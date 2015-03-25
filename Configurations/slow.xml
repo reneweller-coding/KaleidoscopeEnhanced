@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<configuration ImageDirectory="C:\\Users\\rene\\Desktop\\BilderPhotoechoes" ConfigurationName="Slow" timeTextureSoloMin="10" timeTextureSoloMax="40" timeTextureInterpolationMin="40" timeTextureInterpolationMax="120" >
+
+  <!--
+  ***************
+  Texture Effects 
+  ***************
+  -->
+  
+  <!-- Basic Kaleidoscope -->
+  <TextureShader minTimeSolo="20" maxTimeSolo="120" minTimeInterpolation="40" maxTimeInterpolation="80" file="..\\Kaleidoscope.frag" type="KaleidoscopeBase" probability="1.0" complexity="1">
+    <bool name="rotate" probability="0.7"></bool>
+    <int name="sides" minValue="3" maxValue="14"></int>
+    <float name="speed" minValue="0.005" maxValue="0.03"></float>
+  </TextureShader>
+
+  <!-- Basic Tunnel -->
+  <TextureShader minTimeSolo="20" maxTimeSolo="120" minTimeInterpolation="40" maxTimeInterpolation="80" file="..\\Tunnel.frag" type="KaleidoscopeBase" probability="1.0" complexity="1">
+    <bool name="rotate" probability="0.9"></bool>
+    <float name="speedTunnel" minValue="0.001" maxValue="0.04"></float>
+    <int name="sides" minValue="3" maxValue="18"></int>
+    <float name="speed" minValue="0.005" maxValue="0.03"></float>
+  </TextureShader>
+
+
+  <!-- Basic Tunnel -->
+  <TextureShader minTimeSolo="20" maxTimeSolo="120" minTimeInterpolation="40" maxTimeInterpolation="80" file="..\\Tunnel.frag" type="KaleidoscopeBase" probability="1.0" complexity="1">
+    <bool name="rotate" probability="0.9"></bool>
+    <float name="speedTunnel" minValue="0.001" maxValue="0.04"></float>
+    <int name="sides" minValue="3" maxValue="18"></int>
+    <float name="speed" minValue="0.001" maxValue="0.02"></float>
+  </TextureShader>
+
+
+  <!-- Basic Tunnel -->
+  <TextureShader minTimeSolo="20" maxTimeSolo="120" minTimeInterpolation="40" maxTimeInterpolation="80" file="..\\Tunnel.frag" type="KaleidoscopeBase" probability="1.0" complexity="1">
+    <bool name="rotate" probability="0.9"></bool>
+    <float name="speedTunnel" minValue="0.001" maxValue="0.01"></float>
+    <int name="sides" minValue="3" maxValue="18"></int>
+    <float name="speed" minValue="0.001" maxValue="0.02"></float>
+  </TextureShader>
+
+
+  <!--
+  ***************
+  Combine 
+  ***************
+  -->
+
+
+  <!-- Plain -->
+  <CombineShader minTimeSolo="40" maxTimeSolo="240" minTimeInterpolation="80" maxTimeInterpolation="120" file="..\\CombinePlain.frag" type="normal" probability="1.0" complexity="1">
+  </CombineShader>
+
+
+  <!-- Plain -->
+  <CombineShader minTimeSolo="40" maxTimeSolo="240" minTimeInterpolation="80" maxTimeInterpolation="120" file="..\\CombinePlain.frag" type="normal" probability="1.0" complexity="1">
+  </CombineShader>
+
+
+  <!-- Plain -->
+  <CombineShader minTimeSolo="40" maxTimeSolo="240" minTimeInterpolation="80" maxTimeInterpolation="120" file="..\\CombinePlain.frag" type="normal" probability="1.0" complexity="1">
+  </CombineShader>
+
+
+
+  <!-- Multi -->
+  <CombineShader minTimeSolo="10" maxTimeSolo="30" minTimeInterpolation="30" maxTimeInterpolation="120" file="..\\CombineMulti.frag" type="normal" probability="0.1" complexity="1">
+    <bool name="rot" probability="0.5"></bool>
+    <float name="copies" minValue="4.0" maxValue="10.0"></float>
+  </CombineShader>
+  
+
+  <!-- Dark Red -->
+  <CombineShader minTimeSolo="10" maxTimeSolo="30" minTimeInterpolation="30" maxTimeInterpolation="60" file="..\\CombineDarkRed.frag" type="normal" probability="0.01" complexity="1">
+      <bool name="red" probability="1.0"></bool>
+      <bool name="rotate" probability="0.9"></bool>
+  </CombineShader>
+
+
+  <!-- Lichtenstein -->
+  <CombineShader minTimeSolo="30" maxTimeSolo="60" minTimeInterpolation="40" maxTimeInterpolation="80" file="..\\CombineLichtenstein.frag" type="normal" probability="0.01" complexity="1">
+    <float name="size" minValue="4.0" maxValue="18.0"></float>
+  </CombineShader>
+
+
+  <!-- Hexagon -->
+  <CombineShader minTimeSolo="30" maxTimeSolo="120" minTimeInterpolation="20" maxTimeInterpolation="60" file="..\\CombineHexagon.frag" type="normal" probability="0.01" complexity="1">
+  </CombineShader>
+
+</configuration>
+
+
+<!--
+
+
+<TextureShader minTimeSolo="10" maxTimeSolo="20" minTimeInterpolation="5" maxTimeInterpolation="20" file="..\\Rorschach.frag" type="normal" probability="0.01" complexity="1">
+</TextureShader>
+
+    <float name="" minValue="" maxValue=""></float>
+    <int name="" minValue="" maxValue=""></int>
+    <bool name="" probability=""></bool>
+    <interpolator name="" minMin="" maxMin="" minMax="" maxMax=""></interpolator>
+
+<CombineShader minTimeSolo="10" maxTimeSolo="20" minTimeInterpolation="5" maxTimeInterpolation="20" file="..\\Rorschach.frag" type="normal" probability="0.01" complexity="1">
+</CombineShader>
+
+
+
+<TextureShader minTimeSolo="10" maxTimeSolo="20" minTimeInterpolation="5" maxTimeInterpolation="20" file="..\\Rorschach.frag" type="normal" probability="0.01" complexity="1">
+    <float name="" minValue="" maxValue=""></float>
+    <int name="" minValue="" maxValue=""></int>
+    <bool name="" probability=""></bool>
+    <interpolator name="" minMin="" maxMin="" minMax="" maxMax=""></interpolator>
+</TextureShader>
+
+
+-->
