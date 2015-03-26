@@ -1,7 +1,7 @@
 #ifndef QMYWINDOW_H
 #define QMYWINDOW_H
 
-#include <QtGui/QWidget>
+#include <QtWidgets/QWidget>
 
 #include "mainwindow.h"
 

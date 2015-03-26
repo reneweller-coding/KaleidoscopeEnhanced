@@ -54,6 +54,7 @@
 
 #ifdef WIN32
 	#define WIN32_LEAN_AND_MEAN
+    #define NOMINMAX //rwrw Fix for Qt datetime error
 	#include <windows.h>
 	#include <GL/gl.h>
 #elif defined(__APPLE__) || defined(__APPLE_CC__)

@@ -1,7 +1,7 @@
 #include <iostream>
 using namespace std;
 
-#include <QtGui/QApplication>
+#include <QtWidgets/QApplication>
 #include <QtGui/QIcon>
 
 #include "QMyWindow.h"

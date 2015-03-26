@@ -858,7 +858,7 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz)
 			unsigned int timeAct = m_effectTextures[m_actEffectTexture]->getTimeInterpolation();
 			unsigned int timeNext = m_effectTextures[m_nextEffectTexture]->getTimeInterpolation();
 			
-			m_timeInterpolationEffectTexture = (float) (min( timeAct, timeNext));
+			m_timeInterpolationEffectTexture = (float) (std::min( timeAct, timeNext));
 
 			
 			m_effectTextures[m_nextEffectTexture]->startInterpolators();
@@ -1003,7 +1003,7 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz)
 			unsigned int timeAct = m_effectCombines[m_actEffectCombine]->getTimeInterpolation();
 			unsigned int timeNext = m_effectCombines[m_nextEffectCombine]->getTimeInterpolation();
 			
-			m_timeInterpolationEffectCombine = (float) (min( timeAct, timeNext));
+			m_timeInterpolationEffectCombine = (float) (std::min( timeAct, timeNext));
 
 			m_effectCombines[m_nextEffectCombine]->startInterpolators();
 
