@@ -1,4 +1,4 @@
-#include <QtGui/QFileDialog>
+#include <QtWidgets/QFileDialog>
 
 #include "QMyWindow.h"
 

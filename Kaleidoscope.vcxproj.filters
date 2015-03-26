@@ -1,0 +1,232 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="generated Files">
+      <UniqueIdentifier>{7f303619-ab43-4156-8096-6e93f4bdada9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="generated Files\GLSL">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx</Extensions>
+    </Filter>
+    <Filter Include="GUI">
+      <UniqueIdentifier>{8f41e041-ffd8-434e-92e0-219601a39dc3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TextureShader">
+      <UniqueIdentifier>{521d899d-bdf3-4880-80af-32f99a1689c3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CombineFilter">
+      <UniqueIdentifier>{1ec5acbc-19f3-4191-a6fe-943dca271db9}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Configuration.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="EffectShader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="filterShader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GLee.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="glwidget.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="QMyWindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="shader_setup.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="textfile.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TextureEffectKaleidoscopeBase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Uniform.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Vector3D.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="moc\moc_glwidget.cpp">
+      <Filter>generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="moc\moc_QMyWindow.cpp">
+      <Filter>generated Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Configuration.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EffectShader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="filterShader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GLee.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="shader_setup.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stdinc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="textfile.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TextureEffectKaleidoscopeBase.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Uniform.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Vector3D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Vector4D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="default.frag">
+      <Filter>generated Files\GLSL</Filter>
+    </None>
+    <None Include="KaleidoscopeTunnelV7.frag">
+      <Filter>generated Files\GLSL</Filter>
+    </None>
+    <None Include="standard.vert">
+      <Filter>generated Files\GLSL</Filter>
+    </None>
+    <None Include="Bubble.frag">
+      <Filter>TextureShader</Filter>
+    </None>
+    <None Include="Kaleidoscope.frag">
+      <Filter>TextureShader</Filter>
+    </None>
+    <None Include="Rorschach.frag">
+      <Filter>TextureShader</Filter>
+    </None>
+    <None Include="TextureEffectParallaxKaleidoscope.frag">
+      <Filter>TextureShader</Filter>
+    </None>
+    <None Include="TextureEffectParallaxKaleidoscopeTunnel.frag">
+      <Filter>TextureShader</Filter>
+    </None>
+    <None Include="Tunnel.frag">
+      <Filter>TextureShader</Filter>
+    </None>
+    <None Include="TunnelAcceleration.frag">
+      <Filter>TextureShader</Filter>
+    </None>
+    <None Include="TunnelPlain.frag">
+      <Filter>TextureShader</Filter>
+    </None>
+    <None Include="TunnelReverse.frag">
+      <Filter>TextureShader</Filter>
+    </None>
+    <None Include="CombineDarkRed.frag">
+      <Filter>CombineFilter</Filter>
+    </None>
+    <None Include="CombineDeformationFlow.frag">
+      <Filter>CombineFilter</Filter>
+    </None>
+    <None Include="CombineGrey.frag">
+      <Filter>CombineFilter</Filter>
+    </None>
+    <None Include="CombineHexagon.frag">
+      <Filter>CombineFilter</Filter>
+    </None>
+    <None Include="CombineKaleidoscope.frag">
+      <Filter>CombineFilter</Filter>
+    </None>
+    <None Include="CombineLens.frag">
+      <Filter>CombineFilter</Filter>
+    </None>
+    <None Include="CombineLichtenstein.frag">
+      <Filter>CombineFilter</Filter>
+    </None>
+    <None Include="CombineMulti.frag">
+      <Filter>CombineFilter</Filter>
+    </None>
+    <None Include="CombineOilPaint.frag">
+      <Filter>CombineFilter</Filter>
+    </None>
+    <None Include="CombineOilPaintFlow.frag">
+      <Filter>CombineFilter</Filter>
+    </None>
+    <None Include="CombineParallax.frag">
+      <Filter>CombineFilter</Filter>
+    </None>
+    <None Include="CombinePlain.frag">
+      <Filter>CombineFilter</Filter>
+    </None>
+    <None Include="CombinePlaneFlight.frag">
+      <Filter>CombineFilter</Filter>
+    </None>
+    <None Include="CombineRotate.frag">
+      <Filter>CombineFilter</Filter>
+    </None>
+    <None Include="CombineShader.frag">
+      <Filter>CombineFilter</Filter>
+    </None>
+    <None Include="CombineShroom.frag">
+      <Filter>CombineFilter</Filter>
+    </None>
+    <None Include="CombineSphere.frag">
+      <Filter>CombineFilter</Filter>
+    </None>
+    <None Include="CombineWater.frag">
+      <Filter>CombineFilter</Filter>
+    </None>
+    <None Include="CombineWater2.frag">
+      <Filter>CombineFilter</Filter>
+    </None>
+    <None Include="CombineWave.frag">
+      <Filter>CombineFilter</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="glwidget.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="mainwindow.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="QMyWindow.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="mainwindow.ui">
+      <Filter>GUI</Filter>
+    </CustomBuild>
+  </ItemGroup>
+</Project>

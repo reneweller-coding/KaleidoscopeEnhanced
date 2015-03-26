@@ -2,7 +2,7 @@
 
 #include <QtCore/QFile>
 #include <QtGui/QMouseEvent>
-#include <QtGui/QMessageBox>
+#include <QtWidgets/QMessageBox>
 #include <QtGui/QImage>
 
 #include <QtCore/qdir.h>

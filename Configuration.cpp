@@ -15,7 +15,7 @@
 #include <QtCore/QIODevice>
 #include <QtCore/QList>
 #include <QtCore/QString>
-#include <QtXml/QXmlStreamReader>
+#include <QtCore/QXmlStreamReader>
 
 
 
