@@ -1,0 +1,30 @@
+﻿Der Buildvorgang wurde am 04.04.2015 12:01:58 gestartet.
+     1>Projekt "C:\Users\Rene\Desktop\test\Kaleidoscope2\Kaleidoscope\Kaleidoscope.vcxproj" auf Knoten "2", Build Ziel(e).
+     1>CustomBuild:
+         MOCint QMyWindow ...
+       ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\x86_amd64\CL.exe /c /IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include /I"C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\mkspecs\win32-msvc" /Zi /nologo /W3 /WX- /O2 /D WIN32 /D NDEBUG /D _CONSOLE /D _CRT_SECURE_NO_WARNINGS /D _VC80_UPGRADE=0x0710 /D _MBCS /Gm- /EHsc /MT /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"x64\Release\\" /Fd"x64\Release\vc120.pdb" /Gd /TP /errorReport:prompt moc\moc_QMyWindow.cpp
+         moc_QMyWindow.cpp
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\x86_amd64\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Rene\Desktop\test\Kaleidoscope2\Kaleidoscope\\Release\Kaleidoscope.exe" /INCREMENTAL:NO /NOLOGO /LIBPATH:C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib qtmain.lib Qt5Gui.lib Qt5Core.lib Qt5OpenGL.lib OpenGL32.Lib glu32.lib Qt5Xml.lib Qt5Widgets.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /PDB:"C:\Users\Rene\Desktop\test\Kaleidoscope2\Kaleidoscope\\Release\Kaleidoscope.pdb" /SUBSYSTEM:CONSOLE /OPT:REF /OPT:ICF /TLBID:1 /DYNAMICBASE:NO /IMPLIB:"C:\Users\Rene\Desktop\test\Kaleidoscope2\Kaleidoscope\\Release\Kaleidoscope.lib" /MACHINE:X64 x64\Release\Configuration.obj
+         x64\Release\EffectShader.obj
+         x64\Release\filterShader.obj
+         x64\Release\GLee.obj
+         x64\Release\glwidget.obj
+         x64\Release\main.obj
+         x64\Release\mesh.obj
+         x64\Release\moc_glwidget.obj
+         x64\Release\moc_QMyWindow.obj
+         x64\Release\QMyWindow.obj
+         x64\Release\shader_setup.obj
+         x64\Release\textfile.obj
+         x64\Release\TextureEffectKaleidoscopeBase.obj
+         x64\Release\Uniform.obj
+         x64\Release\Utils.obj
+         x64\Release\Vector3D.obj
+         Kaleidoscope.vcxproj -> C:\Users\Rene\Desktop\test\Kaleidoscope2\Kaleidoscope\\Release\Kaleidoscope.exe
+     1>Die Erstellung des Projekts "C:\Users\Rene\Desktop\test\Kaleidoscope2\Kaleidoscope\Kaleidoscope.vcxproj" ist abgeschlossen, Build Ziel(e).
+
+Build erfolgreich.
+
+Verstrichene Zeit 00:00:01.57
