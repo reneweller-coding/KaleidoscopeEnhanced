@@ -245,6 +245,64 @@ unsigned int EffectShader::getInterpolatedTime( unsigned int minTime, unsigned i
 }
 
 
+// ---------------------------------------------------------------------------
+// applyAudioFeatures
+// Called after setUniforms() while the shader program is still active.
+//
+// IMPORTANT – why we no longer scale speed/speedTunnel here:
+//   Those uniforms are multiplied by the absolute 'time' uniform inside the
+//   shaders (phase = time*speed).  Scaling them per-frame therefore remapped
+//   the WHOLE accumulated phase every time the audio changed, producing large
+//   discontinuous jumps – the "wild flicker".  Audio-driven motion is now
+//   delivered as pre-integrated, continuous phase offsets (audioPhase /
+//   audioAdvance), computed once per frame in FilterShader::paint().  The base
+//   speed/speedTunnel uniforms keep advancing smoothly and untouched.
+//
+// This function only uploads dedicated audio uniforms.  glGetUniformLocation
+// returns -1 for any uniform a shader does not declare, so the corresponding
+// upload is silently skipped (e.g. plain combine shaders react to nothing).
+// ---------------------------------------------------------------------------
+void EffectShader::applyAudioFeatures(const AudioFeatures &f)
+{
+    // Integrated, jump-free motion phases (computed in FilterShader::paint).
+    GLint locPhase    = glGetUniformLocation(m_sh_prog_id, "audioPhase");
+    GLint locAdvance  = glGetUniformLocation(m_sh_prog_id, "audioAdvance");
+
+    GLint locBeat     = glGetUniformLocation(m_sh_prog_id, "audioBeat");
+    GLint locLevel    = glGetUniformLocation(m_sh_prog_id, "audioLevel");
+    GLint locSides    = glGetUniformLocation(m_sh_prog_id, "sides");
+    GLint locFlip     = glGetUniformLocation(m_sh_prog_id, "audioFlip");
+    GLint locCentroid = glGetUniformLocation(m_sh_prog_id, "audioCentroid");
+    GLint locFlux     = glGetUniformLocation(m_sh_prog_id, "audioFlux");
+    // 6-band extras (only used by dark-ambient shaders; -1 → no-op for others)
+    GLint locSubBass  = glGetUniformLocation(m_sh_prog_id, "audioSubBass");
+    GLint locLowMid   = glGetUniformLocation(m_sh_prog_id, "audioLowMid");
+    GLint locUpperMid = glGetUniformLocation(m_sh_prog_id, "audioUpperMid");
+    // FFT-derived features (opt-in; -1 → no-op for shaders that don't declare them)
+    GLint locRolloff  = glGetUniformLocation(m_sh_prog_id, "audioRolloff");
+    GLint locSpread   = glGetUniformLocation(m_sh_prog_id, "audioSpread");
+    GLint locMode     = glGetUniformLocation(m_sh_prog_id, "audioMode");
+    GLint locPitch    = glGetUniformLocation(m_sh_prog_id, "audioPitch");
+
+    if (locPhase    >= 0) glUniform1f(locPhase,    f.audioRotPhase);
+    if (locAdvance  >= 0) glUniform1f(locAdvance,  f.audioAdvance);
+    if (locBeat     >= 0) glUniform1f(locBeat,     f.beatDecay);
+    if (locLevel    >= 0) glUniform1f(locLevel,    f.overallLevel);
+    if (locSides    >= 0) glUniform1i(locSides,    f.beatSidesHint);
+    if (locFlip     >= 0) glUniform1f(locFlip,     f.audioFlip);
+    if (locCentroid >= 0) glUniform1f(locCentroid, f.spectralCentroid);
+    if (locFlux     >= 0) glUniform1f(locFlux,     f.spectralFlux);
+    if (locSubBass  >= 0) glUniform1f(locSubBass,  f.subBassLevel);
+    if (locLowMid   >= 0) glUniform1f(locLowMid,   f.lowMidLevel);
+    if (locUpperMid >= 0) glUniform1f(locUpperMid, f.upperMidLevel);
+    // FFT-derived
+    if (locRolloff  >= 0) glUniform1f(locRolloff,  f.spectralRolloff);
+    if (locSpread   >= 0) glUniform1f(locSpread,   f.spectralSpread);
+    if (locMode     >= 0) glUniform1f(locMode,     f.musicalMode);
+    if (locPitch    >= 0) glUniform1f(locPitch,    f.dominantPitch);
+}
+
+
 bool EffectShader::useShader()
 {
 	float prob = (float) (qrand()) / (float) RAND_MAX;

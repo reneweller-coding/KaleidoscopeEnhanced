@@ -1,0 +1,785 @@
+#include "AudioAnalyzer.h"
+
+// Windows / WASAPI headers
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+#include <windows.h>
+#include <mmdeviceapi.h>
+#include <audioclient.h>
+#include <functiondiscoverykeys_devpkey.h>
+#include <combaseapi.h>
+
+#include <cmath>
+#include <algorithm>
+#include <cstring>
+
+// ---------------------------------------------------------------------------
+// Helper: one-pole IIR low-pass coefficient for given cutoff and sample rate.
+//   a = exp(-2*pi*fc/fs)
+//   y[n] = a*y[n-1] + (1-a)*x[n]
+// Larger 'a' → slower response (lower cutoff).
+// ---------------------------------------------------------------------------
+float AudioAnalyzer::coeff(float cutoffHz, int sampleRate)
+{
+    return std::exp(-2.f * 3.14159265f * cutoffHz / float(sampleRate));
+}
+
+// ---------------------------------------------------------------------------
+// radix2fft – in-place Radix-2 Cooley-Tukey Decimation-In-Time FFT.
+//
+// Parameters:
+//   re  – real part array, length N.  Input: windowed audio samples.
+//          Output: real part of DFT coefficients X[0..N-1].
+//   im  – imag part array, length N.  Input: all zeros for real-valued audio.
+//          Output: imaginary part of X[0..N-1].
+//   N   – transform size, MUST be a power of two (e.g. 2048).
+//
+// After the call, the magnitude of the k-th frequency bin is:
+//   |X[k]| = sqrt(re[k]^2 + im[k]^2),  frequency = k * sampleRate / N.
+//
+// For real-valued input the spectrum is conjugate-symmetric:
+//   X[N-k] = conj(X[k]),  so only bins 0..N/2 carry unique information.
+// ---------------------------------------------------------------------------
+/*static*/ void AudioAnalyzer::radix2fft(float *re, float *im, int N)
+{
+    // ---- Bit-reversal permutation ----
+    // Reorders the input array so the butterfly passes work correctly.
+    for (int i = 1, j = 0; i < N; ++i) {
+        int bit = N >> 1;
+        for (; j & bit; bit >>= 1) j ^= bit;
+        j ^= bit;
+        if (i < j) {
+            std::swap(re[i], re[j]);
+            std::swap(im[i], im[j]);
+        }
+    }
+
+    // ---- Butterfly stages ----
+    // len doubles each iteration: 2 → 4 → 8 → … → N.
+    // Each stage computes the DFT of sub-sequences of length len using
+    // the DFT results of sub-sequences of length len/2 (Cooley-Tukey).
+    for (int len = 2; len <= N; len <<= 1) {
+        const float ang = -2.f * 3.14159265358979f / float(len);  // negative: forward FFT
+        const float wRe = std::cos(ang);  // twiddle factor increment (real)
+        const float wIm = std::sin(ang);  // twiddle factor increment (imag)
+
+        for (int i = 0; i < N; i += len) {
+            float curRe = 1.f, curIm = 0.f;  // current twiddle = W^0 = 1
+            for (int j = 0; j < len / 2; ++j) {
+                // Butterfly:  (u, v) → (u + W^j·v,  u - W^j·v)
+                const float uRe = re[i + j];
+                const float uIm = im[i + j];
+                // W^j · x[i+j+len/2]  (complex multiply)
+                const float vRe = re[i + j + len/2] * curRe
+                                - im[i + j + len/2] * curIm;
+                const float vIm = re[i + j + len/2] * curIm
+                                + im[i + j + len/2] * curRe;
+                re[i + j]          = uRe + vRe;
+                im[i + j]          = uIm + vIm;
+                re[i + j + len/2]  = uRe - vRe;
+                im[i + j + len/2]  = uIm - vIm;
+                // Advance twiddle factor:  cur *= W  (complex multiply)
+                const float nextRe = curRe * wRe - curIm * wIm;
+                curIm = curRe * wIm + curIm * wRe;
+                curRe = nextRe;
+            }
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+AudioAnalyzer::AudioAnalyzer(QObject *parent)
+    : QThread(parent)
+{
+    std::memset(m_bassHistory,     0, sizeof(m_bassHistory));
+    std::memset(m_levelHistory,    0, sizeof(m_levelHistory));
+    std::memset(m_ringBuf,         0, sizeof(m_ringBuf));
+    std::memset(m_fftRe,           0, sizeof(m_fftRe));
+    std::memset(m_fftIm,           0, sizeof(m_fftIm));
+    std::memset(m_prevMags,        0, sizeof(m_prevMags));
+    std::memset(m_smoothedChroma,  0, sizeof(m_smoothedChroma));
+
+    // Precompute Hann window for FFT:  w[i] = 0.5 · (1 - cos(2π·i/(N-1)))
+    // Reduces spectral leakage from block edges.
+    for (int i = 0; i < kFFTSize; ++i)
+        m_fftWin[i] = 0.5f * (1.f - std::cos(
+            2.f * 3.14159265358979f * float(i) / float(kFFTSize - 1)));
+}
+
+AudioAnalyzer::~AudioAnalyzer()
+{
+    stop();
+    wait();
+}
+
+void AudioAnalyzer::stop()
+{
+    m_running = false;
+}
+
+AudioFeatures AudioAnalyzer::getFeatures() const
+{
+    QMutexLocker lk(&m_mutex);
+    return m_features;
+}
+
+// ---------------------------------------------------------------------------
+// run() – WASAPI loopback capture loop
+// ---------------------------------------------------------------------------
+void AudioAnalyzer::run()
+{
+    m_running = true;
+
+    // --- COM init for this thread ---
+    HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+    if (FAILED(hr)) { m_running = false; return; }
+
+    IMMDeviceEnumerator *pEnum   = nullptr;
+    IMMDevice           *pDevice = nullptr;
+    IAudioClient        *pClient = nullptr;
+    IAudioCaptureClient *pCapture= nullptr;
+    WAVEFORMATEX        *pwfx    = nullptr;
+
+    auto cleanup = [&]() {
+        if (pCapture) { pCapture->Release(); pCapture = nullptr; }
+        if (pClient)  { pClient->Stop(); pClient->Release();  pClient  = nullptr; }
+        if (pwfx)     { CoTaskMemFree(pwfx); pwfx = nullptr; }
+        if (pDevice)  { pDevice->Release(); pDevice = nullptr; }
+        if (pEnum)    { pEnum->Release();   pEnum   = nullptr; }
+        CoUninitialize();
+    };
+
+    hr = CoCreateInstance(__uuidof(MMDeviceEnumerator), nullptr, CLSCTX_ALL,
+                          __uuidof(IMMDeviceEnumerator), (void**)&pEnum);
+    if (FAILED(hr)) { cleanup(); return; }
+
+    // Get the default audio *render* endpoint (speakers / headphones).
+    // Loopback on a render endpoint captures everything being played.
+    hr = pEnum->GetDefaultAudioEndpoint(eRender, eConsole, &pDevice);
+    if (FAILED(hr)) { cleanup(); return; }
+
+    hr = pDevice->Activate(__uuidof(IAudioClient), CLSCTX_ALL, nullptr, (void**)&pClient);
+    if (FAILED(hr)) { cleanup(); return; }
+
+    hr = pClient->GetMixFormat(&pwfx);
+    if (FAILED(hr)) { cleanup(); return; }
+
+    // Request a 20 ms buffer in loopback shared mode
+    REFERENCE_TIME bufferDuration = 200000; // 100ns units → 20 ms
+    hr = pClient->Initialize(AUDCLNT_SHAREMODE_SHARED,
+                             AUDCLNT_STREAMFLAGS_LOOPBACK,
+                             bufferDuration, 0, pwfx, nullptr);
+    if (FAILED(hr)) { cleanup(); return; }
+
+    hr = pClient->GetService(__uuidof(IAudioCaptureClient), (void**)&pCapture);
+    if (FAILED(hr)) { cleanup(); return; }
+
+    hr = pClient->Start();
+    if (FAILED(hr)) { cleanup(); return; }
+
+    const int  sampleRate  = pwfx->nSamplesPerSec;
+    const int  numChannels = pwfx->nChannels;
+    // Detect IEEE float vs PCM16 format
+    const bool isFloat = (pwfx->wFormatTag == WAVE_FORMAT_IEEE_FLOAT) ||
+                         (pwfx->wFormatTag == WAVE_FORMAT_EXTENSIBLE &&
+                          reinterpret_cast<WAVEFORMATEXTENSIBLE*>(pwfx)->SubFormat ==
+                          KSDATAFORMAT_SUBTYPE_IEEE_FLOAT);
+
+    // Temporary float conversion buffer (max 4096 frames × 8 channels)
+    static float convBuf[4096 * 8];
+
+    while (m_running)
+    {
+        UINT32 packetSize = 0;
+        hr = pCapture->GetNextPacketSize(&packetSize);
+        if (FAILED(hr)) break;
+
+        while (packetSize > 0 && m_running)
+        {
+            BYTE  *pData     = nullptr;
+            UINT32 numFrames = 0;
+            DWORD  flags     = 0;
+
+            hr = pCapture->GetBuffer(&pData, &numFrames, &flags, nullptr, nullptr);
+            if (FAILED(hr)) break;
+
+            if (!(flags & AUDCLNT_BUFFERFLAGS_SILENT) && numFrames > 0)
+            {
+                const int totalSamples = numFrames * numChannels;
+                const float *src = nullptr;
+
+                if (isFloat) {
+                    src = reinterpret_cast<const float*>(pData);
+                } else {
+                    // PCM 16-bit → float
+                    const int16_t *pcm = reinterpret_cast<const int16_t*>(pData);
+                    int count = std::min(totalSamples, 4096 * 8);
+                    for (int i = 0; i < count; ++i)
+                        convBuf[i] = pcm[i] / 32768.f;
+                    src = convBuf;
+                }
+
+                processBlock(src, numFrames, std::min(numChannels, 2), sampleRate);
+            }
+
+            pCapture->ReleaseBuffer(numFrames);
+            hr = pCapture->GetNextPacketSize(&packetSize);
+            if (FAILED(hr)) break;
+        }
+
+        msleep(10); // poll every 10 ms
+    }
+
+    cleanup();
+}
+
+// ---------------------------------------------------------------------------
+// processBlock – 6-band IIR analysis, beat detection, ambient classification
+// ---------------------------------------------------------------------------
+void AudioAnalyzer::processBlock(const float *data, int numFrames,
+                                 int numChannels, int sampleRate)
+{
+    // ---- 5 one-pole LP coefficients ----
+    // One-pole IIR: y[n] = a*y[n-1] + (1-a)*x[n]
+    // Band extraction by subtraction of adjacent LP outputs.
+    const float a60  = coeff(  60.f, sampleRate);
+    const float a150 = coeff( 150.f, sampleRate);
+    const float a500 = coeff( 500.f, sampleRate);
+    const float a2k  = coeff(2000.f, sampleRate);
+    const float a6k  = coeff(6000.f, sampleRate);
+
+    // ---- Ambient-adaptive smoothing (one-pole attack / release) ----
+    // Beat mode: fast release (≈0.88-0.93) – visuals snap with each kick.
+    // Ambient mode: very slow release (≈0.985-0.99) – majestic long swell.
+    // The ambientFactor (0=beat, 1=ambient) blends the two coefficients.
+    // At 100 update cycles/sec: release=0.99 → ~37% decay in ~100 frames ≈ 1 s.
+    const float af = m_ambientFactor;  // 0=beat, 1=ambient
+
+    // Attack coefficients (same for both modes – fast rise is always desired)
+    const float atkSub  = 0.80f;
+    const float atkBass = 0.70f;
+    const float atkLow  = 0.65f;
+    const float atkMid  = 0.60f;
+    const float atkUpp  = 0.55f;
+    const float atkHigh = 0.50f;
+
+    // Release coefficients: lerp between beat-mode and ambient-mode values
+    auto lerpRel = [&](float beat, float amb) { return beat + af * (amb - beat); };
+    const float relSub  = lerpRel(0.94f, 0.993f);
+    const float relBass = lerpRel(0.93f, 0.990f);
+    const float relLow  = lerpRel(0.92f, 0.990f);
+    const float relMid  = lerpRel(0.91f, 0.988f);
+    const float relUpp  = lerpRel(0.89f, 0.987f);
+    const float relHigh = lerpRel(0.88f, 0.985f); // slightly faster so shimmer can breathe
+
+    // ---- Per-sample IIR pass: accumulate squared band energies + ZCR ----
+    float accSub  = 0.f, accBass = 0.f, accLow  = 0.f;
+    float accMid  = 0.f, accUpp  = 0.f, accHigh = 0.f;
+    int   crossings = 0;
+    float prevMono  = 0.f;
+
+    for (int i = 0; i < numFrames; ++i)
+    {
+        // Mix to mono
+        float mono = 0.f;
+        for (int c = 0; c < numChannels; ++c)
+            mono += data[i * numChannels + c];
+        mono /= float(numChannels);
+
+        // Zero-crossing rate: count sign changes (Temporal feature from paper)
+        if ((mono > 0.f && prevMono < 0.f) || (mono < 0.f && prevMono > 0.f))
+            crossings++;
+        prevMono = mono;
+
+        // Feed ring buffer for FFT (circular, kFFTSize = 2048 samples)
+        m_ringBuf[m_ringWrite] = mono;
+        m_ringWrite = (m_ringWrite + 1) % kFFTSize;
+
+        // Feed 5 LP filters in parallel (same input, different cutoffs)
+        m_lp60  = a60  * m_lp60  + (1.f - a60)  * mono;
+        m_lp150 = a150 * m_lp150 + (1.f - a150) * mono;
+        m_lp500 = a500 * m_lp500 + (1.f - a500) * mono;
+        m_lp2k  = a2k  * m_lp2k  + (1.f - a2k)  * mono;
+        m_lp6k  = a6k  * m_lp6k  + (1.f - a6k)  * mono;
+
+        // Extract 6 bands by subtraction of adjacent LP outputs
+        float vSub  = m_lp60;                    // 20–60 Hz   sub-bass rumble
+        float vBass = m_lp150 - m_lp60;          // 60–150 Hz  drone body / kick
+        float vLow  = m_lp500 - m_lp150;         // 150–500 Hz harmonic warmth
+        float vMid  = m_lp2k  - m_lp500;         // 500–2k Hz  melody / texture
+        float vUpp  = m_lp6k  - m_lp2k;          // 2k–6k Hz   metallic / scrape
+        float vHigh = mono    - m_lp6k;          // 6k+ Hz     air / shimmer
+
+        // Accumulate squared amplitudes for RMS calculation
+        accSub  += vSub  * vSub;
+        accBass += vBass * vBass;
+        accLow  += vLow  * vLow;
+        accMid  += vMid  * vMid;
+        accUpp  += vUpp  * vUpp;
+        accHigh += vHigh * vHigh;
+    }
+
+    m_frameCounter += float(numFrames);
+
+    // ---- RMS per band ----
+    const float inv  = (numFrames > 0) ? 1.f / float(numFrames) : 0.f;
+    float rSub  = std::sqrt(accSub  * inv);
+    float rBass = std::sqrt(accBass * inv);
+    float rLow  = std::sqrt(accLow  * inv);
+    float rMid  = std::sqrt(accMid  * inv);
+    float rUpp  = std::sqrt(accUpp  * inv);
+    float rHigh = std::sqrt(accHigh * inv);
+
+    // ---- Asymmetric attack/release smoothing per band ----
+    auto smooth = [](float &s, float v, float atk, float rel) {
+        float a = (v > s) ? atk : rel;
+        s = a * s + (1.f - a) * v;
+    };
+    smooth(m_sSubBass,  rSub,  atkSub,  relSub);
+    smooth(m_sBass,     rBass, atkBass, relBass);
+    smooth(m_sLowMid,   rLow,  atkLow,  relLow);
+    smooth(m_sMid,      rMid,  atkMid,  relMid);
+    smooth(m_sUpperMid, rUpp,  atkUpp,  relUpp);
+    smooth(m_sHigh,     rHigh, atkHigh, relHigh);
+
+    // ---- Beat detection on combined subBass + bass (linear RMS) ----
+    // Beat detection intentionally stays in linear domain (more sensitive
+    // to energy transients than dB). Combined sub+bass catches both:
+    //   - Electronic kick drums (body in 60-150 Hz)
+    //   - Dark ambient sub-bass pulses (modulation in 20-60 Hz)
+    float beatBand = m_sSubBass * 0.35f + m_sBass * 0.65f;
+
+    m_bassHistory[m_histIdx] = beatBand;
+    m_histIdx = (m_histIdx + 1) % kHistoryLen;
+
+    float histMean = 0.f;
+    for (float v : m_bassHistory) histMean += v;
+    histMean /= float(kHistoryLen);
+
+    bool  isBeat  = false;
+    float beatStr = 0.f;
+
+    // Ambient-adaptive beat threshold.
+    // Beat music (ambientFactor≈0): threshold = 1.5× histMean  (normal sensitivity).
+    // Drone music (ambientFactor≈1): threshold = 4.5× histMean  (requires a true
+    // transient 3× above the drone level — small sustain fluctuations never qualify).
+    // This is the primary defence against false beats on Köner / Lustmord / Heemann.
+    const float dynThresh = kBeatThresholdRatio + m_ambientFactor * 3.0f;
+
+    if (m_beatCooldown > 0.f) {
+        m_beatCooldown -= 1.f;
+    } else if (histMean > 1e-4f && beatBand > dynThresh * histMean) {
+        isBeat         = true;
+        beatStr        = std::min((beatBand / (histMean * dynThresh)) - 1.f, 1.f);
+        m_beatCooldown = kBeatCooldownFrames;
+    }
+
+    // ---- Logarithmic (dB) normalisation for shader outputs ----
+    // Human hearing is logarithmic. dB mapping gives far better perceived
+    // dynamic range for driving visual parameters.
+    //   dB = 20 * log10(rms + ε)
+    //   Map [-60 dB .. 0 dB] → [0 .. 1]
+    auto toNorm = [](float rms) -> float {
+        const float dB = 20.f * std::log10(rms + 1e-5f);
+        return std::max(0.f, std::min(1.f, (dB + 60.f) / 60.f));
+    };
+
+    float subBass  = toNorm(m_sSubBass);
+    float bass     = toNorm(m_sBass);
+    float lowMid   = toNorm(m_sLowMid);
+    float mid      = toNorm(m_sMid);
+    float upperMid = toNorm(m_sUpperMid);
+    float high     = toNorm(m_sHigh);
+
+    // Overall level: perceptually weighted mix (bass-heavy, as drones tend to be)
+    float level = subBass  * 0.15f
+                + bass     * 0.30f
+                + lowMid   * 0.25f
+                + mid      * 0.15f
+                + upperMid * 0.10f
+                + high     * 0.05f;
+
+    // ---- Ambient detection – rolling variance of dB level over ~6 s ----
+    // Low variance over time → content is a static drone / ambient pad.
+    // High variance → dynamic beat-driven music with significant energy swings.
+    m_levelHistory[m_ambientIdx] = level;
+    m_ambientIdx = (m_ambientIdx + 1) % kAmbientHistLen;
+
+    float mean2 = 0.f, var2 = 0.f;
+    for (float v : m_levelHistory) mean2 += v;
+    mean2 /= float(kAmbientHistLen);
+    for (float v : m_levelHistory) { float d = v - mean2; var2 += d * d; }
+    var2 /= float(kAmbientHistLen);
+
+    // stddev < 0.07 → ambient/drone; stddev > 0.07 → beat-driven
+    float targetAmbient = 1.f - std::min(std::sqrt(var2) / 0.07f, 1.f);
+
+    // Asymmetric transition speed:
+    //   Rising into ambient mode (drone detected): fast, ~2 s  → catch drones quickly.
+    //   Falling back to beat mode: slow, ~10 s → brief silences / pauses don't
+    //   abruptly switch the visualiser back to restless beat behaviour.
+    const float ambSpeedRise = 0.005f;  // 200 frames ≈ 2 s
+    const float ambSpeedFall = 0.001f;  // 1000 frames ≈ 10 s
+    float ambientSpeed = (targetAmbient > m_ambientFactor) ? ambSpeedRise : ambSpeedFall;
+    m_ambientFactor += ambientSpeed * (targetAmbient - m_ambientFactor);
+
+    // ---- Speed scale envelope ----
+    // On beat: m_beatPulse jumps then decays at 0.85×/cycle → 4-frame ramp.
+    // In ambient mode: speed tracks spectral flux (drone moves when it changes).
+    // beatPulse magnitude is gated by ambientFactor:
+    //   ambientFactor=0 → full pulse (1 + beatStr*2, up to 3.0)
+    //   ambientFactor=1 → almost no pulse (×0.05 = max 0.15)
+    // Even if the raised threshold above lets a drone fluctuation through as a "beat",
+    // the resulting visual flash is negligible because beatDecay ≤ 0.15/3 = 0.05.
+    if (isBeat) m_beatPulse = (1.f + beatStr * 2.f) * (1.f - m_ambientFactor * 0.95f);
+    m_beatPulse = std::max(m_beatPulse * 0.85f, 0.f);
+
+    float beatSpeed = 1.f + m_beatPulse;
+
+    // Spectral flux is not yet computed here, so we use the previous m_sFlux.
+    // This is fine since flux is smoothed and the one-frame lag is imperceptible.
+    float fluxContrib = std::min(m_sFlux / 0.15f, 1.f);
+    float ambientSpd  = 0.1f + fluxContrib * 2.0f + level * 0.5f;
+
+    float speedScale = beatSpeed * (1.f - m_ambientFactor)
+                     + ambientSpd * m_ambientFactor;
+    speedScale = std::max(speedScale, 0.05f);
+
+    // ---- Power (distortion) scale ----
+    float powerScale = (1.f + high * 2.f)    * (1.f - m_ambientFactor)
+                     + (1.f + level * 0.5f)  * m_ambientFactor;
+
+    // ---- beatDecay: smooth decaying pulse 0..1 for shaders ----
+    // Jumps to >0 on a beat and decays in ~4-5 frames (40-50 ms).
+    // Shaders can use this for a sustained visual pop, unlike the one-frame isBeat flag.
+    float beatDecay = std::min(m_beatPulse / 3.f, 1.f);
+
+    // ---- Spectral Flux (6-band) ----
+    // Measures positive-only inter-frame change across all bands.
+    // Zero for a perfectly static held drone; peaks when layers enter or leave.
+    // Primary motion driver for the dark ambient tunnel shader.
+    float rawFlux = std::max(0.f, subBass  - m_prevSubBass)
+                  + std::max(0.f, bass     - m_prevBass)
+                  + std::max(0.f, lowMid   - m_prevLowMid)
+                  + std::max(0.f, mid      - m_prevMid)
+                  + std::max(0.f, upperMid - m_prevUpperMid)
+                  + std::max(0.f, high     - m_prevHigh);
+
+    m_prevSubBass  = subBass;
+    m_prevBass     = bass;
+    m_prevLowMid   = lowMid;
+    m_prevMid      = mid;
+    m_prevUpperMid = upperMid;
+    m_prevHigh     = high;
+
+    m_sFlux = 0.7f * m_sFlux + 0.3f * rawFlux;
+    float spectralFlux = std::min(m_sFlux / 0.15f, 1.f);
+
+    // ---- Spectral Centroid (6-band, log-spaced frequency weights) ----
+    // Each weight is the log-normalised centre frequency of that band,
+    // mapped to [0..1] over the audible range (20 Hz – 20 kHz).
+    //   pos = (log10(fc) - log10(20)) / (log10(20000) - log10(20))
+    //   subBass  fc≈ 40 Hz  → 0.10
+    //   bass     fc≈100 Hz  → 0.23
+    //   lowMid   fc≈275 Hz  → 0.38
+    //   mid      fc≈1000 Hz → 0.57
+    //   upperMid fc≈3500 Hz → 0.75
+    //   high     fc≈13000 Hz→ 0.94
+    static const float kCentroidWeights[6] = { 0.10f, 0.23f, 0.38f, 0.57f, 0.75f, 0.94f };
+    float bands6[6] = { subBass, bass, lowMid, mid, upperMid, high };
+
+    float totalEnergy = 1e-6f;
+    float rawCentroid = 0.f;
+    for (int k = 0; k < 6; ++k) {
+        totalEnergy += bands6[k];
+        rawCentroid += bands6[k] * kCentroidWeights[k];
+    }
+    rawCentroid /= totalEnergy;
+
+    // Very slow smoothing: colour temperature should drift like sunrise/sunset,
+    // not flash with every transient.
+    float smoothedCentroid = 0.98f * m_features.spectralCentroid + 0.02f * rawCentroid;
+
+    // ---- Zero-Crossing Rate (ZCR) ----
+    // Normalise: typical tonal music sits at 0-0.10 crossings/sample,
+    // noise/harsh textures reach 0.25+.  Clip to [0,1].
+    float rawZCR = (numFrames > 0) ? float(crossings) / float(numFrames) : 0.f;
+    m_sZCR = 0.92f * m_sZCR + 0.08f * std::min(rawZCR / 0.25f, 1.f);
+
+    // ---- Spectral Flatness Measure (SFM) ----
+    // Geometric mean / Arithmetic mean of 6 band energies (all dB-normalised).
+    // SFM = 0: one dominant band (pure drone), SFM = 1: even energy (noise).
+    {
+        float b[6] = { subBass, bass, lowMid, mid, upperMid, high };
+        float logSum = 0.f, sumB = 1e-6f;
+        for (int k = 0; k < 6; ++k) { logSum += std::log(b[k] + 1e-6f); sumB += b[k]; }
+        float geoMean   = std::exp(logSum / 6.f);
+        float arithMean = sumB / 6.f;
+        float rawSFM    = (arithMean > 1e-6f) ? geoMean / arithMean : 0.f;
+        m_sSFM = 0.93f * m_sSFM + 0.07f * std::min(rawSFM, 1.f);
+    }
+
+    // ---- Log Attack Time (onset sharpness) ----
+    // Measures how quickly the overall level rises frame-to-frame.
+    // Fast rise (> threshold in one cycle) = sharp attack (kick, metal hit).
+    // Very slow rise = pad swell, drone layer entry.
+    {
+        float rise = std::max(level - m_prevLevel, 0.f);
+        // 0.05 per cycle = moderate attack; clip fast transients to 1.
+        float rawAttack = std::min(rise / 0.05f, 1.f);
+        m_attackAccum = 0.85f * m_attackAccum + 0.15f * rawAttack;
+        m_prevLevel   = level;
+    }
+
+    // ---- BPM estimation from inter-beat intervals ----
+    // Store the time (in samples) between the last kBPMHistLen beats.
+    // Smooth the resulting BPM to avoid jitter.
+    float estimatedBPM = m_smoothedBPM;
+    if (isBeat) {
+        float intervalFrames = m_frameCounter - m_lastBeatFrame;
+        m_lastBeatFrame = m_frameCounter;
+        if (intervalFrames > 0.f && intervalFrames < float(sampleRate) * 3.f) {
+            // Convert sample interval to BPM
+            float bpm = float(sampleRate) * 60.f / intervalFrames;
+            m_beatIntervals[m_bpmIdx] = bpm;
+            m_bpmIdx = (m_bpmIdx + 1) % kBPMHistLen;
+
+            float bpmSum = 0.f;
+            for (float v : m_beatIntervals) bpmSum += v;
+            float meanBPM = bpmSum / float(kBPMHistLen);
+
+            // Smooth BPM estimate (slow — tempo should drift, not jump)
+            m_smoothedBPM = 0.85f * m_smoothedBPM + 0.15f * meanBPM;
+        }
+        // Normalise BPM to [0,1] over range 40..200 BPM
+        estimatedBPM = std::max(0.f, std::min((m_smoothedBPM - 40.f) / 160.f, 1.f));
+    }
+
+    // ---- Arousal & Valence proxies (after Thayer's model) ----
+    // Arousal: combination of energy, rhythm presence, and spectral activity.
+    //   High in energetic beat music, low in still ambient/drone.
+    float arousal = level * 0.4f
+                  + (1.f - m_ambientFactor) * estimatedBPM * 0.35f
+                  + spectralFlux * 0.25f;
+    arousal = std::min(arousal * 1.5f, 1.f);  // scale up (most music sits low)
+
+    // Valence: brightness + tonality + absence of harsh noise.
+    //   High for bright, tonal, clean music; low for dark, noisy, dissonant.
+    float valence = smoothedCentroid * 0.5f
+                  + (1.f - m_sSFM)   * 0.3f   // tonal (not noisy) = more pleasant
+                  + (1.f - m_sZCR)   * 0.2f;  // pure sine (not noisy)
+
+    // ---- Dynamic timing scale (for filterShader / EffectShader) ----
+    // Low arousal + high ambient = very slow visual cycling (minutes).
+    // High arousal + beat music = slightly faster than default.
+    // Range: 0.12 (pure ambient drone) .. 1.6 (fast beat music)
+    //   timingScale < 1 → ALL times scaled longer (longer solos, slower cross-fades)
+    //   timingScale > 1 → times shortened
+    float timingScale = 1.6f * (1.f - m_ambientFactor)   // beat mode: up to 1.6×
+                      + 0.12f * m_ambientFactor;           // ambient:    down to 0.12×
+    // Smooth slowly so transitions aren't abrupt
+    float prevTimingScale = m_features.timingScale;
+    timingScale = 0.998f * prevTimingScale + 0.002f * timingScale;
+
+    // ---- Beat-triggered discrete changes (sub-sampled to avoid restlessness) ----
+    // FIX for "too restless": sides change only every 4 beats, flip every 8.
+    // In ambient mode (few/no beats) these rarely trigger anyway.
+    int   beatSidesHint = m_currentSides;
+    float audioFlip     = m_flipDir;
+
+    // Discrete visual changes are gated by ambientFactor.
+    // In ambient / drone mode (ambientFactor > 0.4) these changes are suppressed
+    // entirely — a static drone like Köner's Daikan should produce a single,
+    // slowly evolving geometry that holds for minutes, not one that flips every
+    // few seconds due to false beats.
+    if (isBeat && m_ambientFactor < 0.4f) {
+        m_beatCount++;
+
+        // Change kaleidoscope symmetry only every 4 beats
+        if (m_beatCount % 4 == 0) {
+            static const int kSidesSet[]  = { 3, 4, 6, 8, 10, 12 };
+            static const int kSidesCount  = 6;
+            int idx;
+            do { idx = rand() % kSidesCount; } while (kSidesSet[idx] == m_currentSides);
+            m_currentSides = kSidesSet[idx];
+            beatSidesHint  = m_currentSides;
+        }
+
+        // Flip rotation only every 8 beats, only on very strong beats (strength > 0.6)
+        if (m_beatCount % 8 == 0 && beatStr > 0.6f && (rand() % 10) < 4) {
+            m_flipDir = -m_flipDir;
+            audioFlip = m_flipDir;
+        }
+    }
+
+    // ========================================================================
+    // FFT-based spectral analysis
+    // ========================================================================
+    // Linearise ring buffer: oldest sample first → in-place FFT input.
+    // After the per-sample loop above, m_ringWrite points to the slot that
+    // will be overwritten NEXT, so (m_ringWrite + i) % kFFTSize gives sample i
+    // in chronological order (oldest i=0, newest i=kFFTSize-1).
+    for (int i = 0; i < kFFTSize; ++i) {
+        int src    = (m_ringWrite + i) % kFFTSize;
+        m_fftRe[i] = m_ringBuf[src] * m_fftWin[i];  // apply Hann window
+        m_fftIm[i] = 0.f;
+    }
+    radix2fft(m_fftRe, m_fftIm, kFFTSize);
+
+    // Compute magnitude spectrum for k = 0 .. kFFTHalf-1.
+    // (The upper half k > kFFTHalf is conjugate-symmetric; discard it.)
+    float mags[kFFTHalf];
+    float totalMagSq = 1e-10f;
+    for (int k = 0; k < kFFTHalf; ++k) {
+        float mag  = std::sqrt(m_fftRe[k]*m_fftRe[k] + m_fftIm[k]*m_fftIm[k]);
+        mags[k]    = mag;
+        totalMagSq += mag * mag;
+    }
+
+    // ---- Spectral Rolloff ----
+    // Find the bin below which 85% of total spectral energy lies.
+    // Low rolloff: dark sub-bass drone.  High rolloff: cymbals / bright pads.
+    {
+        float cumMagSq = 0.f;
+        int   rBin     = kFFTHalf - 1;
+        for (int k = 1; k < kFFTHalf; ++k) {
+            cumMagSq += mags[k] * mags[k];
+            if (cumMagSq >= 0.85f * totalMagSq) { rBin = k; break; }
+        }
+        float rollHz   = float(rBin) * float(sampleRate) / float(kFFTSize);
+        float rollNorm = std::min(rollHz / (float(sampleRate) * 0.5f), 1.f);
+        m_sRolloff = 0.95f * m_sRolloff + 0.05f * rollNorm;
+    }
+
+    // ---- Spectral Spread (standard deviation around FFT centroid) ----
+    // Narrow spread: pure sine / single drone tone.  Wide: full-band noise.
+    {
+        float wSum = 0.f, mSum = 1e-6f;
+        for (int k = 1; k < kFFTHalf; ++k) {
+            float f = float(k) * float(sampleRate) / float(kFFTSize);
+            wSum += f * mags[k];
+            mSum += mags[k];
+        }
+        float centHz = wSum / mSum;
+
+        float varSum = 0.f;
+        for (int k = 1; k < kFFTHalf; ++k) {
+            float f = float(k) * float(sampleRate) / float(kFFTSize);
+            float d = f - centHz;
+            varSum += d * d * mags[k];
+        }
+        float spreadNorm = std::min(std::sqrt(varSum / mSum) / 5000.f, 1.f);
+        m_sSpread = 0.95f * m_sSpread + 0.05f * spreadNorm;
+    }
+
+    // ---- Chroma vector + Key/Mode (Krumhansl-Kessler 1982 profiles) ----
+    // Each FFT bin is mapped to one of 12 pitch classes (C=0 .. B=11)
+    // using MIDI note arithmetic.  Energy is accumulated per pitch class,
+    // then compared against the KK major and minor profiles.
+    // Best-matching profile family (major vs. minor) across all 12 key
+    // transpositions determines musicalMode (0=minor, 1=major).
+    {
+        float chroma[12] = {};
+        for (int k = 3; k < kFFTHalf; ++k) {
+            float f = float(k) * float(sampleRate) / float(kFFTSize);
+            if (f < 60.f || f > 5000.f) continue;  // musical pitch range only
+            // MIDI note: 69 + 12 * log2(f / 440)  → pitch class 0..11
+            float midi       = 69.f + 12.f * std::log2(f / 440.f);
+            int   pitchClass = int(std::round(midi)) % 12;
+            if (pitchClass < 0) pitchClass += 12;
+            chroma[pitchClass] += mags[k];
+        }
+        // L1-normalise then blend into slow-moving smoothed chroma
+        float cSum = 1e-6f;
+        for (int i = 0; i < 12; ++i) cSum += chroma[i];
+        for (int i = 0; i < 12; ++i) {
+            chroma[i] /= cSum;
+            m_smoothedChroma[i] = 0.92f * m_smoothedChroma[i] + 0.08f * chroma[i];
+        }
+
+        // Krumhansl-Kessler key profiles (original 1982 tonal hierarchy ratings)
+        static const float kMajorKK[12] = {
+            6.35f, 2.23f, 3.48f, 2.33f, 4.38f, 4.09f,
+            2.52f, 5.19f, 2.39f, 3.66f, 2.29f, 2.88f };
+        static const float kMinorKK[12] = {
+            6.33f, 2.68f, 3.52f, 5.38f, 2.60f, 3.53f,
+            2.54f, 4.75f, 3.98f, 2.69f, 3.34f, 3.17f };
+
+        float bestMajor = -1e9f, bestMinor = -1e9f;
+        for (int t = 0; t < 12; ++t) {
+            float majCorr = 0.f, minCorr = 0.f;
+            for (int i = 0; i < 12; ++i) {
+                majCorr += m_smoothedChroma[i] * kMajorKK[(i - t + 12) % 12];
+                minCorr += m_smoothedChroma[i] * kMinorKK[(i - t + 12) % 12];
+            }
+            if (majCorr > bestMajor) bestMajor = majCorr;
+            if (minCorr > bestMinor) bestMinor = minCorr;
+        }
+        // Ratio: 0 = purely minor, 1 = purely major.
+        // Very slow smoothing (~3 s) so mode reflects atmosphere, not noise.
+        float rawMode = bestMajor / (bestMajor + bestMinor + 1e-6f);
+        m_sMode = 0.97f * m_sMode + 0.03f * rawMode;
+    }
+
+    // ---- Dominant Pitch – Harmonic Product Spectrum (HPS) ----
+    // Multiply the magnitude spectrum by downsampled-by-2, -3, -4 copies.
+    // The fundamental frequency of a harmonic tone produces the highest product
+    // because all its harmonics reinforce at the same point.
+    // Search range: 60..1200 Hz (covers bass drone through soprano melody).
+    {
+        const int binLo = std::max(3,
+                            int(60.f  * float(kFFTSize) / float(sampleRate)));
+        const int binHi = std::min(kFFTHalf / 4 - 1,
+                            int(1200.f * float(kFFTSize) / float(sampleRate)) + 1);
+        float maxHPS   = -1.f;
+        int   pitchBin = binLo;
+        for (int k = binLo; k < binHi; ++k) {
+            if (k*4 >= kFFTHalf) break;
+            float hps = mags[k] * mags[k*2] * mags[k*3] * mags[k*4];
+            if (hps > maxHPS) { maxHPS = hps; pitchBin = k; }
+        }
+        float pitchHz = float(pitchBin) * float(sampleRate) / float(kFFTSize);
+        // Log-normalise 60..1200 Hz → 0..1
+        float pitchNorm = (std::log2(pitchHz + 1.f) - std::log2(61.f))
+                        / (std::log2(1201.f) - std::log2(61.f));
+        pitchNorm = std::max(0.f, std::min(pitchNorm, 1.f));
+        // Suppress output when there is no signal
+        float maxMag    = 0.f;
+        for (int k = 1; k < kFFTHalf; ++k) maxMag = std::max(maxMag, mags[k]);
+        float confidence = (maxMag > 1e-5f) ? 1.f : 0.f;
+        m_sPitch = 0.94f * m_sPitch + 0.06f * pitchNorm * confidence;
+    }
+
+    // ---- Publish (mutex-protected) ----
+    QMutexLocker lk(&m_mutex);
+    m_features.subBassLevel   = subBass;
+    m_features.bassLevel      = bass;
+    m_features.lowMidLevel    = lowMid;
+    m_features.midLevel       = mid;
+    m_features.upperMidLevel  = upperMid;
+    m_features.highLevel      = high;
+    m_features.overallLevel   = level;
+    m_features.isBeat         = isBeat;
+    m_features.beatStrength   = beatStr;
+    m_features.beatDecay      = beatDecay;
+    m_features.ambientFactor  = m_ambientFactor;
+    m_features.speedScale     = speedScale;
+    m_features.powerScale     = powerScale;
+    m_features.beatSidesHint  = beatSidesHint;
+    m_features.audioFlip      = audioFlip;
+    m_features.spectralFlux   = spectralFlux;
+    m_features.spectralCentroid = smoothedCentroid;
+    // Paper-inspired timbral features
+    m_features.zeroCrossingRate = m_sZCR;
+    m_features.spectralFlatness = m_sSFM;
+    m_features.logAttackTime    = m_attackAccum;
+    m_features.estimatedBPM     = estimatedBPM;
+    m_features.arousal          = arousal;
+    m_features.valence          = valence;
+    m_features.timingScale      = timingScale;
+    // FFT-derived features
+    m_features.spectralRolloff  = m_sRolloff;
+    m_features.spectralSpread   = m_sSpread;
+    m_features.musicalMode      = m_sMode;
+    m_features.dominantPitch    = m_sPitch;
+}

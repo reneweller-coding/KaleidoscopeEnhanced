@@ -1,0 +1,15 @@
+# Visual Studio local / per-user caches (never commit)
+.vs/
+*.VC.db
+*.VC.opendb
+
+# Visual Studio profiler sessions
+*.psess
+*.vsp
+
+# Build intermediates (object/pdb dirs not already tracked)
+x64/
+*.CppClean.log
+
+# Nested build-output copy
+/Kaleidoscope/

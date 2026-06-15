@@ -17,7 +17,7 @@
 #define __UNIFORM_H_INCLUDED__
 
 #include <QtCore/QString>
-#include <QtCore/QTime>
+#include <QtCore/QElapsedTimer>
 
 
 //=============================================================================
@@ -117,6 +117,14 @@ public:
 	void resetParameters( float time );
 	void startInterpolator();
 
+	/** Re-upload the current float value scaled by 'scale'.
+	 *  Call this AFTER setUniform() to override the value for audio reactivity.
+	 *  Has no effect on int/bool uniforms. */
+	void setGLValueScaled(float scale);
+
+	/** Name of the uniform variable (for lookup by EffectShader). */
+	const QString& getName() const { return m_name; }
+
 private:
 
 	
@@ -153,7 +161,7 @@ private:
 	bool	m_increasing;
 	bool	m_initTimer;
 
-	QTime m_time;
+	QElapsedTimer m_time;
 };
 
 

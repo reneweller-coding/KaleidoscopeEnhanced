@@ -1,8 +1,8 @@
 #ifndef CONFIGURATION_H
 #define CONFIGURATION_H
 
-#include <QtOpenGL/QGLWidget>
-#include <QtCore/QTime>
+#include <QtGui/qopengl.h>
+#include <QtCore/QElapsedTimer>
 #include <QtCore/QThread>
 
 #include <QtXml/QDomDocument>

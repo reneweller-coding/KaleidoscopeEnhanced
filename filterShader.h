@@ -1,8 +1,8 @@
 #ifndef GENPROC_H
 #define GENPROC_H
 
-#include <QtOpenGL/QGLWidget>
-#include <QtCore/QTime>
+#include <QtGui/qopengl.h>
+#include <QtCore/QElapsedTimer>
 #include <QtCore/QThread>
 
 #include "mesh.h"
@@ -10,6 +10,7 @@
 #include "EffectShader.h"
 #include "TextureEffectKaleidoscopeBase.h"
 #include "Utils.h"
+#include "AudioFeatures.h"
 
 class ImageLoader;
 
@@ -21,7 +22,14 @@ public:
 	~FilterShader();
 	void loadShader(); // load shader from file, compile and link them to programs, get variable locations
 	bool loadObj(const char *filename);
-	void paint(const float *rotMatrix, float tx, float ty, float tz); // draw scene
+	/** Draw one frame.
+	 *  @param audio  Optional audio analysis result.  Pass a default-constructed
+	 *                AudioFeatures{} (all zero) to disable audio reactivity.
+	 *                Audio-driven motion is integrated into continuous phase
+	 *                offsets here (see m_audioRotPhase / m_audioAdvance) so that
+	 *                changing the audio never jumps the visual.                 */
+	void paint(const float *rotMatrix, float tx, float ty, float tz,
+	           const AudioFeatures &audio = AudioFeatures{});
 	void reinit(int width, int height); // initialization stuff and computation of the distance field
 	void checkGLErrors( const char *label ); // check and print gl errors to stderr
 
@@ -89,7 +97,7 @@ private:
 	// GLSL vars
 
 		// time since initialization
-	QTime m_time;
+	QElapsedTimer m_time;
 
 	unsigned int m_maxIterationsEffectSearch; //maximum number of iterations during search for next effect
 
@@ -107,7 +115,7 @@ private:
     float			m_interpolationCombine; //Between 0 and 1
 
 	
-	QTime		m_timeTexture;
+	QElapsedTimer		m_timeTexture;
 	float       m_timeTextureSolo;
 	float		m_timeTextureInterpolation;
 	float		m_interpolationTexture;
@@ -124,7 +132,7 @@ private:
 	float		m_globaltime;
 
 
-	QTime		m_timeEffectTexture;
+	QElapsedTimer		m_timeEffectTexture;
 	unsigned int	m_stateInterpolationEffectTexture;
 	float		m_interpolationEffectTexture;
 	float		m_timeInterpolationEffectTexture;
@@ -147,7 +155,7 @@ private:
 
 
 	
-	QTime		m_timeEffectCombine;
+	QElapsedTimer		m_timeEffectCombine;
 	unsigned int	m_stateInterpolationEffectCombine;
 	float		m_interpolationEffectCombine;
 	float		m_timeInterpolationEffectCombine;
@@ -157,6 +165,26 @@ private:
 	
 
 	unsigned int m_effectCombineTimeInterpolation;
+
+    // Dynamic timing scale from AudioAnalyzer (via AudioFeatures::timingScale).
+    // < 1.0 → all times scaled longer (ambient mode)
+    // > 1.0 → all times scaled shorter (energetic beat music)
+    float m_timingScale = 1.f;
+
+    // ---- Audio-reactive motion integration (anti-flicker) ----
+    // The old mapping multiplied the absolute 'time' uniform by an audio-varying
+    // speed and a flipping sign (audioFlip), so every audio change remapped the
+    // entire accumulated phase at once → seizure-grade flicker.  We now integrate
+    // the audio-driven *rate* over each frame's dt into these continuous phase
+    // accumulators (passed to shaders via AudioFeatures::audioRotPhase / advance).
+    float m_audioRotPhase = 0.f;   // accumulated rotation phase (radians)
+    float m_audioAdvance  = 0.f;   // accumulated tunnel forward offset
+    float m_audioDir      = 1.f;   // eased rotation direction (-1..+1)
+    // Slew-rate-limited brightness signals so beats pulse instead of strobing
+    // (photosensitive-epilepsy safety).
+    float m_audioBeatSmooth  = 0.f;
+    float m_audioLevelSmooth = 0.f;
+    float m_audioFluxSmooth  = 0.f;
 	//unsigned int m_effectCombineMinTimeInterpolation;
 	//unsigned int m_effectCombineMaxTimeInterpolation;
 

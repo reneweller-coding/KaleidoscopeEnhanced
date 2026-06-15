@@ -1,7 +1,8 @@
-// Program from Stephan Mock 324612 and Randolf Schärfig 327639
+// Program from Stephan Mock 324612 and Randolf Schï¿½rfig 327639
 // modifiziert von cg.in.tu-clausthal
 
-#include <QtOpenGL/QGLWidget>
+#include <QtGui/qopengl.h>
+#include <GL/gl.h>
 
 
 #include <float.h>
