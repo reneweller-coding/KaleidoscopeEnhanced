@@ -1,17 +1,23 @@
 #include <iostream>
-using namespace std;
+#include <cstring>
 
 #include <QtWidgets/QApplication>
 #include <QtGui/QIcon>
-
+#include <QtGui/QScreen>
+#include <QtGui/QSurfaceFormat>
 #include "QMyWindow.h"
 
 #ifdef WIN32
 #include <shlobj.h>
 #endif
 
+// NOTE: keep this AFTER the Windows headers above.  With C++17 std::byte and a
+// `using namespace std;` active, the Windows SDK's unqualified `byte` in
+// objidl.h becomes ambiguous (C2872).  Importing std only here avoids that.
+using namespace std;
+
 QString directory = "C:\\Users\\rene\\Pictures";
-bool fullscreen = true;
+bool fullscreen = false;
 
 
 
@@ -165,15 +171,32 @@ int main(int argc, char *argv[])
 	// parse command line options
 	parsecommandline( argc, argv );
 
+	// Request a compatibility-profile OpenGL context so the existing
+	// fixed-function pipeline and GLSL 1.20 shaders keep working under Qt6.
+	// (Phase B switches this to a core profile.)
+	QSurfaceFormat fmt;
+	fmt.setProfile( QSurfaceFormat::CompatibilityProfile );
+	fmt.setRenderableType( QSurfaceFormat::OpenGL );
+	fmt.setSwapBehavior( QSurfaceFormat::DoubleBuffer );
+	fmt.setDepthBufferSize( 24 );
+	QSurfaceFormat::setDefaultFormat( fmt );
+
 	QApplication app(argc, argv);
 	app.setOverrideCursor(Qt::BlankCursor);
 	QMyWindow *window = new QMyWindow( NULL );
 	QObject::connect(window , SIGNAL(signalQuitApp()), &app, SLOT(quit()));
 	app.setWindowIcon(QIcon(QString("icon.png")));
-	if(!fullscreen)
+	if (!fullscreen)
+	{
+		window->resize(1920, 1080);
 		window->show();
+	}
 	else
 	{
+		// Show on the second screen if present, otherwise the primary.
+		const QList<QScreen*> screens = QGuiApplication::screens();
+		QScreen *target = (screens.size() > 1) ? screens.at(1) : screens.at(0);
+		window->setGeometry( target->geometry() );
 		window->setFocus();
 	    window->showFullScreen();
 	}

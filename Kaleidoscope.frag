@@ -8,6 +8,13 @@ uniform float speed;
 uniform int sides;
 uniform float power;
 uniform int rotate;
+// Audio reactivity
+uniform float audioBeat;      // beat pulse decay 0..1
+uniform float audioLevel;     // smoothed loudness 0..1
+uniform float audioFlip;      // rotation direction: +1 or -1
+uniform float audioCentroid;  // tonal brightness 0=dark drone, 1=bright shimmer
+uniform float audioFlux;      // spectral flux 0..1
+uniform float audioPhase;     // integrated audio rotation phase (radians, jump-free)
 
 const float M_PI = 3.141592653589793;
 
@@ -47,10 +54,31 @@ void main() {
     float tau = 1. * 1.047;
     a = mod(a, tau/sidesK);
     a = abs(a - tau/sidesK/2.);
-    a += time*speed; // rotate
+    a += time * speed + audioPhase; // base rotation + jump-free audio rotation
 
     // polar to cartesian coordinates
     p = r * vec2(cos(a), sin(a));
 	
-    gl_FragColor = interpolation * texture2D(tex0,p+0.5) + (1.0-interpolation)*texture2D(tex1, p + 0.5);
+    vec4 col = interpolation * texture2D(tex0,p+0.5) + (1.0-interpolation)*texture2D(tex1, p + 0.5);
+
+    // --- Beat pulse: outward radial pop ---
+    float zoomK  = 1.0 + audioBeat * 0.15;
+    vec2 pZoomed = p / zoomK;
+    vec4 colZoomed = interpolation * texture2D(tex0, pZoomed+0.5) + (1.0-interpolation)*texture2D(tex1, pZoomed+0.5);
+    col = mix(col, colZoomed, audioBeat * 0.7);
+
+    // --- Spectral Centroid: colour temperature ---
+    // Dark drone (centroid→0): cool twilight tint, slightly dim
+    // Bright shimmer (centroid→1): warm iridescent glow
+    vec3 coolTint = vec3(0.70, 0.75, 1.05);  // blue-violet
+    vec3 warmTint = vec3(1.15, 1.05, 0.85);  // amber-white
+    col.rgb *= mix(coolTint, warmTint, audioCentroid);
+
+    // --- Spectral Flux: gentle luminance when new sound layers enter ---
+    col.rgb *= (1.0 + audioFlux * 0.15);
+
+    // --- Beat brightness + overall breathing (audioBeat is slew-limited host-side) ---
+    col.rgb *= (1.0 + audioBeat * 0.2 + audioLevel * 0.25);
+
+    gl_FragColor = clamp(col, 0.0, 1.0);
 }

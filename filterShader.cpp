@@ -23,6 +23,18 @@ float ROUND(float f)
 }
 
 
+// Move 'cur' toward 'target' by at most rate*dt this frame (slew-rate limiter).
+// Used to keep audio-driven brightness from changing fast enough to strobe.
+static float slewToward(float cur, float target, float rate, float dt)
+{
+	float maxStep = rate * dt;
+	if (target > cur)
+		return (target - cur < maxStep) ? target : cur + maxStep;
+	else
+		return (cur - target < maxStep) ? target : cur - maxStep;
+}
+
+
 
 // Constructor
 FilterShader::FilterShader( )
@@ -99,7 +111,7 @@ void FilterShader::start( int width, int height )
 
 	printf( "Nr of images: %d\n", m_imageList.size() );
 
-	qsrand(QTime::currentTime().msec());
+	qsrand(0);  // no-op: QRandomGenerator is auto-seeded
     unsigned int start = qrand() % (m_imageList.size() + 1);
 	for( unsigned int i = 0; i < start; i++ )
 		m_imageListIterator++;
@@ -277,7 +289,7 @@ FilterShader::FilterShader(int width, int height, const QString &directory)
 
 	printf( "Nr of images: %d\n", m_imageList.size() );
 
-	qsrand(QTime::currentTime().msec());
+	qsrand(0);  // no-op: QRandomGenerator is auto-seeded
     unsigned int start = qrand() % (m_imageList.size() + 1);
 	for( unsigned int i = 0; i < start; i++ )
 		m_imageListIterator++;
@@ -750,8 +762,17 @@ void FilterShader::reinit(int width, int height)
 	fprintf(stderr,"reinit end\n");
 }
 
-void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz)
+void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
+                         const AudioFeatures &audio)
 {
+    // Update adaptive timing scale from audio analysis.
+    // Smooth slowly so a sudden genre change doesn't cause a jarring jump.
+    // The new scale only takes effect the next time a duration is randomised,
+    // so existing running timers complete at their original length.
+    m_timingScale = 0.999f * m_timingScale + 0.001f * audio.timingScale;
+    // Guard against zero to avoid division-by-zero below.
+    if (m_timingScale < 0.05f) m_timingScale = 0.05f;
+
 	// -------------------------
 	// ----- render pass 1 -----
 	// -------------------------
@@ -770,6 +791,54 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz)
 	m_nanotimer.start();
 
 	float timeSinceLastFrameSec = timeSinceLastFrame * 0.001;
+
+
+    // -----------------------------------------------------------------------
+    // Audio-reactive motion: integrate rates into continuous phases.
+    // The previous mapping multiplied the absolute 'time' uniform by an
+    // audio-varying speed and a flipping sign, so every audio change jumped the
+    // whole accumulated phase at once → the seizure-grade flicker.  Here we
+    // build a processed copy of the features: motion becomes smoothly integrated
+    // phase offsets, and the brightness signals are slew-rate limited so beats
+    // pulse instead of strobing.  All applyAudioFeatures() calls below use it.
+    // -----------------------------------------------------------------------
+    AudioFeatures audioFx = audio;
+    {
+        float dt = timeSinceLastFrameSec;
+        if (dt < 0.f)  dt = 0.f;
+        if (dt > 0.1f) dt = 0.1f;   // ignore long stalls (first frame, load hitches)
+
+        // Ease rotation direction between +1/-1 so reversals never snap.  Even
+        // an instant flip would now only change the *rate*, not the phase, but
+        // easing keeps the velocity change graceful too.
+        float dirTarget = (audio.audioFlip >= 0.f) ? 1.f : -1.f;
+        float dirStep   = dt * 1.5f;
+        if (dirStep > 1.f) dirStep = 1.f;
+        m_audioDir += (dirTarget - m_audioDir) * dirStep;
+
+        // Rotation angular velocity (rad/s): gentle drift with loudness plus a
+        // nudge on each beat.  Bounded and independent of absolute time.
+        float rotRate = m_audioDir * (0.20f * audio.overallLevel + 0.80f * audio.beatDecay);
+        m_audioRotPhase += dt * rotRate;
+
+        // Tunnel forward advance: always forward (no sign change → no flips),
+        // driven by spectral flux and loudness so static drones barely move.
+        float advRate = 0.02f * (0.15f + 0.85f * audio.spectralFlux)
+                              * (0.50f + audio.overallLevel);
+        m_audioAdvance += dt * advRate;
+
+        // Slew-limit brightness drivers (photosensitive-safety): a beat may rise
+        // to full over ~150 ms, never in a single frame.
+        m_audioBeatSmooth  = slewToward(m_audioBeatSmooth,  audio.beatDecay,    6.0f, dt);
+        m_audioLevelSmooth = slewToward(m_audioLevelSmooth, audio.overallLevel, 3.0f, dt);
+        m_audioFluxSmooth  = slewToward(m_audioFluxSmooth,  audio.spectralFlux, 3.0f, dt);
+
+        audioFx.audioRotPhase = m_audioRotPhase;
+        audioFx.audioAdvance  = m_audioAdvance;
+        audioFx.beatDecay     = m_audioBeatSmooth;
+        audioFx.overallLevel  = m_audioLevelSmooth;
+        audioFx.spectralFlux  = m_audioFluxSmooth;
+    }
 
 
 
@@ -805,7 +874,7 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz)
 			m_stateTexture = 0;
 			m_timeTexture.start();
 
-            m_timeTextureSolo = (float) (m_timeTextureSoloMin + (qrand() % (m_timeTextureSoloMax - m_timeTextureSoloMin)));
+            m_timeTextureSolo = (float) (m_timeTextureSoloMin + (qrand() % (m_timeTextureSoloMax - m_timeTextureSoloMin))) / m_timingScale;
 		}
 	}
 	else
@@ -830,7 +899,7 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz)
 
 			m_interpolationTexture = 1.0;
 
-            m_timeTextureInterpolation = (float) (m_timeTextureInterpolationMin + (qrand() % (m_timeTextureInterpolationMax - m_timeTextureInterpolationMin)));
+            m_timeTextureInterpolation = (float) (m_timeTextureInterpolationMin + (qrand() % (m_timeTextureInterpolationMax - m_timeTextureInterpolationMin))) / m_timingScale;
 		}
 	}
     
@@ -858,7 +927,7 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz)
 			unsigned int timeAct = m_effectTextures[m_actEffectTexture]->getTimeInterpolation();
 			unsigned int timeNext = m_effectTextures[m_nextEffectTexture]->getTimeInterpolation();
 			
-			m_timeInterpolationEffectTexture = (float) (std::min( timeAct, timeNext));
+			m_timeInterpolationEffectTexture = (float) (std::min( timeAct, timeNext)) / m_timingScale;
 
 			
 			m_effectTextures[m_nextEffectTexture]->startInterpolators();
@@ -910,9 +979,9 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz)
 
             m_interpolationEffectTexture = 1.0;
 			
-			m_timeInterpolationEffectTexture = (float) (m_effectTextures[m_actEffectTexture]->getTimeSolo());
+			m_timeInterpolationEffectTexture = (float) (m_effectTextures[m_actEffectTexture]->getTimeSolo()) / m_timingScale;
 
-			
+
 			m_timeEffectTexture.start();
 		}
 	}
@@ -949,7 +1018,8 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz)
     //glFramebufferTexture2DEXT( GL_FRAMEBUFFER_EXT, m_attachmentpoint, GL_TEXTURE_2D, m_texIDFBOEffectTexture1, 0);
 
 	m_effectTextures[m_actEffectTexture]->enableShader();
-	m_effectTextures[m_actEffectTexture]->setUniforms( m_globaltime, m_interpolationTexture, 0, 1 );	
+	m_effectTextures[m_actEffectTexture]->setUniforms( m_globaltime, m_interpolationTexture, 0, 1 );
+	m_effectTextures[m_actEffectTexture]->applyAudioFeatures( audioFx );
 	m_effectTextures[m_actEffectTexture]->draw();
 
 
@@ -964,6 +1034,7 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz)
 	
 	m_effectTextures[m_nextEffectTexture]->enableShader();
 	m_effectTextures[m_nextEffectTexture]->setUniforms( m_globaltime, m_interpolationTexture, 0, 1 );
+	m_effectTextures[m_nextEffectTexture]->applyAudioFeatures( audioFx );
 	m_effectTextures[m_nextEffectTexture]->draw();
 
 	
@@ -1003,7 +1074,7 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz)
 			unsigned int timeAct = m_effectCombines[m_actEffectCombine]->getTimeInterpolation();
 			unsigned int timeNext = m_effectCombines[m_nextEffectCombine]->getTimeInterpolation();
 			
-			m_timeInterpolationEffectCombine = (float) (std::min( timeAct, timeNext));
+			m_timeInterpolationEffectCombine = (float) (std::min( timeAct, timeNext)) / m_timingScale;
 
 			m_effectCombines[m_nextEffectCombine]->startInterpolators();
 
@@ -1055,7 +1126,7 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz)
 
             m_interpolationEffectCombine = 1.0;
 
-            m_timeInterpolationEffectCombine = (float) (m_effectCombines[m_actEffectCombine]->getTimeSolo());//(float) (m_effectCombineMinTimeSolo[m_actEffectCombine] + (qrand() % (m_effectCombineMaxTimeSolo[m_actEffectCombine] - m_effectCombineMinTimeSolo[m_actEffectCombine])));
+            m_timeInterpolationEffectCombine = (float) (m_effectCombines[m_actEffectCombine]->getTimeSolo()) / m_timingScale;//(float) (m_effectCombineMinTimeSolo[m_actEffectCombine] + (qrand() % (m_effectCombineMaxTimeSolo[m_actEffectCombine] - m_effectCombineMinTimeSolo[m_actEffectCombine])));
 			
 			m_timeEffectCombine.start();
 		}
@@ -1078,7 +1149,8 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz)
     //glFramebufferCombine2DEXT( GL_FRAMEBUFFER_EXT, m_attachmentpoint, GL_Combine_2D, m_texIDFBOEffectCombine1, 0);
 
 	m_effectCombines[m_actEffectCombine]->enableShader();
-	m_effectCombines[m_actEffectCombine]->setUniforms( m_globaltime, m_interpolationEffectTexture, 3, 4 );	
+	m_effectCombines[m_actEffectCombine]->setUniforms( m_globaltime, m_interpolationEffectTexture, 3, 4 );
+	m_effectCombines[m_actEffectCombine]->applyAudioFeatures( audioFx );
 	m_effectCombines[m_actEffectCombine]->draw();
 
 
@@ -1101,6 +1173,7 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz)
 	
 	m_effectCombines[m_nextEffectCombine]->enableShader();
 	m_effectCombines[m_nextEffectCombine]->setUniforms( m_globaltime, m_interpolationEffectTexture, 3, 4 );
+	m_effectCombines[m_nextEffectCombine]->applyAudioFeatures( audioFx );
 	m_effectCombines[m_nextEffectCombine]->draw();
 
 	
@@ -1469,6 +1542,8 @@ void FilterShader::initGLSL()
  */
 void FilterShader::checkGLErrors( const char *label )
 {
+	return;//rwrwtest profiling
+
     GLenum errCode = glGetError();
     if ( errCode == GL_NO_ERROR )
 		return;
@@ -1486,6 +1561,8 @@ void FilterShader::checkGLErrors( const char *label )
  */
 bool FilterShader::checkFramebufferStatus(void)
 {
+	return true; //rwrwtest profiling
+
     GLenum status;
     status = (GLenum) glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
     switch(status) {
@@ -1553,6 +1630,7 @@ void ImageLoader::run()
 			}
 
             m_shader->m_nextImage = prepareImage( QImage( (*m_shader->m_imageListIterator)  ) );
+			printf("%s\n", qPrintable((*m_shader->m_imageListIterator)));
             m_shader->m_triggerImageload = false;
 
 			//float loadingtime = timer.elapsed();

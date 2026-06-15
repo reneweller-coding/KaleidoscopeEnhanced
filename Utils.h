@@ -1,7 +1,7 @@
 #ifndef Utils_H
 #define Utils_H
 
-#include <QtOpenGL/QGLWidget>
+#include <QtGui/QImage>
 
 class NanoTimer
 {

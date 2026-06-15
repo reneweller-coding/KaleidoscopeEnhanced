@@ -2,6 +2,7 @@
 
 #include <QtCore/QFile>
 #include <QtGui/QMouseEvent>
+#include <QtGui/QPainter>
 #include <QtWidgets/QMessageBox>
 #include <QtGui/QImage>
 
@@ -10,6 +11,7 @@
 
 //#include<GL/GLU.h>
 
+#include "GLee.h"        // GLeeInit() + GL extension entry points
 #include "glwidget.h"
 
  #ifndef GL_MULTISAMPLE
@@ -47,15 +49,13 @@ void GLwidget::traverseConfigurations( const QString& dirname, std::vector<Confi
 
 
 
-GLwidget::GLwidget( QWidget *parent, QGLFormat format)
-: QGLWidget(QGLFormat(
-      QGL::DoubleBuffer |
-      QGL::Rgba
-    ), parent)
+GLwidget::GLwidget( QWidget *parent )
+: QOpenGLWidget(parent)
 , m_xTrans(0.0)
 , m_yTrans(0.0)
 , m_zTrans(-2)
-, m_showSelectConfigurationMenu(true)
+, m_showSelectConfigurationMenu(false)
+, m_audioAnalyzer(nullptr)
 {
 	setFocusPolicy(Qt::StrongFocus);
 	setFocus();
@@ -75,8 +75,13 @@ GLwidget::GLwidget( QWidget *parent, QGLFormat format)
 
 GLwidget::~GLwidget()
 {
+	if (m_audioAnalyzer) {
+		m_audioAnalyzer->stop();
+		m_audioAnalyzer->wait();
+		delete m_audioAnalyzer;
+	}
 	for( unsigned int i = 0; i < m_configurationList.size(); i++ )
-		delete m_configurationList[i]; 
+		delete m_configurationList[i];
 }
 
 /*void GLwidget::slotReloadShader(void)
@@ -86,12 +91,7 @@ GLwidget::~GLwidget()
 }*/
 
 
-void GLwidget::swapBuffers()
-{
-  QGLWidget::swapBuffers();
-}
-
-bool GLwidget::slotSetDirectory(const QString &filename) 
+bool GLwidget::slotSetDirectory(const QString &filename)
 {
 	//bool success = m_filterShader->loadObj(filename.toAscii().data());
 	//updateGL();
@@ -111,10 +111,18 @@ void GLwidget::initializeGL()
 	//glLightModeli(GL_LIGHT_MODEL_TWO_SIDE,GL_TRUE);
 
 
+	// Load OpenGL extension entry points now that we have a current context.
+	// (GLee supplies the FBO / shader EXT functions used by the render pipeline.)
+	GLeeInit();
+
 	m_actConfiguration->start( 100, 100 );
-	
+
 	const char *version = (const char *)(glGetString(GL_VERSION));
 	fprintf(stderr,"VERSION %s",version);
+
+	// Start audio analyser (WASAPI loopback – captures any playing audio)
+	m_audioAnalyzer = new AudioAnalyzer(this);
+	m_audioAnalyzer->start();
 
     
 	// start FPS timer
@@ -122,18 +130,16 @@ void GLwidget::initializeGL()
 	//m_fpsLastPeriod = m_fpsTimer.elapsed() - 1000;
 
 	// start periodic refesh timer
-	startTimer( 20 );
+	startTimer( 16.666666666666 );
 
 	//glEnable(GL_MULTISAMPLE); //rwrwforeground
 	setAutoFillBackground(false); //rwrwforeground
 }
 
-#if 1 //rwrwforeground
- void GLwidget::paintEvent(QPaintEvent *event)
+void GLwidget::paintGL()
  {
 	 draw();
 
-	
 	//qglColor(Qt::white);
     //renderText(100, 100, "txt", QFont("Arial", 32, QFont::Bold, false) );
 
@@ -160,10 +166,19 @@ void GLwidget::initializeGL()
 	
  }
 
+
+//static unsigned int counterExportImages = 0;
+//static bool save_images = true;
+
+
+
 void GLwidget::draw()
 {
+	AudioFeatures audio;
+	if (m_audioAnalyzer)
+		audio = m_audioAnalyzer->getFeatures();
 
-	m_actConfiguration->m_filterShader->paint(m_RotationMatrix, m_xTrans, m_yTrans, m_zTrans);
+	m_actConfiguration->m_filterShader->paint(m_RotationMatrix, m_xTrans, m_yTrans, m_zTrans, audio);
 	
 	//printf( "Painting Now\n" );
 	QPainter painter(this);
@@ -175,49 +190,19 @@ void GLwidget::draw()
 	}
 	painter.end();
 
-}
-
-#else
-
-void GLwidget::paintGL() 
-{   
-	m_actConfiguration->m_filterShader->paint(m_RotationMatrix, m_xTrans, m_yTrans, m_zTrans);
-    
-	
-	//qglColor(Qt::white);
-    //renderText(100, 100, "txt", QFont("Arial", 32, QFont::Bold, false) );
-
-
-	//glDisable(GL_LIGHTING);
-    //glDisable(GL_DEPTH_TEST);
-    //qglColor(Qt::white);
-    //renderText(100, 100, "Dies ist ein langer OpenGL Text", QFont("Arial", 48, QFont::Bold, false) );
-    //glEnable(GL_DEPTH_TEST);
-    //glEnable(GL_LIGHTING);
-
-	// update value
-	/*int now = m_fpsTimer.elapsed();
-	if( now - m_fpsLastPeriod >= 1000 )
+	/*if (save_images)
 	{
-		m_fpsValue = m_fpsCounter;
-		m_fpsCounter = 0;
-		m_fpsLastPeriod = now;
-	}
+		QString efn = "G:/temp/file";
+		efn.append( QString::number(counterExportImages) );
+		efn.append(".png");
 
-	// count this frame
-	m_fpsCounter++;*/
+		//printf("Saving Image: %d\n", efn.data() );
 
-	if( m_showSelectConfigurationMenu )
-	{
-		//QPainter painter(this);
-		//painter.setRenderHint(QPainter::Antialiasing);
-		//showSelectConfigurationsMenu( &painter );
-		//painter.end();
-	}
+		this->grabFrameBuffer().save(efn);
+		counterExportImages++;
+	}*/
 
 }
-
-#endif
 
 
 void GLwidget::showSelectConfigurationsMenu( QPainter *painter )
@@ -245,8 +230,8 @@ void GLwidget::showSelectConfigurationsMenu( QPainter *painter )
 	unsigned int maxStringlength = 0;
 	for( unsigned int i = 0; i < nrConfigurations; i++ )
 	{
-		if( fm.width((*m_configurationList[i]).getConfigurationName()) > maxStringlength ) //fm.width(str1)/2
-			maxStringlength = fm.width((*m_configurationList[i]).getConfigurationName());
+		if( fm.horizontalAdvance((*m_configurationList[i]).getConfigurationName()) > maxStringlength ) //fm.horizontalAdvance(str1)/2
+			maxStringlength = fm.horizontalAdvance((*m_configurationList[i]).getConfigurationName());
 	}
 
 	maxStringlength *= 1.5;
@@ -268,10 +253,10 @@ void GLwidget::showSelectConfigurationsMenu( QPainter *painter )
 		number += ". ";
 
 		QString total = number + confname;
-		painter->drawText(centerX - (fm.width(total)/2), centerY-(totalHeight/2) + (i+1)*fm.lineSpacing(), QString(total) );
+		painter->drawText(centerX - (fm.horizontalAdvance(total)/2), centerY-(totalHeight/2) + (i+1)*fm.lineSpacing(), QString(total) );
 	}
 
-    //painter->drawText(centerX - fm.width(str1)/2, centerY, str1);
+    //painter->drawText(centerX - fm.horizontalAdvance(str1)/2, centerY, str1);
 
 	/*
 	QString text = tr("Click and drag with the left mouse button "
@@ -309,8 +294,9 @@ void GLwidget::mouseDoubleClickEvent(QMouseEvent *e) {
 
 void GLwidget::timerEvent( QTimerEvent* )
 {
-	//updateGL();
-	draw();
+	// Schedule a repaint; the actual rendering happens in paintGL() where the
+	// GL context is guaranteed current (QOpenGLWidget requirement).
+	update();
 }
 
 

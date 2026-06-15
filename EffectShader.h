@@ -1,11 +1,12 @@
 #ifndef EFFECT_SHADER_H
 #define EFFECT_SHADER_H
 
-#include <QtOpenGL/QGLWidget>
-#include <QtCore/QTime>
+#include <QtGui/qopengl.h>
+#include <QtCore/QElapsedTimer>
 #include <QtCore/QThread>
 #include "stdinc.h"
 #include "Uniform.h"
+#include "AudioFeatures.h"
 
 //Basic Class for effects
 class EffectShader
@@ -35,6 +36,21 @@ public:
 	void addUniform( const QString &name, float minf, float maxf );
 	void addUniform( const QString &name, int minf, int maxf );
 	void addUniform( const QString &name, float pro );
+
+	/**
+	 * Upload dedicated audio uniforms AFTER setUniforms() has run, while the
+	 * shader program is still active.
+	 *
+	 * Motion is delivered as pre-integrated, continuous phase offsets
+	 * (audioPhase / audioAdvance from FilterShader::paint) rather than by scaling
+	 * the speed/speedTunnel uniforms.  Scaling those used to remap the whole
+	 * time*speed phase per-frame and caused violent flicker; the base speeds are
+	 * now left untouched so they advance smoothly.
+	 *
+	 * Shaders that don't declare a given audio uniform get location -1, so the
+	 * corresponding upload is silently skipped.
+	 */
+	void applyAudioFeatures(const AudioFeatures &features);
 		
 	void addUniformInterpolator( const QString &name, float interpolatorMinMinf,
 							  float interpolatorMinMaxf,

@@ -6,7 +6,10 @@ uniform float interpolation;
 uniform float speed;
 uniform int sides;
 uniform float power;
-
+uniform float audioBeat;
+uniform float audioLevel;
+uniform float audioFlip;
+uniform float audioAdvance;    // integrated, jump-free audio tunnel advance
 
 
 vec2 clampQuadratic( vec2 p )
@@ -57,10 +60,12 @@ void main() {
     a = abs(a - tau/sidesK/2.);
  
 	vec2 uv;
-    uv.x = (speed*time+.1/r);
+    uv.x = (speed * time + audioAdvance + .1/r);
     uv.y = (a/3.1416);
  
     //uv = clampQuadratic( uv );  
     
-    gl_FragColor =  interpolation * texture2D(tex0,uv) + (1.0-interpolation)*texture2D(tex1,uv);
+    vec4 col = interpolation * texture2D(tex0,uv) + (1.0-interpolation)*texture2D(tex1,uv);
+    col.rgb *= (1.0 + audioBeat * 0.2 + audioLevel * 0.2);
+    gl_FragColor = clamp(col, 0.0, 1.0);
 }

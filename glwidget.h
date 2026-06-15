@@ -4,30 +4,31 @@
 #include <vector>
 #include <iostream>
 
-#include <QtOpenGL/QGLWidget>
+#include <QtOpenGLWidgets/QOpenGLWidget>
 #include <QtGui/QImage>
 
 #include "filterShader.h"
 #include "Configuration.h"
+#include "AudioAnalyzer.h"
 
 
-class GLwidget : public QGLWidget 
+class GLwidget : public QOpenGLWidget
 {
 	static const GLdouble SV_TRANSZ;
 	static const GLdouble PV_TRANSZ;
 
     Q_OBJECT
 
-public:            
+public:
 
-    GLwidget( QWidget *parent = 0, QGLFormat format = QGLFormat());
+    GLwidget( QWidget *parent = 0 );
 	~GLwidget();
     
 public slots:
 	bool slotSetDirectory(const QString &filename);
 
-protected:   
-    //virtual void paintGL();
+protected:
+	virtual void paintGL();
 	virtual void initializeGL();
 	virtual void resizeGL ( int width, int height );
 	virtual void mousePressEvent( QMouseEvent *event );
@@ -35,8 +36,6 @@ protected:
 	virtual void mouseDoubleClickEvent(QMouseEvent *e);
 	virtual void keyPressEvent(QKeyEvent *event);
     virtual void timerEvent( QTimerEvent* );
-    virtual void swapBuffers();
-	virtual void paintEvent(QPaintEvent *event);
 
 	void draw();
 
@@ -48,7 +47,7 @@ protected:
     int   m_fpsCounter;     // counter for this period
 	int   m_fpsValue;       // dispalyed to the used
 	int   m_fpsLastPeriod;  // time point of last update
-	QTime m_fpsTimer;
+	QElapsedTimer m_fpsTimer;
 
 	void resetRotation(); // set rotation matrix to Identity
 
@@ -66,6 +65,8 @@ protected:
 	QString			m_directory;
 
 	Configuration  *m_actConfiguration;
+
+	AudioAnalyzer  *m_audioAnalyzer;
 
 	//QPainter		*m_painter;
 	bool			m_showSelectConfigurationMenu;

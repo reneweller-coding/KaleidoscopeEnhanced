@@ -15,6 +15,7 @@
 
 #include "uniform.h"
 #include "shader_setup.h"
+#include "qt6compat.h"   // qrand() shim for Qt6
 
 #include<GL/GLU.h>
 
@@ -164,6 +165,20 @@ void Uniform::setUniform()
 }
 
 
+
+
+// ---------------------------------------------------------------------------
+// setGLValueScaled – audio reactivity override
+// Call after setUniform() to modulate the uploaded float value.
+// ---------------------------------------------------------------------------
+void Uniform::setGLValueScaled(float scale)
+{
+	if (m_location < 0) return;
+
+	if (m_type == BASE_TYPE_FLOAT || m_type == BASE_TYPE_INTERPOLATOR_FLOAT)
+		glUniform1f(m_location, m_data.vf * scale);
+	// int / bool uniforms are not scaled
+}
 
 
 #if 0
