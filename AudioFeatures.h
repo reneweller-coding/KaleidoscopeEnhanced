@@ -181,6 +181,11 @@ struct AudioFeatures
     // Transitions slowly (~3 s) so it reflects musical atmosphere, not noise.
     float musicalMode = 0.5f;
 
+    // chromaHue: harmonic "colour" of the music — the circular mean of the 12-bin
+    //   chroma vector mapped onto the colour wheel (0..1).  A song's key/harmony
+    //   therefore drives a consistent global hue shift → "see the harmony as colour".
+    float chromaHue = 0.f;
+
     // dominantPitch: fundamental frequency estimated via Harmonic Product Spectrum,
     // log-normalised over 60..1200 Hz → 0..1.
     //   0 = low bass drone (~60 Hz)  1 = high treble tone (~1200 Hz)

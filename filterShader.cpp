@@ -842,15 +842,27 @@ void FilterShader::setupSafety()
 		m_presentValenceUni  = glGetUniformLocation( m_presentProgId, "audioValence" );
 		m_presentLevelUni    = glGetUniformLocation( m_presentProgId, "audioLevel" );
 		m_presentFluxUni     = glGetUniformLocation( m_presentProgId, "audioFlux" );
+		m_presentHueUni      = glGetUniformLocation( m_presentProgId, "audioChromaHue" );
 	}
 
 	m_safetyReady = fboOk && (m_presentProgId != 0) && (m_presentTexUni >= 0);
 	checkGLErrors("setupSafety()");
 }
 
+// Mood-based selection bias — see header.
+bool FilterShader::moodAccept(unsigned int complexity)
+{
+	float target = 1.f + m_lastArousal * 9.f;               // desired busyness 1..10
+	float diff   = fabs(float(complexity) - target) / 9.f;  // 0..1
+	float accept = 1.f - 0.6f * diff;                       // closer match → likelier
+	return (float(qrand()) / float(RAND_MAX)) < accept;
+}
+
 void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
                          const AudioFeatures &audio)
 {
+	m_lastArousal = audio.arousal;   // for mood-biased effect selection
+
     // Update adaptive timing scale from audio analysis.
     // Smooth slowly so a sudden genre change doesn't cause a jarring jump.
     // The new scale only takes effect the next time a duration is randomised,
@@ -963,6 +975,7 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
         audioFx.valence         = 0.5f + (audio.valence         - 0.5f) * gate;
         audioFx.arousal         = 0.5f + (audio.arousal         - 0.5f) * gate;
         audioFx.spectralCentroid= 0.5f + (audio.spectralCentroid- 0.5f) * gate;
+        audioFx.chromaHue       = audio.chromaHue * gate;
         audioFx.harmonicChange  = audio.harmonicChange * gate;
         audioFx.roughness       = audio.roughness      * gate;
         audioFx.sharpness       = audio.sharpness      * gate;
@@ -1094,12 +1107,13 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 			for( unsigned int i = 0; i < m_maxIterationsEffectSearch; i++ )
 			{
 				m_nextEffectTexture = qrand() % m_effectTextures.size();
-				if( m_nextEffectTexture != m_actEffectTexture && 
+				if( m_nextEffectTexture != m_actEffectTexture &&
 			(( m_effectTextures[m_actEffectTexture]->getComplexity() +
 			m_effectTextures[m_nextEffectTexture]->getComplexity() +
 			m_effectCombines[m_actEffectCombine]->getComplexity() +
 			m_effectCombines[m_nextEffectCombine]->getComplexity() ) < 20 )
 			&& m_effectTextures[m_nextEffectTexture]->useShader()
+			&& moodAccept( m_effectTextures[m_nextEffectTexture]->getComplexity() )
 			)
 					break;
 			}
@@ -1240,12 +1254,13 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 			for( unsigned int i = 0; i < m_maxIterationsEffectSearch; i++ )
 			{
 				m_nextEffectCombine = qrand() % m_effectCombines.size();
-				if( m_nextEffectCombine != m_actEffectCombine && 
+				if( m_nextEffectCombine != m_actEffectCombine &&
 			(( m_effectTextures[m_actEffectTexture]->getComplexity() +
 			m_effectTextures[m_nextEffectTexture]->getComplexity() +
 			m_effectCombines[m_actEffectCombine]->getComplexity() +
 			m_effectCombines[m_nextEffectCombine]->getComplexity() ) < 20 )
 			&& m_effectCombines[m_nextEffectCombine]->useShader()
+			&& moodAccept( m_effectCombines[m_nextEffectCombine]->getComplexity() )
 			 )
 					break;
 			}
@@ -1411,6 +1426,7 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 		if( m_presentValenceUni  >= 0 ) glUniform1f( m_presentValenceUni,  audioFx.valence );
 		if( m_presentLevelUni    >= 0 ) glUniform1f( m_presentLevelUni,    audioFx.overallLevel );
 		if( m_presentFluxUni     >= 0 ) glUniform1f( m_presentFluxUni,     audioFx.spectralFlux );
+		if( m_presentHueUni      >= 0 ) glUniform1f( m_presentHueUni,      audioFx.chromaHue );
 		drawWindow();
 	}
 
