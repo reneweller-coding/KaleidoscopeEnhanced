@@ -130,6 +130,11 @@ private:
 	// Target framebuffer for the final on-screen pass (QOpenGLWidget's FBO, not 0).
 	GLuint			m_defaultFBO = 0;
 
+	// True once start() has built the GL resources, so revisiting a configuration
+	// only resizes instead of rebuilding (which leaked programs/textures/FBOs and
+	// spawned a duplicate ImageLoader).
+	bool			m_started = false;
+
 	// Manual / novelty-driven early scene change + its rate-limit cooldown.
 	bool			m_forceEffectChange = false;
 	float			m_noveltyCooldown   = 0.f;
