@@ -988,6 +988,13 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
         if (dirStep > 1.f) dirStep = 1.f;
         m_audioDir += (dirTarget - m_audioDir) * dirStep;
 
+        // Ease the kaleidoscope symmetry toward its (beat-chosen) target so it steps
+        // gradually through integers instead of snapping (rounded on upload).
+        float sidesStep = dt * 3.0f;
+        if (sidesStep > 1.f) sidesStep = 1.f;
+        m_smoothedSides += (float(audio.beatSidesHint) - m_smoothedSides) * sidesStep;
+        audioFx.smoothedSides = m_smoothedSides;
+
         // "motion" weights INSTANTANEOUS loudness over the slow arousal mood, so the
         // speed visibly rises and falls WITH the music rather than holding a constant
         // fast spin.  (Earlier this was arousal-dominated → a steady ~0.8 rad/s spin

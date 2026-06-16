@@ -177,6 +177,8 @@ private:
 	static float	clampParam( float v, float lo, float hi )
 	{ return v < lo ? lo : (v > hi ? hi : v); }
 
+	float			m_smoothedSides = 6.f;   // eased kaleidoscope symmetry (no snap)
+
 	// GLSL vars
 
 		// time since initialization

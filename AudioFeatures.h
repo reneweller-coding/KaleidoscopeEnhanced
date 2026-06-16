@@ -66,7 +66,8 @@ struct AudioFeatures
     float spectralCentroid = 0.5f;
 
     // ---- Beat-triggered discrete changes ----
-    int   beatSidesHint = 6;    // new kaleidoscope symmetry on each beat
+    int   beatSidesHint = 6;    // target kaleidoscope symmetry (changes on beats)
+    float smoothedSides = 6.f;  // host-smoothed symmetry → steps gradually, no snap
     float audioFlip     = 1.f;  // rotation direction ±1 (flips on strong beats)
 
     // ---- Derived motion helpers ----
