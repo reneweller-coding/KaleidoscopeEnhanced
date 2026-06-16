@@ -66,6 +66,46 @@ Combine with a lightweight config and lower trails (`,`) for the weakest hardwar
 
 ---
 
+## Deployment — standalone package (no Qt / VS on the target)
+
+`deploy.ps1` builds a **fully self-contained** package that runs on any 64-bit
+Windows PC without Qt or Visual Studio installed:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\deploy.ps1 -Build
+```
+
+This produces `dist\KaleidoscopeVisualizer\` and a portable
+`dist\KaleidoscopeVisualizer-portable.zip`. It runs `windeployqt` to bundle the
+Qt 6 runtime + plugins, copies the MSVC runtime DLLs, and stages the shaders,
+configs, an icon and two double-click launchers:
+
+```
+KaleidoscopeVisualizer\
+    *.frag, *.vert                 shaders          (loaded from "..\")
+    Configurations\*.xml           presets
+    Kaleidoscope-starten.bat       launcher (windowed)
+    Kaleidoscope-Vollbild.bat      launcher (fullscreen / kiosk, -b)
+    LIESMICH.txt                   short end-user readme
+    bin\  Kaleidoscope.exe + Qt6*.dll, platforms\, vcruntime140*.dll, ...
+```
+
+Copy the folder (or unzip the portable ZIP) anywhere and double-click a
+launcher — the `.bat` sets the working directory to `bin\` so the app's `..\`
+asset paths resolve. The package was verified to run with **Qt removed from
+`PATH`**, i.e. purely from its bundled DLLs.
+
+**Classic installer:** if [Inno Setup](https://jrsoftware.org/isdl.php) is
+installed, `deploy.ps1` also compiles `installer.iss` into
+`dist\KaleidoscopeVisualizer-Setup.exe` (Start-menu / desktop shortcuts with the
+correct working directory). Otherwise build it later with `ISCC.exe installer.iss`.
+
+> The bundled `Configurations\*.xml` still point `ImageDirectory` at a local
+> path; edit it to your own photos on the target machine. If it's missing, the
+> app uses a procedural fallback texture instead of crashing.
+
+---
+
 ## Controls
 
 | Key        | Action                                                        |
