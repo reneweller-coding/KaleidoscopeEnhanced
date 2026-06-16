@@ -126,6 +126,13 @@ private:
     float m_sRoughness      = 0.f;    // smoothed sensory dissonance (Sethares)
     float m_loudnessRef     = 0.10f;  // slow loudness reference for AGC (volume independence)
 
+    // ---- Full-spectrum onset detection + downbeat ----
+    float m_onsetAvg        = 0.f;    // recent average of the onset detection function
+    float m_prevODF         = 0.f;    // previous-frame ODF (rising-edge test)
+    float m_onsetCooldown   = 0.f;    // min spacing between onsets
+    float m_downbeatPulse   = 0.f;    // decaying accent on the bar's "1"
+    int   m_kickCount       = 0;      // counts detected kicks (for downbeat every 4)
+
     // ---- Rhythm / dynamics / stereo / classifier state ----
     float m_sRhythm         = 0.f;    // smoothed rhythm strength (beat regularity)
     float m_sStereoWidth    = 0.f;    // smoothed stereo side/mid width
