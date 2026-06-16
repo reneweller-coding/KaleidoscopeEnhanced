@@ -928,7 +928,7 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
         // (Earlier a large steady term made every track a constant fast spin.)
         float rotRate = m_audioDir * kReactivity * gate
                       * ( 0.06f * motion                       // tiny steady drift
-                        + 1.60f * audio.beatDecay              // beat pulses (main hit)
+                        + 1.95f * audio.beatDecay              // beat pulses (main hit)
                         + 0.40f * audio.spectralFlux           // spectral-change pulses
                         + 0.18f * motion * beatBreath );       // in-tempo breathing
         m_audioRotPhase += dt * rotRate;
