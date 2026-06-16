@@ -65,6 +65,10 @@ public:
 	void setupSafety();          // create the final FBO/texture/present shader
 	void updateFinalTexture();   // (re)allocate the mipmapped final texture
 
+	// GPU reaction-diffusion simulation (Gray-Scott, float ping-pong).
+	void setupReactionDiffusion();                       // create float FBOs + sim shader
+	void stepReactionDiffusion(const AudioFeatures &a);  // advance one PDE step per frame
+
 	// Mood-based selection bias: accept a candidate effect with a probability that
 	// depends on how well its complexity matches the current arousal (calm music →
 	// simple effects, energetic → busy).  Safe: callers retry, then fall back.
@@ -182,6 +186,27 @@ private:
 	GLint			m_trailResUni   = -1;
 	GLint			m_trailDecayUni = -1;
 	bool			m_feedbackReady = false;
+
+	// ---- GPU reaction-diffusion simulation (Gray-Scott, float ping-pong) ----
+	// A genuine on-GPU simulation: each frame a fragment shader advances the
+	// Gray-Scott PDE in two RGBA16F buffers (R=A, G=B), reading its own previous
+	// state.  The living field is bound to a global "texSim" sampler so any effect
+	// (e.g. ReactionDiffusion.frag) can fold it through the kaleidoscope.  Audio
+	// (onsets) injects new reagent, so the pattern grows on the beat.
+	static const int kRDSize = 320;          // simulation grid (kept small → fast on iGPUs)
+	GLuint			m_fboRD[2]    = { 0, 0 };
+	GLuint			m_texRD[2]    = { 0, 0 };
+	int				m_rdIdx       = 0;
+	GLuint			m_rdProgId    = 0;
+	GLint			m_rdPrevUni   = -1;
+	GLint			m_rdResUni    = -1;
+	GLint			m_rdSeedUni   = -1;
+	GLint			m_rdFeedUni   = -1;
+	GLint			m_rdKillUni   = -1;
+	GLint			m_rdInjectUni = -1;
+	bool			m_rdReady     = false;   // false → simulation disabled (safe fallback)
+	bool			m_rdSeeded    = false;   // false → next step writes the seed pattern
+	float			m_rdInjectAcc = 0.f;     // moving injection point phase
 
 	// Live-tunable look parameters (static → one shared setting across all configs).
 	static float	s_reactivity;    // audio-motion master gain (default 1.0)

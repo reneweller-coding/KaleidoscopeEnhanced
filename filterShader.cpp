@@ -15,6 +15,13 @@
 static float minSides = 2.0;
 static unsigned int maxSides = 14;
 
+// Half-float colour format for the reaction-diffusion state buffers (Gray-Scott
+// needs more precision than 8-bit or the pattern decays).  GLee may not define
+// the core token, so provide it if missing.
+#ifndef GL_RGBA16F
+#define GL_RGBA16F 0x881A
+#endif
+
 // Live-tunable look parameters (shared across all configs, set by hotkeys).
 float FilterShader::s_reactivity  = 1.0f;
 float FilterShader::s_trailAmount = 0.6f;
@@ -949,6 +956,85 @@ void FilterShader::setupSafety()
 	                && (m_trailCurUni >= 0) && (m_trailPrevUni >= 0);
 
 	checkGLErrors("setupSafety()");
+
+	// GPU reaction-diffusion simulation buffers + shader.
+	setupReactionDiffusion();
+}
+
+// Create the two RGBA16F ping-pong buffers and the Gray-Scott step shader.  The
+// grid is a fixed, modest size (independent of the window) so it stays cheap even
+// on a weak iGPU.  On any failure m_rdReady stays false and effects that sample
+// the simulation fall back to the source image.
+void FilterShader::setupReactionDiffusion()
+{
+	if( m_rdProgId == 0 )
+	{
+		m_rdProgId    = setShaders( "..\\standard.vert", "..\\ReactionDiffusionSim.frag" );
+		m_rdPrevUni   = glGetUniformLocation( m_rdProgId, "texPrev" );
+		m_rdResUni    = glGetUniformLocation( m_rdProgId, "resolution" );
+		m_rdSeedUni   = glGetUniformLocation( m_rdProgId, "seedMode" );
+		m_rdFeedUni   = glGetUniformLocation( m_rdProgId, "feed" );
+		m_rdKillUni   = glGetUniformLocation( m_rdProgId, "kill" );
+		m_rdInjectUni = glGetUniformLocation( m_rdProgId, "inject" );
+	}
+
+	bool rdOk = (m_rdProgId != 0) && (m_rdPrevUni >= 0);
+	for( int i = 0; i < 2 && rdOk; ++i )
+	{
+		if( m_texRD[i] == 0 ) glGenTextures( 1, &m_texRD[i] );
+		glBindTexture( GL_TEXTURE_2D, m_texRD[i] );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA16F, kRDSize, kRDSize, 0,
+		              GL_RGBA, GL_FLOAT, NULL );
+		if( m_fboRD[i] == 0 ) glGenFramebuffersEXT( 1, &m_fboRD[i] );
+		glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_fboRD[i] );
+		glFramebufferTexture2DEXT( GL_FRAMEBUFFER_EXT, m_attachmentpoint,
+		                           GL_TEXTURE_2D, m_texRD[i], 0 );
+		if( !checkFramebufferStatus() ) rdOk = false;
+	}
+	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, 0 );
+	glBindTexture( GL_TEXTURE_2D, 0 );
+
+	m_rdReady  = rdOk;
+	m_rdSeeded = false;   // first step writes the seed pattern
+	checkGLErrors("setupReactionDiffusion()");
+}
+
+// Advance the Gray-Scott simulation by one step into the next ping-pong buffer.
+void FilterShader::stepReactionDiffusion(const AudioFeatures &audio)
+{
+	if( !m_rdReady )
+		return;
+
+	const int cur  = m_rdIdx;
+	const int prev = 1 - m_rdIdx;
+
+	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_fboRD[cur] );
+	glViewport( 0, 0, kRDSize, kRDSize );
+	glUseProgram( m_rdProgId );
+
+	glActiveTexture( GL_TEXTURE0 );
+	glBindTexture( GL_TEXTURE_2D, m_texRD[prev] );
+	glUniform1i( m_rdPrevUni, 0 );
+	if( m_rdResUni  >= 0 ) glUniform2f( m_rdResUni, (float)kRDSize, (float)kRDSize );
+	if( m_rdSeedUni >= 0 ) glUniform1f( m_rdSeedUni, m_rdSeeded ? 0.f : 1.f );
+
+	// Subtle audio modulation of the feed rate keeps the pattern evolving; the
+	// kill rate is held steady so the simulation stays in its interesting regime.
+	if( m_rdFeedUni >= 0 ) glUniform1f( m_rdFeedUni, 0.0545f + 0.004f * audio.spectralCentroid );
+	if( m_rdKillUni >= 0 ) glUniform1f( m_rdKillUni, 0.062f );
+	// Onsets / beats inject fresh reagent so the field blossoms with the music.
+	float inject = (audio.onsetStrength > 0.2f || audio.beatDecay > 0.3f) ? 1.f : 0.f;
+	if( m_rdInjectUni >= 0 ) glUniform1f( m_rdInjectUni, inject );
+
+	drawWindow();
+
+	glBindTexture( GL_TEXTURE_2D, 0 );
+	m_rdSeeded = true;
+	m_rdIdx    = prev;   // ping-pong swap; newest state is now m_texRD[1 - m_rdIdx]
 }
 
 // Mood-based selection bias — see header.
@@ -1263,6 +1349,18 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
     
 	m_globaltime += timeSinceLastFrameSec; //t//+= 0.01f;
 	//m_lastTime = t;
+
+
+	// Advance the on-GPU reaction-diffusion simulation one step, then expose its
+	// living field on a dedicated global sampler unit (7) so any effect (e.g.
+	// ReactionDiffusion.frag) can sample it via the "texSim" uniform.  (Renders at
+	// the small RD grid; the viewport is restored to render-resolution just below.)
+	stepReactionDiffusion( audio );
+	if( m_rdReady )
+	{
+		glActiveTexture( GL_TEXTURE7 );
+		glBindTexture( GL_TEXTURE_2D, m_texRD[1 - m_rdIdx] );   // newest state
+	}
 
 
 	// restore render destination to regular frame buffer

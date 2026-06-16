@@ -118,6 +118,10 @@
   <TextureShader minTimeSolo="15" maxTimeSolo="60" minTimeInterpolation="15" maxTimeInterpolation="40" file="..\\StereoSpectrum.frag" type="normal" probability="0.5" complexity="1">
   </TextureShader>
 
+  <!-- Reaction-Diffusion (live on-GPU Gray-Scott simulation) -->
+  <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="15" maxTimeInterpolation="45" file="..\\ReactionDiffusion.frag" type="normal" probability="0.5" complexity="2">
+  </TextureShader>
+
   <!-- Organic Flow (reaction-diffusion-like cells) -->
   <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="20" maxTimeInterpolation="60" file="..\\OrganicFlow.frag" type="normal" probability="0.6" complexity="1">
   </TextureShader>

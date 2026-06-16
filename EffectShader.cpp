@@ -315,6 +315,10 @@ void EffectShader::applyAudioFeatures(const AudioFeatures &f)
     if (locMusic    >= 0) glUniform1f(locMusic,    f.musicPresence);
     if (locStBandL  >= 0) glUniform3f(locStBandL,  f.stereoLowL, f.stereoMidL, f.stereoHighL);
     if (locStBandR  >= 0) glUniform3f(locStBandR,  f.stereoLowR, f.stereoMidR, f.stereoHighR);
+
+    // Living reaction-diffusion field is bound to texture unit 7 by FilterShader.
+    GLint locSim = glGetUniformLocation(m_sh_prog_id, "texSim");
+    if (locSim >= 0) glUniform1i(locSim, 7);
     if (locPhase    >= 0) glUniform1f(locPhase,    f.audioRotPhase);
     if (locAdvance  >= 0) glUniform1f(locAdvance,  f.audioAdvance);
     if (locBeat     >= 0) glUniform1f(locBeat,     f.beatDecay);
