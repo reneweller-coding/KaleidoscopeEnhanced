@@ -562,6 +562,37 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
     // Re-derive the decaying beat pulse now that onsets are folded into m_beatPulse.
     beatDecay = std::min(m_beatPulse / 3.f, 1.f);
 
+    // ---- Autocorrelation tempo ----
+    // Feed the onset detection function into a fixed-rate envelope, then autocorrelate
+    // it over the natural-tempo lag range (70..180 BPM).  The peak lag gives a robust
+    // tempo estimate (and confidence) that refines the inter-beat BPM below.
+    {
+        int framesPerEnv = std::max(1, sampleRate / kEnvRate);
+        m_envFrameAcc += numFrames;
+        while (m_envFrameAcc >= framesPerEnv) {
+            m_envFrameAcc -= framesPerEnv;
+            m_odfEnv[m_odfEnvIdx] = rawFlux;
+            m_odfEnvIdx = (m_odfEnvIdx + 1) % kOdfEnvLen;
+        }
+        const int lagLo = (60 * kEnvRate) / 180;   // 33 samples (180 BPM)
+        const int lagHi = (60 * kEnvRate) / 70;    // 85 samples (70 BPM)
+        float ac0 = 1e-6f;
+        for (int i = 0; i < kOdfEnvLen; ++i) ac0 += m_odfEnv[i] * m_odfEnv[i];
+        float bestAc = 0.f; int bestLag = 0;
+        for (int lag = lagLo; lag <= lagHi; ++lag) {
+            float ac = 0.f;
+            for (int i = 0; i + lag < kOdfEnvLen; ++i)
+                ac += m_odfEnv[i] * m_odfEnv[i + lag];
+            if (ac > bestAc) { bestAc = ac; bestLag = lag; }
+        }
+        if (bestLag > 0) {
+            float bpm  = float(60 * kEnvRate) / float(bestLag);
+            float conf = bestAc / ac0;
+            m_acConf = 0.90f * m_acConf + 0.10f * std::min(conf * 2.f, 1.f);
+            m_acBPM  = (m_acBPM < 1.f) ? bpm : 0.90f * m_acBPM + 0.10f * bpm;
+        }
+    }
+
     // ---- Spectral Centroid (6-band, log-spaced frequency weights) ----
     // Each weight is the log-normalised centre frequency of that band,
     // mapped to [0..1] over the audible range (20 Hz – 20 kHz).
@@ -639,6 +670,13 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
             m_smoothedBPM = 0.85f * m_smoothedBPM + 0.15f * meanBPM;
         }
     }
+    // Refine the tempo with the autocorrelation estimate when it is confident
+    // (robust for tracks where the kick-based inter-beat estimate is noisy).
+    if (m_acConf > 0.35f && m_acBPM > 1.f) {
+        if (m_smoothedBPM < 1.f) m_smoothedBPM = m_acBPM;
+        else                     m_smoothedBPM = 0.97f * m_smoothedBPM + 0.03f * m_acBPM;
+    }
+
     // Normalise BPM to [0,1] over 40..200 BPM — every frame, not only on beats.
     estimatedBPM = std::max(0.f, std::min((m_smoothedBPM - 40.f) / 160.f, 1.f));
 
