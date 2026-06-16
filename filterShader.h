@@ -39,6 +39,14 @@ public:
 	/** Request an early cross-fade to the next texture effect (manual 'n' key or
 	 *  an automatic musical novelty trigger).  Honoured at the next opportunity. */
 	void requestSceneChange() { m_forceEffectChange = true; }
+
+	// ---- Live-tunable look parameters (shared across all configs; set by hotkeys) ----
+	static void  adjustReactivity( float d ) { s_reactivity  = clampParam(s_reactivity  + d, 0.f, 3.0f); }
+	static void  adjustTrails     ( float d ) { s_trailAmount = clampParam(s_trailAmount + d, 0.f, 0.95f); }
+	static void  adjustMood       ( float d ) { s_moodStrength= clampParam(s_moodStrength+ d, 0.f, 2.5f); }
+	static float reactivity() { return s_reactivity; }
+	static float trails()     { return s_trailAmount; }
+	static float mood()       { return s_moodStrength; }
 	void reinit(int width, int height); // full (re)build: shaders, image + FBO textures, FBOs
 
 	// Lightweight resize: re-allocate ONLY the off-screen FBO colour textures to
@@ -155,7 +163,13 @@ private:
 	GLint			m_trailResUni   = -1;
 	GLint			m_trailDecayUni = -1;
 	bool			m_feedbackReady = false;
-	float			m_trailAmount   = 0.6f;   // 0 = off .. ~0.95 = long trails
+
+	// Live-tunable look parameters (static → one shared setting across all configs).
+	static float	s_reactivity;    // audio-motion master gain (default 1.0)
+	static float	s_trailAmount;   // feedback trail length 0..0.95 (default 0.6)
+	static float	s_moodStrength;  // global mood-grade strength (default 1.0)
+	static float	clampParam( float v, float lo, float hi )
+	{ return v < lo ? lo : (v > hi ? hi : v); }
 
 	// GLSL vars
 

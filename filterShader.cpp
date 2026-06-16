@@ -13,6 +13,11 @@
 static float minSides = 2.0;
 static unsigned int maxSides = 14;
 
+// Live-tunable look parameters (shared across all configs, set by hotkeys).
+float FilterShader::s_reactivity  = 1.0f;
+float FilterShader::s_trailAmount = 0.6f;
+float FilterShader::s_moodStrength = 1.0f;
+
 
 float ROUND(float f)
 {
@@ -956,7 +961,7 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
         // Global reactivity strength.  All audio-driven MOTION is scaled by this
         // single knob — raise it for a wilder show, lower it for calm.  (Motion is
         // integrated into phases, so larger values stay smooth and never flicker.)
-        const float kReactivity = 1.0f;
+        const float kReactivity = s_reactivity;   // live-tunable (hotkeys)
 
         // MASTER GATE: when the audio is not music (speech / video / silence) this
         // fades to 0, so all the audio-driven motion, pulses and mood shifts below
@@ -1427,7 +1432,7 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 	{
 		int cur  = m_trailIdx;
 		int prev = 1 - m_trailIdx;
-		float decay = m_trailAmount * (0.90f + 0.08f * audio.ambientFactor)
+		float decay = s_trailAmount * (0.90f + 0.08f * audio.ambientFactor)
 		            * audio.musicPresence;
 
 		glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_fboTrail[cur] );
@@ -1496,12 +1501,14 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 		glUniform1i( m_presentTexUni, 0 );
 		if( m_presentResUni   >= 0 ) glUniform2f( m_presentResUni, (float)m_width, (float)m_height );
 		if( m_presentScaleUni >= 0 ) glUniform1f( m_presentScaleUni, scale );
-		// Global mood grade — gated values (neutral in non-music mode).
-		if( m_presentCentroidUni >= 0 ) glUniform1f( m_presentCentroidUni, audioFx.spectralCentroid );
-		if( m_presentValenceUni  >= 0 ) glUniform1f( m_presentValenceUni,  audioFx.valence );
-		if( m_presentLevelUni    >= 0 ) glUniform1f( m_presentLevelUni,    audioFx.overallLevel );
-		if( m_presentFluxUni     >= 0 ) glUniform1f( m_presentFluxUni,     audioFx.spectralFlux );
-		if( m_presentHueUni      >= 0 ) glUniform1f( m_presentHueUni,      audioFx.chromaHue );
+		// Global mood grade — gated values (neutral in non-music mode), scaled by the
+		// live mood-strength knob (deviations from neutral × s_moodStrength).
+		float ms = s_moodStrength;
+		if( m_presentCentroidUni >= 0 ) glUniform1f( m_presentCentroidUni, 0.5f + (audioFx.spectralCentroid - 0.5f) * ms );
+		if( m_presentValenceUni  >= 0 ) glUniform1f( m_presentValenceUni,  0.5f + (audioFx.valence          - 0.5f) * ms );
+		if( m_presentLevelUni    >= 0 ) glUniform1f( m_presentLevelUni,    audioFx.overallLevel * ms );
+		if( m_presentFluxUni     >= 0 ) glUniform1f( m_presentFluxUni,     audioFx.spectralFlux * ms );
+		if( m_presentHueUni      >= 0 ) glUniform1f( m_presentHueUni,      audioFx.chromaHue    * ms );
 		drawWindow();
 	}
 
