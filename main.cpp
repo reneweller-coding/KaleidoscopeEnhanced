@@ -1,5 +1,8 @@
 #include <iostream>
 #include <cstring>
+#include <cstdlib>
+
+#include "filterShader.h"
 
 #include <QtWidgets/QApplication>
 #include <QtGui/QIcon>
@@ -72,8 +75,8 @@ void commandlineerror( char *cmd, char *parm )
 void parsecommandline( int argc, char *argv[] )
 {
 	/* valid option characters; last char MUST be 0 ! */
-	char optionchar[] =   { 'h', 'b', 'f', 0 };
-	int musthaveparam[] = {  0 ,  0,   1, 0 };
+	char optionchar[] =   { 'h', 'b', 'f', 's', 0 };
+	int musthaveparam[] = {  0 ,  0,   1,   1, 0 };
 
 	int nopts;
 	int mhp[256];
@@ -133,6 +136,7 @@ void parsecommandline( int argc, char *argv[] )
 				//case 'b': benchmark = true; break;
 				//case 'f': directory = argv[1]; break;
 				case 'b': fullscreen = !fullscreen; break;
+				case 's': FilterShader::setRenderScale( (float) atof( argv[1] ) ); break;
 
 
 				default: fprintf(stderr, "\nBug in parsecommandline !\n");

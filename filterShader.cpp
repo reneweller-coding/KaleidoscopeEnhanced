@@ -17,6 +17,7 @@ static unsigned int maxSides = 14;
 float FilterShader::s_reactivity  = 1.0f;
 float FilterShader::s_trailAmount = 0.6f;
 float FilterShader::s_moodStrength = 1.0f;
+float FilterShader::s_renderScale = 1.0f;
 
 
 float ROUND(float f)
@@ -716,8 +717,12 @@ void FilterShader::reinit(int width, int height)
 	checkGLErrors("reinit() 0");
 	//cleanTextures();
 
-	m_width = width;
-	m_height = height;
+	// width/height arrive as the DISPLAY (window) resolution.  Render the pipeline
+	// at s_renderScale × that; only the final present pass upscales to the display.
+	m_displayW = width;
+	m_displayH = height;
+	m_width  = (int)(width  * s_renderScale + 0.5f);  if (m_width  < 16) m_width  = 16;
+	m_height = (int)(height * s_renderScale + 0.5f);  if (m_height < 16) m_height = 16;
 
 	m_nrTextureUploads = 0;
 /*	const GLubyte *extstr = glGetString(GL_EXTENSIONS);
@@ -792,8 +797,11 @@ void FilterShader::resize(int width, int height)
 	if( width <= 0 || height <= 0 )
 		return;
 
-	m_width  = width;
-	m_height = height;
+	// width/height = display resolution; render at s_renderScale × that.
+	m_displayW = width;
+	m_displayH = height;
+	m_width  = (int)(width  * s_renderScale + 0.5f);  if (m_width  < 16) m_width  = 16;
+	m_height = (int)(height * s_renderScale + 0.5f);  if (m_height < 16) m_height = 16;
 
 	// Effect shaders only need their reported resolution updated (no recompile).
 	for( unsigned int i = 0; i < m_effectTextures.size(); i++ )
@@ -1484,40 +1492,53 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 	{
 		glActiveTexture( GL_TEXTURE0 );
 		glBindTexture( GL_TEXTURE_2D, presentSource );
-		glGenerateMipmapEXT( GL_TEXTURE_2D );
+		glGenerateMipmapEXT( GL_TEXTURE_2D );          // every frame (bloom samples a mip)
 
-		int maxDim = (m_width > m_height) ? m_width : m_height;
-		int lvl = 0;
-		for( int d = maxDim; d > 4; d >>= 1 ) lvl++;   // a small (<=4 px) mip level
-		int lw = 1, lh = 1;
-		glGetTexLevelParameteriv( GL_TEXTURE_2D, lvl, GL_TEXTURE_WIDTH,  &lw );
-		glGetTexLevelParameteriv( GL_TEXTURE_2D, lvl, GL_TEXTURE_HEIGHT, &lh );
-		if( lw < 1 ) lw = 1;
-		if( lh < 1 ) lh = 1;
-		int npx = lw * lh;
-		if( npx > 64 ) npx = 64;
-		float buf[ 4 * 64 ];
-		glGetTexImage( GL_TEXTURE_2D, lvl, GL_RGBA, GL_FLOAT, buf );
-		float mean = 0.f;
-		for( int i = 0; i < npx; i++ )
-			mean += 0.299f*buf[i*4+0] + 0.587f*buf[i*4+1] + 0.114f*buf[i*4+2];
-		mean /= float(npx);
+		// The whole-frame mean comes from a glGetTexImage readback, which forces a
+		// GPU→CPU sync stall — costly on weak GPUs.  Do it only every 3rd frame and
+		// reuse the brightness scale in between (dt is accumulated so the per-second
+		// limit stays correct).  Photosensitivity is unaffected (slow limiter).
+		m_safetyAccumDt += timeSinceLastFrameSec;
+		float scale = m_lastSafetyScale;
+		if( (++m_safetyFrame % 3) == 0 )
+		{
+			int maxDim = (m_width > m_height) ? m_width : m_height;
+			int lvl = 0;
+			for( int d = maxDim; d > 4; d >>= 1 ) lvl++;   // a small (<=4 px) mip level
+			int lw = 1, lh = 1;
+			glGetTexLevelParameteriv( GL_TEXTURE_2D, lvl, GL_TEXTURE_WIDTH,  &lw );
+			glGetTexLevelParameteriv( GL_TEXTURE_2D, lvl, GL_TEXTURE_HEIGHT, &lh );
+			if( lw < 1 ) lw = 1;
+			if( lh < 1 ) lh = 1;
+			int npx = lw * lh;
+			if( npx > 64 ) npx = 64;
+			float buf[ 4 * 64 ];
+			glGetTexImage( GL_TEXTURE_2D, lvl, GL_RGBA, GL_FLOAT, buf );
+			float mean = 0.f;
+			for( int i = 0; i < npx; i++ )
+				mean += 0.299f*buf[i*4+0] + 0.587f*buf[i*4+1] + 0.114f*buf[i*4+2];
+			mean /= float(npx);
 
-		if( m_prevMeanLum < 0.f ) m_prevMeanLum = mean;
-		float maxStep = 2.0f * timeSinceLastFrameSec;         // <= 2.0 luma / second
-		float hi = m_prevMeanLum + maxStep;
-		float clamped = (mean > hi) ? hi : mean;              // only limit RISES
-		float scale = (mean > 1e-4f) ? (clamped / mean) : 1.f;
-		if( scale > 1.f ) scale = 1.f;                        // never brighten
-		m_prevMeanLum = (mean < m_prevMeanLum) ? mean : clamped;  // track displayed mean
+			if( m_prevMeanLum < 0.f ) m_prevMeanLum = mean;
+			float maxStep = 2.0f * m_safetyAccumDt;          // <= 2.0 luma / second
+			float hi = m_prevMeanLum + maxStep;
+			float clamped = (mean > hi) ? hi : mean;         // only limit RISES
+			scale = (mean > 1e-4f) ? (clamped / mean) : 1.f;
+			if( scale > 1.f ) scale = 1.f;                   // never brighten
+			m_prevMeanLum = (mean < m_prevMeanLum) ? mean : clamped;
+			m_lastSafetyScale = scale;
+			m_safetyAccumDt = 0.f;
+		}
 
+		// The present pass is the ONLY one at full display resolution — it upscales
+		// the render-resolution result to the window.
 		glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_defaultFBO );
-		glViewport( 0, 0, m_width, m_height );
+		glViewport( 0, 0, m_displayW, m_displayH );
 		glUseProgram( m_presentProgId );
 		glActiveTexture( GL_TEXTURE0 );
 		glBindTexture( GL_TEXTURE_2D, presentSource );
 		glUniform1i( m_presentTexUni, 0 );
-		if( m_presentResUni   >= 0 ) glUniform2f( m_presentResUni, (float)m_width, (float)m_height );
+		if( m_presentResUni   >= 0 ) glUniform2f( m_presentResUni, (float)m_displayW, (float)m_displayH );
 		if( m_presentScaleUni >= 0 ) glUniform1f( m_presentScaleUni, scale );
 		// Global mood grade — gated values (neutral in non-music mode), scaled by the
 		// live mood-strength knob (deviations from neutral × s_moodStrength).

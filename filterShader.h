@@ -158,6 +158,9 @@ private:
 	GLint			m_presentBeatUni     = -1;
 	float			m_prevMeanLum    = -1.f;   // <0 = uninitialised
 	bool			m_safetyReady    = false;  // false → present pass disabled (safe fallback)
+	int				m_safetyFrame    = 0;      // for sub-sampling the readback
+	float			m_lastSafetyScale= 1.f;    // reused between readbacks
+	float			m_safetyAccumDt  = 0.f;    // dt accumulated since last readback
 
 	// ---- Feedback / trails (phosphor-style ping-pong) ----
 	GLuint			m_fboTrail[2]   = { 0, 0 };
@@ -178,6 +181,18 @@ private:
 	{ return v < lo ? lo : (v > hi ? hi : v); }
 
 	float			m_smoothedSides = 6.f;   // eased kaleidoscope symmetry (no snap)
+
+	// Internal render resolution = display resolution × s_renderScale.  All the
+	// expensive offscreen passes use m_width/m_height (= render res); only the final
+	// present pass upscales to the display resolution (m_displayW/m_displayH).  Set
+	// s_renderScale < 1 to run smoothly on weak GPUs at high display resolutions.
+	int				m_displayW = 100;
+	int				m_displayH = 100;
+	static float	s_renderScale;           // 0.25 .. 2.0 (1.0 = native; set via -s)
+public:
+	static void setRenderScale( float s )
+	{ s_renderScale = (s < 0.25f) ? 0.25f : (s > 2.0f ? 2.0f : s); }
+private:
 
 	// GLSL vars
 
