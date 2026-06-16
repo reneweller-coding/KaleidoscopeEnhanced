@@ -76,20 +76,22 @@ void main() {
     // Low centroid (dark drone) → cool blue-violet tint, reduced brightness
     // High centroid (bright air) → warm golden-white glow
     // Blend is very subtle so it enhances mood without overriding image colour.
-    vec3 coolTint = vec3(0.75, 0.80, 1.05);   // blue-ish / dark
-    vec3 warmTint = vec3(1.10, 1.05, 0.90);   // golden / bright
+    // Wide spread (centred so centroid=0.5 ≈ neutral): dark music clearly cools to
+    // blue, bright music clearly warms to amber.
+    vec3 coolTint = vec3(0.65, 0.85, 1.30);
+    vec3 warmTint = vec3(1.35, 1.10, 0.70);
     vec3 centroidTint = mix(coolTint, warmTint, audioCentroid);
     col.rgb *= centroidTint;
 
-    // --- Valence: pleasant/major music is vivid, tense/minor/rough is muted ---
+    // --- Valence → saturation (centred at 0.5): minor/rough muted, major vivid ---
     float lumT = dot(col.rgb, vec3(0.299, 0.587, 0.114));
-    col.rgb = mix(vec3(lumT), col.rgb, 0.55 + 0.65 * audioValence);
+    col.rgb = mix(vec3(lumT), col.rgb, 0.45 + 1.10 * audioValence);
 
-    // --- Spectral Flux: subtle luminance pulse on new layers ---
-    col.rgb *= (1.0 + audioFlux * 0.2);
+    // --- Spectral Flux → visible shimmer when the sound changes ---
+    col.rgb *= (1.0 + audioFlux * 0.35);
 
-    // --- Overall level breathing ---
-    col.rgb *= (1.0 + audioLevel * 0.3);
+    // --- Overall loudness → brightness (neutral when quiet, brighter when loud) ---
+    col.rgb *= (1.0 + audioLevel * 0.6);
     col.rgb += vec3(pulse);
 
     gl_FragColor = clamp(col, 0.0, 1.0);
