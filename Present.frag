@@ -46,14 +46,19 @@ void main()
     float lum = dot(c, vec3(0.299, 0.587, 0.114));
     c = mix(vec3(lum), c, 0.45 + 1.10 * audioValence);
 
-    // Loudness → brightness, spectral flux → shimmer.
-    c *= (1.0 + 0.55 * audioLevel + 0.30 * audioFlux);
+    // Loudness → brightness, spectral flux → shimmer (gentle, so already-bright
+    // content does not blow out).
+    c *= (1.0 + 0.30 * audioLevel + 0.15 * audioFlux);
 
-    // Bloom / glow: a single tap of a coarse, blurred mip level (the mipmaps are
-    // already generated for the safety mean) gives a cheap bright-pass glow.
+    // Bloom / glow: a single tap of a coarse, blurred mip level (mipmaps already
+    // generated for the safety mean).  Only clearly-bright areas, gently.
     vec3 blurC = texture2D(tex, uv, 4.5).rgb;        // LOD bias → blurred low-res
-    vec3 bloom = max(blurC - 0.45, 0.0);             // bright-pass
-    c += bloom * (0.6 + 0.7 * audioBeat);            // extra glow on beats
+    vec3 bloom = max(blurC - 0.65, 0.0);             // higher threshold = less wash
+    c += bloom * (0.22 + 0.30 * audioBeat);
+
+    // Soft highlight knee: compress values above ~0.8 toward white instead of
+    // hard-clipping the whole frame to flat white when the grade pushes it high.
+    c = c / (1.0 + max(c - 0.8, 0.0));
 
     // Photosensitivity brightness limit (applied last).
     gl_FragColor = vec4(clamp(c * scale, 0.0, 1.0), 1.0);
