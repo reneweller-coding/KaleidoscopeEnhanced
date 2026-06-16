@@ -59,6 +59,14 @@
   <TextureShader minTimeSolo="20" maxTimeSolo="90" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\OrganicFlow.frag" type="normal" probability="0.5" complexity="1">
   </TextureShader>
 
+  <!-- Raymarch Tunnel (3D fly-through) -->
+  <TextureShader minTimeSolo="20" maxTimeSolo="90" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\RaymarchTunnel.frag" type="normal" probability="0.5" complexity="2">
+  </TextureShader>
+
+  <!-- Starfield (warp through stars) -->
+  <TextureShader minTimeSolo="20" maxTimeSolo="90" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\Starfield.frag" type="normal" probability="0.5" complexity="1">
+  </TextureShader>
+
 
   <!--
   ***************
