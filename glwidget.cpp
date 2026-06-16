@@ -305,12 +305,17 @@ void GLwidget::timerEvent( QTimerEvent* )
 }
 
 
-void GLwidget::resizeGL( int width, int height ) 
+void GLwidget::resizeGL( int /*wLogical*/, int /*hLogical*/ )
 {
-	m_width = width;
-	m_height = height;
+	// QOpenGLWidget calls resizeGL() with LOGICAL (device-independent) pixels,
+	// but its default framebuffer is sized to size() * devicePixelRatio().
+	// Size the viewport / FBOs to the physical framebuffer so the visualization
+	// fills the whole widget (and stays sharp) on high-DPI / scaled displays.
+	const qreal dpr = devicePixelRatioF();
+	m_width  = int(this->width()  * dpr + 0.5);
+	m_height = int(this->height() * dpr + 0.5);
 
-	m_actConfiguration->m_filterShader->reinit(width,height);
+	m_actConfiguration->m_filterShader->reinit( m_width, m_height );
 }
 
 // set rotation Matrix for trackball to Identity
