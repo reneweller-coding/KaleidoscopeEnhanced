@@ -283,7 +283,18 @@ void EffectShader::applyAudioFeatures(const AudioFeatures &f)
     GLint locSpread   = glGetUniformLocation(m_sh_prog_id, "audioSpread");
     GLint locMode     = glGetUniformLocation(m_sh_prog_id, "audioMode");
     GLint locPitch    = glGetUniformLocation(m_sh_prog_id, "audioPitch");
+    // Thayer mood axes + extra timbre features (used by the mood-driven shaders).
+    GLint locArousal  = glGetUniformLocation(m_sh_prog_id, "audioArousal");
+    GLint locValence  = glGetUniformLocation(m_sh_prog_id, "audioValence");
+    GLint locHCDF     = glGetUniformLocation(m_sh_prog_id, "audioHarmChange");
+    GLint locRough    = glGetUniformLocation(m_sh_prog_id, "audioRoughness");
+    GLint locSharp    = glGetUniformLocation(m_sh_prog_id, "audioSharpness");
 
+    if (locArousal  >= 0) glUniform1f(locArousal,  f.arousal);
+    if (locValence  >= 0) glUniform1f(locValence,  f.valence);
+    if (locHCDF     >= 0) glUniform1f(locHCDF,     f.harmonicChange);
+    if (locRough    >= 0) glUniform1f(locRough,    f.roughness);
+    if (locSharp    >= 0) glUniform1f(locSharp,    f.sharpness);
     if (locPhase    >= 0) glUniform1f(locPhase,    f.audioRotPhase);
     if (locAdvance  >= 0) glUniform1f(locAdvance,  f.audioAdvance);
     if (locBeat     >= 0) glUniform1f(locBeat,     f.beatDecay);

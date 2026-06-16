@@ -94,9 +94,26 @@
 
 
 
+  <!-- Plasma Flow (mood-tinted flowing plasma) -->
+  <TextureShader minTimeSolo="15" maxTimeSolo="60" minTimeInterpolation="15" maxTimeInterpolation="45" file="..\\PlasmaFlow.frag" type="normal" probability="0.6" complexity="1">
+  </TextureShader>
+
+  <!-- Voronoi Pulse (beat-flaring cells) -->
+  <TextureShader minTimeSolo="15" maxTimeSolo="60" minTimeInterpolation="15" maxTimeInterpolation="45" file="..\\VoronoiPulse.frag" type="normal" probability="0.6" complexity="1">
+  </TextureShader>
+
+  <!-- Fractal KIFS (kaleidoscopic fractal) -->
+  <TextureShader minTimeSolo="15" maxTimeSolo="60" minTimeInterpolation="15" maxTimeInterpolation="45" file="..\\FractalKIFS.frag" type="normal" probability="0.6" complexity="1">
+  </TextureShader>
+
+  <!-- Curl Aurora (flowing mood-coloured curtains) -->
+  <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="20" maxTimeInterpolation="60" file="..\\CurlAurora.frag" type="normal" probability="0.5" complexity="1">
+  </TextureShader>
+
+
   <!--
   ***************
-  Combine 
+  Combine
   ***************
   -->
 

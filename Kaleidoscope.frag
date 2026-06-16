@@ -15,6 +15,7 @@ uniform float audioFlip;      // rotation direction: +1 or -1
 uniform float audioCentroid;  // tonal brightness 0=dark drone, 1=bright shimmer
 uniform float audioFlux;      // spectral flux 0..1
 uniform float audioPhase;     // integrated audio rotation phase (radians, jump-free)
+uniform float audioValence;   // mood pleasantness 0..1 (low=tense/dark, high=happy)
 
 const float M_PI = 3.141592653589793;
 
@@ -62,7 +63,7 @@ void main() {
     vec4 col = interpolation * texture2D(tex0,p+0.5) + (1.0-interpolation)*texture2D(tex1, p + 0.5);
 
     // --- Beat pulse: outward radial pop ---
-    float zoomK  = 1.0 + audioBeat * 0.15;
+    float zoomK  = 1.0 + audioBeat * 0.25;
     vec2 pZoomed = p / zoomK;
     vec4 colZoomed = interpolation * texture2D(tex0, pZoomed+0.5) + (1.0-interpolation)*texture2D(tex1, pZoomed+0.5);
     col = mix(col, colZoomed, audioBeat * 0.7);
@@ -73,6 +74,10 @@ void main() {
     vec3 coolTint = vec3(0.70, 0.75, 1.05);  // blue-violet
     vec3 warmTint = vec3(1.15, 1.05, 0.85);  // amber-white
     col.rgb *= mix(coolTint, warmTint, audioCentroid);
+
+    // --- Valence: pleasant/major music is vivid, tense/minor/rough is muted ---
+    float lumK = dot(col.rgb, vec3(0.299, 0.587, 0.114));
+    col.rgb = mix(vec3(lumK), col.rgb, 0.55 + 0.65 * audioValence);
 
     // --- Spectral Flux: gentle luminance when new sound layers enter ---
     col.rgb *= (1.0 + audioFlux * 0.15);

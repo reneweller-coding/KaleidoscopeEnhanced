@@ -30,6 +30,11 @@ public:
 	 *                changing the audio never jumps the visual.                 */
 	void paint(const float *rotMatrix, float tx, float ty, float tz,
 	           const AudioFeatures &audio = AudioFeatures{});
+
+	/** The framebuffer the final image must be drawn into.  Under QOpenGLWidget
+	 *  the visible buffer is NOT 0 but QOpenGLWidget::defaultFramebufferObject();
+	 *  the widget passes it here every frame before paint().  Defaults to 0. */
+	void setDefaultFBO( GLuint fbo ) { m_defaultFBO = fbo; }
 	void reinit(int width, int height); // initialization stuff and computation of the distance field
 	void checkGLErrors( const char *label ); // check and print gl errors to stderr
 
@@ -93,6 +98,9 @@ private:
 	GLuint			m_texIDFBOEffectTexture2;
 	GLuint			m_texIDFBOEffectCombine1;
 	GLuint			m_texIDFBOEffectCombine2;
+
+	// Target framebuffer for the final on-screen pass (QOpenGLWidget's FBO, not 0).
+	GLuint			m_defaultFBO = 0;
 
 	// GLSL vars
 

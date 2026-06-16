@@ -120,6 +120,26 @@
   </TextureShader>
 
 
+  <!-- Curl Aurora (flowing mood-coloured curtains) -->
+  <TextureShader
+      minTimeSolo="120" maxTimeSolo="360"
+      minTimeInterpolation="80" maxTimeInterpolation="200"
+      file="..\\CurlAurora.frag"
+      type="normal"
+      probability="0.9"
+      complexity="1">
+  </TextureShader>
+
+  <!-- Fractal KIFS (kaleidoscopic fractal centrepiece) -->
+  <TextureShader
+      minTimeSolo="100" maxTimeSolo="300"
+      minTimeInterpolation="70" maxTimeInterpolation="180"
+      file="..\\FractalKIFS.frag"
+      type="normal"
+      probability="0.8"
+      complexity="1">
+  </TextureShader>
+
   <!--
   ===============================================================
   COMBINE SHADERS
