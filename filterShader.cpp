@@ -759,6 +759,9 @@ void FilterShader::reinit(int width, int height)
 	initFBO(  m_fboEffectCombine2, m_texIDFBOEffectCombine2 );
 	
 	//	initFBO();
+	// Photosensitivity-safety: final present FBO + brightness-limiting shader.
+	setupSafety();
+
 	fprintf(stderr,"reinit end\n");
 }
 
@@ -789,8 +792,56 @@ void FilterShader::resize(int width, int height)
 	setupFBOTexture( m_texIDFBOEffectCombine1 );
 	setupFBOTexture( m_texIDFBOEffectCombine2 );
 
+	// Resize the final (present) texture too, keeping its mipmaps.
+	if( m_texFinal != 0 )
+		updateFinalTexture();
+
 	glBindTexture( GL_TEXTURE_2D, 0 );
 	checkGLErrors("resize()");
+}
+
+
+// (Re)allocate the mipmapped final-frame texture at the current size.  Mipmaps
+// give us a cheap whole-frame average luminance for the brightness limiter.
+void FilterShader::updateFinalTexture()
+{
+	if( m_texFinal == 0 )
+		glGenTextures( 1, &m_texFinal );
+	glBindTexture( GL_TEXTURE_2D, m_texFinal );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+	glTexImage2D( GL_TEXTURE_2D, 0, m_texInternalFormat, m_width, m_height, 0,
+	              m_texFormat, m_texType, NULL );
+	glGenerateMipmapEXT( GL_TEXTURE_2D );
+	glBindTexture( GL_TEXTURE_2D, 0 );
+}
+
+// Create the final FBO + present shader.  If anything fails, m_safetyReady stays
+// false and paint() falls back to drawing the combine result straight to screen.
+void FilterShader::setupSafety()
+{
+	updateFinalTexture();
+
+	if( m_fboFinal == 0 )
+		glGenFramebuffersEXT( 1, &m_fboFinal );
+	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_fboFinal );
+	glFramebufferTexture2DEXT( GL_FRAMEBUFFER_EXT, m_attachmentpoint,
+	                           GL_TEXTURE_2D, m_texFinal, 0 );
+	bool fboOk = checkFramebufferStatus();
+	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, 0 );
+
+	if( m_presentProgId == 0 )
+	{
+		m_presentProgId   = setShaders( "..\\standard.vert", "..\\Present.frag" );
+		m_presentTexUni   = glGetUniformLocation( m_presentProgId, "tex" );
+		m_presentResUni   = glGetUniformLocation( m_presentProgId, "resolution" );
+		m_presentScaleUni = glGetUniformLocation( m_presentProgId, "scale" );
+	}
+
+	m_safetyReady = fboOk && (m_presentProgId != 0) && (m_presentTexUni >= 0);
+	checkGLErrors("setupSafety()");
 }
 
 void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
@@ -1254,8 +1305,9 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 	m_effectCombines[m_nextEffectCombine]->draw();
 
 	
-	//Now Use Final Rendering
-	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_defaultFBO );
+	//Now Use Final Rendering — into the safety FBO if active, else to the screen.
+	GLuint combineTarget = m_safetyReady ? m_fboFinal : m_defaultFBO;
+	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, combineTarget );
 	checkFramebufferStatus();
 
 	/*******************************************************************************/
@@ -1292,6 +1344,57 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 
 	drawWindow();
 
+	// -------------------------------------------------------------------------
+	// Photosensitivity-safety present pass.
+	// The combined frame now lives in m_texFinal.  We read its whole-frame average
+	// luminance (via a coarse mip level) and choose a single brightness scale so
+	// that the average can never RISE faster than a safe limit per second — this
+	// reins in large full-screen flashes while leaving local pattern motion (a
+	// uniform scale) completely untouched.  scale is clamped to <=1 so the pass
+	// can only ever darken, never brighten.  On any failure we already rendered
+	// straight to screen (m_safetyReady == false), so nothing is lost.
+	// -------------------------------------------------------------------------
+	if( m_safetyReady )
+	{
+		glActiveTexture( GL_TEXTURE0 );
+		glBindTexture( GL_TEXTURE_2D, m_texFinal );
+		glGenerateMipmapEXT( GL_TEXTURE_2D );
+
+		int maxDim = (m_width > m_height) ? m_width : m_height;
+		int lvl = 0;
+		for( int d = maxDim; d > 4; d >>= 1 ) lvl++;   // a small (<=4 px) mip level
+		int lw = 1, lh = 1;
+		glGetTexLevelParameteriv( GL_TEXTURE_2D, lvl, GL_TEXTURE_WIDTH,  &lw );
+		glGetTexLevelParameteriv( GL_TEXTURE_2D, lvl, GL_TEXTURE_HEIGHT, &lh );
+		if( lw < 1 ) lw = 1;
+		if( lh < 1 ) lh = 1;
+		int npx = lw * lh;
+		if( npx > 64 ) npx = 64;
+		float buf[ 4 * 64 ];
+		glGetTexImage( GL_TEXTURE_2D, lvl, GL_RGBA, GL_FLOAT, buf );
+		float mean = 0.f;
+		for( int i = 0; i < npx; i++ )
+			mean += 0.299f*buf[i*4+0] + 0.587f*buf[i*4+1] + 0.114f*buf[i*4+2];
+		mean /= float(npx);
+
+		if( m_prevMeanLum < 0.f ) m_prevMeanLum = mean;
+		float maxStep = 2.0f * timeSinceLastFrameSec;         // <= 2.0 luma / second
+		float hi = m_prevMeanLum + maxStep;
+		float clamped = (mean > hi) ? hi : mean;              // only limit RISES
+		float scale = (mean > 1e-4f) ? (clamped / mean) : 1.f;
+		if( scale > 1.f ) scale = 1.f;                        // never brighten
+		m_prevMeanLum = (mean < m_prevMeanLum) ? mean : clamped;  // track displayed mean
+
+		glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_defaultFBO );
+		glViewport( 0, 0, m_width, m_height );
+		glUseProgram( m_presentProgId );
+		glActiveTexture( GL_TEXTURE0 );
+		glBindTexture( GL_TEXTURE_2D, m_texFinal );
+		glUniform1i( m_presentTexUni, 0 );
+		if( m_presentResUni   >= 0 ) glUniform2f( m_presentResUni, (float)m_width, (float)m_height );
+		if( m_presentScaleUni >= 0 ) glUniform1f( m_presentScaleUni, scale );
+		drawWindow();
+	}
 
 	checkGLErrors("paint() 2");
 }

@@ -46,6 +46,10 @@ public:
 	// textures and shader programs untouched and allocates no new GL objects, so
 	// it can be called on every window resize without leaking or reloading images.
 	void resize(int width, int height);
+
+	// Photosensitivity-safety helpers (final present FBO + brightness limiter).
+	void setupSafety();          // create the final FBO/texture/present shader
+	void updateFinalTexture();   // (re)allocate the mipmapped final texture
 	void checkGLErrors( const char *label ); // check and print gl errors to stderr
 
 	
@@ -115,6 +119,19 @@ private:
 	// Manual / novelty-driven early scene change + its rate-limit cooldown.
 	bool			m_forceEffectChange = false;
 	float			m_noveltyCooldown   = 0.f;
+
+	// ---- Photosensitivity safety: final present pass with global brightness
+	// rate-limiting.  The combined frame is rendered into m_fboFinal, its average
+	// luminance is read back (coarse mip), and a uniform scale is chosen so the
+	// whole-frame average can't change faster than a safe limit per second.
+	GLuint			m_fboFinal       = 0;
+	GLuint			m_texFinal       = 0;
+	GLuint			m_presentProgId  = 0;
+	GLint			m_presentTexUni  = -1;
+	GLint			m_presentResUni  = -1;
+	GLint			m_presentScaleUni= -1;
+	float			m_prevMeanLum    = -1.f;   // <0 = uninitialised
+	bool			m_safetyReady    = false;  // false → present pass disabled (safe fallback)
 
 	// GLSL vars
 
