@@ -140,6 +140,26 @@
       complexity="1">
   </TextureShader>
 
+  <!-- Lava Lamp (slow rising metaball wax) -->
+  <TextureShader
+      minTimeSolo="120" maxTimeSolo="360"
+      minTimeInterpolation="80" maxTimeInterpolation="200"
+      file="..\\LavaLamp.frag"
+      type="normal"
+      probability="0.8"
+      complexity="1">
+  </TextureShader>
+
+  <!-- Oil Projector (Mathmos-style liquid light show) -->
+  <TextureShader
+      minTimeSolo="120" maxTimeSolo="360"
+      minTimeInterpolation="80" maxTimeInterpolation="200"
+      file="..\\OilProjector.frag"
+      type="normal"
+      probability="0.8"
+      complexity="2">
+  </TextureShader>
+
   <!--
   ===============================================================
   COMBINE SHADERS
