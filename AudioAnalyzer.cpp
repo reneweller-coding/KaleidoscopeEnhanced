@@ -899,6 +899,18 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
         m_sHCDF = 0.85f * m_sHCDF + 0.15f * hcdf;
     }
 
+    // ---- Chroma hue: harmonic "colour" = circular mean of the chroma on the wheel ----
+    // Maps the music's harmonic centre onto the colour wheel (0..1), so the key /
+    // harmony drives a consistent global hue shift.  Uses the slow smoothed chroma.
+    float chSin = 0.f, chCos = 0.f;
+    for (int i = 0; i < 12; ++i) {
+        float ang = 6.28318530718f * float(i) / 12.f;
+        chSin += m_smoothedChroma[i] * std::sin(ang);
+        chCos += m_smoothedChroma[i] * std::cos(ang);
+    }
+    float chromaHue = std::atan2(chSin, chCos) * 0.15915494f;   // /(2π) → -0.5..0.5
+    if (chromaHue < 0.f) chromaHue += 1.f;                       // → 0..1
+
     // ---- Dominant Pitch – Harmonic Product Spectrum (HPS) ----
     // Multiply the magnitude spectrum by downsampled-by-2, -3, -4 copies.
     // The fundamental frequency of a harmonic tone produces the highest product
@@ -1010,4 +1022,5 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
     m_features.spectralSpread   = m_sSpread;
     m_features.musicalMode      = m_sMode;
     m_features.dominantPitch    = m_sPitch;
+    m_features.chromaHue        = chromaHue;
 }

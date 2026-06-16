@@ -50,6 +50,12 @@ public:
 	// Photosensitivity-safety helpers (final present FBO + brightness limiter).
 	void setupSafety();          // create the final FBO/texture/present shader
 	void updateFinalTexture();   // (re)allocate the mipmapped final texture
+
+	// Mood-based selection bias: accept a candidate effect with a probability that
+	// depends on how well its complexity matches the current arousal (calm music →
+	// simple effects, energetic → busy).  Safe: callers retry, then fall back.
+	bool moodAccept(unsigned int complexity);
+	float			m_lastArousal = 0.5f;   // latest arousal (for moodAccept)
 	void checkGLErrors( const char *label ); // check and print gl errors to stderr
 
 	
@@ -135,6 +141,7 @@ private:
 	GLint			m_presentValenceUni  = -1;
 	GLint			m_presentLevelUni    = -1;
 	GLint			m_presentFluxUni     = -1;
+	GLint			m_presentHueUni      = -1;
 	float			m_prevMeanLum    = -1.f;   // <0 = uninitialised
 	bool			m_safetyReady    = false;  // false → present pass disabled (safe fallback)
 

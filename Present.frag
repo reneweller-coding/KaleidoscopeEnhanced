@@ -17,6 +17,16 @@ uniform float audioCentroid;
 uniform float audioValence;
 uniform float audioLevel;
 uniform float audioFlux;
+uniform float audioChromaHue;   // harmony → global hue shift (0 = neutral in non-music)
+
+// Hue rotation around the (1,1,1) luminance axis (Rodrigues), turns in [0,1].
+vec3 hueRotate(vec3 c, float turns)
+{
+    float a = turns * 6.28318530718;
+    vec3  k = vec3(0.57735026919);
+    float cs = cos(a), sn = sin(a);
+    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+}
 
 void main()
 {
@@ -27,6 +37,9 @@ void main()
     vec3 cool = vec3(0.65, 0.85, 1.30);
     vec3 warm = vec3(1.35, 1.10, 0.70);
     c *= mix(cool, warm, audioCentroid);
+
+    // Harmony → hue shift (the song's key/chords tint the whole palette).
+    c = hueRotate(c, audioChromaHue * 0.18);
 
     // Saturation from valence (centred so 0.5 ≈ neutral).
     float lum = dot(c, vec3(0.299, 0.587, 0.114));
