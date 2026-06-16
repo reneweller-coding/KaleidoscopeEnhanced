@@ -111,6 +111,16 @@ The `normal` and `psychedelic` presets also include the newest audio-reactive
 effects: **`StereoSpectrum`** (stereo-separated left/right band display) and
 **`ReactionDiffusion`** (the live GPU Gray-Scott simulation, see below).
 
+**Retro liquid-light / infinity effects** (plain fragment shaders, no compute):
+- **`LavaLamp`** — rising / sinking metaball "wax" blobs; bass adds buoyancy, the
+  beat makes them swell. Slow and hypnotic (also in `darkambient`).
+- **`OilProjector`** — a 1960s liquid light-show / *Mathmos Space Projector*:
+  domain-warped coloured cells on a slowly rotating heated wheel, separated by
+  dark oil veins; the bass is the "heat" that makes it bubble (also in `darkambient`).
+- **`HyperCube`** — an infinity-mirror cube (*Hyperspace Lighting "HyperCube"*):
+  glowing cube edges receding into an endless rotating tunnel, with a counter-
+  rotating inner cube and a vanishing-point glow; colours follow the harmony.
+
 ---
 
 ## How the audio reactivity works
