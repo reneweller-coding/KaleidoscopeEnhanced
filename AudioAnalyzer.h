@@ -133,6 +133,15 @@ private:
     float m_downbeatPulse   = 0.f;    // decaying accent on the bar's "1"
     int   m_kickCount       = 0;      // counts detected kicks (for downbeat every 4)
 
+    // ---- Autocorrelation tempo (fixed-rate onset envelope) ----
+    static constexpr int kEnvRate   = 100;   // onset-envelope sample rate (Hz)
+    static constexpr int kOdfEnvLen = 400;   // ~4 s of envelope
+    float m_odfEnv[kOdfEnvLen] = {};
+    int   m_odfEnvIdx   = 0;
+    int   m_envFrameAcc = 0;
+    float m_acBPM       = 0.f;        // autocorrelation tempo estimate
+    float m_acConf      = 0.f;        // its confidence 0..1
+
     // ---- Rhythm / dynamics / stereo / classifier state ----
     float m_sRhythm         = 0.f;    // smoothed rhythm strength (beat regularity)
     float m_sStereoWidth    = 0.f;    // smoothed stereo side/mid width
