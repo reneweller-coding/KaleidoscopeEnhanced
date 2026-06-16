@@ -47,6 +47,11 @@ struct AudioFeatures
     //   For bigger, musically-placed accents / scene changes.
     float downbeat = 0.f;
 
+    // trackChange: one-shot flag, true for a single update cycle when a new track
+    //   begins (a sustained near-silence followed by the first onset/energy).
+    //   The host uses it to trigger a clean, fresh scene transition.
+    bool  trackChange = false;
+
     // ---- Music-mode classifier ----
     // 0 = clearly beat-driven,  1 = pure ambient/drone.
     // Transitions slowly (~10 s) so visuals blend smoothly.
@@ -142,6 +147,13 @@ struct AudioFeatures
     // stereoWidth: side/mid energy ratio.  0 = mono / dead-centre, 1 = very wide
     //   stereo image.  Drives left/right asymmetry & spatial spread in visuals.
     float stereoWidth = 0.f;
+
+    // Stereo-separated spectrum: per-channel low/mid/high band energies (AGC-
+    //   normalised 0..1) for the LEFT and RIGHT channels independently.  Lets a
+    //   shader draw the left channel's spectrum on one side and the right on the
+    //   other, so the stereo image becomes visible.  (Mono audio mirrors L=R.)
+    float stereoLowL  = 0.f, stereoMidL = 0.f, stereoHighL = 0.f;
+    float stereoLowR  = 0.f, stereoMidR = 0.f, stereoHighR = 0.f;
 
     // deltaPitch: rate of change of the dominant pitch (melodic activity).
     //   ~0 for a held note / drone, higher for fast melodic movement.

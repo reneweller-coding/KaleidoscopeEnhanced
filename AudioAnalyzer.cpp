@@ -248,6 +248,10 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
     const float a2k  = coeff(2000.f, sampleRate);
     const float a6k  = coeff(6000.f, sampleRate);
 
+    // Stereo per-channel 3-band split (low <250 Hz, mid 250-2500 Hz, high >2500 Hz)
+    const float aStLo = coeff( 250.f, sampleRate);
+    const float aStHi = coeff(2500.f, sampleRate);
+
     // ---- Ambient-adaptive smoothing (one-pole attack / release) ----
     // Beat mode: fast release (≈0.88-0.93) – visuals snap with each kick.
     // Ambient mode: very slow release (≈0.985-0.99) – majestic long swell.
@@ -276,6 +280,7 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
     float accSub  = 0.f, accBass = 0.f, accLow  = 0.f;
     float accMid  = 0.f, accUpp  = 0.f, accHigh = 0.f;
     float accStereoSide = 0.f, accStereoMid = 0.f;   // for stereo width
+    float accStLo[2] = {0.f, 0.f}, accStMid[2] = {0.f, 0.f}, accStHi[2] = {0.f, 0.f};
     int   crossings = 0;
     float prevMono  = 0.f;
 
@@ -287,15 +292,27 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
             mono += data[i * numChannels + c];
         mono /= float(numChannels);
 
+        // Per-channel samples (R falls back to L for mono → mirrored spectrum).
+        const float L = data[i * numChannels + 0];
+        const float R = (numChannels >= 2) ? data[i * numChannels + 1] : L;
+
         // Stereo width: energy of the side (L-R) vs. mid (L+R) signal.
         if (numChannels >= 2) {
-            float L = data[i * numChannels + 0];
-            float R = data[i * numChannels + 1];
             float side = 0.5f * (L - R);
             float midS = 0.5f * (L + R);
             accStereoSide += side * side;
             accStereoMid  += midS * midS;
         }
+
+        // Stereo-separated spectrum: cheap 3-band split per channel (2 LPs each).
+        m_lpStL[0] = aStLo * m_lpStL[0] + (1.f - aStLo) * L;
+        m_lpStL[1] = aStHi * m_lpStL[1] + (1.f - aStHi) * L;
+        m_lpStR[0] = aStLo * m_lpStR[0] + (1.f - aStLo) * R;
+        m_lpStR[1] = aStHi * m_lpStR[1] + (1.f - aStHi) * R;
+        const float loL = m_lpStL[0], miL = m_lpStL[1] - m_lpStL[0], hiL = L - m_lpStL[1];
+        const float loR = m_lpStR[0], miR = m_lpStR[1] - m_lpStR[0], hiR = R - m_lpStR[1];
+        accStLo[0] += loL * loL; accStMid[0] += miL * miL; accStHi[0] += hiL * hiL;
+        accStLo[1] += loR * loR; accStMid[1] += miR * miR; accStHi[1] += hiR * hiR;
 
         // Zero-crossing rate: count sign changes (Temporal feature from paper)
         if ((mono > 0.f && prevMono < 0.f) || (mono < 0.f && prevMono > 0.f))
@@ -450,6 +467,16 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
     float nUpperMid = std::min(upperMid * agcGain, 1.f);
     float nHigh     = std::min(high     * agcGain, 1.f);
 
+    // ---- Stereo per-channel band levels (AGC-normalised, lightly smoothed) ----
+    {
+        auto smCh = [](float &s, float v) { s = 0.7f * s + 0.3f * v; };
+        for (int ch = 0; ch < 2; ++ch) {
+            smCh(m_sStBand[ch][0], std::min(std::sqrt(accStLo[ch]  * inv) * agcGain, 1.f));
+            smCh(m_sStBand[ch][1], std::min(std::sqrt(accStMid[ch] * inv) * agcGain, 1.f));
+            smCh(m_sStBand[ch][2], std::min(std::sqrt(accStHi[ch]  * inv) * agcGain, 1.f));
+        }
+    }
+
     // ---- Ambient detection – rolling variance of dB level over ~6 s ----
     // Low variance over time → content is a static drone / ambient pad.
     // High variance → dynamic beat-driven music with significant energy swings.
@@ -561,6 +588,25 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
 
     // Re-derive the decaying beat pulse now that onsets are folded into m_beatPulse.
     beatDecay = std::min(m_beatPulse / 3.f, 1.f);
+
+    // ---- Track-change detection (sustained silence -> first onset/energy) ----
+    // When the audio goes near-silent for a while (track ends / is changed) and
+    // then sound returns, fire a one-shot flag so the host can start the new
+    // track with a clean, fresh transition instead of mid-effect.
+    bool trackChange = false;
+    {
+        const float silenceThresh = 0.015f;   // raw level below this ≈ silence
+        if (level < silenceThresh) {
+            m_silenceFrames += 1.f;
+            if (m_silenceFrames > 60.f)        // ~0.6 s+ of silence → armed
+                m_wasSilent = true;
+        } else {
+            if (m_wasSilent && (onsetStrength > 0.25f || level > 0.05f))
+                trackChange = true;            // first real sound after the gap
+            m_silenceFrames = 0.f;
+            m_wasSilent = false;
+        }
+    }
 
     // ---- Autocorrelation tempo ----
     // Feed the onset detection function into a fixed-rate envelope, then autocorrelate
@@ -1035,6 +1081,7 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
     m_features.isBeat         = isBeat;
     m_features.onsetStrength   = onsetStrength;
     m_features.downbeat        = downbeat;
+    m_features.trackChange     = trackChange;
     m_features.beatStrength   = beatStr;
     m_features.beatDecay      = beatDecay;
     m_features.ambientFactor  = m_ambientFactor;
@@ -1059,6 +1106,12 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
     m_features.beatPhase         = beatPhase;
     m_features.fluxVariance      = m_sFluxVar;
     m_features.stereoWidth       = m_sStereoWidth;
+    m_features.stereoLowL         = m_sStBand[0][0];
+    m_features.stereoMidL         = m_sStBand[0][1];
+    m_features.stereoHighL        = m_sStBand[0][2];
+    m_features.stereoLowR         = m_sStBand[1][0];
+    m_features.stereoMidR         = m_sStBand[1][1];
+    m_features.stereoHighR        = m_sStBand[1][2];
     m_features.deltaPitch        = m_sDeltaPitch;
     m_features.musicPresence     = m_sMusicPresence;
     m_features.timingScale      = timingScale;
