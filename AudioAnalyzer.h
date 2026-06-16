@@ -142,6 +142,11 @@ private:
     float m_acBPM       = 0.f;        // autocorrelation tempo estimate
     float m_acConf      = 0.f;        // its confidence 0..1
 
+    // Smoothed chroma-hue VECTOR (so the harmony→hue drifts slowly without the
+    // angle jumping across the colour-wheel wrap-around → no abrupt colour changes).
+    float m_hueCos      = 0.f;
+    float m_hueSin      = 0.f;
+
     // ---- Rhythm / dynamics / stereo / classifier state ----
     float m_sRhythm         = 0.f;    // smoothed rhythm strength (beat regularity)
     float m_sStereoWidth    = 0.f;    // smoothed stereo side/mid width

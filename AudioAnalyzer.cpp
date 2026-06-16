@@ -946,8 +946,12 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
         chSin += m_smoothedChroma[i] * std::sin(ang);
         chCos += m_smoothedChroma[i] * std::cos(ang);
     }
-    float chromaHue = std::atan2(chSin, chCos) * 0.15915494f;   // /(2π) → -0.5..0.5
-    if (chromaHue < 0.f) chromaHue += 1.f;                       // → 0..1
+    // Smooth the hue VECTOR (not the angle) — this drifts the colour slowly and
+    // continuously, even through the wheel's wrap-around, instead of jumping.
+    m_hueCos = 0.99f * m_hueCos + 0.01f * chCos;
+    m_hueSin = 0.99f * m_hueSin + 0.01f * chSin;
+    float chromaHue = std::atan2(m_hueSin, m_hueCos) * 0.15915494f;  // /(2π) → -0.5..0.5
+    if (chromaHue < 0.f) chromaHue += 1.f;                            // → 0..1
 
     // ---- Dominant Pitch – Harmonic Product Spectrum (HPS) ----
     // Multiply the magnitude spectrum by downsampled-by-2, -3, -4 copies.
@@ -975,7 +979,9 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
         float maxMag    = 0.f;
         for (int k = 1; k < kFFTHalf; ++k) maxMag = std::max(maxMag, mags[k]);
         float confidence = (maxMag > 1e-5f) ? 1.f : 0.f;
-        m_sPitch = 0.94f * m_sPitch + 0.06f * pitchNorm * confidence;
+        // Slow smoothing — HPS can octave-jump frame to frame, and several shaders
+        // use the pitch for hue/scale; this keeps those colour/size changes gradual.
+        m_sPitch = 0.97f * m_sPitch + 0.03f * pitchNorm * confidence;
     }
 
     // ---- Delta-pitch: melodic activity (rate of dominant-pitch change) ----
