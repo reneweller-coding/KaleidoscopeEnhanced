@@ -796,6 +796,16 @@ void FilterShader::resize(int width, int height)
 	if( m_texFinal != 0 )
 		updateFinalTexture();
 
+	// Resize the feedback/trail ping-pong textures.
+	for( int i = 0; i < 2; ++i )
+		if( m_texTrail[i] != 0 )
+		{
+			glBindTexture( GL_TEXTURE_2D, m_texTrail[i] );
+			glTexImage2D( GL_TEXTURE_2D, 0, m_texInternalFormat, m_width, m_height, 0,
+			              m_texFormat, m_texType, NULL );
+			glGenerateMipmapEXT( GL_TEXTURE_2D );
+		}
+
 	glBindTexture( GL_TEXTURE_2D, 0 );
 	checkGLErrors("resize()");
 }
@@ -846,6 +856,40 @@ void FilterShader::setupSafety()
 	}
 
 	m_safetyReady = fboOk && (m_presentProgId != 0) && (m_presentTexUni >= 0);
+
+	// ---- Feedback / trails ping-pong buffers (mipmapped: present reads them) ----
+	bool trailOk = true;
+	for( int i = 0; i < 2; ++i )
+	{
+		if( m_texTrail[i] == 0 ) glGenTextures( 1, &m_texTrail[i] );
+		glBindTexture( GL_TEXTURE_2D, m_texTrail[i] );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+		glTexImage2D( GL_TEXTURE_2D, 0, m_texInternalFormat, m_width, m_height, 0,
+		              m_texFormat, m_texType, NULL );
+		glGenerateMipmapEXT( GL_TEXTURE_2D );
+		if( m_fboTrail[i] == 0 ) glGenFramebuffersEXT( 1, &m_fboTrail[i] );
+		glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_fboTrail[i] );
+		glFramebufferTexture2DEXT( GL_FRAMEBUFFER_EXT, m_attachmentpoint,
+		                           GL_TEXTURE_2D, m_texTrail[i], 0 );
+		if( !checkFramebufferStatus() ) trailOk = false;
+	}
+	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, 0 );
+	glBindTexture( GL_TEXTURE_2D, 0 );
+
+	if( m_trailProgId == 0 )
+	{
+		m_trailProgId   = setShaders( "..\\standard.vert", "..\\Feedback.frag" );
+		m_trailCurUni   = glGetUniformLocation( m_trailProgId, "texCur" );
+		m_trailPrevUni  = glGetUniformLocation( m_trailProgId, "texPrev" );
+		m_trailResUni   = glGetUniformLocation( m_trailProgId, "resolution" );
+		m_trailDecayUni = glGetUniformLocation( m_trailProgId, "decay" );
+	}
+	m_feedbackReady = m_safetyReady && trailOk && (m_trailProgId != 0)
+	                && (m_trailCurUni >= 0) && (m_trailPrevUni >= 0);
+
 	checkGLErrors("setupSafety()");
 }
 
@@ -1373,8 +1417,39 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 	drawWindow();
 
 	// -------------------------------------------------------------------------
+	// Feedback / trails pass: blend the previous displayed frame back in so bright
+	// moving structures leave glowing, fading trails.  Ping-pong of two buffers;
+	// the result becomes the present source.  decay (→0 in non-music) controls the
+	// trail length, longer in ambient passages.
+	// -------------------------------------------------------------------------
+	GLuint presentSource = m_texFinal;
+	if( m_feedbackReady )
+	{
+		int cur  = m_trailIdx;
+		int prev = 1 - m_trailIdx;
+		float decay = m_trailAmount * (0.90f + 0.08f * audio.ambientFactor)
+		            * audio.musicPresence;
+
+		glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_fboTrail[cur] );
+		glViewport( 0, 0, m_width, m_height );
+		glUseProgram( m_trailProgId );
+		glActiveTexture( GL_TEXTURE0 );
+		glBindTexture( GL_TEXTURE_2D, m_texFinal );
+		glActiveTexture( GL_TEXTURE1 );
+		glBindTexture( GL_TEXTURE_2D, m_texTrail[prev] );
+		glUniform1i( m_trailCurUni,  0 );
+		glUniform1i( m_trailPrevUni, 1 );
+		if( m_trailResUni   >= 0 ) glUniform2f( m_trailResUni, (float)m_width, (float)m_height );
+		if( m_trailDecayUni >= 0 ) glUniform1f( m_trailDecayUni, decay );
+		drawWindow();
+
+		presentSource = m_texTrail[cur];
+		m_trailIdx    = prev;   // swap for next frame
+	}
+
+	// -------------------------------------------------------------------------
 	// Photosensitivity-safety present pass.
-	// The combined frame now lives in m_texFinal.  We read its whole-frame average
+	// The frame to display now lives in presentSource.  We read its whole-frame avg
 	// luminance (via a coarse mip level) and choose a single brightness scale so
 	// that the average can never RISE faster than a safe limit per second — this
 	// reins in large full-screen flashes while leaving local pattern motion (a
@@ -1385,7 +1460,7 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 	if( m_safetyReady )
 	{
 		glActiveTexture( GL_TEXTURE0 );
-		glBindTexture( GL_TEXTURE_2D, m_texFinal );
+		glBindTexture( GL_TEXTURE_2D, presentSource );
 		glGenerateMipmapEXT( GL_TEXTURE_2D );
 
 		int maxDim = (m_width > m_height) ? m_width : m_height;
@@ -1417,7 +1492,7 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 		glViewport( 0, 0, m_width, m_height );
 		glUseProgram( m_presentProgId );
 		glActiveTexture( GL_TEXTURE0 );
-		glBindTexture( GL_TEXTURE_2D, m_texFinal );
+		glBindTexture( GL_TEXTURE_2D, presentSource );
 		glUniform1i( m_presentTexUni, 0 );
 		if( m_presentResUni   >= 0 ) glUniform2f( m_presentResUni, (float)m_width, (float)m_height );
 		if( m_presentScaleUni >= 0 ) glUniform1f( m_presentScaleUni, scale );
