@@ -145,6 +145,18 @@ private:
 	float			m_prevMeanLum    = -1.f;   // <0 = uninitialised
 	bool			m_safetyReady    = false;  // false → present pass disabled (safe fallback)
 
+	// ---- Feedback / trails (phosphor-style ping-pong) ----
+	GLuint			m_fboTrail[2]   = { 0, 0 };
+	GLuint			m_texTrail[2]   = { 0, 0 };
+	int				m_trailIdx      = 0;
+	GLuint			m_trailProgId   = 0;
+	GLint			m_trailCurUni   = -1;
+	GLint			m_trailPrevUni  = -1;
+	GLint			m_trailResUni   = -1;
+	GLint			m_trailDecayUni = -1;
+	bool			m_feedbackReady = false;
+	float			m_trailAmount   = 0.6f;   // 0 = off .. ~0.95 = long trails
+
 	// GLSL vars
 
 		// time since initialization
