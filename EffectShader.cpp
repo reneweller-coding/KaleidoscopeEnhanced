@@ -276,8 +276,11 @@ void EffectShader::applyAudioFeatures(const AudioFeatures &f)
     GLint locFlux     = glGetUniformLocation(m_sh_prog_id, "audioFlux");
     // 6-band extras (only used by dark-ambient shaders; -1 → no-op for others)
     GLint locSubBass  = glGetUniformLocation(m_sh_prog_id, "audioSubBass");
+    GLint locBass     = glGetUniformLocation(m_sh_prog_id, "audioBass");
     GLint locLowMid   = glGetUniformLocation(m_sh_prog_id, "audioLowMid");
+    GLint locMid      = glGetUniformLocation(m_sh_prog_id, "audioMid");
     GLint locUpperMid = glGetUniformLocation(m_sh_prog_id, "audioUpperMid");
+    GLint locHigh     = glGetUniformLocation(m_sh_prog_id, "audioHigh");
     // FFT-derived features (opt-in; -1 → no-op for shaders that don't declare them)
     GLint locRolloff  = glGetUniformLocation(m_sh_prog_id, "audioRolloff");
     GLint locSpread   = glGetUniformLocation(m_sh_prog_id, "audioSpread");
@@ -312,8 +315,11 @@ void EffectShader::applyAudioFeatures(const AudioFeatures &f)
     if (locCentroid >= 0) glUniform1f(locCentroid, f.spectralCentroid);
     if (locFlux     >= 0) glUniform1f(locFlux,     f.spectralFlux);
     if (locSubBass  >= 0) glUniform1f(locSubBass,  f.subBassLevel);
+    if (locBass     >= 0) glUniform1f(locBass,     f.bassLevel);
     if (locLowMid   >= 0) glUniform1f(locLowMid,   f.lowMidLevel);
+    if (locMid      >= 0) glUniform1f(locMid,      f.midLevel);
     if (locUpperMid >= 0) glUniform1f(locUpperMid, f.upperMidLevel);
+    if (locHigh     >= 0) glUniform1f(locHigh,     f.highLevel);
     // FFT-derived
     if (locRolloff  >= 0) glUniform1f(locRolloff,  f.spectralRolloff);
     if (locSpread   >= 0) glUniform1f(locSpread,   f.spectralSpread);
