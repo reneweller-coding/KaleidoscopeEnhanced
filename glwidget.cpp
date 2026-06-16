@@ -1,6 +1,7 @@
 #include <math.h>
 
 #include <QtCore/QFile>
+#include <QtCore/QDateTime>
 #include <QtGui/QMouseEvent>
 #include <QtGui/QPainter>
 #include <QtWidgets/QMessageBox>
@@ -403,12 +404,20 @@ void GLwidget::drawFeatureOverlay( QPainter *painter, const AudioFeatures &f )
 		{ "level",         f.overallLevel },
 	};
 	const int n  = int(sizeof(rows) / sizeof(rows[0]));
-	const int x  = 24, y0 = 48, lh = 22, bw = 130, bh = 12;
+	const int x  = 24, y0 = 66, lh = 22, bw = 130, bh = 12;
 
-	painter->fillRect( x - 14, 14, 360, n * lh + 50, QColor(0, 0, 0, 160) );
+	painter->fillRect( x - 14, 14, 360, n * lh + 68, QColor(0, 0, 0, 160) );
 	painter->setFont( QFont("Consolas", 12, QFont::Bold) );
 	painter->setPen( QColor(120, 200, 255) );
-	painter->drawText( x, 36, QString("AUDIO FEATURES   (i to hide)") );
+	painter->drawText( x, 34, QString("AUDIO FEATURES   (i to hide)") );
+
+	// Live-tunable look knobs (hotkeys).
+	painter->setFont( QFont("Consolas", 10) );
+	painter->setPen( QColor(170, 205, 170) );
+	painter->drawText( x, 54, QString("react[] %1   trail,. %2   mood-= %3")
+		.arg(FilterShader::reactivity(), 0, 'f', 1)
+		.arg(FilterShader::trails(),     0, 'f', 2)
+		.arg(FilterShader::mood(),       0, 'f', 1) );
 
 	painter->setFont( QFont("Consolas", 11) );
 	for ( int i = 0; i < n; ++i )
@@ -451,6 +460,25 @@ void GLwidget::keyPressEvent(QKeyEvent* event)
 			if( m_actConfiguration && m_actConfiguration->m_filterShader )
 				m_actConfiguration->m_filterShader->requestSceneChange();
 			break;
+
+		// ---- Live tuning (values shared across all configs) ----
+		case Qt::Key_BracketLeft:  FilterShader::adjustReactivity(-0.10f); break;  // [  less reactive
+		case Qt::Key_BracketRight: FilterShader::adjustReactivity(+0.10f); break;  // ]  more reactive
+		case Qt::Key_Comma:        FilterShader::adjustTrails(-0.05f);     break;  // ,  shorter trails
+		case Qt::Key_Period:       FilterShader::adjustTrails(+0.05f);     break;  // .  longer trails
+		case Qt::Key_Minus:        FilterShader::adjustMood(-0.10f);       break;  // -  less mood colour
+		case Qt::Key_Equal:        FilterShader::adjustMood(+0.10f);       break;  // =  more mood colour
+
+		// ---- Screenshot (this window only) ----
+		case Qt::Key_S:
+		{
+			QImage img = grabFramebuffer();
+			QString fn = QString("kaleidoscope_%1.png")
+			             .arg( QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss") );
+			if( img.save( fn ) )
+				fprintf( stderr, "Saved screenshot: %s\n", fn.toLocal8Bit().constData() );
+			break;
+		}
 		case Qt::Key_1:
 			m_showSelectConfigurationMenu = false;
 			if( m_configurationList.size() > 0 )
