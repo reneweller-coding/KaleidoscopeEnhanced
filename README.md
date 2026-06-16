@@ -34,7 +34,14 @@ cmd /c '"C:\Program Files\Microsoft Visual Studio\18\Community\VC\Auxiliary\Buil
 $env:Path = "C:\Qt\6.11.1\msvc2022_64\bin;" + $env:Path
 .\Release\Kaleidoscope.exe          # windowed 1920×1080
 .\Release\Kaleidoscope.exe -b       # fullscreen (uses the 2nd monitor if present)
+.\Release\Kaleidoscope.exe -s 0.5   # render the pipeline at 50% internal resolution
 ```
+
+**`-s <factor>` (internal render scale, 0.25–2.0):** the expensive effect passes
+render at `factor × display resolution` and only the final pass upscales to the
+display. Use `-s 0.5` (or lower) to run smoothly at 4K on weak GPUs (e.g. an Intel
+NUC / HD Graphics iGPU); `-s 1.0` (default) is native; `> 1.0` supersamples.
+Combine with a lightweight config and lower trails (`,`) for the weakest hardware.
 
 > The shaders (`*.frag`) and `Configurations\*.xml` are loaded from the working
 > directory's parent (`..\`), so run the exe from its `Debug\` / `Release\`
