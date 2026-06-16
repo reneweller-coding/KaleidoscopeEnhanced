@@ -125,6 +125,17 @@ private:
     float m_sHCDF           = 0.f;    // smoothed harmonic change detection function
     float m_sRoughness      = 0.f;    // smoothed sensory dissonance (Sethares)
 
+    // ---- Rhythm / dynamics / stereo / classifier state ----
+    float m_sRhythm         = 0.f;    // smoothed rhythm strength (beat regularity)
+    float m_sStereoWidth    = 0.f;    // smoothed stereo side/mid width
+    float m_prevPitch       = 0.f;    // previous dominant pitch (for delta-pitch)
+    float m_sDeltaPitch     = 0.f;    // smoothed melodic activity
+    static constexpr int kFluxHistLen = 100; // ~1 s of spectral-flux samples
+    float m_fluxHistory[kFluxHistLen] = {};
+    int   m_fluxIdx         = 0;
+    float m_sFluxVar        = 0.f;    // smoothed flux variance ("restlessness")
+    float m_sMusicPresence  = 1.f;    // smoothed music-vs-speech gate (hysteresis)
+
     // ---- FFT analysis (Radix-2 Cooley-Tukey, real-valued audio input) ----
     // Window: 2048 samples ≈ 42 ms at 48 kHz → 23.4 Hz / bin.
     // Enables: spectral rolloff, spectral spread, chroma-based major/minor

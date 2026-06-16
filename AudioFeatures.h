@@ -108,6 +108,42 @@ struct AudioFeatures
     //   1 = rough / dissonant (clusters, distortion, noise).  Lowers valence.
     float roughness = 0.f;
 
+    // ---- Rhythm / dynamics ----
+
+    // rhythmStrength: how steady/periodic the beat is (inter-beat consistency ×
+    //   recency).  ~1 for a driving, regular beat; ~0 for arrhythmic audio,
+    //   speech, or silence.  Key ingredient of the music/speech classifier.
+    float rhythmStrength = 0.f;
+
+    // beatPhase: continuous 0..1 position within the current beat, derived from
+    //   the estimated tempo (wraps every beat).  Lets shaders pulse *in time*
+    //   even between transients, not only decay after each onset.
+    float beatPhase = 0.f;
+
+    // fluxVariance: variance of spectral flux over ~1 s — a "restlessness"
+    //   measure (paper's top music/speech discriminator).  Low = static texture,
+    //   high = busy, changing sound.
+    float fluxVariance = 0.f;
+
+    // ---- Stereo & melodic motion ----
+
+    // stereoWidth: side/mid energy ratio.  0 = mono / dead-centre, 1 = very wide
+    //   stereo image.  Drives left/right asymmetry & spatial spread in visuals.
+    float stereoWidth = 0.f;
+
+    // deltaPitch: rate of change of the dominant pitch (melodic activity).
+    //   ~0 for a held note / drone, higher for fast melodic movement.
+    float deltaPitch = 0.f;
+
+    // ---- Music vs. speech / silence ----
+
+    // musicPresence: 1 = clearly music, 0 = speech / video dialogue / silence.
+    //   Smoothed with hysteresis.  Used as a MASTER GATE on audio reactivity:
+    //   when it falls (e.g. a talking video in the background) the visuals fade
+    //   back to their calm, timer-driven non-reactive behaviour; when music
+    //   returns they smoothly become reactive again.
+    float musicPresence = 1.f;
+
     // Thayer's model proxies (derived, 0..1):
     //   arousal ≈ energy × rhythm × brightness/sharpness (fast/bright = high)
     //   valence ≈ mode × key clarity × tonality × brightness (pleasant = high)
