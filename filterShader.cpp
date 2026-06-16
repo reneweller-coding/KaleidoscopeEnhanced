@@ -912,26 +912,30 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
         if (dirStep > 1.f) dirStep = 1.f;
         m_audioDir += (dirTarget - m_audioDir) * dirStep;
 
-        // "energy" blends the slow arousal mood with instantaneous loudness, so
-        // both an energetic track overall and momentary swells drive the visuals.
-        float energy = 0.5f * audio.arousal + 0.5f * audio.overallLevel;
+        // "motion" weights INSTANTANEOUS loudness over the slow arousal mood, so the
+        // speed visibly rises and falls WITH the music rather than holding a constant
+        // fast spin.  (Earlier this was arousal-dominated → a steady ~0.8 rad/s spin
+        // that looked fast but unreactive.)
+        float motion = 0.25f * audio.arousal + 0.75f * audio.overallLevel;
 
-        // A gentle in-tempo "breathing" from the continuous beat phase, so motion
-        // pulses on the grid even between transients (sin of the 0..1 beat phase).
+        // A gentle in-tempo "breathing" from the continuous beat phase.
         float beatBreath = 0.5f - 0.5f * cosf(audio.beatPhase * 6.2831853f);
 
-        // Rotation angular velocity (rad/s): a clearly visible energy-driven drift
-        // plus a strong nudge on every beat — gated by musicPresence.
+        // Rotation angular velocity (rad/s): a CALM base drift plus the dynamic parts
+        // — beats, spectral change and in-tempo breathing — which are what actually
+        // read as "reacting to the music".  Gated by musicPresence.
         float rotRate = m_audioDir * kReactivity * gate
-                      * (1.20f * energy + 2.50f * audio.beatDecay
-                                + 0.40f * energy * beatBreath);
+                      * ( 0.25f * motion
+                        + 1.60f * audio.beatDecay
+                        + 0.60f * motion * audio.spectralFlux
+                        + 0.25f * motion * beatBreath );
         m_audioRotPhase += dt * rotRate;
 
-        // Tunnel forward advance: always forward (no sign change → no flips).
-        // Flux + energy push the tunnel, plus a surge on harmonic changes — gated.
+        // Tunnel forward advance: gentle, driven by loudness + spectral / harmonic
+        // change so the tunnel speeds through busy passages and eases on calm ones.
         float advRate = kReactivity * gate
-                      * (0.03f + 0.18f * audio.spectralFlux + 0.12f * energy
-                                + 0.20f * audio.harmonicChange);
+                      * ( 0.02f + 0.10f * audio.spectralFlux + 0.05f * motion
+                                + 0.12f * audio.harmonicChange );
         m_audioAdvance += dt * advRate;
 
         // Slew-limit brightness drivers (photosensitive-safety): a beat may rise
