@@ -800,7 +800,10 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
     // Smooth slowly so a sudden genre change doesn't cause a jarring jump.
     // The new scale only takes effect the next time a duration is randomised,
     // so existing running timers complete at their original length.
-    m_timingScale = 0.999f * m_timingScale + 0.001f * audio.timingScale;
+    // When the audio is NOT music (speech / video / silence), musicPresence
+    // pulls the scale back to the neutral 1.0 so scene timing behaves normally.
+    float effTimingScale = 1.0f + (audio.timingScale - 1.0f) * audio.musicPresence;
+    m_timingScale = 0.999f * m_timingScale + 0.001f * effTimingScale;
     // Guard against zero to avoid division-by-zero below.
     if (m_timingScale < 0.05f) m_timingScale = 0.05f;
 
@@ -844,6 +847,12 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
         // integrated into phases, so larger values stay smooth and never flicker.)
         const float kReactivity = 1.0f;
 
+        // MASTER GATE: when the audio is not music (speech / video / silence) this
+        // fades to 0, so all the audio-driven motion, pulses and mood shifts below
+        // smoothly collapse to neutral and the visuals run in their calm,
+        // timer-driven "non-audio" mode.  Music returning fades it back to 1.
+        float gate = audio.musicPresence;
+
         // Ease rotation direction between +1/-1 so reversals never snap.  Even
         // an instant flip would now only change the *rate*, not the phase, but
         // easing keeps the velocity change graceful too.
@@ -856,32 +865,44 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
         // both an energetic track overall and momentary swells drive the visuals.
         float energy = 0.5f * audio.arousal + 0.5f * audio.overallLevel;
 
+        // A gentle in-tempo "breathing" from the continuous beat phase, so motion
+        // pulses on the grid even between transients (sin of the 0..1 beat phase).
+        float beatBreath = 0.5f - 0.5f * cosf(audio.beatPhase * 6.2831853f);
+
         // Rotation angular velocity (rad/s): a clearly visible energy-driven drift
-        // plus a strong nudge on every beat.  Bounded and independent of absolute
-        // time, so it tracks the music without ever jumping.
-        float rotRate = m_audioDir * kReactivity
-                      * (1.20f * energy + 2.50f * audio.beatDecay);
+        // plus a strong nudge on every beat — gated by musicPresence.
+        float rotRate = m_audioDir * kReactivity * gate
+                      * (1.20f * energy + 2.50f * audio.beatDecay
+                                + 0.40f * energy * beatBreath);
         m_audioRotPhase += dt * rotRate;
 
         // Tunnel forward advance: always forward (no sign change → no flips).
-        // Flux + energy push the tunnel, plus an extra surge on harmonic changes
-        // (chord/key shifts), so the visuals visibly "move" when the music does.
-        float advRate = kReactivity
+        // Flux + energy push the tunnel, plus a surge on harmonic changes — gated.
+        float advRate = kReactivity * gate
                       * (0.03f + 0.18f * audio.spectralFlux + 0.12f * energy
                                 + 0.20f * audio.harmonicChange);
         m_audioAdvance += dt * advRate;
 
         // Slew-limit brightness drivers (photosensitive-safety): a beat may rise
-        // to full over ~150 ms, never in a single frame.
+        // to full over ~150 ms, never in a single frame.  Gated by musicPresence.
         m_audioBeatSmooth  = slewToward(m_audioBeatSmooth,  audio.beatDecay,    6.0f, dt);
         m_audioLevelSmooth = slewToward(m_audioLevelSmooth, audio.overallLevel, 3.0f, dt);
         m_audioFluxSmooth  = slewToward(m_audioFluxSmooth,  audio.spectralFlux, 3.0f, dt);
 
         audioFx.audioRotPhase = m_audioRotPhase;
         audioFx.audioAdvance  = m_audioAdvance;
-        audioFx.beatDecay     = m_audioBeatSmooth;
-        audioFx.overallLevel  = m_audioLevelSmooth;
-        audioFx.spectralFlux  = m_audioFluxSmooth;
+        audioFx.beatDecay     = m_audioBeatSmooth     * gate;
+        audioFx.overallLevel  = m_audioLevelSmooth    * gate;
+        audioFx.spectralFlux  = m_audioFluxSmooth     * gate;
+        audioFx.stereoWidth   = audio.stereoWidth     * gate;
+        // Mood signals collapse to neutral (0.5 / 0) as music fades out.
+        audioFx.valence         = 0.5f + (audio.valence         - 0.5f) * gate;
+        audioFx.arousal         = 0.5f + (audio.arousal         - 0.5f) * gate;
+        audioFx.spectralCentroid= 0.5f + (audio.spectralCentroid- 0.5f) * gate;
+        audioFx.harmonicChange  = audio.harmonicChange * gate;
+        audioFx.roughness       = audio.roughness      * gate;
+        audioFx.sharpness       = audio.sharpness      * gate;
+        audioFx.deltaPitch      = audio.deltaPitch     * gate;
     }
 
 

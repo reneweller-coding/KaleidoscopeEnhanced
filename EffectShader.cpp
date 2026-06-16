@@ -289,12 +289,20 @@ void EffectShader::applyAudioFeatures(const AudioFeatures &f)
     GLint locHCDF     = glGetUniformLocation(m_sh_prog_id, "audioHarmChange");
     GLint locRough    = glGetUniformLocation(m_sh_prog_id, "audioRoughness");
     GLint locSharp    = glGetUniformLocation(m_sh_prog_id, "audioSharpness");
+    GLint locBeatPh   = glGetUniformLocation(m_sh_prog_id, "audioBeatPhase");
+    GLint locStereo   = glGetUniformLocation(m_sh_prog_id, "audioStereo");
+    GLint locDPitch   = glGetUniformLocation(m_sh_prog_id, "audioDeltaPitch");
+    GLint locMusic    = glGetUniformLocation(m_sh_prog_id, "audioMusic");
 
     if (locArousal  >= 0) glUniform1f(locArousal,  f.arousal);
     if (locValence  >= 0) glUniform1f(locValence,  f.valence);
     if (locHCDF     >= 0) glUniform1f(locHCDF,     f.harmonicChange);
     if (locRough    >= 0) glUniform1f(locRough,    f.roughness);
     if (locSharp    >= 0) glUniform1f(locSharp,    f.sharpness);
+    if (locBeatPh   >= 0) glUniform1f(locBeatPh,   f.beatPhase);
+    if (locStereo   >= 0) glUniform1f(locStereo,   f.stereoWidth);
+    if (locDPitch   >= 0) glUniform1f(locDPitch,   f.deltaPitch);
+    if (locMusic    >= 0) glUniform1f(locMusic,    f.musicPresence);
     if (locPhase    >= 0) glUniform1f(locPhase,    f.audioRotPhase);
     if (locAdvance  >= 0) glUniform1f(locAdvance,  f.audioAdvance);
     if (locBeat     >= 0) glUniform1f(locBeat,     f.beatDecay);

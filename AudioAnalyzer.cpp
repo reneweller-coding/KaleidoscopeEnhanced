@@ -275,6 +275,7 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
     // ---- Per-sample IIR pass: accumulate squared band energies + ZCR ----
     float accSub  = 0.f, accBass = 0.f, accLow  = 0.f;
     float accMid  = 0.f, accUpp  = 0.f, accHigh = 0.f;
+    float accStereoSide = 0.f, accStereoMid = 0.f;   // for stereo width
     int   crossings = 0;
     float prevMono  = 0.f;
 
@@ -285,6 +286,16 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
         for (int c = 0; c < numChannels; ++c)
             mono += data[i * numChannels + c];
         mono /= float(numChannels);
+
+        // Stereo width: energy of the side (L-R) vs. mid (L+R) signal.
+        if (numChannels >= 2) {
+            float L = data[i * numChannels + 0];
+            float R = data[i * numChannels + 1];
+            float side = 0.5f * (L - R);
+            float midS = 0.5f * (L + R);
+            accStereoSide += side * side;
+            accStereoMid  += midS * midS;
+        }
 
         // Zero-crossing rate: count sign changes (Temporal feature from paper)
         if ((mono > 0.f && prevMono < 0.f) || (mono < 0.f && prevMono > 0.f))
@@ -405,6 +416,20 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
     float sharpDen = subBass + bass + lowMid + mid + upperMid + high + 1e-6f;
     m_sSharpness   = 0.95f * m_sSharpness + 0.05f * std::min(sharpNum / sharpDen, 1.f);
 
+    // ---- Stereo width: RMS(side) / (RMS(mid) + RMS(side)) ----
+    float rawWidth = 0.f;
+    if (accStereoMid > 1e-9f) {
+        float rmsSide = std::sqrt(accStereoSide * inv);
+        float rmsMid  = std::sqrt(accStereoMid  * inv);
+        rawWidth = rmsSide / (rmsMid + rmsSide + 1e-6f);
+    }
+    m_sStereoWidth = 0.90f * m_sStereoWidth + 0.10f * std::min(rawWidth * 2.f, 1.f);
+
+    // ---- Band spread: fraction of energy in bass + treble (vs. mid only) ----
+    // Speech sits mostly in low-mid/mid; music spreads into sub-bass and highs.
+    // A cheap, robust ingredient of the music/speech classifier below.
+    float bandSpread = (subBass + bass + high) / sharpDen;   // 0..~1
+
     // ---- Ambient detection – rolling variance of dB level over ~6 s ----
     // Low variance over time → content is a static drone / ambient pad.
     // High variance → dynamic beat-driven music with significant energy swings.
@@ -480,6 +505,17 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
 
     m_sFlux = 0.7f * m_sFlux + 0.3f * rawFlux;
     float spectralFlux = std::min(m_sFlux / 0.15f, 1.f);
+
+    // ---- Spectral-flux variance over ~1 s ("restlessness") ----
+    m_fluxHistory[m_fluxIdx] = spectralFlux;
+    m_fluxIdx = (m_fluxIdx + 1) % kFluxHistLen;
+    float fMean = 0.f;
+    for (float v : m_fluxHistory) fMean += v;
+    fMean /= float(kFluxHistLen);
+    float fVar = 0.f;
+    for (float v : m_fluxHistory) { float d = v - fMean; fVar += d * d; }
+    fVar /= float(kFluxHistLen);
+    m_sFluxVar = 0.90f * m_sFluxVar + 0.10f * std::min(std::sqrt(fVar) * 4.f, 1.f);
 
     // ---- Spectral Centroid (6-band, log-spaced frequency weights) ----
     // Each weight is the log-normalised centre frequency of that band,
@@ -557,8 +593,32 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
             // Smooth BPM estimate (slow — tempo should drift, not jump)
             m_smoothedBPM = 0.85f * m_smoothedBPM + 0.15f * meanBPM;
         }
-        // Normalise BPM to [0,1] over range 40..200 BPM
-        estimatedBPM = std::max(0.f, std::min((m_smoothedBPM - 40.f) / 160.f, 1.f));
+    }
+    // Normalise BPM to [0,1] over 40..200 BPM — every frame, not only on beats.
+    estimatedBPM = std::max(0.f, std::min((m_smoothedBPM - 40.f) / 160.f, 1.f));
+
+    // ---- Rhythm strength: beat-interval (tempo) consistency × recency ----
+    // Regular, recent beats → ~1; irregular / no recent beats / speech → ~0.
+    float framesSinceBeat = m_frameCounter - m_lastBeatFrame;
+    float recency = std::exp(-framesSinceBeat / (2.0f * float(sampleRate)));  // ~2 s
+    float ibMean = 0.f;
+    for (float v : m_beatIntervals) ibMean += v;
+    ibMean /= float(kBPMHistLen);
+    float ibVar = 0.f;
+    for (float v : m_beatIntervals) { float d = v - ibMean; ibVar += d * d; }
+    ibVar /= float(kBPMHistLen);
+    float ibCV   = (ibMean > 1e-3f) ? std::sqrt(ibVar) / ibMean : 1.f;
+    float rhythm = std::max(0.f, 1.f - ibCV) * recency;
+    m_sRhythm = 0.92f * m_sRhythm + 0.08f * rhythm;
+
+    // ---- Continuous beat phase 0..1 (wraps every beat) from the tempo ----
+    float beatPhase = 0.f;
+    if (m_smoothedBPM > 1.f) {
+        float beatPeriodFrames = float(sampleRate) * 60.f / m_smoothedBPM;
+        if (beatPeriodFrames > 1.f) {
+            float ph = framesSinceBeat / beatPeriodFrames;
+            beatPhase = ph - std::floor(ph);
+        }
     }
 
     // ---- Arousal & Valence proxies (after Thayer's model) ----
@@ -823,6 +883,43 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
         m_sPitch = 0.94f * m_sPitch + 0.06f * pitchNorm * confidence;
     }
 
+    // ---- Delta-pitch: melodic activity (rate of dominant-pitch change) ----
+    float dPitch = std::fabs(m_sPitch - m_prevPitch);
+    m_prevPitch = m_sPitch;
+    m_sDeltaPitch = 0.85f * m_sDeltaPitch + 0.15f * std::min(dPitch * 25.f, 1.f);
+
+    // ========================================================================
+    // Music vs. speech / silence classifier  ->  musicPresence (master gate)
+    // ========================================================================
+    // Speech (e.g. a talking video in the background) is: mid-band dominant
+    // (~300-3400 Hz), lacking sustained bass, non-rhythmic, and choppy (pauses
+    // between words).  Music — whether beat-driven OR a sustained ambient drone —
+    // has at least one of: bass weight, a steady beat, or sustained continuity.
+    // We therefore build a "speechiness" score that several music traits VETO,
+    // so a bass drone or a beat track is never mistaken for speech.
+    float continuity   = 0.f;
+    for (float v : m_levelHistory) if (v > 0.04f) continuity += 1.f;
+    continuity /= float(kAmbientHistLen);                 // 1 = no gaps (music/drone)
+    float gappiness    = 1.f - continuity;                // speech: some gaps
+    float midDom       = (lowMid + mid) / sharpDen;       // speech: mid-dominant
+    float bassPresence = std::min((subBass + bass) * 2.0f, 1.f);   // music veto
+    float sustain      = continuity * (1.f - m_sFluxVar); // steady drone/pad = music
+
+    float speechiness = midDom
+                      * (1.f - bassPresence)              // bass  -> not speech
+                      * (1.f - m_sRhythm)                 // beat  -> not speech
+                      * (1.f - 0.6f * sustain)            // drone -> not speech
+                      * (0.4f + 0.6f * gappiness);        // pauses -> more speech
+    speechiness = std::max(0.f, std::min(speechiness * 1.4f, 1.f));
+    float musicConf = 1.f - speechiness;
+
+    // Smooth with mild hysteresis: ease toward music a bit faster than toward
+    // speech, so brief vocal samples in a song don't drop reactivity, while a
+    // genuine switch to dialogue settles within a few seconds.
+    float mpSpeed = (musicConf > m_sMusicPresence) ? 0.020f : 0.012f;
+    m_sMusicPresence += mpSpeed * (musicConf - m_sMusicPresence);
+    m_sMusicPresence = std::max(0.f, std::min(m_sMusicPresence, 1.f));
+
     // ---- Publish (mutex-protected) ----
     QMutexLocker lk(&m_mutex);
     m_features.subBassLevel   = subBass;
@@ -853,6 +950,12 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
     m_features.sharpness        = m_sSharpness;
     m_features.harmonicChange   = m_sHCDF;
     m_features.roughness        = m_sRoughness;
+    m_features.rhythmStrength    = m_sRhythm;
+    m_features.beatPhase         = beatPhase;
+    m_features.fluxVariance      = m_sFluxVar;
+    m_features.stereoWidth       = m_sStereoWidth;
+    m_features.deltaPitch        = m_sDeltaPitch;
+    m_features.musicPresence     = m_sMusicPresence;
     m_features.timingScale      = timingScale;
     // FFT-derived features
     m_features.spectralRolloff  = m_sRolloff;
