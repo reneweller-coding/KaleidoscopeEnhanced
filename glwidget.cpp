@@ -55,6 +55,7 @@ GLwidget::GLwidget( QWidget *parent )
 , m_yTrans(0.0)
 , m_zTrans(-2)
 , m_showSelectConfigurationMenu(false)
+, m_showFeatureOverlay(false)
 , m_audioAnalyzer(nullptr)
 {
 	setFocusPolicy(Qt::StrongFocus);
@@ -185,13 +186,16 @@ void GLwidget::draw()
 	m_actConfiguration->m_filterShader->paint(m_RotationMatrix, m_xTrans, m_yTrans, m_zTrans, audio);
 	
 	//printf( "Painting Now\n" );
-	// Only spin up a QPainter when the overlay menu is actually visible, so the
+	// Only spin up a QPainter when an overlay is actually visible, so the
 	// normal render path is pure GL (no QPainter/GL state interaction).
-	if( m_showSelectConfigurationMenu )
+	if( m_showSelectConfigurationMenu || m_showFeatureOverlay )
 	{
 		QPainter painter(this);
 		//painter.setRenderHint(QPainter::Antialiasing);
-		showSelectConfigurationsMenu( &painter );
+		if( m_showSelectConfigurationMenu )
+			showSelectConfigurationsMenu( &painter );
+		if( m_showFeatureOverlay )
+			drawFeatureOverlay( &painter, audio );
 		painter.end();
 	}
 
@@ -372,6 +376,57 @@ void GLwidget::mouseMoveEvent( QMouseEvent * e /*the event*/ )
 	updateGL();*/
 }
 
+
+// Live audio-feature panel (toggled with the 'i' key) — handy for demos and for
+// tuning the mapping.  Drawn with QPainter over the rendered frame.
+void GLwidget::drawFeatureOverlay( QPainter *painter, const AudioFeatures &f )
+{
+	struct Row { const char *name; float val; };
+	const float bpm = 40.f + f.estimatedBPM * 160.f;
+	Row rows[] = {
+		{ "musicPresence", f.musicPresence },
+		{ "arousal",       f.arousal },
+		{ "valence",       f.valence },
+		{ "tempo",         f.estimatedBPM },
+		{ "mode maj/min",  f.musicalMode },
+		{ "keyClarity",    f.keyClarity },
+		{ "rhythm",        f.rhythmStrength },
+		{ "beatPhase",     f.beatPhase },
+		{ "flux",          f.spectralFlux },
+		{ "centroid",      f.spectralCentroid },
+		{ "roughness",     f.roughness },
+		{ "sharpness",     f.sharpness },
+		{ "stereoWidth",   f.stereoWidth },
+		{ "level",         f.overallLevel },
+	};
+	const int n  = int(sizeof(rows) / sizeof(rows[0]));
+	const int x  = 24, y0 = 48, lh = 22, bw = 130, bh = 12;
+
+	painter->fillRect( x - 14, 14, 360, n * lh + 50, QColor(0, 0, 0, 160) );
+	painter->setFont( QFont("Consolas", 12, QFont::Bold) );
+	painter->setPen( QColor(120, 200, 255) );
+	painter->drawText( x, 36, QString("AUDIO FEATURES   (i to hide)") );
+
+	painter->setFont( QFont("Consolas", 11) );
+	for ( int i = 0; i < n; ++i )
+	{
+		int ry = y0 + i * lh;
+		float v = rows[i].val; if (v < 0.f) v = 0.f; if (v > 1.f) v = 1.f;
+		painter->setPen( QColor(205, 214, 230) );
+		painter->drawText( x, ry, QString(rows[i].name) );
+		int bx = x + 150;
+		painter->fillRect( bx, ry - 11, bw, bh, QColor(40, 45, 60) );
+		// musicPresence bar turns amber when it drops (speech / non-music mode).
+		QColor barCol = (i == 0 && f.musicPresence < 0.5f) ? QColor(255, 170, 60)
+		                                                    : QColor(90, 170, 255);
+		painter->fillRect( bx, ry - 11, int(bw * v), bh, barCol );
+		painter->setPen( QColor(255, 255, 255) );
+		QString txt = (i == 3) ? QString::number(bpm, 'f', 0)
+		                       : QString::number(rows[i].val, 'f', 2);
+		painter->drawText( bx + bw + 8, ry, txt );
+	}
+}
+
 void GLwidget::keyPressEvent(QKeyEvent* event)
 {
     switch(event->key())
@@ -383,7 +438,10 @@ void GLwidget::keyPressEvent(QKeyEvent* event)
 			exit(0);
 			break;
 		case Qt::Key_0:
-			m_showSelectConfigurationMenu = !m_showSelectConfigurationMenu; 
+			m_showSelectConfigurationMenu = !m_showSelectConfigurationMenu;
+			break;
+		case Qt::Key_I:
+			m_showFeatureOverlay = !m_showFeatureOverlay;
 			break;
 		case Qt::Key_1:
 			m_showSelectConfigurationMenu = false;

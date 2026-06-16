@@ -40,6 +40,7 @@ protected:
 	void draw();
 
 	void showSelectConfigurationsMenu( QPainter *painter );
+	void drawFeatureOverlay( QPainter *painter, const AudioFeatures &f );
 
 	void traverseConfigurations( const QString& dirname, std::vector<Configuration *> &configurationList );
 
@@ -70,6 +71,7 @@ protected:
 
 	//QPainter		*m_painter;
 	bool			m_showSelectConfigurationMenu;
+	bool			m_showFeatureOverlay;
 
 	int		m_width;
 	int		m_height;
