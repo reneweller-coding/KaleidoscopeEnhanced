@@ -758,8 +758,39 @@ void FilterShader::reinit(int width, int height)
 	initFBO(  m_fboEffectCombine1, m_texIDFBOEffectCombine1 );
 	initFBO(  m_fboEffectCombine2, m_texIDFBOEffectCombine2 );
 	
-	//	initFBO();	
+	//	initFBO();
 	fprintf(stderr,"reinit end\n");
+}
+
+
+// Lightweight resize – see header.  Only the off-screen FBO colour textures
+// depend on the window size; everything else (image textures, shader programs,
+// the FBOs themselves) is independent and is kept as-is.  setupFBOTexture()
+// re-allocates the storage of an EXISTING texture ID via glTexImage2D, so the
+// FBOs that already reference these IDs simply render at the new size.  No
+// glGen*/glCreate* is issued, hence no leak and no image reload.
+void FilterShader::resize(int width, int height)
+{
+	if( width <= 0 || height <= 0 )
+		return;
+
+	m_width  = width;
+	m_height = height;
+
+	// Effect shaders only need their reported resolution updated (no recompile).
+	for( unsigned int i = 0; i < m_effectTextures.size(); i++ )
+		m_effectTextures[i]->setSize( m_width, m_height );
+	for( unsigned int i = 0; i < m_effectCombines.size(); i++ )
+		m_effectCombines[i]->setSize( m_width, m_height );
+
+	// Re-allocate the four off-screen colour buffers to the new size, reusing IDs.
+	setupFBOTexture( m_texIDFBOEffectTexture1 );
+	setupFBOTexture( m_texIDFBOEffectTexture2 );
+	setupFBOTexture( m_texIDFBOEffectCombine1 );
+	setupFBOTexture( m_texIDFBOEffectCombine2 );
+
+	glBindTexture( GL_TEXTURE_2D, 0 );
+	checkGLErrors("resize()");
 }
 
 void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
