@@ -301,6 +301,7 @@ void EffectShader::applyAudioFeatures(const AudioFeatures &f)
     // Stereo-separated spectrum: per-channel (low,mid,high) band energies.
     GLint locStBandL  = glGetUniformLocation(m_sh_prog_id, "audioStereoL");
     GLint locStBandR  = glGetUniformLocation(m_sh_prog_id, "audioStereoR");
+    GLint locChroma   = glGetUniformLocation(m_sh_prog_id, "audioChromaHue");
 
     if (locArousal  >= 0) glUniform1f(locArousal,  f.arousal);
     if (locValence  >= 0) glUniform1f(locValence,  f.valence);
@@ -315,6 +316,7 @@ void EffectShader::applyAudioFeatures(const AudioFeatures &f)
     if (locMusic    >= 0) glUniform1f(locMusic,    f.musicPresence);
     if (locStBandL  >= 0) glUniform3f(locStBandL,  f.stereoLowL, f.stereoMidL, f.stereoHighL);
     if (locStBandR  >= 0) glUniform3f(locStBandR,  f.stereoLowR, f.stereoMidR, f.stereoHighR);
+    if (locChroma   >= 0) glUniform1f(locChroma,   f.chromaHue);
 
     // Living reaction-diffusion field is bound to texture unit 7 by FilterShader.
     GLint locSim = glGetUniformLocation(m_sh_prog_id, "texSim");
