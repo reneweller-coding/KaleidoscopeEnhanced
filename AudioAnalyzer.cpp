@@ -749,8 +749,9 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
     if (isBeat && m_ambientFactor < 0.4f) {
         m_beatCount++;
 
-        // Change kaleidoscope symmetry only every 4 beats
-        if (m_beatCount % 4 == 0) {
+        // Change kaleidoscope symmetry only every 16 beats (≈ every 4 bars) so it
+        // is a rare, deliberate event rather than a constant churn.
+        if (m_beatCount % 16 == 0) {
             static const int kSidesSet[]  = { 3, 4, 6, 8, 10, 12 };
             static const int kSidesCount  = 6;
             int idx;
