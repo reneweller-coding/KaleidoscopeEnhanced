@@ -1,4 +1,5 @@
 #include <float.h>
+#include <math.h>
 
 #include "shader_setup.h"
 #include "filterShader.h"
@@ -7,6 +8,7 @@
 #include <QtGui/QImageReader>
 #include <QtCore/qdir.h>
 #include <QtCore/qfileinfo.h>
+#include <QtCore/QSettings>
 #include <GL/GLU.h>
 
 
@@ -18,6 +20,34 @@ float FilterShader::s_reactivity  = 1.0f;
 float FilterShader::s_trailAmount = 0.6f;
 float FilterShader::s_moodStrength = 1.0f;
 float FilterShader::s_renderScale = 1.0f;
+
+// Settings file lives next to the Configurations folder (parent of Debug/Release),
+// matching how shaders and configs are loaded ("..\\...").
+static QString settingsFilePath()
+{
+	return QString( "..\\kaleidoscope_settings.ini" );
+}
+
+void FilterShader::loadSettings()
+{
+	QSettings s( settingsFilePath(), QSettings::IniFormat );
+	s_reactivity   = clampParam( s.value( "reactivity",  s_reactivity  ).toFloat(), 0.f, 3.0f  );
+	s_trailAmount  = clampParam( s.value( "trails",      s_trailAmount ).toFloat(), 0.f, 0.95f );
+	s_moodStrength = clampParam( s.value( "mood",        s_moodStrength).toFloat(), 0.f, 2.5f  );
+	setRenderScale( s.value( "renderScale", s_renderScale ).toFloat() );  // clamps internally
+}
+
+void FilterShader::saveSettings()
+{
+	QSettings s( settingsFilePath(), QSettings::IniFormat );
+	s.setValue( "reactivity",  s_reactivity   );
+	s.setValue( "trails",      s_trailAmount  );
+	s.setValue( "mood",        s_moodStrength );
+	s.setValue( "renderScale", s_renderScale  );
+	s.sync();
+	fprintf( stderr, "Saved settings: react=%.2f trails=%.2f mood=%.2f scale=%.2f\n",
+	         s_reactivity, s_trailAmount, s_moodStrength, s_renderScale );
+}
 
 
 float ROUND(float f)
@@ -126,6 +156,10 @@ void FilterShader::start( int width, int height )
 	m_imageListIterator = m_imageList.begin();
 
 	printf( "Nr of images: %d\n", m_imageList.size() );
+	if( m_imageList.isEmpty() )
+		fprintf( stderr, "WARNING: image directory '%s' missing or empty - "
+		                 "using a procedural fallback texture.\n",
+		         m_imageDirectory.toLocal8Bit().constData() );
 
 	qsrand(0);  // no-op: QRandomGenerator is auto-seeded
     unsigned int start = qrand() % (m_imageList.size() + 1);
@@ -1680,6 +1714,28 @@ void FilterShader::createFBOTexture( GLuint &texID )
 }
 
 
+// Procedural texture used when the configured image directory is missing or empty,
+// so the visualizer still produces colourful kaleidoscope content instead of
+// crashing on an empty image list (former end()-deref / div-by-zero).
+QImage FilterShader::fallbackImage()
+{
+	const int N = 256;
+	QImage img( N, N, QImage::Format_ARGB32 );
+	for( int y = 0; y < N; y++ )
+	{
+		const float v = y / float(N);
+		for( int x = 0; x < N; x++ )
+		{
+			const float u = x / float(N);
+			const int r = int( 127.5f * (1.0f + sinf( u * 12.0f )) );
+			const int g = int( 127.5f * (1.0f + sinf( (u + v) * 9.0f )) );
+			const int b = int( 127.5f * (1.0f + cosf( v * 15.0f )) );
+			img.setPixel( x, y, qRgb( r, g, b ) );
+		}
+	}
+	return img;
+}
+
 void FilterShader::createTexture()
 {
 	checkGLErrors("createTextures() 0");
@@ -1689,7 +1745,16 @@ void FilterShader::createTexture()
     glGenTextures( 1, &m_nextTex );
     //glGenTextures( 1, &m_texID3 );
     // set up texture
-    
+
+	// Robustness: no images configured -> use the procedural fallback for both.
+	if( m_imageList.isEmpty() )
+	{
+		setupTexture( m_actTex,  prepareImage( fallbackImage() ) );
+		setupTexture( m_nextTex, prepareImage( fallbackImage() ) );
+		checkGLErrors("createTextures() 1");
+		return;
+	}
+
 	//m_imageListIterator++;
     if(m_imageListIterator == m_imageList.end() )
         m_imageListIterator = m_imageList.begin();
@@ -1955,6 +2020,15 @@ void ImageLoader::run()
         {
             //NanoTimer timer;
 			//timer.start();
+
+			// Robustness: empty image list -> serve the procedural fallback
+			// instead of dividing by zero / dereferencing end().
+			if( m_shader->m_imageList.isEmpty() )
+			{
+				m_shader->m_nextImage = prepareImage( FilterShader::fallbackImage() );
+				m_shader->m_triggerImageload = false;
+				continue;
+			}
 
 			unsigned int start = qrand() % (m_shader->m_imageList.size() );
 			for( unsigned int i = 0; i < start; i++ )

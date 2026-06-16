@@ -47,6 +47,12 @@ public:
 	static float reactivity() { return s_reactivity; }
 	static float trails()     { return s_trailAmount; }
 	static float mood()       { return s_moodStrength; }
+
+	// Persist / restore the look parameters above (+ render scale) across runs.
+	// loadSettings() is called at startup BEFORE the command line is parsed, so
+	// explicit flags (e.g. -s) still override the saved values.
+	static void  loadSettings();
+	static void  saveSettings();
 	void reinit(int width, int height); // full (re)build: shaders, image + FBO textures, FBOs
 
 	// Lightweight resize: re-allocate ONLY the off-screen FBO colour textures to
@@ -92,6 +98,10 @@ private:
 	void setupFBOTexture( const GLuint texID );
 	void createTexture();  // create and setup textures
 	void setupTexture( const GLuint texID, const QImage &image ); // needed by createTextures()
+public:
+	// Procedural texture used when the image directory is missing/empty (robustness).
+	static QImage fallbackImage();
+private:
 	void initGLSL(); // initialize GLSL - shader programs
 	void drawScene(const float *rotMatrix, float tx, float ty, float tz);
 	void drawWindow();
