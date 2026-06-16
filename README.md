@@ -32,10 +32,26 @@ cmd /c '"C:\Program Files\Microsoft Visual Studio\18\Community\VC\Auxiliary\Buil
 **Run** — the executable needs the Qt 6 DLLs on `PATH` (or run `windeployqt`):
 ```powershell
 $env:Path = "C:\Qt\6.11.1\msvc2022_64\bin;" + $env:Path
-.\Release\Kaleidoscope.exe          # windowed 1920×1080
-.\Release\Kaleidoscope.exe -b       # fullscreen (uses the 2nd monitor if present)
-.\Release\Kaleidoscope.exe -s 0.5   # render the pipeline at 50% internal resolution
+.\Release\Kaleidoscope.exe                    # windowed 1920×1080
+.\Release\Kaleidoscope.exe -b                 # fullscreen (2nd monitor if present)
+.\Release\Kaleidoscope.exe -s 0.5             # render the pipeline at 50% internal resolution
+.\Release\Kaleidoscope.exe -c darkambient     # start with a chosen configuration
+.\Release\Kaleidoscope.exe -m 1 -c psychedelic -s 0.5   # kiosk: fullscreen on monitor 1
 ```
+
+**Command-line options**
+
+| Option        | Meaning                                                            |
+|---------------|-------------------------------------------------------------------|
+| `-b`          | Start fullscreen (2nd monitor if present)                         |
+| `-s <factor>` | Internal render scale 0.25–2.0 (see below)                        |
+| `-c <name>`   | Start with the named configuration (e.g. `darkambient`, `normal`)|
+| `-m <index>`  | Fullscreen on monitor `<index>` (0-based; implies `-b`)          |
+| `-h`          | Print usage and exit                                              |
+
+For an unattended **installation / kiosk**, combine `-m`, `-c` and `-s`. While
+running, the app keeps the display awake and suppresses the screensaver and
+system standby for as long as it is open.
 
 **`-s <factor>` (internal render scale, 0.25–2.0):** the expensive effect passes
 render at `factor × display resolution` and only the final pass upscales to the
@@ -57,16 +73,21 @@ Combine with a lightweight config and lower trails (`,`) for the weakest hardwar
 | `Esc`, `Q` | Quit                                                          |
 | `0`        | Toggle the configuration-select menu                          |
 | `1`–`9`    | Switch configuration                                          |
-| `i`        | Toggle the live audio-feature overlay                         |
+| `i`        | Toggle the live audio-feature overlay (incl. **FPS**)         |
 | `n`        | Manually advance to the next effect (musical scene change)    |
 | `[` / `]`  | Reactivity — less / more audio-driven motion                  |
 | `,` / `.`  | Trails — shorter / longer feedback trails                     |
 | `-` / `=`  | Mood — weaker / stronger colour grading                       |
+| `k`        | Save the current look settings as the startup default         |
+| `a`        | Toggle **auto-config-by-mood** (auto-switch configs)          |
 | `s`        | Save a PNG screenshot of the window                           |
 | mouse drag | (when not fullscreen) trackball / interaction                 |
 
 The tuning keys (`[]`, `,.`, `-=`) change global look parameters shown in the
-`i` overlay; they persist while the app runs.
+`i` overlay. Press **`k`** to persist them (plus the render scale) to
+`..\kaleidoscope_settings.ini`, so they are restored on the next launch
+(command-line flags such as `-s` still take precedence). The `i` overlay also
+shows the current **FPS** — handy for tuning `-s` on a target machine.
 
 ---
 
@@ -85,6 +106,10 @@ Switch between them with the number keys. Included presets:
 Each `<TextureShader>` / `<CombineShader>` entry names a `.frag` file, solo/
 cross-fade times (scaled adaptively by tempo), a `probability` and a
 `complexity`. Adjust the `ImageDirectory` attribute to point at your own photos.
+
+The `normal` and `psychedelic` presets also include the newest audio-reactive
+effects: **`StereoSpectrum`** (stereo-separated left/right band display) and
+**`ReactionDiffusion`** (the live GPU Gray-Scott simulation, see below).
 
 ---
 
@@ -116,11 +141,60 @@ Audio is captured via WASAPI loopback (`AudioAnalyzer`) and analysed in real tim
 - **Music/speech gate:** on speech / video dialogue / silence the reactivity
   fades to a calm, timer-driven mode; music smoothly re-enables it.
 - A **feedback / trails** pass adds phosphor-style light trails.
+- **Auto-config-by-mood** (key `a`, off by default): the sustained mood selects a
+  matching configuration — ambient → `darkambient`, calm → `slow`, energetic →
+  `psychedelic`, otherwise `normal` — with ~8 s hysteresis and a ~30 s dwell so it
+  never flips back and forth.
+- **Track-change detection:** a sustained near-silence followed by the first
+  onset (a new track after a gap) triggers a clean, fresh scene transition.
+- **Stereo-separated spectrum:** the analyser also splits each channel into
+  low/mid/high bands, so the `StereoSpectrum` effect can show the left channel on
+  one side and the right on the other, with the centre seam glowing on wide mixes.
 
 **Photosensitivity safety:** a final pass rate-limits how fast the whole-frame
 *average* luminance may rise, reining in large full-screen flashes while leaving
 local pattern motion untouched. Audio brightness drivers are additionally
 slew-limited at the source.
+
+---
+
+## GPU reaction-diffusion (live simulation effect)
+
+`ReactionDiffusion` is a genuinely *simulated* effect, not a procedural pattern:
+each frame a fragment shader (`ReactionDiffusionSim.frag`) advances a **Gray-Scott
+reaction-diffusion PDE** in a ping-pong pair of `RGBA16F` float buffers (a fixed
+320×320 grid, so it stays cheap even on an iGPU), reading its own previous state.
+Onsets / beats inject fresh reagent, so the pattern **blossoms with the music**.
+The living field is exposed on a global `texSim` sampler, colourised by the mood
+(`ReactionDiffusion.frag`) and then folded by the kaleidoscope into radiating
+organic structures. If `RGBA16F` render targets are unavailable the simulation is
+skipped and the effect falls back to a dark mood-tinted field (never a crash).
+
+> It uses fragment-shader ping-pong rather than GL 4.3 *compute* shaders on
+> purpose: the renderer runs on an OpenGL **compatibility** profile (the GLee
+> loader doesn't expose the compute / SSBO entry points), and a fragment-shader
+> integrator gives the same simulation while staying portable to the weak NUC iGPU.
+
+---
+
+## Installation & robustness
+
+Built for unattended, long-running installations:
+
+- **Kiosk start:** `-c <config>` chooses the configuration, `-m <index>` the
+  monitor (fullscreen), `-s <factor>` the render scale.
+- **No sleep:** while running, the screensaver and system standby are suppressed
+  and the display is kept awake.
+- **Persistent look:** the reactivity / trails / mood / render-scale settings are
+  saved with **`k`** and restored on the next launch (`..\kaleidoscope_settings.ini`).
+- **Self-healing audio:** if the default output device changes (switching outputs,
+  unplugging headphones, an HDMI display sleeping), the WASAPI loopback capture
+  reconnects automatically instead of going silent.
+- **Missing media is safe:** an absent / empty image directory no longer crashes —
+  a procedural fallback texture is used; a missing `Configurations` folder exits
+  with a clear message.
+- **Auto-config-by-mood** (`a`) and **track-change detection** keep the visuals
+  matched to the music with no operator input.
 
 ---
 
@@ -132,7 +206,8 @@ slew-limited at the source.
 - `EffectShader.{h,cpp}`, `Uniform.{h,cpp}` — per-effect shader + uniform handling
 - `Configuration.{h,cpp}` — XML config loading
 - `*.frag` — the effects; `Present.frag` (mood grade + safety), `Feedback.frag`
-  (trails); `Configurations\*.xml` — presets
+  (trails), `ReactionDiffusionSim.frag` (the Gray-Scott PDE step) +
+  `ReactionDiffusion.frag` (its display); `Configurations\*.xml` — presets
 
 ---
 

@@ -134,103 +134,118 @@ void AudioAnalyzer::run()
     HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
     if (FAILED(hr)) { m_running = false; return; }
 
-    IMMDeviceEnumerator *pEnum   = nullptr;
-    IMMDevice           *pDevice = nullptr;
-    IAudioClient        *pClient = nullptr;
-    IAudioCaptureClient *pCapture= nullptr;
-    WAVEFORMATEX        *pwfx    = nullptr;
-
-    auto cleanup = [&]() {
-        if (pCapture) { pCapture->Release(); pCapture = nullptr; }
-        if (pClient)  { pClient->Stop(); pClient->Release();  pClient  = nullptr; }
-        if (pwfx)     { CoTaskMemFree(pwfx); pwfx = nullptr; }
-        if (pDevice)  { pDevice->Release(); pDevice = nullptr; }
-        if (pEnum)    { pEnum->Release();   pEnum   = nullptr; }
-        CoUninitialize();
-    };
-
+    IMMDeviceEnumerator *pEnum = nullptr;
     hr = CoCreateInstance(__uuidof(MMDeviceEnumerator), nullptr, CLSCTX_ALL,
                           __uuidof(IMMDeviceEnumerator), (void**)&pEnum);
-    if (FAILED(hr)) { cleanup(); return; }
-
-    // Get the default audio *render* endpoint (speakers / headphones).
-    // Loopback on a render endpoint captures everything being played.
-    hr = pEnum->GetDefaultAudioEndpoint(eRender, eConsole, &pDevice);
-    if (FAILED(hr)) { cleanup(); return; }
-
-    hr = pDevice->Activate(__uuidof(IAudioClient), CLSCTX_ALL, nullptr, (void**)&pClient);
-    if (FAILED(hr)) { cleanup(); return; }
-
-    hr = pClient->GetMixFormat(&pwfx);
-    if (FAILED(hr)) { cleanup(); return; }
-
-    // Request a 20 ms buffer in loopback shared mode
-    REFERENCE_TIME bufferDuration = 200000; // 100ns units → 20 ms
-    hr = pClient->Initialize(AUDCLNT_SHAREMODE_SHARED,
-                             AUDCLNT_STREAMFLAGS_LOOPBACK,
-                             bufferDuration, 0, pwfx, nullptr);
-    if (FAILED(hr)) { cleanup(); return; }
-
-    hr = pClient->GetService(__uuidof(IAudioCaptureClient), (void**)&pCapture);
-    if (FAILED(hr)) { cleanup(); return; }
-
-    hr = pClient->Start();
-    if (FAILED(hr)) { cleanup(); return; }
-
-    const int  sampleRate  = pwfx->nSamplesPerSec;
-    const int  numChannels = pwfx->nChannels;
-    // Detect IEEE float vs PCM16 format
-    const bool isFloat = (pwfx->wFormatTag == WAVE_FORMAT_IEEE_FLOAT) ||
-                         (pwfx->wFormatTag == WAVE_FORMAT_EXTENSIBLE &&
-                          reinterpret_cast<WAVEFORMATEXTENSIBLE*>(pwfx)->SubFormat ==
-                          KSDATAFORMAT_SUBTYPE_IEEE_FLOAT);
+    if (FAILED(hr)) { CoUninitialize(); m_running = false; return; }
 
     // Temporary float conversion buffer (max 4096 frames × 8 channels)
     static float convBuf[4096 * 8];
 
+    // Outer reconnect loop.  If the capture device is invalidated (the user
+    // switches the default output, unplugs headphones, an HDMI display sleeps,
+    // …), the per-device objects are released and the default endpoint is
+    // re-acquired — so audio reactivity recovers automatically instead of dying.
     while (m_running)
     {
-        UINT32 packetSize = 0;
-        hr = pCapture->GetNextPacketSize(&packetSize);
-        if (FAILED(hr)) break;
+        IMMDevice           *pDevice  = nullptr;
+        IAudioClient        *pClient  = nullptr;
+        IAudioCaptureClient *pCapture = nullptr;
+        WAVEFORMATEX        *pwfx     = nullptr;
 
-        while (packetSize > 0 && m_running)
+        auto deviceCleanup = [&]() {
+            if (pCapture) { pCapture->Release(); pCapture = nullptr; }
+            if (pClient)  { pClient->Stop(); pClient->Release(); pClient = nullptr; }
+            if (pwfx)     { CoTaskMemFree(pwfx); pwfx = nullptr; }
+            if (pDevice)  { pDevice->Release(); pDevice = nullptr; }
+        };
+
+        // Get the default audio *render* endpoint (speakers / headphones).
+        // Loopback on a render endpoint captures everything being played.
+        hr = pEnum->GetDefaultAudioEndpoint(eRender, eConsole, &pDevice);
+        if (SUCCEEDED(hr))
+            hr = pDevice->Activate(__uuidof(IAudioClient), CLSCTX_ALL, nullptr, (void**)&pClient);
+        if (SUCCEEDED(hr))
+            hr = pClient->GetMixFormat(&pwfx);
+        if (SUCCEEDED(hr))
         {
-            BYTE  *pData     = nullptr;
-            UINT32 numFrames = 0;
-            DWORD  flags     = 0;
+            // Request a 20 ms buffer in loopback shared mode
+            REFERENCE_TIME bufferDuration = 200000; // 100ns units → 20 ms
+            hr = pClient->Initialize(AUDCLNT_SHAREMODE_SHARED,
+                                     AUDCLNT_STREAMFLAGS_LOOPBACK,
+                                     bufferDuration, 0, pwfx, nullptr);
+        }
+        if (SUCCEEDED(hr))
+            hr = pClient->GetService(__uuidof(IAudioCaptureClient), (void**)&pCapture);
+        if (SUCCEEDED(hr))
+            hr = pClient->Start();
 
-            hr = pCapture->GetBuffer(&pData, &numFrames, &flags, nullptr, nullptr);
-            if (FAILED(hr)) break;
-
-            if (!(flags & AUDCLNT_BUFFERFLAGS_SILENT) && numFrames > 0)
-            {
-                const int totalSamples = numFrames * numChannels;
-                const float *src = nullptr;
-
-                if (isFloat) {
-                    src = reinterpret_cast<const float*>(pData);
-                } else {
-                    // PCM 16-bit → float
-                    const int16_t *pcm = reinterpret_cast<const int16_t*>(pData);
-                    int count = std::min(totalSamples, 4096 * 8);
-                    for (int i = 0; i < count; ++i)
-                        convBuf[i] = pcm[i] / 32768.f;
-                    src = convBuf;
-                }
-
-                processBlock(src, numFrames, std::min(numChannels, 2), sampleRate);
-            }
-
-            pCapture->ReleaseBuffer(numFrames);
-            hr = pCapture->GetNextPacketSize(&packetSize);
-            if (FAILED(hr)) break;
+        if (FAILED(hr))
+        {
+            // No device yet, or setup failed: clean up and retry shortly.
+            deviceCleanup();
+            msleep(500);
+            continue;
         }
 
-        msleep(10); // poll every 10 ms
+        const int  sampleRate  = pwfx->nSamplesPerSec;
+        const int  numChannels = pwfx->nChannels;
+        // Detect IEEE float vs PCM16 format
+        const bool isFloat = (pwfx->wFormatTag == WAVE_FORMAT_IEEE_FLOAT) ||
+                             (pwfx->wFormatTag == WAVE_FORMAT_EXTENSIBLE &&
+                              reinterpret_cast<WAVEFORMATEXTENSIBLE*>(pwfx)->SubFormat ==
+                              KSDATAFORMAT_SUBTYPE_IEEE_FLOAT);
+
+        bool deviceLost = false;
+        while (m_running && !deviceLost)
+        {
+            UINT32 packetSize = 0;
+            hr = pCapture->GetNextPacketSize(&packetSize);
+            if (FAILED(hr)) { deviceLost = true; break; }   // e.g. AUDCLNT_E_DEVICE_INVALIDATED
+
+            while (packetSize > 0 && m_running)
+            {
+                BYTE  *pData     = nullptr;
+                UINT32 numFrames = 0;
+                DWORD  flags     = 0;
+
+                hr = pCapture->GetBuffer(&pData, &numFrames, &flags, nullptr, nullptr);
+                if (FAILED(hr)) { deviceLost = true; break; }
+
+                if (!(flags & AUDCLNT_BUFFERFLAGS_SILENT) && numFrames > 0)
+                {
+                    const int totalSamples = numFrames * numChannels;
+                    const float *src = nullptr;
+
+                    if (isFloat) {
+                        src = reinterpret_cast<const float*>(pData);
+                    } else {
+                        // PCM 16-bit → float
+                        const int16_t *pcm = reinterpret_cast<const int16_t*>(pData);
+                        int count = std::min(totalSamples, 4096 * 8);
+                        for (int i = 0; i < count; ++i)
+                            convBuf[i] = pcm[i] / 32768.f;
+                        src = convBuf;
+                    }
+
+                    processBlock(src, numFrames, std::min(numChannels, 2), sampleRate);
+                }
+
+                pCapture->ReleaseBuffer(numFrames);
+                hr = pCapture->GetNextPacketSize(&packetSize);
+                if (FAILED(hr)) { deviceLost = true; break; }
+            }
+
+            msleep(10); // poll every 10 ms
+        }
+
+        deviceCleanup();
+        if (deviceLost && m_running)
+            msleep(300); // brief pause before attempting to reconnect
     }
 
-    cleanup();
+    if (pEnum) pEnum->Release();
+    CoUninitialize();
 }
 
 // ---------------------------------------------------------------------------
