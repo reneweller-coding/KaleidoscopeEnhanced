@@ -18,6 +18,7 @@ uniform float audioValence;
 uniform float audioLevel;
 uniform float audioFlux;
 uniform float audioChromaHue;   // harmony → global hue shift (0 = neutral in non-music)
+uniform float audioBeat;        // beat → extra bloom on hits
 
 // Hue rotation around the (1,1,1) luminance axis (Rodrigues), turns in [0,1].
 vec3 hueRotate(vec3 c, float turns)
@@ -47,6 +48,12 @@ void main()
 
     // Loudness → brightness, spectral flux → shimmer.
     c *= (1.0 + 0.55 * audioLevel + 0.30 * audioFlux);
+
+    // Bloom / glow: a single tap of a coarse, blurred mip level (the mipmaps are
+    // already generated for the safety mean) gives a cheap bright-pass glow.
+    vec3 blurC = texture2D(tex, uv, 4.5).rgb;        // LOD bias → blurred low-res
+    vec3 bloom = max(blurC - 0.45, 0.0);             // bright-pass
+    c += bloom * (0.6 + 0.7 * audioBeat);            // extra glow on beats
 
     // Photosensitivity brightness limit (applied last).
     gl_FragColor = vec4(clamp(c * scale, 0.0, 1.0), 1.0);
