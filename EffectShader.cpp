@@ -314,7 +314,7 @@ void EffectShader::applyAudioFeatures(const AudioFeatures &f)
     if (locAdvance  >= 0) glUniform1f(locAdvance,  f.audioAdvance);
     if (locBeat     >= 0) glUniform1f(locBeat,     f.beatDecay);
     if (locLevel    >= 0) glUniform1f(locLevel,    f.overallLevel);
-    if (locSides    >= 0) glUniform1i(locSides,    f.beatSidesHint);
+    if (locSides    >= 0) glUniform1i(locSides,    int(f.smoothedSides + 0.5f)); // smoothed steps
     if (locFlip     >= 0) glUniform1f(locFlip,     f.audioFlip);
     if (locCentroid >= 0) glUniform1f(locCentroid, f.spectralCentroid);
     if (locFlux     >= 0) glUniform1f(locFlux,     f.spectralFlux);
