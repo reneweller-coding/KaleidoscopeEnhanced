@@ -63,10 +63,10 @@ void main() {
     vec4 col = interpolation * texture2D(tex0,p+0.5) + (1.0-interpolation)*texture2D(tex1, p + 0.5);
 
     // --- Beat pulse: outward radial pop ---
-    float zoomK  = 1.0 + audioBeat * 0.25;
+    float zoomK  = 1.0 + audioBeat * 0.32;
     vec2 pZoomed = p / zoomK;
     vec4 colZoomed = interpolation * texture2D(tex0, pZoomed+0.5) + (1.0-interpolation)*texture2D(tex1, pZoomed+0.5);
-    col = mix(col, colZoomed, audioBeat * 0.7);
+    col = mix(col, colZoomed, audioBeat * 0.8);
 
     // --- Spectral Centroid: colour temperature ---
     // Dark drone (centroid→0): cool twilight tint, slightly dim
@@ -83,7 +83,7 @@ void main() {
     col.rgb *= (1.0 + audioFlux * 0.15);
 
     // --- Beat brightness + overall breathing (audioBeat is slew-limited host-side) ---
-    col.rgb *= (1.0 + audioBeat * 0.2 + audioLevel * 0.25);
+    col.rgb *= (1.0 + audioBeat * 0.30 + audioLevel * 0.25);
 
     gl_FragColor = clamp(col, 0.0, 1.0);
 }

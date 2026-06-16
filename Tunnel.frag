@@ -66,11 +66,11 @@ void main() {
     vec4 col = interpolation * texture2D(tex0,uv) + (1.0-interpolation)*texture2D(tex1,uv);
 
     // --- Beat pulse: radial zoom flash (gentle; brightness is slew-limited host-side) ---
-    float pulse   = audioBeat * 0.25;
-    float zoom    = 1.0 + audioBeat * 0.22;
+    float pulse   = audioBeat * 0.32;
+    float zoom    = 1.0 + audioBeat * 0.30;
     vec2 uvZoomed = (uv - 0.5) / zoom + 0.5;
     vec4 colZoomed = interpolation * texture2D(tex0,uvZoomed) + (1.0-interpolation)*texture2D(tex1,uvZoomed);
-    col = mix(col, colZoomed, audioBeat * 0.6);
+    col = mix(col, colZoomed, audioBeat * 0.72);
 
     // --- Spectral Centroid: colour temperature tint ---
     // Low centroid (dark drone) → cool blue-violet tint, reduced brightness
