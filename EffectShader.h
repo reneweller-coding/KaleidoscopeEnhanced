@@ -30,6 +30,11 @@ public:
 
 	
 	virtual void initUniforms(int width, int height); // initialize GLSL - shader programs
+
+	// Update the reported render-target resolution without recompiling the shader
+	// or touching any GL objects.  Used on window resize.
+	void setSize( int width, int height ) { m_width = width; m_height = height; }
+
 	virtual void setUniforms( float time, float interpolation, GLint texLoc1, GLint texLoc2 ); // setting uniforms
 	virtual void checkGLErrors( const char *label ); // check and print gl errors to stderr
 

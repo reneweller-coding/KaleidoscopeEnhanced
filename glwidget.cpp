@@ -315,7 +315,10 @@ void GLwidget::resizeGL( int /*wLogical*/, int /*hLogical*/ )
 	m_width  = int(this->width()  * dpr + 0.5);
 	m_height = int(this->height() * dpr + 0.5);
 
-	m_actConfiguration->m_filterShader->reinit( m_width, m_height );
+	// Lightweight resize: keeps the loaded image textures + shader programs and
+	// only re-sizes the off-screen buffers (no reload, no GL-object leak).
+	// (The one-time full build happens in Configuration::start -> reinit.)
+	m_actConfiguration->m_filterShader->resize( m_width, m_height );
 }
 
 // set rotation Matrix for trackball to Identity

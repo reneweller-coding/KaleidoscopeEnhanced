@@ -35,7 +35,13 @@ public:
 	 *  the visible buffer is NOT 0 but QOpenGLWidget::defaultFramebufferObject();
 	 *  the widget passes it here every frame before paint().  Defaults to 0. */
 	void setDefaultFBO( GLuint fbo ) { m_defaultFBO = fbo; }
-	void reinit(int width, int height); // initialization stuff and computation of the distance field
+	void reinit(int width, int height); // full (re)build: shaders, image + FBO textures, FBOs
+
+	// Lightweight resize: re-allocate ONLY the off-screen FBO colour textures to
+	// the new size, reusing their texture IDs and FBOs.  Keeps the loaded image
+	// textures and shader programs untouched and allocates no new GL objects, so
+	// it can be called on every window resize without leaking or reloading images.
+	void resize(int width, int height);
 	void checkGLErrors( const char *label ); // check and print gl errors to stderr
 
 	
