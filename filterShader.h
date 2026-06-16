@@ -35,6 +35,10 @@ public:
 	 *  the visible buffer is NOT 0 but QOpenGLWidget::defaultFramebufferObject();
 	 *  the widget passes it here every frame before paint().  Defaults to 0. */
 	void setDefaultFBO( GLuint fbo ) { m_defaultFBO = fbo; }
+
+	/** Request an early cross-fade to the next texture effect (manual 'n' key or
+	 *  an automatic musical novelty trigger).  Honoured at the next opportunity. */
+	void requestSceneChange() { m_forceEffectChange = true; }
 	void reinit(int width, int height); // full (re)build: shaders, image + FBO textures, FBOs
 
 	// Lightweight resize: re-allocate ONLY the off-screen FBO colour textures to
@@ -107,6 +111,10 @@ private:
 
 	// Target framebuffer for the final on-screen pass (QOpenGLWidget's FBO, not 0).
 	GLuint			m_defaultFBO = 0;
+
+	// Manual / novelty-driven early scene change + its rate-limit cooldown.
+	bool			m_forceEffectChange = false;
+	float			m_noveltyCooldown   = 0.f;
 
 	// GLSL vars
 
