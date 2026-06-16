@@ -905,7 +905,16 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
         audioFx.deltaPitch      = audio.deltaPitch     * gate;
     }
 
-
+    // Musical novelty: a strong harmonic / section change (a drop, a key change)
+    // forces an early cross-fade to the next effect — rate-limited, and only
+    // while music is actually playing.
+    m_noveltyCooldown -= timeSinceLastFrameSec;
+    if( m_noveltyCooldown <= 0.f &&
+        audio.harmonicChange * audio.musicPresence > 0.5f )
+    {
+        m_forceEffectChange = true;
+        m_noveltyCooldown   = 8.0f;   // at most one musical cut every ~8 s
+    }
 
     if( m_waitForImageToLoad )
     {
@@ -977,10 +986,13 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
         m_interpolationEffectTexture = 1.0;
 
 		float ts = float(m_timeEffectTexture.elapsed()) * 0.001;
-		
-		if( ts > m_timeInterpolationEffectTexture )
+
+		// End the solo early on a manual ('n') or novelty-driven request, but
+		// only after a brief minimum so cuts never come back-to-back.
+		if( ts > m_timeInterpolationEffectTexture || (m_forceEffectChange && ts > 2.f) )
 		{
-			
+			m_forceEffectChange = false;
+
 			m_stateInterpolationEffectTexture = 1;
 
 			//m_timeInterpolationEffectTexture = 5.0;//(float) (m_effectTextureMinTimeInterpolation + (qrand() % (m_effectTextureMaxTimeInterpolation - m_effectTextureMinTimeInterpolation)));

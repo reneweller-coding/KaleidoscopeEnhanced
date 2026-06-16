@@ -443,6 +443,11 @@ void GLwidget::keyPressEvent(QKeyEvent* event)
 		case Qt::Key_I:
 			m_showFeatureOverlay = !m_showFeatureOverlay;
 			break;
+		case Qt::Key_N:
+			// Manually advance to the next texture effect.
+			if( m_actConfiguration && m_actConfiguration->m_filterShader )
+				m_actConfiguration->m_filterShader->requestSceneChange();
+			break;
 		case Qt::Key_1:
 			m_showSelectConfigurationMenu = false;
 			if( m_configurationList.size() > 0 )
