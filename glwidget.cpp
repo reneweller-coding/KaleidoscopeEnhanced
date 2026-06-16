@@ -19,6 +19,9 @@
  #define GL_MULTISAMPLE  0x809D
  #endif
 
+// Start configuration requested on the command line (-c <name>); empty = default.
+QString GLwidget::s_startConfig;
+
 void GLwidget::traverseConfigurations( const QString& dirname, std::vector<Configuration *> &configurationList )
 {
   QDir dir( dirname );
@@ -58,22 +61,48 @@ GLwidget::GLwidget( QWidget *parent )
 , m_showSelectConfigurationMenu(false)
 , m_showFeatureOverlay(false)
 , m_audioAnalyzer(nullptr)
+, m_fpsCounter(0)
+, m_fpsValue(0)
+, m_fpsLastPeriod(0)
 {
 	setFocusPolicy(Qt::StrongFocus);
 	setFocus();
 
 	//m_directory = "C:\\Users\\weller\\Pictures";
 
-	
+
 	m_configurationList.clear();
 	traverseConfigurations( "..\\Configurations" /*directory*/, m_configurationList );
-	
-	m_actConfiguration = m_configurationList[0];//new Configuration( directory );
-	//m_configurationList.push_back( conf );
-	// = conf;
+
+	// Robustness: a missing/empty Configurations directory used to crash here with
+	// an out-of-range vector access.  Fail with a clear message instead.
+	if( m_configurationList.empty() )
+	{
+		fprintf( stderr, "FATAL: no configuration *.xml files found in "
+		                 "..\\Configurations - cannot start.\n" );
+		exit( 1 );
+	}
+
+	// Default to the first configuration, or the one requested with -c <name>.
+	m_actConfiguration = m_configurationList[0];
+	if( !s_startConfig.isEmpty() )
+	{
+		bool found = false;
+		for( unsigned int i = 0; i < m_configurationList.size(); i++ )
+			if( m_configurationList[i]->getConfigurationName()
+			        .compare( s_startConfig, Qt::CaseInsensitive ) == 0 )
+			{
+				m_actConfiguration = m_configurationList[i];
+				found = true;
+				break;
+			}
+		if( !found )
+			fprintf( stderr, "Configuration '%s' not found - using default.\n",
+			         s_startConfig.toLocal8Bit().constData() );
+	}
 
 	resetRotation();
-}       
+}
 
 GLwidget::~GLwidget()
 {
@@ -126,10 +155,17 @@ void GLwidget::initializeGL()
 	m_audioAnalyzer = new AudioAnalyzer(this);
 	m_audioAnalyzer->start();
 
-    
-	// start FPS timer
-	//m_fpsTimer.start();
-	//m_fpsLastPeriod = m_fpsTimer.elapsed() - 1000;
+#ifdef WIN32
+	// Kiosk / installation: keep the display on and suppress the screensaver and
+	// system standby for as long as the visualizer runs (ES_CONTINUOUS makes the
+	// request persistent without needing to be re-issued).
+	SetThreadExecutionState( ES_CONTINUOUS | ES_DISPLAY_REQUIRED | ES_SYSTEM_REQUIRED );
+#endif
+
+	// start FPS timer (shown in the 'i' overlay)
+	m_fpsTimer.start();
+	m_fpsLastPeriod = 0;
+	m_fpsCounter    = 0;
 
 	// start periodic refesh timer
 	startTimer( 16.666666666666 );
@@ -153,19 +189,15 @@ void GLwidget::paintGL()
     //glEnable(GL_DEPTH_TEST);
     //glEnable(GL_LIGHTING);
 
-	// update value
-	/*int now = m_fpsTimer.elapsed();
+	// FPS measurement: recompute once per second, shown in the 'i' overlay.
+	const qint64 now = m_fpsTimer.elapsed();
 	if( now - m_fpsLastPeriod >= 1000 )
 	{
-		m_fpsValue = m_fpsCounter;
-		m_fpsCounter = 0;
+		m_fpsValue      = int( m_fpsCounter * 1000.0 / double(now - m_fpsLastPeriod) + 0.5 );
+		m_fpsCounter    = 0;
 		m_fpsLastPeriod = now;
 	}
-
-	// count this frame
-	m_fpsCounter++;*/
-
-	
+	m_fpsCounter++;
  }
 
 
@@ -409,7 +441,7 @@ void GLwidget::drawFeatureOverlay( QPainter *painter, const AudioFeatures &f )
 	painter->fillRect( x - 14, 14, 360, n * lh + 68, QColor(0, 0, 0, 160) );
 	painter->setFont( QFont("Consolas", 12, QFont::Bold) );
 	painter->setPen( QColor(120, 200, 255) );
-	painter->drawText( x, 34, QString("AUDIO FEATURES   (i to hide)") );
+	painter->drawText( x, 34, QString("AUDIO FEATURES   %1 FPS   (i to hide)").arg(m_fpsValue) );
 
 	// Live-tunable look knobs (hotkeys).
 	painter->setFont( QFont("Consolas", 10) );
@@ -468,6 +500,9 @@ void GLwidget::keyPressEvent(QKeyEvent* event)
 		case Qt::Key_Period:       FilterShader::adjustTrails(+0.05f);     break;  // .  longer trails
 		case Qt::Key_Minus:        FilterShader::adjustMood(-0.10f);       break;  // -  less mood colour
 		case Qt::Key_Equal:        FilterShader::adjustMood(+0.10f);       break;  // =  more mood colour
+
+		// ---- Persist the current look settings as the startup default ----
+		case Qt::Key_K:            FilterShader::saveSettings();           break;
 
 		// ---- Screenshot (this window only) ----
 		case Qt::Key_S:

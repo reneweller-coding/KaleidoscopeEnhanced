@@ -23,7 +23,11 @@ public:
 
     GLwidget( QWidget *parent = 0 );
 	~GLwidget();
-    
+
+	// Start configuration name (CLI -c <name>); empty = first config. Set from
+	// main() before the widget is constructed, so it must be public.
+	static QString s_startConfig;
+
 public slots:
 	bool slotSetDirectory(const QString &filename);
 
@@ -45,9 +49,9 @@ protected:
 	void traverseConfigurations( const QString& dirname, std::vector<Configuration *> &configurationList );
 
 
-    int   m_fpsCounter;     // counter for this period
-	int   m_fpsValue;       // dispalyed to the used
-	int   m_fpsLastPeriod;  // time point of last update
+    int     m_fpsCounter;     // frames counted in the current period
+	int     m_fpsValue;       // frames-per-second shown in the overlay
+	qint64  m_fpsLastPeriod;  // m_fpsTimer.elapsed() at the last update (qint64: kiosk runs for weeks)
 	QElapsedTimer m_fpsTimer;
 
 	void resetRotation(); // set rotation matrix to Identity

@@ -3,6 +3,7 @@
 #include <cstdlib>
 
 #include "filterShader.h"
+#include "glwidget.h"
 
 #include <QtWidgets/QApplication>
 #include <QtGui/QIcon>
@@ -21,6 +22,7 @@ using namespace std;
 
 QString directory = "C:\\Users\\rene\\Pictures";
 bool fullscreen = false;
+int  monitorIndex = -1;   // -m <n>: target monitor for fullscreen (-1 = auto)
 
 
 
@@ -32,37 +34,24 @@ void commandlineerror( char *cmd, char *parm )
 	if ( parm )
 		fprintf(stderr, "with first parameter: %s\n", parm );
 
-	fprintf(stderr, "\n\nUsage: interactive options ...\n"
+	fprintf(stderr, "\n\nUsage: Kaleidoscope [options]\n"
 	"Options:\n"
-	"-g obj      geometry type (default = planes)\n"
-	"              obj = pl, sh, to, bx\n"
-	"              if obj='file', then the object loaded with option -f is used\n"
-	"-x compl    Complexity (#pgons ~ compl^2)\n"
-	"-f file     load file and use the node with name 'benchobj'\n"
-	"-a algo     algorithm to use for coll. det. (default algo = do)\n"
-	"              do = doptree,\n"
-	"              bx = boxtree,\n"
-	"              cx = separating planes.\n"
-	"-e          do not do exact polygon intersection test (if -a = do|bx)\n"
-	"-p          find/print intersecting pairs\n"
-    "-A          show intersecting polygons\n"
-	"-d          show intersecting DOPs or polygons (depending on -e or not)\n"
-	"-D level    show DOP tree at level (can be switched on at run-time with key [/])\n"
-	"-v opt      Verbose\n"
-	"              t = print DOP tree / Boxtree\n"
-	"              l = show line between the closest vertices, if Algo = sep. planes\n"
-	"              s = print Boxtree statistics\n"
-	"              d = print Boxtree in DOT format (for graphviz) to bx_compl_obj.dot\n"
-	"-W          white background (default = black)\n"
-	"-B          show unit box around origin\n"
-	"-h          this help menu\n"
-	"Keys:\n"
-	"l           switch lighting mode\n"
-	"p           switch drawing mode (filled/wireframe/point)\n"
-	"<space>     switch motion mode (object / camera)\n"
-	"e           switch exact polygon intersection test on/off\n"
-	"[/]         decrease/increase level of DOPs for which the geometry is rendered\n"
-	"q           quit\n"
+	"-b            start in fullscreen (uses the 2nd monitor if present)\n"
+	"-s <factor>   internal render scale 0.25..2.0 (lower = faster on weak GPUs)\n"
+	"-c <name>     start with this configuration (e.g. darkambient, normal)\n"
+	"-m <index>    fullscreen on monitor <index> (0-based; implies -b)\n"
+	"-h            this help menu\n"
+	"Keys (while running):\n"
+	"0             toggle the configuration-select menu\n"
+	"1-9           switch configuration\n"
+	"i             toggle the live audio-feature overlay (incl. FPS)\n"
+	"n             advance to the next effect\n"
+	"[ ]           reactivity  - less / more audio-driven motion\n"
+	", .           trails      - shorter / longer feedback trails\n"
+	"- =           mood        - weaker / stronger colour grading\n"
+	"k             save current look settings as the startup default\n"
+	"s             save a PNG screenshot\n"
+	"Esc / q       quit\n"
 	"\n");
 
 	if ( cmd )
@@ -75,8 +64,8 @@ void commandlineerror( char *cmd, char *parm )
 void parsecommandline( int argc, char *argv[] )
 {
 	/* valid option characters; last char MUST be 0 ! */
-	char optionchar[] =   { 'h', 'b', 'f', 's', 0 };
-	int musthaveparam[] = {  0 ,  0,   1,   1, 0 };
+	char optionchar[] =   { 'h', 'b', 'f', 's', 'c', 'm', 0 };
+	int musthaveparam[] = {  0 ,  0,   1,   1,   1,   1,  0 };
 
 	int nopts;
 	int mhp[256];
@@ -137,6 +126,8 @@ void parsecommandline( int argc, char *argv[] )
 				//case 'f': directory = argv[1]; break;
 				case 'b': fullscreen = !fullscreen; break;
 				case 's': FilterShader::setRenderScale( (float) atof( argv[1] ) ); break;
+				case 'c': GLwidget::s_startConfig = QString::fromLocal8Bit( argv[1] ); break;
+				case 'm': monitorIndex = atoi( argv[1] ); fullscreen = true; break;
 
 
 				default: fprintf(stderr, "\nBug in parsecommandline !\n");
@@ -172,6 +163,10 @@ int main(int argc, char *argv[])
 	directory = imagePath;
 #endif
 
+	// Restore saved look settings first, so explicit command-line flags (e.g. -s)
+	// still take precedence over the persisted values.
+	FilterShader::loadSettings();
+
 	// parse command line options
 	parsecommandline( argc, argv );
 
@@ -197,9 +192,13 @@ int main(int argc, char *argv[])
 	}
 	else
 	{
-		// Show on the second screen if present, otherwise the primary.
+		// Pick the target monitor: -m <index> if valid, else the 2nd screen if
+		// present, otherwise the primary.
 		const QList<QScreen*> screens = QGuiApplication::screens();
-		QScreen *target = (screens.size() > 1) ? screens.at(1) : screens.at(0);
+		int idx = monitorIndex;
+		if( idx < 0 || idx >= screens.size() )
+			idx = (screens.size() > 1) ? 1 : 0;
+		QScreen *target = screens.at(idx);
 		window->setGeometry( target->geometry() );
 		window->setFocus();
 	    window->showFullScreen();
