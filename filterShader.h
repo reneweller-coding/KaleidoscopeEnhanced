@@ -130,6 +130,11 @@ private:
 	GLint			m_presentTexUni  = -1;
 	GLint			m_presentResUni  = -1;
 	GLint			m_presentScaleUni= -1;
+	// Global mood-grade uniforms in the present shader.
+	GLint			m_presentCentroidUni = -1;
+	GLint			m_presentValenceUni  = -1;
+	GLint			m_presentLevelUni    = -1;
+	GLint			m_presentFluxUni     = -1;
 	float			m_prevMeanLum    = -1.f;   // <0 = uninitialised
 	bool			m_safetyReady    = false;  // false → present pass disabled (safe fallback)
 

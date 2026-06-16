@@ -430,6 +430,26 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
     // A cheap, robust ingredient of the music/speech classifier below.
     float bandSpread = (subBass + bass + high) / sharpDen;   // 0..~1
 
+    // ---- Automatic gain control (volume independence) ----
+    // Track a slow loudness reference (only while there is signal, with a floor)
+    // and normalise the levels the VISUALS see to it, so the same track played
+    // quietly or loudly drives the visualisation identically.  A single gain is
+    // applied to overall level + all bands, so the spectral SHAPE is preserved;
+    // beat / ambient / music-speech detection keep using the raw values.
+    if (level > 0.02f)
+        m_loudnessRef = 0.9995f * m_loudnessRef + 0.0005f * level;  // ~ tens of seconds
+    m_loudnessRef = std::max(m_loudnessRef, 0.04f);                 // don't amplify near-silence
+    const float kTargetLevel = 0.40f;                              // average music → ~0.40
+    float agcGain = std::max(0.3f, std::min(kTargetLevel / m_loudnessRef, 5.0f));
+
+    float nLevel    = std::min(level    * agcGain, 1.f);
+    float nSubBass  = std::min(subBass  * agcGain, 1.f);
+    float nBass     = std::min(bass     * agcGain, 1.f);
+    float nLowMid   = std::min(lowMid   * agcGain, 1.f);
+    float nMid      = std::min(mid      * agcGain, 1.f);
+    float nUpperMid = std::min(upperMid * agcGain, 1.f);
+    float nHigh     = std::min(high     * agcGain, 1.f);
+
     // ---- Ambient detection – rolling variance of dB level over ~6 s ----
     // Low variance over time → content is a static drone / ambient pad.
     // High variance → dynamic beat-driven music with significant energy swings.
@@ -624,7 +644,7 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
     // ---- Arousal & Valence proxies (after Thayer's model) ----
     // Arousal: combination of energy, rhythm presence, and spectral activity.
     //   High in energetic beat music, low in still ambient/drone.
-    float arousal = level * 0.34f
+    float arousal = nLevel * 0.34f             // volume-independent (AGC-normalised)
                   + (1.f - m_ambientFactor) * estimatedBPM * 0.30f
                   + spectralFlux * 0.21f
                   + m_sSharpness * 0.15f;     // bright/incisive timbre = energetic
@@ -922,13 +942,14 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
 
     // ---- Publish (mutex-protected) ----
     QMutexLocker lk(&m_mutex);
-    m_features.subBassLevel   = subBass;
-    m_features.bassLevel      = bass;
-    m_features.lowMidLevel    = lowMid;
-    m_features.midLevel       = mid;
-    m_features.upperMidLevel  = upperMid;
-    m_features.highLevel      = high;
-    m_features.overallLevel   = level;
+    // Publish the AGC-normalised levels so the visuals are volume-independent.
+    m_features.subBassLevel   = nSubBass;
+    m_features.bassLevel      = nBass;
+    m_features.lowMidLevel    = nLowMid;
+    m_features.midLevel       = nMid;
+    m_features.upperMidLevel  = nUpperMid;
+    m_features.highLevel      = nHigh;
+    m_features.overallLevel   = nLevel;
     m_features.isBeat         = isBeat;
     m_features.beatStrength   = beatStr;
     m_features.beatDecay      = beatDecay;

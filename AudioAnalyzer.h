@@ -124,6 +124,7 @@ private:
     float m_tonalCentroid[6] = {};    // previous-frame Harte 6-D tonal centroid
     float m_sHCDF           = 0.f;    // smoothed harmonic change detection function
     float m_sRoughness      = 0.f;    // smoothed sensory dissonance (Sethares)
+    float m_loudnessRef     = 0.10f;  // slow loudness reference for AGC (volume independence)
 
     // ---- Rhythm / dynamics / stereo / classifier state ----
     float m_sRhythm         = 0.f;    // smoothed rhythm strength (beat regularity)

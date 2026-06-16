@@ -71,20 +71,9 @@ void main() {
     // --- Spectral Centroid: colour temperature ---
     // Dark drone (centroid→0): cool twilight tint, slightly dim
     // Bright shimmer (centroid→1): warm iridescent glow
-    // Wide spread (centred so centroid=0.5 ≈ neutral): dark → blue, bright → amber.
-    vec3 coolTint = vec3(0.62, 0.82, 1.30);
-    vec3 warmTint = vec3(1.38, 1.10, 0.68);
-    col.rgb *= mix(coolTint, warmTint, audioCentroid);
-
-    // --- Valence → saturation (centred at 0.5): minor/rough muted, major vivid ---
-    float lumK = dot(col.rgb, vec3(0.299, 0.587, 0.114));
-    col.rgb = mix(vec3(lumK), col.rgb, 0.45 + 1.10 * audioValence);
-
-    // --- Spectral Flux → visible shimmer when new sound layers enter ---
-    col.rgb *= (1.0 + audioFlux * 0.30);
-
-    // --- Beat brightness + loudness brightness (audioBeat slew-limited host-side) ---
-    col.rgb *= (1.0 + audioBeat * 0.30 + audioLevel * 0.55);
+    // Mood colour / saturation / loudness-brightness are now applied GLOBALLY in the
+    // final present pass.  Keep only the per-effect beat brightness pop here.
+    col.rgb *= (1.0 + audioBeat * 0.30);
 
     gl_FragColor = clamp(col, 0.0, 1.0);
 }

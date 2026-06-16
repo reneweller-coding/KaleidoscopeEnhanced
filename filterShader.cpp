@@ -838,6 +838,10 @@ void FilterShader::setupSafety()
 		m_presentTexUni   = glGetUniformLocation( m_presentProgId, "tex" );
 		m_presentResUni   = glGetUniformLocation( m_presentProgId, "resolution" );
 		m_presentScaleUni = glGetUniformLocation( m_presentProgId, "scale" );
+		m_presentCentroidUni = glGetUniformLocation( m_presentProgId, "audioCentroid" );
+		m_presentValenceUni  = glGetUniformLocation( m_presentProgId, "audioValence" );
+		m_presentLevelUni    = glGetUniformLocation( m_presentProgId, "audioLevel" );
+		m_presentFluxUni     = glGetUniformLocation( m_presentProgId, "audioFlux" );
 	}
 
 	m_safetyReady = fboOk && (m_presentProgId != 0) && (m_presentTexUni >= 0);
@@ -1399,6 +1403,11 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 		glUniform1i( m_presentTexUni, 0 );
 		if( m_presentResUni   >= 0 ) glUniform2f( m_presentResUni, (float)m_width, (float)m_height );
 		if( m_presentScaleUni >= 0 ) glUniform1f( m_presentScaleUni, scale );
+		// Global mood grade — gated values (neutral in non-music mode).
+		if( m_presentCentroidUni >= 0 ) glUniform1f( m_presentCentroidUni, audioFx.spectralCentroid );
+		if( m_presentValenceUni  >= 0 ) glUniform1f( m_presentValenceUni,  audioFx.valence );
+		if( m_presentLevelUni    >= 0 ) glUniform1f( m_presentLevelUni,    audioFx.overallLevel );
+		if( m_presentFluxUni     >= 0 ) glUniform1f( m_presentFluxUni,     audioFx.spectralFlux );
 		drawWindow();
 	}
 
