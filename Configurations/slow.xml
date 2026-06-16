@@ -41,9 +41,22 @@
   </TextureShader>
 
 
+  <!-- Curl Aurora (flowing mood-coloured curtains) -->
+  <TextureShader minTimeSolo="20" maxTimeSolo="90" minTimeInterpolation="30" maxTimeInterpolation="80" file="..\\CurlAurora.frag" type="normal" probability="0.7" complexity="1">
+  </TextureShader>
+
+  <!-- Fractal KIFS (kaleidoscopic fractal) -->
+  <TextureShader minTimeSolo="20" maxTimeSolo="90" minTimeInterpolation="30" maxTimeInterpolation="80" file="..\\FractalKIFS.frag" type="normal" probability="0.6" complexity="1">
+  </TextureShader>
+
+  <!-- Plasma Flow (mood-tinted flowing plasma) -->
+  <TextureShader minTimeSolo="20" maxTimeSolo="90" minTimeInterpolation="30" maxTimeInterpolation="80" file="..\\PlasmaFlow.frag" type="normal" probability="0.5" complexity="1">
+  </TextureShader>
+
+
   <!--
   ***************
-  Combine 
+  Combine
   ***************
   -->
 

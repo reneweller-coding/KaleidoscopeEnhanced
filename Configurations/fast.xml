@@ -48,10 +48,22 @@
     <float name="power" minValue="1.0" maxValue="4.0"></float>
   </TextureShader>
 
+  <!-- Plasma Flow (mood-tinted flowing plasma) -->
+  <TextureShader minTimeSolo="15" maxTimeSolo="50" minTimeInterpolation="10" maxTimeInterpolation="30" file="..\\PlasmaFlow.frag" type="normal" probability="0.7" complexity="1">
+  </TextureShader>
+
+  <!-- Voronoi Pulse (beat-flaring cells) -->
+  <TextureShader minTimeSolo="15" maxTimeSolo="50" minTimeInterpolation="10" maxTimeInterpolation="30" file="..\\VoronoiPulse.frag" type="normal" probability="0.7" complexity="1">
+  </TextureShader>
+
+  <!-- Fractal KIFS (kaleidoscopic fractal) -->
+  <TextureShader minTimeSolo="15" maxTimeSolo="50" minTimeInterpolation="10" maxTimeInterpolation="30" file="..\\FractalKIFS.frag" type="normal" probability="0.6" complexity="1">
+  </TextureShader>
+
 
   <!--
   ***************
-  Combine 
+  Combine
   ***************
   -->
 
