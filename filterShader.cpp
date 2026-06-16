@@ -921,21 +921,23 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
         // A gentle in-tempo "breathing" from the continuous beat phase.
         float beatBreath = 0.5f - 0.5f * cosf(audio.beatPhase * 6.2831853f);
 
-        // Rotation angular velocity (rad/s): a CALM base drift plus the dynamic parts
-        // — beats, spectral change and in-tempo breathing — which are what actually
-        // read as "reacting to the music".  Gated by musicPresence.
+        // Rotation angular velocity (rad/s).  The audio adds mostly TRANSIENT motion
+        // — beats, spectral change, gentle in-tempo breathing — and only a tiny
+        // steady term, so the AVERAGE speed with music playing stays close to the
+        // music-off base speed while the visuals visibly PULSE with the music.
+        // (Earlier a large steady term made every track a constant fast spin.)
         float rotRate = m_audioDir * kReactivity * gate
-                      * ( 0.25f * motion
-                        + 1.60f * audio.beatDecay
-                        + 0.60f * motion * audio.spectralFlux
-                        + 0.25f * motion * beatBreath );
+                      * ( 0.06f * motion                       // tiny steady drift
+                        + 1.60f * audio.beatDecay              // beat pulses (main hit)
+                        + 0.40f * audio.spectralFlux           // spectral-change pulses
+                        + 0.18f * motion * beatBreath );       // in-tempo breathing
         m_audioRotPhase += dt * rotRate;
 
-        // Tunnel forward advance: gentle, driven by loudness + spectral / harmonic
-        // change so the tunnel speeds through busy passages and eases on calm ones.
+        // Tunnel forward advance: also transient-dominated (flux / harmonic change),
+        // with only a whisper of steady loudness, so busy passages surge briefly.
         float advRate = kReactivity * gate
-                      * ( 0.02f + 0.10f * audio.spectralFlux + 0.05f * motion
-                                + 0.12f * audio.harmonicChange );
+                      * ( 0.015f + 0.08f * audio.spectralFlux + 0.02f * motion
+                                 + 0.10f * audio.harmonicChange );
         m_audioAdvance += dt * advRate;
 
         // Slew-limit brightness drivers (photosensitive-safety): a beat may rise
