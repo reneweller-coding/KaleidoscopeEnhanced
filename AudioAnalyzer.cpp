@@ -485,6 +485,11 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
     if (isBeat) m_beatPulse = (1.f + beatStr * 2.f) * (1.f - m_ambientFactor * 0.95f);
     m_beatPulse = std::max(m_beatPulse * 0.85f, 0.f);
 
+    // ---- Downbeat accent: accent the bar's "1" (≈ every 4th detected kick) ----
+    if (isBeat) { m_kickCount++; if (m_kickCount % 4 == 0) m_downbeatPulse = 1.f; }
+    m_downbeatPulse = std::max(m_downbeatPulse * 0.90f, 0.f);
+    float downbeat = m_downbeatPulse;
+
     float beatSpeed = 1.f + m_beatPulse;
 
     // Spectral flux is not yet computed here, so we use the previous m_sFlux.
@@ -536,6 +541,26 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
     for (float v : m_fluxHistory) { float d = v - fMean; fVar += d * d; }
     fVar /= float(kFluxHistLen);
     m_sFluxVar = 0.90f * m_sFluxVar + 0.10f * std::min(std::sqrt(fVar) * 4.f, 1.f);
+
+    // ---- Full-spectrum onset detection (snares / claps / melodic, not just kicks) ----
+    // Peak-pick the onset detection function (instantaneous spectral flux): an onset
+    // is a clear rising jump above its recent average.  Ambient-gated so drones don't
+    // trigger.  A detected onset boosts the visual beat pulse, so the SAME beat-driven
+    // reactions (zoom, rotation kick) now fire across every genre.
+    float onsetStrength = 0.f;
+    if (m_onsetCooldown > 0.f) {
+        m_onsetCooldown -= 1.f;
+    } else if (rawFlux > m_onsetAvg * 1.7f + 0.015f && rawFlux > m_prevODF) {
+        onsetStrength  = std::min((rawFlux / (m_onsetAvg * 1.7f + 1e-4f)) - 1.f, 1.f);
+        m_onsetCooldown = 5.f;
+        float onsetPulse = (0.6f + 0.8f * onsetStrength) * (1.f - m_ambientFactor * 0.9f);
+        m_beatPulse = std::max(m_beatPulse, onsetPulse);
+    }
+    m_onsetAvg = 0.95f * m_onsetAvg + 0.05f * rawFlux;
+    m_prevODF  = rawFlux;
+
+    // Re-derive the decaying beat pulse now that onsets are folded into m_beatPulse.
+    beatDecay = std::min(m_beatPulse / 3.f, 1.f);
 
     // ---- Spectral Centroid (6-band, log-spaced frequency weights) ----
     // Each weight is the log-normalised centre frequency of that band,
@@ -951,6 +976,8 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
     m_features.highLevel      = nHigh;
     m_features.overallLevel   = nLevel;
     m_features.isBeat         = isBeat;
+    m_features.onsetStrength   = onsetStrength;
+    m_features.downbeat        = downbeat;
     m_features.beatStrength   = beatStr;
     m_features.beatDecay      = beatDecay;
     m_features.ambientFactor  = m_ambientFactor;

@@ -31,10 +31,21 @@ struct AudioFeatures
     // ---- Overall amplitude ----
     float overallLevel  = 0.f;   // weighted mix of all bands
 
-    // ---- Beat detection ----
-    bool  isBeat        = false; // true for one update cycle on each onset
+    // ---- Beat / onset detection ----
+    bool  isBeat        = false; // true for one update cycle on each kick
     float beatStrength  = 0.f;   // 0..1 onset magnitude vs. background
-    float beatDecay     = 0.f;   // smooth 0..1 decay after beat (use in shaders)
+    float beatDecay     = 0.f;   // smooth 0..1 decay after beat (use in shaders).
+                                 // Now ALSO boosted by full-spectrum onsets, so it
+                                 // pulses on snares/claps/melodic hits, not only kicks.
+
+    // onsetStrength: full-spectrum onset detector (spectral-flux peak picking).
+    //   Decaying 0..1 that fires on ANY percussive/melodic onset — makes the
+    //   rhythm reaction work for genres without a strong kick drum.
+    float onsetStrength = 0.f;
+
+    // downbeat: decaying accent on the bar's "1" (≈ every 4th detected beat).
+    //   For bigger, musically-placed accents / scene changes.
+    float downbeat = 0.f;
 
     // ---- Music-mode classifier ----
     // 0 = clearly beat-driven,  1 = pure ambient/drone.
