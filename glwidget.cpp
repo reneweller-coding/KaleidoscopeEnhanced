@@ -212,6 +212,13 @@ void GLwidget::draw()
 	if (m_audioAnalyzer)
 		audio = m_audioAnalyzer->getFeatures();
 
+	// Track-change: a fresh track (after a silent gap) gets a clean transition.
+	if( audio.trackChange && m_actConfiguration && m_actConfiguration->m_filterShader )
+		m_actConfiguration->m_filterShader->requestSceneChange();
+
+	// Auto-config-by-mood (optional, key 'a'): may switch m_actConfiguration.
+	updateAutoConfig( audio );
+
 	// QOpenGLWidget renders into its own FBO, not framebuffer 0.  Tell the
 	// pipeline where the final image must land, otherwise it draws off-screen.
 	m_actConfiguration->m_filterShader->setDefaultFBO( defaultFramebufferObject() );
@@ -320,6 +327,55 @@ void GLwidget::showSelectConfigurationsMenu( QPainter *painter )
 	 float radius = 0.5;
 	 //painter->drawEllipse(0, 0, int(2*radius), int(2*radius));*/
 
+}
+
+bool GLwidget::selectConfigByName( const QString &name )
+{
+	for( unsigned int i = 0; i < m_configurationList.size(); i++ )
+		if( m_configurationList[i]->getConfigurationName()
+		        .compare( name, Qt::CaseInsensitive ) == 0 )
+		{
+			if( m_configurationList[i] == m_actConfiguration )
+				return false;                     // already active
+			m_actConfiguration->stop();
+			m_actConfiguration = m_configurationList[i];
+			m_actConfiguration->start( m_width, m_height );
+			return true;
+		}
+	return false;
+}
+
+void GLwidget::updateAutoConfig( const AudioFeatures &f )
+{
+	if( !m_autoConfig )
+		return;
+
+	// Map the sustained mood to a configuration bucket.
+	//   0 ambient/drone, 1 calm, 2 normal, 3 energetic.
+	int bucket;
+	if     ( f.ambientFactor > 0.6f ) bucket = 0;
+	else if ( f.arousal      < 0.33f ) bucket = 1;
+	else if ( f.arousal      > 0.66f ) bucket = 3;
+	else                               bucket = 2;
+	static const char *names[4] = { "darkambient", "slow", "normal", "psychedelic" };
+
+	const qint64 now = m_fpsTimer.elapsed();
+	if( bucket != m_moodBucket )
+	{
+		m_moodBucket      = bucket;
+		m_moodBucketSince = now;
+	}
+
+	// Only switch once the mood has held for ~8 s and at least ~30 s after the
+	// previous switch, so the configuration doesn't flip back and forth.
+	if( now - m_moodBucketSince > 8000 && now - m_lastAutoSwitch > 30000 )
+	{
+		if( selectConfigByName( QString::fromLatin1(names[bucket]) ) )
+		{
+			m_lastAutoSwitch = now;
+			fprintf( stderr, "Auto-config: switched to '%s'\n", names[bucket] );
+		}
+	}
 }
 
 void GLwidget::mouseDoubleClickEvent(QMouseEvent *e) {
@@ -446,10 +502,11 @@ void GLwidget::drawFeatureOverlay( QPainter *painter, const AudioFeatures &f )
 	// Live-tunable look knobs (hotkeys).
 	painter->setFont( QFont("Consolas", 10) );
 	painter->setPen( QColor(170, 205, 170) );
-	painter->drawText( x, 54, QString("react[] %1   trail,. %2   mood-= %3")
+	painter->drawText( x, 54, QString("react[] %1  trail,. %2  mood-= %3  auto-a %4")
 		.arg(FilterShader::reactivity(), 0, 'f', 1)
 		.arg(FilterShader::trails(),     0, 'f', 2)
-		.arg(FilterShader::mood(),       0, 'f', 1) );
+		.arg(FilterShader::mood(),       0, 'f', 1)
+		.arg(m_autoConfig ? "ON" : "off") );
 
 	painter->setFont( QFont("Consolas", 11) );
 	for ( int i = 0; i < n; ++i )
@@ -503,6 +560,13 @@ void GLwidget::keyPressEvent(QKeyEvent* event)
 
 		// ---- Persist the current look settings as the startup default ----
 		case Qt::Key_K:            FilterShader::saveSettings();           break;
+
+		// ---- Auto-config-by-mood toggle ----
+		case Qt::Key_A:
+			m_autoConfig = !m_autoConfig;
+			m_moodBucket = -1;   // re-evaluate from scratch
+			fprintf( stderr, "Auto-config-by-mood: %s\n", m_autoConfig ? "ON" : "OFF" );
+			break;
 
 		// ---- Screenshot (this window only) ----
 		case Qt::Key_S:

@@ -150,6 +150,16 @@ private:
     // ---- Rhythm / dynamics / stereo / classifier state ----
     float m_sRhythm         = 0.f;    // smoothed rhythm strength (beat regularity)
     float m_sStereoWidth    = 0.f;    // smoothed stereo side/mid width
+
+    // ---- Stereo per-channel band split (stereo-separated spectrum) ----
+    float m_lpStL[2]        = {};     // L-channel LP states (~250 Hz, ~2500 Hz)
+    float m_lpStR[2]        = {};     // R-channel LP states
+    float m_sStBand[2][3]   = {};     // smoothed [L/R][low/mid/high] energies
+
+    // ---- Track-change detection (sustained silence -> first onset) ----
+    float m_silenceFrames   = 0.f;    // consecutive near-silent update cycles
+    bool  m_wasSilent       = false;  // armed once the silence is long enough
+
     float m_prevPitch       = 0.f;    // previous dominant pitch (for delta-pitch)
     float m_sDeltaPitch     = 0.f;    // smoothed melodic activity
     static constexpr int kFluxHistLen = 100; // ~1 s of spectral-flux samples

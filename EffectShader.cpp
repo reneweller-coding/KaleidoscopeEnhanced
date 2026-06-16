@@ -298,6 +298,9 @@ void EffectShader::applyAudioFeatures(const AudioFeatures &f)
     GLint locStereo   = glGetUniformLocation(m_sh_prog_id, "audioStereo");
     GLint locDPitch   = glGetUniformLocation(m_sh_prog_id, "audioDeltaPitch");
     GLint locMusic    = glGetUniformLocation(m_sh_prog_id, "audioMusic");
+    // Stereo-separated spectrum: per-channel (low,mid,high) band energies.
+    GLint locStBandL  = glGetUniformLocation(m_sh_prog_id, "audioStereoL");
+    GLint locStBandR  = glGetUniformLocation(m_sh_prog_id, "audioStereoR");
 
     if (locArousal  >= 0) glUniform1f(locArousal,  f.arousal);
     if (locValence  >= 0) glUniform1f(locValence,  f.valence);
@@ -310,6 +313,8 @@ void EffectShader::applyAudioFeatures(const AudioFeatures &f)
     if (locStereo   >= 0) glUniform1f(locStereo,   f.stereoWidth);
     if (locDPitch   >= 0) glUniform1f(locDPitch,   f.deltaPitch);
     if (locMusic    >= 0) glUniform1f(locMusic,    f.musicPresence);
+    if (locStBandL  >= 0) glUniform3f(locStBandL,  f.stereoLowL, f.stereoMidL, f.stereoHighL);
+    if (locStBandR  >= 0) glUniform3f(locStBandR,  f.stereoLowR, f.stereoMidR, f.stereoHighR);
     if (locPhase    >= 0) glUniform1f(locPhase,    f.audioRotPhase);
     if (locAdvance  >= 0) glUniform1f(locAdvance,  f.audioAdvance);
     if (locBeat     >= 0) glUniform1f(locBeat,     f.beatDecay);

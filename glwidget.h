@@ -48,6 +48,19 @@ protected:
 
 	void traverseConfigurations( const QString& dirname, std::vector<Configuration *> &configurationList );
 
+	// Switch to the configuration with the given name (case-insensitive).
+	// Returns true if it switched to a *different* configuration.
+	bool selectConfigByName( const QString &name );
+
+	// Auto-config-by-mood: when enabled, pick a configuration that matches the
+	// sustained musical mood (ambient/energy), with hysteresis + a dwell time.
+	void updateAutoConfig( const AudioFeatures &f );
+
+	bool    m_autoConfig      = false;  // toggled with key 'a'
+	int     m_moodBucket      = -1;     // current mood bucket (see .cpp)
+	qint64  m_moodBucketSince = 0;      // when the bucket last changed
+	qint64  m_lastAutoSwitch  = 0;      // when auto-config last switched
+
 
     int     m_fpsCounter;     // frames counted in the current period
 	int     m_fpsValue;       // frames-per-second shown in the overlay
