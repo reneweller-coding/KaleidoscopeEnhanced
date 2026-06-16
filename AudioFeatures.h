@@ -88,9 +88,29 @@ struct AudioFeatures
     //   0 when no beat is detected (pure ambient / drone).
     float estimatedBPM = 0.f;
 
+    // keyClarity: how strongly a single musical key is implied (Krumhansl-Kessler
+    //   best-vs-mean correlation).  0 = ambiguous/atonal/noise, 1 = one clear key.
+    //   Clear tonality reads as pleasant → contributes to valence.
+    float keyClarity = 0.f;
+
+    // sharpness: Zwicker-style high-frequency weighting of loudness.
+    //   0 = dull / dark (sub-bass drone), 1 = sharp / bright-harsh (cymbals, noise).
+    //   Bright, incisive sound reads as energetic → contributes to arousal.
+    float sharpness = 0.f;
+
+    // harmonicChange: Harmonic Change Detection Function (Harte 2006) — the rate
+    //   of movement of the 6-D tonal centroid.  Spikes on chord/key changes,
+    //   near zero on a sustained harmony.  A natural trigger for visual change.
+    float harmonicChange = 0.f;
+
+    // roughness: sensory dissonance (Plomp-Levelt / Sethares) from beating between
+    //   nearby spectral partials.  0 = consonant / smooth (pure chords, sine drone),
+    //   1 = rough / dissonant (clusters, distortion, noise).  Lowers valence.
+    float roughness = 0.f;
+
     // Thayer's model proxies (derived, 0..1):
-    //   arousal ≈ overall energy × rhythm presence (fast = high, drone = low)
-    //   valence ≈ brightness × tonality × lack of noise (pleasant = high)
+    //   arousal ≈ energy × rhythm × brightness/sharpness (fast/bright = high)
+    //   valence ≈ mode × key clarity × tonality × brightness (pleasant = high)
     float arousal = 0.5f;
     float valence = 0.5f;
 

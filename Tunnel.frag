@@ -17,6 +17,7 @@ uniform float audioCentroid;   // tonal brightness 0..1  (0=dark drone, 1=bright
 uniform float audioFlux;       // spectral flux 0..1     (how fast spectrum changes)
 uniform float audioPhase;      // integrated audio rotation phase (radians, jump-free)
 uniform float audioAdvance;    // integrated audio tunnel advance (jump-free)
+uniform float audioValence;    // mood pleasantness 0..1 (low=tense/dark, high=happy)
 
 const float M_PI = 3.141592653589793;
 
@@ -66,7 +67,7 @@ void main() {
 
     // --- Beat pulse: radial zoom flash (gentle; brightness is slew-limited host-side) ---
     float pulse   = audioBeat * 0.25;
-    float zoom    = 1.0 + audioBeat * 0.12;
+    float zoom    = 1.0 + audioBeat * 0.22;
     vec2 uvZoomed = (uv - 0.5) / zoom + 0.5;
     vec4 colZoomed = interpolation * texture2D(tex0,uvZoomed) + (1.0-interpolation)*texture2D(tex1,uvZoomed);
     col = mix(col, colZoomed, audioBeat * 0.6);
@@ -79,6 +80,10 @@ void main() {
     vec3 warmTint = vec3(1.10, 1.05, 0.90);   // golden / bright
     vec3 centroidTint = mix(coolTint, warmTint, audioCentroid);
     col.rgb *= centroidTint;
+
+    // --- Valence: pleasant/major music is vivid, tense/minor/rough is muted ---
+    float lumT = dot(col.rgb, vec3(0.299, 0.587, 0.114));
+    col.rgb = mix(vec3(lumT), col.rgb, 0.55 + 0.65 * audioValence);
 
     // --- Spectral Flux: subtle luminance pulse on new layers ---
     col.rgb *= (1.0 + audioFlux * 0.2);

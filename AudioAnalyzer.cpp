@@ -399,6 +399,12 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
                 + upperMid * 0.10f
                 + high     * 0.05f;
 
+    // ---- Sharpness (Zwicker-style high-frequency weighting) ----
+    // Ratio of high-frequency energy to total: dark drones → ~0, bright/harsh → ~1.
+    float sharpNum = 0.40f * mid + 0.70f * upperMid + 1.00f * high;
+    float sharpDen = subBass + bass + lowMid + mid + upperMid + high + 1e-6f;
+    m_sSharpness   = 0.95f * m_sSharpness + 0.05f * std::min(sharpNum / sharpDen, 1.f);
+
     // ---- Ambient detection – rolling variance of dB level over ~6 s ----
     // Low variance over time → content is a static drone / ambient pad.
     // High variance → dynamic beat-driven music with significant energy swings.
@@ -558,25 +564,30 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
     // ---- Arousal & Valence proxies (after Thayer's model) ----
     // Arousal: combination of energy, rhythm presence, and spectral activity.
     //   High in energetic beat music, low in still ambient/drone.
-    float arousal = level * 0.4f
-                  + (1.f - m_ambientFactor) * estimatedBPM * 0.35f
-                  + spectralFlux * 0.25f;
+    float arousal = level * 0.34f
+                  + (1.f - m_ambientFactor) * estimatedBPM * 0.30f
+                  + spectralFlux * 0.21f
+                  + m_sSharpness * 0.15f;     // bright/incisive timbre = energetic
     arousal = std::min(arousal * 1.5f, 1.f);  // scale up (most music sits low)
 
-    // Valence: brightness + tonality + absence of harsh noise.
-    //   High for bright, tonal, clean music; low for dark, noisy, dissonant.
-    float valence = smoothedCentroid * 0.5f
-                  + (1.f - m_sSFM)   * 0.3f   // tonal (not noisy) = more pleasant
-                  + (1.f - m_sZCR)   * 0.2f;  // pure sine (not noisy)
+    // Valence: mode (major/minor) + clear tonality + consonance + brightness.
+    //   High for bright, major, tonal, consonant music; low for dark, minor, rough.
+    float valence = m_sMode            * 0.28f   // major = pleasant, minor = tense
+                  + m_sKeyClarity      * 0.17f   // a clearly implied key reads pleasant
+                  + smoothedCentroid   * 0.20f
+                  + (1.f - m_sSFM)     * 0.10f   // tonal (not noisy) = more pleasant
+                  + (1.f - m_sRoughness) * 0.25f; // consonant (not beating) = pleasant
 
     // ---- Dynamic timing scale (for filterShader / EffectShader) ----
-    // Low arousal + high ambient = very slow visual cycling (minutes).
-    // High arousal + beat music = slightly faster than default.
-    // Range: 0.12 (pure ambient drone) .. 1.6 (fast beat music)
+    // Drives how fast scenes/shaders cycle:
     //   timingScale < 1 → ALL times scaled longer (longer solos, slower cross-fades)
-    //   timingScale > 1 → times shortened
-    float timingScale = 1.6f * (1.f - m_ambientFactor)   // beat mode: up to 1.6×
-                      + 0.12f * m_ambientFactor;           // ambient:    down to 0.12×
+    //   timingScale > 1 → times shortened (quicker cuts)
+    // The beat-mode end now tracks arousal, so a calm song cycles gently while an
+    // energetic track cuts fast; ambient/drone collapses to very long holds.
+    // Range: ~0.10 (pure drone) .. ~2.6 (fast, high-arousal beat music).
+    float beatScale   = 0.8f + 1.8f * arousal;             // 0.8 .. 2.6
+    float timingScale = beatScale * (1.f - m_ambientFactor)
+                      + 0.10f * m_ambientFactor;             // ambient: down to 0.10×
     // Smooth slowly so transitions aren't abrupt
     float prevTimingScale = m_features.timingScale;
     timingScale = 0.998f * prevTimingScale + 0.002f * timingScale;
@@ -672,6 +683,33 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
         m_sSpread = 0.95f * m_sSpread + 0.05f * spreadNorm;
     }
 
+    // ---- Roughness (sensory dissonance, Plomp-Levelt / Sethares) ----
+    // Beating between nearby partials creates roughness.  For each bin we sum the
+    // dissonance contribution of a few higher neighbours, weighted by the
+    // amplitude product and the Plomp-Levelt curve.  Restricted to the musical
+    // band and a small window so it stays real-time.
+    {
+        const int rLo  = std::max(2, int(50.f   * float(kFFTSize) / float(sampleRate)));
+        const int rHi  = std::min(kFFTHalf - 1, int(5000.f * float(kFFTSize) / float(sampleRate)));
+        const int rWin = 10;
+        float rough = 0.f;
+        for (int k = rLo; k < rHi; ++k) {
+            float ak = mags[k];
+            if (ak < 1e-6f) continue;
+            float fk = float(k) * float(sampleRate) / float(kFFTSize);
+            float s  = 0.24f / (0.0207f * fk + 18.96f);   // critical-band scaling
+            int   jHi = std::min(k + rWin, rHi - 1);
+            for (int j = k + 1; j <= jHi; ++j) {
+                float fj = float(j) * float(sampleRate) / float(kFFTSize);
+                float x  = s * (fj - fk);
+                float d  = std::exp(-3.5f * x) - std::exp(-5.75f * x);  // dissonance
+                rough += ak * mags[j] * d;
+            }
+        }
+        float rawRough = std::min(rough / (totalMagSq + 1e-6f) * 4.f, 1.f);
+        m_sRoughness = 0.93f * m_sRoughness + 0.07f * rawRough;
+    }
+
     // ---- Chroma vector + Key/Mode (Krumhansl-Kessler 1982 profiles) ----
     // Each FFT bin is mapped to one of 12 pitch classes (C=0 .. B=11)
     // using MIDI note arithmetic.  Energy is accumulated per pitch class,
@@ -706,6 +744,7 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
             2.54f, 4.75f, 3.98f, 2.69f, 3.34f, 3.17f };
 
         float bestMajor = -1e9f, bestMinor = -1e9f;
+        float corrSum = 0.f, bestAny = -1e9f;
         for (int t = 0; t < 12; ++t) {
             float majCorr = 0.f, minCorr = 0.f;
             for (int i = 0; i < 12; ++i) {
@@ -714,11 +753,45 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
             }
             if (majCorr > bestMajor) bestMajor = majCorr;
             if (minCorr > bestMinor) bestMinor = minCorr;
+            corrSum += majCorr + minCorr;
+            bestAny  = std::max(bestAny, std::max(majCorr, minCorr));
         }
         // Ratio: 0 = purely minor, 1 = purely major.
         // Very slow smoothing (~3 s) so mode reflects atmosphere, not noise.
         float rawMode = bestMajor / (bestMajor + bestMinor + 1e-6f);
         m_sMode = 0.97f * m_sMode + 0.03f * rawMode;
+
+        // Key clarity: how far the best-matching key stands above the average of
+        // all 24 key correlations.  Peaked → one clear key; flat → atonal/noise.
+        float meanCorr   = corrSum / 24.f;
+        float rawClarity = (bestAny > 1e-6f)
+                         ? std::min(2.5f * (bestAny - meanCorr) / bestAny, 1.f) : 0.f;
+        rawClarity   = std::max(0.f, rawClarity);
+        m_sKeyClarity = 0.97f * m_sKeyClarity + 0.03f * rawClarity;
+
+        // ---- Harmonic Change (HCDF, Harte 2006) ----
+        // Project the 12-bin chroma onto the 6-D tonal centroid (three circles:
+        // fifths, minor thirds, major thirds), then measure how fast that point
+        // moves frame-to-frame.  Spikes on chord/key changes, ~0 on held harmony.
+        const float P = 3.14159265358979f;
+        float tc[6] = {0,0,0,0,0,0};
+        for (int n = 0; n < 12; ++n) {
+            float c = m_smoothedChroma[n];
+            tc[0] += c * std::sin(float(n) * 7.f * P / 6.f);
+            tc[1] += c * std::cos(float(n) * 7.f * P / 6.f);
+            tc[2] += c * std::sin(float(n) * 3.f * P / 2.f);
+            tc[3] += c * std::cos(float(n) * 3.f * P / 2.f);
+            tc[4] += 0.5f * c * std::sin(float(n) * 2.f * P / 3.f);
+            tc[5] += 0.5f * c * std::cos(float(n) * 2.f * P / 3.f);
+        }
+        float hcdf = 0.f;
+        for (int i = 0; i < 6; ++i) {
+            float d = tc[i] - m_tonalCentroid[i];
+            hcdf += d * d;
+            m_tonalCentroid[i] = tc[i];
+        }
+        hcdf = std::min(std::sqrt(hcdf) * 4.f, 1.f);   // normalise to ~[0,1]
+        m_sHCDF = 0.85f * m_sHCDF + 0.15f * hcdf;
     }
 
     // ---- Dominant Pitch – Harmonic Product Spectrum (HPS) ----
@@ -776,6 +849,10 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
     m_features.estimatedBPM     = estimatedBPM;
     m_features.arousal          = arousal;
     m_features.valence          = valence;
+    m_features.keyClarity       = m_sKeyClarity;
+    m_features.sharpness        = m_sSharpness;
+    m_features.harmonicChange   = m_sHCDF;
+    m_features.roughness        = m_sRoughness;
     m_features.timingScale      = timingScale;
     // FFT-derived features
     m_features.spectralRolloff  = m_sRolloff;

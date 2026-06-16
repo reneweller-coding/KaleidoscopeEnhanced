@@ -119,6 +119,11 @@ private:
     float m_attackAccum     = 0.f;    // smoothed attack sharpness
     float m_sZCR            = 0.f;    // smoothed zero-crossing rate
     float m_sSFM            = 0.f;    // smoothed spectral flatness
+    float m_sSharpness      = 0.f;    // smoothed Zwicker-style sharpness
+    float m_sKeyClarity     = 0.f;    // smoothed key clarity (KK best-vs-mean)
+    float m_tonalCentroid[6] = {};    // previous-frame Harte 6-D tonal centroid
+    float m_sHCDF           = 0.f;    // smoothed harmonic change detection function
+    float m_sRoughness      = 0.f;    // smoothed sensory dissonance (Sethares)
 
     // ---- FFT analysis (Radix-2 Cooley-Tukey, real-valued audio input) ----
     // Window: 2048 samples ≈ 42 ms at 48 kHz → 23.4 Hz / bin.

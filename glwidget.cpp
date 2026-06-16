@@ -178,17 +178,22 @@ void GLwidget::draw()
 	if (m_audioAnalyzer)
 		audio = m_audioAnalyzer->getFeatures();
 
+	// QOpenGLWidget renders into its own FBO, not framebuffer 0.  Tell the
+	// pipeline where the final image must land, otherwise it draws off-screen.
+	m_actConfiguration->m_filterShader->setDefaultFBO( defaultFramebufferObject() );
+
 	m_actConfiguration->m_filterShader->paint(m_RotationMatrix, m_xTrans, m_yTrans, m_zTrans, audio);
 	
 	//printf( "Painting Now\n" );
-	QPainter painter(this);
-	//painter.setRenderHint(QPainter::Antialiasing);
-	
+	// Only spin up a QPainter when the overlay menu is actually visible, so the
+	// normal render path is pure GL (no QPainter/GL state interaction).
 	if( m_showSelectConfigurationMenu )
 	{
+		QPainter painter(this);
+		//painter.setRenderHint(QPainter::Antialiasing);
 		showSelectConfigurationsMenu( &painter );
+		painter.end();
 	}
-	painter.end();
 
 	/*if (save_images)
 	{

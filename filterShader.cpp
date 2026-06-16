@@ -783,7 +783,7 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 	glViewport( 0, 0, m_width, m_height );
 	glUseProgram( 0 );
 	drawScene( rotMatrix, tx, ty, tz );
-	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, 0 );
+	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_defaultFBO );
 	checkFramebufferStatus();*/
 	float timeSinceLastFrame = m_nanotimer.elapsed();
 	//if( timeSinceLastFrame > 20.0 )
@@ -808,6 +808,11 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
         if (dt < 0.f)  dt = 0.f;
         if (dt > 0.1f) dt = 0.1f;   // ignore long stalls (first frame, load hitches)
 
+        // Global reactivity strength.  All audio-driven MOTION is scaled by this
+        // single knob — raise it for a wilder show, lower it for calm.  (Motion is
+        // integrated into phases, so larger values stay smooth and never flicker.)
+        const float kReactivity = 1.0f;
+
         // Ease rotation direction between +1/-1 so reversals never snap.  Even
         // an instant flip would now only change the *rate*, not the phase, but
         // easing keeps the velocity change graceful too.
@@ -816,15 +821,23 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
         if (dirStep > 1.f) dirStep = 1.f;
         m_audioDir += (dirTarget - m_audioDir) * dirStep;
 
-        // Rotation angular velocity (rad/s): gentle drift with loudness plus a
-        // nudge on each beat.  Bounded and independent of absolute time.
-        float rotRate = m_audioDir * (0.20f * audio.overallLevel + 0.80f * audio.beatDecay);
+        // "energy" blends the slow arousal mood with instantaneous loudness, so
+        // both an energetic track overall and momentary swells drive the visuals.
+        float energy = 0.5f * audio.arousal + 0.5f * audio.overallLevel;
+
+        // Rotation angular velocity (rad/s): a clearly visible energy-driven drift
+        // plus a strong nudge on every beat.  Bounded and independent of absolute
+        // time, so it tracks the music without ever jumping.
+        float rotRate = m_audioDir * kReactivity
+                      * (1.20f * energy + 2.50f * audio.beatDecay);
         m_audioRotPhase += dt * rotRate;
 
-        // Tunnel forward advance: always forward (no sign change → no flips),
-        // driven by spectral flux and loudness so static drones barely move.
-        float advRate = 0.02f * (0.15f + 0.85f * audio.spectralFlux)
-                              * (0.50f + audio.overallLevel);
+        // Tunnel forward advance: always forward (no sign change → no flips).
+        // Flux + energy push the tunnel, plus an extra surge on harmonic changes
+        // (chord/key shifts), so the visuals visibly "move" when the music does.
+        float advRate = kReactivity
+                      * (0.03f + 0.18f * audio.spectralFlux + 0.12f * energy
+                                + 0.20f * audio.harmonicChange);
         m_audioAdvance += dt * advRate;
 
         // Slew-limit brightness drivers (photosensitive-safety): a beat may rise
@@ -1026,7 +1039,7 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 	checkGLErrors("createTextures() 1");
 
 	//Now Use Final Rendering
-	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, 0 );
+	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_defaultFBO );
 	checkFramebufferStatus();
 
 	//Do the FBO Stuff
@@ -1039,7 +1052,7 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 
 	
 	//Now Use Post Processing
-	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, 0 );
+	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_defaultFBO );
 	checkFramebufferStatus();
 
 	//printf( "%f %d\n", t-m_lastTime, loadimage );
@@ -1165,7 +1178,7 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 
 
 	//Now Use Final Rendering
-	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, 0 );
+	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_defaultFBO );
 	checkFramebufferStatus();
 
 	//Do the FBO Stuff
@@ -1178,7 +1191,7 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 
 	
 	//Now Use Final Rendering
-	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, 0 );
+	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_defaultFBO );
 	checkFramebufferStatus();
 
 	/*******************************************************************************/
