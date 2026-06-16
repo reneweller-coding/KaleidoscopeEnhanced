@@ -108,6 +108,16 @@ void FilterShader::init( const QString &directory, unsigned int timeTextureSoloM
 
 void FilterShader::start( int width, int height )
 {
+	// Revisiting an already-built configuration: just resize, don't rebuild.
+	// (Rebuilding leaked GL programs/textures/FBOs and spawned a duplicate
+	//  ImageLoader thread every time you switched back to a configuration.)
+	if( m_started )
+	{
+		resize( width, height );
+		return;
+	}
+	m_started = true;
+
 	m_nanotimer.start();
 
 	m_imageList.clear();
