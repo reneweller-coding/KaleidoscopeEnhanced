@@ -47,11 +47,18 @@ $env:Path = "C:\Qt\6.11.1\msvc2022_64\bin;" + $env:Path
 | `-s <factor>` | Internal render scale 0.25–2.0 (see below)                        |
 | `-c <name>`   | Start with the named configuration (e.g. `darkambient`, `normal`)|
 | `-m <index>`  | Fullscreen on monitor `<index>` (0-based; implies `-b`)          |
+| `-l`          | Log to `kaleidoscope.log` instead of the console (kiosk)         |
 | `-h`          | Print usage and exit                                              |
 
-For an unattended **installation / kiosk**, combine `-m`, `-c` and `-s`. While
-running, the app keeps the display awake and suppresses the screensaver and
-system standby for as long as it is open.
+For an unattended **installation / kiosk**, combine `-m`, `-c`, `-s` and `-l`.
+While running, the app keeps the display awake and suppresses the screensaver
+and system standby for as long as it is open.
+
+**Adaptive render scale (key `g`, on by default):** the internal render scale is
+nudged automatically to hold the frame rate near target — it drops below ~45 FPS
+and recovers above ~57 — clamped to between 0.35 and whatever `-s` you launched
+with. So `-s` sets the *maximum* quality and the app stays smooth on its own; the
+live scale and the `g` state are shown in the `i` overlay.
 
 **`-s <factor>` (internal render scale, 0.25–2.0):** the expensive effect passes
 render at `factor × display resolution` and only the final pass upscales to the
@@ -111,15 +118,17 @@ correct working directory). Otherwise build it later with `ISCC.exe installer.is
 | Key        | Action                                                        |
 |------------|---------------------------------------------------------------|
 | `Esc`, `Q` | Quit                                                          |
+| `h`        | Toggle the on-screen **help** (keyboard reference)            |
 | `0`        | Toggle the configuration-select menu                          |
-| `1`–`9`    | Switch configuration                                          |
+| `1`–`9`    | Switch configuration (cross-fades)                            |
 | `i`        | Toggle the live audio-feature overlay (incl. **FPS**)         |
 | `n`        | Manually advance to the next effect (musical scene change)    |
 | `[` / `]`  | Reactivity — less / more audio-driven motion                  |
 | `,` / `.`  | Trails — shorter / longer feedback trails                     |
 | `-` / `=`  | Mood — weaker / stronger colour grading                       |
-| `k`        | Save the current look settings as the startup default         |
 | `a`        | Toggle **auto-config-by-mood** (auto-switch configs)          |
+| `g`        | Toggle **adaptive render scale** (auto-FPS)                   |
+| `k`        | Save the current look **and** UI state as the startup default |
 | `s`        | Save a PNG screenshot of the window                           |
 | mouse drag | (when not fullscreen) trackball / interaction                 |
 
@@ -235,8 +244,16 @@ Built for unattended, long-running installations:
   monitor (fullscreen), `-s <factor>` the render scale.
 - **No sleep:** while running, the screensaver and system standby are suppressed
   and the display is kept awake.
-- **Persistent look:** the reactivity / trails / mood / render-scale settings are
-  saved with **`k`** and restored on the next launch (`..\kaleidoscope_settings.ini`).
+- **Persistent state:** **`k`** saves the look settings (reactivity / trails /
+  mood / render-scale) **and** the UI state (active configuration, auto-config
+  and auto-scale toggles) to `..\kaleidoscope_settings.ini`, so the installation
+  comes back up exactly as configured.
+- **Logging (`-l`):** sends shader status, device reconnects and errors to
+  `kaleidoscope.log` (keeping one previous session as `.log.1`) so an unattended
+  machine stays diagnosable.
+- **Stays smooth on its own:** adaptive render scale (key `g`) holds the frame
+  rate near target without manual `-s` tuning; the heavy effect passes are also
+  skipped whenever no cross-fade is in progress.
 - **Self-healing audio:** if the default output device changes (switching outputs,
   unplugging headphones, an HDMI display sleeping), the WASAPI loopback capture
   reconnects automatically instead of going silent.
