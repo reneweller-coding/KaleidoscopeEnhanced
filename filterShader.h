@@ -47,6 +47,10 @@ public:
 	static float reactivity() { return s_reactivity; }
 	static float trails()     { return s_trailAmount; }
 	static float mood()       { return s_moodStrength; }
+	// Absolute setters (e.g. MIDI knobs map a 0..1 value to the full range).
+	static void  setReactivity( float v ) { s_reactivity  = clampParam(v, 0.f, 3.0f); }
+	static void  setTrails     ( float v ) { s_trailAmount = clampParam(v, 0.f, 0.95f); }
+	static void  setMood       ( float v ) { s_moodStrength= clampParam(v, 0.f, 2.5f); }
 
 	// Persist / restore the look parameters above (+ render scale) across runs.
 	// loadSettings() is called at startup BEFORE the command line is parsed, so

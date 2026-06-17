@@ -12,6 +12,7 @@
 #include "Configuration.h"
 #include "AudioAnalyzer.h"
 #include "NowPlaying.h"
+#include "MidiInput.h"
 
 
 class GLwidget : public QOpenGLWidget
@@ -58,6 +59,10 @@ protected:
 	bool			m_showNowPlaying = true;
 	QString			m_lastNpTitle;
 	qint64			m_npShownAt     = -100000;
+
+	// Optional MIDI control (knobs -> look params, pads -> next effect).
+	void            applyMidi();
+	MidiInput      *m_midi          = nullptr;
 
 	void traverseConfigurations( const QString& dirname, std::vector<Configuration *> &configurationList );
 
