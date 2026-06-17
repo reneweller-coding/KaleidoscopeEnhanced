@@ -11,6 +11,7 @@
 #include "filterShader.h"
 #include "Configuration.h"
 #include "AudioAnalyzer.h"
+#include "NowPlaying.h"
 
 
 class GLwidget : public QOpenGLWidget
@@ -49,6 +50,14 @@ protected:
 	void drawHelpOverlay( QPainter *painter );
 	void drawAudioMenu( QPainter *painter );   // runtime audio-source picker ('d')
 	void selectAudioDevice( int index );       // 0 = default loopback, 1..N = listed
+
+	// "Now playing" lower-third: shown briefly when the track changes (key 'p').
+	void drawNowPlaying( QPainter *painter, const QString &title,
+	                     const QString &artist, float alpha );
+	NowPlaying     *m_nowPlaying    = nullptr;
+	bool			m_showNowPlaying = true;
+	QString			m_lastNpTitle;
+	qint64			m_npShownAt     = -100000;
 
 	void traverseConfigurations( const QString& dirname, std::vector<Configuration *> &configurationList );
 

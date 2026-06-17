@@ -131,7 +131,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>Qt6Guid.lib;Qt6Cored.lib;Qt6OpenGLd.lib;Qt6OpenGLWidgetsd.lib;OpenGL32.Lib;glu32.lib;Qt6Xmld.lib;Qt6Widgetsd.lib;ole32.lib;oleaut32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Qt6Guid.lib;Qt6Cored.lib;Qt6OpenGLd.lib;Qt6OpenGLWidgetsd.lib;OpenGL32.Lib;glu32.lib;Qt6Xmld.lib;Qt6Widgetsd.lib;ole32.lib;oleaut32.lib;WindowsApp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)Kaleidoscope.exe</OutputFile>
       <AdditionalLibraryDirectories>$(QTDIR)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -178,7 +178,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>Qt6Gui.lib;Qt6Core.lib;Qt6OpenGL.lib;Qt6OpenGLWidgets.lib;OpenGL32.Lib;glu32.lib;Qt6Xml.lib;Qt6Widgets.lib;ole32.lib;oleaut32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Qt6Gui.lib;Qt6Core.lib;Qt6OpenGL.lib;Qt6OpenGLWidgets.lib;OpenGL32.Lib;glu32.lib;Qt6Xml.lib;Qt6Widgets.lib;ole32.lib;oleaut32.lib;WindowsApp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)Kaleidoscope.exe</OutputFile>
       <AdditionalLibraryDirectories>$(QTDIR)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>false</GenerateDebugInformation>
@@ -210,6 +210,7 @@ exit /b 0</Command>
     <ClCompile Include="glwidget.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mesh.cpp" />
+    <ClCompile Include="NowPlaying.cpp" />
     <ClCompile Include="moc\moc_AudioAnalyzer.cpp" />
     <ClCompile Include="moc\moc_glwidget.cpp" />
     <ClCompile Include="moc\moc_QMyWindow.cpp" />
