@@ -60,6 +60,13 @@ void main()
     // hard-clipping the whole frame to flat white when the grade pushes it high.
     c = c / (1.0 + max(c - 0.8, 0.0));
 
-    // Photosensitivity brightness limit (applied last).
-    gl_FragColor = vec4(clamp(c * scale, 0.0, 1.0), 1.0);
+    c *= scale;   // photosensitivity brightness limit (applied last)
+
+    // Ordered dither (interleaved gradient noise) to break up 8-bit banding in the
+    // smooth gradients (lava lamp / oil / hypercube).  Spatial only -> flicker-free.
+    float ign = fract(52.9829189 * fract(dot(gl_FragCoord.xy,
+                                             vec2(0.06711056, 0.00583715))));
+    c += (ign - 0.5) / 255.0;
+
+    gl_FragColor = vec4(clamp(c, 0.0, 1.0), 1.0);
 }

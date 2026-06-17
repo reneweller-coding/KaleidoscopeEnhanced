@@ -6,6 +6,7 @@
 
 #include <QtOpenGLWidgets/QOpenGLWidget>
 #include <QtGui/QImage>
+#include <QtGui/QPixmap>
 
 #include "filterShader.h"
 #include "Configuration.h"
@@ -47,6 +48,14 @@ protected:
 	void drawFeatureOverlay( QPainter *painter, const AudioFeatures &f );
 
 	void traverseConfigurations( const QString& dirname, std::vector<Configuration *> &configurationList );
+
+	// Request a configuration switch (applied in timerEvent, OUTSIDE paintGL, so
+	// the cross-fade grab can't re-enter paintGL).  Cross-fades from the old frame.
+	void switchConfig( Configuration *cfg );
+	void beginConfigFade();             // capture the current frame as the fade-out layer
+	Configuration *m_pendingConfig = nullptr;  // requested switch, applied next tick
+	QPixmap m_fadePixmap;               // last frame of the previous config
+	qint64  m_fadeStart = -1;           // fade start (m_fpsTimer ms); <0 = no fade
 
 	// Switch to the configuration with the given name (case-insensitive).
 	// Returns true if it switched to a *different* configuration.
