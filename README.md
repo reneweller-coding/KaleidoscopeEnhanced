@@ -122,6 +122,8 @@ correct working directory). Otherwise build it later with `ISCC.exe installer.is
 | `0`        | Toggle the configuration-select menu                          |
 | `1`–`9`    | Switch configuration (cross-fades)                            |
 | `i`        | Toggle the live audio-feature overlay (incl. **FPS**)         |
+| `d`        | Choose the **audio source** (output / microphone) — overlay   |
+| `p`        | Toggle the **now-playing** track title display                |
 | `n`        | Manually advance to the next effect (musical scene change)    |
 | `[` / `]`  | Reactivity — less / more audio-driven motion                  |
 | `,` / `.`  | Trails — shorter / longer feedback trails                     |
@@ -169,6 +171,22 @@ effects: **`StereoSpectrum`** (stereo-separated left/right band display) and
 - **`HyperCube`** — an infinity-mirror cube (*Hyperspace Lighting "HyperCube"*):
   glowing cube edges receding into an endless rotating tunnel, with a counter-
   rotating inner cube and a vanishing-point glow; colours follow the harmony.
+
+---
+
+## Live control
+
+- **Audio source (`d`):** a transient overlay lists every output device (captured
+  via loopback) and input device (microphone / line-in); press a digit to switch
+  the captured source **at runtime** — useful to react to a live band/room mic
+  instead of the PC's own playback. No menu bar; same keyboard-overlay style as
+  the config menu.
+- **Now playing (`p`):** a tasteful lower-third fades in for a few seconds when
+  the track changes, showing the current **title / artist** (from the Windows
+  media session — works with Spotify, browsers, foobar2000, …). Toggle persists.
+- **MIDI (automatic):** if a MIDI controller is connected it is opened on
+  startup — knob **CC 1/2/3** map to reactivity / trails / mood, and any pad/key
+  (Note-On) advances to the next effect. No device → no-op.
 
 ---
 
@@ -268,6 +286,8 @@ Built for unattended, long-running installations:
 ## Project layout
 
 - `AudioAnalyzer.{h,cpp}`, `AudioFeatures.h` — capture + real-time analysis
+- `NowPlaying.{h,cpp}` — current track title/artist (Windows media session / WinRT)
+- `MidiInput.{h,cpp}` — optional MIDI controller input (winmm)
 - `glwidget.{h,cpp}` — `QOpenGLWidget`, input, overlay
 - `filterShader.{h,cpp}` — the FBO render pipeline + audio→visual mapping
 - `EffectShader.{h,cpp}`, `Uniform.{h,cpp}` — per-effect shader + uniform handling
