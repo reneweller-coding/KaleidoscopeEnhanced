@@ -108,19 +108,21 @@ foreach ($f in @("vc_redist.x64.exe", "dxcompiler.dll", "dxil.dll",
 }
 
 # --- 5. end-user launchers ---------------------------------------------------
+# Launchers: `start "" /D <bin> <exe>` sets the new process's working directory to
+# bin (so the app's "..\" asset paths resolve) WITHOUT relying on `cd`, using the
+# full exe path - robust against spaces / odd launch dirs.  The exe is a
+# Windows-subsystem app now, so no console window appears.
 $batWin = @'
 @echo off
 rem Launch the visualizer windowed. Pass extra options through, e.g.:
 rem   Kaleidoscope-starten.bat -c psychedelic -s 0.75
-cd /d "%~dp0bin"
-start "" "Kaleidoscope.exe" %*
+start "" /D "%~dp0bin" "%~dp0bin\Kaleidoscope.exe" %*
 '@
 $batFs = @'
 @echo off
 rem Launch fullscreen (kiosk). The screensaver/standby are suppressed while it runs.
 rem Add -m <n> to choose a monitor, -c <name> a configuration, -s <factor> the render scale.
-cd /d "%~dp0bin"
-start "" "Kaleidoscope.exe" -b %*
+start "" /D "%~dp0bin" "%~dp0bin\Kaleidoscope.exe" -b %*
 '@
 Set-Content -Path (Join-Path $pkgDir "Kaleidoscope-starten.bat")  -Value $batWin -Encoding Ascii
 Set-Content -Path (Join-Path $pkgDir "Kaleidoscope-Vollbild.bat") -Value $batFs  -Encoding Ascii
