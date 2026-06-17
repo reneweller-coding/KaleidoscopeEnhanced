@@ -17,28 +17,28 @@ EffectShader( minTimeSolo, maxTimeSolo, minTimeInterpolation, maxTimeInterpolati
 , m_timeSoloRotation(20.0)
 , m_timeInterpolationRotation(10.0)
 , m_interpolationRotation(0.0)
-, m_deltaRotation(0.002)
+, m_deltaRotation(0.002f)
 , m_timeSoloRotationMin(240)
 , m_timeSoloRotationMax(600)
 , m_timeInterpolationRotationMin(40)
 , m_timeInterpolationRotationMax(60)
 , m_stateRotation(2)
-, m_speedRotationMin(-0.001)//(0.0005)
-, m_speedRotationMax(0.001)
-, m_speedAct(0.01)
-, m_speed(0.02)
-, m_speedMin(0.02)//-0.02
-, m_speedMax(0.09)//0.4
+, m_speedRotationMin(-0.001f)//(0.0005)
+, m_speedRotationMax(0.001f)
+, m_speedAct(0.01f)
+, m_speed(0.02f)
+, m_speedMin(0.02f)//-0.02
+, m_speedMax(0.09f)//0.4
 , m_sides(8.0)
-, m_power( 1.01 )
-, m_powerMin( 1.0000001 )
-, m_powerMax( 4.01 )
-, m_powerProbability( 0.05 )//0.15
+, m_power( 1.01f )
+, m_powerMin( 1.0000001f )
+, m_powerMax( 4.01f )
+, m_powerProbability( 0.05f )//0.15
 , m_powerRotationAllowed( false )
 , m_statePower(2)
 , m_timeSoloPower(10.0)
 , m_timeInterpolationPower(30.0)
-, m_interpolationPower(1.01)
+, m_interpolationPower(1.01f)
 , m_timeSoloPowerFullMin(30)
 , m_timeSoloPowerFullMax(320)
 , m_timeSoloPowerNoMin(10)
@@ -67,28 +67,28 @@ EffectShader( minTimeSolo, maxTimeSolo, minTimeInterpolation, maxTimeInterpolati
 , m_timeSoloRotation(20.0)
 , m_timeInterpolationRotation(10.0)
 , m_interpolationRotation(0.0)
-, m_deltaRotation(0.002)
+, m_deltaRotation(0.002f)
 , m_timeSoloRotationMin(240)
 , m_timeSoloRotationMax(600)
 , m_timeInterpolationRotationMin(40)
 , m_timeInterpolationRotationMax(60)
 , m_stateRotation(2)
-, m_speedRotationMin(-0.001)//(0.0005)
-, m_speedRotationMax(0.001)
-, m_speedAct(0.01)
-, m_speed(0.02)
-, m_speedMin(0.02)//-0.02
-, m_speedMax(0.09)//0.4
+, m_speedRotationMin(-0.001f)//(0.0005)
+, m_speedRotationMax(0.001f)
+, m_speedAct(0.01f)
+, m_speed(0.02f)
+, m_speedMin(0.02f)//-0.02
+, m_speedMax(0.09f)//0.4
 , m_sides(8.0)
-, m_power( 1.01 )
-, m_powerMin( 1.0000001 )
-, m_powerMax( 4.01 )
-, m_powerProbability( 0.05 )//0.15
+, m_power( 1.01f )
+, m_powerMin( 1.0000001f )
+, m_powerMax( 4.01f )
+, m_powerProbability( 0.05f )//0.15
 , m_powerRotationAllowed( false )
 , m_statePower(2)
 , m_timeSoloPower(10.0)
 , m_timeInterpolationPower(30.0)
-, m_interpolationPower(1.01)
+, m_interpolationPower(1.01f)
 , m_timeSoloPowerFullMin(30)
 , m_timeSoloPowerFullMax(320)
 , m_timeSoloPowerNoMin(10)
@@ -286,14 +286,14 @@ void TextureEffectKaleidoscopeBase::resetParameters()
 
 	m_speed = (float) (m_speedMin + (((float)qrand() / (float) RAND_MAX) * (m_speedMax - m_speedMin)));
 	if( fabs( m_speed ) < EPSILON )
-		m_speed = EPSILON;
+		m_speed = (float) EPSILON;
 	m_speedAct = m_speed;
 
     float pR = ((float)qrand() / (float) RAND_MAX);
     if( pR > 0.4 )
         m_interpolationRotation = 0.0;
     else
-        m_interpolationRotation = M_PI/4.0;
+        m_interpolationRotation = (float)(M_PI/4.0);
 
 
 	m_sides = (float) ((qrand() % m_maxSides)  + m_minSides);

@@ -336,7 +336,7 @@ void GLwidget::draw()
 void GLwidget::showSelectConfigurationsMenu( QPainter *painter )
 {
 	
-	unsigned int nrConfigurations = m_configurationList.size();
+	unsigned int nrConfigurations = (unsigned int) m_configurationList.size();
 
 	unsigned int fontsize = m_height/nrConfigurations*0.3;
 	
@@ -355,14 +355,14 @@ void GLwidget::showSelectConfigurationsMenu( QPainter *painter )
 	unsigned int totalHeight = sizeSingleLine*(nrConfigurations+1);
 
 
-	unsigned int maxStringlength = 0;
+	int maxStringlength = 0;
 	for( unsigned int i = 0; i < nrConfigurations; i++ )
 	{
 		if( fm.horizontalAdvance((*m_configurationList[i]).getConfigurationName()) > maxStringlength ) //fm.horizontalAdvance(str1)/2
 			maxStringlength = fm.horizontalAdvance((*m_configurationList[i]).getConfigurationName());
 	}
 
-	maxStringlength *= 1.5;
+	maxStringlength = int( maxStringlength * 1.5f );
 
 	
 	 // draw the overlayed text using QPainter

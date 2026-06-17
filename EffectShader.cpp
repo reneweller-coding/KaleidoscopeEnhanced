@@ -29,7 +29,7 @@ m_minTimeSolo(minTimeSolo)
 	sprintf( m_fragmentShaderFilename, "%s\0", ba.data() );
 
 
-	m_uniforms.empty();
+	m_uniforms.clear();
 
 	
 	m_timeSolo = getInterpolatedTime( m_minTimeSolo, m_maxTimeSolo );
@@ -158,7 +158,7 @@ void EffectShader::initUniforms(int width, int height)
 	m_interpolationUni = glGetUniformLocation( m_sh_prog_id, "interpolation" );
 
 
-	unsigned int nr = m_uniforms.size();
+	unsigned int nr = (unsigned int) m_uniforms.size();
 	
 	for( unsigned int i = 0; i < m_uniforms.size(); i++ )
 		m_uniforms[i]->initUniform( m_sh_prog_id );
