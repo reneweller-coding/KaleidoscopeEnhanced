@@ -47,6 +47,8 @@ protected:
 	void showSelectConfigurationsMenu( QPainter *painter );
 	void drawFeatureOverlay( QPainter *painter, const AudioFeatures &f );
 	void drawHelpOverlay( QPainter *painter );
+	void drawAudioMenu( QPainter *painter );   // runtime audio-source picker ('d')
+	void selectAudioDevice( int index );       // 0 = default loopback, 1..N = listed
 
 	void traverseConfigurations( const QString& dirname, std::vector<Configuration *> &configurationList );
 
@@ -112,6 +114,7 @@ protected:
 	bool			m_showSelectConfigurationMenu;
 	bool			m_showFeatureOverlay;
 	bool			m_showHelp = false;
+	bool			m_showAudioMenu = false;
 
 	int		m_width;
 	int		m_height;

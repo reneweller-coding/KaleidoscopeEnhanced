@@ -2,9 +2,22 @@
 
 #include <QtCore/QThread>
 #include <QtCore/QMutex>
+#include <QtCore/QString>
+#include <QtCore/QList>
 #include <atomic>
 
 #include "AudioFeatures.h"
+
+struct IMMDeviceEnumerator;   // fwd (WASAPI) — only a pointer is used in the header
+
+// A selectable audio source: any output endpoint (captured via loopback) or any
+// input endpoint (microphone / line-in, captured normally).
+struct AudioDevice
+{
+    QString id;                 // WASAPI endpoint id
+    QString name;               // friendly name shown in the overlay
+    bool    isCapture = false;  // true = input device, false = output (loopback)
+};
 
 /**
  * AudioAnalyzer
@@ -49,6 +62,15 @@ public:
 
     /** Thread-safe snapshot of the latest analysis result. */
     AudioFeatures getFeatures() const;
+
+    /** Selectable audio sources (outputs + inputs), refreshed by the capture thread. */
+    QList<AudioDevice> devices() const;
+
+    /** Friendly name of the source currently being captured. */
+    QString currentDeviceName() const;
+
+    /** Switch the captured source at runtime.  Empty id = back to default loopback. */
+    void requestDevice( const QString &id, bool isCapture );
 
     /** Graceful shutdown – call before wait(). */
     void stop();
@@ -195,6 +217,15 @@ private:
     // N must be a power of two.  Input: re[]=windowed samples, im[]=0.
     // Output: re[k]/im[k] = complex spectrum coefficient X[k].
     static void radix2fft(float *re, float *im, int N);
+
+    // ---- Audio source selection (runtime device switching) ----
+    void enumerateDevices( IMMDeviceEnumerator *pEnum );  // (re)populate m_devices
+    QList<AudioDevice> m_devices;          // available sources (mutex-protected)
+    QString  m_curDeviceName;              // name of the source being captured
+    QString  m_reqDeviceId;                // requested endpoint id ("" = default)
+    bool     m_reqIsCapture = false;       // requested device is an input
+    bool     m_useReqDevice = false;       // use the requested device vs. default
+    std::atomic<bool> m_deviceChangeReq { false };  // make the capture loop re-init
 
     // ---- Shared output ----
     mutable QMutex m_mutex;

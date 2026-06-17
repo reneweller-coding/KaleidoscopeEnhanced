@@ -253,7 +253,8 @@ void GLwidget::draw()
 	//printf( "Painting Now\n" );
 	// Only spin up a QPainter when an overlay or the cross-fade needs it, so the
 	// normal render path is pure GL (no QPainter/GL state interaction).
-	if( m_showSelectConfigurationMenu || m_showFeatureOverlay || m_showHelp || fadeAlpha > 0.f )
+	if( m_showSelectConfigurationMenu || m_showFeatureOverlay || m_showHelp
+	    || m_showAudioMenu || fadeAlpha > 0.f )
 	{
 		QPainter painter(this);
 		//painter.setRenderHint(QPainter::Antialiasing);
@@ -269,6 +270,8 @@ void GLwidget::draw()
 			drawFeatureOverlay( &painter, audio );
 		if( m_showHelp )
 			drawHelpOverlay( &painter );
+		if( m_showAudioMenu )
+			drawAudioMenu( &painter );
 		painter.end();
 	}
 
@@ -652,6 +655,7 @@ void GLwidget::drawHelpOverlay( QPainter *painter )
 		{ "1 - 9",   "switch configuration" },
 		{ "n",       "next effect" },
 		{ "i",       "audio-feature overlay (+ FPS)" },
+		{ "d",       "choose audio source (output / mic)" },
 		{ "a",       "auto-config by mood on/off" },
 		{ "g",       "adaptive render scale on/off" },
 		{ "[  ]",    "reactivity  - less / more" },
@@ -684,8 +688,78 @@ void GLwidget::drawHelpOverlay( QPainter *painter )
 	}
 }
 
+void GLwidget::selectAudioDevice( int index )
+{
+	if( !m_audioAnalyzer )
+		return;
+	if( index == 0 )                          // 0 = default output (loopback)
+	{
+		m_audioAnalyzer->requestDevice( QString(), false );
+		fprintf( stderr, "Audio source: default (loopback)\n" );
+		return;
+	}
+	QList<AudioDevice> devs = m_audioAnalyzer->devices();
+	int di = index - 1;
+	if( di >= 0 && di < devs.size() )
+	{
+		m_audioAnalyzer->requestDevice( devs[di].id, devs[di].isCapture );
+		fprintf( stderr, "Audio source: %s\n", devs[di].name.toLocal8Bit().constData() );
+	}
+}
+
+void GLwidget::drawAudioMenu( QPainter *painter )
+{
+	QList<AudioDevice> devs;
+	QString current;
+	if( m_audioAnalyzer ) { devs = m_audioAnalyzer->devices(); current = m_audioAnalyzer->currentDeviceName(); }
+
+	int shown = devs.size(); if( shown > 9 ) shown = 9;   // 1..9 selectable
+	int n = shown + 1;                                     // + default entry
+
+	const int boxW = 580, lh = 26;
+	const int boxH = lh * (n + 1) + 30;
+	const int x0 = (width()  - boxW) / 2;
+	const int y0 = (height() - boxH) / 2;
+
+	painter->fillRect( x0, y0, boxW, boxH, QColor(0, 0, 0, 200) );
+	painter->setPen( QColor(120, 200, 255) );
+	painter->setFont( QFont("Consolas", 14, QFont::Bold) );
+	painter->drawText( x0 + 20, y0 + 32, QString("AUDIOQUELLE   (0-9 wählen,  d schließen)") );
+
+	painter->setFont( QFont("Consolas", 12) );
+	auto entry = [&]( int i, const QString &label, bool active ) {
+		int ry = y0 + 32 + (i + 1) * lh;
+		painter->setPen( active ? QColor(150, 230, 150) : QColor(210, 218, 232) );
+		painter->drawText( x0 + 24, ry, QString::number(i) + ".  " + label + (active ? "   ←" : "") );
+	};
+	entry( 0, "Standard-Ausgabe (Loopback)", current.startsWith("Standard") );
+	for ( int i = 0; i < shown; ++i )
+	{
+		QString tag = devs[i].isCapture ? "  [Eingang]" : "  [Ausgabe]";
+		entry( i + 1, devs[i].name + tag, !current.startsWith("Standard") && current == devs[i].name );
+	}
+}
+
 void GLwidget::keyPressEvent(QKeyEvent* event)
 {
+	// The audio-source picker is modal for number keys while it is open, so the
+	// digits choose a source instead of switching configuration.
+	if( m_showAudioMenu )
+	{
+		int k = event->key();
+		if( k >= Qt::Key_0 && k <= Qt::Key_9 )
+		{
+			selectAudioDevice( k - Qt::Key_0 );
+			m_showAudioMenu = false;
+			return;
+		}
+		if( k == Qt::Key_D || k == Qt::Key_Escape )
+		{
+			m_showAudioMenu = false;
+			return;
+		}
+	}
+
     switch(event->key())
 	{
 		case Qt::Key_Escape:
@@ -702,6 +776,9 @@ void GLwidget::keyPressEvent(QKeyEvent* event)
 			break;
 		case Qt::Key_H:
 			m_showHelp = !m_showHelp;
+			break;
+		case Qt::Key_D:
+			m_showAudioMenu = true;   // closed again from the modal handler above
 			break;
 		case Qt::Key_N:
 			// Manually advance to the next texture effect.
