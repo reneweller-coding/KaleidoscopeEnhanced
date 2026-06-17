@@ -93,7 +93,7 @@ void Configuration::readConfiguration( const QString &filename )
 	QFile* file = new QFile( filename );
 	if (!file->open(QIODevice::ReadOnly | QIODevice::Text))
 	{
-		printf( "Error on loading %s\n!", filename );
+		printf( "Error on loading %s\n!", qPrintable(filename) );
         exit( 0 );
     }
  

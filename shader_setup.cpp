@@ -98,7 +98,7 @@ void checkShaderExt( void )
     const GLubyte * strVersion = glGetString( GL_VERSION );
     printf("GL version = %s\n", strVersion );
     const GLubyte * extbytes = glGetString( GL_EXTENSIONS );
-    char * extstr = strdup( (char*) extbytes );
+    char * extstr = _strdup( (char*) extbytes );
     char * c = extstr;
     while ( *c )
     {

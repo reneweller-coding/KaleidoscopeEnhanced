@@ -162,7 +162,7 @@ void FilterShader::start( int width, int height )
 	traverse( m_imageDirectory, m_imageList );
 	m_imageListIterator = m_imageList.begin();
 
-	printf( "Nr of images: %d\n", m_imageList.size() );
+	printf( "Nr of images: %d\n", (int) m_imageList.size() );
 	if( m_imageList.isEmpty() )
 		fprintf( stderr, "WARNING: image directory '%s' missing or empty - "
 		                 "using a procedural fallback texture.\n",
@@ -344,7 +344,7 @@ FilterShader::FilterShader(int width, int height, const QString &directory)
 	traverse( directory, m_imageList );
 	m_imageListIterator = m_imageList.begin();
 
-	printf( "Nr of images: %d\n", m_imageList.size() );
+	printf( "Nr of images: %d\n", (int) m_imageList.size() );
 
 	qsrand(0);  // no-op: QRandomGenerator is auto-seeded
     unsigned int start = qrand() % (m_imageList.size() + 1);

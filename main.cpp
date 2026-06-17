@@ -76,7 +76,7 @@ void parsecommandline( int argc, char *argv[] )
 	int isopt[256];
 	char optchar;
 
-	nopts = strlen(optionchar);
+	nopts = (int) strlen(optionchar);
 	if ( nopts > 50 )
 	{
 		fprintf(stderr, "\n\nparsecommandline: the option-chars string "

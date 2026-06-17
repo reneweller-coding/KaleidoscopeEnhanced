@@ -128,6 +128,10 @@
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalOptions>/Zc:__cplusplus /Zc:strictStrings- %(AdditionalOptions)</AdditionalOptions>
+      <!-- Silence Qt 6.11's own QGuiApplication::compressEvent Qt-7 deprecation
+           notice (we don't use it).  CRT deprecations are already off via
+           _CRT_SECURE_NO_WARNINGS, so this only hides that Qt-header noise. -->
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
@@ -175,6 +179,10 @@
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalOptions>/Zc:__cplusplus /Zc:strictStrings- %(AdditionalOptions)</AdditionalOptions>
+      <!-- Silence Qt 6.11's own QGuiApplication::compressEvent Qt-7 deprecation
+           notice (we don't use it).  CRT deprecations are already off via
+           _CRT_SECURE_NO_WARNINGS, so this only hides that Qt-header noise. -->
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
@@ -206,7 +214,10 @@ exit /b 0</Command>
     <ClCompile Include="AudioAnalyzer.cpp" />
     <ClCompile Include="EffectShader.cpp" />
     <ClCompile Include="filterShader.cpp" />
-    <ClCompile Include="GLee.c" />
+    <ClCompile Include="GLee.c">
+      <!-- Vendored third-party extension loader: silence its warnings. -->
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
     <ClCompile Include="glwidget.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mesh.cpp" />
