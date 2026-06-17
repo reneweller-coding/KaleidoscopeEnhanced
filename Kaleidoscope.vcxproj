@@ -182,7 +182,11 @@
       <OutputFile>$(OutDir)Kaleidoscope.exe</OutputFile>
       <AdditionalLibraryDirectories>$(QTDIR)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>false</GenerateDebugInformation>
-      <SubSystem>Console</SubSystem>
+      <!-- Windows (GUI) subsystem so the distributed app shows NO console window.
+           We keep the standard main() entry, so point the entry at the C runtime
+           startup (no qtmain/WinMain needed). -->
+      <SubSystem>Windows</SubSystem>
+      <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
