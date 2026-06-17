@@ -115,6 +115,10 @@ GLwidget::~GLwidget()
 		m_audioAnalyzer->wait();
 		delete m_audioAnalyzer;
 	}
+	if (m_nowPlaying) {
+		m_nowPlaying->stop();
+		delete m_nowPlaying;   // joins its thread
+	}
 	for( unsigned int i = 0; i < m_configurationList.size(); i++ )
 		delete m_configurationList[i];
 }
@@ -158,6 +162,10 @@ void GLwidget::initializeGL()
 	// Start audio analyser (WASAPI loopback – captures any playing audio)
 	m_audioAnalyzer = new AudioAnalyzer(this);
 	m_audioAnalyzer->start();
+
+	// Start the "now playing" poller (SMTC: title/artist of the current track).
+	m_nowPlaying = new NowPlaying();
+	m_nowPlaying->start();
 
 #ifdef WIN32
 	// Kiosk / installation: keep the display on and suppress the screensaver and
@@ -250,11 +258,32 @@ void GLwidget::draw()
 			fadeAlpha = 1.f - float(el) / float(dur);
 	}
 
+	// Now-playing lower-third: appears for a few seconds when the track changes.
+	QString npTitle, npArtist;
+	float   npAlpha = 0.f;
+	if( m_nowPlaying && m_showNowPlaying )
+	{
+		npTitle  = m_nowPlaying->title();
+		npArtist = m_nowPlaying->artist();
+		if( !npTitle.isEmpty() && npTitle != m_lastNpTitle )
+		{
+			m_lastNpTitle = npTitle;
+			m_npShownAt   = m_fpsTimer.elapsed();
+		}
+		qint64 el = m_fpsTimer.elapsed() - m_npShownAt;
+		if( !npTitle.isEmpty() && el >= 0 && el < 6000 )
+		{
+			npAlpha = 1.f;                                  // fade in / out
+			if( el < 400 )       npAlpha = el / 400.f;
+			else if( el > 5300 ) npAlpha = (6000 - el) / 700.f;
+		}
+	}
+
 	//printf( "Painting Now\n" );
 	// Only spin up a QPainter when an overlay or the cross-fade needs it, so the
 	// normal render path is pure GL (no QPainter/GL state interaction).
 	if( m_showSelectConfigurationMenu || m_showFeatureOverlay || m_showHelp
-	    || m_showAudioMenu || fadeAlpha > 0.f )
+	    || m_showAudioMenu || fadeAlpha > 0.f || npAlpha > 0.f )
 	{
 		QPainter painter(this);
 		//painter.setRenderHint(QPainter::Antialiasing);
@@ -272,6 +301,8 @@ void GLwidget::draw()
 			drawHelpOverlay( &painter );
 		if( m_showAudioMenu )
 			drawAudioMenu( &painter );
+		if( npAlpha > 0.f )
+			drawNowPlaying( &painter, npTitle, npArtist, npAlpha );
 		painter.end();
 	}
 
@@ -371,8 +402,9 @@ static const char *kUiSettingsPath = "..\\kaleidoscope_settings.ini";
 void GLwidget::loadUiSettings()
 {
 	QSettings s( kUiSettingsPath, QSettings::IniFormat );
-	m_autoConfig = s.value( "autoConfig", m_autoConfig ).toBool();
-	m_autoScale  = s.value( "autoScale",  m_autoScale  ).toBool();
+	m_autoConfig     = s.value( "autoConfig",  m_autoConfig ).toBool();
+	m_autoScale      = s.value( "autoScale",   m_autoScale  ).toBool();
+	m_showNowPlaying = s.value( "nowPlaying",  m_showNowPlaying ).toBool();
 	// A persisted active config is the default start config, unless -c overrode it.
 	if( s_startConfig.isEmpty() )
 		s_startConfig = s.value( "activeConfig", QString() ).toString();
@@ -385,6 +417,7 @@ void GLwidget::saveUiSettings()
 		s.setValue( "activeConfig", m_actConfiguration->getConfigurationName() );
 	s.setValue( "autoConfig", m_autoConfig );
 	s.setValue( "autoScale",  m_autoScale );
+	s.setValue( "nowPlaying", m_showNowPlaying );
 	s.sync();
 }
 
@@ -656,6 +689,7 @@ void GLwidget::drawHelpOverlay( QPainter *painter )
 		{ "n",       "next effect" },
 		{ "i",       "audio-feature overlay (+ FPS)" },
 		{ "d",       "choose audio source (output / mic)" },
+		{ "p",       "now-playing title on/off" },
 		{ "a",       "auto-config by mood on/off" },
 		{ "g",       "adaptive render scale on/off" },
 		{ "[  ]",    "reactivity  - less / more" },
@@ -740,6 +774,31 @@ void GLwidget::drawAudioMenu( QPainter *painter )
 	}
 }
 
+void GLwidget::drawNowPlaying( QPainter *painter, const QString &title,
+                              const QString &artist, float alpha )
+{
+	int a   = int(alpha * 255.f + 0.5f); if (a < 0) a = 0; if (a > 255) a = 255;
+	int bgA = int(alpha * 150.f + 0.5f);
+
+	QFont tf("Segoe UI", 20, QFont::Bold);
+	QFont af("Segoe UI", 14);
+	QFontMetrics tm(tf), am(af);
+	int w = qMax(tm.horizontalAdvance(title), am.horizontalAdvance(artist)) + 70;
+	const int h = 72;
+	const int x = 40;
+	const int y = height() - h - 50;
+
+	painter->fillRect( x, y, w, h, QColor(0, 0, 0, bgA) );        // backdrop
+	painter->fillRect( x, y, 5, h, QColor(120, 200, 255, a) );    // accent bar
+
+	painter->setFont( tf );
+	painter->setPen( QColor(255, 255, 255, a) );
+	painter->drawText( x + 22, y + 34, title );
+	painter->setFont( af );
+	painter->setPen( QColor(180, 210, 240, a) );
+	painter->drawText( x + 22, y + 58, artist );
+}
+
 void GLwidget::keyPressEvent(QKeyEvent* event)
 {
 	// The audio-source picker is modal for number keys while it is open, so the
@@ -779,6 +838,10 @@ void GLwidget::keyPressEvent(QKeyEvent* event)
 			break;
 		case Qt::Key_D:
 			m_showAudioMenu = true;   // closed again from the modal handler above
+			break;
+		case Qt::Key_P:
+			m_showNowPlaying = !m_showNowPlaying;
+			fprintf( stderr, "Now-playing display: %s\n", m_showNowPlaying ? "ON" : "OFF" );
 			break;
 		case Qt::Key_N:
 			// Manually advance to the next texture effect.
