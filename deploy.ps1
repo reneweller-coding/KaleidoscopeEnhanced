@@ -92,10 +92,48 @@ Copy-Item $exeSrc $binDir
 Info "Running windeployqt ..."
 & $windeploy --release --no-translations --no-opengl-sw --no-system-d3d-compiler (Join-Path $binDir "Kaleidoscope.exe") | Out-Null
 
-# --- 4. guarantee the MSVC runtime is present (standalone, no vc_redist) -----
-foreach ($dll in @("vcruntime140.dll", "vcruntime140_1.dll", "msvcp140.dll")) {
-    $sys = Join-Path $env:WINDIR "System32\$dll"
-    if (Test-Path $sys) { Copy-Item $sys $binDir -Force }
+# --- 4. bundle the FULL C++ runtime so the package is standalone everywhere ---
+# Just shipping vcruntime140/msvcp140 is not enough: they depend on the Universal
+# CRT (ucrtbase.dll + api-ms-win-crt-*.dll).  On a target whose UCRT is missing or
+# older, DLL initialisation fails at load -> "0xc0000142".  So we ship the full VC
+# CRT set from the VS redist AND the matching UCRT from the Windows SDK redist;
+# only if those aren't present do we fall back to copying the core DLLs from
+# System32 (works on the build machine itself, but less portable).
+
+# VC++ CRT (msvcp140*, vcruntime140*, concrt140, ...): prefer the desktop x64
+# redist over the onecore variant.
+$vcRoot = "C:\Program Files\Microsoft Visual Studio\18\Community\VC\Redist\MSVC"
+$vcCrt = $null
+if (Test-Path $vcRoot) {
+    $cand = Get-ChildItem $vcRoot -Recurse -Filter "msvcp140.dll" -ErrorAction SilentlyContinue |
+            Where-Object { $_.FullName -match '\\x64\\' -and $_.FullName -match '\.CRT' }
+    $vcCrt = ($cand | Where-Object { $_.FullName -notmatch 'onecore' } | Select-Object -First 1)
+    if (-not $vcCrt) { $vcCrt = ($cand | Select-Object -First 1) }
+}
+if ($vcCrt) {
+    Copy-Item "$($vcCrt.DirectoryName)\*.dll" $binDir -Force
+    Info "Bundled VC++ CRT from $($vcCrt.DirectoryName)"
+} else {
+    foreach ($dll in @("vcruntime140.dll", "vcruntime140_1.dll", "msvcp140.dll")) {
+        $sys = Join-Path $env:WINDIR "System32\$dll"
+        if (Test-Path $sys) { Copy-Item $sys $binDir -Force }
+    }
+    Info "VC++ redist not found - copied core CRT from System32 (less portable)"
+}
+
+# Universal CRT (ucrtbase.dll + api-ms-win-crt-*.dll) from the Windows SDK redist.
+$ucRoot = "C:\Program Files (x86)\Windows Kits\10\Redist"
+$ucDir  = $null
+if (Test-Path $ucRoot) {
+    $ucDir = Get-ChildItem $ucRoot -Directory -ErrorAction SilentlyContinue |
+             Where-Object { Test-Path "$($_.FullName)\ucrt\DLLs\x64\ucrtbase.dll" } |
+             Sort-Object Name -Descending | Select-Object -First 1
+}
+if ($ucDir) {
+    Copy-Item "$($ucDir.FullName)\ucrt\DLLs\x64\*.dll" $binDir -Force
+    Info "Bundled UCRT from $($ucDir.FullName)\ucrt\DLLs\x64"
+} else {
+    Info "UCRT redist not found - relying on the target's system UCRT (may fail on un-updated Windows)"
 }
 
 # --- 4b. prune deployment bloat this desktop-GL app never loads --------------
