@@ -124,6 +124,66 @@ AudioFeatures AudioAnalyzer::getFeatures() const
 }
 
 // ---------------------------------------------------------------------------
+// Device enumeration + accessors (runtime audio-source selection)
+// ---------------------------------------------------------------------------
+void AudioAnalyzer::enumerateDevices( IMMDeviceEnumerator *pEnum )
+{
+    QList<AudioDevice> devs;
+    auto addFlow = [&]( EDataFlow flow, bool isCap ) {
+        IMMDeviceCollection *coll = nullptr;
+        if ( FAILED(pEnum->EnumAudioEndpoints(flow, DEVICE_STATE_ACTIVE, &coll)) || !coll )
+            return;
+        UINT n = 0; coll->GetCount(&n);
+        for ( UINT i = 0; i < n; ++i ) {
+            IMMDevice *d = nullptr;
+            if ( FAILED(coll->Item(i, &d)) || !d ) continue;
+            LPWSTR id = nullptr; QString qid, qname;
+            if ( SUCCEEDED(d->GetId(&id)) && id ) { qid = QString::fromWCharArray(id); CoTaskMemFree(id); }
+            IPropertyStore *ps = nullptr;
+            if ( SUCCEEDED(d->OpenPropertyStore(STGM_READ, &ps)) && ps ) {
+                PROPVARIANT v; PropVariantInit(&v);
+                if ( SUCCEEDED(ps->GetValue(PKEY_Device_FriendlyName, &v)) && v.vt == VT_LPWSTR )
+                    qname = QString::fromWCharArray(v.pwszVal);
+                PropVariantClear(&v); ps->Release();
+            }
+            if ( !qid.isEmpty() ) {
+                AudioDevice ad; ad.id = qid; ad.name = qname.isEmpty() ? qid : qname; ad.isCapture = isCap;
+                devs.append(ad);
+            }
+            d->Release();
+        }
+        coll->Release();
+    };
+    addFlow( eRender,  false );   // outputs (loopback)
+    addFlow( eCapture, true  );   // inputs (mic / line-in)
+
+    QMutexLocker lk(&m_mutex);
+    m_devices = devs;
+}
+
+QList<AudioDevice> AudioAnalyzer::devices() const
+{
+    QMutexLocker lk(&m_mutex);
+    return m_devices;
+}
+
+QString AudioAnalyzer::currentDeviceName() const
+{
+    QMutexLocker lk(&m_mutex);
+    return m_curDeviceName;
+}
+
+void AudioAnalyzer::requestDevice( const QString &id, bool isCapture )
+{
+    {
+        QMutexLocker lk(&m_mutex);
+        if ( id.isEmpty() ) { m_useReqDevice = false; m_reqDeviceId.clear(); }
+        else                { m_useReqDevice = true;  m_reqDeviceId = id; m_reqIsCapture = isCapture; }
+    }
+    m_deviceChangeReq = true;     // ask the capture loop to re-initialise now
+}
+
+// ---------------------------------------------------------------------------
 // run() – WASAPI loopback capture loop
 // ---------------------------------------------------------------------------
 void AudioAnalyzer::run()
@@ -160,19 +220,36 @@ void AudioAnalyzer::run()
             if (pDevice)  { pDevice->Release(); pDevice = nullptr; }
         };
 
-        // Get the default audio *render* endpoint (speakers / headphones).
-        // Loopback on a render endpoint captures everything being played.
-        hr = pEnum->GetDefaultAudioEndpoint(eRender, eConsole, &pDevice);
+        // Refresh the selectable-device list (cheap; keeps it current across
+        // plug/unplug), and read the runtime selection.
+        enumerateDevices(pEnum);
+        QString reqId; bool reqCap = false; bool useReq = false;
+        {
+            QMutexLocker lk(&m_mutex);
+            useReq = m_useReqDevice; reqId = m_reqDeviceId; reqCap = m_reqIsCapture;
+        }
+        m_deviceChangeReq = false;
+
+        // The selected endpoint, or the default render endpoint (loopback) if none.
+        // Loopback only applies to OUTPUT endpoints; an input device (mic/line-in)
+        // is captured normally.
+        bool isCaptureEndpoint = false;
+        if (useReq && !reqId.isEmpty()) {
+            hr = pEnum->GetDevice((LPCWSTR)reqId.utf16(), &pDevice);
+            isCaptureEndpoint = reqCap;
+        } else {
+            hr = pEnum->GetDefaultAudioEndpoint(eRender, eConsole, &pDevice);
+            isCaptureEndpoint = false;
+        }
         if (SUCCEEDED(hr))
             hr = pDevice->Activate(__uuidof(IAudioClient), CLSCTX_ALL, nullptr, (void**)&pClient);
         if (SUCCEEDED(hr))
             hr = pClient->GetMixFormat(&pwfx);
         if (SUCCEEDED(hr))
         {
-            // Request a 20 ms buffer in loopback shared mode
             REFERENCE_TIME bufferDuration = 200000; // 100ns units → 20 ms
-            hr = pClient->Initialize(AUDCLNT_SHAREMODE_SHARED,
-                                     AUDCLNT_STREAMFLAGS_LOOPBACK,
+            DWORD streamFlags = isCaptureEndpoint ? 0 : AUDCLNT_STREAMFLAGS_LOOPBACK;
+            hr = pClient->Initialize(AUDCLNT_SHAREMODE_SHARED, streamFlags,
                                      bufferDuration, 0, pwfx, nullptr);
         }
         if (SUCCEEDED(hr))
@@ -182,10 +259,21 @@ void AudioAnalyzer::run()
 
         if (FAILED(hr))
         {
-            // No device yet, or setup failed: clean up and retry shortly.
+            // Setup failed.  If a *selected* device failed, drop back to the
+            // default so we don't get stuck retrying a dead source.
             deviceCleanup();
+            if (useReq) { QMutexLocker lk(&m_mutex); m_useReqDevice = false; }
             msleep(500);
             continue;
+        }
+
+        // Publish the friendly name of what we're now capturing.
+        {
+            QMutexLocker lk(&m_mutex);
+            m_curDeviceName.clear();
+            if (!useReq) m_curDeviceName = QStringLiteral("Standard-Ausgabe (Loopback)");
+            else for (const AudioDevice &ad : m_devices)
+                if (ad.id == reqId) { m_curDeviceName = ad.name; break; }
         }
 
         const int  sampleRate  = pwfx->nSamplesPerSec;
@@ -199,6 +287,8 @@ void AudioAnalyzer::run()
         bool deviceLost = false;
         while (m_running && !deviceLost)
         {
+            if (m_deviceChangeReq) { deviceLost = true; break; }   // runtime source switch
+
             UINT32 packetSize = 0;
             hr = pCapture->GetNextPacketSize(&packetSize);
             if (FAILED(hr)) { deviceLost = true; break; }   // e.g. AUDCLNT_E_DEVICE_INVALIDATED
