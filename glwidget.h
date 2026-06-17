@@ -46,6 +46,7 @@ protected:
 
 	void showSelectConfigurationsMenu( QPainter *painter );
 	void drawFeatureOverlay( QPainter *painter, const AudioFeatures &f );
+	void drawHelpOverlay( QPainter *painter );
 
 	void traverseConfigurations( const QString& dirname, std::vector<Configuration *> &configurationList );
 
@@ -69,6 +70,11 @@ protected:
 	int     m_moodBucket      = -1;     // current mood bucket (see .cpp)
 	qint64  m_moodBucketSince = 0;      // when the bucket last changed
 	qint64  m_lastAutoSwitch  = 0;      // when auto-config last switched
+
+	// Persist / restore UI state (active config, auto-config, auto-scale) in the
+	// same settings file FilterShader uses.  Saved with 'k', loaded at startup.
+	void    loadUiSettings();
+	void    saveUiSettings();
 
 	// Adaptive render scale: nudge FilterShader's internal render scale to keep
 	// the frame rate near target, never exceeding the launch -s value.
@@ -105,6 +111,7 @@ protected:
 	//QPainter		*m_painter;
 	bool			m_showSelectConfigurationMenu;
 	bool			m_showFeatureOverlay;
+	bool			m_showHelp = false;
 
 	int		m_width;
 	int		m_height;
