@@ -353,3 +353,11 @@ bool EffectShader::useShader()
 	}
 	return false;
 }
+
+bool EffectShader::usesSim()
+{
+	if( m_usesSim < 0 )
+		m_usesSim = ( m_sh_prog_id != 0 &&
+		              glGetUniformLocation( m_sh_prog_id, "texSim" ) >= 0 ) ? 1 : 0;
+	return m_usesSim == 1;
+}

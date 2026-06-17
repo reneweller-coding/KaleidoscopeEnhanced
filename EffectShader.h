@@ -70,6 +70,11 @@ public:
 	void setProbability( float probability ){ m_probability = probability; };
 	bool useShader();
 
+	// True if this effect's fragment shader samples the reaction-diffusion field
+	// (declares the "texSim" uniform).  Cached on first query.  Lets the host run
+	// the GPU simulation only while an effect that displays it is on screen.
+	bool usesSim();
+
 protected:
 	unsigned int getInterpolatedTime( unsigned int minTime, unsigned int maxTime );
 	void drawWindow();
@@ -101,6 +106,8 @@ protected:
 	unsigned int  m_complexity;
 
 	float	m_probability;
+
+	int		m_usesSim = -1;   // -1 = not yet queried, 0/1 = cached result
 
 
 	std::vector< Uniform *> m_uniforms;

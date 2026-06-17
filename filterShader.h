@@ -227,6 +227,7 @@ private:
 public:
 	static void setRenderScale( float s )
 	{ s_renderScale = (s < 0.25f) ? 0.25f : (s > 2.0f ? 2.0f : s); }
+	static float renderScale() { return s_renderScale; }
 private:
 
 	// GLSL vars
