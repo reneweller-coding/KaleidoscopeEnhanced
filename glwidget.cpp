@@ -119,6 +119,10 @@ GLwidget::~GLwidget()
 		m_nowPlaying->stop();
 		delete m_nowPlaying;   // joins its thread
 	}
+	if (m_midi) {
+		m_midi->stop();
+		delete m_midi;
+	}
 	for( unsigned int i = 0; i < m_configurationList.size(); i++ )
 		delete m_configurationList[i];
 }
@@ -166,6 +170,11 @@ void GLwidget::initializeGL()
 	// Start the "now playing" poller (SMTC: title/artist of the current track).
 	m_nowPlaying = new NowPlaying();
 	m_nowPlaying->start();
+
+	// Optional MIDI control: opens the first controller if one is connected.
+	m_midi = new MidiInput();
+	if( m_midi->start() )
+		fprintf( stderr, "MIDI input: %s\n", m_midi->deviceName().toLocal8Bit().constData() );
 
 #ifdef WIN32
 	// Kiosk / installation: keep the display on and suppress the screensaver and
@@ -233,6 +242,9 @@ void GLwidget::draw()
 	// Track-change: a fresh track (after a silent gap) gets a clean transition.
 	if( audio.trackChange && m_actConfiguration && m_actConfiguration->m_filterShader )
 		m_actConfiguration->m_filterShader->requestSceneChange();
+
+	// Apply any queued MIDI control messages.
+	applyMidi();
 
 	// Auto-config-by-mood (optional, key 'a'): may switch m_actConfiguration.
 	updateAutoConfig( audio );
@@ -719,6 +731,32 @@ void GLwidget::drawHelpOverlay( QPainter *painter )
 		painter->drawText( x0 + 24, ry, QString(lines[i].key) );
 		painter->setPen( QColor(210, 218, 232) );
 		painter->drawText( x0 + 150, ry, QString(lines[i].desc) );
+	}
+}
+
+void GLwidget::applyMidi()
+{
+	if( !m_midi )
+		return;
+	std::vector<MidiInput::Event> evs = m_midi->drain();
+	for( const MidiInput::Event &e : evs )
+	{
+		if( e.type == 0xB0 )                       // Control Change -> look knobs
+		{
+			float v = e.data2 / 127.f;             // 0..1
+			switch( e.data1 )
+			{
+				case 1:  FilterShader::setReactivity( v * 3.0f  ); break;  // CC1  mod wheel
+				case 2:  FilterShader::setTrails     ( v * 0.95f ); break;  // CC2
+				case 3:  FilterShader::setMood       ( v * 2.5f  ); break;  // CC3
+				default: break;
+			}
+		}
+		else if( e.type == 0x90 )                  // Note On -> next effect
+		{
+			if( m_actConfiguration && m_actConfiguration->m_filterShader )
+				m_actConfiguration->m_filterShader->requestSceneChange();
+		}
 	}
 }
 
