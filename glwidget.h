@@ -61,6 +61,13 @@ protected:
 	qint64  m_moodBucketSince = 0;      // when the bucket last changed
 	qint64  m_lastAutoSwitch  = 0;      // when auto-config last switched
 
+	// Adaptive render scale: nudge FilterShader's internal render scale to keep
+	// the frame rate near target, never exceeding the launch -s value.
+	void    updateAdaptiveScale();
+	bool    m_autoScale       = true;   // toggled with key 'g'
+	float   m_autoScaleMax    = 1.f;    // ceiling = the launch render scale
+	qint64  m_lastScaleAdjust = 0;      // when the scale was last changed
+
 
     int     m_fpsCounter;     // frames counted in the current period
 	int     m_fpsValue;       // frames-per-second shown in the overlay

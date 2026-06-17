@@ -1355,9 +1355,16 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 	// living field on a dedicated global sampler unit (7) so any effect (e.g.
 	// ReactionDiffusion.frag) can sample it via the "texSim" uniform.  (Renders at
 	// the small RD grid; the viewport is restored to render-resolution just below.)
-	stepReactionDiffusion( audio );
-	if( m_rdReady )
+	// Only step it when an effect that actually samples texSim is on screen (the
+	// active one, or - during a cross-fade - the incoming one): no point spending
+	// GPU on the simulation while nothing displays it.
+	bool rdNeeded = m_rdReady &&
+	    ( m_effectTextures[m_actEffectTexture]->usesSim()
+	   || ( m_stateInterpolationEffectTexture != 0
+	        && m_effectTextures[m_nextEffectTexture]->usesSim() ) );
+	if( rdNeeded )
 	{
+		stepReactionDiffusion( audio );
 		glActiveTexture( GL_TEXTURE7 );
 		glBindTexture( GL_TEXTURE_2D, m_texRD[1 - m_rdIdx] );   // newest state
 	}
@@ -1393,11 +1400,17 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 
 	//Do the FBO Stuff
 	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_fboEffectTexture2 );
-	
-	m_effectTextures[m_nextEffectTexture]->enableShader();
-	m_effectTextures[m_nextEffectTexture]->setUniforms( m_globaltime, m_interpolationTexture, 0, 1 );
-	m_effectTextures[m_nextEffectTexture]->applyAudioFeatures( audioFx );
-	m_effectTextures[m_nextEffectTexture]->draw();
+
+	// Skip the "next" texture effect while NOT cross-fading: every combine weights
+	// this output (tex1) by (1-interpolation), which is 0 at interpolation==1.0, so
+	// it is invisible.  Saves a whole effect pass during the common solo periods.
+	if( m_stateInterpolationEffectTexture != 0 )
+	{
+		m_effectTextures[m_nextEffectTexture]->enableShader();
+		m_effectTextures[m_nextEffectTexture]->setUniforms( m_globaltime, m_interpolationTexture, 0, 1 );
+		m_effectTextures[m_nextEffectTexture]->applyAudioFeatures( audioFx );
+		m_effectTextures[m_nextEffectTexture]->draw();
+	}
 
 	
 	//Now Use Post Processing
@@ -1533,11 +1546,17 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 
 	//Do the FBO Stuff
 	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_fboEffectCombine2 );
-	
-	m_effectCombines[m_nextEffectCombine]->enableShader();
-	m_effectCombines[m_nextEffectCombine]->setUniforms( m_globaltime, m_interpolationEffectTexture, 3, 4 );
-	m_effectCombines[m_nextEffectCombine]->applyAudioFeatures( audioFx );
-	m_effectCombines[m_nextEffectCombine]->draw();
+
+	// Skip the "next" combine while NOT cross-fading combines: the final present
+	// pass (CombinePlain) weights this output by (1-interpolation)=0 at
+	// interpolation==1.0, so it is invisible.  Saves the second combine pass.
+	if( m_stateInterpolationEffectCombine != 0 )
+	{
+		m_effectCombines[m_nextEffectCombine]->enableShader();
+		m_effectCombines[m_nextEffectCombine]->setUniforms( m_globaltime, m_interpolationEffectTexture, 3, 4 );
+		m_effectCombines[m_nextEffectCombine]->applyAudioFeatures( audioFx );
+		m_effectCombines[m_nextEffectCombine]->draw();
+	}
 
 	
 	//Now Use Final Rendering — into the safety FBO if active, else to the screen.

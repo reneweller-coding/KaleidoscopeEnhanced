@@ -167,6 +167,9 @@ void GLwidget::initializeGL()
 	m_fpsLastPeriod = 0;
 	m_fpsCounter    = 0;
 
+	// Adaptive render scale never goes above whatever -s the user launched with.
+	m_autoScaleMax  = FilterShader::renderScale();
+
 	// start periodic refesh timer
 	startTimer( 16.666666666666 );
 
@@ -198,6 +201,9 @@ void GLwidget::paintGL()
 		m_fpsLastPeriod = now;
 	}
 	m_fpsCounter++;
+
+	// Keep the frame rate near target by nudging the internal render scale.
+	updateAdaptiveScale();
  }
 
 
@@ -378,6 +384,37 @@ void GLwidget::updateAutoConfig( const AudioFeatures &f )
 	}
 }
 
+void GLwidget::updateAdaptiveScale()
+{
+	if( !m_autoScale )
+		return;
+
+	const qint64 now = m_fpsTimer.elapsed();
+	if( m_fpsValue <= 0 || now - m_lastScaleAdjust < 1500 )   // settle ~1.5 s between steps
+		return;
+
+	const float minScale = 0.35f;
+	float scale = FilterShader::renderScale();
+	float next  = scale;
+
+	if( m_fpsValue < 45 && scale > minScale )
+		next = scale - 0.10f;                       // struggling -> coarser, recover FPS
+	else if( m_fpsValue > 57 && scale < m_autoScaleMax )
+		next = scale + 0.05f;                        // headroom -> finer, up to the ceiling
+
+	if( next < minScale )         next = minScale;
+	if( next > m_autoScaleMax )   next = m_autoScaleMax;
+
+	if( next != scale )
+	{
+		FilterShader::setRenderScale( next );
+		if( m_actConfiguration && m_actConfiguration->m_filterShader )
+			m_actConfiguration->m_filterShader->resize( m_width, m_height );
+		m_lastScaleAdjust = now;
+		fprintf( stderr, "Adaptive scale: %.2f (%d FPS)\n", next, m_fpsValue );
+	}
+}
+
 void GLwidget::mouseDoubleClickEvent(QMouseEvent *e) {
   QWidget::mouseDoubleClickEvent(e);
 
@@ -502,11 +539,13 @@ void GLwidget::drawFeatureOverlay( QPainter *painter, const AudioFeatures &f )
 	// Live-tunable look knobs (hotkeys).
 	painter->setFont( QFont("Consolas", 10) );
 	painter->setPen( QColor(170, 205, 170) );
-	painter->drawText( x, 54, QString("react[] %1  trail,. %2  mood-= %3  auto-a %4")
+	painter->drawText( x, 54, QString("react[] %1  trail,. %2  mood-= %3  auto-a %4  scale %5 g:%6")
 		.arg(FilterShader::reactivity(), 0, 'f', 1)
 		.arg(FilterShader::trails(),     0, 'f', 2)
 		.arg(FilterShader::mood(),       0, 'f', 1)
-		.arg(m_autoConfig ? "ON" : "off") );
+		.arg(m_autoConfig ? "ON" : "off")
+		.arg(FilterShader::renderScale(), 0, 'f', 2)
+		.arg(m_autoScale ? "ON" : "off") );
 
 	painter->setFont( QFont("Consolas", 11) );
 	for ( int i = 0; i < n; ++i )
@@ -566,6 +605,12 @@ void GLwidget::keyPressEvent(QKeyEvent* event)
 			m_autoConfig = !m_autoConfig;
 			m_moodBucket = -1;   // re-evaluate from scratch
 			fprintf( stderr, "Auto-config-by-mood: %s\n", m_autoConfig ? "ON" : "OFF" );
+			break;
+
+		// ---- Adaptive render-scale toggle ----
+		case Qt::Key_G:
+			m_autoScale = !m_autoScale;
+			fprintf( stderr, "Adaptive render scale: %s\n", m_autoScale ? "ON" : "OFF" );
 			break;
 
 		// ---- Screenshot (this window only) ----
