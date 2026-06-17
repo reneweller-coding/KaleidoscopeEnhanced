@@ -85,14 +85,26 @@ if (Test-Path (Join-Path $root "icon.png")) {
 }
 
 # --- 3. copy exe + deploy Qt runtime ----------------------------------------
+# This is a desktop-OpenGL QtWidgets app, so skip the software-GL fallback
+# (opengl32sw.dll, ~20 MB) and the Direct3D shader compiler (d3dcompiler).
+# We bundle the MSVC runtime ourselves (below), so no --compiler-runtime either.
 Copy-Item $exeSrc $binDir
 Info "Running windeployqt ..."
-& $windeploy --release --no-translations --compiler-runtime (Join-Path $binDir "Kaleidoscope.exe") | Out-Null
+& $windeploy --release --no-translations --no-opengl-sw --no-system-d3d-compiler (Join-Path $binDir "Kaleidoscope.exe") | Out-Null
 
 # --- 4. guarantee the MSVC runtime is present (standalone, no vc_redist) -----
 foreach ($dll in @("vcruntime140.dll", "vcruntime140_1.dll", "msvcp140.dll")) {
     $sys = Join-Path $env:WINDIR "System32\$dll"
     if (Test-Path $sys) { Copy-Item $sys $binDir -Force }
+}
+
+# --- 4b. prune deployment bloat this desktop-GL app never loads --------------
+# (vc_redist installer is redundant - we ship the loose runtime DLLs; the DX
+#  shader compilers + software GL are only for Qt's D3D/RHI / softrender paths.)
+foreach ($f in @("vc_redist.x64.exe", "dxcompiler.dll", "dxil.dll",
+                 "opengl32sw.dll", "d3dcompiler_47.dll")) {
+    $fp = Join-Path $binDir $f
+    if (Test-Path $fp) { Remove-Item $fp -Force }
 }
 
 # --- 5. end-user launchers ---------------------------------------------------
