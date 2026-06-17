@@ -66,6 +66,9 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros">
     <QTDIR Condition="'$(QTDIR)'==''">C:\Qt\6.11.1\msvc2022_64</QTDIR>
+    <!-- Set to false (here, or via /p:RunDeploy=false) to skip auto-packaging
+         the standalone build after a Release build. -->
+    <RunDeploy Condition="'$(RunDeploy)'==''">true</RunDeploy>
   </PropertyGroup>
   <PropertyGroup>
     <_ProjectFileVersion>12.0.30501.0</_ProjectFileVersion>
@@ -186,6 +189,13 @@
       <DataExecutionPrevention>
       </DataExecutionPrevention>
     </Link>
+    <PostBuildEvent>
+      <Message>Packaging standalone build (deploy.ps1)...</Message>
+      <Command Condition="'$(RunDeploy)'=='true'">echo [post-build] Packaging standalone build into dist\ ...
+powershell -NoProfile -ExecutionPolicy Bypass -File "$(ProjectDir)deploy.ps1" -QtDir "$(QTDIR)"
+if errorlevel 1 echo [post-build] WARNING: standalone packaging failed - the build itself is OK.
+exit /b 0</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Configuration.cpp" />

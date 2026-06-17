@@ -65,6 +65,11 @@ if ($Build) {
 if (-not (Test-Path $exeSrc))    { throw "Release\Kaleidoscope.exe not found - build first (use -Build)." }
 if (-not (Test-Path $windeploy)) { throw "windeployqt not found at $windeploy - check -QtDir." }
 
+# A previously-launched copy (e.g. the packaged exe) would lock the staging dir
+# during a post-build run; close it before staging.
+Get-Process Kaleidoscope -ErrorAction SilentlyContinue | Stop-Process -Force
+Start-Sleep -Milliseconds 300
+
 # --- 1. clean staging --------------------------------------------------------
 Info "Staging into $pkgDir ..."
 if (Test-Path $pkgDir) { Remove-Item $pkgDir -Recurse -Force }
