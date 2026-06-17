@@ -231,13 +231,34 @@ void GLwidget::draw()
 
 	m_actConfiguration->m_filterShader->paint(m_RotationMatrix, m_xTrans, m_yTrans, m_zTrans, audio);
 	
+	// Config cross-fade: draw the captured previous frame on top, fading out.
+	float fadeAlpha = 0.f;
+	if( m_fadeStart >= 0 )
+	{
+		const qint64 dur = 700;                          // fade length (ms)
+		qint64 el = m_fpsTimer.elapsed() - m_fadeStart;
+		if( el >= dur || m_fadePixmap.isNull() )
+		{
+			m_fadeStart = -1;                            // done
+			m_fadePixmap = QPixmap();
+		}
+		else
+			fadeAlpha = 1.f - float(el) / float(dur);
+	}
+
 	//printf( "Painting Now\n" );
-	// Only spin up a QPainter when an overlay is actually visible, so the
+	// Only spin up a QPainter when an overlay or the cross-fade needs it, so the
 	// normal render path is pure GL (no QPainter/GL state interaction).
-	if( m_showSelectConfigurationMenu || m_showFeatureOverlay )
+	if( m_showSelectConfigurationMenu || m_showFeatureOverlay || fadeAlpha > 0.f )
 	{
 		QPainter painter(this);
 		//painter.setRenderHint(QPainter::Antialiasing);
+		if( fadeAlpha > 0.f )
+		{
+			painter.setOpacity( fadeAlpha );
+			painter.drawPixmap( rect(), m_fadePixmap );
+			painter.setOpacity( 1.0 );
+		}
 		if( m_showSelectConfigurationMenu )
 			showSelectConfigurationsMenu( &painter );
 		if( m_showFeatureOverlay )
@@ -335,6 +356,23 @@ void GLwidget::showSelectConfigurationsMenu( QPainter *painter )
 
 }
 
+// Capture the current frame so it can be cross-faded out over the new config.
+void GLwidget::beginConfigFade()
+{
+	m_fadePixmap = QPixmap::fromImage( grabFramebuffer() );
+	m_fadeStart  = m_fpsTimer.elapsed();
+}
+
+void GLwidget::switchConfig( Configuration *cfg )
+{
+	// Only record the request here; it is applied in timerEvent (outside paintGL),
+	// because the fade capture (grabFramebuffer) re-renders and must not re-enter
+	// paintGL when this is reached via auto-config / track-change during draw().
+	if( cfg == 0 || cfg == m_actConfiguration )
+		return;
+	m_pendingConfig = cfg;
+}
+
 bool GLwidget::selectConfigByName( const QString &name )
 {
 	for( unsigned int i = 0; i < m_configurationList.size(); i++ )
@@ -343,9 +381,7 @@ bool GLwidget::selectConfigByName( const QString &name )
 		{
 			if( m_configurationList[i] == m_actConfiguration )
 				return false;                     // already active
-			m_actConfiguration->stop();
-			m_actConfiguration = m_configurationList[i];
-			m_actConfiguration->start( m_width, m_height );
+			switchConfig( m_configurationList[i] );
 			return true;
 		}
 	return false;
@@ -429,6 +465,17 @@ void GLwidget::mouseDoubleClickEvent(QMouseEvent *e) {
 
 void GLwidget::timerEvent( QTimerEvent* )
 {
+	// Apply a requested configuration switch here, outside paintGL: capture the
+	// current (old) frame for the cross-fade, then stop/start the configurations.
+	if( m_pendingConfig && m_pendingConfig != m_actConfiguration )
+	{
+		beginConfigFade();
+		m_actConfiguration->stop();
+		m_actConfiguration = m_pendingConfig;
+		m_actConfiguration->start( m_width, m_height );
+		m_pendingConfig = nullptr;
+	}
+
 	// Schedule a repaint; the actual rendering happens in paintGL() where the
 	// GL context is guaranteed current (QOpenGLWidget requirement).
 	update();
@@ -623,105 +670,18 @@ void GLwidget::keyPressEvent(QKeyEvent* event)
 				fprintf( stderr, "Saved screenshot: %s\n", fn.toLocal8Bit().constData() );
 			break;
 		}
-		case Qt::Key_1:
+		case Qt::Key_1: case Qt::Key_2: case Qt::Key_3:
+		case Qt::Key_4: case Qt::Key_5: case Qt::Key_6:
+		case Qt::Key_7: case Qt::Key_8: case Qt::Key_9:
+		{
 			m_showSelectConfigurationMenu = false;
-			if( m_configurationList.size() > 0 )
-			{
-				m_actConfiguration->stop();
-				m_actConfiguration = m_configurationList[0];
-				m_actConfiguration->start( m_width, m_height );
-			}
+			unsigned int idx = event->key() - Qt::Key_1;   // 0..8
+			if( idx < m_configurationList.size() )
+				switchConfig( m_configurationList[idx] );   // cross-fades from the old frame
 			else
-				printf( "Configuration 1 not found!\n" );
+				printf( "Configuration %u not found!\n", idx + 1 );
 			break;
-		case Qt::Key_2:
-			m_showSelectConfigurationMenu = false;
-			if( m_configurationList.size() > 1 )
-			{
-				m_actConfiguration->stop();
-				m_actConfiguration = m_configurationList[1];
-				m_actConfiguration->start( m_width, m_height );
-			}
-			else
-				printf( "Configuration 2 not found!\n" );
-			break;
-		case Qt::Key_3:
-			m_showSelectConfigurationMenu = false;
-			if( m_configurationList.size() > 2 )
-			{
-				m_actConfiguration->stop();
-				m_actConfiguration = m_configurationList[2];
-				m_actConfiguration->start( m_width, m_height );
-			}
-			else
-				printf( "Configuration 3 not found!\n" );
-			break;
-		case Qt::Key_4:
-			m_showSelectConfigurationMenu = false;
-			if( m_configurationList.size() > 3 )
-			{
-				m_actConfiguration->stop();
-				m_actConfiguration = m_configurationList[3];
-				m_actConfiguration->start( m_width, m_height );
-			}
-			else
-				printf( "Configuration 3 not found!\n" );
-			break;
-		case Qt::Key_5:
-			m_showSelectConfigurationMenu = false;
-			if( m_configurationList.size() > 4 )
-			{
-				m_actConfiguration->stop();
-				m_actConfiguration = m_configurationList[4];
-				m_actConfiguration->start( m_width, m_height );
-			}
-			else
-				printf( "Configuration 4 not found!\n" );
-			break;
-		case Qt::Key_6:
-			m_showSelectConfigurationMenu = false;
-			if( m_configurationList.size() > 5 )
-			{
-				m_actConfiguration->stop();
-				m_actConfiguration = m_configurationList[5];
-				m_actConfiguration->start( m_width, m_height );
-			}
-			else
-				printf( "Configuration 5 not found!\n" );
-			break;
-		case Qt::Key_7:
-			m_showSelectConfigurationMenu = false;
-			if( m_configurationList.size() > 6 )
-			{
-				m_actConfiguration->stop();
-				m_actConfiguration = m_configurationList[6];
-				m_actConfiguration->start( m_width, m_height );
-			}
-			else
-				printf( "Configuration 6 not found!\n" );
-			break;
-		case Qt::Key_8:
-			m_showSelectConfigurationMenu = false;
-			if( m_configurationList.size() > 7 )
-			{
-				m_actConfiguration->stop();
-				m_actConfiguration = m_configurationList[7];
-				m_actConfiguration->start( m_width, m_height );
-			}
-			else
-				printf( "Configuration 8 not found!\n" );
-			break;
-		case Qt::Key_9:
-			m_showSelectConfigurationMenu = false;
-			if( m_configurationList.size() > 8 )
-			{
-				m_actConfiguration->stop();
-				m_actConfiguration = m_configurationList[8];
-				m_actConfiguration->start( m_width, m_height );
-			}
-			else
-				printf( "Configuration 9 not found!\n" );
-			break;
+		}
 
 		default:
 			event->ignore();
