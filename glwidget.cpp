@@ -2,6 +2,7 @@
 
 #include <QtCore/QFile>
 #include <QtCore/QDateTime>
+#include <QtCore/QSettings>
 #include <QtGui/QMouseEvent>
 #include <QtGui/QPainter>
 #include <QtWidgets/QMessageBox>
@@ -70,6 +71,9 @@ GLwidget::GLwidget( QWidget *parent )
 
 	//m_directory = "C:\\Users\\weller\\Pictures";
 
+	// Restore persisted UI state (auto-config / auto-scale toggles, and the last
+	// active config as the default start config) before we pick the start config.
+	loadUiSettings();
 
 	m_configurationList.clear();
 	traverseConfigurations( "..\\Configurations" /*directory*/, m_configurationList );
@@ -249,7 +253,7 @@ void GLwidget::draw()
 	//printf( "Painting Now\n" );
 	// Only spin up a QPainter when an overlay or the cross-fade needs it, so the
 	// normal render path is pure GL (no QPainter/GL state interaction).
-	if( m_showSelectConfigurationMenu || m_showFeatureOverlay || fadeAlpha > 0.f )
+	if( m_showSelectConfigurationMenu || m_showFeatureOverlay || m_showHelp || fadeAlpha > 0.f )
 	{
 		QPainter painter(this);
 		//painter.setRenderHint(QPainter::Antialiasing);
@@ -263,6 +267,8 @@ void GLwidget::draw()
 			showSelectConfigurationsMenu( &painter );
 		if( m_showFeatureOverlay )
 			drawFeatureOverlay( &painter, audio );
+		if( m_showHelp )
+			drawHelpOverlay( &painter );
 		painter.end();
 	}
 
@@ -354,6 +360,29 @@ void GLwidget::showSelectConfigurationsMenu( QPainter *painter )
 	 float radius = 0.5;
 	 //painter->drawEllipse(0, 0, int(2*radius), int(2*radius));*/
 
+}
+
+// Settings file shared with FilterShader (next to the Configurations folder).
+static const char *kUiSettingsPath = "..\\kaleidoscope_settings.ini";
+
+void GLwidget::loadUiSettings()
+{
+	QSettings s( kUiSettingsPath, QSettings::IniFormat );
+	m_autoConfig = s.value( "autoConfig", m_autoConfig ).toBool();
+	m_autoScale  = s.value( "autoScale",  m_autoScale  ).toBool();
+	// A persisted active config is the default start config, unless -c overrode it.
+	if( s_startConfig.isEmpty() )
+		s_startConfig = s.value( "activeConfig", QString() ).toString();
+}
+
+void GLwidget::saveUiSettings()
+{
+	QSettings s( kUiSettingsPath, QSettings::IniFormat );
+	if( m_actConfiguration )
+		s.setValue( "activeConfig", m_actConfiguration->getConfigurationName() );
+	s.setValue( "autoConfig", m_autoConfig );
+	s.setValue( "autoScale",  m_autoScale );
+	s.sync();
 }
 
 // Capture the current frame so it can be cross-faded out over the new config.
@@ -614,6 +643,47 @@ void GLwidget::drawFeatureOverlay( QPainter *painter, const AudioFeatures &f )
 	}
 }
 
+void GLwidget::drawHelpOverlay( QPainter *painter )
+{
+	struct Line { const char *key; const char *desc; };
+	static const Line lines[] = {
+		{ "h",       "show / hide this help" },
+		{ "0",       "configuration menu" },
+		{ "1 - 9",   "switch configuration" },
+		{ "n",       "next effect" },
+		{ "i",       "audio-feature overlay (+ FPS)" },
+		{ "a",       "auto-config by mood on/off" },
+		{ "g",       "adaptive render scale on/off" },
+		{ "[  ]",    "reactivity  - less / more" },
+		{ ",  .",    "trails       - shorter / longer" },
+		{ "-  =",    "mood         - weaker / stronger" },
+		{ "k",       "save current look + state as default" },
+		{ "s",       "save a screenshot (PNG)" },
+		{ "Esc / q", "quit" },
+	};
+	const int n = int(sizeof(lines) / sizeof(lines[0]));
+
+	const int boxW = 430, lh = 26;
+	const int boxH = lh * (n + 1) + 24;
+	const int x0 = (width()  - boxW) / 2;
+	const int y0 = (height() - boxH) / 2;
+
+	painter->fillRect( x0, y0, boxW, boxH, QColor(0, 0, 0, 190) );
+	painter->setPen( QColor(120, 200, 255) );
+	painter->setFont( QFont("Consolas", 14, QFont::Bold) );
+	painter->drawText( x0 + 20, y0 + 32, QString("KALEIDOSCOPE  -  Tastatur / keys") );
+
+	painter->setFont( QFont("Consolas", 12) );
+	for ( int i = 0; i < n; ++i )
+	{
+		int ry = y0 + 32 + (i + 1) * lh;
+		painter->setPen( QColor(150, 230, 150) );
+		painter->drawText( x0 + 24, ry, QString(lines[i].key) );
+		painter->setPen( QColor(210, 218, 232) );
+		painter->drawText( x0 + 150, ry, QString(lines[i].desc) );
+	}
+}
+
 void GLwidget::keyPressEvent(QKeyEvent* event)
 {
     switch(event->key())
@@ -630,6 +700,9 @@ void GLwidget::keyPressEvent(QKeyEvent* event)
 		case Qt::Key_I:
 			m_showFeatureOverlay = !m_showFeatureOverlay;
 			break;
+		case Qt::Key_H:
+			m_showHelp = !m_showHelp;
+			break;
 		case Qt::Key_N:
 			// Manually advance to the next texture effect.
 			if( m_actConfiguration && m_actConfiguration->m_filterShader )
@@ -644,8 +717,11 @@ void GLwidget::keyPressEvent(QKeyEvent* event)
 		case Qt::Key_Minus:        FilterShader::adjustMood(-0.10f);       break;  // -  less mood colour
 		case Qt::Key_Equal:        FilterShader::adjustMood(+0.10f);       break;  // =  more mood colour
 
-		// ---- Persist the current look settings as the startup default ----
-		case Qt::Key_K:            FilterShader::saveSettings();           break;
+		// ---- Persist the current look + UI state as the startup default ----
+		case Qt::Key_K:
+			FilterShader::saveSettings();
+			saveUiSettings();
+			break;
 
 		// ---- Auto-config-by-mood toggle ----
 		case Qt::Key_A:

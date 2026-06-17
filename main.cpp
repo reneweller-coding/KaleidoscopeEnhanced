@@ -1,6 +1,8 @@
 #include <iostream>
 #include <cstring>
 #include <cstdlib>
+#include <cstdio>
+#include <ctime>
 
 #include "filterShader.h"
 #include "glwidget.h"
@@ -23,6 +25,7 @@ using namespace std;
 QString directory = "C:\\Users\\rene\\Pictures";
 bool fullscreen = false;
 int  monitorIndex = -1;   // -m <n>: target monitor for fullscreen (-1 = auto)
+bool logToFile = false;   // -l: redirect stderr to a rotating log file (kiosk)
 
 
 
@@ -40,6 +43,7 @@ void commandlineerror( char *cmd, char *parm )
 	"-s <factor>   internal render scale 0.25..2.0 (lower = faster on weak GPUs)\n"
 	"-c <name>     start with this configuration (e.g. darkambient, normal)\n"
 	"-m <index>    fullscreen on monitor <index> (0-based; implies -b)\n"
+	"-l            log to kaleidoscope.log instead of the console (kiosk)\n"
 	"-h            this help menu\n"
 	"Keys (while running):\n"
 	"0             toggle the configuration-select menu\n"
@@ -64,8 +68,8 @@ void commandlineerror( char *cmd, char *parm )
 void parsecommandline( int argc, char *argv[] )
 {
 	/* valid option characters; last char MUST be 0 ! */
-	char optionchar[] =   { 'h', 'b', 'f', 's', 'c', 'm', 0 };
-	int musthaveparam[] = {  0 ,  0,   1,   1,   1,   1,  0 };
+	char optionchar[] =   { 'h', 'b', 'f', 's', 'c', 'm', 'l', 0 };
+	int musthaveparam[] = {  0 ,  0,   1,   1,   1,   1,   0,  0 };
 
 	int nopts;
 	int mhp[256];
@@ -128,6 +132,7 @@ void parsecommandline( int argc, char *argv[] )
 				case 's': FilterShader::setRenderScale( (float) atof( argv[1] ) ); break;
 				case 'c': GLwidget::s_startConfig = QString::fromLocal8Bit( argv[1] ); break;
 				case 'm': monitorIndex = atoi( argv[1] ); fullscreen = true; break;
+				case 'l': logToFile = true; break;
 
 
 				default: fprintf(stderr, "\nBug in parsecommandline !\n");
@@ -169,6 +174,21 @@ int main(int argc, char *argv[])
 
 	// parse command line options
 	parsecommandline( argc, argv );
+
+	// Kiosk logging: send stderr (shader status, device reconnects, errors) to a
+	// file so an unattended installation stays diagnosable.  Keep one previous
+	// session as kaleidoscope.log.1 so the file can't grow without bound.
+	if( logToFile )
+	{
+		remove( "kaleidoscope.log.1" );
+		rename( "kaleidoscope.log", "kaleidoscope.log.1" );
+		if( freopen( "kaleidoscope.log", "w", stderr ) )
+		{
+			time_t t = time( NULL );
+			fprintf( stderr, "=== Kaleidoscope log started %s", ctime( &t ) );
+			setvbuf( stderr, NULL, _IONBF, 0 );   // unbuffered: nothing lost on a hard kill
+		}
+	}
 
 	// Request a compatibility-profile OpenGL context so the existing
 	// fixed-function pipeline and GLSL 1.20 shaders keep working under Qt6.
