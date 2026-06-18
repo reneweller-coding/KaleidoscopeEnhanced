@@ -1143,11 +1143,11 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
         // beats (the rhythmic accent lives in the corner spotlights now).  So the
         // audio term is a SLOWLY slewed energy envelope (no per-beat spikes) with a
         // small gain, plus a tiny steady drift and a gentle in-tempo breathing.
-        float rotEnergyTarget = 0.35f * motion + 0.25f * audio.spectralFlux;
-        m_rotEnergy = slewToward(m_rotEnergy, rotEnergyTarget, 0.5f, dt);  // ~2 s to change
+        float rotEnergyTarget = 0.50f * motion + 0.35f * audio.spectralFlux;
+        m_rotEnergy = slewToward(m_rotEnergy, rotEnergyTarget, 0.7f, dt);  // ~1.4 s to change
         float rotRate = m_audioDir * kReactivity * gate
                       * ( 0.06f * motion                       // tiny steady drift
-                        + 0.55f * m_rotEnergy                  // smooth energy-driven speed
+                        + 1.20f * m_rotEnergy                  // smooth, clearly-varying audio speed
                         + 0.10f * motion * beatBreath );       // gentle in-tempo breathing
         m_audioRotPhase += dt * rotRate;
 
