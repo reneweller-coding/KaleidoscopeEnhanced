@@ -1137,17 +1137,17 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
         // A gentle in-tempo "breathing" from the continuous beat phase.
         float beatBreath = 0.5f - 0.5f * cosf(audio.beatPhase * 6.2831853f);
 
-        // Rotation angular velocity (rad/s).  The audio adds mostly TRANSIENT motion
-        // — beats, spectral change, gentle in-tempo breathing — and only a tiny
-        // steady term, so the AVERAGE speed with music playing stays close to the
-        // music-off base speed while the visuals visibly PULSE with the music.
-        // (Earlier a large steady term made every track a constant fast spin.)
+        // Rotation angular velocity (rad/s).  The rotation SPEED must change only
+        // gradually with the music's overall energy — never jerk on individual
+        // beats (the rhythmic accent lives in the corner spotlights now).  So the
+        // audio term is a SLOWLY slewed energy envelope (no per-beat spikes) with a
+        // small gain, plus a tiny steady drift and a gentle in-tempo breathing.
+        float rotEnergyTarget = 0.35f * motion + 0.25f * audio.spectralFlux;
+        m_rotEnergy = slewToward(m_rotEnergy, rotEnergyTarget, 0.5f, dt);  // ~2 s to change
         float rotRate = m_audioDir * kReactivity * gate
                       * ( 0.06f * motion                       // tiny steady drift
-                        + 1.95f * audio.beatDecay              // beat/onset pulses (main hit)
-                        + 0.90f * audio.downbeat               // bigger accent on the "1"
-                        + 0.40f * audio.spectralFlux           // spectral-change pulses
-                        + 0.18f * motion * beatBreath );       // in-tempo breathing
+                        + 0.55f * m_rotEnergy                  // smooth energy-driven speed
+                        + 0.10f * motion * beatBreath );       // gentle in-tempo breathing
         m_audioRotPhase += dt * rotRate;
 
         // Tunnel forward advance: also transient-dominated (flux / harmonic change),
