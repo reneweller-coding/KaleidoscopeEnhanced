@@ -1135,10 +1135,11 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
         // fades to 0, so all the audio-driven motion, pulses and mood shifts below
         // smoothly collapse to neutral and the visuals run in their calm,
         // timer-driven "non-audio" mode.  Music returning fades it back to 1.
-        // Sharpen the music gate: below ~0.4 musicPresence (clear speech) it
-        // collapses to 0 (no reaction at all), above ~0.7 (clear music) it is full.
-        // This stops pure speech from leaking ~half-strength reactivity through.
-        float gate = (audio.musicPresence - 0.40f) / 0.30f;
+        // Music gate: clear speech (~0.3 musicPresence) collapses to 0 reaction,
+        // while real music (>=~0.6) gets FULL reaction.  Tuned to give genuine
+        // music plenty of headroom (so beats/cones stay strong) yet still cut pure
+        // speech.  smoothstep over [0.32 .. 0.60].
+        float gate = (audio.musicPresence - 0.32f) / 0.28f;
         gate = (gate < 0.f) ? 0.f : (gate > 1.f ? 1.f : gate);
         gate = gate * gate * (3.f - 2.f * gate);          // smoothstep
 
@@ -1295,22 +1296,20 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 
 		// End the solo early on a manual ('n') or novelty-driven request, but
 		// only after a brief minimum so cuts never come back-to-back.
-		if( ts > m_timeInterpolationEffectTexture || (m_forceEffectChange && ts > 2.f) )
+		bool forced = m_forceEffectChange;
+		if( ts > m_timeInterpolationEffectTexture || (forced && ts > 0.6f) )
 		{
 			m_forceEffectChange = false;
 
 			m_stateInterpolationEffectTexture = 1;
 
-			//m_timeInterpolationEffectTexture = 5.0;//(float) (m_effectTextureMinTimeInterpolation + (qrand() % (m_effectTextureMaxTimeInterpolation - m_effectTextureMinTimeInterpolation)));
-			
-			//unsigned int interpolationTimeMin = min( m_effectTextureMinTimeInterpolation[m_actEffectTexture], m_effectTextureMinTimeInterpolation[m_nextEffectTexture] );
-			//unsigned int interpolationTimeMax = min( m_effectTextureMaxTimeInterpolation[m_actEffectTexture], m_effectTextureMaxTimeInterpolation[m_nextEffectTexture] );
-			//m_timeInterpolationEffectTexture = (float) (interpolationTimeMin + (qrand() % (interpolationTimeMax - interpolationTimeMin)));
-			
 			unsigned int timeAct = m_effectTextures[m_actEffectTexture]->getTimeInterpolation();
 			unsigned int timeNext = m_effectTextures[m_nextEffectTexture]->getTimeInterpolation();
-			
-			m_timeInterpolationEffectTexture = (float) (std::min( timeAct, timeNext)) / m_timingScale;
+
+			// A manual ('n') cut uses a short, snappy cross-fade so it is clearly a
+			// switch; a natural change uses the config's (long) interpolation time.
+			m_timeInterpolationEffectTexture = forced ? 1.6f
+			                  : (float) (std::min( timeAct, timeNext)) / m_timingScale;
 
 			
 			m_effectTextures[m_nextEffectTexture]->startInterpolators();
