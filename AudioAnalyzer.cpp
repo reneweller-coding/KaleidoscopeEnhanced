@@ -878,8 +878,11 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
     //   timingScale > 1 → times shortened (quicker cuts)
     // The beat-mode end now tracks arousal, so a calm song cycles gently while an
     // energetic track cuts fast; ambient/drone collapses to very long holds.
-    // Range: ~0.10 (pure drone) .. ~2.6 (fast, high-arousal beat music).
-    float beatScale   = 0.8f + 1.8f * arousal;             // 0.8 .. 2.6
+    // Range: ~0.10 (pure drone) .. ~2.8 (fast, high-arousal beat music).
+    // Tempo is now a primary driver, so faster music = shorter scenes AND shorter
+    // cross-fades (both are divided by timingScale in filterShader), arousal adds
+    // intensity on top.  estimatedBPM is normalised 0..1 over 40..200 BPM.
+    float beatScale   = 0.7f + 0.9f * arousal + 1.2f * estimatedBPM;   // 0.7 .. ~2.8
     float timingScale = beatScale * (1.f - m_ambientFactor)
                       + 0.10f * m_ambientFactor;             // ambient: down to 0.10×
     // Smooth slowly so transitions aren't abrupt

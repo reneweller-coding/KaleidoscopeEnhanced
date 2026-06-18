@@ -62,15 +62,20 @@ void main()
     float lum = dot(c, vec3(0.299, 0.587, 0.114));
     c = mix(vec3(lum), c, 0.45 + 1.10 * audioValence);
 
-    // Loudness → brightness, spectral flux → shimmer (gentle, so already-bright
+    // Contrast / gamma: many source images are pale, which washed the whole frame
+    // out.  A mild gamma > 1 deepens the mid-tones (richer colour, less white-out)
+    // while leaving blacks black.
+    c = pow(max(c, 0.0), vec3(1.22));
+
+    // Loudness → brightness, spectral flux → shimmer (kept small so already-bright
     // content does not blow out).
-    c *= (1.0 + 0.30 * audioLevel + 0.15 * audioFlux);
+    c *= (1.0 + 0.12 * audioLevel + 0.06 * audioFlux);
 
     // Bloom / glow: a single tap of a coarse, blurred mip level (mipmaps already
     // generated for the safety mean).  Only clearly-bright areas, gently.
     vec3 blurC = texture2D(tex, uv, 4.5).rgb;        // LOD bias → blurred low-res
-    vec3 bloom = max(blurC - 0.65, 0.0);             // higher threshold = less wash
-    c += bloom * (0.22 + 0.08 * audioBeat);          // mostly steady (beat accent is in the spotlights)
+    vec3 bloom = max(blurC - 0.75, 0.0);             // higher threshold = less wash on pale content
+    c += bloom * (0.12 + 0.05 * audioBeat);          // mostly steady (beat accent is in the spotlights)
 
     // Soft highlight knee: compress values above ~0.8 toward white instead of
     // hard-clipping the whole frame to flat white when the grade pushes it high.
@@ -91,21 +96,25 @@ void main()
         float sl     = dot(sBase, vec3(0.299, 0.587, 0.114));
         sBase        = mix(vec3(sl), sBase, 0.5 + 0.8 * audioValence);   // saturation by valence
 
-        // Pulse: dark between beats, a clear flash on each beat, a bigger one on the
-        // downbeat.  No always-on base, so the lamps don't wash the frame.
-        float pulse  = 0.9 * audioBeat + 0.5 * audioDownbeat;
-        float spread = 0.26;     // cone half-width factor (tighter beam)
-        float reach  = 0.38;     // short: the cones stay near their corners, not filling the frame
-        float amp    = 0.55;     // overall brightness
+        // Pulse: dark between beats, a clear flash on each beat, a bigger one on
+        // the downbeat.  Each cone TINTS toward a bright version of the mood colour
+        // (mix, not add), so the spotlights are visible even over pale content.
+        float pulse  = clamp(0.9 * audioBeat + 0.5 * audioDownbeat, 0.0, 1.0);
+        float spread = 0.30;     // cone half-width factor
+        float reach  = 0.45;     // how far the beam carries inward
 
         vec2 c0 = vec2(0.0,    0.0);
         vec2 c1 = vec2(aspect, 0.0);
         vec2 c2 = vec2(0.0,    1.0);
         vec2 c3 = vec2(aspect, 1.0);
-        c += hueRotate(sBase, audioChromaHue*0.10 + 0.00) * coneLight(q, c0, normalize(ctr-c0), spread, reach) * pulse * amp;
-        c += hueRotate(sBase, audioChromaHue*0.10 + 0.05) * coneLight(q, c1, normalize(ctr-c1), spread, reach) * pulse * amp;
-        c += hueRotate(sBase, audioChromaHue*0.10 + 0.10) * coneLight(q, c2, normalize(ctr-c2), spread, reach) * pulse * amp;
-        c += hueRotate(sBase, audioChromaHue*0.10 + 0.15) * coneLight(q, c3, normalize(ctr-c3), spread, reach) * pulse * amp;
+        float m0 = clamp(coneLight(q, c0, normalize(ctr-c0), spread, reach) * pulse, 0.0, 0.85);
+        float m1 = clamp(coneLight(q, c1, normalize(ctr-c1), spread, reach) * pulse, 0.0, 0.85);
+        float m2 = clamp(coneLight(q, c2, normalize(ctr-c2), spread, reach) * pulse, 0.0, 0.85);
+        float m3 = clamp(coneLight(q, c3, normalize(ctr-c3), spread, reach) * pulse, 0.0, 0.85);
+        c = mix(c, hueRotate(sBase, audioChromaHue*0.10 + 0.00) * 1.3, m0);
+        c = mix(c, hueRotate(sBase, audioChromaHue*0.10 + 0.05) * 1.3, m1);
+        c = mix(c, hueRotate(sBase, audioChromaHue*0.10 + 0.10) * 1.3, m2);
+        c = mix(c, hueRotate(sBase, audioChromaHue*0.10 + 0.15) * 1.3, m3);
     }
 
     c *= scale;   // photosensitivity brightness limit (applied last)

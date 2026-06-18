@@ -263,6 +263,34 @@ void FilterShader::start( int width, int height )
 	reinit( width, height );
 }
 
+QString FilterShader::activeShaderInfo() const
+{
+	auto base = [](const char *p) -> QString {
+		QString s = QString::fromLatin1(p ? p : "?");
+		int i = s.lastIndexOf('\\'); if (i < 0) i = s.lastIndexOf('/');
+		return (i >= 0) ? s.mid(i + 1) : s;
+	};
+	QString out;
+	if (!m_effectTextures.empty())
+	{
+		out += "TEX   " + base(m_effectTextures[m_actEffectTexture]->fragmentName());
+		if (m_stateInterpolationEffectTexture != 0)
+			out += QString("   → %1  (%2%)")
+			       .arg(base(m_effectTextures[m_nextEffectTexture]->fragmentName()))
+			       .arg(int((1.0f - m_interpolationEffectTexture) * 100.0f + 0.5f));
+	}
+	out += "\n";
+	if (!m_effectCombines.empty())
+	{
+		out += "COMB  " + base(m_effectCombines[m_actEffectCombine]->fragmentName());
+		if (m_stateInterpolationEffectCombine != 0)
+			out += QString("   → %1  (%2%)")
+			       .arg(base(m_effectCombines[m_nextEffectCombine]->fragmentName()))
+			       .arg(int((1.0f - m_interpolationEffectCombine) * 100.0f + 0.5f));
+	}
+	return out;
+}
+
 void FilterShader::stop()
 {
 	m_imageLoader->terminate();

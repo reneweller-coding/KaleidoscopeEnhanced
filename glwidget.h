@@ -129,6 +129,7 @@ protected:
 	bool			m_showFeatureOverlay;
 	bool			m_showHelp = false;
 	bool			m_showAudioMenu = false;
+	bool			m_showShaderInfo = false;   // debug: active shader names ('v')
 
 	int		m_width;
 	int		m_height;
