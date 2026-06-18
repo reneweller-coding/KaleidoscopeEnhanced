@@ -918,6 +918,7 @@ void FilterShader::setupSafety()
 		m_presentFluxUni     = glGetUniformLocation( m_presentProgId, "audioFlux" );
 		m_presentHueUni      = glGetUniformLocation( m_presentProgId, "audioChromaHue" );
 		m_presentBeatUni     = glGetUniformLocation( m_presentProgId, "audioBeat" );
+		m_presentDownbeatUni = glGetUniformLocation( m_presentProgId, "audioDownbeat" );
 	}
 
 	m_safetyReady = fboOk && (m_presentProgId != 0) && (m_presentTexUni >= 0);
@@ -1705,6 +1706,7 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 		if( m_presentFluxUni     >= 0 ) glUniform1f( m_presentFluxUni,     audioFx.spectralFlux * ms );
 		if( m_presentHueUni      >= 0 ) glUniform1f( m_presentHueUni,      audioFx.chromaHue    * ms );
 		if( m_presentBeatUni     >= 0 ) glUniform1f( m_presentBeatUni,     audioFx.beatDecay );
+		if( m_presentDownbeatUni >= 0 ) glUniform1f( m_presentDownbeatUni, audioFx.downbeat );
 		drawWindow();
 	}
 

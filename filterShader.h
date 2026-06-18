@@ -174,6 +174,7 @@ private:
 	GLint			m_presentFluxUni     = -1;
 	GLint			m_presentHueUni      = -1;
 	GLint			m_presentBeatUni     = -1;
+	GLint			m_presentDownbeatUni = -1;
 	float			m_prevMeanLum    = -1.f;   // <0 = uninitialised
 	bool			m_safetyReady    = false;  // false → present pass disabled (safe fallback)
 	int				m_safetyFrame    = 0;      // for sub-sampling the readback

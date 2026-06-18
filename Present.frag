@@ -19,6 +19,7 @@ uniform float audioLevel;
 uniform float audioFlux;
 uniform float audioChromaHue;   // harmony → global hue shift (0 = neutral in non-music)
 uniform float audioBeat;        // beat → extra bloom on hits
+uniform float audioDownbeat;    // bigger accent on the bar's "1"
 
 // Hue rotation around the (1,1,1) luminance axis (Rodrigues), turns in [0,1].
 vec3 hueRotate(vec3 c, float turns)
@@ -27,6 +28,21 @@ vec3 hueRotate(vec3 c, float turns)
     vec3  k = vec3(0.57735026919);
     float cs = cos(a), sn = sin(a);
     return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+}
+
+// A spotlight CONE emanating from `origin` along `dir`: brightest at the source,
+// widening and fading along the beam.  Returns 0..1.
+float coneLight(vec2 p, vec2 origin, vec2 dir, float spread, float reach)
+{
+    vec2  v = p - origin;
+    float t = dot(v, dir);                       // distance along the beam
+    if (t < 0.0) return 0.0;                      // behind the lamp
+    float perp = length(v - t * dir);            // distance from the beam axis
+    float halfWidth = spread * (t + 0.04);        // cone widens with distance
+    float across = clamp(1.0 - perp / halfWidth, 0.0, 1.0);
+    across = across * across;                     // soft edges
+    float along = exp(-t / reach) * (0.35 + 0.65 * clamp(1.0 - t * 0.3, 0.0, 1.0));
+    return across * along;
 }
 
 void main()
@@ -60,23 +76,36 @@ void main()
     // hard-clipping the whole frame to flat white when the grade pushes it high.
     c = c / (1.0 + max(c - 0.8, 0.0));
 
-    // --- Corner spotlights -------------------------------------------------------
-    // Four gentle "stage lights" in the corners that flash IN TIME with the beat,
-    // coloured by the mood, each corner a slightly different hue.  This replaces
-    // the tiring full-frame beat flash with calm, peripheral accents.  audioBeat /
-    // audioLevel are music-gated upstream, so on speech / silence they stay dark.
+    // --- Corner spotlights (cones) ----------------------------------------------
+    // Four stage-light CONES shining from the corners toward the centre, flashing
+    // IN TIME with the beat (extra punch on the downbeat), coloured by the mood
+    // with a slightly different hue per corner.  Directional, so they read clearly
+    // as spotlights yet stay eye-friendly.  audioBeat / audioDownbeat are music-
+    // gated upstream, so on speech / silence the lamps stay dark.
     {
         float aspect = resolution.x / resolution.y;
         vec2  q      = vec2(uv.x * aspect, uv.y);
+        vec2  ctr    = vec2(aspect * 0.5, 0.5);
+
         vec3  sBase  = mix(vec3(0.35, 0.55, 1.0), vec3(1.0, 0.65, 0.30), audioCentroid);
         float sl     = dot(sBase, vec3(0.299, 0.587, 0.114));
-        sBase        = mix(vec3(sl), sBase, 0.5 + 0.7 * audioValence);   // saturation by valence
-        float glow   = 0.05 * audioLevel + audioBeat;                    // faint base + in-time flash
-        float kf = 9.0, amp = 0.50;
-        vec2 d0 = q - vec2(0.0,    0.0); c += hueRotate(sBase, audioChromaHue*0.10 + 0.00) * exp(-kf*dot(d0,d0)) * glow * amp;
-        vec2 d1 = q - vec2(aspect, 0.0); c += hueRotate(sBase, audioChromaHue*0.10 + 0.05) * exp(-kf*dot(d1,d1)) * glow * amp;
-        vec2 d2 = q - vec2(0.0,    1.0); c += hueRotate(sBase, audioChromaHue*0.10 + 0.10) * exp(-kf*dot(d2,d2)) * glow * amp;
-        vec2 d3 = q - vec2(aspect, 1.0); c += hueRotate(sBase, audioChromaHue*0.10 + 0.15) * exp(-kf*dot(d3,d3)) * glow * amp;
+        sBase        = mix(vec3(sl), sBase, 0.5 + 0.8 * audioValence);   // saturation by valence
+
+        // Pulse: a clear flash on every beat, a bigger one on the downbeat, plus a
+        // faint always-on base so the lamps are subtly present between hits.
+        float pulse  = 0.05 + 1.0 * audioBeat + 0.55 * audioDownbeat;
+        float spread = 0.34;     // cone half-width factor
+        float reach  = 0.85;     // how far the beam carries inward
+        float amp    = 0.70;     // overall brightness (keeps the mood colour, avoids white clip)
+
+        vec2 c0 = vec2(0.0,    0.0);
+        vec2 c1 = vec2(aspect, 0.0);
+        vec2 c2 = vec2(0.0,    1.0);
+        vec2 c3 = vec2(aspect, 1.0);
+        c += hueRotate(sBase, audioChromaHue*0.10 + 0.00) * coneLight(q, c0, normalize(ctr-c0), spread, reach) * pulse * amp;
+        c += hueRotate(sBase, audioChromaHue*0.10 + 0.05) * coneLight(q, c1, normalize(ctr-c1), spread, reach) * pulse * amp;
+        c += hueRotate(sBase, audioChromaHue*0.10 + 0.10) * coneLight(q, c2, normalize(ctr-c2), spread, reach) * pulse * amp;
+        c += hueRotate(sBase, audioChromaHue*0.10 + 0.15) * coneLight(q, c3, normalize(ctr-c3), spread, reach) * pulse * amp;
     }
 
     c *= scale;   // photosensitivity brightness limit (applied last)
