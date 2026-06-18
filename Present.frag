@@ -111,10 +111,10 @@ void main()
         float m1 = clamp(coneLight(q, c1, normalize(ctr-c1), spread, reach) * pulse, 0.0, 0.85);
         float m2 = clamp(coneLight(q, c2, normalize(ctr-c2), spread, reach) * pulse, 0.0, 0.85);
         float m3 = clamp(coneLight(q, c3, normalize(ctr-c3), spread, reach) * pulse, 0.0, 0.85);
-        c = mix(c, hueRotate(sBase, audioChromaHue*0.10 + 0.00) * 1.3, m0);
-        c = mix(c, hueRotate(sBase, audioChromaHue*0.10 + 0.05) * 1.3, m1);
-        c = mix(c, hueRotate(sBase, audioChromaHue*0.10 + 0.10) * 1.3, m2);
-        c = mix(c, hueRotate(sBase, audioChromaHue*0.10 + 0.15) * 1.3, m3);
+        c = mix(c, hueRotate(sBase, audioChromaHue*0.10 + 0.00) * 1.5, m0);
+        c = mix(c, hueRotate(sBase, audioChromaHue*0.10 + 0.05) * 1.5, m1);
+        c = mix(c, hueRotate(sBase, audioChromaHue*0.10 + 0.10) * 1.5, m2);
+        c = mix(c, hueRotate(sBase, audioChromaHue*0.10 + 0.15) * 1.5, m3);
     }
 
     c *= scale;   // photosensitivity brightness limit (applied last)
