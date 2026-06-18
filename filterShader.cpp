@@ -1106,7 +1106,12 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
         // fades to 0, so all the audio-driven motion, pulses and mood shifts below
         // smoothly collapse to neutral and the visuals run in their calm,
         // timer-driven "non-audio" mode.  Music returning fades it back to 1.
-        float gate = audio.musicPresence;
+        // Sharpen the music gate: below ~0.4 musicPresence (clear speech) it
+        // collapses to 0 (no reaction at all), above ~0.7 (clear music) it is full.
+        // This stops pure speech from leaking ~half-strength reactivity through.
+        float gate = (audio.musicPresence - 0.40f) / 0.30f;
+        gate = (gate < 0.f) ? 0.f : (gate > 1.f ? 1.f : gate);
+        gate = gate * gate * (3.f - 2.f * gate);          // smoothstep
 
         // Ease rotation direction between +1/-1 so reversals never snap.  Even
         // an instant flip would now only change the *rate*, not the phase, but

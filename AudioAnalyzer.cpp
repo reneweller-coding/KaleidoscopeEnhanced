@@ -1154,16 +1154,23 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
     for (float v : m_levelHistory) if (v > 0.04f) continuity += 1.f;
     continuity /= float(kAmbientHistLen);                 // 1 = no gaps (music/drone)
     float gappiness    = 1.f - continuity;                // speech: some gaps
-    float midDom       = (lowMid + mid) / sharpDen;       // speech: mid-dominant
-    float bassPresence = std::min((subBass + bass) * 2.0f, 1.f);   // music veto
+    float midDom       = (lowMid + mid) / sharpDen;       // speech: mid-dominant (formants)
+    float highContent  = std::min((upperMid + high) / sharpDen * 2.5f, 1.f); // music has highs
+    float bassPresence = std::min((subBass + bass) * 2.0f, 1.f);             // music has bass
     float sustain      = continuity * (1.f - m_sFluxVar); // steady drone/pad = music
 
-    float speechiness = midDom
-                      * (1.f - bassPresence)              // bass  -> not speech
-                      * (1.f - m_sRhythm)                 // beat  -> not speech
-                      * (1.f - 0.6f * sustain)            // drone -> not speech
-                      * (0.4f + 0.6f * gappiness);        // pauses -> more speech
-    speechiness = std::max(0.f, std::min(speechiness * 1.4f, 1.f));
+    // Core speech signature: energy concentrated in the formant band (~300-3400 Hz)
+    // and lacking BOTH bass and highs.  Then VETO with traits that only music has
+    // (bass weight, a steady beat, sustained continuity, a clear sustained key).
+    // The gappiness floor is high (0.7) so continuous narration is still caught.
+    float midConc = std::max(midDom * (1.f - highContent), 0.f);   // ~1 for speech
+    float speechiness = midConc
+                      * (1.f - bassPresence)              // bass        -> music
+                      * (1.f - m_sRhythm)                 // steady beat -> music
+                      * (1.f - 0.7f * sustain)            // sustained   -> music
+                      * (1.f - 0.5f * m_sKeyClarity)      // clear key   -> music
+                      * (0.7f + 0.3f * gappiness);        // pauses add, don't veto
+    speechiness = std::max(0.f, std::min(speechiness * 1.9f, 1.f));
     float musicConf = 1.f - speechiness;
 
     // Smooth with mild hysteresis: ease toward music a bit faster than toward

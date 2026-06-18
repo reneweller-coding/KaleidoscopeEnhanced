@@ -65,12 +65,13 @@ void main() {
     
     vec4 col = interpolation * texture2D(tex0,uv) + (1.0-interpolation)*texture2D(tex1,uv);
 
-    // --- Beat pulse: radial zoom flash (gentle; brightness is slew-limited host-side) ---
-    float pulse   = audioBeat * 0.32;
-    float zoom    = 1.0 + audioBeat * 0.30;
+    // --- Beat: a VERY subtle radial breath only ---
+    // The strong beat zoom/brightness flash was tiring on the eyes; the rhythmic
+    // accent now lives in the gentle corner spotlights of the final present pass.
+    float zoom    = 1.0 + audioBeat * 0.06;
     vec2 uvZoomed = (uv - 0.5) / zoom + 0.5;
     vec4 colZoomed = interpolation * texture2D(tex0,uvZoomed) + (1.0-interpolation)*texture2D(tex1,uvZoomed);
-    col = mix(col, colZoomed, audioBeat * 0.72);
+    col = mix(col, colZoomed, audioBeat * 0.18);
 
     // --- Spectral Centroid: colour temperature tint ---
     // Low centroid (dark drone) → cool blue-violet tint, reduced brightness
@@ -78,8 +79,6 @@ void main() {
     // Blend is very subtle so it enhances mood without overriding image colour.
     // Mood colour / saturation / loudness-brightness / flux-shimmer are now applied
     // GLOBALLY in the final present pass, so every effect reacts consistently.
-    // Here we keep only the per-effect beat brightness pop.
-    col.rgb += vec3(pulse);
-
+    // No per-effect brightness flash here (moved to the present-pass spotlights).
     gl_FragColor = clamp(col, 0.0, 1.0);
 }
