@@ -91,12 +91,12 @@ void main()
         float sl     = dot(sBase, vec3(0.299, 0.587, 0.114));
         sBase        = mix(vec3(sl), sBase, 0.5 + 0.8 * audioValence);   // saturation by valence
 
-        // Pulse: a clear flash on every beat, a bigger one on the downbeat, plus a
-        // faint always-on base so the lamps are subtly present between hits.
-        float pulse  = 0.05 + 1.0 * audioBeat + 0.55 * audioDownbeat;
-        float spread = 0.34;     // cone half-width factor
-        float reach  = 0.85;     // how far the beam carries inward
-        float amp    = 0.70;     // overall brightness (keeps the mood colour, avoids white clip)
+        // Pulse: dark between beats, a clear flash on each beat, a bigger one on the
+        // downbeat.  No always-on base, so the lamps don't wash the frame.
+        float pulse  = 0.9 * audioBeat + 0.5 * audioDownbeat;
+        float spread = 0.26;     // cone half-width factor (tighter beam)
+        float reach  = 0.38;     // short: the cones stay near their corners, not filling the frame
+        float amp    = 0.55;     // overall brightness
 
         vec2 c0 = vec2(0.0,    0.0);
         vec2 c1 = vec2(aspect, 0.0);
