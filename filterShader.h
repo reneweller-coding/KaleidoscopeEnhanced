@@ -325,6 +325,7 @@ private:
     float m_audioBeatSmooth  = 0.f;
     float m_audioLevelSmooth = 0.f;
     float m_audioFluxSmooth  = 0.f;
+    float m_rotEnergy        = 0.f;   // slowly-slewed rotation-speed envelope (no per-beat jerk)
 	//unsigned int m_effectCombineMinTimeInterpolation;
 	//unsigned int m_effectCombineMaxTimeInterpolation;
 
