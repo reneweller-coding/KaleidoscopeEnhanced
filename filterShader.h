@@ -47,6 +47,9 @@ public:
 	static float reactivity() { return s_reactivity; }
 	static float trails()     { return s_trailAmount; }
 	static float mood()       { return s_moodStrength; }
+
+	// Human-readable names of the currently active / cross-fading effects (debug overlay).
+	QString activeShaderInfo() const;
 	// Absolute setters (e.g. MIDI knobs map a 0..1 value to the full range).
 	static void  setReactivity( float v ) { s_reactivity  = clampParam(v, 0.f, 3.0f); }
 	static void  setTrails     ( float v ) { s_trailAmount = clampParam(v, 0.f, 0.95f); }

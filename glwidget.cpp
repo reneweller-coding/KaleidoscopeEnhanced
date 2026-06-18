@@ -295,7 +295,7 @@ void GLwidget::draw()
 	// Only spin up a QPainter when an overlay or the cross-fade needs it, so the
 	// normal render path is pure GL (no QPainter/GL state interaction).
 	if( m_showSelectConfigurationMenu || m_showFeatureOverlay || m_showHelp
-	    || m_showAudioMenu || fadeAlpha > 0.f || npAlpha > 0.f )
+	    || m_showAudioMenu || m_showShaderInfo || fadeAlpha > 0.f || npAlpha > 0.f )
 	{
 		QPainter painter(this);
 		//painter.setRenderHint(QPainter::Antialiasing);
@@ -313,6 +313,19 @@ void GLwidget::draw()
 			drawHelpOverlay( &painter );
 		if( m_showAudioMenu )
 			drawAudioMenu( &painter );
+		if( m_showShaderInfo && m_actConfiguration && m_actConfiguration->m_filterShader )
+		{
+			QString info = m_actConfiguration->m_filterShader->activeShaderInfo();
+			QStringList rows = info.split('\n');
+			int y = height() - 120;
+			painter.fillRect( 20, y - 24, 720, 28 * rows.size() + 16, QColor(0, 0, 0, 175) );
+			painter.setFont( QFont("Consolas", 13, QFont::Bold) );
+			for( int i = 0; i < rows.size(); ++i )
+			{
+				painter.setPen( QColor(140, 230, 170) );
+				painter.drawText( 34, y + i * 28, rows[i] );
+			}
+		}
 		if( npAlpha > 0.f )
 			drawNowPlaying( &painter, npTitle, npArtist, npAlpha );
 		painter.end();
@@ -700,6 +713,7 @@ void GLwidget::drawHelpOverlay( QPainter *painter )
 		{ "1 - 9",   "switch configuration" },
 		{ "n",       "next effect" },
 		{ "i",       "audio-feature overlay (+ FPS)" },
+		{ "v",       "show active shader names (debug)" },
 		{ "d",       "choose audio source (output / mic)" },
 		{ "p",       "now-playing title on/off" },
 		{ "a",       "auto-config by mood on/off" },
@@ -873,6 +887,9 @@ void GLwidget::keyPressEvent(QKeyEvent* event)
 			break;
 		case Qt::Key_H:
 			m_showHelp = !m_showHelp;
+			break;
+		case Qt::Key_V:
+			m_showShaderInfo = !m_showShaderInfo;   // debug: which shaders are active
 			break;
 		case Qt::Key_D:
 			m_showAudioMenu = true;   // closed again from the modal handler above

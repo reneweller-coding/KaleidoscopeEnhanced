@@ -75,6 +75,9 @@ public:
 	// the GPU simulation only while an effect that displays it is on screen.
 	bool usesSim();
 
+	// The fragment-shader file this effect uses (for the debug overlay).
+	const char* fragmentName() const { return m_fragmentShaderFilename ? m_fragmentShaderFilename : "?"; }
+
 protected:
 	unsigned int getInterpolatedTime( unsigned int minTime, unsigned int maxTime );
 	void drawWindow();
