@@ -54,11 +54,30 @@ void main()
     // generated for the safety mean).  Only clearly-bright areas, gently.
     vec3 blurC = texture2D(tex, uv, 4.5).rgb;        // LOD bias → blurred low-res
     vec3 bloom = max(blurC - 0.65, 0.0);             // higher threshold = less wash
-    c += bloom * (0.22 + 0.30 * audioBeat);
+    c += bloom * (0.22 + 0.08 * audioBeat);          // mostly steady (beat accent is in the spotlights)
 
     // Soft highlight knee: compress values above ~0.8 toward white instead of
     // hard-clipping the whole frame to flat white when the grade pushes it high.
     c = c / (1.0 + max(c - 0.8, 0.0));
+
+    // --- Corner spotlights -------------------------------------------------------
+    // Four gentle "stage lights" in the corners that flash IN TIME with the beat,
+    // coloured by the mood, each corner a slightly different hue.  This replaces
+    // the tiring full-frame beat flash with calm, peripheral accents.  audioBeat /
+    // audioLevel are music-gated upstream, so on speech / silence they stay dark.
+    {
+        float aspect = resolution.x / resolution.y;
+        vec2  q      = vec2(uv.x * aspect, uv.y);
+        vec3  sBase  = mix(vec3(0.35, 0.55, 1.0), vec3(1.0, 0.65, 0.30), audioCentroid);
+        float sl     = dot(sBase, vec3(0.299, 0.587, 0.114));
+        sBase        = mix(vec3(sl), sBase, 0.5 + 0.7 * audioValence);   // saturation by valence
+        float glow   = 0.05 * audioLevel + audioBeat;                    // faint base + in-time flash
+        float kf = 9.0, amp = 0.50;
+        vec2 d0 = q - vec2(0.0,    0.0); c += hueRotate(sBase, audioChromaHue*0.10 + 0.00) * exp(-kf*dot(d0,d0)) * glow * amp;
+        vec2 d1 = q - vec2(aspect, 0.0); c += hueRotate(sBase, audioChromaHue*0.10 + 0.05) * exp(-kf*dot(d1,d1)) * glow * amp;
+        vec2 d2 = q - vec2(0.0,    1.0); c += hueRotate(sBase, audioChromaHue*0.10 + 0.10) * exp(-kf*dot(d2,d2)) * glow * amp;
+        vec2 d3 = q - vec2(aspect, 1.0); c += hueRotate(sBase, audioChromaHue*0.10 + 0.15) * exp(-kf*dot(d3,d3)) * glow * amp;
+    }
 
     c *= scale;   // photosensitivity brightness limit (applied last)
 
