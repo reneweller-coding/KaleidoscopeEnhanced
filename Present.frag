@@ -102,8 +102,8 @@ void main()
         // full-spectrum onset too, so it pulses even for music without a hard kick.
         // Each cone TINTS toward a bright mood colour (mix, not add), so it shows
         // even over pale content.
-        float pulse  = clamp(0.07 + 1.2 * audioBeat + 0.7 * audioDownbeat
-                                  + 0.8 * audioOnset, 0.0, 1.0);
+        float pulse  = clamp(0.50 + 1.2 * audioBeat + 0.7 * audioDownbeat
+                                  + 0.8 * audioOnset, 0.0, 1.0);   // DIAG: strong base to confirm cones render
         float spread = 0.30;     // cone half-width factor
         float reach  = 0.45;     // how far the beam carries inward
 
