@@ -20,6 +20,7 @@ uniform float audioFlux;
 uniform float audioChromaHue;   // harmony → global hue shift (0 = neutral in non-music)
 uniform float audioBeat;        // beat → extra bloom on hits
 uniform float audioDownbeat;    // bigger accent on the bar's "1"
+uniform float audioOnset;       // full-spectrum onset (snares/claps/melodic) → cone pulse
 
 // Hue rotation around the (1,1,1) luminance axis (Rodrigues), turns in [0,1].
 vec3 hueRotate(vec3 c, float turns)
@@ -96,10 +97,13 @@ void main()
         float sl     = dot(sBase, vec3(0.299, 0.587, 0.114));
         sBase        = mix(vec3(sl), sBase, 0.5 + 0.8 * audioValence);   // saturation by valence
 
-        // Pulse: dark between beats, a clear flash on each beat, a bigger one on
-        // the downbeat.  Each cone TINTS toward a bright version of the mood colour
-        // (mix, not add), so the spotlights are visible even over pale content.
-        float pulse  = clamp(0.9 * audioBeat + 0.5 * audioDownbeat, 0.0, 1.0);
+        // Pulse: a faint always-on base (so the lamps are visibly present) plus a
+        // clear flash on each beat / onset, bigger on the downbeat.  Driven by the
+        // full-spectrum onset too, so it pulses even for music without a hard kick.
+        // Each cone TINTS toward a bright mood colour (mix, not add), so it shows
+        // even over pale content.
+        float pulse  = clamp(0.07 + 1.2 * audioBeat + 0.7 * audioDownbeat
+                                  + 0.8 * audioOnset, 0.0, 1.0);
         float spread = 0.30;     // cone half-width factor
         float reach  = 0.45;     // how far the beam carries inward
 

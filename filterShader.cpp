@@ -947,6 +947,7 @@ void FilterShader::setupSafety()
 		m_presentHueUni      = glGetUniformLocation( m_presentProgId, "audioChromaHue" );
 		m_presentBeatUni     = glGetUniformLocation( m_presentProgId, "audioBeat" );
 		m_presentDownbeatUni = glGetUniformLocation( m_presentProgId, "audioDownbeat" );
+		m_presentOnsetUni    = glGetUniformLocation( m_presentProgId, "audioOnset" );
 	}
 
 	m_safetyReady = fboOk && (m_presentProgId != 0) && (m_presentTexUni >= 0);
@@ -1308,7 +1309,7 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 
 			// A manual ('n') cut uses a short, snappy cross-fade so it is clearly a
 			// switch; a natural change uses the config's (long) interpolation time.
-			m_timeInterpolationEffectTexture = forced ? 1.6f
+			m_timeInterpolationEffectTexture = forced ? 0.8f
 			                  : (float) (std::min( timeAct, timeNext)) / m_timingScale;
 
 			
@@ -1472,17 +1473,19 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
         m_interpolationEffectCombine = 1.0;
 
 		float ts = float(m_timeEffectCombine.elapsed()) * 0.001;
-		if( ts > m_timeInterpolationEffectCombine )
+		bool forcedC = m_forceCombineChange;
+		if( ts > m_timeInterpolationEffectCombine || (forcedC && ts > 0.6f) )
 		{
-			
+			m_forceCombineChange = false;
+
 			m_stateInterpolationEffectCombine = 1;
 
-			//m_timeInterpolationEffectCombine = 7.0;//(float) (m_effectCombineMinTimeInterpolation + (qrand() % (m_effectCombineMaxTimeInterpolation - m_effectCombineMinTimeInterpolation)));
-			
 			unsigned int timeAct = m_effectCombines[m_actEffectCombine]->getTimeInterpolation();
 			unsigned int timeNext = m_effectCombines[m_nextEffectCombine]->getTimeInterpolation();
-			
-			m_timeInterpolationEffectCombine = (float) (std::min( timeAct, timeNext)) / m_timingScale;
+
+			// Manual ('n') cut → short snappy cross-fade; natural change → config time.
+			m_timeInterpolationEffectCombine = forcedC ? 0.8f
+			                  : (float) (std::min( timeAct, timeNext)) / m_timingScale;
 
 			m_effectCombines[m_nextEffectCombine]->startInterpolators();
 
@@ -1734,6 +1737,7 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 		if( m_presentHueUni      >= 0 ) glUniform1f( m_presentHueUni,      audioFx.chromaHue    * ms );
 		if( m_presentBeatUni     >= 0 ) glUniform1f( m_presentBeatUni,     audioFx.beatDecay );
 		if( m_presentDownbeatUni >= 0 ) glUniform1f( m_presentDownbeatUni, audioFx.downbeat );
+		if( m_presentOnsetUni    >= 0 ) glUniform1f( m_presentOnsetUni,    audioFx.onsetStrength );
 		drawWindow();
 	}
 
