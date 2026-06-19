@@ -38,7 +38,7 @@ public:
 
 	/** Request an early cross-fade to the next texture effect (manual 'n' key or
 	 *  an automatic musical novelty trigger).  Honoured at the next opportunity. */
-	void requestSceneChange() { m_forceEffectChange = true; }
+	void requestSceneChange() { m_forceEffectChange = true; m_forceCombineChange = true; }
 
 	// ---- Live-tunable look parameters (shared across all configs; set by hotkeys) ----
 	static void  adjustReactivity( float d ) { s_reactivity  = clampParam(s_reactivity  + d, 0.f, 3.0f); }
@@ -158,6 +158,7 @@ private:
 
 	// Manual / novelty-driven early scene change + its rate-limit cooldown.
 	bool			m_forceEffectChange = false;
+	bool			m_forceCombineChange = false;
 	float			m_noveltyCooldown   = 0.f;
 
 	// ---- Photosensitivity safety: final present pass with global brightness
@@ -178,6 +179,7 @@ private:
 	GLint			m_presentHueUni      = -1;
 	GLint			m_presentBeatUni     = -1;
 	GLint			m_presentDownbeatUni = -1;
+	GLint			m_presentOnsetUni    = -1;
 	float			m_prevMeanLum    = -1.f;   // <0 = uninitialised
 	bool			m_safetyReady    = false;  // false → present pass disabled (safe fallback)
 	int				m_safetyFrame    = 0;      // for sub-sampling the readback

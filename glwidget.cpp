@@ -899,9 +899,12 @@ void GLwidget::keyPressEvent(QKeyEvent* event)
 			fprintf( stderr, "Now-playing display: %s\n", m_showNowPlaying ? "ON" : "OFF" );
 			break;
 		case Qt::Key_N:
-			// Manually advance to the next texture effect.
+			// Manually advance to the next effect (texture + combine), snappy cut.
 			if( m_actConfiguration && m_actConfiguration->m_filterShader )
+			{
 				m_actConfiguration->m_filterShader->requestSceneChange();
+				fprintf( stderr, "n: next effect requested\n" );
+			}
 			break;
 
 		// ---- Live tuning (values shared across all configs) ----

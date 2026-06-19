@@ -100,7 +100,7 @@ private:
     float m_bassHistory[kHistoryLen] = {};
     int   m_histIdx       = 0;
     float m_beatCooldown  = 0.f;
-    static constexpr float kBeatThresholdRatio = 1.5f;
+    static constexpr float kBeatThresholdRatio = 1.32f;   // more sensitive (catches softer kicks)
     static constexpr float kBeatCooldownFrames = 8.f;
 
     // ---- Ambient detection ----

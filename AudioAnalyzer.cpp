@@ -682,8 +682,8 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
     float onsetStrength = 0.f;
     if (m_onsetCooldown > 0.f) {
         m_onsetCooldown -= 1.f;
-    } else if (rawFlux > m_onsetAvg * 1.7f + 0.015f && rawFlux > m_prevODF) {
-        onsetStrength  = std::min((rawFlux / (m_onsetAvg * 1.7f + 1e-4f)) - 1.f, 1.f);
+    } else if (rawFlux > m_onsetAvg * 1.45f + 0.010f && rawFlux > m_prevODF) {
+        onsetStrength  = std::min((rawFlux / (m_onsetAvg * 1.45f + 1e-4f)) - 1.f, 1.f);
         m_onsetCooldown = 5.f;
         float onsetPulse = (0.6f + 0.8f * onsetStrength) * (1.f - m_ambientFactor * 0.9f);
         m_beatPulse = std::max(m_beatPulse, onsetPulse);
