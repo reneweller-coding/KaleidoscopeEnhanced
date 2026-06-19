@@ -989,10 +989,6 @@ void FilterShader::setupSafety()
 
 	// GPU reaction-diffusion simulation buffers + shader.
 	setupReactionDiffusion();
-
-	fprintf( stderr, "setupSafety: safetyReady=%d feedbackReady=%d (present pass = cones %s)\n",
-	         (int)m_safetyReady, (int)m_feedbackReady,
-	         m_safetyReady ? "ACTIVE" : "DISABLED -> NO CONES/MOOD GRADE" );
 }
 
 // Create the two RGBA16F ping-pong buffers and the Gray-Scott step shader.  The
@@ -1336,7 +1332,6 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 
 			m_effectTextures[m_actEffectTexture]->resetParameters();
 			m_actEffectTexture = m_nextEffectTexture;
-			fprintf( stderr, "TEX  -> %s\n", m_effectTextures[m_actEffectTexture]->fragmentName() );
 
 			for( unsigned int i = 0; i < m_maxIterationsEffectSearch; i++ )
 			{
@@ -1511,7 +1506,6 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 
 			m_effectCombines[m_actEffectCombine]->resetParameters();
 			m_actEffectCombine = m_nextEffectCombine;
-			fprintf( stderr, "COMB -> %s\n", m_effectCombines[m_actEffectCombine]->fragmentName() );
 
 			for( unsigned int i = 0; i < m_maxIterationsEffectSearch; i++ )
 			{

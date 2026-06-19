@@ -93,32 +93,34 @@ void main()
         vec2  q      = vec2(uv.x * aspect, uv.y);
         vec2  ctr    = vec2(aspect * 0.5, 0.5);
 
-        vec3  sBase  = mix(vec3(0.35, 0.55, 1.0), vec3(1.0, 0.65, 0.30), audioCentroid);
+        // Vivid mood colour: brightness/temperature from the centroid, saturation
+        // from valence.  The four corners take DISTINCT hues around the wheel, all
+        // rotated by the harmony (chroma hue) so the colour shifts with the music.
+        vec3  sBase  = mix(vec3(0.25, 0.55, 1.0), vec3(1.0, 0.55, 0.20), audioCentroid);
         float sl     = dot(sBase, vec3(0.299, 0.587, 0.114));
-        sBase        = mix(vec3(sl), sBase, 0.5 + 0.8 * audioValence);   // saturation by valence
+        sBase        = mix(vec3(sl), sBase, 0.75 + 0.5 * audioValence);   // keep it saturated
 
-        // Pulse: a faint always-on base (so the lamps are visibly present) plus a
-        // clear flash on each beat / onset, bigger on the downbeat.  Driven by the
-        // full-spectrum onset too, so it pulses even for music without a hard kick.
-        // Each cone TINTS toward a bright mood colour (mix, not add), so it shows
-        // even over pale content.
-        float pulse  = clamp(0.50 + 1.2 * audioBeat + 0.7 * audioDownbeat
-                                  + 0.8 * audioOnset, 0.0, 1.0);   // DIAG: strong base to confirm cones render
-        float spread = 0.30;     // cone half-width factor
-        float reach  = 0.45;     // how far the beam carries inward
+        // Pulse: a modest always-on base so the lamps are visibly present, plus a
+        // clear flash on each beat / onset, bigger on the downbeat.  Onset-driven
+        // too, so it pulses even for music without a hard kick.  Each cone TINTS
+        // toward its bright mood colour (mix, not add), visible over any content.
+        float pulse  = clamp(0.16 + 1.0 * audioBeat + 0.6 * audioDownbeat
+                                  + 0.7 * audioOnset, 0.0, 1.0);
+        float spread = 0.52;     // cone half-width factor (thick beams)
+        float reach  = 0.38;     // short, so the thick cones stay in the corner regions
 
         vec2 c0 = vec2(0.0,    0.0);
         vec2 c1 = vec2(aspect, 0.0);
         vec2 c2 = vec2(0.0,    1.0);
         vec2 c3 = vec2(aspect, 1.0);
-        float m0 = clamp(coneLight(q, c0, normalize(ctr-c0), spread, reach) * pulse, 0.0, 0.85);
-        float m1 = clamp(coneLight(q, c1, normalize(ctr-c1), spread, reach) * pulse, 0.0, 0.85);
-        float m2 = clamp(coneLight(q, c2, normalize(ctr-c2), spread, reach) * pulse, 0.0, 0.85);
-        float m3 = clamp(coneLight(q, c3, normalize(ctr-c3), spread, reach) * pulse, 0.0, 0.85);
-        c = mix(c, hueRotate(sBase, audioChromaHue*0.10 + 0.00) * 1.5, m0);
-        c = mix(c, hueRotate(sBase, audioChromaHue*0.10 + 0.05) * 1.5, m1);
-        c = mix(c, hueRotate(sBase, audioChromaHue*0.10 + 0.10) * 1.5, m2);
-        c = mix(c, hueRotate(sBase, audioChromaHue*0.10 + 0.15) * 1.5, m3);
+        float m0 = clamp(coneLight(q, c0, normalize(ctr-c0), spread, reach) * pulse, 0.0, 0.88);
+        float m1 = clamp(coneLight(q, c1, normalize(ctr-c1), spread, reach) * pulse, 0.0, 0.88);
+        float m2 = clamp(coneLight(q, c2, normalize(ctr-c2), spread, reach) * pulse, 0.0, 0.88);
+        float m3 = clamp(coneLight(q, c3, normalize(ctr-c3), spread, reach) * pulse, 0.0, 0.88);
+        c = mix(c, hueRotate(sBase, audioChromaHue + 0.00) * 1.5, m0);
+        c = mix(c, hueRotate(sBase, audioChromaHue + 0.12) * 1.5, m1);
+        c = mix(c, hueRotate(sBase, audioChromaHue + 0.25) * 1.5, m2);
+        c = mix(c, hueRotate(sBase, audioChromaHue + 0.37) * 1.5, m3);
     }
 
     c *= scale;   // photosensitivity brightness limit (applied last)
