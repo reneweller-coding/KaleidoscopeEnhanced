@@ -948,6 +948,7 @@ void FilterShader::setupSafety()
 		m_presentBeatUni     = glGetUniformLocation( m_presentProgId, "audioBeat" );
 		m_presentDownbeatUni = glGetUniformLocation( m_presentProgId, "audioDownbeat" );
 		m_presentOnsetUni    = glGetUniformLocation( m_presentProgId, "audioOnset" );
+		m_presentTimeUni     = glGetUniformLocation( m_presentProgId, "time" );
 	}
 
 	m_safetyReady = fboOk && (m_presentProgId != 0) && (m_presentTexUni >= 0);
@@ -1738,6 +1739,7 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 		if( m_presentBeatUni     >= 0 ) glUniform1f( m_presentBeatUni,     audioFx.beatDecay );
 		if( m_presentDownbeatUni >= 0 ) glUniform1f( m_presentDownbeatUni, audioFx.downbeat );
 		if( m_presentOnsetUni    >= 0 ) glUniform1f( m_presentOnsetUni,    audioFx.onsetStrength );
+		if( m_presentTimeUni     >= 0 ) glUniform1f( m_presentTimeUni,     m_globaltime );
 		drawWindow();
 	}
 
