@@ -21,6 +21,7 @@ uniform float audioChromaHue;   // harmony → global hue shift (0 = neutral in 
 uniform float audioBeat;        // beat → extra bloom on hits
 uniform float audioDownbeat;    // bigger accent on the bar's "1"
 uniform float audioOnset;       // full-spectrum onset (snares/claps/melodic) → cone pulse
+uniform float time;             // for the slow moving-head beam sweep
 
 // Hue rotation around the (1,1,1) luminance axis (Rodrigues), turns in [0,1].
 vec3 hueRotate(vec3 c, float turns)
@@ -30,6 +31,8 @@ vec3 hueRotate(vec3 c, float turns)
     float cs = cos(a), sn = sin(a);
     return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
 }
+
+vec2 rot2(vec2 v, float a) { float c = cos(a), s = sin(a); return mat2(c, -s, s, c) * v; }
 
 // A spotlight CONE emanating from `origin` along `dir`: brightest at the source,
 // widening and fading along the beam.  Returns 0..1.
@@ -113,10 +116,20 @@ void main()
         vec2 c1 = vec2(aspect, 0.0);
         vec2 c2 = vec2(0.0,    1.0);
         vec2 c3 = vec2(aspect, 1.0);
-        float m0 = clamp(coneLight(q, c0, normalize(ctr-c0), spread, reach) * pulse, 0.0, 0.88);
-        float m1 = clamp(coneLight(q, c1, normalize(ctr-c1), spread, reach) * pulse, 0.0, 0.88);
-        float m2 = clamp(coneLight(q, c2, normalize(ctr-c2), spread, reach) * pulse, 0.0, 0.88);
-        float m3 = clamp(coneLight(q, c3, normalize(ctr-c3), spread, reach) * pulse, 0.0, 0.88);
+
+        // Moving-head sweep: each beam swings back and forth around its aim at the
+        // centre, with a different phase per corner (and a touch wider swing when
+        // the music is louder).  Fixed rate so the motion stays smooth (no jumps).
+        float swAmp = 0.55 + 0.35 * audioLevel;     // swing amplitude (radians)
+        float swRate = 0.5;                          // swing speed
+        vec2 d0 = rot2(normalize(ctr-c0), swAmp * sin(time * swRate + 0.0));
+        vec2 d1 = rot2(normalize(ctr-c1), swAmp * sin(time * swRate + 1.7));
+        vec2 d2 = rot2(normalize(ctr-c2), swAmp * sin(time * swRate + 3.3));
+        vec2 d3 = rot2(normalize(ctr-c3), swAmp * sin(time * swRate + 5.0));
+        float m0 = clamp(coneLight(q, c0, d0, spread, reach) * pulse, 0.0, 0.88);
+        float m1 = clamp(coneLight(q, c1, d1, spread, reach) * pulse, 0.0, 0.88);
+        float m2 = clamp(coneLight(q, c2, d2, spread, reach) * pulse, 0.0, 0.88);
+        float m3 = clamp(coneLight(q, c3, d3, spread, reach) * pulse, 0.0, 0.88);
         c = mix(c, hueRotate(sBase, audioChromaHue + 0.00) * 1.5, m0);
         c = mix(c, hueRotate(sBase, audioChromaHue + 0.12) * 1.5, m1);
         c = mix(c, hueRotate(sBase, audioChromaHue + 0.25) * 1.5, m2);
