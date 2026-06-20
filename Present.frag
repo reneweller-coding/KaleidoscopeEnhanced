@@ -22,6 +22,9 @@ uniform float audioBeat;        // beat → extra bloom on hits
 uniform float audioDownbeat;    // bigger accent on the bar's "1"
 uniform float audioOnset;       // full-spectrum onset (snares/claps/melodic) → cone pulse
 uniform float time;             // for the slow moving-head beam sweep
+uniform float audioChase;       // 0..1, steps 1/4 each onset → corner-cone colour chase
+
+float hash21(vec2 p) { return fract(sin(dot(p, vec2(41.3, 289.1))) * 43758.5453); }
 
 // Hue rotation around the (1,1,1) luminance axis (Rodrigues), turns in [0,1].
 vec3 hueRotate(vec3 c, float turns)
@@ -96,17 +99,12 @@ void main()
         vec2  q      = vec2(uv.x * aspect, uv.y);
         vec2  ctr    = vec2(aspect * 0.5, 0.5);
 
-        // Vivid mood colour: brightness/temperature from the centroid, saturation
-        // from valence.  The four corners take DISTINCT hues around the wheel, all
-        // rotated by the harmony (chroma hue) so the colour shifts with the music.
-        vec3  sBase  = mix(vec3(0.25, 0.55, 1.0), vec3(1.0, 0.55, 0.20), audioCentroid);
-        float sl     = dot(sBase, vec3(0.299, 0.587, 0.114));
-        sBase        = mix(vec3(sl), sBase, 0.75 + 0.5 * audioValence);   // keep it saturated
+        // Vivid mood colour (centroid temperature, valence saturation).
+        vec3  moodCol = mix(vec3(0.25, 0.55, 1.0), vec3(1.0, 0.55, 0.20), audioCentroid);
+        float sl      = dot(moodCol, vec3(0.299, 0.587, 0.114));
+        moodCol       = mix(vec3(sl), moodCol, 0.75 + 0.5 * audioValence);
 
-        // Pulse: a modest always-on base so the lamps are visibly present, plus a
-        // clear flash on each beat / onset, bigger on the downbeat.  Onset-driven
-        // too, so it pulses even for music without a hard kick.  Each cone TINTS
-        // toward its bright mood colour (mix, not add), visible over any content.
+        // Beat/onset pulse with a modest always-on base.
         float pulse  = clamp(0.16 + 1.0 * audioBeat + 0.6 * audioDownbeat
                                   + 0.7 * audioOnset, 0.0, 1.0);
         float spread = 0.52;     // cone half-width factor (thick beams)
@@ -117,23 +115,59 @@ void main()
         vec2 c2 = vec2(0.0,    1.0);
         vec2 c3 = vec2(aspect, 1.0);
 
-        // Moving-head sweep: each beam swings back and forth around its aim at the
-        // centre, with a different phase per corner (and a touch wider swing when
-        // the music is louder).  Fixed rate so the motion stays smooth (no jumps).
-        float swAmp = 0.55 + 0.35 * audioLevel;     // swing amplitude (radians)
-        float swRate = 0.5;                          // swing speed
+        // Moving-head sweep (fixed rate, phase-offset per corner, wider when loud).
+        float swAmp = 0.55 + 0.35 * audioLevel;
+        float swRate = 0.5;
         vec2 d0 = rot2(normalize(ctr-c0), swAmp * sin(time * swRate + 0.0));
         vec2 d1 = rot2(normalize(ctr-c1), swAmp * sin(time * swRate + 1.7));
         vec2 d2 = rot2(normalize(ctr-c2), swAmp * sin(time * swRate + 3.3));
         vec2 d3 = rot2(normalize(ctr-c3), swAmp * sin(time * swRate + 5.0));
-        float m0 = clamp(coneLight(q, c0, d0, spread, reach) * pulse, 0.0, 0.88);
-        float m1 = clamp(coneLight(q, c1, d1, spread, reach) * pulse, 0.0, 0.88);
-        float m2 = clamp(coneLight(q, c2, d2, spread, reach) * pulse, 0.0, 0.88);
-        float m3 = clamp(coneLight(q, c3, d3, spread, reach) * pulse, 0.0, 0.88);
-        c = mix(c, hueRotate(sBase, audioChromaHue + 0.00) * 1.5, m0);
-        c = mix(c, hueRotate(sBase, audioChromaHue + 0.12) * 1.5, m1);
-        c = mix(c, hueRotate(sBase, audioChromaHue + 0.25) * 1.5, m2);
-        c = mix(c, hueRotate(sBase, audioChromaHue + 0.37) * 1.5, m3);
+
+        // Colour CHASE: emphasis cycles through the corners (audioChase steps 1/4
+        // on each onset).  Non-active corners keep a 0.45 base so all stay alive.
+        float cw0 = 0.45 + 0.55 * (1.0 - smoothstep(0.0, 0.25, abs(fract(audioChase - 0.00 + 0.5) - 0.5)));
+        float cw1 = 0.45 + 0.55 * (1.0 - smoothstep(0.0, 0.25, abs(fract(audioChase - 0.25 + 0.5) - 0.5)));
+        float cw2 = 0.45 + 0.55 * (1.0 - smoothstep(0.0, 0.25, abs(fract(audioChase - 0.50 + 0.5) - 0.5)));
+        float cw3 = 0.45 + 0.55 * (1.0 - smoothstep(0.0, 0.25, abs(fract(audioChase - 0.75 + 0.5) - 0.5)));
+        float p0 = pulse * cw0, p1 = pulse * cw1, p2 = pulse * cw2, p3 = pulse * cw3;
+
+        vec3 col0 = hueRotate(moodCol, audioChromaHue + 0.00) * 1.5;
+        vec3 col1 = hueRotate(moodCol, audioChromaHue + 0.12) * 1.5;
+        vec3 col2 = hueRotate(moodCol, audioChromaHue + 0.25) * 1.5;
+        vec3 col3 = hueRotate(moodCol, audioChromaHue + 0.37) * 1.5;
+
+        // Core cone tint (visible over any content).
+        c = mix(c, col0, clamp(coneLight(q, c0, d0, spread, reach) * p0, 0.0, 0.88));
+        c = mix(c, col1, clamp(coneLight(q, c1, d1, spread, reach) * p1, 0.0, 0.88));
+        c = mix(c, col2, clamp(coneLight(q, c2, d2, spread, reach) * p2, 0.0, 0.88));
+        c = mix(c, col3, clamp(coneLight(q, c3, d3, spread, reach) * p3, 0.0, 0.88));
+
+        // Volumetric HAZE: a wide, soft additive glow around each beam, as if the
+        // light scatters in stage fog (makes the beams look 3-D).
+        float hz = 0.14;
+        c += col0 * coneLight(q, c0, d0, spread*1.7, reach*1.6) * p0 * hz;
+        c += col1 * coneLight(q, c1, d1, spread*1.7, reach*1.6) * p1 * hz;
+        c += col2 * coneLight(q, c2, d2, spread*1.7, reach*1.6) * p2 * hz;
+        c += col3 * coneLight(q, c3, d3, spread*1.7, reach*1.6) * p3 * hz;
+
+        // MIRROR-BALL speckle: a slowly rotating field of soft twinkling light dots
+        // (disco-ball), music-gated so it fades in with the music.
+        vec2 mb   = rot2(uv - 0.5, time * 0.06);
+        vec2 cell = mb * vec2(16.0, 9.0);
+        vec2 idc  = floor(cell);
+        vec2 fc   = fract(cell) - 0.5;
+        float dotm = smoothstep(0.42, 0.0, length(fc)) * step(0.62, hash21(idc));
+        float tw   = 0.5 + 0.5 * sin(time * 2.5 + hash21(idc) * 31.0);
+        c += hueRotate(vec3(0.85, 0.85, 0.95), audioChromaHue + 0.5)
+             * dotm * tw * 0.12 * (0.2 + 0.8 * audioLevel);
+
+        // GOBO: a slowly rotating fan of light rays from the centre (gobo wheel),
+        // fading in toward the edges so it never washes the middle.
+        vec2  g   = q - ctr;
+        float ang = atan(g.y, g.x) + time * 0.12;
+        float rays = pow(0.5 + 0.5 * cos(ang * 9.0), 6.0);
+        c += hueRotate(moodCol, audioChromaHue + 0.6) * 1.3
+             * rays * 0.08 * (0.2 + 0.8 * audioLevel) * smoothstep(0.05, 0.45, length(g));
     }
 
     c *= scale;   // photosensitivity brightness limit (applied last)

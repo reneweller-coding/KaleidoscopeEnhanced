@@ -949,6 +949,7 @@ void FilterShader::setupSafety()
 		m_presentDownbeatUni = glGetUniformLocation( m_presentProgId, "audioDownbeat" );
 		m_presentOnsetUni    = glGetUniformLocation( m_presentProgId, "audioOnset" );
 		m_presentTimeUni     = glGetUniformLocation( m_presentProgId, "time" );
+		m_presentChaseUni    = glGetUniformLocation( m_presentProgId, "audioChase" );
 	}
 
 	m_safetyReady = fboOk && (m_presentProgId != 0) && (m_presentTexUni >= 0);
@@ -1194,6 +1195,13 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
         m_audioBeatSmooth  = slewToward(m_audioBeatSmooth,  audio.beatDecay,    6.0f, dt);
         m_audioLevelSmooth = slewToward(m_audioLevelSmooth, audio.overallLevel, 3.0f, dt);
         m_audioFluxSmooth  = slewToward(m_audioFluxSmooth,  audio.spectralFlux, 3.0f, dt);
+
+        // Colour-chase phase: advance a quarter-turn on each fresh onset (music-
+        // gated), so the corner cones light up in sequence (a chase / Lauflicht).
+        float onsetGated = audio.onsetStrength * gate;
+        if( onsetGated > 0.30f && m_prevChaseOnset <= 0.15f )
+            m_chasePhase = fmodf( m_chasePhase + 0.25f, 1.0f );
+        m_prevChaseOnset = onsetGated;
 
         audioFx.audioRotPhase = m_audioRotPhase;
         audioFx.audioAdvance  = m_audioAdvance;
@@ -1740,6 +1748,7 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 		if( m_presentDownbeatUni >= 0 ) glUniform1f( m_presentDownbeatUni, audioFx.downbeat );
 		if( m_presentOnsetUni    >= 0 ) glUniform1f( m_presentOnsetUni,    audioFx.onsetStrength );
 		if( m_presentTimeUni     >= 0 ) glUniform1f( m_presentTimeUni,     m_globaltime );
+		if( m_presentChaseUni    >= 0 ) glUniform1f( m_presentChaseUni,    m_chasePhase );
 		drawWindow();
 	}
 

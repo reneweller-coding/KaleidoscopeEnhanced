@@ -181,6 +181,7 @@ private:
 	GLint			m_presentDownbeatUni = -1;
 	GLint			m_presentOnsetUni    = -1;
 	GLint			m_presentTimeUni     = -1;
+	GLint			m_presentChaseUni    = -1;
 	float			m_prevMeanLum    = -1.f;   // <0 = uninitialised
 	bool			m_safetyReady    = false;  // false → present pass disabled (safe fallback)
 	int				m_safetyFrame    = 0;      // for sub-sampling the readback
@@ -333,6 +334,8 @@ private:
     float m_audioLevelSmooth = 0.f;
     float m_audioFluxSmooth  = 0.f;
     float m_rotEnergy        = 0.f;   // slowly-slewed rotation-speed envelope (no per-beat jerk)
+    float m_chasePhase       = 0.f;   // 0..1, advances 1/4 each onset -> corner-cone colour chase
+    float m_prevChaseOnset   = 0.f;   // previous onset value (rising-edge detect for the chase)
 	//unsigned int m_effectCombineMinTimeInterpolation;
 	//unsigned int m_effectCombineMaxTimeInterpolation;
 
