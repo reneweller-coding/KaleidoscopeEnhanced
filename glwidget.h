@@ -31,6 +31,9 @@ public:
 	// main() before the widget is constructed, so it must be public.
 	static QString s_startConfig;
 
+	// CLI -r: start recording immediately on launch (used for testing/debugging).
+	static bool s_autoRecord;
+
 public slots:
 	bool slotSetDirectory(const QString &filename);
 
@@ -63,6 +66,18 @@ protected:
 	// Optional MIDI control (knobs -> look params, pads -> next effect).
 	void            applyMidi();
 	MidiInput      *m_midi          = nullptr;
+
+	// Recording: capture the visualization frames (+ the loopback audio) and mux
+	// them to an mp4 with ffmpeg.  Toggled with key 'r'.
+	void            toggleRecording();
+	void            captureFrame();
+	void            finishRecording();
+	bool            m_recording     = false;
+	QString         m_recDir;
+	int             m_recFrame      = 0;
+	qint64          m_recLastFrame  = 0;
+	QString         m_recConcat;                 // ffmpeg concat list being built
+	std::vector<unsigned char> m_recBuf;         // glReadPixels scratch
 
 	void traverseConfigurations( const QString& dirname, std::vector<Configuration *> &configurationList );
 

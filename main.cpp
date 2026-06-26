@@ -44,6 +44,7 @@ void commandlineerror( char *cmd, char *parm )
 	"-c <name>     start with this configuration (e.g. darkambient, normal)\n"
 	"-m <index>    fullscreen on monitor <index> (0-based; implies -b)\n"
 	"-l            log to kaleidoscope.log instead of the console (kiosk)\n"
+	"-r            start recording (visuals + music -> mp4) immediately\n"
 	"-h            this help menu\n"
 	"Keys (while running):\n"
 	"0             toggle the configuration-select menu\n"
@@ -68,8 +69,8 @@ void commandlineerror( char *cmd, char *parm )
 void parsecommandline( int argc, char *argv[] )
 {
 	/* valid option characters; last char MUST be 0 ! */
-	char optionchar[] =   { 'h', 'b', 'f', 's', 'c', 'm', 'l', 0 };
-	int musthaveparam[] = {  0 ,  0,   1,   1,   1,   1,   0,  0 };
+	char optionchar[] =   { 'h', 'b', 'f', 's', 'c', 'm', 'l', 'r', 0 };
+	int musthaveparam[] = {  0 ,  0,   1,   1,   1,   1,   0,   0,  0 };
 
 	int nopts;
 	int mhp[256];
@@ -133,6 +134,7 @@ void parsecommandline( int argc, char *argv[] )
 				case 'c': GLwidget::s_startConfig = QString::fromLocal8Bit( argv[1] ); break;
 				case 'm': monitorIndex = atoi( argv[1] ); fullscreen = true; break;
 				case 'l': logToFile = true; break;
+				case 'r': GLwidget::s_autoRecord = true; break;
 
 
 				default: fprintf(stderr, "\nBug in parsecommandline !\n");

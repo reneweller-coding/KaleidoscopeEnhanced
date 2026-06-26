@@ -72,6 +72,10 @@ public:
     /** Switch the captured source at runtime.  Empty id = back to default loopback. */
     void requestDevice( const QString &id, bool isCapture );
 
+    /** Record the captured audio (the music) to a 16-bit stereo WAV file. */
+    void startRecording( const QString &wavPath );
+    void stopRecording();
+
     /** Graceful shutdown – call before wait(). */
     void stop();
 
@@ -226,6 +230,16 @@ private:
     bool     m_reqIsCapture = false;       // requested device is an input
     bool     m_useReqDevice = false;       // use the requested device vs. default
     std::atomic<bool> m_deviceChangeReq { false };  // make the capture loop re-init
+
+    // ---- Audio recording (loopback -> 16-bit stereo WAV), written in run() ----
+    std::atomic<bool> m_recReq  { false };  // recording requested (GUI thread)
+    std::atomic<bool> m_wavOpen { false };  // file currently open (run thread)
+    QString  m_recWavPath;                  // requested path (set under m_mutex)
+    void    *m_wavFile = nullptr;           // FILE* (run thread only)
+    unsigned int m_wavDataBytes = 0;        // bytes written to the data chunk
+    void recOpen( int sampleRate );
+    void recWrite( const float *src, int numFrames, int numChannels );
+    void recClose();
 
     // ---- Shared output ----
     mutable QMutex m_mutex;
