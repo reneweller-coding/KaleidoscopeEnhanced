@@ -3,6 +3,8 @@
 #include <QtCore/QFile>
 #include <QtCore/QDateTime>
 #include <QtCore/QSettings>
+#include <QtCore/QProcess>
+#include <QtCore/QDir>
 #include <QtGui/QMouseEvent>
 #include <QtGui/QPainter>
 #include <QtWidgets/QMessageBox>
@@ -22,6 +24,7 @@
 
 // Start configuration requested on the command line (-c <name>); empty = default.
 QString GLwidget::s_startConfig;
+bool    GLwidget::s_autoRecord = false;
 
 void GLwidget::traverseConfigurations( const QString& dirname, std::vector<Configuration *> &configurationList )
 {
@@ -194,6 +197,10 @@ void GLwidget::initializeGL()
 	// start periodic refesh timer
 	startTimer( 16.666666666666 );
 
+	// CLI -r: begin recording straight away (for testing / debugging).
+	if( s_autoRecord )
+		toggleRecording();
+
 	//glEnable(GL_MULTISAMPLE); //rwrwforeground
 	setAutoFillBackground(false); //rwrwforeground
 }
@@ -254,7 +261,11 @@ void GLwidget::draw()
 	m_actConfiguration->m_filterShader->setDefaultFBO( defaultFramebufferObject() );
 
 	m_actConfiguration->m_filterShader->paint(m_RotationMatrix, m_xTrans, m_yTrans, m_zTrans, audio);
-	
+
+	// Capture the clean frame (before any overlay is drawn) while recording.
+	if( m_recording )
+		captureFrame();
+
 	// Config cross-fade: draw the captured previous frame on top, fading out.
 	float fadeAlpha = 0.f;
 	if( m_fadeStart >= 0 )
@@ -295,7 +306,8 @@ void GLwidget::draw()
 	// Only spin up a QPainter when an overlay or the cross-fade needs it, so the
 	// normal render path is pure GL (no QPainter/GL state interaction).
 	if( m_showSelectConfigurationMenu || m_showFeatureOverlay || m_showHelp
-	    || m_showAudioMenu || m_showShaderInfo || fadeAlpha > 0.f || npAlpha > 0.f )
+	    || m_showAudioMenu || m_showShaderInfo || m_recording
+	    || fadeAlpha > 0.f || npAlpha > 0.f )
 	{
 		QPainter painter(this);
 		//painter.setRenderHint(QPainter::Antialiasing);
@@ -328,6 +340,15 @@ void GLwidget::draw()
 		}
 		if( npAlpha > 0.f )
 			drawNowPlaying( &painter, npTitle, npArtist, npAlpha );
+		if( m_recording )
+		{
+			painter.setBrush( QColor(230, 40, 40) );
+			painter.setPen( Qt::NoPen );
+			painter.drawEllipse( width() - 150, 26, 16, 16 );
+			painter.setPen( QColor(255, 255, 255) );
+			painter.setFont( QFont("Consolas", 12, QFont::Bold) );
+			painter.drawText( width() - 126, 39, QString("REC %1").arg(m_recFrame) );
+		}
 		painter.end();
 	}
 
@@ -722,6 +743,7 @@ void GLwidget::drawHelpOverlay( QPainter *painter )
 		{ ",  .",    "trails       - shorter / longer" },
 		{ "-  =",    "mood         - weaker / stronger" },
 		{ "k",       "save current look + state as default" },
+		{ "r",       "record video + music to mp4" },
 		{ "s",       "save a screenshot (PNG)" },
 		{ "Esc / q", "quit" },
 	};
@@ -772,6 +794,94 @@ void GLwidget::applyMidi()
 				m_actConfiguration->m_filterShader->requestSceneChange();
 		}
 	}
+}
+
+void GLwidget::toggleRecording()
+{
+	if( !m_recording )
+	{
+		QString ts = QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss");
+		m_recDir = QString("recordings/rec_%1").arg(ts);
+		QDir().mkpath( m_recDir );
+		m_recFrame = 0;
+		m_recConcat.clear();
+		m_recLastFrame = m_fpsTimer.elapsed();
+		if( m_audioAnalyzer )
+			m_audioAnalyzer->startRecording( m_recDir + "/audio.wav" );
+		m_recording = true;
+		fprintf( stderr, "REC start -> %s\n", m_recDir.toLocal8Bit().constData() );
+	}
+	else
+	{
+		m_recording = false;
+		finishRecording();
+	}
+}
+
+// Grab the freshly-rendered frame (clean, before any overlay) at ~30 fps and save
+// it as a JPG, building the ffmpeg concat list with the real per-frame durations.
+void GLwidget::captureFrame()
+{
+	qint64 now = m_fpsTimer.elapsed();
+	if( now - m_recLastFrame < 33 )      // ~30 fps cap
+		return;
+	float dur = (m_recFrame == 0) ? (1.0f/30.0f) : float(now - m_recLastFrame) / 1000.f;
+	m_recLastFrame = now;
+
+	int w = m_width, h = m_height;
+	if( w < 2 || h < 2 ) return;
+	if( (int)m_recBuf.size() < w*h*4 ) m_recBuf.resize( (size_t)w*h*4 );
+	glReadPixels( 0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, m_recBuf.data() );
+
+	QImage img( m_recBuf.data(), w, h, QImage::Format_RGBA8888 );
+	QImage out = img.mirrored( false, true )                       // GL is bottom-up
+	                .scaledToHeight( h > 720 ? 720 : h, Qt::SmoothTransformation );
+	QString fn = QString("%1/frame_%2.jpg").arg(m_recDir).arg(m_recFrame, 6, 10, QChar('0'));
+	out.save( fn, "JPG", 85 );
+
+	m_recConcat += QString("file 'frame_%1.jpg'\nduration %2\n")
+	               .arg(m_recFrame, 6, 10, QChar('0')).arg(dur, 0, 'f', 4);
+	m_recFrame++;
+}
+
+// Finalise: close the WAV, write the concat list + a make_video.bat, and kick off
+// ffmpeg to mux the frames + audio into kaleidoscope.mp4.
+void GLwidget::finishRecording()
+{
+	if( m_audioAnalyzer )
+		m_audioAnalyzer->stopRecording();      // flushes + closes the WAV
+
+	QString listPath = m_recDir + "/frames.txt";
+	QFile lf( listPath );
+	if( lf.open(QIODevice::WriteOnly | QIODevice::Text) )
+	{
+		QByteArray data = m_recConcat.toLocal8Bit();
+		if( m_recFrame > 0 )   // concat demuxer wants the last entry once more, no duration
+			data += QString("file 'frame_%1.jpg'\n").arg(m_recFrame-1, 6, 10, QChar('0')).toLocal8Bit();
+		lf.write( data );
+		lf.close();
+	}
+
+	QFile bf( m_recDir + "/make_video.bat" );
+	if( bf.open(QIODevice::WriteOnly | QIODevice::Text) )
+	{
+		bf.write( "@echo off\r\ncd /d \"%~dp0\"\r\n"
+		          "ffmpeg -y -f concat -safe 0 -i frames.txt -i audio.wav "
+		          "-c:v libx264 -pix_fmt yuv420p -c:a aac -shortest kaleidoscope.mp4\r\n"
+		          "pause\r\n" );
+		bf.close();
+	}
+
+	// Auto-mux now (detached; ffmpeg is on PATH).  make_video.bat is the fallback.
+	QStringList args;
+	args << "-y" << "-f" << "concat" << "-safe" << "0" << "-i" << listPath
+	     << "-i" << (m_recDir + "/audio.wav")
+	     << "-c:v" << "libx264" << "-pix_fmt" << "yuv420p" << "-c:a" << "aac"
+	     << "-shortest" << (m_recDir + "/kaleidoscope.mp4");
+	QProcess::startDetached( "ffmpeg", args );
+
+	fprintf( stderr, "REC stop: %d frames -> %s (muxing kaleidoscope.mp4)\n",
+	         m_recFrame, m_recDir.toLocal8Bit().constData() );
 }
 
 void GLwidget::selectAudioDevice( int index )
@@ -897,6 +1007,9 @@ void GLwidget::keyPressEvent(QKeyEvent* event)
 		case Qt::Key_P:
 			m_showNowPlaying = !m_showNowPlaying;
 			fprintf( stderr, "Now-playing display: %s\n", m_showNowPlaying ? "ON" : "OFF" );
+			break;
+		case Qt::Key_R:
+			toggleRecording();   // record visuals + music to an mp4
 			break;
 		case Qt::Key_N:
 			// Manually advance to the next effect (texture + combine), snappy cut.

@@ -12,6 +12,7 @@
 #include <cmath>
 #include <algorithm>
 #include <cstring>
+#include <cstdio>
 
 // ---------------------------------------------------------------------------
 // Helper: one-pole IIR low-pass coefficient for given cutoff and sample rate.
@@ -173,6 +174,64 @@ QString AudioAnalyzer::currentDeviceName() const
     return m_curDeviceName;
 }
 
+// ---------------------------------------------------------------------------
+// Audio recording: capture the loopback (the music) to a 16-bit stereo WAV.
+// open / write / close all happen on the capture (run) thread.
+// ---------------------------------------------------------------------------
+static void wr32(FILE *f, unsigned int v) { fwrite(&v, 4, 1, f); }
+static void wr16(FILE *f, unsigned short v) { fwrite(&v, 2, 1, f); }
+
+void AudioAnalyzer::recOpen( int sampleRate )
+{
+    QString p; { QMutexLocker lk(&m_mutex); p = m_recWavPath; }
+    FILE *f = fopen( p.toLocal8Bit().constData(), "wb" );
+    if (!f) return;
+    // 44-byte WAV header, 16-bit stereo, placeholder sizes (fixed up on close).
+    fwrite("RIFF", 1, 4, f); wr32(f, 0); fwrite("WAVE", 1, 4, f);
+    fwrite("fmt ", 1, 4, f); wr32(f, 16); wr16(f, 1); wr16(f, 2);
+    wr32(f, (unsigned)sampleRate); wr32(f, (unsigned)(sampleRate * 4)); wr16(f, 4); wr16(f, 16);
+    fwrite("data", 1, 4, f); wr32(f, 0);
+    m_wavFile = f; m_wavDataBytes = 0; m_wavOpen = true;
+}
+
+void AudioAnalyzer::recWrite( const float *src, int numFrames, int numChannels )
+{
+    FILE *f = (FILE*)m_wavFile;
+    if (!f) return;
+    for (int i = 0; i < numFrames; ++i) {
+        float l = src[i * numChannels + 0];
+        float r = (numChannels > 1) ? src[i * numChannels + 1] : l;
+        short sl = (short)std::max(-32768.f, std::min(32767.f, l * 32767.f));
+        short sr = (short)std::max(-32768.f, std::min(32767.f, r * 32767.f));
+        wr16(f, (unsigned short)sl); wr16(f, (unsigned short)sr);
+    }
+    m_wavDataBytes += (unsigned)(numFrames * 4);
+}
+
+void AudioAnalyzer::recClose()
+{
+    FILE *f = (FILE*)m_wavFile;
+    if (!f) return;
+    fseek(f, 4, SEEK_SET);  wr32(f, 36 + m_wavDataBytes);   // RIFF chunk size
+    fseek(f, 40, SEEK_SET); wr32(f, m_wavDataBytes);        // data chunk size
+    fclose(f);
+    m_wavFile = nullptr; m_wavOpen = false;
+}
+
+void AudioAnalyzer::startRecording( const QString &wavPath )
+{
+    { QMutexLocker lk(&m_mutex); m_recWavPath = wavPath; }
+    m_recReq = true;
+}
+
+void AudioAnalyzer::stopRecording()
+{
+    m_recReq = false;
+    // Wait briefly for the capture thread to flush + close the file.
+    for (int i = 0; i < 100 && m_wavOpen; ++i)
+        QThread::msleep(5);
+}
+
 void AudioAnalyzer::requestDevice( const QString &id, bool isCapture )
 {
     {
@@ -319,6 +378,10 @@ void AudioAnalyzer::run()
                     }
 
                     processBlock(src, numFrames, std::min(numChannels, 2), sampleRate);
+
+                    // Recording: open on first request, then append the samples.
+                    if (m_recReq && !m_wavFile) recOpen(sampleRate);
+                    if (m_wavFile)              recWrite(src, numFrames, numChannels);
                 }
 
                 pCapture->ReleaseBuffer(numFrames);
@@ -326,9 +389,12 @@ void AudioAnalyzer::run()
                 if (FAILED(hr)) { deviceLost = true; break; }
             }
 
+            if (m_wavFile && !m_recReq) recClose();   // finalise the WAV when stopped
+
             msleep(10); // poll every 10 ms
         }
 
+        if (m_wavFile) recClose();   // finalise if recording when the device drops / app stops
         deviceCleanup();
         if (deviceLost && m_running)
             msleep(300); // brief pause before attempting to reconnect
