@@ -69,10 +69,10 @@ void main()
     float lum = dot(c, vec3(0.299, 0.587, 0.114));
     c = mix(vec3(lum), c, 0.45 + 1.10 * audioValence);
 
-    // Contrast / gamma: many source images are pale, which washed the whole frame
-    // out.  A mild gamma > 1 deepens the mid-tones (richer colour, less white-out)
-    // while leaving blacks black.
-    c = pow(max(c, 0.0), vec3(1.22));
+    // Tone-down: the source frames are often very bright/pale, washing the whole
+    // image out.  Cut the exposure and deepen the mid-tones for richer colour
+    // (most effective on the near-white areas).
+    c = pow(max(c, 0.0) * 0.78, vec3(1.25));
 
     // Loudness → brightness, spectral flux → shimmer (kept small so already-bright
     // content does not blow out).
