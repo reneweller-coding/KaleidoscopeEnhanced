@@ -49,9 +49,10 @@ void main()
         float d = length(uv) * exp(-length(uv0));
         vec3  c = palette(length(uv0) + float(i) * 0.4 + T * 0.4);
 
-        // The picture tiles into each fractal cell.
-        vec3 pic = img(fract(uv + 0.5));
-        c *= mix(vec3(1.0), pic * 1.6, 0.5);
+        // The picture tiles into each fractal cell (a drifting crop, so the
+        // fractal is coloured by the ever-changing image).
+        vec3 pic = img(fract(uv + 0.5 + 0.12 * vec2(cos(T * 0.1), sin(T * 0.08))));
+        c *= mix(vec3(1.0), pic * 1.7, 0.6);
 
         d = sin(d * 8.0 + T) / 8.0;
         d = abs(d);
