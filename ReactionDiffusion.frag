@@ -1,11 +1,12 @@
 // ReactionDiffusion.frag
 // -----------------------------------------------------------------------
-// Displays the living Gray-Scott reaction-diffusion field simulated on the
-// GPU each frame (bound to the global "texSim" sampler by FilterShader).  The
-// field is colourised by the musical mood and tinted by the source image; the
-// kaleidoscope/combine passes then fold it into radiating organic structures.
-// If the simulation is unavailable, texSim reads as 0 and the effect degrades
-// to a dark mood-tinted field rather than failing.
+// The living Gray-Scott reaction-diffusion field (simulated on the GPU into
+// "texSim") is used as a LENS on the source image: the B-concentration reveals
+// the picture where the reaction is active and pushes it around along the
+// field's gradient, so the image seems to grow, crawl and dissolve through the
+// organic pattern.  Glowing edges trace the reaction fronts, coloured by mood.
+// The *image* is the star (was a faint 25% tint on procedural colour).  If the
+// simulation is unavailable, texSim reads 0 and it degrades to a dark field.
 // -----------------------------------------------------------------------
 
 uniform vec2  resolution;
@@ -20,6 +21,9 @@ uniform float audioCentroid;
 uniform float audioBeat;
 uniform float audioPhase;
 
+vec3 img(vec2 uv) { return (interpolation * texture2D(tex0, uv)
+                          + (1.0 - interpolation) * texture2D(tex1, uv)).rgb; }
+
 void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution;
@@ -31,23 +35,28 @@ void main()
 
     float b = texture2D(texSim, suv).g;
 
-    // Edge enhancement from the B-concentration gradient.
+    // Field gradient (reaction fronts) -> edge glow + image displacement.
     float bx = texture2D(texSim, suv + vec2(px.x, 0.0)).g
              - texture2D(texSim, suv - vec2(px.x, 0.0)).g;
     float by = texture2D(texSim, suv + vec2(0.0, px.y)).g
              - texture2D(texSim, suv - vec2(0.0, px.y)).g;
-    float edge = clamp(length(vec2(bx, by)) * 6.0, 0.0, 1.0);
+    vec2  grad = vec2(bx, by);
+    float edge = clamp(length(grad) * 6.0, 0.0, 1.0);
 
-    // Two-tone palette driven by mood.
+    // The picture, dragged along the reaction gradient and revealed by B.
+    vec2 iuv = uv + grad * 6.0;
+    vec3 pic = img(fract(iuv));
+
+    // Mood-coloured fronts.
     vec3 cLow  = mix(vec3(0.02, 0.04, 0.12), vec3(0.10, 0.02, 0.14), audioCentroid);
     vec3 cHigh = mix(vec3(0.90, 0.45, 0.20), vec3(0.30, 0.90, 1.00), audioValence);
 
-    vec3 col = mix(cLow, cHigh, smoothstep(0.15, 0.50, b));
-    col += edge * (0.40 + 0.60 * audioBeat) * cHigh;
-
-    // Subtle image tint inside the high-concentration regions.
-    vec3 img = texture2D(tex0, uv).rgb;
-    col = mix(col, col * (0.5 + img), 0.25 * b);
+    // Inactive regions keep a dim image (mood-tinted) so it never goes black;
+    // active reaction regions reveal the picture at full strength.
+    vec3  base   = mix(cLow, img(uv) * 0.30, 0.6);
+    float reveal = smoothstep(0.10, 0.50, b);
+    vec3  col = mix(base, pic * (1.3 + 0.6 * audioCentroid), reveal);
+    col += edge * (0.40 + 0.80 * audioBeat) * cHigh;
 
     gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }

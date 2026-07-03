@@ -1,8 +1,10 @@
 // SpectrumRadial.frag
 // -----------------------------------------------------------------------
-// Radial 6-band spectrum analyzer: the six frequency bands become petals
-// around a central disc that shows the source image.  Pulses on the beat
-// phase; petal length tracks each band's level.
+// Radial 6-band spectrum analyzer built FROM the source image: the picture
+// fills the central disc AND the surrounding petals, whose length tracks each
+// frequency band's level and whose colour cycles per band.  So the analyzer is
+// made of the image itself (was procedural petals with a tiny image disc).
+// Pulses on the beat phase.
 // -----------------------------------------------------------------------
 
 uniform vec2  resolution;
@@ -23,6 +25,9 @@ uniform float audioValence;
 uniform float audioPhase;
 
 const float PI = 3.14159265358979;
+
+vec3 img(vec2 uv) { return (interpolation * texture2D(tex0, uv)
+                          + (1.0 - interpolation) * texture2D(tex1, uv)).rgb; }
 
 vec3 hsv2rgb(vec3 c)
 {
@@ -48,18 +53,22 @@ void main()
     if (fi > 3.5) amp = audioUpperMid;
     if (fi > 4.5) amp = audioHigh;
 
-    float barEdge = 0.18 + 0.65 * amp;
-    float ring    = smoothstep(barEdge, barEdge - 0.03, r) * smoothstep(0.14, 0.17, r);
+    float barEdge = 0.18 + 0.72 * amp;
+    float petal   = smoothstep(barEdge, barEdge - 0.03, r) * smoothstep(0.14, 0.17, r);
+    float disc    = smoothstep(0.17, 0.11, r);
 
-    vec4 img = interpolation * texture2D(tex0, uv) + (1.0 - interpolation) * texture2D(tex1, uv);
+    // Image sampled polar & mirrored inside each wedge -> the picture radiates.
+    float wedge = abs(fract(ang * 6.0) * 2.0 - 1.0);           // 0..1 mirror
+    vec2  pimg  = vec2(wedge, clamp((r - 0.15) * 1.6, 0.0, 1.0));
+    vec3  pic   = img(pimg);
 
     float hue   = fract(fi / 6.0 + 0.12 * audioValence + time * 0.02);
-    vec3  petal = hsv2rgb(vec3(hue, 0.7, 1.0));
+    vec3  band  = hsv2rgb(vec3(hue, 0.7, 1.0));
     float pulse = 0.5 + 0.5 * sin(audioBeatPhase * 2.0 * PI);
 
-    vec3 col = img.rgb * smoothstep(0.17, 0.11, r);                 // central image disc
-    col += ring * petal * (0.6 + 0.8 * pulse + audioBeat);          // petals
-    col += petal * amp * exp(-4.0 * max(r - barEdge, 0.0)) * 0.3;   // outer glow
+    vec3 col = img(uv) * disc;                                 // central image disc
+    col += pic * petal * band * (0.7 + 0.9 * pulse + amp + audioBeat);
+    col += band * amp * exp(-4.0 * max(r - barEdge, 0.0)) * 0.3;   // outer glow
 
     gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }
