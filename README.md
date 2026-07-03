@@ -181,6 +181,13 @@ folds it into mirror/kaleidoscopic symmetry, so they carry the same radiating
 mosaic, marbled liquid, wax lenses, fractal, flying-into-the-image, band petals,
 etc.). This keeps the current title the visual star throughout the whole rotation.
 
+- **`Voyager`** — a volumetric kaleidoscopic fly-through of a field of glowing
+  cells (a deep-space-probe feel), adapted from *"Voyager"* by
+  [@kishimisu](https://www.shadertoy.com/view/M33XDH) (CC BY-NC-SA 4.0).  Wired
+  into our engine: the source image colours the light field and drifts through as
+  a faint nebula, and the music drives the travel / glow / palette with jump-free
+  integrated motion.  In the `normal` and `psychedelic` presets.
+
 ---
 
 ## Live control

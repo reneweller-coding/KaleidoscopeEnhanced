@@ -47,6 +47,10 @@
   <TextureShader minTimeSolo="20" maxTimeSolo="90" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\FractalKIFS.frag" type="normal" probability="0.5" complexity="1">
   </TextureShader>
 
+  <!-- Voyager (volumetric kaleidoscopic fly-through, after kishimisu) -->
+  <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\Voyager.frag" type="normal" probability="0.5" complexity="2">
+  </TextureShader>
+
   <!-- Plasma Flow (mood-tinted flowing plasma) -->
   <TextureShader minTimeSolo="20" maxTimeSolo="90" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\PlasmaFlow.frag" type="normal" probability="0.5" complexity="1">
   </TextureShader>

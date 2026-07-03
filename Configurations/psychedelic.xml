@@ -106,6 +106,10 @@
   <TextureShader minTimeSolo="15" maxTimeSolo="60" minTimeInterpolation="15" maxTimeInterpolation="45" file="..\\FractalKIFS.frag" type="normal" probability="0.6" complexity="1">
   </TextureShader>
 
+  <!-- Voyager (volumetric kaleidoscopic fly-through, after kishimisu) -->
+  <TextureShader minTimeSolo="15" maxTimeSolo="60" minTimeInterpolation="15" maxTimeInterpolation="45" file="..\\Voyager.frag" type="normal" probability="0.7" complexity="2">
+  </TextureShader>
+
   <!-- Curl Aurora (flowing mood-coloured curtains) -->
   <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="20" maxTimeInterpolation="60" file="..\\CurlAurora.frag" type="normal" probability="0.5" complexity="1">
   </TextureShader>
