@@ -51,6 +51,18 @@
   <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\Voyager.frag" type="normal" probability="0.5" complexity="2">
   </TextureShader>
 
+  <!-- Flowing Wires (3D truchet of glowing wire loops, after kishimisu) -->
+  <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\FlowingWires.frag" type="normal" probability="0.5" complexity="2">
+  </TextureShader>
+
+  <!-- Fractal Bloom (glowing fractal flower, after kishimisu) -->
+  <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\FractalBloom.frag" type="normal" probability="0.5" complexity="1">
+  </TextureShader>
+
+  <!-- Disco Godrays (kaleidoscopic volumetric godrays, after kishimisu) -->
+  <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\DiscoGodrays.frag" type="normal" probability="0.5" complexity="2">
+  </TextureShader>
+
   <!-- Plasma Flow (mood-tinted flowing plasma) -->
   <TextureShader minTimeSolo="20" maxTimeSolo="90" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\PlasmaFlow.frag" type="normal" probability="0.5" complexity="1">
   </TextureShader>

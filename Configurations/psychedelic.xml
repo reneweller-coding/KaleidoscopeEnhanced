@@ -110,6 +110,18 @@
   <TextureShader minTimeSolo="15" maxTimeSolo="60" minTimeInterpolation="15" maxTimeInterpolation="45" file="..\\Voyager.frag" type="normal" probability="0.7" complexity="2">
   </TextureShader>
 
+  <!-- Flowing Wires (3D truchet of glowing wire loops, after kishimisu) -->
+  <TextureShader minTimeSolo="15" maxTimeSolo="60" minTimeInterpolation="15" maxTimeInterpolation="45" file="..\\FlowingWires.frag" type="normal" probability="0.6" complexity="2">
+  </TextureShader>
+
+  <!-- Fractal Bloom (glowing fractal flower, after kishimisu) -->
+  <TextureShader minTimeSolo="15" maxTimeSolo="60" minTimeInterpolation="15" maxTimeInterpolation="45" file="..\\FractalBloom.frag" type="normal" probability="0.7" complexity="1">
+  </TextureShader>
+
+  <!-- Disco Godrays (kaleidoscopic volumetric godrays, after kishimisu) -->
+  <TextureShader minTimeSolo="15" maxTimeSolo="60" minTimeInterpolation="15" maxTimeInterpolation="45" file="..\\DiscoGodrays.frag" type="normal" probability="0.7" complexity="2">
+  </TextureShader>
+
   <!-- Curl Aurora (flowing mood-coloured curtains) -->
   <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="20" maxTimeInterpolation="60" file="..\\CurlAurora.frag" type="normal" probability="0.5" complexity="1">
   </TextureShader>
