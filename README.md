@@ -195,6 +195,16 @@ a faint nebula (image-forward), and the music drives motion / glow / palette wit
   ([source](https://www.shadertoy.com/view/mtyGWy), palette by iq).
 - **`DiscoGodrays`** — a mirror-ball emanating fans of coloured volumetric
   godrays ([source](https://www.shadertoy.com/view/Dt33RS)).
+- **`InsideSystem`** — an orbiting fly-through of neon torus lights in an
+  infinite domain ([source](https://www.shadertoy.com/view/msj3D3)).
+- **`Vortex`** — a kaleidoscopic raymarched vortex tunnel
+  ([source](https://www.shadertoy.com/view/MX33Dr)).
+- **`TheCore`** — a glowing warm core seen down a twisting tunnel of tubes
+  ([source](https://www.shadertoy.com/view/cdy3Dd)).
+- **`NeonTubes`** — a fly-through of pulsing neon rings in a repeating domain
+  (a kishimisu code-golf raymarch).
+- **`PsychedelicPills`** — raymarched floating capsules in psychedelic colours
+  ([source](https://www.shadertoy.com/view/csfSRN)).
 
 ---
 
