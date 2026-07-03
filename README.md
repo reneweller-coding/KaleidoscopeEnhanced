@@ -172,6 +172,15 @@ effects: **`StereoSpectrum`** (stereo-separated left/right band display) and
   glowing cube edges receding into an endless rotating tunnel, with a counter-
   rotating inner cube and a vanishing-point glow; colours follow the harmony.
 
+**Image-forward effects.** All the "normal" texture effects above (and
+`PlasmaFlow`, `OrganicFlow`, `VoronoiPulse`, `FractalKIFS`, `RaymarchTunnel`,
+`Starfield`, `SpectrumRadial`) are built *on the source image*, not merely tinted
+by it — the effect refracts, shatters, lenses or warps the actual picture and
+folds it into mirror/kaleidoscopic symmetry, so they carry the same radiating
+"wow" as the Kaleidoscope/Tunnel while each keeps its own character (glass
+mosaic, marbled liquid, wax lenses, fractal, flying-into-the-image, band petals,
+etc.). This keeps the current title the visual star throughout the whole rotation.
+
 ---
 
 ## Live control
