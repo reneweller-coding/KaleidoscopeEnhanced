@@ -55,7 +55,14 @@ float coneLight(vec2 p, vec2 origin, vec2 dir, float spread, float reach)
 void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution;
-    vec3 c  = texture2D(tex, uv).rgb;
+
+    // Subtle whole-scene beat pulse: a gentle zoom "breath" on each beat (a little
+    // bigger on the downbeat).  It's motion, not a flash, and uses the already
+    // slew-limited beat, so it reads as a soft pump rather than a strobe - easy on
+    // the eyes.  Sampled from puv; the corner lights below keep the un-zoomed uv.
+    float scenePulse = clamp(audioBeat + 0.4 * audioDownbeat, 0.0, 1.0);
+    vec2  puv = (uv - 0.5) / (1.0 + 0.020 * scenePulse) + 0.5;
+    vec3  c   = texture2D(tex, puv).rgb;
 
     // Colour temperature (centred so centroid 0.5 ≈ neutral).
     vec3 cool = vec3(0.65, 0.85, 1.30);
@@ -75,12 +82,13 @@ void main()
     c = pow(max(c, 0.0) * 0.78, vec3(1.25));
 
     // Loudness → brightness, spectral flux → shimmer (kept small so already-bright
-    // content does not blow out).
-    c *= (1.0 + 0.12 * audioLevel + 0.06 * audioFlux);
+    // content does not blow out).  Plus a very gentle brightness lift on the beat,
+    // together with the zoom above for a subtle whole-scene pump.
+    c *= (1.0 + 0.12 * audioLevel + 0.06 * audioFlux + 0.05 * scenePulse);
 
     // Bloom / glow: a single tap of a coarse, blurred mip level (mipmaps already
     // generated for the safety mean).  Only clearly-bright areas, gently.
-    vec3 blurC = texture2D(tex, uv, 4.5).rgb;        // LOD bias → blurred low-res
+    vec3 blurC = texture2D(tex, puv, 4.5).rgb;       // LOD bias → blurred low-res (zoomed with the scene)
     vec3 bloom = max(blurC - 0.75, 0.0);             // higher threshold = less wash on pale content
     c += bloom * (0.12 + 0.05 * audioBeat);          // mostly steady (beat accent is in the spotlights)
 
