@@ -27,6 +27,7 @@ float FilterShader::s_reactivity  = 1.0f;
 float FilterShader::s_trailAmount = 0.6f;
 float FilterShader::s_moodStrength = 1.0f;
 float FilterShader::s_renderScale = 1.0f;
+float FilterShader::s_lightShow   = 0.0f;   // corner lamps / light-show OFF by default
 
 // Settings file lives next to the Configurations folder (parent of Debug/Release),
 // matching how shaders and configs are loaded ("..\\...").
@@ -950,6 +951,7 @@ void FilterShader::setupSafety()
 		m_presentOnsetUni    = glGetUniformLocation( m_presentProgId, "audioOnset" );
 		m_presentTimeUni     = glGetUniformLocation( m_presentProgId, "time" );
 		m_presentChaseUni    = glGetUniformLocation( m_presentProgId, "audioChase" );
+		m_presentLampsUni    = glGetUniformLocation( m_presentProgId, "lightShow" );
 	}
 
 	m_safetyReady = fboOk && (m_presentProgId != 0) && (m_presentTexUni >= 0);
@@ -1749,6 +1751,7 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 		if( m_presentOnsetUni    >= 0 ) glUniform1f( m_presentOnsetUni,    audioFx.onsetStrength );
 		if( m_presentTimeUni     >= 0 ) glUniform1f( m_presentTimeUni,     m_globaltime );
 		if( m_presentChaseUni    >= 0 ) glUniform1f( m_presentChaseUni,    m_chasePhase );
+		if( m_presentLampsUni    >= 0 ) glUniform1f( m_presentLampsUni,    s_lightShow );
 		drawWindow();
 	}
 

@@ -451,6 +451,7 @@ void GLwidget::loadUiSettings()
 	m_autoConfig     = s.value( "autoConfig",  m_autoConfig ).toBool();
 	m_autoScale      = s.value( "autoScale",   m_autoScale  ).toBool();
 	m_showNowPlaying = s.value( "nowPlaying",  m_showNowPlaying ).toBool();
+	FilterShader::setLightShow( s.value( "lightShow", FilterShader::lightShow() ).toBool() );
 	// A persisted active config is the default start config, unless -c overrode it.
 	if( s_startConfig.isEmpty() )
 		s_startConfig = s.value( "activeConfig", QString() ).toString();
@@ -464,6 +465,7 @@ void GLwidget::saveUiSettings()
 	s.setValue( "autoConfig", m_autoConfig );
 	s.setValue( "autoScale",  m_autoScale );
 	s.setValue( "nowPlaying", m_showNowPlaying );
+	s.setValue( "lightShow",  FilterShader::lightShow() );
 	s.sync();
 }
 
@@ -739,6 +741,7 @@ void GLwidget::drawHelpOverlay( QPainter *painter )
 		{ "p",       "now-playing title on/off" },
 		{ "a",       "auto-config by mood on/off" },
 		{ "g",       "adaptive render scale on/off" },
+		{ "l",       "stage lamps / light-show on/off" },
 		{ "[  ]",    "reactivity  - less / more" },
 		{ ",  .",    "trails       - shorter / longer" },
 		{ "-  =",    "mood         - weaker / stronger" },
@@ -1010,6 +1013,10 @@ void GLwidget::keyPressEvent(QKeyEvent* event)
 			break;
 		case Qt::Key_R:
 			toggleRecording();   // record visuals + music to an mp4
+			break;
+		case Qt::Key_L:
+			FilterShader::toggleLightShow();   // corner lamps / light-show on/off
+			fprintf( stderr, "Stage lamps: %s\n", FilterShader::lightShow() ? "ON" : "OFF" );
 			break;
 		case Qt::Key_N:
 			// Manually advance to the next effect (texture + combine), snappy cut.
