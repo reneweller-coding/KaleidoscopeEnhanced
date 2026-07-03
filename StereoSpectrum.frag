@@ -1,11 +1,11 @@
 // StereoSpectrum.frag
 // -----------------------------------------------------------------------
-// Stereo-separated spectrum.  The LEFT half of the frame shows the left
-// audio channel's low / mid / high band levels as three rising bars; the
-// RIGHT half shows the right channel's (mirrored toward the centre).  The
-// central seam glows with the overall stereo width, so a wide stereo mix
-// lights up the middle.  The source image shows through as a dim backdrop.
-// (Becomes vividly symmetric once the kaleidoscope pass folds it.)
+// Stereo-separated spectrum made FROM the source image.  The picture is mirror-
+// folded left/right; each half is carved into three vertical bars (low/mid/high
+// for that audio channel) whose HEIGHT is the band level - so the image only
+// lights up as high as the music pushes it, band-tinted, with the rest sinking
+// into shadow.  The central seam glows with the overall stereo width.  The
+// *image* is the star (was a dim 35% backdrop behind procedural bars).
 // -----------------------------------------------------------------------
 
 uniform vec2  resolution;
@@ -20,40 +20,47 @@ uniform float audioStereo;    // overall stereo width 0..1
 uniform float audioBeat;      // decaying beat pulse 0..1
 uniform float audioPhase;     // integrated rotation phase (slow motion)
 
+vec3 img(vec2 uv) { return (interpolation * texture2D(tex0, uv)
+                          + (1.0 - interpolation) * texture2D(tex1, uv)).rgb; }
+
 vec3 bandColor(int i)
 {
-    if (i == 0) return vec3(1.00, 0.35, 0.20);   // low  – warm
-    if (i == 1) return vec3(0.30, 1.00, 0.45);   // mid  – green
-    return            vec3(0.35, 0.55, 1.00);    // high – blue
+    if (i == 0) return vec3(1.00, 0.35, 0.20);   // low  - warm
+    if (i == 1) return vec3(0.30, 1.00, 0.45);   // mid  - green
+    return            vec3(0.35, 0.55, 1.00);    // high - blue
 }
 
 void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution.xy;
 
-    vec4 img = interpolation * texture2D(tex0, uv)
-             + (1.0 - interpolation) * texture2D(tex1, uv);
-    vec3 col = img.rgb * 0.35;                    // dim image backdrop
-
-    // Pick the channel for this half and mirror the x axis toward the centre.
     bool  leftHalf = uv.x < 0.5;
-    float hx    = leftHalf ? (uv.x * 2.0) : ((1.0 - uv.x) * 2.0);  // 0 at edge, 1 at seam
+    float mx    = leftHalf ? uv.x : (1.0 - uv.x);   // 0 at edge .. 0.5 at seam
     vec3  bands = leftHalf ? audioStereoL : audioStereoR;
 
+    // Mirror-fold the image so both halves share the same folded picture.
+    vec3 pic = img(vec2(clamp(mx * 2.0, 0.0, 1.0), uv.y));
+
     // Three columns across each half -> low / mid / high.
-    int   idx   = clamp(int(floor(hx * 3.0)), 0, 2);
+    float hx  = mx * 2.0;                           // 0..1 across the half
+    int   idx = clamp(int(floor(hx * 3.0)), 0, 2);
     float level = (idx == 0) ? bands.x : ((idx == 1) ? bands.y : bands.z);
 
-    // Bar rising from the bottom, lifted a little on the beat.
+    // Bar height = band level (lifted a little on the beat).
     float barH = clamp(level * (1.10 + 0.30 * audioBeat), 0.0, 1.0);
-    float bar  = smoothstep(barH, barH - 0.04, uv.y);
+    float below = smoothstep(barH + 0.02, barH - 0.02, uv.y);   // 1 below the tip
 
     // Thin gaps between the columns.
     float colPos = fract(hx * 3.0);
     float gap    = smoothstep(0.05, 0.11, colPos) * smoothstep(0.05, 0.11, 1.0 - colPos);
 
-    vec3 bc = bandColor(idx);
-    col += bc * bar * gap * (0.80 + 0.60 * level + audioBeat);
+    vec3 bc  = bandColor(idx);
+    // The folded image is always dimly present; the lit bar brightens and tints
+    // the picture up to the band's height, sinking to shadow above it.
+    vec3 col = pic * 0.20;                                   // dim always-on backdrop
+    col += pic * (0.85 * below * gap);                       // bar lights the image
+    col = mix(col, col * bc * 1.8, 0.5 * below * gap);
+    col += bc * below * gap * (0.15 + 0.30 * level + 0.4 * audioBeat);
 
     // Bright moving tip line along the top of each bar.
     float tip = smoothstep(0.020, 0.0, abs(uv.y - barH)) * gap;

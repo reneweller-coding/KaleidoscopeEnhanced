@@ -1,7 +1,9 @@
 // RaymarchTunnel.frag
-// A cheap 3D ray-marched tunnel.  The camera flies forward with the music
-// (audioAdvance/audioPhase), the walls breathe with the bass, beats flash.
-// Colour is left fairly neutral — the global mood grade tints it.
+// A cheap 3D ray-marched tunnel whose walls are papered with the SOURCE IMAGE,
+// mirror-folded around the bore so the picture radiates like a kaleidoscopic
+// wormhole.  The camera flies forward with the music (audioAdvance/audioPhase),
+// the walls breathe with the bass, beats flash and the image brightens.  The
+// *image* is the star (it used to be dim under heavy fog).
 uniform vec2  resolution;
 uniform float time;
 uniform sampler2D tex0;
@@ -11,10 +13,14 @@ uniform float interpolation;
 uniform float audioBeat;
 uniform float audioLevel;
 uniform float audioBass;
+uniform float audioValence;
 uniform float audioAdvance;
 uniform float audioPhase;
 
 const float PI = 3.14159265358979;
+
+vec3 img(vec2 uv) { return (interpolation * texture2D(tex0, uv)
+                          + (1.0 - interpolation) * texture2D(tex1, uv)).rgb; }
 
 // Distance to the inside of a wobbling cylindrical tunnel wall.
 float mapTunnel(vec3 p, float bass)
@@ -30,7 +36,6 @@ void main()
 
     float fly = time * 1.2 + audioAdvance * 4.0;
     vec3 ro = vec3(0.0, 0.0, fly);
-    // roll the camera slowly with the audio phase.
     float roll = audioPhase * 0.3 + time * 0.05;
     mat2 rot = mat2(cos(roll), -sin(roll), sin(roll), cos(roll));
     vec3 rd = normalize(vec3(rot * uv, 1.0));
@@ -46,12 +51,17 @@ void main()
 
     vec3 hit = ro + rd * t;
     float ang = atan(hit.y, hit.x);
-    vec2 wuv  = vec2(ang / (2.0 * PI) + 0.5, hit.z * 0.15);
 
-    vec4 img = interpolation * texture2D(tex0, wuv) + (1.0 - interpolation) * texture2D(tex1, wuv);
-    float fog = exp(-0.09 * t);
-    vec3 col = img.rgb * fog * (0.55 + 0.8 * audioLevel);
-    col += fog * audioBeat * 0.30;
+    // Mirror-fold the angle so the image radiates in symmetric wedges.
+    float sides = floor(2.0 + 6.0 * audioValence);
+    float seg   = 2.0 * PI / sides;
+    float fang  = abs(mod(ang + PI, seg) - 0.5 * seg) / (0.5 * seg);   // 0..1 mirrored
+    vec2  wuv   = vec2(fang, hit.z * 0.15);
+
+    vec3 pic = img(fract(wuv));
+    float fog = exp(-0.06 * t);                        // lighter fog = brighter walls
+    vec3 col  = pic * fog * (0.75 + 0.9 * audioLevel);
+    col += fog * audioBeat * 0.35;
 
     gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }

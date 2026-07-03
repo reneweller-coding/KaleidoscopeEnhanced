@@ -1,12 +1,12 @@
 // HyperCube.frag
 // -----------------------------------------------------------------------
-// Infinity-mirror cube (à la the Hyperspace Lighting Co. "HyperCube"): glowing
-// cube edges reflected into an endless receding tunnel, slowly rotating, with a
-// counter-rotating inner cube outline and a vanishing-point glow.  Inspired by
-// the object, extended with the music: the tunnel lurches forward on the beat
-// (integrated advance), bass fattens the edges and the inner cube, onset &
-// downbeat flash the whole frame, the glow pulses in tempo, and the colours
-// follow the harmony / major-minor mode.  Motion is jump-free (anti-flicker).
+// Infinity-mirror cube (a la the Hyperspace Lighting Co. "HyperCube"): the
+// source image is wrapped onto the walls of an endlessly receding square
+// tunnel, so you fly INTO the picture through glowing cube frames that flash on
+// the beat.  A counter-rotating inner cube outline and a vanishing-point glow
+// complete the illusion.  The *image* is the star (was a 4% tint).  The tunnel
+// lurches forward on the beat (integrated advance), bass fattens the edges,
+// onset & downbeat flash, colours follow the harmony / mode.  Jump-free motion.
 // -----------------------------------------------------------------------
 
 uniform vec2  resolution;
@@ -28,18 +28,21 @@ uniform float audioValence;
 uniform float audioMode;
 uniform float audioChromaHue;
 
+const float PI = 3.14159265358979;
+
 mat2 rot(float a) { float c = cos(a), s = sin(a); return mat2(c, -s, s, c); }
 vec3 pal(float t) { return 0.5 + 0.5 * cos(6.2831 * (t + vec3(0.0, 0.33, 0.67))); }
+vec3 img(vec2 uv) { return (interpolation * texture2D(tex0, uv)
+                          + (1.0 - interpolation) * texture2D(tex1, uv)).rgb; }
 
 void main()
 {
-    vec2 uv = gl_FragCoord.xy / resolution;
-    vec2 p  = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
+    vec2 p = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
     // Gentle overall rotation (jump-free).
     p = rot(0.1 * sin(time * 0.1) + audioPhase * 0.10) * p;
 
-    // Square (chamfer) radius → nested square cube frames.
+    // Square (chamfer) radius -> nested square cube frames.
     float sq    = max(abs(p.x), abs(p.y));
     float depth = log(sq + 1e-3);
     float move  = time * 0.15 + audioAdvance * 0.35;   // travel inward, lurches on beats
@@ -51,15 +54,20 @@ void main()
     float edge  = smoothstep(ew, 0.0, frame) + smoothstep(ew, 0.0, 1.0 - frame);
     edge *= 0.8 + 0.4 * sin(audioBeatPhase * 6.2831);  // in-tempo pulse
 
+    // The image papered onto the receding tunnel walls: angle around the square
+    // ring gives the horizontal, tunnel depth gives the vertical.
+    float ring = (abs(p.x) > abs(p.y))
+               ? (p.y / (abs(p.x) + 1e-3)) * 0.25 + (p.x < 0.0 ? 0.5 : 0.0)
+               : (p.x / (abs(p.y) + 1e-3)) * 0.25 + (p.y < 0.0 ? 0.75 : 0.25);
+    vec2  wuv = vec2(fract(ring), fract(z * 0.5));
+    vec3  pic = img(wuv);
+    float fade = exp(-1.5 * sq);                        // recede to infinity
+    vec3  col  = pic * (0.35 + 1.1 * fade) * (0.5 + 0.7 * audioLevel);
+
     // Colour by depth + harmony; warmer in major, cooler in minor.
     float hue = fract(0.15 * floor(z) + audioChromaHue + 0.2 * audioValence
                       + 0.15 * (audioMode - 0.5));
-    vec3  col = pal(hue) * edge;
-
-    // Depth fade → receding-to-infinity feel; beat / onset punch the edges.
-    float fade = exp(-1.5 * sq);
-    col *= (0.4 + 1.2 * fade);
-    col *= (0.7 + 0.6 * audioBeat + 0.5 * audioOnset);
+    col += pal(hue) * edge * (0.7 + 0.6 * audioBeat + 0.5 * audioOnset);
 
     // Vanishing-point glow at the centre, flaring on downbeats.
     col += pal(fract(audioChromaHue + 0.5))
@@ -69,11 +77,8 @@ void main()
     vec2  qd    = rot(audioPhase * 0.30 + time * 0.05) * p;
     float inner = max(abs(qd.x), abs(qd.y));
     float isz   = 0.28 * (0.8 + 0.2 * sin(time * 0.3)) + 0.06 * audioBass;
-    float ring  = smoothstep(0.02, 0.0, abs(inner - isz));
-    col += pal(fract(hue + 0.3)) * ring * (0.6 + audioBeat + 0.4 * audioSubBass);
-
-    // Faint image tint in the background.
-    col += 0.04 * texture2D(tex0, uv).rgb;
+    float ringE = smoothstep(0.02, 0.0, abs(inner - isz));
+    col += pal(fract(hue + 0.3)) * ringE * (0.6 + audioBeat + 0.4 * audioSubBass);
 
     gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }
