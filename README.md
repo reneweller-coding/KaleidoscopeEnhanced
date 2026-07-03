@@ -181,12 +181,20 @@ folds it into mirror/kaleidoscopic symmetry, so they carry the same radiating
 mosaic, marbled liquid, wax lenses, fractal, flying-into-the-image, band petals,
 etc.). This keeps the current title the visual star throughout the whole rotation.
 
+**Adapted community shaders** (from [@kishimisu](https://www.shadertoy.com/user/kishimisu),
+all CC BY-NC-SA 4.0, attribution kept in each shader header).  Each was wired into
+our engine the same way: the source image colours the effect and drifts through as
+a faint nebula (image-forward), and the music drives motion / glow / palette with
+**jump-free** integrated phases (never `time*audio`).  All in the `normal` and
+`psychedelic` presets.
 - **`Voyager`** — a volumetric kaleidoscopic fly-through of a field of glowing
-  cells (a deep-space-probe feel), adapted from *"Voyager"* by
-  [@kishimisu](https://www.shadertoy.com/view/M33XDH) (CC BY-NC-SA 4.0).  Wired
-  into our engine: the source image colours the light field and drifts through as
-  a faint nebula, and the music drives the travel / glow / palette with jump-free
-  integrated motion.  In the `normal` and `psychedelic` presets.
+  cells, a deep-space-probe feel ([source](https://www.shadertoy.com/view/M33XDH)).
+- **`FlowingWires`** — a 3D truchet raymarched into interlocking glowing wire
+  loops ([source](https://www.shadertoy.com/view/DsBczR)).
+- **`FractalBloom`** — a glowing fractal "flower" of bright kaleidoscopic rings
+  ([source](https://www.shadertoy.com/view/mtyGWy), palette by iq).
+- **`DiscoGodrays`** — a mirror-ball emanating fans of coloured volumetric
+  godrays ([source](https://www.shadertoy.com/view/Dt33RS)).
 
 ---
 

@@ -1,0 +1,73 @@
+// FractalBloom.frag
+// -----------------------------------------------------------------------
+// Adapted from kishimisu's GLSL-tutorial fractal (2023) —
+// https://www.shadertoy.com/view/mtyGWy  (palette by iq: iquilezles.org/articles/palettes)
+// Original licensed CC BY-NC-SA 4.0 (attribution kept per the licence).
+//
+// A glowing fractal "flower": a domain-repeating kaleidoscope of bright rings.
+// Adapted to our engine:
+//   * Shadertoy -> ours (gl_FragCoord/resolution/time, GLSL 1.20).
+//   * IMAGE-FORWARD: the source image tiles into the fractal petals and tints the
+//     palette, and drifts through as a faint backdrop.
+//   * Audio-reactive & JUMP-FREE: gentle spin/animation via audioPhase; beats and
+//     onsets brighten the bloom; centroid/valence grade the palette.
+// -----------------------------------------------------------------------
+
+uniform vec2  resolution;
+uniform float time;
+uniform sampler2D tex0;
+uniform sampler2D tex1;
+uniform float interpolation;
+
+uniform float audioPhase;
+uniform float audioBeat;
+uniform float audioOnset;
+uniform float audioLevel;
+uniform float audioCentroid;
+uniform float audioValence;
+
+mat2 rot(float a) { float c = cos(a), s = sin(a); return mat2(c, -s, s, c); }
+vec3 img(vec2 uv) { return (interpolation * texture2D(tex0, uv)
+                          + (1.0 - interpolation) * texture2D(tex1, uv)).rgb; }
+
+vec3 palette(float t)
+{
+    return 0.5 + 0.5 * cos(6.28318 * (t + vec3(0.263, 0.416, 0.557)));
+}
+
+void main()
+{
+    vec2 uv = (2.0 * gl_FragCoord.xy - resolution) / resolution.y;
+    uv = rot(audioPhase * 0.2) * uv;             // gentle jump-free spin
+    vec2  uv0 = uv;
+    float T   = time + audioPhase * 0.3;
+
+    vec3 col = vec3(0.0);
+    for (int i = 0; i < 4; i++)
+    {
+        uv = fract(uv * 1.5) - 0.5;
+        float d = length(uv) * exp(-length(uv0));
+        vec3  c = palette(length(uv0) + float(i) * 0.4 + T * 0.4);
+
+        // The picture tiles into each fractal cell.
+        vec3 pic = img(fract(uv + 0.5));
+        c *= mix(vec3(1.0), pic * 1.6, 0.5);
+
+        d = sin(d * 8.0 + T) / 8.0;
+        d = abs(d);
+        d = pow(0.01 / d, 1.2);
+        col += c * d;
+    }
+
+    col *= 1.0 + 0.5 * audioBeat + 0.3 * audioOnset;   // beat glow
+
+    // Mood grade.
+    col *= mix(vec3(0.75, 0.85, 1.20), vec3(1.25, 1.05, 0.75), audioCentroid);
+    float lum = dot(col, vec3(0.299, 0.587, 0.114));
+    col = mix(vec3(lum), col, 0.6 + 0.6 * audioValence);
+
+    // Faint image backdrop so the picture reads even in the dark gaps.
+    col += img(uv0 * 0.5 + 0.5) * 0.05 * (0.4 + 0.6 * audioLevel);
+
+    gl_FragColor = vec4(col, 1.0);
+}
