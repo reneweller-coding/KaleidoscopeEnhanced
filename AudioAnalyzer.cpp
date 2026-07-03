@@ -683,10 +683,11 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
     if (isBeat) m_beatPulse = (1.f + beatStr * 2.f) * (1.f - m_ambientFactor * 0.95f);
     m_beatPulse = std::max(m_beatPulse * 0.85f, 0.f);
 
-    // ---- Downbeat accent: accent the bar's "1" (≈ every 4th detected kick) ----
-    if (isBeat) { m_kickCount++; if (m_kickCount % 4 == 0) m_downbeatPulse = 1.f; }
-    m_downbeatPulse = std::max(m_downbeatPulse * 0.90f, 0.f);
-    float downbeat = m_downbeatPulse;
+    // ---- Downbeat accent: accent the bar's "1" ----
+    // Triggered below from the continuous beat phase (every 4th beat), which is
+    // far more reliable than counting kick transients (works for kick-light music
+    // via the autocorrelation tempo too); here we just decay the pulse.
+    m_downbeatPulse = std::max(m_downbeatPulse * 0.92f, 0.f);
 
     float beatSpeed = 1.f + m_beatPulse;
 
@@ -907,9 +908,12 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
     float ibVar = 0.f;
     for (float v : m_beatIntervals) { float d = v - ibMean; ibVar += d * d; }
     ibVar /= float(kBPMHistLen);
-    float ibCV   = (ibMean > 1e-3f) ? std::sqrt(ibVar) / ibMean : 1.f;
-    float rhythm = std::max(0.f, 1.f - ibCV) * recency;
-    m_sRhythm = 0.92f * m_sRhythm + 0.08f * rhythm;
+    float ibCV       = (ibMean > 1e-3f) ? std::sqrt(ibVar) / ibMean : 1.f;
+    float kickRhythm = std::max(0.f, 1.f - ibCV) * recency;
+    // A steady onset envelope (autocorrelation confidence) also means "rhythmic",
+    // so genres without a strong kick still register a rhythm.
+    float rhythm = std::max(kickRhythm, m_acConf);
+    m_sRhythm = 0.90f * m_sRhythm + 0.10f * rhythm;
 
     // ---- Continuous beat phase 0..1 (wraps every beat) from the tempo ----
     float beatPhase = 0.f;
@@ -920,6 +924,15 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
             beatPhase = ph - std::floor(ph);
         }
     }
+
+    // Downbeat: pulse on the bar's "1" — every 4th beat, detected as a wrap of the
+    // continuous beat phase (works whenever a tempo is known).
+    if (m_smoothedBPM > 1.f && m_prevBeatPhase > 0.65f && beatPhase < 0.35f) {
+        m_barBeat = (m_barBeat + 1) & 3;
+        if (m_barBeat == 0) m_downbeatPulse = 1.f;
+    }
+    m_prevBeatPhase = beatPhase;
+    float downbeat = m_downbeatPulse;
 
     // ---- Arousal & Valence proxies (after Thayer's model) ----
     // Arousal: combination of energy, rhythm presence, and spectral activity.
@@ -1009,6 +1022,35 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
         float mag  = std::sqrt(m_fftRe[k]*m_fftRe[k] + m_fftIm[k]*m_fftIm[k]);
         mags[k]    = mag;
         totalMagSq += mag * mag;
+    }
+
+    // ---- 32-band log-spaced spectrum for the analyzer effects ----
+    // Group the FFT magnitudes into perceptually-spaced bands (~40 Hz..16 kHz)
+    // and self-normalise with a decaying-peak reference so the loudest band sits
+    // near 1.0 and the rest scale under it (a lively, volume-independent analyzer).
+    {
+        const int   NB    = AudioFeatures::kSpectrumBands;
+        const float fLo   = 40.f, fHi = 16000.f;
+        const float binHz = float(sampleRate) / float(kFFTSize);
+        float raw[AudioFeatures::kSpectrumBands];
+        float frameMax = 1e-6f;
+        for (int b = 0; b < NB; ++b) {
+            float f0 = fLo * std::pow(fHi / fLo, float(b)     / float(NB));
+            float f1 = fLo * std::pow(fHi / fLo, float(b + 1) / float(NB));
+            int   k0 = std::max(1, int(f0 / binHz));
+            int   k1 = std::min(kFFTHalf - 1, std::max(k0 + 1, int(f1 / binHz)));
+            float acc = 0.f; int cnt = 0;
+            for (int k = k0; k < k1; ++k) { acc += mags[k] * mags[k]; ++cnt; }
+            raw[b]   = (cnt > 0) ? std::sqrt(acc / float(cnt)) : 0.f;
+            frameMax = std::max(frameMax, raw[b]);
+        }
+        m_specRef = std::max(m_specRef * 0.98f, frameMax);   // slow-decaying peak
+        m_specRef = std::max(m_specRef, 1e-4f);              // floor → silence stays low
+        for (int b = 0; b < NB; ++b) {
+            float v = std::min(raw[b] / m_specRef, 1.f);
+            v = std::pow(v, 0.6f);                            // lift mid bands for visibility
+            m_sSpectrum[b] = 0.55f * m_sSpectrum[b] + 0.45f * v;   // fast attack, mild smoothing
+        }
     }
 
     // ---- Spectral Rolloff ----
@@ -1259,6 +1301,8 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
     m_features.upperMidLevel  = nUpperMid;
     m_features.highLevel      = nHigh;
     m_features.overallLevel   = nLevel;
+    for (int b = 0; b < AudioFeatures::kSpectrumBands; ++b)
+        m_features.spectrum[b] = m_sSpectrum[b];
     m_features.isBeat         = isBeat;
     m_features.onsetStrength   = onsetStrength;
     m_features.downbeat        = downbeat;

@@ -318,6 +318,10 @@ void EffectShader::applyAudioFeatures(const AudioFeatures &f)
     if (locStBandR  >= 0) glUniform3f(locStBandR,  f.stereoLowR, f.stereoMidR, f.stereoHighR);
     if (locChroma   >= 0) glUniform1f(locChroma,   f.chromaHue);
 
+    // Fine-grained 32-band spectrum for the analyzer effects (audioSpectrum[32]).
+    GLint locSpectrum = glGetUniformLocation(m_sh_prog_id, "audioSpectrum");
+    if (locSpectrum >= 0) glUniform1fv(locSpectrum, AudioFeatures::kSpectrumBands, f.spectrum);
+
     // Living reaction-diffusion field is bound to texture unit 7 by FilterShader.
     GLint locSim = glGetUniformLocation(m_sh_prog_id, "texSim");
     if (locSim >= 0) glUniform1i(locSim, 7);

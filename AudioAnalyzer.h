@@ -158,6 +158,8 @@ private:
     float m_onsetCooldown   = 0.f;    // min spacing between onsets
     float m_downbeatPulse   = 0.f;    // decaying accent on the bar's "1"
     int   m_kickCount       = 0;      // counts detected kicks (for downbeat every 4)
+    float m_prevBeatPhase   = 0.f;    // previous beatPhase (for downbeat wrap detection)
+    int   m_barBeat         = 0;      // beat-within-bar counter 0..3 (downbeat on 0)
 
     // ---- Autocorrelation tempo (fixed-rate onset envelope) ----
     static constexpr int kEnvRate   = 100;   // onset-envelope sample rate (Hz)
@@ -212,6 +214,10 @@ private:
     float m_smoothedChroma[12] = {};  // smoothed 12-bin chroma vector (C .. B)
 
     // Smoothed FFT-derived outputs
+    // 32-band log-spaced spectrum for the analyzer effects (self-normalised).
+    float m_sSpectrum[AudioFeatures::kSpectrumBands] = {};
+    float m_specRef  = 1e-4f; // decaying-peak reference for spectrum auto-scaling
+
     float m_sRolloff = 0.5f;  // spectral rolloff (fraction of Nyquist, 0..1)
     float m_sSpread  = 0.f;   // spectral spread normalised by 5 kHz
     float m_sMode    = 0.5f;  // musical mode 0=minor/dark .. 1=major/bright

@@ -31,6 +31,13 @@ struct AudioFeatures
     // ---- Overall amplitude ----
     float overallLevel  = 0.f;   // weighted mix of all bands
 
+    // ---- Fine-grained spectrum (for the analyzer effects) ----
+    // 32 log-spaced magnitude bands (~40 Hz .. 16 kHz), self-normalised 0..1 and
+    // lightly smoothed, so a shader can draw a proper many-bar spectrum analyzer
+    // instead of only the 6 coarse bands above.  Uploaded as `audioSpectrum[32]`.
+    static const int kSpectrumBands = 32;
+    float spectrum[kSpectrumBands] = {};
+
     // ---- Beat / onset detection ----
     bool  isBeat        = false; // true for one update cycle on each kick
     float beatStrength  = 0.f;   // 0..1 onset magnitude vs. background
