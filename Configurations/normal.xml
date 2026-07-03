@@ -83,6 +83,14 @@
   <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\PsychedelicPills.frag" type="normal" probability="0.5" complexity="2">
   </TextureShader>
 
+  <!-- Chrome Dreams (rotating chromatic torus tunnel, after kishimisu) -->
+  <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\ChromeDreams.frag" type="normal" probability="0.5" complexity="2">
+  </TextureShader>
+
+  <!-- Sphere Grid (fly-through of an infinite sphere lattice, after kishimisu) -->
+  <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\SphereGrid.frag" type="normal" probability="0.5" complexity="2">
+  </TextureShader>
+
   <!-- Plasma Flow (mood-tinted flowing plasma) -->
   <TextureShader minTimeSolo="20" maxTimeSolo="90" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\PlasmaFlow.frag" type="normal" probability="0.5" complexity="1">
   </TextureShader>

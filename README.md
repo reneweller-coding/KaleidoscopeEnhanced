@@ -205,6 +205,17 @@ a faint nebula (image-forward), and the music drives motion / glow / palette wit
   (a kishimisu code-golf raymarch).
 - **`PsychedelicPills`** — raymarched floating capsules in psychedelic colours
   ([source](https://www.shadertoy.com/view/csfSRN)).
+- **`ChromeDreams`** — a rotating chromatic tunnel of tori
+  ([source](https://www.shadertoy.com/view/ctX3RM)).
+- **`SphereGrid`** — a fly-through of an infinite lattice of spheres down a
+  bright corridor (an untitled kishimisu raymarch).
+
+These last two go a step further with the images: instead of a fixed procedural
+palette they are **coloured by the picture itself** — each depth takes its colour
+from a slowly-drifting crop of the source image (`imgPal`), so the palette *is*
+the image and keeps changing over time and with the harmony (much like the
+Kaleidoscope folding different crops).  The same image-crop colouring is also
+mixed into the other adapted shaders above.
 
 ---
 
