@@ -43,20 +43,21 @@ void main()
     vec2  grad = vec2(bx, by);
     float edge = clamp(length(grad) * 6.0, 0.0, 1.0);
 
-    // The picture, dragged along the reaction gradient and revealed by B.
-    vec2 iuv = uv + grad * 6.0;
+    // The picture ripples along the reaction gradient (a liquid-metal feel).
+    vec2 iuv = uv + grad * 4.0;
     vec3 pic = img(fract(iuv));
 
-    // Mood-coloured fronts.
-    vec3 cLow  = mix(vec3(0.02, 0.04, 0.12), vec3(0.10, 0.02, 0.14), audioCentroid);
-    vec3 cHigh = mix(vec3(0.90, 0.45, 0.20), vec3(0.30, 0.90, 1.00), audioValence);
+    // Mood-coloured reaction fronts.
+    vec3 cHigh = mix(vec3(1.00, 0.55, 0.25), vec3(0.35, 0.85, 1.00), audioValence);
 
-    // Inactive regions keep a dim image (mood-tinted) so it never goes black;
-    // active reaction regions reveal the picture at full strength.
-    vec3  base   = mix(cLow, img(uv) * 0.30, 0.6);
-    float reveal = smoothstep(0.10, 0.50, b);
-    vec3  col = mix(base, pic * (1.3 + 0.6 * audioCentroid), reveal);
-    col += edge * (0.40 + 0.80 * audioBeat) * cHigh;
+    // The image is visible EVERYWHERE (never pure black); the reaction field (B)
+    // brightens and stains the active regions and the fronts (edges) glow, so the
+    // whole picture appears to grow, crawl and dissolve through the pattern.
+    float m   = smoothstep(0.04, 0.35, b);
+    vec3  col = pic * (0.40 + 1.00 * m);
+    col = mix(col, col * cHigh * 1.7, 0.6 * m);            // stain the active regions
+    col += edge * (0.35 + 0.80 * audioBeat) * cHigh;       // glowing reaction fronts
+    col *= 0.85 + 0.40 * audioCentroid;
 
     gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }

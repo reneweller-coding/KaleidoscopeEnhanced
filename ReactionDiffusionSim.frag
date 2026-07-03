@@ -55,14 +55,12 @@ void main()
     float nA = A + (dA * lap.x - reaction + feed * (1.0 - A));
     float nB = B + (dB * lap.y + reaction - (kill + feed) * B);
 
-    // Inject reagent at five fixed spots on a beat -> symmetric blooms that the
-    // kaleidoscope pass turns into radiating structures.
+    // On a beat, scatter fresh reagent across the WHOLE field (hash-based) so the
+    // entire pattern re-blooms with the music, rather than a few fixed dots
+    // wobbling in one place.
     if (inject > 0.5) {
-        if (distance(uv, vec2(0.50, 0.50)) < 0.025) nB = 1.0;
-        if (distance(uv, vec2(0.25, 0.50)) < 0.020) nB = 1.0;
-        if (distance(uv, vec2(0.75, 0.50)) < 0.020) nB = 1.0;
-        if (distance(uv, vec2(0.50, 0.25)) < 0.020) nB = 1.0;
-        if (distance(uv, vec2(0.50, 0.75)) < 0.020) nB = 1.0;
+        float n = hash(floor(gl_FragCoord.xy / 5.0));
+        if (n > 0.90) nB = 1.0;
     }
 
     gl_FragColor = vec4(clamp(nA, 0.0, 1.0), clamp(nB, 0.0, 1.0), 0.0, 1.0);
