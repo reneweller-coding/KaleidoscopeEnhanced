@@ -1409,7 +1409,11 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 	        && m_effectTextures[m_nextEffectTexture]->usesSim() ) );
 	if( rdNeeded )
 	{
-		stepReactionDiffusion( audio );
+		// Several PDE sub-steps per frame so the pattern develops quickly and
+		// fills the whole field with lively, evolving structure (instead of a few
+		// slow-moving injected spots).
+		for( int s = 0; s < 6; ++s )
+			stepReactionDiffusion( audio );
 		glActiveTexture( GL_TEXTURE7 );
 		glBindTexture( GL_TEXTURE_2D, m_texRD[1 - m_rdIdx] );   // newest state
 	}
