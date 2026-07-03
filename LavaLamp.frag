@@ -37,8 +37,11 @@ void main()
     float aspect = resolution.x / resolution.y;
     vec2  p      = vec2((uv.x - 0.5) * aspect, uv.y);   // y in 0..1, x centred
 
-    float drift = time * 0.05 + audioAdvance * 0.30;
-    float buoy  = 0.5 + 0.9 * audioBass + 0.6 * audioArousal;
+    // Circulation speed: a steady base plus the host-integrated audio advance.
+    // (Must NOT multiply the accumulated 'time'/advance by an instantaneous audio
+    // value like bass — that remaps the whole phase in one frame and makes the
+    // blobs jump.  Energy livens the motion through audioAdvance's rate instead.)
+    float drift = time * 0.05 + audioAdvance * 0.55;
     float bob   = 0.015 * sin(audioBeatPhase * 6.2831);
 
     // Metaball field + track the nearest blob (centre & radius) for the lens.
@@ -49,7 +52,7 @@ void main()
     for (int i = 0; i < 6; i++)
     {
         float fi  = float(i);
-        float ph  = drift * (0.5 + 0.18 * fi) * buoy + fi * 1.7;
+        float ph  = drift * (0.5 + 0.18 * fi) + fi * 1.7;
         float by  = 0.5 + 0.42 * sin(ph) + bob;
         float bx  = 0.33 * aspect * sin(ph * 0.7 + fi);
         float rad = 0.10 + 0.03 * sin(ph * 1.3)

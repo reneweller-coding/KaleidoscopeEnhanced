@@ -52,8 +52,10 @@ void main()
     vec3 hit = ro + rd * t;
     float ang = atan(hit.y, hit.x);
 
-    // Mirror-fold the angle so the image radiates in symmetric wedges.
-    float sides = floor(2.0 + 6.0 * audioValence);
+    // Mirror-fold the angle so the image radiates in symmetric wedges.  The fold
+    // count is fixed: deriving it from floor(audio) snapped the whole wall pattern
+    // between symmetries as the music changed.
+    const float sides = 6.0;
     float seg   = 2.0 * PI / sides;
     float fang  = abs(mod(ang + PI, seg) - 0.5 * seg) / (0.5 * seg);   // 0..1 mirrored
     vec2  wuv   = vec2(fang, hit.z * 0.15);

@@ -56,16 +56,17 @@ void main()
     vec2 uv = gl_FragCoord.xy / resolution.xy;
     vec2 p  = (gl_FragCoord.xy - 0.5 * resolution.xy) / resolution.y;
 
-    // Whole mosaic rotates slowly (jump-free) and gives a small beat "breath".
-    p = rot(audioPhase * 0.25 + time * 0.02) * p;
-    p *= 1.0 - 0.05 * audioBeat;
+    // Whole mosaic rotates slowly (jump-free) and gives a tiny beat "breath".
+    p = rot(audioPhase * 0.18 + time * 0.015) * p;
+    p *= 1.0 - 0.025 * audioBeat;
 
-    // Kaleidoscopic symmetry: 3..8 mirror wedges, stepping with brightness.
-    float sides = floor(3.0 + 5.0 * audioCentroid);
-    vec2  fp    = kaleido(p, sides);
+    // Kaleidoscopic symmetry: a calm, fixed 4-fold (was up to 8 and stepping with
+    // the audio, which made it frantic and snappy).
+    vec2  fp = kaleido(p, 4.0);
 
-    // Voronoi shards on the folded plane; pitch sets density.
-    float scale = 3.0 + 7.0 * audioPitch;
+    // Voronoi shards on the folded plane; pitch sets density but stays LOW so the
+    // shards are large and readable, not an overwhelming fine mosaic.
+    float scale = 2.4 + 2.2 * audioPitch;
     vec2  g  = fp * scale;
     vec2  gi = floor(g);
     vec2  gf = fract(g);
@@ -77,8 +78,8 @@ void main()
     {
         vec2  o   = vec2(float(x), float(y));
         vec2  rnd = hash22(gi + o);
-        vec2  c   = o + 0.5 + 0.4 * sin(time * (0.3 + 0.7 * audioFlux)
-                                        + 6.2831 * rnd + audioPhase);
+        vec2  c   = o + 0.5 + 0.30 * sin(time * (0.12 + 0.22 * audioFlux)
+                                         + 6.2831 * rnd + audioPhase);
         vec2  diff = c - gf;
         float dd   = length(diff);
         if (dd < d1) { d2 = d1; d1 = dd; rel = diff; }
@@ -87,18 +88,18 @@ void main()
 
     float seam = 1.0 - smoothstep(0.0, 0.06, d2 - d1);   // 1 on the seam
 
-    // The picture, folded kaleidoscopically, refracted by each shard's lens:
-    // pull the image toward the shard centre so every cell bulges like glass.
+    // The picture, folded kaleidoscopically, gently refracted by each shard's
+    // lens (a small, steady bulge — no violent beat spike).
     vec2 baseUV = fp * 0.6 + 0.5;
-    vec2 iuv    = baseUV + rel * (0.20 + 0.30 * audioBeat);
+    vec2 iuv    = baseUV + rel * 0.12;
     vec3 pic    = img(fract(iuv));
 
-    vec3 col = pic * (0.5 + 0.9 * audioLevel) * (1.0 + 0.4 * audioBeat);
+    vec3 col = pic * (0.55 + 0.8 * audioLevel) * (1.0 + 0.15 * audioBeat);
 
-    // Backlit seams: warm/cool by valence, flaring hard on the beat.
+    // Backlit seams: warm/cool by valence, glowing softly (not a hard flare).
     vec3 seamCol = mix(vec3(0.25, 0.55, 1.0), vec3(1.0, 0.55, 0.2), audioValence);
-    col = mix(col, seamCol * (0.6 + 2.2 * audioBeat + 0.4 * audioCentroid),
-              seam * (0.45 + 0.55 * audioBeat));
+    col = mix(col, seamCol * (0.6 + 1.0 * audioBeat + 0.3 * audioCentroid),
+              seam * (0.30 + 0.30 * audioBeat));
 
     // Jewel vignette.
     col *= 1.0 - 0.30 * dot(p, p);
