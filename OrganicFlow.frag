@@ -73,8 +73,9 @@ void main()
     p = rot(audioPhase * 0.15 + time * 0.02) * p;
     p.x *= 1.0 + audioStereo * 0.5;                  // stereo stretch
 
-    float sides = floor(2.0 + 5.0 * audioCentroid);
-    vec2  fp    = kaleido(p, sides);
+    // Fixed fold count: driving it from a floor(audio) term made the whole
+    // pattern snap between symmetries.  Keep it constant for smooth flow.
+    vec2  fp = kaleido(p, 4.0);
 
     float t  = time * 0.08 + audioPhase * 0.2;
     vec2  q  = vec2(fbm(fp * 2.0 + vec2(0.0, t)), fbm(fp * 2.0 + vec2(5.2, t * 1.1)));
@@ -86,8 +87,9 @@ void main()
     vec2 iuv = fp * 0.6 + 0.5 + (rr - 0.5) * (0.10 + 0.12 * audioLevel);
     vec3 pic = img(fract(iuv));
 
-    // Glowing veins along the cell boundaries.
-    float scale = 6.0 + 10.0 * audioBass + 4.0 * audioDeltaPitch;
+    // Glowing veins along the cell boundaries.  Keep the spatial frequency's
+    // audio swing small so the banding morphs smoothly instead of snapping.
+    float scale = 7.0 + 3.0 * audioBass;
     float band  = sin(v * scale + t * 2.0);
     float vein  = 1.0 - smoothstep(0.0, 0.18, abs(band));
 
