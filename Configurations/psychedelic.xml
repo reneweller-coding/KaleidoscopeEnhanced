@@ -122,6 +122,26 @@
   <TextureShader minTimeSolo="15" maxTimeSolo="60" minTimeInterpolation="15" maxTimeInterpolation="45" file="..\\DiscoGodrays.frag" type="normal" probability="0.7" complexity="2">
   </TextureShader>
 
+  <!-- Inside the System (neon torus lights, after kishimisu) -->
+  <TextureShader minTimeSolo="15" maxTimeSolo="60" minTimeInterpolation="15" maxTimeInterpolation="45" file="..\\InsideSystem.frag" type="normal" probability="0.7" complexity="2">
+  </TextureShader>
+
+  <!-- Vortex (kaleidoscopic vortex tunnel, after kishimisu) -->
+  <TextureShader minTimeSolo="15" maxTimeSolo="60" minTimeInterpolation="15" maxTimeInterpolation="45" file="..\\Vortex.frag" type="normal" probability="0.7" complexity="2">
+  </TextureShader>
+
+  <!-- The Core (glowing core down a twisting tunnel, after kishimisu) -->
+  <TextureShader minTimeSolo="15" maxTimeSolo="60" minTimeInterpolation="15" maxTimeInterpolation="45" file="..\\TheCore.frag" type="normal" probability="0.7" complexity="2">
+  </TextureShader>
+
+  <!-- Neon Tubes (pulsing neon ring tunnel, after kishimisu) -->
+  <TextureShader minTimeSolo="15" maxTimeSolo="60" minTimeInterpolation="15" maxTimeInterpolation="45" file="..\\NeonTubes.frag" type="normal" probability="0.7" complexity="2">
+  </TextureShader>
+
+  <!-- Psychedelic Pills (floating capsules, after kishimisu) -->
+  <TextureShader minTimeSolo="15" maxTimeSolo="60" minTimeInterpolation="15" maxTimeInterpolation="45" file="..\\PsychedelicPills.frag" type="normal" probability="0.7" complexity="2">
+  </TextureShader>
+
   <!-- Curl Aurora (flowing mood-coloured curtains) -->
   <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="20" maxTimeInterpolation="60" file="..\\CurlAurora.frag" type="normal" probability="0.5" complexity="1">
   </TextureShader>

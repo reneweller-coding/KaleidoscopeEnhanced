@@ -63,6 +63,26 @@
   <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\DiscoGodrays.frag" type="normal" probability="0.5" complexity="2">
   </TextureShader>
 
+  <!-- Inside the System (neon torus lights, after kishimisu) -->
+  <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\InsideSystem.frag" type="normal" probability="0.5" complexity="2">
+  </TextureShader>
+
+  <!-- Vortex (kaleidoscopic vortex tunnel, after kishimisu) -->
+  <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\Vortex.frag" type="normal" probability="0.5" complexity="2">
+  </TextureShader>
+
+  <!-- The Core (glowing core down a twisting tunnel, after kishimisu) -->
+  <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\TheCore.frag" type="normal" probability="0.5" complexity="2">
+  </TextureShader>
+
+  <!-- Neon Tubes (pulsing neon ring tunnel, after kishimisu) -->
+  <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\NeonTubes.frag" type="normal" probability="0.5" complexity="2">
+  </TextureShader>
+
+  <!-- Psychedelic Pills (floating capsules, after kishimisu) -->
+  <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\PsychedelicPills.frag" type="normal" probability="0.5" complexity="2">
+  </TextureShader>
+
   <!-- Plasma Flow (mood-tinted flowing plasma) -->
   <TextureShader minTimeSolo="20" maxTimeSolo="90" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\PlasmaFlow.frag" type="normal" probability="0.5" complexity="1">
   </TextureShader>
