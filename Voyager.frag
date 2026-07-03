@@ -33,6 +33,23 @@ uniform float audioValence;
 vec3 img(vec2 uv) { return (interpolation * texture2D(tex0, uv)
                           + (1.0 - interpolation) * texture2D(tex1, uv)).rgb; }
 
+// Colour from a slowly-drifting crop of the picture, indexed by a scalar so the
+// palette comes from the image and keeps changing over time + with the harmony.
+vec3 imgPal(float x)
+{
+    vec2 cc = vec2(0.5) + 0.32 * vec2(cos(time * 0.045 + audioPhase * 0.12),
+                                      sin(time * 0.033 + audioPhase * 0.09));
+    return img(fract(cc + 0.24 * vec2(cos(x), sin(x * 1.31))));
+}
+
+// Hue rotation around the luminance axis (keeps brightness + saturation).
+vec3 hueRot(vec3 c, float a)
+{
+    vec3  k = vec3(0.57735026919);
+    float cs = cos(a), sn = sin(a);
+    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+}
+
 void main()
 {
     vec2 R = resolution;
@@ -86,9 +103,12 @@ void main()
     float lum = dot(col, vec3(0.299, 0.587, 0.114));
     col = mix(vec3(lum), col, 0.6 + 0.6 * audioValence);
 
-    // The picture colours the light field + drifts through as a faint nebula.
-    col *= mix(vec3(1.0), pic * 1.8, 0.5);
-    col += pic * 0.06 * (0.5 + 0.5 * audioLevel);
+    // Image-driven colour: a drifting crop of the picture (keyed by the effect's
+    // brightness + screen position) modulates the palette, so the colours come
+    // from the image and keep changing (like the kaleidoscope folding crops).
+    float himg = dot(imgPal(dot(col, vec3(0.333)) * 6.0
+                 + length(gl_FragCoord.xy / resolution - 0.5) * 4.0), vec3(0.333));
+    col = hueRot(col, (himg - 0.5) * 3.0 + time * 0.05);
 
     col *= 0.9 + 0.5 * audioLevel;
 

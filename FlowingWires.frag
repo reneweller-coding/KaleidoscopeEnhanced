@@ -32,6 +32,23 @@ mat2 rot(float a) { float c = cos(a), s = sin(a); return mat2(c, -s, s, c); }
 vec3 img(vec2 uv) { return (interpolation * texture2D(tex0, uv)
                           + (1.0 - interpolation) * texture2D(tex1, uv)).rgb; }
 
+// Colour from a slowly-drifting crop of the picture, indexed by a scalar so the
+// palette comes from the image and keeps changing over time + with the harmony.
+vec3 imgPal(float x)
+{
+    vec2 cc = vec2(0.5) + 0.32 * vec2(cos(time * 0.045 + audioPhase * 0.12),
+                                      sin(time * 0.033 + audioPhase * 0.09));
+    return img(fract(cc + 0.24 * vec2(cos(x), sin(x * 1.31))));
+}
+
+// Hue rotation around the luminance axis (keeps brightness + saturation).
+vec3 hueRot(vec3 c, float a)
+{
+    vec3  k = vec3(0.57735026919);
+    float cs = cos(a), sn = sin(a);
+    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+}
+
 // Distance to one truchet wire loop + accumulate its glow into O.  Returns the
 // distance (used by the raymarcher).
 float wire(vec3 p, float t, float T, inout vec4 O)
@@ -78,9 +95,9 @@ void main()
     col = mix(vec3(lum), col, 0.6 + 0.6 * audioValence);
 
     // Image-forward: the picture colours the wires + drifts as a faint nebula.
-    vec3 pic = img(fract(abs(F) / R));
-    col *= mix(vec3(1.0), pic * 1.7, 0.45);
-    col += pic * 0.05 * (0.5 + 0.5 * audioLevel);
+    float himg = dot(imgPal(dot(col, vec3(0.333)) * 6.0
+                 + length(gl_FragCoord.xy / resolution - 0.5) * 4.0), vec3(0.333));
+    col = hueRot(col, (himg - 0.5) * 3.0 + time * 0.05);
     col *= 0.9 + 0.5 * audioLevel;
 
     gl_FragColor = vec4(col, 1.0);
