@@ -23,6 +23,7 @@ uniform float audioDownbeat;    // bigger accent on the bar's "1"
 uniform float audioOnset;       // full-spectrum onset (snares/claps/melodic) → cone pulse
 uniform float time;             // for the slow moving-head beam sweep
 uniform float audioChase;       // 0..1, steps 1/4 each onset → corner-cone colour chase
+uniform float lightShow;        // 1 = stage lamps (cones/haze/mirror-ball/gobo) on, 0 = off
 
 float hash21(vec2 p) { return fract(sin(dot(p, vec2(41.3, 289.1))) * 43758.5453); }
 
@@ -61,7 +62,7 @@ void main()
     // slew-limited beat, so it reads as a soft pump rather than a strobe - easy on
     // the eyes.  Sampled from puv; the corner lights below keep the un-zoomed uv.
     float scenePulse = clamp(audioBeat + 0.4 * audioDownbeat, 0.0, 1.0);
-    vec2  puv = (uv - 0.5) / (1.0 + 0.020 * scenePulse) + 0.5;
+    vec2  puv = (uv - 0.5) / (1.0 + 0.040 * scenePulse) + 0.5;
     vec3  c   = texture2D(tex, puv).rgb;
 
     // Colour temperature (centred so centroid 0.5 ≈ neutral).
@@ -84,7 +85,7 @@ void main()
     // Loudness → brightness, spectral flux → shimmer (kept small so already-bright
     // content does not blow out).  Plus a very gentle brightness lift on the beat,
     // together with the zoom above for a subtle whole-scene pump.
-    c *= (1.0 + 0.12 * audioLevel + 0.06 * audioFlux + 0.05 * scenePulse);
+    c *= (1.0 + 0.12 * audioLevel + 0.06 * audioFlux + 0.10 * scenePulse);
 
     // Bloom / glow: a single tap of a coarse, blurred mip level (mipmaps already
     // generated for the safety mean).  Only clearly-bright areas, gently.
@@ -102,6 +103,8 @@ void main()
     // with a slightly different hue per corner.  Directional, so they read clearly
     // as spotlights yet stay eye-friendly.  audioBeat / audioDownbeat are music-
     // gated upstream, so on speech / silence the lamps stay dark.
+    // Optional (key 'l'); off by default so the scene beat pulse can stand alone.
+    if (lightShow > 0.5)
     {
         float aspect = resolution.x / resolution.y;
         vec2  q      = vec2(uv.x * aspect, uv.y);

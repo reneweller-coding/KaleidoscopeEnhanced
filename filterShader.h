@@ -48,6 +48,12 @@ public:
 	static float trails()     { return s_trailAmount; }
 	static float mood()       { return s_moodStrength; }
 
+	// Stage "lamps" (corner spotlight cones + haze/mirror-ball/gobo light show).
+	// Off by default; toggled with key 'l' and persisted.
+	static void  toggleLightShow() { s_lightShow = (s_lightShow > 0.5f) ? 0.f : 1.f; }
+	static void  setLightShow( bool on ) { s_lightShow = on ? 1.f : 0.f; }
+	static bool  lightShow()  { return s_lightShow > 0.5f; }
+
 	// Human-readable names of the currently active / cross-fading effects (debug overlay).
 	QString activeShaderInfo() const;
 	// Absolute setters (e.g. MIDI knobs map a 0..1 value to the full range).
@@ -182,6 +188,7 @@ private:
 	GLint			m_presentOnsetUni    = -1;
 	GLint			m_presentTimeUni     = -1;
 	GLint			m_presentChaseUni    = -1;
+	GLint			m_presentLampsUni    = -1;
 	float			m_prevMeanLum    = -1.f;   // <0 = uninitialised
 	bool			m_safetyReady    = false;  // false → present pass disabled (safe fallback)
 	int				m_safetyFrame    = 0;      // for sub-sampling the readback
@@ -224,6 +231,7 @@ private:
 	static float	s_reactivity;    // audio-motion master gain (default 1.0)
 	static float	s_trailAmount;   // feedback trail length 0..0.95 (default 0.6)
 	static float	s_moodStrength;  // global mood-grade strength (default 1.0)
+	static float	s_lightShow;     // 0 = corner lamps/light-show off (default), 1 = on
 	static float	clampParam( float v, float lo, float hi )
 	{ return v < lo ? lo : (v > hi ? hi : v); }
 
