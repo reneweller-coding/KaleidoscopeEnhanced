@@ -105,7 +105,8 @@ private:
     int   m_histIdx       = 0;
     float m_beatCooldown  = 0.f;
     static constexpr float kBeatThresholdRatio = 1.32f;   // more sensitive (catches softer kicks)
-    static constexpr float kBeatCooldownFrames = 8.f;
+    static constexpr float kBeatCooldownFrames = 18.f;    // ~180 ms — a kick's decay tail must not re-trigger
+    float m_prevBeatBand = 0.f;   // previous-block beat band (rising-edge test)
 
     // ---- Ambient detection ----
     static constexpr int kAmbientHistLen = 256; // ~6 s

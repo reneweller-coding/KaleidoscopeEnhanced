@@ -546,7 +546,13 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
     // to energy transients than dB). Combined sub+bass catches both:
     //   - Electronic kick drums (body in 60-150 Hz)
     //   - Dark ambient sub-bass pulses (modulation in 20-60 Hz)
-    float beatBand = m_sSubBass * 0.35f + m_sBass * 0.65f;
+    // Uses the RAW per-block RMS, NOT the display-smoothed bands: the smoothed
+    // release kept the level high between kicks, crushing the peak/background
+    // contrast to ~1.9x — any ambient-raised threshold then missed real kicks
+    // entirely (measured: 4 of 32 kicks detected on a plain 120 BPM pattern).
+    // Raw RMS falls to ~0 between kicks -> contrast 5-10x, so real kicks clear
+    // the threshold while slow drone wobble still stays below it.
+    float beatBand = rSub * 0.35f + rBass * 0.65f;
 
     m_bassHistory[m_histIdx] = beatBand;
     m_histIdx = (m_histIdx + 1) % kHistoryLen;
@@ -567,11 +573,16 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
 
     if (m_beatCooldown > 0.f) {
         m_beatCooldown -= 1.f;
-    } else if (histMean > 1e-4f && beatBand > dynThresh * histMean) {
+    } else if (histMean > 1e-4f && beatBand > dynThresh * histMean
+               && beatBand > m_prevBeatBand * 1.15f) {
+        // The rising-edge test (vs. the previous block) makes sure we trigger on
+        // the kick's ATTACK only — a long kick/808 tail that is still above the
+        // threshold when the cooldown expires must not fire a phantom 2nd beat.
         isBeat         = true;
         beatStr        = std::min((beatBand / (histMean * dynThresh)) - 1.f, 1.f);
         m_beatCooldown = kBeatCooldownFrames;
     }
+    m_prevBeatBand = beatBand;
 
     // ---- Logarithmic (dB) normalisation for shader outputs ----
     // Human hearing is logarithmic. dB mapping gives far better perceived
@@ -660,17 +671,29 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
     for (float v : m_levelHistory) { float d = v - mean2; var2 += d * d; }
     var2 /= float(kAmbientHistLen);
 
-    // stddev < 0.07 → ambient/drone; stddev > 0.07 → beat-driven
-    float targetAmbient = 1.f - std::min(std::sqrt(var2) / 0.07f, 1.f);
+    // Near-silence is NOT "ambient drone": pushing the factor up during quiet
+    // intros / pauses used to leave the beat threshold ambient-boosted for ~10 s
+    // into the next song — the detector was measurably deaf (4 of 32 kicks).
+    // Hold the factor while there is no signal to classify.
+    if (level > 0.05f)
+    {
+        // stddev < 0.07 → ambient/drone; stddev > 0.07 → beat-driven
+        float targetAmbient = 1.f - std::min(std::sqrt(var2) / 0.07f, 1.f);
 
-    // Asymmetric transition speed:
-    //   Rising into ambient mode (drone detected): fast, ~2 s  → catch drones quickly.
-    //   Falling back to beat mode: slow, ~10 s → brief silences / pauses don't
-    //   abruptly switch the visualiser back to restless beat behaviour.
-    const float ambSpeedRise = 0.005f;  // 200 frames ≈ 2 s
-    const float ambSpeedFall = 0.001f;  // 1000 frames ≈ 10 s
-    float ambientSpeed = (targetAmbient > m_ambientFactor) ? ambSpeedRise : ambSpeedFall;
-    m_ambientFactor += ambientSpeed * (targetAmbient - m_ambientFactor);
+        // A confidently-detected tempo (onset-envelope autocorrelation) is
+        // positive proof of beat music — steady full-mix electronic tracks have
+        // surprisingly LOW loudness variance, so let rhythm evidence pull the
+        // ambient factor down even when the variance test says "static".
+        targetAmbient *= (1.f - m_acConf);
+
+        // Transition speeds: rising into ambient stays deliberate (~2 s); the
+        // fall back to beat mode is now nearly as fast (~2.5 s) so the beat
+        // threshold recovers quickly when a rhythm starts.
+        const float ambSpeedRise = 0.005f;  // 200 blocks ≈ 2 s
+        const float ambSpeedFall = 0.004f;  // 250 blocks ≈ 2.5 s
+        float ambientSpeed = (targetAmbient > m_ambientFactor) ? ambSpeedRise : ambSpeedFall;
+        m_ambientFactor += ambientSpeed * (targetAmbient - m_ambientFactor);
+    }
 
     // ---- Speed scale envelope ----
     // On beat: m_beatPulse jumps then decays at 0.85×/cycle → 4-frame ramp.
