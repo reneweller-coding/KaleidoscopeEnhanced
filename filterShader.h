@@ -344,6 +344,19 @@ private:
     float m_rotEnergy        = 0.f;   // slowly-slewed rotation-speed envelope (no per-beat jerk)
     float m_chasePhase       = 0.f;   // 0..1, advances 1/4 each onset -> corner-cone colour chase
     float m_prevChaseOnset   = 0.f;   // previous onset value (rising-edge detect for the chase)
+    // Peak-hold + exponential-release envelopes for the transient pulses.  The
+    // analyzer's raw pulses decay at audio-block rate (gone within ~60 ms), far
+    // faster than the photosensitivity rise-slew can follow, so beats looked
+    // flattened; and onset/downbeat used to be uploaded raw (a 0->1 jump within
+    // a single frame).  The envelope holds each peak and releases exponentially,
+    // giving the slew a stable target: visible, smooth pulses.
+    float m_beatEnv          = 0.f;
+    float m_onsetEnv         = 0.f;
+    float m_onsetSmooth      = 0.f;
+    float m_downbeatEnv      = 0.f;
+    float m_downbeatSmooth   = 0.f;
+    float m_gateSmooth       = 0.f;   // slewed music gate (no global reactivity pumping)
+    float m_beatPhasePLL     = 0.f;   // continuous beat phase (no per-beat resync snap)
 	//unsigned int m_effectCombineMinTimeInterpolation;
 	//unsigned int m_effectCombineMaxTimeInterpolation;
 

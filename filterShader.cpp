@@ -1144,9 +1144,31 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
         // while real music (>=~0.6) gets FULL reaction.  Tuned to give genuine
         // music plenty of headroom (so beats/cones stay strong) yet still cut pure
         // speech.  smoothstep over [0.32 .. 0.60].
-        float gate = (audio.musicPresence - 0.32f) / 0.28f;
-        gate = (gate < 0.f) ? 0.f : (gate > 1.f ? 1.f : gate);
-        gate = gate * gate * (3.f - 2.f * gate);          // smoothstep
+        float gateRaw = (audio.musicPresence - 0.32f) / 0.28f;
+        gateRaw = (gateRaw < 0.f) ? 0.f : (gateRaw > 1.f ? 1.f : gateRaw);
+        gateRaw = gateRaw * gateRaw * (3.f - 2.f * gateRaw);   // smoothstep
+        // The gate multiplies EVERY audio signal below, so even slow wobbles of
+        // the music/speech classifier around its threshold used to pump the whole
+        // show up and down.  Slew it so global reactivity fades over >~0.8 s.
+        m_gateSmooth = slewToward(m_gateSmooth, gateRaw, 1.2f, dt);
+        const float gate = m_gateSmooth;
+
+        // Continuous beat phase (PLL).  The analyzer's beatPhase RESYNCS (snaps)
+        // on every detected beat — early/late detections jumped the phase, and
+        // several shaders animate with sin(2*pi*beatPhase) (lava bob, oil zoom,
+        // cube pulse, the rotation's beat-breath), so each resync was a visible
+        // jerk.  Run our own phase at the estimated tempo and PULL it gently
+        // toward the analyzer's phase (wrap-aware): continuous by construction,
+        // and in silence (gate 0) it glides to a halt instead of pulsing on.
+        {
+            float bpm  = 40.f + 160.f * audio.estimatedBPM;
+            float rate = (audio.estimatedBPM > 0.004f) ? (bpm / 60.f) : 0.f;
+            float err  = audio.beatPhase - m_beatPhasePLL;
+            err -= floorf(err + 0.5f);                        // wrap to [-0.5, 0.5)
+            float corr = 2.0f * dt; if (corr > 0.3f) corr = 0.3f;
+            m_beatPhasePLL += (dt * rate + err * corr) * gate;
+            m_beatPhasePLL -= floorf(m_beatPhasePLL);         // keep in [0, 1)
+        }
 
         // Ease rotation direction between +1/-1 so reversals never snap.  Even
         // an instant flip would now only change the *rate*, not the phase, but
@@ -1169,8 +1191,8 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
         // that looked fast but unreactive.)
         float motion = 0.25f * audio.arousal + 0.75f * audio.overallLevel;
 
-        // A gentle in-tempo "breathing" from the continuous beat phase.
-        float beatBreath = 0.5f - 0.5f * cosf(audio.beatPhase * 6.2831853f);
+        // A gentle in-tempo "breathing" from the continuous (PLL) beat phase.
+        float beatBreath = 0.5f - 0.5f * cosf(m_beatPhasePLL * 6.2831853f);
 
         // Rotation angular velocity (rad/s).  The rotation SPEED must change only
         // gradually with the music's overall energy — never jerk on individual
@@ -1192,9 +1214,22 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
                                  + 0.10f * audio.harmonicChange );
         m_audioAdvance += dt * advRate;
 
-        // Slew-limit brightness drivers (photosensitive-safety): a beat may rise
-        // to full over ~150 ms, never in a single frame.  Gated by musicPresence.
-        m_audioBeatSmooth  = slewToward(m_audioBeatSmooth,  audio.beatDecay,    6.0f, dt);
+        // Peak-hold + exponential-release envelopes for the transient pulses.
+        // The analyzer's raw pulses decay at audio-block rate (gone in ~60 ms):
+        // the rise-limited smoothing below could never reach the peak before the
+        // target collapsed, which flattened every beat to a barely-visible blip.
+        // Holding the peak and releasing exponentially gives the slew a stable
+        // target — beats now rise to their FULL strength and breathe out.
+        m_beatEnv     = fmaxf(m_beatEnv     * expf(-dt / 0.30f), audio.beatDecay);
+        m_onsetEnv    = fmaxf(m_onsetEnv    * expf(-dt / 0.22f), audio.onsetStrength);
+        m_downbeatEnv = fmaxf(m_downbeatEnv * expf(-dt / 0.45f), audio.downbeat);
+
+        // Slew-limit the visible values (photosensitive-safety: a rise to full
+        // takes >= ~150 ms, never a single frame).  The envelopes' exponential
+        // release is slower than the fall slew, so the decay stays smooth.
+        m_audioBeatSmooth  = slewToward(m_audioBeatSmooth,  m_beatEnv,     6.0f, dt);
+        m_onsetSmooth      = slewToward(m_onsetSmooth,      m_onsetEnv,    7.0f, dt);
+        m_downbeatSmooth   = slewToward(m_downbeatSmooth,   m_downbeatEnv, 5.0f, dt);
         m_audioLevelSmooth = slewToward(m_audioLevelSmooth, audio.overallLevel, 3.0f, dt);
         m_audioFluxSmooth  = slewToward(m_audioFluxSmooth,  audio.spectralFlux, 3.0f, dt);
 
@@ -1208,8 +1243,9 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
         audioFx.audioRotPhase = m_audioRotPhase;
         audioFx.audioAdvance  = m_audioAdvance;
         audioFx.beatDecay     = m_audioBeatSmooth     * gate;
-        audioFx.onsetStrength = audio.onsetStrength   * gate;
-        audioFx.downbeat      = audio.downbeat        * gate;
+        audioFx.onsetStrength = m_onsetSmooth         * gate;
+        audioFx.downbeat      = m_downbeatSmooth      * gate;
+        audioFx.beatPhase     = m_beatPhasePLL;       // continuous (PLL), no snaps
         audioFx.overallLevel  = m_audioLevelSmooth    * gate;
         audioFx.spectralFlux  = m_audioFluxSmooth     * gate;
         audioFx.stereoWidth   = audio.stereoWidth     * gate;
