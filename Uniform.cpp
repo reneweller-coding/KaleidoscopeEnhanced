@@ -47,7 +47,10 @@ void Uniform::resetParameters()
 	}
 	else if( m_type == BASE_TYPE_INT )
 	{
-		m_data.vi = m_dataMin.vi + (qrand() % (m_dataMax.vi - m_dataMin.vi));
+		// Guard: an <int> with minValue == maxValue used to crash with an
+		// integer division by zero (qrand() % 0).
+		int range = m_dataMax.vi - m_dataMin.vi;
+		m_data.vi = (range > 0) ? m_dataMin.vi + (qrand() % range) : m_dataMin.vi;
 	}
 	else if( m_type == BASE_TYPE_INTERPOLATOR_FLOAT )
 	{
@@ -81,10 +84,13 @@ void Uniform::resetParameters( float time )
 	}
 	else if( m_type == BASE_TYPE_INT )
 	{
-		m_data.vi = m_dataMin.vi + (qrand() % (m_dataMax.vi - m_dataMin.vi));
+		// Guard: an <int> with minValue == maxValue used to crash with an
+		// integer division by zero (qrand() % 0).
+		int range = m_dataMax.vi - m_dataMin.vi;
+		m_data.vi = (range > 0) ? m_dataMin.vi + (qrand() % range) : m_dataMin.vi;
 	}
 	else if( m_type == BASE_TYPE_INTERPOLATOR_FLOAT )
-	{	
+	{
 		//Warning double use of m_dataMax/Min.vf
 		m_dataMin.vf = (float) (m_dataMinMin.vf + (((float)qrand() / (float) RAND_MAX) * (m_dataMinMax.vf - m_dataMinMin.vf)));
 		m_dataMax.vf = (float) (m_dataMaxMin.vf + (((float)qrand() / (float) RAND_MAX) * (m_dataMaxMax.vf - m_dataMaxMin.vf)));
