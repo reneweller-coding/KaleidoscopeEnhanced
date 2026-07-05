@@ -141,18 +141,20 @@ private:
 	GLenum			m_texInternalFormat; // internal format of texture
 	GLenum			m_texFormat;
 	GLenum			m_texType;
-	GLuint			m_fboEffectTexture1; // variable to store framebuffer object id
-	GLuint			m_fboEffectTexture2; // variable to store framebuffer object id
-	GLuint			m_fboEffectCombine1; // variable to store framebuffer object id
-	GLuint			m_fboEffectCombine2; // variable to store framebuffer object id
-	GLuint			m_depthFbo;
+	// Zero-initialised so create*/init* can safely REUSE existing ids instead of
+	// generating fresh ones (leak-proof if a rebuild path is ever re-entered).
+	GLuint			m_fboEffectTexture1 = 0; // variable to store framebuffer object id
+	GLuint			m_fboEffectTexture2 = 0; // variable to store framebuffer object id
+	GLuint			m_fboEffectCombine1 = 0; // variable to store framebuffer object id
+	GLuint			m_fboEffectCombine2 = 0; // variable to store framebuffer object id
+	GLuint			m_depthFbo = 0;
 	GLenum			m_attachmentpoint; // where to attack framebufferobjects
-	GLuint			m_texID1; // texture ids of read/write Textures
-	GLuint			m_texID2;
-	GLuint			m_texIDFBOEffectTexture1;
-	GLuint			m_texIDFBOEffectTexture2;
-	GLuint			m_texIDFBOEffectCombine1;
-	GLuint			m_texIDFBOEffectCombine2;
+	GLuint			m_texID1 = 0; // texture ids of read/write Textures
+	GLuint			m_texID2 = 0;
+	GLuint			m_texIDFBOEffectTexture1 = 0;
+	GLuint			m_texIDFBOEffectTexture2 = 0;
+	GLuint			m_texIDFBOEffectCombine1 = 0;
+	GLuint			m_texIDFBOEffectCombine2 = 0;
 
 	// Target framebuffer for the final on-screen pass (QOpenGLWidget's FBO, not 0).
 	GLuint			m_defaultFBO = 0;
@@ -189,11 +191,28 @@ private:
 	GLint			m_presentTimeUni     = -1;
 	GLint			m_presentChaseUni    = -1;
 	GLint			m_presentLampsUni    = -1;
+	GLint			m_presentSwellUni    = -1;
+	GLint			m_presentBarPhaseUni = -1;
+	GLint			m_presentBloomTexUni = -1;
+	GLint			m_presentUseBloomUni = -1;
 	float			m_prevMeanLum    = -1.f;   // <0 = uninitialised
 	bool			m_safetyReady    = false;  // false → present pass disabled (safe fallback)
 	int				m_safetyFrame    = 0;      // for sub-sampling the readback
 	float			m_lastSafetyScale= 1.f;    // reused between readbacks
 	float			m_safetyAccumDt  = 0.f;    // dt accumulated since last readback
+
+	// ---- Two-pass Gaussian bloom (quarter-res bright-pass + separable blur) ----
+	// Replaces the single-tap mip hack in Present.frag with a proper glow.  On any
+	// setup failure m_bloomReady stays false and Present falls back to the mip path.
+	GLuint			m_texBloom[2]  = { 0, 0 };
+	GLuint			m_fboBloom[2]  = { 0, 0 };
+	GLuint			m_bloomProgId  = 0;
+	GLint			m_bloomTexUni    = -1;
+	GLint			m_bloomResUni    = -1;
+	GLint			m_bloomDirUni    = -1;
+	GLint			m_bloomThreshUni = -1;
+	bool			m_bloomReady   = false;
+	int				m_bloomW = 0, m_bloomH = 0;
 
 	// ---- Feedback / trails (phosphor-style ping-pong) ----
 	GLuint			m_fboTrail[2]   = { 0, 0 };
@@ -280,8 +299,8 @@ private:
 	unsigned int		m_timeTextureInterpolationMax;
 	unsigned int		m_timeTextureSoloMin;
 	unsigned int		m_timeTextureSoloMax;
-	GLuint      m_actTex;
-	GLuint		m_nextTex;
+	GLuint      m_actTex  = 0;
+	GLuint		m_nextTex = 0;
 	int			m_state;
 
     float       m_lastTime;
@@ -357,6 +376,24 @@ private:
     float m_downbeatSmooth   = 0.f;
     float m_gateSmooth       = 0.f;   // slewed music gate (no global reactivity pumping)
     float m_beatPhasePLL     = 0.f;   // continuous beat phase (no per-beat resync snap)
+    // Swell: slow loudness-build envelope (fast avg minus slow avg) — the one
+    // signal that captures AMBIENT dynamics; drives bloom/brightness breathing.
+    float m_swellFast        = 0.f;
+    float m_swellSlow        = 0.f;
+    // Bar tracking on the host: barBeat advances on each PLL wrap and re-syncs
+    // to the analyzer's downbeat; barPhase = (barBeat + pllPhase) / 4.
+    int   m_barBeatHost      = 0;
+    float m_prevPllPhase     = 0.f;
+    float m_prevRawDownbeat  = 0.f;
+    bool  m_downbeatTick     = false; // true for THIS frame when a downbeat lands
+    // Beat-quantised scene changes: when a change becomes due it is held PENDING
+    // until the next downbeat (or a timeout / no music), so cuts land on the "1".
+    bool  m_pendingEffectChange  = false;
+    bool  m_pendingCombineChange = false;
+    bool  m_pendingEffectForced  = false;
+    bool  m_pendingCombineForced = false;
+    float m_pendingEffectAge     = 0.f;
+    float m_pendingCombineAge    = 0.f;
 	//unsigned int m_effectCombineMinTimeInterpolation;
 	//unsigned int m_effectCombineMaxTimeInterpolation;
 

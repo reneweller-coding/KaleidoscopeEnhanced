@@ -24,6 +24,10 @@ uniform float audioOnset;       // full-spectrum onset (snares/claps/melodic) �
 uniform float time;             // for the slow moving-head beam sweep
 uniform float audioChase;       // 0..1, steps 1/4 each onset → corner-cone colour chase
 uniform float lightShow;        // 1 = stage lamps (cones/haze/mirror-ball/gobo) on, 0 = off
+uniform float audioSwell;       // slow loudness build (ambient dynamics) → glow breathing
+uniform float audioBarPhase;    // 0..1 position within the 4-beat bar → per-bar lamp sweep
+uniform sampler2D bloomTex;     // 2-pass Gaussian bloom (quarter res), when useBloom = 1
+uniform float useBloom;         // 1 = bloomTex valid, 0 = fall back to the mip tap
 
 float hash21(vec2 p) { return fract(sin(dot(p, vec2(41.3, 289.1))) * 43758.5453); }
 
@@ -83,15 +87,21 @@ void main()
     c = pow(max(c, 0.0) * 0.78, vec3(1.25));
 
     // Loudness → brightness, spectral flux → shimmer (kept small so already-bright
-    // content does not blow out).  Plus a very gentle brightness lift on the beat,
-    // together with the zoom above for a subtle whole-scene pump.
-    c *= (1.0 + 0.12 * audioLevel + 0.06 * audioFlux + 0.10 * scenePulse);
+    // content does not blow out).  A gentle brightness lift on the beat (with the
+    // zoom above = subtle whole-scene pump), and the slow SWELL lets ambient
+    // builds visibly brighten and fade-outs breathe back down.
+    c *= (1.0 + 0.12 * audioLevel + 0.06 * audioFlux + 0.10 * scenePulse
+              + 0.08 * audioSwell);
 
-    // Bloom / glow: a single tap of a coarse, blurred mip level (mipmaps already
-    // generated for the safety mean).  Only clearly-bright areas, gently.
-    vec3 blurC = texture2D(tex, puv, 4.5).rgb;       // LOD bias → blurred low-res (zoomed with the scene)
-    vec3 bloom = max(blurC - 0.75, 0.0);             // higher threshold = less wash on pale content
-    c += bloom * (0.12 + 0.05 * audioBeat);          // mostly steady (beat accent is in the spotlights)
+    // Bloom / glow.  Preferred: the real two-pass Gaussian (bloomTex, quarter res,
+    // bright-passed) — a proper soft halo.  Fallback: the old single mip tap.
+    // The swell breathes the glow (ambient builds bloom up majestically).
+    vec3 bloom;
+    if (useBloom > 0.5)
+        bloom = texture2D(bloomTex, puv).rgb;
+    else
+        bloom = max(texture2D(tex, puv, 4.5).rgb - 0.75, 0.0);
+    c += bloom * (0.12 + 0.05 * audioBeat + 0.10 * audioSwell);
 
     // Soft highlight knee: compress values above ~0.8 toward white instead of
     // hard-clipping the whole frame to flat white when the grade pushes it high.
@@ -126,13 +136,15 @@ void main()
         vec2 c2 = vec2(0.0,    1.0);
         vec2 c3 = vec2(aspect, 1.0);
 
-        // Moving-head sweep (fixed rate, phase-offset per corner, wider when loud).
+        // Moving-head sweep, synced to the BAR (one full sweep per 4 beats, via
+        // audioBarPhase) with phase offsets per corner; a slow time drift keeps
+        // the heads alive when no tempo is running.  Wider sweep when loud.
         float swAmp = 0.55 + 0.35 * audioLevel;
-        float swRate = 0.5;
-        vec2 d0 = rot2(normalize(ctr-c0), swAmp * sin(time * swRate + 0.0));
-        vec2 d1 = rot2(normalize(ctr-c1), swAmp * sin(time * swRate + 1.7));
-        vec2 d2 = rot2(normalize(ctr-c2), swAmp * sin(time * swRate + 3.3));
-        vec2 d3 = rot2(normalize(ctr-c3), swAmp * sin(time * swRate + 5.0));
+        float swPh  = 6.2831 * audioBarPhase + time * 0.10;
+        vec2 d0 = rot2(normalize(ctr-c0), swAmp * sin(swPh + 0.0));
+        vec2 d1 = rot2(normalize(ctr-c1), swAmp * sin(swPh + 1.7));
+        vec2 d2 = rot2(normalize(ctr-c2), swAmp * sin(swPh + 3.3));
+        vec2 d3 = rot2(normalize(ctr-c3), swAmp * sin(swPh + 5.0));
 
         // Colour CHASE: emphasis cycles through the corners (audioChase steps 1/4
         // on each onset).  Non-active corners keep a 0.45 base so all stay alive.

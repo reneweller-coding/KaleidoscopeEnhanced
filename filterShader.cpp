@@ -89,10 +89,13 @@ FilterShader::FilterShader( )
 , m_texInternalFormat(GL_RGBA8)
 , m_texFormat(GL_RGBA)
 , m_texType(GL_UNSIGNED_BYTE)
-, m_fboEffectTexture1(1)
-, m_fboEffectTexture2(2)
-, m_fboEffectCombine1(1)
-, m_fboEffectCombine2(2)
+// GL object ids MUST start at 0 ("not created yet"): creation code reuses an
+// existing id and only calls glGen* when the id is still 0.  The old dummy
+// values (1/2) made those guards skip creation -> invalid FBOs -> black frames.
+, m_fboEffectTexture1(0)
+, m_fboEffectTexture2(0)
+, m_fboEffectCombine1(0)
+, m_fboEffectCombine2(0)
 , m_attachmentpoint(GL_COLOR_ATTACHMENT0_EXT)
 , m_texID1(0)
 , m_texID2(0)
@@ -107,8 +110,8 @@ FilterShader::FilterShader( )
 , m_timeTexture()
 , m_timeTextureSolo(15.0)//rwrw 30
 , m_timeTextureInterpolation(20.0) //rwrw 50
-, m_actTex(1)
-, m_nextTex(2)
+, m_actTex(0)
+, m_nextTex(0)
 , m_stateTexture(1) //State == 1 => Solo
 , m_lastTime(0.0)
 , m_triggerImageload(false)
@@ -324,10 +327,11 @@ FilterShader::FilterShader(int width, int height, const QString &directory)
 , m_texInternalFormat(GL_RGBA8)
 , m_texFormat(GL_RGBA)
 , m_texType(GL_UNSIGNED_BYTE)
-, m_fboEffectTexture1(1)
-, m_fboEffectTexture2(2)
-, m_fboEffectCombine1(1)
-, m_fboEffectCombine2(2)
+// GL object ids MUST start at 0 (see the note in the default constructor).
+, m_fboEffectTexture1(0)
+, m_fboEffectTexture2(0)
+, m_fboEffectCombine1(0)
+, m_fboEffectCombine2(0)
 , m_attachmentpoint(GL_COLOR_ATTACHMENT0_EXT)
 , m_texID1(0)
 , m_texID2(0)
@@ -346,8 +350,8 @@ FilterShader::FilterShader(int width, int height, const QString &directory)
 , m_timeTextureInterpolation(20.0) //rwrw 50
 , m_timeTextureInterpolationMin(20.0) //rwrw 40
 , m_timeTextureInterpolationMax(80.0) //rwrw 80
-, m_actTex(1)
-, m_nextTex(2)
+, m_actTex(0)
+, m_nextTex(0)
 , m_stateTexture(1) //State == 1 => Solo
 , m_lastTime(0.0)
 , m_triggerImageload(false)
@@ -899,6 +903,17 @@ void FilterShader::resize(int width, int height)
 			glGenerateMipmapEXT( GL_TEXTURE_2D );
 		}
 
+	// Resize the bloom buffers (quarter render-res).
+	m_bloomW = m_width  / 4;  if( m_bloomW < 8 ) m_bloomW = 8;
+	m_bloomH = m_height / 4;  if( m_bloomH < 8 ) m_bloomH = 8;
+	for( int i = 0; i < 2; ++i )
+		if( m_texBloom[i] != 0 )
+		{
+			glBindTexture( GL_TEXTURE_2D, m_texBloom[i] );
+			glTexImage2D( GL_TEXTURE_2D, 0, m_texInternalFormat, m_bloomW, m_bloomH, 0,
+			              m_texFormat, m_texType, NULL );
+		}
+
 	glBindTexture( GL_TEXTURE_2D, 0 );
 	checkGLErrors("resize()");
 }
@@ -952,9 +967,47 @@ void FilterShader::setupSafety()
 		m_presentTimeUni     = glGetUniformLocation( m_presentProgId, "time" );
 		m_presentChaseUni    = glGetUniformLocation( m_presentProgId, "audioChase" );
 		m_presentLampsUni    = glGetUniformLocation( m_presentProgId, "lightShow" );
+		m_presentSwellUni    = glGetUniformLocation( m_presentProgId, "audioSwell" );
+		m_presentBarPhaseUni = glGetUniformLocation( m_presentProgId, "audioBarPhase" );
+		m_presentBloomTexUni = glGetUniformLocation( m_presentProgId, "bloomTex" );
+		m_presentUseBloomUni = glGetUniformLocation( m_presentProgId, "useBloom" );
 	}
 
 	m_safetyReady = fboOk && (m_presentProgId != 0) && (m_presentTexUni >= 0);
+
+	// ---- Two-pass Gaussian bloom: quarter-res ping-pong + blur shader ----
+	// (A real separable blur instead of the old single-mip tap.)  On failure
+	// m_bloomReady stays false and Present.frag falls back to the mip path.
+	m_bloomW = m_width  / 4;  if( m_bloomW < 8 ) m_bloomW = 8;
+	m_bloomH = m_height / 4;  if( m_bloomH < 8 ) m_bloomH = 8;
+	bool bloomOk = true;
+	for( int i = 0; i < 2; ++i )
+	{
+		if( m_texBloom[i] == 0 ) glGenTextures( 1, &m_texBloom[i] );
+		glBindTexture( GL_TEXTURE_2D, m_texBloom[i] );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+		glTexImage2D( GL_TEXTURE_2D, 0, m_texInternalFormat, m_bloomW, m_bloomH, 0,
+		              m_texFormat, m_texType, NULL );
+		if( m_fboBloom[i] == 0 ) glGenFramebuffersEXT( 1, &m_fboBloom[i] );
+		glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_fboBloom[i] );
+		glFramebufferTexture2DEXT( GL_FRAMEBUFFER_EXT, m_attachmentpoint,
+		                           GL_TEXTURE_2D, m_texBloom[i], 0 );
+		bloomOk = bloomOk && checkFramebufferStatus();
+	}
+	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, 0 );
+	glBindTexture( GL_TEXTURE_2D, 0 );
+	if( m_bloomProgId == 0 )
+	{
+		m_bloomProgId    = setShaders( "..\\standard.vert", "..\\BloomBlur.frag" );
+		m_bloomTexUni    = glGetUniformLocation( m_bloomProgId, "tex" );
+		m_bloomResUni    = glGetUniformLocation( m_bloomProgId, "resolution" );
+		m_bloomDirUni    = glGetUniformLocation( m_bloomProgId, "dir" );
+		m_bloomThreshUni = glGetUniformLocation( m_bloomProgId, "threshold" );
+	}
+	m_bloomReady = bloomOk && (m_bloomProgId != 0) && (m_bloomTexUni >= 0);
 
 	// ---- Feedback / trails ping-pong buffers (mipmapped: present reads them) ----
 	bool trailOk = true;
@@ -1170,6 +1223,32 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
             m_beatPhasePLL -= floorf(m_beatPhasePLL);         // keep in [0, 1)
         }
 
+        // Bar tracking: the bar position advances on each PLL wrap and re-syncs
+        // to the analyzer's accent-detected downbeat.  downbeatTick marks the
+        // exact frame a downbeat lands, so scene changes can be quantised onto
+        // the musical "1"; barPhase (0..1 over 4 beats) goes to the shaders for
+        // slow, in-tempo per-bar movement.
+        if (m_beatPhasePLL < m_prevPllPhase - 0.5f)            // phase wrapped
+            m_barBeatHost = (m_barBeatHost + 1) & 3;
+        m_prevPllPhase = m_beatPhasePLL;
+        m_downbeatTick = (audio.downbeat > 0.9f && m_prevRawDownbeat <= 0.9f);
+        if (m_downbeatTick)
+            m_barBeatHost = 0;
+        m_prevRawDownbeat = audio.downbeat;
+
+        // Swell: a slow loudness-build envelope (fast average minus slow average)
+        // — rises while the music builds, falls in fade-outs.  THE ambient-motion
+        // signal: level is too fast and arousal too sluggish to show a drone
+        // swelling.  Drives bloom/brightness breathing + a gentle forward surge.
+        {
+            float aF = 1.f - expf(-dt / 1.5f);
+            float aS = 1.f - expf(-dt / 8.0f);
+            m_swellFast += aF * (audio.overallLevel - m_swellFast);
+            m_swellSlow += aS * (audio.overallLevel - m_swellSlow);
+        }
+        float swell = (m_swellFast - m_swellSlow) * 4.f;
+        swell = (swell < 0.f) ? 0.f : (swell > 1.f ? 1.f : swell);
+
         // Ease rotation direction between +1/-1 so reversals never snap.  Even
         // an instant flip would now only change the *rate*, not the phase, but
         // easing keeps the velocity change graceful too.
@@ -1211,7 +1290,8 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
         // with only a whisper of steady loudness, so busy passages surge briefly.
         float advRate = kReactivity * gate
                       * ( 0.015f + 0.08f * audio.spectralFlux + 0.02f * motion
-                                 + 0.10f * audio.harmonicChange );
+                                 + 0.10f * audio.harmonicChange
+                                 + 0.03f * swell );   // ambient builds surge gently
         m_audioAdvance += dt * advRate;
 
         // Peak-hold + exponential-release envelopes for the transient pulses.
@@ -1224,10 +1304,22 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
         m_onsetEnv    = fmaxf(m_onsetEnv    * expf(-dt / 0.22f), audio.onsetStrength);
         m_downbeatEnv = fmaxf(m_downbeatEnv * expf(-dt / 0.45f), audio.downbeat);
 
+        // Tempo-locked pulse: when the rhythm is confidently periodic, blend a
+        // pulse derived from the CONTINUOUS beat phase into the beat target — the
+        // visible pulse then sits exactly on the tempo grid and keeps pulsing
+        // through the occasional missed kick (detection gaps no longer stutter
+        // the rhythm).  Its rise (~1/4 beat) is inherently slower than the slew
+        // limit, so photosensitivity safety is unaffected.
+        float conf = (audio.rhythmStrength - 0.40f) / 0.40f;
+        conf = (conf < 0.f) ? 0.f : (conf > 1.f ? 1.f : conf);
+        float tri  = 1.f - 2.f * fminf(m_beatPhasePLL, 1.f - m_beatPhasePLL);
+        float phasePulse = tri * tri * tri;          // narrow pulse peaked ON the grid
+        float beatTarget = fmaxf(m_beatEnv, 0.8f * conf * phasePulse);
+
         // Slew-limit the visible values (photosensitive-safety: a rise to full
         // takes >= ~150 ms, never a single frame).  The envelopes' exponential
         // release is slower than the fall slew, so the decay stays smooth.
-        m_audioBeatSmooth  = slewToward(m_audioBeatSmooth,  m_beatEnv,     6.0f, dt);
+        m_audioBeatSmooth  = slewToward(m_audioBeatSmooth,  beatTarget,    6.0f, dt);
         m_onsetSmooth      = slewToward(m_onsetSmooth,      m_onsetEnv,    7.0f, dt);
         m_downbeatSmooth   = slewToward(m_downbeatSmooth,   m_downbeatEnv, 5.0f, dt);
         m_audioLevelSmooth = slewToward(m_audioLevelSmooth, audio.overallLevel, 3.0f, dt);
@@ -1246,6 +1338,8 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
         audioFx.onsetStrength = m_onsetSmooth         * gate;
         audioFx.downbeat      = m_downbeatSmooth      * gate;
         audioFx.beatPhase     = m_beatPhasePLL;       // continuous (PLL), no snaps
+        audioFx.swell         = swell * gate;
+        audioFx.barPhase      = (float(m_barBeatHost) + m_beatPhasePLL) * 0.25f;
         audioFx.overallLevel  = m_audioLevelSmooth    * gate;
         audioFx.spectralFlux  = m_audioFluxSmooth     * gate;
         audioFx.stereoWidth   = audio.stereoWidth     * gate;
@@ -1347,22 +1441,38 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 		bool forced = m_forceEffectChange;
 		if( ts > m_timeInterpolationEffectTexture || (forced && ts > 0.6f) )
 		{
-			m_forceEffectChange = false;
+			m_forceEffectChange   = false;
+			m_pendingEffectChange = true;
+			m_pendingEffectForced = m_pendingEffectForced || forced;
+		}
 
-			m_stateInterpolationEffectTexture = 1;
+		// Beat-quantised: a due change is held PENDING until the next downbeat
+		// lands, so cuts fall on the musical "1".  A timeout keeps weak/undetected
+		// beats from stalling the show, and without music we cut immediately.
+		if( m_pendingEffectChange )
+		{
+			m_pendingEffectAge += timeSinceLastFrameSec;
+			if( m_downbeatTick || m_pendingEffectAge > 2.5f || m_gateSmooth < 0.25f )
+			{
+				bool forcedGo         = m_pendingEffectForced;
+				m_pendingEffectChange = false;
+				m_pendingEffectForced = false;
+				m_pendingEffectAge    = 0.f;
 
-			unsigned int timeAct = m_effectTextures[m_actEffectTexture]->getTimeInterpolation();
-			unsigned int timeNext = m_effectTextures[m_nextEffectTexture]->getTimeInterpolation();
+				m_stateInterpolationEffectTexture = 1;
 
-			// A manual ('n') cut uses a short, snappy cross-fade so it is clearly a
-			// switch; a natural change uses the config's (long) interpolation time.
-			m_timeInterpolationEffectTexture = forced ? 0.8f
-			                  : (float) (std::min( timeAct, timeNext)) / m_timingScale;
+				unsigned int timeAct = m_effectTextures[m_actEffectTexture]->getTimeInterpolation();
+				unsigned int timeNext = m_effectTextures[m_nextEffectTexture]->getTimeInterpolation();
 
-			
-			m_effectTextures[m_nextEffectTexture]->startInterpolators();
+				// A manual ('n') cut uses a short, snappy cross-fade so it is clearly a
+				// switch; a natural change uses the config's (long) interpolation time.
+				m_timeInterpolationEffectTexture = forcedGo ? 0.8f
+				                  : (float) (std::min( timeAct, timeNext)) / m_timingScale;
 
-			m_timeEffectTexture.start();
+				m_effectTextures[m_nextEffectTexture]->startInterpolators();
+
+				m_timeEffectTexture.start();
+			}
 		}
 
 	}
@@ -1527,20 +1637,35 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 		bool forcedC = m_forceCombineChange;
 		if( ts > m_timeInterpolationEffectCombine || (forcedC && ts > 0.6f) )
 		{
-			m_forceCombineChange = false;
+			m_forceCombineChange   = false;
+			m_pendingCombineChange = true;
+			m_pendingCombineForced = m_pendingCombineForced || forcedC;
+		}
 
-			m_stateInterpolationEffectCombine = 1;
+		// Beat-quantised, like the texture-effect change above.
+		if( m_pendingCombineChange )
+		{
+			m_pendingCombineAge += timeSinceLastFrameSec;
+			if( m_downbeatTick || m_pendingCombineAge > 2.5f || m_gateSmooth < 0.25f )
+			{
+				bool forcedGo          = m_pendingCombineForced;
+				m_pendingCombineChange = false;
+				m_pendingCombineForced = false;
+				m_pendingCombineAge    = 0.f;
 
-			unsigned int timeAct = m_effectCombines[m_actEffectCombine]->getTimeInterpolation();
-			unsigned int timeNext = m_effectCombines[m_nextEffectCombine]->getTimeInterpolation();
+				m_stateInterpolationEffectCombine = 1;
 
-			// Manual ('n') cut → short snappy cross-fade; natural change → config time.
-			m_timeInterpolationEffectCombine = forcedC ? 0.8f
-			                  : (float) (std::min( timeAct, timeNext)) / m_timingScale;
+				unsigned int timeAct = m_effectCombines[m_actEffectCombine]->getTimeInterpolation();
+				unsigned int timeNext = m_effectCombines[m_nextEffectCombine]->getTimeInterpolation();
 
-			m_effectCombines[m_nextEffectCombine]->startInterpolators();
+				// Manual ('n') cut → short snappy cross-fade; natural change → config time.
+				m_timeInterpolationEffectCombine = forcedGo ? 0.8f
+				                  : (float) (std::min( timeAct, timeNext)) / m_timingScale;
 
-			m_timeEffectCombine.start();
+				m_effectCombines[m_nextEffectCombine]->startInterpolators();
+
+				m_timeEffectCombine.start();
+			}
 		}
 
 	}
@@ -1768,6 +1893,30 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 			m_safetyAccumDt = 0.f;
 		}
 
+		// ---- Two-pass Gaussian bloom (quarter res) ----
+		// Pass 1 extracts the brights from the fresh frame + blurs horizontally
+		// while downsampling; pass 2 blurs vertically.  Present adds the result.
+		if( m_bloomReady )
+		{
+			glUseProgram( m_bloomProgId );
+			glActiveTexture( GL_TEXTURE0 );
+
+			glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_fboBloom[0] );
+			glViewport( 0, 0, m_bloomW, m_bloomH );
+			glBindTexture( GL_TEXTURE_2D, presentSource );
+			glUniform1i( m_bloomTexUni, 0 );
+			if( m_bloomResUni    >= 0 ) glUniform2f( m_bloomResUni, (float)m_bloomW, (float)m_bloomH );
+			if( m_bloomDirUni    >= 0 ) glUniform2f( m_bloomDirUni, 1.f, 0.f );
+			if( m_bloomThreshUni >= 0 ) glUniform1f( m_bloomThreshUni, 0.70f );
+			drawWindow();
+
+			glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_fboBloom[1] );
+			glBindTexture( GL_TEXTURE_2D, m_texBloom[0] );
+			if( m_bloomDirUni    >= 0 ) glUniform2f( m_bloomDirUni, 0.f, 1.f );
+			if( m_bloomThreshUni >= 0 ) glUniform1f( m_bloomThreshUni, 0.f );
+			drawWindow();
+		}
+
 		// The present pass is the ONLY one at full display resolution — it upscales
 		// the render-resolution result to the window.
 		glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_defaultFBO );
@@ -1776,6 +1925,16 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 		glActiveTexture( GL_TEXTURE0 );
 		glBindTexture( GL_TEXTURE_2D, presentSource );
 		glUniform1i( m_presentTexUni, 0 );
+		if( m_bloomReady && m_presentBloomTexUni >= 0 )
+		{
+			glActiveTexture( GL_TEXTURE1 );
+			glBindTexture( GL_TEXTURE_2D, m_texBloom[1] );
+			glUniform1i( m_presentBloomTexUni, 1 );
+			glActiveTexture( GL_TEXTURE0 );
+		}
+		if( m_presentUseBloomUni >= 0 ) glUniform1f( m_presentUseBloomUni, m_bloomReady ? 1.f : 0.f );
+		if( m_presentSwellUni    >= 0 ) glUniform1f( m_presentSwellUni,    audioFx.swell );
+		if( m_presentBarPhaseUni >= 0 ) glUniform1f( m_presentBarPhaseUni, audioFx.barPhase );
 		if( m_presentResUni   >= 0 ) glUniform2f( m_presentResUni, (float)m_displayW, (float)m_displayH );
 		if( m_presentScaleUni >= 0 ) glUniform1f( m_presentScaleUni, scale );
 		// Global mood grade — gated values (neutral in non-music mode), scaled by the
@@ -1847,8 +2006,10 @@ void FilterShader::drawWindow()
  */
 void FilterShader::initFBO(GLuint &fboEffect, GLuint &texIDEffectTexture)
 {
-	// create FBO (off-screen framebuffer)
-    glGenFramebuffersEXT( 1, &fboEffect ); 
+	// create FBO (off-screen framebuffer) — reuse the id if it already exists
+	// (re-entering this path must re-attach, not leak a fresh FBO)
+    if( fboEffect == 0 )
+        glGenFramebuffersEXT( 1, &fboEffect );
 
     // bind offscreen framebuffer (that is, skip the window-specific render target)
     glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, fboEffect );
@@ -1910,7 +2071,8 @@ void FilterShader::createFBOTexture( GLuint &texID )
 {
 	checkGLErrors("createTextures() 0");
 
-    glGenTextures( 1, &texID );
+    if( texID == 0 )                 // reuse on re-entry (no leak)
+        glGenTextures( 1, &texID );
 
     // set up texture
     setupFBOTexture( texID );
@@ -1949,9 +2111,8 @@ void FilterShader::createTexture()
 {
 	checkGLErrors("createTextures() 0");
 
-
-    glGenTextures( 1, &m_actTex );
-    glGenTextures( 1, &m_nextTex );
+    if( m_actTex  == 0 ) glGenTextures( 1, &m_actTex );   // reuse on re-entry
+    if( m_nextTex == 0 ) glGenTextures( 1, &m_nextTex );
     //glGenTextures( 1, &m_texID3 );
     // set up texture
 

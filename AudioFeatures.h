@@ -219,6 +219,19 @@ struct AudioFeatures
     // Derived from arousal and ambientFactor in AudioAnalyzer::processBlock().
     float timingScale = 1.f;
 
+    // swell: slow loudness-swell envelope (host-filled, like the phases below).
+    //   The difference between a fast (~1.5 s) and a slow (~8 s) loudness average:
+    //   rises when the music builds/swells, falls in fade-outs.  The one signal
+    //   that captures AMBIENT dynamics — level is too fast, arousal too slow.
+    //   Drives bloom breathing / gentle brightness; uploaded as `audioSwell`.
+    float swell = 0.f;
+
+    // barPhase: continuous 0..1 position within the BAR (4 beats), from the
+    //   host's beat-phase PLL + downbeat sync (host-filled).  For slow, in-tempo
+    //   movement (per-bar sweeps) between the fast beat pulse and minute-scale
+    //   drift.  Uploaded as `audioBarPhase`.
+    float barPhase = 0.f;
+
     // ---- Host-integrated motion phases ----
     // NOT produced by AudioAnalyzer; filled in once per frame by
     // FilterShader::paint().  Audio-driven motion must never be expressed as a
