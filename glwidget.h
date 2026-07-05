@@ -3,6 +3,10 @@
 
 #include <vector>
 #include <iostream>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
+#include <deque>
 
 #include <QtOpenGLWidgets/QOpenGLWidget>
 #include <QtGui/QImage>
@@ -78,6 +82,21 @@ protected:
 	qint64          m_recLastFrame  = 0;
 	QString         m_recConcat;                 // ffmpeg concat list being built
 	std::vector<unsigned char> m_recBuf;         // glReadPixels scratch
+
+	// Async encoder: mirror/scale/JPEG used to run synchronously in paintGL and
+	// throttled rendering to ~18 fps while recording.  Now only glReadPixels (+ a
+	// memcpy) stays on the GL thread; a single worker thread (order-preserving)
+	// does the image work.  A bounded queue drops frames instead of ballooning
+	// memory if the encoder can't keep up; the dropped time is added to the next
+	// frame's duration so the video timeline stays correct.
+	struct RecJob { QImage img; QString path; };
+	std::thread             m_recThread;
+	std::mutex              m_recMx;
+	std::condition_variable m_recCv;
+	std::deque<RecJob>      m_recQueue;
+	bool                    m_recQuit    = false;
+	float                   m_recCarryDur = 0.f;  // duration of dropped frames
+	void                    recWorker();          // worker-thread loop
 
 	void traverseConfigurations( const QString& dirname, std::vector<Configuration *> &configurationList );
 
