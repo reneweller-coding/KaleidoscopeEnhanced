@@ -160,7 +160,8 @@ private:
     float m_downbeatPulse   = 0.f;    // decaying accent on the bar's "1"
     int   m_kickCount       = 0;      // counts detected kicks (for downbeat every 4)
     float m_prevBeatPhase   = 0.f;    // previous beatPhase (for downbeat wrap detection)
-    int   m_barBeat         = 0;      // beat-within-bar counter 0..3 (downbeat on 0)
+    int   m_barBeat         = 0;      // beat-within-bar counter 0..3
+    float m_barAccum[4]     = {};     // per-bar-position accent strength (argmax = the "1")
 
     // ---- Autocorrelation tempo (fixed-rate onset envelope) ----
     static constexpr int kEnvRate   = 100;   // onset-envelope sample rate (Hz)

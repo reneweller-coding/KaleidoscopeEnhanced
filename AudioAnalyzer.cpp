@@ -893,13 +893,24 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
     // ---- BPM estimation from inter-beat intervals ----
     // Store the time (in samples) between the last kBPMHistLen beats.
     // Smooth the resulting BPM to avoid jitter.
+    // Octave folding: tempo estimators readily lock onto half or double the true
+    // tempo (kicks on every 2nd beat, or a busy hi-hat grid).  Fold every
+    // estimate into the canonical [70..180) BPM dance range — visually, pulsing
+    // at exactly half/double tempo is still ON the grid, so a folded estimate is
+    // always safe, while an unfolded 240 would pulse between the beats.
+    auto foldBPM = [](float bpm) {
+        if (bpm < 1.f) return bpm;
+        while (bpm <  70.f) bpm *= 2.f;
+        while (bpm >= 180.f) bpm *= 0.5f;
+        return bpm;
+    };
     float estimatedBPM = m_smoothedBPM;
     if (isBeat) {
         float intervalFrames = m_frameCounter - m_lastBeatFrame;
         m_lastBeatFrame = m_frameCounter;
         if (intervalFrames > 0.f && intervalFrames < float(sampleRate) * 3.f) {
             // Convert sample interval to BPM
-            float bpm = float(sampleRate) * 60.f / intervalFrames;
+            float bpm = foldBPM(float(sampleRate) * 60.f / intervalFrames);
             m_beatIntervals[m_bpmIdx] = bpm;
             m_bpmIdx = (m_bpmIdx + 1) % kBPMHistLen;
 
@@ -914,9 +925,11 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
     // Refine the tempo with the autocorrelation estimate when it is confident
     // (robust for tracks where the kick-based inter-beat estimate is noisy).
     if (m_acConf > 0.35f && m_acBPM > 1.f) {
-        if (m_smoothedBPM < 1.f) m_smoothedBPM = m_acBPM;
-        else                     m_smoothedBPM = 0.97f * m_smoothedBPM + 0.03f * m_acBPM;
+        float acFolded = foldBPM(m_acBPM);
+        if (m_smoothedBPM < 1.f) m_smoothedBPM = acFolded;
+        else                     m_smoothedBPM = 0.97f * m_smoothedBPM + 0.03f * acFolded;
     }
+    m_smoothedBPM = foldBPM(m_smoothedBPM);
 
     // Normalise BPM to [0,1] over 40..200 BPM — every frame, not only on beats.
     estimatedBPM = std::max(0.f, std::min((m_smoothedBPM - 40.f) / 160.f, 1.f));
@@ -948,11 +961,22 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
         }
     }
 
-    // Downbeat: pulse on the bar's "1" — every 4th beat, detected as a wrap of the
-    // continuous beat phase (works whenever a tempo is known).
+    // True downbeat (bar tracking).  Every detected beat's strength is
+    // accumulated into its position within the 4-beat bar (with per-bar decay);
+    // the consistently-strongest position is the musical "1" — instead of the
+    // old "every 4th wrap from an arbitrary start", the accent now lands on the
+    // actual bar line (kick/accent on the 1 outweighs snares on 2 & 4).
+    if (isBeat) {
+        // A beat firing just before the phase wrap belongs to the NEXT position.
+        int slot = (m_prevBeatPhase > 0.5f) ? ((m_barBeat + 1) & 3) : m_barBeat;
+        m_barAccum[slot] = 0.80f * m_barAccum[slot] + (0.4f + beatStr);
+    }
     if (m_smoothedBPM > 1.f && m_prevBeatPhase > 0.65f && beatPhase < 0.35f) {
         m_barBeat = (m_barBeat + 1) & 3;
-        if (m_barBeat == 0) m_downbeatPulse = 1.f;
+        int best = 0;
+        for (int k = 1; k < 4; ++k)
+            if (m_barAccum[k] > m_barAccum[best]) best = k;
+        if (m_barBeat == best) m_downbeatPulse = 1.f;
     }
     m_prevBeatPhase = beatPhase;
     float downbeat = m_downbeatPulse;
