@@ -113,6 +113,11 @@ GLwidget::GLwidget( QWidget *parent )
 
 GLwidget::~GLwidget()
 {
+	// Closing mid-recording: finalise cleanly (drains + joins the encoder worker).
+	if (m_recording) {
+		m_recording = false;
+		finishRecording();
+	}
 	if (m_audioAnalyzer) {
 		m_audioAnalyzer->stop();
 		m_audioAnalyzer->wait();
@@ -808,9 +813,13 @@ void GLwidget::toggleRecording()
 		QDir().mkpath( m_recDir );
 		m_recFrame = 0;
 		m_recConcat.clear();
+		m_recCarryDur  = 0.f;
 		m_recLastFrame = m_fpsTimer.elapsed();
 		if( m_audioAnalyzer )
 			m_audioAnalyzer->startRecording( m_recDir + "/audio.wav" );
+		// Start the encoder worker (single thread -> frames stay in order).
+		m_recQuit = false;
+		m_recThread = std::thread( &GLwidget::recWorker, this );
 		m_recording = true;
 		fprintf( stderr, "REC start -> %s\n", m_recDir.toLocal8Bit().constData() );
 	}
@@ -821,8 +830,34 @@ void GLwidget::toggleRecording()
 	}
 }
 
-// Grab the freshly-rendered frame (clean, before any overlay) at ~30 fps and save
-// it as a JPG, building the ffmpeg concat list with the real per-frame durations.
+// Encoder worker: mirrors, scales and JPEG-encodes queued frames off the GL
+// thread, so recording no longer throttles rendering.
+void GLwidget::recWorker()
+{
+	for(;;)
+	{
+		RecJob job;
+		{
+			std::unique_lock<std::mutex> lk( m_recMx );
+			m_recCv.wait( lk, [this]{ return m_recQuit || !m_recQueue.empty(); } );
+			if( m_recQueue.empty() )
+			{
+				if( m_recQuit ) return;      // quit only after draining
+				continue;
+			}
+			job = std::move( m_recQueue.front() );
+			m_recQueue.pop_front();
+		}
+		int h = job.img.height();
+		QImage out = job.img.mirrored( false, true )               // GL is bottom-up
+		                .scaledToHeight( h > 720 ? 720 : h, Qt::SmoothTransformation );
+		out.save( job.path, "JPG", 85 );
+	}
+}
+
+// Grab the freshly-rendered frame (clean, before any overlay) at ~30 fps and hand
+// it to the encoder worker; only glReadPixels + one memcpy run on the GL thread.
+// The ffmpeg concat list is built here with the real per-frame durations.
 void GLwidget::captureFrame()
 {
 	qint64 now = m_fpsTimer.elapsed();
@@ -837,13 +872,24 @@ void GLwidget::captureFrame()
 	glReadPixels( 0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, m_recBuf.data() );
 
 	QImage img( m_recBuf.data(), w, h, QImage::Format_RGBA8888 );
-	QImage out = img.mirrored( false, true )                       // GL is bottom-up
-	                .scaledToHeight( h > 720 ? 720 : h, Qt::SmoothTransformation );
 	QString fn = QString("%1/frame_%2.jpg").arg(m_recDir).arg(m_recFrame, 6, 10, QChar('0'));
-	out.save( fn, "JPG", 85 );
+
+	// Bounded queue: if the encoder can't keep up, DROP this frame (its duration
+	// is carried into the next one) instead of growing memory without limit.
+	{
+		std::lock_guard<std::mutex> lk( m_recMx );
+		if( m_recQueue.size() >= 8 )
+		{
+			m_recCarryDur += dur;
+			return;
+		}
+		m_recQueue.push_back( RecJob{ img.copy(), fn } );   // deep copy (buffer is reused)
+	}
+	m_recCv.notify_one();
 
 	m_recConcat += QString("file 'frame_%1.jpg'\nduration %2\n")
-	               .arg(m_recFrame, 6, 10, QChar('0')).arg(dur, 0, 'f', 4);
+	               .arg(m_recFrame, 6, 10, QChar('0')).arg(dur + m_recCarryDur, 0, 'f', 4);
+	m_recCarryDur = 0.f;
 	m_recFrame++;
 }
 
@@ -851,6 +897,18 @@ void GLwidget::captureFrame()
 // ffmpeg to mux the frames + audio into kaleidoscope.mp4.
 void GLwidget::finishRecording()
 {
+	// Drain + stop the encoder worker (it exits only once the queue is empty,
+	// so every queued frame is still written before the mux starts).
+	if( m_recThread.joinable() )
+	{
+		{
+			std::lock_guard<std::mutex> lk( m_recMx );
+			m_recQuit = true;
+		}
+		m_recCv.notify_all();
+		m_recThread.join();
+	}
+
 	if( m_audioAnalyzer )
 		m_audioAnalyzer->stopRecording();      // flushes + closes the WAV
 
