@@ -302,6 +302,10 @@ void EffectShader::applyAudioFeatures(const AudioFeatures &f)
     GLint locStBandL  = glGetUniformLocation(m_sh_prog_id, "audioStereoL");
     GLint locStBandR  = glGetUniformLocation(m_sh_prog_id, "audioStereoR");
     GLint locChroma   = glGetUniformLocation(m_sh_prog_id, "audioChromaHue");
+    // Slow loudness swell (ambient dynamics) + continuous bar phase (0..1 over
+    // 4 beats) for slow in-tempo movement.
+    GLint locSwell    = glGetUniformLocation(m_sh_prog_id, "audioSwell");
+    GLint locBarPh    = glGetUniformLocation(m_sh_prog_id, "audioBarPhase");
 
     if (locArousal  >= 0) glUniform1f(locArousal,  f.arousal);
     if (locValence  >= 0) glUniform1f(locValence,  f.valence);
@@ -317,6 +321,8 @@ void EffectShader::applyAudioFeatures(const AudioFeatures &f)
     if (locStBandL  >= 0) glUniform3f(locStBandL,  f.stereoLowL, f.stereoMidL, f.stereoHighL);
     if (locStBandR  >= 0) glUniform3f(locStBandR,  f.stereoLowR, f.stereoMidR, f.stereoHighR);
     if (locChroma   >= 0) glUniform1f(locChroma,   f.chromaHue);
+    if (locSwell    >= 0) glUniform1f(locSwell,    f.swell);
+    if (locBarPh    >= 0) glUniform1f(locBarPh,    f.barPhase);
 
     // Fine-grained 32-band spectrum for the analyzer effects (audioSpectrum[32]).
     GLint locSpectrum = glGetUniformLocation(m_sh_prog_id, "audioSpectrum");

@@ -272,6 +272,23 @@ Audio is captured via WASAPI loopback (`AudioAnalyzer`) and analysed in real tim
 - **Stereo-separated spectrum:** the analyser also splits each channel into
   low/mid/high bands, so the `StereoSpectrum` effect can show the left channel on
   one side and the right on the other, with the centre seam glowing on wide mixes.
+- **Beat-quantised scene changes:** a due effect/combine change is held until the
+  next **downbeat**, so cuts land on the musical "1" (with a timeout so a weak
+  beat never stalls the show; immediate without music).
+- **Tempo-locked pulse:** with a confident rhythm, the visible beat pulse blends
+  in a pulse from the continuous beat-phase PLL — it sits exactly on the tempo
+  grid and keeps pulsing through occasionally missed kicks.  Tempo estimates are
+  **octave-folded** into 70–180 BPM (no half/double-tempo flicker), and the
+  **downbeat** is found by accent strength per bar position (the real "1", not
+  every-4th-from-anywhere).
+- **Swell & bar phase:** `audioSwell` (slow loudness build, THE ambient-dynamics
+  signal) breathes the bloom/brightness and gently surges the motion;
+  `audioBarPhase` (0..1 across the 4-beat bar) drives slow in-tempo movement
+  (e.g. the stage lamps sweep once per bar).  Both are shader uniforms.
+- **Real bloom:** a two-pass Gaussian bloom (quarter-res bright-pass + separable
+  blur) replaces the old single-mip glow — soft halos around bright detail.
+- **Recording** (`r`) now encodes JPEGs on a worker thread, so capturing no
+  longer throttles the render loop.
 
 **Photosensitivity safety:** a final pass rate-limits how fast the whole-frame
 *average* luminance may rise, reining in large full-screen flashes while leaving
