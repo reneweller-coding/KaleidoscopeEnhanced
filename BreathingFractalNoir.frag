@@ -1,13 +1,9 @@
-// BreathingFractal.frag
+// BreathingFractalNoir.frag
 // -----------------------------------------------------------------------
-// Adapted from an untitled Shadertoy fractal (pasted by the user; exact page/
-// author not given) — very likely the same base as, or the direct parent of,
-// https://www.shadertoy.com/view/DsscWn (identified later from two forks of
-// that page the user also shared; see BreathingFractalZoom.frag / Noir.frag,
-// which share this exact fold/rotate core).  A "breathing" abs/fract
-// kaleidoscope with a per-iteration rotation, producing a tight, glowing
-// lattice of folded lines that pulses and spirals into deep, self-similar
-// layers.
+// Forked from https://www.shadertoy.com/view/DsscWn (the same fold/rotate
+// fractal core as BreathingFractal.frag / BreathingFractalZoom.frag), here
+// with an oscillating zoom, different colour coefficients and a base-colour
+// subtraction instead of a palette remap — a darker, higher-contrast look.
 //
 // Adapted to our engine: GLSL 1.20 (gl_FragCoord/resolution/time); the
 // original's comma-operator loop body de-golfed into ordinary statements; its
@@ -52,9 +48,13 @@ vec3 hueRot(vec3 c, float a)
 
 void main()
 {
-    vec2 v = resolution;
-    vec2 p = (gl_FragCoord.xy - v * 0.5) * 0.4 / v.y;
+    vec2  v  = resolution;
+    vec2  p  = gl_FragCoord.xy;
     float tt = time + audioAdvance * 2.0;    // jump-free (host-integrated) clock
+
+    // Slow zoom oscillation (bounded, so it never crosses zero / flips sign).
+    float zoom = -5.0 + abs(sin(tt * 0.05)) * 4.0;
+    p = ((p - v * 0.5) * 0.4 / v.y) / zoom;
 
     // Breathing effect, a touch stronger on the beat.
     p += p * sin(dot(p, p) * 20.0 - tt) * (0.04 + 0.02 * audioBeat);
@@ -66,16 +66,13 @@ void main()
         mat2 rot = mat2(cos(0.01 * (tt + audioCentroid * 5.0) * i * i
                             + 0.78 * vec4(1.0, 7.0, 3.0, 1.0)));
         p  = abs(2.0 * fract(p - 0.5) - 1.0) * rot;
-        c += exp(-abs(p.y) * 5.0) * (cos(vec4(2.0, 3.0, 1.0, 0.0) * i) * 0.5 + 0.5);
+        c += exp(-abs(p.y) * 5.0) * (cos(vec4(1.0, 2.0, 3.0, 0.0) * i) * 0.3 + 0.2);
     }
 
-    c.gb *= 0.5;   // palette: red-leaning grade
+    c -= vec4(0.3, 0.3, 0.3, 0.0);   // dark base -> higher contrast
+    c  = clamp(c, 0.0, 1.0);
 
-    // The 8-iteration accumulation is unbounded above (each pass can add up to
-    // 1.0 per channel), so bright cores blew out to large flat-white patches.
-    // A soft Reinhard-style compression keeps highlight detail instead.
-    vec3 col = max(c.rgb, 0.0);
-    col = col / (1.0 + col);
+    vec3 col = c.rgb;
     col *= 1.0 + 0.5 * audioBeat + 0.3 * audioOnset;
 
     // Mood grade.
