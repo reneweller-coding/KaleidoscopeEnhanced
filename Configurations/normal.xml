@@ -91,6 +91,18 @@
   <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\SphereGrid.frag" type="normal" probability="0.5" complexity="2">
   </TextureShader>
 
+  <!-- Hex Kaleido (hexagonal jewel kaleidoscope) -->
+  <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\HexKaleido.frag" type="normal" probability="0.5" complexity="1">
+  </TextureShader>
+
+  <!-- Mobius Orbs (Mobius-inversion orb knot) -->
+  <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\MobiusOrbs.frag" type="normal" probability="0.5" complexity="2">
+  </TextureShader>
+
+  <!-- Breathing Fractal (pulsing fold-and-rotate lattice) -->
+  <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\BreathingFractal.frag" type="normal" probability="0.5" complexity="1">
+  </TextureShader>
+
   <!-- Plasma Flow (mood-tinted flowing plasma) -->
   <TextureShader minTimeSolo="20" maxTimeSolo="90" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\PlasmaFlow.frag" type="normal" probability="0.5" complexity="1">
   </TextureShader>

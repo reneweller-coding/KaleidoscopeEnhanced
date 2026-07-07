@@ -150,6 +150,18 @@
   <TextureShader minTimeSolo="15" maxTimeSolo="60" minTimeInterpolation="15" maxTimeInterpolation="45" file="..\\SphereGrid.frag" type="normal" probability="0.7" complexity="2">
   </TextureShader>
 
+  <!-- Hex Kaleido (hexagonal jewel kaleidoscope) -->
+  <TextureShader minTimeSolo="15" maxTimeSolo="60" minTimeInterpolation="15" maxTimeInterpolation="45" file="..\\HexKaleido.frag" type="normal" probability="0.7" complexity="1">
+  </TextureShader>
+
+  <!-- Mobius Orbs (Mobius-inversion orb knot) -->
+  <TextureShader minTimeSolo="15" maxTimeSolo="60" minTimeInterpolation="15" maxTimeInterpolation="45" file="..\\MobiusOrbs.frag" type="normal" probability="0.7" complexity="2">
+  </TextureShader>
+
+  <!-- Breathing Fractal (pulsing fold-and-rotate lattice) -->
+  <TextureShader minTimeSolo="15" maxTimeSolo="60" minTimeInterpolation="15" maxTimeInterpolation="45" file="..\\BreathingFractal.frag" type="normal" probability="0.7" complexity="1">
+  </TextureShader>
+
   <!-- Curl Aurora (flowing mood-coloured curtains) -->
   <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="20" maxTimeInterpolation="60" file="..\\CurlAurora.frag" type="normal" probability="0.5" complexity="1">
   </TextureShader>

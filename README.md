@@ -209,13 +209,22 @@ a faint nebula (image-forward), and the music drives motion / glow / palette wit
   ([source](https://www.shadertoy.com/view/ctX3RM)).
 - **`SphereGrid`** — a fly-through of an infinite lattice of spheres down a
   bright corridor (an untitled kishimisu raymarch).
+- **`HexKaleido`** — a hexagonal jewel kaleidoscope of glowing rings
+  (an untitled Shadertoy shader, [source](https://www.shadertoy.com/view/Xljczw)).
+- **`MobiusOrbs`** — a ring of glowing orbs seen through a Möbius (1/r²)
+  inversion, swirling into a psychedelic knot (an untitled Shadertoy shader,
+  exact source page not given).
+- **`BreathingFractal`** — a pulsing, spiralling fold-and-rotate lattice
+  (an untitled Shadertoy shader, exact source page not given; its mouse-driven
+  detune was replaced by the spectral centroid since this engine has no mouse).
 
-These last two go a step further with the images: instead of a fixed procedural
-palette they are **coloured by the picture itself** — each depth takes its colour
-from a slowly-drifting crop of the source image (`imgPal`), so the palette *is*
-the image and keeps changing over time and with the harmony (much like the
-Kaleidoscope folding different crops).  The same image-crop colouring is also
-mixed into the other adapted shaders above.
+`ChromeDreams` and `SphereGrid` go a step further with the images: instead of a
+fixed procedural palette they are **coloured by the picture itself** — each
+depth takes its colour from a slowly-drifting crop of the source image
+(`imgPal`), so the palette *is* the image and keeps changing over time and with
+the harmony (much like the Kaleidoscope folding different crops).  The same
+image-crop colouring (there: `hueRot` shifting the palette's hue by the image)
+is mixed into all the other adapted shaders above, including the three latest.
 
 ---
 
