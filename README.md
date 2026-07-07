@@ -214,9 +214,22 @@ a faint nebula (image-forward), and the music drives motion / glow / palette wit
 - **`MobiusOrbs`** — a ring of glowing orbs seen through a Möbius (1/r²)
   inversion, swirling into a psychedelic knot (an untitled Shadertoy shader,
   exact source page not given).
-- **`BreathingFractal`** — a pulsing, spiralling fold-and-rotate lattice
-  (an untitled Shadertoy shader, exact source page not given; its mouse-driven
-  detune was replaced by the spectral centroid since this engine has no mouse).
+- **`BreathingFractal`** — a pulsing, spiralling fold-and-rotate lattice (very
+  likely the same base as, or the parent of,
+  [DsscWn](https://www.shadertoy.com/view/DsscWn); its mouse-driven detune was
+  replaced by the spectral centroid since this engine has no mouse).
+- **`BreathingFractalZoom`** — the same fold-and-rotate lattice, forked from
+  [DsscWn](https://www.shadertoy.com/view/DsscWn) with an oscillating zoom and
+  a final cosine-palette remap
+  ([palette source](https://www.shadertoy.com/view/dlVSDK)) — a rich, painterly
+  look.
+- **`BreathingFractalNoir`** — the same lattice, a second fork of DsscWn with
+  different colour coefficients and a dark-base subtraction instead of a
+  palette remap — a darker, high-contrast neon-net look.
+- **`NoiseSpiral`** — a raymarched tunnel, domain-mirrored and twisted along
+  the travel axis, eaten away by layered turbulent noise into a glowing,
+  organic spiral (["playing with this idea"](https://www.shadertoy.com/view/w3VGzc)
+  per the original's own comment).
 
 `ChromeDreams` and `SphereGrid` go a step further with the images: instead of a
 fixed procedural palette they are **coloured by the picture itself** — each

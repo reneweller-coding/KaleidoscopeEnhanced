@@ -103,6 +103,18 @@
   <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\BreathingFractal.frag" type="normal" probability="0.5" complexity="1">
   </TextureShader>
 
+  <!-- Breathing Fractal Zoom (same fractal core, oscillating zoom + palette remap) -->
+  <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\BreathingFractalZoom.frag" type="normal" probability="0.5" complexity="1">
+  </TextureShader>
+
+  <!-- Breathing Fractal Noir (same fractal core, dark high-contrast look) -->
+  <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\BreathingFractalNoir.frag" type="normal" probability="0.5" complexity="1">
+  </TextureShader>
+
+  <!-- Noise Spiral (raymarched turbulent spiral tunnel) -->
+  <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\NoiseSpiral.frag" type="normal" probability="0.5" complexity="2">
+  </TextureShader>
+
   <!-- Plasma Flow (mood-tinted flowing plasma) -->
   <TextureShader minTimeSolo="20" maxTimeSolo="90" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\PlasmaFlow.frag" type="normal" probability="0.5" complexity="1">
   </TextureShader>

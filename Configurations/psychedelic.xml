@@ -162,6 +162,18 @@
   <TextureShader minTimeSolo="15" maxTimeSolo="60" minTimeInterpolation="15" maxTimeInterpolation="45" file="..\\BreathingFractal.frag" type="normal" probability="0.7" complexity="1">
   </TextureShader>
 
+  <!-- Breathing Fractal Zoom (same fractal core, oscillating zoom + palette remap) -->
+  <TextureShader minTimeSolo="15" maxTimeSolo="60" minTimeInterpolation="15" maxTimeInterpolation="45" file="..\\BreathingFractalZoom.frag" type="normal" probability="0.7" complexity="1">
+  </TextureShader>
+
+  <!-- Breathing Fractal Noir (same fractal core, dark high-contrast look) -->
+  <TextureShader minTimeSolo="15" maxTimeSolo="60" minTimeInterpolation="15" maxTimeInterpolation="45" file="..\\BreathingFractalNoir.frag" type="normal" probability="0.7" complexity="1">
+  </TextureShader>
+
+  <!-- Noise Spiral (raymarched turbulent spiral tunnel) -->
+  <TextureShader minTimeSolo="15" maxTimeSolo="60" minTimeInterpolation="15" maxTimeInterpolation="45" file="..\\NoiseSpiral.frag" type="normal" probability="0.7" complexity="2">
+  </TextureShader>
+
   <!-- Curl Aurora (flowing mood-coloured curtains) -->
   <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="20" maxTimeInterpolation="60" file="..\\CurlAurora.frag" type="normal" probability="0.5" complexity="1">
   </TextureShader>
