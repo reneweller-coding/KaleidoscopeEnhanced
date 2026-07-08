@@ -26,3 +26,7 @@ x64/
 kaleidoscope.log*
 kaleidoscope_settings.ini
 recordings/
+
+# Preset editor build artifacts (moc output + build dir)
+PresetEditor/moc_*.cpp
+PresetEditor/build/

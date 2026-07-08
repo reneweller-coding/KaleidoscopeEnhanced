@@ -158,6 +158,32 @@ Each `<TextureShader>` / `<CombineShader>` entry names a `.frag` file, solo/
 cross-fade times (scaled adaptively by tempo), a `probability` and a
 `complexity`. Adjust the `ImageDirectory` attribute to point at your own photos.
 
+You don't have to hand-edit the XML — see the **Preset editor** below.
+
+### Preset editor (standalone tool)
+
+`PresetEditor/` is a separate little Qt app (`PresetEditor.vcxproj`, independent
+of the visualizer) for **building and editing presets** with a **live preview**:
+
+- Browse every texture effect and every combine shader — switch with the
+  drop-downs or the keys `[` / `]` (texture) and `,` / `.` (combine); the preview
+  renders the selected texture folded through the selected combine, driven by a
+  synthesized "music" so audio-reactive shaders animate.
+- **Add** the current texture or combine shader to the preset (`a` / `c` or the
+  buttons), with its solo/interpolation **timings**, `type`, `probability` and
+  `complexity`; the preset's contents are listed in an editable table.
+- Set the preset **name**, `ImageDirectory` (used for the preview images too) and
+  the global timing ranges; **New / Open… / Save** write standard
+  `Configurations/<name>.xml` files the main app reads directly.
+- **Load an existing preset** to edit it (per-shader `<bool>/<int>/<float>`
+  parameters round-trip losslessly).
+
+Build it with MSBuild (`msbuild PresetEditor\PresetEditor.vcxproj
+/p:Configuration=Release /p:Platform=x64`) or add it to the solution in Visual
+Studio; run it with `C:\Qt\...\bin` on `PATH`.  Headless self-tests:
+`PresetEditor.exe --roundtrip in.xml out.xml` and
+`PresetEditor.exe --render tex.frag combine.frag out.png`.
+
 The `normal` and `psychedelic` presets also include the newest audio-reactive
 effects: **`StereoSpectrum`** (stereo-separated left/right band display) and
 **`ReactionDiffusion`** (the live GPU Gray-Scott simulation, see below).

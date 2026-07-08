@@ -1,0 +1,56 @@
+// Preset.h — the preset data model + XML load/save, shared by the editor GUI and
+// the headless --roundtrip self-test.  Matches the schema read by the main app's
+// Configuration.cpp exactly:
+//
+//   <configuration ImageDirectory=".." ConfigurationName=".."
+//                  timeTextureSoloMin/Max timeTextureInterpolationMin/Max>
+//     <TextureShader minTimeSolo maxTimeSolo minTimeInterpolation
+//                    maxTimeInterpolation file type probability complexity>
+//       <bool  name= probability=/>
+//       <int   name= minValue= maxValue=/>
+//       <float name= minValue= maxValue=/>
+//       <interpolator name= minMin= maxMin= minMax= maxMax=/>
+//     </TextureShader>
+//     <CombineShader .../>  (type="normal" only)
+//   </configuration>
+#pragma once
+
+#include <QtCore/QString>
+#include <QtCore/QVector>
+
+// One <bool>/<int>/<float>/<interpolator> child of a shader entry.  Stored as raw
+// attribute strings so an existing preset round-trips losslessly.
+struct ShaderParam
+{
+    QString kind;     // "bool" | "int" | "float" | "interpolator"
+    QString name;
+    QString probability;                 // bool
+    QString minValue, maxValue;          // int / float
+    QString minMin, maxMin, minMax, maxMax;  // interpolator
+};
+
+struct PresetEntry
+{
+    bool     isCombine = false;
+    QString  file;         // bare filename, e.g. "Kaleidoscope.frag"
+    QString  type = "normal";   // "normal" | "KaleidoscopeBase"
+    int      minTimeSolo = 20, maxTimeSolo = 80;
+    int      minTimeInterpolation = 15, maxTimeInterpolation = 50;
+    double   probability = 0.5;
+    int      complexity = 1;
+    QVector<ShaderParam> params;
+};
+
+struct Preset
+{
+    QString name = "MyPreset";
+    QString imageDirectory;
+    int     timeTextureSoloMin = 10,  timeTextureSoloMax = 40;
+    int     timeTextureInterpolationMin = 20, timeTextureInterpolationMax = 80;
+    QVector<PresetEntry> entries;   // texture + combine, in insertion order
+
+    // Load from an XML file; returns false + fills *err on failure.
+    static bool load(const QString &path, Preset &out, QString *err = nullptr);
+    // Save to an XML file; returns false + fills *err on failure.
+    bool save(const QString &path, QString *err = nullptr) const;
+};
