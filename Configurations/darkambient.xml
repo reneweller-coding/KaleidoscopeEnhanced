@@ -160,6 +160,26 @@
       complexity="2">
   </TextureShader>
 
+  <!-- Drone Depths (ambient-first nebula: swell-looming, pitch-elevation) -->
+  <TextureShader
+      minTimeSolo="120" maxTimeSolo="360"
+      minTimeInterpolation="80" maxTimeInterpolation="200"
+      file="..\\DroneDepths.frag"
+      type="normal"
+      probability="1.0"
+      complexity="1">
+  </TextureShader>
+
+  <!-- Metamorph (music-type adaptive: soft clouds in drones) -->
+  <TextureShader
+      minTimeSolo="120" maxTimeSolo="360"
+      minTimeInterpolation="80" maxTimeInterpolation="200"
+      file="..\\Metamorph.frag"
+      type="normal"
+      probability="0.6"
+      complexity="1">
+  </TextureShader>
+
   <!--
   ===============================================================
   COMBINE SHADERS
@@ -167,6 +187,16 @@
   dark ambient aesthetic. Long times, slow cross-fades.
   ===============================================================
   -->
+
+  <!-- Drone Warp (slow liquid warp of the whole frame, swell-driven) -->
+  <CombineShader
+      minTimeSolo="120" maxTimeSolo="480"
+      minTimeInterpolation="120" maxTimeInterpolation="300"
+      file="..\\CombineDroneWarp.frag"
+      type="normal"
+      probability="0.8"
+      complexity="1">
+  </CombineShader>
 
   <CombineShader
       minTimeSolo="120" maxTimeSolo="480"

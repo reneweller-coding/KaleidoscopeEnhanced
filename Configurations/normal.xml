@@ -115,6 +115,18 @@
   <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\NoiseSpiral.frag" type="normal" probability="0.5" complexity="2">
   </TextureShader>
 
+  <!-- Metamorph (music-type adaptive: angular beat shards <-> soft drone clouds) -->
+  <TextureShader minTimeSolo="20" maxTimeSolo="90" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\Metamorph.frag" type="normal" probability="0.6" complexity="1">
+  </TextureShader>
+
+  <!-- Beat Lattice (beat-first: angular shards + tempo-riding ring waves) -->
+  <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\BeatLattice.frag" type="normal" probability="0.5" complexity="1">
+  </TextureShader>
+
+  <!-- Drone Depths (ambient-first nebula; adaptive presets pick it for drones) -->
+  <TextureShader minTimeSolo="30" maxTimeSolo="120" minTimeInterpolation="20" maxTimeInterpolation="60" file="..\\DroneDepths.frag" type="normal" probability="0.3" complexity="1">
+  </TextureShader>
+
   <!-- Plasma Flow (mood-tinted flowing plasma) -->
   <TextureShader minTimeSolo="20" maxTimeSolo="90" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\PlasmaFlow.frag" type="normal" probability="0.5" complexity="1">
   </TextureShader>
@@ -190,6 +202,14 @@
 
   <!-- Hexagon -->
   <CombineShader minTimeSolo="10" maxTimeSolo="60" minTimeInterpolation="20" maxTimeInterpolation="60" file="..\\CombineHexagon.frag" type="normal" probability="0.01" complexity="1">
+  </CombineShader>
+
+  <!-- Pulse (beat-reactive: zoom breath + tempo-riding shock-wave) -->
+  <CombineShader minTimeSolo="30" maxTimeSolo="120" minTimeInterpolation="30" maxTimeInterpolation="70" file="..\\CombinePulse.frag" type="normal" probability="0.5" complexity="1">
+  </CombineShader>
+
+  <!-- Drone Warp (ambient-reactive: slow liquid warp, nearly plain on beat music) -->
+  <CombineShader minTimeSolo="30" maxTimeSolo="120" minTimeInterpolation="30" maxTimeInterpolation="70" file="..\\CombineDroneWarp.frag" type="normal" probability="0.3" complexity="1">
   </CombineShader>
 
 

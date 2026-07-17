@@ -48,6 +48,8 @@ $env:Path = "C:\Qt\6.11.1\msvc2022_64\bin;" + $env:Path
 | `-c <name>`   | Start with the named configuration (e.g. `darkambient`, `normal`)|
 | `-m <index>`  | Fullscreen on monitor `<index>` (0-based; implies `-b`)          |
 | `-l`          | Log to `kaleidoscope.log` instead of the console (kiosk)         |
+| `-r`          | Start recording (frames + audio) immediately on launch            |
+| `-w <wav>`    | Offline: analyze this WAV instead of capturing live audio (test)  |
 | `-h`          | Print usage and exit                                              |
 
 For an unattended **installation / kiosk**, combine `-m`, `-c`, `-s` and `-l`.
@@ -310,6 +312,26 @@ Audio is captured via WASAPI loopback (`AudioAnalyzer`) and analysed in real tim
   strong harmonic changes trigger musically-placed transitions.
 - **Music/speech gate:** on speech / video dialogue / silence the reactivity
   fades to a calm, timer-driven mode; music smoothly re-enables it.
+- **Automatic music-TYPE detection (drone/ambient vs. beat):** classified by
+  CONTENT, following the MIR literature — an HPSS-inspired **harmonicity**
+  (frame-to-frame spectral self-similarity), **onset density** (FFT spectral
+  flux against a per-band peak-hold reference) and **rhythm evidence**
+  (mean-removed autocorrelation with an absolute-energy gate).  The result is
+  exposed to every shader as `audioAmbient` (0 = beat music, 1 = drone),
+  changing over seconds so effects can cross-fade their personality.  Verified
+  deterministically with the offline mode (`-w <file.wav>` feeds a WAV through
+  the analyzer instead of capturing live audio): a 120 BPM kick pattern
+  classifies to 0.00, a sustained drone rises to 1.00 and stays there.
+- **Mode-adaptive effects** (research-informed: percussive → angular/spiky
+  forms, harmonic/sustained → round/soft forms, loudness swell → looming):
+  `Metamorph` cross-fades between an angular beat-lattice personality and a
+  soft drone-cloud personality via `audioAmbient`; `BeatLattice` (beat-first:
+  envelope-popped shards, a ring wave riding the continuous beat phase,
+  per-bar highlight sweep); `DroneDepths` (ambient-first: the image as a
+  breathing nebula, swell → looming glow, pitch → elevation).  Plus the first
+  **audio-reactive combine passes**: `CombinePulse` (beat zoom breath +
+  tempo-riding shock-wave) and `CombineDroneWarp` (slow liquid warp, engaged
+  by `audioAmbient`, nearly plain on beat music).
 - A **feedback / trails** pass adds phosphor-style light trails.
 - **Auto-config-by-mood** (key `a`, off by default): the sustained mood selects a
   matching configuration — ambient → `darkambient`, calm → `slow`, energetic →
