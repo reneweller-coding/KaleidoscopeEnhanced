@@ -69,8 +69,8 @@ void commandlineerror( char *cmd, char *parm )
 void parsecommandline( int argc, char *argv[] )
 {
 	/* valid option characters; last char MUST be 0 ! */
-	char optionchar[] =   { 'h', 'b', 'f', 's', 'c', 'm', 'l', 'r', 0 };
-	int musthaveparam[] = {  0 ,  0,   1,   1,   1,   1,   0,   0,  0 };
+	char optionchar[] =   { 'h', 'b', 'f', 's', 'c', 'm', 'l', 'r', 'w', 0 };
+	int musthaveparam[] = {  0 ,  0,   1,   1,   1,   1,   0,   0,   1,  0 };
 
 	int nopts;
 	int mhp[256];
@@ -135,6 +135,9 @@ void parsecommandline( int argc, char *argv[] )
 				case 'm': monitorIndex = atoi( argv[1] ); fullscreen = true; break;
 				case 'l': logToFile = true; break;
 				case 'r': GLwidget::s_autoRecord = true; break;
+				// Offline analysis: feed this WAV through the analyzer instead of
+				// capturing live audio (deterministic classifier testing).
+				case 'w': AudioAnalyzer::s_offlineWav = QString::fromLocal8Bit( argv[1] ); break;
 
 
 				default: fprintf(stderr, "\nBug in parsecommandline !\n");

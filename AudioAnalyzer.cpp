@@ -242,12 +242,77 @@ void AudioAnalyzer::requestDevice( const QString &id, bool isCapture )
     m_deviceChangeReq = true;     // ask the capture loop to re-initialise now
 }
 
+QString AudioAnalyzer::s_offlineWav;
+
+// Offline analysis (CLI -w): feed a 16-bit PCM WAV through processBlock() in
+// 480-frame chunks — block-for-block identical to live capture (all smoothing
+// constants are per-block), but deterministic and immune to whatever the
+// system happens to be playing.  Used to test/calibrate the classifiers.
+void AudioAnalyzer::analyzeWavOffline( const QString &path )
+{
+    FILE *f = fopen( path.toLocal8Bit().constData(), "rb" );
+    if( !f ) { fprintf( stderr, "OFFLINE: cannot open %s\n", qPrintable(path) ); return; }
+
+    // Minimal RIFF parse: find fmt + data chunks (16-bit PCM only).
+    char id[5] = {0}; unsigned int sz = 0;
+    unsigned short fmtTag = 0, channels = 0, bits = 0;
+    unsigned int sampleRate = 48000; long dataPos = 0; unsigned int dataLen = 0;
+    fseek( f, 12, SEEK_SET );                       // skip RIFF....WAVE
+    while( fread( id, 1, 4, f ) == 4 && fread( &sz, 4, 1, f ) == 1 )
+    {
+        if( strncmp( id, "fmt ", 4 ) == 0 )
+        {
+            unsigned char buf[16];
+            fread( buf, 1, 16, f );
+            fmtTag     = *(unsigned short*)(buf + 0);
+            channels   = *(unsigned short*)(buf + 2);
+            sampleRate = *(unsigned int*)  (buf + 4);
+            bits       = *(unsigned short*)(buf + 14);
+            if( sz > 16 ) fseek( f, sz - 16, SEEK_CUR );
+        }
+        else if( strncmp( id, "data", 4 ) == 0 ) { dataPos = ftell( f ); dataLen = sz; break; }
+        else fseek( f, sz, SEEK_CUR );
+    }
+    if( fmtTag != 1 || bits != 16 || channels < 1 || dataPos == 0 )
+    {
+        fprintf( stderr, "OFFLINE: unsupported WAV (PCM16 required)\n" );
+        fclose( f ); return;
+    }
+
+    fprintf( stderr, "OFFLINE: %s  %u Hz, %u ch, %.1f s\n", qPrintable(path),
+             sampleRate, channels, dataLen / float(sampleRate * channels * 2) );
+
+    const int chunk = 480;                          // = one live capture block
+    short *pcm  = new short[chunk * channels];
+    float *conv = new float[chunk * channels];
+    fseek( f, dataPos, SEEK_SET );
+    unsigned int remain = dataLen / (channels * 2);
+    while( remain > 0 && m_running )
+    {
+        int n = (remain < (unsigned int)chunk) ? (int)remain : chunk;
+        if( fread( pcm, 2 * channels, n, f ) != (size_t)n ) break;
+        for( int i = 0; i < n * channels; ++i ) conv[i] = pcm[i] / 32768.f;
+        processBlock( conv, n, (channels > 2) ? 2 : channels, sampleRate );
+        remain -= n;
+    }
+    delete[] pcm; delete[] conv;
+    fclose( f );
+    fprintf( stderr, "OFFLINE: done\n" );
+}
+
 // ---------------------------------------------------------------------------
 // run() – WASAPI loopback capture loop
 // ---------------------------------------------------------------------------
 void AudioAnalyzer::run()
 {
     m_running = true;
+
+    // Offline mode: analyze the given WAV deterministically, then finish.
+    if( !s_offlineWav.isEmpty() )
+    {
+        analyzeWavOffline( s_offlineWav );
+        return;
+    }
 
     // --- COM init for this thread ---
     HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
@@ -659,35 +724,33 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
         }
     }
 
-    // ---- Ambient detection – rolling variance of dB level over ~6 s ----
-    // Low variance over time → content is a static drone / ambient pad.
-    // High variance → dynamic beat-driven music with significant energy swings.
-    m_levelHistory[m_ambientIdx] = level;
-    m_ambientIdx = (m_ambientIdx + 1) % kAmbientHistLen;
-
-    float mean2 = 0.f, var2 = 0.f;
-    for (float v : m_levelHistory) mean2 += v;
-    mean2 /= float(kAmbientHistLen);
-    for (float v : m_levelHistory) { float d = v - mean2; var2 += d * d; }
-    var2 /= float(kAmbientHistLen);
-
+    // ---- Ambient / beat classification (content-based, HPSS-inspired) ----
+    // The old test used the rolling loudness VARIANCE, which classified by
+    // dynamics statistics — and misfiled steadily-loud electronic music as
+    // "ambient" (low variance!) while lively drones could read as "beat".  Per
+    // the MIR literature the robust separator is CONTENT: harmonic-sustained
+    // (drone/pad/chord) vs. percussive-transient material.  Three ingredients:
+    //   harmonicity  — spectral frame-to-frame self-similarity (m_sSpecSim):
+    //                  drones ~0.99+, beat music dips hard on every transient;
+    //   percussiveness — onset density (m_onsetRate, ~onsets/sec);
+    //   rhythm evidence — m_sRhythm (beat regularity + autocorrelation tempo).
+    // Ambient = harmonic AND sparse-onset AND arrhythmic.
+    //
     // Near-silence is NOT "ambient drone": pushing the factor up during quiet
     // intros / pauses used to leave the beat threshold ambient-boosted for ~10 s
     // into the next song — the detector was measurably deaf (4 of 32 kicks).
     // Hold the factor while there is no signal to classify.
     if (level > 0.05f)
     {
-        // stddev < 0.07 → ambient/drone; stddev > 0.07 → beat-driven
-        float targetAmbient = 1.f - std::min(std::sqrt(var2) / 0.07f, 1.f);
-
-        // A confidently-detected tempo (onset-envelope autocorrelation) is
-        // positive proof of beat music — steady full-mix electronic tracks have
-        // surprisingly LOW loudness variance, so let rhythm evidence pull the
-        // ambient factor down even when the variance test says "static".
-        targetAmbient *= (1.f - m_acConf);
+        // Calibrated against the offline test WAVs: a 120 BPM kick pattern
+        // measures sim ~0.32, a sustained 4-partial drone ~0.82.
+        float harm = (m_sSpecSim - 0.50f) / 0.25f;
+        harm = std::max(0.f, std::min(harm, 1.f));
+        float perc = std::min(m_onsetRate / 2.5f, 1.f);       // >=2.5 onsets/s = fully percussive
+        float targetAmbient = harm * (1.f - perc) * (1.f - m_sRhythm);
 
         // Transition speeds: rising into ambient stays deliberate (~2 s); the
-        // fall back to beat mode is now nearly as fast (~2.5 s) so the beat
+        // fall back to beat mode is nearly as fast (~2.5 s) so the beat
         // threshold recovers quickly when a rhythm starts.
         const float ambSpeedRise = 0.005f;  // 200 blocks ≈ 2 s
         const float ambSpeedFall = 0.004f;  // 250 blocks ≈ 2.5 s
@@ -765,21 +828,30 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
     m_sFluxVar = 0.90f * m_sFluxVar + 0.10f * std::min(std::sqrt(fVar) * 4.f, 1.f);
 
     // ---- Full-spectrum onset detection (snares / claps / melodic, not just kicks) ----
-    // Peak-pick the onset detection function (instantaneous spectral flux): an onset
-    // is a clear rising jump above its recent average.  Ambient-gated so drones don't
-    // trigger.  A detected onset boosts the visual beat pulse, so the SAME beat-driven
-    // reactions (zoom, rotation kick) now fire across every genre.
+    // Peak-pick the onset detection function: an onset is a clear rising jump
+    // above its recent average.  The ODF is the FFT-based normalised spectral
+    // flux (m_odfFFT) — the old per-block band-RMS deltas rippled on sustained
+    // low-frequency content and fired ~10 phantom onsets/sec on pure drones,
+    // which in turn faked a "rhythm" and kept ambientFactor at 0.  A detected
+    // onset boosts the visual beat pulse, so the SAME beat-driven reactions
+    // (zoom, rotation kick) fire across every genre.
     float onsetStrength = 0.f;
     if (m_onsetCooldown > 0.f) {
         m_onsetCooldown -= 1.f;
-    } else if (rawFlux > m_onsetAvg * 1.45f + 0.010f && rawFlux > m_prevODF) {
-        onsetStrength  = std::min((rawFlux / (m_onsetAvg * 1.45f + 1e-4f)) - 1.f, 1.f);
+    } else if (m_odfFFT > m_onsetAvg * 2.2f + 0.060f && m_odfFFT > m_prevODF) {
+        // SPIKE test: a real onset is a jump far above its own short-term average
+        // (2.2x + 0.06 abs).  Slowly swelling drones keep the ODF *steadily*
+        // elevated — near its average — so they no longer fire; a kick from
+        // silence exceeds many times its decayed average.
+        onsetStrength  = std::min((m_odfFFT / (m_onsetAvg * 2.2f + 1e-4f)) - 1.f, 1.f);
         m_onsetCooldown = 5.f;
         float onsetPulse = (0.6f + 0.8f * onsetStrength) * (1.f - m_ambientFactor * 0.9f);
         m_beatPulse = std::max(m_beatPulse, onsetPulse);
+        m_onsetRate += 0.333f;               // leaky integrator: += 1/tau per event
     }
-    m_onsetAvg = 0.95f * m_onsetAvg + 0.05f * rawFlux;
-    m_prevODF  = rawFlux;
+    m_onsetRate *= 0.99667f;                 // tau ~3 s at ~100 blocks/s -> ~onsets/sec
+    m_onsetAvg = 0.95f * m_onsetAvg + 0.05f * m_odfFFT;
+    m_prevODF  = m_odfFFT;
 
     // Re-derive the decaying beat pulse now that onsets are folded into m_beatPulse.
     beatDecay = std::min(m_beatPulse / 3.f, 1.f);
@@ -812,25 +884,48 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
         m_envFrameAcc += numFrames;
         while (m_envFrameAcc >= framesPerEnv) {
             m_envFrameAcc -= framesPerEnv;
-            m_odfEnv[m_odfEnvIdx] = rawFlux;
+            // FFT-based ODF: the old band-RMS flux rippled on sustained bass and
+            // made the autocorrelation "find" a phantom tempo in pure drones.
+            m_odfEnv[m_odfEnvIdx] = m_odfFFT;
             m_odfEnvIdx = (m_odfEnvIdx + 1) % kOdfEnvLen;
         }
         const int lagLo = (60 * kEnvRate) / 180;   // 33 samples (180 BPM)
         const int lagHi = (60 * kEnvRate) / 70;    // 85 samples (70 BPM)
-        float ac0 = 1e-6f;
-        for (int i = 0; i < kOdfEnvLen; ++i) ac0 += m_odfEnv[i] * m_odfEnv[i];
-        float bestAc = 0.f; int bestLag = 0;
-        for (int lag = lagLo; lag <= lagHi; ++lag) {
-            float ac = 0.f;
-            for (int i = 0; i + lag < kOdfEnvLen; ++i)
-                ac += m_odfEnv[i] * m_odfEnv[i + lag];
-            if (ac > bestAc) { bestAc = ac; bestLag = lag; }
+        float envSum = 0.f;
+        for (int i = 0; i < kOdfEnvLen; ++i) envSum += m_odfEnv[i];
+        float envMean = envSum / float(kOdfEnvLen);
+        // MEAN-REMOVED variance: the raw ODF envelope is all-positive (DC-heavy)
+        // and the normalised AC of a DC-dominated signal is ~1 at EVERY lag.
+        float acZ = 1e-6f;
+        for (int i = 0; i < kOdfEnvLen; ++i) {
+            float z = m_odfEnv[i] - envMean;
+            acZ += z * z;
         }
-        if (bestLag > 0) {
-            float bpm  = float(60 * kEnvRate) / float(bestLag);
-            float conf = bestAc / ac0;
-            m_acConf = 0.90f * m_acConf + 0.10f * std::min(conf * 2.f, 1.f);
-            m_acBPM  = (m_acBPM < 1.f) ? bpm : 0.90f * m_acBPM + 0.10f * bpm;
+        float envStd = std::sqrt(acZ / float(kOdfEnvLen));
+        if (envMean < 0.010f || envStd < 0.050f)
+        {
+            // Not enough ABSOLUTE transient energy for a rhythm verdict.  A
+            // normalised autocorrelation is amplitude-blind: the tiny (but real)
+            // periodic ripple of beating drone partials scores "confidently
+            // periodic" even though there is no audible beat (a kick envelope
+            // measures std ~0.14, drone ripple ~0.02).  Decay confidence.
+            m_acConf *= 0.98f;
+        }
+        else
+        {
+            float bestAc = 0.f; int bestLag = 0;
+            for (int lag = lagLo; lag <= lagHi; ++lag) {
+                float ac = 0.f;
+                for (int i = 0; i + lag < kOdfEnvLen; ++i)
+                    ac += (m_odfEnv[i] - envMean) * (m_odfEnv[i + lag] - envMean);
+                if (ac > bestAc) { bestAc = ac; bestLag = lag; }
+            }
+            if (bestLag > 0) {
+                float bpm  = float(60 * kEnvRate) / float(bestLag);
+                float conf = bestAc / acZ;
+                m_acConf = 0.90f * m_acConf + 0.10f * std::min(conf * 2.f, 1.f);
+                m_acBPM  = (m_acBPM < 1.f) ? bpm : 0.90f * m_acBPM + 0.10f * bpm;
+            }
         }
     }
 
@@ -1071,6 +1166,29 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
         totalMagSq += mag * mag;
     }
 
+    // ---- HPSS-inspired harmonicity (see m_sSpecSim in the header) ----
+    // Cosine similarity of this frame's magnitude spectrum vs. the previous one.
+    // This measures CONTENT (harmonic-sustained vs. percussive-transient), which
+    // is what actually separates drone/ambient music from beat music — unlike
+    // the old loudness-variance test, which misfiled steady full-mix electronic
+    // music as "ambient".  (Cheap stand-in for full median-filter HPSS.)
+    {
+        float dot = 0.f, na = 1e-9f, nb = 1e-9f;
+        for (int k = 1; k < kFFTHalf; ++k) {
+            dot += mags[k] * m_prevMags[k];
+            na  += mags[k] * mags[k];
+            nb  += m_prevMags[k] * m_prevMags[k];
+        }
+        if (totalMagSq > 1e-6f)   // silence: hold (nothing to classify)
+        {
+            float sim = dot / std::sqrt(na * nb);
+            if (sim < m_sSpecSim) m_sSpecSim = 0.70f * m_sSpecSim + 0.30f * sim;   // dip fast
+            else                  m_sSpecSim = 0.995f * m_sSpecSim + 0.005f * sim; // recover slow
+        }
+
+        std::memcpy(m_prevMags, mags, sizeof(mags));
+    }
+
     // ---- 32-band log-spaced spectrum for the analyzer effects ----
     // Group the FFT magnitudes into perceptually-spaced bands (~40 Hz..16 kHz)
     // and self-normalise with a decaying-peak reference so the loudest band sits
@@ -1097,6 +1215,28 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
             float v = std::min(raw[b] / m_specRef, 1.f);
             v = std::pow(v, 0.6f);                            // lift mid bands for visibility
             m_sSpectrum[b] = 0.55f * m_sSpectrum[b] + 0.45f * v;   // fast attack, mild smoothing
+        }
+
+        // FFT-based onset detection function (see m_odfFFT in the header):
+        // per-band flux against a PEAK-HOLD reference (max of the last ~200 ms,
+        // exponential release).  Close partials in a drone genuinely beat: their
+        // interference redistributes band energy every hop, so plain frame-to-
+        // frame flux "fires" on perfectly steady material.  Against the recent
+        // per-band MAXIMUM, a steady oscillation stays below its own peak
+        // (ODF = 0) and only genuinely NEW energy — a kick, a snare, a fresh
+        // layer — rises above it.
+        {
+            float pos = 0.f, ref = 1e-6f;
+            for (int b = 0; b < NB; ++b) {
+                float r = m_bandRef32[b];
+                float d = raw[b] - r;
+                if (d > 0.f) pos += d;
+                ref += r;
+                m_bandRef32[b] = std::max(raw[b], r * 0.985f);  // ~650 ms release: slow
+                // enough that beating drone partials stay under their recent peak
+                // (a kick still exceeds its half-decayed reference many times over)
+            }
+            m_odfFFT = (frameMax > 1e-4f) ? (pos / ref) : 0.f;
         }
     }
 
