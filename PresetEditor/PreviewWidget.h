@@ -27,6 +27,14 @@ public:
     // Reload the two sample images from a directory (empty -> procedural fallback).
     void setImageDirectory(const QString &dir);
 
+    // Synthesized music type driving the preview's audio uniforms:
+    //   Beat  = 120 BPM kicks/onsets, audioAmbient = 0
+    //   Drone = no transients, slow swells, audioAmbient = 1
+    // Lets you check how a shader responds to each kind of music.
+    enum MusicMode { Beat = 0, Drone = 1 };
+    void setMusicMode(MusicMode m) { m_mode = m; update(); }
+    MusicMode musicMode() const { return m_mode; }
+
 signals:
     void statusChanged(const QString &text);   // compile logs / current selection
 
@@ -51,6 +59,7 @@ private:
 
     QString m_imageDir;
     bool    m_imagesDirty = true;
+    MusicMode m_mode = Beat;
 
     QOpenGLShaderProgram *m_texProg  = nullptr;
     QOpenGLShaderProgram *m_combProg = nullptr;
