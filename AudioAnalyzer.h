@@ -79,8 +79,15 @@ public:
     /** Graceful shutdown – call before wait(). */
     void stop();
 
+    /** Offline analysis mode (CLI -w <file.wav>): instead of capturing WASAPI
+     *  loopback, the analysis thread feeds this WAV through processBlock() in
+     *  capture-sized chunks and exits.  Deterministic (independent of whatever
+     *  the system is playing) — used to test/calibrate the classifiers. */
+    static QString s_offlineWav;
+
 protected:
     void run() override;
+    void analyzeWavOffline( const QString &path );
 
 private:
     // ---- 5 one-pole IIR low-pass filter states (mono) ----
@@ -157,6 +164,26 @@ private:
     float m_onsetAvg        = 0.f;    // recent average of the onset detection function
     float m_prevODF         = 0.f;    // previous-frame ODF (rising-edge test)
     float m_onsetCooldown   = 0.f;    // min spacing between onsets
+    float m_onsetRate       = 0.f;    // leaky onsets-per-second (percussive density)
+
+    // HPSS-inspired harmonic/percussive content measure: the cosine similarity of
+    // consecutive FFT magnitude spectra.  Sustained harmonic material (drones,
+    // pads, held chords) keeps the spectrum similar frame-to-frame (measured
+    // ~0.8+ — leakage interference between close partials keeps it below 1);
+    // percussive transients punch broadband "vertical" energy into it and the
+    // similarity dips hard (measured ~0.3 on a kick pattern).  Asymmetrically
+    // smoothed (dips tracked fast, recovery slow) so a beat every 0.5 s keeps
+    // the value visibly down.
+    float m_sSpecSim        = 1.f;
+
+    // FFT-based onset detection function (normalised positive spectral flux of
+    // the 2048-sample magnitude spectra).  The old per-block 6-band RMS deltas
+    // RIPPLED on low-frequency content (a 55 Hz sine's period beats against the
+    // ~10 ms block rate), firing ~10 phantom onsets/sec on a pure drone — which
+    // also fooled the autocorrelation into "detecting" a rhythm.  The 43 ms FFT
+    // window integrates over several periods and is stable.
+    float m_odfFFT          = 0.f;
+    float m_bandRef32[32]   = {};     // per-band peak-hold reference (~200 ms release)
     float m_downbeatPulse   = 0.f;    // decaying accent on the bar's "1"
     int   m_kickCount       = 0;      // counts detected kicks (for downbeat every 4)
     float m_prevBeatPhase   = 0.f;    // previous beatPhase (for downbeat wrap detection)

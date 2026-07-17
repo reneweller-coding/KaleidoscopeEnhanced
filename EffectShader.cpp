@@ -306,6 +306,10 @@ void EffectShader::applyAudioFeatures(const AudioFeatures &f)
     // 4 beats) for slow in-tempo movement.
     GLint locSwell    = glGetUniformLocation(m_sh_prog_id, "audioSwell");
     GLint locBarPh    = glGetUniformLocation(m_sh_prog_id, "audioBarPhase");
+    // Music-type classifier (0 = beat-driven music, 1 = ambient/drone).  Changes
+    // slowly (seconds), so shaders can CROSS-FADE between a beat personality and
+    // a drone personality without any visible snap.
+    GLint locAmbient  = glGetUniformLocation(m_sh_prog_id, "audioAmbient");
 
     if (locArousal  >= 0) glUniform1f(locArousal,  f.arousal);
     if (locValence  >= 0) glUniform1f(locValence,  f.valence);
@@ -323,6 +327,7 @@ void EffectShader::applyAudioFeatures(const AudioFeatures &f)
     if (locChroma   >= 0) glUniform1f(locChroma,   f.chromaHue);
     if (locSwell    >= 0) glUniform1f(locSwell,    f.swell);
     if (locBarPh    >= 0) glUniform1f(locBarPh,    f.barPhase);
+    if (locAmbient  >= 0) glUniform1f(locAmbient,  f.ambientFactor);
 
     // Fine-grained 32-band spectrum for the analyzer effects (audioSpectrum[32]).
     GLint locSpectrum = glGetUniformLocation(m_sh_prog_id, "audioSpectrum");
