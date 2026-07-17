@@ -43,11 +43,15 @@ EditorWindow::EditorWindow(const QString &projectRoot, QWidget *parent)
     QVBoxLayout *pl = new QVBoxLayout(panel);
 
     // Preview selection
-    QGroupBox *gSel = new QGroupBox("Preview  (keys: [ ] texture · , . combine)");
+    QGroupBox *gSel = new QGroupBox("Preview  (keys: [ ] texture · , . combine · m music)");
     QFormLayout *fSel = new QFormLayout(gSel);
     m_texCombo = new QComboBox();  m_combCombo = new QComboBox();
     fSel->addRow("Texture shader", m_texCombo);
     fSel->addRow("Combine shader", m_combCombo);
+    QComboBox *musicCombo = new QComboBox();
+    musicCombo->addItems({ "Beat (120 BPM kicks)", "Drone (ambient swells)" });
+    fSel->addRow("Music", musicCombo);
+    m_musicCombo = musicCombo;
     pl->addWidget(gSel);
 
     // Add-to-preset
@@ -128,6 +132,9 @@ EditorWindow::EditorWindow(const QString &projectRoot, QWidget *parent)
     // ---- wiring ----
     connect(m_texCombo,  &QComboBox::currentTextChanged, this, &EditorWindow::onTextureChanged);
     connect(m_combCombo, &QComboBox::currentTextChanged, this, &EditorWindow::onCombineChanged);
+    connect(musicCombo, &QComboBox::currentIndexChanged, this, [this](int i){
+        m_preview->setMusicMode(i == 1 ? PreviewWidget::Drone : PreviewWidget::Beat);
+    });
     connect(bAddTex,  &QPushButton::clicked, this, &EditorWindow::addTextureEntry);
     connect(bAddComb, &QPushButton::clicked, this, &EditorWindow::addCombineEntry);
     connect(bRemove,  &QPushButton::clicked, this, &EditorWindow::removeSelectedEntry);
@@ -358,6 +365,7 @@ void EditorWindow::keyPressEvent(QKeyEvent *e)
     case Qt::Key_Comma:        stepCombo(m_combCombo, -1); return;
     case Qt::Key_A:            addTextureEntry(); return;
     case Qt::Key_C:            addCombineEntry(); return;
+    case Qt::Key_M:            m_musicCombo->setCurrentIndex(1 - m_musicCombo->currentIndex()); return;
     case Qt::Key_Delete:       removeSelectedEntry(); return;
     default: QMainWindow::keyPressEvent(e);
     }

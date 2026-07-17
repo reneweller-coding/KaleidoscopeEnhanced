@@ -154,11 +154,16 @@ void PreviewWidget::applyCommonUniforms(QOpenGLShaderProgram *p)
 {
     const float t = m_time;
     auto sw = [](float x){ return 0.5f + 0.5f * std::sin(x); };   // 0..1 sine
+    const bool drone = (m_mode == Drone);
+    // Beat profile: 120 BPM kicks + onsets, audioAmbient = 0.
+    // Drone profile: no transients at all, slow majestic swells, audioAmbient = 1.
     const float beatPhase = t * 2.0f - std::floor(t * 2.0f);      // 120 BPM
-    const float beat  = std::exp(-beatPhase * 6.0f);              // decaying pulse
-    const float onset = std::exp(-((t*3.f)-std::floor(t*3.f)) * 7.0f);
+    const float beat  = drone ? 0.f : std::exp(-beatPhase * 6.0f);
+    const float onset = drone ? 0.f : std::exp(-((t*3.f)-std::floor(t*3.f)) * 7.0f);
     const float barPh = t * 0.5f - std::floor(t * 0.5f);
-    const float downbeat = (int(std::floor(t * 0.5f)) & 3) == 0 ? beat : 0.f;
+    const float downbeat = (!drone && (int(std::floor(t * 0.5f)) & 3) == 0) ? beat : 0.f;
+    const float ambient = drone ? 1.f : 0.f;
+    const float swell   = drone ? (0.35f + 0.35f * std::sin(t * 0.35f)) : (0.15f + 0.15f * sw(t * 0.5f));
 
     p->setUniformValue("resolution", QVector2D(float(m_fbW), float(m_fbH)));
     p->setUniformValue("time", t);
@@ -170,10 +175,14 @@ void PreviewWidget::applyCommonUniforms(QOpenGLShaderProgram *p)
     p->setUniformValue("audioBeat", beat);
     p->setUniformValue("audioOnset", onset);
     p->setUniformValue("audioDownbeat", downbeat);
-    p->setUniformValue("audioLevel", 0.35f + 0.25f * sw(t * 0.7f));
-    p->setUniformValue("audioFlux", 0.15f + 0.15f * sw(t * 1.3f));
-    p->setUniformValue("audioBass", 0.4f + 0.4f * beat);
-    p->setUniformValue("audioSubBass", 0.3f + 0.4f * beat);
+    p->setUniformValue("audioAmbient", ambient);
+    p->setUniformValue("audioSwell", swell);
+    p->setUniformValue("audioLevel", drone ? (0.30f + 0.20f * sw(t * 0.25f))
+                                           : (0.35f + 0.25f * sw(t * 0.7f)));
+    p->setUniformValue("audioFlux", drone ? (0.05f + 0.06f * sw(t * 0.4f))
+                                          : (0.15f + 0.15f * sw(t * 1.3f)));
+    p->setUniformValue("audioBass", drone ? (0.5f + 0.2f * sw(t * 0.3f)) : (0.4f + 0.4f * beat));
+    p->setUniformValue("audioSubBass", drone ? (0.5f + 0.2f * sw(t * 0.22f)) : (0.3f + 0.4f * beat));
     p->setUniformValue("audioLowMid", 0.3f + 0.2f * sw(t * 0.9f));
     p->setUniformValue("audioMid", 0.35f + 0.25f * sw(t * 1.1f));
     p->setUniformValue("audioUpperMid", 0.3f + 0.25f * sw(t * 1.7f));
@@ -195,7 +204,6 @@ void PreviewWidget::applyCommonUniforms(QOpenGLShaderProgram *p)
     p->setUniformValue("audioSharpness", 0.4f + 0.3f * sw(t * 0.6f));
     p->setUniformValue("audioRolloff", 0.5f + 0.3f * sw(t * 0.25f));
     p->setUniformValue("audioSpread", 0.4f + 0.2f * sw(t * 0.4f));
-    p->setUniformValue("audioSwell", 0.3f + 0.3f * sw(t * 0.1f));
     p->setUniformValue("audioMusic", 1.0f);
     p->setUniformValue("audioChase", t * 0.25f - std::floor(t * 0.25f));
     p->setUniformValue("audioStereoL", QVector3D(0.4f * sw(t*0.9f), 0.3f, 0.25f));

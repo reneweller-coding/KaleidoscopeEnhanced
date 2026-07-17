@@ -51,6 +51,7 @@ private:
     PreviewWidget *m_preview = nullptr;
     QComboBox *m_texCombo  = nullptr;
     QComboBox *m_combCombo = nullptr;
+    QComboBox *m_musicCombo = nullptr;
     QComboBox *m_typeCombo = nullptr;
     QSpinBox  *m_minSolo = nullptr, *m_maxSolo = nullptr;
     QSpinBox  *m_minInterp = nullptr, *m_maxInterp = nullptr;

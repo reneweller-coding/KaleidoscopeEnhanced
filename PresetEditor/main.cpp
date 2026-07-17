@@ -61,6 +61,7 @@ int main(int argc, char *argv[])
     const QString root = findRoot();
 
     // Headless-ish preview grab: render one frame of a shader pair to a PNG.
+    // Optional trailing arg "drone" switches the synthesized music profile.
     if (args.value(0) == "--render" && args.size() >= 4)
     {
         PreviewWidget *w = new PreviewWidget(root);
@@ -68,6 +69,8 @@ int main(int argc, char *argv[])
         const int H = args.value(5, "600").toInt();
         w->setTextureShader(args[1]);
         w->setCombineShader(args[2]);
+        if (args.contains("drone"))
+            w->setMusicMode(PreviewWidget::Drone);
         w->resize(W ? W : 960, H ? H : 600);
         w->show();
         const QString out = args[3];
