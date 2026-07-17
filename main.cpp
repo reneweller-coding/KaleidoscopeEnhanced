@@ -45,6 +45,7 @@ void commandlineerror( char *cmd, char *parm )
 	"-m <index>    fullscreen on monitor <index> (0-based; implies -b)\n"
 	"-l            log to kaleidoscope.log instead of the console (kiosk)\n"
 	"-r            start recording (visuals + music -> mp4) immediately\n"
+	"-w <wav>      offline: analyze this WAV instead of live audio (testing)\n"
 	"-h            this help menu\n"
 	"Keys (while running):\n"
 	"0             toggle the configuration-select menu\n"
