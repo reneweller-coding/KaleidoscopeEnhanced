@@ -213,10 +213,15 @@
 
   <!-- Spectrum Radial (6-band analyzer petals) -->
   <TextureShader minTimeSolo="15" maxTimeSolo="60" minTimeInterpolation="15" maxTimeInterpolation="40" file="..\\SpectrumRadial.frag" type="normal" probability="0.4" complexity="1">
+    <int name="wedgesP" minValue="44" maxValue="97"></int>
+    <float name="petalLenP" minValue="0.5" maxValue="0.95"></float>
+    <float name="rotP" minValue="0.5" maxValue="2.0"></float>
   </TextureShader>
 
   <!-- Stereo Spectrum (left/right channel bands, stereo-separated) -->
   <TextureShader minTimeSolo="15" maxTimeSolo="60" minTimeInterpolation="15" maxTimeInterpolation="40" file="..\\StereoSpectrum.frag" type="normal" probability="0.4" complexity="1">
+    <float name="ledP" minValue="0.0" maxValue="22.0"></float>
+    <float name="spanP" minValue="0.5" maxValue="1.0"></float>
   </TextureShader>
 
   <!-- Reaction-Diffusion (live on-GPU Gray-Scott simulation) -->
@@ -253,10 +258,16 @@
 
   <!-- Raymarch Tunnel (3D fly-through) -->
   <TextureShader minTimeSolo="20" maxTimeSolo="90" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\RaymarchTunnel.frag" type="normal" probability="0.5" complexity="2">
+    <int name="sidesP" minValue="4" maxValue="11"></int>
+    <float name="twistP" minValue="0.0" maxValue="0.20"></float>
+    <float name="snakeP" minValue="0.15" maxValue="0.55"></float>
   </TextureShader>
 
   <!-- Starfield (warp through stars) -->
   <TextureShader minTimeSolo="20" maxTimeSolo="90" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\Starfield.frag" type="normal" probability="0.5" complexity="1">
+    <float name="densP" minValue="0.88" maxValue="0.95"></float>
+    <float name="speedP" minValue="0.6" maxValue="1.6"></float>
+    <float name="rollP" minValue="0.0" maxValue="0.30"></float>
   </TextureShader>
 
 
