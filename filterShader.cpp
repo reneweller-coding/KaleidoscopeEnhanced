@@ -1365,6 +1365,23 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
         m_noveltyCooldown   = 8.0f;   // at most one musical cut every ~8 s
     }
 
+    // SECTION change (Strophe -> Refrain -> Bridge): the analyzer's spectral-
+    // shape novelty detector increments audio.sectionCount once per section.
+    // A single +1 step forces an early cut with the SHORT (0.8 s) cross-fade,
+    // still quantised onto the next downbeat by the pending machinery below,
+    // so the new shader lands on the musical "1" of the new section.  Every
+    // second section also swaps the combine pass for a bigger scenery change.
+    // (Any other difference — e.g. this FilterShader was just (re)started
+    // while the analyzer kept counting — only re-syncs, without a cut.)
+    if( audio.sectionCount == m_lastSectionCount + 1 )
+    {
+        m_forceEffectChange = true;
+        if( (audio.sectionCount & 1) == 0 )
+            m_forceCombineChange = true;
+        m_noveltyCooldown = 8.0f;     // hold off the harmonic hook right after
+    }
+    m_lastSectionCount = audio.sectionCount;
+
     if( m_waitForImageToLoad )
     {
         if( !m_triggerImageload )

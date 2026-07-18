@@ -1238,6 +1238,65 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
             }
             m_odfFFT = (frameMax > 1e-4f) ? (pos / ref) : 0.f;
         }
+
+        // ---- Section-change detection (Strophe / Refrain / Bridge) ----
+        // Real-time Foote-style novelty: a short-term (~2.5 s) EMA of the
+        // NORMALISED band shape (and of the total band energy) is compared
+        // against a long-term (~18 s) one.  Within a section both agree; when
+        // the arrangement changes (chorus: new instruments, more energy) the
+        // fast average pulls away -> the cosine distance spikes once.
+        {
+            float sum = 1e-6f;
+            for (int b = 0; b < NB; ++b) sum += raw[b];
+            // Bias-corrected EMAs: alpha = max(nominal, 1/(n+1)) makes both
+            // averages track the true mean from the very first block instead
+            // of converging up from their zero initialisation.  (Without this
+            // the slow level average lags for ~1 min and the level term reads
+            // as permanent "novelty" -> phantom triggers on the cooldown grid.)
+            float aBias = 1.f / float(m_secWarm + 1);
+            float aF = std::max(0.004f,   aBias);   // tau ~2.5 s at 100 blocks/s
+            float aS = std::max(0.00056f, aBias);   // tau ~18 s
+            for (int b = 0; b < NB; ++b) {
+                float sh = raw[b] / sum;
+                m_secFast[b] += aF * (sh - m_secFast[b]);
+                m_secSlow[b] += aS * (sh - m_secSlow[b]);
+            }
+            m_secFastLvl += aF * (sum - m_secFastLvl);
+            m_secSlowLvl += aS * (sum - m_secSlowLvl);
+
+            float dotFS = 0.f, nF = 1e-9f, nS = 1e-9f;
+            for (int b = 0; b < NB; ++b) {
+                dotFS += m_secFast[b] * m_secSlow[b];
+                nF    += m_secFast[b] * m_secFast[b];
+                nS    += m_secSlow[b] * m_secSlow[b];
+            }
+            float shapeDist = 1.f - dotFS / std::sqrt(nF * nS);
+            float lvlDist   = std::fabs(std::log((m_secFastLvl + 1e-5f)
+                                               / (m_secSlowLvl + 1e-5f)));
+            m_secNovelty = shapeDist * 3.0f + lvlDist * 0.5f;
+
+            if (m_secWarm < 1000000) ++m_secWarm;
+            if (m_secCooldown > 0)   --m_secCooldown;
+
+            // Trigger: enough history for the averages to mean something
+            // (>= 8 s), music actually playing, not silence, novelty clearly
+            // above the steady-state floor.  The cooldown keeps sections
+            // >= ~12 s apart (no verse is shorter).
+            if (m_secWarm > 800 && m_secCooldown == 0 &&
+                m_sMusicPresence > 0.5f && sum > 1e-3f &&
+                m_secNovelty > 0.20f)
+            {
+                ++m_sectionCount;
+                m_secCooldown = 1200;
+                // Re-anchor the long-term average fully onto the new section
+                // so the novelty tail dies out (no echo triggers).
+                for (int b = 0; b < NB; ++b)
+                    m_secSlow[b] = m_secFast[b];
+                m_secSlowLvl = m_secFastLvl;
+                fprintf(stderr, "SECTION change #%d (novelty %.3f, t=%.1fs)\n",
+                        m_sectionCount, m_secNovelty, float(m_secWarm) * 0.01f);
+            }
+        }
     }
 
     // ---- Spectral Rolloff ----
@@ -1527,6 +1586,8 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
     m_features.deltaPitch        = m_sDeltaPitch;
     m_features.musicPresence     = m_sMusicPresence;
     m_features.timingScale      = timingScale;
+    m_features.sectionCount     = m_sectionCount;
+    m_features.sectionNovelty   = m_secNovelty;
     // FFT-derived features
     m_features.spectralRolloff  = m_sRolloff;
     m_features.spectralSpread   = m_sSpread;

@@ -168,6 +168,9 @@ private:
 	bool			m_forceEffectChange = false;
 	bool			m_forceCombineChange = false;
 	float			m_noveltyCooldown   = 0.f;
+	// Last-seen analyzer section counter (verse/chorus/bridge detector); a
+	// single +1 step forces an early, short cross-fade to the next shader.
+	int				m_lastSectionCount  = 0;
 
 	// ---- Photosensitivity safety: final present pass with global brightness
 	// rate-limiting.  The combined frame is rendered into m_fboFinal, its average

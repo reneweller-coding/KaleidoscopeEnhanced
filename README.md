@@ -335,8 +335,20 @@ Audio is captured via WASAPI loopback (`AudioAnalyzer`) and analysed in real tim
   colour temperature, valence → saturation, chroma → hue, loudness → brightness.
 - **Volume independence:** automatic gain control normalises levels, so a track
   played quietly or loudly looks the same.
-- **Adaptive timing:** fast music cuts scenes quickly, ambient holds for minutes;
-  strong harmonic changes trigger musically-placed transitions.
+- **Adaptive timing:** fast music cuts scenes quickly, ambient holds for minutes
+  (`timingScale` ≈ 0.10× for drones … 2.8× for fast high-arousal tracks divides
+  every solo/cross-fade time); strong harmonic changes trigger musically-placed
+  transitions.
+- **Section detection (Strophe → Refrain → Bridge):** a real-time Foote-style
+  novelty detector compares a short-term (~2.5 s) against a long-term (~18 s)
+  average of the normalised 32-band spectral shape + band energy
+  (bias-corrected EMAs).  When the arrangement changes — chorus enters, drums
+  drop out for a bridge — the analyzer bumps `sectionCount`; the host then
+  forces an **early cut with a short (0.8 s) cross-fade**, still quantised
+  onto the next downbeat, so a new shader lands on the "1" of the new section
+  (every second section also swaps the combine pass).  Rate-limited to one
+  section per ~12 s; verified offline with a synthesized verse/chorus/verse
+  WAV (triggers ~2–4 s after each boundary, zero phantom triggers).
 - **Music/speech gate:** on speech / video dialogue / silence the reactivity
   fades to a calm, timer-driven mode; music smoothly re-enables it.
 - **Automatic music-TYPE detection (drone/ambient vs. beat):** classified by
