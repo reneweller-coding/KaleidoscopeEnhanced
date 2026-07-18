@@ -27,6 +27,10 @@ uniform float interpolation;
 
 uniform float audioAdvance;
 uniform float audioPhase;
+
+// Per-activation variety (re-rolled each activation; 0 = default):
+uniform float twistP;   // tunnel twist per depth unit (0 -> 0.2; 0.1 = calm, 0.35 = corkscrew)
+uniform float turbP;    // turbulence amplitude        (0 -> 0.3; 0.15 = smooth, 0.45 = wild)
 uniform float audioBeat;
 uniform float audioOnset;
 uniform float audioLevel;
@@ -68,18 +72,22 @@ void main()
     vec3  p;
     vec4  o = vec4(0.0);
 
+    // Per-activation tunnel character (constant during the scene):
+    float twist = (twistP <= 0.001) ? 0.2 : twistP;
+    float turb  = (turbP  <= 0.001) ? 0.3 : turbP;
+
     for (float i = 0.0; i < 100.0; i += 1.0)
     {
         // March to the current distance, fold the domain (mirrored walls) and
         // twist along the travel axis -> a spiralling, kaleidoscopic tunnel.
         p = vec3(u * d, d + tt + tt);
         p = 2.0 - abs(abs(p) - 2.0);
-        p.xy = p.xy * mat2(cos(p.z * 0.2 + audioPhase * 0.05 + vec4(0.0, 33.0, 11.0, 0.0)));
+        p.xy = p.xy * mat2(cos(p.z * twist + audioPhase * 0.05 + vec4(0.0, 33.0, 11.0, 0.0)));
         s = sin(p.y + p.x);
 
         // Layered turbulence eats into the base distance estimate.
         for (n = 1.0; n < 32.0; n += n)
-            s -= abs(dot(cos(0.3 * tt + p * n), vec3(0.3))) / n;
+            s -= abs(dot(cos(0.3 * tt + p * n), vec3(turb))) / n;
 
         s  = 0.005 + abs(s) * 0.7;
         d += s;

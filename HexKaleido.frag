@@ -27,6 +27,10 @@ uniform float audioLevel;
 uniform float audioCentroid;
 uniform float audioValence;
 
+// Per-activation variety (re-rolled each activation; 0 = default):
+uniform float zoomP;    // hex-lattice scale        (0 -> 1.0; 0.7 = coarser, 1.6 = finer)
+uniform float swirlP;   // radius-coupled swirl amt (0 -> none; curves the lattice)
+
 const float PI     = 3.14159265358979;
 const float ROOT_3 = 1.7320508075688772;
 
@@ -83,6 +87,15 @@ void main()
 
     vec2 uv0 = 2.0 * (fragCoord / resolution) - 1.0;
     uv0.x *= resolution.x / resolution.y;
+    // Per-activation lattice scale + a radius-coupled swirl that bends the
+    // straight hex lattice into curved, spiralling arms (jump-free clocks).
+    float zoomV = (zoomP <= 0.01) ? 1.0 : zoomP;
+    uv0 *= zoomV;
+    if (swirlP > 0.001)
+    {
+        float ang = swirlP * length(uv0) * 1.5 + audioPhase * 0.10;
+        uv0 = mat2(cos(ang), sin(ang), -sin(ang), cos(ang)) * uv0;
+    }
     vec2 uv = uv0;
 
     vec2 h0 = getHex(0.5 * uv).xy;

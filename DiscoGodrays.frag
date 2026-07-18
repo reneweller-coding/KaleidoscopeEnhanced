@@ -21,6 +21,10 @@ uniform sampler2D tex1;
 uniform float interpolation;
 
 uniform float audioPhase;
+
+// Per-activation variety (re-rolled each activation; 0 = default):
+uniform float facetP;   // mirror-ball facet angle (0 -> 0.3; 0.2 = dense, 0.5 = coarse)
+uniform float tubeP;    // ray tube thickness      (0 -> 0.05; 0.03..0.09)
 uniform float audioBeat;
 uniform float audioOnset;
 uniform float audioLevel;
@@ -56,6 +60,10 @@ void main()
     float t = 0.0, d = 0.3, l = 0.0;
     float k = time * 0.3 + audioPhase * 0.15;    // disco spin (jump-free)
 
+    // Per-activation ball character (constant during the scene, so no snapping):
+    float facet = (facetP <= 0.01) ? 0.3  : facetP;   // facet angle -> ray count
+    float tubeW = (tubeP  <= 0.001) ? 0.05 : tubeP;   // ray thickness
+
     vec4 O = vec4(0.0);
     for (int i = 0; i < 60; i++)
     {
@@ -65,16 +73,16 @@ void main()
         p = t / length(p) * p - 2.0 / R;
 
         // Kaleidoscopic angular folds (mirror-ball facets).
-        float a1 = floor((atan(p.z, p.x) + k) / 0.3 + 0.5) * 0.3 - k;
+        float a1 = floor((atan(p.z, p.x) + k) / facet + 0.5) * facet - k;
         p.zx = p.zx * rot(a1);
-        float a2 = floor((atan(p.y, p.x) + k) / 0.3 + 0.5) * 0.3 - k;
+        float a2 = floor((atan(p.y, p.x) + k) / facet + 0.5) * facet - k;
         p.yx = p.yx * rot(a2);
 
-        float dt = length(p.yz) - 0.05;          // thin glowing tube (radial ray)
+        float dt = length(p.yz) - tubeW;          // glowing tube (radial ray)
         l = length(p) - 1.15;                     // sphere shell (glow volume)
 
         vec4 disco = cos(k - t + vec4(0.0, 0.5, 1.0, 0.0));
-        vec4 glow  = disco * smoothstep(1.0, 0.0, dt / 0.045)    // thin ray halo
+        vec4 glow  = disco * smoothstep(1.0, 0.0, dt / (tubeW * 0.9))  // ray halo
                    * disco * smoothstep(1.0, 0.0, l);
         O += glow * 1.1 + 0.0015;
 
