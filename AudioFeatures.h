@@ -219,6 +219,20 @@ struct AudioFeatures
     // Derived from arousal and ambientFactor in AudioAnalyzer::processBlock().
     float timingScale = 1.f;
 
+    // ---- Section-change detection (Strophe -> Refrain -> Bridge) ----
+    // sectionCount increments once whenever the music moves into a new SECTION:
+    // the short-term (~2.5 s) 32-band spectral SHAPE + band energy drift far
+    // enough from the long-term (~18 s) average (a real-time simplification of
+    // Foote-style self-similarity novelty — a chorus brings new
+    // instrumentation/energy, so the fast average pulls away from the slow one).
+    // A COUNTER (not a one-frame flag) so the 60 Hz host can never miss a
+    // 100 Hz event: it compares against its last-seen value and forces an
+    // early, SHORT cross-fade to the next shader.  Rate-limited in the
+    // analyzer (at least ~12 s between triggers).
+    int   sectionCount   = 0;
+    // The continuous novelty score behind it (~0 steady .. ~1 big change).
+    float sectionNovelty = 0.f;
+
     // swell: slow loudness-swell envelope (host-filled, like the phases below).
     //   The difference between a fast (~1.5 s) and a slow (~8 s) loudness average:
     //   rises when the music builds/swells, falls in fade-outs.  The one signal

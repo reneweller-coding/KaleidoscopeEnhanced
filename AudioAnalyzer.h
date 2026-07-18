@@ -247,6 +247,17 @@ private:
     float m_sSpectrum[AudioFeatures::kSpectrumBands] = {};
     float m_specRef  = 1e-4f; // decaying-peak reference for spectrum auto-scaling
 
+    // Section-change detector state (see AudioFeatures::sectionCount):
+    // fast/slow EMAs of the NORMALISED 32-band shape + of the total band energy.
+    float m_secFast[AudioFeatures::kSpectrumBands] = {};  // ~2.5 s EMA
+    float m_secSlow[AudioFeatures::kSpectrumBands] = {};  // ~18 s EMA
+    float m_secFastLvl  = 0.f;
+    float m_secSlowLvl  = 0.f;
+    float m_secNovelty  = 0.f;
+    int   m_secWarm     = 0;    // blocks since start (EMAs must settle first)
+    int   m_secCooldown = 0;    // blocks until the next trigger is allowed
+    int   m_sectionCount = 0;
+
     float m_sRolloff = 0.5f;  // spectral rolloff (fraction of Nyquist, 0..1)
     float m_sSpread  = 0.f;   // spectral spread normalised by 5 kHz
     float m_sMode    = 0.5f;  // musical mode 0=minor/dark .. 1=major/bright
