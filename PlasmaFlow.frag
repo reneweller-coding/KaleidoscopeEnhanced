@@ -5,10 +5,11 @@
 // no longer the picture (it used to be a full-screen sine field with the image
 // as a 40% tint) - instead the plasma is a FLOW that warps the actual picture,
 // and its iridescence tints the folded image.  So the *image* is the star.
-//   audioArousal -> plasma scale / busyness
-//   audioValence -> mirror fold count + iridescence saturation
-//   audioPhase   -> smooth flow (jump-free); audioLevel -> warp strength
-//   audioPitch/Centroid -> hue drift; audioBeat/Flux -> sheen & brightness
+//   sidesP/scaleP/flowAmtP -> per-activation character (fold, scale, marbling)
+//   audioSwell   -> plasma scale + warp breathing (slow; loudness -> size)
+//   audioValence -> iridescence saturation; audioCentroid -> slow hue drift
+//   audioPhase   -> smooth flow (jump-free); audioBarPhase -> per-bar hue sweep
+//   audioBeat    -> sheen; audioLevel -> picture brightness
 // -----------------------------------------------------------------------
 
 uniform vec2  resolution;
@@ -20,11 +21,15 @@ uniform float interpolation;
 uniform float audioBeat;
 uniform float audioLevel;
 uniform float audioCentroid;
-uniform float audioFlux;
-uniform float audioPitch;
-uniform float audioArousal;
 uniform float audioValence;
 uniform float audioPhase;
+uniform float audioSwell;      // slow loudness swell -> plasma scale/warp breathe
+uniform float audioBarPhase;   // 0..1 per bar -> gentle per-bar hue sweep
+
+// Per-activation variety (re-rolled each activation; 0 = default):
+uniform int   sidesP;          // mirror fold count (0 -> 4; 2..8)
+uniform float scaleP;          // plasma scale      (0 -> 6.0; 3.5 = broad, 8 = busy)
+uniform float flowAmtP;        // marbling strength (0 -> 0.10; 0.06..0.16)
 
 const float PI = 3.14159265358979;
 
@@ -55,12 +60,15 @@ void main()
 
     p = rot(audioPhase * 0.2 + time * 0.02) * p;
 
-    // Mirror symmetry (2..8 fold), so the marbled picture radiates.
-    float sides = floor(2.0 + 6.0 * audioValence);
-    vec2  fp    = kaleido(p, sides);
+    // Mirror symmetry: FIXED per activation.  (The old floor(valence) fold
+    // snapped the whole frame; the old arousal-driven scale rescaled the
+    // entire sine field every frame -> the "Gezappel".)
+    vec2  fp = kaleido(p, float((sidesP >= 2) ? sidesP : 4));
 
     float t     = time * 0.2 + audioPhase * 0.5;
-    float scale = 4.0 + 6.0 * audioArousal;
+    // Plasma scale is constant per activation and breathes only with the
+    // SLOW swell (loudness -> size).
+    float scale = ((scaleP <= 0.01) ? 6.0 : scaleP) * (1.0 + 0.06 * audioSwell);
     vec2  q     = fp * scale;
 
     // Plasma value.
@@ -72,19 +80,25 @@ void main()
     v += sin(sqrt(cx * cx + cy * cy) * 1.2 + t * 1.5);
     v *= 0.25;   // ~[-1, 1]
 
-    // Plasma FLOW warps the folded picture (marbling).
+    // Plasma FLOW warps the folded picture (marbling).  The warp amplitude
+    // breathes only with the SLOW swell (the old audioLevel term wobbled it).
     vec2 flow = vec2(sin(q.y * 1.3 + t * 1.1), cos(q.x + t));
-    vec2 iuv  = fp * 0.6 + 0.5 + flow * v * (0.06 + 0.10 * audioLevel);
+    float flowAmt = ((flowAmtP <= 0.001) ? 0.10 : flowAmtP)
+                  * (0.7 + 0.5 * audioSwell);
+    vec2 iuv  = fp * 0.6 + 0.5 + flow * v * flowAmt;
     vec3 pic  = img(fract(iuv));
 
-    // Iridescent plasma sheen tints the picture.
-    float hue   = fract(0.5 + 0.5 * v + 0.15 * audioPitch + 0.10 * audioCentroid);
+    // Iridescent plasma sheen tints the picture.  The hue moves only via slow
+    // terms (the old audioPitch key jumped with every note) and sweeps gently
+    // once per bar (continuous across the bar wrap).
+    float hue   = fract(0.5 + 0.5 * v + time * 0.01 + 0.08 * audioCentroid
+                        + 0.10 * sin(audioBarPhase * 6.28318));
     vec3  sheen = hsv2rgb(vec3(hue, 0.45 + 0.55 * audioValence, 1.0));
 
-    vec3 col = pic * (0.6 + 0.7 * audioLevel);
+    vec3 col = pic * (0.75 + 0.45 * audioLevel);
     col = mix(col, col * sheen * 1.7, 0.5);           // marble the image
-    col += sheen * (0.10 + 0.20 * audioBeat);         // beat sheen
-    col *= (1.0 + 0.2 * audioFlux);
+    col += sheen * (0.10 + 0.13 * audioBeat);         // beat sheen
+    col *= (1.0 + 0.15 * audioSwell);
 
     gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }

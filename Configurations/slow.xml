@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <configuration ImageDirectory="C:\\Users\\rene\\Desktop\\BilderPhotoechoes" ConfigurationName="Slow" timeTextureSoloMin="10" timeTextureSoloMax="40" timeTextureInterpolationMin="40" timeTextureInterpolationMax="120" >
 
   <!--
@@ -51,6 +51,9 @@
 
   <!-- Plasma Flow (mood-tinted flowing plasma) -->
   <TextureShader minTimeSolo="20" maxTimeSolo="90" minTimeInterpolation="30" maxTimeInterpolation="80" file="..\\PlasmaFlow.frag" type="normal" probability="0.5" complexity="1">
+    <int name="sidesP" minValue="2" maxValue="9"></int>
+    <float name="scaleP" minValue="3.5" maxValue="8.0"></float>
+    <float name="flowAmtP" minValue="0.06" maxValue="0.16"></float>
   </TextureShader>
 
 

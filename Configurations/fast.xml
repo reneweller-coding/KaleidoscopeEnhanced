@@ -50,6 +50,9 @@
 
   <!-- Plasma Flow (mood-tinted flowing plasma) -->
   <TextureShader minTimeSolo="15" maxTimeSolo="50" minTimeInterpolation="10" maxTimeInterpolation="30" file="..\\PlasmaFlow.frag" type="normal" probability="0.7" complexity="1">
+    <int name="sidesP" minValue="2" maxValue="9"></int>
+    <float name="scaleP" minValue="3.5" maxValue="8.0"></float>
+    <float name="flowAmtP" minValue="0.06" maxValue="0.16"></float>
   </TextureShader>
 
   <!-- Voronoi Pulse (beat-flaring cells) -->
