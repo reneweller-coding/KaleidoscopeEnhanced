@@ -5,6 +5,12 @@ uniform sampler2D tex1;
 uniform float interpolation;
 uniform float size;
 
+uniform float audioBeat;       // beat -> thin dark borders flash between cells
+uniform float audioOnset;      // percussive hits -> cells brighten
+
+// Per-activation variety (re-rolled each activation; 0 = default):
+uniform float sizeP;           // hex density (0 -> 320; 160 = chunky mosaic, 480 = fine)
+
 float PI = 3.14159265359;
 float TAU = 2.0*PI;
 float deg30 = TAU/12.0;
@@ -65,17 +71,17 @@ vec2 nearestHex(float s, vec2 st){
 
 void main(void){
 	vec2 uv = gl_FragCoord.xy/resolution.xy;
-	//float s = resolution.x/80.0;
-	float s = resolution.x/320.0;
+	// Per-activation hex density (0/absent -> the original 320).
+	float s = resolution.x / ((sizeP <= 1.0) ? 320.0 : sizeP);
 	vec2 nearest = nearestHex(s, gl_FragCoord.xy);
 	vec4 texel = interpolation * texture2D(tex0, nearest/resolution.xy, -100.0) + (1.0-interpolation)*texture2D(tex1, nearest/resolution.xy, -100.0); //texture2D(iChannel0, nearest/resolution.xy, -100.0);
 	float dist = hexDist(gl_FragCoord.xy, nearest);
-	
+
 	float luminance = (texel.r + texel.g + texel.b)/3.0;
-	//float interiorSize = luminance*s;
 	float interiorSize = s;
-	float interior = 1.0;// - smoothstep(interiorSize-1.0, interiorSize, dist); //black borders
-	//gl_FragColor = vec4(dist);
+	// Thin dark borders flash up between the cells on each beat (slew-limited
+	// upstream -> a soft honeycomb pulse, no strobe); hits brighten the cells.
+	float border = smoothstep(interiorSize-2.0, interiorSize, dist);
+	float interior = (1.0 - 0.6 * audioBeat * border) * (1.0 + 0.15 * audioOnset);
 	gl_FragColor = vec4(texel.rgb*interior, 1.0);
-	//gl_FragColor = vec4(nearest, 0.0, 1.0);
 }

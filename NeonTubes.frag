@@ -22,9 +22,29 @@ uniform float audioOnset;
 uniform float audioLevel;
 uniform float audioCentroid;
 uniform float audioValence;
+uniform float audioSwell;      // slow loudness swell -> ring thickness breathes
+uniform float audioBarPhase;   // 0..1 per bar -> gentle per-bar hue sweep
+
+// Per-activation variety (re-rolled each activation; 0 = default):
+uniform float stripeP;    // colour stripe frequency (0 -> 8.0; 5 = broad bands, 12 = fine)
+uniform float ringP;      // ring size multiplier    (0 -> 1.0; 0.7 = slim, 1.3 = chunky)
+uniform float travP;      // scroll speed multiplier (0 -> 1.0)
+uniform int   kSides;     // >=2: weave a spinning n-fold image rosette in (0 = off)
+uniform float rosetteP;   // rosette strength        (0 -> 0.22)
 
 vec3 img(vec2 uv) { return (interpolation * texture2D(tex0, uv)
                           + (1.0 - interpolation) * texture2D(tex1, uv)).rgb; }
+
+// n-fold kaleidoscopic mirror fold of a centred coordinate.
+vec2 kaleido(vec2 p, float sides)
+{
+    float a   = atan(p.y, p.x);
+    float r   = length(p);
+    float seg = 3.14159265 / sides;
+    a = mod(a + 3.14159265, 2.0 * seg) - seg;
+    a = abs(a);
+    return vec2(cos(a), sin(a)) * r;
+}
 
 // Colour from a slowly-drifting crop of the picture, indexed by a scalar so the
 // palette comes from the image and keeps changing over time + with the harmony.
@@ -53,7 +73,12 @@ void main()
 {
     vec2  n = (2.0 * gl_FragCoord.xy - resolution) / resolution.y;
     float o = 0.0, f = 3.0;
-    float scroll = time * 0.5 + audioAdvance * 2.0;   // forward travel (jump-free)
+    // Per-activation character (constant during the scene); ring thickness
+    // breathes slowly with the swell (loudness -> size).
+    float stripeV = (stripeP <= 0.01) ? 8.0 : stripeP;
+    float ringV   = ((ringP <= 0.01) ? 1.0 : ringP) * (1.0 + 0.10 * audioSwell);
+    float travV   = (travP <= 0.01) ? 1.0 : travP;
+    float scroll = (time * 0.5 + audioAdvance * 2.0) * travV;  // forward travel (jump-free)
 
     for (int g = 0; g < 200; g++)
     {
@@ -63,13 +88,13 @@ void main()
         float l = floor(e.z + 0.5);
         f = 2.0 - length(e.xy) - o * 0.1;
         e = fract(e + 0.5) - 0.5;
-        float rr1 = tmix(0.1, 0.5, 2.0, l);
-        float rr2 = tmix(0.05, tmix(0.1, 0.4, 0.5, 0.0), 1.0, 1.6 + l);
+        float rr1 = tmix(0.1, 0.5, 2.0, l) * ringV;
+        float rr2 = tmix(0.05, tmix(0.1, 0.4, 0.5, 0.0), 1.0, 1.6 + l) * ringV;
         f = 0.5 * max(f, length(vec2(length(e.xy) - rr1, e.z)) - rr2);
         o += f;
     }
 
-    vec3 col = (cos(o * 8.0 + vec3(0.0, 1.0, 2.0) * 0.8) * 5.0) / exp(o * 0.2 + length(n));
+    vec3 col = (cos(o * stripeV + vec3(0.0, 1.0, 2.0) * 0.8) * 5.0) / exp(o * 0.2 + length(n));
     col = max(col, 0.0);
     col *= 1.0 + 0.5 * audioBeat + 0.3 * audioOnset;
 
@@ -78,10 +103,24 @@ void main()
     float lum = dot(col, vec3(0.299, 0.587, 0.114));
     col = mix(vec3(lum), col, 0.6 + 0.6 * audioValence);
 
-    // Image-forward: the picture colours the tubes + drifts as a faint nebula.
+    // Image-forward: the picture colours the tubes + drifts as a faint nebula;
+    // the hue sweeps gently once per bar (continuous across the bar wrap).
     float himg = dot(imgPal(dot(col, vec3(0.333)) * 6.0
                  + length(gl_FragCoord.xy / resolution - 0.5) * 4.0), vec3(0.333));
-    col = hueRot(col, (himg - 0.5) * 3.0 + time * 0.05);
+    col = hueRot(col, (himg - 0.5) * 3.0 + time * 0.05
+                      + 0.45 * sin(audioBarPhase * 6.28318));
+
+    // Per-activation: a spinning n-fold kaleidoscopic image rosette woven into
+    // the tubes (squared -> only its bright parts, keeps the depth).
+    if (kSides >= 2)
+    {
+        float ka = time * 0.02 + audioPhase * 0.04;
+        vec2  kp = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
+        kp = mat2(cos(ka), sin(ka), -sin(ka), cos(ka)) * kp;
+        vec3 ros = img(fract(kaleido(kp, float(kSides)) * 0.8 + 0.5));
+        float rosW = (rosetteP <= 0.001) ? 0.22 : rosetteP;
+        col += ros * ros * rosW * (0.6 + 0.4 * audioLevel);
+    }
 
     gl_FragColor = vec4(col, 1.0);
 }

@@ -29,9 +29,30 @@ uniform float audioOnset;
 uniform float audioLevel;
 uniform float audioCentroid;
 uniform float audioValence;
+uniform float audioSwell;      // slow loudness swell -> breathing deepens
+uniform float audioBarPhase;   // 0..1 per bar -> palette wanders per bar
+
+// Per-activation variety (re-rolled each activation; 0 = default):
+uniform float oscP;       // zoom oscillation speed (0 -> 0.05; 0.03 = glacial, 0.09 = lively)
+uniform float deepP;      // zoom oscillation depth (0 -> 4.0; 2.5 = shallow, 4.5 = deep)
+uniform float breathP;    // breath ring frequency  (0 -> 20; 12 = broad, 30 = tight)
+uniform float palShiftP;  // cosine palette offset  (0 -> 0; any value = different colour family)
+uniform int   kSides;     // >=2: weave a spinning n-fold image rosette in (0 = off)
+uniform float rosetteP;   // rosette strength       (0 -> 0.22)
 
 vec3 img(vec2 uv) { return (interpolation * texture2D(tex0, uv)
                           + (1.0 - interpolation) * texture2D(tex1, uv)).rgb; }
+
+// n-fold kaleidoscopic mirror fold of a centred coordinate.
+vec2 kaleido(vec2 p, float sides)
+{
+    float a   = atan(p.y, p.x);
+    float r   = length(p);
+    float seg = 3.14159265 / sides;
+    a = mod(a + 3.14159265, 2.0 * seg) - seg;
+    a = abs(a);
+    return vec2(cos(a), sin(a)) * r;
+}
 
 vec3 imgPal(float x)
 {
@@ -63,12 +84,18 @@ void main()
     vec2  p  = gl_FragCoord.xy;
     float tt = time + audioAdvance * 2.0;    // jump-free (host-integrated) clock
 
+    // Per-activation character (constant during the scene):
+    float oscV    = (oscP    <= 0.001) ? 0.05 : oscP;
+    float deepV   = (deepP   <= 0.01)  ? 4.0  : deepP;
+    float breathV = (breathP <= 0.01)  ? 20.0 : breathP;
+
     // Slow zoom oscillation (bounded, so it never crosses zero / flips sign).
-    float zoom = -5.0 + abs(sin(tt * 0.05)) * 4.0;
+    float zoom = -5.0 + abs(sin(tt * oscV)) * deepV;
     p = ((p - v * 0.5) * 0.4 / v.y) / zoom;
 
-    // Breathing effect, a touch stronger on the beat.
-    p += p * sin(dot(p, p) * 20.0 - tt) * (0.04 + 0.02 * audioBeat);
+    // Breathing effect: stronger on the beat, deeper with the slow swell.
+    p += p * sin(dot(p, p) * breathV - tt)
+           * (0.04 + 0.02 * audioBeat + 0.02 * audioSwell);
 
     vec4 c = vec4(0.0);
     for (float i = 0.5; i < 8.0; i += 1.0)
@@ -80,7 +107,9 @@ void main()
         c += exp(-abs(p.y) * 5.0) * (cos(vec4(0.0, 0.7, 1.5, 0.0) * i) * 0.5 + 0.2);
     }
 
-    c = vec4(palette(c.x), 1.0);
+    // Palette remap: per-activation colour-family offset + a gentle once-per-
+    // bar wander (continuous across the bar wrap).
+    c = vec4(palette(c.x + palShiftP + 0.15 * sin(audioBarPhase * 6.28318)), 1.0);
     c = clamp(c, 0.0, 1.0);
 
     vec3 col = c.rgb;
@@ -95,6 +124,18 @@ void main()
     float himg = dot(imgPal(dot(col, vec3(0.333)) * 6.0
                  + length(gl_FragCoord.xy / resolution - 0.5) * 4.0), vec3(0.333));
     col = hueRot(col, (himg - 0.5) * 3.0 + time * 0.05);
+
+    // Per-activation: a spinning n-fold kaleidoscopic image rosette woven into
+    // the lattice (squared -> only its bright parts, keeps the depth).
+    if (kSides >= 2)
+    {
+        float ka = time * 0.02 + audioPhase * 0.04;
+        vec2  kp = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
+        kp = mat2(cos(ka), sin(ka), -sin(ka), cos(ka)) * kp;
+        vec3 ros = img(fract(kaleido(kp, float(kSides)) * 0.8 + 0.5));
+        float rosW = (rosetteP <= 0.001) ? 0.22 : rosetteP;
+        col += ros * ros * rosW * (0.6 + 0.4 * audioLevel);
+    }
 
     col *= 0.9 + 0.5 * audioLevel;
 

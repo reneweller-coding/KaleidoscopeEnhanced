@@ -6,6 +6,12 @@ uniform float interpolation;
 uniform float copies;
 uniform int rot;
 
+uniform float audioPhase;      // slow jump-free rotation of the tile grid
+uniform float audioSwell;      // slow loudness swell -> the grid looms closer
+
+// Per-activation variety (re-rolled each activation; 0 = default):
+uniform float spinP;           // grid spin speed (0 -> static, like the original)
+
 vec2 clampQuadratic( vec2 p )
 {
 	vec2 uv = p;
@@ -47,13 +53,19 @@ void main() {
 	p.x -= 0.5*resolution.x/resolution.y;
 	p.y -= 0.5;
 	
-	p.y = p.y * copies;
-	p.x = p.x * copies;
-	
-	
+	// The tile grid looms slightly closer with the slow loudness swell.
+	float cop = copies * (1.0 - 0.06 * audioSwell);
+	p.y = p.y * cop;
+	p.x = p.x * cop;
+
+
 	if( rot > 0 )
 		p = rotate( p, 3.14159265359 / 4.0 );
-	
+
+	// Per-activation: slow continuous jump-free spin of the whole grid.
+	if( spinP > 0.001 )
+		p = rotate( p, audioPhase * spinP + time * 0.01 * spinP );
+
 	p = clampQuadratic( p );
 	
 	//GL_MIRRORED_REPEAT in Software to get uniform tiles

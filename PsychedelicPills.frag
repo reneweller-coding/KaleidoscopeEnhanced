@@ -23,8 +23,28 @@ uniform float audioOnset;
 uniform float audioLevel;
 uniform float audioCentroid;
 uniform float audioValence;
+uniform float audioSwell;      // slow loudness swell -> pill size breathes
+uniform float audioBarPhase;   // 0..1 per bar -> gentle per-bar hue sweep
+
+// Per-activation variety (re-rolled each activation; 0 = default):
+uniform float pillP;      // pill size        (0 -> 0.1; 0.07 = grains, 0.14 = boulders)
+uniform float wobbleP;    // pill length wobble (0 -> 0.25; 0.15 = calm, 0.35 = snakes)
+uniform float spinP;      // domain spin rate multiplier (0 -> 1.0)
+uniform int   kSides;     // >=2: weave a spinning n-fold image rosette in (0 = off)
+uniform float rosetteP;   // rosette strength (0 -> 0.22)
 
 mat2 rotm(float a) { return mat2(cos(a), -sin(a), sin(a), cos(a)); }
+
+// n-fold kaleidoscopic mirror fold of a centred coordinate.
+vec2 kaleido(vec2 p, float sides)
+{
+    float a   = atan(p.y, p.x);
+    float r   = length(p);
+    float seg = 3.14159265 / sides;
+    a = mod(a + 3.14159265, 2.0 * seg) - seg;
+    a = abs(a);
+    return vec2(cos(a), sin(a)) * r;
+}
 vec3 img(vec2 uv) { return (interpolation * texture2D(tex0, uv)
                           + (1.0 - interpolation) * texture2D(tex1, uv)).rgb; }
 
@@ -52,20 +72,26 @@ void main()
     float e = time * 0.4 + 0.8;
     float scroll = e + audioAdvance * 0.6;       // forward scroll (jump-free)
 
+    // Per-activation character (constant during the scene); pill size breathes
+    // slowly with the swell (loudness -> size).
+    float wobV  = (wobbleP <= 0.001) ? 0.25 : wobbleP;
+    float pillV = ((pillP <= 0.001) ? 0.1 : pillP) * (1.0 + 0.12 * audioSwell);
+    float spinV = (spinP <= 0.01) ? 1.0 : spinP;
+
     float p = 0.0, h = 3.0, c, y;
     for (int s = 0; s < 200; s++)
     {
         if (!(abs(h) > 0.001 && p < 40.0)) break;
         vec3 o = p * normalize(vec3(1.0, v));
-        c = sin(e + p * 0.5) * 0.25;
-        y = c + 0.25;
+        c = sin(e + p * 0.5) * wobV;
+        y = c + wobV;
         o.x += scroll;
         o.y  = abs(o.y);
         o    = fract(o) - 0.5;
-        o.xy = o.xy * rotm(e + audioPhase * 0.1);
+        o.xy = o.xy * rotm(e * spinV + audioPhase * 0.1);
         o.y += y / 2.0;
         o.y -= clamp(o.y, 0.0, y);
-        p += h = (length(o) - 0.1 * (0.75 + p * 0.1 + c)) * 0.8;
+        p += h = (length(o) - pillV * (0.75 + p * 0.1 + c)) * 0.8;
     }
 
     vec3 col = exp(-p * 0.15 - 0.5 * length(v))
@@ -78,10 +104,24 @@ void main()
     float lum = dot(col, vec3(0.299, 0.587, 0.114));
     col = mix(vec3(lum), col, 0.6 + 0.6 * audioValence);
 
-    // Image-forward: the picture colours the pills + drifts as a faint nebula.
+    // Image-forward: the picture colours the pills + drifts as a faint nebula;
+    // the hue sweeps gently once per bar (continuous across the bar wrap).
     float himg = dot(imgPal(dot(col, vec3(0.333)) * 6.0
                  + length(gl_FragCoord.xy / resolution - 0.5) * 4.0), vec3(0.333));
-    col = hueRot(col, (himg - 0.5) * 3.0 + time * 0.05);
+    col = hueRot(col, (himg - 0.5) * 3.0 + time * 0.05
+                      + 0.45 * sin(audioBarPhase * 6.28318));
+
+    // Per-activation: a spinning n-fold kaleidoscopic image rosette woven into
+    // the pill field (squared -> only its bright parts, keeps the depth).
+    if (kSides >= 2)
+    {
+        float ka = time * 0.02 + audioPhase * 0.04;
+        vec2  kp = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
+        kp = mat2(cos(ka), sin(ka), -sin(ka), cos(ka)) * kp;
+        vec3 ros = img(fract(kaleido(kp, float(kSides)) * 0.8 + 0.5));
+        float rosW = (rosetteP <= 0.001) ? 0.22 : rosetteP;
+        col += ros * ros * rosW * (0.6 + 0.4 * audioLevel);
+    }
 
     gl_FragColor = vec4(col, 1.0);
 }
