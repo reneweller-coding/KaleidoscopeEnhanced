@@ -168,7 +168,22 @@ zoom, orb size/radius and the **length and superellipse shape of its orbs**
 spinning n-segment kaleidoscopic rosette (`kSides`) with a per-flight corridor
 height and speed, `DiscoGodrays` varies facet density and ray thickness,
 `HexKaleido` zoom + swirl, `NoiseSpiral` twist + turbulence, `FractalBloom`
-cell density + ring frequency, `SphereGrid` lattice spacing.  All parameters
+cell density + ring frequency, `SphereGrid` lattice spacing.  The whole
+Shadertoy set (`FlowingWires`, `InsideSystem`, `Vortex`, `TheCore`,
+`NeonTubes`, `PsychedelicPills`, `ChromeDreams`, the three
+`BreathingFractal*` variants) additionally re-rolls its geometry character
+(truchet density, lattice spacing, sector counts, tube/core radii, palette
+offsets, …) and can weave a slowly spinning **n-fold kaleidoscopic image
+rosette** into its light field (`kSides` / `rosetteP`) — the source picture
+folded into a mandala, adding image colour on top of the procedural glow.
+Extra music mappings across the set: the slow loudness **swell** breathes
+sizes (wire/neon/tube thickness, cell heights), the slew-limited **bass**
+pumps cores and orbs, and the **bar phase** sweeps the hue gently once per
+bar.  Combine passes joined in too: `CombinePulse` re-rolls breath/shock/spin
+depths and adds an onset-driven chromatic shimmer, `CombineDroneWarp` re-rolls
+its warp field (scale follows the spectral centroid: bright material → finer
+ripples), `CombineHexagon` re-rolls cell density and flashes cell borders on
+the beat, `CombineMulti` gains a slow grid spin + swell zoom.  All parameters
 follow the convention *absent/0 → the shader's original default*, so bare
 entries (and old presets) keep working unchanged.
 

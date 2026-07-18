@@ -27,8 +27,28 @@ uniform float audioOnset;
 uniform float audioLevel;
 uniform float audioCentroid;
 uniform float audioValence;
+uniform float audioSwell;      // slow loudness swell -> wire thickness breathes
+uniform float audioBarPhase;   // 0..1 per bar -> gentle per-bar hue sweep
+
+// Per-activation variety (re-rolled each activation; 0 = default):
+uniform float snapP;      // truchet snap density   (0 -> 3.8; 2.8 = chunky, 5.2 = fine)
+uniform float glowP;      // wire glow sharpness    (0 -> 50; 35 = fat, 65 = thin)
+uniform float travP;      // flight speed multiplier (0 -> 1.0)
+uniform int   kSides;     // >=2: weave a spinning n-fold image rosette in (0 = off)
+uniform float rosetteP;   // rosette strength       (0 -> 0.22)
 
 mat2 rot(float a) { float c = cos(a), s = sin(a); return mat2(c, -s, s, c); }
+
+// n-fold kaleidoscopic mirror fold of a centred coordinate.
+vec2 kaleido(vec2 p, float sides)
+{
+    float a   = atan(p.y, p.x);
+    float r   = length(p);
+    float seg = 3.14159265 / sides;
+    a = mod(a + 3.14159265, 2.0 * seg) - seg;
+    a = abs(a);
+    return vec2(cos(a), sin(a)) * r;
+}
 vec3 img(vec2 uv) { return (interpolation * texture2D(tex0, uv)
                           + (1.0 - interpolation) * texture2D(tex1, uv)).rgb; }
 
@@ -51,16 +71,16 @@ vec3 hueRot(vec3 c, float a)
 
 // Distance to one truchet wire loop + accumulate its glow into O.  Returns the
 // distance (used by the raymarcher).
-float wire(vec3 p, float t, float T, inout vec4 O)
+float wire(vec3 p, float t, float T, float snapV, float glowV, inout vec4 O)
 {
     vec3 q = p;
     q.xy += 0.5;
     float d = length(vec2(length(q.xy) - 0.5, q.z)) - 0.01;   // torus
-    float ang = floor((atan(q.y, q.x) - T) * 3.8 + 0.5) / 3.8 + T;  // truchet snap
+    float ang = floor((atan(q.y, q.x) - T) * snapV + 0.5) / snapV + T;  // truchet snap
     q.yx = rot(ang) * q.yx;
     q.x -= 0.5;
     O += (sin(t + T) * 0.1 + 0.1) * (1.0 + cos(t + T * 0.5 + vec4(0.0, 1.0, 2.0, 0.0)))
-         / (0.5 + pow(length(q) * 50.0, 1.3));
+         / (0.5 + pow(length(q) * glowV, 1.3));
     return d;
 }
 
@@ -69,7 +89,12 @@ void main()
     vec2  R = resolution;
     vec2  F = 2.0 * gl_FragCoord.xy - R;         // centred pixel coords
     float T = time;
-    float trav = time + audioAdvance * 3.0;      // forward travel (jump-free)
+    // Per-activation character (constant during the scene):
+    float snapV = (snapP <= 0.01) ? 3.8 : snapP;
+    float travV = (travP <= 0.01) ? 1.0 : travP;
+    // Wire glow width breathes with the slow swell (loudness -> size).
+    float glowV = ((glowP <= 0.01) ? 50.0 : glowP) * (1.0 - 0.12 * audioSwell);
+    float trav  = (time + audioAdvance * 3.0) * travV;   // forward travel (jump-free)
 
     vec4  O = vec4(0.0);
     float t = 0.0;
@@ -80,9 +105,9 @@ void main()
         p.zy = rot(T / 3.0) * p.zy;
         p.x += trav;                                       // fly forward
         vec3 pf = fract(p) - 0.5;
-        float d1 = wire(pf, t, T, O);
-        float d2 = wire(vec3(-pf.y, pf.z, pf.x), t, T, O);
-        float d3 = wire(-vec3(pf.z, pf.x, pf.y), t, T, O);
+        float d1 = wire(pf, t, T, snapV, glowV, O);
+        float d2 = wire(vec3(-pf.y, pf.z, pf.x), t, T, snapV, glowV, O);
+        float d3 = wire(-vec3(pf.z, pf.x, pf.y), t, T, snapV, glowV, O);
         t += min(min(d1, d2), d3);
     }
 
@@ -95,9 +120,25 @@ void main()
     col = mix(vec3(lum), col, 0.6 + 0.6 * audioValence);
 
     // Image-forward: the picture colours the wires + drifts as a faint nebula.
+    // The hue additionally sweeps gently once per bar (continuous across the
+    // bar wrap because sin(2*pi*0) == sin(2*pi*1)).
     float himg = dot(imgPal(dot(col, vec3(0.333)) * 6.0
                  + length(gl_FragCoord.xy / resolution - 0.5) * 4.0), vec3(0.333));
-    col = hueRot(col, (himg - 0.5) * 3.0 + time * 0.05);
+    col = hueRot(col, (himg - 0.5) * 3.0 + time * 0.05
+                      + 0.45 * sin(audioBarPhase * 6.28318));
+
+    // Per-activation: a spinning n-fold kaleidoscopic image rosette woven into
+    // the wires (squared -> only its bright parts, keeps the depth).
+    if (kSides >= 2)
+    {
+        float ka = time * 0.02 + audioPhase * 0.04;
+        vec2  kp = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
+        kp = mat2(cos(ka), sin(ka), -sin(ka), cos(ka)) * kp;
+        vec3 ros = img(fract(kaleido(kp, float(kSides)) * 0.8 + 0.5));
+        float rosW = (rosetteP <= 0.001) ? 0.22 : rosetteP;
+        col += ros * ros * rosW * (0.6 + 0.4 * audioLevel);
+    }
+
     col *= 0.9 + 0.5 * audioLevel;
 
     gl_FragColor = vec4(col, 1.0);
