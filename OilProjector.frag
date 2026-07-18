@@ -23,9 +23,12 @@ uniform float audioBeatPhase;
 uniform float audioOnset;
 uniform float audioValence;
 uniform float audioCentroid;
-uniform float audioUpperMid;
 uniform float audioStereo;
-uniform float audioChromaHue;
+uniform float audioSwell;     // slow loudness swell -> the "heat" of the oil
+
+// Per-activation variety (re-rolled each activation; 0 = default):
+uniform int   sidesP;         // mirror fold count (0 -> 4; 2..8)
+uniform float cellP;          // oil cell scale    (0 -> 2.0; 1.4 = broad, 3.0 = fine)
 
 const float PI = 3.14159265358979;
 
@@ -67,16 +70,22 @@ void main()
     p = rot(time * 0.05 + audioPhase * 0.18) * p;
     p *= 1.0 - 0.06 * audioBeat - 0.03 * sin(audioBeatPhase * 6.2831);
 
-    float sides = floor(2.0 + 6.0 * audioValence);
+    // Fold count is FIXED per activation (a floor(audio) fold used to snap the
+    // whole frame whenever the valence crossed a step -> abrupt changes).
+    float sides = float((sidesP >= 2) ? sidesP : 4);
     vec2  fp    = kaleido(p, sides);
+    float cellS = (cellP <= 0.01) ? 2.0 : cellP;
 
     float t    = time * 0.08 + audioAdvance * 0.30;
-    float heat = 0.6 + 1.4 * audioBass + 0.7 * audioOnset;
+    // "Heat" must be SLOW: it displaces the whole cell field, so driving it
+    // with per-beat bass/onset made everything shiver.  The slow swell (plus a
+    // whisper of bass) keeps the bubbling calm but still loudness-coupled.
+    float heat = 0.7 + 0.45 * audioSwell + 0.20 * audioBass;
 
-    vec2 asym = vec2(audioStereo * 0.4 * sin(fp.y * 3.0 + t), 0.0);
-    vec2 q    = vec2(fbm(fp * 2.0 + vec2(0.0, t) + asym),
-                     fbm(fp * 2.0 + vec2(5.2, t * 1.1) - asym));
-    vec2 r    = fp * 2.5 + heat * q + vec2(t * 0.5, 0.0);
+    vec2 asym = vec2(audioStereo * 0.15 * sin(fp.y * 3.0 + t), 0.0);
+    vec2 q    = vec2(fbm(fp * cellS + vec2(0.0, t) + asym),
+                     fbm(fp * cellS + vec2(5.2, t * 1.1) - asym));
+    vec2 r    = fp * cellS * 1.25 + heat * q + vec2(t * 0.5, 0.0);
     float cells = fbm(r * 1.5);
 
     // Dark oil veins along the cell boundaries (crisper with treble).
@@ -86,14 +95,16 @@ void main()
     vec2 iuv = fp * 0.6 + 0.5 + (q - 0.5) * (0.12 + 0.10 * audioBass);
     vec3 pic = img(fract(iuv));
 
-    // Iridescent harmony tint drifting with the cells.
-    float hue  = fract(cells * 1.2 + audioChromaHue + 0.3 * audioValence);
+    // Iridescent tint drifting with the cells.  The tint hue moves only via
+    // SLOW terms (the jumpy chroma-hue snap was the "abrupt colour change").
+    float hue  = fract(cells * 1.2 + time * 0.012 + audioPhase * 0.03
+                       + 0.15 * audioValence);
     vec3  tint = 0.5 + 0.5 * cos(6.2831 * (hue + vec3(0.0, 0.33, 0.67)));
 
     vec3 col = pic * (0.6 + 0.7 * cells);
     col = mix(col, col * tint * 1.8, 0.55);            // stain the picture
     col *= mix(0.55, 1.05, vein);                      // gentle vein shading
-    col *= 1.0 - 0.3 * audioUpperMid * (1.0 - vein);   // treble sharpens veins
+    col *= 1.0 - 0.2 * audioCentroid * (1.0 - vein);   // bright timbre crisps veins
     col *= 1.35;                                       // overall exposure lift
     col += tint * 0.05;                                // faint glow so cells never go black
     col += (audioBeat * 0.20 + audioOnset * 0.30) * col;

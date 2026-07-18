@@ -21,12 +21,17 @@ uniform float interpolation;
 uniform float audioBass;
 uniform float audioLevel;
 uniform float audioBeat;
-uniform float audioFlux;
 uniform float audioCentroid;
 uniform float audioValence;
 uniform float audioStereo;
 uniform float audioPhase;
-uniform float audioDeltaPitch;
+uniform float audioSwell;      // slow loudness swell -> vein scale breathes
+uniform float audioBarPhase;   // 0..1 per bar -> gentle per-bar hue sweep
+
+// Per-activation variety (re-rolled each activation; 0 = default):
+uniform int   sidesP;          // mirror fold count (0 -> 4; 3..8)
+uniform float veinP;           // vein frequency    (0 -> 7.0; 5 = broad, 10 = filigree)
+uniform float swirlP;          // radial swirl amount (0 -> none; up to ~0.8)
 
 const float PI = 3.14159265358979;
 
@@ -65,17 +70,37 @@ vec2 kaleido(vec2 p, float sides)
     return vec2(cos(a), sin(a)) * r;
 }
 
+vec3 imgPal(float x)
+{
+    vec2 cc = vec2(0.5) + 0.32 * vec2(cos(time * 0.045 + audioPhase * 0.12),
+                                      sin(time * 0.033 + audioPhase * 0.09));
+    return img(fract(cc + 0.24 * vec2(cos(x), sin(x * 1.31))));
+}
+
+vec3 hueRot(vec3 c, float a)
+{
+    vec3  k = vec3(0.57735026919);
+    float cs = cos(a), sn = sin(a);
+    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+}
+
 void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution.xy;
     vec2 p  = (gl_FragCoord.xy - 0.5 * resolution.xy) / resolution.y;
 
     p = rot(audioPhase * 0.15 + time * 0.02) * p;
-    p.x *= 1.0 + audioStereo * 0.5;                  // stereo stretch
+    p.x *= 1.0 + audioStereo * 0.15;                 // gentle stereo stretch
 
-    // Fixed fold count: driving it from a floor(audio) term made the whole
-    // pattern snap between symmetries.  Keep it constant for smooth flow.
-    vec2  fp = kaleido(p, 4.0);
+    // Per-activation radial swirl: the whole flow winds into a slow spiral.
+    if (swirlP > 0.001)
+    {
+        float ang = swirlP * length(p) * 1.6 + audioPhase * 0.08;
+        p = rot(ang) * p;
+    }
+
+    // Fold count fixed per activation (audio-stepped folds snap the frame).
+    vec2  fp = kaleido(p, float((sidesP >= 2) ? sidesP : 4));
 
     float t  = time * 0.08 + audioPhase * 0.2;
     vec2  q  = vec2(fbm(fp * 2.0 + vec2(0.0, t)), fbm(fp * 2.0 + vec2(5.2, t * 1.1)));
@@ -87,19 +112,30 @@ void main()
     vec2 iuv = fp * 0.6 + 0.5 + (rr - 0.5) * (0.10 + 0.12 * audioLevel);
     vec3 pic = img(fract(iuv));
 
-    // Glowing veins along the cell boundaries.  Keep the spatial frequency's
-    // audio swing small so the banding morphs smoothly instead of snapping.
-    float scale = 7.0 + 3.0 * audioBass;
+    // Glowing veins along the cell boundaries.  Vein frequency is constant per
+    // activation and breathes only with the SLOW swell (the old per-beat bass
+    // swing rescaled the banding every beat -> hectic crawling).
+    float scale = ((veinP <= 0.01) ? 7.0 : veinP) * (1.0 + 0.10 * audioSwell);
     float band  = sin(v * scale + t * 2.0);
     float vein  = 1.0 - smoothstep(0.0, 0.18, abs(band));
+    // A second, finer filigree octave between the main veins.
+    float band2 = sin(v * scale * 2.7 + t * 3.0 + 1.7);
+    float vein2 = (1.0 - smoothstep(0.0, 0.10, abs(band2))) * 0.45;
 
-    vec3 veinCol = mix(vec3(0.20, 0.80, 0.70), vec3(1.0, 0.60, 0.20), audioValence);
+    // Vein colour comes from a drifting crop of the IMAGE (not a fixed
+    // teal/orange), warmed/cooled by the valence.
+    vec3 veinCol = imgPal(v * 4.0) * 1.6;
+    veinCol = mix(veinCol, veinCol * vec3(1.25, 0.85, 0.55), 0.5 * audioValence);
 
     vec3 col = pic * (0.5 + 0.8 * audioLevel);
-    col = mix(col, veinCol * (0.8 + 1.6 * audioBeat), vein * 0.6);
+    col = mix(col, veinCol * (0.8 + 1.4 * audioBeat), vein * 0.6);
+    col = mix(col, veinCol * 1.2, vein2 * (0.3 + 0.3 * audioCentroid));
     col += vein * audioBeat * 0.3 * veinCol;
-    col *= (1.0 + 0.2 * audioFlux);
+    col *= (1.0 + 0.15 * audioSwell);
     col *= 1.0 - 0.25 * dot(p, p);
+
+    // Gentle per-bar hue sweep (continuous across the bar wrap).
+    col = hueRot(col, 0.35 * sin(audioBarPhase * 6.28318));
 
     gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }
