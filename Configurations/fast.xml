@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <configuration ImageDirectory="C:\\Users\\rene\\Desktop\\BilderPhotoechoes" ConfigurationName="Fast" timeTextureSoloMin="10" timeTextureSoloMax="40" timeTextureInterpolationMin="20" timeTextureInterpolationMax="80" >
 
   <!--
@@ -54,6 +54,9 @@
 
   <!-- Voronoi Pulse (beat-flaring cells) -->
   <TextureShader minTimeSolo="15" maxTimeSolo="50" minTimeInterpolation="10" maxTimeInterpolation="30" file="..\\VoronoiPulse.frag" type="normal" probability="0.7" complexity="1">
+    <int name="sidesP" minValue="3" maxValue="9"></int>
+    <float name="scaleP" minValue="2.2" maxValue="4.5"></float>
+    <float name="driftP" minValue="0.6" maxValue="1.5"></float>
   </TextureShader>
 
   <!-- Fractal KIFS (kaleidoscopic fractal) -->

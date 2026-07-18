@@ -26,11 +26,19 @@ uniform float audioPhase;
 uniform float audioAdvance;
 uniform float audioBeat;
 uniform float audioOnset;
+uniform float audioBeatPhase; // continuous beat phase -> tempo-locked ring waves
 uniform float audioBarPhase;
 uniform float audioSwell;
 uniform float audioLevel;
 uniform float audioCentroid;
 uniform float audioValence;
+uniform float audioSpectrum[32];   // 32 log bands -> the lattice becomes an analyzer
+
+// Per-activation variety (re-rolled each activation; 0 = default):
+uniform int   sidesP;         // mirror fold count   (0 -> 6; 4..9)
+uniform float latticeP;       // beat-shard density  (0 -> 3.0; 2 = large, 4.5 = fine)
+uniform float warpAmtP;       // drone warp amount   (0 -> 0.22; 0.15..0.35)
+uniform float swirlP;         // drone spiral amount (0 -> none; up to ~0.7)
 
 const float PI = 3.14159265358979;
 
@@ -89,12 +97,17 @@ void main()
     vec2 p  = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
     p = rot(audioPhase * 0.15 + time * 0.015) * p;
 
+    // Per-activation character (constant during the scene):
+    float sidesV   = float((sidesP >= 3) ? sidesP : 6);
+    float latticeV = (latticeP <= 0.01) ? 3.0  : latticeP;
+    float warpAmtV = (warpAmtP <= 0.001) ? 0.22 : warpAmtP;
+
     // ---------- BEAT personality: angular mirrored shards ----------
     vec3 beatCol;
     {
-        vec2 fp = kaleido(p, 6.0);
+        vec2 fp = kaleido(p, sidesV);
         // Angular folding: hard abs() creases give crisp, spiky geometry.
-        vec2 q = fp * 3.0;
+        vec2 q = fp * latticeV;
         q = abs(fract(q) - 0.5);
         float crease = min(q.x, q.y);
         float edges  = smoothstep(0.10, 0.02, crease);          // sharp lattice lines
@@ -107,9 +120,23 @@ void main()
         float swp  = 0.5 + 0.5 * cos((ang - audioBarPhase) * 2.0 * PI);
         swp = swp * swp;
 
+        // Spectrum wheel: each direction follows its own frequency band, so
+        // the lattice doubles as a circular analyzer (mirrored, 0 = bass at
+        // the sweep origin).  Slew-limited bands -> shimmer, not strobe.
+        float wf  = ang * 64.0;
+        float binf = (mod(wf, 64.0) < 32.0) ? mod(wf, 64.0) : (63.0 - mod(wf, 64.0));
+        float amp  = audioSpectrum[int(clamp(binf, 0.0, 31.0))];
+
+        // Tempo-locked ring waves radiating from the centre (continuous
+        // beat phase -> they travel smoothly and land ON the beat).
+        float ring = cos(6.2831 * (length(p) * 0.9 - audioBeatPhase));
+        ring = ring * ring * audioBeat;
+
         beatCol = pic * (0.55 + 0.55 * audioBeat + 0.25 * audioOnset);
         beatCol += edges * imgPal(crease * 8.0) * (0.5 + 1.4 * audioBeat) * 1.4;
         beatCol *= 0.75 + 0.5 * swp;
+        beatCol *= 0.85 + 0.35 * amp;              // spectrum wheel
+        beatCol += beatCol * 0.30 * ring;          // travelling tempo rings
     }
 
     // ---------- DRONE personality: soft breathing clouds ----------
@@ -117,15 +144,22 @@ void main()
     {
         // Looming: the slow swell gently expands the view (loudness -> approach).
         vec2 dp = p / (1.0 + 0.10 * audioSwell);
+        // Per-activation spiral: the clouds wind slowly around the centre.
+        if (swirlP > 0.001)
+        {
+            float sa = swirlP * length(dp) * 1.4 + audioPhase * 0.06;
+            dp = rot(sa) * dp;
+        }
         float t = time * 0.02 + audioAdvance * 0.15;
         vec2 warp = vec2(fbm(dp * 1.6 + vec2(0.0, t)),
                          fbm(dp * 1.6 + vec2(5.2, t * 1.1)));
-        vec2 iuv = dp * 0.55 + 0.5 + (warp - 0.5) * 0.22;     // round, curved flow
+        vec2 iuv = dp * 0.55 + 0.5 + (warp - 0.5) * warpAmtV;  // round, curved flow
         vec3 pic = img(fract(iuv));
 
         float glow = fbm(dp * 2.2 + warp * 2.0 - t);
         droneCol = pic * (0.55 + 0.45 * glow + 0.35 * audioSwell);
-        droneCol += imgPal(glow * 3.0) * glow * glow * (0.25 + 0.45 * audioSwell);
+        droneCol += imgPal(glow * 3.0 + 0.5 * sin(audioBarPhase * 6.2831))
+                  * glow * glow * (0.25 + 0.45 * audioSwell);
     }
 
     // ---------- Cross-fade by the (slow) music-type classifier ----------

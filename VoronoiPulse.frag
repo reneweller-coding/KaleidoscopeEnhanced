@@ -23,10 +23,14 @@ uniform float interpolation;
 uniform float audioBeat;
 uniform float audioLevel;
 uniform float audioCentroid;
-uniform float audioFlux;
-uniform float audioPitch;
 uniform float audioValence;
 uniform float audioPhase;
+uniform float audioSwell;     // slow loudness swell -> shard field breathes
+
+// Per-activation variety (re-rolled each activation; 0 = default):
+uniform int   sidesP;         // mirror fold count (0 -> 4; 3..8)
+uniform float scaleP;         // shard density     (0 -> 3.0; 2.2 = big shards, 4.5 = fine)
+uniform float driftP;         // shard drift speed multiplier (0 -> 1.0)
 
 const float PI = 3.14159265358979;
 
@@ -60,16 +64,22 @@ void main()
     p = rot(audioPhase * 0.18 + time * 0.015) * p;
     p *= 1.0 - 0.025 * audioBeat;
 
-    // Kaleidoscopic symmetry: a calm, fixed 4-fold (was up to 8 and stepping with
-    // the audio, which made it frantic and snappy).
-    vec2  fp = kaleido(p, 4.0);
+    // Kaleidoscopic symmetry: fixed per activation (never audio-stepped).
+    vec2  fp = kaleido(p, float((sidesP >= 2) ? sidesP : 4));
 
-    // Voronoi shards on the folded plane; pitch sets density but stays LOW so the
-    // shards are large and readable, not an overwhelming fine mosaic.
-    float scale = 2.4 + 2.2 * audioPitch;
+    // Voronoi shards on the folded plane.  The grid scale is CONSTANT during a
+    // scene (driving it from the detected pitch made the whole mosaic
+    // reorganise itself whenever the melody moved -> flicker); only the slow
+    // swell breathes it a little.
+    float scale = ((scaleP <= 0.01) ? 3.0 : scaleP) * (1.0 + 0.05 * audioSwell);
     vec2  g  = fp * scale;
     vec2  gi = floor(g);
     vec2  gf = fract(g);
+
+    // Shard drift: phase is time + the INTEGRATED audio phase (the old
+    // time * audioFlux term remapped every cell's phase each block -> jitter).
+    float driftV = (driftP <= 0.01) ? 1.0 : driftP;
+    float dph    = (time * 0.10 + audioPhase * 0.25) * driftV;
 
     float d1 = 8.0, d2 = 8.0;
     vec2  rel = vec2(0.0);
@@ -78,8 +88,7 @@ void main()
     {
         vec2  o   = vec2(float(x), float(y));
         vec2  rnd = hash22(gi + o);
-        vec2  c   = o + 0.5 + 0.30 * sin(time * (0.12 + 0.22 * audioFlux)
-                                         + 6.2831 * rnd + audioPhase);
+        vec2  c   = o + 0.5 + 0.30 * sin(dph + 6.2831 * rnd);
         vec2  diff = c - gf;
         float dd   = length(diff);
         if (dd < d1) { d2 = d1; d1 = dd; rel = diff; }
@@ -98,8 +107,8 @@ void main()
 
     // Backlit seams: warm/cool by valence, glowing softly (not a hard flare).
     vec3 seamCol = mix(vec3(0.25, 0.55, 1.0), vec3(1.0, 0.55, 0.2), audioValence);
-    col = mix(col, seamCol * (0.6 + 1.0 * audioBeat + 0.3 * audioCentroid),
-              seam * (0.30 + 0.30 * audioBeat));
+    col = mix(col, seamCol * (0.6 + 0.7 * audioBeat + 0.3 * audioCentroid),
+              seam * (0.30 + 0.25 * audioBeat));
 
     // Jewel vignette.
     col *= 1.0 - 0.30 * dot(p, p);

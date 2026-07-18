@@ -148,6 +148,10 @@
       type="normal"
       probability="0.8"
       complexity="1">
+    <float name="waxHueP" minValue="0.0" maxValue="6.28"></float>
+    <float name="speedP" minValue="0.6" maxValue="1.6"></float>
+    <float name="sizeP" minValue="0.8" maxValue="1.4"></float>
+    <int name="countP" minValue="4" maxValue="9"></int>
   </TextureShader>
 
   <!-- Oil Projector (Mathmos-style liquid light show) -->
@@ -158,6 +162,8 @@
       type="normal"
       probability="0.8"
       complexity="2">
+    <int name="sidesP" minValue="2" maxValue="9"></int>
+    <float name="cellP" minValue="1.4" maxValue="3.0"></float>
   </TextureShader>
 
   <!-- Drone Depths (ambient-first nebula: swell-looming, pitch-elevation) -->
@@ -178,6 +184,10 @@
       type="normal"
       probability="0.6"
       complexity="1">
+    <int name="sidesP" minValue="4" maxValue="10"></int>
+    <float name="latticeP" minValue="2.0" maxValue="4.5"></float>
+    <float name="warpAmtP" minValue="0.15" maxValue="0.35"></float>
+    <float name="swirlP" minValue="0.0" maxValue="0.7"></float>
   </TextureShader>
 
   <!--
