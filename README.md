@@ -160,6 +160,18 @@ Each `<TextureShader>` / `<CombineShader>` entry names a `.frag` file, solo/
 cross-fade times (scaled adaptively by tempo), a `probability` and a
 `complexity`. Adjust the `ImageDirectory` attribute to point at your own photos.
 
+**Per-activation variety:** `<bool>/<int>/<float>` child parameters are
+re-rolled every time a shader is activated, so one shader yields many looks.
+The adapted Shadertoy set uses this heavily — e.g. `MobiusOrbs` re-rolls its
+zoom, orb size/radius and the **length and superellipse shape of its orbs**
+(`stretchP` / `shapeP`), `Voyager` can fold the source image into a slowly
+spinning n-segment kaleidoscopic rosette (`kSides`) with a per-flight corridor
+height and speed, `DiscoGodrays` varies facet density and ray thickness,
+`HexKaleido` zoom + swirl, `NoiseSpiral` twist + turbulence, `FractalBloom`
+cell density + ring frequency, `SphereGrid` lattice spacing.  All parameters
+follow the convention *absent/0 → the shader's original default*, so bare
+entries (and old presets) keep working unchanged.
+
 You don't have to hand-edit the XML — see the **Preset editor** below.
 
 ### Preset editor (standalone tool)

@@ -20,6 +20,10 @@ uniform sampler2D tex1;
 uniform float interpolation;
 
 uniform float audioPhase;
+
+// Per-activation variety (re-rolled each activation; 0 = default):
+uniform float iterZoomP;   // per-iteration zoom (0 -> 1.5; 1.3 = airy, 1.8 = dense)
+uniform float ringFreqP;   // ring frequency     (0 -> 8.0; 5 = broad, 12 = filigree)
 uniform float audioBeat;
 uniform float audioOnset;
 uniform float audioLevel;
@@ -42,10 +46,14 @@ void main()
     vec2  uv0 = uv;
     float T   = time + audioPhase * 0.3;
 
+    // Per-activation fractal character (constant during the scene):
+    float iterZoom = (iterZoomP <= 0.01) ? 1.5 : iterZoomP;
+    float ringFreq = (ringFreqP <= 0.01) ? 8.0 : ringFreqP;
+
     vec3 col = vec3(0.0);
     for (int i = 0; i < 4; i++)
     {
-        uv = fract(uv * 1.5) - 0.5;
+        uv = fract(uv * iterZoom) - 0.5;
         float d = length(uv) * exp(-length(uv0));
         vec3  c = palette(length(uv0) + float(i) * 0.4 + T * 0.4);
 
@@ -54,7 +62,7 @@ void main()
         vec3 pic = img(fract(uv + 0.5 + 0.12 * vec2(cos(T * 0.1), sin(T * 0.08))));
         c *= mix(vec3(1.0), pic * 1.7, 0.6);
 
-        d = sin(d * 8.0 + T) / 8.0;
+        d = sin(d * ringFreq + T) / ringFreq;
         d = abs(d);
         d = pow(0.01 / d, 1.2);
         col += c * d;

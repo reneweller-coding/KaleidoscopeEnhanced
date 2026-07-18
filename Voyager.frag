@@ -27,11 +27,31 @@ uniform float audioBeat;
 uniform float audioBass;
 uniform float audioLevel;
 uniform float audioOnset;
+uniform float audioSwell;
 uniform float audioCentroid;
 uniform float audioValence;
 
+// Per-activation variety (re-rolled by the engine each activation; 0 = default):
+uniform int   kSides;      // >=2: fold the image KALEIDOSCOPICALLY with this many
+                           // mirror segments (0 = the original simple abs-fold)
+uniform float travelMul;   // flight-speed multiplier      (0 -> 1.0)
+uniform float cellH;       // corridor cell height         (0 -> 2.0)
+
+const float PI = 3.14159265358979;
+
 vec3 img(vec2 uv) { return (interpolation * texture2D(tex0, uv)
                           + (1.0 - interpolation) * texture2D(tex1, uv)).rgb; }
+
+// n-fold kaleidoscopic mirror fold of a centred coordinate.
+vec2 kaleido(vec2 p, float sides)
+{
+    float a   = atan(p.y, p.x);
+    float r   = length(p);
+    float seg = PI / sides;
+    a = mod(a + PI, 2.0 * seg) - seg;
+    a = abs(a);
+    return vec2(cos(a), sin(a)) * r;
+}
 
 // Colour from a slowly-drifting crop of the picture, indexed by a scalar so the
 // palette comes from the image and keeps changing over time + with the harmony.
@@ -56,15 +76,32 @@ void main()
     // Mirror-folded, aspect-normalised screen coordinate (the kaleidoscopic fold).
     vec2 u = abs(gl_FragCoord.xy + gl_FragCoord.xy - R) / R.y;
 
-    // Source image sampled once through the folded coord: colours the light field
-    // and its brightness shifts the palette along the ray.
-    vec2  iuv    = vec2(u.x * R.y / R.x, u.y);
+    // Source image sampled through a fold: either the original simple mirror
+    // fold, or (per-activation) a true n-segment kaleidoscopic fold of the
+    // picture — the image becomes a radiating rosette woven into the light field.
+    vec2 iuv;
+    if (kSides >= 2)
+    {
+        // Slowly spinning n-segment rosette (jump-free: time + integrated phase).
+        float ka = time * 0.02 + audioPhase * 0.04;
+        vec2  kp = (gl_FragCoord.xy - 0.5 * R) / R.y;
+        kp  = mat2(cos(ka), sin(ka), -sin(ka), cos(ka)) * kp;
+        iuv = kaleido(kp, float(kSides)) * 0.8 + 0.5;
+    }
+    else
+        iuv = vec2(u.x * R.y / R.x, u.y);
     vec3  pic    = img(fract(iuv));
     float picLum = dot(pic, vec3(0.299, 0.587, 0.114));
 
     float T    = time;                        // rotation clock
-    float trav = time + audioAdvance * 4.0;   // forward travel (jump-free)
-    vec3  f    = vec3(0.2, 2.0, 0.2);         // cell size
+    float tm   = (travelMul <= 0.01) ? 1.0 : travelMul;   // constant per activation
+    float trav = (time + audioAdvance * 4.0) * tm;        // forward travel (jump-free)
+    // Corridor cell height: per-activation base, BREATHING with the slow swell
+    // and (slew-limited) bass — the research's "modulate the fold constants":
+    // the whole repeating world gently expands with the music's energy.
+    float ch = ((cellH <= 0.01) ? 2.0 : cellH)
+             * (1.0 + 0.20 * audioSwell + 0.08 * audioBass);
+    vec3  f  = vec3(0.2, ch, 0.2);            // cell size
 
     // Ray direction: the folded coord, rotated slowly over time (+ gentle audio).
     float a    = T / 16.0 + audioPhase * 0.10;
@@ -109,6 +146,12 @@ void main()
     float himg = dot(imgPal(dot(col, vec3(0.333)) * 6.0
                  + length(gl_FragCoord.xy / resolution - 0.5) * 4.0), vec3(0.333));
     col = hueRot(col, (himg - 0.5) * 3.0 + time * 0.05);
+
+    // The folded picture itself shimmers through as a kaleidoscopic rosette
+    // (squared -> only its bright parts, so the depth is preserved).  In the
+    // true-kaleido variants the rosette is the point, so it gets more weight.
+    float rosW = (kSides >= 2) ? 0.28 : 0.10;
+    col += pic * pic * rosW * (0.5 + 0.5 * audioLevel);
 
     col *= 0.9 + 0.5 * audioLevel;
 

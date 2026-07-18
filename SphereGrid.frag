@@ -21,8 +21,12 @@ uniform float audioPhase;
 uniform float audioBeat;
 uniform float audioOnset;
 uniform float audioLevel;
+uniform float audioSwell;
 uniform float audioCentroid;
 uniform float audioValence;
+
+// Per-activation variety (re-rolled each activation; 0 = default):
+uniform float spacingP;   // lattice fold spacing (0 -> 4.0; 3 = dense, 6 = sparse)
 
 vec3 img(vec2 uv) { return (interpolation * texture2D(tex0, uv)
                           + (1.0 - interpolation) * texture2D(tex1, uv)).rgb; }
@@ -47,13 +51,17 @@ void main()
     float fov = mix(1.0, 2.0, sin(s + 3.14159) * 0.5 + 0.5);
     vec3  t   = normalize(vec3((2.0 * gl_FragCoord.xy - n) / n.y * fov, 1.0));
     vec3  r   = vec3(0.0), a;
+    // Fold spacing: per-activation base, BREATHING with the slow swell (the
+    // research's "modulate the fold constants" — the whole sphere lattice
+    // gently expands as the music builds; slow signal, so no jumps).
+    float sp = ((spacingP <= 0.01) ? 4.0 : spacingP) * (1.0 + 0.10 * audioSwell);
     float d = 0.0, l = 1.0;
     for (int i = 0; i < 200; i++)
     {
         if (!(d < 150.0 && l > 0.001)) break;
         a = r + d * t;
         a.z += sAdv;
-        d += l = length(mod(a + 2.0, 4.0) - 2.0) - step(1.0, abs(a.y)) + 0.001;
+        d += l = length(mod(a + sp * 0.5, sp) - sp * 0.5) - step(1.0, abs(a.y)) + 0.001;
     }
 
     float fov2 = mix(1.0, 2.3, sin(s) * 0.5 + 0.5);

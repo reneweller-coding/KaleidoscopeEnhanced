@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <configuration ImageDirectory="C:\\Users\\rene\\Desktop\\BilderPhotoechoes" ConfigurationName="Normal" timeTextureSoloMin="10" timeTextureSoloMax="40" timeTextureInterpolationMin="20" timeTextureInterpolationMax="80" >
 
   <!--
@@ -49,6 +49,9 @@
 
   <!-- Voyager (volumetric kaleidoscopic fly-through, after kishimisu) -->
   <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\Voyager.frag" type="normal" probability="0.5" complexity="2">
+    <int name="kSides" minValue="0" maxValue="9"></int>
+    <float name="travelMul" minValue="0.6" maxValue="1.6"></float>
+    <float name="cellH" minValue="1.2" maxValue="3.0"></float>
   </TextureShader>
 
   <!-- Flowing Wires (3D truchet of glowing wire loops, after kishimisu) -->
@@ -57,10 +60,14 @@
 
   <!-- Fractal Bloom (glowing fractal flower, after kishimisu) -->
   <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\FractalBloom.frag" type="normal" probability="0.5" complexity="1">
+    <float name="iterZoomP" minValue="1.3" maxValue="1.8"></float>
+    <float name="ringFreqP" minValue="5.0" maxValue="12.0"></float>
   </TextureShader>
 
   <!-- Disco Godrays (kaleidoscopic volumetric godrays, after kishimisu) -->
   <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\DiscoGodrays.frag" type="normal" probability="0.5" complexity="2">
+    <float name="facetP" minValue="0.2" maxValue="0.5"></float>
+    <float name="tubeP" minValue="0.03" maxValue="0.09"></float>
   </TextureShader>
 
   <!-- Inside the System (neon torus lights, after kishimisu) -->
@@ -89,14 +96,22 @@
 
   <!-- Sphere Grid (fly-through of an infinite sphere lattice, after kishimisu) -->
   <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\SphereGrid.frag" type="normal" probability="0.5" complexity="2">
+    <float name="spacingP" minValue="3.0" maxValue="6.0"></float>
   </TextureShader>
 
   <!-- Hex Kaleido (hexagonal jewel kaleidoscope) -->
   <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\HexKaleido.frag" type="normal" probability="0.5" complexity="1">
+    <float name="zoomP" minValue="0.7" maxValue="1.6"></float>
+    <float name="swirlP" minValue="0.0" maxValue="0.5"></float>
   </TextureShader>
 
   <!-- Mobius Orbs (Mobius-inversion orb knot) -->
   <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\MobiusOrbs.frag" type="normal" probability="0.5" complexity="2">
+    <float name="zoomP" minValue="0.04" maxValue="0.28"></float>
+    <float name="orbSizeP" minValue="4.0" maxValue="11.0"></float>
+    <float name="radiusP" minValue="3.0" maxValue="14.0"></float>
+    <float name="stretchP" minValue="0.3" maxValue="2.5"></float>
+    <float name="shapeP" minValue="0.2" maxValue="1.5"></float>
   </TextureShader>
 
   <!-- Breathing Fractal (pulsing fold-and-rotate lattice) -->
@@ -113,6 +128,8 @@
 
   <!-- Noise Spiral (raymarched turbulent spiral tunnel) -->
   <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\NoiseSpiral.frag" type="normal" probability="0.5" complexity="2">
+    <float name="twistP" minValue="0.1" maxValue="0.35"></float>
+    <float name="turbP" minValue="0.18" maxValue="0.45"></float>
   </TextureShader>
 
   <!-- Metamorph (music-type adaptive: angular beat shards <-> soft drone clouds) -->

@@ -24,17 +24,24 @@ uniform float audioPhase;
 uniform float audioBeat;
 uniform float audioOnset;
 uniform float audioLevel;
+uniform float audioBass;
 uniform float audioCentroid;
 uniform float audioValence;
+
+// Per-activation variety (re-rolled by the engine each time the effect comes
+// on): the original's three #define "variants" differed mainly in these very
+// numbers, so rolling them turns one shader into a whole family of looks.
+// All default to the "Variant 01" values when 0 / absent from the config.
+uniform float zoomP;      // 0 -> 0.07   (0.27 = original "Variant 02" look)
+uniform float orbSizeP;   // 0 -> 6.46
+uniform float radiusP;    // 0 -> 11.0
+uniform float stretchP;   // 0 -> 1.2    max extra ellipse aspect (length variance)
+uniform float shapeP;     // 0 -> 0.6    circle -> superellipse shape variance
 
 const float PI   = 3.141592;
 const float ORBS = 20.0;
 
-// "Variant 01" constants from the original.
-const float ZOOM       = 0.07;
 const float CONTRAST   = 0.13;
-const float ORB_SIZE   = 6.46;
-const float RADIUS     = 11.0;
 const float COLORSHIFT = 10.32;
 const float COS_MUL    = 2.38;
 const float X_MUL      = 0.28;
@@ -60,9 +67,31 @@ vec3 hueRot(vec3 c, float a)
 
 mat2 rotate(float a) { return mat2(cos(a), -sin(a), sin(a), cos(a)); }
 
-vec4 orb(vec2 uv, float s, vec2 p, vec3 color, float c)
+// One glowing blob.  No longer a plain circle: each orb is an ELLIPSE with its
+// own orientation (golden-angle spread over the index) whose aspect drifts
+// slowly and stretches with the bass (loudness -> size/elongation, per the
+// crossmodal-correspondence research), and a per-orb SHAPE that blends from
+// round toward a soft superellipse (squarish) - so the field is a mixture of
+// long streaks, plump ovals and rounded lozenges instead of uniform circles.
+vec4 orb(vec2 uv, float s, vec2 p, vec3 color, float c, float i,
+         float stretchAmt, float shapeAmt)
 {
-    return pow(vec4(s / length(uv + p) * color, 1.0), vec4(c));
+    vec2 d = uv + p;
+
+    // Per-orb orientation, drifting on jump-free clocks only.
+    float oa = i * 2.399963 + time * 0.03 + audioPhase * 0.05;
+    d = rotate(oa) * d;
+
+    // Length variance: per-orb aspect, breathing slowly, pumped by the bass.
+    float asp = 1.0 + stretchAmt * (0.5 + 0.5 * sin(i * 1.7 + time * 0.11))
+                    * (1.0 + 0.30 * audioBass);
+    d.x /= asp;
+
+    // Shape variance: exponent 2 = circle, higher = soft superellipse.
+    float k = 2.0 + shapeAmt * (0.5 + 0.5 * sin(i * 2.3 - time * 0.07)) * 2.0;
+    float dist = pow(pow(abs(d.x), k) + pow(abs(d.y), k), 1.0 / k);
+
+    return pow(vec4(s / max(dist, 1e-4) * color, 1.0), vec4(c));
 }
 
 void main()
@@ -70,9 +99,16 @@ void main()
     vec2  fragCoord = gl_FragCoord.xy;
     float tt = time + audioAdvance * 2.0;    // jump-free (host-integrated) clock
 
+    // Per-activation parameters (0 / absent -> "Variant 01" defaults).
+    float zoomV    = (zoomP    <= 0.001) ? 0.07 : zoomP;
+    float orbSize  = (orbSizeP <= 0.001) ? 6.46 : orbSizeP;
+    float radiusV  = (radiusP  <= 0.001) ? 11.0 : radiusP;
+    float stretchV = (stretchP <= 0.001) ? 1.2  : stretchP;
+    float shapeV   = (shapeP   <= 0.001) ? 0.6  : shapeP;
+
     vec2 uv = (2.0 * fragCoord - resolution) / resolution.y;
     vec4 fragColor = vec4(0.0);
-    uv *= ZOOM;
+    uv *= zoomV;
     uv /= max(dot(uv, uv), 1e-6);             // Mobius inversion (guarded)
     uv  = uv * rotate(tt / 10.0 + audioPhase * 0.05);
 
@@ -81,12 +117,13 @@ void main()
         uv.x += cos(uv.y / Y_DIVIDE - tt);
         uv.y += COS_MUL * cos(uv.x * X_MUL) - sin(uv.x / X_DIVIDE - tt);
         float t = i * PI / ORBS * 2.0;
-        float x = RADIUS * tan(t);
-        float y = RADIUS * cos(t + tt / 10.0);
+        float x = radiusV * tan(t);
+        float y = radiusV * cos(t + tt / 10.0);
         vec2  position = vec2(x, y);
         vec3  color = cos(0.02 * uv.x + 0.02 * uv.y * vec3(-2.0, 0.0, -1.0) * PI * 2.0 / 3.0
                           + PI * (i / COLORSHIFT)) * 0.5 + 0.5;
-        fragColor += 0.65 - orb(uv, ORB_SIZE, position, 1.0 - color, CONTRAST);
+        fragColor += 0.65 - orb(uv, orbSize, position, 1.0 - color, CONTRAST,
+                                i, stretchV, shapeV);
     }
 
     vec3 col = max(fragColor.rgb, 0.0);
