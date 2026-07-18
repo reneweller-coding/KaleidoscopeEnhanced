@@ -96,6 +96,9 @@
 
   <!-- Plasma Flow (mood-tinted flowing plasma) -->
   <TextureShader minTimeSolo="15" maxTimeSolo="60" minTimeInterpolation="15" maxTimeInterpolation="45" file="..\\PlasmaFlow.frag" type="normal" probability="0.6" complexity="1">
+    <int name="sidesP" minValue="2" maxValue="9"></int>
+    <float name="scaleP" minValue="3.5" maxValue="8.0"></float>
+    <float name="flowAmtP" minValue="0.06" maxValue="0.16"></float>
   </TextureShader>
 
   <!-- Voronoi Pulse (beat-flaring cells) -->
@@ -273,6 +276,9 @@
 
   <!-- Reaction-Diffusion (live on-GPU Gray-Scott simulation) -->
   <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="15" maxTimeInterpolation="45" file="..\\ReactionDiffusion.frag" type="normal" probability="0.5" complexity="2">
+    <int name="sidesP" minValue="0" maxValue="9"></int>
+    <float name="dispP" minValue="0.3" maxValue="0.9"></float>
+    <float name="zoomP" minValue="0.7" maxValue="1.5"></float>
   </TextureShader>
 
   <!-- Lava Lamp (rising metaball wax) -->
