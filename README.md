@@ -354,6 +354,35 @@ is mixed into all the other adapted shaders above, including the three latest.
   startup — knob **CC 1/2/3** map to reactivity / trails / mood, and any pad/key
   (Note-On) advances to the next effect. No device → no-op.
 
+### Android app (Kaleidoscope Remote)
+
+`AndroidRemote\` contains a small native Android app that wraps the web
+remote in a fullscreen WebView: enter the PC's address once
+(`192.168.x.x:8080`, remembered; BACK reopens the dialog), and you get the
+full remote — live preview, presets, next-effect, blackout, favourite,
+replay, sliders — as a proper app with its own icon; the screen stays on
+while it is open.  Because ALL logic lives on the PC, the app never needs
+updating when the remote grows new controls.
+
+**Build the APK** (no Gradle / Android Studio — plain SDK tools):
+```powershell
+powershell -ExecutionPolicy Bypass -File AndroidRemote\build-apk.ps1
+```
+produces `AndroidRemote\build\KaleidoscopeRemote.apk` (signed with a local
+debug key that the script generates on first run).  One-time toolchain
+setup (~450 MB, defaults expected under `C:\Android-Buildtools\`): unzip a
+JDK 17 to `jdk17\` and the Android command-line tools to
+`sdk\cmdline-tools\latest\`, then
+`sdkmanager "platforms;android-34" "build-tools;34.0.0"`.  Paths can be
+overridden via the script's parameters.
+
+**Install & use:** copy the APK to the phone and tap it (allow "install
+unknown apps" once — it is debug-signed, not from the Play Store).  Start
+the visualizer with `-t 8080`, make sure PC and phone are on the same
+network, and allow `Kaleidoscope.exe` through the **Windows firewall**
+(private networks) when Windows asks — otherwise the phone cannot reach
+the remote.  Requires Android 8.0+ (API 26).
+
 ---
 
 ## How the audio reactivity works
