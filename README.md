@@ -412,9 +412,15 @@ Audio is captured via WASAPI loopback (`AudioAnalyzer`) and analysed in real tim
   analysis + render + scanout lag the heard audio by ~40–80 ms; the display
   phase (tempo pulse, beat/bar phase) is led by an adjustable amount
   (default 50 ms) so pulses land ON the beat you hear.
-- **Transition styles:** shader cross-fades randomly play as a classic mix,
-  a radial wipe from the centre, a fold-through-the-kaleidoscope, or a
-  zoom-through flight (rolled per transition; effect and combine blends).
+- **Transition styles (25):** each cross-fade rolls one of 25 blend styles
+  (linear stays the most common at ~20%).  Wipes/reveals: radial iris,
+  diagonal wipe, staggered blinds, mosaic dissolve, push, sliding doors,
+  clock sweep, dip-to-dark.  Edge-free full-frame morphs: kaleido folds
+  (6- and spinning 8-mirror), zoom-through, swirl, water ripple,
+  blur-through, wax melt, heat shimmer, pixelation, spin-zoom, chromatic
+  (RGB staggered), luminance-ordered dissolve, double-exposure peak,
+  jelly wobble, drain vortex, ghost multi-exposure.  Applied to both the
+  effect and the combine blends.
 - **Web remote (`-t <port>`):** a phone-friendly page at
   `http://<pc>:<port>/` with preset buttons, next-effect, and sliders for
   reactivity / trails / mood / latency plus light-show & auto-preset

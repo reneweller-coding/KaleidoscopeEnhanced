@@ -1,21 +1,26 @@
 // CombinePlain.frag
-// The plain effect blend — with a LIBRARY of per-transition styles.  The host
-// rolls a style whenever a cross-fade starts (transStyle; 0/absent = classic
-// linear mix):
-//    1 radial wipe     — the new scene grows from the centre (iris open)
-//    2 kaleido fold    — both scenes fold through a 6-mirror rosette
-//    3 zoom-through    — forward flight: old dives past, new arrives
-//    4 diagonal wipe   — a soft slanted edge sweeps across
-//    5 blinds          — staggered vertical strips reveal the new scene
-//    6 mosaic dissolve — soft blocks flip over pseudo-randomly
-//    7 swirl           — the frame winds into a whirlpool and unwinds
-//    8 ripple          — a water ripple radiates while the scenes blend
-//    9 push            — the new scene pushes the old one off to the left
-//   10 doors           — the old scene splits and slides open like doors
-//   11 clock sweep     — an angular wipe sweeps around like a clock hand
-//   12 dip to dark     — the blend dips through darkness mid-transition
-// All edges are soft; nothing flashes brighter than the scenes themselves
-// (dip-to-dark only darkens), so photosensitivity safety is unaffected.
+// The plain effect blend — with a LIBRARY of 25 per-transition styles.  The
+// host rolls a style whenever a cross-fade starts (transStyle; 0/absent =
+// classic linear mix):
+//   Wipes / reveals (soft moving edges):
+//    1 radial iris     2 kaleido fold   3 zoom-through    4 diagonal wipe
+//    5 blinds          6 mosaic dissolve 7 swirl          8 water ripple
+//    9 push           10 sliding doors 11 clock sweep    12 dip to dark
+//   EDGE-FREE full-frame morphs:
+//   13 blur-through   — both scenes melt through a soft-focus dip
+//   14 melt           — the old scene drips downward like wax
+//   15 heat shimmer   — turbulent haze dissolves one into the other
+//   16 pixelation     — the frame coarsens into blocks, swaps, sharpens
+//   17 spin-zoom      — the old twists away, the new untwists in
+//   18 chromatic      — R, G and B cross over at slightly different times
+//   19 luminance      — dark areas give way first, highlights last
+//   20 double exposure— a dreamy screen-blend peak mid-transition
+//   21 jelly          — the whole frame wobbles like gelatine while blending
+//   22 kaleido-8 spin — an 8-mirror rosette that also rotates
+//   23 drain vortex   — the old magnifies and spirals away like a drain
+//   24 ghost exposure — layered ghost copies drift apart and resolve
+// All edges are soft; nothing flashes brighter than a gentle screen blend
+// over more than a second, so photosensitivity safety is unaffected.
 // interpolation: 1 = old scene (tex0) fully visible .. 0 = new scene (tex1).
 uniform vec2 resolution;
 uniform float time;
@@ -41,6 +46,26 @@ float hashT(vec2 p2)
     return fract(sin(dot(p2, vec2(127.1, 311.7))) * 43758.5453);
 }
 
+// Smooth 1D value noise (for the melt columns).
+float noise1T(float x)
+{
+    float i = floor(x), f = fract(x);
+    f = f * f * (3.0 - 2.0 * f);
+    return mix(hashT(vec2(i, 7.0)), hashT(vec2(i + 1.0, 7.0)), f);
+}
+
+// Smooth 2D value noise (for the heat shimmer).
+float noise2T(vec2 q)
+{
+    vec2 i = floor(q), f = fract(q);
+    f = f * f * (3.0 - 2.0 * f);
+    float a = hashT(i), b = hashT(i + vec2(1.0, 0.0));
+    float c = hashT(i + vec2(0.0, 1.0)), e = hashT(i + vec2(1.0, 1.0));
+    return mix(mix(a, b, f.x), mix(c, e, f.x), f.y);
+}
+
+vec4 blend4(vec4 a, vec4 b, float w) { return mix(a, b, clamp(w, 0.0, 1.0)); }
+
 void main()
 {
     vec2  p   = gl_FragCoord.xy / resolution;
@@ -55,6 +80,66 @@ void main()
     vec2  p0 = p, p1 = p;                     // sample coords old / new
     float w1 = d;                             // weight of the NEW scene
     float dark = 1.0;                         // optional dip factor
+
+    // Styles that need their own compositing take this early-out path.
+    if (transStyle == 13)                     // blur-through (soft-focus dip)
+    {
+        vec2 px = (4.0 + 10.0 * mid) / resolution;
+        vec4 a = ( texture2D(tex0, p)
+                 + texture2D(tex0, p + vec2( px.x,  px.y))
+                 + texture2D(tex0, p + vec2(-px.x,  px.y))
+                 + texture2D(tex0, p + vec2( px.x, -px.y))
+                 + texture2D(tex0, p + vec2(-px.x, -px.y)) ) * 0.2;
+        vec4 b = ( texture2D(tex1, p)
+                 + texture2D(tex1, p + vec2( px.x,  px.y))
+                 + texture2D(tex1, p + vec2(-px.x,  px.y))
+                 + texture2D(tex1, p + vec2( px.x, -px.y))
+                 + texture2D(tex1, p + vec2(-px.x, -px.y)) ) * 0.2;
+        vec4 sharp = blend4(texture2D(tex0, p), texture2D(tex1, p), d);
+        gl_FragColor = mix(sharp, blend4(a, b, d), mid);
+        return;
+    }
+    if (transStyle == 18)                     // chromatic dissolve
+    {
+        vec4 c0 = texture2D(tex0, p);
+        vec4 c1 = texture2D(tex1, p);
+        float wR = clamp(d * 1.3,        0.0, 1.0);
+        float wG = clamp(d * 1.3 - 0.15, 0.0, 1.0);
+        float wB = clamp(d * 1.3 - 0.30, 0.0, 1.0);
+        gl_FragColor = vec4(mix(c0.r, c1.r, wR),
+                            mix(c0.g, c1.g, wG),
+                            mix(c0.b, c1.b, wB), 1.0);
+        return;
+    }
+    if (transStyle == 19)                     // luminance-ordered dissolve
+    {
+        vec4 c0 = texture2D(tex0, p);
+        vec4 c1 = texture2D(tex1, p);
+        float key = dot(c0.rgb, vec3(0.299, 0.587, 0.114)) * 0.7
+                  + dot(c1.rgb, vec3(0.299, 0.587, 0.114)) * 0.3;
+        float w = smoothstep(key - 0.25, key + 0.25, d * 1.5 - 0.25);
+        gl_FragColor = blend4(c0, c1, w);
+        return;
+    }
+    if (transStyle == 20)                     // double-exposure (screen) peak
+    {
+        vec4 c0 = texture2D(tex0, p);
+        vec4 c1 = texture2D(tex1, p);
+        vec4 scr = 1.0 - (1.0 - c0) * (1.0 - c1);
+        gl_FragColor = mix(blend4(c0, c1, d), scr, 0.65 * mid);
+        return;
+    }
+    if (transStyle == 24)                     // ghost multi-exposure morph
+    {
+        vec2 z1 = cu / (1.0 + 0.045 * mid) + 0.5;
+        vec2 z2 = cu / (1.0 + 0.090 * mid) + 0.5;
+        vec4 a = ( texture2D(tex0, p) + texture2D(tex0, z1)
+                 + texture2D(tex0, z2) ) / 3.0;
+        vec4 b = ( texture2D(tex1, p) + texture2D(tex1, z1)
+                 + texture2D(tex1, z2) ) / 3.0;
+        gl_FragColor = blend4(a, b, d);
+        return;
+    }
 
     if (transStyle == 1)                      // radial wipe (iris open)
     {
@@ -122,7 +207,6 @@ void main()
         float shift = d * 0.54;
         p0 = vec2(clamp(p.x + ((p.x < 0.5) ? shift : -shift), 0.0, 1.0), p.y);
         w1 = 1.0 - smoothstep(shift - 0.02, shift + 0.02, abs(p.x - 0.5));
-        w1 = max(w1, step(1.0, d));           // fully open at the end
     }
     else if (transStyle == 11)                // clock sweep
     {
@@ -133,8 +217,68 @@ void main()
     {
         dark = 1.0 - 0.55 * mid;
     }
+    else if (transStyle == 14)                // melt: the old drips downward
+    {
+        float n    = noise1T(p.x * 7.0);
+        float drop = d * d * (0.55 + 0.75 * n);
+        p0 = vec2(p.x, clamp(p.y + drop, 0.0, 1.0));
+        w1 = smoothstep(0.15, 0.85, d);
+    }
+    else if (transStyle == 15)                // heat-shimmer morph
+    {
+        float amp = mid * 0.055;
+        vec2 q = p * 5.0;
+        vec2 w = vec2(noise2T(q + vec2(0.0, d * 2.0)) - 0.5,
+                      noise2T(q + vec2(3.7, -d * 2.0)) - 0.5);
+        p0 = clamp(p + w * amp, 0.0, 1.0);
+        p1 = p0;
+    }
+    else if (transStyle == 16)                // pixelation morph
+    {
+        float cells = mix(220.0, 16.0, mid);
+        vec2  grid  = vec2(cells, cells / aspect);
+        vec2  pq    = (floor(p * grid) + 0.5) / grid;
+        p0 = pq; p1 = pq;
+    }
+    else if (transStyle == 17)                // spin-zoom crossfade
+    {
+        float a0 =  d * 0.55;                 // old twists away
+        float a1 = -(1.0 - d) * 0.55;         // new untwists in
+        float z0 = 1.0 + 0.55 * d;
+        float z1 = 1.0 + 0.55 * (1.0 - d);
+        vec2 s0 = mat2(cos(a0), -sin(a0), sin(a0), cos(a0)) * cc;
+        vec2 s1 = mat2(cos(a1), -sin(a1), sin(a1), cos(a1)) * cc;
+        s0.x /= aspect;  s1.x /= aspect;
+        p0 = clamp(s0 / z0 + 0.5, 0.0, 1.0);
+        p1 = clamp(s1 / z1 + 0.5, 0.0, 1.0);
+    }
+    else if (transStyle == 21)                // jelly wobble
+    {
+        vec2 w = vec2(sin(p.y * 9.0 + d * 6.0), sin(p.x * 8.0 - d * 5.0));
+        p0 = clamp(p + w * 0.035 * mid, 0.0, 1.0);
+        p1 = p0;
+    }
+    else if (transStyle == 22)                // kaleido-8 spinning fold
+    {
+        float a = d * 1.2;
+        vec2 rc = mat2(cos(a), -sin(a), sin(a), cos(a)) * cc;
+        vec2 f = kaleidoT(rc, 8.0);
+        f.x /= aspect;
+        vec2 pf = mix(p, clamp(f + 0.5, 0.0, 1.0), mid * 0.9);
+        p0 = pf; p1 = pf;
+    }
+    else if (transStyle == 23)                // drain vortex (old spirals away)
+    {
+        float ang = d * d * 3.0 * (1.5 - min(r, 1.0));
+        float cs = cos(ang), sn = sin(ang);
+        vec2 sc = mat2(cs, -sn, sn, cs) * cc;
+        sc /= (1.0 + 1.2 * d * d);            // magnifies as it goes
+        sc.x /= aspect;
+        p0 = clamp(sc + 0.5, 0.0, 1.0);
+        w1 = smoothstep(0.25, 0.9, d);
+    }
 
     vec4 c0 = texture2D(tex0, p0);
     vec4 c1 = texture2D(tex1, p1);
-    gl_FragColor = mix(c0, c1, clamp(w1, 0.0, 1.0)) * dark;
+    gl_FragColor = blend4(c0, c1, w1) * dark;
 }
