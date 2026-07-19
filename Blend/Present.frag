@@ -28,6 +28,8 @@ uniform float audioSwell;       // slow loudness build (ambient dynamics) → gl
 uniform float audioBarPhase;    // 0..1 position within the 4-beat bar → per-bar lamp sweep
 uniform sampler2D bloomTex;     // 2-pass Gaussian bloom (quarter res), when useBloom = 1
 uniform float useBloom;         // 1 = bloomTex valid, 0 = fall back to the mip tap
+uniform float sharpen;          // CAS-style sharpen amount (host: >0 when renderScale < 1)
+uniform vec2  srcTexel;         // 1 / render resolution (the sampled texture)
 
 float hash21(vec2 p) { return fract(sin(dot(p, vec2(41.3, 289.1))) * 43758.5453); }
 
@@ -68,6 +70,20 @@ void main()
     float scenePulse = clamp(audioBeat + 0.4 * audioDownbeat, 0.0, 1.0);
     vec2  puv = (uv - 0.5) / (1.0 + 0.040 * scenePulse) + 0.5;
     vec3  c   = texture2D(tex, puv).rgb;
+
+    // CAS-style sharpening: when the internal render scale is below 1 the
+    // frame is upsampled here — a neighbourhood-clamped unsharp mask (no
+    // halos) restores the crispness the downscale cost.  sharpen = 0 → off.
+    if (sharpen > 0.001)
+    {
+        vec3 n = texture2D(tex, puv + vec2(0.0,  srcTexel.y)).rgb;
+        vec3 s = texture2D(tex, puv - vec2(0.0,  srcTexel.y)).rgb;
+        vec3 e = texture2D(tex, puv + vec2(srcTexel.x, 0.0)).rgb;
+        vec3 w = texture2D(tex, puv - vec2(srcTexel.x, 0.0)).rgb;
+        vec3 mn = min(min(min(n, s), min(e, w)), c);
+        vec3 mx = max(max(max(n, s), max(e, w)), c);
+        c = clamp(c + (4.0 * c - (n + s + e + w)) * sharpen, mn, mx);
+    }
 
     // Colour temperature (centred so centroid 0.5 ≈ neutral).
     vec3 cool = vec3(0.65, 0.85, 1.30);

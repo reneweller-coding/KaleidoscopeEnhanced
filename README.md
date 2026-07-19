@@ -50,6 +50,9 @@ $env:Path = "C:\Qt\6.11.1\msvc2022_64\bin;" + $env:Path
 | `-l`          | Log to `kaleidoscope.log` instead of the console (kiosk)         |
 | `-r`          | Start recording (frames + audio) immediately on launch            |
 | `-w <wav>`    | Offline: analyze this WAV instead of capturing live audio (test)  |
+| `-o`          | Spout output: publish the frame as sender "Kaleidoscope"          |
+| `-t <port>`   | Web remote: phone control page at `http://<pc>:<port>/`           |
+| `-x <wav>`    | **Batch render**: record this WAV to an mp4, then exit (see below)|
 | `-h`          | Print usage and exit                                              |
 
 For an unattended **installation / kiosk**, combine `-m`, `-c`, `-s` and `-l`.
@@ -130,8 +133,12 @@ correct working directory). Otherwise build it later with `ISCC.exe installer.is
 | `[` / `]`  | Reactivity — less / more audio-driven motion                  |
 | `,` / `.`  | Trails — shorter / longer feedback trails                     |
 | `-` / `=`  | Mood — weaker / stronger colour grading                       |
+| `;` / `'`  | Latency — visuals earlier / later vs. the heard beat          |
 | `a`        | Toggle **auto-config-by-mood** (auto-switch configs)          |
 | `g`        | Toggle **adaptive render scale** (auto-FPS)                   |
+| `j`        | **MIDI learn** — bind knobs/pads to the controls              |
+| `r`        | Toggle **recording** (frames + audio → mp4)                   |
+| `y` / `x`  | Arm the **instant replay** ring / save it as an mp4           |
 | `k`        | Save the current look **and** UI state as the startup default |
 | `s`        | Save a PNG screenshot of the window                           |
 | mouse drag | (when not fullscreen) trackball / interaction                 |
@@ -442,7 +449,11 @@ Audio is captured via WASAPI loopback (`AudioAnalyzer`) and analysed in real tim
   more colourful; tiny cached thumbnail stats, loader thread only).
 - **Editor parameter sliders:** the preset editor shows live sliders for
   the previewed shaders' per-activation parameters (ranges from
-  `Komplett.xml`), overriding the preview defaults in real time.
+  `Komplett.xml`), overriding the preview defaults in real time.  A
+  **Würfeln** button rolls all sliders at once (explore looks quickly), and
+  **Als Festwerte in gewählten Eintrag** writes the current slider values
+  into the table-selected preset entry as `min = max` parameters — freezing
+  the exact look you found so that entry always activates with it.
 - **Music/speech gate:** a speechiness classifier (formant-band concentration
   vetoed by music traits: bass weight, steady beat, sustained continuity,
   clear key) yields `musicPresence`; a slewed smoothstep gate derived from it
@@ -497,7 +508,32 @@ Audio is captured via WASAPI loopback (`AudioAnalyzer`) and analysed in real tim
 - **Real bloom:** a two-pass Gaussian bloom (quarter-res bright-pass + separable
   blur) replaces the old single-mip glow — soft halos around bright detail.
 - **Recording** (`r`) now encodes JPEGs on a worker thread, so capturing no
-  longer throttles the render loop.
+  longer throttles the render loop; the `glReadPixels` itself goes through a
+  **double-buffered PBO** (pixel-pack buffer), so grabbing a frame no longer
+  stalls the GPU→CPU pipeline either — recording and the armed replay ring
+  cost almost nothing.
+- **Beat-quantised image changes:** like scene changes, a due kaleidoscope
+  IMAGE switch is held for the next downbeat (with a ~2.5 s timeout, and
+  immediate without music), so new pictures also land on the "1".
+- **Batch renderer (`-x <wav>`):** unattended WAV-to-video — the WAV is fed
+  through the real analyzer paced to the wall clock (deterministic), the run
+  records itself (PBO path), and when the WAV ends the app muxes
+  `recordings\rec_*\kaleidoscope.mp4` (video + the WAV audio) and exits on
+  its own.  `Kaleidoscope.exe -x track.wav -c Club -b` renders a music video
+  of a whole track without anyone at the keyboard.
+- **Shader hot-reload (dev):** saving any `Scene\*.frag` / `Combine\*.frag`
+  while the app runs recompiles it live on the next frame (`HOT-RELOAD` in
+  the log) — shader tuning without restarts.
+- **Lazy shader compile + warm-up:** effects compile on first use (or one per
+  frame in the background right after launch), so start-up shows the first
+  image quickly even with the 66-shader `Komplett` preset.
+- **Uniform-location cache:** the ~40 audio uniforms per pass are resolved
+  once per program instead of every frame (dozens of `glGetUniformLocation`
+  string lookups per frame gone).
+- **CAS sharpening on upscale:** when the internal render scale is below 1.0
+  (`-s` or the adaptive scale), the present pass applies a contrast-adaptive
+  sharpen (AMD-CAS-style, min/max-clamped so it cannot ring) scaled to the
+  upscale factor — low-scale kiosk setups look noticeably crisper.
 
 **Photosensitivity safety:** a final pass rate-limits how fast the whole-frame
 *average* luminance may rise, reining in large full-screen flashes while leaving

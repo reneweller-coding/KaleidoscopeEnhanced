@@ -5,6 +5,7 @@
 #include <QtWidgets/QSlider>
 #include <QtWidgets/QSpinBox>
 #include <QtCore/QRegularExpression>
+#include <QtCore/QRandomGenerator>
 #include <QtWidgets/QDoubleSpinBox>
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QTableWidget>
@@ -68,8 +69,22 @@ EditorWindow::EditorWindow(const QString &projectRoot, QWidget *parent)
     // Live sliders for the previewed shaders' per-activation parameters
     // (ranges from Komplett.xml; values override the preview defaults).
     m_paramBox = new QGroupBox("Shader-Parameter (Preview)");
-    m_paramForm = new QFormLayout(m_paramBox);
+    QVBoxLayout *pv = new QVBoxLayout(m_paramBox);
+    QWidget *pfHost = new QWidget();
+    m_paramForm = new QFormLayout(pfHost);
+    m_paramForm->setContentsMargins(0, 0, 0, 0);
+    pv->addWidget(pfHost);
+    QHBoxLayout *pBtns = new QHBoxLayout();
+    QPushButton *bDice   = new QPushButton("Würfeln");
+    QPushButton *bFreeze = new QPushButton("Als Festwerte in gewählten Eintrag");
+    bDice->setToolTip("Alle Parameter-Slider zufällig setzen");
+    bFreeze->setToolTip("Die aktuellen Slider-Werte als min=max-Parameter in den in der "
+                        "Tabelle gewählten Preset-Eintrag schreiben");
+    pBtns->addWidget(bDice); pBtns->addWidget(bFreeze);
+    pv->addLayout(pBtns);
     pl->addWidget(m_paramBox);
+    connect(bDice,   &QPushButton::clicked, this, &EditorWindow::randomizeParams);
+    connect(bFreeze, &QPushButton::clicked, this, &EditorWindow::freezeParamsIntoEntry);
 
     // Add-to-preset
     QGroupBox *gAdd = new QGroupBox("Add current shader to preset");
@@ -237,13 +252,14 @@ void EditorWindow::rebuildParamSliders()
     m_sliders.clear();
     m_preview->setParamOverrides({});
 
-    auto addFor = [this](const QString &frag, const QString &prefix)
+    auto addFor = [this](const QString &frag, const QString &prefix, bool fromComb)
     {
         for (const KomplettParam &kp : komplettParamsFor(m_root, frag))
         {
             SliderInfo si;
             si.name = kp.name; si.minV = kp.minV; si.maxV = kp.maxV;
             si.isInt = (kp.kind == "int");
+            si.fromCombine = fromComb;
             QSlider *s = new QSlider(Qt::Horizontal);
             s->setRange(0, 1000);
             s->setValue(500);
@@ -253,8 +269,8 @@ void EditorWindow::rebuildParamSliders()
             connect(s, &QSlider::valueChanged, this, [this]{ pushParamOverrides(); });
         }
     };
-    addFor(m_texCombo->currentText(),  "");
-    addFor(m_combCombo->currentText(), "C: ");
+    addFor(m_texCombo->currentText(),  "",    false);
+    addFor(m_combCombo->currentText(), "C: ", true);
     m_paramBox->setVisible(!m_sliders.isEmpty());
     pushParamOverrides();
 }
@@ -268,6 +284,62 @@ void EditorWindow::pushParamOverrides()
         ov.push_back({ si.name, si.minV + t * (si.maxV - si.minV), si.isInt });
     }
     m_preview->setParamOverrides(std::move(ov));
+}
+
+// Dice: throw every slider to a random position (live preview follows).
+void EditorWindow::randomizeParams()
+{
+    for (const SliderInfo &si : m_sliders)
+        si.slider->setValue(QRandomGenerator::global()->bounded(1001));
+}
+
+// Freeze: write the current slider values into the table-selected preset entry
+// as min=max parameters (the engine rolls min when min==max -> a fixed look).
+void EditorWindow::freezeParamsIntoEntry()
+{
+    const int row = m_table->currentRow();
+    if (row < 0 || row >= m_preset.entries.size())
+    {
+        m_status->setText("Festwerte: bitte zuerst einen Eintrag in der Tabelle wählen");
+        return;
+    }
+    PresetEntry &e = m_preset.entries[row];
+    const QString texFile  = m_texCombo->currentText();
+    const QString combFile = m_combCombo->currentText();
+    const bool matchesTex  = (!e.isCombine && e.file == texFile);
+    const bool matchesComb = ( e.isCombine && e.file == combFile);
+    if (!matchesTex && !matchesComb)
+    {
+        m_status->setText("Festwerte: der gewählte Eintrag ("
+                          + e.file + ") passt nicht zum Preview-Shader");
+        return;
+    }
+
+    int written = 0;
+    for (const SliderInfo &si : m_sliders)
+    {
+        if (si.fromCombine != e.isCombine) continue;
+        float t = si.slider->value() / 1000.f;
+        float v = si.minV + t * (si.maxV - si.minV);
+        QString vs = si.isInt ? QString::number(int(v + 0.5f))
+                              : QString::number(v, 'f', 3);
+        ShaderParam sp;
+        sp.kind = si.isInt ? "int" : "float";
+        sp.name = si.name;
+        sp.minValue = vs;
+        sp.maxValue = vs;
+        // Replace an existing param of the same name, else append.
+        bool replaced = false;
+        for (ShaderParam &old : e.params)
+            if (old.name == si.name) { old = sp; replaced = true; break; }
+        if (!replaced) e.params.push_back(sp);
+        ++written;
+    }
+    refreshTable();
+    m_table->selectRow(row);
+    m_status->setText(QString("Festwerte: %1 Parameter in '%2' geschrieben "
+                              "(min = max; Save nicht vergessen)")
+                      .arg(written).arg(e.file));
 }
 
 QVector<ShaderParam> EditorWindow::defaultParamsFor(const QString &f)

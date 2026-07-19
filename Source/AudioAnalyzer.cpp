@@ -14,6 +14,8 @@
 #include <cstring>
 #include <cstdio>
 
+#include <QtCore/QElapsedTimer>
+
 // ---------------------------------------------------------------------------
 // Helper: one-pole IIR low-pass coefficient for given cutoff and sample rate.
 //   a = exp(-2*pi*fc/fs)
@@ -287,14 +289,29 @@ void AudioAnalyzer::analyzeWavOffline( const QString &path )
     float *conv = new float[chunk * channels];
     fseek( f, dataPos, SEEK_SET );
     unsigned int remain = dataLen / (channels * 2);
+    QElapsedTimer clock; clock.start();
+    qint64 fed = 0;                                 // frames delivered so far
     while( remain > 0 && m_running )
     {
         int n = (remain < (unsigned int)chunk) ? (int)remain : chunk;
         if( fread( pcm, 2 * channels, n, f ) != (size_t)n ) break;
         for( int i = 0; i < n * channels; ++i ) conv[i] = pcm[i] / 32768.f;
         processBlock( conv, n, (channels > 2) ? 2 : channels, sampleRate );
+
+        // Recording (-x batch render): mirror the live loop's WAV writer so
+        // the mux gets the music.
+        if( m_recReq && !m_wavFile ) recOpen( sampleRate );
+        if( m_wavFile )              recWrite( conv, n, channels );
+
         remain -= n;
+
+        // Pace to the wall clock: the render loop (and an -x recording) runs
+        // in real time, so the features must arrive at capture speed too.
+        fed += n;
+        qint64 ahead = fed * 1000 / sampleRate - clock.elapsed();
+        if( ahead > 2 ) msleep( (unsigned long)ahead );
     }
+    if( m_wavFile ) recClose();                     // finalise a still-open WAV
     delete[] pcm; delete[] conv;
     fclose( f );
     fprintf( stderr, "OFFLINE: done\n" );

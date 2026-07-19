@@ -45,6 +45,10 @@ public:
 	 *  an automatic musical novelty trigger).  Honoured at the next opportunity. */
 	void requestSceneChange() { m_forceEffectChange = true; m_forceCombineChange = true; }
 
+	/** Hot-reload (dev aid): recompile every effect/combine whose fragment file
+	 *  matches the given bare name.  GL context must be current. */
+	void reloadFragment( const QString &bareName );
+
 	// ---- Live-tunable look parameters (shared across all configs; set by hotkeys) ----
 	static void  adjustReactivity( float d ) { s_reactivity  = clampParam(s_reactivity  + d, 0.f, 3.0f); }
 	static void  adjustTrails     ( float d ) { s_trailAmount = clampParam(s_trailAmount + d, 0.f, 0.95f); }
@@ -211,6 +215,11 @@ private:
 	// rolled when a change fires; linear stays the most common.
 	int				m_transStyleTex  = 0;
 	int				m_transStyleComb = 0;
+
+	// Beat-quantised IMAGE change (like the shader changes: pending until the
+	// next downbeat, with a timeout + no-music escape).
+	bool			m_pendingImgChange = false;
+	float			m_pendingImgAge    = 0.f;
 
 	// Key colour: chroma hue slewed AROUND the colour circle (shortest way,
 	// max ~20 deg/s) so key changes glide instead of jumping the palette.

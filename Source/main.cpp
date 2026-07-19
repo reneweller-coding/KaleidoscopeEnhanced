@@ -49,6 +49,8 @@ void commandlineerror( char *cmd, char *parm )
 	"-o            Spout output: publish the frame as sender 'Kaleidoscope'\n"
 	"              (for OBS / Resolume / any Spout receiver)\n"
 	"-t <port>     web remote: phone control page at http://<this-pc>:<port>/\n"
+	"-x <wav>      batch render: record this WAV deterministically to an mp4\n"
+	"              (recordings\\rec_*), then exit automatically\n"
 	"-h            this help menu\n"
 	"Keys (while running):\n"
 	"0             toggle the configuration-select menu\n"
@@ -77,8 +79,8 @@ void commandlineerror( char *cmd, char *parm )
 void parsecommandline( int argc, char *argv[] )
 {
 	/* valid option characters; last char MUST be 0 ! */
-	char optionchar[] =   { 'h', 'b', 'f', 's', 'c', 'm', 'l', 'r', 'w', 'o', 't', 0 };
-	int musthaveparam[] = {  0 ,  0,   1,   1,   1,   1,   0,   0,   1,   0,   1,  0 };
+	char optionchar[] =   { 'h', 'b', 'f', 's', 'c', 'm', 'l', 'r', 'w', 'o', 't', 'x', 0 };
+	int musthaveparam[] = {  0 ,  0,   1,   1,   1,   1,   0,   0,   1,   0,   1,   1,  0 };
 
 	int nopts;
 	int mhp[256];
@@ -150,6 +152,12 @@ void parsecommandline( int argc, char *argv[] )
 				case 'o': FilterShader::s_spoutEnabled = true; break;
 				// Embedded web remote (phone control page).
 				case 't': GLwidget::s_remotePort = atoi( argv[1] ); break;
+				// Batch render: offline WAV + auto-record + auto-quit at the end.
+				case 'x':
+					AudioAnalyzer::s_offlineWav = QString::fromLocal8Bit( argv[1] );
+					GLwidget::s_autoRecord  = true;
+					GLwidget::s_batchRender = true;
+					break;
 
 
 				default: fprintf(stderr, "\nBug in parsecommandline !\n");

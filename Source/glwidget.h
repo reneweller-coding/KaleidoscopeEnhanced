@@ -11,6 +11,7 @@
 #include <QtOpenGLWidgets/QOpenGLWidget>
 #include <QtGui/QImage>
 #include <QtGui/QPixmap>
+#include <QtCore/QSet>
 
 #include "filterShader.h"
 #include "Configuration.h"
@@ -40,6 +41,10 @@ public:
 
 	// CLI -t <port>: start the embedded web remote on this port (0 = off).
 	static int  s_remotePort;
+
+	// CLI -x <wav>: batch render — record the offline WAV deterministically,
+	// then auto-quit once it ends (the mp4 mux continues detached).
+	static bool s_batchRender;
 
 	// ---- Web-remote hooks (same harmless controls as the keyboard) ----
 	QStringList remoteConfigNames() const;
@@ -123,6 +128,18 @@ protected:
 	struct ReplayFrame { QByteArray jpg; float dur; };
 	void                    captureReplayFrame(); // ~15 fps into the ring
 	void                    saveReplay();         // dump ring + audio, mux mp4
+
+	// PBO double-buffered ASYNC readback: glReadPixels into a pixel-pack
+	// buffer returns immediately; the PREVIOUS frame's buffer (whose DMA has
+	// long finished) is mapped instead — recording / replay capture no longer
+	// stalls the GPU→CPU pipeline every frame.  One frame of added latency in
+	// the capture, invisible in the output.
+	void                    asyncCapture( float dur, bool toReplay );
+	GLuint                  m_pbo[2] = { 0, 0 };
+	int                     m_pboIdx = 0;
+	struct PboMeta { bool pending = false; bool replay = false;
+	                 float dur = 0.f; int w = 0, h = 0; };
+	PboMeta                 m_pboMeta[2];
 	bool                    m_replayArmed  = false;
 	std::mutex              m_replayMx;
 	std::deque<ReplayFrame> m_replayFrames;
@@ -150,6 +167,13 @@ protected:
 	bool    m_autoConfig      = false;  // toggled with key 'a'
 	int     m_moodBucket      = -1;     // current mood bucket (see .cpp)
 	qint64  m_moodBucketSince = 0;      // when the bucket last changed
+
+	// Shader hot-reload (dev aid): saved .frag files in Scene\/Combine\ are
+	// recompiled live on the next frame (GL context current in paintGL).
+	class QFileSystemWatcher *m_shaderWatcher = nullptr;
+	QSet<QString>             m_pendingReloads;
+
+	bool m_batchStopping = false;   // batch render: shutdown initiated
 	qint64  m_lastAutoSwitch  = 0;      // when auto-config last switched
 
 	// Persist / restore UI state (active config, auto-config, auto-scale) in the

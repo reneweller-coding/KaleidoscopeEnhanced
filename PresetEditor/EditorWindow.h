@@ -38,6 +38,8 @@ private slots:
     void savePreset();
     void browseImageDir();
     void loadAudioWav();     // real-analyzer WAV preview (looped)
+    void randomizeParams();          // dice: random values on every slider
+    void freezeParamsIntoEntry();    // write slider values as min=max params
 
 private:
     void scanShaders();
@@ -51,7 +53,8 @@ private:
     // with sensible min/max).  Slider values override the preview defaults.
     void rebuildParamSliders();
     void pushParamOverrides();
-    struct SliderInfo { QString name; float minV, maxV; bool isInt; class QSlider *slider; };
+    struct SliderInfo { QString name; float minV, maxV; bool isInt;
+                        bool fromCombine; class QSlider *slider; };
     QVector<SliderInfo> m_sliders;
     class QGroupBox    *m_paramBox  = nullptr;
     class QFormLayout  *m_paramForm = nullptr;
