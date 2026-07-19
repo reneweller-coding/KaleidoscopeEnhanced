@@ -54,6 +54,8 @@ void commandlineerror( char *cmd, char *parm )
 	"-i <sender>   Spout INPUT: the sender's live video (OBS, Resolume, a\n"
 	"              webcam via OBS, ...) replaces the photos as source image\n"
 	"              ('any' = whichever sender is active; photos while none runs)\n"
+	"-3 <mode>     stereoscopic output: sbs (side-by-side, 3D projectors and\n"
+	"              HMD video viewers), tb (top-bottom), ana (red-cyan glasses)\n"
 	"-h            this help menu\n"
 	"Keys (while running):\n"
 	"0             toggle the configuration-select menu\n"
@@ -75,6 +77,8 @@ void commandlineerror( char *cmd, char *parm )
 	"u             pin/unpin the current effect (no automatic switches)\n"
 	"f             favourite the current effect (persistent selection bonus;\n"
 	"              skipping a fresh effect with 'n' learns a malus)\n"
+	"z             cycle stereoscopic mode (off / SBS / top-bottom / anaglyph)\n"
+	"c / m         stereo depth - weaker / stronger\n"
 	"Esc / q       quit\n"
 	"\n");
 
@@ -88,8 +92,8 @@ void commandlineerror( char *cmd, char *parm )
 void parsecommandline( int argc, char *argv[] )
 {
 	/* valid option characters; last char MUST be 0 ! */
-	char optionchar[] =   { 'h', 'b', 's', 'c', 'm', 'l', 'r', 'w', 'o', 't', 'x', 'i', 0 };
-	int musthaveparam[] = {  0 ,  0,   1,   1,   1,   0,   0,   1,   0,   1,   1,   1,  0 };
+	char optionchar[] =   { 'h', 'b', 's', 'c', 'm', 'l', 'r', 'w', 'o', 't', 'x', 'i', '3', 0 };
+	int musthaveparam[] = {  0 ,  0,   1,   1,   1,   0,   0,   1,   0,   1,   1,   1,   1,  0 };
 
 	int nopts;
 	int mhp[256];
@@ -172,6 +176,16 @@ void parsecommandline( int argc, char *argv[] )
 					FilterShader::s_spoutInEnabled = true;
 					FilterShader::s_spoutInSender  = QString::fromLocal8Bit( argv[1] );
 					break;
+				// Stereoscopic output: sbs (side-by-side), tb (top-bottom),
+				// ana (red-cyan anaglyph); anything else = off.
+				case '3':
+				{
+					QString m3 = QString::fromLocal8Bit( argv[1] ).toLower();
+					FilterShader::s_stereoMode = (m3 == "sbs") ? 1
+					                           : (m3 == "tb")  ? 2
+					                           : (m3.startsWith("ana")) ? 3 : 0;
+					break;
+				}
 
 
 				default: fprintf(stderr, "\nBug in parsecommandline !\n");
