@@ -25,6 +25,8 @@ Configuration::Configuration( const QString &configurationFile )
 {
 	m_filterShader = new FilterShader();
 	readConfiguration( configurationFile );
+	// Namespace for the per-preset taste learning (skip-malus / favourite).
+	m_filterShader->setPresetName( m_configurationName );
 	m_filterShader->init( m_imageDirectory, m_timeTextureSoloMin, m_timeTextureSoloMax, m_timeTextureInterpolationMin, m_timeTextureInterpolationMax );
 }
 

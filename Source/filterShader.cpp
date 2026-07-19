@@ -55,10 +55,11 @@ void FilterShader::loadSettings()
 	s_latencyLead  = clampParam( s.value( "latencyLead", s_latencyLead ).toFloat(), 0.f, 0.25f );
 	setRenderScale( s.value( "renderScale", s_renderScale ).toFloat() );  // clamps internally
 
-	// Taste learning: per-shader selection-weight factors, decayed toward 1.0
-	// a little on every start so old skips/favourites slowly lose their grip.
+	// Taste learning: PER-PRESET per-shader selection-weight factors (keys
+	// "<Preset>/<file>"), decayed toward 1.0 a little on every start so old
+	// skips/favourites slowly lose their grip.
 	s.beginGroup( "taste" );
-	for( const QString &k : s.childKeys() )
+	for( const QString &k : s.allKeys() )        // recursive: Preset/File.frag
 	{
 		float v = clampParam( s.value( k, 1.f ).toFloat(), 0.3f, 2.5f );
 		v = 1.f + ( v - 1.f ) * 0.97f;
@@ -69,22 +70,22 @@ void FilterShader::loadSettings()
 }
 
 // Basename of a fragment path ("..\\Scene\\Voyager.frag" -> "Voyager.frag").
-static QString tasteKey( const char *fragPath )
+static QString tasteBase( const char *fragPath )
 {
 	QString f = QString::fromLocal8Bit( fragPath ? fragPath : "?" );
 	int cut = std::max( f.lastIndexOf( QChar('\\') ), f.lastIndexOf( QChar('/') ) );
 	return f.mid( cut + 1 );
 }
 
-float FilterShader::tasteFor( const char *fragPath )
+float FilterShader::tasteFor( const char *fragPath ) const
 {
-	auto it = s_taste.constFind( tasteKey( fragPath ) );
+	auto it = s_taste.constFind( m_presetName + "/" + tasteBase( fragPath ) );
 	return ( it == s_taste.constEnd() ) ? 1.f : it.value();
 }
 
 void FilterShader::bumpTaste( const char *fragPath, float mul )
 {
-	QString key = tasteKey( fragPath );
+	QString key = m_presetName + "/" + tasteBase( fragPath );
 	float v = clampParam( ( s_taste.value( key, 1.f ) ) * mul, 0.3f, 2.5f );
 	s_taste[key] = v;
 	// Persist immediately (rare events; losing them to a crash would defeat

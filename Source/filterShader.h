@@ -41,6 +41,11 @@ public:
 	 *  the widget passes it here every frame before paint().  Defaults to 0. */
 	void setDefaultFBO( GLuint fbo ) { m_defaultFBO = fbo; }
 
+	/** Preset name (set by Configuration after loading the XML) — namespaces
+	 *  the persistent taste-learning factors, so likes/dislikes are learned
+	 *  PER PRESET. */
+	void setPresetName( const QString &n ) { m_presetName = n; }
+
 	/** Request an early cross-fade to the next texture effect (manual 'n' key,
 	 *  MIDI pad or web remote).  Honoured at the next opportunity.  TASTE
 	 *  LEARNING: skipping an effect that has only just appeared counts as
@@ -394,14 +399,18 @@ private:
 	static bool		s_pinned;        // VJ pin: no effect/combine switches
 	float			m_blackSmooth = 0.f;   // slewed blackout level 0..1
 
-	// ---- Taste learning (persistent, per shader FILE basename) ----
-	// Selection-weight factors in [0.3, 2.5], default 1.0.  A skip shortly
-	// after activation multiplies by 0.8, a favourite by 1.25; each app start
-	// decays every factor toward 1.0 so old grudges fade.  Soft bias only —
-	// moodAccept keeps a floor, no shader is ever excluded.
+	// ---- Taste learning (persistent, PER PRESET + shader FILE basename) ----
+	// Selection-weight factors in [0.3, 2.5], default 1.0, keyed
+	// "<PresetName>/<file>" — skipping a shader in Club leaves its standing
+	// in Ambient untouched.  A skip shortly after activation multiplies by
+	// 0.8, a favourite by 1.25; each app start decays every factor toward
+	// 1.0 so old grudges fade.  Soft bias only — moodAccept keeps a floor,
+	// no shader is ever excluded.  Storage is shared (static) across the
+	// instances; the keys carry the preset namespace.
 	static QHash<QString, float> s_taste;
-	static float	tasteFor( const char *fragPath );
-	static void		bumpTaste( const char *fragPath, float mul );
+	QString			m_presetName;              // set by Configuration after load
+	float			tasteFor( const char *fragPath ) const;
+	void			bumpTaste( const char *fragPath, float mul );
 	static float	clampParam( float v, float lo, float hi )
 	{ return v < lo ? lo : (v > hi ? hi : v); }
 
