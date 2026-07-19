@@ -228,6 +228,16 @@ exit /b 0</Command>
     <ClCompile Include="moc\moc_QMyWindow.cpp" />
     <ClCompile Include="QMyWindow.cpp" />
     <ClCompile Include="shader_setup.cpp" />
+    <ClCompile Include="SpoutOut.cpp" />
+    <ClCompile Include="ThirdParty\SpoutGL\Spout.cpp" />
+    <ClCompile Include="ThirdParty\SpoutGL\SpoutCopy.cpp" />
+    <ClCompile Include="ThirdParty\SpoutGL\SpoutDirectX.cpp" />
+    <ClCompile Include="ThirdParty\SpoutGL\SpoutFrameCount.cpp" />
+    <ClCompile Include="ThirdParty\SpoutGL\SpoutGL.cpp" />
+    <ClCompile Include="ThirdParty\SpoutGL\SpoutGLextensions.cpp" />
+    <ClCompile Include="ThirdParty\SpoutGL\SpoutSenderNames.cpp" />
+    <ClCompile Include="ThirdParty\SpoutGL\SpoutSharedMemory.cpp" />
+    <ClCompile Include="ThirdParty\SpoutGL\SpoutUtils.cpp" />
     <ClCompile Include="textfile.cpp" />
     <ClCompile Include="TextureEffectKaleidoscopeBase.cpp" />
     <ClCompile Include="Uniform.cpp" />

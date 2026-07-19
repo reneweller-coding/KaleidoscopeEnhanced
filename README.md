@@ -146,15 +146,24 @@ shows the current **FPS** — handy for tuning `-s` on a target machine.
 
 ## Configurations
 
-`Configurations\*.xml` define which shaders are in rotation, their timings,
-parameters and probabilities, plus the **`ImageDirectory`** used for textures.
-Switch between them with the number keys. Included presets:
+`Configurations\*.xml` define which shaders are in rotation, their
+parameters, probabilities and mood tags, plus the **`ImageDirectory`** used
+for textures.  Switch between them with the number keys.  Included presets
+(rebuilt 2026-07 around the music-driven engine — the old
+normal/fast/slow/… set lives on in git history):
 
-- **darkambient** — slow, dark, drone-oriented
-- **normal** / **psychedelic** — the full colourful set
-- **fast** / **slow** / **veryslow** — pacing variants
-- **simple** — fewer, plainer effects
-- **VR** — variant for VR/large displays
+- **Allround** — the full modern arsenal, balanced; a safe default
+- **Club** — aggressive & bright: tunnels, godrays, lattices, analyzers
+- **Ambient** — calm drift: fluid ink, lava, drones, liquid light shows
+- **Galerie** — the *photos* star: kaleidoscopes, image tunnels, gentle folds
+- **Psychedelic** — breathing fractals, pills, chrome, plasma, mushrooms
+- **Noir** — dark, high-contrast: noir fractals, dark tunnels, deep drones
+
+**Timing is music-driven:** per-entry `min/maxTime*` attributes are now
+OPTIONAL — the pacing comes from `timingScale` (tempo/arousal), 4-beat
+cross-fades and section cuts.  Absent times fall back to engine defaults
+(solo 20–90 s, fade 15–50 s — these mainly matter as the pacing without
+music).  Old presets with explicit times keep working unchanged.
 
 Each `<TextureShader>` / `<CombineShader>` entry names a `.frag` file, solo/
 cross-fade times (scaled adaptively by tempo), a `probability` and a
@@ -392,8 +401,18 @@ Audio is captured via WASAPI loopback (`AudioAnalyzer`) and analysed in real tim
 - **Robustness:** malformed configs (zero valid combine/texture entries,
   min == max time ranges) no longer crash with a silent division by zero —
   they fall back with a clear stderr warning.
-- **Music/speech gate:** on speech / video dialogue / silence the reactivity
-  fades to a calm, timer-driven mode; music smoothly re-enables it.
+- **Spout output (`-o`):** publishes the displayed frame as Spout sender
+  "Kaleidoscope" for OBS / Resolume / any Spout receiver (Spout2 SDK
+  vendored under `ThirdParty/SpoutGL`, BSD-2; isolated in its own
+  translation unit so its GL extension loading never collides with GLee).
+- **Music/speech gate:** a speechiness classifier (formant-band concentration
+  vetoed by music traits: bass weight, steady beat, sustained continuity,
+  clear key) yields `musicPresence`; a slewed smoothstep gate derived from it
+  multiplies EVERY audio signal, so on speech / dialogue / silence the
+  reactivity fades to a calm, timer-driven mode and music smoothly re-enables
+  it.  The beat/drone classification is HELD (frozen) during speech and
+  silence, so it survives a talk break unchanged and is instantly right when
+  the music returns.
 - **Automatic music-TYPE detection (drone/ambient vs. beat):** classified by
   CONTENT, following the MIR literature — an HPSS-inspired **harmonicity**
   (frame-to-frame spectral self-similarity), **onset density** (FFT spectral

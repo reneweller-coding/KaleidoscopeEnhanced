@@ -800,7 +800,13 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
     // intros / pauses used to leave the beat threshold ambient-boosted for ~10 s
     // into the next song — the detector was measurably deaf (4 of 32 kicks).
     // Hold the factor while there is no signal to classify.
-    if (level > 0.05f)
+    // SPEECH is not classifiable material either: dialogue is mid-dominant,
+    // gappy and arrhythmic, so letting it drive the factor would drag the
+    // beat/drone classification around while the reactivity is gated off
+    // anyway.  Hold the factor whenever the music/speech classifier says
+    // this isn't music — the beat/drone state then survives a talk break
+    // unchanged and is instantly right when the music returns.
+    if (level > 0.05f && m_sMusicPresence > 0.45f)
     {
         // Calibrated against the offline test WAVs: a 120 BPM kick pattern
         // measures sim ~0.32, a sustained 4-partial drone ~0.82.
