@@ -67,5 +67,5 @@ void main(void)
   //float whoa = 0.1 + 0.01 * (1.0 + cos(10.0 * sin(time)));
   //(whoa * whoaColor) *
 
-  gl_FragColor =  color / steps;
+  gl_FragColor =  color / float(steps);
 }

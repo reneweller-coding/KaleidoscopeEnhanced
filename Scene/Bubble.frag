@@ -26,7 +26,7 @@ uniform int vigneting;
 // License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 // Messed up by Weyland
 
-const unsigned int nrBubbles = 32; //64
+const int nrBubbles = 32; //64
 
 
 void main(void)

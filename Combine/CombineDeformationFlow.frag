@@ -94,7 +94,7 @@ void main(void)
 		nachkomma *= resolution.y/resolution.x;
 		nachkomma += 0.5*(resolution.x-resolution.y)/resolution.x;
 		
-		if( (vorkomma % 2)==0 )
+		if( vorkomma - (vorkomma / 2) * 2 == 0 )
 			uv1.x = 1.0-nachkomma;
 		else
 			uv1.x = nachkomma;

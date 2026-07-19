@@ -14,7 +14,7 @@ vec2 clampQuadratic( vec2 p )
 	nachkomma *= resolution.y/resolution.x;
 	nachkomma += 0.5*(resolution.x-resolution.y)/resolution.x;
 	
-	if( (vorkomma % 2)==0 )
+	if( vorkomma - (vorkomma / 2) * 2 == 0 )
 		uv.x = 1.0-nachkomma;
 	else
 		uv.x = nachkomma;
@@ -33,7 +33,7 @@ void main(void)
 
 
 	float speed = 5.0;
-	float extend = 4000;
+	float extend = 4000.0;
 	
 	// pixellate
 	const float pixelSize = 0.25;
@@ -45,7 +45,7 @@ void main(void)
 	
 	//resolution.y/resolution.x*
 	
-	vec3 col;
+	vec3 col = vec3(0.0);
 	for ( int i=0; i < 32; i++ )
 	{
 		// parallax position, whole pixels for retro feel
@@ -58,7 +58,7 @@ void main(void)
 		//uv *= 0.4*pixelSize;
 		uv *= 0.6*pixelSize;
 		
-		col = interpolation * texture2D(tex0,uv+.5) + (1.0-interpolation)*texture2D(tex1, uv+.5);
+		col = (interpolation * texture2D(tex0,uv+.5) + (1.0-interpolation)*texture2D(tex1, uv+.5)).rgb;
 //texture2D( iChannel0, uv+.5 ).rgb;
 		
 		if ( 1.0-col.y < float(i+1)/32.0 )

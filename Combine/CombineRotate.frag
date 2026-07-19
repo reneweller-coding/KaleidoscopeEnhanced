@@ -16,7 +16,7 @@ vec2 clampQuadratic( vec2 p )
 	nachkomma *= resolution.y/resolution.x;
 	nachkomma += 0.5*(resolution.x-resolution.y)/resolution.x;
 	
-	if( (vorkomma % 2)==0 )
+	if( vorkomma - (vorkomma / 2) * 2 == 0 )
 		uv.x = 1.0-nachkomma;
 	else
 		uv.x = nachkomma;
@@ -47,10 +47,9 @@ void main() {
 	
 	//p = clampQuadratic(p);
 	
-	if( direction > 0 )
-		speed = -speed;
-	
-	vec2 cst = vec2( cos(speed*time), sin(speed*time) );
+	float spd = (direction > 0) ? -speed : speed;   // never write to a uniform
+
+	vec2 cst = vec2( cos(spd*time), sin(spd*time) );
     mat2 rot = mat2(cst.x*resolution.y/resolution.x,-cst.y,cst.y*resolution.y/resolution.x,cst.x);
     
     

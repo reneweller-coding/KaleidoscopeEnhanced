@@ -59,7 +59,7 @@ vec3 getKaleidoscopeColor( vec2 coord )
     // polar to cartesian coordinates
     p = r * vec2(cos(a), sin(a));
 	
-    return interpolation * texture2D(tex0,p+0.5) + (1.0-interpolation)*texture2D(tex1, p + 0.5);    
+    return (interpolation * texture2D(tex0,p+0.5) + (1.0-interpolation)*texture2D(tex1, p + 0.5)).rgb;    
     //return interpolation * texture2D(tex0,uv) + (1.0-interpolation)*texture2D(tex1,uv);
 }
 
@@ -93,7 +93,7 @@ void main(void)
 	
 	//resolution.y/resolution.x*
 	
-	vec3 col;
+	vec3 col = vec3(0.0);
 	for ( int i=0; i < 32; i++ )
 	{
 		// parallax position, whole pixels for retro feel

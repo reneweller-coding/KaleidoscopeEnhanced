@@ -68,7 +68,7 @@ void main( void ) {
 		vec3 n = norm(p);
 		float spc = pow(max(0.0, dot(reflect(l1, n), rd)), 30.0);
 		//vec4 ref = textureCube(iChannel0, normalize(reflect(rd, n)));
-		vec3 ref = interpolation * texture2D(tex0, normalize(reflect(rd, n))) + (1.0-interpolation)*texture2D(tex1, normalize(reflect(rd, n)));
+		vec3 ref = (interpolation * texture2D(tex0, normalize(reflect(rd, n)).xy) + (1.0-interpolation)*texture2D(tex1, normalize(reflect(rd, n)).xy)).rgb;
 		//vec3 rfa = texture2D(iChannel1, (p+n).xz / 6.0).xyz * (8./d);
 		vec3 rfa = interpolation * texture2D(tex0, (p+n).xz / 6.0).xyz * (8./d) + (1.0-interpolation)*texture2D(tex1, (p+n).xz / 6.0).xyz * (8./d);
 		

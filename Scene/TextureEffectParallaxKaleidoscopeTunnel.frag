@@ -61,7 +61,7 @@ vec3 getKaleidoscopeColor( vec2 coord )
     uv.x = (speedTunnel*time+.1/r);
     uv.y = (a/M_PI);
     
-    return  interpolation * texture2D(tex0,uv) + (1.0-interpolation)*texture2D(tex1,uv);
+    return  (interpolation * texture2D(tex0,uv) + (1.0-interpolation)*texture2D(tex1,uv)).rgb;
 	
     //return interpolation * texture2D(tex0,p+0.5) + (1.0-interpolation)*texture2D(tex1, p + 0.5);    
     //return interpolation * texture2D(tex0,uv) + (1.0-interpolation)*texture2D(tex1,uv);
@@ -97,12 +97,12 @@ void main(void)
 	
 	//resolution.y/resolution.x*
 	
-	vec3 col;
+	vec3 col = vec3(0.0);
 	for ( int i=0; i < 32; i++ )
 	{
 		// parallax position, whole pixels for retro feel
 		//float depth = 20.0+float(i);
-		float depthFactor = 60;
+		float depthFactor = 60.0;
 		float depth = depthFactor+float(i);
 		vec2 uv = pixel + floor(offset/depth);
 		
