@@ -300,6 +300,66 @@ void AudioAnalyzer::analyzeWavOffline( const QString &path )
     fprintf( stderr, "OFFLINE: done\n" );
 }
 
+// Offline (Preset-Editor) analysis: full pipeline, full speed, one snapshot
+// per 10 ms block.  A local, never-started analyzer instance keeps this
+// completely independent of any live capture.
+std::vector<AudioFeatures> AudioAnalyzer::analyzeWavToTimeline( const QString &path )
+{
+    std::vector<AudioFeatures> timeline;
+
+    FILE *f = fopen( path.toLocal8Bit().constData(), "rb" );
+    if( !f ) { fprintf( stderr, "TIMELINE: cannot open %s\n", qPrintable(path) ); return timeline; }
+
+    char id[5] = {0}; unsigned int sz = 0;
+    unsigned short fmtTag = 0, channels = 0, bits = 0;
+    unsigned int sampleRate = 48000; long dataPos = 0; unsigned int dataLen = 0;
+    fseek( f, 12, SEEK_SET );
+    while( fread( id, 1, 4, f ) == 4 && fread( &sz, 4, 1, f ) == 1 )
+    {
+        if( strncmp( id, "fmt ", 4 ) == 0 )
+        {
+            unsigned char buf[16];
+            fread( buf, 1, 16, f );
+            fmtTag     = *(unsigned short*)(buf + 0);
+            channels   = *(unsigned short*)(buf + 2);
+            sampleRate = *(unsigned int*)  (buf + 4);
+            bits       = *(unsigned short*)(buf + 14);
+            if( sz > 16 ) fseek( f, sz - 16, SEEK_CUR );
+        }
+        else if( strncmp( id, "data", 4 ) == 0 ) { dataPos = ftell( f ); dataLen = sz; break; }
+        else fseek( f, sz, SEEK_CUR );
+    }
+    if( fmtTag != 1 || bits != 16 || channels < 1 || dataPos == 0 )
+    {
+        fprintf( stderr, "TIMELINE: unsupported WAV (PCM16 required)\n" );
+        fclose( f ); return timeline;
+    }
+
+    AudioAnalyzer az;                 // never start()ed: pure DSP state
+    az.m_running = true;              // processBlock guards check this
+
+    const int chunk = 480;
+    short *pcm  = new short[chunk * channels];
+    float *conv = new float[chunk * channels];
+    fseek( f, dataPos, SEEK_SET );
+    unsigned int remain = dataLen / (channels * 2);
+    timeline.reserve( remain / chunk + 1 );
+    while( remain > 0 )
+    {
+        int n = (remain < (unsigned int)chunk) ? (int)remain : chunk;
+        if( fread( pcm, 2 * channels, n, f ) != (size_t)n ) break;
+        for( int i = 0; i < n * channels; ++i ) conv[i] = pcm[i] / 32768.f;
+        az.processBlock( conv, n, (channels > 2) ? 2 : channels, sampleRate );
+        timeline.push_back( az.getFeatures() );
+        remain -= n;
+    }
+    delete[] pcm; delete[] conv;
+    fclose( f );
+    fprintf( stderr, "TIMELINE: %d blocks (%.1f s)\n",
+             (int)timeline.size(), timeline.size() * 0.01f );
+    return timeline;
+}
+
 // ---------------------------------------------------------------------------
 // run() – WASAPI loopback capture loop
 // ---------------------------------------------------------------------------
@@ -1227,16 +1287,34 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
         // layer — rises above it.
         {
             float pos = 0.f, ref = 1e-6f;
+            float posG[3] = { 0.f, 0.f, 0.f };
+            float refG[3] = { 1e-6f, 1e-6f, 1e-6f };
             for (int b = 0; b < NB; ++b) {
                 float r = m_bandRef32[b];
                 float d = raw[b] - r;
-                if (d > 0.f) pos += d;
-                ref += r;
+                int   g = (b < 8) ? 0 : (b < 20) ? 1 : 2;   // kick / snare / hat bands
+                if (d > 0.f) { pos += d; posG[g] += d; }
+                ref += r;  refG[g] += r;
                 m_bandRef32[b] = std::max(raw[b], r * 0.985f);  // ~650 ms release: slow
                 // enough that beating drone partials stay under their recent peak
                 // (a kick still exceeds its half-decayed reference many times over)
             }
             m_odfFFT = (frameMax > 1e-4f) ? (pos / ref) : 0.f;
+
+            // Instrument-separated onsets: the same spike test as the global
+            // onset, but per band group, each against its own running average.
+            for (int g = 0; g < 3; ++g) {
+                float odf = (frameMax > 1e-4f) ? (posG[g] / refG[g]) : 0.f;
+                if (m_onsetCoolGrp[g] > 0) {
+                    --m_onsetCoolGrp[g];
+                } else if (odf > m_onsetAvgGrp[g] * 2.2f + 0.060f) {
+                    float str = std::min(odf / (m_onsetAvgGrp[g] * 2.2f + 1e-4f) - 1.f, 1.f);
+                    m_onsetEnvGrp[g] = std::max(m_onsetEnvGrp[g], str);
+                    m_onsetCoolGrp[g] = 12;                  // >= 120 ms between hits
+                }
+                m_onsetAvgGrp[g] = 0.95f * m_onsetAvgGrp[g] + 0.05f * odf;
+                m_onsetEnvGrp[g] *= 0.93f;                   // ~150 ms decay
+            }
         }
 
         // ---- Section-change detection (Strophe / Refrain / Bridge) ----
@@ -1256,10 +1334,12 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
             float aBias = 1.f / float(m_secWarm + 1);
             float aF = std::max(0.004f,   aBias);   // tau ~2.5 s at 100 blocks/s
             float aS = std::max(0.00056f, aBias);   // tau ~18 s
+            float aP = std::max(0.01f,    aBias);   // tau ~1 s (fingerprint)
             for (int b = 0; b < NB; ++b) {
                 float sh = raw[b] / sum;
-                m_secFast[b] += aF * (sh - m_secFast[b]);
-                m_secSlow[b] += aS * (sh - m_secSlow[b]);
+                m_secFast[b]  += aF * (sh - m_secFast[b]);
+                m_secSlow[b]  += aS * (sh - m_secSlow[b]);
+                m_secPrint[b] += aP * (sh - m_secPrint[b]);
             }
             m_secFastLvl += aF * (sum - m_secFastLvl);
             m_secSlowLvl += aS * (sum - m_secSlowLvl);
@@ -1293,8 +1373,49 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
                 for (int b = 0; b < NB; ++b)
                     m_secSlow[b] = m_secFast[b];
                 m_secSlowLvl = m_secFastLvl;
-                fprintf(stderr, "SECTION change #%d (novelty %.3f, t=%.1fs)\n",
-                        m_sectionCount, m_secNovelty, float(m_secWarm) * 0.01f);
+
+                // ---- Song-structure memory: recognise returning sections ----
+                // Match the ~1 s fingerprint against every stored section
+                // print (cosine similarity).  A close match means this section
+                // has been heard before (chorus #2 = chorus #1) -> same id;
+                // otherwise store it as a new section (LRU replacement).
+                {
+                    int   best = -1; float bestSim = 0.f;
+                    float nP = 1e-9f;
+                    for (int b = 0; b < NB; ++b) nP += m_secPrint[b] * m_secPrint[b];
+                    for (int i = 0; i < m_secPrintN; ++i) {
+                        float d = 0.f, nQ = 1e-9f;
+                        for (int b = 0; b < NB; ++b) {
+                            d  += m_secPrint[b] * m_secPrints[i][b];
+                            nQ += m_secPrints[i][b] * m_secPrints[i][b];
+                        }
+                        float sim = d / std::sqrt(nP * nQ);
+                        if (sim > bestSim) { bestSim = sim; best = i; }
+                    }
+                    if (best >= 0 && bestSim > 0.988f) {
+                        // Returning section: refresh its print (running blend).
+                        m_secCurId = best;
+                        for (int b = 0; b < NB; ++b)
+                            m_secPrints[best][b] += 0.3f * (m_secPrint[b] - m_secPrints[best][b]);
+                    } else {
+                        // New section: store (replace the least recently used).
+                        int slot = m_secPrintN;
+                        if (m_secPrintN < kMaxSectionPrints) ++m_secPrintN;
+                        else {
+                            slot = 0;
+                            for (int i = 1; i < kMaxSectionPrints; ++i)
+                                if (m_secPrintUse[i] < m_secPrintUse[slot]) slot = i;
+                        }
+                        std::memcpy(m_secPrints[slot], m_secPrint, sizeof(m_secPrint));
+                        m_secCurId = slot;
+                    }
+                    m_secPrintUse[m_secCurId] = m_sectionCount;   // LRU stamp
+                    fprintf(stderr, "SECTION change #%d -> id %d (%s, sim %.3f, "
+                            "novelty %.3f, t=%.1fs)\n",
+                            m_sectionCount, m_secCurId,
+                            (best >= 0 && bestSim > 0.988f) ? "known" : "new",
+                            bestSim, m_secNovelty, float(m_secWarm) * 0.01f);
+                }
             }
         }
     }
@@ -1588,6 +1709,10 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
     m_features.timingScale      = timingScale;
     m_features.sectionCount     = m_sectionCount;
     m_features.sectionNovelty   = m_secNovelty;
+    m_features.sectionId        = m_secCurId;
+    m_features.onsetKick        = m_onsetEnvGrp[0];
+    m_features.onsetSnare       = m_onsetEnvGrp[1];
+    m_features.onsetHat         = m_onsetEnvGrp[2];
     // FFT-derived features
     m_features.spectralRolloff  = m_sRolloff;
     m_features.spectralSpread   = m_sSpread;

@@ -43,7 +43,7 @@ vec3 getKaleidoscopeColor( vec2 coord )
     p = rot*p;
 //rwrwtest
 
-    float r = pow( pow(p.x*p.x,power) + pow(p.y*p.y,power), 1.0/(2*power) );
+    float r = pow( pow(p.x*p.x,power) + pow(p.y*p.y,power), 1.0/(2.0*power) );
 
     // cartesian to polar coordinates
     //float r = length(p);

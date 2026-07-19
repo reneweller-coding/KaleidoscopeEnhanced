@@ -78,6 +78,7 @@ bool Preset::load(const QString &path, Preset &out, QString *err)
             e.maxTimeInterpolation = el.attribute("maxTimeInterpolation").toInt();
             e.probability = el.attribute("probability").toDouble();
             e.complexity = el.attribute("complexity").toInt();
+            e.mood = el.attribute("mood");           // pass-through (may be empty)
             readParams(el, e);
             out.entries.push_back(e);
         }
@@ -118,6 +119,8 @@ bool Preset::save(const QString &path, QString *err) const
         w.writeAttribute("file", "..\\" + e.file);
         w.writeAttribute("type", e.type);
         w.writeAttribute("probability", QString::number(e.probability));
+        if (!e.mood.isEmpty())
+            w.writeAttribute("mood", e.mood);
         w.writeAttribute("complexity", QString::number(e.complexity));
         for (const ShaderParam &p : e.params)
         {

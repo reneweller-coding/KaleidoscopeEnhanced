@@ -44,7 +44,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(QTDIR)\include;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtWidgets;$(QTDIR)\include\QtOpenGL;$(QTDIR)\include\QtOpenGLWidgets;$(QTDIR)\include\QtXml;$(QTDIR)\mkspecs\win32-msvc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)..;$(QTDIR)\include;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtWidgets;$(QTDIR)\include\QtOpenGL;$(QTDIR)\include\QtOpenGLWidgets;$(QTDIR)\include\QtXml;$(QTDIR)\mkspecs\win32-msvc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
@@ -55,7 +55,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>Qt6Widgetsd.lib;Qt6Guid.lib;Qt6Cored.lib;Qt6OpenGLd.lib;Qt6OpenGLWidgetsd.lib;Qt6Xmld.lib;OpenGL32.Lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Qt6Widgetsd.lib;Qt6Guid.lib;Qt6Cored.lib;Qt6OpenGLd.lib;Qt6OpenGLWidgetsd.lib;Qt6Xmld.lib;OpenGL32.Lib;ole32.lib;oleaut32.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)PresetEditor.exe</OutputFile>
       <AdditionalLibraryDirectories>$(QTDIR)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -64,7 +64,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(QTDIR)\include;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtWidgets;$(QTDIR)\include\QtOpenGL;$(QTDIR)\include\QtOpenGLWidgets;$(QTDIR)\include\QtXml;$(QTDIR)\mkspecs\win32-msvc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)..;$(QTDIR)\include;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtWidgets;$(QTDIR)\include\QtOpenGL;$(QTDIR)\include\QtOpenGLWidgets;$(QTDIR)\include\QtXml;$(QTDIR)\mkspecs\win32-msvc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
@@ -75,7 +75,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>Qt6Widgets.lib;Qt6Gui.lib;Qt6Core.lib;Qt6OpenGL.lib;Qt6OpenGLWidgets.lib;Qt6Xml.lib;OpenGL32.Lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Qt6Widgets.lib;Qt6Gui.lib;Qt6Core.lib;Qt6OpenGL.lib;Qt6OpenGLWidgets.lib;Qt6Xml.lib;OpenGL32.Lib;ole32.lib;oleaut32.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)PresetEditor.exe</OutputFile>
       <AdditionalLibraryDirectories>$(QTDIR)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>false</GenerateDebugInformation>
@@ -91,8 +91,10 @@
     <ClCompile Include="EditorWindow.cpp" />
     <ClCompile Include="PreviewWidget.cpp" />
     <ClCompile Include="Preset.cpp" />
+    <ClCompile Include="..\AudioAnalyzer.cpp" />
     <ClCompile Include="moc_EditorWindow.cpp" />
     <ClCompile Include="moc_PreviewWidget.cpp" />
+    <ClCompile Include="moc_AudioAnalyzer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Preset.h" />
@@ -109,6 +111,13 @@
 </Command>
       <AdditionalInputs>$(QTDIR)\bin\moc.exe;%(AdditionalInputs)</AdditionalInputs>
       <Outputs>moc_PreviewWidget.cpp;%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="..\AudioAnalyzer.h">
+      <Message>MOCing AudioAnalyzer.h ...</Message>
+      <Command>$(QTDIR)\bin\moc ..\AudioAnalyzer.h -o moc_AudioAnalyzer.cpp
+</Command>
+      <AdditionalInputs>$(QTDIR)\bin\moc.exe;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs>moc_AudioAnalyzer.cpp;%(Outputs)</Outputs>
     </CustomBuild>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

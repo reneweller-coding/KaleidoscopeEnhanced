@@ -142,6 +142,15 @@ void Configuration::readConfiguration( const QString &filename )
 		float probability = el.attribute("probability").toFloat();
 		unsigned int complexity = el.attribute("complexity").toFloat();
 
+		// Optional mood tags (comma list: dark, bright, calm, aggressive) for
+		// the mood-biased shader selection; untagged shaders stay neutral.
+		QString mood = el.attribute("mood");
+		unsigned int moodFlags = 0;
+		if (mood.contains("dark"))       moodFlags |= EffectShader::MOOD_DARK;
+		if (mood.contains("bright"))     moodFlags |= EffectShader::MOOD_BRIGHT;
+		if (mood.contains("calm"))       moodFlags |= EffectShader::MOOD_CALM;
+		if (mood.contains("aggressive")) moodFlags |= EffectShader::MOOD_AGGRESSIVE;
+
 		if( type == "normal" )
 		{
 			EffectShader *shader = new EffectShader( shaderFile, minTimeSolo, maxTimeSolo, minTimeInterpolation, maxTimeInterpolation );
@@ -149,6 +158,7 @@ void Configuration::readConfiguration( const QString &filename )
 			addUniforms( shader, el );
 			shader->setComplexity( complexity );
 			shader->setProbability( probability );
+			shader->setMoodFlags( moodFlags );
 			m_filterShader->addTextureShader( shader );
 
 		}
@@ -159,6 +169,7 @@ void Configuration::readConfiguration( const QString &filename )
 			addUniforms( shader, el );
 			shader->setComplexity( complexity );
 			shader->setProbability( probability );
+			shader->setMoodFlags( moodFlags );
 			m_filterShader->addTextureShader( shader );
 		}
      }
@@ -180,11 +191,18 @@ void Configuration::readConfiguration( const QString &filename )
 		unsigned int maxTimeInterpolation = el.attribute("maxTimeInterpolation").toUInt();
 
 		QString shaderFile = el.attribute("file");
-		
+
 		float probability = el.attribute("probability").toFloat();
 		unsigned int complexity = el.attribute("complexity").toFloat();
 
 		QString type = el.attribute("type");
+
+		QString mood = el.attribute("mood");
+		unsigned int moodFlags = 0;
+		if (mood.contains("dark"))       moodFlags |= EffectShader::MOOD_DARK;
+		if (mood.contains("bright"))     moodFlags |= EffectShader::MOOD_BRIGHT;
+		if (mood.contains("calm"))       moodFlags |= EffectShader::MOOD_CALM;
+		if (mood.contains("aggressive")) moodFlags |= EffectShader::MOOD_AGGRESSIVE;
 
 		if( type == "normal" )
 		{
@@ -193,6 +211,7 @@ void Configuration::readConfiguration( const QString &filename )
 			addUniforms( shader, el );
 			shader->setComplexity( complexity );
 			shader->setProbability( probability );
+			shader->setMoodFlags( moodFlags );
 			m_filterShader->addCombineShader( shader );
 		}
      }

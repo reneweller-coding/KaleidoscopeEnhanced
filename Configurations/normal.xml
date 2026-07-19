@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <configuration ImageDirectory="C:\\Users\\rene\\Desktop\\BilderPhotoechoes" ConfigurationName="Normal" timeTextureSoloMin="10" timeTextureSoloMax="40" timeTextureInterpolationMin="20" timeTextureInterpolationMax="80" >
 
   <!--
@@ -47,11 +47,11 @@
   </TextureShader>
 
   <!-- Fractal KIFS (kaleidoscopic fractal) -->
-  <TextureShader minTimeSolo="20" maxTimeSolo="90" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\FractalKIFS.frag" type="normal" probability="0.5" complexity="1">
+  <TextureShader minTimeSolo="20" maxTimeSolo="90" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\FractalKIFS.frag" type="normal" probability="0.5" mood="aggressive" complexity="1">
   </TextureShader>
 
   <!-- Voyager (volumetric kaleidoscopic fly-through, after kishimisu) -->
-  <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\Voyager.frag" type="normal" probability="0.5" complexity="2">
+  <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\Voyager.frag" type="normal" probability="0.5" mood="bright" complexity="2">
     <int name="kSides" minValue="0" maxValue="9"></int>
     <float name="travelMul" minValue="0.6" maxValue="1.6"></float>
     <float name="cellH" minValue="1.2" maxValue="3.0"></float>
@@ -67,13 +67,13 @@
   </TextureShader>
 
   <!-- Fractal Bloom (glowing fractal flower, after kishimisu) -->
-  <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\FractalBloom.frag" type="normal" probability="0.5" complexity="1">
+  <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\FractalBloom.frag" type="normal" probability="0.5" mood="bright" complexity="1">
     <float name="iterZoomP" minValue="1.3" maxValue="1.8"></float>
     <float name="ringFreqP" minValue="5.0" maxValue="12.0"></float>
   </TextureShader>
 
   <!-- Disco Godrays (kaleidoscopic volumetric godrays, after kishimisu) -->
-  <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\DiscoGodrays.frag" type="normal" probability="0.5" complexity="2">
+  <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\DiscoGodrays.frag" type="normal" probability="0.5" mood="aggressive,bright" complexity="2">
     <float name="facetP" minValue="0.2" maxValue="0.5"></float>
     <float name="tubeP" minValue="0.03" maxValue="0.09"></float>
   </TextureShader>
@@ -87,7 +87,7 @@
   </TextureShader>
 
   <!-- Vortex (kaleidoscopic vortex tunnel, after kishimisu) -->
-  <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\Vortex.frag" type="normal" probability="0.5" complexity="2">
+  <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\Vortex.frag" type="normal" probability="0.5" mood="aggressive,bright" complexity="2">
     <int name="sectorsP" minValue="6" maxValue="17"></int>
     <float name="curveP" minValue="0.04" maxValue="0.14"></float>
     <float name="travP" minValue="0.6" maxValue="1.5"></float>
@@ -96,7 +96,7 @@
   </TextureShader>
 
   <!-- The Core (glowing core down a twisting tunnel, after kishimisu) -->
-  <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\TheCore.frag" type="normal" probability="0.5" complexity="2">
+  <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\TheCore.frag" type="normal" probability="0.5" mood="aggressive" complexity="2">
     <float name="coreP" minValue="0.6" maxValue="1.6"></float>
     <float name="twistP" minValue="0.15" maxValue="0.5"></float>
     <float name="tubeP" minValue="0.06" maxValue="0.16"></float>
@@ -105,7 +105,7 @@
   </TextureShader>
 
   <!-- Neon Tubes (pulsing neon ring tunnel, after kishimisu) -->
-  <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\NeonTubes.frag" type="normal" probability="0.5" complexity="2">
+  <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\NeonTubes.frag" type="normal" probability="0.5" mood="aggressive,bright" complexity="2">
     <float name="stripeP" minValue="5.0" maxValue="12.0"></float>
     <float name="ringP" minValue="0.7" maxValue="1.3"></float>
     <float name="travP" minValue="0.6" maxValue="1.5"></float>
@@ -114,7 +114,7 @@
   </TextureShader>
 
   <!-- Psychedelic Pills (floating capsules, after kishimisu) -->
-  <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\PsychedelicPills.frag" type="normal" probability="0.5" complexity="2">
+  <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\PsychedelicPills.frag" type="normal" probability="0.5" mood="bright" complexity="2">
     <float name="pillP" minValue="0.07" maxValue="0.14"></float>
     <float name="wobbleP" minValue="0.15" maxValue="0.35"></float>
     <float name="spinP" minValue="0.6" maxValue="1.5"></float>
@@ -123,7 +123,7 @@
   </TextureShader>
 
   <!-- Chrome Dreams (rotating chromatic torus tunnel, after kishimisu) -->
-  <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\ChromeDreams.frag" type="normal" probability="0.5" complexity="2">
+  <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\ChromeDreams.frag" type="normal" probability="0.5" mood="bright" complexity="2">
     <float name="ringP" minValue="0.12" maxValue="0.30"></float>
     <float name="stretchP" minValue="0.10" maxValue="0.35"></float>
     <float name="stripeP" minValue="4.0" maxValue="9.0"></float>
@@ -163,7 +163,7 @@
   </TextureShader>
 
   <!-- Breathing Fractal Zoom (same fractal core, oscillating zoom + palette remap) -->
-  <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\BreathingFractalZoom.frag" type="normal" probability="0.5" complexity="1">
+  <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\BreathingFractalZoom.frag" type="normal" probability="0.5" mood="calm,bright" complexity="1">
     <float name="oscP" minValue="0.03" maxValue="0.09"></float>
     <float name="deepP" minValue="2.5" maxValue="4.5"></float>
     <float name="breathP" minValue="12.0" maxValue="30.0"></float>
@@ -173,7 +173,7 @@
   </TextureShader>
 
   <!-- Breathing Fractal Noir (same fractal core, dark high-contrast look) -->
-  <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\BreathingFractalNoir.frag" type="normal" probability="0.5" complexity="1">
+  <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\BreathingFractalNoir.frag" type="normal" probability="0.5" mood="dark" complexity="1">
     <float name="oscP" minValue="0.03" maxValue="0.09"></float>
     <float name="deepP" minValue="2.5" maxValue="4.5"></float>
     <float name="breathP" minValue="12.0" maxValue="30.0"></float>
@@ -197,15 +197,15 @@
   </TextureShader>
 
   <!-- Beat Lattice (beat-first: angular shards + tempo-riding ring waves) -->
-  <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\BeatLattice.frag" type="normal" probability="0.5" complexity="1">
+  <TextureShader minTimeSolo="20" maxTimeSolo="80" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\BeatLattice.frag" type="normal" probability="0.5" mood="aggressive,bright" complexity="1">
   </TextureShader>
 
   <!-- Drone Depths (ambient-first nebula; adaptive presets pick it for drones) -->
-  <TextureShader minTimeSolo="30" maxTimeSolo="120" minTimeInterpolation="20" maxTimeInterpolation="60" file="..\\DroneDepths.frag" type="normal" probability="0.3" complexity="1">
+  <TextureShader minTimeSolo="30" maxTimeSolo="120" minTimeInterpolation="20" maxTimeInterpolation="60" file="..\\DroneDepths.frag" type="normal" probability="0.3" mood="calm,dark" complexity="1">
   </TextureShader>
 
   <!-- Plasma Flow (mood-tinted flowing plasma) -->
-  <TextureShader minTimeSolo="20" maxTimeSolo="90" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\PlasmaFlow.frag" type="normal" probability="0.5" complexity="1">
+  <TextureShader minTimeSolo="20" maxTimeSolo="90" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\PlasmaFlow.frag" type="normal" probability="0.5" mood="calm" complexity="1">
     <int name="sidesP" minValue="2" maxValue="9"></int>
     <float name="scaleP" minValue="3.5" maxValue="8.0"></float>
     <float name="flowAmtP" minValue="0.06" maxValue="0.16"></float>
@@ -232,7 +232,7 @@
   </TextureShader>
 
   <!-- Lava Lamp (rising metaball wax) -->
-  <TextureShader minTimeSolo="25" maxTimeSolo="90" minTimeInterpolation="20" maxTimeInterpolation="50" file="..\\LavaLamp.frag" type="normal" probability="0.4" complexity="1">
+  <TextureShader minTimeSolo="25" maxTimeSolo="90" minTimeInterpolation="20" maxTimeInterpolation="50" file="..\\LavaLamp.frag" type="normal" probability="0.4" mood="calm" complexity="1">
     <float name="waxHueP" minValue="0.0" maxValue="6.28"></float>
     <float name="speedP" minValue="0.6" maxValue="1.6"></float>
     <float name="sizeP" minValue="0.8" maxValue="1.4"></float>
@@ -240,7 +240,7 @@
   </TextureShader>
 
   <!-- Oil Projector (Mathmos-style liquid light show) -->
-  <TextureShader minTimeSolo="25" maxTimeSolo="90" minTimeInterpolation="20" maxTimeInterpolation="50" file="..\\OilProjector.frag" type="normal" probability="0.4" complexity="2">
+  <TextureShader minTimeSolo="25" maxTimeSolo="90" minTimeInterpolation="20" maxTimeInterpolation="50" file="..\\OilProjector.frag" type="normal" probability="0.4" mood="calm" complexity="2">
     <int name="sidesP" minValue="2" maxValue="9"></int>
     <float name="cellP" minValue="1.4" maxValue="3.0"></float>
   </TextureShader>
@@ -250,7 +250,7 @@
   </TextureShader>
 
   <!-- Organic Flow (reaction-diffusion-like cells) -->
-  <TextureShader minTimeSolo="20" maxTimeSolo="90" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\OrganicFlow.frag" type="normal" probability="0.5" complexity="1">
+  <TextureShader minTimeSolo="20" maxTimeSolo="90" minTimeInterpolation="15" maxTimeInterpolation="50" file="..\\OrganicFlow.frag" type="normal" probability="0.5" mood="calm" complexity="1">
     <int name="sidesP" minValue="3" maxValue="9"></int>
     <float name="veinP" minValue="5.0" maxValue="10.0"></float>
     <float name="swirlP" minValue="0.0" maxValue="0.8"></float>
@@ -324,6 +324,12 @@
     <float name="driftP" minValue="0.5" maxValue="2.0"></float>
   </CombineShader>
 
+
+  <!-- Fluid (GPU ink: the image advected along an incompressible curl-noise flow) -->
+  <TextureShader minTimeSolo="25" maxTimeSolo="90" minTimeInterpolation="20" maxTimeInterpolation="60" file="..\\Fluid.frag" type="normal" probability="0.5" mood="calm" complexity="1">
+    <int name="sidesP" minValue="0" maxValue="9"></int>
+    <float name="zoomP" minValue="0.7" maxValue="1.5"></float>
+  </TextureShader>
 
 </configuration>
 

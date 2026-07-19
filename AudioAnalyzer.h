@@ -5,6 +5,7 @@
 #include <QtCore/QString>
 #include <QtCore/QList>
 #include <atomic>
+#include <vector>
 
 #include "AudioFeatures.h"
 
@@ -78,6 +79,13 @@ public:
 
     /** Graceful shutdown – call before wait(). */
     void stop();
+
+    /** Offline (Preset-Editor) analysis: run a 16-bit PCM WAV through the FULL
+     *  analysis pipeline at full speed — no capture thread, no WASAPI — and
+     *  return one AudioFeatures snapshot per 10 ms block.  The editor plays
+     *  these back in sync with the sound so presets can be tuned against real
+     *  music with the real analyzer, not the synthetic profile. */
+    static std::vector<AudioFeatures> analyzeWavToTimeline( const QString &path );
 
     /** Offline analysis mode (CLI -w <file.wav>): instead of capturing WASAPI
      *  loopback, the analysis thread feeds this WAV through processBlock() in
@@ -257,6 +265,24 @@ private:
     int   m_secWarm     = 0;    // blocks since start (EMAs must settle first)
     int   m_secCooldown = 0;    // blocks until the next trigger is allowed
     int   m_sectionCount = 0;
+
+    // Song-structure memory: spectral fingerprints of the sections heard so
+    // far.  m_secPrint is a ~1 s EMA of the shape (at trigger time it is
+    // already ~90% the NEW section, unlike the laggier 2.5 s average).  On a
+    // section trigger it is matched against the stored prints (cosine
+    // similarity) -> the same chorus is recognised when it returns.
+    static const int kMaxSectionPrints = 8;
+    float m_secPrint[AudioFeatures::kSpectrumBands] = {};             // ~1 s EMA
+    float m_secPrints[kMaxSectionPrints][AudioFeatures::kSpectrumBands] = {};
+    int   m_secPrintUse[kMaxSectionPrints] = {};   // last-used stamp (LRU)
+    int   m_secPrintN   = 0;    // stored prints so far
+    int   m_secCurId    = -1;   // current section's id (index into prints)
+
+    // Instrument-separated onsets (see AudioFeatures::onsetKick/Snare/Hat):
+    // per-group positive flux (low/mid/high bands) with its own spike test.
+    float m_onsetAvgGrp[3]  = {};   // running ODF averages
+    int   m_onsetCoolGrp[3] = {};   // per-group re-trigger cooldowns (blocks)
+    float m_onsetEnvGrp[3]  = {};   // decaying output envelopes
 
     float m_sRolloff = 0.5f;  // spectral rolloff (fraction of Nyquist, 0..1)
     float m_sSpread  = 0.f;   // spectral spread normalised by 5 kHz

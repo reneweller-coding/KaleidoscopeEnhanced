@@ -75,8 +75,34 @@ public:
 	// the GPU simulation only while an effect that displays it is on screen.
 	bool usesSim();
 
+	// Same for the fluid simulation ("texFluid" uniform, unit 8).
+	bool usesFluid();
+
 	// The fragment-shader file this effect uses (for the debug overlay).
 	const char* fragmentName() const { return m_fragmentShaderFilename ? m_fragmentShaderFilename : "?"; }
+
+	// ---- Song-structure memory ----
+	// Snapshot / restore of all rolled per-activation parameter values, so a
+	// recognised section (chorus #2 = chorus #1) replays the exact same look.
+	std::vector<float> snapshotParameters() const
+	{
+		std::vector<float> v;
+		v.reserve(m_uniforms.size());
+		for (const Uniform *u : m_uniforms) v.push_back(u->snapshotValue());
+		return v;
+	}
+	void restoreParameters(const std::vector<float> &v)
+	{
+		for (size_t i = 0; i < m_uniforms.size() && i < v.size(); ++i)
+			m_uniforms[i]->restoreValue(v[i]);
+	}
+
+	// ---- Mood tags (config attribute mood="dark,calm,...") ----
+	enum MoodFlags {
+		MOOD_DARK = 1, MOOD_BRIGHT = 2, MOOD_CALM = 4, MOOD_AGGRESSIVE = 8
+	};
+	void setMoodFlags(unsigned int f) { m_moodFlags = f; }
+	unsigned int moodFlags() const    { return m_moodFlags; }
 
 protected:
 	unsigned int getInterpolatedTime( unsigned int minTime, unsigned int maxTime );
@@ -111,7 +137,9 @@ protected:
 	float	m_probability;
 
 	int		m_usesSim = -1;   // -1 = not yet queried, 0/1 = cached result
+	int		m_usesFluid = -1; // same caching for the fluid field
 
+	unsigned int m_moodFlags = 0;   // MoodFlags bitmask (0 = untagged/neutral)
 
 	std::vector< Uniform *> m_uniforms;
 

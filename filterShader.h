@@ -4,6 +4,8 @@
 #include <QtGui/qopengl.h>
 #include <QtCore/QElapsedTimer>
 #include <QtCore/QThread>
+#include <map>
+#include <vector>
 
 #include "mesh.h"
 
@@ -81,11 +83,13 @@ public:
 	// GPU reaction-diffusion simulation (Gray-Scott, float ping-pong).
 	void setupReactionDiffusion();                       // create float FBOs + sim shader
 	void stepReactionDiffusion(const AudioFeatures &a);  // advance one PDE step per frame
+	void setupFluid();                                   // curl-noise dye-advection sim
+	void stepFluid(const AudioFeatures &a);
 
 	// Mood-based selection bias: accept a candidate effect with a probability that
 	// depends on how well its complexity matches the current arousal (calm music →
 	// simple effects, energetic → busy).  Safe: callers retry, then fall back.
-	bool moodAccept(unsigned int complexity);
+	bool moodAccept(EffectShader *s);
 	float			m_lastArousal = 0.5f;   // latest arousal (for moodAccept)
 	void checkGLErrors( const char *label ); // check and print gl errors to stderr
 
@@ -172,6 +176,30 @@ private:
 	// single +1 step forces an early, short cross-fade to the next shader.
 	int				m_lastSectionCount  = 0;
 
+	// ---- Song-structure memory ----
+	// Per analyzer section id: which effect/combine played it and the effect's
+	// rolled parameter values.  A RETURNING section (chorus #2) replays the
+	// exact same look; a NEW section's fresh look is stored after the switch.
+	std::map<int, unsigned int>       m_sectionEffect;
+	std::map<int, unsigned int>       m_sectionCombine;
+	std::map<int, std::vector<float>> m_sectionParams;
+	int				m_pendingSectionStore   = -1;
+	int				m_pendingSectionRestore = -1;
+
+	// Key colour: chroma hue slewed AROUND the colour circle (shortest way,
+	// max ~20 deg/s) so key changes glide instead of jumping the palette.
+	float			m_chromaHueSlew = 0.f;
+
+	// Latest mood state for moodAccept (tag-based shader selection).
+	float			m_lastValence = 0.5f;
+	float			m_lastAmbient = 0.f;
+
+	// Instrument-separated onset envelopes (kick / snare / hat): peak-hold +
+	// slew, exactly like the global beat/onset envelopes above them.
+	float			m_kickEnv = 0.f,  m_kickSmooth = 0.f;
+	float			m_snareEnv = 0.f, m_snareSmooth = 0.f;
+	float			m_hatEnv = 0.f,   m_hatSmooth = 0.f;
+
 	// ---- Photosensitivity safety: final present pass with global brightness
 	// rate-limiting.  The combined frame is rendered into m_fboFinal, its average
 	// luminance is read back (coarse mip), and a uniform scale is chosen so the
@@ -226,6 +254,9 @@ private:
 	GLint			m_trailPrevUni  = -1;
 	GLint			m_trailResUni   = -1;
 	GLint			m_trailDecayUni = -1;
+	GLint			m_trailZoomUni  = -1;   // echo-warp: per-frame zoom
+	GLint			m_trailRotUni   = -1;   //   ... rotation (radians/frame)
+	GLint			m_trailHueUni   = -1;   //   ... hue drift of the echoes
 	bool			m_feedbackReady = false;
 
 	// ---- GPU reaction-diffusion simulation (Gray-Scott, float ping-pong) ----
@@ -248,6 +279,29 @@ private:
 	bool			m_rdReady     = false;   // false → simulation disabled (safe fallback)
 	bool			m_rdSeeded    = false;   // false → next step writes the seed pattern
 	float			m_rdInjectAcc = 0.f;     // moving injection point phase
+
+	// ---- GPU fluid simulation (dye advected along analytic curl noise) ----
+	// Semi-Lagrangian advection of an RGB dye field along the curl of a noise
+	// potential — divergence-free by construction, so it flows like an
+	// incompressible fluid (smoke/ink) without a pressure solve.  The source
+	// image is continuously injected as dye; the field is bound to the global
+	// "texFluid" sampler (unit 8) for any effect that declares it.
+	static const int kFluidSize = 512;
+	GLuint			m_fboFluid[2]     = { 0, 0 };
+	GLuint			m_texFluid[2]     = { 0, 0 };
+	int				m_fluidIdx        = 0;
+	GLuint			m_fluidProgId     = 0;
+	GLint			m_fluidPrevUni    = -1;
+	GLint			m_fluidTex0Uni    = -1;
+	GLint			m_fluidTex1Uni    = -1;
+	GLint			m_fluidInterpUni  = -1;
+	GLint			m_fluidResUni     = -1;
+	GLint			m_fluidSeedUni    = -1;
+	GLint			m_fluidPhaseUni   = -1;
+	GLint			m_fluidImpulseUni = -1;
+	GLint			m_fluidInjectUni  = -1;
+	bool			m_fluidReady      = false;
+	bool			m_fluidSeeded     = false;
 
 	// Live-tunable look parameters (static → one shared setting across all configs).
 	static float	s_reactivity;    // audio-motion master gain (default 1.0)

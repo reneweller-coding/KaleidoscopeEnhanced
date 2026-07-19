@@ -30,6 +30,8 @@ uniform float audioOnset;
 uniform float audioLevel;
 uniform float audioCentroid;
 uniform float audioValence;
+uniform float audioKick;   // kick -> the rays PUMP (boom = light burst)
+uniform float audioHat;    // hats -> glittering sparkle on the ray tips
 
 mat2 rot(float a) { float c = cos(a), s = sin(a); return mat2(c, -s, s, c); }
 vec3 img(vec2 uv) { return (interpolation * texture2D(tex0, uv)
@@ -93,7 +95,10 @@ void main()
     O *= exp(t * 0.1);
 
     vec3 col = max(O.rgb, 0.0);
-    col *= 1.0 + 0.6 * audioBeat + 0.4 * audioOnset;      // beat glow
+    // Instrument accents: the KICK bursts the rays, HATS add a glitter
+    // shimmer on top of the general beat glow.
+    col *= 1.0 + 0.45 * audioBeat + 0.35 * audioKick + 0.25 * audioOnset;
+    col *= 1.0 + 0.12 * audioHat * (0.5 + 0.5 * hash(gl_FragCoord.xy * 0.7));
 
     // Mood grade.
     col *= mix(vec3(0.70, 0.85, 1.25), vec3(1.30, 1.05, 0.70), audioCentroid);
