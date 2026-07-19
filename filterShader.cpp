@@ -1705,10 +1705,10 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 
 				m_stateInterpolationEffectTexture = 1;
 
-				// Roll a transition style: 13 styles (see CombinePlain.frag),
-				// the classic linear mix stays the most common (~1/3).
+				// Roll a transition style: 25 styles (see CombinePlain.frag),
+				// the classic linear mix stays the most common (~20%).
 				{
-					int r = qrand() % 18;
+					int r = qrand() % 30;
 					m_transStyleTex = (r <= 5) ? 0 : (r - 5);
 				}
 
@@ -1954,7 +1954,7 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 
 				// Roll a transition style for the combine blend as well.
 				{
-					int r = qrand() % 18;
+					int r = qrand() % 30;
 					m_transStyleComb = (r <= 5) ? 0 : (r - 5);
 				}
 
