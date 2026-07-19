@@ -3,6 +3,9 @@
 #include <QtCore/QFile>
 #include <QtCore/QBuffer>
 #include <QtCore/QDateTime>
+#include <QtCore/QFileSystemWatcher>
+#include <QtCore/QTimer>
+#include <QtCore/QCoreApplication>
 #include <QtCore/QSettings>
 #include <QtCore/QProcess>
 #include <QtCore/QDir>
@@ -26,7 +29,8 @@
 
 // Start configuration requested on the command line (-c <name>); empty = default.
 QString GLwidget::s_startConfig;
-int     GLwidget::s_remotePort = 0;
+int     GLwidget::s_remotePort  = 0;
+bool    GLwidget::s_batchRender = false;
 
 // ---- Web-remote hooks (called from WebRemote on the main thread) ----
 QStringList GLwidget::remoteConfigNames() const
@@ -118,6 +122,30 @@ GLwidget::GLwidget( QWidget *parent )
 	// controls as the keyboard.  Parented to this widget; main-thread events.
 	if( s_remotePort > 0 )
 		new WebRemote( this, s_remotePort );
+
+	// Shader HOT-RELOAD (dev aid): watch every user shader; a saved file is
+	// recompiled live on the next frame.  Editors often save via replace, so
+	// the (dropped) watch path is re-added shortly after each change.
+	{
+		QStringList watch;
+		for( const QString &d : { QString("..\\Scene"), QString("..\\Combine") } )
+			for( const QFileInfo &fi : QDir(d).entryInfoList({"*.frag"}, QDir::Files) )
+				watch << fi.absoluteFilePath();
+		if( !watch.isEmpty() )
+		{
+			m_shaderWatcher = new QFileSystemWatcher( this );
+			m_shaderWatcher->addPaths( watch );
+			connect( m_shaderWatcher, &QFileSystemWatcher::fileChanged, this,
+			         [this]( const QString &p )
+			{
+				m_pendingReloads.insert( QFileInfo(p).fileName() );
+				QTimer::singleShot( 250, this, [this, p]{
+					if( QFile::exists(p) && m_shaderWatcher )
+						m_shaderWatcher->addPath( p );
+				} );
+			} );
+		}
+	}
 
 	// Robustness: a missing/empty Configurations directory used to crash here with
 	// an out-of-range vector access.  Fail with a clear message instead.
@@ -295,6 +323,31 @@ void GLwidget::draw()
 
 	// Apply any queued MIDI control messages.
 	applyMidi();
+
+	// Batch render (-x): once the offline WAV has been fully analysed, stop
+	// the recording (which kicks off the detached ffmpeg mux) and quit —
+	// unattended WAV-to-video rendering.
+	if( s_batchRender && !m_batchStopping && m_audioAnalyzer
+	    && m_audioAnalyzer->isFinished() )
+	{
+		m_batchStopping = true;
+		if( m_recording )
+			toggleRecording();
+		fprintf( stderr, "BATCH: WAV done - exiting (the mp4 mux continues detached)\n" );
+		QTimer::singleShot( 3000, []{ QCoreApplication::quit(); } );
+	}
+
+	// Hot-reload: recompile shaders whose files changed (GL context current).
+	// Applied to EVERY configuration's pipeline; lazily-uncompiled programs
+	// pick up the new source on their eventual first compile anyway.
+	if( !m_pendingReloads.isEmpty() )
+	{
+		for( const QString &n : m_pendingReloads )
+			for( Configuration *c : m_configurationList )
+				if( c && c->m_filterShader )
+					c->m_filterShader->reloadFragment( n );
+		m_pendingReloads.clear();
+	}
 
 	// Auto-config-by-mood (optional, key 'a'): may switch m_actConfiguration.
 	updateAutoConfig( audio );
@@ -967,23 +1020,85 @@ void GLwidget::captureReplayFrame()
 	if( dur > 0.5f ) dur = 0.5f;                 // clamp gaps (pause, first frame)
 	m_repLastFrame = now;
 
+	asyncCapture( dur, true );
+}
+
+#ifndef GL_PIXEL_PACK_BUFFER
+#define GL_PIXEL_PACK_BUFFER 0x88EB
+#endif
+#ifndef GL_STREAM_READ
+#define GL_STREAM_READ 0x88E1
+#endif
+
+// PBO double-buffered async readback — see the header comment.  Issues this
+// frame's glReadPixels into PBO[cur] (returns immediately) and consumes the
+// PREVIOUS frame's finished transfer from PBO[prev].
+void GLwidget::asyncCapture( float dur, bool toReplay )
+{
 	int w = m_width, h = m_height;
 	if( w < 2 || h < 2 ) return;
-	if( (int)m_recBuf.size() < w*h*4 ) m_recBuf.resize( (size_t)w*h*4 );
-	glReadPixels( 0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, m_recBuf.data() );
-	QImage img( m_recBuf.data(), w, h, QImage::Format_RGBA8888 );
 
+	if( m_pbo[0] == 0 )
+		glGenBuffers( 2, m_pbo );
+
+	const int cur  = m_pboIdx;
+	const int prev = 1 - m_pboIdx;
+
+	// 1. queue this frame's readback (orphaning re-sizes on resolution change)
+	glBindBuffer( GL_PIXEL_PACK_BUFFER, m_pbo[cur] );
+	glBufferData( GL_PIXEL_PACK_BUFFER, (GLsizeiptr)w * h * 4, NULL, GL_STREAM_READ );
+	glReadPixels( 0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, 0 );
+	m_pboMeta[cur].pending = true;
+	m_pboMeta[cur].replay  = toReplay;
+	m_pboMeta[cur].dur     = dur;
+	m_pboMeta[cur].w       = w;
+	m_pboMeta[cur].h       = h;
+
+	// 2. consume the previous frame's data (its DMA finished a frame ago)
+	PboMeta &pm = m_pboMeta[prev];
+	if( pm.pending )
 	{
-		std::lock_guard<std::mutex> lk( m_recMx );
-		if( m_recQueue.size() >= 8 )
+		pm.pending = false;
+		glBindBuffer( GL_PIXEL_PACK_BUFFER, m_pbo[prev] );
+		void *ptr = glMapBuffer( GL_PIXEL_PACK_BUFFER, GL_READ_ONLY );
+		if( ptr )
 		{
-			m_repCarryDur += dur;
-			return;
+			QImage img( (const uchar*)ptr, pm.w, pm.h, QImage::Format_RGBA8888 );
+			bool queued = false;
+			QString fn;
+			if( !pm.replay )
+				fn = QString("%1/frame_%2.jpg").arg(m_recDir).arg(m_recFrame, 6, 10, QChar('0'));
+			{
+				std::lock_guard<std::mutex> lk( m_recMx );
+				if( m_recQueue.size() < 8 )
+				{
+					float carry = pm.replay ? m_repCarryDur : 0.f;
+					m_recQueue.push_back( RecJob{ img.copy(), fn, pm.dur + carry } );
+					queued = true;
+				}
+			}
+			glUnmapBuffer( GL_PIXEL_PACK_BUFFER );
+			if( queued )
+			{
+				m_recCv.notify_one();
+				if( pm.replay )
+					m_repCarryDur = 0.f;
+				else
+				{
+					m_recConcat += QString("file 'frame_%1.jpg'\nduration %2\n")
+					               .arg(m_recFrame, 6, 10, QChar('0'))
+					               .arg(pm.dur + m_recCarryDur, 0, 'f', 4);
+					m_recCarryDur = 0.f;
+					m_recFrame++;
+				}
+			}
+			else if( pm.replay ) m_repCarryDur += pm.dur;
+			else                 m_recCarryDur += pm.dur;
 		}
-		m_recQueue.push_back( RecJob{ img.copy(), QString(), dur + m_repCarryDur } );
-		m_repCarryDur = 0.f;
 	}
-	m_recCv.notify_one();
+	glBindBuffer( GL_PIXEL_PACK_BUFFER, 0 );
+
+	m_pboIdx = prev;
 }
 
 // Save the replay ring (frames + rolling audio) and mux it like a recording.
@@ -1052,31 +1167,7 @@ void GLwidget::captureFrame()
 	float dur = (m_recFrame == 0) ? (1.0f/30.0f) : float(now - m_recLastFrame) / 1000.f;
 	m_recLastFrame = now;
 
-	int w = m_width, h = m_height;
-	if( w < 2 || h < 2 ) return;
-	if( (int)m_recBuf.size() < w*h*4 ) m_recBuf.resize( (size_t)w*h*4 );
-	glReadPixels( 0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, m_recBuf.data() );
-
-	QImage img( m_recBuf.data(), w, h, QImage::Format_RGBA8888 );
-	QString fn = QString("%1/frame_%2.jpg").arg(m_recDir).arg(m_recFrame, 6, 10, QChar('0'));
-
-	// Bounded queue: if the encoder can't keep up, DROP this frame (its duration
-	// is carried into the next one) instead of growing memory without limit.
-	{
-		std::lock_guard<std::mutex> lk( m_recMx );
-		if( m_recQueue.size() >= 8 )
-		{
-			m_recCarryDur += dur;
-			return;
-		}
-		m_recQueue.push_back( RecJob{ img.copy(), fn } );   // deep copy (buffer is reused)
-	}
-	m_recCv.notify_one();
-
-	m_recConcat += QString("file 'frame_%1.jpg'\nduration %2\n")
-	               .arg(m_recFrame, 6, 10, QChar('0')).arg(dur + m_recCarryDur, 0, 'f', 4);
-	m_recCarryDur = 0.f;
-	m_recFrame++;
+	asyncCapture( dur, false );          // PBO path: no GPU->CPU stall
 }
 
 // Finalise: close the WAV, write the concat list + a make_video.bat, and kick off

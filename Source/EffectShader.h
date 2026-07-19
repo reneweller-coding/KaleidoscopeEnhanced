@@ -31,6 +31,34 @@ public:
 	
 	virtual void initUniforms(int width, int height); // initialize GLSL - shader programs
 
+	// ---- Lazy compilation ----
+	// prepare() only records the render size (no GL); the expensive compile
+	// runs on first use (ensureCompiled, called from enableShader) or during
+	// the host's per-frame warm-up.  A 70-shader preset therefore starts
+	// instantly instead of blocking for seconds.
+	void prepare( int width, int height ) { m_width = width; m_height = height; }
+	void ensureCompiled()
+	{
+		if( m_glReady ) return;
+		initUniforms( m_width, m_height );   // virtual: derived locations too
+		m_glReady = true;
+		m_usesSim = m_usesFluid = -1;        // re-query against the new program
+	}
+	bool isCompiled() const { return m_glReady; }
+
+	// Hot-reload (dev aid): recompile this effect's fragment shader from disk.
+	// Not-yet-compiled (lazy) programs are left alone — their eventual compile
+	// reads the new source anyway.
+	void reloadShader()
+	{
+		if( !m_glReady )
+			return;
+		cleanShaderPrograms();
+		m_sh_prog_id = 0;
+		m_glReady    = false;
+		ensureCompiled();
+	}
+
 	// Update the reported render-target resolution without recompiling the shader
 	// or touching any GL objects.  Used on window resize.
 	void setSize( int width, int height ) { m_width = width; m_height = height; }
@@ -138,6 +166,14 @@ protected:
 
 	int		m_usesSim = -1;   // -1 = not yet queried, 0/1 = cached result
 	int		m_usesFluid = -1; // same caching for the fluid field
+
+	bool	m_glReady = false;      // lazy compile: program built yet?
+
+	// Cached audio-uniform locations: applyAudioFeatures used to do ~45
+	// glGetUniformLocation string lookups per shader per FRAME.  Cached per
+	// program id (auto-refreshes after recompile / hot reload).
+	struct AudioLocCache { GLuint progId = 0; GLint L[48]; };
+	AudioLocCache m_audioLocs;
 
 	unsigned int m_moodFlags = 0;   // MoodFlags bitmask (0 = untagged/neutral)
 

@@ -84,6 +84,7 @@ void EffectShader::resetParameters()
 
 void EffectShader::enableShader( )
 {
+	ensureCompiled();          // lazy: compile on first use (see prepare())
 	glUseProgram( m_sh_prog_id );
 }
 
@@ -263,113 +264,87 @@ unsigned int EffectShader::getInterpolatedTime( unsigned int minTime, unsigned i
 // returns -1 for any uniform a shader does not declare, so the corresponding
 // upload is silently skipped (e.g. plain combine shaders react to nothing).
 // ---------------------------------------------------------------------------
+// Audio-uniform name table for the per-program location cache below
+// (indices = the AL_* enum; order must match).
+namespace {
+enum AudioLoc {
+    AL_PHASE, AL_ADVANCE, AL_BEAT, AL_LEVEL, AL_SIDES, AL_FLIP, AL_CENTROID,
+    AL_FLUX, AL_SUBBASS, AL_BASS, AL_LOWMID, AL_MID, AL_UPPERMID, AL_HIGH,
+    AL_ROLLOFF, AL_SPREAD, AL_MODE, AL_PITCH, AL_AROUSAL, AL_VALENCE,
+    AL_HCDF, AL_ROUGH, AL_SHARP, AL_ONSET, AL_DOWNBEAT, AL_BEATPH,
+    AL_STEREO, AL_DPITCH, AL_MUSIC, AL_STBANDL, AL_STBANDR, AL_CHROMA,
+    AL_SWELL, AL_BARPH, AL_AMBIENT, AL_KICK, AL_SNARE, AL_HAT, AL_TRANS,
+    AL_SPECTRUM, AL_TEXSIM, AL_TEXFLUID, AL_COUNT
+};
+const char *kAudioLocNames[AL_COUNT] = {
+    "audioPhase", "audioAdvance", "audioBeat", "audioLevel", "sides",
+    "audioFlip", "audioCentroid", "audioFlux", "audioSubBass", "audioBass",
+    "audioLowMid", "audioMid", "audioUpperMid", "audioHigh", "audioRolloff",
+    "audioSpread", "audioMode", "audioPitch", "audioArousal", "audioValence",
+    "audioHarmChange", "audioRoughness", "audioSharpness", "audioOnset",
+    "audioDownbeat", "audioBeatPhase", "audioStereo", "audioDeltaPitch",
+    "audioMusic", "audioStereoL", "audioStereoR", "audioChromaHue",
+    "audioSwell", "audioBarPhase", "audioAmbient", "audioKick", "audioSnare",
+    "audioHat", "transStyle", "audioSpectrum", "texSim", "texFluid"
+};
+}
+
 void EffectShader::applyAudioFeatures(const AudioFeatures &f)
 {
-    // Integrated, jump-free motion phases (computed in FilterShader::paint).
-    GLint locPhase    = glGetUniformLocation(m_sh_prog_id, "audioPhase");
-    GLint locAdvance  = glGetUniformLocation(m_sh_prog_id, "audioAdvance");
+    // Per-program LOCATION CACHE: this used to perform ~45 string-keyed
+    // glGetUniformLocation lookups per shader per FRAME - the single biggest
+    // CPU cost in the render loop.  Locations are looked up once per program
+    // and auto-refresh when the program id changes (recompile / hot reload).
+    if (m_audioLocs.progId != m_sh_prog_id)
+    {
+        for (int i = 0; i < AL_COUNT; ++i)
+            m_audioLocs.L[i] = glGetUniformLocation(m_sh_prog_id, kAudioLocNames[i]);
+        m_audioLocs.progId = m_sh_prog_id;
+    }
+    const GLint *L = m_audioLocs.L;
 
-    GLint locBeat     = glGetUniformLocation(m_sh_prog_id, "audioBeat");
-    GLint locLevel    = glGetUniformLocation(m_sh_prog_id, "audioLevel");
-    GLint locSides    = glGetUniformLocation(m_sh_prog_id, "sides");
-    GLint locFlip     = glGetUniformLocation(m_sh_prog_id, "audioFlip");
-    GLint locCentroid = glGetUniformLocation(m_sh_prog_id, "audioCentroid");
-    GLint locFlux     = glGetUniformLocation(m_sh_prog_id, "audioFlux");
-    // 6-band extras (only used by dark-ambient shaders; -1 → no-op for others)
-    GLint locSubBass  = glGetUniformLocation(m_sh_prog_id, "audioSubBass");
-    GLint locBass     = glGetUniformLocation(m_sh_prog_id, "audioBass");
-    GLint locLowMid   = glGetUniformLocation(m_sh_prog_id, "audioLowMid");
-    GLint locMid      = glGetUniformLocation(m_sh_prog_id, "audioMid");
-    GLint locUpperMid = glGetUniformLocation(m_sh_prog_id, "audioUpperMid");
-    GLint locHigh     = glGetUniformLocation(m_sh_prog_id, "audioHigh");
-    // FFT-derived features (opt-in; -1 → no-op for shaders that don't declare them)
-    GLint locRolloff  = glGetUniformLocation(m_sh_prog_id, "audioRolloff");
-    GLint locSpread   = glGetUniformLocation(m_sh_prog_id, "audioSpread");
-    GLint locMode     = glGetUniformLocation(m_sh_prog_id, "audioMode");
-    GLint locPitch    = glGetUniformLocation(m_sh_prog_id, "audioPitch");
-    // Thayer mood axes + extra timbre features (used by the mood-driven shaders).
-    GLint locArousal  = glGetUniformLocation(m_sh_prog_id, "audioArousal");
-    GLint locValence  = glGetUniformLocation(m_sh_prog_id, "audioValence");
-    GLint locHCDF     = glGetUniformLocation(m_sh_prog_id, "audioHarmChange");
-    GLint locRough    = glGetUniformLocation(m_sh_prog_id, "audioRoughness");
-    GLint locSharp    = glGetUniformLocation(m_sh_prog_id, "audioSharpness");
-    GLint locOnset    = glGetUniformLocation(m_sh_prog_id, "audioOnset");
-    GLint locDownbeat = glGetUniformLocation(m_sh_prog_id, "audioDownbeat");
-    GLint locBeatPh   = glGetUniformLocation(m_sh_prog_id, "audioBeatPhase");
-    GLint locStereo   = glGetUniformLocation(m_sh_prog_id, "audioStereo");
-    GLint locDPitch   = glGetUniformLocation(m_sh_prog_id, "audioDeltaPitch");
-    GLint locMusic    = glGetUniformLocation(m_sh_prog_id, "audioMusic");
-    // Stereo-separated spectrum: per-channel (low,mid,high) band energies.
-    GLint locStBandL  = glGetUniformLocation(m_sh_prog_id, "audioStereoL");
-    GLint locStBandR  = glGetUniformLocation(m_sh_prog_id, "audioStereoR");
-    GLint locChroma   = glGetUniformLocation(m_sh_prog_id, "audioChromaHue");
-    // Slow loudness swell (ambient dynamics) + continuous bar phase (0..1 over
-    // 4 beats) for slow in-tempo movement.
-    GLint locSwell    = glGetUniformLocation(m_sh_prog_id, "audioSwell");
-    GLint locBarPh    = glGetUniformLocation(m_sh_prog_id, "audioBarPhase");
-    // Music-type classifier (0 = beat-driven music, 1 = ambient/drone).  Changes
-    // slowly (seconds), so shaders can CROSS-FADE between a beat personality and
-    // a drone personality without any visible snap.
-    GLint locAmbient  = glGetUniformLocation(m_sh_prog_id, "audioAmbient");
-    // Instrument-separated onsets (kick / snare / hat band groups), peak-held
-    // and slew-limited host-side like the global beat/onset envelopes.
-    GLint locKick     = glGetUniformLocation(m_sh_prog_id, "audioKick");
-    GLint locSnare    = glGetUniformLocation(m_sh_prog_id, "audioSnare");
-    GLint locHat      = glGetUniformLocation(m_sh_prog_id, "audioHat");
-
-    if (locKick     >= 0) glUniform1f(locKick,     f.onsetKick);
-    if (locSnare    >= 0) glUniform1f(locSnare,    f.onsetSnare);
-    if (locHat      >= 0) glUniform1f(locHat,      f.onsetHat);
-    // Styled effect cross-fade (CombinePlain reads this; -1 elsewhere).
-    GLint locTrans = glGetUniformLocation(m_sh_prog_id, "transStyle");
-    if (locTrans    >= 0) glUniform1i(locTrans,    f.transStyle);
-    if (locArousal  >= 0) glUniform1f(locArousal,  f.arousal);
-    if (locValence  >= 0) glUniform1f(locValence,  f.valence);
-    if (locHCDF     >= 0) glUniform1f(locHCDF,     f.harmonicChange);
-    if (locRough    >= 0) glUniform1f(locRough,    f.roughness);
-    if (locSharp    >= 0) glUniform1f(locSharp,    f.sharpness);
-    if (locOnset    >= 0) glUniform1f(locOnset,    f.onsetStrength);
-    if (locDownbeat >= 0) glUniform1f(locDownbeat, f.downbeat);
-    if (locBeatPh   >= 0) glUniform1f(locBeatPh,   f.beatPhase);
-    if (locStereo   >= 0) glUniform1f(locStereo,   f.stereoWidth);
-    if (locDPitch   >= 0) glUniform1f(locDPitch,   f.deltaPitch);
-    if (locMusic    >= 0) glUniform1f(locMusic,    f.musicPresence);
-    if (locStBandL  >= 0) glUniform3f(locStBandL,  f.stereoLowL, f.stereoMidL, f.stereoHighL);
-    if (locStBandR  >= 0) glUniform3f(locStBandR,  f.stereoLowR, f.stereoMidR, f.stereoHighR);
-    if (locChroma   >= 0) glUniform1f(locChroma,   f.chromaHue);
-    if (locSwell    >= 0) glUniform1f(locSwell,    f.swell);
-    if (locBarPh    >= 0) glUniform1f(locBarPh,    f.barPhase);
-    if (locAmbient  >= 0) glUniform1f(locAmbient,  f.ambientFactor);
-
-    // Fine-grained 32-band spectrum for the analyzer effects (audioSpectrum[32]).
-    GLint locSpectrum = glGetUniformLocation(m_sh_prog_id, "audioSpectrum");
-    if (locSpectrum >= 0) glUniform1fv(locSpectrum, AudioFeatures::kSpectrumBands, f.spectrum);
-
-    // Living reaction-diffusion field is bound to texture unit 7 by FilterShader.
-    GLint locSim = glGetUniformLocation(m_sh_prog_id, "texSim");
-    if (locSim >= 0) glUniform1i(locSim, 7);
-    // Fluid dye field (curl-noise advection) on unit 8, same pattern.
-    GLint locFluid = glGetUniformLocation(m_sh_prog_id, "texFluid");
-    if (locFluid >= 0) glUniform1i(locFluid, 8);
-    if (locPhase    >= 0) glUniform1f(locPhase,    f.audioRotPhase);
-    if (locAdvance  >= 0) glUniform1f(locAdvance,  f.audioAdvance);
-    if (locBeat     >= 0) glUniform1f(locBeat,     f.beatDecay);
-    if (locLevel    >= 0) glUniform1f(locLevel,    f.overallLevel);
-    if (locSides    >= 0) glUniform1i(locSides,    int(f.smoothedSides + 0.5f)); // smoothed steps
-    if (locFlip     >= 0) glUniform1f(locFlip,     f.audioFlip);
-    if (locCentroid >= 0) glUniform1f(locCentroid, f.spectralCentroid);
-    if (locFlux     >= 0) glUniform1f(locFlux,     f.spectralFlux);
-    if (locSubBass  >= 0) glUniform1f(locSubBass,  f.subBassLevel);
-    if (locBass     >= 0) glUniform1f(locBass,     f.bassLevel);
-    if (locLowMid   >= 0) glUniform1f(locLowMid,   f.lowMidLevel);
-    if (locMid      >= 0) glUniform1f(locMid,      f.midLevel);
-    if (locUpperMid >= 0) glUniform1f(locUpperMid, f.upperMidLevel);
-    if (locHigh     >= 0) glUniform1f(locHigh,     f.highLevel);
-    // FFT-derived
-    if (locRolloff  >= 0) glUniform1f(locRolloff,  f.spectralRolloff);
-    if (locSpread   >= 0) glUniform1f(locSpread,   f.spectralSpread);
-    if (locMode     >= 0) glUniform1f(locMode,     f.musicalMode);
-    if (locPitch    >= 0) glUniform1f(locPitch,    f.dominantPitch);
+    if (L[AL_KICK]     >= 0) glUniform1f(L[AL_KICK],     f.onsetKick);
+    if (L[AL_SNARE]    >= 0) glUniform1f(L[AL_SNARE],    f.onsetSnare);
+    if (L[AL_HAT]      >= 0) glUniform1f(L[AL_HAT],      f.onsetHat);
+    if (L[AL_TRANS]    >= 0) glUniform1i(L[AL_TRANS],    f.transStyle);
+    if (L[AL_AROUSAL]  >= 0) glUniform1f(L[AL_AROUSAL],  f.arousal);
+    if (L[AL_VALENCE]  >= 0) glUniform1f(L[AL_VALENCE],  f.valence);
+    if (L[AL_HCDF]     >= 0) glUniform1f(L[AL_HCDF],     f.harmonicChange);
+    if (L[AL_ROUGH]    >= 0) glUniform1f(L[AL_ROUGH],    f.roughness);
+    if (L[AL_SHARP]    >= 0) glUniform1f(L[AL_SHARP],    f.sharpness);
+    if (L[AL_ONSET]    >= 0) glUniform1f(L[AL_ONSET],    f.onsetStrength);
+    if (L[AL_DOWNBEAT] >= 0) glUniform1f(L[AL_DOWNBEAT], f.downbeat);
+    if (L[AL_BEATPH]   >= 0) glUniform1f(L[AL_BEATPH],   f.beatPhase);
+    if (L[AL_STEREO]   >= 0) glUniform1f(L[AL_STEREO],   f.stereoWidth);
+    if (L[AL_DPITCH]   >= 0) glUniform1f(L[AL_DPITCH],   f.deltaPitch);
+    if (L[AL_MUSIC]    >= 0) glUniform1f(L[AL_MUSIC],    f.musicPresence);
+    if (L[AL_STBANDL]  >= 0) glUniform3f(L[AL_STBANDL],  f.stereoLowL, f.stereoMidL, f.stereoHighL);
+    if (L[AL_STBANDR]  >= 0) glUniform3f(L[AL_STBANDR],  f.stereoLowR, f.stereoMidR, f.stereoHighR);
+    if (L[AL_CHROMA]   >= 0) glUniform1f(L[AL_CHROMA],   f.chromaHue);
+    if (L[AL_SWELL]    >= 0) glUniform1f(L[AL_SWELL],    f.swell);
+    if (L[AL_BARPH]    >= 0) glUniform1f(L[AL_BARPH],    f.barPhase);
+    if (L[AL_AMBIENT]  >= 0) glUniform1f(L[AL_AMBIENT],  f.ambientFactor);
+    if (L[AL_SPECTRUM] >= 0) glUniform1fv(L[AL_SPECTRUM], AudioFeatures::kSpectrumBands, f.spectrum);
+    if (L[AL_TEXSIM]   >= 0) glUniform1i(L[AL_TEXSIM],   7);   // RD field (unit 7)
+    if (L[AL_TEXFLUID] >= 0) glUniform1i(L[AL_TEXFLUID], 8);   // fluid dye (unit 8)
+    if (L[AL_PHASE]    >= 0) glUniform1f(L[AL_PHASE],    f.audioRotPhase);
+    if (L[AL_ADVANCE]  >= 0) glUniform1f(L[AL_ADVANCE],  f.audioAdvance);
+    if (L[AL_BEAT]     >= 0) glUniform1f(L[AL_BEAT],     f.beatDecay);
+    if (L[AL_LEVEL]    >= 0) glUniform1f(L[AL_LEVEL],    f.overallLevel);
+    if (L[AL_SIDES]    >= 0) glUniform1i(L[AL_SIDES],    int(f.smoothedSides + 0.5f));
+    if (L[AL_FLIP]     >= 0) glUniform1f(L[AL_FLIP],     f.audioFlip);
+    if (L[AL_CENTROID] >= 0) glUniform1f(L[AL_CENTROID], f.spectralCentroid);
+    if (L[AL_FLUX]     >= 0) glUniform1f(L[AL_FLUX],     f.spectralFlux);
+    if (L[AL_SUBBASS]  >= 0) glUniform1f(L[AL_SUBBASS],  f.subBassLevel);
+    if (L[AL_BASS]     >= 0) glUniform1f(L[AL_BASS],     f.bassLevel);
+    if (L[AL_LOWMID]   >= 0) glUniform1f(L[AL_LOWMID],   f.lowMidLevel);
+    if (L[AL_MID]      >= 0) glUniform1f(L[AL_MID],      f.midLevel);
+    if (L[AL_UPPERMID] >= 0) glUniform1f(L[AL_UPPERMID], f.upperMidLevel);
+    if (L[AL_HIGH]     >= 0) glUniform1f(L[AL_HIGH],     f.highLevel);
+    if (L[AL_ROLLOFF]  >= 0) glUniform1f(L[AL_ROLLOFF],  f.spectralRolloff);
+    if (L[AL_SPREAD]   >= 0) glUniform1f(L[AL_SPREAD],   f.spectralSpread);
+    if (L[AL_MODE]     >= 0) glUniform1f(L[AL_MODE],     f.musicalMode);
+    if (L[AL_PITCH]    >= 0) glUniform1f(L[AL_PITCH],    f.dominantPitch);
 }
 
 
@@ -386,6 +361,8 @@ bool EffectShader::useShader()
 
 bool EffectShader::usesSim()
 {
+	if( !m_glReady )
+		return false;   // lazy: not compiled -> can't be on screen yet
 	if( m_usesSim < 0 )
 		m_usesSim = ( m_sh_prog_id != 0 &&
 		              glGetUniformLocation( m_sh_prog_id, "texSim" ) >= 0 ) ? 1 : 0;
@@ -394,6 +371,8 @@ bool EffectShader::usesSim()
 
 bool EffectShader::usesFluid()
 {
+	if( !m_glReady )
+		return false;
 	if( m_usesFluid < 0 )
 		m_usesFluid = ( m_sh_prog_id != 0 &&
 		                glGetUniformLocation( m_sh_prog_id, "texFluid" ) >= 0 ) ? 1 : 0;

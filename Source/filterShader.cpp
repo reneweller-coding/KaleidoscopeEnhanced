@@ -863,13 +863,13 @@ void FilterShader::reinit(int width, int height)
 	
 	for( unsigned int i = 0; i < m_effectTextures.size(); i++ )
 	{
-		m_effectTextures[i]->initUniforms( m_width, m_height );
+		m_effectTextures[i]->prepare( m_width, m_height );   // lazy compile
 	}
 
 	
 	for( unsigned int i = 0; i < m_effectCombines.size(); i++ )
 	{
-		m_effectCombines[i]->initUniforms( m_width, m_height );
+		m_effectCombines[i]->prepare( m_width, m_height );   // lazy compile
 	}
 
 	checkGLErrors("reinit() 0");
@@ -1291,6 +1291,19 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 	m_moodArousal = audio.arousal;
 	m_moodAmbient = audio.ambientFactor;
 
+	// Lazy-compile warm-up: build ONE not-yet-compiled program per frame.
+	// Start-up is instant (prepare() records only the size) and every shader
+	// is ready long before random selection could pick it; the on-demand
+	// compile in enableShader() remains as the safety net.
+	{
+		bool warmed = false;
+		for( EffectShader *s : m_effectTextures )
+			if( !s->isCompiled() ) { s->ensureCompiled(); warmed = true; break; }
+		if( !warmed )
+			for( EffectShader *s : m_effectCombines )
+				if( !s->isCompiled() ) { s->ensureCompiled(); break; }
+	}
+
     // Update adaptive timing scale from audio analysis.
     // Smooth slowly so a sudden genre change doesn't cause a jarring jump.
     // The new scale only takes effect the next time a duration is randomised,
@@ -1627,19 +1640,29 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 	//No Interpolation, solo texture 1:
 	if( m_stateTexture == 1 )
 	{
-		
+
 		m_interpolationTexture = 1.0;
 
-		//time is up => switch to modus blending
+		//time is up => switch to modus blending.  Like the shader changes, the
+		// IMAGE cross-fade start is quantised onto the next downbeat (with the
+		// same timeout / no-music escape), so picture changes land on the "1".
 		float ts = float(m_timeTexture.elapsed()) * 0.001;
 		if( ts > m_timeTextureSolo )
+			m_pendingImgChange = true;
+		if( m_pendingImgChange )
 		{
-			m_stateTexture = 0;
-			m_timeTexture.start();
+			m_pendingImgAge += timeSinceLastFrameSec;
+			if( m_downbeatTick || m_pendingImgAge > 2.5f || m_gateSmooth < 0.25f )
+			{
+				m_pendingImgChange = false;
+				m_pendingImgAge    = 0.f;
+				m_stateTexture = 0;
+				m_timeTexture.start();
 
-            m_timeTextureSolo = (float) ((m_timeTextureSoloMax > m_timeTextureSoloMin)
-                ? m_timeTextureSoloMin + (qrand() % (m_timeTextureSoloMax - m_timeTextureSoloMin))
-                : m_timeTextureSoloMin) / m_timingScale;   // min==max would be % 0
+				m_timeTextureSolo = (float) ((m_timeTextureSoloMax > m_timeTextureSoloMin)
+					? m_timeTextureSoloMin + (qrand() % (m_timeTextureSoloMax - m_timeTextureSoloMin))
+					: m_timeTextureSoloMin) / m_timingScale;   // min==max would be % 0
+			}
 		}
 	}
 	else
@@ -2289,6 +2312,16 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 		if( m_presentBeatUni     >= 0 ) glUniform1f( m_presentBeatUni,     audioFx.beatDecay );
 		if( m_presentDownbeatUni >= 0 ) glUniform1f( m_presentDownbeatUni, audioFx.downbeat );
 		if( m_presentOnsetUni    >= 0 ) glUniform1f( m_presentOnsetUni,    audioFx.onsetStrength );
+		// CAS sharpening compensates the upsample when renderScale < 1.
+		{
+			GLint locSharp = glGetUniformLocation( m_presentProgId, "sharpen" );
+			GLint locTexel = glGetUniformLocation( m_presentProgId, "srcTexel" );
+			float amt = (s_renderScale < 0.999f)
+			          ? clampParam( (1.f - s_renderScale) * 0.9f, 0.f, 0.45f ) : 0.f;
+			if( locSharp >= 0 ) glUniform1f( locSharp, amt );
+			if( locTexel >= 0 ) glUniform2f( locTexel, 1.f / float(m_width),
+			                                            1.f / float(m_height) );
+		}
 		if( m_presentTimeUni     >= 0 ) glUniform1f( m_presentTimeUni,     m_globaltime );
 		if( m_presentChaseUni    >= 0 ) glUniform1f( m_presentChaseUni,    m_chasePhase );
 		if( m_presentLampsUni    >= 0 ) glUniform1f( m_presentLampsUni,    s_lightShow );
@@ -2705,6 +2738,26 @@ bool FilterShader::checkFramebufferStatus(void)
 	return false;
 }
 
+
+// Hot-reload (dev aid): recompile every program using the given fragment file.
+void FilterShader::reloadFragment( const QString &bareName )
+{
+	auto matches = [&bareName]( EffectShader *s ) {
+		QString f = QString::fromLocal8Bit( s->fragmentName() );
+		f.replace( '\\', '/' );
+		int i = f.lastIndexOf( '/' );
+		return ((i >= 0) ? f.mid( i + 1 ) : f)
+		       .compare( bareName, Qt::CaseInsensitive ) == 0;
+	};
+	int n = 0;
+	for( EffectShader *s : m_effectTextures )
+		if( matches( s ) ) { s->reloadShader(); ++n; }
+	for( EffectShader *s : m_effectCombines )
+		if( matches( s ) ) { s->reloadShader(); ++n; }
+	if( n )
+		fprintf( stderr, "HOT-RELOAD: %s (%d program%s)\n",
+		         qPrintable( bareName ), n, (n == 1) ? "" : "s" );
+}
 
 void FilterShader::addTextureShader( EffectShader * shader )
 {
