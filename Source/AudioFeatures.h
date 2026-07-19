@@ -267,6 +267,18 @@ struct AudioFeatures
     //   host reacts with an immediate quantised scene cut + camera hit.
     int   dropCount = 0;
 
+    // ---- DJ-STOP detection (break dramaturgy) ----
+    // breakHold: 1 while the music "holds its breath" — a sudden FULL-
+    //   spectrum collapse in running beat music (the classic DJ stop,
+    //   0.1..3 s).  The host freezes the motion and dims slightly.
+    //   (The drop detector watches only the BASS during a build-up; this
+    //   one wants total silence without any build-up requirement.)
+    float breakHold = 0.f;
+    // breakSlam: 1.0 the moment the music slams back after the stop, then
+    //   decays over ~1 s.  The host releases the freeze with a camera hit
+    //   (folded into the audioDrop uniform for the shaders).
+    float breakSlam = 0.f;
+
     // Transition style for the CURRENT effect cross-fade (host-rolled when a
     // change fires; uploaded as "transStyle" — CombinePlain styles the blend):
     // 0 linear, 1 radial wipe, 2 kaleido fold-through, 3 zoom-through.

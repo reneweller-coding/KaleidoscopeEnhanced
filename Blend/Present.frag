@@ -33,6 +33,9 @@ uniform vec2  srcTexel;         // 1 / render resolution (the sampled texture)
 uniform float camZoom;          // virtual camera: punch-in zoom (host keeps >= 1)
 uniform float camRot;           // virtual camera: small roll (radians)
 uniform vec2  camOff;           // virtual camera: drift + shake offset (uv units)
+uniform sampler2D titleTex;     // track-title reveal texture (transparent bg)
+uniform float titlePhase;       // 0..1 while the reveal runs; >= 1 = off
+uniform float titleAspect;      // title texture width/height
 
 float hash21(vec2 p) { return fract(sin(dot(p, vec2(41.3, 289.1))) * 43758.5453); }
 
@@ -220,6 +223,41 @@ void main()
         float rays = pow(0.5 + 0.5 * cos(ang * 9.0), 6.0);
         c += hueRotate(moodCol, audioChromaHue + 0.6) * 1.3
              * rays * 0.08 * (0.2 + 0.8 * audioLevel) * smoothstep(0.05, 0.45, length(g));
+    }
+
+    // --- Track-title reveal: the title unfolds out of a kaleidoscopic swirl,
+    // holds readable, then grows toward the viewer and dissolves.  Composited
+    // BEFORE the safety scale so the limiter (and blackout) applies to it too.
+    if (titlePhase < 1.0)
+    {
+        float ph       = titlePhase;
+        float unfold   = smoothstep(0.05, 0.42, ph);   // 0 folded -> 1 readable
+        float dissolve = smoothstep(0.72, 0.96, ph);
+        float fadeIn   = smoothstep(0.00, 0.08, ph);
+
+        vec2 tp = uv - vec2(0.5, 0.52);
+        tp.x *= resolution.x / resolution.y;
+
+        // Kaleidoscopic fold + swirl that unwinds as the title arrives.
+        float fold = 1.0 - unfold;
+        float ang  = atan(tp.y, tp.x);
+        float rad  = length(tp);
+        float seg  = 1.0471976;                        // pi/3: 6 mirror segments
+        float ka   = abs(mod(ang + 3.14159265, 2.0 * seg) - seg);
+        float aa   = mix(ang, ka, fold * 0.85);
+        aa        += fold * 2.4 * (0.55 - min(rad, 0.55));
+        vec2 tq    = vec2(cos(aa), sin(aa)) * rad;
+
+        tq /= 1.0 + 0.9 * dissolve;                    // end: grows toward you
+
+        vec2 tuv = vec2(tq.x / 1.10, -tq.y / (1.10 / titleAspect)) + 0.5;
+        if (tuv.x > 0.0 && tuv.x < 1.0 && tuv.y > 0.0 && tuv.y < 1.0)
+        {
+            vec4 tt = texture2D(titleTex, tuv);
+            float a = tt.a * fadeIn * (1.0 - dissolve);
+            c = mix(c, tt.rgb, a * 0.92);
+            c += tt.rgb * a * (0.25 + 0.30 * audioBeat);   // gentle beat glow
+        }
     }
 
     c *= scale;   // photosensitivity brightness limit (applied last)

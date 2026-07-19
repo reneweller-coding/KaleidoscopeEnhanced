@@ -5,6 +5,9 @@
 //   PresetEditor.exe                         launch the editor GUI
 //   PresetEditor.exe --roundtrip in.xml out.xml   headless load+save (self-test)
 //   PresetEditor.exe --render tex.frag comb.frag out.png [W H]   grab one preview
+//   PresetEditor.exe --transcheck            verify all 25 transition styles:
+//                                            exact A at d=0 / exact B at d=1 and
+//                                            no temporal jumps across the sweep
 #include <QtWidgets/QApplication>
 #include <QtGui/QSurfaceFormat>
 #include <QtGui/QImage>
@@ -12,6 +15,10 @@
 #include <QtCore/QFileInfo>
 #include <QtCore/QTimer>
 #include <cstdio>
+#include <cstdlib>
+#include <cmath>
+#include <vector>
+#include <algorithm>
 
 #include "EditorWindow.h"
 #include "PreviewWidget.h"
@@ -78,6 +85,70 @@ int main(int argc, char *argv[])
             QImage img = w->grabFramebuffer();
             img.save(out);
             QApplication::quit();
+        });
+        return app.exec();
+    }
+
+    // Transition test bench: sweep every CombinePlain style over d = 0..1 with
+    // a PINNED clock (deterministic frames) and verify (a) endpoint identity —
+    // exactly scene A at d=0, exactly scene B at d=1 — and (b) temporal
+    // continuity: no single step may dwarf the style's own typical step.
+    // This is exactly the harness that would have caught the corner leaks /
+    // end snaps fixed in the diagonal/blinds/push/doors/pixelation styles.
+    if (args.value(0) == "--transcheck")
+    {
+        PreviewWidget *w = new PreviewWidget(root);
+        w->setTextureShader("Kaleidoscope.frag");
+        w->setCombineShader("CombinePlain.frag");
+        w->setFixedTime(8.f);
+        w->resize(640, 400);
+        w->show();
+        QTimer::singleShot(800, [w]() {
+            auto meanDiff = [](const QImage &ia, const QImage &ib) -> double {
+                QImage x = ia.convertToFormat(QImage::Format_RGB888);
+                QImage y = ib.convertToFormat(QImage::Format_RGB888);
+                double s = 0.0;
+                const int bytes = x.width() * 3;
+                for (int r = 0; r < x.height(); ++r) {
+                    const uchar *pa = x.constScanLine(r);
+                    const uchar *pb = y.constScanLine(r);
+                    for (int c = 0; c < bytes; ++c)
+                        s += std::abs(int(pa[c]) - int(pb[c]));
+                }
+                return s / (double(x.height()) * bytes);   // mean |diff| in 0..255
+            };
+            const int steps = 24;
+            w->setTransTest(0, 0.f);  QImage refA = w->grabFramebuffer();
+            w->setTransTest(0, 1.f);  QImage refB = w->grabFramebuffer();
+            int fails = 0;
+            fprintf(stderr, "TRANSCHECK  (endpoints <= 1.5/255; jump = maxStep/medianStep <= 6)\n");
+            for (int s = 0; s <= 24; ++s) {
+                QImage prev;
+                std::vector<double> stepDiffs;
+                double endA = 0.0, endB = 0.0, maxStep = 0.0;
+                for (int i = 0; i <= steps; ++i) {
+                    w->setTransTest(s, float(i) / steps);
+                    QImage f = w->grabFramebuffer();
+                    if (i == 0)     endA = meanDiff(f, refA);
+                    if (i == steps) endB = meanDiff(f, refB);
+                    if (i > 0) {
+                        double d = meanDiff(f, prev);
+                        stepDiffs.push_back(d);
+                        if (d > maxStep) maxStep = d;
+                    }
+                    prev = f;
+                }
+                std::sort(stepDiffs.begin(), stepDiffs.end());
+                double med  = stepDiffs[stepDiffs.size() / 2];
+                double jump = (med > 0.05) ? maxStep / med : 0.0;
+                bool ok = endA <= 1.5 && endB <= 1.5 && jump <= 6.0;
+                if (!ok) ++fails;
+                fprintf(stderr, "style %2d: endA %5.2f  endB %5.2f  maxStep %6.2f  jump %5.1fx  %s\n",
+                        s, endA, endB, maxStep, jump, ok ? "OK" : "FAIL");
+            }
+            if (fails) fprintf(stderr, "TRANSCHECK: %d style(s) FAILED\n", fails);
+            else       fprintf(stderr, "TRANSCHECK: all 25 styles OK\n");
+            qApp->exit(fails ? 1 : 0);
         });
         return app.exec();
     }

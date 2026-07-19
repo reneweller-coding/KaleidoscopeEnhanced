@@ -314,6 +314,14 @@ private:
     int   m_dropCooldown = 0;       // blocks until the next drop may fire
     int   m_dropCount    = 0;       // cumulative drops (host-poll counter)
 
+    // ---- DJ-STOP detection (see AudioFeatures::breakHold/breakSlam) ----
+    float m_lvlFast    = 0.f;       // ~60 ms full-band level EMA
+    float m_lvlSlow    = 0.f;       // ~2.5 s reference (frozen during a stop)
+    int   m_stopBlocks = 0;         // blocks in the current stop state
+    bool  m_stopActive = false;
+    float m_breakSlam  = 0.f;       // decaying slam-back pulse
+    int   m_breakCount = 0;
+
     // Instant-replay audio ring: the last ~32 s of captured PCM (stereo s16).
     // Fed in processBlock (capture thread), dumped by dumpReplayWav (main
     // thread) — guarded by m_replayMx.

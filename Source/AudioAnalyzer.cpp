@@ -1056,7 +1056,10 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
             if (m_silenceFrames > 60.f)        // ~0.6 s+ of silence → armed
                 m_wasSilent = true;
         } else {
-            if (m_wasSilent && (onsetStrength > 0.25f || level > 0.05f))
+            // A DJ STOP claims short gaps (the break machinery below freezes
+            // and slam-resumes) — only an unclaimed silence means a new track.
+            if (m_wasSilent && !m_stopActive
+                && (onsetStrength > 0.25f || level > 0.05f))
                 trackChange = true;            // first real sound after the gap
             m_silenceFrames = 0.f;
             m_wasSilent = false;
@@ -1869,6 +1872,57 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
         m_dropPulse *= 0.985f;                                 // ~1.5 s tail
     }
 
+    // ========================================================================
+    // DJ-STOP detection: the WHOLE spectrum collapses for 0.1..3 s in running
+    // beat music, then slams back.  (The drop detector above watches only the
+    // BASS and needs a build-up; a stop is sudden total silence, no build-up.)
+    // While the stop runs the host freezes the motion (breakHold); the return
+    // fires breakSlam (a camera hit + audioDrop pulse for the shaders).
+    // ========================================================================
+    {
+        m_lvlFast += 0.15f * (level - m_lvlFast);              // ~60 ms
+        if (!m_stopActive)
+            m_lvlSlow += 0.004f * (level - m_lvlSlow);         // frozen in the gap
+        bool beatMusic = m_sMusicPresence > 0.5f && m_sRhythm > 0.35f
+                      && m_ambientFactor < 0.6f && m_lvlSlow > 0.02f;
+        if (!m_stopActive)
+        {
+            if (beatMusic && m_lvlFast < 0.15f * m_lvlSlow)
+            {
+                if (++m_stopBlocks >= 8)                       // ~80 ms of collapse
+                {
+                    m_stopActive = true;
+                    m_stopBlocks = 0;
+                    fprintf(stderr, "BREAK: stop detected (t=%.1fs)\n",
+                            m_bldWarm * 0.01f);
+                }
+            }
+            else m_stopBlocks = 0;
+        }
+        else
+        {
+            ++m_stopBlocks;
+            if (m_lvlFast > 0.55f * m_lvlSlow)                 // music slams back
+            {
+                m_stopActive = false;
+                if (m_stopBlocks <= 300)                       // <= 3 s: a DJ stop
+                {
+                    m_breakSlam = 1.f;
+                    ++m_breakCount;
+                    fprintf(stderr, "BREAK: slam-back after %.2fs (t=%.1fs)\n",
+                            m_stopBlocks * 0.01f, m_bldWarm * 0.01f);
+                }
+                m_stopBlocks = 0;
+            }
+            else if (m_stopBlocks > 300)                       // too long: track end
+            {
+                m_stopActive = false;
+                m_stopBlocks = 0;
+            }
+        }
+        m_breakSlam *= 0.985f;                                 // ~1 s tail
+    }
+
     // ---- Publish (mutex-protected) ----
     QMutexLocker lk(&m_mutex);
     // Publish the AGC-normalised levels so the visuals are volume-independent.
@@ -1944,6 +1998,8 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
     m_features.buildUp          = m_sBuildUp;
     m_features.dropPulse        = m_dropPulse;
     m_features.dropCount        = m_dropCount;
+    m_features.breakHold        = m_stopActive ? 1.f : 0.f;
+    m_features.breakSlam        = m_breakSlam;
     // FFT-derived features
     m_features.spectralRolloff  = m_sRolloff;
     m_features.spectralSpread   = m_sSpread;

@@ -50,6 +50,16 @@ public:
     struct ParamOverride { QString name; float value; bool isInt; };
     void setParamOverrides(QVector<ParamOverride> ov) { m_overrides = std::move(ov); update(); }
 
+    // ---- Transition TEST BENCH ----
+    // style >= 0: the combine gets transStyle=style and the interpolation is
+    // SWEPT slowly (triangle, ~10 s round trip) instead of the fixed 1.0 —
+    // slow-motion inspection of one transition.  fixedD in [0,1] pins the
+    // progress instead (headless --transcheck).  style < 0 = normal preview.
+    void setTransTest(int style, float fixedD = -1.f)
+    { m_transStyle = style; m_transFixedD = fixedD; update(); }
+    // Pin the preview clock (deterministic frames for --transcheck); < 0 = live.
+    void setFixedTime(float t) { m_fixedTime = t; update(); }
+
 signals:
     void statusChanged(const QString &text);   // compile logs / current selection
 
@@ -60,6 +70,7 @@ protected:
 
 private:
     QOpenGLShaderProgram *compile(const QString &fileName, QString &log);
+    float  testInterpolation() const;   // test-bench interpolation (1.0 = normal)
     void   applyCommonUniforms(QOpenGLShaderProgram *p);
     void   applyParamOverrides(QOpenGLShaderProgram *p);
     void   drawFullscreenQuad(QOpenGLShaderProgram *p);
@@ -88,6 +99,11 @@ private:
     int     m_fbW = 0, m_fbH = 0;
 
     QVector<ParamOverride> m_overrides;   // editor slider values
+
+    // Transition test bench state (see setTransTest/setFixedTime).
+    int    m_transStyle  = -1;
+    float  m_transFixedD = -1.f;
+    float  m_fixedTime   = -1.f;
 
     // WAV feature timeline playback (real-analyzer preview).
     std::vector<AudioFeatures> m_timeline;

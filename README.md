@@ -251,11 +251,21 @@ of the visualizer) for **building and editing presets** with a **live preview**:
 - **Load an existing preset** to edit it (per-shader `<bool>/<int>/<float>`
   parameters round-trip losslessly).
 
+- **Transition test bench:** the *Übergangs-Zeitlupe* checkbox plays any of
+  the 25 CombinePlain transition styles in slow motion (the blend sweeps
+  back and forth over ~10 s) — for tuning styles visually.  Headless:
+  `PresetEditor.exe --transcheck` sweeps ALL 25 styles with a pinned clock
+  and verifies both endpoint identity (exactly scene A at the start,
+  exactly scene B at the end — no leaks or snaps) and temporal continuity
+  (no single step may dwarf the style's typical step); exits non-zero on
+  failure, so it can guard future style additions.
+
 Build it with MSBuild (`msbuild PresetEditor\PresetEditor.vcxproj
 /p:Configuration=Release /p:Platform=x64`) or add it to the solution in Visual
 Studio; run it with `C:\Qt\...\bin` on `PATH`.  Headless self-tests:
-`PresetEditor.exe --roundtrip in.xml out.xml` and
-`PresetEditor.exe --render tex.frag combine.frag out.png`.
+`PresetEditor.exe --roundtrip in.xml out.xml`,
+`PresetEditor.exe --render tex.frag combine.frag out.png` and
+`PresetEditor.exe --transcheck`.
 
 The `normal` and `psychedelic` presets also include the newest audio-reactive
 effects: **`StereoSpectrum`** (stereo-separated left/right band display) and
@@ -347,9 +357,14 @@ is mixed into all the other adapted shaders above, including the three latest.
   the captured source **at runtime** — useful to react to a live band/room mic
   instead of the PC's own playback. No menu bar; same keyboard-overlay style as
   the config menu.
-- **Now playing (`p`):** a tasteful lower-third fades in for a few seconds when
-  the track changes, showing the current **title / artist** (from the Windows
-  media session — works with Spotify, browsers, foobar2000, …). Toggle persists.
+- **Now playing (`p`) — TITLE REVEAL:** when the track changes, the title and
+  artist (from the Windows media session — Spotify, browsers, foobar2000, …)
+  are woven **through the picture itself**: the text unfolds out of a
+  kaleidoscopic swirl, holds readable for a few seconds with a gentle beat
+  glow, then grows toward the viewer and dissolves (~8 s, photosensitivity-
+  limited, not sent to the clean Spout feed).  Toggle persists; the old
+  QPainter lower third is retired.  Test without music:
+  `set KALEIDO_TITLE_TEST=1` fires one demo reveal a few seconds after start.
 - **MIDI (automatic):** if a MIDI controller is connected it is opened on
   startup — knob **CC 1/2/3** map to reactivity / trails / mood, and any pad/key
   (Note-On) advances to the next effect. No device → no-op.
@@ -592,6 +607,15 @@ Audio is captured via WASAPI loopback (`AudioAnalyzer`) and analysed in real tim
   (`-s` or the adaptive scale), the present pass applies a contrast-adaptive
   sharpen (AMD-CAS-style, min/max-clamped so it cannot ring) scaled to the
   upscale factor — low-scale kiosk setups look noticeably crisper.
+- **DJ-STOP dramaturgy:** when the WHOLE spectrum suddenly collapses in
+  running beat music (the classic DJ stop, 0.1–3 s), the picture "holds its
+  breath" with the track — motion freezes within ~0.1 s and dims slightly;
+  the slam-back releases it with a camera hit (the same hit channel as a
+  drop, so drop-reactive shaders fire too).  A silence that lasts longer
+  than ~3 s is treated as a track end instead (no slam), and the track-
+  change detector ignores gaps the stop machinery has claimed.  Verified
+  with a synthesized groove/stop/slam WAV (both stops caught, slams on the
+  re-entry, no false slam at the real track end).
 - **Build-up / drop detection (EDM dramaturgy):** the analyzer recognises a
   BUILD-UP (climbing onset density, rising centroid/filter sweeps, level
   swell, snare rolls → `audioBuildUp` 0..1) and the DROP that follows it (a

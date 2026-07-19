@@ -46,6 +46,12 @@ public:
 	 *  PER PRESET. */
 	void setPresetName( const QString &n ) { m_presetName = n; }
 
+	/** Track-title REVEAL: renders "title / artist" into a texture that the
+	 *  present pass unfolds out of a kaleidoscopic swirl, holds readable and
+	 *  dissolves toward the viewer (~8 s).  Called by the widget on a track
+	 *  change (replaces the old QPainter lower third). */
+	void showTitle( const QString &title, const QString &artist );
+
 	/** Request an early cross-fade to the next texture effect (manual 'n' key,
 	 *  MIDI pad or web remote).  Honoured at the next opportunity.  TASTE
 	 *  LEARNING: skipping an effect that has only just appeared counts as
@@ -300,6 +306,15 @@ private:
 	GLint			m_presentCamZoomUni  = -1;
 	GLint			m_presentCamRotUni   = -1;
 	GLint			m_presentCamOffUni   = -1;
+	GLint			m_presentTitleTexUni    = -1;
+	GLint			m_presentTitlePhaseUni  = -1;
+	GLint			m_presentTitleAspectUni = -1;
+
+	// ---- Track-title reveal state (see showTitle) ----
+	QImage			m_titlePending;          // rendered text, awaits GL upload
+	GLuint			m_titleTex    = 0;
+	float			m_titleAge    = 999.f;   // seconds since reveal start
+	float			m_titleAspect = 4.f;
 
 	// ---- Virtual camera (global "Regie" layer, applied in the present pass) --
 	// A single slow-moving transform over the finished frame: micro drift,
@@ -398,6 +413,7 @@ private:
 	static bool		s_freeze;        // VJ freeze: hold the picture
 	static bool		s_pinned;        // VJ pin: no effect/combine switches
 	float			m_blackSmooth = 0.f;   // slewed blackout level 0..1
+	float			m_breakSmooth = 0.f;   // slewed DJ-stop hold (freezes motion)
 
 	// ---- Taste learning (persistent, PER PRESET + shader FILE basename) ----
 	// Selection-weight factors in [0.3, 2.5], default 1.0, keyed
