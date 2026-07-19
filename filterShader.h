@@ -56,6 +56,9 @@ public:
 	static void  setLightShow( bool on ) { s_lightShow = on ? 1.f : 0.f; }
 	static bool  lightShow()  { return s_lightShow > 0.5f; }
 
+	// Spout output (CLI -o): publish the displayed frame as sender "Kaleidoscope".
+	static bool		s_spoutEnabled;
+
 	// Human-readable names of the currently active / cross-fading effects (debug overlay).
 	QString activeShaderInfo() const;
 	// Absolute setters (e.g. MIDI knobs map a 0..1 value to the full range).
@@ -258,6 +261,7 @@ private:
 	GLint			m_trailRotUni   = -1;   //   ... rotation (radians/frame)
 	GLint			m_trailHueUni   = -1;   //   ... hue drift of the echoes
 	bool			m_feedbackReady = false;
+	bool			m_spoutStarted  = false;
 
 	// ---- GPU reaction-diffusion simulation (Gray-Scott, float ping-pong) ----
 	// A genuine on-GPU simulation: each frame a fragment shader advances the

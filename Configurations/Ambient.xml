@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<configuration ImageDirectory="C:\\Users\\rene\\Desktop\\BilderPhotoechoes" ConfigurationName="Ambient" >
+
+  <!-- Per-entry min/max times are omitted: the pacing is music-driven
+       (timingScale, 4-beat cross-fades, section cuts); the engine defaults
+       (solo 20-90 s, fade 15-50 s) only matter without music. -->
+
+  <TextureShader file="..\\LavaLamp.frag" type="normal" probability="0.7" mood="calm" complexity="1">
+    <float name="waxHueP" minValue="0.0" maxValue="6.28"></float>
+    <float name="speedP" minValue="0.6" maxValue="1.6"></float>
+    <float name="sizeP" minValue="0.8" maxValue="1.4"></float>
+    <int name="countP" minValue="4" maxValue="9"></int>
+  </TextureShader>
+
+  <TextureShader file="..\\Fluid.frag" type="normal" probability="0.8" mood="calm" complexity="1">
+    <int name="sidesP" minValue="0" maxValue="9"></int>
+    <float name="zoomP" minValue="0.7" maxValue="1.5"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\DroneDepths.frag" type="normal" probability="0.7" mood="calm,dark" complexity="1">
+  </TextureShader>
+
+  <TextureShader file="..\\OrganicFlow.frag" type="normal" probability="0.6" mood="calm" complexity="1">
+    <int name="sidesP" minValue="3" maxValue="9"></int>
+    <float name="veinP" minValue="5.0" maxValue="10.0"></float>
+    <float name="swirlP" minValue="0.0" maxValue="0.8"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\OilProjector.frag" type="normal" probability="0.6" mood="calm" complexity="2">
+    <int name="sidesP" minValue="2" maxValue="9"></int>
+    <float name="cellP" minValue="1.4" maxValue="3.0"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\PlasmaFlow.frag" type="normal" probability="0.5" mood="calm" complexity="1">
+    <int name="sidesP" minValue="2" maxValue="9"></int>
+    <float name="scaleP" minValue="3.5" maxValue="8.0"></float>
+    <float name="flowAmtP" minValue="0.06" maxValue="0.16"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\CurlAurora.frag" type="normal" probability="0.6" mood="calm" complexity="1">
+  </TextureShader>
+
+  <TextureShader file="..\\NoiseSpiral.frag" type="normal" probability="0.5" complexity="2">
+    <float name="twistP" minValue="0.1" maxValue="0.35"></float>
+    <float name="turbP" minValue="0.18" maxValue="0.45"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\BreathingFractalZoom.frag" type="normal" probability="0.5" mood="calm,bright" complexity="1">
+    <float name="oscP" minValue="0.03" maxValue="0.09"></float>
+    <float name="deepP" minValue="2.5" maxValue="4.5"></float>
+    <float name="breathP" minValue="12.0" maxValue="30.0"></float>
+    <float name="palShiftP" minValue="0.0" maxValue="1.0"></float>
+    <int name="kSides" minValue="0" maxValue="9"></int>
+    <float name="rosetteP" minValue="0.15" maxValue="0.35"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\HarmonicRings.frag" type="KaleidoscopeBase" probability="0.5" complexity="1">
+    <!-- Speed only drives ring rotation; flux drives ring brightness -->
+    <float name="speed" minValue="0.0003" maxValue="0.0025"></float>
+    <float name="power" minValue="1.0"    maxValue="1.3"></float>
+    <bool  name="rotate" probability="0.5"></bool>
+  </TextureShader>
+
+  <TextureShader file="..\\Metamorph.frag" type="normal" probability="0.6" complexity="1">
+    <int name="sidesP" minValue="4" maxValue="10"></int>
+    <float name="latticeP" minValue="2.0" maxValue="4.5"></float>
+    <float name="warpAmtP" minValue="0.15" maxValue="0.35"></float>
+    <float name="swirlP" minValue="0.0" maxValue="0.7"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\DarkAmbientTunnel.frag" type="KaleidoscopeBase" probability="0.4" complexity="1">
+    <!-- Very slow rotation â€“ audio flux controls actual motion -->
+    <float name="speedTunnel" minValue="0.0002" maxValue="0.0020"></float>
+    <float name="speed"       minValue="0.0002" maxValue="0.0015"></float>
+    <int   name="sides"       minValue="4"      maxValue="8"></int>
+    <float name="power"       minValue="1.0"    maxValue="1.4"></float>
+    <bool  name="rotate"      probability="0.4"></bool>
+  </TextureShader>
+
+  <TextureShader file="..\\ChromeDreams.frag" type="normal" probability="0.4" mood="bright" complexity="2">
+    <float name="ringP" minValue="0.12" maxValue="0.30"></float>
+    <float name="stretchP" minValue="0.10" maxValue="0.35"></float>
+    <float name="stripeP" minValue="4.0" maxValue="9.0"></float>
+    <float name="travP" minValue="0.6" maxValue="1.4"></float>
+    <int name="kSides" minValue="0" maxValue="9"></int>
+    <float name="rosetteP" minValue="0.15" maxValue="0.35"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\SphereGrid.frag" type="normal" probability="0.4" complexity="2">
+    <float name="spacingP" minValue="3.0" maxValue="6.0"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\ReactionDiffusion.frag" type="normal" probability="0.45" complexity="2">
+    <int name="sidesP" minValue="0" maxValue="9"></int>
+    <float name="dispP" minValue="0.3" maxValue="0.9"></float>
+    <float name="zoomP" minValue="0.7" maxValue="1.5"></float>
+  </TextureShader>
+
+  <CombineShader file="..\\CombinePlain.frag" type="normal" probability="1" complexity="1">
+  </CombineShader>
+
+  <CombineShader file="..\\CombineDroneWarp.frag" type="normal" probability="0.8" complexity="1">
+    <float name="warpScaleP" minValue="2.0" maxValue="5.0"></float>
+    <float name="warpAmtP" minValue="0.5" maxValue="1.8"></float>
+    <float name="driftP" minValue="0.5" maxValue="2.0"></float>
+  </CombineShader>
+
+  <CombineShader file="..\\CombinePulse.frag" type="normal" probability="0.2" complexity="1">
+    <float name="breathAmtP" minValue="0.02" maxValue="0.06"></float>
+    <float name="waveAmtP" minValue="0.008" maxValue="0.03"></float>
+    <float name="spinP" minValue="0.02" maxValue="0.12"></float>
+    <float name="chromaP" minValue="0.001" maxValue="0.005"></float>
+  </CombineShader>
+
+</configuration>

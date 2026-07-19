@@ -46,6 +46,8 @@ void commandlineerror( char *cmd, char *parm )
 	"-l            log to kaleidoscope.log instead of the console (kiosk)\n"
 	"-r            start recording (visuals + music -> mp4) immediately\n"
 	"-w <wav>      offline: analyze this WAV instead of live audio (testing)\n"
+	"-o            Spout output: publish the frame as sender 'Kaleidoscope'\n"
+	"              (for OBS / Resolume / any Spout receiver)\n"
 	"-h            this help menu\n"
 	"Keys (while running):\n"
 	"0             toggle the configuration-select menu\n"
@@ -70,8 +72,8 @@ void commandlineerror( char *cmd, char *parm )
 void parsecommandline( int argc, char *argv[] )
 {
 	/* valid option characters; last char MUST be 0 ! */
-	char optionchar[] =   { 'h', 'b', 'f', 's', 'c', 'm', 'l', 'r', 'w', 0 };
-	int musthaveparam[] = {  0 ,  0,   1,   1,   1,   1,   0,   0,   1,  0 };
+	char optionchar[] =   { 'h', 'b', 'f', 's', 'c', 'm', 'l', 'r', 'w', 'o', 0 };
+	int musthaveparam[] = {  0 ,  0,   1,   1,   1,   1,   0,   0,   1,   0,  0 };
 
 	int nopts;
 	int mhp[256];
@@ -139,6 +141,8 @@ void parsecommandline( int argc, char *argv[] )
 				// Offline analysis: feed this WAV through the analyzer instead of
 				// capturing live audio (deterministic classifier testing).
 				case 'w': AudioAnalyzer::s_offlineWav = QString::fromLocal8Bit( argv[1] ); break;
+				// Spout output: publish the displayed frame to other apps.
+				case 'o': FilterShader::s_spoutEnabled = true; break;
 
 
 				default: fprintf(stderr, "\nBug in parsecommandline !\n");

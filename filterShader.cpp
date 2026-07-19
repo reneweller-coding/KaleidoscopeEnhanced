@@ -3,6 +3,7 @@
 
 #include "shader_setup.h"
 #include "filterShader.h"
+#include "SpoutOut.h"
 #include "Utils.h"
 
 #include <QtGui/QImageReader>
@@ -28,6 +29,7 @@ float FilterShader::s_trailAmount = 0.6f;
 float FilterShader::s_moodStrength = 1.0f;
 float FilterShader::s_renderScale = 1.0f;
 float FilterShader::s_lightShow   = 0.0f;   // corner lamps / light-show OFF by default
+bool  FilterShader::s_spoutEnabled = false; // Spout sender (CLI -o)
 
 // Settings file lives next to the Configurations folder (parent of Debug/Release),
 // matching how shaders and configs are loaded ("..\\...").
@@ -322,6 +324,8 @@ QString FilterShader::activeShaderInfo() const
 
 void FilterShader::stop()
 {
+	spoutOutRelease();
+
 	m_imageLoader->terminate();
 
 	cleanTextures();
@@ -2127,6 +2131,15 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 
 		presentSource = m_texTrail[cur];
 		m_trailIdx    = prev;   // swap for next frame
+	}
+
+	// Spout output (-o): publish the displayed frame for OBS / Resolume etc.
+	// (Needs the GL context, which is current here; texture-share via DX interop.)
+	if( s_spoutEnabled )
+	{
+		if( !m_spoutStarted )
+			m_spoutStarted = spoutOutInit( "Kaleidoscope" );
+		spoutOutSend( presentSource, m_width, m_height );
 	}
 
 	// -------------------------------------------------------------------------

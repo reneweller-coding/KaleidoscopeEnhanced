@@ -114,26 +114,40 @@ void Configuration::readConfiguration( const QString &filename )
 	m_imageDirectory = docElem.attribute("ImageDirectory");
 	m_configurationName = docElem.attribute("ConfigurationName");
 
+	// Image-cycling times: optional (music steering paces the show anyway);
+	// absent/0 falls back to the long-standing baseline.
 	m_timeTextureSoloMin = docElem.attribute( "timeTextureSoloMin" ).toUInt();
 	m_timeTextureSoloMax = docElem.attribute( "timeTextureSoloMax" ).toUInt();
+	if( m_timeTextureSoloMin == 0 ) m_timeTextureSoloMin = 10;
+	if( m_timeTextureSoloMax <= m_timeTextureSoloMin ) m_timeTextureSoloMax = (m_timeTextureSoloMin == 10) ? 40 : m_timeTextureSoloMin + 1;
 	m_timeTextureInterpolationMin = docElem.attribute( "timeTextureInterpolationMin" ).toUInt();
 	m_timeTextureInterpolationMax = docElem.attribute( "timeTextureInterpolationMax" ).toUInt();
+	if( m_timeTextureInterpolationMin == 0 ) m_timeTextureInterpolationMin = 20;
+	if( m_timeTextureInterpolationMax <= m_timeTextureInterpolationMin ) m_timeTextureInterpolationMax = (m_timeTextureInterpolationMin == 20) ? 80 : m_timeTextureInterpolationMin + 1;
 
 
 	// get the node's interested in, this time only caring about person's
 	QDomNodeList nodeList = docElem.elementsByTagName("TextureShader");
- 
+
 	//Check the TextureShaders
 	for(int i = 0; i < nodeList.count(); i++)
     {
 		// get the current one as QDomElement
     	QDomElement el = nodeList.at(i).toElement();
- 
+
+		// The per-entry times are OPTIONAL since the timing became music-driven
+		// (timingScale/beat-quantisation/section cuts steer the pacing): absent
+		// or 0 falls back to a sensible baseline that mainly matters as the
+		// no-music (speech/silence) pacing.
 		unsigned int minTimeSolo = el.attribute("minTimeSolo").toUInt();
 		unsigned int maxTimeSolo = el.attribute("maxTimeSolo").toUInt();
+		if( minTimeSolo == 0 ) minTimeSolo = 20;
+		if( maxTimeSolo <= minTimeSolo ) maxTimeSolo = (minTimeSolo == 20) ? 90 : minTimeSolo + 1;
 
 		unsigned int minTimeInterpolation = el.attribute("minTimeInterpolation").toUInt();
 		unsigned int maxTimeInterpolation = el.attribute("maxTimeInterpolation").toUInt();
+		if( minTimeInterpolation == 0 ) minTimeInterpolation = 15;
+		if( maxTimeInterpolation <= minTimeInterpolation ) maxTimeInterpolation = (minTimeInterpolation == 15) ? 50 : minTimeInterpolation + 1;
 
 		QString shaderFile = el.attribute("file");
 
@@ -177,18 +191,23 @@ void Configuration::readConfiguration( const QString &filename )
 	
 	// get the node's interested in, this time only caring about person's
 	nodeList = docElem.elementsByTagName("CombineShader");
- 
+
 	//Check the TextureShaders
 	for(int i = 0; i < nodeList.count(); i++)
     {
 		// get the current one as QDomElement
     	QDomElement el = nodeList.at(i).toElement();
- 
+
+		// Times optional here too (see the TextureShader loop above).
 		unsigned int minTimeSolo = el.attribute("minTimeSolo").toUInt();
 		unsigned int maxTimeSolo = el.attribute("maxTimeSolo").toUInt();
+		if( minTimeSolo == 0 ) minTimeSolo = 30;
+		if( maxTimeSolo <= minTimeSolo ) maxTimeSolo = (minTimeSolo == 30) ? 120 : minTimeSolo + 1;
 
 		unsigned int minTimeInterpolation = el.attribute("minTimeInterpolation").toUInt();
 		unsigned int maxTimeInterpolation = el.attribute("maxTimeInterpolation").toUInt();
+		if( minTimeInterpolation == 0 ) minTimeInterpolation = 20;
+		if( maxTimeInterpolation <= minTimeInterpolation ) maxTimeInterpolation = (minTimeInterpolation == 20) ? 60 : minTimeInterpolation + 1;
 
 		QString shaderFile = el.attribute("file");
 
