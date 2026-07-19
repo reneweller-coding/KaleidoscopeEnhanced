@@ -1,13 +1,17 @@
 // Aurora.frag
 // -----------------------------------------------------------------------
-// AURORA BOREALIS: slowly waving curtains of light over a dark starfield,
-// the image glowing through the curtains as their colour texture.  Calm and
-// majestic — an ambient-first effect.
-//   swell     -> the display flares up (real aurora "breathing")
-//   centroid  -> how high the curtains reach / their brightness
-//   chroma    -> hue drift of the whole display (via audioChromaHue)
-//   pitch     -> the curtains' altitude drifts with the dominant tone
-// Jump-free: curtain waves ride time + audioPhase (integrated).
+// AURORA BOREALIS v2: TWO waving curtain layers over a starfield with a
+// moon — the back layer higher, dimmer and hue-shifted for real depth.
+// The display DANCES: kicks surge the rays, onsets flare the active
+// regions, the swell breathes the whole sky, and rare high-reaching parts
+// tip into the classic red top fringe.  The image glows through the
+// curtains as their colour texture; a faint aurora glow warms the ground.
+//   swell    -> sky-wide flare-up (aurora "breathing")
+//   kick     -> ray surge (slew-limited envelope, no strobe)
+//   onset    -> brief flare of the bright regions
+//   centroid -> curtain reach / brightness
+//   chroma   -> hue drift; pitch -> curtain altitude
+// Jump-free: all wave fields ride time + audioPhase (integrated).
 //
 // Per-activation variety (0 = default):
 //   bandsP   float curtain frequency multiplier (0 -> 1.0; 0.7..1.8)
@@ -30,6 +34,8 @@ uniform float audioCentroid;
 uniform float audioValence;
 uniform float audioPitch;
 uniform float audioChromaHue;
+uniform float audioKick;
+uniform float audioOnset;
 
 uniform float bandsP;
 uniform float hueP;
@@ -65,6 +71,46 @@ float fbm(vec2 p)
     return s;
 }
 
+// One curtain layer: .x = glow, .y = colour fringe 0..1, .z = brightness env.
+vec3 curtainLayer(vec2 uv, float t, float bands, float height,
+                  float baseOff, float seed)
+{
+    float wave = 0.0;
+    wave += 0.55 * sin(uv.x * 6.0 * bands + t + seed * 3.1 + audioPhase * 0.25);
+    wave += 0.30 * sin(uv.x * 11.0 * bands - t * 0.63 + 1.7 + seed * 5.7);
+    wave += 0.36 * fbm(vec2(uv.x * 4.0 * bands + seed * 7.7, t * 0.35)) - 0.18;
+
+    float env   = fbm(vec2(uv.x * 2.3 * bands + wave * 0.3 + seed * 13.1, t * 0.22));
+    float base  = baseOff + 0.18 * wave + (audioPitch - 0.5) * 0.18;
+    float reach = (0.30 + 0.25 * audioCentroid + 0.10 * audioSwell)
+                * height * (0.55 + 0.9 * env);
+    float d     = base - uv.y;
+    float body  = exp(-max(d, 0.0) / max(reach, 0.05))
+                * smoothstep(-0.02, 0.10, d);
+
+    // Fine striation, phase-bent by the wave + envelope (no two rays alike);
+    // the kick SURGES the rays (envelope-driven -> smooth, in tempo).
+    float rays = 0.55 + 0.45 * sin(uv.x * 95.0 * bands + wave * 9.0 + env * 7.0);
+    rays = pow(rays, 2.0) * (1.0 + 0.5 * audioKick * env);
+
+    float glow = body * rays * (0.25 + 1.15 * env);
+    float fringe = clamp(max(d, 0.0) / max(reach, 0.05), 0.0, 1.0);
+    return vec3(glow, fringe, env);
+}
+
+// Colour a curtain layer: green core -> purple fringe -> RED top, image-lit.
+vec3 curtainColour(vec2 uv, float base, float fringe, float hueOff)
+{
+    vec3 acol = mix(vec3(0.10, 0.95, 0.45), vec3(0.55, 0.20, 0.85),
+                    fringe * fringe);
+    // Classic red top fringe on the highest-reaching parts.
+    acol = mix(acol, vec3(0.95, 0.18, 0.30),
+               smoothstep(0.70, 1.00, fringe) * 0.55);
+    vec3 pic = img(vec2(uv.x, base));
+    acol = mix(acol, acol * (0.4 + 1.4 * pic), 0.45);
+    return hueRot(acol, hueP + audioChromaHue * 1.2 + hueOff);
+}
+
 void main()
 {
     float bands  = (bandsP  > 0.0) ? bandsP  : 1.0;
@@ -85,50 +131,34 @@ void main()
     sky += vec3(0.8, 0.85, 1.0) * star * tw * smoothstep(0.35, 0.0, length(sf))
            * (0.5 + 0.5 * uv.y);
 
-    // --- The aurora curtains. ---
-    // Curtain profile along x: layered waves, drifting with the integrated
-    // phase; the wave FIELD (not the amplitude) moves -> silky motion.
-    float t = time * 0.05 * spd + audioAdvance * 0.15;
-    float wave = 0.0;
-    wave += 0.55 * sin(uv.x * 6.0 * bands + t * 1.00 + audioPhase * 0.20);
-    wave += 0.30 * sin(uv.x * 11.0 * bands - t * 0.63 + 1.7);
-    wave += 0.18 * fbm(vec2(uv.x * 4.0 * bands, t * 0.35)) * 2.0 - 0.18;
+    // Moon with a soft halo (upper right, image-tinted).
+    {
+        float md   = length(p - vec2(0.58, 0.30));
+        float disc = smoothstep(0.050, 0.045, md);
+        float halo = exp(-md * 7.0);
+        sky += vec3(0.92, 0.92, 0.82) * disc * 0.75
+             + vec3(0.55, 0.60, 0.72) * halo * 0.14;
+    }
 
-    // The curtain hangs from an upper edge that waves; light falls off
-    // downward (exp) and cuts off softly at the lower rim.  Reach and
-    // brightness VARY along x (fbm envelope), so the display has bright
-    // active regions and dark gaps instead of a uniform picket fence.
-    float env    = fbm(vec2(uv.x * 2.3 * bands + wave * 0.3, t * 0.22));
-    float base   = 0.55 + 0.18 * wave + (audioPitch - 0.5) * 0.18;
-    float reach  = (0.30 + 0.25 * audioCentroid + 0.10 * audioSwell)
-                 * height * (0.55 + 0.9 * env);
-    float d      = base - uv.y;
-    float body   = exp(-max(d, 0.0) / max(reach, 0.05))
-                 * smoothstep(-0.02, 0.10, d);
+    // --- Two aurora curtain layers (back: higher, dimmer, hue-shifted). ---
+    float t  = time * 0.055 * spd + audioAdvance * 0.18;
+    float energy = 0.45 + 0.85 * audioSwell + 0.25 * audioLevel;
 
-    // Vertical RAYS inside the curtain: fine striation whose phase is bent
-    // by the wave field and the envelope, so no two rays look alike.
-    float rays = 0.55 + 0.45 * sin(uv.x * 95.0 * bands + wave * 9.0 + env * 7.0);
-    rays = pow(rays, 2.0);
+    vec3 L2 = curtainLayer(uv, t * 0.8, bands * 0.7, height * 1.15, 0.70, 1.0);
+    vec3 C2 = curtainColour(uv, 0.70, L2.y, 0.8);
+    float g2 = L2.x * energy * (1.0 + 0.35 * audioOnset * L2.z);
 
-    float glow = body * rays * (0.25 + 1.15 * env)
-               * (0.45 + 0.85 * audioSwell + 0.25 * audioLevel);
+    vec3 L1 = curtainLayer(uv, t, bands, height, 0.55, 0.0);
+    vec3 C1 = curtainColour(uv, 0.55, L1.y, 0.0);
+    float g1 = L1.x * energy * (1.0 + 0.35 * audioOnset * L1.z);
 
-    // Colour: green core -> purple fringe (top), tinted by the image and the
-    // music's key colour; hueP re-rolls the whole family per activation.
-    vec3 cGreen  = vec3(0.10, 0.95, 0.45);
-    vec3 cPurple = vec3(0.55, 0.20, 0.85);
-    float fringe = clamp(max(d, 0.0) / max(reach, 0.05), 0.0, 1.0);
-    vec3 acol = mix(cGreen, cPurple, fringe * fringe);
-    vec3 pic  = img(vec2(uv.x, base) );
-    acol = mix(acol, acol * (0.4 + 1.4 * pic), 0.45);
-    acol = hueRot(acol, hueP + audioChromaHue * 1.2);
+    vec3 col = sky + C2 * g2 * 0.45 + C1 * g1;
 
-    vec3 col = sky + acol * glow;
-
-    // Ground silhouette: a dark ridge line at the bottom.
+    // Ground silhouette with a faint aurora glow on the snow.
     float ridge = 0.06 + 0.04 * fbm(vec2(uv.x * 3.0, 7.7));
-    col *= smoothstep(ridge - 0.015, ridge + 0.015, uv.y);
+    float ground = smoothstep(ridge - 0.015, ridge + 0.015, uv.y);
+    vec3  gcol = (C1 * g1 + C2 * g2 * 0.45) * 0.22 + vec3(0.010, 0.014, 0.022);
+    col = mix(gcol, col, ground);
 
     // Mood grade.
     float lum = dot(col, vec3(0.299, 0.587, 0.114));

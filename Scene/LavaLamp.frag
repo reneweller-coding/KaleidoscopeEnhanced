@@ -29,6 +29,7 @@ uniform float audioAdvance;   // integrated circulation drift (audio-rate)
 uniform float audioSubBass;
 uniform float audioBass;
 uniform float audioBeat;
+uniform float audioKick;
 uniform float audioBeatPhase;
 uniform float audioSwell;
 uniform float audioBarPhase;
@@ -58,6 +59,10 @@ void main()
     vec2  uv     = gl_FragCoord.xy / resolution;
     float aspect = resolution.x / resolution.y;
     vec2  p      = vec2((uv.x - 0.5) * aspect, uv.y);   // y in 0..1, x centred
+
+    // Kick "boing": the whole wax field squashes a touch on the bass drum —
+    // the slew-limited kick envelope makes it a smooth, gooey bounce.
+    p.y = (p.y - 0.42) * (1.0 + 0.055 * audioKick) + 0.42;
 
     // Per-activation character (constant during the scene):
     float speedV = (speedP <= 0.01) ? 1.0 : speedP;
@@ -100,6 +105,19 @@ void main()
         float sd = length(d) - rad;
         if (sd < nearS) { nearS = sd; nearC = vec2(bx, by); nearR = rad; }
     }
+    // Satellite droplets: three small fast runners between the big blobs
+    // (split-off wax that hurries up and down — much livelier circulation).
+    for (int i = 0; i < 3; i++)
+    {
+        float fi = float(i);
+        float ph = drift * (0.95 + 0.27 * fi) + fi * 2.1 + 0.7;
+        float by = 0.52 + 0.36 * sin(ph) + bob;
+        float bx = 0.24 * sin(ph * 0.71 + fi * 2.6) * aspect * 0.62;
+        vec2 d = p - vec2(bx, by);
+        d.y /= 1.0 + 0.55 * abs(cos(ph));
+        float rad = 0.032 * volume;
+        field += rad * rad / (dot(d, d) + 0.0004);
+    }
     // Heated wax pool at the base (swells with the sub-bass).
     {
         vec2 d = p - vec2(0.0, -0.06 + 0.05 * audioSubBass);
@@ -123,6 +141,9 @@ void main()
     float hotness = clamp(1.2 - p.y + 0.35 * m, 0.0, 1.5);
     vec3 waxPal = mix(vec3(1.0, 0.62, 0.16), vec3(1.0, 0.25, 0.10), hotness * 0.7);
     waxPal = hueRot(waxPal, waxHueP + 0.25 * sin(audioBarPhase * 6.2831));
+    // Each blob wears its own subtle tint (varies smoothly with its centre,
+    // so neighbouring blobs shimmer in different shades of the palette).
+    waxPal = hueRot(waxPal, 0.45 * sin(nearC.x * 6.0 + nearC.y * 4.0));
     vec3 wax = waxPal * (0.55 + 0.75 * pic);
     wax = mix(wax, wax * vec3(1.05, 0.75, 1.05), 0.30 * audioValence);
     wax *= 0.85 + 0.55 * audioLevel;
@@ -133,10 +154,26 @@ void main()
                 + img(uv) * 0.10;
     liquid = hueRot(liquid, 0.2 * sin(audioBarPhase * 6.2831));
 
-    // Warm bulb glow rising from the base (breathes with the bass).
+    // Warm bulb glow rising from the base (breathes with the bass and
+    // FLARES on the kick — the lamp visibly pumps light into the wax).
     float bulb = exp(-length(vec2(p.x * 0.7, p.y + 0.10)) * 3.2)
-               * (0.8 + 0.5 * audioBass + 0.3 * audioSubBass);
+               * (0.8 + 0.5 * audioBass + 0.3 * audioSubBass + 0.45 * audioKick);
     liquid += vec3(1.0, 0.45, 0.12) * bulb * 0.55;
+
+    // Tiny heat bubbles sparkling up from the pool (bass-lit, slow paths).
+    {
+        float bub = 0.0;
+        for (int i = 0; i < 5; i++)
+        {
+            float fi = float(i);
+            float bx = (fract(fi * 0.618 + 0.13) - 0.5) * aspect * 0.45;
+            float by = fract(drift * (0.55 + 0.11 * fi) + fi * 0.37);
+            vec2  d  = vec2(p.x - bx - 0.02 * sin(by * 9.0 + fi * 3.0),
+                            p.y - by);
+            bub += smoothstep(0.011, 0.0, length(d)) * (1.0 - by);
+        }
+        liquid += vec3(1.0, 0.72, 0.42) * bub * (0.30 + 0.60 * audioBass);
+    }
 
     vec3 col = mix(liquid, wax, m);
     // The wax also catches the bulb light from below.

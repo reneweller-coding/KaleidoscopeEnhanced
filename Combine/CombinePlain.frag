@@ -161,7 +161,10 @@ void main()
     else if (transStyle == 4)                 // diagonal wipe
     {
         float x = dot(cc, normalize(vec2(1.0, 0.55)));
-        float t = mix(-0.85, 0.85, d);
+        // Travel BEYOND the widescreen corner extent (|x| can reach ~1.02 on
+        // 16:9 + edge width) so no corner shows the new scene at d=0 or
+        // keeps the old one at d=1.
+        float t = mix(-1.15, 1.15, d);
         w1 = smoothstep(x - 0.09, x + 0.09, t);
     }
     else if (transStyle == 5)                 // blinds (staggered strips)
@@ -169,7 +172,9 @@ void main()
         float strip = p.x * 6.0;
         float s   = fract(strip);
         float off = fract(floor(strip) * 0.61803);
-        float t   = d * 1.45 - 0.12 - off * 0.28;
+        // Overshoot so even the most-staggered strip clears s=1 (edge width
+        // included) at d=1 — no leftover sliver snapping away at the end.
+        float t   = d * 1.62 - 0.12 - off * 0.28;
         w1 = 1.0 - smoothstep(t - 0.07, t + 0.07, s);
     }
     else if (transStyle == 6)                 // mosaic dissolve
@@ -200,13 +205,19 @@ void main()
         float xs = p.x + d;
         p0 = vec2(clamp(xs,       0.0, 1.0), p.y);
         p1 = vec2(clamp(xs - 1.0, 0.0, 1.0), p.y);
-        w1 = smoothstep(1.0 - 0.015, 1.0 + 0.015, xs);
+        // Seam softness windowed by mid: a soft seam sitting exactly on the
+        // frame edge at d=0/d=1 would otherwise leak the other scene there.
+        float e = 0.015 * mid + 1e-4;
+        w1 = smoothstep(1.0 - e, 1.0 + e, xs);
     }
     else if (transStyle == 10)                // doors slide open
     {
         float shift = d * 0.54;
         p0 = vec2(clamp(p.x + ((p.x < 0.5) ? shift : -shift), 0.0, 1.0), p.y);
-        w1 = 1.0 - smoothstep(shift - 0.02, shift + 0.02, abs(p.x - 0.5));
+        // The gap eases in — without the window the soft edge shows a centre
+        // stripe of the new scene the moment the transition starts.
+        w1 = (1.0 - smoothstep(shift - 0.02, shift + 0.02, abs(p.x - 0.5)))
+           * smoothstep(0.0, 0.06, d);
     }
     else if (transStyle == 11)                // clock sweep
     {
@@ -235,10 +246,14 @@ void main()
     }
     else if (transStyle == 16)                // pixelation morph
     {
-        float cells = mix(220.0, 16.0, mid);
+        // Starts near-identity (900 cells) and EASES into the blocks — the
+        // old 220-cell start popped visible blockiness in at d=0 and out
+        // again at d=1 (a hard step at both ends of the fade).
+        float cells = mix(900.0, 16.0, mid);
         vec2  grid  = vec2(cells, cells / aspect);
         vec2  pq    = (floor(p * grid) + 0.5) / grid;
-        p0 = pq; p1 = pq;
+        vec2  pm    = mix(p, pq, smoothstep(0.0, 0.12, mid));
+        p0 = pm; p1 = pm;
     }
     else if (transStyle == 17)                // spin-zoom crossfade
     {
