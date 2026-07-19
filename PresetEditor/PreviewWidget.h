@@ -11,7 +11,7 @@
 #include <QtCore/QString>
 #include <vector>
 
-#include "../AudioFeatures.h"
+#include "../Source/AudioFeatures.h"
 
 class QOpenGLShaderProgram;
 class QOpenGLFramebufferObject;

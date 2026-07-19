@@ -26,7 +26,7 @@
 #include <QtGui/QKeyEvent>
 
 // Real-analyzer WAV preview: the actual analysis pipeline + looped playback.
-#include "../AudioAnalyzer.h"
+#include "../Source/AudioAnalyzer.h"
 #include <windows.h>
 #include <mmsystem.h>
 
@@ -170,20 +170,15 @@ EditorWindow::EditorWindow(const QString &projectRoot, QWidget *parent)
 
 void EditorWindow::scanShaders()
 {
-    QDir d(m_root);
-    const QStringList all = d.entryList({ "*.frag" }, QDir::Files, QDir::Name);
-    // Internal pipeline shaders that are not user-selectable effects.
-    static const QStringList skip = {
-        "Present.frag", "Feedback.frag", "ReactionDiffusionSim.frag",
-        "BloomBlur.frag", "default.frag", "CombineShader.frag"
-    };
+    // Since the 2026-07 reorg the user-selectable shaders live in Scene/ and
+    // Combine/ (Blend/ holds the internal pipeline passes and is not listed).
+    const QStringList scenes   = QDir(m_root + "/Scene").entryList(
+                                     { "*.frag" }, QDir::Files, QDir::Name);
+    const QStringList combines = QDir(m_root + "/Combine").entryList(
+                                     { "*.frag" }, QDir::Files, QDir::Name);
     m_texCombo->blockSignals(true); m_combCombo->blockSignals(true);
-    for (const QString &f : all)
-    {
-        if (skip.contains(f)) continue;
-        if (f.startsWith("Combine")) m_combCombo->addItem(f);
-        else                         m_texCombo->addItem(f);
-    }
+    for (const QString &f : scenes)   m_texCombo->addItem(f);
+    for (const QString &f : combines) m_combCombo->addItem(f);
     m_texCombo->blockSignals(false); m_combCombo->blockSignals(false);
     if (m_combCombo->findText("CombinePlain.frag") >= 0)
         m_combCombo->setCurrentText("CombinePlain.frag");
@@ -216,7 +211,7 @@ static QVector<KomplettParam> komplettParamsFor(const QString &root, const QStri
     if (!f.open(QIODevice::ReadOnly)) return out;
     const QString xml = QString::fromUtf8(f.readAll());
     QRegularExpression entryRe(
-        QString("<(?:Texture|Combine)Shader\\b[^>]*file=\"\\.\\.\\\\\\\\%1\"[^>]*>(.*?)</(?:Texture|Combine)Shader>")
+        QString("<(?:Texture|Combine)Shader\\b[^>]*file=\"\\.\\.\\\\\\\\(?:\\w+\\\\\\\\)?%1\"[^>]*>(.*?)</(?:Texture|Combine)Shader>")
             .arg(QRegularExpression::escape(frag)),
         QRegularExpression::DotMatchesEverythingOption);
     const QRegularExpressionMatch em = entryRe.match(xml);

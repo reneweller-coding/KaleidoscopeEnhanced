@@ -44,7 +44,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)..;$(QTDIR)\include;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtWidgets;$(QTDIR)\include\QtOpenGL;$(QTDIR)\include\QtOpenGLWidgets;$(QTDIR)\include\QtXml;$(QTDIR)\mkspecs\win32-msvc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)..;$(ProjectDir)..\Source;$(QTDIR)\include;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtWidgets;$(QTDIR)\include\QtOpenGL;$(QTDIR)\include\QtOpenGLWidgets;$(QTDIR)\include\QtXml;$(QTDIR)\mkspecs\win32-msvc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
@@ -64,7 +64,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)..;$(QTDIR)\include;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtWidgets;$(QTDIR)\include\QtOpenGL;$(QTDIR)\include\QtOpenGLWidgets;$(QTDIR)\include\QtXml;$(QTDIR)\mkspecs\win32-msvc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)..;$(ProjectDir)..\Source;$(QTDIR)\include;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtWidgets;$(QTDIR)\include\QtOpenGL;$(QTDIR)\include\QtOpenGLWidgets;$(QTDIR)\include\QtXml;$(QTDIR)\mkspecs\win32-msvc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
@@ -91,7 +91,7 @@
     <ClCompile Include="EditorWindow.cpp" />
     <ClCompile Include="PreviewWidget.cpp" />
     <ClCompile Include="Preset.cpp" />
-    <ClCompile Include="..\AudioAnalyzer.cpp" />
+    <ClCompile Include="..\Source\AudioAnalyzer.cpp" />
     <ClCompile Include="moc_EditorWindow.cpp" />
     <ClCompile Include="moc_PreviewWidget.cpp" />
     <ClCompile Include="moc_AudioAnalyzer.cpp" />
@@ -112,9 +112,9 @@
       <AdditionalInputs>$(QTDIR)\bin\moc.exe;%(AdditionalInputs)</AdditionalInputs>
       <Outputs>moc_PreviewWidget.cpp;%(Outputs)</Outputs>
     </CustomBuild>
-    <CustomBuild Include="..\AudioAnalyzer.h">
+    <CustomBuild Include="..\Source\AudioAnalyzer.h">
       <Message>MOCing AudioAnalyzer.h ...</Message>
-      <Command>$(QTDIR)\bin\moc ..\AudioAnalyzer.h -o moc_AudioAnalyzer.cpp
+      <Command>$(QTDIR)\bin\moc ..\Source\AudioAnalyzer.h -o moc_AudioAnalyzer.cpp
 </Command>
       <AdditionalInputs>$(QTDIR)\bin\moc.exe;%(AdditionalInputs)</AdditionalInputs>
       <Outputs>moc_AudioAnalyzer.cpp;%(Outputs)</Outputs>

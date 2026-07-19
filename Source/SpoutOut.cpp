@@ -1,6 +1,6 @@
 // SpoutOut.cpp — see SpoutOut.h.  The ONLY file that includes Spout headers.
 #include "SpoutOut.h"
-#include "ThirdParty/SpoutGL/Spout.h"
+#include "../ThirdParty/SpoutGL/Spout.h"
 
 static Spout *s_spout = nullptr;
 

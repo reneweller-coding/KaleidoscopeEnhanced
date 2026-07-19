@@ -74,7 +74,20 @@ void PreviewWidget::resizeGL(int, int) { /* FBO re-sized lazily in paintGL */ }
 
 QOpenGLShaderProgram *PreviewWidget::compile(const QString &fileName, QString &log)
 {
-    QFile f(m_root + "/" + fileName);
+    // Shaders live in subfolders since the 2026-07 reorg (Scene / Combine /
+    // Blend); bare filenames are resolved by searching them (root last, for
+    // throwaway probe shaders).
+    QString path;
+    for (const QString &dir : { QString("Scene/"), QString("Combine/"),
+                                QString("Blend/"), QString("") })
+    {
+        if (QFile::exists(m_root + "/" + dir + fileName))
+        {
+            path = m_root + "/" + dir + fileName;
+            break;
+        }
+    }
+    QFile f(path.isEmpty() ? (m_root + "/" + fileName) : path);
     if (!f.open(QIODevice::ReadOnly | QIODevice::Text))
     {
         log = "cannot open " + fileName;

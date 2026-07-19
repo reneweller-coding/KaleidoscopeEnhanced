@@ -116,7 +116,10 @@ bool Preset::save(const QString &path, QString *err) const
         w.writeAttribute("maxTimeSolo", QString::number(e.maxTimeSolo));
         w.writeAttribute("minTimeInterpolation", QString::number(e.minTimeInterpolation));
         w.writeAttribute("maxTimeInterpolation", QString::number(e.maxTimeInterpolation));
-        w.writeAttribute("file", "..\\" + e.file);
+        // Shaders live in Scene/ and Combine/ since the 2026-07 reorg.
+        w.writeAttribute("file", QString("..\\%1\\%2")
+                                 .arg(e.isCombine ? "Combine" : "Scene")
+                                 .arg(e.file));
         w.writeAttribute("type", e.type);
         w.writeAttribute("probability", QString::number(e.probability));
         if (!e.mood.isEmpty())
