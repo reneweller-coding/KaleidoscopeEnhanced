@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Kaleidoscope Remote: a thin fullscreen WebView around the visualizer's
+     embedded web remote (CLI -t <port>).  All UI/logic comes from the PC, so
+     the app never needs updating when the remote grows new controls. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="de.kaleidoscope.remote"
+    android:versionCode="1"
+    android:versionName="1.0">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- The remote is plain HTTP on the LAN -> cleartext must be allowed. -->
+    <application
+        android:label="@string/app_name"
+        android:icon="@mipmap/ic_launcher"
+        android:usesCleartextTraffic="true"
+        android:theme="@android:style/Theme.Material.NoActionBar">
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:configChanges="orientation|screenSize|keyboardHidden">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>

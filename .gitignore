@@ -32,3 +32,7 @@ recordings/
 # Preset editor build artifacts (moc output + build dir)
 PresetEditor/moc_*.cpp
 PresetEditor/build/
+
+# Android remote app: build output + local signing key
+AndroidRemote/build/
+AndroidRemote/debug.keystore
