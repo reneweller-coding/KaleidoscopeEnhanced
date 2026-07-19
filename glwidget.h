@@ -38,6 +38,17 @@ public:
 	// CLI -r: start recording immediately on launch (used for testing/debugging).
 	static bool s_autoRecord;
 
+	// CLI -t <port>: start the embedded web remote on this port (0 = off).
+	static int  s_remotePort;
+
+	// ---- Web-remote hooks (same harmless controls as the keyboard) ----
+	QStringList remoteConfigNames() const;
+	int         remoteActiveConfig() const;
+	void        remoteSelectConfig( int idx );
+	void        remoteNextEffect();
+	bool        autoConfigEnabled() const   { return m_autoConfig; }
+	void        setAutoConfigEnabled( bool on ) { m_autoConfig = on; m_moodBucket = -1; }
+
 public slots:
 	bool slotSetDirectory(const QString &filename);
 
@@ -68,8 +79,15 @@ protected:
 	qint64			m_npShownAt     = -100000;
 
 	// Optional MIDI control (knobs -> look params, pads -> next effect).
+	// MIDI LEARN (key 'j'): cycles through the targets below; the next CC
+	// (targets 0-3) or note (target 4) that arrives is bound to it and the
+	// learn advances to the next target.  Mappings persist in the settings.
 	void            applyMidi();
 	MidiInput      *m_midi          = nullptr;
+	enum { MIDI_REACT = 0, MIDI_TRAILS, MIDI_MOOD, MIDI_LATENCY, MIDI_NEXT,
+	       MIDI_TARGETS };
+	int             m_midiMap[MIDI_TARGETS] = { 1, 2, 3, -1, -1 };  // CC/note nr, -1 = frei
+	int             m_midiLearn     = -1;   // -1 = off, else target being learned
 
 	// Recording: capture the visualization frames (+ the loopback audio) and mux
 	// them to an mp4 with ffmpeg.  Toggled with key 'r'.
@@ -89,7 +107,7 @@ protected:
 	// does the image work.  A bounded queue drops frames instead of ballooning
 	// memory if the encoder can't keep up; the dropped time is added to the next
 	// frame's duration so the video timeline stays correct.
-	struct RecJob { QImage img; QString path; };
+	struct RecJob { QImage img; QString path; float dur = 0.f; };  // path empty -> replay ring
 	std::thread             m_recThread;
 	std::mutex              m_recMx;
 	std::condition_variable m_recCv;
@@ -97,6 +115,19 @@ protected:
 	bool                    m_recQuit    = false;
 	float                   m_recCarryDur = 0.f;  // duration of dropped frames
 	void                    recWorker();          // worker-thread loop
+	void                    ensureRecWorker();    // (re)start the worker if needed
+
+	// Instant replay (key 'y' arms, 'x' saves): a rolling ~30 s ring of encoded
+	// JPEG frames (worker thread) + the analyzer's rolling PCM ring.  Armed is
+	// opt-in because the periodic glReadPixels costs a little performance.
+	struct ReplayFrame { QByteArray jpg; float dur; };
+	void                    captureReplayFrame(); // ~15 fps into the ring
+	void                    saveReplay();         // dump ring + audio, mux mp4
+	bool                    m_replayArmed  = false;
+	std::mutex              m_replayMx;
+	std::deque<ReplayFrame> m_replayFrames;
+	qint64                  m_repLastFrame = 0;
+	float                   m_repCarryDur  = 0.f;
 
 	void traverseConfigurations( const QString& dirname, std::vector<Configuration *> &configurationList );
 

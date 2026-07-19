@@ -45,6 +45,11 @@ public:
     void setAudioTimeline(std::vector<AudioFeatures> tl);
     bool hasAudioTimeline() const { return !m_timeline.empty(); }
 
+    // Live per-activation parameter overrides (editor sliders): applied after
+    // the built-in defaults each frame, so the sliders tune the actual look.
+    struct ParamOverride { QString name; float value; bool isInt; };
+    void setParamOverrides(QVector<ParamOverride> ov) { m_overrides = std::move(ov); update(); }
+
 signals:
     void statusChanged(const QString &text);   // compile logs / current selection
 
@@ -56,6 +61,7 @@ protected:
 private:
     QOpenGLShaderProgram *compile(const QString &fileName, QString &log);
     void   applyCommonUniforms(QOpenGLShaderProgram *p);
+    void   applyParamOverrides(QOpenGLShaderProgram *p);
     void   drawFullscreenQuad(QOpenGLShaderProgram *p);
     void   loadImages();                     // (re)create m_img0/m_img1 (GL thread)
     GLuint makeTexture(const QString &path);  // from file, or gradient fallback
@@ -80,6 +86,8 @@ private:
     QElapsedTimer m_clock;
     float   m_time = 0.f;
     int     m_fbW = 0, m_fbH = 0;
+
+    QVector<ParamOverride> m_overrides;   // editor slider values
 
     // WAV feature timeline playback (real-analyzer preview).
     std::vector<AudioFeatures> m_timeline;

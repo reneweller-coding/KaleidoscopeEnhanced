@@ -77,6 +77,11 @@ public:
     void startRecording( const QString &wavPath );
     void stopRecording();
 
+    /** Instant replay: dump the last `seconds` of captured audio (kept in a
+     *  rolling ring, always on — a few MB) as a 16-bit WAV.  Returns false if
+     *  nothing has been captured yet. */
+    bool dumpReplayWav( const QString &path, float seconds );
+
     /** Graceful shutdown – call before wait(). */
     void stop();
 
@@ -283,6 +288,16 @@ private:
     float m_onsetAvgGrp[3]  = {};   // running ODF averages
     int   m_onsetCoolGrp[3] = {};   // per-group re-trigger cooldowns (blocks)
     float m_onsetEnvGrp[3]  = {};   // decaying output envelopes
+
+    // Instant-replay audio ring: the last ~32 s of captured PCM (stereo s16).
+    // Fed in processBlock (capture thread), dumped by dumpReplayWav (main
+    // thread) — guarded by m_replayMx.
+    static const int kReplaySeconds = 32;
+    std::vector<short> m_replayRing;      // sized lazily: rate * 2ch * seconds
+    size_t m_replayPos   = 0;             // next write index (frames * 2)
+    size_t m_replayCount = 0;             // frames written so far (saturates)
+    int    m_replayRate  = 48000;
+    QMutex m_replayMx;
 
     float m_sRolloff = 0.5f;  // spectral rolloff (fraction of Nyquist, 0..1)
     float m_sSpread  = 0.f;   // spectral spread normalised by 5 kHz

@@ -320,6 +320,9 @@ void EffectShader::applyAudioFeatures(const AudioFeatures &f)
     if (locKick     >= 0) glUniform1f(locKick,     f.onsetKick);
     if (locSnare    >= 0) glUniform1f(locSnare,    f.onsetSnare);
     if (locHat      >= 0) glUniform1f(locHat,      f.onsetHat);
+    // Styled effect cross-fade (CombinePlain reads this; -1 elsewhere).
+    GLint locTrans = glGetUniformLocation(m_sh_prog_id, "transStyle");
+    if (locTrans    >= 0) glUniform1i(locTrans,    f.transStyle);
     if (locArousal  >= 0) glUniform1f(locArousal,  f.arousal);
     if (locValence  >= 0) glUniform1f(locValence,  f.valence);
     if (locHCDF     >= 0) glUniform1f(locHCDF,     f.harmonicChange);

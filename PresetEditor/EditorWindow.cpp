@@ -2,7 +2,9 @@
 #include "PreviewWidget.h"
 
 #include <QtWidgets/QComboBox>
+#include <QtWidgets/QSlider>
 #include <QtWidgets/QSpinBox>
+#include <QtCore/QRegularExpression>
 #include <QtWidgets/QDoubleSpinBox>
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QTableWidget>
@@ -62,6 +64,12 @@ EditorWindow::EditorWindow(const QString &projectRoot, QWidget *parent)
     QPushButton *bWav = new QPushButton("Audio-WAV…  (w)");
     fSel->addRow("Real audio", bWav);
     pl->addWidget(gSel);
+
+    // Live sliders for the previewed shaders' per-activation parameters
+    // (ranges from Komplett.xml; values override the preview defaults).
+    m_paramBox = new QGroupBox("Shader-Parameter (Preview)");
+    m_paramForm = new QFormLayout(m_paramBox);
+    pl->addWidget(m_paramBox);
 
     // Add-to-preset
     QGroupBox *gAdd = new QGroupBox("Add current shader to preset");
@@ -189,11 +197,82 @@ void EditorWindow::onTextureChanged()
     const QString f = m_texCombo->currentText();
     m_typeCombo->setCurrentText(
         (f == "Kaleidoscope.frag" || f == "Tunnel.frag") ? "KaleidoscopeBase" : "normal");
+    rebuildParamSliders();
 }
 void EditorWindow::onCombineChanged()
 {
     if (!m_combCombo->currentText().isEmpty())
         m_preview->setCombineShader(m_combCombo->currentText());
+    rebuildParamSliders();
+}
+
+// Parse a shader's per-activation parameter ranges out of Komplett.xml (the
+// preset that registers EVERY shader with sensible min/max values).
+struct KomplettParam { QString kind, name; float minV, maxV; };
+static QVector<KomplettParam> komplettParamsFor(const QString &root, const QString &frag)
+{
+    QVector<KomplettParam> out;
+    QFile f(root + "/Configurations/Komplett.xml");
+    if (!f.open(QIODevice::ReadOnly)) return out;
+    const QString xml = QString::fromUtf8(f.readAll());
+    QRegularExpression entryRe(
+        QString("<(?:Texture|Combine)Shader\\b[^>]*file=\"\\.\\.\\\\\\\\%1\"[^>]*>(.*?)</(?:Texture|Combine)Shader>")
+            .arg(QRegularExpression::escape(frag)),
+        QRegularExpression::DotMatchesEverythingOption);
+    const QRegularExpressionMatch em = entryRe.match(xml);
+    if (!em.hasMatch()) return out;
+    QRegularExpression paramRe(
+        "<(int|float)\\s+name=\"(\\w+)\"\\s+minValue=\"([\\d\\.\\-]+)\"\\s+maxValue=\"([\\d\\.\\-]+)\"");
+    QRegularExpressionMatchIterator it = paramRe.globalMatch(em.captured(1));
+    while (it.hasNext())
+    {
+        const QRegularExpressionMatch m = it.next();
+        out.push_back({ m.captured(1), m.captured(2),
+                        m.captured(3).toFloat(), m.captured(4).toFloat() });
+    }
+    return out;
+}
+
+void EditorWindow::rebuildParamSliders()
+{
+    if (!m_paramForm) return;
+    // Clear the old rows + slider registry.
+    while (m_paramForm->rowCount() > 0)
+        m_paramForm->removeRow(0);
+    m_sliders.clear();
+    m_preview->setParamOverrides({});
+
+    auto addFor = [this](const QString &frag, const QString &prefix)
+    {
+        for (const KomplettParam &kp : komplettParamsFor(m_root, frag))
+        {
+            SliderInfo si;
+            si.name = kp.name; si.minV = kp.minV; si.maxV = kp.maxV;
+            si.isInt = (kp.kind == "int");
+            QSlider *s = new QSlider(Qt::Horizontal);
+            s->setRange(0, 1000);
+            s->setValue(500);
+            si.slider = s;
+            m_sliders.push_back(si);
+            m_paramForm->addRow(prefix + kp.name, s);
+            connect(s, &QSlider::valueChanged, this, [this]{ pushParamOverrides(); });
+        }
+    };
+    addFor(m_texCombo->currentText(),  "");
+    addFor(m_combCombo->currentText(), "C: ");
+    m_paramBox->setVisible(!m_sliders.isEmpty());
+    pushParamOverrides();
+}
+
+void EditorWindow::pushParamOverrides()
+{
+    QVector<PreviewWidget::ParamOverride> ov;
+    for (const SliderInfo &si : m_sliders)
+    {
+        float t = si.slider->value() / 1000.f;
+        ov.push_back({ si.name, si.minV + t * (si.maxV - si.minV), si.isInt });
+    }
+    m_preview->setParamOverrides(std::move(ov));
 }
 
 QVector<ShaderParam> EditorWindow::defaultParamsFor(const QString &f)

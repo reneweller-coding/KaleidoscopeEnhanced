@@ -6,6 +6,9 @@
 #include <QtCore/QThread>
 #include <map>
 #include <vector>
+#include <atomic>
+#include <QtCore/QHash>
+#include <QtCore/QPair>
 
 #include "mesh.h"
 
@@ -49,6 +52,15 @@ public:
 	static float reactivity() { return s_reactivity; }
 	static float trails()     { return s_trailAmount; }
 	static float mood()       { return s_moodStrength; }
+
+	// Latency compensation: loopback capture + analysis + render + display add
+	// up to ~40-80 ms, so phase-locked visuals land slightly AFTER the heard
+	// beat.  This leads the DISPLAY phase (tempo pulse, beat/bar phase) by the
+	// given seconds; detection envelopes can't be led, but the phase-driven
+	// rhythm feel dominates.  Keys ; and ' adjust it in 10 ms steps.
+	static void  adjustLatency( float d ) { s_latencyLead = clampParam(s_latencyLead + d, 0.f, 0.25f); }
+	static void  setLatency   ( float v ) { s_latencyLead = clampParam(v, 0.f, 0.25f); }
+	static float latency()    { return s_latencyLead; }
 
 	// Stage "lamps" (corner spotlight cones + haze/mirror-ball/gobo light show).
 	// Off by default; toggled with key 'l' and persisted.
@@ -111,9 +123,15 @@ public:
     bool        m_waitForImageToLoad;
     QImage      m_nextImage;
 
-    
+
 	QStringList 	m_imageList;
 	QStringList::const_iterator m_imageListIterator;
+
+	// Live mood snapshot for the ImageLoader's mood-matched image choice
+	// (written once per frame in paint(), read on the loader thread).
+	std::atomic<float> m_moodValence { 0.5f };
+	std::atomic<float> m_moodArousal { 0.5f };
+	std::atomic<float> m_moodAmbient { 0.f };
 
 private:
 
@@ -188,6 +206,11 @@ private:
 	std::map<int, std::vector<float>> m_sectionParams;
 	int				m_pendingSectionStore   = -1;
 	int				m_pendingSectionRestore = -1;
+
+	// Per-transition blend styles (0 linear, 1 wipe, 2 kaleido, 3 zoom),
+	// rolled when a change fires; linear stays the most common.
+	int				m_transStyleTex  = 0;
+	int				m_transStyleComb = 0;
 
 	// Key colour: chroma hue slewed AROUND the colour circle (shortest way,
 	// max ~20 deg/s) so key changes glide instead of jumping the palette.
@@ -312,6 +335,7 @@ private:
 	static float	s_trailAmount;   // feedback trail length 0..0.95 (default 0.6)
 	static float	s_moodStrength;  // global mood-grade strength (default 1.0)
 	static float	s_lightShow;     // 0 = corner lamps/light-show off (default), 1 = on
+	static float	s_latencyLead;   // display-phase lead in seconds (default 0.05)
 	static float	clampParam( float v, float lo, float hi )
 	{ return v < lo ? lo : (v > hi ? hi : v); }
 
@@ -480,6 +504,10 @@ public:
 private:
     FilterShader *m_shader;
 
+    // Mood-matched image choice: cached tiny-thumbnail stats per image path
+    // (brightness, colourfulness) — loader-thread only, no locking needed.
+    static QPair<float,float> imageStats( const QString &path );
+    QHash<QString, QPair<float,float>> m_stats;
 };
 
 #endif

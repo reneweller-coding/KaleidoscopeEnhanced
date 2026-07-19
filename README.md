@@ -408,6 +408,35 @@ Audio is captured via WASAPI loopback (`AudioAnalyzer`) and analysed in real tim
   "Kaleidoscope" for OBS / Resolume / any Spout receiver (Spout2 SDK
   vendored under `ThirdParty/SpoutGL`, BSD-2; isolated in its own
   translation unit so its GL extension loading never collides with GLee).
+- **Latency compensation (`;` / `'`, persisted):** loopback capture +
+  analysis + render + scanout lag the heard audio by ~40–80 ms; the display
+  phase (tempo pulse, beat/bar phase) is led by an adjustable amount
+  (default 50 ms) so pulses land ON the beat you hear.
+- **Transition styles:** shader cross-fades randomly play as a classic mix,
+  a radial wipe from the centre, a fold-through-the-kaleidoscope, or a
+  zoom-through flight (rolled per transition; effect and combine blends).
+- **Web remote (`-t <port>`):** a phone-friendly page at
+  `http://<pc>:<port>/` with preset buttons, next-effect, and sliders for
+  reactivity / trails / mood / latency plus light-show & auto-preset
+  toggles.  LAN convenience only — no auth, don't expose it to the internet.
+- **MIDI Learn (`j`):** cycles through the assignable targets (reactivity,
+  trails, mood, latency, next-effect pad); the next CC/note received binds
+  to the current target; mappings persist.  Unmapped pad = any note
+  advances (the old behaviour).
+- **Instant replay (`y` arms, `x` saves):** a rolling ~30 s ring of frames
+  (~15 fps, encoded off-thread) plus the analyzer's rolling audio ring;
+  one keypress muxes `replays/replay_*/replay.mp4` — for "that was
+  great!"-moments without having recorded.
+- **Auto-preset by mood (`a`):** sustained drone switches to the Ambient
+  preset, calm → Galerie, normal → Allround, energetic → Club (8 s dwell,
+  30 s between switches).
+- **Mood-matched image choice:** the image loader probes a few random
+  candidates per switch and picks the one whose brightness/colourfulness
+  best fits the live mood (dark valence → darker photos, energetic →
+  more colourful; tiny cached thumbnail stats, loader thread only).
+- **Editor parameter sliders:** the preset editor shows live sliders for
+  the previewed shaders' per-activation parameters (ranges from
+  `Komplett.xml`), overriding the preview defaults in real time.
 - **Music/speech gate:** a speechiness classifier (formant-band concentration
   vetoed by music traits: bass weight, steady beat, sustained continuity,
   clear key) yields `musicPresence`; a slewed smoothstep gate derived from it

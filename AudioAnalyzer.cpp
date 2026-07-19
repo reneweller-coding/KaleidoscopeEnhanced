@@ -300,6 +300,41 @@ void AudioAnalyzer::analyzeWavOffline( const QString &path )
     fprintf( stderr, "OFFLINE: done\n" );
 }
 
+// Instant replay: write the last `seconds` of the rolling PCM ring as a
+// 16-bit stereo WAV (see kReplaySeconds).
+bool AudioAnalyzer::dumpReplayWav( const QString &path, float seconds )
+{
+    QMutexLocker rl(&m_replayMx);
+    if( m_replayCount == 0 || m_replayRing.empty() )
+        return false;
+
+    size_t wantFrames = (size_t)(seconds * m_replayRate);
+    size_t haveFrames = std::min( wantFrames, m_replayCount );
+    const size_t cap  = m_replayRing.size();
+
+    FILE *f = fopen( path.toLocal8Bit().constData(), "wb" );
+    if( !f ) return false;
+
+    unsigned int dataLen = (unsigned int)(haveFrames * 2 * 2);
+    unsigned int riffLen = 36 + dataLen;
+    unsigned short fmt = 1, ch = 2, bits = 16, align = 4;
+    unsigned int rate = (unsigned int)m_replayRate, bytesSec = rate * align;
+    fwrite( "RIFF", 1, 4, f ); fwrite( &riffLen, 4, 1, f );
+    fwrite( "WAVEfmt ", 1, 8, f );
+    unsigned int fmtLen = 16;
+    fwrite( &fmtLen, 4, 1, f ); fwrite( &fmt, 2, 1, f ); fwrite( &ch, 2, 1, f );
+    fwrite( &rate, 4, 1, f ); fwrite( &bytesSec, 4, 1, f );
+    fwrite( &align, 2, 1, f ); fwrite( &bits, 2, 1, f );
+    fwrite( "data", 1, 4, f ); fwrite( &dataLen, 4, 1, f );
+
+    // Oldest wanted sample sits haveFrames*2 behind the write cursor.
+    size_t start = (m_replayPos + cap - haveFrames * 2) % cap;
+    for( size_t i = 0; i < haveFrames * 2; ++i )
+        fwrite( &m_replayRing[(start + i) % cap], 2, 1, f );
+    fclose( f );
+    return true;
+}
+
 // Offline (Preset-Editor) analysis: full pipeline, full speed, one snapshot
 // per 10 ms block.  A local, never-started analyzer instance keeps this
 // completely independent of any live capture.
@@ -537,6 +572,28 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
 {
     // ---- 5 one-pole LP coefficients ----
     // One-pole IIR: y[n] = a*y[n-1] + (1-a)*x[n]
+    // ---- Instant-replay ring: keep the last ~32 s of PCM (stereo s16) ----
+    {
+        QMutexLocker rl(&m_replayMx);
+        if( m_replayRing.empty() || m_replayRate != sampleRate )
+        {
+            m_replayRate = sampleRate;
+            m_replayRing.assign( (size_t)sampleRate * 2 * kReplaySeconds, 0 );
+            m_replayPos = m_replayCount = 0;
+        }
+        const size_t cap = m_replayRing.size();
+        for( int i = 0; i < numFrames; ++i )
+        {
+            float l = data[i * numChannels];
+            float r = (numChannels > 1) ? data[i * numChannels + 1] : l;
+            m_replayRing[m_replayPos]     = (short)(std::max(-1.f, std::min(1.f, l)) * 32000.f);
+            m_replayRing[m_replayPos + 1] = (short)(std::max(-1.f, std::min(1.f, r)) * 32000.f);
+            m_replayPos = (m_replayPos + 2) % cap;
+        }
+        m_replayCount = std::min( m_replayCount + (size_t)numFrames,
+                                  (size_t)sampleRate * kReplaySeconds );
+    }
+
     // Band extraction by subtraction of adjacent LP outputs.
     const float a60  = coeff(  60.f, sampleRate);
     const float a150 = coeff( 150.f, sampleRate);

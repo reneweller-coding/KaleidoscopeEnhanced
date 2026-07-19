@@ -30,6 +30,7 @@ float FilterShader::s_moodStrength = 1.0f;
 float FilterShader::s_renderScale = 1.0f;
 float FilterShader::s_lightShow   = 0.0f;   // corner lamps / light-show OFF by default
 bool  FilterShader::s_spoutEnabled = false; // Spout sender (CLI -o)
+float FilterShader::s_latencyLead  = 0.05f; // display-phase lead vs. heard audio
 
 // Settings file lives next to the Configurations folder (parent of Debug/Release),
 // matching how shaders and configs are loaded ("..\\...").
@@ -44,6 +45,7 @@ void FilterShader::loadSettings()
 	s_reactivity   = clampParam( s.value( "reactivity",  s_reactivity  ).toFloat(), 0.f, 3.0f  );
 	s_trailAmount  = clampParam( s.value( "trails",      s_trailAmount ).toFloat(), 0.f, 0.95f );
 	s_moodStrength = clampParam( s.value( "mood",        s_moodStrength).toFloat(), 0.f, 2.5f  );
+	s_latencyLead  = clampParam( s.value( "latencyLead", s_latencyLead ).toFloat(), 0.f, 0.25f );
 	setRenderScale( s.value( "renderScale", s_renderScale ).toFloat() );  // clamps internally
 }
 
@@ -53,10 +55,11 @@ void FilterShader::saveSettings()
 	s.setValue( "reactivity",  s_reactivity   );
 	s.setValue( "trails",      s_trailAmount  );
 	s.setValue( "mood",        s_moodStrength );
+	s.setValue( "latencyLead", s_latencyLead  );
 	s.setValue( "renderScale", s_renderScale  );
 	s.sync();
-	fprintf( stderr, "Saved settings: react=%.2f trails=%.2f mood=%.2f scale=%.2f\n",
-	         s_reactivity, s_trailAmount, s_moodStrength, s_renderScale );
+	fprintf( stderr, "Saved settings: react=%.2f trails=%.2f mood=%.2f lead=%.0fms scale=%.2f\n",
+	         s_reactivity, s_trailAmount, s_moodStrength, s_latencyLead * 1000.f, s_renderScale );
 }
 
 
@@ -1283,6 +1286,10 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 	m_lastArousal = audio.arousal;   // for mood-biased effect selection
 	m_lastValence = audio.valence;
 	m_lastAmbient = audio.ambientFactor;
+	// Snapshot for the ImageLoader's mood-matched image choice (its thread).
+	m_moodValence = audio.valence;
+	m_moodArousal = audio.arousal;
+	m_moodAmbient = audio.ambientFactor;
 
     // Update adaptive timing scale from audio analysis.
     // Smooth slowly so a sudden genre change doesn't cause a jarring jump.
@@ -1463,7 +1470,15 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
         // limit, so photosensitivity safety is unaffected.
         float conf = (audio.rhythmStrength - 0.40f) / 0.40f;
         conf = (conf < 0.f) ? 0.f : (conf > 1.f ? 1.f : conf);
-        float tri  = 1.f - 2.f * fminf(m_beatPhasePLL, 1.f - m_beatPhasePLL);
+        // Latency compensation: lead the DISPLAY phase by s_latencyLead seconds
+        // (loopback capture + analysis + render + scanout lag behind the heard
+        // audio) so the tempo pulse and all phase-driven movement land ON the
+        // beat the listener hears, not slightly after it.
+        float bpmLead   = 40.f + 160.f * audio.estimatedBPM;
+        float rateLead  = (audio.estimatedBPM > 0.004f) ? (bpmLead / 60.f) : 0.f;
+        float phaseLead = m_beatPhasePLL + s_latencyLead * rateLead;
+        phaseLead -= floorf(phaseLead);
+        float tri  = 1.f - 2.f * fminf(phaseLead, 1.f - phaseLead);
         float phasePulse = tri * tri * tri;          // narrow pulse peaked ON the grid
         float beatTarget = fmaxf(m_beatEnv, 0.8f * conf * phasePulse);
 
@@ -1494,9 +1509,15 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
         audioFx.onsetKick     = m_kickSmooth          * gate;
         audioFx.onsetSnare    = m_snareSmooth         * gate;
         audioFx.onsetHat      = m_hatSmooth           * gate;
-        audioFx.beatPhase     = m_beatPhasePLL;       // continuous (PLL), no snaps
+        audioFx.transStyle    = m_transStyleTex;
+        audioFx.beatPhase     = phaseLead;            // continuous (PLL + latency lead)
         audioFx.swell         = swell * gate;
-        audioFx.barPhase      = (float(m_barBeatHost) + m_beatPhasePLL) * 0.25f;
+        // Bar phase with the same lead, kept continuous across the beat wrap
+        // by leading the raw bar position (not the wrapped phase).
+        {
+            float barPos = float(m_barBeatHost) + m_beatPhasePLL + s_latencyLead * rateLead;
+            audioFx.barPhase = (barPos - floorf(barPos * 0.25f) * 4.f) * 0.25f;
+        }
         audioFx.overallLevel  = m_audioLevelSmooth    * gate;
         audioFx.spectralFlux  = m_audioFluxSmooth     * gate;
         audioFx.stereoWidth   = audio.stereoWidth     * gate;
@@ -1683,6 +1704,12 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 				m_pendingEffectAge    = 0.f;
 
 				m_stateInterpolationEffectTexture = 1;
+
+				// Roll a transition style (linear stays the most common).
+				{
+					int r = qrand() % 6;
+					m_transStyleTex = (r <= 2) ? 0 : (r - 2);
+				}
 
 				unsigned int timeAct = m_effectTextures[m_actEffectTexture]->getTimeInterpolation();
 				unsigned int timeNext = m_effectTextures[m_nextEffectTexture]->getTimeInterpolation();
@@ -1924,6 +1951,12 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 
 				m_stateInterpolationEffectCombine = 1;
 
+				// Roll a transition style for the combine blend as well.
+				{
+					int r = qrand() % 6;
+					m_transStyleComb = (r <= 2) ? 0 : (r - 2);
+				}
+
 				unsigned int timeAct = m_effectCombines[m_actEffectCombine]->getTimeInterpolation();
 				unsigned int timeNext = m_effectCombines[m_nextEffectCombine]->getTimeInterpolation();
 
@@ -2060,6 +2093,12 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 	glUseProgram( m_sh_prog_id_combine );
 	// restore render destination to regular frame buffer
 	glViewport( 0, 0, m_width, m_height );
+
+	// Styled combine-combine transition (0 = classic linear mix).
+	{
+		GLint locTS = glGetUniformLocation( m_sh_prog_id_combine, "transStyle" );
+		if( locTS >= 0 ) glUniform1i( locTS, m_transStyleComb );
+	}
 
 
 	//rwrw
@@ -2682,6 +2721,29 @@ ImageLoader::ImageLoader( FilterShader *shader )
 {
     m_shader = shader;
 }
+
+// Tiny-thumbnail stats for the mood-matched image choice: mean brightness and
+// mean colourfulness (saturation x value), from a fast 32x32 scaled decode.
+QPair<float,float> ImageLoader::imageStats( const QString &path )
+{
+	QImageReader r( path );
+	r.setScaledSize( QSize( 32, 32 ) );
+	QImage im = r.read();
+	if( im.isNull() )
+		return qMakePair( 0.5f, 0.5f );
+	double b = 0.0, c = 0.0;
+	int n = 0;
+	for( int y = 0; y < im.height(); y += 2 )
+		for( int x = 0; x < im.width(); x += 2 )
+		{
+			QColor col = im.pixelColor( x, y );
+			b += col.valueF();
+			c += col.saturationF() * col.valueF();
+			++n;
+		}
+	if( n == 0 ) return qMakePair( 0.5f, 0.5f );
+	return qMakePair( float(b / n), float(c / n) );
+}
  
 void ImageLoader::run()
 {
@@ -2701,14 +2763,35 @@ void ImageLoader::run()
 				continue;
 			}
 
-			unsigned int start = qrand() % (m_shader->m_imageList.size() );
-			for( unsigned int i = 0; i < start; i++ )
-			{
-		        m_shader->m_imageListIterator++;
+			// MOOD-MATCHED image choice: probe a few random candidates and take
+			// the one whose brightness/colourfulness best fits the live mood
+			// (dark valence -> darker photos, energetic music -> more colourful,
+			// ambient pulls slightly darker).  Stats come from a tiny fast-
+			// scaled decode (JPEG DCT downscale) and are cached per path.
+			const int n = m_shader->m_imageList.size();
+			float tb = 0.25f + 0.50f * m_shader->m_moodValence.load();
+			tb *= 1.f - 0.25f * m_shader->m_moodAmbient.load();
+			float ts = 0.20f + 0.50f * m_shader->m_moodArousal.load();
 
-				if(m_shader->m_imageListIterator == m_shader->m_imageList.end() )
-					m_shader->m_imageListIterator = m_shader->m_imageList.begin();
+			int   bestIdx   = qrand() % n;
+			float bestScore = -1e9f;
+			for( int k = 0; k < 5; ++k )
+			{
+				int idx = qrand() % n;
+				const QString &path = m_shader->m_imageList[idx];
+				QPair<float,float> st;
+				auto found = m_stats.find( path );
+				if( found != m_stats.end() )
+					st = found.value();
+				else
+				{
+					st = imageStats( path );
+					m_stats.insert( path, st );
+				}
+				float score = -( fabsf(st.first - tb) + 0.7f * fabsf(st.second - ts) );
+				if( score > bestScore ) { bestScore = score; bestIdx = idx; }
 			}
+			m_shader->m_imageListIterator = m_shader->m_imageList.begin() + bestIdx;
 
             m_shader->m_nextImage = prepareImage( QImage( (*m_shader->m_imageListIterator)  ) );
 			printf("%s\n", qPrintable((*m_shader->m_imageListIterator)));
