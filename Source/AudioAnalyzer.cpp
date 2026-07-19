@@ -942,6 +942,15 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
     if (isBeat) m_beatPulse = (1.f + beatStr * 2.f) * (1.f - m_ambientFactor * 0.95f);
     m_beatPulse = std::max(m_beatPulse * 0.85f, 0.f);
 
+    // Kick dominance: a leaky rate of DETECTED BASS-DRUM beats.  While a
+    // steady kick grid is running (>= ~1 kick/s) the full-spectrum onsets
+    // below (snares/hats/melodic hits) contribute far less to the global
+    // pulse — the picture pumps ON the kick grid instead of on every hi-hat
+    // ("hectic, off-rhythm" feel).  Without a kick (kickRate -> 0) the
+    // onsets keep their full drive, so kick-less genres stay reactive.
+    if (isBeat) m_kickRate += 0.333f;
+    m_kickRate *= 0.99667f;                  // tau ~3 s -> ~kicks per second
+
     // ---- Downbeat accent: accent the bar's "1" ----
     // Triggered below from the continuous beat phase (every 4th beat), which is
     // far more reliable than counting kick transients (works for kick-light music
@@ -1018,7 +1027,13 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
         // silence exceeds many times its decayed average.
         onsetStrength  = std::min((m_odfFFT / (m_onsetAvg * 2.2f + 1e-4f)) - 1.f, 1.f);
         m_onsetCooldown = 5.f;
-        float onsetPulse = (0.6f + 0.8f * onsetStrength) * (1.f - m_ambientFactor * 0.9f);
+        // Kick-dominant global pulse: with a running bass-drum grid the
+        // non-kick onsets only NUDGE the pulse (25%), on kick-less material
+        // they carry it fully (see m_kickRate above).
+        float kickDom    = std::min(m_kickRate / 1.2f, 1.f);
+        float onsetPulse = (0.6f + 0.8f * onsetStrength)
+                         * (1.f - m_ambientFactor * 0.9f)
+                         * (1.f - 0.75f * kickDom);
         m_beatPulse = std::max(m_beatPulse, onsetPulse);
         m_onsetRate += 0.333f;               // leaky integrator: += 1/tau per event
     }

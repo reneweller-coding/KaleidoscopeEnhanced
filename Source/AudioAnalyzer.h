@@ -185,6 +185,7 @@ private:
     float m_prevODF         = 0.f;    // previous-frame ODF (rising-edge test)
     float m_onsetCooldown   = 0.f;    // min spacing between onsets
     float m_onsetRate       = 0.f;    // leaky onsets-per-second (percussive density)
+    float m_kickRate        = 0.f;    // leaky BASS-DRUM beats/second (kick dominance)
 
     // HPSS-inspired harmonic/percussive content measure: the cosine similarity of
     // consecutive FFT magnitude spectra.  Sustained harmonic material (drones,

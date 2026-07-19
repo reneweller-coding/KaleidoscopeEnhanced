@@ -87,6 +87,17 @@ void main()
     p = rot(audioPhase * 0.05 * swirl + time * 0.006) * p;
     p /= (1.0 + 0.10 * audioSwell);
 
+    // BASS VORTEX: the volume curls around a slowly drifting centre, wound
+    // up by the slew-limited bass — the ink visibly sloshes with the music
+    // (amplitude-modulated twist of a static field: continuous, no flicker).
+    {
+        vec2  vc = 0.22 * vec2(sin(time * 0.07), cos(time * 0.053));
+        vec2  vd = p - vc;
+        float va = (0.40 * audioBass + 0.18 * audioSwell) * swirl
+                 * exp(-length(vd) * 2.2);
+        p = vc + rot(va) * vd;
+    }
+
     // Billowing: two stacked domain warps, sinking slowly (ink falls).
     float t  = time * 0.020 * spd + audioAdvance * 0.12;
     vec2  w1 = vec2(fbm(p * 1.8 + vec2(0.0, t)),
@@ -96,9 +107,12 @@ void main()
     vec2  wp = p + (w2 - 0.5) * (0.34 + 0.20 * audioSwell + 0.12 * audioBass) * swirl;
 
     // Ink density: sum of plumes, each a vertical column that sinks from the
-    // top and widens with depth (classic ink-drop look).
+    // top and widens with depth (classic ink-drop look).  EVERY PLUME HAS
+    // ITS OWN COLOUR — the tints accumulate density-weighted, so where two
+    // inks meet they visibly mix.
     float density = 0.0;
     float headGlow = 0.0;
+    vec3  tintAcc = vec3(0.0);
     for (int i = 0; i < 6; i++)
     {
         if (i >= nPlume) break;
@@ -110,24 +124,38 @@ void main()
         d.x      /= (0.28 + 0.55 * clamp(0.55 - y0, 0.0, 1.2));    // widen w/ depth
         float col = exp(-dot(d, d) * 7.0);
         density  += col;
+        tintAcc  += hueRot(vec3(1.0, 0.45, 0.30),
+                           inkHueP + hash11(fi * 9.7 + 0.4) * 4.8) * col;
         // The plume HEAD (just below the source) wells up on onsets.
         float head = exp(-dot(wp - vec2(px, y0 + 0.05), wp - vec2(px, y0 + 0.05)) * 30.0);
         headGlow  += head;
     }
+    vec3 plumeTint = tintAcc / max(density, 1e-3);
     density = clamp(density, 0.0, 1.4);
 
-    // Marbling detail inside the ink.
-    float marble = fbm(wp * 4.0 + w1 * 3.0);
+    // Marbling detail inside the ink + fine TENDRIL filaments (a third,
+    // higher-frequency warp layer eats sharp threads into the clouds).
+    float marble  = fbm(wp * 4.0 + w1 * 3.0);
+    float tendril = fbm(wp * 7.5 - w2 * 2.5 + vec2(t * 0.8, 0.0));
+    density *= 0.72 + 0.55 * tendril;
 
-    // Water: dark, cool, lit from above; ink carries the image's colours.
+    // Water: dark, cool, lit from above, with soft LIGHT SHAFTS falling in
+    // from the surface (they breathe with the swell); the ink carries the
+    // image's colours, tinted per plume.
     vec3 water = mix(vec3(0.015, 0.03, 0.05), vec3(0.05, 0.10, 0.14), audioCentroid)
                * (1.0 - 0.5 * (wp.y + 0.5));
-    vec3 inkCol = img(fract(wp * 0.45 + 0.5 + (w2 - 0.5) * 0.2));
-    inkCol = hueRot(inkCol, inkHueP);
-    inkCol *= 0.55 + 0.75 * marble;
+    float shafts = pow(0.5 + 0.5 * sin(p.x * 9.0 + w1.x * 2.5), 3.0)
+                 * smoothstep(-0.35, 0.55, p.y);
+    water += vec3(0.08, 0.13, 0.19) * shafts * (0.30 + 0.65 * audioSwell);
 
-    vec3 col = mix(water, inkCol, smoothstep(0.08, 0.9, density));
-    col += imgPal(marble * 5.0) * headGlow * (0.25 + 0.75 * audioOnset);
+    vec3 inkCol = img(fract(wp * 0.45 + 0.5 + (w2 - 0.5) * 0.2));
+    inkCol = mix(inkCol, inkCol * plumeTint * 2.2, 0.60);
+    inkCol *= 0.45 + 0.95 * marble;
+
+    vec3 col = mix(water, inkCol, smoothstep(0.06, 0.85, density));
+    // Fresh ink wells out of the plume heads on every onset — clearly
+    // visible drops now, not just a faint shimmer.
+    col += imgPal(marble * 5.0) * headGlow * (0.20 + 1.40 * audioOnset);
 
     // Gentle vignette + mood grade.
     col *= 1.0 - 0.40 * dot(p, p);
