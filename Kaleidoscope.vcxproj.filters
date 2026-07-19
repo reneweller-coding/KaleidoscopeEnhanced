@@ -2,231 +2,456 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+      <UniqueIdentifier>{a8a76030-87e2-4336-a4d5-d075835c4eff}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+      <UniqueIdentifier>{eced039a-176d-44c5-8750-b2b4b5dd1f29}</UniqueIdentifier>
     </Filter>
-    <Filter Include="generated Files">
-      <UniqueIdentifier>{7f303619-ab43-4156-8096-6e93f4bdada9}</UniqueIdentifier>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{529a6b10-b03e-4da8-9cdc-1894f3f48f4c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="generated Files\GLSL">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx</Extensions>
+    <Filter Include="Forms">
+      <UniqueIdentifier>{05d8cfbc-ffed-4983-9281-e57a2cb9ef0d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="GUI">
-      <UniqueIdentifier>{8f41e041-ffd8-434e-92e0-219601a39dc3}</UniqueIdentifier>
+    <Filter Include="ThirdParty">
+      <UniqueIdentifier>{17f62183-e857-4ce4-b39d-026f1566be2d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="TextureShader">
-      <UniqueIdentifier>{521d899d-bdf3-4880-80af-32f99a1689c3}</UniqueIdentifier>
+    <Filter Include="ThirdParty\SpoutGL">
+      <UniqueIdentifier>{6597b076-2df0-45e3-a717-fe0e0b9c9d3e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="CombineFilter">
-      <UniqueIdentifier>{1ec5acbc-19f3-4191-a6fe-943dca271db9}</UniqueIdentifier>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{0b4090fa-0e45-44cc-a9ea-9e98c41ad1df}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\Scene">
+      <UniqueIdentifier>{e529f3dd-bc50-4154-8495-f41f7b17e760}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\Combine">
+      <UniqueIdentifier>{389f641d-137e-49b1-8292-7b9c2d3ef029}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\Blend">
+      <UniqueIdentifier>{2cbfe523-84e8-4dee-a547-b19fa868ab46}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Configurations">
+      <UniqueIdentifier>{9d68de70-045d-4d3e-8d11-f104ed92f882}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Configuration.cpp">
+    <ClCompile Include="Source\Configuration.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="EffectShader.cpp">
+    <ClCompile Include="Source\AudioAnalyzer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="filterShader.cpp">
+    <ClCompile Include="Source\EffectShader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GLee.c">
+    <ClCompile Include="Source\filterShader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="glwidget.cpp">
+    <ClCompile Include="Source\GLee.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="main.cpp">
+    <ClCompile Include="Source\glwidget.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mesh.cpp">
+    <ClCompile Include="Source\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="QMyWindow.cpp">
+    <ClCompile Include="Source\mesh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="shader_setup.cpp">
+    <ClCompile Include="Source\MidiInput.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="textfile.cpp">
+    <ClCompile Include="Source\NowPlaying.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TextureEffectKaleidoscopeBase.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Uniform.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Utils.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Vector3D.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="moc\moc_AudioAnalyzer.cpp">
+      <Filter>Generated Files</Filter>
     </ClCompile>
     <ClCompile Include="moc\moc_glwidget.cpp">
-      <Filter>generated Files</Filter>
+      <Filter>Generated Files</Filter>
     </ClCompile>
     <ClCompile Include="moc\moc_QMyWindow.cpp">
-      <Filter>generated Files</Filter>
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\QMyWindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\shader_setup.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\SpoutIn.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\SpoutOut.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\SpoutGL\Spout.cpp">
+      <Filter>ThirdParty\SpoutGL</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\SpoutGL\SpoutCopy.cpp">
+      <Filter>ThirdParty\SpoutGL</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\SpoutGL\SpoutDirectX.cpp">
+      <Filter>ThirdParty\SpoutGL</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\SpoutGL\SpoutFrameCount.cpp">
+      <Filter>ThirdParty\SpoutGL</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\SpoutGL\SpoutGL.cpp">
+      <Filter>ThirdParty\SpoutGL</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\SpoutGL\SpoutGLextensions.cpp">
+      <Filter>ThirdParty\SpoutGL</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\SpoutGL\SpoutSenderNames.cpp">
+      <Filter>ThirdParty\SpoutGL</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\SpoutGL\SpoutSharedMemory.cpp">
+      <Filter>ThirdParty\SpoutGL</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\SpoutGL\SpoutUtils.cpp">
+      <Filter>ThirdParty\SpoutGL</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\textfile.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\TextureEffectKaleidoscopeBase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Uniform.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Utils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Vector3D.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\WebRemote.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Configuration.h">
+    <ClInclude Include="Source\Configuration.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EffectShader.h">
+    <ClInclude Include="Source\AudioFeatures.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="filterShader.h">
+    <ClInclude Include="Source\EffectShader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GLee.h">
+    <ClInclude Include="Source\filterShader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mesh.h">
+    <ClInclude Include="Source\GLee.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="shader_setup.h">
+    <ClInclude Include="Source\mainwindow.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="stdinc.h">
+    <ClInclude Include="Source\mesh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="textfile.h">
+    <ClInclude Include="Source\SpoutIn.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TextureEffectKaleidoscopeBase.h">
+    <ClInclude Include="Source\shader_setup.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Uniform.h">
+    <ClInclude Include="Source\stdinc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Utils.h">
+    <ClInclude Include="Source\textfile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Vector3D.h">
+    <ClInclude Include="Source\TextureEffectKaleidoscopeBase.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Vector4D.h">
+    <ClInclude Include="Source\Uniform.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Utils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Vector3D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Vector4D.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="default.frag">
-      <Filter>generated Files\GLSL</Filter>
+    <CustomBuild Include="Source\AudioAnalyzer.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Source\glwidget.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Source\QMyWindow.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Source\mainwindow.ui">
+      <Filter>Forms</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Scene\Aurora.frag">
+      <Filter>Shaders\Scene</Filter>
     </None>
-    <None Include="KaleidoscopeTunnelV7.frag">
-      <Filter>generated Files\GLSL</Filter>
+    <None Include="Scene\BauhausGeo.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\BeatLattice.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\BreathingFractal.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\BreathingFractalNoir.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\BreathingFractalZoom.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\Bubble.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\ChromeDreams.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\CityBokeh.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\CurlAurora.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\DarkAmbientTunnel.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\DiscoGodrays.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\DroneDepths.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\FlowingWires.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\Fluid.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\FractalBloom.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\FractalKIFS.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\HarmonicRings.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\HexKaleido.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\HyperCube.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\InkWater.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\InsideSystem.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\Kaleidoscope.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\LavaLamp.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\Metamorph.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\MobiusOrbs.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\NeonTubes.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\NoiseSpiral.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\OilProjector.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\OrganicFlow.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\PlasmaFlow.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\PsychedelicPills.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\RaymarchTunnel.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\ReactionDiffusion.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\Rorschach.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\SpectrumRadial.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\SphereGrid.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\Starfield.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\StereoSpectrum.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\TextureEffectParallaxKaleidoscope.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\TextureEffectParallaxKaleidoscopeTunnel.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\TheCore.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\Tunnel.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\TunnelAcceleration.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\TunnelPlain.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\TunnelReverse.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\VoronoiPulse.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\Vortex.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\Voyager.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Combine\CombineDarkRed.frag">
+      <Filter>Shaders\Combine</Filter>
+    </None>
+    <None Include="Combine\CombineDeformationFlow.frag">
+      <Filter>Shaders\Combine</Filter>
+    </None>
+    <None Include="Combine\CombineDroneWarp.frag">
+      <Filter>Shaders\Combine</Filter>
+    </None>
+    <None Include="Combine\CombineGrey.frag">
+      <Filter>Shaders\Combine</Filter>
+    </None>
+    <None Include="Combine\CombineHexagon.frag">
+      <Filter>Shaders\Combine</Filter>
+    </None>
+    <None Include="Combine\CombineKaleidoscope.frag">
+      <Filter>Shaders\Combine</Filter>
+    </None>
+    <None Include="Combine\CombineLens.frag">
+      <Filter>Shaders\Combine</Filter>
+    </None>
+    <None Include="Combine\CombineLichtenstein.frag">
+      <Filter>Shaders\Combine</Filter>
+    </None>
+    <None Include="Combine\CombineMulti.frag">
+      <Filter>Shaders\Combine</Filter>
+    </None>
+    <None Include="Combine\CombineOilPaint.frag">
+      <Filter>Shaders\Combine</Filter>
+    </None>
+    <None Include="Combine\CombineOilPaintFlow.frag">
+      <Filter>Shaders\Combine</Filter>
+    </None>
+    <None Include="Combine\CombineParallax.frag">
+      <Filter>Shaders\Combine</Filter>
+    </None>
+    <None Include="Combine\CombinePlain.frag">
+      <Filter>Shaders\Combine</Filter>
+    </None>
+    <None Include="Combine\CombinePlaneFlight.frag">
+      <Filter>Shaders\Combine</Filter>
+    </None>
+    <None Include="Combine\CombinePulse.frag">
+      <Filter>Shaders\Combine</Filter>
+    </None>
+    <None Include="Combine\CombineRotate.frag">
+      <Filter>Shaders\Combine</Filter>
+    </None>
+    <None Include="Combine\CombineShroom.frag">
+      <Filter>Shaders\Combine</Filter>
+    </None>
+    <None Include="Combine\CombineSphere.frag">
+      <Filter>Shaders\Combine</Filter>
+    </None>
+    <None Include="Combine\CombineWater.frag">
+      <Filter>Shaders\Combine</Filter>
+    </None>
+    <None Include="Combine\CombineWater2.frag">
+      <Filter>Shaders\Combine</Filter>
+    </None>
+    <None Include="Combine\CombineWave.frag">
+      <Filter>Shaders\Combine</Filter>
+    </None>
+    <None Include="Blend\BloomBlur.frag">
+      <Filter>Shaders\Blend</Filter>
+    </None>
+    <None Include="Blend\CombineShader.frag">
+      <Filter>Shaders\Blend</Filter>
+    </None>
+    <None Include="Blend\default.frag">
+      <Filter>Shaders\Blend</Filter>
+    </None>
+    <None Include="Blend\Feedback.frag">
+      <Filter>Shaders\Blend</Filter>
+    </None>
+    <None Include="Blend\FluidSim.frag">
+      <Filter>Shaders\Blend</Filter>
+    </None>
+    <None Include="Blend\Present.frag">
+      <Filter>Shaders\Blend</Filter>
+    </None>
+    <None Include="Blend\ReactionDiffusionSim.frag">
+      <Filter>Shaders\Blend</Filter>
     </None>
     <None Include="standard.vert">
-      <Filter>generated Files\GLSL</Filter>
+      <Filter>Shaders</Filter>
     </None>
-    <None Include="Bubble.frag">
-      <Filter>TextureShader</Filter>
+    <None Include="Configurations\Allround.xml">
+      <Filter>Configurations</Filter>
     </None>
-    <None Include="Kaleidoscope.frag">
-      <Filter>TextureShader</Filter>
+    <None Include="Configurations\Ambient.xml">
+      <Filter>Configurations</Filter>
     </None>
-    <None Include="Rorschach.frag">
-      <Filter>TextureShader</Filter>
+    <None Include="Configurations\Club.xml">
+      <Filter>Configurations</Filter>
     </None>
-    <None Include="TextureEffectParallaxKaleidoscope.frag">
-      <Filter>TextureShader</Filter>
+    <None Include="Configurations\Galerie.xml">
+      <Filter>Configurations</Filter>
     </None>
-    <None Include="TextureEffectParallaxKaleidoscopeTunnel.frag">
-      <Filter>TextureShader</Filter>
+    <None Include="Configurations\Komplett.xml">
+      <Filter>Configurations</Filter>
     </None>
-    <None Include="Tunnel.frag">
-      <Filter>TextureShader</Filter>
+    <None Include="Configurations\Noir.xml">
+      <Filter>Configurations</Filter>
     </None>
-    <None Include="TunnelAcceleration.frag">
-      <Filter>TextureShader</Filter>
+    <None Include="Configurations\Psychedelic.xml">
+      <Filter>Configurations</Filter>
     </None>
-    <None Include="TunnelPlain.frag">
-      <Filter>TextureShader</Filter>
-    </None>
-    <None Include="TunnelReverse.frag">
-      <Filter>TextureShader</Filter>
-    </None>
-    <None Include="CombineDarkRed.frag">
-      <Filter>CombineFilter</Filter>
-    </None>
-    <None Include="CombineDeformationFlow.frag">
-      <Filter>CombineFilter</Filter>
-    </None>
-    <None Include="CombineGrey.frag">
-      <Filter>CombineFilter</Filter>
-    </None>
-    <None Include="CombineHexagon.frag">
-      <Filter>CombineFilter</Filter>
-    </None>
-    <None Include="CombineKaleidoscope.frag">
-      <Filter>CombineFilter</Filter>
-    </None>
-    <None Include="CombineLens.frag">
-      <Filter>CombineFilter</Filter>
-    </None>
-    <None Include="CombineLichtenstein.frag">
-      <Filter>CombineFilter</Filter>
-    </None>
-    <None Include="CombineMulti.frag">
-      <Filter>CombineFilter</Filter>
-    </None>
-    <None Include="CombineOilPaint.frag">
-      <Filter>CombineFilter</Filter>
-    </None>
-    <None Include="CombineOilPaintFlow.frag">
-      <Filter>CombineFilter</Filter>
-    </None>
-    <None Include="CombineParallax.frag">
-      <Filter>CombineFilter</Filter>
-    </None>
-    <None Include="CombinePlain.frag">
-      <Filter>CombineFilter</Filter>
-    </None>
-    <None Include="CombinePlaneFlight.frag">
-      <Filter>CombineFilter</Filter>
-    </None>
-    <None Include="CombineRotate.frag">
-      <Filter>CombineFilter</Filter>
-    </None>
-    <None Include="CombineShader.frag">
-      <Filter>CombineFilter</Filter>
-    </None>
-    <None Include="CombineShroom.frag">
-      <Filter>CombineFilter</Filter>
-    </None>
-    <None Include="CombineSphere.frag">
-      <Filter>CombineFilter</Filter>
-    </None>
-    <None Include="CombineWater.frag">
-      <Filter>CombineFilter</Filter>
-    </None>
-    <None Include="CombineWater2.frag">
-      <Filter>CombineFilter</Filter>
-    </None>
-    <None Include="CombineWave.frag">
-      <Filter>CombineFilter</Filter>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <CustomBuild Include="glwidget.h">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="mainwindow.h">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="QMyWindow.h">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="mainwindow.ui">
-      <Filter>GUI</Filter>
-    </CustomBuild>
   </ItemGroup>
 </Project>

@@ -88,8 +88,8 @@ void commandlineerror( char *cmd, char *parm )
 void parsecommandline( int argc, char *argv[] )
 {
 	/* valid option characters; last char MUST be 0 ! */
-	char optionchar[] =   { 'h', 'b', 'f', 's', 'c', 'm', 'l', 'r', 'w', 'o', 't', 'x', 'i', 0 };
-	int musthaveparam[] = {  0 ,  0,   1,   1,   1,   1,   0,   0,   1,   0,   1,   1,   1,  0 };
+	char optionchar[] =   { 'h', 'b', 's', 'c', 'm', 'l', 'r', 'w', 'o', 't', 'x', 'i', 0 };
+	int musthaveparam[] = {  0 ,  0,   1,   1,   1,   0,   0,   1,   0,   1,   1,   1,  0 };
 
 	int nopts;
 	int mhp[256];

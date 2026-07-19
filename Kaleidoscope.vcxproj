@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -296,14 +296,7 @@ exit /b 0</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">moc\moc_glwidget.cpp;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">moc\moc_glwidget.cpp;%(Outputs)</Outputs>
     </CustomBuild>
-    <CustomBuild Include="mainwindow.h">
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">MOC mainwindow.h</Message>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MOC mainwindow.h</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-      </Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-      </Command>
-    </CustomBuild>
+    <ClInclude Include="Source\mainwindow.h" />
     <ClInclude Include="Source\mesh.h" />
     <CustomBuild Include="Source\QMyWindow.h">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">MOCint QMyWindow ...</Message>
@@ -338,9 +331,72 @@ exit /b 0</Command>
     <ClInclude Include="Source\Vector4D.h" />
   </ItemGroup>
   <ItemGroup>
+    <CustomBuild Include="Source\mainwindow.ui">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Generating user interface class Source\mainwindow.h...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\uic Source\mainwindow.ui -o Source\mainwindow.h
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\uic.exe;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Source\mainwindow.h;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Generating user interface class Source\mainwindow.h...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(QTDIR)\bin\uic Source\mainwindow.ui -o Source\mainwindow.h
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(QTDIR)\bin\uic.exe;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Source\mainwindow.h;%(Outputs)</Outputs>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Scene\Aurora.frag" />
+    <None Include="Scene\BauhausGeo.frag" />
+    <None Include="Scene\BeatLattice.frag" />
+    <None Include="Scene\BreathingFractal.frag" />
+    <None Include="Scene\BreathingFractalNoir.frag" />
+    <None Include="Scene\BreathingFractalZoom.frag" />
     <None Include="Scene\Bubble.frag" />
+    <None Include="Scene\ChromeDreams.frag" />
+    <None Include="Scene\CityBokeh.frag" />
+    <None Include="Scene\CurlAurora.frag" />
+    <None Include="Scene\DarkAmbientTunnel.frag" />
+    <None Include="Scene\DiscoGodrays.frag" />
+    <None Include="Scene\DroneDepths.frag" />
+    <None Include="Scene\FlowingWires.frag" />
+    <None Include="Scene\Fluid.frag" />
+    <None Include="Scene\FractalBloom.frag" />
+    <None Include="Scene\FractalKIFS.frag" />
+    <None Include="Scene\HarmonicRings.frag" />
+    <None Include="Scene\HexKaleido.frag" />
+    <None Include="Scene\HyperCube.frag" />
+    <None Include="Scene\InkWater.frag" />
+    <None Include="Scene\InsideSystem.frag" />
+    <None Include="Scene\Kaleidoscope.frag" />
+    <None Include="Scene\LavaLamp.frag" />
+    <None Include="Scene\Metamorph.frag" />
+    <None Include="Scene\MobiusOrbs.frag" />
+    <None Include="Scene\NeonTubes.frag" />
+    <None Include="Scene\NoiseSpiral.frag" />
+    <None Include="Scene\OilProjector.frag" />
+    <None Include="Scene\OrganicFlow.frag" />
+    <None Include="Scene\PlasmaFlow.frag" />
+    <None Include="Scene\PsychedelicPills.frag" />
+    <None Include="Scene\RaymarchTunnel.frag" />
+    <None Include="Scene\ReactionDiffusion.frag" />
+    <None Include="Scene\Rorschach.frag" />
+    <None Include="Scene\SpectrumRadial.frag" />
+    <None Include="Scene\SphereGrid.frag" />
+    <None Include="Scene\Starfield.frag" />
+    <None Include="Scene\StereoSpectrum.frag" />
+    <None Include="Scene\TextureEffectParallaxKaleidoscope.frag" />
+    <None Include="Scene\TextureEffectParallaxKaleidoscopeTunnel.frag" />
+    <None Include="Scene\TheCore.frag" />
+    <None Include="Scene\Tunnel.frag" />
+    <None Include="Scene\TunnelAcceleration.frag" />
+    <None Include="Scene\TunnelPlain.frag" />
+    <None Include="Scene\TunnelReverse.frag" />
+    <None Include="Scene\VoronoiPulse.frag" />
+    <None Include="Scene\Vortex.frag" />
+    <None Include="Scene\Voyager.frag" />
     <None Include="Combine\CombineDarkRed.frag" />
     <None Include="Combine\CombineDeformationFlow.frag" />
+    <None Include="Combine\CombineDroneWarp.frag" />
     <None Include="Combine\CombineGrey.frag" />
     <None Include="Combine\CombineHexagon.frag" />
     <None Include="Combine\CombineKaleidoscope.frag" />
@@ -352,48 +408,28 @@ exit /b 0</Command>
     <None Include="Combine\CombineParallax.frag" />
     <None Include="Combine\CombinePlain.frag" />
     <None Include="Combine\CombinePlaneFlight.frag" />
+    <None Include="Combine\CombinePulse.frag" />
     <None Include="Combine\CombineRotate.frag" />
-    <None Include="Blend\CombineShader.frag" />
     <None Include="Combine\CombineShroom.frag" />
     <None Include="Combine\CombineSphere.frag" />
     <None Include="Combine\CombineWater.frag" />
     <None Include="Combine\CombineWater2.frag" />
     <None Include="Combine\CombineWave.frag" />
+    <None Include="Blend\BloomBlur.frag" />
+    <None Include="Blend\CombineShader.frag" />
     <None Include="Blend\default.frag" />
-    <None Include="Scene\Kaleidoscope.frag" />
-    <None Include="Scene\KaleidoscopeTunnelV7.frag" />
-    <CustomBuild Include="mainwindow.ui">
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Generating user interface class mainwindow.h...</Message>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Generating user interface class mainwindow.h...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)/bin/uic mainwindow.ui -o mainwindow.h
-</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)/bin/uic mainwindow.ui -o mainwindow.h
-</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)/bin/uic.exe;%(AdditionalInputs)</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)/bin/uic.exe;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">mainwindow.h;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">mainwindow.h;%(Outputs)</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Generating user interface class mainwindow.h...</Message>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Generating user interface class mainwindow.h...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)/bin/uic mainwindow.ui -o mainwindow.h
-</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(QTDIR)/bin/uic mainwindow.ui -o mainwindow.h
-</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)/bin/uic.exe;%(AdditionalInputs)</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(QTDIR)/bin/uic.exe;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">mainwindow.h;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">mainwindow.h;%(Outputs)</Outputs>
-    </CustomBuild>
-    <None Include="Scene\Rorschach.frag" />
+    <None Include="Blend\Feedback.frag" />
+    <None Include="Blend\FluidSim.frag" />
+    <None Include="Blend\Present.frag" />
+    <None Include="Blend\ReactionDiffusionSim.frag" />
     <None Include="standard.vert" />
-    <None Include="Scene\TextureEffectParallaxKaleidoscope.frag" />
-    <None Include="Scene\TextureEffectParallaxKaleidoscopeTunnel.frag" />
-    <None Include="Scene\DarkAmbientTunnel.frag" />
-    <None Include="Scene\HarmonicRings.frag" />
-    <None Include="Scene\Tunnel.frag" />
-    <None Include="Scene\TunnelAcceleration.frag" />
-    <None Include="Scene\TunnelPlain.frag" />
-    <None Include="Scene\TunnelReverse.frag" />
+    <None Include="Configurations\Allround.xml" />
+    <None Include="Configurations\Ambient.xml" />
+    <None Include="Configurations\Club.xml" />
+    <None Include="Configurations\Galerie.xml" />
+    <None Include="Configurations\Komplett.xml" />
+    <None Include="Configurations\Noir.xml" />
+    <None Include="Configurations\Psychedelic.xml" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

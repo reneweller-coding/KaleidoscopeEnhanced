@@ -29,6 +29,11 @@ $env:QTDIR = "C:\Qt\6.11.1\msvc2022_64"
 cmd /c '"C:\Program Files\Microsoft Visual Studio\18\Community\VC\Auxiliary\Build\vcvars64.bat" && msbuild Kaleidoscope.vcxproj /p:Configuration=Release /p:Platform=x64'
 ```
 
+**Qt Creator** — `Kaleidoscope.pro` mirrors the VS project (same sources,
+modules and defines), so the code can also be browsed and built from
+Qt Creator with a Qt 6 / MSVC kit.  The VS project remains the primary
+build (it also runs the moc/uic steps and the auto-deploy).
+
 **Run** — the executable needs the Qt 6 DLLs on `PATH` (or run `windeployqt`):
 ```powershell
 $env:Path = "C:\Qt\6.11.1\msvc2022_64\bin;" + $env:Path
@@ -131,6 +136,8 @@ correct working directory). Otherwise build it later with `ISCC.exe installer.is
 | `d`        | Choose the **audio source** (output / microphone) — overlay   |
 | `p`        | Toggle the **now-playing** track title display                |
 | `n`        | Manually advance to the next effect (musical scene change)    |
+| `v`        | Show the active shader names (debug overlay)                  |
+| `l`        | Toggle the **stage lamps / light show** (corner cones etc.)   |
 | `[` / `]`  | Reactivity — less / more audio-driven motion                  |
 | `,` / `.`  | Trails — shorter / longer feedback trails                     |
 | `-` / `=`  | Mood — weaker / stronger colour grading                       |
@@ -578,11 +585,13 @@ Audio is captured via WASAPI loopback (`AudioAnalyzer`) and analysed in real tim
   struggles with), `u` PIN (hold the current effect; suppresses scheduled
   AND forced switches).  Tap tempo and blackout are also MIDI-learnable
   pad targets.
-- **Taste learning:** skipping a freshly-appeared effect with `n` teaches a
-  persistent selection MALUS (×0.8, floor 0.3); `f` marks the current
-  effect as a favourite (×1.25, cap 2.5).  Factors decay toward 1.0 a
-  little on every start, bias the mood-based selection softly (never a
-  hard exclusion), and persist in `kaleidoscope_settings.ini`.
+- **Taste learning (per preset):** skipping a freshly-appeared effect with
+  `n` teaches a persistent selection MALUS (×0.8, floor 0.3); `f` marks the
+  current effect as a favourite (×1.25, cap 2.5).  The factors are stored
+  **per preset** (`taste/<Preset>/<shader>` in
+  `kaleidoscope_settings.ini`) — disliking a shader in Club leaves its
+  standing in Ambient untouched.  They decay toward 1.0 a little on every
+  start and bias the mood-based selection softly (never a hard exclusion).
 - **Spout INPUT (`-i <sender|any>`):** a live Spout sender (OBS, Resolume,
   a webcam through OBS's Spout output, …) replaces the photos as the source
   image of the whole pipeline — the kaleidoscope folds the AUDIENCE into
@@ -659,7 +668,10 @@ Reorganised 2026-07 into folders:
   `glwidget` (`QOpenGLWidget`, input, overlays, replay, web-remote hooks),
   `filterShader` (FBO pipeline + audio→visual mapping), `EffectShader` /
   `Uniform` (per-effect shader + params), `Configuration` (XML loading),
-  `WebRemote`, `SpoutOut`, …
+  `WebRemote`, `SpoutOut` / `SpoutIn`, …  The Visual Studio project mirrors
+  this layout in its Solution Explorer filters (Source Files / Header Files /
+  Generated / ThirdParty\SpoutGL / Shaders\Scene|Combine|Blend /
+  Configurations).
 - `Scene\*.frag` — the 49 scene (texture) effects
 - `Combine\*.frag` — the 21 combine passes (incl. `CombinePlain.frag`, which
   carries the 25-style transition library)

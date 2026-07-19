@@ -2,6 +2,8 @@
 .vs/
 *.VC.db
 *.VC.opendb
+*.sdf
+*.vcxproj.user
 
 # Visual Studio profiler sessions
 *.psess
