@@ -27,6 +27,22 @@ PreviewWidget::PreviewWidget(const QString &projectRoot, QWidget *parent)
     t->start(16);
 }
 
+// Transition test bench: interpolation for the current mode.  1.0 = normal
+// preview (texture pass fully visible); while testing, the progress d is
+// either pinned (headless --transcheck) or swept as a slow triangle so a
+// single transition can be inspected in slow motion.
+float PreviewWidget::testInterpolation() const
+{
+    if (m_transStyle < 0) return 1.0f;
+    float d = m_transFixedD;
+    if (d < 0.f)
+    {
+        float ph = std::fmod(m_time * 0.2f, 2.f);      // ~10 s round trip
+        d = (ph < 1.f) ? ph : 2.f - ph;
+    }
+    return 1.f - d;
+}
+
 PreviewWidget::~PreviewWidget()
 {
     makeCurrent();
@@ -239,7 +255,8 @@ void PreviewWidget::applyCommonUniforms(QOpenGLShaderProgram *p)
 
         p->setUniformValue("resolution", QVector2D(float(m_fbW), float(m_fbH)));
         p->setUniformValue("time", m_time);
-        p->setUniformValue("interpolation", 1.0f);
+        p->setUniformValue("interpolation", testInterpolation());
+        p->setUniformValue("transStyle", GLint(m_transStyle >= 0 ? m_transStyle : 0));
         p->setUniformValue("tex0", 0);
         p->setUniformValue("tex1", 1);
         p->setUniformValue("texSim", 7);
@@ -315,7 +332,8 @@ void PreviewWidget::applyCommonUniforms(QOpenGLShaderProgram *p)
 
     p->setUniformValue("resolution", QVector2D(float(m_fbW), float(m_fbH)));
     p->setUniformValue("time", t);
-    p->setUniformValue("interpolation", 1.0f);
+    p->setUniformValue("interpolation", testInterpolation());
+    p->setUniformValue("transStyle", GLint(m_transStyle >= 0 ? m_transStyle : 0));
     p->setUniformValue("tex0", 0);
     p->setUniformValue("tex1", 1);
     p->setUniformValue("texSim", 7);
@@ -393,7 +411,7 @@ void PreviewWidget::drawFullscreenQuad(QOpenGLShaderProgram *p)
 
 void PreviewWidget::paintGL()
 {
-    m_time = m_clock.elapsed() * 0.001f;
+    m_time = (m_fixedTime >= 0.f) ? m_fixedTime : m_clock.elapsed() * 0.001f;
 
     const qreal dpr = devicePixelRatioF();
     const int w = qMax(1, int(width()  * dpr));

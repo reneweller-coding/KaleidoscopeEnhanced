@@ -4,6 +4,7 @@
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QSlider>
 #include <QtWidgets/QSpinBox>
+#include <QtWidgets/QCheckBox>
 #include <QtCore/QRegularExpression>
 #include <QtCore/QRandomGenerator>
 #include <QtWidgets/QDoubleSpinBox>
@@ -82,6 +83,24 @@ EditorWindow::EditorWindow(const QString &projectRoot, QWidget *parent)
                         "Tabelle gewählten Preset-Eintrag schreiben");
     pBtns->addWidget(bDice); pBtns->addWidget(bFreeze);
     pv->addLayout(pBtns);
+    // Transition test bench: watch ONE of the 25 CombinePlain transition
+    // styles in slow motion (interpolation sweeps back and forth, ~10 s).
+    QHBoxLayout *tBench = new QHBoxLayout();
+    m_transCheck = new QCheckBox("Übergangs-Zeitlupe, Stil:");
+    m_transCheck->setToolTip("Überblendung in Zeitlupe hin- und herfahren "
+                             "(Stile 0-24; wählt als Combine am besten CombinePlain). "
+                             "Headless-Prüfung aller Stile: PresetEditor --transcheck");
+    m_transSpin = new QSpinBox();
+    m_transSpin->setRange(0, 24);
+    tBench->addWidget(m_transCheck);
+    tBench->addWidget(m_transSpin);
+    tBench->addStretch(1);
+    pv->addLayout(tBench);
+    auto applyBench = [this] {
+        m_preview->setTransTest(m_transCheck->isChecked() ? m_transSpin->value() : -1);
+    };
+    connect(m_transCheck, &QCheckBox::toggled, this, applyBench);
+    connect(m_transSpin, QOverload<int>::of(&QSpinBox::valueChanged), this, applyBench);
     pl->addWidget(m_paramBox);
     connect(bDice,   &QPushButton::clicked, this, &EditorWindow::randomizeParams);
     connect(bFreeze, &QPushButton::clicked, this, &EditorWindow::freezeParamsIntoEntry);

@@ -8,6 +8,8 @@
 #include "Utils.h"
 
 #include <QtGui/QImageReader>
+#include <QtGui/QPainter>
+#include <QtGui/QFontMetrics>
 #include <QtCore/qdir.h>
 #include <QtCore/qfileinfo.h>
 #include <QtCore/QSettings>
@@ -1054,6 +1056,9 @@ void FilterShader::setupSafety()
 		m_presentCamZoomUni  = glGetUniformLocation( m_presentProgId, "camZoom" );
 		m_presentCamRotUni   = glGetUniformLocation( m_presentProgId, "camRot" );
 		m_presentCamOffUni   = glGetUniformLocation( m_presentProgId, "camOff" );
+		m_presentTitleTexUni    = glGetUniformLocation( m_presentProgId, "titleTex" );
+		m_presentTitlePhaseUni  = glGetUniformLocation( m_presentProgId, "titlePhase" );
+		m_presentTitleAspectUni = glGetUniformLocation( m_presentProgId, "titleAspect" );
 	}
 
 	m_safetyReady = fboOk && (m_presentProgId != 0) && (m_presentTexUni >= 0);
@@ -1306,6 +1311,48 @@ void FilterShader::stepReactionDiffusion(const AudioFeatures &audio)
 //      when it clearly disagrees.  Untagged shaders stay neutral, so sparsely
 //      tagged configs keep working.  The result stays probabilistic — a bias,
 //      not a hard filter, so variety survives.
+// Track-title reveal: render "title / artist" into a transparent image; the
+// GL upload happens at the next paint() (context current there).  A soft dark
+// halo keeps the text readable over any content.
+void FilterShader::showTitle( const QString &title, const QString &artist )
+{
+	const int W = 1024, H = 256;
+	QImage img( W, H, QImage::Format_ARGB32 );
+	img.fill( Qt::transparent );
+	QPainter p( &img );
+	p.setRenderHint( QPainter::Antialiasing );
+	p.setRenderHint( QPainter::TextAntialiasing );
+
+	QFont ft( "Segoe UI", 52, QFont::Bold );
+	QFont fa( "Segoe UI", 26 );
+	QString t = QFontMetrics( ft ).elidedText( title,  Qt::ElideRight, W - 80 );
+	QString a = QFontMetrics( fa ).elidedText( artist, Qt::ElideRight, W - 80 );
+
+	const QRect rT( 40, 24, W - 80, 132 );
+	const QRect rA( 40, 156, W - 80, 68 );
+	p.setFont( ft );
+	p.setPen( QColor( 0, 0, 0, 150 ) );
+	for( int dy = -2; dy <= 2; ++dy )
+		for( int dx = -2; dx <= 2; ++dx )
+			if( dx != 0 || dy != 0 )
+				p.drawText( rT.translated( dx, dy ), Qt::AlignHCenter | Qt::AlignVCenter, t );
+	p.setPen( QColor( 255, 255, 255, 235 ) );
+	p.drawText( rT, Qt::AlignHCenter | Qt::AlignVCenter, t );
+	if( !a.isEmpty() )
+	{
+		p.setFont( fa );
+		p.setPen( QColor( 0, 0, 0, 140 ) );
+		for( int dy = -1; dy <= 1; ++dy )
+			for( int dx = -1; dx <= 1; ++dx )
+				if( dx != 0 || dy != 0 )
+					p.drawText( rA.translated( dx, dy ), Qt::AlignHCenter | Qt::AlignVCenter, a );
+		p.setPen( QColor( 205, 218, 238, 225 ) );
+		p.drawText( rA, Qt::AlignHCenter | Qt::AlignVCenter, a );
+	}
+	p.end();
+	m_titlePending = img;
+}
+
 // Manual "next" (key 'n', MIDI pad, web remote): skipping an effect that has
 // only just come on screen reads as a dislike — remember it (soft, decaying).
 void FilterShader::requestSceneChange()
@@ -1442,6 +1489,35 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 		m_timeEffectTexture.restart();
 		m_timeEffectCombine.restart();
 	}
+
+	// DJ-STOP dramaturgy: while the music holds its breath the PICTURE holds
+	// too — motion freezes within ~0.1 s (95 % dt cut, slewed so it eases in
+	// rather than snapping) and releases just as fast on the slam-back, which
+	// additionally hits the camera below (breakSlam -> dropPulse).
+	m_breakSmooth = slewToward( m_breakSmooth, audio.breakHold, 9.f, dtWall );
+	timeSinceLastFrameSec *= 1.f - 0.95f * m_breakSmooth;
+
+	// Track-title reveal: upload a freshly rendered title (GL context is
+	// current here) and advance the reveal clock on the WALL time (the
+	// reveal keeps playing over a frozen/stopped picture).
+	if( !m_titlePending.isNull() )
+	{
+		QImage gl = m_titlePending.convertToFormat( QImage::Format_RGBA8888 );
+		if( m_titleTex == 0 ) glGenTextures( 1, &m_titleTex );
+		glBindTexture( GL_TEXTURE_2D, m_titleTex );
+		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA8, gl.width(), gl.height(), 0,
+		              GL_RGBA, GL_UNSIGNED_BYTE, gl.constBits() );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+		glBindTexture( GL_TEXTURE_2D, 0 );
+		m_titleAspect  = float(gl.width()) / float(gl.height());
+		m_titlePending = QImage();
+		m_titleAge     = 0.f;
+	}
+	else
+		m_titleAge += dtWall;
 
 
     // -----------------------------------------------------------------------
@@ -1644,7 +1720,9 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
         audioFx.spectralFlux  = m_audioFluxSmooth     * gate;
         audioFx.stereoWidth   = audio.stereoWidth     * gate;
         audioFx.buildUp       = audio.buildUp         * gate;
-        audioFx.dropPulse     = audio.dropPulse       * gate;
+        // The DJ-stop slam-back rides the same "hit" channel as a drop
+        // (camera punch + shake + the shaders' audioDrop uniform).
+        audioFx.dropPulse     = std::max( audio.dropPulse, audio.breakSlam ) * gate;
 
         // ---- Virtual camera (global "Regie" layer, applied in the present
         // pass): micro drift keeps every effect subtly "filmed"; the downbeat
@@ -2465,6 +2543,23 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 		if( m_presentCamZoomUni  >= 0 ) glUniform1f( m_presentCamZoomUni,  m_camZoom );
 		if( m_presentCamRotUni   >= 0 ) glUniform1f( m_presentCamRotUni,   m_camRot );
 		if( m_presentCamOffUni   >= 0 ) glUniform2f( m_presentCamOffUni,   m_camOffX, m_camOffY );
+		// Track-title reveal (phase 0..1 while active; 2 = off).
+		if( m_presentTitlePhaseUni >= 0 )
+		{
+			const float kTitleDur = 8.f;
+			float ph = ( m_titleTex != 0 && m_titleAge < kTitleDur )
+			         ? ( m_titleAge / kTitleDur ) : 2.f;
+			glUniform1f( m_presentTitlePhaseUni, ph );
+			if( ph < 1.f && m_presentTitleTexUni >= 0 )
+			{
+				glActiveTexture( GL_TEXTURE2 );
+				glBindTexture( GL_TEXTURE_2D, m_titleTex );
+				glUniform1i( m_presentTitleTexUni, 2 );
+				glActiveTexture( GL_TEXTURE0 );
+				if( m_presentTitleAspectUni >= 0 )
+					glUniform1f( m_presentTitleAspectUni, m_titleAspect );
+			}
+		}
 		if( m_presentResUni   >= 0 ) glUniform2f( m_presentResUni, (float)m_displayW, (float)m_displayH );
 		// VJ blackout ('b'): a slewed multiplier on the present brightness
 		// scale — window, Spout output and recordings all fade together.
@@ -2474,7 +2569,10 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 			if( step > 1.f ) step = 1.f;
 			m_blackSmooth += ( blackTarget - m_blackSmooth ) * step;
 		}
-		if( m_presentScaleUni >= 0 ) glUniform1f( m_presentScaleUni, scale * (1.f - m_blackSmooth) );
+		// The DJ-stop also dims the held picture slightly (sells the "gasp").
+		if( m_presentScaleUni >= 0 )
+			glUniform1f( m_presentScaleUni,
+			             scale * (1.f - m_blackSmooth) * (1.f - 0.25f * m_breakSmooth) );
 		// Global mood grade — gated values (neutral in non-music mode), scaled by the
 		// live mood-strength knob (deviations from neutral × s_moodStrength).
 		float ms = s_moodStrength;

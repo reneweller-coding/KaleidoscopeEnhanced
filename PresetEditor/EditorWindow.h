@@ -58,6 +58,8 @@ private:
     QVector<SliderInfo> m_sliders;
     class QGroupBox    *m_paramBox  = nullptr;
     class QFormLayout  *m_paramForm = nullptr;
+    class QCheckBox    *m_transCheck = nullptr;   // transition slow-motion bench
+    QSpinBox           *m_transSpin  = nullptr;
 
     QString m_root;
     Preset  m_preset;

@@ -422,24 +422,33 @@ void GLwidget::draw()
 			fadeAlpha = 1.f - float(el) / float(dur);
 	}
 
-	// Now-playing lower-third: appears for a few seconds when the track changes.
-	QString npTitle, npArtist;
-	float   npAlpha = 0.f;
+	// Now-playing TITLE REVEAL: on a track change the title is handed to the
+	// engine, which weaves it through the picture in the present pass (the
+	// text unfolds out of a kaleidoscopic swirl — replaces the old QPainter
+	// lower third).  Toggle stays on key 'p'.
+	float npAlpha = 0.f;   // the QPainter lower third is retired (reveal instead)
 	if( m_nowPlaying && m_showNowPlaying )
 	{
-		npTitle  = m_nowPlaying->title();
-		npArtist = m_nowPlaying->artist();
+		QString npTitle = m_nowPlaying->title();
 		if( !npTitle.isEmpty() && npTitle != m_lastNpTitle )
 		{
 			m_lastNpTitle = npTitle;
 			m_npShownAt   = m_fpsTimer.elapsed();
+			if( m_actConfiguration && m_actConfiguration->m_filterShader )
+				m_actConfiguration->m_filterShader->showTitle( npTitle,
+				                                               m_nowPlaying->artist() );
 		}
-		qint64 el = m_fpsTimer.elapsed() - m_npShownAt;
-		if( !npTitle.isEmpty() && el >= 0 && el < 6000 )
+	}
+	// Demo/test hook: KALEIDO_TITLE_TEST=1 fires one reveal a few seconds in
+	// (lets the reveal be tuned without a real media session running).
+	{
+		static bool titleTest = qEnvironmentVariableIsSet( "KALEIDO_TITLE_TEST" );
+		if( titleTest && m_fpsTimer.elapsed() > 3000 )
 		{
-			npAlpha = 1.f;                                  // fade in / out
-			if( el < 400 )       npAlpha = el / 400.f;
-			else if( el > 5300 ) npAlpha = (6000 - el) / 700.f;
+			titleTest = false;
+			if( m_actConfiguration && m_actConfiguration->m_filterShader )
+				m_actConfiguration->m_filterShader->showTitle( "Neon Cathedral",
+				                                               "The Prisms" );
 		}
 	}
 
@@ -479,8 +488,6 @@ void GLwidget::draw()
 				painter.drawText( 34, y + i * 28, rows[i] );
 			}
 		}
-		if( npAlpha > 0.f )
-			drawNowPlaying( &painter, npTitle, npArtist, npAlpha );
 		if( m_recording )
 		{
 			painter.setBrush( QColor(230, 40, 40) );
