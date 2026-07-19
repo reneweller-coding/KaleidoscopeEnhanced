@@ -1705,10 +1705,11 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 
 				m_stateInterpolationEffectTexture = 1;
 
-				// Roll a transition style (linear stays the most common).
+				// Roll a transition style: 13 styles (see CombinePlain.frag),
+				// the classic linear mix stays the most common (~1/3).
 				{
-					int r = qrand() % 6;
-					m_transStyleTex = (r <= 2) ? 0 : (r - 2);
+					int r = qrand() % 18;
+					m_transStyleTex = (r <= 5) ? 0 : (r - 5);
 				}
 
 				unsigned int timeAct = m_effectTextures[m_actEffectTexture]->getTimeInterpolation();
@@ -1953,8 +1954,8 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 
 				// Roll a transition style for the combine blend as well.
 				{
-					int r = qrand() % 6;
-					m_transStyleComb = (r <= 2) ? 0 : (r - 2);
+					int r = qrand() % 18;
+					m_transStyleComb = (r <= 5) ? 0 : (r - 5);
 				}
 
 				unsigned int timeAct = m_effectCombines[m_actEffectCombine]->getTimeInterpolation();
