@@ -4,6 +4,7 @@
 #include "shader_setup.h"
 #include "filterShader.h"
 #include "SpoutOut.h"
+#include "SpoutIn.h"
 #include "Utils.h"
 
 #include <QtGui/QImageReader>
@@ -31,6 +32,12 @@ float FilterShader::s_renderScale = 1.0f;
 float FilterShader::s_lightShow   = 0.0f;   // corner lamps / light-show OFF by default
 bool  FilterShader::s_spoutEnabled = false; // Spout sender (CLI -o)
 float FilterShader::s_latencyLead  = 0.05f; // display-phase lead vs. heard audio
+bool  FilterShader::s_blackout = false;     // VJ blackout ('b')
+bool  FilterShader::s_freeze   = false;     // VJ freeze ('e')
+bool  FilterShader::s_pinned   = false;     // VJ pin ('u')
+QHash<QString, float> FilterShader::s_taste;  // taste learning (skip/favourite)
+bool    FilterShader::s_spoutInEnabled = false;  // Spout input (CLI -i)
+QString FilterShader::s_spoutInSender;
 
 // Settings file lives next to the Configurations folder (parent of Debug/Release),
 // matching how shaders and configs are loaded ("..\\...").
@@ -47,6 +54,45 @@ void FilterShader::loadSettings()
 	s_moodStrength = clampParam( s.value( "mood",        s_moodStrength).toFloat(), 0.f, 2.5f  );
 	s_latencyLead  = clampParam( s.value( "latencyLead", s_latencyLead ).toFloat(), 0.f, 0.25f );
 	setRenderScale( s.value( "renderScale", s_renderScale ).toFloat() );  // clamps internally
+
+	// Taste learning: per-shader selection-weight factors, decayed toward 1.0
+	// a little on every start so old skips/favourites slowly lose their grip.
+	s.beginGroup( "taste" );
+	for( const QString &k : s.childKeys() )
+	{
+		float v = clampParam( s.value( k, 1.f ).toFloat(), 0.3f, 2.5f );
+		v = 1.f + ( v - 1.f ) * 0.97f;
+		if( fabsf( v - 1.f ) > 0.01f )
+			s_taste[k] = v;
+	}
+	s.endGroup();
+}
+
+// Basename of a fragment path ("..\\Scene\\Voyager.frag" -> "Voyager.frag").
+static QString tasteKey( const char *fragPath )
+{
+	QString f = QString::fromLocal8Bit( fragPath ? fragPath : "?" );
+	int cut = std::max( f.lastIndexOf( QChar('\\') ), f.lastIndexOf( QChar('/') ) );
+	return f.mid( cut + 1 );
+}
+
+float FilterShader::tasteFor( const char *fragPath )
+{
+	auto it = s_taste.constFind( tasteKey( fragPath ) );
+	return ( it == s_taste.constEnd() ) ? 1.f : it.value();
+}
+
+void FilterShader::bumpTaste( const char *fragPath, float mul )
+{
+	QString key = tasteKey( fragPath );
+	float v = clampParam( ( s_taste.value( key, 1.f ) ) * mul, 0.3f, 2.5f );
+	s_taste[key] = v;
+	// Persist immediately (rare events; losing them to a crash would defeat
+	// the learning).
+	QSettings s( settingsFilePath(), QSettings::IniFormat );
+	s.setValue( "taste/" + key, v );
+	s.sync();
+	fprintf( stderr, "Taste: %s -> %.2f\n", key.toLocal8Bit().constData(), v );
 }
 
 void FilterShader::saveSettings()
@@ -328,6 +374,7 @@ QString FilterShader::activeShaderInfo() const
 void FilterShader::stop()
 {
 	spoutOutRelease();
+	spoutInRelease();
 
 	m_imageLoader->terminate();
 
@@ -1003,6 +1050,9 @@ void FilterShader::setupSafety()
 		m_presentBarPhaseUni = glGetUniformLocation( m_presentProgId, "audioBarPhase" );
 		m_presentBloomTexUni = glGetUniformLocation( m_presentProgId, "bloomTex" );
 		m_presentUseBloomUni = glGetUniformLocation( m_presentProgId, "useBloom" );
+		m_presentCamZoomUni  = glGetUniformLocation( m_presentProgId, "camZoom" );
+		m_presentCamRotUni   = glGetUniformLocation( m_presentProgId, "camRot" );
+		m_presentCamOffUni   = glGetUniformLocation( m_presentProgId, "camOff" );
 	}
 
 	m_safetyReady = fboOk && (m_presentProgId != 0) && (m_presentTexUni >= 0);
@@ -1188,9 +1238,9 @@ void FilterShader::stepFluid(const AudioFeatures &audio)
 	glActiveTexture( GL_TEXTURE0 );
 	glBindTexture( GL_TEXTURE_2D, m_texFluid[prev] );
 	glActiveTexture( GL_TEXTURE1 );
-	glBindTexture( GL_TEXTURE_2D, m_actTex );
+	glBindTexture( GL_TEXTURE_2D, m_liveTex ? m_liveTex : m_actTex );
 	glActiveTexture( GL_TEXTURE2 );
-	glBindTexture( GL_TEXTURE_2D, m_nextTex );
+	glBindTexture( GL_TEXTURE_2D, m_liveTex ? m_liveTex : m_nextTex );
 	glUniform1i( m_fluidPrevUni, 0 );
 	if( m_fluidTex0Uni   >= 0 ) glUniform1i( m_fluidTex0Uni, 1 );
 	if( m_fluidTex1Uni   >= 0 ) glUniform1i( m_fluidTex1Uni, 2 );
@@ -1255,11 +1305,33 @@ void FilterShader::stepReactionDiffusion(const AudioFeatures &audio)
 //      when it clearly disagrees.  Untagged shaders stay neutral, so sparsely
 //      tagged configs keep working.  The result stays probabilistic — a bias,
 //      not a hard filter, so variety survives.
+// Manual "next" (key 'n', MIDI pad, web remote): skipping an effect that has
+// only just come on screen reads as a dislike — remember it (soft, decaying).
+void FilterShader::requestSceneChange()
+{
+	if( !s_pinned && !s_freeze &&
+	    m_actEffectTexture < m_effectTextures.size() &&
+	    m_timeEffectTexture.elapsed() < 10000 )
+		bumpTaste( m_effectTextures[m_actEffectTexture]->fragmentName(), 0.8f );
+	m_forceEffectChange  = true;
+	m_forceCombineChange = true;
+}
+
+// Key 'f': the user LIKES what is on screen — persistent selection bonus.
+void FilterShader::favoriteCurrentEffect()
+{
+	if( m_actEffectTexture < m_effectTextures.size() )
+		bumpTaste( m_effectTextures[m_actEffectTexture]->fragmentName(), 1.25f );
+}
+
 bool FilterShader::moodAccept(EffectShader *s)
 {
 	float target = 1.f + m_lastArousal * 9.f;               // desired busyness 1..10
 	float diff   = fabs(float(s->getComplexity()) - target) / 9.f;
 	float accept = 1.f - 0.6f * diff;                       // closer match → likelier
+
+	// Learned taste (skip-malus / favourite-bonus, persistent).
+	accept *= tasteFor( s->fragmentName() );
 
 	unsigned int f = s->moodFlags();
 	if (f)
@@ -1275,8 +1347,11 @@ bool FilterShader::moodAccept(EffectShader *s)
 			bonus += (0.5f - m_lastArousal) * 0.6f + (m_lastAmbient - 0.3f) * 0.6f;
 		accept += bonus;
 	}
-	// Floor keeps every shader reachable (never a hard exclusion).
-	if (accept < 0.15f) accept = 0.15f;
+	// Floor keeps every shader reachable (never a hard exclusion); a disliked
+	// shader gets a lower floor, but never zero.
+	float floorv = 0.15f * std::min( tasteFor( s->fragmentName() ), 1.f );
+	if (floorv < 0.05f) floorv = 0.05f;
+	if (accept < floorv) accept = floorv;
 	return (float(qrand()) / float(RAND_MAX)) < accept;
 }
 
@@ -1302,6 +1377,17 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 		if( !warmed )
 			for( EffectShader *s : m_effectCombines )
 				if( !s->isCompiled() ) { s->ensureCompiled(); break; }
+	}
+
+	// Live input (-i): receive the Spout sender's frame; while a sender runs
+	// its texture replaces BOTH image slots below (crossfades collapse to a
+	// no-op on the image, every effect folds the LIVE picture).  No sender ->
+	// m_liveTex stays 0 and the photos work as usual.
+	if( s_spoutInEnabled )
+	{
+		spoutInInit( s_spoutInSender.toLocal8Bit().constData() );   // idempotent
+		unsigned int lw = 0, lh = 0;
+		m_liveTex = spoutInReceive( &lw, &lh );
 	}
 
     // Update adaptive timing scale from audio analysis.
@@ -1333,6 +1419,28 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 	m_nanotimer.start();
 
 	float timeSinceLastFrameSec = timeSinceLastFrame * 0.001;
+	// Wall-clock frame time, immune to the freeze below (the blackout fade
+	// must keep moving even over a frozen picture).
+	const float dtWall = timeSinceLastFrameSec;
+
+	// VJ FREEZE ('e'): hold the picture.  Frame time 0 stops every phase
+	// integration and envelope slew; re-arming the activation clocks each
+	// frozen frame keeps scheduled switches from falling "due" behind the
+	// frozen image (they simply start their solo fresh on unfreeze).
+	if( s_freeze )
+	{
+		timeSinceLastFrameSec = 0.f;
+		m_timeEffectTexture.restart();
+		m_timeEffectCombine.restart();
+		m_timeTexture.restart();
+	}
+	// VJ PIN ('u'): keep the current effect/combine — re-arm only their
+	// clocks (images keep rotating); forced cuts are suppressed below.
+	else if( s_pinned )
+	{
+		m_timeEffectTexture.restart();
+		m_timeEffectCombine.restart();
+	}
 
 
     // -----------------------------------------------------------------------
@@ -1534,6 +1642,37 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
         audioFx.overallLevel  = m_audioLevelSmooth    * gate;
         audioFx.spectralFlux  = m_audioFluxSmooth     * gate;
         audioFx.stereoWidth   = audio.stereoWidth     * gate;
+        audioFx.buildUp       = audio.buildUp         * gate;
+        audioFx.dropPulse     = audio.dropPulse       * gate;
+
+        // ---- Virtual camera (global "Regie" layer, applied in the present
+        // pass): micro drift keeps every effect subtly "filmed"; the downbeat
+        // punches in and releases; the bar rolls the frame gently; a build-up
+        // slowly tightens the shot; kicks add a tiny shake and a DROP hits
+        // hard.  All terms are either slew-limited envelopes or fixed-
+        // frequency oscillations — no phase remapping, no flicker.
+        {
+            if( m_downbeatTick )
+                m_camPunch = std::max( m_camPunch, 0.20f + 0.25f * m_downbeatSmooth );
+            m_camPunch *= expf( -dt / 0.35f );
+            float punch = m_camPunch + 1.1f * audioFx.dropPulse;
+            float zoom  = 1.f + 0.045f * audioFx.buildUp * audioFx.buildUp
+                              + 0.055f * punch;
+            float sway  = 0.010f * sinf( 6.2831853f * audioFx.barPhase )
+                        * audio.rhythmStrength * gate;
+            float shakeAmp = 0.0035f * m_kickSmooth * gate
+                           + 0.010f  * audioFx.dropPulse;
+            float ox = 0.0030f * sinf( m_globaltime * 0.23f )
+                     + shakeAmp * sinf( m_globaltime * 39.7f );
+            float oy = 0.0030f * cosf( m_globaltime * 0.17f )
+                     + shakeAmp * cosf( m_globaltime * 31.3f );
+            // The zoom must always pay for the offset + rotation so no edge
+            // ever samples outside the frame.
+            float need = fabsf(ox) + fabsf(oy) + 0.62f * fabsf(sway);
+            zoom = std::max( zoom, 1.f + 2.4f * need );
+            m_camZoom = zoom; m_camRot = sway;
+            m_camOffX = ox;   m_camOffY = oy;
+        }
         // Mood signals collapse to neutral (0.5 / 0) as music fades out.
         audioFx.valence         = 0.5f + (audio.valence         - 0.5f) * gate;
         audioFx.arousal         = 0.5f + (audio.arousal         - 0.5f) * gate;
@@ -1617,6 +1756,25 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
         m_noveltyCooldown = 8.0f;     // hold off the harmonic hook right after
     }
     m_lastSectionCount = audio.sectionCount;
+
+    // DROP (bass slams back after a build-up + breakdown): the analyzer bumps
+    // audio.dropCount at the hit.  React with an immediate scene cut — the
+    // pending machinery still quantises it, but a drop IS a downbeat-scale
+    // accent, so it lands right where the ear expects the change.  The
+    // camera layer additionally hits/shakes on audio.dropPulse.
+    if( audio.dropCount == m_lastDropCount + 1 )
+    {
+        m_forceEffectChange = true;
+        m_noveltyCooldown   = 8.0f;
+    }
+    m_lastDropCount = audio.dropCount;
+
+    // VJ PIN ('u'): suppress every forced cut while the current look is held.
+    if( s_pinned )
+    {
+        m_forceEffectChange  = false;
+        m_forceCombineChange = false;
+    }
 
     if( m_waitForImageToLoad )
     {
@@ -1889,11 +2047,11 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 	glViewport( 0, 0, m_width, m_height );
 
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture( GL_TEXTURE_2D, m_actTex );
+	glBindTexture( GL_TEXTURE_2D, m_liveTex ? m_liveTex : m_actTex );
 
-	
+
 	glActiveTexture(GL_TEXTURE1);
-	glBindTexture( GL_TEXTURE_2D, m_nextTex );
+	glBindTexture( GL_TEXTURE_2D, m_liveTex ? m_liveTex : m_nextTex );
 
 
 	//Do the FBO Stuff
@@ -2165,6 +2323,10 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 		int prev = 1 - m_trailIdx;
 		float decay = s_trailAmount * (0.90f + 0.08f * audio.ambientFactor)
 		            * audio.musicPresence;
+		// Build-up tension: trails tighten as the music climbs toward the drop
+		// (crisper, more nervous picture), then the drop's release lets them
+		// bloom back to full length.
+		decay *= 1.f - 0.45f * audioFx.buildUp * (1.f - audioFx.dropPulse);
 
 		glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_fboTrail[cur] );
 		glViewport( 0, 0, m_width, m_height );
@@ -2299,8 +2461,19 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 		if( m_presentUseBloomUni >= 0 ) glUniform1f( m_presentUseBloomUni, m_bloomReady ? 1.f : 0.f );
 		if( m_presentSwellUni    >= 0 ) glUniform1f( m_presentSwellUni,    audioFx.swell );
 		if( m_presentBarPhaseUni >= 0 ) glUniform1f( m_presentBarPhaseUni, audioFx.barPhase );
+		if( m_presentCamZoomUni  >= 0 ) glUniform1f( m_presentCamZoomUni,  m_camZoom );
+		if( m_presentCamRotUni   >= 0 ) glUniform1f( m_presentCamRotUni,   m_camRot );
+		if( m_presentCamOffUni   >= 0 ) glUniform2f( m_presentCamOffUni,   m_camOffX, m_camOffY );
 		if( m_presentResUni   >= 0 ) glUniform2f( m_presentResUni, (float)m_displayW, (float)m_displayH );
-		if( m_presentScaleUni >= 0 ) glUniform1f( m_presentScaleUni, scale );
+		// VJ blackout ('b'): a slewed multiplier on the present brightness
+		// scale — window, Spout output and recordings all fade together.
+		{
+			float blackTarget = s_blackout ? 1.f : 0.f;
+			float step = dtWall * 3.0f;               // ~0.35 s fade
+			if( step > 1.f ) step = 1.f;
+			m_blackSmooth += ( blackTarget - m_blackSmooth ) * step;
+		}
+		if( m_presentScaleUni >= 0 ) glUniform1f( m_presentScaleUni, scale * (1.f - m_blackSmooth) );
 		// Global mood grade — gated values (neutral in non-music mode), scaled by the
 		// live mood-strength knob (deviations from neutral × s_moodStrength).
 		float ms = s_moodStrength;

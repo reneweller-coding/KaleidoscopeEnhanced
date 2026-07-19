@@ -94,6 +94,7 @@ float AudioAnalyzer::coeff(float cutoffHz, int sampleRate)
 AudioAnalyzer::AudioAnalyzer(QObject *parent)
     : QThread(parent)
 {
+    m_tapClock.start();   // tap-tempo clock (read from both threads, set once)
     std::memset(m_bassHistory,     0, sizeof(m_bassHistory));
     std::memset(m_levelHistory,    0, sizeof(m_levelHistory));
     std::memset(m_ringBuf,         0, sizeof(m_ringBuf));
@@ -242,6 +243,38 @@ void AudioAnalyzer::requestDevice( const QString &id, bool isCapture )
         else                { m_useReqDevice = true;  m_reqDeviceId = id; m_reqIsCapture = isCapture; }
     }
     m_deviceChangeReq = true;     // ask the capture loop to re-initialise now
+}
+
+// ---------------------------------------------------------------------------
+// TAP TEMPO (key 't', GUI thread): the median inter-tap interval overrides
+// the estimated tempo + beat phase (applied at publish time) for ~45 s after
+// the last tap.  A pause > 2.5 s starts a fresh series.
+// ---------------------------------------------------------------------------
+void AudioAnalyzer::tapTempo()
+{
+    qint64 now = m_tapClock.elapsed();
+    if (m_tapN > 0 && now - m_tapTimes[(m_tapN - 1) & 7] > 2500)
+        m_tapN = 0;                                   // series broken
+    m_tapTimes[m_tapN & 7] = now;
+    ++m_tapN;
+
+    int cnt = std::min(m_tapN, 8);
+    if (cnt < 2) { fprintf(stderr, "TAP: weiter tippen...\n"); return; }
+
+    // Median of the (up to 7) intervals between the last taps.
+    float iv[7]; int n = 0;
+    for (int i = cnt - 1; i >= 1; --i) {
+        qint64 a = m_tapTimes[(m_tapN - i - 1) & 7];
+        qint64 b = m_tapTimes[(m_tapN - i)     & 7];
+        iv[n++] = float(b - a);
+    }
+    std::sort(iv, iv + n);
+    float med = iv[n / 2];
+    med = std::max(250.f, std::min(med, 1500.f));     // 40..240 BPM
+    m_tapIntervalMs = int(med + 0.5f);
+    m_tapAnchorMs   = now;
+    m_tapUntilMs    = now + 45000;
+    fprintf(stderr, "TAP tempo: %.1f BPM (%d taps)\n", 60000.f / med, cnt);
 }
 
 QString AudioAnalyzer::s_offlineWav;
@@ -1738,6 +1771,89 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
     m_sMusicPresence += mpSpeed * (musicConf - m_sMusicPresence);
     m_sMusicPresence = std::max(0.f, std::min(m_sMusicPresence, 1.f));
 
+    // ========================================================================
+    // Build-up / drop detection (EDM dramaturgy)
+    // ========================================================================
+    // BUILD-UP: the music climbing toward a climax shows as a RISING onset
+    // density (faster hits), a RISING spectral centroid (the classic filter
+    // sweep), a swelling level and snare rolls.  Each is measured as a fast
+    // EMA pulling above a slow one (bias-corrected — zero-init lesson from
+    // the section detector).  DROP: while "armed" by a recent build-up, the
+    // bass drops far below its own average (the breakdown/gap) and then
+    // slams back — that re-entry moment is the drop.
+    {
+        float aBias = 1.f / float(m_bldWarm + 1);
+        if (m_bldWarm < 1000000) ++m_bldWarm;
+        const float aF = std::max(0.0067f, aBias);   // tau ~1.5 s at 100 blocks/s
+        const float aS = std::max(0.001f,  aBias);   // tau ~10 s
+        m_bldFastOnset += aF * (m_onsetRate       - m_bldFastOnset);
+        m_bldSlowOnset += aS * (m_onsetRate       - m_bldSlowOnset);
+        m_bldFastCent  += aF * (smoothedCentroid  - m_bldFastCent);
+        m_bldSlowCent  += aS * (smoothedCentroid  - m_bldSlowCent);
+        m_bldFastLvl   += aF * (level             - m_bldFastLvl);
+        m_bldSlowLvl   += aS * (level             - m_bldSlowLvl);
+        // Snare rolls re-trigger the mid-group onset envelope so fast that its
+        // MEAN stays high — a leaky average of it is a fine roll detector.
+        m_bldSnareRoll += 0.03f * (std::min(m_onsetEnvGrp[1] * 1.5f, 1.f) - m_bldSnareRoll);
+
+        float onsetRise = std::max(0.f, m_bldFastOnset - m_bldSlowOnset);  // onsets/s
+        float centRise  = std::max(0.f, m_bldFastCent  - m_bldSlowCent);
+        float lvlRise   = std::max(0.f, m_bldFastLvl / (m_bldSlowLvl + 1e-4f) - 1.f);
+        float raw = onsetRise * 0.45f            // +2 onsets/s over baseline -> 0.9
+                  + centRise  * 3.0f             // a full filter sweep -> ~0.6
+                  + std::min(lvlRise, 1.f) * 0.5f
+                  + m_bldSnareRoll * 0.6f;
+        raw = std::min(raw, 1.f) * m_sMusicPresence;   // no build-ups in speech
+        float bSpeed = (raw > m_sBuildUp) ? 0.02f : 0.008f;  // rise ~0.5 s, fall ~1.2 s
+        m_sBuildUp += bSpeed * (raw - m_sBuildUp);
+
+        // ---- Drop state machine ----
+        // The vacuum test uses a FAST bass EMA (~0.15 s) against a slow one
+        // that is FROZEN during the gap; the re-entry test uses the current
+        // smoothed band energy (fast attack: a kick spikes it within a block
+        // or two).  The gap must last >= 250 ms so the inter-kick silence of
+        // a normal groove can never count as one.  NOTE: the LINEAR band RMS
+        // (m_sSubBass/m_sBass), NOT the dB-normalised 0..1 values — ratios
+        // like "1.5x the average" are meaningless after dB compression (and
+        // can even be unreachable, since dB-norm saturates at 1.0).
+        float bassE = m_sSubBass + m_sBass;
+        m_bassFast += 0.065f * (bassE - m_bassFast);          // tau ~0.15 s
+        bool vacuum = (m_dropArmed > 0.f)
+                   && (m_bassFast < 0.35f * m_bassSlow);
+        if (!vacuum)                                          // freeze the slow
+            m_bassSlow += 0.002f * (bassE - m_bassSlow);      // avg in the gap
+        // Arming needs the slow EMAs settled (>= ~12 s after start): a fresh
+        // energetic track otherwise reads as a "build-up" while the 10 s
+        // averages are still climbing toward its steady state.
+        if (m_sBuildUp > 0.60f && m_bldWarm > 1200)
+            m_dropArmed = 800.f;                              // ~8 s arming
+        if (m_dropArmed > 0.f)  m_dropArmed -= 1.f;
+        if (vacuum) {
+            m_lowGapBlocks += 1.f;
+            // Long breakdowns must not disarm mid-gap: hold the arming alive
+            // while the vacuum persists.
+            m_dropArmed = std::max(m_dropArmed, 200.f);
+        }
+        else if (m_bassFast > 0.6f * m_bassSlow)              // hysteresis: the
+            m_lowGapBlocks = 0.f;                             // gap is truly over
+        if (m_dropCooldown > 0) --m_dropCooldown;
+        if (m_dropCooldown == 0 && m_dropArmed > 0.f &&
+            m_lowGapBlocks >= 25.f &&                          // >= 250 ms of gap
+            bassE > 1.45f * m_bassSlow &&                      // bass slams back
+            (m_onsetEnvGrp[0] > 0.25f || bassE > 2.0f * m_bassSlow))
+        {
+            m_dropPulse    = 1.f;
+            ++m_dropCount;
+            m_dropCooldown = 800;                              // >= 8 s apart
+            m_dropArmed    = 0.f;
+            m_lowGapBlocks = 0.f;
+            fprintf(stderr, "DROP #%d (buildup %.2f, bass %.2fx, t=%.1fs)\n",
+                    m_dropCount, m_sBuildUp, bassE / (m_bassSlow + 1e-5f),
+                    m_bldWarm * 0.01f);
+        }
+        m_dropPulse *= 0.985f;                                 // ~1.5 s tail
+    }
+
     // ---- Publish (mutex-protected) ----
     QMutexLocker lk(&m_mutex);
     // Publish the AGC-normalised levels so the visuals are volume-independent.
@@ -1776,6 +1892,23 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
     m_features.roughness        = m_sRoughness;
     m_features.rhythmStrength    = m_sRhythm;
     m_features.beatPhase         = beatPhase;
+
+    // Manual TAP tempo (key 't'): override tempo + phase while active.  The
+    // host's beat-phase PLL then locks onto the tapped grid; the raised
+    // rhythmStrength floor engages the tempo-locked pulse and 4-beat fades.
+    {
+        int    tapIv  = m_tapIntervalMs.load();
+        qint64 until  = m_tapUntilMs.load();
+        if (tapIv > 0 && m_tapClock.elapsed() < until)
+        {
+            float bpm = 60000.f / float(tapIv);
+            m_features.estimatedBPM = std::max(0.f, std::min((bpm - 40.f) / 160.f, 1.f));
+            double ph = double(m_tapClock.elapsed() - m_tapAnchorMs.load())
+                      / double(tapIv);
+            m_features.beatPhase = float(ph - std::floor(ph));
+            m_features.rhythmStrength = std::max(m_features.rhythmStrength, 0.85f);
+        }
+    }
     m_features.fluxVariance      = m_sFluxVar;
     m_features.stereoWidth       = m_sStereoWidth;
     m_features.stereoLowL         = m_sStBand[0][0];
@@ -1793,6 +1926,9 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
     m_features.onsetKick        = m_onsetEnvGrp[0];
     m_features.onsetSnare       = m_onsetEnvGrp[1];
     m_features.onsetHat         = m_onsetEnvGrp[2];
+    m_features.buildUp          = m_sBuildUp;
+    m_features.dropPulse        = m_dropPulse;
+    m_features.dropCount        = m_dropCount;
     // FFT-derived features
     m_features.spectralRolloff  = m_sRolloff;
     m_features.spectralSpread   = m_sSpread;

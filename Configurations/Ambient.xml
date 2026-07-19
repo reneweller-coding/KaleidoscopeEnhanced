@@ -112,4 +112,18 @@
     <float name="chromaP" minValue="0.001" maxValue="0.005"></float>
   </CombineShader>
 
+  <TextureShader file="..\\Scene\\InkWater.frag" type="normal" probability="0.55" mood="calm" complexity="2">
+    <int name="plumesP" minValue="2" maxValue="5"></int>
+    <float name="inkHueP" minValue="0.0" maxValue="6.28"></float>
+    <float name="swirlP" minValue="0.6" maxValue="1.6"></float>
+    <float name="speedP" minValue="0.6" maxValue="1.2"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene\\Aurora.frag" type="normal" probability="0.55" mood="calm,dark" complexity="1">
+    <float name="bandsP" minValue="0.7" maxValue="1.6"></float>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+    <float name="heightP" minValue="0.8" maxValue="1.5"></float>
+    <float name="speedP" minValue="0.6" maxValue="1.2"></float>
+  </TextureShader>
+
 </configuration>

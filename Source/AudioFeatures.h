@@ -251,6 +251,22 @@ struct AudioFeatures
     float onsetSnare = 0.f;
     float onsetHat   = 0.f;
 
+    // ---- Build-up / drop detection (EDM dramaturgy) ----
+    // buildUp: 0..1, rises when the music is BUILDING toward a climax —
+    //   climbing onset density, rising spectral centroid (filter sweeps),
+    //   swelling level and snare rolls all add evidence.  Smoothed (~0.5 s
+    //   rise, ~1.5 s fall).  Visuals use it as TENSION: shorter trails,
+    //   slow camera punch-in, tightening geometry.  Uploaded as `audioBuildUp`.
+    float buildUp = 0.f;
+    // dropPulse: 1.0 at the moment of a detected DROP (a bass vacuum after a
+    //   build-up followed by the bass slamming back), then decays over ~1.5 s.
+    //   The RELEASE that follows the tension.  Uploaded as `audioDrop`.
+    float dropPulse = 0.f;
+    // dropCount: increments once per detected drop (counter, so the host can
+    //   never miss one between polls — same pattern as sectionCount).  The
+    //   host reacts with an immediate quantised scene cut + camera hit.
+    int   dropCount = 0;
+
     // Transition style for the CURRENT effect cross-fade (host-rolled when a
     // change fires; uploaded as "transStyle" — CombinePlain styles the blend):
     // 0 linear, 1 radial wipe, 2 kaleido fold-through, 3 zoom-through.

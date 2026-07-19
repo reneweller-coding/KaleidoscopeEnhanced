@@ -53,6 +53,7 @@ $env:Path = "C:\Qt\6.11.1\msvc2022_64\bin;" + $env:Path
 | `-o`          | Spout output: publish the frame as sender "Kaleidoscope"          |
 | `-t <port>`   | Web remote: phone control page at `http://<pc>:<port>/`           |
 | `-x <wav>`    | **Batch render**: record this WAV to an mp4, then exit (see below)|
+| `-i <sender>` | **Spout input**: a live sender replaces the photos (see below)    |
 | `-h`          | Print usage and exit                                              |
 
 For an unattended **installation / kiosk**, combine `-m`, `-c`, `-s` and `-l`.
@@ -134,6 +135,11 @@ correct working directory). Otherwise build it later with `ISCC.exe installer.is
 | `,` / `.`  | Trails — shorter / longer feedback trails                     |
 | `-` / `=`  | Mood — weaker / stronger colour grading                       |
 | `;` / `'`  | Latency — visuals earlier / later vs. the heard beat          |
+| `b`        | **Blackout** — soft fade to black and back (VJ)               |
+| `e`        | **Freeze** — hold the picture (VJ)                            |
+| `t`        | **Tap tempo** — tap the beat to override tempo detection      |
+| `u`        | **Pin** — hold the current effect (no automatic switches)     |
+| `f`        | **Favourite** the current effect (persistent selection bonus) |
 | `a`        | Toggle **auto-config-by-mood** (auto-switch configs)          |
 | `g`        | Toggle **adaptive render scale** (auto-FPS)                   |
 | `j`        | **MIDI learn** — bind knobs/pads to the controls              |
@@ -165,9 +171,21 @@ normal/fast/slow/… set lives on in git history):
 - **Galerie** — the *photos* star: kaleidoscopes, image tunnels, gentle folds
 - **Psychedelic** — breathing fractals, pills, chrome, plasma, mushrooms
 - **Noir** — dark, high-contrast: noir fractals, dark tunnels, deep drones
-- **Komplett** — EVERY effect and combine shader in one rotation (45 texture
+- **Komplett** — EVERY effect and combine shader in one rotation (49 texture
   effects + 21 combines, incl. the legacy set and combines that never had a
   config entry before)
+
+**Themed shader pack (2026-07):** four new scene effects, spread across the
+matching presets: **`InkWater`** (coloured ink plumes sinking into water and
+billowing into marbled clouds — the image IS the ink; Ambient/Psychedelic),
+**`Aurora`** (waving northern-lights curtains over a starfield, reach and
+brightness breathing with the music; Ambient/Noir), **`CityBokeh`** (layers
+of defocused night-city lights drifting in parallax, every bokeh disc
+coloured by the picture, kicks pulsing a hashed subset; Noir/Club) and
+**`BauhausGeo`** (a rotating Kandinsky/Bauhaus poster grid — discs, arcs,
+bars, triangles in posterised image colours, snare-accented; Club/
+Psychedelic).  All follow the house rules: image-based, per-activation
+parameters, mood tags, flicker-free integrated motion.
 
 **Timing is music-driven:** per-entry `min/maxTime*` attributes are now
 OPTIONAL — the pacing comes from `timingScale` (tempo/arousal), 4-beat
@@ -429,13 +447,17 @@ Audio is captured via WASAPI loopback (`AudioAnalyzer`) and analysed in real tim
   jelly wobble, drain vortex, ghost multi-exposure.  Applied to both the
   effect and the combine blends.
 - **Web remote (`-t <port>`):** a phone-friendly page at
-  `http://<pc>:<port>/` with preset buttons, next-effect, and sliders for
-  reactivity / trails / mood / latency plus light-show & auto-preset
-  toggles.  LAN convenience only — no auth, don't expose it to the internet.
+  `http://<pc>:<port>/` with a **live preview image** (~1 Hz JPEG snapshot,
+  captured only while the page is open), preset buttons, next-effect,
+  **blackout**, **favourite** (taste learning), **replay arm + save**, and
+  sliders for reactivity / trails / mood / latency plus light-show &
+  auto-preset toggles.  LAN convenience only — no auth, don't expose it to
+  the internet.
 - **MIDI Learn (`j`):** cycles through the assignable targets (reactivity,
-  trails, mood, latency, next-effect pad); the next CC/note received binds
-  to the current target; mappings persist.  Unmapped pad = any note
-  advances (the old behaviour).
+  trails, mood, latency, next-effect pad, **tap-tempo pad, blackout pad**);
+  the next CC/note received binds to the current target; mappings persist.
+  Unmapped next-effect pad = any note advances (the old behaviour); tap and
+  blackout fire only on their learned notes.
 - **Instant replay (`y` arms, `x` saves):** a rolling ~30 s ring of frames
   (~15 fps, encoded off-thread) plus the analyzer's rolling audio ring;
   one keypress muxes `replays/replay_*/replay.mp4` — for "that was
@@ -534,6 +556,38 @@ Audio is captured via WASAPI loopback (`AudioAnalyzer`) and analysed in real tim
   (`-s` or the adaptive scale), the present pass applies a contrast-adaptive
   sharpen (AMD-CAS-style, min/max-clamped so it cannot ring) scaled to the
   upscale factor — low-scale kiosk setups look noticeably crisper.
+- **Build-up / drop detection (EDM dramaturgy):** the analyzer recognises a
+  BUILD-UP (climbing onset density, rising centroid/filter sweeps, level
+  swell, snare rolls → `audioBuildUp` 0..1) and the DROP that follows it (a
+  bass vacuum while "armed", then the bass slamming back → `audioDrop`
+  pulse + a counter the host can't miss).  Visuals build TENSION during the
+  climb (trails tighten, the camera slowly pushes in) and RELEASE on the
+  drop: an immediate scene cut plus a camera hit.  Verified offline with a
+  synthesized groove→build→break→drop WAV (fires exactly at the slam,
+  zero phantom drops).
+- **Virtual camera (global "Regie" layer):** one slow-moving transform over
+  the finished frame — micro drift (everything feels "filmed"), a decaying
+  downbeat punch-in, a gentle once-per-bar roll, build-up tension zoom and
+  a kick/drop shake.  The zoom always covers the offset + rotation, so no
+  edge ever shows; all terms are slewed envelopes or fixed-frequency
+  oscillations (flicker-free by construction).
+- **VJ handbrakes:** `b` BLACKOUT (slewed fade to black inside the pipeline,
+  so Spout output and recordings fade too), `e` FREEZE (frame time zero —
+  the picture holds, switches wait), `t` TAP TEMPO (median of your taps
+  overrides tempo + beat phase for ~45 s — for material the detector
+  struggles with), `u` PIN (hold the current effect; suppresses scheduled
+  AND forced switches).  Tap tempo and blackout are also MIDI-learnable
+  pad targets.
+- **Taste learning:** skipping a freshly-appeared effect with `n` teaches a
+  persistent selection MALUS (×0.8, floor 0.3); `f` marks the current
+  effect as a favourite (×1.25, cap 2.5).  Factors decay toward 1.0 a
+  little on every start, bias the mood-based selection softly (never a
+  hard exclusion), and persist in `kaleidoscope_settings.ini`.
+- **Spout INPUT (`-i <sender|any>`):** a live Spout sender (OBS, Resolume,
+  a webcam through OBS's Spout output, …) replaces the photos as the source
+  image of the whole pipeline — the kaleidoscope folds the AUDIENCE into
+  the mandala.  While no sender runs, the photos are the fallback.
+  Verified end-to-end with two instances (`-o` sender → `-i` receiver).
 
 **Photosensitivity safety:** a final pass rate-limits how fast the whole-frame
 *average* luminance may rise, reining in large full-screen flashes while leaving
@@ -579,6 +633,11 @@ Built for unattended, long-running installations:
 - **Stays smooth on its own:** adaptive render scale (key `g`) holds the frame
   rate near target without manual `-s` tuning; the heavy effect passes are also
   skipped whenever no cross-fade is in progress.
+- **Kiosk watchdog:** the packaged `Kaleidoscope-Vollbild.bat` runs the app
+  through `watchdog.ps1` — any abnormal exit (crash, GPU reset) restarts it
+  after 5 s with logging on, so an installation never stays black; quitting
+  with Esc/Q really quits, and 5 rapid crashes in a row give up instead of
+  looping forever.
 - **Self-healing audio:** if the default output device changes (switching outputs,
   unplugging headphones, an HDMI display sleeping), the WASAPI loopback capture
   reconnects automatically instead of going silent.
@@ -601,7 +660,7 @@ Reorganised 2026-07 into folders:
   `filterShader` (FBO pipeline + audio→visual mapping), `EffectShader` /
   `Uniform` (per-effect shader + params), `Configuration` (XML loading),
   `WebRemote`, `SpoutOut`, …
-- `Scene\*.frag` — the 45 scene (texture) effects
+- `Scene\*.frag` — the 49 scene (texture) effects
 - `Combine\*.frag` — the 21 combine passes (incl. `CombinePlain.frag`, which
   carries the 25-style transition library)
 - `Blend\*.frag` — internal pipeline passes: `Present.frag` (mood grade +

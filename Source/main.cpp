@@ -51,6 +51,9 @@ void commandlineerror( char *cmd, char *parm )
 	"-t <port>     web remote: phone control page at http://<this-pc>:<port>/\n"
 	"-x <wav>      batch render: record this WAV deterministically to an mp4\n"
 	"              (recordings\\rec_*), then exit automatically\n"
+	"-i <sender>   Spout INPUT: the sender's live video (OBS, Resolume, a\n"
+	"              webcam via OBS, ...) replaces the photos as source image\n"
+	"              ('any' = whichever sender is active; photos while none runs)\n"
 	"-h            this help menu\n"
 	"Keys (while running):\n"
 	"0             toggle the configuration-select menu\n"
@@ -66,6 +69,12 @@ void commandlineerror( char *cmd, char *parm )
 	"j             MIDI learn - bind knobs/pads to the controls (cycles targets)\n"
 	"y             arm the instant-replay buffer (rolling ~30 s)\n"
 	"x             save the instant replay as replays\\replay_*\\replay.mp4\n"
+	"b             BLACKOUT - soft fade to black and back (VJ)\n"
+	"e             FREEZE   - hold the picture (VJ)\n"
+	"t             tap tempo - tap the beat to override tempo detection\n"
+	"u             pin/unpin the current effect (no automatic switches)\n"
+	"f             favourite the current effect (persistent selection bonus;\n"
+	"              skipping a fresh effect with 'n' learns a malus)\n"
 	"Esc / q       quit\n"
 	"\n");
 
@@ -79,8 +88,8 @@ void commandlineerror( char *cmd, char *parm )
 void parsecommandline( int argc, char *argv[] )
 {
 	/* valid option characters; last char MUST be 0 ! */
-	char optionchar[] =   { 'h', 'b', 'f', 's', 'c', 'm', 'l', 'r', 'w', 'o', 't', 'x', 0 };
-	int musthaveparam[] = {  0 ,  0,   1,   1,   1,   1,   0,   0,   1,   0,   1,   1,  0 };
+	char optionchar[] =   { 'h', 'b', 'f', 's', 'c', 'm', 'l', 'r', 'w', 'o', 't', 'x', 'i', 0 };
+	int musthaveparam[] = {  0 ,  0,   1,   1,   1,   1,   0,   0,   1,   0,   1,   1,   1,  0 };
 
 	int nopts;
 	int mhp[256];
@@ -157,6 +166,11 @@ void parsecommandline( int argc, char *argv[] )
 					AudioAnalyzer::s_offlineWav = QString::fromLocal8Bit( argv[1] );
 					GLwidget::s_autoRecord  = true;
 					GLwidget::s_batchRender = true;
+					break;
+				// Spout INPUT: a live sender replaces the photos as source image.
+				case 'i':
+					FilterShader::s_spoutInEnabled = true;
+					FilterShader::s_spoutInSender  = QString::fromLocal8Bit( argv[1] );
 					break;
 
 

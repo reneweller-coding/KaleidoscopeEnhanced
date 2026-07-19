@@ -41,9 +41,16 @@ public:
 	 *  the widget passes it here every frame before paint().  Defaults to 0. */
 	void setDefaultFBO( GLuint fbo ) { m_defaultFBO = fbo; }
 
-	/** Request an early cross-fade to the next texture effect (manual 'n' key or
-	 *  an automatic musical novelty trigger).  Honoured at the next opportunity. */
-	void requestSceneChange() { m_forceEffectChange = true; m_forceCombineChange = true; }
+	/** Request an early cross-fade to the next texture effect (manual 'n' key,
+	 *  MIDI pad or web remote).  Honoured at the next opportunity.  TASTE
+	 *  LEARNING: skipping an effect that has only just appeared counts as
+	 *  "gefaellt mir nicht" — its selection weight gets a persistent, slowly
+	 *  decaying malus. */
+	void requestSceneChange();
+
+	/** Taste learning, positive side (key 'f'): boost the CURRENT effect's
+	 *  persistent selection weight ("Favorit"). */
+	void favoriteCurrentEffect();
 
 	/** Hot-reload (dev aid): recompile every effect/combine whose fragment file
 	 *  matches the given bare name.  GL context must be current. */
@@ -72,8 +79,30 @@ public:
 	static void  setLightShow( bool on ) { s_lightShow = on ? 1.f : 0.f; }
 	static bool  lightShow()  { return s_lightShow > 0.5f; }
 
+	// ---- VJ handbrakes ----
+	// Blackout (key 'b'): fade the OUTPUT to black (window, Spout, recording —
+	// it multiplies the present pass's brightness scale) and back.
+	static void  toggleBlackout() { s_blackout = !s_blackout; }
+	static bool  blackout()       { return s_blackout; }
+	// Freeze (key 'e'): hold the picture — the frame time is forced to 0 (all
+	// phase integration and envelope motion stops) and the activation clocks
+	// are re-armed so no scheduled switch fires behind the frozen image.
+	static void  toggleFreeze()   { s_freeze = !s_freeze; }
+	static bool  frozen()         { return s_freeze; }
+	// Pin (key 'u'): keep the CURRENT effect/combine on screen — scheduled and
+	// forced switches (section/drop/novelty) are suppressed until unpinned.
+	static void  togglePin()      { s_pinned = !s_pinned; }
+	static bool  pinned()         { return s_pinned; }
+
 	// Spout output (CLI -o): publish the displayed frame as sender "Kaleidoscope".
 	static bool		s_spoutEnabled;
+
+	/** Spout INPUT (CLI -i <sender|any>): a Spout sender's live texture (OBS,
+	 *  Resolume, a webcam through OBS, ...) replaces the photo as the source
+	 *  image of the whole pipeline — the audience becomes the mandala.  While
+	 *  no sender runs, the photos are the fallback. */
+	static bool		s_spoutInEnabled;
+	static QString	s_spoutInSender;
 
 	// Human-readable names of the currently active / cross-fading effects (debug overlay).
 	QString activeShaderInfo() const;
@@ -200,6 +229,8 @@ private:
 	// Last-seen analyzer section counter (verse/chorus/bridge detector); a
 	// single +1 step forces an early, short cross-fade to the next shader.
 	int				m_lastSectionCount  = 0;
+	// Last-seen analyzer drop counter (EDM drop detector): +1 = immediate cut.
+	int				m_lastDropCount     = 0;
 
 	// ---- Song-structure memory ----
 	// Per analyzer section id: which effect/combine played it and the effect's
@@ -261,6 +292,18 @@ private:
 	GLint			m_presentBarPhaseUni = -1;
 	GLint			m_presentBloomTexUni = -1;
 	GLint			m_presentUseBloomUni = -1;
+	GLint			m_presentCamZoomUni  = -1;
+	GLint			m_presentCamRotUni   = -1;
+	GLint			m_presentCamOffUni   = -1;
+
+	// ---- Virtual camera (global "Regie" layer, applied in the present pass) --
+	// A single slow-moving transform over the finished frame: micro drift,
+	// downbeat punch-in (decaying), per-bar sway, build-up tension zoom and a
+	// kick/drop shake.  Makes every effect feel "filmed" instead of static.
+	float			m_camPunch = 0.f;   // decaying punch-in envelope
+	float			m_camZoom  = 1.f;
+	float			m_camRot   = 0.f;
+	float			m_camOffX  = 0.f, m_camOffY = 0.f;
 	float			m_prevMeanLum    = -1.f;   // <0 = uninitialised
 	bool			m_safetyReady    = false;  // false → present pass disabled (safe fallback)
 	int				m_safetyFrame    = 0;      // for sub-sampling the readback
@@ -294,6 +337,7 @@ private:
 	GLint			m_trailHueUni   = -1;   //   ... hue drift of the echoes
 	bool			m_feedbackReady = false;
 	bool			m_spoutStarted  = false;
+	GLuint			m_liveTex       = 0;   // Spout-in texture (0 = photos)
 
 	// ---- GPU reaction-diffusion simulation (Gray-Scott, float ping-pong) ----
 	// A genuine on-GPU simulation: each frame a fragment shader advances the
@@ -345,6 +389,19 @@ private:
 	static float	s_moodStrength;  // global mood-grade strength (default 1.0)
 	static float	s_lightShow;     // 0 = corner lamps/light-show off (default), 1 = on
 	static float	s_latencyLead;   // display-phase lead in seconds (default 0.05)
+	static bool		s_blackout;      // VJ blackout target (smoothed per instance)
+	static bool		s_freeze;        // VJ freeze: hold the picture
+	static bool		s_pinned;        // VJ pin: no effect/combine switches
+	float			m_blackSmooth = 0.f;   // slewed blackout level 0..1
+
+	// ---- Taste learning (persistent, per shader FILE basename) ----
+	// Selection-weight factors in [0.3, 2.5], default 1.0.  A skip shortly
+	// after activation multiplies by 0.8, a favourite by 1.25; each app start
+	// decays every factor toward 1.0 so old grudges fade.  Soft bias only —
+	// moodAccept keeps a floor, no shader is ever excluded.
+	static QHash<QString, float> s_taste;
+	static float	tasteFor( const char *fragPath );
+	static void		bumpTaste( const char *fragPath, float mul );
 	static float	clampParam( float v, float lo, float hi )
 	{ return v < lo ? lo : (v > hi ? hi : v); }
 

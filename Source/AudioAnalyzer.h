@@ -4,6 +4,7 @@
 #include <QtCore/QMutex>
 #include <QtCore/QString>
 #include <QtCore/QList>
+#include <QtCore/QElapsedTimer>
 #include <atomic>
 #include <vector>
 
@@ -84,6 +85,12 @@ public:
 
     /** Graceful shutdown – call before wait(). */
     void stop();
+
+    /** TAP TEMPO (key 't', GUI thread): each call is one tap.  The median of
+     *  the last taps overrides the estimated tempo + beat phase for ~45 s
+     *  after the last tap — for material where automatic detection struggles.
+     *  A pause > 2.5 s starts a fresh series. */
+    void tapTempo();
 
     /** Offline (Preset-Editor) analysis: run a 16-bit PCM WAV through the FULL
      *  analysis pipeline at full speed — no capture thread, no WASAPI — and
@@ -289,6 +296,23 @@ private:
     int   m_onsetCoolGrp[3] = {};   // per-group re-trigger cooldowns (blocks)
     float m_onsetEnvGrp[3]  = {};   // decaying output envelopes
 
+    // ---- Build-up / drop detection (see AudioFeatures::buildUp/dropPulse) ----
+    // Build-up evidence: fast-vs-slow (bias-corrected) EMAs of onset rate,
+    // centroid and level, plus a leaky snare-roll density.  Drop: a bass
+    // vacuum while armed (recent build-up) followed by the bass slamming back.
+    float m_bldFastOnset = 0.f, m_bldSlowOnset = 0.f;   // tau ~1.5 s / ~10 s
+    float m_bldFastCent  = 0.f, m_bldSlowCent  = 0.f;
+    float m_bldFastLvl   = 0.f, m_bldSlowLvl   = 0.f;
+    float m_bldSnareRoll = 0.f;     // smoothed snare-onset envelope mean
+    int   m_bldWarm      = 0;       // bias-correction counter (EMA warm-up)
+    float m_sBuildUp     = 0.f;     // smoothed 0..1 output
+    float m_bassFast     = 0.f, m_bassSlow = 0.f;  // bass-energy EMAs (~0.5/5 s)
+    float m_dropArmed    = 0.f;     // blocks of arming left (recent build-up)
+    float m_lowGapBlocks = 0.f;     // consecutive blocks of bass vacuum
+    float m_dropPulse    = 0.f;     // decaying output (1.0 at the hit)
+    int   m_dropCooldown = 0;       // blocks until the next drop may fire
+    int   m_dropCount    = 0;       // cumulative drops (host-poll counter)
+
     // Instant-replay audio ring: the last ~32 s of captured PCM (stereo s16).
     // Fed in processBlock (capture thread), dumped by dumpReplayWav (main
     // thread) — guarded by m_replayMx.
@@ -327,6 +351,14 @@ private:
     void recOpen( int sampleRate );
     void recWrite( const float *src, int numFrames, int numChannels );
     void recClose();
+
+    // ---- Tap tempo (manual override; see tapTempo()) ----
+    QElapsedTimer m_tapClock;            // started in the ctor (thread-safe reads)
+    qint64  m_tapTimes[8] = {};          // GUI-thread-only tap ring
+    int     m_tapN = 0;
+    std::atomic<int>    m_tapIntervalMs { 0 };   // 0 = no manual tempo
+    std::atomic<qint64> m_tapAnchorMs   { 0 };   // phase anchor (last tap)
+    std::atomic<qint64> m_tapUntilMs    { 0 };   // manual mode expiry
 
     // ---- Shared output ----
     mutable QMutex m_mutex;

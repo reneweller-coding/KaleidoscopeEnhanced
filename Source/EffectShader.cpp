@@ -274,7 +274,7 @@ enum AudioLoc {
     AL_HCDF, AL_ROUGH, AL_SHARP, AL_ONSET, AL_DOWNBEAT, AL_BEATPH,
     AL_STEREO, AL_DPITCH, AL_MUSIC, AL_STBANDL, AL_STBANDR, AL_CHROMA,
     AL_SWELL, AL_BARPH, AL_AMBIENT, AL_KICK, AL_SNARE, AL_HAT, AL_TRANS,
-    AL_SPECTRUM, AL_TEXSIM, AL_TEXFLUID, AL_COUNT
+    AL_SPECTRUM, AL_TEXSIM, AL_TEXFLUID, AL_BUILDUP, AL_DROP, AL_COUNT
 };
 const char *kAudioLocNames[AL_COUNT] = {
     "audioPhase", "audioAdvance", "audioBeat", "audioLevel", "sides",
@@ -285,7 +285,8 @@ const char *kAudioLocNames[AL_COUNT] = {
     "audioDownbeat", "audioBeatPhase", "audioStereo", "audioDeltaPitch",
     "audioMusic", "audioStereoL", "audioStereoR", "audioChromaHue",
     "audioSwell", "audioBarPhase", "audioAmbient", "audioKick", "audioSnare",
-    "audioHat", "transStyle", "audioSpectrum", "texSim", "texFluid"
+    "audioHat", "transStyle", "audioSpectrum", "texSim", "texFluid",
+    "audioBuildUp", "audioDrop"
 };
 }
 
@@ -327,6 +328,8 @@ void EffectShader::applyAudioFeatures(const AudioFeatures &f)
     if (L[AL_SPECTRUM] >= 0) glUniform1fv(L[AL_SPECTRUM], AudioFeatures::kSpectrumBands, f.spectrum);
     if (L[AL_TEXSIM]   >= 0) glUniform1i(L[AL_TEXSIM],   7);   // RD field (unit 7)
     if (L[AL_TEXFLUID] >= 0) glUniform1i(L[AL_TEXFLUID], 8);   // fluid dye (unit 8)
+    if (L[AL_BUILDUP]  >= 0) glUniform1f(L[AL_BUILDUP],  f.buildUp);
+    if (L[AL_DROP]     >= 0) glUniform1f(L[AL_DROP],     f.dropPulse);
     if (L[AL_PHASE]    >= 0) glUniform1f(L[AL_PHASE],    f.audioRotPhase);
     if (L[AL_ADVANCE]  >= 0) glUniform1f(L[AL_ADVANCE],  f.audioAdvance);
     if (L[AL_BEAT]     >= 0) glUniform1f(L[AL_BEAT],     f.beatDecay);

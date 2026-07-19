@@ -155,4 +155,18 @@
   <CombineShader file="..\\Combine\\CombineOilPaint.frag" type="normal" probability="0.1" complexity="10">
   </CombineShader>
 
+  <TextureShader file="..\\Scene\\InkWater.frag" type="normal" probability="0.45" mood="calm" complexity="2">
+    <int name="plumesP" minValue="3" maxValue="5"></int>
+    <float name="inkHueP" minValue="0.0" maxValue="6.28"></float>
+    <float name="swirlP" minValue="0.9" maxValue="1.8"></float>
+    <float name="speedP" minValue="0.7" maxValue="1.5"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene\\BauhausGeo.frag" type="normal" probability="0.35" mood="bright,aggressive" complexity="3">
+    <int name="gridP" minValue="3" maxValue="7"></int>
+    <float name="paletteP" minValue="0.0" maxValue="6.28"></float>
+    <float name="spinP" minValue="0.6" maxValue="1.5"></float>
+    <float name="accentP" minValue="0.6" maxValue="1.6"></float>
+  </TextureShader>
+
 </configuration>

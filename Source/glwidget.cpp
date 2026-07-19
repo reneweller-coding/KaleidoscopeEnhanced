@@ -61,6 +61,29 @@ void GLwidget::remoteNextEffect()
 	if( m_actConfiguration && m_actConfiguration->m_filterShader )
 		m_actConfiguration->m_filterShader->requestSceneChange();
 }
+
+void GLwidget::remoteFavorite()
+{
+	if( m_actConfiguration && m_actConfiguration->m_filterShader )
+		m_actConfiguration->m_filterShader->favoriteCurrentEffect();
+}
+
+void GLwidget::remoteToggleReplayArm()
+{
+	m_replayArmed = !m_replayArmed;
+	if( m_replayArmed )
+	{
+		ensureRecWorker();
+		m_repLastFrame = 0;
+	}
+	fprintf( stderr, "Instant-Replay-Puffer (Remote): %s\n", m_replayArmed ? "AN" : "AUS" );
+}
+
+QByteArray GLwidget::remoteSnapshot()
+{
+	m_snapWantedUntil = m_fpsTimer.elapsed() + 10000;
+	return m_snapJpg;
+}
 bool    GLwidget::s_autoRecord = false;
 
 void GLwidget::traverseConfigurations( const QString& dirname, std::vector<Configuration *> &configurationList )
@@ -363,6 +386,26 @@ void GLwidget::draw()
 		captureFrame();
 	else if( m_replayArmed )
 		captureReplayFrame();      // rolling ~30 s instant-replay ring (~15 fps)
+
+	// Web-remote live preview: while the phone page polls /api/snapshot,
+	// refresh a small JPEG of the output ~1x per second (sync read, but rare
+	// and only while someone is actually looking at the page).
+	if( s_remotePort > 0 && m_fpsTimer.elapsed() < m_snapWantedUntil
+	    && m_fpsTimer.elapsed() - m_snapLast > 900 && m_width > 1 && m_height > 1 )
+	{
+		m_snapLast = m_fpsTimer.elapsed();
+		m_recBuf.resize( size_t(m_width) * m_height * 4 );
+		glPixelStorei( GL_PACK_ALIGNMENT, 1 );
+		glReadPixels( 0, 0, m_width, m_height, GL_RGBA, GL_UNSIGNED_BYTE, m_recBuf.data() );
+		QImage img( m_recBuf.data(), m_width, m_height, QImage::Format_RGBA8888 );
+		QImage out = img.mirrored( false, true )
+		                .scaledToHeight( 360, Qt::SmoothTransformation );
+		QByteArray jpg;
+		QBuffer buf( &jpg );
+		buf.open( QIODevice::WriteOnly );
+		out.save( &buf, "JPG", 70 );
+		m_snapJpg = jpg;
+	}
 
 	// Config cross-fade: draw the captured previous frame on top, fading out.
 	float fadeAlpha = 0.f;
@@ -848,6 +891,14 @@ void GLwidget::drawHelpOverlay( QPainter *painter )
 		{ "[  ]",    "reactivity  - less / more" },
 		{ ",  .",    "trails       - shorter / longer" },
 		{ "-  =",    "mood         - weaker / stronger" },
+		{ ";  '",    "latency     - earlier / later" },
+		{ "b",       "BLACKOUT (soft fade to black)" },
+		{ "e",       "FREEZE the picture" },
+		{ "t",       "tap tempo (tap the beat)" },
+		{ "u",       "pin / unpin the current effect" },
+		{ "f",       "favourite the current effect" },
+		{ "j",       "MIDI learn (cycle targets)" },
+		{ "y  x",    "arm / save the instant replay" },
 		{ "k",       "save current look + state as default" },
 		{ "r",       "record video + music to mp4" },
 		{ "s",       "save a screenshot (PNG)" },
@@ -877,7 +928,8 @@ void GLwidget::drawHelpOverlay( QPainter *painter )
 }
 
 static const char *kMidiTargetNames[] =
-	{ "Reactivity", "Trails", "Mood", "Latenz-Vorlauf", "Naechster Effekt" };
+	{ "Reactivity", "Trails", "Mood", "Latenz-Vorlauf", "Naechster Effekt",
+	  "Tap-Tempo", "Blackout" };
 
 void GLwidget::applyMidi()
 {
@@ -889,7 +941,8 @@ void GLwidget::applyMidi()
 		// ---- MIDI LEARN: bind the incoming controller to the current target ----
 		if( m_midiLearn >= 0 )
 		{
-			bool wantsNote = (m_midiLearn == MIDI_NEXT);
+			bool wantsNote = (m_midiLearn == MIDI_NEXT || m_midiLearn == MIDI_TAP
+			                  || m_midiLearn == MIDI_BLACKOUT);
 			if( (wantsNote && e.type == 0x90) || (!wantsNote && e.type == 0xB0) )
 			{
 				m_midiMap[m_midiLearn] = e.data1;
@@ -915,11 +968,20 @@ void GLwidget::applyMidi()
 			else if ( e.data1 == m_midiMap[MIDI_MOOD]    ) FilterShader::setMood       ( v * 2.5f  );
 			else if ( e.data1 == m_midiMap[MIDI_LATENCY] ) FilterShader::setLatency    ( v * 0.25f );
 		}
-		else if( e.type == 0x90 )                  // Note On -> next effect
+		else if( e.type == 0x90 )                  // Note On -> mapped pads
 		{
-			// Unmapped (-1): ANY pad advances (the old behaviour); mapped:
-			// only the learned note does.
-			if( m_midiMap[MIDI_NEXT] < 0 || e.data1 == m_midiMap[MIDI_NEXT] )
+			// Tap-tempo and blackout fire only on their LEARNED note; the
+			// next-effect pad keeps the any-note fallback when unmapped.
+			if( m_midiMap[MIDI_TAP] >= 0 && e.data1 == m_midiMap[MIDI_TAP] )
+			{
+				if( m_audioAnalyzer )
+					m_audioAnalyzer->tapTempo();
+			}
+			else if( m_midiMap[MIDI_BLACKOUT] >= 0 && e.data1 == m_midiMap[MIDI_BLACKOUT] )
+			{
+				FilterShader::toggleBlackout();
+			}
+			else if( m_midiMap[MIDI_NEXT] < 0 || e.data1 == m_midiMap[MIDI_NEXT] )
 				if( m_actConfiguration && m_actConfiguration->m_filterShader )
 					m_actConfiguration->m_filterShader->requestSceneChange();
 		}
@@ -1396,6 +1458,31 @@ void GLwidget::keyPressEvent(QKeyEvent* event)
 			break;
 		case Qt::Key_X:
 			saveReplay();
+			break;
+
+		// ---- VJ handbrakes ----
+		case Qt::Key_B:
+			FilterShader::toggleBlackout();
+			fprintf( stderr, "Blackout: %s\n", FilterShader::blackout() ? "AN" : "AUS" );
+			break;
+		case Qt::Key_E:
+			FilterShader::toggleFreeze();
+			fprintf( stderr, "Freeze: %s\n", FilterShader::frozen() ? "AN" : "AUS" );
+			break;
+		case Qt::Key_T:
+			if( m_audioAnalyzer )
+				m_audioAnalyzer->tapTempo();
+			break;
+		case Qt::Key_U:
+			FilterShader::togglePin();
+			fprintf( stderr, "Effekt-Pin: %s\n",
+			         FilterShader::pinned() ? "AN (haelt den aktuellen Effekt)" : "AUS" );
+			break;
+
+		// ---- Taste learning: favourite the current effect ----
+		case Qt::Key_F:
+			if( m_actConfiguration && m_actConfiguration->m_filterShader )
+				m_actConfiguration->m_filterShader->favoriteCurrentEffect();
 			break;
 
 		// ---- MIDI learn: cycle through the assignable targets ----
