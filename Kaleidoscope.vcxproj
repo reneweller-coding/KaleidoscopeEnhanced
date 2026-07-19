@@ -118,7 +118,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(QTDIR)\include;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtWidgets;$(QTDIR)\include\QtOpenGL;$(QTDIR)\include\QtOpenGLWidgets;$(QTDIR)\include\QtXml;$(QTDIR)\mkspecs\win32-msvc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Source;$(QTDIR)\include;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtWidgets;$(QTDIR)\include\QtOpenGL;$(QTDIR)\include\QtOpenGLWidgets;$(QTDIR)\include\QtXml;$(QTDIR)\mkspecs\win32-msvc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -170,7 +170,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(QTDIR)\include;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtWidgets;$(QTDIR)\include\QtOpenGL;$(QTDIR)\include\QtOpenGLWidgets;$(QTDIR)\include\QtXml;$(QTDIR)\mkspecs\win32-msvc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Source;$(QTDIR)\include;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtWidgets;$(QTDIR)\include\QtOpenGL;$(QTDIR)\include\QtOpenGLWidgets;$(QTDIR)\include\QtXml;$(QTDIR)\mkspecs\win32-msvc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <PrecompiledHeader>
@@ -210,25 +210,25 @@ exit /b 0</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Configuration.cpp" />
-    <ClCompile Include="AudioAnalyzer.cpp" />
-    <ClCompile Include="EffectShader.cpp" />
-    <ClCompile Include="filterShader.cpp" />
-    <ClCompile Include="GLee.c">
+    <ClCompile Include="Source\Configuration.cpp" />
+    <ClCompile Include="Source\AudioAnalyzer.cpp" />
+    <ClCompile Include="Source\EffectShader.cpp" />
+    <ClCompile Include="Source\filterShader.cpp" />
+    <ClCompile Include="Source\GLee.c">
       <!-- Vendored third-party extension loader: silence its warnings. -->
       <WarningLevel>TurnOffAllWarnings</WarningLevel>
     </ClCompile>
-    <ClCompile Include="glwidget.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="mesh.cpp" />
-    <ClCompile Include="MidiInput.cpp" />
-    <ClCompile Include="NowPlaying.cpp" />
+    <ClCompile Include="Source\glwidget.cpp" />
+    <ClCompile Include="Source\main.cpp" />
+    <ClCompile Include="Source\mesh.cpp" />
+    <ClCompile Include="Source\MidiInput.cpp" />
+    <ClCompile Include="Source\NowPlaying.cpp" />
     <ClCompile Include="moc\moc_AudioAnalyzer.cpp" />
     <ClCompile Include="moc\moc_glwidget.cpp" />
     <ClCompile Include="moc\moc_QMyWindow.cpp" />
-    <ClCompile Include="QMyWindow.cpp" />
-    <ClCompile Include="shader_setup.cpp" />
-    <ClCompile Include="SpoutOut.cpp" />
+    <ClCompile Include="Source\QMyWindow.cpp" />
+    <ClCompile Include="Source\shader_setup.cpp" />
+    <ClCompile Include="Source\SpoutOut.cpp" />
     <ClCompile Include="ThirdParty\SpoutGL\Spout.cpp" />
     <ClCompile Include="ThirdParty\SpoutGL\SpoutCopy.cpp" />
     <ClCompile Include="ThirdParty\SpoutGL\SpoutDirectX.cpp" />
@@ -238,21 +238,21 @@ exit /b 0</Command>
     <ClCompile Include="ThirdParty\SpoutGL\SpoutSenderNames.cpp" />
     <ClCompile Include="ThirdParty\SpoutGL\SpoutSharedMemory.cpp" />
     <ClCompile Include="ThirdParty\SpoutGL\SpoutUtils.cpp" />
-    <ClCompile Include="textfile.cpp" />
-    <ClCompile Include="TextureEffectKaleidoscopeBase.cpp" />
-    <ClCompile Include="Uniform.cpp" />
-    <ClCompile Include="Utils.cpp" />
-    <ClCompile Include="Vector3D.cpp" />
-    <ClCompile Include="WebRemote.cpp" />
+    <ClCompile Include="Source\textfile.cpp" />
+    <ClCompile Include="Source\TextureEffectKaleidoscopeBase.cpp" />
+    <ClCompile Include="Source\Uniform.cpp" />
+    <ClCompile Include="Source\Utils.cpp" />
+    <ClCompile Include="Source\Vector3D.cpp" />
+    <ClCompile Include="Source\WebRemote.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Configuration.h" />
-    <CustomBuild Include="AudioAnalyzer.h">
+    <ClInclude Include="Source\Configuration.h" />
+    <CustomBuild Include="Source\AudioAnalyzer.h">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">MOCing AudioAnalyzer.h ...</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MOCing AudioAnalyzer.h ...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc AudioAnalyzer.h -o moc\moc_AudioAnalyzer.cpp
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc Source\AudioAnalyzer.h -o moc\moc_AudioAnalyzer.cpp
 </Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc AudioAnalyzer.h -o moc\moc_AudioAnalyzer.cpp
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc Source\AudioAnalyzer.h -o moc\moc_AudioAnalyzer.cpp
 </Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe;%(AdditionalInputs)</AdditionalInputs>
@@ -260,25 +260,25 @@ exit /b 0</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">moc\moc_AudioAnalyzer.cpp;%(Outputs)</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MOCing AudioAnalyzer.h ...</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">MOCing AudioAnalyzer.h ...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc AudioAnalyzer.h -o moc\moc_AudioAnalyzer.cpp
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc Source\AudioAnalyzer.h -o moc\moc_AudioAnalyzer.cpp
 </Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(QTDIR)\bin\moc AudioAnalyzer.h -o moc\moc_AudioAnalyzer.cpp
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(QTDIR)\bin\moc Source\AudioAnalyzer.h -o moc\moc_AudioAnalyzer.cpp
 </Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc.exe;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(QTDIR)\bin\moc.exe;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">moc\moc_AudioAnalyzer.cpp;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">moc\moc_AudioAnalyzer.cpp;%(Outputs)</Outputs>
     </CustomBuild>
-    <ClInclude Include="AudioFeatures.h" />
-    <ClInclude Include="EffectShader.h" />
-    <ClInclude Include="filterShader.h" />
-    <ClInclude Include="GLee.h" />
-    <CustomBuild Include="glwidget.h">
+    <ClInclude Include="Source\AudioFeatures.h" />
+    <ClInclude Include="Source\EffectShader.h" />
+    <ClInclude Include="Source\filterShader.h" />
+    <ClInclude Include="Source\GLee.h" />
+    <CustomBuild Include="Source\glwidget.h">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">MOCing glwidget.h ...</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MOCing glwidget.h ...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc glwidget.h -o moc\moc_glwidget.cpp
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc Source\glwidget.h -o moc\moc_glwidget.cpp
 </Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc glwidget.h -o moc\moc_glwidget.cpp
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc Source\glwidget.h -o moc\moc_glwidget.cpp
 </Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe;%(AdditionalInputs)</AdditionalInputs>
@@ -286,9 +286,9 @@ exit /b 0</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">moc\moc_glwidget.cpp;%(Outputs)</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MOCing glwidget.h ...</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">MOCing glwidget.h ...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc glwidget.h -o moc\moc_glwidget.cpp
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc Source\glwidget.h -o moc\moc_glwidget.cpp
 </Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(QTDIR)\bin\moc glwidget.h -o moc\moc_glwidget.cpp
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(QTDIR)\bin\moc Source\glwidget.h -o moc\moc_glwidget.cpp
 </Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc.exe;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(QTDIR)\bin\moc.exe;%(AdditionalInputs)</AdditionalInputs>
@@ -303,13 +303,13 @@ exit /b 0</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
       </Command>
     </CustomBuild>
-    <ClInclude Include="mesh.h" />
-    <CustomBuild Include="QMyWindow.h">
+    <ClInclude Include="Source\mesh.h" />
+    <CustomBuild Include="Source\QMyWindow.h">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">MOCint QMyWindow ...</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MOCint QMyWindow ...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc QMyWindow.h -o moc\moc_QMyWindow.cpp
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc Source\QMyWindow.h -o moc\moc_QMyWindow.cpp
 </Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc QMyWindow.h -o moc\moc_QMyWindow.cpp
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc Source\QMyWindow.h -o moc\moc_QMyWindow.cpp
 </Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe;%(AdditionalInputs)</AdditionalInputs>
@@ -317,49 +317,49 @@ exit /b 0</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">moc\moc_QMyWindow.cpp;%(Outputs)</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MOCint QMyWindow ...</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">MOCint QMyWindow ...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc QMyWindow.h -o moc\moc_QMyWindow.cpp
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc Source\QMyWindow.h -o moc\moc_QMyWindow.cpp
 </Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(QTDIR)\bin\moc QMyWindow.h -o moc\moc_QMyWindow.cpp
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(QTDIR)\bin\moc Source\QMyWindow.h -o moc\moc_QMyWindow.cpp
 </Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc.exe;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(QTDIR)\bin\moc.exe;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">moc\moc_QMyWindow.cpp;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">moc\moc_QMyWindow.cpp;%(Outputs)</Outputs>
     </CustomBuild>
-    <ClInclude Include="shader_setup.h" />
-    <ClInclude Include="stdinc.h" />
-    <ClInclude Include="textfile.h" />
-    <ClInclude Include="TextureEffectKaleidoscopeBase.h" />
-    <ClInclude Include="Uniform.h" />
-    <ClInclude Include="Utils.h" />
-    <ClInclude Include="Vector3D.h" />
-    <ClInclude Include="Vector4D.h" />
+    <ClInclude Include="Source\shader_setup.h" />
+    <ClInclude Include="Source\stdinc.h" />
+    <ClInclude Include="Source\textfile.h" />
+    <ClInclude Include="Source\TextureEffectKaleidoscopeBase.h" />
+    <ClInclude Include="Source\Uniform.h" />
+    <ClInclude Include="Source\Utils.h" />
+    <ClInclude Include="Source\Vector3D.h" />
+    <ClInclude Include="Source\Vector4D.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Bubble.frag" />
-    <None Include="CombineDarkRed.frag" />
-    <None Include="CombineDeformationFlow.frag" />
-    <None Include="CombineGrey.frag" />
-    <None Include="CombineHexagon.frag" />
-    <None Include="CombineKaleidoscope.frag" />
-    <None Include="CombineLens.frag" />
-    <None Include="CombineLichtenstein.frag" />
-    <None Include="CombineMulti.frag" />
-    <None Include="CombineOilPaint.frag" />
-    <None Include="CombineOilPaintFlow.frag" />
-    <None Include="CombineParallax.frag" />
-    <None Include="CombinePlain.frag" />
-    <None Include="CombinePlaneFlight.frag" />
-    <None Include="CombineRotate.frag" />
-    <None Include="CombineShader.frag" />
-    <None Include="CombineShroom.frag" />
-    <None Include="CombineSphere.frag" />
-    <None Include="CombineWater.frag" />
-    <None Include="CombineWater2.frag" />
-    <None Include="CombineWave.frag" />
-    <None Include="default.frag" />
-    <None Include="Kaleidoscope.frag" />
-    <None Include="KaleidoscopeTunnelV7.frag" />
+    <None Include="Scene\Bubble.frag" />
+    <None Include="Combine\CombineDarkRed.frag" />
+    <None Include="Combine\CombineDeformationFlow.frag" />
+    <None Include="Combine\CombineGrey.frag" />
+    <None Include="Combine\CombineHexagon.frag" />
+    <None Include="Combine\CombineKaleidoscope.frag" />
+    <None Include="Combine\CombineLens.frag" />
+    <None Include="Combine\CombineLichtenstein.frag" />
+    <None Include="Combine\CombineMulti.frag" />
+    <None Include="Combine\CombineOilPaint.frag" />
+    <None Include="Combine\CombineOilPaintFlow.frag" />
+    <None Include="Combine\CombineParallax.frag" />
+    <None Include="Combine\CombinePlain.frag" />
+    <None Include="Combine\CombinePlaneFlight.frag" />
+    <None Include="Combine\CombineRotate.frag" />
+    <None Include="Blend\CombineShader.frag" />
+    <None Include="Combine\CombineShroom.frag" />
+    <None Include="Combine\CombineSphere.frag" />
+    <None Include="Combine\CombineWater.frag" />
+    <None Include="Combine\CombineWater2.frag" />
+    <None Include="Combine\CombineWave.frag" />
+    <None Include="Blend\default.frag" />
+    <None Include="Scene\Kaleidoscope.frag" />
+    <None Include="Scene\KaleidoscopeTunnelV7.frag" />
     <CustomBuild Include="mainwindow.ui">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Generating user interface class mainwindow.h...</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Generating user interface class mainwindow.h...</Message>
@@ -382,16 +382,16 @@ exit /b 0</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">mainwindow.h;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">mainwindow.h;%(Outputs)</Outputs>
     </CustomBuild>
-    <None Include="Rorschach.frag" />
+    <None Include="Scene\Rorschach.frag" />
     <None Include="standard.vert" />
-    <None Include="TextureEffectParallaxKaleidoscope.frag" />
-    <None Include="TextureEffectParallaxKaleidoscopeTunnel.frag" />
-    <None Include="DarkAmbientTunnel.frag" />
-    <None Include="HarmonicRings.frag" />
-    <None Include="Tunnel.frag" />
-    <None Include="TunnelAcceleration.frag" />
-    <None Include="TunnelPlain.frag" />
-    <None Include="TunnelReverse.frag" />
+    <None Include="Scene\TextureEffectParallaxKaleidoscope.frag" />
+    <None Include="Scene\TextureEffectParallaxKaleidoscopeTunnel.frag" />
+    <None Include="Scene\DarkAmbientTunnel.frag" />
+    <None Include="Scene\HarmonicRings.frag" />
+    <None Include="Scene\Tunnel.frag" />
+    <None Include="Scene\TunnelAcceleration.frag" />
+    <None Include="Scene\TunnelPlain.frag" />
+    <None Include="Scene\TunnelReverse.frag" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

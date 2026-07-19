@@ -21,7 +21,7 @@ m_minSides(2)
 {
 	EffectShader();
 	m_vertexShaderFilename = "..\\standard.vert";
-	m_fragmentShaderFilename = "..\\CombineKaleidoscope.frag";
+	m_fragmentShaderFilename = "..\\Combine\\CombineKaleidoscope.frag";
 
 	m_sides = (float) ( (qrand() % m_maxSides) + m_minSides);
 }

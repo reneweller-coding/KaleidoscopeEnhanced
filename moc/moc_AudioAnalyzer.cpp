@@ -6,7 +6,7 @@
 ** WARNING! All changes made in this file will be lost!
 *****************************************************************************/
 
-#include "../AudioAnalyzer.h"
+#include "../Source/AudioAnalyzer.h"
 #include <QtCore/qmetatype.h>
 
 #include <QtCore/qtmochelpers.h>

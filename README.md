@@ -556,16 +556,30 @@ Built for unattended, long-running installations:
 
 ## Project layout
 
-- `AudioAnalyzer.{h,cpp}`, `AudioFeatures.h` — capture + real-time analysis
-- `NowPlaying.{h,cpp}` — current track title/artist (Windows media session / WinRT)
-- `MidiInput.{h,cpp}` — optional MIDI controller input (winmm)
-- `glwidget.{h,cpp}` — `QOpenGLWidget`, input, overlay
-- `filterShader.{h,cpp}` — the FBO render pipeline + audio→visual mapping
-- `EffectShader.{h,cpp}`, `Uniform.{h,cpp}` — per-effect shader + uniform handling
-- `Configuration.{h,cpp}` — XML config loading
-- `*.frag` — the effects; `Present.frag` (mood grade + safety), `Feedback.frag`
-  (trails), `ReactionDiffusionSim.frag` (the Gray-Scott PDE step) +
-  `ReactionDiffusion.frag` (its display); `Configurations\*.xml` — presets
+Reorganised 2026-07 into folders:
+
+- `Source\` — all C++ sources/headers of the main app:
+  `AudioAnalyzer.{h,cpp}` + `AudioFeatures.h` (capture + real-time analysis),
+  `NowPlaying` (track title/artist), `MidiInput` (MIDI + learn),
+  `glwidget` (`QOpenGLWidget`, input, overlays, replay, web-remote hooks),
+  `filterShader` (FBO pipeline + audio→visual mapping), `EffectShader` /
+  `Uniform` (per-effect shader + params), `Configuration` (XML loading),
+  `WebRemote`, `SpoutOut`, …
+- `Scene\*.frag` — the 45 scene (texture) effects
+- `Combine\*.frag` — the 21 combine passes (incl. `CombinePlain.frag`, which
+  carries the 25-style transition library)
+- `Blend\*.frag` — internal pipeline passes: `Present.frag` (mood grade +
+  safety + dither), `Feedback.frag` (echo-warp trails), `BloomBlur.frag`,
+  `ReactionDiffusionSim.frag` / `FluidSim.frag` (the GPU simulations),
+  `CombineShader.frag`, `default.frag`
+- `standard.vert` stays in the root (single shared vertex shader; the editor
+  also locates the project root by it)
+- `ThirdParty\SpoutGL\` — vendored Spout2 SDK; `PresetEditor\` — the editor;
+  `Configurations\*.xml` — presets (entries reference `..\Scene\...` /
+  `..\Combine\...`)
+
+The deploy packaging (`deploy.ps1`) mirrors the same folder structure into
+`dist\KaleidoscopeVisualizer\`.
 
 ---
 

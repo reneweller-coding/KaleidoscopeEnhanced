@@ -76,7 +76,12 @@ if (Test-Path $pkgDir) { Remove-Item $pkgDir -Recurse -Force }
 New-Item -ItemType Directory -Path $binDir -Force | Out-Null
 
 # --- 2. copy assets (parent of bin, mirroring the dev "..\" layout) ----------
-Copy-Item (Join-Path $root "*.frag") $pkgDir
+# Shaders live in subfolders since the 2026-07 reorg (Scene / Combine / Blend);
+# the exe references them as "..\Scene\...", so the folder structure must be
+# mirrored in the package.
+foreach ($d in @("Scene", "Combine", "Blend")) {
+    Copy-Item (Join-Path $root $d) $pkgDir -Recurse
+}
 Copy-Item (Join-Path $root "*.vert") $pkgDir
 Copy-Item (Join-Path $root "Configurations") $pkgDir -Recurse
 if (Test-Path (Join-Path $root "icon.png")) {

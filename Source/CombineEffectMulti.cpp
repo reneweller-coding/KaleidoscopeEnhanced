@@ -18,7 +18,7 @@ m_minCopies(3)
 	EffectShader();
 
 	m_vertexShaderFilename = "..\\standard.vert";
-	m_fragmentShaderFilename = "..\\CombineMulti.frag";
+	m_fragmentShaderFilename = "..\\Combine\\CombineMulti.frag";
 
 	m_copies = (float) ( (qrand() % m_maxCopies) + m_minCopies);
 }

@@ -5,7 +5,7 @@
        (timingScale, 4-beat cross-fades, section cuts); the engine defaults
        (solo 20-90 s, fade 15-50 s) only matter without music. -->
 
-  <TextureShader file="..\\BreathingFractalNoir.frag" type="normal" probability="0.7" mood="dark" complexity="1">
+  <TextureShader file="..\\Scene\\BreathingFractalNoir.frag" type="normal" probability="0.7" mood="dark" complexity="1">
     <float name="oscP" minValue="0.03" maxValue="0.09"></float>
     <float name="deepP" minValue="2.5" maxValue="4.5"></float>
     <float name="breathP" minValue="12.0" maxValue="30.0"></float>
@@ -14,7 +14,7 @@
     <float name="rosetteP" minValue="0.15" maxValue="0.35"></float>
   </TextureShader>
 
-  <TextureShader file="..\\DarkAmbientTunnel.frag" type="KaleidoscopeBase" probability="0.6" complexity="1">
+  <TextureShader file="..\\Scene\\DarkAmbientTunnel.frag" type="KaleidoscopeBase" probability="0.6" complexity="1">
     <!-- Very slow rotation â€“ audio flux controls actual motion -->
     <float name="speedTunnel" minValue="0.0002" maxValue="0.0020"></float>
     <float name="speed"       minValue="0.0002" maxValue="0.0015"></float>
@@ -23,10 +23,10 @@
     <bool  name="rotate"      probability="0.6"></bool>
   </TextureShader>
 
-  <TextureShader file="..\\DroneDepths.frag" type="normal" probability="0.6" mood="calm,dark" complexity="1">
+  <TextureShader file="..\\Scene\\DroneDepths.frag" type="normal" probability="0.6" mood="calm,dark" complexity="1">
   </TextureShader>
 
-  <TextureShader file="..\\TheCore.frag" type="normal" probability="0.5" mood="aggressive" complexity="2">
+  <TextureShader file="..\\Scene\\TheCore.frag" type="normal" probability="0.5" mood="aggressive" complexity="2">
     <float name="coreP" minValue="0.6" maxValue="1.6"></float>
     <float name="twistP" minValue="0.15" maxValue="0.5"></float>
     <float name="tubeP" minValue="0.06" maxValue="0.16"></float>
@@ -34,35 +34,35 @@
     <float name="rosetteP" minValue="0.15" maxValue="0.35"></float>
   </TextureShader>
 
-  <TextureShader file="..\\ReactionDiffusion.frag" type="normal" probability="0.55" complexity="2">
+  <TextureShader file="..\\Scene\\ReactionDiffusion.frag" type="normal" probability="0.55" complexity="2">
     <int name="sidesP" minValue="0" maxValue="9"></int>
     <float name="dispP" minValue="0.3" maxValue="0.9"></float>
     <float name="zoomP" minValue="0.7" maxValue="1.5"></float>
   </TextureShader>
 
-  <TextureShader file="..\\NoiseSpiral.frag" type="normal" probability="0.5" complexity="2">
+  <TextureShader file="..\\Scene\\NoiseSpiral.frag" type="normal" probability="0.5" complexity="2">
     <float name="twistP" minValue="0.1" maxValue="0.35"></float>
     <float name="turbP" minValue="0.18" maxValue="0.45"></float>
   </TextureShader>
 
-  <TextureShader file="..\\Metamorph.frag" type="normal" probability="0.5" complexity="1">
+  <TextureShader file="..\\Scene\\Metamorph.frag" type="normal" probability="0.5" complexity="1">
     <int name="sidesP" minValue="4" maxValue="10"></int>
     <float name="latticeP" minValue="2.0" maxValue="4.5"></float>
     <float name="warpAmtP" minValue="0.15" maxValue="0.35"></float>
     <float name="swirlP" minValue="0.0" maxValue="0.7"></float>
   </TextureShader>
 
-  <TextureShader file="..\\OilProjector.frag" type="normal" probability="0.5" mood="calm" complexity="2">
+  <TextureShader file="..\\Scene\\OilProjector.frag" type="normal" probability="0.5" mood="calm" complexity="2">
     <int name="sidesP" minValue="2" maxValue="9"></int>
     <float name="cellP" minValue="1.4" maxValue="3.0"></float>
   </TextureShader>
 
-  <TextureShader file="..\\Fluid.frag" type="normal" probability="0.5" mood="calm" complexity="1">
+  <TextureShader file="..\\Scene\\Fluid.frag" type="normal" probability="0.5" mood="calm" complexity="1">
     <int name="sidesP" minValue="0" maxValue="9"></int>
     <float name="zoomP" minValue="0.7" maxValue="1.5"></float>
   </TextureShader>
 
-  <TextureShader file="..\\MobiusOrbs.frag" type="normal" probability="0.4" complexity="2">
+  <TextureShader file="..\\Scene\\MobiusOrbs.frag" type="normal" probability="0.4" complexity="2">
     <float name="zoomP" minValue="0.04" maxValue="0.28"></float>
     <float name="orbSizeP" minValue="4.0" maxValue="11.0"></float>
     <float name="radiusP" minValue="3.0" maxValue="14.0"></float>
@@ -70,7 +70,7 @@
     <float name="shapeP" minValue="0.2" maxValue="1.5"></float>
   </TextureShader>
 
-  <TextureShader file="..\\Vortex.frag" type="normal" probability="0.35" mood="aggressive,bright" complexity="2">
+  <TextureShader file="..\\Scene\\Vortex.frag" type="normal" probability="0.35" mood="aggressive,bright" complexity="2">
     <int name="sectorsP" minValue="6" maxValue="17"></int>
     <float name="curveP" minValue="0.04" maxValue="0.14"></float>
     <float name="travP" minValue="0.6" maxValue="1.5"></float>
@@ -78,21 +78,21 @@
     <float name="rosetteP" minValue="0.15" maxValue="0.35"></float>
   </TextureShader>
 
-  <CombineShader file="..\\CombinePlain.frag" type="normal" probability="1" complexity="1">
+  <CombineShader file="..\\Combine\\CombinePlain.frag" type="normal" probability="1" complexity="1">
   </CombineShader>
 
-  <CombineShader file="..\\CombineDarkRed.frag" type="normal" probability="0.3" complexity="1">
+  <CombineShader file="..\\Combine\\CombineDarkRed.frag" type="normal" probability="0.3" complexity="1">
     <bool name="red" probability="0.3"></bool>
     <bool name="rotate" probability="0.3"></bool>
   </CombineShader>
 
-  <CombineShader file="..\\CombineDroneWarp.frag" type="normal" probability="0.5" complexity="1">
+  <CombineShader file="..\\Combine\\CombineDroneWarp.frag" type="normal" probability="0.5" complexity="1">
     <float name="warpScaleP" minValue="2.0" maxValue="5.0"></float>
     <float name="warpAmtP" minValue="0.5" maxValue="1.8"></float>
     <float name="driftP" minValue="0.5" maxValue="2.0"></float>
   </CombineShader>
 
-  <CombineShader file="..\\CombinePulse.frag" type="normal" probability="0.3" complexity="1">
+  <CombineShader file="..\\Combine\\CombinePulse.frag" type="normal" probability="0.3" complexity="1">
     <float name="breathAmtP" minValue="0.02" maxValue="0.06"></float>
     <float name="waveAmtP" minValue="0.008" maxValue="0.03"></float>
     <float name="spinP" minValue="0.02" maxValue="0.12"></float>

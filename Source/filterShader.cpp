@@ -191,7 +191,7 @@ void FilterShader::start( int width, int height )
 		fprintf( stderr, "WARNING: configuration has no valid <TextureShader> "
 		                 "entries (check attribute names + type) - using a "
 		                 "plain fallback.\n" );
-		EffectShader *fb = new EffectShader( "..\\CombinePlain.frag", 30, 60, 20, 40 );
+		EffectShader *fb = new EffectShader( "..\\Combine\\CombinePlain.frag", 30, 60, 20, 40 );
 		fb->setProbability( 1.f );
 		fb->setComplexity( 1 );
 		m_effectTextures.push_back( fb );
@@ -201,7 +201,7 @@ void FilterShader::start( int width, int height )
 		fprintf( stderr, "WARNING: configuration has no valid <CombineShader> "
 		                 "entries (they need the SAME attribute names as "
 		                 "TextureShader + type=\"normal\") - using CombinePlain.\n" );
-		EffectShader *fb = new EffectShader( "..\\CombinePlain.frag", 30, 60, 20, 40 );
+		EffectShader *fb = new EffectShader( "..\\Combine\\CombinePlain.frag", 30, 60, 20, 40 );
 		fb->setProbability( 1.f );
 		fb->setComplexity( 1 );
 		m_effectCombines.push_back( fb );
@@ -421,39 +421,39 @@ FilterShader::FilterShader(int width, int height, const QString &directory)
 
 
 	
-	EffectShader *tunnelPlain = new EffectShader( "..\\TunnelPlain.frag", 20, 120, 30, 120 );
+	EffectShader *tunnelPlain = new EffectShader( "..\\Scene\\TunnelPlain.frag", 20, 120, 30, 120 );
 	tunnelPlain->addUniform( "speed", 0.001f, 0.05f );
 	tunnelPlain->addUniform( "sides", 3.0f, 14.0f );
 	tunnelPlain->addUniform( "power", 1.0f, 4.0f );
 
 
 
-	EffectShader *bubbles = new EffectShader( "..\\Bubble.frag", 20, 120, 30, 120 );
+	EffectShader *bubbles = new EffectShader( "..\\Scene\\Bubble.frag", 20, 120, 30, 120 );
 	bubbles->addUniform( "speed", 1.0f, 2.5f );
 	bubbles->addUniform( "speedColor", 0.5f, 1.5f );
 	bubbles->addUniform( "negative", 0.1f );
 	bubbles->addUniform( "vigneting", 0.5f );
 
-	TextureEffectKaleidoscopeBase *textureTunnel = new TextureEffectKaleidoscopeBase( "..\\Tunnel.frag", 120, 300, 40, 90 );
+	TextureEffectKaleidoscopeBase *textureTunnel = new TextureEffectKaleidoscopeBase( "..\\Scene\\Tunnel.frag", 120, 300, 40, 90 );
 	textureTunnel->addUniform( "rotate", 0.7 );
 	textureTunnel->addUniform( "speedTunnel", 0.001f, 0.06 );
 
 
-	TextureEffectKaleidoscopeBase *textureTunnelReverse = new TextureEffectKaleidoscopeBase( "..\\TunnelReverse.frag", 20, 120, 20, 40 );
+	TextureEffectKaleidoscopeBase *textureTunnelReverse = new TextureEffectKaleidoscopeBase( "..\\Scene\\TunnelReverse.frag", 20, 120, 20, 40 );
 	textureTunnel->addUniform( "rotate", 0.7 );
 	textureTunnel->addUniform( "speedTunnel", 0.001f, 0.03f );
 	textureTunnel->addUniform( "speedTunnelReverse", 0.0001f, 0.01f );
 
 	
-	TextureEffectKaleidoscopeBase *textureTunnelAccel = new TextureEffectKaleidoscopeBase( "..\\TunnelAcceleration.frag", 10, 20, 10, 20 );
-	//TextureEffectKaleidoscopeBase *textureTunnelAccel = new TextureEffectKaleidoscopeBase( "..\\TunnelAcceleration.frag", 40, 180, 10, 40 );
+	TextureEffectKaleidoscopeBase *textureTunnelAccel = new TextureEffectKaleidoscopeBase( "..\\Scene\\TunnelAcceleration.frag", 10, 20, 10, 20 );
+	//TextureEffectKaleidoscopeBase *textureTunnelAccel = new TextureEffectKaleidoscopeBase( "..\\Scene\\TunnelAcceleration.frag", 40, 180, 10, 40 );
 	textureTunnelAccel->addUniform( "rotate", 0.7 );
 	textureTunnelAccel->addUniform( "speedTunnel", 0.001f, 0.03f );
 	textureTunnelAccel->addUniformInterpolator( "speedTunnelAccel", 0.0, 0.0005f, 0.01f, 0.09f );
 	
 	
-	TextureEffectKaleidoscopeBase *textureTunnelAccel2 = new TextureEffectKaleidoscopeBase( "..\\TunnelAcceleration.frag", 10, 20, 10, 20 );
-	//TextureEffectKaleidoscopeBase *textureTunnelAccel2 = new TextureEffectKaleidoscopeBase( "..\\TunnelAcceleration.frag", 40, 180, 10, 40 );
+	TextureEffectKaleidoscopeBase *textureTunnelAccel2 = new TextureEffectKaleidoscopeBase( "..\\Scene\\TunnelAcceleration.frag", 10, 20, 10, 20 );
+	//TextureEffectKaleidoscopeBase *textureTunnelAccel2 = new TextureEffectKaleidoscopeBase( "..\\Scene\\TunnelAcceleration.frag", 40, 180, 10, 40 );
 	textureTunnelAccel2->addUniform( "rotate", 0.7 );
 	textureTunnelAccel2->addUniform( "speedTunnel", 0.001f, 0.03f );
 	textureTunnelAccel2->addUniformInterpolator( "speedTunnelAccel", 0.0, 0.0005f, 0.01f, 0.09f );
@@ -470,11 +470,11 @@ FilterShader::FilterShader(int width, int height, const QString &directory)
 	TextureEffectKaleidoscopeBase *textureKaleidoscopeBase3 = new TextureEffectKaleidoscopeBase( 20, 90, 60, 120 );
 	textureKaleidoscopeBase3->addUniform( "rotate", 0.7 );
 
-	TextureEffectKaleidoscopeBase *textureTunnel2 = new TextureEffectKaleidoscopeBase( "..\\Tunnel.frag", 120, 300, 40, 90 );
+	TextureEffectKaleidoscopeBase *textureTunnel2 = new TextureEffectKaleidoscopeBase( "..\\Scene\\Tunnel.frag", 120, 300, 40, 90 );
 	textureTunnel2->addUniform( "rotate", 0.7 );
 	textureTunnel2->addUniform( "speedTunnel", 0.001f, 0.06 );
 
-	TextureEffectKaleidoscopeBase *textureTunnel3 = new TextureEffectKaleidoscopeBase( "..\\Tunnel.frag", 120, 300, 40, 90 );
+	TextureEffectKaleidoscopeBase *textureTunnel3 = new TextureEffectKaleidoscopeBase( "..\\Scene\\Tunnel.frag", 120, 300, 40, 90 );
 	textureTunnel3->addUniform( "rotate", 0.7 );
 	textureTunnel3->addUniform( "speedTunnel", 0.001f, 0.06 );
 
@@ -483,7 +483,7 @@ FilterShader::FilterShader(int width, int height, const QString &directory)
 
 
 	
-	EffectShader *rorschach = new EffectShader( "..\\Rorschach.frag", 20, 120, 30, 120 );
+	EffectShader *rorschach = new EffectShader( "..\\Scene\\Rorschach.frag", 20, 120, 30, 120 );
 	rorschach->addUniform( "positive", 0.5 );
 	rorschach->addUniform( "posX", 0.1f, 0.9f );
 	rorschach->addUniform( "posY", 0.1f, 0.9f );
@@ -495,14 +495,14 @@ FilterShader::FilterShader(int width, int height, const QString &directory)
 
 
 	
-	TextureEffectKaleidoscopeBase *textureEffectParallaxKaleidoscope = new TextureEffectKaleidoscopeBase( "..\\TextureEffectParallaxKaleidoscope.frag", 60, 240, 20, 60 );
+	TextureEffectKaleidoscopeBase *textureEffectParallaxKaleidoscope = new TextureEffectKaleidoscopeBase( "..\\Scene\\TextureEffectParallaxKaleidoscope.frag", 60, 240, 20, 60 );
 	textureEffectParallaxKaleidoscope->addUniform( "rotate", 0.2 );
 	textureEffectParallaxKaleidoscope->addUniform( "speedMovement", 3.0f, 6.0f ); //5.0
 	textureEffectParallaxKaleidoscope->addUniform( "extend", 2000.0f, 8000.0f ); //4000
 	textureEffectParallaxKaleidoscope->addUniform( "direction", 0.5 );
 
 	
-	TextureEffectKaleidoscopeBase *textureEffectParallaxKaleidoscopeTunnel = new TextureEffectKaleidoscopeBase( "..\\TextureEffectParallaxKaleidoscopeTunnel.frag", 60, 240, 20, 60 );
+	TextureEffectKaleidoscopeBase *textureEffectParallaxKaleidoscopeTunnel = new TextureEffectKaleidoscopeBase( "..\\Scene\\TextureEffectParallaxKaleidoscopeTunnel.frag", 60, 240, 20, 60 );
 	textureEffectParallaxKaleidoscopeTunnel->addUniform( "rotate", 0.2 );
 	textureEffectParallaxKaleidoscopeTunnel->addUniform( "speedMovement", 3.0f, 6.0f ); //5.0
 	textureEffectParallaxKaleidoscopeTunnel->addUniform( "extend", 2000.0f, 8000.0f ); //4000
@@ -597,7 +597,7 @@ FilterShader::FilterShader(int width, int height, const QString &directory)
 
 
 
-	EffectShader *combineDeformation =  new EffectShader( "..\\CombineDeformationFlow.frag", 20, 40, 30, 60 );//new EffectShader( "..\\CombinePlain.frag" );//new EffectShader( "..\\CombineWave.frag" );
+	EffectShader *combineDeformation =  new EffectShader( "..\\Combine\\CombineDeformationFlow.frag", 20, 40, 30, 60 );//new EffectShader( "..\\Combine\\CombinePlain.frag" );//new EffectShader( "..\\Combine\\CombineWave.frag" );
 	combineDeformation->addUniform( "copies", 3.0f, 10.0f );
 	combineDeformation->addUniform( "displayGrid", .95 );
 	combineDeformation->addUniform( "speed", 0.005f, 0.05f );
@@ -605,17 +605,17 @@ FilterShader::FilterShader(int width, int height, const QString &directory)
 	combineDeformation->addUniform( "leftRight", 0.5 );
 	
 
-	EffectShader *combineLichtenstein = new EffectShader( "..\\CombineLichtenstein.frag", 10, 60, 40, 120 );
+	EffectShader *combineLichtenstein = new EffectShader( "..\\Combine\\CombineLichtenstein.frag", 10, 60, 40, 120 );
 	combineLichtenstein->addUniform( "size", 4.0f, 18.0f );
 
 
-	EffectShader *combineSphere = new EffectShader( "..\\CombineSphere.frag", 30, 90, 20, 90 );
+	EffectShader *combineSphere = new EffectShader( "..\\Combine\\CombineSphere.frag", 30, 90, 20, 90 );
 	combineSphere->addUniform( "radius", 0.5f, 1.0f );
 	combineSphere->addUniform( "nrCopies", 1.0f, 8.0f );
 	combineSphere->addUniform( "speed", 0.01f, 0.15f );
 	combineSphere->addUniform( "rot", 0.5f );
 
-	EffectShader *combineShroom = new EffectShader( "..\\CombineShroom.frag", 10, 30, 20, 60 );
+	EffectShader *combineShroom = new EffectShader( "..\\Combine\\CombineShroom.frag", 10, 30, 20, 60 );
 	combineShroom->addUniform( "scale", 0.01f, 0.025f );
 	combineShroom->addUniform( "speed", 0.05f, 0.9f );
 	combineShroom->addUniform( "negativeU", 0.5f );
@@ -623,40 +623,40 @@ FilterShader::FilterShader(int width, int height, const QString &directory)
 	combineShroom->addUniform( "scaleFactor", 1.0f, 3.5f );
 
 	
-	EffectShader *combineWater = new EffectShader( "..\\CombineWater.frag", 10, 20, 20, 40 );
+	EffectShader *combineWater = new EffectShader( "..\\Combine\\CombineWater.frag", 10, 20, 20, 40 );
 
 		
-	EffectShader *combineMulti = new EffectShader( "..\\CombineMulti.frag", 40, 180, 40, 90 );
+	EffectShader *combineMulti = new EffectShader( "..\\Combine\\CombineMulti.frag", 40, 180, 40, 90 );
 	combineMulti->addUniform( "copies", 3.0f, 12.0f );
 	combineMulti->addUniform( "rot", 0.5 );
 
 	
-	EffectShader *combineMultiShort = new EffectShader( "..\\CombineMulti.frag", 0, 5, 40, 90 );
+	EffectShader *combineMultiShort = new EffectShader( "..\\Combine\\CombineMulti.frag", 0, 5, 40, 90 );
 	combineMultiShort->addUniform( "copies", 3.0f, 12.0f );
 	combineMultiShort->addUniform( "rot", 0.5 );
 
-	EffectShader *combinePlain = new EffectShader( "..\\CombinePlain.frag", 60, 240, 60, 120 );//CombineEffectKaleidoscope()
-	EffectShader *combinePlain2 = new EffectShader( "..\\CombinePlain.frag", 60, 240, 60, 120 );//CombineEffectKaleidoscope();
-	EffectShader *combinePlain3 = new EffectShader( "..\\CombinePlain.frag", 60, 240, 60, 120 );//CombineEffectKaleidoscope();
-	EffectShader *combineGrey = new EffectShader( "..\\CombineGrey.frag", 40, 240, 30, 120 );
-	EffectShader *combineDarkRed = new EffectShader( "..\\CombineDarkRed.frag", 40, 240, 30, 120 );
+	EffectShader *combinePlain = new EffectShader( "..\\Combine\\CombinePlain.frag", 60, 240, 60, 120 );//CombineEffectKaleidoscope()
+	EffectShader *combinePlain2 = new EffectShader( "..\\Combine\\CombinePlain.frag", 60, 240, 60, 120 );//CombineEffectKaleidoscope();
+	EffectShader *combinePlain3 = new EffectShader( "..\\Combine\\CombinePlain.frag", 60, 240, 60, 120 );//CombineEffectKaleidoscope();
+	EffectShader *combineGrey = new EffectShader( "..\\Combine\\CombineGrey.frag", 40, 240, 30, 120 );
+	EffectShader *combineDarkRed = new EffectShader( "..\\Combine\\CombineDarkRed.frag", 40, 240, 30, 120 );
 	combineDarkRed->addUniform( "red", 0.5 );
 	combineDarkRed->addUniform( "blue", 0.5 );
 
 	
-	EffectShader *combineRotate = new EffectShader( "..\\CombineRotate.frag", 30, 120, 20, 40 );
+	EffectShader *combineRotate = new EffectShader( "..\\Combine\\CombineRotate.frag", 30, 120, 20, 40 );
 	combineRotate->addUniform( "speed", 0.01f, 0.02f );
 	combineRotate->addUniform( "direction", 0.5 );
 
 	
-	EffectShader *combineOilPaintFlow = new EffectShader( "..\\CombineOilPaintFlow.frag", 20, 120, 30, 120 );
-	EffectShader *combineOilPaint = new EffectShader( "..\\CombineOilPaint.frag", 20, 120, 30, 120 );
+	EffectShader *combineOilPaintFlow = new EffectShader( "..\\Combine\\CombineOilPaintFlow.frag", 20, 120, 30, 120 );
+	EffectShader *combineOilPaint = new EffectShader( "..\\Combine\\CombineOilPaint.frag", 20, 120, 30, 120 );
 
-	//EffectShader *combineParallax = new EffectShader( "..\\CombineParallax.frag", 20, 120, 30, 120 );
+	//EffectShader *combineParallax = new EffectShader( "..\\Combine\\CombineParallax.frag", 20, 120, 30, 120 );
 
 	
-	//EffectShader *combineWater2 = new EffectShader( "..\\CombineWater2.frag", 20, 120, 30, 120 );
-	EffectShader *combineHexagon = new EffectShader( "..\\CombineHexagon.frag", 20, 90, 30, 80 );
+	//EffectShader *combineWater2 = new EffectShader( "..\\Combine\\CombineWater2.frag", 20, 120, 30, 120 );
+	EffectShader *combineHexagon = new EffectShader( "..\\Combine\\CombineHexagon.frag", 20, 90, 30, 80 );
 	
 	
 	//combineParallax->setComplexity( 10 );
@@ -984,7 +984,7 @@ void FilterShader::setupSafety()
 
 	if( m_presentProgId == 0 )
 	{
-		m_presentProgId   = setShaders( "..\\standard.vert", "..\\Present.frag" );
+		m_presentProgId   = setShaders( "..\\standard.vert", "..\\Blend\\Present.frag" );
 		m_presentTexUni   = glGetUniformLocation( m_presentProgId, "tex" );
 		m_presentResUni   = glGetUniformLocation( m_presentProgId, "resolution" );
 		m_presentScaleUni = glGetUniformLocation( m_presentProgId, "scale" );
@@ -1033,7 +1033,7 @@ void FilterShader::setupSafety()
 	glBindTexture( GL_TEXTURE_2D, 0 );
 	if( m_bloomProgId == 0 )
 	{
-		m_bloomProgId    = setShaders( "..\\standard.vert", "..\\BloomBlur.frag" );
+		m_bloomProgId    = setShaders( "..\\standard.vert", "..\\Blend\\BloomBlur.frag" );
 		m_bloomTexUni    = glGetUniformLocation( m_bloomProgId, "tex" );
 		m_bloomResUni    = glGetUniformLocation( m_bloomProgId, "resolution" );
 		m_bloomDirUni    = glGetUniformLocation( m_bloomProgId, "dir" );
@@ -1065,7 +1065,7 @@ void FilterShader::setupSafety()
 
 	if( m_trailProgId == 0 )
 	{
-		m_trailProgId   = setShaders( "..\\standard.vert", "..\\Feedback.frag" );
+		m_trailProgId   = setShaders( "..\\standard.vert", "..\\Blend\\Feedback.frag" );
 		m_trailCurUni   = glGetUniformLocation( m_trailProgId, "texCur" );
 		m_trailPrevUni  = glGetUniformLocation( m_trailProgId, "texPrev" );
 		m_trailResUni   = glGetUniformLocation( m_trailProgId, "resolution" );
@@ -1094,7 +1094,7 @@ void FilterShader::setupReactionDiffusion()
 {
 	if( m_rdProgId == 0 )
 	{
-		m_rdProgId    = setShaders( "..\\standard.vert", "..\\ReactionDiffusionSim.frag" );
+		m_rdProgId    = setShaders( "..\\standard.vert", "..\\Blend\\ReactionDiffusionSim.frag" );
 		m_rdPrevUni   = glGetUniformLocation( m_rdProgId, "texPrev" );
 		m_rdResUni    = glGetUniformLocation( m_rdProgId, "resolution" );
 		m_rdSeedUni   = glGetUniformLocation( m_rdProgId, "seedMode" );
@@ -1135,7 +1135,7 @@ void FilterShader::setupFluid()
 {
 	if( m_fluidProgId == 0 )
 	{
-		m_fluidProgId     = setShaders( "..\\standard.vert", "..\\FluidSim.frag" );
+		m_fluidProgId     = setShaders( "..\\standard.vert", "..\\Blend\\FluidSim.frag" );
 		m_fluidPrevUni    = glGetUniformLocation( m_fluidProgId, "texPrev" );
 		m_fluidTex0Uni    = glGetUniformLocation( m_fluidProgId, "tex0" );
 		m_fluidTex1Uni    = glGetUniformLocation( m_fluidProgId, "tex1" );
@@ -2630,7 +2630,7 @@ void FilterShader::setupTexture( const GLuint texID, const QImage &image )
 void FilterShader::initGLSL()
 {	
 	// load and compile shader
-	m_sh_prog_id_combine = setShaders( "standard.vert", "..\\CombinePlain.frag" );
+	m_sh_prog_id_combine = setShaders( "standard.vert", "..\\Combine\\CombinePlain.frag" );
 	// Get location of the texture samplers and point vector for future use
 	m_texPointCombineUni1 = glGetUniformLocation( m_sh_prog_id_combine, "tex0" );
 	m_texPointCombineUni2 = glGetUniformLocation( m_sh_prog_id_combine, "tex1" );
