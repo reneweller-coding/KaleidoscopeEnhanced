@@ -904,6 +904,8 @@ void GLwidget::drawHelpOverlay( QPainter *painter )
 		{ "t",       "tap tempo (tap the beat)" },
 		{ "u",       "pin / unpin the current effect" },
 		{ "f",       "favourite the current effect" },
+		{ "z",       "stereo 3D: off / SBS / TB / anaglyph" },
+		{ "c  m",    "stereo depth - weaker / stronger" },
 		{ "j",       "MIDI learn (cycle targets)" },
 		{ "y  x",    "arm / save the instant replay" },
 		{ "k",       "save current look + state as default" },
@@ -1490,6 +1492,24 @@ void GLwidget::keyPressEvent(QKeyEvent* event)
 		case Qt::Key_F:
 			if( m_actConfiguration && m_actConfiguration->m_filterShader )
 				m_actConfiguration->m_filterShader->favoriteCurrentEffect();
+			break;
+
+		// ---- Stereoscopic output ----
+		case Qt::Key_Z:
+		{
+			FilterShader::cycleStereo();
+			static const char *kStereoNames[] =
+				{ "AUS", "Side-by-Side", "Top-Bottom", "Anaglyph (rot/cyan)" };
+			fprintf( stderr, "Stereo: %s\n", kStereoNames[FilterShader::stereoMode() & 3] );
+			break;
+		}
+		case Qt::Key_C:
+			FilterShader::adjustStereoDepth( -0.2f );
+			fprintf( stderr, "Stereo-Tiefe: %.1f\n", FilterShader::stereoDepth() );
+			break;
+		case Qt::Key_M:
+			FilterShader::adjustStereoDepth( +0.2f );
+			fprintf( stderr, "Stereo-Tiefe: %.1f\n", FilterShader::stereoDepth() );
 			break;
 
 		// ---- MIDI learn: cycle through the assignable targets ----

@@ -90,6 +90,21 @@ public:
 	static void  setLightShow( bool on ) { s_lightShow = on ? 1.f : 0.f; }
 	static bool  lightShow()  { return s_lightShow > 0.5f; }
 
+	// ---- Stereoscopic output (CLI -3 sbs|tb|ana; key 'z' cycles, c/m depth) --
+	// The mono frame is DEPTH-REPROJECTED in the present pass: a pseudo-depth
+	// (smoothed brightness pops bright structures forward, the radial term
+	// sinks the tunnel centre) drives a small horizontal disparity per eye.
+	// Side-by-side / top-bottom feed 3D projectors and HMD video viewers
+	// (Virtual Desktop, Bigscreen, ...); red-cyan anaglyph works on any
+	// screen.  No native OpenXR — deliberately a display-format feature.
+	static int   s_stereoMode;    // 0 off, 1 SBS, 2 top-bottom, 3 anaglyph
+	static float s_stereoDepth;   // disparity strength 0..2 (default 1)
+	static void  cycleStereo()    { s_stereoMode = (s_stereoMode + 1) & 3; }
+	static int   stereoMode()     { return s_stereoMode; }
+	static void  adjustStereoDepth( float d )
+	{ s_stereoDepth = clampParam(s_stereoDepth + d, 0.f, 2.f); }
+	static float stereoDepth()    { return s_stereoDepth; }
+
 	// ---- VJ handbrakes ----
 	// Blackout (key 'b'): fade the OUTPUT to black (window, Spout, recording —
 	// it multiplies the present pass's brightness scale) and back.
@@ -309,6 +324,8 @@ private:
 	GLint			m_presentTitleTexUni    = -1;
 	GLint			m_presentTitlePhaseUni  = -1;
 	GLint			m_presentTitleAspectUni = -1;
+	GLint			m_presentStereoModeUni  = -1;
+	GLint			m_presentStereoDepthUni = -1;
 
 	// ---- Track-title reveal state (see showTitle) ----
 	QImage			m_titlePending;          // rendered text, awaits GL upload

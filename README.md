@@ -59,6 +59,7 @@ $env:Path = "C:\Qt\6.11.1\msvc2022_64\bin;" + $env:Path
 | `-t <port>`   | Web remote: phone control page at `http://<pc>:<port>/`           |
 | `-x <wav>`    | **Batch render**: record this WAV to an mp4, then exit (see below)|
 | `-i <sender>` | **Spout input**: a live sender replaces the photos (see below)    |
+| `-3 <mode>`   | **Stereo 3D**: `sbs`, `tb` or `ana`(glyph) — see below            |
 | `-h`          | Print usage and exit                                              |
 
 For an unattended **installation / kiosk**, combine `-m`, `-c`, `-s` and `-l`.
@@ -147,6 +148,8 @@ correct working directory). Otherwise build it later with `ISCC.exe installer.is
 | `t`        | **Tap tempo** — tap the beat to override tempo detection      |
 | `u`        | **Pin** — hold the current effect (no automatic switches)     |
 | `f`        | **Favourite** the current effect (persistent selection bonus) |
+| `z`        | **Stereo 3D** — cycle off / side-by-side / top-bottom / anaglyph |
+| `c` / `m`  | Stereo depth — weaker / stronger                              |
 | `a`        | Toggle **auto-config-by-mood** (auto-switch configs)          |
 | `g`        | Toggle **adaptive render scale** (auto-FPS)                   |
 | `j`        | **MIDI learn** — bind knobs/pads to the controls              |
@@ -607,6 +610,20 @@ Audio is captured via WASAPI loopback (`AudioAnalyzer`) and analysed in real tim
   (`-s` or the adaptive scale), the present pass applies a contrast-adaptive
   sharpen (AMD-CAS-style, min/max-clamped so it cannot ring) scaled to the
   upscale factor — low-scale kiosk setups look noticeably crisper.
+- **Stereoscopic 3D output (`-3 sbs|tb|ana`, key `z` cycles):** the mono
+  frame is **depth-reprojected** in the present pass — a pseudo-depth
+  (smoothed brightness pops bright structures toward the viewer, the
+  radial term sinks the tunnel centre behind the screen) drives a small
+  per-eye disparity.  `sbs` (side-by-side half) and `tb` (top-bottom)
+  feed **3D projectors/TVs and HMD video viewers** (Virtual Desktop,
+  Bigscreen, SkyBox, … — or via Spout → OBS); `ana` is red-cyan
+  **anaglyph** for any screen with paper glasses.  Keys `c`/`m` tune the
+  depth strength (persisted with `k`).  Overlays (title reveal, lamps)
+  sit at screen depth; abstract kaleidoscope content takes this
+  surprisingly well because there are no hard object edges to betray the
+  reprojection.  Honest limits: it is NOT true two-camera rendering (the
+  shaders have no scene camera) and there is no native OpenXR runtime —
+  it is a display-format feature, zero cost while off.
 - **DJ-STOP dramaturgy:** when the WHOLE spectrum suddenly collapses in
   running beat music (the classic DJ stop, 0.1–3 s), the picture "holds its
   breath" with the track — motion freezes within ~0.1 s and dims slightly;

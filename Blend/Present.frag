@@ -36,6 +36,8 @@ uniform vec2  camOff;           // virtual camera: drift + shake offset (uv unit
 uniform sampler2D titleTex;     // track-title reveal texture (transparent bg)
 uniform float titlePhase;       // 0..1 while the reveal runs; >= 1 = off
 uniform float titleAspect;      // title texture width/height
+uniform int   stereoMode;       // 0 off, 1 side-by-side, 2 top-bottom, 3 anaglyph
+uniform float stereoDepth;      // disparity strength 0..2 (host, key c/m)
 
 float hash21(vec2 p) { return fract(sin(dot(p, vec2(41.3, 289.1))) * 43758.5453); }
 
@@ -65,9 +67,36 @@ float coneLight(vec2 p, vec2 origin, vec2 dir, float spread, float reach)
     return across * along;
 }
 
+// Pseudo-depth for the stereoscopic reprojection: smoothed brightness (the
+// blurred bloom buffer doubles as a depth cue) pops bright structures toward
+// the viewer; the radial term sinks the tunnel centre behind the screen.
+float stereoDepthAt(vec2 puv, vec2 cuv)
+{
+    float bl = (useBloom > 0.5)
+             ? dot(texture2D(bloomTex, puv).rgb, vec3(0.299, 0.587, 0.114))
+             : dot(texture2D(tex, puv, 4.0).rgb, vec3(0.299, 0.587, 0.114));
+    return clamp(bl * 1.4, 0.0, 1.0) * 0.7
+         + clamp(length(cuv) * 1.5, 0.0, 1.0) * 0.3;
+}
+
 void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution;
+
+    // Stereoscopic split: each half shows the FULL logical frame for one eye
+    // (side-by-side "half" / top-bottom — the display or HMD player
+    // unsqueezes them, so every uv-based computation below stays correct).
+    float eyeSign = 0.0;                   // -1 left eye, +1 right eye
+    if (stereoMode == 1)
+    {
+        eyeSign = (uv.x < 0.5) ? -1.0 : 1.0;
+        uv.x = fract(uv.x * 2.0);
+    }
+    else if (stereoMode == 2)
+    {
+        eyeSign = (uv.y >= 0.5) ? -1.0 : 1.0;   // top half = left eye
+        uv.y = fract(uv.y * 2.0);
+    }
 
     // Subtle whole-scene beat pulse: a gentle zoom "breath" on each beat (a little
     // bigger on the downbeat).  It's motion, not a flash, and uses the already
@@ -85,12 +114,32 @@ void main()
     cuv.x /= aspect2;
     float camz = (1.0 + 0.040 * scenePulse) * max(camZoom, 1.0);
     vec2  puv = cuv / camz + 0.5 - camOff;
-    vec3  c   = texture2D(tex, puv).rgb;
+
+    // Stereoscopic reprojection: shift the sampling per eye by the local
+    // pseudo-depth (crossed disparity -> bright structures float in front of
+    // the screen, the tunnel centre recedes).  Anaglyph packs both eyes into
+    // one frame: red = left eye, green/blue = right eye.
+    vec3 c;
+    if (stereoMode == 1 || stereoMode == 2)
+    {
+        puv.x += stereoDepth * 0.007
+               * (stereoDepthAt(puv, cuv) - 0.45) * eyeSign;
+        c = texture2D(tex, puv).rgb;
+    }
+    else if (stereoMode == 3)
+    {
+        float disp = stereoDepth * 0.006 * (stereoDepthAt(puv, cuv) - 0.45);
+        vec3 cl = texture2D(tex, puv + vec2(-disp, 0.0)).rgb;   // left eye
+        vec3 cr = texture2D(tex, puv + vec2( disp, 0.0)).rgb;   // right eye
+        c = vec3(cl.r, cr.g, cr.b);
+    }
+    else
+        c = texture2D(tex, puv).rgb;
 
     // CAS-style sharpening: when the internal render scale is below 1 the
     // frame is upsampled here — a neighbourhood-clamped unsharp mask (no
     // halos) restores the crispness the downscale cost.  sharpen = 0 → off.
-    if (sharpen > 0.001)
+    if (sharpen > 0.001 && stereoMode != 3)   // CAS would fringe the anaglyph
     {
         vec3 n = texture2D(tex, puv + vec2(0.0,  srcTexel.y)).rgb;
         vec3 s = texture2D(tex, puv - vec2(0.0,  srcTexel.y)).rgb;

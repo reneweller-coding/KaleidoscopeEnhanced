@@ -34,6 +34,8 @@ float FilterShader::s_renderScale = 1.0f;
 float FilterShader::s_lightShow   = 0.0f;   // corner lamps / light-show OFF by default
 bool  FilterShader::s_spoutEnabled = false; // Spout sender (CLI -o)
 float FilterShader::s_latencyLead  = 0.05f; // display-phase lead vs. heard audio
+int   FilterShader::s_stereoMode  = 0;      // stereoscopic output (CLI -3 / 'z')
+float FilterShader::s_stereoDepth = 1.0f;   // disparity strength
 bool  FilterShader::s_blackout = false;     // VJ blackout ('b')
 bool  FilterShader::s_freeze   = false;     // VJ freeze ('e')
 bool  FilterShader::s_pinned   = false;     // VJ pin ('u')
@@ -55,6 +57,8 @@ void FilterShader::loadSettings()
 	s_trailAmount  = clampParam( s.value( "trails",      s_trailAmount ).toFloat(), 0.f, 0.95f );
 	s_moodStrength = clampParam( s.value( "mood",        s_moodStrength).toFloat(), 0.f, 2.5f  );
 	s_latencyLead  = clampParam( s.value( "latencyLead", s_latencyLead ).toFloat(), 0.f, 0.25f );
+	s_stereoMode   = s.value( "stereoMode", s_stereoMode ).toInt() & 3;
+	s_stereoDepth  = clampParam( s.value( "stereoDepth", s_stereoDepth ).toFloat(), 0.f, 2.f );
 	setRenderScale( s.value( "renderScale", s_renderScale ).toFloat() );  // clamps internally
 
 	// Taste learning: PER-PRESET per-shader selection-weight factors (keys
@@ -105,6 +109,8 @@ void FilterShader::saveSettings()
 	s.setValue( "trails",      s_trailAmount  );
 	s.setValue( "mood",        s_moodStrength );
 	s.setValue( "latencyLead", s_latencyLead  );
+	s.setValue( "stereoMode",  s_stereoMode   );
+	s.setValue( "stereoDepth", s_stereoDepth  );
 	s.setValue( "renderScale", s_renderScale  );
 	s.sync();
 	fprintf( stderr, "Saved settings: react=%.2f trails=%.2f mood=%.2f lead=%.0fms scale=%.2f\n",
@@ -1059,6 +1065,8 @@ void FilterShader::setupSafety()
 		m_presentTitleTexUni    = glGetUniformLocation( m_presentProgId, "titleTex" );
 		m_presentTitlePhaseUni  = glGetUniformLocation( m_presentProgId, "titlePhase" );
 		m_presentTitleAspectUni = glGetUniformLocation( m_presentProgId, "titleAspect" );
+		m_presentStereoModeUni  = glGetUniformLocation( m_presentProgId, "stereoMode" );
+		m_presentStereoDepthUni = glGetUniformLocation( m_presentProgId, "stereoDepth" );
 	}
 
 	m_safetyReady = fboOk && (m_presentProgId != 0) && (m_presentTexUni >= 0);
@@ -2543,6 +2551,8 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 		if( m_presentCamZoomUni  >= 0 ) glUniform1f( m_presentCamZoomUni,  m_camZoom );
 		if( m_presentCamRotUni   >= 0 ) glUniform1f( m_presentCamRotUni,   m_camRot );
 		if( m_presentCamOffUni   >= 0 ) glUniform2f( m_presentCamOffUni,   m_camOffX, m_camOffY );
+		if( m_presentStereoModeUni  >= 0 ) glUniform1i( m_presentStereoModeUni,  s_stereoMode );
+		if( m_presentStereoDepthUni >= 0 ) glUniform1f( m_presentStereoDepthUni, s_stereoDepth );
 		// Track-title reveal (phase 0..1 while active; 2 = off).
 		if( m_presentTitlePhaseUni >= 0 )
 		{
