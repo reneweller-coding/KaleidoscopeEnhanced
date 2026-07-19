@@ -26,7 +26,15 @@ static const char *kPage = R"HTML(<!DOCTYPE html>
  .val{color:#8cf;float:right}
 </style></head><body>
 <h1>Kaleidoscope Remote</h1>
+<img id="prev" style="width:100%;border-radius:10px;background:#000;min-height:80px"
+     src="/api/snapshot" alt="">
 <button class="big" onclick="cmd('/api/next')">&#9193; N&auml;chster Effekt</button>
+<div class="row">
+ <button id="blackout" onclick="cmd('/api/toggle?k=blackout')">&#9899; Blackout</button>
+ <button onclick="cmd('/api/fav')">&#11088; Favorit</button>
+ <button id="replayarm" onclick="cmd('/api/toggle?k=replayarm')">Replay-Puffer</button>
+ <button onclick="cmd('/api/replay')">&#128190; Replay speichern</button>
+</div>
 <div class="row" id="cfgs"></div>
 <label>Reactivity <span class="val" id="vreactivity"></span></label>
 <input type="range" id="reactivity" min="0" max="3" step="0.05"
@@ -58,12 +66,15 @@ function refresh(){ if(Date.now()<hold) return;
   document.getElementById('vlatency').textContent=Math.round(s.latency*1000);
   document.getElementById('lightshow').className=s.lightShow?'active':'';
   document.getElementById('autoconfig').className=s.autoConfig?'active':'';
+  document.getElementById('blackout').className=s.blackout?'active':'';
+  document.getElementById('replayarm').className=s.replayArmed?'active':'';
   const c=document.getElementById('cfgs'); c.innerHTML='';
   s.configs.forEach((n,i)=>{const b=document.createElement('button');
    b.textContent=n; if(i==s.active)b.className='active';
    b.onclick=()=>cmd('/api/config?i='+i); c.appendChild(b);});
  });}
 setInterval(refresh,2000); refresh();
+setInterval(()=>{document.getElementById('prev').src='/api/snapshot?ts='+Date.now();},2000);
 </script></body></html>)HTML";
 
 WebRemote::WebRemote( GLwidget *widget, int port )
@@ -109,16 +120,29 @@ void WebRemote::handleConnection()
 						cfgs << ("\"" + n + "\"");
 					body = QString( "{\"reactivity\":%1,\"trails\":%2,\"mood\":%3,"
 					                "\"latency\":%4,\"lightShow\":%5,\"autoConfig\":%6,"
-					                "\"active\":%7,\"configs\":[%8]}" )
+					                "\"active\":%7,\"blackout\":%8,\"replayArmed\":%9,"
+					                "\"configs\":[%10]}" )
 					       .arg( FilterShader::reactivity() ).arg( FilterShader::trails() )
 					       .arg( FilterShader::mood() ).arg( FilterShader::latency() )
 					       .arg( FilterShader::lightShow() ? 1 : 0 )
 					       .arg( m_widget->autoConfigEnabled() ? 1 : 0 )
 					       .arg( m_widget->remoteActiveConfig() )
+					       .arg( FilterShader::blackout() ? 1 : 0 )
+					       .arg( m_widget->remoteReplayArmed() ? 1 : 0 )
 					       .arg( cfgs.join( "," ) ).toUtf8();
+				}
+				else if( path == "/api/snapshot" )
+				{
+					body  = m_widget->remoteSnapshot();
+					ctype = "image/jpeg";
+					if( body.isEmpty() ) { body = "{}"; ctype = "application/json"; }
 				}
 				else if( path == "/api/next" )
 					m_widget->remoteNextEffect();
+				else if( path == "/api/fav" )
+					m_widget->remoteFavorite();
+				else if( path == "/api/replay" )
+					m_widget->remoteSaveReplay();
 				else if( path == "/api/config" )
 					m_widget->remoteSelectConfig( q.queryItemValue( "i" ).toInt() );
 				else if( path == "/api/set" )
@@ -134,6 +158,8 @@ void WebRemote::handleConnection()
 				{
 					const QString k = q.queryItemValue( "k" );
 					if      ( k == "lightshow"  ) FilterShader::toggleLightShow();
+					else if ( k == "blackout"   ) FilterShader::toggleBlackout();
+					else if ( k == "replayarm"  ) m_widget->remoteToggleReplayArm();
 					else if ( k == "autoconfig" )
 						m_widget->setAutoConfigEnabled( !m_widget->autoConfigEnabled() );
 				}

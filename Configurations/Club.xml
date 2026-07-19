@@ -131,4 +131,18 @@
     <float name="sizeP" minValue="160.0" maxValue="480.0"></float>
   </CombineShader>
 
+  <TextureShader file="..\\Scene\\CityBokeh.frag" type="normal" probability="0.4" mood="dark" complexity="2">
+    <float name="densityP" minValue="0.9" maxValue="1.6"></float>
+    <float name="sizeP" minValue="0.7" maxValue="1.3"></float>
+    <float name="driftP" minValue="0.8" maxValue="1.5"></float>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene\\BauhausGeo.frag" type="normal" probability="0.45" mood="bright,aggressive" complexity="3">
+    <int name="gridP" minValue="4" maxValue="8"></int>
+    <float name="paletteP" minValue="0.0" maxValue="6.28"></float>
+    <float name="spinP" minValue="0.8" maxValue="1.5"></float>
+    <float name="accentP" minValue="0.8" maxValue="1.6"></float>
+  </TextureShader>
+
 </configuration>

@@ -163,12 +163,35 @@ start "" /D "%~dp0bin" "%~dp0bin\Kaleidoscope.exe" %*
 '@
 $batFs = @'
 @echo off
-rem Launch fullscreen (kiosk). The screensaver/standby are suppressed while it runs.
+rem Launch fullscreen (kiosk) WITH WATCHDOG: if the app ever crashes it is
+rem restarted after 5 s automatically (quitting with Esc/Q really quits).
 rem Add -m <n> to choose a monitor, -c <name> a configuration, -s <factor> the render scale.
-start "" /D "%~dp0bin" "%~dp0bin\Kaleidoscope.exe" -b %*
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0watchdog.ps1" %*
+'@
+# The kiosk watchdog: relaunches the app on any abnormal exit (crash, GPU
+# reset, ...) so an unattended installation never stays black.  A normal quit
+# (Esc/Q -> exit code 0) ends the loop; 5 rapid crashes in a row give up
+# (otherwise a broken option would loop forever).  -l keeps a log for
+# diagnosing whatever caused the restarts.
+$watchdog = @'
+param([Parameter(ValueFromRemainingArguments=$true)]$Rest)
+$exe = Join-Path $PSScriptRoot 'bin\Kaleidoscope.exe'
+$bin = Join-Path $PSScriptRoot 'bin'
+$fast = 0
+while ($true) {
+    $t0 = Get-Date
+    $p = Start-Process -FilePath $exe -ArgumentList (@('-b','-l') + $Rest) `
+                       -WorkingDirectory $bin -PassThru
+    $p.WaitForExit()
+    if ($p.ExitCode -eq 0) { break }                     # normal quit (Esc/Q)
+    if (((Get-Date) - $t0).TotalSeconds -lt 60) { $fast++ } else { $fast = 0 }
+    if ($fast -ge 5) { break }                           # crash loop: give up
+    Start-Sleep -Seconds 5
+}
 '@
 Set-Content -Path (Join-Path $pkgDir "Kaleidoscope-starten.bat")  -Value $batWin -Encoding Ascii
 Set-Content -Path (Join-Path $pkgDir "Kaleidoscope-Vollbild.bat") -Value $batFs  -Encoding Ascii
+Set-Content -Path (Join-Path $pkgDir "watchdog.ps1")              -Value $watchdog -Encoding Ascii
 
 $readme = @'
 Kaleidoscope Enhanced - Music Visualizer (portable / standalone)
@@ -179,7 +202,8 @@ Just copy it anywhere on a 64-bit Windows PC and run it.
 
 Start it:
   - Double-click  Kaleidoscope-starten.bat   (windowed)
-  - Double-click  Kaleidoscope-Vollbild.bat  (fullscreen / installation)
+  - Double-click  Kaleidoscope-Vollbild.bat  (fullscreen / installation;
+    includes a WATCHDOG: after a crash the app restarts by itself)
 
 Useful options (append to either .bat, or edit the .bat):
   -c <name>   start configuration (e.g. darkambient, normal, psychedelic)

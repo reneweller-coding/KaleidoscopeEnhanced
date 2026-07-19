@@ -387,4 +387,32 @@
   <CombineShader file="..\\Combine\\CombineWave.frag" type="normal" probability="0.12" complexity="1">
   </CombineShader>
 
+  <TextureShader file="..\\Scene\\InkWater.frag" type="normal" probability="0.4" mood="calm" complexity="2">
+    <int name="plumesP" minValue="2" maxValue="5"></int>
+    <float name="inkHueP" minValue="0.0" maxValue="6.28"></float>
+    <float name="swirlP" minValue="0.6" maxValue="1.8"></float>
+    <float name="speedP" minValue="0.6" maxValue="1.5"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene\\Aurora.frag" type="normal" probability="0.4" mood="calm,dark" complexity="1">
+    <float name="bandsP" minValue="0.7" maxValue="1.8"></float>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+    <float name="heightP" minValue="0.7" maxValue="1.5"></float>
+    <float name="speedP" minValue="0.6" maxValue="1.6"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene\\CityBokeh.frag" type="normal" probability="0.4" mood="dark" complexity="2">
+    <float name="densityP" minValue="0.7" maxValue="1.6"></float>
+    <float name="sizeP" minValue="0.7" maxValue="1.5"></float>
+    <float name="driftP" minValue="0.5" maxValue="1.5"></float>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene\\BauhausGeo.frag" type="normal" probability="0.4" mood="bright,aggressive" complexity="3">
+    <int name="gridP" minValue="3" maxValue="8"></int>
+    <float name="paletteP" minValue="0.0" maxValue="6.28"></float>
+    <float name="spinP" minValue="0.5" maxValue="1.5"></float>
+    <float name="accentP" minValue="0.5" maxValue="1.6"></float>
+  </TextureShader>
+
 </configuration>

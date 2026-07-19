@@ -53,6 +53,14 @@ public:
 	void        remoteNextEffect();
 	bool        autoConfigEnabled() const   { return m_autoConfig; }
 	void        setAutoConfigEnabled( bool on ) { m_autoConfig = on; m_moodBucket = -1; }
+	// Live preview: returns the cached small JPEG of the output and keeps the
+	// ~1 Hz refresh in paintGL alive for the next few seconds.  All on the
+	// GUI thread (QTcpServer + paintGL), so no locking is needed.
+	QByteArray  remoteSnapshot();
+	void        remoteFavorite();
+	void        remoteSaveReplay()          { saveReplay(); }
+	bool        remoteReplayArmed() const   { return m_replayArmed; }
+	void        remoteToggleReplayArm();
 
 public slots:
 	bool slotSetDirectory(const QString &filename);
@@ -90,8 +98,8 @@ protected:
 	void            applyMidi();
 	MidiInput      *m_midi          = nullptr;
 	enum { MIDI_REACT = 0, MIDI_TRAILS, MIDI_MOOD, MIDI_LATENCY, MIDI_NEXT,
-	       MIDI_TARGETS };
-	int             m_midiMap[MIDI_TARGETS] = { 1, 2, 3, -1, -1 };  // CC/note nr, -1 = frei
+	       MIDI_TAP, MIDI_BLACKOUT, MIDI_TARGETS };
+	int             m_midiMap[MIDI_TARGETS] = { 1, 2, 3, -1, -1, -1, -1 };  // CC/note nr, -1 = frei
 	int             m_midiLearn     = -1;   // -1 = off, else target being learned
 
 	// Recording: capture the visualization frames (+ the loopback audio) and mux
@@ -172,6 +180,12 @@ protected:
 	// recompiled live on the next frame (GL context current in paintGL).
 	class QFileSystemWatcher *m_shaderWatcher = nullptr;
 	QSet<QString>             m_pendingReloads;
+
+	// Web-remote live preview: small JPEG of the output, refreshed ~1 Hz in
+	// paintGL while the phone page polls /api/snapshot.
+	QByteArray m_snapJpg;
+	qint64     m_snapWantedUntil = 0;
+	qint64     m_snapLast        = 0;
 
 	bool m_batchStopping = false;   // batch render: shutdown initiated
 	qint64  m_lastAutoSwitch  = 0;      // when auto-config last switched

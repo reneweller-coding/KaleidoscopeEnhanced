@@ -30,6 +30,9 @@ uniform sampler2D bloomTex;     // 2-pass Gaussian bloom (quarter res), when use
 uniform float useBloom;         // 1 = bloomTex valid, 0 = fall back to the mip tap
 uniform float sharpen;          // CAS-style sharpen amount (host: >0 when renderScale < 1)
 uniform vec2  srcTexel;         // 1 / render resolution (the sampled texture)
+uniform float camZoom;          // virtual camera: punch-in zoom (host keeps >= 1)
+uniform float camRot;           // virtual camera: small roll (radians)
+uniform vec2  camOff;           // virtual camera: drift + shake offset (uv units)
 
 float hash21(vec2 p) { return fract(sin(dot(p, vec2(41.3, 289.1))) * 43758.5453); }
 
@@ -68,7 +71,17 @@ void main()
     // slew-limited beat, so it reads as a soft pump rather than a strobe - easy on
     // the eyes.  Sampled from puv; the corner lights below keep the un-zoomed uv.
     float scenePulse = clamp(audioBeat + 0.4 * audioDownbeat, 0.0, 1.0);
-    vec2  puv = (uv - 0.5) / (1.0 + 0.040 * scenePulse) + 0.5;
+    // Virtual camera: aspect-true roll + punch-in zoom + drift/shake offset,
+    // combined with the beat "breath".  The host guarantees the zoom covers
+    // the offset + rotation, so no edge ever samples outside the frame
+    // (camZoom defaults to 0 when unset -> the max() keeps it a no-op).
+    float aspect2 = resolution.x / resolution.y;
+    vec2  cuv = uv - 0.5;
+    cuv.x *= aspect2;
+    cuv = rot2(cuv, camRot);
+    cuv.x /= aspect2;
+    float camz = (1.0 + 0.040 * scenePulse) * max(camZoom, 1.0);
+    vec2  puv = cuv / camz + 0.5 - camOff;
     vec3  c   = texture2D(tex, puv).rgb;
 
     // CAS-style sharpening: when the internal render scale is below 1 the
