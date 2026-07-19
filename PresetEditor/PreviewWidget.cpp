@@ -150,6 +150,16 @@ void PreviewWidget::loadImages()
 
 // Set every uniform any of the effect shaders might declare.  Unused ones resolve
 // to location -1 and are silently ignored, so one call works for all shaders.
+// Editor slider values override the per-activation params (after defaults).
+void PreviewWidget::applyParamOverrides(QOpenGLShaderProgram *p)
+{
+    for (const ParamOverride &o : m_overrides)
+    {
+        if (o.isInt) p->setUniformValue(o.name.toLatin1().constData(), int(o.value + 0.5f));
+        else         p->setUniformValue(o.name.toLatin1().constData(), o.value);
+    }
+}
+
 void PreviewWidget::setAudioTimeline(std::vector<AudioFeatures> tl)
 {
     m_timeline = std::move(tl);
@@ -269,6 +279,7 @@ void PreviewWidget::applyCommonUniforms(QOpenGLShaderProgram *p)
         p->setUniformValue("power", 2.0f);
         p->setUniformValue("size", 10.0f);
         p->setUniformValue("copies", 6.0f);
+        applyParamOverrides(p);
         return;
     }
 
@@ -350,6 +361,7 @@ void PreviewWidget::applyCommonUniforms(QOpenGLShaderProgram *p)
     p->setUniformValue("power", 2.0f);
     p->setUniformValue("size", 10.0f);
     p->setUniformValue("copies", 6.0f);
+    applyParamOverrides(p);
 }
 
 void PreviewWidget::drawFullscreenQuad(QOpenGLShaderProgram *p)

@@ -1,6 +1,7 @@
 #include <math.h>
 
 #include <QtCore/QFile>
+#include <QtCore/QBuffer>
 #include <QtCore/QDateTime>
 #include <QtCore/QSettings>
 #include <QtCore/QProcess>
@@ -17,6 +18,7 @@
 
 #include "GLee.h"        // GLeeInit() + GL extension entry points
 #include "glwidget.h"
+#include "WebRemote.h"
 
  #ifndef GL_MULTISAMPLE
  #define GL_MULTISAMPLE  0x809D
@@ -24,6 +26,37 @@
 
 // Start configuration requested on the command line (-c <name>); empty = default.
 QString GLwidget::s_startConfig;
+int     GLwidget::s_remotePort = 0;
+
+// ---- Web-remote hooks (called from WebRemote on the main thread) ----
+QStringList GLwidget::remoteConfigNames() const
+{
+	QStringList out;
+	for( Configuration *c : m_configurationList )
+		out << c->getConfigurationName();
+	return out;
+}
+
+int GLwidget::remoteActiveConfig() const
+{
+	for( size_t i = 0; i < m_configurationList.size(); ++i )
+		if( m_configurationList[i] == m_actConfiguration )
+			return int(i);
+	return -1;
+}
+
+void GLwidget::remoteSelectConfig( int idx )
+{
+	if( idx >= 0 && idx < (int)m_configurationList.size()
+	    && m_configurationList[idx] != m_actConfiguration )
+		switchConfig( m_configurationList[idx] );
+}
+
+void GLwidget::remoteNextEffect()
+{
+	if( m_actConfiguration && m_actConfiguration->m_filterShader )
+		m_actConfiguration->m_filterShader->requestSceneChange();
+}
 bool    GLwidget::s_autoRecord = false;
 
 void GLwidget::traverseConfigurations( const QString& dirname, std::vector<Configuration *> &configurationList )
@@ -80,6 +113,11 @@ GLwidget::GLwidget( QWidget *parent )
 
 	m_configurationList.clear();
 	traverseConfigurations( "..\\Configurations" /*directory*/, m_configurationList );
+
+	// Embedded web remote (CLI -t <port>): phone page with the same harmless
+	// controls as the keyboard.  Parented to this widget; main-thread events.
+	if( s_remotePort > 0 )
+		new WebRemote( this, s_remotePort );
 
 	// Robustness: a missing/empty Configurations directory used to crash here with
 	// an out-of-range vector access.  Fail with a clear message instead.
@@ -270,6 +308,8 @@ void GLwidget::draw()
 	// Capture the clean frame (before any overlay is drawn) while recording.
 	if( m_recording )
 		captureFrame();
+	else if( m_replayArmed )
+		captureReplayFrame();      // rolling ~30 s instant-replay ring (~15 fps)
 
 	// Config cross-fade: draw the captured previous frame on top, fading out.
 	float fadeAlpha = 0.f;
@@ -456,6 +496,8 @@ void GLwidget::loadUiSettings()
 	m_autoConfig     = s.value( "autoConfig",  m_autoConfig ).toBool();
 	m_autoScale      = s.value( "autoScale",   m_autoScale  ).toBool();
 	m_showNowPlaying = s.value( "nowPlaying",  m_showNowPlaying ).toBool();
+	for( int i = 0; i < MIDI_TARGETS; ++i )
+		m_midiMap[i] = s.value( QString("midiMap%1").arg(i), m_midiMap[i] ).toInt();
 	FilterShader::setLightShow( s.value( "lightShow", FilterShader::lightShow() ).toBool() );
 	// A persisted active config is the default start config, unless -c overrode it.
 	if( s_startConfig.isEmpty() )
@@ -470,6 +512,8 @@ void GLwidget::saveUiSettings()
 	s.setValue( "autoConfig", m_autoConfig );
 	s.setValue( "autoScale",  m_autoScale );
 	s.setValue( "nowPlaying", m_showNowPlaying );
+	for( int i = 0; i < MIDI_TARGETS; ++i )
+		s.setValue( QString("midiMap%1").arg(i), m_midiMap[i] );
 	s.setValue( "lightShow",  FilterShader::lightShow() );
 	s.sync();
 }
@@ -510,14 +554,15 @@ void GLwidget::updateAutoConfig( const AudioFeatures &f )
 	if( !m_autoConfig )
 		return;
 
-	// Map the sustained mood to a configuration bucket.
-	//   0 ambient/drone, 1 calm, 2 normal, 3 energetic.
+	// Map the sustained mood to a configuration bucket (2026-07 preset set).
+	//   0 ambient/drone -> Ambient, 1 calm -> Galerie,
+	//   2 normal -> Allround,       3 energetic -> Club.
 	int bucket;
 	if     ( f.ambientFactor > 0.6f ) bucket = 0;
 	else if ( f.arousal      < 0.33f ) bucket = 1;
 	else if ( f.arousal      > 0.66f ) bucket = 3;
 	else                               bucket = 2;
-	static const char *names[4] = { "darkambient", "slow", "normal", "psychedelic" };
+	static const char *names[4] = { "Ambient", "Galerie", "Allround", "Club" };
 
 	const qint64 now = m_fpsTimer.elapsed();
 	if( bucket != m_moodBucket )
@@ -778,6 +823,9 @@ void GLwidget::drawHelpOverlay( QPainter *painter )
 	}
 }
 
+static const char *kMidiTargetNames[] =
+	{ "Reactivity", "Trails", "Mood", "Latenz-Vorlauf", "Naechster Effekt" };
+
 void GLwidget::applyMidi()
 {
 	if( !m_midi )
@@ -785,21 +833,42 @@ void GLwidget::applyMidi()
 	std::vector<MidiInput::Event> evs = m_midi->drain();
 	for( const MidiInput::Event &e : evs )
 	{
-		if( e.type == 0xB0 )                       // Control Change -> look knobs
+		// ---- MIDI LEARN: bind the incoming controller to the current target ----
+		if( m_midiLearn >= 0 )
+		{
+			bool wantsNote = (m_midiLearn == MIDI_NEXT);
+			if( (wantsNote && e.type == 0x90) || (!wantsNote && e.type == 0xB0) )
+			{
+				m_midiMap[m_midiLearn] = e.data1;
+				fprintf( stderr, "MIDI learn: %s -> %s %d\n",
+				         kMidiTargetNames[m_midiLearn],
+				         wantsNote ? "note" : "CC", e.data1 );
+				m_midiLearn++;                              // advance to next target
+				if( m_midiLearn >= MIDI_TARGETS )
+				{
+					m_midiLearn = -1;
+					saveUiSettings();                       // persist the new mapping
+					fprintf( stderr, "MIDI learn: done (gespeichert)\n" );
+				}
+			}
+			continue;                                       // learn consumes the event
+		}
+
+		if( e.type == 0xB0 )                       // Control Change -> mapped knobs
 		{
 			float v = e.data2 / 127.f;             // 0..1
-			switch( e.data1 )
-			{
-				case 1:  FilterShader::setReactivity( v * 3.0f  ); break;  // CC1  mod wheel
-				case 2:  FilterShader::setTrails     ( v * 0.95f ); break;  // CC2
-				case 3:  FilterShader::setMood       ( v * 2.5f  ); break;  // CC3
-				default: break;
-			}
+			if      ( e.data1 == m_midiMap[MIDI_REACT]   ) FilterShader::setReactivity( v * 3.0f  );
+			else if ( e.data1 == m_midiMap[MIDI_TRAILS]  ) FilterShader::setTrails     ( v * 0.95f );
+			else if ( e.data1 == m_midiMap[MIDI_MOOD]    ) FilterShader::setMood       ( v * 2.5f  );
+			else if ( e.data1 == m_midiMap[MIDI_LATENCY] ) FilterShader::setLatency    ( v * 0.25f );
 		}
 		else if( e.type == 0x90 )                  // Note On -> next effect
 		{
-			if( m_actConfiguration && m_actConfiguration->m_filterShader )
-				m_actConfiguration->m_filterShader->requestSceneChange();
+			// Unmapped (-1): ANY pad advances (the old behaviour); mapped:
+			// only the learned note does.
+			if( m_midiMap[MIDI_NEXT] < 0 || e.data1 == m_midiMap[MIDI_NEXT] )
+				if( m_actConfiguration && m_actConfiguration->m_filterShader )
+					m_actConfiguration->m_filterShader->requestSceneChange();
 		}
 	}
 }
@@ -818,8 +887,7 @@ void GLwidget::toggleRecording()
 		if( m_audioAnalyzer )
 			m_audioAnalyzer->startRecording( m_recDir + "/audio.wav" );
 		// Start the encoder worker (single thread -> frames stay in order).
-		m_recQuit = false;
-		m_recThread = std::thread( &GLwidget::recWorker, this );
+		ensureRecWorker();
 		m_recording = true;
 		fprintf( stderr, "REC start -> %s\n", m_recDir.toLocal8Bit().constData() );
 	}
@@ -827,6 +895,9 @@ void GLwidget::toggleRecording()
 	{
 		m_recording = false;
 		finishRecording();
+		// The worker also feeds the replay ring — bring it back if armed.
+		if( m_replayArmed )
+			ensureRecWorker();
 	}
 }
 
@@ -851,8 +922,123 @@ void GLwidget::recWorker()
 		int h = job.img.height();
 		QImage out = job.img.mirrored( false, true )               // GL is bottom-up
 		                .scaledToHeight( h > 720 ? 720 : h, Qt::SmoothTransformation );
+
+		if( job.path.isEmpty() )
+		{
+			// Replay-ring job: encode to memory and keep ~30 s of history.
+			QByteArray jpg;
+			QBuffer buf( &jpg );
+			buf.open( QIODevice::WriteOnly );
+			out.save( &buf, "JPG", 80 );
+			std::lock_guard<std::mutex> rl( m_replayMx );
+			m_replayFrames.push_back( ReplayFrame{ jpg, job.dur } );
+			float total = 0.f;
+			for( const ReplayFrame &r : m_replayFrames ) total += r.dur;
+			while( total > 31.f && m_replayFrames.size() > 1 )
+			{
+				total -= m_replayFrames.front().dur;
+				m_replayFrames.pop_front();
+			}
+			continue;
+		}
+
 		out.save( job.path, "JPG", 85 );
 	}
+}
+
+// (Re)start the encoder worker; it serves both the recording and the replay
+// ring, so it may need restarting after finishRecording() joined it.
+void GLwidget::ensureRecWorker()
+{
+	if( m_recThread.joinable() )
+		return;
+	m_recQuit = false;
+	m_recThread = std::thread( &GLwidget::recWorker, this );
+}
+
+// Instant replay: grab ~15 fps into the rolling ring while armed (and not
+// already recording — the recording path captures at 30 fps anyway).
+void GLwidget::captureReplayFrame()
+{
+	qint64 now = m_fpsTimer.elapsed();
+	if( now - m_repLastFrame < 66 )
+		return;
+	float dur = (m_repLastFrame == 0) ? (1.f/15.f) : float(now - m_repLastFrame) / 1000.f;
+	if( dur > 0.5f ) dur = 0.5f;                 // clamp gaps (pause, first frame)
+	m_repLastFrame = now;
+
+	int w = m_width, h = m_height;
+	if( w < 2 || h < 2 ) return;
+	if( (int)m_recBuf.size() < w*h*4 ) m_recBuf.resize( (size_t)w*h*4 );
+	glReadPixels( 0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, m_recBuf.data() );
+	QImage img( m_recBuf.data(), w, h, QImage::Format_RGBA8888 );
+
+	{
+		std::lock_guard<std::mutex> lk( m_recMx );
+		if( m_recQueue.size() >= 8 )
+		{
+			m_repCarryDur += dur;
+			return;
+		}
+		m_recQueue.push_back( RecJob{ img.copy(), QString(), dur + m_repCarryDur } );
+		m_repCarryDur = 0.f;
+	}
+	m_recCv.notify_one();
+}
+
+// Save the replay ring (frames + rolling audio) and mux it like a recording.
+void GLwidget::saveReplay()
+{
+	std::deque<ReplayFrame> frames;
+	{
+		std::lock_guard<std::mutex> rl( m_replayMx );
+		frames = m_replayFrames;
+	}
+	if( frames.size() < 15 )
+	{
+		fprintf( stderr, "REPLAY: noch nichts im Puffer (mit 'y' aktivieren, dann etwas warten)\n" );
+		return;
+	}
+
+	QString ts  = QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss");
+	QString dir = QString("replays/replay_%1").arg(ts);
+	QDir().mkpath( dir );
+
+	QString concat;
+	float total = 0.f;
+	for( int i = 0; i < (int)frames.size(); ++i )
+	{
+		QString fn = QString("frame_%1.jpg").arg(i, 6, 10, QChar('0'));
+		QFile f( dir + "/" + fn );
+		if( f.open(QIODevice::WriteOnly) ) { f.write( frames[i].jpg ); f.close(); }
+		concat += QString("file '%1'\nduration %2\n").arg(fn).arg(frames[i].dur, 0, 'f', 4);
+		total  += frames[i].dur;
+	}
+	concat += QString("file 'frame_%1.jpg'\n").arg((int)frames.size()-1, 6, 10, QChar('0'));
+	QFile lf( dir + "/frames.txt" );
+	if( lf.open(QIODevice::WriteOnly | QIODevice::Text) )
+	{ lf.write( concat.toLocal8Bit() ); lf.close(); }
+
+	bool haveAudio = m_audioAnalyzer
+	              && m_audioAnalyzer->dumpReplayWav( dir + "/audio.wav", total + 0.5f );
+
+	QStringList args;
+	args << "-y" << "-f" << "concat" << "-safe" << "0" << "-i" << (dir + "/frames.txt");
+	if( haveAudio )
+	{
+		// The audio ring holds MORE than the video: trim its start so both
+		// ends align (ffmpeg -ss on the wav input).
+		float wavLen = total + 0.5f;
+		args << "-ss" << QString::number( std::max(0.f, wavLen - total), 'f', 2 )
+		     << "-i" << (dir + "/audio.wav");
+	}
+	args << "-c:v" << "libx264" << "-pix_fmt" << "yuv420p";
+	if( haveAudio ) args << "-c:a" << "aac";
+	args << "-shortest" << (dir + "/replay.mp4");
+	QProcess::startDetached( "ffmpeg", args );
+
+	fprintf( stderr, "REPLAY: %d Frames (%.1f s) -> %s (mux replay.mp4)\n",
+	         (int)frames.size(), total, dir.toLocal8Bit().constData() );
 }
 
 // Grab the freshly-rendered frame (clean, before any overlay) at ~30 fps and hand
@@ -1092,11 +1278,44 @@ void GLwidget::keyPressEvent(QKeyEvent* event)
 		case Qt::Key_Period:       FilterShader::adjustTrails(+0.05f);     break;  // .  longer trails
 		case Qt::Key_Minus:        FilterShader::adjustMood(-0.10f);       break;  // -  less mood colour
 		case Qt::Key_Equal:        FilterShader::adjustMood(+0.10f);       break;  // =  more mood colour
+		case Qt::Key_Semicolon:                                                    // ;  less latency lead
+			FilterShader::adjustLatency(-0.01f);
+			fprintf( stderr, "Latency lead: %.0f ms\n", FilterShader::latency() * 1000.f );
+			break;
+		case Qt::Key_Apostrophe:                                                   // '  more latency lead
+			FilterShader::adjustLatency(+0.01f);
+			fprintf( stderr, "Latency lead: %.0f ms\n", FilterShader::latency() * 1000.f );
+			break;
 
 		// ---- Persist the current look + UI state as the startup default ----
 		case Qt::Key_K:
 			FilterShader::saveSettings();
 			saveUiSettings();
+			break;
+
+		// ---- Instant replay: 'y' arms the rolling buffer, 'x' saves it ----
+		case Qt::Key_Y:
+			m_replayArmed = !m_replayArmed;
+			if( m_replayArmed )
+			{
+				ensureRecWorker();
+				m_repLastFrame = 0;
+			}
+			fprintf( stderr, "Instant-Replay-Puffer: %s\n", m_replayArmed ? "AN" : "AUS" );
+			break;
+		case Qt::Key_X:
+			saveReplay();
+			break;
+
+		// ---- MIDI learn: cycle through the assignable targets ----
+		case Qt::Key_J:
+			m_midiLearn = (m_midiLearn < 0) ? 0
+			            : (m_midiLearn + 1 >= MIDI_TARGETS ? -1 : m_midiLearn + 1);
+			if( m_midiLearn >= 0 )
+				fprintf( stderr, "MIDI learn: bewege einen Regler fuer '%s' "
+				         "(j = weiter/beenden)\n", kMidiTargetNames[m_midiLearn] );
+			else
+				fprintf( stderr, "MIDI learn: aus\n" );
 			break;
 
 		// ---- Auto-config-by-mood toggle ----

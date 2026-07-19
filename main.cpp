@@ -48,6 +48,7 @@ void commandlineerror( char *cmd, char *parm )
 	"-w <wav>      offline: analyze this WAV instead of live audio (testing)\n"
 	"-o            Spout output: publish the frame as sender 'Kaleidoscope'\n"
 	"              (for OBS / Resolume / any Spout receiver)\n"
+	"-t <port>     web remote: phone control page at http://<this-pc>:<port>/\n"
 	"-h            this help menu\n"
 	"Keys (while running):\n"
 	"0             toggle the configuration-select menu\n"
@@ -57,8 +58,12 @@ void commandlineerror( char *cmd, char *parm )
 	"[ ]           reactivity  - less / more audio-driven motion\n"
 	", .           trails      - shorter / longer feedback trails\n"
 	"- =           mood        - weaker / stronger colour grading\n"
+	"; '           latency     - visuals earlier / later vs. the heard beat\n"
 	"k             save current look settings as the startup default\n"
 	"s             save a PNG screenshot\n"
+	"j             MIDI learn - bind knobs/pads to the controls (cycles targets)\n"
+	"y             arm the instant-replay buffer (rolling ~30 s)\n"
+	"x             save the instant replay as replays\\replay_*\\replay.mp4\n"
 	"Esc / q       quit\n"
 	"\n");
 
@@ -72,8 +77,8 @@ void commandlineerror( char *cmd, char *parm )
 void parsecommandline( int argc, char *argv[] )
 {
 	/* valid option characters; last char MUST be 0 ! */
-	char optionchar[] =   { 'h', 'b', 'f', 's', 'c', 'm', 'l', 'r', 'w', 'o', 0 };
-	int musthaveparam[] = {  0 ,  0,   1,   1,   1,   1,   0,   0,   1,   0,  0 };
+	char optionchar[] =   { 'h', 'b', 'f', 's', 'c', 'm', 'l', 'r', 'w', 'o', 't', 0 };
+	int musthaveparam[] = {  0 ,  0,   1,   1,   1,   1,   0,   0,   1,   0,   1,  0 };
 
 	int nopts;
 	int mhp[256];
@@ -143,6 +148,8 @@ void parsecommandline( int argc, char *argv[] )
 				case 'w': AudioAnalyzer::s_offlineWav = QString::fromLocal8Bit( argv[1] ); break;
 				// Spout output: publish the displayed frame to other apps.
 				case 'o': FilterShader::s_spoutEnabled = true; break;
+				// Embedded web remote (phone control page).
+				case 't': GLwidget::s_remotePort = atoi( argv[1] ); break;
 
 
 				default: fprintf(stderr, "\nBug in parsecommandline !\n");

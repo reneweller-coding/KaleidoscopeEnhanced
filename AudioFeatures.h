@@ -251,6 +251,11 @@ struct AudioFeatures
     float onsetSnare = 0.f;
     float onsetHat   = 0.f;
 
+    // Transition style for the CURRENT effect cross-fade (host-rolled when a
+    // change fires; uploaded as "transStyle" — CombinePlain styles the blend):
+    // 0 linear, 1 radial wipe, 2 kaleido fold-through, 3 zoom-through.
+    int transStyle = 0;
+
     // swell: slow loudness-swell envelope (host-filled, like the phases below).
     //   The difference between a fast (~1.5 s) and a slow (~8 s) loudness average:
     //   rises when the music builds/swells, falls in fade-outs.  The one signal

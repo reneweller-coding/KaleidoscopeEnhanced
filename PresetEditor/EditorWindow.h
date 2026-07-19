@@ -46,6 +46,16 @@ private:
     void uiToMeta();
     void stepCombo(QComboBox *c, int delta);
 
+    // Live parameter sliders: per-activation params of the previewed shaders,
+    // with slider ranges taken from Komplett.xml (which registers every shader
+    // with sensible min/max).  Slider values override the preview defaults.
+    void rebuildParamSliders();
+    void pushParamOverrides();
+    struct SliderInfo { QString name; float minV, maxV; bool isInt; class QSlider *slider; };
+    QVector<SliderInfo> m_sliders;
+    class QGroupBox    *m_paramBox  = nullptr;
+    class QFormLayout  *m_paramForm = nullptr;
+
     QString m_root;
     Preset  m_preset;
 
