@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <configuration ImageDirectory="C:\\Users\\rene\\Desktop\\BilderPhotoechoes" ConfigurationName="Fast" timeTextureSoloMin="10" timeTextureSoloMax="40" timeTextureInterpolationMin="20" timeTextureInterpolationMax="80" >
 
   <!--
@@ -102,6 +102,122 @@
   <!-- Hexagon -->
   <CombineShader minTimeSolo="10" maxTimeSolo="60" minTimeInterpolation="20" maxTimeInterpolation="60" file="..\\CombineHexagon.frag" type="normal" probability="0.01" complexity="1">
   </CombineShader>
+
+  <TextureShader minTimeSolo="15" maxTimeSolo="50" minTimeInterpolation="10" maxTimeInterpolation="30" file="..\\Voyager.frag" type="normal" probability="0.5" mood="bright" complexity="2">
+    <int name="kSides" minValue="0" maxValue="9"></int>
+    <float name="travelMul" minValue="0.6" maxValue="1.6"></float>
+    <float name="cellH" minValue="1.2" maxValue="3.0"></float>
+  </TextureShader>
+
+  <TextureShader minTimeSolo="15" maxTimeSolo="50" minTimeInterpolation="10" maxTimeInterpolation="30" file="..\\FractalBloom.frag" type="normal" probability="0.5" mood="bright" complexity="1">
+    <float name="iterZoomP" minValue="1.3" maxValue="1.8"></float>
+    <float name="ringFreqP" minValue="5.0" maxValue="12.0"></float>
+  </TextureShader>
+
+  <TextureShader minTimeSolo="15" maxTimeSolo="50" minTimeInterpolation="10" maxTimeInterpolation="30" file="..\\DiscoGodrays.frag" type="normal" probability="0.5" mood="aggressive,bright" complexity="2">
+    <float name="facetP" minValue="0.2" maxValue="0.5"></float>
+    <float name="tubeP" minValue="0.03" maxValue="0.09"></float>
+  </TextureShader>
+
+  <TextureShader minTimeSolo="15" maxTimeSolo="50" minTimeInterpolation="10" maxTimeInterpolation="30" file="..\\Vortex.frag" type="normal" probability="0.5" mood="aggressive,bright" complexity="2">
+    <int name="sectorsP" minValue="6" maxValue="17"></int>
+    <float name="curveP" minValue="0.04" maxValue="0.14"></float>
+    <float name="travP" minValue="0.6" maxValue="1.5"></float>
+    <int name="kSides" minValue="0" maxValue="9"></int>
+    <float name="rosetteP" minValue="0.15" maxValue="0.35"></float>
+  </TextureShader>
+
+  <TextureShader minTimeSolo="15" maxTimeSolo="50" minTimeInterpolation="10" maxTimeInterpolation="30" file="..\\TheCore.frag" type="normal" probability="0.5" mood="aggressive" complexity="2">
+    <float name="coreP" minValue="0.6" maxValue="1.6"></float>
+    <float name="twistP" minValue="0.15" maxValue="0.5"></float>
+    <float name="tubeP" minValue="0.06" maxValue="0.16"></float>
+    <int name="kSides" minValue="0" maxValue="9"></int>
+    <float name="rosetteP" minValue="0.15" maxValue="0.35"></float>
+  </TextureShader>
+
+  <TextureShader minTimeSolo="15" maxTimeSolo="50" minTimeInterpolation="10" maxTimeInterpolation="30" file="..\\NeonTubes.frag" type="normal" probability="0.5" mood="aggressive,bright" complexity="2">
+    <float name="stripeP" minValue="5.0" maxValue="12.0"></float>
+    <float name="ringP" minValue="0.7" maxValue="1.3"></float>
+    <float name="travP" minValue="0.6" maxValue="1.5"></float>
+    <int name="kSides" minValue="0" maxValue="9"></int>
+    <float name="rosetteP" minValue="0.15" maxValue="0.35"></float>
+  </TextureShader>
+
+  <TextureShader minTimeSolo="15" maxTimeSolo="50" minTimeInterpolation="10" maxTimeInterpolation="30" file="..\\PsychedelicPills.frag" type="normal" probability="0.5" mood="bright" complexity="2">
+    <float name="pillP" minValue="0.07" maxValue="0.14"></float>
+    <float name="wobbleP" minValue="0.15" maxValue="0.35"></float>
+    <float name="spinP" minValue="0.6" maxValue="1.5"></float>
+    <int name="kSides" minValue="0" maxValue="9"></int>
+    <float name="rosetteP" minValue="0.15" maxValue="0.35"></float>
+  </TextureShader>
+
+  <TextureShader minTimeSolo="15" maxTimeSolo="50" minTimeInterpolation="10" maxTimeInterpolation="30" file="..\\ChromeDreams.frag" type="normal" probability="0.5" mood="bright" complexity="2">
+    <float name="ringP" minValue="0.12" maxValue="0.30"></float>
+    <float name="stretchP" minValue="0.10" maxValue="0.35"></float>
+    <float name="stripeP" minValue="4.0" maxValue="9.0"></float>
+    <float name="travP" minValue="0.6" maxValue="1.4"></float>
+    <int name="kSides" minValue="0" maxValue="9"></int>
+    <float name="rosetteP" minValue="0.15" maxValue="0.35"></float>
+  </TextureShader>
+
+  <TextureShader minTimeSolo="15" maxTimeSolo="50" minTimeInterpolation="10" maxTimeInterpolation="30" file="..\\SphereGrid.frag" type="normal" probability="0.5" complexity="2">
+    <float name="spacingP" minValue="3.0" maxValue="6.0"></float>
+  </TextureShader>
+
+  <TextureShader minTimeSolo="15" maxTimeSolo="50" minTimeInterpolation="10" maxTimeInterpolation="30" file="..\\HexKaleido.frag" type="normal" probability="0.5" complexity="1">
+    <float name="zoomP" minValue="0.7" maxValue="1.6"></float>
+    <float name="swirlP" minValue="0.0" maxValue="0.5"></float>
+  </TextureShader>
+
+  <TextureShader minTimeSolo="15" maxTimeSolo="50" minTimeInterpolation="10" maxTimeInterpolation="30" file="..\\MobiusOrbs.frag" type="normal" probability="0.5" complexity="2">
+    <float name="zoomP" minValue="0.04" maxValue="0.28"></float>
+    <float name="orbSizeP" minValue="4.0" maxValue="11.0"></float>
+    <float name="radiusP" minValue="3.0" maxValue="14.0"></float>
+    <float name="stretchP" minValue="0.3" maxValue="2.5"></float>
+    <float name="shapeP" minValue="0.2" maxValue="1.5"></float>
+  </TextureShader>
+
+  <TextureShader minTimeSolo="15" maxTimeSolo="50" minTimeInterpolation="10" maxTimeInterpolation="30" file="..\\FlowingWires.frag" type="normal" probability="0.5" complexity="2">
+    <float name="snapP" minValue="2.8" maxValue="5.2"></float>
+    <float name="glowP" minValue="35.0" maxValue="65.0"></float>
+    <float name="travP" minValue="0.6" maxValue="1.5"></float>
+    <int name="kSides" minValue="0" maxValue="9"></int>
+    <float name="rosetteP" minValue="0.15" maxValue="0.35"></float>
+  </TextureShader>
+
+  <TextureShader minTimeSolo="15" maxTimeSolo="50" minTimeInterpolation="10" maxTimeInterpolation="30" file="..\\InsideSystem.frag" type="normal" probability="0.5" complexity="2">
+    <float name="spacingP" minValue="5.0" maxValue="9.0"></float>
+    <float name="attenP" minValue="14.0" maxValue="30.0"></float>
+    <int name="kSides" minValue="0" maxValue="9"></int>
+    <float name="rosetteP" minValue="0.15" maxValue="0.35"></float>
+  </TextureShader>
+
+  <TextureShader minTimeSolo="15" maxTimeSolo="50" minTimeInterpolation="10" maxTimeInterpolation="30" file="..\\Metamorph.frag" type="normal" probability="0.6" complexity="1">
+    <int name="sidesP" minValue="4" maxValue="10"></int>
+    <float name="latticeP" minValue="2.0" maxValue="4.5"></float>
+    <float name="warpAmtP" minValue="0.15" maxValue="0.35"></float>
+    <float name="swirlP" minValue="0.0" maxValue="0.7"></float>
+  </TextureShader>
+
+  <TextureShader minTimeSolo="15" maxTimeSolo="50" minTimeInterpolation="10" maxTimeInterpolation="30" file="..\\BeatLattice.frag" type="normal" probability="0.5" mood="aggressive,bright" complexity="1">
+  </TextureShader>
+
+  <TextureShader minTimeSolo="15" maxTimeSolo="50" minTimeInterpolation="10" maxTimeInterpolation="30" file="..\\Starfield.frag" type="normal" probability="0.5" complexity="1">
+    <float name="densP" minValue="0.88" maxValue="0.95"></float>
+    <float name="speedP" minValue="0.6" maxValue="1.6"></float>
+    <float name="rollP" minValue="0.0" maxValue="0.30"></float>
+  </TextureShader>
+
+  <TextureShader minTimeSolo="15" maxTimeSolo="50" minTimeInterpolation="10" maxTimeInterpolation="30" file="..\\RaymarchTunnel.frag" type="normal" probability="0.5" complexity="2">
+    <int name="sidesP" minValue="4" maxValue="11"></int>
+    <float name="twistP" minValue="0.0" maxValue="0.20"></float>
+    <float name="snakeP" minValue="0.15" maxValue="0.55"></float>
+  </TextureShader>
+
+  <TextureShader minTimeSolo="15" maxTimeSolo="50" minTimeInterpolation="10" maxTimeInterpolation="30" file="..\\Fluid.frag" type="normal" probability="0.5" mood="calm" complexity="1">
+    <int name="sidesP" minValue="0" maxValue="9"></int>
+    <float name="zoomP" minValue="0.7" maxValue="1.5"></float>
+  </TextureShader>
 
 </configuration>
 

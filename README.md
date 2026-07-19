@@ -349,6 +349,49 @@ Audio is captured via WASAPI loopback (`AudioAnalyzer`) and analysed in real tim
   (every second section also swaps the combine pass).  Rate-limited to one
   section per ~12 s; verified offline with a synthesized verse/chorus/verse
   WAV (triggers ~2–4 s after each boundary, zero phantom triggers).
+- **Song-structure MEMORY:** each section additionally gets a spectral
+  fingerprint (a ~1 s shape average, cosine-matched against up to 8 stored
+  prints).  A RETURNING section — chorus #2 — is recognised (`sectionId`)
+  and **replays the exact shader, combine and rolled parameter values** it
+  had the first time; new sections roll fresh and are remembered.  The
+  visuals thereby follow the song's form: every chorus looks the same,
+  every verse different.  (V-C-V-C test WAV: ids 0, 1, 0 — the returning
+  chorus matched with similarity 0.995 vs 0.888 for a different section.)
+- **Mood-matched shader selection:** config entries can carry
+  `mood="dark|bright|calm|aggressive"` tags (comma list).  The next-shader
+  choice biases toward tags agreeing with the live mood (valence → dark/
+  bright, arousal + ambient → aggressive/calm) on top of the existing
+  complexity-vs-arousal matching — a soft probabilistic bias with a floor,
+  never a hard filter.  Untagged shaders stay neutral.
+- **Echo-warp trails:** the feedback pass now samples the previous frame
+  slightly **zoomed + rotated** around the centre, so bright structures
+  leave expanding, swirling, hue-drifting echo tunnels; the beat pumps the
+  outward zoom, ambient passages get longer trails, and the rotation
+  direction swings smoothly.
+- **Instrument-separated onsets:** the 32-band flux is split into low/mid/
+  high groups with separate spike tests → `audioKick`, `audioSnare`,
+  `audioHat` uniforms (peak-hold + slew like the global envelopes).
+  Crossmodal mapping: kick → ring waves / ray bursts, snare → lattice
+  flashes, hats → glitter shimmer (adopted by Metamorph + DiscoGodrays;
+  available to every shader).
+- **Beat-quantised cross-fades:** with a confident rhythm, natural scene
+  transitions last exactly **4 beats** (from the estimated BPM) instead of
+  the config's fixed seconds — transitions breathe in the song's tempo.
+- **Key colour without jumps:** the chroma hue is slewed AROUND the colour
+  circle (shortest way, ~20°/s), so the key-driven global palette glides
+  through key changes instead of snapping.
+- **GPU fluid (`Fluid.frag`):** the source image as INK, advected
+  semi-Lagrangian along the curl of a noise potential (divergence-free →
+  genuinely incompressible flow, no pressure solve needed).  Bass powers
+  the swirl, onsets pour in fresh dye, and the field can fold into a
+  kaleidoscopic mandala per activation (`sidesP`/`zoomP`).
+- **Preset editor — real audio preview:** load a WAV (`w` / the Audio-WAV
+  button); it runs through the ACTUAL analyzer offline and the resulting
+  feature timeline (looped, with sound) drives the preview instead of the
+  synthetic profile — tune presets against real music.
+- **Robustness:** malformed configs (zero valid combine/texture entries,
+  min == max time ranges) no longer crash with a silent division by zero —
+  they fall back with a clear stderr warning.
 - **Music/speech gate:** on speech / video dialogue / silence the reactivity
   fades to a calm, timer-driven mode; music smoothly re-enables it.
 - **Automatic music-TYPE detection (drone/ambient vs. beat):** classified by

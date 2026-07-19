@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <!--
   darkambient.xml
   ============================================================
@@ -127,6 +127,7 @@
       file="..\\CurlAurora.frag"
       type="normal"
       probability="0.9"
+      mood="calm"
       complexity="1">
   </TextureShader>
 
@@ -137,6 +138,7 @@
       file="..\\FractalKIFS.frag"
       type="normal"
       probability="0.8"
+      mood="aggressive"
       complexity="1">
   </TextureShader>
 
@@ -147,6 +149,7 @@
       file="..\\LavaLamp.frag"
       type="normal"
       probability="0.8"
+      mood="calm"
       complexity="1">
     <float name="waxHueP" minValue="0.0" maxValue="6.28"></float>
     <float name="speedP" minValue="0.6" maxValue="1.6"></float>
@@ -161,6 +164,7 @@
       file="..\\OilProjector.frag"
       type="normal"
       probability="0.8"
+      mood="calm"
       complexity="2">
     <int name="sidesP" minValue="2" maxValue="9"></int>
     <float name="cellP" minValue="1.4" maxValue="3.0"></float>
@@ -173,6 +177,7 @@
       file="..\\DroneDepths.frag"
       type="normal"
       probability="1.0"
+      mood="calm,dark"
       complexity="1">
   </TextureShader>
 
@@ -237,5 +242,18 @@
       probability="1.0"
       complexity="1">
   </CombineShader>
+
+  <!-- Fluid (GPU ink: the image advected along an incompressible curl-noise flow) -->
+  <TextureShader
+      minTimeSolo="120" maxTimeSolo="360"
+      minTimeInterpolation="80" maxTimeInterpolation="200"
+      file="..\\Fluid.frag"
+      type="normal"
+      probability="0.8"
+      mood="calm"
+      complexity="1">
+    <int name="sidesP" minValue="0" maxValue="9"></int>
+    <float name="zoomP" minValue="0.7" maxValue="1.5"></float>
+  </TextureShader>
 
 </configuration>

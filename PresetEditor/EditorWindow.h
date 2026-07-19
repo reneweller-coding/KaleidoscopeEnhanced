@@ -37,6 +37,7 @@ private slots:
     void openPreset();
     void savePreset();
     void browseImageDir();
+    void loadAudioWav();     // real-analyzer WAV preview (looped)
 
 private:
     void scanShaders();
@@ -66,4 +67,6 @@ private:
     QSpinBox  *m_gInterpMin = nullptr, *m_gInterpMax = nullptr;
 
     QLabel *m_status = nullptr;
+
+    QString m_wavPath;       // current real-audio preview WAV (empty = synthetic)
 };

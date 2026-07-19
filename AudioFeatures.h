@@ -232,6 +232,24 @@ struct AudioFeatures
     int   sectionCount   = 0;
     // The continuous novelty score behind it (~0 steady .. ~1 big change).
     float sectionNovelty = 0.f;
+    // Song-structure memory: id of the CURRENT section (index into the
+    // analyzer's fingerprint store, assigned at each section trigger).  A
+    // RETURNING section (chorus #2) gets the SAME id as its first occurrence,
+    // so the host can replay the exact same shader + parameters.  -1 until
+    // the first section trigger.
+    int   sectionId      = -1;
+
+    // ---- Instrument-separated onsets ----
+    // The full-spectrum onset (onsetStrength) split into three band groups of
+    // the 32-band flux: LOW = kick/bass drum (~40..180 Hz), MID = snare/claps/
+    // vocal hits, HIGH = hi-hats/cymbals.  Each has its own spike test against
+    // its own running average + peak-hold reference.  Decaying envelopes; the
+    // host peak-holds + slew-limits them before upload (audioKick/Snare/Hat),
+    // so shaders can pulse per INSTRUMENT: kick -> zoom, snare -> flash,
+    // hats -> shimmer (crossmodal-correspondence mapping).
+    float onsetKick  = 0.f;
+    float onsetSnare = 0.f;
+    float onsetHat   = 0.f;
 
     // swell: slow loudness-swell envelope (host-filled, like the phases below).
     //   The difference between a fast (~1.5 s) and a slow (~8 s) loudness average:

@@ -150,8 +150,128 @@ void PreviewWidget::loadImages()
 
 // Set every uniform any of the effect shaders might declare.  Unused ones resolve
 // to location -1 and are silently ignored, so one call works for all shaders.
+void PreviewWidget::setAudioTimeline(std::vector<AudioFeatures> tl)
+{
+    m_timeline = std::move(tl);
+    m_wavClock.restart();
+    m_tlPrevT = 0.f;
+    m_tlPhase = m_tlAdvance = 0.f;
+    m_tlBeatEnv = m_tlBeat = m_tlOnsetEnv = m_tlOnset = 0.f;
+    m_tlDownEnv = m_tlDown = 0.f;
+    m_tlKickEnv = m_tlKick = m_tlSnareEnv = m_tlSnare = m_tlHatEnv = m_tlHat = 0.f;
+    m_tlLvlFast = m_tlLvlSlow = 0.f;
+    m_tlBeatPhase = 0.f;
+    update();
+}
+
 void PreviewWidget::applyCommonUniforms(QOpenGLShaderProgram *p)
 {
+    // ---- REAL audio preview: play back the analyzer's feature timeline ----
+    // Applies a compact version of the host's mapping (FilterShader::paint):
+    // peak-hold + slew envelopes, integrated motion phases, fast-vs-slow swell,
+    // continuous beat phase.  Loops with the (looped) sound.
+    if (!m_timeline.empty())
+    {
+        const float tp = float(m_wavClock.elapsed()) * 0.001f;
+        float dt = tp - m_tlPrevT;
+        if (dt < 0.f || dt > 0.25f) dt = 0.016f;
+        m_tlPrevT = tp;
+        const size_t n   = m_timeline.size();
+        const size_t idx = size_t(tp * 100.f) % n;
+        const AudioFeatures &f = m_timeline[idx];
+
+        auto slew = [dt](float cur, float target, float rate) {
+            float d = target - cur;
+            float mx = rate * dt;
+            if (d >  mx) d =  mx;
+            if (d < -mx) d = -mx;
+            return cur + d;
+        };
+        m_tlBeatEnv  = std::max(m_tlBeatEnv  * std::exp(-dt / 0.30f), f.beatDecay);
+        m_tlOnsetEnv = std::max(m_tlOnsetEnv * std::exp(-dt / 0.22f), f.onsetStrength);
+        m_tlDownEnv  = std::max(m_tlDownEnv  * std::exp(-dt / 0.45f), f.downbeat);
+        m_tlKickEnv  = std::max(m_tlKickEnv  * std::exp(-dt / 0.24f), f.onsetKick);
+        m_tlSnareEnv = std::max(m_tlSnareEnv * std::exp(-dt / 0.20f), f.onsetSnare);
+        m_tlHatEnv   = std::max(m_tlHatEnv   * std::exp(-dt / 0.14f), f.onsetHat);
+        m_tlBeat  = slew(m_tlBeat,  m_tlBeatEnv,  6.f);
+        m_tlOnset = slew(m_tlOnset, m_tlOnsetEnv, 7.f);
+        m_tlDown  = slew(m_tlDown,  m_tlDownEnv,  5.f);
+        m_tlKick  = slew(m_tlKick,  m_tlKickEnv,  7.f);
+        m_tlSnare = slew(m_tlSnare, m_tlSnareEnv, 7.f);
+        m_tlHat   = slew(m_tlHat,   m_tlHatEnv,   8.f);
+
+        // Integrated motion phases (jump-free) + swell (fast-slow loudness).
+        m_tlPhase   += (0.10f + 0.50f * m_tlBeat + 0.30f * f.overallLevel) * dt;
+        m_tlAdvance += (0.15f + 1.00f * f.overallLevel) * dt;
+        m_tlLvlFast += (f.overallLevel - m_tlLvlFast) * std::min(dt / 1.5f, 1.f);
+        m_tlLvlSlow += (f.overallLevel - m_tlLvlSlow) * std::min(dt / 8.0f, 1.f);
+        float swell  = std::min(std::max((m_tlLvlFast - m_tlLvlSlow) * 4.f, 0.f), 1.f);
+        float bpm    = 40.f + 160.f * f.estimatedBPM;
+        m_tlBeatPhase += (f.estimatedBPM > 0.004f ? bpm / 60.f : 0.f) * dt;
+        m_tlBeatPhase -= std::floor(m_tlBeatPhase);
+
+        p->setUniformValue("resolution", QVector2D(float(m_fbW), float(m_fbH)));
+        p->setUniformValue("time", m_time);
+        p->setUniformValue("interpolation", 1.0f);
+        p->setUniformValue("tex0", 0);
+        p->setUniformValue("tex1", 1);
+        p->setUniformValue("texSim", 7);
+
+        p->setUniformValue("audioBeat",      m_tlBeat);
+        p->setUniformValue("audioOnset",     m_tlOnset);
+        p->setUniformValue("audioDownbeat",  m_tlDown);
+        p->setUniformValue("audioKick",      m_tlKick);
+        p->setUniformValue("audioSnare",     m_tlSnare);
+        p->setUniformValue("audioHat",       m_tlHat);
+        p->setUniformValue("audioAmbient",   f.ambientFactor);
+        p->setUniformValue("audioSwell",     swell);
+        p->setUniformValue("audioLevel",     f.overallLevel);
+        p->setUniformValue("audioFlux",      f.spectralFlux);
+        p->setUniformValue("audioBass",      f.bassLevel);
+        p->setUniformValue("audioSubBass",   f.subBassLevel);
+        p->setUniformValue("audioLowMid",    f.lowMidLevel);
+        p->setUniformValue("audioMid",       f.midLevel);
+        p->setUniformValue("audioUpperMid",  f.upperMidLevel);
+        p->setUniformValue("audioHigh",      f.highLevel);
+        p->setUniformValue("audioCentroid",  f.spectralCentroid);
+        p->setUniformValue("audioValence",   f.valence);
+        p->setUniformValue("audioArousal",   f.arousal);
+        p->setUniformValue("audioPitch",     f.dominantPitch);
+        p->setUniformValue("audioPhase",     m_tlPhase);
+        p->setUniformValue("audioAdvance",   m_tlAdvance);
+        p->setUniformValue("audioBeatPhase", m_tlBeatPhase);
+        p->setUniformValue("audioBarPhase",  tp * 0.25f - std::floor(tp * 0.25f));
+        p->setUniformValue("audioChromaHue", f.chromaHue);
+        p->setUniformValue("audioMode",      f.musicalMode);
+        p->setUniformValue("audioStereo",    f.stereoWidth);
+        p->setUniformValue("audioDeltaPitch",f.deltaPitch);
+        p->setUniformValue("audioHarmChange",f.harmonicChange);
+        p->setUniformValue("audioRoughness", f.roughness);
+        p->setUniformValue("audioSharpness", f.sharpness);
+        p->setUniformValue("audioRolloff",   f.spectralRolloff);
+        p->setUniformValue("audioSpread",    f.spectralSpread);
+        p->setUniformValue("audioMusic",     f.musicPresence);
+        p->setUniformValue("audioChase",     tp * 0.25f - std::floor(tp * 0.25f));
+        p->setUniformValue("audioStereoL", QVector3D(f.stereoLowL, f.stereoMidL, f.stereoHighL));
+        p->setUniformValue("audioStereoR", QVector3D(f.stereoLowR, f.stereoMidR, f.stereoHighR));
+
+        int specLoc = p->uniformLocation("audioSpectrum");
+        if (specLoc >= 0)
+            glUniform1fv(specLoc, 32, f.spectrum);
+
+        // Per-shader config params (same defaults as the synthetic path).
+        p->setUniformValue("sides", 6);
+        p->setUniformValue("rot", 1);
+        p->setUniformValue("rotate", 1);
+        p->setUniformValue("red", 1);
+        p->setUniformValue("speed", 0.05f);
+        p->setUniformValue("speedTunnel", 0.03f);
+        p->setUniformValue("power", 2.0f);
+        p->setUniformValue("size", 10.0f);
+        p->setUniformValue("copies", 6.0f);
+        return;
+    }
+
     const float t = m_time;
     auto sw = [](float x){ return 0.5f + 0.5f * std::sin(x); };   // 0..1 sine
     const bool drone = (m_mode == Drone);

@@ -23,6 +23,11 @@
 #include <QtCore/QFileInfo>
 #include <QtGui/QKeyEvent>
 
+// Real-analyzer WAV preview: the actual analysis pipeline + looped playback.
+#include "../AudioAnalyzer.h"
+#include <windows.h>
+#include <mmsystem.h>
+
 static QSpinBox *mkSpin(int lo, int hi, int val)
 {
     QSpinBox *s = new QSpinBox(); s->setRange(lo, hi); s->setValue(val); return s;
@@ -52,6 +57,10 @@ EditorWindow::EditorWindow(const QString &projectRoot, QWidget *parent)
     musicCombo->addItems({ "Beat (120 BPM kicks)", "Drone (ambient swells)" });
     fSel->addRow("Music", musicCombo);
     m_musicCombo = musicCombo;
+    // REAL audio preview: a WAV is analysed by the actual AudioAnalyzer and
+    // its feature timeline (+ the sound, looped) drives the preview.
+    QPushButton *bWav = new QPushButton("Audio-WAV…  (w)");
+    fSel->addRow("Real audio", bWav);
     pl->addWidget(gSel);
 
     // Add-to-preset
@@ -143,6 +152,7 @@ EditorWindow::EditorWindow(const QString &projectRoot, QWidget *parent)
     connect(bOpen, &QPushButton::clicked, this, &EditorWindow::openPreset);
     connect(bSave, &QPushButton::clicked, this, &EditorWindow::savePreset);
     connect(bBrowse, &QPushButton::clicked, this, &EditorWindow::browseImageDir);
+    connect(bWav,    &QPushButton::clicked, this, &EditorWindow::loadAudioWav);
 
     scanShaders();
     metaToUi();
@@ -366,7 +376,46 @@ void EditorWindow::keyPressEvent(QKeyEvent *e)
     case Qt::Key_A:            addTextureEntry(); return;
     case Qt::Key_C:            addCombineEntry(); return;
     case Qt::Key_M:            m_musicCombo->setCurrentIndex(1 - m_musicCombo->currentIndex()); return;
+    case Qt::Key_W:            loadAudioWav(); return;
     case Qt::Key_Delete:       removeSelectedEntry(); return;
     default: QMainWindow::keyPressEvent(e);
     }
+}
+
+// REAL audio preview: pick a WAV, run it through the actual AudioAnalyzer
+// (full pipeline, offline, a few seconds), then loop sound + feature timeline
+// in the preview.  Picking Cancel while a timeline is active switches back to
+// the synthetic profile and stops the sound.
+void EditorWindow::loadAudioWav()
+{
+    const QString path = QFileDialog::getOpenFileName(
+        this, "Audio-WAV für die Vorschau (PCM16)", QString(), "WAV (*.wav)");
+    if (path.isEmpty())
+    {
+        if (m_preview->hasAudioTimeline())
+        {
+            PlaySoundW(NULL, NULL, 0);                      // stop looped sound
+            m_preview->setAudioTimeline({});
+            m_status->setText("Audio preview: back to synthetic profile");
+        }
+        return;
+    }
+
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    std::vector<AudioFeatures> tl = AudioAnalyzer::analyzeWavToTimeline(path);
+    QApplication::restoreOverrideCursor();
+    if (tl.empty())
+    {
+        m_status->setText("Audio preview: could not analyse " + path);
+        return;
+    }
+
+    m_wavPath = path;
+    m_preview->setAudioTimeline(std::move(tl));
+    // Loop the sound; the preview loops its timeline with the same period.
+    PlaySoundW(reinterpret_cast<LPCWSTR>(m_wavPath.utf16()), NULL,
+               SND_FILENAME | SND_ASYNC | SND_LOOP);
+    m_status->setText(QString("Audio preview: %1 (%2 s, echte Analyzer-Features)")
+                      .arg(QFileInfo(path).fileName())
+                      .arg(m_preview->hasAudioTimeline() ? "loop" : "?"));
 }

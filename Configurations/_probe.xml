@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<configuration ImageDirectory="C:\\Users\\rene\\Desktop\\BilderPhotoechoes" ConfigurationName="probe" timeTextureSoloMin="50" timeTextureSoloMax="60" timeTextureInterpolationMin="50" timeTextureInterpolationMax="60" >
+
+  <TextureShader minTimeSolo="50" maxTimeSolo="60" minTimeInterpolation="50" maxTimeInterpolation="60" file="..\\Fluid.frag" type="normal" probability="1.0" complexity="1">
+    <int name="sidesP" minValue="6" maxValue="7"></int>
+  </TextureShader>
+
+  <CombineShader minTimeSolo="50" maxTimeSolo="60" minTimeInterpolation="50" maxTimeInterpolation="60" file="..\\CombinePlain.frag" type="normal" probability="1.0" complexity="1">
+  </CombineShader>
+
+</configuration>

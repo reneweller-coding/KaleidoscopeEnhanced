@@ -176,7 +176,32 @@ void FilterShader::start( int width, int height )
     unsigned int start = qrand() % (m_imageList.size() + 1);
 	for( unsigned int i = 0; i < start; i++ )
 		m_imageListIterator++;
-	
+
+	// A malformed configuration (wrong attribute names, missing type="normal")
+	// used to yield ZERO valid entries here — and every qrand() % size() below
+	// then crashed with a silent integer division by zero (0xC0000094).  Fall
+	// back to a plain pass-through with a clear message instead.
+	if( m_effectTextures.empty() )
+	{
+		fprintf( stderr, "WARNING: configuration has no valid <TextureShader> "
+		                 "entries (check attribute names + type) - using a "
+		                 "plain fallback.\n" );
+		EffectShader *fb = new EffectShader( "..\\CombinePlain.frag", 30, 60, 20, 40 );
+		fb->setProbability( 1.f );
+		fb->setComplexity( 1 );
+		m_effectTextures.push_back( fb );
+	}
+	if( m_effectCombines.empty() )
+	{
+		fprintf( stderr, "WARNING: configuration has no valid <CombineShader> "
+		                 "entries (they need the SAME attribute names as "
+		                 "TextureShader + type=\"normal\") - using CombinePlain.\n" );
+		EffectShader *fb = new EffectShader( "..\\CombinePlain.frag", 30, 60, 20, 40 );
+		fb->setProbability( 1.f );
+		fb->setComplexity( 1 );
+		m_effectCombines.push_back( fb );
+	}
+
 	for( unsigned int i = 0; i < m_maxIterationsEffectSearch; i++ )
 	{
 		m_actEffectTexture = qrand() % m_effectTextures.size();
@@ -1038,6 +1063,9 @@ void FilterShader::setupSafety()
 		m_trailPrevUni  = glGetUniformLocation( m_trailProgId, "texPrev" );
 		m_trailResUni   = glGetUniformLocation( m_trailProgId, "resolution" );
 		m_trailDecayUni = glGetUniformLocation( m_trailProgId, "decay" );
+		m_trailZoomUni  = glGetUniformLocation( m_trailProgId, "warpZoom" );
+		m_trailRotUni   = glGetUniformLocation( m_trailProgId, "warpRot" );
+		m_trailHueUni   = glGetUniformLocation( m_trailProgId, "hueDrift" );
 	}
 	m_feedbackReady = m_safetyReady && trailOk && (m_trailProgId != 0)
 	                && (m_trailCurUni >= 0) && (m_trailPrevUni >= 0);
@@ -1046,6 +1074,9 @@ void FilterShader::setupSafety()
 
 	// GPU reaction-diffusion simulation buffers + shader.
 	setupReactionDiffusion();
+
+	// GPU fluid (curl-noise dye advection) buffers + shader.
+	setupFluid();
 }
 
 // Create the two RGBA16F ping-pong buffers and the Gray-Scott step shader.  The
@@ -1090,6 +1121,91 @@ void FilterShader::setupReactionDiffusion()
 	checkGLErrors("setupReactionDiffusion()");
 }
 
+// Create the fluid dye ping-pong buffers and the advection shader.  Same
+// fail-safe pattern as the RD sim: on any failure m_fluidReady stays false and
+// Fluid.frag degrades to its image fallback.
+void FilterShader::setupFluid()
+{
+	if( m_fluidProgId == 0 )
+	{
+		m_fluidProgId     = setShaders( "..\\standard.vert", "..\\FluidSim.frag" );
+		m_fluidPrevUni    = glGetUniformLocation( m_fluidProgId, "texPrev" );
+		m_fluidTex0Uni    = glGetUniformLocation( m_fluidProgId, "tex0" );
+		m_fluidTex1Uni    = glGetUniformLocation( m_fluidProgId, "tex1" );
+		m_fluidInterpUni  = glGetUniformLocation( m_fluidProgId, "interpolation" );
+		m_fluidResUni     = glGetUniformLocation( m_fluidProgId, "resolution" );
+		m_fluidSeedUni    = glGetUniformLocation( m_fluidProgId, "seedMode" );
+		m_fluidPhaseUni   = glGetUniformLocation( m_fluidProgId, "flowPhase" );
+		m_fluidImpulseUni = glGetUniformLocation( m_fluidProgId, "impulse" );
+		m_fluidInjectUni  = glGetUniformLocation( m_fluidProgId, "injectAmt" );
+	}
+
+	bool ok = (m_fluidProgId != 0) && (m_fluidPrevUni >= 0);
+	for( int i = 0; i < 2 && ok; ++i )
+	{
+		if( m_texFluid[i] == 0 ) glGenTextures( 1, &m_texFluid[i] );
+		glBindTexture( GL_TEXTURE_2D, m_texFluid[i] );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA16F, kFluidSize, kFluidSize, 0,
+		              GL_RGBA, GL_FLOAT, NULL );
+		if( m_fboFluid[i] == 0 ) glGenFramebuffersEXT( 1, &m_fboFluid[i] );
+		glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_fboFluid[i] );
+		glFramebufferTexture2DEXT( GL_FRAMEBUFFER_EXT, m_attachmentpoint,
+		                           GL_TEXTURE_2D, m_texFluid[i], 0 );
+		if( !checkFramebufferStatus() ) ok = false;
+	}
+	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, 0 );
+	glBindTexture( GL_TEXTURE_2D, 0 );
+
+	m_fluidReady  = ok;
+	m_fluidSeeded = false;
+	checkGLErrors("setupFluid()");
+}
+
+// Advance the dye advection by one step into the next ping-pong buffer.
+void FilterShader::stepFluid(const AudioFeatures &audio)
+{
+	if( !m_fluidReady )
+		return;
+
+	const int cur  = m_fluidIdx;
+	const int prev = 1 - m_fluidIdx;
+
+	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_fboFluid[cur] );
+	glViewport( 0, 0, kFluidSize, kFluidSize );
+	glUseProgram( m_fluidProgId );
+
+	glActiveTexture( GL_TEXTURE0 );
+	glBindTexture( GL_TEXTURE_2D, m_texFluid[prev] );
+	glActiveTexture( GL_TEXTURE1 );
+	glBindTexture( GL_TEXTURE_2D, m_actTex );
+	glActiveTexture( GL_TEXTURE2 );
+	glBindTexture( GL_TEXTURE_2D, m_nextTex );
+	glUniform1i( m_fluidPrevUni, 0 );
+	if( m_fluidTex0Uni   >= 0 ) glUniform1i( m_fluidTex0Uni, 1 );
+	if( m_fluidTex1Uni   >= 0 ) glUniform1i( m_fluidTex1Uni, 2 );
+	if( m_fluidInterpUni >= 0 ) glUniform1f( m_fluidInterpUni, m_interpolationTexture );
+	if( m_fluidResUni    >= 0 ) glUniform2f( m_fluidResUni, (float)kFluidSize, (float)kFluidSize );
+	if( m_fluidSeedUni   >= 0 ) glUniform1f( m_fluidSeedUni, m_fluidSeeded ? 0.f : 1.f );
+	// Flow field evolution rides the integrated phase (jump-free); the
+	// slew-limited bass powers the swirl, onsets inject extra dye.
+	if( m_fluidPhaseUni   >= 0 ) glUniform1f( m_fluidPhaseUni,
+	                                          m_globaltime * 0.05f + m_audioAdvance * 0.20f );
+	if( m_fluidImpulseUni >= 0 ) glUniform1f( m_fluidImpulseUni,
+	                                          audio.bassLevel * 0.7f + audio.beatDecay * 0.3f );
+	if( m_fluidInjectUni  >= 0 ) glUniform1f( m_fluidInjectUni,
+	                                          0.012f + 0.020f * audio.onsetStrength );
+
+	drawWindow();
+
+	glBindTexture( GL_TEXTURE_2D, 0 );
+	m_fluidSeeded = true;
+	m_fluidIdx    = prev;   // newest state is now m_texFluid[1 - m_fluidIdx]
+}
+
 // Advance the Gray-Scott simulation by one step into the next ping-pong buffer.
 void FilterShader::stepReactionDiffusion(const AudioFeatures &audio)
 {
@@ -1124,12 +1240,36 @@ void FilterShader::stepReactionDiffusion(const AudioFeatures &audio)
 	m_rdIdx    = prev;   // ping-pong swap; newest state is now m_texRD[1 - m_rdIdx]
 }
 
-// Mood-based selection bias — see header.
-bool FilterShader::moodAccept(unsigned int complexity)
+// Mood-based selection bias — see header.  Two components:
+//   1. Busyness: shader complexity should roughly match the arousal.
+//   2. Mood TAGS (config attribute mood="dark,bright,calm,aggressive"): a
+//      tagged shader is preferred when the music's mood agrees (dark valence →
+//      dark shaders, high arousal → aggressive, ambient → calm) and penalised
+//      when it clearly disagrees.  Untagged shaders stay neutral, so sparsely
+//      tagged configs keep working.  The result stays probabilistic — a bias,
+//      not a hard filter, so variety survives.
+bool FilterShader::moodAccept(EffectShader *s)
 {
 	float target = 1.f + m_lastArousal * 9.f;               // desired busyness 1..10
-	float diff   = fabs(float(complexity) - target) / 9.f;  // 0..1
+	float diff   = fabs(float(s->getComplexity()) - target) / 9.f;
 	float accept = 1.f - 0.6f * diff;                       // closer match → likelier
+
+	unsigned int f = s->moodFlags();
+	if (f)
+	{
+		float bonus = 0.f;
+		if (f & EffectShader::MOOD_BRIGHT)
+			bonus += (m_lastValence - 0.5f) * 0.8f;
+		if (f & EffectShader::MOOD_DARK)
+			bonus += (0.5f - m_lastValence) * 0.8f;
+		if (f & EffectShader::MOOD_AGGRESSIVE)
+			bonus += (m_lastArousal - 0.5f) * 0.8f + (0.3f - m_lastAmbient) * 0.4f;
+		if (f & EffectShader::MOOD_CALM)
+			bonus += (0.5f - m_lastArousal) * 0.6f + (m_lastAmbient - 0.3f) * 0.6f;
+		accept += bonus;
+	}
+	// Floor keeps every shader reachable (never a hard exclusion).
+	if (accept < 0.15f) accept = 0.15f;
 	return (float(qrand()) / float(RAND_MAX)) < accept;
 }
 
@@ -1137,6 +1277,8 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
                          const AudioFeatures &audio)
 {
 	m_lastArousal = audio.arousal;   // for mood-biased effect selection
+	m_lastValence = audio.valence;
+	m_lastAmbient = audio.ambientFactor;
 
     // Update adaptive timing scale from audio analysis.
     // Smooth slowly so a sudden genre change doesn't cause a jarring jump.
@@ -1303,6 +1445,11 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
         m_beatEnv     = fmaxf(m_beatEnv     * expf(-dt / 0.30f), audio.beatDecay);
         m_onsetEnv    = fmaxf(m_onsetEnv    * expf(-dt / 0.22f), audio.onsetStrength);
         m_downbeatEnv = fmaxf(m_downbeatEnv * expf(-dt / 0.45f), audio.downbeat);
+        // Instrument-separated onsets: same peak-hold treatment, with releases
+        // matched to the instrument (kick booms, hats snap).
+        m_kickEnv  = fmaxf(m_kickEnv  * expf(-dt / 0.24f), audio.onsetKick);
+        m_snareEnv = fmaxf(m_snareEnv * expf(-dt / 0.20f), audio.onsetSnare);
+        m_hatEnv   = fmaxf(m_hatEnv   * expf(-dt / 0.14f), audio.onsetHat);
 
         // Tempo-locked pulse: when the rhythm is confidently periodic, blend a
         // pulse derived from the CONTINUOUS beat phase into the beat target — the
@@ -1322,6 +1469,9 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
         m_audioBeatSmooth  = slewToward(m_audioBeatSmooth,  beatTarget,    6.0f, dt);
         m_onsetSmooth      = slewToward(m_onsetSmooth,      m_onsetEnv,    7.0f, dt);
         m_downbeatSmooth   = slewToward(m_downbeatSmooth,   m_downbeatEnv, 5.0f, dt);
+        m_kickSmooth       = slewToward(m_kickSmooth,       m_kickEnv,     7.0f, dt);
+        m_snareSmooth      = slewToward(m_snareSmooth,      m_snareEnv,    7.0f, dt);
+        m_hatSmooth        = slewToward(m_hatSmooth,        m_hatEnv,      8.0f, dt);
         m_audioLevelSmooth = slewToward(m_audioLevelSmooth, audio.overallLevel, 3.0f, dt);
         m_audioFluxSmooth  = slewToward(m_audioFluxSmooth,  audio.spectralFlux, 3.0f, dt);
 
@@ -1337,6 +1487,9 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
         audioFx.beatDecay     = m_audioBeatSmooth     * gate;
         audioFx.onsetStrength = m_onsetSmooth         * gate;
         audioFx.downbeat      = m_downbeatSmooth      * gate;
+        audioFx.onsetKick     = m_kickSmooth          * gate;
+        audioFx.onsetSnare    = m_snareSmooth         * gate;
+        audioFx.onsetHat      = m_hatSmooth           * gate;
         audioFx.beatPhase     = m_beatPhasePLL;       // continuous (PLL), no snaps
         audioFx.swell         = swell * gate;
         audioFx.barPhase      = (float(m_barBeatHost) + m_beatPhasePLL) * 0.25f;
@@ -1347,7 +1500,19 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
         audioFx.valence         = 0.5f + (audio.valence         - 0.5f) * gate;
         audioFx.arousal         = 0.5f + (audio.arousal         - 0.5f) * gate;
         audioFx.spectralCentroid= 0.5f + (audio.spectralCentroid- 0.5f) * gate;
-        audioFx.chromaHue       = audio.chromaHue * gate;
+        // Key colour: slew the chroma hue AROUND the colour circle (shortest
+        // way, max ~20 deg/s) so key changes glide instead of jumping the
+        // global palette from one frame to the next.
+        {
+            float d = audio.chromaHue - m_chromaHueSlew;
+            d -= floorf(d + 0.5f);                        // wrap to [-0.5, 0.5)
+            float maxStep = 0.055f * dt;
+            if (d >  maxStep) d =  maxStep;
+            if (d < -maxStep) d = -maxStep;
+            m_chromaHueSlew += d;
+            m_chromaHueSlew -= floorf(m_chromaHueSlew);   // keep in [0, 1)
+        }
+        audioFx.chromaHue       = m_chromaHueSlew * gate;
         audioFx.harmonicChange  = audio.harmonicChange * gate;
         audioFx.roughness       = audio.roughness      * gate;
         audioFx.sharpness       = audio.sharpness      * gate;
@@ -1373,11 +1538,44 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
     // second section also swaps the combine pass for a bigger scenery change.
     // (Any other difference — e.g. this FilterShader was just (re)started
     // while the analyzer kept counting — only re-syncs, without a cut.)
+    // SONG-STRUCTURE MEMORY: audio.sectionId identifies the section — a
+    // RETURNING section (chorus #2 = chorus #1) replays the shader, combine
+    // and exact parameter values it had the first time; a NEW section rolls
+    // fresh and its look is stored under the id after the switch completes.
     if( audio.sectionCount == m_lastSectionCount + 1 )
     {
-        m_forceEffectChange = true;
-        if( (audio.sectionCount & 1) == 0 )
-            m_forceCombineChange = true;
+        int  id = audio.sectionId;
+        auto it = m_sectionEffect.find( id );
+        bool known = (id >= 0) && it != m_sectionEffect.end()
+                     && it->second < m_effectTextures.size();
+        if( known && it->second == m_actEffectTexture )
+        {
+            // The right shader is already on screen — just refresh its look.
+            m_effectTextures[m_actEffectTexture]->restoreParameters( m_sectionParams[id] );
+        }
+        else
+        {
+            if( known )
+            {
+                m_nextEffectTexture     = it->second;   // replay that section's shader
+                m_pendingSectionRestore = id;           //   ... with its exact params
+                auto ic = m_sectionCombine.find( id );
+                if( ic != m_sectionCombine.end()
+                    && ic->second < m_effectCombines.size()
+                    && ic->second != m_actEffectCombine )
+                {
+                    m_nextEffectCombine  = ic->second;
+                    m_forceCombineChange = true;
+                }
+            }
+            else
+            {
+                m_pendingSectionStore = id;             // remember the new look
+                if( (audio.sectionCount & 1) == 0 )
+                    m_forceCombineChange = true;        // bigger scenery change
+            }
+            m_forceEffectChange = true;
+        }
         m_noveltyCooldown = 8.0f;     // hold off the harmonic hook right after
     }
     m_lastSectionCount = audio.sectionCount;
@@ -1414,7 +1612,9 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 			m_stateTexture = 0;
 			m_timeTexture.start();
 
-            m_timeTextureSolo = (float) (m_timeTextureSoloMin + (qrand() % (m_timeTextureSoloMax - m_timeTextureSoloMin))) / m_timingScale;
+            m_timeTextureSolo = (float) ((m_timeTextureSoloMax > m_timeTextureSoloMin)
+                ? m_timeTextureSoloMin + (qrand() % (m_timeTextureSoloMax - m_timeTextureSoloMin))
+                : m_timeTextureSoloMin) / m_timingScale;   // min==max would be % 0
 		}
 	}
 	else
@@ -1439,7 +1639,9 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 
 			m_interpolationTexture = 1.0;
 
-            m_timeTextureInterpolation = (float) (m_timeTextureInterpolationMin + (qrand() % (m_timeTextureInterpolationMax - m_timeTextureInterpolationMin))) / m_timingScale;
+            m_timeTextureInterpolation = (float) ((m_timeTextureInterpolationMax > m_timeTextureInterpolationMin)
+                ? m_timeTextureInterpolationMin + (qrand() % (m_timeTextureInterpolationMax - m_timeTextureInterpolationMin))
+                : m_timeTextureInterpolationMin) / m_timingScale;   // min==max would be % 0
 		}
 	}
     
@@ -1482,9 +1684,20 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 				unsigned int timeNext = m_effectTextures[m_nextEffectTexture]->getTimeInterpolation();
 
 				// A manual ('n') cut uses a short, snappy cross-fade so it is clearly a
-				// switch; a natural change uses the config's (long) interpolation time.
-				m_timeInterpolationEffectTexture = forcedGo ? 0.8f
-				                  : (float) (std::min( timeAct, timeNext)) / m_timingScale;
+				// switch; a natural change uses the config's (long) interpolation time —
+				// EXCEPT with a confident rhythm, where it becomes exactly 4 BEATS so
+				// the transition breathes in the song's tempo (never longer than the
+				// config asked for).
+				{
+					float cfgT = (float) (std::min( timeAct, timeNext)) / m_timingScale;
+					if( !forcedGo && audio.rhythmStrength > 0.55f
+					    && audio.estimatedBPM > 0.004f )
+					{
+						float fourBeats = 4.f * 60.f / (40.f + 160.f * audio.estimatedBPM);
+						cfgT = fminf(fmaxf(fourBeats, 1.2f), cfgT);
+					}
+					m_timeInterpolationEffectTexture = forcedGo ? 0.8f : cfgT;
+				}
 
 				m_effectTextures[m_nextEffectTexture]->startInterpolators();
 
@@ -1507,6 +1720,28 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 			m_effectTextures[m_actEffectTexture]->resetParameters();
 			m_actEffectTexture = m_nextEffectTexture;
 
+			// Song-structure memory: a recognised section replays the exact
+			// parameter values it had last time; a new section's fresh look
+			// is remembered under its id (combine captured mid-swap if one is
+			// running, so the stored pair matches what ends up on screen).
+			if( m_pendingSectionRestore >= 0 )
+			{
+				auto ip = m_sectionParams.find( m_pendingSectionRestore );
+				if( ip != m_sectionParams.end() )
+					m_effectTextures[m_actEffectTexture]->restoreParameters( ip->second );
+				m_pendingSectionRestore = -1;
+			}
+			if( m_pendingSectionStore >= 0 )
+			{
+				m_sectionEffect[m_pendingSectionStore]  = m_actEffectTexture;
+				m_sectionCombine[m_pendingSectionStore] =
+					(m_stateInterpolationEffectCombine != 0) ? m_nextEffectCombine
+					                                         : m_actEffectCombine;
+				m_sectionParams[m_pendingSectionStore]  =
+					m_effectTextures[m_actEffectTexture]->snapshotParameters();
+				m_pendingSectionStore = -1;
+			}
+
 			for( unsigned int i = 0; i < m_maxIterationsEffectSearch; i++ )
 			{
 				m_nextEffectTexture = qrand() % m_effectTextures.size();
@@ -1516,7 +1751,7 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 			m_effectCombines[m_actEffectCombine]->getComplexity() +
 			m_effectCombines[m_nextEffectCombine]->getComplexity() ) < 20 )
 			&& m_effectTextures[m_nextEffectTexture]->useShader()
-			&& moodAccept( m_effectTextures[m_nextEffectTexture]->getComplexity() )
+			&& moodAccept( m_effectTextures[m_nextEffectTexture] )
 			)
 					break;
 			}
@@ -1579,6 +1814,19 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 			stepReactionDiffusion( audio );
 		glActiveTexture( GL_TEXTURE7 );
 		glBindTexture( GL_TEXTURE_2D, m_texRD[1 - m_rdIdx] );   // newest state
+	}
+
+	// GPU fluid (curl-noise dye advection), same gating: only step while an
+	// effect that samples "texFluid" is on screen; bound to global unit 8.
+	bool fluidNeeded = m_fluidReady &&
+	    ( m_effectTextures[m_actEffectTexture]->usesFluid()
+	   || ( m_stateInterpolationEffectTexture != 0
+	        && m_effectTextures[m_nextEffectTexture]->usesFluid() ) );
+	if( fluidNeeded )
+	{
+		stepFluid( audio );
+		glActiveTexture( GL_TEXTURE8 );
+		glBindTexture( GL_TEXTURE_2D, m_texFluid[1 - m_fluidIdx] );
 	}
 
 
@@ -1675,9 +1923,19 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 				unsigned int timeAct = m_effectCombines[m_actEffectCombine]->getTimeInterpolation();
 				unsigned int timeNext = m_effectCombines[m_nextEffectCombine]->getTimeInterpolation();
 
-				// Manual ('n') cut → short snappy cross-fade; natural change → config time.
-				m_timeInterpolationEffectCombine = forcedGo ? 0.8f
-				                  : (float) (std::min( timeAct, timeNext)) / m_timingScale;
+				// Manual ('n') cut → short snappy cross-fade; natural change → config
+				// time, or exactly 4 beats when the rhythm is confident (see the
+				// texture-effect site above).
+				{
+					float cfgT = (float) (std::min( timeAct, timeNext)) / m_timingScale;
+					if( !forcedGo && audio.rhythmStrength > 0.55f
+					    && audio.estimatedBPM > 0.004f )
+					{
+						float fourBeats = 4.f * 60.f / (40.f + 160.f * audio.estimatedBPM);
+						cfgT = fminf(fmaxf(fourBeats, 1.2f), cfgT);
+					}
+					m_timeInterpolationEffectCombine = forcedGo ? 0.8f : cfgT;
+				}
 
 				m_effectCombines[m_nextEffectCombine]->startInterpolators();
 
@@ -1709,7 +1967,7 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 			m_effectCombines[m_actEffectCombine]->getComplexity() +
 			m_effectCombines[m_nextEffectCombine]->getComplexity() ) < 20 )
 			&& m_effectCombines[m_nextEffectCombine]->useShader()
-			&& moodAccept( m_effectCombines[m_nextEffectCombine]->getComplexity() )
+			&& moodAccept( m_effectCombines[m_nextEffectCombine] )
 			 )
 					break;
 			}
@@ -1852,6 +2110,19 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 		glUniform1i( m_trailPrevUni, 1 );
 		if( m_trailResUni   >= 0 ) glUniform2f( m_trailResUni, (float)m_width, (float)m_height );
 		if( m_trailDecayUni >= 0 ) glUniform1f( m_trailDecayUni, decay );
+		// Echo-warp: the beat pumps the outward zoom, the rotation direction
+		// swings slowly (sin of slow time -> smooth reversals, no snapping)
+		// and echoes drift gently in hue.  All rates scaled by frame time.
+		{
+			float dtf  = timeSinceLastFrameSec;
+			float zoom = 1.0f + (0.05f + 0.22f * m_audioBeatSmooth
+			                     + 0.08f * audio.ambientFactor) * dtf;
+			float rotA = 0.15f * sinf( m_globaltime * 0.02f ) * dtf;
+			float hueD = 0.10f * dtf;
+			if( m_trailZoomUni >= 0 ) glUniform1f( m_trailZoomUni, zoom );
+			if( m_trailRotUni  >= 0 ) glUniform1f( m_trailRotUni,  rotA );
+			if( m_trailHueUni  >= 0 ) glUniform1f( m_trailHueUni,  hueD );
+		}
 		drawWindow();
 
 		presentSource = m_texTrail[cur];

@@ -40,7 +40,7 @@ void main() {
     p = rot*p;
 //rwrwtest
 
-    float r = pow( pow(p.x*p.x,power) + pow(p.y*p.y,power), 1.0/(2*power) );
+    float r = pow( pow(p.x*p.x,power) + pow(p.y*p.y,power), 1.0/(2.0*power) );
 
     // cartesian to polar coordinates
     //float r = length(p);
@@ -71,7 +71,7 @@ void main() {
     
     // cartesian to polar coordinates
     //r = length(p);
-    r = pow( pow(p.x*p.x,power) + pow(p.y*p.y,power), 1.0/(2*power) );
+    r = pow( pow(p.x*p.x,power) + pow(p.y*p.y,power), 1.0/(2.0*power) );
     a = atan(p.y, p.x);
 
     // kaleidoscope

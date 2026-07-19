@@ -38,6 +38,7 @@ struct PresetEntry
     int      minTimeInterpolation = 15, maxTimeInterpolation = 50;
     double   probability = 0.5;
     int      complexity = 1;
+    QString  mood;         // optional mood tags ("dark,calm", ...) — passed through
     QVector<ShaderParam> params;
 };
 

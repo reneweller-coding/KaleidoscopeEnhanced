@@ -33,6 +33,9 @@ uniform float audioLevel;
 uniform float audioCentroid;
 uniform float audioValence;
 uniform float audioSpectrum[32];   // 32 log bands -> the lattice becomes an analyzer
+uniform float audioKick;      // instrument-separated onsets: kick -> ring waves,
+uniform float audioSnare;     // snare -> lattice flash,
+uniform float audioHat;       // hats -> spectrum-wheel shimmer
 
 // Per-activation variety (re-rolled each activation; 0 = default):
 uniform int   sidesP;         // mirror fold count   (0 -> 6; 4..9)
@@ -132,11 +135,15 @@ void main()
         float ring = cos(6.2831 * (length(p) * 0.9 - audioBeatPhase));
         ring = ring * ring * audioBeat;
 
+        // Instrument-separated accents: the SNARE flashes the lattice edges,
+        // the KICK powers the travelling rings, HATS shimmer the spectrum
+        // wheel (crossmodal: impact->flash, boom->wave, sizzle->sparkle).
         beatCol = pic * (0.55 + 0.55 * audioBeat + 0.25 * audioOnset);
-        beatCol += edges * imgPal(crease * 8.0) * (0.5 + 1.4 * audioBeat) * 1.4;
+        beatCol += edges * imgPal(crease * 8.0)
+                 * (0.5 + 1.0 * audioBeat + 0.9 * audioSnare) * 1.4;
         beatCol *= 0.75 + 0.5 * swp;
-        beatCol *= 0.85 + 0.35 * amp;              // spectrum wheel
-        beatCol += beatCol * 0.30 * ring;          // travelling tempo rings
+        beatCol *= 0.85 + 0.35 * amp + 0.10 * audioHat;   // spectrum wheel
+        beatCol += beatCol * ring * (0.15 + 0.45 * audioKick);  // tempo rings
     }
 
     // ---------- DRONE personality: soft breathing clouds ----------

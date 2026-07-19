@@ -241,7 +241,8 @@ unsigned int EffectShader::getTimeInterpolation()
 
 unsigned int EffectShader::getInterpolatedTime( unsigned int minTime, unsigned int maxTime )
 {
-	return minTime + (qrand() % (maxTime - minTime));
+	// min == max in the config would be qrand() % 0 → integer div-by-zero crash.
+	return (maxTime > minTime) ? minTime + (qrand() % (maxTime - minTime)) : minTime;
 }
 
 
@@ -310,7 +311,15 @@ void EffectShader::applyAudioFeatures(const AudioFeatures &f)
     // slowly (seconds), so shaders can CROSS-FADE between a beat personality and
     // a drone personality without any visible snap.
     GLint locAmbient  = glGetUniformLocation(m_sh_prog_id, "audioAmbient");
+    // Instrument-separated onsets (kick / snare / hat band groups), peak-held
+    // and slew-limited host-side like the global beat/onset envelopes.
+    GLint locKick     = glGetUniformLocation(m_sh_prog_id, "audioKick");
+    GLint locSnare    = glGetUniformLocation(m_sh_prog_id, "audioSnare");
+    GLint locHat      = glGetUniformLocation(m_sh_prog_id, "audioHat");
 
+    if (locKick     >= 0) glUniform1f(locKick,     f.onsetKick);
+    if (locSnare    >= 0) glUniform1f(locSnare,    f.onsetSnare);
+    if (locHat      >= 0) glUniform1f(locHat,      f.onsetHat);
     if (locArousal  >= 0) glUniform1f(locArousal,  f.arousal);
     if (locValence  >= 0) glUniform1f(locValence,  f.valence);
     if (locHCDF     >= 0) glUniform1f(locHCDF,     f.harmonicChange);
@@ -336,6 +345,9 @@ void EffectShader::applyAudioFeatures(const AudioFeatures &f)
     // Living reaction-diffusion field is bound to texture unit 7 by FilterShader.
     GLint locSim = glGetUniformLocation(m_sh_prog_id, "texSim");
     if (locSim >= 0) glUniform1i(locSim, 7);
+    // Fluid dye field (curl-noise advection) on unit 8, same pattern.
+    GLint locFluid = glGetUniformLocation(m_sh_prog_id, "texFluid");
+    if (locFluid >= 0) glUniform1i(locFluid, 8);
     if (locPhase    >= 0) glUniform1f(locPhase,    f.audioRotPhase);
     if (locAdvance  >= 0) glUniform1f(locAdvance,  f.audioAdvance);
     if (locBeat     >= 0) glUniform1f(locBeat,     f.beatDecay);
@@ -375,4 +387,12 @@ bool EffectShader::usesSim()
 		m_usesSim = ( m_sh_prog_id != 0 &&
 		              glGetUniformLocation( m_sh_prog_id, "texSim" ) >= 0 ) ? 1 : 0;
 	return m_usesSim == 1;
+}
+
+bool EffectShader::usesFluid()
+{
+	if( m_usesFluid < 0 )
+		m_usesFluid = ( m_sh_prog_id != 0 &&
+		                glGetUniformLocation( m_sh_prog_id, "texFluid" ) >= 0 ) ? 1 : 0;
+	return m_usesFluid == 1;
 }

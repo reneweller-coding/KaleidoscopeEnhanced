@@ -125,6 +125,23 @@ public:
 	/** Name of the uniform variable (for lookup by EffectShader). */
 	const QString& getName() const { return m_name; }
 
+	/** Snapshot / restore of the rolled per-activation value, for the song-
+	 *  structure memory: a recognised section replays its exact look instead of
+	 *  re-rolling.  Ints/bools round-trip through float losslessly here (they
+	 *  are small). */
+	float snapshotValue() const
+	{
+		return (m_type == BASE_TYPE_FLOAT || m_type == BASE_TYPE_INTERPOLATOR_FLOAT)
+		       ? m_data.vf : float(m_data.vi);
+	}
+	void restoreValue(float v)
+	{
+		if (m_type == BASE_TYPE_FLOAT || m_type == BASE_TYPE_INTERPOLATOR_FLOAT)
+			m_data.vf = v;
+		else
+			m_data.vi = int(v + ((v >= 0.f) ? 0.5f : -0.5f));
+	}
+
 private:
 
 	
