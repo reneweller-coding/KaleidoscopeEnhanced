@@ -158,6 +158,9 @@ normal/fast/slow/… set lives on in git history):
 - **Galerie** — the *photos* star: kaleidoscopes, image tunnels, gentle folds
 - **Psychedelic** — breathing fractals, pills, chrome, plasma, mushrooms
 - **Noir** — dark, high-contrast: noir fractals, dark tunnels, deep drones
+- **Komplett** — EVERY effect and combine shader in one rotation (45 texture
+  effects + 21 combines, incl. the legacy set and combines that never had a
+  config entry before)
 
 **Timing is music-driven:** per-entry `min/maxTime*` attributes are now
 OPTIONAL — the pacing comes from `timingScale` (tempo/arousal), 4-beat
