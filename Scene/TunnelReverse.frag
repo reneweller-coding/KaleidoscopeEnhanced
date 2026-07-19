@@ -31,7 +31,7 @@ void main() {
     
     
     float angle = 0.0; 
-    if( rotate > 0 )
+    if( rotate > 0.0 )
        angle = M_PI*0.25;
     
     // a rotation

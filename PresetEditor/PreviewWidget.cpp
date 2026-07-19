@@ -97,16 +97,20 @@ QOpenGLShaderProgram *PreviewWidget::compile(const QString &fileName, QString &l
 
     QOpenGLShaderProgram *p = new QOpenGLShaderProgram();
     p->bindAttributeLocation("aPos", 0);
-    if (!p->addShaderFromSourceCode(QOpenGLShader::Vertex, m_vertSrc)
-        || !p->addShaderFromSourceCode(QOpenGLShader::Fragment, frag)
-        || !p->link())
+    if (p->addShaderFromSourceCode(QOpenGLShader::Vertex, m_vertSrc)
+        && p->addShaderFromSourceCode(QOpenGLShader::Fragment, frag)
+        && p->link())
     {
-        log = p->log();
-        delete p;
-        return nullptr;
+        // Lint aid: surface driver WARNINGS even on successful compiles, so
+        // `--render X.frag ...` doubles as a shader linter.
+        if (!p->log().trimmed().isEmpty())
+            fprintf(stderr, "LINT %s:\n%s\n", qPrintable(fileName),
+                    qPrintable(p->log().trimmed()));
+        return p;
     }
-    log.clear();
-    return p;
+    log = p->log();
+    delete p;
+    return nullptr;
 }
 
 GLuint PreviewWidget::makeTexture(const QString &path)

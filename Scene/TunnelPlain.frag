@@ -22,7 +22,7 @@ vec2 clampQuadratic( vec2 p )
 	nachkomma *= resolution.y/resolution.x;
 	nachkomma += 0.5*(resolution.x-resolution.y)/resolution.x;
 	
-	if( (vorkomma % 2)==0 )
+	if( vorkomma - (vorkomma / 2) * 2 == 0 )
 		uv.x = 1.0-nachkomma;
 	else
 		uv.x = nachkomma;

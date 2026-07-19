@@ -25,8 +25,8 @@ const float frequency = 6.0;
 const int angle = 7; // better when a prime
 
 // reflection
-const float delta = 120;//60.;
-const float intence = 120;//700.;
+const float delta = 120.0;//60.;
+const float intence = 120.0;//700.;
 
 const float reflectionCutOff = 0.012;
 const float reflectionIntence = 200000.;
