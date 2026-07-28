@@ -227,9 +227,13 @@ GLwidget::~GLwidget()
 	makeCurrent();
 	spoutOutRelease();
 	spoutInRelease();
-	doneCurrent();
+	// Keep the context current across the Configuration deletes too: each
+	// ~FilterShader runs cleanTextures()/cleanShaderPrograms() (glDelete*), which
+	// need a current GL context — otherwise those deletes are silently dropped
+	// (GL_INVALID_OPERATION) and the cleanup is meaningless.
 	for( unsigned int i = 0; i < m_configurationList.size(); i++ )
 		delete m_configurationList[i];
+	doneCurrent();
 }
 
 /*void GLwidget::slotReloadShader(void)
@@ -1026,10 +1030,6 @@ void GLwidget::toggleRecording()
 	else
 	{
 		m_recording = false;
-		// Kill any in-flight PBO frame: it must not be consumed as a stray
-		// RECORDING job after frames.txt has already been finalised.
-		m_pboMeta[0].pending = false;
-		m_pboMeta[1].pending = false;
 		finishRecording();
 		// The worker also feeds the replay ring — bring it back if armed.
 		if( m_replayArmed )
@@ -1257,6 +1257,12 @@ void GLwidget::captureFrame()
 // ffmpeg to mux the frames + audio into kaleidoscope.mp4.
 void GLwidget::finishRecording()
 {
+	// Kill any in-flight PBO frame first: it must not be consumed as a stray
+	// RECORDING job after frames.txt has been finalised. Enforced here so EVERY
+	// caller is covered — the toggleRecording() stop path AND ~GLwidget().
+	m_pboMeta[0].pending = false;
+	m_pboMeta[1].pending = false;
+
 	// Drain + stop the encoder worker (it exits only once the queue is empty,
 	// so every queued frame is still written before the mux starts).
 	if( m_recThread.joinable() )

@@ -36,3 +36,7 @@ PresetEditor/build/
 # Android remote app: build output + local signing key
 AndroidRemote/build/
 AndroidRemote/debug.keystore
+
+# Claude Code per-user local settings + editor/tool scratch files (never commit)
+.claude/settings.local.json
+.claude/*.new
