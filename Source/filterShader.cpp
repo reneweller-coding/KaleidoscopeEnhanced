@@ -382,8 +382,11 @@ QString FilterShader::activeShaderInfo() const
 
 void FilterShader::stop()
 {
-	spoutOutRelease();
-	spoutInRelease();
+	// NOTE: the global Spout facades are deliberately NOT released here —
+	// stop() runs on every preset switch, which made the Spout sender vanish
+	// from OBS/Resolume at each switch (and deleted the receiver texture
+	// without a current GL context).  GLwidget's destructor releases them
+	// once at shutdown.
 
 	m_imageLoader->terminate();
 
@@ -1861,6 +1864,10 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
     {
         m_forceEffectChange  = false;
         m_forceCombineChange = false;
+        // A pending section store/restore must not attach to some LATER,
+        // unrelated switch after unpinning — drop it.
+        m_pendingSectionStore   = -1;
+        m_pendingSectionRestore = -1;
     }
 
     if( m_waitForImageToLoad )

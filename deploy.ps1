@@ -177,10 +177,16 @@ $watchdog = @'
 param([Parameter(ValueFromRemainingArguments=$true)]$Rest)
 $exe = Join-Path $PSScriptRoot 'bin\Kaleidoscope.exe'
 $bin = Join-Path $PSScriptRoot 'bin'
+# Build the argument list defensively: with no extra arguments $Rest is
+# $null, and "array + $null" appends a NULL element that makes
+# Start-Process THROW ("argument collection contains a null value") -
+# the launcher would then do nothing at all.
+$argList = @('-b','-l')
+foreach ($r in $Rest) { if ($null -ne $r -and "$r" -ne '') { $argList += "$r" } }
 $fast = 0
 while ($true) {
     $t0 = Get-Date
-    $p = Start-Process -FilePath $exe -ArgumentList (@('-b','-l') + $Rest) `
+    $p = Start-Process -FilePath $exe -ArgumentList $argList `
                        -WorkingDirectory $bin -PassThru
     $p.WaitForExit()
     if ($p.ExitCode -eq 0) { break }                     # normal quit (Esc/Q)
