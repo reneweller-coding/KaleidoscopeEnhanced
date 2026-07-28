@@ -22,6 +22,8 @@
 #include "GLee.h"        // GLeeInit() + GL extension entry points
 #include "glwidget.h"
 #include "WebRemote.h"
+#include "SpoutOut.h"    // global facades, released once in ~GLwidget
+#include "SpoutIn.h"
 
  #ifndef GL_MULTISAMPLE
  #define GL_MULTISAMPLE  0x809D
@@ -220,6 +222,12 @@ GLwidget::~GLwidget()
 		m_midi->stop();
 		delete m_midi;
 	}
+	// The global Spout facades are released ONCE here (not per preset switch)
+	// — with the GL context current, so the receiver texture dies cleanly.
+	makeCurrent();
+	spoutOutRelease();
+	spoutInRelease();
+	doneCurrent();
 	for( unsigned int i = 0; i < m_configurationList.size(); i++ )
 		delete m_configurationList[i];
 }
@@ -1018,6 +1026,10 @@ void GLwidget::toggleRecording()
 	else
 	{
 		m_recording = false;
+		// Kill any in-flight PBO frame: it must not be consumed as a stray
+		// RECORDING job after frames.txt has already been finalised.
+		m_pboMeta[0].pending = false;
+		m_pboMeta[1].pending = false;
 		finishRecording();
 		// The worker also feeds the replay ring — bring it back if armed.
 		if( m_replayArmed )
