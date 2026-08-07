@@ -194,7 +194,9 @@ public:
 
 private:
 
-	void initFBO(GLuint &fboEffect, GLuint &texIDEffect); // initialization of framebuffer object
+	// Initialise a framebuffer object; depthRb != nullptr additionally creates
+	// and attaches a depth renderbuffer (needed by the 3D scene effects).
+	void initFBO(GLuint &fboEffect, GLuint &texIDEffect, GLuint *depthRb = nullptr);
 	void createFBOTexture( GLuint &texID );
 	void setupFBOTexture( const GLuint texID );
 	void createTexture();  // create and setup textures
@@ -375,6 +377,18 @@ private:
 	bool			m_feedbackReady = false;
 	bool			m_spoutStarted  = false;
 	GLuint			m_liveTex       = 0;   // Spout-in texture (0 = photos)
+
+	// Depth renderbuffers for the two effect FBOs (3D scene effects).
+	GLuint			m_depthRbEffect1 = 0, m_depthRbEffect2 = 0;
+	// TRUE-STEREO state (real per-eye rendering of a solo 3D scene):
+	// hold = a 3D scene is solo while SBS/TB stereo is on (freezes combine
+	// switching); now = additionally the combine is solo -> the scene renders
+	// per-eye, the combine pass is bypassed and present passthroughs.
+	bool			m_trueStereoHold = false;
+	bool			m_trueStereoNow  = false;
+	GLint			m_presentStereoSrcUni = -1;
+	// Fixed-function copy of a texture into the bound FBO (combine bypass).
+	void			blitTexture( GLuint tex );
 
 	// ---- GPU reaction-diffusion simulation (Gray-Scott, float ping-pong) ----
 	// A genuine on-GPU simulation: each frame a fragment shader advances the

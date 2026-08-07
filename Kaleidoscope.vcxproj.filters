@@ -22,6 +22,9 @@
     <Filter Include="Shaders">
       <UniqueIdentifier>{0b4090fa-0e45-44cc-a9ea-9e98c41ad1df}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders\Scene3D">
+      <UniqueIdentifier>{7c3a1f22-9d84-4e5b-b1c6-30f9de20a611}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Shaders\Scene">
       <UniqueIdentifier>{e529f3dd-bc50-4154-8495-f41f7b17e760}</UniqueIdentifier>
     </Filter>
@@ -79,6 +82,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\shader_setup.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Scene3DShader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\SpoutIn.cpp">
@@ -153,6 +159,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\mesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Scene3DShader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\SpoutIn.h">
@@ -431,6 +440,24 @@
     </None>
     <None Include="standard.vert">
       <Filter>Shaders</Filter>
+    </None>
+    <None Include="Scene3D\CubeWave.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\CubeWave.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\ParticleGalaxy.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\ParticleGalaxy.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\RibbonTunnel.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\RibbonTunnel.vert">
+      <Filter>Shaders\Scene3D</Filter>
     </None>
     <None Include="Configurations\Allround.xml">
       <Filter>Configurations</Filter>

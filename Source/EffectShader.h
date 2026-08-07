@@ -109,6 +109,10 @@ public:
 	// The fragment-shader file this effect uses (for the debug overlay).
 	const char* fragmentName() const { return m_fragmentShaderFilename ? m_fragmentShaderFilename : "?"; }
 
+	// True for REAL 3D scenes (Scene3DShader): geometry + perspective camera.
+	// The host uses this for the true-stereo path (per-eye rendering).
+	virtual bool is3D() const { return false; }
+
 	// ---- Song-structure memory ----
 	// Snapshot / restore of all rolled per-activation parameter values, so a
 	// recognised section (chorus #2 = chorus #1) replays the exact same look.

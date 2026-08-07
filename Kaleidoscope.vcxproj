@@ -228,6 +228,7 @@ exit /b 0</Command>
     <ClCompile Include="moc\moc_QMyWindow.cpp" />
     <ClCompile Include="Source\QMyWindow.cpp" />
     <ClCompile Include="Source\shader_setup.cpp" />
+    <ClCompile Include="Source\Scene3DShader.cpp" />
     <ClCompile Include="Source\SpoutIn.cpp" />
     <ClCompile Include="Source\SpoutOut.cpp" />
     <ClCompile Include="ThirdParty\SpoutGL\Spout.cpp" />
@@ -320,6 +321,7 @@ exit /b 0</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">moc\moc_QMyWindow.cpp;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">moc\moc_QMyWindow.cpp;%(Outputs)</Outputs>
     </CustomBuild>
+    <ClInclude Include="Source\Scene3DShader.h" />
     <ClInclude Include="Source\SpoutIn.h" />
     <ClInclude Include="Source\shader_setup.h" />
     <ClInclude Include="Source\stdinc.h" />
@@ -422,6 +424,12 @@ exit /b 0</Command>
     <None Include="Blend\FluidSim.frag" />
     <None Include="Blend\Present.frag" />
     <None Include="Blend\ReactionDiffusionSim.frag" />
+    <None Include="Scene3D\CubeWave.frag" />
+    <None Include="Scene3D\CubeWave.vert" />
+    <None Include="Scene3D\ParticleGalaxy.frag" />
+    <None Include="Scene3D\ParticleGalaxy.vert" />
+    <None Include="Scene3D\RibbonTunnel.frag" />
+    <None Include="Scene3D\RibbonTunnel.vert" />
     <None Include="standard.vert" />
     <None Include="Configurations\Allround.xml" />
     <None Include="Configurations\Ambient.xml" />

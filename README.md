@@ -610,6 +610,25 @@ Audio is captured via WASAPI loopback (`AudioAnalyzer`) and analysed in real tim
   (`-s` or the adaptive scale), the present pass applies a contrast-adaptive
   sharpen (AMD-CAS-style, min/max-clamped so it cannot ring) scaled to the
   upscale factor — low-scale kiosk setups look noticeably crisper.
+- **REAL 3D scenes (`type="scene3d"`, `Scene3D\` folder):** actual geometry
+  with a perspective camera and a depth buffer — the first effects that use
+  a real VERTEX shader (the classic effects run fragment-only on the
+  fixed-function quad).  Procedural geometry lives in one static VBO per
+  scene (generic layout: corner + index + four seeds), the vertex shader
+  animates everything from the audio uniforms.  Three scenes ship:
+  **`ParticleGalaxy`** (60k point sprites in a spiral galaxy — the bass
+  pumps the core, each kick rolls a shock ring outward, the camera orbits),
+  **`CubeWave`** (an endless depth-tested neon-city flythrough whose 70×70
+  cube columns ARE the 32-band equalizer; kicks flash the street),
+  **`RibbonTunnel`** (20 glowing ribbons twisting around a weaving flight
+  path; kicks bulge the tunnel, the bar phase swings the twist).  They mix
+  into every preset like normal effects (combines fold them, trails work).
+  **TRUE VR STEREO:** while a 3D scene plays solo in `-3 sbs`/`tb` mode it
+  is rendered TWICE per frame with a real eye offset (two-camera stereo,
+  convergence in the shader; separation follows the `c`/`m` depth knob) —
+  the combine stage passes the eye-packed frame through untouched and the
+  present pass shows each half directly.  During cross-fades the display
+  falls back to the depth-reprojection seamlessly.
 - **Stereoscopic 3D output (`-3 sbs|tb|ana`, key `z` cycles):** the mono
   frame is **depth-reprojected** in the present pass — a pseudo-depth
   (smoothed brightness pops bright structures toward the viewer, the
@@ -743,6 +762,8 @@ Reorganised 2026-07 into folders:
   Generated / ThirdParty\SpoutGL / Shaders\Scene|Combine|Blend /
   Configurations).
 - `Scene\*.frag` — the 49 scene (texture) effects
+- `Scene3D\*.vert + *.frag` — the REAL 3D scenes (vertex-shader animated
+  geometry; ParticleGalaxy, CubeWave, RibbonTunnel)
 - `Combine\*.frag` — the 21 combine passes (incl. `CombinePlain.frag`, which
   carries the 25-style transition library)
 - `Blend\*.frag` — internal pipeline passes: `Present.frag` (mood grade +
