@@ -126,4 +126,10 @@
     <float name="speedP" minValue="0.6" maxValue="1.2"></float>
   </TextureShader>
 
+  <TextureShader file="..\\Scene3D\\PlanetRings.frag" type="scene3d" geom="points" probability="0.4" mood="calm,dark" complexity="2">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\Swarm.frag" type="scene3d" geom="points" probability="0.4" mood="calm" complexity="2">
+  </TextureShader>
+
 </configuration>

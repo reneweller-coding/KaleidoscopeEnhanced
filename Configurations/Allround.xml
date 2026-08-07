@@ -282,4 +282,16 @@
   <TextureShader file="..\\Scene3D\\RibbonTunnel.frag" type="scene3d" geom="ribbon" probability="0.4" mood="bright" complexity="2">
   </TextureShader>
 
+  <TextureShader file="..\\Scene3D\\WarpStars.frag" type="scene3d" geom="points" probability="0.3" mood="aggressive" complexity="1">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\SynthTerrain.frag" type="scene3d" geom="grid" probability="0.3" mood="bright,aggressive" complexity="2">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\Swarm.frag" type="scene3d" geom="points" probability="0.3" mood="calm" complexity="2">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\Fireworks.frag" type="scene3d" geom="points" probability="0.3" mood="bright" complexity="2">
+  </TextureShader>
+
 </configuration>

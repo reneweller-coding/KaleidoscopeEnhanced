@@ -441,6 +441,54 @@
     <None Include="standard.vert">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="Scene3D\CrystalCave.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\CrystalCave.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\Fireworks.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\Fireworks.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\HelixTower.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\HelixTower.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\PlanetRings.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\PlanetRings.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\PortalRush.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\PortalRush.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\Swarm.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\Swarm.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\SynthTerrain.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\SynthTerrain.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\WarpStars.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\WarpStars.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
     <None Include="Scene3D\CubeWave.frag">
       <Filter>Shaders\Scene3D</Filter>
     </None>

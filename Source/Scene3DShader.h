@@ -42,7 +42,8 @@ public:
 	void setEyeOffset( float e ) { m_eyeOffset = e; }
 
 private:
-	enum GeomKind { GEOM_POINTS = 0, GEOM_CUBES = 1, GEOM_RIBBON = 2 };
+	enum GeomKind { GEOM_POINTS = 0, GEOM_CUBES = 1, GEOM_RIBBON = 2,
+	                GEOM_GRID = 3 };
 	void buildGeometry();
 
 	int    m_geomKind    = GEOM_POINTS;
