@@ -415,4 +415,13 @@
     <float name="accentP" minValue="0.5" maxValue="1.6"></float>
   </TextureShader>
 
+  <TextureShader file="..\\Scene3D\\ParticleGalaxy.frag" type="scene3d" geom="points" probability="0.45" mood="calm" complexity="2">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\CubeWave.frag" type="scene3d" geom="cubes" probability="0.45" mood="aggressive,bright" complexity="3">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\RibbonTunnel.frag" type="scene3d" geom="ribbon" probability="0.45" mood="bright" complexity="2">
+  </TextureShader>
+
 </configuration>

@@ -179,11 +179,11 @@ void EffectShader::checkGLErrors( const char *label )
     if ( errCode == GL_NO_ERROR )
 		return;
 
-	fputs( "OpenGL ERROR: ", stderr);
-	fputs( (char*)gluErrorString(errCode), stderr);
-	fputs( " (label: ", stderr);
-	fputs( label, stderr);
-	fputs( ")\n", stderr);
+	// gluErrorString returns NULL for codes it does not know (newer GL) —
+	// fputs(NULL) crashed the app the moment such an error occurred.
+	const char *msg = (const char *) gluErrorString( errCode );
+	fprintf( stderr, "OpenGL ERROR: %s (0x%04x, label: %s)\n",
+	         msg ? msg : "?", (unsigned) errCode, label ? label : "?" );
 }
 
 

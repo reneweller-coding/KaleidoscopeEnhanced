@@ -75,11 +75,33 @@ GLuint setShaders( const char *vert_source, const char * frag_source )
 
 	sh_prog_id = glCreateProgram();
 
+	// NOTE: deliberately fragment-only — the classic fullscreen-quad effects
+	// run on the fixed-function vertex path (the vert filename is ignored).
 	//s_id = glCreateShader( GL_VERTEX_SHADER );
 	//loadAttachShader( sh_prog_id, s_id, vert_source );
 
 	s_id = glCreateShader( GL_FRAGMENT_SHADER );
 	loadAttachShader( sh_prog_id, s_id, frag_source );
+
+	glLinkProgram( sh_prog_id );
+	printProgramInfoLog( sh_prog_id );
+
+	glUseProgram( sh_prog_id );
+
+	return sh_prog_id;
+}
+
+// Vertex + fragment pair (the REAL 3D scene effects): unlike setShaders()
+// above, this one actually attaches the vertex shader.
+GLuint setShadersVF( const char *vert_source, const char *frag_source )
+{
+	GLuint sh_prog_id = glCreateProgram();
+
+	GLuint v_id = glCreateShader( GL_VERTEX_SHADER );
+	loadAttachShader( sh_prog_id, v_id, vert_source );
+
+	GLuint f_id = glCreateShader( GL_FRAGMENT_SHADER );
+	loadAttachShader( sh_prog_id, f_id, frag_source );
 
 	glLinkProgram( sh_prog_id );
 	printProgramInfoLog( sh_prog_id );
