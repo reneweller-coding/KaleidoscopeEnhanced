@@ -615,14 +615,34 @@ Audio is captured via WASAPI loopback (`AudioAnalyzer`) and analysed in real tim
   a real VERTEX shader (the classic effects run fragment-only on the
   fixed-function quad).  Procedural geometry lives in one static VBO per
   scene (generic layout: corner + index + four seeds), the vertex shader
-  animates everything from the audio uniforms.  Three scenes ship:
+  animates everything from the audio uniforms.  Eleven scenes ship:
   **`ParticleGalaxy`** (60k point sprites in a spiral galaxy — the bass
   pumps the core, each kick rolls a shock ring outward, the camera orbits),
   **`CubeWave`** (an endless depth-tested neon-city flythrough whose 70×70
   cube columns ARE the 32-band equalizer; kicks flash the street),
   **`RibbonTunnel`** (20 glowing ribbons twisting around a weaving flight
-  path; kicks bulge the tunnel, the bar phase swings the twist).  They mix
-  into every preset like normal effects (combines fold them, trails work).
+  path; kicks bulge the tunnel, the bar phase swings the twist),
+  **`WarpStars`** (warp-speed star tube with real parallax — the music's
+  tempo IS the throttle, a drop fires a hyperjump flash),
+  **`SynthTerrain`** (a synthwave wireframe valley scrolling toward the
+  camera; the ridge heights are the live spectrum, the bar phase sweeps a
+  scanline down the grid),
+  **`HelixTower`** (a 100-unit DNA double helix; each rung glows with its
+  own spectrum band and every kick sends a light wave climbing the tower),
+  **`Swarm`** (a 60k-bird murmuration swooping along a Lissajous path —
+  onsets scatter the flock, calm passages pull it tight, the camera
+  tracks the flock centre),
+  **`PlanetRings`** (a pointillist gas giant with Kepler-orbiting particle
+  rings — kicks roll a density wave outward through the rings, the swell
+  pulls the orbiting camera closer),
+  **`CrystalCave`** (a depth-tested flight through a cave of glowing gem
+  crystals; kicks flare the passage ahead, snares sparkle a subset),
+  **`PortalRush`** (racing a slalom of glowing ring gates — the gate ahead
+  pulses in tempo, passing one flashes on the kick),
+  **`Fireworks`** (24 procedural bursts at real 3D depths on their own
+  music-nudged cycles; kicks light the sparks, a drop turns the sky on).
+  They mix into every preset like normal effects (combines fold them,
+  trails work).
   **TRUE VR STEREO:** while a 3D scene plays solo in `-3 sbs`/`tb` mode it
   is rendered TWICE per frame with a real eye offset (two-camera stereo,
   convergence in the shader; separation follows the `c`/`m` depth knob) —
@@ -763,7 +783,9 @@ Reorganised 2026-07 into folders:
   Configurations).
 - `Scene\*.frag` — the 49 scene (texture) effects
 - `Scene3D\*.vert + *.frag` — the REAL 3D scenes (vertex-shader animated
-  geometry; ParticleGalaxy, CubeWave, RibbonTunnel)
+  geometry; ParticleGalaxy, CubeWave, RibbonTunnel, WarpStars,
+  SynthTerrain, HelixTower, Swarm, PlanetRings, CrystalCave, PortalRush,
+  Fireworks)
 - `Combine\*.frag` — the 21 combine passes (incl. `CombinePlain.frag`, which
   carries the 25-style transition library)
 - `Blend\*.frag` — internal pipeline passes: `Present.frag` (mood grade +

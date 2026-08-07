@@ -36,6 +36,7 @@ Scene3DShader::Scene3DShader( const QString &filenameFragmentShader, const QStri
 {
 	if      ( geom == "cubes"  ) m_geomKind = GEOM_CUBES;
 	else if ( geom == "ribbon" ) m_geomKind = GEOM_RIBBON;
+	else if ( geom == "grid"   ) m_geomKind = GEOM_GRID;
 	else                         m_geomKind = GEOM_POINTS;
 
 	// The matching vertex shader sits next to the fragment shader
@@ -101,6 +102,36 @@ void Scene3DShader::buildGeometry()
 				v.push_back( hash01( i * 4u + 1u ) );
 				v.push_back( hash01( i * 4u + 2u ) );
 				v.push_back( hash01( i * 4u + 3u ) );
+			}
+	}
+	else if( m_geomKind == GEOM_GRID )
+	{
+		// A 220 x 120 heightfield mesh (two triangles per cell); per-vertex
+		// u/v in attrA.xy, per-cell seeds in attrB — terrain-style scenes.
+		const int W = 220, H = 120;
+		v.reserve( size_t(W) * H * 6 * 8 );
+		for( int cy = 0; cy < H; ++cy )
+			for( int cx = 0; cx < W; ++cx )
+			{
+				const float u0 = float(cx)     / float(W);
+				const float u1 = float(cx + 1) / float(W);
+				const float w0 = float(cy)     / float(H);
+				const float w1 = float(cy + 1) / float(H);
+				const float q[6][2] = {
+					{ u0, w0 }, { u1, w0 }, { u1, w1 },
+					{ u0, w0 }, { u1, w1 }, { u0, w1 }
+				};
+				const unsigned int cell = (unsigned int)( cy * W + cx );
+				for( int k = 0; k < 6; ++k )
+				{
+					v.push_back( q[k][0] ); v.push_back( q[k][1] );
+					v.push_back( 0.f );
+					v.push_back( float(cell) );
+					v.push_back( hash01( cell * 4u + 0u ) );
+					v.push_back( hash01( cell * 4u + 1u ) );
+					v.push_back( hash01( cell * 4u + 2u ) );
+					v.push_back( hash01( cell * 4u + 3u ) );
+				}
 			}
 	}
 	else  // GEOM_RIBBON: 20 ribbons x 300 segments, two triangles per segment.
@@ -204,7 +235,7 @@ void Scene3DShader::draw()
 		                       8 * sizeof(float), (const void *) (4 * sizeof(float)) );
 	}
 
-	if( m_geomKind == GEOM_CUBES )
+	if( m_geomKind == GEOM_CUBES || m_geomKind == GEOM_GRID )
 	{
 		// Solid geometry: depth-tested, opaque.
 		glEnable( GL_DEPTH_TEST );
