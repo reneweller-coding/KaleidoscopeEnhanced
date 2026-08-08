@@ -309,4 +309,19 @@
   <TextureShader file="..\\Scene3D\\OceanNight.frag" type="scene3d" geom="grid" probability="0.3" mood="calm,dark" complexity="2">
   </TextureShader>
 
+  <TextureShader file="..\\Scene3D\\WaveRibbon.frag" type="scene3d" geom="ribbon" probability="0.35" complexity="1">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\TorusKnot.frag" type="scene3d" geom="points" probability="0.3" mood="bright" complexity="2">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\MandalaGrid.frag" type="scene3d" geom="grid" probability="0.3" complexity="2">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\EchoSpiral.frag" type="scene3d" geom="ribbon" probability="0.3" complexity="1">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\GyroRings.frag" type="scene3d" geom="cubes" probability="0.3" complexity="3">
+  </TextureShader>
+
 </configuration>
