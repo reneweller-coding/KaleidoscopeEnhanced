@@ -40,3 +40,6 @@ AndroidRemote/debug.keystore
 # Claude Code per-user local settings + editor/tool scratch files (never commit)
 .claude/settings.local.json
 .claude/*.new
+
+# Qt moc-generated files (top-level build output, not PresetEditor's own moc/)
+/moc/
