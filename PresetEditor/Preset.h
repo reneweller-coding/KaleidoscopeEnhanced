@@ -22,11 +22,12 @@
 // attribute strings so an existing preset round-trips losslessly.
 struct ShaderParam
 {
-    QString kind;     // "bool" | "int" | "float" | "interpolator"
+    QString kind;     // "bool" | "int" | "float" | "interpolator" | "expr"
     QString name;
     QString probability;                 // bool
     QString minValue, maxValue;          // int / float
     QString minMin, maxMin, minMax, maxMax;  // interpolator
+    QString formula;                     // expr (formula layer)
 };
 
 struct PresetEntry

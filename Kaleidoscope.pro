@@ -36,6 +36,7 @@ SOURCES += \
     Source/MidiInput.cpp \
     Source/NowPlaying.cpp \
     Source/QMyWindow.cpp \
+    Source/ExprEval.cpp \
     Source/Scene3DShader.cpp \
     Source/shader_setup.cpp \
     Source/SpoutIn.cpp \
@@ -70,6 +71,7 @@ HEADERS += \
     Source/NowPlaying.h \
     Source/QMyWindow.h \
     Source/qt6compat.h \
+    Source/ExprEval.h \
     Source/Scene3DShader.h \
     Source/shader_setup.h \
     Source/SpoutIn.h \

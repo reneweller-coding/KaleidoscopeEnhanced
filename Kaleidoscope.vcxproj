@@ -228,6 +228,7 @@ exit /b 0</Command>
     <ClCompile Include="moc\moc_QMyWindow.cpp" />
     <ClCompile Include="Source\QMyWindow.cpp" />
     <ClCompile Include="Source\shader_setup.cpp" />
+    <ClCompile Include="Source\ExprEval.cpp" />
     <ClCompile Include="Source\Scene3DShader.cpp" />
     <ClCompile Include="Source\SpoutIn.cpp" />
     <ClCompile Include="Source\SpoutOut.cpp" />
@@ -321,6 +322,7 @@ exit /b 0</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">moc\moc_QMyWindow.cpp;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">moc\moc_QMyWindow.cpp;%(Outputs)</Outputs>
     </CustomBuild>
+    <ClInclude Include="Source\ExprEval.h" />
     <ClInclude Include="Source\Scene3DShader.h" />
     <ClInclude Include="Source\SpoutIn.h" />
     <ClInclude Include="Source\shader_setup.h" />

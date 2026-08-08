@@ -633,6 +633,38 @@ Audio is captured via WASAPI loopback (`AudioAnalyzer`) and analysed in real tim
   **FPS detail budget:** below ~45 fps the heavy cube scenes (CubeWave,
   CrystalCave, SpectrumArena, AsteroidBelt) drop every 2nd cube
   (checkerboard, hysteresis), restoring full detail above ~57 fps.
+- **FORMULA LAYER (`<expr>` — the MilkDrop lesson):** presets can SCRIPT
+  parameter mappings.  A child element like
+  `<expr name="coreP" formula="clamp(0.8 + 0.5*max(bassRel-0.85,0) + 0.4*drop, 0.6, 1.7)"/>`
+  is compiled once (shunting-yard → RPN) and evaluated every frame against
+  the live audio features; the result is uploaded as the float uniform
+  `name` (deliberately overriding a `<float>` of the same name).  New
+  mappings need NO shader edits and NO rebuild.  Variables: `time bass mid
+  treb bassRel midRel trebRel subBass high level kick snare hat onset beat
+  beatPhase barPhase downbeat swell buildUp drop chromaHue centroid flux
+  arousal valence ambient rhythm music advance phase seed1 seed2 seed3`
+  (the seeds re-roll per activation — formulas become families).
+  Functions: `sin cos tan abs sqrt exp log floor fract tanh sign min max
+  pow atan2 clamp mix`; operators `+ - * / ^`, parentheses.  Parse errors
+  are logged (`Expr [...]`) and evaluate to 0; successful compiles log
+  `Expr OK`.  All six presets ship with curated formulas: hues follow the
+  musical KEY (LavaLamp wax, CityBokeh lights, InkWater plumes),
+  amplitudes breathe with the bar/swell (ReactionDiffusion displacement,
+  Aurora curtains, CombinePulse), sizes ride the relative bass
+  (TheCore, MobiusOrbs, LavaLamp blobs), and noir darkness lifts with the
+  music's energy.
+- **Relative band levels (`audioBassRel/MidRel/TrebRel`):** the classic
+  MilkDrop `bass/bass_att` idiom, done volume-safe on the AGC-normalised
+  levels — instant ÷ slow-average (~5 s) per register, ~1.0 = "as loud as
+  usual", clamped 0..2.5.  The continuous companion to the gated onsets;
+  ideal for breathing motion.
+- **Liquid feedback (spatial warp field):** the trails pass now warps the
+  previous frame with SPATIALLY VARYING displacement — a radial ripple
+  that rides the beat, extra swirl toward the rim that swings direction
+  slowly, and a sine flow-field that breathes with ambience/swell (the
+  signature MilkDrop fluidity, applied to every effect at once).  All
+  phases are integrated (no flicker), everything scales with the trails
+  knob and is suppressed for eye-packed true-stereo frames.
 
   *Procedural worlds:*
   **`ParticleGalaxy`** (60k point sprites in a spiral galaxy — the bass

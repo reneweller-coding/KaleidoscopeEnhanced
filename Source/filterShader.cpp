@@ -1159,6 +1159,11 @@ void FilterShader::setupSafety()
 		m_trailRotUni   = glGetUniformLocation( m_trailProgId, "warpRot" );
 		m_trailHueUni   = glGetUniformLocation( m_trailProgId, "hueDrift" );
 		m_trailDepthUni = glGetUniformLocation( m_trailProgId, "depth3D" );
+		m_trailRipAmpUni  = glGetUniformLocation( m_trailProgId, "rippleAmp" );
+		m_trailRipPhUni   = glGetUniformLocation( m_trailProgId, "ripplePhase" );
+		m_trailSwirlUni   = glGetUniformLocation( m_trailProgId, "swirlAmp" );
+		m_trailFlowAmpUni = glGetUniformLocation( m_trailProgId, "flowAmp" );
+		m_trailFlowPhUni  = glGetUniformLocation( m_trailProgId, "flowPhase" );
 	}
 	if( m_stereoMixProgId == 0 )
 	{
@@ -2578,6 +2583,31 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 				                             sceneUp ? 1.f : 0.f, 2.5f, dtWall );
 				if( m_trailDepthUni >= 0 )
 					glUniform1f( m_trailDepthUni, m_trailDepth3D );
+			}
+			// MilkDrop-style spatial warp field: the liquid feedback look.
+			// Ripple rides the beat, the swirl direction swings very slowly,
+			// the flow field breathes with the music; all phases are
+			// integrated (no flicker), all amplitudes are per-frame (x dt).
+			{
+				m_warpRipplePhase += dtf * ( 2.0f + 5.0f * m_audioBeatSmooth );
+				m_warpFlowPhase   += dtf * 0.55f;
+				// Displacement VELOCITIES (uv/s resp. rad/s), applied per
+				// frame; they accumulate through the feedback loop.
+				float rip  = ( 0.05f * m_audioBeatSmooth
+				             + 0.10f * audioFx.dropPulse ) * dtf;
+				float swl  = 0.25f * sinf( m_globaltime * 0.013f )
+				           * ( 0.4f + 0.6f * audio.ambientFactor ) * dtf;
+				float flw  = ( 0.02f + 0.05f * audio.ambientFactor
+				             + 0.04f * audioFx.swell ) * dtf;
+				// Scale with the trails knob (no trails -> no warp) and gate
+				// out of the packed true-stereo frames entirely.
+				float g = s_trailAmount * audio.musicPresence;
+				if( m_trueStereoPacked ) g = 0.f;
+				if( m_trailRipAmpUni  >= 0 ) glUniform1f( m_trailRipAmpUni,  rip * g );
+				if( m_trailRipPhUni   >= 0 ) glUniform1f( m_trailRipPhUni,   m_warpRipplePhase );
+				if( m_trailSwirlUni   >= 0 ) glUniform1f( m_trailSwirlUni,   swl * g );
+				if( m_trailFlowAmpUni >= 0 ) glUniform1f( m_trailFlowAmpUni, flw * g );
+				if( m_trailFlowPhUni  >= 0 ) glUniform1f( m_trailFlowPhUni,  m_warpFlowPhase );
 			}
 		}
 		drawWindow();
