@@ -1402,8 +1402,19 @@ void FilterShader::showTitle( const QString &title, const QString &artist )
 // only just come on screen reads as a dislike — remember it (soft, decaying).
 void FilterShader::requestSceneChange()
 {
-	if( !s_pinned && !s_freeze &&
-	    m_actEffectTexture < m_effectTextures.size() &&
+	// Tell the user WHY nothing will happen instead of silently ignoring
+	// the key (a pinned/frozen show swallowing 'n' looks like a bug).
+	if( s_pinned )
+	{
+		fprintf( stderr, "n: ignored - PIN is active (press 'u' to unpin)\n" );
+		return;
+	}
+	if( s_freeze )
+	{
+		fprintf( stderr, "n: ignored - FREEZE is active (press 'e' to unfreeze)\n" );
+		return;
+	}
+	if( m_actEffectTexture < m_effectTextures.size() &&
 	    m_timeEffectTexture.elapsed() < 10000 )
 		bumpTaste( m_effectTextures[m_actEffectTexture]->fragmentName(), 0.8f );
 	m_forceEffectChange  = true;
@@ -2015,10 +2026,13 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 		// Beat-quantised: a due change is held PENDING until the next downbeat
 		// lands, so cuts fall on the musical "1".  A timeout keeps weak/undetected
 		// beats from stalling the show, and without music we cut immediately.
+		// A MANUAL ('n') cut skips the quantisation entirely — the user pressed
+		// a button and expects the switch NOW, not on the next bar.
 		if( m_pendingEffectChange )
 		{
 			m_pendingEffectAge += timeSinceLastFrameSec;
-			if( m_downbeatTick || m_pendingEffectAge > 2.5f || m_gateSmooth < 0.25f )
+			if( m_pendingEffectForced || m_downbeatTick
+			    || m_pendingEffectAge > 2.5f || m_gateSmooth < 0.25f )
 			{
 				bool forcedGo         = m_pendingEffectForced;
 				m_pendingEffectChange = false;
@@ -2316,11 +2330,13 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 			m_pendingCombineForced = m_pendingCombineForced || forcedC;
 		}
 
-		// Beat-quantised, like the texture-effect change above.
+		// Beat-quantised, like the texture-effect change above (manual cuts
+		// fire immediately here too).
 		if( m_pendingCombineChange && !m_trueStereoHold )
 		{
 			m_pendingCombineAge += timeSinceLastFrameSec;
-			if( m_downbeatTick || m_pendingCombineAge > 2.5f || m_gateSmooth < 0.25f )
+			if( m_pendingCombineForced || m_downbeatTick
+			    || m_pendingCombineAge > 2.5f || m_gateSmooth < 0.25f )
 			{
 				bool forcedGo          = m_pendingCombineForced;
 				m_pendingCombineChange = false;
