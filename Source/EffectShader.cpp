@@ -281,7 +281,8 @@ enum AudioLoc {
     AL_SWELL, AL_BARPH, AL_AMBIENT, AL_KICK, AL_SNARE, AL_HAT, AL_TRANS,
     AL_SPECTRUM, AL_TEXSIM, AL_TEXFLUID, AL_BUILDUP, AL_DROP, AL_WAVE,
     AL_BASSREL, AL_MIDREL, AL_TREBREL, AL_DAYPHASE, AL_TEXSMOKE3D,
-    AL_CHROMA12, AL_FLATNESS, AL_ZCR, AL_COUNT
+    AL_CHROMA12, AL_FLATNESS, AL_ZCR, AL_TEXSSM, AL_SSMHEAD, AL_SSMFILL,
+    AL_COUNT
 };
 const char *kAudioLocNames[AL_COUNT] = {
     "audioPhase", "audioAdvance", "audioBeat", "audioLevel", "sides",
@@ -295,7 +296,7 @@ const char *kAudioLocNames[AL_COUNT] = {
     "audioHat", "transStyle", "audioSpectrum", "texSim", "texFluid",
     "audioBuildUp", "audioDrop", "audioWave", "audioBassRel", "audioMidRel",
     "audioTrebRel", "dayPhase", "texSmoke3D", "audioChroma", "audioFlatness",
-    "audioZCR"
+    "audioZCR", "texSSM", "ssmHead", "ssmFill"
 };
 }
 
@@ -403,6 +404,9 @@ void EffectShader::applyAudioFeatures(const AudioFeatures &f)
     if (L[AL_TEXSIM]      >= 0) glUniform1i(L[AL_TEXSIM],      7);   // RD field (unit 7)
     if (L[AL_TEXFLUID]    >= 0) glUniform1i(L[AL_TEXFLUID],    8);   // fluid dye (unit 8)
     if (L[AL_TEXSMOKE3D]  >= 0) glUniform1i(L[AL_TEXSMOKE3D],  9);   // smoke/fire volume (unit 9)
+    if (L[AL_TEXSSM]      >= 0) glUniform1i(L[AL_TEXSSM],     10);   // self-similarity matrix
+    if (L[AL_SSMHEAD]     >= 0) glUniform1f(L[AL_SSMHEAD],  f.ssmHead);
+    if (L[AL_SSMFILL]     >= 0) glUniform1f(L[AL_SSMFILL],  f.ssmFill);
     if (L[AL_BUILDUP]  >= 0) glUniform1f(L[AL_BUILDUP],  f.buildUp);
     if (L[AL_DROP]     >= 0) glUniform1f(L[AL_DROP],     f.dropPulse);
     if (L[AL_PHASE]    >= 0) glUniform1f(L[AL_PHASE],    f.audioRotPhase);
@@ -482,4 +486,14 @@ bool EffectShader::usesSmoke3D()
 		m_usesSmoke3D = ( m_sh_prog_id != 0 &&
 		                  glGetUniformLocation( m_sh_prog_id, "texSmoke3D" ) >= 0 ) ? 1 : 0;
 	return m_usesSmoke3D == 1;
+}
+
+bool EffectShader::usesSSM()
+{
+	if( !m_glReady )
+		return false;
+	if( m_usesSSM < 0 )
+		m_usesSSM = ( m_sh_prog_id != 0 &&
+		              glGetUniformLocation( m_sh_prog_id, "texSSM" ) >= 0 ) ? 1 : 0;
+	return m_usesSSM == 1;
 }

@@ -29,17 +29,17 @@ void main()
     float rim  = pow(1.0 - max(dot(N, V), 0.0), 2.5);
     float spec = pow(max(dot(reflect(-L, N), V), 0.0), 24.0);
 
-    // Dark body metal, keyed to the musical hue.
-    vec3 base = hueRot(vec3(0.14, 0.21, 0.33), vHue);
-    vec3 col  = base * (0.30 + 0.9 * diff);
+    // Body metal, keyed to the musical hue.
+    vec3 base = hueRot(vec3(0.20, 0.28, 0.42), vHue);
+    vec3 col  = base * (0.35 + 0.95 * diff);
 
-    // Antinode glow: the vibrating regions radiate (squared for contrast —
-    // nodal lines stay dark metal, only true antinodes light up).
+    // Antinode glow: the vibrating regions radiate (raised power keeps the
+    // nodal lines darker than the antinodes without crushing the signal).
     vec3 glow = hueRot(vec3(0.25, 0.75, 1.00), vHue + 0.6);
-    col += glow * vDefo * vDefo * (1.3 + 1.4 * audioSwell + 2.0 * audioDrop);
+    col += glow * pow(vDefo, 1.5) * (2.2 + 1.8 * audioSwell + 2.6 * audioDrop);
 
     col += vec3(0.9, 0.95, 1.0) * spec * 0.8;
     col += hueRot(vec3(0.9, 0.45, 0.20), vHue) * rim * 0.55;
 
-    gl_FragColor = vec4(col * 1.6, 1.0);
+    gl_FragColor = vec4(col * 1.8, 1.0);
 }

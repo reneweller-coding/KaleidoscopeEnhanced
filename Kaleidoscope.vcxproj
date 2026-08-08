@@ -384,6 +384,8 @@ exit /b 0</Command>
     <None Include="Scene\RaymarchTunnel.frag" />
     <None Include="Scene\ReactionDiffusion.frag" />
     <None Include="Scene\Rorschach.frag" />
+    <None Include="Scene\Schlieren.frag" />
+    <None Include="Scene\SelfSimilarity.frag" />
     <None Include="Scene\SpectrumRadial.frag" />
     <None Include="Scene\SphereGrid.frag" />
     <None Include="Scene\Starfield.frag" />
@@ -470,6 +472,8 @@ exit /b 0</Command>
     <None Include="Scene3D\HarmonicStrings.vert" />
     <None Include="Scene3D\HelixTower.frag" />
     <None Include="Scene3D\HelixTower.vert" />
+    <None Include="Scene3D\JellyBody.frag" />
+    <None Include="Scene3D\JellyBody.vert" />
     <None Include="Scene3D\Jellyfish.frag" />
     <None Include="Scene3D\Jellyfish.vert" />
     <None Include="Scene3D\KaleidoDome.frag" />
@@ -546,6 +550,8 @@ exit /b 0</Command>
     <None Include="Scene3D\SpectralTorus.vert" />
     <None Include="Scene3D\SpectrumArena.frag" />
     <None Include="Scene3D\SpectrumArena.vert" />
+    <None Include="Scene3D\SpiralArray.frag" />
+    <None Include="Scene3D\SpiralArray.vert" />
     <None Include="Scene3D\StainedGlassRosette.frag" />
     <None Include="Scene3D\StainedGlassRosette.vert" />
     <None Include="Scene3D\Swarm.frag" />

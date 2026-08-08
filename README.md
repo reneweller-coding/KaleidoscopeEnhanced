@@ -619,7 +619,7 @@ Audio is captured via WASAPI loopback (`AudioAnalyzer`) and analysed in real tim
   fixed-function quad).  Procedural geometry lives in one static VBO per
   scene (generic layout: corner + index + four seeds; kinds: `points`,
   `cubes`, `ribbon`, `grid`, `quads`), the vertex shader animates
-  everything from the audio uniforms.  71 scenes ship.
+  everything from the audio uniforms.  73 scenes ship.
 
   **Scene variety per activation:** every time a 3D scene comes on it rolls
   a fresh epoch — a large time offset (different camera/burst phases), a
@@ -669,8 +669,24 @@ Audio is captured via WASAPI loopback (`AudioAnalyzer`) and analysed in real tim
   smaller, oil-projector cells busier, reaction-diffusion displacement
   rougher (the cross-modal-correspondence rule: rough sound → rough image).
 - **Full chroma vector (`audioChroma[12]`):** the smoothed 12-bin
-  pitch-class energies, so scenes can show WHICH notes sound (Planet4D)
-  instead of only the mean key hue.
+  pitch-class energies, so scenes can show WHICH notes sound (Planet4D,
+  SpiralArray) instead of only the mean key hue.
+- **Self-similarity matrix (`texSSM`, unit 10):** the host keeps ~90 s of
+  feature history (chroma + spectral shape, one vector per 0.35 s) and
+  maintains a 256×256 recurrence matrix — the classic MIR structure view.
+  The `SelfSimilarity` effect renders it as a living ornament: a returning
+  chorus paints bright diagonal stripes, a section change cuts a dark
+  checkerboard edge, a loop becomes a fine grid; "now" is a beat-pulsing
+  golden diagonal.  History accumulates always (CPU-cheap), the texture
+  uploads only while the effect is on screen.
+- **Schlieren optics (`Schlieren`):** synthetic knife-edge schlieren
+  photography over the live fluid sim — the dye field's density gradients
+  become dramatic light/dark streaks (edge direction slowly turning), with
+  a rainbow-filter variant tinting by gradient direction and the photo
+  refracted through the flow like hot air.
+- **Articulation mapping:** `logAttackTime` (attack sharpness) now shapes
+  the EDITING style — staccato material gets shorter trails and snappier
+  cross-fades, legato keeps the full flowing dissolves.
 - **Liquid feedback (spatial warp field):** the trails pass now warps the
   previous frame with SPATIALLY VARYING displacement — a radial ripple
   that rides the beat, extra swirl toward the rim that swings direction
@@ -875,7 +891,15 @@ Audio is captured via WASAPI loopback (`AudioAnalyzer`) and analysed in real tim
   Clifford torus in S³ — circle of fifths × chromatic circle — under a 4D
   double rotation, stereographically projected; node glow follows
   `audioChroma[12]`, fifth/third edges light up when both endpoints sound,
-  so chords light up their shape).
+  so chords light up their shape),
+  **`SpiralArray`** (Chew's spiral array / MuSA.RT: the pitch classes wound
+  along a helix of fifths, and the chroma-weighted CENTER OF EFFECT travels
+  through it as a white-hot comet — a key change is a visible journey to a
+  new neighbourhood, its path painted by the feedback trails),
+  **`JellyBody`** (the spring-mass idea via modal analysis: a soft elastic
+  body that RINGS after every hit — the decaying kick/snare/hat envelopes
+  ARE the damping envelopes, each striking its own mode family at a fixed
+  ring frequency; volume-preserving squash-and-stretch, gummy fresnel look).
 
   They mix into every preset like normal effects (combines fold them,
   trails work).
@@ -1055,7 +1079,8 @@ Reorganised 2026-07 into folders:
   this layout in its Solution Explorer filters (Source Files / Header Files /
   Generated / ThirdParty\SpoutGL / Shaders\Scene|Combine|Blend /
   Configurations).
-- `Scene\*.frag` — the 49 scene (texture) effects
+- `Scene\*.frag` — the 51 scene (texture) effects (incl. `SelfSimilarity`
+  and `Schlieren`)
 - `Scene3D\*.vert + *.frag` — the REAL 3D scenes (vertex-shader animated
   geometry, 67 scenes: procedural worlds like ParticleGalaxy, CubeWave,
   RibbonTunnel, WarpStars, SynthTerrain, HelixTower, Swarm, PlanetRings,
@@ -1072,7 +1097,8 @@ Reorganised 2026-07 into folders:
   TronCycles, VolcanoIsland, ThunderCloud, GearWorks, CometRide,
   MonolithField, BioCell, Wormhole, CrystalGrowth, ConcertCrowd,
   StainedGlassRosette, SciFiHUD, VolumetricFire + research scenes
-  SpectralOrb, SpectralTorus, CymaticsPlate, Planet4D)
+  SpectralOrb, SpectralTorus, CymaticsPlate, Planet4D, SpiralArray,
+  JellyBody)
 - `Combine\*.frag` — the 21 combine passes (incl. `CombinePlain.frag`, which
   carries the 26-style transition library)
 - `Blend\*.frag` — internal pipeline passes: `Present.frag` (mood grade +

@@ -114,7 +114,8 @@ void main()
     gl_Position.x += eyeOff * 0.05 * gl_Position.w;
 
     vNorm = nrm;
-    vView = normalize(vec3(0.0, 0.0, 33.0) - p);
+    // Camera at MODEL-space (0,0,-33) — see JellyBody.vert for the sign story.
+    vView = normalize(vec3(0.0, 0.0, -33.0) - p);
     // Deformation magnitude for the antinode glow (radius change vs. rest).
     vDefo = clamp(abs(modeSum(u, v)) * 4.0, 0.0, 1.0);
     vHue  = audioChromaHue;

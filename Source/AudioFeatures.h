@@ -323,6 +323,14 @@ struct AudioFeatures
     //   drift.  Uploaded as `audioBarPhase`.
     float barPhase = 0.f;
 
+    // ---- Self-similarity matrix bookkeeping (host-filled) ----
+    // The host keeps a ring of feature-vector history and a byte similarity
+    // matrix ("texSSM", unit 10).  ssmHead = ring head as a 0..1 texture
+    // coordinate (shaders unwrap the ring with it), ssmFill = how much of
+    // the window is populated yet (0..1).
+    float ssmHead = 0.f;
+    float ssmFill = 0.f;
+
     // ---- Host-integrated motion phases ----
     // NOT produced by AudioAnalyzer; filled in once per frame by
     // FilterShader::paint().  Audio-driven motion must never be expressed as a

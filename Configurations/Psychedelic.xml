@@ -257,4 +257,21 @@
   <TextureShader file="..\\Scene3D\\Planet4D.frag" type="scene3d" geom="points" probability="0.35" complexity="2">
   </TextureShader>
 
+  <TextureShader file="..\\Scene\\SelfSimilarity.frag" type="normal" probability="0.35" complexity="1">
+    <int name="sidesP" minValue="2" maxValue="8"></int>
+    <float name="zoomP" minValue="0.7" maxValue="1.6"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene\\Schlieren.frag" type="normal" probability="0.35" complexity="2">
+    <int name="sidesP" minValue="0" maxValue="8"></int>
+    <float name="strengthP" minValue="0.8" maxValue="1.8"></float>
+    <float name="rainbowP" minValue="0.4" maxValue="1.0"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\SpiralArray.frag" type="scene3d" geom="points" probability="0.3" complexity="2">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\JellyBody.frag" type="scene3d" geom="grid" probability="0.35" complexity="2">
+  </TextureShader>
+
 </configuration>
