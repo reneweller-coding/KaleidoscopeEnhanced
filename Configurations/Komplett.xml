@@ -448,4 +448,64 @@
   <TextureShader file="..\\Scene3D\\Fireworks.frag" type="scene3d" geom="points" probability="0.4" mood="bright" complexity="2">
   </TextureShader>
 
+  <TextureShader file="..\\Scene3D\\PhotoTunnel.frag" type="scene3d" geom="grid" probability="0.35" mood="bright" complexity="2">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\KaleidoDome.frag" type="scene3d" geom="grid" probability="0.35" complexity="2">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\PhotoSphere.frag" type="scene3d" geom="grid" probability="0.3" mood="calm" complexity="2">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\SilkPhoto.frag" type="scene3d" geom="grid" probability="0.3" mood="calm" complexity="2">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\PhotoVortex.frag" type="scene3d" geom="grid" probability="0.3" complexity="2">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\OceanNight.frag" type="scene3d" geom="grid" probability="0.35" mood="calm,dark" complexity="2">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\PhotoCarousel.frag" type="scene3d" geom="quads" probability="0.35" complexity="1">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\PhotoShatter.frag" type="scene3d" geom="quads" probability="0.3" mood="aggressive" complexity="1">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\MosaicWave.frag" type="scene3d" geom="quads" probability="0.35" complexity="1">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\GalleryHall.frag" type="scene3d" geom="quads" probability="0.3" mood="dark,calm" complexity="1">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\BillboardCity.frag" type="scene3d" geom="quads" probability="0.3" mood="bright" complexity="1">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\Jellyfish.frag" type="scene3d" geom="points" probability="0.35" mood="calm" complexity="2">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\MeteorStorm.frag" type="scene3d" geom="points" probability="0.35" complexity="2">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\BlackHole.frag" type="scene3d" geom="points" probability="0.35" mood="dark" complexity="2">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\LanternRise.frag" type="scene3d" geom="points" probability="0.3" mood="calm" complexity="2">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\Tornado.frag" type="scene3d" geom="points" probability="0.3" mood="aggressive,dark" complexity="2">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\LaserArena.frag" type="scene3d" geom="ribbon" probability="0.35" mood="aggressive" complexity="1">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\KelpForest.frag" type="scene3d" geom="ribbon" probability="0.3" mood="calm" complexity="1">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\SpectrumArena.frag" type="scene3d" geom="cubes" probability="0.35" complexity="3">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\AsteroidBelt.frag" type="scene3d" geom="cubes" probability="0.3" mood="dark" complexity="3">
+  </TextureShader>
+
 </configuration>

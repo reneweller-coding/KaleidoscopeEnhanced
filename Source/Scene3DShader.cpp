@@ -37,6 +37,7 @@ Scene3DShader::Scene3DShader( const QString &filenameFragmentShader, const QStri
 	if      ( geom == "cubes"  ) m_geomKind = GEOM_CUBES;
 	else if ( geom == "ribbon" ) m_geomKind = GEOM_RIBBON;
 	else if ( geom == "grid"   ) m_geomKind = GEOM_GRID;
+	else if ( geom == "quads"  ) m_geomKind = GEOM_QUADS;
 	else                         m_geomKind = GEOM_POINTS;
 
 	// The matching vertex shader sits next to the fragment shader
@@ -132,6 +133,28 @@ void Scene3DShader::buildGeometry()
 					v.push_back( hash01( cell * 4u + 2u ) );
 					v.push_back( hash01( cell * 4u + 3u ) );
 				}
+			}
+	}
+	else if( m_geomKind == GEOM_QUADS )
+	{
+		// 3000 unit quads (photo cards / shards / tiles), two triangles each;
+		// corner u/v in attrA.xy, per-quad seeds in attrB.
+		const int N = 3000;
+		v.reserve( size_t(N) * 6 * 8 );
+		static const float q[6][2] = {
+			{ 0.f, 0.f }, { 1.f, 0.f }, { 1.f, 1.f },
+			{ 0.f, 0.f }, { 1.f, 1.f }, { 0.f, 1.f }
+		};
+		for( int i = 0; i < N; ++i )
+			for( int k = 0; k < 6; ++k )
+			{
+				v.push_back( q[k][0] ); v.push_back( q[k][1] );
+				v.push_back( 0.f );
+				v.push_back( float(i) );
+				v.push_back( hash01( i * 4u + 0u ) );
+				v.push_back( hash01( i * 4u + 1u ) );
+				v.push_back( hash01( i * 4u + 2u ) );
+				v.push_back( hash01( i * 4u + 3u ) );
 			}
 	}
 	else  // GEOM_RIBBON: 20 ribbons x 300 segments, two triangles per segment.
@@ -235,7 +258,8 @@ void Scene3DShader::draw()
 		                       8 * sizeof(float), (const void *) (4 * sizeof(float)) );
 	}
 
-	if( m_geomKind == GEOM_CUBES || m_geomKind == GEOM_GRID )
+	if( m_geomKind == GEOM_CUBES || m_geomKind == GEOM_GRID
+	 || m_geomKind == GEOM_QUADS )
 	{
 		// Solid geometry: depth-tested, opaque.
 		glEnable( GL_DEPTH_TEST );

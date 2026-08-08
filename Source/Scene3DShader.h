@@ -11,10 +11,17 @@
 // The vertex shader builds the world from index+seeds+audio uniforms; the
 // C++ side only supplies the projection matrix and the stereo eye offset.
 //
-// Geometry kinds (config attribute geom="points|cubes|ribbon"):
+// Geometry kinds (config attribute geom="points|cubes|ribbon|grid|quads"):
 //   points  60000 point sprites   additive blending, no depth test
 //   cubes    4900 unit cubes      opaque, depth-tested
 //   ribbon  20x300 quad strips    additive blending, no depth test
+//   grid    220x120 cell sheet    opaque, depth-tested (u/v in attrA.xy)
+//   quads    3000 unit quads      opaque, depth-tested (corner in attrA.xy)
+//
+// The CURRENT IMAGE is available to every scene: the host binds it on unit 0
+// before the effect pass and setUniforms() points "tex0" at it — a fragment
+// shader only has to declare `uniform sampler2D tex0;` (unit 1 / "tex1" holds
+// the incoming cross-fade image).
 //
 // TRUE STEREO: the host calls setEyeOffset(+-e) and renders twice into the
 // side-by-side / top-bottom halves (scissored); the vertex shaders shift the
@@ -43,7 +50,7 @@ public:
 
 private:
 	enum GeomKind { GEOM_POINTS = 0, GEOM_CUBES = 1, GEOM_RIBBON = 2,
-	                GEOM_GRID = 3 };
+	                GEOM_GRID = 3, GEOM_QUADS = 4 };
 	void buildGeometry();
 
 	int    m_geomKind    = GEOM_POINTS;
