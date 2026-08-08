@@ -13,6 +13,7 @@ attribute vec4 attrB;
 uniform mat4  projM;
 uniform float eyeOff;
 uniform float time;
+uniform float cubeBudget;    // FPS detail budget: <1 -> drop every 2nd cube
 
 uniform float audioAdvance;
 uniform float audioSpectrum[32];
@@ -35,6 +36,16 @@ vec3 hueRot(vec3 c, float a)
 void main()
 {
     float i    = attrA.w;
+
+    // FPS budget: below full detail, every 2nd cube collapses (checkerboard
+    // over the field so no visible hole appears).
+    if (cubeBudget < 0.75 && mod(i, 2.0) > 0.5)
+    {
+        gl_Position = vec4(0.0, 0.0, -3.0, 1.0);
+        vCol = vec4(0.0); vCorner = attrA.xyz;
+        return;
+    }
+
     float gx   = mod(i, 70.0) - 34.5;               // column across
     float gz   = floor(i / 70.0);                   // row along the flight
     float seed = attrB.x;

@@ -12,6 +12,7 @@ uniform float eyeOff;
 uniform float time;
 
 uniform float audioSpectrum[32];
+uniform float audioWave[64];
 uniform float audioBass;
 uniform float audioSwell;
 uniform float audioChromaHue;
@@ -38,11 +39,16 @@ void main()
     float lvl  = audioSpectrum[band];
 
     // Base radius breathes with the bass; the ring's own band adds a
-    // smooth m-lobed undulation that slowly precesses.
+    // smooth m-lobed undulation, and the REAL waveform is bent around the
+    // innermost rings — a true circular oscilloscope.
     float mode = 3.0 + mod(ri, 4.0);
+    float fw = t * 62.999;
+    int   wi = int(fw);
+    float wv = mix(audioWave[wi], audioWave[wi + 1], fract(fw));
     float R = (3.5 + ri * 1.55) * (1.0 + 0.05 * audioBass)
             + sin(ang * mode + time * 0.7 + ri * 0.9
-                  + audioAdvance * 0.4) * (0.25 + 2.6 * lvl);
+                  + audioAdvance * 0.4) * (0.25 + 2.6 * lvl)
+            + wv * 1.5 * exp(-ri * 0.30);
 
     // Tilted disc, slowly turning as a whole; sd = radial line thickness.
     float spin = time * 0.06 + audioAdvance * 0.10;

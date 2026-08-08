@@ -44,14 +44,30 @@ public:
 	void draw() override;
 	bool is3D() const override { return true; }
 
+	// PER-ACTIVATION VARIETY: every time the scene is (re)activated it rolls
+	// a fresh epoch — a large time offset (different camera/burst phases), a
+	// mild speed factor (±20 %, constant within the activation so nothing
+	// flickers), a hue rotation and a generic `sceneSeed` uniform some scenes
+	// use structurally (sector counts, knot type).  The same scene becomes a
+	// whole family of variations.
+	void resetParameters() override;
+	void setUniforms( float time, float interpolation,
+	                  GLint texLoc1, GLint texLoc2 ) override;
+	void applyAudioFeatures( const AudioFeatures &f );
+
 	// True-stereo eye offset in world units (0 = mono).  Set by the host
 	// between the two per-eye draw() calls.
 	void setEyeOffset( float e ) { m_eyeOffset = e; }
+
+	// FPS-driven detail budget for the heavy cube scenes (1.0 = all cubes,
+	// 0.5 = every 2nd).  Maintained by FilterShader from the frame rate.
+	static float s_cubeBudget;
 
 private:
 	enum GeomKind { GEOM_POINTS = 0, GEOM_CUBES = 1, GEOM_RIBBON = 2,
 	                GEOM_GRID = 3, GEOM_QUADS = 4 };
 	void buildGeometry();
+	void rollVariation();
 
 	int    m_geomKind    = GEOM_POINTS;
 	GLuint m_vbo         = 0;
@@ -60,5 +76,13 @@ private:
 	GLint  m_eyeUni      = -1;
 	GLint  m_attrA       = -1;
 	GLint  m_attrB       = -1;
+	GLint  m_seedUni     = -1;
+	GLint  m_budgetUni   = -1;
 	float  m_eyeOffset   = 0.f;
+
+	// Per-activation variation state (see resetParameters()).
+	float  m_sceneSeed   = 0.f;
+	float  m_timeOffset  = 0.f;
+	float  m_speedFactor = 1.f;
+	float  m_hueOffset   = 0.f;
 };

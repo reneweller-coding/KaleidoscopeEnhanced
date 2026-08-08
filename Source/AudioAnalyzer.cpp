@@ -695,6 +695,10 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
             mono += data[i * numChannels + c];
         mono /= float(numChannels);
 
+        // Waveform ring for `audioWave[64]` (oscilloscope effects).
+        m_waveRing[m_waveWritePos] = mono;
+        m_waveWritePos = (m_waveWritePos + 1) & (kWaveRing - 1);
+
         // Per-channel samples (R falls back to L for mono → mirrored spectrum).
         const float L = data[i * numChannels + 0];
         const float R = (numChannels >= 2) ? data[i * numChannels + 1] : L;
@@ -1923,6 +1927,33 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
         m_breakSlam *= 0.985f;                                 // ~1 s tail
     }
 
+    // ---- Waveform downsample for `audioWave[64]` ----
+    // Average the rolling mono ring (oldest -> newest = m_waveWritePos onward)
+    // into 64 points; normalise with a decaying |peak| so the wave stays
+    // visible at any volume; light temporal smoothing against block jitter.
+    {
+        const int  NP   = AudioFeatures::kWavePoints;
+        const int  grp  = kWaveRing / NP;                  // 32 samples/point
+        float pts[AudioFeatures::kWavePoints];
+        float peak = 1e-4f;
+        for (int p = 0; p < NP; ++p)
+        {
+            float acc = 0.f;
+            int   base = (m_waveWritePos + p * grp) & (kWaveRing - 1);
+            for (int k = 0; k < grp; ++k)
+                acc += m_waveRing[(base + k) & (kWaveRing - 1)];
+            pts[p] = acc / float(grp);
+            peak = std::max(peak, std::fabs(pts[p]));
+        }
+        m_waveRef = std::max(m_waveRef * 0.995f, peak);
+        m_waveRef = std::max(m_waveRef, 0.02f);            // silence floor
+        for (int p = 0; p < NP; ++p)
+        {
+            float v = std::max(-1.f, std::min(1.f, pts[p] / m_waveRef));
+            m_sWave[p] = 0.35f * m_sWave[p] + 0.65f * v;
+        }
+    }
+
     // ---- Publish (mutex-protected) ----
     QMutexLocker lk(&m_mutex);
     // Publish the AGC-normalised levels so the visuals are volume-independent.
@@ -1935,6 +1966,8 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
     m_features.overallLevel   = nLevel;
     for (int b = 0; b < AudioFeatures::kSpectrumBands; ++b)
         m_features.spectrum[b] = m_sSpectrum[b];
+    for (int p = 0; p < AudioFeatures::kWavePoints; ++p)
+        m_features.wave[p] = m_sWave[p];
     m_features.isBeat         = isBeat;
     m_features.onsetStrength   = onsetStrength;
     m_features.downbeat        = downbeat;

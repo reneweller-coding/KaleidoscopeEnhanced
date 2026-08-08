@@ -618,6 +618,22 @@ Audio is captured via WASAPI loopback (`AudioAnalyzer`) and analysed in real tim
   `cubes`, `ribbon`, `grid`, `quads`), the vertex shader animates
   everything from the audio uniforms.  51 scenes ship.
 
+  **Scene variety per activation:** every time a 3D scene comes on it rolls
+  a fresh epoch — a large time offset (different camera/burst phases), a
+  gentle ±20 % speed factor, a hue rotation, and a `sceneSeed` uniform some
+  scenes use structurally (KaleidoDome/PhotoTunnel/MandalaGrid roll their
+  mirror-sector counts, TorusKnot picks its (p,q) knot type) — so the same
+  scene returns as a whole family of variations.
+  **Real waveform (`audioWave[64]`):** the analyzer publishes the live
+  time-domain signal (64 smoothed points, volume-normalised) — WaveRibbon
+  and OscilloRings ARE now true oscilloscopes, drawing the actual wave.
+  **Depth-aware trails:** while a 3D scene is up, the feedback pass fades
+  bright (near) structures faster and lets dim (far) ones linger — the
+  trails themselves gain depth.
+  **FPS detail budget:** below ~45 fps the heavy cube scenes (CubeWave,
+  CrystalCave, SpectrumArena, AsteroidBelt) drop every 2nd cube
+  (checkerboard, hysteresis), restoring full detail above ~57 fps.
+
   *Procedural worlds:*
   **`ParticleGalaxy`** (60k point sprites in a spiral galaxy — the bass
   pumps the core, each kick rolls a shock ring outward, the camera orbits),
@@ -744,8 +760,11 @@ Audio is captured via WASAPI loopback (`AudioAnalyzer`) and analysed in real tim
   is rendered TWICE per frame with a real eye offset (two-camera stereo,
   convergence in the shader; separation follows the `c`/`m` depth knob) —
   the combine stage passes the eye-packed frame through untouched and the
-  present pass shows each half directly.  During cross-fades the display
-  falls back to the depth-reprojection seamlessly.
+  present pass shows each half directly.  A cross-fade between TWO 3D
+  scenes stays in true stereo as well: both scenes render per-eye and a
+  plain per-pixel mix replaces the styled combine (nothing may warp across
+  the eye boundary).  Only fades involving a classic 2D effect fall back
+  to the depth-reprojection.
 - **Stereoscopic 3D output (`-3 sbs|tb|ana`, key `z` cycles):** the mono
   frame is **depth-reprojected** in the present pass — a pseudo-depth
   (smoothed brightness pops bright structures toward the viewer, the

@@ -14,6 +14,8 @@ uniform float decay;
 uniform float warpZoom;      // per-frame echo expansion (1.0 = none)
 uniform float warpRot;       // per-frame echo rotation (radians)
 uniform float hueDrift;      // per-frame hue rotation of the echoes
+uniform float depth3D;       // 0..1: a 3D scene is on screen -> depth-aware
+                             // trails (bright=near fades fast, dim=far lingers)
 
 vec3 hueRotF(vec3 c, float a)
 {
@@ -45,5 +47,17 @@ void main()
     vec2  e    = min(puv, 1.0 - puv);
     float edge = smoothstep(0.0, 0.02, min(e.x, e.y));
 
-    gl_FragColor = vec4(max(cur, prv * decay * edge), 1.0);
+    // Depth-aware trails for the 3D scenes: brightness is the same pseudo-
+    // depth the stereo reprojection uses (bright = near).  Near structures
+    // shed their echoes quickly (crisp foreground), far dim ones linger —
+    // the trail itself gains a sense of depth.
+    float dScale = 1.0;
+    if (depth3D > 0.001)
+    {
+        float plum = dot(prv, vec3(0.299, 0.587, 0.114));
+        float nearness = smoothstep(0.05, 0.6, plum);
+        dScale = mix(1.0, mix(1.035, 0.90, nearness), depth3D);
+    }
+
+    gl_FragColor = vec4(max(cur, prv * min(decay * dScale, 0.985) * edge), 1.0);
 }

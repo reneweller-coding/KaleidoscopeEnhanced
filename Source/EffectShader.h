@@ -83,7 +83,7 @@ public:
 	 * Shaders that don't declare a given audio uniform get location -1, so the
 	 * corresponding upload is silently skipped.
 	 */
-	void applyAudioFeatures(const AudioFeatures &features);
+	virtual void applyAudioFeatures(const AudioFeatures &features);
 		
 	void addUniformInterpolator( const QString &name, float interpolatorMinMinf,
 							  float interpolatorMinMaxf,

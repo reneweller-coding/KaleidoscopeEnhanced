@@ -4,6 +4,7 @@
 // the fold radius.
 uniform sampler2D tex0;
 uniform float time;
+uniform float sceneSeed;
 uniform float audioAdvance;
 uniform float audioKick;
 uniform float audioDrop;
@@ -23,10 +24,10 @@ vec2 mfold(vec2 uv) { return abs(fract(uv * 0.5) * 2.0 - 1.0); }
 
 void main()
 {
-    // Rosette: fold the dome angle into 10 mirrored sectors, spin with the
-    // music; the radius breathes with the swell.
+    // Rosette: fold the dome angle into 8/10/12/14 mirrored sectors (rolled
+    // per activation), spin with the music; the radius breathes with the swell.
     float ang = atan(vUV.y, vUV.x) + time * 0.06 + audioAdvance * 0.30;
-    float sector = 6.2831853 / 10.0;
+    float sector = 6.2831853 / (8.0 + 2.0 * floor(sceneSeed * 3.999));
     ang = abs(mod(ang, sector * 2.0) - sector);
 
     float r = vR * (1.15 + 0.20 * audioSwell) + 0.06 * time

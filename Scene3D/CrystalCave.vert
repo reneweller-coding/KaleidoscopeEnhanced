@@ -10,6 +10,7 @@ attribute vec4 attrB;
 uniform mat4  projM;
 uniform float eyeOff;
 uniform float time;
+uniform float cubeBudget;    // FPS detail budget: <1 -> drop every 2nd cube
 
 uniform float audioAdvance;
 uniform float audioKick;
@@ -30,6 +31,14 @@ vec3 hueRot(vec3 c, float a)
 
 void main()
 {
+    // FPS budget: below full detail, every 2nd crystal collapses.
+    if (cubeBudget < 0.75 && mod(attrA.w, 2.0) > 0.5)
+    {
+        gl_Position = vec4(0.0, 0.0, -3.0, 1.0);
+        vCol = vec4(0.0); vCorner = attrA.xyz;
+        return;
+    }
+
     float r1 = attrB.x, r2 = attrB.y, r3 = attrB.z, r4 = attrB.w;
 
     const float L = 210.0;

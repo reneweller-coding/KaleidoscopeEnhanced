@@ -2,6 +2,7 @@
 // MandalaGrid.frag — an 8-fold colour rosette flowing softly inward; the
 // bar phase rolls a gentle ring of light through the pattern.
 uniform float time;
+uniform float sceneSeed;
 uniform float audioAdvance;
 uniform float audioBarPhase;
 uniform float audioChromaHue;
@@ -23,8 +24,8 @@ void main()
     float ang = vPolar.x + time * 0.04 + audioAdvance * 0.08;
     float r   = vPolar.y;
 
-    // 8-fold mirror symmetry in the colour pattern.
-    float sector = 6.2831853 / 8.0;
+    // 6/8/10-fold mirror symmetry (rolled per activation).
+    float sector = 6.2831853 / (6.0 + 2.0 * floor(sceneSeed * 2.999));
     float a8 = abs(mod(ang, sector * 2.0) - sector);
 
     // Slow plasma layers in folded polar space, flowing inward.
