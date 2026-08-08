@@ -79,6 +79,7 @@ bool Preset::load(const QString &path, Preset &out, QString *err)
             e.probability = el.attribute("probability").toDouble();
             e.complexity = el.attribute("complexity").toInt();
             e.mood = el.attribute("mood");           // pass-through (may be empty)
+            e.geom = el.attribute("geom");           // scene3d geometry kind
             readParams(el, e);
             out.entries.push_back(e);
         }
@@ -116,11 +117,14 @@ bool Preset::save(const QString &path, QString *err) const
         w.writeAttribute("maxTimeSolo", QString::number(e.maxTimeSolo));
         w.writeAttribute("minTimeInterpolation", QString::number(e.minTimeInterpolation));
         w.writeAttribute("maxTimeInterpolation", QString::number(e.maxTimeInterpolation));
-        // Shaders live in Scene/ and Combine/ since the 2026-07 reorg.
+        // Shaders live in Scene/, Scene3D/ and Combine/ since the 2026-07 reorg.
         w.writeAttribute("file", QString("..\\%1\\%2")
-                                 .arg(e.isCombine ? "Combine" : "Scene")
+                                 .arg(e.isCombine ? "Combine"
+                                     : (e.type == "scene3d" ? "Scene3D" : "Scene"))
                                  .arg(e.file));
         w.writeAttribute("type", e.type);
+        if (!e.geom.isEmpty())
+            w.writeAttribute("geom", e.geom);
         w.writeAttribute("probability", QString::number(e.probability));
         if (!e.mood.isEmpty())
             w.writeAttribute("mood", e.mood);

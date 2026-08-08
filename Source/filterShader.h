@@ -194,7 +194,9 @@ public:
 
 private:
 
-	void initFBO(GLuint &fboEffect, GLuint &texIDEffect); // initialization of framebuffer object
+	// Initialise a framebuffer object; depthRb != nullptr additionally creates
+	// and attaches a depth renderbuffer (needed by the 3D scene effects).
+	void initFBO(GLuint &fboEffect, GLuint &texIDEffect, GLuint *depthRb = nullptr);
 	void createFBOTexture( GLuint &texID );
 	void setupFBOTexture( const GLuint texID );
 	void createTexture();  // create and setup textures
@@ -372,9 +374,35 @@ private:
 	GLint			m_trailZoomUni  = -1;   // echo-warp: per-frame zoom
 	GLint			m_trailRotUni   = -1;   //   ... rotation (radians/frame)
 	GLint			m_trailHueUni   = -1;   //   ... hue drift of the echoes
+	GLint			m_trailDepthUni = -1;   // depth-aware trails (3D scenes)
+	float			m_trailDepth3D  = 0.f;  // slewed 0..1 "a 3D scene is up"
 	bool			m_feedbackReady = false;
 	bool			m_spoutStarted  = false;
 	GLuint			m_liveTex       = 0;   // Spout-in texture (0 = photos)
+
+	// Depth renderbuffers for the two effect FBOs (3D scene effects).
+	GLuint			m_depthRbEffect1 = 0, m_depthRbEffect2 = 0;
+	// FPS EMA for the cube-scene detail budget (see paint()).
+	float			m_cubeFpsEma = 60.f;
+	// TRUE-STEREO state (real per-eye rendering of a solo 3D scene):
+	// hold = a 3D scene is solo while SBS/TB stereo is on (freezes combine
+	// switching); now = additionally the combine is solo -> the scene renders
+	// per-eye, the combine pass is bypassed and present passthroughs.
+	bool			m_trueStereoHold = false;
+	bool			m_trueStereoNow  = false;
+	// packed = the on-screen frame is eye-packed (solo OR a 3D<->3D texture
+	// cross-fade with the combine solo) -> per-eye rendering, plain mixing,
+	// trail-warp suppression and present passthrough.
+	bool			m_trueStereoPacked = false;
+	GLint			m_presentStereoSrcUni = -1;
+	// Plain cross-mix program for packed 3D<->3D cross-fades.
+	GLuint			m_stereoMixProgId  = 0;
+	GLint			m_stereoMixTexAUni = -1;
+	GLint			m_stereoMixTexBUni = -1;
+	GLint			m_stereoMixResUni  = -1;
+	GLint			m_stereoMixWUni    = -1;
+	// Fixed-function copy of a texture into the bound FBO (combine bypass).
+	void			blitTexture( GLuint tex );
 
 	// ---- GPU reaction-diffusion simulation (Gray-Scott, float ping-pong) ----
 	// A genuine on-GPU simulation: each frame a fragment shader advances the

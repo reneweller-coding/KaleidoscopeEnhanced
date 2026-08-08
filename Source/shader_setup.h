@@ -11,5 +11,7 @@
 #endif
 
 GLuint setShaders( const char *vert_source, const char * frag_source );
+// Vertex+fragment pair (3D scenes) — actually attaches the vertex shader.
+GLuint setShadersVF( const char *vert_source, const char *frag_source );
 void checkShaderExt( void );
 

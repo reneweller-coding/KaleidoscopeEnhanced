@@ -145,4 +145,43 @@
     <float name="accentP" minValue="0.8" maxValue="1.6"></float>
   </TextureShader>
 
+  <TextureShader file="..\\Scene3D\\CubeWave.frag" type="scene3d" geom="cubes" probability="0.5" mood="aggressive,bright" complexity="3">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\RibbonTunnel.frag" type="scene3d" geom="ribbon" probability="0.45" mood="bright" complexity="2">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\PortalRush.frag" type="scene3d" geom="ribbon" probability="0.45" mood="aggressive,bright" complexity="2">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\WarpStars.frag" type="scene3d" geom="points" probability="0.4" mood="aggressive" complexity="1">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\SynthTerrain.frag" type="scene3d" geom="grid" probability="0.4" mood="bright,aggressive" complexity="2">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\LaserArena.frag" type="scene3d" geom="ribbon" probability="0.45" mood="aggressive" complexity="1">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\SpectrumArena.frag" type="scene3d" geom="cubes" probability="0.4" complexity="3">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\BillboardCity.frag" type="scene3d" geom="quads" probability="0.35" mood="bright" complexity="1">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\PhotoShatter.frag" type="scene3d" geom="quads" probability="0.35" mood="aggressive" complexity="1">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\PhotoTunnel.frag" type="scene3d" geom="grid" probability="0.35" mood="bright" complexity="2">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\OscilloRings.frag" type="scene3d" geom="ribbon" probability="0.35" mood="bright" complexity="1">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\SineTunnel.frag" type="scene3d" geom="grid" probability="0.35" mood="bright" complexity="2">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\TorusKnot.frag" type="scene3d" geom="points" probability="0.3" mood="bright" complexity="2">
+  </TextureShader>
+
 </configuration>

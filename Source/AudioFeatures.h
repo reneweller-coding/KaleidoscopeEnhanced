@@ -38,6 +38,14 @@ struct AudioFeatures
     static const int kSpectrumBands = 32;
     float spectrum[kSpectrumBands] = {};
 
+    // ---- Time-domain waveform (for oscilloscope-style effects) ----
+    // 64 points of the last ~43 ms of the MONO signal (band-limited by the
+    // downsample averaging), normalised to roughly -1..1 with a decaying-peak
+    // reference so quiet passages still draw a visible wave.  Uploaded as
+    // `audioWave[64]` — the missing MilkDrop ingredient.
+    static const int kWavePoints = 64;
+    float wave[kWavePoints] = {};
+
     // ---- Beat / onset detection ----
     bool  isBeat        = false; // true for one update cycle on each kick
     float beatStrength  = 0.f;   // 0..1 onset magnitude vs. background

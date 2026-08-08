@@ -610,6 +610,161 @@ Audio is captured via WASAPI loopback (`AudioAnalyzer`) and analysed in real tim
   (`-s` or the adaptive scale), the present pass applies a contrast-adaptive
   sharpen (AMD-CAS-style, min/max-clamped so it cannot ring) scaled to the
   upscale factor — low-scale kiosk setups look noticeably crisper.
+- **REAL 3D scenes (`type="scene3d"`, `Scene3D\` folder):** actual geometry
+  with a perspective camera and a depth buffer — the first effects that use
+  a real VERTEX shader (the classic effects run fragment-only on the
+  fixed-function quad).  Procedural geometry lives in one static VBO per
+  scene (generic layout: corner + index + four seeds; kinds: `points`,
+  `cubes`, `ribbon`, `grid`, `quads`), the vertex shader animates
+  everything from the audio uniforms.  51 scenes ship.
+
+  **Scene variety per activation:** every time a 3D scene comes on it rolls
+  a fresh epoch — a large time offset (different camera/burst phases), a
+  gentle ±20 % speed factor, a hue rotation, and a `sceneSeed` uniform some
+  scenes use structurally (KaleidoDome/PhotoTunnel/MandalaGrid roll their
+  mirror-sector counts, TorusKnot picks its (p,q) knot type) — so the same
+  scene returns as a whole family of variations.
+  **Real waveform (`audioWave[64]`):** the analyzer publishes the live
+  time-domain signal (64 smoothed points, volume-normalised) — WaveRibbon
+  and OscilloRings ARE now true oscilloscopes, drawing the actual wave.
+  **Depth-aware trails:** while a 3D scene is up, the feedback pass fades
+  bright (near) structures faster and lets dim (far) ones linger — the
+  trails themselves gain depth.
+  **FPS detail budget:** below ~45 fps the heavy cube scenes (CubeWave,
+  CrystalCave, SpectrumArena, AsteroidBelt) drop every 2nd cube
+  (checkerboard, hysteresis), restoring full detail above ~57 fps.
+
+  *Procedural worlds:*
+  **`ParticleGalaxy`** (60k point sprites in a spiral galaxy — the bass
+  pumps the core, each kick rolls a shock ring outward, the camera orbits),
+  **`CubeWave`** (an endless depth-tested neon-city flythrough whose 70×70
+  cube columns ARE the 32-band equalizer; kicks flash the street),
+  **`RibbonTunnel`** (20 glowing ribbons twisting around a weaving flight
+  path; kicks bulge the tunnel, the bar phase swings the twist),
+  **`WarpStars`** (warp-speed star tube with real parallax — the music's
+  tempo IS the throttle, a drop fires a hyperjump flash),
+  **`SynthTerrain`** (a synthwave wireframe valley scrolling toward the
+  camera; the ridge heights are the live spectrum, the bar phase sweeps a
+  scanline down the grid),
+  **`HelixTower`** (a 100-unit DNA double helix; each rung glows with its
+  own spectrum band and every kick sends a light wave climbing the tower),
+  **`Swarm`** (a 60k-bird murmuration swooping along a Lissajous path —
+  onsets scatter the flock, calm passages pull it tight, the camera
+  tracks the flock centre),
+  **`PlanetRings`** (a pointillist gas giant with Kepler-orbiting particle
+  rings — kicks roll a density wave outward through the rings, the swell
+  pulls the orbiting camera closer),
+  **`CrystalCave`** (a depth-tested flight through a cave of glowing gem
+  crystals; kicks flare the passage ahead, snares sparkle a subset),
+  **`PortalRush`** (racing a slalom of glowing ring gates — the gate ahead
+  pulses in tempo, passing one flashes on the kick),
+  **`Fireworks`** (24 procedural bursts at real 3D depths on their own
+  music-nudged cycles; kicks light the sparks, a drop turns the sky on),
+  **`OceanNight`** (a moonlit night sea — the bass is the sea state, a
+  glitter lane runs to the horizon, kicks roll a circular wavefront),
+  **`Jellyfish`** (a bloom of 25 bioluminescent jellyfish whose bells ALL
+  pulse to the beat with per-jelly phases; tentacles trail and waver),
+  **`MeteorStorm`** (shooting stars with long particle trails over a
+  twinkling star dome; a drop turns the shower into a storm),
+  **`BlackHole`** (an accretion disk — white-hot rim, Doppler-bright
+  approaching side, photon ring, infalling streams; a drop fires the
+  polar jets),
+  **`LanternRise`** (hundreds of sky lanterns drifting up into the night,
+  flames flickering — the calm scene of the pack),
+  **`Tornado`** (a debris vortex snaking under a storm sky; the music's
+  energy is the spin, kicks cinch the funnel, snares crackle white),
+  **`LaserArena`** (a club laser show: two towers fan 20 beams sweeping
+  with the bar, kicks strobe them, a drop snaps every beam vertical),
+  **`KelpForest`** (an underwater kelp forest surging with the swell,
+  caustic light wandering across the blades),
+  **`SpectrumArena`** (the camera stands inside a circular equalizer
+  arena — 98 columns of stacked cubes metering their spectrum bands,
+  dead cubes staying as a faint skeleton grid),
+  **`AsteroidBelt`** (drifting through tumbling sunlit asteroids at every
+  scale; a drop lights every rock's rim).
+
+  *Image-textured scenes* — the CURRENT IMAGE is available to every 3D
+  scene as `tex0` (the host binds it before the pass), so these use the
+  slideshow pictures as MOVING textures, many kaleidoscope-folded:
+  **`PhotoTunnel`** (flying down a weaving tunnel whose walls are the
+  image folded into 8 mirrored sectors and scrolling with the music),
+  **`KaleidoDome`** (inside a planetarium dome covered by a living
+  10-sector kaleidoscope rosette of the image; kicks bloom the centre),
+  **`PhotoSphere`** (a turning planet wrapped in the image, day-side lit,
+  key-coloured atmosphere rim, equator flash on the kick),
+  **`SilkPhoto`** (the photo on a huge silk banner rippling in an
+  audio-driven wind — kicks slap a radial ripple through the fabric),
+  **`PhotoVortex`** (the image dragged down a whirlpool funnel; inner
+  rings spin faster, the throat glows and gulps on the kick),
+  **`PhotoCarousel`** (standing inside a revolving cylinder of 3000
+  framed photo-crop cards; tilt waves climb the wall with the beat),
+  **`PhotoShatter`** (the image as a wall of 3000 shards: calm music
+  keeps it assembled, a DROP blows it into a tumbling cloud that drifts
+  back together),
+  **`MosaicWave`** (a curved 100×30-tile mosaic of the image; flip waves
+  sweep across with the bar — tile backs show a hue-shifted twin),
+  **`GalleryHall`** (an endless museum corridor of gold-framed crops
+  under ceiling lights; the nearest picture pulses with the beat),
+  **`BillboardCity`** (a night flight down an avenue of neon-bordered
+  photo billboards, each pulsing with its own spectrum band).
+
+  *Harmonic scenes* (projectM/MilkDrop-inspired — smooth, continuous,
+  no strobing; the music leans on amplitudes and hues, never yanks):
+  **`WaveRibbon`** (the classic MilkDrop waveform in 3D: 20 stacked
+  neon wave lines, each an echo of the front line a moment earlier;
+  the partials breathe with the spectrum bands),
+  **`OscilloRings`** (nested oscilloscope rings on a tilted plane, each
+  undulating with its own band and harmonic mode),
+  **`AuroraVeil`** (aurora curtains folding across the night sky —
+  green hems, violet crowns, the swell is the solar wind),
+  **`HarmonicStrings`** (a giant harp: 20 strings ringing as standing
+  waves, each mode fed smoothly by its spectrum band),
+  **`EchoSpiral`** (the infinite MilkDrop zoom done honestly: a
+  logarithmic spiral is self-similar, so the slow continuous zoom loops
+  seamlessly forever),
+  **`TorusKnot`** (a glowing (2,3) torus knot streaming its particles
+  along the closed curve, tumbling slowly on two axes),
+  **`RoseOrbit`** (rose curves r=cos(k·θ) drawn by orbiting particle
+  streams — spirograph serenity with a counter-turning twin behind),
+  **`Phyllotaxis`** (the sunflower head: 60k florets on the golden
+  angle, doming gently; a ring of light rolls outward once per bar),
+  **`NebulaCloud`** (a soft nebula of seeded clumps kneaded by slow
+  sine winds, emission-pink and reflection-blue with embedded stars),
+  **`LissajousOrbits`** (six streams tracing closed 3D Lissajous
+  figures whose phase relation drifts over minutes),
+  **`OrbitalShells`** (a warm nucleus in four precessing electron
+  shells, each shell lit by its register),
+  **`FireflyField`** (a summer meadow of drifting fireflies; a wave of
+  blink synchrony sweeps the field with the beat phase),
+  **`SnowDrift`** (slow snowfall through a blue night, every flake on
+  its own pendulum, a faint glow where they land),
+  **`MandalaGrid`** (a breathing mandala membrane with an 8-fold
+  colour rosette flowing softly inward),
+  **`PlasmaSheet`** (the timeless smooth plasma on a rippling silk
+  sheet — gently desaturated, hue keyed to the music),
+  **`SineTunnel`** (a smooth procedural warp throat: harmonic radius
+  ripples, colour bands and a helix stripe streaming along the walls),
+  **`RainOnWater`** (a still pond at night; raindrops on unhurried
+  clocks send damped rings gliding under a moon lane),
+  **`ChromeFlow`** (a sheet of liquid chrome: broad slow undulations,
+  mirror-sheen bands gliding as the surface rolls),
+  **`PolyDance`** (nested fibonacci-sphere constellations of cubes,
+  counter-rotating at stately rates, each shell breathing with its
+  register),
+  **`GyroRings`** (a great gyroscope: six nested rings of cubes on
+  tilted precessing axes; a soft glint travels each ring once per bar).
+
+  They mix into every preset like normal effects (combines fold them,
+  trails work).
+  **TRUE VR STEREO:** while a 3D scene plays solo in `-3 sbs`/`tb` mode it
+  is rendered TWICE per frame with a real eye offset (two-camera stereo,
+  convergence in the shader; separation follows the `c`/`m` depth knob) —
+  the combine stage passes the eye-packed frame through untouched and the
+  present pass shows each half directly.  A cross-fade between TWO 3D
+  scenes stays in true stereo as well: both scenes render per-eye and a
+  plain per-pixel mix replaces the styled combine (nothing may warp across
+  the eye boundary).  Only fades involving a classic 2D effect fall back
+  to the depth-reprojection.
 - **Stereoscopic 3D output (`-3 sbs|tb|ana`, key `z` cycles):** the mono
   frame is **depth-reprojected** in the present pass — a pseudo-depth
   (smoothed brightness pops bright structures toward the viewer, the
@@ -743,6 +898,18 @@ Reorganised 2026-07 into folders:
   Generated / ThirdParty\SpoutGL / Shaders\Scene|Combine|Blend /
   Configurations).
 - `Scene\*.frag` — the 49 scene (texture) effects
+- `Scene3D\*.vert + *.frag` — the REAL 3D scenes (vertex-shader animated
+  geometry, 51 scenes: procedural worlds like ParticleGalaxy, CubeWave,
+  RibbonTunnel, WarpStars, SynthTerrain, HelixTower, Swarm, PlanetRings,
+  CrystalCave, PortalRush, Fireworks, OceanNight, Jellyfish, MeteorStorm,
+  BlackHole, LanternRise, Tornado, LaserArena, KelpForest, SpectrumArena,
+  AsteroidBelt + image-textured scenes PhotoTunnel, KaleidoDome,
+  PhotoSphere, SilkPhoto, PhotoVortex, PhotoCarousel, PhotoShatter,
+  MosaicWave, GalleryHall, BillboardCity + harmonic MilkDrop-inspired
+  scenes WaveRibbon, OscilloRings, AuroraVeil, HarmonicStrings,
+  EchoSpiral, TorusKnot, RoseOrbit, Phyllotaxis, NebulaCloud,
+  LissajousOrbits, OrbitalShells, FireflyField, SnowDrift, MandalaGrid,
+  PlasmaSheet, SineTunnel, RainOnWater, ChromeFlow, PolyDance, GyroRings)
 - `Combine\*.frag` — the 21 combine passes (incl. `CombinePlain.frag`, which
   carries the 25-style transition library)
 - `Blend\*.frag` — internal pipeline passes: `Present.frag` (mood grade +

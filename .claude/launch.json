@@ -1,11 +1,4 @@
 {
   "version": "0.0.1",
-  "configurations": [
-    {
-      "name": "blog-viewer",
-      "runtimeExecutable": "python",
-      "runtimeArgs": ["-m", "http.server", "8123", "--directory", "G:\\Tools\\PythonSkripts\\Blog-Downloader"],
-      "port": 8123
-    }
-  ]
+  "configurations": []
 }
