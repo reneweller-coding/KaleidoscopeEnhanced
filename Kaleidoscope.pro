@@ -36,6 +36,7 @@ SOURCES += \
     Source/MidiInput.cpp \
     Source/NowPlaying.cpp \
     Source/QMyWindow.cpp \
+    Source/Scene3DShader.cpp \
     Source/shader_setup.cpp \
     Source/SpoutIn.cpp \
     Source/SpoutOut.cpp \
@@ -69,6 +70,7 @@ HEADERS += \
     Source/NowPlaying.h \
     Source/QMyWindow.h \
     Source/qt6compat.h \
+    Source/Scene3DShader.h \
     Source/shader_setup.h \
     Source/SpoutIn.h \
     Source/SpoutOut.h \
@@ -91,6 +93,8 @@ DISTFILES += Source/mainwindow.ui
 DISTFILES += \
     standard.vert \
     $$files(Scene/*.frag) \
+    $$files(Scene3D/*.vert) \
+    $$files(Scene3D/*.frag) \
     $$files(Combine/*.frag) \
     $$files(Blend/*.frag) \
     $$files(Configurations/*.xml)

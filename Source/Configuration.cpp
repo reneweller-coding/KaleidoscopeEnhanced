@@ -4,6 +4,7 @@
 #include "Configuration.h"
 #include "EffectShader.h"
 #include "TextureEffectKaleidoscopeBase.h"
+#include "Scene3DShader.h"
 #include "Utils.h"
 
 
@@ -181,6 +182,20 @@ void Configuration::readConfiguration( const QString &filename )
 		else if( type == "KaleidoscopeBase" )
 		{
 			TextureEffectKaleidoscopeBase *shader = new TextureEffectKaleidoscopeBase( shaderFile, minTimeSolo, maxTimeSolo, minTimeInterpolation, maxTimeInterpolation );
+
+			addUniforms( shader, el );
+			shader->setComplexity( complexity );
+			shader->setProbability( probability );
+			shader->setMoodFlags( moodFlags );
+			m_filterShader->addTextureShader( shader );
+		}
+		else if( type == "scene3d" )
+		{
+			// REAL 3D scene: Scene3D\<X>.frag + matching .vert, procedural
+			// geometry chosen by geom="points|cubes|ribbon".
+			Scene3DShader *shader = new Scene3DShader( shaderFile,
+				el.attribute("geom"),
+				minTimeSolo, maxTimeSolo, minTimeInterpolation, maxTimeInterpolation );
 
 			addUniforms( shader, el );
 			shader->setComplexity( complexity );

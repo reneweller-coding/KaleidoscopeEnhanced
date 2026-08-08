@@ -5,6 +5,7 @@
 #include "filterShader.h"
 #include "SpoutOut.h"
 #include "SpoutIn.h"
+#include "Scene3DShader.h"
 #include "Utils.h"
 
 #include <QtGui/QImageReader>
@@ -938,8 +939,8 @@ void FilterShader::reinit(int width, int height)
 	createFBOTexture( m_texIDFBOEffectTexture2 );
 	createFBOTexture( m_texIDFBOEffectCombine1 );
 	createFBOTexture( m_texIDFBOEffectCombine2 );
-	initFBO(  m_fboEffectTexture1, m_texIDFBOEffectTexture1 );
-	initFBO(  m_fboEffectTexture2, m_texIDFBOEffectTexture2 );
+	initFBO(  m_fboEffectTexture1, m_texIDFBOEffectTexture1, &m_depthRbEffect1 );
+	initFBO(  m_fboEffectTexture2, m_texIDFBOEffectTexture2, &m_depthRbEffect2 );
 	initFBO(  m_fboEffectCombine1, m_texIDFBOEffectCombine1 );
 	initFBO(  m_fboEffectCombine2, m_texIDFBOEffectCombine2 );
 	
@@ -979,6 +980,22 @@ void FilterShader::resize(int width, int height)
 	setupFBOTexture( m_texIDFBOEffectTexture2 );
 	setupFBOTexture( m_texIDFBOEffectCombine1 );
 	setupFBOTexture( m_texIDFBOEffectCombine2 );
+
+	// The 3D-scene DEPTH renderbuffers must track the colour size, or the
+	// effect FBOs go INCOMPLETE_DIMENSIONS after any resize.
+	if( m_depthRbEffect1 )
+	{
+		glBindRenderbufferEXT( GL_RENDERBUFFER_EXT, m_depthRbEffect1 );
+		glRenderbufferStorageEXT( GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT,
+		                          m_width, m_height );
+	}
+	if( m_depthRbEffect2 )
+	{
+		glBindRenderbufferEXT( GL_RENDERBUFFER_EXT, m_depthRbEffect2 );
+		glRenderbufferStorageEXT( GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT,
+		                          m_width, m_height );
+	}
+	glBindRenderbufferEXT( GL_RENDERBUFFER_EXT, 0 );
 
 	// Resize the final (present) texture too, keeping its mipmaps.
 	if( m_texFinal != 0 )
@@ -1070,6 +1087,7 @@ void FilterShader::setupSafety()
 		m_presentTitleAspectUni = glGetUniformLocation( m_presentProgId, "titleAspect" );
 		m_presentStereoModeUni  = glGetUniformLocation( m_presentProgId, "stereoMode" );
 		m_presentStereoDepthUni = glGetUniformLocation( m_presentProgId, "stereoDepth" );
+		m_presentStereoSrcUni   = glGetUniformLocation( m_presentProgId, "stereoSource" );
 	}
 
 	m_safetyReady = fboOk && (m_presentProgId != 0) && (m_presentTexUni >= 0);
@@ -1140,6 +1158,17 @@ void FilterShader::setupSafety()
 		m_trailZoomUni  = glGetUniformLocation( m_trailProgId, "warpZoom" );
 		m_trailRotUni   = glGetUniformLocation( m_trailProgId, "warpRot" );
 		m_trailHueUni   = glGetUniformLocation( m_trailProgId, "hueDrift" );
+		m_trailDepthUni = glGetUniformLocation( m_trailProgId, "depth3D" );
+	}
+	if( m_stereoMixProgId == 0 )
+	{
+		// Plain per-pixel cross-mix for eye-packed true-stereo frames (the
+		// styled combines would warp content across the eye boundary).
+		m_stereoMixProgId  = setShaders( "..\\standard.vert", "..\\Blend\\StereoMix.frag" );
+		m_stereoMixTexAUni = glGetUniformLocation( m_stereoMixProgId, "texA" );
+		m_stereoMixTexBUni = glGetUniformLocation( m_stereoMixProgId, "texB" );
+		m_stereoMixResUni  = glGetUniformLocation( m_stereoMixProgId, "resolution" );
+		m_stereoMixWUni    = glGetUniformLocation( m_stereoMixProgId, "interpolation" );
 	}
 	m_feedbackReady = m_safetyReady && trailOk && (m_trailProgId != 0)
 	                && (m_trailCurUni >= 0) && (m_trailPrevUni >= 0);
@@ -1481,6 +1510,19 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 	// Wall-clock frame time, immune to the freeze below (the blackout fade
 	// must keep moving even over a frozen picture).
 	const float dtWall = timeSinceLastFrameSec;
+
+	// FPS-driven detail budget for the heavy cube scenes: below ~45 fps every
+	// 2nd cube is dropped (uniform `cubeBudget`, hysteresis so it never
+	// oscillates); above ~57 fps full detail returns.
+	if( dtWall > 1e-4f && dtWall < 0.5f )
+	{
+		float fps = 1.f / dtWall;
+		m_cubeFpsEma += 0.05f * ( fps - m_cubeFpsEma );
+		if( m_cubeFpsEma < 45.f && Scene3DShader::s_cubeBudget > 0.75f )
+			Scene3DShader::s_cubeBudget = 0.5f;
+		else if( m_cubeFpsEma > 57.f && Scene3DShader::s_cubeBudget < 0.75f )
+			Scene3DShader::s_cubeBudget = 1.f;
+	}
 
 	// VJ FREEZE ('e'): hold the picture.  Frame time 0 stops every phase
 	// integration and envelope slew; re-arming the activation clocks each
@@ -2148,6 +2190,51 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 	glBindTexture( GL_TEXTURE_2D, m_liveTex ? m_liveTex : m_nextTex );
 
 
+	// TRUE STEREO: a solo 3D scene in SBS/TB renders once per eye below — and
+	// since a 3D<->3D texture cross-fade can be blended per-pixel, the PACKED
+	// state now also covers that: both scenes render per-eye and a plain mix
+	// replaces the styled combine (no warp may cross the eye boundary).
+	// While packed content is up, no combine cross-fade may start.
+	{
+		const bool stereoOn = ( s_stereoMode == 1 || s_stereoMode == 2 );
+		const bool act3D    = m_effectTextures[m_actEffectTexture]->is3D();
+		const bool texSolo  = ( m_stateInterpolationEffectTexture == 0 );
+		const bool next3D   = m_effectTextures[m_nextEffectTexture]->is3D();
+		m_trueStereoHold   = stereoOn && act3D && ( texSolo || next3D );
+		m_trueStereoPacked = m_trueStereoHold
+		                   && m_stateInterpolationEffectCombine == 0;
+		m_trueStereoNow    = m_trueStereoPacked && texSolo;
+	}
+
+	// Per-eye scene render into the SBS/TB halves of the bound FBO
+	// (scissored, so each eye's clear stays inside its half).  Eye
+	// separation scales with the stereo-depth knob (keys c/m).
+	auto renderSceneStereo = [&]( EffectShader *fx )
+	{
+		Scene3DShader *s3 = static_cast<Scene3DShader *>( fx );
+		glEnable( GL_SCISSOR_TEST );
+		for( int e = 0; e < 2; ++e )               // e 0 = left eye, 1 = right
+		{
+			if( s_stereoMode == 1 )                // SBS: left half = left eye
+			{
+				int hw = m_width / 2;
+				glViewport( e * hw, 0, hw, m_height );
+				glScissor ( e * hw, 0, hw, m_height );
+			}
+			else                                   // TB: top half = left eye
+			{
+				int hh = m_height / 2;
+				glViewport( 0, e ? 0 : hh, m_width, hh );
+				glScissor ( 0, e ? 0 : hh, m_width, hh );
+			}
+			s3->setEyeOffset( ( e ? 1.f : -1.f ) * 0.5f * s_stereoDepth );
+			s3->draw();
+		}
+		s3->setEyeOffset( 0.f );
+		glDisable( GL_SCISSOR_TEST );
+		glViewport( 0, 0, m_width, m_height );
+	};
+
 	//Do the FBO Stuff
 	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_fboEffectTexture1 );
 
@@ -2156,7 +2243,10 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 	m_effectTextures[m_actEffectTexture]->enableShader();
 	m_effectTextures[m_actEffectTexture]->setUniforms( m_globaltime, m_interpolationTexture, 0, 1 );
 	m_effectTextures[m_actEffectTexture]->applyAudioFeatures( audioFx );
-	m_effectTextures[m_actEffectTexture]->draw();
+	if( m_trueStereoPacked )
+		renderSceneStereo( m_effectTextures[m_actEffectTexture] );
+	else
+		m_effectTextures[m_actEffectTexture]->draw();
 
 
 	checkGLErrors("createTextures() 1");
@@ -2176,7 +2266,10 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 		m_effectTextures[m_nextEffectTexture]->enableShader();
 		m_effectTextures[m_nextEffectTexture]->setUniforms( m_globaltime, m_interpolationTexture, 0, 1 );
 		m_effectTextures[m_nextEffectTexture]->applyAudioFeatures( audioFx );
-		m_effectTextures[m_nextEffectTexture]->draw();
+		if( m_trueStereoPacked )     // 3D<->3D fade: the incoming scene is
+			renderSceneStereo( m_effectTextures[m_nextEffectTexture] );  // eye-packed too
+		else
+			m_effectTextures[m_nextEffectTexture]->draw();
 	}
 
 	
@@ -2207,7 +2300,11 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 
 		float ts = float(m_timeEffectCombine.elapsed()) * 0.001;
 		bool forcedC = m_forceCombineChange;
-		if( ts > m_timeInterpolationEffectCombine || (forcedC && ts > 0.6f) )
+		// The true-stereo hold freezes combine switching: an eye-packed 3D
+		// frame must not enter a combine cross-fade (the pending change fires
+		// as soon as the hold lifts).
+		if( !m_trueStereoHold
+		    && (ts > m_timeInterpolationEffectCombine || (forcedC && ts > 0.6f)) )
 		{
 			m_forceCombineChange   = false;
 			m_pendingCombineChange = true;
@@ -2215,7 +2312,7 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 		}
 
 		// Beat-quantised, like the texture-effect change above.
-		if( m_pendingCombineChange )
+		if( m_pendingCombineChange && !m_trueStereoHold )
 		{
 			m_pendingCombineAge += timeSinceLastFrameSec;
 			if( m_downbeatTick || m_pendingCombineAge > 2.5f || m_gateSmooth < 0.25f )
@@ -2324,10 +2421,33 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 
     //glFramebufferCombine2DEXT( GL_FRAMEBUFFER_EXT, m_attachmentpoint, GL_Combine_2D, m_texIDFBOEffectCombine1, 0);
 
-	m_effectCombines[m_actEffectCombine]->enableShader();
-	m_effectCombines[m_actEffectCombine]->setUniforms( m_globaltime, m_interpolationEffectTexture, 3, 4 );
-	m_effectCombines[m_actEffectCombine]->applyAudioFeatures( audioFx );
-	m_effectCombines[m_actEffectCombine]->draw();
+	if( m_trueStereoNow )
+	{
+		// True stereo: the eye-packed 3D frame passes through UNTOUCHED (any
+		// combine warp would fold content across the eye boundary).
+		blitTexture( m_texIDFBOEffectTexture1 );
+	}
+	else if( m_trueStereoPacked && m_stereoMixProgId != 0 )
+	{
+		// Packed 3D<->3D cross-fade: plain per-pixel mix of the two
+		// eye-packed frames — same endpoint weighting as every combine
+		// style, but guaranteed warp-free.
+		glUseProgram( m_stereoMixProgId );
+		if( m_stereoMixTexAUni >= 0 ) glUniform1i( m_stereoMixTexAUni, 3 );
+		if( m_stereoMixTexBUni >= 0 ) glUniform1i( m_stereoMixTexBUni, 4 );
+		if( m_stereoMixResUni  >= 0 ) glUniform2f( m_stereoMixResUni,
+		                                           (float)m_width, (float)m_height );
+		if( m_stereoMixWUni    >= 0 ) glUniform1f( m_stereoMixWUni,
+		                                           m_interpolationEffectTexture );
+		drawWindow();
+	}
+	else
+	{
+		m_effectCombines[m_actEffectCombine]->enableShader();
+		m_effectCombines[m_actEffectCombine]->setUniforms( m_globaltime, m_interpolationEffectTexture, 3, 4 );
+		m_effectCombines[m_actEffectCombine]->applyAudioFeatures( audioFx );
+		m_effectCombines[m_actEffectCombine]->draw();
+	}
 
 
 	checkGLErrors("createCombines() 1");
@@ -2442,9 +2562,23 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 			                     + 0.08f * audio.ambientFactor) * dtf;
 			float rotA = 0.15f * sinf( m_globaltime * 0.02f ) * dtf;
 			float hueD = 0.10f * dtf;
+			// True stereo: the echo-warp would drag content across the eye
+			// boundary of the packed frame — keep only the plain decay.
+			if( m_trueStereoPacked ) { zoom = 1.f; rotA = 0.f; hueD = 0.f; }
 			if( m_trailZoomUni >= 0 ) glUniform1f( m_trailZoomUni, zoom );
 			if( m_trailRotUni  >= 0 ) glUniform1f( m_trailRotUni,  rotA );
 			if( m_trailHueUni  >= 0 ) glUniform1f( m_trailHueUni,  hueD );
+			// Depth-aware trails while a 3D scene is on screen (slewed so
+			// cross-fades from/to 2D effects ease the behaviour in and out).
+			{
+				bool sceneUp = m_effectTextures[m_actEffectTexture]->is3D()
+				            || ( m_stateInterpolationEffectTexture != 0
+				                 && m_effectTextures[m_nextEffectTexture]->is3D() );
+				m_trailDepth3D = slewToward( m_trailDepth3D,
+				                             sceneUp ? 1.f : 0.f, 2.5f, dtWall );
+				if( m_trailDepthUni >= 0 )
+					glUniform1f( m_trailDepthUni, m_trailDepth3D );
+			}
 		}
 		drawWindow();
 
@@ -2560,6 +2694,7 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 		if( m_presentCamOffUni   >= 0 ) glUniform2f( m_presentCamOffUni,   m_camOffX, m_camOffY );
 		if( m_presentStereoModeUni  >= 0 ) glUniform1i( m_presentStereoModeUni,  s_stereoMode );
 		if( m_presentStereoDepthUni >= 0 ) glUniform1f( m_presentStereoDepthUni, s_stereoDepth );
+		if( m_presentStereoSrcUni   >= 0 ) glUniform1i( m_presentStereoSrcUni,   m_trueStereoPacked ? 1 : 0 );
 		// Track-title reveal (phase 0..1 while active; 2 = off).
 		if( m_presentTitlePhaseUni >= 0 )
 		{
@@ -2667,7 +2802,30 @@ void FilterShader::drawWindow()
  * Create framebuffer object, bind it to reroute rendering operations 
  * from the traditional framebuffer to the off-screen buffer
  */
-void FilterShader::initFBO(GLuint &fboEffect, GLuint &texIDEffectTexture)
+// Fixed-function copy of a texture into the currently bound FBO.  Used by the
+// true-stereo path: the eye-packed 3D frame replaces the combine output 1:1.
+void FilterShader::blitTexture( GLuint tex )
+{
+	glUseProgram( 0 );
+	glActiveTexture( GL_TEXTURE0 );
+	glBindTexture( GL_TEXTURE_2D, tex );
+	glEnable( GL_TEXTURE_2D );
+	glMatrixMode( GL_PROJECTION );
+	glLoadIdentity();
+	gluOrtho2D( 0, m_width, 0, m_height );
+	glMatrixMode( GL_MODELVIEW );
+	glLoadIdentity();
+	glColor3f( 1.f, 1.f, 1.f );
+	glBegin( GL_QUADS );
+	glTexCoord2f( 0, 0 ); glVertex2f( 0.f, 0.f );
+	glTexCoord2f( 1, 0 ); glVertex2f( (float)m_width, 0.f );
+	glTexCoord2f( 1, 1 ); glVertex2f( (float)m_width, (float)m_height );
+	glTexCoord2f( 0, 1 ); glVertex2f( 0.f, (float)m_height );
+	glEnd();
+	glDisable( GL_TEXTURE_2D );
+}
+
+void FilterShader::initFBO(GLuint &fboEffect, GLuint &texIDEffectTexture, GLuint *depthRb)
 {
 	// create FBO (off-screen framebuffer) — reuse the id if it already exists
 	// (re-entering this path must re-attach, not leak a fresh FBO)
@@ -2684,13 +2842,20 @@ void FilterShader::initFBO(GLuint &fboEffect, GLuint &texIDEffectTexture)
 							   GL_TEXTURE_2D, texIDEffectTexture, 0);
 	checkGLErrors("initFBO()");
 
-	// create depth buffer
-	//glGenRenderbuffersEXT(1, &m_depthFbo);
-	//glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, m_depthFbo);
-	//glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT, m_width, m_height);
-	// attach depthbuffer to FBO
-	//glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, m_depthFbo);
-
+	// Optional depth renderbuffer (the 3D scene effects need depth testing;
+	// the plain fullscreen-quad effects ignore it).  (Re)created at the
+	// current size on every (re)init, so window resizes stay correct.
+	if( depthRb )
+	{
+		if( *depthRb == 0 )
+			glGenRenderbuffersEXT( 1, depthRb );
+		glBindRenderbufferEXT( GL_RENDERBUFFER_EXT, *depthRb );
+		glRenderbufferStorageEXT( GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT,
+		                          m_width, m_height );
+		glFramebufferRenderbufferEXT( GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
+		                              GL_RENDERBUFFER_EXT, *depthRb );
+		glBindRenderbufferEXT( GL_RENDERBUFFER_EXT, 0 );
+	}
 
 	// check if that worked
     if ( !checkFramebufferStatus() )

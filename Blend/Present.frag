@@ -38,6 +38,7 @@ uniform float titlePhase;       // 0..1 while the reveal runs; >= 1 = off
 uniform float titleAspect;      // title texture width/height
 uniform int   stereoMode;       // 0 off, 1 side-by-side, 2 top-bottom, 3 anaglyph
 uniform float stereoDepth;      // disparity strength 0..2 (host, key c/m)
+uniform int   stereoSource;     // 1 = source is ALREADY eye-packed (true 3D stereo)
 
 float hash21(vec2 p) { return fract(sin(dot(p, vec2(41.3, 289.1))) * 43758.5453); }
 
@@ -122,8 +123,18 @@ void main()
     vec3 c;
     if (stereoMode == 1 || stereoMode == 2)
     {
-        puv.x += stereoDepth * 0.007
-               * (stereoDepthAt(puv, cuv) - 0.45) * eyeSign;
+        if (stereoSource == 1)
+        {
+            // TRUE stereo: the 3D scene already rendered one view per half —
+            // just sample the matching half (no reprojection).
+            if (stereoMode == 1)
+                puv = vec2(puv.x * 0.5 + ((eyeSign > 0.0) ? 0.5 : 0.0), puv.y);
+            else   // top half = left eye
+                puv = vec2(puv.x, puv.y * 0.5 + ((eyeSign < 0.0) ? 0.5 : 0.0));
+        }
+        else
+            puv.x += stereoDepth * 0.007
+                   * (stereoDepthAt(puv, cuv) - 0.45) * eyeSign;
         c = texture2D(tex, puv).rgb;
     }
     else if (stereoMode == 3)

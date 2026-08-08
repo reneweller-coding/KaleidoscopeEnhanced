@@ -268,6 +268,15 @@ private:
     float m_sSpectrum[AudioFeatures::kSpectrumBands] = {};
     float m_specRef  = 1e-4f; // decaying-peak reference for spectrum auto-scaling
 
+    // Time-domain waveform for `audioWave[64]`: rolling mono ring (last 2048
+    // samples), downsampled to 64 averaged points per block and normalised
+    // with a decaying-peak reference (see AudioFeatures::wave).
+    static const int kWaveRing = 2048;
+    float m_waveRing[kWaveRing] = {};
+    int   m_waveWritePos = 0;
+    float m_waveRef = 0.05f;   // decaying |peak| reference (volume independence)
+    float m_sWave[AudioFeatures::kWavePoints] = {};
+
     // Section-change detector state (see AudioFeatures::sectionCount):
     // fast/slow EMAs of the NORMALISED 32-band shape + of the total band energy.
     float m_secFast[AudioFeatures::kSpectrumBands] = {};  // ~2.5 s EMA

@@ -79,7 +79,7 @@ New-Item -ItemType Directory -Path $binDir -Force | Out-Null
 # Shaders live in subfolders since the 2026-07 reorg (Scene / Combine / Blend);
 # the exe references them as "..\Scene\...", so the folder structure must be
 # mirrored in the package.
-foreach ($d in @("Scene", "Combine", "Blend")) {
+foreach ($d in @("Scene", "Scene3D", "Combine", "Blend")) {
     Copy-Item (Join-Path $root $d) $pkgDir -Recurse
 }
 Copy-Item (Join-Path $root "*.vert") $pkgDir

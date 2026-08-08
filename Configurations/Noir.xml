@@ -113,4 +113,40 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
 
+  <TextureShader file="..\\Scene3D\\CrystalCave.frag" type="scene3d" geom="cubes" probability="0.45" mood="dark" complexity="3">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\PlanetRings.frag" type="scene3d" geom="points" probability="0.4" mood="calm,dark" complexity="2">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\BlackHole.frag" type="scene3d" geom="points" probability="0.4" mood="dark" complexity="2">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\OceanNight.frag" type="scene3d" geom="grid" probability="0.35" mood="calm,dark" complexity="2">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\GalleryHall.frag" type="scene3d" geom="quads" probability="0.35" mood="dark,calm" complexity="1">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\AsteroidBelt.frag" type="scene3d" geom="cubes" probability="0.3" mood="dark" complexity="3">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\MeteorStorm.frag" type="scene3d" geom="points" probability="0.3" complexity="2">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\RainOnWater.frag" type="scene3d" geom="grid" probability="0.4" mood="calm,dark" complexity="2">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\SnowDrift.frag" type="scene3d" geom="points" probability="0.35" mood="calm" complexity="2">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\OrbitalShells.frag" type="scene3d" geom="points" probability="0.35" mood="dark" complexity="2">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\ChromeFlow.frag" type="scene3d" geom="grid" probability="0.3" mood="calm" complexity="2">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\HarmonicStrings.frag" type="scene3d" geom="ribbon" probability="0.3" mood="calm" complexity="1">
+  </TextureShader>
+
 </configuration>
