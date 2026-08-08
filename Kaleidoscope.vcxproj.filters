@@ -447,6 +447,9 @@
     <None Include="Blend\ReactionDiffusionSim.frag">
       <Filter>Shaders\Blend</Filter>
     </None>
+    <None Include="Blend\Smoke3DSim.frag">
+      <Filter>Shaders\Blend</Filter>
+    </None>
     <None Include="standard.vert">
       <Filter>Shaders</Filter>
     </None>
@@ -463,6 +466,36 @@
       <Filter>Shaders\Scene3D</Filter>
     </None>
     <None Include="Scene3D\CometRide.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\ConcertCrowd.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\ConcertCrowd.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\CrystalGrowth.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\CrystalGrowth.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\SciFiHUD.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\SciFiHUD.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\StainedGlassRosette.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\StainedGlassRosette.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\Wormhole.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\Wormhole.vert">
       <Filter>Shaders\Scene3D</Filter>
     </None>
     <None Include="Scene3D\CometRide.vert">
@@ -514,6 +547,12 @@
       <Filter>Shaders\Scene3D</Filter>
     </None>
     <None Include="Scene3D\VolcanoIsland.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\VolumetricFire.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\VolumetricFire.vert">
       <Filter>Shaders\Scene3D</Filter>
     </None>
     <None Include="Scene3D\AuroraVeil.vert">

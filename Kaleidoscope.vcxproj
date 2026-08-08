@@ -427,6 +427,7 @@ exit /b 0</Command>
     <None Include="Blend\FluidSim.frag" />
     <None Include="Blend\Present.frag" />
     <None Include="Blend\ReactionDiffusionSim.frag" />
+    <None Include="Blend\Smoke3DSim.frag" />
     <None Include="Scene3D\AsteroidBelt.frag" />
     <None Include="Scene3D\AsteroidBelt.vert" />
     <None Include="Scene3D\AuroraVeil.frag" />
@@ -441,8 +442,12 @@ exit /b 0</Command>
     <None Include="Scene3D\ChromeFlow.vert" />
     <None Include="Scene3D\CometRide.frag" />
     <None Include="Scene3D\CometRide.vert" />
+    <None Include="Scene3D\ConcertCrowd.frag" />
+    <None Include="Scene3D\ConcertCrowd.vert" />
     <None Include="Scene3D\CrystalCave.frag" />
     <None Include="Scene3D\CrystalCave.vert" />
+    <None Include="Scene3D\CrystalGrowth.frag" />
+    <None Include="Scene3D\CrystalGrowth.vert" />
     <None Include="Scene3D\CubeWave.frag" />
     <None Include="Scene3D\CubeWave.vert" />
     <None Include="Scene3D\DragonFlight.frag" />
@@ -523,6 +528,8 @@ exit /b 0</Command>
     <None Include="Scene3D\RollerCoaster.vert" />
     <None Include="Scene3D\RoseOrbit.frag" />
     <None Include="Scene3D\RoseOrbit.vert" />
+    <None Include="Scene3D\SciFiHUD.frag" />
+    <None Include="Scene3D\SciFiHUD.vert" />
     <None Include="Scene3D\SilkPhoto.frag" />
     <None Include="Scene3D\SilkPhoto.vert" />
     <None Include="Scene3D\SineTunnel.frag" />
@@ -531,6 +538,8 @@ exit /b 0</Command>
     <None Include="Scene3D\SnowDrift.vert" />
     <None Include="Scene3D\SpectrumArena.frag" />
     <None Include="Scene3D\SpectrumArena.vert" />
+    <None Include="Scene3D\StainedGlassRosette.frag" />
+    <None Include="Scene3D\StainedGlassRosette.vert" />
     <None Include="Scene3D\Swarm.frag" />
     <None Include="Scene3D\Swarm.vert" />
     <None Include="Scene3D\SynthTerrain.frag" />
@@ -545,10 +554,14 @@ exit /b 0</Command>
     <None Include="Scene3D\TronCycles.vert" />
     <None Include="Scene3D\VolcanoIsland.frag" />
     <None Include="Scene3D\VolcanoIsland.vert" />
+    <None Include="Scene3D\VolumetricFire.frag" />
+    <None Include="Scene3D\VolumetricFire.vert" />
     <None Include="Scene3D\WarpStars.frag" />
     <None Include="Scene3D\WarpStars.vert" />
     <None Include="Scene3D\WaveRibbon.frag" />
     <None Include="Scene3D\WaveRibbon.vert" />
+    <None Include="Scene3D\Wormhole.frag" />
+    <None Include="Scene3D\Wormhole.vert" />
     <None Include="standard.vert" />
     <None Include="Configurations\Allround.xml" />
     <None Include="Configurations\Ambient.xml" />

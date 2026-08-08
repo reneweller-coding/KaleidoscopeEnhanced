@@ -43,7 +43,7 @@ public:
 		if( m_glReady ) return;
 		initUniforms( m_width, m_height );   // virtual: derived locations too
 		m_glReady = true;
-		m_usesSim = m_usesFluid = -1;        // re-query against the new program
+		m_usesSim = m_usesFluid = m_usesSmoke3D = -1;   // re-query against the new program
 	}
 	bool isCompiled() const { return m_glReady; }
 
@@ -114,6 +114,9 @@ public:
 	// Same for the fluid simulation ("texFluid" uniform, unit 8).
 	bool usesFluid();
 
+	// Same for the volumetric smoke/fire simulation ("texSmoke3D" uniform, unit 9).
+	bool usesSmoke3D();
+
 	// The fragment-shader file this effect uses (for the debug overlay).
 	const char* fragmentName() const { return m_fragmentShaderFilename ? m_fragmentShaderFilename : "?"; }
 
@@ -176,15 +179,16 @@ protected:
 
 	float	m_probability;
 
-	int		m_usesSim = -1;   // -1 = not yet queried, 0/1 = cached result
-	int		m_usesFluid = -1; // same caching for the fluid field
+	int		m_usesSim = -1;      // -1 = not yet queried, 0/1 = cached result
+	int		m_usesFluid = -1;    // same caching for the fluid field
+	int		m_usesSmoke3D = -1;  // same caching for the volumetric smoke/fire field
 
 	bool	m_glReady = false;      // lazy compile: program built yet?
 
 	// Cached audio-uniform locations: applyAudioFeatures used to do ~45
 	// glGetUniformLocation string lookups per shader per FRAME.  Cached per
 	// program id (auto-refreshes after recompile / hot reload).
-	struct AudioLocCache { GLuint progId = 0; GLint L[48]; };
+	struct AudioLocCache { GLuint progId = 0; GLint L[64]; };
 	AudioLocCache m_audioLocs;
 
 	// Formula-layer expressions (uniform name -> compiled program).

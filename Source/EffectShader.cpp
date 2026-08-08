@@ -280,7 +280,7 @@ enum AudioLoc {
     AL_STEREO, AL_DPITCH, AL_MUSIC, AL_STBANDL, AL_STBANDR, AL_CHROMA,
     AL_SWELL, AL_BARPH, AL_AMBIENT, AL_KICK, AL_SNARE, AL_HAT, AL_TRANS,
     AL_SPECTRUM, AL_TEXSIM, AL_TEXFLUID, AL_BUILDUP, AL_DROP, AL_WAVE,
-    AL_BASSREL, AL_MIDREL, AL_TREBREL, AL_COUNT
+    AL_BASSREL, AL_MIDREL, AL_TREBREL, AL_DAYPHASE, AL_TEXSMOKE3D, AL_COUNT
 };
 const char *kAudioLocNames[AL_COUNT] = {
     "audioPhase", "audioAdvance", "audioBeat", "audioLevel", "sides",
@@ -293,7 +293,7 @@ const char *kAudioLocNames[AL_COUNT] = {
     "audioSwell", "audioBarPhase", "audioAmbient", "audioKick", "audioSnare",
     "audioHat", "transStyle", "audioSpectrum", "texSim", "texFluid",
     "audioBuildUp", "audioDrop", "audioWave", "audioBassRel", "audioMidRel",
-    "audioTrebRel"
+    "audioTrebRel", "dayPhase", "texSmoke3D"
 };
 }
 
@@ -337,6 +337,7 @@ void EffectShader::applyAudioFeatures(const AudioFeatures &f)
     if (L[AL_BASSREL]  >= 0) glUniform1f(L[AL_BASSREL],  f.bassRel);
     if (L[AL_MIDREL]   >= 0) glUniform1f(L[AL_MIDREL],   f.midRel);
     if (L[AL_TREBREL]  >= 0) glUniform1f(L[AL_TREBREL],  f.trebRel);
+    if (L[AL_DAYPHASE] >= 0) glUniform1f(L[AL_DAYPHASE], f.dayPhase);
 
     // ---- FORMULA LAYER: evaluate the preset's <expr> mappings ----
     // Runs AFTER the random <float> params (setUniforms), so a formula on
@@ -375,6 +376,7 @@ void EffectShader::applyAudioFeatures(const AudioFeatures &f)
         v[ExprVars::V_MUSIC]    = f.musicPresence;
         v[ExprVars::V_ADVANCE]  = f.audioAdvance;
         v[ExprVars::V_PHASE]    = f.audioRotPhase;
+        v[ExprVars::V_DAYPHASE] = f.dayPhase;
         v[ExprVars::V_SEED1]    = m_exprSeeds[0];
         v[ExprVars::V_SEED2]    = m_exprSeeds[1];
         v[ExprVars::V_SEED3]    = m_exprSeeds[2];
@@ -391,8 +393,9 @@ void EffectShader::applyAudioFeatures(const AudioFeatures &f)
                 glUniform1f(e.loc, e.prog.eval(v));
         }
     }
-    if (L[AL_TEXSIM]   >= 0) glUniform1i(L[AL_TEXSIM],   7);   // RD field (unit 7)
-    if (L[AL_TEXFLUID] >= 0) glUniform1i(L[AL_TEXFLUID], 8);   // fluid dye (unit 8)
+    if (L[AL_TEXSIM]      >= 0) glUniform1i(L[AL_TEXSIM],      7);   // RD field (unit 7)
+    if (L[AL_TEXFLUID]    >= 0) glUniform1i(L[AL_TEXFLUID],    8);   // fluid dye (unit 8)
+    if (L[AL_TEXSMOKE3D]  >= 0) glUniform1i(L[AL_TEXSMOKE3D],  9);   // smoke/fire volume (unit 9)
     if (L[AL_BUILDUP]  >= 0) glUniform1f(L[AL_BUILDUP],  f.buildUp);
     if (L[AL_DROP]     >= 0) glUniform1f(L[AL_DROP],     f.dropPulse);
     if (L[AL_PHASE]    >= 0) glUniform1f(L[AL_PHASE],    f.audioRotPhase);
@@ -462,4 +465,14 @@ bool EffectShader::usesFluid()
 		m_usesFluid = ( m_sh_prog_id != 0 &&
 		                glGetUniformLocation( m_sh_prog_id, "texFluid" ) >= 0 ) ? 1 : 0;
 	return m_usesFluid == 1;
+}
+
+bool EffectShader::usesSmoke3D()
+{
+	if( !m_glReady )
+		return false;
+	if( m_usesSmoke3D < 0 )
+		m_usesSmoke3D = ( m_sh_prog_id != 0 &&
+		                  glGetUniformLocation( m_sh_prog_id, "texSmoke3D" ) >= 0 ) ? 1 : 0;
+	return m_usesSmoke3D == 1;
 }

@@ -13,7 +13,8 @@ const char *kVarNames[ExprVars::V_COUNT] = {
     "subBass", "high", "level", "kick", "snare", "hat", "onset", "beat",
     "beatPhase", "barPhase", "downbeat", "swell", "buildUp", "drop",
     "chromaHue", "centroid", "flux", "arousal", "valence", "ambient",
-    "rhythm", "music", "advance", "phase", "seed1", "seed2", "seed3"
+    "rhythm", "music", "advance", "phase", "dayPhase", "seed1", "seed2",
+    "seed3"
 };
 
 // RPN op codes (>= 0).  Negative codes in Op.code mean:

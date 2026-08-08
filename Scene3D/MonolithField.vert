@@ -19,6 +19,7 @@ uniform float audioDownbeat;
 uniform float audioSwell;
 uniform float audioChromaHue;
 uniform float audioDrop;
+uniform float dayPhase;   // slow host day/night cycle, 0..1 -> ambient light angle
 
 varying vec4 vCol;
 varying vec3 vCorner;
@@ -46,6 +47,10 @@ void main()
 
     float camZ = time * 3.2 + audioAdvance * 8.0;
 
+    // Day/night ambient angle: a warm grazing light by day keeps the
+    // glyph edges dimly visible even without band energy; night is starker.
+    float daylight = clamp(sin(dayPhase * 6.2831853), 0.0, 1.0);
+
     vec3  world;
     vec3  col;
     float glowB = 1.0;
@@ -71,8 +76,9 @@ void main()
         // Choir pulse: the downbeat rolls a wave outward through the field.
         float choir = audioDownbeat * exp(-abs(z - 26.0) * 0.05);
         col = hueRot(vec3(0.30, 0.55, 0.85),
-                     audioChromaHue + r4 * 1.3);
-        glowB = 0.30 + 1.7 * hum + 1.2 * choir + 2.2 * audioDrop;
+                     audioChromaHue + r4 * 1.3 + 0.12 * (1.0 - daylight));
+        glowB = 0.30 + 0.20 * daylight + 1.7 * hum + 1.2 * choir
+              + 2.2 * audioDrop;
 
         if (z < 1.5 || z > 150.0)
         {
