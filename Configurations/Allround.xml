@@ -139,6 +139,7 @@
   </TextureShader>
 
   <TextureShader file="..\\Scene\\VoronoiPulse.frag" type="normal" probability="0.4" complexity="1">
+    <expr name="scaleP" formula="clamp(2.3 + 2.0*flatness + 0.5*seed1, 2.2, 4.8)"/>
     <int name="sidesP" minValue="3" maxValue="9"></int>
     <float name="scaleP" minValue="2.2" maxValue="4.5"></float>
     <float name="driftP" minValue="0.6" maxValue="1.5"></float>
@@ -181,7 +182,7 @@
   </TextureShader>
 
   <TextureShader file="..\\Scene\\OilProjector.frag" type="normal" probability="0.35" mood="calm" complexity="2">
-    <expr name="cellP" formula="clamp(1.8 + 0.5*swell + 0.3*sin(0.11*time), 1.4, 3.0)"/>
+    <expr name="cellP" formula="clamp(1.7 + 0.5*swell + 0.8*flatness + 0.3*sin(0.11*time), 1.4, 3.2)"/>
     <int name="sidesP" minValue="2" maxValue="9"></int>
     <float name="cellP" minValue="1.4" maxValue="3.0"></float>
   </TextureShader>
@@ -371,6 +372,18 @@
   </TextureShader>
 
   <TextureShader file="..\\Scene3D\\VolumetricFire.frag" type="scene3d" geom="ribbon" probability="0.35" complexity="1">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\SpectralOrb.frag" type="scene3d" geom="grid" probability="0.35" complexity="2">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\SpectralTorus.frag" type="scene3d" geom="grid" probability="0.35" complexity="2">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\CymaticsPlate.frag" type="scene3d" geom="points" probability="0.3" mood="calm" complexity="2">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\Planet4D.frag" type="scene3d" geom="points" probability="0.3" complexity="2">
   </TextureShader>
 
 </configuration>

@@ -2,6 +2,15 @@
 // Phyllotaxis.vert — the sunflower head: 60k florets placed by the golden
 // angle (137.5 deg), doming gently in 3D; soft rings of light breathe
 // outward with the bar, the whole head turns imperceptibly slowly.
+//
+// DIVERGENCE-ANGLE DRIFT (the Vogel-formula research idea): the divergence
+// angle δ is no longer the frozen golden angle — each activation offsets it
+// slightly (sceneSeed → a different parastichy family every time), and a
+// VERY slow swell-weighted sine drifts it live.  Because floret n sits at
+// angle n·δ, even a ±0.0002 rad change re-winds the outer spiral by many
+// radians — the spiral families visibly morph and unwind.  The drift RATE
+// is the flicker budget (outer sweep ≈ n·dδ/dt): amplitude × frequency is
+// kept ≤ ~5e-6 rad/s so the rim glides instead of spinning.
 
 attribute vec4 attrA;
 attribute vec4 attrB;
@@ -15,6 +24,7 @@ uniform float audioBarPhase;
 uniform float audioSwell;
 uniform float audioBass;
 uniform float audioChromaHue;
+uniform float sceneSeed;
 
 varying vec4 vCol;
 
@@ -31,7 +41,14 @@ void main()
     float r4 = attrB.w;
 
     const float GA = 2.39996323;             // golden angle in radians
-    float th = n * GA + time * 0.02;
+    // Divergence angle: golden + per-activation family offset + slow live
+    // drift.  amp·freq ≈ (1.6e-4 + 1.4e-4·swell)·0.017 ≤ 5.1e-6 rad/s →
+    // outer floret (n=60000) sweeps ≤ 0.31 rad/s.  (swell is a slow
+    // envelope, so its amplitude contribution is drift-rate-safe too.)
+    float div = GA + (sceneSeed - 0.5) * 0.006
+              + (1.6e-4 + 1.4e-4 * audioSwell)
+              * sin(time * 0.017 + sceneSeed * 6.2831853);
+    float th = n * div + time * 0.02;
     float fr = sqrt(n / 60000.0);            // 0 centre .. 1 rim
     float R  = fr * 24.0 * (1.0 + 0.03 * audioBass);
 

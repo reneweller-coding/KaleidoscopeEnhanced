@@ -2061,4 +2061,8 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
     m_features.musicalMode      = m_sMode;
     m_features.dominantPitch    = m_sPitch;
     m_features.chromaHue        = chromaHue;
+    // Full 12-bin chroma vector (smoothed, L1-normalised) — for scenes that
+    // display the harmony structurally (Planet4D pitch-class hypersphere).
+    for (int i = 0; i < 12; ++i)
+        m_features.chroma[i] = m_smoothedChroma[i];
 }
