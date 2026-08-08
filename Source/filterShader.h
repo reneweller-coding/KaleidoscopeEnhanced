@@ -329,6 +329,8 @@ private:
 	GLint			m_presentTitleTexUni    = -1;
 	GLint			m_presentTitlePhaseUni  = -1;
 	GLint			m_presentTitleAspectUni = -1;
+	GLint			m_presentTitleStyleUni  = -1;
+	GLint			m_presentTitleSeedUni   = -1;
 	GLint			m_presentStereoModeUni  = -1;
 	GLint			m_presentStereoDepthUni = -1;
 
@@ -337,6 +339,8 @@ private:
 	GLuint			m_titleTex    = 0;
 	float			m_titleAge    = 999.f;   // seconds since reveal start
 	float			m_titleAspect = 4.f;
+	int				m_titleStyle  = 0;       // reveal style (rolled per reveal, mood-matched)
+	float			m_titleSeed   = 0.f;     // per-reveal random seed for the shader
 
 	// ---- Virtual camera (global "Regie" layer, applied in the present pass) --
 	// A single slow-moving transform over the finished frame: micro drift,

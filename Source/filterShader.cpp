@@ -1085,6 +1085,8 @@ void FilterShader::setupSafety()
 		m_presentTitleTexUni    = glGetUniformLocation( m_presentProgId, "titleTex" );
 		m_presentTitlePhaseUni  = glGetUniformLocation( m_presentProgId, "titlePhase" );
 		m_presentTitleAspectUni = glGetUniformLocation( m_presentProgId, "titleAspect" );
+		m_presentTitleStyleUni  = glGetUniformLocation( m_presentProgId, "titleStyle" );
+		m_presentTitleSeedUni   = glGetUniformLocation( m_presentProgId, "titleSeed" );
 		m_presentStereoModeUni  = glGetUniformLocation( m_presentProgId, "stereoMode" );
 		m_presentStereoDepthUni = glGetUniformLocation( m_presentProgId, "stereoDepth" );
 		m_presentStereoSrcUni   = glGetUniformLocation( m_presentProgId, "stereoSource" );
@@ -1740,6 +1742,34 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 		m_titleAspect  = float(gl.width()) / float(gl.height());
 		m_titlePending = QImage();
 		m_titleAge     = 0.f;
+
+		// Roll a reveal STYLE that fits the music playing right now.  Each
+		// mood category has its own pool of matching styles (calm → soft
+		// dissolves and drifts, aggressive → glitch/slam/stutter, bright →
+		// light sweeps and sparkle, dark → smoke/shadow), and the pick
+		// within the pool is random so repeats stay varied.
+		// KALEIDO_TITLE_STYLE=<n> forces one style (tuning aid).
+		{
+			static const int calmPool[]   = { 0, 1, 2, 4, 5, 9, 17, 20, 23 };
+			static const int aggroPool[]  = { 7, 10, 11, 12, 13, 14, 21, 22 };
+			static const int brightPool[] = { 3, 6, 8, 15, 18, 19 };
+			static const int darkPool[]   = { 0, 2, 5, 16, 17, 20 };
+			const int *pool; int n;
+			if( audio.ambientFactor > 0.55f || audio.arousal < 0.35f )
+				{ pool = calmPool;   n = 9; }
+			else if( audio.arousal > 0.62f && audio.valence < 0.58f )
+				{ pool = aggroPool;  n = 8; }
+			else if( audio.valence > 0.55f )
+				{ pool = brightPool; n = 6; }
+			else
+				{ pool = darkPool;   n = 6; }
+			m_titleStyle = pool[ qrand() % n ];
+			QByteArray forced = qgetenv( "KALEIDO_TITLE_STYLE" );
+			if( !forced.isEmpty() )
+				m_titleStyle = forced.toInt();
+			m_titleSeed = float(qrand()) / float(RAND_MAX);
+			fprintf( stderr, "Title reveal: style %d\n", m_titleStyle );
+		}
 	}
 	else
 		m_titleAge += dtWall;
@@ -2975,6 +3005,10 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 				glActiveTexture( GL_TEXTURE0 );
 				if( m_presentTitleAspectUni >= 0 )
 					glUniform1f( m_presentTitleAspectUni, m_titleAspect );
+				if( m_presentTitleStyleUni >= 0 )
+					glUniform1i( m_presentTitleStyleUni, m_titleStyle );
+				if( m_presentTitleSeedUni >= 0 )
+					glUniform1f( m_presentTitleSeedUni, m_titleSeed );
 			}
 		}
 		if( m_presentResUni   >= 0 ) glUniform2f( m_presentResUni, (float)m_displayW, (float)m_displayH );
