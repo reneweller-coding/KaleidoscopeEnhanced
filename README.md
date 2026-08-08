@@ -616,7 +616,7 @@ Audio is captured via WASAPI loopback (`AudioAnalyzer`) and analysed in real tim
   fixed-function quad).  Procedural geometry lives in one static VBO per
   scene (generic layout: corner + index + four seeds; kinds: `points`,
   `cubes`, `ribbon`, `grid`, `quads`), the vertex shader animates
-  everything from the audio uniforms.  31 scenes ship.
+  everything from the audio uniforms.  51 scenes ship.
 
   *Procedural worlds:*
   **`ParticleGalaxy`** (60k point sprites in a spiral galaxy — the bass
@@ -691,6 +691,52 @@ Audio is captured via WASAPI loopback (`AudioAnalyzer`) and analysed in real tim
   under ceiling lights; the nearest picture pulses with the beat),
   **`BillboardCity`** (a night flight down an avenue of neon-bordered
   photo billboards, each pulsing with its own spectrum band).
+
+  *Harmonic scenes* (projectM/MilkDrop-inspired — smooth, continuous,
+  no strobing; the music leans on amplitudes and hues, never yanks):
+  **`WaveRibbon`** (the classic MilkDrop waveform in 3D: 20 stacked
+  neon wave lines, each an echo of the front line a moment earlier;
+  the partials breathe with the spectrum bands),
+  **`OscilloRings`** (nested oscilloscope rings on a tilted plane, each
+  undulating with its own band and harmonic mode),
+  **`AuroraVeil`** (aurora curtains folding across the night sky —
+  green hems, violet crowns, the swell is the solar wind),
+  **`HarmonicStrings`** (a giant harp: 20 strings ringing as standing
+  waves, each mode fed smoothly by its spectrum band),
+  **`EchoSpiral`** (the infinite MilkDrop zoom done honestly: a
+  logarithmic spiral is self-similar, so the slow continuous zoom loops
+  seamlessly forever),
+  **`TorusKnot`** (a glowing (2,3) torus knot streaming its particles
+  along the closed curve, tumbling slowly on two axes),
+  **`RoseOrbit`** (rose curves r=cos(k·θ) drawn by orbiting particle
+  streams — spirograph serenity with a counter-turning twin behind),
+  **`Phyllotaxis`** (the sunflower head: 60k florets on the golden
+  angle, doming gently; a ring of light rolls outward once per bar),
+  **`NebulaCloud`** (a soft nebula of seeded clumps kneaded by slow
+  sine winds, emission-pink and reflection-blue with embedded stars),
+  **`LissajousOrbits`** (six streams tracing closed 3D Lissajous
+  figures whose phase relation drifts over minutes),
+  **`OrbitalShells`** (a warm nucleus in four precessing electron
+  shells, each shell lit by its register),
+  **`FireflyField`** (a summer meadow of drifting fireflies; a wave of
+  blink synchrony sweeps the field with the beat phase),
+  **`SnowDrift`** (slow snowfall through a blue night, every flake on
+  its own pendulum, a faint glow where they land),
+  **`MandalaGrid`** (a breathing mandala membrane with an 8-fold
+  colour rosette flowing softly inward),
+  **`PlasmaSheet`** (the timeless smooth plasma on a rippling silk
+  sheet — gently desaturated, hue keyed to the music),
+  **`SineTunnel`** (a smooth procedural warp throat: harmonic radius
+  ripples, colour bands and a helix stripe streaming along the walls),
+  **`RainOnWater`** (a still pond at night; raindrops on unhurried
+  clocks send damped rings gliding under a moon lane),
+  **`ChromeFlow`** (a sheet of liquid chrome: broad slow undulations,
+  mirror-sheen bands gliding as the surface rolls),
+  **`PolyDance`** (nested fibonacci-sphere constellations of cubes,
+  counter-rotating at stately rates, each shell breathing with its
+  register),
+  **`GyroRings`** (a great gyroscope: six nested rings of cubes on
+  tilted precessing axes; a soft glint travels each ring once per bar).
 
   They mix into every preset like normal effects (combines fold them,
   trails work).
@@ -834,13 +880,17 @@ Reorganised 2026-07 into folders:
   Configurations).
 - `Scene\*.frag` — the 49 scene (texture) effects
 - `Scene3D\*.vert + *.frag` — the REAL 3D scenes (vertex-shader animated
-  geometry, 31 scenes: procedural worlds like ParticleGalaxy, CubeWave,
+  geometry, 51 scenes: procedural worlds like ParticleGalaxy, CubeWave,
   RibbonTunnel, WarpStars, SynthTerrain, HelixTower, Swarm, PlanetRings,
   CrystalCave, PortalRush, Fireworks, OceanNight, Jellyfish, MeteorStorm,
   BlackHole, LanternRise, Tornado, LaserArena, KelpForest, SpectrumArena,
   AsteroidBelt + image-textured scenes PhotoTunnel, KaleidoDome,
   PhotoSphere, SilkPhoto, PhotoVortex, PhotoCarousel, PhotoShatter,
-  MosaicWave, GalleryHall, BillboardCity)
+  MosaicWave, GalleryHall, BillboardCity + harmonic MilkDrop-inspired
+  scenes WaveRibbon, OscilloRings, AuroraVeil, HarmonicStrings,
+  EchoSpiral, TorusKnot, RoseOrbit, Phyllotaxis, NebulaCloud,
+  LissajousOrbits, OrbitalShells, FireflyField, SnowDrift, MandalaGrid,
+  PlasmaSheet, SineTunnel, RainOnWater, ChromeFlow, PolyDance, GyroRings)
 - `Combine\*.frag` — the 21 combine passes (incl. `CombinePlain.frag`, which
   carries the 25-style transition library)
 - `Blend\*.frag` — internal pipeline passes: `Present.frag` (mood grade +
