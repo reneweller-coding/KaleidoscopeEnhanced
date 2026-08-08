@@ -3,6 +3,7 @@
 // kaleidoscope sectors around the tube and scrolling toward the camera.
 uniform sampler2D tex0;
 uniform float time;
+uniform float sceneSeed;
 uniform float audioAdvance;
 uniform float audioKick;
 uniform float audioDrop;
@@ -23,9 +24,10 @@ vec2 mfold(vec2 uv) { return abs(fract(uv * 0.5) * 2.0 - 1.0); }
 
 void main()
 {
-    // Kaleidoscope fold around the tube: 8 mirrored sectors, slowly turning.
+    // Kaleidoscope fold around the tube: 6/8/10/12 mirrored sectors (rolled
+    // per activation), slowly turning.
     float a = vAng + time * 0.10 + audioAdvance * 0.25;
-    float sector = 6.2831853 / 8.0;
+    float sector = 6.2831853 / (6.0 + 2.0 * floor(sceneSeed * 3.999));
     a = abs(mod(a, sector * 2.0) - sector);
 
     // The music scrolls the image down the tube.

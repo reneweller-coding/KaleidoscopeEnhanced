@@ -28,6 +28,22 @@ static float hash01( unsigned int n )
 	return float(n & 0xffffff) / float(0x1000000);
 }
 
+// FPS-driven cube budget (see FilterShader::paint's hysteresis).
+float Scene3DShader::s_cubeBudget = 1.f;
+
+static float rand01() { return float(qrand()) / float(RAND_MAX); }
+
+// Roll a fresh activation epoch: time offset, gentle speed factor, hue
+// rotation and the generic scene seed.  All CONSTANT within the activation
+// (only derivatives matter for flicker — these have none).
+void Scene3DShader::rollVariation()
+{
+	m_sceneSeed   = rand01();
+	m_timeOffset  = rand01() * 900.f;
+	m_speedFactor = 0.82f + 0.36f * rand01();
+	m_hueOffset   = rand01() * 6.2831853f;
+}
+
 Scene3DShader::Scene3DShader( const QString &filenameFragmentShader, const QString &geom,
                               unsigned int minTimeSolo, unsigned int maxTimeSolo,
                               unsigned int minTimeInterpolation, unsigned int maxTimeInterpolation )
@@ -39,6 +55,8 @@ Scene3DShader::Scene3DShader( const QString &filenameFragmentShader, const QStri
 	else if ( geom == "grid"   ) m_geomKind = GEOM_GRID;
 	else if ( geom == "quads"  ) m_geomKind = GEOM_QUADS;
 	else                         m_geomKind = GEOM_POINTS;
+
+	rollVariation();
 
 	// The matching vertex shader sits next to the fragment shader
 	// ("..\Scene3D\X.frag" -> "..\Scene3D\X.vert").
@@ -54,6 +72,31 @@ Scene3DShader::~Scene3DShader()
 {
 	if( m_vbo )
 		glDeleteBuffers( 1, &m_vbo );
+}
+
+void Scene3DShader::resetParameters()
+{
+	EffectShader::resetParameters();
+	rollVariation();
+}
+
+// The variation is injected HOST-side so every scene benefits without shader
+// edits: the time uniform gets this activation's epoch + speed, the audio
+// phases and the key hue get constant offsets.
+void Scene3DShader::setUniforms( float time, float interpolation,
+                                 GLint texLoc1, GLint texLoc2 )
+{
+	EffectShader::setUniforms( m_timeOffset + time * m_speedFactor,
+	                           interpolation, texLoc1, texLoc2 );
+}
+
+void Scene3DShader::applyAudioFeatures( const AudioFeatures &f )
+{
+	AudioFeatures v = f;
+	v.chromaHue    = f.chromaHue + m_hueOffset;
+	v.audioRotPhase = f.audioRotPhase + m_hueOffset * 3.1f;
+	v.audioAdvance  = f.audioAdvance  + m_hueOffset * 2.3f;
+	EffectShader::applyAudioFeatures( v );
 }
 
 // Interleaved layout: attrA.xyzw, attrB.xyzw = 8 floats per vertex.
@@ -210,8 +253,10 @@ void Scene3DShader::initUniforms( int width, int height )
 	for( unsigned int i = 0; i < m_uniforms.size(); i++ )
 		m_uniforms[i]->initUniform( m_sh_prog_id );
 
-	m_projUni = glGetUniformLocation( m_sh_prog_id, "projM" );
-	m_eyeUni  = glGetUniformLocation( m_sh_prog_id, "eyeOff" );
+	m_projUni   = glGetUniformLocation( m_sh_prog_id, "projM" );
+	m_eyeUni    = glGetUniformLocation( m_sh_prog_id, "eyeOff" );
+	m_seedUni   = glGetUniformLocation( m_sh_prog_id, "sceneSeed" );
+	m_budgetUni = glGetUniformLocation( m_sh_prog_id, "cubeBudget" );
 	m_attrA   = glGetAttribLocation( m_sh_prog_id, "attrA" );
 	m_attrB   = glGetAttribLocation( m_sh_prog_id, "attrB" );
 
@@ -237,8 +282,10 @@ void Scene3DShader::draw()
 		0.f,        0.f, (2.f * zf * zn) / (zn - zf),    0.f
 	};
 
-	if( m_projUni >= 0 ) glUniformMatrix4fv( m_projUni, 1, GL_FALSE, proj );
-	if( m_eyeUni  >= 0 ) glUniform1f( m_eyeUni, m_eyeOffset );
+	if( m_projUni   >= 0 ) glUniformMatrix4fv( m_projUni, 1, GL_FALSE, proj );
+	if( m_eyeUni    >= 0 ) glUniform1f( m_eyeUni,    m_eyeOffset );
+	if( m_seedUni   >= 0 ) glUniform1f( m_seedUni,   m_sceneSeed );
+	if( m_budgetUni >= 0 ) glUniform1f( m_budgetUni, s_cubeBudget );
 
 	// Clear colour AND depth (scissored to the eye viewport in true stereo).
 	glClearColor( 0.f, 0.f, 0.f, 1.f );

@@ -9,6 +9,7 @@ attribute vec4 attrB;
 uniform mat4  projM;
 uniform float eyeOff;
 uniform float time;
+uniform float sceneSeed;
 uniform vec2  resolution;
 
 uniform float audioAdvance;
@@ -32,7 +33,10 @@ void main()
     // Position along the closed curve; particles FLOW along it.
     float s = r1 * 6.2831853 + time * 0.10 + audioAdvance * 0.22;
 
-    const float p = 2.0, q = 3.0;
+    // Knot family rolled per activation: (2,3), (3,4), (2,5) or (3,5).
+    float kv = floor(sceneSeed * 3.999);
+    float p = (kv < 0.5 || kv > 1.5 && kv < 2.5) ? 2.0 : 3.0;
+    float q = (kv < 0.5) ? 3.0 : (kv < 1.5) ? 4.0 : 5.0;
     float R = 11.0, r = 4.2;
     vec3 C = vec3((R + r * cos(q * s)) * cos(p * s),
                   (R + r * cos(q * s)) * sin(p * s),

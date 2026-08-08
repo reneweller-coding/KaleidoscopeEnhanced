@@ -10,6 +10,7 @@ attribute vec4 attrB;
 uniform mat4  projM;
 uniform float eyeOff;
 uniform float time;
+uniform float cubeBudget;    // FPS detail budget: <1 -> drop every 2nd cube
 
 uniform float audioSpectrum[32];
 uniform float audioBass;
@@ -30,6 +31,16 @@ vec3 hueRot(vec3 c, float a)
 void main()
 {
     float idx = attrA.w;
+
+    // FPS budget: below full detail, every 2nd cube collapses (vertical
+    // pairing keeps every meter column alive, just half as dense).
+    if (cubeBudget < 0.75 && mod(floor(idx / 98.0), 2.0) > 0.5)
+    {
+        gl_Position = vec4(0.0, 0.0, -3.0, 1.0);
+        vCol = vec4(0.0); vCorner = attrA.xyz;
+        return;
+    }
+
     float colI = mod(idx, 98.0);             // column around the arena
     float row  = floor(idx / 98.0);          // 0..49 stacked upward
 

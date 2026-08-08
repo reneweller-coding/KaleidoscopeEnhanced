@@ -429,6 +429,9 @@
     <None Include="Blend\Feedback.frag">
       <Filter>Shaders\Blend</Filter>
     </None>
+    <None Include="Blend\StereoMix.frag">
+      <Filter>Shaders\Blend</Filter>
+    </None>
     <None Include="Blend\FluidSim.frag">
       <Filter>Shaders\Blend</Filter>
     </None>

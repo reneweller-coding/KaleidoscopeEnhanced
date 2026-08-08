@@ -421,6 +421,7 @@ exit /b 0</Command>
     <None Include="Blend\CombineShader.frag" />
     <None Include="Blend\default.frag" />
     <None Include="Blend\Feedback.frag" />
+    <None Include="Blend\StereoMix.frag" />
     <None Include="Blend\FluidSim.frag" />
     <None Include="Blend\Present.frag" />
     <None Include="Blend\ReactionDiffusionSim.frag" />

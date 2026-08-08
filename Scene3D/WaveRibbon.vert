@@ -13,6 +13,7 @@ uniform float eyeOff;
 uniform float time;
 
 uniform float audioSpectrum[32];
+uniform float audioWave[64];
 uniform float audioSwell;
 uniform float audioChromaHue;
 uniform float audioAdvance;
@@ -39,13 +40,22 @@ void main()
     float tt = time - li * 0.18;
     float ph = tt * 1.1 + audioAdvance * 0.5;
 
-    // Smooth harmonic sum; partials keyed softly to low/mid/high bands.
+    // THE REAL WAVEFORM (audioWave = the live time-domain signal), blended
+    // with a smooth harmonic ghost: the front lines ARE the oscilloscope,
+    // the deep echoes dissolve into the harmonic memory of it.
+    float fw = clamp(t, 0.0, 1.0) * 62.999;
+    int   wi = int(fw);
+    float wv = mix(audioWave[wi], audioWave[wi + 1], fract(fw));
+
     float b1 = audioSpectrum[2],  b2 = audioSpectrum[7];
     float b3 = audioSpectrum[14], b4 = audioSpectrum[24];
-    float y = sin(t * 6.2831853 * 1.0 + ph)         * (2.2 + 5.0 * b1)
-            + sin(t * 6.2831853 * 2.0 - ph * 0.7)   * (1.2 + 4.0 * b2)
-            + sin(t * 6.2831853 * 3.0 + ph * 0.53)  * (0.7 + 3.0 * b3)
-            + sin(t * 6.2831853 * 5.0 - ph * 0.41)  * (0.35 + 2.2 * b4);
+    float ghost = sin(t * 6.2831853 * 1.0 + ph)        * (2.2 + 5.0 * b1)
+                + sin(t * 6.2831853 * 2.0 - ph * 0.7)  * (1.2 + 4.0 * b2)
+                + sin(t * 6.2831853 * 3.0 + ph * 0.53) * (0.7 + 3.0 * b3)
+                + sin(t * 6.2831853 * 5.0 - ph * 0.41) * (0.35 + 2.2 * b4);
+
+    float front = 1.0 - li / 19.0;                 // 1 front .. 0 deepest
+    float y = mix(ghost, wv * 9.0, 0.25 + 0.60 * front);
     y *= 0.9 + 0.5 * audioSwell;
 
     // Older echoes sit deeper and drift gently upward; sd gives the line
