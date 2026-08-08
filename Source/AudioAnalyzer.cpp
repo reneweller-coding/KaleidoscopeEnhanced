@@ -1927,6 +1927,25 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
         m_breakSlam *= 0.985f;                                 // ~1 s tail
     }
 
+    // ---- MilkDrop-style relative band levels (instant vs "usual") ----
+    // rel ~ 1.0 = as loud as this register usually is; >1 louder, <1 quieter.
+    // The continuous companion to the gated onset detectors — perfect for
+    // breathing motion (the classic bass/bass_att idiom, done volume-safe on
+    // the AGC-normalised levels).
+    {
+        float fast[3];
+        fast[0] = nBass;
+        fast[1] = 0.5f * (nLowMid + nMid);
+        fast[2] = 0.5f * (nUpperMid + nHigh);
+        for (int i = 0; i < 3; ++i)
+        {
+            m_relSlow[i] = 0.998f * m_relSlow[i] + 0.002f * fast[i];
+            float rel = fast[i] / std::max(m_relSlow[i], 0.06f);
+            rel = std::max(0.f, std::min(2.5f, rel));
+            m_sRel[i] = 0.55f * m_sRel[i] + 0.45f * rel;
+        }
+    }
+
     // ---- Waveform downsample for `audioWave[64]` ----
     // Average the rolling mono ring (oldest -> newest = m_waveWritePos onward)
     // into 64 points; normalise with a decaying |peak| so the wave stays
@@ -1968,6 +1987,9 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
         m_features.spectrum[b] = m_sSpectrum[b];
     for (int p = 0; p < AudioFeatures::kWavePoints; ++p)
         m_features.wave[p] = m_sWave[p];
+    m_features.bassRel = m_sRel[0];
+    m_features.midRel  = m_sRel[1];
+    m_features.trebRel = m_sRel[2];
     m_features.isBeat         = isBeat;
     m_features.onsetStrength   = onsetStrength;
     m_features.downbeat        = downbeat;

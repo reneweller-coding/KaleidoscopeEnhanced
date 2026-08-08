@@ -79,6 +79,10 @@ void EffectShader::resetParameters()
 
 	for( unsigned int i = 0; i < m_uniforms.size(); i++ )
 		m_uniforms[i]->resetParameters( (float) ( m_timeSolo + 2 * m_timeInterpolation ) );
+
+	// Fresh per-activation seeds for the formula layer (seed1..seed3).
+	for( int i = 0; i < 3; i++ )
+		m_exprSeeds[i] = (float) qrand() / (float) RAND_MAX;
 }
 
 
@@ -91,6 +95,7 @@ void EffectShader::enableShader( )
 
 void EffectShader::setUniforms( float time, float interpolation, GLint texLoc1, GLint texLoc2  )
 {
+	m_exprTime = time;              // formula layer reads this frame's time
 	glUniform1i( m_texPointUni1, texLoc1 );		// Combine Unit 0, nicht mit texId verwechseln
 	glUniform1i( m_texPointUni2, texLoc2 );		// Combine Unit 0, nicht mit texId verwechseln
 	glUniform2f( m_texSizeRcpUni, (float) m_width, (float) m_height );
@@ -275,7 +280,7 @@ enum AudioLoc {
     AL_STEREO, AL_DPITCH, AL_MUSIC, AL_STBANDL, AL_STBANDR, AL_CHROMA,
     AL_SWELL, AL_BARPH, AL_AMBIENT, AL_KICK, AL_SNARE, AL_HAT, AL_TRANS,
     AL_SPECTRUM, AL_TEXSIM, AL_TEXFLUID, AL_BUILDUP, AL_DROP, AL_WAVE,
-    AL_COUNT
+    AL_BASSREL, AL_MIDREL, AL_TREBREL, AL_COUNT
 };
 const char *kAudioLocNames[AL_COUNT] = {
     "audioPhase", "audioAdvance", "audioBeat", "audioLevel", "sides",
@@ -287,7 +292,8 @@ const char *kAudioLocNames[AL_COUNT] = {
     "audioMusic", "audioStereoL", "audioStereoR", "audioChromaHue",
     "audioSwell", "audioBarPhase", "audioAmbient", "audioKick", "audioSnare",
     "audioHat", "transStyle", "audioSpectrum", "texSim", "texFluid",
-    "audioBuildUp", "audioDrop", "audioWave"
+    "audioBuildUp", "audioDrop", "audioWave", "audioBassRel", "audioMidRel",
+    "audioTrebRel"
 };
 }
 
@@ -328,6 +334,63 @@ void EffectShader::applyAudioFeatures(const AudioFeatures &f)
     if (L[AL_AMBIENT]  >= 0) glUniform1f(L[AL_AMBIENT],  f.ambientFactor);
     if (L[AL_SPECTRUM] >= 0) glUniform1fv(L[AL_SPECTRUM], AudioFeatures::kSpectrumBands, f.spectrum);
     if (L[AL_WAVE]     >= 0) glUniform1fv(L[AL_WAVE],     AudioFeatures::kWavePoints,   f.wave);
+    if (L[AL_BASSREL]  >= 0) glUniform1f(L[AL_BASSREL],  f.bassRel);
+    if (L[AL_MIDREL]   >= 0) glUniform1f(L[AL_MIDREL],   f.midRel);
+    if (L[AL_TREBREL]  >= 0) glUniform1f(L[AL_TREBREL],  f.trebRel);
+
+    // ---- FORMULA LAYER: evaluate the preset's <expr> mappings ----
+    // Runs AFTER the random <float> params (setUniforms), so a formula on
+    // the same uniform name deliberately takes over.
+    if (!m_exprs.empty())
+    {
+        float v[ExprVars::V_COUNT];
+        v[ExprVars::V_TIME]     = m_exprTime;
+        v[ExprVars::V_BASS]     = f.bassLevel;
+        v[ExprVars::V_MID]      = 0.5f * (f.lowMidLevel + f.midLevel);
+        v[ExprVars::V_TREB]     = 0.5f * (f.upperMidLevel + f.highLevel);
+        v[ExprVars::V_BASSREL]  = f.bassRel;
+        v[ExprVars::V_MIDREL]   = f.midRel;
+        v[ExprVars::V_TREBREL]  = f.trebRel;
+        v[ExprVars::V_SUBBASS]  = f.subBassLevel;
+        v[ExprVars::V_HIGH]     = f.highLevel;
+        v[ExprVars::V_LEVEL]    = f.overallLevel;
+        v[ExprVars::V_KICK]     = f.onsetKick;
+        v[ExprVars::V_SNARE]    = f.onsetSnare;
+        v[ExprVars::V_HAT]      = f.onsetHat;
+        v[ExprVars::V_ONSET]    = f.onsetStrength;
+        v[ExprVars::V_BEAT]     = f.beatDecay;
+        v[ExprVars::V_BEATPH]   = f.beatPhase;
+        v[ExprVars::V_BARPH]    = f.barPhase;
+        v[ExprVars::V_DOWNBEAT] = f.downbeat;
+        v[ExprVars::V_SWELL]    = f.swell;
+        v[ExprVars::V_BUILDUP]  = f.buildUp;
+        v[ExprVars::V_DROP]     = f.dropPulse;
+        v[ExprVars::V_CHROMA]   = f.chromaHue;
+        v[ExprVars::V_CENTROID] = f.spectralCentroid;
+        v[ExprVars::V_FLUX]     = f.spectralFlux;
+        v[ExprVars::V_AROUSAL]  = f.arousal;
+        v[ExprVars::V_VALENCE]  = f.valence;
+        v[ExprVars::V_AMBIENT]  = f.ambientFactor;
+        v[ExprVars::V_RHYTHM]   = f.rhythmStrength;
+        v[ExprVars::V_MUSIC]    = f.musicPresence;
+        v[ExprVars::V_ADVANCE]  = f.audioAdvance;
+        v[ExprVars::V_PHASE]    = f.audioRotPhase;
+        v[ExprVars::V_SEED1]    = m_exprSeeds[0];
+        v[ExprVars::V_SEED2]    = m_exprSeeds[1];
+        v[ExprVars::V_SEED3]    = m_exprSeeds[2];
+
+        for (ExprEntry &e : m_exprs)
+        {
+            if (e.progId != m_sh_prog_id)
+            {
+                QByteArray nm = e.name.toLatin1();
+                e.loc    = glGetUniformLocation(m_sh_prog_id, nm.constData());
+                e.progId = m_sh_prog_id;
+            }
+            if (e.loc >= 0 && e.prog.valid())
+                glUniform1f(e.loc, e.prog.eval(v));
+        }
+    }
     if (L[AL_TEXSIM]   >= 0) glUniform1i(L[AL_TEXSIM],   7);   // RD field (unit 7)
     if (L[AL_TEXFLUID] >= 0) glUniform1i(L[AL_TEXFLUID], 8);   // fluid dye (unit 8)
     if (L[AL_BUILDUP]  >= 0) glUniform1f(L[AL_BUILDUP],  f.buildUp);
@@ -352,6 +415,23 @@ void EffectShader::applyAudioFeatures(const AudioFeatures &f)
     if (L[AL_PITCH]    >= 0) glUniform1f(L[AL_PITCH],    f.dominantPitch);
 }
 
+
+void EffectShader::addExpression( const QString &name, const QString &formula )
+{
+	ExprEntry e;
+	e.name = name;
+	QString ctx = QString("%1:%2").arg(m_fragmentShaderFilename ?
+	                                   m_fragmentShaderFilename : "?").arg(name);
+	if (e.prog.compile(formula, ctx))
+	{
+		m_exprs.push_back(e);
+		fprintf(stderr, "Expr OK: %s = %s\n", qPrintable(ctx),
+		        qPrintable(formula));
+	}
+
+	for (int i = 0; i < 3; i++)
+		m_exprSeeds[i] = (float) qrand() / (float) RAND_MAX;
+}
 
 bool EffectShader::useShader()
 {

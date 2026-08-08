@@ -7,6 +7,7 @@
 #include "stdinc.h"
 #include "Uniform.h"
 #include "AudioFeatures.h"
+#include "ExprEval.h"
 
 //Basic Class for effects
 class EffectShader
@@ -69,6 +70,13 @@ public:
 	void addUniform( const QString &name, float minf, float maxf );
 	void addUniform( const QString &name, int minf, int maxf );
 	void addUniform( const QString &name, float pro );
+
+	// FORMULA LAYER (the MilkDrop lesson): attach a per-frame expression that
+	// is evaluated against the live audio features and uploaded as the float
+	// uniform `name` — presets can script mappings without shader edits.
+	// Evaluated in applyAudioFeatures AFTER the random params, so a formula
+	// deliberately overrides a <float> of the same name.
+	void addExpression( const QString &name, const QString &formula );
 
 	/**
 	 * Upload dedicated audio uniforms AFTER setUniforms() has run, while the
@@ -178,6 +186,18 @@ protected:
 	// program id (auto-refreshes after recompile / hot reload).
 	struct AudioLocCache { GLuint progId = 0; GLint L[48]; };
 	AudioLocCache m_audioLocs;
+
+	// Formula-layer expressions (uniform name -> compiled program).
+	struct ExprEntry
+	{
+		QString     name;
+		ExprProgram prog;
+		GLint       loc    = -1;
+		GLuint      progId = 0;
+	};
+	std::vector<ExprEntry> m_exprs;
+	float m_exprTime     = 0.f;      // time as passed to setUniforms
+	float m_exprSeeds[3] = { 0.5f, 0.5f, 0.5f };   // re-rolled per activation
 
 	unsigned int m_moodFlags = 0;   // MoodFlags bitmask (0 = untagged/neutral)
 

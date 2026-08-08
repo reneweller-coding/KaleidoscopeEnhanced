@@ -47,12 +47,14 @@
   </TextureShader>
 
   <TextureShader file="..\\Scene\\ReactionDiffusion.frag" type="normal" probability="0.5" complexity="2">
+    <expr name="dispP" formula="clamp(0.4 + 0.25*swell + 0.15*sin(6.28*barPhase), 0.3, 0.9)"/>
     <int name="sidesP" minValue="0" maxValue="9"></int>
     <float name="dispP" minValue="0.3" maxValue="0.9"></float>
     <float name="zoomP" minValue="0.7" maxValue="1.5"></float>
   </TextureShader>
 
   <TextureShader file="..\\Scene\\MobiusOrbs.frag" type="normal" probability="0.5" complexity="2">
+    <expr name="orbSizeP" formula="clamp(6.5 + 2.5*max(bassRel-0.9,0), 4.5, 10.5)"/>
     <float name="zoomP" minValue="0.04" maxValue="0.28"></float>
     <float name="orbSizeP" minValue="4.0" maxValue="11.0"></float>
     <float name="radiusP" minValue="3.0" maxValue="14.0"></float>
@@ -61,6 +63,7 @@
   </TextureShader>
 
   <TextureShader file="..\\Scene\\OilProjector.frag" type="normal" probability="0.5" mood="calm" complexity="2">
+    <expr name="cellP" formula="clamp(1.8 + 0.5*swell + 0.3*sin(0.11*time), 1.4, 3.0)"/>
     <int name="sidesP" minValue="2" maxValue="9"></int>
     <float name="cellP" minValue="1.4" maxValue="3.0"></float>
   </TextureShader>
@@ -72,6 +75,7 @@
   </TextureShader>
 
   <TextureShader file="..\\Scene\\Metamorph.frag" type="normal" probability="0.5" complexity="1">
+    <expr name="warpAmtP" formula="clamp(0.10 + 0.12*midRel, 0.12, 0.38)"/>
     <int name="sidesP" minValue="4" maxValue="10"></int>
     <float name="latticeP" minValue="2.0" maxValue="4.5"></float>
     <float name="warpAmtP" minValue="0.15" maxValue="0.35"></float>
@@ -82,6 +86,8 @@
   </CombineShader>
 
   <CombineShader file="..\\Combine\\CombinePulse.frag" type="normal" probability="0.35" complexity="1">
+    <expr name="breathAmtP" formula="0.03 + 0.03*swell"/>
+    <expr name="waveAmtP" formula="clamp(0.008 + 0.014*trebRel, 0.008, 0.04)"/>
     <float name="breathAmtP" minValue="0.02" maxValue="0.06"></float>
     <float name="waveAmtP" minValue="0.008" maxValue="0.03"></float>
     <float name="spinP" minValue="0.02" maxValue="0.12"></float>
@@ -89,6 +95,7 @@
   </CombineShader>
 
   <CombineShader file="..\\Combine\\CombineDroneWarp.frag" type="normal" probability="0.3" complexity="1">
+    <expr name="warpAmtP" formula="clamp(0.7 + 0.7*swell + 0.4*ambient, 0.5, 1.8)"/>
     <float name="warpScaleP" minValue="2.0" maxValue="5.0"></float>
     <float name="warpAmtP" minValue="0.5" maxValue="1.8"></float>
     <float name="driftP" minValue="0.5" maxValue="2.0"></float>

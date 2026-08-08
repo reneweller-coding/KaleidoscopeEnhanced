@@ -27,6 +27,7 @@
   </TextureShader>
 
   <TextureShader file="..\\Scene\\TheCore.frag" type="normal" probability="0.6" mood="aggressive" complexity="2">
+    <expr name="coreP" formula="clamp(0.8 + 0.5*max(bassRel-0.85,0) + 0.4*drop, 0.6, 1.7)"/>
     <float name="coreP" minValue="0.6" maxValue="1.6"></float>
     <float name="twistP" minValue="0.15" maxValue="0.5"></float>
     <float name="tubeP" minValue="0.06" maxValue="0.16"></float>
@@ -46,6 +47,7 @@
   </TextureShader>
 
   <TextureShader file="..\\Scene\\Metamorph.frag" type="normal" probability="0.6" complexity="1">
+    <expr name="warpAmtP" formula="clamp(0.10 + 0.12*midRel, 0.12, 0.38)"/>
     <int name="sidesP" minValue="4" maxValue="10"></int>
     <float name="latticeP" minValue="2.0" maxValue="4.5"></float>
     <float name="warpAmtP" minValue="0.15" maxValue="0.35"></float>
@@ -115,6 +117,8 @@
   </CombineShader>
 
   <CombineShader file="..\\Combine\\CombinePulse.frag" type="normal" probability="0.8" complexity="1">
+    <expr name="breathAmtP" formula="0.03 + 0.03*swell"/>
+    <expr name="waveAmtP" formula="clamp(0.008 + 0.014*trebRel, 0.008, 0.04)"/>
     <float name="breathAmtP" minValue="0.02" maxValue="0.06"></float>
     <float name="waveAmtP" minValue="0.008" maxValue="0.03"></float>
     <float name="spinP" minValue="0.02" maxValue="0.12"></float>
@@ -132,6 +136,8 @@
   </CombineShader>
 
   <TextureShader file="..\\Scene\\CityBokeh.frag" type="normal" probability="0.4" mood="dark" complexity="2">
+    <expr name="hueP" formula="chromaHue + seed1*0.8"/>
+    <expr name="sizeP" formula="clamp(0.9 + 0.5*max(bassRel-0.9,0), 0.7, 1.5)"/>
     <float name="densityP" minValue="0.9" maxValue="1.6"></float>
     <float name="sizeP" minValue="0.7" maxValue="1.3"></float>
     <float name="driftP" minValue="0.8" maxValue="1.5"></float>

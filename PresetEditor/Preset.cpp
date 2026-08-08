@@ -21,7 +21,8 @@ static void readParams(const QDomElement &el, PresetEntry &e)
         QDomElement c = n.toElement();
         if (c.isNull()) continue;
         const QString tag = c.tagName();
-        if (tag != "bool" && tag != "int" && tag != "float" && tag != "interpolator")
+        if (tag != "bool" && tag != "int" && tag != "float"
+            && tag != "interpolator" && tag != "expr")
             continue;
         ShaderParam p;
         p.kind = tag;
@@ -33,6 +34,7 @@ static void readParams(const QDomElement &el, PresetEntry &e)
         p.maxMin = c.attribute("maxMin");
         p.minMax = c.attribute("minMax");
         p.maxMax = c.attribute("maxMax");
+        p.formula = c.attribute("formula");
         e.params.push_back(p);
     }
 }
@@ -140,6 +142,8 @@ bool Preset::save(const QString &path, QString *err) const
                 w.writeAttribute("minValue", p.minValue);
                 w.writeAttribute("maxValue", p.maxValue);
             }
+            else if (p.kind == "expr")
+                w.writeAttribute("formula", p.formula);
             else if (p.kind == "interpolator")
             {
                 w.writeAttribute("minMin", p.minMin);

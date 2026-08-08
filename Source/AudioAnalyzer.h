@@ -268,6 +268,12 @@ private:
     float m_sSpectrum[AudioFeatures::kSpectrumBands] = {};
     float m_specRef  = 1e-4f; // decaying-peak reference for spectrum auto-scaling
 
+    // MilkDrop-style relative band levels: instant / slow-average ratio per
+    // register (bass / mid / treble), ~1.0 = as loud as usual.  The slow EMA
+    // (~5 s) is the "usual"; the ratio is lightly smoothed.
+    float m_relSlow[3] = { 0.2f, 0.2f, 0.2f };
+    float m_sRel[3]    = { 1.0f, 1.0f, 1.0f };
+
     // Time-domain waveform for `audioWave[64]`: rolling mono ring (last 2048
     // samples), downsampled to 64 averaged points per block and normalised
     // with a decaying-peak reference (see AudioFeatures::wave).

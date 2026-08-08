@@ -6,6 +6,8 @@
        (solo 20-90 s, fade 15-50 s) only matter without music. -->
 
   <TextureShader file="..\\Scene\\LavaLamp.frag" type="normal" probability="0.7" mood="calm" complexity="1">
+    <expr name="waxHueP" formula="chromaHue + seed1*1.5"/>
+    <expr name="sizeP" formula="clamp(1.0 + 0.35*max(bassRel-0.9,0), 0.8, 1.5)"/>
     <float name="waxHueP" minValue="0.0" maxValue="6.28"></float>
     <float name="speedP" minValue="0.6" maxValue="1.6"></float>
     <float name="sizeP" minValue="0.8" maxValue="1.4"></float>
@@ -27,6 +29,7 @@
   </TextureShader>
 
   <TextureShader file="..\\Scene\\OilProjector.frag" type="normal" probability="0.6" mood="calm" complexity="2">
+    <expr name="cellP" formula="clamp(1.8 + 0.5*swell + 0.3*sin(0.11*time), 1.4, 3.0)"/>
     <int name="sidesP" minValue="2" maxValue="9"></int>
     <float name="cellP" minValue="1.4" maxValue="3.0"></float>
   </TextureShader>
@@ -46,6 +49,7 @@
   </TextureShader>
 
   <TextureShader file="..\\Scene\\BreathingFractalZoom.frag" type="normal" probability="0.5" mood="calm,bright" complexity="1">
+    <expr name="deepP" formula="clamp(3.2 + 1.0*swell, 2.5, 4.5)"/>
     <float name="oscP" minValue="0.03" maxValue="0.09"></float>
     <float name="deepP" minValue="2.5" maxValue="4.5"></float>
     <float name="breathP" minValue="12.0" maxValue="30.0"></float>
@@ -62,6 +66,7 @@
   </TextureShader>
 
   <TextureShader file="..\\Scene\\Metamorph.frag" type="normal" probability="0.6" complexity="1">
+    <expr name="warpAmtP" formula="clamp(0.10 + 0.12*midRel, 0.12, 0.38)"/>
     <int name="sidesP" minValue="4" maxValue="10"></int>
     <float name="latticeP" minValue="2.0" maxValue="4.5"></float>
     <float name="warpAmtP" minValue="0.15" maxValue="0.35"></float>
@@ -69,7 +74,7 @@
   </TextureShader>
 
   <TextureShader file="..\\Scene\\DarkAmbientTunnel.frag" type="KaleidoscopeBase" probability="0.4" complexity="1">
-    <!-- Very slow rotation â€“ audio flux controls actual motion -->
+    <!-- Very slow rotation Ã¢â‚¬â€œ audio flux controls actual motion -->
     <float name="speedTunnel" minValue="0.0002" maxValue="0.0020"></float>
     <float name="speed"       minValue="0.0002" maxValue="0.0015"></float>
     <int   name="sides"       minValue="4"      maxValue="8"></int>
@@ -91,6 +96,7 @@
   </TextureShader>
 
   <TextureShader file="..\\Scene\\ReactionDiffusion.frag" type="normal" probability="0.45" complexity="2">
+    <expr name="dispP" formula="clamp(0.4 + 0.25*swell + 0.15*sin(6.28*barPhase), 0.3, 0.9)"/>
     <int name="sidesP" minValue="0" maxValue="9"></int>
     <float name="dispP" minValue="0.3" maxValue="0.9"></float>
     <float name="zoomP" minValue="0.7" maxValue="1.5"></float>
@@ -100,12 +106,15 @@
   </CombineShader>
 
   <CombineShader file="..\\Combine\\CombineDroneWarp.frag" type="normal" probability="0.8" complexity="1">
+    <expr name="warpAmtP" formula="clamp(0.7 + 0.7*swell + 0.4*ambient, 0.5, 1.8)"/>
     <float name="warpScaleP" minValue="2.0" maxValue="5.0"></float>
     <float name="warpAmtP" minValue="0.5" maxValue="1.8"></float>
     <float name="driftP" minValue="0.5" maxValue="2.0"></float>
   </CombineShader>
 
   <CombineShader file="..\\Combine\\CombinePulse.frag" type="normal" probability="0.2" complexity="1">
+    <expr name="breathAmtP" formula="0.03 + 0.03*swell"/>
+    <expr name="waveAmtP" formula="clamp(0.008 + 0.014*trebRel, 0.008, 0.04)"/>
     <float name="breathAmtP" minValue="0.02" maxValue="0.06"></float>
     <float name="waveAmtP" minValue="0.008" maxValue="0.03"></float>
     <float name="spinP" minValue="0.02" maxValue="0.12"></float>
@@ -113,6 +122,7 @@
   </CombineShader>
 
   <TextureShader file="..\\Scene\\InkWater.frag" type="normal" probability="0.55" mood="calm" complexity="2">
+    <expr name="inkHueP" formula="chromaHue + 0.3*sin(0.07*time)"/>
     <int name="plumesP" minValue="2" maxValue="5"></int>
     <float name="inkHueP" minValue="0.0" maxValue="6.28"></float>
     <float name="swirlP" minValue="0.6" maxValue="1.6"></float>
@@ -120,6 +130,8 @@
   </TextureShader>
 
   <TextureShader file="..\\Scene\\Aurora.frag" type="normal" probability="0.55" mood="calm,dark" complexity="1">
+    <expr name="heightP" formula="0.9 + 0.35*swell"/>
+    <expr name="bandsP" formula="clamp(0.9 + 0.5*centroid, 0.7, 1.7)"/>
     <float name="bandsP" minValue="0.7" maxValue="1.6"></float>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
     <float name="heightP" minValue="0.8" maxValue="1.5"></float>

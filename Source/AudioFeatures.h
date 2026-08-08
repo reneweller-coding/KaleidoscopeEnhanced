@@ -46,6 +46,13 @@ struct AudioFeatures
     static const int kWavePoints = 64;
     float wave[kWavePoints] = {};
 
+    // ---- Relative band levels (MilkDrop bass/bass_att idiom) ----
+    // Instant / slow-average ratio per register, ~1.0 = as loud as usual,
+    // clamped 0..2.5.  Uploaded as audioBassRel / audioMidRel / audioTrebRel.
+    float bassRel = 1.f;
+    float midRel  = 1.f;
+    float trebRel = 1.f;
+
     // ---- Beat / onset detection ----
     bool  isBeat        = false; // true for one update cycle on each kick
     float beatStrength  = 0.f;   // 0..1 onset magnitude vs. background

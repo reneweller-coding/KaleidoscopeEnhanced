@@ -376,6 +376,11 @@ private:
 	GLint			m_trailHueUni   = -1;   //   ... hue drift of the echoes
 	GLint			m_trailDepthUni = -1;   // depth-aware trails (3D scenes)
 	float			m_trailDepth3D  = 0.f;  // slewed 0..1 "a 3D scene is up"
+	// Spatial warp field (MilkDrop-style liquid feedback).
+	GLint			m_trailRipAmpUni  = -1, m_trailRipPhUni  = -1;
+	GLint			m_trailSwirlUni   = -1, m_trailFlowAmpUni = -1;
+	GLint			m_trailFlowPhUni  = -1;
+	float			m_warpRipplePhase = 0.f, m_warpFlowPhase = 0.f;
 	bool			m_feedbackReady = false;
 	bool			m_spoutStarted  = false;
 	GLuint			m_liveTex       = 0;   // Spout-in texture (0 = photos)

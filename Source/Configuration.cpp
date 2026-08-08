@@ -80,11 +80,18 @@ void Configuration::addUniforms( EffectShader *shader, QDomElement &el )
 			float maxValueF = peData.attribute("maxValue").toFloat();
 			shader->addUniform( name, minValueF, maxValueF );
 		}
-		else if(tagNam == "int") 
-		{ 
+		else if(tagNam == "int")
+		{
 			int minValueI = peData.attribute("minValue").toInt();
 			int maxValueI = peData.attribute("maxValue").toInt();
 			shader->addUniform( name, minValueI, maxValueI );
+		}
+		else if(tagNam == "expr")
+		{
+			// FORMULA LAYER: per-frame expression evaluated against the live
+			// audio features, uploaded as the float uniform `name` (overrides
+			// a <float> of the same name — see EffectShader::addExpression).
+			shader->addExpression( name, peData.attribute("formula") );
 		}
 
 		pEntries = pEntries.nextSibling();
