@@ -1185,6 +1185,9 @@ void FilterShader::setupSafety()
 
 	// GPU fluid (curl-noise dye advection) buffers + shader.
 	setupFluid();
+
+	// GPU volumetric fire/smoke (tiled-atlas pseudo-3D) buffers + shader.
+	setupSmoke3D();
 }
 
 // Create the two RGBA16F ping-pong buffers and the Gray-Scott step shader.  The
@@ -1312,6 +1315,98 @@ void FilterShader::stepFluid(const AudioFeatures &audio)
 	glBindTexture( GL_TEXTURE_2D, 0 );
 	m_fluidSeeded = true;
 	m_fluidIdx    = prev;   // newest state is now m_texFluid[1 - m_fluidIdx]
+}
+
+// Create the smoke/fire ping-pong buffers and the sim shader.  Same fail-safe
+// pattern as RD/Fluid: on any failure m_smoke3DReady stays false and
+// VolumetricFire.frag degrades to an empty (black) field.
+void FilterShader::setupSmoke3D()
+{
+	if( m_smoke3DProgId == 0 )
+	{
+		m_smoke3DProgId       = setShaders( "..\\standard.vert", "..\\Blend\\Smoke3DSim.frag" );
+		m_smoke3DPrevUni      = glGetUniformLocation( m_smoke3DProgId, "texPrev" );
+		m_smoke3DResUni       = glGetUniformLocation( m_smoke3DProgId, "resolution" );
+		m_smoke3DSeedUni      = glGetUniformLocation( m_smoke3DProgId, "seedMode" );
+		m_smoke3DSubUni       = glGetUniformLocation( m_smoke3DProgId, "subStep" );
+		m_smoke3DTimeUni      = glGetUniformLocation( m_smoke3DProgId, "time" );
+		m_smoke3DTurbUni      = glGetUniformLocation( m_smoke3DProgId, "turbulence" );
+		m_smoke3DInjectUni    = glGetUniformLocation( m_smoke3DProgId, "injectAmt" );
+		m_smoke3DEmitPhaseUni = glGetUniformLocation( m_smoke3DProgId, "emitterPhase" );
+	}
+
+	bool ok = (m_smoke3DProgId != 0) && (m_smoke3DPrevUni >= 0);
+	for( int i = 0; i < 2 && ok; ++i )
+	{
+		if( m_texSmoke3D[i] == 0 ) glGenTextures( 1, &m_texSmoke3D[i] );
+		glBindTexture( GL_TEXTURE_2D, m_texSmoke3D[i] );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA16F, kSmoke3DW, kSmoke3DH, 0,
+		              GL_RGBA, GL_FLOAT, NULL );
+		if( m_fboSmoke3D[i] == 0 ) glGenFramebuffersEXT( 1, &m_fboSmoke3D[i] );
+		glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_fboSmoke3D[i] );
+		glFramebufferTexture2DEXT( GL_FRAMEBUFFER_EXT, m_attachmentpoint,
+		                           GL_TEXTURE_2D, m_texSmoke3D[i], 0 );
+		if( !checkFramebufferStatus() ) ok = false;
+	}
+	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, 0 );
+	glBindTexture( GL_TEXTURE_2D, 0 );
+
+	m_smoke3DReady  = ok;
+	m_smoke3DSeeded = false;
+	checkGLErrors("setupSmoke3D()");
+}
+
+// One sub-step (horizontal turbulence+injection, or vertical buoyancy) into the
+// next ping-pong buffer.  Calling this twice per frame (see stepSmoke3D) with
+// the two different subStep values advances both halves of the PDE.
+void FilterShader::stepSmoke3DPass(const AudioFeatures &audio, float subStep)
+{
+	const int cur  = m_smoke3DIdx;
+	const int prev = 1 - m_smoke3DIdx;
+
+	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_fboSmoke3D[cur] );
+	glViewport( 0, 0, kSmoke3DW, kSmoke3DH );
+	glUseProgram( m_smoke3DProgId );
+
+	glActiveTexture( GL_TEXTURE0 );
+	glBindTexture( GL_TEXTURE_2D, m_texSmoke3D[prev] );
+	glUniform1i( m_smoke3DPrevUni, 0 );
+	if( m_smoke3DResUni  >= 0 ) glUniform2f( m_smoke3DResUni, (float)kSmoke3DW, (float)kSmoke3DH );
+	if( m_smoke3DSeedUni >= 0 ) glUniform1f( m_smoke3DSeedUni, m_smoke3DSeeded ? 0.f : 1.f );
+	if( m_smoke3DSubUni  >= 0 ) glUniform1f( m_smoke3DSubUni, subStep );
+	if( m_smoke3DTimeUni >= 0 ) glUniform1f( m_smoke3DTimeUni, m_globaltime );
+	// Treble/onset energy drives per-cell turbulence; kick/bass/drop drives how
+	// hard fresh fuel is injected at the base cells.
+	if( m_smoke3DTurbUni >= 0 ) glUniform1f( m_smoke3DTurbUni,
+	                                         0.5f + 1.3f * audio.highLevel + 0.8f * audio.onsetStrength );
+	if( m_smoke3DInjectUni >= 0 ) glUniform1f( m_smoke3DInjectUni,
+	                                           0.15f + 0.35f * audio.bassLevel
+	                                                 + 0.45f * audio.onsetKick
+	                                                 + 0.35f * audio.dropPulse );
+	// Wandering emitter positions ride the integrated advance phase (jump-free).
+	if( m_smoke3DEmitPhaseUni >= 0 ) glUniform1f( m_smoke3DEmitPhaseUni, m_audioAdvance * 0.5f );
+
+	drawWindow();
+
+	glBindTexture( GL_TEXTURE_2D, 0 );
+	m_smoke3DSeeded = true;
+	m_smoke3DIdx    = prev;
+}
+
+// Advance the fire/smoke volume by one full frame: a horizontal pass followed
+// by a vertical pass, each its own ping-pong swap (mirrors the RD sim's
+// multi-substep-per-frame pattern so structure develops quickly).
+void FilterShader::stepSmoke3D(const AudioFeatures &audio)
+{
+	if( !m_smoke3DReady )
+		return;
+
+	stepSmoke3DPass( audio, 0.f );   // horizontal: turbulence + injection + decay
+	stepSmoke3DPass( audio, 1.f );   // vertical: buoyant rise + cross-cell softening
 }
 
 // Advance the Gray-Scott simulation by one step into the next ping-pong buffer.
@@ -1789,6 +1884,9 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
         audioFx.spectralFlux  = m_audioFluxSmooth     * gate;
         audioFx.stereoWidth   = audio.stereoWidth     * gate;
         audioFx.buildUp       = audio.buildUp         * gate;
+        // Day/night cycle: a slow wall-clock sawtooth, independent of the
+        // music gate (the sky keeps turning even through silence/speech).
+        audioFx.dayPhase      = fmodf( m_globaltime / 280.f, 1.f );
         // The DJ-stop slam-back rides the same "hit" channel as a drop
         // (camera punch + shake + the shaders' audioDrop uniform).
         audioFx.dropPulse     = std::max( audio.dropPulse, audio.breakSlam ) * gate;
@@ -2041,10 +2139,10 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 
 				m_stateInterpolationEffectTexture = 1;
 
-				// Roll a transition style: 25 styles (see CombinePlain.frag),
-				// the classic linear mix stays the most common (~20%).
+				// Roll a transition style: 26 styles (see CombinePlain.frag),
+				// the classic linear mix stays the most common (~19%).
 				{
-					int r = qrand() % 30;
+					int r = qrand() % 31;
 					m_transStyleTex = (r <= 5) ? 0 : (r - 5);
 				}
 
@@ -2197,6 +2295,19 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 		glBindTexture( GL_TEXTURE_2D, m_texFluid[1 - m_fluidIdx] );
 	}
 
+	// GPU volumetric fire/smoke, same gating: only step while an effect that
+	// samples "texSmoke3D" is on screen; bound to global unit 9.
+	bool smoke3DNeeded = m_smoke3DReady &&
+	    ( m_effectTextures[m_actEffectTexture]->usesSmoke3D()
+	   || ( m_stateInterpolationEffectTexture != 0
+	        && m_effectTextures[m_nextEffectTexture]->usesSmoke3D() ) );
+	if( smoke3DNeeded )
+	{
+		stepSmoke3D( audio );
+		glActiveTexture( GL_TEXTURE9 );
+		glBindTexture( GL_TEXTURE_2D, m_texSmoke3D[1 - m_smoke3DIdx] );
+	}
+
 
 	// restore render destination to regular frame buffer
 	glViewport( 0, 0, m_width, m_height );
@@ -2347,7 +2458,7 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 
 				// Roll a transition style for the combine blend as well.
 				{
-					int r = qrand() % 30;
+					int r = qrand() % 31;
 					m_transStyleComb = (r <= 5) ? 0 : (r - 5);
 				}
 

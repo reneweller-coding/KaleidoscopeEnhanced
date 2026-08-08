@@ -159,6 +159,9 @@ public:
 	void stepReactionDiffusion(const AudioFeatures &a);  // advance one PDE step per frame
 	void setupFluid();                                   // curl-noise dye-advection sim
 	void stepFluid(const AudioFeatures &a);
+	void setupSmoke3D();                                 // tiled-atlas pseudo-3D fire/smoke sim
+	void stepSmoke3D(const AudioFeatures &a);             // advance both sub-steps for one frame
+	void stepSmoke3DPass(const AudioFeatures &a, float subStep);  // one horizontal or vertical pass
 
 	// Mood-based selection bias: accept a candidate effect with a probability that
 	// depends on how well its complexity matches the current arousal (calm music →
@@ -452,6 +455,37 @@ private:
 	GLint			m_fluidInjectUni  = -1;
 	bool			m_fluidReady      = false;
 	bool			m_fluidSeeded     = false;
+
+	// ---- GPU volumetric fire/smoke simulation (tiled-atlas pseudo-3D field) ----
+	// A 2D texture atlas tiles COLS x ROWS square cells, each cell a Z-depth
+	// cross-section of the volume (front-facing plane); WITHIN a cell, the local
+	// (u,v) axes are (world X, world Y=height/rise).  Two sub-steps run every
+	// frame on the SAME ping-pong pair (mirrors the RD/Fluid pattern, just called
+	// twice): a "horizontal" pass (per-cell curl turbulence, base injection,
+	// decay) and a "vertical" pass (buoyancy: each texel pulls its value from the
+	// texel below it in the SAME cell, so density/heat rises; slight blend with
+	// neighbour Z-cells softens the depth-slice seams).  R=temperature,
+	// G=density.  The living field is bound to a global "texSmoke3D" sampler
+	// (unit 9) for VolumetricFire.frag's stacked-billboard renderer.
+	static const int kSmoke3DTile = 64;     // per-cell sim resolution
+	static const int kSmoke3DCols = 5;
+	static const int kSmoke3DRows = 4;      // COLS*ROWS = 20 depth slices
+	static const int kSmoke3DW = kSmoke3DTile * kSmoke3DCols;   // 320
+	static const int kSmoke3DH = kSmoke3DTile * kSmoke3DRows;   // 256
+	GLuint			m_fboSmoke3D[2]        = { 0, 0 };
+	GLuint			m_texSmoke3D[2]        = { 0, 0 };
+	int				m_smoke3DIdx           = 0;
+	GLuint			m_smoke3DProgId        = 0;
+	GLint			m_smoke3DPrevUni       = -1;
+	GLint			m_smoke3DResUni        = -1;
+	GLint			m_smoke3DSeedUni       = -1;
+	GLint			m_smoke3DSubUni        = -1;
+	GLint			m_smoke3DTimeUni       = -1;
+	GLint			m_smoke3DTurbUni       = -1;
+	GLint			m_smoke3DInjectUni     = -1;
+	GLint			m_smoke3DEmitPhaseUni  = -1;
+	bool			m_smoke3DReady         = false;
+	bool			m_smoke3DSeeded        = false;
 
 	// Live-tunable look parameters (static → one shared setting across all configs).
 	static float	s_reactivity;    // audio-motion master gain (default 1.0)

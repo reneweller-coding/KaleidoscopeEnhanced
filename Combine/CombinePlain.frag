@@ -1,5 +1,5 @@
 // CombinePlain.frag
-// The plain effect blend — with a LIBRARY of 25 per-transition styles.  The
+// The plain effect blend — with a LIBRARY of 26 per-transition styles.  The
 // host rolls a style whenever a cross-fade starts (transStyle; 0/absent =
 // classic linear mix):
 //   Wipes / reveals (soft moving edges):
@@ -19,6 +19,8 @@
 //   22 kaleido-8 spin — an 8-mirror rosette that also rotates
 //   23 drain vortex   — the old magnifies and spirals away like a drain
 //   24 ghost exposure — layered ghost copies drift apart and resolve
+//   25 datamosh      — RGB-split, stuttering block-shifted glitch (the
+//                       "corrupted P-frame" look), most intense mid-fade
 // All edges are soft; nothing flashes brighter than a gentle screen blend
 // over more than a second, so photosensitivity safety is unaffected.
 // interpolation: 1 = old scene (tex0) fully visible .. 0 = new scene (tex1).
@@ -138,6 +140,35 @@ void main()
         vec4 b = ( texture2D(tex1, p) + texture2D(tex1, z1)
                  + texture2D(tex1, z2) ) / 3.0;
         gl_FragColor = blend4(a, b, d);
+        return;
+    }
+    if (transStyle == 25)                     // datamosh glitch
+    {
+        // Stutter clock: block offsets HOLD for a few frames, then jump — a
+        // continuous animation would read as a wave, not a corrupted codec.
+        // Everything is gated by `mid` (0 at both ends) so identity holds
+        // exactly at d=0/d=1 regardless of the (time-based) stutter phase.
+        float glitchT = floor(time * 10.0);
+        float rowH    = 1.0 / (18.0 + 14.0 * hashT(vec2(glitchT, 0.7)));
+        float row     = floor(p.y / rowH);
+        float rn      = hashT(vec2(row, glitchT));
+
+        float active = step(0.55, rn) * mid;
+        float shift  = (hashT(vec2(row, glitchT + 3.1)) - 0.5) * 0.12 * active;
+
+        vec2 pr = clamp(vec2(p.x + shift,        p.y), 0.0, 1.0);
+        vec2 pg = clamp(vec2(p.x + shift * 0.4,  p.y), 0.0, 1.0);
+        vec2 pb = clamp(vec2(p.x - shift * 0.7,  p.y), 0.0, 1.0);
+
+        // A handful of blocks briefly "stick" on the old frame even as the
+        // fade progresses — the classic moshed P-frame smear.
+        float stuck  = step(0.93, hashT(vec2(row, glitchT + 7.0))) * mid;
+        float wLocal = mix(d, d * 0.15, stuck);
+
+        float rC = mix(texture2D(tex0, pr).r, texture2D(tex1, pr).r, wLocal);
+        float gC = mix(texture2D(tex0, pg).g, texture2D(tex1, pg).g, wLocal);
+        float bC = mix(texture2D(tex0, pb).b, texture2D(tex1, pb).b, wLocal);
+        gl_FragColor = vec4(rC, gC, bC, 1.0);
         return;
     }
 

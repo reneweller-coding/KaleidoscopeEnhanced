@@ -255,9 +255,9 @@ of the visualizer) for **building and editing presets** with a **live preview**:
   parameters round-trip losslessly).
 
 - **Transition test bench:** the *Übergangs-Zeitlupe* checkbox plays any of
-  the 25 CombinePlain transition styles in slow motion (the blend sweeps
+  the 26 CombinePlain transition styles in slow motion (the blend sweeps
   back and forth over ~10 s) — for tuning styles visually.  Headless:
-  `PresetEditor.exe --transcheck` sweeps ALL 25 styles with a pinned clock
+  `PresetEditor.exe --transcheck` sweeps ALL 26 styles with a pinned clock
   and verifies both endpoint identity (exactly scene A at the start,
   exactly scene B at the end — no leaks or snaps) and temporal continuity
   (no single step may dwarf the style's typical step); exits non-zero on
@@ -491,14 +491,17 @@ Audio is captured via WASAPI loopback (`AudioAnalyzer`) and analysed in real tim
   analysis + render + scanout lag the heard audio by ~40–80 ms; the display
   phase (tempo pulse, beat/bar phase) is led by an adjustable amount
   (default 50 ms) so pulses land ON the beat you hear.
-- **Transition styles (25):** each cross-fade rolls one of 25 blend styles
+- **Transition styles (26):** each cross-fade rolls one of 26 blend styles
   (linear stays the most common at ~20%).  Wipes/reveals: radial iris,
   diagonal wipe, staggered blinds, mosaic dissolve, push, sliding doors,
   clock sweep, dip-to-dark.  Edge-free full-frame morphs: kaleido folds
   (6- and spinning 8-mirror), zoom-through, swirl, water ripple,
   blur-through, wax melt, heat shimmer, pixelation, spin-zoom, chromatic
   (RGB staggered), luminance-ordered dissolve, double-exposure peak,
-  jelly wobble, drain vortex, ghost multi-exposure.  Applied to both the
+  jelly wobble, drain vortex, ghost multi-exposure, **datamosh** (row-banded
+  glitch stutter with per-row RGB-channel-split shift and "stuck block"
+  P-frame smear — all gated by the same `sin(π·d)` envelope every style
+  uses, so it still lands on an exact endpoint match).  Applied to both the
   effect and the combine blends.
 - **Web remote (`-t <port>`):** a phone-friendly page at
   `http://<pc>:<port>/` with a **live preview image** (~1 Hz JPEG snapshot,
@@ -616,7 +619,7 @@ Audio is captured via WASAPI loopback (`AudioAnalyzer`) and analysed in real tim
   fixed-function quad).  Procedural geometry lives in one static VBO per
   scene (generic layout: corner + index + four seeds; kinds: `points`,
   `cubes`, `ribbon`, `grid`, `quads`), the vertex shader animates
-  everything from the audio uniforms.  61 scenes ship.
+  everything from the audio uniforms.  67 scenes ship.
 
   **Scene variety per activation:** every time a 3D scene comes on it rolls
   a fresh epoch — a large time offset (different camera/burst phases), a
@@ -665,6 +668,12 @@ Audio is captured via WASAPI loopback (`AudioAnalyzer`) and analysed in real tim
   signature MilkDrop fluidity, applied to every effect at once).  All
   phases are integrated (no flicker), everything scales with the trails
   knob and is suppressed for eye-packed true-stereo frames.
+- **Day/night cycle (`dayPhase`):** a slow wall-clock sawtooth (~4.7 min
+  period, continuous through silence/speech — NOT audio-gated) exposed to
+  both shaders and the formula layer.  Consumers derive
+  `daylight = clamp(sin(dayPhase·2π), 0, 1)` so the wrap is never visually
+  discontinuous; `VolcanoIsland` and `MonolithField` use it for a sun
+  elevation / ambient-light drift.
 
   *Procedural worlds:*
   **`ParticleGalaxy`** (60k point sprites in a spiral galaxy — the bass
@@ -818,7 +827,23 @@ Audio is captured via WASAPI loopback (`AudioAnalyzer`) and analysed in real tim
   LEVITATE),
   **`BioCell`** (a journey inside a living cell: breathing membrane,
   heartbeat nucleus, glowing mitochondria, filament transport lines,
-  vesicles sparkling on onsets).
+  vesicles sparkling on onsets),
+  **`Wormhole`** (a chain of sliding, pinching event horizons recedes down
+  a tube; each ring bends light per-channel into a faint chromatic halo,
+  a photon-ring glow tracing its edge),
+  **`CrystalGrowth`** (70 gem branches grow outward from a hub — a resting
+  glow ticks over even in silence, BUILD-UP blooms them toward full length,
+  a DROP flashes the whole cluster ice-white),
+  **`ConcertCrowd`** (you're on stage looking out at a silhouetted crowd
+  under backlight; a wave of raised arms rolls through the rows on the
+  beat, onsets and drops punch the whole crowd into a jump),
+  **`StainedGlassRosette`** (a 12-fold mirrored glass rosette facing the
+  camera, the photo cropped into each leaded cell with boosted saturation,
+  godrays sweeping outward, swell/kick pulsing the backlight),
+  **`SciFiHUD`** (a diegetic cockpit interface: bezel rings, a rotating
+  radar sweep, a REAL oscilloscope trace of the live waveform
+  (`audioWave[64]`), a 32-band spectrum arc, a target reticle with corner
+  brackets, onset-triggered lock-on rings).
 
   They mix into every preset like normal effects (combines fold them,
   trails work).
@@ -913,6 +938,35 @@ skipped and the effect falls back to a dark mood-tinted field (never a crash).
 > loader doesn't expose the compute / SSBO entry points), and a fragment-shader
 > integrator gives the same simulation while staying portable to the weak NUC iGPU.
 
+A sibling sim, `Fluid` (`FluidSim.frag`, `texFluid`, unit 8), advects an RGB dye
+field along the curl of a drifting noise potential — divergence-free by
+construction, so it swirls like ink in water with no pressure solve; the current
+photo is continuously injected as fresh dye.
+
+---
+
+## GPU volumetric fire/smoke simulation
+
+`VolumetricFire` is the third GPU simulation, and the most literal "3D" one: a
+real volumetric field, faked as a 2D **tiled atlas** acting as a virtual 3D
+texture (`Smoke3DSim.frag`, `texSmoke3D`, unit 9) — 20 square cells arranged
+5×4, each cell one Z-depth cross-section of the volume; WITHIN a cell the local
+(u,v) axes are (world X, world Y = height).  Two sub-steps run every frame on
+the same `RGBA16F` ping-pong pair: a **horizontal** pass (per-cell curl
+turbulence, a handful of wandering fuel emitters near the base, decay) and a
+**vertical** pass (buoyancy — each texel pulls its value from the texel below
+it in the same cell, so heat/density genuinely RISE — plus a light blend with
+the neighbouring depth-cells to soften the between-slice seams).  R stores
+temperature, G stores density.  Kicks/bass/drops drive the fuel injection
+strength; treble/onsets drive the turbulence.
+
+`VolumetricFire.vert/.frag` renders the living field as 20 additively-blended,
+front-facing depth-slice billboards (the classic slice-based volume-rendering
+trick — order-independent, so the stacked slices always sum correctly
+regardless of draw order) — each billboard samples its own atlas cell and maps
+temperature/density through a black → red → orange → yellow → white-hot ramp,
+with a grey smoke haze wherever density outlives the heat.
+
 ---
 
 ## Installation & robustness
@@ -965,7 +1019,7 @@ Reorganised 2026-07 into folders:
   Configurations).
 - `Scene\*.frag` — the 49 scene (texture) effects
 - `Scene3D\*.vert + *.frag` — the REAL 3D scenes (vertex-shader animated
-  geometry, 61 scenes: procedural worlds like ParticleGalaxy, CubeWave,
+  geometry, 67 scenes: procedural worlds like ParticleGalaxy, CubeWave,
   RibbonTunnel, WarpStars, SynthTerrain, HelixTower, Swarm, PlanetRings,
   CrystalCave, PortalRush, Fireworks, OceanNight, Jellyfish, MeteorStorm,
   BlackHole, LanternRise, Tornado, LaserArena, KelpForest, SpectrumArena,
@@ -978,13 +1032,14 @@ Reorganised 2026-07 into folders:
   PlasmaSheet, SineTunnel, RainOnWater, ChromeFlow, PolyDance, GyroRings
   + cinematic spectacle scenes RollerCoaster, DragonFlight, OrbitalDrop,
   TronCycles, VolcanoIsland, ThunderCloud, GearWorks, CometRide,
-  MonolithField, BioCell)
+  MonolithField, BioCell, Wormhole, CrystalGrowth, ConcertCrowd,
+  StainedGlassRosette, SciFiHUD, VolumetricFire)
 - `Combine\*.frag` — the 21 combine passes (incl. `CombinePlain.frag`, which
-  carries the 25-style transition library)
+  carries the 26-style transition library)
 - `Blend\*.frag` — internal pipeline passes: `Present.frag` (mood grade +
   safety + dither), `Feedback.frag` (echo-warp trails), `BloomBlur.frag`,
-  `ReactionDiffusionSim.frag` / `FluidSim.frag` (the GPU simulations),
-  `CombineShader.frag`, `default.frag`
+  `ReactionDiffusionSim.frag` / `FluidSim.frag` / `Smoke3DSim.frag` (the GPU
+  simulations), `CombineShader.frag`, `default.frag`
 - `standard.vert` stays in the root (single shared vertex shader; the editor
   also locates the project root by it)
 - `ThirdParty\SpoutGL\` — vendored Spout2 SDK; `PresetEditor\` — the editor;

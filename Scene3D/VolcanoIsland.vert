@@ -18,6 +18,7 @@ uniform float audioKick;
 uniform float audioBass;
 uniform float audioSwell;
 uniform float audioDrop;
+uniform float dayPhase;   // slow host day/night cycle, 0..1
 
 varying vec4 vCol;
 
@@ -26,6 +27,10 @@ float hash11(float n) { return fract(sin(n * 127.1) * 43758.5453); }
 void main()
 {
     float r1 = attrB.x, r2 = attrB.y, r3 = attrB.z, r4 = attrB.w;
+
+    // Day/night: one full cycle per dayPhase period.  Stars fade in the
+    // island's night sky; sunlit haze warms the rock by day.
+    float daylight = clamp(sin(dayPhase * 6.2831853), 0.0, 1.0);
 
     // Cone: apex (crater rim) at y=14, base radius 34 at y=-12.
     vec3  world;
@@ -63,6 +68,7 @@ void main()
         float rim = smoothstep(0.70, 1.0, h);
         col = mix(vec3(0.11, 0.11, 0.16),
                   vec3(0.9, 0.30, 0.05), rim * (0.6 + 0.4 * audioBass));
+        col += vec3(0.16, 0.11, 0.05) * daylight;         // sunlit haze by day
         glow = 0.8 + 0.4 * r4 + rim * (0.9 + 1.2 * audioDrop);
     }
     else if (r1 < 0.75)
@@ -97,7 +103,7 @@ void main()
         world = vec3(sin(ph) * cos(th), abs(cos(ph)) * 0.9 + 0.06,
                      sin(ph) * sin(th)) * 150.0;
         col  = vec3(0.75, 0.8, 0.95);
-        glow = 0.15 + 0.35 * r4;
+        glow = (0.15 + 0.35 * r4) * (1.0 - 0.9 * daylight);   // fade by day
     }
 
     // Camera circles the island at sea level distance.

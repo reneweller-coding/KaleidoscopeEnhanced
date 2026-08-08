@@ -5,7 +5,7 @@
 //   PresetEditor.exe                         launch the editor GUI
 //   PresetEditor.exe --roundtrip in.xml out.xml   headless load+save (self-test)
 //   PresetEditor.exe --render tex.frag comb.frag out.png [W H]   grab one preview
-//   PresetEditor.exe --transcheck            verify all 25 transition styles:
+//   PresetEditor.exe --transcheck            verify all 26 transition styles:
 //                                            exact A at d=0 / exact B at d=1 and
 //                                            no temporal jumps across the sweep
 #include <QtWidgets/QApplication>
@@ -122,7 +122,7 @@ int main(int argc, char *argv[])
             w->setTransTest(0, 1.f);  QImage refB = w->grabFramebuffer();
             int fails = 0;
             fprintf(stderr, "TRANSCHECK  (endpoints <= 1.5/255; jump = maxStep/medianStep <= 6)\n");
-            for (int s = 0; s <= 24; ++s) {
+            for (int s = 0; s <= 25; ++s) {
                 QImage prev;
                 std::vector<double> stepDiffs;
                 double endA = 0.0, endB = 0.0, maxStep = 0.0;
@@ -147,7 +147,7 @@ int main(int argc, char *argv[])
                         s, endA, endB, maxStep, jump, ok ? "OK" : "FAIL");
             }
             if (fails) fprintf(stderr, "TRANSCHECK: %d style(s) FAILED\n", fails);
-            else       fprintf(stderr, "TRANSCHECK: all 25 styles OK\n");
+            else       fprintf(stderr, "TRANSCHECK: all 26 styles OK\n");
             qApp->exit(fails ? 1 : 0);
         });
         return app.exec();

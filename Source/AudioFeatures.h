@@ -53,6 +53,12 @@ struct AudioFeatures
     float midRel  = 1.f;
     float trebRel = 1.f;
 
+    // ---- Day/night cycle (host wall-clock, NOT audio-derived) ----
+    // A slow 0..1 sawtooth (~4.7 min period) a handful of outdoor 3D scenes
+    // use for sun elevation / sky colour; also exposed to the formula layer.
+    // Always continuous through the wrap (consumers derive sin/cos of it).
+    float dayPhase = 0.f;
+
     // ---- Beat / onset detection ----
     bool  isBeat        = false; // true for one update cycle on each kick
     float beatStrength  = 0.f;   // 0..1 onset magnitude vs. background
