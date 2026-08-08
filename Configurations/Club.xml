@@ -102,6 +102,7 @@
   </TextureShader>
 
   <TextureShader file="..\\Scene\\VoronoiPulse.frag" type="normal" probability="0.5" complexity="1">
+    <expr name="scaleP" formula="clamp(2.3 + 2.0*flatness + 0.5*seed1, 2.2, 4.8)"/>
     <int name="sidesP" minValue="3" maxValue="9"></int>
     <float name="scaleP" minValue="2.2" maxValue="4.5"></float>
     <float name="driftP" minValue="0.6" maxValue="1.5"></float>
@@ -218,6 +219,9 @@
   </TextureShader>
 
   <TextureShader file="..\\Scene3D\\VolumetricFire.frag" type="scene3d" geom="ribbon" probability="0.35" complexity="1">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\SpectralTorus.frag" type="scene3d" geom="grid" probability="0.35" complexity="2">
   </TextureShader>
 
 </configuration>

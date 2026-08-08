@@ -227,6 +227,11 @@ struct AudioFeatures
     //   therefore drives a consistent global hue shift → "see the harmony as colour".
     float chromaHue = 0.f;
 
+    // Full 12-bin chroma vector (pitch-class energies C..B, smoothed and
+    // L1-normalised).  Uploaded as `audioChroma[12]` so a scene can show the
+    // harmony STRUCTURALLY (which notes sound), not only as one mean hue.
+    float chroma[12] = {};
+
     // dominantPitch: fundamental frequency estimated via Harmonic Product Spectrum,
     // log-normalised over 60..1200 Hz → 0..1.
     //   0 = low bass drone (~60 Hz)  1 = high treble tone (~1200 Hz)

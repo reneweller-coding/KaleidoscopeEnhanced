@@ -1428,10 +1428,21 @@ void FilterShader::stepReactionDiffusion(const AudioFeatures &audio)
 	if( m_rdResUni  >= 0 ) glUniform2f( m_rdResUni, (float)kRDSize, (float)kRDSize );
 	if( m_rdSeedUni >= 0 ) glUniform1f( m_rdSeedUni, m_rdSeeded ? 0.f : 1.f );
 
-	// Subtle audio modulation of the feed rate keeps the pattern evolving; the
-	// kill rate is held steady so the simulation stays in its interesting regime.
-	if( m_rdFeedUni >= 0 ) glUniform1f( m_rdFeedUni, 0.0545f + 0.004f * audio.spectralCentroid );
-	if( m_rdKillUni >= 0 ) glUniform1f( m_rdKillUni, 0.062f );
+	// Wander Pearson's Gray-Scott parameter space with the music (the
+	// research-paper mapping): the spectral centroid slides the KILL rate so
+	// bright material morphs the tissue toward worm-like meanders and dark
+	// material toward coral/spot patterns, while bass transients pulse the
+	// FEED rate — sudden extra feed reads as cell division (mitosis bursts).
+	// Both inputs are already smoothed/decaying envelopes; the ranges stay
+	// clamped inside the stable valley around the old fixed point
+	// (F=0.0545, k=0.062) so the simulation can neither die out nor explode.
+	float rdKill = 0.0660f - 0.0070f * audio.spectralCentroid;
+	float rdFeed = 0.0500f + 0.0120f * audio.swell
+	             + 0.0160f * audio.beatDecay;
+	rdKill = std::min( std::max( rdKill, 0.058f ), 0.066f );
+	rdFeed = std::min( std::max( rdFeed, 0.035f ), 0.070f );
+	if( m_rdFeedUni >= 0 ) glUniform1f( m_rdFeedUni, rdFeed );
+	if( m_rdKillUni >= 0 ) glUniform1f( m_rdKillUni, rdKill );
 	// Onsets / beats inject fresh reagent so the field blossoms with the music.
 	float inject = (audio.onsetStrength > 0.2f || audio.beatDecay > 0.3f) ? 1.f : 0.f;
 	if( m_rdInjectUni >= 0 ) glUniform1f( m_rdInjectUni, inject );

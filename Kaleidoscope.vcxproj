@@ -450,6 +450,8 @@ exit /b 0</Command>
     <None Include="Scene3D\CrystalGrowth.vert" />
     <None Include="Scene3D\CubeWave.frag" />
     <None Include="Scene3D\CubeWave.vert" />
+    <None Include="Scene3D\CymaticsPlate.frag" />
+    <None Include="Scene3D\CymaticsPlate.vert" />
     <None Include="Scene3D\DragonFlight.frag" />
     <None Include="Scene3D\DragonFlight.vert" />
     <None Include="Scene3D\EchoSpiral.frag" />
@@ -512,6 +514,8 @@ exit /b 0</Command>
     <None Include="Scene3D\PhotoVortex.vert" />
     <None Include="Scene3D\Phyllotaxis.frag" />
     <None Include="Scene3D\Phyllotaxis.vert" />
+    <None Include="Scene3D\Planet4D.frag" />
+    <None Include="Scene3D\Planet4D.vert" />
     <None Include="Scene3D\PlanetRings.frag" />
     <None Include="Scene3D\PlanetRings.vert" />
     <None Include="Scene3D\PlasmaSheet.frag" />
@@ -536,6 +540,10 @@ exit /b 0</Command>
     <None Include="Scene3D\SineTunnel.vert" />
     <None Include="Scene3D\SnowDrift.frag" />
     <None Include="Scene3D\SnowDrift.vert" />
+    <None Include="Scene3D\SpectralOrb.frag" />
+    <None Include="Scene3D\SpectralOrb.vert" />
+    <None Include="Scene3D\SpectralTorus.frag" />
+    <None Include="Scene3D\SpectralTorus.vert" />
     <None Include="Scene3D\SpectrumArena.frag" />
     <None Include="Scene3D\SpectrumArena.vert" />
     <None Include="Scene3D\StainedGlassRosette.frag" />

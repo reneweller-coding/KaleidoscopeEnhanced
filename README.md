@@ -619,7 +619,7 @@ Audio is captured via WASAPI loopback (`AudioAnalyzer`) and analysed in real tim
   fixed-function quad).  Procedural geometry lives in one static VBO per
   scene (generic layout: corner + index + four seeds; kinds: `points`,
   `cubes`, `ribbon`, `grid`, `quads`), the vertex shader animates
-  everything from the audio uniforms.  67 scenes ship.
+  everything from the audio uniforms.  71 scenes ship.
 
   **Scene variety per activation:** every time a 3D scene comes on it rolls
   a fresh epoch — a large time offset (different camera/burst phases), a
@@ -645,8 +645,9 @@ Audio is captured via WASAPI loopback (`AudioAnalyzer`) and analysed in real tim
   mappings need NO shader edits and NO rebuild.  Variables: `time bass mid
   treb bassRel midRel trebRel subBass high level kick snare hat onset beat
   beatPhase barPhase downbeat swell buildUp drop chromaHue centroid flux
-  arousal valence ambient rhythm music advance phase seed1 seed2 seed3`
-  (the seeds re-roll per activation — formulas become families).
+  arousal valence ambient rhythm music advance phase dayPhase flatness zcr
+  seed1 seed2 seed3` (the seeds re-roll per activation — formulas become
+  families).
   Functions: `sin cos tan abs sqrt exp log floor fract tanh sign min max
   pow atan2 clamp mix`; operators `+ - * / ^`, parentheses.  Parse errors
   are logged (`Expr [...]`) and evaluate to 0; successful compiles log
@@ -661,6 +662,15 @@ Audio is captured via WASAPI loopback (`AudioAnalyzer`) and analysed in real tim
   levels — instant ÷ slow-average (~5 s) per register, ~1.0 = "as loud as
   usual", clamped 0..2.5.  The continuous companion to the gated onsets;
   ideal for breathing motion.
+- **Synesthetic roughness mapping (`audioFlatness`/`audioZCR`):** spectral
+  flatness (how noise-like vs. tonal the sound is) and zero-crossing rate
+  are exposed as uniforms and formula variables; presets map them onto
+  visual TEXTURE DENSITY — noisy, unharmonic material makes Voronoi cells
+  smaller, oil-projector cells busier, reaction-diffusion displacement
+  rougher (the cross-modal-correspondence rule: rough sound → rough image).
+- **Full chroma vector (`audioChroma[12]`):** the smoothed 12-bin
+  pitch-class energies, so scenes can show WHICH notes sound (Planet4D)
+  instead of only the mean key hue.
 - **Liquid feedback (spatial warp field):** the trails pass now warps the
   previous frame with SPATIALLY VARYING displacement — a radial ripple
   that rides the beat, extra swirl toward the rim that swings direction
@@ -845,6 +855,28 @@ Audio is captured via WASAPI loopback (`AudioAnalyzer`) and analysed in real tim
   (`audioWave[64]`), a 32-band spectrum arc, a target reticle with corner
   brackets, onset-triggered lock-on rings).
 
+  *Research scenes* (mathematically grounded, after the music-visualization
+  literature — manifold harmonics, cymatics, hypersymmetric music spaces):
+  **`SpectralOrb`** (MANIFOLD HARMONICS made real: the sphere's
+  Laplace-Beltrami eigenfunctions ARE the spherical harmonics, evaluated in
+  closed form in the vertex shader — the 32-band spectrum excites the orb's
+  natural vibration modes, bass buckling it globally, treble rippling the
+  surface; antinodes glow, nodal lines stay dark metal; the L−R stereo
+  side-signal drives the sin-phase mode partners, so stereo width literally
+  deforms the body asymmetrically),
+  **`SpectralTorus`** (the sibling body: on the torus the eigenfunctions
+  are exactly the 2D Fourier modes cos(2π(nu+mv)) — each band bends the
+  ring or ripples the tube at its own wavenumber pair),
+  **`CymaticsPlate`** (Chladni figures the physical way: 60k sand grains
+  gradient-descend onto the nodal lines of a square-plate standing wave;
+  the mode pair advances on a music clock with cross-faded migration
+  between figures, kicks scatter the sand and it re-converges),
+  **`Planet4D`** (the harmony as a 4D object: the 12 pitch classes on the
+  Clifford torus in S³ — circle of fifths × chromatic circle — under a 4D
+  double rotation, stereographically projected; node glow follows
+  `audioChroma[12]`, fifth/third edges light up when both endpoints sound,
+  so chords light up their shape).
+
   They mix into every preset like normal effects (combines fold them,
   trails work).
   **TRUE VR STEREO:** while a 3D scene plays solo in `-3 sbs`/`tb` mode it
@@ -928,6 +960,12 @@ each frame a fragment shader (`ReactionDiffusionSim.frag`) advances a **Gray-Sco
 reaction-diffusion PDE** in a ping-pong pair of `RGBA16F` float buffers (a fixed
 320×320 grid, so it stays cheap even on an iGPU), reading its own previous state.
 Onsets / beats inject fresh reagent, so the pattern **blossoms with the music**.
+The simulation also **wanders Pearson's parameter space with the music**: the
+spectral centroid slides the kill rate (bright material → worm-like meanders,
+dark material → coral/spot patterns) while bass transients pulse the feed rate
+— sudden extra feed reads as cell division (mitosis bursts).  Both parameters
+stay clamped inside the stable valley, so the tissue can neither die nor
+explode.
 The living field is exposed on a global `texSim` sampler, colourised by the mood
 (`ReactionDiffusion.frag`) and then folded by the kaleidoscope into radiating
 organic structures. If `RGBA16F` render targets are unavailable the simulation is
@@ -1033,7 +1071,8 @@ Reorganised 2026-07 into folders:
   + cinematic spectacle scenes RollerCoaster, DragonFlight, OrbitalDrop,
   TronCycles, VolcanoIsland, ThunderCloud, GearWorks, CometRide,
   MonolithField, BioCell, Wormhole, CrystalGrowth, ConcertCrowd,
-  StainedGlassRosette, SciFiHUD, VolumetricFire)
+  StainedGlassRosette, SciFiHUD, VolumetricFire + research scenes
+  SpectralOrb, SpectralTorus, CymaticsPlate, Planet4D)
 - `Combine\*.frag` — the 21 combine passes (incl. `CombinePlain.frag`, which
   carries the 26-style transition library)
 - `Blend\*.frag` — internal pipeline passes: `Present.frag` (mood grade +

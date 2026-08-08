@@ -24,6 +24,7 @@
   </TextureShader>
 
   <TextureShader file="..\\Scene\\VoronoiPulse.frag" type="normal" probability="0.6" complexity="1">
+    <expr name="scaleP" formula="clamp(2.3 + 2.0*flatness + 0.5*seed1, 2.2, 4.8)"/>
     <int name="sidesP" minValue="3" maxValue="9"></int>
     <float name="scaleP" minValue="2.2" maxValue="4.5"></float>
     <float name="driftP" minValue="0.6" maxValue="1.5"></float>
@@ -47,7 +48,7 @@
   </TextureShader>
 
   <TextureShader file="..\\Scene\\ReactionDiffusion.frag" type="normal" probability="0.5" complexity="2">
-    <expr name="dispP" formula="clamp(0.4 + 0.25*swell + 0.15*sin(6.28*barPhase), 0.3, 0.9)"/>
+    <expr name="dispP" formula="clamp(0.35 + 0.25*swell + 0.25*flatness + 0.15*sin(6.28*barPhase), 0.3, 0.9)"/>
     <int name="sidesP" minValue="0" maxValue="9"></int>
     <float name="dispP" minValue="0.3" maxValue="0.9"></float>
     <float name="zoomP" minValue="0.7" maxValue="1.5"></float>
@@ -63,7 +64,7 @@
   </TextureShader>
 
   <TextureShader file="..\\Scene\\OilProjector.frag" type="normal" probability="0.5" mood="calm" complexity="2">
-    <expr name="cellP" formula="clamp(1.8 + 0.5*swell + 0.3*sin(0.11*time), 1.4, 3.0)"/>
+    <expr name="cellP" formula="clamp(1.7 + 0.5*swell + 0.8*flatness + 0.3*sin(0.11*time), 1.4, 3.2)"/>
     <int name="sidesP" minValue="2" maxValue="9"></int>
     <float name="cellP" minValue="1.4" maxValue="3.0"></float>
   </TextureShader>

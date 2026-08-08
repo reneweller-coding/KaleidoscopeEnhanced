@@ -280,7 +280,8 @@ enum AudioLoc {
     AL_STEREO, AL_DPITCH, AL_MUSIC, AL_STBANDL, AL_STBANDR, AL_CHROMA,
     AL_SWELL, AL_BARPH, AL_AMBIENT, AL_KICK, AL_SNARE, AL_HAT, AL_TRANS,
     AL_SPECTRUM, AL_TEXSIM, AL_TEXFLUID, AL_BUILDUP, AL_DROP, AL_WAVE,
-    AL_BASSREL, AL_MIDREL, AL_TREBREL, AL_DAYPHASE, AL_TEXSMOKE3D, AL_COUNT
+    AL_BASSREL, AL_MIDREL, AL_TREBREL, AL_DAYPHASE, AL_TEXSMOKE3D,
+    AL_CHROMA12, AL_FLATNESS, AL_ZCR, AL_COUNT
 };
 const char *kAudioLocNames[AL_COUNT] = {
     "audioPhase", "audioAdvance", "audioBeat", "audioLevel", "sides",
@@ -293,7 +294,8 @@ const char *kAudioLocNames[AL_COUNT] = {
     "audioSwell", "audioBarPhase", "audioAmbient", "audioKick", "audioSnare",
     "audioHat", "transStyle", "audioSpectrum", "texSim", "texFluid",
     "audioBuildUp", "audioDrop", "audioWave", "audioBassRel", "audioMidRel",
-    "audioTrebRel", "dayPhase", "texSmoke3D"
+    "audioTrebRel", "dayPhase", "texSmoke3D", "audioChroma", "audioFlatness",
+    "audioZCR"
 };
 }
 
@@ -338,6 +340,9 @@ void EffectShader::applyAudioFeatures(const AudioFeatures &f)
     if (L[AL_MIDREL]   >= 0) glUniform1f(L[AL_MIDREL],   f.midRel);
     if (L[AL_TREBREL]  >= 0) glUniform1f(L[AL_TREBREL],  f.trebRel);
     if (L[AL_DAYPHASE] >= 0) glUniform1f(L[AL_DAYPHASE], f.dayPhase);
+    if (L[AL_CHROMA12] >= 0) glUniform1fv(L[AL_CHROMA12], 12, f.chroma);
+    if (L[AL_FLATNESS] >= 0) glUniform1f(L[AL_FLATNESS], f.spectralFlatness);
+    if (L[AL_ZCR]      >= 0) glUniform1f(L[AL_ZCR],      f.zeroCrossingRate);
 
     // ---- FORMULA LAYER: evaluate the preset's <expr> mappings ----
     // Runs AFTER the random <float> params (setUniforms), so a formula on
@@ -377,6 +382,8 @@ void EffectShader::applyAudioFeatures(const AudioFeatures &f)
         v[ExprVars::V_ADVANCE]  = f.audioAdvance;
         v[ExprVars::V_PHASE]    = f.audioRotPhase;
         v[ExprVars::V_DAYPHASE] = f.dayPhase;
+        v[ExprVars::V_FLATNESS] = f.spectralFlatness;
+        v[ExprVars::V_ZCR]      = f.zeroCrossingRate;
         v[ExprVars::V_SEED1]    = m_exprSeeds[0];
         v[ExprVars::V_SEED2]    = m_exprSeeds[1];
         v[ExprVars::V_SEED3]    = m_exprSeeds[2];

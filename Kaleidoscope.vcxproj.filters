@@ -624,6 +624,12 @@
     <None Include="Scene3D\Phyllotaxis.vert">
       <Filter>Shaders\Scene3D</Filter>
     </None>
+    <None Include="Scene3D\Planet4D.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\Planet4D.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
     <None Include="Scene3D\PlasmaSheet.frag">
       <Filter>Shaders\Scene3D</Filter>
     </None>
@@ -658,6 +664,18 @@
       <Filter>Shaders\Scene3D</Filter>
     </None>
     <None Include="Scene3D\SnowDrift.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\SpectralOrb.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\SpectralOrb.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\SpectralTorus.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\SpectralTorus.vert">
       <Filter>Shaders\Scene3D</Filter>
     </None>
     <None Include="Scene3D\TorusKnot.frag">
