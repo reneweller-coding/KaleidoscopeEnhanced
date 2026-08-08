@@ -171,4 +171,10 @@
   <TextureShader file="..\\Scene3D\\HarmonicStrings.frag" type="scene3d" geom="ribbon" probability="0.3" mood="calm" complexity="1">
   </TextureShader>
 
+  <TextureShader file="..\\Scene3D\\CometRide.frag" type="scene3d" geom="points" probability="0.4" mood="calm,dark" complexity="2">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\BioCell.frag" type="scene3d" geom="points" probability="0.4" mood="calm" complexity="2">
+  </TextureShader>
+
 </configuration>

@@ -568,4 +568,34 @@
   <TextureShader file="..\\Scene3D\\GyroRings.frag" type="scene3d" geom="cubes" probability="0.3" complexity="3">
   </TextureShader>
 
+  <TextureShader file="..\\Scene3D\\RollerCoaster.frag" type="scene3d" geom="ribbon" probability="0.45" mood="aggressive,bright" complexity="1">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\DragonFlight.frag" type="scene3d" geom="points" probability="0.45" complexity="2">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\OrbitalDrop.frag" type="scene3d" geom="points" probability="0.4" complexity="2">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\TronCycles.frag" type="scene3d" geom="ribbon" probability="0.4" mood="aggressive" complexity="1">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\VolcanoIsland.frag" type="scene3d" geom="points" probability="0.4" mood="aggressive,dark" complexity="2">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\ThunderCloud.frag" type="scene3d" geom="points" probability="0.4" mood="dark" complexity="2">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\GearWorks.frag" type="scene3d" geom="cubes" probability="0.35" complexity="3">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\CometRide.frag" type="scene3d" geom="points" probability="0.4" mood="calm,dark" complexity="2">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\MonolithField.frag" type="scene3d" geom="cubes" probability="0.35" mood="dark" complexity="3">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\BioCell.frag" type="scene3d" geom="points" probability="0.4" mood="calm" complexity="2">
+  </TextureShader>
+
 </configuration>
