@@ -616,7 +616,7 @@ Audio is captured via WASAPI loopback (`AudioAnalyzer`) and analysed in real tim
   fixed-function quad).  Procedural geometry lives in one static VBO per
   scene (generic layout: corner + index + four seeds; kinds: `points`,
   `cubes`, `ribbon`, `grid`, `quads`), the vertex shader animates
-  everything from the audio uniforms.  51 scenes ship.
+  everything from the audio uniforms.  61 scenes ship.
 
   **Scene variety per activation:** every time a 3D scene comes on it rolls
   a fresh epoch — a large time offset (different camera/burst phases), a
@@ -753,6 +753,40 @@ Audio is captured via WASAPI loopback (`AudioAnalyzer`) and analysed in real tim
   register),
   **`GyroRings`** (a great gyroscope: six nested rings of cubes on
   tilted precessing axes; a soft glint travels each ring once per bar).
+
+  *Spectacle scenes* (cinematic set pieces with camera drama):
+  **`RollerCoaster`** (the camera RIDES a glowing coaster track through
+  neon arch gates and past light pylons — the music's energy is the
+  throttle, kicks flash the gate you pass, a drop sets everything
+  blazing),
+  **`DragonFlight`** (a serpentine particle dragon flies at the chasing
+  camera, wings beating in time with the beat; a DROP makes it breathe
+  fire),
+  **`OrbitalDrop`** (atmospheric re-entry on loop: stars, then plasma
+  fire streaking past, then a cloud deck bursts open and a city of
+  lights rushes up; a music drop fires the sonic-boom ring),
+  **`TronCycles`** (light-cycles race seeded closed circuits across a
+  dark arena, leaving solid glowing walls that turn in sharp 90-degree
+  corners; kicks flash the racing heads),
+  **`VolcanoIsland`** (ballistic lava bombs arc from the crater — every
+  kick feeds the fountain, a DROP is the big eruption; lava rivers
+  crawl the slopes, embers spiral into the night),
+  **`ThunderCloud`** (standing in the rain under a brooding storm
+  cloud; snares and kicks trigger jagged lightning strikes that light
+  the cloud from within — a drop is the full discharge),
+  **`GearWorks`** (a colossal brass clockwork: meshing gears at matched
+  rim speeds, a pendulum swinging one period per bar, a piston
+  hammering with the kick),
+  **`CometRide`** (flying in formation with a comet: tumbling nucleus,
+  geysers venting on kicks, ion and dust tails sweeping across the
+  frame, stars streaming past),
+  **`MonolithField`** (gliding through a plain of towering alien
+  monoliths whose glyph edges hum with their spectrum bands; the
+  downbeat rolls a choir-pulse through the field, a DROP makes them
+  LEVITATE),
+  **`BioCell`** (a journey inside a living cell: breathing membrane,
+  heartbeat nucleus, glowing mitochondria, filament transport lines,
+  vesicles sparkling on onsets).
 
   They mix into every preset like normal effects (combines fold them,
   trails work).
@@ -899,7 +933,7 @@ Reorganised 2026-07 into folders:
   Configurations).
 - `Scene\*.frag` — the 49 scene (texture) effects
 - `Scene3D\*.vert + *.frag` — the REAL 3D scenes (vertex-shader animated
-  geometry, 51 scenes: procedural worlds like ParticleGalaxy, CubeWave,
+  geometry, 61 scenes: procedural worlds like ParticleGalaxy, CubeWave,
   RibbonTunnel, WarpStars, SynthTerrain, HelixTower, Swarm, PlanetRings,
   CrystalCave, PortalRush, Fireworks, OceanNight, Jellyfish, MeteorStorm,
   BlackHole, LanternRise, Tornado, LaserArena, KelpForest, SpectrumArena,
@@ -909,7 +943,10 @@ Reorganised 2026-07 into folders:
   scenes WaveRibbon, OscilloRings, AuroraVeil, HarmonicStrings,
   EchoSpiral, TorusKnot, RoseOrbit, Phyllotaxis, NebulaCloud,
   LissajousOrbits, OrbitalShells, FireflyField, SnowDrift, MandalaGrid,
-  PlasmaSheet, SineTunnel, RainOnWater, ChromeFlow, PolyDance, GyroRings)
+  PlasmaSheet, SineTunnel, RainOnWater, ChromeFlow, PolyDance, GyroRings
+  + cinematic spectacle scenes RollerCoaster, DragonFlight, OrbitalDrop,
+  TronCycles, VolcanoIsland, ThunderCloud, GearWorks, CometRide,
+  MonolithField, BioCell)
 - `Combine\*.frag` — the 21 combine passes (incl. `CombinePlain.frag`, which
   carries the 25-style transition library)
 - `Blend\*.frag` — internal pipeline passes: `Present.frag` (mood grade +

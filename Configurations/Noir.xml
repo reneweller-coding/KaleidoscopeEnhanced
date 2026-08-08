@@ -149,4 +149,13 @@
   <TextureShader file="..\\Scene3D\\HarmonicStrings.frag" type="scene3d" geom="ribbon" probability="0.3" mood="calm" complexity="1">
   </TextureShader>
 
+  <TextureShader file="..\\Scene3D\\MonolithField.frag" type="scene3d" geom="cubes" probability="0.4" mood="dark" complexity="3">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\ThunderCloud.frag" type="scene3d" geom="points" probability="0.35" mood="dark" complexity="2">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\CometRide.frag" type="scene3d" geom="points" probability="0.35" mood="calm,dark" complexity="2">
+  </TextureShader>
+
 </configuration>
