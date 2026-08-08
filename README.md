@@ -614,8 +614,11 @@ Audio is captured via WASAPI loopback (`AudioAnalyzer`) and analysed in real tim
   with a perspective camera and a depth buffer — the first effects that use
   a real VERTEX shader (the classic effects run fragment-only on the
   fixed-function quad).  Procedural geometry lives in one static VBO per
-  scene (generic layout: corner + index + four seeds), the vertex shader
-  animates everything from the audio uniforms.  Eleven scenes ship:
+  scene (generic layout: corner + index + four seeds; kinds: `points`,
+  `cubes`, `ribbon`, `grid`, `quads`), the vertex shader animates
+  everything from the audio uniforms.  31 scenes ship.
+
+  *Procedural worlds:*
   **`ParticleGalaxy`** (60k point sprites in a spiral galaxy — the bass
   pumps the core, each kick rolls a shock ring outward, the camera orbits),
   **`CubeWave`** (an endless depth-tested neon-city flythrough whose 70×70
@@ -640,7 +643,55 @@ Audio is captured via WASAPI loopback (`AudioAnalyzer`) and analysed in real tim
   **`PortalRush`** (racing a slalom of glowing ring gates — the gate ahead
   pulses in tempo, passing one flashes on the kick),
   **`Fireworks`** (24 procedural bursts at real 3D depths on their own
-  music-nudged cycles; kicks light the sparks, a drop turns the sky on).
+  music-nudged cycles; kicks light the sparks, a drop turns the sky on),
+  **`OceanNight`** (a moonlit night sea — the bass is the sea state, a
+  glitter lane runs to the horizon, kicks roll a circular wavefront),
+  **`Jellyfish`** (a bloom of 25 bioluminescent jellyfish whose bells ALL
+  pulse to the beat with per-jelly phases; tentacles trail and waver),
+  **`MeteorStorm`** (shooting stars with long particle trails over a
+  twinkling star dome; a drop turns the shower into a storm),
+  **`BlackHole`** (an accretion disk — white-hot rim, Doppler-bright
+  approaching side, photon ring, infalling streams; a drop fires the
+  polar jets),
+  **`LanternRise`** (hundreds of sky lanterns drifting up into the night,
+  flames flickering — the calm scene of the pack),
+  **`Tornado`** (a debris vortex snaking under a storm sky; the music's
+  energy is the spin, kicks cinch the funnel, snares crackle white),
+  **`LaserArena`** (a club laser show: two towers fan 20 beams sweeping
+  with the bar, kicks strobe them, a drop snaps every beam vertical),
+  **`KelpForest`** (an underwater kelp forest surging with the swell,
+  caustic light wandering across the blades),
+  **`SpectrumArena`** (the camera stands inside a circular equalizer
+  arena — 98 columns of stacked cubes metering their spectrum bands,
+  dead cubes staying as a faint skeleton grid),
+  **`AsteroidBelt`** (drifting through tumbling sunlit asteroids at every
+  scale; a drop lights every rock's rim).
+
+  *Image-textured scenes* — the CURRENT IMAGE is available to every 3D
+  scene as `tex0` (the host binds it before the pass), so these use the
+  slideshow pictures as MOVING textures, many kaleidoscope-folded:
+  **`PhotoTunnel`** (flying down a weaving tunnel whose walls are the
+  image folded into 8 mirrored sectors and scrolling with the music),
+  **`KaleidoDome`** (inside a planetarium dome covered by a living
+  10-sector kaleidoscope rosette of the image; kicks bloom the centre),
+  **`PhotoSphere`** (a turning planet wrapped in the image, day-side lit,
+  key-coloured atmosphere rim, equator flash on the kick),
+  **`SilkPhoto`** (the photo on a huge silk banner rippling in an
+  audio-driven wind — kicks slap a radial ripple through the fabric),
+  **`PhotoVortex`** (the image dragged down a whirlpool funnel; inner
+  rings spin faster, the throat glows and gulps on the kick),
+  **`PhotoCarousel`** (standing inside a revolving cylinder of 3000
+  framed photo-crop cards; tilt waves climb the wall with the beat),
+  **`PhotoShatter`** (the image as a wall of 3000 shards: calm music
+  keeps it assembled, a DROP blows it into a tumbling cloud that drifts
+  back together),
+  **`MosaicWave`** (a curved 100×30-tile mosaic of the image; flip waves
+  sweep across with the bar — tile backs show a hue-shifted twin),
+  **`GalleryHall`** (an endless museum corridor of gold-framed crops
+  under ceiling lights; the nearest picture pulses with the beat),
+  **`BillboardCity`** (a night flight down an avenue of neon-bordered
+  photo billboards, each pulsing with its own spectrum band).
+
   They mix into every preset like normal effects (combines fold them,
   trails work).
   **TRUE VR STEREO:** while a 3D scene plays solo in `-3 sbs`/`tb` mode it
@@ -783,9 +834,13 @@ Reorganised 2026-07 into folders:
   Configurations).
 - `Scene\*.frag` — the 49 scene (texture) effects
 - `Scene3D\*.vert + *.frag` — the REAL 3D scenes (vertex-shader animated
-  geometry; ParticleGalaxy, CubeWave, RibbonTunnel, WarpStars,
-  SynthTerrain, HelixTower, Swarm, PlanetRings, CrystalCave, PortalRush,
-  Fireworks)
+  geometry, 31 scenes: procedural worlds like ParticleGalaxy, CubeWave,
+  RibbonTunnel, WarpStars, SynthTerrain, HelixTower, Swarm, PlanetRings,
+  CrystalCave, PortalRush, Fireworks, OceanNight, Jellyfish, MeteorStorm,
+  BlackHole, LanternRise, Tornado, LaserArena, KelpForest, SpectrumArena,
+  AsteroidBelt + image-textured scenes PhotoTunnel, KaleidoDome,
+  PhotoSphere, SilkPhoto, PhotoVortex, PhotoCarousel, PhotoShatter,
+  MosaicWave, GalleryHall, BillboardCity)
 - `Combine\*.frag` — the 21 combine passes (incl. `CombinePlain.frag`, which
   carries the 25-style transition library)
 - `Blend\*.frag` — internal pipeline passes: `Present.frag` (mood grade +

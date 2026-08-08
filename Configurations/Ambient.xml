@@ -132,4 +132,22 @@
   <TextureShader file="..\\Scene3D\\Swarm.frag" type="scene3d" geom="points" probability="0.4" mood="calm" complexity="2">
   </TextureShader>
 
+  <TextureShader file="..\\Scene3D\\OceanNight.frag" type="scene3d" geom="grid" probability="0.45" mood="calm,dark" complexity="2">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\LanternRise.frag" type="scene3d" geom="points" probability="0.4" mood="calm" complexity="2">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\KelpForest.frag" type="scene3d" geom="ribbon" probability="0.4" mood="calm" complexity="1">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\Jellyfish.frag" type="scene3d" geom="points" probability="0.35" mood="calm" complexity="2">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\SilkPhoto.frag" type="scene3d" geom="grid" probability="0.3" mood="calm" complexity="2">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\PhotoSphere.frag" type="scene3d" geom="grid" probability="0.3" mood="calm" complexity="2">
+  </TextureShader>
+
 </configuration>

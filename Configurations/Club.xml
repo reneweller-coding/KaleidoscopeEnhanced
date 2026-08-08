@@ -160,4 +160,19 @@
   <TextureShader file="..\\Scene3D\\SynthTerrain.frag" type="scene3d" geom="grid" probability="0.4" mood="bright,aggressive" complexity="2">
   </TextureShader>
 
+  <TextureShader file="..\\Scene3D\\LaserArena.frag" type="scene3d" geom="ribbon" probability="0.45" mood="aggressive" complexity="1">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\SpectrumArena.frag" type="scene3d" geom="cubes" probability="0.4" complexity="3">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\BillboardCity.frag" type="scene3d" geom="quads" probability="0.35" mood="bright" complexity="1">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\PhotoShatter.frag" type="scene3d" geom="quads" probability="0.35" mood="aggressive" complexity="1">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\PhotoTunnel.frag" type="scene3d" geom="grid" probability="0.35" mood="bright" complexity="2">
+  </TextureShader>
+
 </configuration>

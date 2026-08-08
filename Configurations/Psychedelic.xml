@@ -184,4 +184,19 @@
   <TextureShader file="..\\Scene3D\\Fireworks.frag" type="scene3d" geom="points" probability="0.35" mood="bright" complexity="2">
   </TextureShader>
 
+  <TextureShader file="..\\Scene3D\\KaleidoDome.frag" type="scene3d" geom="grid" probability="0.45" complexity="2">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\PhotoVortex.frag" type="scene3d" geom="grid" probability="0.4" complexity="2">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\BlackHole.frag" type="scene3d" geom="points" probability="0.35" mood="dark" complexity="2">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\Jellyfish.frag" type="scene3d" geom="points" probability="0.35" mood="calm" complexity="2">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\Tornado.frag" type="scene3d" geom="points" probability="0.3" mood="aggressive,dark" complexity="2">
+  </TextureShader>
+
 </configuration>

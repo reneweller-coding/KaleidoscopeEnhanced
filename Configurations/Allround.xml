@@ -294,4 +294,19 @@
   <TextureShader file="..\\Scene3D\\Fireworks.frag" type="scene3d" geom="points" probability="0.3" mood="bright" complexity="2">
   </TextureShader>
 
+  <TextureShader file="..\\Scene3D\\PhotoTunnel.frag" type="scene3d" geom="grid" probability="0.3" mood="bright" complexity="2">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\PhotoCarousel.frag" type="scene3d" geom="quads" probability="0.3" complexity="1">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\MosaicWave.frag" type="scene3d" geom="quads" probability="0.3" complexity="1">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\MeteorStorm.frag" type="scene3d" geom="points" probability="0.3" complexity="2">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\OceanNight.frag" type="scene3d" geom="grid" probability="0.3" mood="calm,dark" complexity="2">
+  </TextureShader>
+
 </configuration>
