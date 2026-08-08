@@ -29,14 +29,14 @@ void main()
     float rim  = pow(1.0 - max(dot(N, V), 0.0), 2.5);
     float spec = pow(max(dot(reflect(-L, N), V), 0.0), 20.0);
 
-    vec3 base = hueRot(vec3(0.22, 0.12, 0.08), vHue);
-    vec3 col  = base * (0.25 + 0.9 * diff);
+    vec3 base = hueRot(vec3(0.32, 0.18, 0.11), vHue);
+    vec3 col  = base * (0.35 + 0.95 * diff);
 
     vec3 glow = hueRot(vec3(1.0, 0.55, 0.15), vHue + 0.4);
-    col += glow * vDefo * vDefo * (0.9 + 1.2 * audioSwell + 1.8 * audioDrop);
+    col += glow * pow(vDefo, 1.5) * (2.2 + 1.8 * audioSwell + 2.6 * audioDrop);
 
     col += vec3(1.0, 0.95, 0.85) * spec * 0.7;
     col += hueRot(vec3(0.20, 0.55, 0.95), vHue) * rim * 0.55;
 
-    gl_FragColor = vec4(col * 1.6, 1.0);
+    gl_FragColor = vec4(col * 1.8, 1.0);
 }

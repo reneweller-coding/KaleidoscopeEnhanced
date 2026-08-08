@@ -189,4 +189,15 @@
   <TextureShader file="..\\Scene3D\\CymaticsPlate.frag" type="scene3d" geom="points" probability="0.35" mood="calm,dark" complexity="2">
   </TextureShader>
 
+  <TextureShader file="..\\Scene\\SelfSimilarity.frag" type="normal" probability="0.4" mood="dark" complexity="1">
+    <int name="sidesP" minValue="0" maxValue="6"></int>
+    <float name="zoomP" minValue="0.8" maxValue="1.5"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene\\Schlieren.frag" type="normal" probability="0.4" mood="dark" complexity="2">
+    <int name="sidesP" minValue="0" maxValue="4"></int>
+    <float name="strengthP" minValue="0.8" maxValue="1.8"></float>
+    <float name="rainbowP" minValue="0.0" maxValue="0.25"></float>
+  </TextureShader>
+
 </configuration>

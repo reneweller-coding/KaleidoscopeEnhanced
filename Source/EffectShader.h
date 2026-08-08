@@ -43,7 +43,7 @@ public:
 		if( m_glReady ) return;
 		initUniforms( m_width, m_height );   // virtual: derived locations too
 		m_glReady = true;
-		m_usesSim = m_usesFluid = m_usesSmoke3D = -1;   // re-query against the new program
+		m_usesSim = m_usesFluid = m_usesSmoke3D = m_usesSSM = -1;   // re-query vs the new program
 	}
 	bool isCompiled() const { return m_glReady; }
 
@@ -117,6 +117,9 @@ public:
 	// Same for the volumetric smoke/fire simulation ("texSmoke3D" uniform, unit 9).
 	bool usesSmoke3D();
 
+	// Same for the self-similarity matrix ("texSSM" uniform, unit 10).
+	bool usesSSM();
+
 	// The fragment-shader file this effect uses (for the debug overlay).
 	const char* fragmentName() const { return m_fragmentShaderFilename ? m_fragmentShaderFilename : "?"; }
 
@@ -182,6 +185,7 @@ protected:
 	int		m_usesSim = -1;      // -1 = not yet queried, 0/1 = cached result
 	int		m_usesFluid = -1;    // same caching for the fluid field
 	int		m_usesSmoke3D = -1;  // same caching for the volumetric smoke/fire field
+	int		m_usesSSM = -1;      // same caching for the self-similarity matrix
 
 	bool	m_glReady = false;      // lazy compile: program built yet?
 

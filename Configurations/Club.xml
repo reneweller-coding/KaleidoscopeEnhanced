@@ -224,4 +224,7 @@
   <TextureShader file="..\\Scene3D\\SpectralTorus.frag" type="scene3d" geom="grid" probability="0.35" complexity="2">
   </TextureShader>
 
+  <TextureShader file="..\\Scene3D\\JellyBody.frag" type="scene3d" geom="grid" probability="0.4" complexity="2">
+  </TextureShader>
+
 </configuration>

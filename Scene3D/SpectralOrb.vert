@@ -134,7 +134,8 @@ void main()
     gl_Position.x += eyeOff * 0.05 * gl_Position.w;
 
     vNorm = nrm;
-    vView = normalize(vec3(0.0, 0.0, 30.0) - p);
+    // Camera at MODEL-space (0,0,-30) — see JellyBody.vert for the sign story.
+    vView = normalize(vec3(0.0, 0.0, -30.0) - p);
     vDefo = clamp(abs(length(p) / 9.5 - 1.0) * 4.0, 0.0, 1.0);
     vHue  = audioChromaHue;
 }

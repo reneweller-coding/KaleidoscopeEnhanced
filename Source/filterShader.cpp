@@ -1409,6 +1409,56 @@ void FilterShader::stepSmoke3D(const AudioFeatures &audio)
 	stepSmoke3DPass( audio, 1.f );   // vertical: buoyant rise + cross-cell softening
 }
 
+// Accumulate the self-similarity matrix: every kSSMStride seconds push one
+// feature vector (12 chroma bins + 8 coarse spectral-shape dims, unit-
+// normalised) into the ring and fill its row+column with sharpened cosine
+// similarity.  CPU-only and cheap (256 20-dim dots ~3x per second), so it
+// runs EVERY frame regardless of what is on screen — the history must exist
+// BEFORE the SelfSimilarity effect appears, not start from black.
+void FilterShader::stepSSM(const AudioFeatures &a, float dt)
+{
+	m_ssmAccum += dt;
+	if( m_ssmAccum < kSSMStride )
+		return;
+	m_ssmAccum = fmodf( m_ssmAccum, kSSMStride );
+
+	float v[kSSMDims];
+	for( int i = 0; i < 12; ++i )
+		v[i] = a.chroma[i];
+	// Coarse spectral shape: 32 bands averaged down to 8 (weighted a touch
+	// below the chroma so HARMONY dominates the structure comparison).
+	for( int i = 0; i < 8; ++i )
+	{
+		float s = 0.f;
+		for( int k = 0; k < 4; ++k )
+			s += a.spectrum[i * 4 + k];
+		v[12 + i] = s * 0.125f;
+	}
+	float n2 = 0.f;
+	for( int i = 0; i < kSSMDims; ++i ) n2 += v[i] * v[i];
+	if( n2 < 1e-8f )
+		return;                        // silence: keep the last written entry
+	float inv = 1.f / sqrtf( n2 );
+	for( int i = 0; i < kSSMDims; ++i ) v[i] *= inv;
+
+	const int h = m_ssmHead;
+	memcpy( m_ssmVecs[h], v, sizeof(v) );
+	for( int j = 0; j < kSSMSize; ++j )
+	{
+		float d = 0.f;
+		for( int i = 0; i < kSSMDims; ++i )
+			d += v[i] * m_ssmVecs[j][i];
+		d = ( d < 0.f ) ? 0.f : d;
+		d = d * d * d;                 // sharpen: only real similarity stays bright
+		unsigned char byte = (unsigned char)( d * 255.f + 0.5f );
+		m_ssmData[h * kSSMSize + j] = byte;   // row
+		m_ssmData[j * kSSMSize + h] = byte;   // column (symmetric)
+	}
+	m_ssmHead  = ( h + 1 ) % kSSMSize;
+	if( m_ssmCount < kSSMSize ) ++m_ssmCount;
+	m_ssmDirty = true;
+}
+
 // Advance the Gray-Scott simulation by one step into the next ping-pong buffer.
 void FilterShader::stepReactionDiffusion(const AudioFeatures &audio)
 {
@@ -1898,6 +1948,9 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
         // Day/night cycle: a slow wall-clock sawtooth, independent of the
         // music gate (the sky keeps turning even through silence/speech).
         audioFx.dayPhase      = fmodf( m_globaltime / 280.f, 1.f );
+        // Self-similarity ring bookkeeping for the SelfSimilarity effect.
+        audioFx.ssmHead       = float(m_ssmHead)  / float(kSSMSize);
+        audioFx.ssmFill       = float(m_ssmCount) / float(kSSMSize);
         // The DJ-stop slam-back rides the same "hit" channel as a drop
         // (camera punch + shake + the shaders' audioDrop uniform).
         audioFx.dropPulse     = std::max( audio.dropPulse, audio.breakSlam ) * gate;
@@ -2173,6 +2226,10 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 						float fourBeats = 4.f * 60.f / (40.f + 160.f * audio.estimatedBPM);
 						cfgT = fminf(fmaxf(fourBeats, 1.2f), cfgT);
 					}
+					// ARTICULATION: staccato material (sharp attacks) gets
+					// snappier cross-fades, legato keeps the full dissolve —
+					// the performance's phrasing shapes the editing style.
+					cfgT *= 1.f - 0.35f * audio.logAttackTime;
 					m_timeInterpolationEffectTexture = forcedGo ? 0.8f : cfgT;
 				}
 
@@ -2317,6 +2374,39 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 		stepSmoke3D( audio );
 		glActiveTexture( GL_TEXTURE9 );
 		glBindTexture( GL_TEXTURE_2D, m_texSmoke3D[1 - m_smoke3DIdx] );
+	}
+
+	// Self-similarity matrix: the HISTORY accumulates always (CPU-cheap, and
+	// the structure must already exist when the effect appears); the texture
+	// upload + bind (unit 10) only happens while an effect samples "texSSM".
+	stepSSM( audio, timeSinceLastFrameSec );
+	bool ssmNeeded =
+	    ( m_effectTextures[m_actEffectTexture]->usesSSM()
+	   || ( m_stateInterpolationEffectTexture != 0
+	        && m_effectTextures[m_nextEffectTexture]->usesSSM() ) );
+	if( ssmNeeded )
+	{
+		if( m_texSSM == 0 )
+		{
+			glGenTextures( 1, &m_texSSM );
+			glBindTexture( GL_TEXTURE_2D, m_texSSM );
+			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+			glTexImage2D( GL_TEXTURE_2D, 0, GL_LUMINANCE, kSSMSize, kSSMSize, 0,
+			              GL_LUMINANCE, GL_UNSIGNED_BYTE, NULL );
+		}
+		glActiveTexture( GL_TEXTURE10 );
+		glBindTexture( GL_TEXTURE_2D, m_texSSM );
+		if( m_ssmDirty )
+		{
+			glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
+			glTexSubImage2D( GL_TEXTURE_2D, 0, 0, 0, kSSMSize, kSSMSize,
+			                 GL_LUMINANCE, GL_UNSIGNED_BYTE, m_ssmData );
+			glPixelStorei( GL_UNPACK_ALIGNMENT, 4 );
+			m_ssmDirty = false;
+		}
 	}
 
 
@@ -2487,6 +2577,8 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 						float fourBeats = 4.f * 60.f / (40.f + 160.f * audio.estimatedBPM);
 						cfgT = fminf(fmaxf(fourBeats, 1.2f), cfgT);
 					}
+					// ARTICULATION: same phrasing rule as the texture site.
+					cfgT *= 1.f - 0.35f * audio.logAttackTime;
 					m_timeInterpolationEffectCombine = forcedGo ? 0.8f : cfgT;
 				}
 
@@ -2684,6 +2776,11 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 		// (crisper, more nervous picture), then the drop's release lets them
 		// bloom back to full length.
 		decay *= 1.f - 0.45f * audioFx.buildUp * (1.f - audioFx.dropPulse);
+		// ARTICULATION (the performance-cues mapping): staccato material
+		// (sharp attacks, logAttackTime -> 1) crisps the picture with shorter
+		// trails; legato swells keep the full flowing length.  The feature is
+		// slow-moving, so this reads as an interpretation trait, not a pulse.
+		decay *= 1.f - 0.30f * audio.logAttackTime;
 
 		glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_fboTrail[cur] );
 		glViewport( 0, 0, m_width, m_height );

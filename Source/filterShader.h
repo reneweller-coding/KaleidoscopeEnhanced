@@ -487,6 +487,26 @@ private:
 	bool			m_smoke3DReady         = false;
 	bool			m_smoke3DSeeded        = false;
 
+	// ---- Self-similarity matrix (SSM recurrence plot, host-computed) ----
+	// A ring of short feature vectors (12 chroma + 8 coarse band-shape dims),
+	// one entry per kSSMStride seconds (~90 s window across the ring).  Each
+	// new entry fills its row AND column of the byte matrix with sharpened
+	// cosine similarity — repeated sections appear as diagonal stripes, new
+	// sections as dark checkerboard blocks.  History accumulates ALWAYS
+	// (cheap CPU-only); the texture ("texSSM", unit 10) uploads only while
+	// an effect that samples it is on screen (usesSSM gating).
+	static const int kSSMSize   = 256;
+	static const int kSSMDims   = 20;
+	static constexpr float kSSMStride = 0.35f;
+	float			m_ssmVecs[kSSMSize][kSSMDims] = {};
+	unsigned char	m_ssmData[kSSMSize * kSSMSize] = {};
+	int				m_ssmHead   = 0;      // next write slot
+	int				m_ssmCount  = 0;      // filled entries (saturates at kSSMSize)
+	float			m_ssmAccum  = 0.f;    // seconds since the last entry
+	GLuint			m_texSSM    = 0;
+	bool			m_ssmDirty  = false;  // matrix changed since last upload
+	void			stepSSM(const AudioFeatures &a, float dt);
+
 	// Live-tunable look parameters (static → one shared setting across all configs).
 	static float	s_reactivity;    // audio-motion master gain (default 1.0)
 	static float	s_trailAmount;   // feedback trail length 0..0.95 (default 0.6)

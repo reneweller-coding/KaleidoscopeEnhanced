@@ -318,6 +318,12 @@
     <None Include="Scene\Rorschach.frag">
       <Filter>Shaders\Scene</Filter>
     </None>
+    <None Include="Scene\Schlieren.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\SelfSimilarity.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
     <None Include="Scene\SpectrumRadial.frag">
       <Filter>Shaders\Scene</Filter>
     </None>
@@ -711,6 +717,12 @@
     <None Include="Scene3D\GalleryHall.vert">
       <Filter>Shaders\Scene3D</Filter>
     </None>
+    <None Include="Scene3D\JellyBody.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\JellyBody.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
     <None Include="Scene3D\Jellyfish.frag">
       <Filter>Shaders\Scene3D</Filter>
     </None>
@@ -799,6 +811,12 @@
       <Filter>Shaders\Scene3D</Filter>
     </None>
     <None Include="Scene3D\SpectrumArena.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\SpiralArray.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\SpiralArray.vert">
       <Filter>Shaders\Scene3D</Filter>
     </None>
     <None Include="Scene3D\Tornado.frag">
