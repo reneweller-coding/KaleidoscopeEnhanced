@@ -9,8 +9,67 @@
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Media.Control.h>
 
+#include <windows.h>
+#include <string>
+
 using namespace winrt;
 using namespace winrt::Windows::Media::Control;
+
+// ---- VLC fallback ---------------------------------------------------------
+// Classic VLC (3.x) never registers a Windows SMTC media session, so the
+// system-wide "now playing" query above comes back empty for it.  VLC does,
+// however, put the media title into its WINDOW TITLE ("<media> - VLC media
+// player", suffix not localised) — scan the top-level windows for it.
+// (Spotify, browsers and foobar2000-with-Media-Controls-component all speak
+// SMTC and never reach this fallback.)
+namespace {
+struct VlcScan { std::wstring text; };
+
+BOOL CALLBACK vlcEnumProc(HWND hwnd, LPARAM lp)
+{
+    if (!IsWindowVisible(hwnd)) return TRUE;
+    wchar_t buf[512];
+    int n = GetWindowTextW(hwnd, buf, 512);
+    if (n <= 0) return TRUE;
+    std::wstring s(buf, size_t(n));
+    static const std::wstring suffix = L" - VLC media player";
+    if (s.size() > suffix.size()
+        && _wcsicmp(s.c_str() + (s.size() - suffix.size()), suffix.c_str()) == 0)
+    {
+        reinterpret_cast<VlcScan*>(lp)->text = s.substr(0, s.size() - suffix.size());
+        return FALSE;                       // found - stop enumerating
+    }
+    return TRUE;
+}
+
+// "<artist> - <title>" metadata split + filename cleanup (drop the extension,
+// underscores become spaces) so a raw file name still reads like a title.
+void parseVlcTitle(const std::wstring &raw, QString &title, QString &artist)
+{
+    QString w = QString::fromStdWString(raw).trimmed();
+    if (w.isEmpty()) return;
+
+    static const char *exts[] = { ".mp3", ".flac", ".m4a", ".ogg", ".opus",
+                                  ".wav", ".wma", ".aac", ".mp4", ".mkv",
+                                  ".avi", ".webm", ".mov" };
+    for (const char *ext : exts)
+        if (w.endsWith(QString::fromLatin1(ext), Qt::CaseInsensitive))
+        {
+            w.chop(int(strlen(ext)));
+            break;
+        }
+    w.replace(QChar('_'), QChar(' '));
+
+    int cut = w.indexOf(" - ");
+    if (cut > 0)
+    {
+        artist = w.left(cut).trimmed();
+        title  = w.mid(cut + 3).trimmed();
+    }
+    else
+        title = w;
+}
+}
 
 NowPlaying::NowPlaying() {}
 
@@ -62,6 +121,15 @@ void NowPlaying::threadFunc()
             }
         }
         catch (...) { /* no session / API error -> leave empty */ }
+
+        // No SMTC session?  Try the VLC window-title fallback.
+        if (t.isEmpty())
+        {
+            VlcScan scan;
+            EnumWindows(vlcEnumProc, reinterpret_cast<LPARAM>(&scan));
+            if (!scan.text.empty())
+                parseVlcTitle(scan.text, t, a);
+        }
 
         { QMutexLocker l(&m_mutex); m_title = t; m_artist = a; }
 

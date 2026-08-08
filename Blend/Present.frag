@@ -36,6 +36,8 @@ uniform vec2  camOff;           // virtual camera: drift + shake offset (uv unit
 uniform sampler2D titleTex;     // track-title reveal texture (transparent bg)
 uniform float titlePhase;       // 0..1 while the reveal runs; >= 1 = off
 uniform float titleAspect;      // title texture width/height
+uniform int   titleStyle;       // reveal style 0..23 (host-rolled, mood-matched)
+uniform float titleSeed;        // per-reveal random seed
 uniform int   stereoMode;       // 0 off, 1 side-by-side, 2 top-bottom, 3 anaglyph
 uniform float stereoDepth;      // disparity strength 0..2 (host, key c/m)
 uniform int   stereoSource;     // 1 = source is ALREADY eye-packed (true 3D stereo)
@@ -52,6 +54,22 @@ vec3 hueRotate(vec3 c, float turns)
 }
 
 vec2 rot2(vec2 v, float a) { float c = cos(a), s = sin(a); return mat2(c, -s, s, c) * v; }
+
+// ---- Track-title reveal helpers ----
+float vnoise2(vec2 p)
+{
+    vec2 i = floor(p), f = fract(p);
+    f = f * f * (3.0 - 2.0 * f);
+    float a = hash21(i), b = hash21(i + vec2(1.0, 0.0));
+    float cc = hash21(i + vec2(0.0, 1.0)), dd = hash21(i + vec2(1.0, 1.0));
+    return mix(mix(a, b, f.x), mix(cc, dd, f.x), f.y);
+}
+vec2 titleUV(vec2 q) { return vec2(q.x / 1.10, -q.y / (1.10 / titleAspect)) + 0.5; }
+vec4 titleTap(vec2 t)
+{
+    if (t.x <= 0.0 || t.x >= 1.0 || t.y <= 0.0 || t.y >= 1.0) return vec4(0.0);
+    return texture2D(titleTex, t);
+}
 
 // A spotlight CONE emanating from `origin` along `dir`: brightest at the source,
 // widening and fading along the beam.  Returns 0..1.
@@ -285,39 +303,127 @@ void main()
              * rays * 0.08 * (0.2 + 0.8 * audioLevel) * smoothstep(0.05, 0.45, length(g));
     }
 
-    // --- Track-title reveal: the title unfolds out of a kaleidoscopic swirl,
-    // holds readable, then grows toward the viewer and dissolves.  Composited
-    // BEFORE the safety scale so the limiter (and blackout) applies to it too.
+    // --- Track-title reveal: 24 distinct entrance styles (host-rolled per
+    // reveal, matched to the music's mood — calm gets soft dissolves and
+    // drifts, aggressive gets glitch/slam, bright gets light sweeps, dark
+    // gets smoke).  All entrances use an ease-out cubic so the motion
+    // settles organically instead of snapping; the shared ending grows the
+    // text gently toward the viewer while it fades.  Composited BEFORE the
+    // safety scale so the limiter (and blackout) applies to it too.
     if (titlePhase < 1.0)
     {
-        float ph       = titlePhase;
-        float unfold   = smoothstep(0.05, 0.42, ph);   // 0 folded -> 1 readable
-        float dissolve = smoothstep(0.72, 0.96, ph);
-        float fadeIn   = smoothstep(0.00, 0.08, ph);
+        float ph     = titlePhase;
+        float fadeIn = smoothstep(0.00, 0.08, ph);
+        float outp   = smoothstep(0.74, 0.97, ph);
+        float e      = smoothstep(0.03, 0.42, ph);
+        e = 1.0 - pow(1.0 - e, 3.0);                   // ease-out cubic entrance
+        float d  = 1.0 - e;                            // "derangement" remaining
+        float sd = titleSeed * 37.0;
+        int   st = titleStyle;
 
         vec2 tp = uv - vec2(0.5, 0.52);
         tp.x *= resolution.x / resolution.y;
 
-        // Kaleidoscopic fold + swirl that unwinds as the title arrives.
-        float fold = 1.0 - unfold;
-        float ang  = atan(tp.y, tp.x);
-        float rad  = length(tp);
-        float seg  = 1.0471976;                        // pi/3: 6 mirror segments
-        float ka   = abs(mod(ang + 3.14159265, 2.0 * seg) - seg);
-        float aa   = mix(ang, ka, fold * 0.85);
-        aa        += fold * 2.4 * (0.55 - min(rad, 0.55));
-        vec2 tq    = vec2(cos(aa), sin(aa)) * rad;
+        vec2  tq    = tp;
+        float blurA = 0.0;
+        vec2  split = vec2(0.0);
+        float maskA = 1.0;
+        float glowX = 0.0;
 
-        tq /= 1.0 + 0.9 * dissolve;                    // end: grows toward you
-
-        vec2 tuv = vec2(tq.x / 1.10, -tq.y / (1.10 / titleAspect)) + 0.5;
-        if (tuv.x > 0.0 && tuv.x < 1.0 && tuv.y > 0.0 && tuv.y < 1.0)
-        {
-            vec4 tt = texture2D(titleTex, tuv);
-            float a = tt.a * fadeIn * (1.0 - dissolve);
-            c = mix(c, tt.rgb, a * 0.92);
-            c += tt.rgb * a * (0.25 + 0.30 * audioBeat);   // gentle beat glow
+        // ---- Spatial entrances ----
+        if      (st == 1)  tq.y += 0.14 * d * d;                       // gentle drift-in
+        else if (st == 2)  blurA = 0.012 * d;                          // focus pull
+        else if (st == 6)  {                                           // kaleido unwind
+            float ang = atan(tp.y, tp.x);
+            float rad = length(tp);
+            float seg = 1.0471976;
+            float ka  = abs(mod(ang + 3.14159265, 2.0 * seg) - seg);
+            float aa  = mix(ang, ka, d * 0.85);
+            aa       += d * 2.4 * (0.55 - min(rad, 0.55));
+            tq = vec2(cos(aa), sin(aa)) * rad;
         }
+        else if (st == 7)  tq /= 1.0 + 2.5 * d * d;                    // zoom-through (huge -> place)
+        else if (st == 8)  { tq *= 1.0 + 1.6 * d * d; blurA = 0.006 * d; } // rises from depth
+        else if (st == 9)  tq.y += sin(tq.x * 16.0 + ph * 22.0) * 0.055 * d; // water ripple
+        else if (st == 10) split = vec2(0.10, 0.04) * d;               // chromatic assemble
+        else if (st == 11) {                                           // glitch slam
+            float row = floor((tq.y + 2.0) * 22.0);
+            tq.x += (hash21(vec2(row, sd)) - 0.5) * 0.5 * d * d;
+            split = vec2(0.03, 0.0) * d;
+        }
+        else if (st == 12) { float eq = floor(e * 5.0) / 5.0;          // stutter zoom
+                             tq *= 1.0 + 1.6 * (1.0 - eq); }
+        else if (st == 13) {                                           // shockwave ring
+            float r    = length(tq);
+            float ring = exp(-abs(r - e * 1.2) * 9.0);
+            tq += (tq / max(r, 1e-3)) * ring * 0.10 * d;
+            glowX = ring * 0.5 * d;
+        }
+        else if (st == 14) tq = rot2(tq, 0.5 * d * d * (titleSeed > 0.5 ? 1.0 : -1.0)); // spin-in
+        else if (st == 15) tq.x += sign(tp.x) * 0.5 * d * d;           // doors slide together
+        else if (st == 16) {                                           // drop with soft overshoot
+            float b    = e - 1.0;
+            float back = 1.0 + 2.7 * b * b * b + 1.7 * b * b;
+            tq.y += 0.5 * (1.0 - back);
+        }
+        else if (st == 17) {                                           // smoke condense
+            vec2 w = vec2(vnoise2(tq * 5.0 + sd),
+                          vnoise2(tq * 5.0 + sd + 9.7)) - 0.5;
+            tq += w * 0.30 * d;
+            blurA = 0.006 * d;
+        }
+        else if (st == 20) tq += vec2(sin(tq.y * 55.0 + ph * 38.0),    // heat shimmer
+                                      cos(tq.x * 50.0 + ph * 33.0)) * 0.009 * d;
+        else if (st == 21) { float q = 0.004 + 0.10 * d * d;           // pixelate-in
+                             tq = (floor(tq / q) + 0.5) * q; }
+        else if (st == 23) tq.y += sin(tq.x * 9.0 - ph * 16.0)         // flag wave settles
+                                 * 0.06 * d * (0.65 + 0.35 * sin(sd));
+        // (st 0/3/4/5/18/19/22: no spatial change; masks/sampling below.)
+
+        // Shared tasteful ending: grow gently toward the viewer while fading.
+        tq /= 1.0 + 0.55 * outp;
+
+        vec2 tuv = titleUV(tq);
+
+        // ---- Mask-based entrances (need text-space coordinates) ----
+        if      (st == 3)  maskA = smoothstep(0.10, -0.02, tuv.x - e * 1.15); // soft L->R wipe
+        else if (st == 4)  maskA = smoothstep(0.06, -0.06, length(tq) - e * 1.05); // iris
+        else if (st == 5)  { float band = abs(fract(tuv.y * 4.0) - 0.5) * 2.0;  // soft blinds
+                             maskA = smoothstep(band - 0.25, band + 0.05, e * 1.25); }
+        else if (st == 18) { float g = hash21(floor(tuv * vec2(140.0, 36.0)) + sd); // sparkle dissolve
+                             maskA = smoothstep(d - 0.08, d + 0.08, g);
+                             glowX = exp(-abs(g - d) * 30.0) * 0.8 * d; }
+        else if (st == 19) { float sw = tuv.x + tuv.y * 0.25 - (e * 1.6 - 0.25);   // light sweep
+                             maskA = smoothstep(0.05, -0.10, sw);
+                             glowX = exp(-abs(sw) * 18.0) * 0.9; }
+
+        // ---- Sample: plain / blurred / echo ghosts / RGB split ----
+        vec4 tt;
+        if (st == 22) {                                                // echo converge
+            vec2 o = vec2(0.10, 0.035) * d;
+            tt = titleTap(tuv) * 0.5 + titleTap(tuv + o) * 0.25
+               + titleTap(tuv - o) * 0.25;
+        }
+        else if (blurA > 0.0001) {
+            tt  = titleTap(tuv) * 0.4;
+            tt += titleTap(tuv + vec2(blurA, 0.0)) * 0.15;
+            tt += titleTap(tuv - vec2(blurA, 0.0)) * 0.15;
+            tt += titleTap(tuv + vec2(0.0, blurA * 3.0)) * 0.15;
+            tt += titleTap(tuv - vec2(0.0, blurA * 3.0)) * 0.15;
+        }
+        else
+            tt = titleTap(tuv);
+        if (dot(split, split) > 1e-8) {
+            vec4 tr = titleTap(tuv + split);
+            vec4 tb = titleTap(tuv - split);
+            tt.r = tr.r;  tt.b = tb.b;
+            tt.a = max(tt.a, max(tr.a, tb.a));
+        }
+
+        float a = tt.a * fadeIn * (1.0 - outp) * maskA;
+        c = mix(c, tt.rgb, a * 0.92);
+        c += tt.rgb * a * (0.25 + 0.30 * audioBeat);   // gentle beat glow
+        c += tt.rgb * a * glowX;                        // style-specific glint
     }
 
     c *= scale;   // photosensitivity brightness limit (applied last)

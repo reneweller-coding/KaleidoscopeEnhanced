@@ -361,13 +361,25 @@ is mixed into all the other adapted shaders above, including the three latest.
   instead of the PC's own playback. No menu bar; same keyboard-overlay style as
   the config menu.
 - **Now playing (`p`) — TITLE REVEAL:** when the track changes, the title and
-  artist (from the Windows media session — Spotify, browsers, foobar2000, …)
-  are woven **through the picture itself**: the text unfolds out of a
-  kaleidoscopic swirl, holds readable for a few seconds with a gentle beat
-  glow, then grows toward the viewer and dissolves (~8 s, photosensitivity-
-  limited, not sent to the clean Spout feed).  Toggle persists; the old
-  QPainter lower third is retired.  Test without music:
-  `set KALEIDO_TITLE_TEST=1` fires one demo reveal a few seconds after start.
+  artist are woven **through the picture itself** with one of **24 reveal
+  styles**, rolled per reveal and MATCHED TO THE MUSIC's mood — calm material
+  gets soft dissolves, focus pulls, smoke condensation and drifting entrances;
+  aggressive material gets glitch slams, chromatic assembly, stutter zooms and
+  shockwaves; bright material gets light sweeps, sparkle dissolves and door
+  slides; dark material gets shadow drops and blinds.  Every entrance uses an
+  ease-out curve so the motion settles organically (the old single hard
+  kaleido-fold is now just one style of many); all hold readable with a gentle
+  beat glow, then grow toward the viewer and dissolve (~8 s, photosensitivity-
+  limited, not sent to the clean Spout feed).  Toggle persists.
+  **Player support:** the title comes from the Windows system media session
+  (SMTC) — **Spotify**, browsers (YouTube & co.) and most modern players work
+  out of the box; **foobar2000** needs the free official *Media Controls*
+  (`foo_mediacontrol`) component, then it works too; classic **VLC** never
+  registers a media session, so a built-in fallback reads VLC's window title
+  ("`<medium> - VLC media player`") and parses artist/title from it — works
+  whenever VLC shows the medium in its title bar.  Testing:
+  `set KALEIDO_TITLE_TEST=1` fires one demo reveal a few seconds after start;
+  `set KALEIDO_TITLE_STYLE=<0..23>` forces a specific style.
 - **MIDI (automatic):** if a MIDI controller is connected it is opened on
   startup — knob **CC 1/2/3** map to reactivity / trails / mood, and any pad/key
   (Note-On) advances to the next effect. No device → no-op.
