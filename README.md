@@ -631,7 +631,7 @@ Audio is captured via WASAPI loopback (`AudioAnalyzer`) and analysed in real tim
   fixed-function quad).  Procedural geometry lives in one static VBO per
   scene (generic layout: corner + index + four seeds; kinds: `points`,
   `cubes`, `ribbon`, `grid`, `quads`), the vertex shader animates
-  everything from the audio uniforms.  73 scenes ship.
+  everything from the audio uniforms.  75 scenes ship.
 
   **Scene variety per activation:** every time a 3D scene comes on it rolls
   a fresh epoch — a large time offset (different camera/burst phases), a
@@ -699,6 +699,20 @@ Audio is captured via WASAPI loopback (`AudioAnalyzer`) and analysed in real tim
 - **Articulation mapping:** `logAttackTime` (attack sharpness) now shapes
   the EDITING style — staccato material gets shorter trails and snappier
   cross-fades, legato keeps the full flowing dissolves.
+- **Physarum slime mould (`Physarum`, the 4th GPU simulation):** 65k agents
+  lay and follow pheromone trails (Jones 2010) via an agent state texture,
+  a vertex-texture-fetch point-deposit pass and a diffuse/evaporate pass
+  (`texPhysarum`, unit 11) — glowing vein networks grow, merge and
+  constantly rebuild.  Bright material makes tight directed veins, loud
+  passages speed the swarm, hard kicks scatter it (the net visibly
+  explodes and re-forms).  Two species in warm/cool hues.
+- **Song-end dramaturgy (`audioFadeOut` + formula var `fadeOut`):** a
+  fade-out (6 s loudness average sinking well below the 20 s one while
+  music is still present) triggers a cinematic outro — trails bloom long,
+  the picture dims gently, and the next track starts on a fresh scene.
+- **Melody history (`audioMelody[96]` + `audioMelodyHead`):** ~7.7 s of
+  dominant pitch as a ring, so scenes can draw the TUNE itself
+  (MelodyScript).
 - **Liquid feedback (spatial warp field):** the trails pass now warps the
   previous frame with SPATIALLY VARYING displacement — a radial ripple
   that rides the beat, extra swirl toward the rim that swings direction
@@ -911,7 +925,15 @@ Audio is captured via WASAPI loopback (`AudioAnalyzer`) and analysed in real tim
   **`JellyBody`** (the spring-mass idea via modal analysis: a soft elastic
   body that RINGS after every hit — the decaying kick/snare/hat envelopes
   ARE the damping envelopes, each striking its own mode family at a fixed
-  ring frequency; volume-preserving squash-and-stretch, gummy fresnel look).
+  ring frequency; volume-preserving squash-and-stretch, gummy fresnel look),
+  **`StrangeAttractor`** (600 trajectories on a CHAOTIC attractor — each
+  activation picks Lorenz, Thomas, Aizawa or Halvorsen, so the scene
+  returns as four entirely different chaotic beings; parameters breathe
+  with the smoothed audio, velocity paints the colour heat),
+  **`MelodyScript`** (the melody writes itself: ~7.7 s of dominant-pitch
+  history drawn as a glowing handwriting line — pitch is height, silence
+  lifts the pen, melodic activity heats the ink; the trails give the
+  script its afterglow).
 
   They mix into every preset like normal effects (combines fold them,
   trails work).
@@ -1091,8 +1113,8 @@ Reorganised 2026-07 into folders:
   this layout in its Solution Explorer filters (Source Files / Header Files /
   Generated / ThirdParty\SpoutGL / Shaders\Scene|Combine|Blend /
   Configurations).
-- `Scene\*.frag` — the 51 scene (texture) effects (incl. `SelfSimilarity`
-  and `Schlieren`)
+- `Scene\*.frag` — the 52 scene (texture) effects (incl. `SelfSimilarity`,
+  `Schlieren` and `Physarum`)
 - `Scene3D\*.vert + *.frag` — the REAL 3D scenes (vertex-shader animated
   geometry, 67 scenes: procedural worlds like ParticleGalaxy, CubeWave,
   RibbonTunnel, WarpStars, SynthTerrain, HelixTower, Swarm, PlanetRings,
@@ -1110,7 +1132,7 @@ Reorganised 2026-07 into folders:
   MonolithField, BioCell, Wormhole, CrystalGrowth, ConcertCrowd,
   StainedGlassRosette, SciFiHUD, VolumetricFire + research scenes
   SpectralOrb, SpectralTorus, CymaticsPlate, Planet4D, SpiralArray,
-  JellyBody)
+  JellyBody, StrangeAttractor, MelodyScript)
 - `Combine\*.frag` — the 21 combine passes (incl. `CombinePlain.frag`, which
   carries the 26-style transition library)
 - `Blend\*.frag` — internal pipeline passes: `Present.frag` (mood grade +

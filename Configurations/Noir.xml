@@ -200,4 +200,12 @@
     <float name="rainbowP" minValue="0.0" maxValue="0.25"></float>
   </TextureShader>
 
+  <TextureShader file="..\Scene\Physarum.frag" type="normal" probability="0.4" mood="dark" complexity="2">
+    <int name="sidesP" minValue="0" maxValue="8"></int>
+    <float name="zoomP" minValue="0.7" maxValue="1.5"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene3D\MelodyScript.frag" type="scene3d" geom="ribbon" probability="0.3" complexity="1">
+  </TextureShader>
+
 </configuration>

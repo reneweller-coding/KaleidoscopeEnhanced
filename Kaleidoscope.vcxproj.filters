@@ -315,6 +315,9 @@
     <None Include="Scene\ReactionDiffusion.frag">
       <Filter>Shaders\Scene</Filter>
     </None>
+    <None Include="Scene\Physarum.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
     <None Include="Scene\Rorschach.frag">
       <Filter>Shaders\Scene</Filter>
     </None>
@@ -445,6 +448,18 @@
       <Filter>Shaders\Blend</Filter>
     </None>
     <None Include="Blend\FluidSim.frag">
+      <Filter>Shaders\Blend</Filter>
+    </None>
+    <None Include="Blend\PhysarumAgents.frag">
+      <Filter>Shaders\Blend</Filter>
+    </None>
+    <None Include="Blend\PhysarumDeposit.frag">
+      <Filter>Shaders\Blend</Filter>
+    </None>
+    <None Include="Blend\PhysarumDeposit.vert">
+      <Filter>Shaders\Blend</Filter>
+    </None>
+    <None Include="Blend\PhysarumDiffuse.frag">
       <Filter>Shaders\Blend</Filter>
     </None>
     <None Include="Blend\Present.frag">
@@ -753,6 +768,12 @@
     <None Include="Scene3D\LaserArena.vert">
       <Filter>Shaders\Scene3D</Filter>
     </None>
+    <None Include="Scene3D\MelodyScript.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\MelodyScript.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
     <None Include="Scene3D\MeteorStorm.frag">
       <Filter>Shaders\Scene3D</Filter>
     </None>
@@ -853,6 +874,12 @@
       <Filter>Shaders\Scene3D</Filter>
     </None>
     <None Include="Scene3D\PortalRush.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\StrangeAttractor.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\StrangeAttractor.vert">
       <Filter>Shaders\Scene3D</Filter>
     </None>
     <None Include="Scene3D\Swarm.frag">

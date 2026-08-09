@@ -1190,6 +1190,9 @@ void FilterShader::setupSafety()
 
 	// GPU volumetric fire/smoke (tiled-atlas pseudo-3D) buffers + shader.
 	setupSmoke3D();
+
+	// Physarum slime-mould simulation (agents + trail map).
+	setupPhysarum();
 }
 
 // Create the two RGBA16F ping-pong buffers and the Gray-Scott step shader.  The
@@ -1409,6 +1412,183 @@ void FilterShader::stepSmoke3D(const AudioFeatures &audio)
 
 	stepSmoke3DPass( audio, 0.f );   // horizontal: turbulence + injection + decay
 	stepSmoke3DPass( audio, 1.f );   // vertical: buoyant rise + cross-cell softening
+}
+
+// Create the Physarum buffers + the three programs.  Same fail-safe pattern
+// as RD/Fluid/Smoke3D: any failure leaves m_physReady false and the display
+// effect degrades to a dark field.
+void FilterShader::setupPhysarum()
+{
+	if( m_physAgentProgId == 0 )
+	{
+		m_physAgentProgId   = setShaders( "..\\standard.vert", "..\\Blend\\PhysarumAgents.frag" );
+		m_physAgentTexUni   = glGetUniformLocation( m_physAgentProgId, "texAgents" );
+		m_physAgentTrailUni = glGetUniformLocation( m_physAgentProgId, "texTrail" );
+		m_physAgentResUni   = glGetUniformLocation( m_physAgentProgId, "resolution" );
+		m_physAgentSeedUni  = glGetUniformLocation( m_physAgentProgId, "seedMode" );
+		m_physAgentTimeUni  = glGetUniformLocation( m_physAgentProgId, "time" );
+		m_physAgentSpeedUni = glGetUniformLocation( m_physAgentProgId, "speed" );
+		m_physAgentSensAUni = glGetUniformLocation( m_physAgentProgId, "sensAngle" );
+		m_physAgentSensDUni = glGetUniformLocation( m_physAgentProgId, "sensDist" );
+		m_physAgentTurnUni  = glGetUniformLocation( m_physAgentProgId, "turnRate" );
+		m_physAgentScatUni  = glGetUniformLocation( m_physAgentProgId, "scatter" );
+	}
+	if( m_physDepositProgId == 0 )
+	{
+		// The deposit pass needs a REAL vertex shader (VTF) — setShadersVF.
+		m_physDepositProgId = setShadersVF( "..\\Blend\\PhysarumDeposit.vert",
+		                                    "..\\Blend\\PhysarumDeposit.frag" );
+		m_physDepAgentsUni  = glGetUniformLocation( m_physDepositProgId, "texAgents" );
+		m_physDepAmtUni     = glGetUniformLocation( m_physDepositProgId, "depositAmt" );
+		m_physDepAttr       = glGetAttribLocation(  m_physDepositProgId, "aTexel" );
+	}
+	if( m_physDiffuseProgId == 0 )
+	{
+		m_physDiffuseProgId = setShaders( "..\\standard.vert", "..\\Blend\\PhysarumDiffuse.frag" );
+		m_physDifTrailUni   = glGetUniformLocation( m_physDiffuseProgId, "texTrail" );
+		m_physDifResUni     = glGetUniformLocation( m_physDiffuseProgId, "resolution" );
+		m_physDifDecayUni   = glGetUniformLocation( m_physDiffuseProgId, "decay" );
+	}
+
+	bool ok = m_physAgentProgId != 0 && m_physDepositProgId != 0
+	       && m_physDiffuseProgId != 0 && m_physAgentTexUni >= 0
+	       && m_physDepAttr >= 0;
+
+	for( int i = 0; i < 2 && ok; ++i )
+	{
+		if( m_texPhysAgents[i] == 0 ) glGenTextures( 1, &m_texPhysAgents[i] );
+		glBindTexture( GL_TEXTURE_2D, m_texPhysAgents[i] );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA16F, kPhysAgentsSide, kPhysAgentsSide,
+		              0, GL_RGBA, GL_FLOAT, NULL );
+		if( m_fboPhysAgents[i] == 0 ) glGenFramebuffersEXT( 1, &m_fboPhysAgents[i] );
+		glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_fboPhysAgents[i] );
+		glFramebufferTexture2DEXT( GL_FRAMEBUFFER_EXT, m_attachmentpoint,
+		                           GL_TEXTURE_2D, m_texPhysAgents[i], 0 );
+		if( !checkFramebufferStatus() ) ok = false;
+
+		if( m_texPhysTrail[i] == 0 ) glGenTextures( 1, &m_texPhysTrail[i] );
+		glBindTexture( GL_TEXTURE_2D, m_texPhysTrail[i] );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA16F, kPhysTrailSize, kPhysTrailSize,
+		              0, GL_RGBA, GL_FLOAT, NULL );
+		if( m_fboPhysTrail[i] == 0 ) glGenFramebuffersEXT( 1, &m_fboPhysTrail[i] );
+		glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_fboPhysTrail[i] );
+		glFramebufferTexture2DEXT( GL_FRAMEBUFFER_EXT, m_attachmentpoint,
+		                           GL_TEXTURE_2D, m_texPhysTrail[i], 0 );
+		if( !checkFramebufferStatus() ) ok = false;
+		if( ok )
+		{
+			glClearColor( 0.f, 0.f, 0.f, 0.f );
+			glClear( GL_COLOR_BUFFER_BIT );
+		}
+	}
+
+	// One point per agent; the only attribute is the agent's texel coord.
+	if( ok && m_physVBO == 0 )
+	{
+		std::vector<float> v;
+		v.reserve( size_t(kPhysAgentsSide) * kPhysAgentsSide * 2 );
+		for( int y = 0; y < kPhysAgentsSide; ++y )
+			for( int x = 0; x < kPhysAgentsSide; ++x )
+			{
+				v.push_back( (x + 0.5f) / float(kPhysAgentsSide) );
+				v.push_back( (y + 0.5f) / float(kPhysAgentsSide) );
+			}
+		glGenBuffers( 1, &m_physVBO );
+		glBindBuffer( GL_ARRAY_BUFFER, m_physVBO );
+		glBufferData( GL_ARRAY_BUFFER, GLsizeiptr(v.size() * sizeof(float)),
+		              v.data(), GL_STATIC_DRAW );
+		glBindBuffer( GL_ARRAY_BUFFER, 0 );
+	}
+
+	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, 0 );
+	glBindTexture( GL_TEXTURE_2D, 0 );
+	m_physReady  = ok;
+	m_physSeeded = false;
+	checkGLErrors("setupPhysarum()");
+}
+
+// One full Physarum frame: agents sense/turn/move (ping-pong), deposit their
+// pheromone points, then the trail map diffuses + evaporates (ping-pong).
+void FilterShader::stepPhysarum(const AudioFeatures &audio)
+{
+	if( !m_physReady )
+		return;
+
+	const int aCur  = m_physAgentIdx, aPrev = 1 - m_physAgentIdx;
+	const int tCur  = m_physTrailIdx, tPrev = 1 - m_physTrailIdx;
+
+	// ---- 1) Agent update ----
+	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_fboPhysAgents[aCur] );
+	glViewport( 0, 0, kPhysAgentsSide, kPhysAgentsSide );
+	glUseProgram( m_physAgentProgId );
+	glActiveTexture( GL_TEXTURE0 );
+	glBindTexture( GL_TEXTURE_2D, m_texPhysAgents[aPrev] );
+	glActiveTexture( GL_TEXTURE1 );
+	glBindTexture( GL_TEXTURE_2D, m_texPhysTrail[tPrev] );
+	glUniform1i( m_physAgentTexUni, 0 );
+	if( m_physAgentTrailUni >= 0 ) glUniform1i( m_physAgentTrailUni, 1 );
+	if( m_physAgentResUni   >= 0 ) glUniform2f( m_physAgentResUni,
+	                                            (float)kPhysAgentsSide, (float)kPhysAgentsSide );
+	if( m_physAgentSeedUni  >= 0 ) glUniform1f( m_physAgentSeedUni, m_physSeeded ? 0.f : 1.f );
+	if( m_physAgentTimeUni  >= 0 ) glUniform1f( m_physAgentTimeUni, m_globaltime );
+	// Audio character: bright material makes tight directed veins, loud
+	// passages speed the swarm up, hard kicks scatter part of it.
+	if( m_physAgentSpeedUni >= 0 ) glUniform1f( m_physAgentSpeedUni,
+	                                            0.0016f + 0.0022f * audio.overallLevel
+	                                                    + 0.0018f * audio.onsetKick );
+	if( m_physAgentSensAUni >= 0 ) glUniform1f( m_physAgentSensAUni,
+	                                            0.75f - 0.35f * audio.spectralCentroid );
+	if( m_physAgentSensDUni >= 0 ) glUniform1f( m_physAgentSensDUni, 0.014f );
+	if( m_physAgentTurnUni  >= 0 ) glUniform1f( m_physAgentTurnUni,
+	                                            0.30f + 0.25f * audio.onsetStrength );
+	if( m_physAgentScatUni  >= 0 ) glUniform1f( m_physAgentScatUni,
+	                                            ( audio.onsetKick > 0.75f ) ? 0.10f : 0.f );
+	drawWindow();
+
+	// ---- 2) Deposit: 65k points into the CURRENT trail (additive) ----
+	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_fboPhysTrail[tPrev] );
+	glViewport( 0, 0, kPhysTrailSize, kPhysTrailSize );
+	glUseProgram( m_physDepositProgId );
+	glActiveTexture( GL_TEXTURE0 );
+	glBindTexture( GL_TEXTURE_2D, m_texPhysAgents[aCur] );
+	if( m_physDepAgentsUni >= 0 ) glUniform1i( m_physDepAgentsUni, 0 );
+	if( m_physDepAmtUni    >= 0 ) glUniform1f( m_physDepAmtUni,
+	                                           0.06f + 0.05f * audio.onsetStrength );
+	glEnable( GL_BLEND );
+	glBlendFunc( GL_ONE, GL_ONE );
+	glBindBuffer( GL_ARRAY_BUFFER, m_physVBO );
+	glEnableVertexAttribArray( GLuint(m_physDepAttr) );
+	glVertexAttribPointer( GLuint(m_physDepAttr), 2, GL_FLOAT, GL_FALSE,
+	                       2 * sizeof(float), (const void *) 0 );
+	glDrawArrays( GL_POINTS, 0, kPhysAgentsSide * kPhysAgentsSide );
+	glDisableVertexAttribArray( GLuint(m_physDepAttr) );
+	glBindBuffer( GL_ARRAY_BUFFER, 0 );
+	glDisable( GL_BLEND );
+
+	// ---- 3) Diffuse + evaporate into the other trail buffer ----
+	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_fboPhysTrail[tCur] );
+	glUseProgram( m_physDiffuseProgId );
+	glActiveTexture( GL_TEXTURE0 );
+	glBindTexture( GL_TEXTURE_2D, m_texPhysTrail[tPrev] );
+	if( m_physDifTrailUni >= 0 ) glUniform1i( m_physDifTrailUni, 0 );
+	if( m_physDifResUni   >= 0 ) glUniform2f( m_physDifResUni,
+	                                          (float)kPhysTrailSize, (float)kPhysTrailSize );
+	if( m_physDifDecayUni >= 0 ) glUniform1f( m_physDifDecayUni,
+	                                          0.94f + 0.02f * audio.ambientFactor );
+	drawWindow();
+
+	glBindTexture( GL_TEXTURE_2D, 0 );
+	m_physSeeded   = true;
+	m_physAgentIdx = aPrev;
+	m_physTrailIdx = tPrev;
 }
 
 // Accumulate the self-similarity matrix: every kSSMStride seconds push one
@@ -1854,6 +2034,35 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
         }
         float swell = (m_swellFast - m_swellSlow) * 4.f;
         swell = (swell < 0.f) ? 0.f : (swell > 1.f ? 1.f : swell);
+
+        // SONG-END dramaturgy: a fade-out is the 6 s loudness average sinking
+        // well below the 20 s one while music is still (barely) present.  The
+        // envelope rises slowly (never fires on a mere break) and releases
+        // fast when the level comes back.
+        {
+            float a6  = 1.f - expf(-dt / 6.f);
+            float a20 = 1.f - expf(-dt / 20.f);
+            m_fadeSlow6  += a6  * (audio.overallLevel - m_fadeSlow6);
+            m_fadeSlow20 += a20 * (audio.overallLevel - m_fadeSlow20);
+            float ev = 0.f;
+            if( m_fadeSlow20 > 0.08f && audio.musicPresence > 0.25f )
+                ev = clampParam( (m_fadeSlow20 * 0.70f - m_fadeSlow6)
+                                 / (m_fadeSlow20 * 0.45f + 1e-4f), 0.f, 1.f );
+            float rate = ( ev > m_fadeOutEnv ) ? 0.35f : 1.8f;
+            m_fadeOutEnv = slewToward( m_fadeOutEnv, ev, rate, dt );
+        }
+        audioFx.fadeOut = m_fadeOutEnv;
+
+        // MELODY ring: dominantPitch sampled every 80 ms (~7.7 s window).
+        m_melodyAccum += dt;
+        if( m_melodyAccum >= 0.08f )
+        {
+            m_melodyAccum = fmodf( m_melodyAccum, 0.08f );
+            m_melody[m_melodyHead] = audio.dominantPitch;
+            m_melodyHead = ( m_melodyHead + 1 ) % 96;
+        }
+        for( int i = 0; i < 96; ++i ) audioFx.melody[i] = m_melody[i];
+        audioFx.melodyHead = float(m_melodyHead) / 96.f;
 
         // Ease rotation direction between +1/-1 so reversals never snap.  Even
         // an instant flip would now only change the *rate*, not the phase, but
@@ -2406,6 +2615,20 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 		glBindTexture( GL_TEXTURE_2D, m_texSmoke3D[1 - m_smoke3DIdx] );
 	}
 
+	// Physarum slime mould, same gating: only step while an effect that
+	// samples "texPhysarum" is on screen; newest trail map on unit 11.
+	bool physNeeded = m_physReady &&
+	    ( m_effectTextures[m_actEffectTexture]->usesPhysarum()
+	   || ( m_stateInterpolationEffectTexture != 0
+	        && m_effectTextures[m_nextEffectTexture]->usesPhysarum() ) );
+	if( physNeeded )
+	{
+		stepPhysarum( audio );
+		stepPhysarum( audio );          // 2 sub-steps: the net develops faster
+		glActiveTexture( GL_TEXTURE11 );
+		glBindTexture( GL_TEXTURE_2D, m_texPhysTrail[1 - m_physTrailIdx] );
+	}
+
 	// Self-similarity matrix: the HISTORY accumulates always (CPU-cheap, and
 	// the structure must already exist when the effect appears); the texture
 	// upload + bind (unit 10) only happens while an effect samples "texSSM".
@@ -2811,6 +3034,9 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 		// trails; legato swells keep the full flowing length.  The feature is
 		// slow-moving, so this reads as an interpretation trait, not a pulse.
 		decay *= 1.f - 0.30f * audio.logAttackTime;
+		// SONG-END outro: as the track fades out the trails BLOOM — the last
+		// notes linger visibly before the picture settles.
+		decay = std::min( decay * (1.f + 0.40f * audioFx.fadeOut), 0.96f );
 
 		glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_fboTrail[cur] );
 		glViewport( 0, 0, m_width, m_height );
@@ -3020,10 +3246,13 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 			if( step > 1.f ) step = 1.f;
 			m_blackSmooth += ( blackTarget - m_blackSmooth ) * step;
 		}
-		// The DJ-stop also dims the held picture slightly (sells the "gasp").
+		// The DJ-stop also dims the held picture slightly (sells the "gasp");
+		// a detected FADE-OUT dims a touch too (the room lights come down
+		// with the song).
 		if( m_presentScaleUni >= 0 )
 			glUniform1f( m_presentScaleUni,
-			             scale * (1.f - m_blackSmooth) * (1.f - 0.25f * m_breakSmooth) );
+			             scale * (1.f - m_blackSmooth) * (1.f - 0.25f * m_breakSmooth)
+			                   * (1.f - 0.20f * m_fadeOutEnv) );
 		// Global mood grade — gated values (neutral in non-music mode), scaled by the
 		// live mood-strength knob (deviations from neutral × s_moodStrength).
 		float ms = s_moodStrength;

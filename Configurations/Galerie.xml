@@ -94,6 +94,11 @@
     <float name="rainbowP" minValue="0.0" maxValue="1.0"></float>
   </TextureShader>
 
+  <TextureShader file="..\\Scene\\Physarum.frag" type="normal" probability="0.4" complexity="2">
+    <int name="sidesP" minValue="0" maxValue="8"></int>
+    <float name="zoomP" minValue="0.7" maxValue="1.5"></float>
+  </TextureShader>
+
   <CombineShader file="..\\Combine\\CombinePlain.frag" type="normal" probability="1" complexity="1">
   </CombineShader>
 

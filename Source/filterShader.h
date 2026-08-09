@@ -491,6 +491,54 @@ private:
 	bool			m_smoke3DReady         = false;
 	bool			m_smoke3DSeeded        = false;
 
+	// ---- Song-end dramaturgy + melody history (host state) ----
+	float			m_fadeSlow6   = 0.f;    // 6 s loudness average
+	float			m_fadeSlow20  = 0.f;    // 20 s loudness average
+	float			m_fadeOutEnv  = 0.f;    // slewed fade-out envelope
+	float			m_melody[96]  = {};     // dominantPitch ring (~7.7 s)
+	int				m_melodyHead  = 0;
+	float			m_melodyAccum = 0.f;
+
+	// ---- Physarum slime-mould simulation (agents + trail map, unit 11) ----
+	// Jones (2010) model: 65k agents live in a 256^2 RGBA16F ping-pong texture
+	// (R,G = position, B = heading, A = species); each frame they sense the
+	// 512^2 trail map (R/G = two species' pheromone), turn, move, then DEPOSIT
+	// by drawing one GL_POINT each (vertex-texture-fetch of their position)
+	// and the map diffuses + evaporates.  The living vein network is bound to
+	// "texPhysarum" (unit 11) for Scene\Physarum.frag.
+	static const int kPhysAgentsSide = 256;   // 65 536 agents
+	static const int kPhysTrailSize  = 512;
+	GLuint			m_texPhysAgents[2] = { 0, 0 };
+	GLuint			m_fboPhysAgents[2] = { 0, 0 };
+	GLuint			m_texPhysTrail[2]  = { 0, 0 };
+	GLuint			m_fboPhysTrail[2]  = { 0, 0 };
+	int				m_physAgentIdx = 0;
+	int				m_physTrailIdx = 0;
+	GLuint			m_physAgentProgId   = 0;
+	GLuint			m_physDepositProgId = 0;
+	GLuint			m_physDiffuseProgId = 0;
+	GLuint			m_physVBO = 0;
+	GLint			m_physAgentTexUni   = -1;   // agent-update pass
+	GLint			m_physAgentTrailUni = -1;
+	GLint			m_physAgentResUni   = -1;
+	GLint			m_physAgentSeedUni  = -1;
+	GLint			m_physAgentTimeUni  = -1;
+	GLint			m_physAgentSpeedUni = -1;
+	GLint			m_physAgentSensAUni = -1;
+	GLint			m_physAgentSensDUni = -1;
+	GLint			m_physAgentTurnUni  = -1;
+	GLint			m_physAgentScatUni  = -1;
+	GLint			m_physDepAgentsUni  = -1;   // deposit pass
+	GLint			m_physDepAmtUni     = -1;
+	GLint			m_physDepAttr       = -1;
+	GLint			m_physDifTrailUni   = -1;   // diffuse pass
+	GLint			m_physDifResUni     = -1;
+	GLint			m_physDifDecayUni   = -1;
+	bool			m_physReady  = false;
+	bool			m_physSeeded = false;
+	void			setupPhysarum();
+	void			stepPhysarum(const AudioFeatures &a);
+
 	// ---- Self-similarity matrix (SSM recurrence plot, host-computed) ----
 	// A ring of short feature vectors (12 chroma + 8 coarse band-shape dims),
 	// one entry per kSSMStride seconds (~90 s window across the ring).  Each
