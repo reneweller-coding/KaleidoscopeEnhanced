@@ -30,6 +30,7 @@ uniform float audioChromaHue;
 uniform float audioKick;
 uniform float audioSwell;
 uniform float audioDrop;
+uniform float audioBeatPhase;
 
 varying vec3  vNorm;
 varying vec3  vView;
@@ -44,33 +45,22 @@ float modeSum(float u, float v)
     float s = 0.0;
     float ph = sceneSeed * 6.2831853;
 
-    // Global shapes (bands 0..7).  NO (0,0) DC term — uniform tube swelling
-    // is invisible as deformation but would saturate the antinode glow.
-    s += audioSpectrum[0] * 0.140 * cos(TU * (1.0 * u          ) + ph);
-    s += audioSpectrum[1] * 0.130 * cos(TU * (           1.0 * v));
-    s += audioSpectrum[2] * 0.125 * cos(TU * (2.0 * u          ) + ph * 1.7);
-    s += audioSpectrum[3] * 0.120 * cos(TU * (1.0 * u + 1.0 * v) + ph);
-    s += audioSpectrum[4] * 0.115 * cos(TU * (2.0 * u + 1.0 * v));
-    s += audioSpectrum[5] * 0.110 * cos(TU * (3.0 * u          ) + ph * 2.3);
-    s += audioSpectrum[6] * 0.105 * cos(TU * (           2.0 * v));
-    s += audioSpectrum[7] * 0.100 * cos(TU * (3.0 * u + 2.0 * v) + ph);
-
-    // Mid + fine modes (bands 8..31): wavenumbers climb with the band.
-    for (int k = 0; k < 24; ++k)
-    {
-        float fk = float(k);
-        float n  = 2.0 + floor(fk * 0.45);            // 2..12 around the ring
-        float m  = 1.0 + floor(fk * 0.28);            // 1..7 around the tube
-        float w  = 0.075 - fk * 0.0022;               // fine modes displace less
-        s += audioSpectrum[8 + k] * w
-           * cos(TU * (n * u + m * v) + ph + fk * 1.9);
-    }
+    // BIG, SLOW, CREATURELY: only the lowest few modes, with LARGE
+    // amplitudes — the ring visibly bends, squashes and bulges like a
+    // living body instead of trembling with fine ripples.  (The spectrum
+    // is meter-smoothed host-side; the fine-mode chorus of the first
+    // version read as nervous jitter.)
+    s += audioSpectrum[1] * 0.25 * cos(TU * (1.0 * u          ) + ph);
+    s += audioSpectrum[3] * 0.22 * cos(TU * (2.0 * u          ) + ph * 1.7);
+    s += audioSpectrum[6] * 0.19 * cos(TU * (1.0 * u + 1.0 * v) + ph);
+    s += audioSpectrum[10] * 0.16 * cos(TU * (3.0 * u          ) + ph * 2.3);
+    s += audioSpectrum[16] * 0.14 * cos(TU * (2.0 * u + 1.0 * v));
+    s += audioSpectrum[24] * 0.12 * cos(TU * (           1.0 * v) + ph);
 
     // Stereo side modes (sin partners around the major circle).
     vec3 side = audioStereoL - audioStereoR;
-    s += side.x * 0.100 * sin(TU * 1.0 * u);
-    s += side.y * 0.080 * sin(TU * (3.0 * u + 1.0 * v));
-    s += side.z * 0.060 * sin(TU * (6.0 * u + 2.0 * v));
+    s += side.x * 0.20 * sin(TU * 1.0 * u);
+    s += side.y * 0.14 * sin(TU * (2.0 * u + 1.0 * v));
 
     return s;
 }
@@ -89,11 +79,16 @@ vec3 torusPoint(float u, float v)
     vec3 base   = ring * R + nrm * r;
 
     float defo = modeSum(u, v);
+    // KICK WAVE: a fat bulge races once around the ring on every beat —
+    // the clearest possible "the music runs through this body" signal.
+    float wavePos = fract(u - audioBeatPhase);
+    defo += 0.35 * audioKick * exp(-wavePos * 9.0);
+    // A drop TWISTS the tube: v-offset shear that unwinds as it decays.
     vec3 p = base + nrm * (r * defo);
 
-    // Slow tumble (object rotation — pattern rides the body, no remapping).
-    float a1 = time * 0.06;
-    float a2 = 0.55 + 0.15 * sin(time * 0.031);
+    // Faster tumble so the 3D body reads clearly.
+    float a1 = time * 0.11;
+    float a2 = 0.55 + 0.30 * sin(time * 0.047);
     p.yz = mat2(cos(a2), -sin(a2), sin(a2), cos(a2)) * p.yz;
     p.xz = mat2(cos(a1), -sin(a1), sin(a1), cos(a1)) * p.xz;
     return p;

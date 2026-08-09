@@ -1,5 +1,6 @@
 #include <float.h>
 #include <math.h>
+#include <algorithm>
 
 #include "shader_setup.h"
 #include "filterShader.h"
@@ -1998,6 +1999,21 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
         if (dt < 0.f)  dt = 0.f;
         if (dt > 0.1f) dt = 0.1f;   // ignore long stalls (first frame, load hitches)
 
+        // VISUAL spectrum smoothing (anti-jitter): the analyzer's spectrum is
+        // tuned for DETECTION and still flutters frame-to-frame — driving
+        // GEOMETRY with it makes towers/surfaces tremble nervously (the
+        // "zittern" feedback).  Meter ballistics fix it: near-instant attack
+        // keeps the punch, a slow release lets bars fall gracefully.
+        for (int i = 0; i < AudioFeatures::kSpectrumBands; ++i)
+        {
+            float v = audio.spectrum[i];
+            if (v >= m_specVis[i])
+                m_specVis[i] += (v - m_specVis[i]) * std::min(1.f, dt * 22.f);
+            else
+                m_specVis[i] += (v - m_specVis[i]) * std::min(1.f, dt * 3.2f);
+            audioFx.spectrum[i] = m_specVis[i];
+        }
+
         // Global reactivity strength.  All audio-driven MOTION is scaled by this
         // single knob — raise it for a wilder show, lower it for calm.  (Motion is
         // integrated into phases, so larger values stay smooth and never flicker.)
@@ -2277,7 +2293,7 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
     // forces an early cross-fade to the next effect — rate-limited, and only
     // while music is actually playing.
     m_noveltyCooldown -= timeSinceLastFrameSec;
-    if( m_noveltyCooldown <= 0.f &&
+    if( !m_reviewMode && m_noveltyCooldown <= 0.f &&
         audio.harmonicChange * audio.musicPresence > 0.5f )
     {
         m_forceEffectChange = true;
@@ -2296,7 +2312,7 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
     // RETURNING section (chorus #2 = chorus #1) replays the shader, combine
     // and exact parameter values it had the first time; a NEW section rolls
     // fresh and its look is stored under the id after the switch completes.
-    if( audio.sectionCount == m_lastSectionCount + 1 )
+    if( !m_reviewMode && audio.sectionCount == m_lastSectionCount + 1 )
     {
         int  id = audio.sectionId;
         auto it = m_sectionEffect.find( id );
@@ -2339,7 +2355,7 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
     // pending machinery still quantises it, but a drop IS a downbeat-scale
     // accent, so it lands right where the ear expects the change.  The
     // camera layer additionally hits/shakes on audio.dropPulse.
-    if( audio.dropCount == m_lastDropCount + 1 )
+    if( !m_reviewMode && audio.dropCount == m_lastDropCount + 1 )
     {
         m_forceEffectChange = true;
         m_noveltyCooldown   = 8.0f;
@@ -2442,6 +2458,11 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 
 		float ts = float(m_timeEffectTexture.elapsed()) * 0.001;
 
+		// REVIEW MODE: fixed 8 s per scene, regardless of what the config
+		// (or the music pacing) would have chosen.
+		if( m_reviewMode && m_timeInterpolationEffectTexture > 8.f )
+			m_timeInterpolationEffectTexture = 8.f;
+
 		// End the solo early on a manual ('n') or novelty-driven request, but
 		// only after a brief minimum so cuts never come back-to-back.
 		bool forced = m_forceEffectChange;
@@ -2460,7 +2481,7 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 		if( m_pendingEffectChange )
 		{
 			m_pendingEffectAge += timeSinceLastFrameSec;
-			if( m_pendingEffectForced || m_downbeatTick
+			if( m_pendingEffectForced || m_reviewMode || m_downbeatTick
 			    || m_pendingEffectAge > 2.5f || m_gateSmooth < 0.25f )
 			{
 				bool forcedGo         = m_pendingEffectForced;
@@ -2497,7 +2518,8 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 					// snappier cross-fades, legato keeps the full dissolve —
 					// the performance's phrasing shapes the editing style.
 					cfgT *= 1.f - 0.35f * audio.logAttackTime;
-					m_timeInterpolationEffectTexture = forcedGo ? 0.8f : cfgT;
+					m_timeInterpolationEffectTexture =
+					    (forcedGo || m_reviewMode) ? 0.8f : cfgT;
 				}
 
 				m_effectTextures[m_nextEffectTexture]->startInterpolators();
@@ -2543,9 +2565,33 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 				m_pendingSectionStore = -1;
 			}
 
+			// REVIEW MODE: step strictly alphabetically (built lazily).
+			if( m_reviewMode && !m_effectTextures.empty() )
+			{
+				if( m_reviewOrder.size() != m_effectTextures.size() )
+				{
+					m_reviewOrder.clear();
+					for( unsigned int k = 0; k < m_effectTextures.size(); ++k )
+						m_reviewOrder.push_back( (int)k );
+					std::sort( m_reviewOrder.begin(), m_reviewOrder.end(),
+					           [this]( int a, int b )
+					           {
+					               QString na( m_effectTextures[a]->fragmentName() );
+					               QString nb( m_effectTextures[b]->fragmentName() );
+					               int ca = std::max( na.lastIndexOf('\\'), na.lastIndexOf('/') );
+					               int cb = std::max( nb.lastIndexOf('\\'), nb.lastIndexOf('/') );
+					               return na.mid(ca+1).compare( nb.mid(cb+1), Qt::CaseInsensitive ) < 0;
+					           } );
+					m_reviewPos = 0;
+				}
+				m_nextEffectTexture = m_reviewOrder[ m_reviewPos % m_reviewOrder.size() ];
+				m_reviewPos = ( m_reviewPos + 1 ) % (int)m_reviewOrder.size();
+				fprintf( stderr, "Review: %s\n",
+				         m_effectTextures[m_nextEffectTexture]->fragmentName() );
+			}
 			// Remote scene browser: a DIRECTLY requested scene (forceScene)
 			// overrides the random mood roll entirely.
-			if( m_forcedNextTexture >= 0
+			else if( m_forcedNextTexture >= 0
 			    && m_forcedNextTexture < (int)m_effectTextures.size() )
 			{
 				m_nextEffectTexture = m_forcedNextTexture;

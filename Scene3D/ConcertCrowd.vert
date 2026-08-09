@@ -49,9 +49,13 @@ void main()
     jx += cos(clusterA) * 0.9;
     jz += sin(clusterA) * 1.4;
     float hgt = 0.85 + 0.35 * hash11(person * 23.7);   // body height variance
-    vec3 base = vec3((col - COLS * 0.5 + 0.5) * 1.1 + jx,
-                     -9.0 + row * 0.28 + 0.10 * sin(col * 1.7),
-                     10.0 + row * 2.1 + jz);
+    // ROOM-FILLING: wider spread, front rows reach past the frame edges,
+    // rear rows recede far beyond the fog line, and the terrain undulates
+    // (a festival field, not a cut plane).
+    vec3 base = vec3((col - COLS * 0.5 + 0.5) * 2.0 + jx,
+                     -9.0 + row * 0.24
+                          + 0.9 * sin(col * 0.31) * sin(row * 0.22),
+                     4.0 + row * 3.4 + jz);
 
     float ph = hash11(person * 3.7 + 0.5) * 6.2831853;   // per-person phase
 
@@ -101,11 +105,15 @@ void main()
     float dist = max(vp.z, 0.5);
     gl_PointSize = clamp(140.0 * px / dist, 1.5, 16.0 * px);
 
-    // Silhouette body: near-black, rim-lit by the stage backlight.
-    vec3 backlight = hueRot(vec3(1.0, 0.55, 0.20), audioChromaHue);
-    col3 = mix(vec3(0.05, 0.04, 0.05), backlight, rim * (0.6 + 0.5 * armRaise));
+    // Silhouette body, rim-lit by the stage backlight — every person wears
+    // a PERSONAL hue shift (similar family, individual shade), so the crowd
+    // reads as thousands of individuals instead of stamped clones.
+    float personalHue = (hash11(person * 31.7) - 0.5) * 1.4;
+    vec3 backlight = hueRot(vec3(1.0, 0.55, 0.20), audioChromaHue + personalHue);
+    vec3 shirt     = hueRot(vec3(0.09, 0.06, 0.08), personalHue * 2.0);
+    col3 = mix(shirt, backlight, rim * (0.6 + 0.5 * armRaise));
     col3 *= (0.7 + 0.7 * audioSwell + 1.1 * audioDrop)
-          * clamp(1.0 - vp.z / 90.0, 0.15, 1.0);
+          * clamp(1.0 - vp.z / 130.0, 0.10, 1.0);
 
     vCol = vec4(col3 * 3.2, 1.0);
 }

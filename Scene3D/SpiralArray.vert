@@ -1,13 +1,12 @@
 #version 120
-// SpiralArray.vert — Chew's SPIRAL ARRAY (the MuSA.RT idea): the 12 pitch
-// classes wound along a helix of FIFTHS (a quarter turn + a small rise per
-// fifth, so 12 fifths = 3 full turns), and the music's CENTER OF EFFECT —
-// the chroma-weighted centroid of the sounding pitches — travels through
-// the helix as a bright comet.  Stable keys keep the comet resting between
-// their pitches; a key CHANGE sends it on a visible journey to a new
-// neighbourhood.  The engine's global feedback trails paint its path for
-// free.  Point budget (60k): helix wire 18k, 12 node clouds x 2.6k = 31.2k,
-// comet 10.8k.
+// SpiralArray.vert — a DNA DOUBLE HELIX of light (the recognisable motif
+// the abstract tonality helix never managed to be): two glowing strands
+// wind around each other, connected by base-pair rungs that light up in
+// the current harmony's colours (audioChroma picks which rungs glow).
+// A light pulse climbs the helix on every beat, kicks make the strands
+// breathe apart — and a DROP UNZIPS the helix: the strands tear apart
+// down the middle and snap back together as the pulse decays.
+//   60k points: 2x 12k strand beads, 24k rung beads, 12k drifting plasma.
 
 attribute vec4 attrA;
 attribute vec4 attrB;
@@ -22,10 +21,7 @@ uniform float audioChroma[12];
 uniform float audioChromaHue;
 uniform float audioSwell;
 uniform float audioKick;
-uniform float audioOnset;
 uniform float audioDrop;
-uniform float audioDownbeat;
-uniform float audioHarmChange;
 uniform float audioBeatPhase;
 
 varying vec4 vCol;
@@ -38,100 +34,95 @@ vec3 hueRot(vec3 c, float a)
 }
 float hash11(float n) { return fract(sin(n * 127.1) * 43758.5453); }
 
-// Position along the helix by CONTINUOUS fifths index f (0..12): quarter
-// turn per fifth, rising; radius chosen so the coil reads clearly.
-vec3 helixPos(float f)
-{
-    float a = f * 1.5707963;             // pi/2 per fifth -> 3 turns
-    float y = (f - 5.5) * 2.05;          // centred vertically
-    return vec3(cos(a) * 7.5, y, sin(a) * 7.5);
-}
-
-// Pitch class i (0..11) -> its fifths index (i*7 mod 12).
-float fifthsIndex(float pc) { return mod(pc * 7.0, 12.0); }
-
 void main()
 {
     float idx = attrA.w;
     float r1 = attrB.x, r2 = attrB.y, r3 = attrB.z, r4 = attrB.w;
 
-    // ---- Center of effect: chroma-weighted centroid over the 12 nodes ----
-    // (computed per-vertex — 12 adds — so no host state is needed).
-    vec3  ce = vec3(0.0);
-    float wsum = 1e-4;
-    for (int i = 0; i < 12; ++i)
-    {
-        float w = audioChroma[i];
-        w = w * w;                        // sharpen: the KEY notes dominate
-        ce += helixPos(fifthsIndex(float(i))) * w;
-        wsum += w;
-    }
-    ce /= wsum;
+    // Helix parameters: h in 0..1 spans the visible column.
+    const float TURNS = 5.5;
+    const float H     = 34.0;
+    const float R     = 5.2;
 
     vec3  world;
     vec3  col;
     float bright;
     float sizeMul = 1.0;
 
-    if (idx < 18000.0)
+    // The whole molecule slowly turns; a beat pulse climbs it.
+    float spin  = time * 0.35;
+    float pulseH = fract(audioBeatPhase);              // 0 bottom .. 1 top
+
+    // DROP UNZIP: the strands tear apart horizontally, most near the top.
+    float unzip = audioDrop;
+
+    if (idx < 24000.0)
     {
-        // ---- Helix wire: a LIGHT PULSE races down the coil every beat and
-        // kicks make the whole wire surge — the skeleton itself performs. ----
-        float t = idx / 18000.0;          // 0..1 -> fifths 0..12 (wraps)
-        float f = t * 12.0;
-        world = helixPos(f) + vec3(r1 - 0.5, r2 - 0.5, r3 - 0.5) * 0.22;
-        float race = exp(-abs(fract(t * 2.0 - audioBeatPhase) - 0.5) * 14.0);
-        col = hueRot(vec3(0.30, 0.45, 0.70), audioChromaHue * 0.4);
-        bright = 0.10 + 0.10 * audioSwell + 0.9 * race * (0.3 + 0.7 * audioKick);
-        sizeMul = 0.5 + 0.5 * race;
+        // ---- Two strands: beads along the backbones ----
+        float strand = (idx < 12000.0) ? 0.0 : 1.0;
+        float h  = fract(idx / 12000.0) ;
+        h = fract(h * 7.919 + r1 * 0.002);             // decorrelate
+        float ang = h * TURNS * 6.2831853 + spin + strand * 3.1415927;
+
+        vec3 c3 = vec3(cos(ang) * R, (h - 0.5) * H, sin(ang) * R);
+        // Unzip: push the strands apart sideways, stronger toward the top.
+        c3.x += (strand * 2.0 - 1.0) * unzip * 7.0 * h;
+        // Kick: the strands breathe apart radially for an instant.
+        c3.xz *= 1.0 + 0.16 * audioKick;
+        world = c3 + vec3(r2 - 0.5, r3 - 0.5, r4 - 0.5) * 0.30;
+
+        // Strand colours: classic two-tone (cyan / warm) around the key.
+        col = hueRot((strand < 0.5) ? vec3(0.25, 0.85, 1.0)
+                                    : vec3(1.0, 0.55, 0.25), audioChromaHue);
+        float pulse = exp(-abs(h - pulseH) * 8.0);
+        bright = 0.45 + 0.9 * pulse + 0.4 * audioSwell;
+        sizeMul = 0.8 + 0.6 * pulse;
     }
-    else if (idx < 49200.0)
+    else if (idx < 48000.0)
     {
-        // ---- 12 pitch-class node clouds ----
-        float node = floor((idx - 18000.0) / 2600.0);
-        node = min(node, 11.0);
-        float e = audioChroma[int(node)] * 4.0;
+        // ---- Base-pair rungs: 64 rungs x ~375 beads bridging the strands.
+        float ri   = floor((idx - 24000.0) / 375.0);   // rung 0..63
+        float tt   = fract((idx - 24000.0) / 375.0);   // 0..1 across the rung
+        float h    = (ri + 0.5) / 64.0;
+        float ang  = h * TURNS * 6.2831853 + spin;
 
-        vec3 c3 = helixPos(fifthsIndex(node));
-        float u = r1 * 6.2831853, v = acos(2.0 * r2 - 1.0);
-        float rad = (0.42 + 0.85 * e) * pow(r3, 0.6);
-        world = c3 + vec3(sin(v) * cos(u), cos(v), sin(v) * sin(u)) * rad;
+        vec3 a3 = vec3(cos(ang) * R, (h - 0.5) * H, sin(ang) * R);
+        vec3 b3 = vec3(cos(ang + 3.1415927) * R, a3.y, sin(ang + 3.1415927) * R);
+        a3.x += -unzip * 7.0 * h;  b3.x += unzip * 7.0 * h;   // unzip splits rungs
+        vec3 c3 = mix(a3, b3, tt);
+        // The rung BREAKS in the middle while unzipped.
+        float gap = step(0.5 - 0.35 * unzip, tt) * step(tt, 0.5 + 0.35 * unzip)
+                  * step(0.05, unzip);
+        c3.xz *= 1.0 + 0.16 * audioKick;
+        world = c3 + vec3(r2 - 0.5, r3 - 0.5, r4 - 0.5) * 0.22;
 
-        col = hueRot(vec3(1.0, 0.40, 0.25),
-                     node / 12.0 * 3.1415927 + audioChromaHue);
-        bright = (0.16 + 2.4 * e) * (0.8 + 0.4 * audioSwell);
-        sizeMul = 0.85 + 0.8 * e;
+        // Rung colour = its pitch class; it GLOWS when that note sounds.
+        float pc = mod(ri, 12.0);
+        float e  = audioChroma[int(pc)] * 4.0;
+        col = hueRot(vec3(0.9, 0.5, 0.9), pc / 12.0 * 3.1415927 + audioChromaHue);
+        float pulse = exp(-abs(h - pulseH) * 8.0);
+        bright = (0.10 + 2.2 * e + 0.6 * pulse) * (1.0 - gap);
+        sizeMul = 0.6 + 0.5 * e;
     }
     else
     {
-        // ---- The comet: a dense glow cloud at the center of effect.  A
-        // CHORD CHANGE (harmonicChange spike) makes it BURST — the cloud
-        // blows up into a sphere shell and collapses back as the harmony
-        // settles into the new key. ----
-        float u = r1 * 6.2831853, v = acos(2.0 * r2 - 1.0);
-        float burst = clamp(audioHarmChange * 2.0, 0.0, 1.0);
-        float rad = (0.85 + 4.5 * burst * r4) * pow(r3, 0.75)
-                  * (1.0 + 0.35 * audioKick);
-        world = ce + vec3(sin(v) * cos(u), cos(v), sin(v) * sin(u)) * rad;
-
-        // White-hot core with the key's hue at the halo.
-        vec3 halo = hueRot(vec3(1.0, 0.65, 0.30), audioChromaHue);
-        col = mix(vec3(1.05, 1.0, 0.95), halo, pow(r3, 0.5));
-        bright = (1.6 + 1.2 * audioOnset + 2.0 * audioDrop)
-               * (0.85 + 0.35 * audioDownbeat);
-        sizeMul = 1.25;
+        // ---- Ambient plasma drifting around the molecule ----
+        float u = r1 * 6.2831853;
+        float h = r2;
+        float rad = R + 2.5 + 4.0 * r3;
+        world = vec3(cos(u + time * 0.1) * rad, (h - 0.5) * (H + 6.0),
+                     sin(u + time * 0.1) * rad);
+        col = hueRot(vec3(0.3, 0.5, 0.9), audioChromaHue);
+        bright = 0.05 + 0.10 * audioSwell;
+        sizeMul = 0.5;
     }
 
-    // Camera: a SWOOPING orbit — it spirals up and down the helix, close in
-    // on the coil, then pulls back (distance + height breathe over ~25 s).
-    float oa = time * 0.09;
-    world.xz = mat2(cos(oa), -sin(oa), sin(oa), cos(oa)) * world.xz;
-    world.y += sin(time * 0.043) * 6.0;
-    float tilt = 0.28 + 0.14 * sin(time * 0.037 + sceneSeed * 6.28);
-    world.yz = mat2(cos(tilt), -sin(tilt), sin(tilt), cos(tilt)) * world.yz;
+    // Gentle camera: slight tilt + slow vertical drift along the molecule.
+    float tilt = 0.25 + 0.10 * sin(time * 0.03 + sceneSeed * 6.28);
+    world.y  += sin(time * 0.05) * 4.0;
+    world.yz  = mat2(cos(tilt), -sin(tilt), sin(tilt), cos(tilt)) * world.yz;
 
-    float camD = 27.0 + 8.0 * sin(time * 0.026 + 2.0);
-    vec3 vp = world + vec3(0.0, 0.0, camD);
+    vec3 vp = world + vec3(0.0, 0.0, 27.0);
     vp.x -= eyeOff;
     gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
     gl_Position.x += eyeOff * 0.05 * gl_Position.w;
@@ -140,8 +131,8 @@ void main()
 
     float px   = resolution.y / 1080.0;
     float dist = max(vp.z, 0.5);
-    gl_PointSize = clamp(110.0 * sizeMul * (0.5 + 0.5 * r4) * px / dist,
-                         1.5, 13.0 * px);
+    gl_PointSize = clamp(105.0 * sizeMul * (0.5 + 0.5 * r4) * px / dist,
+                         1.5, 12.0 * px);
 
     vCol = vec4(col * bright * 2.8, 1.0);
 }

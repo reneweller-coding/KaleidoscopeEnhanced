@@ -67,7 +67,7 @@ void main()
     // Per-activation character (constant during the scene):
     float speedV = (speedP <= 0.01) ? 1.0 : speedP;
     float sizeV  = (sizeP  <= 0.01) ? 1.0 : sizeP;
-    float nBlobs = float((countP >= 2) ? countP : 6);
+    float nBlobs = float((countP >= 2) ? countP : 9);   // default: a BUSY lamp
 
     // Circulation: steady base + host-integrated audio advance (jump-free).
     float drift = (time * 0.05 + audioAdvance * 0.55) * speedV;
@@ -157,7 +157,10 @@ void main()
     waxPal = hueRot(waxPal, waxHueP + 0.25 * sin(audioBarPhase * 6.2831));
     // Each blob wears its own subtle tint (varies smoothly with its centre,
     // so neighbouring blobs shimmer in different shades of the palette).
-    waxPal = hueRot(waxPal, 0.45 * sin(nearC.x * 6.0 + nearC.y * 4.0));
+    // STRONG per-blob colours: each blob wears its own clearly different
+    // shade of the palette; where blobs merge, the metaball field blends
+    // the hues into each other.
+    waxPal = hueRot(waxPal, 1.1 * sin(nearC.x * 6.0 + nearC.y * 4.0));
     vec3 wax = waxPal * (0.55 + 0.75 * pic);
     wax = mix(wax, wax * vec3(1.05, 0.75, 1.05), 0.30 * audioValence);
     wax *= 0.85 + 0.55 * audioLevel;
@@ -198,13 +201,8 @@ void main()
     col += waxPal * rim * (0.35 + 0.45 * audioBeat)
          * (1.0 + 0.25 * sin(field * 24.0 + time * 2.0) * audioCentroid);
 
-    // Tapered glass vessel: soft side falloff + a glass rim highlight.
-    float halfW = mix(0.46, 0.26, uv.y) * aspect * 0.62;
-    float inside = smoothstep(halfW + 0.03, halfW - 0.02, abs(p.x));
-    float glass  = smoothstep(halfW + 0.03, halfW, abs(p.x))
-                 - smoothstep(halfW, halfW - 0.03, abs(p.x));
-    col = col * mix(0.18, 1.0, inside)
-        + vec3(0.9, 0.8, 0.7) * glass * (0.10 + 0.12 * audioLevel);
+    // No vessel silhouette any more — the wax fills the WHOLE frame (the
+    // glass outline wasted most of the screen and added nothing).
 
     gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }
