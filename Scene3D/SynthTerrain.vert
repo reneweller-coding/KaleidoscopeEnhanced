@@ -14,6 +14,9 @@ uniform float time;
 uniform float audioAdvance;
 uniform float audioSpectrum[32];
 uniform float audioSwell;
+uniform float audioKick;
+uniform float audioDrop;
+uniform float audioBeatPhase;
 
 varying vec3  vWorld;    // x, zAbs, height (for the fragment grid lines)
 varying float vDist;
@@ -37,7 +40,18 @@ void main()
                * (1.0 + 0.15 * audioSwell);
     h += 0.8 * sin(zAbs * 0.35 + attrB.x) * sin(x * 0.4);
 
-    vec3 vp = vec3(x - sin(time * 0.09) * 5.0, h - 7.0, zRel);
+    // KICK QUAKE: every kick rolls a ground shockwave down the valley
+    // toward the camera; a DROP ruptures the whole terrain upward once.
+    float qz = fract(zAbs * 0.012 - audioBeatPhase);
+    h += 3.5 * audioKick * exp(-qz * 9.0) * (0.3 + 0.7 * abs(sin(x * 0.15)));
+    h += 6.0 * audioDrop * exp(-abs(x) * 0.04) * sin(zAbs * 0.10);
+
+    // CAMERA: banking low-level flight — swings across the valley and rolls
+    // into the turns instead of gliding straight down the middle.
+    float swing = sin(time * 0.11) * 18.0;
+    float roll  = -cos(time * 0.11) * 0.14;
+    vec3 vp = vec3(x - swing, h - 6.0 + sin(time * 0.23) * 1.5, zRel);
+    vp.xy = mat2(cos(roll), -sin(roll), sin(roll), cos(roll)) * vp.xy;
     vp.x -= eyeOff;
     gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;

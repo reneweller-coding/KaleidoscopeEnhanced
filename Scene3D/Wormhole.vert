@@ -32,13 +32,24 @@ void main()
     float z   = 1.5 + w * 150.0;
     float ang = u * 6.2831853;
 
-    // The throat slides from far to near and loops — a repeating chain of
-    // pinches the camera flies through.
-    const float period = 90.0;
-    float slide    = mod(time * 12.0 + audioAdvance * 20.0, period);
-    float throatZ  = 150.0 - slide;                 // 150 (far) -> 0 (near)
-    float dz       = z - throatZ;
-    float lensAmt  = exp(-dz * dz * 0.010);          // 1 at the horizon
+    // TWO event horizons, half a period apart, each travelling the FULL way
+    // from beyond the far fog to BEHIND the camera before recycling.  Each
+    // throat's pinch strength fades in while it is still far away and opens
+    // back up just before the camera passes through it — so the fly-through
+    // completes properly and the recycle happens while the throat is
+    // invisible (the old single-throat mod() vanished mid-view and popped
+    // back at the far end: the "collapse and restart" artefact).
+    float travel  = (time * 12.0 + audioAdvance * 20.0) / 170.0;
+    float lensAmt = 0.0;
+    for (int k = 0; k < 2; ++k)
+    {
+        float ph      = fract(travel + float(k) * 0.5);
+        float throatZ = 165.0 - ph * 175.0;          // 165 (far) -> -10 (behind)
+        float fade    = smoothstep(160.0, 135.0, throatZ)   // fade in far away
+                      * smoothstep(-8.0, 12.0, throatZ);    // open up at the camera
+        float dz      = z - throatZ;
+        lensAmt = max(lensAmt, exp(-dz * dz * 0.010) * fade);
+    }
 
     float r = (9.0 + 1.5 * audioBass) * (1.0 - 0.86 * lensAmt)
             * (1.0 + 0.05 * audioSwell);

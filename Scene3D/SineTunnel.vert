@@ -15,6 +15,9 @@ uniform float time;
 uniform float audioBass;
 uniform float audioSwell;
 uniform float audioAdvance;
+uniform float audioKick;
+uniform float audioDrop;
+uniform float audioRotPhase;
 
 varying vec2  vUV;
 varying float vDist;
@@ -36,10 +39,20 @@ void main()
             + sin(ang * 3.0 + z * 0.06 - ph * 0.3) * 0.6;
     r *= 1.0 + 0.06 * audioSwell;
 
-    // Straight tube — the sense of motion comes entirely from the ripple
-    // phases and the colour bands streaming along the walls, so the camera
-    // is ALWAYS looking down the middle of the tunnel.
+    // KICK PUNCH: a sharp constriction ring races away from the camera on
+    // every kick; a DROP blows the whole tube wide for a beat.
+    float punchZ = fract(z * 0.02 - audioAdvance * 0.15);
+    r -= 2.8 * audioKick * exp(-punchZ * 10.0);
+    r *= 1.0 + 0.35 * audioDrop;
+
+    // Straight tube, but the camera ROLLS continuously (integrated phase)
+    // and weaves a small figure-eight off the axis — a flown tunnel, not a
+    // stared-down one.
     vec3 vp = vec3(cos(ang) * r, sin(ang) * r, z);
+    float rollA = audioRotPhase * 0.4 + time * 0.06;
+    vp.xy = mat2(cos(rollA), -sin(rollA), sin(rollA), cos(rollA)) * vp.xy;
+    vp.x += sin(time * 0.31) * 2.2 * (z * 0.012);
+    vp.y += sin(time * 0.23 + 1.6) * 1.8 * (z * 0.012);
 
     vp.x -= eyeOff;
     gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);

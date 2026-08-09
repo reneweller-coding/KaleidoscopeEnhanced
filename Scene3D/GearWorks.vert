@@ -163,12 +163,23 @@ void main()
     world.xy += attrA.xy * 0.8;
     world.z  += attrA.z * 0.8;
 
+    // CAMERA DOLLY: the eye cranes across the clockwork — slow push-ins on
+    // single gears, pull-backs to the whole machine, slight parallax orbit.
     vec3 vp = world;
+    vp.x += sin(time * 0.045) * 14.0;
+    vp.y += sin(time * 0.031 + 1.0) * 7.0;
+    vp.z += sin(time * 0.023) * 10.0 - 4.0;
+    float yaw = sin(time * 0.045) * 0.12;
+    vp.xz = mat2(cos(yaw), -sin(yaw), sin(yaw), cos(yaw)) * vp.xz;
     vp.x -= eyeOff;
     gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
     gl_Position.x += eyeOff * 0.05 * gl_Position.w;
 
+    // KICK SPARKS: random teeth flash white-hot on the kick (metal striking
+    // metal), a drop sets the whole machine glowing.
     col = hueRot(col, audioChromaHue * 0.3);
+    float sparkG = step(0.85, hash11(idx * 7.7 + floor(time * 9.0))) * audioKick;
+    col += vec3(1.0, 0.9, 0.6) * sparkG * 1.8;
     vCol    = vec4(col * glowB * (0.9 + 0.3 * r4) * 1.4, 1.0);
     vCorner = attrA.xyz;
 }

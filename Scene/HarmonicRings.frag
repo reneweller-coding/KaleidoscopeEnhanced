@@ -37,6 +37,9 @@ uniform int   rotate;
 
 // Core audio uniforms
 uniform float audioBeat;
+uniform float audioBeatPhase;
+uniform float audioKick;
+uniform float audioDrop;
 uniform float audioLevel;
 uniform float audioFlip;
 uniform float audioCentroid;
@@ -185,11 +188,24 @@ void main()
         accAlpha += g;
     }
 
+    // ---- KICK SHOCKWAVE: a bright ring EXPANDS from the centre through
+    // the whole stack once per beat (radius rides beatPhase, brightness the
+    // kick) — the stack stops being static wallpaper and starts drumming.
+    {
+        float shockR = audioBeatPhase * 1.35;
+        float shock  = exp(-abs(r - shockR) * 22.0)
+                     * audioKick * (1.0 - audioBeatPhase * 0.6);
+        vec3 sc = mix(vec3(1.0, 0.85, 0.55), vec3(0.6, 0.8, 1.0), audioCentroid);
+        accColor += sc * shock * 1.6;
+        accAlpha += shock;
+    }
+
     // ---- Global modulation ----
     accColor *= (1.0
                + audioBeat  * 0.25   // rings flare on beat (slew-limited host-side)
                + audioFlux  * 0.10   // shimmer as spectrum evolves
-               + audioLevel * 0.20); // gentle overall breathing
+               + audioLevel * 0.20   // gentle overall breathing
+               + audioDrop  * 0.9);  // a drop lights the whole stack
 
     gl_FragColor = clamp(vec4(accColor, accAlpha), 0.0, 1.0);
 }

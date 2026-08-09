@@ -17,6 +17,9 @@ uniform float audioBass;
 uniform float audioAdvance;
 uniform float audioChromaHue;
 uniform float audioDrop;
+uniform float audioKick;
+uniform float audioDownbeat;
+uniform float audioBeatPhase;
 
 varying vec4 vCol;
 varying vec3 vCorner;
@@ -55,7 +58,13 @@ void main()
     float lvl = audioSpectrum[band];
 
     float R = 30.0 * (1.0 + 0.05 * audioBass);
+    // KICK SHOCKWAVE: every kick sends a ring of columns bulging outward,
+    // rolling around the arena once per beat — the wall itself dances.
+    float ringPh = fract(colI / 98.0 * 2.0 - audioBeatPhase);
+    R += 3.5 * audioKick * exp(-ringPh * 6.0);
     float y = (row - 6.0) * 1.75;
+    // Downbeat: the whole arena JUMPS a step upward and settles.
+    y += 1.4 * audioDownbeat;
 
     // Meter: a cube is LIT while its row sits below the band level; dead
     // cubes stay as a faint skeleton so the arena always reads as a space.
@@ -64,6 +73,12 @@ void main()
     float head = step(abs(row - meter), 1.2);        // the meter head
 
     vec3 centre = vec3(cos(ang) * R, y, sin(ang) * R);
+    // CAMERA: instead of standing still, it flies a slow figure inside the
+    // arena — near the wall, back through the middle (object-space motion:
+    // the arena shifts around the camera, always continuous).
+    centre.x += sin(time * 0.13) * 10.0;
+    centre.z += cos(time * 0.09) * 7.0;
+    centre.y -= sin(time * 0.07) * 3.0;
 
     // Whole-cube cull only behind the camera.
     if (centre.z < 1.0)

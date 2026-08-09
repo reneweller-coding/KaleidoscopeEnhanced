@@ -1387,11 +1387,12 @@ void FilterShader::stepSmoke3DPass(const AudioFeatures &audio, float subStep)
 	// Treble/onset energy drives per-cell turbulence; kick/bass/drop drives how
 	// hard fresh fuel is injected at the base cells.
 	if( m_smoke3DTurbUni >= 0 ) glUniform1f( m_smoke3DTurbUni,
-	                                         0.5f + 1.3f * audio.highLevel + 0.8f * audio.onsetStrength );
+	                                         0.8f + 1.8f * audio.highLevel + 1.4f * audio.onsetStrength
+	                                              + 1.2f * audio.onsetKick );
 	if( m_smoke3DInjectUni >= 0 ) glUniform1f( m_smoke3DInjectUni,
-	                                           0.15f + 0.35f * audio.bassLevel
-	                                                 + 0.45f * audio.onsetKick
-	                                                 + 0.35f * audio.dropPulse );
+	                                           0.20f + 0.40f * audio.bassLevel
+	                                                 + 0.90f * audio.onsetKick
+	                                                 + 0.70f * audio.dropPulse );
 	// Wandering emitter positions ride the integrated advance phase (jump-free).
 	if( m_smoke3DEmitPhaseUni >= 0 ) glUniform1f( m_smoke3DEmitPhaseUni, m_audioAdvance * 0.5f );
 

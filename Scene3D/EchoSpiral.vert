@@ -15,6 +15,9 @@ uniform float audioAdvance;
 uniform float audioBass;
 uniform float audioSwell;
 uniform float audioChromaHue;
+uniform float audioKick;
+uniform float audioDrop;
+uniform float audioBeatPhase;
 
 varying vec4  vCol;
 varying float vSide;
@@ -46,16 +49,22 @@ void main()
     float rot = time * 0.10 + audioAdvance * 0.15;
     R *= 1.0 + 0.04 * audioBass;
 
+    // KICK PULSE: a bright bulge races along the spiral groove every beat.
+    float pulse = exp(-abs(fract(t - audioBeatPhase) - 0.5) * 9.0);
+    R *= 1.0 + 0.05 * pulse * audioKick;
+
     // sd widens the band radially (wider toward the rim, like a groove) —
     // narrow enough that the turns stay clearly separated.
     vec2 p = vec2(cos(theta + rot), sin(theta + rot))
            * (R + sd * (0.14 + R * 0.045));
 
-    // Tilted plane so the spiral recedes into depth.
-    float tilt = 0.85;
-    vec3 vp = vec3(p.x,
-                   p.y * cos(tilt) - 1.0,
-                   p.y * sin(tilt) + 34.0);
+    // WHIRLPOOL: the spiral is a funnel — inner turns sink away from the
+    // camera, so the endless zoom reads as being PULLED DOWN the vortex.
+    // A drop yanks the funnel deeper for a beat.
+    float depth = -6.5 * exp(-R * 0.22) * (1.0 + 0.9 * audioDrop);
+    float tilt = 0.72;
+    vec3 world = vec3(p.x, p.y * cos(tilt) + depth, p.y * sin(tilt));
+    vec3 vp = world + vec3(0.0, 1.5, 33.0);
 
     vp.x -= eyeOff;
     gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
@@ -65,7 +74,7 @@ void main()
     // centre; edges of the ribbon soften in the frag.
     vec3 col = hueRot(vec3(0.9, 0.4, 0.65),
                       audioChromaHue + turn * 0.35 - zoomPh * 0.35);
-    col *= (0.9 + 0.5 * audioSwell)
+    col *= (0.9 + 0.5 * audioSwell + 1.2 * pulse * audioKick + 1.4 * audioDrop)
          * smoothstep(0.0, 1.5, R)                 // fade the tiny centre
          * (1.0 - smoothstep(14.0, 26.0, R));      // and the far rim
 

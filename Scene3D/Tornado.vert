@@ -34,9 +34,19 @@ void main()
     // Height in the funnel (dense near the ground).
     float y = -18.0 + 42.0 * pow(r1, 1.5);
 
-    // Funnel radius grows with height; the kick cinches it.
+    // Funnel radius grows with height; the kick cinches it, a DROP rips it
+    // wide open for a beat.
     float rBase = (1.8 + (y + 18.0) * 0.28) * (0.55 + 0.9 * r2);
-    float r = rBase * (1.0 - 0.22 * audioKick);
+    float r = rBase * (1.0 - 0.22 * audioKick) * (1.0 + 0.8 * audioDrop);
+
+    // FLUNG DEBRIS: ~8 % of the particles get hurled out of the funnel on
+    // hard kicks — they arc outward and sink back as the envelope decays.
+    if (r4 > 0.92)
+    {
+        float fling = audioKick * (0.5 + 0.5 * sin(r3 * 40.0));
+        r += fling * 22.0;
+        y += fling * (r2 - 0.3) * 14.0;
+    }
 
     // Spin: fast at the bottom, music-driven (advance = integrated energy).
     float om  = 2.6 / (0.35 + (y + 18.0) * 0.05);
@@ -48,9 +58,12 @@ void main()
 
     vec3 world = vec3(cos(ang) * r + sway.x, y, sin(ang) * r + sway.y);
 
-    // Camera circles the storm at a wary distance.
-    float ca  = time * 0.04;
-    vec3 cam  = vec3(cos(ca) * 52.0, 6.0, sin(ca) * 52.0);
+    // Camera circles the storm — and DIVES: the orbit distance and height
+    // breathe over ~30 s, from a wary wide shot down into the debris rain.
+    float ca  = time * 0.055;
+    float orbR = 40.0 + 16.0 * sin(time * 0.033 + 1.0);
+    float orbH = 6.0 + 9.0 * sin(time * 0.021);
+    vec3 cam  = vec3(cos(ca) * orbR, orbH, sin(ca) * orbR);
     vec3 fwd  = normalize(vec3(0.0, 2.0, 0.0) - cam);
     vec3 rgt  = normalize(cross(fwd, vec3(0.0, 1.0, 0.0)));
     vec3 up   = cross(rgt, fwd);
@@ -67,9 +80,14 @@ void main()
     float dist = max(vp.z, 0.5);
     gl_PointSize = clamp(95.0 * (0.4 + 0.8 * r4) * px / dist, 1.5, 14.0 * px);
 
-    // Dust and debris; a few crackle white on the snare.
+    // Dust and debris; a few crackle white on the snare.  LIGHTNING: the
+    // snare also fires a flash INSIDE the funnel at a wandering height —
+    // the whole storm glows from within for an instant.
     vec3 col = mix(vec3(0.45, 0.38, 0.33), vec3(0.60, 0.58, 0.62), r2);
     col = hueRot(col, audioChromaHue * 0.3);
+    float flashY = -18.0 + 42.0 * fract(sin(floor(time * 1.3) * 91.7) * 437.585);
+    float inner  = exp(-abs(y - flashY) * 0.10) * audioSnare;
+    col += vec3(0.75, 0.80, 1.0) * inner * 2.4;
     if (r4 > 0.93)
         col += vec3(0.8, 0.85, 1.0) * (audioSnare * 2.2 + audioDrop * 1.5);
     col *= (0.5 + 0.9 * audioLevel + 0.8 * audioDrop)

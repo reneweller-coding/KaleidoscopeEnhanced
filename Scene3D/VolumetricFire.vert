@@ -45,12 +45,13 @@ void main()
     vHue        = audioChromaHue;
     vGlow       = 1.4 + 0.9 * audioSwell + 1.7 * audioDrop;
 
-    // Gentle kick-driven breathing of the whole column's width/height, and a
-    // slow bonfire-like sway (rotate about the base, not the centre).
-    float pulse = 1.0 + 0.10 * audioKick + 0.04 * sin(time * 1.7);
-    float width = 20.0 * pulse;
-    float baseY = -9.0;
-    float topY  = 23.0 * pulse + baseY * (1.0 - pulse);
+    // The fire LEAPS on every kick (sharp upward flare, quick settle) and
+    // breathes with the swell — an aggressive bonfire, not a candle.
+    float pulse = 1.0 + 0.30 * audioKick + 0.10 * audioSwell
+                + 0.05 * sin(time * 1.7);
+    float width = 21.0 * (1.0 + 0.12 * audioKick);
+    float baseY = -9.5;
+    float topY  = 25.0 * pulse + baseY * (1.0 - pulse);
 
     vec3 local = vec3( (t - 0.5) * width,
                        mix(baseY, topY, vfrac),

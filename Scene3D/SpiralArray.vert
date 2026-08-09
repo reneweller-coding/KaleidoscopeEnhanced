@@ -25,6 +25,8 @@ uniform float audioKick;
 uniform float audioOnset;
 uniform float audioDrop;
 uniform float audioDownbeat;
+uniform float audioHarmChange;
+uniform float audioBeatPhase;
 
 varying vec4 vCol;
 
@@ -73,13 +75,15 @@ void main()
 
     if (idx < 18000.0)
     {
-        // ---- Helix wire: dim skeleton of the tonal space ----
+        // ---- Helix wire: a LIGHT PULSE races down the coil every beat and
+        // kicks make the whole wire surge — the skeleton itself performs. ----
         float t = idx / 18000.0;          // 0..1 -> fifths 0..12 (wraps)
         float f = t * 12.0;
         world = helixPos(f) + vec3(r1 - 0.5, r2 - 0.5, r3 - 0.5) * 0.22;
+        float race = exp(-abs(fract(t * 2.0 - audioBeatPhase) - 0.5) * 14.0);
         col = hueRot(vec3(0.30, 0.45, 0.70), audioChromaHue * 0.4);
-        bright = 0.10 + 0.10 * audioSwell;
-        sizeMul = 0.5;
+        bright = 0.10 + 0.10 * audioSwell + 0.9 * race * (0.3 + 0.7 * audioKick);
+        sizeMul = 0.5 + 0.5 * race;
     }
     else if (idx < 49200.0)
     {
@@ -100,9 +104,14 @@ void main()
     }
     else
     {
-        // ---- The comet: a dense glow cloud at the center of effect ----
+        // ---- The comet: a dense glow cloud at the center of effect.  A
+        // CHORD CHANGE (harmonicChange spike) makes it BURST — the cloud
+        // blows up into a sphere shell and collapses back as the harmony
+        // settles into the new key. ----
         float u = r1 * 6.2831853, v = acos(2.0 * r2 - 1.0);
-        float rad = 0.85 * pow(r3, 0.75) * (1.0 + 0.35 * audioKick);
+        float burst = clamp(audioHarmChange * 2.0, 0.0, 1.0);
+        float rad = (0.85 + 4.5 * burst * r4) * pow(r3, 0.75)
+                  * (1.0 + 0.35 * audioKick);
         world = ce + vec3(sin(v) * cos(u), cos(v), sin(v) * sin(u)) * rad;
 
         // White-hot core with the key's hue at the halo.
@@ -113,13 +122,16 @@ void main()
         sizeMul = 1.25;
     }
 
-    // Slow orbit of the whole tonal space.
-    float oa = time * 0.05;
+    // Camera: a SWOOPING orbit — it spirals up and down the helix, close in
+    // on the coil, then pulls back (distance + height breathe over ~25 s).
+    float oa = time * 0.09;
     world.xz = mat2(cos(oa), -sin(oa), sin(oa), cos(oa)) * world.xz;
-    float tilt = 0.28 + 0.08 * sin(time * 0.037 + sceneSeed * 6.28);
+    world.y += sin(time * 0.043) * 6.0;
+    float tilt = 0.28 + 0.14 * sin(time * 0.037 + sceneSeed * 6.28);
     world.yz = mat2(cos(tilt), -sin(tilt), sin(tilt), cos(tilt)) * world.yz;
 
-    vec3 vp = world + vec3(0.0, 0.0, 30.0);
+    float camD = 27.0 + 8.0 * sin(time * 0.026 + 2.0);
+    vec3 vp = world + vec3(0.0, 0.0, camD);
     vp.x -= eyeOff;
     gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
     gl_Position.x += eyeOff * 0.05 * gl_Position.w;
