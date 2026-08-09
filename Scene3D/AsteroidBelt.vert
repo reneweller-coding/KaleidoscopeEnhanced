@@ -48,6 +48,16 @@ void main()
                        (r2 - 0.5) * 55.0,
                        z);
 
+    // CAMERA-SAFE corridor: rocks near the flight axis are pushed radially
+    // aside, with the clearance widening as they come close — the belt
+    // visibly parts around the ship and nothing ever engulfs the lens.
+    {
+        float rad  = length(centre.xy);
+        float safe = 7.0 + 60.0 * exp(-z * 0.05);
+        if (rad < safe)
+            centre.xy *= safe / max(rad, 0.6);
+    }
+
     // Whole-rock cull outside the visible corridor.
     if (z < 1.5 || z > 130.0)
     {

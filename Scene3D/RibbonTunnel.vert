@@ -39,11 +39,15 @@ void main()
     float ri   = attrA.w;
 
     const float L = 160.0;
-    float camZ = time * 3.0 + audioAdvance * 8.0;
+    float camZ = time * 5.5 + audioAdvance * 14.0;   // noticeably faster flight
     float z    = mod(t * L - camZ, L);        // 0..L ahead of the camera
 
-    // The tube centre weaves through space.
-    vec2 cw = vec2(sin(z * 0.045 + 1.3), cos(z * 0.038)) * 3.5;
+    // The tube centre weaves HARD through ABSOLUTE space — the slalom curve
+    // scrolls past the camera (a weave over relative z is a frozen shape:
+    // that static look was exactly the old scene's problem).
+    float zAbs = z + camZ;
+    vec2 cw = vec2(sin(zAbs * 0.045 + 1.3), cos(zAbs * 0.038)) * 7.5
+            + vec2(sin(zAbs * 0.013), cos(zAbs * 0.011 + 2.0)) * 5.0;
 
     // Ribbon angle around the tube: per-ribbon slot + twist along z + a
     // smooth per-bar swing.
@@ -60,7 +64,14 @@ void main()
     vec2 tangent = vec2(-sin(ang), cos(ang));
     c2 += tangent * side * (0.35 + 0.25 * attrB.y);
 
-    vec3 vp = vec3(c2.x, c2.y, z);
+    // Camera rides the SAME weave slightly ahead of its own position (it
+    // flies inside the slalom) and rolls into the curves.
+    float camA = camZ + 2.0;
+    vec2 camW = vec2(sin(camA * 0.045 + 1.3), cos(camA * 0.038)) * 7.5
+              + vec2(sin(camA * 0.013), cos(camA * 0.011 + 2.0)) * 5.0;
+    vec3 vp = vec3(c2.x - camW.x, c2.y - camW.y, z);
+    float roll = 0.9 * cos(camA * 0.045 + 1.3) * 0.25;   // bank into the turn
+    vp.xy = mat2(cos(roll), -sin(roll), sin(roll), cos(roll)) * vp.xy;
     vp.x -= eyeOff;
     gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
     gl_Position.x += eyeOff * 0.06 * gl_Position.w;   // converge ~20 units out

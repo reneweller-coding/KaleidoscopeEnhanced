@@ -127,6 +127,20 @@ void main()
         float sd = length(d) - rp;
         if (sd < nearS) { nearS = sd; nearC = vec2(0.0, 0.0); nearR = 0.22; }
     }
+    // BOIL BURST: every kick shoots a fan of tiny hot droplets up out of
+    // the pool — they climb with the (decaying) kick envelope and fall back,
+    // so the lamp visibly BOILS on the beat instead of just simmering.
+    for (int i = 0; i < 6; i++)
+    {
+        float fi  = float(i);
+        float sx  = (fract(sin(fi * 37.7 + 1.7) * 437.5) - 0.5) * 0.5 * aspect;
+        float ric = audioKick * (0.7 + 0.3 * sin(fi * 2.3));
+        float by  = -0.02 + ric * (0.55 + 0.20 * sin(fi * 1.9))
+                  - (1.0 - ric) * 0.05;
+        vec2 d = p - vec2(sx * (0.4 + ric), by);
+        float rad = 0.020 * volume * (0.5 + ric);
+        field += rad * rad / (dot(d, d) + 0.0004);
+    }
 
     float m = smoothstep(0.85, 1.45, field);       // wax surface mask
 

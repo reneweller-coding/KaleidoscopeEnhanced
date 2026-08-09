@@ -50,30 +50,48 @@ void main()
     float gz   = floor(i / 70.0);                   // row along the flight
     float seed = attrB.x;
 
+    // A free STREET runs down the middle — the camera flies over it, so no
+    // tower can ever sit in (or pop up in front of) the lens.
+    if (abs(gx) < 2.5)
+    {
+        gl_Position = vec4(0.0, 0.0, -3.0, 1.0);
+        vCol = vec4(0.0); vCorner = attrA.xyz;
+        return;
+    }
+
     // The row field repeats forever along the flight direction.
     const float spacing = 3.0;
     const float fieldL  = 70.0 * spacing;
     float camZ = time * 4.0 + audioAdvance * 9.0;
     float z    = mod(gz * spacing - camZ, fieldL);  // 0..210 ahead
 
-    // Column height = its spectrum band (smoothed host-side) + seed variety.
-    int   band = int(clamp(abs(gx) / 34.5 * 31.0, 0.0, 31.0));
+    // NEAR FADE: towers shrink away before they reach the camera plane
+    // (recycled cubes used to pop up huge right in front of the lens).
+    float nearFade = smoothstep(2.0, 16.0, z);
+
+    // Column height = its spectrum band, bass at the street edges.
+    int   band = int(clamp((abs(gx) - 2.5) / 32.0 * 31.0, 0.0, 31.0));
     float h    = (0.6 + attrB.y * 1.6)
                * (1.0 + 14.0 * audioSpectrum[band])
-               * (1.0 + 0.25 * audioSwell);
+               * (1.0 + 0.25 * audioSwell) * nearFade;
 
     // Street-level kick flash lifts the near columns a touch.
     float lift = 0.5 * audioKick * exp(-abs(gx) * 0.10);
 
     vec3 world;
-    world.x = gx * spacing + sin(time * 0.11) * 0.0;
-    world.y = attrA.y * h + h * 0.5 + lift - 6.0;
+    world.x = gx * spacing;
+    world.y = attrA.y * h + h * 0.5 + lift - 7.5;
     world.z = z;
-    world.x += attrA.x * (1.4 + 0.8 * attrB.z);     // cube footprint
-    world.z += attrA.z * (1.4 + 0.8 * attrB.w);
+    world.x += attrA.x * (1.4 + 0.8 * attrB.z) * nearFade;   // cube footprint
+    world.z += attrA.z * (1.4 + 0.8 * attrB.w) * nearFade;
 
-    // Camera: fixed height, gentle sway; looks straight down the street.
+    // Camera: flies ABOVE the street with a gentle downward pitch (city
+    // overview instead of eye-level wall), light lateral sway.
     vec3 vp = vec3(world.x - sin(time * 0.11) * 4.0, world.y, world.z);
+    float pitch = 0.14;
+    float cp = cos(pitch), sp2 = sin(pitch);
+    vp.yz = vec2(vp.y * cp + vp.z * sp2,
+                 vp.z * cp - vp.y * sp2);
 
     vp.x -= eyeOff;
     gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);

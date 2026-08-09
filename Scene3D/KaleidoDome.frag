@@ -33,7 +33,13 @@ void main()
     float r = vR * (1.15 + 0.20 * audioSwell) + 0.06 * time
             + 0.20 * audioAdvance;
 
-    vec2 uv = vec2(cos(ang), sin(ang)) * r * 1.15 + 0.5;
+    // Map the folded angle ACROSS the sector to one texture axis and the
+    // radius to the other — every wedge shows a real 2D crop of the image.
+    // (The old dir(ang)*r sampling collapsed each wedge onto a thin ray
+    // through the texture: the image smeared into long radial streaks.)
+    vec2 crop = vec2(sceneSeed * 3.7, sceneSeed * 7.3);
+    vec2 uv = vec2(ang / sector * 1.6 + crop.x,
+                   r * 0.9 + crop.y);
     vec3 col = texture2D(tex0, mfold(uv)).rgb;
 
     // Centre bloom on the kick, whole-sky flash on a drop.

@@ -44,6 +44,13 @@ void main()
     // like FIRE rather than randomly drifting green/blue/purple.
     col = hueRot(col, sin(vHue) * 0.07);
 
+    // Crackling sparks: tiny white-hot pops flickering inside the hot core
+    // (hash-gated per screen cell -> lively, not a uniform glow).
+    vec2  cell = floor(gl_FragCoord.xy / 3.0);
+    float spark = step(0.985, fract(sin(dot(cell, vec2(12.9898, 78.233))
+                                        + floor(vHeightFrac * 40.0)) * 43758.5453));
+    col += vec3(1.3, 1.1, 0.8) * spark * clamp(temp - 0.5, 0.0, 1.0) * 2.0;
+
     float bright = clamp(temp * 1.15 + dens * 0.45, 0.0, 3.2) * vGlow;
     gl_FragColor = vec4(col * bright, 1.0);
 }
