@@ -70,6 +70,19 @@ void GLwidget::remoteFavorite()
 		m_actConfiguration->m_filterShader->favoriteCurrentEffect();
 }
 
+QStringList GLwidget::remoteSceneNames()
+{
+	if( m_actConfiguration && m_actConfiguration->m_filterShader )
+		return m_actConfiguration->m_filterShader->sceneNames();
+	return QStringList();
+}
+
+void GLwidget::remoteForceScene( int idx )
+{
+	if( m_actConfiguration && m_actConfiguration->m_filterShader )
+		m_actConfiguration->m_filterShader->forceScene( idx );
+}
+
 void GLwidget::remoteToggleReplayArm()
 {
 	m_replayArmed = !m_replayArmed;

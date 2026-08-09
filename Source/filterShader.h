@@ -59,6 +59,11 @@ public:
 	 *  decaying malus. */
 	void requestSceneChange();
 
+	/** Remote scene browser: names of the preset's texture shaders, and a
+	 *  DIRECT jump to one of them (instant, unquantised, respects pin/freeze). */
+	QStringList sceneNames() const;
+	void forceScene( int idx );
+
 	/** Taste learning, positive side (key 'f'): boost the CURRENT effect's
 	 *  persistent selection weight ("Favorit"). */
 	void favoriteCurrentEffect();
@@ -256,6 +261,7 @@ private:
 	// Manual / novelty-driven early scene change + its rate-limit cooldown.
 	bool			m_forceEffectChange = false;
 	bool			m_forceCombineChange = false;
+	int				m_forcedNextTexture = -1;   // >= 0: remote-chosen next scene
 	float			m_noveltyCooldown   = 0.f;
 	// Last-seen analyzer section counter (verse/chorus/bridge detector); a
 	// single +1 step forces an early, short cross-fade to the next shader.
