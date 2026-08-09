@@ -43,3 +43,7 @@ AndroidRemote/debug.keystore
 
 # Qt moc-generated files (top-level build output, not PresetEditor's own moc/)
 /moc/
+
+# verify.ps1 artifacts
+Tools/broadband120.wav
+Tools/probe_*.jpg

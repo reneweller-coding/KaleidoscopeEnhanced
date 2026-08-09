@@ -51,6 +51,8 @@ public:
 	int         remoteActiveConfig() const;
 	void        remoteSelectConfig( int idx );
 	void        remoteNextEffect();
+	QStringList remoteSceneNames();
+	void        remoteForceScene( int idx );
 	bool        autoConfigEnabled() const   { return m_autoConfig; }
 	void        setAutoConfigEnabled( bool on ) { m_autoConfig = on; m_moodBucket = -1; }
 	// Live preview: returns the cached small JPEG of the output and keeps the

@@ -52,6 +52,11 @@ static const char *kPage = R"HTML(<!DOCTYPE html>
  <button id="lightshow" onclick="cmd('/api/toggle?k=lightshow')">Lightshow</button>
  <button id="autoconfig" onclick="cmd('/api/toggle?k=autoconfig')">Auto-Preset</button>
 </div>
+<div class="row">
+ <button class="big" id="scenetoggle" onclick="toggleScenes()">&#127916; Szenen-Browser</button>
+ <div id="scenes" style="display:none;max-height:45vh;overflow-y:auto;
+      display:none;grid-template-columns:1fr 1fr;gap:4px"></div>
+</div>
 <script>
 let hold=0;
 function cmd(u){hold=Date.now()+300;fetch(u).then(refresh);}
@@ -75,6 +80,19 @@ function refresh(){ if(Date.now()<hold) return;
  });}
 setInterval(refresh,2000); refresh();
 setInterval(()=>{document.getElementById('prev').src='/api/snapshot?ts='+Date.now();},2000);
+let scenesOpen=false;
+function toggleScenes(){
+ scenesOpen=!scenesOpen;
+ const d=document.getElementById('scenes');
+ if(!scenesOpen){d.style.display='none';return;}
+ fetch('/api/scenes').then(r=>r.json()).then(s=>{
+  d.innerHTML=''; d.style.display='grid';
+  s.scenes.forEach((n,i)=>{const b=document.createElement('button');
+   b.textContent=n; b.style.margin='0'; b.style.padding='10px 6px';
+   b.style.fontSize='.85em';
+   b.onclick=()=>{cmd('/api/force?i='+i);};
+   d.appendChild(b);});
+ });}
 </script></body></html>)HTML";
 
 WebRemote::WebRemote( GLwidget *widget, int port )
@@ -139,6 +157,15 @@ void WebRemote::handleConnection()
 				}
 				else if( path == "/api/next" )
 					m_widget->remoteNextEffect();
+				else if( path == "/api/scenes" )
+				{
+					QStringList names;
+					for( const QString &n : m_widget->remoteSceneNames() )
+						names << ("\"" + n + "\"");
+					body = ("{\"scenes\":[" + names.join( "," ) + "]}").toUtf8();
+				}
+				else if( path == "/api/force" )
+					m_widget->remoteForceScene( q.queryItemValue( "i" ).toInt() );
 				else if( path == "/api/fav" )
 					m_widget->remoteFavorite();
 				else if( path == "/api/replay" )

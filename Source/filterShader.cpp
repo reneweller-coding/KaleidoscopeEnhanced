@@ -1759,6 +1759,33 @@ void FilterShader::requestSceneChange()
 	m_forceCombineChange = true;
 }
 
+// Remote scene browser: list the preset's texture shaders (file basenames).
+QStringList FilterShader::sceneNames() const
+{
+	QStringList out;
+	for( EffectShader *s : m_effectTextures )
+	{
+		QString n = QString::fromLocal8Bit( s->fragmentName() );
+		int cut = std::max( n.lastIndexOf( QChar('\\') ), n.lastIndexOf( QChar('/') ) );
+		n = n.mid( cut + 1 );
+		if( n.endsWith( ".frag" ) ) n.chop( 5 );
+		out << n;
+	}
+	return out;
+}
+
+// Remote scene browser: jump DIRECTLY to scene idx (same instant path as a
+// manual 'n' cut, but with a chosen target instead of a random roll).
+void FilterShader::forceScene( int idx )
+{
+	if( idx < 0 || idx >= (int)m_effectTextures.size() )
+		return;
+	if( s_pinned || s_freeze )
+		return;                       // same handbrakes as requestSceneChange
+	m_forcedNextTexture  = idx;
+	m_forceEffectChange  = true;
+}
+
 // Key 'f': the user LIKES what is on screen — persistent selection bonus.
 void FilterShader::favoriteCurrentEffect()
 {
@@ -2515,6 +2542,15 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 				m_pendingSectionStore = -1;
 			}
 
+			// Remote scene browser: a DIRECTLY requested scene (forceScene)
+			// overrides the random mood roll entirely.
+			if( m_forcedNextTexture >= 0
+			    && m_forcedNextTexture < (int)m_effectTextures.size() )
+			{
+				m_nextEffectTexture = m_forcedNextTexture;
+				m_forcedNextTexture = -1;
+			}
+			else
 			for( unsigned int i = 0; i < m_maxIterationsEffectSearch; i++ )
 			{
 				m_nextEffectTexture = qrand() % m_effectTextures.size();
