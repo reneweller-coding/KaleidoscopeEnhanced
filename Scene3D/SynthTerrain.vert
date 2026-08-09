@@ -30,15 +30,17 @@ void main()
     float zRel = v * 260.0 + 2.0;
     float zAbs = zRel + camZ;
 
-    // Valley profile: flat corridor, ridges rising toward the sides — the
-    // ridge height rides the spectrum band of its |x| position.
-    float base = pow(abs(x) / 90.0, 1.6) * 26.0;
-    float wave = 0.55 + 0.45 * sin(zAbs * 0.045 + x * 0.06)
-                             * sin(zAbs * 0.021 - x * 0.043);
+    // Valley profile: flat corridor, MASSIVE ridges toward the sides — the
+    // ridge height rides the spectrum band of its |x| position.  Structure
+    // frequencies are LOW (big smooth mountains); the old high-frequency
+    // micro-noise term is gone — it aliased against the grid and read as
+    // pixelated trembling.
+    float base = pow(abs(x) / 90.0, 1.6) * 40.0;
+    float wave = 0.55 + 0.45 * sin(zAbs * 0.028 + x * 0.04)
+                             * sin(zAbs * 0.013 - x * 0.027);
     int   band = int(clamp(abs(x) / 90.0 * 31.0, 0.0, 31.0));
     float h    = base * wave * (1.0 + 0.9 * audioSpectrum[band])
                * (1.0 + 0.15 * audioSwell);
-    h += 0.8 * sin(zAbs * 0.35 + attrB.x) * sin(x * 0.4);
 
     // KICK QUAKE: every kick rolls a ground shockwave down the valley
     // toward the camera; a DROP ruptures the whole terrain upward once.

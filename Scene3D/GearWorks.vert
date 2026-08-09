@@ -114,9 +114,11 @@ void main()
     }
     else if (idx < 4400.0)
     {
-        // ---- Pendulum: one full swing per BAR, arm + heavy bob.
+        // ---- Pendulum: PHYSICAL fixed-period swing (a real pendulum obeys
+        // gravity, not the DJ) — the old bar-phase drive snapped whenever
+        // the beat tracker re-locked and read as canned animation.
         float k = idx - 4160.0;
-        float a = 0.55 * sin(6.2831853 * audioBarPhase);
+        float a = 0.55 * sin(time * 1.35);
         vec2 pivot = vec2(4.0, 26.0);
         vec2 dirV  = vec2(sin(a), -cos(a));
         float d = k / 240.0;

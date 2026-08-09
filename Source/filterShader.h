@@ -64,6 +64,11 @@ public:
 	QStringList sceneNames() const;
 	void forceScene( int idx );
 
+	/** Review mode (Test* presets): scenes run alphabetically, 8 s each,
+	 *  'n' steps to the next in order.  No mood/taste filtering, no beat
+	 *  quantisation — a systematic viewing bench. */
+	void setReviewMode( bool on ) { m_reviewMode = on; }
+
 	/** Taste learning, positive side (key 'f'): boost the CURRENT effect's
 	 *  persistent selection weight ("Favorit"). */
 	void favoriteCurrentEffect();
@@ -262,6 +267,11 @@ private:
 	bool			m_forceEffectChange = false;
 	bool			m_forceCombineChange = false;
 	int				m_forcedNextTexture = -1;   // >= 0: remote-chosen next scene
+
+	// ---- Review mode (Test* presets): alphabetical 8 s sequence ----
+	bool			m_reviewMode = false;
+	std::vector<int> m_reviewOrder;             // effect indices, sorted by name
+	int				m_reviewPos = 0;
 	float			m_noveltyCooldown   = 0.f;
 	// Last-seen analyzer section counter (verse/chorus/bridge detector); a
 	// single +1 step forces an early, short cross-fade to the next shader.
@@ -496,6 +506,9 @@ private:
 	GLint			m_smoke3DEmitPhaseUni  = -1;
 	bool			m_smoke3DReady         = false;
 	bool			m_smoke3DSeeded        = false;
+
+	// ---- Visual spectrum ballistics (anti-jitter for geometry scenes) ----
+	float			m_specVis[32] = {};
 
 	// ---- Song-end dramaturgy + melody history (host state) ----
 	float			m_fadeSlow6   = 0.f;    // 6 s loudness average

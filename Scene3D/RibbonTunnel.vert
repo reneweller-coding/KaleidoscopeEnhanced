@@ -45,9 +45,10 @@ void main()
     // The tube centre weaves HARD through ABSOLUTE space — the slalom curve
     // scrolls past the camera (a weave over relative z is a frozen shape:
     // that static look was exactly the old scene's problem).
+    // Long, sweeping curves (the fast weave shook the frame nervously).
     float zAbs = z + camZ;
-    vec2 cw = vec2(sin(zAbs * 0.045 + 1.3), cos(zAbs * 0.038)) * 7.5
-            + vec2(sin(zAbs * 0.013), cos(zAbs * 0.011 + 2.0)) * 5.0;
+    vec2 cw = vec2(sin(zAbs * 0.020 + 1.3), cos(zAbs * 0.016)) * 9.0
+            + vec2(sin(zAbs * 0.007), cos(zAbs * 0.006 + 2.0)) * 6.0;
 
     // Ribbon angle around the tube: per-ribbon slot + twist along z + a
     // smooth per-bar swing.
@@ -67,10 +68,10 @@ void main()
     // Camera rides the SAME weave slightly ahead of its own position (it
     // flies inside the slalom) and rolls into the curves.
     float camA = camZ + 2.0;
-    vec2 camW = vec2(sin(camA * 0.045 + 1.3), cos(camA * 0.038)) * 7.5
-              + vec2(sin(camA * 0.013), cos(camA * 0.011 + 2.0)) * 5.0;
+    vec2 camW = vec2(sin(camA * 0.020 + 1.3), cos(camA * 0.016)) * 9.0
+              + vec2(sin(camA * 0.007), cos(camA * 0.006 + 2.0)) * 6.0;
     vec3 vp = vec3(c2.x - camW.x, c2.y - camW.y, z);
-    float roll = 0.9 * cos(camA * 0.045 + 1.3) * 0.25;   // bank into the turn
+    float roll = 0.14 * cos(camA * 0.020 + 1.3);          // gentle bank
     vp.xy = mat2(cos(roll), -sin(roll), sin(roll), cos(roll)) * vp.xy;
     vp.x -= eyeOff;
     gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);

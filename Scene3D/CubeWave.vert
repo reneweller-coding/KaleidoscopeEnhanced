@@ -62,7 +62,7 @@ void main()
     // The row field repeats forever along the flight direction.
     const float spacing = 3.0;
     const float fieldL  = 70.0 * spacing;
-    float camZ = time * 4.0 + audioAdvance * 9.0;
+    float camZ = time * 10.0 + audioAdvance * 18.0;   // a real flight speed
     float z    = mod(gz * spacing - camZ, fieldL);  // 0..210 ahead
 
     // NEAR FADE: towers shrink away before they reach the camera plane

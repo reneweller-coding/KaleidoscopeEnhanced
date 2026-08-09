@@ -86,6 +86,11 @@ void main()
     float r = length(p);
     float a = atan(p.y, p.x);
 
+    // SUBWOOFER MEMBRANE: the whole ring stack pumps in and out with the
+    // bass like a speaker cone (centre-weighted, so the middle excursions
+    // are biggest) — the picture IS the driver making the sound.
+    r /= 1.0 + 0.30 * (audioSubBass + 0.6 * audioKick) * exp(-r * 0.8);
+
     // Slowly rotating angle: smooth base drift + jump-free integrated audio phase
     float at = a + time * speed + audioPhase * 0.35;
 

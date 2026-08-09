@@ -57,8 +57,11 @@ void main()
     float u   = fract(clockv);
     float cyc = floor(clockv);
 
-    // Shell TYPE re-rolls every cycle.
-    float typ = floor(hash11(burst * 13.7 + cyc * 3.1) * 4.999);
+    // Shell TYPE re-rolls every cycle (type 5 = GLITTER: sparks that fall
+    // slowly and twinkle for a long time); every shell also gets its own
+    // BURN SPEED, so some flash out quickly while others linger.
+    float typ  = floor(hash11(burst * 13.7 + cyc * 3.1) * 5.999);
+    float burn = 0.8 + 1.6 * hash11(burst * 21.3 + cyc * 7.7);
 
     const float RISE = 0.10;              // first 10 % of the cycle = rocket
     vec3  world;
@@ -104,19 +107,25 @@ void main()
             d.yz = mat2(cos(t2), -sin(t2), sin(t2), cos(t2)) * d.yz;
         }
 
-        float grav = (typ == 1.0) ? 34.0 : 15.0;    // WILLOW droops hard
+        float grav = (typ == 1.0) ? 34.0 : ((typ == 5.0) ? 6.0 : 15.0);
         float sp   = (8.0 + 7.0 * r3) * ((typ == 2.0) ? 0.85 : 1.0);
         float re   = sp * (1.0 - exp(-ub * 4.0)) * 1.1;
         world = Cb + d * re + vec3(0.0, -grav * ub * ub, 0.0);
+        if (typ == 5.0)                    // GLITTER: sparks drift down slowly
+            world.y -= 6.0 * ub;
 
         // Brightness: the POP is scaled by the music's accents, then fades
-        // (willow lingers, strobe blinks).
-        float fade = (typ == 1.0) ? exp(-ub * 1.1) : exp(-ub * 1.9);
+        // with the shell's OWN burn speed (willow and glitter linger).
+        float fade = (typ == 1.0) ? exp(-ub * 0.9 * burn)
+                   : (typ == 5.0) ? exp(-ub * 0.6 * burn)
+                                  : exp(-ub * 1.9 * burn);
         float pop  = smoothstep(0.0, 0.04, ub)
                    * (0.55 + 0.75 * audioDownbeat + 0.6 * audioKick);
         B = pop * fade * (0.7 + 0.3 * sin(ub * 40.0 + r4 * 20.0));
         if (typ == 3.0)
             B *= step(0.45, fract(ub * 26.0 + r4 * 9.0)) * 1.6;   // STROBE
+        if (typ == 5.0)                    // GLITTER: hard fast twinkle
+            B *= 0.35 + 1.5 * step(0.72, fract(sin(r4 * 91.7) * 437.5 + ub * 33.0));
         B *= 1.0 + 1.6 * audioDrop;
     }
 
@@ -135,7 +144,8 @@ void main()
     // Colour by type: peony = key-hued family, willow = gold, ring = cool
     // electric, strobe = white-silver, crossette = two-tone split.
     vec3 col;
-    if      (typ == 1.0) col = vec3(1.0, 0.75, 0.30);
+    if      (typ == 5.0) col = vec3(1.0, 0.95, 0.75);     // glitter: champagne
+    else if (typ == 1.0) col = vec3(1.0, 0.75, 0.30);
     else if (typ == 2.0) col = hueRot(vec3(0.30, 0.75, 1.0), audioChromaHue);
     else if (typ == 3.0) col = vec3(1.0, 0.97, 0.90);
     else if (typ == 4.0) col = hueRot(mix(vec3(1.0, 0.4, 0.2), vec3(0.3, 0.5, 1.0),

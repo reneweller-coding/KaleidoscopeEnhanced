@@ -45,14 +45,20 @@ void main()
     r -= 2.8 * audioKick * exp(-punchZ * 10.0);
     r *= 1.0 + 0.35 * audioDrop;
 
-    // Straight tube, but the camera ROLLS continuously (integrated phase)
-    // and weaves a small figure-eight off the axis — a flown tunnel, not a
-    // stared-down one.
-    vec3 vp = vec3(cos(ang) * r, sin(ang) * r, z);
-    float rollA = audioRotPhase * 0.4 + time * 0.06;
+    // SERPENTINE FLIGHT: the tube winds through ABSOLUTE space and the
+    // camera flies its centreline — sweeping banked curves keep revealing
+    // new tunnel around each bend (the fixed straight "hole" is gone).
+    float camZ = time * 9.0 + audioAdvance * 14.0;
+    float zAbs = z + camZ;
+    vec2 path  = vec2(sin(zAbs * 0.022 + 1.0), cos(zAbs * 0.017)) * 10.0
+               + vec2(sin(zAbs * 0.008), cos(zAbs * 0.006 + 2.0)) * 7.0;
+    vec2 camP  = vec2(sin(camZ * 0.022 + 1.0), cos(camZ * 0.017)) * 10.0
+               + vec2(sin(camZ * 0.008), cos(camZ * 0.006 + 2.0)) * 7.0;
+
+    vec3 vp = vec3(cos(ang) * r + path.x - camP.x,
+                   sin(ang) * r + path.y - camP.y, z);
+    float rollA = audioRotPhase * 0.4 + 0.5 * cos(camZ * 0.022 + 1.0);
     vp.xy = mat2(cos(rollA), -sin(rollA), sin(rollA), cos(rollA)) * vp.xy;
-    vp.x += sin(time * 0.31) * 2.2 * (z * 0.012);
-    vp.y += sin(time * 0.23 + 1.6) * 1.8 * (z * 0.012);
 
     vp.x -= eyeOff;
     gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);

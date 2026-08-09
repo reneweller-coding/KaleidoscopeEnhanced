@@ -124,6 +124,11 @@ void Configuration::readConfiguration( const QString &filename )
 	m_imageDirectory = docElem.attribute("ImageDirectory");
 	m_configurationName = docElem.attribute("ConfigurationName");
 
+	// REVIEW MODE for the Test* presets: scenes run ALPHABETICALLY, 8 s
+	// each, and 'n' steps to the next in order — a systematic viewing
+	// bench, not a show.  Only presets whose name starts with "Test".
+	m_filterShader->setReviewMode( m_configurationName.startsWith( "Test" ) );
+
 	// Image-cycling times: optional (music steering paces the show anyway);
 	// absent/0 falls back to the long-standing baseline.
 	m_timeTextureSoloMin = docElem.attribute( "timeTextureSoloMin" ).toUInt();
