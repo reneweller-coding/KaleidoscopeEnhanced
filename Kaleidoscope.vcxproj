@@ -383,6 +383,7 @@ exit /b 0</Command>
     <None Include="Scene\PsychedelicPills.frag" />
     <None Include="Scene\RaymarchTunnel.frag" />
     <None Include="Scene\ReactionDiffusion.frag" />
+    <None Include="Scene\Physarum.frag" />
     <None Include="Scene\Rorschach.frag" />
     <None Include="Scene\Schlieren.frag" />
     <None Include="Scene\SelfSimilarity.frag" />
@@ -427,6 +428,10 @@ exit /b 0</Command>
     <None Include="Blend\Feedback.frag" />
     <None Include="Blend\StereoMix.frag" />
     <None Include="Blend\FluidSim.frag" />
+    <None Include="Blend\PhysarumAgents.frag" />
+    <None Include="Blend\PhysarumDeposit.frag" />
+    <None Include="Blend\PhysarumDeposit.vert" />
+    <None Include="Blend\PhysarumDiffuse.frag" />
     <None Include="Blend\Present.frag" />
     <None Include="Blend\ReactionDiffusionSim.frag" />
     <None Include="Blend\Smoke3DSim.frag" />
@@ -488,6 +493,8 @@ exit /b 0</Command>
     <None Include="Scene3D\LissajousOrbits.vert" />
     <None Include="Scene3D\MandalaGrid.frag" />
     <None Include="Scene3D\MandalaGrid.vert" />
+    <None Include="Scene3D\MelodyScript.frag" />
+    <None Include="Scene3D\MelodyScript.vert" />
     <None Include="Scene3D\MeteorStorm.frag" />
     <None Include="Scene3D\MeteorStorm.vert" />
     <None Include="Scene3D\MonolithField.frag" />
@@ -554,6 +561,8 @@ exit /b 0</Command>
     <None Include="Scene3D\SpiralArray.vert" />
     <None Include="Scene3D\StainedGlassRosette.frag" />
     <None Include="Scene3D\StainedGlassRosette.vert" />
+    <None Include="Scene3D\StrangeAttractor.frag" />
+    <None Include="Scene3D\StrangeAttractor.vert" />
     <None Include="Scene3D\Swarm.frag" />
     <None Include="Scene3D\Swarm.vert" />
     <None Include="Scene3D\SynthTerrain.frag" />

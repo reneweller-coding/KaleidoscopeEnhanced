@@ -323,6 +323,22 @@ struct AudioFeatures
     //   drift.  Uploaded as `audioBarPhase`.
     float barPhase = 0.f;
 
+    // ---- Song-end dramaturgy (host-filled) ----
+    // fadeOut: 0..1 envelope that rises while the track is FADING OUT (the
+    // 6 s loudness average sinking well below the 20 s one while music is
+    // still present).  The host answers with a cinematic outro: trails
+    // bloom long, the picture dims gently — then the track-change detector
+    // starts the next song on a fresh scene.
+    float fadeOut = 0.f;
+
+    // ---- Melody history (host-filled ring, for MelodyScript) ----
+    // dominantPitch sampled every ~80 ms; 96 entries ≈ 7.7 s of melody.
+    // 0 = no clear pitch.  Uploaded as audioMelody[96] + audioMelodyHead
+    // (head as 0..1 ring position, newest just behind it).
+    static const int kMelodyLen = 96;
+    float melody[kMelodyLen] = {};
+    float melodyHead = 0.f;
+
     // ---- Self-similarity matrix bookkeeping (host-filled) ----
     // The host keeps a ring of feature-vector history and a byte similarity
     // matrix ("texSSM", unit 10).  ssmHead = ring head as a 0..1 texture

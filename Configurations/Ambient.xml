@@ -221,4 +221,12 @@
   <TextureShader file="..\\Scene3D\\SpiralArray.frag" type="scene3d" geom="points" probability="0.35" mood="calm" complexity="2">
   </TextureShader>
 
+  <TextureShader file="..\Scene\Physarum.frag" type="normal" probability="0.45" mood="calm" complexity="2">
+    <int name="sidesP" minValue="0" maxValue="8"></int>
+    <float name="zoomP" minValue="0.7" maxValue="1.5"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene3D\MelodyScript.frag" type="scene3d" geom="ribbon" probability="0.3" complexity="1">
+  </TextureShader>
+
 </configuration>

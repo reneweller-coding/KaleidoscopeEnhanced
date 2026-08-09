@@ -282,7 +282,7 @@ enum AudioLoc {
     AL_SPECTRUM, AL_TEXSIM, AL_TEXFLUID, AL_BUILDUP, AL_DROP, AL_WAVE,
     AL_BASSREL, AL_MIDREL, AL_TREBREL, AL_DAYPHASE, AL_TEXSMOKE3D,
     AL_CHROMA12, AL_FLATNESS, AL_ZCR, AL_TEXSSM, AL_SSMHEAD, AL_SSMFILL,
-    AL_COUNT
+    AL_TEXPHYS, AL_FADEOUT, AL_MELODY, AL_MELODYHEAD, AL_COUNT
 };
 const char *kAudioLocNames[AL_COUNT] = {
     "audioPhase", "audioAdvance", "audioBeat", "audioLevel", "sides",
@@ -296,7 +296,8 @@ const char *kAudioLocNames[AL_COUNT] = {
     "audioHat", "transStyle", "audioSpectrum", "texSim", "texFluid",
     "audioBuildUp", "audioDrop", "audioWave", "audioBassRel", "audioMidRel",
     "audioTrebRel", "dayPhase", "texSmoke3D", "audioChroma", "audioFlatness",
-    "audioZCR", "texSSM", "ssmHead", "ssmFill"
+    "audioZCR", "texSSM", "ssmHead", "ssmFill", "texPhysarum",
+    "audioFadeOut", "audioMelody", "audioMelodyHead"
 };
 }
 
@@ -342,6 +343,9 @@ void EffectShader::applyAudioFeatures(const AudioFeatures &f)
     if (L[AL_TREBREL]  >= 0) glUniform1f(L[AL_TREBREL],  f.trebRel);
     if (L[AL_DAYPHASE] >= 0) glUniform1f(L[AL_DAYPHASE], f.dayPhase);
     if (L[AL_CHROMA12] >= 0) glUniform1fv(L[AL_CHROMA12], 12, f.chroma);
+    if (L[AL_FADEOUT]  >= 0) glUniform1f(L[AL_FADEOUT],  f.fadeOut);
+    if (L[AL_MELODY]   >= 0) glUniform1fv(L[AL_MELODY], AudioFeatures::kMelodyLen, f.melody);
+    if (L[AL_MELODYHEAD] >= 0) glUniform1f(L[AL_MELODYHEAD], f.melodyHead);
     if (L[AL_FLATNESS] >= 0) glUniform1f(L[AL_FLATNESS], f.spectralFlatness);
     if (L[AL_ZCR]      >= 0) glUniform1f(L[AL_ZCR],      f.zeroCrossingRate);
 
@@ -385,6 +389,7 @@ void EffectShader::applyAudioFeatures(const AudioFeatures &f)
         v[ExprVars::V_DAYPHASE] = f.dayPhase;
         v[ExprVars::V_FLATNESS] = f.spectralFlatness;
         v[ExprVars::V_ZCR]      = f.zeroCrossingRate;
+        v[ExprVars::V_FADEOUT]  = f.fadeOut;
         v[ExprVars::V_SEED1]    = m_exprSeeds[0];
         v[ExprVars::V_SEED2]    = m_exprSeeds[1];
         v[ExprVars::V_SEED3]    = m_exprSeeds[2];
@@ -405,6 +410,7 @@ void EffectShader::applyAudioFeatures(const AudioFeatures &f)
     if (L[AL_TEXFLUID]    >= 0) glUniform1i(L[AL_TEXFLUID],    8);   // fluid dye (unit 8)
     if (L[AL_TEXSMOKE3D]  >= 0) glUniform1i(L[AL_TEXSMOKE3D],  9);   // smoke/fire volume (unit 9)
     if (L[AL_TEXSSM]      >= 0) glUniform1i(L[AL_TEXSSM],     10);   // self-similarity matrix
+    if (L[AL_TEXPHYS]     >= 0) glUniform1i(L[AL_TEXPHYS],    11);   // Physarum trail map
     if (L[AL_SSMHEAD]     >= 0) glUniform1f(L[AL_SSMHEAD],  f.ssmHead);
     if (L[AL_SSMFILL]     >= 0) glUniform1f(L[AL_SSMFILL],  f.ssmFill);
     if (L[AL_BUILDUP]  >= 0) glUniform1f(L[AL_BUILDUP],  f.buildUp);
@@ -496,4 +502,14 @@ bool EffectShader::usesSSM()
 		m_usesSSM = ( m_sh_prog_id != 0 &&
 		              glGetUniformLocation( m_sh_prog_id, "texSSM" ) >= 0 ) ? 1 : 0;
 	return m_usesSSM == 1;
+}
+
+bool EffectShader::usesPhysarum()
+{
+	if( !m_glReady )
+		return false;
+	if( m_usesPhysarum < 0 )
+		m_usesPhysarum = ( m_sh_prog_id != 0 &&
+		                   glGetUniformLocation( m_sh_prog_id, "texPhysarum" ) >= 0 ) ? 1 : 0;
+	return m_usesPhysarum == 1;
 }
