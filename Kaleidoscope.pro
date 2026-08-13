@@ -100,4 +100,5 @@ DISTFILES += \
     $$files(Combine/*.frag) \
     $$files(Blend/*.frag) \
     $$files(Blend/*.vert) \
+    $$files(Blend/*.comp) \
     $$files(Configurations/*.xml)

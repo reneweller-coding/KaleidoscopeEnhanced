@@ -1158,7 +1158,9 @@ The deploy packaging (`deploy.ps1`) mirrors the same folder structure into
   `wglGetProcAddress`, keeps the classic call-site names) replaced GLee; all
   238 shaders are GLSL **330 core**; fullscreen passes draw a `gl_VertexID`
   triangle through the shared `Blend/Fullscreen.vert` (no client-side vertex
-  arrays anywhere — every draw goes through a VAO).  The compute-shader entry
-  points (`glDispatchCompute` etc.) are loaded opportunistically for future
-  compute-based sims.
+  arrays anywhere — every draw goes through a VAO).  Compute shaders are
+  live: `setComputeShader()` (soft-fail, `shader_setup.cpp`) builds GL 4.3
+  compute programs, and the Physarum trail diffusion runs as an image-store
+  kernel (`Blend/PhysarumDiffuse.comp`, 16×16 groups) with the original
+  fragment pass kept as an automatic fallback where compute is unavailable.
 - Built and tested on Qt 6.11.1 / VS 2026 (toolset v145), x64, NVIDIA OpenGL 4.6.

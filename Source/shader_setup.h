@@ -13,5 +13,7 @@
 GLuint setShaders( const char *vert_source, const char * frag_source );
 // Vertex+fragment pair (3D scenes) — actually attaches the vertex shader.
 GLuint setShadersVF( const char *vert_source, const char *frag_source );
-void checkShaderExt( void );
+// GL 4.3 compute program.  Returns 0 (no exit) when compute entry points,
+// the file, or compile/link are missing — callers keep a fragment fallback.
+GLuint setComputeShader( const char *comp_source );
 

@@ -89,6 +89,7 @@ typedef ptrdiff_t GLintptr;
 
 #define GL_SHADER_IMAGE_ACCESS_BARRIER_BIT 0x00000020
 #define GL_TEXTURE_FETCH_BARRIER_BIT       0x00000008
+#define GL_FRAMEBUFFER_BARRIER_BIT         0x00000400
 #define GL_ALL_BARRIER_BITS                0xFFFFFFFF
 
 // ---- Function pointers (loaded in glcoreInit) ----
