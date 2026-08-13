@@ -591,6 +591,9 @@
     <None Include="Blend\CfxHistogram.comp">
       <Filter>Shaders\Blend</Filter>
     </None>
+    <None Include="Scene\EventHorizon.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
     <None Include="Blend\Blit.frag">
       <Filter>Shaders\Blend</Filter>
     </None>

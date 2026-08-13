@@ -270,4 +270,10 @@
     <float name="voidP" minValue="0.3" maxValue="0.8"></float>
   </TextureShader>
 
+  <TextureShader file="..\\Scene\\EventHorizon.frag" type="normal" probability="0.35" complexity="3">
+    <float name="massP" minValue="0.3" maxValue="0.9"></float>
+    <float name="diskP" minValue="0.3" maxValue="0.8"></float>
+    <float name="tiltP" minValue="0.2" maxValue="0.9"></float>
+  </TextureShader>
+
 </configuration>

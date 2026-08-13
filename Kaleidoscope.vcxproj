@@ -472,6 +472,7 @@ exit /b 0</Command>
     <None Include="Scene\LiquidMetal.frag" />
     <None Include="Scene\ShatterField.frag" />
     <None Include="Blend\CfxHistogram.comp" />
+    <None Include="Scene\EventHorizon.frag" />
     <None Include="Blend\Blit.frag" />
     <None Include="Blend\Fullscreen.vert" />
     <None Include="Blend\PhysarumDiffuse.comp" />

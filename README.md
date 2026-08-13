@@ -1092,6 +1092,31 @@ Not built: `Marching Cubes`. Meshing an isosurface needs a compute→VBO→indir
 draw path that this renderer does not have, and faking it with a raymarch would
 not have been the thing that was asked for. The `texSculpt` slot is reserved.
 
+### EventHorizon — general relativity in a plain fragment shader
+
+`Scene/EventHorizon.frag` needs no compute at all. Each pixel integrates its own
+photon in the Schwarzschild orbit plane using
+
+```
+d²u/dφ² + u = 3 M u²      (u = 1/r)
+```
+
+The `3Mu²` term *is* the relativity: drop it and light travels straight, keep it
+and the photon sphere, the shadow and the Einstein ring all fall out for free.
+The slideshow photo is the sky, so the lensing visibly drags the picture around
+the shadow; the disk gets Doppler beaming from its Keplerian orbit, which is
+what makes it read as *rotating* rather than as a flat ring.
+
+Two things cost a rebuild each: the camera has to sit **outside** the disk's
+outer radius (inside it, all you see is a wall of disk) at 20–45° elevation, and
+the sky must be sampled with `textureLod(..., 0)` — next to the shadow the lensed
+direction changes so fast between neighbouring pixels that the automatic
+derivative picks a very coarse mip and the sky shatters into hard blocks.
+
+*Naming:* a `Scene3D\BlackHole.frag` already existed, and the preset registration
+script compared only the file NAME — so the new scene was silently skipped in
+four presets. It now compares the full `Scene\<name>.frag` path.
+
 **Lessons that cost a rebuild each** (all fixed in the code, worth not
 repeating): `centroid` is a reserved GLSL keyword and cannot be a uniform name.
 A capped per-cell index list makes separation saturate while cohesion, being an
