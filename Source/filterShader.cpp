@@ -1684,6 +1684,38 @@ void FilterShader::stepSSM(const AudioFeatures &a, float dt)
 	m_ssmDirty = true;
 }
 
+// Push one row of the spectrogram history.  Several rows can fall due in a
+// single frame after a hitch, hence the while loop — dropping them instead
+// would make the scroll speed depend on the frame rate, and a terrain built
+// from this would visibly stretch whenever the renderer stumbled.
+void FilterShader::stepSpectro(const AudioFeatures &a, float dt)
+{
+	m_spectroAccum += dt;
+	int rows = 0;
+	while( m_spectroAccum >= kSpectroStride && rows < 8 )
+	{
+		m_spectroAccum -= kSpectroStride;
+		++rows;
+
+		unsigned char *dst = m_spectroData + size_t(m_spectroHead) * kSpectroW;
+		for( int i = 0; i < kSpectroW; ++i )
+		{
+			// The bands are already self-normalised 0..1; the mild curve lifts
+			// the quiet ones so the far end of the history does not flatten
+			// into a plain.
+			float v = a.spectrum[i];
+			v = ( v <= 0.f ) ? 0.f : powf( v, 0.75f );
+			if( v > 1.f ) v = 1.f;
+			dst[i] = (unsigned char)( v * 255.f + 0.5f );
+		}
+		m_spectroHead = ( m_spectroHead + 1 ) % kSpectroH;
+		if( m_spectroCount < kSpectroH ) ++m_spectroCount;
+		if( m_spectroPend < kSpectroH ) ++m_spectroPend;
+	}
+	if( m_spectroAccum > kSpectroStride * 8.f )
+		m_spectroAccum = 0.f;             // a long stall: resync rather than catch up
+}
+
 // Advance the Gray-Scott simulation by one step into the next ping-pong buffer.
 void FilterShader::stepReactionDiffusion(const AudioFeatures &audio)
 {
@@ -2293,6 +2325,25 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
         // Self-similarity ring bookkeeping for the SelfSimilarity effect.
         audioFx.ssmHead       = float(m_ssmHead)  / float(kSSMSize);
         audioFx.ssmFill       = float(m_ssmCount) / float(kSSMSize);
+        // Scrolling-spectrogram ring bookkeeping (SpectroCanyon and friends).
+        // spectroHead is the T coordinate of "now" and moves CONTINUOUSLY: the
+        // sub-row fraction is folded in, because a head that only advanced when
+        // a row was written would jerk the terrain forward every 80 ms.
+        //
+        // It deliberately trails the write head by two rows and lands on a
+        // texel centre.  Sampling any closer would let the linear filter
+        // interpolate across the write position, mixing the newest row with the
+        // 20-second-old one that is about to be overwritten.  As the fraction
+        // runs 0->1 the sample slides from row head-2 to head-1; the row write
+        // then bumps the head and lands on exactly the same coordinate, so the
+        // motion is seamless.
+        {
+            float frac = m_spectroAccum / kSpectroStride;
+            if( frac < 0.f ) frac = 0.f; else if( frac > 1.f ) frac = 1.f;
+            audioFx.spectroHead = ( float(m_spectroHead) - 1.5f + frac )
+                                / float(kSpectroH);
+            audioFx.spectroFill = float(m_spectroCount) / float(kSpectroH);
+        }
         // The DJ-stop slam-back rides the same "hit" channel as a drop
         // (camera punch + shake + the shaders' audioDrop uniform).
         audioFx.dropPulse     = std::max( audio.dropPulse, audio.breakSlam ) * gate;
@@ -2808,6 +2859,61 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 			                 GL_RED, GL_UNSIGNED_BYTE, m_ssmData );
 			glPixelStorei( GL_UNPACK_ALIGNMENT, 4 );
 			m_ssmDirty = false;
+		}
+	}
+
+	// Scrolling spectrogram, same gating: the history costs 32 bytes per row
+	// and accumulates always, the texture (unit 28) only exists while an effect
+	// samples "texSpectro".
+	stepSpectro( audio, timeSinceLastFrameSec );
+	bool spectroNeeded =
+	    ( m_effectTextures[m_actEffectTexture]->usesSpectro()
+	   || ( m_stateInterpolationEffectTexture != 0
+	        && m_effectTextures[m_nextEffectTexture]->usesSpectro() ) );
+	if( spectroNeeded )
+	{
+		if( m_texSpectro == 0 )
+		{
+			glGenTextures( 1, &m_texSpectro );
+			glBindTexture( GL_TEXTURE_2D, m_texSpectro );
+			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+			// S = frequency: clamped, or the lowest band would bleed into the
+			// highest across the seam.  T = time: repeats, because it is a ring.
+			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+			glTexImage2D( GL_TEXTURE_2D, 0, GL_R8, kSpectroW, kSpectroH, 0,
+			              GL_RED, GL_UNSIGNED_BYTE, NULL );
+			m_spectroPend = kSpectroH;    // fresh texture: upload the whole ring
+		}
+		glActiveTexture( GL_TEXTURE28 );
+		glBindTexture( GL_TEXTURE_2D, m_texSpectro );
+		if( m_spectroPend > 0 )
+		{
+			glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
+			if( m_spectroPend >= kSpectroH )
+			{
+				glTexSubImage2D( GL_TEXTURE_2D, 0, 0, 0, kSpectroW, kSpectroH,
+				                 GL_RED, GL_UNSIGNED_BYTE, m_spectroData );
+			}
+			else
+			{
+				// Only the rows written since the last upload, which is one or
+				// two in a normal frame.  The block can straddle the ring's
+				// wrap, so it may need splitting into two uploads.
+				int first = ( m_spectroHead - m_spectroPend + kSpectroH ) % kSpectroH;
+				int run   = ( first + m_spectroPend > kSpectroH )
+				          ? kSpectroH - first : m_spectroPend;
+				glTexSubImage2D( GL_TEXTURE_2D, 0, 0, first, kSpectroW, run,
+				                 GL_RED, GL_UNSIGNED_BYTE,
+				                 m_spectroData + size_t(first) * kSpectroW );
+				if( run < m_spectroPend )
+					glTexSubImage2D( GL_TEXTURE_2D, 0, 0, 0, kSpectroW,
+					                 m_spectroPend - run, GL_RED, GL_UNSIGNED_BYTE,
+					                 m_spectroData );
+			}
+			glPixelStorei( GL_UNPACK_ALIGNMENT, 4 );
+			m_spectroPend = 0;
 		}
 	}
 

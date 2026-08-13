@@ -44,6 +44,7 @@ public:
 		initUniforms( m_width, m_height );   // virtual: derived locations too
 		m_glReady = true;
 		m_usesSim = m_usesFluid = m_usesSmoke3D = m_usesSSM = m_usesPhysarum = -1;
+		m_usesSpectro = -1;
 	}
 	bool isCompiled() const { return m_glReady; }
 
@@ -119,6 +120,7 @@ public:
 
 	// Same for the self-similarity matrix ("texSSM" uniform, unit 10).
 	bool usesSSM();
+	bool usesSpectro();
 
 	// Same for the Physarum trail map ("texPhysarum" uniform, unit 11).
 	bool usesPhysarum();
@@ -191,6 +193,7 @@ protected:
 	int		m_usesFluid = -1;    // same caching for the fluid field
 	int		m_usesSmoke3D = -1;  // same caching for the volumetric smoke/fire field
 	int		m_usesSSM = -1;      // same caching for the self-similarity matrix
+	int		m_usesSpectro = -1;  // ... and for the scrolling spectrogram history
 	int		m_usesPhysarum = -1; // same caching for the Physarum trail map
 	unsigned int	m_cfxMask = 0;   // compute-FX sampler bits (see cfxMask())
 	GLuint		m_cfxProg = 0;   // program the mask was resolved for

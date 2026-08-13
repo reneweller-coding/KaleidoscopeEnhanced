@@ -47,6 +47,8 @@ typedef ptrdiff_t GLintptr;
 #define GL_TEXTURE10                      0x84CA
 #define GL_TEXTURE11                      0x84CB
 #define GL_TEXTURE12                      0x84CC
+// ComputeFX publishes on 12..27; 28 upward is for host-uploaded data textures.
+#define GL_TEXTURE28                      0x84DC
 
 #define GL_ARRAY_BUFFER                   0x8892
 #define GL_ELEMENT_ARRAY_BUFFER           0x8893

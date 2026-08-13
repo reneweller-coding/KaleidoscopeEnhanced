@@ -275,7 +275,8 @@ enum AudioLoc {
     AL_SPECTRUM, AL_TEXSIM, AL_TEXFLUID, AL_BUILDUP, AL_DROP, AL_WAVE,
     AL_BASSREL, AL_MIDREL, AL_TREBREL, AL_DAYPHASE, AL_TEXSMOKE3D,
     AL_CHROMA12, AL_FLATNESS, AL_ZCR, AL_TEXSSM, AL_SSMHEAD, AL_SSMFILL,
-    AL_TEXPHYS, AL_FADEOUT, AL_MELODY, AL_MELODYHEAD, AL_COUNT
+    AL_TEXPHYS, AL_FADEOUT, AL_MELODY, AL_MELODYHEAD,
+    AL_TEXSPECTRO, AL_SPECTROHEAD, AL_SPECTROFILL, AL_COUNT
 };
 const char *kAudioLocNames[AL_COUNT] = {
     "audioPhase", "audioAdvance", "audioBeat", "audioLevel", "sides",
@@ -290,7 +291,8 @@ const char *kAudioLocNames[AL_COUNT] = {
     "audioBuildUp", "audioDrop", "audioWave", "audioBassRel", "audioMidRel",
     "audioTrebRel", "dayPhase", "texSmoke3D", "audioChroma", "audioFlatness",
     "audioZCR", "texSSM", "ssmHead", "ssmFill", "texPhysarum",
-    "audioFadeOut", "audioMelody", "audioMelodyHead"
+    "audioFadeOut", "audioMelody", "audioMelodyHead",
+    "texSpectro", "spectroHead", "spectroFill"
 };
 }
 
@@ -404,8 +406,14 @@ void EffectShader::applyAudioFeatures(const AudioFeatures &f)
     if (L[AL_TEXSMOKE3D]  >= 0) glUniform1i(L[AL_TEXSMOKE3D],  9);   // smoke/fire volume (unit 9)
     if (L[AL_TEXSSM]      >= 0) glUniform1i(L[AL_TEXSSM],     10);   // self-similarity matrix
     if (L[AL_TEXPHYS]     >= 0) glUniform1i(L[AL_TEXPHYS],    11);   // Physarum trail map
+    // Unit 28 sits above the ComputeFX block (12..27).  A shader only ever has
+    // a handful of these active at once, so the per-stage unit limit is never
+    // the binding constraint — the numbering just has to stay collision-free.
+    if (L[AL_TEXSPECTRO]  >= 0) glUniform1i(L[AL_TEXSPECTRO], 28);   // spectrogram history
     if (L[AL_SSMHEAD]     >= 0) glUniform1f(L[AL_SSMHEAD],  f.ssmHead);
     if (L[AL_SSMFILL]     >= 0) glUniform1f(L[AL_SSMFILL],  f.ssmFill);
+    if (L[AL_SPECTROHEAD] >= 0) glUniform1f(L[AL_SPECTROHEAD], f.spectroHead);
+    if (L[AL_SPECTROFILL] >= 0) glUniform1f(L[AL_SPECTROFILL], f.spectroFill);
     if (L[AL_BUILDUP]  >= 0) glUniform1f(L[AL_BUILDUP],  f.buildUp);
     if (L[AL_DROP]     >= 0) glUniform1f(L[AL_DROP],     f.dropPulse);
     if (L[AL_PHASE]    >= 0) glUniform1f(L[AL_PHASE],    f.audioRotPhase);
@@ -495,6 +503,16 @@ bool EffectShader::usesSSM()
 		m_usesSSM = ( m_sh_prog_id != 0 &&
 		              glGetUniformLocation( m_sh_prog_id, "texSSM" ) >= 0 ) ? 1 : 0;
 	return m_usesSSM == 1;
+}
+
+bool EffectShader::usesSpectro()
+{
+	if( !m_glReady )
+		return false;
+	if( m_usesSpectro < 0 )
+		m_usesSpectro = ( m_sh_prog_id != 0 &&
+		                  glGetUniformLocation( m_sh_prog_id, "texSpectro" ) >= 0 ) ? 1 : 0;
+	return m_usesSpectro == 1;
 }
 
 bool EffectShader::usesPhysarum()

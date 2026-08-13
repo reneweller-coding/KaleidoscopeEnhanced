@@ -597,6 +597,24 @@ private:
 	bool			m_ssmDirty  = false;  // matrix changed since last upload
 	void			stepSSM(const AudioFeatures &a, float dt);
 
+	// ---- Scrolling spectrogram (host-filled history) ----
+	// One row of 32 log-spaced bands every kSpectroStride seconds, written into
+	// a ring so no row ever has to be moved.  Same demand gating as the SSM:
+	// the history accumulates always (a memcpy per row), while the texture
+	// ("texSpectro", unit 28) is only created and uploaded while an effect that
+	// samples it is on screen.  Rows are held at 8 bit — this is terrain and
+	// paint, not analysis, and R8 keeps the per-row upload to 32 bytes.
+	static const int kSpectroW = AudioFeatures::kSpectrumBands;   // 32
+	static const int kSpectroH = 256;                             // ~20 s
+	static constexpr float kSpectroStride = 0.08f;
+	unsigned char	m_spectroData[kSpectroH * kSpectroW] = {};
+	int				m_spectroHead  = 0;    // next row to write
+	int				m_spectroCount = 0;    // filled rows (saturates at kSpectroH)
+	float			m_spectroAccum = 0.f;  // seconds since the last row
+	int				m_spectroPend  = 0;    // rows written since the last upload
+	GLuint			m_texSpectro   = 0;
+	void			stepSpectro(const AudioFeatures &a, float dt);
+
 	// Live-tunable look parameters (static → one shared setting across all configs).
 	static float	s_reactivity;    // audio-motion master gain (default 1.0)
 	static float	s_trailAmount;   // feedback trail length 0..0.95 (default 0.6)
