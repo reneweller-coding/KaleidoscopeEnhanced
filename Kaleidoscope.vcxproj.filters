@@ -513,6 +513,27 @@
     <None Include="Scene\LightningStorm.frag">
       <Filter>Shaders\Scene</Filter>
     </None>
+    <None Include="Blend\CfxPixelSort.comp">
+      <Filter>Shaders\Blend</Filter>
+    </None>
+    <None Include="Scene\PixelMelt.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Blend\CfxFFT.comp">
+      <Filter>Shaders\Blend</Filter>
+    </None>
+    <None Include="Blend\CfxFFTLoad.comp">
+      <Filter>Shaders\Blend</Filter>
+    </None>
+    <None Include="Blend\CfxFFTMask.comp">
+      <Filter>Shaders\Blend</Filter>
+    </None>
+    <None Include="Blend\CfxFFTStore.comp">
+      <Filter>Shaders\Blend</Filter>
+    </None>
+    <None Include="Scene\SpectrumFilter.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
     <None Include="Blend\Blit.frag">
       <Filter>Shaders\Blend</Filter>
     </None>
