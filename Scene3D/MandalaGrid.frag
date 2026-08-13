@@ -1,4 +1,5 @@
-#version 120
+#version 330 core
+out vec4 fragColor;
 // MandalaGrid.frag — an 8-fold colour rosette flowing softly inward; the
 // bar phase rolls a gentle ring of light through the pattern.
 uniform float time;
@@ -9,8 +10,8 @@ uniform float audioChromaHue;
 uniform float audioSwell;
 uniform float audioDrop;
 
-varying vec2  vPolar;
-varying float vLift;
+in vec2  vPolar;
+in float vLift;
 
 vec3 hueRot(vec3 c, float a)
 {
@@ -52,5 +53,5 @@ void main()
     float lum = dot(col, vec3(0.299, 0.587, 0.114));
     col = mix(col, vec3(lum), 0.22);
 
-    gl_FragColor = vec4(col * 1.25, 1.0);
+    fragColor = vec4(col * 1.25, 1.0);
 }

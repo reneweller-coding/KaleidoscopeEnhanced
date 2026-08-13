@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 uniform vec2 resolution;
 uniform float time;
 uniform sampler2D tex0;
@@ -57,7 +59,7 @@ void main() {
     uv.x = (speedTunnel*time+.1/r);
     uv.y = (a/3.1416);
     
-    vec4 color1 = interpolation * texture2D(tex0,uv) + (1.0-interpolation)*texture2D(tex1,uv);
+    vec4 color1 = interpolation * texture(tex0,uv) + (1.0-interpolation)*texture(tex1,uv);
     
     
     //Tunnel Backward
@@ -83,8 +85,8 @@ void main() {
     uv.x = (speedTunnelReverse*time+.1/r);
     uv.y = (a/M_PI);
     
-    vec4 color2 =  interpolation * texture2D(tex0,uv) + (1.0-interpolation)*texture2D(tex1,uv);
+    vec4 color2 =  interpolation * texture(tex0,uv) + (1.0-interpolation)*texture(tex1,uv);
    
     //Combine Plain and Reverse
-    gl_FragColor = 0.5*color1+0.5*color2;;
+    fragColor = 0.5*color1+0.5*color2;;
 }

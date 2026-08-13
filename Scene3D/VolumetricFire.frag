@@ -1,4 +1,5 @@
-#version 120
+#version 330 core
+out vec4 fragColor;
 // VolumetricFire.frag — companion to VolumetricFire.vert.  Samples the live
 // GPU fire/smoke simulation (Blend/Smoke3DSim.frag, R=temperature,
 // G=density) at this depth-slice billboard's atlas cell and maps it through
@@ -10,10 +11,10 @@
 
 uniform sampler2D texSmoke3D;
 
-varying vec2  vAtlasUV;
-varying float vHeightFrac;
-varying float vHue;
-varying float vGlow;
+in vec2  vAtlasUV;
+in float vHeightFrac;
+in float vHue;
+in float vGlow;
 
 vec3 hueRot(vec3 c, float a)
 {
@@ -24,7 +25,7 @@ vec3 hueRot(vec3 c, float a)
 
 void main()
 {
-    vec4  sim  = texture2D(texSmoke3D, vAtlasUV);
+    vec4  sim  = texture(texSmoke3D, vAtlasUV);
     float temp = sim.r;
     float dens = sim.g;
 
@@ -52,5 +53,5 @@ void main()
     col += vec3(1.3, 1.1, 0.8) * spark * clamp(temp - 0.5, 0.0, 1.0) * 2.0;
 
     float bright = clamp(temp * 1.15 + dens * 0.45, 0.0, 3.2) * vGlow;
-    gl_FragColor = vec4(col * bright, 1.0);
+    fragColor = vec4(col * bright, 1.0);
 }

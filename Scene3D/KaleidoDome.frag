@@ -1,4 +1,5 @@
-#version 120
+#version 330 core
+out vec4 fragColor;
 // KaleidoDome.frag — a 10-sector kaleidoscope rosette of the current image
 // spinning across the dome; kicks bloom the centre, the bar phase breathes
 // the fold radius.
@@ -11,8 +12,8 @@ uniform float audioDrop;
 uniform float audioSwell;
 uniform float audioChromaHue;
 
-varying vec2  vUV;
-varying float vR;
+in vec2  vUV;
+in float vR;
 
 vec3 hueRot(vec3 c, float a)
 {
@@ -40,7 +41,7 @@ void main()
     vec2 crop = vec2(sceneSeed * 3.7, sceneSeed * 7.3);
     vec2 uv = vec2(ang / sector * 1.6 + crop.x,
                    r * 0.9 + crop.y);
-    vec3 col = texture2D(tex0, mfold(uv)).rgb;
+    vec3 col = texture(tex0, mfold(uv)).rgb;
 
     // Centre bloom on the kick, whole-sky flash on a drop.
     float centre = exp(-vR * 2.2);
@@ -51,5 +52,5 @@ void main()
     float seam = exp(-abs(ang - sector * 0.5) * 24.0);
     col += hueRot(vec3(0.35, 0.5, 0.7), audioChromaHue) * seam * 0.30;
 
-    gl_FragColor = vec4(col * 1.30, 1.0);
+    fragColor = vec4(col * 1.30, 1.0);
 }

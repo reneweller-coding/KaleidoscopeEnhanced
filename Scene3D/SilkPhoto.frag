@@ -1,4 +1,5 @@
-#version 120
+#version 330 core
+out vec4 fragColor;
 // SilkPhoto.frag — the photo itself, recognisable, with cloth shading and a
 // silky key-coloured sheen wandering across the folds.
 uniform sampler2D tex0;
@@ -7,8 +8,8 @@ uniform float audioChromaHue;
 uniform float audioSwell;
 uniform float audioDrop;
 
-varying vec2  vUV;
-varying float vShade;
+in vec2  vUV;
+in float vShade;
 
 vec3 hueRot(vec3 c, float a)
 {
@@ -19,7 +20,7 @@ vec3 hueRot(vec3 c, float a)
 
 void main()
 {
-    vec3 col = texture2D(tex0, vec2(vUV.x, 1.0 - vUV.y)).rgb;
+    vec3 col = texture(tex0, vec2(vUV.x, 1.0 - vUV.y)).rgb;
 
     col *= vShade;
 
@@ -31,5 +32,5 @@ void main()
 
     col *= 1.0 + 0.8 * audioDrop;
 
-    gl_FragColor = vec4(col * 1.15, 1.0);
+    fragColor = vec4(col * 1.15, 1.0);
 }

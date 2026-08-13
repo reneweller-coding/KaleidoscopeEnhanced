@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 // BeatLattice.frag
 // -----------------------------------------------------------------------
 // A BEAT-FIRST primary effect, built for rhythmic music.  Research-informed:
@@ -32,8 +34,8 @@ uniform float audioBass;
 const float PI = 3.14159265358979;
 
 mat2 rot(float a) { float c = cos(a), s = sin(a); return mat2(c, -s, s, c); }
-vec3 img(vec2 uv) { return (interpolation * texture2D(tex0, uv)
-                          + (1.0 - interpolation) * texture2D(tex1, uv)).rgb; }
+vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
+                          + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
 
 vec3 imgPal(float x)
 {
@@ -103,5 +105,5 @@ void main()
     col *= 0.9 + 0.4 * audioLevel;
     col *= 1.0 - 0.25 * dot(p, p);
 
-    gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }

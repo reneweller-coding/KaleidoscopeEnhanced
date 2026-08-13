@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 // CombinePlain.frag
 // The plain effect blend — with a LIBRARY of 26 per-transition styles.  The
 // host rolls a style whenever a cross-fade starts (transStyle; 0/absent =
@@ -87,59 +89,59 @@ void main()
     if (transStyle == 13)                     // blur-through (soft-focus dip)
     {
         vec2 px = (4.0 + 10.0 * mid) / resolution;
-        vec4 a = ( texture2D(tex0, p)
-                 + texture2D(tex0, p + vec2( px.x,  px.y))
-                 + texture2D(tex0, p + vec2(-px.x,  px.y))
-                 + texture2D(tex0, p + vec2( px.x, -px.y))
-                 + texture2D(tex0, p + vec2(-px.x, -px.y)) ) * 0.2;
-        vec4 b = ( texture2D(tex1, p)
-                 + texture2D(tex1, p + vec2( px.x,  px.y))
-                 + texture2D(tex1, p + vec2(-px.x,  px.y))
-                 + texture2D(tex1, p + vec2( px.x, -px.y))
-                 + texture2D(tex1, p + vec2(-px.x, -px.y)) ) * 0.2;
-        vec4 sharp = blend4(texture2D(tex0, p), texture2D(tex1, p), d);
-        gl_FragColor = mix(sharp, blend4(a, b, d), mid);
+        vec4 a = ( texture(tex0, p)
+                 + texture(tex0, p + vec2( px.x,  px.y))
+                 + texture(tex0, p + vec2(-px.x,  px.y))
+                 + texture(tex0, p + vec2( px.x, -px.y))
+                 + texture(tex0, p + vec2(-px.x, -px.y)) ) * 0.2;
+        vec4 b = ( texture(tex1, p)
+                 + texture(tex1, p + vec2( px.x,  px.y))
+                 + texture(tex1, p + vec2(-px.x,  px.y))
+                 + texture(tex1, p + vec2( px.x, -px.y))
+                 + texture(tex1, p + vec2(-px.x, -px.y)) ) * 0.2;
+        vec4 sharp = blend4(texture(tex0, p), texture(tex1, p), d);
+        fragColor = mix(sharp, blend4(a, b, d), mid);
         return;
     }
     if (transStyle == 18)                     // chromatic dissolve
     {
-        vec4 c0 = texture2D(tex0, p);
-        vec4 c1 = texture2D(tex1, p);
+        vec4 c0 = texture(tex0, p);
+        vec4 c1 = texture(tex1, p);
         float wR = clamp(d * 1.3,        0.0, 1.0);
         float wG = clamp(d * 1.3 - 0.15, 0.0, 1.0);
         float wB = clamp(d * 1.3 - 0.30, 0.0, 1.0);
-        gl_FragColor = vec4(mix(c0.r, c1.r, wR),
+        fragColor = vec4(mix(c0.r, c1.r, wR),
                             mix(c0.g, c1.g, wG),
                             mix(c0.b, c1.b, wB), 1.0);
         return;
     }
     if (transStyle == 19)                     // luminance-ordered dissolve
     {
-        vec4 c0 = texture2D(tex0, p);
-        vec4 c1 = texture2D(tex1, p);
+        vec4 c0 = texture(tex0, p);
+        vec4 c1 = texture(tex1, p);
         float key = dot(c0.rgb, vec3(0.299, 0.587, 0.114)) * 0.7
                   + dot(c1.rgb, vec3(0.299, 0.587, 0.114)) * 0.3;
         float w = smoothstep(key - 0.25, key + 0.25, d * 1.5 - 0.25);
-        gl_FragColor = blend4(c0, c1, w);
+        fragColor = blend4(c0, c1, w);
         return;
     }
     if (transStyle == 20)                     // double-exposure (screen) peak
     {
-        vec4 c0 = texture2D(tex0, p);
-        vec4 c1 = texture2D(tex1, p);
+        vec4 c0 = texture(tex0, p);
+        vec4 c1 = texture(tex1, p);
         vec4 scr = 1.0 - (1.0 - c0) * (1.0 - c1);
-        gl_FragColor = mix(blend4(c0, c1, d), scr, 0.65 * mid);
+        fragColor = mix(blend4(c0, c1, d), scr, 0.65 * mid);
         return;
     }
     if (transStyle == 24)                     // ghost multi-exposure morph
     {
         vec2 z1 = cu / (1.0 + 0.045 * mid) + 0.5;
         vec2 z2 = cu / (1.0 + 0.090 * mid) + 0.5;
-        vec4 a = ( texture2D(tex0, p) + texture2D(tex0, z1)
-                 + texture2D(tex0, z2) ) / 3.0;
-        vec4 b = ( texture2D(tex1, p) + texture2D(tex1, z1)
-                 + texture2D(tex1, z2) ) / 3.0;
-        gl_FragColor = blend4(a, b, d);
+        vec4 a = ( texture(tex0, p) + texture(tex0, z1)
+                 + texture(tex0, z2) ) / 3.0;
+        vec4 b = ( texture(tex1, p) + texture(tex1, z1)
+                 + texture(tex1, z2) ) / 3.0;
+        fragColor = blend4(a, b, d);
         return;
     }
     if (transStyle == 25)                     // datamosh glitch
@@ -165,10 +167,10 @@ void main()
         float stuck  = step(0.93, hashT(vec2(row, glitchT + 7.0))) * mid;
         float wLocal = mix(d, d * 0.15, stuck);
 
-        float rC = mix(texture2D(tex0, pr).r, texture2D(tex1, pr).r, wLocal);
-        float gC = mix(texture2D(tex0, pg).g, texture2D(tex1, pg).g, wLocal);
-        float bC = mix(texture2D(tex0, pb).b, texture2D(tex1, pb).b, wLocal);
-        gl_FragColor = vec4(rC, gC, bC, 1.0);
+        float rC = mix(texture(tex0, pr).r, texture(tex1, pr).r, wLocal);
+        float gC = mix(texture(tex0, pg).g, texture(tex1, pg).g, wLocal);
+        float bC = mix(texture(tex0, pb).b, texture(tex1, pb).b, wLocal);
+        fragColor = vec4(rC, gC, bC, 1.0);
         return;
     }
 
@@ -324,7 +326,7 @@ void main()
         w1 = smoothstep(0.25, 0.9, d);
     }
 
-    vec4 c0 = texture2D(tex0, p0);
-    vec4 c1 = texture2D(tex1, p1);
-    gl_FragColor = blend4(c0, c1, w1) * dark;
+    vec4 c0 = texture(tex0, p0);
+    vec4 c1 = texture(tex1, p1);
+    fragColor = blend4(c0, c1, w1) * dark;
 }

@@ -1,12 +1,12 @@
-#version 120
+#version 330 core
 // VolcanoIsland.vert — an island volcano at night: ballistic lava bombs
 // arc from the crater (every kick feeds the fountain, a DROP is the big
 // eruption), lava rivers crawl down seeded channels, embers spiral up into
 // the smoke.  60k points: 35 % fountain, 25 % cone rock, 15 % lava
 // rivers, 15 % rising embers, 10 % stars.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -20,7 +20,7 @@ uniform float audioSwell;
 uniform float audioDrop;
 uniform float dayPhase;   // slow host day/night cycle, 0..1
 
-varying vec4 vCol;
+out vec4 vCol;
 
 float hash11(float n) { return fract(sin(n * 127.1) * 43758.5453); }
 

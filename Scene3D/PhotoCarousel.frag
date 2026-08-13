@@ -1,4 +1,5 @@
-#version 120
+#version 330 core
+out vec4 fragColor;
 // PhotoCarousel.frag — each card is a seeded crop of the current image with
 // a thin glowing frame; the frame colour follows the music's key.
 uniform sampler2D tex0;
@@ -6,9 +7,9 @@ uniform float audioChromaHue;
 uniform float audioKick;
 uniform float audioDrop;
 
-varying vec2  vUV;
-varying vec4  vSeed;
-varying float vGlow;
+in vec2  vUV;
+in vec4  vSeed;
+in float vGlow;
 
 vec3 hueRot(vec3 c, float a)
 {
@@ -21,7 +22,7 @@ void main()
 {
     // Seeded crop window: 40 % of the image, anywhere.
     vec2 crop = vSeed.xy * 0.6;
-    vec3 col  = texture2D(tex0, crop + vUV * 0.4).rgb;
+    vec3 col  = texture(tex0, crop + vUV * 0.4).rgb;
 
     // Thin glowing frame around the card edge.
     vec2  b     = min(vUV, 1.0 - vUV);
@@ -32,5 +33,5 @@ void main()
 
     col *= (0.75 + 0.45 * vGlow) * (1.0 + 0.8 * audioDrop);
 
-    gl_FragColor = vec4(col * 1.15, 1.0);
+    fragColor = vec4(col * 1.15, 1.0);
 }

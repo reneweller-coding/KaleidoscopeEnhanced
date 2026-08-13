@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 // VoronoiPulse.frag
 // -----------------------------------------------------------------------
 // The source image SHATTERED into a kaleidoscopic stained-glass mosaic.  The
@@ -35,8 +37,8 @@ uniform float driftP;         // shard drift speed multiplier (0 -> 1.0)
 const float PI = 3.14159265358979;
 
 mat2 rot(float a) { float c = cos(a), s = sin(a); return mat2(c, -s, s, c); }
-vec3 img(vec2 uv) { return (interpolation * texture2D(tex0, uv)
-                          + (1.0 - interpolation) * texture2D(tex1, uv)).rgb; }
+vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
+                          + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
 
 vec2 hash22(vec2 p)
 {
@@ -113,5 +115,5 @@ void main()
     // Jewel vignette.
     col *= 1.0 - 0.30 * dot(p, p);
 
-    gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }

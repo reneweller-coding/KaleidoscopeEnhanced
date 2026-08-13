@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 // Present.frag
 // Final present pass.  Two jobs:
 //  1) A GLOBAL MOOD GRADE applied once to the finished frame, so EVERY effect
@@ -68,7 +70,7 @@ vec2 titleUV(vec2 q) { return vec2(q.x / 1.10, -q.y / (1.10 / titleAspect)) + 0.
 vec4 titleTap(vec2 t)
 {
     if (t.x <= 0.0 || t.x >= 1.0 || t.y <= 0.0 || t.y >= 1.0) return vec4(0.0);
-    return texture2D(titleTex, t);
+    return texture(titleTex, t);
 }
 
 // A spotlight CONE emanating from `origin` along `dir`: brightest at the source,
@@ -92,8 +94,8 @@ float coneLight(vec2 p, vec2 origin, vec2 dir, float spread, float reach)
 float stereoDepthAt(vec2 puv, vec2 cuv)
 {
     float bl = (useBloom > 0.5)
-             ? dot(texture2D(bloomTex, puv).rgb, vec3(0.299, 0.587, 0.114))
-             : dot(texture2D(tex, puv, 4.0).rgb, vec3(0.299, 0.587, 0.114));
+             ? dot(texture(bloomTex, puv).rgb, vec3(0.299, 0.587, 0.114))
+             : dot(texture(tex, puv, 4.0).rgb, vec3(0.299, 0.587, 0.114));
     return clamp(bl * 1.4, 0.0, 1.0) * 0.7
          + clamp(length(cuv) * 1.5, 0.0, 1.0) * 0.3;
 }
@@ -153,27 +155,27 @@ void main()
         else
             puv.x += stereoDepth * 0.007
                    * (stereoDepthAt(puv, cuv) - 0.45) * eyeSign;
-        c = texture2D(tex, puv).rgb;
+        c = texture(tex, puv).rgb;
     }
     else if (stereoMode == 3)
     {
         float disp = stereoDepth * 0.006 * (stereoDepthAt(puv, cuv) - 0.45);
-        vec3 cl = texture2D(tex, puv + vec2(-disp, 0.0)).rgb;   // left eye
-        vec3 cr = texture2D(tex, puv + vec2( disp, 0.0)).rgb;   // right eye
+        vec3 cl = texture(tex, puv + vec2(-disp, 0.0)).rgb;   // left eye
+        vec3 cr = texture(tex, puv + vec2( disp, 0.0)).rgb;   // right eye
         c = vec3(cl.r, cr.g, cr.b);
     }
     else
-        c = texture2D(tex, puv).rgb;
+        c = texture(tex, puv).rgb;
 
     // CAS-style sharpening: when the internal render scale is below 1 the
     // frame is upsampled here — a neighbourhood-clamped unsharp mask (no
     // halos) restores the crispness the downscale cost.  sharpen = 0 → off.
     if (sharpen > 0.001 && stereoMode != 3)   // CAS would fringe the anaglyph
     {
-        vec3 n = texture2D(tex, puv + vec2(0.0,  srcTexel.y)).rgb;
-        vec3 s = texture2D(tex, puv - vec2(0.0,  srcTexel.y)).rgb;
-        vec3 e = texture2D(tex, puv + vec2(srcTexel.x, 0.0)).rgb;
-        vec3 w = texture2D(tex, puv - vec2(srcTexel.x, 0.0)).rgb;
+        vec3 n = texture(tex, puv + vec2(0.0,  srcTexel.y)).rgb;
+        vec3 s = texture(tex, puv - vec2(0.0,  srcTexel.y)).rgb;
+        vec3 e = texture(tex, puv + vec2(srcTexel.x, 0.0)).rgb;
+        vec3 w = texture(tex, puv - vec2(srcTexel.x, 0.0)).rgb;
         vec3 mn = min(min(min(n, s), min(e, w)), c);
         vec3 mx = max(max(max(n, s), max(e, w)), c);
         c = clamp(c + (4.0 * c - (n + s + e + w)) * sharpen, mn, mx);
@@ -208,9 +210,9 @@ void main()
     // The swell breathes the glow (ambient builds bloom up majestically).
     vec3 bloom;
     if (useBloom > 0.5)
-        bloom = texture2D(bloomTex, puv).rgb;
+        bloom = texture(bloomTex, puv).rgb;
     else
-        bloom = max(texture2D(tex, puv, 4.5).rgb - 0.75, 0.0);
+        bloom = max(texture(tex, puv, 4.5).rgb - 0.75, 0.0);
     c += bloom * (0.12 + 0.05 * audioBeat + 0.10 * audioSwell);
 
     // Soft highlight knee: compress values above ~0.8 toward white instead of
@@ -434,5 +436,5 @@ void main()
                                              vec2(0.06711056, 0.00583715))));
     c += (ign - 0.5) / 255.0;
 
-    gl_FragColor = vec4(clamp(c, 0.0, 1.0), 1.0);
+    fragColor = vec4(clamp(c, 0.0, 1.0), 1.0);
 }

@@ -1,11 +1,11 @@
-#version 120
+#version 330 core
 // LaserArena.vert — a club laser show: 20 beams from two stage towers fan
 // and sweep with the bar phase, kicks strobe them, a DROP snaps every beam
 // vertical.  Each ribbon is one beam: t = distance along the beam,
 // side = across the beam width.  attrA.x = t, attrA.y = side, attrA.w = beam.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -17,8 +17,8 @@ uniform float audioKick;
 uniform float audioChromaHue;
 uniform float audioDrop;
 
-varying vec4  vCol;
-varying float vSide;
+out vec4  vCol;
+out float vSide;
 
 vec3 hueRot(vec3 c, float a)
 {

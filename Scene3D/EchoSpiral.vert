@@ -1,4 +1,4 @@
-#version 120
+#version 330 core
 // EchoSpiral.vert — WHIPPING LIGHT-SNAKES: 20 comet ribbons chase their own
 // heads along seeded 3D Lissajous orbits, each ribbon the fading TRAIL of
 // its comet (t = age along the trail).  The swarm braids, whips and
@@ -8,8 +8,8 @@
 //   attrA.x = t along the trail (0 head .. 1 tail end)
 //   attrA.y = side (ribbon thickness), attrA.w = ribbon index
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -21,8 +21,8 @@ uniform float audioSwell;
 uniform float audioChromaHue;
 uniform float audioDrop;
 
-varying vec4  vCol;
-varying float vSide;
+out vec4  vCol;
+out float vSide;
 
 vec3 hueRot(vec3 c, float a)
 {

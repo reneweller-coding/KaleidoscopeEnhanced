@@ -1,4 +1,4 @@
-#version 120
+#version 330 core
 // CubeWave.vert — an endless neon-city flythrough of REAL cubes.
 // A 70x70 field of depth-tested cubes repeats forever along the flight path;
 // each column's height rides one of the 32 spectrum bands (the whole city IS
@@ -7,8 +7,8 @@
 //   attrB     = per-cube seeds
 // True stereo: eyeOff shifts the view; convergence re-centres after proj.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -23,8 +23,8 @@ uniform float audioChromaHue;
 uniform float audioSwell;
 uniform float audioDrop;
 
-varying vec4 vCol;
-varying vec3 vCorner;
+out vec4 vCol;
+out vec3 vCorner;
 
 vec3 hueRot(vec3 c, float a)
 {

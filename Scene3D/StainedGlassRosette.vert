@@ -1,11 +1,11 @@
-#version 120
+#version 330 core
 // StainedGlassRosette.vert — a great cathedral rose window fills the view:
 // a flat polar disc facing the camera, slowly turning, lit from behind by
 // a light that pulses with the swell.  The glass mosaic + lead lines + god
 // rays all live in the fragment shader.  attrA.x = angle, attrA.y = radius.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -14,8 +14,8 @@ uniform float time;
 uniform float audioAdvance;
 uniform float audioSwell;
 
-varying vec2  vPolar;      // angle, radius 0..1
-varying vec2  vXY;         // cartesian, for the fragment's own polar re-map
+out vec2  vPolar;      // angle, radius 0..1
+out vec2  vXY;         // cartesian, for the fragment's own polar re-map
 
 void main()
 {

@@ -1,10 +1,10 @@
-#version 120
+#version 330 core
 // PlasmaSheet.vert — a great silk sheet of plasma hanging in space,
 // rippling with two slow interference trains; the classic MilkDrop plasma
 // lives in the fragment shader.  attrA.x/.y span the sheet.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -14,8 +14,8 @@ uniform float audioBass;
 uniform float audioSwell;
 uniform float audioAdvance;
 
-varying vec2  vUV;
-varying float vH;
+out vec2  vUV;
+out float vH;
 
 void main()
 {

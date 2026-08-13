@@ -1,12 +1,12 @@
-#version 120
+#version 330 core
 // DragonFlight.vert — a serpentine particle dragon undulates through the
 // night, flying TOWARD the chasing camera: scaled body tube with a belly
 // glow, two wing membranes beating IN TIME (locked to the beat phase), and
 // a DROP makes it breathe fire.  60k points: 55 % body, 25 % wings,
 // 15 % fire breath, 5 % drifting sky embers.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -21,7 +21,7 @@ uniform float audioChromaHue;
 uniform float audioDrop;
 uniform float audioKick;
 
-varying vec4 vCol;
+out vec4 vCol;
 
 vec3 hueRot(vec3 c, float a)
 {

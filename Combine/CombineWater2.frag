@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 uniform vec2 resolution;
 uniform float time;
 uniform sampler2D tex0;
@@ -7,19 +9,19 @@ uniform float interpolation;
 
 
 
-//vec4 col = interpolation * texture2D(tex0, c1) + (1.0-interpolation)*texture2D(tex1, c1); 
+//vec4 col = interpolation * texture(tex0, c1) + (1.0-interpolation)*texture(tex1, c1); 
 
 float rand(vec2 n) { return 0.5 + 0.5 * fract(sin(dot(n.xy, vec2(12.9898, 78.233)))* 43758.5453); }
 
 float water(vec3 p) {
 	float t = time / 4.;
 	p.z += t * 2.; p.x += t * 2.;
-	//vec3 c1 = texture2D(iChannel1, p.xz / 30.).xyz;
-	vec3 c1 = interpolation * texture2D(tex0, p.xz / 30.).xyz + (1.0-interpolation)*texture2D(tex1, p.xz / 30.).xyz; //texture2D(iChannel1, p.xz / 30.).xyz;
+	//vec3 c1 = texture(iChannel1, p.xz / 30.).xyz;
+	vec3 c1 = interpolation * texture(tex0, p.xz / 30.).xyz + (1.0-interpolation)*texture(tex1, p.xz / 30.).xyz; //texture(iChannel1, p.xz / 30.).xyz;
 	p.z += t * 3.; p.x += t * 0.5;
-	vec3 c2 = interpolation * texture2D(tex0, p.xz / 30.).xyz + (1.0-interpolation)*texture2D(tex1, p.xz / 30.).xyz;
+	vec3 c2 = interpolation * texture(tex0, p.xz / 30.).xyz + (1.0-interpolation)*texture(tex1, p.xz / 30.).xyz;
 	p.z += t * 4.; p.x += t * 0.8;
-	vec3 c3 = interpolation * texture2D(tex0, p.xz / 30.).xyz + (1.0-interpolation)*texture2D(tex1, p.xz / 30.).xyz;
+	vec3 c3 = interpolation * texture(tex0, p.xz / 30.).xyz + (1.0-interpolation)*texture(tex1, p.xz / 30.).xyz;
 	c1 += c2 - c3;
 	float z = (c1.x + c1.y + c1.z) / 3.;
 	return p.y + z / 4.;
@@ -67,12 +69,12 @@ void main( void ) {
 		vec3 p = ro + rd * d;
 		vec3 n = norm(p);
 		float spc = pow(max(0.0, dot(reflect(l1, n), rd)), 30.0);
-		//vec4 ref = textureCube(iChannel0, normalize(reflect(rd, n)));
-		vec3 ref = (interpolation * texture2D(tex0, normalize(reflect(rd, n)).xy) + (1.0-interpolation)*texture2D(tex1, normalize(reflect(rd, n)).xy)).rgb;
-		//vec3 rfa = texture2D(iChannel1, (p+n).xz / 6.0).xyz * (8./d);
-		vec3 rfa = interpolation * texture2D(tex0, (p+n).xz / 6.0).xyz * (8./d) + (1.0-interpolation)*texture2D(tex1, (p+n).xz / 6.0).xyz * (8./d);
+		//vec4 ref = texture(iChannel0, normalize(reflect(rd, n)));
+		vec3 ref = (interpolation * texture(tex0, normalize(reflect(rd, n)).xy) + (1.0-interpolation)*texture(tex1, normalize(reflect(rd, n)).xy)).rgb;
+		//vec3 rfa = texture(iChannel1, (p+n).xz / 6.0).xyz * (8./d);
+		vec3 rfa = interpolation * texture(tex0, (p+n).xz / 6.0).xyz * (8./d) + (1.0-interpolation)*texture(tex1, (p+n).xz / 6.0).xyz * (8./d);
 		
 		c = rfa.xyz + (ref.xyz * 0.5)+ spc;
 	}
-	gl_FragColor = vec4(vec3(c), 1.0 );
+	fragColor = vec4(vec3(c), 1.0 );
 }

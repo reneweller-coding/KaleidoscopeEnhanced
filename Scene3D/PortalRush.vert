@@ -1,11 +1,11 @@
-#version 120
+#version 330 core
 // PortalRush.vert — racing through a slalom of glowing ring gates.  Each
 // "ribbon" is bent into a torus band; the gate directly ahead pulses with
 // the beat, passing gates flash on the kick, a drop flares them all.
 //   attrA.x = position around the ring, attrA.y = band side, attrA.w = gate.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -18,8 +18,8 @@ uniform float audioSwell;
 uniform float audioChromaHue;
 uniform float audioDrop;
 
-varying vec4  vCol;
-varying float vSide;
+out vec4  vCol;
+out float vSide;
 
 vec3 hueRot(vec3 c, float a)
 {

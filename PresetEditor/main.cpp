@@ -58,7 +58,8 @@ int main(int argc, char *argv[])
     }
 
     QSurfaceFormat fmt;
-    fmt.setProfile(QSurfaceFormat::CompatibilityProfile);
+    fmt.setVersion(3, 3);
+    fmt.setProfile(QSurfaceFormat::CoreProfile);
     fmt.setRenderableType(QSurfaceFormat::OpenGL);
     fmt.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
     fmt.setDepthBufferSize(24);

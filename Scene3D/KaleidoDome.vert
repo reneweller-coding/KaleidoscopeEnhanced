@@ -1,11 +1,11 @@
-#version 120
+#version 330 core
 // KaleidoDome.vert — INSIDE a planetarium dome fully covered with a living
 // kaleidoscope rosette of the current image.  The dome section always faces
 // the camera (no tearing); all rotation happens in texture space.
 // attrA.x = azimuth 0..1, attrA.y = elevation 0..1.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -14,8 +14,8 @@ uniform float time;
 uniform float audioBass;
 uniform float audioSwell;
 
-varying vec2  vUV;
-varying float vR;
+out vec2  vUV;
+out float vR;
 
 void main()
 {

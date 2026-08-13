@@ -1,4 +1,4 @@
-#version 120
+#version 330 core
 // JellyBody.vert — a soft ELASTIC body that RINGS after every hit: the
 // spring-mass idea seen through modal analysis.  A struck elastic body's
 // response is a superposition of damped eigenmodes — and the engine's
@@ -14,8 +14,8 @@
 // SpectralOrb; the complement scene: impulse response instead of
 // continuous spectral drive.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -29,10 +29,10 @@ uniform float audioSwell;
 uniform float audioChromaHue;
 uniform float audioDrop;
 
-varying vec3  vNorm;
-varying vec3  vView;
-varying float vDefo;
-varying float vHue;
+out vec3  vNorm;
+out vec3  vView;
+out float vDefo;
+out float vHue;
 
 // Damped modal displacement at direction d.  The envelopes decay host-side;
 // cos(w*time) runs free — amplitude-gated ringing, no phase remapping.

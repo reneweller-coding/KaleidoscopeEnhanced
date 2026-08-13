@@ -1,4 +1,4 @@
-#version 120
+#version 330 core
 // MelodyScript.vert — the MELODY writes itself: the host keeps ~7.7 s of
 // dominant-pitch history (audioMelody[96], ring with audioMelodyHead) and
 // this scene draws it as a glowing handwriting line scrolling right to
@@ -14,8 +14,8 @@
 //   7     "now" playhead (vertical, right side)
 //   8..19 sparkle ticks riding the trace (accents on onsets)
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -30,7 +30,7 @@ uniform float audioChromaHue;
 uniform float audioDrop;
 uniform float audioLevel;
 
-varying vec4 vCol;
+out vec4 vCol;
 
 vec3 hueRot(vec3 c, float a)
 {

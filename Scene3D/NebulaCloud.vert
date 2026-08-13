@@ -1,10 +1,10 @@
-#version 120
+#version 330 core
 // NebulaCloud.vert — a soft nebula: particles gathered in seeded clumps,
 // the whole cloud kneaded by slow sine winds and turning around its axis;
 // hue drifts with the music's key.  Nothing here ever hurries.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -16,7 +16,7 @@ uniform float audioLevel;
 uniform float audioChromaHue;
 uniform float audioCentroid;
 
-varying vec4 vCol;
+out vec4 vCol;
 
 vec3 hueRot(vec3 c, float a)
 {

@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 // ChromeDreams.frag
 // -----------------------------------------------------------------------
 // Adapted from "Chrome Dreams" by @kishimisu (2022) — https://www.shadertoy.com/view/ctX3RM
@@ -34,8 +36,8 @@ uniform float travP;      // scroll speed multiplier (0 -> 1.0)
 uniform int   kSides;     // >=2: weave a spinning n-fold image rosette in (0 = off)
 uniform float rosetteP;   // rosette strength      (0 -> 0.22)
 
-vec3 img(vec2 uv) { return (interpolation * texture2D(tex0, uv)
-                          + (1.0 - interpolation) * texture2D(tex1, uv)).rgb; }
+vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
+                          + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
 
 mat2 crot(float a) { return mat2(cos(a), sin(a), -sin(a), cos(a)); }
 
@@ -115,5 +117,5 @@ void main()
         col += ros * ros * rosW * (0.6 + 0.4 * audioLevel);
     }
 
-    gl_FragColor = vec4(col, 1.0);
+    fragColor = vec4(col, 1.0);
 }

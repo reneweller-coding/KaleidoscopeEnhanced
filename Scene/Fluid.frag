@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 // Fluid.frag
 // -----------------------------------------------------------------------
 // Displays the GPU fluid field (FluidSim.frag, bound as texFluid on unit 8):
@@ -33,8 +35,8 @@ uniform float zoomP;          // field zoom (0 -> 1.0; 0.7..1.5)
 const float PI = 3.14159265358979;
 
 mat2 rot(float a) { float c = cos(a), s = sin(a); return mat2(c, -s, s, c); }
-vec3 img(vec2 uv) { return (interpolation * texture2D(tex0, uv)
-                          + (1.0 - interpolation) * texture2D(tex1, uv)).rgb; }
+vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
+                          + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
 
 vec3 hueRot(vec3 c, float a)
 {
@@ -75,14 +77,14 @@ void main()
             + 0.01 * vec2(sin(audioPhase * 0.20), cos(audioPhase * 0.16));
     }
 
-    vec3 dye = texture2D(texFluid, suv).rgb;
+    vec3 dye = texture(texFluid, suv).rgb;
 
     // Gentle unsharp mask keeps the ink filaments crisp at screen res.
     vec2 px = 2.0 / resolution;
-    vec3 blur = ( texture2D(texFluid, suv + vec2(px.x, 0.0)).rgb
-                + texture2D(texFluid, suv - vec2(px.x, 0.0)).rgb
-                + texture2D(texFluid, suv + vec2(0.0, px.y)).rgb
-                + texture2D(texFluid, suv - vec2(0.0, px.y)).rgb ) * 0.25;
+    vec3 blur = ( texture(texFluid, suv + vec2(px.x, 0.0)).rgb
+                + texture(texFluid, suv - vec2(px.x, 0.0)).rgb
+                + texture(texFluid, suv + vec2(0.0, px.y)).rgb
+                + texture(texFluid, suv - vec2(0.0, px.y)).rgb ) * 0.25;
     dye += (dye - blur) * 1.2;
 
     // Fallback: if the sim is dark/unavailable, the image shows through dimly.
@@ -100,5 +102,5 @@ void main()
     col *= 0.95 + 0.40 * audioLevel;
     col *= 1.0 - 0.20 * dot(uv - 0.5, uv - 0.5) * 4.0;   // soft vignette
 
-    gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }

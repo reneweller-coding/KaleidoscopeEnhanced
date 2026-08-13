@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 // PhysarumAgents.frag
 // -----------------------------------------------------------------------
 // Physarum polycephalum (slime mould) agent update — the classic Jones
@@ -34,7 +36,7 @@ float hash21(vec2 p)
 
 float senseOwn(vec2 pos, float species)
 {
-    vec2 t = texture2D(texTrail, fract(pos)).rg;
+    vec2 t = texture(texTrail, fract(pos)).rg;
     return mix(t.r, t.g, species);
 }
 
@@ -48,11 +50,11 @@ void main()
         vec2  p = vec2(hash21(texel * 17.1), hash21(texel * 29.7 + 3.3));
         float a = hash21(texel * 41.3 + 7.7) * 6.2831853;
         float s = step(0.5, hash21(texel * 53.9 + 1.2));
-        gl_FragColor = vec4(p, a, s);
+        fragColor = vec4(p, a, s);
         return;
     }
 
-    vec4  ag  = texture2D(texAgents, texel);
+    vec4  ag  = texture(texAgents, texel);
     vec2  pos = ag.rg;
     float ang = ag.b;
     float spc = ag.a;
@@ -80,5 +82,5 @@ void main()
 
     pos = fract(pos + vec2(cos(ang), sin(ang)) * speed);
 
-    gl_FragColor = vec4(pos, ang, spc);
+    fragColor = vec4(pos, ang, spc);
 }

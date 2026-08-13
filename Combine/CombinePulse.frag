@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 // CombinePulse.frag
 // -----------------------------------------------------------------------
 // The first BEAT-reactive combine pass.  Classic combines are static folds;
@@ -33,8 +35,8 @@ mat2 rot(float a) { float c = cos(a), s = sin(a); return mat2(c, -s, s, c); }
 
 vec4 frame(vec2 uv)
 {
-    return interpolation * texture2D(tex0, uv)
-         + (1.0 - interpolation) * texture2D(tex1, uv);
+    return interpolation * texture(tex0, uv)
+         + (1.0 - interpolation) * texture(tex1, uv);
 }
 
 void main()
@@ -76,5 +78,5 @@ void main()
     vec4  colG  = frame(uv);
     vec4  colR  = frame(uv + dir * split);
     vec4  colB  = frame(uv - dir * split);
-    gl_FragColor = vec4(colR.r, colG.g, colB.b, colG.a);
+    fragColor = vec4(colR.r, colG.g, colB.b, colG.a);
 }

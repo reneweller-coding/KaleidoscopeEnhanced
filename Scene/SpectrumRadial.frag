@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 // SpectrumRadial.frag
 // -----------------------------------------------------------------------
 // Radial spectrum analyzer with 32 frequency bands (mirrored into 64 wedges)
@@ -28,8 +30,8 @@ uniform float rotP;                // ring rotation speed multiplier (0 -> 1.0)
 
 const float PI = 3.14159265358979;
 
-vec3 img(vec2 uv) { return (interpolation * texture2D(tex0, uv)
-                          + (1.0 - interpolation) * texture2D(tex1, uv)).rgb; }
+vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
+                          + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
 
 vec3 hsv2rgb(vec3 c)
 {
@@ -91,5 +93,5 @@ void main()
     float ripple = pow(0.5 + 0.5 * cos(2.0 * PI * (r * 3.5 - audioBeatPhase)), 10.0);
     col += band * ripple * disc * audioBeat * 0.30;
 
-    gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }

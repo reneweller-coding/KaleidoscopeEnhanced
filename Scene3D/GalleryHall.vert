@@ -1,4 +1,4 @@
-#version 120
+#version 330 core
 // GalleryHall.vert — an endless museum corridor at night: framed pictures
 // on both walls, each a different crop of the current image.  The camera
 // strolls forward with the music; the picture nearest the camera lights up
@@ -7,8 +7,8 @@
 // Quad budget: index < 300 -> 150 frames per wall side; the rest of the
 // 3000 quads become faint ceiling light strips.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -18,10 +18,10 @@ uniform float audioAdvance;
 uniform float audioBeatPhase;
 uniform float audioSwell;
 
-varying vec2  vUV;
-varying vec4  vSeed;
-varying float vLight;
-varying float vKind;                          // 0 = picture, 1 = light strip
+out vec2  vUV;
+out vec4  vSeed;
+out float vLight;
+out float vKind;                          // 0 = picture, 1 = light strip
 
 void main()
 {

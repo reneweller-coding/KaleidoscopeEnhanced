@@ -243,11 +243,12 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	// Request a compatibility-profile OpenGL context so the existing
-	// fixed-function pipeline and GLSL 1.20 shaders keep working under Qt6.
-	// (Phase B switches this to a core profile.)
+	// OpenGL 4.3 CORE profile: the fixed-function remnants are gone, all
+	// shaders are GLSL 330 core, and 4.3 unlocks compute shaders for the
+	// GPU simulations.
 	QSurfaceFormat fmt;
-	fmt.setProfile( QSurfaceFormat::CompatibilityProfile );
+	fmt.setVersion( 4, 3 );
+	fmt.setProfile( QSurfaceFormat::CoreProfile );
 	fmt.setRenderableType( QSurfaceFormat::OpenGL );
 	fmt.setSwapBehavior( QSurfaceFormat::DoubleBuffer );
 	fmt.setDepthBufferSize( 24 );

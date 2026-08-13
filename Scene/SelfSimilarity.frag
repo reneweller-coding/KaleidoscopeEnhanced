@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 // SelfSimilarity.frag
 // -----------------------------------------------------------------------
 // The SONG'S STRUCTURE as the image: the host maintains a self-similarity
@@ -42,8 +44,8 @@ uniform float zoomP;           // matrix zoom (0 -> 1.0; 0.7..1.6)
 const float PI = 3.14159265358979;
 
 mat2 rot(float a) { float c = cos(a), s = sin(a); return mat2(c, -s, s, c); }
-vec3 img(vec2 uv) { return (interpolation * texture2D(tex0, uv)
-                          + (1.0 - interpolation) * texture2D(tex1, uv)).rgb; }
+vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
+                          + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
 vec3 imgPal(float x)
 {
     vec2 cc = vec2(0.5) + 0.30 * vec2(cos(time * 0.041 + audioPhase * 0.10),
@@ -71,7 +73,7 @@ vec2 kaleido(vec2 p, float sides)
 // simple add (wrap mode GL_REPEAT does the mod).
 float ssm(vec2 h)
 {
-    return texture2D(texSSM, h + vec2(ssmHead)).r;
+    return texture(texSSM, h + vec2(ssmHead)).r;
 }
 
 void main()
@@ -120,5 +122,5 @@ void main()
     col *= 1.0 + 0.15 * audioOnset + 0.9 * audioDrop;
     col *= 0.9 + 0.3 * audioLevel;
 
-    gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }

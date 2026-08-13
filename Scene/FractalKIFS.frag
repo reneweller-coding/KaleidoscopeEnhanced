@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 // FractalKIFS.frag
 // -----------------------------------------------------------------------
 // Kaleidoscopic Iterated Function System (fold + rotate + scale): the source
@@ -31,8 +33,8 @@ uniform float audioPhase;
 const float PI = 3.14159265358979;
 
 mat2 rot(float a) { float c = cos(a), s = sin(a); return mat2(c, -s, s, c); }
-vec3 img(vec2 uv) { return (interpolation * texture2D(tex0, uv)
-                          + (1.0 - interpolation) * texture2D(tex1, uv)).rgb; }
+vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
+                          + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
 
 void main()
 {
@@ -76,5 +78,5 @@ void main()
     col += shade * audioBeat * vec3(0.5, 0.4, 0.6);
     col *= (1.0 + 0.2 * audioFlux);
 
-    gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }

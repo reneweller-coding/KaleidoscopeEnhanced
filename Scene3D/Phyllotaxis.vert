@@ -1,4 +1,4 @@
-#version 120
+#version 330 core
 // Phyllotaxis.vert — the sunflower head: 60k florets placed by the golden
 // angle (137.5 deg), doming gently in 3D; soft rings of light breathe
 // outward with the bar, the whole head turns imperceptibly slowly.
@@ -12,8 +12,8 @@
 // is the flicker budget (outer sweep ≈ n·dδ/dt): amplitude × frequency is
 // kept ≤ ~5e-6 rad/s so the rim glides instead of spinning.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -26,7 +26,7 @@ uniform float audioBass;
 uniform float audioChromaHue;
 uniform float sceneSeed;
 
-varying vec4 vCol;
+out vec4 vCol;
 
 vec3 hueRot(vec3 c, float a)
 {

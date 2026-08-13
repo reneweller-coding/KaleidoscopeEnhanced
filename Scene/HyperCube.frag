@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 // HyperCube.frag
 // -----------------------------------------------------------------------
 // Infinity-mirror cube (a la the Hyperspace Lighting Co. "HyperCube"): the
@@ -32,8 +34,8 @@ const float PI = 3.14159265358979;
 
 mat2 rot(float a) { float c = cos(a), s = sin(a); return mat2(c, -s, s, c); }
 vec3 pal(float t) { return 0.5 + 0.5 * cos(6.2831 * (t + vec3(0.0, 0.33, 0.67))); }
-vec3 img(vec2 uv) { return (interpolation * texture2D(tex0, uv)
-                          + (1.0 - interpolation) * texture2D(tex1, uv)).rgb; }
+vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
+                          + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
 
 void main()
 {
@@ -80,5 +82,5 @@ void main()
     float ringE = smoothstep(0.02, 0.0, abs(inner - isz));
     col += pal(fract(hue + 0.3)) * ringE * (0.6 + audioBeat + 0.4 * audioSubBass);
 
-    gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }

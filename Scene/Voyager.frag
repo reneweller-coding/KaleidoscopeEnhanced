@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 // Voyager.frag
 // -----------------------------------------------------------------------
 // Adapted from "Voyager" by @kishimisu (2024) — https://www.shadertoy.com/view/M33XDH
@@ -39,8 +41,8 @@ uniform float cellH;       // corridor cell height         (0 -> 2.0)
 
 const float PI = 3.14159265358979;
 
-vec3 img(vec2 uv) { return (interpolation * texture2D(tex0, uv)
-                          + (1.0 - interpolation) * texture2D(tex1, uv)).rgb; }
+vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
+                          + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
 
 // n-fold kaleidoscopic mirror fold of a centred coordinate.
 vec2 kaleido(vec2 p, float sides)
@@ -155,5 +157,5 @@ void main()
 
     col *= 0.9 + 0.5 * audioLevel;
 
-    gl_FragColor = vec4(col, 1.0);
+    fragColor = vec4(col, 1.0);
 }

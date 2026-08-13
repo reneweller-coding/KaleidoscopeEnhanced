@@ -1,4 +1,5 @@
-#version 120
+#version 330 core
+out vec4 fragColor;
 // Wormhole.frag — the wall image is bent around each throat: near the
 // horizon the angular coordinate smears (extra rotation growing with
 // lensAmt, like light dragged around a photon sphere) and the three colour
@@ -11,10 +12,10 @@ uniform float audioKick;
 uniform float audioDrop;
 uniform float audioChromaHue;
 
-varying vec2  vUV;
-varying float vDist;
-varying float vAng;
-varying float vLensAmt;
+in vec2  vUV;
+in float vDist;
+in float vAng;
+in float vLensAmt;
 
 vec3 hueRot(vec3 c, float a)
 {
@@ -33,7 +34,7 @@ vec3 sampleBent(float bendMul)
     a = abs(a - sector) / sector;                 // 0..1 mirrored
     vec2 uv = vec2(a * 1.4,
                    vUV.y * 6.0 - time * 0.30 - audioAdvance * 1.0);
-    return texture2D(tex0, mfold(uv)).rgb;
+    return texture(tex0, mfold(uv)).rgb;
 }
 
 void main()
@@ -52,5 +53,5 @@ void main()
     col *= 0.75 + 0.5 * vLensAmt;                  // brighter near the throat
     col *= exp(-vDist * 0.014);                    // depth fog
 
-    gl_FragColor = vec4(col * 1.3, 1.0);
+    fragColor = vec4(col * 1.3, 1.0);
 }

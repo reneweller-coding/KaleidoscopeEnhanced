@@ -1,5 +1,5 @@
 // Scene3DShader.cpp — see Scene3DShader.h.
-#include "GLee.h"          // MUST come before any gl.h include (Qt's qopengl.h)
+#include "glcore.h"          // MUST come before any gl.h include (Qt's qopengl.h)
 #include "shader_setup.h"
 #include "Scene3DShader.h"
 
@@ -263,6 +263,27 @@ void Scene3DShader::initUniforms( int width, int height )
 	if( m_vbo == 0 )
 		buildGeometry();
 
+	// Core profile: vertex attribs live in a VAO, baked once here (the
+	// attrib locations are program-specific, so the VAO is per-scene).
+	if( m_vao == 0 )
+		glGenVertexArrays( 1, &m_vao );
+	glBindVertexArray( m_vao );
+	glBindBuffer( GL_ARRAY_BUFFER, m_vbo );
+	if( m_attrA >= 0 )
+	{
+		glEnableVertexAttribArray( GLuint(m_attrA) );
+		glVertexAttribPointer( GLuint(m_attrA), 4, GL_FLOAT, GL_FALSE,
+		                       8 * sizeof(float), (const void *) 0 );
+	}
+	if( m_attrB >= 0 )
+	{
+		glEnableVertexAttribArray( GLuint(m_attrB) );
+		glVertexAttribPointer( GLuint(m_attrB), 4, GL_FLOAT, GL_FALSE,
+		                       8 * sizeof(float), (const void *) (4 * sizeof(float)) );
+	}
+	glBindVertexArray( 0 );
+	glBindBuffer( GL_ARRAY_BUFFER, 0 );
+
 	checkGLErrors( "Scene3DShader::initUniforms" );
 }
 
@@ -291,19 +312,7 @@ void Scene3DShader::draw()
 	glClearColor( 0.f, 0.f, 0.f, 1.f );
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-	glBindBuffer( GL_ARRAY_BUFFER, m_vbo );
-	if( m_attrA >= 0 )
-	{
-		glEnableVertexAttribArray( GLuint(m_attrA) );
-		glVertexAttribPointer( GLuint(m_attrA), 4, GL_FLOAT, GL_FALSE,
-		                       8 * sizeof(float), (const void *) 0 );
-	}
-	if( m_attrB >= 0 )
-	{
-		glEnableVertexAttribArray( GLuint(m_attrB) );
-		glVertexAttribPointer( GLuint(m_attrB), 4, GL_FLOAT, GL_FALSE,
-		                       8 * sizeof(float), (const void *) (4 * sizeof(float)) );
-	}
+	glBindVertexArray( m_vao );
 
 	if( m_geomKind == GEOM_CUBES || m_geomKind == GEOM_GRID
 	 || m_geomKind == GEOM_QUADS )
@@ -317,25 +326,23 @@ void Scene3DShader::draw()
 	else
 	{
 		// Glowing geometry: additive, order-independent (no depth test).
+		// (Core profile: point sprites are always on; only the programmable
+		// point size still needs its enable.)
 		glDisable( GL_DEPTH_TEST );
 		glEnable( GL_BLEND );
 		glBlendFunc( GL_ONE, GL_ONE );
 		if( m_geomKind == GEOM_POINTS )
 		{
-			glEnable( GL_POINT_SPRITE );
 			glEnable( GL_VERTEX_PROGRAM_POINT_SIZE );
 			glDrawArrays( GL_POINTS, 0, m_vertexCount );
 			glDisable( GL_VERTEX_PROGRAM_POINT_SIZE );
-			glDisable( GL_POINT_SPRITE );
 		}
 		else
 			glDrawArrays( GL_TRIANGLES, 0, m_vertexCount );
 		glDisable( GL_BLEND );
 	}
 
-	if( m_attrA >= 0 ) glDisableVertexAttribArray( GLuint(m_attrA) );
-	if( m_attrB >= 0 ) glDisableVertexAttribArray( GLuint(m_attrB) );
-	glBindBuffer( GL_ARRAY_BUFFER, 0 );
+	glBindVertexArray( 0 );
 
 	checkGLErrors( "Scene3DShader::draw" );
 }

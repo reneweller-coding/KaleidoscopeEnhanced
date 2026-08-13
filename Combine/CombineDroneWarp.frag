@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 // CombineDroneWarp.frag
 // -----------------------------------------------------------------------
 // The first AMBIENT-reactive combine pass: a slow, round, liquid domain warp
@@ -68,6 +70,6 @@ void main()
     c /= (1.0 + 0.020 * audioSwell * audioAmbient);
     vec2 uv = c + 0.5 + w * amt;
 
-    gl_FragColor = interpolation * texture2D(tex0, uv)
-                 + (1.0 - interpolation) * texture2D(tex1, uv);
+    fragColor = interpolation * texture(tex0, uv)
+                 + (1.0 - interpolation) * texture(tex1, uv);
 }

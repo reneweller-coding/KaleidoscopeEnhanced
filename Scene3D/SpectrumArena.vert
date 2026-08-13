@@ -1,11 +1,11 @@
-#version 120
+#version 330 core
 // SpectrumArena.vert — the camera stands INSIDE a circular equalizer arena:
 // 98 columns of 50 stacked cubes wrap around; each column belongs to a
 // spectrum band (mirrored left/right), cubes light bottom-up with the
 // band's level.  The whole arena breathes with the bass and slowly turns.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -21,8 +21,8 @@ uniform float audioKick;
 uniform float audioDownbeat;
 uniform float audioBeatPhase;
 
-varying vec4 vCol;
-varying vec3 vCorner;
+out vec4 vCol;
+out vec3 vCorner;
 
 vec3 hueRot(vec3 c, float a)
 {

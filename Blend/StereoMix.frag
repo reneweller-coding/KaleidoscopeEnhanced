@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 // StereoMix.frag
 // Plain per-pixel cross-mix used ONLY for TRUE-STEREO 3D<->3D scene
 // cross-fades: both inputs are eye-packed SBS/TB frames, so the blend must
@@ -12,7 +14,7 @@ uniform float interpolation;
 void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution;
-    vec3 a = texture2D(texA, uv).rgb;
-    vec3 b = texture2D(texB, uv).rgb;
-    gl_FragColor = vec4(mix(b, a, interpolation), 1.0);
+    vec3 a = texture(texA, uv).rgb;
+    vec3 b = texture(texB, uv).rgb;
+    fragColor = vec4(mix(b, a, interpolation), 1.0);
 }

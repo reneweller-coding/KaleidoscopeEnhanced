@@ -1,4 +1,5 @@
-#version 120
+#version 330 core
+out vec4 fragColor;
 // SineTunnel.frag — smooth colour bands flow along the tube; a gentle
 // helix stripe winds around it.  Deep teal-violet palette, no strobes.
 uniform float time;
@@ -7,9 +8,9 @@ uniform float audioChromaHue;
 uniform float audioSwell;
 uniform float audioKick;
 
-varying vec2  vUV;
-varying float vDist;
-varying float vAng;
+in vec2  vUV;
+in float vDist;
+in float vAng;
 
 vec3 hueRot(vec3 c, float a)
 {
@@ -34,5 +35,5 @@ void main()
 
     col *= (0.75 + 0.4 * audioSwell + 0.35 * audioKick)
          * exp(-vDist * 0.010);
-    gl_FragColor = vec4(col * 1.5, 1.0);
+    fragColor = vec4(col * 1.5, 1.0);
 }

@@ -1,4 +1,5 @@
-#version 120
+#version 330 core
+out vec4 fragColor;
 // OceanNight.frag — deep blue water, a moon-glitter lane running to the
 // horizon, foam sparkle on the crests.
 uniform float time;
@@ -6,9 +7,9 @@ uniform float audioCentroid;
 uniform float audioChromaHue;
 uniform float audioDrop;
 
-varying vec3  vWorld;
-varying float vSpec;
-varying float vDist;
+in vec3  vWorld;
+in float vSpec;
+in float vDist;
 
 vec3 hueRot(vec3 c, float a)
 {
@@ -42,5 +43,5 @@ void main()
     col *= mix(vec3(0.9, 0.95, 1.05), vec3(1.05, 1.0, 0.92), audioCentroid);
     col *= exp(-vDist * 0.006);                 // haze
 
-    gl_FragColor = vec4(col * 1.25, 1.0);
+    fragColor = vec4(col * 1.25, 1.0);
 }

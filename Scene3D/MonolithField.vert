@@ -1,12 +1,12 @@
-#version 120
+#version 330 core
 // MonolithField.vert — gliding through a plain of towering alien
 // monoliths: near-black slabs whose glyph edges hum with their own
 // spectrum band; the downbeat sends a choir-pulse rolling through the
 // field, and on a DROP the monoliths LEVITATE, glyphs ablaze.
 // Cubes: 64 monoliths + drifting shards + ground rubble.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -21,8 +21,8 @@ uniform float audioChromaHue;
 uniform float audioDrop;
 uniform float dayPhase;   // slow host day/night cycle, 0..1 -> ambient light angle
 
-varying vec4 vCol;
-varying vec3 vCorner;
+out vec4 vCol;
+out vec3 vCorner;
 
 vec3 hueRot(vec3 c, float a)
 {

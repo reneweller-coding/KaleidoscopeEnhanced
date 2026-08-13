@@ -1,4 +1,4 @@
-#version 120
+#version 330 core
 // Wormhole.vert — flying through a chain of gravitational-lensing throats:
 // the tube's radius pinches toward zero at a periodic "event horizon" that
 // slides toward the camera and loops, so the flight reads as passing
@@ -8,8 +8,8 @@
 //   visible tube ahead of the camera — motion lives in time, not in a
 //   moving mesh (never puts the camera outside the tube).
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -19,10 +19,10 @@ uniform float audioAdvance;
 uniform float audioBass;
 uniform float audioSwell;
 
-varying vec2  vUV;
-varying float vDist;
-varying float vAng;
-varying float vLensAmt;
+out vec2  vUV;
+out float vDist;
+out float vAng;
+out float vLensAmt;
 
 void main()
 {

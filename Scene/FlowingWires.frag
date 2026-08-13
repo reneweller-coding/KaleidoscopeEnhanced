@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 // FlowingWires.frag
 // -----------------------------------------------------------------------
 // Adapted from "Flowing Wires" by @kishimisu (2023) — https://www.shadertoy.com/view/DsBczR
@@ -49,8 +51,8 @@ vec2 kaleido(vec2 p, float sides)
     a = abs(a);
     return vec2(cos(a), sin(a)) * r;
 }
-vec3 img(vec2 uv) { return (interpolation * texture2D(tex0, uv)
-                          + (1.0 - interpolation) * texture2D(tex1, uv)).rgb; }
+vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
+                          + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
 
 // Colour from a slowly-drifting crop of the picture, indexed by a scalar so the
 // palette comes from the image and keeps changing over time + with the harmony.
@@ -141,5 +143,5 @@ void main()
 
     col *= 0.9 + 0.5 * audioLevel;
 
-    gl_FragColor = vec4(col, 1.0);
+    fragColor = vec4(col, 1.0);
 }

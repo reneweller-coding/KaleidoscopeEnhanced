@@ -1,11 +1,11 @@
-#version 120
+#version 330 core
 // PhotoShatter.vert — the current image stands as a wall of 3000 shards
 // (75 x 40 grid).  Calm music keeps it assembled with a gentle breathing;
 // kicks knock it apart a little, a DROP blows it into a tumbling cloud that
 // drifts back together.  attrA.xy = shard corner, attrA.w = shard index.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -16,8 +16,8 @@ uniform float audioDrop;
 uniform float audioBuildUp;
 uniform float audioOnset;
 
-varying vec2  vUV;
-varying float vLight;
+out vec2  vUV;
+out float vLight;
 
 void main()
 {

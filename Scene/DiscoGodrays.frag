@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 // DiscoGodrays.frag
 // -----------------------------------------------------------------------
 // Adapted from "Disco Godrays" by @kishimisu (2023) — https://www.shadertoy.com/view/Dt33RS
@@ -34,8 +36,8 @@ uniform float audioKick;   // kick -> the rays PUMP (boom = light burst)
 uniform float audioHat;    // hats -> glittering sparkle on the ray tips
 
 mat2 rot(float a) { float c = cos(a), s = sin(a); return mat2(c, -s, s, c); }
-vec3 img(vec2 uv) { return (interpolation * texture2D(tex0, uv)
-                          + (1.0 - interpolation) * texture2D(tex1, uv)).rgb; }
+vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
+                          + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
 float hash(vec2 p) { return fract(sin(dot(p, vec2(41.3, 289.1))) * 43758.5453); }
 
 // Colour from a slowly-drifting crop of the picture, indexed by a scalar so the
@@ -111,5 +113,5 @@ void main()
                  + length(gl_FragCoord.xy / resolution - 0.5) * 4.0), vec3(0.333));
     col = hueRot(col, (himg - 0.5) * 3.0 + time * 0.05);
 
-    gl_FragColor = vec4(col, 1.0);
+    fragColor = vec4(col, 1.0);
 }

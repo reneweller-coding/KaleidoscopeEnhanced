@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 // ReactionDiffusion.frag
 // -----------------------------------------------------------------------
 // The living Gray-Scott reaction-diffusion field (simulated on the GPU into
@@ -40,8 +42,8 @@ uniform float zoomP;           // field zoom                (0 -> 1.0; 0.7..1.5)
 const float PI = 3.14159265358979;
 
 mat2 rot(float a) { float c = cos(a), s = sin(a); return mat2(c, -s, s, c); }
-vec3 img(vec2 uv) { return (interpolation * texture2D(tex0, uv)
-                          + (1.0 - interpolation) * texture2D(tex1, uv)).rgb; }
+vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
+                          + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
 
 vec3 imgPal(float x)
 {
@@ -71,11 +73,11 @@ vec2 kaleido(vec2 p, float sides)
 // doesn't shake the lighting/displacement.
 float bSmooth(vec2 suv, vec2 px)
 {
-    float b = texture2D(texSim, suv).g * 2.0;
-    b += texture2D(texSim, suv + vec2( 2.0 * px.x, 0.0)).g;
-    b += texture2D(texSim, suv - vec2( 2.0 * px.x, 0.0)).g;
-    b += texture2D(texSim, suv + vec2(0.0,  2.0 * px.y)).g;
-    b += texture2D(texSim, suv - vec2(0.0,  2.0 * px.y)).g;
+    float b = texture(texSim, suv).g * 2.0;
+    b += texture(texSim, suv + vec2( 2.0 * px.x, 0.0)).g;
+    b += texture(texSim, suv - vec2( 2.0 * px.x, 0.0)).g;
+    b += texture(texSim, suv + vec2(0.0,  2.0 * px.y)).g;
+    b += texture(texSim, suv - vec2(0.0,  2.0 * px.y)).g;
     return b / 6.0;
 }
 
@@ -142,5 +144,5 @@ void main()
     col *= 0.85 + 0.30 * audioCentroid;
     col *= 0.95 + 0.25 * audioLevel;
 
-    gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }

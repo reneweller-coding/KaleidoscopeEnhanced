@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 // NeonTubes.frag
 // -----------------------------------------------------------------------
 // Adapted from a @kishimisu code-golf raymarch (2022, CC BY-NC-SA 4.0).
@@ -32,8 +34,8 @@ uniform float travP;      // scroll speed multiplier (0 -> 1.0)
 uniform int   kSides;     // >=2: weave a spinning n-fold image rosette in (0 = off)
 uniform float rosetteP;   // rosette strength        (0 -> 0.22)
 
-vec3 img(vec2 uv) { return (interpolation * texture2D(tex0, uv)
-                          + (1.0 - interpolation) * texture2D(tex1, uv)).rgb; }
+vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
+                          + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
 
 // n-fold kaleidoscopic mirror fold of a centred coordinate.
 vec2 kaleido(vec2 p, float sides)
@@ -122,5 +124,5 @@ void main()
         col += ros * ros * rosW * (0.6 + 0.4 * audioLevel);
     }
 
-    gl_FragColor = vec4(col, 1.0);
+    fragColor = vec4(col, 1.0);
 }

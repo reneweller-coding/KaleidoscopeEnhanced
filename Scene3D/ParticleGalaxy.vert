@@ -1,4 +1,4 @@
-#version 120
+#version 330 core
 // ParticleGalaxy.vert — a REAL 3D spiral galaxy of 60k point sprites.
 // The camera orbits the core; the bass pumps the central bulge, every kick
 // sends a bright shock ring rolling outward along the beat phase, and a drop
@@ -7,8 +7,8 @@
 //   attrA.w = particle index, attrB = 4 seeds in [0,1)
 // True stereo: eyeOff shifts the view; convergence re-centres after proj.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -25,7 +25,7 @@ uniform float audioChromaHue;
 uniform float audioCentroid;
 uniform float audioDrop;
 
-varying vec4 vCol;
+out vec4 vCol;
 
 vec3 hueRot(vec3 c, float a)
 {

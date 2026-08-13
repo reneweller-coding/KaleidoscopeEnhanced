@@ -1,11 +1,11 @@
-#version 120
+#version 330 core
 // AuroraVeil.vert — true 3D aurora curtains: each ribbon is a tall veil
 // hanging in the night sky, slowly folding on itself; the swell drives the
 // wave amplitude, everything drifts, nothing jumps.
 // attrA.x = along the curtain, attrA.y = vertical extent, attrA.w = veil.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -16,8 +16,8 @@ uniform float audioLevel;
 uniform float audioChromaHue;
 uniform float audioAdvance;
 
-varying vec4  vCol;
-varying float vSide;
+out vec4  vCol;
+out float vSide;
 
 vec3 hueRot(vec3 c, float a)
 {

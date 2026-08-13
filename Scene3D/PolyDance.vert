@@ -1,11 +1,11 @@
-#version 120
+#version 330 core
 // PolyDance.vert — nested platonic constellations: cubes sit on the
 // vertices of three slowly counter-rotating spherical shells (fibonacci
 // lattices), each shell breathing with its own register.  A dignified,
 // geometric dance — nothing ever snaps.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -17,8 +17,8 @@ uniform float audioHigh;
 uniform float audioSwell;
 uniform float audioChromaHue;
 
-varying vec4 vCol;
-varying vec3 vCorner;
+out vec4 vCol;
+out vec3 vCorner;
 
 vec3 hueRot(vec3 c, float a)
 {

@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 uniform vec2 resolution;
 uniform float time;
 uniform sampler2D tex0;
@@ -16,7 +18,7 @@ void main() {
 	p.x /= resolution.x;
 	p.y /= resolution.y;
 		
-    vec3 colres = (interpolation * texture2D(tex0,p) + (1.0-interpolation)*texture2D(tex1, p)).xyz;
+    vec3 colres = (interpolation * texture(tex0,p) + (1.0-interpolation)*texture(tex1, p)).xyz;
     float gray = dot( vec3( colres[0], colres[1], colres[2] ), vec3(0.3, 0.59, 0.11) );
     
     vec3 g = vec3( gray, gray, gray );
@@ -30,6 +32,6 @@ void main() {
 		
 	vec3 res = colorMul * g;
     
-    gl_FragColor = vec4( res.x, res.y, res.z, 1.0 );
+    fragColor = vec4( res.x, res.y, res.z, 1.0 );
 
 }

@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 // BreathingFractalNoir.frag
 // -----------------------------------------------------------------------
 // Forked from https://www.shadertoy.com/view/DsscWn (the same fold/rotate
@@ -39,8 +41,8 @@ uniform float darkP;      // dark-base subtraction  (0 -> 0.3; 0.2 = airy, 0.45 
 uniform int   kSides;     // >=2: weave a spinning n-fold image rosette in (0 = off)
 uniform float rosetteP;   // rosette strength       (0 -> 0.22)
 
-vec3 img(vec2 uv) { return (interpolation * texture2D(tex0, uv)
-                          + (1.0 - interpolation) * texture2D(tex1, uv)).rgb; }
+vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
+                          + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
 
 // n-fold kaleidoscopic mirror fold of a centred coordinate.
 vec2 kaleido(vec2 p, float sides)
@@ -129,5 +131,5 @@ void main()
 
     col *= 0.9 + 0.5 * audioLevel;
 
-    gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }

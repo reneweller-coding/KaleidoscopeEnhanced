@@ -1,10 +1,10 @@
-#version 120
+#version 330 core
 // BillboardCity.vert — a night flight down an avenue of glowing photo
 // billboards; each screen shows a seeded kaleido-crop of the current image
 // and pulses with its own spectrum band.  attrA.xy = corner, attrA.w = index.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -14,10 +14,10 @@ uniform float audioAdvance;
 uniform float audioSpectrum[32];
 uniform float audioSwell;
 
-varying vec2  vUV;
-varying vec4  vSeed;
-varying float vBand;
-varying float vFade;
+out vec2  vUV;
+out vec4  vSeed;
+out float vBand;
+out float vFade;
 
 void main()
 {

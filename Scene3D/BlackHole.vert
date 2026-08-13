@@ -1,11 +1,11 @@
-#version 120
+#version 330 core
 // BlackHole.vert — an accretion disk around an invisible black hole:
 // white-hot inner rim, red-cool outer edge, Doppler-bright approaching
 // side, a thin photon ring, and infalling streams.  A DROP fires the
 // relativistic polar jets.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -18,7 +18,7 @@ uniform float audioSwell;
 uniform float audioChromaHue;
 uniform float audioDrop;
 
-varying vec4 vCol;
+out vec4 vCol;
 
 vec3 hueRot(vec3 c, float a)
 {

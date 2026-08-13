@@ -1,8 +1,9 @@
-#version 120
+#version 330 core
+out vec4 fragColor;
 // MonolithField.frag — near-black slab faces; the EDGES are the glyphs:
 // segmented luminous runes running up the corners.
-varying vec4 vCol;
-varying vec3 vCorner;
+in vec4 vCol;
+in vec3 vCorner;
 
 void main()
 {
@@ -14,5 +15,5 @@ void main()
 
     // Glyph segmentation: dashes along the vertical edges.
     float dash = step(0.35, fract(vCorner.y * 9.0));
-    gl_FragColor = vec4(vCol.rgb * (0.10 + 1.7 * edge * dash), 1.0);
+    fragColor = vec4(vCol.rgb * (0.10 + 1.7 * edge * dash), 1.0);
 }

@@ -69,16 +69,36 @@ void loadAttachShader( GLuint program_id, GLuint shader_id, const char * filenam
 }
 
 
+// The ONE shared vertex shader for every fullscreen pass (core profile has
+// no fixed-function vertex path): compiled once, attached to each program.
+static GLuint fullscreenVertShader()
+{
+	static GLuint vs = 0;
+	if( vs == 0 )
+	{
+		vs = glCreateShader( GL_VERTEX_SHADER );
+		GLchar *src = textFileRead( "..\\Blend\\Fullscreen.vert" );
+		if( src == NULL )
+		{
+			fprintf( stderr, "FATAL: Blend\\Fullscreen.vert missing!\n" );
+			exit( 1 );
+		}
+		glShaderSource( vs, 1, const_cast<const GLchar**>( &src ), NULL );
+		free( src );
+		glCompileShader( vs );
+		printShaderInfoLog( vs );
+	}
+	return vs;
+}
+
 GLuint setShaders( const char *vert_source, const char * frag_source )
 {
 	GLuint s_id, sh_prog_id;
+	(void)vert_source;   // historical parameter; the shared fullscreen vert rules
 
 	sh_prog_id = glCreateProgram();
 
-	// NOTE: deliberately fragment-only — the classic fullscreen-quad effects
-	// run on the fixed-function vertex path (the vert filename is ignored).
-	//s_id = glCreateShader( GL_VERTEX_SHADER );
-	//loadAttachShader( sh_prog_id, s_id, vert_source );
+	glAttachShader( sh_prog_id, fullscreenVertShader() );
 
 	s_id = glCreateShader( GL_FRAGMENT_SHADER );
 	loadAttachShader( sh_prog_id, s_id, frag_source );

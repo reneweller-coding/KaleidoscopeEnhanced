@@ -1,4 +1,4 @@
-#version 120
+#version 330 core
 // Planet4D.vert — the harmony as a four-dimensional object (after the
 // Planet-4D music-space idea): the 12 pitch classes sit on the CLIFFORD
 // TORUS in S³ — one circle is the circle of FIFTHS, the other the
@@ -16,8 +16,8 @@
 // Points budget (60k): 12 nodes x 2500 grains (glow clouds), then 36 edges
 // x ~833 grains (great-circle SLERP arcs on S³).
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -33,7 +33,7 @@ uniform float audioKick;
 uniform float audioDrop;
 uniform float audioRotPhase;
 
-varying vec4 vCol;
+out vec4 vCol;
 
 vec3 hueRot(vec3 c, float a)
 {

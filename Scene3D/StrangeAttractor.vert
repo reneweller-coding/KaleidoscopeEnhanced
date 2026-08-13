@@ -1,4 +1,4 @@
-#version 120
+#version 330 core
 // StrangeAttractor.vert — 600 trajectories x 100 steps on a CHAOTIC
 // ATTRACTOR: each vertex (trajectory, step) Euler-integrates its `step`
 // count of iterations (<= 100, so chaotic divergence stays bounded and the
@@ -10,8 +10,8 @@
 // inputs must be slow), speed of travel along the trajectories rides the
 // music's advance, velocity magnitude paints the colour.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -26,7 +26,7 @@ uniform float audioChromaHue;
 uniform float audioDrop;
 uniform float audioAdvance;
 
-varying vec4 vCol;
+out vec4 vCol;
 
 vec3 hueRot(vec3 c, float a)
 {

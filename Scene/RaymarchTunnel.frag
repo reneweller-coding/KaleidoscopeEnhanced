@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 // RaymarchTunnel.frag
 // A ray-marched wormhole papered with the SOURCE IMAGE, mirror-folded around
 // the bore so the picture radiates in symmetric wedges.  Now with:
@@ -32,8 +34,8 @@ uniform float snakeP;          // tunnel snaking amplitude (0 -> 0.35; 0.15..0.5
 
 const float PI = 3.14159265358979;
 
-vec3 img(vec2 uv) { return (interpolation * texture2D(tex0, uv)
-                          + (1.0 - interpolation) * texture2D(tex1, uv)).rgb; }
+vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
+                          + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
 
 vec3 imgPal(float x)
 {
@@ -118,5 +120,5 @@ void main()
     col = hueRot(col, (himg - 0.5) * 2.0 + time * 0.04
                       + 0.35 * sin(audioBarPhase * 2.0 * PI));
 
-    gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }

@@ -158,7 +158,7 @@ FilterShader::FilterShader( )
 , m_fboEffectTexture2(0)
 , m_fboEffectCombine1(0)
 , m_fboEffectCombine2(0)
-, m_attachmentpoint(GL_COLOR_ATTACHMENT0_EXT)
+, m_attachmentpoint(GL_COLOR_ATTACHMENT0)
 , m_texID1(0)
 , m_texID2(0)
 , m_texIDFBOEffectTexture1(0)
@@ -425,7 +425,7 @@ FilterShader::FilterShader(int width, int height, const QString &directory)
 , m_fboEffectTexture2(0)
 , m_fboEffectCombine1(0)
 , m_fboEffectCombine2(0)
-, m_attachmentpoint(GL_COLOR_ATTACHMENT0_EXT)
+, m_attachmentpoint(GL_COLOR_ATTACHMENT0)
 , m_texID1(0)
 , m_texID2(0)
 , m_texIDFBOEffectTexture1(0)
@@ -830,10 +830,10 @@ FilterShader::~FilterShader()
 
 void FilterShader::cleanTextures()
 {
-	glDeleteFramebuffersEXT( 1, &m_fboEffectTexture1 );		// clean up framebuffer object
-	glDeleteFramebuffersEXT( 1, &m_fboEffectTexture2 );		// clean up framebuffer object
-	glDeleteFramebuffersEXT( 1, &m_fboEffectCombine1 );		// clean up framebuffer object
-	glDeleteFramebuffersEXT( 1, &m_fboEffectCombine2 );		// clean up framebuffer object
+	glDeleteFramebuffers( 1, &m_fboEffectTexture1 );		// clean up framebuffer object
+	glDeleteFramebuffers( 1, &m_fboEffectTexture2 );		// clean up framebuffer object
+	glDeleteFramebuffers( 1, &m_fboEffectCombine1 );		// clean up framebuffer object
+	glDeleteFramebuffers( 1, &m_fboEffectCombine2 );		// clean up framebuffer object
 	glDeleteTextures( 1, &m_actTex );         // clean up textures
 	glDeleteTextures( 1, &m_nextTex );
 	//glDeleteTextures( 1, &m_texID3 );
@@ -986,17 +986,17 @@ void FilterShader::resize(int width, int height)
 	// effect FBOs go INCOMPLETE_DIMENSIONS after any resize.
 	if( m_depthRbEffect1 )
 	{
-		glBindRenderbufferEXT( GL_RENDERBUFFER_EXT, m_depthRbEffect1 );
-		glRenderbufferStorageEXT( GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT,
+		glBindRenderbuffer( GL_RENDERBUFFER, m_depthRbEffect1 );
+		glRenderbufferStorage( GL_RENDERBUFFER, GL_DEPTH_COMPONENT,
 		                          m_width, m_height );
 	}
 	if( m_depthRbEffect2 )
 	{
-		glBindRenderbufferEXT( GL_RENDERBUFFER_EXT, m_depthRbEffect2 );
-		glRenderbufferStorageEXT( GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT,
+		glBindRenderbuffer( GL_RENDERBUFFER, m_depthRbEffect2 );
+		glRenderbufferStorage( GL_RENDERBUFFER, GL_DEPTH_COMPONENT,
 		                          m_width, m_height );
 	}
-	glBindRenderbufferEXT( GL_RENDERBUFFER_EXT, 0 );
+	glBindRenderbuffer( GL_RENDERBUFFER, 0 );
 
 	// Resize the final (present) texture too, keeping its mipmaps.
 	if( m_texFinal != 0 )
@@ -1009,7 +1009,7 @@ void FilterShader::resize(int width, int height)
 			glBindTexture( GL_TEXTURE_2D, m_texTrail[i] );
 			glTexImage2D( GL_TEXTURE_2D, 0, m_texInternalFormat, m_width, m_height, 0,
 			              m_texFormat, m_texType, NULL );
-			glGenerateMipmapEXT( GL_TEXTURE_2D );
+			glGenerateMipmap( GL_TEXTURE_2D );
 		}
 
 	// Resize the bloom buffers (quarter render-res).
@@ -1041,7 +1041,7 @@ void FilterShader::updateFinalTexture()
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
 	glTexImage2D( GL_TEXTURE_2D, 0, m_texInternalFormat, m_width, m_height, 0,
 	              m_texFormat, m_texType, NULL );
-	glGenerateMipmapEXT( GL_TEXTURE_2D );
+	glGenerateMipmap( GL_TEXTURE_2D );
 	glBindTexture( GL_TEXTURE_2D, 0 );
 }
 
@@ -1052,12 +1052,12 @@ void FilterShader::setupSafety()
 	updateFinalTexture();
 
 	if( m_fboFinal == 0 )
-		glGenFramebuffersEXT( 1, &m_fboFinal );
-	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_fboFinal );
-	glFramebufferTexture2DEXT( GL_FRAMEBUFFER_EXT, m_attachmentpoint,
+		glGenFramebuffers( 1, &m_fboFinal );
+	glBindFramebuffer( GL_FRAMEBUFFER, m_fboFinal );
+	glFramebufferTexture2D( GL_FRAMEBUFFER, m_attachmentpoint,
 	                           GL_TEXTURE_2D, m_texFinal, 0 );
 	bool fboOk = checkFramebufferStatus();
-	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, 0 );
+	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
 
 	if( m_presentProgId == 0 )
 	{
@@ -1111,13 +1111,13 @@ void FilterShader::setupSafety()
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
 		glTexImage2D( GL_TEXTURE_2D, 0, m_texInternalFormat, m_bloomW, m_bloomH, 0,
 		              m_texFormat, m_texType, NULL );
-		if( m_fboBloom[i] == 0 ) glGenFramebuffersEXT( 1, &m_fboBloom[i] );
-		glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_fboBloom[i] );
-		glFramebufferTexture2DEXT( GL_FRAMEBUFFER_EXT, m_attachmentpoint,
+		if( m_fboBloom[i] == 0 ) glGenFramebuffers( 1, &m_fboBloom[i] );
+		glBindFramebuffer( GL_FRAMEBUFFER, m_fboBloom[i] );
+		glFramebufferTexture2D( GL_FRAMEBUFFER, m_attachmentpoint,
 		                           GL_TEXTURE_2D, m_texBloom[i], 0 );
 		bloomOk = bloomOk && checkFramebufferStatus();
 	}
-	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, 0 );
+	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
 	glBindTexture( GL_TEXTURE_2D, 0 );
 	if( m_bloomProgId == 0 )
 	{
@@ -1141,14 +1141,14 @@ void FilterShader::setupSafety()
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
 		glTexImage2D( GL_TEXTURE_2D, 0, m_texInternalFormat, m_width, m_height, 0,
 		              m_texFormat, m_texType, NULL );
-		glGenerateMipmapEXT( GL_TEXTURE_2D );
-		if( m_fboTrail[i] == 0 ) glGenFramebuffersEXT( 1, &m_fboTrail[i] );
-		glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_fboTrail[i] );
-		glFramebufferTexture2DEXT( GL_FRAMEBUFFER_EXT, m_attachmentpoint,
+		glGenerateMipmap( GL_TEXTURE_2D );
+		if( m_fboTrail[i] == 0 ) glGenFramebuffers( 1, &m_fboTrail[i] );
+		glBindFramebuffer( GL_FRAMEBUFFER, m_fboTrail[i] );
+		glFramebufferTexture2D( GL_FRAMEBUFFER, m_attachmentpoint,
 		                           GL_TEXTURE_2D, m_texTrail[i], 0 );
 		if( !checkFramebufferStatus() ) trailOk = false;
 	}
-	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, 0 );
+	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
 	glBindTexture( GL_TEXTURE_2D, 0 );
 
 	if( m_trailProgId == 0 )
@@ -1224,13 +1224,13 @@ void FilterShader::setupReactionDiffusion()
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
 		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA16F, kRDSize, kRDSize, 0,
 		              GL_RGBA, GL_FLOAT, NULL );
-		if( m_fboRD[i] == 0 ) glGenFramebuffersEXT( 1, &m_fboRD[i] );
-		glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_fboRD[i] );
-		glFramebufferTexture2DEXT( GL_FRAMEBUFFER_EXT, m_attachmentpoint,
+		if( m_fboRD[i] == 0 ) glGenFramebuffers( 1, &m_fboRD[i] );
+		glBindFramebuffer( GL_FRAMEBUFFER, m_fboRD[i] );
+		glFramebufferTexture2D( GL_FRAMEBUFFER, m_attachmentpoint,
 		                           GL_TEXTURE_2D, m_texRD[i], 0 );
 		if( !checkFramebufferStatus() ) rdOk = false;
 	}
-	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, 0 );
+	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
 	glBindTexture( GL_TEXTURE_2D, 0 );
 
 	m_rdReady  = rdOk;
@@ -1268,13 +1268,13 @@ void FilterShader::setupFluid()
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
 		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA16F, kFluidSize, kFluidSize, 0,
 		              GL_RGBA, GL_FLOAT, NULL );
-		if( m_fboFluid[i] == 0 ) glGenFramebuffersEXT( 1, &m_fboFluid[i] );
-		glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_fboFluid[i] );
-		glFramebufferTexture2DEXT( GL_FRAMEBUFFER_EXT, m_attachmentpoint,
+		if( m_fboFluid[i] == 0 ) glGenFramebuffers( 1, &m_fboFluid[i] );
+		glBindFramebuffer( GL_FRAMEBUFFER, m_fboFluid[i] );
+		glFramebufferTexture2D( GL_FRAMEBUFFER, m_attachmentpoint,
 		                           GL_TEXTURE_2D, m_texFluid[i], 0 );
 		if( !checkFramebufferStatus() ) ok = false;
 	}
-	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, 0 );
+	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
 	glBindTexture( GL_TEXTURE_2D, 0 );
 
 	m_fluidReady  = ok;
@@ -1291,7 +1291,7 @@ void FilterShader::stepFluid(const AudioFeatures &audio)
 	const int cur  = m_fluidIdx;
 	const int prev = 1 - m_fluidIdx;
 
-	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_fboFluid[cur] );
+	glBindFramebuffer( GL_FRAMEBUFFER, m_fboFluid[cur] );
 	glViewport( 0, 0, kFluidSize, kFluidSize );
 	glUseProgram( m_fluidProgId );
 
@@ -1352,13 +1352,13 @@ void FilterShader::setupSmoke3D()
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
 		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA16F, kSmoke3DW, kSmoke3DH, 0,
 		              GL_RGBA, GL_FLOAT, NULL );
-		if( m_fboSmoke3D[i] == 0 ) glGenFramebuffersEXT( 1, &m_fboSmoke3D[i] );
-		glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_fboSmoke3D[i] );
-		glFramebufferTexture2DEXT( GL_FRAMEBUFFER_EXT, m_attachmentpoint,
+		if( m_fboSmoke3D[i] == 0 ) glGenFramebuffers( 1, &m_fboSmoke3D[i] );
+		glBindFramebuffer( GL_FRAMEBUFFER, m_fboSmoke3D[i] );
+		glFramebufferTexture2D( GL_FRAMEBUFFER, m_attachmentpoint,
 		                           GL_TEXTURE_2D, m_texSmoke3D[i], 0 );
 		if( !checkFramebufferStatus() ) ok = false;
 	}
-	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, 0 );
+	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
 	glBindTexture( GL_TEXTURE_2D, 0 );
 
 	m_smoke3DReady  = ok;
@@ -1374,7 +1374,7 @@ void FilterShader::stepSmoke3DPass(const AudioFeatures &audio, float subStep)
 	const int cur  = m_smoke3DIdx;
 	const int prev = 1 - m_smoke3DIdx;
 
-	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_fboSmoke3D[cur] );
+	glBindFramebuffer( GL_FRAMEBUFFER, m_fboSmoke3D[cur] );
 	glViewport( 0, 0, kSmoke3DW, kSmoke3DH );
 	glUseProgram( m_smoke3DProgId );
 
@@ -1466,9 +1466,9 @@ void FilterShader::setupPhysarum()
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
 		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA16F, kPhysAgentsSide, kPhysAgentsSide,
 		              0, GL_RGBA, GL_FLOAT, NULL );
-		if( m_fboPhysAgents[i] == 0 ) glGenFramebuffersEXT( 1, &m_fboPhysAgents[i] );
-		glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_fboPhysAgents[i] );
-		glFramebufferTexture2DEXT( GL_FRAMEBUFFER_EXT, m_attachmentpoint,
+		if( m_fboPhysAgents[i] == 0 ) glGenFramebuffers( 1, &m_fboPhysAgents[i] );
+		glBindFramebuffer( GL_FRAMEBUFFER, m_fboPhysAgents[i] );
+		glFramebufferTexture2D( GL_FRAMEBUFFER, m_attachmentpoint,
 		                           GL_TEXTURE_2D, m_texPhysAgents[i], 0 );
 		if( !checkFramebufferStatus() ) ok = false;
 
@@ -1480,9 +1480,9 @@ void FilterShader::setupPhysarum()
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
 		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA16F, kPhysTrailSize, kPhysTrailSize,
 		              0, GL_RGBA, GL_FLOAT, NULL );
-		if( m_fboPhysTrail[i] == 0 ) glGenFramebuffersEXT( 1, &m_fboPhysTrail[i] );
-		glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_fboPhysTrail[i] );
-		glFramebufferTexture2DEXT( GL_FRAMEBUFFER_EXT, m_attachmentpoint,
+		if( m_fboPhysTrail[i] == 0 ) glGenFramebuffers( 1, &m_fboPhysTrail[i] );
+		glBindFramebuffer( GL_FRAMEBUFFER, m_fboPhysTrail[i] );
+		glFramebufferTexture2D( GL_FRAMEBUFFER, m_attachmentpoint,
 		                           GL_TEXTURE_2D, m_texPhysTrail[i], 0 );
 		if( !checkFramebufferStatus() ) ok = false;
 		if( ok )
@@ -1509,8 +1509,19 @@ void FilterShader::setupPhysarum()
 		              v.data(), GL_STATIC_DRAW );
 		glBindBuffer( GL_ARRAY_BUFFER, 0 );
 	}
+	if( ok && m_physDepVAO == 0 )
+	{
+		glGenVertexArrays( 1, &m_physDepVAO );
+		glBindVertexArray( m_physDepVAO );
+		glBindBuffer( GL_ARRAY_BUFFER, m_physVBO );
+		glEnableVertexAttribArray( GLuint(m_physDepAttr) );
+		glVertexAttribPointer( GLuint(m_physDepAttr), 2, GL_FLOAT, GL_FALSE,
+		                       2 * sizeof(float), (const void *) 0 );
+		glBindVertexArray( 0 );
+		glBindBuffer( GL_ARRAY_BUFFER, 0 );
+	}
 
-	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, 0 );
+	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
 	glBindTexture( GL_TEXTURE_2D, 0 );
 	m_physReady  = ok;
 	m_physSeeded = false;
@@ -1528,7 +1539,7 @@ void FilterShader::stepPhysarum(const AudioFeatures &audio)
 	const int tCur  = m_physTrailIdx, tPrev = 1 - m_physTrailIdx;
 
 	// ---- 1) Agent update ----
-	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_fboPhysAgents[aCur] );
+	glBindFramebuffer( GL_FRAMEBUFFER, m_fboPhysAgents[aCur] );
 	glViewport( 0, 0, kPhysAgentsSide, kPhysAgentsSide );
 	glUseProgram( m_physAgentProgId );
 	glActiveTexture( GL_TEXTURE0 );
@@ -1556,7 +1567,7 @@ void FilterShader::stepPhysarum(const AudioFeatures &audio)
 	drawWindow();
 
 	// ---- 2) Deposit: 65k points into the CURRENT trail (additive) ----
-	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_fboPhysTrail[tPrev] );
+	glBindFramebuffer( GL_FRAMEBUFFER, m_fboPhysTrail[tPrev] );
 	glViewport( 0, 0, kPhysTrailSize, kPhysTrailSize );
 	glUseProgram( m_physDepositProgId );
 	glActiveTexture( GL_TEXTURE0 );
@@ -1566,17 +1577,15 @@ void FilterShader::stepPhysarum(const AudioFeatures &audio)
 	                                           0.06f + 0.05f * audio.onsetStrength );
 	glEnable( GL_BLEND );
 	glBlendFunc( GL_ONE, GL_ONE );
-	glBindBuffer( GL_ARRAY_BUFFER, m_physVBO );
-	glEnableVertexAttribArray( GLuint(m_physDepAttr) );
-	glVertexAttribPointer( GLuint(m_physDepAttr), 2, GL_FLOAT, GL_FALSE,
-	                       2 * sizeof(float), (const void *) 0 );
+	glEnable( GL_VERTEX_PROGRAM_POINT_SIZE );
+	glBindVertexArray( m_physDepVAO );
 	glDrawArrays( GL_POINTS, 0, kPhysAgentsSide * kPhysAgentsSide );
-	glDisableVertexAttribArray( GLuint(m_physDepAttr) );
-	glBindBuffer( GL_ARRAY_BUFFER, 0 );
+	glBindVertexArray( 0 );
+	glDisable( GL_VERTEX_PROGRAM_POINT_SIZE );
 	glDisable( GL_BLEND );
 
 	// ---- 3) Diffuse + evaporate into the other trail buffer ----
-	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_fboPhysTrail[tCur] );
+	glBindFramebuffer( GL_FRAMEBUFFER, m_fboPhysTrail[tCur] );
 	glUseProgram( m_physDiffuseProgId );
 	glActiveTexture( GL_TEXTURE0 );
 	glBindTexture( GL_TEXTURE_2D, m_texPhysTrail[tPrev] );
@@ -1652,7 +1661,7 @@ void FilterShader::stepReactionDiffusion(const AudioFeatures &audio)
 	const int cur  = m_rdIdx;
 	const int prev = 1 - m_rdIdx;
 
-	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_fboRD[cur] );
+	glBindFramebuffer( GL_FRAMEBUFFER, m_fboRD[cur] );
 	glViewport( 0, 0, kRDSize, kRDSize );
 	glUseProgram( m_rdProgId );
 
@@ -1759,6 +1768,24 @@ void FilterShader::requestSceneChange()
 		bumpTaste( m_effectTextures[m_actEffectTexture]->fragmentName(), 0.8f );
 	m_forceEffectChange  = true;
 	m_forceCombineChange = true;
+}
+
+// Validation aid: compile EVERYTHING now (lazy compilation would otherwise
+// only exercise shaders that actually come on screen).
+void FilterShader::compileAllShaders()
+{
+	for( EffectShader *s : m_effectTextures )
+	{
+		fprintf( stderr, "COMPILEALL %s\n", s->fragmentName() );
+		s->ensureCompiled();
+	}
+	for( EffectShader *s : m_effectCombines )
+	{
+		fprintf( stderr, "COMPILEALL %s\n", s->fragmentName() );
+		s->ensureCompiled();
+	}
+	fprintf( stderr, "COMPILEALL done (%d textures, %d combines)\n",
+	         (int)m_effectTextures.size(), (int)m_effectCombines.size() );
 }
 
 // Remote scene browser: list the preset's texture shaders (file basenames).
@@ -1877,12 +1904,12 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 	// -------------------------
 
 	/*glBindTexture( GL_TEXTURE_2D, 0 );
-	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_fbo );
-	//glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, 0 );
+	glBindFramebuffer( GL_FRAMEBUFFER, m_fbo );
+	//glBindFramebuffer( GL_FRAMEBUFFER, 0 );
 	glViewport( 0, 0, m_width, m_height );
 	glUseProgram( 0 );
 	drawScene( rotMatrix, tx, ty, tz );
-	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_defaultFBO );
+	glBindFramebuffer( GL_FRAMEBUFFER, m_defaultFBO );
 	checkFramebufferStatus();*/
 	float timeSinceLastFrame = m_nanotimer.elapsed();
 	//if( timeSinceLastFrame > 20.0 )
@@ -2730,8 +2757,8 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
 			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
-			glTexImage2D( GL_TEXTURE_2D, 0, GL_LUMINANCE, kSSMSize, kSSMSize, 0,
-			              GL_LUMINANCE, GL_UNSIGNED_BYTE, NULL );
+			glTexImage2D( GL_TEXTURE_2D, 0, GL_R8, kSSMSize, kSSMSize, 0,
+			              GL_RED, GL_UNSIGNED_BYTE, NULL );
 		}
 		glActiveTexture( GL_TEXTURE10 );
 		glBindTexture( GL_TEXTURE_2D, m_texSSM );
@@ -2739,7 +2766,7 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 		{
 			glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
 			glTexSubImage2D( GL_TEXTURE_2D, 0, 0, 0, kSSMSize, kSSMSize,
-			                 GL_LUMINANCE, GL_UNSIGNED_BYTE, m_ssmData );
+			                 GL_RED, GL_UNSIGNED_BYTE, m_ssmData );
 			glPixelStorei( GL_UNPACK_ALIGNMENT, 4 );
 			m_ssmDirty = false;
 		}
@@ -2803,9 +2830,9 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 	};
 
 	//Do the FBO Stuff
-	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_fboEffectTexture1 );
+	glBindFramebuffer( GL_FRAMEBUFFER, m_fboEffectTexture1 );
 
-    //glFramebufferTexture2DEXT( GL_FRAMEBUFFER_EXT, m_attachmentpoint, GL_TEXTURE_2D, m_texIDFBOEffectTexture1, 0);
+    //glFramebufferTexture2D( GL_FRAMEBUFFER, m_attachmentpoint, GL_TEXTURE_2D, m_texIDFBOEffectTexture1, 0);
 
 	m_effectTextures[m_actEffectTexture]->enableShader();
 	m_effectTextures[m_actEffectTexture]->setUniforms( m_globaltime, m_interpolationTexture, 0, 1 );
@@ -2819,11 +2846,11 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 	checkGLErrors("createTextures() 1");
 
 	//Now Use Final Rendering
-	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_defaultFBO );
+	glBindFramebuffer( GL_FRAMEBUFFER, m_defaultFBO );
 	checkFramebufferStatus();
 
 	//Do the FBO Stuff
-	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_fboEffectTexture2 );
+	glBindFramebuffer( GL_FRAMEBUFFER, m_fboEffectTexture2 );
 
 	// Skip the "next" texture effect while NOT cross-fading: every combine weights
 	// this output (tex1) by (1-interpolation), which is 0 at interpolation==1.0, so
@@ -2841,7 +2868,7 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 
 	
 	//Now Use Post Processing
-	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_defaultFBO );
+	glBindFramebuffer( GL_FRAMEBUFFER, m_defaultFBO );
 	checkFramebufferStatus();
 
 	//printf( "%f %d\n", t-m_lastTime, loadimage );
@@ -2988,9 +3015,9 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 
 
 	//Do the FBO Stuff
-	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_fboEffectCombine1 );
+	glBindFramebuffer( GL_FRAMEBUFFER, m_fboEffectCombine1 );
 
-    //glFramebufferCombine2DEXT( GL_FRAMEBUFFER_EXT, m_attachmentpoint, GL_Combine_2D, m_texIDFBOEffectCombine1, 0);
+    //glFramebufferCombine2DEXT( GL_FRAMEBUFFER, m_attachmentpoint, GL_Combine_2D, m_texIDFBOEffectCombine1, 0);
 
 	if( m_trueStereoNow )
 	{
@@ -3024,7 +3051,7 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 	checkGLErrors("createCombines() 1");
 
 
-    /*glFramebufferCombine2DEXT( GL_FRAMEBUFFER_EXT, m_attachmentpoint, GL_Combine_2D, m_texIDFBOEffectCombine2, 0);
+    /*glFramebufferCombine2DEXT( GL_FRAMEBUFFER, m_attachmentpoint, GL_Combine_2D, m_texIDFBOEffectCombine2, 0);
 
 	m_effectCombines[m_nextEffectCombine]->enableShader();
 	m_effectCombines[m_nextEffectCombine]->setUniforms( m_globaltime, m_interpolationCombine );
@@ -3032,11 +3059,11 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 
 
 	//Now Use Final Rendering
-	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_defaultFBO );
+	glBindFramebuffer( GL_FRAMEBUFFER, m_defaultFBO );
 	checkFramebufferStatus();
 
 	//Do the FBO Stuff
-	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_fboEffectCombine2 );
+	glBindFramebuffer( GL_FRAMEBUFFER, m_fboEffectCombine2 );
 
 	// Skip the "next" combine while NOT cross-fading combines: the final present
 	// pass (CombinePlain) weights this output by (1-interpolation)=0 at
@@ -3052,7 +3079,7 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 	
 	//Now Use Final Rendering — into the safety FBO if active, else to the screen.
 	GLuint combineTarget = m_safetyReady ? m_fboFinal : m_defaultFBO;
-	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, combineTarget );
+	glBindFramebuffer( GL_FRAMEBUFFER, combineTarget );
 	checkFramebufferStatus();
 
 	/*******************************************************************************/
@@ -3121,7 +3148,7 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 		// notes linger visibly before the picture settles.
 		decay = std::min( decay * (1.f + 0.40f * audioFx.fadeOut), 0.96f );
 
-		glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_fboTrail[cur] );
+		glBindFramebuffer( GL_FRAMEBUFFER, m_fboTrail[cur] );
 		glViewport( 0, 0, m_width, m_height );
 		glUseProgram( m_trailProgId );
 		glActiveTexture( GL_TEXTURE0 );
@@ -3213,7 +3240,7 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 	{
 		glActiveTexture( GL_TEXTURE0 );
 		glBindTexture( GL_TEXTURE_2D, presentSource );
-		glGenerateMipmapEXT( GL_TEXTURE_2D );          // every frame (bloom samples a mip)
+		glGenerateMipmap( GL_TEXTURE_2D );          // every frame (bloom samples a mip)
 
 		// The whole-frame mean comes from a glGetTexImage readback, which forces a
 		// GPU→CPU sync stall — costly on weak GPUs.  Do it only every 3rd frame and
@@ -3259,7 +3286,7 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 			glUseProgram( m_bloomProgId );
 			glActiveTexture( GL_TEXTURE0 );
 
-			glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_fboBloom[0] );
+			glBindFramebuffer( GL_FRAMEBUFFER, m_fboBloom[0] );
 			glViewport( 0, 0, m_bloomW, m_bloomH );
 			glBindTexture( GL_TEXTURE_2D, presentSource );
 			glUniform1i( m_bloomTexUni, 0 );
@@ -3268,7 +3295,7 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 			if( m_bloomThreshUni >= 0 ) glUniform1f( m_bloomThreshUni, 0.70f );
 			drawWindow();
 
-			glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_fboBloom[1] );
+			glBindFramebuffer( GL_FRAMEBUFFER, m_fboBloom[1] );
 			glBindTexture( GL_TEXTURE_2D, m_texBloom[0] );
 			if( m_bloomDirUni    >= 0 ) glUniform2f( m_bloomDirUni, 0.f, 1.f );
 			if( m_bloomThreshUni >= 0 ) glUniform1f( m_bloomThreshUni, 0.f );
@@ -3277,7 +3304,7 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 
 		// The present pass is the ONLY one at full display resolution — it upscales
 		// the render-resolution result to the window.
-		glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_defaultFBO );
+		glBindFramebuffer( GL_FRAMEBUFFER, m_defaultFBO );
 		glViewport( 0, 0, m_displayW, m_displayH );
 		glUseProgram( m_presentProgId );
 		glActiveTexture( GL_TEXTURE0 );
@@ -3389,23 +3416,23 @@ void FilterShader::drawScene(const float *rotMatrix, float tx, float ty, float t
 	}
 }
 
+// Shared empty VAO for every fullscreen-triangle draw (core profile needs a
+// VAO bound even without vertex attributes; the shared Fullscreen.vert
+// generates the triangle from gl_VertexID).
+GLuint fullscreenVAO()
+{
+	static GLuint vao = 0;
+	if( vao == 0 )
+		glGenVertexArrays( 1, &vao );
+	return vao;
+}
+
 void FilterShader::drawWindow()
 {
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	gluOrtho2D(0,m_width,0,m_height);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	glPolygonMode( GL_FRONT, GL_FILL );
-
-	glBegin(GL_QUADS);
-	glTexCoord2f(0,0); glVertex2f(0,0);
-	glTexCoord2f(1,0); glVertex2f(m_width,0);
-	glTexCoord2f(1,1); glVertex2f(m_width,m_height);
-	glTexCoord2f(0,1); glVertex2f(0,m_height);
-	glEnd();
+	glBindVertexArray( fullscreenVAO() );
+	glDrawArrays( GL_TRIANGLES, 0, 3 );
+	glBindVertexArray( 0 );
 }
 
 
@@ -3417,23 +3444,21 @@ void FilterShader::drawWindow()
 // true-stereo path: the eye-packed 3D frame replaces the combine output 1:1.
 void FilterShader::blitTexture( GLuint tex )
 {
-	glUseProgram( 0 );
+	// Tiny dedicated blit program (fixed-function texturing is gone in core).
+	static GLuint blitProg = 0;
+	static GLint  blitTexUni = -1;
+	if( blitProg == 0 )
+	{
+		blitProg   = setShaders( "..\\standard.vert", "..\\Blend\\Blit.frag" );
+		blitTexUni = glGetUniformLocation( blitProg, "tex" );
+	}
+	glUseProgram( blitProg );
 	glActiveTexture( GL_TEXTURE0 );
 	glBindTexture( GL_TEXTURE_2D, tex );
-	glEnable( GL_TEXTURE_2D );
-	glMatrixMode( GL_PROJECTION );
-	glLoadIdentity();
-	gluOrtho2D( 0, m_width, 0, m_height );
-	glMatrixMode( GL_MODELVIEW );
-	glLoadIdentity();
-	glColor3f( 1.f, 1.f, 1.f );
-	glBegin( GL_QUADS );
-	glTexCoord2f( 0, 0 ); glVertex2f( 0.f, 0.f );
-	glTexCoord2f( 1, 0 ); glVertex2f( (float)m_width, 0.f );
-	glTexCoord2f( 1, 1 ); glVertex2f( (float)m_width, (float)m_height );
-	glTexCoord2f( 0, 1 ); glVertex2f( 0.f, (float)m_height );
-	glEnd();
-	glDisable( GL_TEXTURE_2D );
+	if( blitTexUni >= 0 ) glUniform1i( blitTexUni, 0 );
+	glBindVertexArray( fullscreenVAO() );
+	glDrawArrays( GL_TRIANGLES, 0, 3 );
+	glBindVertexArray( 0 );
 }
 
 void FilterShader::initFBO(GLuint &fboEffect, GLuint &texIDEffectTexture, GLuint *depthRb)
@@ -3441,15 +3466,15 @@ void FilterShader::initFBO(GLuint &fboEffect, GLuint &texIDEffectTexture, GLuint
 	// create FBO (off-screen framebuffer) — reuse the id if it already exists
 	// (re-entering this path must re-attach, not leak a fresh FBO)
     if( fboEffect == 0 )
-        glGenFramebuffersEXT( 1, &fboEffect );
+        glGenFramebuffers( 1, &fboEffect );
 
     // bind offscreen framebuffer (that is, skip the window-specific render target)
-    glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, fboEffect );
+    glBindFramebuffer( GL_FRAMEBUFFER, fboEffect );
 
     // check if something went completely wrong
     checkGLErrors("initFBO()");
 		// attach texture to FBO
-    glFramebufferTexture2DEXT( GL_FRAMEBUFFER_EXT, m_attachmentpoint,
+    glFramebufferTexture2D( GL_FRAMEBUFFER, m_attachmentpoint,
 							   GL_TEXTURE_2D, texIDEffectTexture, 0);
 	checkGLErrors("initFBO()");
 
@@ -3459,19 +3484,19 @@ void FilterShader::initFBO(GLuint &fboEffect, GLuint &texIDEffectTexture, GLuint
 	if( depthRb )
 	{
 		if( *depthRb == 0 )
-			glGenRenderbuffersEXT( 1, depthRb );
-		glBindRenderbufferEXT( GL_RENDERBUFFER_EXT, *depthRb );
-		glRenderbufferStorageEXT( GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT,
+			glGenRenderbuffers( 1, depthRb );
+		glBindRenderbuffer( GL_RENDERBUFFER, *depthRb );
+		glRenderbufferStorage( GL_RENDERBUFFER, GL_DEPTH_COMPONENT,
 		                          m_width, m_height );
-		glFramebufferRenderbufferEXT( GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
-		                              GL_RENDERBUFFER_EXT, *depthRb );
-		glBindRenderbufferEXT( GL_RENDERBUFFER_EXT, 0 );
+		glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+		                              GL_RENDERBUFFER, *depthRb );
+		glBindRenderbuffer( GL_RENDERBUFFER, 0 );
 	}
 
 	// check if that worked
     if ( !checkFramebufferStatus() )
 	{
-		fputs( "glFramebufferTexture2DEXT() FAILED!\n", stderr );
+		fputs( "glFramebufferTexture2D() FAILED!\n", stderr );
 		exit(1);
 	}
 }
@@ -3517,7 +3542,7 @@ void FilterShader::createFBOTexture( GLuint &texID )
     setupFBOTexture( texID );
 
 	// set texenv mode from modulate (the default) to replace)
-	glTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE );
+	// (glTexEnvi removed: fixed-function texturing is gone in core)
 
     // check if something went completely wrong
     checkGLErrors("createTextures() 1");
@@ -3714,7 +3739,7 @@ void FilterShader::setupTexture( const GLuint texID, const QImage &image )
 	//float convertingtime = timer.elapsed();
 	//timer.start();
 
-	glGenerateMipmapEXT( GL_TEXTURE_2D );
+	glGenerateMipmap( GL_TEXTURE_2D );
 
 	//float uploadtime = timer.elapsed();
 	//printf( "Time to texture: Uploading %f  Mipmap: %f\n", convertingtime, uploadtime );//rwrwdebug
@@ -3774,29 +3799,29 @@ bool FilterShader::checkFramebufferStatus(void)
 	return true; //rwrwtest profiling
 
     GLenum status;
-    status = (GLenum) glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
+    status = (GLenum) glCheckFramebufferStatus(GL_FRAMEBUFFER);
     switch(status) {
-        case GL_FRAMEBUFFER_COMPLETE_EXT:
+        case GL_FRAMEBUFFER_COMPLETE:
             return true;
-        case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT_EXT:
+        case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
 			printf("Framebuffer incomplete, incomplete attachment\n");
             return false;
-        case GL_FRAMEBUFFER_UNSUPPORTED_EXT:
+        case GL_FRAMEBUFFER_UNSUPPORTED:
 			printf("Unsupported framebuffer format\n");
             return false;
-        case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT_EXT:
+        case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
 			printf("Framebuffer incomplete, missing attachment\n");
             return false;
-        case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT:
+        case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS:
 			printf("Framebuffer incomplete, attached images must have same dimensions\n");
             return false;
-        case GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT:
+        case GL_FRAMEBUFFER_INCOMPLETE_FORMATS:
 			printf("Framebuffer incomplete, attached images must have same format\n");
             return false;
-        case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER_EXT:
+        case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
 			printf("Framebuffer incomplete, missing draw buffer\n");
             return false;
-        case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER_EXT:
+        case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
 			printf("Framebuffer incomplete, missing read buffer\n");
             return false;
     }

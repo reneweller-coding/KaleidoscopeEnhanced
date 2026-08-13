@@ -1,10 +1,10 @@
-#version 120
+#version 330 core
 // OrbitalShells.vert — a glowing nucleus wrapped in four precessing
 // electron shells; each shell's brightness follows its register (bass to
 // treble) with slow, dignified motion.  An atom as a chandelier.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -18,7 +18,7 @@ uniform float audioHigh;
 uniform float audioSwell;
 uniform float audioChromaHue;
 
-varying vec4 vCol;
+out vec4 vCol;
 
 vec3 hueRot(vec3 c, float a)
 {

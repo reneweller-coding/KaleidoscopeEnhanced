@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 // InkWater.frag
 // -----------------------------------------------------------------------
 // INK IN WATER: coloured ink plumes sink into still water and billow into
@@ -38,8 +40,8 @@ uniform float swirlP;
 uniform float speedP;
 
 mat2 rot(float a) { float c = cos(a), s = sin(a); return mat2(c, -s, s, c); }
-vec3 img(vec2 uv) { return (interpolation * texture2D(tex0, uv)
-                          + (1.0 - interpolation) * texture2D(tex1, uv)).rgb; }
+vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
+                          + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
 vec3 imgPal(float x)
 {
     vec2 cc = vec2(0.5) + 0.30 * vec2(cos(time * 0.040 + audioPhase * 0.10),
@@ -164,5 +166,5 @@ void main()
     col = mix(vec3(lum), col, 0.6 + 0.55 * audioValence);
     col *= 0.85 + 0.4 * audioLevel;
 
-    gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }

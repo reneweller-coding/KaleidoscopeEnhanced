@@ -1,4 +1,4 @@
-#version 120
+#version 330 core
 // CymaticsPlate.vert — Chladni figures done the physical way: 60k grains of
 // "sand" on a square vibrating plate.  The plate's standing wave is the
 // classic free-plate Chladni field
@@ -15,8 +15,8 @@
 // between the nodal lines (grains on the lines stay still — physically
 // right).
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -31,7 +31,7 @@ uniform float audioSwell;
 uniform float audioChromaHue;
 uniform float audioDrop;
 
-varying vec4 vCol;
+out vec4 vCol;
 
 vec3 hueRot(vec3 c, float a)
 {

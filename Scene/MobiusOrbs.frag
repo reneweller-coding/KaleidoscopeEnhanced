@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 // MobiusOrbs.frag
 // -----------------------------------------------------------------------
 // Adapted from an untitled Shadertoy Möbius-inversion orb field (pasted by the
@@ -48,8 +50,8 @@ const float X_MUL      = 0.28;
 const float Y_DIVIDE   = 4.99;
 const float X_DIVIDE   = 6.27;
 
-vec3 img(vec2 uv) { return (interpolation * texture2D(tex0, uv)
-                          + (1.0 - interpolation) * texture2D(tex1, uv)).rgb; }
+vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
+                          + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
 
 vec3 imgPal(float x)
 {
@@ -141,5 +143,5 @@ void main()
 
     col *= 0.9 + 0.5 * audioLevel;
 
-    gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }

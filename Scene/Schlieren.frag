@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 // Schlieren.frag
 // -----------------------------------------------------------------------
 // KNIFE-EDGE SCHLIEREN OPTICS over the live GPU fluid: the classic
@@ -43,8 +45,8 @@ uniform float rainbowP;        // 0 knife-edge mono .. 1 colour-filter mode
 const float PI = 3.14159265358979;
 
 mat2 rot(float a) { float c = cos(a), s = sin(a); return mat2(c, -s, s, c); }
-vec3 img(vec2 uv) { return (interpolation * texture2D(tex0, uv)
-                          + (1.0 - interpolation) * texture2D(tex1, uv)).rgb; }
+vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
+                          + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
 vec3 hueRot(vec3 c, float a)
 {
     vec3  k = vec3(0.57735026919);
@@ -63,7 +65,7 @@ vec2 kaleido(vec2 p, float sides)
 
 float dens(vec2 uv)
 {
-    vec3 d = texture2D(texFluid, uv).rgb;
+    vec3 d = texture(texFluid, uv).rgb;
     return dot(d, vec3(0.299, 0.587, 0.114));
 }
 
@@ -122,5 +124,5 @@ void main()
     col += hueRot(vec3(0.9, 0.6, 0.2), audioChromaHue)
          * clamp(gmag * gain - 0.6, 0.0, 1.0) * (0.4 + 1.2 * audioDrop);
 
-    gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }

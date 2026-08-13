@@ -214,10 +214,7 @@ exit /b 0</Command>
     <ClCompile Include="Source\AudioAnalyzer.cpp" />
     <ClCompile Include="Source\EffectShader.cpp" />
     <ClCompile Include="Source\filterShader.cpp" />
-    <ClCompile Include="Source\GLee.c">
-      <!-- Vendored third-party extension loader: silence its warnings. -->
-      <WarningLevel>TurnOffAllWarnings</WarningLevel>
-    </ClCompile>
+    <ClCompile Include="Source\glcore.cpp" />
     <ClCompile Include="Source\glwidget.cpp" />
     <ClCompile Include="Source\main.cpp" />
     <ClCompile Include="Source\mesh.cpp" />
@@ -274,8 +271,8 @@ exit /b 0</Command>
     </CustomBuild>
     <ClInclude Include="Source\AudioFeatures.h" />
     <ClInclude Include="Source\EffectShader.h" />
+    <ClInclude Include="Source\glcore.h" />
     <ClInclude Include="Source\filterShader.h" />
-    <ClInclude Include="Source\GLee.h" />
     <CustomBuild Include="Source\glwidget.h">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">MOCing glwidget.h ...</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MOCing glwidget.h ...</Message>
@@ -425,6 +422,8 @@ exit /b 0</Command>
     <None Include="Blend\BloomBlur.frag" />
     <None Include="Blend\CombineShader.frag" />
     <None Include="Blend\default.frag" />
+    <None Include="Blend\Blit.frag" />
+    <None Include="Blend\Fullscreen.vert" />
     <None Include="Blend\Feedback.frag" />
     <None Include="Blend\StereoMix.frag" />
     <None Include="Blend\FluidSim.frag" />

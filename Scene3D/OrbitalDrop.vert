@@ -1,12 +1,12 @@
-#version 120
+#version 330 core
 // OrbitalDrop.vert — atmospheric re-entry, looping forever: the fall
 // begins among the stars, plasma fire streaks past the view, then a cloud
 // deck bursts open and a city of lights rushes up — fade to black, and the
 // next drop begins.  A DROP in the music fires a sonic-boom ring.
 // Camera looks steeply down; the world rises past it.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -20,7 +20,7 @@ uniform float audioChromaHue;
 uniform float audioDrop;
 uniform float audioLevel;
 
-varying vec4 vCol;
+out vec4 vCol;
 
 vec3 hueRot(vec3 c, float a)
 {

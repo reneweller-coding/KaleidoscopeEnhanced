@@ -1,10 +1,10 @@
-#version 120
+#version 330 core
 // SnowDrift.vert — slow snowfall through a blue night; every flake sways
 // on its own pendulum, a faint ground glow catches them as they land.
 // The music only leans on the wind and the sparkle — never shakes it.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -15,7 +15,7 @@ uniform float audioSwell;
 uniform float audioLevel;
 uniform float audioChromaHue;
 
-varying vec4 vCol;
+out vec4 vCol;
 
 vec3 hueRot(vec3 c, float a)
 {

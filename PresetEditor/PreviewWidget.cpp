@@ -2,6 +2,7 @@
 
 #include <QtOpenGL/QOpenGLShaderProgram>
 #include <QtOpenGL/QOpenGLFramebufferObject>
+#include <QtOpenGL/QOpenGLVertexArrayObject>
 #include <QtGui/QImage>
 #include <QtGui/QVector2D>
 #include <QtGui/QVector3D>
@@ -11,10 +12,11 @@
 #include <QtCore/QTimer>
 #include <cmath>
 
-// Trivial fullscreen-quad vertex shader (GLSL 110; the .frag files use
-// gl_FragCoord, so no texcoords / matrices are needed).
+// Trivial fullscreen-quad vertex shader (330 core, matching the migrated
+// .frag files; they use gl_FragCoord, so no texcoords / matrices are needed).
 static const char *kVert =
-    "attribute vec2 aPos;\n"
+    "#version 330 core\n"
+    "in vec2 aPos;\n"
     "void main() { gl_Position = vec4(aPos, 0.0, 1.0); }\n";
 
 PreviewWidget::PreviewWidget(const QString &projectRoot, QWidget *parent)
@@ -52,6 +54,7 @@ PreviewWidget::~PreviewWidget()
     if (m_img0) glDeleteTextures(1, &m_img0);
     if (m_img1) glDeleteTextures(1, &m_img1);
     if (m_vbo)  glDeleteBuffers(1, &m_vbo);
+    delete m_quadVAO;
     doneCurrent();
 }
 
@@ -75,11 +78,20 @@ void PreviewWidget::initializeGL()
 
     m_vertSrc = kVert;
 
-    // Fullscreen triangle-strip quad in NDC.
+    // Fullscreen triangle-strip quad in NDC.  Attrib 0 is baked into a VAO
+    // once — every program binds aPos to location 0 (core profile needs the
+    // VAO; the default vertex array does not exist there).
     const float quad[8] = { -1.f,-1.f,  1.f,-1.f,  -1.f,1.f,  1.f,1.f };
     glGenBuffers(1, &m_vbo);
     glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(quad), quad, GL_STATIC_DRAW);
+
+    m_quadVAO = new QOpenGLVertexArrayObject();
+    m_quadVAO->create();
+    m_quadVAO->bind();
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), nullptr);
+    m_quadVAO->release();
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     m_clock.start();
@@ -399,14 +411,11 @@ void PreviewWidget::applyCommonUniforms(QOpenGLShaderProgram *p)
     applyParamOverrides(p);
 }
 
-void PreviewWidget::drawFullscreenQuad(QOpenGLShaderProgram *p)
+void PreviewWidget::drawFullscreenQuad(QOpenGLShaderProgram *)
 {
-    glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-    p->enableAttributeArray(0);
-    p->setAttributeBuffer(0, GL_FLOAT, 0, 2);
+    m_quadVAO->bind();
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-    p->disableAttributeArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    m_quadVAO->release();
 }
 
 void PreviewWidget::paintGL()

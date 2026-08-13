@@ -1,11 +1,11 @@
-#version 120
+#version 330 core
 // HarmonicStrings.vert — a giant invisible harp: 20 strings stretched
 // through space, each ringing as a standing wave in its own mode; the
 // string's spectrum band feeds its amplitude smoothly.  Pure, steady.
 // attrA.x = along the string, attrA.y = side, attrA.w = string index.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -15,8 +15,8 @@ uniform float audioSpectrum[32];
 uniform float audioSwell;
 uniform float audioChromaHue;
 
-varying vec4  vCol;
-varying float vSide;
+out vec4  vCol;
+out float vSide;
 
 vec3 hueRot(vec3 c, float a)
 {

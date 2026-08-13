@@ -1,4 +1,5 @@
-#version 120
+#version 330 core
+out vec4 fragColor;
 // BillboardCity.frag — each screen: kaleido-mirrored crop of the image,
 // neon border, brightness driven by the board's own spectrum band.
 uniform sampler2D tex0;
@@ -6,10 +7,10 @@ uniform float time;
 uniform float audioChromaHue;
 uniform float audioDrop;
 
-varying vec2  vUV;
-varying vec4  vSeed;
-varying float vBand;
-varying float vFade;
+in vec2  vUV;
+in vec4  vSeed;
+in float vBand;
+in float vFade;
 
 vec3 hueRot(vec3 c, float a)
 {
@@ -24,7 +25,7 @@ void main()
     vec2 uv = vSeed.xy * 0.5
             + abs(fract(vUV * (1.0 + vSeed.z)
                         + vec2(time * 0.02, 0.0)) * 2.0 - 1.0) * 0.5;
-    vec3 col = texture2D(tex0, uv).rgb;
+    vec3 col = texture(tex0, uv).rgb;
 
     // The board's spectrum band lights the screen; some boards flicker.
     float flicker = 0.9 + 0.1 * sin(time * (20.0 + vSeed.w * 40.0));
@@ -37,5 +38,5 @@ void main()
                           vSeed.w * 4.0 + audioChromaHue), border);
 
     col *= vFade * (1.0 + 0.9 * audioDrop);
-    gl_FragColor = vec4(col * 1.25, 1.0);
+    fragColor = vec4(col * 1.25, 1.0);
 }

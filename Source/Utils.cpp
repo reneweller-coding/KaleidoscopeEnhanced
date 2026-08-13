@@ -5,7 +5,7 @@
 #include <windows.h>
 #include <stdio.h>
 
-#include "GLee.h"        // GL types / functions (GLint, glGetIntegerv, ...)
+#include "glcore.h"        // GL types / functions (GLint, glGetIntegerv, ...)
 #include <GL/gl.h>
 #include "Utils.h"
 

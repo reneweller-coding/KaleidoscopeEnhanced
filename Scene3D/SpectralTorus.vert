@@ -1,4 +1,4 @@
-#version 120
+#version 330 core
 // SpectralTorus.vert — the second manifold-harmonics body: on the (flat)
 // torus the Laplace-Beltrami eigenfunctions are EXACTLY the 2D Fourier
 // modes cos(2π(n·u + m·v)) — closed form, zero precomputation, and their
@@ -15,8 +15,8 @@
 // Grid geometry: attrA.x = u -> major angle (around the ring),
 // attrA.y = v -> minor angle (around the tube).
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -32,10 +32,10 @@ uniform float audioSwell;
 uniform float audioDrop;
 uniform float audioBeatPhase;
 
-varying vec3  vNorm;
-varying vec3  vView;
-varying float vDefo;
-varying float vHue;
+out vec3  vNorm;
+out vec3  vView;
+out float vDefo;
+out float vHue;
 
 // (n,m) mode table: band k excites cos(2π(n·u + m·v)).  Low bands = low
 // wavenumbers (global bending), high bands = fine tube ripples.

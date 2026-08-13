@@ -1,4 +1,4 @@
-#version 120
+#version 330 core
 // TronCycles.vert — light-cycles race across a dark arena, leaving solid
 // glowing light WALLS that turn in sharp 90-degree corners.  Each cycle
 // runs its own seeded closed circuit (zero net drift — the duel never
@@ -6,8 +6,8 @@
 // wall.  Ribbons 0-7 = cycle walls, 8-19 = the arena floor grid.
 //   attrA.x = t along ribbon, attrA.y = side, attrA.w = ribbon index.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -19,8 +19,8 @@ uniform float audioSwell;
 uniform float audioChromaHue;
 uniform float audioDrop;
 
-varying vec4  vCol;
-varying float vSide;
+out vec4  vCol;
+out float vSide;
 
 vec3 hueRot(vec3 c, float a)
 {

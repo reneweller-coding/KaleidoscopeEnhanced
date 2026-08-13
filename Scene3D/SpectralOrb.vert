@@ -1,4 +1,4 @@
-#version 120
+#version 330 core
 // SpectralOrb.vert — MANIFOLD HARMONICS made real (the research-paper idea):
 // the Laplace-Beltrami eigenfunctions of the SPHERE are known in closed form
 // — they are the spherical harmonics Y_l^m — so the paper's "excite the
@@ -20,8 +20,8 @@
 // φ (0..π).  Seam u=0/1 and both poles close automatically because the
 // displacement depends only on the direction vector.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -36,10 +36,10 @@ uniform float audioKick;
 uniform float audioSwell;
 uniform float audioDrop;
 
-varying vec3  vNorm;
-varying vec3  vView;
-varying float vDefo;    // |displacement| -> antinode glow
-varying float vHue;
+out vec3  vNorm;
+out vec3  vView;
+out float vDefo;    // |displacement| -> antinode glow
+out float vHue;
 
 // Sum of excited eigenmodes at unit direction d (θ,φ passed alongside to
 // avoid re-deriving them).  Amplitudes come straight from the 32-band

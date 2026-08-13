@@ -1,11 +1,11 @@
-#version 120
+#version 330 core
 // MosaicWave.vert — a huge curved mosaic wall (100 x 30 tiles) showing the
 // current image; flip waves sweep across it with the bar, kicks pop the
 // tile under the wave.  Tiles flip around their vertical axis — the back
 // side shows a hue-shifted variant.  attrA.xy = tile corner, attrA.w = tile.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -15,9 +15,9 @@ uniform float audioBarPhase;
 uniform float audioKick;
 uniform float audioSwell;
 
-varying vec2  vUV;
-varying float vFlip;
-varying float vLight;
+out vec2  vUV;
+out float vFlip;
+out float vLight;
 
 void main()
 {

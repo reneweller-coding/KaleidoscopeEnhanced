@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 // StereoSpectrum.frag
 // -----------------------------------------------------------------------
 // Stereo spectrum analyzer with 32 frequency bands per side.  Bass sits at the
@@ -27,8 +29,8 @@ uniform float audioBarPhase;       // 0..1 per bar -> gentle rainbow sweep
 uniform float ledP;                // LED row count (0 -> continuous bars; 10..22)
 uniform float spanP;               // rainbow span  (0 -> 0.85; 0.5 = tight, 1.0 = full)
 
-vec3 img(vec2 uv) { return (interpolation * texture2D(tex0, uv)
-                          + (1.0 - interpolation) * texture2D(tex1, uv)).rgb; }
+vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
+                          + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
 
 vec3 hsv2rgb(vec3 c)
 {
@@ -93,5 +95,5 @@ void main()
     float seam = smoothstep(0.035, 0.0, abs(uv.x - 0.5));
     col += vec3(1.0) * seam * (0.10 + 0.90 * audioStereo);
 
-    gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }

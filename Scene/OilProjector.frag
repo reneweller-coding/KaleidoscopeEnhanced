@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 // OilProjector.frag
 // -----------------------------------------------------------------------
 // 1960s liquid light-show / Mathmos Space Projector - but now the swirling oil
@@ -33,8 +35,8 @@ uniform float cellP;          // oil cell scale    (0 -> 2.0; 1.4 = broad, 3.0 =
 const float PI = 3.14159265358979;
 
 mat2 rot(float a) { float c = cos(a), s = sin(a); return mat2(c, -s, s, c); }
-vec3 img(vec2 uv) { return (interpolation * texture2D(tex0, uv)
-                          + (1.0 - interpolation) * texture2D(tex1, uv)).rgb; }
+vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
+                          + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
 
 float hash(vec2 p) { return fract(sin(dot(p, vec2(41.3, 289.1))) * 43758.5453); }
 float noise(vec2 p)
@@ -109,5 +111,5 @@ void main()
     col += tint * 0.05;                                // faint glow so cells never go black
     col += (audioBeat * 0.20 + audioOnset * 0.30) * col;
 
-    gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }

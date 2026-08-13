@@ -1,11 +1,11 @@
-#version 120
+#version 330 core
 // GearWorks.vert — a colossal clockwork wall: eight brass gears mesh and
 // turn (small ones spin fast, big ones stately), a pendulum swings one
 // full period per BAR, and a piston hammers with the beat.  Cubes are the
 // teeth, spokes, hubs, frame and machinery.  A drop over-cranks the works.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -19,8 +19,8 @@ uniform float audioSwell;
 uniform float audioChromaHue;
 uniform float audioDrop;
 
-varying vec4 vCol;
-varying vec3 vCorner;
+out vec4 vCol;
+out vec3 vCorner;
 
 vec3 hueRot(vec3 c, float a)
 {

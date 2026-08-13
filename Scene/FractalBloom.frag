@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 // FractalBloom.frag
 // -----------------------------------------------------------------------
 // Adapted from kishimisu's GLSL-tutorial fractal (2023) —
@@ -31,8 +33,8 @@ uniform float audioCentroid;
 uniform float audioValence;
 
 mat2 rot(float a) { float c = cos(a), s = sin(a); return mat2(c, -s, s, c); }
-vec3 img(vec2 uv) { return (interpolation * texture2D(tex0, uv)
-                          + (1.0 - interpolation) * texture2D(tex1, uv)).rgb; }
+vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
+                          + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
 
 vec3 palette(float t)
 {
@@ -78,5 +80,5 @@ void main()
     // Faint image backdrop so the picture reads even in the dark gaps.
     col += img(uv0 * 0.5 + 0.5) * 0.05 * (0.4 + 0.6 * audioLevel);
 
-    gl_FragColor = vec4(col, 1.0);
+    fragColor = vec4(col, 1.0);
 }

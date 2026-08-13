@@ -1,10 +1,10 @@
-#version 120
+#version 330 core
 // TorusKnot.vert — a glowing (2,3) torus knot of 60k particles streaming
 // along the curve; the whole knot turns slowly on two axes, the bass
 // breathes the tube.  Harmonic and endless — the curve closes on itself.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -17,7 +17,7 @@ uniform float audioBass;
 uniform float audioSwell;
 uniform float audioChromaHue;
 
-varying vec4 vCol;
+out vec4 vCol;
 
 vec3 hueRot(vec3 c, float a)
 {

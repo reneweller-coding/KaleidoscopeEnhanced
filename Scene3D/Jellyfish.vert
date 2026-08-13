@@ -1,10 +1,10 @@
-#version 120
+#version 330 core
 // Jellyfish.vert — a bloom of 25 bioluminescent jellyfish (60k points:
 // 60 % bell shells, 40 % trailing tentacles).  ALL bells pulse to the beat
 // with per-jelly phase offsets; onsets make the bloom flash.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -17,7 +17,7 @@ uniform float audioSwell;
 uniform float audioChromaHue;
 uniform float audioDrop;
 
-varying vec4 vCol;
+out vec4 vCol;
 
 vec3 hueRot(vec3 c, float a)
 {

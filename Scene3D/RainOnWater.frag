@@ -1,13 +1,14 @@
-#version 120
+#version 330 core
+out vec4 fragColor;
 // RainOnWater.frag — ink-dark water, ripple rings caught by a low moon,
 // its long reflection trembling where the rings pass.
 uniform float time;
 uniform float audioChromaHue;
 uniform float audioSwell;
 
-varying vec3  vWorld;
-varying float vSlope;
-varying float vDist;
+in vec3  vWorld;
+in float vSlope;
+in float vDist;
 
 vec3 hueRot(vec3 c, float a)
 {
@@ -33,5 +34,5 @@ void main()
          * 0.9 * (0.8 + 0.4 * audioSwell);
 
     col *= exp(-vDist * 0.007);
-    gl_FragColor = vec4(col * 1.3, 1.0);
+    fragColor = vec4(col * 1.3, 1.0);
 }

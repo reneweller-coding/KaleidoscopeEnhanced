@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 // DarkAmbientTunnel.frag
 // -----------------------------------------------------------------------
 // Atmospheric void tunnel designed for dark ambient and drone music.
@@ -84,8 +86,8 @@ void main()
     uv.y += warp;
 
     // ---- Texture sample ----
-    vec4 col = interpolation         * texture2D(tex0, uv)
-             + (1.0 - interpolation) * texture2D(tex1, uv);
+    vec4 col = interpolation         * texture(tex0, uv)
+             + (1.0 - interpolation) * texture(tex1, uv);
 
     // ---- Spectral centroid: colour temperature ----
     // centroid = 0 → void-blue  (Thomas Köner / Lustmord sub-bass void)
@@ -111,5 +113,5 @@ void main()
               + audioBeat  * 0.20   // subtle flash on beat (slew-limited host-side)
               + audioFlux  * 0.12); // shimmer when new drone layers enter
 
-    gl_FragColor = clamp(col, 0.0, 1.0);
+    fragColor = clamp(col, 0.0, 1.0);
 }

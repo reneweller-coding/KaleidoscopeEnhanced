@@ -1,11 +1,11 @@
-#version 120
+#version 330 core
 // OceanNight.vert — a moonlit night ocean: the grid is the water surface,
 // three travelling wave trains sum into swell; the bass IS the sea state,
 // kicks send a circular wavefront out from below the moon.
 // attrA.x = across, attrA.y = toward the horizon.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -16,9 +16,9 @@ uniform float audioSwell;
 uniform float audioKick;
 uniform float audioAdvance;
 
-varying vec3  vWorld;
-varying float vSpec;
-varying float vDist;
+out vec3  vWorld;
+out float vSpec;
+out float vDist;
 
 void main()
 {

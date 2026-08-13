@@ -51,7 +51,7 @@
     <ClCompile Include="Source\filterShader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\GLee.c">
+    <ClCompile Include="Source\glcore.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\glwidget.cpp">
@@ -152,10 +152,10 @@
     <ClInclude Include="Source\EffectShader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Source\filterShader.h">
+    <ClInclude Include="Source\glcore.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Source\GLee.h">
+    <ClInclude Include="Source\filterShader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\mainwindow.h">
@@ -439,6 +439,12 @@
       <Filter>Shaders\Blend</Filter>
     </None>
     <None Include="Blend\default.frag">
+      <Filter>Shaders\Blend</Filter>
+    </None>
+    <None Include="Blend\Blit.frag">
+      <Filter>Shaders\Blend</Filter>
+    </None>
+    <None Include="Blend\Fullscreen.vert">
       <Filter>Shaders\Blend</Filter>
     </None>
     <None Include="Blend\Feedback.frag">

@@ -1,4 +1,4 @@
-#version 120
+#version 330 core
 // RibbonTunnel.vert — a REAL 3D tunnel of 20 glowing ribbons twisting around
 // the flight path.  The tube weaves through space, the bar phase swings the
 // twist, every kick bulges the tunnel just ahead of the camera, drops light
@@ -7,8 +7,8 @@
 //   attrB   = per-ribbon seeds
 // True stereo: eyeOff shifts the view; convergence re-centres after proj.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -22,8 +22,8 @@ uniform float audioSwell;
 uniform float audioChromaHue;
 uniform float audioDrop;
 
-varying vec4  vCol;
-varying float vSide;
+out vec4  vCol;
+out float vSide;
 
 vec3 hueRot(vec3 c, float a)
 {

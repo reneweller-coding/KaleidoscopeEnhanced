@@ -19,7 +19,7 @@
 
 //#include<GL/GLU.h>
 
-#include "GLee.h"        // GLeeInit() + GL extension entry points
+#include "glcore.h"        // core-profile GL entry points (glcoreInit)
 #include "glwidget.h"
 #include "WebRemote.h"
 #include "SpoutOut.h"    // global facades, released once in ~GLwidget
@@ -276,14 +276,26 @@ void GLwidget::initializeGL()
 	//glLightModeli(GL_LIGHT_MODEL_TWO_SIDE,GL_TRUE);
 
 
-	// Load OpenGL extension entry points now that we have a current context.
-	// (GLee supplies the FBO / shader EXT functions used by the render pipeline.)
-	GLeeInit();
+	// Load OpenGL core entry points now that we have a current context
+	// (glcore replaced GLee for the 4.3-core migration; compute entries are
+	// optional, everything else is required).
+	if( !glcoreInit() )
+		fprintf( stderr, "FATAL: required OpenGL core functions missing\n" );
 
 	m_actConfiguration->start( 100, 100 );
 
 	const char *version = (const char *)(glGetString(GL_VERSION));
-	fprintf(stderr,"VERSION %s",version);
+	fprintf(stderr,"VERSION %s (core profile)\n",version);
+
+	// Migration/validation aid: compile every shader of the active preset
+	// eagerly, then quit — the log holds one verdict per shader.
+	if( qEnvironmentVariableIsSet( "KALEIDO_COMPILE_ALL" ) )
+	{
+		if( m_actConfiguration->m_filterShader )
+			m_actConfiguration->m_filterShader->compileAllShaders();
+		fflush( stderr );
+		exit( 0 );
+	}
 
 	// Start audio analyser (WASAPI loopback – captures any playing audio)
 	m_audioAnalyzer = new AudioAnalyzer(this);
