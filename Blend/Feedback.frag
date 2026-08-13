@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 // Feedback.frag
 // Phosphor-style feedback/trails pass, upgraded to an ECHO-WARP: the previous
 // displayed frame is sampled slightly ZOOMED and ROTATED around the centre
@@ -38,7 +40,7 @@ vec3 hueRotF(vec3 c, float a)
 void main()
 {
     vec2 uv  = gl_FragCoord.xy / resolution;
-    vec3 cur = texture2D(texCur, uv).rgb;
+    vec3 cur = texture(texCur, uv).rgb;
 
     // Echo-warp: previous frame zoomed + rotated around the centre
     // (aspect-corrected), so echoes expand outward and swirl.
@@ -46,7 +48,7 @@ void main()
     vec2 c = uv - 0.5;
     c.x *= aspect;
 
-    // Spatially varying part: swirl grows toward the rim, a radial ripple
+    // Spatially in part: swirl grows toward the rim, a radial ripple
     // wave rolls outward, and a slow sine "noise" field kneads everything.
     float rad = length(c);
     float rotHere = warpRot + swirlAmp * smoothstep(0.15, 0.75, rad);
@@ -65,7 +67,7 @@ void main()
     c.x /= aspect;
     vec2 puv = c + 0.5;
 
-    vec3 prv = hueRotF(texture2D(texPrev, puv).rgb, hueDrift);
+    vec3 prv = hueRotF(texture(texPrev, puv).rgb, hueDrift);
 
     // Soft edge fade: echoes leaving the frame dissolve instead of smearing
     // into hard border bars.
@@ -84,5 +86,5 @@ void main()
         dScale = mix(1.0, mix(1.035, 0.90, nearness), depth3D);
     }
 
-    gl_FragColor = vec4(max(cur, prv * min(decay * dScale, 0.985) * edge), 1.0);
+    fragColor = vec4(max(cur, prv * min(decay * dScale, 0.985) * edge), 1.0);
 }

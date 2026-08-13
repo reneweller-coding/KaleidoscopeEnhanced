@@ -1,10 +1,10 @@
-#version 120
+#version 330 core
 // FireflyField.vert — a summer night meadow: thousands of fireflies drift
 // on lazy paths and blink softly; a slow wave of synchrony sweeps the
 // field with the beat phase (real fireflies do this!).  Deeply calm.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -16,7 +16,7 @@ uniform float audioSwell;
 uniform float audioLevel;
 uniform float audioChromaHue;
 
-varying vec4 vCol;
+out vec4 vCol;
 
 vec3 hueRot(vec3 c, float a)
 {

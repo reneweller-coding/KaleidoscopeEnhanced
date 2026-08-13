@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 // LavaLamp.frag
 // -----------------------------------------------------------------------
 // A REAL lava lamp this time: glowing wax blobs rise and sink inside a
@@ -43,8 +45,8 @@ uniform float speedP;     // circulation speed multiplier (0 -> 1.0; 0.6..1.6)
 uniform float sizeP;      // blob size multiplier         (0 -> 1.0; 0.8..1.4)
 uniform int   countP;     // number of blobs              (0 -> 6; 4..8)
 
-vec3 img(vec2 uv) { return (interpolation * texture2D(tex0, uv)
-                          + (1.0 - interpolation) * texture2D(tex1, uv)).rgb; }
+vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
+                          + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
 
 // Hue rotation around the luminance axis (keeps brightness + saturation).
 vec3 hueRot(vec3 c, float a)
@@ -204,5 +206,5 @@ void main()
     // No vessel silhouette any more — the wax fills the WHOLE frame (the
     // glass outline wasted most of the screen and added nothing).
 
-    gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }

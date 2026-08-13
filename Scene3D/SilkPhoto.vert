@@ -1,11 +1,11 @@
-#version 120
+#version 330 core
 // SilkPhoto.vert — the current image on a huge silk banner rippling in an
 // audio-driven wind.  The cloth hangs from its top edge; the music is the
 // wind, kicks slap a radial ripple through the fabric.
 // attrA.x = across the banner, attrA.y = down the banner.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -16,8 +16,8 @@ uniform float audioSwell;
 uniform float audioKick;
 uniform float audioBass;
 
-varying vec2  vUV;
-varying float vShade;
+out vec2  vUV;
+out float vShade;
 
 void main()
 {

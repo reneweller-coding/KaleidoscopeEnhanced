@@ -1,11 +1,11 @@
-#version 120
+#version 330 core
 // KelpForest.vert — an underwater kelp forest swaying in the surge: each
 // ribbon is one kelp frond anchored on the sea floor; the swell IS the
 // surge, caustic light ripples from above.  attrA.x = height 0..1,
 // attrA.y = side, attrA.w = frond index.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -16,8 +16,8 @@ uniform float audioLevel;
 uniform float audioChromaHue;
 uniform float audioBarPhase;
 
-varying vec4  vCol;
-varying float vSide;
+out vec4  vCol;
+out float vSide;
 
 vec3 hueRot(vec3 c, float a)
 {

@@ -1,11 +1,11 @@
-#version 120
+#version 330 core
 // PlanetRings.vert — a pointillist gas giant with particle rings and a far
 // starfield.  The rings orbit Kepler-style (inner faster), a kick sends a
 // density wave rolling outward through the rings, the bass wobbles them,
 // and the swell pulls the orbiting camera closer.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -22,7 +22,7 @@ uniform float audioChromaHue;
 uniform float audioCentroid;
 uniform float audioDrop;
 
-varying vec4 vCol;
+out vec4 vCol;
 
 vec3 hueRot(vec3 c, float a)
 {

@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 uniform vec2 resolution;
 uniform float time;
 uniform sampler2D tex0;
@@ -17,7 +19,7 @@ uniform int vigneting;
 //	p.x /= resolution.x;
 //	p.y /= resolution.y;
 		
-  //  gl_FragColor = interpolation * texture2D(tex0,p) + (1.0-interpolation)*texture2D(tex1, p);
+  //  fragColor = interpolation * texture(tex0,p) + (1.0-interpolation)*texture(tex1, p);
 
 //}
 
@@ -69,5 +71,5 @@ void main(void)
     if( negative == 1 )
 		color = 1.0-color;
     
-	gl_FragColor = vec4(color,1.0);
+	fragColor = vec4(color,1.0);
 }

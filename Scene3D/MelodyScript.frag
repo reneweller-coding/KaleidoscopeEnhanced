@@ -1,8 +1,9 @@
-#version 120
+#version 330 core
+out vec4 fragColor;
 // MelodyScript.frag — additive ribbon ink (colour fully baked in the vert).
-varying vec4 vCol;
+in vec4 vCol;
 
 void main()
 {
-    gl_FragColor = vec4(vCol.rgb, 1.0);
+    fragColor = vec4(vCol.rgb, 1.0);
 }

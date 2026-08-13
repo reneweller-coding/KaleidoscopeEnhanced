@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 // BauhausGeo.frag
 // -----------------------------------------------------------------------
 // BAUHAUS GEOMETRY: a rotating composition of flat geometric primitives
@@ -38,8 +40,8 @@ uniform float spinP;
 uniform float accentP;
 
 mat2 rot(float a) { float c = cos(a), s = sin(a); return mat2(c, -s, s, c); }
-vec3 img(vec2 uv) { return (interpolation * texture2D(tex0, uv)
-                          + (1.0 - interpolation) * texture2D(tex1, uv)).rgb; }
+vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
+                          + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
 vec3 hueRot(vec3 c, float a)
 {
     vec3  k = vec3(0.57735026919);
@@ -153,5 +155,5 @@ void main()
     col = mix(vec3(lum), col, 0.75 + 0.4 * audioValence);
     col *= 0.90 + 0.25 * audioLevel;
 
-    gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }

@@ -1,10 +1,10 @@
-#version 120
+#version 330 core
 // Tornado.vert — a debris vortex under a storm sky: 60k particles spiral in
 // a funnel whose spin rate follows the music's energy; kicks cinch the
 // funnel tight, snares crackle lightning-white debris.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -18,7 +18,7 @@ uniform float audioSnare;
 uniform float audioChromaHue;
 uniform float audioDrop;
 
-varying vec4 vCol;
+out vec4 vCol;
 
 vec3 hueRot(vec3 c, float a)
 {

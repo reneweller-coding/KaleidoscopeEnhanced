@@ -1,11 +1,12 @@
-#version 120
+#version 330 core
+out vec4 fragColor;
 // PhotoShatter.frag — plain image shards with a hot edge while flying.
 uniform sampler2D tex0;
 uniform float audioDrop;
 uniform float audioChromaHue;
 
-varying vec2  vUV;
-varying float vLight;
+in vec2  vUV;
+in float vLight;
 
 vec3 hueRot(vec3 c, float a)
 {
@@ -16,7 +17,7 @@ vec3 hueRot(vec3 c, float a)
 
 void main()
 {
-    vec3 col = texture2D(tex0, vUV).rgb * vLight;
+    vec3 col = texture(tex0, vUV).rgb * vLight;
 
     // Hot fracture edges, strongest during the blast.
     vec2  cellUV = fract(vUV * vec2(75.0, 40.0));
@@ -25,5 +26,5 @@ void main()
     col += hueRot(vec3(1.0, 0.55, 0.20), audioChromaHue)
          * edge * (0.15 + 1.6 * audioDrop);
 
-    gl_FragColor = vec4(col * 1.15, 1.0);
+    fragColor = vec4(col * 1.15, 1.0);
 }

@@ -1,12 +1,12 @@
-#version 120
+#version 330 core
 // WaveRibbon.vert — the classic MilkDrop waveform, reborn in 3D: 20 stacked
 // glowing wave lines drift back into space, each an "echo" of the front
 // line a moment earlier.  The wave itself is a smooth harmonic sum whose
 // partial amplitudes breathe with the spectrum bands — steady, no strobes.
 // attrA.x = position along the line, attrA.y = side, attrA.w = line index.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -18,8 +18,8 @@ uniform float audioSwell;
 uniform float audioChromaHue;
 uniform float audioAdvance;
 
-varying vec4  vCol;
-varying float vSide;
+out vec4  vCol;
+out float vSide;
 
 vec3 hueRot(vec3 c, float a)
 {

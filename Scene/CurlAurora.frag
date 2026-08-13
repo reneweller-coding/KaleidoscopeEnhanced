@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 // CurlAurora.frag
 // -----------------------------------------------------------------------
 // Flowing aurora curtains (domain-warped value noise) driven by mood.
@@ -84,12 +86,12 @@ void main()
     col *= glow;
 
     // Let the source image show through as gentle texture.
-    vec4 img = interpolation * texture2D(tex0, uv) + (1.0 - interpolation) * texture2D(tex1, uv);
+    vec4 img = interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv);
     col = mix(col, col * (0.4 + 1.2 * img.rgb), 0.35);
 
     // Beat shimmer + flux brightening (both slew-limited host-side).
     col += vec3(0.15, 0.18, 0.25) * audioBeat;
     col *= (1.0 + 0.25 * audioFlux);
 
-    gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }

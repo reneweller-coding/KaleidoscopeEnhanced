@@ -1,4 +1,4 @@
-#version 120
+#version 330 core
 // VolumetricFire.vert — a genuine GPU-simulated fire/smoke COLUMN rendered as
 // a stack of 20 front-facing, additively-blended depth-slice billboards (the
 // classic slice-based volume-rendering trick).  Each billboard samples ONE
@@ -10,8 +10,8 @@
 // -> local Y edge) — the same "ribbons as arbitrary strips" trick as
 // SciFiHUD.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -22,10 +22,10 @@ uniform float audioSwell;
 uniform float audioDrop;
 uniform float audioChromaHue;
 
-varying vec2  vAtlasUV;
-varying float vHeightFrac;
-varying float vHue;
-varying float vGlow;
+out vec2  vAtlasUV;
+out float vHeightFrac;
+out float vHue;
+out float vGlow;
 
 const float COLS = 5.0;
 const float ROWS = 4.0;

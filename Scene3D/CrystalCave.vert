@@ -1,11 +1,11 @@
-#version 120
+#version 330 core
 // CrystalCave.vert — a flight through a cave of glowing crystal shards.
 // Each "cube" is stretched into a long faceted crystal pointing inward from
 // the cave wall; the kick makes the crystals just ahead flare, the swell
 // breathes the ambient glow.  attrA.xyz = unit corner, attrA.w = index.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -19,8 +19,8 @@ uniform float audioSwell;
 uniform float audioChromaHue;
 uniform float audioDrop;
 
-varying vec4 vCol;
-varying vec3 vCorner;
+out vec4 vCol;
+out vec3 vCorner;
 
 vec3 hueRot(vec3 c, float a)
 {

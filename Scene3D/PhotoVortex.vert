@@ -1,10 +1,10 @@
-#version 120
+#version 330 core
 // PhotoVortex.vert — the current image spirals down a whirlpool funnel;
 // kicks make the vortex gulp, the music's advance drives the swirl.
 // attrA.x = angle around the funnel, attrA.y = radius (0 = throat).
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -14,8 +14,8 @@ uniform float audioAdvance;
 uniform float audioKick;
 uniform float audioBass;
 
-varying vec2  vUV;
-varying float vDepth;
+out vec2  vUV;
+out float vDepth;
 
 void main()
 {

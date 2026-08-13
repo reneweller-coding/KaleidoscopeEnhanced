@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 uniform vec2 resolution;
 uniform float time;
 uniform sampler2D tex0;
@@ -75,10 +77,10 @@ float ddy = dy - reflectionCutOff;
 if (ddx > 0. && ddy > 0.)
 	alpha = pow(alpha, ddx*ddy*reflectionIntence);
 
-vec4 col = interpolation * texture2D(tex0, c1) + (1.0-interpolation)*texture2D(tex1, c1); 
+vec4 col = interpolation * texture(tex0, c1) + (1.0-interpolation)*texture(tex1, c1); 
 col *= alpha;	
-//vec4 col = texture2D(iChannel0,c1)*(alpha);
-gl_FragColor = col;
+//vec4 col = texture(iChannel0,c1)*(alpha);
+fragColor = col;
 }
 
 

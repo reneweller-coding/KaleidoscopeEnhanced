@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 uniform vec2 resolution;
 uniform float time;
 uniform sampler2D tex0;
@@ -70,5 +72,5 @@ void main() {
 	
 	//GL_MIRRORED_REPEAT in Software to get uniform tiles
 		
-    gl_FragColor = interpolation * texture2D(tex0,p) + (1.0-interpolation)*texture2D(tex1, p);
+    fragColor = interpolation * texture(tex0,p) + (1.0-interpolation)*texture(tex1, p);
 }

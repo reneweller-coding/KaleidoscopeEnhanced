@@ -1,4 +1,4 @@
-#version 120
+#version 330 core
 // Fireworks.vert — a night sky of procedural fireworks at real 3D depths,
 // with DISTINCT SHELL TYPES: every burst re-rolls its kind each cycle —
 //   0 PEONY     classic uniform sphere
@@ -12,8 +12,8 @@
 // drop turns the whole sky on.
 //   attrA.w = particle index (24 bursts x 2500), attrB = per-particle seeds.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -27,7 +27,7 @@ uniform float audioSwell;
 uniform float audioChromaHue;
 uniform float audioDrop;
 
-varying vec4 vCol;
+out vec4 vCol;
 
 vec3 hueRot(vec3 c, float a)
 {

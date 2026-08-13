@@ -1,4 +1,5 @@
-#version 120
+#version 330 core
+out vec4 fragColor;
 // SpectralTorus.frag — companion to SpectralTorus.vert.  Same physical-body
 // language as SpectralOrb (nodal lines dark, antinodes radiant) but in a
 // warmer key so the two manifold-harmonics scenes read as siblings, not
@@ -7,10 +8,10 @@
 uniform float audioSwell;
 uniform float audioDrop;
 
-varying vec3  vNorm;
-varying vec3  vView;
-varying float vDefo;
-varying float vHue;
+in vec3  vNorm;
+in vec3  vView;
+in float vDefo;
+in float vHue;
 
 vec3 hueRot(vec3 c, float a)
 {
@@ -38,5 +39,5 @@ void main()
     col += vec3(1.0, 0.95, 0.85) * spec * 0.7;
     col += hueRot(vec3(0.20, 0.55, 0.95), vHue) * rim * 0.55;
 
-    gl_FragColor = vec4(col * 1.8, 1.0);
+    fragColor = vec4(col * 1.8, 1.0);
 }

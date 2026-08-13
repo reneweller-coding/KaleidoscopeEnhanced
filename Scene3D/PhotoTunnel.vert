@@ -1,12 +1,12 @@
-#version 120
+#version 330 core
 // PhotoTunnel.vert — flying through a curving tunnel whose walls ARE the
 // current image, kaleidoscope-folded and scrolling with the music.  The
 // tunnel is a static cylinder mesh (grid bent around the axis); the flight
 // feel comes from the scrolling texture + the weaving tunnel path, so the
 // connected mesh never tears.  attrA.xy = u (angle) / w (length).
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -17,9 +17,9 @@ uniform float audioKick;
 uniform float audioSwell;
 uniform float audioAdvance;
 
-varying vec2  vUV;
-varying float vDist;
-varying float vAng;
+out vec2  vUV;
+out float vDist;
+out float vAng;
 
 void main()
 {

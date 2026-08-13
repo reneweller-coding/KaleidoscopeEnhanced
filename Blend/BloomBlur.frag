@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 // BloomBlur.frag
 // -----------------------------------------------------------------------
 // One pass of the two-pass Gaussian bloom (quarter-resolution).
@@ -15,7 +17,7 @@ uniform float threshold;    // >0 -> bright-pass extract (first pass only)
 
 vec3 tap(vec2 uv)
 {
-    vec3 c = texture2D(tex, uv).rgb;
+    vec3 c = texture(tex, uv).rgb;
     if (threshold > 0.0)
         c = max(c - threshold, vec3(0.0)) * 1.6;
     return c;
@@ -37,5 +39,5 @@ void main()
     c += tap(uv + px * 4.0) * 0.0162162;
     c += tap(uv - px * 4.0) * 0.0162162;
 
-    gl_FragColor = vec4(c, 1.0);
+    fragColor = vec4(c, 1.0);
 }

@@ -1,4 +1,4 @@
-#version 120
+#version 330 core
 // RollerCoaster.vert — THE CAMERA RIDES THE TRACK.  A glowing coaster
 // track winds through a dark void; the view races along it, through neon
 // arch gates and past light pylons.  The music's integrated energy is the
@@ -6,8 +6,8 @@
 // Ribbons: 0-1 rails, 2-3 ties, 4-11 arch gates, 12-19 scenery pylons.
 //   attrA.x = t along ribbon, attrA.y = side, attrA.w = ribbon index.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -20,8 +20,8 @@ uniform float audioDrop;
 uniform float audioSwell;
 uniform float audioChromaHue;
 
-varying vec4  vCol;
-varying float vSide;
+out vec4  vCol;
+out float vSide;
 
 vec3 hueRot(vec3 c, float a)
 {

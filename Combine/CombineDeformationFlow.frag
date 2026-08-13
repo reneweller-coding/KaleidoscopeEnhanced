@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 uniform vec2 resolution;
 uniform float time;
 uniform sampler2D tex0;
@@ -18,7 +20,7 @@ uniform int leftRight;
   //	p.x /= resolution.x;
   //	p.y /= resolution.y;
 		
-  //  gl_FragColor = ;
+  //  fragColor = ;
 
 //}
 
@@ -101,10 +103,10 @@ void main(void)
 				
 	
 
-  //vec3 col = texture2D( iChannel0, 0.125*uv ).zyx;
+  //vec3 col = texture( iChannel0, 0.125*uv ).zyx;
 
   //uv.x *= resolution.x/resolution.y;
-  vec3 col = (interpolation * texture2D(tex0,uv1) + (1.0-interpolation)*texture2D(tex1, uv1)).xyz;
+  vec3 col = (interpolation * texture(tex0,uv1) + (1.0-interpolation)*texture(tex1, uv1)).xyz;
 
   float w = exp(-15.0*r1*r1) + exp(-15.0*r2*r2);
 
@@ -114,5 +116,5 @@ void main(void)
 	w += 0.25*smoothstep( 0.93,1.0,sin(32.0*uv.y*copies));
   }
 
-  gl_FragColor = vec4(col+w,1.0);
+  fragColor = vec4(col+w,1.0);
 }

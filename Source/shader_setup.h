@@ -6,7 +6,7 @@
 #include <OpenGL/gl.h>
 #include <GLUT/glut.h>
 #elif defined(WIN32)
-#include "GLee.h"
+#include "glcore.h"
 #include <GL/gl.h>
 #endif
 

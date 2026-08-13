@@ -1,4 +1,4 @@
-#version 120
+#version 330 core
 // SciFiHUD.vert — a diegetic sci-fi cockpit interface floating in front of
 // the camera: bezel rings, a rotating radar sweep, a REAL oscilloscope
 // trace of the live waveform, a spectrum arc, compass ticks, a target
@@ -6,8 +6,8 @@
 // 20 ribbons, each routed to a HUD role by index (ri = attrA.w).
 //   attrA.x = t along the ribbon, attrA.y = side (thickness/trail).
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -21,9 +21,9 @@ uniform float audioKick;
 uniform float audioChromaHue;
 uniform float audioSwell;
 
-varying vec4  vCol;
-varying float vSide;
-varying float vFade;
+out vec4  vCol;
+out float vSide;
+out float vFade;
 
 vec3 hueRot(vec3 c, float a)
 {

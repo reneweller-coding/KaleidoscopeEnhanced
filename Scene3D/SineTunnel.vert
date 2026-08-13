@@ -1,12 +1,12 @@
-#version 120
+#version 330 core
 // SineTunnel.vert — a smooth procedural warp tunnel (the MilkDrop classic
 // without the image): the tube's radius carries slow harmonic ripples
 // travelling toward the camera; colours flow along the walls in the frag.
 // attrA.x = angle, attrA.y = length.  Static mesh — motion lives in the
 // ripple phases and the flowing shading, so nothing tears.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -19,9 +19,9 @@ uniform float audioKick;
 uniform float audioDrop;
 uniform float audioRotPhase;
 
-varying vec2  vUV;
-varying float vDist;
-varying float vAng;
+out vec2  vUV;
+out float vDist;
+out float vAng;
 
 void main()
 {

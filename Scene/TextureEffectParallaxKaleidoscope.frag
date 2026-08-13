@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 uniform vec2 resolution;
 uniform float time;
 uniform sampler2D tex0;
@@ -59,8 +61,8 @@ vec3 getKaleidoscopeColor( vec2 coord )
     // polar to cartesian coordinates
     p = r * vec2(cos(a), sin(a));
 	
-    return (interpolation * texture2D(tex0,p+0.5) + (1.0-interpolation)*texture2D(tex1, p + 0.5)).rgb;    
-    //return interpolation * texture2D(tex0,uv) + (1.0-interpolation)*texture2D(tex1,uv);
+    return (interpolation * texture(tex0,p+0.5) + (1.0-interpolation)*texture(tex1, p + 0.5)).rgb;    
+    //return interpolation * texture(tex0,uv) + (1.0-interpolation)*texture(tex1,uv);
 }
 
 
@@ -106,8 +108,8 @@ void main(void)
 		//uv *= 0.4*pixelSize;
 		uv *= 0.8*pixelSize;
 		
-		col = getKaleidoscopeColor( uv+.5 );//interpolation * texture2D(tex0,uv+.5) + (1.0-interpolation)*texture2D(tex1, uv+.5);
-//texture2D( iChannel0, uv+.5 ).rgb;
+		col = getKaleidoscopeColor( uv+.5 );//interpolation * texture(tex0,uv+.5) + (1.0-interpolation)*texture(tex1, uv+.5);
+//texture( iChannel0, uv+.5 ).rgb;
 		
 		if ( 1.0-col.y < float(i+1)/32.0 )
 		{
@@ -117,5 +119,5 @@ void main(void)
 		}
 	}
 	
-	gl_FragColor = vec4(col,1.0);//vec4( getKaleidoscopeColor( pixel+.5 ), 1.0 );//vec4(col,1.0);
+	fragColor = vec4(col,1.0);//vec4( getKaleidoscopeColor( pixel+.5 ), 1.0 );//vec4(col,1.0);
 }

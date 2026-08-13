@@ -1,10 +1,10 @@
-#version 120
+#version 330 core
 // PhotoSphere.vert — a slowly turning planet wrapped in the current image;
 // the camera orbits it, the bass makes it breathe.  attrA.x = longitude,
 // attrA.y = latitude (grid sheet closed around the sphere).
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -14,9 +14,9 @@ uniform float audioBass;
 uniform float audioSwell;
 uniform float audioAdvance;
 
-varying vec2  vUV;
-varying vec3  vN;
-varying vec3  vView;
+out vec2  vUV;
+out vec3  vN;
+out vec3  vView;
 
 void main()
 {

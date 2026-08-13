@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 uniform vec2 resolution;
 uniform float time;
 uniform sampler2D tex0;
@@ -63,7 +65,7 @@ void main(void)
   if (r > radius )
   {
 	uv.x /= resolution.x;
-	gl_FragColor = interpolation * texture2D(tex0, uv) + (1.0-interpolation)*texture2D(tex1, uv);
+	fragColor = interpolation * texture(tex0, uv) + (1.0-interpolation)*texture(tex1, uv);
   }
   else
   {
@@ -77,6 +79,6 @@ void main(void)
 		
 	  uv1 = clampQuadratic( uv1 );
 	  
-	  gl_FragColor = interpolation * texture2D(tex0, uv1) + (1.0-interpolation)*texture2D(tex1, uv1);
+	  fragColor = interpolation * texture(tex0, uv1) + (1.0-interpolation)*texture(tex1, uv1);
 	}
 }

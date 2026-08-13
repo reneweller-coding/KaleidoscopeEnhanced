@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 // FluidSim.frag
 // -----------------------------------------------------------------------
 // GPU "ink" simulation step: an RGB dye field is advected semi-Lagrangian
@@ -24,8 +26,8 @@ uniform float flowPhase;
 uniform float impulse;
 uniform float injectAmt;
 
-vec3 img(vec2 uv) { return (interpolation * texture2D(tex0, uv)
-                          + (1.0 - interpolation) * texture2D(tex1, uv)).rgb; }
+vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
+                          + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
 
 float hash21(vec2 p)
 {
@@ -55,7 +57,7 @@ void main()
 
     if (seedMode > 0.5)
     {
-        gl_FragColor = vec4(img(uv), 1.0);
+        fragColor = vec4(img(uv), 1.0);
         return;
     }
 
@@ -71,12 +73,12 @@ void main()
     float mag  = min(length(vel), 3.0);
     vec2  vdir = vel / max(length(vel), 1e-4);
     vec2  disp = vdir * mag * (0.0012 + 0.0016 * impulse);
-    vec3  dye  = texture2D(texPrev, uv - disp).rgb;
+    vec3  dye  = texture(texPrev, uv - disp).rgb;
 
     // Slow fade + continuous image injection: the picture is the ink source,
     // so the field stays recognisably image-coloured while it swirls.
     dye *= 0.996;
     dye  = mix(dye, img(uv), clamp(injectAmt, 0.0, 0.2));
 
-    gl_FragColor = vec4(dye, 1.0);
+    fragColor = vec4(dye, 1.0);
 }

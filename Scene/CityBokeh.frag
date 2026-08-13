@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 // CityBokeh.frag
 // -----------------------------------------------------------------------
 // CITY LIGHTS BOKEH: a night city seen through a defocused lens — layers of
@@ -36,8 +38,8 @@ uniform float sizeP;
 uniform float driftP;
 uniform float hueP;
 
-vec3 img(vec2 uv) { return (interpolation * texture2D(tex0, uv)
-                          + (1.0 - interpolation) * texture2D(tex1, uv)).rgb; }
+vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
+                          + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
 vec3 hueRot(vec3 c, float a)
 {
     vec3  k = vec3(0.57735026919);
@@ -126,5 +128,5 @@ void main()
     // Vignette.
     col *= 1.0 - 0.35 * dot(p, p);
 
-    gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }

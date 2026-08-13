@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 uniform vec2 resolution;
 uniform float time;
 uniform sampler2D tex0;
@@ -22,7 +24,7 @@ void main(void)
 	
 	float w = max(-0.1, 0.6-abs(y) );
 	
-	vec4 color = interpolation * texture2D(tex0,uv) + (1.0-interpolation)*texture2D(tex1, uv);
+	vec4 color = interpolation * texture(tex0,uv) + (1.0-interpolation)*texture(tex1, uv);
 	
-	gl_FragColor = vec4( color.xyz+w, 1.0);
+	fragColor = vec4( color.xyz+w, 1.0);
 }

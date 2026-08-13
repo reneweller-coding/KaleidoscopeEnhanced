@@ -71,6 +71,7 @@ private:
 
 	int    m_geomKind    = GEOM_POINTS;
 	GLuint m_vbo         = 0;
+	GLuint m_vao         = 0;   // core profile: attrib state container
 	int    m_vertexCount = 0;
 	GLint  m_projUni     = -1;
 	GLint  m_eyeUni      = -1;

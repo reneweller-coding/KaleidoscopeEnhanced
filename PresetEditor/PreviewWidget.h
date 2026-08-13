@@ -16,6 +16,7 @@
 class QOpenGLShaderProgram;
 class QOpenGLFramebufferObject;
 class QOpenGLTexture;
+class QOpenGLVertexArrayObject;
 
 class PreviewWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
@@ -93,6 +94,7 @@ private:
     QOpenGLFramebufferObject *m_fbo  = nullptr;
     GLuint  m_img0 = 0, m_img1 = 0;
     GLuint  m_vbo  = 0;
+    QOpenGLVertexArrayObject *m_quadVAO = nullptr;   // core profile: baked quad attribs
 
     QElapsedTimer m_clock;
     float   m_time = 0.f;

@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 uniform vec2 resolution;
 uniform float time;
 uniform sampler2D tex0;
@@ -65,7 +67,7 @@ void main() {
  
     //uv = clampQuadratic( uv );  
     
-    vec4 col = interpolation * texture2D(tex0,uv) + (1.0-interpolation)*texture2D(tex1,uv);
+    vec4 col = interpolation * texture(tex0,uv) + (1.0-interpolation)*texture(tex1,uv);
     col.rgb *= (1.0 + audioBeat * 0.2 + audioLevel * 0.2);
-    gl_FragColor = clamp(col, 0.0, 1.0);
+    fragColor = clamp(col, 0.0, 1.0);
 }

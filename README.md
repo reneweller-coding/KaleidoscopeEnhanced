@@ -498,7 +498,8 @@ Audio is captured via WASAPI loopback (`AudioAnalyzer`) and analysed in real tim
 - **Spout output (`-o`):** publishes the displayed frame as Spout sender
   "Kaleidoscope" for OBS / Resolume / any Spout receiver (Spout2 SDK
   vendored under `ThirdParty/SpoutGL`, BSD-2; isolated in its own
-  translation unit so its GL extension loading never collides with GLee).
+  translation unit so its GL extension loading never collides with the
+  app's own `glcore` loader).
 - **Latency compensation (`;` / `'`, persisted):** loopback capture +
   analysis + render + scanout lag the heard audio by ~40–80 ms; the display
   phase (tempo pulse, beat/bar phase) is led by an adjustable amount
@@ -1030,9 +1031,9 @@ organic structures. If `RGBA16F` render targets are unavailable the simulation i
 skipped and the effect falls back to a dark mood-tinted field (never a crash).
 
 > It uses fragment-shader ping-pong rather than GL 4.3 *compute* shaders on
-> purpose: the renderer runs on an OpenGL **compatibility** profile (the GLee
-> loader doesn't expose the compute / SSBO entry points), and a fragment-shader
-> integrator gives the same simulation while staying portable to the weak NUC iGPU.
+> purpose: a fragment-shader integrator gives the same simulation while staying
+> portable to the weak NUC iGPU.  (Since the 4.3 core-profile migration the
+> compute entry points ARE available, so future sims can go either way.)
 
 A sibling sim, `Fluid` (`FluidSim.frag`, `texFluid`, unit 8), advects an RGB dye
 field along the curl of a drifting noise potential — divergence-free by
@@ -1152,6 +1153,12 @@ The deploy packaging (`deploy.ps1`) mirrors the same folder structure into
 
 ## Notes
 
-- Rendering currently uses an OpenGL **compatibility profile** (fixed-function
-  vertex path + GLSL 1.20 fragment shaders) under `QOpenGLWidget`.
+- Rendering uses an OpenGL **4.3 core profile** under `QOpenGLWidget`: a
+  self-written minimal loader (`Source/glcore.{h,cpp}`, ~60 entry points via
+  `wglGetProcAddress`, keeps the classic call-site names) replaced GLee; all
+  238 shaders are GLSL **330 core**; fullscreen passes draw a `gl_VertexID`
+  triangle through the shared `Blend/Fullscreen.vert` (no client-side vertex
+  arrays anywhere — every draw goes through a VAO).  The compute-shader entry
+  points (`glDispatchCompute` etc.) are loaded opportunistically for future
+  compute-based sims.
 - Built and tested on Qt 6.11.1 / VS 2026 (toolset v145), x64, NVIDIA OpenGL 4.6.

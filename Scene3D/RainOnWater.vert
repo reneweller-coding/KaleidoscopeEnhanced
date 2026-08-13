@@ -1,11 +1,11 @@
-#version 120
+#version 330 core
 // RainOnWater.vert — a still pond at night; raindrops land on their own
 // unhurried clocks and send damped rings gliding outward.  The music sets
 // the rain's density and the moon's warmth — the pond stays a pond.
 // attrA.x/.y span the surface.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -14,9 +14,9 @@ uniform float time;
 uniform float audioLevel;
 uniform float audioSwell;
 
-varying vec3  vWorld;
-varying float vSlope;
-varying float vDist;
+out vec3  vWorld;
+out float vSlope;
+out float vDist;
 
 float hash11(float n) { return fract(sin(n * 127.1) * 43758.5453); }
 

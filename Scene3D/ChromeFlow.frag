@@ -1,4 +1,5 @@
-#version 120
+#version 330 core
+out vec4 fragColor;
 // ChromeFlow.frag — fake-environment chrome: the normal indexes a smooth
 // striped "sky" so the surface reads as polished metal; a warm key-light
 // band and a cool counter-band glide as the surface rolls.
@@ -7,9 +8,9 @@ uniform float audioChromaHue;
 uniform float audioSwell;
 uniform float audioCentroid;
 
-varying vec2  vUV;
-varying vec3  vNrm;
-varying float vDist;
+in vec2  vUV;
+in vec3  vNrm;
+in float vDist;
 
 vec3 hueRot(vec3 c, float a)
 {
@@ -44,5 +45,5 @@ void main()
     col += vec3(0.9, 0.92, 0.95) * spec * 0.7;
 
     col *= exp(-vDist * 0.008);
-    gl_FragColor = vec4(col * 1.1, 1.0);
+    fragColor = vec4(col * 1.1, 1.0);
 }

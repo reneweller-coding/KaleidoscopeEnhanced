@@ -1,10 +1,10 @@
-#version 120
+#version 330 core
 // LanternRise.vert — hundreds of sky lanterns drifting up into the night
 // (600 lanterns x 100 points as soft glowing shells + flame).  Deeply calm:
 // the swell brightens the sky, kicks are only a soft flicker.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -16,7 +16,7 @@ uniform float audioKick;
 uniform float audioChromaHue;
 uniform float audioLevel;
 
-varying vec4 vCol;
+out vec4 vCol;
 
 vec3 hueRot(vec3 c, float a)
 {

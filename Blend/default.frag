@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 uniform sampler2D tex0;
 uniform sampler2D tex1;
 uniform sampler2D tex2;
@@ -18,16 +20,16 @@ void main(void)
     uv.x = .75*time+.1/r;
     uv.y = a/3.1416;
 
-    vec3 col =  texture2D(tex0,uv).xyz;
+    vec3 col =  texture(tex0,uv).xyz;
     
     //float xCoord = gl_FragCoord.x / resolution.x;
     //float yCoord = gl_FragCoord.y / resolution.y;
 
-	//vec3 col =  0.3*texture2D(tex0, vec2( xCoord, yCoord) ).xyz + 0.3*texture2D(tex1, vec2( xCoord, yCoord) ).xyz
-	// + 0.3*texture2D(tex2, vec2( xCoord, yCoord) ).xyz;
+	//vec3 col =  0.3*texture(tex0, vec2( xCoord, yCoord) ).xyz + 0.3*texture(tex1, vec2( xCoord, yCoord) ).xyz
+	// + 0.3*texture(tex2, vec2( xCoord, yCoord) ).xyz;
 	
 
-    gl_FragColor = vec4(col,1.0);
+    fragColor = vec4(col,1.0);
  
 }
 

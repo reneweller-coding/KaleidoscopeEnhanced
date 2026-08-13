@@ -1,12 +1,12 @@
-#version 120
+#version 330 core
 // CrystalGrowth.vert — a cluster of crystal branches grows outward from a
 // central hub; each branch is only as long as the music's BUILD-UP tension
 // allows (a slow ambient drift keeps it alive without music), and a DROP
 // snaps the whole formation into a blinding ice-white flash before it
 // settles back to its resting glow.  70 branches x 70 segments = 4900 cubes.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -19,8 +19,8 @@ uniform float audioDrop;
 uniform float audioSwell;
 uniform float audioChromaHue;
 
-varying vec4 vCol;
-varying vec3 vCorner;
+out vec4 vCol;
+out vec3 vCorner;
 
 vec3 hueRot(vec3 c, float a)
 {

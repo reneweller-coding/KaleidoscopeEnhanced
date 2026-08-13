@@ -1,4 +1,5 @@
-#version 120
+#version 330 core
+out vec4 fragColor;
 // StainedGlassRosette.frag — a 12-petal kaleidoscope of Voronoi "glass"
 // pieces, each a saturated, hue-varied crop of the current image, held
 // together by dark lead lines; warm godrays radiate from behind, pulsing
@@ -11,8 +12,8 @@ uniform float audioKick;
 uniform float audioDrop;
 uniform float audioChromaHue;
 
-varying vec2  vPolar;      // angle, radius 0..1
-varying vec2  vXY;
+in vec2  vPolar;      // angle, radius 0..1
+in vec2  vXY;
 
 float hashG(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 vec2  hash2G(vec2 p)
@@ -63,7 +64,7 @@ void main()
     // Each glass piece: a seeded crop of the current image, saturated.
     vec2 crop = hash2G(vec2(cellHash * 37.0, cellHash * 71.0)) * 0.6;
     vec2 sampleUV = crop + fract(pv * 0.15 + cellHash * 3.0) * 0.4;
-    vec3 pic = texture2D(tex0, sampleUV).rgb;
+    vec3 pic = texture(tex0, sampleUV).rgb;
     float lum = dot(pic, vec3(0.299, 0.587, 0.114));
     vec3 glass = mix(vec3(lum), pic, 1.7);              // extra saturation
     glass = hueRotG(glass, audioChromaHue * 0.5 + cellHash * 2.2);
@@ -81,5 +82,5 @@ void main()
     // Soft circular vignette so the disc has a clean rim.
     col *= smoothstep(1.05, 0.85, rad);
 
-    gl_FragColor = vec4(col * 1.3, 1.0);
+    fragColor = vec4(col * 1.3, 1.0);
 }

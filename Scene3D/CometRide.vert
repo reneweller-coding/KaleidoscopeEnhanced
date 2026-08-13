@@ -1,12 +1,12 @@
-#version 120
+#version 330 core
 // CometRide.vert — flying in formation with a comet: a tumbling icy
 // nucleus, geysers venting on every kick, a straight blue ion tail and a
 // curved white dust tail streaming a hundred units behind, stars sliding
 // past.  A DROP is a major outburst that floods the whole tail.
 // 60k points: 10 % nucleus, 15 % jets, 55 % tails, 20 % stars.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -19,7 +19,7 @@ uniform float audioSwell;
 uniform float audioChromaHue;
 uniform float audioDrop;
 
-varying vec4 vCol;
+out vec4 vCol;
 
 vec3 hueRot(vec3 c, float a)
 {

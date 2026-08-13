@@ -1,4 +1,4 @@
-#version 120
+#version 330 core
 // SpiralArray.vert — a DNA DOUBLE HELIX of light (the recognisable motif
 // the abstract tonality helix never managed to be): two glowing strands
 // wind around each other, connected by base-pair rungs that light up in
@@ -8,8 +8,8 @@
 // down the middle and snap back together as the pulse decays.
 //   60k points: 2x 12k strand beads, 24k rung beads, 12k drifting plasma.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -24,7 +24,7 @@ uniform float audioKick;
 uniform float audioDrop;
 uniform float audioBeatPhase;
 
-varying vec4 vCol;
+out vec4 vCol;
 
 vec3 hueRot(vec3 c, float a)
 {

@@ -1,10 +1,10 @@
-#version 120
+#version 330 core
 // WarpStars.vert — warp-speed starfield with REAL parallax.  The camera
 // races down a star tube; audioAdvance IS the throttle (fast music = warp),
 // a drop fires a hyperjump flash.  attrA.w = index, attrB = seeds.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -18,7 +18,7 @@ uniform float audioDrop;
 uniform float audioChromaHue;
 uniform float audioLevel;
 
-varying vec4 vCol;
+out vec4 vCol;
 
 vec3 hueRot(vec3 c, float a)
 {

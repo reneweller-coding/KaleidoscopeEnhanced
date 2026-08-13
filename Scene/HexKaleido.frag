@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 // HexKaleido.frag
 // -----------------------------------------------------------------------
 // Adapted from an untitled Shadertoy hex-kaleidoscope — https://www.shadertoy.com/view/Xljczw
@@ -34,8 +36,8 @@ uniform float swirlP;   // radius-coupled swirl amt (0 -> none; curves the latti
 const float PI     = 3.14159265358979;
 const float ROOT_3 = 1.7320508075688772;
 
-vec3 img(vec2 uv) { return (interpolation * texture2D(tex0, uv)
-                          + (1.0 - interpolation) * texture2D(tex1, uv)).rgb; }
+vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
+                          + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
 
 // Colour from a slowly-drifting crop of the picture, indexed by a scalar so the
 // palette comes from the image and keeps changing over time + with the harmony.
@@ -133,5 +135,5 @@ void main()
     color *= 0.9 + 0.5 * audioLevel;
     color  = pow(max(color, 0.0), vec3(1.0 / 2.2));   // gamma
 
-    gl_FragColor = vec4(clamp(color, 0.0, 1.0), 1.0);
+    fragColor = vec4(clamp(color, 0.0, 1.0), 1.0);
 }

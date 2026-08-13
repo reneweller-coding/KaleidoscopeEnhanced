@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 // HarmonicRings.frag
 // -----------------------------------------------------------------------
 // 6 concentric Gaussian glow rings, one per frequency band.
@@ -71,8 +73,8 @@ vec4 ringTex(float angle, float r, float ringIdx)
 {
     float u = angle / (2.0 * PI) + ringIdx * 0.137;
     float v = fract(r * 0.45 + ringIdx * 0.073);
-    return interpolation         * texture2D(tex0, vec2(u, v))
-         + (1.0 - interpolation) * texture2D(tex1, vec2(u, v));
+    return interpolation         * texture(tex0, vec2(u, v))
+         + (1.0 - interpolation) * texture(tex1, vec2(u, v));
 }
 
 void main()
@@ -212,5 +214,5 @@ void main()
                + audioLevel * 0.20   // gentle overall breathing
                + audioDrop  * 0.9);  // a drop lights the whole stack
 
-    gl_FragColor = clamp(vec4(accColor, accAlpha), 0.0, 1.0);
+    fragColor = clamp(vec4(accColor, accAlpha), 0.0, 1.0);
 }

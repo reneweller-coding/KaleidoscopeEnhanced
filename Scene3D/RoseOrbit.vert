@@ -1,10 +1,10 @@
-#version 120
+#version 330 core
 // RoseOrbit.vert — a rose curve (r = cos(k*theta)) drawn by orbiting
 // particle streams on a tilted plane, petals slowly precessing; a second
 // faint rose spins counterwise behind it.  Spirograph serenity.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -16,7 +16,7 @@ uniform float audioSwell;
 uniform float audioBass;
 uniform float audioChromaHue;
 
-varying vec4 vCol;
+out vec4 vCol;
 
 vec3 hueRot(vec3 c, float a)
 {

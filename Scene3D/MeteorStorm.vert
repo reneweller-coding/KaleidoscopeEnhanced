@@ -1,10 +1,10 @@
-#version 120
+#version 330 core
 // MeteorStorm.vert — shooting stars over a still night sky: 40 meteors
 // (1200 trail particles each), the rest static stars.  Meteor cycles run on
 // music-nudged clocks; a drop turns the shower into a storm.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -17,7 +17,7 @@ uniform float audioSwell;
 uniform float audioChromaHue;
 uniform float audioDrop;
 
-varying vec4 vCol;
+out vec4 vCol;
 
 vec3 hueRot(vec3 c, float a)
 {

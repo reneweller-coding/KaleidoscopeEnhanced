@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 uniform vec2 resolution;
 uniform float time;
 uniform sampler2D tex0;
@@ -32,13 +34,13 @@ void main(void)
 	// Distance to quad center	
 	float dist = length(quadCenter - gl_FragCoord.xy);
 	
-	vec4 texel =  interpolation * texture2D(tex0,quad) + (1.0-interpolation)*texture2D(tex1, quad);
+	vec4 texel =  interpolation * texture(tex0,quad) + (1.0-interpolation)*texture(tex1, quad);
 	if (dist > radius)
 	{
-		gl_FragColor = vec4(0.25);
+		fragColor = vec4(0.25);
 	}
 	else
 	{
-		gl_FragColor = texel;
+		fragColor = texel;
 	}
 }

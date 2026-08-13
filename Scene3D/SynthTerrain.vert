@@ -1,11 +1,11 @@
-#version 120
+#version 330 core
 // SynthTerrain.vert — a synthwave wireframe terrain flythrough: the camera
 // glides down a valley between mountain ridges whose heights ride the 32
 // spectrum bands.  The grid mesh (attrA.xy = u/v) is displaced here; the
 // fragment shader draws the glowing grid lines.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -18,8 +18,8 @@ uniform float audioKick;
 uniform float audioDrop;
 uniform float audioBeatPhase;
 
-varying vec3  vWorld;    // x, zAbs, height (for the fragment grid lines)
-varying float vDist;
+out vec3  vWorld;    // x, zAbs, height (for the fragment grid lines)
+out float vDist;
 
 void main()
 {

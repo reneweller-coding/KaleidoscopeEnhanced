@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 uniform vec2 resolution;
 uniform float time;
 uniform sampler2D tex0;
@@ -58,8 +60,8 @@ void main(void)
 		//uv *= 0.4*pixelSize;
 		uv *= 0.6*pixelSize;
 		
-		col = (interpolation * texture2D(tex0,uv+.5) + (1.0-interpolation)*texture2D(tex1, uv+.5)).rgb;
-//texture2D( iChannel0, uv+.5 ).rgb;
+		col = (interpolation * texture(tex0,uv+.5) + (1.0-interpolation)*texture(tex1, uv+.5)).rgb;
+//texture( iChannel0, uv+.5 ).rgb;
 		
 		if ( 1.0-col.y < float(i+1)/32.0 )
 		{
@@ -69,5 +71,5 @@ void main(void)
 		}
 	}
 	
-	gl_FragColor = vec4(col,1.0);
+	fragColor = vec4(col,1.0);
 }

@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 // ReactionDiffusionSim.frag
 // -----------------------------------------------------------------------
 // One step of a Gray-Scott reaction-diffusion simulation, run on the GPU in
@@ -28,24 +30,24 @@ void main()
         // Seed: A = 1 everywhere, B = 1 in scattered noisy clusters.
         float n = hash(floor(gl_FragCoord.xy / 8.0));
         float b = (n > 0.85) ? 1.0 : 0.0;
-        gl_FragColor = vec4(1.0, b, 0.0, 1.0);
+        fragColor = vec4(1.0, b, 0.0, 1.0);
         return;
     }
 
-    vec2  s = texture2D(texPrev, uv).rg;
+    vec2  s = texture(texPrev, uv).rg;
     float A = s.r;
     float B = s.g;
 
     // 9-point Laplacian (weights sum to zero).
     vec2 lap = vec2(0.0);
-    lap += texture2D(texPrev, uv + vec2( px.x, 0.0)).rg * 0.20;
-    lap += texture2D(texPrev, uv + vec2(-px.x, 0.0)).rg * 0.20;
-    lap += texture2D(texPrev, uv + vec2(0.0,  px.y)).rg * 0.20;
-    lap += texture2D(texPrev, uv + vec2(0.0, -px.y)).rg * 0.20;
-    lap += texture2D(texPrev, uv + vec2( px.x,  px.y)).rg * 0.05;
-    lap += texture2D(texPrev, uv + vec2(-px.x,  px.y)).rg * 0.05;
-    lap += texture2D(texPrev, uv + vec2( px.x, -px.y)).rg * 0.05;
-    lap += texture2D(texPrev, uv + vec2(-px.x, -px.y)).rg * 0.05;
+    lap += texture(texPrev, uv + vec2( px.x, 0.0)).rg * 0.20;
+    lap += texture(texPrev, uv + vec2(-px.x, 0.0)).rg * 0.20;
+    lap += texture(texPrev, uv + vec2(0.0,  px.y)).rg * 0.20;
+    lap += texture(texPrev, uv + vec2(0.0, -px.y)).rg * 0.20;
+    lap += texture(texPrev, uv + vec2( px.x,  px.y)).rg * 0.05;
+    lap += texture(texPrev, uv + vec2(-px.x,  px.y)).rg * 0.05;
+    lap += texture(texPrev, uv + vec2( px.x, -px.y)).rg * 0.05;
+    lap += texture(texPrev, uv + vec2(-px.x, -px.y)).rg * 0.05;
     lap += s * (-1.0);
 
     const float dA = 1.0;
@@ -63,5 +65,5 @@ void main()
         if (n > 0.90) nB = 1.0;
     }
 
-    gl_FragColor = vec4(clamp(nA, 0.0, 1.0), clamp(nB, 0.0, 1.0), 0.0, 1.0);
+    fragColor = vec4(clamp(nA, 0.0, 1.0), clamp(nB, 0.0, 1.0), 0.0, 1.0);
 }

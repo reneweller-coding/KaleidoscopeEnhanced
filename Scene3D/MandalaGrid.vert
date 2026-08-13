@@ -1,11 +1,11 @@
-#version 120
+#version 330 core
 // MandalaGrid.vert — a breathing mandala disc floating in space: the grid
 // becomes a circular membrane whose surface carries slow radial standing
 // waves; the fragment shader paints an 8-fold symmetric colour rosette.
 // attrA.x = angle, attrA.y = radius.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -15,8 +15,8 @@ uniform float audioBass;
 uniform float audioSwell;
 uniform float audioAdvance;
 
-varying vec2  vPolar;                        // angle, radius 0..1
-varying float vLift;
+out vec2  vPolar;                        // angle, radius 0..1
+out float vLift;
 
 void main()
 {

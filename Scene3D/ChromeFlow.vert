@@ -1,11 +1,11 @@
-#version 120
+#version 330 core
 // ChromeFlow.vert — a sheet of liquid chrome: broad, slow undulations,
 // mirror-bright sheen bands gliding across the metal.  The bass leans on
 // the wave weight; everything else is pure patience.
 // attrA.x/.y span the sheet.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -15,9 +15,9 @@ uniform float audioBass;
 uniform float audioSwell;
 uniform float audioAdvance;
 
-varying vec2  vUV;
-varying vec3  vNrm;
-varying float vDist;
+out vec2  vUV;
+out vec3  vNrm;
+out float vDist;
 
 void main()
 {

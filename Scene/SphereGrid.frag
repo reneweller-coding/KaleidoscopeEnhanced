@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 // SphereGrid.frag
 // -----------------------------------------------------------------------
 // Adapted from an untitled @kishimisu raymarch (CC BY-NC-SA 4.0): a fly-through
@@ -28,8 +30,8 @@ uniform float audioValence;
 // Per-activation variety (re-rolled each activation; 0 = default):
 uniform float spacingP;   // lattice fold spacing (0 -> 4.0; 3 = dense, 6 = sparse)
 
-vec3 img(vec2 uv) { return (interpolation * texture2D(tex0, uv)
-                          + (1.0 - interpolation) * texture2D(tex1, uv)).rgb; }
+vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
+                          + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
 
 // Colour from a slowly-drifting crop of the picture, indexed by a scalar so the
 // palette varies with depth and the crop window moves over time + with the
@@ -74,5 +76,5 @@ void main()
     float lum = dot(col, vec3(0.299, 0.587, 0.114));
     col = mix(vec3(lum), col, 0.6 + 0.6 * audioValence);
 
-    gl_FragColor = vec4(col, 1.0);
+    fragColor = vec4(col, 1.0);
 }

@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 uniform vec2 resolution;
 uniform float time;
 uniform sampler2D tex0;
@@ -276,9 +278,9 @@ vec3 sample(const int x, const int y, vec2 delta)
 	uv = uv + delta;
 	//uv.y = 1.0 - uv.y;
 	
-	//return texture2D(iChannel0, uv).xyz;
+	//return texture(iChannel0, uv).xyz;
 	
-	return interpolation * texture2D(tex0, uv).xyz + (1.0-interpolation)*texture2D(tex1, uv).xyz;
+	return interpolation * texture(tex0, uv).xyz + (1.0-interpolation)*texture(tex1, uv).xyz;
              
 }
 
@@ -326,8 +328,8 @@ void main (void)
 	 
      for (int j = -radius; j <= 0; ++j)  {
          for (int i = -radius; i <= 0; ++i)  {
-             //c = texture2D(iChannel0, uv + vec2(i,j) * src_size).rgb;
-             c = interpolation * texture2D(tex0, uv + vec2(i,j) * src_size).rgb + (1.0-interpolation)*texture2D(tex1, uv + vec2(i,j) * src_size).rgb;
+             //c = texture(iChannel0, uv + vec2(i,j) * src_size).rgb;
+             c = interpolation * texture(tex0, uv + vec2(i,j) * src_size).rgb + (1.0-interpolation)*texture(tex1, uv + vec2(i,j) * src_size).rgb;
              m0 += c;
              s0 += c * c;
          }
@@ -335,8 +337,8 @@ void main (void)
 
      for (int j = -radius; j <= 0; ++j)  {
          for (int i = 0; i <= radius; ++i)  {
-             //c = texture2D(iChannel0, uv + vec2(i,j) * src_size).rgb;
-             c = interpolation * texture2D(tex0, uv + vec2(i,j) * src_size).rgb + (1.0-interpolation)*texture2D(tex1, uv + vec2(i,j) * src_size).rgb;
+             //c = texture(iChannel0, uv + vec2(i,j) * src_size).rgb;
+             c = interpolation * texture(tex0, uv + vec2(i,j) * src_size).rgb + (1.0-interpolation)*texture(tex1, uv + vec2(i,j) * src_size).rgb;
              m1 += c;
              s1 += c * c;
          }
@@ -344,8 +346,8 @@ void main (void)
 
      for (int j = 0; j <= radius; ++j)  {
          for (int i = 0; i <= radius; ++i)  {
-             //c = texture2D(iChannel0, uv + vec2(i,j) * src_size).rgb;
-             c = interpolation * texture2D(tex0, uv + vec2(i,j) * src_size).rgb + (1.0-interpolation)*texture2D(tex1, uv + vec2(i,j) * src_size).rgb;
+             //c = texture(iChannel0, uv + vec2(i,j) * src_size).rgb;
+             c = interpolation * texture(tex0, uv + vec2(i,j) * src_size).rgb + (1.0-interpolation)*texture(tex1, uv + vec2(i,j) * src_size).rgb;
              m2 += c;
              s2 += c * c;
          }
@@ -353,8 +355,8 @@ void main (void)
 
      for (int j = 0; j <= radius; ++j)  {
          for (int i = -radius; i <= 0; ++i)  {
-             //c = texture2D(iChannel0, uv + vec2(i,j) * src_size).rgb;
-             c = interpolation * texture2D(tex0, uv + vec2(i,j) * src_size).rgb + (1.0-interpolation)*texture2D(tex1, uv + vec2(i,j) * src_size).rgb;
+             //c = texture(iChannel0, uv + vec2(i,j) * src_size).rgb;
+             c = interpolation * texture(tex0, uv + vec2(i,j) * src_size).rgb + (1.0-interpolation)*texture(tex1, uv + vec2(i,j) * src_size).rgb;
              m3 += c;
              s3 += c * c;
          }
@@ -402,12 +404,12 @@ void main (void)
 
 	vec4 res2 = vec4(overlay(screen( result.rgb,c2.rgb), result.rgb) , 1.0);
 
-	//vec3 col3 = texture2D(iChannel0, gl_FragCoord.xy / iResolution.xy + col2.xy * 0.05 ).xyz;
-	vec3 col3 = interpolation * texture2D(tex0, gl_FragCoord.xy / resolution.xy + col2.xy * 0.05).xyz + (1.0-interpolation)*texture2D(tex1, gl_FragCoord.xy / resolution.xy + col2.xy * 0.05).xyz;
+	//vec3 col3 = texture(iChannel0, gl_FragCoord.xy / iResolution.xy + col2.xy * 0.05 ).xyz;
+	vec3 col3 = interpolation * texture(tex0, gl_FragCoord.xy / resolution.xy + col2.xy * 0.05).xyz + (1.0-interpolation)*texture(tex1, gl_FragCoord.xy / resolution.xy + col2.xy * 0.05).xyz;
              
 	
-	gl_FragColor = vec4(saturation(col3,res2.rgb ),1.0);
+	fragColor = vec4(saturation(col3,res2.rgb ),1.0);
 	 
-	// gl_FragColor = res2;
+	// fragColor = res2;
 	 
  }

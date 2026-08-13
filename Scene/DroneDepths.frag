@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 // DroneDepths.frag
 // -----------------------------------------------------------------------
 // An AMBIENT-FIRST primary effect, built for drone / dark-ambient music (no
@@ -29,8 +31,8 @@ uniform float audioPitch;
 uniform float audioHarmChange;
 
 mat2 rot(float a) { float c = cos(a), s = sin(a); return mat2(c, -s, s, c); }
-vec3 img(vec2 uv) { return (interpolation * texture2D(tex0, uv)
-                          + (1.0 - interpolation) * texture2D(tex1, uv)).rgb; }
+vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
+                          + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
 
 vec3 imgPal(float x)
 {
@@ -110,5 +112,5 @@ void main()
 
     col *= 0.85 + 0.4 * audioLevel;
 
-    gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }

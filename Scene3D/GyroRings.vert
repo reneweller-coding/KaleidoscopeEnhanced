@@ -1,11 +1,11 @@
-#version 120
+#version 330 core
 // GyroRings.vert — a great gyroscope: six nested rings of cubes, each
 // revolving around its own tilted axis at its own stately rate; the bass
 // breathes the whole instrument, the downbeat sends a soft glint around
 // each ring.  Harmonic clockwork.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -16,8 +16,8 @@ uniform float audioSwell;
 uniform float audioBarPhase;
 uniform float audioChromaHue;
 
-varying vec4 vCol;
-varying vec3 vCorner;
+out vec4 vCol;
+out vec3 vCorner;
 
 vec3 hueRot(vec3 c, float a)
 {

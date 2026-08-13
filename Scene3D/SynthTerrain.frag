@@ -1,4 +1,5 @@
-#version 120
+#version 330 core
+out vec4 fragColor;
 // SynthTerrain.frag — dark ground, glowing synthwave grid lines.
 uniform float time;
 uniform float audioKick;
@@ -7,8 +8,8 @@ uniform float audioCentroid;
 uniform float audioDrop;
 uniform float audioBarPhase;
 
-varying vec3  vWorld;
-varying float vDist;
+in vec3  vWorld;
+in float vDist;
 
 vec3 hueRot(vec3 c, float a)
 {
@@ -40,5 +41,5 @@ void main()
     col *= mix(vec3(0.85, 0.9, 1.1), vec3(1.1, 1.0, 0.85), audioCentroid);
     col *= exp(-vDist * 0.010);                    // horizon fog
 
-    gl_FragColor = vec4(col, 1.0);
+    fragColor = vec4(col, 1.0);
 }

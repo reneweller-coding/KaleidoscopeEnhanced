@@ -1,4 +1,5 @@
-#version 120
+#version 330 core
+out vec4 fragColor;
 // SpectralOrb.frag — companion to SpectralOrb.vert.  Lit like a physical
 // resonating body: a cool key light, a warm rim, and an emissive glow that
 // follows |displacement| so the ANTINODES — where the audio actually excites
@@ -7,10 +8,10 @@
 uniform float audioSwell;
 uniform float audioDrop;
 
-varying vec3  vNorm;
-varying vec3  vView;
-varying float vDefo;
-varying float vHue;
+in vec3  vNorm;
+in vec3  vView;
+in float vDefo;
+in float vHue;
 
 vec3 hueRot(vec3 c, float a)
 {
@@ -41,5 +42,5 @@ void main()
     col += vec3(0.9, 0.95, 1.0) * spec * 0.8;
     col += hueRot(vec3(0.9, 0.45, 0.20), vHue) * rim * 0.55;
 
-    gl_FragColor = vec4(col * 1.8, 1.0);
+    fragColor = vec4(col * 1.8, 1.0);
 }

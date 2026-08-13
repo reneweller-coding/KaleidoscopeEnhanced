@@ -1,10 +1,10 @@
-#version 120
+#version 330 core
 // HelixTower.vert — a 100-unit DNA double helix of glowing points; the base
 // pair "rungs" light up with their spectrum band, a kick wave climbs the
 // tower, the camera spirals slowly around it.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -20,7 +20,7 @@ uniform float audioChromaHue;
 uniform float audioSwell;
 uniform float audioDrop;
 
-varying vec4 vCol;
+out vec4 vCol;
 
 vec3 hueRot(vec3 c, float a)
 {

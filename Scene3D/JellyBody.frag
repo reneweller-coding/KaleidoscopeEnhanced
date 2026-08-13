@@ -1,4 +1,5 @@
-#version 120
+#version 330 core
+out vec4 fragColor;
 // JellyBody.frag — translucent wobbling jelly: deep saturated body colour,
 // strong fresnel rim (the classic gummy look), wet specular, and a subtle
 // subsurface glow that brightens where the body is currently deformed —
@@ -7,10 +8,10 @@
 uniform float audioSwell;
 uniform float audioDrop;
 
-varying vec3  vNorm;
-varying vec3  vView;
-varying float vDefo;
-varying float vHue;
+in vec3  vNorm;
+in vec3  vView;
+in float vDefo;
+in float vHue;
 
 vec3 hueRot(vec3 c, float a)
 {
@@ -41,5 +42,5 @@ void main()
     col += hueRot(vec3(1.0, 0.6, 0.75), vHue) * fres * 0.9;
     col += vec3(1.0) * spec * 1.1;
 
-    gl_FragColor = vec4(col * 1.7, 1.0);
+    fragColor = vec4(col * 1.7, 1.0);
 }

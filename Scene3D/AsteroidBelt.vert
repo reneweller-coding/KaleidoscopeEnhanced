@@ -1,10 +1,10 @@
-#version 120
+#version 330 core
 // AsteroidBelt.vert — drifting through an asteroid belt: 4900 tumbling
 // rocks at every scale, sunlight from one side, kicks kick the throttle,
 // a drop lights every rock's rim like a solar flare.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -17,8 +17,8 @@ uniform float audioChromaHue;
 uniform float audioDrop;
 uniform float audioSwell;
 
-varying vec4 vCol;
-varying vec3 vCorner;
+out vec4 vCol;
+out vec3 vCorner;
 
 vec3 hueRot(vec3 c, float a)
 {

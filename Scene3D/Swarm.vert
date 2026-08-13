@@ -1,11 +1,11 @@
-#version 120
+#version 330 core
 // Swarm.vert — a murmuration: 60k points trail a swooping Lissajous leader
 // path through space; onsets scatter the flock, calm passages pull it tight.
 // The "flock" illusion comes from per-bird lag along the path plus smooth
 // per-bird oscillation offsets — no simulation needed.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -20,7 +20,7 @@ uniform float audioChromaHue;
 uniform float audioCentroid;
 uniform float audioDrop;
 
-varying vec4 vCol;
+out vec4 vCol;
 
 vec3 hueRot(vec3 c, float a)
 {

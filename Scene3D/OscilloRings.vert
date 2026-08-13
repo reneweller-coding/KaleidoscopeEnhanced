@@ -1,11 +1,11 @@
-#version 120
+#version 330 core
 // OscilloRings.vert — 20 nested oscilloscope rings floating on a tilted
 // plane; every ring undulates radially with its own spectrum band and its
 // own harmonic mode, all of it slow and continuous.
 // attrA.x = angle around the ring, attrA.y = side, attrA.w = ring index.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -18,8 +18,8 @@ uniform float audioSwell;
 uniform float audioChromaHue;
 uniform float audioAdvance;
 
-varying vec4  vCol;
-varying float vSide;
+out vec4  vCol;
+out float vSide;
 
 vec3 hueRot(vec3 c, float a)
 {

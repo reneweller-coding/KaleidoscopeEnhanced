@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 // NoiseSpiral.frag
 // -----------------------------------------------------------------------
 // "Playing with this idea: https://www.shadertoy.com/view/w3VGzc" (as noted in
@@ -37,8 +39,8 @@ uniform float audioLevel;
 uniform float audioCentroid;
 uniform float audioValence;
 
-vec3 img(vec2 uv) { return (interpolation * texture2D(tex0, uv)
-                          + (1.0 - interpolation) * texture2D(tex1, uv)).rgb; }
+vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
+                          + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
 
 vec3 imgPal(float x)
 {
@@ -113,5 +115,5 @@ void main()
 
     col *= 0.9 + 0.5 * audioLevel;
 
-    gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }

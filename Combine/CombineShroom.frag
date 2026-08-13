@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 uniform vec2 resolution;
 uniform float time;
 uniform sampler2D tex0;
@@ -59,7 +61,7 @@ void main(void)
   
   for (int i=0; i<steps; i++)
   {
-     color += interpolation * texture2D(tex0, uv) + (1.0-interpolation)*texture2D(tex1, uv);
+     color += interpolation * texture(tex0, uv) + (1.0-interpolation)*texture(tex1, uv);
 	 uv += delta * factor;
   }
 	
@@ -67,5 +69,5 @@ void main(void)
   //float whoa = 0.1 + 0.01 * (1.0 + cos(10.0 * sin(time)));
   //(whoa * whoaColor) *
 
-  gl_FragColor =  color / float(steps);
+  fragColor =  color / float(steps);
 }

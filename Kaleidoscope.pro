@@ -29,7 +29,7 @@ SOURCES += \
     Source/Configuration.cpp \
     Source/EffectShader.cpp \
     Source/filterShader.cpp \
-    Source/GLee.c \
+    Source/glcore.cpp \
     Source/glwidget.cpp \
     Source/main.cpp \
     Source/mesh.cpp \
@@ -63,7 +63,7 @@ HEADERS += \
     Source/Configuration.h \
     Source/EffectShader.h \
     Source/filterShader.h \
-    Source/GLee.h \
+    Source/glcore.h \
     Source/glwidget.h \
     Source/mainwindow.h \
     Source/mesh.h \
@@ -99,4 +99,5 @@ DISTFILES += \
     $$files(Scene3D/*.frag) \
     $$files(Combine/*.frag) \
     $$files(Blend/*.frag) \
+    $$files(Blend/*.vert) \
     $$files(Configurations/*.xml)

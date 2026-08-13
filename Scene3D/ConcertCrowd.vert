@@ -1,12 +1,12 @@
-#version 120
+#version 330 core
 // ConcertCrowd.vert — YOU are on stage, looking out at a silhouetted crowd
 // under backlight.  A "wave" of raised arms rolls through the rows on the
 // beat phase (each person's own small phase offset keeps it human, not
 // robotic); kicks/onsets punch the whole crowd into a jump.  1200 people x
 // 50 points each (40 cols x 30 rows).
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -20,7 +20,7 @@ uniform float audioSwell;
 uniform float audioChromaHue;
 uniform float audioDrop;
 
-varying vec4 vCol;
+out vec4 vCol;
 
 vec3 hueRot(vec3 c, float a)
 {

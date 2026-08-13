@@ -1,12 +1,12 @@
-#version 120
+#version 330 core
 // ThunderCloud.vert — inside a night thunderstorm: a towering cloud mass
 // broods overhead, and jagged lightning bolts tear through it — every
 // SNARE can trigger a strike, a DROP is the full discharge.  The cloud
 // billows around each bolt are lit from within by "their" bolt.
 // 60k points: 60 % cloud, 25 % bolts (12 of them), 15 % rain.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -20,7 +20,7 @@ uniform float audioSwell;
 uniform float audioLevel;
 uniform float audioDrop;
 
-varying vec4 vCol;
+out vec4 vCol;
 
 float hash11(float n) { return fract(sin(n * 127.1) * 43758.5453); }
 

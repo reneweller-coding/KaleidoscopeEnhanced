@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 // Smoke3DSim.frag
 // -----------------------------------------------------------------------
 // GPU volumetric fire/smoke simulation: a real 3D field faked as a 2D-tiled
@@ -49,7 +51,7 @@ vec4 sampleSlice(float slice, vec2 localPx)
     slice = clamp(slice, 0.0, NSLICES - 1.0);
     vec2 o  = tileOrigin(slice);
     vec2 lp = clamp(localPx, vec2(0.5), vec2(TILE - 0.5));
-    return texture2D(texPrev, (o + lp) / resolution);
+    return texture(texPrev, (o + lp) / resolution);
 }
 
 float hash21(vec2 p)
@@ -69,12 +71,12 @@ void main()
 
     if (seedMode > 0.5)
     {
-        gl_FragColor = vec4(0.0);
+        fragColor = vec4(0.0);
         return;
     }
     if (slice >= NSLICES)
     {
-        gl_FragColor = vec4(0.0);              // unused atlas margin, if any
+        fragColor = vec4(0.0);              // unused atlas margin, if any
         return;
     }
 
@@ -124,7 +126,7 @@ void main()
 
         float temp = mixed.r * 0.940 + fuel * 0.115;
         float dens = mixed.g * 0.965 + fuel * 0.075;
-        gl_FragColor = vec4(clamp(temp, 0.0, 3.0), clamp(dens, 0.0, 2.0), 0.0, 0.0);
+        fragColor = vec4(clamp(temp, 0.0, 3.0), clamp(dens, 0.0, 2.0), 0.0, 0.0);
     }
     else
     {
@@ -145,6 +147,6 @@ void main()
         float temp = risen.r * (1.0 - cool);
         float dens = risen.g * (1.0 - cool * 0.55);
 
-        gl_FragColor = vec4(clamp(temp, 0.0, 3.0), clamp(dens, 0.0, 2.0), 0.0, 0.0);
+        fragColor = vec4(clamp(temp, 0.0, 3.0), clamp(dens, 0.0, 2.0), 0.0, 0.0);
     }
 }

@@ -127,21 +127,13 @@ void EffectShader::draw( )
 
 void EffectShader::drawWindow()
 {
+	// Core profile: fullscreen triangle via the shared Fullscreen.vert
+	// (the VAO lives in filterShader.cpp — one empty VAO for all passes).
+	extern GLuint fullscreenVAO();
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	gluOrtho2D(0,m_width,0,m_height);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	glPolygonMode( GL_FRONT, GL_FILL );
-
-	glBegin(GL_QUADS);
-	glTexCoord2f(0,0); glVertex2f(0,0);
-	glTexCoord2f(1,0); glVertex2f(m_width,0);
-	glTexCoord2f(1,1); glVertex2f(m_width,m_height);
-	glTexCoord2f(0,1); glVertex2f(0,m_height);
-	glEnd();
+	glBindVertexArray( fullscreenVAO() );
+	glDrawArrays( GL_TRIANGLES, 0, 3 );
+	glBindVertexArray( 0 );
 }
 
 

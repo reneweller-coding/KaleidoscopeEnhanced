@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 // OrganicFlow.frag
 // -----------------------------------------------------------------------
 // The source image pushed through an organic, reaction-diffusion-like FLOW:
@@ -36,8 +38,8 @@ uniform float swirlP;          // radial swirl amount (0 -> none; up to ~0.8)
 const float PI = 3.14159265358979;
 
 mat2 rot(float a) { float c = cos(a), s = sin(a); return mat2(c, -s, s, c); }
-vec3 img(vec2 uv) { return (interpolation * texture2D(tex0, uv)
-                          + (1.0 - interpolation) * texture2D(tex1, uv)).rgb; }
+vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
+                          + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
 
 float hash21(vec2 p)
 {
@@ -137,5 +139,5 @@ void main()
     // Gentle per-bar hue sweep (continuous across the bar wrap).
     col = hueRot(col, 0.35 * sin(audioBarPhase * 6.28318));
 
-    gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }

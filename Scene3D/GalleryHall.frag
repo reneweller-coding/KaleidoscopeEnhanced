@@ -1,14 +1,15 @@
-#version 120
+#version 330 core
+out vec4 fragColor;
 // GalleryHall.frag — gold-framed image crops under warm gallery light;
 // ceiling strips are soft white bars.
 uniform sampler2D tex0;
 uniform float audioChromaHue;
 uniform float audioDrop;
 
-varying vec2  vUV;
-varying vec4  vSeed;
-varying float vLight;
-varying float vKind;
+in vec2  vUV;
+in vec4  vSeed;
+in float vLight;
+in float vKind;
 
 vec3 hueRot(vec3 c, float a)
 {
@@ -24,7 +25,7 @@ void main()
     {
         // Seeded crop of the image inside a gold frame.
         vec2 crop = vSeed.xy * 0.5;
-        col = texture2D(tex0, crop + vUV * 0.5).rgb;
+        col = texture(tex0, crop + vUV * 0.5).rgb;
 
         vec2  b     = min(vUV, 1.0 - vUV);
         float frame = 1.0 - smoothstep(0.045, 0.09, min(b.x, b.y));
@@ -44,5 +45,5 @@ void main()
     }
 
     col *= 1.0 + 0.7 * audioDrop;
-    gl_FragColor = vec4(col * 1.2, 1.0);
+    fragColor = vec4(col * 1.2, 1.0);
 }

@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 uniform vec2 resolution;
 uniform float time;
 uniform sampler2D tex0;
@@ -34,5 +36,5 @@ void main() {
     // polar to cartesian coordinates
     p = r * vec2(cos(a), sin(a));
 	
-    gl_FragColor = interpolation * texture2D(tex0,p+0.5) + (1.0-interpolation)*texture2D(tex1, p + 0.5);
+    fragColor = interpolation * texture(tex0,p+0.5) + (1.0-interpolation)*texture(tex1, p + 0.5);
 }

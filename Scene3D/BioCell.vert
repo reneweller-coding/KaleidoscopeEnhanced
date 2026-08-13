@@ -1,4 +1,4 @@
-#version 120
+#version 330 core
 // BioCell.vert — a journey INSIDE a living cell: the membrane breathes
 // around you with the bass, the nucleus pulses like a heart, mitochondria
 // glow with the music's energy, filaments span the cytoplasm and vesicles
@@ -6,8 +6,8 @@
 // 60k points: 20 % membrane, 15 % nucleus, 20 % mitochondria,
 // 20 % filaments, 25 % vesicles.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -22,7 +22,7 @@ uniform float audioChromaHue;
 uniform float audioDrop;
 uniform float audioKick;
 
-varying vec4 vCol;
+out vec4 vCol;
 
 vec3 hueRot(vec3 c, float a)
 {

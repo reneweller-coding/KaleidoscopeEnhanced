@@ -69,6 +69,11 @@ public:
 	 *  quantisation — a systematic viewing bench. */
 	void setReviewMode( bool on ) { m_reviewMode = on; }
 
+	/** Validation aid (KALEIDO_COMPILE_ALL=1): eagerly compile every effect
+	 *  and combine shader of this configuration — the log then holds one
+	 *  Compilation/Linking verdict per shader.  GL context must be current. */
+	void compileAllShaders();
+
 	/** Taste learning, positive side (key 'f'): boost the CURRENT effect's
 	 *  persistent selection weight ("Favorit"). */
 	void favoriteCurrentEffect();
@@ -537,6 +542,7 @@ private:
 	GLuint			m_physDepositProgId = 0;
 	GLuint			m_physDiffuseProgId = 0;
 	GLuint			m_physVBO = 0;
+	GLuint			m_physDepVAO = 0;   // core profile: attrib state for the deposit points
 	GLint			m_physAgentTexUni   = -1;   // agent-update pass
 	GLint			m_physAgentTrailUni = -1;
 	GLint			m_physAgentResUni   = -1;

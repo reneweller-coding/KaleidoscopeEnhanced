@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 // Aurora.frag
 // -----------------------------------------------------------------------
 // AURORA BOREALIS v2: TWO waving curtain layers over a starfield with a
@@ -42,8 +44,8 @@ uniform float hueP;
 uniform float heightP;
 uniform float speedP;
 
-vec3 img(vec2 uv) { return (interpolation * texture2D(tex0, uv)
-                          + (1.0 - interpolation) * texture2D(tex1, uv)).rgb; }
+vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
+                          + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
 vec3 hueRot(vec3 c, float a)
 {
     vec3  k = vec3(0.57735026919);
@@ -165,5 +167,5 @@ void main()
     col = mix(vec3(lum), col, 0.65 + 0.5 * audioValence);
     col *= 0.9 + 0.3 * audioLevel;
 
-    gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }

@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 // PhysarumDiffuse.frag
 // -----------------------------------------------------------------------
 // Trail-map relaxation: 3x3 mean blur (pheromone diffusion) x decay
@@ -17,8 +19,8 @@ void main()
     vec2 sum = vec2(0.0);
     for (int y = -1; y <= 1; ++y)
         for (int x = -1; x <= 1; ++x)
-            sum += texture2D(texTrail, fract(uv + vec2(float(x), float(y)) * px)).rg;
+            sum += texture(texTrail, fract(uv + vec2(float(x), float(y)) * px)).rg;
     sum /= 9.0;
 
-    gl_FragColor = vec4(sum * decay, 0.0, 1.0);
+    fragColor = vec4(sum * decay, 0.0, 1.0);
 }

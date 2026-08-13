@@ -1,11 +1,11 @@
-#version 120
+#version 330 core
 // PhotoCarousel.vert — the camera stands inside a slowly revolving cylinder
 // of 3000 photo cards (50 stacked rings x 60 cards); every card shows its
 // own crop of the current image.  Beat waves of tilt travel up the wall,
 // onsets shiver the cards.  attrA.xy = card corner, attrA.w = card index.
 
-attribute vec4 attrA;
-attribute vec4 attrB;
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -16,9 +16,9 @@ uniform float audioBeatPhase;
 uniform float audioOnset;
 uniform float audioSwell;
 
-varying vec2  vUV;
-varying vec4  vSeed;
-varying float vGlow;
+out vec2  vUV;
+out vec4  vSeed;
+out float vGlow;
 
 void main()
 {

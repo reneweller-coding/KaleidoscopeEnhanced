@@ -1,3 +1,5 @@
+#version 330 core
+out vec4 fragColor;
 uniform vec2 resolution;
 uniform float time;
 uniform sampler2D tex0;
@@ -13,12 +15,12 @@ uniform float fiOffset;//original = 0.1
 
 
 const float speed = 0.5;
-//const float divisor = 0.01;//original=50; //Je kleiner desto mehr Bewegung, aber auch schneller //sollte in Abhängigkeit von timefactor gesetzt werden
+//const float divisor = 0.01;//original=50; //Je kleiner desto mehr Bewegung, aber auch schneller //sollte in Abhï¿½ngigkeit von timefactor gesetzt werden
 const float factor = 0.2;//original = 1.0
 const float potence = 70.0;//70.0;//original = 30.0 //zoom
-//const float timefactor = 0.1; //Geschwindigkeit, sollte in Abhängigkeit von divisor gesetzt werden
+//const float timefactor = 0.1; //Geschwindigkeit, sollte in Abhï¿½ngigkeit von divisor gesetzt werden
 const float diminishing = 1.0;//original = 1.0;//speed
-const float distancefactor = 500.0;//200old original 1.0 blur //Grösse der Kugeln
+const float distancefactor = 500.0;//200old original 1.0 blur //Grï¿½sse der Kugeln
 //const float posX = 0.2;//original = 0.5,0.9,0.75
 //const float posY = 0.7;
 //const float posZ = 0.9;
@@ -64,5 +66,5 @@ void main(void)
 	vec4 col = vec4(colorfactor,colorfactor,colorfactor,1.0)*d*noise;
 	if (positive > 0 )
 		col = 1.0-col;
-	gl_FragColor = col;
+	fragColor = col;
 }
