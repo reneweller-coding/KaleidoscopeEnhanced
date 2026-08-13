@@ -1,0 +1,45 @@
+#version 430
+// CfxErosionSeed.comp — a fresh fractal landscape.
+// R = terrain height, G = water, B = sediment.
+layout(local_size_x = 16, local_size_y = 16) in;
+layout(rgba16f, binding = 0) uniform image2D imgLand;
+
+uniform ivec2 size;
+uniform uint  seed;
+
+float hash21(vec2 p, uint s)
+{
+    p += float(s % 4096u) * 0.137;
+    p = fract(p * vec2(123.34, 456.21));
+    p += dot(p, p + 45.32);
+    return fract(p.x * p.y);
+}
+
+float vnoise(vec2 p, uint s)
+{
+    vec2 i = floor(p), f = fract(p);
+    f = f * f * (3.0 - 2.0 * f);
+    float a = hash21(i, s),               b = hash21(i + vec2(1, 0), s);
+    float c = hash21(i + vec2(0, 1), s),  d = hash21(i + vec2(1, 1), s);
+    return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+}
+
+void main()
+{
+    ivec2 p = ivec2(gl_GlobalInvocationID.xy);
+    if (p.x >= size.x || p.y >= size.y) return;
+
+    vec2 uv = (vec2(p) + 0.5) / vec2(size);
+    vec2 q = uv * 5.0;
+
+    float h = 0.0, amp = 0.5, frq = 1.0;
+    for (int o = 0; o < 6; ++o)
+    {
+        h += vnoise(q * frq, seed + uint(o) * 71u) * amp;
+        amp *= 0.5; frq *= 2.03;
+    }
+    // Ridged component gives proper mountain crests to carve.
+    h = h * 0.7 + 0.3 * (1.0 - abs(vnoise(q * 2.1, seed + 13u) * 2.0 - 1.0));
+
+    imageStore(imgLand, p, vec4(h, 0.0, 0.0, 1.0));
+}

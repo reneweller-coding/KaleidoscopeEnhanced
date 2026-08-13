@@ -1,0 +1,27 @@
+#version 430
+// CfxNSJacobi.comp — one Jacobi iteration of the pressure Poisson equation
+//   laplacian(p) = divergence(v)
+// This is the step the old curl-noise "fluid" never had.  Curl noise is
+// divergence-free BY CONSTRUCTION, which looks pretty but cannot produce
+// vortex shedding, obstacles or a genuine pressure response; solving for the
+// pressure and subtracting its gradient is what makes the flow real.
+layout(local_size_x = 16, local_size_y = 16) in;
+
+layout(rgba16f, binding = 0) readonly  uniform image2D prsSrc;   // R=div, G=p
+layout(rgba16f, binding = 1) writeonly uniform image2D prsDst;
+
+uniform ivec2 size;
+
+float pAt(ivec2 q) { return imageLoad(prsSrc, clamp(q, ivec2(0), size - ivec2(1))).g; }
+
+void main()
+{
+    ivec2 p = ivec2(gl_GlobalInvocationID.xy);
+    if (p.x >= size.x || p.y >= size.y) return;
+
+    float div = imageLoad(prsSrc, p).r;
+    float sum = pAt(p + ivec2(1, 0)) + pAt(p - ivec2(1, 0))
+              + pAt(p + ivec2(0, 1)) + pAt(p - ivec2(0, 1));
+
+    imageStore(prsDst, p, vec4(div, (sum - div) * 0.25, 0.0, 1.0));
+}

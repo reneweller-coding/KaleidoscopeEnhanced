@@ -1071,6 +1071,26 @@ look like anything; that temporal integration is what makes it silky.
 | `CausticPool` | `texCaustics` (18) | A wave equation on a shared-memory stencil, then **photon splatting**: each photon refracts at the surface and deposits its energy where it lands on the pool floor |
 | `PixelMelt` | `texSorted` (19) | Every row luminance-sorted by a **counting sort in shared memory** — histogram with atomics, prefix sum, then scatter each pixel to the slot its bucket earned |
 | `SpectrumFilter` | `texFFT` (20) | A real 256² **2D FFT** (radix-2 Cooley-Tukey, one workgroup per line, eight barrier-separated stages in shared memory): the 32 audio bands weight the image's spatial frequencies by radius, then it transforms back |
+| `InkTank` | `texNSFluid` (25) | Actual **Navier-Stokes**: advect, then solve the pressure Poisson equation (24 Jacobi iterations) and subtract its gradient. The older `Fluid` is curl noise — divergence-free by construction, so it can only swirl; this one sheds vortices and pushes back against the walls |
+| `FerroSpikes` | `texFerro` (21) | The **Swift-Hohenberg** equation on a coarse grid: a 13-point biharmonic stencil selects one wavelength and a quadratic term breaks the up/down symmetry, giving the hexagonal peak lattice a ferrofluid forms in a magnetic field. Bass is the magnet |
+| `ErodedLand` | `texErosion` (22) | **Hydraulic erosion**: droplets run downhill, cutting where they accelerate and depositing where they slow. The land is re-raised every ~14 s, so the drainage network forms, matures and starts over |
+| `LiquidMetal` | `texMetal` (23) | Cohesive particles with a spatial-hash neighbourhood, rendered by **screen-space fluid reconstruction** — threshold the splatted density, take its gradient as the normal |
+| `ShatterField` | `texShards` (24) | 1300 rigid shards, each splatting its own patch of the photo at its current pose; a spring pulls them home so the picture visibly re-assembles between transients |
+| `ClothDrape` | `texCloth` (26) | A **Verlet mass-spring sheet**, one particle per texel, with Jacobi distance constraints. Keeping the cloth on a grid means the display can shade it directly — only the physics needs compute |
+
+Global, not a scene: **percentile auto-exposure** (`Blend/CfxHistogram.comp`).
+One workgroup builds a 256-bin luminance histogram of the finished frame with
+shared-memory atomics and writes the exposure its median and 98th percentile
+justify into an SSBO that `Present.frag` reads *directly* — so unlike the older
+mean-luminance limiter it costs no GPU→CPU sync at all. It sits **on top of**
+the photosensitivity limiter, never instead of it: capping how fast the frame
+may brighten must not depend on a histogram being available.
+
+`Physarum` was also raised from 65k to **1M agents** on a 1024² trail map.
+
+Not built: `Marching Cubes`. Meshing an isosurface needs a compute→VBO→indirect
+draw path that this renderer does not have, and faking it with a raymarch would
+not have been the thing that was asked for. The `texSculpt` slot is reserved.
 
 **Lessons that cost a rebuild each** (all fixed in the code, worth not
 repeating): `centroid` is a reserved GLSL keyword and cannot be a uniform name.
@@ -1090,7 +1110,18 @@ unless `NOMINMAX` is set before it, which turns every later `std::min` into a
 baffling "invalid token on the right of `::`". `half` is a reserved GLSL word
 too, so a butterfly's half-span needs another name. And a frequency mask needs
 a LOW floor — a near-flat mask leaves the picture untouched, which is the whole
-effect gone.
+effect gone. `CfxResolve` writes the frame's density into the canvas **alpha**;
+it used to write a constant 1.0 there, which silently told every screen-space
+surface effect "solid everywhere". A droplet whose step length is the raw
+terrain gradient never leaves its own texel and grinds that one pixel into
+noise — take a fixed one-pixel step along steepest descent instead, and spread
+erosion over a 3×3 kernel or the pixel-scale feedback dissolves the landscape.
+Swift-Hohenberg selects `k = 1/sqrt(q)` radians *per texel*: the small-angle
+shortcut `|lap| = k²` puts the pattern above Nyquist, so use the discrete
+eigenvalue `2(1-cos k)` and pick the grid resolution to suit. And a shader
+storage block in a `#version 330` fragment shader needs
+`#extension GL_ARB_shader_storage_buffer_object : require` — bumping the
+version instead would break linking against the shared 330 vertex shader.
 
 **Probing these is its own trap.** Use one app run per scene with a generated
 single-scene preset (`scratchpad/probe.ps1`): a preset whose name starts with

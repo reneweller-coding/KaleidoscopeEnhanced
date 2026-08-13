@@ -1,0 +1,98 @@
+#version 430
+// CfxMetalStep.comp — SPH-flavoured blobs of liquid metal.
+// Particles attract into cohesive drops and repel at short range, so the
+// population behaves like a fluid with surface tension rather than a gas.
+// The neighbourhood comes from the same uniform-grid trick as the boids.
+layout(local_size_x = 256) in;
+
+layout(std430, binding = 0) buffer Accum { uint acc[]; };
+layout(std430, binding = 1) buffer Parts { vec4 part[]; };   // xy pos, zw vel
+layout(std430, binding = 2) buffer Grid  { uint cell[]; };
+
+uniform ivec2 size;
+uniform uint  count;
+uniform int   gridN;
+uniform int   perCell;
+uniform float dt;
+uniform float kick;
+uniform float level;
+uniform float swirl;
+uniform int   buildGrid;    // 1 = only bin into the grid, 0 = simulate + splat
+
+const float SCALE = 256.0;
+
+void splat1(ivec2 ip, float w)
+{
+    if (ip.x < 0 || ip.y < 0 || ip.x >= size.x || ip.y >= size.y) return;
+    uint i = uint(ip.y * size.x + ip.x) * 4u;
+    // Only the density channel matters: the display builds the metal surface
+    // from the density field, exactly like screen-space fluid rendering.
+    atomicAdd(acc[i + 3u], uint(w * SCALE));
+}
+
+void main()
+{
+    uint id = gl_GlobalInvocationID.x;
+    if (id >= count) return;
+
+    vec4 s = part[id];
+    vec2 p = s.xy, v = s.zw;
+
+    if (buildGrid == 1)
+    {
+        ivec2 g = clamp(ivec2(fract(p) * float(gridN)), ivec2(0), ivec2(gridN - 1));
+        uint base = uint(g.y * gridN + g.x) * uint(perCell + 1);
+        uint slot = atomicAdd(cell[base], 1u);
+        if (slot < uint(perCell)) cell[base + 1u + slot] = id;
+        return;
+    }
+
+    vec2 force = vec2(0.0);
+    ivec2 g = clamp(ivec2(fract(p) * float(gridN)), ivec2(0), ivec2(gridN - 1));
+    for (int oy = -1; oy <= 1; ++oy)
+    for (int ox = -1; ox <= 1; ++ox)
+    {
+        ivec2 gc = ivec2((g.x + ox + gridN) % gridN, (g.y + oy + gridN) % gridN);
+        uint base = uint(gc.y * gridN + gc.x) * uint(perCell + 1);
+        uint n = min(cell[base], uint(perCell));
+        for (uint k = 0u; k < n; ++k)
+        {
+            uint oi = cell[base + 1u + k];
+            if (oi == id) continue;
+            vec2 d = part[oi].xy - p;
+            d -= round(d);
+            float r = length(d) + 1e-5;
+            if (r > 0.030) continue;
+            // Lennard-Jones-ish: repel very close, attract in the mid range.
+            // The attraction is the surface tension that forms the droplets.
+            float f = (r < 0.011) ? -2.6 * (0.011 - r) / r : 0.55 * (0.030 - r);
+            force += d / r * f;
+        }
+    }
+
+    // A slow rotational field keeps the drops travelling and colliding.
+    vec2 c = p - 0.5;
+    force += vec2(-c.y, c.x) * swirl * (0.25 + level);
+    force.y -= 0.06;                              // gravity
+
+    if (kick > 0.3)
+        force += normalize(c + 1e-5) * kick * 0.5;
+
+    v = (v + force * dt) * 0.94;
+    float sp = length(v);
+    if (sp > 0.5) v *= 0.5 / sp;
+    p = fract(p + v * dt + 1.0);
+
+    part[id] = vec4(p, v);
+
+    // Splat a small disc: overlapping discs are what merge into a smooth
+    // surface once the display thresholds the density.
+    ivec2 ip = ivec2(p * vec2(size));
+    for (int oy = -3; oy <= 3; ++oy)
+    for (int ox = -3; ox <= 3; ++ox)
+    {
+        float d2 = float(ox * ox + oy * oy);
+        if (d2 > 10.5) continue;
+        splat1(ip + ivec2(ox, oy), 1.0 - d2 * 0.085);
+    }
+}

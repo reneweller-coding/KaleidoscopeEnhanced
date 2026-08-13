@@ -250,4 +250,24 @@
     <float name="bandP" minValue="0.2" maxValue="0.9"></float>
   </TextureShader>
 
+  <TextureShader file="..\\Scene\\InkTank.frag" type="normal" probability="0.45" complexity="2">
+    <float name="glowP" minValue="0.3" maxValue="0.8"></float>
+    <float name="inkP" minValue="0.4" maxValue="0.9"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene\\FerroSpikes.frag" type="normal" probability="0.45" complexity="2">
+    <float name="shineP" minValue="0.3" maxValue="0.9"></float>
+    <float name="reflectP" minValue="0.3" maxValue="0.8"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene\\LiquidMetal.frag" type="normal" probability="0.5" complexity="2">
+    <float name="shineP" minValue="0.4" maxValue="0.9"></float>
+    <float name="thickP" minValue="0.3" maxValue="0.8"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene\\ShatterField.frag" type="normal" probability="0.55" complexity="2">
+    <float name="glowP" minValue="0.4" maxValue="0.9"></float>
+    <float name="voidP" minValue="0.3" maxValue="0.8"></float>
+  </TextureShader>
+
 </configuration>

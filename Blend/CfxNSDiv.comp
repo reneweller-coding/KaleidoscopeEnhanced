@@ -1,0 +1,22 @@
+#version 430
+// CfxNSDiv.comp — divergence of the velocity field, and pressure reset.
+// Stored as R = divergence, G = pressure (starts at 0 for the Jacobi solve).
+layout(local_size_x = 16, local_size_y = 16) in;
+
+layout(rgba16f, binding = 0) readonly  uniform image2D velSrc;
+layout(rgba16f, binding = 1) writeonly uniform image2D prsDst;
+
+uniform ivec2 size;
+
+vec2 vAt(ivec2 p) { return imageLoad(velSrc, clamp(p, ivec2(0), size - ivec2(1))).rg; }
+
+void main()
+{
+    ivec2 p = ivec2(gl_GlobalInvocationID.xy);
+    if (p.x >= size.x || p.y >= size.y) return;
+
+    float div = 0.5 * ((vAt(p + ivec2(1, 0)).x - vAt(p - ivec2(1, 0)).x)
+                     + (vAt(p + ivec2(0, 1)).y - vAt(p - ivec2(0, 1)).y));
+
+    imageStore(prsDst, p, vec4(div, 0.0, 0.0, 1.0));
+}

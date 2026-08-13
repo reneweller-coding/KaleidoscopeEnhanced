@@ -32,6 +32,9 @@ enum CfxKind
 	CFX_EROSION,       // hydraulic erosion heightfield
 	CFX_METAL,         // screen-space fluid (metaball mercury)
 	CFX_SHARDS,        // shatter & reassemble
+	CFX_NSFLUID,       // Navier-Stokes with a real pressure projection
+	CFX_CLOTH,         // XPBD cloth as a displacement field
+	CFX_SCULPT,        // 3D scalar field, raymarched isosurface
 	CFX_COUNT
 };
 
@@ -111,6 +114,14 @@ private:
 	GLuint stepErosion  ( const AudioFeatures &a, float dt, float t );
 	GLuint stepMetal    ( const AudioFeatures &a, float dt, float t, GLuint src );
 	GLuint stepShards   ( const AudioFeatures &a, float dt, float t, GLuint src );
+	GLuint stepNSFluid  ( const AudioFeatures &a, float dt, float t, GLuint src );
+	GLuint stepCloth    ( const AudioFeatures &a, float dt, float t );
+	GLuint stepSculpt   ( const AudioFeatures &a, float dt, float t );
+
+	// Extra ping-pong slot for sims that need a second field (velocity vs dye).
+	Field  m_field2[CFX_COUNT];
+	// The Navier-Stokes solver needs a third: the pressure it iterates on.
+	Field  m_nsPressure;
 
 	bool   m_ok = false;
 	int    m_maxTexUnits = 16;

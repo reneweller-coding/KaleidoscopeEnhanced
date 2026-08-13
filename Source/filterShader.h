@@ -531,8 +531,12 @@ private:
 	// by drawing one GL_POINT each (vertex-texture-fetch of their position)
 	// and the map diffuses + evaporates.  The living vein network is bound to
 	// "texPhysarum" (unit 11) for Scene\Physarum.frag.
-	static const int kPhysAgentsSide = 256;   // 65 536 agents
-	static const int kPhysTrailSize  = 512;
+	// 1 048 576 agents on a 1024x1024 trail map.  The deposit is a point per
+	// agent through a vertex-texture fetch, which the GPU rasterises happily
+	// at this count; the finer trail map is what lets the vein network show
+	// its branching instead of a smooth glow.
+	static const int kPhysAgentsSide = 1024;  // 1 048 576 agents
+	static const int kPhysTrailSize  = 1024;
 	GLuint			m_texPhysAgents[2] = { 0, 0 };
 	GLuint			m_fboPhysAgents[2] = { 0, 0 };
 	GLuint			m_texPhysTrail[2]  = { 0, 0 };
@@ -545,6 +549,9 @@ private:
 	GLuint			m_physVBO = 0;
 	GLuint			m_physDepVAO = 0;   // core profile: attrib state for the deposit points
 	ComputeFX		m_cfx;                     // GL 4.3 compute-shader sims
+	GLuint			m_autoExpBuf  = 0;         // 4 floats: exposure, p50, p98, pad
+	GLuint			m_autoExpProg = 0;
+	bool			m_autoExpTried = false;
 	GLuint			m_physDiffuseCompId = 0;   // compute-shader diffuse (0 = fragment fallback)
 	GLint			m_physDifCTrailUni = -1;
 	GLint			m_physDifCResUni   = -1;

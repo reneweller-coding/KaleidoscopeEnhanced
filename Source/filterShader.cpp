@@ -3348,6 +3348,40 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 			m_safetyAccumDt = 0.f;
 		}
 
+		// ---- GPU percentile auto-exposure (Blend/CfxHistogram.comp) ----
+		// Writes into an SSBO that Present.frag reads directly, so unlike the
+		// mean-luminance limiter above it costs no GPU->CPU sync at all.
+		if( !m_autoExpTried )
+		{
+			m_autoExpTried = true;
+			m_autoExpProg = setComputeShader( "..\\Blend\\CfxHistogram.comp" );
+			if( m_autoExpProg )
+			{
+				const float init[4] = { 1.f, 0.5f, 1.f, 0.f };
+				glGenBuffers( 1, &m_autoExpBuf );
+				glBindBuffer( GL_SHADER_STORAGE_BUFFER, m_autoExpBuf );
+				glBufferData( GL_SHADER_STORAGE_BUFFER, sizeof(init), init, GL_DYNAMIC_COPY );
+				glBindBuffer( GL_SHADER_STORAGE_BUFFER, 0 );
+			}
+			fprintf( stderr, "Auto-exposure: %s\n",
+			         m_autoExpProg ? "histogram (GPU)" : "off" );
+		}
+		if( m_autoExpProg && m_autoExpBuf )
+		{
+			glUseProgram( m_autoExpProg );
+			glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 3, m_autoExpBuf );
+			glActiveTexture( GL_TEXTURE0 );
+			glBindTexture( GL_TEXTURE_2D, presentSource );
+			glUniform1i( glGetUniformLocation( m_autoExpProg, "texFrame" ), 0 );
+			glUniform2i( glGetUniformLocation( m_autoExpProg, "size" ), m_width, m_height );
+			glUniform1f( glGetUniformLocation( m_autoExpProg, "target" ), 0.26f );
+			glUniform1f( glGetUniformLocation( m_autoExpProg, "maxGain" ), 1.35f );
+			glUniform1f( glGetUniformLocation( m_autoExpProg, "slew" ),
+			             0.9f * timeSinceLastFrameSec );
+			glDispatchCompute( 1, 1, 1 );
+			glMemoryBarrier( GL_SHADER_STORAGE_BARRIER_BIT );
+		}
+
 		// ---- Two-pass Gaussian bloom (quarter res) ----
 		// Pass 1 extracts the brights from the fresh frame + blurs horizontally
 		// while downsampling; pass 2 blurs vertically.  Present adds the result.
@@ -3377,6 +3411,10 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 		glBindFramebuffer( GL_FRAMEBUFFER, m_defaultFBO );
 		glViewport( 0, 0, m_displayW, m_displayH );
 		glUseProgram( m_presentProgId );
+		// The auto-exposure buffer is read by the present FRAGMENT shader, so
+		// it has to stay bound at the same point the shader declares (3).
+		if( m_autoExpBuf )
+			glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 3, m_autoExpBuf );
 		glActiveTexture( GL_TEXTURE0 );
 		glBindTexture( GL_TEXTURE_2D, presentSource );
 		glUniform1i( m_presentTexUni, 0 );

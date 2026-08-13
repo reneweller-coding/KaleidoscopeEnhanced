@@ -1,5 +1,18 @@
 #version 330 core
+// Shader-storage blocks are a 4.3 feature; requesting the extension keeps this
+// shader at 330 so it still links against the shared 330 fullscreen vertex
+// shader that every other 2D pass uses.
+#extension GL_ARB_shader_storage_buffer_object : require
 out vec4 fragColor;
+
+// GPU auto-exposure.  Blend/CfxHistogram.comp builds a luminance histogram of
+// the finished frame and writes the exposure its percentiles justify into this
+// buffer; reading it straight from the fragment shader avoids the GPU->CPU
+// readback the old mean-luminance path needed.  autoExposure <= 0 means the
+// compute path is unavailable, and the pass falls back to 1.0.
+layout(std430, binding = 3) readonly buffer AutoExp {
+    float autoExposure; float lumaP50; float lumaP98; float autoPad;
+};
 // Present.frag
 // Final present pass.  Two jobs:
 //  1) A GLOBAL MOOD GRADE applied once to the finished frame, so EVERY effect
@@ -429,6 +442,12 @@ void main()
     }
 
     c *= scale;   // photosensitivity brightness limit (applied last)
+
+    // Percentile auto-exposure ON TOP of the limiter, never instead of it: the
+    // limiter is what caps how fast the frame may BRIGHTEN, and that safety
+    // property must not depend on a histogram being available.
+    if (autoExposure > 0.0)
+        c *= clamp(autoExposure, 0.72, 1.35);
 
     // Ordered dither (interleaved gradient noise) to break up 8-bit banding in the
     // smooth gradients (lava lamp / oil / hypercube).  Spatial only -> flicker-free.

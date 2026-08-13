@@ -1,0 +1,75 @@
+#version 430
+// CfxHistogram.comp — luminance histogram of the finished frame, then the
+// exposure that frame deserves.
+// -----------------------------------------------------------------------
+// The photosensitivity limiter previously worked off the frame's MEAN
+// luminance, which a few blown highlights drag around and which darkens the
+// whole picture to fix a local problem.  A histogram gives percentiles: the
+// 50th says where the body of the image sits and the 98th says whether the
+// highlights are really clipping, so the exposure can be corrected without
+// touching contrast.
+//
+// One workgroup, 256 bins, atomics in shared memory.  Reading back a whole
+// frame per histogram would cost a full GPU sync; here it stays on the GPU
+// and the result lands in a 4-float buffer the present pass reads.
+// -----------------------------------------------------------------------
+layout(local_size_x = 16, local_size_y = 16) in;
+
+layout(std430, binding = 0) buffer Result { float exposureOut; float p50; float p98; float pad; };
+uniform sampler2D texFrame;
+uniform ivec2 size;
+uniform float target;      // where the median should sit
+uniform float maxGain;
+uniform float slew;        // how fast the exposure may move (per frame)
+
+shared uint hist[256];
+
+void main()
+{
+    uint lid = gl_LocalInvocationIndex;
+    if (lid < 256u) hist[lid] = 0u;
+    barrier();
+
+    // Each invocation walks a strided set of pixels: 16x16 threads cover the
+    // frame in a grid, sampling roughly 1 in 16 pixels, which is plenty for a
+    // 256-bin histogram and costs almost nothing.
+    ivec2 base = ivec2(gl_LocalInvocationID.xy);
+    for (int y = base.y; y < size.y; y += 16 * 4)
+    for (int x = base.x; x < size.x; x += 16 * 4)
+    {
+        vec3 c = texelFetch(texFrame, ivec2(x, y), 0).rgb;
+        float l = dot(c, vec3(0.299, 0.587, 0.114));
+        uint b = uint(clamp(sqrt(max(l, 0.0)), 0.0, 0.999) * 256.0);
+        atomicAdd(hist[b], 1u);
+    }
+    barrier();
+
+    if (lid != 0u) return;
+
+    uint total = 0u;
+    for (int i = 0; i < 256; ++i) total += hist[i];
+    if (total == 0u) return;
+
+    uint acc = 0u;
+    float m50 = 0.5, m98 = 1.0;
+    bool got50 = false;
+    for (int i = 0; i < 256; ++i)
+    {
+        acc += hist[i];
+        float f = float(acc) / float(total);
+        float v = float(i) / 256.0;
+        v = v * v;                                  // undo the sqrt binning
+        if (!got50 && f >= 0.50) { m50 = v; got50 = true; }
+        if (f >= 0.98) { m98 = v; break; }
+    }
+
+    // Aim the MEDIAN at the target, but never so hard that the 98th
+    // percentile clips: highlights win the argument.
+    float want = (m50 > 1e-4) ? clamp(target / m50, 1.0 / maxGain, maxGain) : 1.0;
+    if (m98 * want > 1.0) want = min(want, 1.0 / max(m98, 1e-4));
+
+    float prev = (exposureOut > 0.0) ? exposureOut : 1.0;
+    exposureOut = prev + clamp(want - prev, -slew, slew);
+    p50 = m50;
+    p98 = m98;
+}

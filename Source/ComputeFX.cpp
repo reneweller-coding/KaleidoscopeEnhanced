@@ -24,6 +24,9 @@ const CfxInfo kCfxInfo[CFX_COUNT] = {
 	{ "texErosion",   22 },
 	{ "texMetal",     23 },
 	{ "texShards",    24 },
+	{ "texNSFluid",   25 },
+	{ "texCloth",     26 },
+	{ "texSculpt",    27 },
 };
 
 namespace {
@@ -42,8 +45,10 @@ enum {
 	P_RESOLVE = 0, P_FLAME, P_PART_INIT, P_PART_STEP, P_NBODY_INIT, P_NBODY_STEP,
 	P_BOIDS_INIT, P_BOIDS_GRID, P_BOIDS_STEP, P_CRYSTAL, P_CRYSTAL_SEED,
 	P_LIGHT_FIELD, P_LIGHT_GROW, P_CAUSTIC_WAVE, P_CAUSTIC_PHOTON,
-	P_SORT, P_FFT_H, P_FFT_V, P_FFT_MASK, P_FERRO, P_EROSION,
-	P_METAL_STEP, P_METAL_SPLAT, P_SHARD_INIT, P_SHARD_STEP
+	P_SORT, P_FFT_H, P_FFT_V, P_FFT_MASK, P_FFT_STORE, P_FERRO, P_EROSION,
+	P_EROSION_SEED, P_METAL_STEP, P_METAL_SPLAT, P_SHARD_INIT, P_SHARD_STEP,
+	P_NS_ADVECT, P_NS_DIV, P_NS_JACOBI, P_NS_PROJECT, P_CLOTH_INIT, P_CLOTH_STEP,
+	P_SCULPT
 };
 
 inline int groups( int n, int local ) { return ( n + local - 1 ) / local; }
@@ -56,9 +61,11 @@ ComputeFX::~ComputeFX()
 	{
 		freeCanvas( m_canvas[k] );
 		freeField( m_field[k] );
+		freeField( m_field2[k] );
 		if( m_buf[k] )  glDeleteBuffers( 1, &m_buf[k] );
 		if( m_buf2[k] ) glDeleteBuffers( 1, &m_buf2[k] );
 	}
+	freeField( m_nsPressure );
 	for( int i = 0; i < kProgSlots; ++i )
 		if( m_prog[i] ) glDeleteProgram( m_prog[i] );
 }
@@ -214,6 +221,7 @@ void ComputeFX::retireIdle( float now )
 		if( m_field[k].tex[0] && now - m_field[k].lastUse > kIdle )
 		{
 			freeField( m_field[k] );
+			freeField( m_field2[k] );
 			if( m_buf[k] )  { glDeleteBuffers( 1, &m_buf[k] );  m_buf[k] = 0; }
 			if( m_buf2[k] ) { glDeleteBuffers( 1, &m_buf2[k] ); m_buf2[k] = 0; }
 		}
@@ -247,10 +255,14 @@ GLuint ComputeFX::step( int k, const AudioFeatures &a, float dt, float t,
 		case CFX_EROSION:   tex = stepErosion( a, dt, t ); break;
 		case CFX_METAL:     tex = stepMetal( a, dt, t, srcImage ); break;
 		case CFX_SHARDS:    tex = stepShards( a, dt, t, srcImage ); break;
+		case CFX_NSFLUID:   tex = stepNSFluid( a, dt, t, srcImage ); break;
+		case CFX_CLOTH:     tex = stepCloth( a, dt, t ); break;
+		case CFX_SCULPT:    tex = stepSculpt( a, dt, t ); break;
 	}
 	if( !tex ) m_dead[k] = true;    // a failed program never becomes good again
 	m_canvas[k].lastUse = t;
 	m_field[k].lastUse  = t;
+	m_field2[k].lastUse = t;
 	glUseProgram( 0 );
 	return tex;
 }
@@ -738,7 +750,7 @@ GLuint ComputeFX::stepFFT( const AudioFeatures &a, float dt, float t, GLuint src
 	GLuint pl = prog( P_FFT_H,    "..\\Blend\\CfxFFTLoad.comp" );
 	GLuint pf = prog( P_FFT_V,    "..\\Blend\\CfxFFT.comp" );
 	GLuint pm = prog( P_FFT_MASK, "..\\Blend\\CfxFFTMask.comp" );
-	GLuint ps = prog( P_METAL_STEP, "..\\Blend\\CfxFFTStore.comp" );
+	GLuint ps = prog( P_FFT_STORE, "..\\Blend\\CfxFFTStore.comp" );
 	if( !pl || !pf || !pm || !ps ) return 0;
 
 	glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 0, m_buf[CFX_FFT] );
@@ -791,7 +803,384 @@ GLuint ComputeFX::stepFFT( const AudioFeatures &a, float dt, float t, GLuint src
 
 	return f.tex[0];
 }
-GLuint ComputeFX::stepFerro    ( const AudioFeatures &, float, float ) { return 0; }
-GLuint ComputeFX::stepErosion  ( const AudioFeatures &, float, float ) { return 0; }
-GLuint ComputeFX::stepMetal    ( const AudioFeatures &, float, float, GLuint ) { return 0; }
-GLuint ComputeFX::stepShards   ( const AudioFeatures &, float, float, GLuint ) { return 0; }
+// ---------------------------------------------------------------------------
+// 10. Ferrofluid — Swift-Hohenberg pattern formation (Rosensweig spikes).
+// ---------------------------------------------------------------------------
+
+GLuint ComputeFX::stepFerro( const AudioFeatures &a, float dt, float t )
+{
+	// A COARSE grid on purpose.  Swift-Hohenberg selects k = 1/sqrt(qScale)
+	// radians per texel, so a visible spike spacing needs qScale near 1 — and
+	// then the biharmonic's stiffness (q^2 * 64) still allows a usable dt.
+	// Trying to get 34-pixel spikes on a 512-wide grid put the selected mode
+	// above Nyquist, which is why the first attempts aliased into fine worms.
+	// Here one texel is ~10 display pixels and the spikes land ~40 px apart.
+	Field &f = m_field[CFX_FERRO];
+	if( !ensureField( f, 176, 99, GL_RGBA16F ) ) return 0;
+	GLuint p = prog( P_FERRO, "..\\Blend\\CfxFerro.comp" );
+	if( !p ) return 0;
+
+	// The bass IS the magnet: below the threshold the surface stays flat,
+	// above it the spike lattice stands up.
+	// Hexagonal spikes only win NEAR the threshold; push r far above it and the
+	// stripe (labyrinth) phase takes over, so keep the ceiling low.
+	float r = -0.15f + 0.40f * a.bassRel * ( 0.35f + a.overallLevel )
+	          + 0.25f * a.onsetKick;
+	if( r > 0.30f ) r = 0.30f;
+
+	for( int s = 0; s < 8; ++s )
+	{
+		const int cur = f.idx, nxt = 1 - f.idx;
+		glUseProgram( p );
+		glBindImageTexture( 0, f.tex[cur], 0, GL_FALSE, 0, GL_READ_ONLY,  GL_RGBA16F );
+		glBindImageTexture( 1, f.tex[nxt], 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA16F );
+		glUniform2i( glGetUniformLocation( p, "size" ), f.w, f.h );
+		glUniform1f( glGetUniformLocation( p, "rParam" ), r );
+		// The selected mode is where q * |laplacian eigenvalue| = 1.  The
+		// small-k shortcut |lap| = k^2 is what made the first guesses come out
+		// too fine: at these wavenumbers the DISCRETE eigenvalue 2(1-cos k) per
+		// axis is what counts.  q = 1.2 puts it at k ~ 0.95 rad/texel, i.e. a
+		// ~7-texel spacing.  dt must stay under 2/(q^2 * 64) for stability.
+		glUniform1f( glGetUniformLocation( p, "qScale" ), 1.20f );
+		glUniform1f( glGetUniformLocation( p, "gQuad" ), 0.60f );
+		glUniform1f( glGetUniformLocation( p, "dt" ), 0.018f );
+		glUniform1f( glGetUniformLocation( p, "kick" ), a.onsetKick );
+		// A flat field is a fixed point of the equation, so it needs a seed to
+		// break symmetry — always a trickle, a burst on transients.
+		glUniform1f( glGetUniformLocation( p, "seedAmp" ),
+		             f.seeded ? ( 0.004f + 0.10f * a.onsetKick ) : 0.9f );
+		glUniform1ui( glGetUniformLocation( p, "frame" ),
+		              (GLuint)( t * 997.f ) + (GLuint)s );
+		glDispatchCompute( groups( f.w, 16 ), groups( f.h, 16 ), 1 );
+		glMemoryBarrier( GL_SHADER_IMAGE_ACCESS_BARRIER_BIT );
+		f.idx = nxt;
+	}
+	f.seeded = true;
+	glMemoryBarrier( GL_TEXTURE_FETCH_BARRIER_BIT );
+	return f.tex[f.idx];
+}
+
+// ---------------------------------------------------------------------------
+// 11. Hydraulic erosion — droplets carving a landscape in real time.
+// ---------------------------------------------------------------------------
+
+GLuint ComputeFX::stepErosion( const AudioFeatures &a, float dt, float t )
+{
+	// 8k droplets x 64 steps x a 3x3 kernel rewrote every texel ~18 times per
+	// frame and sanded the whole landscape flat within seconds.  2k keeps it
+	// near one touch per texel per frame, which carves instead of polishing.
+	const int kDrops = 1 << 11;              // 2,048 droplets per frame
+	Field &f = m_field[CFX_EROSION];
+	if( !ensureField( f, 512, 512, GL_RGBA16F ) ) return 0;
+
+	GLuint pseed = prog( P_EROSION_SEED, "..\\Blend\\CfxErosionSeed.comp" );
+	GLuint pstep = prog( P_EROSION,      "..\\Blend\\CfxErosion.comp" );
+	if( !pseed || !pstep ) return 0;
+
+	// Erosion has no counterbalance here, so left running it does exactly what
+	// it does in nature: it grinds the mountains down to a plain, and the scene
+	// goes dead.  Re-raising the land every ~14 s turns that into the point of
+	// the effect — peaks appear, the drainage network cuts in, repeat.
+	static float lastSeed = -1000.f;
+	if( ( !f.seeded || a.dropPulse > 0.85f ) && t - lastSeed > 14.f )
+	{
+		lastSeed = t;
+		glUseProgram( pseed );
+		glBindImageTexture( 0, f.tex[0], 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA16F );
+		glUniform2i( glGetUniformLocation( pseed, "size" ), f.w, f.h );
+		glUniform1ui( glGetUniformLocation( pseed, "seed" ), (GLuint)( t * 331.f ) + 1u );
+		glDispatchCompute( groups( f.w, 16 ), groups( f.h, 16 ), 1 );
+		glMemoryBarrier( GL_SHADER_IMAGE_ACCESS_BARRIER_BIT );
+		f.seeded = true;
+	}
+
+	glUseProgram( pstep );
+	glBindImageTexture( 0, f.tex[0], 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16F );
+	glUniform2i( glGetUniformLocation( pstep, "size" ), f.w, f.h );
+	glUniform1ui( glGetUniformLocation( pstep, "count" ), (GLuint)kDrops );
+	glUniform1ui( glGetUniformLocation( pstep, "frame" ), (GLuint)( t * 1000.f ) );
+	glUniform1f( glGetUniformLocation( pstep, "rain" ), 0.5f + 1.6f * a.overallLevel );
+	glUniform1f( glGetUniformLocation( pstep, "capacityK" ),
+	             2.2f + 2.5f * a.onsetKick );
+	glDispatchCompute( groups( kDrops, 256 ), 1, 1 );
+	glMemoryBarrier( GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT );
+
+	return f.tex[0];
+}
+
+// ---------------------------------------------------------------------------
+// 12. Navier-Stokes with a real pressure projection.
+// ---------------------------------------------------------------------------
+
+GLuint ComputeFX::stepNSFluid( const AudioFeatures &a, float dt, float t,
+                               GLuint srcImage )
+{
+	const int W = 512, H = 288;
+	Field &vel = m_field[CFX_NSFLUID];     // RG = velocity
+	Field &dye = m_field2[CFX_NSFLUID];    // RGB = colour, A = density
+	Canvas &out = m_canvas[CFX_NSFLUID];   // published result (tex only)
+	if( !ensureField( vel, W, H, GL_RGBA16F ) ) return 0;
+	if( !ensureField( dye, W, H, GL_RGBA16F ) ) return 0;
+	if( !ensureCanvas( out, W, H ) ) return 0;
+
+	GLuint pa = prog( P_NS_ADVECT,  "..\\Blend\\CfxNSAdvect.comp" );
+	GLuint pd = prog( P_NS_DIV,     "..\\Blend\\CfxNSDiv.comp" );
+	GLuint pj = prog( P_NS_JACOBI,  "..\\Blend\\CfxNSJacobi.comp" );
+	GLuint pp = prog( P_NS_PROJECT, "..\\Blend\\CfxNSProject.comp" );
+	if( !pa || !pd || !pj || !pp ) return 0;
+
+	Field &prs = m_nsPressure;
+	if( !ensureField( prs, W, H, GL_RGBA16F ) ) return 0;
+
+	static float jetPhase = 0.f;
+	jetPhase += dt * ( 0.35f + 1.1f * a.overallLevel );
+
+	// ---- 1) advect velocity + dye, apply forces ----
+	{
+		const int vc = vel.idx, vn = 1 - vel.idx;
+		const int dc = dye.idx, dn = 1 - dye.idx;
+		glUseProgram( pa );
+		glBindImageTexture( 0, vel.tex[vc], 0, GL_FALSE, 0, GL_READ_ONLY,  GL_RGBA16F );
+		glBindImageTexture( 1, vel.tex[vn], 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA16F );
+		glBindImageTexture( 2, dye.tex[dc], 0, GL_FALSE, 0, GL_READ_ONLY,  GL_RGBA16F );
+		glBindImageTexture( 3, dye.tex[dn], 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA16F );
+		glActiveTexture( GL_TEXTURE0 );
+		glBindTexture( GL_TEXTURE_2D, srcImage );
+		glUniform1i( glGetUniformLocation( pa, "texPhoto" ), 0 );
+		glUniform2i( glGetUniformLocation( pa, "size" ), W, H );
+		glUniform1f( glGetUniformLocation( pa, "dt" ), 0.9f );
+		glUniform1f( glGetUniformLocation( pa, "dissipation" ), 0.994f );
+		glUniform1f( glGetUniformLocation( pa, "kick" ), a.onsetKick );
+		glUniform1f( glGetUniformLocation( pa, "level" ), a.overallLevel );
+		glUniform1f( glGetUniformLocation( pa, "hue" ), a.chromaHue );
+		float jx = 0.5f + 0.32f * sinf( jetPhase * 0.7f );
+		float jy = 0.5f + 0.26f * cosf( jetPhase * 0.53f );
+		glUniform2f( glGetUniformLocation( pa, "jetPos" ), jx, jy );
+		glUniform2f( glGetUniformLocation( pa, "jetDir" ),
+		             cosf( jetPhase * 1.7f ), sinf( jetPhase * 1.7f ) );
+		glUniform1f( glGetUniformLocation( pa, "jetAmp" ),
+		             0.010f + 0.055f * a.onsetKick + 0.020f * a.overallLevel );
+		glDispatchCompute( groups( W, 16 ), groups( H, 16 ), 1 );
+		glMemoryBarrier( GL_SHADER_IMAGE_ACCESS_BARRIER_BIT );
+		vel.idx = vn; dye.idx = dn;
+	}
+
+	// ---- 2) divergence ----
+	glUseProgram( pd );
+	glBindImageTexture( 0, vel.tex[vel.idx], 0, GL_FALSE, 0, GL_READ_ONLY,  GL_RGBA16F );
+	glBindImageTexture( 1, prs.tex[0],       0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA16F );
+	glUniform2i( glGetUniformLocation( pd, "size" ), W, H );
+	glDispatchCompute( groups( W, 16 ), groups( H, 16 ), 1 );
+	glMemoryBarrier( GL_SHADER_IMAGE_ACCESS_BARRIER_BIT );
+
+	// ---- 3) Jacobi iterations on the pressure Poisson equation ----
+	prs.idx = 0;
+	for( int i = 0; i < 24; ++i )
+	{
+		const int c = prs.idx, n = 1 - prs.idx;
+		glUseProgram( pj );
+		glBindImageTexture( 0, prs.tex[c], 0, GL_FALSE, 0, GL_READ_ONLY,  GL_RGBA16F );
+		glBindImageTexture( 1, prs.tex[n], 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA16F );
+		glUniform2i( glGetUniformLocation( pj, "size" ), W, H );
+		glDispatchCompute( groups( W, 16 ), groups( H, 16 ), 1 );
+		glMemoryBarrier( GL_SHADER_IMAGE_ACCESS_BARRIER_BIT );
+		prs.idx = n;
+	}
+
+	// ---- 4) subtract the pressure gradient, publish ----
+	glUseProgram( pp );
+	glBindImageTexture( 0, vel.tex[vel.idx], 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16F );
+	glBindImageTexture( 1, prs.tex[prs.idx], 0, GL_FALSE, 0, GL_READ_ONLY,  GL_RGBA16F );
+	glBindImageTexture( 2, dye.tex[dye.idx], 0, GL_FALSE, 0, GL_READ_ONLY,  GL_RGBA16F );
+	glBindImageTexture( 3, out.tex,          0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA16F );
+	glUniform2i( glGetUniformLocation( pp, "size" ), W, H );
+	glDispatchCompute( groups( W, 16 ), groups( H, 16 ), 1 );
+	glMemoryBarrier( GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT );
+
+	return out.tex;
+}
+// ---------------------------------------------------------------------------
+// 13. Liquid metal — cohesive particles rendered as a screen-space surface.
+// ---------------------------------------------------------------------------
+
+GLuint ComputeFX::stepMetal( const AudioFeatures &a, float dt, float t, GLuint )
+{
+	const int kParts = 1 << 16;              // 65,536
+	const int kGrid = 96, kPerCell = 32;
+	Canvas &c = m_canvas[CFX_METAL];
+	// A DELIBERATELY small canvas.  Screen-space fluid needs the particle
+	// discs to overlap into a continuous density field; at 1280x720 the same
+	// population reads as speckle, and no amount of thresholding recovers a
+	// surface from it.  640x360 quadruples the density per pixel.
+	if( !ensureCanvas( c, 640, 360 ) ) return 0;
+	if( !ensureBuffer( m_buf[CFX_METAL], size_t(kParts) * 4 * sizeof(float) ) ) return 0;
+	if( !ensureBuffer( m_buf2[CFX_METAL],
+	                   size_t(kGrid) * kGrid * ( kPerCell + 1 ) * sizeof(unsigned int) ) )
+		return 0;
+
+	GLuint pi = prog( P_PART_INIT,  "..\\Blend\\CfxParticleInit.comp" );
+	GLuint ps = prog( P_METAL_STEP, "..\\Blend\\CfxMetalStep.comp" );
+	if( !pi || !ps ) return 0;
+
+	if( !c.seeded )
+	{
+		glUseProgram( pi );
+		glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 1, m_buf[CFX_METAL] );
+		glUniform1ui( glGetUniformLocation( pi, "count" ), (GLuint)kParts );
+		glDispatchCompute( groups( kParts, 256 ), 1, 1 );
+		glMemoryBarrier( GL_SHADER_STORAGE_BARRIER_BIT );
+		c.seeded = true;
+	}
+
+	static float swirl = 0.f;
+	swirl = 0.25f + 0.5f * sinf( t * 0.11f );
+
+	const unsigned int zero = 0;
+	glBindBuffer( GL_SHADER_STORAGE_BUFFER, m_buf2[CFX_METAL] );
+	glClearBufferData( GL_SHADER_STORAGE_BUFFER, GL_R32UI, GL_RED_INTEGER,
+	                   GL_UNSIGNED_INT, &zero );
+	glBindBuffer( GL_SHADER_STORAGE_BUFFER, 0 );
+
+	clearAccum( c );
+	for( int pass = 1; pass >= 0; --pass )     // 1 = bin, 0 = simulate + splat
+	{
+		glUseProgram( ps );
+		glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 0, c.ssbo );
+		glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 1, m_buf[CFX_METAL] );
+		glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 2, m_buf2[CFX_METAL] );
+		glUniform2i( glGetUniformLocation( ps, "size" ), c.w, c.h );
+		glUniform1ui( glGetUniformLocation( ps, "count" ), (GLuint)kParts );
+		glUniform1i( glGetUniformLocation( ps, "gridN" ), kGrid );
+		glUniform1i( glGetUniformLocation( ps, "perCell" ), kPerCell );
+		glUniform1f( glGetUniformLocation( ps, "dt" ), 0.55f );
+		glUniform1f( glGetUniformLocation( ps, "kick" ), a.onsetKick );
+		glUniform1f( glGetUniformLocation( ps, "level" ), a.overallLevel );
+		glUniform1f( glGetUniformLocation( ps, "swirl" ), swirl );
+		glUniform1i( glGetUniformLocation( ps, "buildGrid" ), pass );
+		glDispatchCompute( groups( kParts, 256 ), 1, 1 );
+		glMemoryBarrier( GL_SHADER_STORAGE_BARRIER_BIT );
+	}
+
+	resolve( c, 0, 1.0f, 1.f, 0.0f );          // no trails: it is a SURFACE
+	return c.tex;
+}
+
+// ---------------------------------------------------------------------------
+// 14. Shatter & reassemble.
+// ---------------------------------------------------------------------------
+
+GLuint ComputeFX::stepShards( const AudioFeatures &a, float dt, float t,
+                              GLuint srcImage )
+{
+	const int gx = 48, gy = 27;
+	const int kShards = gx * gy;
+	Canvas &c = m_canvas[CFX_SHARDS];
+	int w, h; canvasSize( 1920, 1080, w, h );
+	if( !ensureCanvas( c, w, h ) ) return 0;
+	if( !ensureBuffer( m_buf[CFX_SHARDS],  size_t(kShards) * 4 * sizeof(float) ) ) return 0;
+	if( !ensureBuffer( m_buf2[CFX_SHARDS], size_t(kShards) * 4 * sizeof(float) ) ) return 0;
+
+	GLuint pi = prog( P_SHARD_INIT, "..\\Blend\\CfxShardInit.comp" );
+	GLuint ps = prog( P_SHARD_STEP, "..\\Blend\\CfxShardStep.comp" );
+	if( !pi || !ps ) return 0;
+
+	// Every strong transient blows the picture apart again; between bursts the
+	// spring pulls every shard home and it re-assembles.
+	static float lastBurst = -100.f;
+	bool burst = ( a.onsetKick > 0.62f || a.dropPulse > 0.6f )
+	             && ( t - lastBurst > 3.2f );
+	if( !c.seeded || burst )
+	{
+		lastBurst = t;
+		c.seeded = true;
+		glUseProgram( pi );
+		glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 1, m_buf[CFX_SHARDS] );
+		glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 2, m_buf2[CFX_SHARDS] );
+		glUniform1ui( glGetUniformLocation( pi, "count" ), (GLuint)kShards );
+		glUniform1ui( glGetUniformLocation( pi, "seed" ), (GLuint)( t * 733.f ) + 1u );
+		glUniform1f( glGetUniformLocation( pi, "burst" ),
+		             0.10f + 0.16f * a.onsetKick + 0.18f * a.dropPulse );
+		glDispatchCompute( groups( kShards, 256 ), 1, 1 );
+		glMemoryBarrier( GL_SHADER_STORAGE_BARRIER_BIT );
+	}
+
+	clearAccum( c );
+	glUseProgram( ps );
+	glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 0, c.ssbo );
+	glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 1, m_buf[CFX_SHARDS] );
+	glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 2, m_buf2[CFX_SHARDS] );
+	glActiveTexture( GL_TEXTURE0 );
+	glBindTexture( GL_TEXTURE_2D, srcImage );
+	glUniform1i( glGetUniformLocation( ps, "texPhoto" ), 0 );
+	glUniform2i( glGetUniformLocation( ps, "size" ), c.w, c.h );
+	glUniform2i( glGetUniformLocation( ps, "grid" ), gx, gy );
+	glUniform1f( glGetUniformLocation( ps, "dt" ), 0.9f );
+	glUniform1f( glGetUniformLocation( ps, "springK" ), 2.2f );
+	glUniform1f( glGetUniformLocation( ps, "damp" ), 0.985f );
+	glUniform1f( glGetUniformLocation( ps, "gravity" ), 0.35f );
+	glUniform1f( glGetUniformLocation( ps, "level" ), a.overallLevel );
+	glDispatchCompute( groups( kShards, 256 ), 1, 1 );
+	glMemoryBarrier( GL_SHADER_STORAGE_BARRIER_BIT );
+
+	resolve( c, 0, 1.0f, 1.f, 0.0f );
+	return c.tex;
+}
+
+// ---------------------------------------------------------------------------
+// 15. Cloth — a Verlet mass-spring sheet as a displacement field.
+// ---------------------------------------------------------------------------
+
+GLuint ComputeFX::stepCloth( const AudioFeatures &a, float dt, float t )
+{
+	// Verlet needs x(t) and x(t-1) — and x(t-1) is dead once x(t+1) exists, so
+	// the new state goes straight into the slot the old one occupied.  Two
+	// textures are enough; a third "previous" field would just be bookkeeping.
+	Field &f = m_field[CFX_CLOTH];
+	const int W = 256, H = 144;
+	if( !ensureField( f, W, H, GL_RGBA16F ) ) return 0;
+
+	GLuint pi = prog( P_CLOTH_INIT, "..\\Blend\\CfxClothInit.comp" );
+	GLuint ps = prog( P_CLOTH_STEP, "..\\Blend\\CfxCloth.comp" );
+	if( !pi || !ps ) return 0;
+
+	if( !f.seeded )
+	{
+		glUseProgram( pi );
+		glBindImageTexture( 0, f.tex[0], 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA16F );
+		glBindImageTexture( 1, f.tex[1], 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA16F );
+		glUniform2i( glGetUniformLocation( pi, "size" ), W, H );
+		glDispatchCompute( groups( W, 16 ), groups( H, 16 ), 1 );
+		glMemoryBarrier( GL_SHADER_IMAGE_ACCESS_BARRIER_BIT );
+		f.seeded = true;
+	}
+
+	static float wind = 0.f;
+	wind += dt * ( 0.5f + 1.6f * a.overallLevel );
+
+	// Several relaxation steps per frame: one Jacobi pass on a 256-wide sheet
+	// propagates a disturbance by one texel, which would look like treacle.
+	for( int s = 0; s < 4; ++s )
+	{
+		const int cur = f.idx, prev = 1 - f.idx;
+		glUseProgram( ps );
+		glBindImageTexture( 0, f.tex[cur],  0, GL_FALSE, 0, GL_READ_ONLY,  GL_RGBA16F );
+		glBindImageTexture( 1, f.tex[prev], 0, GL_FALSE, 0, GL_READ_ONLY,  GL_RGBA16F );
+		glBindImageTexture( 2, f.tex[prev], 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA16F );
+		glUniform2i( glGetUniformLocation( ps, "size" ), W, H );
+		glUniform1f( glGetUniformLocation( ps, "damp" ), 0.988f );
+		glUniform1f( glGetUniformLocation( ps, "stiff" ), 0.22f );
+		glUniform1f( glGetUniformLocation( ps, "gravity" ), 0.00035f );
+		glUniform1f( glGetUniformLocation( ps, "windPhase" ), wind );
+		glUniform1f( glGetUniformLocation( ps, "windAmp" ), 0.0016f );
+		glUniform1f( glGetUniformLocation( ps, "kick" ), a.onsetKick * 0.004f );
+		glUniform1f( glGetUniformLocation( ps, "level" ), a.overallLevel );
+		glUniform1f( glGetUniformLocation( ps, "time" ), t );
+		glDispatchCompute( groups( W, 16 ), groups( H, 16 ), 1 );
+		glMemoryBarrier( GL_SHADER_IMAGE_ACCESS_BARRIER_BIT );
+		f.idx = prev;              // what we just wrote is the new current
+	}
+	glMemoryBarrier( GL_TEXTURE_FETCH_BARRIER_BIT );
+	return f.tex[f.idx];
+}
+
+GLuint ComputeFX::stepSculpt( const AudioFeatures &, float, float ) { return 0; }

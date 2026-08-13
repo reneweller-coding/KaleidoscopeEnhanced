@@ -1,0 +1,70 @@
+#version 430
+// CfxCloth.comp — a mass-spring sheet with Verlet integration and Jacobi
+// distance constraints, one particle per texel.
+// -----------------------------------------------------------------------
+// Verlet keeps the velocity implicit (v = x - xPrev), so a whole frame is a
+// single pass over the grid: read the four structural neighbours, pull each
+// bond back toward its rest length, add gravity, wind and the beat's
+// impulses, then write the new position.  The constraint solve is the part
+// that needs the neighbours' CURRENT positions, which is why it lives in a
+// ping-pong pair rather than in place.
+// -----------------------------------------------------------------------
+layout(local_size_x = 16, local_size_y = 16) in;
+
+layout(rgba16f, binding = 0) readonly  uniform image2D imgCur;
+layout(rgba16f, binding = 1) readonly  uniform image2D imgPrev;
+layout(rgba16f, binding = 2) writeonly uniform image2D imgOut;
+
+uniform ivec2 size;
+uniform float damp;
+uniform float stiff;
+uniform float gravity;
+uniform float windPhase;
+uniform float windAmp;
+uniform float kick;
+uniform float level;
+uniform float time;
+
+vec3 dAt(ivec2 p) { return imageLoad(imgCur, clamp(p, ivec2(0), size - ivec2(1))).rgb; }
+
+// Rest position of a grid node, in the cloth's own space.
+vec3 rest(ivec2 p)
+{
+    return vec3((vec2(p) + 0.5) / vec2(size) * 2.0 - 1.0, 0.0);
+}
+
+void main()
+{
+    ivec2 p = ivec2(gl_GlobalInvocationID.xy);
+    if (p.x >= size.x || p.y >= size.y) return;
+
+    vec3 d  = dAt(p);
+    vec3 dp = imageLoad(imgPrev, p).rgb;
+
+    // Verlet: the previous frame's displacement carries the velocity.
+    vec3 vel = (d - dp) * damp;
+
+    // Structural springs to the four neighbours.  Working on DISPLACEMENTS
+    // means the rest length is already satisfied when all displacements are
+    // equal, so the constraint reduces to a Laplacian pull.
+    vec3 lap = dAt(p + ivec2(1, 0)) + dAt(p - ivec2(1, 0))
+             + dAt(p + ivec2(0, 1)) + dAt(p - ivec2(0, 1)) - 4.0 * d;
+
+    vec3 acc = lap * stiff;
+    acc.y -= gravity;
+
+    // Wind: a travelling pressure wave across the sheet, plus beat gusts.
+    vec3 r = rest(p);
+    float w = sin(windPhase + r.x * 3.1 + r.y * 1.7)
+            * cos(windPhase * 0.63 - r.y * 2.3);
+    acc.z += w * windAmp * (0.4 + level);
+    acc.z += kick * 0.9 * sin(windPhase * 2.1 + r.x * 5.0);
+
+    vec3 dNew = d + vel + acc * 0.5;
+
+    // Pinned along the top edge — a curtain, not a free sheet.
+    if (p.y >= size.y - 1) dNew = vec3(0.0);
+    dNew = clamp(dNew, vec3(-1.5), vec3(1.5));
+
+    imageStore(imgOut, p, vec4(dNew, 1.0));
+}

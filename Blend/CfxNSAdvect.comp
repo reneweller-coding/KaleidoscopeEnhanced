@@ -1,0 +1,87 @@
+#version 430
+// CfxNSAdvect.comp — semi-Lagrangian advection of velocity AND dye, plus the
+// music's forces.  Step 1 of a real Navier-Stokes solve.
+// vel texture: RG = velocity.  dye texture: RGB = colour, A = density.
+layout(local_size_x = 16, local_size_y = 16) in;
+
+layout(rgba16f, binding = 0) readonly  uniform image2D velSrc;
+layout(rgba16f, binding = 1) writeonly uniform image2D velDst;
+layout(rgba16f, binding = 2) readonly  uniform image2D dyeSrc;
+layout(rgba16f, binding = 3) writeonly uniform image2D dyeDst;
+
+uniform sampler2D texPhoto;
+uniform ivec2 size;
+uniform float dt;
+uniform float dissipation;
+uniform float kick;
+uniform float level;
+uniform float hue;
+uniform vec2  jetPos;
+uniform vec2  jetDir;
+uniform float jetAmp;
+
+vec2 velAt(vec2 uv)
+{
+    // Bilinear fetch from the velocity image (imageLoad has no filtering).
+    vec2 p = uv * vec2(size) - 0.5;
+    ivec2 i = ivec2(floor(p));
+    vec2  f = fract(p);
+    ivec2 m = size - ivec2(1);
+    vec2 a = imageLoad(velSrc, clamp(i,               ivec2(0), m)).rg;
+    vec2 b = imageLoad(velSrc, clamp(i + ivec2(1, 0), ivec2(0), m)).rg;
+    vec2 c = imageLoad(velSrc, clamp(i + ivec2(0, 1), ivec2(0), m)).rg;
+    vec2 d = imageLoad(velSrc, clamp(i + ivec2(1, 1), ivec2(0), m)).rg;
+    return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+}
+
+vec4 dyeAt(vec2 uv)
+{
+    vec2 p = uv * vec2(size) - 0.5;
+    ivec2 i = ivec2(floor(p));
+    vec2  f = fract(p);
+    ivec2 m = size - ivec2(1);
+    vec4 a = imageLoad(dyeSrc, clamp(i,               ivec2(0), m));
+    vec4 b = imageLoad(dyeSrc, clamp(i + ivec2(1, 0), ivec2(0), m));
+    vec4 c = imageLoad(dyeSrc, clamp(i + ivec2(0, 1), ivec2(0), m));
+    vec4 d = imageLoad(dyeSrc, clamp(i + ivec2(1, 1), ivec2(0), m));
+    return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+}
+
+void main()
+{
+    ivec2 p = ivec2(gl_GlobalInvocationID.xy);
+    if (p.x >= size.x || p.y >= size.y) return;
+
+    vec2 uv = (vec2(p) + 0.5) / vec2(size);
+    vec2 v  = imageLoad(velSrc, p).rg;
+
+    // Trace backwards along the velocity and pick up what was there.
+    vec2 back = uv - v * dt;
+    vec2 vNew = velAt(back) * 0.999;
+    vec4 dNew = dyeAt(back);
+    dNew.rgb *= dissipation;
+    dNew.a   *= dissipation;
+
+    // Forces: a wandering jet on the beat, plus buoyancy so dense dye rises.
+    float d = length((uv - jetPos) * vec2(float(size.x) / float(size.y), 1.0));
+    float g = exp(-d * d * 260.0);
+    vNew += jetDir * (jetAmp * g * dt * 60.0);
+    vNew.y += dNew.a * 0.12 * dt * 60.0 * (0.4 + level);
+
+    // Inject fresh dye at the jet, coloured from the photo there.
+    if (jetAmp > 0.001)
+    {
+        vec3 c = texture(texPhoto, uv).rgb;
+        vec3 tint = 0.5 + 0.5 * cos(6.2831853 * (vec3(0.0, 0.33, 0.67)) + hue);
+        dNew.rgb += mix(c, c * tint * 1.8, 0.6) * g * jetAmp * 2.4;
+        dNew.a   += g * jetAmp * 2.0;
+    }
+
+    // Walls: no flow through the border, otherwise the projection cannot
+    // converge and the whole field slowly drifts off screen.
+    if (p.x <= 1 || p.x >= size.x - 2) vNew.x = 0.0;
+    if (p.y <= 1 || p.y >= size.y - 2) vNew.y = 0.0;
+
+    imageStore(velDst, p, vec4(vNew, 0.0, 1.0));
+    imageStore(dyeDst, p, clamp(dNew, 0.0, 8.0));
+}
