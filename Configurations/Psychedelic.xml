@@ -292,4 +292,9 @@
     <float name="glowP" minValue="0.3" maxValue="0.8"></float>
   </TextureShader>
 
+  <TextureShader file="..\\Scene\\LightningStorm.frag" type="normal" probability="0.4" complexity="2">
+    <float name="glowP" minValue="0.4" maxValue="0.9"></float>
+    <float name="skyP" minValue="0.3" maxValue="0.8"></float>
+  </TextureShader>
+
 </configuration>

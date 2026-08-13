@@ -1066,6 +1066,9 @@ look like anything; that temporal integration is what makes it silky.
 | `ParticleFlow` | `texParticles` (13) | 1.3M particles advected along the **curl** of a noise potential (divergence-free), each splatting the photo's colour where it happens to be |
 | `GalaxyCollision` | `texNBody` (14) | 65k gravitating stars, forces accumulated through **shared-memory tiles** against a 1/32 sample; two discs on a decaying mutual orbit grow tidal bridges and tails |
 | `Murmuration` | `texBoids` (15) | 131k boids with a **real neighbourhood** from an atomically built spatial-hash grid — separation, alignment, cohesion and a density-gradient pressure term |
+| `CrystalGrowth` | `texCrystal` (16) | Diffusion-limited aggregation: random walkers **freeze into a texel they discover at runtime**, which is the defining scatter operation |
+| `LightningStorm` | `texLightning` (17) | A branching discharge whose tips claim new slots through an **atomic counter**, so the tree's width is decided on the GPU frame by frame |
+| `CausticPool` | `texCaustics` (18) | A wave equation on a shared-memory stencil, then **photon splatting**: each photon refracts at the surface and deposits its energy where it lands on the pool floor |
 
 **Lessons that cost a rebuild each** (all fixed in the code, worth not
 repeating): `centroid` is a reserved GLSL keyword and cannot be a uniform name.
@@ -1077,7 +1080,12 @@ population into the border. Orbital speeds must be *derived* from the gravity
 constant actually used — guessing left the discs 70× under-speed, so they
 free-fell through the core and sprayed across the frame. And a NaN position
 passes every bounds check (`NaN < 0` and `NaN >= w` are both false), so
-particle sims need an explicit finite-check respawn.
+particle sims need an explicit finite-check respawn. DLA needs *low*
+stickiness (≲0.1) and walkers respawned on a ring around the cluster — freezing
+on first contact from a seed line is Eden growth, a featureless advancing wall
+with none of the branching. And `<windows.h>` defines `min`/`max` as macros
+unless `NOMINMAX` is set before it, which turns every later `std::min` into a
+baffling "invalid token on the right of `::`".
 
 **Probing these is its own trap.** Use one app run per scene with a generated
 single-scene preset (`scratchpad/probe.ps1`): a preset whose name starts with

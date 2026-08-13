@@ -14,6 +14,11 @@
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
+// Without this, <windows.h> defines min/max as MACROS and every later
+// std::min( a, b ) fails with a bewildering "invalid token on the right of ::".
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
 #include <windows.h>
 #include <GL/gl.h>
 

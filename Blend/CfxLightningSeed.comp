@@ -1,0 +1,32 @@
+#version 430
+// CfxLightningSeed.comp — clear the tip buffer and start a fresh bolt.
+layout(local_size_x = 128) in;
+
+layout(std430, binding = 1) buffer Tips { vec4 tip[]; };
+layout(std430, binding = 2) buffer Ctrl { uint tipCount; uint pad[3]; };
+
+uniform uint  capacity;
+uniform uint  seed;
+uniform float startX;
+uniform float life;
+
+void main()
+{
+    uint id = gl_GlobalInvocationID.x;
+    if (id >= capacity) return;
+
+    // Invocation 0 owns slots 0..2; everyone else clears their own.  Letting
+    // every invocation clear its slot AND invocation 0 write 0..2 is a race.
+    if (id >= 3u)
+        tip[id] = vec4(0.0);
+
+    if (id == 0u)
+    {
+        tipCount = 3u;
+        // Three leaders from the TOP edge, heading down.  Canvas v runs
+        // bottom-to-top (GL texture origin), so "down the screen" is -y.
+        tip[0] = vec4(startX,        0.97, -1.5707963,        life);
+        tip[1] = vec4(startX - 0.06, 0.97, -1.5707963 - 0.35, life * 0.8);
+        tip[2] = vec4(startX + 0.06, 0.97, -1.5707963 + 0.35, life * 0.8);
+    }
+}

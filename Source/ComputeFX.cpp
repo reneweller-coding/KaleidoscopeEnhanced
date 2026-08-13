@@ -6,6 +6,7 @@
 #include <math.h>
 #include <string.h>
 #include <vector>
+#include <algorithm>
 
 // Global sampler units.  Units 0..11 are taken by the slideshow images and the
 // older sims (texSim 7, texFluid 8, texSmoke3D 9, texSSM 10, texPhysarum 11).
@@ -506,9 +507,191 @@ GLuint ComputeFX::stepBoids( const AudioFeatures &a, float dt, float t )
 // simply shows an empty field).
 // ---------------------------------------------------------------------------
 
-GLuint ComputeFX::stepCrystal  ( const AudioFeatures &, float, float ) { return 0; }
-GLuint ComputeFX::stepLightning( const AudioFeatures &, float, float ) { return 0; }
-GLuint ComputeFX::stepCaustics ( const AudioFeatures &, float, float, GLuint ) { return 0; }
+// ---------------------------------------------------------------------------
+// 5. Diffusion-limited aggregation — frost creeping across the frame.
+// ---------------------------------------------------------------------------
+
+GLuint ComputeFX::stepCrystal( const AudioFeatures &a, float dt, float t )
+{
+	const int kWalkers = 1 << 15;            // 32,768
+	Field &f = m_field[CFX_CRYSTAL];
+	if( !ensureField( f, 1024, 576, GL_RGBA16F ) ) return 0;
+	if( !ensureBuffer( m_buf[CFX_CRYSTAL], size_t(kWalkers) * 4 * sizeof(float) ) )
+		return 0;
+
+	GLuint pseed = prog( P_CRYSTAL_SEED, "..\\Blend\\CfxCrystalSeed.comp" );
+	GLuint pstep = prog( P_CRYSTAL,      "..\\Blend\\CfxCrystal.comp" );
+	if( !pseed || !pstep ) return 0;
+
+	// Re-seed when the structure has had its run, or on a big drop.
+	static float lastSeed = -1000.f;
+	if( !f.seeded || a.dropPulse > 0.85f )
+	{
+		if( t - lastSeed > 30.f )
+		{
+			lastSeed = t;
+			glUseProgram( pseed );
+			glBindImageTexture( 0, f.tex[0], 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA16F );
+			glUniform2i( glGetUniformLocation( pseed, "size" ), f.w, f.h );
+			glUniform1ui( glGetUniformLocation( pseed, "seed" ), (GLuint)( t * 613.f ) + 1u );
+			glUniform1f( glGetUniformLocation( pseed, "hue" ), a.chromaHue );
+			glDispatchCompute( groups( f.w, 16 ), groups( f.h, 16 ), 1 );
+			glMemoryBarrier( GL_SHADER_IMAGE_ACCESS_BARRIER_BIT );
+			f.seeded = true;
+		}
+	}
+
+	glUseProgram( pstep );
+	glBindImageTexture( 0, f.tex[0], 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16F );
+	glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 1, m_buf[CFX_CRYSTAL] );
+	glUniform2i( glGetUniformLocation( pstep, "size" ), f.w, f.h );
+	glUniform1ui( glGetUniformLocation( pstep, "count" ), (GLuint)kWalkers );
+	glUniform1ui( glGetUniformLocation( pstep, "frame" ), (GLuint)( t * 1000.f ) );
+	glUniform1f( glGetUniformLocation( pstep, "now" ), t );
+	glUniform1f( glGetUniformLocation( pstep, "hue" ), a.chromaHue );
+	// Stickiness has to stay LOW: at high values a walker freezes on first
+	// contact, which is Eden growth — a compact blob with no branches at all.
+	// Below ~0.1 walkers can slip past the tips into the fjords and the
+	// characteristic dendrites appear.
+	glUniform1f( glGetUniformLocation( pstep, "stickiness" ),
+	             0.015f + 0.075f * a.overallLevel + 0.05f * a.onsetKick );
+	glUniform1f( glGetUniformLocation( pstep, "drift" ),
+	             0.55f + 0.8f * a.overallLevel );
+	glDispatchCompute( groups( kWalkers, 256 ), 1, 1 );
+	glMemoryBarrier( GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT );
+
+	return f.tex[0];
+}
+
+// ---------------------------------------------------------------------------
+// 6. Dielectric breakdown — a branching bolt that grows itself on the GPU.
+// ---------------------------------------------------------------------------
+
+GLuint ComputeFX::stepLightning( const AudioFeatures &a, float dt, float t )
+{
+	const int kTips = 4096;
+	Canvas &c = m_canvas[CFX_LIGHTNING];
+	int w, h; canvasSize( 1920, 1080, w, h );
+	if( !ensureCanvas( c, w, h ) ) return 0;
+	if( !ensureBuffer( m_buf[CFX_LIGHTNING], size_t(kTips) * 4 * sizeof(float) ) )
+		return 0;
+	if( !ensureBuffer( m_buf2[CFX_LIGHTNING], 4 * sizeof(unsigned int) ) ) return 0;
+
+	GLuint pseed = prog( P_LIGHT_FIELD, "..\\Blend\\CfxLightningSeed.comp" );
+	GLuint pstep = prog( P_LIGHT_GROW,  "..\\Blend\\CfxLightningStep.comp" );
+	if( !pseed || !pstep ) return 0;
+
+	// A new bolt on every strong onset, and a fallback so quiet passages are
+	// not left with an empty sky.
+	static float lastBolt = -100.f;
+	bool strike = ( a.onsetKick > 0.55f || a.dropPulse > 0.6f )
+	              && ( t - lastBolt > 0.5f );
+	if( !c.seeded || strike || t - lastBolt > 3.5f )
+	{
+		lastBolt = t;
+		c.seeded = true;
+		glUseProgram( pseed );
+		glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 1, m_buf[CFX_LIGHTNING] );
+		glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 2, m_buf2[CFX_LIGHTNING] );
+		glUniform1ui( glGetUniformLocation( pseed, "capacity" ), (GLuint)kTips );
+		glUniform1ui( glGetUniformLocation( pseed, "seed" ), (GLuint)( t * 811.f ) );
+		float sx = 0.5f + 0.42f * sinf( t * 2.7f ) * cosf( t * 1.3f );
+		glUniform1f( glGetUniformLocation( pseed, "startX" ), sx );
+		glUniform1f( glGetUniformLocation( pseed, "life" ), 55.f + 35.f * a.overallLevel );
+		glDispatchCompute( groups( kTips, 128 ), 1, 1 );
+		glMemoryBarrier( GL_SHADER_STORAGE_BARRIER_BIT );
+	}
+
+	clearAccum( c );
+	glUseProgram( pstep );
+	glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 0, c.ssbo );
+	glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 1, m_buf[CFX_LIGHTNING] );
+	glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 2, m_buf2[CFX_LIGHTNING] );
+	glUniform2i( glGetUniformLocation( pstep, "size" ), c.w, c.h );
+	glUniform1ui( glGetUniformLocation( pstep, "capacity" ), (GLuint)kTips );
+	glUniform1ui( glGetUniformLocation( pstep, "frame" ), (GLuint)( t * 1000.f ) );
+	glUniform1f( glGetUniformLocation( pstep, "hue" ), a.chromaHue );
+	glUniform1f( glGetUniformLocation( pstep, "level" ), a.overallLevel );
+	glUniform1f( glGetUniformLocation( pstep, "branchP" ),
+	             0.030f + 0.055f * a.spectralCentroid );
+	glUniform1f( glGetUniformLocation( pstep, "charge" ),
+	             std::min( 1.f, a.onsetKick + 0.35f * a.overallLevel ) );
+	glDispatchCompute( groups( kTips, 128 ), 1, 1 );
+	glMemoryBarrier( GL_SHADER_STORAGE_BARRIER_BIT );
+
+	// Long afterglow: the eye keeps a bolt far longer than it exists.
+	resolve( c, 0, 3.2f, 1.f, 0.90f );
+	return c.tex;
+}
+
+// ---------------------------------------------------------------------------
+// 7. Caustics — wave surface + photon splatting onto the pool floor.
+// ---------------------------------------------------------------------------
+
+GLuint ComputeFX::stepCaustics( const AudioFeatures &a, float dt, float t,
+                                GLuint srcImage )
+{
+	Field &f = m_field[CFX_CAUSTICS];
+	Canvas &c = m_canvas[CFX_CAUSTICS];
+	const int wW = 512, wH = 288;
+	if( !ensureField( f, wW, wH, GL_RGBA16F ) ) return 0;
+	int w, h; canvasSize( 1920, 1080, w, h );
+	if( !ensureCanvas( c, w, h ) ) return 0;
+
+	GLuint pw = prog( P_CAUSTIC_WAVE,   "..\\Blend\\CfxWave.comp" );
+	GLuint pp = prog( P_CAUSTIC_PHOTON, "..\\Blend\\CfxPhoton.comp" );
+	if( !pw || !pp ) return 0;
+
+	// Two sub-steps: the wave then travels at a believable speed without
+	// pushing the explicit integrator past its stability limit.
+	for( int s = 0; s < 2; ++s )
+	{
+		const int cur = f.idx, nxt = 1 - f.idx;
+		glUseProgram( pw );
+		glBindImageTexture( 0, f.tex[cur], 0, GL_FALSE, 0, GL_READ_ONLY,  GL_RGBA16F );
+		glBindImageTexture( 1, f.tex[nxt], 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA16F );
+		glUniform2i( glGetUniformLocation( pw, "size" ), wW, wH );
+		glUniform1f( glGetUniformLocation( pw, "damp" ), 0.9965f );
+		glUniform1f( glGetUniformLocation( pw, "speed" ), 0.30f );
+		glUniform1f( glGetUniformLocation( pw, "kick" ), a.onsetKick );
+		// One stone per sub-step at most; kicks and snares drop them in
+		// different places so the surface never looks periodic.
+		float amp = 0.f; float dx = 0.5f, dy = 0.5f;
+		if( s == 0 && a.onsetKick > 0.45f )
+		{
+			amp = 0.55f * a.onsetKick;
+			dx = 0.5f + 0.36f * sinf( t * 5.1f );
+			dy = 0.5f + 0.30f * cosf( t * 3.7f );
+		}
+		else if( s == 1 && a.onsetSnare > 0.5f )
+		{
+			amp = 0.35f * a.onsetSnare;
+			dx = 0.5f + 0.34f * cosf( t * 4.3f );
+			dy = 0.5f + 0.28f * sinf( t * 6.2f );
+		}
+		glUniform1f( glGetUniformLocation( pw, "dropAmp" ), amp );
+		glUniform2f( glGetUniformLocation( pw, "dropPos" ), dx, dy );
+		glDispatchCompute( groups( wW, 16 ), groups( wH, 16 ), 1 );
+		glMemoryBarrier( GL_SHADER_IMAGE_ACCESS_BARRIER_BIT );
+		f.idx = nxt;
+	}
+
+	clearAccum( c );
+	glUseProgram( pp );
+	glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 0, c.ssbo );
+	glBindImageTexture( 1, f.tex[f.idx], 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA16F );
+	glUniform2i( glGetUniformLocation( pp, "size" ), c.w, c.h );
+	glUniform2i( glGetUniformLocation( pp, "waveSize" ), wW, wH );
+	glUniform1f( glGetUniformLocation( pp, "depth" ), 0.55f + 0.35f * a.bassRel );
+	glUniform1f( glGetUniformLocation( pp, "hue" ), a.chromaHue );
+	glUniform1f( glGetUniformLocation( pp, "level" ), a.overallLevel );
+	glUniform1f( glGetUniformLocation( pp, "disperse" ), 0.06f + 0.05f * a.spectralCentroid );
+	glDispatchCompute( groups( wW, 16 ), groups( wH, 16 ), 1 );
+	glMemoryBarrier( GL_SHADER_STORAGE_BARRIER_BIT );
+
+	resolve( c, 0, 0.30f, 1.f, 0.35f );
+	return c.tex;
+}
 GLuint ComputeFX::stepPixelSort( const AudioFeatures &, float, float, GLuint, int, int ) { return 0; }
 GLuint ComputeFX::stepFFT      ( const AudioFeatures &, float, float, GLuint ) { return 0; }
 GLuint ComputeFX::stepFerro    ( const AudioFeatures &, float, float ) { return 0; }

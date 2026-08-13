@@ -1,0 +1,61 @@
+#version 430
+// CfxWave.comp — 2D wave equation on a full-resolution height field.
+// R = h(t), G = h(t-1).  Explicit second-order integration with damping;
+// kicks drop stones.  The shared-memory tile makes the 5-point stencil read
+// each texel once per workgroup instead of five times.
+layout(local_size_x = 16, local_size_y = 16) in;
+
+layout(rgba16f, binding = 0) readonly  uniform image2D imgSrc;
+layout(rgba16f, binding = 1) writeonly uniform image2D imgDst;
+
+uniform ivec2 size;
+uniform float damp;
+uniform float speed;       // c^2 * dt^2 / dx^2, keep < 0.5 for stability
+uniform float kick;
+uniform vec2  dropPos;
+uniform float dropAmp;
+
+shared float tile[18][18];
+
+void main()
+{
+    ivec2 p = ivec2(gl_GlobalInvocationID.xy);
+    ivec2 l = ivec2(gl_LocalInvocationID.xy) + ivec2(1);
+
+    ivec2 c = clamp(p, ivec2(0), size - ivec2(1));
+    tile[l.y][l.x] = imageLoad(imgSrc, c).r;
+
+    // Halo: the edge lanes also fetch the ring around the tile.
+    if (gl_LocalInvocationID.x == 0u)
+        tile[l.y][0] = imageLoad(imgSrc, clamp(c - ivec2(1, 0), ivec2(0), size - 1)).r;
+    if (gl_LocalInvocationID.x == 15u)
+        tile[l.y][17] = imageLoad(imgSrc, clamp(c + ivec2(1, 0), ivec2(0), size - 1)).r;
+    if (gl_LocalInvocationID.y == 0u)
+        tile[0][l.x] = imageLoad(imgSrc, clamp(c - ivec2(0, 1), ivec2(0), size - 1)).r;
+    if (gl_LocalInvocationID.y == 15u)
+        tile[17][l.x] = imageLoad(imgSrc, clamp(c + ivec2(0, 1), ivec2(0), size - 1)).r;
+
+    barrier();
+
+    if (p.x >= size.x || p.y >= size.y) return;
+
+    vec4  s     = imageLoad(imgSrc, p);
+    float h     = s.r;
+    float hprev = s.g;
+
+    float lap = tile[l.y][l.x - 1] + tile[l.y][l.x + 1]
+              + tile[l.y - 1][l.x] + tile[l.y + 1][l.x] - 4.0 * h;
+
+    float hNew = (2.0 * h - hprev + speed * lap) * damp;
+
+    // Stone: a smooth dimple, so the wave front stays band-limited (a hard
+    // spike would alias into checkerboard noise on the very first step).
+    if (dropAmp > 0.001)
+    {
+        vec2 uv = (vec2(p) + 0.5) / vec2(size);
+        float d = length((uv - dropPos) * vec2(float(size.x) / float(size.y), 1.0));
+        hNew += dropAmp * exp(-d * d * 900.0);
+    }
+
+    imageStore(imgDst, p, vec4(clamp(hNew, -4.0, 4.0), h, 0.0, 1.0));
+}
