@@ -1,0 +1,25 @@
+#version 430
+// CfxBoidsInit.comp — scatter the flock with random headings.
+layout(local_size_x = 256) in;
+
+layout(std430, binding = 1) buffer Boids { vec4 boid[]; };   // xy = pos, zw = vel
+
+uniform uint count;
+
+uint pcg(inout uint s)
+{
+    s = s * 747796405u + 2891336453u;
+    uint w = ((s >> ((s >> 28) + 4u)) ^ s) * 277803737u;
+    return (w >> 22) ^ w;
+}
+float rnd(inout uint s) { return float(pcg(s)) * (1.0 / 4294967296.0); }
+
+void main()
+{
+    uint i = gl_GlobalInvocationID.x;
+    if (i >= count) return;
+    uint rs = i * 2654435761u + 99u;
+    pcg(rs);
+    float a = rnd(rs) * 6.2831853;
+    boid[i] = vec4(rnd(rs), rnd(rs), cos(a) * 0.05, sin(a) * 0.05);
+}

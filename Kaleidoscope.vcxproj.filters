@@ -51,6 +51,9 @@
     <ClCompile Include="Source\filterShader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\ComputeFX.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="Source\glcore.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -150,6 +153,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\EffectShader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\ComputeFX.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\glcore.h">
@@ -440,6 +446,45 @@
     </None>
     <None Include="Blend\default.frag">
       <Filter>Shaders\Blend</Filter>
+    </None>
+    <None Include="Blend\CfxBoidsGrid.comp">
+      <Filter>Shaders\Blend</Filter>
+    </None>
+    <None Include="Blend\CfxBoidsInit.comp">
+      <Filter>Shaders\Blend</Filter>
+    </None>
+    <None Include="Blend\CfxBoidsStep.comp">
+      <Filter>Shaders\Blend</Filter>
+    </None>
+    <None Include="Blend\CfxFlame.comp">
+      <Filter>Shaders\Blend</Filter>
+    </None>
+    <None Include="Blend\CfxNBodyInit.comp">
+      <Filter>Shaders\Blend</Filter>
+    </None>
+    <None Include="Blend\CfxNBodyStep.comp">
+      <Filter>Shaders\Blend</Filter>
+    </None>
+    <None Include="Blend\CfxParticleInit.comp">
+      <Filter>Shaders\Blend</Filter>
+    </None>
+    <None Include="Blend\CfxParticleStep.comp">
+      <Filter>Shaders\Blend</Filter>
+    </None>
+    <None Include="Blend\CfxResolve.comp">
+      <Filter>Shaders\Blend</Filter>
+    </None>
+    <None Include="Scene\FractalFlame.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\GalaxyCollision.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\Murmuration.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\ParticleFlow.frag">
+      <Filter>Shaders\Scene</Filter>
     </None>
     <None Include="Blend\Blit.frag">
       <Filter>Shaders\Blend</Filter>

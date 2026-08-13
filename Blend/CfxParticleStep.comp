@@ -1,0 +1,130 @@
+#version 430
+// CfxParticleStep.comp — two million particles in a divergence-free flow.
+// -----------------------------------------------------------------------
+// Velocity comes from the CURL of a scalar noise potential, so the field is
+// divergence-free by construction: particles swirl and never bunch up into
+// sinks.  Each particle carries the colour of the photo at its birth spot,
+// which makes the picture dissolve into flowing silk instead of being
+// replaced by an abstract pattern.
+//
+// The splat is the reason this needs compute: every thread writes to the
+// pixel its particle happens to be over, which a fragment shader cannot do.
+// -----------------------------------------------------------------------
+
+layout(local_size_x = 256) in;
+
+layout(std430, binding = 0) buffer Accum { uint acc[]; };
+layout(std430, binding = 1) buffer Parts { vec4 part[]; };
+
+uniform sampler2D texPhoto;
+uniform ivec2 size;
+uniform uint  count;
+uniform float dt;
+uniform float flow;        // integrated travel phase
+uniform float curlPhase;   // integrated field-morph phase
+uniform float kick;
+uniform float level;
+uniform float hue;
+uniform float drop;
+uniform uint  frame;
+
+const float SCALE = 256.0;
+
+uint pcg(inout uint s)
+{
+    s = s * 747796405u + 2891336453u;
+    uint w = ((s >> ((s >> 28) + 4u)) ^ s) * 277803737u;
+    return (w >> 22) ^ w;
+}
+float rnd(inout uint s) { return float(pcg(s)) * (1.0 / 4294967296.0); }
+
+float hash21(vec2 p)
+{
+    p = fract(p * vec2(123.34, 456.21));
+    p += dot(p, p + 45.32);
+    return fract(p.x * p.y);
+}
+
+float vnoise(vec2 p)
+{
+    vec2 i = floor(p), f = fract(p);
+    f = f * f * (3.0 - 2.0 * f);
+    float a = hash21(i), b = hash21(i + vec2(1, 0));
+    float c = hash21(i + vec2(0, 1)), d = hash21(i + vec2(1, 1));
+    return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+}
+
+// Scalar stream function; its curl is the (divergence-free) velocity.
+float potential(vec2 p)
+{
+    float s = vnoise(p * 2.3 + vec2(curlPhase, -curlPhase * 0.7)) * 1.0
+            + vnoise(p * 5.1 - vec2(curlPhase * 1.3, curlPhase)) * 0.45
+            + vnoise(p * 11.0 + vec2(curlPhase * 0.4, curlPhase * 1.7)) * 0.18;
+    // A slow global rotation keeps the whole frame in motion even in quiet
+    // passages (the noise alone can locally stall).
+    float r = length(p - 0.5);
+    return s + 0.55 * sin(flow * 0.5 + r * 6.0);
+}
+
+vec2 curl(vec2 p)
+{
+    const float e = 0.0035;
+    float dx = potential(p + vec2(e, 0.0)) - potential(p - vec2(e, 0.0));
+    float dy = potential(p + vec2(0.0, e)) - potential(p - vec2(0.0, e));
+    return vec2(dy, -dx) / (2.0 * e);
+}
+
+void splat(vec2 uv, vec3 col, float w)
+{
+    ivec2 ip = ivec2(uv * vec2(size));
+    if (ip.x < 0 || ip.y < 0 || ip.x >= size.x || ip.y >= size.y) return;
+    uint i = uint(ip.y * size.x + ip.x) * 4u;
+    vec3 c = max(col, vec3(0.0)) * w;
+    atomicAdd(acc[i + 0u], uint(c.r * SCALE));
+    atomicAdd(acc[i + 1u], uint(c.g * SCALE));
+    atomicAdd(acc[i + 2u], uint(c.b * SCALE));
+    atomicAdd(acc[i + 3u], uint(w * SCALE));
+}
+
+void main()
+{
+    uint i = gl_GlobalInvocationID.x;
+    if (i >= count) return;
+
+    vec4  s   = part[i];
+    vec2  pos = s.xy;
+    vec2  vel = s.zw;
+
+    // Recycle a slice of the population every frame so the field keeps being
+    // re-seeded from the photo instead of slowly emptying into the vortices.
+    uint rs = i * 2246822519u + frame * 2654435761u;
+    pcg(rs);
+    if (rnd(rs) < 0.004 + 0.02 * drop)
+    {
+        pos = vec2(rnd(rs), rnd(rs));
+        vel = vec2(0.0);
+    }
+
+    vec2 f = curl(pos) * (0.045 + 0.075 * level);
+    // Kicks blow the swarm radially outward from the centre.
+    vec2 rad = pos - 0.5;
+    f += normalize(rad + 1e-5) * kick * 0.55;
+
+    vel = mix(vel, f, clamp(dt * 5.0, 0.0, 1.0));
+    pos += vel * dt;
+    pos = fract(pos + 1.0);        // seamless wrap
+
+    part[i] = vec4(pos, vel);
+
+    // Photo colour at the particle, warmed by its own speed.
+    vec3 photo = texture(texPhoto, pos).rgb;
+    float sp = clamp(length(vel) * 2.2, 0.0, 1.5);
+    vec3 tint = 0.5 + 0.5 * cos(6.2831853 * (sp * 0.35 + vec3(0.0, 0.33, 0.67)) + hue);
+    // Brightness rides hard on SPEED: slow particles stay dark so only the
+    // convergence lines of the flow field light up as filaments.  A flat
+    // brightness turned the whole field into an even wash of paint.
+    float lum = pow(sp, 1.4);
+    vec3 col = mix(photo, photo * tint * 1.9, 0.60) * (0.16 + 1.8 * lum);
+
+    splat(pos, col, 0.13 + 0.85 * lum);
+}

@@ -214,6 +214,7 @@ exit /b 0</Command>
     <ClCompile Include="Source\AudioAnalyzer.cpp" />
     <ClCompile Include="Source\EffectShader.cpp" />
     <ClCompile Include="Source\filterShader.cpp" />
+    <ClCompile Include="Source\ComputeFX.cpp" />
     <ClCompile Include="Source\glcore.cpp" />
     <ClCompile Include="Source\glwidget.cpp" />
     <ClCompile Include="Source\main.cpp" />
@@ -271,6 +272,7 @@ exit /b 0</Command>
     </CustomBuild>
     <ClInclude Include="Source\AudioFeatures.h" />
     <ClInclude Include="Source\EffectShader.h" />
+    <ClInclude Include="Source\ComputeFX.h" />
     <ClInclude Include="Source\glcore.h" />
     <ClInclude Include="Source\filterShader.h" />
     <CustomBuild Include="Source\glwidget.h">
@@ -422,6 +424,19 @@ exit /b 0</Command>
     <None Include="Blend\BloomBlur.frag" />
     <None Include="Blend\CombineShader.frag" />
     <None Include="Blend\default.frag" />
+    <None Include="Blend\CfxBoidsGrid.comp" />
+    <None Include="Blend\CfxBoidsInit.comp" />
+    <None Include="Blend\CfxBoidsStep.comp" />
+    <None Include="Blend\CfxFlame.comp" />
+    <None Include="Blend\CfxNBodyInit.comp" />
+    <None Include="Blend\CfxNBodyStep.comp" />
+    <None Include="Blend\CfxParticleInit.comp" />
+    <None Include="Blend\CfxParticleStep.comp" />
+    <None Include="Blend\CfxResolve.comp" />
+    <None Include="Scene\FractalFlame.frag" />
+    <None Include="Scene\GalaxyCollision.frag" />
+    <None Include="Scene\Murmuration.frag" />
+    <None Include="Scene\ParticleFlow.frag" />
     <None Include="Blend\Blit.frag" />
     <None Include="Blend\Fullscreen.vert" />
     <None Include="Blend\PhysarumDiffuse.comp" />

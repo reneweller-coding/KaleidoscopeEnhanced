@@ -282,4 +282,14 @@
   <TextureShader file="..\Scene3D\StrangeAttractor.frag" type="scene3d" geom="points" probability="0.35" complexity="2">
   </TextureShader>
 
+  <TextureShader file="..\\Scene\\FractalFlame.frag" type="normal" probability="0.7" complexity="2">
+    <float name="glowP" minValue="0.25" maxValue="0.6"></float>
+    <float name="photoP" minValue="0.03" maxValue="0.12"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene\\ParticleFlow.frag" type="normal" probability="0.6" complexity="2">
+    <float name="smearP" minValue="0.25" maxValue="0.9"></float>
+    <float name="glowP" minValue="0.3" maxValue="0.8"></float>
+  </TextureShader>
+
 </configuration>

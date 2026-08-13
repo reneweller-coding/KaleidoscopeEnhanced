@@ -1,0 +1,52 @@
+#version 430
+// CfxResolve.comp — shared back end of every "splatting" compute sim.
+// -----------------------------------------------------------------------
+// The sims scatter colour into a uint accumulator (fixed point, because
+// atomicAdd on floats is an optional extension while uint atomics are core).
+// This pass converts one frame of accumulation into the RGBA16F canvas the
+// display shaders sample, and keeps a decaying copy of the previous frame:
+// a single frame of a chaos game / particle splat is sparse and noisy, the
+// temporal integration is what makes it silky.
+// -----------------------------------------------------------------------
+
+layout(local_size_x = 16, local_size_y = 16) in;
+
+layout(std430, binding = 0) readonly buffer Accum { uint acc[]; };
+layout(rgba16f, binding = 0) uniform image2D imgOut;
+
+uniform ivec2 size;
+uniform int   mode;        // 0 = linear exposure, 1 = fractal-flame log density
+uniform float exposure;
+uniform float gammaInv;    // flame gamma (applied to the brightness term)
+uniform float decay;       // how much of the previous frame survives
+
+const float SCALE = 1.0 / 256.0;
+
+void main()
+{
+    ivec2 p = ivec2(gl_GlobalInvocationID.xy);
+    if (p.x >= size.x || p.y >= size.y) return;
+
+    uint i = uint(p.y * size.x + p.x) * 4u;
+    vec3  sum  = vec3(acc[i], acc[i + 1u], acc[i + 2u]) * SCALE;
+    float hits = float(acc[i + 3u]) * SCALE;
+
+    vec3 col;
+    if (mode == 1)
+    {
+        // Fractal-flame tonemap: the AVERAGE colour of everything that landed
+        // here, brightened by the LOG of the density.  Without the log the
+        // few hottest pixels blow out and the delicate filaments vanish.
+        col = (hits > 1e-5) ? sum / hits : vec3(0.0);
+        float b = log(1.0 + hits * exposure);
+        col *= pow(b, gammaInv);
+    }
+    else
+    {
+        col = sum * exposure;
+    }
+
+    vec3 prev = imageLoad(imgOut, p).rgb;
+    // max() rather than += : overlapping trails must not saturate to white.
+    imageStore(imgOut, p, vec4(max(col, prev * decay), 1.0));
+}
