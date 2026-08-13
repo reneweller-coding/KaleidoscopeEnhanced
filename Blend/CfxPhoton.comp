@@ -1,0 +1,74 @@
+#version 430
+// CfxPhoton.comp — caustics by PHOTON SPLATTING through a wave surface.
+// -----------------------------------------------------------------------
+// One photon per invocation enters the water vertically, refracts at the
+// surface according to the local gradient of the height field, travels to
+// the pool floor and deposits its energy THERE.  Where neighbouring photons
+// converge, the floor lights up — that is a real caustic, and it only works
+// because each thread writes to a texel it computes rather than owns.
+//
+// The energy is conserved per photon, so bright caustic lines are paid for
+// by the dark regions between them; no manual contrast shaping needed.
+// -----------------------------------------------------------------------
+
+layout(local_size_x = 16, local_size_y = 16) in;
+
+layout(std430, binding = 0) buffer Accum { uint acc[]; };
+layout(rgba16f, binding = 1) readonly uniform image2D imgWave;
+
+uniform ivec2 size;        // accumulator size
+uniform ivec2 waveSize;
+uniform float depth;       // how far below the surface the floor sits
+uniform float hue;
+uniform float level;
+uniform float disperse;    // chromatic split between R and B
+
+const float SCALE = 256.0;
+
+void splat(vec2 uv, vec3 col, float w)
+{
+    ivec2 ip = ivec2(uv * vec2(size));
+    if (ip.x < 0 || ip.y < 0 || ip.x >= size.x || ip.y >= size.y) return;
+    uint i = uint(ip.y * size.x + ip.x) * 4u;
+    vec3 c = max(col, vec3(0.0)) * w;
+    atomicAdd(acc[i + 0u], uint(c.r * SCALE));
+    atomicAdd(acc[i + 1u], uint(c.g * SCALE));
+    atomicAdd(acc[i + 2u], uint(c.b * SCALE));
+    atomicAdd(acc[i + 3u], uint(w * SCALE));
+}
+
+float hAt(ivec2 p)
+{
+    return imageLoad(imgWave, clamp(p, ivec2(0), waveSize - ivec2(1))).r;
+}
+
+void main()
+{
+    ivec2 p = ivec2(gl_GlobalInvocationID.xy);
+    if (p.x >= waveSize.x || p.y >= waveSize.y) return;
+
+    // Surface normal from the height gradient.
+    float hx = hAt(p + ivec2(1, 0)) - hAt(p - ivec2(1, 0));
+    float hy = hAt(p + ivec2(0, 1)) - hAt(p - ivec2(0, 1));
+    vec2 grad = vec2(hx, hy) * 0.5;
+
+    vec2 uv = (vec2(p) + 0.5) / vec2(waveSize);
+
+    // Thin-surface refraction: the lateral shift on the floor is proportional
+    // to the gradient times the depth.  Splitting R and B by a slightly
+    // different factor gives the faint rainbow fringe real caustics have.
+    vec2 baseHit = uv - grad * depth;
+    vec2 hitR = uv - grad * (depth * (1.0 + disperse));
+    vec2 hitB = uv - grad * (depth * (1.0 - disperse));
+
+    // Nearly white: the water's colour belongs in the display shader, where it
+    // can depend on depth.  A saturated tint here turned the whole pool green.
+    vec3 tint = mix(vec3(1.0),
+                    0.5 + 0.5 * cos(6.2831853 * (0.55 + vec3(0.0, 0.33, 0.67)) + hue),
+                    0.30);
+    float e = 0.55 + 0.9 * level;
+
+    splat(hitR,    vec3(tint.r, 0.0, 0.0) * 3.0, e);
+    splat(baseHit, vec3(0.0, tint.g, 0.0) * 3.0, e);
+    splat(hitB,    vec3(0.0, 0.0, tint.b) * 3.0, e);
+}

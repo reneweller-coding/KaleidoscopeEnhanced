@@ -249,4 +249,9 @@
     <float name="glowP" minValue="0.3" maxValue="0.7"></float>
   </TextureShader>
 
+  <TextureShader file="..\\Scene\\CausticPool.frag" type="normal" probability="0.55" complexity="2">
+    <float name="warpP" minValue="0.3" maxValue="0.9"></float>
+    <float name="glowP" minValue="0.3" maxValue="0.8"></float>
+  </TextureShader>
+
 </configuration>

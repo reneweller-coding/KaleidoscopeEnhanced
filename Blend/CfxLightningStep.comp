@@ -1,0 +1,117 @@
+#version 430
+// CfxLightningStep.comp — branching electrical discharge.
+// -----------------------------------------------------------------------
+// A population of TIPS advances one step per frame and occasionally splits.
+// Splitting means appending a new tip to a shader-storage buffer via an
+// ATOMIC counter — the tree's size is decided on the GPU, frame by frame,
+// which is exactly the kind of data-dependent growth a fragment shader has
+// no way to express.
+//
+// Each tip draws its segment by splatting along the step, so the bolt is
+// rendered by the same pass that grows it.
+// -----------------------------------------------------------------------
+
+layout(local_size_x = 128) in;
+
+layout(std430, binding = 0) buffer Accum { uint acc[]; };
+// x, y, angle, life   (life <= 0 = slot free)
+layout(std430, binding = 1) buffer Tips  { vec4 tip[]; };
+layout(std430, binding = 2) buffer Ctrl  { uint tipCount; uint pad[3]; };
+
+uniform ivec2 size;
+uniform uint  capacity;
+uniform uint  frame;
+uniform float hue;
+uniform float level;
+uniform float branchP;     // split probability per tip per frame
+uniform float charge;      // 0..1, how hot the bolt burns
+
+const float SCALE = 256.0;
+
+uint pcg(inout uint s)
+{
+    s = s * 747796405u + 2891336453u;
+    uint w = ((s >> ((s >> 28) + 4u)) ^ s) * 277803737u;
+    return (w >> 22) ^ w;
+}
+float rnd(inout uint s) { return float(pcg(s)) * (1.0 / 4294967296.0); }
+
+void splat1(ivec2 ip, vec3 col, float w)
+{
+    if (ip.x < 0 || ip.y < 0 || ip.x >= size.x || ip.y >= size.y) return;
+    uint i = uint(ip.y * size.x + ip.x) * 4u;
+    vec3 c = max(col, vec3(0.0)) * w;
+    atomicAdd(acc[i + 0u], uint(c.r * SCALE));
+    atomicAdd(acc[i + 1u], uint(c.g * SCALE));
+    atomicAdd(acc[i + 2u], uint(c.b * SCALE));
+    atomicAdd(acc[i + 3u], uint(w * SCALE));
+}
+
+void segment(vec2 a, vec2 b, vec3 col, float w)
+{
+    for (int k = 0; k <= 6; ++k)
+    {
+        vec2 q = mix(a, b, float(k) / 6.0);
+        ivec2 ip = ivec2(q * vec2(size));
+        splat1(ip,                 col, w);
+        splat1(ip + ivec2(1, 0),   col, w * 0.45);
+        splat1(ip + ivec2(0, 1),   col, w * 0.45);
+        splat1(ip + ivec2(-1, 0),  col, w * 0.45);
+        splat1(ip + ivec2(0, -1),  col, w * 0.45);
+    }
+}
+
+void main()
+{
+    uint id = gl_GlobalInvocationID.x;
+    if (id >= capacity) return;
+
+    vec4 t = tip[id];
+    if (t.w <= 0.0) return;                 // free slot
+
+    uint rs = id * 2654435761u + frame * 2246822519u + 11u;
+    pcg(rs);
+
+    vec2  p   = t.xy;
+    float ang = t.z;
+
+    // Wander: a small random turn plus a persistent downward pull, so the
+    // bolt travels but never in a straight line.
+    ang += (rnd(rs) - 0.5) * 0.9;
+    ang = mix(ang, -1.5707963, 0.10);       // pulled toward the ground (-y)
+    float stepLen = 0.010 + 0.010 * level;
+    vec2 q = p + vec2(cos(ang), sin(ang)) * stepLen;
+
+    // Colour: a hot white-blue core; older tips cool toward violet.
+    // Lightning is white-hot at the core and violet-blue at the extremities.
+    // A free-running cosine palette put green in it, which reads as neon rope
+    // rather than a discharge; the music only nudges the tint.
+    float ageF = clamp(t.w / 90.0, 0.0, 1.0);
+    vec3 hot  = vec3(1.00, 1.00, 1.10);
+    vec3 cool = vec3(0.45, 0.55, 1.00)
+              * (1.0 + 0.18 * sin(hue + vec3(0.0, 2.1, 4.2)));
+    vec3 col  = mix(cool, hot, ageF) * (2.2 + 4.0 * charge);
+
+    segment(p, q, col, 1.2 + 1.0 * charge);
+
+    t.xy = q;
+    t.z  = ang;
+    t.w -= 1.0;
+    if (q.x < -0.05 || q.x > 1.05 || q.y < -0.05 || q.y > 1.05)
+        t.w = 0.0;                          // left the frame
+    tip[id] = t;
+
+    // Branch: claim a slot atomically.  The tree's width is therefore decided
+    // by the GPU at runtime, not by a fixed host-side allocation pattern.
+    if (t.w > 0.0 && rnd(rs) < branchP)
+    {
+        uint slot = atomicAdd(tipCount, 1u);
+        if (slot < capacity)
+        {
+            float da = (rnd(rs) < 0.5 ? -1.0 : 1.0) * (0.5 + rnd(rs) * 0.8);
+            tip[slot] = vec4(q, ang + da, t.w * (0.45 + 0.35 * rnd(rs)));
+        }
+        else
+            atomicAdd(tipCount, uint(-1));  // undo: the tree is full
+    }
+}

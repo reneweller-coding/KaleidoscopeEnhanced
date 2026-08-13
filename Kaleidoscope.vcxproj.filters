@@ -486,6 +486,33 @@
     <None Include="Scene\ParticleFlow.frag">
       <Filter>Shaders\Scene</Filter>
     </None>
+    <None Include="Blend\CfxCrystal.comp">
+      <Filter>Shaders\Blend</Filter>
+    </None>
+    <None Include="Blend\CfxCrystalSeed.comp">
+      <Filter>Shaders\Blend</Filter>
+    </None>
+    <None Include="Blend\CfxLightningSeed.comp">
+      <Filter>Shaders\Blend</Filter>
+    </None>
+    <None Include="Blend\CfxLightningStep.comp">
+      <Filter>Shaders\Blend</Filter>
+    </None>
+    <None Include="Blend\CfxPhoton.comp">
+      <Filter>Shaders\Blend</Filter>
+    </None>
+    <None Include="Blend\CfxWave.comp">
+      <Filter>Shaders\Blend</Filter>
+    </None>
+    <None Include="Scene\CausticPool.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\CrystalGrowth.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\LightningStorm.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
     <None Include="Blend\Blit.frag">
       <Filter>Shaders\Blend</Filter>
     </None>
