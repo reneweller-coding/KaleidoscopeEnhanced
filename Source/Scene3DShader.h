@@ -64,9 +64,18 @@ public:
 	static float s_cubeBudget;
 
 private:
+	// GEOM_PATCHES feeds GL_PATCHES (4 control points per quad) instead of
+	// triangles, which is the only geometry a tessellation stage can consume.
 	enum GeomKind { GEOM_POINTS = 0, GEOM_CUBES = 1, GEOM_RIBBON = 2,
-	                GEOM_GRID = 3, GEOM_QUADS = 4 };
+	                GEOM_GRID = 3, GEOM_QUADS = 4, GEOM_PATCHES = 5 };
 	void buildGeometry();
+
+	// Optional pipeline stages, named after the fragment shader
+	// (X.frag -> X.tesc / X.tese / X.geom).  A scene opts in by the file
+	// simply EXISTING; absent files leave the stage out of the program.
+	char *m_tescFilename = nullptr;
+	char *m_teseFilename = nullptr;
+	char *m_geomFilename = nullptr;
 	void rollVariation();
 
 	int    m_geomKind    = GEOM_POINTS;

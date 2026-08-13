@@ -66,10 +66,12 @@ GLC_DEF(glMemoryBarrier)
 GLC_DEF(glBindBufferBase)
 GLC_DEF(glClearBufferData)
 GLC_DEF(glDrawArraysIndirect)
+GLC_DEF(glPatchParameteri)
 
 #undef GLC_DEF
 
 int glcoreHasCompute = 0;
+int glcoreHasTess    = 0;
 
 static void *glcGet(const char *name)
 {
@@ -157,12 +159,18 @@ int glcoreInit(void)
     GLC_LOAD_OPT(glBindBufferBase)
     GLC_LOAD_OPT(glClearBufferData)
     GLC_LOAD_OPT(glDrawArraysIndirect)
+    GLC_LOAD_OPT(glPatchParameteri)
 
     glcoreHasCompute = ( glcore_glDispatchCompute && glcore_glBindImageTexture
                       && glcore_glMemoryBarrier   && glcore_glBindBufferBase
                       && glcore_glClearBufferData ) ? 1 : 0;
-    fprintf( stderr, "glcore: compute pipeline %s\n",
-             glcoreHasCompute ? "available" : "NOT available (fragment fallbacks)" );
+    // Geometry shaders need no extra entry point (core since 3.2); only
+    // tessellation adds one, so glPatchParameteri is the whole test.
+    glcoreHasTess = ( glcore_glPatchParameteri != 0 ) ? 1 : 0;
+
+    fprintf( stderr, "glcore: compute pipeline %s, tessellation %s\n",
+             glcoreHasCompute ? "available" : "NOT available (fragment fallbacks)",
+             glcoreHasTess ? "available" : "NOT available" );
 
 #undef GLC_LOAD
 #undef GLC_LOAD_OPT

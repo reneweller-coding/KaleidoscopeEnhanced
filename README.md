@@ -1092,6 +1092,40 @@ Not built: `Marching Cubes`. Meshing an isosurface needs a compute→VBO→indir
 draw path that this renderer does not have, and faking it with a raymarch would
 not have been the thing that was asked for. The `texSculpt` slot is reserved.
 
+### Tessellation and geometry stages
+
+Two pipeline stages that the project had never used are now wired in, and a
+scene opts into them **purely by file presence**: `setShadersPipeline()` looks
+for `X.tesc` / `X.tese` / `X.geom` next to a 3D scene's `X.vert` / `X.frag` and
+attaches whichever exist. No preset attribute, no engine change per scene — a
+missing file simply means "this scene does not use that stage".
+
+Tessellation additionally needs patch primitives, so `Scene3DShader` gained
+`geom="patches"`: a 64×64 field of quad patches (four control points each)
+drawn with `GL_PATCHES` and `glPatchParameteri(GL_PATCH_VERTICES, 4)`. That is
+the only geometry a tessellation control shader can consume.
+
+**`Ocean`** is the first scene on it. Six octaves of Gerstner waves — which
+displace the surface *horizontally* against the direction of travel, and that
+is what produces sharp crests and broad troughs instead of a sine ripple — with
+the tessellation level chosen per patch by distance, so the foreground gets
+many triangles and the horizon almost none.
+
+Things worth knowing before writing another one:
+
+- **Project in the evaluation shader, not the vertex shader.** In a tessellated
+  pipeline the vertex shader runs on the *patch corners*; projecting there
+  means the tessellator interpolates in clip space and the displacement never
+  appears.
+- **Outer tessellation levels must match across a shared edge**, so compute each
+  edge's level from that edge's own midpoint. Deriving it from the patch centre
+  gives neighbouring patches different levels and the surface cracks.
+- Any constant both stages use (here the sheet's `EXTENT`) has to be literally
+  the same in both, or they place the same patch in different spots.
+- Uniforms are **program-wide**, so the tessellation stages see `audioAdvance`
+  and the preset `<float>` params without any engine plumbing. Preset params are
+  scalars only — a `vec2` has to be a constant or two floats.
+
 ### EventHorizon — general relativity in a plain fragment shader
 
 `Scene/EventHorizon.frag` needs no compute at all. Each pixel integrates its own

@@ -50,22 +50,32 @@ Scene3DShader::Scene3DShader( const QString &filenameFragmentShader, const QStri
 	: EffectShader( filenameFragmentShader, minTimeSolo, maxTimeSolo,
 	                minTimeInterpolation, maxTimeInterpolation )
 {
-	if      ( geom == "cubes"  ) m_geomKind = GEOM_CUBES;
-	else if ( geom == "ribbon" ) m_geomKind = GEOM_RIBBON;
-	else if ( geom == "grid"   ) m_geomKind = GEOM_GRID;
-	else if ( geom == "quads"  ) m_geomKind = GEOM_QUADS;
-	else                         m_geomKind = GEOM_POINTS;
+	if      ( geom == "cubes"   ) m_geomKind = GEOM_CUBES;
+	else if ( geom == "ribbon"  ) m_geomKind = GEOM_RIBBON;
+	else if ( geom == "grid"    ) m_geomKind = GEOM_GRID;
+	else if ( geom == "quads"   ) m_geomKind = GEOM_QUADS;
+	else if ( geom == "patches" ) m_geomKind = GEOM_PATCHES;
+	else                          m_geomKind = GEOM_POINTS;
 
 	rollVariation();
 
 	// The matching vertex shader sits next to the fragment shader
 	// ("..\Scene3D\X.frag" -> "..\Scene3D\X.vert").
-	QString vert = filenameFragmentShader;
-	vert.replace( ".frag", ".vert" );
-	QByteArray vb = vert.toLocal8Bit();
-	char *vname = (char *) malloc( sizeof(char) * (vb.size() + 1) );
-	strcpy( vname, vb.constData() );
-	m_vertexShaderFilename = vname;
+	auto sibling = []( const QString &frag, const char *ext ) -> char *
+	{
+		QString s = frag;
+		s.replace( ".frag", ext );
+		QByteArray b = s.toLocal8Bit();
+		char *out = (char *) malloc( sizeof(char) * (b.size() + 1) );
+		strcpy( out, b.constData() );
+		return out;
+	};
+
+	m_vertexShaderFilename = sibling( filenameFragmentShader, ".vert" );
+	// Optional stages: named, but only used if the file actually exists.
+	m_tescFilename = sibling( filenameFragmentShader, ".tesc" );
+	m_teseFilename = sibling( filenameFragmentShader, ".tese" );
+	m_geomFilename = sibling( filenameFragmentShader, ".geom" );
 }
 
 Scene3DShader::~Scene3DShader()
@@ -200,6 +210,37 @@ void Scene3DShader::buildGeometry()
 				v.push_back( hash01( i * 4u + 3u ) );
 			}
 	}
+	else if( m_geomKind == GEOM_PATCHES )
+	{
+		// A 64 x 64 field of QUAD PATCHES — four control points each, in CCW
+		// order, which is what a tessellation control shader consumes.  The
+		// corners carry their global (u,v) so the evaluation shader can place
+		// and displace them; the actual triangle count is decided on the GPU.
+		const int W = 64, H = 64;
+		v.reserve( size_t(W) * H * 4 * 8 );
+		for( int cy = 0; cy < H; ++cy )
+			for( int cx = 0; cx < W; ++cx )
+			{
+				const float u0 = float(cx)     / float(W);
+				const float u1 = float(cx + 1) / float(W);
+				const float w0 = float(cy)     / float(H);
+				const float w1 = float(cy + 1) / float(H);
+				const float c[4][2] = {
+					{ u0, w0 }, { u1, w0 }, { u1, w1 }, { u0, w1 }
+				};
+				const unsigned int cell = (unsigned int)( cy * W + cx );
+				for( int k = 0; k < 4; ++k )
+				{
+					v.push_back( c[k][0] ); v.push_back( c[k][1] );
+					v.push_back( 0.f );
+					v.push_back( float(cell) );
+					v.push_back( hash01( cell * 4u + 0u ) );
+					v.push_back( hash01( cell * 4u + 1u ) );
+					v.push_back( hash01( cell * 4u + 2u ) );
+					v.push_back( hash01( cell * 4u + 3u ) );
+				}
+			}
+	}
 	else  // GEOM_RIBBON: 20 ribbons x 300 segments, two triangles per segment.
 	{
 		const int M = 20, S = 300;
@@ -244,7 +285,11 @@ void Scene3DShader::initUniforms( int width, int height )
 	// NOT the base initUniforms: setShaders() is deliberately fragment-only
 	// (the classic effects run on the fixed-function vertex path) — a real
 	// 3D scene needs its vertex shader actually attached.
-	m_sh_prog_id       = setShadersVF( m_vertexShaderFilename, m_fragmentShaderFilename );
+	// Tessellation / geometry stages join in automatically when their file is
+	// present next to the .vert/.frag — no engine change per scene.
+	m_sh_prog_id = setShadersPipeline( m_vertexShaderFilename,
+	                                   m_tescFilename, m_teseFilename,
+	                                   m_geomFilename, m_fragmentShaderFilename );
 	m_texPointUni1     = glGetUniformLocation( m_sh_prog_id, "tex0" );
 	m_texPointUni2     = glGetUniformLocation( m_sh_prog_id, "tex1" );
 	m_texSizeRcpUni    = glGetUniformLocation( m_sh_prog_id, "resolution" );
@@ -314,7 +359,18 @@ void Scene3DShader::draw()
 
 	glBindVertexArray( m_vao );
 
-	if( m_geomKind == GEOM_CUBES || m_geomKind == GEOM_GRID
+	if( m_geomKind == GEOM_PATCHES )
+	{
+		// Tessellated surface: the patch is the primitive, and the tessellator
+		// decides how many triangles it becomes.
+		glEnable( GL_DEPTH_TEST );
+		glDisable( GL_BLEND );
+		if( glPatchParameteri )
+			glPatchParameteri( GL_PATCH_VERTICES, 4 );
+		glDrawArrays( GL_PATCHES, 0, m_vertexCount );
+		glDisable( GL_DEPTH_TEST );
+	}
+	else if( m_geomKind == GEOM_CUBES || m_geomKind == GEOM_GRID
 	 || m_geomKind == GEOM_QUADS )
 	{
 		// Solid geometry: depth-tested, opaque.
