@@ -66,8 +66,12 @@ public:
 private:
 	// GEOM_PATCHES feeds GL_PATCHES (4 control points per quad) instead of
 	// triangles, which is the only geometry a tessellation stage can consume.
+	// GEOM_SCATTER is the same point cloud as GEOM_POINTS but drawn opaque and
+	// depth-tested, for geometry shaders that grow each point into a solid body
+	// (grass, hair, shards) — those must occlude each other, not add up.
 	enum GeomKind { GEOM_POINTS = 0, GEOM_CUBES = 1, GEOM_RIBBON = 2,
-	                GEOM_GRID = 3, GEOM_QUADS = 4, GEOM_PATCHES = 5 };
+	                GEOM_GRID = 3, GEOM_QUADS = 4, GEOM_PATCHES = 5,
+	                GEOM_SCATTER = 6 };
 	void buildGeometry();
 
 	// Optional pipeline stages, named after the fragment shader

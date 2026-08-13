@@ -1126,6 +1126,55 @@ Things worth knowing before writing another one:
   and the preset `<float>` params without any engine plumbing. Preset params are
   scalars only — a `vec2` has to be a constant or two floats.
 
+**`BloomSculpt`** is the second one: the patch sheet's (u,v) is read as
+(azimuth, polar angle) so the flat grid closes into a sphere, and its radius is
+then modulated by twelve spherical harmonics, one per pitch class. A held note
+swells its own mode, a chord grows several lobes at once. Two details carry it:
+
+- Every mode keeps the `sin(phi)^m` factor real spherical harmonics have. That
+  is not decoration — it makes the mode vanish at the poles, where the azimuth
+  is undefined. Without it each incoming meridian meets the pole with a
+  different value and the sphere pinches into a flickering spike.
+- The harmonic sum is **sharpened** before it becomes a radius (`sign(S) *
+  pow(|S|, 0.68)`, with the same factor applied to the derivatives). A sum of
+  smooth harmonics is smooth; rendered straight it is a bulging blob no matter
+  how many modes go in. The exponent pushes the mid values out toward the
+  extremes, so the surface spends its time on broad petals joined by tight
+  creases.
+
+### Geometry shaders — GrassField and Detonation
+
+The geometry stage gets one primitive at a time *with all its vertices at once*,
+which is the one thing neither a vertex nor a fragment shader can do. Both
+scenes on it exist because of that property, not despite it.
+
+**`GrassField`** (`geom="scatter"`) holds 60000 bare points in its buffer and
+nothing else; the geometry shader grows each into a tapered, wind-bent blade.
+The blade shape lives entirely in the shader, so changing the grass costs no
+buffer rebuild and no CPU work. Two of the points are hijacked as the backdrop —
+index 0 becomes the ground plane, index 1 a sky quad written straight in clip
+space at the far plane — because otherwise the gaps between blades are black.
+
+`geom="scatter"` is the same point cloud as `geom="points"` but drawn **opaque
+and depth-tested**. The existing point path is additive and depth-free, which is
+right for glowing particles and wrong for anything solid: overlapping blades
+would add up to white instead of occluding each other.
+
+**`Detonation`** (`geom="grid"`) takes an ordinary closed mesh and treats each
+triangle as an independent rigid body — only possible here, since a vertex
+shader sees one corner at a time and cannot know which face it belongs to. A
+ring of pressure sweeps out from a wandering epicentre, so shards lift in a
+travelling wave rather than the whole shell pulsing at once.
+
+- The mesh's own triangles are far too fine to be shards (52800 on a unit
+  sphere, each a hundredth across — flung individually they read as dust). So
+  the shards are **plates**: a coarse grid laid over the surface, with every
+  triangle inside a plate sharing one centre, one axis and one throw.
+- Which side of the shell a fragment is on is decided by `dot(N, V)`, **not** by
+  `gl_FrontFacing`. That flag follows the mesh's triangle winding, and the grid
+  this sphere is built from winds inward — it reports the entire outer shell as
+  back-facing and paints the whole ball as magma.
+
 ### EventHorizon — general relativity in a plain fragment shader
 
 `Scene/EventHorizon.frag` needs no compute at all. Each pixel integrates its own

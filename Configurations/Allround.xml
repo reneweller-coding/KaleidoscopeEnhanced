@@ -501,4 +501,27 @@
     <float name="glitterP" minValue="0.35" maxValue="0.85"></float>
   </TextureShader>
 
+  <TextureShader file="..\\Scene3D\\BloomSculpt.frag" type="scene3d" geom="patches" probability="0.4" mood="dreamy" complexity="3">
+    <float name="bloomP"   minValue="0.35" maxValue="0.75"></float>
+    <float name="camDistP" minValue="3.0"  maxValue="3.9"></float>
+    <float name="twistP"   minValue="0.5"  maxValue="1.6"></float>
+    <float name="detailP"  minValue="0.75" maxValue="1.25"></float>
+    <float name="glossP"   minValue="0.35" maxValue="0.85"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\GrassField.frag" type="scene3d" geom="scatter" probability="0.4" mood="calm" complexity="3">
+    <float name="camHP"  minValue="0.85" maxValue="1.45"></float>
+    <float name="bladeP" minValue="0.75" maxValue="1.15"></float>
+    <float name="windP"  minValue="0.55" maxValue="1.25"></float>
+    <float name="hueP"   minValue="0.2"  maxValue="0.85"></float>
+    <float name="skyP"   minValue="0.4"  maxValue="1.0"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\Detonation.frag" type="scene3d" geom="grid" probability="0.45" mood="aggressive" complexity="4">
+    <float name="blastP"   minValue="0.6"  maxValue="1.15"></float>
+    <float name="camDistP" minValue="2.9"  maxValue="3.6"></float>
+    <float name="spinP"    minValue="0.6"  maxValue="1.5"></float>
+    <float name="glowP"    minValue="0.45" maxValue="1.0"></float>
+  </TextureShader>
+
 </configuration>

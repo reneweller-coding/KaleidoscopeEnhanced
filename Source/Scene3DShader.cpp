@@ -55,6 +55,7 @@ Scene3DShader::Scene3DShader( const QString &filenameFragmentShader, const QStri
 	else if ( geom == "grid"    ) m_geomKind = GEOM_GRID;
 	else if ( geom == "quads"   ) m_geomKind = GEOM_QUADS;
 	else if ( geom == "patches" ) m_geomKind = GEOM_PATCHES;
+	else if ( geom == "scatter" ) m_geomKind = GEOM_SCATTER;
 	else                          m_geomKind = GEOM_POINTS;
 
 	rollVariation();
@@ -114,7 +115,7 @@ void Scene3DShader::buildGeometry()
 {
 	std::vector<float> v;
 
-	if( m_geomKind == GEOM_POINTS )
+	if( m_geomKind == GEOM_POINTS || m_geomKind == GEOM_SCATTER )
 	{
 		const int N = 60000;
 		v.reserve( size_t(N) * 8 );
@@ -368,6 +369,15 @@ void Scene3DShader::draw()
 		if( glPatchParameteri )
 			glPatchParameteri( GL_PATCH_VERTICES, 4 );
 		glDrawArrays( GL_PATCHES, 0, m_vertexCount );
+		glDisable( GL_DEPTH_TEST );
+	}
+	else if( m_geomKind == GEOM_SCATTER )
+	{
+		// Points that a geometry shader grows into solid bodies: depth-tested
+		// and opaque, so a near blade hides the ones behind it.
+		glEnable( GL_DEPTH_TEST );
+		glDisable( GL_BLEND );
+		glDrawArrays( GL_POINTS, 0, m_vertexCount );
 		glDisable( GL_DEPTH_TEST );
 	}
 	else if( m_geomKind == GEOM_CUBES || m_geomKind == GEOM_GRID
