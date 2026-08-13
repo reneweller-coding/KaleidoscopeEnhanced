@@ -16,6 +16,7 @@
 #include "TextureEffectKaleidoscopeBase.h"
 #include "Utils.h"
 #include "AudioFeatures.h"
+#include "ComputeFX.h"
 
 class ImageLoader;
 
@@ -543,6 +544,7 @@ private:
 	GLuint			m_physDiffuseProgId = 0;
 	GLuint			m_physVBO = 0;
 	GLuint			m_physDepVAO = 0;   // core profile: attrib state for the deposit points
+	ComputeFX		m_cfx;                     // GL 4.3 compute-shader sims
 	GLuint			m_physDiffuseCompId = 0;   // compute-shader diffuse (0 = fragment fallback)
 	GLint			m_physDifCTrailUni = -1;
 	GLint			m_physDifCResUni   = -1;

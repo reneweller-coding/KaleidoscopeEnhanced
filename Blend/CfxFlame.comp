@@ -1,0 +1,149 @@
+#version 430
+// CfxFlame.comp — fractal flames (Draves' chaos game) in real time.
+// -----------------------------------------------------------------------
+// 65k walkers each iterate a randomly chosen non-linear transform and plot
+// where they land, accumulating colour AND density atomically.  The density
+// histogram is the whole point: it is a SCATTER (every thread writes to a
+// pixel it only discovers at runtime), which a fragment shader cannot do.
+//
+// Anti-flicker: the transforms are driven by HOST-INTEGRATED phases, never
+// by time x an audio level — otherwise the whole attractor would jitter
+// whenever the loudness moved.
+// -----------------------------------------------------------------------
+
+layout(local_size_x = 256) in;
+
+layout(std430, binding = 0) buffer Accum { uint acc[]; };
+
+uniform ivec2 size;
+uniform float phase;      // integrated: overall morph
+uniform float warp;       // integrated: variation blend
+uniform float spin;       // integrated: rotation
+uniform uint  frame;      // RNG decorrelation between frames
+uniform float hue;
+uniform float level;
+uniform float kick;
+uniform float bright;
+uniform float drop;
+
+const float SCALE = 256.0;
+const int   ITERS = 32;
+const int   WARMUP = 12;
+
+uint pcg(inout uint s)
+{
+    s = s * 747796405u + 2891336453u;
+    uint w = ((s >> ((s >> 28) + 4u)) ^ s) * 277803737u;
+    return (w >> 22) ^ w;
+}
+float rnd(inout uint s) { return float(pcg(s)) * (1.0 / 4294967296.0); }
+
+// ---- classic flame variations ----
+vec2 vLinear     (vec2 p) { return p; }
+vec2 vSinusoidal (vec2 p) { return sin(p); }
+vec2 vSpherical  (vec2 p) { float r = dot(p, p) + 1e-6; return p / r; }
+vec2 vSwirl      (vec2 p) { float r = dot(p, p); float s = sin(r), c = cos(r);
+                            return vec2(p.x * s - p.y * c, p.x * c + p.y * s); }
+vec2 vHorseshoe  (vec2 p) { float r = length(p) + 1e-6;
+                            return vec2((p.x - p.y) * (p.x + p.y), 2.0 * p.x * p.y) / r; }
+vec2 vPolar      (vec2 p) { float r = length(p); float a = atan(p.y, p.x);
+                            return vec2(a * 0.3183099, r - 1.0); }
+vec2 vHandkerchief(vec2 p){ float r = length(p); float a = atan(p.y, p.x);
+                            return r * vec2(sin(a + r), cos(a - r)); }
+vec2 vDisc       (vec2 p) { float r = length(p); float a = atan(p.y, p.x) * 0.3183099;
+                            return a * vec2(sin(3.14159265 * r), cos(3.14159265 * r)); }
+
+vec2 variation(int id, vec2 p)
+{
+    if (id == 0) return vSpherical(p);
+    if (id == 1) return vSwirl(p);
+    if (id == 2) return vSinusoidal(p);
+    if (id == 3) return vHorseshoe(p);
+    if (id == 4) return vPolar(p);
+    if (id == 5) return vHandkerchief(p);
+    if (id == 6) return vDisc(p);
+    return vLinear(p);
+}
+
+// Four affine maps whose coefficients breathe on the integrated phases.
+void affine(int i, out vec2 A, out vec2 B, out vec2 C)
+{
+    float fi  = float(i);
+    float ang = spin * (0.6 + 0.27 * fi) + fi * 1.5708;
+    float s   = 0.58 + 0.16 * sin(warp * 1.17 + fi * 2.1)
+                     + 0.05 * bright;
+    float sh  = 0.22 * sin(phase * 0.83 + fi * 1.31);
+    float ca  = cos(ang), sa = sin(ang);
+    A = vec2( ca * s,        -sa * s + sh );
+    B = vec2( sa * s + sh,    ca * s      );
+    // Translations sit on a slowly rotating ring so the lobes orbit instead
+    // of drifting off screen.
+    float ta = phase * 0.71 + fi * 1.5708;
+    float tr = 0.52 + 0.18 * sin(warp * 0.63 + fi);
+    C = vec2(cos(ta), sin(ta)) * tr;
+}
+
+vec3 palette(float c)
+{
+    return 0.5 + 0.5 * cos(6.2831853 * (c + vec3(0.0, 0.33, 0.67)) + hue);
+}
+
+void splat(vec2 p, vec3 col)
+{
+    // World [-2.2, 2.2] -> pixels, with a gentle zoom on loud passages.
+    float zoom = 0.24 - 0.020 * level;
+    vec2 uv = p * zoom + 0.5;
+    ivec2 ip = ivec2(uv * vec2(size));
+    if (ip.x < 0 || ip.y < 0 || ip.x >= size.x || ip.y >= size.y) return;
+    uint i = uint(ip.y * size.x + ip.x) * 4u;
+    vec3 c = max(col, vec3(0.0));
+    atomicAdd(acc[i + 0u], uint(c.r * SCALE));
+    atomicAdd(acc[i + 1u], uint(c.g * SCALE));
+    atomicAdd(acc[i + 2u], uint(c.b * SCALE));
+    atomicAdd(acc[i + 3u], uint(SCALE));
+}
+
+void main()
+{
+    uint id = gl_GlobalInvocationID.x;
+    uint rs = id * 2654435761u + frame * 2246822519u + 1u;
+    pcg(rs); pcg(rs);
+
+    vec2  p  = vec2(rnd(rs), rnd(rs)) * 2.0 - 1.0;
+    float ci = rnd(rs);
+
+    // Variation assignment per transform: two ids blended by a slow weight so
+    // the flame changes CHARACTER without ever snapping between shapes.
+    int  vA[4]; int vB[4];
+    vA[0] = 0; vB[0] = 1;
+    vA[1] = 1; vB[1] = 3;
+    vA[2] = 2; vB[2] = 5;
+    vA[3] = 3; vB[3] = 6;
+    float wBlend = 0.5 + 0.5 * sin(warp * 0.47);
+    // A drop briefly pushes one lobe into the polar variation = a hard visual
+    // "snap open" that still interpolates rather than jumping.
+    float polarMix = clamp(drop * 1.2, 0.0, 1.0);
+
+    for (int it = 0; it < ITERS; ++it)
+    {
+        int t = int(rnd(rs) * 4.0) & 3;
+        vec2 A, B, C;
+        affine(t, A, B, C);
+        vec2 q = vec2(dot(A, p), dot(B, p)) + C;
+
+        vec2 v = mix(variation(vA[t], q), variation(vB[t], q), wBlend);
+        if (t == 1) v = mix(v, vPolar(q), polarMix);
+        p = v;
+
+        // Colour index drifts toward this transform's own colour.
+        float tc = float(t) * 0.25 + 0.08 * sin(phase * 0.4 + float(t));
+        ci = 0.5 * (ci + tc);
+
+        if (it >= WARMUP)
+        {
+            // Kicks momentarily brighten the freshly plotted points.
+            vec3 col = palette(ci) * (1.0 + 0.55 * kick);
+            splat(p, col);
+        }
+    }
+}

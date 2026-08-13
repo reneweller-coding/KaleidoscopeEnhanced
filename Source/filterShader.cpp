@@ -2625,7 +2625,22 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 			}
 
 			// REVIEW MODE: step strictly alphabetically (built lazily).
-			if( m_reviewMode && !m_effectTextures.empty() )
+			// Remote scene browser: a DIRECTLY requested scene wins over
+			// EVERYTHING, including the review sequence — picking a scene in
+			// the remote and being silently ignored is never what was meant.
+			if( m_forcedNextTexture >= 0
+			    && m_forcedNextTexture < (int)m_effectTextures.size() )
+			{
+				m_nextEffectTexture = m_forcedNextTexture;
+				m_forcedNextTexture = -1;
+				fprintf( stderr, "Forced: %s\n",
+				         m_effectTextures[m_nextEffectTexture]->fragmentName() );
+				// Resume the review walk AFTER the scene that was jumped to.
+				for( unsigned int k = 0; k < m_reviewOrder.size(); ++k )
+					if( m_reviewOrder[k] == m_nextEffectTexture )
+					{ m_reviewPos = ( k + 1 ) % (int)m_reviewOrder.size(); break; }
+			}
+			else if( m_reviewMode && !m_effectTextures.empty() )
 			{
 				if( m_reviewOrder.size() != m_effectTextures.size() )
 				{
@@ -2647,14 +2662,6 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 				m_reviewPos = ( m_reviewPos + 1 ) % (int)m_reviewOrder.size();
 				fprintf( stderr, "Review: %s\n",
 				         m_effectTextures[m_nextEffectTexture]->fragmentName() );
-			}
-			// Remote scene browser: a DIRECTLY requested scene (forceScene)
-			// overrides the random mood roll entirely.
-			else if( m_forcedNextTexture >= 0
-			    && m_forcedNextTexture < (int)m_effectTextures.size() )
-			{
-				m_nextEffectTexture = m_forcedNextTexture;
-				m_forcedNextTexture = -1;
 			}
 			else
 			for( unsigned int i = 0; i < m_maxIterationsEffectSearch; i++ )
@@ -2804,6 +2811,37 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 		}
 	}
 
+
+	// ---- GL 4.3 compute-shader sims (ComputeFX) ----
+	// Same demand gating as the older sims, but generic: an effect opts in by
+	// declaring the sampler, which sets one bit of cfxMask().  Only the kinds
+	// actually on screen are stepped, and each publishes on its own unit.
+	{
+		static bool cfxInit = false;
+		if( !cfxInit ) { m_cfx.init(); cfxInit = true; }
+
+		unsigned int need = m_effectTextures[m_actEffectTexture]->cfxMask();
+		if( m_stateInterpolationEffectTexture != 0 )
+			need |= m_effectTextures[m_nextEffectTexture]->cfxMask();
+
+		if( need )
+		{
+			GLuint src = m_liveTex ? m_liveTex : m_actTex;
+			for( int k = 0; k < CFX_COUNT; ++k )
+			{
+				if( !( need & ( 1u << k ) ) ) continue;
+				GLuint tex = m_cfx.step( k, audio, timeSinceLastFrameSec,
+				                         m_globaltime, src, m_width, m_height );
+				if( tex )
+				{
+					glActiveTexture( GL_TEXTURE0 + kCfxInfo[k].unit );
+					glBindTexture( GL_TEXTURE_2D, tex );
+				}
+			}
+			glActiveTexture( GL_TEXTURE0 );
+		}
+		m_cfx.retireIdle( m_globaltime );
+	}
 
 	// restore render destination to regular frame buffer
 	glViewport( 0, 0, m_width, m_height );

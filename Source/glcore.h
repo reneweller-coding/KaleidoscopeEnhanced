@@ -47,9 +47,14 @@ typedef ptrdiff_t GLintptr;
 #define GL_ELEMENT_ARRAY_BUFFER           0x8893
 #define GL_PIXEL_UNPACK_BUFFER            0x88EC
 #define GL_PIXEL_PACK_BUFFER              0x88EB
+#define GL_SHADER_STORAGE_BUFFER          0x90D2
+#define GL_DISPATCH_INDIRECT_BUFFER       0x90EE
+#define GL_DRAW_INDIRECT_BUFFER           0x8F3F
 #define GL_STATIC_DRAW                    0x88E4
 #define GL_DYNAMIC_DRAW                   0x88E8
 #define GL_STREAM_DRAW                    0x88E0
+#define GL_STATIC_COPY                    0x88E6
+#define GL_DYNAMIC_COPY                   0x88EA
 #define GL_WRITE_ONLY                     0x88B9
 #define GL_READ_ONLY                      0x88B8
 #define GL_READ_WRITE                     0x88BA
@@ -83,13 +88,22 @@ typedef ptrdiff_t GLintptr;
 #define GL_R32F                           0x822E
 #define GL_RG                             0x8227
 #define GL_RG16F                          0x822F
+#define GL_RG32F                          0x8230
+#define GL_R32UI                          0x8236
+#define GL_RED_INTEGER                    0x8D94
+#define GL_MAX_TEXTURE_IMAGE_UNITS        0x8872
+#define GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS 0x90EB
 
 #define GL_PROGRAM_POINT_SIZE             0x8642
 #define GL_NUM_EXTENSIONS                 0x821D
+#define GL_CURRENT_PROGRAM                0x8B8D
 
 #define GL_SHADER_IMAGE_ACCESS_BARRIER_BIT 0x00000020
 #define GL_TEXTURE_FETCH_BARRIER_BIT       0x00000008
 #define GL_FRAMEBUFFER_BARRIER_BIT         0x00000400
+#define GL_SHADER_STORAGE_BARRIER_BIT      0x00002000
+#define GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT 0x00000001
+#define GL_COMMAND_BARRIER_BIT             0x00000040
 #define GL_ALL_BARRIER_BITS                0xFFFFFFFF
 
 // ---- Function pointers (loaded in glcoreInit) ----
@@ -132,6 +146,8 @@ GLC_FN(void,   glGetProgramInfoLog, (GLuint, GLsizei, GLsizei*, GLchar*))
 GLC_FN(void,   glUseProgram, (GLuint))
 GLC_FN(GLint,  glGetUniformLocation, (GLuint, const GLchar*))
 GLC_FN(void,   glUniform1i, (GLint, GLint))
+GLC_FN(void,   glUniform2i, (GLint, GLint, GLint))
+GLC_FN(void,   glUniform1ui, (GLint, GLuint))
 GLC_FN(void,   glUniform1f, (GLint, GLfloat))
 GLC_FN(void,   glUniform2f, (GLint, GLfloat, GLfloat))
 GLC_FN(void,   glUniform3f, (GLint, GLfloat, GLfloat, GLfloat))
@@ -154,8 +170,12 @@ GLC_FN(void,   glFramebufferRenderbuffer, (GLenum, GLenum, GLenum, GLuint))
 GLC_FN(void,   glGenerateMipmap, (GLenum))
 GLC_FN(const GLubyte*, glGetStringi, (GLenum, GLuint))
 GLC_FN(void,   glDispatchCompute, (GLuint, GLuint, GLuint))
+GLC_FN(void,   glDispatchComputeIndirect, (GLintptr))
 GLC_FN(void,   glBindImageTexture, (GLuint, GLuint, GLint, GLboolean, GLint, GLenum, GLenum))
 GLC_FN(void,   glMemoryBarrier, (GLbitfield))
+GLC_FN(void,   glBindBufferBase, (GLenum, GLuint, GLuint))
+GLC_FN(void,   glClearBufferData, (GLenum, GLenum, GLenum, GLenum, const void*))
+GLC_FN(void,   glDrawArraysIndirect, (GLenum, const void*))
 
 #undef GLC_FN
 
@@ -191,6 +211,8 @@ GLC_FN(void,   glMemoryBarrier, (GLbitfield))
 #define glUseProgram               glcore_glUseProgram
 #define glGetUniformLocation       glcore_glGetUniformLocation
 #define glUniform1i                glcore_glUniform1i
+#define glUniform2i                glcore_glUniform2i
+#define glUniform1ui               glcore_glUniform1ui
 #define glUniform1f                glcore_glUniform1f
 #define glUniform2f                glcore_glUniform2f
 #define glUniform3f                glcore_glUniform3f
@@ -213,8 +235,16 @@ GLC_FN(void,   glMemoryBarrier, (GLbitfield))
 #define glGenerateMipmap           glcore_glGenerateMipmap
 #define glGetStringi               glcore_glGetStringi
 #define glDispatchCompute          glcore_glDispatchCompute
+#define glDispatchComputeIndirect  glcore_glDispatchComputeIndirect
 #define glBindImageTexture         glcore_glBindImageTexture
 #define glMemoryBarrier            glcore_glMemoryBarrier
+#define glBindBufferBase           glcore_glBindBufferBase
+#define glClearBufferData          glcore_glClearBufferData
+#define glDrawArraysIndirect       glcore_glDrawArraysIndirect
+
+// True when every entry point the compute pipeline needs resolved (set by
+// glcoreInit).  Callers gate their compute path on this and keep a fallback.
+extern int glcoreHasCompute;
 
 // Resolve every pointer above; returns false (and logs the names) if any
 // required function is missing.  GL context must be current.

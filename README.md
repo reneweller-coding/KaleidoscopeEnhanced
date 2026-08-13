@@ -1042,6 +1042,53 @@ photo is continuously injected as fresh dye.
 
 ---
 
+## Compute-shader effects (`ComputeFX`)
+
+Everything in `Source/ComputeFX.{h,cpp}` needs a capability a fragment shader
+does not have: **scattered writes** (a thread decides at runtime *which* pixel
+it writes), **atomics**, **workgroup shared memory** or **shader-storage
+buffers**. A scene opts in exactly like the older sims — by *declaring the
+sampler*; `EffectShader::cfxMask()` resolves that to one bit per sim, and only
+the kinds actually on screen are stepped. Idle sims free their GPU memory after
+25 s. Every kind fails soft: no compute, no program, no allocation → the scene
+just sees an empty field.
+
+The scattering sims share one back end (`Blend/CfxResolve.comp`): they
+`atomicAdd` colour and density into a **uint** accumulator (fixed point —
+float atomics are an optional extension, uint atomics are core), which is then
+resolved into an `RGBA16F` canvas that keeps a decaying copy of the previous
+frame. A single frame of a chaos game or a particle splat is far too sparse to
+look like anything; that temporal integration is what makes it silky.
+
+| Scene | Sampler / unit | What compute buys |
+|---|---|---|
+| `FractalFlame` | `texFlame` (12) | 65k chaos-game walkers plot 2M points per frame into an atomic **density histogram**; log-density tonemapping gives the classic flame filaments |
+| `ParticleFlow` | `texParticles` (13) | 1.3M particles advected along the **curl** of a noise potential (divergence-free), each splatting the photo's colour where it happens to be |
+| `GalaxyCollision` | `texNBody` (14) | 65k gravitating stars, forces accumulated through **shared-memory tiles** against a 1/32 sample; two discs on a decaying mutual orbit grow tidal bridges and tails |
+| `Murmuration` | `texBoids` (15) | 131k boids with a **real neighbourhood** from an atomically built spatial-hash grid — separation, alignment, cohesion and a density-gradient pressure term |
+
+**Lessons that cost a rebuild each** (all fixed in the code, worth not
+repeating): `centroid` is a reserved GLSL keyword and cannot be a uniform name.
+A capped per-cell index list makes separation saturate while cohesion, being an
+average, does not — the flock collapses to a point unless a pressure term reads
+the *uncapped* counters. Scattering a flock "radially away from the centre" is
+a translation, not a scatter: on a wrapped domain it marches the whole
+population into the border. Orbital speeds must be *derived* from the gravity
+constant actually used — guessing left the discs 70× under-speed, so they
+free-fell through the core and sprayed across the frame. And a NaN position
+passes every bounds check (`NaN < 0` and `NaN >= w` are both false), so
+particle sims need an explicit finite-check respawn.
+
+**Probing these is its own trap.** Use one app run per scene with a generated
+single-scene preset (`scratchpad/probe.ps1`): a preset whose name starts with
+`Test` enables review mode and auto-advances every 8 s past whatever the remote
+just forced, the recording's JPEGs lag behind a background encoder queue, and
+during a cross-fade two scenes are on screen at once. All three silently
+mis-attribute screenshots. `/api/snapshot` is synchronous but must be called
+twice — the first call only arms the capture.
+
+---
+
 ## GPU volumetric fire/smoke simulation
 
 `VolumetricFire` is the third GPU simulation, and the most literal "3D" one: a

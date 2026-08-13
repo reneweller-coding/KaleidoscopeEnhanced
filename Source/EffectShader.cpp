@@ -2,6 +2,7 @@
 
 #include "shader_setup.h"
 #include "EffectShader.h"
+#include "ComputeFX.h"
 
 #include <QtGui/QImageReader>
 #include <QtCore/qdir.h>
@@ -504,4 +505,33 @@ bool EffectShader::usesPhysarum()
 		m_usesPhysarum = ( m_sh_prog_id != 0 &&
 		                   glGetUniformLocation( m_sh_prog_id, "texPhysarum" ) >= 0 ) ? 1 : 0;
 	return m_usesPhysarum == 1;
+}
+
+// Which compute-FX sims does this shader want?  One bit per CfxKind, resolved
+// once per program: a shader opts in purely by DECLARING the sampler (same
+// convention as texSim/texFluid above).  The sampler's texture unit is bound
+// here too — sampler uniforms never change, so once per program is enough.
+unsigned int EffectShader::cfxMask()
+{
+	if( !m_glReady || m_sh_prog_id == 0 )
+		return 0;
+	if( m_cfxProg != m_sh_prog_id )
+	{
+		m_cfxProg = m_sh_prog_id;
+		m_cfxMask = 0;
+		GLint prev = 0;
+		glGetIntegerv( GL_CURRENT_PROGRAM, &prev );
+		glUseProgram( m_sh_prog_id );
+		for( int k = 0; k < CFX_COUNT; ++k )
+		{
+			GLint loc = glGetUniformLocation( m_sh_prog_id, kCfxInfo[k].sampler );
+			if( loc >= 0 )
+			{
+				m_cfxMask |= ( 1u << k );
+				glUniform1i( loc, kCfxInfo[k].unit );
+			}
+		}
+		glUseProgram( GLuint( prev ) );
+	}
+	return m_cfxMask;
 }

@@ -36,6 +36,8 @@ GLC_DEF(glGetProgramInfoLog)
 GLC_DEF(glUseProgram)
 GLC_DEF(glGetUniformLocation)
 GLC_DEF(glUniform1i)
+GLC_DEF(glUniform2i)
+GLC_DEF(glUniform1ui)
 GLC_DEF(glUniform1f)
 GLC_DEF(glUniform2f)
 GLC_DEF(glUniform3f)
@@ -58,10 +60,16 @@ GLC_DEF(glFramebufferRenderbuffer)
 GLC_DEF(glGenerateMipmap)
 GLC_DEF(glGetStringi)
 GLC_DEF(glDispatchCompute)
+GLC_DEF(glDispatchComputeIndirect)
 GLC_DEF(glBindImageTexture)
 GLC_DEF(glMemoryBarrier)
+GLC_DEF(glBindBufferBase)
+GLC_DEF(glClearBufferData)
+GLC_DEF(glDrawArraysIndirect)
 
 #undef GLC_DEF
+
+int glcoreHasCompute = 0;
 
 static void *glcGet(const char *name)
 {
@@ -117,6 +125,8 @@ int glcoreInit(void)
     GLC_LOAD(glUseProgram)
     GLC_LOAD(glGetUniformLocation)
     GLC_LOAD(glUniform1i)
+    GLC_LOAD(glUniform2i)
+    GLC_LOAD(glUniform1ui)
     GLC_LOAD(glUniform1f)
     GLC_LOAD(glUniform2f)
     GLC_LOAD(glUniform3f)
@@ -141,8 +151,18 @@ int glcoreInit(void)
     // Compute (GL 4.3): required for the compute-shader path, but the app
     // still RUNS without it (fragment ping-pong fallbacks stay in place).
     GLC_LOAD_OPT(glDispatchCompute)
+    GLC_LOAD_OPT(glDispatchComputeIndirect)
     GLC_LOAD_OPT(glBindImageTexture)
     GLC_LOAD_OPT(glMemoryBarrier)
+    GLC_LOAD_OPT(glBindBufferBase)
+    GLC_LOAD_OPT(glClearBufferData)
+    GLC_LOAD_OPT(glDrawArraysIndirect)
+
+    glcoreHasCompute = ( glcore_glDispatchCompute && glcore_glBindImageTexture
+                      && glcore_glMemoryBarrier   && glcore_glBindBufferBase
+                      && glcore_glClearBufferData ) ? 1 : 0;
+    fprintf( stderr, "glcore: compute pipeline %s\n",
+             glcoreHasCompute ? "available" : "NOT available (fragment fallbacks)" );
 
 #undef GLC_LOAD
 #undef GLC_LOAD_OPT

@@ -673,4 +673,24 @@
   <TextureShader file="..\Scene3D\MelodyScript.frag" type="scene3d" geom="ribbon" probability="0.3" complexity="1">
   </TextureShader>
 
+  <TextureShader file="..\\Scene\\FractalFlame.frag" type="normal" probability="0.5" complexity="2">
+    <float name="glowP" minValue="0.25" maxValue="0.6"></float>
+    <float name="photoP" minValue="0.03" maxValue="0.12"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene\\ParticleFlow.frag" type="normal" probability="0.5" complexity="2">
+    <float name="smearP" minValue="0.25" maxValue="0.9"></float>
+    <float name="glowP" minValue="0.3" maxValue="0.8"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene\\GalaxyCollision.frag" type="normal" probability="0.45" complexity="2">
+    <float name="glowP" minValue="0.4" maxValue="0.9"></float>
+    <float name="dustP" minValue="0.3" maxValue="0.8"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene\\Murmuration.frag" type="normal" probability="0.45" complexity="2">
+    <float name="inkP" minValue="0.4" maxValue="0.9"></float>
+    <float name="glowP" minValue="0.3" maxValue="0.7"></float>
+  </TextureShader>
+
 </configuration>

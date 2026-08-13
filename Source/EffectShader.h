@@ -122,6 +122,8 @@ public:
 
 	// Same for the Physarum trail map ("texPhysarum" uniform, unit 11).
 	bool usesPhysarum();
+	// Bit k set = this shader declares kCfxInfo[k].sampler (compute-FX sims).
+	unsigned int cfxMask();
 
 	// The fragment-shader file this effect uses (for the debug overlay).
 	const char* fragmentName() const { return m_fragmentShaderFilename ? m_fragmentShaderFilename : "?"; }
@@ -190,6 +192,8 @@ protected:
 	int		m_usesSmoke3D = -1;  // same caching for the volumetric smoke/fire field
 	int		m_usesSSM = -1;      // same caching for the self-similarity matrix
 	int		m_usesPhysarum = -1; // same caching for the Physarum trail map
+	unsigned int	m_cfxMask = 0;   // compute-FX sampler bits (see cfxMask())
+	GLuint		m_cfxProg = 0;   // program the mask was resolved for
 
 	bool	m_glReady = false;      // lazy compile: program built yet?
 

@@ -1,0 +1,176 @@
+#version 430
+// CfxBoidsStep.comp — Reynolds flocking over a spatial-hash neighbourhood.
+// -----------------------------------------------------------------------
+// Separation / alignment / cohesion evaluated against the 3x3 cells around
+// each boid, plus a slowly orbiting attractor that gives the murmuration a
+// destination.  Kicks scatter the flock; a drop collapses it hard onto the
+// attractor, which reads as the whole swarm "inhaling".
+//
+// Each boid is drawn as a short streak (a few splats along its velocity), so
+// the flock renders as motion-blurred filaments rather than dots.
+// -----------------------------------------------------------------------
+
+layout(local_size_x = 256) in;
+
+layout(std430, binding = 0) buffer Accum { uint acc[]; };
+layout(std430, binding = 1) buffer Boids { vec4 boid[]; };
+layout(std430, binding = 2) buffer Grid  { uint cell[]; };
+
+uniform ivec2 size;
+uniform uint  count;
+uniform int   gridN;
+uniform int   perCell;
+uniform float dt;
+uniform float goalPhase;
+uniform float kick;
+uniform float level;
+uniform float drop;
+uniform float hue;
+uniform float bright;
+
+const float SCALE = 256.0;
+
+void splat1(ivec2 ip, vec3 col, float w)
+{
+    if (ip.x < 0 || ip.y < 0 || ip.x >= size.x || ip.y >= size.y) return;
+    uint i = uint(ip.y * size.x + ip.x) * 4u;
+    vec3 c = max(col, vec3(0.0)) * w;
+    atomicAdd(acc[i + 0u], uint(c.r * SCALE));
+    atomicAdd(acc[i + 1u], uint(c.g * SCALE));
+    atomicAdd(acc[i + 2u], uint(c.b * SCALE));
+    atomicAdd(acc[i + 3u], uint(w * SCALE));
+}
+
+// A bird gets a small CROSS footprint, not a single texel.  The resolve pass
+// keeps the brighter of (this frame, decayed previous), so a sub-pixel-sparse
+// population would never build up into readable density no matter how long it
+// ran — coverage has to come from the splat itself.
+void splat(vec2 uv, vec3 col, float w)
+{
+    ivec2 ip = ivec2(uv * vec2(size));
+    splat1(ip,                  col, w);
+    splat1(ip + ivec2( 1,  0), col, w * 0.5);
+    splat1(ip + ivec2(-1,  0), col, w * 0.5);
+    splat1(ip + ivec2( 0,  1), col, w * 0.5);
+    splat1(ip + ivec2( 0, -1), col, w * 0.5);
+}
+
+void main()
+{
+    uint id = gl_GlobalInvocationID.x;
+    if (id >= count) return;
+
+    vec4 me = boid[id];
+    vec2 p = me.xy, v = me.zw;
+
+    vec2  sep = vec2(0.0), ali = vec2(0.0), coh = vec2(0.0);
+    float nAli = 0.0, nCoh = 0.0;
+
+    const float rSep = 0.0065;
+    const float rVis = 0.016;
+
+    // PRESSURE from the uncapped cell counts.  The per-cell index list is
+    // capped at `perCell`, so in a dense jam every boid only ever sees the
+    // same 24 neighbours and its separation force saturates — while cohesion,
+    // being an average, does not.  That asymmetry collapsed the entire flock
+    // onto a single point.  The raw counters are NOT capped, so their spatial
+    // gradient gives a repulsion that keeps working at any density.
+    vec2  dens2 = vec2(0.0);
+    float total = 0.0;
+
+    ivec2 g = clamp(ivec2(fract(p) * float(gridN)), ivec2(0), ivec2(gridN - 1));
+    for (int oy = -1; oy <= 1; ++oy)
+    for (int ox = -1; ox <= 1; ++ox)
+    {
+        ivec2 gc = ivec2((g.x + ox + gridN) % gridN, (g.y + oy + gridN) % gridN);
+        uint base = uint(gc.y * gridN + gc.x) * uint(perCell + 1);
+        float cnt = float(cell[base]);
+        dens2 += vec2(float(ox), float(oy)) * cnt;
+        total += cnt;
+        uint n = min(cell[base], uint(perCell));
+        for (uint k = 0u; k < n; ++k)
+        {
+            uint oi = cell[base + 1u + k];
+            if (oi == id) continue;
+            vec4 ob = boid[oi];
+            // Shortest vector on the wrapped torus.
+            vec2 d = ob.xy - p;
+            d -= round(d);
+            float dist = length(d);
+            if (dist > rVis) continue;
+            if (dist < rSep) sep -= d / (dist + 1e-4) * (rSep - dist);
+            ali += ob.zw; nAli += 1.0;
+            coh += d;     nCoh += 1.0;
+        }
+    }
+
+    if (nAli > 0.0) ali = ali / nAli - v;
+    if (nCoh > 0.0) coh = coh / nCoh;
+
+    // FIVE slowly orbiting attractors, assigned by a hash of the boid id.
+    // Two attractors pulled the whole population into two fat blobs with no
+    // internal structure; five keeps the flock split into travelling BANDS,
+    // which is what makes a murmuration readable.
+    float sel = fract(float(id) * 0.618034);
+    float gi  = floor(sel * 5.0);
+    float ga  = goalPhase * (0.7 + 0.23 * gi) + gi * 1.2566;
+    float gr  = 0.20 + 0.11 * sin(goalPhase * 0.61 + gi * 2.3);
+    vec2 goal = vec2(0.5) + gr * vec2(cos(ga), sin(ga * 1.17));
+    vec2 toGoal = goal - p;
+    toGoal -= round(toGoal);
+
+    // Down the density gradient, scaled by how crowded it actually is.
+    vec2 pressure = -dens2 / max(total, 1.0)
+                  * clamp(total / (float(count) / float(gridN * gridN) * 9.0),
+                          0.0, 8.0);
+
+    // Cohesion is deliberately WEAK: on a torus with 131k birds it is the
+    // runaway term, and the flock's shape comes from the goals + pressure.
+    vec2 acc2 = sep * 26.0
+              + pressure * 0.55
+              + ali * 1.9
+              + coh * 0.55
+              + toGoal * (0.16 + 2.6 * drop);
+
+    // Kicks SCATTER the flock — per-bird random directions.  Pushing everyone
+    // radially away from the frame centre (the obvious first idea) is not a
+    // scatter but a translation: on a wrapped domain it marched the entire
+    // population into the border and pinned it there.
+    if (kick > 0.25)
+    {
+        float ka = fract(float(id) * 0.7548776 + goalPhase * 0.3) * 6.2831853;
+        acc2 += vec2(cos(ka), sin(ka)) * kick * 0.60;
+    }
+
+    v += acc2 * dt;
+
+    // Speed limit -> the flock keeps a consistent, readable pace.
+    float spMax = 0.085 + 0.11 * level;
+    float sp = length(v);
+    if (sp > spMax) v *= spMax / sp;
+    if (sp < spMax * 0.35) v *= 1.06;
+
+    // Guard: one NaN velocity would put a bird at an undefined pixel forever
+    // (NaN fails every bounds comparison), so respawn instead of trusting it.
+    if (!(dot(v, v) < 1.0e6) || !(dot(p, p) < 1.0e6))
+    {
+        p = vec2(fract(float(id) * 0.6180339), fract(float(id) * 0.3819660));
+        v = vec2(0.0);
+    }
+
+    p = fract(p + v * dt + 1.0);
+    boid[id] = vec4(p, v);
+
+    // Bright material makes the flock colder/whiter, dark material warmer.
+    float shade = clamp(sp / spMax, 0.0, 1.0);
+    vec3 col = 0.5 + 0.5 * cos(6.2831853 * (shade * 0.30 + 0.12 * bright
+                                            + vec3(0.0, 0.33, 0.67)) + hue);
+    col *= 0.45 + 1.1 * shade;
+
+    // Streak: four splats back along the velocity.
+    for (int s = 0; s < 4; ++s)
+    {
+        float f = float(s) * 0.25;
+        splat(fract(p - v * dt * f * 2.2), col, 0.55 - 0.10 * float(s));
+    }
+}
