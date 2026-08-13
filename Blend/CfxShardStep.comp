@@ -1,0 +1,89 @@
+#version 430
+// CfxShardStep.comp — shatter and reassemble.
+// -----------------------------------------------------------------------
+// Each shard is an independent rigid piece of the frame with its own
+// offset, rotation and spin.  It splats its patch of the photo wherever it
+// currently is, which is a scatter: the destination pixels are decided by
+// the shard's state at runtime.  Between bursts a spring pulls every shard
+// home, so the picture visibly re-assembles itself.
+// -----------------------------------------------------------------------
+layout(local_size_x = 256) in;
+
+layout(std430, binding = 0) buffer Accum  { uint acc[]; };
+layout(std430, binding = 1) buffer ShardA { vec4 sa[]; };
+layout(std430, binding = 2) buffer ShardB { vec4 sb[]; };
+
+uniform sampler2D texPhoto;
+uniform ivec2 size;
+uniform ivec2 grid;        // shards across x and y
+uniform float dt;
+uniform float springK;     // pull back home
+uniform float damp;
+uniform float gravity;
+uniform float level;
+
+const float SCALE = 256.0;
+
+void splat1(ivec2 ip, vec3 col, float w)
+{
+    if (ip.x < 0 || ip.y < 0 || ip.x >= size.x || ip.y >= size.y) return;
+    uint i = uint(ip.y * size.x + ip.x) * 4u;
+    vec3 c = max(col, vec3(0.0)) * w;
+    atomicAdd(acc[i + 0u], uint(c.r * SCALE));
+    atomicAdd(acc[i + 1u], uint(c.g * SCALE));
+    atomicAdd(acc[i + 2u], uint(c.b * SCALE));
+    atomicAdd(acc[i + 3u], uint(w * SCALE));
+}
+
+void main()
+{
+    uint id = gl_GlobalInvocationID.x;
+    uint total = uint(grid.x * grid.y);
+    if (id >= total) return;
+
+    vec4 A = sa[id];
+    vec4 B = sb[id];
+
+    // Spring home + gravity while away.
+    vec2 off = A.xy;
+    vec2 vel = B.xy;
+    vel += (-off * springK - vec2(0.0, gravity * min(length(off) * 6.0, 1.0))) * dt;
+    vel *= damp;
+    off += vel * dt;
+
+    float rot = A.z + B.z * dt;
+    B.z *= damp;
+    // Rotation settles back to square as the shard comes home.
+    rot = mix(rot, 0.0, clamp(dt * springK * 0.5, 0.0, 1.0));
+
+    sa[id] = vec4(off, rot, 0.0);
+    sb[id] = vec4(vel, B.z, B.w);
+
+    // Home rectangle of this shard, in uv.
+    ivec2 g = ivec2(int(id) % grid.x, int(id) / grid.x);
+    vec2 cell = 1.0 / vec2(grid);
+    vec2 home = (vec2(g) + 0.5) * cell;
+
+    float ca = cos(rot), sn = sin(rot);
+    mat2 R = mat2(ca, -sn, sn, ca);
+
+    // Draw the shard: sample its own patch of the photo and place it at the
+    // shard's current pose.  8x8 samples per shard is enough at this scale.
+    for (int sy = 0; sy < 8; ++sy)
+    for (int sx = 0; sx < 8; ++sx)
+    {
+        vec2 loc = (vec2(sx, sy) + 0.5) / 8.0 - 0.5;      // -0.5..0.5
+        vec2 srcUV = home + loc * cell;
+        vec3 col = texture(texPhoto, srcUV).rgb;
+
+        vec2 dstUV = home + R * (loc * cell) + off;
+        // A shard leaving the frame just stops being drawn.
+        if (dstUV.x < 0.0 || dstUV.x > 1.0 || dstUV.y < 0.0 || dstUV.y > 1.0) continue;
+
+        ivec2 ip = ivec2(dstUV * vec2(size));
+        // Fill the gaps between samples so the shard reads as a solid piece.
+        for (int oy = 0; oy < 3; ++oy)
+        for (int ox = 0; ox < 3; ++ox)
+            splat1(ip + ivec2(ox, oy), col, 0.16);
+    }
+}

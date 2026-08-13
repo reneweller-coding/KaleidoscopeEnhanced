@@ -48,5 +48,8 @@ void main()
 
     vec3 prev = imageLoad(imgOut, p).rgb;
     // max() rather than += : overlapping trails must not saturate to white.
-    imageStore(imgOut, p, vec4(max(col, prev * decay), 1.0));
+    // ALPHA carries this frame's raw density.  Screen-space surface effects
+    // (liquid metal, shatter coverage) reconstruct their geometry from it, and
+    // writing a constant 1.0 there silently told them "solid everywhere".
+    imageStore(imgOut, p, vec4(max(col, prev * decay), hits));
 }

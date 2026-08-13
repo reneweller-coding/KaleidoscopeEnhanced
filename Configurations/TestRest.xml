@@ -561,4 +561,34 @@
     <float name="glowP" minValue="0.3" maxValue="0.8"></float>
   </TextureShader>
 
+  <TextureShader file="..\\Scene\\InkTank.frag" type="normal" probability="1.0" complexity="2">
+    <float name="glowP" minValue="0.3" maxValue="0.8"></float>
+    <float name="inkP" minValue="0.4" maxValue="0.9"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene\\FerroSpikes.frag" type="normal" probability="1.0" complexity="2">
+    <float name="shineP" minValue="0.3" maxValue="0.9"></float>
+    <float name="reflectP" minValue="0.3" maxValue="0.8"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene\\ErodedLand.frag" type="normal" probability="1.0" complexity="2">
+    <float name="sunP" minValue="0.3" maxValue="0.9"></float>
+    <float name="waterP" minValue="0.3" maxValue="0.8"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene\\LiquidMetal.frag" type="normal" probability="1.0" complexity="2">
+    <float name="shineP" minValue="0.4" maxValue="0.9"></float>
+    <float name="thickP" minValue="0.3" maxValue="0.8"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene\\ShatterField.frag" type="normal" probability="1.0" complexity="2">
+    <float name="glowP" minValue="0.4" maxValue="0.9"></float>
+    <float name="voidP" minValue="0.3" maxValue="0.8"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene\\ClothDrape.frag" type="normal" probability="1.0" complexity="2">
+    <float name="shineP" minValue="0.3" maxValue="0.8"></float>
+    <float name="printP" minValue="0.4" maxValue="0.9"></float>
+  </TextureShader>
+
 </configuration>

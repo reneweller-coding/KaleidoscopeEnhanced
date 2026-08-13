@@ -534,6 +534,63 @@
     <None Include="Scene\SpectrumFilter.frag">
       <Filter>Shaders\Scene</Filter>
     </None>
+    <None Include="Blend\CfxErosion.comp">
+      <Filter>Shaders\Blend</Filter>
+    </None>
+    <None Include="Blend\CfxErosionSeed.comp">
+      <Filter>Shaders\Blend</Filter>
+    </None>
+    <None Include="Blend\CfxFerro.comp">
+      <Filter>Shaders\Blend</Filter>
+    </None>
+    <None Include="Blend\CfxNSAdvect.comp">
+      <Filter>Shaders\Blend</Filter>
+    </None>
+    <None Include="Blend\CfxNSDiv.comp">
+      <Filter>Shaders\Blend</Filter>
+    </None>
+    <None Include="Blend\CfxNSJacobi.comp">
+      <Filter>Shaders\Blend</Filter>
+    </None>
+    <None Include="Blend\CfxNSProject.comp">
+      <Filter>Shaders\Blend</Filter>
+    </None>
+    <None Include="Scene\ErodedLand.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\FerroSpikes.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\InkTank.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Blend\CfxCloth.comp">
+      <Filter>Shaders\Blend</Filter>
+    </None>
+    <None Include="Blend\CfxClothInit.comp">
+      <Filter>Shaders\Blend</Filter>
+    </None>
+    <None Include="Blend\CfxMetalStep.comp">
+      <Filter>Shaders\Blend</Filter>
+    </None>
+    <None Include="Blend\CfxShardInit.comp">
+      <Filter>Shaders\Blend</Filter>
+    </None>
+    <None Include="Blend\CfxShardStep.comp">
+      <Filter>Shaders\Blend</Filter>
+    </None>
+    <None Include="Scene\ClothDrape.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\LiquidMetal.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\ShatterField.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Blend\CfxHistogram.comp">
+      <Filter>Shaders\Blend</Filter>
+    </None>
     <None Include="Blend\Blit.frag">
       <Filter>Shaders\Blend</Filter>
     </None>

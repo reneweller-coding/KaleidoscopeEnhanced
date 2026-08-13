@@ -1,0 +1,73 @@
+#version 330 core
+out vec4 fragColor;
+// LiquidMetal.frag — screen-space fluid rendering.  Blend/CfxMetalStep.comp
+// splats 32k cohesive particles into a DENSITY field (alpha channel); the
+// surface is reconstructed here by thresholding that density and taking its
+// gradient as the normal.  That is the standard screen-space fluid trick, and
+// it only works because the particles could scatter into the field at all.
+
+uniform sampler2D tex0;
+uniform sampler2D texMetal;      // <- requests the liquid-metal sim
+uniform vec2  resolution;
+uniform float time;
+uniform float interpolation;
+
+uniform float audioLevel;
+uniform float audioBeat;
+uniform float audioKick;
+uniform float audioHigh;
+uniform float audioChromaHue;
+
+uniform float shineP;
+uniform float thickP;
+
+float dens(vec2 uv)
+{
+    // Smooth the raw splat field: individual discs must merge into one body.
+    float d = texture(texMetal, uv).a * 4.0;
+    vec2 px = 1.5 / resolution;
+    d += texture(texMetal, uv + vec2( px.x, 0.0)).a * 2.0;
+    d += texture(texMetal, uv + vec2(-px.x, 0.0)).a * 2.0;
+    d += texture(texMetal, uv + vec2(0.0,  px.y)).a * 2.0;
+    d += texture(texMetal, uv + vec2(0.0, -px.y)).a * 2.0;
+    return d / 12.0;
+}
+
+void main()
+{
+    vec2 uv = gl_FragCoord.xy / resolution;
+    vec2 px = 1.0 / resolution;
+
+    float d = dens(uv);
+    float surf = smoothstep(0.9, 2.2 + 1.5 * thickP, d);
+
+    // Normal from the density gradient — the metal's shape.
+    float dx = dens(uv + vec2(px.x * 2.0, 0.0)) - dens(uv - vec2(px.x * 2.0, 0.0));
+    float dy = dens(uv + vec2(0.0, px.y * 2.0)) - dens(uv - vec2(0.0, px.y * 2.0));
+    vec3 n = normalize(vec3(-dx * 90.0, -dy * 90.0, 1.0));
+
+    vec3 V = vec3(0.0, 0.0, 1.0);
+    vec3 L = normalize(vec3(0.5 * sin(time * 0.13), 0.5 * cos(time * 0.10), 0.85));
+    vec3 Hv = normalize(L + V);
+
+    float spec = pow(max(dot(n, Hv), 0.0), 45.0 + 90.0 * shineP);
+    float fres = pow(1.0 - max(dot(n, V), 0.0), 2.5);
+
+    // The room the metal reflects: the photo, distorted by the surface normal.
+    vec3 refl = texture(tex0, clamp(uv + n.xy * 0.28, 0.0, 1.0)).rgb;
+    vec3 tint = 0.5 + 0.5 * cos(6.2831853 * (vec3(0.0, 0.33, 0.67))
+                                + 0.5 * sin(audioChromaHue));
+
+    vec3 metal = vec3(0.03) + refl * (0.35 + 0.85 * fres)
+               + tint * spec * (2.0 + 3.0 * audioKick + 1.5 * audioHigh);
+
+    // Background: the photo, dimmed, so the drops read as sitting in a room.
+    vec3 bg = texture(tex0, uv).rgb;
+    bg = mix(vec3(dot(bg, vec3(0.33))), bg, 0.5) * 0.16;
+
+    vec3 col = mix(bg, metal, surf);
+    col *= 1.0 + 0.15 * audioBeat;
+
+    col = col / (1.0 + col * 0.28);
+    fragColor = vec4(col, interpolation);
+}
