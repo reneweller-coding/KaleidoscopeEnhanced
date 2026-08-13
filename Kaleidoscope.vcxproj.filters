@@ -447,6 +447,9 @@
     <None Include="Blend\Fullscreen.vert">
       <Filter>Shaders\Blend</Filter>
     </None>
+    <None Include="Blend\PhysarumDiffuse.comp">
+      <Filter>Shaders\Blend</Filter>
+    </None>
     <None Include="Blend\Feedback.frag">
       <Filter>Shaders\Blend</Filter>
     </None>

@@ -1450,6 +1450,18 @@ void FilterShader::setupPhysarum()
 		m_physDifTrailUni   = glGetUniformLocation( m_physDiffuseProgId, "texTrail" );
 		m_physDifResUni     = glGetUniformLocation( m_physDiffuseProgId, "resolution" );
 		m_physDifDecayUni   = glGetUniformLocation( m_physDiffuseProgId, "decay" );
+
+		// Proof port of the GL 4.3 compute path: same diffuse as an image-
+		// store kernel.  Soft-fails to 0 -> the fragment pass above stays.
+		m_physDiffuseCompId = setComputeShader( "..\\Blend\\PhysarumDiffuse.comp" );
+		if( m_physDiffuseCompId )
+		{
+			m_physDifCTrailUni = glGetUniformLocation( m_physDiffuseCompId, "texTrail" );
+			m_physDifCResUni   = glGetUniformLocation( m_physDiffuseCompId, "resolution" );
+			m_physDifCDecayUni = glGetUniformLocation( m_physDiffuseCompId, "decay" );
+		}
+		fprintf( stderr, "PHYSARUM diffuse: %s path\n",
+		         m_physDiffuseCompId ? "compute" : "fragment" );
 	}
 
 	bool ok = m_physAgentProgId != 0 && m_physDepositProgId != 0
@@ -1585,16 +1597,36 @@ void FilterShader::stepPhysarum(const AudioFeatures &audio)
 	glDisable( GL_BLEND );
 
 	// ---- 3) Diffuse + evaporate into the other trail buffer ----
-	glBindFramebuffer( GL_FRAMEBUFFER, m_fboPhysTrail[tCur] );
-	glUseProgram( m_physDiffuseProgId );
-	glActiveTexture( GL_TEXTURE0 );
-	glBindTexture( GL_TEXTURE_2D, m_texPhysTrail[tPrev] );
-	if( m_physDifTrailUni >= 0 ) glUniform1i( m_physDifTrailUni, 0 );
-	if( m_physDifResUni   >= 0 ) glUniform2f( m_physDifResUni,
-	                                          (float)kPhysTrailSize, (float)kPhysTrailSize );
-	if( m_physDifDecayUni >= 0 ) glUniform1f( m_physDifDecayUni,
-	                                          0.94f + 0.02f * audio.ambientFactor );
-	drawWindow();
+	const float difDecay = 0.94f + 0.02f * audio.ambientFactor;
+	if( m_physDiffuseCompId )
+	{
+		// Compute path: identical kernel, image store instead of an FBO pass.
+		glUseProgram( m_physDiffuseCompId );
+		glActiveTexture( GL_TEXTURE0 );
+		glBindTexture( GL_TEXTURE_2D, m_texPhysTrail[tPrev] );
+		if( m_physDifCTrailUni >= 0 ) glUniform1i( m_physDifCTrailUni, 0 );
+		if( m_physDifCResUni   >= 0 ) glUniform2f( m_physDifCResUni,
+		                                           (float)kPhysTrailSize, (float)kPhysTrailSize );
+		if( m_physDifCDecayUni >= 0 ) glUniform1f( m_physDifCDecayUni, difDecay );
+		glBindImageTexture( 0, m_texPhysTrail[tCur], 0, GL_FALSE, 0,
+		                    GL_WRITE_ONLY, GL_RGBA16F );
+		glDispatchCompute( GLuint(kPhysTrailSize / 16), GLuint(kPhysTrailSize / 16), 1 );
+		// The written trail is next SAMPLED (agents/display) and rendered
+		// INTO by the deposit pass — fence both kinds of downstream access.
+		glMemoryBarrier( GL_TEXTURE_FETCH_BARRIER_BIT | GL_FRAMEBUFFER_BARRIER_BIT );
+	}
+	else
+	{
+		glBindFramebuffer( GL_FRAMEBUFFER, m_fboPhysTrail[tCur] );
+		glUseProgram( m_physDiffuseProgId );
+		glActiveTexture( GL_TEXTURE0 );
+		glBindTexture( GL_TEXTURE_2D, m_texPhysTrail[tPrev] );
+		if( m_physDifTrailUni >= 0 ) glUniform1i( m_physDifTrailUni, 0 );
+		if( m_physDifResUni   >= 0 ) glUniform2f( m_physDifResUni,
+		                                          (float)kPhysTrailSize, (float)kPhysTrailSize );
+		if( m_physDifDecayUni >= 0 ) glUniform1f( m_physDifDecayUni, difDecay );
+		drawWindow();
+	}
 
 	glBindTexture( GL_TEXTURE_2D, 0 );
 	m_physSeeded   = true;

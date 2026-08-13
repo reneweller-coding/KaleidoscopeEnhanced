@@ -543,6 +543,10 @@ private:
 	GLuint			m_physDiffuseProgId = 0;
 	GLuint			m_physVBO = 0;
 	GLuint			m_physDepVAO = 0;   // core profile: attrib state for the deposit points
+	GLuint			m_physDiffuseCompId = 0;   // compute-shader diffuse (0 = fragment fallback)
+	GLint			m_physDifCTrailUni = -1;
+	GLint			m_physDifCResUni   = -1;
+	GLint			m_physDifCDecayUni = -1;
 	GLint			m_physAgentTexUni   = -1;   // agent-update pass
 	GLint			m_physAgentTrailUni = -1;
 	GLint			m_physAgentResUni   = -1;

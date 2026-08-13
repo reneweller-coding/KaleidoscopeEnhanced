@@ -133,30 +133,46 @@ GLuint setShadersVF( const char *vert_source, const char *frag_source )
 
 
 
-/* check whether or not the shader extension is there -- exit, if not! */
-
-void checkShaderExt( void )
+// GL 4.3 compute program.  Unlike the exit-on-error loaders above this one
+// fails SOFT (returns 0): the compute entry points are loaded optionally in
+// glcoreInit, so a missing function / file / compile keeps the caller on its
+// fragment-shader fallback instead of killing the app.
+GLuint setComputeShader( const char *comp_source )
 {
-    const GLubyte * strVersion = glGetString( GL_VERSION );
-    printf("GL version = %s\n", strVersion );
-    const GLubyte * extbytes = glGetString( GL_EXTENSIONS );
-    char * extstr = _strdup( (char*) extbytes );
-    char * c = extstr;
-    while ( *c )
-    {
-        if ( *c == ' ' )
-            *c = '\n';
-        c ++ ;
-    }
-    fputs("GL extensions: ", stdout);
-    puts( extstr );
+	if( glDispatchCompute == NULL )
+		return 0;
 
-    ///* Run-time extension check. */
-    //if ( !glutExtensionSupported("GL_ARB_vertex_shader") )
-    //{
-    //    fprintf(stderr, "GL_ARB_vertex_shader not found!\n");
-    //    exit(-1);
-    //}
+	GLchar *src = textFileRead( comp_source );
+	if( src == NULL )
+	{
+		fprintf( stderr, "Couldn't load compute shader '%s'!\n", comp_source );
+		return 0;
+	}
+	GLuint cs = glCreateShader( GL_COMPUTE_SHADER );
+	glShaderSource( cs, 1, const_cast<const GLchar**>( &src ), NULL );
+	free( src );
+	glCompileShader( cs );
+	printShaderInfoLog( cs );
+	GLint ok = 0;
+	glGetShaderiv( cs, GL_COMPILE_STATUS, &ok );
+	if( !ok )
+	{
+		glDeleteShader( cs );
+		return 0;
+	}
+
+	GLuint prog = glCreateProgram();
+	glAttachShader( prog, cs );
+	glLinkProgram( prog );
+	printProgramInfoLog( prog );
+	glGetProgramiv( prog, GL_LINK_STATUS, &ok );
+	glDeleteShader( cs );
+	if( !ok )
+	{
+		glDeleteProgram( prog );
+		return 0;
+	}
+	return prog;
 }
 
 
