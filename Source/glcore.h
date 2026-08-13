@@ -67,6 +67,13 @@ typedef ptrdiff_t GLintptr;
 #define GL_FRAGMENT_SHADER                0x8B30
 #define GL_VERTEX_SHADER                  0x8B31
 #define GL_COMPUTE_SHADER                 0x91B9
+#define GL_GEOMETRY_SHADER                0x8DD9
+#define GL_TESS_EVALUATION_SHADER         0x8E87
+#define GL_TESS_CONTROL_SHADER            0x8E88
+#define GL_PATCHES                        0x000E
+#define GL_PATCH_VERTICES                 0x8E72
+#define GL_MAX_PATCH_VERTICES             0x8E7D
+#define GL_MAX_TESS_GEN_LEVEL             0x8E7E
 #define GL_COMPILE_STATUS                 0x8B81
 #define GL_LINK_STATUS                    0x8B82
 #define GL_INFO_LOG_LENGTH                0x8B84
@@ -181,6 +188,7 @@ GLC_FN(void,   glMemoryBarrier, (GLbitfield))
 GLC_FN(void,   glBindBufferBase, (GLenum, GLuint, GLuint))
 GLC_FN(void,   glClearBufferData, (GLenum, GLenum, GLenum, GLenum, const void*))
 GLC_FN(void,   glDrawArraysIndirect, (GLenum, const void*))
+GLC_FN(void,   glPatchParameteri, (GLenum, GLint))
 
 #undef GLC_FN
 
@@ -246,10 +254,14 @@ GLC_FN(void,   glDrawArraysIndirect, (GLenum, const void*))
 #define glBindBufferBase           glcore_glBindBufferBase
 #define glClearBufferData          glcore_glClearBufferData
 #define glDrawArraysIndirect       glcore_glDrawArraysIndirect
+#define glPatchParameteri          glcore_glPatchParameteri
 
 // True when every entry point the compute pipeline needs resolved (set by
 // glcoreInit).  Callers gate their compute path on this and keep a fallback.
 extern int glcoreHasCompute;
+// True when tessellation is usable (glPatchParameteri resolved).  Geometry
+// shaders need no extra entry point, so they ride on the core 3.2 context.
+extern int glcoreHasTess;
 
 // Resolve every pointer above; returns false (and logs the names) if any
 // required function is missing.  GL context must be current.
