@@ -347,6 +347,14 @@ struct AudioFeatures
     float ssmHead = 0.f;
     float ssmFill = 0.f;
 
+    // ---- Spectrogram history bookkeeping (host-filled) ----
+    // A scrolling spectrogram ("texSpectro", unit 28): 32 log-spaced bands
+    // across, ~20 s of history down, written as a ring in the T axis.
+    // spectroHead = the ring head as a 0..1 texture coordinate (the newest row
+    // sits just BELOW it), spectroFill = how much of the window is populated.
+    float spectroHead = 0.f;
+    float spectroFill = 0.f;
+
     // ---- Host-integrated motion phases ----
     // NOT produced by AudioAnalyzer; filled in once per frame by
     // FilterShader::paint().  Audio-driven motion must never be expressed as a

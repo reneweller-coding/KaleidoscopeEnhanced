@@ -1142,6 +1142,32 @@ swells its own mode, a chord grows several lobes at once. Two details carry it:
   extremes, so the surface spends its time on broad petals joined by tight
   creases.
 
+**`SpectroCanyon`** is the third, and it is the one that needed a new piece of
+engine. `texSpectro` (unit 28) is a **scrolling spectrogram**: 32 log-spaced
+bands across, ~20 s of history down, written as a ring so no row is ever moved.
+The history accumulates always — it is 32 bytes per row — while the texture is
+created and uploaded only while an effect that samples it is on screen, exactly
+like `texSSM`. Per frame it uploads only the one or two rows that actually
+became due, splitting the block when it straddles the ring's wrap.
+
+The canyon reads that texture as a heightfield: distance from the camera is
+time, distance from the centre line is frequency, mirrored so the bass ends up
+in the two outer walls and the treble along the floor. The mesh never moves —
+the spectrogram slides through it, and that sliding is what reads as flight.
+
+Two things make it work:
+
+- **`spectroHead` is continuous.** It carries the sub-row fraction, because a
+  head that only advanced when a row was written would jerk the terrain forward
+  every 80 ms. It also trails the write head by two rows and lands on a texel
+  centre: sampling any closer lets the linear filter interpolate across the
+  write position, mixing the newest row with the 20-second-old one about to be
+  overwritten.
+- Normals come from **central differences at a fixed world distance**, not a
+  fixed fraction of a patch. The height lives in a texture and cannot be
+  differentiated analytically, and a step measured in patch space would change
+  with the tessellation level and band the shading at every level boundary.
+
 ### Geometry shaders — GrassField and Detonation
 
 The geometry stage gets one primitive at a time *with all its vertices at once*,

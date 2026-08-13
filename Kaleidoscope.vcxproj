@@ -590,6 +590,10 @@ exit /b 0</Command>
     <None Include="Scene3D\Ocean.tesc" />
     <None Include="Scene3D\Ocean.tese" />
     <None Include="Scene3D\Ocean.vert" />
+    <None Include="Scene3D\SpectroCanyon.frag" />
+    <None Include="Scene3D\SpectroCanyon.tesc" />
+    <None Include="Scene3D\SpectroCanyon.tese" />
+    <None Include="Scene3D\SpectroCanyon.vert" />
     <None Include="Scene3D\Planet4D.frag" />
     <None Include="Scene3D\Planet4D.vert" />
     <None Include="Scene3D\PlanetRings.frag" />
