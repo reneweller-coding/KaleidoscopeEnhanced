@@ -446,6 +446,13 @@ exit /b 0</Command>
     <None Include="Scene\CausticPool.frag" />
     <None Include="Scene\CrystalGrowth.frag" />
     <None Include="Scene\LightningStorm.frag" />
+    <None Include="Blend\CfxPixelSort.comp" />
+    <None Include="Scene\PixelMelt.frag" />
+    <None Include="Blend\CfxFFT.comp" />
+    <None Include="Blend\CfxFFTLoad.comp" />
+    <None Include="Blend\CfxFFTMask.comp" />
+    <None Include="Blend\CfxFFTStore.comp" />
+    <None Include="Scene\SpectrumFilter.frag" />
     <None Include="Blend\Blit.frag" />
     <None Include="Blend\Fullscreen.vert" />
     <None Include="Blend\PhysarumDiffuse.comp" />

@@ -245,4 +245,9 @@
     <float name="skyP" minValue="0.3" maxValue="0.8"></float>
   </TextureShader>
 
+  <TextureShader file="..\\Scene\\PixelMelt.frag" type="normal" probability="0.55" complexity="2">
+    <float name="meltP" minValue="0.3" maxValue="0.9"></float>
+    <float name="bandP" minValue="0.2" maxValue="0.9"></float>
+  </TextureShader>
+
 </configuration>

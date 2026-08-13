@@ -1,0 +1,50 @@
+#version 430
+// CfxFFTMask.comp — the MUSIC's spectrum filters the IMAGE's spectrum.
+// -----------------------------------------------------------------------
+// Distance from the (centred) DC term is spatial frequency: the middle is
+// coarse structure, the rim is fine detail.  Mapping the 32 audio bands onto
+// that radius means bass literally softens the picture into broad shapes
+// while hi-hats cut its edges back in.
+// -----------------------------------------------------------------------
+layout(local_size_x = 16, local_size_y = 16) in;
+
+layout(std430, binding = 0) buffer Data { vec2 z[]; };
+
+uniform int   N;
+uniform float spec[32];
+uniform float gain;
+uniform float tilt;        // extra emphasis on fine detail
+uniform float swirl;       // rotates the anisotropy so the filter is not static
+
+void main()
+{
+    ivec2 p = ivec2(gl_GlobalInvocationID.xy);
+    if (p.x >= N || p.y >= N) return;
+
+    vec2 d = vec2(p) - vec2(float(N) * 0.5);
+    float r = length(d) / (float(N) * 0.5);          // 0 = DC, 1 = Nyquist-ish
+
+    // Log-ish radius so the low bands get the area they deserve.
+    float t = clamp(pow(clamp(r, 0.0, 1.0), 0.55), 0.0, 0.9999);
+    float fb = t * 31.0;
+    int   b0 = int(fb);
+    float fr = fb - float(b0);
+    float band = mix(spec[b0], spec[min(b0 + 1, 31)], fr);
+
+    // Mild directional anisotropy: horizontal and vertical detail respond a
+    // little differently, which keeps the filtered image from looking like a
+    // plain radial blur.
+    float ang = atan(d.y, d.x);
+    float aniso = 1.0 + 0.25 * sin(2.0 * ang + swirl);
+
+    // A near-flat mask leaves the picture untouched, which is the whole
+    // effect gone: the floor has to be LOW so the bands genuinely decide
+    // which spatial frequencies survive.
+    float w = (0.03 + gain * band * aniso) * (1.0 + tilt * r);
+
+    // Always keep the DC term: dropping it makes the whole frame flicker in
+    // brightness whenever the bass moves.
+    if (p.x == N / 2 && p.y == N / 2) w = 1.0;
+
+    z[p.y * N + p.x] *= w;
+}

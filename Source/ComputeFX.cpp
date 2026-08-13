@@ -692,8 +692,105 @@ GLuint ComputeFX::stepCaustics( const AudioFeatures &a, float dt, float t,
 	resolve( c, 0, 0.30f, 1.f, 0.35f );
 	return c.tex;
 }
-GLuint ComputeFX::stepPixelSort( const AudioFeatures &, float, float, GLuint, int, int ) { return 0; }
-GLuint ComputeFX::stepFFT      ( const AudioFeatures &, float, float, GLuint ) { return 0; }
+// ---------------------------------------------------------------------------
+// 8. Pixel sorting — one workgroup per row, counting sort in shared memory.
+// ---------------------------------------------------------------------------
+
+GLuint ComputeFX::stepPixelSort( const AudioFeatures &a, float dt, float t,
+                                 GLuint srcImage, int outW, int outH )
+{
+	Field &f = m_field[CFX_PIXELSORT];
+	int w, h; canvasSize( outW, outH, w, h );
+	if( !ensureField( f, w, h, GL_RGBA16F ) ) return 0;
+	GLuint p = prog( P_SORT, "..\\Blend\\CfxPixelSort.comp" );
+	if( !p ) return 0;
+
+	// The sort KEY rotates slowly, which makes the melt appear to flow rather
+	// than settling into one fixed arrangement.
+	static float bias = 0.f;
+	bias += dt * ( 0.03f + 0.22f * a.overallLevel );
+	if( bias > 1.f ) bias -= 1.f;
+
+	glUseProgram( p );
+	glBindImageTexture( 0, f.tex[0], 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA16F );
+	glActiveTexture( GL_TEXTURE0 );
+	glBindTexture( GL_TEXTURE_2D, srcImage );
+	glUniform1i( glGetUniformLocation( p, "texSrc" ), 0 );
+	glUniform2i( glGetUniformLocation( p, "size" ), f.w, f.h );
+	glUniform1f( glGetUniformLocation( p, "bias" ), bias );
+	glUniform1i( glGetUniformLocation( p, "reverse" ), ( a.beatPhase > 0.5f ) ? 1 : 0 );
+	glDispatchCompute( f.h, 1, 1 );          // one workgroup per row
+	glMemoryBarrier( GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT );
+
+	return f.tex[0];
+}
+// ---------------------------------------------------------------------------
+// 9. 2D FFT — the audio spectrum filters the image's spatial frequencies.
+// ---------------------------------------------------------------------------
+
+GLuint ComputeFX::stepFFT( const AudioFeatures &a, float dt, float t, GLuint srcImage )
+{
+	const int N = 256;
+	Field &f = m_field[CFX_FFT];
+	if( !ensureField( f, N, N, GL_RGBA16F ) ) return 0;
+	if( !ensureBuffer( m_buf[CFX_FFT], size_t(N) * N * 2 * sizeof(float) ) ) return 0;
+
+	GLuint pl = prog( P_FFT_H,    "..\\Blend\\CfxFFTLoad.comp" );
+	GLuint pf = prog( P_FFT_V,    "..\\Blend\\CfxFFT.comp" );
+	GLuint pm = prog( P_FFT_MASK, "..\\Blend\\CfxFFTMask.comp" );
+	GLuint ps = prog( P_METAL_STEP, "..\\Blend\\CfxFFTStore.comp" );
+	if( !pl || !pf || !pm || !ps ) return 0;
+
+	glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 0, m_buf[CFX_FFT] );
+
+	// 1) photo luminance -> complex
+	glUseProgram( pl );
+	glActiveTexture( GL_TEXTURE0 );
+	glBindTexture( GL_TEXTURE_2D, srcImage );
+	glUniform1i( glGetUniformLocation( pl, "texSrc" ), 0 );
+	glUniform1i( glGetUniformLocation( pl, "N" ), N );
+	glDispatchCompute( groups( N, 16 ), groups( N, 16 ), 1 );
+	glMemoryBarrier( GL_SHADER_STORAGE_BARRIER_BIT );
+
+	// 2) forward transform: rows then columns
+	auto fftPass = [&]( int axis, int inv )
+	{
+		glUseProgram( pf );
+		glUniform1i( glGetUniformLocation( pf, "N" ), N );
+		glUniform1i( glGetUniformLocation( pf, "axis" ), axis );
+		glUniform1i( glGetUniformLocation( pf, "inverse" ), inv );
+		glDispatchCompute( N, 1, 1 );          // one workgroup per line
+		glMemoryBarrier( GL_SHADER_STORAGE_BARRIER_BIT );
+	};
+	fftPass( 0, 0 );
+	fftPass( 1, 0 );
+
+	// 3) the mask: 32 audio bands mapped onto the radius (= spatial frequency)
+	glUseProgram( pm );
+	glUniform1i( glGetUniformLocation( pm, "N" ), N );
+	glUniform1fv( glGetUniformLocation( pm, "spec" ), 32, a.spectrum );
+	glUniform1f( glGetUniformLocation( pm, "gain" ), 7.5f );
+	glUniform1f( glGetUniformLocation( pm, "tilt" ), 0.35f + 0.9f * a.spectralCentroid );
+	glUniform1f( glGetUniformLocation( pm, "swirl" ), t * 0.35f );
+	glDispatchCompute( groups( N, 16 ), groups( N, 16 ), 1 );
+	glMemoryBarrier( GL_SHADER_STORAGE_BARRIER_BIT );
+
+	// 4) inverse transform
+	fftPass( 1, 1 );
+	fftPass( 0, 1 );
+
+	// 5) back into a texture
+	glUseProgram( ps );
+	glBindImageTexture( 0, f.tex[0], 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA16F );
+	glActiveTexture( GL_TEXTURE0 );
+	glBindTexture( GL_TEXTURE_2D, srcImage );
+	glUniform1i( glGetUniformLocation( ps, "texSrc" ), 0 );
+	glUniform1i( glGetUniformLocation( ps, "N" ), N );
+	glDispatchCompute( groups( N, 16 ), groups( N, 16 ), 1 );
+	glMemoryBarrier( GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT );
+
+	return f.tex[0];
+}
 GLuint ComputeFX::stepFerro    ( const AudioFeatures &, float, float ) { return 0; }
 GLuint ComputeFX::stepErosion  ( const AudioFeatures &, float, float ) { return 0; }
 GLuint ComputeFX::stepMetal    ( const AudioFeatures &, float, float, GLuint ) { return 0; }

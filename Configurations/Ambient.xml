@@ -254,4 +254,9 @@
     <float name="glowP" minValue="0.3" maxValue="0.8"></float>
   </TextureShader>
 
+  <TextureShader file="..\\Scene\\SpectrumFilter.frag" type="normal" probability="0.5" complexity="2">
+    <float name="mixP" minValue="0.4" maxValue="0.9"></float>
+    <float name="glowP" minValue="0.3" maxValue="0.8"></float>
+  </TextureShader>
+
 </configuration>

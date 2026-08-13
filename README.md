@@ -1069,6 +1069,8 @@ look like anything; that temporal integration is what makes it silky.
 | `CrystalGrowth` | `texCrystal` (16) | Diffusion-limited aggregation: random walkers **freeze into a texel they discover at runtime**, which is the defining scatter operation |
 | `LightningStorm` | `texLightning` (17) | A branching discharge whose tips claim new slots through an **atomic counter**, so the tree's width is decided on the GPU frame by frame |
 | `CausticPool` | `texCaustics` (18) | A wave equation on a shared-memory stencil, then **photon splatting**: each photon refracts at the surface and deposits its energy where it lands on the pool floor |
+| `PixelMelt` | `texSorted` (19) | Every row luminance-sorted by a **counting sort in shared memory** — histogram with atomics, prefix sum, then scatter each pixel to the slot its bucket earned |
+| `SpectrumFilter` | `texFFT` (20) | A real 256² **2D FFT** (radix-2 Cooley-Tukey, one workgroup per line, eight barrier-separated stages in shared memory): the 32 audio bands weight the image's spatial frequencies by radius, then it transforms back |
 
 **Lessons that cost a rebuild each** (all fixed in the code, worth not
 repeating): `centroid` is a reserved GLSL keyword and cannot be a uniform name.
@@ -1085,7 +1087,10 @@ stickiness (≲0.1) and walkers respawned on a ring around the cluster — freez
 on first contact from a seed line is Eden growth, a featureless advancing wall
 with none of the branching. And `<windows.h>` defines `min`/`max` as macros
 unless `NOMINMAX` is set before it, which turns every later `std::min` into a
-baffling "invalid token on the right of `::`".
+baffling "invalid token on the right of `::`". `half` is a reserved GLSL word
+too, so a butterfly's half-span needs another name. And a frequency mask needs
+a LOW floor — a near-flat mask leaves the picture untouched, which is the whole
+effect gone.
 
 **Probing these is its own trap.** Use one app run per scene with a generated
 single-scene preset (`scratchpad/probe.ps1`): a preset whose name starts with

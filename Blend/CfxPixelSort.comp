@@ -1,0 +1,67 @@
+#version 430
+// CfxPixelSort.comp — the glitch-art classic: every row of the image sorted
+// by luminance, one workgroup per row.
+// -----------------------------------------------------------------------
+// A counting sort in SHARED MEMORY: histogram the row's 256 luminance
+// buckets with atomics, prefix-sum them, then SCATTER each pixel to the
+// position its bucket has earned.  Both the histogram and the scatter are
+// operations a fragment shader has no way to express — it would have to
+// know, for its own pixel, how many pixels in the row are darker, which is
+// a reduction over the whole row per pixel.
+//
+// Rows are sorted whole; WHERE the sorted version is revealed is decided by
+// the display shader, so the melt can spread and retreat with the music.
+// -----------------------------------------------------------------------
+
+layout(local_size_x = 256) in;
+
+layout(rgba16f, binding = 0) writeonly uniform image2D imgOut;
+uniform sampler2D texSrc;
+
+uniform ivec2 size;
+uniform float bias;        // rotates the sort key so the melt direction drifts
+uniform int   reverse;     // 1 = bright-to-dark
+
+shared uint hist[256];
+shared uint ofs[256];
+
+void main()
+{
+    int y = int(gl_WorkGroupID.x);
+    if (y >= size.y) return;
+    uint lid = gl_LocalInvocationID.x;
+
+    hist[lid] = 0u;
+    barrier();
+
+    // --- histogram ---
+    for (int x = int(lid); x < size.x; x += 256)
+    {
+        vec3 c = texture(texSrc, (vec2(x, y) + 0.5) / vec2(size)).rgb;
+        float l = fract(dot(c, vec3(0.299, 0.587, 0.114)) + bias);
+        uint b = uint(clamp(l, 0.0, 0.999) * 256.0);
+        if (reverse == 1) b = 255u - b;
+        atomicAdd(hist[b], 1u);
+    }
+    barrier();
+
+    // --- exclusive prefix sum (256 entries: one thread is plenty) ---
+    if (lid == 0u)
+    {
+        uint run = 0u;
+        for (int i = 0; i < 256; ++i) { ofs[i] = run; run += hist[i]; }
+    }
+    barrier();
+
+    // --- scatter ---
+    for (int x = int(lid); x < size.x; x += 256)
+    {
+        vec3 c = texture(texSrc, (vec2(x, y) + 0.5) / vec2(size)).rgb;
+        float l = fract(dot(c, vec3(0.299, 0.587, 0.114)) + bias);
+        uint b = uint(clamp(l, 0.0, 0.999) * 256.0);
+        if (reverse == 1) b = 255u - b;
+        uint pos = atomicAdd(ofs[b], 1u);
+        if (pos < uint(size.x))
+            imageStore(imgOut, ivec2(int(pos), y), vec4(c, 1.0));
+    }
+}

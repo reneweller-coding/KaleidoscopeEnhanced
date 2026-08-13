@@ -1,0 +1,73 @@
+#version 430
+// CfxFFT.comp — in-place radix-2 Cooley-Tukey FFT of one line, entirely in
+// workgroup SHARED MEMORY.
+// -----------------------------------------------------------------------
+// One workgroup per line, 128 threads for N=256 (each thread owns exactly
+// one butterfly per stage).  The eight stages are separated by barrier(),
+// which is the whole point: a fragment shader has no way to synchronise
+// neighbouring invocations, so a Fourier transform there would need eight
+// separate full-screen passes and eight round trips through memory.
+//
+// The same kernel does rows and columns (axis) and forward and inverse
+// (inverse), so a full 2D transform is four dispatches.
+// -----------------------------------------------------------------------
+
+layout(local_size_x = 128) in;
+
+layout(std430, binding = 0) buffer Data { vec2 z[]; };   // complex, N*N
+
+uniform int N;
+uniform int axis;        // 0 = rows, 1 = columns
+uniform int inverse;     // 0 = forward, 1 = inverse (conjugate twiddles + 1/N)
+
+shared vec2 s[256];
+
+int idx(int line, int k) { return (axis == 0) ? (line * N + k) : (k * N + line); }
+
+uint bitrev8(uint v)
+{
+    v = ((v >> 1) & 0x55u) | ((v & 0x55u) << 1);
+    v = ((v >> 2) & 0x33u) | ((v & 0x33u) << 2);
+    v = ((v >> 4) & 0x0Fu) | ((v & 0x0Fu) << 4);
+    return v & 0xFFu;
+}
+
+vec2 cmul(vec2 a, vec2 b) { return vec2(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x); }
+
+void main()
+{
+    int line = int(gl_WorkGroupID.x);
+    int tid  = int(gl_LocalInvocationID.x);
+
+    // Load in bit-reversed order (decimation in time).
+    int a0 = tid, a1 = tid + N / 2;
+    s[a0] = z[idx(line, int(bitrev8(uint(a0))))];
+    s[a1] = z[idx(line, int(bitrev8(uint(a1))))];
+    barrier();
+
+    float sgn = (inverse == 1) ? 1.0 : -1.0;
+
+    for (int st = 1; st <= 8; ++st)
+    {
+        int m  = 1 << st;
+        int hf = m >> 1;   // 'half' is a RESERVED GLSL word
+        int grp  = tid / hf;
+        int pos  = tid - grp * hf;
+        int i1   = grp * m + pos;
+        int i2   = i1 + hf;
+
+        float ang = sgn * 6.2831853 * float(pos) / float(m);
+        vec2  w   = vec2(cos(ang), sin(ang));
+
+        vec2 u = s[i1];
+        vec2 v = cmul(w, s[i2]);
+        barrier();
+        s[i1] = u + v;
+        s[i2] = u - v;
+        barrier();
+    }
+
+    float scale = (inverse == 1) ? (1.0 / float(N)) : 1.0;
+    z[idx(line, a0)] = s[a0] * scale;
+    z[idx(line, a1)] = s[a1] * scale;
+}
