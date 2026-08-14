@@ -1,0 +1,341 @@
+#version 430
+// CoralGrowth.comp — a coral accreting over a minute, in a buffer that survives.
+// -----------------------------------------------------------------------
+// Every other generator here derives its whole output from this frame's inputs.
+// This one cannot: what the coral looks like now depends on what it did before,
+// so it is the first to use the persistent state buffer.
+//
+// The growth is diffusion-limited aggregation.  Walkers wander at random above a
+// seeded floor; when one touches the structure it FREEZES there and becomes part
+// of it.  That single rule is why DLA looks organic: a walker is far more likely
+// to meet a protruding tip than to reach down into a crevice, so tips outgrow
+// hollows and the colony branches on its own.  Nothing in the rule says "branch".
+//
+// Two details decide whether that actually happens, and both were got wrong the
+// first time:
+//
+//   * The inward bias has to aim at the colony, not at the origin.  Bias toward
+//     a point the structure is not at, and the walkers settle into a cloud
+//     around that point and never touch anything.
+//   * Contact has to be tested exactly.  Scanning a rotating slice of the node
+//     list is cheap but blind — a walker crosses a node's contact shell in two
+//     or three frames, so a slice that holds 5% of the colony misses almost
+//     every touch and the walker sails on into the interior before it sticks.
+//     The result is a filled ball, which is the opposite of coral.  So contact
+//     goes through a uniform hash grid instead: one node index per cell, cells
+//     wider than the contact radius, 27 neighbours tested.  Cheaper than the
+//     slice AND correct.
+//
+// The shader runs twice per frame.  genPass 0 advances the simulation, genPass 1
+// turns the frozen nodes into geometry — separated by a barrier, because
+// invocations within one dispatch have no ordering.
+// -----------------------------------------------------------------------
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+
+layout(std430, binding = 0) buffer Verts { float verts[]; };
+layout(std430, binding = 1) buffer Cmd   { uint  cmd[]; };
+
+// The persistent state.  Claiming a node slot is an atomicAdd and GLSL core has
+// no float atomics, so the whole payload is a uint array and the floats travel
+// through bit casts.  One array, because std430 only lets the LAST member be
+// unsized.
+//   st[OFF_NODES ..] nodes,   4 words each: xyz as float + parent index
+//   st[OFF_WALK  ..] walkers, 4 words each: xyz as float + seed
+//   st[OFF_GRID  ..] hash grid, one word per cell: node index + 1, 0 = empty
+layout(std430, binding = 2) buffer State
+{
+    uint nodeCount;
+    uint radiusQ;                // colony reach from BASE, fixed point x4096
+    uint pad0, pad1;             // keep the payload 16-byte aligned
+    uint st[];
+};
+
+uniform uint  maxVertices;
+uniform uint  frameIndex;
+uniform float genPass;
+uniform float time;
+uniform float sceneSeed;
+uniform float audioAdvance;
+uniform float audioLevel;
+uniform float audioKick;
+uniform float audioSubBass;
+uniform float audioHigh;
+
+uniform float stickP;       // preset: contact radius, so bond length
+uniform float thickP;       // preset: branch thickness
+uniform float reachP;       // preset: how far the colony is allowed to spread
+
+const int   NODES   = 12000;
+const int   WALKERS = 512;
+const int   SEEDS   = 32;
+const int   SIDES   = 6;
+const int   GRID    = 38;
+const float GH      = 3.2;                      // half extent of the hash grid
+const vec3  BASE    = vec3(0.0, -1.55, 0.0);    // the floor the colony sits on
+
+const int OFF_NODES = 0;
+const int OFF_WALK  = 4 * NODES;
+const int OFF_GRID  = 4 * NODES + 4 * WALKERS;
+
+float hash1(float n) { return fract(sin(n * 91.3458) * 47453.5453); }
+vec3  hash3(float n)
+{
+    return fract(sin(vec3(n * 91.3458, n * 47.1234, n * 13.9871)) * 43758.5453);
+}
+
+float getF(int i)          { return uintBitsToFloat(st[i]); }
+void  setF(int i, float v) { st[i] = floatBitsToUint(v); }
+
+vec3 nodePos(int i)
+{
+    int o = OFF_NODES + i * 4;
+    return vec3(getF(o), getF(o + 1), getF(o + 2));
+}
+
+ivec3 cellCoord(vec3 p)
+{
+    return ivec3(floor((p + GH) / (2.0 * GH) * float(GRID)));
+}
+
+int cellIndex(ivec3 c)
+{
+    if (any(lessThan(c, ivec3(0))) || any(greaterThanEqual(c, ivec3(GRID))))
+        return -1;
+    return c.x + GRID * (c.y + GRID * c.z);
+}
+
+void writeVertex(uint slot, vec3 p, vec3 n, float age, float depth)
+{
+    uint o = slot * 8u;
+    verts[o + 0u] = p.x;  verts[o + 1u] = p.y;  verts[o + 2u] = p.z;
+    verts[o + 3u] = age;
+    verts[o + 4u] = n.x;  verts[o + 5u] = n.y;  verts[o + 6u] = n.z;
+    verts[o + 7u] = depth;
+}
+
+void main()
+{
+    uvec3 g = gl_GlobalInvocationID;
+    uint id = g.x + 64u * (g.y + 64u * g.z);
+
+    float contact = clamp(stickP, 0.4, 2.0) * 0.075;
+
+    // ---------------- pass 0: advance the colony ----------------
+    if (genPass < 0.5)
+    {
+        // Frame zero plants a floor: a jittered disc of nodes the colony can
+        // rise from.  A single seed point would give a sphere hanging in the
+        // void; a plane of seeds gives a reef standing on a bed, which is the
+        // silhouette that reads as coral.
+        if (frameIndex == 0u)
+        {
+            if (id < uint(SEEDS))
+            {
+                vec3 h = hash3(float(id) * 7.13 + 1.7 + sceneSeed * 31.0);
+                float a = 6.2831853 * h.x;
+                float rr = 0.45 * sqrt(h.y);
+                vec3 p = BASE + vec3(cos(a) * rr, 0.04 * h.z, sin(a) * rr);
+                int o = OFF_NODES + int(id) * 4;
+                setF(o,     p.x);
+                setF(o + 1, p.y);
+                setF(o + 2, p.z);
+                setF(o + 3, -1.0);                     // floor nodes have no parent
+                int c = cellIndex(cellCoord(p));
+                if (c >= 0)
+                    st[OFF_GRID + c] = id + 1u;
+                if (id == 0u)
+                {
+                    nodeCount = uint(SEEDS);
+                    radiusQ = uint(0.9 * 4096.0);
+                }
+            }
+            return;
+        }
+
+        if (id >= uint(WALKERS))
+            return;
+
+        int count = int(nodeCount);
+        if (count >= NODES)
+            return;                                    // colony is full
+
+        int wo = OFF_WALK + int(id) * 4;
+        vec3 w = vec3(getF(wo), getF(wo + 1), getF(wo + 2));
+        float seed = getF(wo + 3);
+
+        // Walkers are launched just outside the frontier rather than at some
+        // fixed far radius.  Released far away a 3D random walk is transient —
+        // it escapes to infinity with probability one — so a distant spawn is
+        // mostly wasted travel.  Tracking the reach with an atomicMax costs one
+        // word and keeps every walker useful.
+        float colonyR = float(radiusQ) / 4096.0;
+        float spawnR = min(colonyR + 0.40, GH * 1.05 * clamp(reachP, 0.5, 1.6));
+        float killR = spawnR * 1.6 + 0.8;
+
+        // The attractor rides up with the colony instead of sitting on the
+        // floor.  Aim every walker at the floor centre and the reef spreads out
+        // into a flat cushion, because that is where the traffic goes; aim them
+        // at its middle height and it grows up as readily as out.
+        vec3 aim = BASE + vec3(0.0, colonyR * 0.55, 0.0);
+
+        if (!(seed > 0.5) || distance(w, BASE) > killR || w.y < BASE.y - 0.25)
+        {
+            seed = hash1(float(id) * 3.7 + float(frameIndex) * 0.017
+                         + sceneSeed * 91.0) + 1.0;
+            vec3 h = hash3(seed * 17.3);
+            float th = h.x * 6.2831853;
+            float cph = 0.12 + 0.88 * h.y;             // released above the reef
+            float sph = sqrt(max(1.0 - cph * cph, 0.0));
+            w = BASE + vec3(sph * cos(th), cph, sph * sin(th)) * spawnR;
+        }
+
+        // Random step with a mild pull toward the colony.  Mild matters: a hard
+        // pull turns the walk ballistic, every walker arrives along a radius and
+        // the colony comes out smooth.  The branching lives in the wandering.
+        vec3 r = hash3(seed * 31.7 + float(frameIndex) * 0.311) - 0.5;
+        float step = 0.06 * (1.0 + 0.6 * audioLevel);
+        w += normalize(r + 1e-5) * step
+           + normalize(aim - w + 1e-5) * step * 0.14;
+
+        // Contact: 27 cells of the hash grid.
+        ivec3 c0 = cellCoord(w);
+        bool touched = false;
+        int hitNode = 0;
+        for (int dz = -1; dz <= 1 && !touched; ++dz)
+        for (int dy = -1; dy <= 1 && !touched; ++dy)
+        for (int dx = -1; dx <= 1 && !touched; ++dx)
+        {
+            int c = cellIndex(c0 + ivec3(dx, dy, dz));
+            if (c < 0)
+                continue;
+            uint e = st[OFF_GRID + c];
+            if (e == 0u)
+                continue;
+            int n = int(e) - 1;
+            if (n >= count)
+                continue;
+            if (distance(w, nodePos(n)) < contact)
+            {
+                touched = true;
+                hitNode = n;
+            }
+        }
+
+        if (touched)
+        {
+            vec3 hp = nodePos(hitNode);
+            vec3 out1 = normalize(w - hp + vec3(1e-5, 1e-5, 1e-5));
+
+            // Sticking is deliberately near-certain.  It is tempting to slow the
+            // growth down by making it rare, but that is exactly backwards: a
+            // walker that ignores its first few contacts works its way INTO the
+            // structure before it settles, which fills the crevices and gives a
+            // compact ball.  The branching needs walkers that stop dead on first
+            // touch.  Pacing comes from the walker count instead, and the kick
+            // rides on top so the reef surges on the beat.
+            float pStick = clamp(0.50 + 0.45 * audioKick + 0.15 * audioSubBass,
+                                 0.0, 0.97);
+            if (hash1(seed * 13.7 + float(frameIndex) * 0.713) < pStick)
+            {
+                // Bond at a fixed length so every link meshes to the same
+                // gauge; a walker that stuck wherever it happened to be would
+                // leave degenerate near-zero links all through the colony.
+                vec3 np = hp + out1 * contact * 0.92;
+                uint slot = atomicAdd(nodeCount, 1u);
+                if (slot < uint(NODES))
+                {
+                    int o = OFF_NODES + int(slot) * 4;
+                    setF(o,     np.x);
+                    setF(o + 1, np.y);
+                    setF(o + 2, np.z);
+                    setF(o + 3, float(hitNode));
+                    int c = cellIndex(cellCoord(np));
+                    if (c >= 0)
+                        st[OFF_GRID + c] = slot + 1u;
+                    atomicMax(radiusQ, uint(distance(np, BASE) * 4096.0));
+                }
+                else
+                {
+                    atomicAdd(nodeCount, uint(-1));    // full: undo the claim
+                }
+                seed = 0.0;                            // respawn next frame
+                w = BASE;
+            }
+            else
+            {
+                w = hp + out1 * contact * 1.7;         // bounce off, try again
+            }
+        }
+
+        setF(wo,     w.x);
+        setF(wo + 1, w.y);
+        setF(wo + 2, w.z);
+        setF(wo + 3, seed);
+        return;
+    }
+
+    // ---------------- pass 1: mesh the colony ----------------
+    int count = int(min(nodeCount, uint(NODES)));
+    if (id >= uint(count) || id < uint(SEEDS))
+        return;
+
+    // The simulation works in its own small units — bond length 0.07, reach
+    // under two — because the hash grid wants cells a little wider than the
+    // contact radius and everything gets cheaper the smaller they are.  DLA is
+    // scale-free, so how big the reef looks is purely a meshing decision, and
+    // the generator already knows its own reach.  Below the framing radius the
+    // scale is fixed and the colony visibly grows; past it the scale gives way
+    // and the growth reads as a camera pulling back, which is the only way to
+    // keep a structure that spreads without bound inside the frame.
+    float colonyR = float(radiusQ) / 4096.0;
+    float sc = 2.2 / max(colonyR, 0.85);
+
+    int parent = int(getF(OFF_NODES + int(id) * 4 + 3));
+    if (parent < 0 || parent >= count)
+        return;
+
+    vec3 a = nodePos(int(id));
+    vec3 b = nodePos(parent);
+    vec3 dir = a - b;
+    float L = length(dir);
+    if (L < 1e-5 || L > 0.3)
+        return;                                        // a stale or absurd link
+    dir /= L;
+
+    vec3 lift = vec3(0.0, 1.05, 0.0);
+    vec3 ea = (a - BASE) * sc - lift;
+    vec3 eb = (b - BASE) * sc - lift;
+
+    // Older branches are thicker: a coral thickens where it has been growing
+    // longest, and the node index IS its age.
+    float age = 1.0 - float(id) / float(max(count, 1));
+    float r = clamp(thickP, 0.3, 2.5) * (0.022 + 0.030 * age) * sc
+            * (1.0 + 0.25 * audioKick);
+
+    vec3 up = abs(dir.y) < 0.9 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0);
+    vec3 u = normalize(cross(dir, up));
+    vec3 v = cross(dir, u);
+
+    uint need = uint(SIDES) * 6u;
+    uint base = atomicAdd(cmd[4], need);
+    if (base + need > maxVertices)
+        return;
+
+    float depth = clamp((a.y - BASE.y) / max(colonyR, 0.85), 0.0, 1.0);
+    for (int s = 0; s < SIDES; ++s)
+    {
+        float t0 = 6.2831853 * float(s)     / float(SIDES);
+        float t1 = 6.2831853 * float(s + 1) / float(SIDES);
+        vec3 n0 = u * cos(t0) + v * sin(t0);
+        vec3 n1 = u * cos(t1) + v * sin(t1);
+        vec3 A = eb + n0 * r * 1.15, B = eb + n1 * r * 1.15;
+        vec3 C = ea + n1 * r,        D = ea + n0 * r;
+        uint o = base + uint(s) * 6u;
+        writeVertex(o + 0u, A, n0, age, depth);
+        writeVertex(o + 1u, B, n1, age, depth);
+        writeVertex(o + 2u, C, n1, age, depth);
+        writeVertex(o + 3u, A, n0, age, depth);
+        writeVertex(o + 4u, C, n1, age, depth);
+        writeVertex(o + 5u, D, n0, age, depth);
+    }
+}

@@ -90,6 +90,8 @@ Scene3DShader::~Scene3DShader()
 		glDeleteBuffers( 1, &m_vbo );
 	if( m_cmdBuf )
 		glDeleteBuffers( 1, &m_cmdBuf );
+	if( m_stateBuf )
+		glDeleteBuffers( 1, &m_stateBuf );
 	if( m_genProg )
 		glDeleteProgram( m_genProg );
 }
@@ -370,6 +372,25 @@ bool Scene3DShader::setupIndirect()
 	glBindBuffer( GL_DRAW_INDIRECT_BUFFER, m_cmdBuf );
 	glBufferData( GL_DRAW_INDIRECT_BUFFER, sizeof(cmd), cmd, GL_DYNAMIC_COPY );
 	glBindBuffer( GL_DRAW_INDIRECT_BUFFER, 0 );
+
+	// Persistent state, zeroed exactly once.  From here it belongs entirely to
+	// the generator; the host never reads or writes it again, which is what
+	// makes it cheap — no readback, no synchronisation, no per-frame upload.
+	//
+	// The zeroing goes through a CPU-side buffer rather than glClearBufferData.
+	// It is a few hundred kilobytes, once, at scene load — while a state buffer
+	// that came up holding whatever the driver left behind is a generator that
+	// starts from garbage, and the symptom of that is a scene that looks wrong
+	// on some machines and fine on others.
+	if( m_stateBytes > 0 )
+	{
+		std::vector<unsigned char> zero( size_t(m_stateBytes), 0 );
+		glGenBuffers( 1, &m_stateBuf );
+		glBindBuffer( GL_SHADER_STORAGE_BUFFER, m_stateBuf );
+		glBufferData( GL_SHADER_STORAGE_BUFFER, GLsizeiptr(m_stateBytes),
+		              &zero[0], GL_DYNAMIC_COPY );
+		glBindBuffer( GL_SHADER_STORAGE_BUFFER, 0 );
+	}
 	return true;
 }
 
@@ -428,12 +449,39 @@ void Scene3DShader::runGenerator( float time )
 
 	glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 0, m_vbo );
 	glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 1, m_cmdBuf );
+	if( m_stateBuf )
+		glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 2, m_stateBuf );
+
+	{
+		GLint l = glGetUniformLocation( m_genProg, "frameIndex" );
+		if( l >= 0 ) glUniform1ui( l, GLuint(m_frameIndex) );
+	}
+	GLint passLoc = glGetUniformLocation( m_genProg, "genPass" );
 
 	// A fixed invocation budget: 64^3 = 262144, in 4x4x4 blocks.  What one
 	// invocation MEANS is entirely the generator's business — a voxel for an
 	// isosurface, a node for a tree, a lot for a city.  A generator that needs
 	// fewer simply returns early, which costs nothing worth measuring.
-	glDispatchCompute( 16, 16, 16 );
+	//
+	// A stateful generator runs TWICE: once to advance its simulation, then —
+	// after a barrier — once to build geometry from the result.  Doing both in
+	// one dispatch would race, because invocations within a dispatch have no
+	// ordering, and the meshing half would read state the stepping half had not
+	// finished writing.
+	if( passLoc >= 0 && m_stateBuf )
+	{
+		glUniform1f( passLoc, 0.f );
+		glDispatchCompute( 16, 16, 16 );
+		glMemoryBarrier( GL_SHADER_STORAGE_BARRIER_BIT );
+		glUniform1f( passLoc, 1.f );
+		glDispatchCompute( 16, 16, 16 );
+	}
+	else
+	{
+		if( passLoc >= 0 ) glUniform1f( passLoc, 1.f );
+		glDispatchCompute( 16, 16, 16 );
+	}
+	++m_frameIndex;
 
 	// The clamp pass has to see the finished counter, so it needs its own
 	// barrier before it runs — not just one at the end.
@@ -456,6 +504,8 @@ void Scene3DShader::runGenerator( float time )
 
 	glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 0, 0 );
 	glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 1, 0 );
+	if( m_stateBuf )
+		glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 2, 0 );
 }
 
 void Scene3DShader::initUniforms( int width, int height )

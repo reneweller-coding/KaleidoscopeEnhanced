@@ -215,6 +215,10 @@ void Configuration::readConfiguration( const QString &filename )
 			// gives a 3-unit object about 50 texels, which is unusable.
 			if( el.hasAttribute("shadowExtent") )
 				shader->setShadowExtent( el.attribute("shadowExtent").toFloat() );
+			// Persistent generator state, in bytes.  Only a scene that
+			// accumulates something across frames needs it.
+			if( el.hasAttribute("stateBytes") )
+				shader->setStateBytes( el.attribute("stateBytes").toInt() );
 
 			addUniforms( shader, el );
 			shader->setComplexity( complexity );
