@@ -609,6 +609,9 @@
     <None Include="Combine\CombineDepthFog.frag">
       <Filter>Shaders\Combine</Filter>
     </None>
+    <None Include="Blend\OitResolve.frag">
+      <Filter>Shaders\Blend</Filter>
+    </None>
     <None Include="Blend\Blit.frag">
       <Filter>Shaders\Blend</Filter>
     </None>
@@ -940,6 +943,12 @@
       <Filter>Shaders\Scene3D</Filter>
     </None>
     <None Include="Scene3D\PillarHall.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\GlassStack.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\GlassStack.vert">
       <Filter>Shaders\Scene3D</Filter>
     </None>
     <None Include="Scene3D\Planet4D.frag">

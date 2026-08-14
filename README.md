@@ -1092,6 +1092,49 @@ Not built: `Marching Cubes`. Meshing an isosurface needs a compute→VBO→indir
 draw path that this renderer does not have, and faking it with a raymarch would
 not have been the thing that was asked for. The `texSculpt` slot is reserved.
 
+### Order-independent transparency
+
+Interpenetrating transparent objects are the case sorting cannot solve: there is
+no order of the objects that is correct for every pixel, because they pass
+through one another — and sorting per triangle does not help either once two
+faces intersect. **Weighted-blended OIT** sidesteps the question by never asking
+it.
+
+Every transparent fragment adds its premultiplied colour into an accumulation
+buffer, scaled by a weight that falls off with distance, and multiplies a second
+buffer down by `(1 - alpha)`. Both operations are **commutative**, so the result
+cannot depend on the order fragments arrived in. No sorting, and no popping when
+geometry rotates through itself. The approximation is that layers at similar
+depths are averaged rather than composited in sequence — invisible for glass and
+smoke, wrong for a stack of opaque cards, which is exactly the trade this
+technique exists to make.
+
+The engine side, mirroring the shadow contract: a scene declares `oitPass` to
+opt in, draws its opaque geometry with `oitPass` 0 into the frame as usual, and
+is then drawn a second time with `oitPass` 1 into the accumulation targets.
+`Blend/OitResolve.frag` composites the result back over the frame.
+
+Four things that are not optional:
+
+- **The accumulation target must be floating point.** It sums premultiplied
+  colour over every layer with no clamping in between; an 8-bit target saturates
+  after two or three panes and the stack becomes a flat white card.
+- **The two targets need different blend functions** — colour adds, revealage
+  multiplies down — which one `glBlendFunc` cannot express. That is what the
+  indexed `glBlendFunci` is for.
+- **Depth writes off, depth test on.** The transparent pass shares the scene's
+  depth buffer so opaque geometry still occludes it, but writing depth would
+  make the first transparent surface drawn hide the ones behind it, which is
+  precisely the order dependence being removed.
+- **The weight must be computed from linear depth.** `gl_FragCoord.z` is
+  non-linear, so feeding it in raw pushes almost every fragment into the same
+  weight and the ordering hint is lost. The weight must also never reach zero,
+  or a distant layer vanishes instead of merely being faint.
+
+**`GlassStack`** is the first scene under the contract: nested glass shells,
+each tumbling on its own axis so they interpenetrate rather than nest neatly —
+neat nesting would be sortable, and would prove nothing.
+
 ### Shadow maps — a contract, not an automatic pass
 
 The tempting design is for the engine to render every 3D scene a second time

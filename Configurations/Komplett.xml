@@ -870,4 +870,12 @@
     <float name="hueP"     minValue="0.15" maxValue="0.9"></float>
   </TextureShader>
 
+  <TextureShader file="..\\Scene3D\\GlassStack.frag" type="scene3d" geom="cubes" probability="0.45" mood="dreamy" complexity="3">
+    <float name="camDistP" minValue="5.0"  maxValue="7.5"></float>
+    <float name="spreadP"  minValue="0.7"  maxValue="1.3"></float>
+    <float name="shellsP"  minValue="0.45" maxValue="1.0"></float>
+    <float name="glassP"   minValue="0.4"  maxValue="1.0"></float>
+    <float name="glowP"    minValue="0.35" maxValue="1.0"></float>
+  </TextureShader>
+
 </configuration>

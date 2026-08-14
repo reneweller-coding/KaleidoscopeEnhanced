@@ -285,7 +285,7 @@ enum AudioLoc {
     AL_TEXSPECTRO, AL_SPECTROHEAD, AL_SPECTROFILL,
     AL_TEXDEPTH0, AL_TEXDEPTH1, AL_DEPTHVALID, AL_NEARFAR, AL_TANHALFFOV,
     AL_TEXSHADOW, AL_LIGHTM, AL_SHADOWPASS, AL_LIGHTDIR, AL_SHADOWTEXEL,
-    AL_COUNT
+    AL_OITPASS, AL_COUNT
 };
 const char *kAudioLocNames[AL_COUNT] = {
     "audioPhase", "audioAdvance", "audioBeat", "audioLevel", "sides",
@@ -303,7 +303,8 @@ const char *kAudioLocNames[AL_COUNT] = {
     "audioFadeOut", "audioMelody", "audioMelodyHead",
     "texSpectro", "spectroHead", "spectroFill",
     "texDepth0", "texDepth1", "depthValid", "nearFar", "tanHalfFov",
-    "texShadow", "lightM", "shadowPass", "lightDir", "shadowTexel"
+    "texShadow", "lightM", "shadowPass", "lightDir", "shadowTexel",
+    "oitPass"
 };
 }
 
@@ -438,6 +439,7 @@ void EffectShader::applyAudioFeatures(const AudioFeatures &f)
     if (L[AL_LIGHTDIR]    >= 0) glUniform3f(L[AL_LIGHTDIR], s_lightDir[0],
                                             s_lightDir[1], s_lightDir[2]);
     if (L[AL_SHADOWTEXEL] >= 0) glUniform1f(L[AL_SHADOWTEXEL], 1.f / 2048.f);
+    if (L[AL_OITPASS]     >= 0) glUniform1f(L[AL_OITPASS],     s_oitPass);
     if (L[AL_SSMHEAD]     >= 0) glUniform1f(L[AL_SSMHEAD],  f.ssmHead);
     if (L[AL_SSMFILL]     >= 0) glUniform1f(L[AL_SSMFILL],  f.ssmFill);
     if (L[AL_SPECTROHEAD] >= 0) glUniform1f(L[AL_SPECTROHEAD], f.spectroHead);
@@ -531,6 +533,18 @@ bool EffectShader::usesSSM()
 		m_usesSSM = ( m_sh_prog_id != 0 &&
 		              glGetUniformLocation( m_sh_prog_id, "texSSM" ) >= 0 ) ? 1 : 0;
 	return m_usesSSM == 1;
+}
+
+float EffectShader::s_oitPass = 0.f;
+
+bool EffectShader::usesOit()
+{
+	if( !m_glReady )
+		return false;
+	if( m_usesOit < 0 )
+		m_usesOit = ( m_sh_prog_id != 0 &&
+		              glGetUniformLocation( m_sh_prog_id, "oitPass" ) >= 0 ) ? 1 : 0;
+	return m_usesOit == 1;
 }
 
 bool EffectShader::usesShadow()

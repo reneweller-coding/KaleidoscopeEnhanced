@@ -90,6 +90,7 @@ typedef ptrdiff_t GLintptr;
 #define GL_FRAMEBUFFER                    0x8D40
 #define GL_RENDERBUFFER                   0x8D41
 #define GL_COLOR_ATTACHMENT0              0x8CE0
+#define GL_COLOR_ATTACHMENT1              0x8CE1
 #define GL_DEPTH_ATTACHMENT               0x8D00
 #define GL_DEPTH_COMPONENT24              0x81A6
 #define GL_FRAMEBUFFER_COMPLETE           0x8CD5
@@ -198,6 +199,12 @@ GLC_FN(void,   glBindBufferBase, (GLenum, GLuint, GLuint))
 GLC_FN(void,   glClearBufferData, (GLenum, GLenum, GLenum, GLenum, const void*))
 GLC_FN(void,   glDrawArraysIndirect, (GLenum, const void*))
 GLC_FN(void,   glPatchParameteri, (GLenum, GLint))
+// Order-independent transparency needs its two targets blended DIFFERENTLY in
+// the same draw — accumulation adds, revealage multiplies — which is exactly
+// what the indexed blend entry points are for.
+GLC_FN(void,   glBlendFunci, (GLuint, GLenum, GLenum))
+GLC_FN(void,   glDrawBuffers, (GLsizei, const GLenum *))
+GLC_FN(void,   glClearBufferfv, (GLenum, GLint, const GLfloat *))
 
 #undef GLC_FN
 
@@ -264,6 +271,9 @@ GLC_FN(void,   glPatchParameteri, (GLenum, GLint))
 #define glClearBufferData          glcore_glClearBufferData
 #define glDrawArraysIndirect       glcore_glDrawArraysIndirect
 #define glPatchParameteri          glcore_glPatchParameteri
+#define glBlendFunci               glcore_glBlendFunci
+#define glDrawBuffers              glcore_glDrawBuffers
+#define glClearBufferfv            glcore_glClearBufferfv
 
 // True when every entry point the compute pipeline needs resolved (set by
 // glcoreInit).  Callers gate their compute path on this and keep a fallback.

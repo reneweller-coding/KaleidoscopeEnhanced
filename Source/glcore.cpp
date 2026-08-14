@@ -67,6 +67,9 @@ GLC_DEF(glBindBufferBase)
 GLC_DEF(glClearBufferData)
 GLC_DEF(glDrawArraysIndirect)
 GLC_DEF(glPatchParameteri)
+GLC_DEF(glBlendFunci)
+GLC_DEF(glDrawBuffers)
+GLC_DEF(glClearBufferfv)
 
 #undef GLC_DEF
 
@@ -160,6 +163,9 @@ int glcoreInit(void)
     GLC_LOAD_OPT(glClearBufferData)
     GLC_LOAD_OPT(glDrawArraysIndirect)
     GLC_LOAD_OPT(glPatchParameteri)
+    GLC_LOAD_OPT(glBlendFunci)
+    GLC_LOAD_OPT(glDrawBuffers)
+    GLC_LOAD_OPT(glClearBufferfv)
 
     glcoreHasCompute = ( glcore_glDispatchCompute && glcore_glBindImageTexture
                       && glcore_glMemoryBarrier   && glcore_glBindBufferBase

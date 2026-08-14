@@ -431,6 +431,17 @@ private:
 	bool			ensureShadowMap();
 	void			updateLightMatrix(float t);
 	void			renderShadowPass(EffectShader *fx);
+
+	// ---- order-independent transparency (weighted blended) ----
+	// Two extra targets the transparent geometry accumulates into, sharing the
+	// scene's depth buffer so transparency is still occluded by opaque solids.
+	// Created on first use, like the shadow map.
+	GLuint			m_oitFbo = 0;
+	GLuint			m_oitAccum = 0;     // RGBA16F: premultiplied colour, weighted
+	GLuint			m_oitReveal = 0;    // R16F: how much background still shows
+	GLuint			m_oitResolveProg = 0;
+	bool			ensureOitTargets();
+	void			renderOitPass(EffectShader *fx, GLuint depthTex, GLuint targetFbo);
 	// FPS EMA for the cube-scene detail budget (see paint()).
 	float			m_cubeFpsEma = 60.f;
 	// TRUE-STEREO state (real per-eye rendering of a solo 3D scene):

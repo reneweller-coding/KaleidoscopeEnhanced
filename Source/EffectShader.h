@@ -44,7 +44,7 @@ public:
 		initUniforms( m_width, m_height );   // virtual: derived locations too
 		m_glReady = true;
 		m_usesSim = m_usesFluid = m_usesSmoke3D = m_usesSSM = m_usesPhysarum = -1;
-		m_usesSpectro = m_usesShadow = -1;
+		m_usesSpectro = m_usesShadow = m_usesOit = -1;
 	}
 	bool isCompiled() const { return m_glReady; }
 
@@ -167,6 +167,13 @@ public:
 	static float s_lightDir[3];
 	bool usesShadow();
 
+	// ---- order-independent transparency ----
+	// Same shape of contract as the shadow pass.  oitPass is 0 for the scene's
+	// opaque geometry and 1 for its transparent geometry, which is drawn into
+	// an accumulation target instead of the frame.
+	static float s_oitPass;
+	bool usesOit();
+
 	// ---- Song-structure memory ----
 	// Snapshot / restore of all rolled per-activation parameter values, so a
 	// recognised section (chorus #2 = chorus #1) replays the exact same look.
@@ -228,6 +235,7 @@ protected:
 	int		m_usesSSM = -1;      // same caching for the self-similarity matrix
 	int		m_usesSpectro = -1;  // ... and for the scrolling spectrogram history
 	int		m_usesShadow = -1;   // ... and for the shadow map
+	int		m_usesOit = -1;      // ... and for order-independent transparency
 	int		m_usesPhysarum = -1; // same caching for the Physarum trail map
 	unsigned int	m_cfxMask = 0;   // compute-FX sampler bits (see cfxMask())
 	GLuint		m_cfxProg = 0;   // program the mask was resolved for
