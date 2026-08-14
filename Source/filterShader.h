@@ -17,6 +17,7 @@
 #include "Utils.h"
 #include "AudioFeatures.h"
 #include "ComputeFX.h"
+#include "GpuSims.h"
 
 class ImageLoader;
 
@@ -173,14 +174,6 @@ public:
 	void setupSafety();          // create the final FBO/texture/present shader
 	void updateFinalTexture();   // (re)allocate the mipmapped final texture
 
-	// GPU reaction-diffusion simulation (Gray-Scott, float ping-pong).
-	void setupReactionDiffusion();                       // create float FBOs + sim shader
-	void stepReactionDiffusion(const AudioFeatures &a);  // advance one PDE step per frame
-	void setupFluid();                                   // curl-noise dye-advection sim
-	void stepFluid(const AudioFeatures &a);
-	void setupSmoke3D();                                 // tiled-atlas pseudo-3D fire/smoke sim
-	void stepSmoke3D(const AudioFeatures &a);             // advance both sub-steps for one frame
-	void stepSmoke3DPass(const AudioFeatures &a, float subStep);  // one horizontal or vertical pass
 
 	// Mood-based selection bias: accept a candidate effect with a probability that
 	// depends on how well its complexity matches the current arousal (calm music →
@@ -467,80 +460,8 @@ private:
 	// Fixed-function copy of a texture into the bound FBO (combine bypass).
 	void			blitTexture( GLuint tex );
 
-	// ---- GPU reaction-diffusion simulation (Gray-Scott, float ping-pong) ----
-	// A genuine on-GPU simulation: each frame a fragment shader advances the
-	// Gray-Scott PDE in two RGBA16F buffers (R=A, G=B), reading its own previous
-	// state.  The living field is bound to a global "texSim" sampler so any effect
-	// (e.g. ReactionDiffusion.frag) can fold it through the kaleidoscope.  Audio
-	// (onsets) injects new reagent, so the pattern grows on the beat.
-	static const int kRDSize = 320;          // simulation grid (kept small → fast on iGPUs)
-	GLuint			m_fboRD[2]    = { 0, 0 };
-	GLuint			m_texRD[2]    = { 0, 0 };
-	int				m_rdIdx       = 0;
-	GLuint			m_rdProgId    = 0;
-	GLint			m_rdPrevUni   = -1;
-	GLint			m_rdResUni    = -1;
-	GLint			m_rdSeedUni   = -1;
-	GLint			m_rdFeedUni   = -1;
-	GLint			m_rdKillUni   = -1;
-	GLint			m_rdInjectUni = -1;
-	bool			m_rdReady     = false;   // false → simulation disabled (safe fallback)
-	bool			m_rdSeeded    = false;   // false → next step writes the seed pattern
-	float			m_rdInjectAcc = 0.f;     // moving injection point phase
 
-	// ---- GPU fluid simulation (dye advected along analytic curl noise) ----
-	// Semi-Lagrangian advection of an RGB dye field along the curl of a noise
-	// potential — divergence-free by construction, so it flows like an
-	// incompressible fluid (smoke/ink) without a pressure solve.  The source
-	// image is continuously injected as dye; the field is bound to the global
-	// "texFluid" sampler (unit 8) for any effect that declares it.
-	static const int kFluidSize = 512;
-	GLuint			m_fboFluid[2]     = { 0, 0 };
-	GLuint			m_texFluid[2]     = { 0, 0 };
-	int				m_fluidIdx        = 0;
-	GLuint			m_fluidProgId     = 0;
-	GLint			m_fluidPrevUni    = -1;
-	GLint			m_fluidTex0Uni    = -1;
-	GLint			m_fluidTex1Uni    = -1;
-	GLint			m_fluidInterpUni  = -1;
-	GLint			m_fluidResUni     = -1;
-	GLint			m_fluidSeedUni    = -1;
-	GLint			m_fluidPhaseUni   = -1;
-	GLint			m_fluidImpulseUni = -1;
-	GLint			m_fluidInjectUni  = -1;
-	bool			m_fluidReady      = false;
-	bool			m_fluidSeeded     = false;
 
-	// ---- GPU volumetric fire/smoke simulation (tiled-atlas pseudo-3D field) ----
-	// A 2D texture atlas tiles COLS x ROWS square cells, each cell a Z-depth
-	// cross-section of the volume (front-facing plane); WITHIN a cell, the local
-	// (u,v) axes are (world X, world Y=height/rise).  Two sub-steps run every
-	// frame on the SAME ping-pong pair (mirrors the RD/Fluid pattern, just called
-	// twice): a "horizontal" pass (per-cell curl turbulence, base injection,
-	// decay) and a "vertical" pass (buoyancy: each texel pulls its value from the
-	// texel below it in the SAME cell, so density/heat rises; slight blend with
-	// neighbour Z-cells softens the depth-slice seams).  R=temperature,
-	// G=density.  The living field is bound to a global "texSmoke3D" sampler
-	// (unit 9) for VolumetricFire.frag's stacked-billboard renderer.
-	static const int kSmoke3DTile = 64;     // per-cell sim resolution
-	static const int kSmoke3DCols = 5;
-	static const int kSmoke3DRows = 4;      // COLS*ROWS = 20 depth slices
-	static const int kSmoke3DW = kSmoke3DTile * kSmoke3DCols;   // 320
-	static const int kSmoke3DH = kSmoke3DTile * kSmoke3DRows;   // 256
-	GLuint			m_fboSmoke3D[2]        = { 0, 0 };
-	GLuint			m_texSmoke3D[2]        = { 0, 0 };
-	int				m_smoke3DIdx           = 0;
-	GLuint			m_smoke3DProgId        = 0;
-	GLint			m_smoke3DPrevUni       = -1;
-	GLint			m_smoke3DResUni        = -1;
-	GLint			m_smoke3DSeedUni       = -1;
-	GLint			m_smoke3DSubUni        = -1;
-	GLint			m_smoke3DTimeUni       = -1;
-	GLint			m_smoke3DTurbUni       = -1;
-	GLint			m_smoke3DInjectUni     = -1;
-	GLint			m_smoke3DEmitPhaseUni  = -1;
-	bool			m_smoke3DReady         = false;
-	bool			m_smoke3DSeeded        = false;
 
 	// ---- Visual spectrum ballistics (anti-jitter for geometry scenes) ----
 	float			m_specVis[32] = {};
@@ -553,96 +474,15 @@ private:
 	int				m_melodyHead  = 0;
 	float			m_melodyAccum = 0.f;
 
-	// ---- Physarum slime-mould simulation (agents + trail map, unit 11) ----
-	// Jones (2010) model: 65k agents live in a 256^2 RGBA16F ping-pong texture
-	// (R,G = position, B = heading, A = species); each frame they sense the
-	// 512^2 trail map (R/G = two species' pheromone), turn, move, then DEPOSIT
-	// by drawing one GL_POINT each (vertex-texture-fetch of their position)
-	// and the map diffuses + evaporates.  The living vein network is bound to
-	// "texPhysarum" (unit 11) for Scene\Physarum.frag.
-	// 1 048 576 agents on a 1024x1024 trail map.  The deposit is a point per
-	// agent through a vertex-texture fetch, which the GPU rasterises happily
-	// at this count; the finer trail map is what lets the vein network show
-	// its branching instead of a smooth glow.
-	static const int kPhysAgentsSide = 1024;  // 1 048 576 agents
-	static const int kPhysTrailSize  = 1024;
-	GLuint			m_texPhysAgents[2] = { 0, 0 };
-	GLuint			m_fboPhysAgents[2] = { 0, 0 };
-	GLuint			m_texPhysTrail[2]  = { 0, 0 };
-	GLuint			m_fboPhysTrail[2]  = { 0, 0 };
-	int				m_physAgentIdx = 0;
-	int				m_physTrailIdx = 0;
-	GLuint			m_physAgentProgId   = 0;
-	GLuint			m_physDepositProgId = 0;
-	GLuint			m_physDiffuseProgId = 0;
-	GLuint			m_physVBO = 0;
-	GLuint			m_physDepVAO = 0;   // core profile: attrib state for the deposit points
 	ComputeFX		m_cfx;                     // GL 4.3 compute-shader sims
 	GLuint			m_autoExpBuf  = 0;         // 4 floats: exposure, p50, p98, pad
 	GLuint			m_autoExpProg = 0;
 	bool			m_autoExpTried = false;
-	GLuint			m_physDiffuseCompId = 0;   // compute-shader diffuse (0 = fragment fallback)
-	GLint			m_physDifCTrailUni = -1;
-	GLint			m_physDifCResUni   = -1;
-	GLint			m_physDifCDecayUni = -1;
-	GLint			m_physAgentTexUni   = -1;   // agent-update pass
-	GLint			m_physAgentTrailUni = -1;
-	GLint			m_physAgentResUni   = -1;
-	GLint			m_physAgentSeedUni  = -1;
-	GLint			m_physAgentTimeUni  = -1;
-	GLint			m_physAgentSpeedUni = -1;
-	GLint			m_physAgentSensAUni = -1;
-	GLint			m_physAgentSensDUni = -1;
-	GLint			m_physAgentTurnUni  = -1;
-	GLint			m_physAgentScatUni  = -1;
-	GLint			m_physDepAgentsUni  = -1;   // deposit pass
-	GLint			m_physDepAmtUni     = -1;
-	GLint			m_physDepAttr       = -1;
-	GLint			m_physDifTrailUni   = -1;   // diffuse pass
-	GLint			m_physDifResUni     = -1;
-	GLint			m_physDifDecayUni   = -1;
-	bool			m_physReady  = false;
-	bool			m_physSeeded = false;
-	void			setupPhysarum();
-	void			stepPhysarum(const AudioFeatures &a);
 
-	// ---- Self-similarity matrix (SSM recurrence plot, host-computed) ----
-	// A ring of short feature vectors (12 chroma + 8 coarse band-shape dims),
-	// one entry per kSSMStride seconds (~90 s window across the ring).  Each
-	// new entry fills its row AND column of the byte matrix with sharpened
-	// cosine similarity — repeated sections appear as diagonal stripes, new
-	// sections as dark checkerboard blocks.  History accumulates ALWAYS
-	// (cheap CPU-only); the texture ("texSSM", unit 10) uploads only while
-	// an effect that samples it is on screen (usesSSM gating).
-	static const int kSSMSize   = 256;
-	static const int kSSMDims   = 20;
-	static constexpr float kSSMStride = 0.35f;
-	float			m_ssmVecs[kSSMSize][kSSMDims] = {};
-	unsigned char	m_ssmData[kSSMSize * kSSMSize] = {};
-	int				m_ssmHead   = 0;      // next write slot
-	int				m_ssmCount  = 0;      // filled entries (saturates at kSSMSize)
-	float			m_ssmAccum  = 0.f;    // seconds since the last entry
-	GLuint			m_texSSM    = 0;
-	bool			m_ssmDirty  = false;  // matrix changed since last upload
-	void			stepSSM(const AudioFeatures &a, float dt);
 
-	// ---- Scrolling spectrogram (host-filled history) ----
-	// One row of 32 log-spaced bands every kSpectroStride seconds, written into
-	// a ring so no row ever has to be moved.  Same demand gating as the SSM:
-	// the history accumulates always (a memcpy per row), while the texture
-	// ("texSpectro", unit 28) is only created and uploaded while an effect that
-	// samples it is on screen.  Rows are held at 8 bit — this is terrain and
-	// paint, not analysis, and R8 keeps the per-row upload to 32 bytes.
-	static const int kSpectroW = AudioFeatures::kSpectrumBands;   // 32
-	static const int kSpectroH = 256;                             // ~20 s
-	static constexpr float kSpectroStride = 0.08f;
-	unsigned char	m_spectroData[kSpectroH * kSpectroW] = {};
-	int				m_spectroHead  = 0;    // next row to write
-	int				m_spectroCount = 0;    // filled rows (saturates at kSpectroH)
-	float			m_spectroAccum = 0.f;  // seconds since the last row
-	int				m_spectroPend  = 0;    // rows written since the last upload
-	GLuint			m_texSpectro   = 0;
-	void			stepSpectro(const AudioFeatures &a, float dt);
+	// GPU-/Host-Simulationen (RD, Fluid, Smoke3D, Physarum, SSM, Spectro):
+	// komplett in GpuSims gekapselt; paint() meldet nur den Bedarf.
+	GpuSims			m_sims;
 
 	// Live-tunable look parameters (static → one shared setting across all configs).
 	static float	s_reactivity;    // audio-motion master gain (default 1.0)
