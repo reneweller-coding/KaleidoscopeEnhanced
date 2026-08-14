@@ -84,17 +84,6 @@ void GLwidget::remoteForceScene( int idx )
 		m_actConfiguration->m_filterShader->forceScene( idx );
 }
 
-void GLwidget::remoteToggleReplayArm()
-{
-	m_replayArmed = !m_replayArmed;
-	if( m_replayArmed )
-	{
-		ensureRecWorker();
-		m_repLastFrame = 0;
-	}
-	fprintf( stderr, "Instant-Replay-Puffer (Remote): %s\n", m_replayArmed ? "AN" : "AUS" );
-}
-
 QByteArray GLwidget::remoteSnapshot()
 {
 	m_snapWantedUntil = m_fpsTimer.elapsed() + 10000;
@@ -218,11 +207,10 @@ GLwidget::GLwidget( QWidget *parent )
 
 GLwidget::~GLwidget()
 {
-	// Closing mid-recording: finalise cleanly (drains + joins the encoder worker).
-	if (m_recording) {
-		m_recording = false;
-		finishRecording();
-	}
+	// Closing mid-recording: finalise cleanly (drains + joins the encoder
+	// worker) WHILE the audio analyzer is still alive — the recorder closes
+	// the WAV through it.  After shutdown() the recorder never touches it.
+	m_recorder.shutdown();
 	if (m_audioAnalyzer) {
 		m_audioAnalyzer->stop();
 		m_audioAnalyzer->wait();
@@ -302,6 +290,7 @@ void GLwidget::initializeGL()
 	// Start audio analyser (WASAPI loopback – captures any playing audio)
 	m_audioAnalyzer = new AudioAnalyzer(this);
 	m_audioAnalyzer->start();
+	m_recorder.setAudioAnalyzer( m_audioAnalyzer );
 
 	// Start the "now playing" poller (SMTC: title/artist of the current track).
 	m_nowPlaying = new NowPlaying();
@@ -332,7 +321,7 @@ void GLwidget::initializeGL()
 
 	// CLI -r: begin recording straight away (for testing / debugging).
 	if( s_autoRecord )
-		toggleRecording();
+		m_recorder.toggle();
 
 	//glEnable(GL_MULTISAMPLE); //rwrwforeground
 	setAutoFillBackground(false); //rwrwforeground
@@ -393,8 +382,8 @@ void GLwidget::draw()
 	    && m_audioAnalyzer->isFinished() )
 	{
 		m_batchStopping = true;
-		if( m_recording )
-			toggleRecording();
+		if( m_recorder.recording() )
+			m_recorder.toggle();
 		fprintf( stderr, "BATCH: WAV done - exiting (the mp4 mux continues detached)\n" );
 		QTimer::singleShot( 3000, []{ QCoreApplication::quit(); } );
 	}
@@ -420,11 +409,9 @@ void GLwidget::draw()
 
 	m_actConfiguration->m_filterShader->paint(m_RotationMatrix, m_xTrans, m_yTrans, m_zTrans, audio);
 
-	// Capture the clean frame (before any overlay is drawn) while recording.
-	if( m_recording )
-		captureFrame();
-	else if( m_replayArmed )
-		captureReplayFrame();      // rolling ~30 s instant-replay ring (~15 fps)
+	// Capture the clean frame (before any overlay is drawn) while recording
+	// or while the instant-replay ring is armed.
+	m_recorder.captureIfDue( m_width, m_height );
 
 	// Web-remote live preview: while the phone page polls /api/snapshot,
 	// refresh a small JPEG of the output ~1x per second (sync read, but rare
@@ -433,10 +420,10 @@ void GLwidget::draw()
 	    && m_fpsTimer.elapsed() - m_snapLast > 900 && m_width > 1 && m_height > 1 )
 	{
 		m_snapLast = m_fpsTimer.elapsed();
-		m_recBuf.resize( size_t(m_width) * m_height * 4 );
+		m_snapBuf.resize( size_t(m_width) * m_height * 4 );
 		glPixelStorei( GL_PACK_ALIGNMENT, 1 );
-		glReadPixels( 0, 0, m_width, m_height, GL_RGBA, GL_UNSIGNED_BYTE, m_recBuf.data() );
-		QImage img( m_recBuf.data(), m_width, m_height, QImage::Format_RGBA8888 );
+		glReadPixels( 0, 0, m_width, m_height, GL_RGBA, GL_UNSIGNED_BYTE, m_snapBuf.data() );
+		QImage img( m_snapBuf.data(), m_width, m_height, QImage::Format_RGBA8888 );
 		QImage out = img.mirrored( false, true )
 		                .scaledToHeight( 360, Qt::SmoothTransformation );
 		QByteArray jpg;
@@ -495,7 +482,7 @@ void GLwidget::draw()
 	// Only spin up a QPainter when an overlay or the cross-fade needs it, so the
 	// normal render path is pure GL (no QPainter/GL state interaction).
 	if( m_showSelectConfigurationMenu || m_showFeatureOverlay || m_showHelp
-	    || m_showAudioMenu || m_showShaderInfo || m_recording
+	    || m_showAudioMenu || m_showShaderInfo || m_recorder.recording()
 	    || fadeAlpha > 0.f || npAlpha > 0.f )
 	{
 		QPainter painter(this);
@@ -527,14 +514,14 @@ void GLwidget::draw()
 				painter.drawText( 34, y + i * 28, rows[i] );
 			}
 		}
-		if( m_recording )
+		if( m_recorder.recording() )
 		{
 			painter.setBrush( QColor(230, 40, 40) );
 			painter.setPen( Qt::NoPen );
 			painter.drawEllipse( width() - 150, 26, 16, 16 );
 			painter.setPen( QColor(255, 255, 255) );
 			painter.setFont( QFont("Consolas", 12, QFont::Bold) );
-			painter.drawText( width() - 126, 39, QString("REC %1").arg(m_recFrame) );
+			painter.drawText( width() - 126, 39, QString("REC %1").arg(m_recorder.frameCount()) );
 		}
 		painter.end();
 	}
@@ -1036,308 +1023,6 @@ void GLwidget::applyMidi()
 	}
 }
 
-void GLwidget::toggleRecording()
-{
-	if( !m_recording )
-	{
-		QString ts = QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss");
-		m_recDir = QString("recordings/rec_%1").arg(ts);
-		QDir().mkpath( m_recDir );
-		m_recFrame = 0;
-		m_recConcat.clear();
-		m_recCarryDur  = 0.f;
-		m_recLastFrame = m_fpsTimer.elapsed();
-		if( m_audioAnalyzer )
-			m_audioAnalyzer->startRecording( m_recDir + "/audio.wav" );
-		// Start the encoder worker (single thread -> frames stay in order).
-		ensureRecWorker();
-		m_recording = true;
-		fprintf( stderr, "REC start -> %s\n", m_recDir.toLocal8Bit().constData() );
-	}
-	else
-	{
-		m_recording = false;
-		finishRecording();
-		// The worker also feeds the replay ring — bring it back if armed.
-		if( m_replayArmed )
-			ensureRecWorker();
-	}
-}
-
-// Encoder worker: mirrors, scales and JPEG-encodes queued frames off the GL
-// thread, so recording no longer throttles rendering.
-void GLwidget::recWorker()
-{
-	for(;;)
-	{
-		RecJob job;
-		{
-			std::unique_lock<std::mutex> lk( m_recMx );
-			m_recCv.wait( lk, [this]{ return m_recQuit || !m_recQueue.empty(); } );
-			if( m_recQueue.empty() )
-			{
-				if( m_recQuit ) return;      // quit only after draining
-				continue;
-			}
-			job = std::move( m_recQueue.front() );
-			m_recQueue.pop_front();
-		}
-		int h = job.img.height();
-		QImage out = job.img.mirrored( false, true )               // GL is bottom-up
-		                .scaledToHeight( h > 720 ? 720 : h, Qt::SmoothTransformation );
-
-		if( job.path.isEmpty() )
-		{
-			// Replay-ring job: encode to memory and keep ~30 s of history.
-			QByteArray jpg;
-			QBuffer buf( &jpg );
-			buf.open( QIODevice::WriteOnly );
-			out.save( &buf, "JPG", 80 );
-			std::lock_guard<std::mutex> rl( m_replayMx );
-			m_replayFrames.push_back( ReplayFrame{ jpg, job.dur } );
-			float total = 0.f;
-			for( const ReplayFrame &r : m_replayFrames ) total += r.dur;
-			while( total > 31.f && m_replayFrames.size() > 1 )
-			{
-				total -= m_replayFrames.front().dur;
-				m_replayFrames.pop_front();
-			}
-			continue;
-		}
-
-		out.save( job.path, "JPG", 85 );
-	}
-}
-
-// (Re)start the encoder worker; it serves both the recording and the replay
-// ring, so it may need restarting after finishRecording() joined it.
-void GLwidget::ensureRecWorker()
-{
-	if( m_recThread.joinable() )
-		return;
-	m_recQuit = false;
-	m_recThread = std::thread( &GLwidget::recWorker, this );
-}
-
-// Instant replay: grab ~15 fps into the rolling ring while armed (and not
-// already recording — the recording path captures at 30 fps anyway).
-void GLwidget::captureReplayFrame()
-{
-	qint64 now = m_fpsTimer.elapsed();
-	if( now - m_repLastFrame < 66 )
-		return;
-	float dur = (m_repLastFrame == 0) ? (1.f/15.f) : float(now - m_repLastFrame) / 1000.f;
-	if( dur > 0.5f ) dur = 0.5f;                 // clamp gaps (pause, first frame)
-	m_repLastFrame = now;
-
-	asyncCapture( dur, true );
-}
-
-#ifndef GL_PIXEL_PACK_BUFFER
-#define GL_PIXEL_PACK_BUFFER 0x88EB
-#endif
-#ifndef GL_STREAM_READ
-#define GL_STREAM_READ 0x88E1
-#endif
-
-// PBO double-buffered async readback — see the header comment.  Issues this
-// frame's glReadPixels into PBO[cur] (returns immediately) and consumes the
-// PREVIOUS frame's finished transfer from PBO[prev].
-void GLwidget::asyncCapture( float dur, bool toReplay )
-{
-	int w = m_width, h = m_height;
-	if( w < 2 || h < 2 ) return;
-
-	if( m_pbo[0] == 0 )
-		glGenBuffers( 2, m_pbo );
-
-	const int cur  = m_pboIdx;
-	const int prev = 1 - m_pboIdx;
-
-	// 1. queue this frame's readback (orphaning re-sizes on resolution change)
-	glBindBuffer( GL_PIXEL_PACK_BUFFER, m_pbo[cur] );
-	glBufferData( GL_PIXEL_PACK_BUFFER, (GLsizeiptr)w * h * 4, NULL, GL_STREAM_READ );
-	glReadPixels( 0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, 0 );
-	m_pboMeta[cur].pending = true;
-	m_pboMeta[cur].replay  = toReplay;
-	m_pboMeta[cur].dur     = dur;
-	m_pboMeta[cur].w       = w;
-	m_pboMeta[cur].h       = h;
-
-	// 2. consume the previous frame's data (its DMA finished a frame ago)
-	PboMeta &pm = m_pboMeta[prev];
-	if( pm.pending )
-	{
-		pm.pending = false;
-		glBindBuffer( GL_PIXEL_PACK_BUFFER, m_pbo[prev] );
-		void *ptr = glMapBuffer( GL_PIXEL_PACK_BUFFER, GL_READ_ONLY );
-		if( ptr )
-		{
-			QImage img( (const uchar*)ptr, pm.w, pm.h, QImage::Format_RGBA8888 );
-			bool queued = false;
-			QString fn;
-			if( !pm.replay )
-				fn = QString("%1/frame_%2.jpg").arg(m_recDir).arg(m_recFrame, 6, 10, QChar('0'));
-			{
-				std::lock_guard<std::mutex> lk( m_recMx );
-				if( m_recQueue.size() < 8 )
-				{
-					float carry = pm.replay ? m_repCarryDur : 0.f;
-					m_recQueue.push_back( RecJob{ img.copy(), fn, pm.dur + carry } );
-					queued = true;
-				}
-			}
-			glUnmapBuffer( GL_PIXEL_PACK_BUFFER );
-			if( queued )
-			{
-				m_recCv.notify_one();
-				if( pm.replay )
-					m_repCarryDur = 0.f;
-				else
-				{
-					m_recConcat += QString("file 'frame_%1.jpg'\nduration %2\n")
-					               .arg(m_recFrame, 6, 10, QChar('0'))
-					               .arg(pm.dur + m_recCarryDur, 0, 'f', 4);
-					m_recCarryDur = 0.f;
-					m_recFrame++;
-				}
-			}
-			else if( pm.replay ) m_repCarryDur += pm.dur;
-			else                 m_recCarryDur += pm.dur;
-		}
-	}
-	glBindBuffer( GL_PIXEL_PACK_BUFFER, 0 );
-
-	m_pboIdx = prev;
-}
-
-// Save the replay ring (frames + rolling audio) and mux it like a recording.
-void GLwidget::saveReplay()
-{
-	std::deque<ReplayFrame> frames;
-	{
-		std::lock_guard<std::mutex> rl( m_replayMx );
-		frames = m_replayFrames;
-	}
-	if( frames.size() < 15 )
-	{
-		fprintf( stderr, "REPLAY: noch nichts im Puffer (mit 'y' aktivieren, dann etwas warten)\n" );
-		return;
-	}
-
-	QString ts  = QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss");
-	QString dir = QString("replays/replay_%1").arg(ts);
-	QDir().mkpath( dir );
-
-	QString concat;
-	float total = 0.f;
-	for( int i = 0; i < (int)frames.size(); ++i )
-	{
-		QString fn = QString("frame_%1.jpg").arg(i, 6, 10, QChar('0'));
-		QFile f( dir + "/" + fn );
-		if( f.open(QIODevice::WriteOnly) ) { f.write( frames[i].jpg ); f.close(); }
-		concat += QString("file '%1'\nduration %2\n").arg(fn).arg(frames[i].dur, 0, 'f', 4);
-		total  += frames[i].dur;
-	}
-	concat += QString("file 'frame_%1.jpg'\n").arg((int)frames.size()-1, 6, 10, QChar('0'));
-	QFile lf( dir + "/frames.txt" );
-	if( lf.open(QIODevice::WriteOnly | QIODevice::Text) )
-	{ lf.write( concat.toLocal8Bit() ); lf.close(); }
-
-	bool haveAudio = m_audioAnalyzer
-	              && m_audioAnalyzer->dumpReplayWav( dir + "/audio.wav", total + 0.5f );
-
-	QStringList args;
-	args << "-y" << "-f" << "concat" << "-safe" << "0" << "-i" << (dir + "/frames.txt");
-	if( haveAudio )
-	{
-		// The audio ring holds MORE than the video: trim its start so both
-		// ends align (ffmpeg -ss on the wav input).
-		float wavLen = total + 0.5f;
-		args << "-ss" << QString::number( std::max(0.f, wavLen - total), 'f', 2 )
-		     << "-i" << (dir + "/audio.wav");
-	}
-	args << "-c:v" << "libx264" << "-pix_fmt" << "yuv420p";
-	if( haveAudio ) args << "-c:a" << "aac";
-	args << "-shortest" << (dir + "/replay.mp4");
-	QProcess::startDetached( "ffmpeg", args );
-
-	fprintf( stderr, "REPLAY: %d Frames (%.1f s) -> %s (mux replay.mp4)\n",
-	         (int)frames.size(), total, dir.toLocal8Bit().constData() );
-}
-
-// Grab the freshly-rendered frame (clean, before any overlay) at ~30 fps and hand
-// it to the encoder worker; only glReadPixels + one memcpy run on the GL thread.
-// The ffmpeg concat list is built here with the real per-frame durations.
-void GLwidget::captureFrame()
-{
-	qint64 now = m_fpsTimer.elapsed();
-	if( now - m_recLastFrame < 33 )      // ~30 fps cap
-		return;
-	float dur = (m_recFrame == 0) ? (1.0f/30.0f) : float(now - m_recLastFrame) / 1000.f;
-	m_recLastFrame = now;
-
-	asyncCapture( dur, false );          // PBO path: no GPU->CPU stall
-}
-
-// Finalise: close the WAV, write the concat list + a make_video.bat, and kick off
-// ffmpeg to mux the frames + audio into kaleidoscope.mp4.
-void GLwidget::finishRecording()
-{
-	// Kill any in-flight PBO frame first: it must not be consumed as a stray
-	// RECORDING job after frames.txt has been finalised. Enforced here so EVERY
-	// caller is covered — the toggleRecording() stop path AND ~GLwidget().
-	m_pboMeta[0].pending = false;
-	m_pboMeta[1].pending = false;
-
-	// Drain + stop the encoder worker (it exits only once the queue is empty,
-	// so every queued frame is still written before the mux starts).
-	if( m_recThread.joinable() )
-	{
-		{
-			std::lock_guard<std::mutex> lk( m_recMx );
-			m_recQuit = true;
-		}
-		m_recCv.notify_all();
-		m_recThread.join();
-	}
-
-	if( m_audioAnalyzer )
-		m_audioAnalyzer->stopRecording();      // flushes + closes the WAV
-
-	QString listPath = m_recDir + "/frames.txt";
-	QFile lf( listPath );
-	if( lf.open(QIODevice::WriteOnly | QIODevice::Text) )
-	{
-		QByteArray data = m_recConcat.toLocal8Bit();
-		if( m_recFrame > 0 )   // concat demuxer wants the last entry once more, no duration
-			data += QString("file 'frame_%1.jpg'\n").arg(m_recFrame-1, 6, 10, QChar('0')).toLocal8Bit();
-		lf.write( data );
-		lf.close();
-	}
-
-	QFile bf( m_recDir + "/make_video.bat" );
-	if( bf.open(QIODevice::WriteOnly | QIODevice::Text) )
-	{
-		bf.write( "@echo off\r\ncd /d \"%~dp0\"\r\n"
-		          "ffmpeg -y -f concat -safe 0 -i frames.txt -i audio.wav "
-		          "-c:v libx264 -pix_fmt yuv420p -c:a aac -shortest kaleidoscope.mp4\r\n"
-		          "pause\r\n" );
-		bf.close();
-	}
-
-	// Auto-mux now (detached; ffmpeg is on PATH).  make_video.bat is the fallback.
-	QStringList args;
-	args << "-y" << "-f" << "concat" << "-safe" << "0" << "-i" << listPath
-	     << "-i" << (m_recDir + "/audio.wav")
-	     << "-c:v" << "libx264" << "-pix_fmt" << "yuv420p" << "-c:a" << "aac"
-	     << "-shortest" << (m_recDir + "/kaleidoscope.mp4");
-	QProcess::startDetached( "ffmpeg", args );
-
-	fprintf( stderr, "REC stop: %d frames -> %s (muxing kaleidoscope.mp4)\n",
-	         m_recFrame, m_recDir.toLocal8Bit().constData() );
-}
-
 void GLwidget::selectAudioDevice( int index )
 {
 	if( !m_audioAnalyzer )
@@ -1463,7 +1148,7 @@ void GLwidget::keyPressEvent(QKeyEvent* event)
 			fprintf( stderr, "Now-playing display: %s\n", m_showNowPlaying ? "ON" : "OFF" );
 			break;
 		case Qt::Key_R:
-			toggleRecording();   // record visuals + music to an mp4
+			m_recorder.toggle();   // record visuals + music to an mp4
 			break;
 		case Qt::Key_L:
 			FilterShader::toggleLightShow();   // corner lamps / light-show on/off
@@ -1502,16 +1187,10 @@ void GLwidget::keyPressEvent(QKeyEvent* event)
 
 		// ---- Instant replay: 'y' arms the rolling buffer, 'x' saves it ----
 		case Qt::Key_Y:
-			m_replayArmed = !m_replayArmed;
-			if( m_replayArmed )
-			{
-				ensureRecWorker();
-				m_repLastFrame = 0;
-			}
-			fprintf( stderr, "Instant-Replay-Puffer: %s\n", m_replayArmed ? "AN" : "AUS" );
+			m_recorder.toggleReplayArm();
 			break;
 		case Qt::Key_X:
-			saveReplay();
+			m_recorder.saveReplay();
 			break;
 
 		// ---- VJ handbrakes ----

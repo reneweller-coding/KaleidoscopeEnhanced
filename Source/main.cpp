@@ -267,13 +267,18 @@ int main(int argc, char *argv[])
 
 	QApplication app(argc, argv);
 	app.setOverrideCursor(Qt::BlankCursor);
-	QMyWindow *window = new QMyWindow( NULL );
-	QObject::connect(window , SIGNAL(signalQuitApp()), &app, SLOT(quit()));
+	// Stack statt new-ohne-delete: so läuft ~QMyWindow/~GLwidget (Recorder-
+	// Finalisierung, GL-Cleanup mit aktuellem Kontext) GARANTIERT VOR
+	// ~QApplication.  Der frühere Leak ließ die Widgets erst irgendwo im
+	// App-Teardown sterben — Nährboden für Exit-Asserts der Debug-Qt
+	// ("Must construct a QGuiApplication before a QPixmap" & Co.).
+	QMyWindow window( NULL );
+	QObject::connect(&window , SIGNAL(signalQuitApp()), &app, SLOT(quit()));
 	app.setWindowIcon(QIcon(QString("icon.png")));
 	if (!fullscreen)
 	{
-		window->resize(1920, 1080);
-		window->show();
+		window.resize(1920, 1080);
+		window.show();
 	}
 	else
 	{
@@ -284,9 +289,9 @@ int main(int argc, char *argv[])
 		if( idx < 0 || idx >= screens.size() )
 			idx = (screens.size() > 1) ? 1 : 0;
 		QScreen *target = screens.at(idx);
-		window->setGeometry( target->geometry() );
-		window->setFocus();
-	    window->showFullScreen();
+		window.setGeometry( target->geometry() );
+		window.setFocus();
+	    window.showFullScreen();
 	}
 
 	return app.exec();

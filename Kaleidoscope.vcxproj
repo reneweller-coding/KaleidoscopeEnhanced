@@ -221,6 +221,7 @@ exit /b 0</Command>
     <ClCompile Include="Source\mesh.cpp" />
     <ClCompile Include="Source\MidiInput.cpp" />
     <ClCompile Include="Source\NowPlaying.cpp" />
+    <ClCompile Include="Source\Recorder.cpp" />
     <ClCompile Include="moc\moc_AudioAnalyzer.cpp" />
     <ClCompile Include="moc\moc_glwidget.cpp" />
     <ClCompile Include="moc\moc_QMyWindow.cpp" />
@@ -249,6 +250,7 @@ exit /b 0</Command>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Configuration.h" />
+    <ClInclude Include="Source\Recorder.h" />
     <CustomBuild Include="Source\AudioAnalyzer.h">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">MOCing AudioAnalyzer.h ...</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MOCing AudioAnalyzer.h ...</Message>
