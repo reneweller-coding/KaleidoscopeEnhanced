@@ -686,4 +686,16 @@
     <float name="glowP"    minValue="0.45" maxValue="1.0"></float>
   </TextureShader>
 
+  <CombineShader file="..\\Combine\\CombineDepthField.frag" type="normal" probability="0.5" complexity="4">
+    <float name="focusP"    minValue="0.7"  maxValue="1.4"></float>
+    <float name="apertureP" minValue="0.35" maxValue="0.9"></float>
+    <float name="bokehP"    minValue="0.3"  maxValue="1.0"></float>
+  </CombineShader>
+
+  <CombineShader file="..\\Combine\\CombineSunShafts.frag" type="normal" probability="0.5" complexity="4">
+    <float name="shaftP"  minValue="0.5" maxValue="1.1"></float>
+    <float name="lengthP" minValue="0.6" maxValue="1.1"></float>
+    <float name="dustP"   minValue="0.3" maxValue="0.9"></float>
+  </CombineShader>
+
 </configuration>

@@ -67,6 +67,8 @@ EffectShader::~EffectShader()
 }
 
 
+float EffectShader::s_depthValid[2] = { 0.f, 0.f };
+
 void EffectShader::cleanShaderPrograms()
 {
 	glDeleteProgram(m_sh_prog_id);
@@ -276,7 +278,8 @@ enum AudioLoc {
     AL_BASSREL, AL_MIDREL, AL_TREBREL, AL_DAYPHASE, AL_TEXSMOKE3D,
     AL_CHROMA12, AL_FLATNESS, AL_ZCR, AL_TEXSSM, AL_SSMHEAD, AL_SSMFILL,
     AL_TEXPHYS, AL_FADEOUT, AL_MELODY, AL_MELODYHEAD,
-    AL_TEXSPECTRO, AL_SPECTROHEAD, AL_SPECTROFILL, AL_COUNT
+    AL_TEXSPECTRO, AL_SPECTROHEAD, AL_SPECTROFILL,
+    AL_TEXDEPTH0, AL_TEXDEPTH1, AL_DEPTHVALID, AL_NEARFAR, AL_COUNT
 };
 const char *kAudioLocNames[AL_COUNT] = {
     "audioPhase", "audioAdvance", "audioBeat", "audioLevel", "sides",
@@ -292,7 +295,8 @@ const char *kAudioLocNames[AL_COUNT] = {
     "audioTrebRel", "dayPhase", "texSmoke3D", "audioChroma", "audioFlatness",
     "audioZCR", "texSSM", "ssmHead", "ssmFill", "texPhysarum",
     "audioFadeOut", "audioMelody", "audioMelodyHead",
-    "texSpectro", "spectroHead", "spectroFill"
+    "texSpectro", "spectroHead", "spectroFill",
+    "texDepth0", "texDepth1", "depthValid", "nearFar"
 };
 }
 
@@ -410,6 +414,16 @@ void EffectShader::applyAudioFeatures(const AudioFeatures &f)
     // a handful of these active at once, so the per-stage unit limit is never
     // the binding constraint — the numbering just has to stay collision-free.
     if (L[AL_TEXSPECTRO]  >= 0) glUniform1i(L[AL_TEXSPECTRO], 28);   // spectrogram history
+    // The two scene depth buffers, as the combine stage sees them.  depthValid
+    // says whether each one actually holds a 3D scene's geometry — a 2D effect
+    // leaves the far plane there, and a depth-driven combine has to know the
+    // difference between "everything is far away" and "there is no depth".
+    if (L[AL_TEXDEPTH0]   >= 0) glUniform1i(L[AL_TEXDEPTH0],  29);
+    if (L[AL_TEXDEPTH1]   >= 0) glUniform1i(L[AL_TEXDEPTH1],  30);
+    if (L[AL_DEPTHVALID]  >= 0) glUniform2f(L[AL_DEPTHVALID],
+                                            s_depthValid[0], s_depthValid[1]);
+    if (L[AL_NEARFAR]     >= 0) glUniform2f(L[AL_NEARFAR],
+                                            kSceneNear, kSceneFar);
     if (L[AL_SSMHEAD]     >= 0) glUniform1f(L[AL_SSMHEAD],  f.ssmHead);
     if (L[AL_SSMFILL]     >= 0) glUniform1f(L[AL_SSMFILL],  f.ssmFill);
     if (L[AL_SPECTROHEAD] >= 0) glUniform1f(L[AL_SPECTROHEAD], f.spectroHead);

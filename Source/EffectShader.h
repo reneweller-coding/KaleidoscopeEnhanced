@@ -134,6 +134,18 @@ public:
 	// The host uses this for the true-stereo path (per-eye rendering).
 	virtual bool is3D() const { return false; }
 
+	// The 3D projection's clip planes, shared so a depth-reading effect can
+	// linearise what it samples.  They live here rather than in Scene3DShader
+	// because the CONSUMER is the combine stage, which knows nothing about
+	// scenes — and a copy of these numbers that drifts out of step with the
+	// projection would silently distort every depth-based effect.
+	static constexpr float kSceneNear = 0.5f;
+	static constexpr float kSceneFar  = 220.f;
+
+	// Whether each texture-effect FBO's depth attachment holds real geometry
+	// this frame (set by FilterShader; [0] = tex0's scene, [1] = tex1's).
+	static float s_depthValid[2];
+
 	// ---- Song-structure memory ----
 	// Snapshot / restore of all rolled per-activation parameter values, so a
 	// recognised section (chorus #2 = chorus #1) replays the exact same look.

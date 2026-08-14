@@ -597,6 +597,12 @@
     <None Include="Blend\IndirectClamp.comp">
       <Filter>Shaders\Blend</Filter>
     </None>
+    <None Include="Combine\CombineDepthField.frag">
+      <Filter>Shaders\Combine</Filter>
+    </None>
+    <None Include="Combine\CombineSunShafts.frag">
+      <Filter>Shaders\Combine</Filter>
+    </None>
     <None Include="Blend\Blit.frag">
       <Filter>Shaders\Blend</Filter>
     </None>

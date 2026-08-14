@@ -940,8 +940,8 @@ void FilterShader::reinit(int width, int height)
 	createFBOTexture( m_texIDFBOEffectTexture2 );
 	createFBOTexture( m_texIDFBOEffectCombine1 );
 	createFBOTexture( m_texIDFBOEffectCombine2 );
-	initFBO(  m_fboEffectTexture1, m_texIDFBOEffectTexture1, &m_depthRbEffect1 );
-	initFBO(  m_fboEffectTexture2, m_texIDFBOEffectTexture2, &m_depthRbEffect2 );
+	initFBO(  m_fboEffectTexture1, m_texIDFBOEffectTexture1, &m_depthTexEffect1 );
+	initFBO(  m_fboEffectTexture2, m_texIDFBOEffectTexture2, &m_depthTexEffect2 );
 	initFBO(  m_fboEffectCombine1, m_texIDFBOEffectCombine1 );
 	initFBO(  m_fboEffectCombine2, m_texIDFBOEffectCombine2 );
 	
@@ -982,21 +982,16 @@ void FilterShader::resize(int width, int height)
 	setupFBOTexture( m_texIDFBOEffectCombine1 );
 	setupFBOTexture( m_texIDFBOEffectCombine2 );
 
-	// The 3D-scene DEPTH renderbuffers must track the colour size, or the
-	// effect FBOs go INCOMPLETE_DIMENSIONS after any resize.
-	if( m_depthRbEffect1 )
+	// The 3D-scene DEPTH textures must track the colour size, or the effect
+	// FBOs go INCOMPLETE_DIMENSIONS after any resize.
+	for( GLuint dt : { m_depthTexEffect1, m_depthTexEffect2 } )
 	{
-		glBindRenderbuffer( GL_RENDERBUFFER, m_depthRbEffect1 );
-		glRenderbufferStorage( GL_RENDERBUFFER, GL_DEPTH_COMPONENT,
-		                          m_width, m_height );
+		if( !dt ) continue;
+		glBindTexture( GL_TEXTURE_2D, dt );
+		glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, m_width, m_height,
+		              0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL );
 	}
-	if( m_depthRbEffect2 )
-	{
-		glBindRenderbuffer( GL_RENDERBUFFER, m_depthRbEffect2 );
-		glRenderbufferStorage( GL_RENDERBUFFER, GL_DEPTH_COMPONENT,
-		                          m_width, m_height );
-	}
-	glBindRenderbuffer( GL_RENDERBUFFER, 0 );
+	glBindTexture( GL_TEXTURE_2D, 0 );
 
 	// Resize the final (present) texture too, keeping its mipmaps.
 	if( m_texFinal != 0 )
@@ -3010,6 +3005,18 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 
     //glFramebufferTexture2D( GL_FRAMEBUFFER, m_attachmentpoint, GL_TEXTURE_2D, m_texIDFBOEffectTexture1, 0);
 
+	// A 2D effect never touches the depth attachment, so whatever the last 3D
+	// scene left there would still be sitting in it — and the combine stage now
+	// READS that texture.  Clearing here means "no geometry" always reads as the
+	// far plane instead of as a stale silhouette.
+	EffectShader::s_depthValid[0] =
+	    m_effectTextures[m_actEffectTexture]->is3D() ? 1.f : 0.f;
+	if( EffectShader::s_depthValid[0] == 0.f )
+	{
+		glClearDepth( 1.0 );
+		glClear( GL_DEPTH_BUFFER_BIT );
+	}
+
 	m_effectTextures[m_actEffectTexture]->enableShader();
 	m_effectTextures[m_actEffectTexture]->setUniforms( m_globaltime, m_interpolationTexture, 0, 1 );
 	m_effectTextures[m_actEffectTexture]->applyAudioFeatures( audioFx );
@@ -3031,8 +3038,16 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 	// Skip the "next" texture effect while NOT cross-fading: every combine weights
 	// this output (tex1) by (1-interpolation), which is 0 at interpolation==1.0, so
 	// it is invisible.  Saves a whole effect pass during the common solo periods.
+	EffectShader::s_depthValid[1] = 0.f;
 	if( m_stateInterpolationEffectTexture != 0 )
 	{
+		EffectShader::s_depthValid[1] =
+		    m_effectTextures[m_nextEffectTexture]->is3D() ? 1.f : 0.f;
+		if( EffectShader::s_depthValid[1] == 0.f )
+		{
+			glClearDepth( 1.0 );
+			glClear( GL_DEPTH_BUFFER_BIT );
+		}
 		m_effectTextures[m_nextEffectTexture]->enableShader();
 		m_effectTextures[m_nextEffectTexture]->setUniforms( m_globaltime, m_interpolationTexture, 0, 1 );
 		m_effectTextures[m_nextEffectTexture]->applyAudioFeatures( audioFx );
@@ -3189,6 +3204,13 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 	glActiveTexture(GL_TEXTURE4);
 	glBindTexture( GL_TEXTURE_2D, m_texIDFBOEffectTexture2 );
 
+	// The matching depth buffers.  Bound unconditionally: they are two texture
+	// binds, and a combine that ignores them never declares the samplers.
+	glActiveTexture(GL_TEXTURE0 + 29);
+	glBindTexture( GL_TEXTURE_2D, m_depthTexEffect1 );
+	glActiveTexture(GL_TEXTURE0 + 30);
+	glBindTexture( GL_TEXTURE_2D, m_depthTexEffect2 );
+	glActiveTexture(GL_TEXTURE0);
 
 	//Do the FBO Stuff
 	glBindFramebuffer( GL_FRAMEBUFFER, m_fboEffectCombine1 );
@@ -3692,19 +3714,28 @@ void FilterShader::initFBO(GLuint &fboEffect, GLuint &texIDEffectTexture, GLuint
 							   GL_TEXTURE_2D, texIDEffectTexture, 0);
 	checkGLErrors("initFBO()");
 
-	// Optional depth renderbuffer (the 3D scene effects need depth testing;
-	// the plain fullscreen-quad effects ignore it).  (Re)created at the
-	// current size on every (re)init, so window resizes stay correct.
+	// Optional depth buffer (the 3D scene effects need depth testing; the plain
+	// fullscreen-quad effects ignore it).  (Re)created at the current size on
+	// every (re)init, so window resizes stay correct.
+	//
+	// A TEXTURE, not a renderbuffer: a renderbuffer is write-only from the
+	// shader's side, and everything interesting downstream — depth of field,
+	// ambient occlusion, light shafts, fog — needs to READ the depth the scene
+	// just wrote.  The attachment costs the same either way.
 	if( depthRb )
 	{
 		if( *depthRb == 0 )
-			glGenRenderbuffers( 1, depthRb );
-		glBindRenderbuffer( GL_RENDERBUFFER, *depthRb );
-		glRenderbufferStorage( GL_RENDERBUFFER, GL_DEPTH_COMPONENT,
-		                          m_width, m_height );
-		glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-		                              GL_RENDERBUFFER, *depthRb );
-		glBindRenderbuffer( GL_RENDERBUFFER, 0 );
+			glGenTextures( 1, depthRb );
+		glBindTexture( GL_TEXTURE_2D, *depthRb );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+		glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, m_width, m_height,
+		              0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL );
+		glFramebufferTexture2D( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+		                        GL_TEXTURE_2D, *depthRb, 0 );
+		glBindTexture( GL_TEXTURE_2D, 0 );
 	}
 
 	// check if that worked
