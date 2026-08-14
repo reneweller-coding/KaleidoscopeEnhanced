@@ -969,6 +969,24 @@
     <None Include="Scene3D\GlassStack.vert">
       <Filter>Shaders\Scene3D</Filter>
     </None>
+    <None Include="Scene3D\FlowRibbons.comp">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\FlowRibbons.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\FlowRibbons.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\Skyburst.comp">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\Skyburst.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\Skyburst.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
     <None Include="Scene3D\Planet4D.frag">
       <Filter>Shaders\Scene3D</Filter>
     </None>

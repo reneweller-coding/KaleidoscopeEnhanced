@@ -1,0 +1,190 @@
+#version 430
+// Skyburst.comp — fireworks with real trails, and no simulation state at all.
+// -----------------------------------------------------------------------
+// Ballistics has a closed form, and that is the whole trick here: a spark's
+// position at any moment follows from its launch velocity and the elapsed time,
+// so a thread can evaluate not just where its spark IS but where it WAS —
+// which is what a trail needs.  A particle system would have to store the path;
+// this one derives it.
+//
+// The phase comes from audioAdvance, the host-integrated clock, so shells fire
+// on a musical grid without needing any event history to react to.
+// -----------------------------------------------------------------------
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+
+layout(std430, binding = 0) buffer Verts { float verts[]; };
+layout(std430, binding = 1) buffer Cmd   { uint  cmd[]; };
+
+uniform uint  maxVertices;
+uniform float time;
+uniform float sceneSeed;
+uniform float audioAdvance;
+uniform float audioLevel;
+uniform float audioKick;
+uniform float audioSubBass;
+uniform float audioHigh;
+uniform float audioChroma[12];
+
+uniform float burstP;       // preset: burst size
+uniform float trailP;       // preset: trail length
+uniform float rateP;        // preset: how often shells go up
+
+const int SHELLS = 14;
+const int SPARKS = 620;
+const int TRAIL  = 6;                 // points per trail -> TRAIL-1 segments
+// Deliberately far below 9.81.  A firework is watched over a couple of
+// seconds, and at real gravity the fall (0.5*g*t^2) swamps the burst's own
+// spread (v/k, about 8 units) — the sphere never opens, the sparks just rain
+// downward.  Slowing gravity is what buys the bloom its moment.
+const float GRAV = 3.4;
+const float BURST_AT = 0.30;          // fraction of the shell's life
+const float DRAG = 1.15;
+
+float hash1(float n) { return fract(sin(n * 91.3458) * 47453.5453); }
+vec2  hash2(float n) { return fract(sin(vec2(n * 91.3458, n * 47.1234)) * 43758.5453); }
+
+// Where a spark is at local time t after the burst.  Exponential drag, not a
+// linear slowdown: a spark decelerates hardest immediately after the burst,
+// which is what gives a firework its characteristic sudden bloom followed by a
+// slow drift.
+vec3 sparkAt(vec3 burstPos, vec3 v, float t)
+{
+    float k = DRAG;
+    float f = (1.0 - exp(-k * t)) / k;
+    return burstPos + v * f - vec3(0.0, 0.5 * GRAV * t * t, 0.0);
+}
+
+void writeVertex(uint slot, vec3 p, float age, float shellHue, float bright)
+{
+    uint o = slot * 8u;
+    verts[o + 0u] = p.x;  verts[o + 1u] = p.y;  verts[o + 2u] = p.z;
+    verts[o + 3u] = age;
+    verts[o + 4u] = shellHue;
+    verts[o + 5u] = bright;
+    verts[o + 6u] = 0.0;
+    verts[o + 7u] = 0.0;
+}
+
+void main()
+{
+    uvec3 g = gl_GlobalInvocationID;
+    uint id = g.x + 64u * (g.y + 64u * g.z);
+    if (id >= uint(SHELLS * SPARKS))
+        return;
+
+    int shell = int(id) / SPARKS;
+    int spark = int(id) % SPARKS;
+
+    float sf = float(shell) + sceneSeed * 53.0;
+    vec2  sh = hash2(sf);
+    float sh2 = hash1(sf + 7.7);
+
+    // Each shell runs its own life cycle, offset so they do not all fire
+    // together.  rateP sets how many lives pass per unit of the audio clock.
+    float rate = rateP * (0.055 + 0.02 * sh.x);
+    float life = fract(audioAdvance * rate + hash1(sf + 3.1));
+    if (life < 0.02)
+        return;                        // still on the ground
+
+    // ---- the mortar ----
+    vec3 pad = vec3((sh.x - 0.5) * 52.0, 0.0, 22.0 + sh.y * 52.0);
+    float apex = 10.0 + 7.0 * sh2 * (1.0 + 0.4 * audioSubBass);
+    // Rise time is BURST_AT of the life; pick the launch speed that reaches the
+    // apex exactly then, so the shell always bursts at the top of its arc.
+    float riseT = BURST_AT;
+    float v0 = apex / riseT + 0.5 * GRAV * riseT;
+
+    if (life < BURST_AT)
+    {
+        // Still climbing: draw the mortar's own trail, a short bright streak.
+        if (spark >= 12)
+            return;                    // one thin trail, not 620 of them
+        float t = life;
+        uint need = uint(TRAIL - 1) * 6u;
+        uint base = atomicAdd(cmd[4], need);
+        if (base + need > maxVertices)
+            return;
+
+        float hue = fract(0.08 + 0.05 * sh2);
+        float dt = 0.012;
+        for (int s = 0; s < TRAIL - 1; ++s)
+        {
+            float t0 = max(t - float(s)     * dt, 0.0);
+            float t1 = max(t - float(s + 1) * dt, 0.0);
+            vec3 a = pad + vec3(0.0, v0 * t0 - 0.5 * GRAV * t0 * t0, 0.0);
+            vec3 b = pad + vec3(0.0, v0 * t1 - 0.5 * GRAV * t1 * t1, 0.0);
+            vec3 side = vec3(0.05 + 0.02 * float(spark) * 0.0, 0.0, 0.0);
+            float w0 = 0.07, w1 = 0.05;
+            uint o = base + uint(s) * 6u;
+            float br = 1.0 - float(s) / float(TRAIL);
+            writeVertex(o + 0u, a - vec3(w0, 0, 0), 0.0, hue, br);
+            writeVertex(o + 1u, a + vec3(w0, 0, 0), 0.0, hue, br);
+            writeVertex(o + 2u, b + vec3(w1, 0, 0), 0.0, hue, br * 0.6);
+            writeVertex(o + 3u, a - vec3(w0, 0, 0), 0.0, hue, br);
+            writeVertex(o + 4u, b + vec3(w1, 0, 0), 0.0, hue, br * 0.6);
+            writeVertex(o + 5u, b - vec3(w1, 0, 0), 0.0, hue, br * 0.6);
+        }
+        return;
+    }
+
+    // ---- after the burst ----
+    vec3 burstPos = pad + vec3(0.0, apex, 0.0);
+    float t = (life - BURST_AT) / (1.0 - BURST_AT) * 1.8;   // seconds since burst
+
+    // Spark direction: a Fibonacci sphere, which spreads points far more evenly
+    // than random directions do — random ones clump and the shell looks moth
+    // eaten.
+    float fi = (float(spark) + 0.5) / float(SPARKS);
+    float phi = acos(1.0 - 2.0 * fi);
+    float theta = 2.39996323 * float(spark);
+    vec3 dir = vec3(sin(phi) * cos(theta), cos(phi), sin(phi) * sin(theta));
+
+    // A little per-spark speed spread, so the shell has thickness rather than
+    // being an infinitely thin shell of light.
+    float speed = burstP * (7.0 + 4.5 * hash1(float(spark) + sf))
+                * (1.0 + 0.25 * audioKick);
+    vec3 v = dir * speed;
+
+    // Colour from the shell's own pitch class.
+    int band = int(mod(float(shell) * 5.0, 12.0));
+    float hue = fract(0.02 + float(band) / 12.0 + 0.35 * audioChroma[band] * 4.0);
+
+    float fade = 1.0 - smoothstep(1.05, 1.8, t);
+    if (fade <= 0.002)
+        return;
+
+    uint need = uint(TRAIL - 1) * 6u;
+    uint base = atomicAdd(cmd[4], need);
+    if (base + need > maxVertices)
+        return;
+
+    float dt = trailP * 0.055;
+    for (int s = 0; s < TRAIL - 1; ++s)
+    {
+        float t0 = max(t - float(s)     * dt, 0.0);
+        float t1 = max(t - float(s + 1) * dt, 0.0);
+        vec3 a = sparkAt(burstPos, v, t0);
+        vec3 b = sparkAt(burstPos, v, t1);
+
+        vec3 seg = b - a;
+        float L = length(seg);
+        if (L < 1e-5) continue;
+        // Widen across the segment, in whatever direction is perpendicular to
+        // it and roughly horizontal — the trail is a screen-facing streak, and
+        // at this scale nothing more careful is visible.
+        vec3 side = normalize(cross(seg / L, vec3(0.0, 0.0, 1.0)) + 1e-4);
+
+        float f0 = float(s)     / float(TRAIL - 1);
+        float f1 = float(s + 1) / float(TRAIL - 1);
+        float w0 = (0.035 + 0.05 * audioHigh) * (1.0 - f0) * fade;
+        float w1 = (0.035 + 0.05 * audioHigh) * (1.0 - f1) * fade;
+
+        uint o = base + uint(s) * 6u;
+        writeVertex(o + 0u, a - side * w0, f0, hue, fade * (1.0 - f0));
+        writeVertex(o + 1u, a + side * w0, f0, hue, fade * (1.0 - f0));
+        writeVertex(o + 2u, b + side * w1, f1, hue, fade * (1.0 - f1));
+        writeVertex(o + 3u, a - side * w0, f0, hue, fade * (1.0 - f0));
+        writeVertex(o + 4u, b + side * w1, f1, hue, fade * (1.0 - f1));
+        writeVertex(o + 5u, b - side * w1, f1, hue, fade * (1.0 - f1));
+    }
+}

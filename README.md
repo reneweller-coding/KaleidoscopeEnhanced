@@ -1159,6 +1159,47 @@ distance — a single layer always looks like dust on the lens instead of weathe
 The wind is one field shared by every layer and driven by height, so a gust
 travels down the frame instead of shifting everything at once.
 
+### FlowRibbons and Skyburst — two more indirect generators
+
+**`FlowRibbons`** traces thousands of streamlines through a **curl-noise** field.
+Curl noise is the curl of a vector potential and is therefore divergence-free
+by construction — and that single property is why the ribbons read as a flowing
+medium rather than as drifting confetti: a divergence-free field has no sources
+and no sinks, so nothing piles up in a corner or drains away, and the
+streamlines can only stretch and fold, which is what a fluid does.
+
+Two structural choices worth copying:
+
+- **One thread per whole ribbon**, not per segment. That looks wasteful against
+  262144 invocations, but a streamline has to be *integrated* from its start, so
+  a thread per segment would redo the same walk for every segment — O(S²) where
+  this is O(S).
+- **One `atomicAdd` per ribbon.** Reserving per triangle would issue sixty-four
+  atomics for the same ribbon and serialise on the counter for no gain.
+
+Integration is midpoint, not Euler: with Euler the ribbons drift off their
+streamline and the fold structure smears out. The frame is carried along the
+curve by parallel transport rather than rebuilt each step, so a ribbon does not
+flip when its tangent passes vertical.
+
+**`Skyburst`** is fireworks with real trails, and no simulation state at all.
+Ballistics has a closed form, so a thread can evaluate not only where its spark
+*is* but where it *was* — which is exactly what a trail needs. A particle system
+would have to store the path; this one derives it. Shell phases come from
+`audioAdvance`, so shells fire on a musical grid without any event history.
+
+Three physical details carry it: drag is **exponential**, not linear, which
+gives the characteristic sudden bloom followed by a slow drift; spark directions
+come from a **Fibonacci sphere**, because random directions clump and the shell
+looks moth-eaten; and the trail **cools along its length**, white at the head
+through the shell's colour to deep red at the tail.
+
+Gravity is set at 3.4, far below the real 9.81 — a firework is watched over a
+couple of seconds, and at real gravity the fall (½gt²) swamps the burst's own
+spread (v/k, about eight units). The sphere never opens; the sparks just rain
+downward. That was the first probe, and it is why the constant is a decision
+rather than a value.
+
 ### Order-independent transparency
 
 Interpenetrating transparent objects are the case sorting cannot solve: there is
