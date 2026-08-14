@@ -1295,6 +1295,54 @@ travelling wave rather than the whole shell pulsing at once.
   this sphere is built from winds inward — it reports the entire outer shell as
   back-facing and paints the whole ball as magma.
 
+**`HairCurtain`** and **`Blueprint`** round out the geometry stage, and each is
+there for one specific reason.
+
+Hair is shaded with Kajiya-Kay, because a hair is a cylinder far thinner than a
+pixel: it has no single normal, it has a whole *ring* of them around the fibre.
+Integrating over that ring makes the highlight depend on the angle to the
+**tangent**, which is why hair shows a band of light running across the strands
+instead of a point highlight on each one. Two things that cost iterations:
+
+- The specular exponent has to be **far lower** than a solid surface would use.
+  `sin()` of the fibre angle stays near 1 over a wide range, so a power in the
+  hundreds collapses the band to nothing and the curtain goes dead flat.
+- The strands must fall over a **curved crown**, not hang from a straight line.
+  The highlight is a band of *directions*; a curtain of exactly parallel strands
+  has the same angle everywhere and shows no band at all. Fanning the roots
+  along an arc is what makes the sheen appear.
+
+Blueprint draws a single-pass wireframe. That needs one thing a vertex shader
+cannot provide: each vertex must know *which corner* of its triangle it is. A
+vertex is shared between triangles, so that is not a property of the vertex — it
+only exists once the whole triangle is in view. With (1,0,0), (0,1,0), (0,0,1)
+at the corners, the interpolated value is the barycentric coordinate and its
+smallest component is the distance to the nearest edge; `fwidth` converts that
+to pixels so the line keeps one width regardless of foreshortening.
+
+The same stage also solves the two problems that make such a wireframe look
+wrong. The grid splits every quad into two triangles, and drawing the shared
+hypotenuse turns a clean lattice into a herringbone that advertises the
+triangulation — so each edge is checked for being a diagonal (its endpoints
+differ in *both* parameters) and masked out. And a blueprint needs its sheet:
+one triangle of the mesh is spent emitting a **full-screen triangle** in clip
+space, which is exactly three vertices — the reason this fits where a quad
+backdrop would not.
+
+**`Magnetosphere`** is the third generator on the indirect path, and it exists
+because a dipole field line has a closed form: `r = L·sin²θ`. Every point of
+every line can be evaluated independently, with no simulation at all, which is
+precisely the shape a compute generator wants. One thread builds one segment of
+one line from nothing but its own index, and each shell is tied to one band of
+the spectrum — bass in the tight inner shells, treble streaming out along the
+outer ones.
+
+The shell fraction rides down to the fragment shader in the spare vertex float
+(2.0 marks the planet, anything below is the shell). Deriving it from the
+position instead is wrong in a way that is easy to miss: a line's footpoints
+come down to the planet's surface, so its innermost points share a radius with
+every other line and the colour ramp collapses in the middle of the image.
+
 ### EventHorizon — general relativity in a plain fragment shader
 
 `Scene/EventHorizon.frag` needs no compute at all. Each pixel integrates its own
