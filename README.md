@@ -1513,6 +1513,57 @@ to be a real texel or two — smaller, and the difference is quantised by the
 source's own 8-bit levels and the surface comes out terraced. The tangents also
 have to carry the sheet's world size, or the normal is wrong by the aspect ratio.
 
+### FeatherStorm and PrismExplode
+
+**`FeatherStorm`** puts one feather in each quad and lets the fragment shader
+cut the silhouette out of it. That split is the point: a feather has a
+complicated outline and almost no volume, so paying for it in geometry would be
+absurd, while paying for it in fragments costs one shape function and stays
+crisp at any distance.
+
+The shape took two corrections, and both are about why the first version read as
+a bed of leaves:
+
+- **The width profile must be asymmetric.** `sin(π·u)` is the obvious choice and
+  it is symmetric, which is exactly what makes it a leaf. A feather is widest
+  *past* the middle and narrows toward the quill much faster than toward the
+  point; `u^0.55 · (1-u)^0.35` peaks at 0.61 and does both.
+- **The aspect has to be about six to one.** At a third of its length, a shape is
+  a leaf whatever the outline function does.
+
+The two vanes are also given different widths — a flight feather's leading vane
+is visibly narrower than its trailing one, and that asymmetry is most of what
+tells the eye "feather" before it can name why — and the same comb that draws the
+barbs also nicks the outline, because a vane with a clean edge looks like
+plastic.
+
+The motion is a vortex whose angular speed falls as 1/r. A rigid rotation is what
+a solid disc does and the eye recognises it instantly; real circulation shears,
+so the inner feathers whip round while the outer ones barely turn.
+
+**`PrismExplode`** is a shell of glass wedges thrown outward on the kick and
+pulled back by a spring. Its subject is dispersion, done properly: glass has a
+different refractive index for every wavelength, modelled by Cauchy's equation
+`n(λ) = A + B/λ²`. With crown-glass values that is 1.532 for blue and 1.527 for
+red — and the three channels are refracted *separately*, each with its own index,
+scaled by the wedge angle the generator measured for that shard. A thin shard
+barely tints; a fat one throws a full spectrum.
+
+That alone produced no rainbow, and the reason is worth stating because it is
+physics rather than a bug:
+
+> **Dispersion is only visible against high-frequency contrast.** The three
+> refracted directions differ by a fraction of a degree, so against a smooth sky
+> gradient all three land on nearly the same value and the shard comes out
+> merely tinted. A prism in a featureless white room makes no rainbow either — it
+> needs an edge.
+
+So the analytic environment gained a set of bright narrow bands. They are not
+decoration; they are the slit that turns the wedges into spectra. Total internal
+reflection is also handled — `refract` returns a zero vector there, and falling
+back to the mirror direction makes a grazing shard turn reflective instead of
+black, which is what real glass does.
+
 ### Order-independent transparency
 
 Interpenetrating transparent objects are the case sorting cannot solve: there is

@@ -2,12 +2,28 @@
 // SmokeHall.comp — a colonnade in smoke, lit through slotted beams.
 //
 // UNFINISHED — deliberately not registered in any preset.
-// The technique works: the shadow map really does carve beams into the volume,
-// and the four findings below are solid and worth keeping.  What is not solved
-// is the composition — the roof beams cover too much of the sky from an eye at
-// mid-height, so the frame is dominated by their black undersides instead of by
-// the shafts between them.  The next pass should widen the slots relative to the
-// beams and settle the camera height against the hall height, then probe.
+//
+// Second pass fixed two real things: the roof is now about a fifth solid instead
+// of nearly half, and the slab-size cap is gone.  That cap was a genuine bug —
+// it was meant to stop slabs reaching outside the hall, but a capped far slab no
+// longer spans the frustum, so large soft holes opened in the volume.  Confining
+// the smoke belongs in the fragment shader, in world space, where it is exact.
+//
+// It also exposed why this is hard, which is worth more than another tuning
+// round.  A shaft is only visible when the lit/shadowed split is CONSTANT along
+// the view ray — otherwise every ray crosses the same alternating pattern and
+// they all average to the same grey.  That requires the shadow slab to contain
+// the view direction, which requires the light to have no component along it.
+// The host's sun deliberately swings through a slow arc, so its horizontal
+// direction rotates: no fixed corridor orientation is perpendicular to it for
+// long, and lengthwise slots stop working as soon as the sun has swung a little.
+//
+// The fix that would actually work: rotate the HALL (kind 0 only) in the vertex
+// shader by an angle derived from lightDir, so the corridor always runs across
+// the sun, while the smoke slabs stay view-aligned and unrotated.  The shadow
+// pass uses the same vertex shader, so the map stays consistent; the fragment
+// bound has to be rotated by the same angle to match.  That is the next attempt,
+// not another pass at the numbers.
 // -----------------------------------------------------------------------
 // This is the first scene that wants BOTH new contracts at once.  The hall is
 // opaque and casts into the shadow map; the smoke is transparent and reads that
@@ -46,7 +62,11 @@ uniform float camHP;        // preset: eye height
 
 const int COLS   = 4;                  // pillar columns (two per side)
 const int ROWS   = 6;                  // pillar rows along the hall
-const int BEAMS  = 14;                 // roof beams
+// Ten beams over a 31-unit span with a 0.75 width: about a fifth of the roof is
+// solid.  The first attempt had fourteen at 1.05 over the same span -- nearly
+// half -- and from an eye at mid-height that fills the upper frame with their
+// black undersides.  A shaft scene has to be mostly slot.
+const int BEAMS  = 10;
 const int SLABS  = 56;                 // smoke slices
 // The hall is deliberately SHORT.  The shadow box is centred on the origin and
 // sized once, so anything past its edge gets "lit" for free — and a stretch of
@@ -97,7 +117,9 @@ void main()
     if (id >= uint(NQUADS))
         return;
 
-    float H = clamp(heightP, 0.5, 1.8) * 8.4;
+    // A taller hall as well as a sparser roof: the beams have to be far enough
+    // above the eye that they read as a ceiling rather than as a lid.
+    float H = clamp(heightP, 0.5, 1.8) * 11.5;
     float pitch = clamp(spacingP, 0.6, 1.8) * 4.6;
     // The hall slides toward the viewer.  Wrapping the geometry rather than
     // moving the camera keeps every coordinate small and bounded, which matters
@@ -152,8 +174,8 @@ void main()
         // One quad each is enough; a beam only has to block, and it is only ever
         // seen from below.
         int b = int(id) - 1 - NPILLQ;
-        float bx = -15.0 + float(b) * 2.30;
-        float t = 1.05;
+        float bx = -15.0 + float(b) * 3.40;
+        float t = 0.75;
         // Back to -8, not -3: the nearest smoke slabs sit behind the eye's own
         // starting point, and a slab with no beam above it is lit everywhere.
         // One uniformly lit slab in front of the lens washes out every striped
@@ -170,12 +192,15 @@ void main()
     // Spaced by the cube of the parameter: near slices matter far more, because
     // they cover more screen and are what the eye resolves.
     float zv = mix(NEARZ, FARZ, f * f * (3.0 - 2.0 * f));
-    // Big enough to cover the frustum at that depth, but capped: a slab that
-    // keeps growing with distance ends up mostly outside the hall AND outside
-    // the shadow box, where the lookup can only answer "lit" — and a volume that
-    // is lit everywhere is a flat grey wall, not a shaft.
-    float hh = min(0.60 * (zv + 6.6), 6.5);
-    float hw = min(hh * 1.95, 17.0);
+    // Each slab covers the whole frustum at its own depth.  An earlier version
+    // capped the size to keep the slabs from reaching outside the hall, which
+    // fixed the wrong problem and broke a real one: a capped far slab no longer
+    // spans the frustum, so the top and bottom of the frame have only the near
+    // slabs in them and large soft holes open up in the volume.  Confining the
+    // smoke is the fragment shader's job — it discards outside the colonnade in
+    // world space, which is exact, where a size cap is only a guess.
+    float hh = 0.60 * (zv + 6.6);
+    float hw = hh * 1.95;
     float ey = clamp(camHP, 0.5, 5.0);
     emitQuad(vec3(-hw, ey - hh, zv), vec3(hw, ey - hh, zv),
              vec3(hw, ey + hh, zv),  vec3(-hw, ey + hh, zv),

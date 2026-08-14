@@ -1,0 +1,129 @@
+#version 430
+// FeatherStorm.comp — a vortex full of feathers.
+// -----------------------------------------------------------------------
+// Each feather is one quad; the feather itself is drawn inside it by the
+// fragment shader, which discards everything outside the vane.  That split is
+// the point: a feather has a complicated silhouette and almost no volume, so
+// paying for it in geometry would be absurd, while paying for it in fragments
+// costs one shape function and gives a crisp outline at any distance.
+//
+// The motion is a vortex, and the one detail that decides whether it reads as
+// wind rather than as a carousel is that the angular speed falls with radius.
+// A rigid rotation — every feather at the same angular rate — is exactly what a
+// solid disc does, and the eye recognises it instantly.  Real circulation goes
+// as 1/r away from the core, so the inner feathers whip round and the outer ones
+// barely turn, and the whole field shears.
+//
+// The quads are built with their own orientation rather than facing the camera,
+// so a feather is sometimes seen edge-on and nearly vanishes.  That flicker of
+// presence and absence is most of what makes a swarm of thin things look real.
+// -----------------------------------------------------------------------
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+
+layout(std430, binding = 0) buffer Verts { float verts[]; };
+layout(std430, binding = 1) buffer Cmd   { uint  cmd[]; };
+
+uniform uint  maxVertices;
+uniform float time;
+uniform float sceneSeed;
+uniform float audioAdvance;
+uniform float audioLevel;
+uniform float audioKick;
+uniform float audioSubBass;
+uniform float audioHigh;
+
+uniform float countP;       // preset: how many feathers
+uniform float swirlP;       // preset: strength of the vortex
+uniform float sizeP;        // preset: feather length
+
+const int FEATHERS = 1100;
+
+float hash1(float n) { return fract(sin(n * 91.3458) * 47453.5453); }
+vec3  hash3(float n)
+{
+    return fract(sin(vec3(n * 91.3458, n * 47.1234, n * 13.9871)) * 43758.5453);
+}
+
+void writeVertex(uint slot, vec3 p, vec3 n, float u, float v)
+{
+    uint o = slot * 8u;
+    verts[o + 0u] = p.x;  verts[o + 1u] = p.y;  verts[o + 2u] = p.z;
+    verts[o + 3u] = u;
+    verts[o + 4u] = n.x;  verts[o + 5u] = n.y;  verts[o + 6u] = n.z;
+    verts[o + 7u] = v;
+}
+
+void main()
+{
+    uvec3 g = gl_GlobalInvocationID;
+    uint id = g.x + 64u * (g.y + 64u * g.z);
+
+    int n = int(clamp(countP, 0.15, 1.0) * float(FEATHERS));
+    if (id >= uint(n))
+        return;
+
+    float fi = float(id);
+    vec3 h = hash3(fi * 1.717 + sceneSeed * 53.0);
+    vec3 h2 = hash3(fi * 3.911 + 7.3 + sceneSeed * 11.0);
+
+    // Start radius and height in the column.
+    float r0 = 0.7 + 5.6 * sqrt(h.x);
+    float y0 = -6.0 + 12.0 * h.y;
+    float a0 = 6.2831853 * h.z;
+
+    // Circulation falling off with radius, plus a slow rise.  audioAdvance
+    // carries the phase, so a change in level alters the speed from here on
+    // rather than teleporting every feather.
+    float swirl = clamp(swirlP, 0.2, 2.5);
+    float omega = swirl * (1.9 / (0.9 + r0 * 0.55));
+    float ang = a0 + audioAdvance * omega * 0.35;
+
+    float rise = mod(y0 + audioAdvance * (0.55 + 0.5 * h2.x) * (0.6 + 0.7 * audioLevel),
+                     12.0) - 6.0;
+    // A gentle breathing of the radius, so the column is not a cylinder.
+    float r = r0 * (1.0 + 0.10 * sin(audioAdvance * 0.4 + fi * 0.7))
+            * (1.0 + 0.18 * audioSubBass);
+
+    vec3 c = vec3(cos(ang) * r, rise, sin(ang) * r);
+
+    // The feather's own frame.  The shaft points mostly along its travel — a
+    // feather falls shaft-first — with a per-feather tumble on top.
+    vec3 vel = normalize(vec3(-sin(ang), 0.55, cos(ang)) + 1e-4);
+    float tumble = audioAdvance * (0.6 + 1.4 * h2.y) + fi * 2.1;
+    vec3 up = normalize(vec3(sin(tumble), cos(tumble) * 0.6, cos(tumble * 0.7)));
+    vec3 side = normalize(cross(vel, up));
+    vec3 shaft = normalize(cross(side, vel * 0.15 + up * 0.99));
+
+    // Long and slender.  A feather is roughly six times as long as it is wide;
+    // at a third of its length it is a leaf whatever the fragment shader does
+    // to the outline.
+    float len = clamp(sizeP, 0.3, 2.2) * (0.75 + 0.85 * h2.z)
+              * (1.0 + 0.25 * audioKick);
+    float wid = len * 0.17;
+
+    vec3 A = c - shaft * len * 0.5 - side * wid;
+    vec3 B = c + shaft * len * 0.5 - side * wid;
+    vec3 C = c + shaft * len * 0.5 + side * wid;
+    vec3 D = c - shaft * len * 0.5 + side * wid;
+
+    vec3 nrm = normalize(cross(B - A, D - A));
+
+    uint base = atomicAdd(cmd[4], 12u);
+    if (base + 12u > maxVertices)
+        return;
+
+    // u runs from quill to tip, v across the vane; the fragment shader cuts the
+    // feather out of the quad using them.
+    writeVertex(base +  0u, A, nrm, 0.0, -1.0);
+    writeVertex(base +  1u, B, nrm, 1.0, -1.0);
+    writeVertex(base +  2u, C, nrm, 1.0,  1.0);
+    writeVertex(base +  3u, A, nrm, 0.0, -1.0);
+    writeVertex(base +  4u, C, nrm, 1.0,  1.0);
+    writeVertex(base +  5u, D, nrm, 0.0,  1.0);
+    writeVertex(base +  6u, C, nrm, 1.0,  1.0);
+    writeVertex(base +  7u, B, nrm, 1.0, -1.0);
+    writeVertex(base +  8u, A, nrm, 0.0, -1.0);
+    writeVertex(base +  9u, D, nrm, 0.0,  1.0);
+    writeVertex(base + 10u, C, nrm, 1.0,  1.0);
+    writeVertex(base + 11u, A, nrm, 0.0, -1.0);
+}

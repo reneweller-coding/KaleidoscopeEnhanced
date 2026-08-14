@@ -1080,6 +1080,24 @@
     <None Include="Scene3D\VideoRelief.vert">
       <Filter>Shaders\Scene3D</Filter>
     </None>
+    <None Include="Scene3D\FeatherStorm.comp">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\FeatherStorm.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\FeatherStorm.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\PrismExplode.comp">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\PrismExplode.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\PrismExplode.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
     <None Include="Scene3D\Planet4D.frag">
       <Filter>Shaders\Scene3D</Filter>
     </None>

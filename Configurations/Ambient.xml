@@ -491,4 +491,25 @@
     <float name="inkP"     minValue="0.40" maxValue="1.20"></float>
   </TextureShader>
 
+  <TextureShader file="..\\Scene3D\\FeatherStorm.frag" type="scene3d" geom="indirect" probability="0.55" mood="calm,dreamy" complexity="4">
+    <float name="countP"   minValue="0.40" maxValue="1.00"></float>
+    <float name="swirlP"   minValue="0.40" maxValue="2.00"></float>
+    <float name="sizeP"    minValue="0.60" maxValue="1.60"></float>
+    <float name="camDistP" minValue="7.50" maxValue="11.00"></float>
+    <float name="camHP"    minValue="-1.50" maxValue="1.50"></float>
+    <float name="barbP"    minValue="0.40" maxValue="1.30"></float>
+    <float name="glowP"    minValue="0.45" maxValue="1.00"></float>
+    <float name="hueP"     minValue="0.00" maxValue="1.00"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\PrismExplode.frag" type="scene3d" geom="indirect" probability="0.30" mood="dreamy" complexity="4">
+    <float name="burstP"   minValue="0.50" maxValue="2.00"></float>
+    <float name="countP"   minValue="0.40" maxValue="1.00"></float>
+    <float name="sizeP"    minValue="0.50" maxValue="1.60"></float>
+    <float name="camDistP" minValue="4.40" maxValue="6.40"></float>
+    <float name="dispP"    minValue="0.40" maxValue="1.80"></float>
+    <float name="glowP"    minValue="0.45" maxValue="1.00"></float>
+    <float name="hueP"     minValue="0.00" maxValue="1.00"></float>
+  </TextureShader>
+
 </configuration>
