@@ -524,10 +524,13 @@ void Scene3DShader::draw()
 	// Perspective projection (55° vertical FOV, near 0.5, far 220).  The
 	// aspect uses the FULL frame even for a half-viewport stereo eye — the
 	// display/HMD player unsqueezes the halves back to full width.
-	const float fovY = 55.f * 3.14159265f / 180.f;
+	// The three numbers come from EffectShader, because the combine stage needs
+	// the same ones to turn a depth sample back into a view-space position.
+	// Two copies would drift, and every depth-based effect would then be
+	// subtly, invisibly wrong.
 	const float aspect = (m_height > 0) ? float(m_width) / float(m_height) : 1.f;
-	const float zn = 0.5f, zf = 220.f;
-	const float f = 1.f / tanf( fovY * 0.5f );
+	const float zn = kSceneNear, zf = kSceneFar;
+	const float f = 1.f / kSceneTanHalfFovY;
 	float proj[16] = {
 		f / aspect, 0.f, 0.f,                            0.f,
 		0.f,        f,   0.f,                            0.f,

@@ -279,7 +279,8 @@ enum AudioLoc {
     AL_CHROMA12, AL_FLATNESS, AL_ZCR, AL_TEXSSM, AL_SSMHEAD, AL_SSMFILL,
     AL_TEXPHYS, AL_FADEOUT, AL_MELODY, AL_MELODYHEAD,
     AL_TEXSPECTRO, AL_SPECTROHEAD, AL_SPECTROFILL,
-    AL_TEXDEPTH0, AL_TEXDEPTH1, AL_DEPTHVALID, AL_NEARFAR, AL_COUNT
+    AL_TEXDEPTH0, AL_TEXDEPTH1, AL_DEPTHVALID, AL_NEARFAR, AL_TANHALFFOV,
+    AL_COUNT
 };
 const char *kAudioLocNames[AL_COUNT] = {
     "audioPhase", "audioAdvance", "audioBeat", "audioLevel", "sides",
@@ -296,7 +297,7 @@ const char *kAudioLocNames[AL_COUNT] = {
     "audioZCR", "texSSM", "ssmHead", "ssmFill", "texPhysarum",
     "audioFadeOut", "audioMelody", "audioMelodyHead",
     "texSpectro", "spectroHead", "spectroFill",
-    "texDepth0", "texDepth1", "depthValid", "nearFar"
+    "texDepth0", "texDepth1", "depthValid", "nearFar", "tanHalfFov"
 };
 }
 
@@ -424,6 +425,7 @@ void EffectShader::applyAudioFeatures(const AudioFeatures &f)
                                             s_depthValid[0], s_depthValid[1]);
     if (L[AL_NEARFAR]     >= 0) glUniform2f(L[AL_NEARFAR],
                                             kSceneNear, kSceneFar);
+    if (L[AL_TANHALFFOV]  >= 0) glUniform1f(L[AL_TANHALFFOV], kSceneTanHalfFovY);
     if (L[AL_SSMHEAD]     >= 0) glUniform1f(L[AL_SSMHEAD],  f.ssmHead);
     if (L[AL_SSMFILL]     >= 0) glUniform1f(L[AL_SSMFILL],  f.ssmFill);
     if (L[AL_SPECTROHEAD] >= 0) glUniform1f(L[AL_SPECTROHEAD], f.spectroHead);
