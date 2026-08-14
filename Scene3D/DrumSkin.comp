@@ -1,0 +1,198 @@
+#version 430
+// DrumSkin.comp — a circular membrane vibrating in its real modes.
+// -----------------------------------------------------------------------
+// The project already has CymaticsPlate, which is a PLATE: it obeys the
+// biharmonic equation and its patterns are Chladni figures.  A drumhead is a
+// different object — a MEMBRANE, governed by the ordinary wave equation — and
+// the difference is audible, not just visual.  A membrane's modes are
+//
+//     z(r, th, t) = J_n(a_nm * r / R) * cos(n*th + ph) * cos(w_nm * t)
+//
+// where a_nm is the m-th zero of the Bessel function J_n, and the frequencies
+// are proportional to those zeros: 2.405, 3.832, 5.136, 5.520, ...  Those ratios
+// are IRRATIONAL.  A string's overtones are 1, 2, 3, 4 and it sings a pitch; a
+// drumhead's are 1, 1.59, 2.14, 2.30 and it makes a thud.  This scene is that
+// fact drawn — the modes never come back into phase, so the surface never
+// repeats.
+//
+// The Bessel functions are evaluated with the standard split: the ascending
+// series below x = 3, the large-argument asymptotic above it.  The asymptotic
+// form is the interesting half — it says J_n behaves like a decaying cosine of
+// x with a phase shift of n*pi/2 + pi/4, which is why the ripples on a drumhead
+// look like waves that lose height toward the rim rather than like a sine.
+// -----------------------------------------------------------------------
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+
+layout(std430, binding = 0) buffer Verts { float verts[]; };
+layout(std430, binding = 1) buffer Cmd   { uint  cmd[]; };
+
+uniform uint  maxVertices;
+uniform float time;
+uniform float sceneSeed;
+uniform float audioAdvance;
+uniform float audioLevel;
+uniform float audioKick;
+uniform float audioSubBass;
+uniform float audioHigh;
+uniform float audioSpectrum[32];
+uniform float audioChroma[12];
+
+uniform float ampP;         // preset: how far the skin moves
+uniform float modeP;        // preset: how many modes are allowed to speak
+uniform float tensionP;     // preset: overall mode speed
+
+const int RINGS = 44;
+const int SECT  = 72;
+const int NQUADS = RINGS * SECT;
+const float R = 3.05;
+
+// The first zeros of J_n, which set both the shape and the frequency of a mode.
+const int NMODES = 8;
+const float ALPHA[8] = float[8](2.4048, 3.8317, 5.1356, 5.5201,
+                                6.3802, 7.0156, 7.5883, 8.4172);
+const int   ORDER[8] = int[8]  (0,      1,      2,      0,
+                                3,      1,      4,      2);
+
+float besselJ(int n, float x)
+{
+    x = abs(x);
+    if (x < 1e-4)
+        return (n == 0) ? 1.0 : 0.0;
+
+    if (x < 3.0)
+    {
+        // Ascending series: J_n(x) = sum_k (-1)^k / (k! (k+n)!) (x/2)^(2k+n).
+        // Nine terms is plenty below x = 3, where successive terms fall off fast.
+        float sum = 0.0;
+        float halfx = 0.5 * x;
+        float term = 1.0;
+        for (int i = 1; i <= n; ++i)
+            term *= halfx / float(i);
+        sum = term;
+        for (int k = 1; k <= 9; ++k)
+        {
+            term *= -(halfx * halfx) / (float(k) * float(k + n));
+            sum += term;
+        }
+        return sum;
+    }
+
+    // Large-argument asymptotic: a cosine whose amplitude falls as 1/sqrt(x),
+    // phase-shifted by n*pi/2 + pi/4.
+    float amp = sqrt(2.0 / (3.14159265 * x));
+    return amp * cos(x - float(n) * 1.5707963 - 0.7853982);
+}
+
+float skin(vec2 pxz, float amp, float modes, float speed)
+{
+    float r = length(pxz);
+    float th = atan(pxz.y, pxz.x);
+    float rn = clamp(r / R, 0.0, 1.0);
+
+    float z = 0.0;
+    for (int i = 0; i < NMODES; ++i)
+    {
+        if (float(i) > modes)
+            break;
+
+        // Each mode is driven by its own slice of the spectrum, so a strike that
+        // is bright in the top end lights the high modes and a soft one leaves
+        // the fundamental ringing alone.
+        float drive = audioSpectrum[(i * 4 + 1) % 32];
+        float a = ALPHA[i];
+        int n = ORDER[i];
+
+        // The phase advances at the mode's OWN frequency, which is proportional
+        // to its Bessel zero.  Multiplying the host-integrated advance by a
+        // constant ratio is safe; multiplying absolute time by a live level is
+        // what makes a surface flicker instead of vibrate.
+        // The constant offset per mode matters more than it looks.  Started
+        // together, all eight modes cross zero together: the head alternates
+        // between a smooth dome and a flat plate, and for half the cycle there
+        // is no pattern on it at all.  Offsetting them means some mode is always
+        // near its peak, which is also what a real head does — a strike excites
+        // the modes at different phases.
+        float ph = audioAdvance * speed * (a / ALPHA[0]) * 0.55 + float(i) * 1.9;
+
+        float shape = besselJ(n, a * rn);
+        float ang = (n == 0) ? 1.0 : cos(float(n) * th + float(i) * 1.3 + sceneSeed * 6.0);
+
+        z += shape * ang * cos(ph) * (0.10 + 0.95 * drive) / (1.0 + 0.35 * float(i));
+    }
+
+    // The rim is clamped: a drumhead is fixed at the hoop, which is the boundary
+    // condition that makes the Bessel zeros the zeros in the first place.
+    float clampRim = 1.0 - smoothstep(0.90, 1.0, rn);
+    return z * amp * clampRim;
+}
+
+void writeVertex(uint slot, vec3 p, vec3 n, float h, float rr)
+{
+    uint o = slot * 8u;
+    verts[o + 0u] = p.x;  verts[o + 1u] = p.y;  verts[o + 2u] = p.z;
+    verts[o + 3u] = h;
+    verts[o + 4u] = n.x;  verts[o + 5u] = n.y;  verts[o + 6u] = n.z;
+    verts[o + 7u] = rr;
+}
+
+void main()
+{
+    uvec3 g = gl_GlobalInvocationID;
+    uint id = g.x + 64u * (g.y + 64u * g.z);
+    if (id >= uint(NQUADS))
+        return;
+
+    int s = int(id) % SECT;
+    int r = int(id) / SECT;
+
+    // The displacement has to be a real fraction of the radius.  Eight modes at
+    // a tenth of a unit each average out to almost nothing once they are summed
+    // with alternating signs, so the sum needs a good deal more gain than the
+    // individual mode amplitudes suggest.
+    float amp = clamp(ampP, 0.1, 2.5) * 1.25 * (0.45 + 0.9 * audioLevel + 0.7 * audioKick);
+    float modes = clamp(modeP, 0.0, 1.0) * float(NMODES - 1);
+    float speed = clamp(tensionP, 0.3, 2.5);
+
+    // Rings spaced by sqrt so the cells keep a similar area from centre to rim.
+    float r0 = R * sqrt(float(r)     / float(RINGS));
+    float r1 = R * sqrt(float(r + 1) / float(RINGS));
+    float a0 = 6.2831853 * float(s)     / float(SECT);
+    float a1 = 6.2831853 * float(s + 1) / float(SECT);
+
+    vec2 c00 = vec2(cos(a0), sin(a0)) * r0;
+    vec2 c10 = vec2(cos(a0), sin(a0)) * r1;
+    vec2 c11 = vec2(cos(a1), sin(a1)) * r1;
+    vec2 c01 = vec2(cos(a1), sin(a1)) * r0;
+
+    float h00 = skin(c00, amp, modes, speed);
+    float h10 = skin(c10, amp, modes, speed);
+    float h11 = skin(c11, amp, modes, speed);
+    float h01 = skin(c01, amp, modes, speed);
+
+    vec3 p00 = vec3(c00.x, h00, c00.y);
+    vec3 p10 = vec3(c10.x, h10, c10.y);
+    vec3 p11 = vec3(c11.x, h11, c11.y);
+    vec3 p01 = vec3(c01.x, h01, c01.y);
+
+    vec3 n = normalize(cross(p10 - p00, p01 - p00));
+    if (n.y < 0.0) n = -n;
+
+    float hAvg = (h00 + h10 + h11 + h01) * 0.25;
+    float rAvg = (r0 + r1) * 0.5 / R;
+
+    uint base = atomicAdd(cmd[4], 12u);
+    if (base + 12u > maxVertices)
+        return;
+    writeVertex(base +  0u, p00, n, hAvg, rAvg);
+    writeVertex(base +  1u, p10, n, hAvg, rAvg);
+    writeVertex(base +  2u, p11, n, hAvg, rAvg);
+    writeVertex(base +  3u, p00, n, hAvg, rAvg);
+    writeVertex(base +  4u, p11, n, hAvg, rAvg);
+    writeVertex(base +  5u, p01, n, hAvg, rAvg);
+    writeVertex(base +  6u, p11, n, hAvg, rAvg);
+    writeVertex(base +  7u, p10, n, hAvg, rAvg);
+    writeVertex(base +  8u, p00, n, hAvg, rAvg);
+    writeVertex(base +  9u, p01, n, hAvg, rAvg);
+    writeVertex(base + 10u, p11, n, hAvg, rAvg);
+    writeVertex(base + 11u, p00, n, hAvg, rAvg);
+}

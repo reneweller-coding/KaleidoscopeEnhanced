@@ -642,6 +642,9 @@
     <None Include="Combine\CombineWiggle.frag">
       <Filter>Shaders\Combine</Filter>
     </None>
+    <None Include="Scene\IceCrack.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
     <None Include="Blend\Blit.frag">
       <Filter>Shaders\Blend</Filter>
     </None>
@@ -1060,6 +1063,21 @@
       <Filter>Shaders\Scene3D</Filter>
     </None>
     <None Include="Scene3D\ShadowForest.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\DrumSkin.comp">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\DrumSkin.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\DrumSkin.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\VideoRelief.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\VideoRelief.vert">
       <Filter>Shaders\Scene3D</Filter>
     </None>
     <None Include="Scene3D\Planet4D.frag">
