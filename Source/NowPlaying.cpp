@@ -131,6 +131,9 @@ void NowPlaying::threadFunc()
     // Thread, kein Lock nötig - nur der veröffentlichte m_timeline braucht ihn).
     Timeline prevTl;
     QString  prevTitle;
+    qint64   trackChangeMs = 0;   // wann WIR den aktuellen Titel erkannt haben
+    bool     posConfirmed  = false;  // erst TRUE, sobald zwei Meldungen zueinander passen
+    Timeline candidate;               // erste (noch unbestätigte) Meldung des neuen Tracks
 
     while (m_running)
     {
@@ -174,21 +177,66 @@ void NowPlaying::threadFunc()
                 parseVlcTitle(scan.text, t, a);
         }
 
-        // Drift-Korrektur statt Sofort-Übernahme: SMTC aktualisiert die Position
-        // oft nur alle paar Sekunden, und der frische Wert liegt dabei fast immer
-        // etwas neben unserer eigenen (glatten) Hochrechnung - kleine Ausschläge
-        // hier ließen den Lyrics-Scroll bislang bei JEDEM Poll (~1x/s) kurz
-        // zurückspringen und wieder aufholen ("hoch und wieder runter"). Bei
-        // laufendem, unverändertem Track wird nur ein VIERTEL der Abweichung
-        // übernommen: echte Drift gleicht sich binnen weniger Sekunden aus, ein
-        // einzelner Ausreißer bleibt unsichtbar. Ein GROSSER Sprung (>1.5s, also
-        // ein echter Seek) wird weiterhin sofort und vollständig übernommen -
-        // sonst würde ein Vor-/Zurückspulen spürbar hinterherhinken. Bei Track-
-        // wechsel, Pause/Resume oder dem allerersten Sample greift die Korrektur
-        // ebenfalls nicht (kein sinnvoller Vergleichswert vorhanden).
-        if (tl.positionSec >= 0.0 && prevTl.positionSec >= 0.0 && prevTl.playing
-            && tl.playing == prevTl.playing && t == prevTitle)
+        // Der ROHE SMTC-Wert dieses Polls bleibt unangetastet in `raw` -
+        // `tl` ist die Version, die am Ende veröffentlicht wird.
+        const Timeline raw = tl;
+        const bool istNeuerTrack = !t.isEmpty() && (t != prevTitle);
+
+        if (istNeuerTrack)
         {
+            // NEUER Track: SMTC liefert direkt nach einem Wechsel manchmal
+            // noch 1-2 Polls lang die Position des VORHERIGEN Titels (das OS
+            // hat die Property noch nicht aktualisiert) - genau das erzeugte
+            // den gemeldeten "Sprung in zwei Stufen": erst die falsche
+            // Alt-Position, kurz danach die Korrektur auf die echte. EIN
+            // fixer Schwellwert ("muss nahe 0 sein") wäre aber falsch - ein
+            // Track kann völlig legitim mit einer großen Position beginnen,
+            // z.B. wenn die App erst MITTEN im Song gestartet wird. Deshalb:
+            // jede Meldung wird erst veröffentlicht, sobald sie von der
+            // NÄCHSTEN bestätigt wird (siehe unten); bis dahin nutzt der
+            // Aufrufer seine eigene lokale Uhr seit dem Wechsel (Position < 0).
+            trackChangeMs   = raw.stampMs;
+            posConfirmed    = false;
+            candidate       = raw;
+            tl.positionSec  = -1.0;
+        }
+        else if (!posConfirmed && raw.positionSec >= 0.0 && candidate.positionSec >= 0.0)
+        {
+            // Gleitendes Fenster (nicht nur "1. vs. 2. Meldung"): passt DIESE
+            // Meldung zu der VORHERIGEN (im Rahmen normaler Weiterspielzeit,
+            // < 0.6s Abweichung - deutlich enger als der ~1s-Poll-Abstand,
+            // damit zwei gleich EINGEFRORENE Alt-Werte nicht fälschlich als
+            // "konsistent" durchgehen)? Dann bestätigen sich beide gegenseitig
+            // - ab jetzt vertrauen wir dem Verlauf. Passt sie NICHT, wird SIE
+            // selbst der neue Kandidat für den nächsten Vergleich (kann sein,
+            // dass auch sie noch stale ist - erst zwei AUFEINANDERFOLGENDE,
+            // zueinander passende Meldungen gelten als sicher).
+            const double erwartet = candidate.positionSec
+                            + double(raw.stampMs - candidate.stampMs) * 0.001;
+            if (std::fabs(raw.positionSec - erwartet) < 0.6)
+                posConfirmed = true;
+            else
+            {
+                fprintf(stderr, "[NowPlaying] Settle: Meldung (%.1fs) passt nicht zur vorherigen "
+                                "(%.1fs erwartet) - noch %.1fs seit Trackwechsel, warte weiter\n",
+                        raw.positionSec, erwartet, double(raw.stampMs - trackChangeMs) * 0.001);
+                candidate      = raw;
+                tl.positionSec = -1.0;
+            }
+        }
+        else if (posConfirmed && prevTl.positionSec >= 0.0 && prevTl.playing
+                 && tl.playing == prevTl.playing)
+        {
+            // Drift-Korrektur statt Sofort-Übernahme (bestätigter Track,
+            // laufend unverändert): SMTC aktualisiert die Position oft nur
+            // alle paar Sekunden, und der frische Wert liegt dabei fast
+            // immer etwas neben unserer eigenen (glatten) Hochrechnung -
+            // kleine Ausschläge hier ließen den Lyrics-Scroll bislang bei
+            // JEDEM Poll (~1x/s) kurz zurückspringen und wieder aufholen.
+            // Nur ein VIERTEL der Abweichung wird übernommen: echte Drift
+            // gleicht sich binnen weniger Sekunden aus, ein einzelner
+            // Ausreißer bleibt unsichtbar. Ein GROSSER Sprung (>1.5s, ein
+            // echter Seek) wird weiterhin sofort komplett übernommen.
             const double erwartet   = prevTl.positionSec
                                      + double(tl.stampMs - prevTl.stampMs) * 0.001;
             const double abweichung = tl.positionSec - erwartet;
