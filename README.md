@@ -1232,6 +1232,73 @@ the trace, not once. The damping puts most of the figure's visible area in the
 first fraction of the trace, so a single turn spends nearly all its range on the
 tiny wound-down centre and the big outer loops come out in one flat colour.
 
+### Persistent generator state, and CoralGrowth on it
+
+Every generator up to here derives its whole output from this frame's inputs.
+That is a real constraint, and it rules out anything that *accumulates*: growth,
+erosion, memory. So the indirect path gained one optional piece.
+
+A scene3d entry may carry **`stateBytes="N"`**. The host then allocates an SSBO
+of that size at **binding 2**, zeroes it once, and leaves it alone forever —
+never reading it, never uploading to it, never synchronising on it. That is what
+makes it cheap. The generator also gets two more uniforms: **`frameIndex`**, so
+it can tell its first frame from the rest, and **`genPass`**.
+
+`genPass` exists because a stateful generator has two jobs that must not race.
+When a state buffer is present the host dispatches the generator **twice** with a
+`GL_SHADER_STORAGE_BARRIER_BIT` between: pass 0 advances the simulation, pass 1
+turns the result into geometry. Doing both in one dispatch would be wrong, not
+merely slower — invocations within a dispatch have no ordering, so the meshing
+half would read state the stepping half had not finished writing.
+
+The zeroing goes through a CPU-side buffer rather than `glClearBufferData`. It is
+a few hundred kilobytes, once, at scene load — against a state buffer that comes
+up holding whatever the driver left behind, whose symptom is a scene that looks
+wrong on some machines and right on others.
+
+**`CoralGrowth`** is the first scene on it: **diffusion-limited aggregation**.
+Walkers wander at random above a seeded floor; when one touches the structure it
+freezes there and becomes part of it. That single rule is the whole simulation,
+and it is why DLA looks organic — a walker is far more likely to meet a
+protruding tip than to reach down into a crevice, so tips outgrow hollows and the
+colony branches on its own. Nothing in the rule says "branch".
+
+Getting from that rule to something that looks like coral took four corrections,
+each of which produced a specific and recognisable failure:
+
+- **Bias the walkers toward the colony, not toward the origin.** The first
+  version seeded the colony at `y = -1.6` while pulling walkers toward `(0,0,0)`.
+  Drift against diffusion put them in a cloud about 0.07 wide around a point 1.6
+  away from the only node, so nothing was ever within contact range and the
+  screen stayed black. There was no error to see — the simulation ran perfectly
+  and did nothing.
+- **Test contact exactly.** Scanning a rotating slice of the node list is cheap,
+  and blind: a walker crosses a node's contact shell in two or three frames, so a
+  slice holding 5% of the colony misses nearly every touch and the walker sails
+  on into the interior before it sticks. That fills the crevices and gives a ball
+  — the opposite of coral. Contact goes through a **uniform hash grid** instead,
+  one node index per cell, cells wider than the contact radius, 27 neighbours
+  tested. Both cheaper than the slice *and* correct.
+- **Stick on first touch.** It is tempting to slow the growth down by making
+  sticking rare, but low stick probability is the same failure as a blind
+  contact test, arrived at deliberately: a walker that ignores its first contacts
+  works its way inside before settling. Branching needs walkers that stop dead.
+  Pacing comes from the **walker count** instead, and the kick rides on top so
+  the reef surges audibly on the beat.
+- **Let the generator frame its own output.** DLA is scale-free and its reach
+  grows without bound, so no fixed render scale works: the same shader that was
+  a speck at 12 s overflowed the screen at 40 s. The generator tracks its reach
+  with one `atomicMax` and scales the mesh by `2.2 / max(reach, 0.85)` — a fixed
+  scale while the colony is small, so it visibly grows, giving way to a camera
+  pull-back once it fills the frame.
+
+Sizing the state buffer is the one thing a preset can get wrong silently. Writes
+past the end of an SSBO are discarded, not faulted, so a buffer that is too small
+does not crash — it just loses whatever lives at the end of the layout. Here that
+was the hash grid, and the symptom was again a black screen from a simulation
+that ran without complaint. `CoralGrowth` needs 477 040 bytes and asks for
+524 288.
+
 ### Order-independent transparency
 
 Interpenetrating transparent objects are the case sorting cannot solve: there is

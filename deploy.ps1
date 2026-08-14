@@ -95,7 +95,17 @@ if (Test-Path (Join-Path $root "icon.png")) {
 # We bundle the MSVC runtime ourselves (below), so no --compiler-runtime either.
 Copy-Item $exeSrc $binDir
 Info "Running windeployqt ..."
+# windeployqt writes advisory notes to stderr -- currently one about dxcompiler.dll,
+# which is irrelevant to a desktop-OpenGL app.  Under $ErrorActionPreference="Stop"
+# Windows PowerShell turns ANY stderr line from a native exe into a terminating
+# error, so a harmless note would abort the whole deployment.  Judge it by its
+# exit code instead, which is the only thing that actually says whether it worked.
+$prevEap = $ErrorActionPreference
+$ErrorActionPreference = "Continue"
 & $windeploy --release --no-translations --no-opengl-sw --no-system-d3d-compiler (Join-Path $binDir "Kaleidoscope.exe") | Out-Null
+$deployExit = $LASTEXITCODE
+$ErrorActionPreference = $prevEap
+if ($deployExit -ne 0) { throw "windeployqt failed with exit code $deployExit" }
 
 # --- 4. bundle the FULL C++ runtime so the package is standalone everywhere ---
 # Just shipping vcruntime140/msvcp140 is not enough: they depend on the Universal

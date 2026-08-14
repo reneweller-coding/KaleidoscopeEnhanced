@@ -54,6 +54,7 @@ public:
 	// Also true when only the compute generator reads the spectrogram — the
 	// base class can only see the render program.
 	bool usesSpectro() override;
+	void  setStateBytes( int b ) { m_stateBytes = b; }
 	void  setShadowExtent( float e ) { m_shadowExtent = e; }
 	float shadowExtent() const override { return m_shadowExtent; }
 	void setUniforms( float time, float interpolation,
@@ -93,6 +94,17 @@ private:
 	bool    setupIndirect();      // allocate buffers + compile the generator
 	void    runGenerator( float time );
 	int     m_genSpectro   = -1;  // cached: does the generator read texSpectro?
+
+	// ---- persistent generator state ----
+	// A buffer that SURVIVES between frames, bound at SSBO 2.  Every generator
+	// so far derives its whole output from the current frame's inputs, which is
+	// why they need nothing but a scratch vertex buffer.  A growing structure
+	// cannot: what it looks like now depends on what it did before.  Requested
+	// with the stateBytes attribute; zeroed once, then never touched by the
+	// host again.
+	GLuint  m_stateBuf   = 0;
+	int     m_stateBytes = 0;
+	unsigned int m_frameIndex = 0;
 	AudioFeatures m_lastAudio;    // this scene's features, for the generator
 	float   m_lastTime     = 0.f; // raw time from setUniforms, ditto
 	float   m_shadowExtent = EffectShader::kShadowExtent;
