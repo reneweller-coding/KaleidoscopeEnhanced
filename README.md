@@ -1092,6 +1092,56 @@ Not built: `Marching Cubes`. Meshing an isosurface needs a compute→VBO→indir
 draw path that this renderer does not have, and faking it with a raymarch would
 not have been the thing that was asked for. The `texSculpt` slot is reserved.
 
+### The scene depth buffer, readable
+
+The two texture-effect FBOs used to carry their depth in a **renderbuffer**,
+which is write-only from a shader's point of view. It is now a **depth
+texture**, and the combine stage gets both of them as `texDepth0` / `texDepth1`
+(units 29/30) alongside the colour buffers it already had. The attachment costs
+the same either way; what changes is that everything downstream — depth of
+field, ambient occlusion, light shafts, fog — becomes possible, and it works
+with *every* 3D scene in the library rather than only with scenes written for
+it.
+
+Two pieces of bookkeeping make it safe to rely on:
+
+- **`depthValid`** (a `vec2`) says whether each layer's depth holds real
+  geometry this frame. A 2D effect never touches the depth attachment, so
+  whatever the last 3D scene left there would still be sitting in it — the
+  engine clears it to the far plane for non-3D effects and reports 0, so a
+  depth-driven combine can tell "everything is far away" from "there is no
+  depth" and pass those layers through untouched.
+- **`nearFar`** carries the 3D projection's clip planes, which live in
+  `EffectShader` rather than in `Scene3DShader` because the consumer is the
+  combine stage — and a second copy of those numbers that drifted out of step
+  with the projection would silently distort every depth-based effect. A depth
+  buffer is stored non-linearly, with most of its precision near the camera, so
+  anything comparing depths has to linearise first or the whole scene lands in
+  one bucket.
+
+**`CombineDepthField`** is real depth of field: the focal plane is a physical
+distance that the bass pulls toward the camera and the kick snaps back — a rack
+focus on the beat. Samples that are *in focus and in front* are rejected when
+gathering, which is what stops a sharp foreground from smearing into a blurred
+background. Two things learned by looking: 12 taps spread over a large disc read
+as twelve copies rather than as blur (wider bokeh needs more taps, not a bigger
+radius), and the per-pixel rotation of the tap pattern has to come from a
+**hash** — a smooth function of uv gives neighbouring pixels almost the same
+twelve directions and the sampling becomes a visible weave.
+
+**`CombineSunShafts`** is the effect that could not be done before. The classic
+radial-blur godray marches toward the light accumulating the colour buffer, and
+fails the moment anything bright sits in front of the light — a lit object
+smears rays out of itself as if it were a hole in the sky. With depth, the
+occlusion test is the real one, so shafts fall *behind* objects and are cut off
+by their silhouettes.
+
+Worth stating, because the wrong version is tempting: the march accumulates
+**openness**, not the frame's colour. Colour is bright exactly where there is
+geometry, while light only travels where there is none — accumulate both and the
+two gates cancel and the shafts disappear. What travels along the ray is the
+sky's light; what the frame contributes is only the occluders.
+
 ### Compute → indirect draw — geometry the CPU never sees
 
 `geom="indirect"` is the third and last of the pipeline additions, and the only

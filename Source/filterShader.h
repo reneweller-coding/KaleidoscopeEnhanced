@@ -415,7 +415,10 @@ private:
 	GLuint			m_liveTex       = 0;   // Spout-in texture (0 = photos)
 
 	// Depth renderbuffers for the two effect FBOs (3D scene effects).
-	GLuint			m_depthRbEffect1 = 0, m_depthRbEffect2 = 0;
+	// Depth attachments of the two texture-effect FBOs.  Textures, not
+	// renderbuffers, so the combine stage can READ what the 3D scene wrote
+	// ("texDepth0"/"texDepth1", units 29/30).
+	GLuint			m_depthTexEffect1 = 0, m_depthTexEffect2 = 0;
 	// FPS EMA for the cube-scene detail budget (see paint()).
 	float			m_cubeFpsEma = 60.f;
 	// TRUE-STEREO state (real per-eye rendering of a solo 3D scene):
