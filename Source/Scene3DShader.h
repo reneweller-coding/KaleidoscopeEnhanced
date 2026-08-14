@@ -30,12 +30,12 @@
 #pragma once
 
 #include "EffectShader.h"
-#include <QtCore/QString>
+#include <string>
 
 class Scene3DShader : public EffectShader
 {
 public:
-	Scene3DShader( const QString &filenameFragmentShader, const QString &geom,
+	Scene3DShader( const std::string &filenameFragmentShader, const std::string &geom,
 	               unsigned int minTimeSolo, unsigned int maxTimeSolo,
 	               unsigned int minTimeInterpolation, unsigned int maxTimeInterpolation );
 	~Scene3DShader();

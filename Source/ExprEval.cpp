@@ -61,14 +61,13 @@ bool rightAssoc( int opChar ) { return opChar == '^' || opChar == 'n'; }
 
 } // namespace
 
-bool ExprProgram::compile( const QString &formula, const QString &context )
+bool ExprProgram::compile( const std::string &formula, const std::string &context )
 {
     m_prog.clear();
     m_ok = false;
 
-    QByteArray ba = formula.toLatin1();
-    const char *s = ba.constData();
-    const int   n = ba.size();
+    const char *s = formula.c_str();
+    const int   n = (int)formula.size();
 
     // ---- Tokenise ----
     std::vector<Token> toks;
@@ -96,7 +95,7 @@ bool ExprProgram::compile( const QString &formula, const QString &context )
                           || (s[j] >= 'A' && s[j] <= 'Z')
                           || (s[j] >= '0' && s[j] <= '9') || s[j] == '_'))
                 ++j;
-            QByteArray ident(s + i, j - i);
+            std::string ident(s + i, j - i);
             i = j;
 
             int fidx = -1;
@@ -115,7 +114,7 @@ bool ExprProgram::compile( const QString &formula, const QString &context )
             if (vidx < 0)
             {
                 fprintf(stderr, "Expr [%s]: unknown identifier '%s'\n",
-                        qPrintable(context), ident.constData());
+                        context.c_str(), ident.c_str());
                 return false;
             }
             Token t; t.kind = Token::VAR; t.idx = vidx;
@@ -136,7 +135,7 @@ bool ExprProgram::compile( const QString &formula, const QString &context )
             continue;
         }
         fprintf(stderr, "Expr [%s]: unexpected character '%c'\n",
-                qPrintable(context), ch);
+                context.c_str(), ch);
         return false;
     }
 
@@ -178,7 +177,7 @@ bool ExprProgram::compile( const QString &formula, const QString &context )
             { popOpToProg(stack.back()); stack.pop_back(); }
             if (stack.empty())
             {
-                fprintf(stderr, "Expr [%s]: misplaced comma\n", qPrintable(context));
+                fprintf(stderr, "Expr [%s]: misplaced comma\n", context.c_str());
                 return false;
             }
             break;
@@ -195,7 +194,7 @@ bool ExprProgram::compile( const QString &formula, const QString &context )
             { popOpToProg(stack.back()); stack.pop_back(); }
             if (stack.empty())
             {
-                fprintf(stderr, "Expr [%s]: unbalanced ')'\n", qPrintable(context));
+                fprintf(stderr, "Expr [%s]: unbalanced ')'\n", context.c_str());
                 return false;
             }
             stack.pop_back();                          // the '('
@@ -208,7 +207,7 @@ bool ExprProgram::compile( const QString &formula, const QString &context )
     {
         if (stack.back().kind == Token::LPAREN)
         {
-            fprintf(stderr, "Expr [%s]: unbalanced '('\n", qPrintable(context));
+            fprintf(stderr, "Expr [%s]: unbalanced '('\n", context.c_str());
             return false;
         }
         popOpToProg(stack.back());
@@ -225,14 +224,14 @@ bool ExprProgram::compile( const QString &formula, const QString &context )
         else if (op.code == F_CLAMP || op.code == F_MIX) arity = 3;
         if (depth < arity)
         {
-            fprintf(stderr, "Expr [%s]: malformed expression\n", qPrintable(context));
+            fprintf(stderr, "Expr [%s]: malformed expression\n", context.c_str());
             return false;
         }
         depth -= arity - 1;
     }
     if (depth != 1)
     {
-        fprintf(stderr, "Expr [%s]: malformed expression\n", qPrintable(context));
+        fprintf(stderr, "Expr [%s]: malformed expression\n", context.c_str());
         return false;
     }
 

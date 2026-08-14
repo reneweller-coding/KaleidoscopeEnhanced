@@ -257,6 +257,7 @@ exit /b 0</Command>
     <ClInclude Include="Source\GpuSims.h" />
     <ClInclude Include="Source\PresentPass.h" />
     <ClInclude Include="Source\SceneScheduler.h" />
+    <ClInclude Include="Source\coreclock.h" />
     <CustomBuild Include="Source\AudioAnalyzer.h">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">MOCing AudioAnalyzer.h ...</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MOCing AudioAnalyzer.h ...</Message>

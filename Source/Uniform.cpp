@@ -15,11 +15,11 @@
 
 #include "uniform.h"
 #include "shader_setup.h"
-#include "qt6compat.h"   // qrand() shim for Qt6
+#include <cstdlib>
 
 #include<GL/GLU.h>
 
-Uniform::Uniform( const QString &name, baseType_e type )
+Uniform::Uniform( const std::string &name, baseType_e type )
 {
 	m_name = name;
 	m_type = type;
@@ -34,11 +34,11 @@ void Uniform::resetParameters()
 {
 	if( m_type == BASE_TYPE_FLOAT )
 	{
-		m_data.vf = (float) (m_dataMin.vf + (((float)qrand() / (float) RAND_MAX) * (m_dataMax.vf - m_dataMin.vf)));
+		m_data.vf = (float) (m_dataMin.vf + (((float)rand() / (float) RAND_MAX) * (m_dataMax.vf - m_dataMin.vf)));
 	}
 	else if( m_type == BASE_TYPE_BOOL )
 	{
-		float des = (float) (qrand()) / (float) RAND_MAX;
+		float des = (float) (rand()) / (float) RAND_MAX;
 
 		if( des > m_dataMin.vf )
 			m_data.vi = 1;
@@ -48,17 +48,17 @@ void Uniform::resetParameters()
 	else if( m_type == BASE_TYPE_INT )
 	{
 		// Guard: an <int> with minValue == maxValue used to crash with an
-		// integer division by zero (qrand() % 0).
+		// integer division by zero (rand() % 0).
 		int range = m_dataMax.vi - m_dataMin.vi;
-		m_data.vi = (range > 0) ? m_dataMin.vi + (qrand() % range) : m_dataMin.vi;
+		m_data.vi = (range > 0) ? m_dataMin.vi + (rand() % range) : m_dataMin.vi;
 	}
 	else if( m_type == BASE_TYPE_INTERPOLATOR_FLOAT )
 	{
 		//Warning double use of m_dataMax/Min.vf
-		m_dataMin.vf = (float) (m_dataMinMin.vf + (((float)qrand() / (float) RAND_MAX) * (m_dataMinMax.vf - m_dataMinMin.vf)));
-		m_dataMax.vf = (float) (m_dataMaxMin.vf + (((float)qrand() / (float) RAND_MAX) * (m_dataMaxMax.vf - m_dataMaxMin.vf)));
+		m_dataMin.vf = (float) (m_dataMinMin.vf + (((float)rand() / (float) RAND_MAX) * (m_dataMinMax.vf - m_dataMinMin.vf)));
+		m_dataMax.vf = (float) (m_dataMaxMin.vf + (((float)rand() / (float) RAND_MAX) * (m_dataMaxMax.vf - m_dataMaxMin.vf)));
 
-		m_delta.vf = (m_dataMax.vf - m_dataMin.vf) / m_totalTime.vf * 0.001; //time in sec delta in msec
+		m_delta.vf = (m_dataMax.vf - m_dataMin.vf) / m_totalTime.vf * 0.001f; //time in sec delta in msec
 		
 		m_data.vf = m_dataMin.vf;
 
@@ -71,11 +71,11 @@ void Uniform::resetParameters( float time )
 {
 	if( m_type == BASE_TYPE_FLOAT )
 	{
-		m_data.vf = (float) (m_dataMin.vf + (((float)qrand() / (float) RAND_MAX) * (m_dataMax.vf - m_dataMin.vf)));
+		m_data.vf = (float) (m_dataMin.vf + (((float)rand() / (float) RAND_MAX) * (m_dataMax.vf - m_dataMin.vf)));
 	}
 	else if( m_type == BASE_TYPE_BOOL )
 	{
-		float des = (float) (qrand()) / (float) RAND_MAX;
+		float des = (float) (rand()) / (float) RAND_MAX;
 
 		if( des > m_dataMin.vf )
 			m_data.vi = 1;
@@ -85,19 +85,19 @@ void Uniform::resetParameters( float time )
 	else if( m_type == BASE_TYPE_INT )
 	{
 		// Guard: an <int> with minValue == maxValue used to crash with an
-		// integer division by zero (qrand() % 0).
+		// integer division by zero (rand() % 0).
 		int range = m_dataMax.vi - m_dataMin.vi;
-		m_data.vi = (range > 0) ? m_dataMin.vi + (qrand() % range) : m_dataMin.vi;
+		m_data.vi = (range > 0) ? m_dataMin.vi + (rand() % range) : m_dataMin.vi;
 	}
 	else if( m_type == BASE_TYPE_INTERPOLATOR_FLOAT )
 	{
 		//Warning double use of m_dataMax/Min.vf
-		m_dataMin.vf = (float) (m_dataMinMin.vf + (((float)qrand() / (float) RAND_MAX) * (m_dataMinMax.vf - m_dataMinMin.vf)));
-		m_dataMax.vf = (float) (m_dataMaxMin.vf + (((float)qrand() / (float) RAND_MAX) * (m_dataMaxMax.vf - m_dataMaxMin.vf)));
+		m_dataMin.vf = (float) (m_dataMinMin.vf + (((float)rand() / (float) RAND_MAX) * (m_dataMinMax.vf - m_dataMinMin.vf)));
+		m_dataMax.vf = (float) (m_dataMaxMin.vf + (((float)rand() / (float) RAND_MAX) * (m_dataMaxMax.vf - m_dataMaxMin.vf)));
 
 		m_totalTime.vf = time;
 
-		//m_delta.vf = (m_dataMax.vf - m_dataMin.vf) / m_totalTime.vf * 0.001; //time in sec delta in msec
+		//m_delta.vf = (m_dataMax.vf - m_dataMin.vf) / m_totalTime.vf * 0.001f; //time in sec delta in msec
 		
 		//m_data.vf = m_dataMin.vf;
 
@@ -109,8 +109,7 @@ void Uniform::resetParameters( float time )
 void Uniform::initUniform( unsigned int sh_prog_id )
 {
 	
-	QByteArray ba = m_name.toLocal8Bit();
-	const char* name = ba.data();//toAscii().constData();
+	const char* name = m_name.c_str();
 
 	m_location = glGetUniformLocation( sh_prog_id, name );
 }
@@ -142,7 +141,7 @@ void Uniform::setUniform()
 		{
 			m_time.start();
 			//m_initTimer = true;	
-			m_delta.vf = (m_dataMax.vf - m_dataMin.vf) / m_totalTime.vf * 0.001; //time in sec delta in msec
+			m_delta.vf = (m_dataMax.vf - m_dataMin.vf) / m_totalTime.vf * 0.001f; //time in sec delta in msec
 			
 			m_data.vf = m_dataMin.vf;
 
@@ -201,7 +200,7 @@ void Uniform::setGLValueScaled(float scale)
  *	      defined in the OpenGL 2.0 specification.
  * @param location Location of the uniform variable.
  * */
-CUniform::CUniform( const QString & name, int type, int location )
+CUniform::CUniform( const std::string & name, int type, int location )
  : m_name( name ), m_type( type ), m_location( location )
 {
 	memset( &m_data, 0, sizeof(m_data) );
@@ -477,7 +476,7 @@ CUniform CUniform::getColumnVector( int column ) const
 		break;
 	}
 
-	CUniform u( m_name + QString( "[%1]" ).arg( column ), type );
+	CUniform u( m_name + "[" + std::to_string( column ) + "]", type );
 
 	// copy components
 	for( int i = 0 ; i < components ; i++ )
@@ -598,34 +597,34 @@ bool CUniform::isMatrix( void ) const
  * @return A QString object with the string representation of the type.
  */
 //======================
-QString CUniform::getTypeNameString( int type )
+std::string CUniform::getTypeNameString( int type )
 {
 	switch( type )
 	{
-	case GL_FLOAT				: return QString( "GL_FLOAT" ); break;
-	case GL_FLOAT_VEC2			: return QString( "GL_FLOAT_VEC2" ); break;
-	case GL_FLOAT_VEC3			: return QString( "GL_FLOAT_VEC3" ); break;
-	case GL_FLOAT_VEC4			: return QString( "GL_FLOAT_VEC4" ); break;
-	case GL_INT					: return QString( "GL_INT" ); break;
-	case GL_INT_VEC2			: return QString( "GL_INT_VEC2" ); break;
-	case GL_INT_VEC3			: return QString( "GL_INT_VEC3" ); break;
-	case GL_INT_VEC4			: return QString( "GL_INT_VEC4" ); break;
-	case GL_BOOL				: return QString( "GL_BOOL" ); break;
-	case GL_BOOL_VEC2			: return QString( "GL_BOOL_VEC2" ); break;
-	case GL_BOOL_VEC3			: return QString( "GL_BOOL_VEC3" ); break;
-	case GL_BOOL_VEC4			: return QString( "GL_BOOL_VEC4" ); break;
-	case GL_FLOAT_MAT2			: return QString( "GL_FLOAT_MAT2" ); break;
-	case GL_FLOAT_MAT3			: return QString( "GL_FLOAT_MAT3" ); break;
-	case GL_FLOAT_MAT4			: return QString( "GL_FLOAT_MAT4" ); break;
-	case GL_SAMPLER_1D			: return QString( "GL_SAMPLER_1D" ); break;
-	case GL_SAMPLER_2D			: return QString( "GL_SAMPLER_2D" ); break;
-	case GL_SAMPLER_3D			: return QString( "GL_SAMPLER_3D" ); break;
-	case GL_SAMPLER_CUBE		: return QString( "GL_SAMPLER_CUBE" ); break;
-	case GL_SAMPLER_1D_SHADOW	: return QString( "GL_SAMPLER_1D_SHADOW" ); break;
-	case GL_SAMPLER_2D_SHADOW	: return QString( "GL_SAMPLER_2D_SHADOW" ); break;
+	case GL_FLOAT				: return std::string( "GL_FLOAT" ); break;
+	case GL_FLOAT_VEC2			: return std::string( "GL_FLOAT_VEC2" ); break;
+	case GL_FLOAT_VEC3			: return std::string( "GL_FLOAT_VEC3" ); break;
+	case GL_FLOAT_VEC4			: return std::string( "GL_FLOAT_VEC4" ); break;
+	case GL_INT					: return std::string( "GL_INT" ); break;
+	case GL_INT_VEC2			: return std::string( "GL_INT_VEC2" ); break;
+	case GL_INT_VEC3			: return std::string( "GL_INT_VEC3" ); break;
+	case GL_INT_VEC4			: return std::string( "GL_INT_VEC4" ); break;
+	case GL_BOOL				: return std::string( "GL_BOOL" ); break;
+	case GL_BOOL_VEC2			: return std::string( "GL_BOOL_VEC2" ); break;
+	case GL_BOOL_VEC3			: return std::string( "GL_BOOL_VEC3" ); break;
+	case GL_BOOL_VEC4			: return std::string( "GL_BOOL_VEC4" ); break;
+	case GL_FLOAT_MAT2			: return std::string( "GL_FLOAT_MAT2" ); break;
+	case GL_FLOAT_MAT3			: return std::string( "GL_FLOAT_MAT3" ); break;
+	case GL_FLOAT_MAT4			: return std::string( "GL_FLOAT_MAT4" ); break;
+	case GL_SAMPLER_1D			: return std::string( "GL_SAMPLER_1D" ); break;
+	case GL_SAMPLER_2D			: return std::string( "GL_SAMPLER_2D" ); break;
+	case GL_SAMPLER_3D			: return std::string( "GL_SAMPLER_3D" ); break;
+	case GL_SAMPLER_CUBE		: return std::string( "GL_SAMPLER_CUBE" ); break;
+	case GL_SAMPLER_1D_SHADOW	: return std::string( "GL_SAMPLER_1D_SHADOW" ); break;
+	case GL_SAMPLER_2D_SHADOW	: return std::string( "GL_SAMPLER_2D_SHADOW" ); break;
 	}
 
-	return QString( "<unknown type %1>" ).arg( type );
+	return std::string( "<unknown type %1>" ).arg( type );
 }
 
 

@@ -3,7 +3,7 @@
 #include "shader_setup.h"
 #include "TextureEffectKaleidoscopeBase.h"
 
-#include <QtGui/QImageReader>
+#include <cstdlib>
 #include <QtCore/qdir.h>
 #include <QtCore/qfileinfo.h>
 
@@ -49,7 +49,7 @@ EffectShader( minTimeSolo, maxTimeSolo, minTimeInterpolation, maxTimeInterpolati
 	m_vertexShaderFilename = "..\\standard.vert";
 	m_fragmentShaderFilename = "..\\Scene\\Kaleidoscope.frag";
 
-	m_sides = (float) ( (qrand() % m_maxSides) + m_minSides);
+	m_sides = (float) ( (rand() % m_maxSides) + m_minSides);
 
 	m_interpolationPower = m_power;
 
@@ -60,7 +60,7 @@ EffectShader( minTimeSolo, maxTimeSolo, minTimeInterpolation, maxTimeInterpolati
 
 
 // Constructor
-TextureEffectKaleidoscopeBase::TextureEffectKaleidoscopeBase( const QString &filename, unsigned int minTimeSolo, unsigned int  maxTimeSolo, unsigned int  minTimeInterpolation, unsigned int  maxTimeInterpolation ): 
+TextureEffectKaleidoscopeBase::TextureEffectKaleidoscopeBase( const std::string &filename, unsigned int minTimeSolo, unsigned int  maxTimeSolo, unsigned int  minTimeInterpolation, unsigned int  maxTimeInterpolation ): 
 EffectShader( minTimeSolo, maxTimeSolo, minTimeInterpolation, maxTimeInterpolation )
 , m_minSides(2)
 , m_maxSides(14)
@@ -98,15 +98,15 @@ EffectShader( minTimeSolo, maxTimeSolo, minTimeInterpolation, maxTimeInterpolati
 {
 	m_vertexShaderFilename = "..\\standard.vert";
 
-	QByteArray ba = filename.toLocal8Bit();
-	//const char* name = ba.data();//toAscii().constData();*/
+
+	//const char* name = filename.c_str();//toAscii().constData();*/
 
 	m_fragmentShaderFilename = (char *) malloc(sizeof(char)*(filename.size()+1) );
-	sprintf( m_fragmentShaderFilename, "%s\0", ba.data() );
+	sprintf( m_fragmentShaderFilename, "%s\0", filename.c_str() );
 
-	//m_fragmentShaderFilename = ba.data();//filename.toLocal8Bit().data();
+	//m_fragmentShaderFilename = filename.c_str();//filename.toLocal8Bit().data();
 
-	m_sides = (float) ( (qrand() % m_maxSides) + m_minSides);
+	m_sides = (float) ( (rand() % m_maxSides) + m_minSides);
 
 	m_interpolationPower = m_power;
 
@@ -162,11 +162,11 @@ void TextureEffectKaleidoscopeBase::setUniforms( float time, float interpolation
 			m_timeRotation.start();
             
             //qsrand(QTime::currentTime().msec());
-            m_timeSoloRotation = (float) (m_timeSoloRotationMin + (qrand() % (m_timeSoloRotationMax - m_timeSoloRotationMin)));
+            m_timeSoloRotation = (float) (m_timeSoloRotationMin + (rand() % (m_timeSoloRotationMax - m_timeSoloRotationMin)));
 
             //qsrand(QTime::currentTime().msec());
             if( m_powerRotationAllowed )
-                m_deltaRotation = m_speedRotationMin +  ((float)qrand() / (float) RAND_MAX) * ( m_speedRotationMax - m_speedRotationMin ) ;
+                m_deltaRotation = m_speedRotationMin +  ((float)rand() / (float) RAND_MAX) * ( m_speedRotationMax - m_speedRotationMin ) ;
             else
                 m_deltaRotation = 0.0;
 
@@ -186,7 +186,7 @@ void TextureEffectKaleidoscopeBase::setUniforms( float time, float interpolation
 			m_timeRotation.start();
 
             //qsrand(QTime::currentTime().msec());
-            m_timeInterpolationRotation = (float) (m_timeInterpolationRotationMin + (qrand() % (m_timeInterpolationRotationMax - m_timeInterpolationRotationMin)));
+            m_timeInterpolationRotation = (float) (m_timeInterpolationRotationMin + (rand() % (m_timeInterpolationRotationMax - m_timeInterpolationRotationMin)));
 		}
 	}*/
 
@@ -201,7 +201,7 @@ void TextureEffectKaleidoscopeBase::setUniforms( float time, float interpolation
 			m_statePower = 1;
 			m_timePower.start();
             
-            m_timeSoloPower = (float) (m_timeSoloPowerNoMin + (qrand() % (m_timeSoloPowerNoMax - m_timeSoloPowerNoMin)));
+            m_timeSoloPower = (float) (m_timeSoloPowerNoMin + (rand() % (m_timeSoloPowerNoMax - m_timeSoloPowerNoMin)));
 		}
 	}
     //Decreasing
@@ -225,11 +225,11 @@ void TextureEffectKaleidoscopeBase::setUniforms( float time, float interpolation
 			m_statePower = 3;
 			m_timePower.start();
             
-            m_timeSoloPower = (float) (m_timeSoloPowerFullMin + (qrand() % (m_timeSoloPowerFullMax - m_timeSoloPowerFullMin)));
+            m_timeSoloPower = (float) (m_timeSoloPowerFullMin + (rand() % (m_timeSoloPowerFullMax - m_timeSoloPowerFullMin)));
 
-			m_power = (float) (m_powerMin + (((float)qrand() / (float) RAND_MAX) * (m_powerMax - m_powerMin)));
+			m_power = (float) (m_powerMin + (((float)rand() / (float) RAND_MAX) * (m_powerMax - m_powerMin)));
 			m_powerRotationAllowed = false;
-            float pTp = ((float)qrand() / (float) RAND_MAX);
+            float pTp = ((float)rand() / (float) RAND_MAX);
             if( pTp < m_powerProbability )
             {
                 m_powerRotationAllowed = false;
@@ -253,7 +253,7 @@ void TextureEffectKaleidoscopeBase::setUniforms( float time, float interpolation
 			m_statePower = 0;
 			m_timePower.start();
 
-            m_timeInterpolationPower = (float) (m_timeInterpolationPowerMin + (qrand() % (m_timeInterpolationPowerMax - m_timeInterpolationPowerMin)));
+            m_timeInterpolationPower = (float) (m_timeInterpolationPowerMin + (rand() % (m_timeInterpolationPowerMax - m_timeInterpolationPowerMin)));
 		    
         }
 	}
@@ -284,17 +284,17 @@ void TextureEffectKaleidoscopeBase::resetParameters()
 {
 	EffectShader::resetParameters();
 
-	m_speed = (float) (m_speedMin + (((float)qrand() / (float) RAND_MAX) * (m_speedMax - m_speedMin)));
+	m_speed = (float) (m_speedMin + (((float)rand() / (float) RAND_MAX) * (m_speedMax - m_speedMin)));
 	if( fabs( m_speed ) < EPSILON )
 		m_speed = (float) EPSILON;
 	m_speedAct = m_speed;
 
-    float pR = ((float)qrand() / (float) RAND_MAX);
+    float pR = ((float)rand() / (float) RAND_MAX);
     if( pR > 0.4 )
         m_interpolationRotation = 0.0;
     else
         m_interpolationRotation = (float)(M_PI/4.0);
 
 
-	m_sides = (float) ((qrand() % m_maxSides)  + m_minSides);
+	m_sides = (float) ((rand() % m_maxSides)  + m_minSides);
 }

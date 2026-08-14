@@ -16,8 +16,8 @@
 #ifndef __UNIFORM_H_INCLUDED__
 #define __UNIFORM_H_INCLUDED__
 
-#include <QtCore/QString>
-#include <QtCore/QElapsedTimer>
+#include <string>
+#include "coreclock.h"
 
 
 //=============================================================================
@@ -66,7 +66,7 @@ enum baseType_e
 class Uniform
 {
 public:
-	Uniform( const QString &name, baseType_e type );
+	Uniform( const std::string &name, baseType_e type );
 	virtual ~Uniform( void );
 
 	
@@ -123,7 +123,7 @@ public:
 	void setGLValueScaled(float scale);
 
 	/** Name of the uniform variable (for lookup by EffectShader). */
-	const QString& getName() const { return m_name; }
+	const std::string& getName() const { return m_name; }
 
 	/** Snapshot / restore of the rolled per-activation value, for the song-
 	 *  structure memory: a recognised section replays its exact look instead of
@@ -157,7 +157,7 @@ private:
 	} dataUnit_t;
 
 
-	QString		m_name;
+	std::string	m_name;
 	int			m_type; // GL_xxx type identifier
 	int			m_location;
 	dataUnit_t	m_data;
@@ -178,7 +178,7 @@ private:
 	bool	m_increasing;
 	bool	m_initTimer;
 
-	QElapsedTimer m_time;
+	WallClock m_time;
 };
 
 

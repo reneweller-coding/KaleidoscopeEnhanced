@@ -2,8 +2,8 @@
 #define TEXTURE_EFFECT_KALEIDOSCOPE_BASE_H
 
 #include <QtGui/qopengl.h>
-#include <QtCore/QElapsedTimer>
-#include <QtCore/QThread>
+#include <string>
+#include "coreclock.h"
 #include "EffectShader.h"
 
 
@@ -11,7 +11,7 @@
 class TextureEffectKaleidoscopeBase : public EffectShader
 {
 public:
-	TextureEffectKaleidoscopeBase( const QString &filename, unsigned int  minTimeSolo, unsigned int  maxTimeSolo, unsigned int  minTimeInterpolation, unsigned int  maxTimeInterpolation );
+	TextureEffectKaleidoscopeBase( const std::string &filename, unsigned int  minTimeSolo, unsigned int  maxTimeSolo, unsigned int  minTimeInterpolation, unsigned int  maxTimeInterpolation );
 	TextureEffectKaleidoscopeBase( unsigned int  minTimeSolo, unsigned int  maxTimeSolo, unsigned int  minTimeInterpolation, unsigned int  maxTimeInterpolation );
 	~TextureEffectKaleidoscopeBase();
 	
@@ -29,7 +29,7 @@ protected:
 
 
 
-	QElapsedTimer m_timeRotation;
+	WallClock m_timeRotation;
     float           m_timeSoloRotation;
     float           m_timeInterpolationRotation;
     float           m_interpolationRotation;
@@ -52,7 +52,7 @@ protected:
     float			m_speedKaleidoscopeMin;
     float			m_speedKaleidoscopeMax;
     
-	QElapsedTimer m_timePower;
+	WallClock m_timePower;
     unsigned int    m_statePower;
     float           m_timeSoloPower;
     float           m_timeInterpolationPower;
