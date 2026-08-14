@@ -8,10 +8,17 @@ out vec4 fragColor;
 in vec3  vObj;
 in vec3  vNormal;
 in vec3  vView;
+in vec3  vWorld;
 in float vSwell;
 in vec2  vSurfUV;
 
 uniform sampler2D tex0;
+uniform sampler2DShadow texShadow;
+uniform mat4  lightM;
+uniform vec3  lightDir;
+uniform float shadowPass;
+uniform float shadowTexel;
+uniform float shadowExtent;
 uniform float interpolation;
 uniform float time;
 
@@ -30,13 +37,36 @@ vec3 hue2rgb(float h)
     return clamp(abs(mod(h * 6.0 + vec3(0.0, 4.0, 2.0), 6.0) - 3.0) - 1.0, 0.0, 1.0);
 }
 
+float shadowAt(vec3 world, vec3 n, float ndl)
+{
+    float lift = (2.0 * shadowExtent * shadowTexel) * 2.2 / max(ndl, 0.15);
+    vec4 lp = lightM * vec4(world + n * lift, 1.0);
+    vec3 proj = lp.xyz / lp.w * 0.5 + 0.5;
+    if (proj.z > 1.0)
+        return 1.0;
+    float bias = 0.0006 + 0.0030 * (1.0 - ndl);
+    float s = 0.0;
+    float r = shadowTexel * 1.6;
+    for (int y = -1; y <= 1; ++y)
+        for (int x = -1; x <= 1; ++x)
+            s += texture(texShadow,
+                         vec3(proj.xy + vec2(float(x), float(y)) * r, proj.z - bias));
+    return s / 9.0;
+}
+
 void main()
 {
+    if (shadowPass > 0.5)
+    {
+        fragColor = vec4(0.0);
+        return;
+    }
+
     vec3 n = normalize(vNormal);
     vec3 V = normalize(vView);
     if (dot(n, V) < 0.0) n = -n;          // shade the backfaces of deep folds too
 
-    vec3 L = normalize(vec3(0.55, 0.75, -0.45));
+    vec3 L = normalize(lightDir);
 
     // Body colour follows the surface's own radius: the deep valleys between
     // lobes stay dark and saturated, the crests bleach toward the light.
@@ -46,7 +76,13 @@ void main()
 
     float diff = max(dot(n, L), 0.0);
     float wrap = 0.5 + 0.5 * dot(n, L);   // wrapped fill, keeps the shadow side readable
-    vec3 col = base * (0.20 + 0.95 * diff + 0.55 * wrap * wrap);
+
+    // A convoluted body is exactly where shadowing earns its keep: the deep
+    // folds between petals now go dark because a neighbouring lobe is in the
+    // way, not merely because they face away from the light.
+    float shadow = shadowAt(vWorld, n, diff);
+
+    vec3 col = base * (0.20 + 0.95 * diff * shadow + 0.55 * wrap * wrap);
 
     // Second, cooler light from the opposite side.  One light on a shape this
     // convoluted leaves half the lobes as unreadable black.
@@ -64,7 +100,7 @@ void main()
 
     vec3 H = normalize(L + V);
     float spec = pow(max(dot(n, H), 0.0), 40.0 + 260.0 * glossP);
-    col += vec3(1.0, 0.96, 0.88) * spec * (0.9 + 2.2 * audioHigh);
+    col += vec3(1.0, 0.96, 0.88) * spec * shadow * (0.9 + 2.2 * audioHigh);
 
     // Rim: without it the dark side of a lobe merges with the background and
     // the whole silhouette — the thing tessellation bought us — disappears.

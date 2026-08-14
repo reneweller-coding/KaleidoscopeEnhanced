@@ -560,8 +560,18 @@ void Scene3DShader::draw()
 			// program object, not in the context, so simply switching back
 			// restores everything the host already uploaded for this frame —
 			// no need to replay setUniforms().
-			glBindVertexArray( 0 );
-			runGenerator( m_lastTime );
+			//
+			// A shadowed scene reaches draw() TWICE per frame.  The mesh is
+			// built in the first of those passes and reused in the second:
+			// regenerating would double the compute for an identical result,
+			// and — worse — the shadow map would then describe a mesh the
+			// camera pass no longer draws if any input changed between them.
+			bool generate = ( EffectShader::s_shadowPass > 0.5f ) || !usesShadow();
+			if( generate )
+			{
+				glBindVertexArray( 0 );
+				runGenerator( m_lastTime );
+			}
 			glUseProgram( m_sh_prog_id );
 
 			glBindVertexArray( m_vao );

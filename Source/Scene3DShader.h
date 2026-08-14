@@ -54,6 +54,8 @@ public:
 	// Also true when only the compute generator reads the spectrogram — the
 	// base class can only see the render program.
 	bool usesSpectro() override;
+	void  setShadowExtent( float e ) { m_shadowExtent = e; }
+	float shadowExtent() const override { return m_shadowExtent; }
 	void setUniforms( float time, float interpolation,
 	                  GLint texLoc1, GLint texLoc2 ) override;
 	void applyAudioFeatures( const AudioFeatures &f );
@@ -93,6 +95,7 @@ private:
 	int     m_genSpectro   = -1;  // cached: does the generator read texSpectro?
 	AudioFeatures m_lastAudio;    // this scene's features, for the generator
 	float   m_lastTime     = 0.f; // raw time from setUniforms, ditto
+	float   m_shadowExtent = EffectShader::kShadowExtent;
 	// The counter-clamp pass is identical for every indirect scene, so it is
 	// compiled once for the process.
 	static GLuint s_clampProg;

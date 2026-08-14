@@ -8,9 +8,12 @@ in vec4 attrB;      // xyz = surface normal (from the field gradient)
 out vec3  vObj;
 out vec3  vNormal;
 out vec3  vView;
+out vec3  vWorld;
 out float vStrength;
 
 uniform mat4  projM;
+uniform mat4  lightM;
+uniform float shadowPass;
 uniform float eyeOff;
 uniform float audioAdvance;
 uniform float audioLevel;
@@ -36,8 +39,20 @@ void main()
     vObj      = p;
     vNormal   = rot * n;
     vView     = normalize(-vp);
+    vWorld    = pw;
     vStrength = attrA.w;
 
-    gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
-    gl_Position.x += eyeOff * 0.045 * gl_Position.w;
+    // The shadow contract on the indirect path.  The generator has already run
+    // once this frame (the engine skips it on the second pass), so both passes
+    // draw the same mesh — which is exactly what a shadow map must be able to
+    // assume.
+    if (shadowPass > 0.5)
+    {
+        gl_Position = lightM * vec4(pw, 1.0);
+    }
+    else
+    {
+        gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
+        gl_Position.x += eyeOff * 0.045 * gl_Position.w;
+    }
 }

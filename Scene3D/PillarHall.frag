@@ -45,10 +45,11 @@ vec3 hue2rgb(float h)
     return clamp(abs(mod(h * 6.0 + vec3(0.0, 4.0, 2.0), 6.0) - 3.0) - 1.0, 0.0, 1.0);
 }
 
-// The shadow map covers a 120-unit cube, so one of its texels is about this
-// wide in world units.  Everything about the bias is expressed in multiples of
-// it, which is why the numbers below stay sane if the map is ever resized.
-const float SHADOW_WORLD_TEXEL = 120.0 / 2048.0;
+// One shadow texel, in world units.  Derived rather than hardcoded, because
+// the light's box is sized per scene now — a constant here would silently
+// under- or over-bias every scene whose scale differs from this one's.
+uniform float shadowExtent;
+#define SHADOW_WORLD_TEXEL (2.0 * shadowExtent * shadowTexel)
 
 float shadowAt(vec3 world, vec3 n, float ndl)
 {

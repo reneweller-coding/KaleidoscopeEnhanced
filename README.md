@@ -1219,6 +1219,29 @@ Three things that cost iterations, all worth knowing:
 **`PillarHall`** is the first scene under the contract: a field of pillars whose
 heights follow the spectrum, on a floor bright enough to show what falls on it.
 
+**The light's box is sized by the scene**, via an optional `shadowExtent`
+attribute on the `<TextureShader>` element. The map's 2048 texels are spent
+across whatever that says, so a 120-unit box gives a 3-unit object about fifty
+texels and its shadows come out in blocks. Only the scene knows its own scale,
+and fitting the box automatically would mean refitting it every frame from
+bounds the host never sees. The value also reaches the shaders as a
+`shadowExtent` uniform, so the normal offset is expressed in real world units
+and stays correct at any scale.
+
+**`Detonation`, `BloomSculpt` and `MetaSculpt` are now under the contract too**
+— one scene on each of the three pipeline kinds, which is what actually proves
+the claim that a single depth pass serves them all. The branch goes wherever
+that kind produces `gl_Position`: the **geometry shader** for Detonation, the
+**tessellation evaluation shader** for BloomSculpt, the **vertex shader** for
+MetaSculpt.
+
+The indirect path needed one refinement for this. A shadowed scene reaches
+`draw()` twice per frame, and regenerating the mesh in both passes would double
+the compute for an identical result — and worse, if any input changed between
+them the shadow map would describe a mesh the camera pass no longer draws. The
+generator therefore runs in whichever pass comes first (the depth one) and the
+second pass reuses the buffer.
+
 ### The scene depth buffer, readable
 
 The two texture-effect FBOs used to carry their depth in a **renderbuffer**,

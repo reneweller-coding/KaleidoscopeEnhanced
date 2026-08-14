@@ -25,10 +25,13 @@ in  vec4 tcSeed[];
 out vec3  vObj;         // object-space point (drives the body colour)
 out vec3  vNormal;
 out vec3  vView;        // view direction at the surface
+out vec3  vWorld;       // for the shadow lookup
 out float vSwell;       // total displacement, for the emissive seams
 out vec2  vSurfUV;
 
 uniform mat4  projM;
+uniform mat4  lightM;
+uniform float shadowPass;
 uniform float eyeOff;
 uniform float audioAdvance;
 uniform float audioChroma[12];
@@ -168,9 +171,19 @@ void main()
     vObj    = p;
     vNormal = nw;
     vView   = normalize(-vec3(vp.x, vp.y, vp.z));
+    vWorld  = pw;                     // origin-centred, matching the light box
     vSwell  = swell;
     vSurfUV = uv;
 
-    gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
-    gl_Position.x += eyeOff * 0.045 * gl_Position.w;
+    // The shadow contract, in the tessellation evaluation shader — which is
+    // where this scene's projection lives, so it is where the branch belongs.
+    if (shadowPass > 0.5)
+    {
+        gl_Position = lightM * vec4(pw, 1.0);
+    }
+    else
+    {
+        gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
+        gl_Position.x += eyeOff * 0.045 * gl_Position.w;
+    }
 }

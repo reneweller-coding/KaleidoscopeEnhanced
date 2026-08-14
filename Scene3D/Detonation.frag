@@ -14,11 +14,19 @@ out vec4 fragColor;
 
 in vec3  vNormal;
 in vec3  vView;
+in vec3  vWorld;
 in float vShard;
 in float vEdge;
 in vec2  vUV;
 
 uniform sampler2D tex0;
+// Declaring this is what asks the engine for the extra depth pass.
+uniform sampler2DShadow texShadow;
+uniform mat4  lightM;
+uniform vec3  lightDir;
+uniform float shadowPass;
+uniform float shadowTexel;
+uniform float shadowExtent;
 uniform float interpolation;
 uniform float time;
 
@@ -33,11 +41,38 @@ uniform float audioAmbient;
 uniform float glowP;
 uniform float blastP;
 
+// Same normal-offset lookup as PillarHall; the offset is in world units, so it
+// follows this scene's much smaller shadow box automatically.
+float shadowAt(vec3 world, vec3 n, float ndl)
+{
+    float lift = (2.0 * shadowExtent * shadowTexel) * 2.2 / max(ndl, 0.15);
+    vec4 lp = lightM * vec4(world + n * lift, 1.0);
+    vec3 proj = lp.xyz / lp.w * 0.5 + 0.5;
+    if (proj.z > 1.0)
+        return 1.0;
+    float bias = 0.0006 + 0.0030 * (1.0 - ndl);
+    float s = 0.0;
+    float r = shadowTexel * 1.6;
+    for (int y = -1; y <= 1; ++y)
+        for (int x = -1; x <= 1; ++x)
+            s += texture(texShadow,
+                         vec3(proj.xy + vec2(float(x), float(y)) * r, proj.z - bias));
+    return s / 9.0;
+}
+
 void main()
 {
+    // Depth pass: nothing to shade, and sampling texShadow here would read the
+    // texture currently being rendered into.
+    if (shadowPass > 0.5)
+    {
+        fragColor = vec4(0.0);
+        return;
+    }
+
     vec3 n = normalize(vNormal);
     vec3 V = normalize(vView);
-    vec3 L = normalize(vec3(0.55, 0.70, -0.45));
+    vec3 L = normalize(lightDir);
 
     vec3 col;
 
@@ -47,8 +82,13 @@ void main()
         float diff = max(dot(n, L), 0.0);
         float wrap = 0.5 + 0.5 * dot(n, L);
 
+        // Shards now cast onto each other: a plate lifting off the shell throws
+        // its shadow across the ones still in place, which is what finally
+        // makes the surface read as a solid crust rather than as a mosaic.
+        float shadow = shadowAt(vWorld, n, diff);
+
         vec3 rock = mix(vec3(0.16, 0.17, 0.21), vec3(0.36, 0.31, 0.27), vEdge);
-        col = rock * (0.30 + 0.95 * diff + 0.55 * wrap * wrap);
+        col = rock * (0.30 + 0.95 * diff * shadow + 0.55 * wrap * wrap);
 
         // Cool counter-light, so the shards facing away are still solid objects
         // and not black holes with glowing edges.
@@ -64,7 +104,7 @@ void main()
 
         vec3 H = normalize(L + V);
         col += vec3(0.9, 0.92, 1.0) * pow(max(dot(n, H), 0.0), 70.0)
-             * (0.6 + 1.8 * audioHigh);
+             * shadow * (0.6 + 1.8 * audioHigh);
 
         // A shard that has flown glows along its underside — the heat it took
         // with it.  This is what ties the flying pieces to the core.

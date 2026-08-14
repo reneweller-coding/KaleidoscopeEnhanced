@@ -606,7 +606,7 @@
     <float name="glitterP" minValue="0.35" maxValue="0.85"></float>
   </TextureShader>
 
-  <TextureShader file="..\\Scene3D\\BloomSculpt.frag" type="scene3d" geom="patches" probability="1.0" mood="dreamy" complexity="3">
+  <TextureShader file="..\\Scene3D\\BloomSculpt.frag" type="scene3d" geom="patches" probability="1.0" mood="dreamy" complexity="3" shadowExtent="2.6">
     <float name="bloomP"   minValue="0.35" maxValue="0.75"></float>
     <float name="camDistP" minValue="3.0"  maxValue="3.9"></float>
     <float name="twistP"   minValue="0.5"  maxValue="1.6"></float>
@@ -622,7 +622,7 @@
     <float name="skyP"   minValue="0.4"  maxValue="1.0"></float>
   </TextureShader>
 
-  <TextureShader file="..\\Scene3D\\Detonation.frag" type="scene3d" geom="grid" probability="1.0" mood="aggressive" complexity="4">
+  <TextureShader file="..\\Scene3D\\Detonation.frag" type="scene3d" geom="grid" probability="1.0" mood="aggressive" complexity="4" shadowExtent="3.2">
     <float name="blastP"   minValue="0.6"  maxValue="1.15"></float>
     <float name="camDistP" minValue="2.9"  maxValue="3.6"></float>
     <float name="spinP"    minValue="0.6"  maxValue="1.5"></float>
@@ -637,7 +637,7 @@
     <float name="glowP"   minValue="0.45" maxValue="1.0"></float>
   </TextureShader>
 
-  <TextureShader file="..\\Scene3D\\MetaSculpt.frag" type="scene3d" geom="indirect" probability="1.0" mood="dreamy" complexity="4">
+  <TextureShader file="..\\Scene3D\\MetaSculpt.frag" type="scene3d" geom="indirect" probability="1.0" mood="dreamy" complexity="4" shadowExtent="2.8">
     <float name="blobP"    minValue="0.65" maxValue="1.05"></float>
     <float name="spreadP"  minValue="0.75" maxValue="1.30"></float>
     <float name="isoP"     minValue="0.8"  maxValue="1.25"></float>
@@ -710,7 +710,7 @@
     <float name="glowP"    minValue="0.3" maxValue="1.0"></float>
   </CombineShader>
 
-  <TextureShader file="..\\Scene3D\\PillarHall.frag" type="scene3d" geom="cubes" probability="1.0" mood="dark" complexity="4">
+  <TextureShader file="..\\Scene3D\\PillarHall.frag" type="scene3d" geom="cubes" probability="1.0" mood="dark" complexity="4" shadowExtent="60">
     <float name="camHP"    minValue="6.0"  maxValue="13.0"></float>
     <float name="heightP"  minValue="0.7"  maxValue="1.35"></float>
     <float name="spacingP" minValue="0.85" maxValue="1.2"></float>
