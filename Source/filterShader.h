@@ -145,6 +145,10 @@ public:
 	 *  no sender runs, the photos are the fallback. */
 	static bool		s_spoutInEnabled;
 	static QString	s_spoutInSender;
+	// Native video as an image source (CLI -v).  Feeds the same m_liveTex slot
+	// as Spout does, so every effect gets moving footage without knowing.
+	// Spout wins if both are given: it is the live feed, the file is not.
+	static QString	s_videoPath;
 
 	// Human-readable names of the currently active / cross-fading effects (debug overlay).
 	QString activeShaderInfo() const;
