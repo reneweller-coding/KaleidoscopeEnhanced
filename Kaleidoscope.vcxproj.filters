@@ -75,6 +75,9 @@
     <ClCompile Include="Source\Recorder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\GpuSims.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="moc\moc_AudioAnalyzer.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
