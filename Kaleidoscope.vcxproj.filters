@@ -987,6 +987,24 @@
     <None Include="Scene3D\Skyburst.vert">
       <Filter>Shaders\Scene3D</Filter>
     </None>
+    <None Include="Scene3D\Harmonograph.comp">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\Harmonograph.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\Harmonograph.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\SpectroWeave.comp">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\SpectroWeave.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\SpectroWeave.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
     <None Include="Scene3D\Planet4D.frag">
       <Filter>Shaders\Scene3D</Filter>
     </None>

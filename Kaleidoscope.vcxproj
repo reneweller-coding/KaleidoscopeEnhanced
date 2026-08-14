@@ -634,6 +634,12 @@ exit /b 0</Command>
     <None Include="Scene3D\Skyburst.comp" />
     <None Include="Scene3D\Skyburst.frag" />
     <None Include="Scene3D\Skyburst.vert" />
+    <None Include="Scene3D\Harmonograph.comp" />
+    <None Include="Scene3D\Harmonograph.frag" />
+    <None Include="Scene3D\Harmonograph.vert" />
+    <None Include="Scene3D\SpectroWeave.comp" />
+    <None Include="Scene3D\SpectroWeave.frag" />
+    <None Include="Scene3D\SpectroWeave.vert" />
     <None Include="Scene3D\Planet4D.frag" />
     <None Include="Scene3D\Planet4D.vert" />
     <None Include="Scene3D\PlanetRings.frag" />

@@ -1,0 +1,144 @@
+#version 430
+// Harmonograph.comp — a wire sculpture whose shape IS the interval being played.
+// -----------------------------------------------------------------------
+// A Lissajous figure closes if and only if its frequency ratio is rational,
+// and the simpler the ratio the simpler the closed figure.  That is the same
+// fact that makes an interval sound consonant: a perfect fifth is 3:2 and its
+// figure is a tidy loop; a tritone is close to 45:32 and its figure never
+// repeats, it just fills the space.  So the sculpture does not illustrate
+// consonance — it IS the same property, drawn.
+//
+// The ratio comes from the two loudest pitch classes, snapped to the just
+// interval nearest their semitone distance.  Equal temperament's 2^(n/12) would
+// be irrational for every interval and NOTHING would ever close, which is
+// exactly the wrong lesson to draw.
+// -----------------------------------------------------------------------
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+
+layout(std430, binding = 0) buffer Verts { float verts[]; };
+layout(std430, binding = 1) buffer Cmd   { uint  cmd[]; };
+
+uniform uint  maxVertices;
+uniform float time;
+uniform float sceneSeed;
+uniform float audioAdvance;
+uniform float audioLevel;
+uniform float audioKick;
+uniform float audioSubBass;
+uniform float audioChroma[12];
+
+uniform float sizeP;        // preset: figure size
+uniform float dampP;        // preset: how fast the pendulum decays
+uniform float wireP;        // preset: wire thickness
+
+const int STEPS = 3600;
+const int SIDES = 5;
+
+// Just ratios for each semitone distance.  Index = semitones apart.
+const vec2 JUST[12] = vec2[12](
+    vec2(1.0, 1.0),   // unison
+    vec2(16.0, 15.0), // minor second
+    vec2(9.0, 8.0),   // major second
+    vec2(6.0, 5.0),   // minor third
+    vec2(5.0, 4.0),   // major third
+    vec2(4.0, 3.0),   // fourth
+    vec2(45.0, 32.0), // tritone - the one that never closes
+    vec2(3.0, 2.0),   // fifth
+    vec2(8.0, 5.0),   // minor sixth
+    vec2(5.0, 3.0),   // major sixth
+    vec2(16.0, 9.0),  // minor seventh
+    vec2(15.0, 8.0)   // major seventh
+);
+
+// The curve.  Three damped pendulums, the classic harmonograph: two driving
+// the plane and one the depth.
+vec3 curveAt(float t, vec2 ratio, float damp)
+{
+    float a = ratio.x, b = ratio.y;
+    float c = a + b;                    // the depth axis takes the sum, so the
+                                        // figure is genuinely three-dimensional
+    float d = exp(-damp * t * 0.055);
+    float ph = audioAdvance * 0.10;
+    return vec3(sin(a * t + ph),
+                sin(b * t + ph * 1.31 + 1.2),
+                sin(c * t * 0.5 + ph * 0.7)) * d * sizeP * 2.6;
+}
+
+void writeVertex(uint slot, vec3 p, vec3 n, float along, float energy)
+{
+    uint o = slot * 8u;
+    verts[o + 0u] = p.x;  verts[o + 1u] = p.y;  verts[o + 2u] = p.z;
+    verts[o + 3u] = along;
+    verts[o + 4u] = n.x;  verts[o + 5u] = n.y;  verts[o + 6u] = n.z;
+    verts[o + 7u] = energy;
+}
+
+void main()
+{
+    uvec3 g = gl_GlobalInvocationID;
+    uint id = g.x + 64u * (g.y + 64u * g.z);
+    if (id >= uint(STEPS))
+        return;
+
+    // ---- which interval is sounding ----
+    // Every thread repeats this: twelve comparisons is cheaper than any way of
+    // sharing the answer between threads would be.
+    int i1 = 0, i2 = 1;
+    float e1 = -1.0, e2 = -1.0;
+    for (int i = 0; i < 12; ++i)
+    {
+        float e = audioChroma[i];
+        if (e > e1)      { e2 = e1; i2 = i1; e1 = e; i1 = i; }
+        else if (e > e2) { e2 = e; i2 = i; }
+    }
+    int semis = int(mod(float(i2 - i1) + 12.0, 12.0));
+    vec2 ratio = JUST[semis];
+    float energy = clamp((e1 + e2) * 4.0, 0.0, 1.5);
+
+    float damp = dampP * (0.6 + 0.5 * audioSubBass);
+
+    float t0 = float(id)     * 0.055;
+    float t1 = float(id + 1) * 0.055;
+    vec3 p0 = curveAt(t0, ratio, damp);
+    vec3 p1 = curveAt(t1, ratio, damp);
+
+    vec3 dir = p1 - p0;
+    float L = length(dir);
+    if (L < 1e-6)
+        return;
+    dir /= L;
+
+    // The wire thins as the pendulum runs down, the way the trace of a real
+    // harmonograph fades as its arm loses swing.
+    float along = float(id) / float(STEPS);
+    float r = wireP * 0.020 * (1.0 - 0.55 * along) * (1.0 + 0.5 * energy)
+            * (1.0 + 0.3 * audioKick);
+
+    vec3 up = abs(dir.y) < 0.9 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0);
+    vec3 u = normalize(cross(dir, up));
+    vec3 v = cross(dir, u);
+
+    uint need = uint(SIDES) * 6u;
+    uint base = atomicAdd(cmd[4], need);
+    if (base + need > maxVertices)
+        return;
+
+    for (int s = 0; s < SIDES; ++s)
+    {
+        float a0 = 6.2831853 * float(s)     / float(SIDES);
+        float a1 = 6.2831853 * float(s + 1) / float(SIDES);
+        vec3 n0 = u * cos(a0) + v * sin(a0);
+        vec3 n1 = u * cos(a1) + v * sin(a1);
+
+        vec3 A = p0 + n0 * r, B = p0 + n1 * r;
+        vec3 C = p1 + n1 * r, D = p1 + n0 * r;
+
+        uint o = base + uint(s) * 6u;
+        writeVertex(o + 0u, A, n0, along, energy);
+        writeVertex(o + 1u, B, n1, along, energy);
+        writeVertex(o + 2u, C, n1, along, energy);
+        writeVertex(o + 3u, A, n0, along, energy);
+        writeVertex(o + 4u, C, n1, along, energy);
+        writeVertex(o + 5u, D, n0, along, energy);
+    }
+}
