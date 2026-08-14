@@ -398,4 +398,22 @@
     <float name="hueP"     minValue="0.0"  maxValue="1.0"></float>
   </TextureShader>
 
+  <TextureShader file="..\\Scene3D\\Origami.frag" type="scene3d" geom="indirect" shadowExtent="7" probability="0.40" mood="calm,dark" complexity="3">
+    <float name="foldP"    minValue="0.60" maxValue="1.40"></float>
+    <float name="wavesP"   minValue="0.60" maxValue="2.60"></float>
+    <float name="skewP"    minValue="0.70" maxValue="1.35"></float>
+    <float name="camDistP" minValue="4.80" maxValue="6.40"></float>
+    <float name="glowP"    minValue="0.45" maxValue="1.00"></float>
+    <float name="hueP"     minValue="0.00" maxValue="1.00"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\CathedralGlass.frag" type="scene3d" geom="indirect" probability="0.35" mood="dark" complexity="3">
+    <float name="spinP"    minValue="0.50" maxValue="2.20"></float>
+    <float name="paneP"    minValue="0.60" maxValue="1.45"></float>
+    <float name="depthP"   minValue="0.55" maxValue="1.60"></float>
+    <float name="camDistP" minValue="5.00" maxValue="6.60"></float>
+    <float name="glowP"    minValue="0.45" maxValue="1.00"></float>
+    <float name="hueP"     minValue="0.00" maxValue="1.00"></float>
+  </TextureShader>
+
 </configuration>

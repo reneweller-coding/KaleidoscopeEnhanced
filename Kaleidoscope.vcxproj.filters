@@ -1014,6 +1014,24 @@
     <None Include="Scene3D\CoralGrowth.vert">
       <Filter>Shaders\Scene3D</Filter>
     </None>
+    <None Include="Scene3D\Origami.comp">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\Origami.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\Origami.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\CathedralGlass.comp">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\CathedralGlass.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\CathedralGlass.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
     <None Include="Scene3D\Planet4D.frag">
       <Filter>Shaders\Scene3D</Filter>
     </None>

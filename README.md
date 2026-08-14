@@ -1299,6 +1299,69 @@ was the hash grid, and the symptom was again a black screen from a simulation
 that ran without complaint. `CoralGrowth` needs 477 040 bytes and asks for
 524 288.
 
+### Origami — a Miura fold with one degree of freedom
+
+The Miura fold is the one origami pattern worth building as real geometry rather
+than faking with a normal map, because it is **rigid-foldable**: the panels never
+bend or stretch, only the creases rotate, and the whole sheet has a *single*
+degree of freedom. One angle controls how tall the corrugation stands, how far
+the sheet contracts, and how much the ridges zigzag. A pattern with exactly one
+parameter is the ideal thing to hand to a piece of music.
+
+The generator uses the standard Schenk-Guest cell lengths, and runs the fold
+angle as a **wave along the columns** so a fold travels through the paper instead
+of the whole sheet breathing at once. That is not rigid folding any more, and it
+is the right trade: every vertex is still a pure function of its `(i, j)`, so
+neighbouring facets share their corners exactly and the sheet stays watertight.
+The panels give up a little flatness, which nobody can see, rather than the seams
+opening, which everybody can. Because the columns may each sit at their own
+angle, the x positions are a running sum rather than a closed form.
+
+Two things the probe taught, both about light rather than geometry:
+
+- **Wrap the key light.** Panels turn through ninety degrees at every crease, so
+  a hard `N·L` sends half of them to zero and the sheet reads as holes.
+- **A corrugation shadows itself everywhere**, which is the point — but letting
+  the shadow map drive an occluded panel to black loses the fold pattern exactly
+  where it is deepest. The map is remapped into `[0.38, 1]` instead.
+
+### CathedralGlass, and an overflow that turns bright pixels black
+
+A single sheet of stained glass does not need OIT: there is nothing to sort.
+This scene earns it by stacking three rose windows at different depths and
+turning them against each other, so some pixels have three panes in front of them
+in an order that changes as they rotate. The geometry is split by kind — opaque
+stone tracery, transparent glass — and the vertex shader drops whichever kind
+does not belong to the pass currently running.
+
+Stained glass is not lit, it is **backlit**: a pane's colour is what survives the
+light passing through it, not what bounces off. So the glass has almost no
+diffuse term and a large emissive one, scaled by the spectrum band that pane
+stands for. Shading it the usual way — key light, specular, ambient — gives
+coloured plastic.
+
+That emissive term exposed a real bug, and it is worth stating plainly because
+the symptom points the wrong way:
+
+> The OIT accumulation buffer is **RGBA16F**, and the weight multiplies colour by
+> up to 3000. An emissive colour of 10, times an alpha near 1, times that weight,
+> summed over three overlapping layers, passes 65504 — half precision's ceiling.
+> It becomes `+Inf`, and `OitResolve.frag`'s inf guard paints it **black**. So
+> the *brightest* region of the image is the one that goes dark.
+
+The fix is two-sided: tone-map the colour *before* accumulating rather than after
+resolving, and drop the weight ceiling from the paper's 3e3 to 2.5e2 — which
+keeps the same relative ordering between near and far layers with an order of
+magnitude of headroom. `GlassStack` had the same latent bug (its specular spikes
+on a loud kick could overflow the same way) and got the same fix.
+
+One thing remains unexplained rather than fixed: quads emitted across the centre
+of projection came back as thin slivers instead of full wedges — one triangle of
+each pair never rasterised — while the identical quad moved out to the rim drew
+correctly. Neither winding order nor a larger inner radius changed it. The window
+is therefore built as an annulus around an open oculus, lit from its inner rim,
+which is what a real one often is anyway.
+
 ### Order-independent transparency
 
 Interpenetrating transparent objects are the case sorting cannot solve: there is

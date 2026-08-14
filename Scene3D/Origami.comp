@@ -1,0 +1,158 @@
+#version 430
+// Origami.comp — a Miura-ori sheet folding and unfolding with the music.
+// -----------------------------------------------------------------------
+// The Miura fold is the one origami pattern that is worth building as geometry
+// rather than faking with a bump map, because it is *rigid-foldable*: the panels
+// never bend or stretch, only the creases rotate, and the whole sheet has a
+// single degree of freedom.  One angle theta controls everything — how tall the
+// corrugation is, how far the sheet contracts, how much the ridges zigzag.  A
+// pattern with exactly one parameter is the ideal thing to hand to a piece of
+// music.
+//
+// The four lengths below are the standard Schenk-Guest parametrisation of a
+// folded Miura cell (panel sides a and b, acute crease angle gamma, fold angle
+// theta).  At theta = 0 they reduce to the flat crease pattern; as theta opens,
+// H lifts the ridges, V and L pull the sheet in, and S — the sideways kink that
+// gives the Miura its herringbone look — closes up.
+//
+// Theta is not constant across the sheet: it runs as a wave along the columns,
+// so a fold travels through the paper instead of the whole sheet breathing at
+// once.  That is not rigid folding any more, strictly — but every vertex is
+// still a pure function of its (i, j), so neighbouring facets share their
+// corners exactly and the sheet stays watertight.  It is the panels that give up
+// a little flatness, which nobody can see, rather than the seams opening, which
+// everybody can.
+// -----------------------------------------------------------------------
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+
+layout(std430, binding = 0) buffer Verts { float verts[]; };
+layout(std430, binding = 1) buffer Cmd   { uint  cmd[]; };
+
+uniform uint  maxVertices;
+uniform float time;
+uniform float sceneSeed;
+uniform float audioAdvance;
+uniform float audioLevel;
+uniform float audioKick;
+uniform float audioSubBass;
+uniform float audioHigh;
+uniform float audioBass;
+
+uniform float foldP;        // preset: how deep the fold goes
+uniform float wavesP;       // preset: fold waves across the sheet
+uniform float skewP;        // preset: crease angle, so how strong the zigzag is
+
+const int   NI = 28;        // columns (across the corrugation)
+const int   NJ = 16;        // rows
+const float CELL = 0.506;   // panel side; sized so the sheet overruns the frame
+
+float thetaAt(int i, float phase, float base, float amp, float waves)
+{
+    float u = float(i) / float(NI);
+    float w = 0.5 - 0.5 * cos(6.2831853 * (u * waves - phase));
+    return base + amp * w;
+}
+
+// The four folded-cell lengths.  gam is the crease angle.
+void cellDims(float th, float gam, out float H, out float S, out float L, out float V)
+{
+    float st = sin(th), ct = cos(th);
+    float sg = sin(gam), tg = tan(gam);
+    float den = sqrt(1.0 + ct * ct * tg * tg);
+    H = CELL * st * sg;
+    S = CELL * ct * tg / den;
+    L = CELL * sqrt(max(1.0 - st * st * sg * sg, 0.0));
+    V = CELL / den;
+}
+
+vec3 vertexAt(int i, int j, float phase, float base, float amp, float waves, float gam)
+{
+    // x is a running sum of the column widths, because each column may be at its
+    // own fold angle.  A closed form would need theta to be uniform.
+    float x = 0.0;
+    for (int k = 0; k < i; ++k)
+    {
+        float H, S, L, V;
+        cellDims(thetaAt(k, phase, base, amp, waves), gam, H, S, L, V);
+        x += V;
+    }
+    float H, S, L, V;
+    cellDims(thetaAt(i, phase, base, amp, waves), gam, H, S, L, V);
+
+    // Alternate rows kick sideways by S: that is the herringbone.  Alternate
+    // columns rise by H: that is the corrugation.
+    if (mod(float(j), 2.0) > 0.5)
+        x += S;
+    float y = float(j) * L;
+    float z = (mod(float(i), 2.0) > 0.5) ? H : 0.0;
+    return vec3(x, y, z);
+}
+
+void writeVertex(uint slot, vec3 p, vec3 n, float fold, float across)
+{
+    uint o = slot * 8u;
+    verts[o + 0u] = p.x;  verts[o + 1u] = p.y;  verts[o + 2u] = p.z;
+    verts[o + 3u] = fold;
+    verts[o + 4u] = n.x;  verts[o + 5u] = n.y;  verts[o + 6u] = n.z;
+    verts[o + 7u] = across;
+}
+
+void main()
+{
+    uvec3 g = gl_GlobalInvocationID;
+    uint id = g.x + 64u * (g.y + 64u * g.z);
+    if (id >= uint(NI * NJ))
+        return;
+
+    int i = int(id) % NI;
+    int j = int(id) / NI;
+
+    // The travelling fold rides on audioAdvance, never on absolute time scaled by
+    // a live audio value — the latter jumps the phase every time the level moves
+    // and the sheet flickers instead of folding.
+    float phase = audioAdvance * 0.055;
+    float base  = 0.30 + 0.14 * audioSubBass;
+    float amp   = clamp(foldP, 0.3, 1.6) * (0.62 + 0.34 * audioLevel + 0.22 * audioKick);
+    float waves = clamp(wavesP, 0.5, 4.0) * 1.5;
+    float gam   = clamp(skewP, 0.4, 1.6) * 0.95;
+
+    vec3 p00 = vertexAt(i,     j,     phase, base, amp, waves, gam);
+    vec3 p10 = vertexAt(i + 1, j,     phase, base, amp, waves, gam);
+    vec3 p11 = vertexAt(i + 1, j + 1, phase, base, amp, waves, gam);
+    vec3 p01 = vertexAt(i,     j + 1, phase, base, amp, waves, gam);
+
+    // Centre the sheet on the origin.  The extent is recomputed rather than
+    // assumed, because the sheet contracts as it folds and a fixed offset would
+    // let it drift out of frame.
+    float span = 0.0;
+    for (int k = 0; k < NI; ++k)
+    {
+        float H, S, L, V;
+        cellDims(thetaAt(k, phase, base, amp, waves), gam, H, S, L, V);
+        span += V;
+    }
+    float Hc, Sc, Lc, Vc;
+    cellDims(base + amp * 0.5, gam, Hc, Sc, Lc, Vc);
+    vec3 mid = vec3(span * 0.5, float(NJ) * Lc * 0.5, 0.0);
+    p00 -= mid;  p10 -= mid;  p11 -= mid;  p01 -= mid;
+
+    // One flat normal for the whole panel.  Averaging across a crease is exactly
+    // what must NOT happen here: the hard edge between two panels catching the
+    // light differently is the entire look.
+    vec3 n = normalize(cross(p10 - p00, p01 - p00));
+
+    float th = thetaAt(i, phase, base, amp, waves);
+    float fold = clamp(th / 1.6, 0.0, 1.0);
+    float across = float(i) / float(NI);
+
+    uint base_ = atomicAdd(cmd[4], 6u);
+    if (base_ + 6u > maxVertices)
+        return;
+
+    writeVertex(base_ + 0u, p00, n, fold, across);
+    writeVertex(base_ + 1u, p10, n, fold, across);
+    writeVertex(base_ + 2u, p11, n, fold, across);
+    writeVertex(base_ + 3u, p00, n, fold, across);
+    writeVertex(base_ + 4u, p11, n, fold, across);
+    writeVertex(base_ + 5u, p01, n, fold, across);
+}
