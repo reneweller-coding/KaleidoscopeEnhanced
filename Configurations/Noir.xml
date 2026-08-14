@@ -381,4 +381,12 @@
     <float name="skyP"   minValue="0.3   " maxValue="0.9"></float>
   </TextureShader>
 
+  <TextureShader file="..\\Scene3D\\SpectroWeave.frag" type="scene3d" geom="indirect" probability="0.4" mood="dark" complexity="4">
+    <float name="twistP"  minValue="0.6"  maxValue="1.6"></float>
+    <float name="spreadP" minValue="0.75" maxValue="1.35"></float>
+    <float name="thickP"  minValue="0.7"  maxValue="1.4"></float>
+    <float name="camHP"   minValue="-1.0" maxValue="1.0"></float>
+    <float name="glowP"   minValue="0.45" maxValue="1.0"></float>
+  </TextureShader>
+
 </configuration>

@@ -1200,6 +1200,38 @@ spread (v/k, about eight units). The sphere never opens; the sparks just rain
 downward. That was the first probe, and it is why the constant is a decision
 rather than a value.
 
+### SpectroWeave and Harmonograph
+
+**`SpectroWeave`** reads the same spectrogram as SpectroCanyon but as thirty-two
+*separate* strands, one per band, braided around a common axis — so instead of a
+landscape whose shape is the spectrum, you fly through a bundle in which each
+frequency is its own visible thread that swells where its band was loud.
+
+Its strand paths are closed-form helices, so unlike FlowRibbons there is nothing
+to integrate and a thread can own a single **segment**. That is the better split
+whenever the curve has a formula: 4096 threads doing one step each beats 32
+threads doing 128. The strand radii come from a golden-ratio spread of the band
+index, so neighbouring bands are *not* neighbouring strands — which is what
+makes the bundle look woven rather than like a rolled-up sheet.
+
+**`Harmonograph`** draws a wire sculpture whose shape *is* the interval being
+played. A Lissajous figure closes if and only if its frequency ratio is
+rational, and the simpler the ratio the simpler the closed figure — which is the
+same fact that makes an interval sound consonant. A perfect fifth is 3:2 and its
+figure is a tidy loop; a tritone is near 45:32 and never repeats, it just fills
+the space. The sculpture does not illustrate consonance, it *is* the same
+property, drawn.
+
+The ratio comes from the two loudest pitch classes, snapped to the **just**
+interval nearest their semitone distance. Equal temperament's 2^(n/12) is
+irrational for every interval, so nothing would ever close — which is exactly
+the wrong lesson to draw.
+
+One thing the probe taught: the hue must sweep the wheel about three times along
+the trace, not once. The damping puts most of the figure's visible area in the
+first fraction of the trace, so a single turn spends nearly all its range on the
+tiny wound-down centre and the big outer loops come out in one flat colour.
+
 ### Order-independent transparency
 
 Interpenetrating transparent objects are the case sorting cannot solve: there is
