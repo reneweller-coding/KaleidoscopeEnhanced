@@ -1044,4 +1044,13 @@
     <float name="hueP"     minValue="0.00" maxValue="1.00"></float>
   </TextureShader>
 
+  <TextureShader file="..\\Scene3D\\SmokeHall.frag" type="scene3d" geom="indirect" shadowExtent="44" probability="0.35" mood="dark" complexity="5">
+    <float name="spacingP" minValue="0.80" maxValue="1.40"></float>
+    <float name="heightP"  minValue="0.80" maxValue="1.30"></float>
+    <float name="camHP"    minValue="1.80" maxValue="3.40"></float>
+    <float name="densityP" minValue="0.60" maxValue="1.50"></float>
+    <float name="glowP"    minValue="0.45" maxValue="1.00"></float>
+    <float name="hueP"     minValue="0.00" maxValue="1.00"></float>
+  </TextureShader>
+
 </configuration>

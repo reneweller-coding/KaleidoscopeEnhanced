@@ -82,7 +82,11 @@ float shadowAt(vec3 world, float ndl)
         return 1.0;
     float bias = 0.0008 + 0.0030 * (1.0 - ndl);
     float s = 0.0;
-    float r = shadowTexel * 1.5;
+    // A wider kernel than the other shadowed scenes use.  The box has to be big
+    // enough to hold the whole hall, which spends texels fast, and a shaft's
+    // edge crossing the volume magnifies every step in the map into a visible
+    // staircase — a soft edge is also what a real shaft has.
+    float r = shadowTexel * 2.6;
     for (int y = -1; y <= 1; ++y)
         for (int x = -1; x <= 1; ++x)
             s += texture(texShadow,
@@ -152,10 +156,13 @@ void main()
     float d = fbm(q);
     d = smoothstep(0.42, 0.92, d);
 
-    // Denser low down, thinning toward the roof, and thinning again far away so
-    // the corridor does not simply fog over into a grey wall.
-    float hFall = exp(-max(vWorld.y, 0.0) * 0.22);
-    float far = 1.0 - smoothstep(0.55, 1.0, vExtra);
+    // Denser low down, but only gently: the shafts are BORN at the roof slots,
+    // so smoke that has already thinned to nothing by mid-height leaves the beams
+    // with nothing to be visible in.  An earlier exponent of 0.22 put barely a
+    // sixth of the density up at the ceiling, which is precisely where the effect
+    // was supposed to start.
+    float hFall = exp(-max(vWorld.y, 0.0) * 0.10);
+    float far = 1.0 - smoothstep(0.75, 1.0, vExtra);
     float dens = d * hFall * far * clamp(densityP, 0.2, 2.0)
                * (0.55 + 0.45 * audioLevel);
 
@@ -169,10 +176,12 @@ void main()
                       + 0.05 * sin(audioChromaHue));
     vec3 beam = mix(vec3(1.0, 0.94, 0.80), hue2rgb(hue), 0.30);
 
-    vec3 col = beam * lit * (0.30 + 0.55 * glowP)
-             * (0.5 + 0.8 * audioKick + 0.35 * audioSubBass);
-    // A little ambient scatter so unlit smoke is a presence, not a hole.
-    col += vec3(0.05, 0.06, 0.09) * (0.6 + 1.0 * audioAmbient);
+    // Contrast is the whole effect.  What makes a shaft is the RATIO between
+    // smoke that the beam reaches and smoke it does not; raising the ambient to
+    // keep the unlit smoke "visible" is the surest way to erase it.
+    vec3 col = beam * lit * (0.85 + 1.30 * glowP)
+             * (0.6 + 0.8 * audioKick + 0.35 * audioSubBass);
+    col += vec3(0.030, 0.036, 0.055) * (0.6 + 1.0 * audioAmbient);
 
     // Tone-map before accumulating: fifty-six slices into an RGBA16F target
     // with a weight in the hundreds is exactly the case that overflows half
@@ -184,7 +193,7 @@ void main()
     // a = 0.035 leaves about 13% and reads as thick smoke, while the 0.16 this
     // started at leaves 10^-9 — the volume goes fully opaque a few slices in and
     // its average colour simply replaces the frame.
-    float alpha = clamp(dens * 0.018, 0.0, 0.045);
+    float alpha = clamp(dens * 0.030, 0.0, 0.070);
 
     // A FLAT weight, unlike every other OIT scene here — and this is the whole
     // reason the shafts read.  The depth-falling weight exists to make nearer

@@ -39,7 +39,14 @@ void main()
         return;
     }
 
-    vec3 p = attrA.xyz;
+    // Slide the whole scene so it straddles the origin.  The light's box is
+    // centred there and sized once from shadowExtent, and anything outside it
+    // gets "lit" for free from the shadow lookup's bounds guard.  The generator
+    // builds the hall running from z = -8 to 26, which puts its middle nine
+    // units down the corridor and half its length — including most of the smoke
+    // — outside any box small enough to have usable resolution.  That is why the
+    // volume came back uniformly lit: not a lighting bug, a framing one.
+    vec3 p = attrA.xyz - vec3(0.0, 0.0, 9.0);
 
     // No rotation anywhere in this scene, on purpose: the smoke slabs are
     // perpendicular to the view axis and stop working the moment the scene
@@ -47,7 +54,7 @@ void main()
     // The eye sits BEHIND the first row of pillars.  Put it level with them and
     // the nearest column stands a couple of units off the lens, subtending most
     // of the frame — the hall stops reading as a hall and becomes a black shape.
-    vec3 vp = vec3(p.x - eyeOff, p.y - camHP, p.z + 6.0);
+    vec3 vp = vec3(p.x - eyeOff, p.y - camHP, p.z + 15.0);
 
     vObj    = p;
     vNormal = attrB.xyz;
