@@ -598,6 +598,12 @@ exit /b 0</Command>
     <None Include="Scene3D\MetaSculpt.frag" />
     <None Include="Scene3D\MetaSculpt.vert" />
     <None Include="Scene3D\MetaSculpt.comp" />
+    <None Include="Scene3D\GrowthTree.comp" />
+    <None Include="Scene3D\GrowthTree.frag" />
+    <None Include="Scene3D\GrowthTree.vert" />
+    <None Include="Scene3D\SpectrumCity.comp" />
+    <None Include="Scene3D\SpectrumCity.frag" />
+    <None Include="Scene3D\SpectrumCity.vert" />
     <None Include="Scene3D\Planet4D.frag" />
     <None Include="Scene3D\Planet4D.vert" />
     <None Include="Scene3D\PlanetRings.frag" />

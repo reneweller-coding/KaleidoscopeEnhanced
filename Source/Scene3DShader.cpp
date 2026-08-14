@@ -123,6 +123,20 @@ void Scene3DShader::applyAudioFeatures( const AudioFeatures &f )
 	m_lastAudio = v;
 }
 
+// A generator can sample the host's data textures too, and the host only
+// uploads and binds those while something on screen actually wants them.  The
+// base class only inspects the render program, so a scene whose ONLY reader is
+// its compute generator would find unit 28 empty.
+bool Scene3DShader::usesSpectro()
+{
+	if( EffectShader::usesSpectro() )
+		return true;
+	if( m_genSpectro < 0 )
+		m_genSpectro = ( m_genProg != 0 &&
+		                 glGetUniformLocation( m_genProg, "texSpectro" ) >= 0 ) ? 1 : 0;
+	return m_genSpectro == 1;
+}
+
 // Interleaved layout: attrA.xyzw, attrB.xyzw = 8 floats per vertex.
 void Scene3DShader::buildGeometry()
 {
@@ -391,6 +405,18 @@ void Scene3DShader::runGenerator( float time )
 		if( l >= 0 ) glUniform1fv( l, 12, a.chroma );
 	}
 	{
+		GLint l = glGetUniformLocation( m_genProg, "audioSpectrum" );
+		if( l >= 0 ) glUniform1fv( l, AudioFeatures::kSpectrumBands, a.spectrum );
+	}
+	// The host binds the spectrogram to unit 28 whenever usesSpectro() says
+	// somebody wants it — which, for an indirect scene, includes this program.
+	{
+		GLint l = glGetUniformLocation( m_genProg, "texSpectro" );
+		if( l >= 0 ) glUniform1i( l, 28 );
+	}
+	setF( "spectroHead", a.spectroHead );
+	setF( "spectroFill", a.spectroFill );
+	{
 		GLint l = glGetUniformLocation( m_genProg, "maxVertices" );
 		if( l >= 0 ) glUniform1ui( l, GLuint(m_meshCapacity) );
 	}
@@ -403,7 +429,10 @@ void Scene3DShader::runGenerator( float time )
 	glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 0, m_vbo );
 	glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 1, m_cmdBuf );
 
-	// One invocation per cell of a 64^3 field, in 4x4x4 blocks.
+	// A fixed invocation budget: 64^3 = 262144, in 4x4x4 blocks.  What one
+	// invocation MEANS is entirely the generator's business — a voxel for an
+	// isosurface, a node for a tree, a lot for a city.  A generator that needs
+	// fewer simply returns early, which costs nothing worth measuring.
 	glDispatchCompute( 16, 16, 16 );
 
 	// The clamp pass has to see the finished counter, so it needs its own
@@ -459,6 +488,12 @@ void Scene3DShader::initUniforms( int width, int height )
 
 	if( m_vbo == 0 )
 		buildGeometry();
+
+	// Built here rather than lazily on the first draw, so the generator program
+	// exists before FilterShader asks which host textures this scene needs —
+	// usesSpectro() inspects the generator too.
+	if( m_geomKind == GEOM_INDIRECT )
+		setupIndirect();
 
 	// Core profile: vertex attribs live in a VAO, baked once here (the
 	// attrib locations are program-specific, so the VAO is per-scene).

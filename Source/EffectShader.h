@@ -120,7 +120,7 @@ public:
 
 	// Same for the self-similarity matrix ("texSSM" uniform, unit 10).
 	bool usesSSM();
-	bool usesSpectro();
+	virtual bool usesSpectro();
 
 	// Same for the Physarum trail map ("texPhysarum" uniform, unit 11).
 	bool usesPhysarum();
