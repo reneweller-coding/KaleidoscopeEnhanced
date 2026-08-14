@@ -47,3 +47,4 @@ AndroidRemote/debug.keystore
 # verify.ps1 artifacts
 Tools/broadband120.wav
 Tools/probe_*.jpg
+cache/

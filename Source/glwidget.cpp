@@ -1174,7 +1174,12 @@ void GLwidget::updateTrackOverlays( FilterShader *fs )
 	float artistTarget = 0.f;
 	if( artistOn )
 	{
-		const qint64 cycleMs = 45000, showMs = 14000, fadeMs = 2200;
+		// Bei großen Sammlungen (bis 50 Bilder) rotiert es flotter, damit
+		// über einen Abend auch wirklich viele Bilder drankommen.
+		const bool   viele   = m_trackMedia->imageCount() >= 10;
+		const qint64 cycleMs = viele ? 26000 : 45000;
+		const qint64 showMs  = viele ? 12000 : 14000;
+		const qint64 fadeMs  = 2200;
 		qint64 t  = m_fpsTimer.elapsed() - m_trackStartMs;
 		if( t < 0 ) t = 0;
 		qint64 ph = t % cycleMs;
