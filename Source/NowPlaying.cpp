@@ -113,7 +113,7 @@ double NowPlaying::positionNowSec() const
     if (!tl.playing)
         return tl.positionSec;
     const qint64 nowMs = QDateTime::currentMSecsSinceEpoch();
-    double p = tl.positionSec + double(nowMs - tl.stampMs) * 0.001;
+    double p = tl.positionSec + double(nowMs - tl.stampMs) * 0.001 * tl.rate;
     if (tl.durationSec > 0.0 && p > tl.durationSec)
         p = tl.durationSec;
     return p;
@@ -227,21 +227,30 @@ void NowPlaying::threadFunc()
         else if (posConfirmed && prevTl.positionSec >= 0.0 && prevTl.playing
                  && tl.playing == prevTl.playing)
         {
-            // Drift-Korrektur statt Sofort-Übernahme (bestätigter Track,
-            // laufend unverändert): SMTC aktualisiert die Position oft nur
-            // alle paar Sekunden, und der frische Wert liegt dabei fast
-            // immer etwas neben unserer eigenen (glatten) Hochrechnung -
-            // kleine Ausschläge hier ließen den Lyrics-Scroll bislang bei
-            // JEDEM Poll (~1x/s) kurz zurückspringen und wieder aufholen.
-            // Nur ein VIERTEL der Abweichung wird übernommen: echte Drift
-            // gleicht sich binnen weniger Sekunden aus, ein einzelner
-            // Ausreißer bleibt unsichtbar. Ein GROSSER Sprung (>1.5s, ein
-            // echter Seek) wird weiterhin sofort komplett übernommen.
+            // MONOTONE Positions-Fortschreibung (bestätigter Track, laufend
+            // unverändert): SMTC aktualisiert die Position oft nur alle paar
+            // Sekunden, und der frische Wert liegt fast immer etwas neben
+            // unserer eigenen Hochrechnung. Frühere Fassungen übernahmen einen
+            // Teil der Abweichung als POSITIONS-Schritt - jeder Poll erzeugte
+            // damit einen kleinen Sprung (auch rückwärts!), sichtbar als
+            // hüpfender Scroll und als Karaoke-Flip in die Vorzeile, wenn der
+            // Rückschritt eine Zeilengrenze kreuzte. Jetzt bleibt die Position
+            // exakt auf der Hochrechnung (kontinuierlich, monoton) und die
+            // Abweichung wird stattdessen in die LAUFRATE gelegt: bei bis zu
+            // ±15% Tempo-Anpassung gleitet die Anzeige unmerklich auf SMTCs
+            // Zeitachse zu, statt zu springen. Nur ein echter Seek (>1.5s)
+            // wird weiterhin sofort als Sprung übernommen (Rate zurück auf 1).
             const double erwartet   = prevTl.positionSec
-                                     + double(tl.stampMs - prevTl.stampMs) * 0.001;
+                                     + double(tl.stampMs - prevTl.stampMs) * 0.001
+                                       * prevTl.rate;
             const double abweichung = tl.positionSec - erwartet;
             if (std::fabs(abweichung) < 1.5)
-                tl.positionSec = erwartet + abweichung * 0.25;
+            {
+                tl.positionSec = erwartet;
+                double r = 1.0 + abweichung * 0.15;
+                tl.rate = (r < 0.85) ? 0.85 : (r > 1.15 ? 1.15 : r);
+            }
+            // else: echter Seek - roher Wert + rate 1.0 (Default) bleiben.
         }
         prevTl    = tl;
         prevTitle = t;

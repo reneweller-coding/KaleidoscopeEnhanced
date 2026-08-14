@@ -169,8 +169,11 @@ void SceneScheduler::tick( const Tick &t )
 		             && it->second < tex.size();
 		if( known && it->second == m_actTexture )
 		{
-			// The right shader is already on screen - just refresh its look.
-			tex[m_actTexture]->restoreParameters( m_sectionParams[id] );
+			// Der richtige Shader ist bereits auf dem Schirm.  Frueher wurden
+			// hier SOFORT die gespeicherten Parameter draufgesetzt - ein
+			// harter, unueberblendeter Sprung auf einen komplett anderen Look
+			// mitten im laufenden Bild.  Visuelle Kontinuitaet schlaegt
+			// Replay-Treue: der aktuelle Look bleibt einfach stehen.
 		}
 		else
 		{
@@ -284,6 +287,22 @@ void SceneScheduler::tick( const Tick &t )
 
 				tex[m_nextTexture]->startInterpolators();
 
+				// Song-Struktur-Gedaechtnis: die gespeicherten Parameter der
+				// wiederkehrenden Section JETZT setzen - der Effekt blendet
+				// dann bereits MIT dem gespeicherten Look ein.  (Frueher
+				// passierte das erst am FADE-ENDE: die Szene blendete mit
+				// frisch gewuerfelten Parametern ein und sprang im Moment des
+				// Abschlusses hart auf den gespeicherten Look um - der vom
+				// User gemeldete "Sprung zu einem komplett anderen Bild
+				// direkt nach dem Szenenwechsel".)
+				if( m_pendingSectionRestore >= 0 )
+				{
+					auto ip = m_sectionParams.find( m_pendingSectionRestore );
+					if( ip != m_sectionParams.end() )
+						tex[m_nextTexture]->restoreParameters( ip->second );
+					m_pendingSectionRestore = -1;
+				}
+
 				restart( m_clockEffectTexture );
 			}
 		}
@@ -302,16 +321,11 @@ void SceneScheduler::tick( const Tick &t )
 			tex[m_actTexture]->resetParameters();
 			m_actTexture = m_nextTexture;
 
-			// Song-structure memory: restore a recognised section's exact look;
-			// remember a new section's fresh look under its id (combine captured
-			// mid-swap if one is running).
-			if( m_pendingSectionRestore >= 0 )
-			{
-				auto ip = m_sectionParams.find( m_pendingSectionRestore );
-				if( ip != m_sectionParams.end() )
-					tex[m_actTexture]->restoreParameters( ip->second );
-				m_pendingSectionRestore = -1;
-			}
+			// Song-Struktur-Gedaechtnis: das RESTORE passiert inzwischen am
+			// FADE-START (s.o., der Effekt blendet mit dem gespeicherten Look
+			// ein); hier am Abschluss wird nur noch der Look einer NEUEN
+			// Section gespeichert (dafuer muessen die finalen Parameter
+			// feststehen - Fade-Ende ist der richtige Moment).
 			if( m_pendingSectionStore >= 0 )
 			{
 				m_sectionEffect[m_pendingSectionStore]  = m_actTexture;
