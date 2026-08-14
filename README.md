@@ -1149,6 +1149,43 @@ toward the eye still lights the body plausibly — while every derived quantity
 that actually needs the direction (thickness probes, rim terms, reflections) is
 quietly wrong.
 
+**`GrowthTree`** shows the other thing this stage is for. A compute shader
+cannot recurse, which is the obvious way to build a tree and the one that is
+unavailable. The way around it is that a binary tree has a closed-form address:
+number the branches the way a binary heap numbers its nodes and a branch's index
+*is* its path from the root. Node *n*'s depth is the position of its highest set
+bit (`findMSB`), and the bits below that spell out, one per level, which way to
+turn. Every thread reconstructs its own branch from scratch in O(depth) steps,
+with no shared state and no ordering between threads at all.
+
+Growth is a wave in *depth*: a level opens only once the growth phase has passed
+it, so the tree unfurls from the trunk outward and folds back in, and a kick
+shoves the wave forward so the crown bursts on the beat. Two proportions matter
+more than they look: the branch radius has to taper more slowly than the length
+(at 0.74 per level the eleventh generation is three thousandths of the trunk —
+sub-pixel hairlines that alias into sparkle), and a leaf must be sized **from
+the twig it grows on**, not from a constant, or it is bigger than the whole
+branch and the crown becomes a pile of slabs.
+
+**`SpectrumCity`** is a night city whose skyline is the music's history: depth
+into the scene is time (rows of the spectrogram ring), distance from the avenue
+is frequency, and a building's height is the energy that band had when its row
+was written. A bar of music arrives at the horizon and marches down the street
+as a wave of rising towers. The lots never move, which is what makes the window
+pattern possible — the fragment shader needs a stable per-building identity, and
+it has one because only the heights animate.
+
+A generator can read the host's data textures too, but the host only uploads and
+binds those while something on screen wants them, and the base `usesSpectro()`
+only inspects the *render* program. `Scene3DShader` overrides it to check the
+generator as well, and builds the generator in `initUniforms` rather than lazily
+on first draw, so the answer is already correct when the host asks.
+
+Two smaller traps, both familiar in shape: **`half` is a reserved GLSL keyword**
+(like `centroid` before it) and produces a bare syntax error naming only the
+token; and a roof "warning light" applied to the whole roof quad rather than a
+small lamp turns every tower into a glowing red lid.
+
 ### Tessellation and geometry stages
 
 Two pipeline stages that the project had never used are now wired in, and a

@@ -1,0 +1,162 @@
+#version 430
+// GrowthTree.comp — an L-system tree, grown on the GPU, one branch per thread.
+// -----------------------------------------------------------------------
+// A compute shader cannot recurse, which is the obvious way to build a tree and
+// the one that is unavailable.  The way around it is that a binary tree has a
+// closed-form address: number the branches the way a binary heap numbers its
+// nodes and a branch's index IS its path from the root.  Node n's depth is the
+// position of its highest set bit, and the bits below that spell out, one per
+// level, which way to turn.  So every thread reconstructs its own branch from
+// scratch in O(depth) steps, with no shared state and no ordering between
+// threads at all.
+//
+// Growth is a wave in DEPTH: each level opens only once the growth phase has
+// passed it, so the tree unfurls from the trunk outward and folds back in.  A
+// kick shoves that wave forward, which makes the crown burst on the beat.
+// -----------------------------------------------------------------------
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+
+layout(std430, binding = 0) buffer Verts { float verts[]; };
+layout(std430, binding = 1) buffer Cmd   { uint  cmd[]; };
+
+uniform uint  maxVertices;
+uniform float time;
+uniform float sceneSeed;
+uniform float audioAdvance;
+uniform float audioLevel;
+uniform float audioKick;
+uniform float audioSubBass;
+uniform float audioHigh;
+uniform float audioChroma[12];
+
+uniform float branchP;      // preset: branching angle
+uniform float lengthP;      // preset: how fast segments shorten
+uniform float growthP;      // preset: growth speed
+uniform float leafP;        // preset: leaf size
+
+const int MAXDEPTH = 11;                 // nodes 1 .. 2^12-1
+const uint NODES   = (1u << (MAXDEPTH + 1)) - 1u;
+const int  SIDES   = 5;                  // cross-section of a branch tube
+
+float hash1(float n) { return fract(sin(n * 91.3458) * 47453.5453); }
+
+vec3 rotAxis(vec3 v, vec3 axis, float a)
+{
+    float c = cos(a), s = sin(a);
+    return v * c + cross(axis, v) * s + axis * dot(axis, v) * (1.0 - c);
+}
+
+void writeVertex(uint slot, vec3 p, vec3 n, float depthN, float kind)
+{
+    uint o = slot * 8u;
+    verts[o + 0u] = p.x;  verts[o + 1u] = p.y;  verts[o + 2u] = p.z;
+    verts[o + 3u] = depthN;
+    verts[o + 4u] = n.x;  verts[o + 5u] = n.y;  verts[o + 6u] = n.z;
+    verts[o + 7u] = kind;               // 0 = wood, 1 = leaf
+}
+
+void emitTri(vec3 a, vec3 b, vec3 c, vec3 na, vec3 nb, vec3 nc,
+             float depthN, float kind)
+{
+    uint base = atomicAdd(cmd[4], 3u);
+    if (base + 3u > maxVertices)
+        return;
+    writeVertex(base + 0u, a, na, depthN, kind);
+    writeVertex(base + 1u, b, nb, depthN, kind);
+    writeVertex(base + 2u, c, nc, depthN, kind);
+}
+
+void main()
+{
+    uvec3 g = gl_GlobalInvocationID;
+    uint id = g.x + 64u * (g.y + 64u * g.z);
+    uint n = id + 1u;                    // heap numbering starts at 1
+    if (n > NODES)
+        return;
+
+    int depth = findMSB(n);              // 0 for the trunk
+
+    // The growth wave.  It breathes in and out rather than restarting, so the
+    // crown never pops back to a stump between cycles.
+    float wave = growthP * (float(MAXDEPTH) + 1.5)
+               * (0.55 + 0.45 * sin(audioAdvance * 0.055))
+               + 2.2 * audioKick + 1.2 * audioSubBass;
+    float open = clamp(wave - float(depth), 0.0, 1.0);
+    if (open <= 0.002)
+        return;                          // this level has not grown yet
+
+    // ---- walk down from the root to this branch's base ----
+    vec3 pos  = vec3(0.0, -1.75, 0.0);
+    vec3 dir  = vec3(0.0, 1.0, 0.0);
+    vec3 side = vec3(1.0, 0.0, 0.0);
+    float len = 1.15;
+    float rad = 0.115;
+
+    float angle = branchP * 0.52 * (1.0 + 0.25 * audioLevel);
+    float ratio = lengthP;
+
+    for (int d = 0; d < depth; ++d)
+    {
+        pos += dir * len;                // to the end of the parent segment
+
+        uint bit = (n >> uint(depth - 1 - d)) & 1u;
+
+        // Roll the frame by the golden angle each level, and half a turn for
+        // the second child.  Without the roll every split happens in the same
+        // plane and the tree comes out as a flat fan.
+        float roll = 2.3999632 * float(d + 1) + (bit == 0u ? 0.0 : 3.14159265)
+                   + 0.6 * hash1(float(n >> uint(depth - d)) + sceneSeed * 37.0);
+        side = normalize(rotAxis(side, dir, roll));
+
+        // Pitch away from the parent, a little wider for the pitch class this
+        // level is tied to — a bright chord opens the crown.
+        float ca = angle * (1.0 + 0.5 * audioChroma[d % 12] * 4.0);
+        dir  = normalize(rotAxis(dir, side, ca));
+        side = normalize(side - dir * dot(side, dir));
+
+        len *= ratio;
+        // Radius tapers more slowly than length.  At 0.74 per level the eleventh
+        // generation is 3 thousandths of the trunk — sub-pixel hairlines that
+        // alias into sparkle instead of reading as twigs.
+        rad *= 0.82;
+    }
+
+    float segLen = len * open;
+    vec3 p0 = pos;
+    vec3 p1 = pos + dir * segLen;
+    float r0 = rad;
+    float r1 = rad * 0.72;
+    float depthN = float(depth) / float(MAXDEPTH);
+
+    // ---- the branch as a tapered tube ----
+    vec3 u = normalize(side - dir * dot(side, dir));
+    vec3 v = cross(dir, u);
+
+    for (int s = 0; s < SIDES; ++s)
+    {
+        float a0 = 6.2831853 * float(s)     / float(SIDES);
+        float a1 = 6.2831853 * float(s + 1) / float(SIDES);
+        vec3 n0 = u * cos(a0) + v * sin(a0);
+        vec3 n1 = u * cos(a1) + v * sin(a1);
+
+        vec3 b0 = p0 + n0 * r0, b1 = p0 + n1 * r0;
+        vec3 t0 = p1 + n0 * r1, t1 = p1 + n1 * r1;
+        emitTri(b0, b1, t1, n0, n1, n1, depthN, 0.0);
+        emitTri(b0, t1, t0, n0, n1, n0, depthN, 0.0);
+    }
+
+    // ---- a leaf at every fully grown tip ----
+    if (depth >= MAXDEPTH - 1 && open > 0.5)
+    {
+        // Sized from the twig it grows on, not from a constant.  A fixed size
+        // is a leaf that happens to fit ONE generation; here it is bigger than
+        // the whole branch and the crown turns into a pile of slabs.
+        float sz = leafP * segLen * 1.15 * (0.6 + 0.8 * hash1(float(n) + 3.7))
+                 * (0.75 + 0.6 * audioHigh);
+        vec3 c = p1 + dir * sz * 0.7;
+        vec3 e0 = u * sz, e1 = v * sz * 0.55;
+        vec3 ln = normalize(cross(e0, e1));
+        emitTri(c - e0 - e1, c + e0 - e1, c + e0 + e1, ln, ln, ln, 1.0, 1.0);
+        emitTri(c - e0 - e1, c + e0 + e1, c - e0 + e1, ln, ln, ln, 1.0, 1.0);
+    }
+}

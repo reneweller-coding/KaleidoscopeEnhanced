@@ -1,0 +1,137 @@
+#version 430
+// SpectrumCity.comp — a night city whose skyline is the music's history.
+// -----------------------------------------------------------------------
+// One thread per building lot.  Depth into the scene is TIME (rows of the
+// spectrogram ring), distance from the avenue is FREQUENCY, and a building's
+// height is the energy that band had when that row was written.  Because
+// spectroHead advances continuously, the whole skyline flows toward the
+// camera: a bar of music arrives at the horizon and marches down the avenue as
+// a wave of rising and falling towers.
+//
+// The lots never move, which is what makes the shading possible: the fragment
+// shader needs a stable per-building identity for its window pattern, and it
+// gets one because the geometry is fixed and only the heights animate.
+//
+// A box needs a normal per face, but the vertex format has only two spare
+// floats after position/uv/height, so the face is written as an INDEX and the
+// normal is reconstructed in the vertex shader.  Box faces are axis-aligned, so
+// that costs nothing in accuracy.
+// -----------------------------------------------------------------------
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+
+layout(std430, binding = 0) buffer Verts { float verts[]; };
+layout(std430, binding = 1) buffer Cmd   { uint  cmd[]; };
+
+uniform uint  maxVertices;
+uniform float time;
+uniform float sceneSeed;
+uniform float audioAdvance;
+uniform float audioLevel;
+uniform float audioKick;
+uniform float audioSubBass;
+
+uniform sampler2D texSpectro;
+uniform float spectroHead;      // T coordinate of "now", continuous
+uniform float spectroFill;
+
+uniform float heightP;      // preset: tower height
+uniform float densityP;     // preset: how many lots are actually built on
+uniform float avenueP;      // preset: width of the central avenue
+
+const int   COLS   = 40;        // lots across
+const int   ROWS   = 46;        // lots into the distance
+const float SPACING = 7.0;
+const float FOOT    = 4.6;      // building footprint (the rest is street)
+const float AGE_SPAN = 0.82;    // how much of the ring the city spans
+
+float hash1(vec2 p) { return fract(sin(dot(p, vec2(41.317, 289.113))) * 43758.5453); }
+
+void writeVertex(uint slot, vec3 p, float faceU, float faceIdx,
+                 float upAmount, float lotHash, float energy)
+{
+    uint o = slot * 8u;
+    verts[o + 0u] = p.x;  verts[o + 1u] = p.y;  verts[o + 2u] = p.z;
+    verts[o + 3u] = faceU;
+    verts[o + 4u] = faceIdx;
+    verts[o + 5u] = upAmount;      // height above ground, in world units
+    verts[o + 6u] = lotHash;
+    verts[o + 7u] = energy;
+}
+
+void emitQuad(vec3 a, vec3 b, vec3 c, vec3 d, float wa, float wb,
+              float face, float h0, float h1, float lotHash, float energy)
+{
+    uint base = atomicAdd(cmd[4], 6u);
+    if (base + 6u > maxVertices)
+        return;
+    writeVertex(base + 0u, a, wa, face, h0, lotHash, energy);
+    writeVertex(base + 1u, b, wb, face, h0, lotHash, energy);
+    writeVertex(base + 2u, c, wb, face, h1, lotHash, energy);
+    writeVertex(base + 3u, a, wa, face, h0, lotHash, energy);
+    writeVertex(base + 4u, c, wb, face, h1, lotHash, energy);
+    writeVertex(base + 5u, d, wa, face, h1, lotHash, energy);
+}
+
+void main()
+{
+    uvec3 g = gl_GlobalInvocationID;
+    uint id = g.x + 64u * (g.y + 64u * g.z);
+    if (id >= uint(COLS * ROWS))
+        return;
+
+    int i = int(id) % COLS;             // across  -> frequency
+    int j = int(id) / COLS;             // into the scene -> time
+
+    vec2 lot = vec2(float(i), float(j));
+    float h1r = hash1(lot + sceneSeed * 13.0);
+    float h2r = hash1(lot + sceneSeed * 13.0 + 57.0);
+
+    // Empty lots, so the city has squares and gaps instead of a solid slab.
+    if (h1r > densityP)
+        return;
+
+    float cx = (float(i) - float(COLS - 1) * 0.5) * SPACING;
+    float cz = float(j) * SPACING + 6.0;
+
+    // The avenue: a clear corridor straight down the middle of the frame,
+    // which is what turns a field of boxes into a street you look along.
+    if (abs(cx) < avenueP * SPACING * 1.5)
+        return;
+
+    // Frequency from distance to the avenue, so the bass towers flank the view
+    // and the treble runs off to the sides.
+    float freq = clamp(abs(cx) / (float(COLS) * 0.5 * SPACING), 0.0, 1.0);
+    freq = 1.0 - freq;                      // 0 at the edges -> bass near the avenue
+
+    // Frequency is symmetric about the avenue, so without this the two sides of
+    // the street would be exact mirror images of each other.  Offsetting one
+    // side by a fraction of a bar keeps the structure and kills the symmetry.
+    float t = spectroHead - (float(j) / float(ROWS)) * AGE_SPAN
+            - ((cx > 0.0) ? 0.045 : 0.0);
+    float e = texture(texSpectro, vec2(freq, fract(t))).r;
+    e *= smoothstep(0.0, 0.12, spectroFill);
+
+    float base = 2.0 + 9.0 * h2r;           // every city has a low-rise floor
+    float h = base + e * heightP * 46.0 * (0.55 + 0.75 * h2r);
+    h *= 1.0 + 0.10 * audioKick;
+
+    // NOT "half": that is a reserved GLSL keyword and the compiler rejects it
+    // with a bare syntax error that names the token and nothing else.
+    float halfW = FOOT * 0.5 * (0.72 + 0.5 * h2r);
+    float x0 = cx - halfW, x1 = cx + halfW;
+    float z0 = cz - halfW, z1 = cz + halfW;
+    float w  = halfW * 2.0;
+
+    // Four walls + a roof.  No floor: nothing can ever see it.
+    //   face 0 = +x, 1 = -x, 2 = +z, 3 = -z, 4 = +y
+    emitQuad(vec3(x1, 0.0, z0), vec3(x1, 0.0, z1), vec3(x1, h, z1), vec3(x1, h, z0),
+             0.0, w, 0.0, 0.0, h, h1r, e);
+    emitQuad(vec3(x0, 0.0, z1), vec3(x0, 0.0, z0), vec3(x0, h, z0), vec3(x0, h, z1),
+             0.0, w, 1.0, 0.0, h, h1r, e);
+    emitQuad(vec3(x1, 0.0, z1), vec3(x0, 0.0, z1), vec3(x0, h, z1), vec3(x1, h, z1),
+             0.0, w, 2.0, 0.0, h, h1r, e);
+    emitQuad(vec3(x0, 0.0, z0), vec3(x1, 0.0, z0), vec3(x1, h, z0), vec3(x0, h, z0),
+             0.0, w, 3.0, 0.0, h, h1r, e);
+    emitQuad(vec3(x0, h, z0), vec3(x1, h, z0), vec3(x1, h, z1), vec3(x0, h, z1),
+             0.0, w, 4.0, h, h, h1r, e);
+}

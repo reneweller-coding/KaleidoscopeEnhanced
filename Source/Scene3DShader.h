@@ -51,6 +51,9 @@ public:
 	// use structurally (sector counts, knot type).  The same scene becomes a
 	// whole family of variations.
 	void resetParameters() override;
+	// Also true when only the compute generator reads the spectrogram — the
+	// base class can only see the render program.
+	bool usesSpectro() override;
 	void setUniforms( float time, float interpolation,
 	                  GLint texLoc1, GLint texLoc2 ) override;
 	void applyAudioFeatures( const AudioFeatures &f );
@@ -87,6 +90,7 @@ private:
 	int     m_meshCapacity = 0;   // vertices the VBO can hold
 	bool    setupIndirect();      // allocate buffers + compile the generator
 	void    runGenerator( float time );
+	int     m_genSpectro   = -1;  // cached: does the generator read texSpectro?
 	AudioFeatures m_lastAudio;    // this scene's features, for the generator
 	float   m_lastTime     = 0.f; // raw time from setUniforms, ditto
 	// The counter-clamp pass is identical for every indirect scene, so it is
