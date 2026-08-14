@@ -141,6 +141,10 @@ public:
 	// projection would silently distort every depth-based effect.
 	static constexpr float kSceneNear = 0.5f;
 	static constexpr float kSceneFar  = 220.f;
+	// tan(55 degrees / 2).  Together with near/far and the aspect this is
+	// everything needed to rebuild a view-space position from a depth sample,
+	// which is what separates real screen-space occlusion from a fake one.
+	static constexpr float kSceneTanHalfFovY = 0.52056705f;
 
 	// Whether each texture-effect FBO's depth attachment holds real geometry
 	// this frame (set by FilterShader; [0] = tex0's scene, [1] = tex1's).

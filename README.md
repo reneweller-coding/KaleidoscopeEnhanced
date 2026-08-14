@@ -1142,6 +1142,48 @@ geometry, while light only travels where there is none — accumulate both and t
 two gates cancel and the shafts disappear. What travels along the ray is the
 sky's light; what the frame contributes is only the occluders.
 
+**`CombineAmbientOcclusion`** asks, for every pixel, how much of the hemisphere
+above its surface is blocked by nearby geometry — which needs a position and a
+normal, and only a depth buffer is available. Both are rebuilt: a depth sample
+plus the field of view gives the view-space position (the screen coordinate is a
+ray direction, the linear depth is how far along it the surface sits), and the
+normal comes from the derivatives of that position across the screen.
+
+This is exactly why the engine now shares `tanHalfFov` as well, and why
+`Scene3DShader` builds its projection from those same constants instead of its
+own literals. Guessed camera parameters do not look broken — they look like
+slightly wrong occlusion, which is far harder to notice and impossible to debug
+from the image.
+
+Three details decide whether it reads as lighting or as dirt:
+
+- The sampling radius is a **world** distance projected into screen space, so
+  near geometry gets a wide kernel and far geometry a narrow one. A fixed pixel
+  radius makes occlusion scale with distance, which is backwards.
+- A **range check** rejects neighbours much closer to the camera; they belong to
+  a different surface, and counting them draws a dark halo around every
+  silhouette (the screen-space derivatives that produced the normal cross
+  silhouettes too, so this term covers both problems).
+- Occluded areas get **cooler and keep some of their own colour**, because light
+  reaching a crease has bounced off the walls around it. Multiplying straight to
+  grey is what makes cheap SSAO look like smudged dirt.
+
+**`CombineDepthFog`** treats haze as physics rather than as a distance-keyed
+colour ramp. Two things happen to light crossing a hazy volume: some is
+absorbed, and some is scattered *into* the ray from the sun. A plain lerp toward
+a fog colour models only the first, which is why it flattens a scene into a
+wash; keeping them separate is what gives aerial perspective its direction —
+the haze glows toward the light and stays dark away from it. Scattering is
+weighted by the Henyey-Greenstein phase function, and a height falloff turns the
+fog into a layer with a surface so tall geometry can stand out of it.
+
+One trap, and it is a spectacular one: a phase function is a probability
+**density**, and a forward-scattering lobe is very tall — at g = 0.62 its peak
+is above 11. Used raw it does not brighten the haze, it detonates it and the
+whole frame goes white. Dividing by that peak, which has the closed form
+`(1+g)/(1-g)²`, turns it into a 0..1 shape that still concentrates exactly where
+it should.
+
 ### Compute → indirect draw — geometry the CPU never sees
 
 `geom="indirect"` is the third and last of the pipeline additions, and the only

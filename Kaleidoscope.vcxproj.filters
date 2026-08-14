@@ -603,6 +603,12 @@
     <None Include="Combine\CombineSunShafts.frag">
       <Filter>Shaders\Combine</Filter>
     </None>
+    <None Include="Combine\CombineAmbientOcclusion.frag">
+      <Filter>Shaders\Combine</Filter>
+    </None>
+    <None Include="Combine\CombineDepthFog.frag">
+      <Filter>Shaders\Combine</Filter>
+    </None>
     <None Include="Blend\Blit.frag">
       <Filter>Shaders\Blend</Filter>
     </None>
