@@ -18,6 +18,7 @@
 #include "AudioFeatures.h"
 #include "ComputeFX.h"
 #include "GpuSims.h"
+#include "PresentPass.h"
 
 class ImageLoader;
 
@@ -170,9 +171,8 @@ public:
 	// it can be called on every window resize without leaking or reloading images.
 	void resize(int width, int height);
 
-	// Photosensitivity-safety helpers (final present FBO + brightness limiter).
-	void setupSafety();          // create the final FBO/texture/present shader
-	void updateFinalTexture();   // (re)allocate the mipmapped final texture
+	// Baut Trails/StereoMix + delegiert Present/Bloom an den PresentPass.
+	void setupSafety();
 
 
 	// Mood-based selection bias: accept a candidate effect with a probability that
@@ -315,50 +315,12 @@ private:
 	float			m_snareEnv = 0.f, m_snareSmooth = 0.f;
 	float			m_hatEnv = 0.f,   m_hatSmooth = 0.f;
 
-	// ---- Photosensitivity safety: final present pass with global brightness
-	// rate-limiting.  The combined frame is rendered into m_fboFinal, its average
-	// luminance is read back (coarse mip), and a uniform scale is chosen so the
-	// whole-frame average can't change faster than a safe limit per second.
-	GLuint			m_fboFinal       = 0;
-	GLuint			m_texFinal       = 0;
-	GLuint			m_presentProgId  = 0;
-	GLint			m_presentTexUni  = -1;
-	GLint			m_presentResUni  = -1;
-	GLint			m_presentScaleUni= -1;
-	// Global mood-grade uniforms in the present shader.
-	GLint			m_presentCentroidUni = -1;
-	GLint			m_presentValenceUni  = -1;
-	GLint			m_presentLevelUni    = -1;
-	GLint			m_presentFluxUni     = -1;
-	GLint			m_presentHueUni      = -1;
-	GLint			m_presentBeatUni     = -1;
-	GLint			m_presentDownbeatUni = -1;
-	GLint			m_presentOnsetUni    = -1;
-	GLint			m_presentTimeUni     = -1;
-	GLint			m_presentChaseUni    = -1;
-	GLint			m_presentLampsUni    = -1;
-	GLint			m_presentSwellUni    = -1;
-	GLint			m_presentBarPhaseUni = -1;
-	GLint			m_presentBloomTexUni = -1;
-	GLint			m_presentUseBloomUni = -1;
-	GLint			m_presentCamZoomUni  = -1;
-	GLint			m_presentCamRotUni   = -1;
-	GLint			m_presentCamOffUni   = -1;
-	GLint			m_presentTitleTexUni    = -1;
-	GLint			m_presentTitlePhaseUni  = -1;
-	GLint			m_presentTitleAspectUni = -1;
-	GLint			m_presentTitleStyleUni  = -1;
-	GLint			m_presentTitleSeedUni   = -1;
-	GLint			m_presentStereoModeUni  = -1;
-	GLint			m_presentStereoDepthUni = -1;
+	// Finaler Present (Limiter, AutoExposure, Bloom, Titel-Reveal, Stereo):
+	// komplett im PresentPass gekapselt.
+	PresentPass		m_present;
 
 	// ---- Track-title reveal state (see showTitle) ----
 	QImage			m_titlePending;          // rendered text, awaits GL upload
-	GLuint			m_titleTex    = 0;
-	float			m_titleAge    = 999.f;   // seconds since reveal start
-	float			m_titleAspect = 4.f;
-	int				m_titleStyle  = 0;       // reveal style (rolled per reveal, mood-matched)
-	float			m_titleSeed   = 0.f;     // per-reveal random seed for the shader
 
 	// ---- Virtual camera (global "Regie" layer, applied in the present pass) --
 	// A single slow-moving transform over the finished frame: micro drift,
@@ -368,24 +330,7 @@ private:
 	float			m_camZoom  = 1.f;
 	float			m_camRot   = 0.f;
 	float			m_camOffX  = 0.f, m_camOffY = 0.f;
-	float			m_prevMeanLum    = -1.f;   // <0 = uninitialised
-	bool			m_safetyReady    = false;  // false → present pass disabled (safe fallback)
-	int				m_safetyFrame    = 0;      // for sub-sampling the readback
-	float			m_lastSafetyScale= 1.f;    // reused between readbacks
-	float			m_safetyAccumDt  = 0.f;    // dt accumulated since last readback
 
-	// ---- Two-pass Gaussian bloom (quarter-res bright-pass + separable blur) ----
-	// Replaces the single-tap mip hack in Present.frag with a proper glow.  On any
-	// setup failure m_bloomReady stays false and Present falls back to the mip path.
-	GLuint			m_texBloom[2]  = { 0, 0 };
-	GLuint			m_fboBloom[2]  = { 0, 0 };
-	GLuint			m_bloomProgId  = 0;
-	GLint			m_bloomTexUni    = -1;
-	GLint			m_bloomResUni    = -1;
-	GLint			m_bloomDirUni    = -1;
-	GLint			m_bloomThreshUni = -1;
-	bool			m_bloomReady   = false;
-	int				m_bloomW = 0, m_bloomH = 0;
 
 	// ---- Feedback / trails (phosphor-style ping-pong) ----
 	GLuint			m_fboTrail[2]   = { 0, 0 };
@@ -450,7 +395,6 @@ private:
 	// cross-fade with the combine solo) -> per-eye rendering, plain mixing,
 	// trail-warp suppression and present passthrough.
 	bool			m_trueStereoPacked = false;
-	GLint			m_presentStereoSrcUni = -1;
 	// Plain cross-mix program for packed 3D<->3D cross-fades.
 	GLuint			m_stereoMixProgId  = 0;
 	GLint			m_stereoMixTexAUni = -1;
@@ -475,9 +419,6 @@ private:
 	float			m_melodyAccum = 0.f;
 
 	ComputeFX		m_cfx;                     // GL 4.3 compute-shader sims
-	GLuint			m_autoExpBuf  = 0;         // 4 floats: exposure, p50, p98, pad
-	GLuint			m_autoExpProg = 0;
-	bool			m_autoExpTried = false;
 
 
 	// GPU-/Host-Simulationen (RD, Fluid, Smoke3D, Physarum, SSM, Spectro):
@@ -493,7 +434,6 @@ private:
 	static bool		s_blackout;      // VJ blackout target (smoothed per instance)
 	static bool		s_freeze;        // VJ freeze: hold the picture
 	static bool		s_pinned;        // VJ pin: no effect/combine switches
-	float			m_blackSmooth = 0.f;   // slewed blackout level 0..1
 	float			m_breakSmooth = 0.f;   // slewed DJ-stop hold (freezes motion)
 
 	// ---- Taste learning (persistent, PER PRESET + shader FILE basename) ----
