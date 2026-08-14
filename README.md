@@ -1387,18 +1387,41 @@ made earlier for good reasons:
 The ground keeps a real sky term where it is shadowed rather than going to
 black — a shadow on a sunlit floor is blue, not absent.
 
-### SmokeHall — unfinished, and what it established
+### SmokeHall — finished on the third pass, and why the first two failed
 
-`SmokeHall` is in the tree but **registered in no preset**, so it cannot appear
-in a show. It is the first scene to want both new contracts at once: the hall is
+`SmokeHall` is the only scene that uses both new contracts at once: the hall is
 opaque and casts into the shadow map, the smoke is transparent and reads that
-same map back, so a slab standing in a pillar's shadow goes dark and the shafts
-between the roof beams are real geometry rather than a screen-space guess.
+same map back, so a slab standing in a beam's shadow goes dark and the shafts
+between the roof slots are real geometry rather than a screen-space guess.
 
-The technique works. The composition does not yet — from an eye at mid-height
-the roof beams cover too much of the sky, so the frame is dominated by their
-black undersides instead of by the shafts between them. Four findings from it
-are worth keeping regardless:
+It took three passes, and the first two diagnoses were both wrong in the same
+way. The frame kept coming back an even grey, which looks like a tuning problem
+every time. It was not:
+
+> **The hall did not fit in the light's box.** `shadowExtent` sizes an
+> orthographic box centred on the origin, and the shadow lookup returns *lit* for
+> anything projecting outside it. That fallback is correct — there is no
+> information out there — but it is **silent**, and a volume that is lit
+> everywhere looks exactly like a volume whose shadow map was never written. The
+> hall is 32 units wide and 34 deep; at `shadowExtent="24"` most of it was
+> outside, so most of the smoke reported lit and the shafts had nothing to cut.
+
+Sealing the roof completely settled it in a single probe: still pale, therefore
+the beams were not shadowing anything, therefore the geometry was never the
+issue. It ships at `shadowExtent="44"`, with the hall shifted to straddle the
+origin — a scene built from z = -8 to 26 wastes half of any box small enough to
+have usable resolution.
+
+The aesthetic conclusion reversed too. The first two passes opened the roof up,
+reasoning that the beams' black undersides were filling the frame. That was a
+framing problem. **A shaft needs scarcity**: light through a fifth of the ceiling
+leaves four fifths of the volume lit, and a mostly-lit volume is a pale wash.
+Mostly dark with a few narrow slots is the cathedral — and it also makes the dark
+ceiling correct rather than a fault.
+
+Four findings from the earlier passes stand on their own:
+
+### SmokeHall — the volumetric findings
 
 - **A participating medium wants a FLAT OIT weight.** Every other transparent
   scene here uses a weight that falls off with depth, because that is what stands

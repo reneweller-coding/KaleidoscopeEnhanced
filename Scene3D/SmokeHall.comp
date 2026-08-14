@@ -1,29 +1,35 @@
 #version 430
 // SmokeHall.comp — a colonnade in smoke, lit through slotted beams.
 //
-// UNFINISHED — deliberately not registered in any preset.
+// It took three passes, and every earlier diagnosis was wrong in the same way:
+// the frame kept coming back an even grey, and each time that looked like a
+// tuning problem.  It was not.  The actual fault was that the hall did not FIT
+// IN THE LIGHT'S BOX.
 //
-// Second pass fixed two real things: the roof is now about a fifth solid instead
-// of nearly half, and the slab-size cap is gone.  That cap was a genuine bug —
-// it was meant to stop slabs reaching outside the hall, but a capped far slab no
-// longer spans the frustum, so large soft holes opened in the volume.  Confining
-// the smoke belongs in the fragment shader, in world space, where it is exact.
+// shadowExtent sizes an orthographic box centred on the origin, and the shadow
+// lookup returns "lit" for anything that projects outside it.  That fallback is
+// correct — there is no information out there — but it is silent, and a volume
+// that is lit everywhere looks exactly like a volume whose shadow map never got
+// written.  The hall runs 32 units wide and 34 deep; at extent 24 most of it was
+// outside, so most of the smoke reported lit and the shafts had nothing to cut.
+// A test with the roof sealed completely settled it in one probe: still pale, so
+// the beams were not shadowing anything, so the geometry was never the issue.
 //
-// It also exposed why this is hard, which is worth more than another tuning
-// round.  A shaft is only visible when the lit/shadowed split is CONSTANT along
-// the view ray — otherwise every ray crosses the same alternating pattern and
-// they all average to the same grey.  That requires the shadow slab to contain
-// the view direction, which requires the light to have no component along it.
-// The host's sun deliberately swings through a slow arc, so its horizontal
-// direction rotates: no fixed corridor orientation is perpendicular to it for
-// long, and lengthwise slots stop working as soon as the sun has swung a little.
+// Two other real fixes came out of the earlier passes and are kept:
+//   * the hall is shifted to straddle the origin, because that is where the box
+//     is — a scene built from z = -8 to 26 wastes half of any box that is small
+//     enough to have usable resolution;
+//   * the slab-size cap is gone.  It was meant to stop slabs reaching outside
+//     the hall, but a capped far slab no longer spans the frustum and large soft
+//     holes opened in the volume.  Confining the smoke belongs in the fragment
+//     shader, in world space, where it is exact.
 //
-// The fix that would actually work: rotate the HALL (kind 0 only) in the vertex
-// shader by an angle derived from lightDir, so the corridor always runs across
-// the sun, while the smoke slabs stay view-aligned and unrotated.  The shadow
-// pass uses the same vertex shader, so the map stays consistent; the fragment
-// bound has to be rotated by the same angle to match.  That is the next attempt,
-// not another pass at the numbers.
+// And the aesthetic conclusion reversed as well.  Passes one and two opened the
+// roof up, reasoning that the beams' black undersides were filling the frame.
+// That was a framing problem.  A shaft needs SCARCITY: light through a fifth of
+// the ceiling leaves four fifths of the volume lit, and a mostly-lit volume is a
+// pale wash.  Mostly dark with a few narrow slots is the cathedral — and it also
+// makes the dark ceiling correct rather than a fault.
 // -----------------------------------------------------------------------
 // This is the first scene that wants BOTH new contracts at once.  The hall is
 // opaque and casts into the shadow map; the smoke is transparent and reads that
@@ -62,11 +68,16 @@ uniform float camHP;        // preset: eye height
 
 const int COLS   = 4;                  // pillar columns (two per side)
 const int ROWS   = 6;                  // pillar rows along the hall
-// Ten beams over a 31-unit span with a 0.75 width: about a fifth of the roof is
-// solid.  The first attempt had fourteen at 1.05 over the same span -- nearly
-// half -- and from an eye at mid-height that fills the upper frame with their
-// black undersides.  A shaft scene has to be mostly slot.
+// The roof is mostly SOLID, with narrow slots between the beams.  Both earlier
+// attempts went the other way, on the reasoning that the beams' black undersides
+// were filling the frame — but that was a framing problem, not a roof one.  What
+// a shaft needs is scarcity: light through a fifth of the ceiling leaves four
+// fifths of the volume lit, and a volume that is mostly lit is a pale wash with
+// no beams in it.  Mostly dark with a few bright slots is the cathedral, and it
+// is also what makes the dark ceiling correct rather than a fault.
 const int BEAMS  = 10;
+const float BEAM_PITCH = 3.40;
+const float SLOT_W     = 0.70;
 const int SLABS  = 56;                 // smoke slices
 // The hall is deliberately SHORT.  The shadow box is centred on the origin and
 // sized once, so anything past its edge gets "lit" for free — and a stretch of
@@ -174,8 +185,8 @@ void main()
         // One quad each is enough; a beam only has to block, and it is only ever
         // seen from below.
         int b = int(id) - 1 - NPILLQ;
-        float bx = -15.0 + float(b) * 3.40;
-        float t = 0.75;
+        float bx = -15.0 + float(b) * BEAM_PITCH;
+        float t = BEAM_PITCH - SLOT_W;
         // Back to -8, not -3: the nearest smoke slabs sit behind the eye's own
         // starting point, and a slab with no beam above it is lit everywhere.
         // One uniformly lit slab in front of the lens washes out every striped
