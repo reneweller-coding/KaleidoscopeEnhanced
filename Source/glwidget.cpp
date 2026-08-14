@@ -207,6 +207,14 @@ GLwidget::GLwidget( QWidget *parent )
 
 GLwidget::~GLwidget()
 {
+	// Zuletzt gewählten Zustand sichern - deckt den GRACEFUL Quit-Pfad ab
+	// (Fenster-X, Menü "Exit": app.quit() -> app.exec() kehrt zurück ->
+	// dieser Destruktor läuft). Die harten exit(0)-Stellen (Escape/Q/
+	// Doppelklick) rufen saveAllSettings() zusätzlich VOR exit() selbst -
+	// exit() unterbricht die Ausführung sofort und durchläuft KEINE
+	// C++-Destruktoren, dieser hier käme für sie also nie zum Zug.
+	saveAllSettings();
+
 	// Closing mid-recording: finalise cleanly (drains + joins the encoder
 	// worker) WHILE the audio analyzer is still alive — the recorder closes
 	// the WAV through it.  After shutdown() the recorder never touches it.
@@ -690,6 +698,12 @@ void GLwidget::saveUiSettings()
 	s.sync();
 }
 
+void GLwidget::saveAllSettings()
+{
+	FilterShader::saveSettings();
+	saveUiSettings();
+}
+
 // Capture the current frame so it can be cross-faded out over the new config.
 void GLwidget::beginConfigFade()
 {
@@ -789,6 +803,7 @@ void GLwidget::updateAdaptiveScale()
 void GLwidget::mouseDoubleClickEvent(QMouseEvent *e) {
   QWidget::mouseDoubleClickEvent(e);
 
+  saveAllSettings();   // exit() unten läuft an keinem Destruktor vorbei
   exit( 0 );
 
   if(isFullScreen()) {
@@ -1081,7 +1096,17 @@ void GLwidget::updateTrackOverlays( FilterShader *fs )
 		return;
 	}
 
-	const float dt = 1.f / 60.f;   // Blend-Slew; exaktes dt ist hier unkritisch
+	// Echtes dt statt einer festen 60-Hz-Annahme: schwankt die Framezeit
+	// (GPU-Last, adaptive Render-Skalierung, Compute-Sims), ruckelt das
+	// Scroll-Smoothing sonst, weil der Slew-Schritt nicht zur tatsächlich
+	// vergangenen Zeit passt. Erster Aufruf / lange Aussetzer werden geklemmt.
+	const qint64 nowMs = m_fpsTimer.elapsed();
+	float dt = ( m_overlayLastMs < 0 ) ? ( 1.f / 60.f )
+	                                   : float( nowMs - m_overlayLastMs ) * 0.001f;
+	if( dt < 0.f )    dt = 0.f;
+	if( dt > 0.25f )  dt = 0.25f;
+	m_overlayLastMs = nowMs;
+
 	auto slew = []( float cur, float target, float rate, float dt )
 	{
 		float step = rate * dt;
@@ -1312,9 +1337,11 @@ void GLwidget::keyPressEvent(QKeyEvent* event)
     switch(event->key())
 	{
 		case Qt::Key_Escape:
+			saveAllSettings();   // exit() unten läuft an keinem Destruktor vorbei
 			exit(0);
 			break;
 		case Qt::Key_Q:
+			saveAllSettings();
 			exit(0);
 			break;
 		case Qt::Key_0:
@@ -1392,8 +1419,7 @@ void GLwidget::keyPressEvent(QKeyEvent* event)
 
 		// ---- Persist the current look + UI state as the startup default ----
 		case Qt::Key_K:
-			FilterShader::saveSettings();
-			saveUiSettings();
+			saveAllSettings();
 			break;
 
 		// ---- Instant replay: 'y' arms the rolling buffer, 'x' saves it ----
