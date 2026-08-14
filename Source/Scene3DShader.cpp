@@ -34,7 +34,7 @@ float Scene3DShader::s_cubeBudget = 1.f;
 // Shared by all geom="indirect" scenes (see setupIndirect()).
 GLuint Scene3DShader::s_clampProg = 0;
 
-static float rand01() { return float(qrand()) / float(RAND_MAX); }
+static float rand01() { return float(rand()) / float(RAND_MAX); }
 
 // Roll a fresh activation epoch: time offset, gentle speed factor, hue
 // rotation and the generic scene seed.  All CONSTANT within the activation
@@ -47,7 +47,7 @@ void Scene3DShader::rollVariation()
 	m_hueOffset   = rand01() * 6.2831853f;
 }
 
-Scene3DShader::Scene3DShader( const QString &filenameFragmentShader, const QString &geom,
+Scene3DShader::Scene3DShader( const std::string &filenameFragmentShader, const std::string &geom,
                               unsigned int minTimeSolo, unsigned int maxTimeSolo,
                               unsigned int minTimeInterpolation, unsigned int maxTimeInterpolation )
 	: EffectShader( filenameFragmentShader, minTimeSolo, maxTimeSolo,
@@ -66,13 +66,14 @@ Scene3DShader::Scene3DShader( const QString &filenameFragmentShader, const QStri
 
 	// The matching vertex shader sits next to the fragment shader
 	// ("..\Scene3D\X.frag" -> "..\Scene3D\X.vert").
-	auto sibling = []( const QString &frag, const char *ext ) -> char *
+	auto sibling = []( const std::string &frag, const char *ext ) -> char *
 	{
-		QString s = frag;
-		s.replace( ".frag", ext );
-		QByteArray b = s.toLocal8Bit();
-		char *out = (char *) malloc( sizeof(char) * (b.size() + 1) );
-		strcpy( out, b.constData() );
+		std::string s = frag;
+		size_t p = s.rfind( ".frag" );
+		if( p != std::string::npos )
+			s.replace( p, 5, ext );
+		char *out = (char *) malloc( sizeof(char) * (s.size() + 1) );
+		strcpy( out, s.c_str() );
 		return out;
 	};
 
@@ -443,8 +444,7 @@ void Scene3DShader::runGenerator( float time )
 	}
 	for( unsigned int i = 0; i < m_uniforms.size(); ++i )
 	{
-		QByteArray n = m_uniforms[i]->getName().toLocal8Bit();
-		setF( n.constData(), m_uniforms[i]->snapshotValue() );
+		setF( m_uniforms[i]->getName().c_str(), m_uniforms[i]->snapshotValue() );
 	}
 
 	glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 0, m_vbo );

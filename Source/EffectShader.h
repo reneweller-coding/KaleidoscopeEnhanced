@@ -2,8 +2,7 @@
 #define EFFECT_SHADER_H
 
 #include <QtGui/qopengl.h>
-#include <QtCore/QElapsedTimer>
-#include <QtCore/QThread>
+#include <string>
 #include "stdinc.h"
 #include "Uniform.h"
 #include "AudioFeatures.h"
@@ -15,7 +14,7 @@ class EffectShader
 public:
 	EffectShader();
 	EffectShader( unsigned int  minTimeSolo, unsigned int  maxTimeSolo, unsigned int  minTimeInterpolation, unsigned int  maxTimeInterpolation );
-	EffectShader( const QString &filenameFragmentShader, unsigned int  minTimeSolo, unsigned int  maxTimeSolo, unsigned int  minTimeInterpolation, unsigned int  maxTimeInterpolation );
+	EffectShader( const std::string &filenameFragmentShader, unsigned int  minTimeSolo, unsigned int  maxTimeSolo, unsigned int  minTimeInterpolation, unsigned int  maxTimeInterpolation );
 	~EffectShader();
 	
 	
@@ -68,16 +67,16 @@ public:
 	virtual void setUniforms( float time, float interpolation, GLint texLoc1, GLint texLoc2 ); // setting uniforms
 	virtual void checkGLErrors( const char *label ); // check and print gl errors to stderr
 
-	void addUniform( const QString &name, float minf, float maxf );
-	void addUniform( const QString &name, int minf, int maxf );
-	void addUniform( const QString &name, float pro );
+	void addUniform( const std::string &name, float minf, float maxf );
+	void addUniform( const std::string &name, int minf, int maxf );
+	void addUniform( const std::string &name, float pro );
 
 	// FORMULA LAYER (the MilkDrop lesson): attach a per-frame expression that
 	// is evaluated against the live audio features and uploaded as the float
 	// uniform `name` — presets can script mappings without shader edits.
 	// Evaluated in applyAudioFeatures AFTER the random params, so a formula
 	// deliberately overrides a <float> of the same name.
-	void addExpression( const QString &name, const QString &formula );
+	void addExpression( const std::string &name, const std::string &formula );
 
 	/**
 	 * Upload dedicated audio uniforms AFTER setUniforms() has run, while the
@@ -94,7 +93,7 @@ public:
 	 */
 	virtual void applyAudioFeatures(const AudioFeatures &features);
 		
-	void addUniformInterpolator( const QString &name, float interpolatorMinMinf,
+	void addUniformInterpolator( const std::string &name, float interpolatorMinMinf,
 							  float interpolatorMinMaxf,
 							  float interpolatorMaxMinf,
 							  float interpolatorMaxMaxf );
@@ -257,7 +256,7 @@ protected:
 	// Formula-layer expressions (uniform name -> compiled program).
 	struct ExprEntry
 	{
-		QString     name;
+		std::string name;
 		ExprProgram prog;
 		GLint       loc    = -1;
 		GLuint      progId = 0;

@@ -20,7 +20,7 @@
 #pragma once
 
 #include <vector>
-#include <QtCore/QString>
+#include <string>
 
 namespace ExprVars {
 enum Index {
@@ -38,7 +38,7 @@ class ExprProgram
 public:
     // Compile a formula.  Returns false (and logs) on a parse error; the
     // program then evaluates to 0.
-    bool compile( const QString &formula, const QString &context );
+    bool compile( const std::string &formula, const std::string &context );
 
     // Evaluate against a filled variable array (ExprVars::V_COUNT floats).
     float eval( const float *vars ) const;

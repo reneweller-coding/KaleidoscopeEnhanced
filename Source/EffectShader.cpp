@@ -4,14 +4,14 @@
 #include "EffectShader.h"
 #include "ComputeFX.h"
 
-#include <QtGui/QImageReader>
+#include <cstdlib>
 #include <QtCore/qdir.h>
 #include <QtCore/qfileinfo.h>
 
 #include<GL/GLU.h>
 
 // Constructor
-EffectShader::EffectShader( const QString &filenameFragmentShader, unsigned int  minTimeSolo, unsigned int  maxTimeSolo, unsigned int  minTimeInterpolation, unsigned int  maxTimeInterpolation ):
+EffectShader::EffectShader( const std::string &filenameFragmentShader, unsigned int  minTimeSolo, unsigned int  maxTimeSolo, unsigned int  minTimeInterpolation, unsigned int  maxTimeInterpolation ):
 m_minTimeSolo(minTimeSolo)
 , m_maxTimeSolo(maxTimeSolo)
 , m_minTimeInterpolation(minTimeInterpolation)
@@ -20,14 +20,13 @@ m_minTimeSolo(minTimeSolo)
 , m_probability(1.0)
 {
 
-	QByteArray ba = filenameFragmentShader.toLocal8Bit();
-	const char* name = ba.data();//toAscii().constData();
+	const char* name = filenameFragmentShader.c_str();
 
 	m_vertexShaderFilename = "..\\standard.vert";
-	//m_fragmentShaderFilename = ba.data();//filenameFragmentShader.toLocal8Bit().data();
+	//m_fragmentShaderFilename = filenameFragmentShader.c_str();//filenameFragmentShader.toLocal8Bit().data();
 
 	m_fragmentShaderFilename = (char *) malloc(sizeof(char)*(filenameFragmentShader.size()+1) );
-	sprintf( m_fragmentShaderFilename, "%s\0", ba.data() );
+	sprintf( m_fragmentShaderFilename, "%s\0", filenameFragmentShader.c_str() );
 
 
 	m_uniforms.clear();
@@ -90,7 +89,7 @@ void EffectShader::resetParameters()
 
 	// Fresh per-activation seeds for the formula layer (seed1..seed3).
 	for( int i = 0; i < 3; i++ )
-		m_exprSeeds[i] = (float) qrand() / (float) RAND_MAX;
+		m_exprSeeds[i] = (float) rand() / (float) RAND_MAX;
 }
 
 
@@ -192,7 +191,7 @@ void EffectShader::checkGLErrors( const char *label )
 }
 
 
-void EffectShader::addUniform( const QString &name, float minf, float maxf )
+void EffectShader::addUniform( const std::string &name, float minf, float maxf )
 {
 	Uniform *u = new Uniform( name, BASE_TYPE_FLOAT );
 	u->setMinMax( minf, maxf );
@@ -200,7 +199,7 @@ void EffectShader::addUniform( const QString &name, float minf, float maxf )
 	m_uniforms.push_back( u );
 }
 
-void EffectShader::addUniform( const QString &name, int minf, int maxf )
+void EffectShader::addUniform( const std::string &name, int minf, int maxf )
 {
 	Uniform *u = new Uniform( name, BASE_TYPE_INT );
 	u->setMinMax( minf, maxf );
@@ -208,7 +207,7 @@ void EffectShader::addUniform( const QString &name, int minf, int maxf )
 	m_uniforms.push_back( u );
 }
 
-void EffectShader::addUniform( const QString &name, float pro )
+void EffectShader::addUniform( const std::string &name, float pro )
 {
 	Uniform *u = new Uniform( name, BASE_TYPE_BOOL );
 	u->setProbability( pro );
@@ -218,7 +217,7 @@ void EffectShader::addUniform( const QString &name, float pro )
 
 
 
-void EffectShader::addUniformInterpolator( const QString &name, float interpolatorMinMinf,
+void EffectShader::addUniformInterpolator( const std::string &name, float interpolatorMinMinf,
 						  float interpolatorMinMaxf,
 						  float interpolatorMaxMinf,
 						  float interpolatorMaxMaxf )
@@ -247,8 +246,8 @@ unsigned int EffectShader::getTimeInterpolation()
 
 unsigned int EffectShader::getInterpolatedTime( unsigned int minTime, unsigned int maxTime )
 {
-	// min == max in the config would be qrand() % 0 → integer div-by-zero crash.
-	return (maxTime > minTime) ? minTime + (qrand() % (maxTime - minTime)) : minTime;
+	// min == max in the config would be rand() % 0 → integer div-by-zero crash.
+	return (maxTime > minTime) ? minTime + (rand() % (maxTime - minTime)) : minTime;
 }
 
 
@@ -406,8 +405,7 @@ void EffectShader::applyAudioFeatures(const AudioFeatures &f)
         {
             if (e.progId != m_sh_prog_id)
             {
-                QByteArray nm = e.name.toLatin1();
-                e.loc    = glGetUniformLocation(m_sh_prog_id, nm.constData());
+                e.loc    = glGetUniformLocation(m_sh_prog_id, e.name.c_str());
                 e.progId = m_sh_prog_id;
             }
             if (e.loc >= 0 && e.prog.valid())
@@ -469,26 +467,26 @@ void EffectShader::applyAudioFeatures(const AudioFeatures &f)
 }
 
 
-void EffectShader::addExpression( const QString &name, const QString &formula )
+void EffectShader::addExpression( const std::string &name, const std::string &formula )
 {
 	ExprEntry e;
 	e.name = name;
-	QString ctx = QString("%1:%2").arg(m_fragmentShaderFilename ?
-	                                   m_fragmentShaderFilename : "?").arg(name);
+	std::string ctx = std::string(m_fragmentShaderFilename ?
+	                              m_fragmentShaderFilename : "?") + ":" + name;
 	if (e.prog.compile(formula, ctx))
 	{
 		m_exprs.push_back(e);
-		fprintf(stderr, "Expr OK: %s = %s\n", qPrintable(ctx),
-		        qPrintable(formula));
+		fprintf(stderr, "Expr OK: %s = %s\n", ctx.c_str(),
+		        formula.c_str());
 	}
 
 	for (int i = 0; i < 3; i++)
-		m_exprSeeds[i] = (float) qrand() / (float) RAND_MAX;
+		m_exprSeeds[i] = (float) rand() / (float) RAND_MAX;
 }
 
 bool EffectShader::useShader()
 {
-	float prob = (float) (qrand()) / (float) RAND_MAX;
+	float prob = (float) (rand()) / (float) RAND_MAX;
 
 	if( prob <= m_probability )
 	{

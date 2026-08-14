@@ -58,7 +58,7 @@ void Configuration::addUniforms( EffectShader *shader, QDomElement &el )
 		QDomElement peData = pEntries.toElement();
 		QString tagNam = peData.tagName();
 
-		QString name = peData.attribute("name");
+		std::string name = peData.attribute("name").toStdString();
 
 		if(tagNam == "interpolator") 
 		{
@@ -91,7 +91,7 @@ void Configuration::addUniforms( EffectShader *shader, QDomElement &el )
 			// FORMULA LAYER: per-frame expression evaluated against the live
 			// audio features, uploaded as the float uniform `name` (overrides
 			// a <float> of the same name — see EffectShader::addExpression).
-			shader->addExpression( name, peData.attribute("formula") );
+			shader->addExpression( name, peData.attribute("formula").toStdString() );
 		}
 
 		pEntries = pEntries.nextSibling();
@@ -182,7 +182,7 @@ void Configuration::readConfiguration( const QString &filename )
 
 		if( type == "normal" )
 		{
-			EffectShader *shader = new EffectShader( shaderFile, minTimeSolo, maxTimeSolo, minTimeInterpolation, maxTimeInterpolation );
+			EffectShader *shader = new EffectShader( shaderFile.toStdString(), minTimeSolo, maxTimeSolo, minTimeInterpolation, maxTimeInterpolation );
 
 			addUniforms( shader, el );
 			shader->setComplexity( complexity );
@@ -193,7 +193,7 @@ void Configuration::readConfiguration( const QString &filename )
 		}
 		else if( type == "KaleidoscopeBase" )
 		{
-			TextureEffectKaleidoscopeBase *shader = new TextureEffectKaleidoscopeBase( shaderFile, minTimeSolo, maxTimeSolo, minTimeInterpolation, maxTimeInterpolation );
+			TextureEffectKaleidoscopeBase *shader = new TextureEffectKaleidoscopeBase( shaderFile.toStdString(), minTimeSolo, maxTimeSolo, minTimeInterpolation, maxTimeInterpolation );
 
 			addUniforms( shader, el );
 			shader->setComplexity( complexity );
@@ -205,8 +205,8 @@ void Configuration::readConfiguration( const QString &filename )
 		{
 			// REAL 3D scene: Scene3D\<X>.frag + matching .vert, procedural
 			// geometry chosen by geom="points|cubes|ribbon".
-			Scene3DShader *shader = new Scene3DShader( shaderFile,
-				el.attribute("geom"),
+			Scene3DShader *shader = new Scene3DShader( shaderFile.toStdString(),
+				el.attribute("geom").toStdString(),
 				minTimeSolo, maxTimeSolo, minTimeInterpolation, maxTimeInterpolation );
 
 			// Optional: half-width of the light's shadow box, in world units.
@@ -265,7 +265,7 @@ void Configuration::readConfiguration( const QString &filename )
 
 		if( type == "normal" )
 		{
-			EffectShader *shader = new EffectShader( shaderFile, minTimeSolo, maxTimeSolo, minTimeInterpolation, maxTimeInterpolation );
+			EffectShader *shader = new EffectShader( shaderFile.toStdString(), minTimeSolo, maxTimeSolo, minTimeInterpolation, maxTimeInterpolation );
 
 			addUniforms( shader, el );
 			shader->setComplexity( complexity );
