@@ -85,6 +85,14 @@ void PresentPass::setup( int renderW, int renderH,
 		m_presentStereoModeUni  = glGetUniformLocation( m_presentProgId, "stereoMode" );
 		m_presentStereoDepthUni = glGetUniformLocation( m_presentProgId, "stereoDepth" );
 		m_presentStereoSrcUni   = glGetUniformLocation( m_presentProgId, "stereoSource" );
+		m_presentLyricsTexUni    = glGetUniformLocation( m_presentProgId, "lyricsTex" );
+		m_presentLyricsAlphaUni  = glGetUniformLocation( m_presentProgId, "lyricsAlpha" );
+		m_presentLyricsScrollUni = glGetUniformLocation( m_presentProgId, "lyricsScrollV" );
+		m_presentLyricsAspectUni = glGetUniformLocation( m_presentProgId, "lyricsAspect" );
+		m_presentLyricsHlUni     = glGetUniformLocation( m_presentProgId, "lyricsHl" );
+		m_presentArtistTexUni    = glGetUniformLocation( m_presentProgId, "artistTex" );
+		m_presentArtistAlphaUni  = glGetUniformLocation( m_presentProgId, "artistAlpha" );
+		m_presentArtistAspectUni = glGetUniformLocation( m_presentProgId, "artistAspect" );
 	}
 
 	m_safetyReady = fboOk && (m_presentProgId != 0) && (m_presentTexUni >= 0);
@@ -141,6 +149,31 @@ void PresentPass::resize( int renderW, int renderH,
 			              fmt, type, NULL );
 		}
 	glBindTexture( GL_TEXTURE_2D, 0 );
+}
+
+// RGBA8-Bild in eine (ggf. neue) Textur laden - gemeinsames Muster für
+// Lyrics- und Künstlerbild-Overlay.
+static void uploadRGBA( GLuint &tex, const void *rgba, int w, int h )
+{
+	if( tex == 0 ) glGenTextures( 1, &tex );
+	glBindTexture( GL_TEXTURE_2D, tex );
+	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA8, w, h, 0,
+	              GL_RGBA, GL_UNSIGNED_BYTE, rgba );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+	glBindTexture( GL_TEXTURE_2D, 0 );
+}
+
+void PresentPass::setLyricsImage( const void *rgba, int w, int h )
+{
+	uploadRGBA( m_lyricsTex, rgba, w, h );
+}
+
+void PresentPass::setArtistImage( const void *rgba, int w, int h )
+{
+	uploadRGBA( m_artistTex, rgba, w, h );
 }
 
 // Frisch gerenderten Titel hochladen; Reveal-Uhr auf 0 (Stil/Seed setzt der
@@ -313,6 +346,37 @@ void PresentPass::run( const Inputs &in )
 				glUniform1f( m_presentTitleSeedUni, m_titleSeed );
 		}
 	}
+	// Lyrics- und Künstlerbild-Overlay (Units 3/4; Alpha 0 = inaktiv).
+	if( m_presentLyricsAlphaUni >= 0 )
+	{
+		float la = ( m_lyricsTex != 0 ) ? in.lyricsAlpha : 0.f;
+		glUniform1f( m_presentLyricsAlphaUni, la );
+		if( la > 0.001f && m_presentLyricsTexUni >= 0 )
+		{
+			glActiveTexture( GL_TEXTURE3 );
+			glBindTexture( GL_TEXTURE_2D, m_lyricsTex );
+			glUniform1i( m_presentLyricsTexUni, 3 );
+			glActiveTexture( GL_TEXTURE0 );
+			if( m_presentLyricsScrollUni >= 0 ) glUniform1f( m_presentLyricsScrollUni, in.lyricsScrollV );
+			if( m_presentLyricsAspectUni >= 0 ) glUniform1f( m_presentLyricsAspectUni, in.lyricsAspect );
+			if( m_presentLyricsHlUni     >= 0 ) glUniform3f( m_presentLyricsHlUni,
+			                                                 in.lyricsHlV0, in.lyricsHlV1, in.lyricsHlProg );
+		}
+	}
+	if( m_presentArtistAlphaUni >= 0 )
+	{
+		float aa = ( m_artistTex != 0 ) ? in.artistAlpha : 0.f;
+		glUniform1f( m_presentArtistAlphaUni, aa );
+		if( aa > 0.001f && m_presentArtistTexUni >= 0 )
+		{
+			glActiveTexture( GL_TEXTURE4 );
+			glBindTexture( GL_TEXTURE_2D, m_artistTex );
+			glUniform1i( m_presentArtistTexUni, 4 );
+			glActiveTexture( GL_TEXTURE0 );
+			if( m_presentArtistAspectUni >= 0 ) glUniform1f( m_presentArtistAspectUni, in.artistAspect );
+		}
+	}
+
 	if( m_presentResUni   >= 0 ) glUniform2f( m_presentResUni, (float)in.displayW, (float)in.displayH );
 	// VJ blackout ('b'): a slewed multiplier on the present brightness
 	// scale — window, Spout output and recordings all fade together.

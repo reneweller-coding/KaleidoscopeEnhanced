@@ -224,6 +224,7 @@ GLwidget::~GLwidget()
 		m_midi->stop();
 		delete m_midi;
 	}
+	delete m_trackMedia;
 	// The global Spout facades are released ONCE here (not per preset switch)
 	// — with the GL context current, so the receiver texture dies cleanly.
 	makeCurrent();
@@ -295,6 +296,33 @@ void GLwidget::initializeGL()
 	// Start the "now playing" poller (SMTC: title/artist of the current track).
 	m_nowPlaying = new NowPlaying();
 	m_nowPlaying->start();
+
+	// Lyrics + Künstlerbilder (LRCLIB / Deezer) - lädt erst bei Trackwechsel
+	// und nur, wenn einer der Modi aktiv ist.
+	m_trackMedia = new TrackMedia();
+	// Test-Hook: KALEIDO_LYRICS_TEST="Artist|Titel" erzwingt einen Abruf ohne
+	// laufenden Player; die Playback-Position läuft dann auf der App-Uhr
+	// (deterministisch für Batch-Proben).  KALEIDO_LYRICS_MODE=1|2 wählt den
+	// Modus, Künstlerbilder gehen mit an.
+	{
+		QByteArray t = qgetenv( "KALEIDO_LYRICS_TEST" );
+		if( !t.isEmpty() )
+		{
+			QStringList parts = QString::fromLocal8Bit( t ).split( '|' );
+			if( parts.size() == 2 )
+			{
+				m_lyricsTest = true;
+				m_artistShow = true;
+				QByteArray md = qgetenv( "KALEIDO_LYRICS_MODE" );
+				m_lyricsMode = md.isEmpty() ? 2 : qBound( 0, md.toInt(), 2 );
+				m_trackStartMs = 0;
+				m_trackMedia->requestTrack( parts[0], parts[1] );
+				fprintf( stderr, "[Lyrics] TESTMODUS: %s - %s (Modus %d)\n",
+				         parts[0].toLocal8Bit().constData(),
+				         parts[1].toLocal8Bit().constData(), m_lyricsMode );
+			}
+		}
+	}
 
 	// Optional MIDI control: opens the first controller if one is connected.
 	m_midi = new MidiInput();
@@ -463,8 +491,19 @@ void GLwidget::draw()
 			if( m_actConfiguration && m_actConfiguration->m_filterShader )
 				m_actConfiguration->m_filterShader->showTitle( npTitle,
 				                                               m_nowPlaying->artist() );
+			// Trackwechsel: Lyrics + Künstlerbilder für den neuen Titel holen
+			// (nur wenn ein Modus aktiv ist - sonst keine Netz-Anfragen).
+			m_trackStartMs = m_fpsTimer.elapsed();
+			if( m_trackMedia && !m_lyricsTest
+			    && ( m_lyricsMode > 0 || m_artistShow ) )
+				m_trackMedia->requestTrack( m_nowPlaying->artist(), npTitle );
 		}
 	}
+
+	// Lyrics-/Künstlerbild-Overlay: Zustand berechnen + Texturen hochladen
+	// (GL-Kontext ist hier aktuell), dann an den PresentPass durchreichen.
+	if( m_actConfiguration && m_actConfiguration->m_filterShader )
+		updateTrackOverlays( m_actConfiguration->m_filterShader );
 	// Demo/test hook: KALEIDO_TITLE_TEST=1 fires one reveal a few seconds in
 	// (lets the reveal be tuned without a real media session running).
 	{
@@ -625,6 +664,8 @@ void GLwidget::loadUiSettings()
 	m_autoConfig     = s.value( "autoConfig",  m_autoConfig ).toBool();
 	m_autoScale      = s.value( "autoScale",   m_autoScale  ).toBool();
 	m_showNowPlaying = s.value( "nowPlaying",  m_showNowPlaying ).toBool();
+	m_lyricsMode     = qBound( 0, s.value( "lyricsMode", m_lyricsMode ).toInt(), 2 );
+	m_artistShow     = s.value( "artistImages", m_artistShow ).toBool();
 	for( int i = 0; i < MIDI_TARGETS; ++i )
 		m_midiMap[i] = s.value( QString("midiMap%1").arg(i), m_midiMap[i] ).toInt();
 	FilterShader::setLightShow( s.value( "lightShow", FilterShader::lightShow() ).toBool() );
@@ -641,6 +682,8 @@ void GLwidget::saveUiSettings()
 	s.setValue( "autoConfig", m_autoConfig );
 	s.setValue( "autoScale",  m_autoScale );
 	s.setValue( "nowPlaying", m_showNowPlaying );
+	s.setValue( "lyricsMode",   m_lyricsMode );
+	s.setValue( "artistImages", m_artistShow );
 	for( int i = 0; i < MIDI_TARGETS; ++i )
 		s.setValue( QString("midiMap%1").arg(i), m_midiMap[i] );
 	s.setValue( "lightShow",  FilterShader::lightShow() );
@@ -918,6 +961,8 @@ void GLwidget::drawHelpOverlay( QPainter *painter )
 		{ "v",       "show active shader names (debug)" },
 		{ "d",       "choose audio source (output / mic)" },
 		{ "p",       "now-playing title on/off" },
+		{ "w",       "Lyrics: aus / Scroll / Karaoke (Internet)" },
+		{ "o",       "Kuenstlerbilder ein/aus (Internet)" },
 		{ "a",       "auto-config by mood on/off" },
 		{ "g",       "adaptive render scale on/off" },
 		{ "l",       "stage lamps / light-show on/off" },
@@ -1021,6 +1066,145 @@ void GLwidget::applyMidi()
 					m_actConfiguration->m_filterShader->requestSceneChange();
 		}
 	}
+}
+
+// Lyrics-/Künstlerbild-Overlay: pro Frame den Anzeige-Zustand berechnen.
+// Sync-Quelle ist die SMTC-Playback-Position (extrapoliert); ohne sie (VLC-
+// Fallback, Testmodus) läuft eine lokale Uhr ab Trackwechsel.  Alle Blenden
+// sind geslewt, damit nichts hart aufpoppt.
+void GLwidget::updateTrackOverlays( FilterShader *fs )
+{
+	FilterShader::OverlayFrame o;
+	if( !m_trackMedia )
+	{
+		fs->setOverlayFrame( o );
+		return;
+	}
+
+	const float dt = 1.f / 60.f;   // Blend-Slew; exaktes dt ist hier unkritisch
+	auto slew = []( float cur, float target, float rate, float dt )
+	{
+		float step = rate * dt;
+		if( target > cur ) return ( target - cur < step ) ? target : cur + step;
+		return ( cur - target < step ) ? target : cur - step;
+	};
+
+	// Playback-Position: SMTC, sonst lokale Uhr seit Trackwechsel.
+	double pos = m_nowPlaying ? m_nowPlaying->positionNowSec() : -1.0;
+	double dur = 0.0;
+	if( m_nowPlaying )
+		dur = m_nowPlaying->timeline().durationSec;
+	if( pos < 0.0 || m_lyricsTest )
+		pos = double( m_fpsTimer.elapsed() - m_trackStartMs ) * 0.001;
+
+	// ---- Lyrics ----
+	if( m_trackMedia->lyricsRevision() != m_lyricsRevUploaded )
+	{
+		m_lyricsRevUploaded = m_trackMedia->lyricsRevision();
+		m_karaokeLine = -1;
+		m_scrollVSm   = 0.f;
+		const QImage &img = m_trackMedia->lyricsImage();
+		if( !img.isNull() )
+		{
+			QImage gl = img.convertToFormat( QImage::Format_RGBA8888 );
+			fs->setLyricsTexture( gl.constBits(), gl.width(), gl.height() );
+		}
+	}
+
+	bool lyricsOn = ( m_lyricsMode > 0 ) && m_trackMedia->hasLyrics();
+	m_lyricsAlphaSm = slew( m_lyricsAlphaSm, lyricsOn ? 1.f : 0.f, 1.5f, dt );
+	if( lyricsOn || m_lyricsAlphaSm > 0.001f )
+	{
+		const auto  &lines = m_trackMedia->lines();
+		const QImage &img  = m_trackMedia->lyricsImage();
+		o.lyricsAlpha  = m_lyricsAlphaSm * 0.92f;
+		o.lyricsAspect = img.isNull() ? 1.f
+		               : float(img.width()) / float(img.height());
+
+		float targetV = m_scrollVSm;
+		if( m_trackMedia->syncedLyrics() )
+		{
+			// Aktive Zeile suchen (Cache + Vorwärts-/Rückwärtsscan für Seeks).
+			int n = int(lines.size());
+			int i = ( m_karaokeLine >= 0 && m_karaokeLine < n ) ? m_karaokeLine : 0;
+			while( i + 1 < n && pos >= lines[i].t1 ) ++i;
+			while( i > 0     && pos <  lines[i].t0 ) --i;
+			m_karaokeLine = i;
+
+			const auto &L = lines[i];
+			float lineFrac = 0.f;
+			if( L.t1 > L.t0 )
+				lineFrac = float( ( pos - L.t0 ) / ( L.t1 - L.t0 ) );
+			lineFrac = std::min( std::max( lineFrac, 0.f ), 1.f );
+
+			// Scroll-Ziel: Zentrum gleitet kontinuierlich zur nächsten Zeile.
+			float c0 = 0.5f * ( L.v0 + L.v1 );
+			float c1 = ( i + 1 < n ) ? 0.5f * ( lines[i+1].v0 + lines[i+1].v1 )
+			                         : c0;
+			targetV = c0 + ( c1 - c0 ) * lineFrac;
+
+			if( m_lyricsMode == 2 && pos >= L.t0 && pos < L.t1 )
+			{
+				o.lyricsHlV0   = L.v0;
+				o.lyricsHlV1   = L.v1;
+				o.lyricsHlProg = lineFrac;
+			}
+		}
+		else
+		{
+			// Unsynchronisiert: gleichmäßig über die Songdauer scrollen;
+			// ohne Dauer mit fester, gemächlicher Geschwindigkeit.
+			if( dur > 10.0 )
+				targetV = float( pos / dur );
+			else
+				targetV = float( pos * 0.008 );
+			targetV = std::min( std::max( targetV, 0.f ), 1.f );
+		}
+
+		// Weich nachziehen; bei Seeks (> 8 % Sprung) direkt springen.
+		if( fabsf( targetV - m_scrollVSm ) > 0.08f )
+			m_scrollVSm = targetV;
+		else
+			m_scrollVSm = slew( m_scrollVSm, targetV, 0.10f, dt );
+		o.lyricsScrollV = m_scrollVSm;
+	}
+
+	// ---- Künstlerbilder: Rotation, alle ~45 s für ~14 s eingeblendet ----
+	bool artistOn = m_artistShow && m_trackMedia->imageCount() > 0;
+	float artistTarget = 0.f;
+	if( artistOn )
+	{
+		const qint64 cycleMs = 45000, showMs = 14000, fadeMs = 2200;
+		qint64 t  = m_fpsTimer.elapsed() - m_trackStartMs;
+		if( t < 0 ) t = 0;
+		qint64 ph = t % cycleMs;
+		int    cy = int( t / cycleMs );
+		if( ph < showMs )
+		{
+			int idx = cy % m_trackMedia->imageCount();
+			if( idx != m_artistIdxUploaded
+			    || m_artistRevSeen != m_trackMedia->imagesRevision() )
+			{
+				m_artistIdxUploaded = idx;
+				m_artistRevSeen     = m_trackMedia->imagesRevision();
+				const QImage &img = m_trackMedia->imageAt( idx );
+				fs->setArtistTexture( img.constBits(), img.width(), img.height() );
+			}
+			float in  = std::min( 1.f, float(ph) / float(fadeMs) );
+			float out = std::min( 1.f, float(showMs - ph) / float(fadeMs) );
+			artistTarget = std::min( in, out );
+		}
+	}
+	m_artistAlphaSm = slew( m_artistAlphaSm, artistTarget, 1.2f, dt );
+	if( m_artistAlphaSm > 0.001f && m_artistIdxUploaded >= 0
+	    && m_artistIdxUploaded < m_trackMedia->imageCount() )
+	{
+		const QImage &img = m_trackMedia->imageAt( m_artistIdxUploaded );
+		o.artistAlpha  = m_artistAlphaSm * 0.9f;
+		o.artistAspect = float(img.width()) / float(std::max( img.height(), 1 ));
+	}
+
+	fs->setOverlayFrame( o );
 }
 
 void GLwidget::selectAudioDevice( int index )
@@ -1146,6 +1330,28 @@ void GLwidget::keyPressEvent(QKeyEvent* event)
 		case Qt::Key_P:
 			m_showNowPlaying = !m_showNowPlaying;
 			fprintf( stderr, "Now-playing display: %s\n", m_showNowPlaying ? "ON" : "OFF" );
+			break;
+
+		// ---- Lyrics-Modus zyklisch: aus -> Scroll -> Karaoke ----
+		case Qt::Key_W:
+		{
+			m_lyricsMode = ( m_lyricsMode + 1 ) % 3;
+			static const char *kLyricsNames[] = { "AUS", "Scroll", "Karaoke" };
+			fprintf( stderr, "Lyrics: %s\n", kLyricsNames[m_lyricsMode] );
+			// Beim Einschalten sofort für den laufenden Track nachladen.
+			if( m_lyricsMode > 0 && m_trackMedia && m_nowPlaying
+			    && !m_nowPlaying->title().isEmpty() )
+				m_trackMedia->requestTrack( m_nowPlaying->artist(), m_nowPlaying->title() );
+			break;
+		}
+
+		// ---- Künstlerbilder an/aus ----
+		case Qt::Key_O:
+			m_artistShow = !m_artistShow;
+			fprintf( stderr, "Kuenstlerbilder: %s\n", m_artistShow ? "AN" : "AUS" );
+			if( m_artistShow && m_trackMedia && m_nowPlaying
+			    && !m_nowPlaying->title().isEmpty() )
+				m_trackMedia->requestTrack( m_nowPlaying->artist(), m_nowPlaying->title() );
 			break;
 		case Qt::Key_R:
 			m_recorder.toggle();   // record visuals + music to an mp4

@@ -19,6 +19,7 @@
 #include "NowPlaying.h"
 #include "MidiInput.h"
 #include "Recorder.h"
+#include "TrackMedia.h"
 
 
 class GLwidget : public QOpenGLWidget
@@ -97,6 +98,26 @@ protected:
 	bool			m_showNowPlaying = true;
 	QString			m_lastNpTitle;
 	qint64			m_npShownAt     = -100000;
+
+	// ---- Lyrics + Künstlerbilder (TrackMedia: LRCLIB / Deezer, optional) ----
+	// Taste 'w' schaltet den Lyrics-Modus (aus -> Scroll -> Karaoke), Taste
+	// 'o' die Künstlerbilder.  updateTrackOverlays() berechnet pro Frame den
+	// Overlay-Zustand (Playback-Sync, Blenden, Bildrotation) und reicht ihn
+	// samt Texturen an den FilterShader/PresentPass durch.
+	void			updateTrackOverlays( FilterShader *fs );
+	TrackMedia	   *m_trackMedia     = nullptr;
+	int				m_lyricsMode     = 0;      // 0 aus, 1 Scroll, 2 Karaoke (persistiert)
+	bool			m_artistShow     = false;  // Künstlerbilder an/aus (persistiert)
+	int				m_lyricsRevUploaded = -1;
+	int				m_artistRevSeen  = -1;
+	int				m_artistIdx      = -1;
+	int				m_artistIdxUploaded = -1;
+	float			m_lyricsAlphaSm  = 0.f;
+	float			m_artistAlphaSm  = 0.f;
+	float			m_scrollVSm      = 0.f;
+	int				m_karaokeLine    = -1;
+	qint64			m_trackStartMs   = 0;      // Fallback-Uhr ohne SMTC-Position
+	bool			m_lyricsTest     = false;  // KALEIDO_LYRICS_TEST aktiv
 
 	// Optional MIDI control (knobs -> look params, pads -> next effect).
 	// MIDI LEARN (key 'j'): cycles through the targets below; the next CC

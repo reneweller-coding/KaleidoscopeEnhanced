@@ -1764,6 +1764,14 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 		pin.moodStrength = s_moodStrength;
 		pin.lightShow    = s_lightShow;
 		pin.renderScale  = s_renderScale;
+		pin.lyricsAlpha   = m_overlay.lyricsAlpha;
+		pin.lyricsScrollV = m_overlay.lyricsScrollV;
+		pin.lyricsAspect  = m_overlay.lyricsAspect;
+		pin.lyricsHlV0    = m_overlay.lyricsHlV0;
+		pin.lyricsHlV1    = m_overlay.lyricsHlV1;
+		pin.lyricsHlProg  = m_overlay.lyricsHlProg;
+		pin.artistAlpha   = m_overlay.artistAlpha;
+		pin.artistAspect  = m_overlay.artistAspect;
 		m_present.run( pin );
 	}
 
