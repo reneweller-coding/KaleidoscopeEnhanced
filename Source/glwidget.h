@@ -18,6 +18,7 @@
 #include "AudioAnalyzer.h"
 #include "NowPlaying.h"
 #include "MidiInput.h"
+#include "Recorder.h"
 
 
 class GLwidget : public QOpenGLWidget
@@ -64,9 +65,9 @@ public:
 	// GUI thread (QTcpServer + paintGL), so no locking is needed.
 	QByteArray  remoteSnapshot();
 	void        remoteFavorite();
-	void        remoteSaveReplay()          { saveReplay(); }
-	bool        remoteReplayArmed() const   { return m_replayArmed; }
-	void        remoteToggleReplayArm();
+	void        remoteSaveReplay()          { m_recorder.saveReplay(); }
+	bool        remoteReplayArmed() const   { return m_recorder.replayArmed(); }
+	void        remoteToggleReplayArm()     { m_recorder.toggleReplayArm(); }
 
 public slots:
 	bool slotSetDirectory(const QString &filename);
@@ -108,57 +109,11 @@ protected:
 	int             m_midiMap[MIDI_TARGETS] = { 1, 2, 3, -1, -1, -1, -1 };  // CC/note nr, -1 = frei
 	int             m_midiLearn     = -1;   // -1 = off, else target being learned
 
-	// Recording: capture the visualization frames (+ the loopback audio) and mux
-	// them to an mp4 with ffmpeg.  Toggled with key 'r'.
-	void            toggleRecording();
-	void            captureFrame();
-	void            finishRecording();
-	bool            m_recording     = false;
-	QString         m_recDir;
-	int             m_recFrame      = 0;
-	qint64          m_recLastFrame  = 0;
-	QString         m_recConcat;                 // ffmpeg concat list being built
-	std::vector<unsigned char> m_recBuf;         // glReadPixels scratch
-
-	// Async encoder: mirror/scale/JPEG used to run synchronously in paintGL and
-	// throttled rendering to ~18 fps while recording.  Now only glReadPixels (+ a
-	// memcpy) stays on the GL thread; a single worker thread (order-preserving)
-	// does the image work.  A bounded queue drops frames instead of ballooning
-	// memory if the encoder can't keep up; the dropped time is added to the next
-	// frame's duration so the video timeline stays correct.
-	struct RecJob { QImage img; QString path; float dur = 0.f; };  // path empty -> replay ring
-	std::thread             m_recThread;
-	std::mutex              m_recMx;
-	std::condition_variable m_recCv;
-	std::deque<RecJob>      m_recQueue;
-	bool                    m_recQuit    = false;
-	float                   m_recCarryDur = 0.f;  // duration of dropped frames
-	void                    recWorker();          // worker-thread loop
-	void                    ensureRecWorker();    // (re)start the worker if needed
-
-	// Instant replay (key 'y' arms, 'x' saves): a rolling ~30 s ring of encoded
-	// JPEG frames (worker thread) + the analyzer's rolling PCM ring.  Armed is
-	// opt-in because the periodic glReadPixels costs a little performance.
-	struct ReplayFrame { QByteArray jpg; float dur; };
-	void                    captureReplayFrame(); // ~15 fps into the ring
-	void                    saveReplay();         // dump ring + audio, mux mp4
-
-	// PBO double-buffered ASYNC readback: glReadPixels into a pixel-pack
-	// buffer returns immediately; the PREVIOUS frame's buffer (whose DMA has
-	// long finished) is mapped instead — recording / replay capture no longer
-	// stalls the GPU→CPU pipeline every frame.  One frame of added latency in
-	// the capture, invisible in the output.
-	void                    asyncCapture( float dur, bool toReplay );
-	GLuint                  m_pbo[2] = { 0, 0 };
-	int                     m_pboIdx = 0;
-	struct PboMeta { bool pending = false; bool replay = false;
-	                 float dur = 0.f; int w = 0, h = 0; };
-	PboMeta                 m_pboMeta[2];
-	bool                    m_replayArmed  = false;
-	std::mutex              m_replayMx;
-	std::deque<ReplayFrame> m_replayFrames;
-	qint64                  m_repLastFrame = 0;
-	float                   m_repCarryDur  = 0.f;
+	// Recording + Instant Replay: komplett in Source/Recorder.{h,cpp}
+	// gekapselt (PBO-Readback, Encoder-Worker, Replay-Ring, ffmpeg-Mux).
+	// GLwidget ruft nur noch toggle()/captureIfDue()/saveReplay() etc.
+	Recorder        m_recorder;
+	std::vector<unsigned char> m_snapBuf;        // glReadPixels scratch (Web-Snapshot)
 
 	void traverseConfigurations( const QString& dirname, std::vector<Configuration *> &configurationList );
 
