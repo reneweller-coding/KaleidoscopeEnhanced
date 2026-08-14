@@ -1,0 +1,189 @@
+#version 430
+// Magnetosphere.comp — a planet inside its own dipole field, built as tubes.
+// -----------------------------------------------------------------------
+// A dipole field line has a closed form: r = L sin^2(theta), where L is the
+// distance at which the line crosses the equator.  That is what makes this
+// scene possible without any simulation at all — every point of every line can
+// be evaluated independently, which is exactly the shape a compute generator
+// wants.  One thread builds one segment of one line, from nothing but its own
+// index.
+//
+// Each shell L is tied to one band of the spectrum, so the field lights up
+// from the inside out: bass in the tight inner shells, treble streaming far
+// out along the outer ones.
+// -----------------------------------------------------------------------
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+
+layout(std430, binding = 0) buffer Verts { float verts[]; };
+layout(std430, binding = 1) buffer Cmd   { uint  cmd[]; };
+
+uniform uint  maxVertices;
+uniform float time;
+uniform float sceneSeed;
+uniform float audioAdvance;
+uniform float audioLevel;
+uniform float audioKick;
+uniform float audioSubBass;
+uniform float audioHigh;
+uniform float audioSpectrum[32];
+
+uniform float shellsP;      // preset: how far the outer shells reach
+uniform float tubeP;        // preset: field-line thickness
+uniform float tiltP;        // preset: dipole tilt against the view
+
+const int SHELLS = 18;          // distinct L values
+const int LONGS  = 16;          // lines per shell
+const int SEGS   = 34;          // segments along one line
+const int SIDES  = 4;           // cross-section of a tube
+const float PLANET_R = 1.0;
+const int LINES = SHELLS * LONGS;
+
+const int SPHERE_U = 40;        // planet mesh
+const int SPHERE_V = 20;
+
+const float PI = 3.14159265;
+
+float hash1(float n) { return fract(sin(n * 91.3458) * 47453.5453); }
+
+mat3 tilt()
+{
+    // The dipole leans against the orbit, which is what stops the whole scene
+    // from being symmetric about the screen's vertical axis.
+    float a = tiltP * 0.42;
+    float b = audioAdvance * 0.05;
+    mat3 rz = mat3(cos(a), sin(a), 0.0, -sin(a), cos(a), 0.0, 0.0, 0.0, 1.0);
+    mat3 ry = mat3(cos(b), 0.0, -sin(b), 0.0, 1.0, 0.0, sin(b), 0.0, cos(b));
+    return ry * rz;
+}
+
+// A point on the field line (L, phi) at colatitude theta.
+vec3 linePoint(float L, float phi, float theta)
+{
+    float s = sin(theta);
+    float r = L * s * s;
+    return vec3(r * s * cos(phi), r * cos(theta), r * s * sin(phi));
+}
+
+void writeVertex(uint slot, vec3 p, vec3 n, float energy, float kind)
+{
+    uint o = slot * 8u;
+    verts[o + 0u] = p.x;  verts[o + 1u] = p.y;  verts[o + 2u] = p.z;
+    verts[o + 3u] = energy;
+    verts[o + 4u] = n.x;  verts[o + 5u] = n.y;  verts[o + 6u] = n.z;
+    // The spare float carries BOTH facts the fragment shader needs: 2.0 marks
+    // the planet, and anything below that is the field line's shell fraction.
+    // Deriving the shell from |position| instead would be wrong — a line's
+    // footpoints come down to the planet's surface, so its innermost points
+    // share a radius with every other line and the colour ramp collapses.
+    verts[o + 7u] = kind;
+}
+
+void emitTri(vec3 a, vec3 b, vec3 c, vec3 na, vec3 nb, vec3 nc,
+             float energy, float kind)
+{
+    uint base = atomicAdd(cmd[4], 3u);
+    if (base + 3u > maxVertices)
+        return;
+    writeVertex(base + 0u, a, na, energy, kind);
+    writeVertex(base + 1u, b, nb, energy, kind);
+    writeVertex(base + 2u, c, nc, energy, kind);
+}
+
+void main()
+{
+    uvec3 g = gl_GlobalInvocationID;
+    uint id = g.x + 64u * (g.y + 64u * g.z);
+
+    mat3 M = tilt();
+
+    // ---- the planet, built by the block of threads after the field lines ----
+    uint fieldCount = uint(LINES * SEGS);
+    if (id >= fieldCount)
+    {
+        uint sid = id - fieldCount;
+        if (sid >= uint(SPHERE_U * SPHERE_V))
+            return;
+        int su = int(sid) % SPHERE_U;
+        int sv = int(sid) / SPHERE_U;
+
+        float u0 = float(su)     / float(SPHERE_U) * 2.0 * PI;
+        float u1 = float(su + 1) / float(SPHERE_U) * 2.0 * PI;
+        float v0 = float(sv)     / float(SPHERE_V) * PI;
+        float v1 = float(sv + 1) / float(SPHERE_V) * PI;
+
+        vec3 p00 = vec3(sin(v0) * cos(u0), cos(v0), sin(v0) * sin(u0));
+        vec3 p10 = vec3(sin(v0) * cos(u1), cos(v0), sin(v0) * sin(u1));
+        vec3 p11 = vec3(sin(v1) * cos(u1), cos(v1), sin(v1) * sin(u1));
+        vec3 p01 = vec3(sin(v1) * cos(u0), cos(v1), sin(v1) * sin(u0));
+
+        float R = PLANET_R * (1.0 + 0.02 * audioSubBass);
+        vec3 a = M * (p00 * R), b = M * (p10 * R);
+        vec3 c = M * (p11 * R), d = M * (p01 * R);
+        vec3 na = M * p00, nb = M * p10, nc = M * p11, nd = M * p01;
+        emitTri(a, b, c, na, nb, nc, 0.0, 2.0);
+        emitTri(a, c, d, na, nc, nd, 0.0, 2.0);
+        return;
+    }
+
+    // ---- one segment of one field line ----
+    uint line = id / uint(SEGS);
+    uint seg  = id % uint(SEGS);
+    uint sh   = line / uint(LONGS);
+    uint lo   = line % uint(LONGS);
+
+    // Shells spaced so the inner ones stay distinct instead of crowding.
+    // The inner shell starts well clear of the surface: field lines that hug
+    // the planet bury it in glow, and the planet is the anchor the whole image
+    // needs.  The outer reach is kept modest for the same reason — at a
+    // physical scale the planet would be a dot.
+    float f = float(sh) / float(SHELLS - 1);
+    float L = mix(1.55, 1.55 + 2.9 * shellsP, f * f * 0.65 + f * 0.35);
+    float phi = 2.0 * PI * (float(lo) + 0.5 * float(sh & 1u)) / float(LONGS);
+
+    // Each shell listens to its own band: bass hugs the planet, treble streams
+    // out to the far lines.
+    int band = int(f * 30.0);
+    float energy = audioSpectrum[band] * (0.9 + 0.6 * audioLevel);
+    energy = clamp(energy * 1.6, 0.0, 1.4);
+
+    // A line only exists above the surface: r = L sin^2(theta) >= R.
+    float sMin = sqrt(clamp(PLANET_R / L, 0.0, 1.0));
+    float thMin = asin(clamp(sMin, 0.0, 1.0));
+    float t0 = float(seg)     / float(SEGS);
+    float t1 = float(seg + 1) / float(SEGS);
+    float th0 = mix(thMin, PI - thMin, t0);
+    float th1 = mix(thMin, PI - thMin, t1);
+
+    vec3 p0 = M * linePoint(L, phi, th0);
+    vec3 p1 = M * linePoint(L, phi, th1);
+    vec3 dir = p1 - p0;
+    float dl = length(dir);
+    if (dl < 1e-5)
+        return;
+    dir /= dl;
+
+    // Thickness swells with the band's energy, so a loud band physically
+    // fattens its own shell rather than only brightening it.
+    float rad = tubeP * 0.014 * (1.0 + 2.2 * energy + 0.8 * audioKick);
+
+    vec3 up = abs(dir.y) < 0.9 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0);
+    vec3 u = normalize(cross(dir, up));
+    vec3 v = cross(dir, u);
+
+    // A plasma pulse travelling from the equator toward the poles: the phase is
+    // integrated by the host, so its speed never jumps with the level.
+    float pulse = 0.5 + 0.5 * sin(t0 * 9.0 - audioAdvance * 2.2 + float(sh) * 0.9);
+    float e0 = energy * (0.45 + 0.85 * pulse);
+
+    for (int s = 0; s < SIDES; ++s)
+    {
+        float a0 = 2.0 * PI * float(s)     / float(SIDES);
+        float a1 = 2.0 * PI * float(s + 1) / float(SIDES);
+        vec3 n0 = u * cos(a0) + v * sin(a0);
+        vec3 n1 = u * cos(a1) + v * sin(a1);
+        vec3 b0 = p0 + n0 * rad, b1 = p0 + n1 * rad;
+        vec3 c0 = p1 + n0 * rad, c1 = p1 + n1 * rad;
+        emitTri(b0, b1, c1, n0, n1, n1, e0, f);
+        emitTri(b0, c1, c0, n0, n1, n0, e0, f);
+    }
+}
