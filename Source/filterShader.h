@@ -24,7 +24,6 @@ class FilterShader
 {
 public:
 	FilterShader( );
-	FilterShader(int width, int height, const QString &filename);
 	~FilterShader();
 	void loadShader(); // load shader from file, compile and link them to programs, get variable locations
 	bool loadObj(const char *filename);
