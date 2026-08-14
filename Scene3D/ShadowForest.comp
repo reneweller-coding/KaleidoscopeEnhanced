@@ -1,0 +1,124 @@
+#version 430
+// ShadowForest.comp — a stand of trunks whose shadows are the subject.
+// -----------------------------------------------------------------------
+// The trunks themselves are almost nothing: tapered four-sided prisms, dark,
+// mostly in silhouette.  What the scene is actually about is the pattern they
+// throw across the ground, which is the one thing that cannot be faked without
+// a shadow map — sixty overlapping shadows, each stretching and swinging as the
+// light moves, is not a texture anyone can author.
+//
+// Everything is kept inside the light's box on purpose.  The box is centred on
+// the origin and sized once from the preset, so geometry past its edge silently
+// reports "lit" and a whole region of ground comes back flat.  A short, dense
+// stand entirely inside the box beats a deep one half outside it.
+// -----------------------------------------------------------------------
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+
+layout(std430, binding = 0) buffer Verts { float verts[]; };
+layout(std430, binding = 1) buffer Cmd   { uint  cmd[]; };
+
+uniform uint  maxVertices;
+uniform float time;
+uniform float sceneSeed;
+uniform float audioAdvance;
+uniform float audioLevel;
+uniform float audioKick;
+uniform float audioSubBass;
+
+uniform float densityP;     // preset: how thick the stand is
+uniform float heightP;      // preset: trunk height
+uniform float swayP;        // preset: how much the trunks lean with the music
+
+const int TREES = 64;
+const int SIDES = 4;
+const float SPANX = 15.0;
+const float SPANZ = 26.0;
+
+const int NQUADS = 1 + TREES * SIDES;
+
+float hash1(float n) { return fract(sin(n * 91.3458) * 47453.5453); }
+
+void writeVertex(uint slot, vec3 p, vec3 n, float kind, float extra)
+{
+    uint o = slot * 8u;
+    verts[o + 0u] = p.x;  verts[o + 1u] = p.y;  verts[o + 2u] = p.z;
+    verts[o + 3u] = kind;
+    verts[o + 4u] = n.x;  verts[o + 5u] = n.y;  verts[o + 6u] = n.z;
+    verts[o + 7u] = extra;
+}
+
+void emitQuad(vec3 a, vec3 b, vec3 c, vec3 d, vec3 n, float kind, float extra)
+{
+    uint base = atomicAdd(cmd[4], 12u);
+    if (base + 12u > maxVertices)
+        return;
+    writeVertex(base +  0u, a, n, kind, extra);
+    writeVertex(base +  1u, b, n, kind, extra);
+    writeVertex(base +  2u, c, n, kind, extra);
+    writeVertex(base +  3u, a, n, kind, extra);
+    writeVertex(base +  4u, c, n, kind, extra);
+    writeVertex(base +  5u, d, n, kind, extra);
+    writeVertex(base +  6u, c, n, kind, extra);
+    writeVertex(base +  7u, b, n, kind, extra);
+    writeVertex(base +  8u, a, n, kind, extra);
+    writeVertex(base +  9u, d, n, kind, extra);
+    writeVertex(base + 10u, c, n, kind, extra);
+    writeVertex(base + 11u, a, n, kind, extra);
+}
+
+void main()
+{
+    uvec3 g = gl_GlobalInvocationID;
+    uint id = g.x + 64u * (g.y + 64u * g.z);
+    if (id >= uint(NQUADS))
+        return;
+
+    if (id == 0u)
+    {
+        emitQuad(vec3(-SPANX - 6.0, 0.0, -10.0), vec3(SPANX + 6.0, 0.0, -10.0),
+                 vec3(SPANX + 6.0, 0.0, SPANZ),  vec3(-SPANX - 6.0, 0.0, SPANZ),
+                 vec3(0.0, 1.0, 0.0), 0.0, 0.0);
+        return;
+    }
+
+    int k = int(id) - 1;
+    int side = k % SIDES;
+    int t = k / SIDES;
+
+    float h0 = hash1(float(t) * 3.17 + sceneSeed * 41.0);
+    float h1 = hash1(float(t) * 7.91 + 2.3 + sceneSeed * 17.0);
+    float h2 = hash1(float(t) * 5.37 + 9.1);
+
+    // Scattered, not gridded: a grid reads as a plantation and the shadows fall
+    // into rows the eye locks onto instead of a thicket.
+    float cx = (h0 * 2.0 - 1.0) * SPANX * clamp(densityP, 0.5, 1.6);
+    float depth = mod(h1 * SPANZ + audioAdvance * 1.15, SPANZ + 8.0) - 6.0;
+
+    // Tall on purpose.  The host keeps the sun high — deliberately, because a low
+    // sun makes shadows longer than the objects and any repeated geometry turns
+    // the ground entirely dark.  At about sixty degrees a shadow is a bit over
+    // half the height, so the only way to get a shadow worth looking at is to
+    // give it something tall to fall from.
+    float H = (7.0 + 6.0 * h2) * clamp(heightP, 0.5, 1.7);
+    float r0 = 0.10 + 0.16 * h2;
+    float r1 = r0 * 0.42;
+
+    // A slow lean, different per trunk, riding audioAdvance so the stand breathes
+    // without any trunk ever jumping.
+    float sw = clamp(swayP, 0.0, 2.0) * 0.10 * (0.5 + 0.9 * audioLevel);
+    vec2 lean = vec2(sin(audioAdvance * 0.30 + h0 * 6.28),
+                     cos(audioAdvance * 0.23 + h1 * 6.28)) * sw * H;
+
+    float a0 = 6.2831853 * float(side)     / float(SIDES);
+    float a1 = 6.2831853 * float(side + 1) / float(SIDES);
+    vec2 d0 = vec2(cos(a0), sin(a0));
+    vec2 d1 = vec2(cos(a1), sin(a1));
+
+    vec3 b0 = vec3(cx + d0.x * r0,        0.0, depth + d0.y * r0);
+    vec3 b1 = vec3(cx + d1.x * r0,        0.0, depth + d1.y * r0);
+    vec3 t1 = vec3(cx + d1.x * r1 + lean.x, H, depth + d1.y * r1 + lean.y);
+    vec3 t0 = vec3(cx + d0.x * r1 + lean.x, H, depth + d0.y * r1 + lean.y);
+
+    vec3 n = normalize(vec3((d0.x + d1.x) * 0.5, 0.15, (d0.y + d1.y) * 0.5));
+    emitQuad(b0, b1, t1, t0, n, 1.0, h2);
+}
