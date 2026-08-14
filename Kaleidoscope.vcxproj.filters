@@ -81,6 +81,9 @@
     <ClCompile Include="Source\PresentPass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\SceneScheduler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="moc\moc_AudioAnalyzer.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
