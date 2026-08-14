@@ -442,4 +442,28 @@
     <float name="hueP"     minValue="0.00" maxValue="1.00"></float>
   </TextureShader>
 
+  <CombineShader file="..\\Combine\\CombineEdgeInk.frag" type="normal" probability="0.28" complexity="3">
+    <float name="inkP"   minValue="0.50" maxValue="1.60"></float>
+    <float name="bandsP" minValue="0.15" maxValue="0.90"></float>
+    <float name="paperP" minValue="0.00" maxValue="1.00"></float>
+  </CombineShader>
+
+  <CombineShader file="..\\Combine\\CombineRimLight.frag" type="normal" probability="0.32" complexity="3">
+    <float name="rimP"   minValue="0.50" maxValue="1.50"></float>
+    <float name="sharpP" minValue="0.25" maxValue="0.90"></float>
+    <float name="fillP"  minValue="0.30" maxValue="1.00"></float>
+  </CombineShader>
+
+  <CombineShader file="..\\Combine\\CombineHeatShimmer.frag" type="normal" probability="0.30" complexity="3">
+    <float name="heatP"  minValue="0.40" maxValue="1.60"></float>
+    <float name="scaleP" minValue="0.20" maxValue="0.90"></float>
+    <float name="splitP" minValue="0.20" maxValue="1.20"></float>
+  </CombineShader>
+
+  <CombineShader file="..\\Combine\\CombineWiggle.frag" type="normal" probability="0.26" complexity="2">
+    <float name="wiggleP" minValue="0.50" maxValue="1.60"></float>
+    <float name="holdP"   minValue="0.15" maxValue="0.85"></float>
+    <float name="grainP"  minValue="0.30" maxValue="1.00"></float>
+  </CombineShader>
+
 </configuration>

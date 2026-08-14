@@ -1421,6 +1421,50 @@ are worth keeping regardless:
   answer "lit" — and one uniformly lit slab in front of the lens washes out every
   striped one behind it.
 
+### Four combines on the depth buffer
+
+`CombineEdgeInk`, `CombineRimLight`, `CombineHeatShimmer` and `CombineWiggle`
+all sit in the combine stage and all but the last read scene depth. Each turned
+on one decision that separates the working version from the obvious one.
+
+**`CombineEdgeInk` — use the second difference, not the first.** The obvious edge
+test thresholds the difference between neighbouring depths, and it is wrong in a
+way that looks nearly right: a floor receding from the camera has a large depth
+difference between *every* adjacent pair, so the ground inks solid black while a
+wall facing the camera gets no outline at all. The test fires on slope, and slope
+is not silhouette. Comparing the centre sample against the average of its two
+opposite neighbours fixes it exactly — on any plane, at any angle, that average
+*is* the centre, because linear interpolation is exact, so the response is zero
+except where the surface actually breaks. Dividing by distance afterwards keeps a
+far outline as heavy as a near one. Without depth it falls back to a luminance
+edge rather than switching off.
+
+**`CombineRimLight` — reconstruct normals, but pick the right neighbour.** A rim
+needs a normal and the depth buffer has none; it can be recovered by unprojecting
+neighbouring pixels and crossing the edge vectors. At a silhouette the neighbour
+belongs to a different surface, so the normal there is garbage — and a silhouette
+is exactly where a rim is brightest, so the artefact lands precisely where the
+effect lives. Taking both the forward and backward difference and keeping
+whichever spans the smaller depth step fixes it: at an interior pixel they agree,
+and at an edge the one that stays on the near surface wins.
+
+**`CombineHeatShimmer` — bend along the gradient, not the value.** A ray crossing
+turbulent air is deflected by the *slope* of the refractive index. Displacing by
+a noise field directly is the common shortcut and it looks wrong in a way that is
+hard to name: the image slides in blobs instead of rippling, because a smooth
+field has no small-scale structure until you differentiate it. Distortion also
+scales with the depth the ray crossed — more air, more bending — which is what
+makes the far trunks of a scene waver while the near ones stay put.
+
+**`CombineWiggle` — hold, and hold at a constant rate.** Drawn animation wobbles
+because each frame was drawn separately, and it reads as hand-made only because
+it is shot on twos or threes: the same drawing exposed for two or three frames,
+so the wobble steps at eight to twelve times a second rather than at sixty. A
+displacement that updates every frame is video noise. The hold rate has to stay
+constant, too — `floor(time * rate)` with a rate that follows the music does not
+speed the boil up, it makes the step index jump back and forth and the drawing
+stutters at random. The music changes how far the line moves, never how often.
+
 ### Order-independent transparency
 
 Interpenetrating transparent objects are the case sorting cannot solve: there is

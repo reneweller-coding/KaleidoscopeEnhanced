@@ -630,6 +630,18 @@
     <None Include="Scene\VoronoiShatter.frag">
       <Filter>Shaders\Scene</Filter>
     </None>
+    <None Include="Combine\CombineEdgeInk.frag">
+      <Filter>Shaders\Combine</Filter>
+    </None>
+    <None Include="Combine\CombineHeatShimmer.frag">
+      <Filter>Shaders\Combine</Filter>
+    </None>
+    <None Include="Combine\CombineRimLight.frag">
+      <Filter>Shaders\Combine</Filter>
+    </None>
+    <None Include="Combine\CombineWiggle.frag">
+      <Filter>Shaders\Combine</Filter>
+    </None>
     <None Include="Blend\Blit.frag">
       <Filter>Shaders\Blend</Filter>
     </None>
