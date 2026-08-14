@@ -217,6 +217,7 @@ exit /b 0</Command>
     <ClCompile Include="Source\ComputeFX.cpp" />
     <ClCompile Include="Source\glcore.cpp" />
     <ClCompile Include="Source\GpuSims.cpp" />
+    <ClCompile Include="Source\PresentPass.cpp" />
     <ClCompile Include="Source\glwidget.cpp" />
     <ClCompile Include="Source\main.cpp" />
     <ClCompile Include="Source\mesh.cpp" />
@@ -253,6 +254,7 @@ exit /b 0</Command>
     <ClInclude Include="Source\Configuration.h" />
     <ClInclude Include="Source\Recorder.h" />
     <ClInclude Include="Source\GpuSims.h" />
+    <ClInclude Include="Source\PresentPass.h" />
     <CustomBuild Include="Source\AudioAnalyzer.h">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">MOCing AudioAnalyzer.h ...</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MOCing AudioAnalyzer.h ...</Message>
