@@ -125,6 +125,12 @@ void main()
 
         // A cold bounce so the shadowed sides are not simply flat black.
         col += stone * vec3(0.30, 0.42, 0.62) * max(-dot(n, L) * 0.4 + 0.35, 0.0) * 0.5;
+
+        // Downward-facing surfaces — the undersides of the beams — are lit only
+        // by what comes back up off the floor.  Without this term they are the
+        // darkest thing in the frame and they sit right across the top of it.
+        col += stone * vec3(0.85, 0.80, 0.68) * max(-dot(n, L), 0.0) * 0.55
+             * (0.4 + 0.7 * audioLevel);
         col *= 1.0 + 0.12 * audioBeat;
         col = col / (1.0 + col * 0.30);
         outAccum  = vec4(col, interpolation);
@@ -136,7 +142,7 @@ void main()
     // The smoke lives inside the colonnade and nowhere else.  Without this the
     // slabs carry haze out past the pillars and past the edge of the shadow box,
     // and the frame turns into an even grey with the architecture buried in it.
-    if (abs(vWorld.x) > 15.0 || vWorld.y < -0.2 || vWorld.y > 9.2)
+    if (abs(vWorld.x) > 15.0 || vWorld.y < -0.2 || vWorld.y > 11.8)
         discard;
 
     // Drift rises and rolls down the hall.  It rides audioAdvance, never

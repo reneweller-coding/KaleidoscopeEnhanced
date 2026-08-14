@@ -1,0 +1,112 @@
+#version 430
+// PrismExplode.comp — a shell of glass wedges blown apart and pulled back.
+// -----------------------------------------------------------------------
+// The shards are triangular wedges arranged on a sphere.  Each one carries its
+// own facet normal and a wedge angle, because the fragment shader needs both to
+// work out how far it bends light — this scene's whole subject is dispersion,
+// and dispersion depends on the geometry of the prism, not just on its colour.
+//
+// The explosion is a decaying impulse rather than a loop.  A shard leaves on a
+// kick, travels outward, and is drawn back by a spring; the ones that left on
+// the last kick are still coming home when the next one throws them out again,
+// so the shell is never tidy and never twice the same.
+// -----------------------------------------------------------------------
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+
+layout(std430, binding = 0) buffer Verts { float verts[]; };
+layout(std430, binding = 1) buffer Cmd   { uint  cmd[]; };
+
+uniform uint  maxVertices;
+uniform float time;
+uniform float sceneSeed;
+uniform float audioAdvance;
+uniform float audioLevel;
+uniform float audioKick;
+uniform float audioSubBass;
+uniform float audioHigh;
+
+uniform float burstP;       // preset: how far the shards fly
+uniform float countP;       // preset: how many shards
+uniform float sizeP;        // preset: shard size
+
+const int SHARDS = 900;
+
+vec3 hash3(float n)
+{
+    return fract(sin(vec3(n * 91.3458, n * 47.1234, n * 13.9871)) * 43758.5453);
+}
+
+void writeVertex(uint slot, vec3 p, vec3 n, float wedge, float seed)
+{
+    uint o = slot * 8u;
+    verts[o + 0u] = p.x;  verts[o + 1u] = p.y;  verts[o + 2u] = p.z;
+    verts[o + 3u] = wedge;
+    verts[o + 4u] = n.x;  verts[o + 5u] = n.y;  verts[o + 6u] = n.z;
+    verts[o + 7u] = seed;
+}
+
+void main()
+{
+    uvec3 g = gl_GlobalInvocationID;
+    uint id = g.x + 64u * (g.y + 64u * g.z);
+
+    int n = int(clamp(countP, 0.15, 1.0) * float(SHARDS));
+    if (id >= uint(n))
+        return;
+
+    float fi = float(id);
+    vec3 h = hash3(fi * 2.317 + sceneSeed * 37.0);
+    vec3 h2 = hash3(fi * 5.113 + 3.7);
+
+    // Even coverage of the sphere: uniform in cos(phi), not in phi, or the
+    // shards crowd at the poles.
+    float th = h.x * 6.2831853;
+    float cph = 1.0 - 2.0 * h.y;
+    float sph = sqrt(max(1.0 - cph * cph, 0.0));
+    vec3 dir = vec3(sph * cos(th), cph, sph * sin(th));
+
+    // A decaying outward impulse.  Each shard has its own phase in the cycle, so
+    // they do not all leave and return together.
+    float phase = fract(audioAdvance * 0.11 + h.z);
+    float launch = exp(-phase * 4.5) * (1.0 - phase);
+    float burst = clamp(burstP, 0.2, 2.5)
+                * (0.7 + 1.9 * audioKick + 0.7 * audioSubBass);
+    float rad = 1.45 + burst * launch * (0.6 + 0.9 * h2.x)
+              + 0.12 * sin(audioAdvance * 0.6 + fi);
+
+    vec3 c = dir * rad;
+
+    // A local frame on the sphere, tumbled per shard.
+    vec3 up = abs(dir.y) < 0.9 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0);
+    vec3 t1 = normalize(cross(dir, up));
+    vec3 t2 = cross(dir, t1);
+    float rot = audioAdvance * (0.5 + 1.3 * h2.y) + fi * 1.7;
+    vec3 e1 = t1 * cos(rot) + t2 * sin(rot);
+    vec3 e2 = -t1 * sin(rot) + t2 * cos(rot);
+
+    float s = clamp(sizeP, 0.2, 2.2) * (0.11 + 0.16 * h2.z);
+
+    // A triangular wedge: three corners, tipped out of the tangent plane so the
+    // facet has a real orientation of its own and catches the light separately
+    // from its neighbours.
+    float tip = s * (0.5 + 0.8 * h2.x);
+    vec3 A = c + e1 * s;
+    vec3 B = c - e1 * s * 0.5 + e2 * s * 0.87;
+    vec3 C = c - e1 * s * 0.5 - e2 * s * 0.87 + dir * tip;
+
+    vec3 nrm = normalize(cross(B - A, C - A));
+
+    // The wedge angle drives how strongly this shard disperses: a thin wedge
+    // barely separates the colours, a fat one throws a full spectrum.
+    float wedge = clamp(tip / max(s, 1e-3), 0.0, 1.6);
+
+    uint base = atomicAdd(cmd[4], 6u);
+    if (base + 6u > maxVertices)
+        return;
+    writeVertex(base + 0u, A, nrm, wedge, h2.z);
+    writeVertex(base + 1u, B, nrm, wedge, h2.z);
+    writeVertex(base + 2u, C, nrm, wedge, h2.z);
+    writeVertex(base + 3u, C, nrm, wedge, h2.z);
+    writeVertex(base + 4u, B, nrm, wedge, h2.z);
+    writeVertex(base + 5u, A, nrm, wedge, h2.z);
+}

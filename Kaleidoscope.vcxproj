@@ -665,6 +665,12 @@ exit /b 0</Command>
     <None Include="Scene3D\DrumSkin.vert" />
     <None Include="Scene3D\VideoRelief.frag" />
     <None Include="Scene3D\VideoRelief.vert" />
+    <None Include="Scene3D\FeatherStorm.comp" />
+    <None Include="Scene3D\FeatherStorm.frag" />
+    <None Include="Scene3D\FeatherStorm.vert" />
+    <None Include="Scene3D\PrismExplode.comp" />
+    <None Include="Scene3D\PrismExplode.frag" />
+    <None Include="Scene3D\PrismExplode.vert" />
     <None Include="Scene3D\Planet4D.frag" />
     <None Include="Scene3D\Planet4D.vert" />
     <None Include="Scene3D\PlanetRings.frag" />
