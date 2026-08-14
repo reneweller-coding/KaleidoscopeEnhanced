@@ -1,0 +1,171 @@
+#version 430
+// FlowRibbons.comp — thousands of streamlines through a curl-noise field.
+// -----------------------------------------------------------------------
+// The field is CURL noise, which is the curl of a vector potential and is
+// therefore divergence-free by construction.  That single property is why the
+// ribbons read as a flowing medium: a divergence-free field has no sources and
+// no sinks, so nothing ever piles up in a corner or drains away, and the
+// streamlines can only stretch and fold — exactly what a fluid does.
+//
+// One thread builds one whole ribbon.  That looks wasteful against 262144
+// invocations, but a streamline has to be INTEGRATED from its start, so a
+// thread per segment would redo the same walk for every segment and cost O(S^2)
+// where this costs O(S).
+// -----------------------------------------------------------------------
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+
+layout(std430, binding = 0) buffer Verts { float verts[]; };
+layout(std430, binding = 1) buffer Cmd   { uint  cmd[]; };
+
+uniform uint  maxVertices;
+uniform float time;
+uniform float sceneSeed;
+uniform float audioAdvance;
+uniform float audioLevel;
+uniform float audioKick;
+uniform float audioSubBass;
+uniform float audioHigh;
+
+uniform float widthP;       // preset: ribbon width
+uniform float twistP;       // preset: how fast a ribbon twists along itself
+uniform float scaleP;       // preset: size of the flow structures
+
+const int RIBBONS = 2400;
+const int SEGS    = 32;             // segments per ribbon
+const float STEP  = 0.085;          // integration step, world units
+
+float hash1(vec3 p)
+{
+    return fract(sin(dot(p, vec3(127.1, 311.7, 74.7))) * 43758.5453);
+}
+
+// Value noise: cheap, and smooth enough that its curl is well behaved.
+float noise3(vec3 p)
+{
+    vec3 i = floor(p), f = fract(p);
+    f = f * f * (3.0 - 2.0 * f);
+    float n000 = hash1(i + vec3(0,0,0)), n100 = hash1(i + vec3(1,0,0));
+    float n010 = hash1(i + vec3(0,1,0)), n110 = hash1(i + vec3(1,1,0));
+    float n001 = hash1(i + vec3(0,0,1)), n101 = hash1(i + vec3(1,0,1));
+    float n011 = hash1(i + vec3(0,1,1)), n111 = hash1(i + vec3(1,1,1));
+    return mix(mix(mix(n000, n100, f.x), mix(n010, n110, f.x), f.y),
+               mix(mix(n001, n101, f.x), mix(n011, n111, f.x), f.y), f.z);
+}
+
+// The vector potential.  The flow is its curl, so this is what actually gets
+// designed — and because the curl of ANY field is divergence-free, no amount of
+// messing with this can make the flow leak.
+vec3 potential(vec3 p)
+{
+    float s = 1.0 / max(scaleP * 1.6, 0.2);
+    vec3 q = p * s + vec3(0.0, 0.0, audioAdvance * 0.06);
+    float a = noise3(q);
+    float b = noise3(q + vec3(31.4, 17.2, 9.6));
+    float c = noise3(q + vec3(5.1, 43.7, 22.3));
+
+    // A gentle rotation about the vertical, so the whole field turns while its
+    // detail churns.  Bass widens the vortex.
+    vec3 base = vec3(-p.z, 0.0, p.x) * (0.10 + 0.16 * audioSubBass);
+    return (vec3(a, b, c) - 0.5) * 2.2 + base;
+}
+
+vec3 curl(vec3 p)
+{
+    const float e = 0.12;
+    vec3 dx = vec3(e, 0, 0), dy = vec3(0, e, 0), dz = vec3(0, 0, e);
+    vec3 py1 = potential(p + dy), py0 = potential(p - dy);
+    vec3 pz1 = potential(p + dz), pz0 = potential(p - dz);
+    vec3 px1 = potential(p + dx), px0 = potential(p - dx);
+    return vec3( (py1.z - py0.z) - (pz1.y - pz0.y),
+                 (pz1.x - pz0.x) - (px1.z - px0.z),
+                 (px1.y - px0.y) - (py1.x - py0.x) ) / (2.0 * e);
+}
+
+void writeVertex(uint slot, vec3 p, vec3 n, float along, float rnd)
+{
+    uint o = slot * 8u;
+    verts[o + 0u] = p.x;  verts[o + 1u] = p.y;  verts[o + 2u] = p.z;
+    verts[o + 3u] = along;
+    verts[o + 4u] = n.x;  verts[o + 5u] = n.y;  verts[o + 6u] = n.z;
+    verts[o + 7u] = rnd;
+}
+
+void main()
+{
+    uvec3 g = gl_GlobalInvocationID;
+    uint id = g.x + 64u * (g.y + 64u * g.z);
+    if (id >= uint(RIBBONS))
+        return;
+
+    float fi = float(id);
+    vec3 h = vec3(hash1(vec3(fi, 1.0, sceneSeed * 37.0)),
+                  hash1(vec3(fi, 2.0, sceneSeed * 91.0)),
+                  hash1(vec3(fi, 3.0, sceneSeed * 13.0)));
+    float rnd = h.x;
+
+    // Seeds fill a slab in front of the camera and drift through it, so the
+    // ribbons keep arriving instead of the field emptying out.
+    vec3 p = vec3((h.x - 0.5) * 16.0,
+                  (h.y - 0.5) * 10.0,
+                  mod(h.z * 26.0 - audioAdvance * 0.5, 26.0) + 2.0);
+
+    // The whole ribbon is reserved with ONE atomicAdd.  Reserving per triangle
+    // would issue sixty-four atomics for the same ribbon and serialise on the
+    // counter for no gain.
+    uint need = uint(SEGS) * 6u;
+    uint base = atomicAdd(cmd[4], need);
+    if (base + need > maxVertices)
+        return;
+
+    float width = widthP * (0.028 + 0.045 * h.y) * (1.0 + 0.5 * audioKick);
+    float twist = twistP * (1.4 + 3.0 * h.z);
+
+    vec3 prev = p;
+    vec3 tang = normalize(curl(p) + 1e-4);
+    // A stable starting frame; it is then carried along the curve rather than
+    // rebuilt, so the ribbon does not flip when the tangent passes vertical.
+    vec3 up = abs(tang.y) < 0.9 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0);
+    vec3 side = normalize(cross(tang, up));
+
+    for (int s = 0; s < SEGS; ++s)
+    {
+        float t0 = float(s)     / float(SEGS);
+        float t1 = float(s + 1) / float(SEGS);
+
+        // Midpoint integration: with plain Euler the ribbons drift off the
+        // streamline and the fold structure smears out.
+        vec3 k1 = normalize(curl(prev) + 1e-4);
+        vec3 mid = prev + k1 * (STEP * 0.5);
+        vec3 k2 = normalize(curl(mid) + 1e-4);
+        vec3 next = prev + k2 * STEP;
+
+        // Parallel transport: rotate the frame by the same rotation that took
+        // the old tangent to the new one.
+        vec3 nt = k2;
+        side = normalize(side - nt * dot(side, nt));
+        vec3 nrm = normalize(cross(nt, side));
+
+        // Twist about the ribbon's own axis, which is what makes it flash as it
+        // turns edge-on and then flat again.
+        float a0 = twist * t0 * 6.2831853;
+        float a1 = twist * t1 * 6.2831853;
+        vec3 w0 = side * cos(a0) + nrm * sin(a0);
+        vec3 w1 = side * cos(a1) + nrm * sin(a1);
+        vec3 n0 = normalize(cross(nt, w0));
+        vec3 n1 = normalize(cross(nt, w1));
+
+        // Taper at both ends so a ribbon fades in and out instead of being cut.
+        float wf0 = width * sin(3.14159265 * t0);
+        float wf1 = width * sin(3.14159265 * t1);
+
+        uint o = base + uint(s) * 6u;
+        writeVertex(o + 0u, prev - w0 * wf0, n0, t0, rnd);
+        writeVertex(o + 1u, prev + w0 * wf0, n0, t0, rnd);
+        writeVertex(o + 2u, next + w1 * wf1, n1, t1, rnd);
+        writeVertex(o + 3u, prev - w0 * wf0, n0, t0, rnd);
+        writeVertex(o + 4u, next + w1 * wf1, n1, t1, rnd);
+        writeVertex(o + 5u, next - w1 * wf1, n1, t1, rnd);
+
+        prev = next;
+    }
+}

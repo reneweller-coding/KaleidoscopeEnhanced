@@ -628,6 +628,12 @@ exit /b 0</Command>
     <None Include="Scene3D\PillarHall.vert" />
     <None Include="Scene3D\GlassStack.frag" />
     <None Include="Scene3D\GlassStack.vert" />
+    <None Include="Scene3D\FlowRibbons.comp" />
+    <None Include="Scene3D\FlowRibbons.frag" />
+    <None Include="Scene3D\FlowRibbons.vert" />
+    <None Include="Scene3D\Skyburst.comp" />
+    <None Include="Scene3D\Skyburst.frag" />
+    <None Include="Scene3D\Skyburst.vert" />
     <None Include="Scene3D\Planet4D.frag" />
     <None Include="Scene3D\Planet4D.vert" />
     <None Include="Scene3D\PlanetRings.frag" />
