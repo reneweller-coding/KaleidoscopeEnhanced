@@ -31,6 +31,9 @@ static float hash01( unsigned int n )
 // FPS-driven cube budget (see FilterShader::paint's hysteresis).
 float Scene3DShader::s_cubeBudget = 1.f;
 
+// Shared by all geom="indirect" scenes (see setupIndirect()).
+GLuint Scene3DShader::s_clampProg = 0;
+
 static float rand01() { return float(qrand()) / float(RAND_MAX); }
 
 // Roll a fresh activation epoch: time offset, gentle speed factor, hue
@@ -56,6 +59,7 @@ Scene3DShader::Scene3DShader( const QString &filenameFragmentShader, const QStri
 	else if ( geom == "quads"   ) m_geomKind = GEOM_QUADS;
 	else if ( geom == "patches" ) m_geomKind = GEOM_PATCHES;
 	else if ( geom == "scatter" ) m_geomKind = GEOM_SCATTER;
+	else if ( geom == "indirect") m_geomKind = GEOM_INDIRECT;
 	else                          m_geomKind = GEOM_POINTS;
 
 	rollVariation();
@@ -77,12 +81,17 @@ Scene3DShader::Scene3DShader( const QString &filenameFragmentShader, const QStri
 	m_tescFilename = sibling( filenameFragmentShader, ".tesc" );
 	m_teseFilename = sibling( filenameFragmentShader, ".tese" );
 	m_geomFilename = sibling( filenameFragmentShader, ".geom" );
+	m_compFilename = sibling( filenameFragmentShader, ".comp" );
 }
 
 Scene3DShader::~Scene3DShader()
 {
 	if( m_vbo )
 		glDeleteBuffers( 1, &m_vbo );
+	if( m_cmdBuf )
+		glDeleteBuffers( 1, &m_cmdBuf );
+	if( m_genProg )
+		glDeleteProgram( m_genProg );
 }
 
 void Scene3DShader::resetParameters()
@@ -99,6 +108,7 @@ void Scene3DShader::setUniforms( float time, float interpolation,
 {
 	EffectShader::setUniforms( m_timeOffset + time * m_speedFactor,
 	                           interpolation, texLoc1, texLoc2 );
+	m_lastTime = time;      // the indirect generator needs it in draw()
 }
 
 void Scene3DShader::applyAudioFeatures( const AudioFeatures &f )
@@ -108,6 +118,9 @@ void Scene3DShader::applyAudioFeatures( const AudioFeatures &f )
 	v.audioRotPhase = f.audioRotPhase + m_hueOffset * 3.1f;
 	v.audioAdvance  = f.audioAdvance  + m_hueOffset * 2.3f;
 	EffectShader::applyAudioFeatures( v );
+	// Kept for the indirect generator, which is a separate program and so is
+	// not reached by the shared uniform upload above.
+	m_lastAudio = v;
 }
 
 // Interleaved layout: attrA.xyzw, attrB.xyzw = 8 floats per vertex.
@@ -115,7 +128,14 @@ void Scene3DShader::buildGeometry()
 {
 	std::vector<float> v;
 
-	if( m_geomKind == GEOM_POINTS || m_geomKind == GEOM_SCATTER )
+	if( m_geomKind == GEOM_INDIRECT )
+	{
+		// Nothing to build: setupIndirect() allocates an empty vertex buffer
+		// that a compute shader fills every frame.  Returning here keeps the
+		// vector empty, and the code below uploads a zero-sized buffer, which
+		// setupIndirect() then resizes.
+	}
+	else if( m_geomKind == GEOM_POINTS || m_geomKind == GEOM_SCATTER )
 	{
 		const int N = 60000;
 		v.reserve( size_t(N) * 8 );
@@ -273,9 +293,140 @@ void Scene3DShader::buildGeometry()
 	if( m_vbo == 0 )
 		glGenBuffers( 1, &m_vbo );
 	glBindBuffer( GL_ARRAY_BUFFER, m_vbo );
-	glBufferData( GL_ARRAY_BUFFER, GLsizeiptr(v.size() * sizeof(float)),
-	              v.data(), GL_STATIC_DRAW );
+	if( m_geomKind == GEOM_INDIRECT )
+	{
+		// Room for the generator's output.  GL_DYNAMIC_COPY says what actually
+		// happens to this buffer: written by the GPU, read by the GPU, never
+		// touched by the CPU at all.
+		//
+		// 200k triangles is several times what an isosurface over a 64^3 field
+		// produces, which is the headroom a generator needs to stay safe on a
+		// loud frame.  MUST stay a multiple of 3 — the overflow guard relies on
+		// a three-vertex reservation either fitting entirely or starting at or
+		// past the end, so that no half-written triangle lands inside the
+		// clamped range.  Allocated lazily, on the scene's first appearance.
+		m_meshCapacity = 600000;                       // vertices (19.2 MB)
+		glBufferData( GL_ARRAY_BUFFER,
+		              GLsizeiptr(size_t(m_meshCapacity) * 8 * sizeof(float)),
+		              NULL, GL_DYNAMIC_COPY );
+	}
+	else
+	{
+		glBufferData( GL_ARRAY_BUFFER, GLsizeiptr(v.size() * sizeof(float)),
+		              v.data(), GL_STATIC_DRAW );
+	}
 	glBindBuffer( GL_ARRAY_BUFFER, 0 );
+}
+
+// Compile the scene's generator and allocate the indirect command buffer.
+// Fails soft in every direction: no compute support, no .comp file, a compile
+// error — the scene simply draws nothing rather than taking the app down.
+bool Scene3DShader::setupIndirect()
+{
+	if( m_genTried )
+		return m_genProg != 0;
+	m_genTried = true;
+
+	if( !glcoreHasCompute || !glDrawArraysIndirect || !m_compFilename )
+		return false;
+
+	m_genProg = setComputeShader( m_compFilename );      // 0 on any failure
+	if( m_genProg == 0 )
+		return false;
+
+	// The clamp pass is shared by every indirect scene, so it is compiled once
+	// for the whole process.
+	if( s_clampProg == 0 )
+		s_clampProg = setComputeShader( "..\\Blend\\IndirectClamp.comp" );
+	if( s_clampProg == 0 )
+	{
+		glDeleteProgram( m_genProg );
+		m_genProg = 0;
+		return false;
+	}
+
+	// DrawArraysIndirectCommand = { count, instanceCount, first, baseInstance },
+	// plus a fifth slot the generator counts into.  instanceCount/first/
+	// baseInstance are set once here and never change.  This is the whole point
+	// of the indirect path: the vertex count is produced and consumed on the
+	// GPU, so the CPU never has to wait for a readback to learn how much
+	// geometry there is.
+	const GLuint cmd[8] = { 0u, 1u, 0u, 0u, 0u, 0u, 0u, 0u };
+	glGenBuffers( 1, &m_cmdBuf );
+	glBindBuffer( GL_DRAW_INDIRECT_BUFFER, m_cmdBuf );
+	glBufferData( GL_DRAW_INDIRECT_BUFFER, sizeof(cmd), cmd, GL_DYNAMIC_COPY );
+	glBindBuffer( GL_DRAW_INDIRECT_BUFFER, 0 );
+	return true;
+}
+
+// Run the generator, clamp its counter, and fence the results for both the
+// vertex fetch and the indirect command fetch.  The raw counter is reset by the
+// clamp pass, so there is no CPU-side buffer touch here at all.
+void Scene3DShader::runGenerator( float time )
+{
+	glUseProgram( m_genProg );
+
+	// The generator is a SECOND program, so it does not get the shared audio
+	// uniforms.  It takes a deliberately small set by hand, plus the scene's
+	// own preset <float> params looked up by name — which is what lets a
+	// generator be tuned from the preset exactly like the render stages.
+	auto setF = [&]( const char *n, float v )
+	{
+		GLint l = glGetUniformLocation( m_genProg, n );
+		if( l >= 0 ) glUniform1f( l, v );
+	};
+	const AudioFeatures &a = m_lastAudio;      // already carries this scene's offsets
+	setF( "time",         m_timeOffset + time * m_speedFactor );
+	setF( "sceneSeed",    m_sceneSeed );
+	setF( "audioAdvance", a.audioAdvance );
+	setF( "audioLevel",   a.overallLevel );
+	setF( "audioBeat",    a.beatDecay );
+	setF( "audioKick",    a.onsetKick );
+	setF( "audioSubBass", a.subBassLevel );
+	setF( "audioHigh",    a.highLevel );
+	setF( "audioBass",    a.bassLevel );
+	setF( "audioMid",     a.midLevel );
+	{
+		GLint l = glGetUniformLocation( m_genProg, "audioChroma" );
+		if( l >= 0 ) glUniform1fv( l, 12, a.chroma );
+	}
+	{
+		GLint l = glGetUniformLocation( m_genProg, "maxVertices" );
+		if( l >= 0 ) glUniform1ui( l, GLuint(m_meshCapacity) );
+	}
+	for( unsigned int i = 0; i < m_uniforms.size(); ++i )
+	{
+		QByteArray n = m_uniforms[i]->getName().toLocal8Bit();
+		setF( n.constData(), m_uniforms[i]->snapshotValue() );
+	}
+
+	glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 0, m_vbo );
+	glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 1, m_cmdBuf );
+
+	// One invocation per cell of a 64^3 field, in 4x4x4 blocks.
+	glDispatchCompute( 16, 16, 16 );
+
+	// The clamp pass has to see the finished counter, so it needs its own
+	// barrier before it runs — not just one at the end.
+	glMemoryBarrier( GL_SHADER_STORAGE_BARRIER_BIT );
+
+	glUseProgram( s_clampProg );
+	{
+		GLint l = glGetUniformLocation( s_clampProg, "maxVertices" );
+		if( l >= 0 ) glUniform1ui( l, GLuint(m_meshCapacity) );
+	}
+	glDispatchCompute( 1, 1, 1 );
+
+	// Three consumers to fence against: the vertex puller, the indirect command
+	// fetch, and any later shader read.  Missing the COMMAND bit is the classic
+	// bug here — the draw then reads a stale vertex count and the mesh flickers
+	// between this frame's size and the last frame's.
+	glMemoryBarrier( GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT
+	               | GL_COMMAND_BARRIER_BIT
+	               | GL_SHADER_STORAGE_BARRIER_BIT );
+
+	glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 0, 0 );
+	glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 1, 0 );
 }
 
 void Scene3DShader::initUniforms( int width, int height )
@@ -360,7 +511,31 @@ void Scene3DShader::draw()
 
 	glBindVertexArray( m_vao );
 
-	if( m_geomKind == GEOM_PATCHES )
+	if( m_geomKind == GEOM_INDIRECT )
+	{
+		// Compute builds the mesh, then the draw reads its vertex count out of
+		// a buffer the GPU just wrote.  Nothing about the geometry — not even
+		// how much of it there is — passes through the CPU this frame.
+		if( setupIndirect() )
+		{
+			// The generator binds its own program.  Uniform values live in the
+			// program object, not in the context, so simply switching back
+			// restores everything the host already uploaded for this frame —
+			// no need to replay setUniforms().
+			glBindVertexArray( 0 );
+			runGenerator( m_lastTime );
+			glUseProgram( m_sh_prog_id );
+
+			glBindVertexArray( m_vao );
+			glEnable( GL_DEPTH_TEST );
+			glDisable( GL_BLEND );
+			glBindBuffer( GL_DRAW_INDIRECT_BUFFER, m_cmdBuf );
+			glDrawArraysIndirect( GL_TRIANGLES, 0 );
+			glBindBuffer( GL_DRAW_INDIRECT_BUFFER, 0 );
+			glDisable( GL_DEPTH_TEST );
+		}
+	}
+	else if( m_geomKind == GEOM_PATCHES )
 	{
 		// Tessellated surface: the patch is the primitive, and the tessellator
 		// decides how many triangles it becomes.

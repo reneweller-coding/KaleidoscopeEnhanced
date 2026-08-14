@@ -1092,6 +1092,63 @@ Not built: `Marching Cubes`. Meshing an isosurface needs a compute→VBO→indir
 draw path that this renderer does not have, and faking it with a raymarch would
 not have been the thing that was asked for. The `texSculpt` slot is reserved.
 
+### Compute → indirect draw — geometry the CPU never sees
+
+`geom="indirect"` is the third and last of the pipeline additions, and the only
+one where the host stops knowing what is being drawn. A scene opts in the same
+way as everywhere else — by putting an `X.comp` next to its `X.vert`/`X.frag` —
+and that compute shader writes both the vertices **and the draw call's own
+argument list** into buffers. `glDrawArraysIndirect` then reads the vertex count
+straight out of GPU memory. Nothing about the geometry, not even how much of it
+there is, travels back through the CPU.
+
+The pieces:
+
+- The vertex buffer is bound twice — as an SSBO for the generator to write, and
+  as the VAO's array buffer for the draw to read. It uses the same interleaved
+  `attrA`/`attrB` layout as every other 3D scene, so the existing VAO setup
+  works unchanged. It is allocated lazily, on the scene's first appearance.
+- The generator is a **second program**, so the shared audio uniforms never
+  reach it. It gets a small explicit set by hand, plus the scene's own preset
+  `<float>` params looked up by name — which is what lets a generator be tuned
+  from the preset exactly like the render stages.
+- **`Blend/IndirectClamp.comp`** is shared by every indirect scene. A generator
+  hands out vertex slots with `atomicAdd`, and `atomicAdd` keeps counting after
+  the shader has stopped writing: an invocation that finds no room still bumped
+  the counter on its way to giving up. Handing that raw number to the draw would
+  make the GPU pull vertices from past the end of the buffer, so the raw total
+  lives in its own slot and this pass publishes the clamped value into the one
+  the draw reads. Capacity is a multiple of 3 and reservations are 3 at a time,
+  so a reservation either fits entirely or starts at or past the end — no
+  half-written triangle can fall inside the clamped range.
+- Three barriers, not one: the clamp pass needs the finished counter before it
+  runs, and the draw needs `GL_COMMAND_BARRIER_BIT` as well as the vertex-attrib
+  bit. Forgetting the command bit is the classic bug — the draw then reads a
+  stale count and the mesh flickers between this frame's size and the last
+  frame's.
+
+**`MetaSculpt`** is the first scene on it: twelve metaballs, one per pitch
+class, orbiting and swelling with their own chroma bin, extracted as an
+isosurface every frame. A single note grows one lobe, a chord merges several
+into one smooth body. Because metaballs *merge* rather than intersect, the
+result always reads as a single object.
+
+Extraction is marching **tetrahedra**, not marching cubes: each cell splits into
+six tetrahedra via the Kuhn decomposition, and a tetrahedron has three
+topological cases against a cube's 256. It costs more triangles for the same
+surface, but it needs no 4096-entry table baked into the shader and it cannot
+produce the ambiguous-face holes that make a naive marching-cubes implementation
+leak. Every tetrahedron's faces lie either on the cube's surface or on a shared
+diagonal plane, so neighbouring cells agree and the mesh is watertight without
+any inter-cell communication.
+
+One sign worth remembering: **a metaball field grows toward the inside**, so its
+gradient points inward and the outward normal is the *negated* gradient. Getting
+this backwards is easy to miss, because a fragment shader that flips normals
+toward the eye still lights the body plausibly — while every derived quantity
+that actually needs the direction (thickness probes, rim terms, reflections) is
+quietly wrong.
+
 ### Tessellation and geometry stages
 
 Two pipeline stages that the project had never used are now wired in, and a

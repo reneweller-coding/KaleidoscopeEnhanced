@@ -203,7 +203,9 @@ protected:
 	// Cached audio-uniform locations: applyAudioFeatures used to do ~45
 	// glGetUniformLocation string lookups per shader per FRAME.  Cached per
 	// program id (auto-refreshes after recompile / hot reload).
-	struct AudioLocCache { GLuint progId = 0; GLint L[64]; };
+	// Sized with headroom over AL_COUNT — the array is indexed by the enum, so
+	// it has to stay ahead of it as uniforms are added.
+	struct AudioLocCache { GLuint progId = 0; GLint L[96]; };
 	AudioLocCache m_audioLocs;
 
 	// Formula-layer expressions (uniform name -> compiled program).

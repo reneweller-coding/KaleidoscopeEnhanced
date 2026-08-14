@@ -139,7 +139,8 @@ void WebRemote::handleConnection()
 					body = QString( "{\"reactivity\":%1,\"trails\":%2,\"mood\":%3,"
 					                "\"latency\":%4,\"lightShow\":%5,\"autoConfig\":%6,"
 					                "\"active\":%7,\"blackout\":%8,\"replayArmed\":%9,"
-					                "\"configs\":[%10]}" )
+					                "\"fps\":%10,\"renderScale\":%11,"
+					                "\"configs\":[%12]}" )
 					       .arg( FilterShader::reactivity() ).arg( FilterShader::trails() )
 					       .arg( FilterShader::mood() ).arg( FilterShader::latency() )
 					       .arg( FilterShader::lightShow() ? 1 : 0 )
@@ -147,6 +148,8 @@ void WebRemote::handleConnection()
 					       .arg( m_widget->remoteActiveConfig() )
 					       .arg( FilterShader::blackout() ? 1 : 0 )
 					       .arg( m_widget->remoteReplayArmed() ? 1 : 0 )
+					       .arg( m_widget->fpsValue() )
+					       .arg( FilterShader::renderScale() )
 					       .arg( cfgs.join( "," ) ).toUtf8();
 				}
 				else if( path == "/api/snapshot" )

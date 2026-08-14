@@ -1,0 +1,27 @@
+#version 430
+// IndirectClamp.comp — turn the generator's raw reservation counter into a
+// safe draw count.  Shared by every geom="indirect" scene.
+//
+// A generator hands out vertex slots with atomicAdd, and atomicAdd keeps
+// counting even after the shader has stopped writing: an invocation that finds
+// no room still bumped the counter on its way to giving up.  Handing that raw
+// number to the draw call would make the GPU pull vertices from past the end of
+// the buffer.  So the raw total lives in its own slot and this pass publishes
+// the clamped value into the one the draw actually reads.
+//
+// Capacity is always a multiple of 3 and reservations are 3 at a time, so a
+// reservation either fits entirely or starts at or beyond the end — no
+// half-written triangle can ever fall inside the clamped range.
+layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+
+// DrawArraysIndirectCommand + our own counter:
+//   [0] count  [1] instanceCount  [2] first  [3] baseInstance  [4] rawCount
+layout(std430, binding = 1) buffer Cmd { uint cmd[]; };
+
+uniform uint maxVertices;
+
+void main()
+{
+    cmd[0] = min(cmd[4], maxVertices);
+    cmd[4] = 0u;            // armed for the next frame; the host never touches it
+}

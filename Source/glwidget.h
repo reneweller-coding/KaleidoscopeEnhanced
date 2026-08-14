@@ -49,6 +49,10 @@ public:
 	// ---- Web-remote hooks (same harmless controls as the keyboard) ----
 	QStringList remoteConfigNames() const;
 	int         remoteActiveConfig() const;
+	// Live frame rate, as shown in the overlay.  Exposed for the web remote:
+	// the auto render-scale hides a struggling scene by quietly getting
+	// coarser, so the frame rate is the only way to see it happening.
+	int         fpsValue() const { return m_fpsValue; }
 	void        remoteSelectConfig( int idx );
 	void        remoteNextEffect();
 	QStringList remoteSceneNames();

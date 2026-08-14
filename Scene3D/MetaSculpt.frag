@@ -1,0 +1,82 @@
+#version 330 core
+out vec4 fragColor;
+// MetaSculpt.frag — wet, heavy, subsurface-lit material for the metaball body.
+// The generator maintains no triangle winding (its normals come from the field
+// gradient, which is the more accurate source anyway), so the normal is flipped
+// toward the eye here rather than trusted for facing.
+
+in vec3  vObj;
+in vec3  vNormal;
+in vec3  vView;
+in float vStrength;      // 0..1 thickness probe from the generator
+
+uniform sampler2D tex0;
+uniform float interpolation;
+uniform float time;
+
+uniform float audioLevel;
+uniform float audioBeat;
+uniform float audioHigh;
+uniform float audioKick;
+uniform float audioSubBass;
+uniform float audioChromaHue;
+uniform float audioAmbient;
+
+uniform float glossP;
+uniform float isoP;
+
+vec3 hue2rgb(float h)
+{
+    return clamp(abs(mod(h * 6.0 + vec3(0.0, 4.0, 2.0), 6.0) - 3.0) - 1.0, 0.0, 1.0);
+}
+
+void main()
+{
+    vec3 n = normalize(vNormal);
+    vec3 V = normalize(vView);
+    if (dot(n, V) < 0.0) n = -n;
+
+    vec3 L  = normalize(vec3(0.5, 0.72, -0.48));
+    vec3 L2 = normalize(vec3(-0.72, -0.2, -0.55));
+
+    // Colour by how much body sits behind the surface: the thin necks where two
+    // lobes have just merged come out a different hue from the fat centres, so
+    // the topology of the body is readable at a glance.
+    float depth = clamp(vStrength * 2.2, 0.0, 1.0);
+    float hue = fract(0.58 + 0.26 * depth + 0.20 * length(vObj)
+                      + 0.07 * sin(audioChromaHue));
+    vec3 base = mix(vec3(0.09, 0.10, 0.16), hue2rgb(hue), 0.70);
+
+    float diff = max(dot(n, L), 0.0);
+    float wrap = 0.5 + 0.5 * dot(n, L);
+    vec3 col = base * (0.18 + 0.90 * diff + 0.50 * wrap * wrap);
+    col += base * vec3(0.5, 0.65, 1.0) * max(dot(n, L2), 0.0) * 0.5;
+
+    // Subsurface: thin parts glow through.  1 - depth is exactly "how close to
+    // the surface of the field this is", which is the cheapest honest measure
+    // of thickness available here.
+    float thin = pow(1.0 - depth, 2.2);
+    col += hue2rgb(fract(hue + 0.08)) * thin
+         * (0.35 + 0.8 * audioAmbient + 0.7 * audioSubBass);
+
+    // Environment mirror + Fresnel, which is what makes it read as wet.
+    vec3 R = reflect(-V, n);
+    vec2 envUV = vec2(atan(R.x, R.z) / 6.2831853 + 0.5,
+                      clamp(R.y * 0.5 + 0.5, 0.0, 1.0));
+    vec3 env = textureLod(tex0, fract(envUV), 0.0).rgb;
+    env = mix(vec3(dot(env, vec3(0.333))), env, 0.7);
+    float fres = pow(1.0 - clamp(dot(n, V), 0.0, 1.0), 4.0);
+    col = mix(col, env * (0.55 + 0.8 * glossP), fres * (0.35 + 0.45 * glossP));
+
+    vec3 H = normalize(L + V);
+    col += vec3(1.0, 0.96, 0.9) * pow(max(dot(n, H), 0.0), 45.0 + 300.0 * glossP)
+         * (0.9 + 2.2 * audioHigh);
+
+    // Rim, so the silhouette survives against the black background.
+    col += hue2rgb(fract(hue + 0.5)) * pow(fres, 1.7)
+         * (0.35 + 0.9 * audioLevel + 0.6 * audioKick);
+
+    col *= 1.0 + 0.20 * audioBeat;
+    col = col / (1.0 + col * 0.27);
+    fragColor = vec4(col, interpolation);
+}

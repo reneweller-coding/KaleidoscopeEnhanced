@@ -69,10 +69,29 @@ private:
 	// GEOM_SCATTER is the same point cloud as GEOM_POINTS but drawn opaque and
 	// depth-tested, for geometry shaders that grow each point into a solid body
 	// (grass, hair, shards) — those must occlude each other, not add up.
+	// GEOM_INDIRECT has NO host-built geometry at all: a compute shader writes
+	// the vertices and the draw call's own argument list into buffers, and the
+	// vertex count never travels back to the CPU.  See runGenerator().
 	enum GeomKind { GEOM_POINTS = 0, GEOM_CUBES = 1, GEOM_RIBBON = 2,
 	                GEOM_GRID = 3, GEOM_QUADS = 4, GEOM_PATCHES = 5,
-	                GEOM_SCATTER = 6 };
+	                GEOM_SCATTER = 6, GEOM_INDIRECT = 7 };
 	void buildGeometry();
+
+	// ---- compute -> indirect draw ----
+	// The generator is the scene's own "X.comp", opted into the same way as the
+	// tessellation and geometry stages: by the file being there.
+	char   *m_compFilename = 0;
+	GLuint  m_genProg      = 0;   // generator compute program (0 = none/failed)
+	GLuint  m_cmdBuf       = 0;   // DrawArraysIndirectCommand, written on the GPU
+	bool    m_genTried     = false;
+	int     m_meshCapacity = 0;   // vertices the VBO can hold
+	bool    setupIndirect();      // allocate buffers + compile the generator
+	void    runGenerator( float time );
+	AudioFeatures m_lastAudio;    // this scene's features, for the generator
+	float   m_lastTime     = 0.f; // raw time from setUniforms, ditto
+	// The counter-clamp pass is identical for every indirect scene, so it is
+	// compiled once for the process.
+	static GLuint s_clampProg;
 
 	// Optional pipeline stages, named after the fragment shader
 	// (X.frag -> X.tesc / X.tese / X.geom).  A scene opts in by the file
