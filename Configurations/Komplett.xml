@@ -789,4 +789,12 @@
     <float name="glowP"   minValue="0.45" maxValue="1.0"></float>
   </TextureShader>
 
+  <TextureShader file="..\\Scene3D\\MetaSculpt.frag" type="scene3d" geom="indirect" probability="0.5" mood="dreamy" complexity="4">
+    <float name="blobP"    minValue="0.65" maxValue="1.05"></float>
+    <float name="spreadP"  minValue="0.75" maxValue="1.30"></float>
+    <float name="isoP"     minValue="0.8"  maxValue="1.25"></float>
+    <float name="camDistP" minValue="3.4"  maxValue="4.6"></float>
+    <float name="glossP"   minValue="0.4"  maxValue="0.9"></float>
+  </TextureShader>
+
 </configuration>

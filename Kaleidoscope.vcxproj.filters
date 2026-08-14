@@ -594,6 +594,9 @@
     <None Include="Scene\EventHorizon.frag">
       <Filter>Shaders\Scene</Filter>
     </None>
+    <None Include="Blend\IndirectClamp.comp">
+      <Filter>Shaders\Blend</Filter>
+    </None>
     <None Include="Blend\Blit.frag">
       <Filter>Shaders\Blend</Filter>
     </None>
@@ -865,6 +868,15 @@
       <Filter>Shaders\Scene3D</Filter>
     </None>
     <None Include="Scene3D\SpectroCanyon.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\MetaSculpt.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\MetaSculpt.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\MetaSculpt.comp">
       <Filter>Shaders\Scene3D</Filter>
     </None>
     <None Include="Scene3D\Planet4D.frag">

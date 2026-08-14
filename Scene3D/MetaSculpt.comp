@@ -1,0 +1,236 @@
+#version 430
+// MetaSculpt.comp — build a solid body out of the music, every frame.
+// -----------------------------------------------------------------------
+// This is the generator half of the compute -> indirect-draw path.  It walks a
+// 64^3 scalar field, extracts the isosurface, and writes the resulting
+// triangles straight into the vertex buffer the draw call will read.  The
+// vertex COUNT goes into the draw command itself, so the number of triangles
+// can change completely from frame to frame without the CPU ever learning what
+// it is.
+//
+// The surface is a metaball field: twelve blobs, one per pitch class, orbiting
+// and swelling with their own bin.  A single note grows one lobe; a chord
+// merges several into one smooth body; a dense mix fuses everything into a
+// churning mass.  Because metaballs MERGE rather than intersect, the result
+// always reads as one object.
+//
+// Extraction is marching TETRAHEDRA, not marching cubes.  Each cell is split
+// into six tetrahedra, and a tetrahedron has only three topological cases
+// (nothing / one triangle / a quad) against the 256 of a cube.  It costs more
+// triangles for the same surface, but it needs no 4096-entry lookup table
+// baked into the shader, and it cannot produce the ambiguous-face holes that
+// make a naive marching-cubes implementation leak.
+// -----------------------------------------------------------------------
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+
+// Vertex layout must match Scene3DShader's interleaved attrA/attrB:
+// 8 floats = attrA.xyzw (position + field strength), attrB.xyzw (normal + id).
+layout(std430, binding = 0) buffer Verts { float verts[]; };
+//   [0] count  [1] instanceCount  [2] first  [3] baseInstance  [4] rawCount
+layout(std430, binding = 1) buffer Cmd   { uint  cmd[]; };
+
+uniform uint  maxVertices;
+uniform float time;
+uniform float sceneSeed;
+uniform float audioAdvance;
+uniform float audioLevel;
+uniform float audioKick;
+uniform float audioSubBass;
+uniform float audioHigh;
+uniform float audioChroma[12];
+
+uniform float blobP;        // preset: blob size
+uniform float spreadP;      // preset: how far they orbit
+uniform float isoP;         // preset: surface threshold
+
+const int   GRID   = 64;
+const float HALF   = 1.65;          // the field spans [-HALF, HALF]^3
+
+// Metaball field.  Sums to a large value inside a blob and falls off as 1/r^2,
+// which is what makes neighbouring blobs blend into one skin instead of
+// showing a crease where they touch.
+float field(vec3 p)
+{
+    float f = 0.0;
+    for (int i = 0; i < 12; ++i)
+    {
+        float fi = float(i);
+        // Each pitch class rides its own slow orbit.  The phases are mutually
+        // irrational so the constellation never repeats.
+        float a = audioAdvance * (0.13 + 0.021 * fi) + fi * 2.3999632;
+        float b = audioAdvance * (0.09 + 0.017 * fi) + fi * 1.7;
+        vec3 c = spreadP * 1.15 * vec3(cos(a) * (0.55 + 0.35 * sin(b)),
+                                       sin(b) * 0.75,
+                                       sin(a) * (0.55 + 0.35 * cos(b)));
+
+        // Bins are L1-normalised (~0..0.3); every blob keeps a floor so the
+        // body never vanishes into nothing during a quiet bar.
+        float w = blobP * (0.13 + 0.85 * audioChroma[i] * 4.0);
+        vec3 d = p - c;
+        f += w * w / (dot(d, d) + 0.012);
+    }
+    // A core, so there is always one connected mass at the centre for the
+    // lobes to grow out of.  Kept deliberately weak: a strong core swallows
+    // every blob and the body is a featureless ball no matter what plays.
+    float r2 = dot(p, p);
+    f += (0.13 + 0.10 * audioSubBass) / (r2 + 0.05);
+
+    // Kick punches the whole surface outward for a moment.
+    return f * (1.0 + 0.20 * audioKick);
+}
+
+float iso() { return 1.55 * isoP; }
+
+// Outward surface normal, by central differences.  The field is analytic, but
+// a symbolic gradient of twelve reciprocal-square terms costs more than six
+// extra evaluations and gains nothing visible.
+//
+// NOTE THE SIGN: a metaball field GROWS toward the inside, so its gradient
+// points inward and the outward normal is the negated gradient.  Getting this
+// backwards is easy to miss, because a fragment shader that flips normals
+// toward the eye still lights the body plausibly — while every derived
+// quantity that actually needs the direction (thickness probes, rim terms,
+// reflections) is quietly wrong.
+vec3 fieldNormal(vec3 p)
+{
+    const float e = 0.012;
+    vec3 g = vec3(
+        field(p + vec3(e, 0, 0)) - field(p - vec3(e, 0, 0)),
+        field(p + vec3(0, e, 0)) - field(p - vec3(0, e, 0)),
+        field(p + vec3(0, 0, e)) - field(p - vec3(0, 0, e)));
+    return normalize(-g);
+}
+
+// How much body sits behind this point.  The field value AT a surface vertex is
+// useless for this — it equals the threshold by definition — so probe a fixed
+// distance inward instead: on a thin neck the field has barely risen, inside a
+// fat lobe it is far above the threshold.
+float thickness(vec3 p, vec3 n)
+{
+    return clamp(field(p - n * 0.18) / max(iso(), 1e-3) - 1.0, 0.0, 1.0);
+}
+
+void writeVertex(uint slot, vec3 p, vec3 n, float strength)
+{
+    uint o = slot * 8u;
+    verts[o + 0u] = p.x;
+    verts[o + 1u] = p.y;
+    verts[o + 2u] = p.z;
+    verts[o + 3u] = strength;
+    verts[o + 4u] = n.x;
+    verts[o + 5u] = n.y;
+    verts[o + 6u] = n.z;
+    verts[o + 7u] = 0.0;
+}
+
+// Where the surface crosses the segment a-b, by linear interpolation of the
+// field values.  Snapping to the midpoint instead would quantise the whole
+// surface to the grid and make it visibly blocky at this resolution.
+vec3 lerpEdge(vec3 pa, vec3 pb, float va, float vb)
+{
+    float t = clamp((iso() - va) / (vb - va), 0.0, 1.0);
+    return mix(pa, pb, t);
+}
+
+void emitTri(vec3 a, vec3 b, vec3 c)
+{
+    // Reserve three slots at once, so a triangle is never split across the
+    // buffer's end.  Capacity is a multiple of three and reservations are too,
+    // so an over-capacity reservation starts at or past the end and simply
+    // writes nothing — the clamp pass then trims the published count.
+    uint base = atomicAdd(cmd[4], 3u);
+    if (base + 3u > maxVertices)
+        return;
+
+    vec3 na = fieldNormal(a), nb = fieldNormal(b), nc = fieldNormal(c);
+    writeVertex(base + 0u, a, na, thickness(a, na));
+    writeVertex(base + 1u, b, nb, thickness(b, nb));
+    writeVertex(base + 2u, c, nc, thickness(c, nc));
+}
+
+// One tetrahedron.  Rather than a 16-case table, the vertices are sorted into
+// inside/outside lists and the three topologies are handled directly — the
+// same code covers a case and its complement, and there is no table to get
+// subtly wrong.
+//
+// Winding is deliberately NOT maintained: the normals come from the field
+// gradient, not from the triangle, and the fragment shader flips them toward
+// the eye.  Consistent orientation would cost sorting work that buys nothing.
+void marchTet(vec3 p0, vec3 p1, vec3 p2, vec3 p3,
+              float v0, float v1, float v2, float v3)
+{
+    vec3  p[4] = vec3[4](p0, p1, p2, p3);
+    float v[4] = float[4](v0, v1, v2, v3);
+    float t = iso();
+
+    int inI[4], outI[4];
+    int nIn = 0, nOut = 0;
+    for (int i = 0; i < 4; ++i)
+    {
+        if (v[i] >= t) { inI[nIn] = i; ++nIn; }
+        else           { outI[nOut] = i; ++nOut; }
+    }
+    if (nIn == 0 || nIn == 4)
+        return;                             // wholly inside or outside
+
+    if (nIn == 1 || nIn == 3)
+    {
+        // One vertex on its own side: the three edges leaving it are cut, and
+        // they always form exactly one triangle.
+        int lone = (nIn == 1) ? inI[0] : outI[0];
+        int o0, o1, o2;
+        if (nIn == 1) { o0 = outI[0]; o1 = outI[1]; o2 = outI[2]; }
+        else          { o0 = inI[0];  o1 = inI[1];  o2 = inI[2];  }
+        emitTri(lerpEdge(p[lone], p[o0], v[lone], v[o0]),
+                lerpEdge(p[lone], p[o1], v[lone], v[o1]),
+                lerpEdge(p[lone], p[o2], v[lone], v[o2]));
+    }
+    else
+    {
+        // Two on each side: four cut edges forming a quad, split into two
+        // triangles.  The diagonal has to join opposite corners of the quad,
+        // which is why the pairing below is (a0b0, a0b1, a1b1) and
+        // (a0b0, a1b1, a1b0) — pairing them any other way folds the quad.
+        int a0 = inI[0],  a1 = inI[1];
+        int b0 = outI[0], b1 = outI[1];
+        vec3 q00 = lerpEdge(p[a0], p[b0], v[a0], v[b0]);
+        vec3 q01 = lerpEdge(p[a0], p[b1], v[a0], v[b1]);
+        vec3 q11 = lerpEdge(p[a1], p[b1], v[a1], v[b1]);
+        vec3 q10 = lerpEdge(p[a1], p[b0], v[a1], v[b0]);
+        emitTri(q00, q01, q11);
+        emitTri(q00, q11, q10);
+    }
+}
+
+void main()
+{
+    uvec3 g = gl_GlobalInvocationID;
+    if (g.x >= uint(GRID) || g.y >= uint(GRID) || g.z >= uint(GRID))
+        return;
+
+    float step = 2.0 * HALF / float(GRID);
+    vec3 base = vec3(g) * step - vec3(HALF);
+
+    // The eight corners, indexed so bit0=x, bit1=y, bit2=z.
+    vec3 c[8];
+    float w[8];
+    for (int i = 0; i < 8; ++i)
+    {
+        c[i] = base + step * vec3(float(i & 1), float((i >> 1) & 1),
+                                  float((i >> 2) & 1));
+        w[i] = field(c[i]);
+    }
+
+    // Kuhn decomposition: six tetrahedra, all sharing the cube's main diagonal
+    // 0-7, one per order in which x, y and z can be stepped.  Because every
+    // tetrahedron's faces lie either on the cube's surface or on a shared
+    // diagonal plane, neighbouring cells always agree and the mesh is
+    // watertight without any inter-cell communication.
+    const int T[6][4] = int[6][4](
+        int[4](0, 1, 3, 7), int[4](0, 1, 5, 7), int[4](0, 2, 3, 7),
+        int[4](0, 2, 6, 7), int[4](0, 4, 5, 7), int[4](0, 4, 6, 7));
+
+    for (int t = 0; t < 6; ++t)
+        marchTet(c[T[t][0]], c[T[t][1]], c[T[t][2]], c[T[t][3]],
+                 w[T[t][0]], w[T[t][1]], w[T[t][2]], w[T[t][3]]);
+}

@@ -473,6 +473,7 @@ exit /b 0</Command>
     <None Include="Scene\ShatterField.frag" />
     <None Include="Blend\CfxHistogram.comp" />
     <None Include="Scene\EventHorizon.frag" />
+    <None Include="Blend\IndirectClamp.comp" />
     <None Include="Blend\Blit.frag" />
     <None Include="Blend\Fullscreen.vert" />
     <None Include="Blend\PhysarumDiffuse.comp" />
@@ -594,6 +595,9 @@ exit /b 0</Command>
     <None Include="Scene3D\SpectroCanyon.tesc" />
     <None Include="Scene3D\SpectroCanyon.tese" />
     <None Include="Scene3D\SpectroCanyon.vert" />
+    <None Include="Scene3D\MetaSculpt.frag" />
+    <None Include="Scene3D\MetaSculpt.vert" />
+    <None Include="Scene3D\MetaSculpt.comp" />
     <None Include="Scene3D\Planet4D.frag" />
     <None Include="Scene3D\Planet4D.vert" />
     <None Include="Scene3D\PlanetRings.frag" />
