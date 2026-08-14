@@ -19,6 +19,7 @@
 #include "ComputeFX.h"
 #include "GpuSims.h"
 #include "PresentPass.h"
+#include "SceneScheduler.h"
 
 class ImageLoader;
 
@@ -69,7 +70,7 @@ public:
 	/** Review mode (Test* presets): scenes run alphabetically, 8 s each,
 	 *  'n' steps to the next in order.  No mood/taste filtering, no beat
 	 *  quantisation — a systematic viewing bench. */
-	void setReviewMode( bool on ) { m_reviewMode = on; }
+	void setReviewMode( bool on ) { m_scheduler.setReviewMode( on ); }
 
 	/** Validation aid (KALEIDO_COMPILE_ALL=1): eagerly compile every effect
 	 *  and combine shader of this configuration — the log then holds one
@@ -178,8 +179,6 @@ public:
 	// Mood-based selection bias: accept a candidate effect with a probability that
 	// depends on how well its complexity matches the current arousal (calm music →
 	// simple effects, energetic → busy).  Safe: callers retry, then fall back.
-	bool moodAccept(EffectShader *s);
-	float			m_lastArousal = 0.5f;   // latest arousal (for moodAccept)
 	void checkGLErrors( const char *label ); // check and print gl errors to stderr
 
 	
@@ -266,35 +265,19 @@ private:
 	bool			m_started = false;
 
 	// Manual / novelty-driven early scene change + its rate-limit cooldown.
-	bool			m_forceEffectChange = false;
-	bool			m_forceCombineChange = false;
-	int				m_forcedNextTexture = -1;   // >= 0: remote-chosen next scene
 
 	// ---- Review mode (Test* presets): alphabetical 8 s sequence ----
-	bool			m_reviewMode = false;
-	std::vector<int> m_reviewOrder;             // effect indices, sorted by name
-	int				m_reviewPos = 0;
-	float			m_noveltyCooldown   = 0.f;
 	// Last-seen analyzer section counter (verse/chorus/bridge detector); a
 	// single +1 step forces an early, short cross-fade to the next shader.
-	int				m_lastSectionCount  = 0;
 	// Last-seen analyzer drop counter (EDM drop detector): +1 = immediate cut.
-	int				m_lastDropCount     = 0;
 
 	// ---- Song-structure memory ----
 	// Per analyzer section id: which effect/combine played it and the effect's
 	// rolled parameter values.  A RETURNING section (chorus #2) replays the
 	// exact same look; a NEW section's fresh look is stored after the switch.
-	std::map<int, unsigned int>       m_sectionEffect;
-	std::map<int, unsigned int>       m_sectionCombine;
-	std::map<int, std::vector<float>> m_sectionParams;
-	int				m_pendingSectionStore   = -1;
-	int				m_pendingSectionRestore = -1;
 
 	// Per-transition blend styles (0 linear, 1 wipe, 2 kaleido, 3 zoom),
 	// rolled when a change fires; linear stays the most common.
-	int				m_transStyleTex  = 0;
-	int				m_transStyleComb = 0;
 
 	// Beat-quantised IMAGE change (like the shader changes: pending until the
 	// next downbeat, with a timeout + no-music escape).
@@ -306,8 +289,6 @@ private:
 	float			m_chromaHueSlew = 0.f;
 
 	// Latest mood state for moodAccept (tag-based shader selection).
-	float			m_lastValence = 0.5f;
-	float			m_lastAmbient = 0.f;
 
 	// Instrument-separated onset envelopes (kick / snare / hat): peak-hold +
 	// slew, exactly like the global beat/onset envelopes above them.
@@ -424,6 +405,8 @@ private:
 	// GPU-/Host-Simulationen (RD, Fluid, Smoke3D, Physarum, SSM, Spectro):
 	// komplett in GpuSims gekapselt; paint() meldet nur den Bedarf.
 	GpuSims			m_sims;
+	// Szenen-/Combine-Wahl, Trigger, Review, Song-Struktur: SceneScheduler.
+	SceneScheduler	m_scheduler;
 
 	// Live-tunable look parameters (static → one shared setting across all configs).
 	static float	s_reactivity;    // audio-motion master gain (default 1.0)
@@ -471,7 +454,6 @@ private:
 		// time since initialization
 	QElapsedTimer m_time;
 
-	unsigned int m_maxIterationsEffectSearch; //maximum number of iterations during search for next effect
 
 
 
@@ -504,10 +486,6 @@ private:
 	float		m_globaltime;
 
 
-	QElapsedTimer		m_timeEffectTexture;
-	unsigned int	m_stateInterpolationEffectTexture;
-	float		m_interpolationEffectTexture;
-	float		m_timeInterpolationEffectTexture;
 	
 	//EffectShader *m_effectTextures[NR_EFFECTS_TEXTURE];
 	//unsigned int  m_effectTextureMinTimeSolo[NR_EFFECTS_TEXTURE];
@@ -522,15 +500,9 @@ private:
 	//unsigned int m_effectTextureMinTimeInterpolation;
 	//unsigned int m_effectTextureMaxTimeInterpolation;
 
-	unsigned int  m_actEffectTexture;
-	unsigned int  m_nextEffectTexture;
 
 
 	
-	QElapsedTimer		m_timeEffectCombine;
-	unsigned int	m_stateInterpolationEffectCombine;
-	float		m_interpolationEffectCombine;
-	float		m_timeInterpolationEffectCombine;
 
 	
 	std::vector<EffectShader *> m_effectCombines;
@@ -585,17 +557,9 @@ private:
     bool  m_downbeatTick     = false; // true for THIS frame when a downbeat lands
     // Beat-quantised scene changes: when a change becomes due it is held PENDING
     // until the next downbeat (or a timeout / no music), so cuts land on the "1".
-    bool  m_pendingEffectChange  = false;
-    bool  m_pendingCombineChange = false;
-    bool  m_pendingEffectForced  = false;
-    bool  m_pendingCombineForced = false;
-    float m_pendingEffectAge     = 0.f;
-    float m_pendingCombineAge    = 0.f;
 	//unsigned int m_effectCombineMinTimeInterpolation;
 	//unsigned int m_effectCombineMaxTimeInterpolation;
 
-	unsigned int  m_actEffectCombine;
-	unsigned int  m_nextEffectCombine;
 
 	NanoTimer	m_nanotimer; //debug
 	unsigned int m_nrTextureUploads;

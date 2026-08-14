@@ -181,17 +181,10 @@ FilterShader::FilterShader( )
 , m_triggerImageload(false)
 , m_waitForImageToLoad(false)
 , m_globaltime(0.0)
-, m_stateInterpolationEffectTexture(0)
-, m_interpolationEffectTexture( 1.0 )
-, m_effectTextureTimeInterpolation( 10 )
 //, m_effectTextureMinTimeInterpolation( 10 )
 //, m_effectTextureMaxTimeInterpolation( 20 )
-, m_stateInterpolationEffectCombine(0)
-, m_interpolationEffectCombine( 1.0 )
-, m_effectCombineTimeInterpolation( 10 )
 //, m_effectCombineMinTimeInterpolation( 12 )
 //, m_effectCombineMaxTimeInterpolation( 27 )
-, m_maxIterationsEffectSearch(100)
 , m_nanotimer()
 , m_nrTextureUploads(0)
 {
@@ -266,86 +259,14 @@ void FilterShader::start( int width, int height )
 		m_effectCombines.push_back( fb );
 	}
 
-	for( unsigned int i = 0; i < m_maxIterationsEffectSearch; i++ )
-	{
-		m_actEffectTexture = qrand() % m_effectTextures.size();
-		if( m_effectTextures[m_actEffectTexture]->useShader() )
-			break;
-	}
-
-	//m_actEffectTexture = 0; //rwrwtest
-
-
-	for( unsigned int i = 0; i < m_maxIterationsEffectSearch; i++ )
-	{
-		m_nextEffectTexture = qrand() % m_effectTextures.size();
-		if( m_nextEffectTexture != m_actEffectTexture && 
-			(( m_effectTextures[m_actEffectTexture]->getComplexity() +
-			m_effectTextures[m_nextEffectTexture]->getComplexity() ) < 12 )
-			&& m_effectTextures[m_nextEffectTexture]->useShader()
-			)
-			break;
-	}
-
-	
-	if( m_nextEffectTexture == m_actEffectTexture )
-	{
-		m_nextEffectTexture += 1;
-		if( m_nextEffectTexture == m_effectTextures.size() )
-			m_nextEffectTexture = 0;
-	}
-
-	//m_effectTextures[m_actEffectTexture]->startInterpolators();
-
-
-
-	//rwrwtest
-	//m_actEffectTexture = qrand() % m_effectTextures.size();
-
-
-    m_timeInterpolationEffectTexture = (float) (m_effectTextures[m_actEffectTexture]->getTimeSolo());
-
-
-	//m_actEffectCombine = qrand() % m_effectCombines.size();
-
-	for( unsigned int i = 0; i < m_maxIterationsEffectSearch; i++ )
-	{
-		m_actEffectCombine = qrand() % m_effectCombines.size();
-		if( m_effectCombines[m_actEffectCombine]->useShader() )
-			break;
-	}
-
-	for( unsigned int i = 0; i < m_maxIterationsEffectSearch; i++ )
-	{
-		m_nextEffectCombine = qrand() % m_effectCombines.size();
-		if( m_nextEffectCombine != m_actEffectCombine && 
-			(( m_effectTextures[m_actEffectTexture]->getComplexity() +
-			m_effectTextures[m_nextEffectTexture]->getComplexity() +
-			m_effectCombines[m_actEffectCombine]->getComplexity() +
-			m_effectCombines[m_nextEffectCombine]->getComplexity() ) < 20 )
-			&& m_effectCombines[m_nextEffectCombine]->useShader()
-			)
-			break;
-	}
-
-	if( m_nextEffectCombine == m_actEffectCombine )
-	{
-		m_nextEffectCombine += 1;
-		if( m_nextEffectCombine == m_effectCombines.size() )
-			m_nextEffectCombine = 0;
-	}
-
-
-	//rwrwtest
-	//m_actEffectCombine = 6;//5;//3;
-
-    m_timeInterpolationEffectCombine = (float) (m_effectCombines[m_actEffectCombine]->getTimeSolo());
+	// Initiale Effekt-/Combine-Wahl + Szenen-Uhren: SceneScheduler.
+	m_scheduler.attach( &m_effectTextures, &m_effectCombines );
+	m_scheduler.setTasteCallback( [this]( const char *f ){ return tasteFor( f ); } );
+	m_scheduler.reset();
 
 	//Start the timers
 	m_time.start();
 	m_timeTexture.start();
-	m_timeEffectTexture.start();
-	m_timeEffectCombine.start();
 
 	
 	//m_filterShader = new FilterShader(100,100, directory);
@@ -366,20 +287,20 @@ QString FilterShader::activeShaderInfo() const
 	QString out;
 	if (!m_effectTextures.empty())
 	{
-		out += "TEX   " + base(m_effectTextures[m_actEffectTexture]->fragmentName());
-		if (m_stateInterpolationEffectTexture != 0)
+		out += "TEX   " + base(m_effectTextures[m_scheduler.actTexture()]->fragmentName());
+		if (m_scheduler.texState() != 0)
 			out += QString("   → %1  (%2%)")
-			       .arg(base(m_effectTextures[m_nextEffectTexture]->fragmentName()))
-			       .arg(int((1.0f - m_interpolationEffectTexture) * 100.0f + 0.5f));
+			       .arg(base(m_effectTextures[m_scheduler.nextTexture()]->fragmentName()))
+			       .arg(int((1.0f - m_scheduler.texInterp()) * 100.0f + 0.5f));
 	}
 	out += "\n";
 	if (!m_effectCombines.empty())
 	{
-		out += "COMB  " + base(m_effectCombines[m_actEffectCombine]->fragmentName());
-		if (m_stateInterpolationEffectCombine != 0)
+		out += "COMB  " + base(m_effectCombines[m_scheduler.actCombine()]->fragmentName());
+		if (m_scheduler.combState() != 0)
 			out += QString("   → %1  (%2%)")
-			       .arg(base(m_effectCombines[m_nextEffectCombine]->fragmentName()))
-			       .arg(int((1.0f - m_interpolationEffectCombine) * 100.0f + 0.5f));
+			       .arg(base(m_effectCombines[m_scheduler.nextCombine()]->fragmentName()))
+			       .arg(int((1.0f - m_scheduler.combInterp()) * 100.0f + 0.5f));
 	}
 	return out;
 }
@@ -738,11 +659,10 @@ void FilterShader::requestSceneChange()
 		fprintf( stderr, "n: ignored - FREEZE is active (press 'e' to unfreeze)\n" );
 		return;
 	}
-	if( m_actEffectTexture < m_effectTextures.size() &&
-	    m_timeEffectTexture.elapsed() < 10000 )
-		bumpTaste( m_effectTextures[m_actEffectTexture]->fragmentName(), 0.8f );
-	m_forceEffectChange  = true;
-	m_forceCombineChange = true;
+	if( m_scheduler.actTexture() < m_effectTextures.size() &&
+	    m_scheduler.actElapsedSec() < 10.f )
+		bumpTaste( m_effectTextures[m_scheduler.actTexture()]->fragmentName(), 0.8f );
+	m_scheduler.requestChange( true );
 }
 
 // Validation aid: compile EVERYTHING now (lazy compilation would otherwise
@@ -786,54 +706,21 @@ void FilterShader::forceScene( int idx )
 		return;
 	if( s_pinned || s_freeze )
 		return;                       // same handbrakes as requestSceneChange
-	m_forcedNextTexture  = idx;
-	m_forceEffectChange  = true;
+	m_scheduler.forceScene( idx );
 }
 
 // Key 'f': the user LIKES what is on screen — persistent selection bonus.
 void FilterShader::favoriteCurrentEffect()
 {
-	if( m_actEffectTexture < m_effectTextures.size() )
-		bumpTaste( m_effectTextures[m_actEffectTexture]->fragmentName(), 1.25f );
+	if( m_scheduler.actTexture() < m_effectTextures.size() )
+		bumpTaste( m_effectTextures[m_scheduler.actTexture()]->fragmentName(), 1.25f );
 }
 
-bool FilterShader::moodAccept(EffectShader *s)
-{
-	float target = 1.f + m_lastArousal * 9.f;               // desired busyness 1..10
-	float diff   = fabs(float(s->getComplexity()) - target) / 9.f;
-	float accept = 1.f - 0.6f * diff;                       // closer match → likelier
-
-	// Learned taste (skip-malus / favourite-bonus, persistent).
-	accept *= tasteFor( s->fragmentName() );
-
-	unsigned int f = s->moodFlags();
-	if (f)
-	{
-		float bonus = 0.f;
-		if (f & EffectShader::MOOD_BRIGHT)
-			bonus += (m_lastValence - 0.5f) * 0.8f;
-		if (f & EffectShader::MOOD_DARK)
-			bonus += (0.5f - m_lastValence) * 0.8f;
-		if (f & EffectShader::MOOD_AGGRESSIVE)
-			bonus += (m_lastArousal - 0.5f) * 0.8f + (0.3f - m_lastAmbient) * 0.4f;
-		if (f & EffectShader::MOOD_CALM)
-			bonus += (0.5f - m_lastArousal) * 0.6f + (m_lastAmbient - 0.3f) * 0.6f;
-		accept += bonus;
-	}
-	// Floor keeps every shader reachable (never a hard exclusion); a disliked
-	// shader gets a lower floor, but never zero.
-	float floorv = 0.15f * std::min( tasteFor( s->fragmentName() ), 1.f );
-	if (floorv < 0.05f) floorv = 0.05f;
-	if (accept < floorv) accept = floorv;
-	return (float(qrand()) / float(RAND_MAX)) < accept;
-}
 
 void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
                          const AudioFeatures &audio)
 {
-	m_lastArousal = audio.arousal;   // for mood-biased effect selection
-	m_lastValence = audio.valence;
-	m_lastAmbient = audio.ambientFactor;
+	m_scheduler.setMood( audio.arousal, audio.valence, audio.ambientFactor );
 	// Snapshot for the ImageLoader's mood-matched image choice (its thread).
 	m_moodValence = audio.valence;
 	m_moodArousal = audio.arousal;
@@ -925,17 +812,13 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 	if( s_freeze )
 	{
 		timeSinceLastFrameSec = 0.f;
-		m_timeEffectTexture.restart();
-		m_timeEffectCombine.restart();
+		m_scheduler.rearmEffectClocks();
 		m_timeTexture.restart();
 	}
 	// VJ PIN ('u'): keep the current effect/combine — re-arm only their
 	// clocks (images keep rotating); forced cuts are suppressed below.
 	else if( s_pinned )
-	{
-		m_timeEffectTexture.restart();
-		m_timeEffectCombine.restart();
-	}
+		m_scheduler.rearmEffectClocks();
 
 	// DJ-STOP dramaturgy: while the music holds its breath the PICTURE holds
 	// too — motion freezes within ~0.1 s (95 % dt cut, slewed so it eases in
@@ -1216,7 +1099,7 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
         audioFx.onsetKick     = m_kickSmooth          * gate;
         audioFx.onsetSnare    = m_snareSmooth         * gate;
         audioFx.onsetHat      = m_hatSmooth           * gate;
-        audioFx.transStyle    = m_transStyleTex;
+        audioFx.transStyle    = m_scheduler.transStyleTex();
         audioFx.beatPhase     = phaseLead;            // continuous (PLL + latency lead)
         audioFx.swell         = swell * gate;
         // Bar phase with the same lead, kept continuous across the beat wrap
@@ -1294,89 +1177,6 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
         audioFx.deltaPitch      = audio.deltaPitch     * gate;
     }
 
-    // Musical novelty: a strong harmonic / section change (a drop, a key change)
-    // forces an early cross-fade to the next effect — rate-limited, and only
-    // while music is actually playing.
-    m_noveltyCooldown -= timeSinceLastFrameSec;
-    if( !m_reviewMode && m_noveltyCooldown <= 0.f &&
-        audio.harmonicChange * audio.musicPresence > 0.5f )
-    {
-        m_forceEffectChange = true;
-        m_noveltyCooldown   = 8.0f;   // at most one musical cut every ~8 s
-    }
-
-    // SECTION change (Strophe -> Refrain -> Bridge): the analyzer's spectral-
-    // shape novelty detector increments audio.sectionCount once per section.
-    // A single +1 step forces an early cut with the SHORT (0.8 s) cross-fade,
-    // still quantised onto the next downbeat by the pending machinery below,
-    // so the new shader lands on the musical "1" of the new section.  Every
-    // second section also swaps the combine pass for a bigger scenery change.
-    // (Any other difference — e.g. this FilterShader was just (re)started
-    // while the analyzer kept counting — only re-syncs, without a cut.)
-    // SONG-STRUCTURE MEMORY: audio.sectionId identifies the section — a
-    // RETURNING section (chorus #2 = chorus #1) replays the shader, combine
-    // and exact parameter values it had the first time; a NEW section rolls
-    // fresh and its look is stored under the id after the switch completes.
-    if( !m_reviewMode && audio.sectionCount == m_lastSectionCount + 1 )
-    {
-        int  id = audio.sectionId;
-        auto it = m_sectionEffect.find( id );
-        bool known = (id >= 0) && it != m_sectionEffect.end()
-                     && it->second < m_effectTextures.size();
-        if( known && it->second == m_actEffectTexture )
-        {
-            // The right shader is already on screen — just refresh its look.
-            m_effectTextures[m_actEffectTexture]->restoreParameters( m_sectionParams[id] );
-        }
-        else
-        {
-            if( known )
-            {
-                m_nextEffectTexture     = it->second;   // replay that section's shader
-                m_pendingSectionRestore = id;           //   ... with its exact params
-                auto ic = m_sectionCombine.find( id );
-                if( ic != m_sectionCombine.end()
-                    && ic->second < m_effectCombines.size()
-                    && ic->second != m_actEffectCombine )
-                {
-                    m_nextEffectCombine  = ic->second;
-                    m_forceCombineChange = true;
-                }
-            }
-            else
-            {
-                m_pendingSectionStore = id;             // remember the new look
-                if( (audio.sectionCount & 1) == 0 )
-                    m_forceCombineChange = true;        // bigger scenery change
-            }
-            m_forceEffectChange = true;
-        }
-        m_noveltyCooldown = 8.0f;     // hold off the harmonic hook right after
-    }
-    m_lastSectionCount = audio.sectionCount;
-
-    // DROP (bass slams back after a build-up + breakdown): the analyzer bumps
-    // audio.dropCount at the hit.  React with an immediate scene cut — the
-    // pending machinery still quantises it, but a drop IS a downbeat-scale
-    // accent, so it lands right where the ear expects the change.  The
-    // camera layer additionally hits/shakes on audio.dropPulse.
-    if( !m_reviewMode && audio.dropCount == m_lastDropCount + 1 )
-    {
-        m_forceEffectChange = true;
-        m_noveltyCooldown   = 8.0f;
-    }
-    m_lastDropCount = audio.dropCount;
-
-    // VJ PIN ('u'): suppress every forced cut while the current look is held.
-    if( s_pinned )
-    {
-        m_forceEffectChange  = false;
-        m_forceCombineChange = false;
-        // A pending section store/restore must not attach to some LATER,
-        // unrelated switch after unpinning — drop it.
-        m_pendingSectionStore   = -1;
-        m_pendingSectionRestore = -1;
-    }
 
     if( m_waitForImageToLoad )
     {
@@ -1453,201 +1253,26 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 		}
 	}
     
-/***********************************State Machine for Interpolation between two texture effects*****************************************/
+/*********************** Szenen-Wahl: SceneScheduler ***********************/
 
-    //State Machine for Interpolation between Tunnel and Plain
-    //Full Plain
-    if( m_stateInterpolationEffectTexture == 0 )
-	{
-        m_interpolationEffectTexture = 1.0;
-
-		float ts = float(m_timeEffectTexture.elapsed()) * 0.001;
-
-		// REVIEW MODE: fixed 8 s per scene, regardless of what the config
-		// (or the music pacing) would have chosen.
-		if( m_reviewMode && m_timeInterpolationEffectTexture > 8.f )
-			m_timeInterpolationEffectTexture = 8.f;
-
-		// End the solo early on a manual ('n') or novelty-driven request, but
-		// only after a brief minimum so cuts never come back-to-back.
-		bool forced = m_forceEffectChange;
-		if( ts > m_timeInterpolationEffectTexture || (forced && ts > 0.6f) )
-		{
-			m_forceEffectChange   = false;
-			m_pendingEffectChange = true;
-			m_pendingEffectForced = m_pendingEffectForced || forced;
-		}
-
-		// Beat-quantised: a due change is held PENDING until the next downbeat
-		// lands, so cuts fall on the musical "1".  A timeout keeps weak/undetected
-		// beats from stalling the show, and without music we cut immediately.
-		// A MANUAL ('n') cut skips the quantisation entirely — the user pressed
-		// a button and expects the switch NOW, not on the next bar.
-		if( m_pendingEffectChange )
-		{
-			m_pendingEffectAge += timeSinceLastFrameSec;
-			if( m_pendingEffectForced || m_reviewMode || m_downbeatTick
-			    || m_pendingEffectAge > 2.5f || m_gateSmooth < 0.25f )
-			{
-				bool forcedGo         = m_pendingEffectForced;
-				m_pendingEffectChange = false;
-				m_pendingEffectForced = false;
-				m_pendingEffectAge    = 0.f;
-
-				m_stateInterpolationEffectTexture = 1;
-
-				// Roll a transition style: 26 styles (see CombinePlain.frag),
-				// the classic linear mix stays the most common (~19%).
-				{
-					int r = qrand() % 31;
-					m_transStyleTex = (r <= 5) ? 0 : (r - 5);
-				}
-
-				unsigned int timeAct = m_effectTextures[m_actEffectTexture]->getTimeInterpolation();
-				unsigned int timeNext = m_effectTextures[m_nextEffectTexture]->getTimeInterpolation();
-
-				// A manual ('n') cut uses a short, snappy cross-fade so it is clearly a
-				// switch; a natural change uses the config's (long) interpolation time —
-				// EXCEPT with a confident rhythm, where it becomes exactly 4 BEATS so
-				// the transition breathes in the song's tempo (never longer than the
-				// config asked for).
-				{
-					float cfgT = (float) (std::min( timeAct, timeNext)) / m_timingScale;
-					if( !forcedGo && audio.rhythmStrength > 0.55f
-					    && audio.estimatedBPM > 0.004f )
-					{
-						float fourBeats = 4.f * 60.f / (40.f + 160.f * audio.estimatedBPM);
-						cfgT = fminf(fmaxf(fourBeats, 1.2f), cfgT);
-					}
-					// ARTICULATION: staccato material (sharp attacks) gets
-					// snappier cross-fades, legato keeps the full dissolve —
-					// the performance's phrasing shapes the editing style.
-					cfgT *= 1.f - 0.35f * audio.logAttackTime;
-					m_timeInterpolationEffectTexture =
-					    (forcedGo || m_reviewMode) ? 0.8f : cfgT;
-				}
-
-				m_effectTextures[m_nextEffectTexture]->startInterpolators();
-
-				m_timeEffectTexture.start();
-			}
-		}
-
-	}
-    //Decreasing
-	else
-	{
-		float ts = float(m_timeEffectTexture.elapsed()) * 0.001;
-		
-		m_interpolationEffectTexture = (1-ts/m_timeInterpolationEffectTexture);
-
-		if( ts > m_timeInterpolationEffectTexture )
-		{
-			m_stateInterpolationEffectTexture = 0;
-
-			m_effectTextures[m_actEffectTexture]->resetParameters();
-			m_actEffectTexture = m_nextEffectTexture;
-
-			// Song-structure memory: a recognised section replays the exact
-			// parameter values it had last time; a new section's fresh look
-			// is remembered under its id (combine captured mid-swap if one is
-			// running, so the stored pair matches what ends up on screen).
-			if( m_pendingSectionRestore >= 0 )
-			{
-				auto ip = m_sectionParams.find( m_pendingSectionRestore );
-				if( ip != m_sectionParams.end() )
-					m_effectTextures[m_actEffectTexture]->restoreParameters( ip->second );
-				m_pendingSectionRestore = -1;
-			}
-			if( m_pendingSectionStore >= 0 )
-			{
-				m_sectionEffect[m_pendingSectionStore]  = m_actEffectTexture;
-				m_sectionCombine[m_pendingSectionStore] =
-					(m_stateInterpolationEffectCombine != 0) ? m_nextEffectCombine
-					                                         : m_actEffectCombine;
-				m_sectionParams[m_pendingSectionStore]  =
-					m_effectTextures[m_actEffectTexture]->snapshotParameters();
-				m_pendingSectionStore = -1;
-			}
-
-			// REVIEW MODE: step strictly alphabetically (built lazily).
-			// Remote scene browser: a DIRECTLY requested scene wins over
-			// EVERYTHING, including the review sequence — picking a scene in
-			// the remote and being silently ignored is never what was meant.
-			if( m_forcedNextTexture >= 0
-			    && m_forcedNextTexture < (int)m_effectTextures.size() )
-			{
-				m_nextEffectTexture = m_forcedNextTexture;
-				m_forcedNextTexture = -1;
-				fprintf( stderr, "Forced: %s\n",
-				         m_effectTextures[m_nextEffectTexture]->fragmentName() );
-				// Resume the review walk AFTER the scene that was jumped to.
-				for( unsigned int k = 0; k < m_reviewOrder.size(); ++k )
-					if( m_reviewOrder[k] == m_nextEffectTexture )
-					{ m_reviewPos = ( k + 1 ) % (int)m_reviewOrder.size(); break; }
-			}
-			else if( m_reviewMode && !m_effectTextures.empty() )
-			{
-				if( m_reviewOrder.size() != m_effectTextures.size() )
-				{
-					m_reviewOrder.clear();
-					for( unsigned int k = 0; k < m_effectTextures.size(); ++k )
-						m_reviewOrder.push_back( (int)k );
-					std::sort( m_reviewOrder.begin(), m_reviewOrder.end(),
-					           [this]( int a, int b )
-					           {
-					               QString na( m_effectTextures[a]->fragmentName() );
-					               QString nb( m_effectTextures[b]->fragmentName() );
-					               int ca = std::max( na.lastIndexOf('\\'), na.lastIndexOf('/') );
-					               int cb = std::max( nb.lastIndexOf('\\'), nb.lastIndexOf('/') );
-					               return na.mid(ca+1).compare( nb.mid(cb+1), Qt::CaseInsensitive ) < 0;
-					           } );
-					m_reviewPos = 0;
-				}
-				m_nextEffectTexture = m_reviewOrder[ m_reviewPos % m_reviewOrder.size() ];
-				m_reviewPos = ( m_reviewPos + 1 ) % (int)m_reviewOrder.size();
-				fprintf( stderr, "Review: %s\n",
-				         m_effectTextures[m_nextEffectTexture]->fragmentName() );
-			}
-			else
-			for( unsigned int i = 0; i < m_maxIterationsEffectSearch; i++ )
-			{
-				m_nextEffectTexture = qrand() % m_effectTextures.size();
-				if( m_nextEffectTexture != m_actEffectTexture &&
-			(( m_effectTextures[m_actEffectTexture]->getComplexity() +
-			m_effectTextures[m_nextEffectTexture]->getComplexity() +
-			m_effectCombines[m_actEffectCombine]->getComplexity() +
-			m_effectCombines[m_nextEffectCombine]->getComplexity() ) < 20 )
-			&& m_effectTextures[m_nextEffectTexture]->useShader()
-			&& moodAccept( m_effectTextures[m_nextEffectTexture] )
-			)
-					break;
-			}
-
-					
-			if( m_nextEffectTexture == m_actEffectTexture )
-			{
-				m_nextEffectTexture += 1;
-				if( m_nextEffectTexture == m_effectTextures.size() )
-					m_nextEffectTexture = 0;
-			}
-
-			/*if( m_actEffectTexture == 0 )
-				m_nextEffectTexture = 1;
-			else
-				m_nextEffectTexture = 0;*/
-
-
-            m_interpolationEffectTexture = 1.0;
-			
-			m_timeInterpolationEffectTexture = (float) (m_effectTextures[m_actEffectTexture]->getTimeSolo()) / m_timingScale;
-
-
-			m_timeEffectTexture.start();
-		}
-	}
-
-	//printf( "%d\t%d\t%f\n", m_stateInterpolationEffectTexture, m_actEffectTexture, m_interpolationEffectTexture );
+	// Trigger (Novelty/Section/Drop, Pin) + Effekt-Zustandsmaschine.  Der
+	// Combine-Teil (tickCombine) laeuft weiter NACH den Effekt-Passes, weil
+	// erst dort m_trueStereoHold entsteht.
+	SceneScheduler::Tick schedTick;
+	schedTick.dt             = timeSinceLastFrameSec;
+	schedTick.downbeatTick   = m_downbeatTick;
+	schedTick.gateSmooth     = m_gateSmooth;
+	schedTick.timingScale    = m_timingScale;
+	schedTick.pinned         = s_pinned;
+	schedTick.harmonicChange = audio.harmonicChange;
+	schedTick.musicPresence  = audio.musicPresence;
+	schedTick.sectionCount   = audio.sectionCount;
+	schedTick.sectionId      = audio.sectionId;
+	schedTick.dropCount      = audio.dropCount;
+	schedTick.rhythmStrength = audio.rhythmStrength;
+	schedTick.estimatedBPM   = audio.estimatedBPM;
+	schedTick.logAttackTime  = audio.logAttackTime;
+	m_scheduler.tick( schedTick );
     
     //printf( "Rotation t n: %d %f %f\n", m_stateInterpolationTunnel, m_speedKaleidoscopeTunnelAct, m_speedTunnelAct );
 
@@ -1667,9 +1292,9 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 	// Überblendung, der einblendende), Frame-Kontext übergeben, laufen lassen.
 	// GpuSims bindet die neuesten Felder auf die globalen Units 7-11/28.
 	{
-		EffectShader *aktE = m_effectTextures[m_actEffectTexture];
-		EffectShader *nxtE = m_effectTextures[m_nextEffectTexture];
-		const bool fading  = ( m_stateInterpolationEffectTexture != 0 );
+		EffectShader *aktE = m_effectTextures[m_scheduler.actTexture()];
+		EffectShader *nxtE = m_effectTextures[m_scheduler.nextTexture()];
+		const bool fading  = ( m_scheduler.texState() != 0 );
 		GpuSims::Demand need;
 		need.rd       = aktE->usesSim()      || ( fading && nxtE->usesSim() );
 		need.fluid    = aktE->usesFluid()    || ( fading && nxtE->usesFluid() );
@@ -1697,9 +1322,9 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 		static bool cfxInit = false;
 		if( !cfxInit ) { m_cfx.init(); cfxInit = true; }
 
-		unsigned int need = m_effectTextures[m_actEffectTexture]->cfxMask();
-		if( m_stateInterpolationEffectTexture != 0 )
-			need |= m_effectTextures[m_nextEffectTexture]->cfxMask();
+		unsigned int need = m_effectTextures[m_scheduler.actTexture()]->cfxMask();
+		if( m_scheduler.texState() != 0 )
+			need |= m_effectTextures[m_scheduler.nextTexture()]->cfxMask();
 
 		if( need )
 		{
@@ -1738,12 +1363,12 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 	// While packed content is up, no combine cross-fade may start.
 	{
 		const bool stereoOn = ( s_stereoMode == 1 || s_stereoMode == 2 );
-		const bool act3D    = m_effectTextures[m_actEffectTexture]->is3D();
-		const bool texSolo  = ( m_stateInterpolationEffectTexture == 0 );
-		const bool next3D   = m_effectTextures[m_nextEffectTexture]->is3D();
+		const bool act3D    = m_effectTextures[m_scheduler.actTexture()]->is3D();
+		const bool texSolo  = ( m_scheduler.texState() == 0 );
+		const bool next3D   = m_effectTextures[m_scheduler.nextTexture()]->is3D();
 		m_trueStereoHold   = stereoOn && act3D && ( texSolo || next3D );
 		m_trueStereoPacked = m_trueStereoHold
-		                   && m_stateInterpolationEffectCombine == 0;
+		                   && m_scheduler.combState() == 0;
 		m_trueStereoNow    = m_trueStereoPacked && texSolo;
 	}
 
@@ -1792,34 +1417,34 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 	// The box is sized by the SCENE, because only it knows its own scale, and
 	// the map's 2048 texels are spent across whatever this says.
 	EffectShader::s_shadowExtent =
-	    m_effectTextures[m_actEffectTexture]->shadowExtent();
+	    m_effectTextures[m_scheduler.actTexture()]->shadowExtent();
 	updateLightMatrix( m_globaltime );
-	if( m_effectTextures[m_actEffectTexture]->usesShadow() )
+	if( m_effectTextures[m_scheduler.actTexture()]->usesShadow() )
 	{
-		renderShadowPass( m_effectTextures[m_actEffectTexture] );
+		renderShadowPass( m_effectTextures[m_scheduler.actTexture()] );
 		glBindFramebuffer( GL_FRAMEBUFFER, m_fboEffectTexture1 );
 	}
 
 	EffectShader::s_depthValid[0] =
-	    m_effectTextures[m_actEffectTexture]->is3D() ? 1.f : 0.f;
+	    m_effectTextures[m_scheduler.actTexture()]->is3D() ? 1.f : 0.f;
 	if( EffectShader::s_depthValid[0] == 0.f )
 	{
 		glClearDepth( 1.0 );
 		glClear( GL_DEPTH_BUFFER_BIT );
 	}
 
-	m_effectTextures[m_actEffectTexture]->enableShader();
-	m_effectTextures[m_actEffectTexture]->setUniforms( m_globaltime, m_interpolationTexture, 0, 1 );
-	m_effectTextures[m_actEffectTexture]->applyAudioFeatures( audioFx );
+	m_effectTextures[m_scheduler.actTexture()]->enableShader();
+	m_effectTextures[m_scheduler.actTexture()]->setUniforms( m_globaltime, m_interpolationTexture, 0, 1 );
+	m_effectTextures[m_scheduler.actTexture()]->applyAudioFeatures( audioFx );
 	if( m_trueStereoPacked )
-		renderSceneStereo( m_effectTextures[m_actEffectTexture] );
+		renderSceneStereo( m_effectTextures[m_scheduler.actTexture()] );
 	else
-		m_effectTextures[m_actEffectTexture]->draw();
+		m_effectTextures[m_scheduler.actTexture()]->draw();
 
 	// Transparent geometry goes in afterwards, over the opaque frame this scene
 	// just produced and against the depth it just wrote.
-	if( !m_trueStereoPacked && m_effectTextures[m_actEffectTexture]->usesOit() )
-		renderOitPass( m_effectTextures[m_actEffectTexture],
+	if( !m_trueStereoPacked && m_effectTextures[m_scheduler.actTexture()]->usesOit() )
+		renderOitPass( m_effectTextures[m_scheduler.actTexture()],
 		               m_depthTexEffect1, m_fboEffectTexture1 );
 
 	checkGLErrors("createTextures() 1");
@@ -1835,22 +1460,22 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 	// this output (tex1) by (1-interpolation), which is 0 at interpolation==1.0, so
 	// it is invisible.  Saves a whole effect pass during the common solo periods.
 	EffectShader::s_depthValid[1] = 0.f;
-	if( m_stateInterpolationEffectTexture != 0 )
+	if( m_scheduler.texState() != 0 )
 	{
 		EffectShader::s_depthValid[1] =
-		    m_effectTextures[m_nextEffectTexture]->is3D() ? 1.f : 0.f;
+		    m_effectTextures[m_scheduler.nextTexture()]->is3D() ? 1.f : 0.f;
 		if( EffectShader::s_depthValid[1] == 0.f )
 		{
 			glClearDepth( 1.0 );
 			glClear( GL_DEPTH_BUFFER_BIT );
 		}
-		m_effectTextures[m_nextEffectTexture]->enableShader();
-		m_effectTextures[m_nextEffectTexture]->setUniforms( m_globaltime, m_interpolationTexture, 0, 1 );
-		m_effectTextures[m_nextEffectTexture]->applyAudioFeatures( audioFx );
+		m_effectTextures[m_scheduler.nextTexture()]->enableShader();
+		m_effectTextures[m_scheduler.nextTexture()]->setUniforms( m_globaltime, m_interpolationTexture, 0, 1 );
+		m_effectTextures[m_scheduler.nextTexture()]->applyAudioFeatures( audioFx );
 		if( m_trueStereoPacked )     // 3D<->3D fade: the incoming scene is
-			renderSceneStereo( m_effectTextures[m_nextEffectTexture] );  // eye-packed too
+			renderSceneStereo( m_effectTextures[m_scheduler.nextTexture()] );  // eye-packed too
 		else
-			m_effectTextures[m_nextEffectTexture]->draw();
+			m_effectTextures[m_scheduler.nextTexture()]->draw();
 	}
 
 	
@@ -1873,122 +1498,8 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 	
 /***********************************Plain and Full*****************************************/
 
-    //State Machine for Interpolation between Tunnel and Plain
-    //Full Plain
-    if( m_stateInterpolationEffectCombine == 0 )
-	{
-        m_interpolationEffectCombine = 1.0;
-
-		float ts = float(m_timeEffectCombine.elapsed()) * 0.001;
-		bool forcedC = m_forceCombineChange;
-		// The true-stereo hold freezes combine switching: an eye-packed 3D
-		// frame must not enter a combine cross-fade (the pending change fires
-		// as soon as the hold lifts).
-		if( !m_trueStereoHold
-		    && (ts > m_timeInterpolationEffectCombine || (forcedC && ts > 0.6f)) )
-		{
-			m_forceCombineChange   = false;
-			m_pendingCombineChange = true;
-			m_pendingCombineForced = m_pendingCombineForced || forcedC;
-		}
-
-		// Beat-quantised, like the texture-effect change above (manual cuts
-		// fire immediately here too).
-		if( m_pendingCombineChange && !m_trueStereoHold )
-		{
-			m_pendingCombineAge += timeSinceLastFrameSec;
-			if( m_pendingCombineForced || m_downbeatTick
-			    || m_pendingCombineAge > 2.5f || m_gateSmooth < 0.25f )
-			{
-				bool forcedGo          = m_pendingCombineForced;
-				m_pendingCombineChange = false;
-				m_pendingCombineForced = false;
-				m_pendingCombineAge    = 0.f;
-
-				m_stateInterpolationEffectCombine = 1;
-
-				// Roll a transition style for the combine blend as well.
-				{
-					int r = qrand() % 31;
-					m_transStyleComb = (r <= 5) ? 0 : (r - 5);
-				}
-
-				unsigned int timeAct = m_effectCombines[m_actEffectCombine]->getTimeInterpolation();
-				unsigned int timeNext = m_effectCombines[m_nextEffectCombine]->getTimeInterpolation();
-
-				// Manual ('n') cut → short snappy cross-fade; natural change → config
-				// time, or exactly 4 beats when the rhythm is confident (see the
-				// texture-effect site above).
-				{
-					float cfgT = (float) (std::min( timeAct, timeNext)) / m_timingScale;
-					if( !forcedGo && audio.rhythmStrength > 0.55f
-					    && audio.estimatedBPM > 0.004f )
-					{
-						float fourBeats = 4.f * 60.f / (40.f + 160.f * audio.estimatedBPM);
-						cfgT = fminf(fmaxf(fourBeats, 1.2f), cfgT);
-					}
-					// ARTICULATION: same phrasing rule as the texture site.
-					cfgT *= 1.f - 0.35f * audio.logAttackTime;
-					m_timeInterpolationEffectCombine = forcedGo ? 0.8f : cfgT;
-				}
-
-				m_effectCombines[m_nextEffectCombine]->startInterpolators();
-
-				m_timeEffectCombine.start();
-			}
-		}
-
-	}
-    //Decreasing
-	else
-	{
-		float ts = float(m_timeEffectCombine.elapsed()) * 0.001;
-		
-		m_interpolationEffectCombine = (1-ts/m_timeInterpolationEffectCombine);
-
-		if( ts > m_timeInterpolationEffectCombine )
-		{
-			m_stateInterpolationEffectCombine = 0;
-
-			m_effectCombines[m_actEffectCombine]->resetParameters();
-			m_actEffectCombine = m_nextEffectCombine;
-
-			for( unsigned int i = 0; i < m_maxIterationsEffectSearch; i++ )
-			{
-				m_nextEffectCombine = qrand() % m_effectCombines.size();
-				if( m_nextEffectCombine != m_actEffectCombine &&
-			(( m_effectTextures[m_actEffectTexture]->getComplexity() +
-			m_effectTextures[m_nextEffectTexture]->getComplexity() +
-			m_effectCombines[m_actEffectCombine]->getComplexity() +
-			m_effectCombines[m_nextEffectCombine]->getComplexity() ) < 20 )
-			&& m_effectCombines[m_nextEffectCombine]->useShader()
-			&& moodAccept( m_effectCombines[m_nextEffectCombine] )
-			 )
-					break;
-			}
-					
-			if( m_nextEffectCombine == m_actEffectCombine )
-			{
-				m_nextEffectCombine += 1;
-				if( m_nextEffectCombine == m_effectCombines.size() )
-					m_nextEffectCombine = 0;
-			}
-
-			//m_nextEffectCombine = 0;
-
-			/*if( m_actEffectCombine == 0 )
-				m_nextEffectCombine = 1;
-			else
-				m_nextEffectCombine = 0;*/
-
-
-            m_interpolationEffectCombine = 1.0;
-
-            m_timeInterpolationEffectCombine = (float) (m_effectCombines[m_actEffectCombine]->getTimeSolo()) / m_timingScale;//(float) (m_effectCombineMinTimeSolo[m_actEffectCombine] + (qrand() % (m_effectCombineMaxTimeSolo[m_actEffectCombine] - m_effectCombineMinTimeSolo[m_actEffectCombine])));
-			
-			m_timeEffectCombine.start();
-		}
-	}
+	// Combine-Zustandsmaschine (an der alten Stelle, s.o.).
+	m_scheduler.tickCombine( schedTick, m_trueStereoHold );
 
 	
 	// restore render destination to regular frame buffer
@@ -2030,15 +1541,15 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 		if( m_stereoMixResUni  >= 0 ) glUniform2f( m_stereoMixResUni,
 		                                           (float)m_width, (float)m_height );
 		if( m_stereoMixWUni    >= 0 ) glUniform1f( m_stereoMixWUni,
-		                                           m_interpolationEffectTexture );
+		                                           m_scheduler.texInterp() );
 		drawWindow();
 	}
 	else
 	{
-		m_effectCombines[m_actEffectCombine]->enableShader();
-		m_effectCombines[m_actEffectCombine]->setUniforms( m_globaltime, m_interpolationEffectTexture, 3, 4 );
-		m_effectCombines[m_actEffectCombine]->applyAudioFeatures( audioFx );
-		m_effectCombines[m_actEffectCombine]->draw();
+		m_effectCombines[m_scheduler.actCombine()]->enableShader();
+		m_effectCombines[m_scheduler.actCombine()]->setUniforms( m_globaltime, m_scheduler.texInterp(), 3, 4 );
+		m_effectCombines[m_scheduler.actCombine()]->applyAudioFeatures( audioFx );
+		m_effectCombines[m_scheduler.actCombine()]->draw();
 	}
 
 
@@ -2047,9 +1558,9 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 
     /*glFramebufferCombine2DEXT( GL_FRAMEBUFFER, m_attachmentpoint, GL_Combine_2D, m_texIDFBOEffectCombine2, 0);
 
-	m_effectCombines[m_nextEffectCombine]->enableShader();
-	m_effectCombines[m_nextEffectCombine]->setUniforms( m_globaltime, m_interpolationCombine );
-	m_effectCombines[m_nextEffectCombine]->draw();*/
+	m_effectCombines[m_scheduler.nextCombine()]->enableShader();
+	m_effectCombines[m_scheduler.nextCombine()]->setUniforms( m_globaltime, m_interpolationCombine );
+	m_effectCombines[m_scheduler.nextCombine()]->draw();*/
 
 
 	//Now Use Final Rendering
@@ -2062,12 +1573,12 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 	// Skip the "next" combine while NOT cross-fading combines: the final present
 	// pass (CombinePlain) weights this output by (1-interpolation)=0 at
 	// interpolation==1.0, so it is invisible.  Saves the second combine pass.
-	if( m_stateInterpolationEffectCombine != 0 )
+	if( m_scheduler.combState() != 0 )
 	{
-		m_effectCombines[m_nextEffectCombine]->enableShader();
-		m_effectCombines[m_nextEffectCombine]->setUniforms( m_globaltime, m_interpolationEffectTexture, 3, 4 );
-		m_effectCombines[m_nextEffectCombine]->applyAudioFeatures( audioFx );
-		m_effectCombines[m_nextEffectCombine]->draw();
+		m_effectCombines[m_scheduler.nextCombine()]->enableShader();
+		m_effectCombines[m_scheduler.nextCombine()]->setUniforms( m_globaltime, m_scheduler.texInterp(), 3, 4 );
+		m_effectCombines[m_scheduler.nextCombine()]->applyAudioFeatures( audioFx );
+		m_effectCombines[m_scheduler.nextCombine()]->draw();
 	}
 
 	
@@ -2085,7 +1596,7 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 	// Styled combine-combine transition (0 = classic linear mix).
 	{
 		GLint locTS = glGetUniformLocation( m_sh_prog_id_combine, "transStyle" );
-		if( locTS >= 0 ) glUniform1i( locTS, m_transStyleComb );
+		if( locTS >= 0 ) glUniform1i( locTS, m_scheduler.transStyleComb() );
 	}
 
 
@@ -2095,7 +1606,7 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 	glUniform1i( m_texPointCombineUni1, 5 );		// texture Unit 0, nicht mit texId verwechseln
 	glUniform1i( m_texPointCombineUni2, 6 );		// texture Unit 0, nicht mit texId verwechseln
 	glUniform2f( m_texSizeRcpCombineUni, (float) m_width, (float) m_height );
-    glUniform1f( m_interpolationCombineUni, m_interpolationEffectCombine );
+    glUniform1f( m_interpolationCombineUni, m_scheduler.combInterp() );
 	glUniform1f( m_timeCombineUni, m_globaltime );
 
 
@@ -2171,9 +1682,9 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 			// Depth-aware trails while a 3D scene is on screen (slewed so
 			// cross-fades from/to 2D effects ease the behaviour in and out).
 			{
-				bool sceneUp = m_effectTextures[m_actEffectTexture]->is3D()
-				            || ( m_stateInterpolationEffectTexture != 0
-				                 && m_effectTextures[m_nextEffectTexture]->is3D() );
+				bool sceneUp = m_effectTextures[m_scheduler.actTexture()]->is3D()
+				            || ( m_scheduler.texState() != 0
+				                 && m_effectTextures[m_scheduler.nextTexture()]->is3D() );
 				m_trailDepth3D = slewToward( m_trailDepth3D,
 				                             sceneUp ? 1.f : 0.f, 2.5f, dtWall );
 				if( m_trailDepthUni >= 0 )
