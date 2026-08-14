@@ -1092,6 +1092,50 @@ Not built: `Marching Cubes`. Meshing an isosurface needs a compute→VBO→indir
 draw path that this renderer does not have, and faking it with a raymarch would
 not have been the thing that was asked for. The `texSculpt` slot is reserved.
 
+### Shadow maps — a contract, not an automatic pass
+
+The tempting design is for the engine to render every 3D scene a second time
+with a light matrix substituted for `projM`. It does not work: **every scene
+places its own camera** before applying `projM`, so swapping the matrix lights
+the scene from a direction that ignores that placement. The depth pass is
+therefore something a scene *signs up for*:
+
+- The engine sets `shadowPass` to 1, binds a depth-only framebuffer, and draws
+  the scene. It supplies `lightM`, `lightDir`, `texShadow` (unit 31) and
+  `shadowTexel`.
+- While `shadowPass` is 1 the scene projects its **world** position with
+  `lightM` instead of its usual camera chain, and its fragment shader returns
+  immediately — it would otherwise sample the very texture it is rendering into.
+- A scene opts in by declaring `texShadow`; scenes that do not are untouched and
+  cost nothing.
+
+`lightM` is an **orthographic** box, because this is a sun: its rays are
+parallel, and a perspective shadow frustum would give the shadows a vanishing
+point the shading does not have. It covers a fixed 120-unit cube at the origin,
+and a scene wanting shadows keeps its geometry inside it — automatically fitting
+the box would mean refitting it every frame from bounds the host never sees.
+
+Three things that cost iterations, all worth knowing:
+
+- **`sampler2DShadow`, not `sampler2D`.** With `GL_TEXTURE_COMPARE_MODE` set,
+  the hardware compares each of the four texels a linear filter would fetch and
+  averages the four *booleans* — free 2×2 percentage-closer filtering. A plain
+  sampler averages the depths first and compares once, which produces a hard
+  edge with a halo rather than a soft edge.
+- **No face culling in the depth pass.** The standard trick is to cull front
+  faces so the map records each object's far side, moving self-shadowing off the
+  lit surface — but it assumes a known winding, and the cube buffer winds its
+  outward faces clockwise. Culling `GL_FRONT` there records the *nearest*
+  surfaces and every face shadows itself. Receivers offset their lookup along
+  the surface normal instead, which needs no assumption at all.
+- **Shadow length goes as 1/tan(elevation).** At 37° a tall object throws a
+  shadow longer than itself, and in any scene with repeated geometry the ground
+  goes entirely dark — which looks exactly like a broken shadow map. The sun sits
+  high for that reason.
+
+**`PillarHall`** is the first scene under the contract: a field of pillars whose
+heights follow the spectrum, on a floor bright enough to show what falls on it.
+
 ### The scene depth buffer, readable
 
 The two texture-effect FBOs used to carry their depth in a **renderbuffer**,

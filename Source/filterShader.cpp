@@ -3009,6 +3009,17 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 	// scene left there would still be sitting in it — and the combine stage now
 	// READS that texture.  Clearing here means "no geometry" always reads as the
 	// far plane instead of as a stale silhouette.
+	// Shadow map first: the depth pass has to be complete before the scene that
+	// samples it is drawn.  It renders into its own framebuffer, so it happens
+	// before the texture FBO is bound below.
+	m_lastAudioFx = audioFx;
+	updateLightMatrix( m_globaltime );
+	if( m_effectTextures[m_actEffectTexture]->usesShadow() )
+	{
+		renderShadowPass( m_effectTextures[m_actEffectTexture] );
+		glBindFramebuffer( GL_FRAMEBUFFER, m_fboEffectTexture1 );
+	}
+
 	EffectShader::s_depthValid[0] =
 	    m_effectTextures[m_actEffectTexture]->is3D() ? 1.f : 0.f;
 	if( EffectShader::s_depthValid[0] == 0.f )
@@ -3695,6 +3706,163 @@ void FilterShader::blitTexture( GLuint tex )
 	glBindVertexArray( fullscreenVAO() );
 	glDrawArrays( GL_TRIANGLES, 0, 3 );
 	glBindVertexArray( 0 );
+}
+
+// Create the shadow map's depth-only framebuffer.  Lazy: only a scene that
+// declares "texShadow" ever triggers it, and most never do.
+bool FilterShader::ensureShadowMap()
+{
+	if( m_shadowFbo != 0 )
+		return true;
+
+	glGenTextures( 1, &m_shadowTex );
+	glBindTexture( GL_TEXTURE_2D, m_shadowTex );
+	// LINEAR is deliberate: with GL_TEXTURE_COMPARE_MODE set, the hardware
+	// filters the RESULT of four depth comparisons rather than the depths
+	// themselves — free 2x2 percentage-closer filtering, which is what turns a
+	// staircased shadow edge into a soft one.
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+	// Outside the light's box there is no occluder, so the border must read as
+	// "fully lit" — CLAMP_TO_EDGE would smear the nearest shadow outward across
+	// everything beyond the map.
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER );
+	const float border[4] = { 1.f, 1.f, 1.f, 1.f };
+	glTexParameterfv( GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL );
+	glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, kShadowSize, kShadowSize,
+	              0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL );
+
+	glGenFramebuffers( 1, &m_shadowFbo );
+	glBindFramebuffer( GL_FRAMEBUFFER, m_shadowFbo );
+	glFramebufferTexture2D( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+	                        GL_TEXTURE_2D, m_shadowTex, 0 );
+	// No colour attachment at all; without telling GL that, the framebuffer is
+	// incomplete.
+	glDrawBuffer( GL_NONE );
+	glReadBuffer( GL_NONE );
+	bool ok = checkFramebufferStatus();
+	glBindFramebuffer( GL_FRAMEBUFFER, m_defaultFBO );
+	glBindTexture( GL_TEXTURE_2D, 0 );
+
+	if( !ok )
+	{
+		fputs( "shadow map FBO incomplete - shadows disabled\n", stderr );
+		glDeleteFramebuffers( 1, &m_shadowFbo );
+		glDeleteTextures( 1, &m_shadowTex );
+		m_shadowFbo = m_shadowTex = 0;
+	}
+	return ok;
+}
+
+// Orthographic projection along a slowly turning light direction, covering a
+// fixed cube at the origin.  Orthographic and not perspective because this is a
+// SUN: its rays are parallel, and a perspective shadow frustum would give the
+// shadows a vanishing point that the shading does not have.
+void FilterShader::updateLightMatrix(float t)
+{
+	const float E = EffectShader::kShadowExtent;
+
+	// Kept fairly high on purpose.  A low sun is more dramatic per shadow, but
+	// shadow length goes as 1/tan(elevation) — at 37 degrees a tall object
+	// throws a shadow longer than itself, and in any scene with repeated
+	// geometry the ground ends up entirely dark.
+	float a = t * 0.06f;
+	float lx = 0.42f * sinf( a );
+	float ly = 1.15f + 0.16f * sinf( a * 0.43f );
+	float lz = -0.42f * cosf( a ) - 0.18f;
+	float ln = sqrtf( lx * lx + ly * ly + lz * lz );
+	lx /= ln; ly /= ln; lz /= ln;
+	EffectShader::s_lightDir[0] = lx;
+	EffectShader::s_lightDir[1] = ly;
+	EffectShader::s_lightDir[2] = lz;
+
+	// Look-at from the light toward the origin.  f points from the eye into the
+	// scene, so it is the NEGATED light direction.
+	float fx = -lx, fy = -ly, fz = -lz;
+	// Any up vector not parallel to f; y is parallel when the light is overhead.
+	float ux = 0.f, uy = 1.f, uz = 0.f;
+	if( fabsf( fy ) > 0.98f ) { ux = 1.f; uy = 0.f; }
+	// s = f x up, then u = s x f  (both normalised).
+	float sx = fy * uz - fz * uy;
+	float sy = fz * ux - fx * uz;
+	float sz = fx * uy - fy * ux;
+	float sn = sqrtf( sx * sx + sy * sy + sz * sz );
+	sx /= sn; sy /= sn; sz /= sn;
+	float tx = sy * fz - sz * fy;
+	float ty = sz * fx - sx * fz;
+	float tz = sx * fy - sy * fx;
+
+	// Eye far enough back that the whole box lies in front of it.
+	const float dist = E * 2.f;
+	float ex = lx * dist, ey = ly * dist, ez = lz * dist;
+
+	// View matrix (column-major), rows s / t / -f, translated by -eye.
+	float V[16] = {
+		 sx,  tx, -fx, 0.f,
+		 sy,  ty, -fy, 0.f,
+		 sz,  tz, -fz, 0.f,
+		-( sx * ex + sy * ey + sz * ez ),
+		-( tx * ex + ty * ey + tz * ez ),
+		  ( fx * ex + fy * ey + fz * ez ), 1.f
+	};
+
+	// Orthographic box: +-E across, and deep enough to hold the box from the
+	// eye's distance.
+	const float zn = 0.1f, zf = dist + E * 2.f;
+	float P[16] = {
+		1.f / E, 0.f,     0.f,                  0.f,
+		0.f,     1.f / E, 0.f,                  0.f,
+		0.f,     0.f,    -2.f / ( zf - zn ),    0.f,
+		0.f,     0.f,    -( zf + zn ) / ( zf - zn ), 1.f
+	};
+
+	// s_lightM = P * V, column-major.
+	float *M = EffectShader::s_lightM;
+	for( int c = 0; c < 4; ++c )
+		for( int r = 0; r < 4; ++r )
+		{
+			float sum = 0.f;
+			for( int k = 0; k < 4; ++k )
+				sum += P[k * 4 + r] * V[c * 4 + k];
+			M[c * 4 + r] = sum;
+		}
+}
+
+// Draw one 3D scene into the shadow map, depth only.
+void FilterShader::renderShadowPass(EffectShader *fx)
+{
+	if( !ensureShadowMap() )
+		return;
+
+	glBindFramebuffer( GL_FRAMEBUFFER, m_shadowFbo );
+	glViewport( 0, 0, kShadowSize, kShadowSize );
+	glClearDepth( 1.0 );
+	glClear( GL_DEPTH_BUFFER_BIT );
+
+	// Deliberately NO face culling.  The usual trick is to cull front faces so
+	// the map records each object's far side, which moves self-shadowing out of
+	// the lit surface — but it only works if the geometry's winding is known,
+	// and it is not: the cube buffer winds its outward faces clockwise, so
+	// culling GL_FRONT there records the NEAREST surfaces and every face
+	// shadows itself.  The receivers offset their lookup along the surface
+	// normal instead, which needs no assumption about winding at all.
+	glDisable( GL_CULL_FACE );
+
+	EffectShader::s_shadowPass = 1.f;
+	fx->enableShader();
+	fx->setUniforms( m_globaltime, m_interpolationTexture, 0, 1 );
+	fx->applyAudioFeatures( m_lastAudioFx );
+	fx->draw();
+	EffectShader::s_shadowPass = 0.f;
+
+	glActiveTexture( GL_TEXTURE0 + 31 );
+	glBindTexture( GL_TEXTURE_2D, m_shadowTex );
+	glActiveTexture( GL_TEXTURE0 );
+
+	glViewport( 0, 0, m_width, m_height );
 }
 
 void FilterShader::initFBO(GLuint &fboEffect, GLuint &texIDEffectTexture, GLuint *depthRb)

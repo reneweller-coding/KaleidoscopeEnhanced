@@ -68,6 +68,10 @@ EffectShader::~EffectShader()
 
 
 float EffectShader::s_depthValid[2] = { 0.f, 0.f };
+float EffectShader::s_shadowPass = 0.f;
+float EffectShader::s_lightDir[3] = { 0.45f, 0.80f, -0.40f };
+float EffectShader::s_lightM[16] = { 1.f, 0.f, 0.f, 0.f,  0.f, 1.f, 0.f, 0.f,
+                                     0.f, 0.f, 1.f, 0.f,  0.f, 0.f, 0.f, 1.f };
 
 void EffectShader::cleanShaderPrograms()
 {
@@ -280,6 +284,7 @@ enum AudioLoc {
     AL_TEXPHYS, AL_FADEOUT, AL_MELODY, AL_MELODYHEAD,
     AL_TEXSPECTRO, AL_SPECTROHEAD, AL_SPECTROFILL,
     AL_TEXDEPTH0, AL_TEXDEPTH1, AL_DEPTHVALID, AL_NEARFAR, AL_TANHALFFOV,
+    AL_TEXSHADOW, AL_LIGHTM, AL_SHADOWPASS, AL_LIGHTDIR, AL_SHADOWTEXEL,
     AL_COUNT
 };
 const char *kAudioLocNames[AL_COUNT] = {
@@ -297,7 +302,8 @@ const char *kAudioLocNames[AL_COUNT] = {
     "audioZCR", "texSSM", "ssmHead", "ssmFill", "texPhysarum",
     "audioFadeOut", "audioMelody", "audioMelodyHead",
     "texSpectro", "spectroHead", "spectroFill",
-    "texDepth0", "texDepth1", "depthValid", "nearFar", "tanHalfFov"
+    "texDepth0", "texDepth1", "depthValid", "nearFar", "tanHalfFov",
+    "texShadow", "lightM", "shadowPass", "lightDir", "shadowTexel"
 };
 }
 
@@ -426,6 +432,12 @@ void EffectShader::applyAudioFeatures(const AudioFeatures &f)
     if (L[AL_NEARFAR]     >= 0) glUniform2f(L[AL_NEARFAR],
                                             kSceneNear, kSceneFar);
     if (L[AL_TANHALFFOV]  >= 0) glUniform1f(L[AL_TANHALFFOV], kSceneTanHalfFovY);
+    if (L[AL_TEXSHADOW]   >= 0) glUniform1i(L[AL_TEXSHADOW],  31);
+    if (L[AL_LIGHTM]      >= 0) glUniformMatrix4fv(L[AL_LIGHTM], 1, GL_FALSE, s_lightM);
+    if (L[AL_SHADOWPASS]  >= 0) glUniform1f(L[AL_SHADOWPASS],  s_shadowPass);
+    if (L[AL_LIGHTDIR]    >= 0) glUniform3f(L[AL_LIGHTDIR], s_lightDir[0],
+                                            s_lightDir[1], s_lightDir[2]);
+    if (L[AL_SHADOWTEXEL] >= 0) glUniform1f(L[AL_SHADOWTEXEL], 1.f / 2048.f);
     if (L[AL_SSMHEAD]     >= 0) glUniform1f(L[AL_SSMHEAD],  f.ssmHead);
     if (L[AL_SSMFILL]     >= 0) glUniform1f(L[AL_SSMFILL],  f.ssmFill);
     if (L[AL_SPECTROHEAD] >= 0) glUniform1f(L[AL_SPECTROHEAD], f.spectroHead);
@@ -519,6 +531,16 @@ bool EffectShader::usesSSM()
 		m_usesSSM = ( m_sh_prog_id != 0 &&
 		              glGetUniformLocation( m_sh_prog_id, "texSSM" ) >= 0 ) ? 1 : 0;
 	return m_usesSSM == 1;
+}
+
+bool EffectShader::usesShadow()
+{
+	if( !m_glReady )
+		return false;
+	if( m_usesShadow < 0 )
+		m_usesShadow = ( m_sh_prog_id != 0 &&
+		                 glGetUniformLocation( m_sh_prog_id, "texShadow" ) >= 0 ) ? 1 : 0;
+	return m_usesShadow == 1;
 }
 
 bool EffectShader::usesSpectro()

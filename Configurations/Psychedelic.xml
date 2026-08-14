@@ -392,4 +392,12 @@
     <float name="glowP"    minValue="0.3" maxValue="1.0"></float>
   </CombineShader>
 
+  <TextureShader file="..\\Scene3D\\PillarHall.frag" type="scene3d" geom="cubes" probability="0.4" mood="dark" complexity="4">
+    <float name="camHP"    minValue="6.0"  maxValue="13.0"></float>
+    <float name="heightP"  minValue="0.7"  maxValue="1.35"></float>
+    <float name="spacingP" minValue="0.85" maxValue="1.2"></float>
+    <float name="softP"    minValue="0.3"  maxValue="1.0"></float>
+    <float name="hueP"     minValue="0.15" maxValue="0.9"></float>
+  </TextureShader>
+
 </configuration>
