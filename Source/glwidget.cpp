@@ -1186,11 +1186,13 @@ void GLwidget::updateTrackOverlays( FilterShader *fs )
 			targetV = std::min( std::max( targetV, 0.f ), 1.f );
 		}
 
-		// Weich nachziehen; bei Seeks (> 8 % Sprung) direkt springen.
-		if( fabsf( targetV - m_scrollVSm ) > 0.08f )
-			m_scrollVSm = targetV;
-		else
-			m_scrollVSm = slew( m_scrollVSm, targetV, 0.10f, dt );
+		// Immer weich nachziehen statt zu teleportieren - auch bei einem
+		// großen Sprung (Seek, oder eine seltene, vom Settle-Fenster in
+		// NowPlaying nicht abgefangene Korrektur) mit deutlich höherer Rate,
+		// damit es "schnell aufholt" statt zu schneiden. Ein Sprung über die
+		// halbe Textur braucht damit ~0.2s statt eines Einzelframe-Cuts.
+		float rate = ( fabsf( targetV - m_scrollVSm ) > 0.08f ) ? 2.5f : 0.10f;
+		m_scrollVSm = slew( m_scrollVSm, targetV, rate, dt );
 		o.lyricsScrollV = m_scrollVSm;
 	}
 
