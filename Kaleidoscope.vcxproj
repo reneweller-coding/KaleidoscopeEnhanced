@@ -479,6 +479,10 @@ exit /b 0</Command>
     <None Include="Combine\CombineAmbientOcclusion.frag" />
     <None Include="Combine\CombineDepthFog.frag" />
     <None Include="Blend\OitResolve.frag" />
+    <None Include="Scene\Halftone.frag" />
+    <None Include="Scene\Snowfall.frag" />
+    <None Include="Scene\Tonnetz.frag" />
+    <None Include="Scene\VoronoiShatter.frag" />
     <None Include="Blend\Blit.frag" />
     <None Include="Blend\Fullscreen.vert" />
     <None Include="Blend\PhysarumDiffuse.comp" />

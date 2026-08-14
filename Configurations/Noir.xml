@@ -354,4 +354,22 @@
     <float name="hueP"     minValue="0.15" maxValue="0.9"></float>
   </TextureShader>
 
+  <TextureShader file="..\\Scene\\VoronoiShatter.frag" type="normal" probability="0.4" mood="aggressive" complexity="2">
+    <float name="cellsP" minValue="0.3"  maxValue="0.75"></float>
+    <float name="flyP"   minValue="0.7"  maxValue="1.4"></float>
+    <float name="edgeP"  minValue="0.4"  maxValue="1.0"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene\\Halftone.frag" type="normal" probability="0.5" mood="calm" complexity="2">
+    <float name="dotP"  minValue="0.2"  maxValue="0.6"></float>
+    <float name="inkP"  minValue="0.45" maxValue="0.95"></float>
+    <float name="slipP" minValue="0.3"  maxValue="1.2"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene\\Snowfall.frag" type="normal" probability="0.4" mood="calm" complexity="2">
+    <float name="densityP" minValue="0.35" maxValue="0.85"></float>
+    <float name="windP"    minValue="0.4"  maxValue="1.3"></float>
+    <float name="depthP"   minValue="0.3"  maxValue="0.9"></float>
+  </TextureShader>
+
 </configuration>
