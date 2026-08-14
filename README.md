@@ -1465,6 +1465,54 @@ constant, too — `floor(time * rate)` with a rate that follows the music does n
 speed the boil up, it makes the step index jump back and forth and the drawing
 stutters at random. The music changes how far the line moves, never how often.
 
+### IceCrack, DrumSkin, VideoRelief
+
+**`IceCrack`** puts the photograph behind a sheet of ice that keeps breaking. The
+shards are a Voronoi tessellation, and getting a clean crack out of one is the
+whole problem. The usual trick — take `F2 - F1`, the gap between the distances to
+the two nearest seeds, and call small values "near an edge" — is not the distance
+to the edge. Where two cells meet head-on it is roughly right; where they meet at
+a shallow angle it is far too large, so the crack swells into a broad smear
+exactly at the junctions where three shards come together, which is where the eye
+looks. The correct distance needs a second pass: for every neighbouring seed, the
+perpendicular distance from the pixel to the bisector between it and the winning
+seed. The smallest of those *is* the distance to the cell wall, and it gives a
+line of even width everywhere. It costs a second nine-cell loop and it is the
+difference between cracked ice and a dirty window. Each shard also refracts what
+is behind it by its own constant offset, which is what makes the pieces read as
+separate slabs rather than as a drawn pattern.
+
+**`DrumSkin`** is a circular membrane vibrating in its real modes, and it exists
+to be the counterpart of `CymaticsPlate`. That scene is a *plate* — it obeys the
+biharmonic equation and its patterns are Chladni figures. A drumhead is a
+*membrane*, governed by the ordinary wave equation, and the difference is
+audible. Its modes are `J_n(a_nm · r/R) · cos(n·θ) · cos(ω·t)`, where `a_nm` is
+the m-th zero of the Bessel function `J_n`, and the frequencies are proportional
+to those zeros: 2.405, 3.832, 5.136, 5.520. Those ratios are irrational. A
+string's overtones are 1, 2, 3, 4 and it sings a pitch; a drumhead's are 1, 1.59,
+2.14, 2.30 and it makes a thud. The scene is that fact drawn — the modes never
+come back into phase, so the surface never repeats.
+
+The Bessel functions use the standard split: the ascending series below x = 3,
+the large-argument asymptotic above. The asymptotic form is the interesting half,
+because it says `J_n` behaves like a cosine whose amplitude decays as 1/√x — which
+is why the ripples on a drumhead look like waves losing height toward the rim
+rather than like a sine.
+
+One thing the probe forced: **give each mode a constant phase offset.** Started
+together, all eight cross zero together, and the head alternates between a smooth
+dome and a flat plate with no pattern on it for half the cycle. Offsetting them
+means some mode is always near its peak — which is also what a struck head does.
+
+**`VideoRelief`** reads the image source in the *vertex* shader and makes its
+luminance the height, turning a photograph, a Spout feed or a decoded video into
+terrain the light can rake across. The normal decides whether it works: taking
+the height at the vertex and treating the surface as flat gives a lit plane with
+a texture on it. Four extra taps and a cross product give the relief. The step has
+to be a real texel or two — smaller, and the difference is quantised by the
+source's own 8-bit levels and the surface comes out terraced. The tangents also
+have to carry the sheet's world size, or the normal is wrong by the aspect ratio.
+
 ### Order-independent transparency
 
 Interpenetrating transparent objects are the case sorting cannot solve: there is

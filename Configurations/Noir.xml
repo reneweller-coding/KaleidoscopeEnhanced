@@ -450,4 +450,29 @@
     <float name="grainP"  minValue="0.30" maxValue="1.00"></float>
   </CombineShader>
 
+  <TextureShader file="..\\Scene\\IceCrack.frag" type="normal" probability="0.45" mood="dark" complexity="3">
+    <float name="shardP"   minValue="0.20" maxValue="0.90"></float>
+    <float name="crackP"   minValue="0.40" maxValue="1.50"></float>
+    <float name="refractP" minValue="0.30" maxValue="1.60"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\DrumSkin.frag" type="scene3d" geom="indirect" probability="0.35" mood="dark" complexity="4">
+    <float name="ampP"     minValue="0.60" maxValue="1.60"></float>
+    <float name="modeP"    minValue="0.35" maxValue="1.00"></float>
+    <float name="tensionP" minValue="0.50" maxValue="1.80"></float>
+    <float name="camDistP" minValue="5.80" maxValue="7.40"></float>
+    <float name="tiltP"    minValue="0.70" maxValue="1.15"></float>
+    <float name="glowP"    minValue="0.45" maxValue="1.00"></float>
+    <float name="hueP"     minValue="0.00" maxValue="1.00"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\VideoRelief.frag" type="scene3d" geom="grid" probability="0.35" mood="dark" complexity="4">
+    <float name="reliefP"  minValue="0.80" maxValue="2.00"></float>
+    <float name="scrollP"  minValue="0.30" maxValue="1.60"></float>
+    <float name="camDistP" minValue="5.80" maxValue="7.20"></float>
+    <float name="tiltP"    minValue="0.50" maxValue="1.10"></float>
+    <float name="glowP"    minValue="0.45" maxValue="1.00"></float>
+    <float name="inkP"     minValue="0.40" maxValue="1.20"></float>
+  </TextureShader>
+
 </configuration>
