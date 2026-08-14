@@ -54,6 +54,9 @@ void commandlineerror( char *cmd, char *parm )
 	"-i <sender>   Spout INPUT: the sender's live video (OBS, Resolume, a\n"
 	"              webcam via OBS, ...) replaces the photos as source image\n"
 	"              ('any' = whichever sender is active; photos while none runs)\n"
+	"-v <path>     native VIDEO as source image: a file (looped) or a folder\n"
+	"              of videos played in turn, replacing the photos.  Uses the\n"
+	"              system's own codecs; -i wins if both are given\n"
 	"-3 <mode>     stereoscopic output: sbs (side-by-side, 3D projectors and\n"
 	"              HMD video viewers), tb (top-bottom), ana (red-cyan glasses)\n"
 	"-h            this help menu\n"
@@ -92,8 +95,11 @@ void commandlineerror( char *cmd, char *parm )
 void parsecommandline( int argc, char *argv[] )
 {
 	/* valid option characters; last char MUST be 0 ! */
-	char optionchar[] =   { 'h', 'b', 's', 'c', 'm', 'l', 'r', 'w', 'o', 't', 'x', 'i', '3', 0 };
-	int musthaveparam[] = {  0 ,  0,   1,   1,   1,   0,   0,   1,   0,   1,   1,   1,   1,  0 };
+	// A switch must be listed HERE as well as handled in the switch below —
+	// the table is what makes it valid at all, and a case with no entry here is
+	// rejected before it is ever reached.
+	char optionchar[] =   { 'h', 'b', 's', 'c', 'm', 'l', 'r', 'w', 'o', 't', 'x', 'i', '3', 'v', 0 };
+	int musthaveparam[] = {  0 ,  0,   1,   1,   1,   0,   0,   1,   0,   1,   1,   1,   1,   1,  0 };
 
 	int nopts;
 	int mhp[256];
@@ -175,6 +181,11 @@ void parsecommandline( int argc, char *argv[] )
 				case 'i':
 					FilterShader::s_spoutInEnabled = true;
 					FilterShader::s_spoutInSender  = QString::fromLocal8Bit( argv[1] );
+					break;
+				// Native VIDEO input: a file, or a directory played in turn.
+				// Same slot as -i; Spout wins if both are given.
+				case 'v':
+					FilterShader::s_videoPath = QString::fromLocal8Bit( argv[1] );
 					break;
 				// Stereoscopic output: sbs (side-by-side), tb (top-bottom),
 				// ana (red-cyan anaglyph); anything else = off.

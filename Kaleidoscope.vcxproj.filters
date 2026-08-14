@@ -93,6 +93,9 @@
     <ClCompile Include="Source\Scene3DShader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\VideoIn.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="Source\SpoutIn.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -174,6 +177,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\Scene3DShader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\VideoIn.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\SpoutIn.h">

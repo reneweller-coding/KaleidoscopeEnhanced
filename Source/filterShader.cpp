@@ -6,6 +6,7 @@
 #include "filterShader.h"
 #include "SpoutOut.h"
 #include "SpoutIn.h"
+#include "VideoIn.h"
 #include "Scene3DShader.h"
 #include "Utils.h"
 
@@ -44,6 +45,7 @@ bool  FilterShader::s_pinned   = false;     // VJ pin ('u')
 QHash<QString, float> FilterShader::s_taste;  // taste learning (skip/favourite)
 bool    FilterShader::s_spoutInEnabled = false;  // Spout input (CLI -i)
 QString FilterShader::s_spoutInSender;
+QString FilterShader::s_videoPath;                // native video input (CLI -v)
 
 // Settings file lives next to the Configurations folder (parent of Debug/Release),
 // matching how shaders and configs are loaded ("..\\...").
@@ -1945,6 +1947,15 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 		spoutInInit( s_spoutInSender.toLocal8Bit().constData() );   // idempotent
 		unsigned int lw = 0, lh = 0;
 		m_liveTex = spoutInReceive( &lw, &lh );
+	}
+	else if( !s_videoPath.isEmpty() )
+	{
+		// Same slot, same consequences: while a frame is available it replaces
+		// both photo slots, so cross-fades collapse on the image and every
+		// effect folds the moving picture instead of a still.
+		videoInInit( s_videoPath.toLocal8Bit().constData() );        // idempotent
+		unsigned int lw = 0, lh = 0;
+		m_liveTex = videoInFrame( &lw, &lh );
 	}
 
     // Update adaptive timing scale from audio analysis.

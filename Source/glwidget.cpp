@@ -24,6 +24,7 @@
 #include "WebRemote.h"
 #include "SpoutOut.h"    // global facades, released once in ~GLwidget
 #include "SpoutIn.h"
+#include "VideoIn.h"
 
  #ifndef GL_MULTISAMPLE
  #define GL_MULTISAMPLE  0x809D
@@ -240,6 +241,7 @@ GLwidget::~GLwidget()
 	makeCurrent();
 	spoutOutRelease();
 	spoutInRelease();
+	videoInRelease();
 	// Keep the context current across the Configuration deletes too: each
 	// ~FilterShader runs cleanTextures()/cleanShaderPrograms() (glDelete*), which
 	// need a current GL context — otherwise those deletes are silently dropped

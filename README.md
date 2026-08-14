@@ -1092,6 +1092,33 @@ Not built: `Marching Cubes`. Meshing an isosurface needs a compute→VBO→indir
 draw path that this renderer does not have, and faking it with a raymarch would
 not have been the thing that was asked for. The `texSculpt` slot is reserved.
 
+### Native video as an image source
+
+`-v <path>` plays a video file (looped) or a folder of them in turn, and its
+frames replace the photographs. It hangs off exactly the hook the Spout input
+already used — `m_liveTex` — so while a frame is available it stands in for
+*both* photo slots, cross-fades collapse to a no-op on the image, and every
+effect in the library folds moving footage without knowing anything changed.
+Spout wins if both are given: that one is a live feed, a file is not.
+
+Decoding is Qt6Multimedia's, which means the platform's own codecs — nothing
+bundled, and whatever the machine can already play works here. Frames arrive via
+`QVideoSink`, are converted with `QVideoFrame::toImage()` and uploaded. Mapping
+the frame directly would be faster but would mean handling every pixel format a
+platform might hand over (NV12, planar YUV, …), and this is a *texture source*,
+not the main render path.
+
+Everything runs on the GUI thread — `QMediaPlayer` emits there and `paint()`
+runs there — so the newest frame is simply held in a member with no lock. Adding
+one would only add a way to get it wrong. The audio output is muted on purpose:
+a video's soundtrack would fight the music the visuals are reacting to.
+
+One thing worth knowing about this codebase: a new command-line switch has to be
+listed in `parsecommandline`'s **option table**, not only handled in the switch
+below it. The table is what makes a letter valid at all — a `case` with no entry
+is rejected before it is ever reached, and the app exits before it writes so
+much as a log line.
+
 ### Four image and harmony scenes
 
 The last of the idea list, and none of them needed new engine support — they are
