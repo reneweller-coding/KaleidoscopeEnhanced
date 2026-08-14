@@ -85,6 +85,12 @@ void main()
     col += tint * 0.25 * audioAmbient;
     col *= 1.0 + 0.20 * audioBeat + 0.15 * audioSubBass;
 
+    // Tone-map BEFORE accumulating.  The accumulator is RGBA16F and the weight
+    // below multiplies by hundreds, so a specular spike on a loud kick, summed
+    // over several overlapping panes, can pass 65504 and become +Inf — which the
+    // resolve turns into black.  The brightest pixels are the ones at risk.
+    col = col / (1.0 + col * 0.22);
+
     // The depth weight.  gl_FragCoord.z is non-linear, so it is turned back
     // into a distance first — feeding the raw value in would push almost every
     // fragment into the same weight bucket and the ordering hint would be lost.
@@ -92,8 +98,8 @@ void main()
     float ndc = gl_FragCoord.z * 2.0 - 1.0;
     float z = (2.0 * zn * zf) / (zf + zn - ndc * (zf - zn));
 
-    float w = alpha * max(1e-2, 3e3 * pow(1.0 - z / zf, 3.0));
-    w = clamp(w, 1e-2, 3e3);
+    float w = alpha * max(1e-2, 2.5e2 * pow(1.0 - z / zf, 3.0));
+    w = clamp(w, 1e-2, 2.5e2);
 
     // Premultiplied colour into the accumulator, plain alpha into revealage.
     // The framebuffer blend does the rest: attachment 0 adds, attachment 1

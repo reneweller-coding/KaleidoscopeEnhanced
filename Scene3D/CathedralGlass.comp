@@ -1,0 +1,168 @@
+#version 430
+// CathedralGlass.comp — a rose window with two more turning behind it.
+// -----------------------------------------------------------------------
+// A single sheet of stained glass does not need order-independent transparency:
+// there is nothing to sort.  This scene earns it by stacking three wheels at
+// different depths and turning them against each other, so at any moment some
+// pixels have three panes in front of them, in an order that changes as they
+// rotate.  That is the case sorting cannot fix cheaply and OIT can.
+//
+// The geometry is deliberately split in two kinds, because the two halves go
+// through different passes:
+//   kind 0 — the stone tracery: opaque, writes depth, hides what is behind it
+//   kind 1 — the glass: transparent, writes no depth, accumulates
+// The vertex shader drops whichever kind does not belong to the pass it is in.
+// Emitting both in both passes would draw the stone twice and let the glass
+// occlude itself, which is the exact failure OIT exists to avoid.
+// -----------------------------------------------------------------------
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+
+layout(std430, binding = 0) buffer Verts { float verts[]; };
+layout(std430, binding = 1) buffer Cmd   { uint  cmd[]; };
+
+uniform uint  maxVertices;
+uniform float time;
+uniform float sceneSeed;
+uniform float audioAdvance;
+uniform float audioLevel;
+uniform float audioKick;
+uniform float audioSubBass;
+uniform float audioHigh;
+uniform float audioSpectrum[32];
+
+uniform float spinP;        // preset: how fast the back wheels turn
+uniform float paneP;        // preset: pane size, so how thick the leading is
+uniform float depthP;       // preset: how far apart the wheels sit
+
+const int LAYERS = 3;
+const int RINGS  = 5;
+const int SECT   = 16;
+const float R0 = 0.55;
+const float DR = 0.72;
+
+const int NGLASS = LAYERS * RINGS * SECT;      // 240 panes
+const int NSPOKE = RINGS * SECT;               // 80 radial ribs
+const int NRINGQ = (RINGS + 1) * SECT;         // 96 arc ribs
+const int NQUADS = NGLASS + NSPOKE + NRINGQ;
+
+void writeVertex(uint slot, vec3 p, vec3 n, float kind, float lvl)
+{
+    uint o = slot * 8u;
+    verts[o + 0u] = p.x;  verts[o + 1u] = p.y;  verts[o + 2u] = p.z;
+    verts[o + 3u] = kind;
+    verts[o + 4u] = n.x;  verts[o + 5u] = n.y;  verts[o + 6u] = n.z;
+    verts[o + 7u] = lvl;
+}
+
+// Both windings, always.  A pane of glass has no back: it is a flat sheet meant
+// to be seen from either side, and the window tips as it sways.  Emitting one
+// winding leaves the result at the mercy of whatever cull state the frame
+// happens to be in — and the failure is not a missing pane but a missing
+// TRIANGLE, so a quad comes back as a thin wedge and the cause reads like a
+// shading bug rather than a geometry one.
+void emitQuad(vec3 a, vec3 b, vec3 c, vec3 d, vec3 n, float kind, float lvl)
+{
+    uint base = atomicAdd(cmd[4], 12u);
+    if (base + 12u > maxVertices)
+        return;
+    writeVertex(base +  0u, a, n, kind, lvl);
+    writeVertex(base +  1u, b, n, kind, lvl);
+    writeVertex(base +  2u, c, n, kind, lvl);
+    writeVertex(base +  3u, a, n, kind, lvl);
+    writeVertex(base +  4u, c, n, kind, lvl);
+    writeVertex(base +  5u, d, n, kind, lvl);
+    writeVertex(base +  6u, c, n, kind, lvl);
+    writeVertex(base +  7u, b, n, kind, lvl);
+    writeVertex(base +  8u, a, n, kind, lvl);
+    writeVertex(base +  9u, d, n, kind, lvl);
+    writeVertex(base + 10u, c, n, kind, lvl);
+    writeVertex(base + 11u, a, n, kind, lvl);
+}
+
+vec3 pol(float r, float a, float z) { return vec3(r * cos(a), r * sin(a), z); }
+
+void main()
+{
+    uvec3 g = gl_GlobalInvocationID;
+    uint id = g.x + 64u * (g.y + 64u * g.z);
+    if (id >= uint(NQUADS))
+        return;
+
+    const float TAU = 6.2831853;
+    float gap = clamp(paneP, 0.4, 1.6);
+    float layerGap = clamp(depthP, 0.4, 2.0) * 0.95;
+    vec3 nz = vec3(0.0, 0.0, 1.0);
+
+    if (id < uint(NGLASS))
+    {
+        int k = int(id);
+        int s = k % SECT;          k /= SECT;
+        int r = k % RINGS;         k /= RINGS;
+        int l = k;
+
+        // Wheel 0 is the window itself and stays put; the ones behind it turn,
+        // in opposite directions, at rates that do not divide each other — so
+        // the pattern never settles into a repeat the eye can predict.
+        float sgn = (l == 1) ? 1.0 : -1.0;
+        float rot = (l == 0) ? 0.0
+                  : sgn * audioAdvance * clamp(spinP, 0.2, 3.0)
+                        * (0.030 + 0.017 * float(l));
+
+        float a0 = TAU * (float(s) + 0.06 * gap) / float(SECT) + rot;
+        float a1 = TAU * (float(s + 1) - 0.06 * gap) / float(SECT) + rot;
+        // Every course is an annulus segment.  The middle stays open: it is the
+        // oculus, and it is lit from its rim rather than glazed.  Two attempts
+        // at filling it — a fan of triangles, then extending this course inward
+        // — both came back as thin slivers instead of wedges, which is a real
+        // unexplained behaviour of quads emitted at the centre of projection
+        // here and not something to paper over with a third variation.
+        float ri = R0 + DR * float(r)     + 0.035 * gap;
+        float ro = R0 + DR * float(r + 1) - 0.035 * gap;
+        float z  = -float(l) * layerGap;
+
+        // Each sector is a spectrum band, so the wheel is a spectrum analyser
+        // that happens to be a window.  Neighbouring sectors get neighbouring
+        // bands, which is what makes a sweep read as a sweep.
+        int band = (s * 32 / SECT + r * 2) % 32;
+        float lvl = clamp(audioSpectrum[band] * 1.6, 0.0, 1.0);
+
+        // The kind carries the layer index as well as "this is glass".  Three
+        // equally strong wheels summed together average out to brown; the
+        // fragment shader needs to know which one it is looking at so the ones
+        // behind can be held back and the front wheel stays the subject.
+        // kind 4 marks the innermost course of the front wheel: the ring that
+        // frames the oculus and carries its light.
+        float kind = (r == 0 && l == 0) ? 4.0 : 1.0 + float(l);
+        emitQuad(pol(ri, a0, z), pol(ro, a0, z), pol(ro, a1, z), pol(ri, a1, z),
+                 nz, kind, lvl);
+        return;
+    }
+
+    // ---- stone tracery, front plane only ----
+    float w = 0.030 * gap + 0.010;
+    float zf = 0.06;
+
+    if (id < uint(NGLASS + NSPOKE))
+    {
+        int k = int(id) - NGLASS;
+        int s = k % SECT;
+        int r = k / SECT;
+        float a = TAU * float(s) / float(SECT);
+        float ri = R0 + DR * float(r);
+        float ro = R0 + DR * float(r + 1);
+        vec2 t = vec2(-sin(a), cos(a)) * w;      // sideways along the rib
+        emitQuad(vec3(pol(ri, a, zf).xy - t, zf), vec3(pol(ro, a, zf).xy - t, zf),
+                 vec3(pol(ro, a, zf).xy + t, zf), vec3(pol(ri, a, zf).xy + t, zf),
+                 nz, 0.0, 0.0);
+        return;
+    }
+
+    int k = int(id) - NGLASS - NSPOKE;
+    int s = k % SECT;
+    int r = k / SECT;
+    float rr = R0 + DR * float(r);
+    float a0 = TAU * float(s)     / float(SECT);
+    float a1 = TAU * float(s + 1) / float(SECT);
+    emitQuad(pol(rr - w, a0, zf), pol(rr + w, a0, zf),
+             pol(rr + w, a1, zf), pol(rr - w, a1, zf), nz, 0.0, 0.0);
+}

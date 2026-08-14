@@ -643,6 +643,12 @@ exit /b 0</Command>
     <None Include="Scene3D\CoralGrowth.comp" />
     <None Include="Scene3D\CoralGrowth.frag" />
     <None Include="Scene3D\CoralGrowth.vert" />
+    <None Include="Scene3D\Origami.comp" />
+    <None Include="Scene3D\Origami.frag" />
+    <None Include="Scene3D\Origami.vert" />
+    <None Include="Scene3D\CathedralGlass.comp" />
+    <None Include="Scene3D\CathedralGlass.frag" />
+    <None Include="Scene3D\CathedralGlass.vert" />
     <None Include="Scene3D\Planet4D.frag" />
     <None Include="Scene3D\Planet4D.vert" />
     <None Include="Scene3D\PlanetRings.frag" />
