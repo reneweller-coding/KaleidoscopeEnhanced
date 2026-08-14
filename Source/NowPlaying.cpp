@@ -6,6 +6,8 @@
 
 #include "NowPlaying.h"
 
+#include <QtCore/QDateTime>
+
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Media.Control.h>
 
@@ -95,6 +97,26 @@ void NowPlaying::stop()
 QString NowPlaying::title() const  { QMutexLocker l(&m_mutex); return m_title; }
 QString NowPlaying::artist() const { QMutexLocker l(&m_mutex); return m_artist; }
 
+NowPlaying::Timeline NowPlaying::timeline() const
+{
+    QMutexLocker l(&m_mutex);
+    return m_timeline;
+}
+
+double NowPlaying::positionNowSec() const
+{
+    Timeline tl = timeline();
+    if (tl.positionSec < 0.0)
+        return -1.0;
+    if (!tl.playing)
+        return tl.positionSec;
+    const qint64 nowMs = QDateTime::currentMSecsSinceEpoch();
+    double p = tl.positionSec + double(nowMs - tl.stampMs) * 0.001;
+    if (tl.durationSec > 0.0 && p > tl.durationSec)
+        p = tl.durationSec;
+    return p;
+}
+
 void NowPlaying::threadFunc()
 {
     // WinRT must be initialised per-thread.  SMTC works in the multi-threaded
@@ -106,6 +128,7 @@ void NowPlaying::threadFunc()
     while (m_running)
     {
         QString t, a;
+        Timeline tl;
         try
         {
             auto mgr = GlobalSystemMediaTransportControlsSessionManager::RequestAsync().get();
@@ -117,6 +140,19 @@ void NowPlaying::threadFunc()
                     auto props = session.TryGetMediaPropertiesAsync().get();
                     t = QString::fromWCharArray(props.Title().c_str());
                     a = QString::fromWCharArray(props.Artist().c_str());
+
+                    // Zeitachse für den Lyrics-Sync.  TimeSpan zählt in
+                    // 100-ns-Ticks; StartTime abziehen (Streams starten
+                    // nicht immer bei 0).
+                    auto tp  = session.GetTimelineProperties();
+                    auto pi  = session.GetPlaybackInfo();
+                    const double kTick = 1e-7;
+                    double start = double(tp.StartTime().count()) * kTick;
+                    tl.positionSec = double(tp.Position().count()) * kTick - start;
+                    tl.durationSec = double(tp.EndTime().count())  * kTick - start;
+                    tl.playing = (pi.PlaybackStatus()
+                        == GlobalSystemMediaTransportControlsSessionPlaybackStatus::Playing);
+                    tl.stampMs = QDateTime::currentMSecsSinceEpoch();
                 }
             }
         }
@@ -131,7 +167,7 @@ void NowPlaying::threadFunc()
                 parseVlcTitle(scan.text, t, a);
         }
 
-        { QMutexLocker l(&m_mutex); m_title = t; m_artist = a; }
+        { QMutexLocker l(&m_mutex); m_title = t; m_artist = a; m_timeline = tl; }
 
         // ~1 s poll, but wake every 100 ms so stop() is responsive.
         for (int i = 0; i < 10 && m_running; ++i)

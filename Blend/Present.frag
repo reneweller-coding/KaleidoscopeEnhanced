@@ -57,6 +57,18 @@ uniform int   stereoMode;       // 0 off, 1 side-by-side, 2 top-bottom, 3 anagly
 uniform float stereoDepth;      // disparity strength 0..2 (host, key c/m)
 uniform int   stereoSource;     // 1 = source is ALREADY eye-packed (true 3D stereo)
 
+// ---- Lyrics-Overlay (LRCLIB; Taste 'w': aus / Scroll / Karaoke) ----
+uniform sampler2D lyricsTex;    // hohe Zeilen-Textur (transparenter Grund)
+uniform float lyricsAlpha;      // 0 = aus (Host blendet weich)
+uniform float lyricsScrollV;    // Textur-V, das im Bildzentrum liegt
+uniform float lyricsAspect;     // Texturbreite / -hoehe
+uniform vec3  lyricsHl;         // Karaoke: aktive Zeile v0, v1, Fortschritt (v0<0 = aus)
+
+// ---- Kuenstlerbild-Overlay (Deezer; Taste 'o') ----
+uniform sampler2D artistTex;
+uniform float artistAlpha;      // 0 = aus (Host blendet weich + rotiert Bilder)
+uniform float artistAspect;     // Bildbreite / -hoehe
+
 float hash21(vec2 p) { return fract(sin(dot(p, vec2(41.3, 289.1))) * 43758.5453); }
 
 // Hue rotation around the (1,1,1) luminance axis (Rodrigues), turns in [0,1].
@@ -316,6 +328,73 @@ void main()
         float rays = pow(0.5 + 0.5 * cos(ang * 9.0), 6.0);
         c += hueRotate(moodCol, audioChromaHue + 0.6) * 1.3
              * rays * 0.08 * (0.2 + 0.8 * audioLevel) * smoothstep(0.05, 0.45, length(g));
+    }
+
+    // --- Kuenstlerbild: organisch in die Ecke unten links eingeschmolzen.
+    // Gefiederter, per Noise unregelmaessig ausgefranster Rand + weiche
+    // Mischung (mix + sanftes Screen) statt hartem Bilderrahmen; eine leichte
+    // audio-phasige Wabernbewegung laesst es mit der Szene atmen.  Vor dem
+    // Titel/Limiter komponiert, damit Blackout & Co. mitwirken.
+    if (artistAlpha > 0.001)
+    {
+        float wU = 0.26;                                   // 26% der Bildbreite
+        float hU = wU * (resolution.x / resolution.y) / max(artistAspect, 0.2);
+        vec2  m0 = vec2(0.035, 0.045);                     // Ecke unten links
+        vec2  a  = (uv - m0) / vec2(wU, hU);
+        if (a.x > -0.2 && a.x < 1.2 && a.y > -0.2 && a.y < 1.2)
+        {
+            // Atmen: kleine, langsame Verformung (zeitbasiert, flickerfrei).
+            vec2 warp = vec2(sin(time * 0.37 + a.y * 5.0),
+                             cos(time * 0.31 + a.x * 4.0)) * 0.012;
+            vec2 av = clamp(a + warp, 0.0, 1.0);
+            vec3 img = texture(artistTex, vec2(av.x, 1.0 - av.y)).rgb;
+
+            float feather = smoothstep(0.0, 0.16, a.x) * smoothstep(0.0, 0.16, a.y)
+                          * smoothstep(0.0, 0.16, 1.0 - a.x)
+                          * smoothstep(0.0, 0.16, 1.0 - a.y);
+            // Organischer Fransen-Rand statt sauberer Kante.
+            feather *= 0.62 + 0.38 * vnoise2(a * 6.0 + vec2(time * 0.05, 0.0));
+
+            float aa = feather * artistAlpha;
+            c  = mix(c, img, aa * 0.78);
+            c += img * img * aa * 0.22;                    // sanfter Screen-Anteil
+        }
+    }
+
+    // --- Lyrics: Credits-Scroll ueber die Bildmitte bzw. Karaoke mit
+    // goldenem Zeilen-Highlight und Fortschritts-Sweep.  Das V-Fenster wird
+    // vom Host positioniert (Scroll folgt der Playback-Position; Karaoke
+    // zentriert die aktive Zeile).
+    if (lyricsAlpha > 0.001)
+    {
+        float u = (uv.x - 0.5) / 0.62 + 0.5;               // Textband: 62% Breite
+        // Sichtbares V pro Bildschirm-UV (Textur behaelt ihr Pixel-Seitenverhaeltnis).
+        float vSpan = (resolution.y / resolution.x) * lyricsAspect / 0.62;
+        float v = lyricsScrollV + (0.5 - uv.y) * vSpan;
+        if (u > 0.0 && u < 1.0 && v > 0.0 && v < 1.0)
+        {
+            vec4 lt = texture(lyricsTex, vec2(u, v));
+            // Weiche Raender oben/unten (Credits-Fenster).
+            float edge = smoothstep(0.04, 0.22, uv.y) * smoothstep(0.96, 0.78, uv.y);
+            float a = lt.a * lyricsAlpha * edge;
+
+            vec3 col = lt.rgb;
+            if (lyricsHl.x >= 0.0)
+            {
+                // Karaoke: aktive Zeile gold + Sweep, restliche Zeilen dezent.
+                if (v >= lyricsHl.x && v <= lyricsHl.y)
+                {
+                    float sweep = smoothstep(lyricsHl.z + 0.02, lyricsHl.z - 0.02, u);
+                    vec3 gold = col * vec3(1.0, 0.86, 0.42);
+                    col = mix(col, gold, 0.35 + 0.65 * sweep);
+                    a  *= 1.0;
+                    c  += gold * a * 0.25 * (0.5 + 0.5 * audioBeat);
+                }
+                else
+                    a *= 0.45;                             // Kontext-Zeilen dezenter
+            }
+            c = mix(c, col, a * 0.95);
+        }
     }
 
     // --- Track-title reveal: 24 distinct entrance styles (host-rolled per

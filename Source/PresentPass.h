@@ -49,6 +49,10 @@ public:
 	/** Reveal-Uhr läuft auf der WANDzeit weiter (spielt über Freeze/Stop). */
 	void advanceTitle( float dtWall ) { m_titleAge += dtWall; }
 
+	// ---- Lyrics-/Künstlerbild-Overlay (Qt-Seite liefert fertige Pixel) ----
+	void setLyricsImage( const void *rgba, int w, int h );
+	void setArtistImage( const void *rgba, int w, int h );
+
 	/** Frame-Eingaben für run() - alles Werte, die weiterhin der Pipeline/
 	 *  den Statics von FilterShader gehören. */
 	struct Inputs
@@ -75,6 +79,16 @@ public:
 		float  moodStrength = 1.f;
 		float  lightShow    = 0.f;
 		float  renderScale  = 1.f;
+		// Lyrics-Overlay (Alpha 0 = aus; Hl-V0 < 0 = kein Karaoke-Highlight)
+		float  lyricsAlpha   = 0.f;
+		float  lyricsScrollV = 0.f;
+		float  lyricsAspect  = 1.f;
+		float  lyricsHlV0    = -1.f;
+		float  lyricsHlV1    = -1.f;
+		float  lyricsHlProg  = 0.f;
+		// Künstlerbild-Overlay
+		float  artistAlpha   = 0.f;
+		float  artistAspect  = 1.f;
 	};
 
 	/** Den kompletten Present ausführen (Limiter, AutoExposure, Bloom,
@@ -148,6 +162,18 @@ private:
 	float	m_titleAspect = 4.f;
 	int		m_titleStyle  = 0;
 	float	m_titleSeed   = 0.f;
+
+	// ---- Lyrics / Künstlerbild ----
+	GLuint	m_lyricsTex = 0;
+	GLuint	m_artistTex = 0;
+	GLint	m_presentLyricsTexUni    = -1;
+	GLint	m_presentLyricsAlphaUni  = -1;
+	GLint	m_presentLyricsScrollUni = -1;
+	GLint	m_presentLyricsAspectUni = -1;
+	GLint	m_presentLyricsHlUni     = -1;
+	GLint	m_presentArtistTexUni    = -1;
+	GLint	m_presentArtistAlphaUni  = -1;
+	GLint	m_presentArtistAspectUni = -1;
 };
 
 #endif

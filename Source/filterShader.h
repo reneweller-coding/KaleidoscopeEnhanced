@@ -55,6 +55,24 @@ public:
 	 *  change (replaces the old QPainter lower third). */
 	void showTitle( const QString &title, const QString &artist );
 
+	/** Lyrics-/Künstlerbild-Overlay: GLwidget berechnet den Frame-Zustand
+	 *  (Sync, Blenden, Bildrotation) und liefert fertige Texturen; hier wird
+	 *  nur an den PresentPass durchgereicht. */
+	struct OverlayFrame
+	{
+		float lyricsAlpha   = 0.f;
+		float lyricsScrollV = 0.f;
+		float lyricsAspect  = 1.f;
+		float lyricsHlV0    = -1.f;
+		float lyricsHlV1    = -1.f;
+		float lyricsHlProg  = 0.f;
+		float artistAlpha   = 0.f;
+		float artistAspect  = 1.f;
+	};
+	void setOverlayFrame( const OverlayFrame &o ) { m_overlay = o; }
+	void setLyricsTexture( const void *rgba, int w, int h ) { m_present.setLyricsImage( rgba, w, h ); }
+	void setArtistTexture( const void *rgba, int w, int h ) { m_present.setArtistImage( rgba, w, h ); }
+
 	/** Request an early cross-fade to the next texture effect (manual 'n' key,
 	 *  MIDI pad or web remote).  Honoured at the next opportunity.  TASTE
 	 *  LEARNING: skipping an effect that has only just appeared counts as
@@ -299,6 +317,7 @@ private:
 	// Finaler Present (Limiter, AutoExposure, Bloom, Titel-Reveal, Stereo):
 	// komplett im PresentPass gekapselt.
 	PresentPass		m_present;
+	OverlayFrame	m_overlay;   // Lyrics/Künstlerbild, pro Frame von GLwidget gesetzt
 
 	// ---- Track-title reveal state (see showTitle) ----
 	QImage			m_titlePending;          // rendered text, awaits GL upload

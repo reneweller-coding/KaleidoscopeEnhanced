@@ -136,6 +136,8 @@ correct working directory). Otherwise build it later with `ISCC.exe installer.is
 | `i`        | Toggle the live audio-feature overlay (incl. **FPS**)         |
 | `d`        | Choose the **audio source** (output / microphone) — overlay   |
 | `p`        | Toggle the **now-playing** track title display                |
+| `w`        | **Lyrics** (Internet, LRCLIB): off / credits scroll / karaoke |
+| `o`        | **Artist images** (Internet, Deezer): blended into the scene  |
 | `n`        | Manually advance to the next effect (musical scene change)    |
 | `v`        | Show the active shader names (debug overlay)                  |
 | `l`        | Toggle the **stage lamps / light show** (corner cones etc.)   |
