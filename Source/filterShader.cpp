@@ -3036,6 +3036,11 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 	else
 		m_effectTextures[m_actEffectTexture]->draw();
 
+	// Transparent geometry goes in afterwards, over the opaque frame this scene
+	// just produced and against the depth it just wrote.
+	if( !m_trueStereoPacked && m_effectTextures[m_actEffectTexture]->usesOit() )
+		renderOitPass( m_effectTextures[m_actEffectTexture],
+		               m_depthTexEffect1, m_fboEffectTexture1 );
 
 	checkGLErrors("createTextures() 1");
 
@@ -3863,6 +3868,131 @@ void FilterShader::renderShadowPass(EffectShader *fx)
 	glActiveTexture( GL_TEXTURE0 );
 
 	glViewport( 0, 0, m_width, m_height );
+}
+
+// Allocate the two accumulation targets weighted-blended OIT needs.
+bool FilterShader::ensureOitTargets()
+{
+	if( m_oitFbo != 0 )
+		return true;
+	if( !glBlendFunci || !glDrawBuffers || !glClearBufferfv )
+		return false;
+
+	// Accumulation must be FLOATING POINT and cannot be 8-bit: it sums
+	// premultiplied colour over every transparent layer with no clamping in
+	// between, so an 8-bit target saturates after two or three panes and the
+	// stack turns into a flat white card.
+	glGenTextures( 1, &m_oitAccum );
+	glBindTexture( GL_TEXTURE_2D, m_oitAccum );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA16F, m_width, m_height, 0,
+	              GL_RGBA, GL_FLOAT, NULL );
+
+	glGenTextures( 1, &m_oitReveal );
+	glBindTexture( GL_TEXTURE_2D, m_oitReveal );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+	glTexImage2D( GL_TEXTURE_2D, 0, GL_R16F, m_width, m_height, 0,
+	              GL_RED, GL_FLOAT, NULL );
+
+	glGenFramebuffers( 1, &m_oitFbo );
+	glBindFramebuffer( GL_FRAMEBUFFER, m_oitFbo );
+	glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+	                        GL_TEXTURE_2D, m_oitAccum, 0 );
+	glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1,
+	                        GL_TEXTURE_2D, m_oitReveal, 0 );
+	const GLenum bufs[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+	glDrawBuffers( 2, bufs );
+	bool ok = checkFramebufferStatus();
+	glBindFramebuffer( GL_FRAMEBUFFER, m_defaultFBO );
+	glBindTexture( GL_TEXTURE_2D, 0 );
+
+	if( ok && m_oitResolveProg == 0 )
+		m_oitResolveProg = setShaders( "..\\standard.vert", "..\\Blend\\OitResolve.frag" );
+
+	if( !ok )
+	{
+		fputs( "OIT targets incomplete - transparent pass disabled\n", stderr );
+		glDeleteFramebuffers( 1, &m_oitFbo );
+		glDeleteTextures( 1, &m_oitAccum );
+		glDeleteTextures( 1, &m_oitReveal );
+		m_oitFbo = m_oitAccum = m_oitReveal = 0;
+	}
+	return ok;
+}
+
+// Draw the scene's transparent geometry into the accumulation targets, then
+// composite the result back over the already-rendered opaque frame.
+void FilterShader::renderOitPass(EffectShader *fx, GLuint depthTex, GLuint targetFbo)
+{
+	if( !ensureOitTargets() )
+		return;
+
+	glBindFramebuffer( GL_FRAMEBUFFER, m_oitFbo );
+	// The SCENE'S depth buffer, not one of our own: transparent surfaces must
+	// still be hidden by the opaque geometry that was drawn before them, and
+	// that information only exists in the depth the scene just wrote.
+	glFramebufferTexture2D( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+	                        GL_TEXTURE_2D, depthTex, 0 );
+
+	// Accumulation starts empty; revealage starts at 1 (nothing covered yet).
+	const GLfloat zero[4] = { 0.f, 0.f, 0.f, 0.f };
+	const GLfloat one[4]  = { 1.f, 1.f, 1.f, 1.f };
+	glClearBufferfv( GL_COLOR, 0, zero );
+	glClearBufferfv( GL_COLOR, 1, one );
+
+	glEnable( GL_DEPTH_TEST );
+	// Depth WRITES off.  The whole point is that transparent surfaces do not
+	// occlude each other — writing depth would make the first one drawn hide
+	// the ones behind it, which is exactly the order dependence being removed.
+	glDepthMask( GL_FALSE );
+	glEnable( GL_BLEND );
+	// The two targets blend DIFFERENTLY: colour adds up, revealage multiplies
+	// down.  One glBlendFunc could not express both.
+	glBlendFunci( 0, GL_ONE, GL_ONE );
+	glBlendFunci( 1, GL_ZERO, GL_ONE_MINUS_SRC_COLOR );
+
+	EffectShader::s_oitPass = 1.f;
+	fx->enableShader();
+	fx->setUniforms( m_globaltime, m_interpolationTexture, 0, 1 );
+	fx->applyAudioFeatures( m_lastAudioFx );
+	fx->draw();
+	EffectShader::s_oitPass = 0.f;
+
+	glDepthMask( GL_TRUE );
+	glDisable( GL_BLEND );
+	glDisable( GL_DEPTH_TEST );
+
+	// ---- resolve: composite the accumulated transparency over the frame ----
+	glBindFramebuffer( GL_FRAMEBUFFER, targetFbo );
+	glViewport( 0, 0, m_width, m_height );
+	if( m_oitResolveProg == 0 )
+		return;
+	glUseProgram( m_oitResolveProg );
+	glActiveTexture( GL_TEXTURE0 );
+	glBindTexture( GL_TEXTURE_2D, m_oitAccum );
+	glActiveTexture( GL_TEXTURE1 );
+	glBindTexture( GL_TEXTURE_2D, m_oitReveal );
+	glActiveTexture( GL_TEXTURE0 );
+	GLint l0 = glGetUniformLocation( m_oitResolveProg, "texAccum" );
+	GLint l1 = glGetUniformLocation( m_oitResolveProg, "texReveal" );
+	GLint lr = glGetUniformLocation( m_oitResolveProg, "resolution" );
+	if( l0 >= 0 ) glUniform1i( l0, 0 );
+	if( l1 >= 0 ) glUniform1i( l1, 1 );
+	if( lr >= 0 ) glUniform2f( lr, float(m_width), float(m_height) );
+
+	// Standard "over" compositing of the resolved layer onto the opaque frame.
+	glEnable( GL_BLEND );
+	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+	glBindVertexArray( fullscreenVAO() );
+	glDrawArrays( GL_TRIANGLES, 0, 3 );
+	glBindVertexArray( 0 );
+	glDisable( GL_BLEND );
 }
 
 void FilterShader::initFBO(GLuint &fboEffect, GLuint &texIDEffectTexture, GLuint *depthRb)
