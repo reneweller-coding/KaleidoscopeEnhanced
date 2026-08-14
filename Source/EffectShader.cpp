@@ -69,6 +69,7 @@ EffectShader::~EffectShader()
 
 float EffectShader::s_depthValid[2] = { 0.f, 0.f };
 float EffectShader::s_shadowPass = 0.f;
+float EffectShader::s_shadowExtent = EffectShader::kShadowExtent;
 float EffectShader::s_lightDir[3] = { 0.45f, 0.80f, -0.40f };
 float EffectShader::s_lightM[16] = { 1.f, 0.f, 0.f, 0.f,  0.f, 1.f, 0.f, 0.f,
                                      0.f, 0.f, 1.f, 0.f,  0.f, 0.f, 0.f, 1.f };
@@ -285,7 +286,7 @@ enum AudioLoc {
     AL_TEXSPECTRO, AL_SPECTROHEAD, AL_SPECTROFILL,
     AL_TEXDEPTH0, AL_TEXDEPTH1, AL_DEPTHVALID, AL_NEARFAR, AL_TANHALFFOV,
     AL_TEXSHADOW, AL_LIGHTM, AL_SHADOWPASS, AL_LIGHTDIR, AL_SHADOWTEXEL,
-    AL_OITPASS, AL_COUNT
+    AL_OITPASS, AL_SHADOWEXTENT, AL_COUNT
 };
 const char *kAudioLocNames[AL_COUNT] = {
     "audioPhase", "audioAdvance", "audioBeat", "audioLevel", "sides",
@@ -304,7 +305,7 @@ const char *kAudioLocNames[AL_COUNT] = {
     "texSpectro", "spectroHead", "spectroFill",
     "texDepth0", "texDepth1", "depthValid", "nearFar", "tanHalfFov",
     "texShadow", "lightM", "shadowPass", "lightDir", "shadowTexel",
-    "oitPass"
+    "oitPass", "shadowExtent"
 };
 }
 
@@ -440,6 +441,7 @@ void EffectShader::applyAudioFeatures(const AudioFeatures &f)
                                             s_lightDir[1], s_lightDir[2]);
     if (L[AL_SHADOWTEXEL] >= 0) glUniform1f(L[AL_SHADOWTEXEL], 1.f / 2048.f);
     if (L[AL_OITPASS]     >= 0) glUniform1f(L[AL_OITPASS],     s_oitPass);
+    if (L[AL_SHADOWEXTENT]>= 0) glUniform1f(L[AL_SHADOWEXTENT], s_shadowExtent);
     if (L[AL_SSMHEAD]     >= 0) glUniform1f(L[AL_SSMHEAD],  f.ssmHead);
     if (L[AL_SSMFILL]     >= 0) glUniform1f(L[AL_SSMFILL],  f.ssmFill);
     if (L[AL_SPECTROHEAD] >= 0) glUniform1f(L[AL_SPECTROHEAD], f.spectroHead);

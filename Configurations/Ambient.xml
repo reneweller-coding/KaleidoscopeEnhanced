@@ -291,7 +291,7 @@
     <float name="glitterP" minValue="0.35" maxValue="0.85"></float>
   </TextureShader>
 
-  <TextureShader file="..\\Scene3D\\BloomSculpt.frag" type="scene3d" geom="patches" probability="0.5" mood="dreamy" complexity="3">
+  <TextureShader file="..\\Scene3D\\BloomSculpt.frag" type="scene3d" geom="patches" probability="0.5" mood="dreamy" complexity="3" shadowExtent="2.6">
     <float name="bloomP"   minValue="0.35" maxValue="0.75"></float>
     <float name="camDistP" minValue="3.0"  maxValue="3.9"></float>
     <float name="twistP"   minValue="0.5"  maxValue="1.6"></float>
@@ -315,7 +315,7 @@
     <float name="glowP"   minValue="0.45" maxValue="1.0"></float>
   </TextureShader>
 
-  <TextureShader file="..\\Scene3D\\MetaSculpt.frag" type="scene3d" geom="indirect" probability="0.45" mood="dreamy" complexity="4">
+  <TextureShader file="..\\Scene3D\\MetaSculpt.frag" type="scene3d" geom="indirect" probability="0.45" mood="dreamy" complexity="4" shadowExtent="2.8">
     <float name="blobP"    minValue="0.65" maxValue="1.05"></float>
     <float name="spreadP"  minValue="0.75" maxValue="1.30"></float>
     <float name="isoP"     minValue="0.8"  maxValue="1.25"></float>

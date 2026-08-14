@@ -20,11 +20,14 @@ in  vec2 gUV[];
 
 out vec3  vNormal;
 out vec3  vView;
+out vec3  vWorld;      // for the shadow lookup
 out float vShard;      // how far this shard has flown, 0..1
 out float vEdge;       // per-shard random, for colour scatter
 out vec2  vUV;
 
 uniform mat4  projM;
+uniform mat4  lightM;
+uniform float shadowPass;
 uniform float eyeOff;
 uniform float audioAdvance;
 uniform float audioKick;
@@ -134,12 +137,23 @@ void main()
 
         vNormal = fn;
         vView   = normalize(-vp);
+        vWorld  = p;                      // origin-centred, which is where the
+                                          // light's box is
         vShard  = clamp(fly * 1.6, 0.0, 1.0);
         vEdge   = h.x;
         vUV     = gUV[i];
 
-        gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
-        gl_Position.x += eyeOff * 0.045 * gl_Position.w;
+        // The shadow contract: the depth pass wants the WORLD position through
+        // the light's matrix, not this scene's camera chain.
+        if (shadowPass > 0.5)
+        {
+            gl_Position = lightM * vec4(p, 1.0);
+        }
+        else
+        {
+            gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
+            gl_Position.x += eyeOff * 0.045 * gl_Position.w;
+        }
         EmitVertex();
     }
     EndPrimitive();

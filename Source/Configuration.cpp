@@ -209,6 +209,13 @@ void Configuration::readConfiguration( const QString &filename )
 				el.attribute("geom"),
 				minTimeSolo, maxTimeSolo, minTimeInterpolation, maxTimeInterpolation );
 
+			// Optional: half-width of the light's shadow box, in world units.
+			// Only the scene knows its own scale, and the shadow map's
+			// resolution is spent across whatever this says — a 120-unit box
+			// gives a 3-unit object about 50 texels, which is unusable.
+			if( el.hasAttribute("shadowExtent") )
+				shader->setShadowExtent( el.attribute("shadowExtent").toFloat() );
+
 			addUniforms( shader, el );
 			shader->setComplexity( complexity );
 			shader->setProbability( probability );

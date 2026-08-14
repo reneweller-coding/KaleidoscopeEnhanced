@@ -3013,6 +3013,10 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 	// samples it is drawn.  It renders into its own framebuffer, so it happens
 	// before the texture FBO is bound below.
 	m_lastAudioFx = audioFx;
+	// The box is sized by the SCENE, because only it knows its own scale, and
+	// the map's 2048 texels are spent across whatever this says.
+	EffectShader::s_shadowExtent =
+	    m_effectTextures[m_actEffectTexture]->shadowExtent();
 	updateLightMatrix( m_globaltime );
 	if( m_effectTextures[m_actEffectTexture]->usesShadow() )
 	{
@@ -3768,7 +3772,10 @@ bool FilterShader::ensureShadowMap()
 // shadows a vanishing point that the shading does not have.
 void FilterShader::updateLightMatrix(float t)
 {
-	const float E = EffectShader::kShadowExtent;
+	// The ACTIVE scene's box, not the default: the map's resolution is spent
+	// across it, so a small scene must get a small box or its shadows come out
+	// in blocks a texel wide.
+	const float E = EffectShader::s_shadowExtent;
 
 	// Kept fairly high on purpose.  A low sun is more dramatic per shadow, but
 	// shadow length goes as 1/tan(elevation) — at 37 degrees a tall object

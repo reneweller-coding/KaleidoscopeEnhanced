@@ -161,7 +161,11 @@ public:
 	// lightM covers a fixed 2*kShadowExtent cube at the origin.  A scene that
 	// wants shadows keeps its geometry inside it — an automatically fitted box
 	// would have to be refitted every frame from bounds the host never sees.
+	// Default half-width of the light's box; a scene overrides it with the
+	// shadowExtent attribute when its own scale differs.
 	static constexpr float kShadowExtent = 60.f;
+	virtual float shadowExtent() const { return kShadowExtent; }
+	static float s_shadowExtent;      // the ACTIVE scene's, for the receivers
 	static float s_shadowPass;        // 1 during the depth-only pass
 	static float s_lightM[16];        // light view-projection, column-major
 	static float s_lightDir[3];
