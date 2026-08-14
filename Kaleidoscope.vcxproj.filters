@@ -936,6 +936,12 @@
     <None Include="Scene3D\Magnetosphere.vert">
       <Filter>Shaders\Scene3D</Filter>
     </None>
+    <None Include="Scene3D\PillarHall.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\PillarHall.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
     <None Include="Scene3D\Planet4D.frag">
       <Filter>Shaders\Scene3D</Filter>
     </None>

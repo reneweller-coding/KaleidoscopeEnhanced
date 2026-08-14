@@ -44,7 +44,7 @@ public:
 		initUniforms( m_width, m_height );   // virtual: derived locations too
 		m_glReady = true;
 		m_usesSim = m_usesFluid = m_usesSmoke3D = m_usesSSM = m_usesPhysarum = -1;
-		m_usesSpectro = -1;
+		m_usesSpectro = m_usesShadow = -1;
 	}
 	bool isCompiled() const { return m_glReady; }
 
@@ -150,6 +150,23 @@ public:
 	// this frame (set by FilterShader; [0] = tex0's scene, [1] = tex1's).
 	static float s_depthValid[2];
 
+	// ---- shadow mapping ----
+	// A scene cannot simply be re-projected by the engine: every scene places
+	// its OWN camera before applying projM, so substituting a light matrix for
+	// projM would light the scene from a direction that ignores that placement.
+	// The depth pass is therefore a CONTRACT the scene opts into: while
+	// shadowPass is 1 it must project its world position with lightM instead,
+	// and its fragment shader must return immediately.
+	//
+	// lightM covers a fixed 2*kShadowExtent cube at the origin.  A scene that
+	// wants shadows keeps its geometry inside it — an automatically fitted box
+	// would have to be refitted every frame from bounds the host never sees.
+	static constexpr float kShadowExtent = 60.f;
+	static float s_shadowPass;        // 1 during the depth-only pass
+	static float s_lightM[16];        // light view-projection, column-major
+	static float s_lightDir[3];
+	bool usesShadow();
+
 	// ---- Song-structure memory ----
 	// Snapshot / restore of all rolled per-activation parameter values, so a
 	// recognised section (chorus #2 = chorus #1) replays the exact same look.
@@ -210,6 +227,7 @@ protected:
 	int		m_usesSmoke3D = -1;  // same caching for the volumetric smoke/fire field
 	int		m_usesSSM = -1;      // same caching for the self-similarity matrix
 	int		m_usesSpectro = -1;  // ... and for the scrolling spectrogram history
+	int		m_usesShadow = -1;   // ... and for the shadow map
 	int		m_usesPhysarum = -1; // same caching for the Physarum trail map
 	unsigned int	m_cfxMask = 0;   // compute-FX sampler bits (see cfxMask())
 	GLuint		m_cfxProg = 0;   // program the mask was resolved for

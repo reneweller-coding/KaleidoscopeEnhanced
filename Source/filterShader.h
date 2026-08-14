@@ -419,6 +419,18 @@ private:
 	// renderbuffers, so the combine stage can READ what the 3D scene wrote
 	// ("texDepth0"/"texDepth1", units 29/30).
 	GLuint			m_depthTexEffect1 = 0, m_depthTexEffect2 = 0;
+
+	// ---- shadow map ----
+	// A single depth-only target, shared by whichever 3D scene wants it.
+	// Created on first use: a scene opts in by declaring "texShadow", and most
+	// never do.
+	static const int kShadowSize = 2048;
+	GLuint			m_shadowFbo = 0;
+	GLuint			m_shadowTex = 0;
+	AudioFeatures	m_lastAudioFx;   // this frame's features, for the shadow pass
+	bool			ensureShadowMap();
+	void			updateLightMatrix(float t);
+	void			renderShadowPass(EffectShader *fx);
 	// FPS EMA for the cube-scene detail budget (see paint()).
 	float			m_cubeFpsEma = 60.f;
 	// TRUE-STEREO state (real per-eye rendering of a solo 3D scene):

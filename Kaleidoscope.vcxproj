@@ -617,6 +617,8 @@ exit /b 0</Command>
     <None Include="Scene3D\Magnetosphere.comp" />
     <None Include="Scene3D\Magnetosphere.frag" />
     <None Include="Scene3D\Magnetosphere.vert" />
+    <None Include="Scene3D\PillarHall.frag" />
+    <None Include="Scene3D\PillarHall.vert" />
     <None Include="Scene3D\Planet4D.frag" />
     <None Include="Scene3D\Planet4D.vert" />
     <None Include="Scene3D\PlanetRings.frag" />

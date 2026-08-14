@@ -30,6 +30,13 @@ typedef ptrdiff_t GLintptr;
 
 // ---- Tokens beyond GL 1.1 (only what the codebase touches) ----
 #define GL_CLAMP_TO_EDGE                  0x812F
+// Shadow-map sampling.  With COMPARE_REF_TO_TEXTURE the sampler returns the
+// RESULT of a depth comparison, so a LINEAR filter averages four booleans and
+// gives 2x2 percentage-closer filtering for free.
+#define GL_CLAMP_TO_BORDER                0x812D
+#define GL_TEXTURE_COMPARE_MODE           0x884C
+#define GL_TEXTURE_COMPARE_FUNC           0x884D
+#define GL_COMPARE_REF_TO_TEXTURE         0x884E
 #define GL_TEXTURE_WRAP_R                 0x8072
 #define GL_BGRA                           0x80E1
 #define GL_MULTISAMPLE                    0x809D
