@@ -612,6 +612,18 @@
     <None Include="Blend\OitResolve.frag">
       <Filter>Shaders\Blend</Filter>
     </None>
+    <None Include="Scene\Halftone.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\Snowfall.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\Tonnetz.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\VoronoiShatter.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
     <None Include="Blend\Blit.frag">
       <Filter>Shaders\Blend</Filter>
     </None>

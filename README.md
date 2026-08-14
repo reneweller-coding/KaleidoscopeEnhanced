@@ -1092,6 +1092,46 @@ Not built: `Marching Cubes`. Meshing an isosurface needs a compute→VBO→indir
 draw path that this renderer does not have, and faking it with a raymarch would
 not have been the thing that was asked for. The `texSculpt` slot is reserved.
 
+### Four image and harmony scenes
+
+The last of the idea list, and none of them needed new engine support — they are
+there because each one rests on a fact worth knowing rather than on a trick.
+
+**`VoronoiShatter`** breaks the photograph into Voronoi cells, because a Voronoi
+diagram *is* what a fracture pattern looks like: both come from the same rule,
+that every point belongs to the nearest seed. The cells are the break, not a
+decoration drawn on top of it. Each shard then samples the photo through its own
+transform — shifted, rotated, scaled about its own centre — which is the
+difference between a shattered picture and a picture with cracks drawn on: a
+real shard carries its piece of the image away with it and the seams stop lining
+up. The crack itself comes from the distance between the *nearest* and
+*second-nearest* seed, which is small exactly on a cell boundary and nowhere
+else.
+
+**`Halftone`** separates into CMYK and screens each ink on its own grid at 15°,
+75°, 0° and 45°. Those angles are not a style choice: they are the ones that
+keep four dot grids from lining up into a moiré. Screening RGB instead would
+give three grids fighting each other and a picture that looks like a bug rather
+than like print. Two details do the rest — dot *area* follows the value (hence
+the `sqrt` on the radius, without which the midtones come out far too dark), and
+black is pulled out first, which is what gives print its deep blacks instead of
+a muddy three-ink overlap.
+
+**`Tonnetz`** is the harmonic lattice: pitch classes on a triangular grid whose
+three axes are the perfect fifth, the major third and the minor third. Its point
+is that **triads become triangles** — every major and minor chord is one small
+triangle, and chords sharing notes sit next to each other. So a held chord
+lights one triangle, a related chord lights the triangle sharing an edge with
+it, and a modulation walks across the plane. The whole lattice is one line of
+code (`pitch = 7a + 4b mod 12`); everything else in the file is drawing.
+
+**`Snowfall`** buys depth with layers rather than geometry: several sheets of
+flakes, the near ones big, fast and badly out of focus, the far ones small, slow
+and sharp. Parallax *plus* a focus that changes with it is what the eye reads as
+distance — a single layer always looks like dust on the lens instead of weather.
+The wind is one field shared by every layer and driven by height, so a gust
+travels down the frame instead of shifting everything at once.
+
 ### Order-independent transparency
 
 Interpenetrating transparent objects are the case sorting cannot solve: there is
