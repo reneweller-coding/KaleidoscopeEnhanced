@@ -124,6 +124,11 @@ protected:
 	// Echtes dt fürs Scroll-/Blend-Smoothing (nicht an die 60-Hz-Annahme
 	// gekoppelt) - ohne das ruckelt es, sobald die Framezeit schwankt.
 	qint64			m_overlayLastMs  = -1;
+	// An WELCHEN FilterShader die Overlay-Texturen zuletzt hochgeladen wurden:
+	// jede Konfiguration hat ihren EIGENEN PresentPass - nach einem Preset-
+	// Wechsel müssen Lyrics-/Künstlerbild-Texturen dort neu hochgeladen
+	// werden, sonst sind sie "verloren".
+	FilterShader   *m_overlayFs      = nullptr;
 
 	// Optional MIDI control (knobs -> look params, pads -> next effect).
 	// MIDI LEARN (key 'j'): cycles through the targets below; the next CC

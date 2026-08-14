@@ -38,6 +38,12 @@ public:
         double durationSec = 0.0;
         bool   playing     = false;
         qint64 stampMs     = 0;      // lokale Uhr beim Erfassen
+        // Extrapolations-RATE statt Positions-Sprüngen: Abweichungen zwischen
+        // SMTC und eigener Hochrechnung werden als leicht veränderte
+        // Laufgeschwindigkeit ausgeglichen (Gleiten). Die veröffentlichte
+        // Position ist dadurch MONOTON - sie läuft nie rückwärts, was vorher
+        // Karaoke kurz in die Vorzeile flippen und den Scroll hüpfen ließ.
+        double rate        = 1.0;
     };
     Timeline timeline() const;
     double   positionNowSec() const;   // extrapoliert; <0 = unbekannt

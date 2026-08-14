@@ -1114,6 +1114,17 @@ void GLwidget::updateTrackOverlays( FilterShader *fs )
 		return ( cur - target < step ) ? target : cur - step;
 	};
 
+	// Preset-Wechsel: die neue Konfiguration hat einen EIGENEN PresentPass
+	// ohne unsere Texturen - Upload-Merker zurücksetzen, damit Lyrics und
+	// Künstlerbild unten sofort neu hochgeladen werden.
+	if( fs != m_overlayFs )
+	{
+		m_overlayFs         = fs;
+		m_lyricsRevUploaded = -1;
+		m_artistIdxUploaded = -1;
+		m_artistRevSeen     = -1;
+	}
+
 	// Playback-Position: SMTC, sonst lokale Uhr seit Trackwechsel.
 	double pos = m_nowPlaying ? m_nowPlaying->positionNowSec() : -1.0;
 	double dur = 0.0;
@@ -1150,10 +1161,14 @@ void GLwidget::updateTrackOverlays( FilterShader *fs )
 		if( m_trackMedia->syncedLyrics() )
 		{
 			// Aktive Zeile suchen (Cache + Vorwärts-/Rückwärtsscan für Seeks).
+			// RÜCKWÄRTS mit 0.3s Hysterese: nur ein echtes Zurückspulen soll
+			// die Zeile wechseln - ein winziger Positions-Rückschritt (falls
+			// je einer durchrutscht) darf das Highlight nicht in die Vorzeile
+			// flippen lassen.
 			int n = int(lines.size());
 			int i = ( m_karaokeLine >= 0 && m_karaokeLine < n ) ? m_karaokeLine : 0;
 			while( i + 1 < n && pos >= lines[i].t1 ) ++i;
-			while( i > 0     && pos <  lines[i].t0 ) --i;
+			while( i > 0     && pos <  lines[i].t0 - 0.3 ) --i;
 			m_karaokeLine = i;
 
 			const auto &L = lines[i];
