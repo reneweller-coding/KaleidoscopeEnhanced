@@ -1,0 +1,183 @@
+#version 430
+// SmokeHall.comp — a colonnade in smoke, lit through slotted beams.
+//
+// UNFINISHED — deliberately not registered in any preset.
+// The technique works: the shadow map really does carve beams into the volume,
+// and the four findings below are solid and worth keeping.  What is not solved
+// is the composition — the roof beams cover too much of the sky from an eye at
+// mid-height, so the frame is dominated by their black undersides instead of by
+// the shafts between them.  The next pass should widen the slots relative to the
+// beams and settle the camera height against the hall height, then probe.
+// -----------------------------------------------------------------------
+// This is the first scene that wants BOTH new contracts at once.  The hall is
+// opaque and casts into the shadow map; the smoke is transparent and reads that
+// same map back, so a slab of smoke standing in a pillar's shadow goes dark and
+// the shafts between the roof beams come out as real geometry rather than as a
+// screen-space guess.  Nothing else in the engine can produce a beam of light
+// that bends correctly around an object it has never heard of.
+//
+// Three passes see three different subsets, and the vertex shader is what sorts
+// them out:
+//   shadow pass      hall only  — smoke must not block the light it scatters
+//   opaque pass      hall only
+//   transparent pass smoke only
+//
+// The smoke slabs are perpendicular to the view axis and stay put while the hall
+// scrolls past them.  That is the reason this scene flies the camera forward
+// instead of turning it: a slab set that rotates with the scene stops facing the
+// viewer, and view-aligned slicing is the whole basis of the technique.
+// -----------------------------------------------------------------------
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+
+layout(std430, binding = 0) buffer Verts { float verts[]; };
+layout(std430, binding = 1) buffer Cmd   { uint  cmd[]; };
+
+uniform uint  maxVertices;
+uniform float time;
+uniform float sceneSeed;
+uniform float audioAdvance;
+uniform float audioLevel;
+uniform float audioKick;
+uniform float audioSubBass;
+
+uniform float spacingP;     // preset: pillar spacing
+uniform float heightP;      // preset: hall height
+uniform float camHP;        // preset: eye height
+
+const int COLS   = 4;                  // pillar columns (two per side)
+const int ROWS   = 6;                  // pillar rows along the hall
+const int BEAMS  = 14;                 // roof beams
+const int SLABS  = 56;                 // smoke slices
+// The hall is deliberately SHORT.  The shadow box is centred on the origin and
+// sized once, so anything past its edge gets "lit" for free — and a stretch of
+// unshadowed smoke at the far end is a grey wash with no beams in it, sitting
+// right in the middle of the frame where the corridor recedes.  Better a short
+// hall entirely inside the box than a long one half outside it.
+const float SPAN = 26.0;
+const float NEARZ = -4.8;              // first smoke slab (object z; eye is at -6)
+const float FARZ  = 21.0;              // last smoke slab
+
+const int NPILLQ = COLS * ROWS * 4;    // 160 pillar sides
+const int NQUADS = 1 + NPILLQ + BEAMS + SLABS;
+
+void writeVertex(uint slot, vec3 p, vec3 n, float kind, float extra)
+{
+    uint o = slot * 8u;
+    verts[o + 0u] = p.x;  verts[o + 1u] = p.y;  verts[o + 2u] = p.z;
+    verts[o + 3u] = kind;
+    verts[o + 4u] = n.x;  verts[o + 5u] = n.y;  verts[o + 6u] = n.z;
+    verts[o + 7u] = extra;
+}
+
+// Both windings.  The hall is seen from inside and the slabs from whichever way
+// the frustum happens to face them; neither has a meaningful back.
+void emitQuad(vec3 a, vec3 b, vec3 c, vec3 d, vec3 n, float kind, float extra)
+{
+    uint base = atomicAdd(cmd[4], 12u);
+    if (base + 12u > maxVertices)
+        return;
+    writeVertex(base +  0u, a, n, kind, extra);
+    writeVertex(base +  1u, b, n, kind, extra);
+    writeVertex(base +  2u, c, n, kind, extra);
+    writeVertex(base +  3u, a, n, kind, extra);
+    writeVertex(base +  4u, c, n, kind, extra);
+    writeVertex(base +  5u, d, n, kind, extra);
+    writeVertex(base +  6u, c, n, kind, extra);
+    writeVertex(base +  7u, b, n, kind, extra);
+    writeVertex(base +  8u, a, n, kind, extra);
+    writeVertex(base +  9u, d, n, kind, extra);
+    writeVertex(base + 10u, c, n, kind, extra);
+    writeVertex(base + 11u, a, n, kind, extra);
+}
+
+void main()
+{
+    uvec3 g = gl_GlobalInvocationID;
+    uint id = g.x + 64u * (g.y + 64u * g.z);
+    if (id >= uint(NQUADS))
+        return;
+
+    float H = clamp(heightP, 0.5, 1.8) * 8.4;
+    float pitch = clamp(spacingP, 0.6, 1.8) * 4.6;
+    // The hall slides toward the viewer.  Wrapping the geometry rather than
+    // moving the camera keeps every coordinate small and bounded, which matters
+    // because the shadow box is sized once and cannot follow a camera that
+    // wanders off down an endless corridor.
+    float scroll = mod(audioAdvance * 1.35, pitch);
+
+    if (id == 0u)
+    {
+        // Floor.
+        emitQuad(vec3(-16.0, 0.0, -8.0), vec3(16.0, 0.0, -8.0),
+                 vec3(16.0, 0.0, SPAN),  vec3(-16.0, 0.0, SPAN),
+                 vec3(0.0, 1.0, 0.0), 0.0, 0.0);
+        return;
+    }
+
+    if (id < uint(1 + NPILLQ))
+    {
+        int k = int(id) - 1;
+        int side = k % 4;   k /= 4;
+        int col  = k % COLS; k /= COLS;
+        int row  = k;
+
+        float xs = (col < 2) ? -1.0 : 1.0;
+        float xo = (col % 2 == 0) ? 4.6 : 8.6;
+        float cx = xs * xo;
+        float cz = float(row + 1) * pitch - scroll;
+        float w = 0.62;
+
+        // Four sides of a box.  Which side this invocation owns comes from the
+        // low two bits, which is cheaper than four branches.
+        vec2 dir = (side == 0) ? vec2(1.0, 0.0)
+                 : (side == 1) ? vec2(0.0, 1.0)
+                 : (side == 2) ? vec2(-1.0, 0.0) : vec2(0.0, -1.0);
+        vec2 tan1 = vec2(-dir.y, dir.x);
+        vec2 p0 = vec2(cx, cz) + (dir - tan1) * w;
+        vec2 p1 = vec2(cx, cz) + (dir + tan1) * w;
+        emitQuad(vec3(p0.x, 0.0, p0.y), vec3(p1.x, 0.0, p1.y),
+                 vec3(p1.x, H,   p1.y), vec3(p0.x, H,   p0.y),
+                 vec3(dir.x, 0.0, dir.y), 0.0, 1.0);
+        return;
+    }
+
+    if (id < uint(1 + NPILLQ + BEAMS))
+    {
+        // Roof beams run ALONG the hall, not across it.  Across was the obvious
+        // arrangement and it produces no visible shafts at all: a view ray going
+        // down the corridor crosses every stripe in turn, so every ray averages
+        // to the same thing and the volume comes out an even grey.  Running them
+        // lengthwise makes the lit/shadow split a function of screen x, and the
+        // ray keeps whichever side it started on — which is what a shaft is.
+        // One quad each is enough; a beam only has to block, and it is only ever
+        // seen from below.
+        int b = int(id) - 1 - NPILLQ;
+        float bx = -15.0 + float(b) * 2.30;
+        float t = 1.05;
+        // Back to -8, not -3: the nearest smoke slabs sit behind the eye's own
+        // starting point, and a slab with no beam above it is lit everywhere.
+        // One uniformly lit slab in front of the lens washes out every striped
+        // one behind it.
+        emitQuad(vec3(bx,     H, -8.0),  vec3(bx + t, H, -8.0),
+                 vec3(bx + t, H, SPAN),  vec3(bx,     H, SPAN),
+                 vec3(0.0, -1.0, 0.0), 0.0, 2.0);
+        return;
+    }
+
+    // ---- smoke slabs ----
+    int s = int(id) - 1 - NPILLQ - BEAMS;
+    float f = float(s) / float(SLABS - 1);
+    // Spaced by the cube of the parameter: near slices matter far more, because
+    // they cover more screen and are what the eye resolves.
+    float zv = mix(NEARZ, FARZ, f * f * (3.0 - 2.0 * f));
+    // Big enough to cover the frustum at that depth, but capped: a slab that
+    // keeps growing with distance ends up mostly outside the hall AND outside
+    // the shadow box, where the lookup can only answer "lit" — and a volume that
+    // is lit everywhere is a flat grey wall, not a shaft.
+    float hh = min(0.60 * (zv + 6.6), 6.5);
+    float hw = min(hh * 1.95, 17.0);
+    float ey = clamp(camHP, 0.5, 5.0);
+    emitQuad(vec3(-hw, ey - hh, zv), vec3(hw, ey - hh, zv),
+             vec3(hw, ey + hh, zv),  vec3(-hw, ey + hh, zv),
+             vec3(0.0, 0.0, -1.0), 1.0, f);
+}

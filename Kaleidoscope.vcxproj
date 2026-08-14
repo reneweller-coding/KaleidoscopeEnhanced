@@ -649,6 +649,12 @@ exit /b 0</Command>
     <None Include="Scene3D\CathedralGlass.comp" />
     <None Include="Scene3D\CathedralGlass.frag" />
     <None Include="Scene3D\CathedralGlass.vert" />
+    <None Include="Scene3D\SmokeHall.comp" />
+    <None Include="Scene3D\SmokeHall.frag" />
+    <None Include="Scene3D\SmokeHall.vert" />
+    <None Include="Scene3D\ShadowForest.comp" />
+    <None Include="Scene3D\ShadowForest.frag" />
+    <None Include="Scene3D\ShadowForest.vert" />
     <None Include="Scene3D\Planet4D.frag" />
     <None Include="Scene3D\Planet4D.vert" />
     <None Include="Scene3D\PlanetRings.frag" />

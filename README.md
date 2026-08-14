@@ -1362,6 +1362,65 @@ correctly. Neither winding order nor a larger inner radius changed it. The windo
 is therefore built as an annulus around an open oculus, lit from its inner rim,
 which is what a real one often is anyway.
 
+### ShadowForest — the shadows are the subject
+
+The trunks are almost nothing: tapered four-sided prisms, dark, mostly in
+silhouette. The scene is about the pattern they throw across the ground, which
+is the one thing that cannot be faked without a shadow map — sixty overlapping
+shadows, each stretching and swinging as the light moves, is not a texture
+anyone can author.
+
+Two constraints shaped it, and both are consequences of decisions the engine
+made earlier for good reasons:
+
+- **The sun is high, so the trunks must be tall.** The host deliberately keeps
+  the light steep, because shadow length goes as 1/tan(elevation) and a low sun
+  turns any scene with repeated geometry entirely dark. At about sixty degrees a
+  shadow is a bit over half the object's height — so the only way to get a shadow
+  worth looking at is to give it something tall to fall from. The trunks run
+  7–13 units against a 1.7-unit eye height.
+- **Everything stays inside the light's box.** It is centred on the origin and
+  sized once from `shadowExtent`, so geometry past its edge silently reports
+  "lit" and a whole region of ground comes back flat. A short dense stand inside
+  the box beats a deep one half outside it.
+
+The ground keeps a real sky term where it is shadowed rather than going to
+black — a shadow on a sunlit floor is blue, not absent.
+
+### SmokeHall — unfinished, and what it established
+
+`SmokeHall` is in the tree but **registered in no preset**, so it cannot appear
+in a show. It is the first scene to want both new contracts at once: the hall is
+opaque and casts into the shadow map, the smoke is transparent and reads that
+same map back, so a slab standing in a pillar's shadow goes dark and the shafts
+between the roof beams are real geometry rather than a screen-space guess.
+
+The technique works. The composition does not yet — from an eye at mid-height
+the roof beams cover too much of the sky, so the frame is dominated by their
+black undersides instead of by the shafts between them. Four findings from it
+are worth keeping regardless:
+
+- **A participating medium wants a FLAT OIT weight.** Every other transparent
+  scene here uses a weight that falls off with depth, because that is what stands
+  in for the sort that is not happening. A volume has no such ordering: every
+  slice along the ray contributes equally to the integral. Weight the near slabs
+  more and the resolve stops averaging the volume and instead shows you the
+  shadow pattern of whichever slice is closest — coarse blobs where there should
+  be beams.
+- **Per-slice opacity is set by the product, not the slice.** With 56 slabs the
+  number that matters is `(1 - a)^56`. At `a = 0.035` that leaves 13% and reads
+  as thick smoke; at `0.16` it leaves 10⁻⁹, the volume goes fully opaque a few
+  slices in, and its average colour simply replaces the frame.
+- **Slots must run ALONG the corridor, not across it.** Across is the obvious
+  arrangement and produces no visible shafts at all: a ray going down the hall
+  crosses every stripe in turn, so every ray averages to the same value and the
+  volume comes out an even grey. Lengthwise makes the lit/shadow split a function
+  of screen x, and the ray keeps whichever side it started on.
+- **The volume must be bounded to the architecture.** Slabs sized to cover the
+  frustum grow past both the hall and the shadow box, where the lookup can only
+  answer "lit" — and one uniformly lit slab in front of the lens washes out every
+  striped one behind it.
+
 ### Order-independent transparency
 
 Interpenetrating transparent objects are the case sorting cannot solve: there is

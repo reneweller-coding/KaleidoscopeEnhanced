@@ -964,4 +964,14 @@
     <float name="hueP"     minValue="0.00" maxValue="1.00"></float>
   </TextureShader>
 
+  <TextureShader file="..\\Scene3D\\ShadowForest.frag" type="scene3d" geom="indirect" shadowExtent="34" probability="0.45" mood="calm,dark" complexity="4">
+    <float name="densityP" minValue="0.70" maxValue="1.40"></float>
+    <float name="heightP"  minValue="0.70" maxValue="1.45"></float>
+    <float name="swayP"    minValue="0.30" maxValue="1.60"></float>
+    <float name="camHP"    minValue="1.30" maxValue="2.40"></float>
+    <float name="mistP"    minValue="0.50" maxValue="1.60"></float>
+    <float name="glowP"    minValue="0.45" maxValue="1.00"></float>
+    <float name="hueP"     minValue="0.00" maxValue="1.00"></float>
+  </TextureShader>
+
 </configuration>
