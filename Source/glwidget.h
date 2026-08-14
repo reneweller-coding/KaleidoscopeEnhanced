@@ -106,8 +106,11 @@ protected:
 	// samt Texturen an den FilterShader/PresentPass durch.
 	void			updateTrackOverlays( FilterShader *fs );
 	TrackMedia	   *m_trackMedia     = nullptr;
-	int				m_lyricsMode     = 0;      // 0 aus, 1 Scroll, 2 Karaoke (persistiert)
-	bool			m_artistShow     = false;  // Künstlerbilder an/aus (persistiert)
+	// Default beim allerersten Start (keine gespeicherten Settings): Karaoke
+	// + Künstlerbilder an - ab dann persistiert loadUiSettings()/saveUiSettings()
+	// den zuletzt gewählten Zustand.
+	int				m_lyricsMode     = 2;      // 0 aus, 1 Scroll, 2 Karaoke (persistiert)
+	bool			m_artistShow     = true;   // Künstlerbilder an/aus (persistiert)
 	int				m_lyricsRevUploaded = -1;
 	int				m_artistRevSeen  = -1;
 	int				m_artistIdx      = -1;
@@ -118,6 +121,9 @@ protected:
 	int				m_karaokeLine    = -1;
 	qint64			m_trackStartMs   = 0;      // Fallback-Uhr ohne SMTC-Position
 	bool			m_lyricsTest     = false;  // KALEIDO_LYRICS_TEST aktiv
+	// Echtes dt fürs Scroll-/Blend-Smoothing (nicht an die 60-Hz-Annahme
+	// gekoppelt) - ohne das ruckelt es, sobald die Framezeit schwankt.
+	qint64			m_overlayLastMs  = -1;
 
 	// Optional MIDI control (knobs -> look params, pads -> next effect).
 	// MIDI LEARN (key 'j'): cycles through the targets below; the next CC
@@ -176,6 +182,11 @@ protected:
 	// same settings file FilterShader uses.  Saved with 'k', loaded at startup.
 	void    loadUiSettings();
 	void    saveUiSettings();
+	// Bündelt saveUiSettings() + FilterShader::saveSettings() - ruft die
+	// Taste 'k' auf UND jeder Quit-Pfad (auch die harten exit(0)-Stellen,
+	// die keine C++-Destruktoren mehr durchlaufen), damit der zuletzt
+	// gewählte Zustand wirklich immer übersteht.
+	void    saveAllSettings();
 
 	// Adaptive render scale: nudge FilterShader's internal render scale to keep
 	// the frame rate near target, never exceeding the launch -s value.

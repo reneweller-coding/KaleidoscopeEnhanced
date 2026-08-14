@@ -397,7 +397,7 @@ void main()
         }
     }
 
-    // --- Track-title reveal: 24 distinct entrance styles (host-rolled per
+    // --- Track-title reveal: 30 distinct entrance styles (host-rolled per
     // reveal, matched to the music's mood — calm gets soft dissolves and
     // drifts, aggressive gets glitch/slam, bright gets light sweeps, dark
     // gets smoke).  All entrances use an ease-out cubic so the motion
@@ -472,7 +472,16 @@ void main()
                              tq = (floor(tq / q) + 0.5) * q; }
         else if (st == 23) tq.y += sin(tq.x * 9.0 - ph * 16.0)         // flag wave settles
                                  * 0.06 * d * (0.65 + 0.35 * sin(sd));
-        // (st 0/3/4/5/18/19/22: no spatial change; masks/sampling below.)
+        else if (st == 25) {                                           // vinyl spin-in
+            float dir = (titleSeed > 0.5) ? 1.0 : -1.0;
+            tq = rot2(tq, d * d * 6.2831853 * dir) * (1.0 + 2.0 * d * d);
+        }
+        else if (st == 27) {                                           // shatter converge
+            vec2 cell = floor(tq * 6.0 + 3.0);
+            vec2 rnd  = vec2(hash21(cell + sd), hash21(cell + sd + 11.3)) - 0.5;
+            tq += rnd * 0.7 * d * d;
+        }
+        // (st 0/3/4/5/18/19/22/24/26/28/29: no spatial change; masks/sampling below.)
 
         // Shared tasteful ending: grow gently toward the viewer while fading.
         tq /= 1.0 + 0.55 * outp;
@@ -490,6 +499,15 @@ void main()
         else if (st == 19) { float sw = tuv.x + tuv.y * 0.25 - (e * 1.6 - 0.25);   // light sweep
                              maskA = smoothstep(0.05, -0.10, sw);
                              glowX = exp(-abs(sw) * 18.0) * 0.9; }
+        else if (st == 24) { float band = abs(tuv.y - 0.5) * 2.0;              // vertical curtain
+                             maskA = smoothstep(band - 0.06, band + 0.06, e * 1.15); }
+        else if (st == 26) { float cellX = floor(tuv.x * 34.0) / 34.0;         // typewriter
+                             maskA = step(cellX, e * 1.06); }
+        else if (st == 28) { float band = abs(fract((tuv.x + tuv.y) * 3.0) - 0.5) * 2.0; // diagonal blinds
+                             maskA = smoothstep(band - 0.25, band + 0.05, e * 1.25); }
+        else if (st == 29) { float g = hash21(floor(tuv * vec2(46.0, 12.0)) + sd); // magnetic snap
+                             maskA = smoothstep(d - 0.10, d + 0.10, g);
+                             glowX = exp(-abs(g - d) * 22.0) * 0.7 * d; }
 
         // ---- Sample: plain / blurred / echo ghosts / RGB split ----
         vec4 tt;

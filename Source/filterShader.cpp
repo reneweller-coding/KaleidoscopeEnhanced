@@ -606,26 +606,37 @@ void FilterShader::setupSafety()
 // halo keeps the text readable over any content.
 void FilterShader::showTitle( const QString &title, const QString &artist )
 {
-	const int W = 1024, H = 256;
+	// 2x Auflösung ggü. dem ursprünglichen 1024x256 (gleiches Seitenverhältnis
+	// 4:1, alle Maße/Schriftgrade proportional mitskaliert): mehrere Einflug-
+	// Stile vergrößern die Textur beim Reveal bis auf das ~3.5-fache (z.B.
+	// "zoom-through"), und der gemeinsame Ausklang aller Stile ("wächst sanft
+	// dem Betrachter entgegen") vergrößert zusätzlich bis 1.55x - bei der alten
+	// Auflösung wurde dabei das Texel-Raster sichtbar (verpixelter Text, je
+	// nach Stil unterschiedlich stark, wegen des gemeinsamen Ausklangs aber
+	// IMMER auch am Ende jedes Reveals). Kostet nichts an Laufzeit: wird nur
+	// einmal pro Trackwechsel gerendert.
+	const float S = 2.0f;
+	const int W = int(1024 * S), H = int(256 * S);
 	QImage img( W, H, QImage::Format_ARGB32 );
 	img.fill( Qt::transparent );
 	QPainter p( &img );
 	p.setRenderHint( QPainter::Antialiasing );
 	p.setRenderHint( QPainter::TextAntialiasing );
 
-	QFont ft( "Segoe UI", 52, QFont::Bold );
-	QFont fa( "Segoe UI", 26 );
-	QString t = QFontMetrics( ft ).elidedText( title,  Qt::ElideRight, W - 80 );
-	QString a = QFontMetrics( fa ).elidedText( artist, Qt::ElideRight, W - 80 );
+	QFont ft( "Segoe UI", int(52 * S), QFont::Bold );
+	QFont fa( "Segoe UI", int(26 * S) );
+	QString t = QFontMetrics( ft ).elidedText( title,  Qt::ElideRight, W - int(80 * S) );
+	QString a = QFontMetrics( fa ).elidedText( artist, Qt::ElideRight, W - int(80 * S) );
 
-	const QRect rT( 40, 24, W - 80, 132 );
-	const QRect rA( 40, 156, W - 80, 68 );
+	const QRect rT( int(40 * S), int(24 * S), W - int(80 * S), int(132 * S) );
+	const QRect rA( int(40 * S), int(156 * S), W - int(80 * S), int(68 * S) );
 	p.setFont( ft );
 	p.setPen( QColor( 0, 0, 0, 150 ) );
 	for( int dy = -2; dy <= 2; ++dy )
 		for( int dx = -2; dx <= 2; ++dx )
 			if( dx != 0 || dy != 0 )
-				p.drawText( rT.translated( dx, dy ), Qt::AlignHCenter | Qt::AlignVCenter, t );
+				p.drawText( rT.translated( int(dx * S), int(dy * S) ),
+				            Qt::AlignHCenter | Qt::AlignVCenter, t );
 	p.setPen( QColor( 255, 255, 255, 235 ) );
 	p.drawText( rT, Qt::AlignHCenter | Qt::AlignVCenter, t );
 	if( !a.isEmpty() )
@@ -635,7 +646,8 @@ void FilterShader::showTitle( const QString &title, const QString &artist )
 		for( int dy = -1; dy <= 1; ++dy )
 			for( int dx = -1; dx <= 1; ++dx )
 				if( dx != 0 || dy != 0 )
-					p.drawText( rA.translated( dx, dy ), Qt::AlignHCenter | Qt::AlignVCenter, a );
+					p.drawText( rA.translated( int(dx * S), int(dy * S) ),
+					            Qt::AlignHCenter | Qt::AlignVCenter, a );
 		p.setPen( QColor( 205, 218, 238, 225 ) );
 		p.drawText( rA, Qt::AlignHCenter | Qt::AlignVCenter, a );
 	}
@@ -843,19 +855,19 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 		// within the pool is random so repeats stay varied.
 		// KALEIDO_TITLE_STYLE=<n> forces one style (tuning aid).
 		{
-			static const int calmPool[]   = { 0, 1, 2, 4, 5, 9, 17, 20, 23 };
-			static const int aggroPool[]  = { 7, 10, 11, 12, 13, 14, 21, 22 };
-			static const int brightPool[] = { 3, 6, 8, 15, 18, 19 };
-			static const int darkPool[]   = { 0, 2, 5, 16, 17, 20 };
+			static const int calmPool[]   = { 0, 1, 2, 4, 5, 9, 17, 20, 23, 24, 26 };
+			static const int aggroPool[]  = { 7, 10, 11, 12, 13, 14, 21, 22, 25, 27, 29 };
+			static const int brightPool[] = { 3, 6, 8, 15, 18, 19, 24, 25, 28, 29 };
+			static const int darkPool[]   = { 0, 2, 5, 16, 17, 20, 26, 27, 28 };
 			const int *pool; int n;
 			if( audio.ambientFactor > 0.55f || audio.arousal < 0.35f )
-				{ pool = calmPool;   n = 9; }
+				{ pool = calmPool;   n = 11; }
 			else if( audio.arousal > 0.62f && audio.valence < 0.58f )
-				{ pool = aggroPool;  n = 8; }
+				{ pool = aggroPool;  n = 11; }
 			else if( audio.valence > 0.55f )
-				{ pool = brightPool; n = 6; }
+				{ pool = brightPool; n = 10; }
 			else
-				{ pool = darkPool;   n = 6; }
+				{ pool = darkPool;   n = 9; }
 			int style = pool[ qrand() % n ];
 			QByteArray forced = qgetenv( "KALEIDO_TITLE_STYLE" );
 			if( !forced.isEmpty() )

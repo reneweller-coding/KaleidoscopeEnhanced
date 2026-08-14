@@ -8,6 +8,8 @@
 
 #include <QtCore/QDateTime>
 
+#include <cmath>
+
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Media.Control.h>
 
@@ -125,6 +127,11 @@ void NowPlaying::threadFunc()
     try { winrt::init_apartment(winrt::apartment_type::multi_threaded); inited = true; }
     catch (...) { /* already initialised on this thread is fine */ }
 
+    // Laufende Basislinie für die Drift-Korrektur unten (bleibt auf DIESEM
+    // Thread, kein Lock nötig - nur der veröffentlichte m_timeline braucht ihn).
+    Timeline prevTl;
+    QString  prevTitle;
+
     while (m_running)
     {
         QString t, a;
@@ -166,6 +173,30 @@ void NowPlaying::threadFunc()
             if (!scan.text.empty())
                 parseVlcTitle(scan.text, t, a);
         }
+
+        // Drift-Korrektur statt Sofort-Übernahme: SMTC aktualisiert die Position
+        // oft nur alle paar Sekunden, und der frische Wert liegt dabei fast immer
+        // etwas neben unserer eigenen (glatten) Hochrechnung - kleine Ausschläge
+        // hier ließen den Lyrics-Scroll bislang bei JEDEM Poll (~1x/s) kurz
+        // zurückspringen und wieder aufholen ("hoch und wieder runter"). Bei
+        // laufendem, unverändertem Track wird nur ein VIERTEL der Abweichung
+        // übernommen: echte Drift gleicht sich binnen weniger Sekunden aus, ein
+        // einzelner Ausreißer bleibt unsichtbar. Ein GROSSER Sprung (>1.5s, also
+        // ein echter Seek) wird weiterhin sofort und vollständig übernommen -
+        // sonst würde ein Vor-/Zurückspulen spürbar hinterherhinken. Bei Track-
+        // wechsel, Pause/Resume oder dem allerersten Sample greift die Korrektur
+        // ebenfalls nicht (kein sinnvoller Vergleichswert vorhanden).
+        if (tl.positionSec >= 0.0 && prevTl.positionSec >= 0.0 && prevTl.playing
+            && tl.playing == prevTl.playing && t == prevTitle)
+        {
+            const double erwartet   = prevTl.positionSec
+                                     + double(tl.stampMs - prevTl.stampMs) * 0.001;
+            const double abweichung = tl.positionSec - erwartet;
+            if (std::fabs(abweichung) < 1.5)
+                tl.positionSec = erwartet + abweichung * 0.25;
+        }
+        prevTl    = tl;
+        prevTitle = t;
 
         { QMutexLocker l(&m_mutex); m_title = t; m_artist = a; m_timeline = tl; }
 
