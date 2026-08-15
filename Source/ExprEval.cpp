@@ -17,6 +17,14 @@ const char *kVarNames[ExprVars::V_COUNT] = {
     "fadeOut", "seed1", "seed2", "seed3"
 };
 
+} // namespace (closed early so ExprVars::names() below can sit in its own
+  // namespace block; kVarNames keeps internal linkage, just accessed via a
+  // function pointer return instead of being named directly outside this TU)
+
+namespace ExprVars { const char* const* names() { return kVarNames; } }
+
+namespace {
+
 // RPN op codes (>= 0).  Negative codes in Op.code mean:
 //   OP_CONST (-1): push Op.value;  OP_VAR (-2): push vars[(int)Op.value].
 enum {
