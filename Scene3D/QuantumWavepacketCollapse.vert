@@ -1,6 +1,10 @@
 #version 330 core
-layout(location = 0) in vec3 inPos;
-layout(location = 1) in vec3 inNormal;
+// GEOM_POINTS supplies no meaningful position (attrA.xyz is always zero;
+// only attrA.w = point id and attrB = 4 per-point hash seeds are real —
+// see Scene3DShader.cpp). A pseudo-random seed point takes the place of the
+// "inPos" this shader originally expected as an arbitrary base position.
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4 projM;
 uniform float eyeOff;
@@ -25,13 +29,14 @@ float hash11(float p) {
 }
 
 void main() {
-    float id = float(gl_VertexID);
+    float id = attrA.w;
     float seed = hash11(id);
+    vec3 seedPos = attrB.xyz * 2.0 - 1.0;
 
     // Spherical coordinates of 3D quantum eigenstate harmonic oscillator
-    float r = length(inPos) * 2.5;
-    float theta = acos(clamp(inPos.z / max(r, 0.001), -1.0, 1.0));
-    float phi = atan(inPos.y, inPos.x);
+    float r = length(seedPos) * 2.5;
+    float theta = acos(clamp(seedPos.z / max(r, 0.001), -1.0, 1.0));
+    float phi = atan(seedPos.y, seedPos.x);
 
     // Superposition of spherical harmonics Y_lm and radial Laguerre modes
     float t = time * 0.5 + audioAdvance * 0.2;
@@ -49,7 +54,7 @@ void main() {
     vec3 collapseCenter = vec3(sin(t * 0.7) * 1.5, cos(t * 0.5) * 1.2, sin(t * 0.3) * 1.0);
     float collapseAmount = audioKick * 0.7;
 
-    vec3 pos = mix(inPos * (1.5 + 0.8 * prob), collapseCenter + normalize(inPos - collapseCenter) * (0.3 + 0.5 * seed), collapseAmount);
+    vec3 pos = mix(seedPos * (1.5 + 0.8 * prob), collapseCenter + normalize(seedPos - collapseCenter) * (0.3 + 0.5 * seed), collapseAmount);
 
     vPos = pos;
     vProb = prob;

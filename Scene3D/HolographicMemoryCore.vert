@@ -1,7 +1,8 @@
 #version 330 core
-layout(location = 0) in vec3 inPos;
-layout(location = 1) in vec3 inNormal;
-layout(location = 2) in vec2 inTexCoord;
+// attrA.xy = quad-local corner uv (0..1), attrA.w = quad id, attrB = seeds
+// (Scene3DShader.cpp GEOM_QUADS)
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4 projM;
 uniform float eyeOff;
@@ -27,7 +28,7 @@ float hash11(float p) {
 }
 
 void main() {
-    float quadID = floor(float(gl_VertexID) / 6.0);
+    float quadID = attrA.w;
     float seed = hash11(quadID);
 
     // Organize quads into 16 cylindrical storage tiers
@@ -48,7 +49,7 @@ void main() {
     vec3 bitangent = vec3(0.0, 1.0, 0.0);
 
     // Quad local vertex offset
-    vec2 offset = inTexCoord - vec2(0.5);
+    vec2 offset = attrA.xy - vec2(0.5);
     float waferScale = 0.14 + 0.03 * sin(quadID * 0.1);
 
     vec3 localPos = offset.x * tangent * waferScale * 1.6 + offset.y * bitangent * waferScale;
@@ -58,7 +59,7 @@ void main() {
     float laserHit = exp(-abs(height - sin(time * 3.0) * 2.0) * 4.0) * (0.8 + audioMid * 1.2);
 
     vPos = pos;
-    vUV = inTexCoord;
+    vUV = attrA.xy;
     vTier = tier / 16.0;
     vReadLaser = laserHit;
 

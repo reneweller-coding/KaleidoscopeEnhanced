@@ -1,6 +1,8 @@
 #version 330 core
-layout(location = 0) in vec3 inPos;
-layout(location = 1) in vec3 inNormal; // Holds heat, strand, intensity
+// attrA.xyz = world pos (baked by the compute generator), attrA.w = heat
+// attrB.w   = specBand (Scene3DShader.cpp GEOM_INDIRECT, 8-float layout)
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4 projM;
 uniform float eyeOff;
@@ -12,12 +14,13 @@ out float vHeat;
 out float vStrand;
 
 void main() {
-    vPos = inPos;
-    vHeat = inNormal.x;
-    vStrand = inNormal.y;
+    vec3 worldP = attrA.xyz;
+    vPos = worldP;
+    vHeat = attrA.w;
+    vStrand = attrB.w;
 
     // Stereoscopic 3D camera projection
-    vec3 vp = inPos;
+    vec3 vp = worldP;
     vp.z += 6.5; // Offset into camera frustum
     vp.x -= eyeOff;
 

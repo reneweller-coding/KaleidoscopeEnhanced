@@ -1,6 +1,8 @@
 #version 330 core
-layout(location = 0) in vec3 inPos;
-layout(location = 1) in vec3 inNormal; // pulse, branchLevel, scale
+// attrA.xyz = world pos (baked by the compute generator), attrA.w = pulse
+// attrB.w   = branchLevel (Scene3DShader.cpp GEOM_INDIRECT, 8-float layout)
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4 projM;
 uniform float eyeOff;
@@ -12,12 +14,13 @@ out float vPulse;
 out float vLevel;
 
 void main() {
-    vPos = inPos;
-    vPulse = inNormal.x;
-    vLevel = inNormal.y;
+    vec3 worldP = attrA.xyz;
+    vPos = worldP;
+    vPulse = attrA.w;
+    vLevel = attrB.w;
 
     // Stereoscopic 3D camera projection
-    vec3 vp = inPos;
+    vec3 vp = worldP;
     vp.z += 4.5;
     vp.x -= eyeOff;
 

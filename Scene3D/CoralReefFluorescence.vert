@@ -1,7 +1,7 @@
 #version 330 core
-layout(location = 0) in vec3 inPos;
-layout(location = 1) in vec3 inNormal;
-layout(location = 2) in vec2 inTexCoord;
+// attrA.xy = grid uv (0..1), attrB = per-cell seeds (Scene3DShader.cpp GEOM_GRID)
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4 projM;
 uniform float eyeOff;
@@ -20,7 +20,7 @@ out vec2 vUV;
 out float vFluorescence;
 
 void main() {
-    vec2 gridUV = inTexCoord;
+    vec2 gridUV = attrA.xy;
     vec2 p = gridUV * 12.0;
 
     float t = time * 0.4 + audioAdvance * 0.2;

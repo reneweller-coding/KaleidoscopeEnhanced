@@ -1,12 +1,13 @@
 #version 430 core
-layout(location = 0) in vec3 inPos;
-layout(location = 1) in vec3 inNormal;
-layout(location = 2) in vec2 inTexCoord;
+// attrA.xy = corner uv (0..1), attrA.w = cell id; attrB = per-cell seeds
+// (see Scene3DShader.cpp GEOM_PATCHES) — the only real per-vertex data.
+in vec4 attrA;
+in vec4 attrB;
 
 out vec3 vControlPos;
 out vec2 vControlUV;
 
 void main() {
-    vControlPos = inPos;
-    vControlUV = inTexCoord;
+    vControlPos = attrA.xyz;
+    vControlUV = attrA.xy;
 }

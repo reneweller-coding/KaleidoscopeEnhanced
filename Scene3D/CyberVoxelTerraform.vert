@@ -1,7 +1,16 @@
 #version 330 core
-layout(location = 0) in vec3 inPos;
-layout(location = 1) in vec3 inNormal;
-layout(location = 2) in vec2 inTexCoord;
+// attrA.xyz = unit-cube corner (-0.5..0.5), attrA.w = cube id, attrB = seeds
+// (Scene3DShader.cpp GEOM_CUBES) — no per-face normal is supplied, so it is
+// looked up from which 6-vertex face group (gl_VertexID % 36) this vertex
+// belongs to, matching the CPU-side face winding order (-Z,+Z,-X,+X,+Y,-Y).
+in vec4 attrA;
+in vec4 attrB;
+
+const vec3 CUBE_FACE_NORMALS[6] = vec3[6](
+    vec3( 0.0,  0.0, -1.0), vec3( 0.0,  0.0,  1.0),
+    vec3(-1.0,  0.0,  0.0), vec3( 1.0,  0.0,  0.0),
+    vec3( 0.0,  1.0,  0.0), vec3( 0.0, -1.0,  0.0)
+);
 
 uniform mat4 projM;
 uniform float eyeOff;
@@ -21,7 +30,7 @@ out float vHeight;
 
 void main() {
     // 70x70 grid coordinates
-    float cubeID = floor(float(gl_VertexID) / 36.0);
+    float cubeID = attrA.w;
     float gridX = mod(cubeID, 70.0);
     float gridZ = floor(cubeID / 70.0);
 
@@ -42,11 +51,11 @@ void main() {
     vec3 cubeCenter = vec3(gridUV.x * 5.0, height - 1.2, gridUV.y * 5.0);
 
     // Local vertex of the cube (scaled)
-    vec3 localPos = (inPos - vec3(0.0, 0.0, 0.0)) * vec3(0.06, 0.06 + height * 0.15, 0.06);
+    vec3 localPos = attrA.xyz * vec3(0.06, 0.06 + height * 0.15, 0.06);
     vec3 pos = cubeCenter + localPos;
 
     vPos = pos;
-    vNormal = inNormal;
+    vNormal = CUBE_FACE_NORMALS[int(mod(float(gl_VertexID), 36.0)) / 6];
     vUV = gridUV * 0.5 + 0.5;
     vHeight = height;
 
