@@ -1,0 +1,99 @@
+#version 430
+layout(local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
+
+// JellyfishBioluminescenceAbyss.comp
+// Compute shader generating 3D pulsating deep-sea medusae bells and bioluminescent tentacle curtains
+
+layout(std430, binding = 0) buffer Verts {
+    float verts[]; // 6 floats per vertex: px, py, pz, nx, ny, nz (where n holds tentacleIdx, bioGlow, medusaID)
+};
+
+layout(std430, binding = 1) buffer Cmd {
+    uint count;
+    uint instanceCount;
+    uint first;
+    uint baseInstance;
+    uint vertCount;
+};
+
+uniform float time;
+uniform float audioPhase;
+uniform float audioAdvance;
+uniform float audioKick;
+uniform float audioBass;
+uniform float audioMid;
+uniform float audioHigh;
+uniform float audioSwell;
+
+float hash11(float p) {
+    p = fract(p * 0.1031);
+    p *= p + 81.37;
+    p *= p + p;
+    return fract(p);
+}
+
+void main() {
+    uint id = gl_GlobalInvocationID.x;
+    const uint TOTAL_SEGMENTS = 4096u;
+    if (id >= TOTAL_SEGMENTS) return;
+
+    if (id == 0u) {
+        count = TOTAL_SEGMENTS * 2u;
+        instanceCount = 1u;
+        first = 0u;
+        baseInstance = 0u;
+        vertCount = TOTAL_SEGMENTS * 2u;
+    }
+    barrier();
+
+    float seed = float(id);
+    float medusaID = floor(seed / 128.0); // 32 individual jellyfish
+    float tentacleID = mod(seed, 128.0);
+
+    // Medusa colony roaming paths
+    float mAngle = hash11(medusaID) * 6.2831853 + time * 0.1;
+    float mRadius = (hash11(medusaID + 50.0) * 0.7 + 0.3) * 3.5;
+    float mHeight = sin(time * 0.4 + medusaID * 2.0) * 1.8;
+
+    vec3 medusaCenter = vec3(mRadius * cos(mAngle), mHeight, mRadius * sin(mAngle));
+
+    // Jellyfish bell pulsating contraction pump driven by sub-bass
+    float pumpPhase = time * 2.0 + medusaID * 1.5 + audioAdvance * 0.5;
+    float contraction = pow(max(sin(pumpPhase), 0.0), 3.0) * (0.8 + 0.5 * audioBass);
+
+    // Bell umbrella rim coordinates
+    float bellAngle = (tentacleID / 128.0) * 6.2831853;
+    float bellR = (0.45 - 0.15 * contraction);
+    float bellY = 0.25 * sin(bellAngle * 8.0) * (1.0 - contraction);
+
+    vec3 bellVertex = medusaCenter + vec3(bellR * cos(bellAngle), bellY + 0.2, bellR * sin(bellAngle));
+
+    // Trailing tentacle tip waving in current
+    float tentacleLen = 1.2 + 0.6 * hash11(seed);
+    float waveX = sin(pumpPhase - tentacleLen * 2.0 + bellAngle) * 0.2;
+    float waveZ = cos(pumpPhase - tentacleLen * 2.0 + bellAngle) * 0.2;
+
+    vec3 tentacleTip = bellVertex - vec3(waveX, tentacleLen, waveZ);
+
+    // Bioluminescent pulse wave traveling down tentacle
+    float bioGlow = exp(-abs(tentacleLen * 0.5 - mod(time * 3.0 + audioKick * 2.0, 1.5)) * 6.0);
+    bioGlow *= (1.0 + audioKick * 2.5);
+
+    uint vIdx = id * 12u;
+
+    // Vertex 1: Bell umbrella rim
+    verts[vIdx + 0u] = bellVertex.x;
+    verts[vIdx + 1u] = bellVertex.y;
+    verts[vIdx + 2u] = bellVertex.z;
+    verts[vIdx + 3u] = tentacleID / 128.0;
+    verts[vIdx + 4u] = bioGlow;
+    verts[vIdx + 5u] = 1.0;
+
+    // Vertex 2: Trailing tentacle tip
+    verts[vIdx + 6u] = tentacleTip.x;
+    verts[vIdx + 7u] = tentacleTip.y;
+    verts[vIdx + 8u] = tentacleTip.z;
+    verts[vIdx + 9u] = tentacleID / 128.0;
+    verts[vIdx + 10u] = bioGlow;
+    verts[vIdx + 11u] = 1.0;
+}

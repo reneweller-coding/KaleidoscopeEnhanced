@@ -718,4 +718,35 @@
     <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
 
+  <TextureShader file="..\Scene\CalabiYauManifold.frag" type="normal" probability="0.6" mood="psychedelic,bright" complexity="4">
+    <float name="genusP" minValue="0.6" maxValue="2.0"></float>
+    <float name="zoomP"  minValue="0.6" maxValue="1.8"></float>
+    <float name="glowP"  minValue="0.7" maxValue="2.2"></float>
+    <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene\CliffordTorusKleinBottle.frag" type="normal" probability="0.6" mood="bright,psychedelic" complexity="3">
+    <float name="radiusP" minValue="0.6" maxValue="1.8"></float>
+    <float name="glassP"  minValue="0.6" maxValue="2.0"></float>
+    <float name="rotSpdP" minValue="0.6" maxValue="2.2"></float>
+    <float name="hueP"    minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene3D\CyberspaceDNAHelix.frag" type="scene3d" geom="ribbon" probability="0.55" mood="bright,psychedelic" complexity="2">
+    <float name="glowP"  minValue="0.7" maxValue="2.0"></float>
+    <float name="helixP" minValue="0.6" maxValue="2.0"></float>
+    <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene3D\SuperfluidHeliumVortexTurbulence.frag" type="scene3d" geom="indirect" probability="0.55" mood="bright,psychedelic" complexity="4">
+    <float name="glowP" minValue="0.6" maxValue="2.0"></float>
+    <float name="hueP"  minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene3D\ChladniAcousticPlate.frag" type="scene3d" geom="points" probability="0.58" mood="bright,psychedelic" complexity="2">
+    <float name="glowP"   minValue="0.7" maxValue="2.0"></float>
+    <float name="nodalP"  minValue="0.6" maxValue="2.0"></float>
+    <float name="hueP"    minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
 </configuration>

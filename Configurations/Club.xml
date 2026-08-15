@@ -430,4 +430,43 @@
     <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
 
+  <TextureShader file="..\Scene\PrismaticLaserVault.frag" type="normal" probability="0.6" mood="aggressive,bright" complexity="3">
+    <float name="beamP"  minValue="0.7" maxValue="2.2"></float>
+    <float name="prismP" minValue="0.7" maxValue="1.8"></float>
+    <float name="smokeP" minValue="0.6" maxValue="2.0"></float>
+    <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene3D\LargeHadronCollision.frag" type="scene3d" geom="points" probability="0.6" mood="aggressive,bright" complexity="2">
+    <float name="glowP"   minValue="0.7" maxValue="2.0"></float>
+    <float name="energyP" minValue="0.8" maxValue="2.2"></float>
+    <float name="hueP"    minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene\PulsarMagnetosphereJets.frag" type="normal" probability="0.58" mood="aggressive,bright" complexity="4">
+    <float name="spinP"  minValue="0.8" maxValue="2.2"></float>
+    <float name="beamP"  minValue="0.8" maxValue="2.2"></float>
+    <float name="fieldP" minValue="0.6" maxValue="1.8"></float>
+    <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene\PlasmaLightningGlobe.frag" type="normal" probability="0.58" mood="aggressive,bright" complexity="3">
+    <float name="arcP"    minValue="0.8" maxValue="2.2"></float>
+    <float name="branchP" minValue="0.7" maxValue="2.0"></float>
+    <float name="glassP"  minValue="0.6" maxValue="1.8"></float>
+    <float name="hueP"    minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene3D\SynchrotronRadiationRing.frag" type="scene3d" geom="ribbon" probability="0.55" mood="aggressive,bright" complexity="2">
+    <float name="glowP" minValue="0.7" maxValue="2.0"></float>
+    <float name="radP"  minValue="0.7" maxValue="2.0"></float>
+    <float name="hueP"  minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene3D\DysonSwarmSolarHarvester.frag" type="scene3d" geom="quads" probability="0.55" mood="bright,aggressive" complexity="2">
+    <float name="glowP"  minValue="0.7" maxValue="2.0"></float>
+    <float name="relayP" minValue="0.8" maxValue="2.2"></float>
+    <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
 </configuration>

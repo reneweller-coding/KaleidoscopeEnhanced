@@ -456,6 +456,24 @@
     <None Include="Scene\PrismaticRainbowCloud.frag">
       <Filter>Shaders\Scene</Filter>
     </None>
+    <None Include="Scene\PrismaticLaserVault.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\CalabiYauManifold.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\CliffordTorusKleinBottle.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\PulsarMagnetosphereJets.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\FerrofluidSpikeForest.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\PlasmaLightningGlobe.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
     <None Include="Combine\CombineDarkRed.frag">
       <Filter>Shaders\Combine</Filter>
     </None>
@@ -1597,6 +1615,69 @@
       <Filter>Shaders\Scene3D</Filter>
     </None>
     <None Include="Scene3D\AuroraBorealisOverFjord.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\LargeHadronCollision.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\LargeHadronCollision.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\SynchrotronRadiationRing.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\SynchrotronRadiationRing.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\KineticTesseractOrigami.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\KineticTesseractOrigami.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\JellyfishBioluminescenceAbyss.comp">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\JellyfishBioluminescenceAbyss.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\JellyfishBioluminescenceAbyss.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\CyberspaceDNAHelix.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\CyberspaceDNAHelix.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\BioluminescentForestCanopy.comp">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\BioluminescentForestCanopy.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\BioluminescentForestCanopy.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\DysonSwarmSolarHarvester.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\DysonSwarmSolarHarvester.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\SuperfluidHeliumVortexTurbulence.comp">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\SuperfluidHeliumVortexTurbulence.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\SuperfluidHeliumVortexTurbulence.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\ChladniAcousticPlate.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\ChladniAcousticPlate.frag">
       <Filter>Shaders\Scene3D</Filter>
     </None>
     <None Include="Configurations\Allround.xml">
