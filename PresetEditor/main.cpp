@@ -57,6 +57,75 @@ int main(int argc, char *argv[])
         return 0;
     }
 
+    // Headless completeness check: every preset entry should carry every
+    // <bool>/<int>/<float>/<expr>/<interpolator> param its shader declares in
+    // Komplett.xml (the exhaustive reference every shader is registered
+    // against).  A param may legitimately carry a DIFFERENT value/range per
+    // preset -- that is the point of per-preset tuning, not a bug -- but a
+    // param that is entirely ABSENT silently rolls that uniform to GLSL's
+    // zero default at runtime, which is a real bug (found this way once
+    // already: TestShatter.xml's LavaLamp.frag entry was missing sizeP and
+    // both <expr> lines every other preset has). This checks presence, never
+    // equality, so deliberately different tuning across presets is not flagged.
+    //   --validate                 checks every Configurations/*.xml (except
+    //                               Komplett.xml itself)
+    //   --validate <preset.xml>    checks just that one file
+    if (args.value(0) == "--validate")
+    {
+        QCoreApplication app(argc, argv);
+        const QString cfgDir = findRoot() + "/Configurations";
+        Preset komplett; QString err;
+        if (!Preset::load(cfgDir + "/Komplett.xml", komplett, &err))
+        {
+            fprintf(stderr, "validate: cannot load Komplett.xml: %s\n", qPrintable(err));
+            return 1;
+        }
+
+        QStringList paths;
+        if (args.size() >= 2) paths << args[1];
+        else for (const QString &f : QDir(cfgDir).entryList({ "*.xml" }, QDir::Files, QDir::Name))
+                 if (f != "Komplett.xml") paths << (cfgDir + "/" + f);
+
+        int gaps = 0, checkedFiles = 0;
+        for (const QString &path : paths)
+        {
+            Preset p;
+            if (!Preset::load(path, p, &err))
+            {
+                fprintf(stderr, "validate: %s: %s\n", qPrintable(path), qPrintable(err));
+                continue;
+            }
+            ++checkedFiles;
+            for (const PresetEntry &e : p.entries)
+            {
+                const PresetEntry *ref = nullptr;
+                for (const PresetEntry &k : komplett.entries)
+                    if (k.file == e.file && k.isCombine == e.isCombine) { ref = &k; break; }
+                if (!ref) continue;   // not (or no longer) in Komplett.xml -- nothing to compare against
+                for (const ShaderParam &kp : ref->params)
+                {
+                    // Match on (name, kind): a shader can carry an <expr> AND
+                    // a <float> of the same name (formula + declared clamp
+                    // range) -- an entry that only has one of the two is
+                    // still missing the other.
+                    bool have = false;
+                    for (const ShaderParam &p2 : e.params)
+                        if (p2.name == kp.name && p2.kind == kp.kind) { have = true; break; }
+                    if (!have)
+                    {
+                        fprintf(stderr, "MISSING  %-20s %-28s '%s' (%s)\n",
+                                qPrintable(QFileInfo(path).fileName()), qPrintable(e.file),
+                                qPrintable(kp.name), qPrintable(kp.kind));
+                        ++gaps;
+                    }
+                }
+            }
+        }
+        if (gaps) fprintf(stderr, "VALIDATE: %d missing param(s) across %d file(s)\n", gaps, checkedFiles);
+        else      fprintf(stderr, "VALIDATE: all %d file(s) complete vs. Komplett.xml\n", checkedFiles);
+        return gaps ? 1 : 0;
+    }
+
     QSurfaceFormat fmt;
     fmt.setVersion(3, 3);
     fmt.setProfile(QSurfaceFormat::CoreProfile);

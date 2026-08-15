@@ -26,6 +26,7 @@
 #include <QtCore/QDir>
 #include <QtCore/QFileInfo>
 #include <QtGui/QKeyEvent>
+#include <algorithm>
 
 // Real-analyzer WAV preview: the actual analysis pipeline + looped playback.
 #include "../Source/AudioAnalyzer.h"
@@ -42,6 +43,12 @@ EditorWindow::EditorWindow(const QString &projectRoot, QWidget *parent)
 {
     setWindowTitle("Kaleidoscope — Preset Editor");
     resize(1180, 760);
+
+    // Reference param set for defaultParamsFor()/rebuildRangeEditor(): loaded
+    // once (not per lookup, unlike the regex-based komplettParamsFor() the
+    // preview sliders use) because Preset::load() parses real XML via
+    // QDomDocument and is comparatively expensive to re-run per keystroke.
+    Preset::load(m_root + "/Configurations/Komplett.xml", m_komplett);
 
     m_preview = new PreviewWidget(m_root);
     connect(m_preview, &PreviewWidget::statusChanged,
@@ -154,6 +161,18 @@ EditorWindow::EditorWindow(const QString &projectRoot, QWidget *parent)
     QPushButton *bRemove = new QPushButton("Remove selected  (Del)");
     vTab->addWidget(bRemove);
     pl->addWidget(gTab, 1);
+
+    // Per-entry parameter range editor: lets the SELECTED table row deviate
+    // from Komplett.xml's default range deliberately (different min/max per
+    // preset, not just a different probability) -- select a row to populate.
+    m_rangeBox = new QGroupBox("Selected entry: parameter ranges");
+    QVBoxLayout *rv = new QVBoxLayout(m_rangeBox);
+    QWidget *rfHost = new QWidget();
+    m_rangeForm = new QFormLayout(rfHost);
+    m_rangeForm->setContentsMargins(0, 0, 0, 0);
+    rv->addWidget(rfHost);
+    m_rangeBox->setVisible(false);
+    pl->addWidget(m_rangeBox);
 
     // Preset metadata + file actions
     QGroupBox *gMeta = new QGroupBox("Preset");
@@ -324,14 +343,26 @@ void EditorWindow::rebuildParamSliders()
     m_sliders.clear();
     m_preview->setParamOverrides({});
 
-    auto addFor = [this](const QString &frag, const QString &prefix, bool fromComb)
+    // If the previewed shader IS the table-selected entry, scrub within that
+    // entry's own saved range instead of Komplett.xml's default -- so tuning
+    // a range in the panel below is immediately visible here, not just after
+    // a save+reload.
+    const int selRow = m_table->currentRow();
+    const PresetEntry *sel = (selRow >= 0 && selRow < m_preset.entries.size())
+                              ? &m_preset.entries[selRow] : nullptr;
+
+    auto addFor = [this, sel](const QString &frag, const QString &prefix, bool fromComb)
     {
+        const PresetEntry *e = (sel && sel->isCombine == fromComb && sel->file == frag) ? sel : nullptr;
         for (const KomplettParam &kp : komplettParamsFor(m_root, frag))
         {
             SliderInfo si;
             si.name = kp.name; si.minV = kp.minV; si.maxV = kp.maxV;
             si.isInt = (kp.kind == "int");
             si.fromCombine = fromComb;
+            if (e) for (const ShaderParam &p : e->params)
+                if (p.name == kp.name && p.kind == kp.kind)
+                { si.minV = p.minValue.toFloat(); si.maxV = p.maxValue.toFloat(); break; }
             QSlider *s = new QSlider(Qt::Horizontal);
             s->setRange(0, 1000);
             s->setValue(500);
@@ -414,20 +445,11 @@ void EditorWindow::freezeParamsIntoEntry()
                       .arg(written).arg(e.file));
 }
 
-QVector<ShaderParam> EditorWindow::defaultParamsFor(const QString &f)
+QVector<ShaderParam> EditorWindow::defaultParamsFor(const QString &f) const
 {
-    auto B = [](const QString &n, const QString &p){ ShaderParam s; s.kind="bool"; s.name=n; s.probability=p; return s; };
-    auto I = [](const QString &n, const QString &a, const QString &b){ ShaderParam s; s.kind="int"; s.name=n; s.minValue=a; s.maxValue=b; return s; };
-    auto F = [](const QString &n, const QString &a, const QString &b){ ShaderParam s; s.kind="float"; s.name=n; s.minValue=a; s.maxValue=b; return s; };
-
-    QVector<ShaderParam> v;
-    if (f == "Kaleidoscope.frag")      { v << B("rotate","0.7") << I("sides","2","14") << F("speed","0.04","0.09"); }
-    else if (f == "Tunnel.frag")       { v << B("rotate","0.7") << F("speedTunnel","0.005","0.07") << I("sides","2","14") << F("speed","0.01","0.09"); }
-    else if (f == "TunnelPlain.frag")  { v << F("sides","2","14") << F("speed","0.01","0.05") << F("power","1.0","4.0"); }
-    else if (f == "CombineMulti.frag") { v << B("rot","0.5") << F("copies","3.0","12.0"); }
-    else if (f == "CombineDarkRed.frag"){ v << B("red","0.95") << B("rotate","0.7"); }
-    else if (f == "CombineLichtenstein.frag") { v << F("size","4.0","18.0"); }
-    return v;
+    for (const PresetEntry &e : m_komplett.entries)
+        if (e.file == f) return e.params;
+    return {};
 }
 
 void EditorWindow::addTextureEntry()
@@ -475,6 +497,7 @@ void EditorWindow::removeSelectedEntry()
 
 void EditorWindow::onTableSelectionChanged()
 {
+    rebuildRangeEditor();
     int row = m_table->currentRow();
     if (row < 0 || row >= m_preset.entries.size()) return;
     const PresetEntry &e = m_preset.entries[row];
@@ -498,6 +521,105 @@ void EditorWindow::onTableSelectionChanged()
     if (!e.isCombine) pushPreviewTexture();
 }
 
+// Rebuild the "Selected entry: parameter ranges" panel for whatever row is
+// currently selected in the table.  Rows come from the UNION of the entry's
+// own params (edit their existing value) and Komplett.xml's declared params
+// for that shader that the entry doesn't have yet (editing one of THOSE adds
+// it to the entry -- the same action fixes an accidentally-missing param).
+void EditorWindow::rebuildRangeEditor()
+{
+    if (!m_rangeForm) return;
+    while (m_rangeForm->rowCount() > 0) m_rangeForm->removeRow(0);
+
+    const int row = m_table->currentRow();
+    if (row < 0 || row >= m_preset.entries.size()) { m_rangeBox->setVisible(false); return; }
+    const PresetEntry &entry = m_preset.entries[row];
+
+    struct Row { ShaderParam param; bool present; };
+    QVector<Row> combined;
+    for (const ShaderParam &p : entry.params) combined.push_back({ p, true });
+    for (const ShaderParam &kp : defaultParamsFor(entry.file))
+    {
+        // Match on (name, kind): a shader can carry an <expr> AND a <float>
+        // of the same name (formula + declared clamp range), so a same-named
+        // param of a DIFFERENT kind must not hide this one from the panel.
+        bool have = false;
+        for (const Row &r : combined)
+            if (r.param.name == kp.name && r.param.kind == kp.kind) { have = true; break; }
+        if (!have) combined.push_back({ kp, false });
+    }
+    // Interpolator params (rare -- one use in the whole catalogue) have no
+    // dedicated control here; they round-trip untouched via e.params.
+    combined.erase(std::remove_if(combined.begin(), combined.end(),
+                   [](const Row &r){ return r.param.kind == "interpolator"; }), combined.end());
+    m_rangeBox->setVisible(!combined.isEmpty());
+
+    // Writes (or creates) the named param in m_preset.entries[row], then
+    // refreshes the preview sliders so the new band is immediately visible.
+    auto writeParam = [this, row](const QString &name, const QString &kind,
+                                   const QString &minV, const QString &maxV,
+                                   const QString &prob, const QString &formula)
+    {
+        if (row < 0 || row >= m_preset.entries.size()) return;
+        PresetEntry &ent = m_preset.entries[row];
+        ShaderParam *t = nullptr;
+        for (ShaderParam &p : ent.params) if (p.name == name) { t = &p; break; }
+        if (!t) { ShaderParam np; np.kind = kind; np.name = name; ent.params.push_back(np); t = &ent.params.back(); }
+        if (kind == "bool") t->probability = prob;
+        else if (kind == "int" || kind == "float") { t->minValue = minV; t->maxValue = maxV; }
+        else if (kind == "expr") t->formula = formula;
+        rebuildParamSliders();
+    };
+
+    for (const Row &r : combined)
+    {
+        const ShaderParam &p = r.param;
+        QLabel *label = new QLabel(p.name + "  [" + p.kind + "]");
+        if (!r.present)
+            label->setToolTip("Fehlt in diesem Preset-Eintrag (Komplett.xml-Default gezeigt); "
+                              "Aendern fuegt den Parameter hinzu.");
+        if (p.kind == "bool")
+        {
+            QDoubleSpinBox *prob = new QDoubleSpinBox();
+            prob->setRange(0.0, 1.0); prob->setSingleStep(0.05); prob->setDecimals(2);
+            prob->setValue(p.probability.isEmpty() ? 0.5 : p.probability.toDouble());
+            connect(prob, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this,
+                    [=](double v){ writeParam(p.name, "bool", {}, {}, QString::number(v, 'f', 2), {}); });
+            m_rangeForm->addRow(label, prob);
+        }
+        else if (p.kind == "int" || p.kind == "float")
+        {
+            const bool isInt = (p.kind == "int");
+            QDoubleSpinBox *lo = new QDoubleSpinBox(), *hi = new QDoubleSpinBox();
+            for (QDoubleSpinBox *s : { lo, hi })
+            {
+                s->setRange(-1.0e6, 1.0e6);
+                s->setDecimals(isInt ? 0 : 4);
+                s->setSingleStep(isInt ? 1.0 : 0.01);
+            }
+            lo->setValue(p.minValue.toDouble()); hi->setValue(p.maxValue.toDouble());
+            auto fmt = [isInt](double v){ return isInt ? QString::number(int(v))
+                                                        : QString::number(v, 'f', 4); };
+            auto apply = [=]{ writeParam(p.name, p.kind, fmt(lo->value()), fmt(hi->value()), {}, {}); };
+            connect(lo, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, apply);
+            connect(hi, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, apply);
+            QWidget *host = new QWidget();
+            QHBoxLayout *hl = new QHBoxLayout(host);
+            hl->setContentsMargins(0, 0, 0, 0);
+            hl->addWidget(new QLabel("min")); hl->addWidget(lo);
+            hl->addWidget(new QLabel("max")); hl->addWidget(hi);
+            m_rangeForm->addRow(label, host);
+        }
+        else if (p.kind == "expr")
+        {
+            QLineEdit *edit = new QLineEdit(p.formula);
+            connect(edit, &QLineEdit::editingFinished, this,
+                    [=]{ writeParam(p.name, "expr", {}, {}, {}, edit->text()); });
+            m_rangeForm->addRow(label, edit);
+        }
+    }
+}
+
 void EditorWindow::refreshTable()
 {
     m_table->setRowCount(m_preset.entries.size());
@@ -516,6 +638,7 @@ void EditorWindow::refreshTable()
         set(8, QString::number(e.probability));
         set(9, QString::number(e.complexity));
     }
+    rebuildRangeEditor();
 }
 
 void EditorWindow::metaToUi()
