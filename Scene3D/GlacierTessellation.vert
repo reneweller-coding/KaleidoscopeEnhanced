@@ -1,0 +1,12 @@
+#version 400 core
+// GlacierTessellation.vert — pass quad patch control points to Tessellation Control stage
+in vec4 attrA;
+in vec4 attrB;
+
+out vec2 vUV;
+out vec4 vSeed;
+
+void main() {
+    vUV = attrA.xy;
+    vSeed = attrB;
+}
