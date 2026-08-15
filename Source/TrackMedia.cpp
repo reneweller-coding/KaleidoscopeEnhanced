@@ -351,8 +351,15 @@ void TrackMedia::parseSynced( const QString &lrc )
 			last = int(m.capturedEnd());
 		}
 		QString text = line.mid( last ).trimmed();
-		if( times.empty() || text.isEmpty() )
+		if( times.empty() )
 			continue;
+		// An empty text after a timestamp is the standard LRC convention for
+		// marking an instrumental break (solo, intro, outro) -- kept as a
+		// GAP MARKER (t0 only, text stays empty) rather than dropped: without
+		// it, the line before swallows the whole gap (its t1 is set to the
+		// NEXT entry's t0 below), collapsing any mid-song silence to zero and
+		// leaving the long-pause fade-out in glwidget.cpp with nothing to
+		// detect except intro/outro.
 		for( double t : times )
 		{
 			LyricLine l;
@@ -386,11 +393,30 @@ void TrackMedia::parsePlain( const QString &plain )
 // (Stil wie der Titel-Reveal: weiß mit dunklem Halo, lesbar über allem).
 void TrackMedia::renderLyricsImage()
 {
-	int h = int(m_lines.size()) * kLyrLineH + kLyrLineH;
+	// Gap markers (empty text, see parseSynced) carry timing only -- they
+	// never get a row of their own, so the texture height budgets by REAL
+	// line count, not m_lines.size().
+	int nReal = 0;
+	for( const LyricLine &l : m_lines )
+		if( !l.text.isEmpty() ) ++nReal;
+
+	int h = nReal * kLyrLineH + kLyrLineH;
 	if( h > kLyrMaxH )
 	{
-		m_lines.resize( size_t(( kLyrMaxH - kLyrLineH ) / kLyrLineH) );
-		h = int(m_lines.size()) * kLyrLineH + kLyrLineH;
+		// Truncate once the REAL-line budget is exhausted; any gap markers
+		// before the cutoff are kept (free -- they cost no row).
+		const int keepReal = ( kLyrMaxH - kLyrLineH ) / kLyrLineH;
+		int seen = 0;
+		size_t cut = m_lines.size();
+		for( size_t k = 0; k < m_lines.size(); ++k )
+			if( !m_lines[k].text.isEmpty() && ++seen > keepReal )
+			{
+				cut = k;
+				break;
+			}
+		m_lines.resize( cut );
+		nReal = std::min( nReal, keepReal );
+		h = nReal * kLyrLineH + kLyrLineH;
 	}
 
 	QImage img( kLyrTexW, h, QImage::Format_ARGB32 );
@@ -403,9 +429,20 @@ void TrackMedia::renderLyricsImage()
 	p.setFont( f );
 	QFontMetrics fm( f );
 
+	int row = 0;
+	float lastV0 = 0.f, lastV1 = 0.f;
 	for( size_t i = 0; i < m_lines.size(); ++i )
 	{
-		const int yTop = int(i) * kLyrLineH + kLyrLineH / 2;
+		if( m_lines[i].text.isEmpty() )
+		{
+			// Instrumental marker: no row of its own -- visually "sticks" to
+			// the last sung line (scroll/highlight stay put there) until the
+			// long-pause fade-out in glwidget.cpp takes over.
+			m_lines[i].v0 = lastV0;
+			m_lines[i].v1 = lastV1;
+			continue;
+		}
+		const int yTop = row * kLyrLineH + kLyrLineH / 2;
 		QRect r( 30, yTop, kLyrTexW - 60, kLyrLineH );
 		QString t = fm.elidedText( m_lines[i].text, Qt::ElideRight, r.width() );
 
@@ -420,6 +457,9 @@ void TrackMedia::renderLyricsImage()
 
 		m_lines[i].v0 = float(yTop)             / float(h);
 		m_lines[i].v1 = float(yTop + kLyrLineH) / float(h);
+		lastV0 = m_lines[i].v0;
+		lastV1 = m_lines[i].v1;
+		++row;
 	}
 	p.end();
 	m_lyricsImage = img;

@@ -1202,15 +1202,43 @@ void GLwidget::updateTrackOverlays( FilterShader *fs )
 	// lokale Uhr zurücksetzt). Deshalb final HIER, an der einzigen
 	// Verbrauchsstelle: eine eigene, mit dem Frame-dt integrierte Position,
 	// die zur Referenz nur hin-GLEITET (Rate 0..1.15 - bremst bei Pause bis
-	// zum Stillstand, läuft nie rückwärts). Sprünge asymmetrisch: VORWÄRTS
-	// (>1.5s) sofort (User hat vorgespult, harmlos fürs Auge) - RÜCKWÄRTS
-	// erst, wenn die Referenz den früheren Stand ~2s lang konsistent
-	// bestätigt (echtes Zurückspulen); kürzeres Flackern jeder Art wird
-	// dadurch komplett überbrückt, die Anzeige läuft einfach weiter.
-	if( m_posSmooth < 0.0 || pos - m_posSmooth > 1.5 )
+	// zum Stillstand, läuft nie rückwärts). Sprünge in BEIDE Richtungen erst
+	// nach kurzer Bestätigung: VORWÄRTS 0.4s (ein echter Vorspul-Seek fühlt
+	// sich weiter sofort an), RÜCKWÄRTS 2s (echtes Zurückspulen). Beide
+	// Fenster waren frueher asymmetrisch (vorwaerts ganz ohne Bestaetigung,
+	// "harmlos fuers Auge") - eine PLL-Simulation mit realistischem Referenz-
+	// Rauschen zeigte aber: ein einzelner Ausreisser >1.5s voraus sprang
+	// SOFORT, und wenn die Referenz eine Umlaufzeit spaeter auf den echten
+	// Wert zurueckfiel, erkannte die Rueckwaerts-Bestaetigung genau DAS als
+	// "2s konsistent falsch" und sprang zurueck - ein einzelner Ausreisser
+	// wurde so zu ZWEI sichtbaren Spruengen (vor, dann zurueck), exakt das
+	// gemeldete Huepfen. Kuerzeres Flackern jeder Art wird jetzt in BEIDEN
+	// Richtungen komplett ueberbrueckt, die Anzeige laeuft einfach weiter.
+	if( m_posSmooth < 0.0 )
 	{
 		m_posSmooth     = pos;
 		m_backJumpSince = -1;
+		m_fwdJumpSince  = -1;
+	}
+	else if( pos - m_posSmooth > 1.5 )
+	{
+		const qint64 pllNow = m_fpsTimer.elapsed();
+		double erwartet = m_fwdJumpRef
+		                + ( m_fwdJumpSince >= 0
+		                    ? double( pllNow - m_fwdJumpSince ) * 0.001 : 0.0 );
+		if( m_fwdJumpSince < 0 || fabs( pos - erwartet ) > 1.0 )
+		{
+			m_fwdJumpSince = pllNow;         // (neuer) Vorwärts-Kandidat
+			m_fwdJumpRef   = pos;
+		}
+		else if( pllNow - m_fwdJumpSince > 400 )
+		{
+			m_posSmooth    = pos;            // 0.4s konsistent: echter Seek
+			m_fwdJumpSince = -1;
+		}
+		m_backJumpSince = -1;
+		if( m_fwdJumpSince >= 0 )
+			m_posSmooth += double(dt);       // solange pending: normal weiterlaufen
 	}
 	else if( pos - m_posSmooth < -1.5 )
 	{
@@ -1228,16 +1256,18 @@ void GLwidget::updateTrackOverlays( FilterShader *fs )
 			m_posSmooth     = pos;           // 2s konsistent: echter Seek
 			m_backJumpSince = -1;
 		}
+		m_fwdJumpSince = -1;
 		if( m_backJumpSince >= 0 )
 			m_posSmooth += double(dt);       // solange pending: normal weiterlaufen
 	}
 	else
 	{
 		m_backJumpSince = -1;
+		m_fwdJumpSince  = -1;
 		// Asymmetrischer Gain: hinterherhinken sanft aufholen (0.3), aber
 		// VORAUSlaufen hart abbremsen (2.0) - sonst schiebt eine Pause
 		// (eingefrorene Referenz) die Position erst 3.3s über das Ziel
-		// hinaus und über die 1.5s-Schwelle in den Rückwärts-Pfad.
+		// hinaus und über die 1.5s-Schwelle in den Vorwärts-Pfad.
 		const double err = pos - m_posSmooth;
 		double r = 1.0 + err * ( err < 0.0 ? 2.0 : 0.3 );
 		if( r < 0.0 )   r = 0.0;
@@ -1282,6 +1312,17 @@ void GLwidget::updateTrackOverlays( FilterShader *fs )
 				// Intro (nur bei i==0 stabil): vor der allerersten Zeile.
 				inLongGap = ( lines[i].t0 > 9.f ) && ( pos < lines[i].t0 - 2.f );
 			}
+			else if( lines[i].text.isEmpty() && pos < lines[i].t1 )
+			{
+				// Aktive "Zeile" ist ein Instrumental-Marker (leerer Text,
+				// siehe TrackMedia::parseSynced) -- Solo/Break MITTEN im Song,
+				// nicht nur Intro/Outro. i steht hier bereits stabil auf dem
+				// Marker (die Hysterese-Suche unten haelt es dort), darum
+				// reicht dessen eigene Spanne als Luecke.
+				inLongGap = ( lines[i].t1 - lines[i].t0 > 9.f )
+				          && ( pos > lines[i].t0 + 2.f )
+				          && ( pos < lines[i].t1 - 2.f );
+			}
 			else if( pos >= lines[i].t1 )
 			{
 				bool hasNext = ( i + 1 < n );
@@ -1320,6 +1361,19 @@ void GLwidget::updateTrackOverlays( FilterShader *fs )
 			int i = ( m_karaokeLine >= 0 && m_karaokeLine < n ) ? m_karaokeLine : 0;
 			while( i + 1 < n && pos >= lines[i].t1 ) ++i;
 			while( i > 0     && pos <  lines[i].t0 - 0.3 ) --i;
+			// A line index going BACKWARD is exactly the "flip to the previous
+			// line" symptom three earlier rounds already tried to fix (monotone
+			// NowPlaying publish, consumer PLL, this hysteresis). If it still
+			// happens, this is the forensic trail: with -l, it lands in
+			// kaleidoscope.log correlated with the exact pos/m_posSmooth that
+			// caused it, instead of having to guess at a fourth blind fix.
+			if( i < m_karaokeLine )
+				fprintf( stderr, "[Lyrics] Zeile RUECKWAERTS: %d -> %d  "
+				         "pos=%.3f posSmooth=%.3f  t0[alt]=%.3f t1[alt]=%.3f "
+				         "t0[neu]=%.3f t1[neu]=%.3f\n",
+				         m_karaokeLine, i, pos, m_posSmooth,
+				         lines[m_karaokeLine].t0, lines[m_karaokeLine].t1,
+				         lines[i].t0, lines[i].t1 );
 			m_karaokeLine = i;
 
 			// Kinetik: Zeilen-Alter fuer den Slam-Einflug der frischen Zeile.

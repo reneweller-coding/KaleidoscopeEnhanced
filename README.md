@@ -541,8 +541,14 @@ is mixed into all the other adapted shaders above, including the three latest.
   needs no network at all. Playback position comes from the Windows system
   media session (SMTC) — the same source the title reveal uses — smoothed by
   a "Consumer-PLL" that only ever *glides* toward the reported position
-  instead of jumping, which is what kills the backward-hop flicker flaky
-  SMTC data used to cause. **Scroll** is a plain vertically-scrolling credits
+  instead of snapping to it outright. Jumps in either direction only commit
+  after the reference briefly confirms itself first (0.4s forward, 2s
+  backward — asymmetric on purpose, so a real fast-forward seek still feels
+  instant): a single stray SMTC sample landing more than 1.5s off no longer
+  moves the display at all, which a lone outlier used to do immediately,
+  only to "self-correct" ~2s later once the backward-confirmation logic
+  caught up with it — one bad sample as two visible hops instead of none.
+  **Scroll** is a plain vertically-scrolling credits
   band; **Karaoke** additionally tints the active line gold with a
   left-to-right progress sweep — since LRC only carries one timestamp per
   line, this is *line-level* sync with the sweep animated smoothly across
@@ -550,8 +556,11 @@ is mixed into all the other adapted shaders above, including the three latest.
   behaves like Scroll if only unsynced/plain lyrics were found for that
   track. `Shift+w` toggles an optional "kinetic slam" pop-in where each
   newly active line eases in from 1.18× scale — off by default (user
-  feedback: too jumpy). Long instrumental gaps fade the lyrics out instead
-  of leaving a stale line on screen. Testing:
+  feedback: too jumpy). Long gaps — intro, outro, and mid-song instrumental
+  breaks/solos (an empty-text LRC timestamp, the standard convention for
+  marking one, is kept as a gap marker instead of being dropped) — fade the
+  lyrics out instead of leaving a stale line creeping across the screen for
+  a whole solo. Testing:
   `set KALEIDO_LYRICS_TEST=Artist|Title` forces a lookup with no player
   running; `KALEIDO_LYRICS_MODE=1` / `2` forces Scroll / Karaoke for that test.
 - **Artist images (`o`) — on by default:** photos of the currently playing
