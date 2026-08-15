@@ -149,6 +149,17 @@ protected:
 	// (Titel-/Playing-Flaps) wird komplett überbrückt.
 	qint64			m_backJumpSince  = -1;
 	double			m_backJumpRef    = 0.0;
+	// Dieselbe Bestätigung jetzt auch VORWÄRTS, nur kürzer (0.4s statt 2s -
+	// ein echter Vorspul-Seek soll sich weiter sofort anfühlen). Vorher
+	// sprang ein einzelner verrutschter Referenzwert >1.5s voraus GANZ OHNE
+	// Bestätigung durch - unauffällig für sich allein, aber sobald die
+	// Referenz eine Umlaufzeit später wieder auf den echten Wert zurückfiel,
+	// erkannte die Rückwärts-Logik genau DAS als "2s konsistent falsch" und
+	// sprang zurück: ein einzelner Ausreißer wurde so zu ZWEI sichtbaren
+	// Sprüngen (vor, dann zurück) - exakt das gemeldete Huepfen, durch eine
+	// PLL-Simulation mit realistischem Referenz-Rauschen nachgestellt.
+	qint64			m_fwdJumpSince   = -1;
+	double			m_fwdJumpRef     = 0.0;
 	// An WELCHEN FilterShader die Overlay-Texturen zuletzt hochgeladen wurden:
 	// jede Konfiguration hat ihren EIGENEN PresentPass - nach einem Preset-
 	// Wechsel müssen Lyrics-/Künstlerbild-Texturen dort neu hochgeladen
