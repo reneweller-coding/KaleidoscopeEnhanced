@@ -104,3 +104,26 @@ jobs:
           $exe = "PresetEditor\build\Release\PresetEditor.exe"
           & $exe --transcheck
           if ($LASTEXITCODE -ne 0) { exit 1 }
+
+      # Regression guard for the compute-FX 2D preview fix: renders
+      # FractalFlame/ParticleFlow/SpectrumFilter/PixelMelt and fails if any
+      # comes back solid black. Confirmed to actually catch a regression,
+      # not just pass trivially: verified locally that forcing Mesa to GLSL
+      # 3.3 (the pre-fix context request) makes ComputeFX's compute programs
+      # fail to compile and this step correctly fails (ParticleFlow's
+      # fallback is dark enough to trip it) -- on a real GPU the same
+      # request doesn't reproduce the bug, since desktop drivers commonly
+      # hand back a context above the requested minimum regardless, which is
+      # exactly why this needs to run under the same software-GL path as
+      # --transcheck rather than skipping straight to "looks fine locally".
+      - name: Self-test -- cfxcheck (compute-FX 2D shaders not black, software GL)
+        shell: pwsh
+        continue-on-error: true
+        env:
+          GALLIUM_DRIVER: llvmpipe
+          MESA_GL_VERSION_OVERRIDE: '4.3'
+          MESA_GLSL_VERSION_OVERRIDE: '430'
+        run: |
+          $exe = "PresetEditor\build\Release\PresetEditor.exe"
+          & $exe --cfxcheck
+          if ($LASTEXITCODE -ne 0) { exit 1 }

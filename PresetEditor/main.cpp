@@ -8,9 +8,13 @@
 //   PresetEditor.exe --transcheck            verify all 28 transition styles:
 //                                            exact A at d=0 / exact B at d=1 and
 //                                            no temporal jumps across the sweep
+//   PresetEditor.exe --cfxcheck              verify the GL 4.3 compute-FX
+//                                            2D shaders don't render solid
+//                                            black (regression guard)
 #include <QtWidgets/QApplication>
 #include <QtGui/QSurfaceFormat>
 #include <QtGui/QImage>
+#include <QtGui/QColor>
 #include <QtCore/QDir>
 #include <QtCore/QFileInfo>
 #include <QtCore/QTimer>
@@ -19,6 +23,8 @@
 #include <cmath>
 #include <vector>
 #include <algorithm>
+#include <functional>
+#include <memory>
 
 #include "EditorWindow.h"
 #include "PreviewWidget.h"
@@ -207,6 +213,63 @@ int main(int argc, char *argv[])
             img.save(out);
             QApplication::quit();
         });
+        return app.exec();
+    }
+
+    // Compute-FX regression guard: renders a fixed set of GL 4.3 compute-
+    // driven 2D texture shaders and checks each ISN'T solid black. This is
+    // exactly the failure mode fixed in this repo's history (the editor
+    // requesting only a 3.3 context, and the 2D preview path never
+    // dispatching the compute pass at all) -- a plain --render smoke test
+    // wouldn't catch a silent regression back to either, since nothing
+    // asserts on the pixels it grabs. One shader per sim family so a future
+    // regression in any one of them (not just the one someone happens to
+    // manually check) still fails CI.
+    if (args.value(0) == "--cfxcheck")
+    {
+        struct CfxCheckState { PreviewWidget *w; QStringList shaders; int idx = 0; int fails = 0; };
+        auto state = std::make_shared<CfxCheckState>();
+        state->w = new PreviewWidget(root);
+        state->shaders = { "FractalFlame.frag", "ParticleFlow.frag",
+                            "SpectrumFilter.frag", "PixelMelt.frag" };
+        state->w->resize(320, 200);   // small: only average brightness matters
+        state->w->show();
+
+        auto step = std::make_shared<std::function<void()>>();
+        *step = [state, step]() {
+            if (state->idx >= state->shaders.size())
+            {
+                fprintf(stderr, "CFXCHECK: %d failure(s) of %d shader(s)\n",
+                        state->fails, int(state->shaders.size()));
+                qApp->exit(state->fails ? 1 : 0);
+                return;
+            }
+            const QString name = state->shaders[state->idx];
+            state->w->setTextureShader(name);
+            state->w->setCombineShader("CombinePlain.frag");
+            // Same warm-up window --render already gives a fresh compute-FX
+            // shader (see its own comment above) before the first grab.
+            QTimer::singleShot(1200, [state, step, name]() {
+                const QImage img = state->w->grabFramebuffer();
+                double sum = 0.0;
+                int n = 0;
+                for (int y = 0; y < img.height(); y += 7)
+                    for (int x = 0; x < img.width(); x += 7)
+                    {
+                        const QColor c = img.pixelColor(x, y);
+                        sum += (c.red() + c.green() + c.blue()) / 3.0;
+                        ++n;
+                    }
+                const double avgLuma = n ? sum / n : 0.0;
+                const bool ok = avgLuma > 3.0;   // solid black averages ~0
+                fprintf(stderr, "cfxcheck %-20s avgLuma=%6.2f  %s\n",
+                        qPrintable(name), avgLuma, ok ? "OK" : "FAIL (looks black)");
+                if (!ok) ++state->fails;
+                ++state->idx;
+                (*step)();
+            });
+        };
+        (*step)();
         return app.exec();
     }
 
