@@ -382,11 +382,31 @@ and `CoralGrowth` — preview correctly end to end: full lighting, per-fragment
 discard, generator state all confirmed. **Known limitation:** a scene that
 opts into the shadow map or OIT — i.e. anything calling `draw()` more than
 once per frame — currently loses part or all of its geometry in this preview
-only (confirmed on `ShadowForest`, `PillarHall`, `CathedralGlass`); the root
-cause wasn't found despite a real investigation, and it doesn't reproduce in
-the shipped app, where the same shaders render correctly. Author those presets
-by hand or verify them with `Kaleidoscope.exe -c <name> -l` instead, until this
-is root-caused.
+only (confirmed on `ShadowForest`, `PillarHall`, `CathedralGlass`); it doesn't
+reproduce in the shipped app, where the same shaders render correctly. Author
+those presets by hand or verify them with `Kaleidoscope.exe -c <name> -l`
+instead, until this is root-caused.
+
+Progress on the diagnosis, from actually reading the indirect draw buffer
+back off the GPU instead of guessing from screenshots (`--geom indirect`
+scenes now log the real vertex count per pass when run with
+`KALEIDO_INDIRECT_LOG=1` — see `Scene3DShader::draw()`): for `CathedralGlass`
+(OIT, no shadow), the buffer genuinely holds a stable, correct, non-zero
+vertex count on every single frame, on both the opaque and the OIT draw call
+— so this is not a case of the compute generator failing or the indirect
+buffer coming up empty, which was the leading theory. The geometry is
+present and gets drawn; the frame is still black. That rules out the
+generator/buffer path and points at something later in the pipeline (camera/
+projection, or the OIT accumulate → resolve composite) instead — still open.
+A real, separate bug was found and fixed in the process: `Scene3DPreview`'s
+`captureStderr()` helper (used to capture `ensureCompiled()`'s compile/link
+log for the status bar) redirected the process's global `stderr` via
+`freopen()` and restored it via `freopen("CONOUT$", ...)`, which only
+reattaches a real Windows console — under any piped/captured invocation
+(headless `--render`, a test harness, output redirected to a log) that
+restore silently fails, leaving stderr broken for the rest of the process.
+Fixed to save/restore the actual original stderr file descriptor
+(`_dup`/`_dup2`) instead of assuming a console exists.
 
 **Compute-FX preview (2D path).** The editor's ordinary `type="normal"`
 texture-shader path used to render solid black for any shader driven by a GL
