@@ -752,6 +752,9 @@ exit /b 0</Command>
     <None Include="Configurations\Psychedelic.xml" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ItemGroup>
+    <ResourceCompile Include="Kaleidoscope.rc" />
+  </ItemGroup>
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
 </Project>

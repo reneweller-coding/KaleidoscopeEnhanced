@@ -16,7 +16,9 @@
                 Kaleidoscope.exe      <- the app
                 Qt6*.dll, platforms\, ...  <- Qt runtime (via windeployqt)
                 vcruntime140*.dll, msvcp140.dll  <- MSVC runtime
-                icon.png
+                icon.ico                  <- window icon (multi-res); also
+                                             embedded in Kaleidoscope.exe itself
+                                             as its PE resource icon
 
     The launchers set the working directory to bin\ so the app's "..\" asset
     paths resolve to the package root.  The whole folder is then zipped to
@@ -86,7 +88,10 @@ Copy-Item (Join-Path $root "*.vert") $pkgDir
 Copy-Item (Join-Path $root "Configurations") $pkgDir -Recurse
 if (Test-Path (Join-Path $root "icon.png")) {
     Copy-Item (Join-Path $root "icon.png") $pkgDir
-    Copy-Item (Join-Path $root "icon.png") $binDir   # window icon (loaded from CWD=bin)
+}
+if (Test-Path (Join-Path $root "icon.ico")) {
+    Copy-Item (Join-Path $root "icon.ico") $pkgDir
+    Copy-Item (Join-Path $root "icon.ico") $binDir   # window icon (loaded from CWD=bin)
 }
 
 # --- 3. copy exe + deploy Qt runtime ----------------------------------------
