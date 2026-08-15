@@ -274,8 +274,13 @@ of the visualizer) for **building and editing presets** with a **live preview**:
   `"chromaHue + seed1*1.5"`. No raw BPM variable exists on purpose — only the
   continuous `beatPhase`/`barPhase` signals derived from it, so a formula
   can't reproduce the `time*bpm` snap-on-tempo-change bug the engine avoids
-  elsewhere. There's still no in-UI syntax validation (a broken formula only
-  logs to stderr and silently evaluates to 0) or live value readout.
+  elsewhere. Each expr row also has a **live value readout**: the formula
+  recompiles on every keystroke and, if valid, shows what it currently
+  evaluates to against the preview's synthesized Beat/Drone audio state
+  (the same variable mapping `EffectShader.cpp` uses at runtime), refreshed
+  a few times a second so you can see it move as the preview animates. A
+  broken formula turns the field red instead of silently evaluating to 0 —
+  though the exact parser message still only goes to stderr, not the UI.
 - **Completeness self-test:** `PresetEditor.exe --validate [preset.xml]` checks
   every preset entry (or just the one file given) against `Komplett.xml` and
   reports any param the shader declares that the entry doesn't carry AT ALL —
