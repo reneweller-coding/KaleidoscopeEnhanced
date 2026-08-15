@@ -8,38 +8,38 @@
   <TextureShader file="..\\Scene\\Kaleidoscope.frag" type="KaleidoscopeBase" probability="0.9" complexity="1">
     <bool name="rotate" probability="0.9"></bool>
     <int name="sides" minValue="2" maxValue="14"></int>
-    <float name="speed" minValue="0.04" maxValue="0.09"></float>
+    <float name="speed" minValue="0.028" maxValue="0.063"></float>
   </TextureShader>
 
   <TextureShader file="..\\Scene\\Tunnel.frag" type="KaleidoscopeBase" probability="0.7" complexity="1">
     <bool name="rotate" probability="0.7"></bool>
-    <float name="speedTunnel" minValue="0.005" maxValue="0.07"></float>
+    <float name="speedTunnel" minValue="0.0035" maxValue="0.049"></float>
     <int name="sides" minValue="2" maxValue="14"></int>
-    <float name="speed" minValue="0.01" maxValue="0.09"></float>
+    <float name="speed" minValue="0.007" maxValue="0.063"></float>
   </TextureShader>
 
   <TextureShader file="..\\Scene\\HexKaleido.frag" type="normal" probability="0.7" complexity="1">
     <float name="zoomP" minValue="0.7" maxValue="1.6"></float>
-    <float name="swirlP" minValue="0.0" maxValue="0.5"></float>
+    <float name="swirlP" minValue="0" maxValue="0.35"></float>
   </TextureShader>
 
   <TextureShader file="..\\Scene\\VoronoiPulse.frag" type="normal" probability="0.6" complexity="1">
     <expr name="scaleP" formula="clamp(2.3 + 2.0*flatness + 0.5*seed1, 2.2, 4.8)"/>
     <int name="sidesP" minValue="3" maxValue="9"></int>
     <float name="scaleP" minValue="2.2" maxValue="4.5"></float>
-    <float name="driftP" minValue="0.6" maxValue="1.5"></float>
+    <float name="driftP" minValue="0.42" maxValue="1.05"></float>
   </TextureShader>
 
   <TextureShader file="..\\Scene\\RaymarchTunnel.frag" type="normal" probability="0.6" complexity="2">
     <int name="sidesP" minValue="4" maxValue="11"></int>
-    <float name="twistP" minValue="0.0" maxValue="0.20"></float>
+    <float name="twistP" minValue="0" maxValue="0.14"></float>
     <float name="snakeP" minValue="0.15" maxValue="0.55"></float>
   </TextureShader>
 
   <TextureShader file="..\\Scene\\Starfield.frag" type="normal" probability="0.6" complexity="1">
     <float name="densP" minValue="0.88" maxValue="0.95"></float>
-    <float name="speedP" minValue="0.6" maxValue="1.6"></float>
-    <float name="rollP" minValue="0.0" maxValue="0.30"></float>
+    <float name="speedP" minValue="0.42" maxValue="1.12"></float>
+    <float name="rollP" minValue="0" maxValue="0.21"></float>
   </TextureShader>
 
   <TextureShader file="..\\Scene\\Fluid.frag" type="normal" probability="0.6" mood="calm" complexity="1">
@@ -72,7 +72,7 @@
   <TextureShader file="..\\Scene\\OrganicFlow.frag" type="normal" probability="0.5" mood="calm" complexity="1">
     <int name="sidesP" minValue="3" maxValue="9"></int>
     <float name="veinP" minValue="5.0" maxValue="10.0"></float>
-    <float name="swirlP" minValue="0.0" maxValue="0.8"></float>
+    <float name="swirlP" minValue="0" maxValue="0.56"></float>
   </TextureShader>
 
   <TextureShader file="..\\Scene\\Metamorph.frag" type="normal" probability="0.5" complexity="1">
@@ -80,7 +80,7 @@
     <int name="sidesP" minValue="4" maxValue="10"></int>
     <float name="latticeP" minValue="2.0" maxValue="4.5"></float>
     <float name="warpAmtP" minValue="0.15" maxValue="0.35"></float>
-    <float name="swirlP" minValue="0.0" maxValue="0.7"></float>
+    <float name="swirlP" minValue="0" maxValue="0.49"></float>
   </TextureShader>
 
   <TextureShader file="..\\Scene\\SelfSimilarity.frag" type="normal" probability="0.4" complexity="1">
@@ -107,7 +107,7 @@
     <expr name="waveAmtP" formula="clamp(0.008 + 0.014*trebRel, 0.008, 0.04)"/>
     <float name="breathAmtP" minValue="0.02" maxValue="0.06"></float>
     <float name="waveAmtP" minValue="0.008" maxValue="0.03"></float>
-    <float name="spinP" minValue="0.02" maxValue="0.12"></float>
+    <float name="spinP" minValue="0.014" maxValue="0.084"></float>
     <float name="chromaP" minValue="0.001" maxValue="0.005"></float>
   </CombineShader>
 
@@ -115,14 +115,14 @@
     <expr name="warpAmtP" formula="clamp(0.7 + 0.7*swell + 0.4*ambient, 0.5, 1.8)"/>
     <float name="warpScaleP" minValue="2.0" maxValue="5.0"></float>
     <float name="warpAmtP" minValue="0.5" maxValue="1.8"></float>
-    <float name="driftP" minValue="0.5" maxValue="2.0"></float>
+    <float name="driftP" minValue="0.35" maxValue="1.4"></float>
   </CombineShader>
 
   <CombineShader file="..\\Combine\\CombineSphere.frag" type="normal" probability="0.05" complexity="5">
     <bool name="rot" probability="0.05"></bool>
     <float name="radius" minValue="0.5" maxValue="1.0"></float>
-    <float name="nrCopies" minValue="1.0" maxValue="8.0"></float>
-    <float name="speed" minValue="0.01" maxValue="0.15"></float>
+    <float name="nrCopies" minValue="0.75" maxValue="6"></float>
+    <float name="speed" minValue="0.007" maxValue="0.105"></float>
   </CombineShader>
 
   <TextureShader file="..\\Scene\\ParticleFlow.frag" type="normal" probability="0.4" complexity="2">
@@ -180,7 +180,7 @@
   <TextureShader file="..\\Scene3D\\BloomSculpt.frag" type="scene3d" geom="patches" probability="0.45" mood="dreamy" complexity="3" shadowExtent="2.6">
     <float name="bloomP"   minValue="0.35" maxValue="0.75"></float>
     <float name="camDistP" minValue="3.0"  maxValue="3.9"></float>
-    <float name="twistP"   minValue="0.5"  maxValue="1.6"></float>
+    <float name="twistP" minValue="0.35" maxValue="1.12"></float>
     <float name="detailP"  minValue="0.75" maxValue="1.25"></float>
     <float name="glossP"   minValue="0.35" maxValue="0.85"></float>
   </TextureShader>
@@ -221,7 +221,7 @@
 
   <TextureShader file="..\\Scene3D\\SpectrumCity.frag" type="scene3d" geom="indirect" probability="0.4" mood="dark" complexity="4">
     <float name="heightP"  minValue="0.7"  maxValue="1.35"></float>
-    <float name="densityP" minValue="0.65" maxValue="0.92"></float>
+    <float name="densityP" minValue="0.4875" maxValue="0.69"></float>
     <float name="avenueP"  minValue="0.7"  maxValue="1.5"></float>
     <float name="camHP"    minValue="11.0" maxValue="26.0"></float>
     <float name="glowP"    minValue="0.45" maxValue="1.0"></float>
@@ -261,7 +261,7 @@
   </CombineShader>
 
   <CombineShader file="..\\Combine\\CombineDepthFog.frag" type="normal" probability="0.35" complexity="4">
-    <float name="densityP" minValue="0.5" maxValue="1.5"></float>
+    <float name="densityP" minValue="0.375" maxValue="1.125"></float>
     <float name="heightP"  minValue="0.4" maxValue="1.6"></float>
     <float name="glowP"    minValue="0.3" maxValue="1.0"></float>
   </CombineShader>
@@ -269,7 +269,7 @@
   <TextureShader file="..\\Scene3D\\PillarHall.frag" type="scene3d" geom="cubes" probability="0.4" mood="dark" complexity="4" shadowExtent="60">
     <float name="camHP"    minValue="6.0"  maxValue="13.0"></float>
     <float name="heightP"  minValue="0.7"  maxValue="1.35"></float>
-    <float name="spacingP" minValue="0.85" maxValue="1.2"></float>
+    <float name="spacingP" minValue="1.13333" maxValue="1.6"></float>
     <float name="softP"    minValue="0.3"  maxValue="1.0"></float>
     <float name="hueP"     minValue="0.15" maxValue="0.9"></float>
   </TextureShader>
@@ -277,13 +277,13 @@
   <TextureShader file="..\\Scene3D\\GlassStack.frag" type="scene3d" geom="cubes" probability="0.5" mood="dreamy" complexity="3">
     <float name="camDistP" minValue="5.0"  maxValue="7.5"></float>
     <float name="spreadP"  minValue="0.7"  maxValue="1.3"></float>
-    <float name="shellsP"  minValue="0.45" maxValue="1.0"></float>
+    <float name="shellsP" minValue="0.3375" maxValue="0.75"></float>
     <float name="glassP"   minValue="0.4"  maxValue="1.0"></float>
     <float name="glowP"    minValue="0.35" maxValue="1.0"></float>
   </TextureShader>
 
   <TextureShader file="..\\Scene\\VoronoiShatter.frag" type="normal" probability="0.45" mood="aggressive" complexity="2">
-    <float name="cellsP" minValue="0.3"  maxValue="0.75"></float>
+    <float name="cellsP" minValue="0.225" maxValue="0.5625"></float>
     <float name="flyP"   minValue="0.7"  maxValue="1.4"></float>
     <float name="edgeP"  minValue="0.4"  maxValue="1.0"></float>
   </TextureShader>
@@ -301,14 +301,14 @@
   </TextureShader>
 
   <TextureShader file="..\\Scene\\Snowfall.frag" type="normal" probability="0.45" mood="calm" complexity="2">
-    <float name="densityP" minValue="0.35" maxValue="0.85"></float>
+    <float name="densityP" minValue="0.2625" maxValue="0.6375"></float>
     <float name="windP"    minValue="0.4"  maxValue="1.3"></float>
     <float name="depthP"   minValue="0.3"  maxValue="0.9"></float>
   </TextureShader>
 
   <TextureShader file="..\\Scene3D\\FlowRibbons.frag" type="scene3d" geom="indirect" probability="0.45" mood="dreamy" complexity="4">
     <float name="widthP" minValue="0.7"  maxValue="1.4"></float>
-    <float name="twistP" minValue="0.5"  maxValue="1.6"></float>
+    <float name="twistP" minValue="0.35" maxValue="1.12"></float>
     <float name="scaleP" minValue="0.7"  maxValue="1.5"></float>
     <float name="camHP"  minValue="-1.5" maxValue="1.5"></float>
     <float name="glowP"  minValue="0.4"  maxValue="1.0"></float>
@@ -318,14 +318,14 @@
   <TextureShader file="..\\Scene3D\\Skyburst.frag" type="scene3d" geom="indirect" probability="0.4" mood="aggressive" complexity="4">
     <float name="burstP" minValue="0.75" maxValue="1.35"></float>
     <float name="trailP" minValue="0.6"  maxValue="1.4"></float>
-    <float name="rateP"  minValue="0.7"  maxValue="1.5"></float>
+    <float name="rateP" minValue="0.49" maxValue="1.05"></float>
     <float name="camHP"  minValue="1.0"  maxValue="4.0"></float>
     <float name="glowP"  minValue="0.45" maxValue="1.0"></float>
     <float name="skyP"   minValue="0.3   " maxValue="0.9"></float>
   </TextureShader>
 
   <TextureShader file="..\\Scene3D\\SpectroWeave.frag" type="scene3d" geom="indirect" probability="0.45" mood="dark" complexity="4">
-    <float name="twistP"  minValue="0.6"  maxValue="1.6"></float>
+    <float name="twistP" minValue="0.42" maxValue="1.12"></float>
     <float name="spreadP" minValue="0.75" maxValue="1.35"></float>
     <float name="thickP"  minValue="0.7"  maxValue="1.4"></float>
     <float name="camHP"   minValue="-1.0" maxValue="1.0"></float>
@@ -360,7 +360,7 @@
   </TextureShader>
 
   <TextureShader file="..\\Scene3D\\CathedralGlass.frag" type="scene3d" geom="indirect" probability="0.45" mood="calm,bright" complexity="3">
-    <float name="spinP"    minValue="0.50" maxValue="2.20"></float>
+    <float name="spinP" minValue="0.35" maxValue="1.54"></float>
     <float name="paneP"    minValue="0.60" maxValue="1.45"></float>
     <float name="depthP"   minValue="0.55" maxValue="1.60"></float>
     <float name="camDistP" minValue="5.00" maxValue="6.60"></float>
@@ -369,7 +369,7 @@
   </TextureShader>
 
   <TextureShader file="..\\Scene3D\\ShadowForest.frag" type="scene3d" geom="indirect" shadowExtent="34" probability="0.45" mood="calm,dark" complexity="4">
-    <float name="densityP" minValue="0.70" maxValue="1.40"></float>
+    <float name="densityP" minValue="0.525" maxValue="1.05"></float>
     <float name="heightP"  minValue="0.70" maxValue="1.45"></float>
     <float name="swayP"    minValue="0.30" maxValue="1.60"></float>
     <float name="camHP"    minValue="1.30" maxValue="2.40"></float>
@@ -380,7 +380,7 @@
 
   <CombineShader file="..\\Combine\\CombineEdgeInk.frag" type="normal" probability="0.34" complexity="3">
     <float name="inkP"   minValue="0.50" maxValue="1.60"></float>
-    <float name="bandsP" minValue="0.15" maxValue="0.90"></float>
+    <float name="bandsP" minValue="0.1125" maxValue="0.675"></float>
     <float name="paperP" minValue="0.00" maxValue="1.00"></float>
   </CombineShader>
 
@@ -420,7 +420,7 @@
 
   <TextureShader file="..\\Scene3D\\VideoRelief.frag" type="scene3d" geom="grid" probability="0.55" mood="calm,bright" complexity="4">
     <float name="reliefP"  minValue="0.80" maxValue="2.00"></float>
-    <float name="scrollP"  minValue="0.30" maxValue="1.60"></float>
+    <float name="scrollP" minValue="0.21" maxValue="1.12"></float>
     <float name="camDistP" minValue="5.80" maxValue="7.20"></float>
     <float name="tiltP"    minValue="0.50" maxValue="1.10"></float>
     <float name="glowP"    minValue="0.45" maxValue="1.00"></float>
@@ -428,8 +428,8 @@
   </TextureShader>
 
   <TextureShader file="..\\Scene3D\\FeatherStorm.frag" type="scene3d" geom="indirect" probability="0.45" mood="calm,dreamy" complexity="4">
-    <float name="countP"   minValue="0.40" maxValue="1.00"></float>
-    <float name="swirlP"   minValue="0.40" maxValue="2.00"></float>
+    <float name="countP" minValue="0.3" maxValue="0.75"></float>
+    <float name="swirlP" minValue="0.28" maxValue="1.4"></float>
     <float name="sizeP"    minValue="0.60" maxValue="1.60"></float>
     <float name="camDistP" minValue="7.50" maxValue="11.00"></float>
     <float name="camHP"    minValue="-1.50" maxValue="1.50"></float>
@@ -440,7 +440,7 @@
 
   <TextureShader file="..\\Scene3D\\PrismExplode.frag" type="scene3d" geom="indirect" probability="0.45" mood="aggressive,bright" complexity="4">
     <float name="burstP"   minValue="0.50" maxValue="2.00"></float>
-    <float name="countP"   minValue="0.40" maxValue="1.00"></float>
+    <float name="countP" minValue="0.3" maxValue="0.75"></float>
     <float name="sizeP"    minValue="0.50" maxValue="1.60"></float>
     <float name="camDistP" minValue="4.40" maxValue="6.40"></float>
     <float name="dispP"    minValue="0.40" maxValue="1.80"></float>
@@ -449,10 +449,10 @@
   </TextureShader>
 
   <TextureShader file="..\\Scene3D\\SmokeHall.frag" type="scene3d" geom="indirect" shadowExtent="44" probability="0.35" mood="dark" complexity="5">
-    <float name="spacingP" minValue="0.80" maxValue="1.40"></float>
+    <float name="spacingP" minValue="1.06667" maxValue="1.86667"></float>
     <float name="heightP"  minValue="0.80" maxValue="1.30"></float>
     <float name="camHP"    minValue="1.80" maxValue="3.40"></float>
-    <float name="densityP" minValue="0.60" maxValue="1.50"></float>
+    <float name="densityP" minValue="0.45" maxValue="1.125"></float>
     <float name="glowP"    minValue="0.45" maxValue="1.00"></float>
     <float name="hueP"     minValue="0.00" maxValue="1.00"></float>
   </TextureShader>
