@@ -12,6 +12,7 @@
 #include <cmath>
 #include <string>
 #include <functional>
+#include <io.h>
 
 // EffectShader is a CONCRETE class (draw()/checkGLErrors() are virtual but not
 // pure), so its own vtable -- emitted once, in EffectShader.obj -- keeps
@@ -88,20 +89,31 @@ static QString captureStderr( const std::function<void()> &body )
     GetTempPathA( MAX_PATH, tmpDir );
     GetTempFileNameA( tmpDir, "kle", 0, tmpPath );
 
+    // Duplicate the REAL stderr descriptor first, whatever it actually is --
+    // a console, a file, or (any headless/automated run: --render, a test
+    // harness, output piped to a log) a pipe.  The previous version restored
+    // via freopen("CONOUT$", ...), which only works when a console is
+    // attached; under a pipe it silently leaves stderr broken for the rest
+    // of the process, so every fprintf(stderr, ...) anywhere else in the app
+    // -- including shader_setup.cpp's own compile-error logging -- goes
+    // dark with no error of its own. Found by chasing exactly that symptom.
+    const int savedFd = _dup( _fileno( stderr ) );
+
     FILE *redirected = freopen( tmpPath, "w", stderr );
     body();
     fflush( stderr );
 
     QString log;
-    if( redirected )
+    if( redirected && savedFd != -1 )
     {
-        // Restore stderr to the console before anything else can print again.
-        freopen( "CONOUT$", "w", stderr );
+        _dup2( savedFd, _fileno( stderr ) );   // restore the ORIGINAL stderr target
         QFile f( QString::fromLocal8Bit( tmpPath ) );
         if( f.open( QIODevice::ReadOnly | QIODevice::Text ) )
             log = QString::fromLocal8Bit( f.readAll() ).trimmed();
         f.remove();
     }
+    if( savedFd != -1 )
+        _close( savedFd );
     return log;
 }
 

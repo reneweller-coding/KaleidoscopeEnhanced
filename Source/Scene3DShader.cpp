@@ -631,6 +631,36 @@ void Scene3DShader::draw()
 			glDrawArraysIndirect( GL_TRIANGLES, 0 );
 			glBindBuffer( GL_DRAW_INDIRECT_BUFFER, 0 );
 			glDisable( GL_DEPTH_TEST );
+
+			// Diagnostic: KALEIDO_INDIRECT_LOG=1 appends the buffer's ACTUAL
+			// vertex count (read back from the GPU, not inferred from a
+			// screenshot) plus the pass flags that gated whether this call
+			// regenerated the mesh, to indirect_diag.log next to the exe.
+			// Written with a plain fopen/fclose, not stderr: Scene3DPreview::
+			// captureStderr() (used by ensureCompiled() to capture shader
+			// compile logs) freopen()s the process-global stderr mid-frame,
+			// and under a piped/captured process (any headless run, this
+			// tool's own testing included) its restore step can leave stderr
+			// broken for the rest of the process -- so anything logged here
+			// via stderr can silently vanish for reasons that have nothing
+			// to do with the geometry itself.
+			if( getenv( "KALEIDO_INDIRECT_LOG" ) )
+			{
+				glBindBuffer( GL_DRAW_INDIRECT_BUFFER, m_cmdBuf );
+				GLuint *cmd4 = (GLuint *) glMapBuffer( GL_DRAW_INDIRECT_BUFFER, GL_READ_ONLY );
+				GLuint count = cmd4 ? cmd4[0] : 0xffffffffu;
+				if( cmd4 ) glUnmapBuffer( GL_DRAW_INDIRECT_BUFFER );
+				glBindBuffer( GL_DRAW_INDIRECT_BUFFER, 0 );
+				FILE *df = fopen( "indirect_diag.log", "a" );
+				if( df )
+				{
+					fprintf( df,
+					    "shadowPass=%.0f oitPass=%.0f generate=%d count=%u frameIndex=%d\n",
+					    EffectShader::s_shadowPass, EffectShader::s_oitPass, generate,
+					    count, m_frameIndex );
+					fclose( df );
+				}
+			}
 		}
 	}
 	else if( m_geomKind == GEOM_PATCHES )
