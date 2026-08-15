@@ -288,6 +288,23 @@ parameters, mood tags, flicker-free integrated motion.
 - **`HopfFibrationToruses`** (`Scene3D/`, `geom="ribbon"`): 20 stereographically projected 4D Hopf fibration Villarceau circles swirling seamlessly in 3D without intersecting.
 - **`AuroraBorealisOverFjord`** (`Scene3D/`, `geom="patches"` + `AuroraBorealisOverFjord.tesc` + `.tese`): Hardware GPU tessellation of an arctic fjord with reflective water and volumetric northern lights.
 
+**High-Energy & Optical Hypnosis Suite (2026-08 Expansion 3 — 15 New Shaders):**
+- **`PrismaticLaserVault`** (`Scene/`): Volumetric 64-beam laser maze with dichroic prism cubes, optical smoke volume scattering, and beam-splitter refractions filling 100% of the viewport.
+- **`CalabiYauManifold`** (`Scene/`): Raymarched 6D Calabi-Yau Kähler manifold projection with audio-reactive topological genus morphing and iridescent metallic highlights.
+- **`CliffordTorusKleinBottle`** (`Scene/`): 4D non-orientable Klein bottle and Clifford torus rotating in 4D space with glass refraction, internal self-intersection, and chromatic dispersion.
+- **`PulsarMagnetosphereJets`** (`Scene/`): Rapidly spinning millisecond pulsar with twisted dipole magnetic light cylinder and polar synchrotron lighthouse beams sweeping directly across the camera.
+- **`FerrofluidSpikeForest`** (`Scene/`): 3D raymarched pool of magnetic liquid ferrofluid rising into sharp Rosensweig instability spikes with oily rainbow thin-film sheens.
+- **`PlasmaLightningGlobe`** (`Scene/`): Dielectric breakdown plasma globe with dozens of snaking, branching high-voltage filament arcs striking the glass sphere.
+- **`LargeHadronCollision`** (`Scene3D/`, `geom="points"`): 60,000 relativistic particle collision tracks spraying outwards along curved magnetic solenoid trajectories with Cherenkov radiation rings.
+- **`SynchrotronRadiationRing`** (`Scene3D/`, `geom="ribbon"`): Electron storage ring undulating through periodic magnets, emitting forward-beamed X-ray and EUV synchrotron cones.
+- **`KineticTesseractOrigami`** (`Scene3D/`, `geom="quads"`): 3,000-quad 4D Miura-ori kinetic origami tessellation blooming open and closed with music pacing and beat kicks.
+- **`JellyfishBioluminescenceAbyss`** (`Scene3D/`, `geom="indirect"` + `JellyfishBioluminescenceAbyss.comp`): GPU Compute Shader simulating 32 giant deep-sea medusae with pulsating bells and trailing bioluminescent tentacle curtains.
+- **`CyberspaceDNAHelix`** (`Scene3D/`, `geom="ribbon"`): Double-helix DNA macromolecule unzipping and transcribing with floating nucleotide base-pair streams.
+- **`BioluminescentForestCanopy`** (`Scene3D/`, `geom="indirect"` + `BioluminescentForestCanopy.comp`): GPU Compute Shader generating 4,096 bioluminescent alien rainforest fronds and glowing airborne spores.
+- **`DysonSwarmSolarHarvester`** (`Scene3D/`, `geom="quads"`): Thousands of geometric orbital mirrors surrounding a hypergiant star, reflecting the corona and firing laser power relays.
+- **`SuperfluidHeliumVortexTurbulence`** (`Scene3D/`, `geom="indirect"` + `SuperfluidHeliumVortexTurbulence.comp`): GPU Compute Shader simulating quantum vortex tangle filaments and Kelvin wave packets in superfluid Helium-II.
+- **`ChladniAcousticPlate`** (`Scene3D/`, `geom="points"`): 60,000 crystalline particles migrating away from antinodes to gather on sacred geometry nodal lines of a vibrating Chladni plate.
+
 **Timing is music-driven:** per-entry `min/maxTime*` attributes are now
 OPTIONAL — the pacing comes from `timingScale` (tempo/arousal), 4-beat
 cross-fades and section cuts.  Absent times fall back to engine defaults
