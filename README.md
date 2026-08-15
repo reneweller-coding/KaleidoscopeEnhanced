@@ -328,9 +328,9 @@ of the visualizer) for **building and editing presets** with a **live preview**:
   `TestRegie`, `TestShatter` were each missing one to three params).
 
 - **Transition test bench:** the *Übergangs-Zeitlupe* checkbox plays any of
-  the 26 CombinePlain transition styles in slow motion (the blend sweeps
+  the 28 CombinePlain transition styles in slow motion (the blend sweeps
   back and forth over ~10 s) — for tuning styles visually.  Headless:
-  `PresetEditor.exe --transcheck` sweeps ALL 26 styles with a pinned clock
+  `PresetEditor.exe --transcheck` sweeps ALL 28 styles with a pinned clock
   and verifies both endpoint identity (exactly scene A at the start,
   exactly scene B at the end — no leaks or snaps) and temporal continuity
   (no single step may dwarf the style's typical step); exits non-zero on
@@ -620,6 +620,24 @@ Audio is captured via WASAPI loopback (`AudioAnalyzer`) and analysed in real tim
   leave expanding, swirling, hue-drifting echo tunnels; the beat pumps the
   outward zoom, ambient passages get longer trails, and the rotation
   direction swings smoothly.
+- **Drop-rewind & time-echo (present pass):** the last ~3.2 s of frames are
+  kept in a GPU history ring (96 layers, third-resolution). On roughly 40%
+  of drops the picture **rewinds** ~1.6 s and tape-catches-up over ~0.5 s,
+  landing exactly on the hit — sold with VHS artifacts (line jitter, a
+  chroma offset, scanlines, band noise) that read as "the tape is
+  spooling" and incidentally hide the ring's lower resolution; a DJ-STOP
+  scrubs backward the same way and snaps live on the slam-back. Separately,
+  a faint **time-echo** — the scene from ~1.4 s ago, screen-blended and
+  slightly enlarged — drifts under ambient passages and flares briefly
+  after a drop. Both fall back to the plain live frame if the GPU can't
+  provide the history-ring extensions (`glTexImage3D`/
+  `glFramebufferTextureLayer`/`glBlitFramebuffer`).
+- **Cinema-camera look:** two always-on grade touches. **Anamorphic
+  streaks** stretch the bloom buffer's highlights out horizontally with a
+  cool tint (the classic anamorphic-lens look), breathing with the loudness
+  swell and flaring hard on drops. **Halation** adds a warm, wide-blurred
+  glow around bright highlights — the soft "film emulsion" bleed real
+  camera film has, as opposed to a clean digital bloom.
 - **Instrument-separated onsets:** the 32-band flux is split into low/mid/
   high groups with separate spike tests → `audioKick`, `audioSnare`,
   `audioHat` uniforms (peak-hold + slew like the global envelopes).
@@ -653,7 +671,7 @@ Audio is captured via WASAPI loopback (`AudioAnalyzer`) and analysed in real tim
   analysis + render + scanout lag the heard audio by ~40–80 ms; the display
   phase (tempo pulse, beat/bar phase) is led by an adjustable amount
   (default 50 ms) so pulses land ON the beat you hear.
-- **Transition styles (26):** each cross-fade rolls one of 26 blend styles
+- **Transition styles (28):** each cross-fade rolls one of 28 blend styles
   (linear stays the most common at ~20%).  Wipes/reveals: radial iris,
   diagonal wipe, staggered blinds, mosaic dissolve, push, sliding doors,
   clock sweep, dip-to-dark.  Edge-free full-frame morphs: kaleido folds
@@ -662,15 +680,25 @@ Audio is captured via WASAPI loopback (`AudioAnalyzer`) and analysed in real tim
   (RGB staggered), luminance-ordered dissolve, double-exposure peak,
   jelly wobble, drain vortex, ghost multi-exposure, **datamosh** (row-banded
   glitch stutter with per-row RGB-channel-split shift and "stuck block"
-  P-frame smear — all gated by the same `sin(π·d)` envelope every style
-  uses, so it still lands on an exact endpoint match).  Applied to both the
-  effect and the combine blends.
+  P-frame smear), **shatter** (the frame breaks into Voronoi shards that
+  fly, spin and fall away to reveal the next scene) and **portal** (the new
+  scene opens along the old scene's real depth — a glowing threshold rim
+  expanding outward — with a 3D-only effect; falls back to the zoom-through
+  style when neither scene has depth) — all gated by the same `sin(π·d)`
+  envelope every style uses, so it still lands on an exact endpoint match.
+  Applied to both the effect and the combine blends.  On a drop specifically,
+  the scheduler picks shatter for about half of the cuts instead of always
+  hard-cutting (see Build-up/drop below).
 - **Web remote (`-t <port>`):** a phone-friendly page at
   `http://<pc>:<port>/` with a **live preview image** (~1 Hz JPEG snapshot,
   captured only while the page is open), preset buttons, next-effect,
   **blackout**, **favourite** (taste learning), **replay arm + save**, and
   sliders for reactivity / trails / mood / latency plus light-show &
-  auto-preset toggles.  LAN convenience only — no auth, don't expose it to
+  auto-preset toggles.  A **scene browser** (`/api/scenes`) lists every
+  texture shader in the active preset as a two-column button grid;
+  tapping one jumps straight to it (`/api/force?i=n`, instant and
+  unquantised, still respecting Pin/Freeze) — a real VJ console from a
+  phone, not just next/blackout.  LAN convenience only — no auth, don't expose it to
   the internet.
 - **MIDI Learn (`j`):** cycles through the assignable targets (reactivity,
   trails, mood, latency, next-effect pad, **tap-tempo pad, blackout pad**);
@@ -746,6 +774,17 @@ Audio is captured via WASAPI loopback (`AudioAnalyzer`) and analysed in real tim
   signal) breathes the bloom/brightness and gently surges the motion;
   `audioBarPhase` (0..1 across the 4-beat bar) drives slow in-tempo movement
   (e.g. the stage lamps sweep once per bar).  Both are shader uniforms.
+- **Stage lamps / light show (`l`, off by default):** four corner spotlight
+  cones aim toward the centre like moving-head fixtures — a slow bar-synced
+  sweep (one full swing per 4 beats, phase-offset per corner), mood-coloured
+  with a slightly different hue each, flashing on the beat with extra punch
+  on the downbeat.  Silent on speech/silence (gated the same way the beat
+  pulse is).  Layered on top: a **colour chase** that steps the flash
+  emphasis through the four corners once per onset; a soft **haze** —
+  a wider, dimmer glow around each beam, as if scattering in stage fog, for
+  a 3-D look; a slowly rotating **mirror-ball** speckle field of twinkling
+  dots; and a rotating **gobo** wheel — a fan of light rays from screen
+  centre, fading out toward the middle so it never washes the picture.
 - **Real bloom:** a two-pass Gaussian bloom (quarter-res bright-pass + separable
   blur) replaces the old single-mip glow — soft halos around bright detail.
 - **Recording** (`r`) now encodes JPEGs on a worker thread, so capturing no
@@ -1124,10 +1163,19 @@ Audio is captured via WASAPI loopback (`AudioAnalyzer`) and analysed in real tim
   swell, snare rolls → `audioBuildUp` 0..1) and the DROP that follows it (a
   bass vacuum while "armed", then the bass slamming back → `audioDrop`
   pulse + a counter the host can't miss).  Visuals build TENSION during the
-  climb (trails tighten, the camera slowly pushes in) and RELEASE on the
-  drop: an immediate scene cut plus a camera hit.  Verified offline with a
-  synthesized groove→build→break→drop WAV (fires exactly at the slam,
-  zero phantom drops).
+  climb — trails tighten, the camera slowly pushes in, black **CinemaScope
+  letterbox bars** creep in from top and bottom, and in the final bars the
+  picture itself "holds its breath" (desaturates, dims slightly, the
+  vignette tightens — a distinct mechanism from the DJ-STOP breath-hold
+  above, triggered by the build-up curve rather than a sudden silence) —
+  and RELEASE on the drop:
+  the bars tear open, a **bass-shockwave** ring (pure image displacement, no
+  brightness change — small on every kick, large on the drop itself)
+  expands from centre, and the scene cuts — about half the time an
+  instant hard cut with a camera hit, the other half the **shatter**
+  transition (see Transition styles) so the release itself reads as an
+  impact.  Verified offline with a synthesized groove→build→break→drop WAV
+  (fires exactly at the slam, zero phantom drops).
 - **Virtual camera (global "Regie" layer):** one slow-moving transform over
   the finished frame — micro drift (everything feels "filmed"), a decaying
   downbeat punch-in, a gentle once-per-bar roll, build-up tension zoom and
@@ -2350,7 +2398,7 @@ Reorganised 2026-07 into folders:
   SpectralOrb, SpectralTorus, CymaticsPlate, Planet4D, SpiralArray,
   JellyBody, StrangeAttractor, MelodyScript)
 - `Combine\*.frag` — the 21 combine passes (incl. `CombinePlain.frag`, which
-  carries the 26-style transition library)
+  carries the 28-style transition library)
 - `Blend\*.frag` — internal pipeline passes: `Present.frag` (mood grade +
   safety + dither), `Feedback.frag` (echo-warp trails), `BloomBlur.frag`,
   `ReactionDiffusionSim.frag` / `FluidSim.frag` / `Smoke3DSim.frag` (the GPU
@@ -2362,6 +2410,13 @@ Reorganised 2026-07 into folders:
   `..\Combine\...`)
 - `docs\screenshots\` — the README gallery images, rendered headlessly via
   `PresetEditor.exe --render` (see [Preset editor](#preset-editor-standalone-tool))
+- `Tools\verify.ps1` — a committed PowerShell verification loop: `-Smoke`
+  runs every preset for 9 s and greps the log; `-Roundtrip` / `-Transcheck`
+  call the same self-tests `PresetEditor.exe` exposes directly; `-Scenes
+  Name1,Name2` probes individual scenes offline against an auto-generated
+  broadband WAV and drops a late frame as `Tools\probe_<name>.jpg` for
+  visual review — the tool this session's own scene-verification workflow
+  runs on.
 
 The deploy packaging (`deploy.ps1`) mirrors the same folder structure into
 `dist\KaleidoscopeVisualizer\`.
