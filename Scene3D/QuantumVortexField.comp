@@ -1,0 +1,119 @@
+#version 430
+// QuantumVortexField.comp — GPU Compute Shader generating dynamic 3D toroidal
+// magnetic vortex filaments and Lorenz attractor streamlines with glowing ribbons.
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+
+layout(std430, binding = 0) buffer Verts { float verts[]; };
+layout(std430, binding = 1) buffer Cmd   { uint  cmd[]; };
+
+uniform uint  maxVertices;
+uniform float time;
+uniform float sceneSeed;
+uniform float audioAdvance;
+uniform float audioLevel;
+uniform float audioKick;
+uniform float audioSubBass;
+uniform float audioHigh;
+uniform float audioSpectrum[32];
+
+uniform float fluxP;
+uniform float spinP;
+uniform float glowP;
+
+const int FILAMENTS = 64 * 48; // 3072 streamlines
+const int STEPS = 8;           // 8 segments per filament -> quad strip
+
+float hash1(float n) { return fract(sin(n * 143.567) * 43758.5453); }
+vec3  hash3(float n) { return fract(sin(vec3(n * 83.34, n * 39.12, n * 67.56)) * 43758.5453); }
+
+void writeVertex(uint slot, vec3 p, vec3 n, float hue, float glow) {
+    uint o = slot * 8u;
+    verts[o + 0u] = p.x;  verts[o + 1u] = p.y;  verts[o + 2u] = p.z;
+    verts[o + 3u] = hue;
+    verts[o + 4u] = n.x;  verts[o + 5u] = n.y;  verts[o + 6u] = n.z;
+    verts[o + 7u] = glow;
+}
+
+// 3D Toroidal Vortex Vector Field
+vec3 vortexField(vec3 p, float t) {
+    float r = length(p.xz);
+    float a = atan(p.z, p.x);
+    
+    // Torus core radius R = 8.0
+    float R = 8.0;
+    float dCore = length(vec2(r - R, p.y));
+    
+    // Poloidal (around core) + Toroidal (around center) circulation
+    vec3 vToroidal = vec3(-sin(a), 0.0, cos(a)) * (4.0 / max(r * 0.2 + 1.0, 0.5));
+    vec3 vPoloidal = vec3(cos(a) * (-p.y), r - R, sin(a) * (-p.y)) * (3.0 / max(dCore * 0.5 + 1.0, 0.5));
+
+    // Chaotic Lorenz perturbation
+    vec3 lorenz = vec3(
+        10.0 * (p.y - p.x),
+        p.x * (28.0 - p.z) - p.y,
+        p.x * p.y - (8.0 / 3.0) * p.z
+    ) * 0.015;
+
+    return vToroidal + vPoloidal + lorenz;
+}
+
+void main() {
+    uvec3 g = gl_GlobalInvocationID;
+    uint id = g.x + 64u * (g.y + 64u * g.z);
+    if (id >= uint(FILAMENTS)) return;
+
+    float i = float(id);
+    vec3 seed = hash3(i);
+
+    float flx = (fluxP > 0.0) ? fluxP : 1.0;
+    float spn = (spinP > 0.0) ? spinP : 1.0;
+    float glw = (glowP > 0.0) ? glowP : 1.0;
+
+    // Seed streamline start position around toroidal magnetosphere
+    float a0 = seed.x * 6.2831853 + time * 0.2 * spn + audioAdvance * 0.1;
+    float r0 = 8.0 + (seed.y - 0.5) * 6.0 * flx + audioSubBass * 3.0;
+    float y0 = (seed.z - 0.5) * 5.0;
+
+    vec3 curP = vec3(cos(a0) * r0, y0, sin(a0) * r0);
+    float dt = 0.15;
+    float ribWidth = 0.18 * (1.0 + 0.5 * audioKick);
+
+    float filHue = fract(seed.x * 0.6 + time * 0.05);
+    int band = int(clamp(seed.x * 31.0, 0.0, 31.0));
+    float filGlow = (0.6 + audioSpectrum[band] * 2.0 + audioKick * 1.0) * glw;
+
+    // Integrate streamline path through the vector field
+    vec3 pts[STEPS + 1];
+    pts[0] = curP;
+
+    for (int s = 0; s < STEPS; s++) {
+        vec3 v = vortexField(curP, time);
+        curP += v * dt;
+        pts[s + 1] = curP;
+    }
+
+    // Emit triangle strip quad segments
+    for (int s = 0; s < STEPS; s++) {
+        uint base = atomicAdd(cmd[4], 6u);
+        if (base + 6u > maxVertices) return;
+
+        vec3 pA = pts[s];
+        vec3 pB = pts[s + 1];
+        vec3 fwd = normalize(pB - pA + vec3(1e-5));
+        vec3 side = normalize(cross(fwd, vec3(0.0, 1.0, 0.0)));
+        vec3 norm = cross(side, fwd);
+
+        vec3 v0 = pA - side * ribWidth;
+        vec3 v1 = pA + side * ribWidth;
+        vec3 v2 = pB + side * ribWidth;
+        vec3 v3 = pB - side * ribWidth;
+
+        writeVertex(base + 0u, v0, norm, filHue, filGlow);
+        writeVertex(base + 1u, v1, norm, filHue, filGlow);
+        writeVertex(base + 2u, v2, norm, filHue, filGlow);
+
+        writeVertex(base + 3u, v0, norm, filHue, filGlow);
+        writeVertex(base + 4u, v2, norm, filHue, filGlow);
+        writeVertex(base + 5u, v3, norm, filHue, filGlow);
+    }
+}

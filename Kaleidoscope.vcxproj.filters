@@ -408,6 +408,36 @@
     <None Include="Scene\FluidInkMarble.frag">
       <Filter>Shaders\Scene</Filter>
     </None>
+    <None Include="Scene\CyberGridCity.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\QuantumChromaField.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\AbyssalLuminescence.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\SolarFlareCorona.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\GlitchMatrixHypercube.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\BismuthLabyrinth.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\NeonFluidDynamics.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\StargateWormhole.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\PrismaticKaleidoMandala.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\ChromaAcidTrip.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
     <None Include="Combine\CombineDarkRed.frag">
       <Filter>Shaders\Combine</Filter>
     </None>
@@ -1402,6 +1432,84 @@
       <Filter>Shaders\Scene3D</Filter>
     </None>
     <None Include="Scene3D\CosmicBoidsVortex.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\SuperconductorLevitation.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\SuperconductorLevitation.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\CyberRibbonHighway.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\CyberRibbonHighway.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\NeuroSynapseNetwork.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\NeuroSynapseNetwork.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\CrystalMonoliths.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\CrystalMonoliths.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\PlasmaVortexGrid.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\PlasmaVortexGrid.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\LaserSpireArray.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\LaserSpireArray.geom">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\LaserSpireArray.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\CrystalShatterBurst.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\CrystalShatterBurst.geom">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\CrystalShatterBurst.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\BioluminescentSwarm.comp">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\BioluminescentSwarm.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\BioluminescentSwarm.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\QuantumVortexField.comp">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\QuantumVortexField.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\QuantumVortexField.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\GlacierTessellation.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\GlacierTessellation.tesc">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\GlacierTessellation.tese">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\GlacierTessellation.frag">
       <Filter>Shaders\Scene3D</Filter>
     </None>
     <None Include="Configurations\Allround.xml">

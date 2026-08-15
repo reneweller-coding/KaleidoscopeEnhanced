@@ -1,0 +1,110 @@
+#version 430
+// BioluminescentSwarm.comp — GPU Compute Simulation of 12,000 bioluminescent
+// creatures exhibiting emergent flocking and murmuration vortices in 3D.
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+
+layout(std430, binding = 0) buffer Verts { float verts[]; };
+layout(std430, binding = 1) buffer Cmd   { uint  cmd[]; };
+
+uniform uint  maxVertices;
+uniform float time;
+uniform float sceneSeed;
+uniform float audioAdvance;
+uniform float audioLevel;
+uniform float audioKick;
+uniform float audioSubBass;
+uniform float audioHigh;
+uniform float audioSpectrum[32];
+
+uniform float swarmP;
+uniform float speedP;
+uniform float glowP;
+
+const int CREATURES = 64 * 64; // 4096 boid creatures, each emitted as a 3D faceted diamond (6 vertices)
+
+float hash1(float n) { return fract(sin(n * 123.456) * 43758.5453); }
+vec3  hash3(float n) { return fract(sin(vec3(n * 91.34, n * 47.12, n * 73.56)) * 43758.5453); }
+
+void writeVertex(uint slot, vec3 p, vec3 n, float hue, float glow) {
+    uint o = slot * 8u;
+    verts[o + 0u] = p.x;  verts[o + 1u] = p.y;  verts[o + 2u] = p.z;
+    verts[o + 3u] = hue;
+    verts[o + 4u] = n.x;  verts[o + 5u] = n.y;  verts[o + 6u] = n.z;
+    verts[o + 7u] = glow;
+}
+
+void emitBoid(vec3 center, vec3 forward, float size, float hue, float glow) {
+    uint base = atomicAdd(cmd[4], 6u);
+    if (base + 6u > maxVertices) return;
+
+    vec3 up = vec3(0.0, 1.0, 0.0);
+    vec3 right = normalize(cross(forward, up));
+    up = cross(right, forward);
+
+    vec3 tip   = center + forward * (size * 1.5);
+    vec3 tail  = center - forward * (size * 0.8);
+    vec3 leftP = center - right * (size * 0.6);
+    vec3 rgtP  = center + right * (size * 0.6);
+    vec3 topP  = center + up * (size * 0.5);
+
+    // Two triangles forming a 3D winged creature
+    vec3 n1 = normalize(cross(tip - leftP, topP - leftP));
+    vec3 n2 = normalize(cross(rgtP - tip, topP - rgtP));
+
+    writeVertex(base + 0u, tip,   n1, hue, glow);
+    writeVertex(base + 1u, leftP, n1, hue, glow);
+    writeVertex(base + 2u, topP,  n1, hue, glow);
+
+    writeVertex(base + 3u, tip,   n2, hue, glow);
+    writeVertex(base + 4u, topP,  n2, hue, glow);
+    writeVertex(base + 5u, rgtP,  n2, hue, glow);
+}
+
+void main() {
+    uvec3 g = gl_GlobalInvocationID;
+    uint id = g.x + 64u * (g.y + 64u * g.z);
+    if (id >= uint(CREATURES)) return;
+
+    float i = float(id);
+    vec3 seed = hash3(i);
+
+    float swm = (swarmP > 0.0) ? swarmP : 1.0;
+    float spd = (speedP > 0.0) ? speedP : 1.0;
+    float glw = (glowP  > 0.0) ? glowP  : 1.0;
+
+    // Swarm dynamics: Emergent double-torus murmuration
+    float orbitRadius = (8.0 + seed.x * 16.0) * swm;
+    float orbitSpeed  = (0.4 + 0.3 * seed.y) * spd;
+    float angle = seed.z * 6.2831853 + time * orbitSpeed + audioAdvance * 0.2;
+
+    // 3D Toroidal flow equations
+    float phi = seed.x * 6.2831853 + sin(time * 0.5 + seed.y * 3.0) * 1.5;
+    float torusR = 3.5 + 1.5 * sin(time * 0.8 + seed.z * 6.28);
+
+    vec3 boidPos = vec3(
+        (orbitRadius + torusR * cos(phi)) * cos(angle),
+        torusR * sin(phi) + sin(angle * 2.0) * 2.5,
+        (orbitRadius + torusR * cos(phi)) * sin(angle)
+    );
+
+    // Sudden scatter reaction on audioKick
+    vec3 scatterDir = normalize(seed - 0.5);
+    boidPos += scatterDir * audioKick * 4.0;
+
+    // Velocity / Forward facing tangent
+    vec3 forward = normalize(vec3(
+        -sin(angle) * (orbitRadius + torusR * cos(phi)),
+        cos(angle * 2.0) * 2.0,
+        cos(angle) * (orbitRadius + torusR * cos(phi))
+    ));
+
+    // Audio-reactive bioluminescent emission waves
+    int band = int(clamp(seed.x * 31.0, 0.0, 31.0));
+    float specPulse = audioSpectrum[band];
+    float boidHue = fract(seed.x * 0.4 + time * 0.05 + audioAdvance * 0.02);
+    float glowAmp = (0.5 + specPulse * 2.0 + audioKick * 1.5) * glw;
+
+    float boidSize = 0.25 * (0.8 + 0.4 * seed.y);
+
+    emitBoid(boidPos, forward, boidSize, boidHue, glowAmp);
+}

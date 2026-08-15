@@ -249,6 +249,28 @@ parameters, mood tags, flicker-free integrated motion.
 - **`FluidInkMarble`**: 100% full-canvas liquid hydrodynamics & reaction-diffusion surface where loaded photos act as vibrant floating inks in turbulent vorticity streams (Allround/Club/Psychedelic/Ambient).
 - **`CosmicBoidsVortex`**: 3D particle swarm vortex in 3D space with near-plane lens explosions on beats (Allround/Club/Psychedelic/Noir/Ambient).
 
+**Full-Screen & 3D Dynamic Visualizer Suite (2026-08 Expansion — 20 New Shaders):**
+- **`CyberGridCity`** (`Scene/`): Raymarched infinite synthwave cyberpunk megalopolis with illuminated neon grid skyscrapers, reflective rain-slicked highway avenues, and holographic photo projection billboards (`tex0`/`tex1`).
+- **`QuantumChromaField`** (`Scene/`): Multi-layered quantum wave interference lattice and Riemann surface vortex field with high-contrast iridescent diffraction fringes covering 100% of the viewport.
+- **`AbyssalLuminescence`** (`Scene/`): Deep ocean bioluminescent ecosystem with undulating siphonophore tendrils, underwater caustic light shafts, and glowing marine snow.
+- **`SolarFlareCorona`** (`Scene/`): Extreme close-up of a turbulent stellar photosphere, magnetic coronal loops, convection granules, and sub-bass coronal mass ejections.
+- **`GlitchMatrixHypercube`** (`Scene/`): 4D tesseract rotating across 6 Euclidean planes, integrated with cyber data moshing, digital glitch slices, matrix rain, and multi-planar photo projection.
+- **`BismuthLabyrinth`** (`Scene/`): Raymarched infinite 3D hopper crystal labyrinth of metallic elemental bismuth with stepped 90° terraces and thin-film rainbow oxidation layers.
+- **`NeonFluidDynamics`** (`Scene/`): Multi-scale Navier-Stokes curl-noise vorticity advection with vibrant neon ink plumes, shockwave collisions, and liquid photo marbling.
+- **`StargateWormhole`** (`Scene/`): Relativistic Einstein-Rosen bridge hyperspace tunnel with gravitational light lensing around a central singularity and Doppler color shifts.
+- **`PrismaticKaleidoMandala`** (`Scene/`): Non-Euclidean Poincaré disk hyperbolic kaleidoscope with sacred geometry rosettes and infinite crystalline mirror reflections.
+- **`ChromaAcidTrip`** (`Scene/`): Hypnotic psychedelic feedback loop with melting contour lines, reaction-diffusion spirals, liquid optical displacement, and chromatic solarization flashes.
+- **`SuperconductorLevitation`** (`Scene3D/`, `geom="cubes"`): 4,900 quantum-locked superconducting tiles levitating and undulating over an active magnetic flux field driven by 32 spectrum bands.
+- **`CyberRibbonHighway`** (`Scene3D/`, `geom="ribbon"`): 20 intertwined neon hyper-loop highway ribbons spiraling through 3D space with high-speed pulse packets and glowing lane markings.
+- **`NeuroSynapseNetwork`** (`Scene3D/`, `geom="points"`): 60,000 synaptic nodes forming a 3D neural connectome with action potential electrical spikes racing across axons.
+- **`CrystalMonoliths`** (`Scene3D/`, `geom="quads"`): 3,000 obsidian and prismatic glass monolith cards orbiting in 3D spiral formations, projecting photo textures with chromatic dispersion.
+- **`PlasmaVortexGrid`** (`Scene3D/`, `geom="grid"`): 220x120 heightfield grid warped into a relativistic energy whirlpool with Bessel wave harmonics and stereo-friendly camera banking.
+- **`LaserSpireArray`** (`Scene3D/`, `geom="scatter"` + `LaserSpireArray.geom`): Geometry Shader extrudes 3D point seeds into tall hexagonal crystalline spires with skyward laser beams.
+- **`CrystalShatterBurst`** (`Scene3D/`, `geom="cubes"` + `CrystalShatterBurst.geom`): Geometry Shader shatters 3D cube primitives into tumbling tetrahedral crystal shards on beat kicks.
+- **`BioluminescentSwarm`** (`Scene3D/`, `geom="indirect"` + `BioluminescentSwarm.comp`): GPU Compute Shader running a 12,000-organism boid murmuration simulation in 3D with spectrogram-reactive bioluminescent pulse waves.
+- **`QuantumVortexField`** (`Scene3D/`, `geom="indirect"` + `QuantumVortexField.comp`): GPU Compute Shader generating dynamic 3D toroidal magnetic vortex filaments and Lorenz attractor streamlines with glowing ribbons.
+- **`GlacierTessellation`** (`Scene3D/`, `geom="patches"` + `GlacierTessellation.tesc` + `.tese`): Distance-adaptive GPU hardware tessellation generating an arctic glacial ocean with subsurface blue scattering and glowing crevasses.
+
 **Timing is music-driven:** per-entry `min/maxTime*` attributes are now
 OPTIONAL — the pacing comes from `timingScale` (tempo/arousal), 4-beat
 cross-fades and section cuts.  Absent times fall back to engine defaults
