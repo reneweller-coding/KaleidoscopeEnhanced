@@ -124,6 +124,18 @@ protected:
 	// Echtes dt fürs Scroll-/Blend-Smoothing (nicht an die 60-Hz-Annahme
 	// gekoppelt) - ohne das ruckelt es, sobald die Framezeit schwankt.
 	qint64			m_overlayLastMs  = -1;
+	// Consumer-seitige PLL für die Playback-Position: EIGENE, stetig
+	// integrierte Uhr, die nur zur jeweils verfügbaren Referenz (SMTC oder
+	// lokale Uhr) hin BESCHLEUNIGT oder BREMST (Rate 0..1.15) - springen
+	// kann sie konstruktionsbedingt nur bei einem echten Seek (>1.5s).
+	// Deckt ALLE Restquellen von Rückwärtsschritten ab (Playing-Flackern,
+	// Titel-Flackern/Settle-Resets, SMTC<->Lokaluhr-Übergabe).
+	double			m_posSmooth      = -1.0;
+	// Rückwärts-Sprünge der Referenz werden erst nach ~2s konsistenter
+	// Bestätigung übernommen (echter Rückwärts-Seek) - kürzeres Flackern
+	// (Titel-/Playing-Flaps) wird komplett überbrückt.
+	qint64			m_backJumpSince  = -1;
+	double			m_backJumpRef    = 0.0;
 	// An WELCHEN FilterShader die Overlay-Texturen zuletzt hochgeladen wurden:
 	// jede Konfiguration hat ihren EIGENEN PresentPass - nach einem Preset-
 	// Wechsel müssen Lyrics-/Künstlerbild-Texturen dort neu hochgeladen
