@@ -1,7 +1,8 @@
 #version 330 core
-layout(location = 0) in vec3 inPos;
-layout(location = 1) in vec3 inNormal;
-layout(location = 2) in vec2 inTexCoord;
+// attrA.x = t along ribbon (0..1), attrA.y = side (-1..+1), attrA.w = ribbon
+// id, attrB = per-ribbon seeds (Scene3DShader.cpp GEOM_RIBBON).
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4 projM;
 uniform float eyeOff;
@@ -20,8 +21,8 @@ out float vFiberID;
 out float vEnergy;
 
 void main() {
-    float ribbonID = floor(float(gl_VertexID) / 1200.0);
-    float tAlong = inTexCoord.x * 6.2831853; // Angle along fiber circle
+    float ribbonID = attrA.w;
+    float tAlong = attrA.x * 6.2831853; // Angle along fiber circle
 
     // 4D Hopf Fibration parameterization
     // Each fiber is defined by two angles eta (torus radius) and xi (torus angle)
@@ -48,10 +49,10 @@ void main() {
     vec3 normal4D = normalize(cross(tangent, vec3(0.0, 0.0, 1.0)));
     float ribbonWidth = (0.04 + 0.02 * sin(tAlong * 4.0)) * (1.0 + audioKick * 0.5);
 
-    vec3 pos = hopfR3 + normal4D * (inTexCoord.y - 0.5) * ribbonWidth;
+    vec3 pos = hopfR3 + normal4D * (attrA.y * 0.5) * ribbonWidth;
 
     vPos = pos;
-    vUV = inTexCoord;
+    vUV = vec2(attrA.x, attrA.y * 0.5 + 0.5);
     vFiberID = ribbonID / 20.0;
     vEnergy = (0.8 + 0.4 * sin(tAlong * 8.0 - time * 6.0)) * (1.0 + audioKick * 2.0);
 

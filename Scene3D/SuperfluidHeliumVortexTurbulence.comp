@@ -1,21 +1,18 @@
 #version 430
-layout(local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 
 // SuperfluidHeliumVortexTurbulence.comp
 // Compute shader generating 3D quantum vortex tangle filaments in superfluid Helium-II
 
 layout(std430, binding = 0) buffer Verts {
-    float verts[]; // 6 floats per vertex: px, py, pz, nx, ny, nz (where n holds kelvinWave, circulation, filamentID)
+    float verts[]; // 8 floats per vertex: attrA.xyzw (pos, kelvinAmp), attrB.xyzw (pad, circulation)
 };
 
-layout(std430, binding = 1) buffer Cmd {
-    uint count;
-    uint instanceCount;
-    uint first;
-    uint baseInstance;
-    uint vertCount;
-};
+// DrawArraysIndirectCommand + our own counter:
+//   [0] count  [1] instanceCount  [2] first  [3] baseInstance  [4] rawCount
+layout(std430, binding = 1) buffer Cmd { uint cmd[]; };
 
+uniform uint  maxVertices;
 uniform float time;
 uniform float audioPhase;
 uniform float audioAdvance;
@@ -32,19 +29,40 @@ float hash11(float p) {
     return fract(p);
 }
 
+void writeVertex(uint slot, vec3 p, float e1, float e2) {
+    uint o = slot * 8u;
+    verts[o + 0u] = p.x;  verts[o + 1u] = p.y;  verts[o + 2u] = p.z;
+    verts[o + 3u] = e1;
+    verts[o + 4u] = 0.0;  verts[o + 5u] = 0.0;  verts[o + 6u] = 0.0;
+    verts[o + 7u] = e2;
+}
+
+// A vortex-ring segment is a line from p1 to p2; GL_TRIANGLES needs a real
+// triangle, so it is emitted as a thin two-triangle ribbon.
+void emitSegment(vec3 pA, vec3 pB, float e1, float e2, float thickness) {
+    uint base = atomicAdd(cmd[4], 6u);
+    if (base + 6u > maxVertices) return;
+
+    vec3 dir = pB - pA;
+    float len = length(dir);
+    dir = (len > 1e-5) ? dir / len : vec3(0.0, 1.0, 0.0);
+    vec3 upv = (abs(dir.y) > 0.95) ? vec3(1.0, 0.0, 0.0) : vec3(0.0, 1.0, 0.0);
+    vec3 side = normalize(cross(dir, upv)) * thickness;
+
+    vec3 a0 = pA - side, a1 = pA + side, b0 = pB - side, b1 = pB + side;
+    writeVertex(base + 0u, a0, e1, e2);
+    writeVertex(base + 1u, a1, e1, e2);
+    writeVertex(base + 2u, b0, e1, e2);
+    writeVertex(base + 3u, a1, e1, e2);
+    writeVertex(base + 4u, b1, e1, e2);
+    writeVertex(base + 5u, b0, e1, e2);
+}
+
 void main() {
-    uint id = gl_GlobalInvocationID.x;
+    uvec3 g = gl_GlobalInvocationID;
+    uint id = g.x + 64u * (g.y + 64u * g.z);
     const uint TOTAL_SEGMENTS = 4096u;
     if (id >= TOTAL_SEGMENTS) return;
-
-    if (id == 0u) {
-        count = TOTAL_SEGMENTS * 2u;
-        instanceCount = 1u;
-        first = 0u;
-        baseInstance = 0u;
-        vertCount = TOTAL_SEGMENTS * 2u;
-    }
-    barrier();
 
     float seed = float(id);
     float ringID = floor(seed / 64.0); // 64 vortex rings
@@ -73,21 +91,5 @@ void main() {
 
     float circulation = 0.5 + 0.5 * sin(ringID + time * 3.0 + audioKick * 3.0);
 
-    uint vIdx = id * 12u;
-
-    // Vertex 1
-    verts[vIdx + 0u] = p1.x;
-    verts[vIdx + 1u] = p1.y;
-    verts[vIdx + 2u] = p1.z;
-    verts[vIdx + 3u] = kelvinAmp;
-    verts[vIdx + 4u] = circulation;
-    verts[vIdx + 5u] = 1.0;
-
-    // Vertex 2
-    verts[vIdx + 6u] = p2.x;
-    verts[vIdx + 7u] = p2.y;
-    verts[vIdx + 8u] = p2.z;
-    verts[vIdx + 9u] = kelvinAmp;
-    verts[vIdx + 10u] = circulation;
-    verts[vIdx + 11u] = 1.0;
+    emitSegment(p1, p2, kelvinAmp, circulation, 0.015);
 }

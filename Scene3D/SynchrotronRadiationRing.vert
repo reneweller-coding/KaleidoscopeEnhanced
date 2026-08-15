@@ -1,7 +1,8 @@
 #version 330 core
-layout(location = 0) in vec3 inPos;
-layout(location = 1) in vec3 inNormal;
-layout(location = 2) in vec2 inTexCoord;
+// attrA.x = t along ribbon (0..1), attrA.y = side (-1..+1), attrA.w = ribbon
+// id, attrB = per-ribbon seeds (Scene3DShader.cpp GEOM_RIBBON).
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4 projM;
 uniform float eyeOff;
@@ -20,8 +21,8 @@ out float vRadiation;
 out float vBeamID;
 
 void main() {
-    float ribbonID = floor(float(gl_VertexID) / 1200.0);
-    float tAlong = inTexCoord.x * 6.2831853; // Angle around storage ring
+    float ribbonID = attrA.w;
+    float tAlong = attrA.x * 6.2831853; // Angle around storage ring
 
     // Storage ring radius
     float R0 = 3.2;
@@ -44,10 +45,10 @@ void main() {
     vec3 normal = vec3(0.0, 1.0, 0.0);
 
     float width = (0.05 + 0.03 * radiation) * (1.0 + audioSwell * 0.5);
-    vec3 pos = orbitCenter + normal * (inTexCoord.y - 0.5) * width;
+    vec3 pos = orbitCenter + normal * (attrA.y * 0.5) * width;
 
     vPos = pos;
-    vUV = inTexCoord;
+    vUV = vec2(attrA.x, attrA.y * 0.5 + 0.5);
     vRadiation = radiation;
     vBeamID = ribbonID / 20.0;
 

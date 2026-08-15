@@ -1,7 +1,8 @@
 #version 330 core
-layout(location = 0) in vec3 inPos;
-layout(location = 1) in vec3 inNormal;
-layout(location = 2) in vec2 inTexCoord;
+// attrA.xy = quad-local corner uv (0..1), attrA.w = quad id, attrB = seeds
+// (Scene3DShader.cpp GEOM_QUADS)
+in vec4 attrA;
+in vec4 attrB;
 
 uniform mat4 projM;
 uniform float eyeOff;
@@ -26,7 +27,7 @@ float hash11(float p) {
 }
 
 void main() {
-    float quadID = floor(float(gl_VertexID) / 6.0);
+    float quadID = attrA.w;
     float seed = hash11(quadID);
 
     // 50x60 Miura-ori origami facet grid
@@ -54,12 +55,12 @@ void main() {
     vec3 facetCenter = vec3(x, y, z);
 
     // Local vertex of quad
-    vec2 offset = inTexCoord - vec2(0.5);
+    vec2 offset = attrA.xy - vec2(0.5);
     vec3 localPos = vec3(offset.x * a * 0.95, offset.y * b * 0.95, 0.0);
     vec3 pos = facetCenter + localPos;
 
     vPos = pos;
-    vUV = inTexCoord;
+    vUV = attrA.xy;
     vFoldAngle = fold;
 
     // Stereoscopic 3D camera projection

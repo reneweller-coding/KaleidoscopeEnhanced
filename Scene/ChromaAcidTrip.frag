@@ -35,6 +35,7 @@ uniform float audioBass;
 uniform float audioMid;
 uniform float audioHigh;
 uniform float audioFlux;
+uniform float audioChromaHue;
 
 uniform float meltP;
 uniform float feedbackP;
