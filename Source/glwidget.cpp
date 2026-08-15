@@ -678,6 +678,7 @@ void GLwidget::loadUiSettings()
 	m_showNowPlaying = s.value( "nowPlaying",  m_showNowPlaying ).toBool();
 	m_lyricsMode     = qBound( 0, s.value( "lyricsMode", m_lyricsMode ).toInt(), 2 );
 	m_artistShow     = s.value( "artistImages", m_artistShow ).toBool();
+	m_lyricsKinetic  = s.value( "lyricsKinetic", m_lyricsKinetic ).toBool();
 	for( int i = 0; i < MIDI_TARGETS; ++i )
 		m_midiMap[i] = s.value( QString("midiMap%1").arg(i), m_midiMap[i] ).toInt();
 	FilterShader::setLightShow( s.value( "lightShow", FilterShader::lightShow() ).toBool() );
@@ -696,6 +697,7 @@ void GLwidget::saveUiSettings()
 	s.setValue( "nowPlaying", m_showNowPlaying );
 	s.setValue( "lyricsMode",   m_lyricsMode );
 	s.setValue( "artistImages", m_artistShow );
+	s.setValue( "lyricsKinetic", m_lyricsKinetic );
 	for( int i = 0; i < MIDI_TARGETS; ++i )
 		s.setValue( QString("midiMap%1").arg(i), m_midiMap[i] );
 	s.setValue( "lightShow",  FilterShader::lightShow() );
@@ -1259,6 +1261,44 @@ void GLwidget::updateTrackOverlays( FilterShader *fs )
 	}
 
 	bool lyricsOn = ( m_lyricsMode > 0 ) && m_trackMedia->hasLyrics();
+	// Laengere textlose Pausen (Intro, Solo, Outro): Lyrics sanft ausblenden
+	// statt eine tote/alte Zeile stehenzulassen.  Nutzt den Karaoke-
+	// Zeilenindex vom LETZTEN Frame (kontinuierlicher Zustand, 16ms alt -
+	// fuer diese Entscheidung unkritisch, vermeidet eine zweite Zeilensuche).
+	// WICHTIG: die Hysterese-Suche unten haelt i waehrend einer Luecke auf
+	// der VORHERIGEN (zuletzt aktiven) Zeile, nicht auf der kommenden - eine
+	// erste Fassung nahm faelschlich lines[i].t0 als Luecken-Ende und fand
+	// dadurch nie eine Luecke (durch eine Zeilen-Simulation aufgedeckt).
+	if( lyricsOn && m_trackMedia->syncedLyrics() )
+	{
+		const auto &lines = m_trackMedia->lines();
+		int n = int(lines.size());
+		if( n > 0 )
+		{
+			int i = ( m_karaokeLine >= 0 && m_karaokeLine < n ) ? m_karaokeLine : 0;
+			bool inLongGap = false;
+			if( pos < lines[i].t0 )
+			{
+				// Intro (nur bei i==0 stabil): vor der allerersten Zeile.
+				inLongGap = ( lines[i].t0 > 9.f ) && ( pos < lines[i].t0 - 2.f );
+			}
+			else if( pos >= lines[i].t1 )
+			{
+				bool hasNext = ( i + 1 < n );
+				if( hasNext )
+				{
+					float gapEnd = lines[i+1].t0;
+					inLongGap = ( gapEnd - lines[i].t1 > 9.f )
+					          && ( pos > lines[i].t1 + 2.f )
+					          && ( pos < gapEnd - 2.f );
+				}
+				else
+					inLongGap = pos > lines[i].t1 + 2.f;   // Outro: unbegrenzt
+			}
+			if( inLongGap )
+				lyricsOn = false;
+		}
+	}
 	m_lyricsAlphaSm = slew( m_lyricsAlphaSm, lyricsOn ? 1.f : 0.f, 1.5f, dt );
 	if( lyricsOn || m_lyricsAlphaSm > 0.001f )
 	{
@@ -1288,7 +1328,7 @@ void GLwidget::updateTrackOverlays( FilterShader *fs )
 				m_lastKaraokeLineSeen = i;
 				m_lineChangeMs        = m_fpsTimer.elapsed();
 			}
-			if( m_lineChangeMs >= 0 )
+			if( m_lyricsKinetic && m_lineChangeMs >= 0 )
 				o.lyricsLineAge = float( m_fpsTimer.elapsed() - m_lineChangeMs ) * 0.001f;
 
 			const auto &L = lines[i];
@@ -1523,8 +1563,17 @@ void GLwidget::keyPressEvent(QKeyEvent* event)
 			break;
 
 		// ---- Lyrics-Modus zyklisch: aus -> Scroll -> Karaoke ----
+		// Umschalt+W: kinetischer Zeilen-Slam an/aus (separat, da manchen der
+		// Einflug beim Zeilenwechsel zu unruhig ist).
 		case Qt::Key_W:
 		{
+			if( event->modifiers() & Qt::ShiftModifier )
+			{
+				m_lyricsKinetic = !m_lyricsKinetic;
+				fprintf( stderr, "Lyrics-Kinetik (Zeilen-Slam): %s\n",
+				         m_lyricsKinetic ? "AN" : "AUS" );
+				break;
+			}
 			m_lyricsMode = ( m_lyricsMode + 1 ) % 3;
 			static const char *kLyricsNames[] = { "AUS", "Scroll", "Karaoke" };
 			fprintf( stderr, "Lyrics: %s\n", kLyricsNames[m_lyricsMode] );

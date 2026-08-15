@@ -166,7 +166,9 @@ void main()
     // bigger on the downbeat).  It's motion, not a flash, and uses the already
     // slew-limited beat, so it reads as a soft pump rather than a strobe - easy on
     // the eyes.  Sampled from puv; the corner lights below keep the un-zoomed uv.
-    float scenePulse = clamp(audioBeat + 0.4 * audioDownbeat, 0.0, 1.0);
+    // Gedaempft (war ungeklammert bis zu 1.0 -> 4% Zoom-Puls JEDEN Beat):
+    // User-Feedback, die Beat-Reaktion war insgesamt zu praesent.
+    float scenePulse = clamp(audioBeat + 0.4 * audioDownbeat, 0.0, 1.0) * 0.6;
     // Virtual camera: aspect-true roll + punch-in zoom + drift/shake offset,
     // combined with the beat "breath".  The host guarantees the zoom covers
     // the offset + rotation, so no edge ever samples outside the frame
@@ -500,14 +502,17 @@ void main()
         float v = lyricsScrollV + (0.5 - uv.y) * vSpan;
         if (u > 0.0 && u < 1.0 && v > 0.0 && v < 1.0)
         {
-            // Kinetik: die FRISCHE aktive Zeile slammt gross herein (1.5x ->
-            // 1.0 in 0.35 s, ease-out) - Pixel um die Zeile herum werden in
-            // ihren vergroesserten Fussabdruck hineingesampelt.
+            // Kinetik (optional, Umschalt+W - Default AUS: User-Feedback,
+            // der urspruengliche 1.5x-Slam sprang zu stark): die frische
+            // aktive Zeile wird nur noch sanft groesser (1.18x -> 1.0 in
+            // 0.35 s, ease-out) statt zu "springen".  lyricsLineAge bleibt
+            // bei deaktivierter Kinetik immer 999 (siehe glwidget.cpp) ->
+            // dieser Block ist dann komplett wirkungslos.
             float u2 = u, v2 = v, slamGlow = 0.0;
             if (lyricsHl.x >= 0.0 && lyricsLineAge < 0.35)
             {
                 float rem = 1.0 - lyricsLineAge / 0.35;
-                float sl  = 1.0 + 0.5 * rem * rem;
+                float sl  = 1.0 + 0.18 * rem * rem;
                 float vc  = 0.5 * (lyricsHl.x + lyricsHl.y);
                 float vS  = (v - vc) / sl + vc;
                 float uS  = (u - 0.5) / sl + 0.5;
@@ -532,7 +537,7 @@ void main()
                     vec3 gold = col * vec3(1.0, 0.86, 0.42);
                     col = mix(col, gold, 0.35 + 0.65 * sweep);
                     c  += gold * a * 0.25 * (0.5 + 0.5 * audioBeat);
-                    c  += gold * a * 0.35 * slamGlow;      // Slam-Aufblitzen
+                    c  += gold * a * 0.18 * slamGlow;      // dezentes Aufblitzen
                 }
                 else
                     a *= 0.45;                             // Kontext-Zeilen dezenter

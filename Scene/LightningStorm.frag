@@ -48,7 +48,11 @@ void main()
     vec3 photo = texture(tex0, uv).rgb;
     float lum = dot(photo, vec3(0.299, 0.587, 0.114));
     vec3 lit = mix(vec3(lum), photo, 0.5) * vec3(0.80, 0.88, 1.10);
-    col += lit * (0.045 + (0.35 + 0.5 * skyP) * flash);
+    // Basis-Anteil angehoben (war 0.045): die Blitze selbst erreichten bei
+    // ruhigem Pegel nie den unteren Bildbereich, und mit nur 4.5% Fotolicht
+    // blieb dieser praktisch schwarz.  Jetzt ist immer ein gedaempftes,
+    // gewitterstimmiges Foto zu sehen, die Blitze setzen die Akzente obendrauf.
+    col += lit * (0.16 + (0.35 + 0.5 * skyP) * flash);
 
     col *= 1.0 + 0.5 * audioDrop;
     col = col / (1.0 + col * 0.38);

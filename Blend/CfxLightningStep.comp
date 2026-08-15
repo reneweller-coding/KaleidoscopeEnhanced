@@ -79,7 +79,11 @@ void main()
     // bolt travels but never in a straight line.
     ang += (rnd(rs) - 0.5) * 0.9;
     ang = mix(ang, -1.5707963, 0.10);       // pulled toward the ground (-y)
-    float stepLen = 0.010 + 0.010 * level;
+    // War 0.010+0.010*level: kombiniert mit der alten kurzen Lebensdauer
+    // erreichte ein Blitz bei ruhigem Pegel nie den unteren Bildrand - jetzt
+    // reicht die Basisgeschwindigkeit allein (samt Reserve fuer die
+    // Winkel-Drift) fuer die volle Bildhoehe.
+    float stepLen = 0.013 + 0.009 * level;
     vec2 q = p + vec2(cos(ang), sin(ang)) * stepLen;
 
     // Colour: a hot white-blue core; older tips cool toward violet.
