@@ -1,0 +1,48 @@
+#version 330 core
+in vec3 vPos;
+in float vPulse;
+in float vLevel;
+
+out vec4 fragColor;
+
+uniform float time;
+uniform sampler2D tex0;
+uniform sampler2D tex1;
+uniform float interpolation;
+
+uniform float audioPhase;
+uniform float audioAdvance;
+uniform float audioKick;
+uniform float audioBass;
+uniform float audioMid;
+uniform float audioHigh;
+uniform float audioSwell;
+
+uniform float glowP;
+uniform float pulseP;
+uniform float hueP;
+
+vec3 hueRot(vec3 c, float a) {
+    vec3 k = vec3(0.57735026919);
+    float cs = cos(a), sn = sin(a);
+    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+}
+
+void main() {
+    float glw = (glowP  > 0.0) ? glowP  : 1.0;
+    float pls = (pulseP > 0.0) ? pulseP : 1.0;
+    float hue = (hueP   > 0.0) ? hueP   : 0.0;
+
+    // Resting mycelium hyphae bioluminescent green/cyan color
+    vec3 baseColor = mix(vec3(0.1, 0.5, 0.3), vec3(0.2, 0.7, 0.8), vLevel);
+
+    // Bio-electric action potential gold/white flash
+    vec3 pulseColor = vec3(1.0, 0.95, 0.5);
+
+    vec3 col = mix(baseColor, pulseColor, vPulse * pls);
+    col *= (0.6 + 1.8 * vPulse) * glw;
+
+    if (hue > 0.001) col = hueRot(col, hue);
+
+    fragColor = vec4(col, 1.0);
+}
