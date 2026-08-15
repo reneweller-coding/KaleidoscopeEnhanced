@@ -632,12 +632,20 @@ Audio is captured via WASAPI loopback (`AudioAnalyzer`) and analysed in real tim
   after a drop. Both fall back to the plain live frame if the GPU can't
   provide the history-ring extensions (`glTexImage3D`/
   `glFramebufferTextureLayer`/`glBlitFramebuffer`).
-- **Cinema-camera look:** two always-on grade touches. **Anamorphic
-  streaks** stretch the bloom buffer's highlights out horizontally with a
-  cool tint (the classic anamorphic-lens look), breathing with the loudness
-  swell and flaring hard on drops. **Halation** adds a warm, wide-blurred
-  glow around bright highlights — the soft "film emulsion" bleed real
-  camera film has, as opposed to a clean digital bloom.
+- **Cinema-camera look:** four always-on grade/motion touches meant to read
+  as "shot on film," not rendered. **Anamorphic streaks** stretch the bloom
+  buffer's highlights out horizontally with a cool tint (the classic
+  anamorphic-lens look), breathing with the loudness swell and flaring hard
+  on drops. **Halation** adds a warm, wide-blurred glow around bright
+  highlights — the soft "film emulsion" bleed real camera film has, as
+  opposed to a clean digital bloom. **Film grain** is fine zero-mean pixel
+  noise (no fullscreen brightness flicker, so it's photosensitivity-safe by
+  construction), stronger in shadows like real emulsion and a touch more
+  present while music is playing. **Gate-weave** is the tiny, discrete
+  24fps-hashed jitter of a real film projector's gate, folded into the
+  virtual camera's offset — the zoom always pays for whatever offset it
+  produces, so it rides the same "no edge ever shows" contract as the
+  camera drift/shake and needed no extra safety margin of its own.
 - **Instrument-separated onsets:** the 32-band flux is split into low/mid/
   high groups with separate spike tests → `audioKick`, `audioSnare`,
   `audioHat` uniforms (peak-hold + slew like the global envelopes).
