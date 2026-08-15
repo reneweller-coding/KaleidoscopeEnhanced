@@ -31,6 +31,10 @@ enum Index {
     V_ADVANCE, V_PHASE, V_DAYPHASE, V_FLATNESS, V_ZCR, V_FADEOUT,
     V_SEED1, V_SEED2, V_SEED3, V_COUNT
 };
+// Names in Index order (size V_COUNT) -- for building an editor menu /
+// autocomplete list; the evaluator itself resolves identifiers structurally
+// at compile() time and never calls this.
+const char* const* names();
 }
 
 class ExprProgram

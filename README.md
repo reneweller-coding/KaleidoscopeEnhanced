@@ -266,6 +266,16 @@ of the visualizer) for **building and editing presets** with a **live preview**:
   have yet **adds** it — the same action that lets a preset diverge on purpose
   also fixes an accidentally-missing param, and it updates the live preview
   slider's band immediately so the new range is visible before you save.
+  `<expr>` (formula-layer) rows get a **variable picker** next to the text
+  field — a dropdown of the ~38 audio-derived names the expression compiler
+  understands (`bassRel`, `chromaHue`, `beatPhase`, `barPhase`, `seed1`, …,
+  see `Source/ExprEval.h`); picking one inserts it at the cursor rather than
+  replacing the formula, so it composes into expressions like
+  `"chromaHue + seed1*1.5"`. No raw BPM variable exists on purpose — only the
+  continuous `beatPhase`/`barPhase` signals derived from it, so a formula
+  can't reproduce the `time*bpm` snap-on-tempo-change bug the engine avoids
+  elsewhere. There's still no in-UI syntax validation (a broken formula only
+  logs to stderr and silently evaluates to 0) or live value readout.
 - **Completeness self-test:** `PresetEditor.exe --validate [preset.xml]` checks
   every preset entry (or just the one file given) against `Komplett.xml` and
   reports any param the shader declares that the entry doesn't carry AT ALL —

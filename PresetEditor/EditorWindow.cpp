@@ -30,6 +30,7 @@
 
 // Real-analyzer WAV preview: the actual analysis pipeline + looped playback.
 #include "../Source/AudioAnalyzer.h"
+#include "../Source/ExprEval.h"
 #include <windows.h>
 #include <mmsystem.h>
 
@@ -615,7 +616,32 @@ void EditorWindow::rebuildRangeEditor()
             QLineEdit *edit = new QLineEdit(p.formula);
             connect(edit, &QLineEdit::editingFinished, this,
                     [=]{ writeParam(p.name, "expr", {}, {}, {}, edit->text()); });
-            m_rangeForm->addRow(label, edit);
+            // Variable picker: ExprEval.h documents ~38 audio-derived names
+            // (bassRel, chromaHue, beatPhase, seed1, ...) but nothing in the
+            // editor ever listed them -- authoring a formula meant already
+            // knowing the exact spelling. Selecting one INSERTS it at the
+            // cursor (formulas are combinations like "chromaHue + seed1*1.5",
+            // not single tokens), then resets to the placeholder so it can be
+            // used again for the next variable in the same formula.
+            QComboBox *varPick = new QComboBox();
+            varPick->addItem(tr("Variable einfügen…"));
+            const char *const *names = ExprVars::names();
+            for (int i = 0; i < ExprVars::V_COUNT; ++i)
+                varPick->addItem(names[i]);
+            connect(varPick, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+                    [=](int idx) {
+                        if (idx <= 0) return;
+                        edit->insert(varPick->itemText(idx));
+                        edit->setFocus();
+                        varPick->setCurrentIndex(0);
+                        writeParam(p.name, "expr", {}, {}, {}, edit->text());
+                    });
+            QWidget *host = new QWidget();
+            QHBoxLayout *hl = new QHBoxLayout(host);
+            hl->setContentsMargins(0, 0, 0, 0);
+            hl->addWidget(edit, 1);
+            hl->addWidget(varPick);
+            m_rangeForm->addRow(label, host);
         }
     }
 }
