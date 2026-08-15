@@ -274,7 +274,7 @@ int main(int argc, char *argv[])
 	// ("Must construct a QGuiApplication before a QPixmap" & Co.).
 	QMyWindow window( NULL );
 	QObject::connect(&window , SIGNAL(signalQuitApp()), &app, SLOT(quit()));
-	app.setWindowIcon(QIcon(QString("icon.png")));
+	app.setWindowIcon(QIcon(QString("icon.ico")));   // multi-res: Qt picks the best size per context
 	if (!fullscreen)
 	{
 		window.resize(1920, 1080);

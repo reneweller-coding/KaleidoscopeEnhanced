@@ -1,7 +1,12 @@
+<img src="icon.png" width="96" align="left" alt="Kaleidoscope Enhanced icon">
+
 # Kaleidoscope Enhanced — Music Visualizer
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 ![Platform](https://img.shields.io/badge/platform-Windows-0078D6)
+
+<br clear="left">
+
 
 A real-time, audio-reactive kaleidoscope / tunnel visualizer for Windows. It
 captures whatever is playing on the system (WASAPI loopback — Spotify, browser,
@@ -2425,6 +2430,15 @@ Reorganised 2026-07 into folders:
   broadband WAV and drops a late frame as `Tools\probe_<name>.jpg` for
   visual review — the tool this session's own scene-verification workflow
   runs on.
+- `icon.png` / `icon.ico` — the app mark: two concentric rings of cut-glass
+  facets, radially mirrored the same way the app itself builds a kaleidoscope
+  image. `icon.ico` is embedded directly in `Kaleidoscope.exe` as a Windows
+  resource (`Kaleidoscope.rc`, also carries the FileVersion/ProductName
+  block Explorer's Properties dialog reads) and loaded again at runtime for
+  the window/taskbar icon; `icon.png` is a plain 512px export for anything
+  that just wants a flat image. Regenerate both with
+  `python Tools\generate_icon.py` (procedural, Pillow only — no external
+  design tool needed).
 
 The deploy packaging (`deploy.ps1`) mirrors the same folder structure into
 `dist\KaleidoscopeVisualizer\`.
