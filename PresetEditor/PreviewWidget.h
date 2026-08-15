@@ -19,6 +19,8 @@
 #include <vector>
 
 #include "../Source/AudioFeatures.h"
+#include "../Source/CfxTypes.h"
+#include "ComputeFXPreview.h"
 #include "Scene3DPreview.h"
 
 class QOpenGLShaderProgram;
@@ -135,6 +137,16 @@ private:
 
     QOpenGLShaderProgram *m_texProg  = nullptr;
     QOpenGLShaderProgram *m_combProg = nullptr;
+
+    // Compute-FX dispatch for the 2D path (see paintGL): which kinds m_texProg
+    // declares (recomputed whenever it's recompiled), and the wall-clock dt/
+    // now these stateful sims step on -- independent of m_fixedTime, which
+    // pins the shader's "time" uniform for reproducible --render grabs but
+    // must not freeze the sims' own phase accumulators (see .cpp).
+    ComputeFXPreview m_cfx;
+    bool      m_cfxReady = false;
+    unsigned int m_cfxMask = 0;
+    float     m_cfxPrevTime = -1.f;
     QOpenGLFramebufferObject *m_fbo  = nullptr;
     GLuint  m_img0 = 0, m_img1 = 0;
     GLuint  m_vbo  = 0;

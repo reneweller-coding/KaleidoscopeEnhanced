@@ -1,8 +1,11 @@
 # Builds both apps (Release|x64) and runs the headless preset self-tests.
 #
 # --roundtrip and --validate need no GL context (pure QCoreApplication) and
-# are the load-bearing checks. --transcheck renders real OpenGL 3.3 core
-# frames, which the hosted runner's GPU-less VM can't provide out of the box
+# are the load-bearing checks. --transcheck renders real OpenGL 4.3 core
+# frames (PresetEditor requests 4.3, not 3.3, so its ComputeFX-backed 2D
+# previews -- FractalFlame, PixelSort, SpectrumFilter, ... -- get a working
+# compute pipeline instead of rendering black), which the hosted runner's
+# GPU-less VM can't provide out of the box
 # (its inbox opengl32.dll is a software OpenGL 1.1 driver only) -- Mesa's
 # llvmpipe opengl32.dll is dropped next to the exe to stand in for it. That
 # swap is best-effort: if it doesn't come up cleanly on a given runner image,
@@ -95,8 +98,8 @@ jobs:
         continue-on-error: true
         env:
           GALLIUM_DRIVER: llvmpipe
-          MESA_GL_VERSION_OVERRIDE: '3.3'
-          MESA_GLSL_VERSION_OVERRIDE: '330'
+          MESA_GL_VERSION_OVERRIDE: '4.3'
+          MESA_GLSL_VERSION_OVERRIDE: '430'
         run: |
           $exe = "PresetEditor\build\Release\PresetEditor.exe"
           & $exe --transcheck

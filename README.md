@@ -388,6 +388,20 @@ the shipped app, where the same shaders render correctly. Author those presets
 by hand or verify them with `Kaleidoscope.exe -c <name> -l` instead, until this
 is root-caused.
 
+**Compute-FX preview (2D path).** The editor's ordinary `type="normal"`
+texture-shader path used to render solid black for any shader driven by a GL
+4.3 compute pass — `FractalFlame`, `ParticleFlow`, `PixelMelt`, `SpectrumFilter`
+and the rest of the `ComputeFX` family — because the pipeline that steps those
+sims and publishes their result on a texture unit only ran inside the main
+app, and because the editor itself requested only a 3.3 core context, one
+version short of what compute shaders need. Both are fixed: the editor now
+requests 4.3, and a small `ComputeFXPreview` wrapper (kept to its own
+translation unit so `ComputeFX.h`'s `glcore.h` macros never reach
+`PreviewWidget.cpp`'s own Qt-based GL calls) steps whichever kind a shader
+declares before the fragment pass samples it — on real wall-clock time,
+independent of `--render --time`, since these sims are stateful accumulators
+that need to warm up, not a pure function of a pinned clock.
+
 The `normal` and `psychedelic` presets also include the newest audio-reactive
 effects: **`StereoSpectrum`** (stereo-separated left/right band display) and
 **`ReactionDiffusion`** (the live GPU Gray-Scott simulation, see below).

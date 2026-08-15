@@ -687,6 +687,27 @@ void PreviewWidget::paintGL()
             m_scenePreview.clear();
             delete m_texProg;  m_texProg  = compile(m_texFile, log);
             emit statusChanged(m_texFile + (log.isEmpty() ? "  OK" : "\n" + log));
+
+            // Which compute-FX kinds does this shader want? Same convention
+            // as EffectShader::cfxMask() (opt in by declaring the sampler),
+            // reimplemented directly against the plain QOpenGLShaderProgram
+            // this path uses instead of constructing a whole redundant
+            // EffectShader just to ask it one question.
+            m_cfxMask = 0;
+            if (m_texProg)
+            {
+                m_texProg->bind();
+                for (int k = 0; k < CFX_COUNT; ++k)
+                {
+                    const int loc = m_texProg->uniformLocation(kCfxInfo[k].sampler);
+                    if (loc >= 0)
+                    {
+                        m_cfxMask |= (1u << k);
+                        m_texProg->setUniformValue(loc, kCfxInfo[k].unit);
+                    }
+                }
+                m_texProg->release();
+            }
         }
         m_texDirty = false;
     }
@@ -709,6 +730,36 @@ void PreviewWidget::paintGL()
     }
     else if (!is3D && m_texProg)
     {
+        // ---- Compute-FX pre-pass: step whatever this shader declared, bind
+        // each result on its own unit before the fragment pass samples it.
+        // Runs on a REAL wall clock, not m_time: m_time may be pinned via
+        // --time for a reproducible fragment-shader frame, but these sims
+        // are stateful accumulators (see ComputeFX::stepFlame's static phase/
+        // warp/spin) -- freezing their dt would freeze them on their startup
+        // transient instead of letting them warm up like the live app does.
+        if (m_cfxMask)
+        {
+            if (!m_cfxReady) { m_cfx.init(); m_cfxReady = true; }
+            const float now = m_clock.elapsed() * 0.001f;
+            const float dt  = (m_cfxPrevTime < 0.f) ? 0.f
+                             : qBound(0.f, now - m_cfxPrevTime, 0.1f);
+            m_cfxPrevTime = now;
+            const AudioFeatures feats = m_timeline.empty() ? synthFeatures(m_time)
+                                                            : timelineFeatures();
+            for (int k = 0; k < CFX_COUNT; ++k)
+            {
+                if (!(m_cfxMask & (1u << k))) continue;
+                const GLuint tex = m_cfx.step(k, feats, dt, now, m_img0, w, h);
+                if (tex)
+                {
+                    glActiveTexture(GL_TEXTURE0 + kCfxInfo[k].unit);
+                    glBindTexture(GL_TEXTURE_2D, tex);
+                }
+            }
+            glActiveTexture(GL_TEXTURE0);
+            m_cfx.retireIdle(now);
+        }
+
         // ---- Pass 1: texture shader -> FBO (unchanged 2D path) ----
         m_fbo->bind();
         glViewport(0, 0, w, h);
