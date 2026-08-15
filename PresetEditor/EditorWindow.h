@@ -19,10 +19,13 @@ class EditorWindow : public QMainWindow
 public:
     explicit EditorWindow(const QString &projectRoot, QWidget *parent = nullptr);
 
-    // Default <bool>/<int>/<float> params for the known legacy shaders (empty for
-    // the modern shaders, which read audio uniforms directly).  Shared with the
-    // headless self-test.
-    static QVector<ShaderParam> defaultParamsFor(const QString &fileName);
+    // Default <bool>/<int>/<float>/<expr> params for a shader, copied from its
+    // Komplett.xml entry (the exhaustive reference the whole engine tunes
+    // against) so a newly-added preset entry starts COMPLETE instead of with
+    // an empty or partial param list -- a missing param silently rolls its
+    // uniform to GLSL's zero default at runtime, which degrades scenes.
+    // Empty if the shader has no Komplett.xml entry.
+    QVector<ShaderParam> defaultParamsFor(const QString &fileName) const;
 
 protected:
     void keyPressEvent(QKeyEvent *e) override;
@@ -65,8 +68,22 @@ private:
     class QCheckBox    *m_transCheck = nullptr;   // transition slow-motion bench
     QSpinBox           *m_transSpin  = nullptr;
 
+    // Per-preset-entry parameter RANGE editor (as opposed to the single-value
+    // preview sliders above): lets a preset deliberately diverge from
+    // Komplett.xml's default range for one shader -- e.g. a slower speedP
+    // band in Ambient than in Club for the same shader, rather than every
+    // preset mechanically inheriting identical ranges.  Rows are built from
+    // the union of the selected entry's own params and Komplett.xml's
+    // declared set; editing a row that only exists in Komplett (i.e. is
+    // currently missing from the entry) ADDS it -- the same action doubles
+    // as the fix for an accidentally-absent param.
+    void rebuildRangeEditor();
+    QGroupBox   *m_rangeBox  = nullptr;
+    QFormLayout *m_rangeForm = nullptr;
+
     QString m_root;
     Preset  m_preset;
+    Preset  m_komplett;   // loaded once from Configurations/Komplett.xml; the reference range set
 
     PreviewWidget *m_preview = nullptr;
     QComboBox *m_texCombo  = nullptr;

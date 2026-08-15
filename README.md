@@ -255,6 +255,24 @@ of the visualizer) for **building and editing presets** with a **live preview**:
   `Configurations/<name>.xml` files the main app reads directly.
 - **Load an existing preset** to edit it (per-shader `<bool>/<int>/<float>`
   parameters round-trip losslessly).
+- **Per-entry parameter ranges.** Selecting a row in the preset table opens a
+  "parameter ranges" panel below it: one control per `<bool>/<int>/<float>/<expr>`
+  the shader declares, seeded from `Komplett.xml` but editable per preset —
+  deliberately, since a shader's ideal range often differs by preset (a slower
+  `speedP` band for `Ambient` than for `Club`, say), not just its probability
+  of appearing. A new entry starts with the shader's *complete* declared param
+  set (previously only 6 legacy shaders had any defaults at all; every other
+  freshly-added entry started empty). Editing a range that the entry doesn't
+  have yet **adds** it — the same action that lets a preset diverge on purpose
+  also fixes an accidentally-missing param, and it updates the live preview
+  slider's band immediately so the new range is visible before you save.
+- **Completeness self-test:** `PresetEditor.exe --validate [preset.xml]` checks
+  every preset entry (or just the one file given) against `Komplett.xml` and
+  reports any param the shader declares that the entry doesn't carry AT ALL —
+  a real bug (the uniform silently rolls to GLSL's zero default at runtime),
+  not to be confused with a deliberately different VALUE, which this never
+  flags. Caught and fixed three small test presets this way (`TestLightning`,
+  `TestRegie`, `TestShatter` were each missing one to three params).
 
 - **Transition test bench:** the *Übergangs-Zeitlupe* checkbox plays any of
   the 26 CombinePlain transition styles in slow motion (the blend sweeps
@@ -269,8 +287,9 @@ Build it with MSBuild (`msbuild PresetEditor\PresetEditor.vcxproj
 /p:Configuration=Release /p:Platform=x64`) or add it to the solution in Visual
 Studio; run it with `C:\Qt\...\bin` on `PATH`.  Headless self-tests:
 `PresetEditor.exe --roundtrip in.xml out.xml`,
-`PresetEditor.exe --render tex.frag combine.frag out.png` and
-`PresetEditor.exe --transcheck`.
+`PresetEditor.exe --render tex.frag combine.frag out.png`,
+`PresetEditor.exe --transcheck` and
+`PresetEditor.exe --validate [preset.xml]`.
 
 **Scene3D preview.** The editor used to preview every shader through the same
 flat fullscreen-quad pipeline, which meant `type="scene3d"` shaders — real
