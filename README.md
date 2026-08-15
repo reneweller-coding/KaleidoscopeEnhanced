@@ -1,5 +1,8 @@
 # Kaleidoscope Enhanced — Music Visualizer
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+![Platform](https://img.shields.io/badge/platform-Windows-0078D6)
+
 A real-time, audio-reactive kaleidoscope / tunnel visualizer for Windows. It
 captures whatever is playing on the system (WASAPI loopback — Spotify, browser,
 foobar2000, …), analyses it, and drives a chained GLSL shader pipeline whose
@@ -9,9 +12,10 @@ It works equally well for **beat-driven music** (Rock/Pop/EDM) and **beatless
 ambient / drone**, and automatically calms down to a non-reactive mode for
 **speech / video dialogue**.
 
-**[⬇ Download the latest portable build](https://github.com/reneweller-coding/KaleidoscopeEnhanced/releases/latest)**
-— no install, no Qt/Visual Studio needed, just unzip and run (see
-[Deployment](#deployment--standalone-package-no-qt--vs-on-the-target)).
+**[⬇ Download the latest release](https://github.com/reneweller-coding/KaleidoscopeEnhanced/releases/latest)**
+— no Qt / Visual Studio needed. Either run the installer (`KaleidoscopeVisualizer-Setup.exe`)
+or grab the portable ZIP and just unzip-and-run; see
+[Deployment](#deployment--standalone-package-no-qt--vs-on-the-target).
 
 |  |  |
 |---|---|
