@@ -2,6 +2,7 @@
 #pragma once
 
 #include <QtWidgets/QMainWindow>
+#include <QtCore/QStringList>
 #include "Preset.h"
 
 class PreviewWidget;
@@ -47,6 +48,9 @@ private:
     void metaToUi();
     void uiToMeta();
     void stepCombo(QComboBox *c, int delta);
+    // True if fileName was found under Scene3D/ (not Scene/) by scanShaders().
+    bool isScene3D(const QString &fileName) const { return m_scene3DFiles.contains(fileName); }
+    void pushPreviewTexture();   // send the full type/geom/stateBytes/shadowExtent to m_preview
 
     // Live parameter sliders: per-activation params of the previewed shaders,
     // with slider ranges taken from Komplett.xml (which registers every shader
@@ -73,6 +77,12 @@ private:
     QSpinBox  *m_minInterp = nullptr, *m_maxInterp = nullptr;
     QDoubleSpinBox *m_prob = nullptr;
     QSpinBox  *m_complex = nullptr;
+
+    // scene3d authoring (only meaningful/enabled when m_typeCombo == "scene3d").
+    QComboBox      *m_geomCombo = nullptr;
+    QSpinBox       *m_stateBytesSpin = nullptr;
+    QDoubleSpinBox *m_shadowExtentSpin = nullptr;
+    QStringList     m_scene3DFiles;   // Scene3D/*.frag, populated by scanShaders()
 
     QTableWidget *m_table = nullptr;
 

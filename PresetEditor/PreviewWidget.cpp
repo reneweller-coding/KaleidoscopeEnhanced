@@ -10,7 +10,13 @@
 #include <QtCore/QDir>
 #include <QtCore/QFileInfo>
 #include <QtCore/QTimer>
+#include <QtCore/QRegularExpression>
 #include <cmath>
+
+// For EffectShader::kSceneNear/kSceneFar/kSceneTanHalfFovY only -- these are
+// plain static constexpr floats, no GL calls, so unlike glcore.h (see
+// Scene3DPreview.h) this include carries no macro-collision risk here.
+#include "../Source/EffectShader.h"
 
 // Trivial fullscreen-quad vertex shader (330 core, matching the migrated
 // .frag files; they use gl_FragCoord, so no texcoords / matrices are needed).
@@ -18,6 +24,38 @@ static const char *kVert =
     "#version 330 core\n"
     "in vec2 aPos;\n"
     "void main() { gl_Position = vec4(aPos, 0.0, 1.0); }\n";
+
+// Look up the <int>/<float> ranges Komplett.xml registers for one fragment
+// file (it registers every shader with sensible min/max values).  An
+// independent copy of EditorWindow.cpp's komplettParamsFor(), which only
+// feeds the slider panel -- this one feeds Scene3DShader::addUniform()
+// directly so a scene3d shader gets a real per-activation roll instead of
+// GLSL's zero default, in BOTH the GUI and the headless --render/self-test
+// paths that never touch EditorWindow at all.
+struct KomplettRange { QString kind, name; float minV, maxV; };
+static QVector<KomplettRange> komplettRangesFor(const QString &root, const QString &frag)
+{
+    QVector<KomplettRange> out;
+    QFile f(root + "/Configurations/Komplett.xml");
+    if (!f.open(QIODevice::ReadOnly)) return out;
+    const QString xml = QString::fromUtf8(f.readAll());
+    QRegularExpression entryRe(
+        QString("<(?:Texture|Combine)Shader\\b[^>]*file=\"\\.\\.\\\\\\\\(?:\\w+\\\\\\\\)?%1\"[^>]*>(.*?)</(?:Texture|Combine)Shader>")
+            .arg(QRegularExpression::escape(frag)),
+        QRegularExpression::DotMatchesEverythingOption);
+    const QRegularExpressionMatch em = entryRe.match(xml);
+    if (!em.hasMatch()) return out;
+    QRegularExpression paramRe(
+        "<(int|float)\\s+name=\"(\\w+)\"\\s+minValue=\"([\\d\\.\\-]+)\"\\s+maxValue=\"([\\d\\.\\-]+)\"");
+    QRegularExpressionMatchIterator it = paramRe.globalMatch(em.captured(1));
+    while (it.hasNext())
+    {
+        const QRegularExpressionMatch m = it.next();
+        out.push_back({ m.captured(1), m.captured(2),
+                        m.captured(3).toFloat(), m.captured(4).toFloat() });
+    }
+    return out;
+}
 
 PreviewWidget::PreviewWidget(const QString &projectRoot, QWidget *parent)
     : QOpenGLWidget(parent), m_root(projectRoot)
@@ -58,9 +96,13 @@ PreviewWidget::~PreviewWidget()
     doneCurrent();
 }
 
-void PreviewWidget::setTextureShader(const QString &fileName)
+void PreviewWidget::setTextureShader(const QString &fileName, const QString &type,
+                                      const QString &geom, int stateBytes,
+                                      double shadowExtent)
 {
-    m_texFile = fileName; m_texDirty = true; update();
+    m_texFile = fileName; m_texType = type; m_texGeom = geom;
+    m_texStateBytes = stateBytes; m_texShadowExtent = shadowExtent;
+    m_texDirty = true; update();
 }
 void PreviewWidget::setCombineShader(const QString &fileName)
 {
@@ -96,6 +138,10 @@ void PreviewWidget::initializeGL()
 
     m_clock.start();
     loadImages();
+
+    // Load glcore's GL 4.3 entry points now, once, with this context current --
+    // Scene3DPreview needs them the first time a scene3d shader is picked.
+    m_scenePreview.ensureGL();
 }
 
 void PreviewWidget::resizeGL(int, int) { /* FBO re-sized lazily in paintGL */ }
@@ -411,6 +457,117 @@ void PreviewWidget::applyCommonUniforms(QOpenGLShaderProgram *p)
     applyParamOverrides(p);
 }
 
+// A synthetic AudioFeatures snapshot for the scene3d path -- see the header
+// comment on why this is an independent small copy of applyCommonUniforms'
+// Beat/Drone math rather than a shared refactor.  audioKick/Snare/Hat are
+// filled here even though the 2D synthetic path never has been: several of
+// this session's newest Scene3D shaders (CoralGrowth's stick probability,
+// PrismExplode's whole launch impulse, FeatherStorm's vane length, DrumSkin's
+// amplitude) are driven almost entirely by audioKick, and leaving it at 0
+// would make "Beat" preview mode look static for exactly the shaders this
+// feature exists to check.
+AudioFeatures PreviewWidget::synthFeatures(float t) const
+{
+    auto sw = [](float x){ return 0.5f + 0.5f * std::sin(x); };
+    const bool drone = (m_mode == Drone);
+    const float beatPhase = t * 2.0f - std::floor(t * 2.0f);
+    const float beat  = drone ? 0.f : std::exp(-beatPhase * 6.0f);
+    const float onset = drone ? 0.f : std::exp(-((t * 3.f) - std::floor(t * 3.f)) * 7.0f);
+    const float downbeat = (!drone && (int(std::floor(t * 0.5f)) & 3) == 0) ? beat : 0.f;
+
+    AudioFeatures f;
+    f.overallLevel = drone ? (0.30f + 0.20f * sw(t * 0.25f)) : (0.35f + 0.25f * sw(t * 0.7f));
+    f.bassLevel    = drone ? (0.5f + 0.2f * sw(t * 0.3f))  : (0.4f + 0.4f * beat);
+    f.subBassLevel = drone ? (0.5f + 0.2f * sw(t * 0.22f)) : (0.3f + 0.4f * beat);
+    f.lowMidLevel   = 0.3f  + 0.2f  * sw(t * 0.9f);
+    f.midLevel      = 0.35f + 0.25f * sw(t * 1.1f);
+    f.upperMidLevel = 0.3f  + 0.25f * sw(t * 1.7f);
+    f.highLevel     = 0.25f + 0.25f * sw(t * 2.3f);
+    f.beatDecay     = beat;
+    f.onsetStrength = onset;
+    f.downbeat      = downbeat;
+    f.onsetKick     = beat;
+    f.onsetSnare    = downbeat * 0.6f;
+    f.onsetHat      = onset * 0.5f;
+    f.ambientFactor = drone ? 1.f : 0.f;
+    f.swell = drone ? (0.35f + 0.35f * std::sin(t * 0.35f)) : (0.15f + 0.15f * sw(t * 0.5f));
+    f.barPhase   = t * 0.5f - std::floor(t * 0.5f);
+    f.chromaHue  = t * 0.02f - std::floor(t * 0.02f);
+    f.dayPhase   = t * 0.01f - std::floor(t * 0.01f);
+    f.audioRotPhase = t * 0.3f;
+    f.audioAdvance  = t * 0.5f;
+    for (int i = 0; i < AudioFeatures::kSpectrumBands; ++i)
+        f.spectrum[i] = 0.15f + 0.7f * sw(t * 2.0f + float(i) * 0.6f) * std::exp(-float(i) / 40.f);
+    return f;
+}
+
+// The WAV-timeline counterpart of synthFeatures(): same envelope math as the
+// timeline branch of applyCommonUniforms (peak-hold decay, slew, integrated
+// phases), an independent copy for the same reason, kept in step by updating
+// the SAME m_tl* members.  Those members already tolerate being advanced more
+// than once per frame -- applyCommonUniforms itself is called once for the
+// texture pass and once for the combine pass whenever both are 2D, and the
+// second call's dt is a few microseconds, so its update is a rounding error.
+// Adding this third call for the scene3d path relies on exactly that same
+// tolerance rather than on any new assumption.
+AudioFeatures PreviewWidget::timelineFeatures()
+{
+    if (m_timeline.empty())
+        return synthFeatures(m_time);
+
+    const float tp = float(m_wavClock.elapsed()) * 0.001f;
+    float dt = tp - m_tlPrevT;
+    if (dt < 0.f || dt > 0.25f) dt = 0.016f;
+    m_tlPrevT = tp;
+    const size_t n   = m_timeline.size();
+    const size_t idx = size_t(tp * 100.f) % n;
+    AudioFeatures out = m_timeline[idx];   // the real analyzed frame ...
+
+    auto slew = [dt](float cur, float target, float rate) {
+        float d = target - cur;
+        float mx = rate * dt;
+        if (d >  mx) d =  mx;
+        if (d < -mx) d = -mx;
+        return cur + d;
+    };
+    m_tlBeatEnv  = std::max(m_tlBeatEnv  * std::exp(-dt / 0.30f), out.beatDecay);
+    m_tlOnsetEnv = std::max(m_tlOnsetEnv * std::exp(-dt / 0.22f), out.onsetStrength);
+    m_tlDownEnv  = std::max(m_tlDownEnv  * std::exp(-dt / 0.45f), out.downbeat);
+    m_tlKickEnv  = std::max(m_tlKickEnv  * std::exp(-dt / 0.24f), out.onsetKick);
+    m_tlSnareEnv = std::max(m_tlSnareEnv * std::exp(-dt / 0.20f), out.onsetSnare);
+    m_tlHatEnv   = std::max(m_tlHatEnv   * std::exp(-dt / 0.14f), out.onsetHat);
+    m_tlBeat  = slew(m_tlBeat,  m_tlBeatEnv,  6.f);
+    m_tlOnset = slew(m_tlOnset, m_tlOnsetEnv, 7.f);
+    m_tlDown  = slew(m_tlDown,  m_tlDownEnv,  5.f);
+    m_tlKick  = slew(m_tlKick,  m_tlKickEnv,  7.f);
+    m_tlSnare = slew(m_tlSnare, m_tlSnareEnv, 7.f);
+    m_tlHat   = slew(m_tlHat,   m_tlHatEnv,   8.f);
+
+    // ... but with the smoothed / host-integrated fields overriding the
+    // instantaneous sample, exactly as the 2D timeline path does.
+    m_tlPhase   += (0.10f + 0.50f * m_tlBeat + 0.30f * out.overallLevel) * dt;
+    m_tlAdvance += (0.15f + 1.00f * out.overallLevel) * dt;
+    m_tlLvlFast += (out.overallLevel - m_tlLvlFast) * std::min(dt / 1.5f, 1.f);
+    m_tlLvlSlow += (out.overallLevel - m_tlLvlSlow) * std::min(dt / 8.0f, 1.f);
+    const float swell = std::min(std::max((m_tlLvlFast - m_tlLvlSlow) * 4.f, 0.f), 1.f);
+    const float bpm = 40.f + 160.f * out.estimatedBPM;
+    m_tlBeatPhase += (out.estimatedBPM > 0.004f ? bpm / 60.f : 0.f) * dt;
+    m_tlBeatPhase -= std::floor(m_tlBeatPhase);
+
+    out.beatDecay     = m_tlBeat;
+    out.onsetStrength = m_tlOnset;
+    out.downbeat      = m_tlDown;
+    out.onsetKick      = m_tlKick;
+    out.onsetSnare     = m_tlSnare;
+    out.onsetHat       = m_tlHat;
+    out.swell          = swell;
+    out.audioRotPhase  = m_tlPhase;
+    out.audioAdvance   = m_tlAdvance;
+    out.beatPhase      = m_tlBeatPhase;
+    out.barPhase       = tp * 0.25f - std::floor(tp * 0.25f);
+    return out;
+}
+
 void PreviewWidget::drawFullscreenQuad(QOpenGLShaderProgram *)
 {
     m_quadVAO->bind();
@@ -433,10 +590,53 @@ void PreviewWidget::paintGL()
     }
 
     if (m_imagesDirty) loadImages();
+    const bool is3D = (m_texType == "scene3d");
     QString log;
-    if (m_texDirty)  { delete m_texProg;  m_texProg  = compile(m_texFile, log);
-                       emit statusChanged(m_texFile + (log.isEmpty() ? "  OK" : "\n" + log));
-                       m_texDirty = false; }
+    if (m_texDirty)
+    {
+        if (is3D)
+        {
+            // shader_setup.cpp's loader exit(1)s on a REQUIRED file (vert or
+            // frag) that is missing -- right for the shipped app, wrong for an
+            // editor where the shader may be mid-edit.  Confirm both exist
+            // BEFORE ever calling in, so that path is never reached.
+            const QString base = QFileInfo(m_texFile).completeBaseName();
+            const QString fragAbs = m_root + "/Scene3D/" + m_texFile;
+            const QString vertAbs = m_root + "/Scene3D/" + base + ".vert";
+            if (!QFile::exists(fragAbs) || !QFile::exists(vertAbs))
+            {
+                m_scenePreview.clear();
+                emit statusChanged(m_texFile + QString("\nmissing %1")
+                    .arg(QFile::exists(fragAbs) ? base + ".vert" : m_texFile));
+            }
+            else
+            {
+                const QString fragRel = "..\\Scene3D\\" + m_texFile;
+                m_scenePreview.setShader(fragRel, m_texGeom, m_texStateBytes,
+                                          m_texShadowExtent, log);
+                // A fresh Scene3DShader has no per-activation params registered
+                // yet -- without this, every camHP/densityP/glowP/... uniform
+                // the shader declares sits at GLSL's zero default, which for
+                // several scenes (a zeroed eye height, a zeroed extent) breaks
+                // the framing outright rather than just looking untuned.
+                for (const KomplettRange &r : komplettRangesFor(m_root, m_texFile))
+                {
+                    if (r.kind == "int")
+                        m_scenePreview.addIntRange(r.name, int(r.minV), int(r.maxV));
+                    else
+                        m_scenePreview.addFloatRange(r.name, r.minV, r.maxV);
+                }
+                emit statusChanged(m_texFile + (log.isEmpty() ? "  OK" : "\n" + log));
+            }
+        }
+        else
+        {
+            m_scenePreview.clear();
+            delete m_texProg;  m_texProg  = compile(m_texFile, log);
+            emit statusChanged(m_texFile + (log.isEmpty() ? "  OK" : "\n" + log));
+        }
+        m_texDirty = false;
+    }
     if (m_combDirty) { delete m_combProg; m_combProg = compile(m_combFile, log);
                        m_combDirty = false; }
 
@@ -446,9 +646,17 @@ void PreviewWidget::paintGL()
     glActiveTexture(GL_TEXTURE7); glBindTexture(GL_TEXTURE_2D, m_img0);
     glActiveTexture(GL_TEXTURE0);
 
-    // ---- Pass 1: texture shader -> FBO ----
-    if (m_texProg)
+    unsigned sceneColorTex = 0, sceneDepthTex = 0;
+    if (is3D && m_scenePreview.active())
     {
+        const AudioFeatures feats = m_timeline.empty() ? synthFeatures(m_time)
+                                                        : timelineFeatures();
+        m_scenePreview.render(w, h, m_time, testInterpolation(), feats,
+                               m_img0, m_img1, sceneColorTex, sceneDepthTex);
+    }
+    else if (!is3D && m_texProg)
+    {
+        // ---- Pass 1: texture shader -> FBO (unchanged 2D path) ----
         m_fbo->bind();
         glViewport(0, 0, w, h);
         glClear(GL_COLOR_BUFFER_BIT);
@@ -464,15 +672,39 @@ void PreviewWidget::paintGL()
     glViewport(0, 0, w, h);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    if (m_combProg && m_texProg)
+    const bool haveScene = is3D && sceneColorTex != 0;
+    if (m_combProg && (haveScene || m_texProg))
     {
-        glActiveTexture(GL_TEXTURE0); glBindTexture(GL_TEXTURE_2D, m_fbo->texture());
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, haveScene ? sceneColorTex : m_fbo->texture());
         glActiveTexture(GL_TEXTURE1); glBindTexture(GL_TEXTURE_2D, m_img1);
+        // A depth-reading combine (fog, AO, sun shafts, the edge/rim/heat-
+        // shimmer trio) needs the SAME depthValid/texDepth0/nearFar/tanHalfFov
+        // contract the main host gives it.  Bound unconditionally on unit 2,
+        // like the main app binds both unconditionally too: a combine that
+        // never declares the sampler simply never looks it up.
+        glActiveTexture(GL_TEXTURE0 + 2);
+        glBindTexture(GL_TEXTURE_2D, haveScene ? sceneDepthTex : 0);
         glActiveTexture(GL_TEXTURE0);
         m_combProg->bind();
         applyCommonUniforms(m_combProg);
+        m_combProg->setUniformValue("texDepth0", 2);
+        m_combProg->setUniformValue("depthValid", QVector2D(haveScene ? 1.f : 0.f, 0.f));
+        m_combProg->setUniformValue("nearFar",
+            QVector2D(EffectShader::kSceneNear, EffectShader::kSceneFar));
+        m_combProg->setUniformValue("tanHalfFov", EffectShader::kSceneTanHalfFovY);
         drawFullscreenQuad(m_combProg);
         m_combProg->release();
+    }
+    else if (haveScene)
+    {
+        // Combine failed to compile: unlike the 2D fallback below (which just
+        // re-runs the texture shader), there is no cheap "re-render without a
+        // combine" step for a 3D scene here -- render() already produced the
+        // frame into its own FBO, and blitting it back out needs machinery
+        // this class does not otherwise have.  The compile error is already
+        // visible in the status bar (onCombineChanged's log), so this is a
+        // visible, not silent, degradation: leave the screen cleared.
     }
     else if (m_texProg)
     {
