@@ -25,6 +25,7 @@ class QOpenGLShaderProgram;
 class QOpenGLFramebufferObject;
 class QOpenGLTexture;
 class QOpenGLVertexArrayObject;
+class ExprProgram;
 
 class PreviewWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
@@ -63,6 +64,20 @@ public:
     // the built-in defaults each frame, so the sliders tune the actual look.
     struct ParamOverride { QString name; float value; bool isInt; };
     void setParamOverrides(QVector<ParamOverride> ov) { m_overrides = std::move(ov); update(); }
+
+    // Evaluate a compiled formula-layer program against the synthesized
+    // Beat/Drone audio profile at the CURRENT preview time -- the same
+    // variable mapping EffectShader.cpp uses at runtime, so the editor's
+    // live formula readout matches what the shipped app would compute.
+    // Deliberately always uses the SYNTHETIC profile, even when a WAV
+    // timeline is loaded: synthFeatures() is pure/side-effect-free, while
+    // timelineFeatures() advances playback envelope state and is only safe
+    // to call once per frame -- not safe for evaluating several formula
+    // rows on every editor timer tick. seed1-3 aren't part of AudioFeatures
+    // (EffectShader rolls them once per scene ACTIVATION); fixed constants
+    // here, since the editor preview has no activation concept to roll
+    // them from.
+    float evalExpr(const ExprProgram &prog) const;
 
     // ---- Transition TEST BENCH ----
     // style >= 0: the combine gets transStyle=style and the interpolation is

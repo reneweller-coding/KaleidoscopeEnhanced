@@ -25,6 +25,7 @@
 #include <QtWidgets/QStatusBar>
 #include <QtCore/QDir>
 #include <QtCore/QFileInfo>
+#include <QtCore/QTimer>
 #include <QtGui/QKeyEvent>
 #include <algorithm>
 
@@ -241,6 +242,10 @@ EditorWindow::EditorWindow(const QString &projectRoot, QWidget *parent)
     connect(bSave, &QPushButton::clicked, this, &EditorWindow::savePreset);
     connect(bBrowse, &QPushButton::clicked, this, &EditorWindow::browseImageDir);
     connect(bWav,    &QPushButton::clicked, this, &EditorWindow::loadAudioWav);
+
+    m_exprTimer = new QTimer(this);
+    connect(m_exprTimer, &QTimer::timeout, this, &EditorWindow::tickExprValues);
+    m_exprTimer->start(150);
 
     scanShaders();
     metaToUi();
@@ -531,6 +536,7 @@ void EditorWindow::rebuildRangeEditor()
 {
     if (!m_rangeForm) return;
     while (m_rangeForm->rowCount() > 0) m_rangeForm->removeRow(0);
+    m_exprRows.clear();   // widgets just destroyed by removeRow(); drop the now-dangling pointers
 
     const int row = m_table->currentRow();
     if (row < 0 || row >= m_preset.entries.size()) { m_rangeBox->setVisible(false); return; }
@@ -636,14 +642,49 @@ void EditorWindow::rebuildRangeEditor()
                         varPick->setCurrentIndex(0);
                         writeParam(p.name, "expr", {}, {}, {}, edit->text());
                     });
+            // Live readout: shows what the formula currently evaluates to
+            // (against the synthesized audio state -- see
+            // PreviewWidget::evalExpr()) and turns red instead of quietly
+            // evaluating to 0 on a typo. Recompiled on every keystroke, kept
+            // separate from the writeParam() commit on editingFinished so a
+            // half-typed formula isn't written into the preset yet.
+            QLabel *valueLbl = new QLabel();
+            valueLbl->setMinimumWidth(64);
+            valueLbl->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+            const int rowIdx = m_exprRows.size();
+            m_exprRows.push_back({ edit, valueLbl, nullptr });
+            auto recompile = [this, rowIdx]() {
+                if (rowIdx >= m_exprRows.size()) return;   // stale (panel rebuilt meanwhile)
+                ExprRow &er = m_exprRows[rowIdx];
+                auto prog = std::make_shared<ExprProgram>();
+                const bool ok = prog->compile(er.edit->text().toStdString(), "editor");
+                er.edit->setStyleSheet(ok ? QString() : "background: #663333;");
+                er.edit->setToolTip(ok ? QString() : tr("Syntaxfehler (Details in der Konsole)"));
+                er.prog = ok ? prog : nullptr;
+                er.valueLbl->setText(ok ? QString::number(m_preview->evalExpr(*prog), 'f', 3)
+                                        : tr("Fehler"));
+            };
+            connect(edit, &QLineEdit::textChanged, this, [=](const QString &){ recompile(); });
+            recompile();
             QWidget *host = new QWidget();
             QHBoxLayout *hl = new QHBoxLayout(host);
             hl->setContentsMargins(0, 0, 0, 0);
             hl->addWidget(edit, 1);
             hl->addWidget(varPick);
+            hl->addWidget(valueLbl);
             m_rangeForm->addRow(label, host);
         }
     }
+}
+
+// Re-evaluate every currently-valid <expr> row against the animated
+// synthetic audio state (the formula text itself only changes on keystrokes;
+// its VALUE changes every frame, driven by the preview's Beat/Drone clock).
+void EditorWindow::tickExprValues()
+{
+    for (const ExprRow &er : m_exprRows)
+        if (er.prog)
+            er.valueLbl->setText(QString::number(m_preview->evalExpr(*er.prog), 'f', 3));
 }
 
 void EditorWindow::refreshTable()

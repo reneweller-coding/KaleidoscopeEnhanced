@@ -3,6 +3,7 @@
 
 #include <QtWidgets/QMainWindow>
 #include <QtCore/QStringList>
+#include <memory>
 #include "Preset.h"
 
 class PreviewWidget;
@@ -12,6 +13,8 @@ class QDoubleSpinBox;
 class QLineEdit;
 class QTableWidget;
 class QLabel;
+class QTimer;
+class ExprProgram;
 
 class EditorWindow : public QMainWindow
 {
@@ -80,6 +83,17 @@ private:
     void rebuildRangeEditor();
     QGroupBox   *m_rangeBox  = nullptr;
     QFormLayout *m_rangeForm = nullptr;
+
+    // <expr> rows in the range editor get a live "current value" readout and
+    // a red/invalid state instead of the formula silently evaluating to 0 on
+    // a typo (ExprEval only ever logged parse errors to stderr). Recompiled
+    // on every keystroke (see rebuildRangeEditor()); re-evaluated on a timer
+    // since the result depends on the animated synthetic audio state, not
+    // just the formula text.
+    struct ExprRow { QLineEdit *edit; QLabel *valueLbl; std::shared_ptr<ExprProgram> prog; };
+    QVector<ExprRow> m_exprRows;
+    QTimer *m_exprTimer = nullptr;
+    void tickExprValues();
 
     QString m_root;
     Preset  m_preset;

@@ -17,6 +17,7 @@
 // plain static constexpr floats, no GL calls, so unlike glcore.h (see
 // Scene3DPreview.h) this include carries no macro-collision risk here.
 #include "../Source/EffectShader.h"
+#include "../Source/ExprEval.h"
 
 // Trivial fullscreen-quad vertex shader (330 core, matching the migrated
 // .frag files; they use gl_FragCoord, so no texcoords / matrices are needed).
@@ -491,6 +492,7 @@ AudioFeatures PreviewWidget::synthFeatures(float t) const
     f.onsetHat      = onset * 0.5f;
     f.ambientFactor = drone ? 1.f : 0.f;
     f.swell = drone ? (0.35f + 0.35f * std::sin(t * 0.35f)) : (0.15f + 0.15f * sw(t * 0.5f));
+    f.beatPhase  = beatPhase;
     f.barPhase   = t * 0.5f - std::floor(t * 0.5f);
     f.chromaHue  = t * 0.02f - std::floor(t * 0.02f);
     f.dayPhase   = t * 0.01f - std::floor(t * 0.01f);
@@ -499,6 +501,57 @@ AudioFeatures PreviewWidget::synthFeatures(float t) const
     for (int i = 0; i < AudioFeatures::kSpectrumBands; ++i)
         f.spectrum[i] = 0.15f + 0.7f * sw(t * 2.0f + float(i) * 0.6f) * std::exp(-float(i) / 40.f);
     return f;
+}
+
+// Mirrors EffectShader.cpp's per-activation <expr> uniform upload -- same
+// AudioFeatures field -> ExprVars::Index mapping, so a formula previewed
+// here evaluates the same way it would in the shipped app given the same
+// audio state. Fields synthFeatures() never sets (bassRel/midRel/trebRel,
+// arousal/valence, musicPresence, ...) keep AudioFeatures' own neutral
+// struct defaults, which already read as "nothing unusual happening".
+float PreviewWidget::evalExpr(const ExprProgram &prog) const
+{
+    const AudioFeatures f = synthFeatures(m_time);
+    float v[ExprVars::V_COUNT];
+    v[ExprVars::V_TIME]     = m_time;
+    v[ExprVars::V_BASS]     = f.bassLevel;
+    v[ExprVars::V_MID]      = 0.5f * (f.lowMidLevel + f.midLevel);
+    v[ExprVars::V_TREB]     = 0.5f * (f.upperMidLevel + f.highLevel);
+    v[ExprVars::V_BASSREL]  = f.bassRel;
+    v[ExprVars::V_MIDREL]   = f.midRel;
+    v[ExprVars::V_TREBREL]  = f.trebRel;
+    v[ExprVars::V_SUBBASS]  = f.subBassLevel;
+    v[ExprVars::V_HIGH]     = f.highLevel;
+    v[ExprVars::V_LEVEL]    = f.overallLevel;
+    v[ExprVars::V_KICK]     = f.onsetKick;
+    v[ExprVars::V_SNARE]    = f.onsetSnare;
+    v[ExprVars::V_HAT]      = f.onsetHat;
+    v[ExprVars::V_ONSET]    = f.onsetStrength;
+    v[ExprVars::V_BEAT]     = f.beatDecay;
+    v[ExprVars::V_BEATPH]   = f.beatPhase;
+    v[ExprVars::V_BARPH]    = f.barPhase;
+    v[ExprVars::V_DOWNBEAT] = f.downbeat;
+    v[ExprVars::V_SWELL]    = f.swell;
+    v[ExprVars::V_BUILDUP]  = f.buildUp;
+    v[ExprVars::V_DROP]     = f.dropPulse;
+    v[ExprVars::V_CHROMA]   = f.chromaHue;
+    v[ExprVars::V_CENTROID] = f.spectralCentroid;
+    v[ExprVars::V_FLUX]     = f.spectralFlux;
+    v[ExprVars::V_AROUSAL]  = f.arousal;
+    v[ExprVars::V_VALENCE]  = f.valence;
+    v[ExprVars::V_AMBIENT]  = f.ambientFactor;
+    v[ExprVars::V_RHYTHM]   = f.rhythmStrength;
+    v[ExprVars::V_MUSIC]    = f.musicPresence;
+    v[ExprVars::V_ADVANCE]  = f.audioAdvance;
+    v[ExprVars::V_PHASE]    = f.audioRotPhase;
+    v[ExprVars::V_DAYPHASE] = f.dayPhase;
+    v[ExprVars::V_FLATNESS] = f.spectralFlatness;
+    v[ExprVars::V_ZCR]      = f.zeroCrossingRate;
+    v[ExprVars::V_FADEOUT]  = f.fadeOut;
+    v[ExprVars::V_SEED1]    = 0.3f;
+    v[ExprVars::V_SEED2]    = 0.6f;
+    v[ExprVars::V_SEED3]    = 0.9f;
+    return prog.eval(v);
 }
 
 // The WAV-timeline counterpart of synthFeatures(): same envelope math as the
