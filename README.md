@@ -173,8 +173,9 @@ correct working directory). Otherwise build it later with `ISCC.exe installer.is
 | `i`        | Toggle the live audio-feature overlay (incl. **FPS**)         |
 | `d`        | Choose the **audio source** (output / microphone) — overlay   |
 | `p`        | Toggle the **now-playing** track title display                |
-| `w`        | **Lyrics** (Internet, LRCLIB): off / credits scroll / karaoke |
-| `o`        | **Artist images** (Internet, Deezer): blended into the scene  |
+| `w`        | **Lyrics** (Internet): off / credits scroll / karaoke — on by default |
+| `Shift+w`  | Toggle the karaoke **kinetic line-slam** pop-in (off by default) |
+| `o`        | **Artist images** (Internet): rotating inset + colour grade — on by default |
 | `n`        | Manually advance to the next effect (musical scene change)    |
 | `v`        | Show the active shader names (debug overlay)                  |
 | `l`        | Toggle the **stage lamps / light show** (corner cones etc.)   |
@@ -492,6 +493,42 @@ is mixed into all the other adapted shaders above, including the three latest.
   whenever VLC shows the medium in its title bar.  Testing:
   `set KALEIDO_TITLE_TEST=1` fires one demo reveal a few seconds after start;
   `set KALEIDO_TITLE_STYLE=<0..23>` forces a specific style.
+- **Lyrics (`w`) — off / scroll / karaoke, on by default:** synced lyrics
+  fetched from the internet with no API key needed — a 3-service fallback
+  chain (**LRCLIB** exact match → LRCLIB fuzzy search → **NetEase** →
+  **lyrics.ovh** plain text) tries each in turn until one hits. Results
+  (including a **negative** result, so a song with no lyrics anywhere isn't
+  re-queried for 7 days) are cached in `cache\lyrics\`, so replaying a track
+  needs no network at all. Playback position comes from the Windows system
+  media session (SMTC) — the same source the title reveal uses — smoothed by
+  a "Consumer-PLL" that only ever *glides* toward the reported position
+  instead of jumping, which is what kills the backward-hop flicker flaky
+  SMTC data used to cause. **Scroll** is a plain vertically-scrolling credits
+  band; **Karaoke** additionally tints the active line gold with a
+  left-to-right progress sweep — since LRC only carries one timestamp per
+  line, this is *line-level* sync with the sweep animated smoothly across
+  the line's duration, not real word-boundary highlighting, and it silently
+  behaves like Scroll if only unsynced/plain lyrics were found for that
+  track. `Shift+w` toggles an optional "kinetic slam" pop-in where each
+  newly active line eases in from 1.18× scale — off by default (user
+  feedback: too jumpy). Long instrumental gaps fade the lyrics out instead
+  of leaving a stale line on screen. Testing:
+  `set KALEIDO_LYRICS_TEST=Artist|Title` forces a lookup with no player
+  running; `KALEIDO_LYRICS_MODE=1` / `2` forces Scroll / Karaoke for that test.
+- **Artist images (`o`) — on by default:** photos of the currently playing
+  artist, fetched from **Deezer** + **TheAudioDB** + **iTunes** (deduplicated,
+  up to 50 images, 4 parallel downloads, cached in `cache\artist\` so a
+  re-played artist needs no network once ~8 images are cached), rotating as
+  a small organic **bottom-left inset** with a noise-feathered, deliberately
+  non-rectangular edge — a bigger cached library rotates faster (26 s cycle /
+  12 s visible once ≥10 images are on disk, else 45 s / 14 s). The shown
+  image's two dominant colours are also extracted and slowly blended into
+  the whole scene's colour grade ("cover-palette"), so the visuals pick up
+  the artist's own colour world, not just a picture-in-picture. **This is a
+  separate mechanism from `ImageDirectory` above:** that's a local photo
+  folder folded directly into the kaleidoscope/tunnel geometry as source
+  material; artist images are internet-fetched, tied to whoever is currently
+  playing, and composited as an overlay + colour tint instead.
 - **MIDI (automatic):** if a MIDI controller is connected it is opened on
   startup — knob **CC 1/2/3** map to reactivity / trails / mood, and any pad/key
   (Note-On) advances to the next effect. No device → no-op.
@@ -2282,12 +2319,14 @@ Reorganised 2026-07 into folders:
 
 - `Source\` — all C++ sources/headers of the main app:
   `AudioAnalyzer.{h,cpp}` + `AudioFeatures.h` (capture + real-time analysis),
-  `NowPlaying` (track title/artist), `MidiInput` (MIDI + learn),
-  `glwidget` (`QOpenGLWidget`, input, overlays, replay, web-remote hooks),
-  `filterShader` (FBO pipeline + audio→visual mapping), `EffectShader` /
-  `Uniform` (per-effect shader + params), `Configuration` (XML loading),
-  `WebRemote`, `SpoutOut` / `SpoutIn`, …  The Visual Studio project mirrors
-  this layout in its Solution Explorer filters (Source Files / Header Files /
+  `NowPlaying` (track title/artist via SMTC, incl. the VLC window-title
+  fallback), `TrackMedia` (lyrics + artist-image fetch/cache/rotation —
+  LRCLIB/NetEase/lyrics.ovh and Deezer/TheAudioDB/iTunes), `MidiInput`
+  (MIDI + learn), `glwidget` (`QOpenGLWidget`, input, overlays, replay,
+  web-remote hooks), `filterShader` (FBO pipeline + audio→visual mapping),
+  `EffectShader` / `Uniform` (per-effect shader + params), `Configuration`
+  (XML loading), `WebRemote`, `SpoutOut` / `SpoutIn`, …  The Visual Studio
+  project mirrors this layout in its Solution Explorer filters (Source Files / Header Files /
   Generated / ThirdParty\SpoutGL / Shaders\Scene|Combine|Blend /
   Configurations).
 - `Scene\*.frag` — the 52 scene (texture) effects (incl. `SelfSimilarity`,
