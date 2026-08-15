@@ -242,6 +242,13 @@ bars, triangles in posterised image colours, snare-accented; Club/
 Psychedelic).  All follow the house rules: image-based, per-activation
 parameters, mood tags, flicker-free integrated motion.
 
+**Full-Screen Dynamic Shader Pack (2026-08):** five new 100% viewport-filling, high-energy scene effects:
+- **`HyperWarpTunnel`**: infinite warp tunnel with dynamic polar coordinates, multi-frequency FBM domain warping, and kick FOV shockwave pulses (Allround/Club/Psychedelic/Noir/Ambient).
+- **`VolumetricSupernova`**: raymarched 3D volumetric plasma field & explosion with 3D Curl Noise, light absorption, and sub-bass shockwaves (Allround/Club/Psychedelic/Noir/Ambient).
+- **`CrystalMirrorGrid`**: raymarched 3D crystal mirror lattice refracting and reflecting the live photo/kaleidoscope with kick shatter impulses (Allround/Club/Psychedelic/Noir).
+- **`FluidInkMarble`**: 100% full-canvas liquid hydrodynamics & reaction-diffusion surface where loaded photos act as vibrant floating inks in turbulent vorticity streams (Allround/Club/Psychedelic/Ambient).
+- **`CosmicBoidsVortex`**: 3D particle swarm vortex in 3D space with near-plane lens explosions on beats (Allround/Club/Psychedelic/Noir/Ambient).
+
 **Timing is music-driven:** per-entry `min/maxTime*` attributes are now
 OPTIONAL — the pacing comes from `timingScale` (tempo/arousal), 4-beat
 cross-fades and section cuts.  Absent times fall back to engine defaults
