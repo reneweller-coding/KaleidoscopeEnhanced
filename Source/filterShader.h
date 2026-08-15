@@ -63,6 +63,13 @@ public:
 		float lyricsAlpha   = 0.f;
 		float lyricsScrollV = 0.f;
 		float lyricsAspect  = 1.f;
+		// Kinetik: Sekunden seit dem Wechsel der aktiven Karaoke-Zeile
+		// (Slam-Einflug der frischen Zeile); gross = kein Slam.
+		float lyricsLineAge = 999.f;
+		// Cover-Palette: zwei dominante Farben des Kuenstlerbilds + Staerke.
+		float paletteAmt    = 0.f;
+		float paletteA[3]   = { 0.f, 0.f, 0.f };
+		float paletteB[3]   = { 0.f, 0.f, 0.f };
 		float lyricsHlV0    = -1.f;
 		float lyricsHlV1    = -1.f;
 		float lyricsHlProg  = 0.f;
@@ -342,6 +349,14 @@ private:
 	int				m_lastDropSeen = -1;   // dropCount-Stand (-1 = noch nie)
 	float			m_breathSm    = 0.f;   // geslewtes Atem-anhalten 0..1
 	float			m_echoOverride = -1.f; // KALEIDO_REGIE_TEST: erzwungenes Echo
+	// CinemaScope-Letterbox: Balken kriechen im Build-up herein (langsam)
+	// und reissen auf den Drop auf (sehr schnell).
+	float			m_letterSm    = 0.f;
+	// Bass-Schockwelle: expandierender Verzerrungsring (Radius/Amplitude).
+	float			m_shockR      = 9.f;
+	float			m_shockAmp    = 0.f;
+	float			m_prevShockKick = 0.f;
+	float			m_prevShockDrop = 0.f;
 
 
 	// ---- Feedback / trails (phosphor-style ping-pong) ----

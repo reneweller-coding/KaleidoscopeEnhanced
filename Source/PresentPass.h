@@ -99,6 +99,21 @@ public:
 		float  echoDelay     = 1.4f;
 		// Build-up-"Atem anhalten": Entsättigen + Dimmen + Vignette 0..1.
 		float  breath        = 0.f;
+		// CinemaScope-Letterbox 0..1 (Balken je ~11% Bildhöhe bei 1).
+		float  letterbox     = 0.f;
+		// Bass-Schockwelle: expandierender Verzerrungsring.
+		float  shockR        = 9.f;
+		float  shockAmp      = 0.f;
+		// Kinetik: Sekunden seit Wechsel der aktiven Karaoke-Zeile.
+		float  lyricsLineAge = 999.f;
+		// Cover-Palette (dominante Künstlerbild-Farben) + Stärke.
+		float  paletteAmt    = 0.f;
+		float  paletteA[3]   = { 0.f, 0.f, 0.f };
+		float  paletteB[3]   = { 0.f, 0.f, 0.f };
+		// 2.5D-Parallaxe: Tiefentextur der aktiven Szene + Stärke (geslewt).
+		GLuint sceneDepthTex = 0;
+		float  depthPar      = 0.f;
+		float  nearZ = 0.5f, farZ = 220.f;
 	};
 
 	/** Den kompletten Present ausführen (Limiter, AutoExposure, Bloom,
@@ -195,6 +210,15 @@ private:
 	GLint	m_presentEchoUni     = -1;   // vec2( amt, layer )
 	GLint	m_presentBreathUni   = -1;
 	GLint	m_presentDropUni     = -1;
+	GLint	m_presentLetterUni   = -1;
+	GLint	m_presentShockUni    = -1;   // vec2( radius, amp )
+	GLint	m_presentLineAgeUni  = -1;
+	GLint	m_presentPalAUni     = -1;
+	GLint	m_presentPalBUni     = -1;
+	GLint	m_presentPalAmtUni   = -1;
+	GLint	m_presentSceneDepthUni = -1; // Unit 6
+	GLint	m_presentDepthParUni = -1;
+	GLint	m_presentNearFar2Uni = -1;
 
 	// ---- Lyrics / Künstlerbild ----
 	GLuint	m_lyricsTex = 0;
