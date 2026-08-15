@@ -1,0 +1,98 @@
+# Builds both apps (Release|x64) and runs the headless preset self-tests.
+#
+# --roundtrip and --validate need no GL context (pure QCoreApplication) and
+# are the load-bearing checks. --transcheck renders real OpenGL 3.3 core
+# frames, which the hosted runner's GPU-less VM can't provide out of the box
+# (its inbox opengl32.dll is a software OpenGL 1.1 driver only) -- Mesa's
+# llvmpipe opengl32.dll is dropped next to the exe to stand in for it. That
+# swap is best-effort: if it doesn't come up cleanly on a given runner image,
+# the step is allowed to fail without blocking the pipeline.
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+env:
+  QT_VERSION: '6.11.1'
+  MESA_VERSION: '26.2.0'
+
+jobs:
+  build-and-test:
+    # GA image with Visual Studio 2026 (toolset v145, required by both
+    # .vcxproj files) preinstalled -- see actions/runner-images.
+    runs-on: windows-2025-vs2026
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v3
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: ${{ env.QT_VERSION }}
+          arch: win64_msvc2022_64
+          modules: qtmultimedia
+          cache: true
+
+      # QTDIR is what both .vcxproj files read for their include/lib paths;
+      # install-qt-action exports QT_ROOT_DIR, not QTDIR, so it's passed
+      # through explicitly.
+      - name: Build Kaleidoscope (main app, Release x64)
+        shell: pwsh
+        run: msbuild Kaleidoscope.sln /p:Configuration=Release /p:Platform=x64 "/p:QTDIR=$env:QT_ROOT_DIR" /m /v:minimal
+
+      - name: Build PresetEditor (Release x64)
+        shell: pwsh
+        run: msbuild PresetEditor\PresetEditor.vcxproj /p:Configuration=Release /p:Platform=x64 "/p:QTDIR=$env:QT_ROOT_DIR" /m /v:minimal
+
+      - name: Self-test -- roundtrip (load+save every preset, no GL)
+        shell: pwsh
+        run: |
+          $exe = "PresetEditor\build\Release\PresetEditor.exe"
+          $tmp = Join-Path $env:RUNNER_TEMP "roundtrip"
+          New-Item -ItemType Directory -Force -Path $tmp | Out-Null
+          $failed = $false
+          Get-ChildItem "Configurations\*.xml" | ForEach-Object {
+            $out = Join-Path $tmp $_.Name
+            & $exe --roundtrip $_.FullName $out
+            if ($LASTEXITCODE -ne 0) {
+              Write-Error "roundtrip failed: $($_.Name)"
+              $failed = $true
+            }
+          }
+          if ($failed) { exit 1 }
+
+      - name: Self-test -- validate (param completeness vs Komplett.xml, no GL)
+        shell: pwsh
+        run: |
+          $exe = "PresetEditor\build\Release\PresetEditor.exe"
+          & $exe --validate
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+
+      - name: Install software OpenGL (Mesa llvmpipe, for --transcheck)
+        shell: pwsh
+        continue-on-error: true
+        run: |
+          $url = "https://github.com/pal1000/mesa-dist-win/releases/download/$env:MESA_VERSION/mesa3d-$env:MESA_VERSION-release-msvc.7z"
+          Invoke-WebRequest -Uri $url -OutFile mesa.7z
+          & "C:\Program Files\7-Zip\7z.exe" x mesa.7z -omesa -y | Out-Null
+          Copy-Item mesa\x64\opengl32.dll,mesa\x64\libgallium_wgl.dll -Destination "PresetEditor\build\Release\"
+
+      - name: Self-test -- transcheck (28 transition styles, software GL)
+        shell: pwsh
+        continue-on-error: true
+        env:
+          GALLIUM_DRIVER: llvmpipe
+          MESA_GL_VERSION_OVERRIDE: '3.3'
+          MESA_GLSL_VERSION_OVERRIDE: '330'
+        run: |
+          $exe = "PresetEditor\build\Release\PresetEditor.exe"
+          & $exe --transcheck
+          if ($LASTEXITCODE -ne 0) { exit 1 }
