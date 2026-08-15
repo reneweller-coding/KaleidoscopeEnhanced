@@ -5,7 +5,7 @@
 //   PresetEditor.exe                         launch the editor GUI
 //   PresetEditor.exe --roundtrip in.xml out.xml   headless load+save (self-test)
 //   PresetEditor.exe --render tex.frag comb.frag out.png [W H]   grab one preview
-//   PresetEditor.exe --transcheck            verify all 26 transition styles:
+//   PresetEditor.exe --transcheck            verify all 28 transition styles:
 //                                            exact A at d=0 / exact B at d=1 and
 //                                            no temporal jumps across the sweep
 #include <QtWidgets/QApplication>
