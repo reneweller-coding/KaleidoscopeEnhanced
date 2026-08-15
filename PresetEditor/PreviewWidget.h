@@ -1,8 +1,15 @@
 // PreviewWidget.h — live preview of one texture shader folded through one combine
 // shader, exactly as the main app's two-pass pipeline does, but with a single
 // fixed selection and a synthesized (animated) set of audio uniforms so that
-// audio-reactive shaders still move.  Self-contained: QOpenGLShaderProgram +
-// QOpenGLFramebufferObject + QOpenGLFunctions, no GLee / glu / EffectShader.
+// audio-reactive shaders still move.
+//
+// Two texture-shader paths live here side by side.  type="normal" keeps the
+// original self-contained pipeline: QOpenGLShaderProgram + QOpenGLFramebuffer-
+// Object + QOpenGLFunctions, no EffectShader.  type="scene3d" hands off to
+// Scene3DPreview, which renders a REAL Scene3DShader (procedural geometry,
+// shadow map, order-independent transparency) through the engine's own Qt-
+// free rendering core.  The two never mix GL bindings in this file — see
+// Scene3DPreview.h for why that would be a silent, hard-to-find bug.
 #pragma once
 
 #include <QtOpenGLWidgets/QOpenGLWidget>
@@ -12,6 +19,7 @@
 #include <vector>
 
 #include "../Source/AudioFeatures.h"
+#include "Scene3DPreview.h"
 
 class QOpenGLShaderProgram;
 class QOpenGLFramebufferObject;
@@ -26,7 +34,12 @@ public:
     ~PreviewWidget() override;
 
     // Select the texture / combine .frag (bare filename, resolved against root).
-    void setTextureShader(const QString &fileName);
+    // type/geom/stateBytes/shadowExtent only matter for type="scene3d"; the
+    // defaults keep every existing call site (self-tests, --render) on the
+    // original type="normal" path unchanged.
+    void setTextureShader(const QString &fileName, const QString &type = "normal",
+                           const QString &geom = QString(), int stateBytes = 0,
+                           double shadowExtent = 0.0);
     void setCombineShader(const QString &fileName);
     // Reload the two sample images from a directory (empty -> procedural fallback).
     void setImageDirectory(const QString &dir);
@@ -77,6 +90,15 @@ private:
     void   drawFullscreenQuad(QOpenGLShaderProgram *p);
     void   loadImages();                     // (re)create m_img0/m_img1 (GL thread)
     GLuint makeTexture(const QString &path);  // from file, or gradient fallback
+    // A synthetic AudioFeatures snapshot at time t, matching the same Beat/
+    // Drone math applyCommonUniforms already uses for the 2D path -- kept as
+    // an independent small copy rather than a shared refactor of the proven
+    // 2D uniform code (see Scene3DPreview.h's design note).  Only the fields
+    // that matter for a typical 3D scene are filled; the rest keep the
+    // struct's own neutral defaults (valence/arousal/musicPresence, ...).
+    AudioFeatures synthFeatures(float t) const;
+    // WAV-timeline counterpart; advances the m_tl* envelope members (not const).
+    AudioFeatures timelineFeatures();
 
     QString m_root;
     QString m_vertSrc;
@@ -84,6 +106,13 @@ private:
     QString m_texFile = "Kaleidoscope.frag";
     QString m_combFile = "CombinePlain.frag";
     bool    m_texDirty = true, m_combDirty = true;
+
+    // scene3d texture-shader path.
+    QString m_texType = "normal";
+    QString m_texGeom;
+    int     m_texStateBytes = 0;
+    double  m_texShadowExtent = 0.0;
+    Scene3DPreview m_scenePreview;
 
     QString m_imageDir;
     bool    m_imagesDirty = true;

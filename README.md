@@ -272,6 +272,30 @@ Studio; run it with `C:\Qt\...\bin` on `PATH`.  Headless self-tests:
 `PresetEditor.exe --render tex.frag combine.frag out.png` and
 `PresetEditor.exe --transcheck`.
 
+**Scene3D preview.** The editor used to preview every shader through the same
+flat fullscreen-quad pipeline, which meant `type="scene3d"` shaders — real
+procedural geometry, not a screen-space effect — couldn't be selected at all.
+It now links the same Qt-free rendering core the main app uses
+(`EffectShader`/`Scene3DShader`/`Uniform`/`ExprEval`/`glcore`/…) through a new
+`Scene3DPreview` class, so `Scene3D/` shaders show up in the type drop-down
+alongside `geom`, `stateBytes` and `shadowExtent` fields to author them
+correctly, and `--render` accepts the same flags headlessly. Per-activation
+`<float>`/`<int>` ranges from `Komplett.xml` are applied on load, the way the
+shipped app applies them, so a scene's camera/extent parameters land where the
+preset intends rather than at GLSL's zero default.
+
+Single-pass scenes — anything that calls `draw()` once per frame, including
+compute-driven and persistent-state scenes like `FeatherStorm`, `PrismExplode`
+and `CoralGrowth` — preview correctly end to end: full lighting, per-fragment
+discard, generator state all confirmed. **Known limitation:** a scene that
+opts into the shadow map or OIT — i.e. anything calling `draw()` more than
+once per frame — currently loses part or all of its geometry in this preview
+only (confirmed on `ShadowForest`, `PillarHall`, `CathedralGlass`); the root
+cause wasn't found despite a real investigation, and it doesn't reproduce in
+the shipped app, where the same shaders render correctly. Author those presets
+by hand or verify them with `Kaleidoscope.exe -c <name> -l` instead, until this
+is root-caused.
+
 The `normal` and `psychedelic` presets also include the newest audio-reactive
 effects: **`StereoSpectrum`** (stereo-separated left/right band display) and
 **`ReactionDiffusion`** (the live GPU Gray-Scott simulation, see below).

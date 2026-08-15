@@ -82,6 +82,8 @@ bool Preset::load(const QString &path, Preset &out, QString *err)
             e.complexity = el.attribute("complexity").toInt();
             e.mood = el.attribute("mood");           // pass-through (may be empty)
             e.geom = el.attribute("geom");           // scene3d geometry kind
+            e.stateBytes = el.attribute("stateBytes").toInt();
+            e.shadowExtent = el.attribute("shadowExtent").toDouble();
             readParams(el, e);
             out.entries.push_back(e);
         }
@@ -127,6 +129,10 @@ bool Preset::save(const QString &path, QString *err) const
         w.writeAttribute("type", e.type);
         if (!e.geom.isEmpty())
             w.writeAttribute("geom", e.geom);
+        if (e.stateBytes > 0)
+            w.writeAttribute("stateBytes", QString::number(e.stateBytes));
+        if (e.shadowExtent > 0.0)
+            w.writeAttribute("shadowExtent", QString::number(e.shadowExtent));
         w.writeAttribute("probability", QString::number(e.probability));
         if (!e.mood.isEmpty())
             w.writeAttribute("mood", e.mood);

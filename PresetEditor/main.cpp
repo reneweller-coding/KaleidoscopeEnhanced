@@ -68,21 +68,49 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
     const QString root = findRoot();
 
+    // shader_setup.cpp / textfile.cpp resolve every path relative to the
+    // process's CURRENT WORKING DIRECTORY, hard-coded in the "..\Blend\...",
+    // "..\standard.vert", "..\Scene3D\..." style the whole engine's configs
+    // already use.  The main app gets this for free because its exe lives one
+    // level below root (Release\); PresetEditor.exe does not, and until a
+    // scene3d shader was added, nothing in this app ever exercised a
+    // CWD-relative path (PreviewWidget's own 2D loader resolves everything
+    // against `root` explicitly).  Anchoring the CWD here, once, before any
+    // shader ever loads, makes those same relative strings resolve correctly
+    // regardless of where the exe was launched from.
+    QDir::setCurrent( root + "/PresetEditor" );
+
     // Headless-ish preview grab: render one frame of a shader pair to a PNG.
     // Optional trailing arg "drone" switches the synthesized music profile.
+    // Optional --geom/--stateBytes/--shadowExtent select the scene3d path
+    // (tex.frag must then be a Scene3D/ file); their absence keeps the
+    // texture shader on the original type="normal" path.
     if (args.value(0) == "--render" && args.size() >= 4)
     {
         PreviewWidget *w = new PreviewWidget(root);
         const int W = args.value(4, "960").toInt();
         const int H = args.value(5, "600").toInt();
-        w->setTextureShader(args[1]);
+        auto flagValue = [&](const QString &flag) -> QString {
+            int i = args.indexOf(flag);
+            return (i >= 0 && i + 1 < args.size()) ? args[i + 1] : QString();
+        };
+        const QString geom = flagValue("--geom");
+        if (!geom.isEmpty())
+            w->setTextureShader(args[1], "scene3d", geom,
+                                 flagValue("--stateBytes").toInt(),
+                                 flagValue("--shadowExtent").toDouble());
+        else
+            w->setTextureShader(args[1]);
         w->setCombineShader(args[2]);
         if (args.contains("drone"))
             w->setMusicMode(PreviewWidget::Drone);
         w->resize(W ? W : 960, H ? H : 600);
         w->show();
         const QString out = args[3];
-        QTimer::singleShot(1000, [w, out]() {
+        // A 3D scene compiles a compute generator + shadow map + OIT targets
+        // on its first frame; give it longer than the 2D path's 1 s before
+        // the grab.
+        QTimer::singleShot(geom.isEmpty() ? 1000 : 2500, [w, out]() {
             QImage img = w->grabFramebuffer();
             img.save(out);
             QApplication::quit();

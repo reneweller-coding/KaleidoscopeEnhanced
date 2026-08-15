@@ -35,7 +35,10 @@ struct PresetEntry
     bool     isCombine = false;
     QString  file;         // bare filename, e.g. "Kaleidoscope.frag"
     QString  type = "normal";   // "normal" | "KaleidoscopeBase" | "scene3d"
-    QString  geom;         // scene3d only: "points" | "cubes" | "ribbon"
+    QString  geom;         // scene3d only: "points" | "cubes" | "ribbon" | ...
+    // scene3d only, both optional (0 = attribute omitted, matching Configuration.cpp):
+    int      stateBytes   = 0;    // persistent generator state buffer size
+    double   shadowExtent = 0.0;  // shadow-box half-width; 0 = engine default
     int      minTimeSolo = 20, maxTimeSolo = 80;
     int      minTimeInterpolation = 15, maxTimeInterpolation = 50;
     double   probability = 0.5;

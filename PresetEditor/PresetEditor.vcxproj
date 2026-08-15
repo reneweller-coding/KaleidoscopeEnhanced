@@ -55,7 +55,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>Qt6Widgetsd.lib;Qt6Guid.lib;Qt6Cored.lib;Qt6OpenGLd.lib;Qt6OpenGLWidgetsd.lib;Qt6Xmld.lib;OpenGL32.Lib;ole32.lib;oleaut32.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Qt6Widgetsd.lib;Qt6Guid.lib;Qt6Cored.lib;Qt6OpenGLd.lib;Qt6OpenGLWidgetsd.lib;Qt6Xmld.lib;OpenGL32.Lib;GlU32.Lib;ole32.lib;oleaut32.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)PresetEditor.exe</OutputFile>
       <AdditionalLibraryDirectories>$(QTDIR)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -75,7 +75,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>Qt6Widgets.lib;Qt6Gui.lib;Qt6Core.lib;Qt6OpenGL.lib;Qt6OpenGLWidgets.lib;Qt6Xml.lib;OpenGL32.Lib;ole32.lib;oleaut32.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Qt6Widgets.lib;Qt6Gui.lib;Qt6Core.lib;Qt6OpenGL.lib;Qt6OpenGLWidgets.lib;Qt6Xml.lib;OpenGL32.Lib;GlU32.Lib;ole32.lib;oleaut32.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)PresetEditor.exe</OutputFile>
       <AdditionalLibraryDirectories>$(QTDIR)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>false</GenerateDebugInformation>
@@ -90,14 +90,42 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="EditorWindow.cpp" />
     <ClCompile Include="PreviewWidget.cpp" />
+    <ClCompile Include="Scene3DPreview.cpp" />
     <ClCompile Include="Preset.cpp" />
     <ClCompile Include="..\Source\AudioAnalyzer.cpp" />
+    <!-- The Qt-free rendering core (a119fe8), shared verbatim with the main
+         app so the editor's preview is the SAME code path, not a second one
+         that drifts.  None of these include any Qt module. -->
+    <ClCompile Include="..\Source\EffectShader.cpp" />
+    <ClCompile Include="..\Source\Scene3DShader.cpp" />
+    <ClCompile Include="..\Source\Uniform.cpp" />
+    <ClCompile Include="..\Source\ExprEval.cpp" />
+    <ClCompile Include="..\Source\shader_setup.cpp" />
+    <ClCompile Include="..\Source\textfile.cpp" />
+    <ClCompile Include="..\Source\glcore.cpp" />
+    <!-- Pulled in only to satisfy EffectShader::cfxMask()'s reference to
+         kCfxInfo at LINK time: cfxMask() is reachable purely because it is
+         a member of EffectShader.obj, not because Scene3DPreview calls it.
+         The compute-FX sim textures it describes are the same GpuSims-fed
+         textures (fluid/smoke/SSM/physarum/spectro) already out of scope for
+         this editor; nothing here actually dispatches a compute pass. -->
+    <ClCompile Include="..\Source\ComputeFX.cpp" />
     <ClCompile Include="moc_EditorWindow.cpp" />
     <ClCompile Include="moc_PreviewWidget.cpp" />
     <ClCompile Include="moc_AudioAnalyzer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Preset.h" />
+    <ClInclude Include="Scene3DPreview.h" />
+    <ClInclude Include="..\Source\EffectShader.h" />
+    <ClInclude Include="..\Source\Scene3DShader.h" />
+    <ClInclude Include="..\Source\Uniform.h" />
+    <ClInclude Include="..\Source\ExprEval.h" />
+    <ClInclude Include="..\Source\shader_setup.h" />
+    <ClInclude Include="..\Source\textfile.h" />
+    <ClInclude Include="..\Source\glcore.h" />
+    <ClInclude Include="..\Source\ComputeFX.h" />
+    <ClInclude Include="..\Source\stdinc.h" />
     <CustomBuild Include="EditorWindow.h">
       <Message>MOCing EditorWindow.h ...</Message>
       <Command>$(QTDIR)\bin\moc EditorWindow.h -o moc_EditorWindow.cpp

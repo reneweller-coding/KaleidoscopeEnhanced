@@ -109,12 +109,25 @@ EditorWindow::EditorWindow(const QString &projectRoot, QWidget *parent)
     QGroupBox *gAdd = new QGroupBox("Add current shader to preset");
     QFormLayout *fAdd = new QFormLayout(gAdd);
     m_typeCombo = new QComboBox();
-    m_typeCombo->addItems({ "normal", "KaleidoscopeBase" });
+    m_typeCombo->addItems({ "normal", "KaleidoscopeBase", "scene3d" });
+    // scene3d-only fields (geom is required by the engine; stateBytes/
+    // shadowExtent are optional, 0 = attribute omitted, matching Configuration.cpp).
+    m_geomCombo = new QComboBox();
+    m_geomCombo->addItems({ "points", "cubes", "ribbon", "grid", "quads",
+                             "patches", "scatter", "indirect" });
+    m_stateBytesSpin = mkSpin(0, 8 * 1024 * 1024, 0);
+    m_stateBytesSpin->setSpecialValueText("(none)");
+    m_shadowExtentSpin = new QDoubleSpinBox();
+    m_shadowExtentSpin->setRange(0.0, 500.0);
+    m_shadowExtentSpin->setSpecialValueText("(engine default)");
     m_minSolo = mkSpin(0, 100000, 20);   m_maxSolo = mkSpin(0, 100000, 80);
     m_minInterp = mkSpin(0, 100000, 15); m_maxInterp = mkSpin(0, 100000, 50);
     m_prob = new QDoubleSpinBox(); m_prob->setRange(0.0, 1.0); m_prob->setSingleStep(0.05); m_prob->setValue(0.5);
     m_complex = mkSpin(1, 20, 1);
     fAdd->addRow("Type (texture)", m_typeCombo);
+    fAdd->addRow("Geom (scene3d)", m_geomCombo);
+    fAdd->addRow("stateBytes (scene3d)", m_stateBytesSpin);
+    fAdd->addRow("shadowExtent (scene3d)", m_shadowExtentSpin);
     fAdd->addRow("minTimeSolo", m_minSolo);
     fAdd->addRow("maxTimeSolo", m_maxSolo);
     fAdd->addRow("minTimeInterpolation", m_minInterp);
@@ -131,9 +144,9 @@ EditorWindow::EditorWindow(const QString &projectRoot, QWidget *parent)
     // Preset contents table
     QGroupBox *gTab = new QGroupBox("Preset contents");
     QVBoxLayout *vTab = new QVBoxLayout(gTab);
-    m_table = new QTableWidget(0, 9);
+    m_table = new QTableWidget(0, 10);
     m_table->setHorizontalHeaderLabels(
-        { "Kind", "File", "Type", "SoloMin", "SoloMax", "IntMin", "IntMax", "Prob", "Cplx" });
+        { "Kind", "File", "Type", "Geom", "SoloMin", "SoloMax", "IntMin", "IntMax", "Prob", "Cplx" });
     m_table->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
     m_table->setSelectionBehavior(QAbstractItemView::SelectRows);
     m_table->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -183,6 +196,19 @@ EditorWindow::EditorWindow(const QString &projectRoot, QWidget *parent)
     // ---- wiring ----
     connect(m_texCombo,  &QComboBox::currentTextChanged, this, &EditorWindow::onTextureChanged);
     connect(m_combCombo, &QComboBox::currentTextChanged, this, &EditorWindow::onCombineChanged);
+    // Tuning geom/stateBytes/shadowExtent for the CURRENTLY previewed scene3d
+    // shader should update the live preview immediately, the same way the
+    // parameter sliders already do -- otherwise the fields would look inert
+    // until the next unrelated preview refresh.
+    connect(m_geomCombo, &QComboBox::currentTextChanged, this, [this]{
+        if (isScene3D(m_texCombo->currentText())) pushPreviewTexture();
+    });
+    connect(m_stateBytesSpin, QOverload<int>::of(&QSpinBox::valueChanged), this, [this]{
+        if (isScene3D(m_texCombo->currentText())) pushPreviewTexture();
+    });
+    connect(m_shadowExtentSpin, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, [this]{
+        if (isScene3D(m_texCombo->currentText())) pushPreviewTexture();
+    });
     connect(musicCombo, &QComboBox::currentIndexChanged, this, [this](int i){
         m_preview->setMusicMode(i == 1 ? PreviewWidget::Drone : PreviewWidget::Beat);
     });
@@ -204,28 +230,55 @@ EditorWindow::EditorWindow(const QString &projectRoot, QWidget *parent)
 
 void EditorWindow::scanShaders()
 {
-    // Since the 2026-07 reorg the user-selectable shaders live in Scene/ and
-    // Combine/ (Blend/ holds the internal pipeline passes and is not listed).
-    const QStringList scenes   = QDir(m_root + "/Scene").entryList(
-                                     { "*.frag" }, QDir::Files, QDir::Name);
-    const QStringList combines = QDir(m_root + "/Combine").entryList(
-                                     { "*.frag" }, QDir::Files, QDir::Name);
+    // Since the 2026-07 reorg the user-selectable shaders live in Scene/,
+    // Scene3D/ and Combine/ (Blend/ holds the internal pipeline passes and is
+    // not listed).  Scene3D shaders share the texture-shader combo with the
+    // 2D ones -- onTextureChanged() tells them apart by which folder they
+    // were actually found in (m_scene3DFiles), not by any naming convention.
+    const QStringList scenes    = QDir(m_root + "/Scene").entryList(
+                                      { "*.frag" }, QDir::Files, QDir::Name);
+    const QStringList scenes3D  = QDir(m_root + "/Scene3D").entryList(
+                                      { "*.frag" }, QDir::Files, QDir::Name);
+    const QStringList combines  = QDir(m_root + "/Combine").entryList(
+                                      { "*.frag" }, QDir::Files, QDir::Name);
+    m_scene3DFiles = scenes3D;
     m_texCombo->blockSignals(true); m_combCombo->blockSignals(true);
     for (const QString &f : scenes)   m_texCombo->addItem(f);
+    for (const QString &f : scenes3D) m_texCombo->addItem(f);
     for (const QString &f : combines) m_combCombo->addItem(f);
+    m_texCombo->model()->sort(0);
     m_texCombo->blockSignals(false); m_combCombo->blockSignals(false);
     if (m_combCombo->findText("CombinePlain.frag") >= 0)
         m_combCombo->setCurrentText("CombinePlain.frag");
 }
 
+// Send whatever the "Add current shader to preset" panel currently says for
+// type/geom/stateBytes/shadowExtent to the live preview.  Split out of
+// onTextureChanged() so the geom/stateBytes/shadowExtent fields can push an
+// update on their own, without re-deriving which file is selected.
+void EditorWindow::pushPreviewTexture()
+{
+    const QString f = m_texCombo->currentText();
+    if (f.isEmpty()) return;
+    m_preview->setTextureShader(f, m_typeCombo->currentText(),
+                                 m_geomCombo->currentText(),
+                                 m_stateBytesSpin->value(),
+                                 m_shadowExtentSpin->value());
+}
+
 void EditorWindow::onTextureChanged()
 {
     if (m_texCombo->currentText().isEmpty()) return;
-    m_preview->setTextureShader(m_texCombo->currentText());
-    // KaleidoscopeBase suits the Kaleidoscope/Tunnel bases; default others to normal.
     const QString f = m_texCombo->currentText();
-    m_typeCombo->setCurrentText(
-        (f == "Kaleidoscope.frag" || f == "Tunnel.frag") ? "KaleidoscopeBase" : "normal");
+    // Folder tells the type, not the name: KaleidoscopeBase suits the two
+    // legacy fullscreen shaders specifically; anything found under Scene3D/
+    // is scene3d; everything else defaults to normal.
+    if (isScene3D(f))
+        m_typeCombo->setCurrentText("scene3d");
+    else
+        m_typeCombo->setCurrentText(
+            (f == "Kaleidoscope.frag" || f == "Tunnel.frag") ? "KaleidoscopeBase" : "normal");
+    pushPreviewTexture();
     rebuildParamSliders();
 }
 void EditorWindow::onCombineChanged()
@@ -384,6 +437,12 @@ void EditorWindow::addTextureEntry()
     e.isCombine = false;
     e.file = m_texCombo->currentText();
     e.type = m_typeCombo->currentText();
+    if (e.type == "scene3d")
+    {
+        e.geom = m_geomCombo->currentText();
+        e.stateBytes = m_stateBytesSpin->value();
+        e.shadowExtent = m_shadowExtentSpin->value();
+    }
     e.minTimeSolo = m_minSolo->value(); e.maxTimeSolo = m_maxSolo->value();
     e.minTimeInterpolation = m_minInterp->value(); e.maxTimeInterpolation = m_maxInterp->value();
     e.probability = m_prob->value(); e.complexity = m_complex->value();
@@ -423,9 +482,20 @@ void EditorWindow::onTableSelectionChanged()
     if (e.isCombine) m_combCombo->setCurrentText(e.file);
     else             m_texCombo->setCurrentText(e.file);
     m_typeCombo->setCurrentText(e.type);
+    if (e.type == "scene3d")
+    {
+        if (!e.geom.isEmpty()) m_geomCombo->setCurrentText(e.geom);
+        m_stateBytesSpin->setValue(e.stateBytes);
+        m_shadowExtentSpin->setValue(e.shadowExtent);
+    }
     m_minSolo->setValue(e.minTimeSolo); m_maxSolo->setValue(e.maxTimeSolo);
     m_minInterp->setValue(e.minTimeInterpolation); m_maxInterp->setValue(e.maxTimeInterpolation);
     m_prob->setValue(e.probability); m_complex->setValue(e.complexity);
+    // m_texCombo->setCurrentText() above already re-fired onTextureChanged()
+    // (or is a no-op if the text was already current); either way the geom/
+    // stateBytes/shadowExtent values just restored need their own push, since
+    // onTextureChanged() ran BEFORE this function set them.
+    if (!e.isCombine) pushPreviewTexture();
 }
 
 void EditorWindow::refreshTable()
@@ -438,12 +508,13 @@ void EditorWindow::refreshTable()
         set(0, e.isCombine ? "Combine" : "Texture");
         set(1, e.file);
         set(2, e.type);
-        set(3, QString::number(e.minTimeSolo));
-        set(4, QString::number(e.maxTimeSolo));
-        set(5, QString::number(e.minTimeInterpolation));
-        set(6, QString::number(e.maxTimeInterpolation));
-        set(7, QString::number(e.probability));
-        set(8, QString::number(e.complexity));
+        set(3, e.geom);
+        set(4, QString::number(e.minTimeSolo));
+        set(5, QString::number(e.maxTimeSolo));
+        set(6, QString::number(e.minTimeInterpolation));
+        set(7, QString::number(e.maxTimeInterpolation));
+        set(8, QString::number(e.probability));
+        set(9, QString::number(e.complexity));
     }
 }
 
