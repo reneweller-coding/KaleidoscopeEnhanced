@@ -92,15 +92,15 @@ EditorWindow::EditorWindow(const QString &projectRoot, QWidget *parent)
                         "Tabelle gewählten Preset-Eintrag schreiben");
     pBtns->addWidget(bDice); pBtns->addWidget(bFreeze);
     pv->addLayout(pBtns);
-    // Transition test bench: watch ONE of the 25 CombinePlain transition
+    // Transition test bench: watch ONE of the 28 CombinePlain transition
     // styles in slow motion (interpolation sweeps back and forth, ~10 s).
     QHBoxLayout *tBench = new QHBoxLayout();
     m_transCheck = new QCheckBox("Übergangs-Zeitlupe, Stil:");
     m_transCheck->setToolTip("Überblendung in Zeitlupe hin- und herfahren "
-                             "(Stile 0-24; wählt als Combine am besten CombinePlain). "
+                             "(Stile 0-27; wählt als Combine am besten CombinePlain). "
                              "Headless-Prüfung aller Stile: PresetEditor --transcheck");
     m_transSpin = new QSpinBox();
-    m_transSpin->setRange(0, 24);
+    m_transSpin->setRange(0, 27);
     tBench->addWidget(m_transCheck);
     tBench->addWidget(m_transSpin);
     tBench->addStretch(1);
