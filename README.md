@@ -9,6 +9,39 @@ It works equally well for **beat-driven music** (Rock/Pop/EDM) and **beatless
 ambient / drone**, and automatically calms down to a non-reactive mode for
 **speech / video dialogue**.
 
+**[⬇ Download the latest portable build](https://github.com/reneweller-coding/KaleidoscopeEnhanced/releases/latest)**
+— no install, no Qt/Visual Studio needed, just unzip and run (see
+[Deployment](#deployment--standalone-package-no-qt--vs-on-the-target)).
+
+|  |  |
+|---|---|
+| ![Kaleidoscope](docs/screenshots/kaleidoscope.png) | ![PrismExplode](docs/screenshots/prismexplode.png) |
+| ![FeatherStorm](docs/screenshots/featherstorm.png) | ![Metamorph](docs/screenshots/metamorph.png) |
+
+*Four of the ~200 shaders in the catalogue — a classic kaleidoscope fold, a
+compute-driven prism-shatter scene, a volumetric feather storm (real 3D
+geometry + shadow map), and a domain-warped fractal cloud. Renders like these
+are reproducible headlessly via `PresetEditor.exe --render` (see
+[Preset editor](#preset-editor-standalone-tool)).*
+
+---
+
+## Contents
+
+- [Build](#build)
+- [Deployment — standalone package](#deployment--standalone-package-no-qt--vs-on-the-target)
+- [Controls](#controls)
+- [Configurations](#configurations)
+  - [Preset editor (standalone tool)](#preset-editor-standalone-tool)
+- [Live control](#live-control)
+- [How the audio reactivity works](#how-the-audio-reactivity-works)
+- [GPU reaction-diffusion (live simulation effect)](#gpu-reaction-diffusion-live-simulation-effect)
+- [Compute-shader effects (`ComputeFX`)](#compute-shader-effects-computefx)
+- [GPU volumetric fire/smoke simulation](#gpu-volumetric-firesmoke-simulation)
+- [Installation & robustness](#installation--robustness)
+- [Project layout](#project-layout)
+- [Notes](#notes)
+
 ---
 
 ## Build
@@ -2284,6 +2317,8 @@ Reorganised 2026-07 into folders:
 - `ThirdParty\SpoutGL\` — vendored Spout2 SDK; `PresetEditor\` — the editor;
   `Configurations\*.xml` — presets (entries reference `..\Scene\...` /
   `..\Combine\...`)
+- `docs\screenshots\` — the README gallery images, rendered headlessly via
+  `PresetEditor.exe --render` (see [Preset editor](#preset-editor-standalone-tool))
 
 The deploy packaging (`deploy.ps1`) mirrors the same folder structure into
 `dist\KaleidoscopeVisualizer\`.
