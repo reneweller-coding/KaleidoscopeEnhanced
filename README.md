@@ -271,6 +271,23 @@ parameters, mood tags, flicker-free integrated motion.
 - **`QuantumVortexField`** (`Scene3D/`, `geom="indirect"` + `QuantumVortexField.comp`): GPU Compute Shader generating dynamic 3D toroidal magnetic vortex filaments and Lorenz attractor streamlines with glowing ribbons.
 - **`GlacierTessellation`** (`Scene3D/`, `geom="patches"` + `GlacierTessellation.tesc` + `.tese`): Distance-adaptive GPU hardware tessellation generating an arctic glacial ocean with subsurface blue scattering and glowing crevasses.
 
+**Next-Gen Physics, Biology & Architecture Suite (2026-08 Expansion 2 — 15 New Shaders):**
+- **`SupermassiveAccretionDisk`** (`Scene/`): Raymarched rotating Kerr black hole with relativistic frame dragging, Doppler photon sphere, and high-energy polar plasma jets.
+- **`EscherRelativityMatrix`** (`Scene/`): Raymarched infinite 3D architectural labyrinth inspired by M.C. Escher's *Relativity* with 3 orthogonal gravity directions and neon staircases.
+- **`MandelbulbHyperRealm`** (`Scene/`): Deep 3D dive into the Mandelbulb fractal $(z^N + c)$ with audio-reactive power $N$ morphing and iridescent metallic specular shading.
+- **`HyperbolicHoneycombTessellation`** (`Scene/`): True 3D hyperbolic non-Euclidean space tessellation in the Poincaré ball with infinite Coxeter mirror reflections.
+- **`VolcanicLightningPlume`** (`Scene/`): Volumetric explosive volcanic ash column billowing into the night sky with lava fountains and branched electrostatic volcanic lightning.
+- **`PrismaticRainbowCloud`** (`Scene/`): Polar stratospheric nacreous mother-of-pearl clouds with pastel Mie diffraction iridescence and glowing crepuscular god rays.
+- **`TokamakFusionCore`** (`Scene3D/`, `geom="indirect"` + `TokamakFusionCore.comp`): GPU Compute Shader simulating 4,096 magnetic D-T plasma filaments inside a toroidal vacuum vessel.
+- **`QuantumWavepacketCollapse`** (`Scene3D/`, `geom="points"`): 60,000-particle 3D quantum probability density field in superposition with beat-triggered wavepacket collapse.
+- **`HolographicMemoryCore`** (`Scene3D/`, `geom="quads"`): 3,000 hexagonal quartz holographic data crystals floating in an optical vault projecting photo textures.
+- **`CyberVoxelTerraform`** (`Scene3D/`, `geom="cubes"`): 4,900 monolithic voxel cubes dynamically assembling into cybernetic equalizer cities and pyramids.
+- **`DeepSeaVentsEcosystem`** (`Scene3D/`, `geom="indirect"` + `DeepSeaVentsEcosystem.comp`): GPU Compute Shader generating hydrothermal black smoker mineral plumes and bioluminescent organisms.
+- **`MyceliumNeuralPulse`** (`Scene3D/`, `geom="indirect"` + `MyceliumNeuralPulse.comp`): GPU Compute Shader generating a 3D branching fungal mycelium network conducting bio-electric action potentials.
+- **`CoralReefFluorescence`** (`Scene3D/`, `geom="grid"`): 220x120 heightfield fluorescent coral reef with undulating polyps and ultraviolet light response.
+- **`HopfFibrationToruses`** (`Scene3D/`, `geom="ribbon"`): 20 stereographically projected 4D Hopf fibration Villarceau circles swirling seamlessly in 3D without intersecting.
+- **`AuroraBorealisOverFjord`** (`Scene3D/`, `geom="patches"` + `AuroraBorealisOverFjord.tesc` + `.tese`): Hardware GPU tessellation of an arctic fjord with reflective water and volumetric northern lights.
+
 **Timing is music-driven:** per-entry `min/maxTime*` attributes are now
 OPTIONAL — the pacing comes from `timingScale` (tempo/arousal), 4-beat
 cross-fades and section cuts.  Absent times fall back to engine defaults

@@ -391,4 +391,43 @@
     <float name="hueP"  minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
 
+  <TextureShader file="..\Scene\SupermassiveAccretionDisk.frag" type="normal" probability="0.6" mood="aggressive,bright" complexity="4">
+    <float name="spinP" minValue="0.8" maxValue="1.8"></float>
+    <float name="diskP" minValue="0.7" maxValue="1.8"></float>
+    <float name="jetP"  minValue="0.8" maxValue="2.2"></float>
+    <float name="hueP"  minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene\EscherRelativityMatrix.frag" type="normal" probability="0.55" mood="bright,aggressive" complexity="3">
+    <float name="gridP" minValue="0.6" maxValue="2.0"></float>
+    <float name="archP" minValue="0.6" maxValue="1.8"></float>
+    <float name="neonP" minValue="0.8" maxValue="2.2"></float>
+    <float name="hueP"  minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene\VolcanicLightningPlume.frag" type="normal" probability="0.58" mood="aggressive,bright" complexity="3">
+    <float name="eruptionP" minValue="0.8" maxValue="2.0"></float>
+    <float name="smokeP"    minValue="0.6" maxValue="1.8"></float>
+    <float name="boltP"     minValue="0.8" maxValue="2.2"></float>
+    <float name="hueP"      minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene3D\TokamakFusionCore.frag" type="scene3d" geom="indirect" probability="0.58" mood="aggressive,bright" complexity="4">
+    <float name="heatP" minValue="0.8" maxValue="2.0"></float>
+    <float name="glowP" minValue="0.8" maxValue="2.2"></float>
+    <float name="hueP"  minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene3D\CyberVoxelTerraform.frag" type="scene3d" geom="cubes" probability="0.58" mood="aggressive,bright" complexity="3">
+    <float name="glowP" minValue="0.7" maxValue="2.0"></float>
+    <float name="neonP" minValue="0.8" maxValue="2.2"></float>
+    <float name="hueP"  minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene3D\HopfFibrationToruses.frag" type="scene3d" geom="ribbon" probability="0.55" mood="bright,aggressive" complexity="2">
+    <float name="glowP"  minValue="0.7" maxValue="2.0"></float>
+    <float name="widthP" minValue="0.6" maxValue="1.8"></float>
+    <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
 </configuration>

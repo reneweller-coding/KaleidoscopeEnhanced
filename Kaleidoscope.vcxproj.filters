@@ -438,6 +438,24 @@
     <None Include="Scene\ChromaAcidTrip.frag">
       <Filter>Shaders\Scene</Filter>
     </None>
+    <None Include="Scene\SupermassiveAccretionDisk.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\EscherRelativityMatrix.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\MandelbulbHyperRealm.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\HyperbolicHoneycombTessellation.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\VolcanicLightningPlume.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\PrismaticRainbowCloud.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
     <None Include="Combine\CombineDarkRed.frag">
       <Filter>Shaders\Combine</Filter>
     </None>
@@ -1510,6 +1528,75 @@
       <Filter>Shaders\Scene3D</Filter>
     </None>
     <None Include="Scene3D\GlacierTessellation.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\TokamakFusionCore.comp">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\TokamakFusionCore.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\TokamakFusionCore.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\QuantumWavepacketCollapse.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\QuantumWavepacketCollapse.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\HolographicMemoryCore.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\HolographicMemoryCore.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\CyberVoxelTerraform.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\CyberVoxelTerraform.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\DeepSeaVentsEcosystem.comp">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\DeepSeaVentsEcosystem.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\DeepSeaVentsEcosystem.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\MyceliumNeuralPulse.comp">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\MyceliumNeuralPulse.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\MyceliumNeuralPulse.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\CoralReefFluorescence.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\CoralReefFluorescence.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\HopfFibrationToruses.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\HopfFibrationToruses.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\AuroraBorealisOverFjord.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\AuroraBorealisOverFjord.tesc">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\AuroraBorealisOverFjord.tese">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\AuroraBorealisOverFjord.frag">
       <Filter>Shaders\Scene3D</Filter>
     </None>
     <None Include="Configurations\Allround.xml">

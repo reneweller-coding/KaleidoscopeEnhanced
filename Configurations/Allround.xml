@@ -969,4 +969,100 @@
     <float name="hueP"    minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
 
+  <!-- 15 Additional Next-Gen Shaders -->
+  <TextureShader file="..\Scene\SupermassiveAccretionDisk.frag" type="normal" probability="0.5" mood="aggressive,bright" complexity="4">
+    <float name="spinP" minValue="0.5" maxValue="1.8"></float>
+    <float name="diskP" minValue="0.6" maxValue="1.8"></float>
+    <float name="jetP"  minValue="0.5" maxValue="2.2"></float>
+    <float name="hueP"  minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene\EscherRelativityMatrix.frag" type="normal" probability="0.48" mood="bright,aggressive" complexity="3">
+    <float name="gridP" minValue="0.5" maxValue="2.0"></float>
+    <float name="archP" minValue="0.5" maxValue="1.8"></float>
+    <float name="neonP" minValue="0.5" maxValue="2.2"></float>
+    <float name="hueP"  minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene\MandelbulbHyperRealm.frag" type="normal" probability="0.48" mood="psychedelic,bright" complexity="4">
+    <float name="powerP" minValue="4.0" maxValue="8.0"></float>
+    <float name="zoomP"  minValue="0.5" maxValue="1.8"></float>
+    <float name="glowP"  minValue="0.5" maxValue="2.2"></float>
+    <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene\HyperbolicHoneycombTessellation.frag" type="normal" probability="0.48" mood="bright,psychedelic" complexity="3">
+    <float name="polyP"  minValue="0.5" maxValue="2.0"></float>
+    <float name="zoomP"  minValue="0.5" maxValue="1.8"></float>
+    <float name="facetP" minValue="0.5" maxValue="2.2"></float>
+    <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene\VolcanicLightningPlume.frag" type="normal" probability="0.5" mood="aggressive,bright,dark" complexity="3">
+    <float name="eruptionP" minValue="0.5" maxValue="2.0"></float>
+    <float name="smokeP"    minValue="0.5" maxValue="1.8"></float>
+    <float name="boltP"     minValue="0.5" maxValue="2.2"></float>
+    <float name="hueP"      minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene\PrismaticRainbowCloud.frag" type="normal" probability="0.48" mood="calm,dreamy,bright" complexity="3">
+    <float name="densityP" minValue="0.5" maxValue="1.8"></float>
+    <float name="waveP"    minValue="0.5" maxValue="2.0"></float>
+    <float name="rayP"     minValue="0.5" maxValue="2.2"></float>
+    <float name="hueP"     minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene3D\TokamakFusionCore.frag" type="scene3d" geom="indirect" probability="0.5" mood="aggressive,bright" complexity="4">
+    <float name="heatP" minValue="0.5" maxValue="2.0"></float>
+    <float name="glowP" minValue="0.5" maxValue="2.2"></float>
+    <float name="hueP"  minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene3D\QuantumWavepacketCollapse.frag" type="scene3d" geom="points" probability="0.48" mood="bright,psychedelic" complexity="2">
+    <float name="glowP"     minValue="0.5" maxValue="2.0"></float>
+    <float name="collapseP" minValue="0.5" maxValue="2.0"></float>
+    <float name="hueP"      minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene3D\HolographicMemoryCore.frag" type="scene3d" geom="quads" probability="0.48" mood="bright,calm" complexity="2">
+    <float name="glowP"  minValue="0.5" maxValue="2.0"></float>
+    <float name="laserP" minValue="0.5" maxValue="2.2"></float>
+    <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene3D\CyberVoxelTerraform.frag" type="scene3d" geom="cubes" probability="0.5" mood="aggressive,bright" complexity="3">
+    <float name="glowP" minValue="0.5" maxValue="2.0"></float>
+    <float name="neonP" minValue="0.5" maxValue="2.2"></float>
+    <float name="hueP"  minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene3D\DeepSeaVentsEcosystem.frag" type="scene3d" geom="indirect" probability="0.48" mood="calm,dark,dreamy" complexity="4">
+    <float name="glowP" minValue="0.5" maxValue="2.0"></float>
+    <float name="hueP"  minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene3D\MyceliumNeuralPulse.frag" type="scene3d" geom="indirect" probability="0.48" mood="calm,bright" complexity="4">
+    <float name="glowP"  minValue="0.5" maxValue="2.0"></float>
+    <float name="pulseP" minValue="0.5" maxValue="2.2"></float>
+    <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene3D\CoralReefFluorescence.frag" type="scene3d" geom="grid" probability="0.48" mood="calm,dreamy,bright" complexity="3">
+    <float name="glowP"  minValue="0.5" maxValue="2.0"></float>
+    <float name="fluorP" minValue="0.5" maxValue="2.2"></float>
+    <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene3D\HopfFibrationToruses.frag" type="scene3d" geom="ribbon" probability="0.5" mood="bright,psychedelic" complexity="2">
+    <float name="glowP"  minValue="0.5" maxValue="2.0"></float>
+    <float name="widthP" minValue="0.5" maxValue="1.8"></float>
+    <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene3D\AuroraBorealisOverFjord.frag" type="scene3d" geom="patches" probability="0.48" mood="calm,dreamy,bright" complexity="4">
+    <float name="glowP"   minValue="0.5" maxValue="2.0"></float>
+    <float name="auroraP" minValue="0.5" maxValue="2.2"></float>
+    <float name="hueP"    minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
 </configuration>
