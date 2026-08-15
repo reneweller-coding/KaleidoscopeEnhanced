@@ -17,7 +17,12 @@ on:
   workflow_dispatch:
 
 env:
-  QT_VERSION: '6.11.1'
+  # 6.10.3 rather than the 6.11.x the project builds with locally: Qt 6.11's
+  # Windows msvc2022_64 packages aren't published to aqt's public mirror yet
+  # (confirmed via `aqt list-qt windows desktop --arch 6.11.x` -- 6.10.3 is
+  # the newest version that actually resolves). Bump this once 6.11 lands
+  # there; nothing in either app depends on a 6.11-only API.
+  QT_VERSION: '6.10.3'
   MESA_VERSION: '26.2.0'
 
 jobs:
