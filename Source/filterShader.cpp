@@ -729,6 +729,12 @@ void FilterShader::favoriteCurrentEffect()
 }
 
 
+// Dev-Haken KALEIDO_FORCE_DROP (Injektion in paint()): file-static, weil der
+// Zaehler an ZWEI Verbrauchsstellen in paint() addiert wird.
+static int   s_fakeDrops   = 0;
+static float s_fakePulse   = 0.f;
+static float s_forceDropAt = -2.f;
+
 void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
                          const AudioFeatures &audio)
 {
@@ -1138,6 +1144,25 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
         // (camera punch + shake + the shaders' audioDrop uniform).
         audioFx.dropPulse     = std::max( audio.dropPulse, audio.breakSlam ) * gate;
 
+        // Dev-Haken KALEIDO_FORCE_DROP=<sek>: injiziert einmalig einen
+        // synthetischen Drop (Zaehler + Puls) zur angegebenen globalen Zeit -
+        // macht die ganze Drop-Kette (Schnitt/Shatter, Rewind-Race, Streaks)
+        // deterministisch probbar, ohne den Detektor treffen zu muessen.
+        if( s_forceDropAt < -1.f )
+        {
+            const char *fd = getenv( "KALEIDO_FORCE_DROP" );
+            s_forceDropAt = fd ? (float)atof( fd ) : -1.f;
+        }
+        if( s_forceDropAt >= 0.f && m_globaltime >= s_forceDropAt )
+        {
+            ++s_fakeDrops;
+            s_fakePulse   = 1.f;
+            s_forceDropAt = -1.f;
+            fprintf( stderr, "FORCED DROP (t=%.1fs)\n", m_globaltime );
+        }
+        s_fakePulse *= expf( -dt / 0.5f );
+        audioFx.dropPulse = std::max( audioFx.dropPulse, s_fakePulse );
+
         // ---- Virtual camera (global "Regie" layer, applied in the present
         // pass): micro drift keeps every effect subtly "filmed"; the downbeat
         // punches in and releases; the bar rolls the frame gently; a build-up
@@ -1155,9 +1180,17 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
                         * audio.rhythmStrength * gate;
             float shakeAmp = 0.0035f * m_kickSmooth * gate
                            + 0.010f  * audioFx.dropPulse;
-            float ox = 0.0030f * sinf( m_globaltime * 0.23f )
+            // Gate-Weave: das feine 24-fps-Zittern einer Filmkopie im
+            // Projektor - diskrete, winzige Versaetze pro "Filmbild"
+            // (kein Audio-Faktor auf absoluter Zeit, nur Wandzeit-Hash).
+            float film = floorf( m_globaltime * 24.f );
+            float wvx  = ( sinf( film * 12.9898f ) * 43758.5453f );
+            wvx = ( wvx - floorf( wvx ) - 0.5f ) * 0.0012f;
+            float wvy  = ( sinf( film * 78.2330f ) * 12543.8530f );
+            wvy = ( wvy - floorf( wvy ) - 0.5f ) * 0.0012f;
+            float ox = 0.0030f * sinf( m_globaltime * 0.23f ) + wvx
                      + shakeAmp * sinf( m_globaltime * 39.7f );
-            float oy = 0.0030f * cosf( m_globaltime * 0.17f )
+            float oy = 0.0030f * cosf( m_globaltime * 0.17f ) + wvy
                      + shakeAmp * cosf( m_globaltime * 31.3f );
             // The zoom must always pay for the offset + rotation so no edge
             // ever samples outside the frame.
@@ -1165,6 +1198,63 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
             zoom = std::max( zoom, 1.f + 2.4f * need );
             m_camZoom = zoom; m_camRot = sway;
             m_camOffX = ox;   m_camOffY = oy;
+        }
+
+        // ---- Zeit-Regie: Drop-Rewind, Break-Scrub, Zeitecho, Atem-anhalten --
+        {
+            // Drop-Rewind-Race: auf ~40% der Drops springt die Anzeige 1.6 s
+            // in die Vergangenheit und holt in ~0.5 s sichtbar auf - der
+            // Tape-Catch-up landet genau im Drop-Hit.
+            const int dropCountNow = audio.dropCount + s_fakeDrops;
+            if( m_lastDropSeen < 0 )
+                m_lastDropSeen = dropCountNow;
+            if( dropCountNow > m_lastDropSeen )
+            {
+                m_lastDropSeen = dropCountNow;
+                if( gate > 0.5f && ( rand() % 100 ) < 40 )
+                {
+                    m_rewindBack = 1.6f;
+                    m_rewindRace = true;
+                }
+            }
+            // DJ-Stop: solange die Musik den Atem anhaelt, scrubbt das Bild
+            // rueckwaerts (max ~2.8 s Ring-Tiefe); der Slam-back schnappt es
+            // mit hoher Rate zurueck auf live.
+            if( audio.breakHold > 0.5f && !m_rewindRace )
+                m_rewindBack = std::min( m_rewindBack + 1.5f * dt, 2.8f );
+            else if( m_rewindBack > 0.f )
+            {
+                float rate = m_rewindRace ? 3.2f : 6.0f;
+                m_rewindBack -= rate * dt;
+                if( m_rewindBack <= 0.f ) { m_rewindBack = 0.f; m_rewindRace = false; }
+            }
+            // Sichtbarkeit schnell, aber nicht hart schalten (12/s Slew);
+            // das ENDE des Race bleibt ein knackiger Schnitt zurueck auf live.
+            float rmTarget = ( m_rewindBack > 0.02f ) ? 1.f : 0.f;
+            m_rewindMixSm = slewToward( m_rewindMixSm, rmTarget, 12.f, dt );
+
+            // Atem-anhalten: erst die obere Haelfte des Build-ups zaehlt -
+            // ein normaler Groove soll das Bild nicht staendig entsaettigen.
+            float bTarget = std::max( 0.f, std::min( 1.f,
+                                ( audio.buildUp - 0.5f ) * 2.2f ) ) * gate;
+            m_breathSm = slewToward( m_breathSm, bTarget, 2.5f, dt );
+
+            // Dev-Haken KALEIDO_REGIE_TEST: festes 12-s-Muster (3 s Echo,
+            // 3 s Breath, 2 s Rewind-Scrub, Rest live) fuer deterministische
+            // Frame-Proben der Zeit-Regie ohne echte Drops/Build-ups.
+            static int s_regieTest = -1;
+            if( s_regieTest < 0 )
+                s_regieTest = getenv( "KALEIDO_REGIE_TEST" ) ? 1 : 0;
+            if( s_regieTest )
+            {
+                float ph = fmodf( m_globaltime, 12.f );
+                m_echoOverride = ( ph < 3.f ) ? 0.40f : 0.f;
+                m_breathSm   = ( ph >= 3.f && ph < 6.f ) ? 1.f : 0.f;
+                if( ph >= 7.f && ph < 9.f )
+                    { m_rewindBack = 1.5f; m_rewindMixSm = 1.f; }
+                else if( ph >= 9.f && ph < 9.5f )
+                    { m_rewindBack = 0.f; m_rewindMixSm = 0.f; }
+            }
         }
         // Mood signals collapse to neutral (0.5 / 0) as music fades out.
         audioFx.valence         = 0.5f + (audio.valence         - 0.5f) * gate;
@@ -1280,7 +1370,7 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 	schedTick.musicPresence  = audio.musicPresence;
 	schedTick.sectionCount   = audio.sectionCount;
 	schedTick.sectionId      = audio.sectionId;
-	schedTick.dropCount      = audio.dropCount;
+	schedTick.dropCount      = audio.dropCount + s_fakeDrops;
 	schedTick.rhythmStrength = audio.rhythmStrength;
 	schedTick.estimatedBPM   = audio.estimatedBPM;
 	schedTick.logAttackTime  = audio.logAttackTime;
@@ -1784,6 +1874,18 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 		pin.lyricsHlProg  = m_overlay.lyricsHlProg;
 		pin.artistAlpha   = m_overlay.artistAlpha;
 		pin.artistAspect  = m_overlay.artistAspect;
+		// Zeit-Regie: Rewind/Echo/Breath.  Das Zeitecho traeumt in Ambient-
+		// Passagen und blitzt nach einem Drop als Flashback auf; waehrend
+		// eines Rewinds pausiert es (History auf History waere Matsch).
+		pin.rewindSecs = m_rewindBack;
+		pin.rewindMix  = m_rewindMixSm;
+		pin.echoAmt    = std::max( 0.50f * audioFx.dropPulse,
+		                           0.20f * audio.ambientFactor * audio.musicPresence )
+		               * ( 1.f - m_rewindMixSm );
+		if( m_echoOverride >= 0.f )
+			pin.echoAmt = m_echoOverride;
+		pin.echoDelay  = 1.4f;
+		pin.breath     = m_breathSm;
 		m_present.run( pin );
 	}
 

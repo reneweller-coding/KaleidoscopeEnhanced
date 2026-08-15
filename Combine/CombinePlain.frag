@@ -23,6 +23,12 @@ out vec4 fragColor;
 //   24 ghost exposure — layered ghost copies drift apart and resolve
 //   25 datamosh      — RGB-split, stuttering block-shifted glitch (the
 //                       "corrupted P-frame" look), most intense mid-fade
+//   26 shatter       — the old scene breaks into Voronoi shards that fly
+//                       apart, spin and fall; the new scene stands behind
+//   27 portal        — the new scene opens along the OLD scene's real
+//                       depth: near geometry peels away first, a glowing
+//                       rim rides the depth threshold (3D scenes only;
+//                       falls back to linear without valid depth)
 // All edges are soft; nothing flashes brighter than a gentle screen blend
 // over more than a second, so photosensitivity safety is unaffected.
 // interpolation: 1 = old scene (tex0) fully visible .. 0 = new scene (tex1).
@@ -30,6 +36,9 @@ uniform vec2 resolution;
 uniform float time;
 uniform sampler2D tex0;
 uniform sampler2D tex1;
+uniform sampler2D texDepth0;   // scene depth of the OLD effect (portal)
+uniform vec2  depthValid;      // x/y: does tex0/tex1 hold real 3D depth?
+uniform vec2  nearFar;         // shared scene clip planes (linearisation)
 uniform float interpolation;
 uniform int transStyle;
 
@@ -171,6 +180,84 @@ void main()
         float gC = mix(texture(tex0, pg).g, texture(tex1, pg).g, wLocal);
         float bC = mix(texture(tex0, pb).b, texture(tex1, pb).b, wLocal);
         fragColor = vec4(rC, gC, bC, 1.0);
+        return;
+    }
+    if (transStyle == 26)                     // shatter: shards fly, spin, fall
+    {
+        // Jittered-grid Voronoi shards over the aspect-true frame.  To draw a
+        // MOVED shard correctly the pixel is un-transformed by each candidate
+        // shard's motion and only accepted if the landing point really lies in
+        // that shard's cell (nearest-site test over its 3x3 hood) — sampling
+        // through the pixel's OWN cell would smear content once shards part.
+        const float SC = 3.4;                 // shard cells per unit
+        vec4  fresh = texture(tex1, p);
+        vec4  outC  = fresh;
+        float bestT = 1e9;                    // most intact matching shard wins
+        vec2  gcell = floor(cc * SC);
+        for (int gy = -1; gy <= 1; gy++)
+        for (int gx = -1; gx <= 1; gx++)
+        {
+            vec2  cell = gcell + vec2(float(gx), float(gy));
+            vec2  site = (cell + vec2(hashT(cell), hashT(cell + 19.7))) / SC;
+            float rs   = hashT(cell + 4.2);
+            float t    = clamp(d * 1.3 - rs * 0.3, 0.0, 1.0);  // staggered break
+            t = t * t;                                          // eases in
+            // Throw: outward + random sideways, then gravity + spin.
+            vec2  vel = normalize(site + vec2(1e-4, 2e-4)) * 0.55
+                      + vec2((hashT(cell + 7.7) - 0.5) * 0.9, 0.30);
+            vec2  off = vel * t + vec2(0.0, -1.35) * t * t;
+            float ang = (hashT(cell + 2.2) - 0.5) * 3.2 * t;
+            float cs2 = cos(ang), sn2 = sin(ang);
+            vec2  q   = mat2(cs2, sn2, -sn2, cs2) * (cc - site - off) + site;
+            // Membership: q's nearest site must be THIS cell's site.
+            vec2  qc = floor(q * SC);
+            float bd = 1e9;  vec2 bc = vec2(99.0);
+            for (int ny = -1; ny <= 1; ny++)
+            for (int nx = -1; nx <= 1; nx++)
+            {
+                vec2  c2  = qc + vec2(float(nx), float(ny));
+                vec2  s2  = (c2 + vec2(hashT(c2), hashT(c2 + 19.7))) / SC;
+                float dd2 = dot(q - s2, q - s2);
+                if (dd2 < bd) { bd = dd2; bc = c2; }
+            }
+            if (bc == cell && t < bestT)
+            {
+                vec2 pq = vec2(q.x / aspect, q.y) + 0.5;
+                if (pq.x > 0.0 && pq.x < 1.0 && pq.y > 0.0 && pq.y < 1.0)
+                {
+                    vec4 shard = texture(tex0, pq);
+                    shard.rgb *= 1.0 - 0.45 * t;            // tumbling into shadow
+                    float wS = 1.0 - smoothstep(0.70, 1.0, t);
+                    outC  = mix(fresh, shard, wS);
+                    bestT = t;
+                }
+            }
+        }
+        fragColor = outC;
+        return;
+    }
+    if (transStyle == 27)                     // portal: opens along real depth
+    {
+        vec4 c0 = texture(tex0, p);
+        vec4 c1 = texture(tex1, p);
+        if (depthValid.x < 0.5) { fragColor = blend4(c0, c1, d); return; }
+        // Normalised LINEAR depth of the old scene (depth buffers are not
+        // linear — comparing raw z would dump the whole scene in one bucket).
+        float zn  = nearFar.x, zf = nearFar.y;
+        float zr  = texture(texDepth0, p).r;
+        float lin = zn * zf / max(zf - zr * (zf - zn), 1e-4);
+        float ln  = clamp((lin - zn) / max(zf - zn, 1e-4), 0.0, 1.0);
+        // Threshold sweeps from below the near plane to beyond the far plane:
+        // identity guaranteed at both fade ends, near geometry peels first.
+        float sw = d * d * 1.6 - 0.2;
+        float ew = 0.06 + 0.10 * d;
+        float nz = (noise2T(p * vec2(9.0 * aspect, 9.0) + d * 3.0) - 0.5) * ew;
+        float wOld = smoothstep(sw - ew, sw + ew, ln + nz);
+        vec4 col = mix(c1, c0, wOld);
+        // Glowing rim rides the moving threshold (the portal's energy edge).
+        float rim = exp(-abs(ln + nz - sw) / max(ew, 1e-4));
+        col.rgb += vec3(0.45, 0.75, 1.35) * rim * 0.40 * mid;
+        fragColor = col;
         return;
     }
 

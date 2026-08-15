@@ -331,6 +331,18 @@ private:
 	float			m_camRot   = 0.f;
 	float			m_camOffX  = 0.f, m_camOffY = 0.f;
 
+	// ---- Zeit-Regie (History-Ring im PresentPass) ----
+	// Drop-Rewind-Race: auf ~40% der Drops springt das Bild ~1.6 s zurueck
+	// und holt sichtbar auf; waehrend eines DJ-Stops (breakHold) scrubbt es
+	// rueckwaerts und schnappt beim Slam zurueck auf live.  Dazu Zeitecho
+	// (Ambient/Drop-Flashback) und das Build-up-"Atem anhalten".
+	float			m_rewindBack  = 0.f;   // Sekunden hinter live (0 = live)
+	float			m_rewindMixSm = 0.f;   // weiche Sichtbarkeit des Rewinds
+	bool			m_rewindRace  = false; // true = Drop-Race (langsameres Aufholen)
+	int				m_lastDropSeen = -1;   // dropCount-Stand (-1 = noch nie)
+	float			m_breathSm    = 0.f;   // geslewtes Atem-anhalten 0..1
+	float			m_echoOverride = -1.f; // KALEIDO_REGIE_TEST: erzwungenes Echo
+
 
 	// ---- Feedback / trails (phosphor-style ping-pong) ----
 	GLuint			m_fboTrail[2]   = { 0, 0 };

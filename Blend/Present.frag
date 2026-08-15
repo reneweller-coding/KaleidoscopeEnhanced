@@ -69,6 +69,13 @@ uniform sampler2D artistTex;
 uniform float artistAlpha;      // 0 = aus (Host blendet weich + rotiert Bilder)
 uniform float artistAspect;     // Bildbreite / -hoehe
 
+// ---- Zeit-Regie: Frame-History-Ring (Drittel-Auflösung, letzte ~3 s) ----
+uniform sampler2DArray histTex; // Unit 5 - IMMER eigene Unit (Sampler-Typ!)
+uniform vec2  rewind;           // x = Mix 0..1, y = Ring-Layer (Vergangenheit)
+uniform vec2  echo;             // x = Staerke,  y = Ring-Layer (~1.4 s zurueck)
+uniform float breath;           // Build-up "Atem anhalten": Desat/Dim/Vignette
+uniform float audioDrop;        // Drop-/Slam-Puls (Streak-Boost, Rewind-Wuerze)
+
 float hash21(vec2 p) { return fract(sin(dot(p, vec2(41.3, 289.1))) * 43758.5453); }
 
 // Hue rotation around the (1,1,1) luminance axis (Rodrigues), turns in [0,1].
@@ -192,6 +199,36 @@ void main()
     else
         c = texture(tex, puv).rgb;
 
+    // --- Drop-Rewind / Break-Scrub: statt des Live-Bilds laeuft ein Frame aus
+    // dem History-Ring - mit VHS-Wuerze (Zeilenzittern, Chroma-Versatz,
+    // Scanlines), die das "Band spult" sofort lesbar macht und nebenbei die
+    // Drittel-Aufloesung des Rings kaschiert.  Alles VOR dem Grade, damit
+    // Mood-Farben und Limiter normal weiterwirken.
+    if (rewind.x > 0.001)
+    {
+        vec2  ruv = puv;
+        float ln  = floor(ruv.y * 240.0);
+        ruv.x += (hash21(vec2(ln, floor(time * 27.0))) - 0.5) * 0.007 * rewind.x;
+        vec3 hc;
+        hc.g = texture(histTex, vec3(ruv, rewind.y)).g;
+        hc.r = texture(histTex, vec3(ruv + vec2( 0.0016, 0.0), rewind.y)).r;
+        hc.b = texture(histTex, vec3(ruv - vec2( 0.0016, 0.0), rewind.y)).b;
+        hc *= 0.90 + 0.10 * sin(ruv.y * resolution.y * 3.14159);   // scanlines
+        hc += (hash21(gl_FragCoord.xy + fract(time * 17.0) * 61.0) - 0.5)
+              * 0.05;                                              // Bandrauschen
+        c = mix(c, hc, rewind.x);
+    }
+
+    // --- Zeitecho: die Szene von vor ~1.4 s als Geisterschicht (Screen-Blend,
+    // leicht groesser skaliert -> loest sich sichtbar vom Live-Bild).  Traeumt
+    // in Ambient-Passagen und blitzt als Flashback nach einem Drop auf.
+    if (echo.x > 0.001)
+    {
+        vec2 euv = (puv - 0.5) / 1.045 + 0.5;
+        vec3 g = texture(histTex, vec3(euv, echo.y)).rgb;
+        c = 1.0 - (1.0 - c) * (1.0 - g * echo.x);
+    }
+
     // CAS-style sharpening: when the internal render scale is below 1 the
     // frame is upsampled here — a neighbourhood-clamped unsharp mask (no
     // halos) restores the crispness the downscale cost.  sharpen = 0 → off.
@@ -240,9 +277,50 @@ void main()
         bloom = max(texture(tex, puv, 4.5).rgb - 0.75, 0.0);
     c += bloom * (0.12 + 0.05 * audioBeat + 0.10 * audioSwell);
 
+    // --- Kino-Kamera: anamorphotische Streaks + Halation -------------------
+    // Streaks: die hellen Spitzen des (bereits bright-passed) Bloom-Puffers
+    // horizontal weit ausgezogen und kuehl getoent - der Anamorphot-Look.
+    // Atmet mit dem Swell und schiesst auf Drops auf.
+    if (useBloom > 0.5)
+    {
+        vec3  streak = vec3(0.0);
+        float wsum   = 0.0;
+        for (int i = 1; i <= 6; i++)
+        {
+            float o = float(i) * 0.020;
+            float w = exp(-float(i) * 0.55);
+            streak += (texture(bloomTex, puv + vec2(o, 0.0)).rgb
+                     + texture(bloomTex, puv - vec2(o, 0.0)).rgb) * w;
+            wsum   += 2.0 * w;
+        }
+        streak /= wsum;
+        float streakW = 0.10 + 0.30 * audioSwell + 0.80 * audioDrop;
+        c += streak * vec3(0.55, 0.75, 1.30) * 0.30 * streakW;
+    }
+    // Halation: warmes Filmglimmen um die Lichter (breiter Mip-Tap des
+    // Frames, warm getoent) - gibt Highlights den "Fotoemulsion"-Schmelz.
+    {
+        vec3 hal = max(texture(tex, puv, 5.0).rgb - 0.55, 0.0);
+        c += hal * vec3(1.15, 0.72, 0.42) * 0.14;
+    }
+
     // Soft highlight knee: compress values above ~0.8 toward white instead of
     // hard-clipping the whole frame to flat white when the grade pushes it high.
     c = c / (1.0 + max(c - 0.8, 0.0));
+
+    // --- Build-up "Atem anhalten": in den letzten Takten vor dem Drop nimmt
+    // das Bild koordiniert Farbe und Licht zurueck und die Vignette zieht
+    // sich zu - die Anspannung vor dem Schlag.  Der Drop selbst loest mit
+    // Punch/Shake/Streaks auf.  breath ist geslewt (kein Pumpen).
+    if (breath > 0.001)
+    {
+        float lb = dot(c, vec3(0.299, 0.587, 0.114));
+        c  = mix(c, vec3(lb), 0.38 * breath);              // entsaettigen
+        c *= 1.0 - 0.13 * breath;                          // leicht dimmen
+        float vg = length(vec2((uv.x - 0.5) * (resolution.x / resolution.y),
+                               uv.y - 0.5));
+        c *= 1.0 - 0.50 * breath * smoothstep(0.34, 0.72, vg);
+    }
 
     // --- Corner spotlights (cones) ----------------------------------------------
     // Four stage-light CONES shining from the corners toward the centre, flashing
@@ -545,6 +623,19 @@ void main()
     // property must not depend on a histogram being available.
     if (autoExposure > 0.0)
         c *= clamp(autoExposure, 0.72, 1.35);
+
+    // --- Filmkorn: feines, temporales Korn, staerker in den Schatten (wie
+    // echte Emulsion) und einen Hauch praesenter, wenn Musik laeuft.  Zero-
+    // mean Pixelrauschen - keine Fullscreen-Helligkeitsschwankung, also
+    // unkritisch fuer die Photosensitivitaet.
+    {
+        float gr = hash21(gl_FragCoord.xy * 0.73
+                          + vec2(fract(time * 13.7) * 91.0,
+                                 fract(time *  7.3) * 57.0)) - 0.5;
+        float lumG = clamp(dot(c, vec3(0.299, 0.587, 0.114)), 0.0, 1.0);
+        c += gr * 0.022 * (0.35 + 0.65 * (1.0 - lumG))
+                * (0.55 + 0.45 * audioLevel);
+    }
 
     // Ordered dither (interleaved gradient noise) to break up 8-bit banding in the
     // smooth gradients (lava lamp / oil / hypercube).  Spatial only -> flicker-free.

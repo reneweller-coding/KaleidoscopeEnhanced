@@ -1,4 +1,5 @@
 #include <cstdio>
+#include <cmath>
 
 #include "PresentPass.h"
 #include "shader_setup.h"
@@ -93,6 +94,11 @@ void PresentPass::setup( int renderW, int renderH,
 		m_presentArtistTexUni    = glGetUniformLocation( m_presentProgId, "artistTex" );
 		m_presentArtistAlphaUni  = glGetUniformLocation( m_presentProgId, "artistAlpha" );
 		m_presentArtistAspectUni = glGetUniformLocation( m_presentProgId, "artistAspect" );
+		m_presentHistTexUni  = glGetUniformLocation( m_presentProgId, "histTex" );
+		m_presentRewindUni   = glGetUniformLocation( m_presentProgId, "rewind" );
+		m_presentEchoUni     = glGetUniformLocation( m_presentProgId, "echo" );
+		m_presentBreathUni   = glGetUniformLocation( m_presentProgId, "breath" );
+		m_presentDropUni     = glGetUniformLocation( m_presentProgId, "audioDrop" );
 	}
 
 	m_safetyReady = fboOk && (m_presentProgId != 0) && (m_presentTexUni >= 0);
@@ -166,6 +172,75 @@ static void uploadRGBA( GLuint &tex, const void *rgba, int w, int h )
 	glBindTexture( GL_TEXTURE_2D, 0 );
 }
 
+// ---- Frame-History-Ring -----------------------------------------------------
+// Drittel-Auflösung reicht: Rewind trägt ohnehin einen VHS-Look (der die
+// Weichheit verkauft) und das Zeitecho ist eine Geisterschicht.  96 Layer bei
+// ~30 Aufnahmen/s = ~3.2 s Vergangenheit; bei 1080p-Rendering ~88 MB VRAM.
+void PresentPass::captureHistory( GLuint sourceTex, int renderW, int renderH,
+                                  float dtWall )
+{
+	if( !m_histTried )
+	{
+		m_histTried = true;
+		m_histReady = ( glcore_glTexImage3D && glcore_glFramebufferTextureLayer
+		             && glcore_glBlitFramebuffer );
+		fprintf( stderr, "Frame history ring: %s\n",
+		         m_histReady ? "available" : "off (GL entry points missing)" );
+	}
+	if( !m_histReady )
+		return;
+
+	int hw = renderW / 3;  if( hw < 32 ) hw = 32;
+	int hh = renderH / 3;  if( hh < 32 ) hh = 32;
+	if( m_histTex == 0 || hw != m_histW || hh != m_histH )
+	{
+		if( m_histTex == 0 ) glGenTextures( 1, &m_histTex );
+		glBindTexture( GL_TEXTURE_2D_ARRAY, m_histTex );
+		glTexImage3D( GL_TEXTURE_2D_ARRAY, 0, GL_RGBA8, hw, hh, kHistLayers,
+		              0, GL_RGBA, GL_UNSIGNED_BYTE, NULL );
+		glTexParameteri( GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+		glTexParameteri( GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+		glTexParameteri( GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+		glTexParameteri( GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+		glBindTexture( GL_TEXTURE_2D_ARRAY, 0 );
+		m_histW = hw;  m_histH = hh;
+		m_histHead = 0;  m_histCount = 0;  m_histAccum = 1.f;   // sofort aufnehmen
+	}
+	if( m_histFboDst == 0 ) glGenFramebuffers( 1, &m_histFboDst );
+	if( m_histFboSrc == 0 ) glGenFramebuffers( 1, &m_histFboSrc );
+
+	// Fixe Aufnahme-Kadenz auf der WANDzeit - der Layer-Abstand ist dadurch
+	// (näherungsweise) konstant 1/30 s, egal wie die Framerate schwankt.
+	m_histAccum += dtWall;
+	if( m_histAccum < 1.f / 30.f )
+		return;
+	m_histAccum = fmodf( m_histAccum, 1.f / 30.f );
+
+	glBindFramebuffer( GL_READ_FRAMEBUFFER, m_histFboSrc );
+	glFramebufferTexture2D( GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+	                        GL_TEXTURE_2D, sourceTex, 0 );
+	glBindFramebuffer( GL_DRAW_FRAMEBUFFER, m_histFboDst );
+	glFramebufferTextureLayer( GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+	                           m_histTex, 0, m_histHead );
+	glBlitFramebuffer( 0, 0, renderW, renderH, 0, 0, m_histW, m_histH,
+	                   GL_COLOR_BUFFER_BIT, GL_LINEAR );
+	glBindFramebuffer( GL_READ_FRAMEBUFFER, 0 );
+	glBindFramebuffer( GL_DRAW_FRAMEBUFFER, 0 );
+
+	m_histHead = ( m_histHead + 1 ) % kHistLayers;
+	if( m_histCount < kHistLayers ) m_histCount++;
+}
+
+// Sekunden zurück -> Layer-Index (geklemmt auf das, was der Ring hält).
+float PresentPass::historyLayerBack( float secs ) const
+{
+	int slots = int( secs * 30.f + 0.5f );
+	if( slots > m_histCount - 1 ) slots = m_histCount - 1;
+	if( slots < 1 ) slots = 1;
+	int idx = ( m_histHead - slots + 2 * kHistLayers ) % kHistLayers;
+	return float( idx );
+}
+
 void PresentPass::setLyricsImage( const void *rgba, int w, int h )
 {
 	uploadRGBA( m_lyricsTex, rgba, w, h );
@@ -201,6 +276,11 @@ void PresentPass::run( const Inputs &in )
 	if( !m_safetyReady || !in.fx )
 		return;
 	const AudioFeatures &audioFx = *in.fx;
+
+	// Frame-History-Ring: das frische Frame aufzeichnen, BEVOR irgendetwas
+	// präsentiert wird - so speist auch ein laufender Rewind den Ring weiter
+	// mit dem Live-Bild (die Pipeline rendert ja normal weiter).
+	captureHistory( in.source, in.renderW, in.renderH, in.dtWall );
 
 	glActiveTexture( GL_TEXTURE0 );
 	glBindTexture( GL_TEXTURE_2D, in.source );
@@ -378,6 +458,30 @@ void PresentPass::run( const Inputs &in )
 			glActiveTexture( GL_TEXTURE0 );
 			if( m_presentArtistAspectUni >= 0 ) glUniform1f( m_presentArtistAspectUni, in.artistAspect );
 		}
+	}
+
+	// ---- Zeit-Regie: Rewind / Zeitecho / Atem-anhalten ----
+	// Der Array-Sampler MUSS immer auf einer eigenen Unit stehen (5): zwei
+	// Sampler-TYPEN auf derselben Unit machen den ganzen Draw ungültig,
+	// auch wenn der Array-Sampler nie abgetastet wird.
+	{
+		if( m_presentHistTexUni >= 0 ) glUniform1i( m_presentHistTexUni, 5 );
+		float rew = ( m_histReady && m_histCount > 8 )  ? in.rewindMix : 0.f;
+		float ech = ( m_histReady && m_histCount > 45 ) ? in.echoAmt   : 0.f;
+		if( m_histReady && ( rew > 0.001f || ech > 0.001f ) )
+		{
+			glActiveTexture( GL_TEXTURE5 );
+			glBindTexture( GL_TEXTURE_2D_ARRAY, m_histTex );
+			glActiveTexture( GL_TEXTURE0 );
+		}
+		if( m_presentRewindUni >= 0 )
+			glUniform2f( m_presentRewindUni, rew,
+			             m_histReady ? historyLayerBack( in.rewindSecs ) : 0.f );
+		if( m_presentEchoUni >= 0 )
+			glUniform2f( m_presentEchoUni, ech,
+			             m_histReady ? historyLayerBack( in.echoDelay ) : 0.f );
+		if( m_presentBreathUni >= 0 ) glUniform1f( m_presentBreathUni, in.breath );
+		if( m_presentDropUni   >= 0 ) glUniform1f( m_presentDropUni, audioFx.dropPulse );
 	}
 
 	if( m_presentResUni   >= 0 ) glUniform2f( m_presentResUni, (float)in.displayW, (float)in.displayH );

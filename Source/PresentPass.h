@@ -89,6 +89,16 @@ public:
 		// Künstlerbild-Overlay
 		float  artistAlpha   = 0.f;
 		float  artistAspect  = 1.f;
+		// ---- Zeit-Regie (Frame-History-Ring) ----
+		// rewindSecs > 0: statt des Live-Bilds den Ring-Frame von vor N
+		// Sekunden zeigen (Drop-Rewind / Break-Scrub); rewindMix blendet.
+		float  rewindSecs    = 0.f;
+		float  rewindMix     = 0.f;
+		// Zeitecho: Geisterschicht von vor echoDelay Sekunden (Screen-Blend).
+		float  echoAmt       = 0.f;
+		float  echoDelay     = 1.4f;
+		// Build-up-"Atem anhalten": Entsättigen + Dimmen + Vignette 0..1.
+		float  breath        = 0.f;
 	};
 
 	/** Den kompletten Present ausführen (Limiter, AutoExposure, Bloom,
@@ -162,6 +172,29 @@ private:
 	float	m_titleAspect = 4.f;
 	int		m_titleStyle  = 0;
 	float	m_titleSeed   = 0.f;
+
+	// ---- Frame-History-Ring (Zeitecho / Drop-Rewind) ----
+	// 2D-Array-Textur (Drittel-Auflösung, RGBA8) mit den letzten ~3 s des
+	// fertigen Bilds, ~30 Aufnahmen/s per FBO-Blit.  Fällt SOFT aus: ohne
+	// die GL-Einstiegspunkte bleibt m_histReady false und Echo/Rewind sind
+	// einfach unsichtbar.
+	void	captureHistory( GLuint sourceTex, int renderW, int renderH, float dtWall );
+	float	historyLayerBack( float secs ) const;   // Sek. zurück -> Layer-Index
+	static const int kHistLayers = 96;              // ~3.2 s bei 30 Hz
+	GLuint	m_histTex    = 0;
+	GLuint	m_histFboDst = 0;      // Ziel: jeweiliger Ring-Layer
+	GLuint	m_histFboSrc = 0;      // Quelle: das frische Frame
+	int		m_histW = 0, m_histH = 0;
+	int		m_histHead   = 0;      // nächster Schreib-Slot
+	int		m_histCount  = 0;      // gefüllte Slots (<= kHistLayers)
+	float	m_histAccum  = 0.f;    // Wandzeit seit letzter Aufnahme
+	bool	m_histReady  = false;
+	bool	m_histTried  = false;
+	GLint	m_presentHistTexUni  = -1;
+	GLint	m_presentRewindUni   = -1;   // vec2( mix, layer )
+	GLint	m_presentEchoUni     = -1;   // vec2( amt, layer )
+	GLint	m_presentBreathUni   = -1;
+	GLint	m_presentDropUni     = -1;
 
 	// ---- Lyrics / Künstlerbild ----
 	GLuint	m_lyricsTex = 0;

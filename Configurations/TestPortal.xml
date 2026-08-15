@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<configuration ImageDirectory="C:\\Users\\rene\\Desktop\\BilderPhotoechoes" ConfigurationName="TestPortal" >
+
+  <!-- PROBE: zwei echte 3D-Szenen (Tiefenpuffer!); mit KALEIDO_TRANS_STYLE=27
+       ist jeder Review-Wechsel der Tiefen-Portal-Uebergang. -->
+
+  <TextureShader file="..\\Scene3D\\SynthTerrain.frag" type="scene3d" geom="grid" probability="1.0" complexity="2">
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\KaleidoDome.frag" type="scene3d" geom="grid" probability="1.0" complexity="2">
+  </TextureShader>
+
+</configuration>

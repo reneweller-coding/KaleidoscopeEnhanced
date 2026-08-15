@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<configuration ImageDirectory="C:\\Users\\rene\\Desktop\\BilderPhotoechoes" ConfigurationName="TestShatter" >
+
+  <!-- PROBE: zwei kontrastreiche 2D-Szenen; mit KALEIDO_TRANS_STYLE=26 ist
+       jeder Review-Wechsel (alle 8s) der Voronoi-Shatter-Uebergang. -->
+
+  <TextureShader file="..\\Scene\\LavaLamp.frag" type="normal" probability="1.0" complexity="1">
+    <float name="waxHueP" minValue="0.0" maxValue="6.28"></float>
+    <float name="speedP" minValue="0.6" maxValue="1.6"></float>
+    <int name="countP" minValue="4" maxValue="9"></int>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene\\HarmonicRings.frag" type="KaleidoscopeBase" probability="1.0" complexity="1">
+    <float name="speed" minValue="0.0003" maxValue="0.0025"></float>
+  </TextureShader>
+
+</configuration>
