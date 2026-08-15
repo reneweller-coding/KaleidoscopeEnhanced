@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -414,6 +414,10 @@ exit /b 0</Command>
     <None Include="Scene\VoronoiPulse.frag" />
     <None Include="Scene\Vortex.frag" />
     <None Include="Scene\Voyager.frag" />
+    <None Include="Scene\HyperWarpTunnel.frag" />
+    <None Include="Scene\VolumetricSupernova.frag" />
+    <None Include="Scene\CrystalMirrorGrid.frag" />
+    <None Include="Scene\FluidInkMarble.frag" />
     <None Include="Combine\CombineDarkRed.frag" />
     <None Include="Combine\CombineDeformationFlow.frag" />
     <None Include="Combine\CombineDroneWarp.frag" />
@@ -743,6 +747,8 @@ exit /b 0</Command>
     <None Include="Scene3D\WaveRibbon.vert" />
     <None Include="Scene3D\Wormhole.frag" />
     <None Include="Scene3D\Wormhole.vert" />
+    <None Include="Scene3D\CosmicBoidsVortex.vert" />
+    <None Include="Scene3D\CosmicBoidsVortex.frag" />
     <None Include="standard.vert" />
     <None Include="Configurations\Allround.xml" />
     <None Include="Configurations\Ambient.xml" />

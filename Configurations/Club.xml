@@ -273,7 +273,36 @@
   <TextureShader file="..\\Scene\\EventHorizon.frag" type="normal" probability="0.35" complexity="3">
     <float name="massP" minValue="0.3" maxValue="0.9"></float>
     <float name="diskP" minValue="0.3" maxValue="0.8"></float>
-    <float name="tiltP" minValue="0.2" maxValue="0.9"></float>
+  <!-- Screen-Filling Dynamic Visualizers -->
+  <TextureShader file="..\\Scene\\HyperWarpTunnel.frag" type="normal" probability="0.6" mood="aggressive,bright" complexity="3">
+    <float name="speedP" minValue="0.8" maxValue="1.8"></float>
+    <float name="warpP" minValue="0.5" maxValue="2.0"></float>
+    <float name="twistP" minValue="0.3" maxValue="1.5"></float>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene\\VolumetricSupernova.frag" type="normal" probability="0.6" mood="aggressive,bright" complexity="4">
+    <float name="densityP" minValue="0.6" maxValue="1.8"></float>
+    <float name="speedP" minValue="0.7" maxValue="1.5"></float>
+    <float name="flareP" minValue="0.5" maxValue="2.0"></float>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene\\CrystalMirrorGrid.frag" type="normal" probability="0.55" mood="bright,aggressive" complexity="4">
+    <float name="facetP" minValue="0.6" maxValue="1.8"></float>
+    <float name="shatterP" minValue="0.7" maxValue="2.0"></float>
+    <float name="refractP" minValue="0.5" maxValue="1.5"></float>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene\\FluidInkMarble.frag" type="normal" probability="0.5" mood="bright" complexity="3">
+    <float name="viscosityP" minValue="0.5" maxValue="1.8"></float>
+    <float name="swirlP" minValue="0.8" maxValue="2.0"></float>
+    <float name="flowP" minValue="0.6" maxValue="1.6"></float>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\CosmicBoidsVortex.frag" type="scene3d" geom="points" probability="0.55" mood="bright,aggressive" complexity="3">
   </TextureShader>
 
 </configuration>
