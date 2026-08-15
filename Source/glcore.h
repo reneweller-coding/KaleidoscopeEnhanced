@@ -40,6 +40,10 @@ typedef ptrdiff_t GLintptr;
 #define GL_TEXTURE_WRAP_R                 0x8072
 #define GL_BGRA                           0x80E1
 #define GL_MULTISAMPLE                    0x809D
+// Frame-History-Ring (PresentPass): Array-Textur + FBO-Blit.
+#define GL_TEXTURE_2D_ARRAY               0x8C1A
+#define GL_READ_FRAMEBUFFER               0x8CA8
+#define GL_DRAW_FRAMEBUFFER               0x8CA9
 
 #define GL_TEXTURE0                       0x84C0
 #define GL_TEXTURE1                       0x84C1
@@ -205,6 +209,11 @@ GLC_FN(void,   glPatchParameteri, (GLenum, GLint))
 GLC_FN(void,   glBlendFunci, (GLuint, GLenum, GLenum))
 GLC_FN(void,   glDrawBuffers, (GLsizei, const GLenum *))
 GLC_FN(void,   glClearBufferfv, (GLenum, GLint, const GLfloat *))
+// Frame-History-Ring: 2D-Array-Textur als Ringpuffer der letzten Sekunden,
+// gefuellt per FBO-zu-Layer-Blit (Downscale inklusive).
+GLC_FN(void,   glTexImage3D, (GLenum, GLint, GLint, GLsizei, GLsizei, GLsizei, GLint, GLenum, GLenum, const void*))
+GLC_FN(void,   glFramebufferTextureLayer, (GLenum, GLenum, GLuint, GLint, GLint))
+GLC_FN(void,   glBlitFramebuffer, (GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLbitfield, GLenum))
 
 #undef GLC_FN
 
@@ -274,6 +283,9 @@ GLC_FN(void,   glClearBufferfv, (GLenum, GLint, const GLfloat *))
 #define glBlendFunci               glcore_glBlendFunci
 #define glDrawBuffers              glcore_glDrawBuffers
 #define glClearBufferfv            glcore_glClearBufferfv
+#define glTexImage3D               glcore_glTexImage3D
+#define glFramebufferTextureLayer  glcore_glFramebufferTextureLayer
+#define glBlitFramebuffer          glcore_glBlitFramebuffer
 
 // True when every entry point the compute pipeline needs resolved (set by
 // glcoreInit).  Callers gate their compute path on this and keep a fallback.

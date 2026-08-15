@@ -138,6 +138,10 @@ private:
 	float m_noveltyCooldown  = 0.f;
 	int   m_lastSectionCount = 0;
 	int   m_lastDropCount    = 0;
+	// Ein Drop hat den Wechsel ausgelöst: beim Feuern wird daraus ein HARTER
+	// Schnitt (Musikvideo-Look) oder der Shatter-Übergang statt des normalen
+	// Crossfades.
+	bool  m_dropCutPending   = false;
 
 	// Song-Struktur-Gedächtnis
 	std::map<int, unsigned int>       m_sectionEffect;

@@ -207,6 +207,7 @@ void SceneScheduler::tick( const Tick &t )
 	if( !m_reviewMode && t.dropCount == m_lastDropCount + 1 )
 	{
 		m_forceEffectChange = true;
+		m_dropCutPending    = true;
 		m_noveltyCooldown   = 8.0f;
 	}
 	m_lastDropCount = t.dropCount;
@@ -216,6 +217,7 @@ void SceneScheduler::tick( const Tick &t )
 	{
 		m_forceEffectChange  = false;
 		m_forceCombineChange = false;
+		m_dropCutPending     = false;
 		// A pending section store/restore must not attach to some LATER,
 		// unrelated switch after unpinning - drop it.
 		m_pendingSectionStore   = -1;
@@ -258,11 +260,21 @@ void SceneScheduler::tick( const Tick &t )
 
 				m_texState = 1;
 
-				// Roll a transition style: 26 styles (see CombinePlain.frag),
-				// the classic linear mix stays the most common (~19%).
+				// Roll a transition style: 28 styles (see CombinePlain.frag),
+				// the classic linear mix stays the most common.  Style 27
+				// (portal) needs REAL depth on both sides - without two 3D
+				// scenes it falls back to the zoom-through flight.
 				{
-					int r = rand() % 31;
-					m_transStyleTex = (r <= 5) ? 0 : (r - 5);
+					int r = rand() % 33;
+					int st = (r <= 5) ? 0 : (r - 5);
+					if( st == 27 && !( tex[m_actTexture]->is3D()
+					                && tex[m_nextTexture]->is3D() ) )
+						st = 3;
+					// Dev-Haken: KALEIDO_TRANS_STYLE erzwingt einen Stil
+					// (Proben einzelner Uebergaenge ohne Wuerfel-Glueck).
+					if( const char *fs = getenv( "KALEIDO_TRANS_STYLE" ) )
+						st = atoi( fs );
+					m_transStyleTex = st;
 				}
 
 				unsigned int timeAct  = tex[m_actTexture]->getTimeInterpolation();
@@ -283,6 +295,25 @@ void SceneScheduler::tick( const Tick &t )
 					// legato keeps the full dissolve.
 					cfgT *= 1.f - 0.35f * t.logAttackTime;
 					m_texFadeDur = (forcedGo || m_reviewMode) ? 0.8f : cfgT;
+				}
+
+				// Drop-Dramaturgie: der Wechsel kam von einem erkannten DROP.
+				// Musikvideo-Schnitt statt Dissolve - haelfte hart (2-3 Frames),
+				// haelfte als Shatter (die alte Szene zerbirst auf den Hit).
+				// NACH der Dauer-Berechnung, damit nichts sie ueberschreibt.
+				if( m_dropCutPending && !m_reviewMode )
+				{
+					m_dropCutPending = false;
+					if( rand() % 2 )
+					{
+						m_transStyleTex = 0;
+						m_texFadeDur    = 0.15f;
+					}
+					else
+					{
+						m_transStyleTex = 26;
+						m_texFadeDur    = 0.7f;
+					}
 				}
 
 				tex[m_nextTexture]->startInterpolators();

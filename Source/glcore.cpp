@@ -70,6 +70,9 @@ GLC_DEF(glPatchParameteri)
 GLC_DEF(glBlendFunci)
 GLC_DEF(glDrawBuffers)
 GLC_DEF(glClearBufferfv)
+GLC_DEF(glTexImage3D)
+GLC_DEF(glFramebufferTextureLayer)
+GLC_DEF(glBlitFramebuffer)
 
 #undef GLC_DEF
 
@@ -166,6 +169,10 @@ int glcoreInit(void)
     GLC_LOAD_OPT(glBlendFunci)
     GLC_LOAD_OPT(glDrawBuffers)
     GLC_LOAD_OPT(glClearBufferfv)
+    // Frame-History-Ring (optional: ohne sie bleiben Echo/Rewind einfach aus)
+    GLC_LOAD_OPT(glTexImage3D)
+    GLC_LOAD_OPT(glFramebufferTextureLayer)
+    GLC_LOAD_OPT(glBlitFramebuffer)
 
     glcoreHasCompute = ( glcore_glDispatchCompute && glcore_glBindImageTexture
                       && glcore_glMemoryBarrier   && glcore_glBindBufferBase
