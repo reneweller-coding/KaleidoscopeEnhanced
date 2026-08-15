@@ -1,0 +1,119 @@
+#version 430
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+
+// TeslaLightningTree.comp
+// Compute shader generating 3D branching Lichtenberg lightning discharge streamers
+// and high-energy return-stroke channels inside a dielectric field.
+
+layout(std430, binding = 0) buffer Verts {
+    float verts[]; // 8 floats per vertex: attrA.xyzw (pos, heat), attrB.xyzw (pad, branchID)
+};
+
+// DrawArraysIndirectCommand + counter:
+//   [0] count  [1] instanceCount  [2] first  [3] baseInstance  [4] rawCount
+layout(std430, binding = 1) buffer Cmd { uint cmd[]; };
+
+uniform uint  maxVertices;
+uniform float time;
+uniform float audioPhase;
+uniform float audioAdvance;
+uniform float audioKick;
+uniform float audioBass;
+uniform float audioMid;
+uniform float audioHigh;
+uniform float audioSwell;
+
+float hash11(float p) {
+    p = fract(p * 0.1031);
+    p *= p + 33.33;
+    p *= p + p;
+    return fract(p);
+}
+
+vec3 hash31(float p) {
+    vec3 p3 = fract(vec3(p) * vec3(0.1031, 0.1030, 0.0973));
+    p3 += dot(p3, p3.yzx + 33.33);
+    return fract((p3.xxy + p3.yzz) * p3.zyx);
+}
+
+void writeVertex(uint slot, vec3 p, float heat, float branchID) {
+    uint o = slot * 8u;
+    verts[o + 0u] = p.x;  verts[o + 1u] = p.y;  verts[o + 2u] = p.z;
+    verts[o + 3u] = heat;
+    verts[o + 4u] = 0.0;  verts[o + 5u] = 0.0;  verts[o + 6u] = 0.0;
+    verts[o + 7u] = branchID;
+}
+
+void emitSegment(vec3 pA, vec3 pB, float heat, float branchID, float thickness) {
+    uint base = atomicAdd(cmd[4], 6u);
+    if (base + 6u > maxVertices) return;
+
+    vec3 dir = pB - pA;
+    float len = length(dir);
+    dir = (len > 1e-5) ? dir / len : vec3(0.0, 1.0, 0.0);
+    vec3 upv = (abs(dir.y) > 0.95) ? vec3(1.0, 0.0, 0.0) : vec3(0.0, 1.0, 0.0);
+    vec3 side = normalize(cross(dir, upv)) * thickness;
+
+    vec3 a0 = pA - side, a1 = pA + side, b0 = pB - side, b1 = pB + side;
+    writeVertex(base + 0u, a0, heat, branchID);
+    writeVertex(base + 1u, a1, heat, branchID);
+    writeVertex(base + 2u, b0, heat, branchID);
+    writeVertex(base + 3u, a1, heat, branchID);
+    writeVertex(base + 4u, b1, heat, branchID);
+    writeVertex(base + 5u, b0, heat, branchID);
+}
+
+void main() {
+    uvec3 g = gl_GlobalInvocationID;
+    uint id = g.x + 64u * (g.y + 64u * g.z);
+    const uint TOTAL_SEGMENTS = 4096u;
+    if (id >= TOTAL_SEGMENTS) return;
+
+    float seed = float(id);
+    uint boltIdx = id / 64u;      // 64 main lightning bolts
+    uint stepIdx = id % 64u;      // 64 segment steps per bolt
+
+    float boltSeed = float(boltIdx);
+    vec3 boltOrigin = vec3(
+        (hash11(boltSeed * 13.1) - 0.5) * 1.5,
+        3.2,
+        (hash11(boltSeed * 27.7) - 0.5) * 1.5
+    );
+
+    // Main bolt target ground point
+    vec3 boltTarget = vec3(
+        (hash11(boltSeed * 43.3) - 0.5) * 4.0,
+        -2.5,
+        (hash11(boltSeed * 89.1) - 0.5) * 4.0
+    );
+
+    float t0 = float(stepIdx) / 64.0;
+    float t1 = float(stepIdx + 1u) / 64.0;
+
+    // Stepped leader jitter / fractal branching
+    vec3 p0 = mix(boltOrigin, boltTarget, t0);
+    vec3 p1 = mix(boltOrigin, boltTarget, t1);
+
+    // Fractal lightning noise offset
+    float jitterAmp = sin(t0 * 3.14159) * 0.7 * (1.0 + 0.3 * audioHigh);
+    vec3 jitter0 = (hash31(boltSeed * 100.0 + float(stepIdx)) - vec3(0.5)) * jitterAmp;
+    vec3 jitter1 = (hash31(boltSeed * 100.0 + float(stepIdx + 1u)) - vec3(0.5)) * jitterAmp;
+
+    p0 += jitter0;
+    p1 += jitter1;
+
+    // Secondary branching branch creation on higher steps
+    if (stepIdx > 20u && hash11(seed * 7.7) > 0.6) {
+        vec3 branchDir = normalize(p1 - p0 + (hash31(seed * 19.3) - vec3(0.5)) * 1.8);
+        p1 = p0 + branchDir * 0.25;
+    }
+
+    // Return stroke heat / ionization flash
+    float boltFlash = fract(time * 3.0 + boltSeed * 0.2);
+    float isMainStroke = step(0.85, hash11(boltSeed + floor(time * 3.0)));
+    float heat = (1.0 - t0) * (0.6 + 2.0 * audioKick * isMainStroke);
+
+    float thickness = (0.02 + 0.03 * isMainStroke + 0.015 * audioKick) * (1.0 - t0 * 0.5);
+
+    emitSegment(p0, p1, heat, boltSeed, thickness);
+}

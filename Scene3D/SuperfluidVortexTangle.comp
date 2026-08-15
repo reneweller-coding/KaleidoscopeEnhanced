@@ -1,0 +1,100 @@
+#version 430
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+
+// SuperfluidVortexTangle.comp
+// Compute shader simulating quantum vortex tangle filaments, quantized circulation,
+// and Kelvin wave cascades in superfluid Helium-II.
+
+layout(std430, binding = 0) buffer Verts {
+    float verts[]; // 8 floats per vertex: attrA.xyzw (pos, circulation), attrB.xyzw (pad, ringID)
+};
+
+layout(std430, binding = 1) buffer Cmd { uint cmd[]; };
+
+uniform uint  maxVertices;
+uniform float time;
+uniform float audioPhase;
+uniform float audioAdvance;
+uniform float audioKick;
+uniform float audioBass;
+uniform float audioMid;
+uniform float audioHigh;
+uniform float audioSwell;
+
+float hash11(float p) {
+    p = fract(p * 0.1031);
+    p *= p + 33.33;
+    p *= p + p;
+    return fract(p);
+}
+
+void writeVertex(uint slot, vec3 p, float circ, float ringID) {
+    uint o = slot * 8u;
+    verts[o + 0u] = p.x;  verts[o + 1u] = p.y;  verts[o + 2u] = p.z;
+    verts[o + 3u] = circ;
+    verts[o + 4u] = 0.0;  verts[o + 5u] = 0.0;  verts[o + 6u] = 0.0;
+    verts[o + 7u] = ringID;
+}
+
+void emitSegment(vec3 pA, vec3 pB, float circ, float ringID, float thickness) {
+    uint base = atomicAdd(cmd[4], 6u);
+    if (base + 6u > maxVertices) return;
+
+    vec3 dir = pB - pA;
+    float len = length(dir);
+    dir = (len > 1e-5) ? dir / len : vec3(0.0, 1.0, 0.0);
+    vec3 upv = (abs(dir.y) > 0.95) ? vec3(1.0, 0.0, 0.0) : vec3(0.0, 1.0, 0.0);
+    vec3 side = normalize(cross(dir, upv)) * thickness;
+
+    vec3 a0 = pA - side, a1 = pA + side, b0 = pB - side, b1 = pB + side;
+    writeVertex(base + 0u, a0, circ, ringID);
+    writeVertex(base + 1u, a1, circ, ringID);
+    writeVertex(base + 2u, b0, circ, ringID);
+    writeVertex(base + 3u, a1, circ, ringID);
+    writeVertex(base + 4u, b1, circ, ringID);
+    writeVertex(base + 5u, b0, circ, ringID);
+}
+
+void main() {
+    uvec3 g = gl_GlobalInvocationID;
+    uint id = g.x + 64u * (g.y + 64u * g.z);
+    const uint TOTAL_SEGMENTS = 4096u;
+    if (id >= TOTAL_SEGMENTS) return;
+
+    uint ringIdx = id / 64u;      // 64 quantized vortex rings
+    uint stepIdx = id % 64u;      // 64 segments per ring
+
+    float ringSeed = float(ringIdx);
+    float ringR = 0.8 + 1.8 * hash11(ringSeed * 3.7);
+
+    // Ring center translation through superfluid volume
+    float transSpeed = 0.5 / ringR;
+    vec3 ringCenter = vec3(
+        sin(ringSeed * 7.1 + time * 0.2) * 2.2,
+        cos(ringSeed * 13.3 + time * 0.15) * 1.6,
+        mod(ringSeed * 1.5 + (time * transSpeed + audioAdvance * 0.1) * 3.0, 12.0) - 6.0
+    );
+
+    float t0 = (float(stepIdx) / 64.0) * 6.2831853;
+    float t1 = (float(stepIdx + 1u) / 64.0) * 6.2831853;
+
+    // Kelvin waves (helical perturbations along quantized vortex cores)
+    float kModes = 5.0 + floor(hash11(ringSeed * 9.1) * 4.0);
+    float kelvinAmp = (0.12 + 0.15 * audioHigh) * (1.0 + 0.5 * audioKick);
+
+    float wave0 = sin(t0 * kModes + time * 4.0) * kelvinAmp;
+    float wave1 = sin(t1 * kModes + time * 4.0) * kelvinAmp;
+
+    // Evaluate segment endpoints
+    float r0 = ringR + wave0;
+    float r1 = ringR + wave1;
+
+    vec3 pA = ringCenter + vec3(cos(t0) * r0, sin(t0) * r0, cos(t0 * kModes) * kelvinAmp);
+    vec3 pB = ringCenter + vec3(cos(t1) * r1, sin(t1) * r1, cos(t1 * kModes) * kelvinAmp);
+
+    // Circulation speed & quantum energy
+    float circulation = (1.0 / ringR) * (0.8 + 0.6 * audioBass);
+    float thickness = (0.025 + 0.015 * audioKick);
+
+    emitSegment(pA, pB, circulation, ringSeed, thickness);
+}

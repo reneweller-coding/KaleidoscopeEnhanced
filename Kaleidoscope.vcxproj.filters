@@ -474,6 +474,78 @@
     <None Include="Scene\PlasmaLightningGlobe.frag">
       <Filter>Shaders\Scene</Filter>
     </None>
+    <None Include="Scene\KerrNewmanSingularity.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\BismuthHyperLabyrinth.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\FerrofluidHexMatrix.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\PrismaticSuperradiance.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\HyperDimensionalTesseractTunnel.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\NeutronStarMagnetarBurst.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\LiquidCrystalOptics.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\NonEuclideanHyperbolicMandala.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\SuperradiantTokamakIgnition.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\IridescentChitinMorpho.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\GrapheneDiracPlasmonics.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\SuperheatedCoronalLoop.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\InfinitePhotoZoomAbyss.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\StainedGlassCathedralCaustics.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\OrigamiMirrorKaleidoscope.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\FluidPhotoMarblingEbru.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\PrismaticCrystalChamber.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\KineticTileMosaicMatrix.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\HyperbolicPoincareTunnel.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\CyberHologramGlitchVoxel.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\QuantumChromodynamicsGluonPlasma.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\BioluminescentAbyssalTrenches.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\NonEuclideanOctahedralLabyrinth.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
+    <None Include="Scene\MetamorphicLavaVortex.frag">
+      <Filter>Shaders\Scene</Filter>
+    </None>
     <None Include="Combine\CombineDarkRed.frag">
       <Filter>Shaders\Combine</Filter>
     </None>
@@ -1678,6 +1750,117 @@
       <Filter>Shaders\Scene3D</Filter>
     </None>
     <None Include="Scene3D\ChladniAcousticPlate.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\QuantumQubitArray.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\QuantumQubitArray.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\LorenzAttractorTurbulence.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\LorenzAttractorTurbulence.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\StellarNurseryCollapse.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\StellarNurseryCollapse.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\SolarSailArmada.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\SolarSailArmada.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\BioluminescentOceanSwell.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\BioluminescentOceanSwell.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\CrystallineCavernTessellation.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\CrystallineCavernTessellation.tesc">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\CrystallineCavernTessellation.tese">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\CrystallineCavernTessellation.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\TeslaLightningTree.comp">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\TeslaLightningTree.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\TeslaLightningTree.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\SuperfluidVortexTangle.comp">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\SuperfluidVortexTangle.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\SuperfluidVortexTangle.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\DendriticSnowCrystal.comp">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\DendriticSnowCrystal.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\DendriticSnowCrystal.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\SolarWindMagnetosphere.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\SolarWindMagnetosphere.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\NeuralAxonSynapseCloud.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\NeuralAxonSynapseCloud.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\KineticMirrorHexagonArray.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\KineticMirrorHexagonArray.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\HypercubeLatticePillars.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\HypercubeLatticePillars.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\PlasmaFilamentTornado.comp">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\PlasmaFilamentTornado.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\PlasmaFilamentTornado.frag">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\SuperconductingFluxVortex.comp">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\SuperconductingFluxVortex.vert">
+      <Filter>Shaders\Scene3D</Filter>
+    </None>
+    <None Include="Scene3D\SuperconductingFluxVortex.frag">
       <Filter>Shaders\Scene3D</Filter>
     </None>
     <None Include="Configurations\Allround.xml">

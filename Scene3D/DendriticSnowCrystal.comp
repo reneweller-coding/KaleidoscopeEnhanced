@@ -1,0 +1,116 @@
+#version 430
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+
+// DendriticSnowCrystal.comp
+// Compute shader simulating 6-fold non-equilibrium dendritic ice snowflake
+// growth and branching hexagonal prism facets in 3D space.
+
+layout(std430, binding = 0) buffer Verts {
+    float verts[]; // 8 floats per vertex: attrA.xyzw (pos, iceRefract), attrB.xyzw (pad, armID)
+};
+
+layout(std430, binding = 1) buffer Cmd { uint cmd[]; };
+
+uniform uint  maxVertices;
+uniform float time;
+uniform float audioPhase;
+uniform float audioAdvance;
+uniform float audioKick;
+uniform float audioBass;
+uniform float audioMid;
+uniform float audioHigh;
+uniform float audioSwell;
+
+float hash11(float p) {
+    p = fract(p * 0.1031);
+    p *= p + 33.33;
+    p *= p + p;
+    return fract(p);
+}
+
+void writeVertex(uint slot, vec3 p, float ice, float armID) {
+    uint o = slot * 8u;
+    verts[o + 0u] = p.x;  verts[o + 1u] = p.y;  verts[o + 2u] = p.z;
+    verts[o + 3u] = ice;
+    verts[o + 4u] = 0.0;  verts[o + 5u] = 0.0;  verts[o + 6u] = 0.0;
+    verts[o + 7u] = armID;
+}
+
+void emitSegment(vec3 pA, vec3 pB, float ice, float armID, float thickness) {
+    uint base = atomicAdd(cmd[4], 6u);
+    if (base + 6u > maxVertices) return;
+
+    vec3 dir = pB - pA;
+    float len = length(dir);
+    dir = (len > 1e-5) ? dir / len : vec3(0.0, 1.0, 0.0);
+    vec3 upv = (abs(dir.y) > 0.95) ? vec3(1.0, 0.0, 0.0) : vec3(0.0, 1.0, 0.0);
+    vec3 side = normalize(cross(dir, upv)) * thickness;
+
+    vec3 a0 = pA - side, a1 = pA + side, b0 = pB - side, b1 = pB + side;
+    writeVertex(base + 0u, a0, ice, armID);
+    writeVertex(base + 1u, a1, ice, armID);
+    writeVertex(base + 2u, b0, ice, armID);
+    writeVertex(base + 3u, a1, ice, armID);
+    writeVertex(base + 4u, b1, ice, armID);
+    writeVertex(base + 5u, b0, ice, armID);
+}
+
+void main() {
+    uvec3 g = gl_GlobalInvocationID;
+    uint id = g.x + 64u * (g.y + 64u * g.z);
+    const uint TOTAL_SEGMENTS = 4096u;
+    if (id >= TOTAL_SEGMENTS) return;
+
+    // 6 primary snowflake sectors
+    uint flakeSector = (id / 682u) % 6u;
+    uint segIdx = id % 682u;
+
+    float baseAngle = (float(flakeSector) / 6.0) * 6.2831853 + time * 0.15;
+    vec3 armDir = vec3(cos(baseAngle), sin(baseAngle), 0.0);
+    vec3 side60A = vec3(cos(baseAngle + 1.0471975), sin(baseAngle + 1.0471975), 0.0); // +60 deg
+    vec3 side60B = vec3(cos(baseAngle - 1.0471975), sin(baseAngle - 1.0471975), 0.0); // -60 deg
+
+    // Growth extension length
+    float maxGrowth = 3.5 * (0.8 + 0.5 * audioBass);
+    float growthProgress = fract(time * 0.08 + audioAdvance * 0.05);
+
+    vec3 p0 = vec3(0.0);
+    vec3 p1 = vec3(0.0);
+    float armDist = 0.0;
+
+    if (segIdx < 120u) {
+        // Main spine arm segment
+        float t0 = (float(segIdx) / 120.0) * maxGrowth;
+        float t1 = (float(segIdx + 1u) / 120.0) * maxGrowth;
+        p0 = armDir * t0;
+        p1 = armDir * t1;
+        armDist = t0;
+    } else {
+        // Secondary & tertiary branching side needles
+        uint branchIdx = (segIdx - 120u) / 28u;
+        uint subSeg = (segIdx - 120u) % 28u;
+        
+        float branchPos = (float(branchIdx) / 20.0) * maxGrowth;
+        vec3 branchOrigin = armDir * branchPos;
+
+        vec3 branchDir = (branchIdx % 2u == 0u) ? side60A : side60B;
+        float branchLen = (maxGrowth - branchPos) * 0.55 * (1.0 + 0.3 * audioHigh);
+
+        float bt0 = (float(subSeg) / 28.0) * branchLen;
+        float bt1 = (float(subSeg + 1u) / 28.0) * branchLen;
+
+        p0 = branchOrigin + branchDir * bt0;
+        p1 = branchOrigin + branchDir * bt1;
+        armDist = branchPos + bt0;
+    }
+
+    // 3D snowflake thickness & Z fluting
+    float zFlute = sin(armDist * 8.0) * 0.15 * (1.0 + 0.4 * audioMid);
+    p0.z += zFlute;
+    p1.z += zFlute;
+
+    float thickness = (0.025 + 0.015 * audioKick) * (1.0 - armDist / (maxGrowth + 1.0));
+    float iceRefract = armDist / maxGrowth;
+
+    emitSegment(p0, p1, iceRefract, float(flakeSector), thickness);
+}
