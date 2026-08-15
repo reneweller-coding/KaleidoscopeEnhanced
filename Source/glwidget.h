@@ -111,6 +111,10 @@ protected:
 	// den zuletzt gewählten Zustand.
 	int				m_lyricsMode     = 2;      // 0 aus, 1 Scroll, 2 Karaoke (persistiert)
 	bool			m_artistShow     = true;   // Künstlerbilder an/aus (persistiert)
+	// Kinetischer Zeilen-Slam beim Karaoke-Zeilenwechsel: per User-Feedback
+	// ("springt zuviel") standardmäßig AUS, per Umschalt+W zuschaltbar
+	// (persistiert wie die anderen Overlay-Einstellungen).
+	bool			m_lyricsKinetic  = false;
 	int				m_lyricsRevUploaded = -1;
 	int				m_artistRevSeen  = -1;
 	int				m_artistIdx      = -1;

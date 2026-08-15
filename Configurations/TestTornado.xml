@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<configuration ImageDirectory="C:\\Users\\rene\\Desktop\\BilderPhotoechoes" ConfigurationName="TestTornado" >
+
+  <!-- PROBE: nur Tornado, fuer Unstetigkeiten- und Bildfuellungs-Check. -->
+
+  <TextureShader file="..\\Scene3D\\Tornado.frag" type="scene3d" geom="points" probability="1.0" complexity="2">
+  </TextureShader>
+
+</configuration>

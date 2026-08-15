@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<configuration ImageDirectory="C:\\Users\\rene\\Desktop\\BilderPhotoechoes" ConfigurationName="TestLightning" >
+
+  <!-- PROBE: nur LightningStorm, fuer die "nur schwarz"-Diagnose. -->
+
+  <TextureShader file="..\\Scene\\LightningStorm.frag" type="normal" probability="1.0" complexity="2">
+  </TextureShader>
+
+</configuration>

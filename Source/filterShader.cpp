@@ -1170,15 +1170,20 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
         // hard.  All terms are either slew-limited envelopes or fixed-
         // frequency oscillations — no phase remapping, no flicker.
         {
+            // Downbeat-Punch UND Kick-Shake gedaempft (User-Feedback: die
+            // Beat-Reaktion, insbesondere das Pulsieren, war zu praesent) -
+            // der Drop-Hit (1.1*dropPulse weiter unten, 0.010*dropPulse im
+            // Shake) bleibt bewusst kraeftig, das ist der dramaturgische
+            // Moment; nur das PRO-BEAT-Dauerpumpen wird leiser.
             if( m_downbeatTick )
-                m_camPunch = std::max( m_camPunch, 0.20f + 0.25f * m_downbeatSmooth );
+                m_camPunch = std::max( m_camPunch, 0.13f + 0.16f * m_downbeatSmooth );
             m_camPunch *= expf( -dt / 0.35f );
             float punch = m_camPunch + 1.1f * audioFx.dropPulse;
             float zoom  = 1.f + 0.045f * audioFx.buildUp * audioFx.buildUp
                               + 0.055f * punch;
             float sway  = 0.010f * sinf( 6.2831853f * audioFx.barPhase )
                         * audio.rhythmStrength * gate;
-            float shakeAmp = 0.0035f * m_kickSmooth * gate
+            float shakeAmp = 0.0022f * m_kickSmooth * gate
                            + 0.010f  * audioFx.dropPulse;
             // Gate-Weave: das feine 24-fps-Zittern einer Filmkopie im
             // Projektor - diskrete, winzige Versaetze pro "Filmbild"

@@ -594,11 +594,12 @@ GLuint ComputeFX::stepLightning( const AudioFeatures &a, float dt, float t )
 	if( !pseed || !pstep ) return 0;
 
 	// A new bolt on every strong onset, and a fallback so quiet passages are
-	// not left with an empty sky.
+	// not left with an empty sky.  Cadence tightened (was 3.5s) so the storm
+	// stays visibly alive even without percussive onsets.
 	static float lastBolt = -100.f;
 	bool strike = ( a.onsetKick > 0.55f || a.dropPulse > 0.6f )
 	              && ( t - lastBolt > 0.5f );
-	if( !c.seeded || strike || t - lastBolt > 3.5f )
+	if( !c.seeded || strike || t - lastBolt > 2.2f )
 	{
 		lastBolt = t;
 		c.seeded = true;
@@ -609,7 +610,13 @@ GLuint ComputeFX::stepLightning( const AudioFeatures &a, float dt, float t )
 		glUniform1ui( glGetUniformLocation( pseed, "seed" ), (GLuint)( t * 811.f ) );
 		float sx = 0.5f + 0.42f * sinf( t * 2.7f ) * cosf( t * 1.3f );
 		glUniform1f( glGetUniformLocation( pseed, "startX" ), sx );
-		glUniform1f( glGetUniformLocation( pseed, "life" ), 55.f + 35.f * a.overallLevel );
+		// War 55+35*level: bei ruhigem Pegel starben die Laeufer nach nur
+		// ~55 Schritten * 0.01 Schrittweite = 0.55 der Bildhoehe - der GESAMTE
+		// untere Bildbereich blieb ausserhalb der Screen-Space-Beleuchtung
+		// dauerhaft schwarz ("LightningStorm ist einfach nur schwarz").  Jetzt
+		// mit satter Reserve (Wander-Ineffizienz durch die Winkel-Drift
+		// eingerechnet) IMMER bis zum unteren Rand, unabhaengig vom Pegel.
+		glUniform1f( glGetUniformLocation( pseed, "life" ), 170.f + 70.f * a.overallLevel );
 		glDispatchCompute( groups( kTips, 128 ), 1, 1 );
 		glMemoryBarrier( GL_SHADER_STORAGE_BARRIER_BIT );
 	}
