@@ -103,13 +103,15 @@
     <ClCompile Include="..\Source\shader_setup.cpp" />
     <ClCompile Include="..\Source\textfile.cpp" />
     <ClCompile Include="..\Source\glcore.cpp" />
-    <!-- Pulled in only to satisfy EffectShader::cfxMask()'s reference to
-         kCfxInfo at LINK time: cfxMask() is reachable purely because it is
-         a member of EffectShader.obj, not because Scene3DPreview calls it.
-         The compute-FX sim textures it describes are the same GpuSims-fed
-         textures (fluid/smoke/SSM/physarum/spectro) already out of scope for
-         this editor; nothing here actually dispatches a compute pass. -->
+    <!-- Actually dispatched now: ComputeFXPreview.cpp (2D path, see its own
+         header for why it, not PreviewWidget.cpp directly, is the one
+         file here that includes this) steps whichever compute-FX kinds a
+         texture shader declares (FractalFlame, VolumetricFire, PixelSort,
+         SpectrumFilter, InkTank, ...), which used to render solid black in
+         this editor.  Also still satisfies EffectShader::cfxMask()'s
+         reference to kCfxInfo at LINK time for the unrelated scene3d path. -->
     <ClCompile Include="..\Source\ComputeFX.cpp" />
+    <ClCompile Include="ComputeFXPreview.cpp" />
     <ClCompile Include="moc_EditorWindow.cpp" />
     <ClCompile Include="moc_PreviewWidget.cpp" />
     <ClCompile Include="moc_AudioAnalyzer.cpp" />
@@ -125,6 +127,8 @@
     <ClInclude Include="..\Source\textfile.h" />
     <ClInclude Include="..\Source\glcore.h" />
     <ClInclude Include="..\Source\ComputeFX.h" />
+    <ClInclude Include="..\Source\CfxTypes.h" />
+    <ClInclude Include="ComputeFXPreview.h" />
     <ClInclude Include="..\Source\stdinc.h" />
     <CustomBuild Include="EditorWindow.h">
       <Message>MOCing EditorWindow.h ...</Message>

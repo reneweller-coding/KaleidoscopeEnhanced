@@ -127,7 +127,12 @@ int main(int argc, char *argv[])
     }
 
     QSurfaceFormat fmt;
-    fmt.setVersion(3, 3);
+    // 4.3, matching the main app: several texture shaders (FractalFlame,
+    // VolumetricFire, PixelSort/PixelMelt, SpectrumFilter, InkTank, ...) are
+    // driven by a GL 4.3 compute pass (see ComputeFX). A 3.3 context made
+    // ComputeFX::init() fail its capability check and step() return 0 -- so
+    // those shaders rendered solid black here even with the dispatch below.
+    fmt.setVersion(4, 3);
     fmt.setProfile(QSurfaceFormat::CoreProfile);
     fmt.setRenderableType(QSurfaceFormat::OpenGL);
     fmt.setSwapBehavior(QSurfaceFormat::DoubleBuffer);

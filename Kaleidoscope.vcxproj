@@ -285,6 +285,7 @@ exit /b 0</Command>
     <ClInclude Include="Source\AudioFeatures.h" />
     <ClInclude Include="Source\EffectShader.h" />
     <ClInclude Include="Source\ComputeFX.h" />
+    <ClInclude Include="Source\CfxTypes.h" />
     <ClInclude Include="Source\glcore.h" />
     <ClInclude Include="Source\filterShader.h" />
     <CustomBuild Include="Source\glwidget.h">
