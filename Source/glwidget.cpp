@@ -502,6 +502,7 @@ void GLwidget::draw()
 			// Trackwechsel: Lyrics + Künstlerbilder für den neuen Titel holen
 			// (nur wenn ein Modus aktiv ist - sonst keine Netz-Anfragen).
 			m_trackStartMs = m_fpsTimer.elapsed();
+			m_posSmooth    = -1.0;   // Consumer-PLL neu aufsetzen (neuer Song = neue Zeitachse)
 			if( m_trackMedia && !m_lyricsTest
 			    && ( m_lyricsMode > 0 || m_artistShow ) )
 				m_trackMedia->requestTrack( m_nowPlaying->artist(), npTitle );
@@ -1125,13 +1126,65 @@ void GLwidget::updateTrackOverlays( FilterShader *fs )
 		m_artistRevSeen     = -1;
 	}
 
-	// Playback-Position: SMTC, sonst lokale Uhr seit Trackwechsel.
+	// Playback-Position: SMTC, sonst lokale Uhr seit Trackwechsel - beides
+	// nur als REFERENZ für die PLL unten.
 	double pos = m_nowPlaying ? m_nowPlaying->positionNowSec() : -1.0;
 	double dur = 0.0;
 	if( m_nowPlaying )
 		dur = m_nowPlaying->timeline().durationSec;
 	if( pos < 0.0 || m_lyricsTest )
 		pos = double( m_fpsTimer.elapsed() - m_trackStartMs ) * 0.001;
+
+	// Consumer-PLL (die Aufnahme des Users hat es bewiesen: trotz monotoner
+	// NowPlaying-Publikation kamen noch Rückwärtsschritte an - z.B. wenn ein
+	// Player kurz playing=false flackert und dabei ein roher Alt-Wert
+	// durchrutscht, oder ein Titel-Flackern das Settle-Fenster auf die
+	// lokale Uhr zurücksetzt). Deshalb final HIER, an der einzigen
+	// Verbrauchsstelle: eine eigene, mit dem Frame-dt integrierte Position,
+	// die zur Referenz nur hin-GLEITET (Rate 0..1.15 - bremst bei Pause bis
+	// zum Stillstand, läuft nie rückwärts). Sprünge asymmetrisch: VORWÄRTS
+	// (>1.5s) sofort (User hat vorgespult, harmlos fürs Auge) - RÜCKWÄRTS
+	// erst, wenn die Referenz den früheren Stand ~2s lang konsistent
+	// bestätigt (echtes Zurückspulen); kürzeres Flackern jeder Art wird
+	// dadurch komplett überbrückt, die Anzeige läuft einfach weiter.
+	if( m_posSmooth < 0.0 || pos - m_posSmooth > 1.5 )
+	{
+		m_posSmooth     = pos;
+		m_backJumpSince = -1;
+	}
+	else if( pos - m_posSmooth < -1.5 )
+	{
+		const qint64 pllNow = m_fpsTimer.elapsed();
+		double erwartet = m_backJumpRef
+		                + ( m_backJumpSince >= 0
+		                    ? double( pllNow - m_backJumpSince ) * 0.001 : 0.0 );
+		if( m_backJumpSince < 0 || fabs( pos - erwartet ) > 1.0 )
+		{
+			m_backJumpSince = pllNow;        // (neuer) Rückwärts-Kandidat
+			m_backJumpRef   = pos;
+		}
+		else if( pllNow - m_backJumpSince > 2000 )
+		{
+			m_posSmooth     = pos;           // 2s konsistent: echter Seek
+			m_backJumpSince = -1;
+		}
+		if( m_backJumpSince >= 0 )
+			m_posSmooth += double(dt);       // solange pending: normal weiterlaufen
+	}
+	else
+	{
+		m_backJumpSince = -1;
+		// Asymmetrischer Gain: hinterherhinken sanft aufholen (0.3), aber
+		// VORAUSlaufen hart abbremsen (2.0) - sonst schiebt eine Pause
+		// (eingefrorene Referenz) die Position erst 3.3s über das Ziel
+		// hinaus und über die 1.5s-Schwelle in den Rückwärts-Pfad.
+		const double err = pos - m_posSmooth;
+		double r = 1.0 + err * ( err < 0.0 ? 2.0 : 0.3 );
+		if( r < 0.0 )   r = 0.0;
+		if( r > 1.15 )  r = 1.15;
+		m_posSmooth += double(dt) * r;
+	}
+	pos = m_posSmooth;
 
 	// ---- Lyrics ----
 	if( m_trackMedia->lyricsRevision() != m_lyricsRevUploaded )
@@ -1183,11 +1236,16 @@ void GLwidget::updateTrackOverlays( FilterShader *fs )
 			                         : c0;
 			targetV = c0 + ( c1 - c0 ) * lineFrac;
 
-			if( m_lyricsMode == 2 && pos >= L.t0 && pos < L.t1 )
+			// Highlight IMMER auf der (hysterese-stabilen) aktiven Zeile -
+			// frueher war es an "pos >= t0" gebunden, wodurch ein winziger
+			// Positions-Ruecklauf um den Zeilenanfang das Highlight kurz
+			// ausblendete: alle Zeilen poppten auf volle Helligkeit und
+			// zurueck ("Huepfen"), obwohl gar nichts scrollte.
+			if( m_lyricsMode == 2 )
 			{
 				o.lyricsHlV0   = L.v0;
 				o.lyricsHlV1   = L.v1;
-				o.lyricsHlProg = lineFrac;
+				o.lyricsHlProg = lineFrac;   // bereits auf 0..1 geklemmt
 			}
 		}
 		else
