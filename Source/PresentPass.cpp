@@ -99,6 +99,15 @@ void PresentPass::setup( int renderW, int renderH,
 		m_presentEchoUni     = glGetUniformLocation( m_presentProgId, "echo" );
 		m_presentBreathUni   = glGetUniformLocation( m_presentProgId, "breath" );
 		m_presentDropUni     = glGetUniformLocation( m_presentProgId, "audioDrop" );
+		m_presentLetterUni   = glGetUniformLocation( m_presentProgId, "letterbox" );
+		m_presentShockUni    = glGetUniformLocation( m_presentProgId, "shock" );
+		m_presentLineAgeUni  = glGetUniformLocation( m_presentProgId, "lyricsLineAge" );
+		m_presentPalAUni     = glGetUniformLocation( m_presentProgId, "paletteA" );
+		m_presentPalBUni     = glGetUniformLocation( m_presentProgId, "paletteB" );
+		m_presentPalAmtUni   = glGetUniformLocation( m_presentProgId, "paletteAmt" );
+		m_presentSceneDepthUni = glGetUniformLocation( m_presentProgId, "sceneDepth" );
+		m_presentDepthParUni = glGetUniformLocation( m_presentProgId, "depthPar" );
+		m_presentNearFar2Uni = glGetUniformLocation( m_presentProgId, "nearFar2" );
 	}
 
 	m_safetyReady = fboOk && (m_presentProgId != 0) && (m_presentTexUni >= 0);
@@ -482,6 +491,29 @@ void PresentPass::run( const Inputs &in )
 			             m_histReady ? historyLayerBack( in.echoDelay ) : 0.f );
 		if( m_presentBreathUni >= 0 ) glUniform1f( m_presentBreathUni, in.breath );
 		if( m_presentDropUni   >= 0 ) glUniform1f( m_presentDropUni, audioFx.dropPulse );
+	}
+
+	// ---- Welle 2: Letterbox, Schockwelle, Palette, Zeilen-Slam, Parallaxe ----
+	{
+		if( m_presentLetterUni  >= 0 ) glUniform1f( m_presentLetterUni, in.letterbox );
+		if( m_presentShockUni   >= 0 ) glUniform2f( m_presentShockUni, in.shockR, in.shockAmp );
+		if( m_presentLineAgeUni >= 0 ) glUniform1f( m_presentLineAgeUni, in.lyricsLineAge );
+		if( m_presentPalAmtUni  >= 0 ) glUniform1f( m_presentPalAmtUni, in.paletteAmt );
+		if( m_presentPalAUni    >= 0 ) glUniform3f( m_presentPalAUni,
+		                                    in.paletteA[0], in.paletteA[1], in.paletteA[2] );
+		if( m_presentPalBUni    >= 0 ) glUniform3f( m_presentPalBUni,
+		                                    in.paletteB[0], in.paletteB[1], in.paletteB[2] );
+		// Tiefen-Sampler IMMER auf eigener Unit (6) - siehe histTex-Kommentar.
+		if( m_presentSceneDepthUni >= 0 ) glUniform1i( m_presentSceneDepthUni, 6 );
+		float dp = ( in.sceneDepthTex != 0 ) ? in.depthPar : 0.f;
+		if( dp > 0.001f )
+		{
+			glActiveTexture( GL_TEXTURE6 );
+			glBindTexture( GL_TEXTURE_2D, in.sceneDepthTex );
+			glActiveTexture( GL_TEXTURE0 );
+		}
+		if( m_presentDepthParUni >= 0 ) glUniform1f( m_presentDepthParUni, dp );
+		if( m_presentNearFar2Uni >= 0 ) glUniform2f( m_presentNearFar2Uni, in.nearZ, in.farZ );
 	}
 
 	if( m_presentResUni   >= 0 ) glUniform2f( m_presentResUni, (float)in.displayW, (float)in.displayH );

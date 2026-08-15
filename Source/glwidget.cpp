@@ -503,6 +503,9 @@ void GLwidget::draw()
 			// (nur wenn ein Modus aktiv ist - sonst keine Netz-Anfragen).
 			m_trackStartMs = m_fpsTimer.elapsed();
 			m_posSmooth    = -1.0;   // Consumer-PLL neu aufsetzen (neuer Song = neue Zeitachse)
+			m_palValid     = false;  // Cover-Palette gehoert zum alten Kuenstler
+			m_lastKaraokeLineSeen = -1;
+			m_lineChangeMs = -1;
 			if( m_trackMedia && !m_lyricsTest
 			    && ( m_lyricsMode > 0 || m_artistShow ) )
 				m_trackMedia->requestTrack( m_nowPlaying->artist(), npTitle );
@@ -1084,6 +1087,61 @@ void GLwidget::applyMidi()
 	}
 }
 
+// Cover-Palette: die zwei dominanten Farben eines Kuenstlerbilds.  12 Hue-
+// Eimer, gewichtet mit Saettigung*Helligkeit (Grau/Schwarz zaehlt nicht);
+// Sieger = gewichtetes RGB-Mittel seines Eimers, Zweitfarbe = bester Eimer
+// mit Kreis-Abstand >= 2 (sonst dunkle Schattierung der Ersten).  Liefert
+// false fuer praktisch farblose Cover (S/W-Fotos) - dann bleibt das Grading
+// neutral statt einen Zufallston zu erfinden.
+static bool extractPalette( const QImage &src, float *palA, float *palB )
+{
+	if( src.isNull() )
+		return false;
+	QImage img = src.scaled( 24, 24, Qt::IgnoreAspectRatio, Qt::FastTransformation )
+	                .convertToFormat( QImage::Format_RGB32 );
+	double wSum[12] = {}, rSum[12] = {}, gSum[12] = {}, bSum[12] = {};
+	for( int y = 0; y < img.height(); ++y )
+		for( int x = 0; x < img.width(); ++x )
+		{
+			QColor c( img.pixel( x, y ) );
+			float h, s, v;
+			c.getHsvF( &h, &s, &v );
+			if( h < 0.f || s < 0.22f || v < 0.14f )
+				continue;
+			int    bkt = int( h * 12.f ) % 12;
+			double w   = double( s ) * double( v );
+			wSum[bkt] += w;
+			rSum[bkt] += w * c.redF();
+			gSum[bkt] += w * c.greenF();
+			bSum[bkt] += w * c.blueF();
+		}
+	int best = 0;
+	for( int k = 1; k < 12; ++k )
+		if( wSum[k] > wSum[best] ) best = k;
+	// Mindestens ~4% der Pixel muessen farbig auf den Sieger einzahlen.
+	if( wSum[best] < 24.0 * 24.0 * 0.04 * 0.25 )
+		return false;
+	palA[0] = float( rSum[best] / wSum[best] );
+	palA[1] = float( gSum[best] / wSum[best] );
+	palA[2] = float( bSum[best] / wSum[best] );
+	int second = -1;
+	for( int k = 0; k < 12; ++k )
+	{
+		int dc = abs( k - best );  dc = ( dc > 6 ) ? 12 - dc : dc;
+		if( dc >= 2 && ( second < 0 || wSum[k] > wSum[second] ) && wSum[k] > 1.0 )
+			second = k;
+	}
+	if( second >= 0 )
+	{
+		palB[0] = float( rSum[second] / wSum[second] );
+		palB[1] = float( gSum[second] / wSum[second] );
+		palB[2] = float( bSum[second] / wSum[second] );
+	}
+	else
+		for( int k = 0; k < 3; ++k ) palB[k] = palA[k] * 0.30f;  // dunkle Schattierung
+	return true;
+}
+
 // Lyrics-/Künstlerbild-Overlay: pro Frame den Anzeige-Zustand berechnen.
 // Sync-Quelle ist die SMTC-Playback-Position (extrapoliert); ohne sie (VLC-
 // Fallback, Testmodus) läuft eine lokale Uhr ab Trackwechsel.  Alle Blenden
@@ -1224,6 +1282,15 @@ void GLwidget::updateTrackOverlays( FilterShader *fs )
 			while( i > 0     && pos <  lines[i].t0 - 0.3 ) --i;
 			m_karaokeLine = i;
 
+			// Kinetik: Zeilen-Alter fuer den Slam-Einflug der frischen Zeile.
+			if( i != m_lastKaraokeLineSeen )
+			{
+				m_lastKaraokeLineSeen = i;
+				m_lineChangeMs        = m_fpsTimer.elapsed();
+			}
+			if( m_lineChangeMs >= 0 )
+				o.lyricsLineAge = float( m_fpsTimer.elapsed() - m_lineChangeMs ) * 0.001f;
+
 			const auto &L = lines[i];
 			float lineFrac = 0.f;
 			if( L.t1 > L.t0 )
@@ -1294,6 +1361,9 @@ void GLwidget::updateTrackOverlays( FilterShader *fs )
 				m_artistRevSeen     = m_trackMedia->imagesRevision();
 				const QImage &img = m_trackMedia->imageAt( idx );
 				fs->setArtistTexture( img.constBits(), img.width(), img.height() );
+				// Cover-Palette aus dem frisch gewaehlten Bild ziehen - der
+				// Song bekommt organisch die Farbwelt seines Kuenstlers.
+				m_palValid = extractPalette( img, m_palA, m_palB );
 			}
 			float in  = std::min( 1.f, float(ph) / float(fadeMs) );
 			float out = std::min( 1.f, float(showMs - ph) / float(fadeMs) );
@@ -1301,6 +1371,19 @@ void GLwidget::updateTrackOverlays( FilterShader *fs )
 		}
 	}
 	m_artistAlphaSm = slew( m_artistAlphaSm, artistTarget, 1.2f, dt );
+	// Cover-Palette: sehr langsam einblenden (0.3/s) - die Farbwelt eines
+	// Songs soll sich etablieren, nicht aufpoppen.  Unabhaengig davon, ob
+	// das Bild selbst gerade sichtbar ist.
+	m_palAmtSm = slew( m_palAmtSm, m_palValid ? 1.f : 0.f, 0.3f, dt );
+	if( m_palAmtSm > 0.001f )
+	{
+		o.paletteAmt = m_palAmtSm;
+		for( int k = 0; k < 3; ++k )
+		{
+			o.paletteA[k] = m_palA[k];
+			o.paletteB[k] = m_palB[k];
+		}
+	}
 	if( m_artistAlphaSm > 0.001f && m_artistIdxUploaded >= 0
 	    && m_artistIdxUploaded < m_trackMedia->imageCount() )
 	{

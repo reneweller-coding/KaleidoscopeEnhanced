@@ -1193,8 +1193,11 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
             float oy = 0.0030f * cosf( m_globaltime * 0.17f ) + wvy
                      + shakeAmp * cosf( m_globaltime * 31.3f );
             // The zoom must always pay for the offset + rotation so no edge
-            // ever samples outside the frame.
-            float need = fabsf(ox) + fabsf(oy) + 0.62f * fabsf(sway);
+            // ever samples outside the frame.  Die 2.5D-Parallaxe verschiebt
+            // nahe Strukturen bis 1.8x staerker als den Frame selbst - der
+            // Deckungs-Faktor waechst mit (Vorframe-Wert des Slews reicht).
+            float need = ( fabsf(ox) + fabsf(oy) ) * ( 1.f + 1.8f * m_trailDepth3D )
+                       + 0.62f * fabsf(sway);
             zoom = std::max( zoom, 1.f + 2.4f * need );
             m_camZoom = zoom; m_camRot = sway;
             m_camOffX = ox;   m_camOffY = oy;
@@ -1239,6 +1242,31 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
                                 ( audio.buildUp - 0.5f ) * 2.2f ) ) * gate;
             m_breathSm = slewToward( m_breathSm, bTarget, 2.5f, dt );
 
+            // CinemaScope-Letterbox: die Balken KRIECHEN im Build-up herein
+            // (0.8/s - man merkt erst spaet, dass das Bild enger wird) und
+            // reissen auf den Drop schlagartig auf (12/s).
+            {
+                float lbRate = ( audioFx.dropPulse > 0.4f ) ? 12.f
+                             : ( bTarget > m_letterSm ? 0.8f : 2.0f );
+                m_letterSm = slewToward( m_letterSm, bTarget, lbRate, dt );
+            }
+
+            // Bass-Schockwelle: auf jeden kraeftigen Kick startet ein
+            // Verzerrungsring im Zentrum (klein), auf einen Drop ein grosser.
+            // Reine Verschiebung, keine Helligkeit - photosensitiv unkritisch.
+            {
+                bool kickEdge = ( m_kickSmooth > 0.55f && m_prevShockKick <= 0.55f );
+                bool dropEdge = ( audioFx.dropPulse > 0.85f && m_prevShockDrop <= 0.85f );
+                m_prevShockKick = m_kickSmooth;
+                m_prevShockDrop = audioFx.dropPulse;
+                if( dropEdge )
+                    { m_shockR = 0.f; m_shockAmp = 0.030f; }
+                else if( kickEdge && gate > 0.5f )
+                    { m_shockR = 0.f; m_shockAmp = std::max( m_shockAmp, 0.011f ); }
+                m_shockR   += dt * 1.7f;
+                m_shockAmp *= expf( -dt / 0.30f );
+            }
+
             // Dev-Haken KALEIDO_REGIE_TEST: festes 12-s-Muster (3 s Echo,
             // 3 s Breath, 2 s Rewind-Scrub, Rest live) fuer deterministische
             // Frame-Proben der Zeit-Regie ohne echte Drops/Build-ups.
@@ -1250,6 +1278,9 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
                 float ph = fmodf( m_globaltime, 12.f );
                 m_echoOverride = ( ph < 3.f ) ? 0.40f : 0.f;
                 m_breathSm   = ( ph >= 3.f && ph < 6.f ) ? 1.f : 0.f;
+                m_letterSm   = m_breathSm;             // Balken folgen dem Breath
+                if( ph >= 6.0f && ph < 6.4f && m_shockR > 1.f )
+                    { m_shockR = 0.f; m_shockAmp = 0.03f; }   // 1 Welle pro Zyklus
                 if( ph >= 7.f && ph < 9.f )
                     { m_rewindBack = 1.5f; m_rewindMixSm = 1.f; }
                 else if( ph >= 9.f && ph < 9.5f )
@@ -1886,6 +1917,23 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 			pin.echoAmt = m_echoOverride;
 		pin.echoDelay  = 1.4f;
 		pin.breath     = m_breathSm;
+		// Welle 2: Letterbox, Schockwelle, Cover-Palette, Zeilen-Slam,
+		// 2.5D-Parallaxe (Tiefe der AKTIVEN Szene; eine 2D-Szene hat auf
+		// die Fernebene geloeschte Tiefe -> Parallaxe neutralisiert sich).
+		pin.letterbox    = m_letterSm;
+		pin.shockR       = m_shockR;
+		pin.shockAmp     = m_shockAmp;
+		pin.lyricsLineAge = m_overlay.lyricsLineAge;
+		pin.paletteAmt   = m_overlay.paletteAmt;
+		for( int pi = 0; pi < 3; ++pi )
+		{
+			pin.paletteA[pi] = m_overlay.paletteA[pi];
+			pin.paletteB[pi] = m_overlay.paletteB[pi];
+		}
+		pin.sceneDepthTex = m_depthTexEffect1;
+		pin.depthPar      = m_trailDepth3D;
+		pin.nearZ         = EffectShader::kSceneNear;
+		pin.farZ          = EffectShader::kSceneFar;
 		m_present.run( pin );
 	}
 

@@ -119,6 +119,15 @@ protected:
 	float			m_artistAlphaSm  = 0.f;
 	float			m_scrollVSm      = 0.f;
 	int				m_karaokeLine    = -1;
+	// Kinetik: wann die aktive Karaoke-Zeile zuletzt gewechselt hat
+	// (Slam-Einflug der frischen Zeile im Present).
+	int				m_lastKaraokeLineSeen = -1;
+	qint64			m_lineChangeMs   = -1;
+	// Cover-Palette: dominante Farben des aktuellen Kuenstlerbilds.
+	float			m_palA[3] = { 0.f, 0.f, 0.f };
+	float			m_palB[3] = { 0.f, 0.f, 0.f };
+	bool			m_palValid       = false;
+	float			m_palAmtSm       = 0.f;
 	qint64			m_trackStartMs   = 0;      // Fallback-Uhr ohne SMTC-Position
 	bool			m_lyricsTest     = false;  // KALEIDO_LYRICS_TEST aktiv
 	// Echtes dt fürs Scroll-/Blend-Smoothing (nicht an die 60-Hz-Annahme

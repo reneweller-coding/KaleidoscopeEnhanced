@@ -76,6 +76,17 @@ uniform vec2  echo;             // x = Staerke,  y = Ring-Layer (~1.4 s zurueck)
 uniform float breath;           // Build-up "Atem anhalten": Desat/Dim/Vignette
 uniform float audioDrop;        // Drop-/Slam-Puls (Streak-Boost, Rewind-Wuerze)
 
+// ---- Welle 2 ----
+uniform float letterbox;        // CinemaScope-Balken 0..1 (Drop reisst auf)
+uniform vec2  shock;            // Bass-Schockwelle: x = Radius, y = Amplitude
+uniform float lyricsLineAge;    // Sek. seit Wechsel der aktiven Karaoke-Zeile
+uniform vec3  paletteA;         // Cover-Palette: dominante Farbe (Lichter)
+uniform vec3  paletteB;         //                Zweitfarbe (Schatten)
+uniform float paletteAmt;       // 0 = neutral (kein/farbloses Cover)
+uniform sampler2D sceneDepth;   // Unit 6: Tiefe der AKTIVEN Szene (2.5D-Parallaxe)
+uniform float depthPar;         // Parallaxe-Staerke (geslewte 3D-heit der Szene)
+uniform vec2  nearFar2;         // Clip-Ebenen zur Linearisierung
+
 float hash21(vec2 p) { return fract(sin(dot(p, vec2(41.3, 289.1))) * 43758.5453); }
 
 // Hue rotation around the (1,1,1) luminance axis (Rodrigues), turns in [0,1].
@@ -168,6 +179,33 @@ void main()
     float camz = (1.0 + 0.040 * scenePulse) * max(camZoom, 1.0);
     vec2  puv = cuv / camz + 0.5 - camOff;
 
+    // --- 2.5D-Parallaxe: die Kameradrift verschiebt NAHE Strukturen bis
+    // 1.8x staerker als den Frame selbst (Tiefe der aktiven 3D-Szene,
+    // linearisiert).  Eine 2D-Szene hat auf fern geloeschte Tiefe ->
+    // nearness 0 -> neutral.  Der Host deckt den Extra-Versatz im Zoom.
+    if (depthPar > 0.001)
+    {
+        float zr  = texture(sceneDepth, clamp(puv, 0.0, 1.0)).r;
+        float lin = nearFar2.x * nearFar2.y
+                  / max(nearFar2.y - zr * (nearFar2.y - nearFar2.x), 1e-4);
+        float nearness = 1.0 - clamp((lin - nearFar2.x)
+                                     / (nearFar2.y - nearFar2.x), 0.0, 1.0);
+        puv -= camOff * (1.8 * nearness * depthPar);
+    }
+
+    // --- Bass-Schockwelle: ein expandierender Verzerrungsring vom Zentrum
+    // (Kick klein, Drop gross).  Reine Verschiebung - keine Helligkeit.
+    if (shock.y > 0.0005)
+    {
+        vec2  sd = puv - 0.5;
+        sd.x *= aspect2;
+        float rr   = length(sd);
+        float wave = exp(-abs(rr - shock.x) * 14.0) * shock.y;
+        vec2  dir  = (rr > 1e-4) ? sd / rr : vec2(0.0);
+        dir.x /= aspect2;
+        puv += dir * wave;
+    }
+
     // Stereoscopic reprojection: shift the sampling per eye by the local
     // pseudo-depth (crossed disparity -> bright structures float in front of
     // the screen, the tunnel centre recedes).  Anaglyph packs both eyes into
@@ -259,6 +297,17 @@ void main()
     // image out.  Cut the exposure and deepen the mid-tones for richer colour
     // (most effective on the near-white areas).
     c = pow(max(c, 0.0) * 0.78, vec3(1.25));
+
+    // --- Cover-Palette: das Grading zieht dezent in die Farbwelt des
+    // Kuenstlerbild-Covers (Duotone aus der Luminanz: Schatten -> Zweitfarbe,
+    // Lichter -> Hauptfarbe).  Bewusst subtil (max ~20%) und sehr langsam
+    // eingeblendet - jeder Song bekommt "seine" Farbwelt.
+    if (paletteAmt > 0.001)
+    {
+        float lp  = dot(c, vec3(0.299, 0.587, 0.114));
+        vec3  duo = mix(paletteB, paletteA, smoothstep(0.10, 0.85, lp)) * lp * 1.6;
+        c = mix(c, duo, 0.20 * paletteAmt);
+    }
 
     // Loudness → brightness, spectral flux → shimmer (kept small so already-bright
     // content does not blow out).  A gentle brightness lift on the beat (with the
@@ -451,7 +500,24 @@ void main()
         float v = lyricsScrollV + (0.5 - uv.y) * vSpan;
         if (u > 0.0 && u < 1.0 && v > 0.0 && v < 1.0)
         {
-            vec4 lt = texture(lyricsTex, vec2(u, v));
+            // Kinetik: die FRISCHE aktive Zeile slammt gross herein (1.5x ->
+            // 1.0 in 0.35 s, ease-out) - Pixel um die Zeile herum werden in
+            // ihren vergroesserten Fussabdruck hineingesampelt.
+            float u2 = u, v2 = v, slamGlow = 0.0;
+            if (lyricsHl.x >= 0.0 && lyricsLineAge < 0.35)
+            {
+                float rem = 1.0 - lyricsLineAge / 0.35;
+                float sl  = 1.0 + 0.5 * rem * rem;
+                float vc  = 0.5 * (lyricsHl.x + lyricsHl.y);
+                float vS  = (v - vc) / sl + vc;
+                float uS  = (u - 0.5) / sl + 0.5;
+                if (vS >= lyricsHl.x && vS <= lyricsHl.y)
+                {
+                    u2 = uS;  v2 = vS;
+                    slamGlow = rem;
+                }
+            }
+            vec4 lt = texture(lyricsTex, vec2(u2, v2));
             // Weiche Raender oben/unten (Credits-Fenster).
             float edge = smoothstep(0.04, 0.22, uv.y) * smoothstep(0.96, 0.78, uv.y);
             float a = lt.a * lyricsAlpha * edge;
@@ -460,13 +526,13 @@ void main()
             if (lyricsHl.x >= 0.0)
             {
                 // Karaoke: aktive Zeile gold + Sweep, restliche Zeilen dezent.
-                if (v >= lyricsHl.x && v <= lyricsHl.y)
+                if (v2 >= lyricsHl.x && v2 <= lyricsHl.y)
                 {
-                    float sweep = smoothstep(lyricsHl.z + 0.02, lyricsHl.z - 0.02, u);
+                    float sweep = smoothstep(lyricsHl.z + 0.02, lyricsHl.z - 0.02, u2);
                     vec3 gold = col * vec3(1.0, 0.86, 0.42);
                     col = mix(col, gold, 0.35 + 0.65 * sweep);
-                    a  *= 1.0;
                     c  += gold * a * 0.25 * (0.5 + 0.5 * audioBeat);
+                    c  += gold * a * 0.35 * slamGlow;      // Slam-Aufblitzen
                 }
                 else
                     a *= 0.45;                             // Kontext-Zeilen dezenter
@@ -635,6 +701,16 @@ void main()
         float lumG = clamp(dot(c, vec3(0.299, 0.587, 0.114)), 0.0, 1.0);
         c += gr * 0.022 * (0.35 + 0.65 * (1.0 - lumG))
                 * (0.55 + 0.45 * audioLevel);
+    }
+
+    // --- CinemaScope-Letterbox: schwarze Balken kriechen im Build-up herein
+    // und reissen auf den Drop auf (Host slewt asymmetrisch).  NACH dem Korn,
+    // damit die Balken sauber schwarz bleiben (echte Matte, kein Filmbild).
+    if (letterbox > 0.001)
+    {
+        float bar = 0.11 * letterbox;
+        c *= smoothstep(bar - 0.012, bar + 0.004, uv.y)
+           * smoothstep(bar - 0.012, bar + 0.004, 1.0 - uv.y);
     }
 
     // Ordered dither (interleaved gradient noise) to break up 8-bit banding in the
