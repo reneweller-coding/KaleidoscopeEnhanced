@@ -1,0 +1,116 @@
+#version 430 core
+// PlasmaFilamentTornado.comp
+// -----------------------------------------------------------------------
+// GPU compute shader generating 4,096 helical Birkeland plasma current
+// filaments swirling in a relativistic space hurricane vortex.
+// -----------------------------------------------------------------------
+
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+
+layout(std430, binding = 0) buffer Verts { float verts[]; };
+layout(std430, binding = 1) buffer Cmd   { uint cmd[];   };
+
+uniform uint  maxVertices;
+uniform float time;
+
+uniform float audioPhase;
+uniform float audioAdvance;
+uniform float audioSwell;
+uniform float audioLevel;
+uniform float audioKick;
+uniform float audioCentroid;
+uniform float audioValence;
+uniform float audioSubBass;
+uniform float audioBass;
+uniform float audioMid;
+uniform float audioHigh;
+uniform float audioFlux;
+uniform float audioChromaHue;
+
+uniform float vortexP;
+uniform float pinchP;
+uniform float speedP;
+uniform float hueP;
+
+float hash11(float p) {
+    p = fract(p * 0.1031);
+    p *= p + 33.33;
+    p *= p + p;
+    return fract(p);
+}
+
+void main() {
+    uvec3 g = gl_GlobalInvocationID;
+    uint gid = g.x + 64u * (g.y + 64u * g.z);
+    if (gid >= 4096u) return;
+
+    float vtx = (vortexP > 0.0) ? vortexP : 1.0;
+    float pnc = (pinchP  > 0.0) ? pinchP  : 1.0;
+    float spd = (speedP  > 0.0) ? speedP  : 1.0;
+
+    float t = time * 0.4 * spd + audioAdvance * 0.2;
+    float fGid = float(gid);
+
+    // Filament parameter along tornado vertical axis
+    float strandID = floor(fGid / 64.0); // 64 strands
+    float segID = mod(fGid, 64.0);       // 64 segments per strand
+
+    float u1 = segID / 64.0;
+    float u2 = (segID + 1.0) / 64.0;
+
+    // Tornado height range [-2.5, 2.5]
+    float y1 = (u1 - 0.5) * 5.0;
+    float y2 = (u2 - 0.5) * 5.0;
+
+    // Tornado funnel radius (widens at top and base)
+    float r1 = (0.3 + 0.4 * (y1 * y1) + 0.3 * sin(y1 * 2.0 + t)) * vtx * (1.0 + 0.3 * audioBass);
+    float r2 = (0.3 + 0.4 * (y2 * y2) + 0.3 * sin(y2 * 2.0 + t)) * vtx * (1.0 + 0.3 * audioBass);
+
+    // Helical swirl angle
+    float strandOffset = strandID * (6.2831853 / 64.0);
+    float a1 = strandOffset + y1 * 3.5 * pnc + t * 2.5;
+    float a2 = strandOffset + y2 * 3.5 * pnc + t * 2.5;
+
+    // Centerline positions
+    vec3 pA = vec3(cos(a1) * r1, y1, sin(a1) * r1);
+    vec3 pB = vec3(cos(a2) * r2, y2, sin(a2) * r2);
+
+    // Z-Pinch magnetic compression shockwave on kick
+    float pinchCompression = exp(-abs(y1) * 2.0) * audioKick * 0.6;
+    pA.xz *= (1.0 - pinchCompression);
+    pB.xz *= (1.0 - pinchCompression);
+
+    // Ribbon width vectors
+    vec3 forward = normalize(pB - pA);
+    vec3 binormal = normalize(vec3(-forward.z, 0.0, forward.x));
+    float ribbonWidth = (0.02 + 0.02 * audioHigh);
+
+    // 4 ribbon quad corners
+    vec3 v0 = pA - binormal * ribbonWidth;
+    vec3 v1 = pA + binormal * ribbonWidth;
+    vec3 v2 = pB - binormal * ribbonWidth;
+    vec3 v3 = pB + binormal * ribbonWidth;
+
+    // Allocate 6 vertices (2 triangles = 1 ribbon quad segment)
+    uint base = atomicAdd(cmd[4], 6u);
+    if (base + 6u > maxVertices) return;
+
+    // Write 6 vertices in GL_TRIANGLES layout (stride = 8 floats)
+    vec3 pList[6] = vec3[6](v0, v1, v2,  v1, v3, v2);
+    vec2 uvList[6] = vec2[6](
+        vec2(0.0, u1), vec2(1.0, u1), vec2(0.0, u2),
+        vec2(1.0, u1), vec2(1.0, u2), vec2(0.0, u2)
+    );
+
+    for (uint i = 0u; i < 6u; ++i) {
+        uint off = (base + i) * 8u;
+        verts[off + 0u] = pList[i].x;
+        verts[off + 1u] = pList[i].y;
+        verts[off + 2u] = pList[i].z;
+        verts[off + 3u] = strandID;
+        verts[off + 4u] = hash11(strandID);
+        verts[off + 5u] = u1;
+        verts[off + 6u] = uvList[i].x;
+        verts[off + 7u] = uvList[i].y;
+    }
+}

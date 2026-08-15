@@ -305,6 +305,53 @@ parameters, mood tags, flicker-free integrated motion.
 - **`SuperfluidHeliumVortexTurbulence`** (`Scene3D/`, `geom="indirect"` + `SuperfluidHeliumVortexTurbulence.comp`): GPU Compute Shader simulating quantum vortex tangle filaments and Kelvin wave packets in superfluid Helium-II.
 - **`ChladniAcousticPlate`** (`Scene3D/`, `geom="points"`): 60,000 crystalline particles migrating away from antinodes to gather on sacred geometry nodal lines of a vibrating Chladni plate.
 
+**Non-Euclidean, Relativistic & Quantum Dynamics Suite (2026-08 Expansion 4 — 13 New Shaders):**
+- **`KerrNewmanSingularity`** (`Scene/`): Relativistic raymarched rotating charged Kerr-Newman black hole with ergosphere frame-dragging, photon sphere Doppler beaming, and polar synchrotron plasma jets.
+- **`BismuthHyperLabyrinth`** (`Scene/`): Infinite 3D/4D hopper crystal maze of elemental bismuth with stepped 90° square terraces, thin-film oxidation rainbow iridescence, and photo texturing.
+- **`FerrofluidHexMatrix`** (`Scene/`): Raymarched magnetic ferrofluid pool forming Rosensweig instability cone spikes in a hexagonal magnetic lattice with oily sheen and fluid vortex advection.
+- **`PrismaticSuperradiance`** (`Scene/`): Volumetric laser resonance chamber with multi-angle Brewster prisms, cascaded Raman scattering, stimulated emission sheets, and chromatic photo dispersion.
+- **`QuantumQubitArray`** (`Scene3D/`, `geom="cubes"`): 4,900 monolithic qubit towers rotating on Bloch spheres across a superconducting microchip with quantum gate phase flips.
+- **`LorenzAttractorTurbulence`** (`Scene3D/`, `geom="ribbon"`): 20 glowing neon ribbons tracing chaotic strange attractor trajectories (Lorenz, Rössler, Chen) through 3D phase space with velocity Doppler grading.
+- **`StellarNurseryCollapse`** (`Scene3D/`, `geom="points"`): 60,000-particle gravitational collapse of an interstellar nebula into a spinning protostellar accretion disk and relativistic bipolar plasma jets.
+- **`SolarSailArmada`** (`Scene3D/`, `geom="quads"`): 3,000 reflective solar sails in geometric orbital formation tacking into the solar wind, projecting photo textures with specular solar glints.
+- **`BioluminescentOceanSwell`** (`Scene3D/`, `geom="grid"`): 220x120 heightfield open ocean swell with Gerstner wave harmonics and bioluminescent dinoflagellate blue-cyan crest emission.
+- **`CrystallineCavernTessellation`** (`Scene3D/`, `geom="patches"` + `CrystallineCavernTessellation.tesc` + `.tese`): Hardware GPU tessellation of an underground geode cavern with quartz/amethyst crystal clusters and subterranean illumination.
+- **`TeslaLightningTree`** (`Scene3D/`, `geom="indirect"` + `TeslaLightningTree.comp`): GPU Compute Shader generating 4,096 Lichtenberg lightning discharge streamers with stepped leaders and ionized return strokes.
+- **`SuperfluidVortexTangle`** (`Scene3D/`, `geom="indirect"` + `SuperfluidVortexTangle.comp`): GPU Compute Shader simulating quantized vortex rings, reconnection events, and Kelvin waves in superfluid Helium-II.
+- **`DendriticSnowCrystal`** (`Scene3D/`, `geom="indirect"` + `DendriticSnowCrystal.comp`): GPU Compute Shader simulating 6-fold dendritic snowflake growth with hexagonal branching ice prisms and rainbow refraction.
+
+**Full-Screen Optical & Quantum Dynamics Suite (2026-08 Expansion 5 — 8 New Shaders):**
+- **`HyperDimensionalTesseractTunnel`** (`Scene/`): 100% viewport-filling 4D hypercube lattice rotating simultaneously across all 6 Euclidean planes with infinite interior mirror reflections, neon hyper-edges, and multi-angle photo texturing.
+- **`NeutronStarMagnetarBurst`** (`Scene/`): Extreme close-up of a $10^{15}$ Gauss magnetar with starquake crust fractures, Cherenkov gamma-ray bursts, positron pair-plasma fountains, and synchrotron gravitational lensing.
+- **`LiquidCrystalOptics`** (`Scene/`): Polarized optical microscopy of nematic liquid crystal Schlieren textures, topological disclination defects, Michel-Lévy birefringence interference, and polarized photo texturing.
+- **`NonEuclideanHyperbolicMandala`** (`Scene/`): Infinite hyperbolic Poincaré disk space tessellation with $\{7,3\}$ sacred geometry Coxeter circle inversions, logarithmic spirals, and recursive kaleidoscopic photo folding.
+- **`SuperradiantTokamakIgnition`** (`Scene/`): Volumetric inside view of a burning magnetic confinement fusion core with toroidal flux surfaces, helical runaway electron beams, Alfvén wave turbulence, and D-T plasma fire.
+- **`IridescentChitinMorpho`** (`Scene/`): Bio-photonic dielectric nanostructure grating simulation (Morpho butterfly wings & jewel beetle chitin) producing pure Bragg interference structural color.
+- **`GrapheneDiracPlasmonics`** (`Scene/`): 2D honeycomb carbon graphene lattice visualizing Dirac cones, topological quantum Hall edge states, localized wavepacket hops, and plasmonic resonances.
+- **`SuperheatedCoronalLoop`** (`Scene/`): Solar coronal magnetic loops spanning the canvas over boiling photospheric convection granules with explosive magnetic reconnection flares.
+
+**Texture-Hero & Holographic Kaleidoscope Suite (2026-08 Expansion 6 — 8 New Shaders):**
+- **`InfinitePhotoZoomAbyss`** (`Scene/`): 100% viewport-filling seamless infinite logarithmic Droste spiral dive into the photo with conformal mapping $w = \ln(z)$ and multi-octave blending.
+- **`StainedGlassCathedralCaustics`** (`Scene/`): Gothic cathedral rose window transforming the photo into luminous stained glass with lead came tracery, antique glass refraction, and volumetric godrays.
+- **`OrigamiMirrorKaleidoscope`** (`Scene/`): 3D kinetic Miura-ori origami mirror tessellation where every triangular facet reflects dynamic sections of the photo with angle-dependent chromatic dispersion.
+- **`FluidPhotoMarblingEbru`** (`Scene/`): Traditional Turkish Ebru paper-marbling simulation where the photo floats as liquid oil pigments combed and raked into elegant peacock swirls and streamlines.
+- **`PrismaticCrystalChamber`** (`Scene/`): Infinity mirror room of faceted quartz and dichroic glass prisms reflecting the photo across multiple total-reflection bounces with diamond glints.
+- **`KineticTileMosaicMatrix`** (`Scene/`): Architectural kinetic facade of thousands of mechanical tiles that elevate, flip, and rotate in 3D relief, physically reconstructing the photo with ambient cast shadows.
+- **`HyperbolicPoincareTunnel`** (`Scene/`): Infinite non-Euclidean tunnel whose cross-section is an $\{8,3\}$ hyperbolic Poincaré disk paved with conformal self-similar tiles of the photo.
+- **`CyberHologramGlitchVoxel`** (`Scene/`): Volumetric 3D laser holographic projection converting 2D photos into a floating 3D voxel pointcloud via luminance depth extrusion, laser scanlines, and data-mosh glitch slices.
+
+**Multiverse & Complex Systems Suite (2026-08 Expansion 7 — 10 New Shaders):**
+- **`QuantumChromodynamicsGluonPlasma`** (`Scene/`): Relativistic heavy-ion collision deconfined quark-gluon fireball with SU(3) non-abelian color flux tubes and gluon Cherenkov radiation.
+- **`BioluminescentAbyssalTrenches`** (`Scene/`): Volumetric deep-sea Hadal zone (11,000m depth) with hydrothermal crystal spires, flashing siphonophores, pyrosome light tubes, and marine snow.
+- **`NonEuclideanOctahedralLabyrinth`** (`Scene/`): 100% viewport-filling 3D hyperbolic octahedral mirror maze reflecting photos across recursive internal Coxeter reflection planes.
+- **`MetamorphicLavaVortex`** (`Scene/`): Viscous basalt magma ocean with floating black obsidian crust plates fracturing and submerging into glowing 1500°C molten lava rivers.
+- **`SolarWindMagnetosphere`** (`Scene3D/`, `geom="grid"`): 220x120 heightfield planetary magnetosphere bow shock deflecting supersonic solar wind into emerald and crimson auroral curtains.
+- **`NeuralAxonSynapseCloud`** (`Scene3D/`, `geom="points"`): 60,000-particle cerebral cortex connectome with action potentials racing along axonal pathways to ignite neurotransmitter synapses.
+- **`KineticMirrorHexagonArray`** (`Scene3D/`, `geom="quads"`): 3,000 suspended kinetic mirror plates rippling and tilting in 3D wave kinematics with photo reflection and specular solar glints.
+- **`HypercubeLatticePillars`** (`Scene3D/`, `geom="cubes"`): 4,900 cubes forming concentric monolithic architectural towers with sci-fi neon edge lighting and dynamic height extrusions.
+- **`PlasmaFilamentTornado`** (`Scene3D/`, `geom="indirect"` + `PlasmaFilamentTornado.comp`): GPU Compute Shader generating 4,096 helical Birkeland plasma current filaments in a space hurricane vortex with Z-pinch compression.
+- **`SuperconductingFluxVortex`** (`Scene3D/`, `geom="indirect"` + `SuperconductingFluxVortex.comp`): GPU Compute Shader generating 4,096 quantized Abrikosov flux vortex ribbons in a Type-II superconductor lattice with Kelvin wave excitations.
+
 **Timing is music-driven:** per-entry `min/maxTime*` attributes are now
 OPTIONAL — the pacing comes from `timingScale` (tempo/arousal), 4-beat
 cross-fades and section cuts.  Absent times fall back to engine defaults
