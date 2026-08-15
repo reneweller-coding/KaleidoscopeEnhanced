@@ -291,6 +291,21 @@ Studio; run it with `C:\Qt\...\bin` on `PATH`.  Headless self-tests:
 `PresetEditor.exe --transcheck` and
 `PresetEditor.exe --validate [preset.xml]`.
 
+`--render` also takes `--param name=value` (repeatable) and `--time seconds`,
+pinning a specific texture-shader uniform / clock the same way the editor's
+own live sliders do — this is what makes a saved preset RANGE actually
+verifiable: render the same shader twice with two different `--param` values
+(e.g. one preset's saved min, another's saved max) and compare the two PNGs,
+rather than reading the numbers and guessing. Two gotchas that cost real
+debugging time the first time: (1) the texture/combine filenames are BARE
+(`Metamorph.frag`, not `Scene\Metamorph.frag` — `compile()` searches
+`Scene/Combine/Blend/` itself); a wrong path fails silently and the FBO just
+keeps whatever the previous frame left in it, which can look like a
+plausible-but-wrong render. (2) some shaders only read a given param in ONE
+of the two BEAT/DRONE music-mode branches (`Metamorph.frag`'s `swirlP` only
+affects its DRONE cloud personality) — pass the trailing `drone` arg or the
+override will look like it's doing nothing.
+
 **Scene3D preview.** The editor used to preview every shader through the same
 flat fullscreen-quad pipeline, which meant `type="scene3d"` shaders — real
 procedural geometry, not a screen-space effect — couldn't be selected at all.

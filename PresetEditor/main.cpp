@@ -154,6 +154,12 @@ int main(int argc, char *argv[])
     // Optional --geom/--stateBytes/--shadowExtent select the scene3d path
     // (tex.frag must then be a Scene3D/ file); their absence keeps the
     // texture shader on the original type="normal" path.
+    // Optional --param name=value (repeatable) pins a texture-shader uniform
+    // to an exact value -- the same mechanism the editor's live sliders use
+    // (PreviewWidget::setParamOverrides) -- so a specific PRESET ENTRY's saved
+    // range can actually be rendered and compared, not just guessed at from
+    // the numbers.  Optional --time seconds pins the clock (setFixedTime) so
+    // two renders at different param values are directly comparable.
     if (args.value(0) == "--render" && args.size() >= 4)
     {
         PreviewWidget *w = new PreviewWidget(root);
@@ -173,6 +179,18 @@ int main(int argc, char *argv[])
         w->setCombineShader(args[2]);
         if (args.contains("drone"))
             w->setMusicMode(PreviewWidget::Drone);
+        QVector<PreviewWidget::ParamOverride> overrides;
+        for (int i = 0; i < args.size(); ++i)
+        {
+            if (args[i] != "--param" || i + 1 >= args.size()) continue;
+            const QString kv = args[++i];
+            const int eq = kv.indexOf('=');
+            if (eq > 0)
+                overrides.push_back({ kv.left(eq), kv.mid(eq + 1).toFloat(), false });
+        }
+        if (!overrides.isEmpty()) w->setParamOverrides(overrides);
+        const QString timeArg = flagValue("--time");
+        if (!timeArg.isEmpty()) w->setFixedTime(timeArg.toFloat());
         w->resize(W ? W : 960, H ? H : 600);
         w->show();
         const QString out = args[3];
