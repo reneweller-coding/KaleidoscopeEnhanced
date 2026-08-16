@@ -81,10 +81,13 @@ void main()
 
     vec4 rnd = vec4(hash22(bestSeed), hash22(bestSeed + 17.3));
 
-    // How far this frame has thrown the shards.  Drops blow it wide open, the
-    // kick jolts it, and a build-up loosens everything in advance.
-    float blast = flyP * (0.05 + 0.55 * audioDrop + 0.35 * audioKick
-                               + 0.30 * audioBuildUp + 0.12 * audioSubBass);
+    // How far this frame has thrown the shards.  Drops blow it wide open and
+    // a build-up loosens everything in advance; the kick only nudges it --
+    // it used to jolt as hard as a drop, so the shards re-shattered on every
+    // single beat instead of holding together between the real dramatic
+    // moments.
+    float blast = flyP * (0.05 + 0.55 * audioDrop + 0.12 * audioKick
+                               + 0.30 * audioBuildUp + 0.06 * audioSubBass);
 
     // Each shard flies outward from the frame's centre, spins about its own
     // centre, and drifts back.  Flying along a shared direction would slide the
@@ -93,7 +96,7 @@ void main()
     vec2 offset = dir * blast * (0.35 + 1.2 * rnd.x)
                 + (rnd.zw - 0.5) * blast * 0.6;
 
-    float spin = blast * (rnd.y - 0.5) * 3.4;
+    float spin = blast * (rnd.y - 0.5) * 2.0;
     float cs = cos(spin), sn = sin(spin);
     mat2 rot = mat2(cs, -sn, sn, cs);
 

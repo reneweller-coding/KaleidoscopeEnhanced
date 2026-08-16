@@ -83,17 +83,28 @@ void main()
     // ---- which interval is sounding ----
     // Every thread repeats this: twelve comparisons is cheaper than any way of
     // sharing the answer between threads would be.
+    //
+    // The whole curve is re-evaluated from scratch every frame (no state
+    // buffer persists which pair won last time), so the ranking below has to
+    // be noise-tolerant on its own: two pitch classes sitting close in energy
+    // will otherwise cross back and forth from ordinary analysis jitter, and
+    // every crossing snaps the ENTIRE 3D figure to a different ratio's shape
+    // -- a hard geometric teleport, not just a colour change.  Quantizing the
+    // energies before ranking turns near-ties into flat plateaus that small
+    // noise can't cross, so only a genuine, meaningful shift in which pitch
+    // dominates changes the figure.  (Only the ranking is quantized; `energy`
+    // below still uses the exact values, so brightness stays smooth.)
     int i1 = 0, i2 = 1;
     float e1 = -1.0, e2 = -1.0;
     for (int i = 0; i < 12; ++i)
     {
-        float e = audioChroma[i];
+        float e = floor(audioChroma[i] * 12.0) / 12.0;
         if (e > e1)      { e2 = e1; i2 = i1; e1 = e; i1 = i; }
         else if (e > e2) { e2 = e; i2 = i; }
     }
     int semis = int(mod(float(i2 - i1) + 12.0, 12.0));
     vec2 ratio = JUST[semis];
-    float energy = clamp((e1 + e2) * 4.0, 0.0, 1.5);
+    float energy = clamp((audioChroma[i1] + audioChroma[i2]) * 4.0, 0.0, 1.5);
 
     float damp = dampP * (0.6 + 0.5 * audioSubBass);
 

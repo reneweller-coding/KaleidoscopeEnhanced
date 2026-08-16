@@ -593,9 +593,22 @@ void Scene3DShader::draw()
 	if( m_seedUni   >= 0 ) glUniform1f( m_seedUni,   m_sceneSeed );
 	if( m_budgetUni >= 0 ) glUniform1f( m_budgetUni, s_cubeBudget );
 
-	// Clear colour AND depth (scissored to the eye viewport in true stereo).
-	glClearColor( 0.f, 0.f, 0.f, 1.f );
-	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+	// During the OIT accumulation pass, the caller (FilterShader::renderOitPass
+	// / Scene3DPreview::renderOitPass) has ALREADY bound the two-target OIT
+	// FBO, cleared it to its own per-attachment values (0 for accumulation,
+	// 1 for revealage -- NOT the same value, so a blanket glClear here would
+	// stomp the revealage back to 0), and set up the additive/multiplicative
+	// blend it needs.  Below, every geometry branch forces its own opaque
+	// blend/depth state for the normal case; both the clear and that
+	// per-branch state-forcing must defer to the OIT pass instead.
+	const bool inOitPass = ( EffectShader::s_oitPass >= 0.5f );
+
+	if( !inOitPass )
+	{
+		// Clear colour AND depth (scissored to the eye viewport in true stereo).
+		glClearColor( 0.f, 0.f, 0.f, 1.f );
+		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+	}
 
 	glBindVertexArray( m_vao );
 
@@ -625,12 +638,11 @@ void Scene3DShader::draw()
 			glUseProgram( m_sh_prog_id );
 
 			glBindVertexArray( m_vao );
-			glEnable( GL_DEPTH_TEST );
-			glDisable( GL_BLEND );
+			if( !inOitPass ) { glEnable( GL_DEPTH_TEST ); glDisable( GL_BLEND ); }
 			glBindBuffer( GL_DRAW_INDIRECT_BUFFER, m_cmdBuf );
 			glDrawArraysIndirect( GL_TRIANGLES, 0 );
 			glBindBuffer( GL_DRAW_INDIRECT_BUFFER, 0 );
-			glDisable( GL_DEPTH_TEST );
+			if( !inOitPass ) glDisable( GL_DEPTH_TEST );
 
 			// Diagnostic: KALEIDO_INDIRECT_LOG=1 appends the buffer's ACTUAL
 			// vertex count (read back from the GPU, not inferred from a
@@ -667,39 +679,46 @@ void Scene3DShader::draw()
 	{
 		// Tessellated surface: the patch is the primitive, and the tessellator
 		// decides how many triangles it becomes.
-		glEnable( GL_DEPTH_TEST );
-		glDisable( GL_BLEND );
+		if( !inOitPass ) { glEnable( GL_DEPTH_TEST ); glDisable( GL_BLEND ); }
 		if( glPatchParameteri )
 			glPatchParameteri( GL_PATCH_VERTICES, 4 );
 		glDrawArrays( GL_PATCHES, 0, m_vertexCount );
-		glDisable( GL_DEPTH_TEST );
+		if( !inOitPass ) glDisable( GL_DEPTH_TEST );
 	}
 	else if( m_geomKind == GEOM_SCATTER )
 	{
 		// Points that a geometry shader grows into solid bodies: depth-tested
 		// and opaque, so a near blade hides the ones behind it.
-		glEnable( GL_DEPTH_TEST );
-		glDisable( GL_BLEND );
+		if( !inOitPass ) { glEnable( GL_DEPTH_TEST ); glDisable( GL_BLEND ); }
 		glDrawArrays( GL_POINTS, 0, m_vertexCount );
-		glDisable( GL_DEPTH_TEST );
+		if( !inOitPass ) glDisable( GL_DEPTH_TEST );
 	}
 	else if( m_geomKind == GEOM_CUBES || m_geomKind == GEOM_GRID
 	 || m_geomKind == GEOM_QUADS )
 	{
-		// Solid geometry: depth-tested, opaque.
-		glEnable( GL_DEPTH_TEST );
-		glDisable( GL_BLEND );
+		// Solid geometry: depth-tested, opaque -- EXCEPT during the OIT
+		// accumulation pass, whose caller has already set up the blend and
+		// depth state a transparent pass needs (additive/multiplicative
+		// blending, depth-test on but depth-WRITE off); forcing this
+		// branch's normal opaque state here would silently turn the whole
+		// accumulation into an ordinary non-blended overwrite (GlassStack,
+		// the first geom="cubes" scene to use OIT, was invisible-as-glass
+		// this way -- flat opaque shards instead of layered translucency).
+		if( !inOitPass ) { glEnable( GL_DEPTH_TEST ); glDisable( GL_BLEND ); }
 		glDrawArrays( GL_TRIANGLES, 0, m_vertexCount );
-		glDisable( GL_DEPTH_TEST );
+		if( !inOitPass ) glDisable( GL_DEPTH_TEST );
 	}
 	else
 	{
 		// Glowing geometry: additive, order-independent (no depth test).
 		// (Core profile: point sprites are always on; only the programmable
 		// point size still needs its enable.)
-		glDisable( GL_DEPTH_TEST );
-		glEnable( GL_BLEND );
-		glBlendFunc( GL_ONE, GL_ONE );
+		if( !inOitPass )
+		{
+			glDisable( GL_DEPTH_TEST );
+			glEnable( GL_BLEND );
+			glBlendFunc( GL_ONE, GL_ONE );
+		}
 		if( m_geomKind == GEOM_POINTS )
 		{
 			glEnable( GL_VERTEX_PROGRAM_POINT_SIZE );
@@ -708,7 +727,7 @@ void Scene3DShader::draw()
 		}
 		else
 			glDrawArrays( GL_TRIANGLES, 0, m_vertexCount );
-		glDisable( GL_BLEND );
+		if( !inOitPass ) glDisable( GL_BLEND );
 	}
 
 	glBindVertexArray( 0 );
