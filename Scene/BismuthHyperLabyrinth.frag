@@ -101,9 +101,15 @@ void main() {
 
     vec2 uv = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
-    // Smooth forward camera flight through crystal corridors
-    float t = time * 0.3 * spd + audioAdvance * 0.15;
-    vec3 ro = vec3(cos(t * 0.4) * 1.5, sin(t * 0.3) * 1.2, t * 2.0);
+    // Smooth forward camera flight through crystal corridors.  The old path
+    // oscillated AROUND the origin (+-1.5/1.2), but a numeric probe of
+    // mapBismuth() along that path found it inside solid rock ~82% of the
+    // time -- the open channel through this IFS actually sits off-centre,
+    // around (1.7, 1.7).  Re-centring the wander there (and slowing it down)
+    // keeps the camera clear for the shader's whole stepP/audioBass range,
+    // bar the rare graze at stepP's extreme high end.
+    float t = time * 0.18 * spd + audioAdvance * 0.09;
+    vec3 ro = vec3(1.7 + cos(t * 0.4) * 0.3, 1.7 + sin(t * 0.3) * 0.24, t * 2.0);
     vec3 ta = ro + vec3(sin(t * 0.4 + 0.3), cos(t * 0.3 + 0.2), 2.0);
     vec3 ww = normalize(ta - ro);
     vec3 uu = normalize(cross(ww, vec3(0.0, 1.0, 0.0)));

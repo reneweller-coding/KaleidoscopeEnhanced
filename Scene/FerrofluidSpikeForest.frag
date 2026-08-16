@@ -125,13 +125,22 @@ void main() {
         vec2 refUV = fract(ref.xy * 0.5 + 0.5);
         vec3 photo = img(refUV);
 
-        // Oil-slick thin-film iridescence
+        // Oil-slick thin-film iridescence.  The colour phase now also drifts
+        // with radius, so the rainbow sheen forms concentric mandala bands
+        // that follow the spike rings instead of a single flat tint.
         float cosTheta = max(dot(-rd, n), 0.0);
-        vec3 oilIrid = 0.5 + 0.5 * cos(vec3(0.0, 2.0, 4.0) + (1.0 - cosTheta) * 8.0 * oil + audioCentroid * 3.0);
+        vec3 oilIrid = 0.5 + 0.5 * cos(vec3(0.0, 2.0, 4.0) + (1.0 - cosTheta) * 8.0 * oil
+                                        + length(p.xz) * 2.2 + audioCentroid * 3.0);
 
-        // Deep glossy black ferrofluid body + sharp chrome specular highlights
+        // Deep glossy black ferrofluid body + sharp chrome specular highlights.
+        // The iridescence used to be a pure Fresnel-edge effect (pow(...,3) is
+        // near zero across most of a head-on surface), so almost the whole
+        // pool read as flat black with colour only right at the silhouette.
+        // A gentler falloff plus a small always-on floor spreads the rainbow
+        // sheen across the visible spikes instead of just their rims.
         vec3 ferroBody = vec3(0.03, 0.03, 0.04);
-        col = mix(ferroBody, photo, 0.3) * diff + oilIrid * pow(1.0 - cosTheta, 3.0) * 0.8;
+        float iridSpread = 0.30 + 0.70 * pow(1.0 - cosTheta, 1.6);
+        col = mix(ferroBody, photo, 0.3) * diff + oilIrid * iridSpread * 1.3 * oil;
         col += vec3(1.0, 1.0, 1.0) * spec * (1.5 + audioKick * 3.0);
     } else {
         col = img(st) * 0.2;

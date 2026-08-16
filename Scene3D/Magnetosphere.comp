@@ -47,13 +47,21 @@ float hash1(float n) { return fract(sin(n * 91.3458) * 47453.5453); }
 
 mat3 tilt()
 {
-    // The dipole leans against the orbit, which is what stops the whole scene
-    // from being symmetric about the screen's vertical axis.
-    float a = tiltP * 0.42;
-    float b = audioAdvance * 0.05;
-    mat3 rz = mat3(cos(a), sin(a), 0.0, -sin(a), cos(a), 0.0, 0.0, 0.0, 1.0);
-    mat3 ry = mat3(cos(b), 0.0, -sin(b), 0.0, 1.0, 0.0, sin(b), 0.0, cos(b));
-    return ry * rz;
+    // The dipole leans against the orbit AND slowly tumbles through all three
+    // axes.  A pure Y-yaw alone barely changed the silhouette (the dipole is
+    // rotationally symmetric about its own axis), which is what made the
+    // scene read as static; adding a slow Z drift and a gentle X pitch on
+    // top makes the whole field genuinely turn in space over time.  All
+    // three ride on audioAdvance (an already-integrated, tempo-scaled phase)
+    // at constant rates, never on raw time scaled by an audio level, so nothing
+    // here can jump or flicker when the music's energy changes.
+    float az = tiltP * 0.42 + audioAdvance * 0.021;
+    float ay = audioAdvance * 0.05;
+    float ax = 0.3 * sin(audioAdvance * 0.033) + audioAdvance * 0.017;
+    mat3 rz = mat3(cos(az), sin(az), 0.0, -sin(az), cos(az), 0.0, 0.0, 0.0, 1.0);
+    mat3 ry = mat3(cos(ay), 0.0, -sin(ay), 0.0, 1.0, 0.0, sin(ay), 0.0, cos(ay));
+    mat3 rx = mat3(1.0, 0.0, 0.0, 0.0, cos(ax), sin(ax), 0.0, -sin(ax), cos(ax));
+    return ry * rx * rz;
 }
 
 // A point on the field line (L, phi) at colatitude theta.
