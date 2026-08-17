@@ -14,7 +14,9 @@ uniform int rotate;
 uniform float speedMovement;// = 5.0;
 uniform	float extend;// = 4000;
 uniform int direction;
-	
+uniform float audioPhase;     // integrated audio rotation phase (radians, jump-free)
+uniform float audioAdvance;   // integrated tunnel advance + orbit drift (jump-free)
+uniform float audioSwell;     // slow energy envelope widens the orbit
 
 
 const float M_PI = 3.141592653589793;
@@ -57,10 +59,10 @@ vec3 getKaleidoscopeColor( vec2 coord )
     float tau = 1. * 1.047;
     a = mod(a, tau/sidesK);
     a = abs(a - tau/sidesK/2.);
-    a += time*speed; // rotate
- 
+    a += time*speed + 0.3*audioPhase; // base rotation + jump-free audio rotation
+
 	vec2 uv;
-    uv.x = (speedTunnel*time+.1/r);
+    uv.x = (speedTunnel*time + 0.5*audioAdvance + .1/r);
     uv.y = (a/M_PI);
     
     return  (interpolation * texture(tex0,uv) + (1.0-interpolation)*texture(tex1,uv)).rgb;
@@ -94,7 +96,9 @@ void main(void)
 		rotDir = -1.0;
 	
 	
-	vec2 offset = vec2(cos(speedMovement*time*.2)*extend,sin(rotDir*speedMovement*time*.2)*extend)/pixelSize;
+	float orbit = speedMovement*time*.2 + 0.15*audioAdvance;      // jump-free audio drift
+	float ext   = extend*(1.0 + 0.12*audioSwell);                 // orbit widens on swells
+	vec2 offset = vec2(cos(orbit)*ext,sin(rotDir*orbit)*ext)/pixelSize;
 	//vec2 offset = vec2(cos(speedMovement*.2)*extend,sin(speedMovement*.2)*extend)/pixelSize;
 	
 	//resolution.y/resolution.x*
