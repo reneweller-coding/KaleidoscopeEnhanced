@@ -83,6 +83,7 @@ private:
     void rebuildRangeEditor();
     QGroupBox   *m_rangeBox  = nullptr;
     QFormLayout *m_rangeForm = nullptr;
+    QLabel      *m_rangeHint = nullptr;   // "select an entry" placeholder
 
     // <expr> rows in the range editor get a live "current value" readout and
     // a red/invalid state instead of the formula silently evaluating to 0 on

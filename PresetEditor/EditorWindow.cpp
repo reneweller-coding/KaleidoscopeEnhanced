@@ -42,6 +42,21 @@ static QSpinBox *mkSpin(int lo, int hi, int val)
     QSpinBox *s = new QSpinBox(); s->setRange(lo, hi); s->setValue(val); return s;
 }
 
+// Placeholder for the range/mapping box while no table row is selected --
+// shared between the constructor and rebuildRangeEditor()'s no-selection
+// branch (which must RESTORE it after the parameter-less-entry message).
+static QString rangeHowToText()
+{
+    return EditorWindow::tr(
+        "Hier erscheinen die Einstellungen des in „Preset contents“ "
+        "GEWÄHLTEN Eintrags:\n"
+        "  • Min/Max-Bereiche je Parameter\n"
+        "  • Formel-Mapping: Formel statt Zufallswert je <float>-Parameter\n"
+        "  • Audio-Mapping: welches Musiksignal welche audio*-Uniform speist\n"
+        "Dazu einen Eintrag anlegen („Add texture effect“) oder ein "
+        "Preset öffnen – und seine Zeile in der Tabelle anklicken.");
+}
+
 EditorWindow::EditorWindow(const QString &projectRoot, QWidget *parent)
     : QMainWindow(parent), m_root(projectRoot)
 {
@@ -169,13 +184,19 @@ EditorWindow::EditorWindow(const QString &projectRoot, QWidget *parent)
     // Per-entry parameter range editor: lets the SELECTED table row deviate
     // from Komplett.xml's default range deliberately (different min/max per
     // preset, not just a different probability) -- select a row to populate.
-    m_rangeBox = new QGroupBox("Selected entry: parameter ranges");
+    m_rangeBox = new QGroupBox("Gewählter Eintrag: Parameter · Formel-Mapping · Audio-Mapping");
     QVBoxLayout *rv = new QVBoxLayout(m_rangeBox);
+    // Always visible, with a placeholder while nothing is selected: this box
+    // is where the per-preset MAPPING lives (which music signal drives which
+    // uniform), and an invisible box made that feature undiscoverable.
+    m_rangeHint = new QLabel(rangeHowToText());
+    m_rangeHint->setWordWrap(true);
+    m_rangeHint->setStyleSheet("color: #888;");
+    rv->addWidget(m_rangeHint);
     QWidget *rfHost = new QWidget();
     m_rangeForm = new QFormLayout(rfHost);
     m_rangeForm->setContentsMargins(0, 0, 0, 0);
     rv->addWidget(rfHost);
-    m_rangeBox->setVisible(false);
     pl->addWidget(m_rangeBox);
 
     // Preset metadata + file actions
@@ -601,7 +622,13 @@ void EditorWindow::rebuildRangeEditor()
 
     const int row = m_table->currentRow();
     if (row < 0 || row >= m_preset.entries.size())
-    { m_rangeBox->setVisible(false); m_preview->setSceneExprs({}); return; }
+    {   // no selection: keep the box visible and show the how-to placeholder
+        m_rangeHint->setText(rangeHowToText());
+        m_rangeHint->setVisible(true);
+        m_preview->setSceneExprs({});
+        return;
+    }
+    m_rangeHint->setVisible(false);
     const PresetEntry &entry = m_preset.entries[row];
 
     struct Row { ShaderParam param; bool present; };
@@ -665,7 +692,16 @@ void EditorWindow::rebuildRangeEditor()
     // dedicated control here; they round-trip untouched via e.params.
     combined.erase(std::remove_if(combined.begin(), combined.end(),
                    [](const Row &r){ return r.param.kind == "interpolator"; }), combined.end());
-    m_rangeBox->setVisible(!combined.isEmpty());
+    // Box stays visible even for a (rare) parameter-less entry -- an
+    // appearing/disappearing panel is exactly what made this undiscoverable.
+    if (combined.isEmpty())
+    {
+        m_rangeHint->setText(tr("Dieser Eintrag hat keine einstellbaren "
+                                "Parameter und liest keine skalaren "
+                                "audio*-Uniforms."));
+        m_rangeHint->setVisible(true);
+        return;
+    }
 
     // Pushes the entry's SAVED formula layer (own exprs first, then Komplett
     // defaults it hasn't overridden) into the preview, so the rendered image
