@@ -110,6 +110,13 @@ int main(int argc, char *argv[])
                 if (!ref) continue;   // not (or no longer) in Komplett.xml -- nothing to compare against
                 for (const ShaderParam &kp : ref->params)
                 {
+                    // Audio-mapping overrides (<expr name="audioKick"> etc.)
+                    // are deliberately PER-PRESET: absence means "raw engine
+                    // value", the correct default -- not a completeness gap.
+                    // Requiring them everywhere would force every preset to
+                    // copy whatever mapping Komplett.xml happens to carry.
+                    if (kp.kind == "expr" && kp.name.startsWith("audio"))
+                        continue;
                     // Match on (name, kind): a shader can carry an <expr> AND
                     // a <float> of the same name (formula + declared clamp
                     // range) -- an entry that only has one of the two is
@@ -171,6 +178,12 @@ int main(int argc, char *argv[])
     // range can actually be rendered and compared, not just guessed at from
     // the numbers.  Optional --time seconds pins the clock (setFixedTime) so
     // two renders at different param values are directly comparable.
+    // Optional --expr name=formula (repeatable) injects a formula-layer entry
+    // (PreviewWidget::setSceneExprs) -- for audio* names this exercises the
+    // REAL override path (EffectShader::applyAudioFeatures + runGenerator's
+    // audio pass on scene3d), so an A/B render with --expr audioKick=0 vs =6
+    // proves the audio-mapping plumbing end to end.  Unlike --param this
+    // reaches the scene3d path too.
     if (args.value(0) == "--render" && args.size() >= 4)
     {
         PreviewWidget *w = new PreviewWidget(root);
@@ -200,6 +213,15 @@ int main(int argc, char *argv[])
                 overrides.push_back({ kv.left(eq), kv.mid(eq + 1).toFloat(), false });
         }
         if (!overrides.isEmpty()) w->setParamOverrides(overrides);
+        QVector<QPair<QString, QString>> exprs;
+        for (int i = 0; i < args.size(); ++i)
+        {
+            if (args[i] != "--expr" || i + 1 >= args.size()) continue;
+            const QString kv = args[++i];
+            const int eq = kv.indexOf('=');
+            if (eq > 0) exprs.push_back({ kv.left(eq), kv.mid(eq + 1) });
+        }
+        if (!exprs.isEmpty()) w->setSceneExprs(exprs);
         const QString timeArg = flagValue("--time");
         if (!timeArg.isEmpty()) w->setFixedTime(timeArg.toFloat());
         w->resize(W ? W : 960, H ? H : 600);

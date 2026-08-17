@@ -92,7 +92,17 @@ public:
 	 * corresponding upload is silently skipped.
 	 */
 	virtual void applyAudioFeatures(const AudioFeatures &features);
-		
+
+	// Fill the ExprVars variable array (ExprVars::V_COUNT floats) from an
+	// AudioFeatures snapshot.  Shared by the formula layer in
+	// applyAudioFeatures and by Scene3DShader::runGenerator's audio-override
+	// pass, so a formula sees IDENTICAL variable semantics in both — two
+	// copies of this mapping would drift, and a mapping that behaves
+	// differently in the compute stage than in the fragment stage is the
+	// kind of bug a screenshot can't explain.
+	static void fillExprVars( const AudioFeatures &f, float timeVal,
+	                          const float seeds[3], float *out );
+
 	void addUniformInterpolator( const std::string &name, float interpolatorMinMinf,
 							  float interpolatorMinMaxf,
 							  float interpolatorMaxMinf,

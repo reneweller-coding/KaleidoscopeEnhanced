@@ -1147,6 +1147,29 @@ Audio is captured via WASAPI loopback (`AudioAnalyzer`) and analysed in real tim
   Aurora curtains, CombinePulse), sizes ride the relative bass
   (TheCore, MobiusOrbs, LavaLamp blobs), and noir darkness lifts with the
   music's energy.
+- **Editable AUDIO MAPPING (per scene, no shader edits):** the same formula
+  layer also REMAPS the audio uniforms themselves.  An entry like
+  `<expr name="audioKick" formula="0.5*kick+0.5*snare"/>` is evaluated AFTER
+  the raw upload and overrides that uniform by name — for the render stages
+  and (since this feature) equally for a Scene3D compute generator, so a
+  remapped scene never half-follows two different signals.  Constants work
+  too (`audioSwell` = `0.8` pins a swell).  The editor's range panel shows an
+  **Audio-Mapping section** for every scalar `audio*` uniform the selected
+  shader's sources actually read: empty field = the engine's raw value
+  (exactly the shipped default), a formula = this preset's override; the
+  placeholder names the identity variable (audioKick → `kick`) as a starting
+  point.  A **Formel-Mapping section** additionally gives every `<float>`
+  param its own formula row, so ANY tunable uniform can be driven by ANY
+  audio variable (empty = the usual random-in-range roll); formulas reach
+  a Scene3D compute generator too, so both programs of a scene always see
+  the same value.  `PresetEditor --render ... --expr audioKick=0.0`
+  A/B-tests a mapping headlessly through the real engine path.
+- **All 325 scenes are audio-coupled:** the last six uncoupled legacy scenes
+  (Bubble, Rorschach, TunnelAcceleration, TunnelReverse, and both parallax
+  kaleidoscopes) now read the integrated `audioPhase`/`audioAdvance` phases
+  (jump-free motion coupling) plus amplitude terms (`audioKick` puffs,
+  `audioLevel` saturation, `audioSwell` orbit widening) — all additive, per
+  the anti-flicker rule, and all remappable per preset like everything else.
 - **Relative band levels (`audioBassRel/MidRel/TrebRel`):** the classic
   MilkDrop `bass/bass_att` idiom, done volume-safe on the AGC-normalised
   levels — instant ÷ slow-average (~5 s) per register, ~1.0 = "as loud as

@@ -76,6 +76,9 @@ public:
     // no uniforms registered yet).
     void addFloatRange( const QString &name, float lo, float hi );
     void addIntRange( const QString &name, int lo, int hi );
+    // Formula-layer entry (incl. audio-mapping overrides): forwarded into the
+    // real EffectShader, so the preview evaluates it exactly like the host.
+    void addExpr( const QString &name, const QString &formula );
 
     // Render one frame into an internally-owned depth-tested FBO sized w x h,
     // running the shadow pass first and the OIT pass after if the scene opted

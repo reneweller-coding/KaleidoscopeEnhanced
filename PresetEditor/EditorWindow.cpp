@@ -25,6 +25,8 @@
 #include <QtWidgets/QStatusBar>
 #include <QtCore/QDir>
 #include <QtCore/QFileInfo>
+#include <QtCore/QFile>
+#include <QtCore/QSet>
 #include <QtCore/QTimer>
 #include <QtGui/QKeyEvent>
 #include <algorithm>
@@ -527,6 +529,65 @@ void EditorWindow::onTableSelectionChanged()
     if (!e.isCombine) pushPreviewTexture();
 }
 
+// The ExprVars identity variable for an audio uniform ("audioKick" -> "kick"),
+// or empty if the formula layer has no equivalent.  Shown as the placeholder
+// of an unmapped audio row, so authoring an override starts from the variable
+// that carries (almost) the same value the raw upload would.
+static QString identityVarFor(const QString &uniform)
+{
+    QString v = uniform.mid(5);            // strip the "audio" prefix
+    if (v.isEmpty()) return {};
+    if (v == "ZCR") v = "zcr";
+    else v[0] = v[0].toLower();
+    const char *const *names = ExprVars::names();
+    for (int i = 0; i < ExprVars::V_COUNT; ++i)
+        if (v == QLatin1String(names[i])) return v;
+    return {};
+}
+
+// Every SCALAR audio uniform the entry's shader stages actually read -- these
+// are the mapping targets the panel offers.  Reading the sources (rather than
+// some registry) means the list is always true for the shader as it is NOW,
+// mid-edit included.  Array/vec uniforms are excluded: a formula evaluates to
+// one float.
+static QStringList usedAudioUniforms(const QString &root, const PresetEntry &e)
+{
+    static const QSet<QString> kNonScalar = {
+        "audioSpectrum", "audioWave", "audioChroma", "audioMelody",
+        "audioStereoBandL", "audioStereoBandR"
+    };
+    QString rel = e.file;
+    rel.replace('\\', '/');
+    while (rel.startsWith("../")) rel = rel.mid(3);
+    const QFileInfo fi(rel);
+    const QString folder = fi.path();          // "Scene" | "Scene3D" | "Combine"
+    const QString stem   = fi.completeBaseName();
+    QStringList files;
+    if (folder.compare("Scene3D", Qt::CaseInsensitive) == 0)
+        for (const char *ext : { ".frag", ".vert", ".comp", ".tesc", ".tese", ".geom" })
+            files << root + "/Scene3D/" + stem + ext;
+    else
+        files << root + "/" + folder + "/" + stem + ".frag";
+
+    QSet<QString> found;
+    static const QRegularExpression re("\\baudio[A-Z]\\w*");
+    for (const QString &fp : files)
+    {
+        QFile f(fp);
+        if (!f.open(QIODevice::ReadOnly)) continue;
+        const QString src = QString::fromUtf8(f.readAll());
+        auto it = re.globalMatch(src);
+        while (it.hasNext())
+        {
+            const QString u = it.next().captured(0);
+            if (!kNonScalar.contains(u)) found.insert(u);
+        }
+    }
+    QStringList out = found.values();
+    out.sort();
+    return out;
+}
+
 // Rebuild the "Selected entry: parameter ranges" panel for whatever row is
 // currently selected in the table.  Rows come from the UNION of the entry's
 // own params (edit their existing value) and Komplett.xml's declared params
@@ -539,7 +600,8 @@ void EditorWindow::rebuildRangeEditor()
     m_exprRows.clear();   // widgets just destroyed by removeRow(); drop the now-dangling pointers
 
     const int row = m_table->currentRow();
-    if (row < 0 || row >= m_preset.entries.size()) { m_rangeBox->setVisible(false); return; }
+    if (row < 0 || row >= m_preset.entries.size())
+    { m_rangeBox->setVisible(false); m_preview->setSceneExprs({}); return; }
     const PresetEntry &entry = m_preset.entries[row];
 
     struct Row { ShaderParam param; bool present; };
@@ -555,34 +617,139 @@ void EditorWindow::rebuildRangeEditor()
             if (r.param.name == kp.name && r.param.kind == kp.kind) { have = true; break; }
         if (!have) combined.push_back({ kp, false });
     }
+    // ---- AUDIO-MAPPING: every scalar audio uniform the shader's sources
+    // actually READ becomes an editable formula row.  An empty row means the
+    // engine's raw value (exactly today's behaviour); a formula writes an
+    // <expr name="audioX"> override into this entry, which the formula layer
+    // evaluates AFTER the raw upload and per scene -- so the coupling is no
+    // longer hardwired in GLSL, without touching any shader.
+    for (const QString &au : usedAudioUniforms(m_root, entry))
+    {
+        bool have = false;
+        for (const Row &r : combined)
+            if (r.param.name == au && r.param.kind == "expr") { have = true; break; }
+        if (have) continue;
+        ShaderParam ap; ap.kind = "expr"; ap.name = au;   // empty formula = raw
+        combined.push_back({ ap, false });
+    }
+    // ---- FREE FORMULA MAPPING: every FLOAT param additionally gets a formula
+    // row, so ANY tunable uniform can be driven by ANY audio variable -- not
+    // just remapped audio uniforms.  Float only: the formula layer uploads
+    // via glUniform1f, which is a GL error on an int/bool uniform.
+    {
+        const int n = combined.size();   // don't iterate the rows we append
+        for (int i = 0; i < n; ++i)
+        {
+            if (combined[i].param.kind != "float") continue;
+            const QString &nm = combined[i].param.name;
+            bool have = false;
+            for (const Row &r : combined)
+                if (r.param.name == nm && r.param.kind == "expr") { have = true; break; }
+            if (have) continue;
+            ShaderParam fp; fp.kind = "expr"; fp.name = nm;  // empty = random-in-range
+            combined.push_back({ fp, false });
+        }
+    }
+    // Order: value rows, then param-formula rows, then audio-mapping rows --
+    // each formula group under its own section header below.
+    std::stable_sort(combined.begin(), combined.end(),
+        [](const Row &a, const Row &b){
+            auto rank = [](const Row &r){
+                if (r.param.kind != "expr") return 0;
+                return r.param.name.startsWith("audio") ? 2 : 1;
+            };
+            return rank(a) < rank(b);
+        });
+
     // Interpolator params (rare -- one use in the whole catalogue) have no
     // dedicated control here; they round-trip untouched via e.params.
     combined.erase(std::remove_if(combined.begin(), combined.end(),
                    [](const Row &r){ return r.param.kind == "interpolator"; }), combined.end());
     m_rangeBox->setVisible(!combined.isEmpty());
 
+    // Pushes the entry's SAVED formula layer (own exprs first, then Komplett
+    // defaults it hasn't overridden) into the preview, so the rendered image
+    // follows the committed formulas -- incl. audio-mapping overrides.
+    auto pushSceneExprs = [this, row]()
+    {
+        if (row < 0 || row >= m_preset.entries.size())
+        { m_preview->setSceneExprs({}); return; }
+        const PresetEntry &ent = m_preset.entries[row];
+        QVector<QPair<QString, QString>> ex;
+        QSet<QString> have;
+        for (const ShaderParam &p : ent.params)
+            if (p.kind == "expr" && !p.formula.trimmed().isEmpty())
+            { ex.push_back({ p.name, p.formula }); have.insert(p.name); }
+        for (const ShaderParam &kp : defaultParamsFor(ent.file))
+            if (kp.kind == "expr" && !have.contains(kp.name)
+                && !kp.formula.trimmed().isEmpty())
+                ex.push_back({ kp.name, kp.formula });
+        m_preview->setSceneExprs(std::move(ex));
+    };
+
     // Writes (or creates) the named param in m_preset.entries[row], then
     // refreshes the preview sliders so the new band is immediately visible.
-    auto writeParam = [this, row](const QString &name, const QString &kind,
+    auto writeParam = [this, row, pushSceneExprs](const QString &name, const QString &kind,
                                    const QString &minV, const QString &maxV,
                                    const QString &prob, const QString &formula)
     {
         if (row < 0 || row >= m_preset.entries.size()) return;
         PresetEntry &ent = m_preset.entries[row];
         ShaderParam *t = nullptr;
-        for (ShaderParam &p : ent.params) if (p.name == name) { t = &p; break; }
+        // (name, kind) match: an <expr> and a <float> of the same name are
+        // two independent params -- a name-only match would write the expr's
+        // formula onto the FLOAT param (whichever comes first in the list).
+        for (ShaderParam &p : ent.params)
+            if (p.name == name && p.kind == kind) { t = &p; break; }
         if (!t) { ShaderParam np; np.kind = kind; np.name = name; ent.params.push_back(np); t = &ent.params.back(); }
         if (kind == "bool") t->probability = prob;
         else if (kind == "int" || kind == "float") { t->minValue = minV; t->maxValue = maxV; }
         else if (kind == "expr") t->formula = formula;
         rebuildParamSliders();
+        pushSceneExprs();
     };
 
+    // Removes the named param again -- an audio-mapping row cleared back to
+    // empty means "raw engine value", which is the ABSENCE of the override,
+    // not an override with an empty formula.
+    auto removeParam = [this, row, pushSceneExprs](const QString &name, const QString &kind)
+    {
+        if (row < 0 || row >= m_preset.entries.size()) return;
+        PresetEntry &ent = m_preset.entries[row];
+        for (int i = 0; i < ent.params.size(); ++i)
+            if (ent.params[i].name == name && ent.params[i].kind == kind)
+            { ent.params.removeAt(i); break; }
+        rebuildParamSliders();
+        pushSceneExprs();
+    };
+
+    bool audioHeaderDone = false, exprHeaderDone = false;
     for (const Row &r : combined)
     {
         const ShaderParam &p = r.param;
+        const bool isAudioMap = (p.kind == "expr" && p.name.startsWith("audio"));
+        if (isAudioMap && !audioHeaderDone)
+        {
+            audioHeaderDone = true;
+            QLabel *head = new QLabel(tr("<b>Audio-Mapping</b>"));
+            QLabel *hint = new QLabel(tr("leer = Standardwert der Engine"));
+            hint->setStyleSheet("color: #888;");
+            m_rangeForm->addRow(head, hint);
+        }
+        else if (p.kind == "expr" && !isAudioMap && !exprHeaderDone)
+        {
+            exprHeaderDone = true;
+            QLabel *head = new QLabel(tr("<b>Formel-Mapping</b>"));
+            QLabel *hint = new QLabel(tr("Formel ersetzt den Zufallswert; leer = Zufallswert aus Bereich"));
+            hint->setStyleSheet("color: #888;");
+            m_rangeForm->addRow(head, hint);
+        }
         QLabel *label = new QLabel(p.name + "  [" + p.kind + "]");
-        if (!r.present)
+        if (isAudioMap)
+            label->setToolTip(tr("Audio-Uniform, die dieser Shader liest. Formel ersetzt "
+                                 "den rohen Engine-Wert pro Szene (z.B. \"0.5*kick+0.5*snare\" "
+                                 "oder eine Konstante). Leeren = Standard."));
+        else if (!r.present)
             label->setToolTip("Fehlt in diesem Preset-Eintrag (Komplett.xml-Default gezeigt); "
                               "Aendern fuegt den Parameter hinzu.");
         if (p.kind == "bool")
@@ -620,8 +787,38 @@ void EditorWindow::rebuildRangeEditor()
         else if (p.kind == "expr")
         {
             QLineEdit *edit = new QLineEdit(p.formula);
-            connect(edit, &QLineEdit::editingFinished, this,
-                    [=]{ writeParam(p.name, "expr", {}, {}, {}, edit->text()); });
+            // Komplett.xml's default formula for this name, if any: --validate
+            // requires Komplett-declared exprs to be PRESENT in every preset
+            // entry, so clearing such a row restores the default instead of
+            // removing the param.
+            QString defFormula;
+            if (!isAudioMap)
+                for (const ShaderParam &kp : defaultParamsFor(entry.file))
+                    if (kp.kind == "expr" && kp.name == p.name)
+                    { defFormula = kp.formula; break; }
+            if (isAudioMap)
+            {
+                // Show WHAT the raw engine value would be as the placeholder:
+                // for most uniforms the identically-named formula variable
+                // (audioKick -> "kick"), so typing the placeholder text is a
+                // valid starting point to tweak from.
+                const QString iv = identityVarFor(p.name);
+                edit->setPlaceholderText(iv.isEmpty() ? tr("Engine-Rohwert")
+                                                      : iv + tr("   (Engine-Rohwert)"));
+            }
+            else if (defFormula.isEmpty())
+                edit->setPlaceholderText(tr("z.B. 1.0 + 0.5*kick   (leer = Zufallswert aus Bereich)"));
+            connect(edit, &QLineEdit::editingFinished, this, [=]{
+                if (!edit->text().trimmed().isEmpty())
+                    writeParam(p.name, "expr", {}, {}, {}, edit->text());
+                else if (!defFormula.isEmpty())
+                {   // Komplett declares this formula: restore the default
+                    edit->setText(defFormula);
+                    writeParam(p.name, "expr", {}, {}, {}, defFormula);
+                }
+                else
+                    removeParam(p.name, "expr");     // absence = engine default
+            });
             // Variable picker: ExprEval.h documents ~38 audio-derived names
             // (bassRel, chromaHue, beatPhase, seed1, ...) but nothing in the
             // editor ever listed them -- authoring a formula meant already
@@ -656,6 +853,14 @@ void EditorWindow::rebuildRangeEditor()
             auto recompile = [this, rowIdx]() {
                 if (rowIdx >= m_exprRows.size()) return;   // stale (panel rebuilt meanwhile)
                 ExprRow &er = m_exprRows[rowIdx];
+                if (er.edit->text().trimmed().isEmpty())
+                {   // empty = "raw engine value", a valid state -- never red
+                    er.edit->setStyleSheet(QString());
+                    er.edit->setToolTip(QString());
+                    er.prog = nullptr;
+                    er.valueLbl->setText(QStringLiteral("—"));
+                    return;
+                }
                 auto prog = std::make_shared<ExprProgram>();
                 const bool ok = prog->compile(er.edit->text().toStdString(), "editor");
                 er.edit->setStyleSheet(ok ? QString() : "background: #663333;");
@@ -675,6 +880,7 @@ void EditorWindow::rebuildRangeEditor()
             m_rangeForm->addRow(label, host);
         }
     }
+    pushSceneExprs();   // preview follows the entry's saved formula layer
 }
 
 // Re-evaluate every currently-valid <expr> row against the animated

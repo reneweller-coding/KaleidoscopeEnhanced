@@ -447,6 +447,27 @@ void Scene3DShader::runGenerator( float time )
 		setF( m_uniforms[i]->getName().c_str(), m_uniforms[i]->snapshotValue() );
 	}
 
+	// FORMULA-LAYER CONSISTENCY: the render stages get their uniforms
+	// remapped by the formula layer — applyAudioFeatures evaluates the
+	// preset's <expr> entries AFTER the raw uploads and overrides them by
+	// name (audio remaps AND scripted config params alike).  The generator
+	// is a SECOND program whose uniforms were just set by hand above, so
+	// without this pass a scene with a formula on a uniform BOTH programs
+	// read would half-follow two different values: fragment stage on the
+	// formula, compute-built geometry on the raw/rolled value.
+	if( !m_exprs.empty() )
+	{
+		float ev[ExprVars::V_COUNT];
+		fillExprVars( a, m_exprTime, m_exprSeeds, ev );
+		for( ExprEntry &e : m_exprs )
+		{
+			if( !e.prog.valid() )
+				continue;
+			GLint l = glGetUniformLocation( m_genProg, e.name.c_str() );
+			if( l >= 0 ) glUniform1f( l, e.prog.eval( ev ) );
+		}
+	}
+
 	glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 0, m_vbo );
 	glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 1, m_cmdBuf );
 	if( m_stateBuf )

@@ -178,6 +178,47 @@ Jeder Shader braucht einen Eintrag in `Configurations/Komplett.xml` (die
 vollständige Referenzdatei) — sonst kann er nie ausgewählt werden. Jede
 `Scene3D/X.frag` braucht zwingend eine `Scene3D/X.vert`. `--validate` prüft,
 dass alle Stimmungs-Presets die deklarierten Parameter vollständig haben.
+Ausnahme: `<expr name="audio…">`-Einträge (Audio-Mapping-Overrides, siehe V9)
+sind bewusst **pro Preset optional** und werden von `--validate` übersprungen.
+
+### V9 — Audio-Kopplung nicht im GLSL festverdrahten
+
+Welche Audio-Uniform ein Shader liest (`audioKick`, `audioSwell`, …) ist Teil
+des Shaders — **wie** sie gespeist wird, nicht mehr zwingend. Ein Preset kann
+jede skalare `audio*`-Uniform per Formel überschreiben:
+
+```xml
+<expr name="audioKick" formula="0.5*kick + 0.5*snare"/>
+<expr name="audioSwell" formula="0.8"/>   <!-- auch Konstanten -->
+```
+
+Der Formel-Layer evaluiert das NACH dem Roh-Upload und überschreibt per
+Namen — für die Render-Stufen **und** den Compute-Generator einer
+Scene3D-Szene (beide sehen denselben Wert). Kein `<expr>` = Roh-Wert der
+Engine, exakt das bisherige Verhalten.
+
+Das gilt nicht nur für Audio-Uniforms: **jeder `<float>`-Parameter** kann per
+`<expr>` mit einer Formel (inkl. Audio-Variablen) belegt werden — der Editor
+bietet dafür pro Float-Param eine „Formel-Mapping"-Zeile an. Nur Floats:
+der Formel-Layer lädt per `glUniform1f`, auf einer `int`-Uniform wäre das
+ein GL-Fehler.
+
+Konsequenzen fürs Autorieren:
+
+- Im GLSL die **semantisch beste** Uniform wählen (Kick-Impuls → `audioKick`,
+  langsames Atmen → `audioSwell`), nicht zwei Signale im Shader mischen —
+  Mischungen sind jetzt Preset-Sache.
+- Bewegung IMMER über die integrierten Phasen koppeln (`audioPhase` für
+  Rotation, `audioAdvance` für Vorschub), **additiv** zur eigenen
+  `time*speed`-Phase — so wurden die letzten sechs ungekoppelten
+  Legacy-Szenen (Bubble, Rorschach, die vier Tunnel/Parallax-Varianten)
+  nachgerüstet, ohne V7 zu verletzen.
+- Der Editor zeigt pro Szene eine **Audio-Mapping-Sektion** (alle gelesenen
+  `audio*`-Skalare; leer = Standard). Headless-A/B-Test:
+  `--render … --expr audioKick=0.0` vs. `=6.0` (läuft im Gegensatz zu
+  `--param` auch über den Scene3D-Pfad).
+- V7 (Anti-Flimmer) gilt unverändert auch für Formeln: nie eine Formel auf
+  eine Uniform legen, die im Shader mit `time` multipliziert wird.
 
 ---
 
@@ -219,7 +260,9 @@ Bild ansehen, bevor man „kaputt" sagt.
 - `PresetEditor --render` reicht `--param`-Overrides **nur an den 2D-Pfad**
   durch, nicht an Scene3D. Scene3D-Szenen rendern mit ihren zufälligen
   Per-Aktivierungs-Werten — für „schwarz oder nicht" reicht das, für
-  Feinabstimmung eines bestimmten Parameterwerts nicht.
+  Feinabstimmung eines bestimmten Parameterwerts nicht. **Aber:**
+  `--expr name=formel` (Formel-Layer, auch `--expr camHP=3.0`) erreicht
+  beide Pfade — für Scene3D ist das der Testhebel der Wahl.
 - Compile-Fehler erscheinen wegen des `captureStderr`-Bugs oft **nicht** im
   Log. Ein leeres Log ist kein Beweis für einen fehlerfreien Shader.
 - `KALEIDO_INDIRECT_LOG=1` schreibt die tatsächliche, von der GPU

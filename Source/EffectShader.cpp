@@ -362,44 +362,7 @@ void EffectShader::applyAudioFeatures(const AudioFeatures &f)
     if (!m_exprs.empty())
     {
         float v[ExprVars::V_COUNT];
-        v[ExprVars::V_TIME]     = m_exprTime;
-        v[ExprVars::V_BASS]     = f.bassLevel;
-        v[ExprVars::V_MID]      = 0.5f * (f.lowMidLevel + f.midLevel);
-        v[ExprVars::V_TREB]     = 0.5f * (f.upperMidLevel + f.highLevel);
-        v[ExprVars::V_BASSREL]  = f.bassRel;
-        v[ExprVars::V_MIDREL]   = f.midRel;
-        v[ExprVars::V_TREBREL]  = f.trebRel;
-        v[ExprVars::V_SUBBASS]  = f.subBassLevel;
-        v[ExprVars::V_HIGH]     = f.highLevel;
-        v[ExprVars::V_LEVEL]    = f.overallLevel;
-        v[ExprVars::V_KICK]     = f.onsetKick;
-        v[ExprVars::V_SNARE]    = f.onsetSnare;
-        v[ExprVars::V_HAT]      = f.onsetHat;
-        v[ExprVars::V_ONSET]    = f.onsetStrength;
-        v[ExprVars::V_BEAT]     = f.beatDecay;
-        v[ExprVars::V_BEATPH]   = f.beatPhase;
-        v[ExprVars::V_BARPH]    = f.barPhase;
-        v[ExprVars::V_DOWNBEAT] = f.downbeat;
-        v[ExprVars::V_SWELL]    = f.swell;
-        v[ExprVars::V_BUILDUP]  = f.buildUp;
-        v[ExprVars::V_DROP]     = f.dropPulse;
-        v[ExprVars::V_CHROMA]   = f.chromaHue;
-        v[ExprVars::V_CENTROID] = f.spectralCentroid;
-        v[ExprVars::V_FLUX]     = f.spectralFlux;
-        v[ExprVars::V_AROUSAL]  = f.arousal;
-        v[ExprVars::V_VALENCE]  = f.valence;
-        v[ExprVars::V_AMBIENT]  = f.ambientFactor;
-        v[ExprVars::V_RHYTHM]   = f.rhythmStrength;
-        v[ExprVars::V_MUSIC]    = f.musicPresence;
-        v[ExprVars::V_ADVANCE]  = f.audioAdvance;
-        v[ExprVars::V_PHASE]    = f.audioRotPhase;
-        v[ExprVars::V_DAYPHASE] = f.dayPhase;
-        v[ExprVars::V_FLATNESS] = f.spectralFlatness;
-        v[ExprVars::V_ZCR]      = f.zeroCrossingRate;
-        v[ExprVars::V_FADEOUT]  = f.fadeOut;
-        v[ExprVars::V_SEED1]    = m_exprSeeds[0];
-        v[ExprVars::V_SEED2]    = m_exprSeeds[1];
-        v[ExprVars::V_SEED3]    = m_exprSeeds[2];
+        fillExprVars(f, m_exprTime, m_exprSeeds, v);
 
         for (ExprEntry &e : m_exprs)
         {
@@ -464,6 +427,50 @@ void EffectShader::applyAudioFeatures(const AudioFeatures &f)
     if (L[AL_SPREAD]   >= 0) glUniform1f(L[AL_SPREAD],   f.spectralSpread);
     if (L[AL_MODE]     >= 0) glUniform1f(L[AL_MODE],     f.musicalMode);
     if (L[AL_PITCH]    >= 0) glUniform1f(L[AL_PITCH],    f.dominantPitch);
+}
+
+
+void EffectShader::fillExprVars( const AudioFeatures &f, float timeVal,
+                                 const float seeds[3], float *v )
+{
+    v[ExprVars::V_TIME]     = timeVal;
+    v[ExprVars::V_BASS]     = f.bassLevel;
+    v[ExprVars::V_MID]      = 0.5f * (f.lowMidLevel + f.midLevel);
+    v[ExprVars::V_TREB]     = 0.5f * (f.upperMidLevel + f.highLevel);
+    v[ExprVars::V_BASSREL]  = f.bassRel;
+    v[ExprVars::V_MIDREL]   = f.midRel;
+    v[ExprVars::V_TREBREL]  = f.trebRel;
+    v[ExprVars::V_SUBBASS]  = f.subBassLevel;
+    v[ExprVars::V_HIGH]     = f.highLevel;
+    v[ExprVars::V_LEVEL]    = f.overallLevel;
+    v[ExprVars::V_KICK]     = f.onsetKick;
+    v[ExprVars::V_SNARE]    = f.onsetSnare;
+    v[ExprVars::V_HAT]      = f.onsetHat;
+    v[ExprVars::V_ONSET]    = f.onsetStrength;
+    v[ExprVars::V_BEAT]     = f.beatDecay;
+    v[ExprVars::V_BEATPH]   = f.beatPhase;
+    v[ExprVars::V_BARPH]    = f.barPhase;
+    v[ExprVars::V_DOWNBEAT] = f.downbeat;
+    v[ExprVars::V_SWELL]    = f.swell;
+    v[ExprVars::V_BUILDUP]  = f.buildUp;
+    v[ExprVars::V_DROP]     = f.dropPulse;
+    v[ExprVars::V_CHROMA]   = f.chromaHue;
+    v[ExprVars::V_CENTROID] = f.spectralCentroid;
+    v[ExprVars::V_FLUX]     = f.spectralFlux;
+    v[ExprVars::V_AROUSAL]  = f.arousal;
+    v[ExprVars::V_VALENCE]  = f.valence;
+    v[ExprVars::V_AMBIENT]  = f.ambientFactor;
+    v[ExprVars::V_RHYTHM]   = f.rhythmStrength;
+    v[ExprVars::V_MUSIC]    = f.musicPresence;
+    v[ExprVars::V_ADVANCE]  = f.audioAdvance;
+    v[ExprVars::V_PHASE]    = f.audioRotPhase;
+    v[ExprVars::V_DAYPHASE] = f.dayPhase;
+    v[ExprVars::V_FLATNESS] = f.spectralFlatness;
+    v[ExprVars::V_ZCR]      = f.zeroCrossingRate;
+    v[ExprVars::V_FADEOUT]  = f.fadeOut;
+    v[ExprVars::V_SEED1]    = seeds[0];
+    v[ExprVars::V_SEED2]    = seeds[1];
+    v[ExprVars::V_SEED3]    = seeds[2];
 }
 
 
