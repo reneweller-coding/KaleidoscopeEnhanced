@@ -564,6 +564,14 @@ of the visualizer) for **building and editing presets** with a **live preview**:
   not to be confused with a deliberately different VALUE, which this never
   flags. Caught and fixed three small test presets this way (`TestLightning`,
   `TestRegie`, `TestShatter` were each missing one to three params).
+- **Hidden presets (`hidden="true"`):** a preset can opt out of the main
+  app's user-facing selection entirely — it appears in neither the config
+  menu, the digit keys, the web remote nor auto-config, and only
+  `-c <name>` loads it.  `Komplett.xml` (the master reference carrying
+  curated values, ranges and formula mappings for EVERY scene — open it in
+  the editor to start any scene from sensible defaults) and the `Test*`
+  benches ship hidden.  The editor round-trips the flag and exposes it as
+  a *verborgen (hidden)* checkbox in the Preset box.
 
 - **Transition test bench:** the *Übergangs-Zeitlupe* checkbox plays any of
   the 28 CombinePlain transition styles in slow motion (the blend sweeps

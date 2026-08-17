@@ -51,6 +51,10 @@ struct Preset
 {
     QString name = "MyPreset";
     QString imageDirectory;
+    // hidden="true": the main app keeps this preset out of its user-facing
+    // selection (menu, digit keys, web remote); only -c <name> reaches it.
+    // Used for master/reference presets (Komplett) and Test* benches.
+    bool    hidden = false;
     int     timeTextureSoloMin = 10,  timeTextureSoloMax = 40;
     int     timeTextureInterpolationMin = 20, timeTextureInterpolationMax = 80;
     QVector<PresetEntry> entries;   // texture + combine, in insertion order

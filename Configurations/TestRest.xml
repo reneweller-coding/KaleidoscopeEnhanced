@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<configuration ImageDirectory="C:\\Users\\rene\\Desktop\\BilderPhotoechoes" ConfigurationName="TestRest" >
+<configuration ImageDirectory="C:\\Users\\rene\\Desktop\\BilderPhotoechoes" ConfigurationName="TestRest" hidden="true" >
 
   <!-- REVIEW: alle ANDEREN Texture-Shader - CombinePlain, gleiche Wahrscheinlichkeit -->
 

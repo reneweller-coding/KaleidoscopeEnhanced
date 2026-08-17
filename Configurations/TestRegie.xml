@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<configuration ImageDirectory="C:\\Users\\rene\\Desktop\\BilderPhotoechoes" ConfigurationName="TestRegie" >
+<configuration ImageDirectory="C:\\Users\\rene\\Desktop\\BilderPhotoechoes" ConfigurationName="TestRegie" hidden="true" >
 
   <!-- PROBE: eine einzige ruhige Szene fuer die Zeit-Regie-Verifikation
        (KALEIDO_REGIE_TEST=1: 0-3s Echo, 3-6s Breath, 7-9s Rewind). -->

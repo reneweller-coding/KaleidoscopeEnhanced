@@ -209,6 +209,13 @@ EditorWindow::EditorWindow(const QString &projectRoot, QWidget *parent)
     m_gSoloMin = mkSpin(0, 100000, 10);  m_gSoloMax = mkSpin(0, 100000, 40);
     m_gInterpMin = mkSpin(0, 100000, 20); m_gInterpMax = mkSpin(0, 100000, 80);
     fMeta->addRow("Name", m_nameEdit);
+    m_hiddenCheck = new QCheckBox(tr("verborgen (hidden) – nicht im Hauptprogramm wählbar"));
+    m_hiddenCheck->setToolTip(tr("Schreibt hidden=\"true\" in die XML: das Hauptprogramm "
+                                 "zeigt dieses Preset weder im Menü noch auf den Zifferntasten "
+                                 "oder in der Web-Fernbedienung. Nur -c <Name> lädt es noch — "
+                                 "gedacht für Master-/Referenz-Presets wie Komplett und die "
+                                 "Test*-Prüfstände."));
+    fMeta->addRow("", m_hiddenCheck);
     fMeta->addRow("ImageDirectory", imgRow);
     fMeta->addRow("timeTextureSoloMin", m_gSoloMin);
     fMeta->addRow("timeTextureSoloMax", m_gSoloMax);
@@ -953,6 +960,7 @@ void EditorWindow::refreshTable()
 void EditorWindow::metaToUi()
 {
     m_nameEdit->setText(m_preset.name);
+    m_hiddenCheck->setChecked(m_preset.hidden);
     m_imgDirEdit->setText(m_preset.imageDirectory);
     m_gSoloMin->setValue(m_preset.timeTextureSoloMin);
     m_gSoloMax->setValue(m_preset.timeTextureSoloMax);
@@ -964,6 +972,7 @@ void EditorWindow::metaToUi()
 void EditorWindow::uiToMeta()
 {
     m_preset.name = m_nameEdit->text().trimmed();
+    m_preset.hidden = m_hiddenCheck->isChecked();
     m_preset.imageDirectory = m_imgDirEdit->text();
     m_preset.timeTextureSoloMin = m_gSoloMin->value();
     m_preset.timeTextureSoloMax = m_gSoloMax->value();
