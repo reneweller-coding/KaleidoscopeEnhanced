@@ -15,6 +15,7 @@
 #include <QtGui/QSurfaceFormat>
 #include <QtGui/QImage>
 #include <QtGui/QColor>
+#include <QtGui/QIcon>
 #include <QtCore/QDir>
 #include <QtCore/QFileInfo>
 #include <QtCore/QTimer>
@@ -154,6 +155,10 @@ int main(int argc, char *argv[])
 
     QApplication app(argc, argv);
     const QString root = findRoot();
+    // Window/taskbar icon of the RUNNING app; the exe's own Explorer icon
+    // comes from PresetEditor.rc (Qt doesn't read that resource itself).
+    // Resolved against root, not the CWD: main() re-anchors the CWD below.
+    app.setWindowIcon(QIcon(root + "/icon.ico"));
 
     // shader_setup.cpp / textfile.cpp resolve every path relative to the
     // process's CURRENT WORKING DIRECTORY, hard-coded in the "..\Blend\...",
