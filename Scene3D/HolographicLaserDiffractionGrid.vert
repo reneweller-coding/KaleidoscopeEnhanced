@@ -22,6 +22,8 @@ uniform float gratingP;
 uniform float depthP;
 uniform float speedP;
 uniform float hueP;
+uniform float audioPhase;
+uniform float audioChromaHue;
 
 out vec4 vCol;
 out vec2 vUV;

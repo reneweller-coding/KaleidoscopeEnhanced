@@ -58,8 +58,13 @@ void main() {
     vec3 worldPos = vec3(hexX + kelvinWave * waveAmp, hexY + kelvinCos * waveAmp, z);
     vWorldPos = worldPos;
 
-    vec4 viewPos = vec4(worldPos, 1.0);
-    gl_Position = projM * viewPos;
+    // Camera transform: projM expects NEGATIVE view-space z (clip-w = -z_view).
+    // Without the push-back only the half of the lattice that happened to fall
+    // beyond the near plane was ever visible.
+    vec3 vp = worldPos;
+    vp.z += 7.0;
+    vp.x -= eyeOff;
+    gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 
     // Point sprite size

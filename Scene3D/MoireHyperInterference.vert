@@ -21,6 +21,7 @@ uniform float freqP;
 uniform float depthP;
 uniform float speedP;
 uniform float hueP;
+uniform float audioPhase;
 
 out vec4 vCol;
 out vec2 vUV;

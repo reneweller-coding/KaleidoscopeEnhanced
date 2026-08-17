@@ -34,7 +34,10 @@ void main() {
     float phs = (phaseP > 0.0) ? phaseP : 1.0;
     float spd = (speedP > 0.0) ? speedP : 1.0;
 
-    int quadIndex = gl_InstanceID;
+    // The engine draws NON-instanced (glDrawArrays), so gl_InstanceID is
+    // always 0 -- every unit would collapse onto one spot.  Scene3DShader
+    // packs the per-unit index into attrA.w instead (see buildGeometry).
+    int quadIndex = int(attrA.w);
     vMetaPhase = float(quadIndex) / 3000.0;
     vec2 corner = attrA.xy;
     vTexCoord = corner * 0.5 + 0.5;
@@ -55,7 +58,11 @@ void main() {
     vec3 worldPos = vec3(x, y, z) + vec3(corner.x, corner.y, 0.0) * cardScale;
     vWorldPos = worldPos;
 
-    vec4 viewPos = vec4(worldPos, 1.0);
-    gl_Position = projM * viewPos;
+    // Camera transform: projM expects NEGATIVE view-space z (clip-w = -z_view),
+    // so push the scene away along +z and negate.  eyeOff is the stereo shift.
+    vec3 vp = worldPos;
+    vp.z += 6.5;
+    vp.x -= eyeOff;
+    gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 }

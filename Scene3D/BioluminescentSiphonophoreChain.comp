@@ -1,19 +1,22 @@
 #version 430 core
+// BioluminescentSiphonophoreChain.comp — a colonial siphonophore stem.
+// -----------------------------------------------------------------------
+// Emits ONE SMALL BILLBOARD QUAD (2 triangles, 6 vertices) per zooid point.
+// The geom="indirect" path always issues glDrawArraysIndirect(GL_TRIANGLES),
+// so a generator that writes one loose vertex per unit produces nothing
+// usable -- the points have to be widened into real triangles here.
+//
+// The draw count MUST be published through atomicAdd(cmd[4], n): the shared
+// Blend/IndirectClamp.comp runs after every generator and overwrites cmd[0]
+// with min(cmd[4], maxVertices), so a generator that writes cmd[0] itself has
+// its count zeroed and draws nothing.
+// -----------------------------------------------------------------------
 layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 
-struct Vertex {
-    vec4 pos;
-    vec4 norm;
-};
+layout(std430, binding = 0) buffer Verts { float verts[]; };
+layout(std430, binding = 1) buffer Cmd   { uint  cmd[];   };
 
-layout(std430, binding = 0) buffer VertexBuffer {
-    Vertex verts[];
-};
-
-layout(std430, binding = 1) buffer DrawElementsBuffer {
-    uint cmd[4];
-};
-
+uniform uint  maxVertices;
 uniform float time;
 uniform float audioAdvance;
 uniform float audioKick;
@@ -23,20 +26,54 @@ uniform float chainP;
 uniform float pulseP;
 uniform float speedP;
 
+const uint POINTS = 4096u;      // 64 zooids x 64 points
+
+// attrA = (pos.xyz, 1.0), attrB = (normal.xyz, phase) -- the 8-float stride
+// Scene3DShader binds as attrA/attrB.
+// corner: 0=(-1,-1) 1=(1,-1) 2=(1,1) 3=(-1,1).  The fragment shader needs a
+// quad-local coordinate for its round sprite falloff -- gl_PointCoord is NOT
+// available here because geom="indirect" draws GL_TRIANGLES, not GL_POINTS.
+void writeVertex(uint slot, vec3 p, vec3 n, float phase, float corner)
+{
+    uint o = slot * 8u;
+    verts[o + 0u] = p.x;  verts[o + 1u] = p.y;  verts[o + 2u] = p.z;
+    verts[o + 3u] = corner;
+    verts[o + 4u] = n.x;  verts[o + 5u] = n.y;  verts[o + 6u] = n.z;
+    verts[o + 7u] = phase;
+}
+
+// A camera-facing quad: the scene camera looks down -z, so an XY-plane quad
+// always faces it without needing a view matrix in here.
+void emitQuad(vec3 c, vec3 n, float phase, float r)
+{
+    uint base = atomicAdd(cmd[4], 6u);
+    if (base + 6u > maxVertices) return;
+
+    vec3 a = c + vec3(-r, -r, 0.0);
+    vec3 b = c + vec3( r, -r, 0.0);
+    vec3 d = c + vec3( r,  r, 0.0);
+    vec3 e = c + vec3(-r,  r, 0.0);
+
+    writeVertex(base + 0u, a, n, phase, 0.0);
+    writeVertex(base + 1u, b, n, phase, 1.0);
+    writeVertex(base + 2u, d, n, phase, 2.0);
+    writeVertex(base + 3u, a, n, phase, 0.0);
+    writeVertex(base + 4u, d, n, phase, 2.0);
+    writeVertex(base + 5u, e, n, phase, 3.0);
+}
+
 void main() {
-    uint idx = gl_GlobalInvocationID.x +
-               gl_GlobalInvocationID.y * 16u +
-               gl_GlobalInvocationID.z * 256u;
+    uvec3 g = gl_GlobalInvocationID;
+    uint idx = g.x + 64u * (g.y + 64u * g.z);
+    if (idx >= POINTS) return;
 
-    if (idx >= 4096u) return;
-
-    float pNorm = float(idx) / 4096.0;
+    float pNorm = float(idx) / float(POINTS);
     float t = time * 0.4 * (speedP > 0.0 ? speedP : 1.0) + audioAdvance * 0.2;
 
     // 64 zooids with 64 points each along a winding siphonophore stem
     uint zooidID = idx / 64u;
     float zNorm = float(idx % 64u) / 64.0;
-    float s = (float(zooidID) + zNorm) / 64.0; // [0, 1] along 50m chain
+    float s = (float(zooidID) + zNorm) / 64.0; // [0, 1] along the chain
 
     // Winding sinusoidal siphonophore stem in deep ocean
     float stemZ = (s - 0.5) * 5.0 * (chainP > 0.0 ? chainP : 1.0);
@@ -52,13 +89,7 @@ void main() {
     vec3 pos = vec3(stemX + tentacleX, stemY + tentacleY, stemZ);
     vec3 normal = normalize(vec3(cos(zooidAngle), sin(zooidAngle), 0.5));
 
-    verts[idx].pos = vec4(pos, 1.0);
-    verts[idx].norm = vec4(normal, pNorm);
-
-    if (idx == 0u) {
-        cmd[0] = 4096u;
-        cmd[1] = 1u;
-        cmd[2] = 0u;
-        cmd[3] = 0u;
-    }
+    // Each nectophore flares with the beat.
+    float r = 0.020 * (1.0 + 0.8 * audioBass + 1.5 * audioKick + 0.4 * audioHigh);
+    emitQuad(pos, normal, pNorm, r);
 }
