@@ -17,6 +17,7 @@
 #include <QtCore/QElapsedTimer>
 #include <QtCore/QString>
 #include <vector>
+#include <memory>
 
 #include "../Source/AudioFeatures.h"
 #include "../Source/CfxTypes.h"
@@ -67,6 +68,13 @@ public:
     struct ParamOverride { QString name; float value; bool isInt; };
     void setParamOverrides(QVector<ParamOverride> ov) { m_overrides = std::move(ov); update(); }
 
+    // Formula-layer entries of the SELECTED preset entry (uniform name ->
+    // formula), incl. audio-mapping overrides (<expr name="audioKick">).
+    // The 2D path applies them after the synthetic audio uniforms; the
+    // scene3d path forwards them into the real Scene3DShader, so the preview
+    // follows the same override-by-name order as the shipped engine.
+    void setSceneExprs(QVector<QPair<QString, QString>> exprs);
+
     // Evaluate a compiled formula-layer program against the synthesized
     // Beat/Drone audio profile at the CURRENT preview time -- the same
     // variable mapping EffectShader.cpp uses at runtime, so the editor's
@@ -104,6 +112,7 @@ private:
     float  testInterpolation() const;   // test-bench interpolation (1.0 = normal)
     void   applyCommonUniforms(QOpenGLShaderProgram *p);
     void   applyParamOverrides(QOpenGLShaderProgram *p);
+    void   applySceneExprs(QOpenGLShaderProgram *p);
     void   drawFullscreenQuad(QOpenGLShaderProgram *p);
     void   loadImages();                     // (re)create m_img0/m_img1 (GL thread)
     GLuint makeTexture(const QString &path);  // from file, or gradient fallback
@@ -157,6 +166,8 @@ private:
     int     m_fbW = 0, m_fbH = 0;
 
     QVector<ParamOverride> m_overrides;   // editor slider values
+    struct SceneExpr { QString name; QString formula; std::shared_ptr<ExprProgram> prog; };
+    QVector<SceneExpr> m_sceneExprs;      // formula layer of the selected entry
 
     // Transition test bench state (see setTransTest/setFixedTime).
     int    m_transStyle  = -1;

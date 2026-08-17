@@ -75,6 +75,12 @@ void Scene3DPreview::addIntRange( const QString &name, int lo, int hi )
         m_scene->addUniform( name.toStdString(), lo, hi );
 }
 
+void Scene3DPreview::addExpr( const QString &name, const QString &formula )
+{
+    if( m_scene )
+        m_scene->addExpression( name.toStdString(), formula.toStdString() );
+}
+
 // Redirect stderr to a temp file for the duration of one compile call, then
 // read it back as the status-panel log.  Every compiler/linker message in
 // this codebase goes straight to stderr (printShaderInfoLog / printProgram-

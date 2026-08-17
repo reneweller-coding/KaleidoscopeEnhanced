@@ -243,6 +243,43 @@ void PreviewWidget::loadImages()
 // Set every uniform any of the effect shaders might declare.  Unused ones resolve
 // to location -1 and are silently ignored, so one call works for all shaders.
 // Editor slider values override the per-activation params (after defaults).
+void PreviewWidget::setSceneExprs(QVector<QPair<QString, QString>> exprs)
+{
+    // Called on every panel refresh -- rebuild (and re-dirty the scene3d
+    // shader) only when the formula set actually changed.
+    if (exprs.size() == m_sceneExprs.size())
+    {
+        bool same = true;
+        for (int i = 0; i < exprs.size(); ++i)
+            if (exprs[i].first  != m_sceneExprs[i].name
+             || exprs[i].second != m_sceneExprs[i].formula) { same = false; break; }
+        if (same) return;
+    }
+    m_sceneExprs.clear();
+    for (const auto &e : exprs)
+    {
+        SceneExpr se; se.name = e.first; se.formula = e.second;
+        se.prog = std::make_shared<ExprProgram>();
+        if (!se.prog->compile(se.formula.toStdString(),
+                              ("mapping:" + se.name).toStdString()))
+            se.prog = nullptr;   // invalid formula: skip, never break the preview
+        m_sceneExprs.push_back(se);
+    }
+    m_texDirty = true;   // scene3d path: rebuild so addExpression() runs fresh
+    update();
+}
+
+// Apply the entry's formula layer to the 2D preview program.  Runs AFTER the
+// synthetic audio uniforms, mirroring the engine's override-by-name order in
+// EffectShader::applyAudioFeatures -- so an <expr name="audioKick"> shows the
+// same takeover here that it performs in the shipped host.
+void PreviewWidget::applySceneExprs(QOpenGLShaderProgram *p)
+{
+    for (const SceneExpr &se : m_sceneExprs)
+        if (se.prog && se.prog->valid())
+            p->setUniformValue(se.name.toLatin1().constData(), evalExpr(*se.prog));
+}
+
 void PreviewWidget::applyParamOverrides(QOpenGLShaderProgram *p)
 {
     for (const ParamOverride &o : m_overrides)
@@ -373,6 +410,7 @@ void PreviewWidget::applyCommonUniforms(QOpenGLShaderProgram *p)
         p->setUniformValue("size", 10.0f);
         p->setUniformValue("copies", 6.0f);
         applyParamOverrides(p);
+        applySceneExprs(p);
         return;
     }
 
@@ -456,6 +494,7 @@ void PreviewWidget::applyCommonUniforms(QOpenGLShaderProgram *p)
     p->setUniformValue("size", 10.0f);
     p->setUniformValue("copies", 6.0f);
     applyParamOverrides(p);
+    applySceneExprs(p);
 }
 
 // A synthetic AudioFeatures snapshot for the scene3d path -- see the header
@@ -679,6 +718,12 @@ void PreviewWidget::paintGL()
                     else
                         m_scenePreview.addFloatRange(r.name, r.minV, r.maxV);
                 }
+                // Formula layer of the selected entry (incl. audio-mapping
+                // overrides): forwarded into the REAL EffectShader, so the 3D
+                // preview evaluates them on the same code path as the host.
+                for (const SceneExpr &se : m_sceneExprs)
+                    if (se.prog)
+                        m_scenePreview.addExpr(se.name, se.formula);
                 emit statusChanged(m_texFile + (log.isEmpty() ? "  OK" : "\n" + log));
             }
         }
