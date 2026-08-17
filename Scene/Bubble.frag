@@ -9,6 +9,9 @@ uniform float speed;// = 2.0; //1.0
 uniform float speedColor;// = 1.0; //1.0
 uniform int negative;
 uniform int vigneting;
+uniform float audioAdvance;   // integrated travel: bubbles rise faster with the music (jump-free)
+uniform float audioKick;      // kick puff on the bubble radius
+uniform float audioLevel;     // louder music = more saturated bubbles
 
 //void main() {
 
@@ -49,9 +52,10 @@ void main(void)
 		float pox =      sin(float(i)*321.55+4.1) * resolution.x / resolution.y;
 
         // buble size, position and color
-		float rad = 0.1 + 0.5*siz+sin(speed*time/60.+pha*500.+siz)/20.;
-		vec2  pos = vec2( pox+sin(speed*time/40.+pha+siz), -1.0-rad + (2.0+2.0*rad)
-						 *mod(pha+0.1*(speed*time/5.)*(0.2+0.8*siz),1.0));
+		float rad = 0.1 + 0.5*siz+sin(speed*time/60.+pha*500.+siz)/20.
+		          + 0.025*audioKick*(0.3+0.7*siz);
+		vec2  pos = vec2( pox+sin(speed*time/40.+0.15*audioAdvance+pha+siz), -1.0-rad + (2.0+2.0*rad)
+						 *mod(pha+0.1*(speed*time/5.+0.8*audioAdvance)*(0.2+0.8*siz),1.0));
 		float dis = length( uv - pos );
 		vec3  col = mix( vec3(0.194*sin(speedColor*time/6.0),0.3,0.0), 
 						vec3(1.1*sin(speedColor*time/9.0),0.4,0.8), 
@@ -61,7 +65,7 @@ void main(void)
         // render
 		float f = length(uv-pos)/rad;
 		f = sqrt(clamp(1.0-f*f,0.0,1.0));
-		color -= col.zyx *(1.0-smoothstep( rad*0.95, rad, dis )) * f;
+		color -= (1.0+0.35*audioLevel) * col.zyx *(1.0-smoothstep( rad*0.95, rad, dis )) * f;
 	}
 
     // vigneting	

@@ -12,6 +12,9 @@ uniform int sides;
 uniform float power;
 uniform int rotate;
 uniform float speedTunnelAccel;
+uniform float audioPhase;     // integrated audio rotation phase (radians, jump-free)
+uniform float audioAdvance;   // integrated audio tunnel advance (jump-free)
+uniform float audioKick;      // subtle brightness pulse on kicks
 
 const float M_PI = 3.141592653589793;
 
@@ -51,11 +54,12 @@ void main() {
     float tau = 1. * 1.047;
     a = mod(a, tau/sidesK);
     a = abs(a - tau/sidesK/2.);
-    a += time*speed; // rotate
- 
+    a += time*speed + audioPhase; // base rotation + jump-free audio rotation
+
 	vec2 uv;
-    uv.x = (speedTunnelAccel*time+.1/r);
+    uv.x = (speedTunnelAccel*time + audioAdvance + .1/r);
     uv.y = (a/M_PI);
-    
+
     fragColor =  interpolation * texture(tex0,uv) + (1.0-interpolation)*texture(tex1,uv);
+    fragColor.rgb *= 1.0 + 0.10*audioKick;
 }

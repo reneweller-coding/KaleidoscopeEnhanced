@@ -12,6 +12,9 @@ uniform int sides;
 uniform float power;
 uniform float speedTunnelReverse;
 uniform float rotate;
+uniform float audioPhase;     // integrated audio rotation phase (radians, jump-free)
+uniform float audioAdvance;   // integrated audio tunnel advance (jump-free)
+uniform float audioKick;      // subtle brightness pulse on kicks
 
 const float M_PI = 3.141592653589793;
 
@@ -53,10 +56,10 @@ void main() {
     float tau = 1. * 1.047;
     a = mod(a, tau/sidesK);
     a = abs(a - tau/sidesK/2.);
-    a += time*speed; // rotate
- 
+    a += time*speed + audioPhase; // base rotation + jump-free audio rotation
+
 	vec2 uv;
-    uv.x = (speedTunnel*time+.1/r);
+    uv.x = (speedTunnel*time + audioAdvance + .1/r);
     uv.y = (a/3.1416);
     
     vec4 color1 = interpolation * texture(tex0,uv) + (1.0-interpolation)*texture(tex1,uv);
@@ -80,13 +83,15 @@ void main() {
     float sidesT2 = 0.5 * float(sides);
     a = mod(a, tau/sidesT2);
     a = abs(a - tau/sidesT2/2.);
-    a += time*speed; // rotate
-    
-    uv.x = (speedTunnelReverse*time+.1/r);
+    a += time*speed + audioPhase; // base rotation + jump-free audio rotation
+
+    // the reverse layer RECEDES with the music (opposite sign), so the two
+    // tunnels shear against each other on energetic passages
+    uv.x = (speedTunnelReverse*time - 0.5*audioAdvance + .1/r);
     uv.y = (a/M_PI);
-    
+
     vec4 color2 =  interpolation * texture(tex0,uv) + (1.0-interpolation)*texture(tex1,uv);
-   
+
     //Combine Plain and Reverse
-    fragColor = 0.5*color1+0.5*color2;;
+    fragColor = (0.5*color1+0.5*color2) * (1.0 + 0.10*audioKick);
 }

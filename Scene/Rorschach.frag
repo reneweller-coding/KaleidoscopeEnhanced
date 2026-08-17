@@ -12,6 +12,9 @@ uniform float posZ;
 uniform float divisor;
 uniform float fiOffset;//original = 0.1
 //uniform float timefactor;
+uniform float audioAdvance;   // integrated drift: the inkblot morphs with the music (jump-free)
+uniform float audioKick;      // kick throb on the blot intensity
+uniform float audioLevel;     // louder music = denser ink
 
 
 const float speed = 0.5;
@@ -49,13 +52,14 @@ void main(void)
 		float offset2 = speed*cos(fi/divisor);
 		
 		//vec3 pos = offset2*sin( timefactor*time*offset*vec3(posX,posY,posZ)+0.1*fi );
-		vec3 pos = offset2*sin( timefactor*time*offset*vec3(posX,posY,posZ)+0.1*fi );
+		vec3 pos = offset2*sin( timefactor*time*offset*vec3(posX,posY,posZ)+0.1*fi+0.25*audioAdvance );
 
 		//d += distancefactor*pow(clamp((1.0-abs(distance(vec3(uv.x,uv.y,uv.x+uv.y), pos))),0.0,1.0),potence);
 		d += distancefactor*pow(clamp((1.0-abs(distance(vec3(uv.x,uv.y,uv.x+uv.y), pos))),0.0,1.0),potence);
 	}
 	
 	//d = clamp(d,0.0,0.0125)*80.0;
+	d *= 1.0 + 0.25*audioLevel + 0.35*audioKick;
 	
 	float noise = 1.0;//0.2*sin(uv.y*1800.0)+1.0-2.0*abs(uv.x);	
 	//float noise = 0.2*sin(uv.y*1800.0)+1.0-2.0*abs(uv.x);	
