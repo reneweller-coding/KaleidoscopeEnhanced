@@ -1,0 +1,111 @@
+#version 430 core
+// CryovolcanicIceGeysers.comp
+// -----------------------------------------------------------------------
+// GPU compute shader generating 4,096 cryovolcanic ice geyser plumes
+// erupting from tectonic ice fractures with crystal scattering.
+// -----------------------------------------------------------------------
+
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+
+layout(std430, binding = 0) buffer Verts { float verts[]; };
+layout(std430, binding = 1) buffer Cmd   { uint cmd[];   };
+
+uniform uint  maxVertices;
+uniform float time;
+
+uniform float audioPhase;
+uniform float audioAdvance;
+uniform float audioSwell;
+uniform float audioLevel;
+uniform float audioKick;
+uniform float audioCentroid;
+uniform float audioValence;
+uniform float audioSubBass;
+uniform float audioBass;
+uniform float audioMid;
+uniform float audioHigh;
+uniform float audioFlux;
+uniform float audioChromaHue;
+
+uniform float geyserP;
+uniform float plumeP;
+uniform float speedP;
+uniform float hueP;
+
+float hash11(float p) {
+    p = fract(p * 0.1031);
+    p *= p + 33.33;
+    p *= p + p;
+    return fract(p);
+}
+
+void main() {
+    uvec3 g = gl_GlobalInvocationID;
+    uint gid = g.x + 64u * (g.y + 64u * g.z);
+    if (gid >= 4096u) return;
+
+    float gys = (geyserP > 0.0) ? geyserP : 1.0;
+    float plm = (plumeP  > 0.0) ? plumeP  : 1.0;
+    float spd = (speedP  > 0.0) ? speedP  : 1.0;
+
+    float t = time * 0.4 * spd + audioAdvance * 0.2;
+    float fGid = float(gid);
+
+    float plumeID = floor(fGid / 64.0); // 64 geysers
+    float segID = mod(fGid, 64.0);       // 64 segments per plume
+
+    float u1 = segID / 64.0;
+    float u2 = (segID + 1.0) / 64.0;
+
+    // Linear ground vent positions along ice fractures
+    float ventX = (hash11(plumeID) - 0.5) * 10.0;
+    float ventZ = (hash11(plumeID * 2.3) - 0.5) * 8.0;
+
+    // Plume altitude: y in [0, 6]
+    float y1 = u1 * 6.0 * gys * (1.0 + 0.3 * audioBass);
+    float y2 = u2 * 6.0 * gys * (1.0 + 0.3 * audioBass);
+
+    // Lateral plume dispersion in vacuum
+    float spread1 = pow(u1, 1.5) * 1.8 * plm + sin(u1 * 10.0 - t * 3.0) * 0.2;
+    float spread2 = pow(u2, 1.5) * 1.8 * plm + sin(u2 * 10.0 - t * 3.0) * 0.2;
+
+    float angle1 = plumeID * 1.5 + u1 * 4.0 + t;
+    float angle2 = plumeID * 1.5 + u2 * 4.0 + t;
+
+    // Kick eruption burst
+    float kickErupt1 = audioKick * 2.0 * u1;
+    float kickErupt2 = audioKick * 2.0 * u2;
+
+    vec3 pA = vec3(ventX + cos(angle1) * spread1, y1 + kickErupt1 - 2.5, ventZ + sin(angle1) * spread1);
+    vec3 pB = vec3(ventX + cos(angle2) * spread2, y2 + kickErupt2 - 2.5, ventZ + sin(angle2) * spread2);
+
+    vec3 forward = normalize(pB - pA);
+    vec3 binormal = normalize(vec3(-forward.z, 0.0, forward.x));
+    float ribbonWidth = (0.02 + 0.04 * u1) * (1.0 + audioHigh * 0.5);
+
+    vec3 v0 = pA - binormal * ribbonWidth;
+    vec3 v1 = pA + binormal * ribbonWidth;
+    vec3 v2 = pB - binormal * ribbonWidth;
+    vec3 v3 = pB + binormal * ribbonWidth;
+
+    uint base = atomicAdd(cmd[4], 6u);
+    if (base + 6u > maxVertices) return;
+
+    vec3 pList[6] = vec3[6](v0, v1, v2,  v1, v3, v2);
+    vec2 uvList[6] = vec2[6](
+        vec2(0.0, u1), vec2(1.0, u1), vec2(0.0, u2),
+        vec2(1.0, u1), vec2(1.0, u2), vec2(0.0, u2)
+    );
+
+    for (uint i = 0u; i < 6u; ++i) {
+        uint off = (base + i) * 8u;
+        verts[off + 0u] = pList[i].x;
+        verts[off + 1u] = pList[i].y;
+        verts[off + 2u] = pList[i].z;
+        verts[off + 3u] = plumeID;
+        verts[off + 4u] = hash11(plumeID);
+        verts[off + 5u] = u1;
+        verts[off + 6u] = uvList[i].x;
+        verts[off + 7u] = uvList[i].y;
+    }
+}

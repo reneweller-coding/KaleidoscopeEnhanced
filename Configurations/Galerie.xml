@@ -266,6 +266,101 @@
     <float name="glowP"    minValue="0.3" maxValue="1.0"></float>
   </CombineShader>
 
+  <!-- Batch 10: New Photo-Hero, Bokeh & Optical Transitions -->
+  <CombineShader file="..\Combine\CombineDreamyBokehBloom.frag" type="normal" probability="0.45" complexity="3">
+    <float name="bokehP" minValue="0.5" maxValue="1.8"></float>
+    <float name="bloomP" minValue="0.5" maxValue="1.8"></float>
+    <float name="speedP" minValue="0.4" maxValue="1.6"></float>
+    <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
+  </CombineShader>
+
+  <CombineShader file="..\Combine\CombineSpectralPrismSplit.frag" type="normal" probability="0.40" complexity="3">
+    <float name="prismP" minValue="0.5" maxValue="1.8"></float>
+    <float name="splitP" minValue="0.5" maxValue="1.8"></float>
+    <float name="speedP" minValue="0.4" maxValue="1.6"></float>
+    <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
+  </CombineShader>
+
+  <CombineShader file="..\Combine\CombineDichroicMirrorSlide.frag" type="normal" probability="0.40" complexity="3">
+    <float name="dichroP" minValue="0.5" maxValue="1.8"></float>
+    <float name="slideP"  minValue="0.5" maxValue="1.8"></float>
+    <float name="speedP"  minValue="0.4" maxValue="1.6"></float>
+    <float name="hueP"    minValue="0.0" maxValue="6.28"></float>
+  </CombineShader>
+
+  <CombineShader file="..\Combine\CombineCausticLiquidWarp.frag" type="normal" probability="0.40" complexity="3">
+    <float name="causticP" minValue="0.5" maxValue="1.8"></float>
+    <float name="rippleP"  minValue="0.5" maxValue="1.8"></float>
+    <float name="speedP"   minValue="0.4" maxValue="1.6"></float>
+    <float name="hueP"     minValue="0.0" maxValue="6.28"></float>
+  </CombineShader>
+
+  <CombineShader file="..\Combine\CombineAnamorphicFlareSweep.frag" type="normal" probability="0.40" complexity="3">
+    <float name="flareP" minValue="0.5" maxValue="1.8"></float>
+    <float name="sweepP" minValue="0.5" maxValue="1.8"></float>
+    <float name="speedP" minValue="0.4" maxValue="1.6"></float>
+    <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
+  </CombineShader>
+
+  <CombineShader file="..\Combine\CombineSandRippleAeolian.frag" type="normal" probability="0.40" complexity="3">
+    <float name="rippleP" minValue="0.5" maxValue="1.8"></float>
+    <float name="windP"   minValue="0.5" maxValue="1.8"></float>
+    <float name="speedP"  minValue="0.4" maxValue="1.6"></float>
+    <float name="hueP"    minValue="0.0" maxValue="6.28"></float>
+  </CombineShader>
+
+  <CombineShader file="..\Combine\CombineFrostDendriteFreeze.frag" type="normal" probability="0.40" complexity="3">
+    <float name="frostP"  minValue="0.5" maxValue="1.8"></float>
+    <float name="branchP" minValue="0.5" maxValue="1.8"></float>
+    <float name="speedP"  minValue="0.4" maxValue="1.6"></float>
+    <float name="hueP"    minValue="0.0" maxValue="6.28"></float>
+  </CombineShader>
+
+  <!-- Batch 11: New Photo-Hero, Optics & Wave Resonance Transitions -->
+  <CombineShader file="..\Combine\CombineNewtonRingsInterference.frag" type="normal" probability="0.40" complexity="3">
+    <float name="ringP"  minValue="0.5" maxValue="1.8"></float>
+    <float name="gapP"   minValue="0.5" maxValue="1.8"></float>
+    <float name="speedP" minValue="0.4" maxValue="1.6"></float>
+    <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
+  </CombineShader>
+
+  <CombineShader file="..\Combine\CombineBirefringenceCrystalSplit.frag" type="normal" probability="0.40" complexity="3">
+    <float name="birefP" minValue="0.5" maxValue="1.8"></float>
+    <float name="angleP" minValue="0.5" maxValue="1.8"></float>
+    <float name="speedP" minValue="0.4" maxValue="1.6"></float>
+    <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
+  </CombineShader>
+
+  <CombineShader file="..\Combine\CombineFaradayWaveLattice.frag" type="normal" probability="0.38" complexity="3">
+    <float name="faradayP" minValue="0.5" maxValue="1.8"></float>
+    <float name="gridP"    minValue="0.5" maxValue="1.8"></float>
+    <float name="speedP"   minValue="0.4" maxValue="1.6"></float>
+    <float name="hueP"     minValue="0.0" maxValue="6.28"></float>
+  </CombineShader>
+
+  <CombineShader file="..\Combine\CombineChromatographySeparation.frag" type="normal" probability="0.38" complexity="3">
+    <float name="solventP" minValue="0.5" maxValue="1.8"></float>
+    <float name="retardP"  minValue="0.5" maxValue="1.8"></float>
+    <float name="speedP"   minValue="0.4" maxValue="1.6"></float>
+    <float name="hueP"     minValue="0.0" maxValue="6.28"></float>
+  </CombineShader>
+
+  <CombineShader file="..\Combine\CombineFresnelDiffractionEdge.frag" type="normal" probability="0.38" complexity="3">
+    <float name="edgeP"   minValue="0.5" maxValue="1.8"></float>
+    <float name="fringeP" minValue="0.5" maxValue="1.8"></float>
+    <float name="speedP"  minValue="0.4" maxValue="1.6"></float>
+    <float name="hueP"    minValue="0.0" maxValue="6.28"></float>
+  </CombineShader>
+
+  <CombineShader file="..\Combine\CombineAcousticChladniResonance.frag" type="normal" probability="0.38" complexity="3">
+    <float name="modeP"  minValue="0.5" maxValue="1.8"></float>
+    <float name="nodalP" minValue="0.5" maxValue="1.8"></float>
+    <float name="speedP" minValue="0.4" maxValue="1.6"></float>
+    <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
+  </CombineShader>
+
+
+
   <TextureShader file="..\\Scene3D\\PillarHall.frag" type="scene3d" geom="cubes" probability="0.4" mood="dark" complexity="4" shadowExtent="60">
     <float name="camHP"    minValue="6.0"  maxValue="13.0"></float>
     <float name="heightP"  minValue="0.7"  maxValue="1.35"></float>
@@ -514,4 +609,91 @@
     <float name="hueP"    minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
 
+  <!-- Batch 8: New Photo-Hero & Optical Shaders -->
+  <TextureShader file="..\Scene\PenroseAperiodicTessellation.frag" type="normal" probability="0.8" mood="bright,calm,dreamy" complexity="3">
+    <float name="tileP"  minValue="0.5" maxValue="1.8"></float>
+    <float name="foldP"  minValue="0.5" maxValue="1.8"></float>
+    <float name="speedP" minValue="0.4" maxValue="1.8"></float>
+    <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene\DichroicInfinityPrismVault.frag" type="normal" probability="0.8" mood="bright,psychedelic" complexity="4">
+    <float name="prismP"      minValue="0.5" maxValue="1.8"></float>
+    <float name="dispersionP" minValue="0.5" maxValue="2.0"></float>
+    <float name="speedP"      minValue="0.4" maxValue="1.8"></float>
+    <float name="hueP"        minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene3D\BioluminescentBreakingWave.frag" type="scene3d" geom="grid" probability="0.8" mood="bright,calm,dreamy" complexity="3">
+    <float name="waveHeightP" minValue="0.5" maxValue="1.8"></float>
+    <float name="steepnessP"  minValue="0.5" maxValue="1.8"></float>
+    <float name="speedP"      minValue="0.4" maxValue="1.8"></float>
+    <float name="hueP"        minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene3D\KelvinHelmholtzCloudWaves.frag" type="scene3d" geom="grid" probability="0.8" mood="calm,dreamy,bright" complexity="3">
+    <float name="billowP" minValue="0.5" maxValue="1.8"></float>
+    <float name="shearP"  minValue="0.5" maxValue="1.8"></float>
+    <float name="speedP"  minValue="0.4" maxValue="1.8"></float>
+    <float name="hueP"    minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene3D\RadiolarianSilicaLattice.frag" type="scene3d" geom="quads" probability="0.8" mood="bright,calm,dreamy" complexity="3">
+    <float name="latticeP" minValue="0.5" maxValue="1.8"></float>
+    <float name="scatterP" minValue="0.5" maxValue="1.8"></float>
+    <float name="glowP"    minValue="0.5" maxValue="1.8"></float>
+    <float name="hueP"     minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene3D\AcousticLevitationMatrix.frag" type="scene3d" geom="cubes" probability="0.75" mood="bright,calm" complexity="3">
+    <float name="nodeP"  minValue="0.5" maxValue="1.8"></float>
+    <float name="liftP"  minValue="0.5" maxValue="1.8"></float>
+    <float name="speedP" minValue="0.4" maxValue="1.8"></float>
+    <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <!-- Batch 9: New Photo-Hero & Optical Shaders -->
+  <TextureShader file="..\Scene\KleinQuarticHyperbolicCurve.frag" type="normal" probability="0.8" mood="bright,calm,psychedelic" complexity="3">
+    <float name="genusP"    minValue="0.5" maxValue="1.8"></float>
+    <float name="heptagonP" minValue="0.5" maxValue="1.8"></float>
+    <float name="speedP"    minValue="0.4" maxValue="1.8"></float>
+    <float name="hueP"      minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene\ScherkMinimalSurfaceTower.frag" type="normal" probability="0.8" mood="bright,psychedelic" complexity="4">
+    <float name="saddleP" minValue="0.5" maxValue="1.8"></float>
+    <float name="towerP"  minValue="0.5" maxValue="1.8"></float>
+    <float name="speedP"  minValue="0.4" maxValue="1.8"></float>
+    <float name="hueP"    minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene\ApollonianSpherePackingGasket.frag" type="normal" probability="0.75" mood="bright,psychedelic" complexity="4">
+    <float name="gasketP"  minValue="0.5" maxValue="1.8"></float>
+    <float name="fractalP" minValue="0.5" maxValue="1.8"></float>
+    <float name="speedP"   minValue="0.4" maxValue="1.8"></float>
+    <float name="hueP"     minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene3D\DiatomSilicaMicrofrustule.frag" type="scene3d" geom="quads" probability="0.8" mood="bright,calm,dreamy" complexity="3">
+    <float name="diatomP" minValue="0.5" maxValue="1.8"></float>
+    <float name="poreP"   minValue="0.5" maxValue="1.8"></float>
+    <float name="speedP"  minValue="0.4" maxValue="1.8"></float>
+    <float name="hueP"    minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene3D\DielectricMetasurfaceHologram.frag" type="scene3d" geom="quads" probability="0.75" mood="bright,aggressive" complexity="3">
+    <float name="metaP"  minValue="0.5" maxValue="1.8"></float>
+    <float name="phaseP" minValue="0.5" maxValue="1.8"></float>
+    <float name="speedP" minValue="0.4" maxValue="1.8"></float>
+    <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene3D\SandDuneBarchanMigration.frag" type="scene3d" geom="grid" probability="0.8" mood="calm,dreamy,bright" complexity="3">
+    <float name="duneP"   minValue="0.5" maxValue="1.8"></float>
+    <float name="rippleP" minValue="0.5" maxValue="1.8"></float>
+    <float name="speedP"  minValue="0.4" maxValue="1.8"></float>
+    <float name="hueP"    minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
 </configuration>
+

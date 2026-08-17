@@ -516,6 +516,206 @@
     <float name="grainP"  minValue="0.30" maxValue="1.00"></float>
   </CombineShader>
 
+  <!-- Batch 10: New Psychedelic & Mathematical Transitions -->
+  <CombineShader file="..\Combine\CombineVoronoiShatter.frag" type="normal" probability="0.35" complexity="3">
+    <float name="cellP"  minValue="0.5" maxValue="2.2"></float>
+    <float name="liftP"  minValue="0.5" maxValue="2.0"></float>
+    <float name="speedP" minValue="0.5" maxValue="2.0"></float>
+    <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
+  </CombineShader>
+
+  <CombineShader file="..\Combine\CombinePoincareSpin.frag" type="normal" probability="0.35" complexity="3">
+    <float name="diskP"  minValue="0.5" maxValue="2.2"></float>
+    <float name="spinP"  minValue="0.5" maxValue="2.0"></float>
+    <float name="speedP" minValue="0.5" maxValue="2.0"></float>
+    <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
+  </CombineShader>
+
+  <CombineShader file="..\Combine\CombinePenroseMorph.frag" type="normal" probability="0.35" complexity="3">
+    <float name="tileP"  minValue="0.5" maxValue="2.2"></float>
+    <float name="foldP"  minValue="0.5" maxValue="2.0"></float>
+    <float name="speedP" minValue="0.5" maxValue="2.0"></float>
+    <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
+  </CombineShader>
+
+  <CombineShader file="..\Combine\CombineMoireInterference.frag" type="normal" probability="0.32" complexity="2">
+    <float name="freqP"  minValue="0.5" maxValue="2.2"></float>
+    <float name="angleP" minValue="0.5" maxValue="2.0"></float>
+    <float name="speedP" minValue="0.5" maxValue="2.0"></float>
+    <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
+  </CombineShader>
+
+  <CombineShader file="..\Combine\CombineLogarithmicSpiral.frag" type="normal" probability="0.35" complexity="3">
+    <float name="spiralP" minValue="0.5" maxValue="2.2"></float>
+    <float name="armsP"   minValue="0.5" maxValue="2.0"></float>
+    <float name="speedP"  minValue="0.5" maxValue="2.0"></float>
+    <float name="hueP"    minValue="0.0" maxValue="6.28"></float>
+  </CombineShader>
+
+  <CombineShader file="..\Combine\CombineGoldenNautilus.frag" type="normal" probability="0.35" complexity="3">
+    <float name="phiP"   minValue="0.5" maxValue="2.2"></float>
+    <float name="sweepP" minValue="0.5" maxValue="2.0"></float>
+    <float name="speedP" minValue="0.5" maxValue="2.0"></float>
+    <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
+  </CombineShader>
+
+  <CombineShader file="..\Combine\CombineSpectralPrismSplit.frag" type="normal" probability="0.38" complexity="3">
+    <float name="prismP" minValue="0.5" maxValue="2.2"></float>
+    <float name="splitP" minValue="0.5" maxValue="2.0"></float>
+    <float name="speedP" minValue="0.5" maxValue="2.0"></float>
+    <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
+  </CombineShader>
+
+  <CombineShader file="..\Combine\CombineCausticLiquidWarp.frag" type="normal" probability="0.32" complexity="3">
+    <float name="causticP" minValue="0.5" maxValue="2.2"></float>
+    <float name="rippleP"  minValue="0.5" maxValue="2.0"></float>
+    <float name="speedP"   minValue="0.5" maxValue="2.0"></float>
+    <float name="hueP"     minValue="0.0" maxValue="6.28"></float>
+  </CombineShader>
+
+  <CombineShader file="..\Combine\CombineEbruMarblingRake.frag" type="normal" probability="0.35" complexity="3">
+    <float name="rakeP"  minValue="0.5" maxValue="2.2"></float>
+    <float name="swirlP" minValue="0.5" maxValue="2.0"></float>
+    <float name="speedP" minValue="0.5" maxValue="2.0"></float>
+    <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
+  </CombineShader>
+
+  <CombineShader file="..\Combine\CombineQuantumWaveCollapse.frag" type="normal" probability="0.35" complexity="3">
+    <float name="waveP"     minValue="0.5" maxValue="2.2"></float>
+    <float name="collapseP" minValue="0.5" maxValue="2.0"></float>
+    <float name="speedP"    minValue="0.5" maxValue="2.0"></float>
+    <float name="hueP"      minValue="0.0" maxValue="6.28"></float>
+  </CombineShader>
+
+  <CombineShader file="..\Combine\CombineGravitationalLensWarp.frag" type="normal" probability="0.35" complexity="3">
+    <float name="lensP"  minValue="0.5" maxValue="2.2"></float>
+    <float name="massP"  minValue="0.5" maxValue="2.0"></float>
+    <float name="speedP" minValue="0.5" maxValue="2.0"></float>
+    <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
+  </CombineShader>
+
+  <CombineShader file="..\Combine\CombineWormholeSpaceFold.frag" type="normal" probability="0.35" complexity="3">
+    <float name="throatP" minValue="0.5" maxValue="2.2"></float>
+    <float name="curveP"  minValue="0.5" maxValue="2.0"></float>
+    <float name="speedP"  minValue="0.5" maxValue="2.0"></float>
+    <float name="hueP"    minValue="0.0" maxValue="6.28"></float>
+  </CombineShader>
+
+  <CombineShader file="..\Combine\CombineTesseract4DRotation.frag" type="normal" probability="0.35" complexity="3">
+    <float name="rot4DP" minValue="0.5" maxValue="2.2"></float>
+    <float name="sliceP" minValue="0.5" maxValue="2.0"></float>
+    <float name="speedP" minValue="0.5" maxValue="2.0"></float>
+    <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
+  </CombineShader>
+
+  <CombineShader file="..\Combine\CombineReactionDiffusionTuring.frag" type="normal" probability="0.35" complexity="3">
+    <float name="turingP" minValue="0.5" maxValue="2.2"></float>
+    <float name="scaleP"  minValue="0.5" maxValue="2.0"></float>
+    <float name="speedP"  minValue="0.5" maxValue="2.0"></float>
+    <float name="hueP"    minValue="0.0" maxValue="6.28"></float>
+  </CombineShader>
+
+  <CombineShader file="..\Combine\CombineAuroraCurtainFold.frag" type="normal" probability="0.35" complexity="3">
+    <float name="curtainP" minValue="0.5" maxValue="2.2"></float>
+    <float name="rayP"     minValue="0.5" maxValue="2.0"></float>
+    <float name="speedP"   minValue="0.5" maxValue="2.0"></float>
+    <float name="hueP"     minValue="0.0" maxValue="6.28"></float>
+  </CombineShader>
+
+  <!-- Batch 11: New Psychedelic, Mathematical & Crystal Transitions -->
+  <CombineShader file="..\Combine\CombineNewtonRingsInterference.frag" type="normal" probability="0.35" complexity="3">
+    <float name="ringP"  minValue="0.5" maxValue="2.2"></float>
+    <float name="gapP"   minValue="0.5" maxValue="2.0"></float>
+    <float name="speedP" minValue="0.5" maxValue="2.0"></float>
+    <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
+  </CombineShader>
+
+  <CombineShader file="..\Combine\CombineGyroidMembraneMelt.frag" type="normal" probability="0.38" complexity="3">
+    <float name="gyroidP" minValue="0.5" maxValue="2.2"></float>
+    <float name="isoP"    minValue="0.5" maxValue="2.0"></float>
+    <float name="speedP"  minValue="0.5" maxValue="2.0"></float>
+    <float name="hueP"    minValue="0.0" maxValue="6.28"></float>
+  </CombineShader>
+
+  <CombineShader file="..\Combine\CombineBirefringenceCrystalSplit.frag" type="normal" probability="0.35" complexity="3">
+    <float name="birefP" minValue="0.5" maxValue="2.2"></float>
+    <float name="angleP" minValue="0.5" maxValue="2.0"></float>
+    <float name="speedP" minValue="0.5" maxValue="2.0"></float>
+    <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
+  </CombineShader>
+
+  <CombineShader file="..\Combine\CombineFaradayWaveLattice.frag" type="normal" probability="0.35" complexity="3">
+    <float name="faradayP" minValue="0.5" maxValue="2.2"></float>
+    <float name="gridP"    minValue="0.5" maxValue="2.0"></float>
+    <float name="speedP"   minValue="0.5" maxValue="2.0"></float>
+    <float name="hueP"     minValue="0.0" maxValue="6.28"></float>
+  </CombineShader>
+
+  <CombineShader file="..\Combine\CombineHelicoidMinimalSurface.frag" type="normal" probability="0.38" complexity="3">
+    <float name="pitchP" minValue="0.5" maxValue="2.2"></float>
+    <float name="screwP" minValue="0.5" maxValue="2.0"></float>
+    <float name="speedP" minValue="0.5" maxValue="2.0"></float>
+    <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
+  </CombineShader>
+
+  <CombineShader file="..\Combine\CombineKaleidoscopicPolytope.frag" type="normal" probability="0.38" complexity="3">
+    <float name="mirrorP" minValue="0.5" maxValue="2.2"></float>
+    <float name="foldP"   minValue="0.5" maxValue="2.0"></float>
+    <float name="speedP"  minValue="0.5" maxValue="2.0"></float>
+    <float name="hueP"    minValue="0.0" maxValue="6.28"></float>
+  </CombineShader>
+
+  <CombineShader file="..\Combine\CombineAbrikosovVortexLatticeSweep.frag" type="normal" probability="0.35" complexity="3">
+    <float name="vortexP" minValue="0.5" maxValue="2.2"></float>
+    <float name="sweepP"  minValue="0.5" maxValue="2.0"></float>
+    <float name="speedP"  minValue="0.5" maxValue="2.0"></float>
+    <float name="hueP"    minValue="0.0" maxValue="6.28"></float>
+  </CombineShader>
+
+  <CombineShader file="..\Combine\CombineSolitonWaveCollision.frag" type="normal" probability="0.35" complexity="3">
+    <float name="solitonP" minValue="0.5" maxValue="2.2"></float>
+    <float name="widthP"   minValue="0.5" maxValue="2.0"></float>
+    <float name="speedP"   minValue="0.5" maxValue="2.0"></float>
+    <float name="hueP"     minValue="0.0" maxValue="6.28"></float>
+  </CombineShader>
+
+  <CombineShader file="..\Combine\CombineChromatographySeparation.frag" type="normal" probability="0.35" complexity="3">
+    <float name="solventP" minValue="0.5" maxValue="2.2"></float>
+    <float name="retardP"  minValue="0.5" maxValue="2.0"></float>
+    <float name="speedP"   minValue="0.5" maxValue="2.0"></float>
+    <float name="hueP"     minValue="0.0" maxValue="6.28"></float>
+  </CombineShader>
+
+  <CombineShader file="..\Combine\CombineLiquidCrystalDefectDomain.frag" type="normal" probability="0.35" complexity="3">
+    <float name="defectP" minValue="0.5" maxValue="2.2"></float>
+    <float name="brushP"  minValue="0.5" maxValue="2.0"></float>
+    <float name="speedP"  minValue="0.5" maxValue="2.0"></float>
+    <float name="hueP"    minValue="0.0" maxValue="6.28"></float>
+  </CombineShader>
+
+  <CombineShader file="..\Combine\CombineAcousticChladniResonance.frag" type="normal" probability="0.35" complexity="3">
+    <float name="modeP"  minValue="0.5" maxValue="2.2"></float>
+    <float name="nodalP" minValue="0.5" maxValue="2.0"></float>
+    <float name="speedP" minValue="0.5" maxValue="2.0"></float>
+    <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
+  </CombineShader>
+
+  <CombineShader file="..\Combine\CombineKerrSchildWarpSheet.frag" type="normal" probability="0.35" complexity="3">
+    <float name="warpP"  minValue="0.5" maxValue="2.2"></float>
+    <float name="nullP"  minValue="0.5" maxValue="2.0"></float>
+    <float name="speedP" minValue="0.5" maxValue="2.0"></float>
+    <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
+  </CombineShader>
+
+  <CombineShader file="..\Combine\CombineCosmicStringLensing.frag" type="normal" probability="0.35" complexity="3">
+    <float name="tensionP" minValue="0.5" maxValue="2.2"></float>
+    <float name="deficitP" minValue="0.5" maxValue="2.0"></float>
+    <float name="speedP"   minValue="0.5" maxValue="2.0"></float>
+    <float name="hueP"     minValue="0.0" maxValue="6.28"></float>
+  </CombineShader>
+
+
+
   <TextureShader file="..\\Scene\\IceCrack.frag" type="normal" probability="0.45" mood="calm,bright" complexity="3">
     <float name="shardP"   minValue="0.20" maxValue="0.90"></float>
     <float name="crackP"   minValue="0.40" maxValue="1.50"></float>
@@ -828,6 +1028,162 @@
     <float name="kelvinP" minValue="0.6" maxValue="2.2"></float>
     <float name="speedP"  minValue="0.6" maxValue="2.0"></float>
     <float name="hueP"    minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <!-- Batch 8: New Psychedelic & Quantum Shaders -->
+  <TextureShader file="..\Scene\EinsteinRingGravitationalLens.frag" type="normal" probability="0.55" mood="bright,dark,psychedelic" complexity="3">
+    <float name="lensP"  minValue="0.5" maxValue="2.2"></float>
+    <float name="massP"  minValue="0.5" maxValue="2.0"></float>
+    <float name="speedP" minValue="0.5" maxValue="2.0"></float>
+    <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene\GyroidTriplyPeriodicLabyrinth.frag" type="normal" probability="0.58" mood="bright,psychedelic" complexity="4">
+    <float name="scaleP" minValue="0.5" maxValue="2.2"></float>
+    <float name="wallP"  minValue="0.5" maxValue="2.0"></float>
+    <float name="speedP" minValue="0.5" maxValue="2.0"></float>
+    <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene\PenroseAperiodicTessellation.frag" type="normal" probability="0.55" mood="bright,calm,dreamy" complexity="3">
+    <float name="tileP"  minValue="0.5" maxValue="2.2"></float>
+    <float name="foldP"  minValue="0.5" maxValue="2.0"></float>
+    <float name="speedP" minValue="0.5" maxValue="2.0"></float>
+    <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene\QuaternionicJulia4DFlight.frag" type="normal" probability="0.58" mood="psychedelic,bright" complexity="4">
+    <float name="iterP"  minValue="0.5" maxValue="2.0"></float>
+    <float name="sliceP" minValue="0.5" maxValue="2.2"></float>
+    <float name="speedP" minValue="0.5" maxValue="2.0"></float>
+    <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene\JosephsonVortexLattice.frag" type="normal" probability="0.55" mood="bright,psychedelic" complexity="3">
+    <float name="latticeP" minValue="0.5" maxValue="2.2"></float>
+    <float name="vortexP"  minValue="0.5" maxValue="2.0"></float>
+    <float name="speedP"   minValue="0.5" maxValue="2.0"></float>
+    <float name="hueP"     minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene\DichroicInfinityPrismVault.frag" type="normal" probability="0.55" mood="bright,psychedelic" complexity="4">
+    <float name="prismP"      minValue="0.5" maxValue="2.2"></float>
+    <float name="dispersionP" minValue="0.5" maxValue="2.2"></float>
+    <float name="speedP"      minValue="0.5" maxValue="2.0"></float>
+    <float name="hueP"        minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene3D\HopfTorusCliffordKlein.frag" type="scene3d" geom="ribbon" probability="0.55" mood="bright,psychedelic" complexity="3">
+    <float name="fiberP"  minValue="0.5" maxValue="2.0"></float>
+    <float name="radiusP" minValue="0.5" maxValue="2.0"></float>
+    <float name="widthP"  minValue="0.5" maxValue="2.0"></float>
+    <float name="hueP"    minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene3D\MoireHyperInterference.frag" type="scene3d" geom="grid" probability="0.55" mood="bright,psychedelic" complexity="3">
+    <float name="freqP"  minValue="0.5" maxValue="2.0"></float>
+    <float name="depthP" minValue="0.5" maxValue="2.0"></float>
+    <float name="speedP" minValue="0.5" maxValue="2.0"></float>
+    <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene3D\RadiolarianSilicaLattice.frag" type="scene3d" geom="quads" probability="0.52" mood="bright,calm,dreamy" complexity="3">
+    <float name="latticeP" minValue="0.5" maxValue="2.0"></float>
+    <float name="scatterP" minValue="0.5" maxValue="2.0"></float>
+    <float name="glowP"    minValue="0.5" maxValue="2.0"></float>
+    <float name="hueP"     minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene3D\HolographicLaserDiffractionGrid.frag" type="scene3d" geom="quads" probability="0.55" mood="bright,aggressive" complexity="3">
+    <float name="gratingP" minValue="0.5" maxValue="2.0"></float>
+    <float name="depthP"   minValue="0.5" maxValue="2.0"></float>
+    <float name="speedP"   minValue="0.5" maxValue="2.0"></float>
+    <float name="hueP"     minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <!-- Batch 9: New Psychedelic & Quantum Shaders -->
+  <TextureShader file="..\Scene\HawkingRadiationEvaporation.frag" type="normal" probability="0.55" mood="bright,dark,psychedelic" complexity="3">
+    <float name="evapP"    minValue="0.5" maxValue="2.2"></float>
+    <float name="horizonP" minValue="0.5" maxValue="2.0"></float>
+    <float name="speedP"   minValue="0.5" maxValue="2.0"></float>
+    <float name="hueP"     minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene\HeliosphericCurrentSheet.frag" type="normal" probability="0.55" mood="bright,psychedelic" complexity="3">
+    <float name="spiralP" minValue="0.5" maxValue="2.2"></float>
+    <float name="skirtP"  minValue="0.5" maxValue="2.0"></float>
+    <float name="speedP"  minValue="0.5" maxValue="2.0"></float>
+    <float name="hueP"    minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene\ScherkMinimalSurfaceTower.frag" type="normal" probability="0.58" mood="bright,psychedelic" complexity="4">
+    <float name="saddleP" minValue="0.5" maxValue="2.2"></float>
+    <float name="towerP"  minValue="0.5" maxValue="2.0"></float>
+    <float name="speedP"  minValue="0.5" maxValue="2.0"></float>
+    <float name="hueP"    minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene\ApollonianSpherePackingGasket.frag" type="normal" probability="0.58" mood="bright,psychedelic" complexity="4">
+    <float name="gasketP"  minValue="0.5" maxValue="2.2"></float>
+    <float name="fractalP" minValue="0.5" maxValue="2.0"></float>
+    <float name="speedP"   minValue="0.5" maxValue="2.0"></float>
+    <float name="hueP"     minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene\KleinQuarticHyperbolicCurve.frag" type="normal" probability="0.55" mood="bright,calm,psychedelic" complexity="3">
+    <float name="genusP"    minValue="0.5" maxValue="2.2"></float>
+    <float name="heptagonP" minValue="0.5" maxValue="2.0"></float>
+    <float name="speedP"    minValue="0.5" maxValue="2.0"></float>
+    <float name="hueP"      minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene\DiracConeGrapheneValleytronics.frag" type="normal" probability="0.55" mood="bright,psychedelic" complexity="3">
+    <float name="coneP"   minValue="0.5" maxValue="2.2"></float>
+    <float name="valleyP" minValue="0.5" maxValue="2.0"></float>
+    <float name="speedP"  minValue="0.5" maxValue="2.0"></float>
+    <float name="hueP"    minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene\MajoranaZeroModeBraid.frag" type="normal" probability="0.55" mood="bright,psychedelic" complexity="3">
+    <float name="braidP"    minValue="0.5" maxValue="2.2"></float>
+    <float name="junctionP" minValue="0.5" maxValue="2.0"></float>
+    <float name="speedP"    minValue="0.5" maxValue="2.0"></float>
+    <float name="hueP"      minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene3D\CliffordTorusVillarceauLinks.frag" type="scene3d" geom="cubes" probability="0.55" mood="bright,psychedelic" complexity="3">
+    <float name="torusP" minValue="0.5" maxValue="2.0"></float>
+    <float name="linkP"  minValue="0.5" maxValue="2.0"></float>
+    <float name="speedP" minValue="0.5" maxValue="2.0"></float>
+    <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene3D\NonEuclideanDodecahedronLoom.frag" type="scene3d" geom="ribbon" probability="0.55" mood="bright,calm,psychedelic" complexity="3">
+    <float name="dodecaP" minValue="0.5" maxValue="2.0"></float>
+    <float name="loomP"   minValue="0.5" maxValue="2.0"></float>
+    <float name="widthP"  minValue="0.5" maxValue="2.0"></float>
+    <float name="hueP"    minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene3D\BoseEinsteinVortexTangle.frag" type="scene3d" geom="indirect" probability="0.55" mood="bright,psychedelic" complexity="4">
+    <float name="becP"    minValue="0.5" maxValue="2.0"></float>
+    <float name="vortexP" minValue="0.5" maxValue="2.0"></float>
+    <float name="speedP"  minValue="0.5" maxValue="2.0"></float>
+    <float name="hueP"    minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene3D\PhotonicCrystalFiberCore.frag" type="scene3d" geom="cubes" probability="0.55" mood="bright,psychedelic" complexity="3">
+    <float name="pcfP"   minValue="0.5" maxValue="2.0"></float>
+    <float name="coreP"  minValue="0.5" maxValue="2.0"></float>
+    <float name="speedP" minValue="0.5" maxValue="2.0"></float>
+    <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene3D\MetamaterialNegativeRefraction.frag" type="scene3d" geom="grid" probability="0.55" mood="bright,psychedelic" complexity="3">
+    <float name="nP"     minValue="0.5" maxValue="2.0"></float>
+    <float name="lensP"  minValue="0.5" maxValue="2.0"></float>
+    <float name="speedP" minValue="0.5" maxValue="2.0"></float>
+    <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
 
 </configuration>

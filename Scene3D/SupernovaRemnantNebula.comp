@@ -1,0 +1,112 @@
+#version 430 core
+// SupernovaRemnantNebula.comp
+// -----------------------------------------------------------------------
+// GPU compute shader generating 4,096 expanding supernova filament strands
+// with Rayleigh-Taylor instability fingers and central pulsar shockwaves.
+// -----------------------------------------------------------------------
+
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+
+layout(std430, binding = 0) buffer Verts { float verts[]; };
+layout(std430, binding = 1) buffer Cmd   { uint cmd[];   };
+
+uniform uint  maxVertices;
+uniform float time;
+
+uniform float audioPhase;
+uniform float audioAdvance;
+uniform float audioSwell;
+uniform float audioLevel;
+uniform float audioKick;
+uniform float audioCentroid;
+uniform float audioValence;
+uniform float audioSubBass;
+uniform float audioBass;
+uniform float audioMid;
+uniform float audioHigh;
+uniform float audioFlux;
+uniform float audioChromaHue;
+
+uniform float expandP;
+uniform float filamentP;
+uniform float speedP;
+uniform float hueP;
+
+float hash11(float p) {
+    p = fract(p * 0.1031);
+    p *= p + 33.33;
+    p *= p + p;
+    return fract(p);
+}
+
+void main() {
+    uvec3 g = gl_GlobalInvocationID;
+    uint gid = g.x + 64u * (g.y + 64u * g.z);
+    if (gid >= 4096u) return;
+
+    float expn = (expandP   > 0.0) ? expandP   : 1.0;
+    float flm  = (filamentP > 0.0) ? filamentP : 1.0;
+    float spd  = (speedP    > 0.0) ? speedP    : 1.0;
+
+    float t = time * 0.35 * spd + audioAdvance * 0.15;
+    float fGid = float(gid);
+
+    float strandID = floor(fGid / 64.0); // 64 strands
+    float segID = mod(fGid, 64.0);       // 64 segments per strand
+
+    float u1 = segID / 64.0;
+    float u2 = (segID + 1.0) / 64.0;
+
+    // Fibonacci sphere distribution for strand radial directions
+    float phi = strandID * 2.3999632; // golden angle
+    float cosTheta = 1.0 - (strandID / 64.0) * 2.0;
+    float sinTheta = sqrt(max(0.0, 1.0 - cosTheta * cosTheta));
+    vec3 dir = vec3(cos(phi) * sinTheta, sin(phi) * sinTheta, cosTheta);
+
+    // Rayleigh-Taylor instability wave along filament length
+    float rBase1 = (1.2 + u1 * 3.8 * expn) * (1.0 + 0.25 * audioSwell);
+    float rBase2 = (1.2 + u2 * 3.8 * expn) * (1.0 + 0.25 * audioSwell);
+
+    float rtFinger1 = sin(u1 * 18.0 * flm + t * 2.0 + strandID) * 0.45;
+    float rtFinger2 = sin(u2 * 18.0 * flm + t * 2.0 + strandID) * 0.45;
+
+    // Kick shockwave explosion
+    float kickBlast1 = audioKick * 1.5 * exp(-pow(u1 - 0.7, 2.0) * 10.0);
+    float kickBlast2 = audioKick * 1.5 * exp(-pow(u2 - 0.7, 2.0) * 10.0);
+
+    vec3 pA = dir * (rBase1 + rtFinger1 + kickBlast1);
+    vec3 pB = dir * (rBase2 + rtFinger2 + kickBlast2);
+
+    // Ribbon cross vector
+    vec3 forward = normalize(pB - pA);
+    vec3 sideVec = normalize(cross(forward, vec3(0.0, 1.0, 0.0)));
+    if (length(sideVec) < 0.1) sideVec = vec3(1.0, 0.0, 0.0);
+
+    float ribbonWidth = 0.035 * (1.0 + audioHigh * 0.8);
+
+    vec3 v0 = pA - sideVec * ribbonWidth;
+    vec3 v1 = pA + sideVec * ribbonWidth;
+    vec3 v2 = pB - sideVec * ribbonWidth;
+    vec3 v3 = pB + sideVec * ribbonWidth;
+
+    uint base = atomicAdd(cmd[4], 6u);
+    if (base + 6u > maxVertices) return;
+
+    vec3 pList[6] = vec3[6](v0, v1, v2,  v1, v3, v2);
+    vec2 uvList[6] = vec2[6](
+        vec2(0.0, u1), vec2(1.0, u1), vec2(0.0, u2),
+        vec2(1.0, u1), vec2(1.0, u2), vec2(0.0, u2)
+    );
+
+    for (uint i = 0u; i < 6u; ++i) {
+        uint off = (base + i) * 8u;
+        verts[off + 0u] = pList[i].x;
+        verts[off + 1u] = pList[i].y;
+        verts[off + 2u] = pList[i].z;
+        verts[off + 3u] = strandID;
+        verts[off + 4u] = hash11(strandID);
+        verts[off + 5u] = u1;
+        verts[off + 6u] = uvList[i].x;
+        verts[off + 7u] = uvList[i].y;
+    }
+}
