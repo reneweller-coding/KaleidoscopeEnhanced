@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<configuration ImageDirectory="C:\\Users\\rene\\Desktop\\BilderPhotoechoes" ConfigurationName="Komplett" >
+<configuration ImageDirectory="C:\\Users\\rene\\Desktop\\BilderPhotoechoes" ConfigurationName="Komplett" hidden="true" >
 
   <!-- EVERY effect and combine shader in one rotation (times omitted:
        the pacing is music-driven; engine defaults apply without music). -->

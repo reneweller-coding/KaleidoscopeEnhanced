@@ -184,6 +184,9 @@ protected:
 	std::vector<unsigned char> m_snapBuf;        // glReadPixels scratch (Web-Snapshot)
 
 	void traverseConfigurations( const QString& dirname, std::vector<Configuration *> &configurationList );
+	// hidden="true" presets: kept out of every index-based selection path
+	// (menu, digit keys, web remote), reachable only by name (-c / auto-config).
+	std::vector<Configuration *> m_hiddenConfigurations;
 
 	// Request a configuration switch (applied in timerEvent, OUTSIDE paintGL, so
 	// the cross-fade grab can't re-enter paintGL).  Cross-fades from the old frame.

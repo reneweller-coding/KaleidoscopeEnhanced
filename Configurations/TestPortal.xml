@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<configuration ImageDirectory="C:\\Users\\rene\\Desktop\\BilderPhotoechoes" ConfigurationName="TestPortal" >
+<configuration ImageDirectory="C:\\Users\\rene\\Desktop\\BilderPhotoechoes" ConfigurationName="TestPortal" hidden="true" >
 
   <!-- PROBE: zwei echte 3D-Szenen (Tiefenpuffer!); mit KALEIDO_TRANS_STYLE=27
        ist jeder Review-Wechsel der Tiefen-Portal-Uebergang. -->

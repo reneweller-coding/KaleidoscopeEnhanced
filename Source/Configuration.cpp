@@ -123,6 +123,7 @@ void Configuration::readConfiguration( const QString &filename )
 
 	m_imageDirectory = docElem.attribute("ImageDirectory");
 	m_configurationName = docElem.attribute("ConfigurationName");
+	m_hidden = docElem.attribute("hidden").compare("true", Qt::CaseInsensitive) == 0;
 
 	// REVIEW MODE for the Test* presets: scenes run ALPHABETICALLY, 8 s
 	// each, and 'n' steps to the next in order — a systematic viewing

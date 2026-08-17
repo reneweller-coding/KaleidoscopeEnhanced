@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<configuration ImageDirectory="C:\\Users\\rene\\Desktop\\BilderPhotoechoes" ConfigurationName="TestTornado" >
+<configuration ImageDirectory="C:\\Users\\rene\\Desktop\\BilderPhotoechoes" ConfigurationName="TestTornado" hidden="true" >
 
   <!-- PROBE: nur Tornado, fuer Unstetigkeiten- und Bildfuellungs-Check. -->
 

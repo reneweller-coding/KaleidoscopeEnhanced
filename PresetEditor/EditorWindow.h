@@ -7,6 +7,7 @@
 #include "Preset.h"
 
 class PreviewWidget;
+class QCheckBox;
 class QComboBox;
 class QSpinBox;
 class QDoubleSpinBox;
@@ -119,6 +120,7 @@ private:
     QTableWidget *m_table = nullptr;
 
     QLineEdit *m_nameEdit = nullptr;
+    QCheckBox *m_hiddenCheck = nullptr;   // hidden="true" root attribute
     QLineEdit *m_imgDirEdit = nullptr;
     QSpinBox  *m_gSoloMin = nullptr, *m_gSoloMax = nullptr;
     QSpinBox  *m_gInterpMin = nullptr, *m_gInterpMax = nullptr;

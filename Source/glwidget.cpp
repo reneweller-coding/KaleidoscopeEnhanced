@@ -184,19 +184,46 @@ GLwidget::GLwidget( QWidget *parent )
 		exit( 1 );
 	}
 
+	// HIDDEN presets (hidden="true" on the root element, e.g. the Komplett
+	// master reference and the Test* benches): moved to a side list so they
+	// never appear in the user-facing selection — menu, digit keys, web
+	// remote and auto-config all index m_configurationList only.  They stay
+	// fully loadable via -c <name>; the by-name lookups search both lists.
+	for( size_t i = m_configurationList.size(); i-- > 0; )
+		if( m_configurationList[i]->isHidden() )
+		{
+			fprintf( stderr, "Configuration '%s' is hidden (selectable only via -c).\n",
+			         m_configurationList[i]->getConfigurationName().toLocal8Bit().constData() );
+			m_hiddenConfigurations.push_back( m_configurationList[i] );
+			m_configurationList.erase( m_configurationList.begin() + i );
+		}
+	if( m_configurationList.empty() )
+	{
+		// Every preset hidden: a broken setup — show them anyway rather than
+		// dying, since each hidden file is still a complete, working preset.
+		fprintf( stderr, "WARNING: every configuration is hidden - showing them anyway.\n" );
+		m_configurationList.swap( m_hiddenConfigurations );
+	}
+
 	// Default to the first configuration, or the one requested with -c <name>.
+	// -c searches the hidden list too: that is the dev/CI door into the
+	// Komplett master and the Test* benches.
 	m_actConfiguration = m_configurationList[0];
 	if( !s_startConfig.isEmpty() )
 	{
 		bool found = false;
-		for( unsigned int i = 0; i < m_configurationList.size(); i++ )
-			if( m_configurationList[i]->getConfigurationName()
-			        .compare( s_startConfig, Qt::CaseInsensitive ) == 0 )
-			{
-				m_actConfiguration = m_configurationList[i];
-				found = true;
-				break;
-			}
+		for( const auto *lst : { &m_configurationList, &m_hiddenConfigurations } )
+		{
+			for( Configuration *c : *lst )
+				if( c->getConfigurationName()
+				        .compare( s_startConfig, Qt::CaseInsensitive ) == 0 )
+				{
+					m_actConfiguration = c;
+					found = true;
+					break;
+				}
+			if( found ) break;
+		}
 		if( !found )
 			fprintf( stderr, "Configuration '%s' not found - using default.\n",
 			         s_startConfig.toLocal8Bit().constData() );
@@ -245,6 +272,8 @@ GLwidget::~GLwidget()
 	// (GL_INVALID_OPERATION) and the cleanup is meaningless.
 	for( unsigned int i = 0; i < m_configurationList.size(); i++ )
 		delete m_configurationList[i];
+	for( unsigned int i = 0; i < m_hiddenConfigurations.size(); i++ )
+		delete m_hiddenConfigurations[i];
 	doneCurrent();
 }
 
@@ -430,9 +459,10 @@ void GLwidget::draw()
 	if( !m_pendingReloads.isEmpty() )
 	{
 		for( const QString &n : m_pendingReloads )
-			for( Configuration *c : m_configurationList )
-				if( c && c->m_filterShader )
-					c->m_filterShader->reloadFragment( n );
+			for( const auto *lst : { &m_configurationList, &m_hiddenConfigurations } )
+				for( Configuration *c : *lst )
+					if( c && c->m_filterShader )
+						c->m_filterShader->reloadFragment( n );
 		m_pendingReloads.clear();
 	}
 
@@ -729,15 +759,18 @@ void GLwidget::switchConfig( Configuration *cfg )
 
 bool GLwidget::selectConfigByName( const QString &name )
 {
-	for( unsigned int i = 0; i < m_configurationList.size(); i++ )
-		if( m_configurationList[i]->getConfigurationName()
-		        .compare( name, Qt::CaseInsensitive ) == 0 )
-		{
-			if( m_configurationList[i] == m_actConfiguration )
-				return false;                     // already active
-			switchConfig( m_configurationList[i] );
-			return true;
-		}
+	// Hidden presets are reachable by NAME on purpose (dev/CI door);
+	// only the index-based selection paths never see them.
+	for( const auto *lst : { &m_configurationList, &m_hiddenConfigurations } )
+		for( Configuration *c : *lst )
+			if( c->getConfigurationName()
+			        .compare( name, Qt::CaseInsensitive ) == 0 )
+			{
+				if( c == m_actConfiguration )
+					return false;                 // already active
+				switchConfig( c );
+				return true;
+			}
 	return false;
 }
 

@@ -59,6 +59,7 @@ bool Preset::load(const QString &path, Preset &out, QString *err)
     out = Preset();
     out.imageDirectory = root.attribute("ImageDirectory");
     out.name = root.attribute("ConfigurationName");
+    out.hidden = root.attribute("hidden").compare("true", Qt::CaseInsensitive) == 0;
     out.timeTextureSoloMin = root.attribute("timeTextureSoloMin").toInt();
     out.timeTextureSoloMax = root.attribute("timeTextureSoloMax").toInt();
     out.timeTextureInterpolationMin = root.attribute("timeTextureInterpolationMin").toInt();
@@ -109,6 +110,7 @@ bool Preset::save(const QString &path, QString *err) const
     w.writeStartElement("configuration");
     w.writeAttribute("ImageDirectory", imageDirectory);
     w.writeAttribute("ConfigurationName", name);
+    if (hidden) w.writeAttribute("hidden", "true");   // absent = visible
     w.writeAttribute("timeTextureSoloMin", QString::number(timeTextureSoloMin));
     w.writeAttribute("timeTextureSoloMax", QString::number(timeTextureSoloMax));
     w.writeAttribute("timeTextureInterpolationMin", QString::number(timeTextureInterpolationMin));

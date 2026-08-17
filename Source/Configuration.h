@@ -21,6 +21,10 @@ public:
 	~Configuration( );
 
 	QString getConfigurationName() { return m_configurationName; };
+	// hidden="true" on the root element: a master/reference or test-bench
+	// preset that must not appear in the user-facing selection (menu, digit
+	// keys, web remote, auto-config).  Still loadable via -c <name>.
+	bool isHidden() const { return m_hidden; }
 	void start( int width, int height );
 	void stop();
 
@@ -33,6 +37,7 @@ private:
 
 	QString m_imageDirectory;
 	QString m_configurationName;
+	bool    m_hidden = false;
 
 	unsigned int		m_timeTextureInterpolationMin;
 	unsigned int		m_timeTextureInterpolationMax;
