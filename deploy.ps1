@@ -12,8 +12,14 @@
             Kaleidoscope-starten.bat  <- double-click launcher (windowed)
             Kaleidoscope-Vollbild.bat <- fullscreen / kiosk launcher (-b)
             LIESMICH.txt              <- short end-user readme
+            PresetEditor-starten.bat  <- preset editor launcher
+            PresetEditor\             <- empty CWD anchor for the editor (its
+                                         "..\Scene3D\..." asset paths resolve
+                                         against this, mirroring the dev layout)
             bin\
                 Kaleidoscope.exe      <- the app
+                PresetEditor.exe      <- preset authoring GUI (live preview,
+                                         ranges, formula/audio mappings)
                 Qt6*.dll, platforms\, ...  <- Qt runtime (via windeployqt)
                 vcruntime140*.dll, msvcp140.dll  <- MSVC runtime
                 icon.ico                  <- window icon (multi-res); also
@@ -62,6 +68,9 @@ if ($Build) {
     $vcvars = "C:\Program Files\Microsoft Visual Studio\18\Community\VC\Auxiliary\Build\vcvars64.bat"
     cmd /c "`"$vcvars`" && msbuild Kaleidoscope.vcxproj /p:Configuration=Release /p:Platform=x64 /p:QTDIR=$QtDir /m /nologo /v:minimal"
     if ($LASTEXITCODE -ne 0) { throw "Build failed." }
+    Info "Building PresetEditor Release|x64 ..."
+    cmd /c "`"$vcvars`" && msbuild PresetEditor\PresetEditor.vcxproj /p:Configuration=Release /p:Platform=x64 /p:QTDIR=$QtDir /m /nologo /v:minimal"
+    if ($LASTEXITCODE -ne 0) { throw "PresetEditor build failed." }
 }
 
 if (-not (Test-Path $exeSrc))    { throw "Release\Kaleidoscope.exe not found - build first (use -Build)." }
@@ -111,6 +120,36 @@ $ErrorActionPreference = "Continue"
 $deployExit = $LASTEXITCODE
 $ErrorActionPreference = $prevEap
 if ($deployExit -ne 0) { throw "windeployqt failed with exit code $deployExit" }
+
+# --- 3b. bundle the PresetEditor (preset authoring GUI) ----------------------
+# Same Qt module set as the main app, but windeployqt is re-run on its exe so
+# anything the main app happens not to pull stays covered (idempotent for the
+# shared DLLs).  Soft-skip if the editor was never built: the main app's own
+# Release PostBuild triggers this script, and at that moment the editor exe
+# may legitimately not exist yet.
+$editorSrc = Join-Path $root "PresetEditor\build\Release\PresetEditor.exe"
+if (Test-Path $editorSrc) {
+    Copy-Item $editorSrc $binDir
+    $ErrorActionPreference = "Continue"
+    & $windeploy --release --no-translations --no-opengl-sw --no-system-d3d-compiler (Join-Path $binDir "PresetEditor.exe") | Out-Null
+    $deployExit = $LASTEXITCODE
+    $ErrorActionPreference = $prevEap
+    if ($deployExit -ne 0) { throw "windeployqt (PresetEditor) failed with exit code $deployExit" }
+    # CWD anchor: the editor's main() does QDir::setCurrent(<root>/PresetEditor)
+    # so the engine's "..\Scene3D\..." paths resolve to the package root -- the
+    # folder must exist in the package.  It holds a note instead of being empty
+    # because Compress-Archive silently DROPS empty directories from the zip.
+    $anchorDir = Join-Path $pkgDir "PresetEditor"
+    New-Item -ItemType Directory -Path $anchorDir -Force | Out-Null
+    Set-Content -Path (Join-Path $anchorDir "LIESMICH.txt") -Encoding utf8 -Value @'
+Dieser Ordner verankert das Arbeitsverzeichnis des Preset-Editors:
+die Engine laedt Shader ueber relative Pfade ("..\Scene3D\..."), die von hier
+aus auf den Paket-Stammordner zeigen. Bitte nicht loeschen.
+'@
+    Info "Bundled PresetEditor.exe"
+} else {
+    Info "PresetEditor\build\Release\PresetEditor.exe not found - packaging WITHOUT the editor"
+}
 
 # --- 4. bundle the FULL C++ runtime so the package is standalone everywhere ---
 # Just shipping vcruntime140/msvcp140 is not enough: they depend on the Universal
@@ -213,6 +252,18 @@ while ($true) {
 Set-Content -Path (Join-Path $pkgDir "Kaleidoscope-starten.bat")  -Value $batWin -Encoding Ascii
 Set-Content -Path (Join-Path $pkgDir "Kaleidoscope-Vollbild.bat") -Value $batFs  -Encoding Ascii
 Set-Content -Path (Join-Path $pkgDir "watchdog.ps1")              -Value $watchdog -Encoding Ascii
+if (Test-Path (Join-Path $binDir "PresetEditor.exe")) {
+    # Console-subsystem on purpose: the console shows the shader-compile and
+    # formula logs ("Expr OK: ..."), which is useful in an authoring tool.
+    $batEd = @'
+@echo off
+rem Startet den Preset-Editor: Configurations\*.xml bearbeiten mit
+rem Live-Shader-Vorschau, Parameter-Bereichen und Formel-/Audio-Mappings.
+rem Das Konsolenfenster zeigt Shader-Compile- und Formel-Logs.
+start "" /D "%~dp0bin" "%~dp0bin\PresetEditor.exe" %*
+'@
+    Set-Content -Path (Join-Path $pkgDir "PresetEditor-starten.bat") -Value $batEd -Encoding Ascii
+}
 
 $readme = @'
 Kaleidoscope Enhanced - Music Visualizer (portable / standalone)
@@ -239,6 +290,12 @@ Pictures: the kaleidoscope textures come from the folder named in
   Configurations\*.xml  (the "ImageDirectory" attribute). Point it at your
   own photos. If it is missing, a built-in procedural texture is used instead
   (the program still runs - it never crashes on missing images).
+
+Preset editor:
+  - Double-click  PresetEditor-starten.bat  to edit Configurations\*.xml with
+    a live shader preview: per-preset parameter ranges, and formula/audio
+    mappings (which music signal drives which shader parameter). The console
+    window it opens shows shader-compile and formula logs.
 
 It captures whatever is playing on the system (WASAPI loopback) and reacts to
 the music. Requires a GPU with OpenGL 2.0+ (FBO); RGBA16F for the reaction-
