@@ -352,7 +352,130 @@ parameters, mood tags, flicker-free integrated motion.
 - **`PlasmaFilamentTornado`** (`Scene3D/`, `geom="indirect"` + `PlasmaFilamentTornado.comp`): GPU Compute Shader generating 4,096 helical Birkeland plasma current filaments in a space hurricane vortex with Z-pinch compression.
 - **`SuperconductingFluxVortex`** (`Scene3D/`, `geom="indirect"` + `SuperconductingFluxVortex.comp`): GPU Compute Shader generating 4,096 quantized Abrikosov flux vortex ribbons in a Type-II superconductor lattice with Kelvin wave excitations.
 
+**Quantum, Cosmic & Optical Metamaterials Suite (2026-08 Expansion 8 — 28 New Shaders):**
+- **`EinsteinRingGravitationalLens`** (`Scene/`): Relativistic gravitational lensing around a rotating dark matter singularity with Einstein rings, dual photo images, photon sphere Doppler shifts, and gravitational shockwaves.
+- **`QuasarRelativisticJet`** (`Scene/`): Raymarched look down the magnetic confinement funnel of a supermassive quasar core with relativistic synchrotron plasma jets, shock diamonds, and Cherenkov beaming.
+- **`SolarCoronaProminence`** (`Scene/`): Volumetric solar magnetic coronal loops arching over a boiling photospheric convection surface with explosive magnetic reconnection flares.
+- **`GyroidTriplyPeriodicLabyrinth`** (`Scene/`): Raymarched infinite non-Euclidean minimal surface ($TPMS$) dividing 3D space into two interpenetrating congruent labyrinths with titanium/glass caustics and photo mapping.
+- **`PenroseAperiodicTessellation`** (`Scene/`): Infinite 5-fold aperiodic Penrose tiling governed by the Golden Ratio ($\phi$) with recursive deflation, photoelastic stress birefringence colors, and sacred geometric photo mapping.
+- **`QuaternionicJulia4DFlight`** (`Scene/`): Raymarched flight through a true 4D Quaternion Julia fractal ($q_{n+1} = q_n^2 + C$) with 4D hyper-rotations, metallic specular highlights, and constant morphing.
+- **`SchwarzschildWormholeTunnel`** (`Scene/`): Raymarched flight through a traversable Morris-Thorne wormhole connecting two distinct universes (`tex0` and `tex1`) with chromatic gravitational lensing arcs.
+- **`CasimirCavityVacuumFluctuations`** (`Scene/`): Nanoscale optical cavity between reflecting mirrors displaying zero-point quantum field fluctuations, dynamical Casimir photon pair production, and thin-film dielectric reflections.
+- **`SonoluminescenceBubble`** (`Scene/`): Acoustic cavitation bubble collapse in an ultrasonic standing wave field producing picosecond 20,000K plasma flashes and spherical acoustic shockwaves.
+- **`JosephsonVortexLattice`** (`Scene/`): High-temperature layered superconductor Josephson junction array simulating quantized fluxon vortex lattices, phase isobars, and vortex liquid melting transitions.
+- **`FireWhirlTornado`** (`Scene/`): Volumetric 3D rotating fire tornado with helical flame column, turbulent soot/ash advection, rising ember sparks, and blackbody thermal radiation gradient.
+- **`SupercellMesocyclone`** (`Scene/`): Volumetric rotating supercell storm cloud with helical updraft mesocyclone, lowering wall cloud, anvil overhang, crepuscular rays, and intracloud lightning flashes.
+- **`DichroicInfinityPrismVault`** (`Scene/`): Raymarched infinite mirror chamber of dichroic glass prisms and cubic beam-splitters with RGB spectral dispersion, total internal reflection, and optical caustics.
+- **`LiquidMercuryFerrofluidChamber`** (`Scene/`): Raymarched reflective pool of liquid mercury and magnetic ferrofluid forming Rosensweig instability cone spikes in hexagonal arrays under shifting magnetic fields.
+- **`CosmicStringHyperspaceWeb`** (`Scene3D/`, `geom="ribbon"`): 20 hyper-dimensional cosmic strings spanning a 3D web with standing Kelvin wave vibrations, metric deficit angles, and relativistic pulse packets.
+- **`SupernovaRemnantNebula`** (`Scene3D/`, `geom="indirect"` + `SupernovaRemnantNebula.comp`): GPU Compute Shader generating 4,096 expanding supernova filament strands with Rayleigh-Taylor instability fingers and central pulsar shockwaves.
+- **`HopfTorusCliffordKlein`** (`Scene3D/`, `geom="ribbon"`): 20 interlocking Villarceau circles and Clifford tori stereographically projected from 4D space into 3D with seamless photo wrapping.
+- **`CherenkovCascadeShower`** (`Scene3D/`, `geom="points"`): 60,000 relativistic particle collision tracks in heavy water with glowing cyan Cherenkov radiation cones and magnetic deflection spirals.
+- **`QuantumHallEdgeCurrents`** (`Scene3D/`, `geom="ribbon"`): 20 chiral topological edge channels in a 2D electron gas executing cyclotron skipping orbits with quantum phase transitions.
+- **`BioluminescentBreakingWave`** (`Scene3D/`, `geom="grid"`): 220x120 heightfield breaking ocean wave with Gerstner wave harmonics and dinoflagellate bioluminescent crest emission.
+- **`CryovolcanicIceGeysers`** (`Scene3D/`, `geom="indirect"` + `CryovolcanicIceGeysers.comp`): GPU Compute Shader generating 4,096 cryovolcanic ice geyser plumes erupting from tectonic ice fractures with crystal scattering.
+- **`FiberopticLightLoom`** (`Scene3D/`, `geom="ribbon"`): 20 woven fiberoptic ribbons flowing in 3D warp-and-weft patterns transmitting high-speed data pulse packets and glowing curtains.
+- **`RadiolarianSilicaLattice`** (`Scene3D/`, `geom="quads"`): 3,000 transparent icosahedral silica skeleton cards floating in deep-sea suspension with crystalline glass refractions.
+- **`AcousticLevitationMatrix`** (`Scene3D/`, `geom="cubes"`): 4,900 monolithic levitating voxels trapped in an ultrasonic standing wave field creating a volumetric 3D photo display.
+- **`BioluminescentMyceliumCave`** (`Scene3D/`, `geom="indirect"` + `BioluminescentMyceliumCave.comp`): GPU Compute Shader generating 4,096 bioluminescent mycelial filaments hanging from cavern ceiling stalactites and conducting action potentials.
+- **`MoireHyperInterference`** (`Scene3D/`, `geom="grid"`): 220x120 heightfield grid undulating with optical Moiré superlattices and dynamic interference zone plates.
+- **`KelvinHelmholtzCloudWaves`** (`Scene3D/`, `geom="grid"`): 220x120 heightfield atmospheric shear billows and rolling breaking cloud waves illuminated by sunset backlighting.
+- **`HolographicLaserDiffractionGrid`** (`Scene3D/`, `geom="quads"`): 3,000 spatial light modulator (SLM) holographic cards reconstructing 3D Fourier optical diffraction patterns and interference fringes.
+
+**Astro-Quantum, Higher-Dimensional & Biophotonic Metamaterials Suite (2026-08 Expansion 9 — 30 New Shaders):**
+- **`HawkingRadiationEvaporation`** (`Scene/`): Quantum tunneling Hawking radiation evaporation around a micro-black hole with virtual particle separation, extreme gravitational redshift, and quantum horizon photo pixels.
+- **`MagnetarCrustquakeSGR`** (`Scene/`): Ultra-magnetic neutron star ($10^{15}\text{ G}$) undergoing tectonic crust fractures (starquakes) with torsional Alfvén wave shears and Soft Gamma Repeater (SGR) flares.
+- **`CosmicRayAirShowerCherenkov`** (`Scene/`): Relativistic cosmic ray atmospheric air shower with secondary hadronic/EM cascades, near-UV nitrogen fluorescence, and Cherenkov cones.
+- **`HeliosphericCurrentSheet`** (`Scene/`): Rotating Parker spiral "ballerina skirt" wavy current sheet dividing solar magnetic polarities with sector boundary crossings and solar wind turbulence.
+- **`GravitationalWaveInterferometer`** (`Scene/`): Laser interferometer optical cavity with Fabry-Pérot arm resonators, quadrupolar spacetime strain fringe shifts, and dark-port signal readouts.
+- **`ScherkMinimalSurfaceTower`** (`Scene/`): Raymarched infinite minimal surface towers governed by Scherk's doubly periodic minimal surface ($e^z \cos(x) = \cos(y)$) with glass/titanium reflections.
+- **`ApollonianSpherePackingGasket`** (`Scene/`): Raymarched 3D Apollonian sphere packing gasket with osculating tangent spheres, recursive sphere inversions, and jewel specular reflections.
+- **`KleinQuarticHyperbolicCurve`** (`Scene/`): Riemann surface of genus 3 with 168 automorphisms ($PSL(2,7)$) and $\{7,3\}$ hyperbolic Klein quartic tiling with conformal circle inversions.
+- **`MandelboxHyperCubeMetamaterial`** (`Scene/`): Raymarched 3D Mandelbox fractal with sphere folding, box folding, and scale inversion generating infinite cyber-architectural megastructures.
+- **`DiracConeGrapheneValleytronics`** (`Scene/`): 2D honeycomb Dirac lattice with linear relativistic dispersion ($E = \pm \hbar v_F |k|$), Valley Hall pseudospin states ($K, K'$), and Berry curvature flux.
+- **`TopologicalInsulatorDiracSurface`** (`Scene/`): 3D topological insulator with insulating bulk and protected conducting 2D Dirac surface states with spin-momentum locking ($k \times \sigma$).
+- **`MajoranaZeroModeBraid`** (`Scene/`): 1D topological superconductor nanowire array executing non-abelian Majorana zero-mode braiding operations with topological quantum gate phase flips.
+- **`BallLightningPlasmoid`** (`Scene/`): Volumetric autonomous ball lightning plasmoid with self-confined toroidal plasma core, helical magnetic filaments, and dielectric air breakdown arcs.
+- **`MantleConvectionPlume`** (`Scene/`): Volumetric deep Earth core-mantle boundary thermal plumes with Rayleigh-Bénard convection rolls, mushrooming magma diapirs, and molten rock photo warping.
+- **`AuroraAustralisCurtainSwell`** (`Scene/`): Volumetric double-curtain Antarctic Aurora Australis waving along geomagnetic field lines with oxygen emerald ($557.7\text{ nm}$) and nitrogen crimson ($630.0\text{ nm}$) rays.
+- **`AccretionDiskToroidVortex`** (`Scene3D/`, `geom="grid"`): 220x120 heightfield magnetohydrodynamic relativistic toroidal accretion disk with inner ISCO plunge and Doppler beaming.
+- **`CliffordTorusVillarceauLinks`** (`Scene3D/`, `geom="cubes"`): 4,900 monolithic cubes tracing nested Villarceau circles on 4D Clifford tori stereographically projected into 3D.
+- **`NonEuclideanDodecahedronLoom`** (`Scene3D/`, `geom="ribbon"`): 20 hyperbolic dodecahedral edge ribbons weaving through non-Euclidean Poincaré space with geodesic paths.
+- **`AbrikosovFluxLatticeVortices`** (`Scene3D/`, `geom="points"`): 60,000 superconducting Cooper-pair vortex flux lines forming a triangular Abrikosov lattice with Kelvin wave excitations.
+- **`SuperconductingQubitResonator`** (`Scene3D/`, `geom="ribbon"`): 20 superconducting coplanar waveguide microwave resonator ribbons coupling transmon qubits with microwave standing waves.
+- **`BoseEinsteinVortexTangle`** (`Scene3D/`, `geom="indirect"` + `BoseEinsteinVortexTangle.comp`): GPU Compute Shader generating 4,096 quantized vortex filament strands in a rotating Bose-Einstein condensate.
+- **`GeomagneticDynamoCore`** (`Scene3D/`, `geom="indirect"` + `GeomagneticDynamoCore.comp`): GPU Compute Shader generating 4,096 helical convective fluid columns in the liquid outer core generating the planetary dipole field.
+- **`SandDuneBarchanMigration`** (`Scene3D/`, `geom="grid"`): 220x120 heightfield crescent barchan sand dunes migrating under aeolian wind shear with wind ripple saltation waves.
+- **`OceanAbyssalBrinePool`** (`Scene3D/`, `geom="grid"`): 220x120 heightfield underwater brine pool with dense hypersaline shoreline waves and shimmering halocline refraction.
+- **`PhotonicCrystalFiberCore`** (`Scene3D/`, `geom="cubes"`): 4,900 monolithic micro-structured silica pillars forming a photonic crystal fiber (PCF) honeycomb cladding around a hollow core.
+- **`MetamaterialNegativeRefraction`** (`Scene3D/`, `geom="grid"`): 220x120 heightfield metamaterial interface displaying negative index of refraction ($n < 0$) with backwards phase velocity and superlens focusing.
+- **`ChiralLiquidCrystalCholesteric`** (`Scene3D/`, `geom="ribbon"`): 20 twisted cholesteric liquid crystal molecular ribbons with helical pitch layers and selective circular Bragg reflection.
+- **`DiatomSilicaMicrofrustule`** (`Scene3D/`, `geom="quads"`): 3,000 microscopic marine diatom silica frustules with hexagonal micro-pore diffraction grids floating in deep-sea suspension.
+- **`DielectricMetasurfaceHologram`** (`Scene3D/`, `geom="quads"`): 3,000 sub-wavelength dielectric nanopillar meta-atoms modulating optical phase and polarization to project 3D holograms.
+- **`BioluminescentSiphonophoreChain`** (`Scene3D/`, `geom="indirect"` + `BioluminescentSiphonophoreChain.comp`): GPU Compute Shader simulating a 50-meter deep-sea colonial siphonophore chain with pulsating nectophores and action potential waves.
+
+**Smooth & Dynamic Transitions Suite (2026-08 Expansion 10 — 35 New Combine Shaders):**
+- **`CombineVoronoiShatter`** (`Combine/`): Continuous Voronoi cell mosaic dissolution where polygonal cells softly lift, rotate, and cross-fade with glowing cell boundaries pulsing to audio hits.
+- **`CombinePoincareSpin`** (`Combine/`): Conformal hyperbolic Poincaré disk inversion and continuous Möbius transformation smoothly turning the outgoing scene inside out and drawing the new scene from the non-Euclidean boundary.
+- **`CombinePenroseMorph`** (`Combine/`): 5-fold aperiodic Penrose tiling morphing through recursive golden-ratio deflation ($\phi = 1.618$) with luminous kite-and-dart grid lines.
+- **`CombineMoireInterference`** (`Combine/`): Optical Moiré superlattice interference fringes dissolving between scenes through rotating high-frequency line gratings.
+- **`CombineQuadtreeSubdivide`** (`Combine/`): Hierarchical recursive quadtree subdivision splitting the viewport into multi-scale tiles with cybernetic neon boundary partitions.
+- **`CombineLogarithmicSpiral`** (`Combine/`): Equiangular logarithmic spiral vortex ($r = a e^{b \theta}$) winding the old scene inward and unwinding the next scene outward.
+- **`CombineGoldenNautilus`** (`Combine/`): Fibonacci golden spiral nautilus chamber sweep unfurling across the screen in golden ratio proportions.
+- **`CombineSpectralPrismSplit`** (`Combine/`): Optical prism dispersion splitting red, green, and blue channels across chromatic aberration paths and recombining cleanly.
+- **`CombineAnamorphicFlareSweep`** (`Combine/`): Horizontal cinematic anamorphic laser flare sweep washing across the screen with cylindrical lens distortion.
+- **`CombineCausticLiquidWarp`** (`Combine/`): Underwater optical caustic refraction networks undulating and clearing with shimmering aquatic specular glints.
+- **`CombineHologramScanInterference`** (`Combine/`): Volumetric laser holographic scanlines and spatial-light-modulator interference fringes reconstructing the incoming scene.
+- **`CombineDreamyBokehBloom`** (`Combine/`): Multi-tap circle-of-confusion bokeh blur blooming into soft luminous aperture discs and resolving into the new scene.
+- **`CombineGlitchPixelSort`** (`Combine/`): Directional luminance pixel-sorting displacement streaks glitching and resolving into clean pixels.
+- **`CombineDichroicMirrorSlide`** (`Combine/`): Angled optical dichroic mirror planes sliding across the screen with thin-film interference polarization colors.
+- **`CombineNavierStokesMelt`** (`Combine/`): Turbulent curl-noise fluid advection vorticity liquifying and melting the outgoing scene into the incoming one.
+- **`CombineEbruMarblingRake`** (`Combine/`): Traditional Turkish paper marbling (Ebru) comb teeth sweeps drawing capillary swirls and chevron folds.
+- **`CombineFerrofluidSpikes`** (`Combine/`): Magnetic ferrofluid Rosensweig instability cone spikes erupting in hexagonal lattices and relaxing into the new scene.
+- **`MagmaCrustFracture`** (`Combine/`): Obsidian basalt crust fractures opening into glowing 1500°C molten magma rivers that cool into the incoming scene.
+- **`SmokeTurbulenceDrift`** (`Combine/`): Volumetric atmospheric smoke plumes billowing across the viewport with forward light scattering.
+- **`QuantumWaveCollapse`** (`Combine/`): Schrödinger wavepacket probability density interference ($|\psi|^2$) collapsing from quantum superposition into the observed eigenstate.
+- **`FrostDendriteFreeze`** (`Combine/`): Hexagonal dendritic ice crystal frostwork growing across the screen and melting away into the incoming scene.
+- **`GravitationalLensWarp`** (`Combine/`): Relativistic black-hole gravitational lensing swallowing the old scene into an Einstein ring and expanding the new scene.
+- **`WormholeSpaceFold`** (`Combine/`): Traversable Morris-Thorne wormhole throat folding space-time to bridge dual universes.
+- **`HyperspaceStreak`** (`Combine/`): Relativistic warp drive light streak tunnel stretching stars and scene geometry with Lorentz contraction.
+- **`SupernovaShockwave`** (`Combine/`): Spherical supernova blast wave expanding radially with a glowing Cherenkov ionization rim.
+- **`EventHorizonSwirl`** (`Combine/`): Rotating Kerr black hole ergosphere frame-dragging vortex twisting spacetime into a relativistic spiral.
+- **`Tesseract4DRotation`** (`Combine/`): 4D hypercube double-rotation in XW and YZ planes projecting 4D shadows that rotate Universe 1 into Universe 2.
+- **`DopplerBeamingWipe`** (`Combine/`): Relativistic blueshift/redshift Doppler color transition with relativistic beaming headlamp focus.
+- **`BioluminescentSparkle`** (`Combine/`): Marine dinoflagellate bioluminescent sparkling points igniting on fluid wave motion.
+- **`ReactionDiffusionTuring`** (`Combine/`): Morphogenetic Turing activator-inhibitor spots and labyrinthine stripes spontaneously organizing to bridge scenes.
+- **`SandRippleAeolian`** (`Combine/`): Desert sand ripple saltation waves blown across dunes by wind shear.
+- **`OceanBreakerWave`** (`Combine/`): Ocean swell rolling across the frame and cresting into a curling breaker wave with sea foam spray.
+- **`CellularMitosis`** (`Combine/`): Biological cell division with cytokinesis cleavage furrow pinching and daughter cell fusion.
+- **`MyceliumNetworkSprout`** (`Combine/`): Branching fungal hyphae network growing organic light pathways and conducting action-potential pulses.
+- **`AuroraCurtainFold`** (`Combine/`): Luminous geomagnetic auroral curtains waving in emerald ($557.7\text{ nm}$) and violet ($427.8\text{ nm}$) emission sheets.
+
+**Smooth & Continuous Transitions Suite 2.0 (2026-08 Expansion 11 — 20 New Combine Shaders):**
+- **`CombineNewtonRingsInterference`** (`Combine/`): Optical thin-film Newton's rings interference fringes between a curved lens and optical flat expanding radially with rainbow dispersion.
+- **`CombineGyroidMembraneMelt`** (`Combine/`): Triply periodic minimal surface ($TPMS$) gyroid labyrinth membrane phase transition smoothly transferring between dual fluid channels.
+- **`CombineBirefringenceCrystalSplit`** (`Combine/`): Calcite crystal optical birefringence double-refraction splitting light into ordinary ($o$) and extraordinary ($e$) polarized rays.
+- **`CombineLichtenbergLightningWipe`** (`Combine/`): High-voltage electrical dielectric breakdown Lichtenberg fractal discharge trees branching across the screen with ozone blue-violet ionization arcs.
+- **`CombineFaradayWaveLattice`** (`Combine/`): Vertically vibrated fluid surface Faraday wave subharmonic standing ripple lattice undulating and modulating cross-fade modes.
+- **`CombineHelicoidMinimalSurface`** (`Combine/`): Ruled helicoid minimal surface ($z = c \theta$) rotating continuously on its vertical axis, screwing the outgoing scene into the incoming one.
+- **`CombineRayleighTaylorInstability`** (`Combine/`): Heavy fluid sinking into lighter fluid forming mushrooming Rayleigh-Taylor instability fingers and curling vortex plumes.
+- **`CombineKaleidoscopicPolytope`** (`Combine/`): Coxeter reflection group 4D kaleidoscopic mirror polytope folding and unfolding space through hyper-plane reflections.
+- **`CombineAbrikosovVortexLatticeSweep`** (`Combine/`): Superconducting triangular Abrikosov flux vortex lattice sweeping across the viewport with magnetic phase singularities.
+- **`CombinePlasmaFilamentPinch`** (`Combine/`): Magnetohydrodynamic Z-pinch plasma filaments contracting radially by Lorentz forces ($j \times B$) and bursting into the incoming scene.
+- **`CombineSolitonWaveCollision`** (`Combine/`): Non-linear Korteweg-de Vries (KdV) solitary waves colliding elastically without dispersion and leaving the incoming scene behind.
+- **`CombineChromatographySeparation`** (`Combine/`): Chemical paper chromatography capillary action separating pigment colors along solvent fronts by retention factors ($R_f$).
+- **`CombineLiquidCrystalDefectDomain`** (`Combine/`): Nematic liquid crystal Schlieren texture topological defects ($s = \pm 1/2, \pm 1$) and dark extinction brushes annihilating and aligning.
+- **`CombineFresnelDiffractionEdge`** (`Combine/`): Straight knife-edge optical Fresnel diffraction pattern with sinusoidal Cornu-spiral fringe oscillations across the shadow boundary.
+- **`CombineAcousticChladniResonance`** (`Combine/`): 2D vibrating Chladni plate resonant nodal line dust patterns morphing into higher harmonic eigenmodes.
+- **`CombineKerrSchildWarpSheet`** (`Combine/`): Spacetime null geodesic Kerr-Schild metric deformation ($g_{\mu\nu} = \eta_{\mu\nu} + 2 H k_\mu k_\nu$) stretching and shearing light rays continuously.
+- **`CombineBioluminescentPhytoplanktonBloom`** (`Combine/`): Swirling glowing phytoplankton algal bloom currents weaving dynamic turquoise bioluminescent trails across ocean eddies.
+- **`CombineFerroelectricDomainFlip`** (`Combine/`): Ferroelectric polarization domain walls ($180^\circ$ and $90^\circ$ domains) sweeping across crystal grains under coercive fields.
+- **`CombineSuperfluidHe4Fountain`** (`Combine/`): Superfluid Helium-4 thermomechanical fountain effect with zero-viscosity roll-waves and quantum droplet geysers.
+- **`CombineCosmicStringLensing`** (`Combine/`): Straight 1D relativistic topological cosmic string deficit angle ($8\pi G \mu$) creating dual wedge copies that rotate and fuse seamlessly.
+
 **Timing is music-driven:** per-entry `min/maxTime*` attributes are now
+
+
 OPTIONAL — the pacing comes from `timingScale` (tempo/arousal), 4-beat
 cross-fades and section cuts.  Absent times fall back to engine defaults
 (solo 20–90 s, fade 15–50 s — these mainly matter as the pacing without

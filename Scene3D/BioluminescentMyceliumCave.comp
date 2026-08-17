@@ -1,0 +1,107 @@
+#version 430 core
+// BioluminescentMyceliumCave.comp
+// -----------------------------------------------------------------------
+// GPU compute shader generating 4,096 bioluminescent mycelial filaments
+// hanging from cavern ceiling stalactites and conducting bio-electric pulses.
+// -----------------------------------------------------------------------
+
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+
+layout(std430, binding = 0) buffer Verts { float verts[]; };
+layout(std430, binding = 1) buffer Cmd   { uint cmd[];   };
+
+uniform uint  maxVertices;
+uniform float time;
+
+uniform float audioPhase;
+uniform float audioAdvance;
+uniform float audioSwell;
+uniform float audioLevel;
+uniform float audioKick;
+uniform float audioCentroid;
+uniform float audioValence;
+uniform float audioSubBass;
+uniform float audioBass;
+uniform float audioMid;
+uniform float audioHigh;
+uniform float audioFlux;
+uniform float audioChromaHue;
+
+uniform float hyphaeP;
+uniform float pulseP;
+uniform float speedP;
+uniform float hueP;
+
+float hash11(float p) {
+    p = fract(p * 0.1031);
+    p *= p + 33.33;
+    p *= p + p;
+    return fract(p);
+}
+
+void main() {
+    uvec3 g = gl_GlobalInvocationID;
+    uint gid = g.x + 64u * (g.y + 64u * g.z);
+    if (gid >= 4096u) return;
+
+    float hyp = (hyphaeP > 0.0) ? hyphaeP : 1.0;
+    float pls = (pulseP  > 0.0) ? pulseP  : 1.0;
+    float spd = (speedP  > 0.0) ? speedP  : 1.0;
+
+    float t = time * 0.35 * spd + audioAdvance * 0.15;
+    float fGid = float(gid);
+
+    float strandID = floor(fGid / 64.0); // 64 mycelial strands
+    float segID = mod(fGid, 64.0);       // 64 segments per strand
+
+    float u1 = segID / 64.0;
+    float u2 = (segID + 1.0) / 64.0;
+
+    // Stalactite ceiling anchor points
+    float anchorX = (hash11(strandID) - 0.5) * 8.0;
+    float anchorZ = (hash11(strandID * 3.7) - 0.5) * 8.0;
+
+    // Hanging downward from y = 3.0
+    float y1 = 3.0 - u1 * 6.0 * hyp * (1.0 + 0.2 * audioBass);
+    float y2 = 3.0 - u2 * 6.0 * hyp * (1.0 + 0.2 * audioBass);
+
+    // Catenary / pendulum sway and branching curvature
+    float sway1 = sin(u1 * 4.0 + t * 2.0 + strandID) * 0.45 * u1;
+    float sway2 = sin(u2 * 4.0 + t * 2.0 + strandID) * 0.45 * u2;
+
+    float swayZ1 = cos(u1 * 3.5 - t * 1.8 + strandID * 2.0) * 0.4 * u1;
+    float swayZ2 = cos(u2 * 3.5 - t * 1.8 + strandID * 2.0) * 0.4 * u2;
+
+    vec3 pA = vec3(anchorX + sway1, y1, anchorZ + swayZ1);
+    vec3 pB = vec3(anchorX + sway2, y2, anchorZ + swayZ2);
+
+    vec3 forward = normalize(pB - pA);
+    vec3 binormal = normalize(vec3(-forward.z, 0.0, forward.x));
+    float ribbonWidth = (0.02 + 0.015 * (1.0 - u1)) * (1.0 + audioHigh * 0.5);
+
+    vec3 v0 = pA - binormal * ribbonWidth;
+    vec3 v1 = pA + binormal * ribbonWidth;
+    vec3 v2 = pB - binormal * ribbonWidth;
+    vec3 v3 = pB + binormal * ribbonWidth;
+
+    uint base = atomicAdd(cmd[4], 6u);
+    if (base + 6u > maxVertices) return;
+
+    vec3 pList[6] = vec3[6](v0, v1, v2,  v1, v3, v2);
+    vec2 uvList[6] = vec2[6](
+        vec2(0.0, u1), vec2(1.0, u1), vec2(0.0, u2),
+        vec2(1.0, u1), vec2(1.0, u2), vec2(0.0, u2)
+    );
+
+    for (uint i = 0u; i < 6u; ++i) {
+        uint off = (base + i) * 8u;
+        verts[off + 0u] = pList[i].x;
+        verts[off + 1u] = pList[i].y;
+        verts[off + 2u] = pList[i].z;
+        verts[off + 3u] = strandID;
+        verts[off + 4u] = hash11(strandID);
+        verts[off + 5u] = u1;
+        verts[off + 6u] = uvList[i].x;
+        verts[off + 7u] = uvList[i].y;
+    }
+}
