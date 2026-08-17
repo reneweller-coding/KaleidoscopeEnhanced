@@ -14,7 +14,10 @@
 ;
 ; The app loads its shaders/configs from "..\" relative to the exe, so the
 ; exe lives in {app}\bin and the assets in {app}; the shortcut's working
-; directory is therefore {app}\bin.
+; directory is therefore {app}\bin.  The staged package also contains the
+; PresetEditor (bin\PresetEditor.exe + the PresetEditor\ CWD-anchor folder);
+; the recursive [Files] entry picks all of that up, and [Icons] adds a
+; start-menu shortcut for it.
 ; ---------------------------------------------------------------------------
 
 #define MyAppName "Kaleidoscope Enhanced"
@@ -56,6 +59,10 @@ Source: "{#SrcDir}\*"; DestDir: "{app}"; Flags: recursesubdirs createallsubdirs 
 ; Working directory = {app}\bin so the app's "..\" asset paths resolve.
 Name: "{group}\{#MyAppName}";            Filename: "{app}\bin\{#MyAppExeName}"; WorkingDir: "{app}\bin"
 Name: "{group}\{#MyAppName} (Vollbild)"; Filename: "{app}\bin\{#MyAppExeName}"; WorkingDir: "{app}\bin"; Parameters: "-b"
+; Preset editor (bundled since the deploy.ps1 3b step): its own console window
+; shows shader-compile/formula logs on purpose. The exe re-anchors its CWD to
+; {app}\PresetEditor itself, so bin\ as WorkingDir is only the starting point.
+Name: "{group}\{#MyAppName} Preset-Editor"; Filename: "{app}\bin\PresetEditor.exe"; WorkingDir: "{app}\bin"
 Name: "{autodesktop}\{#MyAppName}";      Filename: "{app}\bin\{#MyAppExeName}"; WorkingDir: "{app}\bin"; Tasks: desktopicon
 
 [Run]
