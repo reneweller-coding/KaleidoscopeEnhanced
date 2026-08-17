@@ -35,7 +35,10 @@ void main() {
     float cor = (coreP > 0.0) ? coreP : 1.0;
     float spd = (speedP > 0.0) ? speedP : 1.0;
 
-    int cubeIndex = gl_InstanceID;
+    // The engine draws NON-instanced (glDrawArrays), so gl_InstanceID is
+    // always 0 -- every unit would collapse onto one spot.  Scene3DShader
+    // packs the per-unit index into attrA.w instead (see buildGeometry).
+    int cubeIndex = int(attrA.w);
     vec3 cubeCorner = attrA.xyz;
     vNormal = attrB.xyz;
     vTexCoord = attrA.xy * 0.5 + 0.5;
@@ -61,7 +64,11 @@ void main() {
     vec3 worldPos = vec3(x, y + pulse, z) + cubeCorner * cubeScale;
     vWorldPos = worldPos;
 
-    vec4 viewPos = vec4(worldPos, 1.0);
-    gl_Position = projM * viewPos;
+    // Camera transform: projM expects NEGATIVE view-space z (clip-w = -z_view),
+    // so push the scene away along +z and negate.  eyeOff is the stereo shift.
+    vec3 vp = worldPos;
+    vp.z += 7.0;
+    vp.x -= eyeOff;
+    gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 }

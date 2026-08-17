@@ -21,6 +21,7 @@ uniform float billowP;
 uniform float shearP;
 uniform float speedP;
 uniform float hueP;
+uniform float audioLevel;
 
 out vec4 vCol;
 out vec2 vUV;

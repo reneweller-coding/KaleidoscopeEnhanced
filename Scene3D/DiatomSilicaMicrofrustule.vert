@@ -34,9 +34,15 @@ void main() {
     float por = (poreP   > 0.0) ? poreP   : 1.0;
     float spd = (speedP  > 0.0) ? speedP  : 1.0;
 
-    int quadIndex = gl_InstanceID;
+    // The engine draws NON-instanced (glDrawArrays), so gl_InstanceID is
+    // always 0 -- every unit would collapse onto one spot.  Scene3DShader
+    // packs the per-unit index into attrA.w instead (see buildGeometry).
+    int quadIndex = int(attrA.w);
     vDiatomIndex = float(quadIndex) / 3000.0;
-    vec2 corner = attrA.xy; // [-1, 1]
+    // Scene3DShader supplies attrA.xy in [0,1] for grid/quads geometry;
+    // this shader's math assumes a centred [-1,1] domain, so remap it here
+    // (otherwise everything lands in one quadrant, off to the side).
+    vec2 corner = attrA.xy * 2.0 - 1.0;   // [-1,1]
     vTexCoord = corner * 0.5 + 0.5;
 
     float t = time * 0.35 * spd + audioAdvance * 0.18;
@@ -59,7 +65,11 @@ void main() {
     vec3 worldPos = center + vec3(corner.x, corner.y, 0.0) * cardScale;
     vWorldPos = worldPos;
 
-    vec4 viewPos = vec4(worldPos, 1.0);
-    gl_Position = projM * viewPos;
+    // Camera transform: projM expects NEGATIVE view-space z (clip-w = -z_view),
+    // so push the scene away along +z and negate.  eyeOff is the stereo shift.
+    vec3 vp = worldPos;
+    vp.z += 7.0;
+    vp.x -= eyeOff;
+    gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 }

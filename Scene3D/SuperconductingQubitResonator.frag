@@ -27,6 +27,7 @@ uniform float qubitP;
 uniform float meanderP;
 uniform float widthP;
 uniform float hueP;
+uniform float time;
 
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;

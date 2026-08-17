@@ -9,16 +9,26 @@ uniform float audioKick;
 out vec3 vWorldPos;
 out vec3 vNormal;
 out float vDynamoPhase;
+out vec2 vQuadUV;
 
 void main() {
     vec3 pos = attrA.xyz;
+
+    // Quad-local coordinate in [-1,1], rebuilt from the corner code the
+    // generator packed into attrA.w (gl_PointCoord is undefined for triangles).
+    float cc = attrA.w;
+    vQuadUV = vec2((cc == 0.0 || cc == 3.0) ? -1.0 : 1.0,
+                   (cc <  2.0)              ? -1.0 : 1.0);
     vWorldPos = pos;
     vNormal = attrB.xyz;
     vDynamoPhase = attrB.w;
 
-    vec4 viewPos = vec4(pos, 1.0);
-    gl_Position = projM * viewPos;
+    // Camera transform: projM expects NEGATIVE view-space z (clip-w = -z_view),
+    // so push the scene away along +z and negate.  eyeOff is the stereo shift.
+    vec3 vp = pos;
+    vp.z += 7.5;
+    vp.x -= eyeOff;
+    gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 
-    gl_PointSize = clamp((22.0 / max(gl_Position.w, 0.4)) * (1.0 + audioKick * 1.5), 3.0, 40.0);
 }

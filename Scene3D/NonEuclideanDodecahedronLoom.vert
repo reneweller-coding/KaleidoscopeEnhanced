@@ -34,7 +34,10 @@ void main() {
     float lmp = (loomP   > 0.0) ? loomP   : 1.0;
     float wdp = (widthP  > 0.0) ? widthP  : 1.0;
 
-    int ribbonIdx = int(attrB.x);
+    // GEOM_RIBBON packs the ribbon index into attrA.w; attrB.x is a random
+    // hash01 in [0,1), so int(attrB.x) was always 0 and all 20 ribbons
+    // collapsed onto ribbon 0 (see Scene3DShader::buildGeometry).
+    int ribbonIdx = int(attrA.w);
     float s = attrA.x;       // [0, 1] along ribbon
     float side = attrA.y;    // -1 or +1 for ribbon width
     vRibbonIndex = float(ribbonIdx) / 20.0;
@@ -66,7 +69,11 @@ void main() {
     vec3 worldPos = p0 + binormal * (side * ribbonWidth);
     vWorldPos = worldPos;
 
-    vec4 viewPos = vec4(worldPos, 1.0);
-    gl_Position = projM * viewPos;
+    // Camera transform: projM expects NEGATIVE view-space z (clip-w = -z_view),
+    // so push the scene away along +z and negate.  eyeOff is the stereo shift.
+    vec3 vp = worldPos;
+    vp.z += 6.5;
+    vp.x -= eyeOff;
+    gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 }

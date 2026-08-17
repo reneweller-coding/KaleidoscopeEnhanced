@@ -1,0 +1,227 @@
+# Shader-Autoren-Handbuch
+
+Wie man neue Shader für Kaleidoscope schreibt, ohne in die immer gleichen
+Fallen zu laufen.
+
+**Warum es dieses Dokument gibt:** Über drei Shader-Batches (55 / 39 / 113
+Dateien) sind 17, 3 und nochmal 17 Shader komplett schwarz ausgeliefert
+worden. Kein einziger davon war ein „kreativer" Fehler — es waren jedes Mal
+Verstöße gegen unausgesprochene Verträge der Engine. Alle scheitern **still**:
+Der Shader kompiliert (oder eben nicht, ohne Meldung), rendert schwarz, und
+das Log sagt kein Wort. Genau deshalb sind sie so teuer: Man findet sie nur
+durch Rendern und Hinsehen.
+
+Die Regeln unten sind in `Tools/shadercheck.py` mechanisch kodiert. **Zuerst
+den Linter laufen lassen, dann rendern** — er findet in einer Sekunde, wofür
+ein Render-Durchlauf eine Stunde braucht.
+
+---
+
+## Die Prozedur (Kurzfassung)
+
+```bash
+# 1. Statische Vertragsprüfung -- MUSS 0 errors zeigen
+python Tools/shadercheck.py --new HEAD~1
+
+# 2. Preset-Selbsttests (Registrierung + Parameter-Vollständigkeit)
+PresetEditor\build\Release\PresetEditor.exe --validate
+
+# 3. Optische Prüfung: jeden neuen Shader rendern und auf Schwarz prüfen
+#    (siehe "Batch-Rendern" unten -- Achtung: CR-Falle!)
+
+# 4. Erst dann committen.
+```
+
+Kein Shader gilt als „fertig", bevor er einmal **gerendert und angeschaut**
+wurde. Registrierung + Kompilieren beweisen gar nichts — 17 von 58 Shadern
+waren registriert, kompilierten (scheinbar) und waren trotzdem schwarz.
+
+---
+
+## Die Verträge der Engine
+
+### V1 — Vertex-Attribute heißen `attrA` / `attrB`
+
+`Scene3DShader::initUniforms()` ruft ausschließlich
+`glGetAttribLocation(prog, "attrA")` und `"attrB"` auf. Jeder andere Name
+(`inPos`, `inNormal`, `inTexCoord`, …) bekommt **niemals** Daten — die
+Geometrie kollabiert auf einen Punkt.
+
+```glsl
+in vec4 attrA;   // Bedeutung hängt vom geom-Kind ab (siehe V2)
+in vec4 attrB;   // xyzw = vier hash01-Seeds in [0,1)
+```
+
+### V2 — Was in `attrA`/`attrB` steht, je `geom`-Kind
+
+Maßgeblich ist `Scene3DShader::buildGeometry()`:
+
+| `geom` | `attrA.xy` | `attrA.z` | `attrA.w` | `attrB` |
+|---|---|---|---|---|
+| `points` / `scatter` | 0 | 0 | Punkt-Index | 4 Seeds |
+| `cubes` | Würfel-Ecke (−0.5…0.5) | Ecke | **Würfel-Index** | 4 Seeds |
+| `grid` | Zell-UV **[0,1]** | 0 | Zell-Index | 4 Seeds |
+| `quads` | Ecken-UV **[0,1]** | 0 | **Quad-Index** | 4 Seeds |
+| `patches` | Ecken-UV [0,1] | 0 | Zell-Index | 4 Seeds |
+| `ribbon` | x = t [0,1], y = Seite (−1/+1) | 0 | **Ribbon-Index** | 4 Seeds |
+| `indirect` | frei — der Compute-Shader schreibt alles | | | |
+
+Drei Fallen, die alle schon zugeschlagen haben:
+
+- **Der Index steht in `attrA.w`** — nicht in `attrB.x`. `attrB` enthält
+  `hash01()`-Werte in [0,1), also ist `int(attrB.x)` **immer 0**: alle 20
+  Ribbons landen übereinander auf Ribbon 0.
+- **`gl_InstanceID` ist immer 0.** Die Engine zeichnet mit `glDrawArrays`,
+  *nicht* instanziert. Wer `gl_InstanceID` benutzt, bekommt alle Objekte an
+  derselben Stelle.
+- **`grid`/`quads` liefern `[0,1]`, nicht `[-1,1]`.** Wer die Mathematik auf
+  einen zentrierten Bereich auslegt, schiebt die ganze Szene in einen
+  Quadranten. Umrechnen: `attrA.xy * 2.0 - 1.0`.
+
+### V3 — Die Kamera-Transformation ist Pflicht
+
+`projM` hat `-1` in der w-Zeile, d.h. **clip-w = −z_view**. Sichtbar ist nur
+Geometrie mit **negativem** view-z jenseits der Near-Plane (0.5). Rohe
+Objektkoordinaten direkt in die Projektion zu geben heißt: nichts wird
+gerastert.
+
+```glsl
+vec3 vp = worldPos;
+vp.z += camDist;          // vom Betrachter wegschieben
+vp.x -= eyeOff;           // Stereo-Versatz
+gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);   // <-- das Minus!
+gl_Position.x += eyeOff * 0.045 * gl_Position.w;      // Konvergenz
+```
+
+Liegt die Fläche in der XZ-Ebene (Terrain, Scheibe), vorher noch nach unten
+kippen, sonst sieht man sie von der Kante:
+
+```glsl
+float c = cos(tilt), s = sin(tilt);
+vp = vec3(vp.x, vp.y * c - vp.z * s, vp.y * s + vp.z * c);
+```
+
+*Ausnahme:* Ein `.vert`, zu dem eine `.tese` oder `.geom` gehört, ist ein
+Durchreicher — dort projiziert die nachgelagerte Stufe.
+
+### V4 — `gl_PointCoord` existiert nur bei `GL_POINTS`
+
+Nur `geom="points"` (und `scatter`) zeichnet Punkte. Alle anderen Kinds —
+insbesondere `indirect` — zeichnen `GL_TRIANGLES`. Dort ist `gl_PointCoord`
+**undefiniert** (liefert praktisch (0,0)), und das übliche Sprite-Muster
+
+```glsl
+vec2 pt = gl_PointCoord * 2.0 - 1.0;
+if (dot(pt, pt) > 1.0) discard;      // verwirft JEDES Fragment
+```
+
+löscht das komplette Bild. Für Dreiecke eine echte Quad-Koordinate als
+Varying durchreichen (der Generator packt z.B. einen Ecken-Code in `attrA.w`).
+
+### V5 — Indirect-Generatoren: der Draw-Count-Vertrag
+
+`Blend/IndirectClamp.comp` läuft **nach jedem** Generator und macht:
+
+```glsl
+cmd[0] = min(cmd[4], maxVertices);
+cmd[4] = 0u;
+```
+
+Daraus folgt zwingend:
+
+- Vertices **nur** über `atomicAdd(cmd[4], n)` reservieren.
+- **Niemals** `cmd[0..3]` selbst schreiben — der Wert wird überschrieben,
+  und weil `cmd[4]` dann 0 ist, wird `cmd[0] = 0`: es zeichnet nichts.
+- Den Puffer **unsized** deklarieren: `buffer Cmd { uint cmd[]; }` —
+  `uint cmd[4]` schließt Slot 4 aus.
+- `uniform uint maxVertices` nehmen und die Reservierung prüfen.
+- `GL_TRIANGLES` heißt: pro Einheit ein Vielfaches von 3 Vertices. Ein
+  loser Punkt pro Einheit ergibt keine Dreiecke.
+
+```glsl
+uint base = atomicAdd(cmd[4], 6u);
+if (base + 6u > maxVertices) return;   // 2 Dreiecke = 1 Quad
+```
+
+Der Dispatch ist fest `16×16×16` bei `local_size 4,4,4` — den Index über
+**alle drei Achsen** flachklopfen, sonst erreicht man 1/4096 der Einheiten:
+
+```glsl
+uvec3 g = gl_GlobalInvocationID;
+uint idx = g.x + 64u * (g.y + 64u * g.z);
+```
+
+### V6 — Jede benutzte Uniform muss deklariert sein
+
+Ein nicht deklarierter Bezeichner ist ein **harter GLSL-Compile-Fehler**. Die
+Meldung geht durch den bekannten `captureStderr`/`CONOUT$`-Bug verloren, also
+sieht man nur Schwarz und ein leeres Log. Das hat `ChromaAcidTrip.frag`
+erwischt (`audioChromaHue`) und danach nochmal sechs Shader (`time`,
+`audioPhase`, `audioLevel`, `audioChromaHue`).
+
+Die Liste der Host-Uniforms steht in `Source/EffectShader.cpp` (`kAudioLocs`).
+
+### V7 — Anti-Flimmer: `time` nie mit einem Audiowert multiplizieren
+
+```glsl
+float t = time * audioLevel;               // FALSCH - springt bei jeder Änderung
+float t = time * 0.4 + audioAdvance * 0.2; // richtig - Rate ist einintegriert
+```
+
+`audioAdvance` ist eine bereits integrierte Phase. Absolute Zeit mit einem
+schwankenden Faktor zu skalieren lässt die Phase bei jeder Pegeländerung
+springen.
+
+### V8 — Registrierung
+
+Jeder Shader braucht einen Eintrag in `Configurations/Komplett.xml` (die
+vollständige Referenzdatei) — sonst kann er nie ausgewählt werden. Jede
+`Scene3D/X.frag` braucht zwingend eine `Scene3D/X.vert`. `--validate` prüft,
+dass alle Stimmungs-Presets die deklarierten Parameter vollständig haben.
+
+---
+
+## Batch-Rendern (und die CR-Falle)
+
+```bash
+while IFS='|' read -r name file type geom; do
+  if [ -n "$geom" ]; then
+    "$EXE" --render "$file" CombinePlain.frag "$OUT/$name.png" 960 600 \
+           --geom "$geom" > "$OUT/$name.log" 2>&1 </dev/null
+  else
+    "$EXE" --render "$file" CombinePlain.frag "$OUT/$name.png" 960 600 \
+           > "$OUT/$name.log" 2>&1 </dev/null
+  fi
+done < meta.txt
+```
+
+**Zwei Fallen, die schon zu falschen Diagnosen geführt haben:**
+
+1. **CR/LF.** Eine unter Windows von Python geschriebene Metadaten-Datei endet
+   auf `\r\n`. Beim `IFS='|' read` landet das `\r` im **letzten** Feld. Steht
+   dort `geom`, bekommen 2D-Shader ein `--geom $'\r'` (und laufen fälschlich
+   über den Scene3D-Pfad), 3D-Shader ein ungültiges geom, das auf
+   `GEOM_POINTS` zurückfällt. Ergebnis: „56 von 58 schwarz" — komplett falsch.
+   → Metadaten immer mit `newline="\n"` schreiben oder `tr -d '\r'` vorschalten.
+
+2. **Nicht parallel zu anderen GPU-Tests laufen lassen.** Ein Batch-Render
+   gleichzeitig mit `--validate`/`--transcheck` kann in Timeouts laufen.
+
+Schwarz-Erkennung: mittlere Luminanz eines heruntergerechneten Bildes; unter
+~3.0 ist verdächtig. **Aber:** Ein dünner, spärlicher Effekt (z.B.
+`DendriticSnowCrystal`) kann legitim darunter liegen — bei Treffern immer das
+Bild ansehen, bevor man „kaputt" sagt.
+
+---
+
+## Bekannte Grenzen des Prüfwerkzeugs
+
+- `PresetEditor --render` reicht `--param`-Overrides **nur an den 2D-Pfad**
+  durch, nicht an Scene3D. Scene3D-Szenen rendern mit ihren zufälligen
+  Per-Aktivierungs-Werten — für „schwarz oder nicht" reicht das, für
+  Feinabstimmung eines bestimmten Parameterwerts nicht.
+- Compile-Fehler erscheinen wegen des `captureStderr`-Bugs oft **nicht** im
+  Log. Ein leeres Log ist kein Beweis für einen fehlerfreien Shader.
+- `KALEIDO_INDIRECT_LOG=1` schreibt die tatsächliche, von der GPU
+  zurückgelesene Vertex-Anzahl nach `indirect_diag.log` — das beste Mittel,
+  um „Generator kaputt" von „Generator ok, aber unsichtbar" zu trennen.

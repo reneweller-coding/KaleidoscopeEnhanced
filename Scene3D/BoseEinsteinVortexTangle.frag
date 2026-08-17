@@ -4,6 +4,7 @@ out vec4 fragColor;
 in vec3 vWorldPos;
 in vec3 vNormal;
 in float vVortexPhase;
+in vec2 vQuadUV;
 
 uniform sampler2D tex0;
 uniform sampler2D tex1;
@@ -42,7 +43,7 @@ void main() {
     float hue = (hueP > 0.0) ? hueP : 0.0;
 
     // Circular Gaussian sprite profile
-    vec2 pt = gl_PointCoord * 2.0 - 1.0;
+    vec2 pt = vQuadUV;   // quad-local [-1,1]; see .vert
     float r2 = dot(pt, pt);
     if (r2 > 1.0) discard;
     float glow = exp(-r2 * 3.5);

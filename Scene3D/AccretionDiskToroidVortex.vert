@@ -36,7 +36,10 @@ void main() {
     float spd = (speedP  > 0.0) ? speedP  : 1.0;
 
     // 220x120 grid coordinates in [-1, 1]
-    vec2 gridUV = attrA.xy;
+    // Scene3DShader supplies attrA.xy in [0,1] for grid/quads geometry;
+    // this shader's math assumes a centred [-1,1] domain, so remap it here
+    // (otherwise everything lands in one quadrant, off to the side).
+    vec2 gridUV = attrA.xy * 2.0 - 1.0;   // [-1,1]
     vTexCoord = gridUV * 0.5 + 0.5;
 
     float t = time * 0.4 * spd + audioAdvance * 0.2;
@@ -66,7 +69,15 @@ void main() {
     // Surface normal estimation
     vNormal = normalize(vec3(-gridUV.x * 0.3, 1.0, -gridUV.y * 0.3));
 
-    vec4 viewPos = vec4(pos, 1.0);
-    gl_Position = projM * viewPos;
+    // Camera transform: this surface lies in the XZ plane, so pitch it down
+    // first (otherwise it is seen edge-on), then push away along +z and negate
+    // -- projM expects NEGATIVE view-space z (clip-w = -z_view).
+    vec3 vp = pos;
+    float camTilt = 0.45;
+    float cosT = cos(camTilt), sinT = sin(camTilt);
+    vp = vec3(vp.x, vp.y * cosT - vp.z * sinT, vp.y * sinT + vp.z * cosT);
+    vp.z += 7.0;
+    vp.x -= eyeOff;
+    gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 }
