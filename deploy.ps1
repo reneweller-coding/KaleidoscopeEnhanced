@@ -314,11 +314,27 @@ Info "Package ready: $pkgDir  ($sizeMB MB)"
 Info "Portable ZIP : $zip"
 
 # --- 7. optional Inno Setup installer ---------------------------------------
-$iscc = (Get-Command ISCC.exe -ErrorAction SilentlyContinue)
-$iss  = Join-Path $root "installer.iss"
-if ($iscc -and (Test-Path $iss)) {
-    Info "Inno Setup found - building setup.exe ..."
-    & $iscc.Source $iss
+# Not just PATH: the Inno Setup installer does not add itself to PATH, so
+# probe the standard install locations too (newest version first).
+$isccPath = (Get-Command ISCC.exe -ErrorAction SilentlyContinue).Source
+if (-not $isccPath) {
+    $isccPath = @(
+        "C:\Program Files\Inno Setup 7\ISCC.exe",
+        "C:\Program Files (x86)\Inno Setup 7\ISCC.exe",
+        "C:\Program Files\Inno Setup 6\ISCC.exe",
+        "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+    ) | Where-Object { Test-Path $_ } | Select-Object -First 1
+}
+$iss = Join-Path $root "installer.iss"
+if ($isccPath -and (Test-Path $iss)) {
+    Info "Inno Setup found ($isccPath) - building setup.exe ..."
+    # Same stderr trap as windeployqt above: judge ISCC by its exit code, not
+    # by whether it happened to print a warning line to stderr.
+    $ErrorActionPreference = "Continue"
+    & $isccPath $iss
+    $isccExit = $LASTEXITCODE
+    $ErrorActionPreference = $prevEap
+    if ($isccExit -ne 0) { throw "ISCC failed with exit code $isccExit" }
     Info "Installer written to dist\ (see installer.iss OutputDir)."
 } else {
     Info "Inno Setup (ISCC.exe) not found - skipping setup.exe."
