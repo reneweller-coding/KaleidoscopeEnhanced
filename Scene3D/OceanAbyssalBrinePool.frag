@@ -1,5 +1,13 @@
 #version 330 core
 out vec4 fragColor;
+// OceanAbyssalBrinePool.frag
+// -----------------------------------------------------------------------
+// OCEAN ABYSSAL BRINE POOL: a deep-sea brine basin seen from above, the
+// camera slowly ORBITING the pool; hypersaline internal waves shimmer in
+// photo-palette colours against the abyssal blue shore.
+//   audioKick -> halocline shimmer    audioBass -> internal waves
+//   audioAdvance -> orbit
+// -----------------------------------------------------------------------
 
 in vec3 vWorldPos;
 in vec3 vNormal;

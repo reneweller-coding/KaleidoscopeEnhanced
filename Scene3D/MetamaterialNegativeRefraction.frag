@@ -1,5 +1,13 @@
 #version 330 core
 out vec4 fragColor;
+// MetamaterialNegativeRefraction.frag
+// -----------------------------------------------------------------------
+// METAMATERIAL NEGATIVE REFRACTION: a wave-carrying slab seen from above;
+// two media take their tints from opposite ends of the photo-palette arc,
+// the refraction kink runs through the middle and a superlens focal spot
+// glows in the slab plane on the kick.
+//   audioKick -> focal spot    audioBass -> wave amplitude
+// -----------------------------------------------------------------------
 
 in vec3 vWorldPos;
 in vec3 vNormal;

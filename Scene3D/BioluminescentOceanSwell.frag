@@ -1,5 +1,14 @@
 #version 330 core
 out vec4 fragColor;
+// BioluminescentOceanSwell.frag
+// -----------------------------------------------------------------------
+// BIOLUMINESCENT OCEAN SWELL: open-ocean Gerstner swell viewed from a
+// gliding camera above the water, horizon high in the frame; narrow crest
+// bands glow bioluminescent cyan, the moon adds a specular path, the photo
+// tints sky reflection and glow.
+//   audioBass/Swell -> wave amplitude    audioKick -> splash + crest flash
+//   audioAdvance    -> forward glide over open water
+// -----------------------------------------------------------------------
 
 in vec3 vPos;
 in vec3 vNormal;

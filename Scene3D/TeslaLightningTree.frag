@@ -1,5 +1,13 @@
 #version 330 core
 out vec4 fragColor;
+// TeslaLightningTree.frag
+// -----------------------------------------------------------------------
+// TESLA LIGHTNING TREE: a branching discharge tree grown fresh every
+// frame, camera ORBITING the trunk; plasma tinted by a bounded hue wobble
+// (never a full rainbow spin), photo colours in the corona.
+//   audioKick -> branch flash    audioHigh -> arc jitter
+//   audioAdvance + time -> orbit
+// -----------------------------------------------------------------------
 
 in vec3 vPos;
 in float vHeat;

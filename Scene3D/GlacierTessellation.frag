@@ -1,5 +1,13 @@
 #version 400 core
 out vec4 fragColor;
+// GlacierTessellation.frag
+// -----------------------------------------------------------------------
+// GLACIER TESSELLATION: low flight over tessellated glacier ice - white/blue
+// subsurface-scattering ice with crevasse light from INSIDE, tinted by the
+// photo palette; the terrain streams beneath the camera.
+//   audioAdvance -> flight speed      audioKick -> crevasse flash
+//   audioBass    -> ice-wave heave
+// -----------------------------------------------------------------------
 
 in vec3 vNormal;
 in vec3 vWorld;

@@ -1,5 +1,13 @@
 #version 330 core
 out vec4 fragColor;
+// PlasmaVortexGrid.frag
+// -----------------------------------------------------------------------
+// PLASMA VORTEX GRID: a glowing funnel grid swirled by a TRAVELING SPIRAL
+// WAVE (rigid base rotation + bounded radial wave - no mesh shear), the
+// camera banking around and into the funnel.
+//   audioKick -> shock tsunami    audioSubBass -> funnel depth
+//   audioSpectrum -> Bessel ripple heights
+// -----------------------------------------------------------------------
 
 in vec3 vWorld;
 in vec2 vUV;

@@ -1,8 +1,9 @@
 #version 330 core
 out vec4 fragColor;
-// ChromeFlow.frag — fake-environment chrome: the normal indexes a smooth
-// striped "sky" so the surface reads as polished metal; a warm key-light
-// band and a cool counter-band glide as the surface rolls.
+// ChromeFlow.frag - LIQUID CHROME: a rolling sheet of molten metal that
+// MIRRORS the current photo (true reflect() environment lookup), with
+// polish-streak sheen bands and four wave trains for real curvature.
+//   audioBass/Swell -> wave weight    audioAdvance -> flow phase
 uniform float time;
 uniform float audioChromaHue;
 uniform float audioSwell;
