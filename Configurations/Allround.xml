@@ -6,12 +6,16 @@
        (solo 20-90 s, fade 15-50 s) only matter without music. -->
 
   <TextureShader file="..\\Scene\\Kaleidoscope.frag" type="KaleidoscopeBase" probability="0.6" complexity="1">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <bool name="rotate" probability="0.6"></bool>
     <int name="sides" minValue="2" maxValue="14"></int>
     <float name="speed" minValue="0.04" maxValue="0.09"></float>
   </TextureShader>
 
   <TextureShader file="..\\Scene\\Tunnel.frag" type="KaleidoscopeBase" probability="0.5" complexity="1">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <bool name="rotate" probability="0.5"></bool>
     <float name="speedTunnel" minValue="0.005" maxValue="0.07"></float>
     <int name="sides" minValue="2" maxValue="14"></int>
@@ -19,18 +23,24 @@
   </TextureShader>
 
   <TextureShader file="..\\Scene\\HexKaleido.frag" type="normal" probability="0.5" complexity="1">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="zoomP" minValue="0.7" maxValue="1.6"></float>
     <expr name="swirlP" formula="clamp(0.25 + 0.1*(seed3*2.0-1.0) + 0.175*(flux), 0, 0.5)"/>
     <float name="swirlP" minValue="0.0" maxValue="0.5"></float>
   </TextureShader>
 
   <TextureShader file="..\\Scene\\Voyager.frag" type="normal" probability="0.5" mood="bright" complexity="2">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <int name="kSides" minValue="0" maxValue="9"></int>
     <float name="travelMul" minValue="0.6" maxValue="1.6"></float>
     <float name="cellH" minValue="1.2" maxValue="3.0"></float>
   </TextureShader>
 
   <TextureShader file="..\\Scene\\FlowingWires.frag" type="normal" probability="0.4" complexity="2">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="snapP" minValue="2.8" maxValue="5.2"></float>
     <expr name="glowP" formula="clamp(50 + 6*(seed1*2.0-1.0) + 13.5*(0.6*kick+0.4*snare), 35, 65)"/>
     <float name="glowP" minValue="35.0" maxValue="65.0"></float>
@@ -40,16 +50,22 @@
   </TextureShader>
 
   <TextureShader file="..\\Scene\\FractalBloom.frag" type="normal" probability="0.4" mood="bright" complexity="1">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="iterZoomP" minValue="1.3" maxValue="1.8"></float>
     <float name="ringFreqP" minValue="5.0" maxValue="12.0"></float>
   </TextureShader>
 
   <TextureShader file="..\\Scene\\DiscoGodrays.frag" type="normal" probability="0.4" mood="aggressive,bright" complexity="2">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="facetP" minValue="0.2" maxValue="0.5"></float>
     <float name="tubeP" minValue="0.03" maxValue="0.09"></float>
   </TextureShader>
 
   <TextureShader file="..\\Scene\\InsideSystem.frag" type="normal" probability="0.4" complexity="2">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="spacingP" minValue="5.0" maxValue="9.0"></float>
     <float name="attenP" minValue="14.0" maxValue="30.0"></float>
     <int name="kSides" minValue="0" maxValue="9"></int>
@@ -57,6 +73,8 @@
   </TextureShader>
 
   <TextureShader file="..\\Scene\\Vortex.frag" type="normal" probability="0.4" mood="aggressive,bright" complexity="2">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <int name="sectorsP" minValue="6" maxValue="17"></int>
     <float name="curveP" minValue="0.04" maxValue="0.14"></float>
     <float name="travP" minValue="0.6" maxValue="1.5"></float>
@@ -65,6 +83,8 @@
   </TextureShader>
 
   <TextureShader file="..\\Scene\\TheCore.frag" type="normal" probability="0.4" mood="aggressive" complexity="2">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <expr name="coreP" formula="clamp(0.8 + 0.5*max(bassRel-0.85,0) + 0.4*drop, 0.6, 1.7)"/>
     <float name="coreP" minValue="0.6" maxValue="1.6"></float>
     <expr name="twistP" formula="clamp(0.325 + 0.07*(seed1*2.0-1.0) + 0.1225*(flux), 0.15, 0.5)"/>
@@ -75,6 +95,8 @@
   </TextureShader>
 
   <TextureShader file="..\\Scene\\NeonTubes.frag" type="normal" probability="0.4" mood="aggressive,bright" complexity="2">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="stripeP" minValue="5.0" maxValue="12.0"></float>
     <float name="ringP" minValue="0.7" maxValue="1.3"></float>
     <float name="travP" minValue="0.6" maxValue="1.5"></float>
@@ -83,6 +105,8 @@
   </TextureShader>
 
   <TextureShader file="..\\Scene\\PsychedelicPills.frag" type="normal" probability="0.4" mood="bright" complexity="2">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="pillP" minValue="0.07" maxValue="0.14"></float>
     <expr name="wobbleP" formula="clamp(0.25 + 0.04*(seed1*2.0-1.0) + 0.08*(max(bassRel-0.9,0.0)), 0.15, 0.35)"/>
     <float name="wobbleP" minValue="0.15" maxValue="0.35"></float>
@@ -92,6 +116,8 @@
   </TextureShader>
 
   <TextureShader file="..\\Scene\\ChromeDreams.frag" type="normal" probability="0.4" mood="bright" complexity="2">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="ringP" minValue="0.12" maxValue="0.30"></float>
     <float name="stretchP" minValue="0.10" maxValue="0.35"></float>
     <float name="stripeP" minValue="4.0" maxValue="9.0"></float>
@@ -101,10 +127,14 @@
   </TextureShader>
 
   <TextureShader file="..\\Scene\\SphereGrid.frag" type="normal" probability="0.4" complexity="2">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="spacingP" minValue="3.0" maxValue="6.0"></float>
   </TextureShader>
 
   <TextureShader file="..\\Scene\\MobiusOrbs.frag" type="normal" probability="0.5" complexity="2">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <expr name="orbSizeP" formula="clamp(6.5 + 2.5*max(bassRel-0.9,0), 4.5, 10.5)"/>
     <float name="zoomP" minValue="0.04" maxValue="0.28"></float>
     <float name="orbSizeP" minValue="4.0" maxValue="11.0"></float>
@@ -115,6 +145,8 @@
   </TextureShader>
 
   <TextureShader file="..\\Scene\\BreathingFractal.frag" type="normal" probability="0.35" complexity="1">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="zoomP" minValue="0.25" maxValue="0.6"></float>
     <float name="breathP" minValue="12.0" maxValue="30.0"></float>
     <float name="rotSpdP" minValue="0.006" maxValue="0.016"></float>
@@ -125,6 +157,8 @@
   </TextureShader>
 
   <TextureShader file="..\\Scene\\BreathingFractalZoom.frag" type="normal" probability="0.35" mood="calm,bright" complexity="1">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <expr name="deepP" formula="clamp(3.2 + 1.0*swell, 2.5, 4.5)"/>
     <float name="oscP" minValue="0.03" maxValue="0.09"></float>
     <float name="deepP" minValue="2.5" maxValue="4.5"></float>
@@ -135,6 +169,8 @@
   </TextureShader>
 
   <TextureShader file="..\\Scene\\NoiseSpiral.frag" type="normal" probability="0.4" complexity="2">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <expr name="twistP" formula="clamp(0.225 + 0.05*(seed2*2.0-1.0) + 0.0875*(flux), 0.1, 0.35)"/>
     <float name="twistP" minValue="0.1" maxValue="0.35"></float>
     <expr name="turbP" formula="clamp(0.315 + 0.054*(seed1*2.0-1.0) + 0.0945*(flux), 0.18, 0.45)"/>
@@ -142,11 +178,15 @@
   </TextureShader>
 
   <TextureShader file="..\\Scene\\Fluid.frag" type="normal" probability="0.5" mood="calm" complexity="1">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <int name="sidesP" minValue="0" maxValue="9"></int>
     <float name="zoomP" minValue="0.7" maxValue="1.5"></float>
   </TextureShader>
 
   <TextureShader file="..\\Scene\\VoronoiPulse.frag" type="normal" probability="0.4" complexity="1">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <expr name="scaleP" formula="clamp(2.3 + 2.0*flatness + 0.5*seed1, 2.2, 4.8)"/>
     <int name="sidesP" minValue="3" maxValue="9"></int>
     <float name="scaleP" minValue="2.2" maxValue="4.5"></float>
@@ -154,9 +194,13 @@
   </TextureShader>
 
   <TextureShader file="..\\Scene\\FractalKIFS.frag" type="normal" probability="0.35" mood="aggressive" complexity="1">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
   </TextureShader>
 
   <TextureShader file="..\\Scene\\RaymarchTunnel.frag" type="normal" probability="0.45" complexity="2">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <int name="sidesP" minValue="4" maxValue="11"></int>
     <expr name="twistP" formula="clamp(0.1 + 0.04*(seed1*2.0-1.0) + 0.07*(flux), 0, 0.2)"/>
     <float name="twistP" minValue="0.0" maxValue="0.20"></float>
@@ -164,12 +208,16 @@
   </TextureShader>
 
   <TextureShader file="..\\Scene\\Starfield.frag" type="normal" probability="0.45" complexity="1">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="densP" minValue="0.88" maxValue="0.95"></float>
     <float name="speedP" minValue="0.6" maxValue="1.6"></float>
     <float name="rollP" minValue="0.0" maxValue="0.30"></float>
   </TextureShader>
 
   <TextureShader file="..\\Scene\\PlasmaFlow.frag" type="normal" probability="0.4" mood="calm" complexity="1">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <int name="sidesP" minValue="2" maxValue="9"></int>
     <expr name="scaleP" formula="clamp(5.75 + 1.125*(seed1*2.0-1.0) + 1.125*(swell), 3.5, 8)"/>
     <float name="scaleP" minValue="3.5" maxValue="8.0"></float>
@@ -177,6 +225,8 @@
   </TextureShader>
 
   <TextureShader file="..\\Scene\\OrganicFlow.frag" type="normal" probability="0.4" mood="calm" complexity="1">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <int name="sidesP" minValue="3" maxValue="9"></int>
     <float name="veinP" minValue="5.0" maxValue="10.0"></float>
     <expr name="swirlP" formula="clamp(0.4 + 0.16*(seed1*2.0-1.0) + 0.28*(flux), 0, 0.8)"/>
@@ -184,6 +234,8 @@
   </TextureShader>
 
   <TextureShader file="..\\Scene\\LavaLamp.frag" type="normal" probability="0.35" mood="calm" complexity="1">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <expr name="waxHueP" formula="chromaHue + seed1*1.5"/>
     <expr name="sizeP" formula="clamp(1.0 + 0.35*max(bassRel-0.9,0), 0.8, 1.5)"/>
     <float name="waxHueP" minValue="0.0" maxValue="6.28"></float>
@@ -193,12 +245,16 @@
   </TextureShader>
 
   <TextureShader file="..\\Scene\\OilProjector.frag" type="normal" probability="0.35" mood="calm" complexity="2">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <expr name="cellP" formula="clamp(1.7 + 0.5*swell + 0.8*flatness + 0.3*sin(0.11*time), 1.4, 3.2)"/>
     <int name="sidesP" minValue="2" maxValue="9"></int>
     <float name="cellP" minValue="1.4" maxValue="3.0"></float>
   </TextureShader>
 
   <TextureShader file="..\\Scene\\ReactionDiffusion.frag" type="normal" probability="0.4" complexity="2">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <expr name="dispP" formula="clamp(0.4 + 0.25*swell + 0.15*sin(6.28*barPhase), 0.3, 0.9)"/>
     <int name="sidesP" minValue="0" maxValue="9"></int>
     <float name="dispP" minValue="0.3" maxValue="0.9"></float>
@@ -206,6 +262,8 @@
   </TextureShader>
 
   <TextureShader file="..\\Scene\\Metamorph.frag" type="normal" probability="0.6" complexity="1">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <expr name="warpAmtP" formula="clamp(0.10 + 0.12*midRel, 0.12, 0.38)"/>
     <int name="sidesP" minValue="4" maxValue="10"></int>
     <float name="latticeP" minValue="2.0" maxValue="4.5"></float>
@@ -215,12 +273,18 @@
   </TextureShader>
 
   <TextureShader file="..\\Scene\\BeatLattice.frag" type="normal" probability="0.4" mood="aggressive,bright" complexity="1">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
   </TextureShader>
 
   <TextureShader file="..\\Scene\\DroneDepths.frag" type="normal" probability="0.3" mood="calm,dark" complexity="1">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
   </TextureShader>
 
   <TextureShader file="..\\Scene\\SpectrumRadial.frag" type="normal" probability="0.25" complexity="1">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <int name="wedgesP" minValue="44" maxValue="97"></int>
     <expr name="petalLenP" formula="clamp(0.725 + 0.1125*(seed3*2.0-1.0) + 0.1125*(swell), 0.5, 0.95)"/>
     <float name="petalLenP" minValue="0.5" maxValue="0.95"></float>
@@ -228,6 +292,8 @@
   </TextureShader>
 
   <TextureShader file="..\\Scene\\StereoSpectrum.frag" type="normal" probability="0.25" complexity="1">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="ledP" minValue="0.0" maxValue="22.0"></float>
     <float name="spanP" minValue="0.5" maxValue="1.0"></float>
   </TextureShader>
@@ -271,6 +337,8 @@
   </CombineShader>
 
   <TextureShader file="..\\Scene\\InkWater.frag" type="normal" probability="0.4" mood="calm" complexity="2">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <expr name="inkHueP" formula="chromaHue + 0.3*sin(0.07*time)"/>
     <int name="plumesP" minValue="2" maxValue="5"></int>
     <float name="inkHueP" minValue="0.0" maxValue="6.28"></float>
@@ -280,6 +348,8 @@
   </TextureShader>
 
   <TextureShader file="..\\Scene\\Aurora.frag" type="normal" probability="0.35" mood="calm,dark" complexity="1">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <expr name="heightP" formula="0.9 + 0.35*swell"/>
     <expr name="bandsP" formula="clamp(0.9 + 0.5*centroid, 0.7, 1.7)"/>
     <float name="bandsP" minValue="0.7" maxValue="1.8"></float>
@@ -290,6 +360,8 @@
   </TextureShader>
 
   <TextureShader file="..\\Scene\\CityBokeh.frag" type="normal" probability="0.4" mood="dark" complexity="2">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <expr name="hueP" formula="chromaHue + seed1*0.8"/>
     <expr name="sizeP" formula="clamp(0.9 + 0.5*max(bassRel-0.9,0), 0.7, 1.5)"/>
     <float name="densityP" minValue="0.7" maxValue="1.6"></float>
@@ -299,6 +371,8 @@
   </TextureShader>
 
   <TextureShader file="..\\Scene\\BauhausGeo.frag" type="normal" probability="0.35" mood="bright,aggressive" complexity="3">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <int name="gridP" minValue="3" maxValue="8"></int>
     <float name="paletteP" minValue="0.0" maxValue="6.28"></float>
     <float name="spinP" minValue="0.5" maxValue="1.5"></float>
@@ -530,11 +604,15 @@
   </TextureShader>
 
   <TextureShader file="..\\Scene\\SelfSimilarity.frag" type="normal" probability="0.35" complexity="1">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <int name="sidesP" minValue="0" maxValue="8"></int>
     <float name="zoomP" minValue="0.7" maxValue="1.6"></float>
   </TextureShader>
 
   <TextureShader file="..\\Scene\\Schlieren.frag" type="normal" probability="0.35" complexity="2">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <int name="sidesP" minValue="0" maxValue="8"></int>
     <float name="strengthP" minValue="0.6" maxValue="1.8"></float>
     <float name="rainbowP" minValue="0.0" maxValue="1.0"></float>
@@ -555,6 +633,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\Physarum.frag" type="normal" probability="0.4" complexity="2">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <int name="sidesP" minValue="0" maxValue="8"></int>
     <float name="zoomP" minValue="0.7" maxValue="1.5"></float>
   </TextureShader>
@@ -574,6 +654,8 @@
   </TextureShader>
 
   <TextureShader file="..\\Scene\\FractalFlame.frag" type="normal" probability="0.45" complexity="2">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <expr name="glowP" formula="clamp(0.425 + 0.07*(seed3*2.0-1.0) + 0.1575*(0.6*kick+0.4*snare), 0.25, 0.6)"/>
     <float name="glowP" minValue="0.25" maxValue="0.6"></float>
     <expr name="photoP" formula="clamp(0.075 + 0.018*(seed1*2.0-1.0) + 0.0405*(0.6*kick+0.4*snare), 0.03, 0.12)"/>
@@ -581,30 +663,40 @@
   </TextureShader>
 
   <TextureShader file="..\\Scene\\ParticleFlow.frag" type="normal" probability="0.5" complexity="2">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="smearP" minValue="0.25" maxValue="0.9"></float>
     <expr name="glowP" formula="clamp(0.55 + 0.1*(seed1*2.0-1.0) + 0.225*(0.6*kick+0.4*snare), 0.3, 0.8)"/>
     <float name="glowP" minValue="0.3" maxValue="0.8"></float>
   </TextureShader>
 
   <TextureShader file="..\\Scene\\GalaxyCollision.frag" type="normal" probability="0.4" complexity="2">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <expr name="glowP" formula="clamp(0.65 + 0.1*(seed2*2.0-1.0) + 0.225*(0.6*kick+0.4*snare), 0.4, 0.9)"/>
     <float name="glowP" minValue="0.4" maxValue="0.9"></float>
     <float name="dustP" minValue="0.3" maxValue="0.8"></float>
   </TextureShader>
 
   <TextureShader file="..\\Scene\\Murmuration.frag" type="normal" probability="0.4" complexity="2">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="inkP" minValue="0.4" maxValue="0.9"></float>
     <expr name="glowP" formula="clamp(0.5 + 0.08*(seed2*2.0-1.0) + 0.18*(0.6*kick+0.4*snare), 0.3, 0.7)"/>
     <float name="glowP" minValue="0.3" maxValue="0.7"></float>
   </TextureShader>
 
   <TextureShader file="..\\Scene\\LightningStorm.frag" type="normal" probability="0.4" complexity="2">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <expr name="glowP" formula="clamp(0.65 + 0.1*(seed1*2.0-1.0) + 0.225*(0.6*kick+0.4*snare), 0.4, 0.9)"/>
     <float name="glowP" minValue="0.4" maxValue="0.9"></float>
     <float name="skyP" minValue="0.3" maxValue="0.8"></float>
   </TextureShader>
 
   <TextureShader file="..\\Scene\\CausticPool.frag" type="normal" probability="0.45" complexity="2">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <expr name="warpP" formula="clamp(0.6 + 0.12*(seed1*2.0-1.0) + 0.21*(flux), 0.3, 0.9)"/>
     <float name="warpP" minValue="0.3" maxValue="0.9"></float>
     <expr name="glowP" formula="clamp(0.55 + 0.1*(seed3*2.0-1.0) + 0.225*(0.6*kick+0.4*snare), 0.3, 0.8)"/>
@@ -612,46 +704,62 @@
   </TextureShader>
 
   <TextureShader file="..\\Scene\\PixelMelt.frag" type="normal" probability="0.4" complexity="2">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <expr name="meltP" formula="clamp(0.6 + 0.12*(seed2*2.0-1.0) + 0.21*(flux), 0.3, 0.9)"/>
     <float name="meltP" minValue="0.3" maxValue="0.9"></float>
     <float name="bandP" minValue="0.2" maxValue="0.9"></float>
   </TextureShader>
 
   <TextureShader file="..\\Scene\\SpectrumFilter.frag" type="normal" probability="0.45" complexity="2">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="mixP" minValue="0.4" maxValue="0.9"></float>
     <expr name="glowP" formula="clamp(0.55 + 0.1*(seed2*2.0-1.0) + 0.225*(0.6*kick+0.4*snare), 0.3, 0.8)"/>
     <float name="glowP" minValue="0.3" maxValue="0.8"></float>
   </TextureShader>
 
   <TextureShader file="..\\Scene\\InkTank.frag" type="normal" probability="0.45" complexity="2">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <expr name="glowP" formula="clamp(0.55 + 0.1*(seed2*2.0-1.0) + 0.225*(0.6*kick+0.4*snare), 0.3, 0.8)"/>
     <float name="glowP" minValue="0.3" maxValue="0.8"></float>
     <float name="inkP" minValue="0.4" maxValue="0.9"></float>
   </TextureShader>
 
   <TextureShader file="..\\Scene\\FerroSpikes.frag" type="normal" probability="0.35" complexity="2">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="shineP" minValue="0.3" maxValue="0.9"></float>
     <float name="reflectP" minValue="0.3" maxValue="0.8"></float>
   </TextureShader>
 
   <TextureShader file="..\\Scene\\ErodedLand.frag" type="normal" probability="0.35" complexity="2">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="sunP" minValue="0.3" maxValue="0.9"></float>
     <float name="waterP" minValue="0.3" maxValue="0.8"></float>
   </TextureShader>
 
   <TextureShader file="..\\Scene\\LiquidMetal.frag" type="normal" probability="0.4" complexity="2">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="shineP" minValue="0.4" maxValue="0.9"></float>
     <expr name="thickP" formula="clamp(0.55 + 0.125*(seed1*2.0-1.0) + 0.125*(swell), 0.3, 0.8)"/>
     <float name="thickP" minValue="0.3" maxValue="0.8"></float>
   </TextureShader>
 
   <TextureShader file="..\\Scene\\ShatterField.frag" type="normal" probability="0.4" complexity="2">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <expr name="glowP" formula="clamp(0.65 + 0.1*(seed1*2.0-1.0) + 0.225*(0.6*kick+0.4*snare), 0.4, 0.9)"/>
     <float name="glowP" minValue="0.4" maxValue="0.9"></float>
     <float name="voidP" minValue="0.3" maxValue="0.8"></float>
   </TextureShader>
 
   <TextureShader file="..\\Scene\\ClothDrape.frag" type="normal" probability="0.4" complexity="2">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="shineP" minValue="0.3" maxValue="0.8"></float>
     <float name="printP" minValue="0.4" maxValue="0.9"></float>
   </TextureShader>
@@ -659,6 +767,8 @@
 
 
   <TextureShader file="..\\Scene\\EventHorizon.frag" type="normal" probability="0.45" complexity="3">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="massP" minValue="0.3" maxValue="0.9"></float>
     <float name="diskP" minValue="0.3" maxValue="0.8"></float>
     <float name="tiltP" minValue="0.2" maxValue="0.9"></float>
@@ -865,18 +975,24 @@
   </TextureShader>
 
   <TextureShader file="..\\Scene\\VoronoiShatter.frag" type="normal" probability="0.45" mood="aggressive" complexity="2">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="cellsP" minValue="0.3"  maxValue="0.75"></float>
     <float name="flyP"   minValue="0.7"  maxValue="1.4"></float>
     <float name="edgeP"  minValue="0.4"  maxValue="1.0"></float>
   </TextureShader>
 
   <TextureShader file="..\\Scene\\Halftone.frag" type="normal" probability="0.4" mood="calm" complexity="2">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="dotP"  minValue="0.2"  maxValue="0.6"></float>
     <float name="inkP"  minValue="0.45" maxValue="0.95"></float>
     <float name="slipP" minValue="0.3"  maxValue="1.2"></float>
   </TextureShader>
 
   <TextureShader file="..\\Scene\\Tonnetz.frag" type="normal" probability="0.4" mood="dreamy" complexity="2">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="zoomP"  minValue="0.3"  maxValue="0.8"></float>
     <expr name="glowP" formula="clamp(0.7 + 0.12*(seed1*2.0-1.0) + 0.27*(0.6*kick+0.4*snare), 0.4, 1)"/>
     <float name="glowP" minValue="0.4"  maxValue="1.0"></float>
@@ -885,6 +1001,8 @@
   </TextureShader>
 
   <TextureShader file="..\\Scene\\Snowfall.frag" type="normal" probability="0.4" mood="calm" complexity="2">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="densityP" minValue="0.35" maxValue="0.85"></float>
     <float name="windP"    minValue="0.4"  maxValue="1.3"></float>
     <float name="depthP"   minValue="0.3"  maxValue="0.9"></float>
@@ -1434,6 +1552,8 @@
 
 
   <TextureShader file="..\\Scene\\IceCrack.frag" type="normal" probability="0.42" mood="calm,bright" complexity="3">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="shardP"   minValue="0.20" maxValue="0.90"></float>
     <float name="crackP"   minValue="0.40" maxValue="1.50"></float>
     <float name="refractP" minValue="0.30" maxValue="1.60"></float>
@@ -1527,6 +1647,8 @@
 
   <!-- Screen-Filling Dynamic Visualizers -->
   <TextureShader file="..\Scene\HyperWarpTunnel.frag" type="normal" probability="0.5" mood="aggressive,bright" complexity="3">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="speedP" minValue="0.5" maxValue="1.8"></float>
     <expr name="warpP" formula="clamp(1.25 + 0.3*(seed1*2.0-1.0) + 0.525*(flux), 0.5, 2)"/>
     <float name="warpP" minValue="0.5" maxValue="2.0"></float>
@@ -1537,6 +1659,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\VolumetricSupernova.frag" type="normal" probability="0.5" mood="aggressive,bright" complexity="4">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="densityP" minValue="0.6" maxValue="1.8"></float>
     <float name="speedP" minValue="0.5" maxValue="1.5"></float>
     <float name="flareP" minValue="0.5" maxValue="2.0"></float>
@@ -1545,6 +1669,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\CrystalMirrorGrid.frag" type="normal" probability="0.45" mood="bright,aggressive" complexity="4">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="facetP" minValue="0.6" maxValue="1.8"></float>
     <float name="shatterP" minValue="0.5" maxValue="2.0"></float>
     <float name="refractP" minValue="0.5" maxValue="1.5"></float>
@@ -1553,6 +1679,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\FluidInkMarble.frag" type="normal" probability="0.5" mood="dreamy,bright" complexity="3">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="viscosityP" minValue="0.5" maxValue="1.8"></float>
     <expr name="swirlP" formula="clamp(1.3 + 0.28*(seed3*2.0-1.0) + 0.49*(flux), 0.6, 2)"/>
     <float name="swirlP" minValue="0.6" maxValue="2.0"></float>
@@ -1570,6 +1698,8 @@
 
   <!-- 20 New Ultra-Dynamic Screen-Filling Shaders -->
   <TextureShader file="..\Scene\CyberGridCity.frag" type="normal" probability="0.5" mood="aggressive,bright" complexity="3">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="speedP" minValue="0.5" maxValue="1.8"></float>
     <float name="densityP" minValue="0.6" maxValue="1.5"></float>
     <float name="neonP" minValue="0.5" maxValue="2.0"></float>
@@ -1578,6 +1708,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\QuantumChromaField.frag" type="normal" probability="0.48" mood="bright,psychedelic" complexity="3">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="waveFreqP" minValue="0.5" maxValue="2.2"></float>
     <float name="phaseRotP" minValue="0.4" maxValue="1.8"></float>
     <expr name="glowP" formula="clamp(1.25 + 0.3*(seed1*2.0-1.0) + 0.675*(0.6*kick+0.4*snare), 0.5, 2)"/>
@@ -1587,6 +1719,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\AbyssalLuminescence.frag" type="normal" probability="0.45" mood="calm,dark,dreamy" complexity="3">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="depthP" minValue="0.6" maxValue="1.8"></float>
     <float name="tentacleP" minValue="0.5" maxValue="2.0"></float>
     <expr name="glowP" formula="clamp(1.25 + 0.3*(seed2*2.0-1.0) + 0.675*(0.6*kick+0.4*snare), 0.5, 2)"/>
@@ -1596,6 +1730,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\SolarFlareCorona.frag" type="normal" probability="0.48" mood="aggressive,bright" complexity="4">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <expr name="turbulenceP" formula="clamp(1.25 + 0.3*(seed2*2.0-1.0) + 0.525*(flux), 0.5, 2)"/>
     <float name="turbulenceP" minValue="0.5" maxValue="2.0"></float>
     <float name="heatP" minValue="0.6" maxValue="1.8"></float>
@@ -1605,6 +1741,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\GlitchMatrixHypercube.frag" type="normal" probability="0.46" mood="aggressive,bright" complexity="3">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="glitchP" minValue="0.4" maxValue="2.0"></float>
     <float name="rotSpdP" minValue="0.5" maxValue="1.8"></float>
     <float name="facetP" minValue="0.5" maxValue="2.2"></float>
@@ -1613,6 +1751,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\BismuthLabyrinth.frag" type="normal" probability="0.45" mood="bright,psychedelic" complexity="4">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="iterP" minValue="0.6" maxValue="1.8"></float>
     <float name="stepP" minValue="0.5" maxValue="1.6"></float>
     <float name="iridescenceP" minValue="0.5" maxValue="2.2"></float>
@@ -1621,6 +1761,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\NeonFluidDynamics.frag" type="normal" probability="0.5" mood="dreamy,bright" complexity="3">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="viscosityP" minValue="0.5" maxValue="1.8"></float>
     <expr name="swirlP" formula="clamp(1.35 + 0.34*(seed1*2.0-1.0) + 0.595*(flux), 0.5, 2.2)"/>
     <float name="swirlP" minValue="0.5" maxValue="2.2"></float>
@@ -1630,6 +1772,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\StargateWormhole.frag" type="normal" probability="0.48" mood="aggressive,bright" complexity="3">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <expr name="warpP" formula="clamp(1.35 + 0.34*(seed3*2.0-1.0) + 0.595*(flux), 0.5, 2.2)"/>
     <float name="warpP" minValue="0.5" maxValue="2.2"></float>
     <float name="lensP" minValue="0.5" maxValue="2.0"></float>
@@ -1639,6 +1783,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\PrismaticKaleidoMandala.frag" type="normal" probability="0.48" mood="bright,psychedelic" complexity="3">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="symmetryP" minValue="0.6" maxValue="2.0"></float>
     <float name="zoomP" minValue="0.5" maxValue="1.8"></float>
     <float name="facetP" minValue="0.5" maxValue="2.2"></float>
@@ -1647,6 +1793,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\ChromaAcidTrip.frag" type="normal" probability="0.46" mood="psychedelic,bright" complexity="3">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <expr name="meltP" formula="clamp(1.35 + 0.34*(seed3*2.0-1.0) + 0.595*(flux), 0.5, 2.2)"/>
     <float name="meltP" minValue="0.5" maxValue="2.2"></float>
     <float name="feedbackP" minValue="0.5" maxValue="1.8"></float>
@@ -1788,6 +1936,8 @@
 
   <!-- 15 Additional Next-Gen Shaders -->
   <TextureShader file="..\Scene\SupermassiveAccretionDisk.frag" type="normal" probability="0.5" mood="aggressive,bright" complexity="4">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="spinP" minValue="0.5" maxValue="1.8"></float>
     <float name="diskP" minValue="0.6" maxValue="1.8"></float>
     <float name="jetP"  minValue="0.5" maxValue="2.2"></float>
@@ -1796,6 +1946,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\EscherRelativityMatrix.frag" type="normal" probability="0.48" mood="bright,aggressive" complexity="3">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="gridP" minValue="0.5" maxValue="2.0"></float>
     <float name="archP" minValue="0.5" maxValue="1.8"></float>
     <float name="neonP" minValue="0.5" maxValue="2.2"></float>
@@ -1804,6 +1956,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\MandelbulbHyperRealm.frag" type="normal" probability="0.48" mood="psychedelic,bright" complexity="4">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="powerP" minValue="4.0" maxValue="8.0"></float>
     <float name="zoomP"  minValue="0.5" maxValue="1.8"></float>
     <expr name="glowP" formula="clamp(1.35 + 0.34*(seed3*2.0-1.0) + 0.765*(0.6*kick+0.4*snare), 0.5, 2.2)"/>
@@ -1813,6 +1967,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\HyperbolicHoneycombTessellation.frag" type="normal" probability="0.48" mood="bright,psychedelic" complexity="3">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="polyP"  minValue="0.5" maxValue="2.0"></float>
     <float name="zoomP"  minValue="0.5" maxValue="1.8"></float>
     <float name="facetP" minValue="0.5" maxValue="2.2"></float>
@@ -1821,6 +1977,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\VolcanicLightningPlume.frag" type="normal" probability="0.5" mood="aggressive,bright,dark" complexity="3">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="eruptionP" minValue="0.5" maxValue="2.0"></float>
     <float name="smokeP"    minValue="0.5" maxValue="1.8"></float>
     <float name="boltP"     minValue="0.5" maxValue="2.2"></float>
@@ -1829,6 +1987,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\PrismaticRainbowCloud.frag" type="normal" probability="0.48" mood="calm,dreamy,bright" complexity="3">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="densityP" minValue="0.5" maxValue="1.8"></float>
     <expr name="waveP" formula="clamp(1.25 + 0.3*(seed3*2.0-1.0) + 0.6*(max(bassRel-0.9,0.0)), 0.5, 2)"/>
     <float name="waveP"    minValue="0.5" maxValue="2.0"></float>
@@ -1948,6 +2108,8 @@
 
   <!-- Batch 3: 15 High-Energy & Optical Shaders -->
   <TextureShader file="..\Scene\PrismaticLaserVault.frag" type="normal" probability="0.5" mood="aggressive,bright" complexity="3">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <expr name="beamP" formula="clamp(1.35 + 0.34*(seed3*2.0-1.0) + 0.68*(max(bassRel-0.9,0.0)), 0.5, 2.2)"/>
     <float name="beamP"  minValue="0.5" maxValue="2.2"></float>
     <float name="prismP" minValue="0.5" maxValue="1.8"></float>
@@ -1957,6 +2119,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\CalabiYauManifold.frag" type="normal" probability="0.48" mood="psychedelic,bright" complexity="4">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="genusP" minValue="0.5" maxValue="2.0"></float>
     <float name="zoomP"  minValue="0.5" maxValue="1.8"></float>
     <expr name="glowP" formula="clamp(1.35 + 0.34*(seed1*2.0-1.0) + 0.765*(0.6*kick+0.4*snare), 0.5, 2.2)"/>
@@ -1966,6 +2130,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\CliffordTorusKleinBottle.frag" type="normal" probability="0.48" mood="bright,psychedelic" complexity="3">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <expr name="radiusP" formula="clamp(1.15 + 0.325*(seed2*2.0-1.0) + 0.325*(swell), 0.5, 1.8)"/>
     <float name="radiusP" minValue="0.5" maxValue="1.8"></float>
     <float name="glassP"  minValue="0.5" maxValue="2.0"></float>
@@ -1975,6 +2141,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\PulsarMagnetosphereJets.frag" type="normal" probability="0.5" mood="aggressive,bright" complexity="4">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="spinP"  minValue="0.5" maxValue="2.2"></float>
     <expr name="beamP" formula="clamp(1.35 + 0.34*(seed2*2.0-1.0) + 0.68*(max(bassRel-0.9,0.0)), 0.5, 2.2)"/>
     <float name="beamP"  minValue="0.5" maxValue="2.2"></float>
@@ -1984,6 +2152,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\FerrofluidSpikeForest.frag" type="normal" probability="0.48" mood="dark,aggressive" complexity="4">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="spikeP" minValue="0.5" maxValue="2.2"></float>
     <float name="ringP"  minValue="0.5" maxValue="2.0"></float>
     <float name="oilP"   minValue="0.5" maxValue="2.0"></float>
@@ -1992,6 +2162,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\PlasmaLightningGlobe.frag" type="normal" probability="0.5" mood="aggressive,bright" complexity="3">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="arcP"    minValue="0.5" maxValue="2.2"></float>
     <float name="branchP" minValue="0.5" maxValue="2.0"></float>
     <float name="glassP"  minValue="0.5" maxValue="1.8"></float>
@@ -2107,6 +2279,8 @@
 
   <!-- Batch 4: 13 Non-Euclidean, Relativistic & Quantum Dynamics Shaders -->
   <TextureShader file="..\Scene\KerrNewmanSingularity.frag" type="normal" probability="0.5" mood="dark,aggressive" complexity="4">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="spinP" minValue="0.5" maxValue="2.0"></float>
     <float name="diskP" minValue="0.5" maxValue="2.2"></float>
     <float name="jetP"  minValue="0.5" maxValue="2.0"></float>
@@ -2115,6 +2289,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\BismuthHyperLabyrinth.frag" type="normal" probability="0.48" mood="psychedelic,bright" complexity="4">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="zoomP"  minValue="0.5" maxValue="1.8"></float>
     <float name="stepP"  minValue="0.5" maxValue="2.0"></float>
     <float name="speedP" minValue="0.5" maxValue="2.0"></float>
@@ -2123,6 +2299,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\FerrofluidHexMatrix.frag" type="normal" probability="0.48" mood="dark,aggressive" complexity="4">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="spikeP"     minValue="0.5" maxValue="2.2"></float>
     <float name="viscosityP" minValue="0.5" maxValue="2.0"></float>
     <float name="speedP"     minValue="0.5" maxValue="2.0"></float>
@@ -2131,6 +2309,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\PrismaticSuperradiance.frag" type="normal" probability="0.5" mood="aggressive,bright" complexity="3">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <expr name="beamP" formula="clamp(1.35 + 0.34*(seed1*2.0-1.0) + 0.68*(max(bassRel-0.9,0.0)), 0.5, 2.2)"/>
     <float name="beamP"       minValue="0.5" maxValue="2.2"></float>
     <expr name="dispersionP" formula="clamp(1.25 + 0.3*(seed2*2.0-1.0) + 0.6*(max(bassRel-0.9,0.0)), 0.5, 2)"/>
@@ -2250,6 +2430,8 @@
 
   <!-- Batch 5: 8 Fullscreen High-Energy & Optical Dynamics Shaders -->
   <TextureShader file="..\Scene\HyperDimensionalTesseractTunnel.frag" type="normal" probability="0.5" mood="aggressive,bright" complexity="4">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="speedP"  minValue="0.5" maxValue="2.0"></float>
     <float name="rot4DP"  minValue="0.5" maxValue="2.0"></float>
     <float name="mirrorP" minValue="0.5" maxValue="2.0"></float>
@@ -2258,6 +2440,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\NeutronStarMagnetarBurst.frag" type="normal" probability="0.5" mood="dark,aggressive" complexity="4">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="magnetP" minValue="0.5" maxValue="2.2"></float>
     <float name="burstP"  minValue="0.5" maxValue="2.2"></float>
     <float name="speedP"  minValue="0.5" maxValue="2.0"></float>
@@ -2266,6 +2450,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\LiquidCrystalOptics.frag" type="normal" probability="0.5" mood="psychedelic,bright" complexity="3">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="defectP" minValue="0.5" maxValue="2.0"></float>
     <float name="retardP" minValue="0.5" maxValue="2.0"></float>
     <float name="speedP"  minValue="0.5" maxValue="2.0"></float>
@@ -2274,6 +2460,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\NonEuclideanHyperbolicMandala.frag" type="normal" probability="0.48" mood="psychedelic,bright" complexity="4">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="symmP"  minValue="5.0" maxValue="9.0"></float>
     <float name="zoomP"  minValue="0.5" maxValue="2.0"></float>
     <float name="speedP" minValue="0.5" maxValue="2.0"></float>
@@ -2282,6 +2470,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\SuperradiantTokamakIgnition.frag" type="normal" probability="0.5" mood="aggressive,bright" complexity="4">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="plasmaP"  minValue="0.5" maxValue="2.2"></float>
     <float name="helicalP" minValue="0.5" maxValue="2.0"></float>
     <float name="speedP"   minValue="0.5" maxValue="2.0"></float>
@@ -2290,6 +2480,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\IridescentChitinMorpho.frag" type="normal" probability="0.48" mood="calm,bright,dreamy" complexity="3">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="gratingP" minValue="0.5" maxValue="2.0"></float>
     <expr name="scaleP" formula="clamp(1.25 + 0.375*(seed2*2.0-1.0) + 0.375*(swell), 0.5, 2)"/>
     <float name="scaleP"   minValue="0.5" maxValue="2.0"></float>
@@ -2299,6 +2491,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\GrapheneDiracPlasmonics.frag" type="normal" probability="0.5" mood="bright,aggressive" complexity="3">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="latticeP" minValue="0.5" maxValue="2.0"></float>
     <float name="plasmonP" minValue="0.5" maxValue="2.2"></float>
     <float name="speedP"   minValue="0.5" maxValue="2.0"></float>
@@ -2307,6 +2501,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\SuperheatedCoronalLoop.frag" type="normal" probability="0.5" mood="aggressive,bright" complexity="4">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="loopP"    minValue="0.5" maxValue="2.2"></float>
     <float name="granuleP" minValue="0.5" maxValue="2.0"></float>
     <float name="speedP"   minValue="0.5" maxValue="2.0"></float>
@@ -2316,6 +2512,8 @@
 
   <!-- Batch 6: 8 Texture-Hero & Holographic Kaleidoscope Shaders -->
   <TextureShader file="..\Scene\InfinitePhotoZoomAbyss.frag" type="normal" probability="0.5" mood="bright,psychedelic" complexity="3">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="speedP"  minValue="0.5" maxValue="2.0"></float>
     <float name="spiralP" minValue="0.5" maxValue="2.0"></float>
     <float name="zoomP"   minValue="0.5" maxValue="2.0"></float>
@@ -2324,6 +2522,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\StainedGlassCathedralCaustics.frag" type="normal" probability="0.5" mood="calm,bright,dreamy" complexity="3">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="traceryP" minValue="0.5" maxValue="2.0"></float>
     <float name="godrayP"  minValue="0.5" maxValue="2.2"></float>
     <float name="glassP"   minValue="0.5" maxValue="2.0"></float>
@@ -2332,6 +2532,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\OrigamiMirrorKaleidoscope.frag" type="normal" probability="0.5" mood="bright,psychedelic" complexity="3">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="foldP"  minValue="0.5" maxValue="2.0"></float>
     <expr name="scaleP" formula="clamp(1.25 + 0.375*(seed3*2.0-1.0) + 0.375*(swell), 0.5, 2)"/>
     <float name="scaleP" minValue="0.5" maxValue="2.0"></float>
@@ -2341,6 +2543,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\FluidPhotoMarblingEbru.frag" type="normal" probability="0.5" mood="calm,bright,dreamy" complexity="3">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="rakeP"  minValue="0.5" maxValue="2.0"></float>
     <expr name="swirlP" formula="clamp(1.25 + 0.3*(seed2*2.0-1.0) + 0.525*(flux), 0.5, 2)"/>
     <float name="swirlP" minValue="0.5" maxValue="2.0"></float>
@@ -2350,6 +2554,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\PrismaticCrystalChamber.frag" type="normal" probability="0.5" mood="bright,psychedelic" complexity="4">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="facetP"      minValue="0.5" maxValue="2.0"></float>
     <expr name="dispersionP" formula="clamp(1.35 + 0.34*(seed3*2.0-1.0) + 0.68*(max(bassRel-0.9,0.0)), 0.5, 2.2)"/>
     <float name="dispersionP" minValue="0.5" maxValue="2.2"></float>
@@ -2359,6 +2565,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\KineticTileMosaicMatrix.frag" type="normal" probability="0.5" mood="bright,aggressive" complexity="3">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="densityP" minValue="0.5" maxValue="2.0"></float>
     <float name="depthP"   minValue="0.5" maxValue="2.2"></float>
     <float name="speedP"   minValue="0.5" maxValue="2.0"></float>
@@ -2367,6 +2575,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\HyperbolicPoincareTunnel.frag" type="normal" probability="0.5" mood="bright,psychedelic" complexity="4">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="speedP"  minValue="0.5" maxValue="2.0"></float>
     <float name="branchP" minValue="0.5" maxValue="2.0"></float>
     <float name="curveP"  minValue="0.5" maxValue="2.0"></float>
@@ -2375,6 +2585,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\CyberHologramGlitchVoxel.frag" type="normal" probability="0.5" mood="aggressive,bright" complexity="3">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="depthP"  minValue="0.5" maxValue="2.2"></float>
     <float name="glitchP" minValue="0.5" maxValue="2.2"></float>
     <float name="speedP"  minValue="0.5" maxValue="2.0"></float>
@@ -2384,6 +2596,8 @@
 
   <!-- Batch 7: 10 Multiverse & Complex Systems Shaders -->
   <TextureShader file="..\Scene\QuantumChromodynamicsGluonPlasma.frag" type="normal" probability="0.5" mood="aggressive,bright" complexity="4">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="plasmaP" minValue="0.5" maxValue="2.2"></float>
     <float name="stringP" minValue="0.5" maxValue="2.0"></float>
     <float name="speedP"  minValue="0.5" maxValue="2.0"></float>
@@ -2392,6 +2606,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\BioluminescentAbyssalTrenches.frag" type="normal" probability="0.5" mood="calm,bright,dreamy" complexity="4">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="trenchP" minValue="0.5" maxValue="2.0"></float>
     <float name="bioP"    minValue="0.5" maxValue="2.2"></float>
     <float name="speedP"  minValue="0.5" maxValue="2.0"></float>
@@ -2400,6 +2616,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\NonEuclideanOctahedralLabyrinth.frag" type="normal" probability="0.48" mood="psychedelic,bright" complexity="4">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="speedP" minValue="0.5" maxValue="2.0"></float>
     <float name="foldP"  minValue="0.5" maxValue="2.0"></float>
     <expr name="scaleP" formula="clamp(1.25 + 0.375*(seed1*2.0-1.0) + 0.375*(swell), 0.5, 2)"/>
@@ -2409,6 +2627,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\MetamorphicLavaVortex.frag" type="normal" probability="0.5" mood="aggressive,dark" complexity="4">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="magmaP" minValue="0.5" maxValue="2.2"></float>
     <float name="crustP" minValue="0.5" maxValue="2.0"></float>
     <float name="speedP" minValue="0.5" maxValue="2.0"></float>
@@ -2494,6 +2714,8 @@
 
   <!-- Batch 8: 28 Quantum, Cosmic & Optical Shaders -->
   <TextureShader file="..\Scene\EinsteinRingGravitationalLens.frag" type="normal" probability="0.5" mood="bright,dark,psychedelic" complexity="3">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="lensP"  minValue="0.5" maxValue="2.2"></float>
     <float name="massP"  minValue="0.5" maxValue="2.0"></float>
     <float name="speedP" minValue="0.5" maxValue="2.0"></float>
@@ -2502,6 +2724,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\QuasarRelativisticJet.frag" type="normal" probability="0.5" mood="aggressive,bright" complexity="4">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="jetP"         minValue="0.5" maxValue="2.2"></float>
     <float name="collimationP" minValue="0.5" maxValue="2.0"></float>
     <float name="speedP"       minValue="0.5" maxValue="2.0"></float>
@@ -2510,6 +2734,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\SolarCoronaProminence.frag" type="normal" probability="0.5" mood="aggressive,bright" complexity="3">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="loopP"    minValue="0.5" maxValue="2.2"></float>
     <float name="granuleP" minValue="0.5" maxValue="2.0"></float>
     <float name="flareP"   minValue="0.5" maxValue="2.2"></float>
@@ -2518,6 +2744,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\GyroidTriplyPeriodicLabyrinth.frag" type="normal" probability="0.5" mood="bright,psychedelic" complexity="4">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <expr name="scaleP" formula="clamp(1.35 + 0.425*(seed2*2.0-1.0) + 0.425*(swell), 0.5, 2.2)"/>
     <float name="scaleP" minValue="0.5" maxValue="2.2"></float>
     <float name="wallP"  minValue="0.5" maxValue="2.0"></float>
@@ -2527,6 +2755,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\PenroseAperiodicTessellation.frag" type="normal" probability="0.5" mood="bright,calm,dreamy" complexity="3">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="tileP"  minValue="0.5" maxValue="2.2"></float>
     <float name="foldP"  minValue="0.5" maxValue="2.0"></float>
     <float name="speedP" minValue="0.5" maxValue="2.0"></float>
@@ -2535,6 +2765,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\QuaternionicJulia4DFlight.frag" type="normal" probability="0.48" mood="psychedelic,bright" complexity="4">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="iterP"  minValue="0.5" maxValue="2.0"></float>
     <float name="sliceP" minValue="0.5" maxValue="2.2"></float>
     <float name="speedP" minValue="0.5" maxValue="2.0"></float>
@@ -2543,6 +2775,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\SchwarzschildWormholeTunnel.frag" type="normal" probability="0.5" mood="bright,dark,aggressive" complexity="4">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="throatP"    minValue="0.5" maxValue="2.2"></float>
     <float name="curvatureP" minValue="0.5" maxValue="2.0"></float>
     <float name="speedP"     minValue="0.5" maxValue="2.0"></float>
@@ -2551,6 +2785,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\CasimirCavityVacuumFluctuations.frag" type="normal" probability="0.5" mood="calm,bright,dreamy" complexity="3">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="gapP"   minValue="0.5" maxValue="2.2"></float>
     <float name="fluctP" minValue="0.5" maxValue="2.0"></float>
     <float name="speedP" minValue="0.5" maxValue="2.0"></float>
@@ -2559,6 +2795,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\SonoluminescenceBubble.frag" type="normal" probability="0.5" mood="bright,calm,aggressive" complexity="3">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="cavityP" minValue="0.5" maxValue="2.2"></float>
     <float name="shockP"  minValue="0.5" maxValue="2.0"></float>
     <float name="speedP"  minValue="0.5" maxValue="2.0"></float>
@@ -2567,6 +2805,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\JosephsonVortexLattice.frag" type="normal" probability="0.5" mood="bright,psychedelic" complexity="3">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="latticeP" minValue="0.5" maxValue="2.2"></float>
     <float name="vortexP"  minValue="0.5" maxValue="2.0"></float>
     <float name="speedP"   minValue="0.5" maxValue="2.0"></float>
@@ -2575,6 +2815,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\FireWhirlTornado.frag" type="normal" probability="0.5" mood="aggressive,bright" complexity="4">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="tornadoP" minValue="0.5" maxValue="2.2"></float>
     <float name="heatP"    minValue="0.5" maxValue="2.0"></float>
     <float name="speedP"   minValue="0.5" maxValue="2.0"></float>
@@ -2583,6 +2825,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\SupercellMesocyclone.frag" type="normal" probability="0.5" mood="dark,aggressive,calm" complexity="3">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="cloudP" minValue="0.5" maxValue="2.2"></float>
     <float name="stormP" minValue="0.5" maxValue="2.0"></float>
     <float name="speedP" minValue="0.5" maxValue="2.0"></float>
@@ -2591,6 +2835,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\DichroicInfinityPrismVault.frag" type="normal" probability="0.5" mood="bright,psychedelic" complexity="4">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="prismP"      minValue="0.5" maxValue="2.2"></float>
     <expr name="dispersionP" formula="clamp(1.35 + 0.34*(seed3*2.0-1.0) + 0.68*(max(bassRel-0.9,0.0)), 0.5, 2.2)"/>
     <float name="dispersionP" minValue="0.5" maxValue="2.2"></float>
@@ -2600,6 +2846,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\LiquidMercuryFerrofluidChamber.frag" type="normal" probability="0.5" mood="bright,calm,dark" complexity="4">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="spikeP"   minValue="0.5" maxValue="2.2"></float>
     <float name="faradayP" minValue="0.5" maxValue="2.0"></float>
     <float name="speedP"   minValue="0.5" maxValue="2.0"></float>
@@ -2786,6 +3034,8 @@
 
   <!-- Batch 9: 30 Astro-Quantum, Higher-Dimensional & Biophotonic Shaders -->
   <TextureShader file="..\Scene\HawkingRadiationEvaporation.frag" type="normal" probability="0.5" mood="bright,dark,psychedelic" complexity="3">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="evapP"    minValue="0.5" maxValue="2.2"></float>
     <float name="horizonP" minValue="0.5" maxValue="2.0"></float>
     <float name="speedP"   minValue="0.5" maxValue="2.0"></float>
@@ -2794,6 +3044,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\MagnetarCrustquakeSGR.frag" type="normal" probability="0.5" mood="aggressive,bright" complexity="4">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="crustP" minValue="0.5" maxValue="2.2"></float>
     <float name="burstP" minValue="0.5" maxValue="2.0"></float>
     <float name="speedP" minValue="0.5" maxValue="2.0"></float>
@@ -2802,6 +3054,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\CosmicRayAirShowerCherenkov.frag" type="normal" probability="0.5" mood="bright,aggressive,dark" complexity="3">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="cascadeP" minValue="0.5" maxValue="2.2"></float>
     <float name="fluorP"   minValue="0.5" maxValue="2.0"></float>
     <float name="speedP"   minValue="0.5" maxValue="2.0"></float>
@@ -2810,6 +3064,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\HeliosphericCurrentSheet.frag" type="normal" probability="0.5" mood="bright,psychedelic" complexity="3">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="spiralP" minValue="0.5" maxValue="2.2"></float>
     <float name="skirtP"  minValue="0.5" maxValue="2.0"></float>
     <float name="speedP"  minValue="0.5" maxValue="2.0"></float>
@@ -2818,6 +3074,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\GravitationalWaveInterferometer.frag" type="normal" probability="0.5" mood="bright,calm,dreamy" complexity="3">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="cavityP" minValue="0.5" maxValue="2.2"></float>
     <float name="strainP" minValue="0.5" maxValue="2.0"></float>
     <float name="speedP"  minValue="0.5" maxValue="2.0"></float>
@@ -2826,6 +3084,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\ScherkMinimalSurfaceTower.frag" type="normal" probability="0.5" mood="bright,psychedelic" complexity="4">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="saddleP" minValue="0.5" maxValue="2.2"></float>
     <float name="towerP"  minValue="0.5" maxValue="2.0"></float>
     <float name="speedP"  minValue="0.5" maxValue="2.0"></float>
@@ -2834,6 +3094,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\ApollonianSpherePackingGasket.frag" type="normal" probability="0.48" mood="bright,psychedelic" complexity="4">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="gasketP"  minValue="0.5" maxValue="2.2"></float>
     <float name="fractalP" minValue="0.5" maxValue="2.0"></float>
     <float name="speedP"   minValue="0.5" maxValue="2.0"></float>
@@ -2842,6 +3104,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\KleinQuarticHyperbolicCurve.frag" type="normal" probability="0.5" mood="bright,calm,psychedelic" complexity="3">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="genusP"    minValue="0.5" maxValue="2.2"></float>
     <float name="heptagonP" minValue="0.5" maxValue="2.0"></float>
     <float name="speedP"    minValue="0.5" maxValue="2.0"></float>
@@ -2850,6 +3114,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\MandelboxHyperCubeMetamaterial.frag" type="normal" probability="0.48" mood="aggressive,bright" complexity="4">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <expr name="scaleP" formula="clamp(2.25 + 0.375*(seed2*2.0-1.0) + 0.375*(swell), 1.5, 3)"/>
     <float name="scaleP" minValue="1.5" maxValue="3.0"></float>
     <float name="foldP"  minValue="0.5" maxValue="2.0"></float>
@@ -2859,6 +3125,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\DiracConeGrapheneValleytronics.frag" type="normal" probability="0.5" mood="bright,psychedelic" complexity="3">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="coneP"   minValue="0.5" maxValue="2.2"></float>
     <float name="valleyP" minValue="0.5" maxValue="2.0"></float>
     <float name="speedP"  minValue="0.5" maxValue="2.0"></float>
@@ -2867,6 +3135,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\TopologicalInsulatorDiracSurface.frag" type="normal" probability="0.5" mood="bright,calm,dreamy" complexity="3">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="surfaceP" minValue="0.5" maxValue="2.2"></float>
     <float name="spinP"    minValue="0.5" maxValue="2.0"></float>
     <float name="speedP"   minValue="0.5" maxValue="2.0"></float>
@@ -2875,6 +3145,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\MajoranaZeroModeBraid.frag" type="normal" probability="0.5" mood="bright,psychedelic" complexity="3">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="braidP"    minValue="0.5" maxValue="2.2"></float>
     <float name="junctionP" minValue="0.5" maxValue="2.0"></float>
     <float name="speedP"    minValue="0.5" maxValue="2.0"></float>
@@ -2883,6 +3155,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\BallLightningPlasmoid.frag" type="normal" probability="0.5" mood="aggressive,bright" complexity="4">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="plasmoidP" minValue="0.5" maxValue="2.2"></float>
     <float name="arcP"      minValue="0.5" maxValue="2.0"></float>
     <float name="speedP"    minValue="0.5" maxValue="2.0"></float>
@@ -2891,6 +3165,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\MantleConvectionPlume.frag" type="normal" probability="0.5" mood="dark,aggressive,bright" complexity="3">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="plumeP"   minValue="0.5" maxValue="2.2"></float>
     <float name="convectP" minValue="0.5" maxValue="2.0"></float>
     <float name="speedP"   minValue="0.5" maxValue="2.0"></float>
@@ -2899,6 +3175,8 @@
   </TextureShader>
 
   <TextureShader file="..\Scene\AuroraAustralisCurtainSwell.frag" type="normal" probability="0.5" mood="calm,dreamy,bright" complexity="3">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="curtainP" minValue="0.5" maxValue="2.2"></float>
     <float name="rayP"     minValue="0.5" maxValue="2.0"></float>
     <float name="speedP"   minValue="0.5" maxValue="2.0"></float>

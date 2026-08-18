@@ -1643,11 +1643,28 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 	// restore render destination to regular frame buffer
 	glViewport( 0, 0, m_width, m_height );
 
+	// 2D CAMERA RIG: if a scene carries rig2* formulas, the combine gets the
+	// TRANSFORMED frame instead.  Never on eye-packed frames (warping a
+	// packed stereo frame shears the two eyes against each other), and the
+	// "next" slot only when its pass actually rendered this frame.
+	GLuint combineTex1 = m_texIDFBOEffectTexture1;
+	GLuint combineTex2 = m_texIDFBOEffectTexture2;
+	if( !m_trueStereoPacked )
+	{
+		combineTex1 = rig2Transform( m_effectTextures[m_scheduler.actTexture()],
+		                             m_texIDFBOEffectTexture1, 0 );
+		if( m_scheduler.texState() != 0 )
+			combineTex2 = rig2Transform( m_effectTextures[m_scheduler.nextTexture()],
+			                             m_texIDFBOEffectTexture2, 1 );
+		glBindFramebuffer( GL_FRAMEBUFFER, m_defaultFBO );
+		glViewport( 0, 0, m_width, m_height );
+	}
+
 	glActiveTexture(GL_TEXTURE3);
-	glBindTexture( GL_TEXTURE_2D, m_texIDFBOEffectTexture1 );
-	
+	glBindTexture( GL_TEXTURE_2D, combineTex1 );
+
 	glActiveTexture(GL_TEXTURE4);
-	glBindTexture( GL_TEXTURE_2D, m_texIDFBOEffectTexture2 );
+	glBindTexture( GL_TEXTURE_2D, combineTex2 );
 
 	// The matching depth buffers.  Bound unconditionally: they are two texture
 	// binds, and a combine that ignores them never declares the samplers.
@@ -1994,6 +2011,76 @@ void FilterShader::drawWindow()
  */
 // Fixed-function copy of a texture into the currently bound FBO.  Used by the
 // true-stereo path: the eye-packed 3D frame replaces the combine output 1:1.
+// 2D CAMERA RIG: rotate/zoom/pan a finished 2D scene frame before the
+// combine consumes it, driven by the scene's rig2* formulas (evaluated in
+// EffectShader::applyAudioFeatures).  Renders src into a per-slot scratch
+// texture through Blend/Rig2D.frag and returns THAT; the caller simply
+// binds the returned id, so nothing is copied back and no other consumer
+// of the original texture is affected.  Off (returns src) when the scene
+// has no rig2 formulas — zero extra cost for the whole existing catalogue.
+GLuint FilterShader::rig2Transform( EffectShader *fx, GLuint srcTex, int slot )
+{
+	float rig[4];
+	if( !fx || !fx->rig2( rig ) )
+		return srcTex;
+
+	static GLuint prog = 0;
+	static GLint  uTex = -1, uRoll = -1, uZoom = -1, uPan = -1, uRes = -1;
+	if( prog == 0 )
+	{
+		prog  = setShaders( "..\\standard.vert", "..\\Blend\\Rig2D.frag" );
+		uTex  = glGetUniformLocation( prog, "tex" );
+		uRoll = glGetUniformLocation( prog, "rigRoll" );
+		uZoom = glGetUniformLocation( prog, "rigZoom" );
+		uPan  = glGetUniformLocation( prog, "rigPan" );
+		uRes  = glGetUniformLocation( prog, "resolution" );
+	}
+	if( prog == 0 )
+		return srcTex;                      // compile failed: fail open
+
+	// Lazy scratch targets, size-checked every use (render scale / DPI
+	// changes re-allocate here instead of needing a resize() case).
+	if( m_rig2W != m_width || m_rig2H != m_height )
+	{
+		for( int i = 0; i < 2; ++i )
+		{
+			if( m_rig2Tex[i] == 0 ) glGenTextures( 1, &m_rig2Tex[i] );
+			glBindTexture( GL_TEXTURE_2D, m_rig2Tex[i] );
+			glTexImage2D( GL_TEXTURE_2D, 0, m_texInternalFormat, m_width, m_height,
+			              0, m_texFormat, m_texType, NULL );
+			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+			if( m_rig2Fbo[i] == 0 ) glGenFramebuffers( 1, &m_rig2Fbo[i] );
+			glBindFramebuffer( GL_FRAMEBUFFER, m_rig2Fbo[i] );
+			glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+			                        GL_TEXTURE_2D, m_rig2Tex[i], 0 );
+		}
+		glBindTexture( GL_TEXTURE_2D, 0 );
+		m_rig2W = m_width;
+		m_rig2H = m_height;
+	}
+
+	glBindFramebuffer( GL_FRAMEBUFFER, m_rig2Fbo[slot] );
+	glViewport( 0, 0, m_width, m_height );
+	glDisable( GL_DEPTH_TEST );
+	glDisable( GL_BLEND );
+	glUseProgram( prog );
+	glActiveTexture( GL_TEXTURE0 );
+	glBindTexture( GL_TEXTURE_2D, srcTex );
+	if( uTex  >= 0 ) glUniform1i( uTex, 0 );
+	if( uRes  >= 0 ) glUniform2f( uRes,  float(m_width), float(m_height) );
+	if( uRoll >= 0 ) glUniform1f( uRoll, rig[0] );
+	if( uZoom >= 0 ) glUniform1f( uZoom, rig[1] );
+	if( uPan  >= 0 ) glUniform2f( uPan,  rig[2], rig[3] );
+	glBindVertexArray( fullscreenVAO() );
+	glDrawArrays( GL_TRIANGLES, 0, 3 );
+	glBindVertexArray( 0 );
+	checkGLErrors( "FilterShader::rig2Transform" );
+	return m_rig2Tex[slot];
+}
+
 void FilterShader::blitTexture( GLuint tex )
 {
 	// Tiny dedicated blit program (fixed-function texturing is gone in core).

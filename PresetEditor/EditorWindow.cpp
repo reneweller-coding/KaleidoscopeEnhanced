@@ -764,20 +764,26 @@ void EditorWindow::rebuildRangeEditor()
     // composes into projM -- pitch/yaw/roll (radians), dolly (world units,
     // >0 = closer) plus host-INTEGRATED V rates (audio-varying rates are
     // jump-free by construction).  Empty = rig off.
-    if (entry.type.compare("scene3d", Qt::CaseInsensitive) == 0)
     {
-        static const char *kRig[8] = { "rigPitch", "rigYaw", "rigRoll", "rigDolly",
-                                       "rigPitchV", "rigYawV", "rigRollV", "rigDollyV" };
-        for (const char *rn : kRig)
-        {
-            bool have = false;
-            for (const Row &r : combined)
-                if (r.param.kind == "expr" && r.param.name == QLatin1String(rn))
-                { have = true; break; }
-            if (have) continue;
-            ShaderParam rp; rp.kind = "expr"; rp.name = rn;
-            combined.push_back({ rp, false });
-        }
+        // scene3d gets the projM rig; every OTHER texture scene gets the 2D
+        // rig (FilterShader's Rig2D transform pass).  Combines get neither.
+        static const char *kRig3[8] = { "rigPitch", "rigYaw", "rigRoll", "rigDolly",
+                                        "rigPitchV", "rigYawV", "rigRollV", "rigDollyV" };
+        static const char *kRig2[8] = { "rig2Roll", "rig2Zoom", "rig2X", "rig2Y",
+                                        "rig2RollV", "rig2ZoomV", "rig2XV", "rig2YV" };
+        const bool is3D = entry.type.compare("scene3d", Qt::CaseInsensitive) == 0;
+        const char *const *rig = is3D ? kRig3 : kRig2;
+        if (!entry.isCombine)
+            for (int ri = 0; ri < 8; ++ri)
+            {
+                bool have = false;
+                for (const Row &r : combined)
+                    if (r.param.kind == "expr" && r.param.name == QLatin1String(rig[ri]))
+                    { have = true; break; }
+                if (have) continue;
+                ShaderParam rp; rp.kind = "expr"; rp.name = rig[ri];
+                combined.push_back({ rp, false });
+            }
     }
     // Order: value rows, then param-formula rows, then audio-mapping rows --
     // each formula group under its own section header below.

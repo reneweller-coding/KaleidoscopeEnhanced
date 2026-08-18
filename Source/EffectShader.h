@@ -218,7 +218,12 @@ protected:
 	unsigned int	m_height; // Combine height
 
 	//Shader and Uniforms
-	GLuint			m_sh_prog_id; // id of shader program
+	// = 0 HERE, not only in the default ctor: the file-loading ctor never
+	// touched it, so it held stack garbage until initUniforms() -- harmless
+	// for years, until addUniform()'s late-registration path started testing
+	// it BEFORE the GL loader ran (garbage nonzero -> glGetUniformLocation
+	// through a still-NULL glcore pointer -> instant 0xC0000005 at startup).
+	GLuint			m_sh_prog_id = 0; // id of shader program
 	GLint			m_texPointUni1;
 	GLint			m_texPointUni2;
 	GLint			m_texSizeRcpUni;	
@@ -274,6 +279,24 @@ protected:
 	std::vector<ExprEntry> m_exprs;
 	float m_exprTime     = 0.f;      // time as passed to setUniforms
 	float m_exprSeeds[3] = { 0.5f, 0.5f, 0.5f };   // re-rolled per activation
+
+	// 2D CAMERA RIG state (formulas rig2Roll/rig2Zoom/rig2X/rig2Y + the
+	// host-integrated rig2…V rates), evaluated in applyAudioFeatures and
+	// consumed by FilterShader's Blend/Rig2D.frag transform pass.
+	bool  m_rig2Active   = false;
+	float m_rig2[4]      = { 0.f, 0.f, 0.f, 0.f };   // roll zoom x y
+	float m_rig2Acc[4]   = { 0.f, 0.f, 0.f, 0.f };
+	float m_rig2LastT    = -1.0e9f;
+
+public:
+	// Current 2D-rig transform (roll, zoom, panX, panY); false = pass off.
+	bool rig2( float out[4] ) const
+	{
+		if( !m_rig2Active ) return false;
+		for( int i = 0; i < 4; ++i ) out[i] = m_rig2[i];
+		return true;
+	}
+protected:
 
 	unsigned int m_moodFlags = 0;   // MoodFlags bitmask (0 = untagged/neutral)
 
