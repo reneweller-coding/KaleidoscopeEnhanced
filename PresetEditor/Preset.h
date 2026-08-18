@@ -58,7 +58,8 @@ struct ShaderParam
  */
 struct PresetEntry
 {
-    bool     isCombine = false;   ///< true = `<CombineShader>` (FX blend pass); false = `<TextureShader>` (scene).
+    bool     isCombine = false;   ///< true = `<CombineShader>` (FX overlay pass); false = `<TextureShader>` (scene).
+    bool     isTransition = false;   ///< true = `<TransitionShader>` (scene-fade blend from Transitions/); mutually exclusive with isCombine.
     /**
      * @brief Folder segment of the file= attribute ("Scene2D" | "Scene3D" | "FX").
      *

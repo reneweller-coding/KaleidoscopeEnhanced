@@ -162,7 +162,8 @@ GLwidget::GLwidget( QWidget *parent )
 	// the (dropped) watch path is re-added shortly after each change.
 	{
 		QStringList watch;
-		for( const QString &d : { QString("..\\Scene2D"), QString("..\\FX") } )
+		for( const QString &d : { QString("..\\Scene2D"), QString("..\\FX"),
+		                          QString("..\\Transitions") } )
 			for( const QFileInfo &fi : QDir(d).entryInfoList({"*.frag"}, QDir::Files) )
 				watch << fi.absoluteFilePath();
 		if( !watch.isEmpty() )

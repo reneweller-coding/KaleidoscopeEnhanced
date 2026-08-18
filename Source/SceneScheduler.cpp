@@ -140,6 +140,32 @@ void SceneScheduler::forceScene( int idx )
 	m_forceEffectChange = true;
 }
 
+/**
+ * @brief Find a registered transition shader by fragment basename.
+ *
+ * Compares only the basename (text after the last path separator) so the
+ * dramaturgy hooks ("Shatter.frag" on a drop, the Portal depth gate) stay
+ * independent of how the preset spelled the path.
+ * @param basename File name without path, e.g. "Crossfade.frag".
+ * @return Index into the transition list, or -1 if not registered.
+ */
+int SceneScheduler::findTransition( const char *basename ) const
+{
+	if( !m_transitions || !basename )
+		return -1;
+	for( unsigned int i = 0; i < m_transitions->size(); i++ )
+	{
+		const char *frag = (*m_transitions)[i]->fragmentName();
+		if( !frag ) continue;
+		const char *b = frag;
+		for( const char *p = frag; *p; ++p )
+			if( *p == '\\' || *p == '/' ) b = p + 1;
+		if( strcmp( b, basename ) == 0 )
+			return (int) i;
+	}
+	return -1;
+}
+
 // Mood-basierter Auswahl-Bias - zwei Komponenten:
 //   1. Busyness: Shader-Komplexität soll grob zum Arousal passen.
 //   2. Mood-TAGS (config mood="dark,bright,calm,aggressive"): Bonus bei
@@ -334,21 +360,44 @@ void SceneScheduler::tick( const Tick &t )
 
 				m_texState = 1;
 
-				// Roll a transition style: 28 styles (see FxPlain.frag),
-				// the classic linear mix stays the most common.  Style 27
-				// (portal) needs REAL depth on both sides - without two 3D
-				// scenes it falls back to the zoom-through flight.
+				// Roll the TRANSITION for this fade: probability-weighted
+				// rejection sampling over the registered Transitions/ shaders,
+				// mood-biased like every other slot (Crossfade carries
+				// probability 1.0 in the presets, so the classic linear mix
+				// stays the most common).  Portal needs REAL depth on both
+				// sides - without two 3D scenes it falls back to ZoomThrough.
+				if( m_transitions && !m_transitions->empty() )
 				{
-					int r = rand() % 33;
-					int st = (r <= 5) ? 0 : (r - 5);
-					if( st == 27 && !( tex[m_actTexture]->is3D()
-					                && tex[m_nextTexture]->is3D() ) )
-						st = 3;
-					// Dev-Haken: KALEIDO_TRANS_STYLE erzwingt einen Stil
-					// (Proben einzelner Uebergaenge ohne Wuerfel-Glueck).
+					std::vector<EffectShader *> &tr = *m_transitions;
+					for( unsigned int i = 0; i < kMaxSearch; i++ )
+					{
+						m_actTransition = rand() % tr.size();
+						if( tr[m_actTransition]->useShader()
+						    && moodAccept( tr[m_actTransition] ) )
+							break;
+					}
+					if( findTransition( "Portal.frag" ) == (int) m_actTransition
+					    && !( tex[m_actTexture]->is3D()
+					       && tex[m_nextTexture]->is3D() ) )
+					{
+						int zoom = findTransition( "ZoomThrough.frag" );
+						if( zoom < 0 ) zoom = findTransition( "Crossfade.frag" );
+						if( zoom >= 0 ) m_actTransition = (unsigned int) zoom;
+					}
+					// Dev-Haken: KALEIDO_TRANS_STYLE erzwingt einen Uebergang
+					// (Proben einzelner Uebergaenge ohne Wuerfel-Glueck) -
+					// Dateiname ("Shatter.frag") oder Listen-Index.
 					if( const char *fs = getenv( "KALEIDO_TRANS_STYLE" ) )
-						st = atoi( fs );
-					m_transStyleTex = st;
+					{
+						int idx = findTransition( fs );
+						if( idx < 0 && fs[0] >= '0' && fs[0] <= '9' )
+							idx = atoi( fs ) % (int) tr.size();
+						if( idx >= 0 ) m_actTransition = (unsigned int) idx;
+					}
+					// Per-activation variety: re-roll the transition's own
+					// <float>/<interpolator> params for THIS fade.
+					tr[m_actTransition]->resetParameters();
+					tr[m_actTransition]->startInterpolators();
 				}
 
 				unsigned int timeAct  = tex[m_actTexture]->getTimeInterpolation();
@@ -378,14 +427,16 @@ void SceneScheduler::tick( const Tick &t )
 				if( m_dropCutPending && !m_reviewMode )
 				{
 					m_dropCutPending = false;
-					if( rand() % 2 )
+					int cross   = findTransition( "Crossfade.frag" );
+					int shatter = findTransition( "Shatter.frag" );
+					if( ( rand() % 2 || shatter < 0 ) && cross >= 0 )
 					{
-						m_transStyleTex = 0;
+						m_actTransition = (unsigned int) cross;
 						m_texFadeDur    = 0.15f;
 					}
-					else
+					else if( shatter >= 0 )
 					{
-						m_transStyleTex = 26;
+						m_actTransition = (unsigned int) shatter;
 						m_texFadeDur    = 0.7f;
 					}
 				}
@@ -553,12 +604,6 @@ void SceneScheduler::tickCombine( const Tick &t, bool trueStereoHold )
 				m_pendingCombineAge    = 0.f;
 
 				m_combState = 1;
-
-				// Roll a transition style for the combine blend as well.
-				{
-					int r = rand() % 31;
-					m_transStyleComb = (r <= 5) ? 0 : (r - 5);
-				}
 
 				unsigned int timeAct  = comb[m_actCombine]->getTimeInterpolation();
 				unsigned int timeNext = comb[m_nextCombine]->getTimeInterpolation();

@@ -309,7 +309,7 @@ enum AudioLoc {
     AL_ROLLOFF, AL_SPREAD, AL_MODE, AL_PITCH, AL_AROUSAL, AL_VALENCE,
     AL_HCDF, AL_ROUGH, AL_SHARP, AL_ONSET, AL_DOWNBEAT, AL_BEATPH,
     AL_STEREO, AL_DPITCH, AL_MUSIC, AL_STBANDL, AL_STBANDR, AL_CHROMA,
-    AL_SWELL, AL_BARPH, AL_AMBIENT, AL_KICK, AL_SNARE, AL_HAT, AL_TRANS,
+    AL_SWELL, AL_BARPH, AL_AMBIENT, AL_KICK, AL_SNARE, AL_HAT,
     AL_SPECTRUM, AL_TEXSIM, AL_TEXFLUID, AL_BUILDUP, AL_DROP, AL_WAVE,
     AL_BASSREL, AL_MIDREL, AL_TREBREL, AL_DAYPHASE, AL_TEXSMOKE3D,
     AL_CHROMA12, AL_FLATNESS, AL_ZCR, AL_TEXSSM, AL_SSMHEAD, AL_SSMFILL,
@@ -328,7 +328,7 @@ const char *kAudioLocNames[AL_COUNT] = {
     "audioDownbeat", "audioBeatPhase", "audioStereo", "audioDeltaPitch",
     "audioMusic", "audioStereoL", "audioStereoR", "audioChromaHue",
     "audioSwell", "audioBarPhase", "audioAmbient", "audioKick", "audioSnare",
-    "audioHat", "transStyle", "audioSpectrum", "texSim", "texFluid",
+    "audioHat", "audioSpectrum", "texSim", "texFluid",
     "audioBuildUp", "audioDrop", "audioWave", "audioBassRel", "audioMidRel",
     "audioTrebRel", "dayPhase", "texSmoke3D", "audioChroma", "audioFlatness",
     "audioZCR", "texSSM", "ssmHead", "ssmFill", "texPhysarum",
@@ -357,7 +357,6 @@ void EffectShader::applyAudioFeatures(const AudioFeatures &f)
     if (L[AL_KICK]     >= 0) glUniform1f(L[AL_KICK],     f.onsetKick);
     if (L[AL_SNARE]    >= 0) glUniform1f(L[AL_SNARE],    f.onsetSnare);
     if (L[AL_HAT]      >= 0) glUniform1f(L[AL_HAT],      f.onsetHat);
-    if (L[AL_TRANS]    >= 0) glUniform1i(L[AL_TRANS],    f.transStyle);
     if (L[AL_AROUSAL]  >= 0) glUniform1f(L[AL_AROUSAL],  f.arousal);
     if (L[AL_VALENCE]  >= 0) glUniform1f(L[AL_VALENCE],  f.valence);
     if (L[AL_HCDF]     >= 0) glUniform1f(L[AL_HCDF],     f.harmonicChange);

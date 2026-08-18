@@ -1,0 +1,43 @@
+#version 330 core
+out vec4 fragColor;
+/**
+ * @file DiagonalWipe.frag
+ * @brief Soft diagonal wipe travelling corner to corner (overshoots the
+ * widescreen extent so no corner is left behind).
+ *
+ * Scene TRANSITION shader (Transitions/): blends the outgoing scene
+ * (tex0) into the incoming one (tex1) over one cross-fade.
+ * interpolation: 1 = old scene fully visible .. 0 = new scene.
+ * Extracted from the former FxPlain.frag 28-style library.
+ */
+uniform vec2 resolution;
+uniform sampler2D tex0;
+uniform sampler2D tex1;
+uniform float interpolation;
+
+const float PI = 3.14159265358979;
+
+vec4 blend4(vec4 a, vec4 b, float w) { return mix(a, b, clamp(w, 0.0, 1.0)); }
+
+void main()
+{
+    vec2  p   = gl_FragCoord.xy / resolution;
+    float d   = 1.0 - interpolation;          // transition progress 0..1
+    float aspect = resolution.x / resolution.y;
+    vec2  cc  = p - 0.5;                      // centred, aspect-corrected
+    cc.x *= aspect;
+    vec2  p0 = p, p1 = p;                     // sample coords old / new
+    float w1 = d;                             // weight of the NEW scene
+    float dark = 1.0;                         // optional dip factor
+
+    float x = dot(cc, normalize(vec2(1.0, 0.55)));
+    // Travel BEYOND the widescreen corner extent (|x| can reach ~1.02 on
+    // 16:9 + edge width) so no corner shows the new scene at d=0 or
+    // keeps the old one at d=1.
+    float t = mix(-1.15, 1.15, d);
+    w1 = smoothstep(x - 0.09, x + 0.09, t);
+
+    vec4 c0 = texture(tex0, p0);
+    vec4 c1 = texture(tex1, p1);
+    fragColor = blend4(c0, c1, w1) * dark;
+}

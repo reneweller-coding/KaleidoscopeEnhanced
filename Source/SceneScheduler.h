@@ -20,7 +20,8 @@
 //    + moodAccept (Arousal-Busyness, Mood-Tags, gelerntes Taste via Callback)
 //  - Review-Modus (Test*-Presets): alphabetisch, fix 8 s pro Szene
 //  - Remote-Direktsprung (forceScene) schlägt alles
-//  - Übergangs-Stile (26 Stile, linear bleibt am häufigsten)
+//  - Übergangs-Wahl: ein Shader aus Transitions/ pro Fade (probability- und
+//    mood-gewichtet; Crossfade bleibt der häufigste)
 //
 // Uhren: std::chrono::steady_clock - exakt die Wandzeit-Semantik der alten
 // QElapsedTimer (Freeze/Pin re-armen die Uhren jeden gehaltenen Frame).
@@ -58,13 +59,16 @@ class EffectShader;
 class SceneScheduler
 {
 public:
-	/** @brief Bind the effect/combine lists to iterate (ownership stays with the caller).
+	/** @brief Bind the effect/combine/transition lists to iterate (ownership stays with the caller).
 	 * @param textures Pointer to the pipeline's effect-shader list (the "texture" slot).
-	 * @param combines Pointer to the pipeline's combine-shader list.
+	 * @param combines Pointer to the pipeline's combine/overlay-shader list.
+	 * @param transitions Pointer to the pipeline's scene-transition shader list
+	 *        (Transitions/ — one shader per blend style, rolled per fade).
 	 */
 	void attach( std::vector<EffectShader *> *textures,
-	             std::vector<EffectShader *> *combines )
-	{ m_textures = textures; m_combines = combines; }
+	             std::vector<EffectShader *> *combines,
+	             std::vector<EffectShader *> *transitions )
+	{ m_textures = textures; m_combines = combines; m_transitions = transitions; }
 
 	/** @brief Roll the initial act/next scene and combine picks and (re)start both clocks (the old start() block). */
 	void reset();
@@ -145,8 +149,7 @@ public:
 	int   combState()  const { return m_combState; }   ///< Combine state machine phase: 0 = Solo, 1 = Fade.
 	float texInterp()  const { return m_texInterp; }   // 1 -> 0 während des Fades   ///< Effect cross-fade blend factor, 1 -> 0 over the fade.
 	float combInterp() const { return m_combInterp; }  ///< Combine cross-fade blend factor, 1 -> 0 over the fade.
-	int   transStyleTex()  const { return m_transStyleTex; }    ///< Rolled transition style index for the current/last effect fade.
-	int   transStyleComb() const { return m_transStyleComb; }   ///< Rolled transition style index for the current/last combine fade.
+	unsigned int actTransition() const { return m_actTransition; }   ///< Index of the transition shader rolled for the current/last scene fade.
 
 private:
 	using Clock = std::chrono::steady_clock;
@@ -169,8 +172,15 @@ private:
 	 */
 	float tasteOf( const char *frag ) const { return m_tasteFor ? m_tasteFor( frag ) : 1.f; }
 
-	std::vector<EffectShader *> *m_textures = nullptr;   ///< Effect/texture shader list (not owned).
-	std::vector<EffectShader *> *m_combines = nullptr;   ///< Combine shader list (not owned).
+	/** @brief Find a registered transition by fragment basename (e.g. "Shatter.frag").
+	 * @param basename File name without path to look for.
+	 * @return Index into the transition list, or -1 if absent/empty.
+	 */
+	int findTransition( const char *basename ) const;
+
+	std::vector<EffectShader *> *m_textures    = nullptr;   ///< Effect/texture shader list (not owned).
+	std::vector<EffectShader *> *m_combines    = nullptr;   ///< Combine/overlay shader list (not owned).
+	std::vector<EffectShader *> *m_transitions = nullptr;   ///< Scene-transition shader list (not owned).
 
 	// Auswahl-Zustand
 	unsigned int m_actTexture  = 0;   ///< Currently active effect/texture shader index.
@@ -219,9 +229,8 @@ private:
 	std::vector<int> m_reviewOrder;         ///< Texture indices sorted alphabetically by fragment basename (built lazily).
 	int   m_reviewPos  = 0;                 ///< Current position within m_reviewOrder.
 
-	// Übergangs-Stile
-	int   m_transStyleTex  = 0;    ///< Rolled transition style for the effect slot's current/last fade.
-	int   m_transStyleComb = 0;    ///< Rolled transition style for the combine slot's current/last fade.
+	// Übergangs-Auswahl (ein Shader pro Fade, aus Transitions/)
+	unsigned int m_actTransition = 0;   ///< Transition shader rolled for the effect slot's current/last fade.
 
 	// Mood-Snapshot für moodAccept
 	float m_lastArousal = 0.5f;   ///< Last mood arousal snapshot (0..1) from setMood().

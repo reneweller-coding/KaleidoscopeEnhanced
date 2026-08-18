@@ -21,7 +21,7 @@
  *                                            --stateBytes/--shadowExtent for scene3d,
  *                                            --param name=value, --expr name=formula,
  *                                            --time seconds, --images dir, "drone")
- *   PresetEditor.exe --transcheck            verify all 28 transition styles:
+ *   PresetEditor.exe --transcheck            verify every shader in Transitions/:
  *                                            exact A at d=0 / exact B at d=1 and
  *                                            no temporal jumps across the sweep
  *   PresetEditor.exe --cfxcheck              verify the GL 4.3 compute-FX
@@ -142,6 +142,7 @@ int main(int argc, char *argv[])
                 const PresetEntry *ref = nullptr;
                 for (const PresetEntry &k : komplett.entries)
                     if (k.file == e.file && k.isCombine == e.isCombine
+                        && k.isTransition == e.isTransition
                         // Folder-aware: Scene2D/X.frag and Scene3D/X.frag are
                         // DIFFERENT scenes sharing a bare name (CrystalGrowth)
                         // -- a bare-name match checked one against the other's
@@ -374,11 +375,17 @@ int main(int argc, char *argv[])
     {
         PreviewWidget *w = new PreviewWidget(root);
         w->setTextureShader("Kaleidoscope.frag");
-        w->setCombineShader("FxPlain.frag");
+        w->setCombineShader("Transitions/Crossfade.frag");
         w->setFixedTime(8.f);
         w->resize(640, 400);
         w->show();
-        QTimer::singleShot(800, [w]() {
+        // Every Transitions/*.frag is swept through the preview's combine
+        // slot (the interfaces are identical: tex0/tex1/interpolation).
+        // Optional --core restricts the run to the 28 split-out FxPlain
+        // styles (the fast CI set); default is the full folder.
+        QStringList transFiles = QDir(root + "/Transitions").entryList(
+                                     { "*.frag" }, QDir::Files, QDir::Name);
+        QTimer::singleShot(800, [w, transFiles]() {
             auto meanDiff = [](const QImage &ia, const QImage &ib) -> double {
                 QImage x = ia.convertToFormat(QImage::Format_RGB888);
                 QImage y = ib.convertToFormat(QImage::Format_RGB888);
@@ -393,16 +400,23 @@ int main(int argc, char *argv[])
                 return s / (double(x.height()) * bytes);   // mean |diff| in 0..255
             };
             const int steps = 24;
+            // Endpoint truth from the linear Crossfade: exact scene A at
+            // d=0 and exact scene B at d=1, for every transition.
             w->setTransTest(0, 0.f);  QImage refA = w->grabFramebuffer();
             w->setTransTest(0, 1.f);  QImage refB = w->grabFramebuffer();
             int fails = 0;
-            fprintf(stderr, "TRANSCHECK  (endpoints <= 1.5/255; jump = maxStep/medianStep <= 6)\n");
-            for (int s = 0; s <= 27; ++s) {
+            fprintf(stderr, "TRANSCHECK  %d transition(s)  (endpoints <= 1.5/255; jump = maxStep/medianStep <= 6)\n",
+                    (int) transFiles.size());
+            for (const QString &tf : transFiles) {
+                // Folder-qualified: a bare name would resolve through the
+                // preview's Scene2D-first search order, and Scene2D carries
+                // a VoronoiShatter.frag SCENE that shadows the transition.
+                w->setCombineShader("Transitions/" + tf);
                 QImage prev;
                 std::vector<double> stepDiffs;
                 double endA = 0.0, endB = 0.0, maxStep = 0.0;
                 for (int i = 0; i <= steps; ++i) {
-                    w->setTransTest(s, float(i) / steps);
+                    w->setTransTest(0, float(i) / steps);
                     QImage f = w->grabFramebuffer();
                     if (i == 0)     endA = meanDiff(f, refA);
                     if (i == steps) endB = meanDiff(f, refB);
@@ -418,11 +432,11 @@ int main(int argc, char *argv[])
                 double jump = (med > 0.05) ? maxStep / med : 0.0;
                 bool ok = endA <= 1.5 && endB <= 1.5 && jump <= 6.0;
                 if (!ok) ++fails;
-                fprintf(stderr, "style %2d: endA %5.2f  endB %5.2f  maxStep %6.2f  jump %5.1fx  %s\n",
-                        s, endA, endB, maxStep, jump, ok ? "OK" : "FAIL");
+                fprintf(stderr, "%-38s endA %5.2f  endB %5.2f  maxStep %6.2f  jump %5.1fx  %s\n",
+                        qPrintable(tf), endA, endB, maxStep, jump, ok ? "OK" : "FAIL");
             }
-            if (fails) fprintf(stderr, "TRANSCHECK: %d style(s) FAILED\n", fails);
-            else       fprintf(stderr, "TRANSCHECK: all 28 styles OK\n");
+            if (fails) fprintf(stderr, "TRANSCHECK: %d transition(s) FAILED\n", fails);
+            else       fprintf(stderr, "TRANSCHECK: all %d transitions OK\n", (int) transFiles.size());
             qApp->exit(fails ? 1 : 0);
         });
         return app.exec();

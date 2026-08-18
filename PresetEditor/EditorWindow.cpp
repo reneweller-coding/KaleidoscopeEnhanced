@@ -130,24 +130,22 @@ EditorWindow::EditorWindow(const QString &projectRoot, QWidget *parent)
                         "Tabelle gewählten Preset-Eintrag schreiben");
     pBtns->addWidget(bDice); pBtns->addWidget(bFreeze);
     pv->addLayout(pBtns);
-    // Transition test bench: watch ONE of the 28 FxPlain transition
-    // styles in slow motion (interpolation sweeps back and forth, ~10 s).
+    // Transition test bench: sweep the currently selected combine/transition
+    // shader's interpolation back and forth in slow motion (~10 s round
+    // trip).  Since the Transitions/ split the combine combo lists the
+    // transition shaders too, so any of them can be inspected here.
     QHBoxLayout *tBench = new QHBoxLayout();
-    m_transCheck = new QCheckBox("Übergangs-Zeitlupe, Stil:");
-    m_transCheck->setToolTip("Überblendung in Zeitlupe hin- und herfahren "
-                             "(Stile 0-27; wählt als Combine am besten FxPlain). "
-                             "Headless-Prüfung aller Stile: PresetEditor --transcheck");
-    m_transSpin = new QSpinBox();
-    m_transSpin->setRange(0, 27);
+    m_transCheck = new QCheckBox("Übergangs-Zeitlupe");
+    m_transCheck->setToolTip("Überblendung des gewählten Combine-/Transition-"
+                             "Shaders in Zeitlupe hin- und herfahren. "
+                             "Headless-Prüfung aller Transitions: PresetEditor --transcheck");
     tBench->addWidget(m_transCheck);
-    tBench->addWidget(m_transSpin);
     tBench->addStretch(1);
     pv->addLayout(tBench);
     auto applyBench = [this] {
-        m_preview->setTransTest(m_transCheck->isChecked() ? m_transSpin->value() : -1);
+        m_preview->setTransTest(m_transCheck->isChecked() ? 0 : -1);
     };
     connect(m_transCheck, &QCheckBox::toggled, this, applyBench);
-    connect(m_transSpin, QOverload<int>::of(&QSpinBox::valueChanged), this, applyBench);
     pl->addWidget(m_paramBox);
     connect(bDice,   &QPushButton::clicked, this, &EditorWindow::randomizeParams);
     connect(bFreeze, &QPushButton::clicked, this, &EditorWindow::freezeParamsIntoEntry);
@@ -306,22 +304,34 @@ EditorWindow::EditorWindow(const QString &projectRoot, QWidget *parent)
 
 void EditorWindow::scanShaders()
 {
-    // Since the 2026-07 reorg the user-selectable shaders live in Scene2D/,
-    // Scene3D/ and FX/ (Engine/ holds the internal pipeline passes and is
-    // not listed).  Scene3D shaders share the texture-shader combo with the
-    // 2D ones -- onTextureChanged() tells them apart by which folder they
-    // were actually found in (m_scene3DFiles), not by any naming convention.
-    const QStringList scenes    = QDir(m_root + "/Scene").entryList(
+    // The user-selectable shaders live in Scene2D/, Scene3D/, FX/ and
+    // Transitions/ (Engine/ holds the internal pipeline passes and is not
+    // listed).  NOTE: this scanned the pre-rename "Scene"/"Combine" folders
+    // until the Transitions split - both QDirs came back empty, so the
+    // combos listed no 2D scenes and no combines at all (dormant since the
+    // Variante-A rename, same class of bug as the glwidget hot-reload).
+    // Scene3D shaders share the texture-shader combo with the 2D ones --
+    // onTextureChanged() tells them apart by which folder they were actually
+    // found in (m_scene3DFiles), not by any naming convention.  Transitions
+    // share the combine combo: the preview drives both through the same
+    // tex0/tex1/interpolation slot.
+    const QStringList scenes    = QDir(m_root + "/Scene2D").entryList(
                                       { "*.frag" }, QDir::Files, QDir::Name);
     const QStringList scenes3D  = QDir(m_root + "/Scene3D").entryList(
                                       { "*.frag" }, QDir::Files, QDir::Name);
-    const QStringList combines  = QDir(m_root + "/Combine").entryList(
+    const QStringList combines  = QDir(m_root + "/FX").entryList(
+                                      { "*.frag" }, QDir::Files, QDir::Name);
+    const QStringList trans     = QDir(m_root + "/Transitions").entryList(
                                       { "*.frag" }, QDir::Files, QDir::Name);
     m_scene3DFiles = scenes3D;
     m_texCombo->blockSignals(true); m_combCombo->blockSignals(true);
     for (const QString &f : scenes)   m_texCombo->addItem(f);
     for (const QString &f : scenes3D) m_texCombo->addItem(f);
     for (const QString &f : combines) m_combCombo->addItem(f);
+    // Folder-qualified: a bare transition name would resolve through the
+    // preview's Scene2D-first search order (Scene2D/VoronoiShatter.frag
+    // shadows Transitions/VoronoiShatter.frag).
+    for (const QString &f : trans)    m_combCombo->addItem("Transitions/" + f);
     m_texCombo->model()->sort(0);
     m_texCombo->blockSignals(false); m_combCombo->blockSignals(false);
     if (m_combCombo->findText("FxPlain.frag") >= 0)

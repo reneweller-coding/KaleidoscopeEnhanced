@@ -361,4 +361,51 @@ void Configuration::readConfiguration( const QString &filename )
 		}
      }
 
+	// Scene-transition shaders (Transitions/): same attribute set as the
+	// combine entries, but they feed the dedicated transition pass that
+	// blends outgoing/incoming scene during a fade.  One is rolled per fade
+	// (probability + mood weighted); absent entries fall back to the plain
+	// Crossfade inside FilterShader::start().
+	nodeList = docElem.elementsByTagName("TransitionShader");
+
+	for(int i = 0; i < nodeList.count(); i++)
+    {
+    	QDomElement el = nodeList.at(i).toElement();
+
+		unsigned int minTimeSolo = el.attribute("minTimeSolo").toUInt();
+		unsigned int maxTimeSolo = el.attribute("maxTimeSolo").toUInt();
+		if( minTimeSolo == 0 ) minTimeSolo = 30;
+		if( maxTimeSolo <= minTimeSolo ) maxTimeSolo = (minTimeSolo == 30) ? 120 : minTimeSolo + 1;
+
+		unsigned int minTimeInterpolation = el.attribute("minTimeInterpolation").toUInt();
+		unsigned int maxTimeInterpolation = el.attribute("maxTimeInterpolation").toUInt();
+		if( minTimeInterpolation == 0 ) minTimeInterpolation = 20;
+		if( maxTimeInterpolation <= minTimeInterpolation ) maxTimeInterpolation = (minTimeInterpolation == 20) ? 60 : minTimeInterpolation + 1;
+
+		QString shaderFile = mapLegacyShaderPath( el.attribute("file") );
+
+		float probability = el.attribute("probability").toFloat();
+		unsigned int complexity = el.attribute("complexity").toFloat();
+
+		QString type = el.attribute("type");
+
+		QString mood = el.attribute("mood");
+		unsigned int moodFlags = 0;
+		if (mood.contains("dark"))       moodFlags |= EffectShader::MOOD_DARK;
+		if (mood.contains("bright"))     moodFlags |= EffectShader::MOOD_BRIGHT;
+		if (mood.contains("calm"))       moodFlags |= EffectShader::MOOD_CALM;
+		if (mood.contains("aggressive")) moodFlags |= EffectShader::MOOD_AGGRESSIVE;
+
+		if( type == "normal" )
+		{
+			EffectShader *shader = new EffectShader( shaderFile.toStdString(), minTimeSolo, maxTimeSolo, minTimeInterpolation, maxTimeInterpolation );
+
+			addUniforms( shader, el );
+			shader->setComplexity( complexity );
+			shader->setProbability( probability );
+			shader->setMoodFlags( moodFlags );
+			m_filterShader->addTransitionShader( shader );
+		}
+     }
+
 }

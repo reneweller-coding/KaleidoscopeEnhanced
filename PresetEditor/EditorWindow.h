@@ -151,7 +151,6 @@ private:
     class QGroupBox    *m_paramBox  = nullptr;   ///< Group box hosting the live parameter-slider panel.
     class QFormLayout  *m_paramForm = nullptr;   ///< Form layout the sliders are added to (rows cleared/rebuilt on every rebuildParamSliders() call).
     class QCheckBox    *m_transCheck = nullptr;   ///< transition slow-motion bench
-    QSpinBox           *m_transSpin  = nullptr;   ///< Which of the 28 FxPlain transition styles (0-27) the slow-motion bench sweeps.
 
     /**
      * @brief Rebuild the "Selected entry: parameter ranges / formula / audio mapping" panel for the table-selected entry.
