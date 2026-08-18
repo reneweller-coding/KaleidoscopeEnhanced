@@ -1,5 +1,14 @@
 #version 330 core
 out vec4 fragColor;
+// AccretionDiskToroidVortex.frag
+// -----------------------------------------------------------------------
+// ACCRETION DISK TOROID VORTEX: a glowing accretion torus seen from ABOVE,
+// the camera slowly orbiting the central hole while spiral density waves
+// wind around the ISCO rim (the golden ring where matter takes its last
+// stable lap before plunging in).
+//   audioAdvance -> orbit + spiral wind-up      audioKick -> ISCO rim flare
+//   audioBass    -> disk thickness/undulation   audioSwell -> camera breath
+// -----------------------------------------------------------------------
 
 in vec3 vWorldPos;
 in vec3 vNormal;

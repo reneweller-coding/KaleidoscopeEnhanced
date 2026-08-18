@@ -5,6 +5,15 @@ in float vRadiation;
 in float vBeamID;
 
 out vec4 fragColor;
+// SynchrotronRadiationRing.frag
+// -----------------------------------------------------------------------
+// SYNCHROTRON RADIATION RING: a storage ring with 24 undulator wiggles -
+// the electron beam glows golden where it is bent, and TANGENTIAL
+// RADIATION JETS spray off along the tangent (that IS synchrotron light),
+// camera orbiting with a top-down pitch.
+//   audioKick -> beam + jet surge    audioBass -> wiggler amplitude
+//   audioAdvance -> ring rotation + orbit
+// -----------------------------------------------------------------------
 
 uniform float time;
 uniform sampler2D tex0;

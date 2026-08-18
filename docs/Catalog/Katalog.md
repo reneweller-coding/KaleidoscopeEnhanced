@@ -1394,6 +1394,8 @@ Voyager.frag Adapted from "Voyager" by @kishimisu (2024) — https://www.shadert
 
 `Scene3D/AccretionDiskToroidVortex.frag` · type=scene3d · geom=grid · mood=bright,aggressive,dark · complexity=3
 
+AccretionDiskToroidVortex.frag ACCRETION DISK TOROID VORTEX: a glowing accretion torus seen from ABOVE, the camera slowly orbiting the central hole while spiral density waves wind around the ISCO rim (the golden ring where matter takes its last stable lap before plunging in). audioAdvance -> orbit + spiral wind-up audioKick -> ISCO rim flare audioBass -> disk thickness/undulation audioSwell -> camera breath
+
 ![AccretionDiskToroidVortex ruhig (t=8)](img/AccretionDiskToroidVortex_A.jpg) ![AccretionDiskToroidVortex ruhig (t=16)](img/AccretionDiskToroidVortex_B.jpg) ![AccretionDiskToroidVortex audio-heiß (t=8)](img/AccretionDiskToroidVortex_C.jpg)
 
 
@@ -1416,6 +1418,8 @@ AsteroidBelt.frag — matte rock faces; a faint cool rim keeps silhouettes reada
 ### AuroraBorealisOverFjord
 
 `Scene3D/AuroraBorealisOverFjord.frag` · type=scene3d · geom=patches · mood=calm,dreamy,bright · complexity=4
+
+AuroraBorealisOverFjord.frag AURORA BOREALIS OVER FJORD: night flight down a fjord - mountains on both sides, a mirror-water canal below, and a full-height AURORA CURTAIN WALL with vertical rays at the far end (arctic-green identity, tinted by the photo palette). The water reflects the curtain in drifting bands. audioAdvance -> flight down the fjord audioKick -> curtain surge audioSwell -> aurora brightness audioBass…
 
 ![AuroraBorealisOverFjord ruhig (t=8)](img/AuroraBorealisOverFjord_A.jpg) ![AuroraBorealisOverFjord ruhig (t=16)](img/AuroraBorealisOverFjord_B.jpg) ![AuroraBorealisOverFjord audio-heiß (t=8)](img/AuroraBorealisOverFjord_C.jpg)
 
@@ -1451,6 +1455,8 @@ Frag-side music pulse (added by the deaf-scene pass: reactivity measured ~0 -- t
 
 `Scene3D/BioluminescentBreakingWave.frag` · type=scene3d · geom=grid · mood=bright,calm,dreamy · complexity=3
 
+BioluminescentBreakingWave.frag BIOLUMINESCENT BREAKING WAVE: rolling Gerstner swell seen from above the surf line; the crests break into glowing dinoflagellate foam CELLS (not a full-width neon bar), dark troughs carry the photo tint. audioBass -> swell height audioKick -> breaker splash + glow surge audioHigh -> cross-chop audioAdvance -> wave phase (jump-free)
+
 ![BioluminescentBreakingWave ruhig (t=8)](img/BioluminescentBreakingWave_A.jpg) ![BioluminescentBreakingWave ruhig (t=16)](img/BioluminescentBreakingWave_B.jpg) ![BioluminescentBreakingWave audio-heiß (t=8)](img/BioluminescentBreakingWave_C.jpg)
 
 
@@ -1471,6 +1477,8 @@ Frag-side music pulse (added by the deaf-scene pass: reactivity measured ~0 -- t
 ### BioluminescentOceanSwell
 
 `Scene3D/BioluminescentOceanSwell.frag` · type=scene3d · geom=grid · mood=calm,dreamy,bright · complexity=3
+
+BioluminescentOceanSwell.frag BIOLUMINESCENT OCEAN SWELL: open-ocean Gerstner swell viewed from a gliding camera above the water, horizon high in the frame; narrow crest bands glow bioluminescent cyan, the moon adds a specular path, the photo tints sky reflection and glow. audioBass/Swell -> wave amplitude audioKick -> splash + crest flash audioAdvance -> forward glide over open water
 
 ![BioluminescentOceanSwell ruhig (t=8)](img/BioluminescentOceanSwell_A.jpg) ![BioluminescentOceanSwell ruhig (t=16)](img/BioluminescentOceanSwell_B.jpg) ![BioluminescentOceanSwell audio-heiß (t=8)](img/BioluminescentOceanSwell_C.jpg)
 
@@ -1522,6 +1530,8 @@ Blueprint.frag — the body as a drafting drawing rather than a lit object. Almo
 
 `Scene3D/BoseEinsteinVortexTangle.frag` · type=scene3d · geom=indirect · mood=bright,psychedelic · complexity=4
 
+BoseEinsteinVortexTangle.frag BOSE-EINSTEIN VORTEX TANGLE: an ultracold condensate cloud of ruby/cyan quantum sprites threaded by vortex lines, the camera orbiting INSIDE the tangle with a slow nodding pitch. audioKick -> core brightness audioPhase -> ruby/cyan state mix audioAdvance -> orbit (additive sprites, source-level gains)
+
 ![BoseEinsteinVortexTangle ruhig (t=8)](img/BoseEinsteinVortexTangle_A.jpg) ![BoseEinsteinVortexTangle ruhig (t=16)](img/BoseEinsteinVortexTangle_B.jpg) ![BoseEinsteinVortexTangle audio-heiß (t=8)](img/BoseEinsteinVortexTangle_C.jpg)
 
 
@@ -1547,6 +1557,8 @@ CathedralGlass.frag — stone in the opaque pass, glass in the transparent one. 
 
 `Scene3D/ChiralLiquidCrystalCholesteric.frag` · type=scene3d · geom=ribbon · mood=bright,calm,dreamy · complexity=3
 
+ChiralLiquidCrystalCholesteric.frag CHIRAL LIQUID CRYSTAL (CHOLESTERIC): 20 helical director ribbons seen from the SIDE at a slow orbit - layered golden wave-sheets whose twist period (the cholesteric pitch) reads directly in the picture; Bragg colours come from the photo palette. audioAdvance -> orbit + helix twist audioKick -> ribbon width pitchP/twistP -> cholesteric pitch and twist rate
+
 ![ChiralLiquidCrystalCholesteric ruhig (t=8)](img/ChiralLiquidCrystalCholesteric_A.jpg) ![ChiralLiquidCrystalCholesteric ruhig (t=16)](img/ChiralLiquidCrystalCholesteric_B.jpg) ![ChiralLiquidCrystalCholesteric audio-heiß (t=8)](img/ChiralLiquidCrystalCholesteric_C.jpg)
 
 
@@ -1561,7 +1573,7 @@ CathedralGlass.frag — stone in the opaque pass, glass in the transparent one. 
 
 `Scene3D/ChromeFlow.frag` · type=scene3d · geom=grid · mood=calm · complexity=2
 
-ChromeFlow.frag — fake-environment chrome: the normal indexes a smooth striped "sky" so the surface reads as polished metal; a warm key-light band and a cool counter-band glide as the surface rolls.
+ChromeFlow.frag - LIQUID CHROME: a rolling sheet of molten metal that MIRRORS the current photo (true reflect() environment lookup), with polish-streak sheen bands and four wave trains for real curvature. audioBass/Swell -> wave weight audioAdvance -> flow phase
 
 ![ChromeFlow ruhig (t=8)](img/ChromeFlow_A.jpg) ![ChromeFlow ruhig (t=16)](img/ChromeFlow_B.jpg) ![ChromeFlow audio-heiß (t=8)](img/ChromeFlow_C.jpg)
 
@@ -1605,6 +1617,8 @@ CoralGrowth.frag — living tissue over a calcified core. Age is the useful sign
 ### CoralReefFluorescence
 
 `Scene3D/CoralReefFluorescence.frag` · type=scene3d · geom=grid · mood=calm,dreamy,bright · complexity=3
+
+CoralReefFluorescence.frag CORAL REEF FLUORESCENCE: a reef ridge under UV night light - the coral tips fluoresce in colours drawn from the photo-palette arc (GFP/RFP style), deep-ocean blue ambient below. audioKick -> fluorescence pulse audioSwell -> polyp sway glowP/fluorP -> emission strength
 
 ![CoralReefFluorescence ruhig (t=8)](img/CoralReefFluorescence_A.jpg) ![CoralReefFluorescence ruhig (t=16)](img/CoralReefFluorescence_B.jpg) ![CoralReefFluorescence audio-heiß (t=8)](img/CoralReefFluorescence_C.jpg)
 
@@ -1839,12 +1853,16 @@ GearWorks.frag — brass faces with machined luminous edges (depth-tested).
 
 `Scene3D/GeomagneticDynamoCore.frag` · type=scene3d · geom=indirect · mood=bright,aggressive · complexity=4
 
+GeomagneticDynamoCore.frag GEOMAGNETIC DYNAMO CORE: the flux-tube strings of a planetary dynamo - gold and teal filament ropes coiling around the core, camera orbiting close with a slow pitch. audioKick -> field-line surge audioAdvance -> orbit + convection (additive sprite strings, source-level gains)
+
 ![GeomagneticDynamoCore ruhig (t=8)](img/GeomagneticDynamoCore_A.jpg) ![GeomagneticDynamoCore ruhig (t=16)](img/GeomagneticDynamoCore_B.jpg) ![GeomagneticDynamoCore audio-heiß (t=8)](img/GeomagneticDynamoCore_C.jpg)
 
 
 ### GlacierTessellation
 
 `Scene3D/GlacierTessellation.frag` · type=scene3d · geom=patches · mood=calm,bright · complexity=4
+
+GlacierTessellation.frag GLACIER TESSELLATION: low flight over tessellated glacier ice - white/blue subsurface-scattering ice with crevasse light from INSIDE, tinted by the photo palette; the terrain streams beneath the camera. audioAdvance -> flight speed audioKick -> crevasse flash audioBass -> ice-wave heave
 
 ![GlacierTessellation ruhig (t=8)](img/GlacierTessellation_A.jpg) ![GlacierTessellation ruhig (t=16)](img/GlacierTessellation_B.jpg) ![GlacierTessellation audio-heiß (t=8)](img/GlacierTessellation_C.jpg)
 
@@ -2107,6 +2125,8 @@ MelodyScript.frag — additive ribbon ink (colour fully baked in the vert).
 
 `Scene3D/MetamaterialNegativeRefraction.frag` · type=scene3d · geom=grid · mood=bright,psychedelic · complexity=3
 
+MetamaterialNegativeRefraction.frag METAMATERIAL NEGATIVE REFRACTION: a wave-carrying slab seen from above; two media take their tints from opposite ends of the photo-palette arc, the refraction kink runs through the middle and a superlens focal spot glows in the slab plane on the kick. audioKick -> focal spot audioBass -> wave amplitude
+
 ![MetamaterialNegativeRefraction ruhig (t=8)](img/MetamaterialNegativeRefraction_A.jpg) ![MetamaterialNegativeRefraction ruhig (t=16)](img/MetamaterialNegativeRefraction_B.jpg) ![MetamaterialNegativeRefraction audio-heiß (t=8)](img/MetamaterialNegativeRefraction_C.jpg)
 
 
@@ -2159,6 +2179,8 @@ MosaicWave.frag — front = the image; back = hue-inverted twin. Thin dark grout
 
 `Scene3D/MyceliumNeuralPulse.frag` · type=scene3d · geom=indirect · mood=calm,bright · complexity=4
 
+MyceliumNeuralPulse.frag MYCELIUM NEURAL PULSE: an underground hyphae network - teal resting threads through which photo-palette-coloured action potentials flash, camera orbiting the thicket. audioKick/Onset -> pulse firing audioAdvance -> orbit pulseP/glowP -> firing rate and brightness
+
 ![MyceliumNeuralPulse ruhig (t=8)](img/MyceliumNeuralPulse_A.jpg) ![MyceliumNeuralPulse ruhig (t=16)](img/MyceliumNeuralPulse_B.jpg) ![MyceliumNeuralPulse audio-heiß (t=8)](img/MyceliumNeuralPulse_C.jpg)
 
 
@@ -2191,6 +2213,8 @@ NeuralAxonSynapseCloud.frag
 
 `Scene3D/NonEuclideanDodecahedronLoom.frag` · type=scene3d · geom=ribbon · mood=bright,calm,psychedelic · complexity=3
 
+NonEuclideanDodecahedronLoom.frag NON-EUCLIDEAN DODECAHEDRON LOOM: glowing thread-loops woven around dodecahedral symmetry axes, tumbling around all three axes; each strand takes its colour from the photo-palette arc. audioPhase -> thread colour drift audioAdvance + time -> tumble (additive threads, source-level gains)
+
 ![NonEuclideanDodecahedronLoom ruhig (t=8)](img/NonEuclideanDodecahedronLoom_A.jpg) ![NonEuclideanDodecahedronLoom ruhig (t=16)](img/NonEuclideanDodecahedronLoom_B.jpg) ![NonEuclideanDodecahedronLoom audio-heiß (t=8)](img/NonEuclideanDodecahedronLoom_C.jpg)
 
 
@@ -2206,6 +2230,8 @@ Ocean.frag — water shading for the tessellated surface. Fresnel decides the mi
 ### OceanAbyssalBrinePool
 
 `Scene3D/OceanAbyssalBrinePool.frag` · type=scene3d · geom=grid · mood=calm,dark,dreamy · complexity=3
+
+OceanAbyssalBrinePool.frag OCEAN ABYSSAL BRINE POOL: a deep-sea brine basin seen from above, the camera slowly ORBITING the pool; hypersaline internal waves shimmer in photo-palette colours against the abyssal blue shore. audioKick -> halocline shimmer audioBass -> internal waves audioAdvance -> orbit
 
 ![OceanAbyssalBrinePool ruhig (t=8)](img/OceanAbyssalBrinePool_A.jpg) ![OceanAbyssalBrinePool ruhig (t=16)](img/OceanAbyssalBrinePool_B.jpg) ![OceanAbyssalBrinePool audio-heiß (t=8)](img/OceanAbyssalBrinePool_C.jpg)
 
@@ -2278,6 +2304,8 @@ PhotoCarousel.frag — each card is a seeded crop of the current image with a th
 ### PhotonicCrystalFiberCore
 
 `Scene3D/PhotonicCrystalFiberCore.frag` · type=scene3d · geom=cubes · mood=bright,psychedelic · complexity=3
+
+PhotonicCrystalFiberCore.frag PHOTONIC CRYSTAL FIBER CORE: the cross-section lattice of a holey fiber (hexagonal cladding, hollow core) slowly rolling; LIGHT PULSES race down the guided core on the kick, supercontinuum colours from the photo arc. audioKick -> guided light pulse audioPhase -> supercontinuum drift time -> slow roll around the fiber axis
 
 ![PhotonicCrystalFiberCore ruhig (t=8)](img/PhotonicCrystalFiberCore_A.jpg) ![PhotonicCrystalFiberCore ruhig (t=16)](img/PhotonicCrystalFiberCore_B.jpg) ![PhotonicCrystalFiberCore audio-heiß (t=8)](img/PhotonicCrystalFiberCore_C.jpg)
 
@@ -2378,6 +2406,8 @@ PlasmaSheet.frag — the timeless smooth plasma: three drifting sine fields summ
 
 `Scene3D/PlasmaVortexGrid.frag` · type=scene3d · geom=grid · mood=aggressive,bright · complexity=3
 
+PlasmaVortexGrid.frag PLASMA VORTEX GRID: a glowing funnel grid swirled by a TRAVELING SPIRAL WAVE (rigid base rotation + bounded radial wave - no mesh shear), the camera banking around and into the funnel. audioKick -> shock tsunami audioSubBass -> funnel depth audioSpectrum -> Bessel ripple heights
+
 ![PlasmaVortexGrid ruhig (t=8)](img/PlasmaVortexGrid_A.jpg) ![PlasmaVortexGrid ruhig (t=16)](img/PlasmaVortexGrid_B.jpg) ![PlasmaVortexGrid audio-heiß (t=8)](img/PlasmaVortexGrid_C.jpg)
 
 
@@ -2419,12 +2449,16 @@ PrismExplode.frag — real dispersion, from Cauchy's equation. A prism makes a s
 
 `Scene3D/QuantumQubitArray.frag` · type=scene3d · geom=cubes · mood=aggressive,bright · complexity=3
 
+QuantumQubitArray.frag QUANTUM QUBIT ARRAY: a 70x70 quantum-processor die seen from above - thousands of Josephson qubit plates whose Bloch rotations ripple across the chip in waves, gold circuit substrate beneath. audioSpectrum -> plate heights by band audioKick -> gate-flip wave audioBass -> overall lift (state colours from the photo palette)
+
 ![QuantumQubitArray ruhig (t=8)](img/QuantumQubitArray_A.jpg) ![QuantumQubitArray ruhig (t=16)](img/QuantumQubitArray_B.jpg) ![QuantumQubitArray audio-heiß (t=8)](img/QuantumQubitArray_C.jpg)
 
 
 ### QuantumVortexField
 
 `Scene3D/QuantumVortexField.frag` · type=scene3d · geom=indirect · mood=bright,aggressive · complexity=4
+
+QuantumVortexField.frag QUANTUM VORTEX FIELD: a toroidal magnetosphere of filament streamlines - thin ribbon fibres integrated through a poloidal/toroidal vector field (tamed Lorenz perturbation), forming a feathered vortex ring. audioKick -> filament width + glow audioSubBass -> ring radius audioSpectrum -> per-filament glow
 
 ![QuantumVortexField ruhig (t=8)](img/QuantumVortexField_A.jpg) ![QuantumVortexField ruhig (t=16)](img/QuantumVortexField_B.jpg) ![QuantumVortexField audio-heiß (t=8)](img/QuantumVortexField_C.jpg)
 
@@ -2439,6 +2473,8 @@ PrismExplode.frag — real dispersion, from Cauchy's equation. A prism makes a s
 ### RadiolarianSilicaLattice
 
 `Scene3D/RadiolarianSilicaLattice.frag` · type=scene3d · geom=quads · mood=bright,calm,dreamy · complexity=3
+
+RadiolarianSilicaLattice.frag RADIOLARIAN SILICA LATTICE: concentric glass micro-skeleton shells rotating against each other, seen from a safe distance (no camera collisions); silica cards tinted by the photo palette, star sparkles on the kick. audioKick -> shell burst audioSwell -> lattice breathing latticeP -> shell spacing
 
 ![RadiolarianSilicaLattice ruhig (t=8)](img/RadiolarianSilicaLattice_A.jpg) ![RadiolarianSilicaLattice ruhig (t=16)](img/RadiolarianSilicaLattice_B.jpg) ![RadiolarianSilicaLattice audio-heiß (t=8)](img/RadiolarianSilicaLattice_C.jpg)
 
@@ -2482,6 +2518,8 @@ RoseOrbit.frag — soft glowing point (additive blending).
 ### SandDuneBarchanMigration
 
 `Scene3D/SandDuneBarchanMigration.frag` · type=scene3d · geom=grid · mood=calm,dreamy,bright · complexity=3
+
+SandDuneBarchanMigration.frag SAND DUNE BARCHAN MIGRATION: golden barchan dunes seen from above in late light - crescent slip faces, wind-ripple specular, photo blended into the sand. The gold stays gold (no global hue spin). audioBass -> dune swell audioKick -> sand-glint flash audioAdvance -> slow dune migration
 
 ![SandDuneBarchanMigration ruhig (t=8)](img/SandDuneBarchanMigration_A.jpg) ![SandDuneBarchanMigration ruhig (t=16)](img/SandDuneBarchanMigration_B.jpg) ![SandDuneBarchanMigration audio-heiß (t=8)](img/SandDuneBarchanMigration_C.jpg)
 
@@ -2674,6 +2712,8 @@ SuperconductingFluxVortex.frag
 
 `Scene3D/SuperconductingQubitResonator.frag` · type=scene3d · geom=ribbon · mood=bright,calm · complexity=3
 
+SuperconductingQubitResonator.frag SUPERCONDUCTING QUBIT RESONATOR: microwave standing waves meandering along a superconducting coplanar resonator strip, seen at a 3/4 orbit; blue/pink photon-number states glow along the line. audioSpectrum -> mode amplitudes audioKick -> readout pulse audioAdvance -> orbit
+
 ![SuperconductingQubitResonator ruhig (t=8)](img/SuperconductingQubitResonator_A.jpg) ![SuperconductingQubitResonator ruhig (t=16)](img/SuperconductingQubitResonator_B.jpg) ![SuperconductingQubitResonator audio-heiß (t=8)](img/SuperconductingQubitResonator_C.jpg)
 
 
@@ -2718,6 +2758,8 @@ Swarm.frag — soft glowing point (additive blending).
 
 `Scene3D/SynchrotronRadiationRing.frag` · type=scene3d · geom=ribbon · mood=aggressive,bright · complexity=2
 
+SynchrotronRadiationRing.frag SYNCHROTRON RADIATION RING: a storage ring with 24 undulator wiggles - the electron beam glows golden where it is bent, and TANGENTIAL RADIATION JETS spray off along the tangent (that IS synchrotron light), camera orbiting with a top-down pitch. audioKick -> beam + jet surge audioBass -> wiggler amplitude audioAdvance -> ring rotation + orbit
+
 ![SynchrotronRadiationRing ruhig (t=8)](img/SynchrotronRadiationRing_A.jpg) ![SynchrotronRadiationRing ruhig (t=16)](img/SynchrotronRadiationRing_B.jpg) ![SynchrotronRadiationRing audio-heiß (t=8)](img/SynchrotronRadiationRing_C.jpg)
 
 
@@ -2733,6 +2775,8 @@ SynthTerrain.frag — dark ground, glowing synthwave grid lines.
 ### TeslaLightningTree
 
 `Scene3D/TeslaLightningTree.frag` · type=scene3d · geom=indirect · mood=aggressive,bright · complexity=4
+
+TeslaLightningTree.frag TESLA LIGHTNING TREE: a branching discharge tree grown fresh every frame, camera ORBITING the trunk; plasma tinted by a bounded hue wobble (never a full rainbow spin), photo colours in the corona. audioKick -> branch flash audioHigh -> arc jitter audioAdvance + time -> orbit
 
 ![TeslaLightningTree ruhig (t=8)](img/TeslaLightningTree_A.jpg) ![TeslaLightningTree ruhig (t=16)](img/TeslaLightningTree_B.jpg) ![TeslaLightningTree audio-heiß (t=8)](img/TeslaLightningTree_C.jpg)
 

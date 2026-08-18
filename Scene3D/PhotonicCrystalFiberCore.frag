@@ -1,5 +1,13 @@
 #version 330 core
 out vec4 fragColor;
+// PhotonicCrystalFiberCore.frag
+// -----------------------------------------------------------------------
+// PHOTONIC CRYSTAL FIBER CORE: the cross-section lattice of a holey fiber
+// (hexagonal cladding, hollow core) slowly rolling; LIGHT PULSES race down
+// the guided core on the kick, supercontinuum colours from the photo arc.
+//   audioKick -> guided light pulse    audioPhase -> supercontinuum drift
+//   time -> slow roll around the fiber axis
+// -----------------------------------------------------------------------
 
 in vec3 vWorldPos;
 in vec3 vNormal;

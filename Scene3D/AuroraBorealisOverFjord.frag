@@ -6,6 +6,15 @@ in float teAurora;
 in float teSky;
 
 out vec4 fragColor;
+// AuroraBorealisOverFjord.frag
+// -----------------------------------------------------------------------
+// AURORA BOREALIS OVER FJORD: night flight down a fjord - mountains on both
+// sides, a mirror-water canal below, and a full-height AURORA CURTAIN WALL
+// with vertical rays at the far end (arctic-green identity, tinted by the
+// photo palette).  The water reflects the curtain in drifting bands.
+//   audioAdvance -> flight down the fjord       audioKick  -> curtain surge
+//   audioSwell   -> aurora brightness           audioBass  -> water ripples
+// -----------------------------------------------------------------------
 
 uniform float time;
 uniform sampler2D tex0;

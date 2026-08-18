@@ -4,6 +4,14 @@ in float vPulse;
 in float vLevel;
 
 out vec4 fragColor;
+// MyceliumNeuralPulse.frag
+// -----------------------------------------------------------------------
+// MYCELIUM NEURAL PULSE: an underground hyphae network - teal resting
+// threads through which photo-palette-coloured action potentials flash,
+// camera orbiting the thicket.
+//   audioKick/Onset -> pulse firing    audioAdvance -> orbit
+//   pulseP/glowP    -> firing rate and brightness
+// -----------------------------------------------------------------------
 
 uniform float time;
 uniform sampler2D tex0;

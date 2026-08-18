@@ -1,5 +1,13 @@
 #version 330 core
 out vec4 fragColor;
+// SandDuneBarchanMigration.frag
+// -----------------------------------------------------------------------
+// SAND DUNE BARCHAN MIGRATION: golden barchan dunes seen from above in
+// late light - crescent slip faces, wind-ripple specular, photo blended
+// into the sand.  The gold stays gold (no global hue spin).
+//   audioBass -> dune swell    audioKick -> sand-glint flash
+//   audioAdvance -> slow dune migration
+// -----------------------------------------------------------------------
 
 in vec3 vWorldPos;
 in vec3 vNormal;

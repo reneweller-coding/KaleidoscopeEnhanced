@@ -1,5 +1,13 @@
 #version 330 core
 out vec4 fragColor;
+// QuantumQubitArray.frag
+// -----------------------------------------------------------------------
+// QUANTUM QUBIT ARRAY: a 70x70 quantum-processor die seen from above -
+// thousands of Josephson qubit plates whose Bloch rotations ripple across
+// the chip in waves, gold circuit substrate beneath.
+//   audioSpectrum -> plate heights by band    audioKick -> gate-flip wave
+//   audioBass -> overall lift    (state colours from the photo palette)
+// -----------------------------------------------------------------------
 
 in vec3 vPos;
 in vec3 vNormal;

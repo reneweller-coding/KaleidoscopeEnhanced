@@ -1,5 +1,13 @@
 #version 330 core
 out vec4 fragColor;
+// GeomagneticDynamoCore.frag
+// -----------------------------------------------------------------------
+// GEOMAGNETIC DYNAMO CORE: the flux-tube strings of a planetary dynamo -
+// gold and teal filament ropes coiling around the core, camera orbiting
+// close with a slow pitch.
+//   audioKick -> field-line surge    audioAdvance -> orbit + convection
+//   (additive sprite strings, source-level gains)
+// -----------------------------------------------------------------------
 
 in vec3 vWorldPos;
 in vec3 vNormal;
