@@ -89,11 +89,10 @@ void main() {
     vec3 synCol = mix(gabaCyan, gluViolet, sin(id * 0.1) * 0.5 + 0.5);
     synCol = mix(synCol, dopaGold, isSynapse);
 
-    // Halved vs the original: the additive sprite cloud summed the old
-    // brightness (up to 5.2x) into a solid white frame (metric scan: mean
-    // luma 250, saturation 0.02) -- the neurotransmitter palette only
-    // reads if single sprites stay well below clip.
-    float brightness = (0.22 + 0.8 * isSynapse + 0.6 * clusterEnergy + 1.0 * cognitiveSurge);
+    // Redesign after the white-out diagnosis: gain cuts alone can never fix
+    // this scene — 60k sprites at up to 64 px meant >100x additive overdraw,
+    // so the fix is AREA (quadratic) plus dim resting neurons, not brightness.
+    float brightness = (0.10 + 0.9 * isSynapse + 0.5 * clusterEnergy + 1.0 * cognitiveSurge);
     vColor = vec4(synCol * brightness, 1.0);
 
     // Stereo 3D camera projection
@@ -103,8 +102,9 @@ void main() {
     gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 
-    // Perspective point size
-    float baseSize = (12.0 + 16.0 * isSynapse + 20.0 * cognitiveSurge);
-    gl_PointSize = clamp(baseSize * (6.5 / max(vp.z, 1.0)), 2.0, 64.0);
+    // Perspective point size — small on purpose: sprite AREA is what the
+    // additive sum integrates, so radius is the real exposure control here.
+    float baseSize = (3.0 + 6.0 * isSynapse + 7.0 * cognitiveSurge);
+    gl_PointSize = clamp(baseSize * (6.5 / max(vp.z, 1.0)), 1.5, 20.0);
     vSize = gl_PointSize;
 }

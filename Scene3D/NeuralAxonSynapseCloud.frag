@@ -24,8 +24,8 @@ void main() {
     float distSq = dot(circCoord, circCoord);
     if (distSq > 1.0) discard;
 
-    float alpha = exp(-distSq * 3.5);
-    vec3 col = vColor.rgb * alpha * 0.6;
+    float alpha = exp(-distSq * 5.0);
+    vec3 col = vColor.rgb * alpha * 0.5;
 
     col = hueRot(col, audioChromaHue + hue);
     fragColor = vec4(col, alpha);
