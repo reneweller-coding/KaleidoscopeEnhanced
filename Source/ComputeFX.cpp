@@ -166,7 +166,7 @@ void ComputeFX::clearAccum( const Canvas &c )
 void ComputeFX::resolve( const Canvas &c, int mode, float exposure,
                          float gammaInv, float decay )
 {
-	GLuint p = prog( P_RESOLVE, "..\\Blend\\CfxResolve.comp" );
+	GLuint p = prog( P_RESOLVE, "..\\Engine\\CfxResolve.comp" );
 	if( !p ) return;
 	glUseProgram( p );
 	glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 0, c.ssbo );
@@ -287,7 +287,7 @@ GLuint ComputeFX::stepFlame( const AudioFeatures &a, float dt, float t )
 	Canvas &c = m_canvas[CFX_FLAME];
 	int w, h; canvasSize( 1920, 1080, w, h );
 	if( !ensureCanvas( c, w, h ) ) return 0;
-	GLuint p = prog( P_FLAME, "..\\Blend\\CfxFlame.comp" );
+	GLuint p = prog( P_FLAME, "..\\Engine\\CfxFlame.comp" );
 	if( !p ) return 0;
 
 	// The transforms morph on HOST-INTEGRATED phases (never time x audio, which
@@ -336,8 +336,8 @@ GLuint ComputeFX::stepParticles( const AudioFeatures &a, float dt, float t,
 	if( !ensureBuffer( m_buf[CFX_PARTICLES], size_t(kParticles) * 4 * sizeof(float) ) )
 		return 0;
 
-	GLuint pi = prog( P_PART_INIT, "..\\Blend\\CfxParticleInit.comp" );
-	GLuint ps = prog( P_PART_STEP, "..\\Blend\\CfxParticleStep.comp" );
+	GLuint pi = prog( P_PART_INIT, "..\\Engine\\CfxParticleInit.comp" );
+	GLuint ps = prog( P_PART_STEP, "..\\Engine\\CfxParticleStep.comp" );
 	if( !pi || !ps ) return 0;
 
 	if( !c.seeded )
@@ -396,8 +396,8 @@ GLuint ComputeFX::stepNBody( const AudioFeatures &a, float dt, float t )
 	if( !ensureBuffer( m_buf[CFX_NBODY],  size_t(kBodies) * 4 * sizeof(float) ) ) return 0;
 	if( !ensureBuffer( m_buf2[CFX_NBODY], size_t(kBodies) * 4 * sizeof(float) ) ) return 0;
 
-	GLuint pi = prog( P_NBODY_INIT, "..\\Blend\\CfxNBodyInit.comp" );
-	GLuint ps = prog( P_NBODY_STEP, "..\\Blend\\CfxNBodyStep.comp" );
+	GLuint pi = prog( P_NBODY_INIT, "..\\Engine\\CfxNBodyInit.comp" );
+	GLuint ps = prog( P_NBODY_STEP, "..\\Engine\\CfxNBodyStep.comp" );
 	if( !pi || !ps ) return 0;
 
 	// A drop restarts the pair of galaxies on a fresh collision course.
@@ -455,9 +455,9 @@ GLuint ComputeFX::stepBoids( const AudioFeatures &a, float dt, float t )
 	                   size_t(kGrid) * kGrid * ( kPerCell + 1 ) * sizeof(unsigned int) ) )
 		return 0;
 
-	GLuint pi = prog( P_BOIDS_INIT, "..\\Blend\\CfxBoidsInit.comp" );
-	GLuint pg = prog( P_BOIDS_GRID, "..\\Blend\\CfxBoidsGrid.comp" );
-	GLuint ps = prog( P_BOIDS_STEP, "..\\Blend\\CfxBoidsStep.comp" );
+	GLuint pi = prog( P_BOIDS_INIT, "..\\Engine\\CfxBoidsInit.comp" );
+	GLuint pg = prog( P_BOIDS_GRID, "..\\Engine\\CfxBoidsGrid.comp" );
+	GLuint ps = prog( P_BOIDS_STEP, "..\\Engine\\CfxBoidsStep.comp" );
 	if( !pi || !pg || !ps ) return 0;
 
 	if( !c.seeded )
@@ -531,8 +531,8 @@ GLuint ComputeFX::stepCrystal( const AudioFeatures &a, float dt, float t )
 	if( !ensureBuffer( m_buf[CFX_CRYSTAL], size_t(kWalkers) * 4 * sizeof(float) ) )
 		return 0;
 
-	GLuint pseed = prog( P_CRYSTAL_SEED, "..\\Blend\\CfxCrystalSeed.comp" );
-	GLuint pstep = prog( P_CRYSTAL,      "..\\Blend\\CfxCrystal.comp" );
+	GLuint pseed = prog( P_CRYSTAL_SEED, "..\\Engine\\CfxCrystalSeed.comp" );
+	GLuint pstep = prog( P_CRYSTAL,      "..\\Engine\\CfxCrystal.comp" );
 	if( !pseed || !pstep ) return 0;
 
 	// Re-seed when the structure has had its run, or on a big drop.
@@ -589,8 +589,8 @@ GLuint ComputeFX::stepLightning( const AudioFeatures &a, float dt, float t )
 		return 0;
 	if( !ensureBuffer( m_buf2[CFX_LIGHTNING], 4 * sizeof(unsigned int) ) ) return 0;
 
-	GLuint pseed = prog( P_LIGHT_FIELD, "..\\Blend\\CfxLightningSeed.comp" );
-	GLuint pstep = prog( P_LIGHT_GROW,  "..\\Blend\\CfxLightningStep.comp" );
+	GLuint pseed = prog( P_LIGHT_FIELD, "..\\Engine\\CfxLightningSeed.comp" );
+	GLuint pstep = prog( P_LIGHT_GROW,  "..\\Engine\\CfxLightningStep.comp" );
 	if( !pseed || !pstep ) return 0;
 
 	// A new bolt on every strong onset, and a fallback so quiet passages are
@@ -657,8 +657,8 @@ GLuint ComputeFX::stepCaustics( const AudioFeatures &a, float dt, float t,
 	int w, h; canvasSize( 1920, 1080, w, h );
 	if( !ensureCanvas( c, w, h ) ) return 0;
 
-	GLuint pw = prog( P_CAUSTIC_WAVE,   "..\\Blend\\CfxWave.comp" );
-	GLuint pp = prog( P_CAUSTIC_PHOTON, "..\\Blend\\CfxPhoton.comp" );
+	GLuint pw = prog( P_CAUSTIC_WAVE,   "..\\Engine\\CfxWave.comp" );
+	GLuint pp = prog( P_CAUSTIC_PHOTON, "..\\Engine\\CfxPhoton.comp" );
 	if( !pw || !pp ) return 0;
 
 	// Two sub-steps: the wave then travels at a believable speed without
@@ -721,7 +721,7 @@ GLuint ComputeFX::stepPixelSort( const AudioFeatures &a, float dt, float t,
 	Field &f = m_field[CFX_PIXELSORT];
 	int w, h; canvasSize( outW, outH, w, h );
 	if( !ensureField( f, w, h, GL_RGBA16F ) ) return 0;
-	GLuint p = prog( P_SORT, "..\\Blend\\CfxPixelSort.comp" );
+	GLuint p = prog( P_SORT, "..\\Engine\\CfxPixelSort.comp" );
 	if( !p ) return 0;
 
 	// The sort KEY rotates slowly, which makes the melt appear to flow rather
@@ -754,10 +754,10 @@ GLuint ComputeFX::stepFFT( const AudioFeatures &a, float dt, float t, GLuint src
 	if( !ensureField( f, N, N, GL_RGBA16F ) ) return 0;
 	if( !ensureBuffer( m_buf[CFX_FFT], size_t(N) * N * 2 * sizeof(float) ) ) return 0;
 
-	GLuint pl = prog( P_FFT_H,    "..\\Blend\\CfxFFTLoad.comp" );
-	GLuint pf = prog( P_FFT_V,    "..\\Blend\\CfxFFT.comp" );
-	GLuint pm = prog( P_FFT_MASK, "..\\Blend\\CfxFFTMask.comp" );
-	GLuint ps = prog( P_FFT_STORE, "..\\Blend\\CfxFFTStore.comp" );
+	GLuint pl = prog( P_FFT_H,    "..\\Engine\\CfxFFTLoad.comp" );
+	GLuint pf = prog( P_FFT_V,    "..\\Engine\\CfxFFT.comp" );
+	GLuint pm = prog( P_FFT_MASK, "..\\Engine\\CfxFFTMask.comp" );
+	GLuint ps = prog( P_FFT_STORE, "..\\Engine\\CfxFFTStore.comp" );
 	if( !pl || !pf || !pm || !ps ) return 0;
 
 	glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 0, m_buf[CFX_FFT] );
@@ -824,7 +824,7 @@ GLuint ComputeFX::stepFerro( const AudioFeatures &a, float dt, float t )
 	// Here one texel is ~10 display pixels and the spikes land ~40 px apart.
 	Field &f = m_field[CFX_FERRO];
 	if( !ensureField( f, 176, 99, GL_RGBA16F ) ) return 0;
-	GLuint p = prog( P_FERRO, "..\\Blend\\CfxFerro.comp" );
+	GLuint p = prog( P_FERRO, "..\\Engine\\CfxFerro.comp" );
 	if( !p ) return 0;
 
 	// The bass IS the magnet: below the threshold the surface stays flat,
@@ -880,8 +880,8 @@ GLuint ComputeFX::stepErosion( const AudioFeatures &a, float dt, float t )
 	Field &f = m_field[CFX_EROSION];
 	if( !ensureField( f, 512, 512, GL_RGBA16F ) ) return 0;
 
-	GLuint pseed = prog( P_EROSION_SEED, "..\\Blend\\CfxErosionSeed.comp" );
-	GLuint pstep = prog( P_EROSION,      "..\\Blend\\CfxErosion.comp" );
+	GLuint pseed = prog( P_EROSION_SEED, "..\\Engine\\CfxErosionSeed.comp" );
+	GLuint pstep = prog( P_EROSION,      "..\\Engine\\CfxErosion.comp" );
 	if( !pseed || !pstep ) return 0;
 
 	// Erosion has no counterbalance here, so left running it does exactly what
@@ -930,10 +930,10 @@ GLuint ComputeFX::stepNSFluid( const AudioFeatures &a, float dt, float t,
 	if( !ensureField( dye, W, H, GL_RGBA16F ) ) return 0;
 	if( !ensureCanvas( out, W, H ) ) return 0;
 
-	GLuint pa = prog( P_NS_ADVECT,  "..\\Blend\\CfxNSAdvect.comp" );
-	GLuint pd = prog( P_NS_DIV,     "..\\Blend\\CfxNSDiv.comp" );
-	GLuint pj = prog( P_NS_JACOBI,  "..\\Blend\\CfxNSJacobi.comp" );
-	GLuint pp = prog( P_NS_PROJECT, "..\\Blend\\CfxNSProject.comp" );
+	GLuint pa = prog( P_NS_ADVECT,  "..\\Engine\\CfxNSAdvect.comp" );
+	GLuint pd = prog( P_NS_DIV,     "..\\Engine\\CfxNSDiv.comp" );
+	GLuint pj = prog( P_NS_JACOBI,  "..\\Engine\\CfxNSJacobi.comp" );
+	GLuint pp = prog( P_NS_PROJECT, "..\\Engine\\CfxNSProject.comp" );
 	if( !pa || !pd || !pj || !pp ) return 0;
 
 	Field &prs = m_nsPressure;
@@ -1025,8 +1025,8 @@ GLuint ComputeFX::stepMetal( const AudioFeatures &a, float dt, float t, GLuint )
 	                   size_t(kGrid) * kGrid * ( kPerCell + 1 ) * sizeof(unsigned int) ) )
 		return 0;
 
-	GLuint pi = prog( P_PART_INIT,  "..\\Blend\\CfxParticleInit.comp" );
-	GLuint ps = prog( P_METAL_STEP, "..\\Blend\\CfxMetalStep.comp" );
+	GLuint pi = prog( P_PART_INIT,  "..\\Engine\\CfxParticleInit.comp" );
+	GLuint ps = prog( P_METAL_STEP, "..\\Engine\\CfxMetalStep.comp" );
 	if( !pi || !ps ) return 0;
 
 	if( !c.seeded )
@@ -1087,8 +1087,8 @@ GLuint ComputeFX::stepShards( const AudioFeatures &a, float dt, float t,
 	if( !ensureBuffer( m_buf[CFX_SHARDS],  size_t(kShards) * 4 * sizeof(float) ) ) return 0;
 	if( !ensureBuffer( m_buf2[CFX_SHARDS], size_t(kShards) * 4 * sizeof(float) ) ) return 0;
 
-	GLuint pi = prog( P_SHARD_INIT, "..\\Blend\\CfxShardInit.comp" );
-	GLuint ps = prog( P_SHARD_STEP, "..\\Blend\\CfxShardStep.comp" );
+	GLuint pi = prog( P_SHARD_INIT, "..\\Engine\\CfxShardInit.comp" );
+	GLuint ps = prog( P_SHARD_STEP, "..\\Engine\\CfxShardStep.comp" );
 	if( !pi || !ps ) return 0;
 
 	// Every strong transient blows the picture apart again; between bursts the
@@ -1146,8 +1146,8 @@ GLuint ComputeFX::stepCloth( const AudioFeatures &a, float dt, float t )
 	const int W = 256, H = 144;
 	if( !ensureField( f, W, H, GL_RGBA16F ) ) return 0;
 
-	GLuint pi = prog( P_CLOTH_INIT, "..\\Blend\\CfxClothInit.comp" );
-	GLuint ps = prog( P_CLOTH_STEP, "..\\Blend\\CfxCloth.comp" );
+	GLuint pi = prog( P_CLOTH_INIT, "..\\Engine\\CfxClothInit.comp" );
+	GLuint ps = prog( P_CLOTH_STEP, "..\\Engine\\CfxCloth.comp" );
 	if( !pi || !ps ) return 0;
 
 	if( !f.seeded )

@@ -282,7 +282,7 @@ protected:
 
 	// 2D CAMERA RIG state (formulas rig2Roll/rig2Zoom/rig2X/rig2Y + the
 	// host-integrated rig2…V rates), evaluated in applyAudioFeatures and
-	// consumed by FilterShader's Blend/Rig2D.frag transform pass.
+	// consumed by FilterShader's Engine/Rig2D.frag transform pass.
 	bool  m_rig2Active   = false;
 	float m_rig2[4]      = { 0.f, 0.f, 0.f, 0.f };   // roll zoom x y
 	float m_rig2Acc[4]   = { 0.f, 0.f, 0.f, 0.f };

@@ -18,7 +18,7 @@ TextureEffectTunnel(minTimeSolo, maxTimeSolo, minTimeInterpolation, maxTimeInter
 , m_speedTunnelReverseMax(-0.08)//0.4
 {
 	m_vertexShaderFilename = "..\\standard.vert";
-	m_fragmentShaderFilename = "..\\Scene\\TunnelReverse.frag";
+	m_fragmentShaderFilename = "..\\Scene2D\\TunnelReverse.frag";
 }
 
 // Destructor

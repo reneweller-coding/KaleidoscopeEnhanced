@@ -109,12 +109,12 @@ EditorWindow::EditorWindow(const QString &projectRoot, QWidget *parent)
                         "Tabelle gewählten Preset-Eintrag schreiben");
     pBtns->addWidget(bDice); pBtns->addWidget(bFreeze);
     pv->addLayout(pBtns);
-    // Transition test bench: watch ONE of the 28 CombinePlain transition
+    // Transition test bench: watch ONE of the 28 FxPlain transition
     // styles in slow motion (interpolation sweeps back and forth, ~10 s).
     QHBoxLayout *tBench = new QHBoxLayout();
     m_transCheck = new QCheckBox("Übergangs-Zeitlupe, Stil:");
     m_transCheck->setToolTip("Überblendung in Zeitlupe hin- und herfahren "
-                             "(Stile 0-27; wählt als Combine am besten CombinePlain). "
+                             "(Stile 0-27; wählt als Combine am besten FxPlain). "
                              "Headless-Prüfung aller Stile: PresetEditor --transcheck");
     m_transSpin = new QSpinBox();
     m_transSpin->setRange(0, 27);
@@ -285,8 +285,8 @@ EditorWindow::EditorWindow(const QString &projectRoot, QWidget *parent)
 
 void EditorWindow::scanShaders()
 {
-    // Since the 2026-07 reorg the user-selectable shaders live in Scene/,
-    // Scene3D/ and Combine/ (Blend/ holds the internal pipeline passes and is
+    // Since the 2026-07 reorg the user-selectable shaders live in Scene2D/,
+    // Scene3D/ and FX/ (Engine/ holds the internal pipeline passes and is
     // not listed).  Scene3D shaders share the texture-shader combo with the
     // 2D ones -- onTextureChanged() tells them apart by which folder they
     // were actually found in (m_scene3DFiles), not by any naming convention.
@@ -303,8 +303,8 @@ void EditorWindow::scanShaders()
     for (const QString &f : combines) m_combCombo->addItem(f);
     m_texCombo->model()->sort(0);
     m_texCombo->blockSignals(false); m_combCombo->blockSignals(false);
-    if (m_combCombo->findText("CombinePlain.frag") >= 0)
-        m_combCombo->setCurrentText("CombinePlain.frag");
+    if (m_combCombo->findText("FxPlain.frag") >= 0)
+        m_combCombo->setCurrentText("FxPlain.frag");
 }
 
 // Send whatever the "Add current shader to preset" panel currently says for
@@ -580,15 +580,15 @@ static QString identityVarFor(const QString &uniform)
 // one float.
 // Shader source files of an entry (frag only for 2D, all stages for Scene3D).
 // PresetEntry.file is the BARE name; the folder comes from e.folder (parsed
-// from the file= attribute at load), with the isCombine/type inference as the
+// from the file= attribute at load), with the isFX/type inference as the
 // fallback for entries created in the GUI before their first save.
 static QStringList shaderSourceFiles(const QString &root, const PresetEntry &e)
 {
     QString folder = e.folder;
     if (folder.isEmpty())
-        folder = e.isCombine ? QStringLiteral("Combine")
+        folder = e.isCombine ? QStringLiteral("FX")
                : (e.type.compare("scene3d", Qt::CaseInsensitive) == 0
-                      ? QStringLiteral("Scene3D") : QStringLiteral("Scene"));
+                      ? QStringLiteral("Scene3D") : QStringLiteral("Scene2D"));
     const QString stem = QFileInfo(e.file).completeBaseName();
     QStringList files;
     if (folder.compare("Scene3D", Qt::CaseInsensitive) == 0)
@@ -1060,7 +1060,7 @@ void EditorWindow::refreshTable()
     {
         const PresetEntry &e = m_preset.entries[i];
         auto set = [&](int col, const QString &s){ m_table->setItem(i, col, new QTableWidgetItem(s)); };
-        set(0, e.isCombine ? "Combine" : "Texture");
+        set(0, e.isCombine ? "FX" : "Texture");
         set(1, e.file);
         set(2, e.type);
         set(3, e.geom);

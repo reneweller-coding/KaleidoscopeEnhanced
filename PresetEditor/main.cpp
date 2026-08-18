@@ -108,7 +108,7 @@ int main(int argc, char *argv[])
                 const PresetEntry *ref = nullptr;
                 for (const PresetEntry &k : komplett.entries)
                     if (k.file == e.file && k.isCombine == e.isCombine
-                        // Folder-aware: Scene/X.frag and Scene3D/X.frag are
+                        // Folder-aware: Scene2D/X.frag and Scene3D/X.frag are
                         // DIFFERENT scenes sharing a bare name (CrystalGrowth)
                         // -- a bare-name match checked one against the other's
                         // params.  Empty folder (legacy) matches anything.
@@ -170,7 +170,7 @@ int main(int argc, char *argv[])
     app.setWindowIcon(QIcon(root + "/icon.ico"));
 
     // shader_setup.cpp / textfile.cpp resolve every path relative to the
-    // process's CURRENT WORKING DIRECTORY, hard-coded in the "..\Blend\...",
+    // process's CURRENT WORKING DIRECTORY, hard-coded in the "..\Engine\...",
     // "..\standard.vert", "..\Scene3D\..." style the whole engine's configs
     // already use.  The main app gets this for free because its exe lives one
     // level below root (Release\); PresetEditor.exe does not, and until a
@@ -288,7 +288,7 @@ int main(int argc, char *argv[])
             }
             const QString name = state->shaders[state->idx];
             state->w->setTextureShader(name);
-            state->w->setCombineShader("CombinePlain.frag");
+            state->w->setCombineShader("FxPlain.frag");
             // Same warm-up window --render already gives a fresh compute-FX
             // shader (see its own comment above) before the first grab.
             QTimer::singleShot(1200, [state, step, name]() {
@@ -315,7 +315,7 @@ int main(int argc, char *argv[])
         return app.exec();
     }
 
-    // Transition test bench: sweep every CombinePlain style over d = 0..1 with
+    // Transition test bench: sweep every FxPlain style over d = 0..1 with
     // a PINNED clock (deterministic frames) and verify (a) endpoint identity —
     // exactly scene A at d=0, exactly scene B at d=1 — and (b) temporal
     // continuity: no single step may dwarf the style's own typical step.
@@ -325,7 +325,7 @@ int main(int argc, char *argv[])
     {
         PreviewWidget *w = new PreviewWidget(root);
         w->setTextureShader("Kaleidoscope.frag");
-        w->setCombineShader("CombinePlain.frag");
+        w->setCombineShader("FxPlain.frag");
         w->setFixedTime(8.f);
         w->resize(640, 400);
         w->show();

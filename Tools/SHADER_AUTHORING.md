@@ -120,7 +120,7 @@ Varying durchreichen (der Generator packt z.B. einen Ecken-Code in `attrA.w`).
 
 ### V5 — Indirect-Generatoren: der Draw-Count-Vertrag
 
-`Blend/IndirectClamp.comp` läuft **nach jedem** Generator und macht:
+`Engine/IndirectClamp.comp` läuft **nach jedem** Generator und macht:
 
 ```glsl
 cmd[0] = min(cmd[4], maxVertices);
@@ -199,7 +199,7 @@ sind bewusst **pro Preset optional** und werden von `--validate` übersprungen.
 
 Statt der generischen `0.5 + 0.5*cos(vec3(0, 2, 4) + phase)`-Palette den
 Haus-Standard **imgPalette(t)** verwenden (Snippet in den umgestellten
-Szenen, z. B. `Scene/FerrofluidSpikeForest.frag`): Farben kommen von einem
+Szenen, z. B. `Scene2D/FerrofluidSpikeForest.frag`): Farben kommen von einem
 rotierenden Kreisbogen im AKTUELLEN Diashow-Bild — jede Aktivierung erbt
 eine frische Palette aus den Fotos, der Bogen folgt der Tonart
 (`audioChromaHue`, zirkulär geslewt = sprungfrei) mit langsamem
@@ -219,7 +219,7 @@ flächendeckend umgesetzt; dabei etablierte Konventionen:
   Identitätsfarbe (Feuer, Lava, Bio-Glow, Metall): biegt die Farbe
   luminanzerhaltend um `k` (0.15–0.28) Richtung Foto-Bogen — Feuer bleibt
   Feuer, der Farbton lehnt sich ans Bild an. Snippet in den
-  TOENUNG-Szenen (z. B. `Scene/Aurora.frag`).
+  TOENUNG-Szenen (z. B. `Scene2D/Aurora.frag`).
 - Auch **Vertex-Shader** dürfen imgPalette nutzen (Vertex-Texture-Fetch,
   Beweis: VideoRelief.vert und die ganze Punkt/Ribbon-Familie) — Sampler-
   und Audio-Deklarationen dann im .vert.
@@ -322,7 +322,7 @@ Konsequenzen fürs Autorieren:
   eine Uniform legen, die im Shader mit `time` multipliziert wird.
 - **2D-Kamera-Rig (alle 2D-Szenen):** Formeln `rig2Roll`/`rig2Zoom`/
   `rig2X`/`rig2Y` (+ integrierte `rig2…V`-Raten) — FilterShader schiebt das
-  fertige Szenen-FBO durch `Blend/Rig2D.frag` (Spiegel-Faltung an den
+  fertige Szenen-FBO durch `Engine/Rig2D.frag` (Spiegel-Faltung an den
   Rändern), bevor der Combine es liest. Nur aktiv, wenn eine Formel
   existiert; auf gepackten Stereo-Frames grundsätzlich aus.
 - **Kamera-Rig (nur Scene3D, keine Shader-Änderung nötig):** Formeln namens
@@ -365,10 +365,10 @@ Volldurchsicht — 13 Bögen statt 975 Einzelbilder).
 ```bash
 while IFS='|' read -r name file type geom; do
   if [ -n "$geom" ]; then
-    "$EXE" --render "$file" CombinePlain.frag "$OUT/$name.png" 960 600 \
+    "$EXE" --render "$file" FxPlain.frag "$OUT/$name.png" 960 600 \
            --geom "$geom" > "$OUT/$name.log" 2>&1 </dev/null
   else
-    "$EXE" --render "$file" CombinePlain.frag "$OUT/$name.png" 960 600 \
+    "$EXE" --render "$file" FxPlain.frag "$OUT/$name.png" 960 600 \
            > "$OUT/$name.log" 2>&1 </dev/null
   fi
 done < meta.txt

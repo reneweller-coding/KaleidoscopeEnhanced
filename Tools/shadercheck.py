@@ -80,7 +80,7 @@ def check(paths, reg):
         typ, geom = reg.get(stem + ".frag", (None, None))
 
         # --- R1 registration + pairing ------------------------------------
-        if ext == ".frag" and (rel.startswith("Scene/") or in3d):
+        if ext == ".frag" and (rel.startswith("Scene2D/") or in3d):
             if stem + ".frag" not in reg:
                 err(rel, "not registered in Komplett.xml (scene can never be selected)")
             if in3d and not os.path.exists(os.path.join(ROOT, "Scene3D", stem + ".vert")):
@@ -169,7 +169,7 @@ def check(paths, reg):
             writes_cmd0 = re.search(r'\bcmd\s*\[\s*0\s*\]\s*=', body)
             uses_atomic = re.search(r'atomicAdd\s*\(\s*cmd\s*\[\s*4\s*\]', body)
             if writes_cmd0:
-                err(rel, "writes cmd[0] directly. Blend/IndirectClamp.comp runs after "
+                err(rel, "writes cmd[0] directly. Engine/IndirectClamp.comp runs after "
                          "every generator and does cmd[0] = min(cmd[4], maxVertices), "
                          "so this count is overwritten with 0 and nothing draws. "
                          "Publish the count via atomicAdd(cmd[4], n) instead")
@@ -218,7 +218,7 @@ def main():
                  if p.endswith((".frag", ".vert", ".comp"))]
     else:
         files = []
-        for d in ("Scene", "Scene3D", "Combine", "Blend"):
+        for d in ("Scene2D", "Scene3D", "FX", "Engine"):
             dp = os.path.join(ROOT, d)
             if not os.path.isdir(dp):
                 continue

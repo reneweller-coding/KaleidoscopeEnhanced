@@ -75,13 +75,13 @@ scenes, seen = [], set()
 for m in re.finditer(r'<TextureShader\b([^>]*)>', xml):
     attrs = dict(re.findall(r'(\w+)="([^"]*)"', m.group(1)))
     f = attrs.get("file", "").replace("\\", "/")
-    if "Combine" in f:
+    if "FX" in f:
         continue
     stem = os.path.splitext(os.path.basename(f))[0]
     if not stem or stem in seen:
         continue
     seen.add(stem)
-    folder = "Scene3D" if "Scene3D" in f else "Scene"
+    folder = "Scene3D" if "Scene3D" in f else "Scene2D"
     scenes.append({
         "stem": stem, "folder": folder,
         "type": attrs.get("type", "normal"),
@@ -130,7 +130,7 @@ cur_folder = None
 for s in scenes:
     if s["folder"] != cur_folder:
         cur_folder = s["folder"]
-        label = "2D-Szenen (Scene/)" if cur_folder == "Scene" else "3D-Szenen (Scene3D/)"
+        label = "2D-Szenen (Scene2D/)" if cur_folder == "Scene2D" else "3D-Szenen (Scene3D/)"
         md.append(f"\n---\n\n## {label}\n")
         ht.append(f"<h1>{label}</h1>")
     meta = f"`{s['folder']}/{s['stem']}.frag` · type={s['type']}"

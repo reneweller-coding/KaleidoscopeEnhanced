@@ -33,12 +33,12 @@ struct ShaderParam
 struct PresetEntry
 {
     bool     isCombine = false;
-    // Folder segment of the file= attribute ("Scene" | "Scene3D" | "Combine").
+    // Folder segment of the file= attribute ("Scene2D" | "Scene3D" | "FX").
     // Carried explicitly because the BARE filename is ambiguous: a 2D
-    // Scene/X.frag and a 3D Scene3D/X.frag can legitimately coexist
+    // Scene2D/X.frag and a 3D Scene3D/X.frag can legitimately coexist
     // (CrystalGrowth does), and --validate matching on the bare name alone
     // checked one against the other's params.  Empty = infer from
-    // isCombine/type (pre-folder files round-trip unchanged).
+    // isFX/type (pre-folder files round-trip unchanged).
     QString  folder;
     QString  file;         // bare filename, e.g. "Kaleidoscope.frag"
     QString  type = "normal";   // "normal" | "KaleidoscopeBase" | "scene3d"

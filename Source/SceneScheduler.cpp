@@ -260,7 +260,7 @@ void SceneScheduler::tick( const Tick &t )
 
 				m_texState = 1;
 
-				// Roll a transition style: 28 styles (see CombinePlain.frag),
+				// Roll a transition style: 28 styles (see FxPlain.frag),
 				// the classic linear mix stays the most common.  Style 27
 				// (portal) needs REAL depth on both sides - without two 3D
 				// scenes it falls back to the zoom-through flight.

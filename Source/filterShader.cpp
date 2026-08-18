@@ -79,7 +79,7 @@ void FilterShader::loadSettings()
 	s.endGroup();
 }
 
-// Basename of a fragment path ("..\\Scene\\Voyager.frag" -> "Voyager.frag").
+// Basename of a fragment path ("..\\Scene2D\\Voyager.frag" -> "Voyager.frag").
 static QString tasteBase( const char *fragPath )
 {
 	QString f = QString::fromLocal8Bit( fragPath ? fragPath : "?" );
@@ -243,7 +243,7 @@ void FilterShader::start( int width, int height )
 		fprintf( stderr, "WARNING: configuration has no valid <TextureShader> "
 		                 "entries (check attribute names + type) - using a "
 		                 "plain fallback.\n" );
-		EffectShader *fb = new EffectShader( "..\\Combine\\CombinePlain.frag", 30, 60, 20, 40 );
+		EffectShader *fb = new EffectShader( "..\\FX\\FxPlain.frag", 30, 60, 20, 40 );
 		fb->setProbability( 1.f );
 		fb->setComplexity( 1 );
 		m_effectTextures.push_back( fb );
@@ -252,8 +252,8 @@ void FilterShader::start( int width, int height )
 	{
 		fprintf( stderr, "WARNING: configuration has no valid <CombineShader> "
 		                 "entries (they need the SAME attribute names as "
-		                 "TextureShader + type=\"normal\") - using CombinePlain.\n" );
-		EffectShader *fb = new EffectShader( "..\\Combine\\CombinePlain.frag", 30, 60, 20, 40 );
+		                 "TextureShader + type=\"normal\") - using FxPlain.\n" );
+		EffectShader *fb = new EffectShader( "..\\FX\\FxPlain.frag", 30, 60, 20, 40 );
 		fb->setProbability( 1.f );
 		fb->setComplexity( 1 );
 		m_effectCombines.push_back( fb );
@@ -558,7 +558,7 @@ void FilterShader::setupSafety()
 
 	if( m_trailProgId == 0 )
 	{
-		m_trailProgId   = setShaders( "..\\standard.vert", "..\\Blend\\Feedback.frag" );
+		m_trailProgId   = setShaders( "..\\standard.vert", "..\\Engine\\Feedback.frag" );
 		m_trailCurUni   = glGetUniformLocation( m_trailProgId, "texCur" );
 		m_trailPrevUni  = glGetUniformLocation( m_trailProgId, "texPrev" );
 		m_trailResUni   = glGetUniformLocation( m_trailProgId, "resolution" );
@@ -577,7 +577,7 @@ void FilterShader::setupSafety()
 	{
 		// Plain per-pixel cross-mix for eye-packed true-stereo frames (the
 		// styled combines would warp content across the eye boundary).
-		m_stereoMixProgId  = setShaders( "..\\standard.vert", "..\\Blend\\StereoMix.frag" );
+		m_stereoMixProgId  = setShaders( "..\\standard.vert", "..\\Engine\\StereoMix.frag" );
 		m_stereoMixTexAUni = glGetUniformLocation( m_stereoMixProgId, "texA" );
 		m_stereoMixTexBUni = glGetUniformLocation( m_stereoMixProgId, "texB" );
 		m_stereoMixResUni  = glGetUniformLocation( m_stereoMixProgId, "resolution" );
@@ -1726,7 +1726,7 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 	glBindFramebuffer( GL_FRAMEBUFFER, m_fboEffectCombine2 );
 
 	// Skip the "next" combine while NOT cross-fading combines: the final present
-	// pass (CombinePlain) weights this output by (1-interpolation)=0 at
+	// pass (FxPlain) weights this output by (1-interpolation)=0 at
 	// interpolation==1.0, so it is invisible.  Saves the second combine pass.
 	if( m_scheduler.combState() != 0 )
 	{
@@ -2014,7 +2014,7 @@ void FilterShader::drawWindow()
 // 2D CAMERA RIG: rotate/zoom/pan a finished 2D scene frame before the
 // combine consumes it, driven by the scene's rig2* formulas (evaluated in
 // EffectShader::applyAudioFeatures).  Renders src into a per-slot scratch
-// texture through Blend/Rig2D.frag and returns THAT; the caller simply
+// texture through Engine/Rig2D.frag and returns THAT; the caller simply
 // binds the returned id, so nothing is copied back and no other consumer
 // of the original texture is affected.  Off (returns src) when the scene
 // has no rig2 formulas — zero extra cost for the whole existing catalogue.
@@ -2028,7 +2028,7 @@ GLuint FilterShader::rig2Transform( EffectShader *fx, GLuint srcTex, int slot )
 	static GLint  uTex = -1, uRoll = -1, uZoom = -1, uPan = -1, uRes = -1;
 	if( prog == 0 )
 	{
-		prog  = setShaders( "..\\standard.vert", "..\\Blend\\Rig2D.frag" );
+		prog  = setShaders( "..\\standard.vert", "..\\Engine\\Rig2D.frag" );
 		uTex  = glGetUniformLocation( prog, "tex" );
 		uRoll = glGetUniformLocation( prog, "rigRoll" );
 		uZoom = glGetUniformLocation( prog, "rigZoom" );
@@ -2088,7 +2088,7 @@ void FilterShader::blitTexture( GLuint tex )
 	static GLint  blitTexUni = -1;
 	if( blitProg == 0 )
 	{
-		blitProg   = setShaders( "..\\standard.vert", "..\\Blend\\Blit.frag" );
+		blitProg   = setShaders( "..\\standard.vert", "..\\Engine\\Blit.frag" );
 		blitTexUni = glGetUniformLocation( blitProg, "tex" );
 	}
 	glUseProgram( blitProg );
@@ -2303,7 +2303,7 @@ bool FilterShader::ensureOitTargets()
 	glBindTexture( GL_TEXTURE_2D, 0 );
 
 	if( ok && m_oitResolveProg == 0 )
-		m_oitResolveProg = setShaders( "..\\standard.vert", "..\\Blend\\OitResolve.frag" );
+		m_oitResolveProg = setShaders( "..\\standard.vert", "..\\Engine\\OitResolve.frag" );
 
 	if( !ok )
 	{
@@ -2686,7 +2686,7 @@ void FilterShader::setupTexture( const GLuint texID, const QImage &image )
 void FilterShader::initGLSL()
 {	
 	// load and compile shader
-	m_sh_prog_id_combine = setShaders( "standard.vert", "..\\Combine\\CombinePlain.frag" );
+	m_sh_prog_id_combine = setShaders( "standard.vert", "..\\FX\\FxPlain.frag" );
 	// Get location of the texture samplers and point vector for future use
 	m_texPointCombineUni1 = glGetUniformLocation( m_sh_prog_id_combine, "tex0" );
 	m_texPointCombineUni2 = glGetUniformLocation( m_sh_prog_id_combine, "tex1" );

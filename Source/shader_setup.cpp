@@ -77,10 +77,10 @@ static GLuint fullscreenVertShader()
 	if( vs == 0 )
 	{
 		vs = glCreateShader( GL_VERTEX_SHADER );
-		GLchar *src = textFileRead( "..\\Blend\\Fullscreen.vert" );
+		GLchar *src = textFileRead( "..\\Engine\\Fullscreen.vert" );
 		if( src == NULL )
 		{
-			fprintf( stderr, "FATAL: Blend\\Fullscreen.vert missing!\n" );
+			fprintf( stderr, "FATAL: Engine\\Fullscreen.vert missing!\n" );
 			exit( 1 );
 		}
 		glShaderSource( vs, 1, const_cast<const GLchar**>( &src ), NULL );

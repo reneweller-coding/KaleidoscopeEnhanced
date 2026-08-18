@@ -47,7 +47,7 @@ EffectShader( minTimeSolo, maxTimeSolo, minTimeInterpolation, maxTimeInterpolati
 , m_timeInterpolationPowerMax(60)
 {
 	m_vertexShaderFilename = "..\\standard.vert";
-	m_fragmentShaderFilename = "..\\Scene\\Kaleidoscope.frag";
+	m_fragmentShaderFilename = "..\\Scene2D\\Kaleidoscope.frag";
 
 	m_sides = (float) ( (rand() % m_maxSides) + m_minSides);
 

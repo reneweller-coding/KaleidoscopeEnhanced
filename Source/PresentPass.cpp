@@ -56,7 +56,7 @@ void PresentPass::setup( int renderW, int renderH,
 
 	if( m_presentProgId == 0 )
 	{
-		m_presentProgId   = setShaders( "..\\standard.vert", "..\\Blend\\Present.frag" );
+		m_presentProgId   = setShaders( "..\\standard.vert", "..\\Engine\\Present.frag" );
 		m_presentTexUni   = glGetUniformLocation( m_presentProgId, "tex" );
 		m_presentResUni   = glGetUniformLocation( m_presentProgId, "resolution" );
 		m_presentScaleUni = glGetUniformLocation( m_presentProgId, "scale" );
@@ -138,7 +138,7 @@ void PresentPass::setup( int renderW, int renderH,
 	glBindTexture( GL_TEXTURE_2D, 0 );
 	if( m_bloomProgId == 0 )
 	{
-		m_bloomProgId    = setShaders( "..\\standard.vert", "..\\Blend\\BloomBlur.frag" );
+		m_bloomProgId    = setShaders( "..\\standard.vert", "..\\Engine\\BloomBlur.frag" );
 		m_bloomTexUni    = glGetUniformLocation( m_bloomProgId, "tex" );
 		m_bloomResUni    = glGetUniformLocation( m_bloomProgId, "resolution" );
 		m_bloomDirUni    = glGetUniformLocation( m_bloomProgId, "dir" );
@@ -331,13 +331,13 @@ void PresentPass::run( const Inputs &in )
 		m_safetyAccumDt = 0.f;
 	}
 
-	// ---- GPU percentile auto-exposure (Blend/CfxHistogram.comp) ----
+	// ---- GPU percentile auto-exposure (Engine/CfxHistogram.comp) ----
 	// Writes into an SSBO that Present.frag reads directly, so unlike the
 	// mean-luminance limiter above it costs no GPU->CPU sync at all.
 	if( !m_autoExpTried )
 	{
 		m_autoExpTried = true;
-		m_autoExpProg = setComputeShader( "..\\Blend\\CfxHistogram.comp" );
+		m_autoExpProg = setComputeShader( "..\\Engine\\CfxHistogram.comp" );
 		if( m_autoExpProg )
 		{
 			const float init[4] = { 1.f, 0.5f, 1.f, 0.f };

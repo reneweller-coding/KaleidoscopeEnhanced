@@ -354,7 +354,7 @@ bool Scene3DShader::setupIndirect()
 	// The clamp pass is shared by every indirect scene, so it is compiled once
 	// for the whole process.
 	if( s_clampProg == 0 )
-		s_clampProg = setComputeShader( "..\\Blend\\IndirectClamp.comp" );
+		s_clampProg = setComputeShader( "..\\Engine\\IndirectClamp.comp" );
 	if( s_clampProg == 0 )
 	{
 		glDeleteProgram( m_genProg );
