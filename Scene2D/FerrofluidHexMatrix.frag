@@ -1,12 +1,12 @@
 #version 330 core
 out vec4 fragColor;
-// FerrofluidHexMatrix.frag
-// -----------------------------------------------------------------------
-// FERROFLUID HEX MATRIX: Raymarched magnetic liquid ferrofluid pool rising
-// into sharp Rosensweig instability cone spikes in a dynamic hexagonal
-// magnetic lattice, with viscous fluid vortex advection, oily rainbow
-// thin-film sheen, and audio-reactive magnetic field flux.
-// -----------------------------------------------------------------------
+/**
+ * @file FerrofluidHexMatrix.frag
+ * @brief FERROFLUID HEX MATRIX: Raymarched magnetic liquid ferrofluid pool rising
+ * into sharp Rosensweig instability cone spikes in a dynamic hexagonal
+ * magnetic lattice, with viscous fluid vortex advection, oily rainbow
+ * thin-film sheen, and audio-reactive magnetic field flux.
+ */
 
 uniform vec2  resolution;
 uniform float time;

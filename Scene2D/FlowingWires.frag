@@ -1,20 +1,20 @@
 #version 330 core
 out vec4 fragColor;
-// FlowingWires.frag
-// -----------------------------------------------------------------------
-// Adapted from "Flowing Wires" by @kishimisu (2023) — https://www.shadertoy.com/view/DsBczR
-// Original licensed CC BY-NC-SA 4.0 (attribution kept per the licence).
-//
-// A 3D truchet pattern raymarched into interlocking glowing wire loops.
-// Adapted to our engine:
-//   * Shadertoy -> ours (gl_FragCoord/resolution/time, GLSL 1.20; round() -> floor(x+.5),
-//     the mat2(cos(a+vec4(0,33,11,0))) trick -> a proper rotation).
-//   * IMAGE-FORWARD: the source image colours the glow and drifts through as a
-//     faint nebula.
-//   * Audio-reactive & JUMP-FREE: forward travel from the host-integrated
-//     audioAdvance, spin from audioPhase (never time*audio); beats/onsets brighten
-//     the wires, centroid/valence grade the palette.
-// -----------------------------------------------------------------------
+/**
+ * @file FlowingWires.frag
+ * @brief Adapted from "Flowing Wires" by @kishimisu (2023) — https://www.shadertoy.com/view/DsBczR
+ * Original licensed CC BY-NC-SA 4.0 (attribution kept per the licence).
+ *
+ * A 3D truchet pattern raymarched into interlocking glowing wire loops.
+ * Adapted to our engine:
+ *   * Shadertoy -> ours (gl_FragCoord/resolution/time, GLSL 1.20; round() -> floor(x+.5),
+ *     the mat2(cos(a+vec4(0,33,11,0))) trick -> a proper rotation).
+ *   * IMAGE-FORWARD: the source image colours the glow and drifts through as a
+ *     faint nebula.
+ *   * Audio-reactive & JUMP-FREE: forward travel from the host-integrated
+ *     audioAdvance, spin from audioPhase (never time*audio); beats/onsets brighten
+ *     the wires, centroid/valence grade the palette.
+ */
 
 uniform vec2  resolution;
 uniform float time;

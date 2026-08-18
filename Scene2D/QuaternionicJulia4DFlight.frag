@@ -1,22 +1,22 @@
 #version 330 core
 out vec4 fragColor;
-// QuaternionicJulia4DFlight.frag
-// -----------------------------------------------------------------------
-// QUATERNIONIC JULIA 4D FLIGHT: Raymarched flight through a true 4D
-// Quaternion Julia fractal (q_{n+1} = q_n^2 + C). Projected into 3D via
-// 4D hyper-rotations with metallic specular highlights, audio-reactive
-// constant morphing, and continuous photo texture refraction.
-//   audioAdvance -> rotates 4D hyper-plane slicing angles (xw, yw, zw)
-//   audioKick    -> morphs quaternion constant C & triggers metallic flashes
-//   audioBass    -> pulses 4D Julia escape radius and fractal density
-//   audioSwell   -> increases specular glossiness and iridescence
-//
-// Per-activation variety:
-//   iterP   float raymarching & fractal iteration depth (0.5..2.0)
-//   sliceP  float 4D hyperspace slice offset            (0.5..2.2)
-//   speedP  float 4D rotation velocity                 (0.5..2.0)
-//   hueP    float metallic iridescence hue offset      (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file QuaternionicJulia4DFlight.frag
+ * @brief QUATERNIONIC JULIA 4D FLIGHT: Raymarched flight through a true 4D
+ * Quaternion Julia fractal (q_{n+1} = q_n^2 + C). Projected into 3D via
+ * 4D hyper-rotations with metallic specular highlights, audio-reactive
+ * constant morphing, and continuous photo texture refraction.
+ *   audioAdvance -> rotates 4D hyper-plane slicing angles (xw, yw, zw)
+ *   audioKick    -> morphs quaternion constant C & triggers metallic flashes
+ *   audioBass    -> pulses 4D Julia escape radius and fractal density
+ *   audioSwell   -> increases specular glossiness and iridescence
+ *
+ * Per-activation variety:
+ *   iterP   float raymarching & fractal iteration depth (0.5..2.0)
+ *   sliceP  float 4D hyperspace slice offset            (0.5..2.2)
+ *   speedP  float 4D rotation velocity                 (0.5..2.0)
+ *   hueP    float metallic iridescence hue offset      (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

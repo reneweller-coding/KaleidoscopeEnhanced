@@ -1,12 +1,12 @@
 #version 330 core
 out vec4 fragColor;
-// KerrNewmanSingularity.frag
-// -----------------------------------------------------------------------
-// KERR-NEWMAN SINGULARITY: Relativistic raymarching of a rotating charged
-// black hole with Kerr-Schild spacetime metric, ergosphere frame dragging,
-// gravitational light bending around the photon sphere, Doppler beaming,
-// polar synchrotron plasma jets, and double-warped photo disk projections.
-// -----------------------------------------------------------------------
+/**
+ * @file KerrNewmanSingularity.frag
+ * @brief KERR-NEWMAN SINGULARITY: Relativistic raymarching of a rotating charged
+ * black hole with Kerr-Schild spacetime metric, ergosphere frame dragging,
+ * gravitational light bending around the photon sphere, Doppler beaming,
+ * polar synchrotron plasma jets, and double-warped photo disk projections.
+ */
 
 uniform vec2  resolution;
 uniform float time;

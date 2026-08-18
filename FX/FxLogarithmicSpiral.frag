@@ -1,20 +1,20 @@
 #version 330 core
 out vec4 fragColor;
-// FxLogarithmicSpiral.frag
-// -----------------------------------------------------------------------
-// FX LOGARITHMIC SPIRAL: Equiangular logarithmic spiral vortex
-// (r = a * exp(b * theta)). The outgoing scene winds inward along spiral
-// streamlines while the incoming scene unwinds outwards from the center.
-//   interpolation -> controls spiral vortex winding angle & depth
-//   audioKick     -> flashes spiral arm streamline highlights
-//   audioBass     -> undulates spiral pitch & radial breathing
-//
-// Per-activation variety:
-//   spiralP float spiral winding tightness (0.5..2.2)
-//   armsP   float spiral arm count         (0.5..2.0)
-//   speedP  float animation speed          (0.5..2.0)
-//   hueP    float spiral hue offset        (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file FxLogarithmicSpiral.frag
+ * @brief FX LOGARITHMIC SPIRAL: Equiangular logarithmic spiral vortex
+ * (r = a * exp(b * theta)). The outgoing scene winds inward along spiral
+ * streamlines while the incoming scene unwinds outwards from the center.
+ *   interpolation -> controls spiral vortex winding angle & depth
+ *   audioKick     -> flashes spiral arm streamline highlights
+ *   audioBass     -> undulates spiral pitch & radial breathing
+ *
+ * Per-activation variety:
+ *   spiralP float spiral winding tightness (0.5..2.2)
+ *   armsP   float spiral arm count         (0.5..2.0)
+ *   speedP  float animation speed          (0.5..2.0)
+ *   hueP    float spiral hue offset        (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

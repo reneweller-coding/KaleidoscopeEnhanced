@@ -1,12 +1,12 @@
 #version 330 core
 out vec4 fragColor;
-// NeutronStarMagnetarBurst.frag
-// -----------------------------------------------------------------------
-// NEUTRON STAR MAGNETAR BURST: 100% viewport-filling extreme close-up of
-// a hyper-magnetic neutron star (10^15 Gauss). Starquake crust fault fractures,
-// blinding Cherenkov radiation bursts, relativistic pair-plasma fountains,
-// twisted dipolar magnetic flux tubes, and gravitational synchrotron lensing.
-// -----------------------------------------------------------------------
+/**
+ * @file NeutronStarMagnetarBurst.frag
+ * @brief NEUTRON STAR MAGNETAR BURST: 100% viewport-filling extreme close-up of
+ * a hyper-magnetic neutron star (10^15 Gauss). Starquake crust fault fractures,
+ * blinding Cherenkov radiation bursts, relativistic pair-plasma fountains,
+ * twisted dipolar magnetic flux tubes, and gravitational synchrotron lensing.
+ */
 
 uniform vec2  resolution;
 uniform float time;

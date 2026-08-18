@@ -1,22 +1,22 @@
 #version 330 core
 out vec4 fragColor;
-// MandelboxHyperCubeMetamaterial.frag
-// -----------------------------------------------------------------------
-// MANDELBOX HYPERCUBE METAMATERIAL: Raymarched 3D Mandelbox fractal
-// generating infinite metallic cyber-architectural megastructures.
-// Recursive box folds, sphere folds, scale inversions, neon edge lighting,
-// and continuous multi-planar photo texture reflections.
-//   audioAdvance -> navigates camera through Mandelbox corridors
-//   audioKick    -> flashes neon edge channels and metallic specular reflections
-//   audioBass    -> pulses Mandelbox scale factor & box folding boundaries
-//   audioChromaHue-> shifts cybernetic architectural color grading
-//
-// Per-activation variety:
-//   scaleP float Mandelbox scale factor (1.5..3.0)
-//   foldP  float box folding limit threshold (0.5..2.0)
-//   speedP float camera traversal velocity   (0.5..2.0)
-//   hueP   float neon palette hue offset     (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file MandelboxHyperCubeMetamaterial.frag
+ * @brief MANDELBOX HYPERCUBE METAMATERIAL: Raymarched 3D Mandelbox fractal
+ * generating infinite metallic cyber-architectural megastructures.
+ * Recursive box folds, sphere folds, scale inversions, neon edge lighting,
+ * and continuous multi-planar photo texture reflections.
+ *   audioAdvance -> navigates camera through Mandelbox corridors
+ *   audioKick    -> flashes neon edge channels and metallic specular reflections
+ *   audioBass    -> pulses Mandelbox scale factor & box folding boundaries
+ *   audioChromaHue-> shifts cybernetic architectural color grading
+ *
+ * Per-activation variety:
+ *   scaleP float Mandelbox scale factor (1.5..3.0)
+ *   foldP  float box folding limit threshold (0.5..2.0)
+ *   speedP float camera traversal velocity   (0.5..2.0)
+ *   hueP   float neon palette hue offset     (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

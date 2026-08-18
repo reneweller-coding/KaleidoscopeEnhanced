@@ -1,21 +1,21 @@
 #version 330 core
 out vec4 fragColor;
-// SolarFlareCorona.frag
-// -----------------------------------------------------------------------
-// SOLAR FLARE CORONA: Extreme close-up of a turbulent stellar photosphere,
-// incandescent plasma convection cells, magnetic coronal loops, and explosive
-// coronal mass ejections erupting across the screen.
-//   audioSubBass -> expands radial solar flare shockwaves
-//   audioKick    -> flashes incandescent core nuclear ignition
-//   audioMid     -> ripples magnetic flux loops & plasma convection
-//   audioHigh    -> excites fine coronal filaments & solar sparks
-//
-// Per-activation variety:
-//   turbulenceP  float plasma vortex turbulence multiplier (0.5..2.0)
-//   heatP        float thermal color intensity             (0.6..1.8)
-//   flareP       float coronal prominence reach            (0.5..2.2)
-//   hueP         float stellar color grading               (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file SolarFlareCorona.frag
+ * @brief SOLAR FLARE CORONA: Extreme close-up of a turbulent stellar photosphere,
+ * incandescent plasma convection cells, magnetic coronal loops, and explosive
+ * coronal mass ejections erupting across the screen.
+ *   audioSubBass -> expands radial solar flare shockwaves
+ *   audioKick    -> flashes incandescent core nuclear ignition
+ *   audioMid     -> ripples magnetic flux loops & plasma convection
+ *   audioHigh    -> excites fine coronal filaments & solar sparks
+ *
+ * Per-activation variety:
+ *   turbulenceP  float plasma vortex turbulence multiplier (0.5..2.0)
+ *   heatP        float thermal color intensity             (0.6..1.8)
+ *   flareP       float coronal prominence reach            (0.5..2.2)
+ *   hueP         float stellar color grading               (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

@@ -1,22 +1,22 @@
 #version 330 core
 out vec4 fragColor;
-// FxLiquidCrystalDefectDomain.frag
-// -----------------------------------------------------------------------
-// FX LIQUID CRYSTAL DEFECT DOMAIN: Nematic liquid crystal Schlieren transition.
-// Topological point defects (disclinations with strength s = +/-1/2), rainbow
-// birefringence interference tints on the domains between them, and dark
-// extinction brushes rotate and annihilate as the director field aligns,
-// seamlessly transitioning into the incoming scene.
-//   interpolation -> sweeps director field alignment & defect annihilation
-//   audioKick     -> flashes topological disclination core singularities
-//   audioBass     -> drives director field Frank elastic distortion
-//
-// Per-activation variety:
-//   defectP float topological defect density & core scale (0.5..2.2)
-//   brushP  float cross-polarizer Schlieren brush width   (0.5..2.0)
-//   speedP  float animation speed multiplier              (0.5..2.0)
-//   hueP    float nematic birefringence hue offset        (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file FxLiquidCrystalDefectDomain.frag
+ * @brief FX LIQUID CRYSTAL DEFECT DOMAIN: Nematic liquid crystal Schlieren transition.
+ * Topological point defects (disclinations with strength s = +/-1/2), rainbow
+ * birefringence interference tints on the domains between them, and dark
+ * extinction brushes rotate and annihilate as the director field aligns,
+ * seamlessly transitioning into the incoming scene.
+ *   interpolation -> sweeps director field alignment & defect annihilation
+ *   audioKick     -> flashes topological disclination core singularities
+ *   audioBass     -> drives director field Frank elastic distortion
+ *
+ * Per-activation variety:
+ *   defectP float topological defect density & core scale (0.5..2.2)
+ *   brushP  float cross-polarizer Schlieren brush width   (0.5..2.0)
+ *   speedP  float animation speed multiplier              (0.5..2.0)
+ *   hueP    float nematic birefringence hue offset        (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

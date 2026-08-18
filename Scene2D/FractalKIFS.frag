@@ -1,18 +1,18 @@
 #version 330 core
 out vec4 fragColor;
-// FractalKIFS.frag
-// -----------------------------------------------------------------------
-// Kaleidoscopic Iterated Function System (fold + rotate + scale): the source
-// image is sampled THROUGH the folded IFS coordinate, so the picture itself is
-// shattered into an endlessly self-similar fractal kaleidoscope, with the
-// orbit-trap structure glowing through it.  The *image* is the star (was a
-// dark procedural base with the picture only inside bright bits).
-//   audioMode     -> fold angle (minor = sharp/edgy, major = soft)
-//   audioPitch    -> zoom
-//   audioArousal  -> per-iteration scale (busier when energetic)
-//   audioPhase    -> smooth, jump-free overall rotation
-//   audioValence/Centroid -> palette & brightness; audioBeat -> bloom
-// -----------------------------------------------------------------------
+/**
+ * @file FractalKIFS.frag
+ * @brief Kaleidoscopic Iterated Function System (fold + rotate + scale): the source
+ * image is sampled THROUGH the folded IFS coordinate, so the picture itself is
+ * shattered into an endlessly self-similar fractal kaleidoscope, with the
+ * orbit-trap structure glowing through it.  The *image* is the star (was a
+ * dark procedural base with the picture only inside bright bits).
+ *   audioMode     -> fold angle (minor = sharp/edgy, major = soft)
+ *   audioPitch    -> zoom
+ *   audioArousal  -> per-iteration scale (busier when energetic)
+ *   audioPhase    -> smooth, jump-free overall rotation
+ *   audioValence/Centroid -> palette & brightness; audioBeat -> bloom
+ */
 
 uniform vec2  resolution;
 uniform float time;

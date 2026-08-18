@@ -1,13 +1,13 @@
 #version 330 core
 out vec4 fragColor;
-// BoseEinsteinVortexTangle.frag
-// -----------------------------------------------------------------------
-// BOSE-EINSTEIN VORTEX TANGLE: an ultracold condensate cloud of ruby/cyan
-// quantum sprites threaded by vortex lines, the camera orbiting INSIDE the
-// tangle with a slow nodding pitch.
-//   audioKick -> core brightness    audioPhase -> ruby/cyan state mix
-//   audioAdvance -> orbit           (additive sprites, source-level gains)
-// -----------------------------------------------------------------------
+/**
+ * @file BoseEinsteinVortexTangle.frag
+ * @brief BOSE-EINSTEIN VORTEX TANGLE: an ultracold condensate cloud of ruby/cyan
+ * quantum sprites threaded by vortex lines, the camera orbiting INSIDE the
+ * tangle with a slow nodding pitch.
+ *   audioKick -> core brightness    audioPhase -> ruby/cyan state mix
+ *   audioAdvance -> orbit           (additive sprites, source-level gains)
+ */
 
 in vec3 vWorldPos;
 in vec3 vNormal;

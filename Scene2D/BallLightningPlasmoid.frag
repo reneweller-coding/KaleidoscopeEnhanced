@@ -1,22 +1,22 @@
 #version 330 core
 out vec4 fragColor;
-// BallLightningPlasmoid.frag
-// -----------------------------------------------------------------------
-// BALL LIGHTNING PLASMOID: Volumetric autonomous ball lightning plasmoid
-// with magnetically self-confined toroidal plasma core. Helical discharge
-// filaments, atmospheric dielectric air breakdown arcs, high-frequency
-// ionization glow, and audio-reactive electrical detonation bursts.
-//   audioAdvance -> rotates toroidal plasma core vortex currents
-//   audioKick    -> fires explosive high-voltage electrical discharge arcs
-//   audioBass    -> pulses plasmoid confinement radius & magnetic pinch
-//   audioCentroid-> shifts ionization color temperature (electric cyan/violet)
-//
-// Per-activation variety:
-//   plasmoidP float plasmoid core radius & glow density  (0.5..2.2)
-//   arcP      float electrical discharge branching scale (0.5..2.0)
-//   speedP    float plasma vortex circulation velocity   (0.5..2.0)
-//   hueP      float plasma discharge hue offset          (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file BallLightningPlasmoid.frag
+ * @brief BALL LIGHTNING PLASMOID: Volumetric autonomous ball lightning plasmoid
+ * with magnetically self-confined toroidal plasma core. Helical discharge
+ * filaments, atmospheric dielectric air breakdown arcs, high-frequency
+ * ionization glow, and audio-reactive electrical detonation bursts.
+ *   audioAdvance -> rotates toroidal plasma core vortex currents
+ *   audioKick    -> fires explosive high-voltage electrical discharge arcs
+ *   audioBass    -> pulses plasmoid confinement radius & magnetic pinch
+ *   audioCentroid-> shifts ionization color temperature (electric cyan/violet)
+ *
+ * Per-activation variety:
+ *   plasmoidP float plasmoid core radius & glow density  (0.5..2.2)
+ *   arcP      float electrical discharge branching scale (0.5..2.0)
+ *   speedP    float plasma vortex circulation velocity   (0.5..2.0)
+ *   hueP      float plasma discharge hue offset          (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

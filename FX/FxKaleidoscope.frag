@@ -1,8 +1,10 @@
 #version 330 core
 out vec4 fragColor;
-// FxKaleidoscope.frag
-// FX KALEIDOSCOPE: classic radial mirror-fold -- the polar angle is
-// wrapped and mirrored into "sides" repeating wedges, slowly rotating.
+/**
+ * @file FxKaleidoscope.frag
+ * @brief FX KALEIDOSCOPE: classic radial mirror-fold -- the polar angle is
+ * wrapped and mirrored into "sides" repeating wedges, slowly rotating.
+ */
 uniform vec2 resolution;
 uniform float time;
 uniform sampler2D tex0;

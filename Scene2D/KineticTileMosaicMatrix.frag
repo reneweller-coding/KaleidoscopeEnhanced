@@ -1,12 +1,12 @@
 #version 330 core
 out vec4 fragColor;
-// KineticTileMosaicMatrix.frag
-// -----------------------------------------------------------------------
-// KINETIC TILE MOSAIC MATRIX: 100% viewport-filling architectural facade
-// of thousands of mechanical kinetic tiles that elevate, flip, and rotate
-// in 3D relief, physically reconstructing the loaded photo with specular
-// bevel highlights, cast ambient shadows, and audio-reactive wave cascades.
-// -----------------------------------------------------------------------
+/**
+ * @file KineticTileMosaicMatrix.frag
+ * @brief KINETIC TILE MOSAIC MATRIX: 100% viewport-filling architectural facade
+ * of thousands of mechanical kinetic tiles that elevate, flip, and rotate
+ * in 3D relief, physically reconstructing the loaded photo with specular
+ * bevel highlights, cast ambient shadows, and audio-reactive wave cascades.
+ */
 
 uniform vec2  resolution;
 uniform float time;

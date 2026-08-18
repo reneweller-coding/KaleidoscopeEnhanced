@@ -1,20 +1,20 @@
 #version 330 core
 out vec4 fragColor;
-// FxGlitchPixelSort.frag
-// -----------------------------------------------------------------------
-// FX GLITCH PIXEL SORT: Directional luminance pixel-sorting transition.
-// Pixels stretch and sort into horizontal crystalline streaks based on
-// luminance thresholds, glitching and resolving seamlessly into the incoming scene.
-//   interpolation -> sweeps pixel-sort threshold & glitch severity
-//   audioKick     -> triggers sharp horizontal glitch slice displacements
-//   audioHigh     -> intensifies high-frequency glitch noise
-//
-// Per-activation variety:
-//   glitchP float glitch slice frequency & chaos (0.5..2.2)
-//   streakP float pixel sort streak length        (0.5..2.0)
-//   speedP  float animation speed multiplier     (0.5..2.0)
-//   hueP    float glitch chromatic hue offset     (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file FxGlitchPixelSort.frag
+ * @brief FX GLITCH PIXEL SORT: Directional luminance pixel-sorting transition.
+ * Pixels stretch and sort into horizontal crystalline streaks based on
+ * luminance thresholds, glitching and resolving seamlessly into the incoming scene.
+ *   interpolation -> sweeps pixel-sort threshold & glitch severity
+ *   audioKick     -> triggers sharp horizontal glitch slice displacements
+ *   audioHigh     -> intensifies high-frequency glitch noise
+ *
+ * Per-activation variety:
+ *   glitchP float glitch slice frequency & chaos (0.5..2.2)
+ *   streakP float pixel sort streak length        (0.5..2.0)
+ *   speedP  float animation speed multiplier     (0.5..2.0)
+ *   hueP    float glitch chromatic hue offset     (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

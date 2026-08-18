@@ -1,7 +1,9 @@
 #version 330 core
-// SuperfluidVortexTangle.vert
-// attrA.xyz = world pos, attrA.w = circulation
-// attrB.w = ringID (GEOM_INDIRECT, 8-float layout)
+/**
+ * @file SuperfluidVortexTangle.vert
+ * @brief attrA.xyz = world pos, attrA.w = circulation
+ * attrB.w = ringID (GEOM_INDIRECT, 8-float layout)
+ */
 in vec4 attrA;
 in vec4 attrB;
 

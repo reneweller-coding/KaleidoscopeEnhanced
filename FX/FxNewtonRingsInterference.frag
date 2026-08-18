@@ -1,20 +1,20 @@
 #version 330 core
 out vec4 fragColor;
-// FxNewtonRingsInterference.frag
-// -----------------------------------------------------------------------
-// FX NEWTON RINGS INTERFERENCE: Optical thin-film Newton's rings transition.
-// Interference between a spherical lens surface and an optical flat produces
-// concentric chromatic interference rings that expand radially to reveal the incoming scene.
-//   interpolation -> sweeps air gap thickness & expanding interference fringe radius
-//   audioKick     -> flashes constructive interference rainbow rings
-//   audioBass     -> undulates lens curvature & ring spacing
-//
-// Per-activation variety:
-//   ringP  float Newton ring radial frequency (0.5..2.2)
-//   gapP   float optical air gap depth scale  (0.5..2.0)
-//   speedP float animation speed multiplier   (0.5..2.0)
-//   hueP   float interference ring hue offset (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file FxNewtonRingsInterference.frag
+ * @brief FX NEWTON RINGS INTERFERENCE: Optical thin-film Newton's rings transition.
+ * Interference between a spherical lens surface and an optical flat produces
+ * concentric chromatic interference rings that expand radially to reveal the incoming scene.
+ *   interpolation -> sweeps air gap thickness & expanding interference fringe radius
+ *   audioKick     -> flashes constructive interference rainbow rings
+ *   audioBass     -> undulates lens curvature & ring spacing
+ *
+ * Per-activation variety:
+ *   ringP  float Newton ring radial frequency (0.5..2.2)
+ *   gapP   float optical air gap depth scale  (0.5..2.0)
+ *   speedP float animation speed multiplier   (0.5..2.0)
+ *   hueP   float interference ring hue offset (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

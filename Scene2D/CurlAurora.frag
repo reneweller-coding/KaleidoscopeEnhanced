@@ -1,16 +1,16 @@
 #version 330 core
 out vec4 fragColor;
-// CurlAurora.frag
-// -----------------------------------------------------------------------
-// Flowing aurora curtains (domain-warped value noise) driven by mood.
-//   audioArousal  -> contrast / brightness of the curtains
-//   audioValence  -> palette (low = teal/green, high = magenta/pink)
-//   audioCentroid -> pale-blue bright tips (spectral brightness)
-//   audioLevel/SubBass -> overall glow
-//   audioPhase/Advance -> smooth, jump-free horizontal drift with the music
-//   audioBeat     -> gentle shimmer (slew-limited host-side, never strobes)
-// The source image breathes through as subtle texture.
-// -----------------------------------------------------------------------
+/**
+ * @file CurlAurora.frag
+ * @brief Flowing aurora curtains (domain-warped value noise) driven by mood.
+ *   audioArousal  -> contrast / brightness of the curtains
+ *   audioValence  -> palette (low = teal/green, high = magenta/pink)
+ *   audioCentroid -> pale-blue bright tips (spectral brightness)
+ *   audioLevel/SubBass -> overall glow
+ *   audioPhase/Advance -> smooth, jump-free horizontal drift with the music
+ *   audioBeat     -> gentle shimmer (slew-limited host-side, never strobes)
+ * The source image breathes through as subtle texture.
+ */
 
 uniform vec2  resolution;
 uniform float time;

@@ -1,15 +1,15 @@
 #version 330 core
 out vec4 fragColor;
-// StereoSpectrum.frag
-// -----------------------------------------------------------------------
-// Stereo spectrum analyzer with 32 frequency bands per side.  Bass sits at the
-// centre and treble runs out to the edges; the LEFT half's bar heights are
-// scaled by the LEFT channel's energy and the RIGHT half by the RIGHT channel,
-// so a wide stereo mix makes the two sides visibly differ.  The bars are filled
-// with the (mirror-folded) source image and tinted across the rainbow; the
-// central seam glows with the overall stereo width.  Many more bands and far
-// more deflection than the old 3-per-side version.
-// -----------------------------------------------------------------------
+/**
+ * @file StereoSpectrum.frag
+ * @brief Stereo spectrum analyzer with 32 frequency bands per side.  Bass sits at the
+ * centre and treble runs out to the edges; the LEFT half's bar heights are
+ * scaled by the LEFT channel's energy and the RIGHT half by the RIGHT channel,
+ * so a wide stereo mix makes the two sides visibly differ.  The bars are filled
+ * with the (mirror-folded) source image and tinted across the rainbow; the
+ * central seam glows with the overall stereo width.  Many more bands and far
+ * more deflection than the old 3-per-side version.
+ */
 
 uniform vec2  resolution;
 uniform float time;

@@ -1,22 +1,22 @@
 #version 330 core
 out vec4 fragColor;
-// ApollonianSpherePackingGasket.frag
-// -----------------------------------------------------------------------
-// APOLLONIAN SPHERE PACKING GASKET: Raymarched infinite 3D Apollonian sphere
-// packing gasket formed by recursive sphere inversions. Mutually tangent
-// "kissing" spheres create an infinite fractal foam with jewel refractions,
-// specular mirror reflections, and audio-reactive metric scaling.
-//   audioAdvance -> navigates camera through the Apollonian sphere foam
-//   audioKick    -> flashes sphere facet contact points and jewel glints
-//   audioBass    -> pulses recursive sphere inversion radius & metric scale
-//   audioChromaHue-> shifts jewel dispersion reflection colors
-//
-// Per-activation variety:
-//   gasketP  float Apollonian sphere packing density      (0.5..2.2)
-//   fractalP float sphere inversion recursion scale       (0.5..2.0)
-//   speedP   float camera navigation velocity             (0.5..2.0)
-//   hueP     float jewel reflection hue offset            (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file ApollonianSpherePackingGasket.frag
+ * @brief APOLLONIAN SPHERE PACKING GASKET: Raymarched infinite 3D Apollonian sphere
+ * packing gasket formed by recursive sphere inversions. Mutually tangent
+ * "kissing" spheres create an infinite fractal foam with jewel refractions,
+ * specular mirror reflections, and audio-reactive metric scaling.
+ *   audioAdvance -> navigates camera through the Apollonian sphere foam
+ *   audioKick    -> flashes sphere facet contact points and jewel glints
+ *   audioBass    -> pulses recursive sphere inversion radius & metric scale
+ *   audioChromaHue-> shifts jewel dispersion reflection colors
+ *
+ * Per-activation variety:
+ *   gasketP  float Apollonian sphere packing density      (0.5..2.2)
+ *   fractalP float sphere inversion recursion scale       (0.5..2.0)
+ *   speedP   float camera navigation velocity             (0.5..2.0)
+ *   hueP     float jewel reflection hue offset            (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

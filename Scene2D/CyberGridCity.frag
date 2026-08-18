@@ -1,22 +1,22 @@
 #version 330 core
 out vec4 fragColor;
-// CyberGridCity.frag
-// -----------------------------------------------------------------------
-// CYBER GRID CITY: Full-screen raymarched synthwave/cyberpunk metropolis.
-// Towering skyscrapers with illuminated neon grid windows, reflective
-// rain-slicked highway streets, rushing traffic light pulses along grids,
-// holographic photo billboards mapping tex0/tex1, and skyward neon beams.
-//   audioSubBass -> pulses ground grid shockwave & street reflections
-//   audioKick    -> flashes neon skyline & lightning storm over city
-//   audioHigh    -> sparkles skyscraper window lights & holo-glitch
-//   audioSwell   -> lifts camera elevation & deepens atmospheric volumetric fog
-//
-// Per-activation variety:
-//   speedP    float flight speed multiplier      (0.5..1.8)
-//   densityP  float building density / scale     (0.6..1.5)
-//   neonP     float neon emission intensity      (0.5..2.0)
-//   hueP      float color palette rotation       (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file CyberGridCity.frag
+ * @brief CYBER GRID CITY: Full-screen raymarched synthwave/cyberpunk metropolis.
+ * Towering skyscrapers with illuminated neon grid windows, reflective
+ * rain-slicked highway streets, rushing traffic light pulses along grids,
+ * holographic photo billboards mapping tex0/tex1, and skyward neon beams.
+ *   audioSubBass -> pulses ground grid shockwave & street reflections
+ *   audioKick    -> flashes neon skyline & lightning storm over city
+ *   audioHigh    -> sparkles skyscraper window lights & holo-glitch
+ *   audioSwell   -> lifts camera elevation & deepens atmospheric volumetric fog
+ *
+ * Per-activation variety:
+ *   speedP    float flight speed multiplier      (0.5..1.8)
+ *   densityP  float building density / scale     (0.6..1.5)
+ *   neonP     float neon emission intensity      (0.5..2.0)
+ *   hueP      float color palette rotation       (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

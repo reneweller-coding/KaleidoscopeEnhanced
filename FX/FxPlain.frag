@@ -1,37 +1,39 @@
 #version 330 core
 out vec4 fragColor;
-// FxPlain.frag
-// The plain effect blend — with a LIBRARY of 26 per-transition styles.  The
-// host rolls a style whenever a cross-fade starts (transStyle; 0/absent =
-// classic linear mix):
-//   Wipes / reveals (soft moving edges):
-//    1 radial iris     2 kaleido fold   3 zoom-through    4 diagonal wipe
-//    5 blinds          6 mosaic dissolve 7 swirl          8 water ripple
-//    9 push           10 sliding doors 11 clock sweep    12 dip to dark
-//   EDGE-FREE full-frame morphs:
-//   13 blur-through   — both scenes melt through a soft-focus dip
-//   14 melt           — the old scene drips downward like wax
-//   15 heat shimmer   — turbulent haze dissolves one into the other
-//   16 pixelation     — the frame coarsens into blocks, swaps, sharpens
-//   17 spin-zoom      — the old twists away, the new untwists in
-//   18 chromatic      — R, G and B cross over at slightly different times
-//   19 luminance      — dark areas give way first, highlights last
-//   20 double exposure— a dreamy screen-blend peak mid-transition
-//   21 jelly          — the whole frame wobbles like gelatine while blending
-//   22 kaleido-8 spin — an 8-mirror rosette that also rotates
-//   23 drain vortex   — the old magnifies and spirals away like a drain
-//   24 ghost exposure — layered ghost copies drift apart and resolve
-//   25 datamosh      — RGB-split, stuttering block-shifted glitch (the
-//                       "corrupted P-frame" look), most intense mid-fade
-//   26 shatter       — the old scene breaks into Voronoi shards that fly
-//                       apart, spin and fall; the new scene stands behind
-//   27 portal        — the new scene opens along the OLD scene's real
-//                       depth: near geometry peels away first, a glowing
-//                       rim rides the depth threshold (3D scenes only;
-//                       falls back to linear without valid depth)
-// All edges are soft; nothing flashes brighter than a gentle screen blend
-// over more than a second, so photosensitivity safety is unaffected.
-// interpolation: 1 = old scene (tex0) fully visible .. 0 = new scene (tex1).
+/**
+ * @file FxPlain.frag
+ * @brief The plain effect blend — with a LIBRARY of 26 per-transition styles.  The
+ * host rolls a style whenever a cross-fade starts (transStyle; 0/absent =
+ * classic linear mix):
+ *   Wipes / reveals (soft moving edges):
+ *    1 radial iris     2 kaleido fold   3 zoom-through    4 diagonal wipe
+ *    5 blinds          6 mosaic dissolve 7 swirl          8 water ripple
+ *    9 push           10 sliding doors 11 clock sweep    12 dip to dark
+ *   EDGE-FREE full-frame morphs:
+ *   13 blur-through   — both scenes melt through a soft-focus dip
+ *   14 melt           — the old scene drips downward like wax
+ *   15 heat shimmer   — turbulent haze dissolves one into the other
+ *   16 pixelation     — the frame coarsens into blocks, swaps, sharpens
+ *   17 spin-zoom      — the old twists away, the new untwists in
+ *   18 chromatic      — R, G and B cross over at slightly different times
+ *   19 luminance      — dark areas give way first, highlights last
+ *   20 double exposure— a dreamy screen-blend peak mid-transition
+ *   21 jelly          — the whole frame wobbles like gelatine while blending
+ *   22 kaleido-8 spin — an 8-mirror rosette that also rotates
+ *   23 drain vortex   — the old magnifies and spirals away like a drain
+ *   24 ghost exposure — layered ghost copies drift apart and resolve
+ *   25 datamosh      — RGB-split, stuttering block-shifted glitch (the
+ *                       "corrupted P-frame" look), most intense mid-fade
+ *   26 shatter       — the old scene breaks into Voronoi shards that fly
+ *                       apart, spin and fall; the new scene stands behind
+ *   27 portal        — the new scene opens along the OLD scene's real
+ *                       depth: near geometry peels away first, a glowing
+ *                       rim rides the depth threshold (3D scenes only;
+ *                       falls back to linear without valid depth)
+ * All edges are soft; nothing flashes brighter than a gentle screen blend
+ * over more than a second, so photosensitivity safety is unaffected.
+ * interpolation: 1 = old scene (tex0) fully visible .. 0 = new scene (tex1).
+ */
 uniform vec2 resolution;
 uniform float time;
 uniform sampler2D tex0;

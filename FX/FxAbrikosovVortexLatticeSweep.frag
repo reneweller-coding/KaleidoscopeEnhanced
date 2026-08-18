@@ -1,21 +1,21 @@
 #version 330 core
 out vec4 fragColor;
-// FxAbrikosovVortexLatticeSweep.frag
-// -----------------------------------------------------------------------
-// FX ABRIKOSOV VORTEX LATTICE SWEEP: Type-II superconductor vortex lattice.
-// A triangular lattice of quantized magnetic flux vortices (Abrikosov lattice)
-// sweeps across the screen, each vortex carrying 2pi phase winding that rotates
-// and transitions between scenes.
-//   interpolation -> sweeps superconducting flux penetration front across viewport
-//   audioKick     -> flashes quantized vortex core magnetic singularity points
-//   audioBass     -> drives vortex lattice triangular constant & Kelvin waves
-//
-// Per-activation variety:
-//   vortexP float Abrikosov vortex density & lattice scale (0.5..2.2)
-//   sweepP  float flux front sweep velocity ratio          (0.5..2.0)
-//   speedP  float animation speed multiplier               (0.5..2.0)
-//   hueP    float vortex core magnetic hue offset          (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file FxAbrikosovVortexLatticeSweep.frag
+ * @brief FX ABRIKOSOV VORTEX LATTICE SWEEP: Type-II superconductor vortex lattice.
+ * A triangular lattice of quantized magnetic flux vortices (Abrikosov lattice)
+ * sweeps across the screen, each vortex carrying 2pi phase winding that rotates
+ * and transitions between scenes.
+ *   interpolation -> sweeps superconducting flux penetration front across viewport
+ *   audioKick     -> flashes quantized vortex core magnetic singularity points
+ *   audioBass     -> drives vortex lattice triangular constant & Kelvin waves
+ *
+ * Per-activation variety:
+ *   vortexP float Abrikosov vortex density & lattice scale (0.5..2.2)
+ *   sweepP  float flux front sweep velocity ratio          (0.5..2.0)
+ *   speedP  float animation speed multiplier               (0.5..2.0)
+ *   hueP    float vortex core magnetic hue offset          (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

@@ -1,20 +1,20 @@
 #version 330 core
 out vec4 fragColor;
-// FxFresnelDiffractionEdge.frag
-// -----------------------------------------------------------------------
-// FX FRESNEL DIFFRACTION EDGE: Straight knife-edge optical Fresnel diffraction.
-// A straight absorbing edge sweeps across the optical field, creating decaying
-// sinusoidal diffraction fringes governed by Cornu spirals that bridge the transition.
-//   interpolation -> sweeps knife-edge shadow boundary across the screen
-//   audioKick     -> flashes principal diffraction fringe maxima
-//   audioBass     -> undulates Fresnel diffraction zone distance
-//
-// Per-activation variety:
-//   edgeP   float Fresnel zone parameter v scale      (0.5..2.2)
-//   fringeP float diffraction fringe visibility ratio (0.5..2.0)
-//   speedP  float animation speed multiplier          (0.5..2.0)
-//   hueP    float diffraction fringe hue offset       (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file FxFresnelDiffractionEdge.frag
+ * @brief FX FRESNEL DIFFRACTION EDGE: Straight knife-edge optical Fresnel diffraction.
+ * A straight absorbing edge sweeps across the optical field, creating decaying
+ * sinusoidal diffraction fringes governed by Cornu spirals that bridge the transition.
+ *   interpolation -> sweeps knife-edge shadow boundary across the screen
+ *   audioKick     -> flashes principal diffraction fringe maxima
+ *   audioBass     -> undulates Fresnel diffraction zone distance
+ *
+ * Per-activation variety:
+ *   edgeP   float Fresnel zone parameter v scale      (0.5..2.2)
+ *   fringeP float diffraction fringe visibility ratio (0.5..2.0)
+ *   speedP  float animation speed multiplier          (0.5..2.0)
+ *   hueP    float diffraction fringe hue offset       (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

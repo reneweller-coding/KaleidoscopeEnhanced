@@ -1,21 +1,21 @@
 #version 330 core
 out vec4 fragColor;
-// FxTesseract4DRotation.frag
-// -----------------------------------------------------------------------
-// FX TESSERACT 4D ROTATION: 4D hypercube rotation & W-axis slice transition.
-// The image is embedded as a 3D hyperplane in 4D Euclidean space. Double
-// rotations in XW and YZ planes rotate Universe 1 into the 4th dimension and
-// project Universe 2 onto the 3D screen.
-//   interpolation -> sweeps 4D hyper-rotation angle from 0 to pi/2
-//   audioKick     -> flashes 4D tesseract edge boundary vertices
-//   audioBass     -> undulates 4D hyper-volume projection perspective
-//
-// Per-activation variety:
-//   rot4DP float 4D rotation angle velocity ratio (0.5..2.2)
-//   sliceP float W-axis slicing plane displacement (0.5..2.0)
-//   speedP float animation speed multiplier       (0.5..2.0)
-//   hueP   float 4D wireframe hue offset          (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file FxTesseract4DRotation.frag
+ * @brief FX TESSERACT 4D ROTATION: 4D hypercube rotation & W-axis slice transition.
+ * The image is embedded as a 3D hyperplane in 4D Euclidean space. Double
+ * rotations in XW and YZ planes rotate Universe 1 into the 4th dimension and
+ * project Universe 2 onto the 3D screen.
+ *   interpolation -> sweeps 4D hyper-rotation angle from 0 to pi/2
+ *   audioKick     -> flashes 4D tesseract edge boundary vertices
+ *   audioBass     -> undulates 4D hyper-volume projection perspective
+ *
+ * Per-activation variety:
+ *   rot4DP float 4D rotation angle velocity ratio (0.5..2.2)
+ *   sliceP float W-axis slicing plane displacement (0.5..2.0)
+ *   speedP float animation speed multiplier       (0.5..2.0)
+ *   hueP   float 4D wireframe hue offset          (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

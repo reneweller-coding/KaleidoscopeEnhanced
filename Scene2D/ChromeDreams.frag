@@ -1,16 +1,16 @@
 #version 330 core
 out vec4 fragColor;
-// ChromeDreams.frag
-// -----------------------------------------------------------------------
-// Adapted from "Chrome Dreams" by @kishimisu (2022) — https://www.shadertoy.com/view/ctX3RM
-// Original licensed CC BY-NC-SA 4.0 (attribution kept per the licence).
-//
-// Rotations + space repetition into a chromatic tunnel of tori.  Adapted to our
-// engine, and COLOURED BY THE IMAGE: each depth takes its colour from a slowly-
-// drifting crop of the source picture (imgPal), so the palette is the image
-// itself and keeps changing.  Audio-reactive & jump-free (scroll via
-// audioAdvance, spin via audioPhase; beats brighten; centroid/valence grade).
-// -----------------------------------------------------------------------
+/**
+ * @file ChromeDreams.frag
+ * @brief Adapted from "Chrome Dreams" by @kishimisu (2022) — https://www.shadertoy.com/view/ctX3RM
+ * Original licensed CC BY-NC-SA 4.0 (attribution kept per the licence).
+ *
+ * Rotations + space repetition into a chromatic tunnel of tori.  Adapted to our
+ * engine, and COLOURED BY THE IMAGE: each depth takes its colour from a slowly-
+ * drifting crop of the source picture (imgPal), so the palette is the image
+ * itself and keeps changing.  Audio-reactive & jump-free (scroll via
+ * audioAdvance, spin via audioPhase; beats brighten; centroid/valence grade).
+ */
 
 uniform vec2  resolution;
 uniform float time;

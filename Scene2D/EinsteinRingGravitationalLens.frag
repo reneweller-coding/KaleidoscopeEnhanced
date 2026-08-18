@@ -1,22 +1,22 @@
 #version 330 core
 out vec4 fragColor;
-// EinsteinRingGravitationalLens.frag
-// -----------------------------------------------------------------------
-// EINSTEIN RING GRAVITATIONAL LENS: Relativistic gravitational lensing around
-// a massive rotating dark-matter singularity. Background photo textures are
-// warped into Einstein rings, arc mirages, and multiple relativistic images
-// with Doppler frequency shifts and gravitational wave metric ripples.
-//   audioAdvance -> rotates relativistic accretion and frame dragging
-//   audioKick    -> fires gravitational metric compression shockwaves
-//   audioSubBass -> expands Einstein radius and event horizon shadow
-//   audioChromaHue-> shifts relativistic Doppler color grading
-//
-// Per-activation variety:
-//   lensP   float Einstein ring deflection strength (0.5..2.2)
-//   massP   float central singularity mass scale    (0.5..2.0)
-//   speedP  float orbital frame dragging velocity  (0.5..2.0)
-//   hueP    float base chromatic palette offset     (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file EinsteinRingGravitationalLens.frag
+ * @brief EINSTEIN RING GRAVITATIONAL LENS: Relativistic gravitational lensing around
+ * a massive rotating dark-matter singularity. Background photo textures are
+ * warped into Einstein rings, arc mirages, and multiple relativistic images
+ * with Doppler frequency shifts and gravitational wave metric ripples.
+ *   audioAdvance -> rotates relativistic accretion and frame dragging
+ *   audioKick    -> fires gravitational metric compression shockwaves
+ *   audioSubBass -> expands Einstein radius and event horizon shadow
+ *   audioChromaHue-> shifts relativistic Doppler color grading
+ *
+ * Per-activation variety:
+ *   lensP   float Einstein ring deflection strength (0.5..2.2)
+ *   massP   float central singularity mass scale    (0.5..2.0)
+ *   speedP  float orbital frame dragging velocity  (0.5..2.0)
+ *   hueP    float base chromatic palette offset     (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

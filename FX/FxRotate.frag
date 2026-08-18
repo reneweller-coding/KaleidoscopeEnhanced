@@ -1,8 +1,10 @@
 #version 330 core
 out vec4 fragColor;
-// FxRotate.frag
-// FX ROTATE: plain continuous rotation of the scene around its centre,
-// direction and speed set per activation.
+/**
+ * @file FxRotate.frag
+ * @brief FX ROTATE: plain continuous rotation of the scene around its centre,
+ * direction and speed set per activation.
+ */
 uniform vec2 resolution;
 uniform float time;
 uniform sampler2D tex0;

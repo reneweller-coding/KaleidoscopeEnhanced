@@ -1,12 +1,12 @@
 #version 330 core
 out vec4 fragColor;
-// HyperbolicPoincareTunnel.frag
-// -----------------------------------------------------------------------
-// HYPERBOLIC POINCARE TUNNEL: 100% viewport-filling infinite flight down
-// a non-Euclidean tunnel whose cross-section is an {8,3} hyperbolic
-// Poincare disk. The tunnel walls are paved with conformal self-similar
-// tiles of the loaded photo with hyperbolic circle reflections.
-// -----------------------------------------------------------------------
+/**
+ * @file HyperbolicPoincareTunnel.frag
+ * @brief HYPERBOLIC POINCARE TUNNEL: 100% viewport-filling infinite flight down
+ * a non-Euclidean tunnel whose cross-section is an {8,3} hyperbolic
+ * Poincare disk. The tunnel walls are paved with conformal self-similar
+ * tiles of the loaded photo with hyperbolic circle reflections.
+ */
 
 uniform vec2  resolution;
 uniform float time;

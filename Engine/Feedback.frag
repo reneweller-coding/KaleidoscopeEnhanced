@@ -1,14 +1,16 @@
 #version 330 core
 out vec4 fragColor;
-// Feedback.frag
-// Phosphor-style feedback/trails pass, upgraded to an ECHO-WARP: the previous
-// displayed frame is sampled slightly ZOOMED and ROTATED around the centre
-// before being blended back in, so bright structures leave glowing echo
-// tunnels that expand, swirl and drift in hue as they fade.
-//   out = max(current, warpedPrevious * decay)
-// decay near 0 = no trails; near 1 = long trails.  The host modulates decay
-// (longer in ambient/sustained passages), pumps the zoom with the beat and
-// swings the rotation direction slowly.
+/**
+ * @file Feedback.frag
+ * @brief Phosphor-style feedback/trails pass, upgraded to an ECHO-WARP: the previous
+ * displayed frame is sampled slightly ZOOMED and ROTATED around the centre
+ * before being blended back in, so bright structures leave glowing echo
+ * tunnels that expand, swirl and drift in hue as they fade.
+ *   out = max(current, warpedPrevious * decay)
+ * decay near 0 = no trails; near 1 = long trails.  The host modulates decay
+ * (longer in ambient/sustained passages), pumps the zoom with the beat and
+ * swings the rotation direction slowly.
+ */
 uniform sampler2D texCur;    // current combined frame
 uniform sampler2D texPrev;   // previous trail frame
 uniform vec2  resolution;

@@ -1,21 +1,21 @@
 #version 330 core
 out vec4 fragColor;
-// SupermassiveAccretionDisk.frag
-// -----------------------------------------------------------------------
-// SUPERMASSIVE ACCRETION DISK: Raymarched Kerr rotating black hole with extreme
-// gravitational frame-dragging, Doppler-boosted photon sphere, relativistic
-// polar plasma jets, and gravitational lensing warping background starfields & photos.
-//   audioSubBass -> expands ergosphere & singularity gravitational lens ring
-//   audioKick    -> ignites explosive polar relativistic jet bursts
-//   audioHigh    -> sparks synchrotron radiation in accretion disk
-//   audioSwell   -> increases accretion disk thermal radiance & swirl
-//
-// Per-activation variety:
-//   spinP    float black hole angular momentum spin factor (0.5..1.8)
-//   diskP    float accretion disk radius / density         (0.6..1.8)
-//   jetP     float relativistic polar jet intensity        (0.5..2.2)
-//   hueP     float Doppler spectrum color shift            (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file SupermassiveAccretionDisk.frag
+ * @brief SUPERMASSIVE ACCRETION DISK: Raymarched Kerr rotating black hole with extreme
+ * gravitational frame-dragging, Doppler-boosted photon sphere, relativistic
+ * polar plasma jets, and gravitational lensing warping background starfields & photos.
+ *   audioSubBass -> expands ergosphere & singularity gravitational lens ring
+ *   audioKick    -> ignites explosive polar relativistic jet bursts
+ *   audioHigh    -> sparks synchrotron radiation in accretion disk
+ *   audioSwell   -> increases accretion disk thermal radiance & swirl
+ *
+ * Per-activation variety:
+ *   spinP    float black hole angular momentum spin factor (0.5..1.8)
+ *   diskP    float accretion disk radius / density         (0.6..1.8)
+ *   jetP     float relativistic polar jet intensity        (0.5..2.2)
+ *   hueP     float Doppler spectrum color shift            (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

@@ -1,20 +1,20 @@
 #version 330 core
 out vec4 fragColor;
-// CrystalMirrorGrid.frag
-// -----------------------------------------------------------------------
-// CRYSTAL MIRROR GRID: Raymarched 3D crystal mirror lattice filling 100% of
-// the screen. Every facet refracts and reflects the live photo/kaleidoscope.
-//   audioKick    -> shatter impulse bursting crystal facets towards the camera lens
-//   audioMid     -> lattice rotation & folding wave
-//   audioBass    -> facet extrusion depth & pulse
-//   audioChroma  -> spectral dispersion on crystal edges
-//
-// Per-activation variety (0 = default):
-//   facetP   float facet density multiplier   (0 -> 1.0; 0.6..1.8)
-//   shatterP float shatter impulse strength   (0 -> 1.0; 0.5..2.0)
-//   refractP float refraction dispersion mul  (0 -> 1.0; 0.5..1.5)
-//   hueP     float global hue rotation        (0 -> none; 0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file CrystalMirrorGrid.frag
+ * @brief CRYSTAL MIRROR GRID: Raymarched 3D crystal mirror lattice filling 100% of
+ * the screen. Every facet refracts and reflects the live photo/kaleidoscope.
+ *   audioKick    -> shatter impulse bursting crystal facets towards the camera lens
+ *   audioMid     -> lattice rotation & folding wave
+ *   audioBass    -> facet extrusion depth & pulse
+ *   audioChroma  -> spectral dispersion on crystal edges
+ *
+ * Per-activation variety (0 = default):
+ *   facetP   float facet density multiplier   (0 -> 1.0; 0.6..1.8)
+ *   shatterP float shatter impulse strength   (0 -> 1.0; 0.5..2.0)
+ *   refractP float refraction dispersion mul  (0 -> 1.0; 0.5..1.5)
+ *   hueP     float global hue rotation        (0 -> none; 0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

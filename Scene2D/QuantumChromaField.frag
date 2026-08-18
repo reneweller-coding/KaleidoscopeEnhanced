@@ -1,22 +1,22 @@
 #version 330 core
 out vec4 fragColor;
-// QuantumChromaField.frag
-// -----------------------------------------------------------------------
-// QUANTUM CHROMA FIELD: Multi-layered complex domain quantum wave interference
-// and Riemann surface vortex field. High-contrast holographic diffraction
-// fringes, phase singularities, quantum spin vortices, and dynamic
-// chromatic dispersion covering 100% of the screen.
-//   audioPhase   -> spins quantum phase vortices
-//   audioSubBass -> expands nodal interference envelope
-//   audioKick    -> excites high-energy quantum state collapse & flash
-//   audioFlux    -> modulates interference density & fine wave harmonics
-//
-// Per-activation variety:
-//   waveFreqP  float nodal wave frequency multiplier   (0.5..2.2)
-//   phaseRotP  float quantum phase spin speed          (0.4..1.8)
-//   glowP      float iridescent fringe intensity       (0.5..2.0)
-//   hueP       float color spectrum offset             (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file QuantumChromaField.frag
+ * @brief QUANTUM CHROMA FIELD: Multi-layered complex domain quantum wave interference
+ * and Riemann surface vortex field. High-contrast holographic diffraction
+ * fringes, phase singularities, quantum spin vortices, and dynamic
+ * chromatic dispersion covering 100% of the screen.
+ *   audioPhase   -> spins quantum phase vortices
+ *   audioSubBass -> expands nodal interference envelope
+ *   audioKick    -> excites high-energy quantum state collapse & flash
+ *   audioFlux    -> modulates interference density & fine wave harmonics
+ *
+ * Per-activation variety:
+ *   waveFreqP  float nodal wave frequency multiplier   (0.5..2.2)
+ *   phaseRotP  float quantum phase spin speed          (0.4..1.8)
+ *   glowP      float iridescent fringe intensity       (0.5..2.0)
+ *   hueP       float color spectrum offset             (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

@@ -1,19 +1,19 @@
 #version 330 core
 out vec4 fragColor;
-// FractalBloom.frag
-// -----------------------------------------------------------------------
-// Adapted from kishimisu's GLSL-tutorial fractal (2023) —
-// https://www.shadertoy.com/view/mtyGWy  (palette by iq: iquilezles.org/articles/palettes)
-// Original licensed CC BY-NC-SA 4.0 (attribution kept per the licence).
-//
-// A glowing fractal "flower": a domain-repeating kaleidoscope of bright rings.
-// Adapted to our engine:
-//   * Shadertoy -> ours (gl_FragCoord/resolution/time, GLSL 1.20).
-//   * IMAGE-FORWARD: the source image tiles into the fractal petals and tints the
-//     palette, and drifts through as a faint backdrop.
-//   * Audio-reactive & JUMP-FREE: gentle spin/animation via audioPhase; beats and
-//     onsets brighten the bloom; centroid/valence grade the palette.
-// -----------------------------------------------------------------------
+/**
+ * @file FractalBloom.frag
+ * @brief Adapted from kishimisu's GLSL-tutorial fractal (2023) —
+ * https://www.shadertoy.com/view/mtyGWy  (palette by iq: iquilezles.org/articles/palettes)
+ * Original licensed CC BY-NC-SA 4.0 (attribution kept per the licence).
+ *
+ * A glowing fractal "flower": a domain-repeating kaleidoscope of bright rings.
+ * Adapted to our engine:
+ *   * Shadertoy -> ours (gl_FragCoord/resolution/time, GLSL 1.20).
+ *   * IMAGE-FORWARD: the source image tiles into the fractal petals and tints the
+ *     palette, and drifts through as a faint backdrop.
+ *   * Audio-reactive & JUMP-FREE: gentle spin/animation via audioPhase; beats and
+ *     onsets brighten the bloom; centroid/valence grade the palette.
+ */
 
 uniform vec2  resolution;
 uniform float time;

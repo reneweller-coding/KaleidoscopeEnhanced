@@ -1,12 +1,12 @@
 #version 330 core
 out vec4 fragColor;
-// CyberHologramGlitchVoxel.frag
-// -----------------------------------------------------------------------
-// CYBER HOLOGRAM GLITCH VOXEL: 100% viewport-filling volumetric 3D laser
-// holographic scan. The 2D photo is converted into a floating 3D voxel
-// pointcloud via luminance depth extrusion, with scanning laser sheets,
-// chromatic optical aberration, CRT scanlines, and audio data-mosh glitches.
-// -----------------------------------------------------------------------
+/**
+ * @file CyberHologramGlitchVoxel.frag
+ * @brief CYBER HOLOGRAM GLITCH VOXEL: 100% viewport-filling volumetric 3D laser
+ * holographic scan. The 2D photo is converted into a floating 3D voxel
+ * pointcloud via luminance depth extrusion, with scanning laser sheets,
+ * chromatic optical aberration, CRT scanlines, and audio data-mosh glitches.
+ */
 
 uniform vec2  resolution;
 uniform float time;

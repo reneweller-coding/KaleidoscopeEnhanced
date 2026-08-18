@@ -1,16 +1,16 @@
 #version 330 core
 out vec4 fragColor;
-// SphereGrid.frag
-// -----------------------------------------------------------------------
-// Adapted from an untitled @kishimisu raymarch (CC BY-NC-SA 4.0): a fly-through
-// of an infinite lattice of spheres down a bright corridor.
-//
-// Adapted to our engine, and COLOURED BY THE IMAGE: instead of a fixed cosine
-// palette, each depth takes its colour from a slowly-drifting crop of the source
-// picture (imgPal), so the palette is the image itself and keeps changing (like
-// the kaleidoscope folding different crops).  Audio-reactive & jump-free
-// (forward travel via audioAdvance; beats brighten; centroid/valence grade).
-// -----------------------------------------------------------------------
+/**
+ * @file SphereGrid.frag
+ * @brief Adapted from an untitled @kishimisu raymarch (CC BY-NC-SA 4.0): a fly-through
+ * of an infinite lattice of spheres down a bright corridor.
+ *
+ * Adapted to our engine, and COLOURED BY THE IMAGE: instead of a fixed cosine
+ * palette, each depth takes its colour from a slowly-drifting crop of the source
+ * picture (imgPal), so the palette is the image itself and keeps changing (like
+ * the kaleidoscope folding different crops).  Audio-reactive & jump-free
+ * (forward travel via audioAdvance; beats brighten; centroid/valence grade).
+ */
 
 uniform vec2  resolution;
 uniform float time;

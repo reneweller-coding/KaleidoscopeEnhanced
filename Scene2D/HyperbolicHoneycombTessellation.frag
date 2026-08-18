@@ -1,21 +1,21 @@
 #version 330 core
 out vec4 fragColor;
-// HyperbolicHoneycombTessellation.frag
-// -----------------------------------------------------------------------
-// HYPERBOLIC HONEYCOMB TESSELLATION: Raymarched true 3D hyperbolic non-Euclidean
-// space tessellation ({5,3,4} dodecahedral / icosahedral honeycombs) in the Poincaré ball.
-// Infinite kaleidoscope mirror reflections repeating to infinity with photo projections.
-//   audioAdvance -> translates hyperbolic isometry matrix through space
-//   audioKick    -> flashes prismatic mirror facet edges and light pulses
-//   audioBass    -> undulates hyperbolic metric curvature
-//   audioSwell   -> increases jewel reflection refraction intensity
-//
-// Per-activation variety:
-//   polyP    float dodecahedron/icosahedron symmetry folding (0.5..2.0)
-//   zoomP    float Poincaré ball camera depth               (0.5..1.8)
-//   facetP   float prismatic mirror edge thickness           (0.5..2.2)
-//   hueP     float spectral dispersion hue offset           (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file HyperbolicHoneycombTessellation.frag
+ * @brief HYPERBOLIC HONEYCOMB TESSELLATION: Raymarched true 3D hyperbolic non-Euclidean
+ * space tessellation ({5,3,4} dodecahedral / icosahedral honeycombs) in the Poincaré ball.
+ * Infinite kaleidoscope mirror reflections repeating to infinity with photo projections.
+ *   audioAdvance -> translates hyperbolic isometry matrix through space
+ *   audioKick    -> flashes prismatic mirror facet edges and light pulses
+ *   audioBass    -> undulates hyperbolic metric curvature
+ *   audioSwell   -> increases jewel reflection refraction intensity
+ *
+ * Per-activation variety:
+ *   polyP    float dodecahedron/icosahedron symmetry folding (0.5..2.0)
+ *   zoomP    float Poincaré ball camera depth               (0.5..1.8)
+ *   facetP   float prismatic mirror edge thickness           (0.5..2.2)
+ *   hueP     float spectral dispersion hue offset           (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

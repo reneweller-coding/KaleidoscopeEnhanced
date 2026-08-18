@@ -1,20 +1,20 @@
 #version 330 core
 out vec4 fragColor;
-// FxSolitonWaveCollision.frag
-// -----------------------------------------------------------------------
-// FX SOLITON WAVE COLLISION: Non-linear Korteweg-de Vries (KdV) soliton transition.
-// Two non-linear solitary waves (sech^2 solitons) propagate toward each other,
-// collide with non-linear phase shifts without dispersing, and leave the incoming scene behind.
-//   interpolation -> sweeps soliton wave collision trajectory across viewport
-//   audioKick     -> flashes maximum non-linear wave crest superposition peak
-//   audioBass     -> drives soliton wave amplitude & non-linear steepness
-//
-// Per-activation variety:
-//   solitonP float soliton amplitude & velocity ratio    (0.5..2.2)
-//   widthP   float solitary wave sech^2 spatial width   (0.5..2.0)
-//   speedP   float animation speed multiplier           (0.5..2.0)
-//   hueP     float soliton wave crest hue offset        (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file FxSolitonWaveCollision.frag
+ * @brief FX SOLITON WAVE COLLISION: Non-linear Korteweg-de Vries (KdV) soliton transition.
+ * Two non-linear solitary waves (sech^2 solitons) propagate toward each other,
+ * collide with non-linear phase shifts without dispersing, and leave the incoming scene behind.
+ *   interpolation -> sweeps soliton wave collision trajectory across viewport
+ *   audioKick     -> flashes maximum non-linear wave crest superposition peak
+ *   audioBass     -> drives soliton wave amplitude & non-linear steepness
+ *
+ * Per-activation variety:
+ *   solitonP float soliton amplitude & velocity ratio    (0.5..2.2)
+ *   widthP   float solitary wave sech^2 spatial width   (0.5..2.0)
+ *   speedP   float animation speed multiplier           (0.5..2.0)
+ *   hueP     float soliton wave crest hue offset        (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

@@ -1,12 +1,12 @@
 #version 330 core
 out vec4 fragColor;
-// StainedGlassCathedralCaustics.frag
-// -----------------------------------------------------------------------
-// STAINED GLASS CATHEDRAL CAUSTICS: 100% viewport-filling Gothic cathedral
-// rose window. The loaded photo is transformed into a luminous stained glass
-// masterpiece with procedural lead tracery, antique bubbled glass refraction,
-// and volumetric sunbeams (godrays) casting jewel-toned caustics.
-// -----------------------------------------------------------------------
+/**
+ * @file StainedGlassCathedralCaustics.frag
+ * @brief STAINED GLASS CATHEDRAL CAUSTICS: 100% viewport-filling Gothic cathedral
+ * rose window. The loaded photo is transformed into a luminous stained glass
+ * masterpiece with procedural lead tracery, antique bubbled glass refraction,
+ * and volumetric sunbeams (godrays) casting jewel-toned caustics.
+ */
 
 uniform vec2  resolution;
 uniform float time;

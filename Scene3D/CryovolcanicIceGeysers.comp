@@ -1,9 +1,9 @@
 #version 430 core
-// CryovolcanicIceGeysers.comp
-// -----------------------------------------------------------------------
-// GPU compute shader generating 4,096 cryovolcanic ice geyser plumes
-// erupting from tectonic ice fractures with crystal scattering.
-// -----------------------------------------------------------------------
+/**
+ * @file CryovolcanicIceGeysers.comp
+ * @brief GPU compute shader generating 4,096 cryovolcanic ice geyser plumes
+ * erupting from tectonic ice fractures with crystal scattering.
+ */
 
 layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 

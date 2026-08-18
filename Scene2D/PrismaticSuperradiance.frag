@@ -1,12 +1,12 @@
 #version 330 core
 out vec4 fragColor;
-// PrismaticSuperradiance.frag
-// -----------------------------------------------------------------------
-// PRISMATIC SUPERRADIANCE: Volumetric quantum laser resonance chamber
-// with multi-faceted Brewster-angle dichroic prism cubes, cascaded Raman
-// scattering, coherent Q-switched stimulated emission beam sheets, and
-// chromatic dispersion of live kaleidoscope photo textures.
-// -----------------------------------------------------------------------
+/**
+ * @file PrismaticSuperradiance.frag
+ * @brief PRISMATIC SUPERRADIANCE: Volumetric quantum laser resonance chamber
+ * with multi-faceted Brewster-angle dichroic prism cubes, cascaded Raman
+ * scattering, coherent Q-switched stimulated emission beam sheets, and
+ * chromatic dispersion of live kaleidoscope photo textures.
+ */
 
 uniform vec2  resolution;
 uniform float time;

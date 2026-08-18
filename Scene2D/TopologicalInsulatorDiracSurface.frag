@@ -1,22 +1,22 @@
 #version 330 core
 out vec4 fragColor;
-// TopologicalInsulatorDiracSurface.frag
-// -----------------------------------------------------------------------
-// TOPOLOGICAL INSULATOR DIRAC SURFACE: 3D topological insulator crystal
-// with insulating bulk and protected conducting 2D Dirac surface states.
-// Spin-momentum locking ($k \times \sigma$), suppressed backscattering,
-// helical current loops, and continuous photo texture reflections.
-//   audioAdvance -> rotates spin-momentum locked Dirac surface currents
-//   audioKick    -> flashes protected topological edge state transitions
-//   audioBass    -> pulses bulk bandgap and surface Dirac cone height
-//   audioCentroid-> shifts electronic spin polarization vector colors
-//
-// Per-activation variety:
-//   surfaceP float crystal facet lattice density         (0.5..2.2)
-//   spinP    float spin-momentum locking helical pitch    (0.5..2.0)
-//   speedP   float surface current drift velocity         (0.5..2.0)
-//   hueP     float topological state hue offset           (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file TopologicalInsulatorDiracSurface.frag
+ * @brief TOPOLOGICAL INSULATOR DIRAC SURFACE: 3D topological insulator crystal
+ * with insulating bulk and protected conducting 2D Dirac surface states.
+ * Spin-momentum locking ($k \times \sigma$), suppressed backscattering,
+ * helical current loops, and continuous photo texture reflections.
+ *   audioAdvance -> rotates spin-momentum locked Dirac surface currents
+ *   audioKick    -> flashes protected topological edge state transitions
+ *   audioBass    -> pulses bulk bandgap and surface Dirac cone height
+ *   audioCentroid-> shifts electronic spin polarization vector colors
+ *
+ * Per-activation variety:
+ *   surfaceP float crystal facet lattice density         (0.5..2.2)
+ *   spinP    float spin-momentum locking helical pitch    (0.5..2.0)
+ *   speedP   float surface current drift velocity         (0.5..2.0)
+ *   hueP     float topological state hue offset           (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

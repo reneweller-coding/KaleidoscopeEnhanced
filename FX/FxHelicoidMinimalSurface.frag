@@ -1,20 +1,20 @@
 #version 330 core
 out vec4 fragColor;
-// FxHelicoidMinimalSurface.frag
-// -----------------------------------------------------------------------
-// FX HELICOID MINIMAL SURFACE: Ruled helicoid minimal surface screw transition.
-// A continuous helical ramp surface (z = c * theta) rotates and screws the outgoing
-// scene along its ruled geodesics, seamlessly unfurling into the incoming scene.
-//   interpolation -> sweeps helicoid rotation & helical screw pitch
-//   audioKick     -> flashes helicoid minimal surface ruling lines
-//   audioBass     -> undulates helical pitch & radial expansion
-//
-// Per-activation variety:
-//   pitchP float helical screw pitch & tightness  (0.5..2.2)
-//   screwP float rotation angular velocity ratio  (0.5..2.0)
-//   speedP float animation speed multiplier       (0.5..2.0)
-//   hueP   float minimal surface hue offset       (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file FxHelicoidMinimalSurface.frag
+ * @brief FX HELICOID MINIMAL SURFACE: Ruled helicoid minimal surface screw transition.
+ * A continuous helical ramp surface (z = c * theta) rotates and screws the outgoing
+ * scene along its ruled geodesics, seamlessly unfurling into the incoming scene.
+ *   interpolation -> sweeps helicoid rotation & helical screw pitch
+ *   audioKick     -> flashes helicoid minimal surface ruling lines
+ *   audioBass     -> undulates helical pitch & radial expansion
+ *
+ * Per-activation variety:
+ *   pitchP float helical screw pitch & tightness  (0.5..2.2)
+ *   screwP float rotation angular velocity ratio  (0.5..2.0)
+ *   speedP float animation speed multiplier       (0.5..2.0)
+ *   hueP   float minimal surface hue offset       (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

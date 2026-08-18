@@ -1,20 +1,20 @@
 #version 330 core
 out vec4 fragColor;
-// FxFrostDendriteFreeze.frag
-// -----------------------------------------------------------------------
-// FX FROST DENDRITE FREEZE: Hexagonal dendritic ice crystal freeze & melt.
-// Feathery ice frostwork branches rapidly across the viewport, freezing the
-// outgoing scene into crystalline frost and melting away into the incoming scene.
-//   interpolation -> sweeps freezing crystallization to melting thaw
-//   audioKick     -> flashes sharp dendritic ice needle growth
-//   audioHigh     -> sharpens crystalline frostwork facet lines
-//
-// Per-activation variety:
-//   frostP  float frost crystal density & scale  (0.5..2.2)
-//   branchP float dendritic branch branching     (0.5..2.0)
-//   speedP  float animation speed multiplier     (0.5..2.0)
-//   hueP    float ice crystal shimmer hue offset (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file FxFrostDendriteFreeze.frag
+ * @brief FX FROST DENDRITE FREEZE: Hexagonal dendritic ice crystal freeze & melt.
+ * Feathery ice frostwork branches rapidly across the viewport, freezing the
+ * outgoing scene into crystalline frost and melting away into the incoming scene.
+ *   interpolation -> sweeps freezing crystallization to melting thaw
+ *   audioKick     -> flashes sharp dendritic ice needle growth
+ *   audioHigh     -> sharpens crystalline frostwork facet lines
+ *
+ * Per-activation variety:
+ *   frostP  float frost crystal density & scale  (0.5..2.2)
+ *   branchP float dendritic branch branching     (0.5..2.0)
+ *   speedP  float animation speed multiplier     (0.5..2.0)
+ *   hueP    float ice crystal shimmer hue offset (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

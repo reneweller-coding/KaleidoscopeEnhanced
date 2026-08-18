@@ -1,21 +1,21 @@
 #version 330 core
 out vec4 fragColor;
-// VolcanicLightningPlume.frag
-// -----------------------------------------------------------------------
-// VOLCANIC LIGHTNING PLUME: Volumetric explosive volcanic ash column rising
-// into the night sky with glowing basalt magma fountains, turbulent curl-noise
-// smoke billowing, and branched electrostatic volcanic lightning discharges.
-//   audioKick    -> triggers explosive volcanic eruption burst & branched lightning
-//   audioSubBass -> rumbles seismic ground tremors and lava fountain height
-//   audioHigh    -> sparks electrostatic lightning branches and crackles
-//   audioSwell   -> billows ash column into the upper atmosphere
-//
-// Per-activation variety:
-//   eruptionP float lava fountain height & power           (0.5..2.0)
-//   smokeP    float ash density and billow turbulence      (0.5..1.8)
-//   boltP     float electrostatic lightning intensity      (0.5..2.2)
-//   hueP      float magma and lightning hue rotation       (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file VolcanicLightningPlume.frag
+ * @brief VOLCANIC LIGHTNING PLUME: Volumetric explosive volcanic ash column rising
+ * into the night sky with glowing basalt magma fountains, turbulent curl-noise
+ * smoke billowing, and branched electrostatic volcanic lightning discharges.
+ *   audioKick    -> triggers explosive volcanic eruption burst & branched lightning
+ *   audioSubBass -> rumbles seismic ground tremors and lava fountain height
+ *   audioHigh    -> sparks electrostatic lightning branches and crackles
+ *   audioSwell   -> billows ash column into the upper atmosphere
+ *
+ * Per-activation variety:
+ *   eruptionP float lava fountain height & power           (0.5..2.0)
+ *   smokeP    float ash density and billow turbulence      (0.5..1.8)
+ *   boltP     float electrostatic lightning intensity      (0.5..2.2)
+ *   hueP      float magma and lightning hue rotation       (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

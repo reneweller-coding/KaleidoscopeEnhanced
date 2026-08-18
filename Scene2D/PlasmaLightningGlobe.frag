@@ -1,21 +1,21 @@
 #version 330 core
 out vec4 fragColor;
-// PlasmaLightningGlobe.frag
-// -----------------------------------------------------------------------
-// PLASMA LIGHTNING GLOBE: Dielectric breakdown plasma globe with dozens of snaking,
-// branching high-voltage filament arcs striking the glass sphere, central electrode glow,
-// and electric neon magenta/cyan gas ionization trails.
-//   audioHigh    -> sparks new dielectric breakdown plasma filament branches
-//   audioKick    -> flashes high-energy arc discharges to glass boundary
-//   audioSwell   -> thickens noble gas ionization luminescence
-//   audioPhase   -> twists plasma filament tendril paths
-//
-// Per-activation variety:
-//   arcP     float plasma filament density & count         (0.5..2.2)
-//   branchP  float dielectric branching complexity         (0.5..2.0)
-//   glassP   float glass spherical refraction intensity    (0.5..1.8)
-//   hueP     float plasma ionization color shift           (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file PlasmaLightningGlobe.frag
+ * @brief PLASMA LIGHTNING GLOBE: Dielectric breakdown plasma globe with dozens of snaking,
+ * branching high-voltage filament arcs striking the glass sphere, central electrode glow,
+ * and electric neon magenta/cyan gas ionization trails.
+ *   audioHigh    -> sparks new dielectric breakdown plasma filament branches
+ *   audioKick    -> flashes high-energy arc discharges to glass boundary
+ *   audioSwell   -> thickens noble gas ionization luminescence
+ *   audioPhase   -> twists plasma filament tendril paths
+ *
+ * Per-activation variety:
+ *   arcP     float plasma filament density & count         (0.5..2.2)
+ *   branchP  float dielectric branching complexity         (0.5..2.0)
+ *   glassP   float glass spherical refraction intensity    (0.5..1.8)
+ *   hueP     float plasma ionization color shift           (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

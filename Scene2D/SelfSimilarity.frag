@@ -1,24 +1,24 @@
 #version 330 core
 out vec4 fragColor;
-// SelfSimilarity.frag
-// -----------------------------------------------------------------------
-// The SONG'S STRUCTURE as the image: the host maintains a self-similarity
-// matrix (SSM recurrence plot) over ~90 s of feature history (chroma +
-// spectral shape, "texSSM" unit 10) — the classic MIR structure view.
-// A returning chorus paints bright DIAGONAL STRIPES, a new section cuts a
-// dark CHECKERBOARD edge, a repeating loop becomes a fine grid.  Rendered
-// here as a living ornament:
-//   * the ring is unwrapped with ssmHead so "now" always sits at the top-
-//     right corner and history flows away along the diagonal;
-//   * bright similarity cells are stained with a drifting crop of the
-//     IMAGE, dark cells stay near-black — the picture lives INSIDE the
-//     song's structure;
-//   * an optional kaleido fold turns the matrix into a radial mandala
-//     whose spokes ARE the piece's repetitions;
-//   * the main diagonal ("now vs now") carries a beat-pulsing light.
-// Before ~90 s of history the unfilled region reads as calm darkness and
-// the picture grows with the song — intentional dramaturgy, not a bug.
-// -----------------------------------------------------------------------
+/**
+ * @file SelfSimilarity.frag
+ * @brief The SONG'S STRUCTURE as the image: the host maintains a self-similarity
+ * matrix (SSM recurrence plot) over ~90 s of feature history (chroma +
+ * spectral shape, "texSSM" unit 10) — the classic MIR structure view.
+ * A returning chorus paints bright DIAGONAL STRIPES, a new section cuts a
+ * dark CHECKERBOARD edge, a repeating loop becomes a fine grid.  Rendered
+ * here as a living ornament:
+ *   * the ring is unwrapped with ssmHead so "now" always sits at the top-
+ *     right corner and history flows away along the diagonal;
+ *   * bright similarity cells are stained with a drifting crop of the
+ *     IMAGE, dark cells stay near-black — the picture lives INSIDE the
+ *     song's structure;
+ *   * an optional kaleido fold turns the matrix into a radial mandala
+ *     whose spokes ARE the piece's repetitions;
+ *   * the main diagonal ("now vs now") carries a beat-pulsing light.
+ * Before ~90 s of history the unfilled region reads as calm darkness and
+ * the picture grows with the song — intentional dramaturgy, not a bug.
+ */
 
 uniform vec2  resolution;
 uniform float time;

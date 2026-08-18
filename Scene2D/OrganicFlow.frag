@@ -1,18 +1,18 @@
 #version 330 core
 out vec4 fragColor;
-// OrganicFlow.frag
-// -----------------------------------------------------------------------
-// The source image pushed through an organic, reaction-diffusion-like FLOW:
-// a domain-warped fbm displaces and marbles the folded picture while glowing
-// veins trace the cell boundaries, all mirror-symmetric so it reads like
-// living stained glass.  The *image* is the star (was a 40% tint on procedural
-// colour).
-//   audioBass      -> vein scale / thickness
-//   audioStereo    -> horizontal stretch (wide stereo = wider cells)
-//   audioDeltaPitch-> extra churn on melodic movement
-//   audioValence/Centroid -> vein palette & fold count
-//   audioPhase     -> smooth flow (jump-free); audioBeat -> vein flash
-// -----------------------------------------------------------------------
+/**
+ * @file OrganicFlow.frag
+ * @brief The source image pushed through an organic, reaction-diffusion-like FLOW:
+ * a domain-warped fbm displaces and marbles the folded picture while glowing
+ * veins trace the cell boundaries, all mirror-symmetric so it reads like
+ * living stained glass.  The *image* is the star (was a 40% tint on procedural
+ * colour).
+ *   audioBass      -> vein scale / thickness
+ *   audioStereo    -> horizontal stretch (wide stereo = wider cells)
+ *   audioDeltaPitch-> extra churn on melodic movement
+ *   audioValence/Centroid -> vein palette & fold count
+ *   audioPhase     -> smooth flow (jump-free); audioBeat -> vein flash
+ */
 
 uniform vec2  resolution;
 uniform float time;

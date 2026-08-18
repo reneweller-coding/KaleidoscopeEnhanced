@@ -1,16 +1,16 @@
 #version 330 core
 out vec4 fragColor;
-// Fluid.frag
-// -----------------------------------------------------------------------
-// Displays the GPU fluid field (FluidSim.frag, bound as texFluid on unit 8):
-// the source image as INK swirling through an incompressible curl-noise flow.
-// The field can be folded into an n-segment kaleidoscopic mandala per
-// activation, gets a gentle sharpen so the ink filaments stay crisp at
-// screen resolution, and the usual audio grades: beats brighten, the swell
-// looms, centroid/valence set the mood, the bar phase sweeps the hue.
-// If the simulation is unavailable, texFluid reads 0 -> falls back to the
-// plain (dimmed) image so the effect never shows black.
-// -----------------------------------------------------------------------
+/**
+ * @file Fluid.frag
+ * @brief Displays the GPU fluid field (FluidSim.frag, bound as texFluid on unit 8):
+ * the source image as INK swirling through an incompressible curl-noise flow.
+ * The field can be folded into an n-segment kaleidoscopic mandala per
+ * activation, gets a gentle sharpen so the ink filaments stay crisp at
+ * screen resolution, and the usual audio grades: beats brighten, the swell
+ * looms, centroid/valence set the mood, the bar phase sweeps the hue.
+ * If the simulation is unavailable, texFluid reads 0 -> falls back to the
+ * plain (dimmed) image so the effect never shows black.
+ */
 
 uniform vec2  resolution;
 uniform float time;

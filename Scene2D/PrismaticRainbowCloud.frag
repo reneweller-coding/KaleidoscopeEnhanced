@@ -1,21 +1,21 @@
 #version 330 core
 out vec4 fragColor;
-// PrismaticRainbowCloud.frag
-// -----------------------------------------------------------------------
-// PRISMATIC RAINBOW CLOUD: Polar stratospheric nacreous (mother-of-pearl) clouds
-// with high-altitude Mie/Rayleigh pastel diffraction iridescence, glowing twilight
-// crepuscular rays, and delicate fluid-like cloud wisp advection.
-//   audioSwell   -> thickens cloud density and illuminates internal pastel glow
-//   audioPhase   -> drifts diffraction iridescence color spectra
-//   audioKick    -> pulses crepuscular god rays and lens sparkles
-//   audioBass    -> creates deep atmospheric gravity wave ripples
-//
-// Per-activation variety:
-//   densityP float nacreous cloud density & thickness      (0.5..1.8)
-//   waveP    float atmospheric gravity wave frequency      (0.5..2.0)
-//   rayP     float crepuscular sun ray intensity           (0.5..2.2)
-//   hueP     float iridescent pastel spectrum offset       (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file PrismaticRainbowCloud.frag
+ * @brief PRISMATIC RAINBOW CLOUD: Polar stratospheric nacreous (mother-of-pearl) clouds
+ * with high-altitude Mie/Rayleigh pastel diffraction iridescence, glowing twilight
+ * crepuscular rays, and delicate fluid-like cloud wisp advection.
+ *   audioSwell   -> thickens cloud density and illuminates internal pastel glow
+ *   audioPhase   -> drifts diffraction iridescence color spectra
+ *   audioKick    -> pulses crepuscular god rays and lens sparkles
+ *   audioBass    -> creates deep atmospheric gravity wave ripples
+ *
+ * Per-activation variety:
+ *   densityP float nacreous cloud density & thickness      (0.5..1.8)
+ *   waveP    float atmospheric gravity wave frequency      (0.5..2.0)
+ *   rayP     float crepuscular sun ray intensity           (0.5..2.2)
+ *   hueP     float iridescent pastel spectrum offset       (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

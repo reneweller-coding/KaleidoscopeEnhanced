@@ -1,7 +1,9 @@
 #version 330 core
-// DendriticSnowCrystal.vert
-// attrA.xyz = world pos, attrA.w = iceRefract
-// attrB.w = flakeSector (GEOM_INDIRECT, 8-float layout)
+/**
+ * @file DendriticSnowCrystal.vert
+ * @brief attrA.xyz = world pos, attrA.w = iceRefract
+ * attrB.w = flakeSector (GEOM_INDIRECT, 8-float layout)
+ */
 in vec4 attrA;
 in vec4 attrB;
 

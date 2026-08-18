@@ -1,9 +1,9 @@
 #version 430 core
-// SupernovaRemnantNebula.comp
-// -----------------------------------------------------------------------
-// GPU compute shader generating 4,096 expanding supernova filament strands
-// with Rayleigh-Taylor instability fingers and central pulsar shockwaves.
-// -----------------------------------------------------------------------
+/**
+ * @file SupernovaRemnantNebula.comp
+ * @brief GPU compute shader generating 4,096 expanding supernova filament strands
+ * with Rayleigh-Taylor instability fingers and central pulsar shockwaves.
+ */
 
 layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 

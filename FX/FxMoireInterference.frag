@@ -1,20 +1,20 @@
 #version 330 core
 out vec4 fragColor;
-// FxMoireInterference.frag
-// -----------------------------------------------------------------------
-// FX MOIRE INTERFERENCE: Optical Moiré superlattice interference fringes
-// bridging the transition between scenes. Overlapping rotating line gratings
-// produce dynamic macroscopic interference waves that carry the cross-fade.
-//   interpolation -> controls grating rotation angle & interference phase
-//   audioKick     -> flashes Moiré constructive interference maxima
-//   audioBass     -> undulates grating spatial frequency
-//
-// Per-activation variety:
-//   freqP  float grating spatial frequency (0.5..2.2)
-//   angleP float relative grating twist     (0.5..2.0)
-//   speedP float animation speed multiplier (0.5..2.0)
-//   hueP   float interference fringe hue    (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file FxMoireInterference.frag
+ * @brief FX MOIRE INTERFERENCE: Optical Moiré superlattice interference fringes
+ * bridging the transition between scenes. Overlapping rotating line gratings
+ * produce dynamic macroscopic interference waves that carry the cross-fade.
+ *   interpolation -> controls grating rotation angle & interference phase
+ *   audioKick     -> flashes Moiré constructive interference maxima
+ *   audioBass     -> undulates grating spatial frequency
+ *
+ * Per-activation variety:
+ *   freqP  float grating spatial frequency (0.5..2.2)
+ *   angleP float relative grating twist     (0.5..2.0)
+ *   speedP float animation speed multiplier (0.5..2.0)
+ *   hueP   float interference fringe hue    (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

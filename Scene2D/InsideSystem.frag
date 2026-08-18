@@ -1,15 +1,15 @@
 #version 330 core
 out vec4 fragColor;
-// InsideSystem.frag
-// -----------------------------------------------------------------------
-// Adapted from "Inside the System" by @kishimisu (2022) — https://www.shadertoy.com/view/msj3D3
-// Original licensed CC BY-NC-SA 4.0 (attribution kept per the licence).
-//
-// Neon torus lights in an infinitely-repeating domain, flown through by an
-// orbiting camera.  Adapted to our engine: image-forward (the picture colours
-// the neon glow + drifts as a faint nebula), audio-reactive & jump-free (camera
-// travel from audioAdvance; beats/onsets brighten; centroid/valence grade).
-// -----------------------------------------------------------------------
+/**
+ * @file InsideSystem.frag
+ * @brief Adapted from "Inside the System" by @kishimisu (2022) — https://www.shadertoy.com/view/msj3D3
+ * Original licensed CC BY-NC-SA 4.0 (attribution kept per the licence).
+ *
+ * Neon torus lights in an infinitely-repeating domain, flown through by an
+ * orbiting camera.  Adapted to our engine: image-forward (the picture colours
+ * the neon glow + drifts as a faint nebula), audio-reactive & jump-free (camera
+ * travel from audioAdvance; beats/onsets brighten; centroid/valence grade).
+ */
 
 uniform vec2  resolution;
 uniform float time;

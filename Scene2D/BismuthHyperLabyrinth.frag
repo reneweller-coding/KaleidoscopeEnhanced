@@ -1,12 +1,12 @@
 #version 330 core
 out vec4 fragColor;
-// BismuthHyperLabyrinth.frag
-// -----------------------------------------------------------------------
-// BISMUTH HYPER LABYRINTH: Raymarched infinite 3D/4D hopper crystal maze
-// of elemental bismuth with stepped 90-degree concentric square terraces,
-// thin-film optical interference oxidation iridescence, metallic specular
-// reflections, holographic audio equalizer pulses, and photo texturing.
-// -----------------------------------------------------------------------
+/**
+ * @file BismuthHyperLabyrinth.frag
+ * @brief BISMUTH HYPER LABYRINTH: Raymarched infinite 3D/4D hopper crystal maze
+ * of elemental bismuth with stepped 90-degree concentric square terraces,
+ * thin-film optical interference oxidation iridescence, metallic specular
+ * reflections, holographic audio equalizer pulses, and photo texturing.
+ */
 
 uniform vec2  resolution;
 uniform float time;

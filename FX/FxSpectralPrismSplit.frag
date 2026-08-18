@@ -1,21 +1,21 @@
 #version 330 core
 out vec4 fragColor;
-// FxSpectralPrismSplit.frag
-// -----------------------------------------------------------------------
-// FX SPECTRAL PRISM SPLIT: Optical prism dispersion transition.
-// The image splits into red, green, and blue spectral sub-images that
-// disperse across the screen with chromatic aberration and recombine
-// smoothly into the incoming scene.
-//   interpolation -> sweeps dispersion angle & channel separation
-//   audioKick     -> flashes spectral rainbow flare streaks
-//   audioBass     -> widens chromatic channel separation distance
-//
-// Per-activation variety:
-//   prismP float dispersion intensity & separation width (0.5..2.2)
-//   splitP float split angle direction multiplier        (0.5..2.0)
-//   speedP float animation speed                         (0.5..2.0)
-//   hueP   float spectral hue offset                     (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file FxSpectralPrismSplit.frag
+ * @brief FX SPECTRAL PRISM SPLIT: Optical prism dispersion transition.
+ * The image splits into red, green, and blue spectral sub-images that
+ * disperse across the screen with chromatic aberration and recombine
+ * smoothly into the incoming scene.
+ *   interpolation -> sweeps dispersion angle & channel separation
+ *   audioKick     -> flashes spectral rainbow flare streaks
+ *   audioBass     -> widens chromatic channel separation distance
+ *
+ * Per-activation variety:
+ *   prismP float dispersion intensity & separation width (0.5..2.2)
+ *   splitP float split angle direction multiplier        (0.5..2.0)
+ *   speedP float animation speed                         (0.5..2.0)
+ *   hueP   float spectral hue offset                     (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

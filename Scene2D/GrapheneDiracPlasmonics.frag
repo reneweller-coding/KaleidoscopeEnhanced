@@ -1,11 +1,11 @@
 #version 330 core
 out vec4 fragColor;
-// GrapheneDiracPlasmonics.frag
-// -----------------------------------------------------------------------
-// GRAPHENE DIRAC PLASMONICS: 100% viewport-filling 2D honeycomb carbon
-// graphene lattice visualizing Dirac cones, topological quantum Hall edge
-// states, localized electronic wavepacket hops, and plasmonic resonances.
-// -----------------------------------------------------------------------
+/**
+ * @file GrapheneDiracPlasmonics.frag
+ * @brief GRAPHENE DIRAC PLASMONICS: 100% viewport-filling 2D honeycomb carbon
+ * graphene lattice visualizing Dirac cones, topological quantum Hall edge
+ * states, localized electronic wavepacket hops, and plasmonic resonances.
+ */
 
 uniform vec2  resolution;
 uniform float time;

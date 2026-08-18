@@ -1,25 +1,25 @@
 #version 330 core
 out vec4 fragColor;
-// NoiseSpiral.frag
-// -----------------------------------------------------------------------
-// "Playing with this idea: https://www.shadertoy.com/view/w3VGzc" (as noted in
-// the original's own comment; exact page/author of the shader pasted by the
-// user is otherwise unspecified).  A raymarched tunnel whose walls are folded
-// (domain-mirrored) and twisted along the travel axis, then eaten away by
-// layered turbulent noise, giving a glowing, spiralling, organic tunnel with
-// a bright vanishing point.
-//
-// Adapted to our engine: GLSL 1.20 (gl_FragCoord/resolution/time); the
-// original's comma-operator for-loop golf de-golfed into ordinary nested
-// loops/statements; tanh (GLSL 1.30+, not guaranteed in our 1.20 compatibility
-// target) hand-rolled via a clamped exp() so it can't overflow to Inf/NaN;
-// jump-free audio motion (host-integrated audioAdvance added to time, never
-// time*audio); beat/onset brightness (applied before the tanh compression, so
-// it's actually visible instead of saturating); mood grade; and IMAGE-DRIVEN
-// colour: a drifting crop of the source picture (imgPal) rotates the
-// palette's hue (hueRot) so the tunnel colours come from the ever-changing
-// image.
-// -----------------------------------------------------------------------
+/**
+ * @file NoiseSpiral.frag
+ * @brief "Playing with this idea: https://www.shadertoy.com/view/w3VGzc" (as noted in
+ * the original's own comment; exact page/author of the shader pasted by the
+ * user is otherwise unspecified).  A raymarched tunnel whose walls are folded
+ * (domain-mirrored) and twisted along the travel axis, then eaten away by
+ * layered turbulent noise, giving a glowing, spiralling, organic tunnel with
+ * a bright vanishing point.
+ *
+ * Adapted to our engine: GLSL 1.20 (gl_FragCoord/resolution/time); the
+ * original's comma-operator for-loop golf de-golfed into ordinary nested
+ * loops/statements; tanh (GLSL 1.30+, not guaranteed in our 1.20 compatibility
+ * target) hand-rolled via a clamped exp() so it can't overflow to Inf/NaN;
+ * jump-free audio motion (host-integrated audioAdvance added to time, never
+ * time*audio); beat/onset brightness (applied before the tanh compression, so
+ * it's actually visible instead of saturating); mood grade; and IMAGE-DRIVEN
+ * colour: a drifting crop of the source picture (imgPal) rotates the
+ * palette's hue (hueRot) so the tunnel colours come from the ever-changing
+ * image.
+ */
 
 uniform vec2  resolution;
 uniform float time;

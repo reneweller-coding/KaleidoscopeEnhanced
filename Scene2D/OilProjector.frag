@@ -1,15 +1,15 @@
 #version 330 core
 out vec4 fragColor;
-// OilProjector.frag
-// -----------------------------------------------------------------------
-// 1960s liquid light-show / Mathmos Space Projector - but now the swirling oil
-// cells REFRACT the source image: the picture is folded on the glass wheel and
-// dragged through the domain-warped flow, with dark oil veins between the cells
-// and a harmony-driven iridescent tint.  The *image* is the star (was a 10%
-// tint).  Bass + onset are the "heat" that makes it bubble, the beat gives an
-// in-tempo zoom pulse, treble crisps the veins, stereo skews the flow, harmony
-// drives the palette.  Rotation/evolution use jump-free phases (anti-flicker).
-// -----------------------------------------------------------------------
+/**
+ * @file OilProjector.frag
+ * @brief 1960s liquid light-show / Mathmos Space Projector - but now the swirling oil
+ * cells REFRACT the source image: the picture is folded on the glass wheel and
+ * dragged through the domain-warped flow, with dark oil veins between the cells
+ * and a harmony-driven iridescent tint.  The *image* is the star (was a 10%
+ * tint).  Bass + onset are the "heat" that makes it bubble, the beat gives an
+ * in-tempo zoom pulse, treble crisps the veins, stereo skews the flow, harmony
+ * drives the palette.  Rotation/evolution use jump-free phases (anti-flicker).
+ */
 
 uniform vec2  resolution;
 uniform float time;

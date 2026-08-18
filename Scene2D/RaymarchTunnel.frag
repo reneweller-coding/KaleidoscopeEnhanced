@@ -1,15 +1,17 @@
 #version 330 core
 out vec4 fragColor;
-// RaymarchTunnel.frag
-// A ray-marched wormhole papered with the SOURCE IMAGE, mirror-folded around
-// the bore so the picture radiates in symmetric wedges.  Now with:
-//   * a per-activation SPIRAL TWIST of the fold (the wedges corkscrew away),
-//   * corrugated rib shading so the walls have depth,
-//   * TEMPO-LOCKED LIGHT RINGS racing down the bore on the continuous beat
-//     phase (they land ON the beat, travelling smoothly - no snapping),
-//   * a warm light at the end of the tunnel breathing with the slow swell,
-//   * image-driven hue variance (imgPal/hueRot) + a per-bar hue sweep.
-// Camera flight via audioAdvance/audioPhase (jump-free).
+/**
+ * @file RaymarchTunnel.frag
+ * @brief A ray-marched wormhole papered with the SOURCE IMAGE, mirror-folded around
+ * the bore so the picture radiates in symmetric wedges.  Now with:
+ *   * a per-activation SPIRAL TWIST of the fold (the wedges corkscrew away),
+ *   * corrugated rib shading so the walls have depth,
+ *   * TEMPO-LOCKED LIGHT RINGS racing down the bore on the continuous beat
+ *     phase (they land ON the beat, travelling smoothly - no snapping),
+ *   * a warm light at the end of the tunnel breathing with the slow swell,
+ *   * image-driven hue variance (imgPal/hueRot) + a per-bar hue sweep.
+ * Camera flight via audioAdvance/audioPhase (jump-free).
+ */
 uniform vec2  resolution;
 uniform float time;
 uniform sampler2D tex0;

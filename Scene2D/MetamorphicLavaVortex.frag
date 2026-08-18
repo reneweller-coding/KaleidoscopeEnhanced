@@ -1,12 +1,12 @@
 #version 330 core
 out vec4 fragColor;
-// MetamorphicLavaVortex.frag
-// -----------------------------------------------------------------------
-// METAMORPHIC LAVA VORTEX: 100% viewport-filling viscous basalt magma
-// ocean. Solidified black obsidian crust plates drift, fracture, and submerge
-// into glowing 1500°C molten lava rivers, with convective heat shimmer,
-// incandescent fault cracks, and volcanic photo texture advection.
-// -----------------------------------------------------------------------
+/**
+ * @file MetamorphicLavaVortex.frag
+ * @brief METAMORPHIC LAVA VORTEX: 100% viewport-filling viscous basalt magma
+ * ocean. Solidified black obsidian crust plates drift, fracture, and submerge
+ * into glowing 1500°C molten lava rivers, with convective heat shimmer,
+ * incandescent fault cracks, and volcanic photo texture advection.
+ */
 
 uniform vec2  resolution;
 uniform float time;

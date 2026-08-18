@@ -1,6 +1,8 @@
 #version 330 core
-// StellarNurseryCollapse.vert
-// attrA.xyz = 0.0, attrA.w = point ID (0..59999), attrB = seeds (GEOM_POINTS).
+/**
+ * @file StellarNurseryCollapse.vert
+ * @brief attrA.xyz = 0.0, attrA.w = point ID (0..59999), attrB = seeds (GEOM_POINTS).
+ */
 in vec4 attrA;
 in vec4 attrB;
 

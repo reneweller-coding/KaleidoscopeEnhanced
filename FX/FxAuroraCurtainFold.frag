@@ -1,20 +1,20 @@
 #version 330 core
 out vec4 fragColor;
-// FxAuroraCurtainFold.frag
-// -----------------------------------------------------------------------
-// FX AURORA CURTAIN FOLD: Geomagnetic auroral curtain fold wipe transition.
-// Luminous curtains of emerald-green and violet polar light ripple across
-// geomagnetic field lines, folding and weaving the dual scenes together.
-//   interpolation -> sweeps auroral curtain wave front across the sky
-//   audioKick     -> flashes intense substorm auroral rays
-//   audioBass     -> undulates geomagnetic curtain folding frequency
-//
-// Per-activation variety:
-//   curtainP float auroral curtain fold depth & width (0.5..2.2)
-//   rayP     float vertical ray emission density     (0.5..2.0)
-//   speedP   float animation speed multiplier        (0.5..2.0)
-//   hueP     float auroral emission hue offset       (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file FxAuroraCurtainFold.frag
+ * @brief FX AURORA CURTAIN FOLD: Geomagnetic auroral curtain fold wipe transition.
+ * Luminous curtains of emerald-green and violet polar light ripple across
+ * geomagnetic field lines, folding and weaving the dual scenes together.
+ *   interpolation -> sweeps auroral curtain wave front across the sky
+ *   audioKick     -> flashes intense substorm auroral rays
+ *   audioBass     -> undulates geomagnetic curtain folding frequency
+ *
+ * Per-activation variety:
+ *   curtainP float auroral curtain fold depth & width (0.5..2.2)
+ *   rayP     float vertical ray emission density     (0.5..2.0)
+ *   speedP   float animation speed multiplier        (0.5..2.0)
+ *   hueP     float auroral emission hue offset       (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

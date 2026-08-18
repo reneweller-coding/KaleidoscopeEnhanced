@@ -1,20 +1,20 @@
 #version 330 core
 out vec4 fragColor;
-// FxCellularMitosis.frag
-// -----------------------------------------------------------------------
-// FX CELLULAR MITOSIS: Biological cell division & cytokinesis transition.
-// A parent biological cell elongates, forms a pinching cleavage furrow, and
-// divides into daughter cells that separate and morph into the incoming scene.
-//   interpolation -> controls cell elongation, cleavage furrow & cytokinesis
-//   audioKick     -> flashes mitotic spindle fiber glowing microtubules
-//   audioBass     -> undulates cell membrane elasticity & expansion
-//
-// Per-activation variety:
-//   mitosisP float cell membrane curvature & size     (0.5..2.2)
-//   cleaveP  float cytokinesis cleavage furrow depth (0.5..2.0)
-//   speedP   float animation speed multiplier        (0.5..2.0)
-//   hueP     float membrane glow hue offset          (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file FxCellularMitosis.frag
+ * @brief FX CELLULAR MITOSIS: Biological cell division & cytokinesis transition.
+ * A parent biological cell elongates, forms a pinching cleavage furrow, and
+ * divides into daughter cells that separate and morph into the incoming scene.
+ *   interpolation -> controls cell elongation, cleavage furrow & cytokinesis
+ *   audioKick     -> flashes mitotic spindle fiber glowing microtubules
+ *   audioBass     -> undulates cell membrane elasticity & expansion
+ *
+ * Per-activation variety:
+ *   mitosisP float cell membrane curvature & size     (0.5..2.2)
+ *   cleaveP  float cytokinesis cleavage furrow depth (0.5..2.0)
+ *   speedP   float animation speed multiplier        (0.5..2.0)
+ *   hueP     float membrane glow hue offset          (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

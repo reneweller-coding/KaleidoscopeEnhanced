@@ -1,21 +1,21 @@
 #version 330 core
 out vec4 fragColor;
-// FxBirefringenceCrystalSplit.frag
-// -----------------------------------------------------------------------
-// FX BIREFRINGENCE CRYSTAL SPLIT: Calcite crystal optical birefringence transition.
-// An anisotropic uniaxial crystal splits light rays into ordinary (o-ray) and
-// extraordinary (e-ray) polarized components that separate, display polarization
-// color fringes, and recombine seamlessly into the incoming scene.
-//   interpolation -> sweeps optical crystal thickness & o/e ray displacement
-//   audioKick     -> flashes polarized isochromatic interference fringes
-//   audioBass     -> widens ordinary/extraordinary ray birefringence separation
-//
-// Per-activation variety:
-//   birefP float birefringence Delta-n separation scale (0.5..2.2)
-//   angleP float optic axis crystal orientation         (0.5..2.0)
-//   speedP float animation speed multiplier             (0.5..2.0)
-//   hueP   float polarization fringe hue offset         (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file FxBirefringenceCrystalSplit.frag
+ * @brief FX BIREFRINGENCE CRYSTAL SPLIT: Calcite crystal optical birefringence transition.
+ * An anisotropic uniaxial crystal splits light rays into ordinary (o-ray) and
+ * extraordinary (e-ray) polarized components that separate, display polarization
+ * color fringes, and recombine seamlessly into the incoming scene.
+ *   interpolation -> sweeps optical crystal thickness & o/e ray displacement
+ *   audioKick     -> flashes polarized isochromatic interference fringes
+ *   audioBass     -> widens ordinary/extraordinary ray birefringence separation
+ *
+ * Per-activation variety:
+ *   birefP float birefringence Delta-n separation scale (0.5..2.2)
+ *   angleP float optic axis crystal orientation         (0.5..2.0)
+ *   speedP float animation speed multiplier             (0.5..2.0)
+ *   hueP   float polarization fringe hue offset         (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

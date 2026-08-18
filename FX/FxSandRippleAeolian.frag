@@ -1,20 +1,20 @@
 #version 330 core
 out vec4 fragColor;
-// FxSandRippleAeolian.frag
-// -----------------------------------------------------------------------
-// FX SAND RIPPLE AEOLIAN: Desert sand ripple saltation & wind shear transition.
-// Aeolian wind gusts blow golden sand ripples across the desert dunes,
-// carrying fine grain saltation waves that wipe between the scenes.
-//   interpolation -> sweeps sandstorm wind front across the frame
-//   audioKick     -> flashes golden mineral glints in the blowing sand
-//   audioBass     -> undulates sand dune ripple frequency & wave height
-//
-// Per-activation variety:
-//   rippleP float sand ripple spatial frequency (0.5..2.2)
-//   windP   float wind shear velocity multiplier (0.5..2.0)
-//   speedP  float animation speed multiplier    (0.5..2.0)
-//   hueP    float desert sand mineral hue offset (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file FxSandRippleAeolian.frag
+ * @brief FX SAND RIPPLE AEOLIAN: Desert sand ripple saltation & wind shear transition.
+ * Aeolian wind gusts blow golden sand ripples across the desert dunes,
+ * carrying fine grain saltation waves that wipe between the scenes.
+ *   interpolation -> sweeps sandstorm wind front across the frame
+ *   audioKick     -> flashes golden mineral glints in the blowing sand
+ *   audioBass     -> undulates sand dune ripple frequency & wave height
+ *
+ * Per-activation variety:
+ *   rippleP float sand ripple spatial frequency (0.5..2.2)
+ *   windP   float wind shear velocity multiplier (0.5..2.0)
+ *   speedP  float animation speed multiplier    (0.5..2.0)
+ *   hueP    float desert sand mineral hue offset (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

@@ -1,21 +1,21 @@
 #version 330 core
 out vec4 fragColor;
-// SolarCoronaProminence.frag
-// -----------------------------------------------------------------------
-// SOLAR CORONA PROMINENCE: Volumetric solar magnetic coronal loops arching
-// over a boiling photospheric convection surface with explosive magnetic
-// reconnection flares, EUV thermal glow, and plasma filament turbulence.
-//   audioAdvance -> drives photospheric granulation convection flow
-//   audioKick    -> triggers coronal mass ejections & explosive flare flashes
-//   audioBass    -> undulates magnetic coronal loop arch heights
-//   audioSwell   -> widens thermal plasma glow & ionization layers
-//
-// Per-activation variety:
-//   loopP    float coronal loop density & arch height      (0.5..2.2)
-//   granuleP float photospheric convection cell size        (0.5..2.0)
-//   flareP   float magnetic reconnection flare brightness  (0.5..2.2)
-//   hueP     float EUV/H-alpha chromatic temperature shift (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file SolarCoronaProminence.frag
+ * @brief SOLAR CORONA PROMINENCE: Volumetric solar magnetic coronal loops arching
+ * over a boiling photospheric convection surface with explosive magnetic
+ * reconnection flares, EUV thermal glow, and plasma filament turbulence.
+ *   audioAdvance -> drives photospheric granulation convection flow
+ *   audioKick    -> triggers coronal mass ejections & explosive flare flashes
+ *   audioBass    -> undulates magnetic coronal loop arch heights
+ *   audioSwell   -> widens thermal plasma glow & ionization layers
+ *
+ * Per-activation variety:
+ *   loopP    float coronal loop density & arch height      (0.5..2.2)
+ *   granuleP float photospheric convection cell size        (0.5..2.0)
+ *   flareP   float magnetic reconnection flare brightness  (0.5..2.2)
+ *   hueP     float EUV/H-alpha chromatic temperature shift (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

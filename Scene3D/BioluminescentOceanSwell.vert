@@ -1,6 +1,8 @@
 #version 330 core
-// BioluminescentOceanSwell.vert
-// attrA.xy = u, w (0..1), attrA.w = cell ID, attrB = seeds (GEOM_GRID).
+/**
+ * @file BioluminescentOceanSwell.vert
+ * @brief attrA.xy = u, w (0..1), attrA.w = cell ID, attrB = seeds (GEOM_GRID).
+ */
 in vec4 attrA;
 in vec4 attrB;
 

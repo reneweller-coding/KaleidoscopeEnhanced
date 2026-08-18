@@ -1,20 +1,20 @@
 #version 330 core
 out vec4 fragColor;
-// FxFerrofluidSpikes.frag
-// -----------------------------------------------------------------------
-// FX FERROFLUID SPIKES: Magnetic ferrofluid Rosensweig instability transition.
-// Applied magnetic fields pull the scene into an array of sharp conical spikes,
-// reflecting metallic gloss and dissolving into the incoming scene as spikes relax.
-//   interpolation -> sweeps magnetic field strength & spike eruption/relaxation
-//   audioKick     -> flashes sharp metallic spike apex specular highlights
-//   audioBass     -> drives magnetic spike height & Rosensweig cone sharpness
-//
-// Per-activation variety:
-//   spikeP float Rosensweig spike hexagonal density (0.5..2.2)
-//   magP   float magnetic pull displacement scale   (0.5..2.0)
-//   speedP float animation speed multiplier         (0.5..2.0)
-//   hueP   float metallic specular hue offset       (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file FxFerrofluidSpikes.frag
+ * @brief FX FERROFLUID SPIKES: Magnetic ferrofluid Rosensweig instability transition.
+ * Applied magnetic fields pull the scene into an array of sharp conical spikes,
+ * reflecting metallic gloss and dissolving into the incoming scene as spikes relax.
+ *   interpolation -> sweeps magnetic field strength & spike eruption/relaxation
+ *   audioKick     -> flashes sharp metallic spike apex specular highlights
+ *   audioBass     -> drives magnetic spike height & Rosensweig cone sharpness
+ *
+ * Per-activation variety:
+ *   spikeP float Rosensweig spike hexagonal density (0.5..2.2)
+ *   magP   float magnetic pull displacement scale   (0.5..2.0)
+ *   speedP float animation speed multiplier         (0.5..2.0)
+ *   hueP   float metallic specular hue offset       (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

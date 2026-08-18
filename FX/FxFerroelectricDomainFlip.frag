@@ -1,20 +1,20 @@
 #version 330 core
 out vec4 fragColor;
-// FxFerroelectricDomainFlip.frag
-// -----------------------------------------------------------------------
-// FX FERROELECTRIC DOMAIN FLIP: Perovskite crystal domain wall transition.
-// Spontaneous electric polarization domains (180° and 90° domain walls)
-// nucleate and propagate across crystal grains, flipping polarization and scenes.
-//   interpolation -> sweeps coercive electric field & polarization reversal
-//   audioKick     -> flashes domain wall Barkhausen jump pulses
-//   audioBass     -> undulates piezoelectric crystal lattice strain
-//
-// Per-activation variety:
-//   domainP float ferroelectric domain grain density  (0.5..2.2)
-//   wallP   float domain wall boundary sharpness      (0.5..2.0)
-//   speedP  float animation speed multiplier          (0.5..2.0)
-//   hueP    float polarization domain hue offset      (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file FxFerroelectricDomainFlip.frag
+ * @brief FX FERROELECTRIC DOMAIN FLIP: Perovskite crystal domain wall transition.
+ * Spontaneous electric polarization domains (180° and 90° domain walls)
+ * nucleate and propagate across crystal grains, flipping polarization and scenes.
+ *   interpolation -> sweeps coercive electric field & polarization reversal
+ *   audioKick     -> flashes domain wall Barkhausen jump pulses
+ *   audioBass     -> undulates piezoelectric crystal lattice strain
+ *
+ * Per-activation variety:
+ *   domainP float ferroelectric domain grain density  (0.5..2.2)
+ *   wallP   float domain wall boundary sharpness      (0.5..2.0)
+ *   speedP  float animation speed multiplier          (0.5..2.0)
+ *   hueP    float polarization domain hue offset      (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

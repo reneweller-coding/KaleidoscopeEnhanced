@@ -1,20 +1,20 @@
 #version 330 core
 out vec4 fragColor;
-// FxPenroseMorph.frag
-// -----------------------------------------------------------------------
-// FX PENROSE MORPH: 5-fold aperiodic Penrose tiling morphing between
-// scenes through recursive golden-ratio deflation (phi = 1.618). Kite and dart
-// tiles subdivide smoothly, with glowing aperiodic grid lines guiding the cross-fade.
-//   interpolation -> drives recursive deflation hierarchy & scene swap
-//   audioKick     -> flashes 5-fold golden ratio reflection lines
-//   audioBass     -> undulates pentagonal tiling inflation scale
-//
-// Per-activation variety:
-//   tileP  float Penrose tiling grid density     (0.5..2.2)
-//   foldP  float 5-fold folding symmetry depth   (0.5..2.0)
-//   speedP float animation speed multiplier      (0.5..2.0)
-//   hueP   float grid glow hue offset            (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file FxPenroseMorph.frag
+ * @brief FX PENROSE MORPH: 5-fold aperiodic Penrose tiling morphing between
+ * scenes through recursive golden-ratio deflation (phi = 1.618). Kite and dart
+ * tiles subdivide smoothly, with glowing aperiodic grid lines guiding the cross-fade.
+ *   interpolation -> drives recursive deflation hierarchy & scene swap
+ *   audioKick     -> flashes 5-fold golden ratio reflection lines
+ *   audioBass     -> undulates pentagonal tiling inflation scale
+ *
+ * Per-activation variety:
+ *   tileP  float Penrose tiling grid density     (0.5..2.2)
+ *   foldP  float 5-fold folding symmetry depth   (0.5..2.0)
+ *   speedP float animation speed multiplier      (0.5..2.0)
+ *   hueP   float grid glow hue offset            (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

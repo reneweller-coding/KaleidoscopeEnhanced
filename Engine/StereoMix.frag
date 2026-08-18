@@ -1,11 +1,13 @@
 #version 330 core
 out vec4 fragColor;
-// StereoMix.frag
-// Plain per-pixel cross-mix used ONLY for TRUE-STEREO 3D<->3D scene
-// cross-fades: both inputs are eye-packed SBS/TB frames, so the blend must
-// never move a pixel (any warp would fold content across the eye boundary).
-// interpolation = 1 -> texA (the active scene), 0 -> texB (the incoming one)
-// — the same weighting every combine style honours at its endpoints.
+/**
+ * @file StereoMix.frag
+ * @brief Plain per-pixel cross-mix used ONLY for TRUE-STEREO 3D<->3D scene
+ * cross-fades: both inputs are eye-packed SBS/TB frames, so the blend must
+ * never move a pixel (any warp would fold content across the eye boundary).
+ * interpolation = 1 -> texA (the active scene), 0 -> texB (the incoming one)
+ * — the same weighting every combine style honours at its endpoints.
+ */
 uniform sampler2D texA;
 uniform sampler2D texB;
 uniform vec2  resolution;

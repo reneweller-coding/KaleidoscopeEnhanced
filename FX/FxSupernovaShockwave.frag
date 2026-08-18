@@ -1,20 +1,20 @@
 #version 330 core
 out vec4 fragColor;
-// FxSupernovaShockwave.frag
-// -----------------------------------------------------------------------
-// FX SUPERNOVA SHOCKWAVE: Spherical supernova blast wave transition.
-// A hyper-velocity relativistic blast wave detonates at the center, expanding
-// radially outward with glowing shock compression and revealing the new scene.
-//   interpolation -> sweeps the spherical shockwave radius across the viewport
-//   audioKick     -> detonates primary supernova core explosion flash
-//   audioBass     -> drives shockwave displacement amplitude
-//
-// Per-activation variety:
-//   blastP float shockwave expansion velocity multiplier (0.5..2.2)
-//   shockP float shock front compression thickness       (0.5..2.0)
-//   speedP float animation speed multiplier              (0.5..2.0)
-//   hueP   float shockwave ionization hue offset         (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file FxSupernovaShockwave.frag
+ * @brief FX SUPERNOVA SHOCKWAVE: Spherical supernova blast wave transition.
+ * A hyper-velocity relativistic blast wave detonates at the center, expanding
+ * radially outward with glowing shock compression and revealing the new scene.
+ *   interpolation -> sweeps the spherical shockwave radius across the viewport
+ *   audioKick     -> detonates primary supernova core explosion flash
+ *   audioBass     -> drives shockwave displacement amplitude
+ *
+ * Per-activation variety:
+ *   blastP float shockwave expansion velocity multiplier (0.5..2.2)
+ *   shockP float shock front compression thickness       (0.5..2.0)
+ *   speedP float animation speed multiplier              (0.5..2.0)
+ *   hueP   float shockwave ionization hue offset         (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

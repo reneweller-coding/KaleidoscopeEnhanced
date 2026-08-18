@@ -1,22 +1,22 @@
 #version 330 core
 out vec4 fragColor;
-// DiracConeGrapheneValleytronics.frag
-// -----------------------------------------------------------------------
-// DIRAC CONE GRAPHENE VALLEYTRONICS: 2D honeycomb carbon lattice displaying
-// linear relativistic Dirac cones (E = +/- hbar * v_F * |k|). Valley Hall
-// pseudospin states (K and K' valleys), Berry curvature flux, quantum
-// wavepacket tunneling, and continuous photo texture reflections.
-//   audioAdvance -> drives electronic wavepacket drift across K/K' valleys
-//   audioKick    -> flashes inter-valley quantum tunneling & plasmonic bursts
-//   audioBass    -> undulates Fermi energy surface and Dirac cone slope
-//   audioChromaHue-> shifts valley pseudospin polarization colors
-//
-// Per-activation variety:
-//   coneP   float Dirac cone dispersion slope scale      (0.5..2.2)
-//   valleyP float K/K' valley polarization asymmetry     (0.5..2.0)
-//   speedP  float electronic transport drift velocity    (0.5..2.0)
-//   hueP    float plasmonic spectrum chromatic offset    (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file DiracConeGrapheneValleytronics.frag
+ * @brief DIRAC CONE GRAPHENE VALLEYTRONICS: 2D honeycomb carbon lattice displaying
+ * linear relativistic Dirac cones (E = +/- hbar * v_F * |k|). Valley Hall
+ * pseudospin states (K and K' valleys), Berry curvature flux, quantum
+ * wavepacket tunneling, and continuous photo texture reflections.
+ *   audioAdvance -> drives electronic wavepacket drift across K/K' valleys
+ *   audioKick    -> flashes inter-valley quantum tunneling & plasmonic bursts
+ *   audioBass    -> undulates Fermi energy surface and Dirac cone slope
+ *   audioChromaHue-> shifts valley pseudospin polarization colors
+ *
+ * Per-activation variety:
+ *   coneP   float Dirac cone dispersion slope scale      (0.5..2.2)
+ *   valleyP float K/K' valley polarization asymmetry     (0.5..2.0)
+ *   speedP  float electronic transport drift velocity    (0.5..2.0)
+ *   hueP    float plasmonic spectrum chromatic offset    (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

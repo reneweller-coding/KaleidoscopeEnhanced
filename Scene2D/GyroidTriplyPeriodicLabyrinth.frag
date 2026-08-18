@@ -1,22 +1,22 @@
 #version 330 core
 out vec4 fragColor;
-// GyroidTriplyPeriodicLabyrinth.frag
-// -----------------------------------------------------------------------
-// GYROID TRIPLY PERIODIC LABYRINTH: Raymarched infinite non-Euclidean minimal
-// surface (TPMS) dividing 3D space into two interpenetrating congruent labyrinths.
-// Seamless camera flight through twisting titanium and crystal passages with
-// caustic reflections, photo mapping, and audio-reactive wall breathing.
-//   audioAdvance -> navigates camera through the infinite gyroid tunnels
-//   audioBass    -> modulates gyroid isosurface threshold & wall opening
-//   audioKick    -> flashes chromatic neon caustics along the labyrinth walls
-//   audioSwell   -> widens corridor volume & specularity
-//
-// Per-activation variety:
-//   scaleP  float gyroid spatial lattice frequency   (0.5..2.2)
-//   wallP   float gyroid corridor wall thickness     (0.5..2.0)
-//   speedP  float camera traversal velocity          (0.5..2.0)
-//   hueP    float structural chromatic hue offset   (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file GyroidTriplyPeriodicLabyrinth.frag
+ * @brief GYROID TRIPLY PERIODIC LABYRINTH: Raymarched infinite non-Euclidean minimal
+ * surface (TPMS) dividing 3D space into two interpenetrating congruent labyrinths.
+ * Seamless camera flight through twisting titanium and crystal passages with
+ * caustic reflections, photo mapping, and audio-reactive wall breathing.
+ *   audioAdvance -> navigates camera through the infinite gyroid tunnels
+ *   audioBass    -> modulates gyroid isosurface threshold & wall opening
+ *   audioKick    -> flashes chromatic neon caustics along the labyrinth walls
+ *   audioSwell   -> widens corridor volume & specularity
+ *
+ * Per-activation variety:
+ *   scaleP  float gyroid spatial lattice frequency   (0.5..2.2)
+ *   wallP   float gyroid corridor wall thickness     (0.5..2.0)
+ *   speedP  float camera traversal velocity          (0.5..2.0)
+ *   hueP    float structural chromatic hue offset   (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

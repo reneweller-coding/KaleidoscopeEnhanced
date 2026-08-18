@@ -1,20 +1,20 @@
 #version 330 core
 out vec4 fragColor;
-// FxGravitationalLensWarp.frag
-// -----------------------------------------------------------------------
-// FX GRAVITATIONAL LENS WARP: Relativistic black-hole gravitational lensing.
-// A dark matter singularity opens at the center of the frame, bending spacetime,
-// forming Einstein rings, swallowing the outgoing scene and expanding the new one.
-//   interpolation -> sweeps Schwarzschild radius from 0 to maximum and back
-//   audioKick     -> flashes bright photon sphere ring emission
-//   audioBass     -> drives gravitational deflection depth
-//
-// Per-activation variety:
-//   lensP  float gravitational lensing strength (0.5..2.2)
-//   massP  float black hole mass & ring radius  (0.5..2.0)
-//   speedP float frame dragging rotation speed  (0.5..2.0)
-//   hueP   float photon ring hue offset         (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file FxGravitationalLensWarp.frag
+ * @brief FX GRAVITATIONAL LENS WARP: Relativistic black-hole gravitational lensing.
+ * A dark matter singularity opens at the center of the frame, bending spacetime,
+ * forming Einstein rings, swallowing the outgoing scene and expanding the new one.
+ *   interpolation -> sweeps Schwarzschild radius from 0 to maximum and back
+ *   audioKick     -> flashes bright photon sphere ring emission
+ *   audioBass     -> drives gravitational deflection depth
+ *
+ * Per-activation variety:
+ *   lensP  float gravitational lensing strength (0.5..2.2)
+ *   massP  float black hole mass & ring radius  (0.5..2.0)
+ *   speedP float frame dragging rotation speed  (0.5..2.0)
+ *   hueP   float photon ring hue offset         (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

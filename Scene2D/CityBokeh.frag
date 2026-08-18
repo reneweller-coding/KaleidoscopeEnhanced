@@ -1,23 +1,23 @@
 #version 330 core
 out vec4 fragColor;
-// CityBokeh.frag
-// -----------------------------------------------------------------------
-// CITY LIGHTS BOKEH: a night city seen through a defocused lens — layers of
-// soft bokeh discs drifting past at different depths (parallax), coloured by
-// the source image (every light picks its colour from the picture).  The
-// focus BREATHES with the swell; kicks pulse a scattered subset of lights.
-//   swell -> focus/size breathing (the whole field softens and swells)
-//   kick  -> a hashed subset of lights pulses up (envelope-driven, smooth)
-//   centroid -> warm/cool city temperature
-//   stereo width -> unused (kept mono-symmetric)
-// Jump-free: drift rides time + audioAdvance; pulses use slewed envelopes.
-//
-// Per-activation variety (0 = default):
-//   densityP float light density multiplier   (0 -> 1.0; 0.7..1.6)
-//   sizeP    float bokeh size multiplier      (0 -> 1.0; 0.7..1.5)
-//   driftP   float drift speed multiplier     (0 -> 1.0; 0.5..1.5)
-//   hueP     float global hue rotation        (0 -> none; 0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file CityBokeh.frag
+ * @brief CITY LIGHTS BOKEH: a night city seen through a defocused lens — layers of
+ * soft bokeh discs drifting past at different depths (parallax), coloured by
+ * the source image (every light picks its colour from the picture).  The
+ * focus BREATHES with the swell; kicks pulse a scattered subset of lights.
+ *   swell -> focus/size breathing (the whole field softens and swells)
+ *   kick  -> a hashed subset of lights pulses up (envelope-driven, smooth)
+ *   centroid -> warm/cool city temperature
+ *   stereo width -> unused (kept mono-symmetric)
+ * Jump-free: drift rides time + audioAdvance; pulses use slewed envelopes.
+ *
+ * Per-activation variety (0 = default):
+ *   densityP float light density multiplier   (0 -> 1.0; 0.7..1.6)
+ *   sizeP    float bokeh size multiplier      (0 -> 1.0; 0.7..1.5)
+ *   driftP   float drift speed multiplier     (0 -> 1.0; 0.5..1.5)
+ *   hueP     float global hue rotation        (0 -> none; 0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

@@ -1,20 +1,20 @@
 #version 330 core
 out vec4 fragColor;
-// FxDreamyBokehBloom.frag
-// -----------------------------------------------------------------------
-// FX DREAMY BOKEH BLOOM: Smooth depth-of-field bokeh blur and lens bloom
-// transition. The outgoing scene melts into a soft out-of-focus bokeh field
-// of luminous circular aperture discs and resolves into the incoming scene.
-//   interpolation -> sweeps camera focus distance & circle-of-confusion blur
-//   audioKick     -> flashes luminous bokeh highlight discs
-//   audioSwell    -> broadens dreamy lens bloom radius
-//
-// Per-activation variety:
-//   bokehP float circle-of-confusion blur radius (0.5..2.2)
-//   bloomP float luminous highlight bloom gain   (0.5..2.0)
-//   speedP float animation speed multiplier      (0.5..2.0)
-//   hueP   float bokeh chromatic hue offset      (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file FxDreamyBokehBloom.frag
+ * @brief FX DREAMY BOKEH BLOOM: Smooth depth-of-field bokeh blur and lens bloom
+ * transition. The outgoing scene melts into a soft out-of-focus bokeh field
+ * of luminous circular aperture discs and resolves into the incoming scene.
+ *   interpolation -> sweeps camera focus distance & circle-of-confusion blur
+ *   audioKick     -> flashes luminous bokeh highlight discs
+ *   audioSwell    -> broadens dreamy lens bloom radius
+ *
+ * Per-activation variety:
+ *   bokehP float circle-of-confusion blur radius (0.5..2.2)
+ *   bloomP float luminous highlight bloom gain   (0.5..2.0)
+ *   speedP float animation speed multiplier      (0.5..2.0)
+ *   hueP   float bokeh chromatic hue offset      (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

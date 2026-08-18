@@ -1,12 +1,12 @@
 #version 330 core
 out vec4 fragColor;
-// OrigamiMirrorKaleidoscope.frag
-// -----------------------------------------------------------------------
-// ORIGAMI MIRROR KALEIDOSCOPE: 100% viewport-filling 3D kinetic Miura-ori
-// origami tessellation where every triangular mirror facet reflects dynamic
-// sections of the photo with angle-dependent chromatic dispersion and
-// audio-reactive mechanical folding kinematics.
-// -----------------------------------------------------------------------
+/**
+ * @file OrigamiMirrorKaleidoscope.frag
+ * @brief ORIGAMI MIRROR KALEIDOSCOPE: 100% viewport-filling 3D kinetic Miura-ori
+ * origami tessellation where every triangular mirror facet reflects dynamic
+ * sections of the photo with angle-dependent chromatic dispersion and
+ * audio-reactive mechanical folding kinematics.
+ */
 
 uniform vec2  resolution;
 uniform float time;

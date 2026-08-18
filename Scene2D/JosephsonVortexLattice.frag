@@ -1,22 +1,22 @@
 #version 330 core
 out vec4 fragColor;
-// JosephsonVortexLattice.frag
-// -----------------------------------------------------------------------
-// JOSEPHSON VORTEX LATTICE: High-temperature layered superconductor
-// Josephson junction array simulating quantized fluxon vortex lattices.
-// Cooper-pair phase isobars, vortex liquid melting transitions, soliton
-// wave packets, and quantum phase photo mapping.
-//   audioAdvance -> drives fluxon motion across superconductor layers
-//   audioKick    -> triggers vortex lattice melting into turbulent fluid
-//   audioBass    -> pulses Josephson plasma resonance frequency
-//   audioChromaHue-> rotates superconducting phase color spectrum
-//
-// Per-activation variety:
-//   latticeP float fluxon vortex lattice density      (0.5..2.2)
-//   vortexP  float vortex core circulating intensity  (0.5..2.0)
-//   speedP   float fluxon drift velocity              (0.5..2.0)
-//   hueP     float phase palette hue offset           (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file JosephsonVortexLattice.frag
+ * @brief JOSEPHSON VORTEX LATTICE: High-temperature layered superconductor
+ * Josephson junction array simulating quantized fluxon vortex lattices.
+ * Cooper-pair phase isobars, vortex liquid melting transitions, soliton
+ * wave packets, and quantum phase photo mapping.
+ *   audioAdvance -> drives fluxon motion across superconductor layers
+ *   audioKick    -> triggers vortex lattice melting into turbulent fluid
+ *   audioBass    -> pulses Josephson plasma resonance frequency
+ *   audioChromaHue-> rotates superconducting phase color spectrum
+ *
+ * Per-activation variety:
+ *   latticeP float fluxon vortex lattice density      (0.5..2.2)
+ *   vortexP  float vortex core circulating intensity  (0.5..2.0)
+ *   speedP   float fluxon drift velocity              (0.5..2.0)
+ *   hueP     float phase palette hue offset           (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

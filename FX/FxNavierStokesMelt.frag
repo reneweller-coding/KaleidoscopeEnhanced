@@ -1,20 +1,20 @@
 #version 330 core
 out vec4 fragColor;
-// FxNavierStokesMelt.frag
-// -----------------------------------------------------------------------
-// FX NAVIER STOKES MELT: Fluid advection vorticity melting transition.
-// The outgoing scene liquifies into turbulent curl-noise fluid vortices,
-// melting and swirling seamlessly to reveal the incoming scene underneath.
-//   interpolation -> drives fluid viscosity reduction & melting progress
-//   audioKick     -> injects turbulent fluid velocity impulses
-//   audioBass     -> undulates large-scale convective vortex rolls
-//
-// Per-activation variety:
-//   viscP   float fluid viscosity & curl noise scale (0.5..2.2)
-//   vortexP float vorticity spin intensity          (0.5..2.0)
-//   speedP  float advection velocity multiplier      (0.5..2.0)
-//   hueP    float fluid highlight hue offset         (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file FxNavierStokesMelt.frag
+ * @brief FX NAVIER STOKES MELT: Fluid advection vorticity melting transition.
+ * The outgoing scene liquifies into turbulent curl-noise fluid vortices,
+ * melting and swirling seamlessly to reveal the incoming scene underneath.
+ *   interpolation -> drives fluid viscosity reduction & melting progress
+ *   audioKick     -> injects turbulent fluid velocity impulses
+ *   audioBass     -> undulates large-scale convective vortex rolls
+ *
+ * Per-activation variety:
+ *   viscP   float fluid viscosity & curl noise scale (0.5..2.2)
+ *   vortexP float vorticity spin intensity          (0.5..2.0)
+ *   speedP  float advection velocity multiplier      (0.5..2.0)
+ *   hueP    float fluid highlight hue offset         (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

@@ -1,22 +1,22 @@
 #version 330 core
 out vec4 fragColor;
-// LiquidMercuryFerrofluidChamber.frag
-// -----------------------------------------------------------------------
-// LIQUID MERCURY FERROFLUID CHAMBER: Raymarched reflective pool of liquid
-// mercury and magnetic ferrofluid. Paramagnetic Rosensweig instability cone
-// spikes erupt in hexagonal arrays under shifting magnetic fields, with
-// standing Faraday ripples, chrome mirror reflections, and photo dispersion.
-//   audioAdvance -> rotates magnetic field poles & advects liquid ripples
-//   audioKick    -> violently erupts sharp Rosensweig cone spikes from pool
-//   audioBass    -> undulates Faraday standing-wave frequency and height
-//   audioCentroid-> modulates specular chrome highlight sharpness
-//
-// Per-activation variety:
-//   spikeP   float Rosensweig cone spike sharpness & height (0.5..2.2)
-//   faradayP float Faraday ripple wave amplitude           (0.5..2.0)
-//   speedP   float magnetic field oscillation velocity     (0.5..2.0)
-//   hueP     float metallic sheen hue offset               (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file LiquidMercuryFerrofluidChamber.frag
+ * @brief LIQUID MERCURY FERROFLUID CHAMBER: Raymarched reflective pool of liquid
+ * mercury and magnetic ferrofluid. Paramagnetic Rosensweig instability cone
+ * spikes erupt in hexagonal arrays under shifting magnetic fields, with
+ * standing Faraday ripples, chrome mirror reflections, and photo dispersion.
+ *   audioAdvance -> rotates magnetic field poles & advects liquid ripples
+ *   audioKick    -> violently erupts sharp Rosensweig cone spikes from pool
+ *   audioBass    -> undulates Faraday standing-wave frequency and height
+ *   audioCentroid-> modulates specular chrome highlight sharpness
+ *
+ * Per-activation variety:
+ *   spikeP   float Rosensweig cone spike sharpness & height (0.5..2.2)
+ *   faradayP float Faraday ripple wave amplitude           (0.5..2.0)
+ *   speedP   float magnetic field oscillation velocity     (0.5..2.0)
+ *   hueP     float metallic sheen hue offset               (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

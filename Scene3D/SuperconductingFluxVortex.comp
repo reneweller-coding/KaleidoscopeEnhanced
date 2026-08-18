@@ -1,9 +1,9 @@
 #version 430 core
-// SuperconductingFluxVortex.comp
-// -----------------------------------------------------------------------
-// GPU compute shader simulating 4,096 quantized Abrikosov magnetic flux
-// vortex ribbons in a Type-II high-temperature superconductor lattice.
-// -----------------------------------------------------------------------
+/**
+ * @file SuperconductingFluxVortex.comp
+ * @brief GPU compute shader simulating 4,096 quantized Abrikosov magnetic flux
+ * vortex ribbons in a Type-II high-temperature superconductor lattice.
+ */
 
 layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 

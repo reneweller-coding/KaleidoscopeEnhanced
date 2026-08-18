@@ -1,27 +1,27 @@
 #version 330 core
 out vec4 fragColor;
-// Smoke3DSim.frag
-// -----------------------------------------------------------------------
-// GPU volumetric fire/smoke simulation: a real 3D field faked as a 2D-tiled
-// atlas ("virtual 3D texture" — same trick as light/shadow atlases).  The
-// atlas is COLS x ROWS square cells; each cell is one Z-DEPTH cross-section
-// of the volume (a front-facing plane).  WITHIN a cell, the local (u,v) axes
-// are (world X, world Y = height/rise) — so buoyancy ("fire rises") is just
-// texel-space upward advection inside a single cell, and puffiness across
-// depth comes from a light blend with the neighbouring cells.
-//
-// Driven by FilterShader::stepSmoke3D(), which runs this shader TWICE per
-// frame on the same ping-pong pair (mirrors the RD sim's multi-substep
-// pattern):
-//   subStep 0 (horizontal): per-cell curl turbulence + base fuel injection
-//                            (a few wandering emitter points) + decay.
-//   subStep 1 (vertical):   buoyant rise (sample the texel BELOW) blended
-//                            with a touch of the neighbour depth-cells
-//                            (softens the between-slice seams) + cooling.
-//
-// R = temperature (hot core > 1.0 for the white-hot flash), G = density
-// (smoke, persists and cools longer than the flame itself).
-// -----------------------------------------------------------------------
+/**
+ * @file Smoke3DSim.frag
+ * @brief GPU volumetric fire/smoke simulation: a real 3D field faked as a 2D-tiled
+ * atlas ("virtual 3D texture" — same trick as light/shadow atlases).  The
+ * atlas is COLS x ROWS square cells; each cell is one Z-DEPTH cross-section
+ * of the volume (a front-facing plane).  WITHIN a cell, the local (u,v) axes
+ * are (world X, world Y = height/rise) — so buoyancy ("fire rises") is just
+ * texel-space upward advection inside a single cell, and puffiness across
+ * depth comes from a light blend with the neighbouring cells.
+ *
+ * Driven by FilterShader::stepSmoke3D(), which runs this shader TWICE per
+ * frame on the same ping-pong pair (mirrors the RD sim's multi-substep
+ * pattern):
+ *   subStep 0 (horizontal): per-cell curl turbulence + base fuel injection
+ *                            (a few wandering emitter points) + decay.
+ *   subStep 1 (vertical):   buoyant rise (sample the texel BELOW) blended
+ *                            with a touch of the neighbour depth-cells
+ *                            (softens the between-slice seams) + cooling.
+ *
+ * R = temperature (hot core > 1.0 for the white-hot flash), G = density
+ * (smoke, persists and cools longer than the flame itself).
+ */
 
 uniform sampler2D texPrev;
 uniform vec2  resolution;      // full atlas size in pixels

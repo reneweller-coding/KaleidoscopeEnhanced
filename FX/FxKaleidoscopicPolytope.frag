@@ -1,20 +1,20 @@
 #version 330 core
 out vec4 fragColor;
-// FxKaleidoscopicPolytope.frag
-// -----------------------------------------------------------------------
-// FX KALEIDOSCOPIC POLYTOPE: Coxeter reflection group 4D polytope transition.
-// Multiple hyper-plane reflection mirrors fold and unfurl space across regular
-// Coxeter symmetry facets, tessellating and transitioning between scenes.
-//   interpolation -> sweeps kaleidoscopic fold angle & facet recursion
-//   audioKick     -> flashes mirror facet intersection reflection planes
-//   audioBass     -> undulates Coxeter polytope breathing radius
-//
-// Per-activation variety:
-//   mirrorP float reflection symmetry folding order   (0.5..2.2)
-//   foldP   float facet fold depth & displacement    (0.5..2.0)
-//   speedP  float animation speed multiplier         (0.5..2.0)
-//   hueP    float kaleidoscopic facet hue offset     (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file FxKaleidoscopicPolytope.frag
+ * @brief FX KALEIDOSCOPIC POLYTOPE: Coxeter reflection group 4D polytope transition.
+ * Multiple hyper-plane reflection mirrors fold and unfurl space across regular
+ * Coxeter symmetry facets, tessellating and transitioning between scenes.
+ *   interpolation -> sweeps kaleidoscopic fold angle & facet recursion
+ *   audioKick     -> flashes mirror facet intersection reflection planes
+ *   audioBass     -> undulates Coxeter polytope breathing radius
+ *
+ * Per-activation variety:
+ *   mirrorP float reflection symmetry folding order   (0.5..2.2)
+ *   foldP   float facet fold depth & displacement    (0.5..2.0)
+ *   speedP  float animation speed multiplier         (0.5..2.0)
+ *   hueP    float kaleidoscopic facet hue offset     (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

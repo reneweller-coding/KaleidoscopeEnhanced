@@ -1,16 +1,16 @@
 #version 330 core
 out vec4 fragColor;
-// PsychedelicPills.frag
-// -----------------------------------------------------------------------
-// Adapted from "Psychedelic Pills" by @kishimisu (2022) — https://www.shadertoy.com/view/csfSRN
-// Original licensed CC BY-NC-SA 4.0 (attribution kept per the licence).
-//
-// Raymarched capsules ("pills") in a repeating domain with psychedelic colours.
-// (The original's antialiasing template is dropped -> a single sample.)  Adapted
-// to our engine: image-forward (the picture colours the pills + drifts as a faint
-// nebula), audio-reactive & jump-free (scroll via audioAdvance, spin via
-// audioPhase; beats brighten; centroid/valence grade).
-// -----------------------------------------------------------------------
+/**
+ * @file PsychedelicPills.frag
+ * @brief Adapted from "Psychedelic Pills" by @kishimisu (2022) — https://www.shadertoy.com/view/csfSRN
+ * Original licensed CC BY-NC-SA 4.0 (attribution kept per the licence).
+ *
+ * Raymarched capsules ("pills") in a repeating domain with psychedelic colours.
+ * (The original's antialiasing template is dropped -> a single sample.)  Adapted
+ * to our engine: image-forward (the picture colours the pills + drifts as a faint
+ * nebula), audio-reactive & jump-free (scroll via audioAdvance, spin via
+ * audioPhase; beats brighten; centroid/valence grade).
+ */
 
 uniform vec2  resolution;
 uniform float time;

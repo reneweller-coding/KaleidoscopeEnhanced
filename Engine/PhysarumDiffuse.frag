@@ -1,11 +1,11 @@
 #version 330 core
 out vec4 fragColor;
-// PhysarumDiffuse.frag
-// -----------------------------------------------------------------------
-// Trail-map relaxation: 3x3 mean blur (pheromone diffusion) x decay
-// (evaporation).  The balance of deposit vs. evaporation sets how bold
-// the vein network grows; decay is audio-nudged host-side.
-// -----------------------------------------------------------------------
+/**
+ * @file PhysarumDiffuse.frag
+ * @brief Trail-map relaxation: 3x3 mean blur (pheromone diffusion) x decay
+ * (evaporation).  The balance of deposit vs. evaporation sets how bold
+ * the vein network grows; decay is audio-nudged host-side.
+ */
 
 uniform sampler2D texTrail;
 uniform vec2  resolution;      // trail-map size

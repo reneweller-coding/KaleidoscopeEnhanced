@@ -1,22 +1,22 @@
 #version 330 core
 out vec4 fragColor;
-// HeliosphericCurrentSheet.frag
-// -----------------------------------------------------------------------
-// HELIOSPHERIC CURRENT SHEET: Rotating Parker spiral "ballerina skirt"
-// current sheet separating opposite magnetic polarities throughout the solar
-// system. Wavy sector boundary crossings, solar wind stream turbulence,
-// and undulating plasma membrane photo reflections.
-//   audioAdvance -> rotates Parker spiral sector boundaries & solar wind
-//   audioKick    -> flashes interplanetary magnetic reconnection sheets
-//   audioBass    -> undulates ballerina skirt wave amplitude & tilt
-//   audioCentroid-> shifts solar wind proton/electron temperature grading
-//
-// Per-activation variety:
-//   spiralP float Parker spiral arm winding tightness   (0.5..2.2)
-//   skirtP  float ballerina skirt vertical waviness     (0.5..2.0)
-//   speedP  float solar rotation velocity                (0.5..2.0)
-//   hueP    float interplanetary magnetic hue offset     (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file HeliosphericCurrentSheet.frag
+ * @brief HELIOSPHERIC CURRENT SHEET: Rotating Parker spiral "ballerina skirt"
+ * current sheet separating opposite magnetic polarities throughout the solar
+ * system. Wavy sector boundary crossings, solar wind stream turbulence,
+ * and undulating plasma membrane photo reflections.
+ *   audioAdvance -> rotates Parker spiral sector boundaries & solar wind
+ *   audioKick    -> flashes interplanetary magnetic reconnection sheets
+ *   audioBass    -> undulates ballerina skirt wave amplitude & tilt
+ *   audioCentroid-> shifts solar wind proton/electron temperature grading
+ *
+ * Per-activation variety:
+ *   spiralP float Parker spiral arm winding tightness   (0.5..2.2)
+ *   skirtP  float ballerina skirt vertical waviness     (0.5..2.0)
+ *   speedP  float solar rotation velocity                (0.5..2.0)
+ *   hueP    float interplanetary magnetic hue offset     (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

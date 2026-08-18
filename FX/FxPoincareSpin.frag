@@ -1,21 +1,21 @@
 #version 330 core
 out vec4 fragColor;
-// FxPoincareSpin.frag
-// -----------------------------------------------------------------------
-// FX POINCARE SPIN: Conformal hyperbolic Poincaré disk inversion and
-// continuous Möbius transformation. The outgoing scene turns inside out
-// through hyperbolic circle inversions while the incoming scene expands
-// smoothly from the non-Euclidean horizon.
-//   interpolation -> sweeps hyperbolic Möbius translation from 0 to 1
-//   audioKick     -> flashes hyperbolic geodesic boundaries
-//   audioBass     -> pulses Poincaré metric radius
-//
-// Per-activation variety:
-//   diskP  float Poincaré disk metric curvature (0.5..2.2)
-//   spinP  float hyperbolic rotation velocity   (0.5..2.0)
-//   speedP float animation speed multiplier      (0.5..2.0)
-//   hueP   float geodesic rim hue offset        (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file FxPoincareSpin.frag
+ * @brief FX POINCARE SPIN: Conformal hyperbolic Poincaré disk inversion and
+ * continuous Möbius transformation. The outgoing scene turns inside out
+ * through hyperbolic circle inversions while the incoming scene expands
+ * smoothly from the non-Euclidean horizon.
+ *   interpolation -> sweeps hyperbolic Möbius translation from 0 to 1
+ *   audioKick     -> flashes hyperbolic geodesic boundaries
+ *   audioBass     -> pulses Poincaré metric radius
+ *
+ * Per-activation variety:
+ *   diskP  float Poincaré disk metric curvature (0.5..2.2)
+ *   spinP  float hyperbolic rotation velocity   (0.5..2.0)
+ *   speedP float animation speed multiplier      (0.5..2.0)
+ *   hueP   float geodesic rim hue offset        (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

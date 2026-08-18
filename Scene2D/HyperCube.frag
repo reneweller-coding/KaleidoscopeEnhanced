@@ -1,15 +1,15 @@
 #version 330 core
 out vec4 fragColor;
-// HyperCube.frag
-// -----------------------------------------------------------------------
-// Infinity-mirror cube (a la the Hyperspace Lighting Co. "HyperCube"): the
-// source image is wrapped onto the walls of an endlessly receding square
-// tunnel, so you fly INTO the picture through glowing cube frames that flash on
-// the beat.  A counter-rotating inner cube outline and a vanishing-point glow
-// complete the illusion.  The *image* is the star (was a 4% tint).  The tunnel
-// lurches forward on the beat (integrated advance), bass fattens the edges,
-// onset & downbeat flash, colours follow the harmony / mode.  Jump-free motion.
-// -----------------------------------------------------------------------
+/**
+ * @file HyperCube.frag
+ * @brief Infinity-mirror cube (a la the Hyperspace Lighting Co. "HyperCube"): the
+ * source image is wrapped onto the walls of an endlessly receding square
+ * tunnel, so you fly INTO the picture through glowing cube frames that flash on
+ * the beat.  A counter-rotating inner cube outline and a vanishing-point glow
+ * complete the illusion.  The *image* is the star (was a 4% tint).  The tunnel
+ * lurches forward on the beat (integrated advance), bass fattens the edges,
+ * onset & downbeat flash, colours follow the harmony / mode.  Jump-free motion.
+ */
 
 uniform vec2  resolution;
 uniform float time;

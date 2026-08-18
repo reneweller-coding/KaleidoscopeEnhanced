@@ -1,13 +1,13 @@
 #version 330 core
 out vec4 fragColor;
-// HyperDimensionalTesseractTunnel.frag
-// -----------------------------------------------------------------------
-// HYPER DIMENSIONAL TESSERACT TUNNEL: 100% viewport-filling 4D hypercube
-// lattice rotating simultaneously across all 6 orthogonal Euclidean planes
-// (XY, XZ, XW, YZ, YW, ZW) and projected into a 3D perspective warp tunnel.
-// Infinite recursive interior mirror reflections, glowing neon hyper-edges,
-// multi-angle photo texturing on 4D hyper-faces, and hyperspace warp flow.
-// -----------------------------------------------------------------------
+/**
+ * @file HyperDimensionalTesseractTunnel.frag
+ * @brief HYPER DIMENSIONAL TESSERACT TUNNEL: 100% viewport-filling 4D hypercube
+ * lattice rotating simultaneously across all 6 orthogonal Euclidean planes
+ * (XY, XZ, XW, YZ, YW, ZW) and projected into a 3D perspective warp tunnel.
+ * Infinite recursive interior mirror reflections, glowing neon hyper-edges,
+ * multi-angle photo texturing on 4D hyper-faces, and hyperspace warp flow.
+ */
 
 uniform vec2  resolution;
 uniform float time;

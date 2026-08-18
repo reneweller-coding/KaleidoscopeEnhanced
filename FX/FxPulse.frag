@@ -1,17 +1,17 @@
 #version 330 core
 out vec4 fragColor;
-// FxPulse.frag
-// -----------------------------------------------------------------------
-// The first BEAT-reactive combine pass.  Classic combines are static folds;
-// this one breathes with the music (research: loudness/beat -> expansion,
-// impulsive pulsation with envelope release):
-//   audioBeat      -> a gentle centre zoom "breath" (slew-limited upstream);
-//   audioBeatPhase -> a subtle radial shock-wave expanding outward each beat
-//                     (CONTINUOUS phase - no snapping);
-//   audioPhase     -> slow jump-free rotation;
-//   audioDownbeat  -> a slightly deeper breath on the bar's "1".
-// Kept deliberately subtle: it composes with any texture effect underneath.
-// -----------------------------------------------------------------------
+/**
+ * @file FxPulse.frag
+ * @brief The first BEAT-reactive combine pass.  Classic combines are static folds;
+ * this one breathes with the music (research: loudness/beat -> expansion,
+ * impulsive pulsation with envelope release):
+ *   audioBeat      -> a gentle centre zoom "breath" (slew-limited upstream);
+ *   audioBeatPhase -> a subtle radial shock-wave expanding outward each beat
+ *                     (CONTINUOUS phase - no snapping);
+ *   audioPhase     -> slow jump-free rotation;
+ *   audioDownbeat  -> a slightly deeper breath on the bar's "1".
+ * Kept deliberately subtle: it composes with any texture effect underneath.
+ */
 
 uniform vec2  resolution;
 uniform float time;
