@@ -6,6 +6,22 @@ in float vTemp;
 in float vSeed;
 in float vRadius;
 
+/**
+ * @file StellarNurseryCollapse.frag
+ * @brief Draws the 60k-point protostellar system built in
+ * StellarNurseryCollapse.vert (accretion disk, spherical halo, and bipolar
+ * jets around a collapsing stellar nursery) as soft blackbody-coloured point
+ * sprites.
+ *
+ * Point colour comes from a black -> red -> yellow -> blue-white blackbody
+ * ramp driven by vTemp (cooler in the outer disk, hotter toward the core and
+ * in the jets), tinted by a photo-derived dust colour sampled from the
+ * slideshow image at the point's position; audioKick adds an extra white
+ * flare to the hottest (core/jet) points; hueP and audioChromaHue rotate the
+ * final hue. A soft-knee tone map keeps loud passages from clipping to flat
+ * white.
+ */
+
 uniform float time;
 uniform sampler2D tex0;
 uniform sampler2D tex1;

@@ -206,7 +206,7 @@ void GpuSims::setupFluid()
 
 /**
  * @brief Advances the curl-noise dye advection by one step into the next ping-pong buffer.
- * @param a Current audio features; drives the swirl impulse and dye-injection amount.
+ * @param audio Current audio features; drives the swirl impulse and dye-injection amount.
  * @param f Per-frame context supplying the integrated flow phase and the two dye source textures.
  *
  * Advance the dye advection by one step into the next ping-pong buffer.
@@ -300,7 +300,7 @@ void GpuSims::setupSmoke3D()
 
 /**
  * @brief Runs one sub-step of the smoke/fire PDE (horizontal or vertical half) into the next ping-pong buffer.
- * @param a Current audio features; drives per-cell turbulence and base-cell fuel injection.
+ * @param audio Current audio features; drives per-cell turbulence and base-cell fuel injection.
  * @param f Per-frame context (time, integrated emitter-wander phase).
  * @param subStep Which half of the PDE this pass computes (0 = horizontal, 1 = vertical); forwarded to the shader as-is.
  *
@@ -345,7 +345,7 @@ void GpuSims::stepSmoke3DPass(const AudioFeatures &audio, const Frame &f, float 
 
 /**
  * @brief Advances the smoke/fire volume by one full frame: a horizontal pass followed by a vertical pass, each its own ping-pong swap.
- * @param a Current audio features, forwarded unchanged to both sub-step passes.
+ * @param audio Current audio features, forwarded unchanged to both sub-step passes.
  * @param f Per-frame context, forwarded unchanged to both sub-step passes.
  *
  * Advance the fire/smoke volume by one full frame: a horizontal pass followed
@@ -491,7 +491,7 @@ void GpuSims::setupPhysarum()
 
 /**
  * @brief Advances the Physarum slime-mould sim by one frame: agent update, pheromone deposit, then trail diffuse+evaporate.
- * @param a Current audio features; drives agent speed/sensor angle/turn rate/scatter and deposit amount.
+ * @param audio Current audio features; drives agent speed/sensor angle/turn rate/scatter and deposit amount.
  * @param f Per-frame context; supplies time to the agent-update shader.
  *
  * One full Physarum frame: agents sense/turn/move (ping-pong), deposit their
@@ -683,7 +683,7 @@ void GpuSims::stepSpectro(const AudioFeatures &a, float dt)
 
 /**
  * @brief Advances the Gray-Scott reaction-diffusion sim by one step into the next ping-pong buffer.
- * @param a Current audio features; drives the feed/kill parameter wander and the reagent-injection trigger.
+ * @param audio Current audio features; drives the feed/kill parameter wander and the reagent-injection trigger.
  *
  * Advance the Gray-Scott simulation by one step into the next ping-pong buffer.
  */

@@ -10,6 +10,18 @@ in vec2  vUV;
 in float vFlip;
 in float vLight;
 
+/**
+ * @file MosaicWave.frag
+ * @brief Shades one tile of a mosaic wall built from photo tiles that
+ * flip between front (the image) and back (a hue-inverted twin), with
+ * thin dark grout lines keeping the mosaic pattern readable.
+ *
+ * vFlip (front/back sign from the vertex stage) selects which face is
+ * shown, hue-rotating the back face by audioChromaHue; vLight (also
+ * baked upstream) shades edge-on tiles darker as they flip; audioDrop
+ * adds a final brightness pulse across the whole wall.
+ */
+
 vec3 hueRot(vec3 c, float a)
 {
     vec3  k = vec3(0.57735026919);

@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file SpectralOrb.vert
+ * @brief Vertex stage companion to SpectralOrb.frag -- see that file's header for
+ * this scene's description.
+ */
 // SpectralOrb.vert — MANIFOLD HARMONICS made real (the research-paper idea):
 // the Laplace-Beltrami eigenfunctions of the SPHERE are known in closed form
 // — they are the spherical harmonics Y_l^m — so the paper's "excite the

@@ -13,6 +13,20 @@ in vec3  vView;
 in float vDefo;
 in float vHue;
 
+/**
+ * @file SpectralOrb.frag
+ * @brief Companion to SpectralOrb.vert. Lights the vibrating orb like a
+ * physical resonating body — a cool key light, a warm rim, and an emissive
+ * glow that follows the absolute displacement vDefo, so the antinodes where
+ * the audio actually excites the surface light up while the nodal lines
+ * stay dark metal.
+ *
+ * audioSwell and audioDrop scale the antinode glow's intensity, making the
+ * excited regions flare brighter on swells and drops; vHue (from
+ * SpectralOrb.vert) keys both the body metal tint and the glow colour to the
+ * current musical hue.
+ */
+
 vec3 hueRot(vec3 c, float a)
 {
     vec3  k = vec3(0.57735026919);

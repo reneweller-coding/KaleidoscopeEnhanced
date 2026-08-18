@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file PhotoCarousel.vert
+ * @brief Vertex stage companion to PhotoCarousel.frag -- see that file's header for
+ * this scene's description.
+ */
 // PhotoCarousel.vert — the camera stands inside a slowly revolving cylinder
 // of 3000 photo cards (50 stacked rings x 60 cards); every card shows its
 // own crop of the current image.  Beat waves of tilt travel up the wall,

@@ -7,6 +7,20 @@ in float vRibbonID;
 in float vVelocity;
 in float vSide;
 
+/**
+ * @file LorenzAttractorTurbulence.frag
+ * @brief Shades one ribbon-tube segment of the strange-attractor flow
+ * traced in LorenzAttractorTurbulence.vert: a glowing tube core whose
+ * hue Doppler-shifts from blue to magenta with the local path speed
+ * (vVelocity), overlaid with fast travelling pulse packets and a sampled
+ * strip of the current photo.
+ *
+ * audioKick sharpens and brightens the travelling pulse packets;
+ * audioChromaHue, together with the hueP preset, rotates the final hue;
+ * glowP scales overall brightness. A soft-knee tone curve keeps the
+ * additive core+pulse+photo mix from clipping to white.
+ */
+
 uniform float time;
 uniform sampler2D tex0;
 uniform sampler2D tex1;

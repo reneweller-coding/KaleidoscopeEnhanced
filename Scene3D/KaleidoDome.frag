@@ -15,6 +15,18 @@ uniform float audioChromaHue;
 in vec2  vUV;
 in float vR;
 
+/**
+ * @file KaleidoDome.frag
+ * @brief Renders a spinning kaleidoscope rosette of the current slideshow
+ * photo projected onto a dome, folded into 8/10/12/14 mirrored sectors
+ * chosen per activation from sceneSeed.
+ *
+ * audioAdvance drives both the sector spin and a slow radial creep across
+ * the source image so the crop never repeats; audioSwell breathes the
+ * sampled radius; audioKick blooms the dome's centre and audioDrop
+ * flashes the whole sky; audioChromaHue tints the glowing sector seams.
+ */
+
 vec3 hueRot(vec3 c, float a)
 {
     vec3  k = vec3(0.57735026919);

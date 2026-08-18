@@ -2,7 +2,7 @@
 out vec4 fragColor;
 /**
  * @file TheCore.frag
- * @brief Adapted from "The Core" by @kishimisu (2023) — https://www.shadertoy.com/view/cdy3Dd
+ * @brief Adapted from "The Core" by \@kishimisu (2023) — https://www.shadertoy.com/view/cdy3Dd
  * Original licensed CC BY-NC-SA 4.0 (attribution kept per the licence).
  *
  * A glowing warm "core" seen down a twisting, domain-repeating tunnel of tubes.

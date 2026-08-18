@@ -1,5 +1,11 @@
 #version 330 core
 out vec4 fragColor;
+/**
+ * @file GalaxyCollision.frag
+ * @brief Displays the compute N-body simulation of two colliding galaxies (32k gravitating bodies) as a star field with a tight stellar glow and a wide galactic haze.
+ *
+ * texNBody holds the simulated star field; this pass adds a two-scale halo, a near one for star glow and a far one for galactic dust haze, and grades the result. audioSubBass widens the far halo and pulses the whole field like a slow breath, audioBeat adds to that pulse, and audioDrop flashes the star cores white-hot on a drop. The photo appears only as a heavily darkened deep-space backdrop showing through the sparser regions.
+ */
 // GalaxyCollision.frag — 32k gravitating bodies from the compute N-body sim.
 // Star fields need the opposite grading from a fluid: tiny bright points with
 // long soft halos, so the bloom here is wide and the core is left sharp.

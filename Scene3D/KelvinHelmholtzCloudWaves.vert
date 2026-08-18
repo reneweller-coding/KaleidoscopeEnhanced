@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file KelvinHelmholtzCloudWaves.vert
+ * @brief Vertex stage companion to KelvinHelmholtzCloudWaves.frag -- see that file's header for
+ * this scene's description.
+ */
 // KelvinHelmholtzCloudWaves.vert — 220x120 heightfield atmospheric shear billows
 // and rolling breaking cloud waves illuminated by dramatic sunset backlighting.
 //   attrA.xy = grid UV (0..1), attrA.zw = quad index

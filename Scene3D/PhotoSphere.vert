@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file PhotoSphere.vert
+ * @brief Vertex stage companion to PhotoSphere.frag -- see that file's header for
+ * this scene's description.
+ */
 // PhotoSphere.vert — a slowly turning planet wrapped in the current image;
 // the camera orbits it, the bass makes it breathe.  attrA.x = longitude,
 // attrA.y = latitude (grid sheet closed around the sphere).

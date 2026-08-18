@@ -1,5 +1,21 @@
 #version 330 core
 out vec4 fragColor;
+/**
+ * @file FxEdgeInk.frag
+ * @brief FX EDGE INK: line-art / ink-outline overlay drawn from the second
+ * derivative of the scene's depth, so silhouettes and creases ink while a
+ * receding plane at any angle stays clean.
+ *
+ * Falls back to a luminance-gradient edge test where depth isn't valid
+ * (2D scenes); interior tones are flattened into a small number of
+ * posterised bands between the inked lines.
+ *   interpolation -> cross-fades the two inked scene layers
+ *   audioChromaHue-> shifts the paper tint and ink colour with the harmonic hue
+ *   audioLevel    -> thickens the ink line weight
+ *   audioBeat     -> subtle overall brightness pulse
+ *   audioKick     -> extra brightness pulse
+ *   audioHigh     -> adds a touch of ink-coloured bloom in the highs
+ */
 // FxEdgeInk.frag — ink outlines from depth, flat wash inside them.
 // -----------------------------------------------------------------------
 // The whole quality of a line-art filter is in what counts as an edge.  The

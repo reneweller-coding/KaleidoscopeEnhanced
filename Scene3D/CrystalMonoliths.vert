@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file CrystalMonoliths.vert
+ * @brief Vertex stage companion to CrystalMonoliths.frag -- see that file's header for
+ * this scene's description.
+ */
 // CrystalMonoliths.vert — 3,000 obsidian and prismatic glass monoliths orbiting
 // in 3D spiral formations, projecting photo textures with chromatic dispersion.
 //   attrA.xy = corner u/v (0..1), attrA.w = quad index

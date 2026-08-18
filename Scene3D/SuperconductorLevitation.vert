@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file SuperconductorLevitation.vert
+ * @brief Vertex stage companion to SuperconductorLevitation.frag -- see that file's header for
+ * this scene's description.
+ */
 // SuperconductorLevitation.vert — 4,900 quantum-locked superconducting tiles
 // levitating and undulating over an active magnetic flux field.
 // 70x70 field of depth-tested cubes. Tiles tilt, pitch, and hover in concentric

@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file LargeHadronCollision.vert
+ * @brief Vertex stage companion to LargeHadronCollision.frag -- see that file's header for
+ * this scene's description.
+ */
 layout(location = 0) in vec3 inPos;
 layout(location = 1) in vec3 inNormal;
 

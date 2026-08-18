@@ -5,6 +5,21 @@ in float vSpecies;
 
 out vec4 fragColor;
 
+/**
+ * @file LargeHadronCollision.frag
+ * @brief Shades one particle-track point from a continuous stream of
+ * simulated collision debris, coloured by species: gold quark/gluon
+ * jets, cyan muon/Cherenkov tracks, magenta Higgs-decay cascades.
+ *
+ * vEnergy (per-point brightness, freshest tracks brightest, baked in
+ * LargeHadronCollision.vert from audioKick-boosted burst speed and an
+ * evolving helical Lorentz trajectory) scales the additive output; the
+ * species colour is tinted toward the current photo palette by vSpecies
+ * via the house palTint/imgPalette helpers (audioChromaHue-keyed).
+ * energyP and glowP are user presets; a soft-knee compression keeps
+ * thousands of overlapping additive tracks from summing to pure white.
+ */
+
 uniform float time;
 uniform sampler2D tex0;
 uniform sampler2D tex1;

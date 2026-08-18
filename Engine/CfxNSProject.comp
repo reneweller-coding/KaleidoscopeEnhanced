@@ -1,5 +1,16 @@
 #version 430
-// CfxNSProject.comp — subtract the pressure gradient, and publish the result.
+/**
+ * @file CfxNSProject.comp
+ * @brief Step 4 (final) of the Navier-Stokes solve: subtracts the pressure gradient to make velocity divergence-free, and publishes the display frame.
+ *
+ * Reads the converged pressure from the last CfxNSJacobi.comp iteration
+ * (binding 1) and the dye texture from CfxNSAdvect.comp (binding 2), corrects
+ * the velocity image in place (binding 0, read-write) by subtracting the
+ * central-difference pressure gradient, re-pins border velocity to zero, and
+ * writes the final displayable frame to binding 3: dye RGB plus flow speed in
+ * alpha so downstream display shaders can shade the fluid without a second
+ * sampler.
+ */
 // The output texture carries the dye (RGB) plus the speed (A) so the display
 // can shade the flow without a second sampler.
 //

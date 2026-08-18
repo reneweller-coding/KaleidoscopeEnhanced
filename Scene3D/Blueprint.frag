@@ -13,6 +13,24 @@ in vec3  vView;
 in vec2  vUV;
 in float vMorph;
 
+/**
+ * @file Blueprint.frag
+ * @brief Renders the morphing body as a cyanotype drafting drawing rather
+ * than a lit object: a dark blue paper wash with a screen-space plate grid,
+ * a fwidth-based wireframe traced from barycentric coordinates, a silhouette
+ * rim, periodic section lines, and a plotter-style measuring sweep.
+ *
+ * audioAmbient brightens the paper wash and its grid; audioBeat adds an
+ * overall brightness pulse to both paper and body; audioLevel strengthens
+ * the wireframe lines and the body's final brightness; audioHigh whitens the
+ * ink tone slightly; audioSubBass brightens the periodic section lines;
+ * audioKick both intensifies the body's final brightness and drives the
+ * time-scrolling measuring sweep that races around the body on every hit;
+ * audioChromaHue applies a small bounded blue-channel hue rotation (kept
+ * subtle since blueprints are meant to stay blue). lineP scales wireframe
+ * line thickness and glowP scales both wireframe and rim glow strength.
+ */
+
 uniform sampler2D tex0;
 uniform float interpolation;
 uniform float time;

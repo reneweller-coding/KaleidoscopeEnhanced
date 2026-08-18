@@ -1,5 +1,11 @@
 #version 330 core
 out vec4 fragColor;
+/**
+ * @file Kaleidoscope.frag
+ * @brief The classic kaleidoscope fold: photo pixels are read back through a polar mirror-and-repeat of `sides` segments, with an optional superellipse warp via the `power` exponent.
+ *
+ * audioPhase is an integrated, jump-free rotation angle added directly to the segment angle, so the whole pattern spins in step with the music without ever snapping. audioBeat adds a very subtle radial zoom-breath, blended in at low strength by design (an earlier, stronger beat flash was tiring on the eyes). audioLevel, audioFlip, audioCentroid, audioFlux and audioValence are declared and documented here but are not read by this shader's own logic; the mood colour, saturation and loudness brightness they describe are applied globally afterwards, in the final present pass.
+ */
 uniform vec2 resolution;
 uniform float time;
 uniform sampler2D tex0;

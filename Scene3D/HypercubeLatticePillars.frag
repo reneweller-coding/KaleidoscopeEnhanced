@@ -29,6 +29,20 @@ in vec2 vTexCoord;
 in vec4 vColor;
 in float vHeight;
 
+/**
+ * @file HypercubeLatticePillars.frag
+ * @brief Shades a lattice of tesseract/hypercube pillar monoliths: a dark
+ * photo-textured monolith face with sci-fi neon edge lines picked out near
+ * each cube corner (vTexCoord), lit with a simple diffuse+specular term.
+ *
+ * audioHigh brightens the neon edge color, audioKick intensifies the
+ * specular highlight, and audioChromaHue (plus the hueP preset) rotates
+ * the final color's hue. Most of the other declared audio* uniforms in
+ * this file (audioPhase, audioAdvance, audioSwell, audioLevel,
+ * audioCentroid, audioValence, audioSubBass, audioBass, audioMid,
+ * audioFlux) are unused by this particular fragment stage.
+ */
+
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }

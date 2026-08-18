@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file PhotoShatter.vert
+ * @brief Vertex stage companion to PhotoShatter.frag -- see that file's header for
+ * this scene's description.
+ */
 // PhotoShatter.vert — the current image stands as a wall of 3000 shards
 // (75 x 40 grid).  Calm music keeps it assembled with a gentle breathing;
 // kicks knock it apart a little, a DROP blows it into a tumbling cloud that

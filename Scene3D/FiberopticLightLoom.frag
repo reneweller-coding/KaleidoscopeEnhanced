@@ -5,6 +5,19 @@ in vec4  vCol;
 in float vSide;
 in float vLength;
 
+/**
+ * @file FiberopticLightLoom.frag
+ * @brief Shades a woven bundle of fiber-optic strands: each strand's
+ * cross-section (vSide) blends its per-vertex color with a slideshow photo
+ * that scrolls lengthwise along the strand (vLength, animated by time), and
+ * a bright rim picks out the strand's outer edge.
+ *
+ * This fragment stage declares no audio uniforms itself; any audio-driven
+ * brightness arrives already baked into the per-vertex vCol supplied by the
+ * companion vertex shader. A soft-knee tone-mapping pass at the end
+ * compresses hot highlights instead of clipping them to flat white.
+ */
+
 uniform sampler2D tex0;
 uniform sampler2D tex1;
 uniform float interpolation;

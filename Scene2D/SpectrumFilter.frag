@@ -1,6 +1,19 @@
 #version 330 core
 out vec4 fragColor;
-// SpectrumFilter.frag — the picture seen through the SONG's own EQ curve.
+/**
+ * @file SpectrumFilter.frag
+ * @brief The photo re-lit by the song's own EQ curve: its luminance is
+ *        filtered per spatial frequency upstream (texFFT) so bass dissolves
+ *        the image into broad shapes while hi-hats cut its edges back in.
+ *
+ * The original photo's colours are kept and only re-lit by the ratio of
+ * filtered to original luminance (mixP controls how strongly). Where texFFT's
+ * "work" channel shows the filter changing the image most, the frame glows
+ * in imgPalette's tint (a photo-sampled colour arc driven by
+ * audioChromaHue/audioAdvance/audioValence), boosted by audioBeat. A soft
+ * bloom grows with audioSubBass, an unsharp-mask sharpen is driven by
+ * audioHigh, and audioKick gives the result an overall brightness pulse.
+ */
 // Blend/CfxFFT*.comp transform the photo's luminance, weight each spatial
 // frequency by the matching audio band and transform back: bass dissolves the
 // image into broad shapes, hi-hats cut its edges back in.

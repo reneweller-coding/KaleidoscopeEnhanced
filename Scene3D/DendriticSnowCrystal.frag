@@ -5,6 +5,18 @@ in vec3 vPos;
 in float vRefract;
 in float vSector;
 
+/**
+ * @file DendriticSnowCrystal.frag
+ * @brief Lighting for growing dendritic snow-crystal facets: mixes an icy-
+ * white core with a rainbow-dispersion tint per facet (vRefract), overlays a
+ * refracted slideshow photo through the ice, and scatters bright hashed
+ * specular sparkle glints across the surface.
+ *
+ * audioKick intensifies the sparkle glints, and the facet's rainbow tint
+ * (imgPalette) follows the musical key through audioChromaHue/audioAdvance
+ * with audioValence shaping saturation; hueP applies the final hue rotation.
+ */
+
 uniform float time;
 uniform sampler2D tex0;
 uniform sampler2D tex1;

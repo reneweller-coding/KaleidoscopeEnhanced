@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file FlowRibbons.vert
+ * @brief Vertex stage companion to FlowRibbons.frag -- see that file's header for
+ * this scene's description.
+ */
 // FlowRibbons.vert — the ribbons arrive finished; place them and pass through.
 
 in vec4 attrA;      // xyz = object position, w = position along the ribbon

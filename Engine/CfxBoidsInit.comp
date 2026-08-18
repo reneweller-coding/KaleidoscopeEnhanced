@@ -1,4 +1,15 @@
 #version 430
+/**
+ * @file CfxBoidsInit.comp
+ * @brief Seeds the boid SSBO with random positions and small random-heading velocities, once per canvas lifetime.
+ *
+ * First stage of the boids pipeline: writes the initial `Boids` SSBO
+ * (binding 1, xy = position in [0,1), zw = velocity) that CfxBoidsGrid.comp
+ * bins each frame and CfxBoidsStep.comp then reads, simulates, and
+ * overwrites. Dispatched once when the canvas is not yet seeded, using a
+ * per-invocation PCG hash so every boid gets an independent starting
+ * position and heading angle.
+ */
 // CfxBoidsInit.comp — scatter the flock with random headings.
 layout(local_size_x = 256) in;
 

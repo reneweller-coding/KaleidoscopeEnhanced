@@ -2,7 +2,7 @@
 out vec4 fragColor;
 /**
  * @file FlowingWires.frag
- * @brief Adapted from "Flowing Wires" by @kishimisu (2023) — https://www.shadertoy.com/view/DsBczR
+ * @brief Adapted from "Flowing Wires" by \@kishimisu (2023) — https://www.shadertoy.com/view/DsBczR
  * Original licensed CC BY-NC-SA 4.0 (attribution kept per the licence).
  *
  * A 3D truchet pattern raymarched into interlocking glowing wire loops.

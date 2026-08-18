@@ -5,6 +5,19 @@ in vec3 vPos;
 in float vCirc;
 in float vRingID;
 
+/**
+ * @file SuperfluidVortexTangle.frag
+ * @brief Draws a tangle of quantized superfluid vortex rings as glowing
+ * point sprites, blending a deep-ocean-blue-to-electric-cyan/emerald
+ * circulation colour with a faint reflection of the current slideshow photo.
+ *
+ * vCirc (local circulation, from the vertex stage) drives a pulsing core
+ * glow that brightens toward white; vRingID cycles the base circulation hue
+ * over time; audioKick punches overall brightness (scaled by the vortexP
+ * preset), and audioChromaHue plus hueP rotate the final colour. A
+ * soft-knee tone map keeps hot audio from clipping to flat white.
+ */
+
 uniform float time;
 uniform sampler2D tex0;
 uniform sampler2D tex1;

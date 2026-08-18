@@ -11,6 +11,21 @@ in float vAlong;
 in float vTint;
 in float vKind;
 
+/**
+ * @file GrassField.frag
+ * @brief Shades a field of grass with three materials picked by vKind: a
+ * photo-tinted sky gradient, a soil-to-lawn ground plane, and individual
+ * blades shaded mostly by occlusion along their own length (dark base, lit
+ * tip) plus backlit translucency and large-scale patchiness so the sward
+ * doesn't read as a flat green mat.
+ *
+ * audioLevel brightens a warm sky glow band, audioAmbient lifts soil
+ * brightness and blade backlight translucency, audioHigh brightens the
+ * specular sheen on blade tips, audioKick brightens a band of light that
+ * sweeps across the field, audioChromaHue nudges the overall hue, and
+ * audioBeat/audioSubBass pulse the final brightness.
+ */
+
 uniform sampler2D tex0;
 uniform float interpolation;
 uniform float time;

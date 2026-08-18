@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file CymaticsPlate.vert
+ * @brief Vertex stage companion to CymaticsPlate.frag -- see that file's header for
+ * this scene's description.
+ */
 // CymaticsPlate.vert — Chladni figures done the physical way: 60k grains of
 // "sand" on a square vibrating plate.  The plate's standing wave is the
 // classic free-plate Chladni field

@@ -1,5 +1,16 @@
 #version 430
-// CfxNSJacobi.comp — one Jacobi iteration of the pressure Poisson equation
+/**
+ * @file CfxNSJacobi.comp
+ * @brief Step 3 of the Navier-Stokes solve: one relaxation iteration of the pressure Poisson equation.
+ *
+ * Reads a pressure texture (image binding 0, R = divergence from
+ * CfxNSDiv.comp, G = current pressure estimate) and writes an updated
+ * estimate (binding 1) as the average of the four neighbours' pressure minus
+ * the local divergence, divided by four. The host dispatches this kernel
+ * ping-ponging between two textures 24 times per frame (see
+ * ComputeFX::stepNSFluid) before handing the converged pressure to
+ * CfxNSProject.comp, which subtracts its gradient from the velocity field.
+ */
 //   laplacian(p) = divergence(v)
 // This is the step the old curl-noise "fluid" never had.  Curl noise is
 // divergence-free BY CONSTRUCTION, which looks pretty but cannot produce

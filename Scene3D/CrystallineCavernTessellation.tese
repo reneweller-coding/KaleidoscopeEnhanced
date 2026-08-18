@@ -1,4 +1,9 @@
 #version 430 core
+/**
+ * @file CrystallineCavernTessellation.tese
+ * @brief Tessellation-evaluation stage companion to CrystallineCavernTessellation.frag -- see that file's header for
+ * this scene's description.
+ */
 layout(quads, fractional_odd_spacing, ccw) in;
 
 in vec3 tcPos[];

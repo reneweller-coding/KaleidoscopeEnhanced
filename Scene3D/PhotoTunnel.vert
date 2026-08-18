@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file PhotoTunnel.vert
+ * @brief Vertex stage companion to PhotoTunnel.frag -- see that file's header for
+ * this scene's description.
+ */
 // PhotoTunnel.vert — flying through a curving tunnel whose walls ARE the
 // current image, kaleidoscope-folded and scrolling with the music.  The
 // tunnel is a static cylinder mesh (grid bent around the axis); the flight

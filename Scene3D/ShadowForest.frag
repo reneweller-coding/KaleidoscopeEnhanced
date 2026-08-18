@@ -12,6 +12,23 @@ in vec3  vWorld;
 in float vKind;
 in float vVar;
 
+/**
+ * @file ShadowForest.frag
+ * @brief Shades the ground and trunks of the ShadowForest colonnade,
+ * reading a real shadow map (texShadow/lightM, built from the geometry
+ * ShadowForest.comp generates) so the sixty overlapping trunk shadows fall
+ * correctly across the ground rather than being faked.
+ *
+ * audioLevel boosts the direct sunlight term on the ground; audioAmbient
+ * scales the sky-bounce fill light and the distance haze; audioKick
+ * strengthens the trunks' silhouette rim light; audioBeat and audioSubBass
+ * pulse the overall exposure; audioHigh adds a faint white highlight.
+ * hueP/audioChromaHue/audioValence drive imgPalette, a live sample of the
+ * slideshow photo that tints the sunlight colour, with audioAdvance
+ * providing its slow drift. vKind selects ground vs. trunk shading and vVar
+ * varies bark tone between trunks.
+ */
+
 uniform sampler2D tex0;
 uniform sampler2DShadow texShadow;
 uniform mat4  lightM;

@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file MandalaGrid.vert
+ * @brief Vertex stage companion to MandalaGrid.frag -- see that file's header for
+ * this scene's description.
+ */
 // MandalaGrid.vert — a breathing mandala disc floating in space: the grid
 // becomes a circular membrane whose surface carries slow radial standing
 // waves; the fragment shader paints an 8-fold symmetric colour rosette.

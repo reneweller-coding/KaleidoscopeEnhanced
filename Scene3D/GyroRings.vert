@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file GyroRings.vert
+ * @brief Vertex stage companion to GyroRings.frag -- see that file's header for
+ * this scene's description.
+ */
 // GyroRings.vert — a great gyroscope: six nested rings of cubes, each
 // revolving around its own tilted axis at its own stately rate; the bass
 // breathes the whole instrument, the downbeat sends a soft glint around

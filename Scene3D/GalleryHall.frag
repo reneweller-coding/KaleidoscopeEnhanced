@@ -15,6 +15,21 @@ in vec4  vSeed;
 in float vLight;
 in float vKind;
 
+/**
+ * @file GalleryHall.frag
+ * @brief Shades a gallery wall of gold-framed photo crops (vKind < 0.5)
+ * under warm spotlighting, plus soft white ceiling light-strip bars
+ * (vKind >= 0.5); each frame samples a per-instance seeded crop (vSeed) of
+ * the current slideshow photo.
+ *
+ * audioChromaHue rotates the gold frame's hue slightly, and audioDrop
+ * punches the whole scene brighter on a musical drop. audioLevel and
+ * audioKick were added specifically to this fragment stage because the
+ * vertex-side coupling barely moved any pixels (measured near-zero
+ * reactivity), so here they directly scale the final brightness alongside
+ * the per-instance vLight term.
+ */
+
 vec3 hueRot(vec3 c, float a)
 {
     vec3  k = vec3(0.57735026919);

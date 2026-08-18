@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file LanternRise.vert
+ * @brief Vertex stage companion to LanternRise.frag -- see that file's header for
+ * this scene's description.
+ */
 // LanternRise.vert — hundreds of sky lanterns drifting up into the night
 // (600 lanterns x 100 points as soft glowing shells + flame).  Deeply calm:
 // the swell brightens the sky, kicks are only a soft flicker.

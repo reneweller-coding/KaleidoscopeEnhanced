@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file MelodyScript.vert
+ * @brief Vertex stage companion to MelodyScript.frag -- see that file's header for
+ * this scene's description.
+ */
 // MelodyScript.vert — the MELODY writes itself: the host keeps ~7.7 s of
 // dominant-pitch history (audioMelody[96], ring with audioMelodyHead) and
 // this scene draws it as a glowing handwriting line scrolling right to

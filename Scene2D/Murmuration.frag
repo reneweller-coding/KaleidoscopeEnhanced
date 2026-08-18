@@ -1,6 +1,17 @@
 #version 330 core
 out vec4 fragColor;
-// Murmuration.frag — 131k boids with a real spatial-hash neighbourhood.
+/**
+ * @file Murmuration.frag
+ * @brief A starling flock of 131k boids, composited as dark silhouette density
+ *        over an evening sky built from two colour samples of the photo.
+ *
+ * The flock (rendered upstream into texBoids) is read back here purely as a
+ * density field: a tight 8-tap blur feeds a contrast curve so dense regions
+ * go dark/solid and thin regions glow. audioAmbient brightens/dims the whole
+ * sky and its low sun glow; audioLevel and audioBeat add to the sun's pulse;
+ * audioBeat also drives the flock's rim shimmer; audioKick gives the final
+ * image a brightness kick and audioDrop makes the shimmer flare on a drop.
+ */
 // A starling flock reads as DENSITY, not as individuals, so this pass leans
 // on contrast shaping: dense regions go dark and solid, thin regions glow.
 

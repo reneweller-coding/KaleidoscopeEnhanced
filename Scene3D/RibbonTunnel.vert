@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file RibbonTunnel.vert
+ * @brief Vertex stage companion to RibbonTunnel.frag -- see that file's header for
+ * this scene's description.
+ */
 // RibbonTunnel.vert — a REAL 3D tunnel of 20 glowing ribbons twisting around
 // the flight path.  The tube weaves through space, the bar phase swings the
 // twist, every kick bulges the tunnel just ahead of the camera, drops light

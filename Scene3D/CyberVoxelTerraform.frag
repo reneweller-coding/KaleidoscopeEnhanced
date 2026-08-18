@@ -6,6 +6,19 @@ in float vHeight;
 
 out vec4 fragColor;
 
+/**
+ * @file CyberVoxelTerraform.frag
+ * @brief Lighting for a voxel landscape projected with a slideshow photo:
+ * diffuse-lit cube terrain blended with the photo texture, coloured by
+ * elevation (vHeight) via the house photo-palette, with glowing neon rim
+ * lines on each voxel's top face.
+ *
+ * audioKick brightens the neon top-face rim, and the photo-palette itself
+ * (imgPalette) follows the musical key through audioChromaHue and
+ * audioAdvance with saturation shaped by audioValence; hueP applies an
+ * additional preset hue rotation to the final colour.
+ */
+
 uniform float time;
 uniform sampler2D tex0;
 uniform sampler2D tex1;

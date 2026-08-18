@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file RainOnWater.vert
+ * @brief Vertex stage companion to RainOnWater.frag -- see that file's header for
+ * this scene's description.
+ */
 // RainOnWater.vert — a still pond at night; raindrops land on their own
 // unhurried clocks and send damped rings gliding outward.  The music sets
 // the rain's density and the moon's warmth — the pond stays a pond.

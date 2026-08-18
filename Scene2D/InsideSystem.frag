@@ -2,7 +2,7 @@
 out vec4 fragColor;
 /**
  * @file InsideSystem.frag
- * @brief Adapted from "Inside the System" by @kishimisu (2022) — https://www.shadertoy.com/view/msj3D3
+ * @brief Adapted from "Inside the System" by \@kishimisu (2022) — https://www.shadertoy.com/view/msj3D3
  * Original licensed CC BY-NC-SA 4.0 (attribution kept per the licence).
  *
  * Neon torus lights in an infinitely-repeating domain, flown through by an

@@ -6,6 +6,20 @@ in vec2 vUV;
 in vec3 vNormal;
 in float vInterference;
 
+/**
+ * @file MoireHyperInterference.frag
+ * @brief Shades the 220x120 heightfield of optical Moire superlattice
+ * fringes built in MoireHyperInterference.vert: the baked interference
+ * palette blended with the current photo, a fixed-light specular
+ * highlight, and an amber glow where the two gratings' beat pattern
+ * (vInterference) is strongest.
+ *
+ * All audio response (grating rotation speed, beat-frequency depth,
+ * kick elevation, hue rotation) is computed upstream in the vertex
+ * stage and arrives baked in vCol/vInterference; this fragment stage
+ * itself reads no audio uniforms directly.
+ */
+
 uniform sampler2D tex0;
 uniform sampler2D tex1;
 uniform float interpolation;

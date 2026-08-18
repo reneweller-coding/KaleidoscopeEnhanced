@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file HarmonicStrings.vert
+ * @brief Vertex stage companion to HarmonicStrings.frag -- see that file's header for
+ * this scene's description.
+ */
 // HarmonicStrings.vert — a giant invisible harp: 20 strings stretched
 // through space, each ringing as a standing wave in its own mode; the
 // string's spectrum band feeds its amplitude smoothly.  Pure, steady.

@@ -6,6 +6,21 @@ in vec3  gWorld;
 in vec4  gCol;
 in vec3  gBary;
 
+/**
+ * @file CrystalShatterBurst.frag
+ * @brief Lighting for the exploding gem geode's tetrahedral shards: a
+ * directional diffuse plus specular highlight per facet, with a bright
+ * wireframe line traced along each triangle's edges via barycentric
+ * coordinates.
+ *
+ * All of this scene's audio reactivity happens further upstream in
+ * CrystalShatterBurst.geom, which fractures the incoming cube mesh into
+ * shards and flings them outward on audioKick and audioSubBass, tumbles
+ * them with audioAdvance, and tints them toward gold on audioKick; this
+ * fragment stage only shades the already-audio-driven shard geometry it
+ * receives via gNormal/gWorld/gCol/gBary.
+ */
+
 void main() {
     vec3 n = normalize(gNormal);
     vec3 lightDir = normalize(vec3(0.6, 0.9, -0.4));

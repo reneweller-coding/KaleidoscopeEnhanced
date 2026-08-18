@@ -9,6 +9,21 @@ uniform float audioKick;
 in vec4 vCol;
 in vec3 vCorner;
 
+/**
+ * @file MonolithField.frag
+ * @brief Shades the near-black monolith slabs (plus drifting shards and
+ * ground rubble) built in MonolithField.vert: the faces stay almost
+ * unlit, while segmented luminous glyph dashes trace the vertical edges.
+ *
+ * vCorner (the vertex's local cube-corner position) picks out the
+ * edges and their dashed glyph segmentation; vCol carries the
+ * per-object colour and brightness already computed in the vertex stage
+ * from its own spectrum band, the downbeat choir pulse and the drop
+ * levitation. This stage's own audioLevel/audioKick uniforms were added
+ * afterward to give the glyphs a small extra pulse, since the vert-side
+ * coupling alone barely moved any pixels.
+ */
+
 void main()
 {
     vec3 a = abs(vCorner) * 2.0;

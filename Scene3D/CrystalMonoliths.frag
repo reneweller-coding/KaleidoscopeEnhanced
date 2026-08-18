@@ -6,6 +6,20 @@ in vec2 vUV;
 in vec3 vNormal;
 in vec3 vWorldPos;
 
+/**
+ * @file CrystalMonoliths.frag
+ * @brief Lighting for orbiting obsidian and prismatic-glass monolith slabs:
+ * maps a slideshow photo through the crystal as refracted light, adds a
+ * bright rim glow at each facet's border, and a sharp specular highlight
+ * off a fixed key light.
+ *
+ * The monoliths' motion and base colour (orbit radius/speed, kick expansion,
+ * hue) are computed upstream in CrystalMonoliths.vert from audioAdvance,
+ * audioKick and audioSwell and passed in through vCol; this fragment stage
+ * only re-lights that colour with the current photo (tex0/tex1, cross-faded
+ * by interpolation) and a glass-like specular/edge treatment.
+ */
+
 uniform sampler2D tex0;
 uniform sampler2D tex1;
 uniform float interpolation;

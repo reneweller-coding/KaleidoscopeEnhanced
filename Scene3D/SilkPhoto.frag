@@ -11,6 +11,20 @@ uniform float audioDrop;
 in vec2  vUV;
 in float vShade;
 
+/**
+ * @file SilkPhoto.frag
+ * @brief Renders the current slideshow photo mapped straight onto a
+ * wind-rippled silk banner (the ripple mesh comes from SilkPhoto.vert),
+ * shaded by the fold slope vShade and overlaid with a silky diagonal sheen
+ * that wanders across the fabric over time.
+ *
+ * audioChromaHue rotates the sheen's colour via hueRot; audioSwell scales
+ * how strongly the sheen highlight shows; audioDrop punches up the overall
+ * brightness on a drop. The banner's wind sway, kick ripple and fold shading
+ * itself are driven by audioLevel, audioSwell, audioKick and audioBass in
+ * SilkPhoto.vert.
+ */
+
 vec3 hueRot(vec3 c, float a)
 {
     vec3  k = vec3(0.57735026919);

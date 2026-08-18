@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file LaserSpireArray.vert
+ * @brief Vertex stage companion to LaserSpireArray.frag -- see that file's header for
+ * this scene's description.
+ */
 // LaserSpireArray.vert — feed 3D point cloud seeds to Geometry Shader
 // to extrude into tall 3D hexagonal laser spires / obelisks.
 in vec4 attrA;

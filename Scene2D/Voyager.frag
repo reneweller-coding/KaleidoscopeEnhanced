@@ -2,7 +2,7 @@
 out vec4 fragColor;
 /**
  * @file Voyager.frag
- * @brief Adapted from "Voyager" by @kishimisu (2024) — https://www.shadertoy.com/view/M33XDH
+ * @brief Adapted from "Voyager" by \@kishimisu (2024) — https://www.shadertoy.com/view/M33XDH
  * Original licensed CC BY-NC-SA 4.0 (attribution kept per the licence).
  *
  * A volumetric fly-through of glowing, endlessly-repeating cells — like a deep-

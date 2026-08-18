@@ -4,6 +4,19 @@ out vec4 fragColor;
 in vec4 vCol;
 in vec3 vCorner;
 
+/**
+ * @file SpectrumArena.frag
+ * @brief Shades the depth-tested equalizer-column cubes of a circular
+ * "arena" the camera flies inside, drawing each cube as a dark face with a
+ * luminous rim where its corner faces the eye.
+ *
+ * This fragment stage reads no audio uniforms directly: all reactivity
+ * (per-column spectrum band level, kick shockwave ring, downbeat jump,
+ * chroma-driven hue) is computed once per vertex in the companion vertex
+ * shader and arrives already baked into vCol; here it is only modulated by
+ * the screen-space edge falloff derived from vCorner.
+ */
+
 void main()
 {
     vec3 a = abs(vCorner) * 2.0;

@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file MonolithField.vert
+ * @brief Vertex stage companion to MonolithField.frag -- see that file's header for
+ * this scene's description.
+ */
 // MonolithField.vert — gliding through a plain of towering alien
 // monoliths: near-black slabs whose glyph edges hum with their own
 // spectrum band; the downbeat sends a choir-pulse rolling through the

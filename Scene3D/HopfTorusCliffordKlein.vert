@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file HopfTorusCliffordKlein.vert
+ * @brief Vertex stage companion to HopfTorusCliffordKlein.frag -- see that file's header for
+ * this scene's description.
+ */
 // HopfTorusCliffordKlein.vert — 20 interlocking Villarceau circles and
 // Clifford tori stereographically projected from 4D space into 3D.
 //   attrA.x = t along ribbon, attrA.y = side (-1/+1), attrA.w = ribbon index

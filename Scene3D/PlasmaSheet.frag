@@ -15,6 +15,20 @@ uniform float audioValence;
 in vec2  vUV;
 in float vH;
 
+/**
+ * @file PlasmaSheet.frag
+ * @brief Shades the classic smooth plasma sheet: three drifting sine
+ * fields summed and mapped through the house photo palette.
+ *
+ * audioAdvance drifts the sine fields' phase; audioSwell and audioLevel
+ * scale overall brightness; the sheet's colour is drawn from the house
+ * imgPalette (a rotating sample arc over the current slideshow photo,
+ * tex0/tex1 crossfaded by interpolation) whose angle follows
+ * audioChromaHue with an audioAdvance drift and whose saturation follows
+ * audioValence. vH (the vertex-computed ripple height) adds a subtle
+ * relief brightening.
+ */
+
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }

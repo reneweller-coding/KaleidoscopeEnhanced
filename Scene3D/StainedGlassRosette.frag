@@ -15,6 +15,21 @@ uniform float audioChromaHue;
 in vec2  vPolar;      // angle, radius 0..1
 in vec2  vXY;
 
+/**
+ * @file StainedGlassRosette.frag
+ * @brief Renders a 12-fold-mirrored cathedral rose window as a Voronoi
+ * mosaic of stained-glass "panes", each a saturated, hue-rotated crop of the
+ * current slideshow image (tex0) held together by dark lead lines, backlit
+ * by radiating godrays.
+ *
+ * audioSwell breathes the backlight and godray intensity; audioKick and
+ * audioDrop flare the rays and backlight further; audioChromaHue rotates
+ * both the per-pane glass hue and the godray colour with the musical key;
+ * audioAdvance slowly turns the whole rosette and animates the ray pattern.
+ * The window is a flat polar disc (vPolar/vXY from the vertex stage) facing
+ * the camera with a soft circular vignette at its rim.
+ */
+
 float hashG(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 vec2  hash2G(vec2 p)
 {

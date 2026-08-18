@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file BioluminescentSwarm.vert
+ * @brief Vertex stage companion to BioluminescentSwarm.frag -- see that file's header for
+ * this scene's description.
+ */
 // BioluminescentSwarm.vert — Indirect render pass for compute boids
 in vec4 attrA; // xyz = world pos, w = hue
 in vec4 attrB; // xyz = normal, w = glow

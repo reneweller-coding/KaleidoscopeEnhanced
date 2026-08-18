@@ -1,5 +1,24 @@
 #version 330 core
 out vec4 fragColor;
+/**
+ * @file FxRimLight.frag
+ * @brief FX RIM LIGHT: relights the scene from behind using a surface
+ * normal reconstructed from the real depth buffer, adding a grazing-angle
+ * rim highlight plus an opposing fill light.
+ *
+ * Uses whichever of the forward/backward depth differences spans the
+ * smaller step, per axis, so the reconstructed normal (and therefore the
+ * rim) stays clean right up to silhouette edges; the key light's direction
+ * and colour drift with dayPhase and the harmonic hue.
+ *   interpolation -> cross-fades the two rim-lit scene layers
+ *   audioKick     -> flashes the rim-light intensity
+ *   audioLevel    -> adds to the rim-light intensity
+ *   audioAmbient  -> strengthens the opposing fill light
+ *   audioChromaHue-> tints the key/fill light colours with the harmonic hue
+ *   audioHigh     -> adds a touch of key-coloured highlight
+ *   audioSubBass  -> subtle overall brightness pulse
+ *   audioBeat     -> subtle overall brightness pulse
+ */
 // FxRimLight.frag — relight the frame from behind, using only depth.
 // -----------------------------------------------------------------------
 // A rim needs a surface normal, and the depth buffer does not store one.  It can

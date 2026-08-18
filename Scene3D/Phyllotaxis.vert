@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file Phyllotaxis.vert
+ * @brief Vertex stage companion to Phyllotaxis.frag -- see that file's header for
+ * this scene's description.
+ */
 // Phyllotaxis.vert — the sunflower head: 60k florets placed by the golden
 // angle (137.5 deg), doming gently in 3D; soft rings of light breathe
 // outward with the bar, the whole head turns imperceptibly slowly.

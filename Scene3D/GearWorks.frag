@@ -4,6 +4,17 @@ out vec4 fragColor;
 in vec4 vCol;
 in vec3 vCorner;
 
+/**
+ * @file GearWorks.frag
+ * @brief Shades a gear-mechanism face as flat brass with machined,
+ * luminous edges: distance from each cube corner (vCorner) picks out the
+ * beveled edge lines and brightens them against a dim flat face.
+ *
+ * This fragment shader declares no audio uniforms directly; its color
+ * (vCol) is computed per-vertex by the companion vertex shader, so any
+ * audio reactivity arrives already baked into that per-vertex color.
+ */
+
 void main()
 {
     vec3 a = abs(vCorner) * 2.0;

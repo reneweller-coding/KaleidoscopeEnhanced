@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file LaserArena.vert
+ * @brief Vertex stage companion to LaserArena.frag -- see that file's header for
+ * this scene's description.
+ */
 // LaserArena.vert — a club laser show: 20 beams from two stage towers fan
 // and sweep with the bar phase, kicks strobe them, a DROP snaps every beam
 // vertical.  Each ribbon is one beam: t = distance along the beam,

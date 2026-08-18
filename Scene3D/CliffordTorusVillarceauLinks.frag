@@ -6,6 +6,20 @@ in vec3 vNormal;
 in vec2 vTexCoord;
 in float vIndex;
 
+/**
+ * @file CliffordTorusVillarceauLinks.frag
+ * @brief Shades a segment of interlinked Villarceau circles (a Clifford
+ * torus's characteristic linked-loop decomposition), blending the slideshow
+ * photo with a topological-phase colour and simple diffuse/specular
+ * lighting, then fading to a dark fog with distance.
+ *
+ * audioPhase offsets imgPalette()'s sample point per-loop (via vIndex), so
+ * each linked circle's colour cycles with the audio phase; audioKick
+ * brightens the specular highlight; audioChromaHue and the hueP preset both
+ * apply a final hue rotation via hueRot(). torusP/linkP/speedP are declared
+ * for the companion vertex shader's torus radius/link count/rotation speed.
+ */
+
 uniform sampler2D tex0;
 uniform sampler2D tex1;
 uniform float interpolation;

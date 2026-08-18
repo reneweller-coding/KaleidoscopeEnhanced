@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file SupernovaRemnantNebula.vert
+ * @brief Vertex stage companion to SupernovaRemnantNebula.frag -- see that file's header for
+ * this scene's description.
+ */
 // SupernovaRemnantNebula.vert
 
 layout(location = 0) in vec4 attrA; // xyz = pos, w = strandID

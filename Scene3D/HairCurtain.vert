@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file HairCurtain.vert
+ * @brief Vertex stage companion to HairCurtain.frag -- see that file's header for
+ * this scene's description.
+ */
 // HairCurtain.vert — one vertex per strand: fix where it hangs from.
 // The strand itself is grown in the geometry shader.
 

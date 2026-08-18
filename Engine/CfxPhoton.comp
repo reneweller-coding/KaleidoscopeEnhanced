@@ -1,5 +1,19 @@
 #version 430
-// CfxPhoton.comp — caustics by PHOTON SPLATTING through a wave surface.
+/**
+ * @file CfxPhoton.comp
+ * @brief Second half of the caustics effect: refracts one photon per texel through the wave-height field and splats it onto the pool floor.
+ *
+ * Reads the height field written by CfxWave.comp (image binding 1, R
+ * channel) and, per invocation, computes the local surface gradient, refracts
+ * a vertical light ray by that gradient scaled by depth, and additively
+ * splats (atomicAdd) into the uint accumulator at binding 0 — once at the
+ * gradient-scaled hit point per RGB channel, each with a slightly different
+ * depth factor (the disperse uniform) to produce a faint chromatic-aberration
+ * fringe like real caustics. Where neighbouring photons converge, the
+ * accumulator brightens on its own; CfxResolve.comp then tonemaps it into the
+ * display texture. Colour tint stays near-white since the water's own colour
+ * is applied later by the display shader.
+ */
 // -----------------------------------------------------------------------
 // One photon per invocation enters the water vertically, refracts at the
 // surface according to the local gradient of the height field, travels to

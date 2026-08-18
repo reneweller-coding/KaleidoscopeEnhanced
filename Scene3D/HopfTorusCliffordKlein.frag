@@ -5,6 +5,18 @@ in vec4  vCol;
 in float vSide;
 in float vLength;
 
+/**
+ * @file HopfTorusCliffordKlein.frag
+ * @brief Shades one strand of a Hopf-torus / Clifford-torus tube lattice:
+ * blends its per-vertex color (vCol) with a slideshow photo that scrolls
+ * along the strand's length (vLength, animated by time), with a bright rim
+ * along the strand's cross-section edge (vSide).
+ *
+ * This fragment shader declares no audio uniforms directly; any audio
+ * reactivity arrives already baked into the per-vertex vCol supplied by
+ * the companion vertex shader.
+ */
+
 uniform sampler2D tex0;
 uniform sampler2D tex1;
 uniform float interpolation;

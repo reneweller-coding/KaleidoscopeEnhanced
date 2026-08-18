@@ -5,6 +5,20 @@ in float vFoldAngle;
 
 out vec4 fragColor;
 
+/**
+ * @file KineticTesseractOrigami.frag
+ * @brief Shades one facet of the Miura-ori origami sheet folded by
+ * KineticTesseractOrigami.vert: the stored photo blended with an
+ * iridescent paper sheen, plus neon crease lines at each facet's border.
+ *
+ * vFoldAngle (the current fold amount from the vertex stage, itself
+ * driven by audioAdvance/audioBass/audioKick) selects the sheen's hue
+ * from the house photo palette; audioKick brightens the glowing crease
+ * lines and audioSwell lifts overall brightness; audioChromaHue/hueP and
+ * audioValence shape the palette's hue drift and saturation via the
+ * shared imgPalette helper. glowP scales final output.
+ */
+
 uniform float time;
 uniform sampler2D tex0;
 uniform sampler2D tex1;

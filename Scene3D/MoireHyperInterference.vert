@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file MoireHyperInterference.vert
+ * @brief Vertex stage companion to MoireHyperInterference.frag -- see that file's header for
+ * this scene's description.
+ */
 // MoireHyperInterference.vert — 220x120 heightfield grid undulating
 // with optical Moiré superlattices and dynamic interference zone plates.
 //   attrA.xy = grid UV (0..1), attrA.zw = quad index

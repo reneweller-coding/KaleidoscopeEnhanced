@@ -1,4 +1,16 @@
 #version 430
+/**
+ * @file CfxFFTStore.comp
+ * @brief Writes the filtered complex field back out as a displayable texture, completing the FFT-filter pipeline.
+ *
+ * Final stage after CfxFFT.comp's inverse transform. Reads the `Data` SSBO
+ * (binding 0), undoes CfxFFTLoad.comp's checkerboard sign flip to recover
+ * the filtered luminance, and re-samples `texSrc` to compute the original
+ * luminance for comparison. Stores the result to `imgOut` (binding 0): R =
+ * filtered luma, G = absolute difference from the original ("edge energy"
+ * the display uses to tint where the mask changed the image most), B =
+ * original luma.
+ */
 // CfxFFTStore.comp — filtered luminance back into a texture.
 // R = the filtered luma, G = |filtered - original| (an "edge energy" channel
 // the display uses to tint where the filter is doing the most work).

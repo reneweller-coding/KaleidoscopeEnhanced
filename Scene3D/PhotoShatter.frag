@@ -8,6 +8,16 @@ uniform float audioChromaHue;
 in vec2  vUV;
 in float vLight;
 
+/**
+ * @file PhotoShatter.frag
+ * @brief Shades one flying shard of the shattered current photo (tex0):
+ * the plain image, lit by vLight, with hot fracture-line edges.
+ *
+ * audioDrop is what ignites the fracture edges — they stay faint between
+ * drops and blaze orange on one — and audioChromaHue hue-rotates that
+ * edge colour so it tracks the music's key.
+ */
+
 vec3 hueRot(vec3 c, float a)
 {
     vec3  k = vec3(0.57735026919);

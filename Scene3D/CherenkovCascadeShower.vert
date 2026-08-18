@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file CherenkovCascadeShower.vert
+ * @brief Vertex stage companion to CherenkovCascadeShower.frag -- see that file's header for
+ * this scene's description.
+ */
 // CherenkovCascadeShower.vert — 60,000 relativistic particle collision tracks
 // in heavy water with glowing cyan Cherenkov radiation and magnetic deflection.
 //   attrA.x = particle ID, attrA.y = seed, attrA.zw = track params

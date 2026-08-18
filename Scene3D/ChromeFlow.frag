@@ -18,6 +18,22 @@ in vec2  vUV;
 in vec3  vNrm;
 in float vDist;
 
+/**
+ * @file ChromeFlow.frag
+ * @brief Renders a rolling sheet of molten chrome that mirrors the current
+ * slideshow photo via a true reflect() environment lookup, overlaid with two
+ * sweeping polish-streak sheen bands and a fixed moonlight specular
+ * highlight.
+ *
+ * audioSwell strengthens the first sheen band and audioCentroid strengthens
+ * the second; audioAdvance and audioChromaHue feed imgPalette() (via
+ * palTint()) so the warm/cool sheen tints drift with the musical key, with
+ * audioValence shaping that palette's saturation. time animates both sheen
+ * bands' phase along the reflection vector. The reflection direction itself
+ * is a fixed camera-relative ray (not audio-driven); distance fog fades the
+ * sheet toward the horizon via vDist.
+ */
+
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }

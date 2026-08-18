@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file GrassField.geom
+ * @brief Geometry stage companion to GrassField.frag -- see that file's header for
+ * this scene's description.
+ */
 // GrassField.geom — grow a blade of grass out of every point.
 // -----------------------------------------------------------------------
 // This is what a geometry shader is actually good for: the vertex buffer

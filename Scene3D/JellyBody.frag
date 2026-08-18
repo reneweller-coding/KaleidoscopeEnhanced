@@ -13,6 +13,20 @@ in vec3  vView;
 in float vDefo;
 in float vHue;
 
+/**
+ * @file JellyBody.frag
+ * @brief Lighting for a single translucent jelly body: deep saturated
+ * colour, fresnel rim, wet specular highlight, and light seeming to pass
+ * through from behind.
+ *
+ * The body's shape and per-vertex deformation (vDefo) and hue (vHue) are
+ * computed upstream in JellyBody.vert from the instrument-triggered modal
+ * ringing (audioKick/audioSnare/audioHat); this stage only reads
+ * audioSwell and audioDrop, using them to brighten the subsurface glow
+ * that pools where the body is currently deformed, making the ring-down
+ * itself visible as travelling light.
+ */
+
 vec3 hueRot(vec3 c, float a)
 {
     vec3  k = vec3(0.57735026919);

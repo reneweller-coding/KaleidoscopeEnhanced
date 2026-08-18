@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file PortalRush.vert
+ * @brief Vertex stage companion to PortalRush.frag -- see that file's header for
+ * this scene's description.
+ */
 // PortalRush.vert — racing through a slalom of glowing ring gates.  Each
 // "ribbon" is bent into a torus band; the gate directly ahead pulses with
 // the beat, passing gates flash on the kick, a drop flares them all.

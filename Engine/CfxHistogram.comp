@@ -1,4 +1,19 @@
 #version 430
+/**
+ * @file CfxHistogram.comp
+ * @brief Builds a 256-bin luminance histogram of the rendered frame and derives a percentile-based auto-exposure gain from it.
+ *
+ * Standalone pass used by PresentPass's GPU percentile auto-exposure step
+ * (see Source/PresentPass.cpp), not chained to another CfxHistogram sibling.
+ * A single workgroup strides over `texFrame` accumulating a shared-memory
+ * histogram (sqrt-remapped bins so low luminances get more resolution), then
+ * invocation 0 finds the 50th and 98th percentiles and computes a new
+ * exposure gain that pulls the median toward `target` while never letting
+ * the 98th-percentile highlight clip, slewed by `slew` per frame. Result is
+ * written to the four-float `Result` SSBO (binding 0: exposure, p50, p98,
+ * pad) that the present pass reads back to grade the frame, avoiding a
+ * costly CPU readback of the whole image.
+ */
 // CfxHistogram.comp — luminance histogram of the finished frame, then the
 // exposure that frame deserves.
 // -----------------------------------------------------------------------

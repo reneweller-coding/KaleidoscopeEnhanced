@@ -26,6 +26,23 @@ in vec3  vObj;
 in float vWedge;
 in float vSeed;
 
+/**
+ * @file PrismExplode.frag
+ * @brief Renders the exploding shell of glass-prism shards built by
+ * PrismExplode.comp, refracting a procedural sky through each facet with
+ * real chromatic dispersion (Cauchy's equation, one refraction per colour
+ * channel) instead of a painted rainbow gradient.
+ *
+ * audioKick and audioSubBass widen the dispersion spread on transients;
+ * audioBeat and audioSubBass also pulse the overall exposure. audioHigh adds
+ * a faint white highlight and audioAmbient lifts the ambient fill. The
+ * palette comes from imgPalette, a live sample of the current slideshow
+ * photo whose sampling angle follows audioChromaHue (with an audioAdvance
+ * drift) and whose saturation follows audioValence. The per-vertex vWedge
+ * (facet wedge angle) scales how strongly a shard splits colour, and vSeed
+ * varies facet-edge tinting between shards.
+ */
+
 uniform sampler2D tex0;
 uniform float interpolation;
 uniform float time;

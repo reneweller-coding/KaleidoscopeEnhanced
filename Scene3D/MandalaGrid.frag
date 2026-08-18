@@ -17,6 +17,20 @@ uniform float audioValence;
 in vec2  vPolar;
 in float vLift;
 
+/**
+ * @file MandalaGrid.frag
+ * @brief Renders an 8/10-fold (rolled per activation via sceneSeed)
+ * mirrored plasma rosette in folded polar space, its layered sine fields
+ * mapped into the current photo palette and flowing slowly inward.
+ *
+ * audioAdvance drives both the rosette's slow spin and the inward flow
+ * speed; audioBarPhase positions a soft ring of light that breathes
+ * outward once per bar; audioSwell/audioDrop brighten the whole pattern;
+ * audioChromaHue (via the house imgPalette helper) sets the palette's
+ * hue arc and audioValence its saturation. vLift (per-vertex relief from
+ * the vertex stage) adds subtle 3D shading.
+ */
+
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }

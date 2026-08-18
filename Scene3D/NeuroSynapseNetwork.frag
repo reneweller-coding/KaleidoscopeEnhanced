@@ -4,6 +4,20 @@ out vec4 fragColor;
 in vec4  vCol;
 in float vLife;
 
+/**
+ * @file NeuroSynapseNetwork.frag
+ * @brief Renders one particle of the 60,000-node neural-connectome point
+ * cloud as a tight-cored, short-tailed glow sprite.
+ *
+ * Reads no audio uniforms directly: per-particle position, the electrical
+ * action-potential flashes and colour are all computed in the paired
+ * NeuroSynapseNetwork.vert (which itself reacts to audioKick, audioBass,
+ * audioSubBass, audioHigh, audioSwell and the spectrum bins) and arrive
+ * here as vCol and vLife. vLife brightens the glow for firing particles,
+ * and a soft-knee tone-map compresses hot additive overlap instead of
+ * clipping the whole frame to white.
+ */
+
 void main() {
     // Round gaussian point sprite
     vec2 pc = gl_PointCoord - 0.5;

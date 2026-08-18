@@ -1,4 +1,25 @@
 #version 430
+
+/**
+ * @file CathedralGlass.comp
+ * @brief Compute kernel that generates the geometry for a three-layer
+ * stained-glass rose window: a front wheel of stone tracery and glass panes
+ * with two more glass wheels counter-rotating behind it at increasing depth,
+ * around an open central oculus.
+ *
+ * audioAdvance drives the counter-rotation speed of the two back wheels
+ * (opposite directions, non-commensurate rates so the layered pattern never
+ * repeats); audioSpectrum[] assigns each glass pane's sector a spectrum
+ * band, so the window doubles as a circular spectrum analyser. spinP scales
+ * rotation speed, paneP scales pane/gap size (leading thickness), and depthP
+ * scales the spacing between the three wheels. Each invocation emits one
+ * quad -- glass pane, radial stone rib, or arc stone rib -- into the shared
+ * vertex/command buffers, tagging it with a kind (0 = opaque stone, 1-3 =
+ * glass wheel index, 4 = oculus ring) and a level (spectrum brightness) that
+ * the sibling CathedralGlass.frag reads back to route stone through an
+ * opaque pass and glass through an order-independent-transparency pass.
+ */
+
 // CathedralGlass.comp — a rose window with two more turning behind it.
 // -----------------------------------------------------------------------
 // A single sheet of stained glass does not need order-independent transparency:

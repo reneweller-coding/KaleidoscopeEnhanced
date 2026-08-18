@@ -5,6 +5,19 @@ out vec4 fragColor;
 in vec4 vCol;
 in vec3 vCorner;
 
+/**
+ * @file AsteroidBelt.frag
+ * @brief Shades a single asteroid chunk with a matte rock face plus a faint
+ * cool rim light along its cube-corner edges, keeping silhouettes readable
+ * against black space.
+ *
+ * This fragment stage carries no audio uniforms of its own: vCol (the base
+ * rock colour, already audio/position-modulated per vertex) and vCorner (a
+ * local box coordinate used purely to detect edges via smoothstep) are the
+ * only inputs, so any audio reactivity for this scene lives in the companion
+ * vertex shader.
+ */
+
 void main()
 {
     vec3 a = abs(vCorner) * 2.0;

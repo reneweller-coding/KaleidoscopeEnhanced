@@ -1,5 +1,22 @@
 #version 330 core
 out vec4 fragColor;
+/**
+ * @file FxHeatShimmer.frag
+ * @brief FX HEAT SHIMMER: refraction of the scene through turbulent heated
+ * air, displacing pixels along the GRADIENT of an animated noise field
+ * rather than the field's raw value.
+ *
+ * Displacement strength scales with scene brightness and, where available,
+ * with depth/air-path (more haze between eye and surface bends light more);
+ * each colour channel samples at a slightly different offset for a touch of
+ * chromatic dispersion.
+ *   interpolation -> cross-fades the two shimmer-displaced scene layers
+ *   audioLevel    -> strengthens the heat-bend displacement
+ *   audioKick     -> punches the displacement briefly
+ *   audioSubBass  -> adds to the displacement strength
+ *   audioHigh     -> brightens the heat-bloom highlight
+ *   audioBeat     -> subtle overall brightness pulse
+ */
 // FxHeatShimmer.frag — air that has been heated, and bends light because of
 // it.
 // -----------------------------------------------------------------------

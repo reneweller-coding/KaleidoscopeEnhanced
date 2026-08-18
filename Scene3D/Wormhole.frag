@@ -17,6 +17,20 @@ in float vDist;
 in float vAng;
 in float vLensAmt;
 
+/**
+ * @file Wormhole.frag
+ * @brief Flies through a repeating chain of gravitational-lensing wormhole
+ * throats: bends the slideshow image (tex0) around each throat with growing
+ * angular smear near its horizon and per-channel chromatic aberration, and
+ * traces a bright photon ring at the horizon itself.
+ *
+ * audioAdvance drives the flight speed and the image's scroll along the
+ * tube; audioKick and audioDrop flare the photon ring's brightness;
+ * audioChromaHue tints the ring's colour. vLensAmt (the current throat's
+ * lensing strength, from the vertex stage) controls both the bend amount
+ * and how brightly that stretch of tube is lit; vDist applies depth fog.
+ */
+
 vec3 hueRot(vec3 c, float a)
 {
     vec3  k = vec3(0.57735026919);

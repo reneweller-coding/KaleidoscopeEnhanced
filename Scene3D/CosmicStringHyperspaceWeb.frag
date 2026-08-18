@@ -5,6 +5,19 @@ in vec4  vCol;
 in float vSide;
 in float vLength;
 
+/**
+ * @file CosmicStringHyperspaceWeb.frag
+ * @brief Fragment shader for the cosmic-string web ribbons: blends the
+ * per-vertex colour with a photo sample scrolling along the ribbon length,
+ * then adds a bright edge rim and a hot core beam down the ribbon centre.
+ *
+ * The scene's audio reactivity (string tension/vibration, kick jolts, swell,
+ * hue) is computed upstream in CosmicStringHyperspaceWeb.vert and arrives
+ * here baked into vCol; this stage only re-samples the slideshow photo
+ * (tex0/tex1, cross-faded by interpolation) using vSide/vLength/time and
+ * layers the glow on top.
+ */
+
 uniform sampler2D tex0;
 uniform sampler2D tex1;
 uniform float interpolation;

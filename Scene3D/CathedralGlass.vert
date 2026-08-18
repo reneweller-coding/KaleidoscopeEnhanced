@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file CathedralGlass.vert
+ * @brief Vertex stage companion to CathedralGlass.frag -- see that file's header for
+ * this scene's description.
+ */
 // CathedralGlass.vert — place the window, and drop whichever half of the
 // geometry does not belong to the pass currently running.
 

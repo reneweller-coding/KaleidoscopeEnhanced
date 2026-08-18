@@ -1,5 +1,19 @@
 #version 430
-// CfxResolve.comp — shared back end of every "splatting" compute sim.
+/**
+ * @file CfxResolve.comp
+ * @brief Shared tonemapping back end for every splatting compute simulation (N-body, particle flow, caustics, shards).
+ *
+ * Reads the uint fixed-point accumulator (binding 0) that a sim's step kernel
+ * scattered colour into via atomicAdd, converts it to floating colour, and
+ * writes the result into the RGBA16F display image (binding 0) blended with a
+ * decayed copy of the previous frame via max() so overlapping trails cannot
+ * saturate to white. Mode 0 is a simple linear-exposure tonemap; mode 1 is
+ * the fractal-flame tonemap (average colour per texel, brightened by the log
+ * of hit density) that keeps faint filaments visible instead of blown-out hot
+ * spots. Output alpha carries this frame's raw density, which later
+ * screen-space effects (liquid metal, shatter coverage) use to reconstruct
+ * sim geometry.
+ */
 // -----------------------------------------------------------------------
 // The sims scatter colour into a uint accumulator (fixed point, because
 // atomicAdd on floats is an optional extension while uint atomics are core).

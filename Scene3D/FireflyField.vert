@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file FireflyField.vert
+ * @brief Vertex stage companion to FireflyField.frag -- see that file's header for
+ * this scene's description.
+ */
 // FireflyField.vert — a summer night meadow: thousands of fireflies drift
 // on lazy paths and blink softly; a slow wave of synchrony sweeps the
 // field with the beat phase (real fireflies do this!).  Deeply calm.

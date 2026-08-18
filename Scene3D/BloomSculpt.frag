@@ -12,6 +12,25 @@ in vec3  vWorld;
 in float vSwell;
 in vec2  vSurfUV;
 
+/**
+ * @file BloomSculpt.frag
+ * @brief Lights a tessellated, lobed sculptural bloom shape with restrained
+ * shading built to read its silhouette: a shadow-mapped key light, a cooler
+ * fill light, an equirect environment-mirror reflection of the slideshow
+ * photo, a rim light, and a hue derived from surface radius (via the
+ * photo-arc imgPalette()).
+ *
+ * audioChromaHue drives imgPalette()'s rotating photo-arc sample point and a
+ * small hue-cycle offset over the surface radius; audioValence shapes that
+ * palette's saturation and audioAdvance slowly drifts it; audioHigh
+ * brightens the specular highlight, audioLevel the rim light, audioKick the
+ * glow along the most-displaced ridges (gated by vSwell against the bloomP
+ * preset), and audioBeat/audioAmbient add a final overall brightness lift.
+ * glossP scales specular sharpness and the environment-reflection strength.
+ * A percentage-closer-filtered shadow map (texShadow/lightM) darkens the
+ * deep folds between lobes so a convoluted surface stays legible.
+ */
+
 uniform sampler2D tex0;
 uniform sampler2DShadow texShadow;
 uniform mat4  lightM;

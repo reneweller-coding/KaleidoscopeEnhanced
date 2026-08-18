@@ -6,6 +6,21 @@ in vec3 teNormal;
 in vec2 teUV;
 in float teCrystal;
 
+/**
+ * @file CrystallineCavernTessellation.frag
+ * @brief Lighting for a tessellated amethyst/quartz cavern: a point light at
+ * the cavern's centre lights the rock, a projected photo textures the stone
+ * substrate, and a per-vertex crystal mask (teCrystal) blooms into emissive,
+ * specular-highlighted facets.
+ *
+ * audioKick pumps the brightness of the crystal facet emission, and
+ * audioChromaHue rotates the final colour with the musical key; distance
+ * from the centre lantern fades everything into cavern fog. This shader
+ * follows a tessellation control/evaluation pair
+ * (CrystallineCavernTessellation.tesc, CrystallineCavernTessellation.tese)
+ * that subdivides the cavern mesh before this stage shades it.
+ */
+
 uniform float time;
 uniform sampler2D tex0;
 uniform sampler2D tex1;

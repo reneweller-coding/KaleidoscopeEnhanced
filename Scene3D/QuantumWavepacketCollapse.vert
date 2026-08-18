@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file QuantumWavepacketCollapse.vert
+ * @brief Vertex stage companion to QuantumWavepacketCollapse.frag -- see that file's header for
+ * this scene's description.
+ */
 // GEOM_POINTS supplies no meaningful position (attrA.xyz is always zero;
 // only attrA.w = point id and attrB = 4 per-point hash seeds are real —
 // see Scene3DShader.cpp). A pseudo-random seed point takes the place of the

@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file NebulaCloud.vert
+ * @brief Vertex stage companion to NebulaCloud.frag -- see that file's header for
+ * this scene's description.
+ */
 // NebulaCloud.vert — a soft nebula: particles gathered in seeded clumps,
 // the whole cloud kneaded by slow sine winds and turning around its axis;
 // hue drifts with the music's key.  Nothing here ever hurries.

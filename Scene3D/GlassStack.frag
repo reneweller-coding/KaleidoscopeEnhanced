@@ -21,6 +21,23 @@ in vec3  vView;
 in float vShell;
 in float vKind;
 
+/**
+ * @file GlassStack.frag
+ * @brief One shader with two jobs selected by oitPass: shades the stack's
+ * opaque core normally, and shades each translucent glass pane (fresnel-
+ * driven density, thin at face-on and dense at grazing angles) as a
+ * weighted-blended order-independent-transparency (OIT) contribution --
+ * premultiplied color times a depth-based weight into outAccum, plain
+ * alpha into outReveal.
+ *
+ * audioChromaHue picks the core and glass hue from the photo-arc palette
+ * (imgPalette), audioHigh brightens the specular highlight, audioKick
+ * brightens the fresnel rim on both the core and the glass, audioBeat
+ * pulses the brightness of both passes (audioSubBass additionally pulses
+ * the glass shell), and audioAmbient adds a flat tint to the glass shell.
+ * glassP controls how dense each pane reads.
+ */
+
 uniform sampler2D tex0;
 uniform float interpolation;
 uniform float time;

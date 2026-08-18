@@ -1,5 +1,16 @@
 #version 330 core
 out vec4 fragColor;
+/**
+ * @file FxPlaneFlight.frag
+ * @brief FX PLANE FLIGHT: forward-flight perspective warp that projects the
+ * scene as if streaming past on either side of a travelling flight path,
+ * brightened toward the horizon line.
+ *
+ * The view direction rotates slowly over time and the sampled UV scrolls
+ * forward, giving an endless "flying alongside a wall of texture" look.
+ * This effect declares no audio-reactive uniforms.
+ *   interpolation -> linearly cross-fades tex0 over tex1 in the warped UV space
+ */
 // FxPlaneFlight.frag (Inigo Quilez, iq/2013)
 // FX PLANE FLIGHT: a forward-flight perspective warp -- the scene is
 // projected as if streaming past on either side of a travelling flight

@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file Jellyfish.vert
+ * @brief Vertex stage companion to Jellyfish.frag -- see that file's header for
+ * this scene's description.
+ */
 // Jellyfish.vert — a bloom of 25 bioluminescent jellyfish (60k points:
 // 60 % bell shells, 40 % trailing tentacles).  ALL bells pulse to the beat
 // with per-jelly phase offsets; onsets make the bloom flash.

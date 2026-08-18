@@ -4,7 +4,7 @@ out vec4 fragColor;
  * @file TopologicalInsulatorDiracSurface.frag
  * @brief TOPOLOGICAL INSULATOR DIRAC SURFACE: 3D topological insulator crystal
  * with insulating bulk and protected conducting 2D Dirac surface states.
- * Spin-momentum locking ($k \times \sigma$), suppressed backscattering,
+ * Spin-momentum locking (k x sigma), suppressed backscattering,
  * helical current loops, and continuous photo texture reflections.
  *   audioAdvance -> rotates spin-momentum locked Dirac surface currents
  *   audioKick    -> flashes protected topological edge state transitions

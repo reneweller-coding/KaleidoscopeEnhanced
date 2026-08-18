@@ -32,6 +32,22 @@ in vec2 vTexCoord;
 in vec4 vColor;
 in float vHeight;
 
+/**
+ * @file SolarWindMagnetosphere.frag
+ * @brief Shades the magnetosphere bow-shock heightfield (built in
+ * SolarWindMagnetosphere.vert) with a diffuse/specular lighting term, a
+ * projected sample of the live slideshow photo, a wireframe magnetic-flux
+ * grid, and additive auroral colour carried in vColor.
+ *
+ * audioLevel boosts the auroral colour; audioHigh brightens both the
+ * flux-grid wireframe glow and the specular highlight; audioChromaHue (with
+ * the hueP preset) rotates the final composite hue. Most of the other
+ * declared audio uniforms (audioAdvance, audioKick, audioSubBass, audioBass,
+ * audioMid, audioSwell, audioCentroid, audioValence, audioFlux, and the
+ * bowShockP/auroraP/speedP presets) drive the heightfield's bow-shock
+ * deformation and vertex colour in the vertex shader rather than here.
+ */
+
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }

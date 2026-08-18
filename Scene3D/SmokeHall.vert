@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file SmokeHall.vert
+ * @brief Vertex stage companion to SmokeHall.frag -- see that file's header for
+ * this scene's description.
+ */
 // SmokeHall.vert — place the hall, and hand each pass only the geometry that
 // belongs to it.  Three passes, two kinds:
 //   shadow      hall  (smoke must not cast, or it would shadow its own shafts)

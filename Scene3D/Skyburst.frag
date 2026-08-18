@@ -11,6 +11,22 @@ in float vHue;
 in float vBright;
 in float vDist;
 
+/**
+ * @file Skyburst.frag
+ * @brief Shades the firework spark trails built by Skyburst.comp as pure
+ * emissive light (no lighting model): a blackbody-style cooling gradient
+ * from white-hot at the head (vAge near 0) through the shell's own hue to
+ * deep red at the tail (vAge near 1), against a faint night sky.
+ *
+ * audioChromaHue tints the shell's base colour via hue2rgb/imgPalette (with
+ * audioAdvance and audioValence shaping that photo-sampled palette);
+ * audioLevel scales the streak's overall glow; audioHigh brightens the
+ * white-hot head so dense bursts read as light rather than coloured lines;
+ * audioAmbient lifts the background sky; audioBeat, audioSubBass and
+ * audioKick pulse the final exposure. skyP blends a dim, low slideshow-photo
+ * sample into the night sky background.
+ */
+
 uniform sampler2D tex0;
 uniform float interpolation;
 uniform float time;

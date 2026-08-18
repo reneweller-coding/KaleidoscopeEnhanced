@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file SpectrumCity.vert
+ * @brief Vertex stage companion to SpectrumCity.frag -- see that file's header for
+ * this scene's description.
+ */
 // SpectrumCity.vert — place the city and rebuild each face's normal from the
 // face index the generator packed in (box faces are axis-aligned, so an index
 // is exact and leaves two floats free for the window pattern).

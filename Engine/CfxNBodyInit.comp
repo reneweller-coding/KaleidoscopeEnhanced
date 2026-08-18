@@ -1,5 +1,16 @@
 #version 430
-// CfxNBodyInit.comp — two rotating disc galaxies on a collision course.
+/**
+ * @file CfxNBodyInit.comp
+ * @brief Seeds the N-body star buffers with two tilted, counter-orbiting disc galaxies.
+ *
+ * Writes initial position+mass (binding 1) and velocity+colour-index (binding 2)
+ * for every body: half the population forms one disc, half the other, each on a
+ * grazing mutual orbit rather than a head-on course so the collision unfolds over
+ * minutes instead of merging instantly. Runs once per (re)start; CfxNBodyStep.comp
+ * then integrates these buffers frame to frame. Per-body mass is scaled by
+ * 1/count so the total gravitating mass, and thus the orbital speeds baked in
+ * here, stay valid regardless of how many bodies are simulated.
+ */
 layout(local_size_x = 256) in;
 
 layout(std430, binding = 1) buffer Pos { vec4 pos[]; };   // xyz + mass

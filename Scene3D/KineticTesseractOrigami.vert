@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file KineticTesseractOrigami.vert
+ * @brief Vertex stage companion to KineticTesseractOrigami.frag -- see that file's header for
+ * this scene's description.
+ */
 // attrA.xy = quad-local corner uv (0..1), attrA.w = quad id, attrB = seeds
 // (Scene3DShader.cpp GEOM_QUADS)
 in vec4 attrA;

@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file GlassStack.vert
+ * @brief Vertex stage companion to GlassStack.frag -- see that file's header for
+ * this scene's description.
+ */
 // GlassStack.vert — nested glass shells, and the first scene to sign the OIT
 // contract.
 // -----------------------------------------------------------------------

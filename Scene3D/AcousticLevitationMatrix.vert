@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file AcousticLevitationMatrix.vert
+ * @brief Vertex stage companion to AcousticLevitationMatrix.frag -- see that file's header for
+ * this scene's description.
+ */
 // AcousticLevitationMatrix.vert — 4,900 monolithic levitating voxels
 // trapped in an ultrasonic standing wave field creating a volumetric 3D photo display.
 //   attrA.xyz = local cube corner (-0.5..0.5), attrA.w = cube index

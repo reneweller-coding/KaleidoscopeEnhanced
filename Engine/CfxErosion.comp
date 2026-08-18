@@ -1,4 +1,18 @@
 #version 430
+/**
+ * @file CfxErosion.comp
+ * @brief Simulates one rain droplet per thread flowing downhill across the terrain, eroding or depositing sediment as it goes.
+ *
+ * Per-frame step following CfxErosionSeed.comp's fractal-noise terrain. Each
+ * invocation spawns a droplet at a random texel and walks `imgLand`
+ * (binding 0, R = height, G/B unused by this pass) for a fixed number of
+ * steps along the local gradient, tracking carried sediment against a
+ * slope/speed-dependent carrying capacity; height changes are scattered
+ * through a low-pass 3x3 kernel (`addAt`) to the texels the droplet visits,
+ * since writing only the single texel underfoot would be a positive
+ * feedback that dissolves the terrain into pixel noise instead of carving
+ * valleys.
+ */
 // CfxErosion.comp — droplet-based hydraulic erosion.
 // -----------------------------------------------------------------------
 // Each invocation is a rain droplet: it runs downhill along the terrain

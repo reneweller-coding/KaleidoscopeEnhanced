@@ -14,6 +14,18 @@ uniform float audioChromaHue;
 in vec2  vUV;
 in float vDepth;
 
+/**
+ * @file PhotoVortex.frag
+ * @brief Shades the vortex throat: the current slideshow image is wound
+ * into mirrored rings that stream inward and stretch as they fall toward
+ * a glowing eye.
+ *
+ * tex0/tex1 are crossfaded by interpolation. audioAdvance drives the
+ * inward streaming speed of the image rings; audioKick pulses the
+ * throat's eye glow, audioDrop blazes it; audioChromaHue sets the eye's
+ * hue.
+ */
+
 vec3 hueRot(vec3 c, float a)
 {
     vec3  k = vec3(0.57735026919);

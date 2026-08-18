@@ -8,6 +8,20 @@ uniform float audioKick;
 in vec4  vCol;
 in float vSide;
 
+/**
+ * @file TronCycles.frag
+ * @brief Shades the light-cycle walls and arena floor grid of the Tron-style
+ * duel as a solid light wall with a blazing top edge (vSide selects how far
+ * across the wall's height this fragment sits).
+ *
+ * audioLevel and audioKick both scale the wall/edge brightness directly in
+ * this stage; a prior reactivity pass noted this frag-side coupling barely
+ * moves any pixels on its own -- the bulk of the audio response (racing
+ * head flash on kicks, wall ignition on drops, chroma-tinted wall hue) is
+ * computed per-vertex in the companion vertex shader (TronCycles.vert) and
+ * arrives pre-baked in vCol.
+ */
+
 void main()
 {
     float body = 0.45 + 0.25 * (vSide * 0.5 + 0.5);

@@ -12,6 +12,19 @@ in vec2  vUV;
 in float vDist;
 in float vAng;
 
+/**
+ * @file SineTunnel.frag
+ * @brief Shades the procedural warp tunnel of SineTunnel.vert with smooth
+ * longitudinal colour bands flowing toward the camera and a slow double
+ * helix stripe winding around the tube wall, in a deep teal-violet palette.
+ *
+ * audioAdvance drives the flow speed of the bands and helix; audioChromaHue
+ * rotates between the two band hues via hueRot; audioSwell and audioKick
+ * brighten the wall; distance fog fades the far tube. A soft-knee tone-map
+ * (the catalogue-review fix noted inline) compresses loud-audio exposure
+ * instead of clipping the frame to white.
+ */
+
 vec3 hueRot(vec3 c, float a)
 {
     vec3  k = vec3(0.57735026919);

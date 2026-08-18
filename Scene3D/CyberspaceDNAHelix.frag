@@ -6,6 +6,20 @@ in float vTranscription;
 
 out vec4 fragColor;
 
+/**
+ * @file CyberspaceDNAHelix.frag
+ * @brief Lighting for the double-helix DNA strand: colours each base-pair
+ * rung by nucleotide (Adenine/Thymine/Cytosine/Guanine, cycled along the
+ * strand) and flashes it toward white as a transcription pulse travels past.
+ *
+ * The transcription pulse itself (vTranscription, which drives both the
+ * brightness boost and the colour mix toward the pulse colour) is generated
+ * per-vertex in CyberspaceDNAHelix.vert, where audioKick sharpens it and
+ * audioSwell widens the strand-unzipping fork at the helix's centre; this
+ * fragment stage only reads vTranscription back and applies the preset hue
+ * rotation (hueP).
+ */
+
 uniform float time;
 uniform sampler2D tex0;
 uniform sampler2D tex1;

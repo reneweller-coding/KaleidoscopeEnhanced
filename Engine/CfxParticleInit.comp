@@ -1,5 +1,14 @@
 #version 430
-// CfxParticleInit.comp — scatter 2M particles uniformly, at rest.
+/**
+ * @file CfxParticleInit.comp
+ * @brief Scatters the particle-flow buffer uniformly across UV space, at rest.
+ *
+ * Writes vec4(pos.xy, 0, 0) for every particle in the Parts buffer (binding
+ * 1), using a per-invocation PCG hash so the distribution is uniform and seed-
+ * stable. Runs once at start; CfxParticleStep.comp then advects these
+ * particles frame to frame through a divergence-free curl-noise field and
+ * periodically re-seeds a fraction of them back to random positions.
+ */
 layout(local_size_x = 256) in;
 
 layout(std430, binding = 1) buffer Parts { vec4 part[]; };   // xy = pos, zw = vel

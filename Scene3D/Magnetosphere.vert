@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file Magnetosphere.vert
+ * @brief Vertex stage companion to Magnetosphere.frag -- see that file's header for
+ * this scene's description.
+ */
 // Magnetosphere.vert — vertices arrive finished from the generator; place the
 // system and pass the shading data through.
 

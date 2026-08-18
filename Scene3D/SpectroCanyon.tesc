@@ -1,4 +1,9 @@
 #version 400 core
+/**
+ * @file SpectroCanyon.tesc
+ * @brief Tessellation-control stage companion to SpectroCanyon.frag -- see that file's header for
+ * this scene's description.
+ */
 // SpectroCanyon.tesc — spend triangles where the canyon is close.
 // Each edge takes its level from its OWN midpoint, so two patches sharing an
 // edge always agree and the walls do not split along the seams.

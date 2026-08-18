@@ -1,6 +1,18 @@
 #version 330 core
 out vec4 fragColor;
-// PixelMelt.frag — the luminance-sorted image from Blend/CfxPixelSort.comp,
+/**
+ * @file PixelMelt.frag
+ * @brief The photo dissolving into pixel-sorted streaks that sweep through
+ *        the frame in ragged horizontal bands and then re-form.
+ *
+ * Each screen row is assigned its own random melt phase, advanced by
+ * audioAdvance, so the reveal moves through the image in bands rather than
+ * switching all at once; a horizontal blur adds smear motion once a row is
+ * mid-melt. audioBuildUp pushes the melted area outward in advance of a
+ * drop, audioDrop and audioKick momentarily melt more of the frame at once,
+ * audioHigh sparkles along the melt boundary, and audioBeat brightens the
+ * whole result.
+ */
 // revealed by a moving mask so the picture MELTS into streaks and re-forms
 // instead of just being permanently scrambled.
 

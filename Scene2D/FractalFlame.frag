@@ -1,5 +1,11 @@
 #version 330 core
 out vec4 fragColor;
+/**
+ * @file FractalFlame.frag
+ * @brief Displays and grades the density field produced by the compute-shader chaos-game fractal flame.
+ *
+ * The GPU chaos game (CfxFlame compute pass) does the actual fractal iteration into texFlame; this pass only tone-maps it: a 6-tap bloom, a filmic knee, a bounded hue rotation, and a peek of the photo showing through the flame's dark gaps. audioBeat and audioLevel drive a beat-pumped zoom and a slow rotation around the frame centre, with audioAdvance integrating the rotation so it stays jump-free, audioKick and audioLevel intensify the bloom halo, audioChromaHue rotates the flame's hue within a bounded sine sweep, and audioMusic gates how much of the photo shows through the flame's dark regions.
+ */
 // FractalFlame.frag — displays the compute-shader flame density field.
 // The chaos game (Blend/CfxFlame.comp) does all the work; this pass only
 // grades it: a filmic curve, a slow chromatic bloom and a whisper of the

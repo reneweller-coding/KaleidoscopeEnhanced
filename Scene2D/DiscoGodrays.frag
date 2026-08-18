@@ -2,7 +2,7 @@
 out vec4 fragColor;
 /**
  * @file DiscoGodrays.frag
- * @brief Adapted from "Disco Godrays" by @kishimisu (2023) — https://www.shadertoy.com/view/Dt33RS
+ * @brief Adapted from "Disco Godrays" by \@kishimisu (2023) — https://www.shadertoy.com/view/Dt33RS
  * Original licensed CC BY-NC-SA 4.0 (attribution kept per the licence).
  *
  * Kaleidoscopic volumetric "godrays": a densely-sampled raymarch through a

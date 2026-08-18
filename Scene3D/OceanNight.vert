@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file OceanNight.vert
+ * @brief Vertex stage companion to OceanNight.frag -- see that file's header for
+ * this scene's description.
+ */
 // OceanNight.vert — a moonlit night ocean: the grid is the water surface,
 // three travelling wave trains sum into swell; the bass IS the sea state,
 // kicks send a circular wavefront out from below the moon.

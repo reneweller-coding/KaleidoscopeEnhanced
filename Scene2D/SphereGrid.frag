@@ -2,7 +2,7 @@
 out vec4 fragColor;
 /**
  * @file SphereGrid.frag
- * @brief Adapted from an untitled @kishimisu raymarch (CC BY-NC-SA 4.0): a fly-through
+ * @brief Adapted from an untitled \@kishimisu raymarch (CC BY-NC-SA 4.0): a fly-through
  * of an infinite lattice of spheres down a bright corridor.
  *
  * Adapted to our engine, and COLOURED BY THE IMAGE: instead of a fixed cosine

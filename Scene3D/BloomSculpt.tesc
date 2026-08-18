@@ -1,4 +1,9 @@
 #version 400 core
+/**
+ * @file BloomSculpt.tesc
+ * @brief Tessellation-control stage companion to BloomSculpt.frag -- see that file's header for
+ * this scene's description.
+ */
 // BloomSculpt.tesc — uniform-ish subdivision with a polar taper.
 // -----------------------------------------------------------------------
 // On a sphere the patches near the poles cover a tiny sliver of surface but

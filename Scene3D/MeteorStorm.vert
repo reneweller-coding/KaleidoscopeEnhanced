@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file MeteorStorm.vert
+ * @brief Vertex stage companion to MeteorStorm.frag -- see that file's header for
+ * this scene's description.
+ */
 // MeteorStorm.vert — shooting stars over a still night sky: 40 meteors
 // (1200 trail particles each), the rest static stars.  Meteor cycles run on
 // music-nudged clocks; a drop turns the shower into a storm.

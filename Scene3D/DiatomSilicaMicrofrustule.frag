@@ -5,6 +5,19 @@ in vec3 vWorldPos;
 in vec2 vTexCoord;
 in float vDiatomIndex;
 
+/**
+ * @file DiatomSilicaMicrofrustule.frag
+ * @brief Lighting for a diatom's circular silica shell (valve): discards
+ * outside the disc, overlays a hexagonal micropore lattice, blends a
+ * slideshow photo with an iridescent structural-colour palette, and adds a
+ * bright rim glow at the shell's edge, fading into distance fog.
+ *
+ * audioPhase offsets the iridescent colour arc, audioKick brightens the rim
+ * glow, and audioChromaHue (guarded by hueP) rotates the final hue; the
+ * iridescent palette itself (imgPalette) tracks the musical key via
+ * audioAdvance with audioValence shaping saturation.
+ */
+
 uniform sampler2D tex0;
 uniform sampler2D tex1;
 uniform float interpolation;

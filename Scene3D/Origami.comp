@@ -1,4 +1,24 @@
 #version 430
+
+/**
+ * @file Origami.comp
+ * @brief Compute kernel that generates the folded Miura-ori paper sheet:
+ * for each grid cell it derives the four folded-cell lengths from a
+ * travelling fold angle theta and writes two triangles (position, normal,
+ * fold depth, across-sheet coordinate) into the mesh's vertex buffer.
+ *
+ * The fold travels along the sheet's columns as a wave rather than
+ * folding uniformly, driven by audioAdvance (phase, never raw time scaled
+ * by a live audio value, to avoid flicker); audioSubBass lifts the base
+ * fold angle, audioLevel and audioKick scale the fold amplitude (together
+ * with the foldP preset), and wavesP/skewP set the wave count and
+ * crease-angle skew. Its output SSBO (Verts, plus an atomically
+ * incremented indirect draw command in Cmd) is consumed as per-vertex
+ * attributes by the paired Origami.vert, which orients the finished sheet
+ * for the camera and hands the fold/across values on to Origami.frag for
+ * shading.
+ */
+
 // Origami.comp — a Miura-ori sheet folding and unfolding with the music.
 // -----------------------------------------------------------------------
 // The Miura fold is the one origami pattern that is worth building as geometry

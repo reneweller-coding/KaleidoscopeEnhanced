@@ -1,5 +1,18 @@
 #version 330 core
 out vec4 fragColor;
+/**
+ * @file TunnelReverse.frag
+ * @brief Two mirrored-segment kaleidoscope tunnels blended 50/50: a forward
+ *        layer (same construction as Tunnel.frag) and a second layer whose
+ *        rotation and radial mapping run in the opposite sense, so the two
+ *        tunnels shear against each other rather than simply co-scrolling.
+ *
+ * audioPhase (integrated, jump-free) adds to the wedge rotation of both
+ * layers; audioAdvance adds to the forward layer's scroll but is SUBTRACTED
+ * (opposite sign, half weight) from the reverse layer's, so the reverse
+ * tunnel visibly recedes against the forward one on energetic passages;
+ * audioKick gives the combined result a subtle brightness pulse.
+ */
 uniform vec2 resolution;
 uniform float time;
 uniform sampler2D tex0;

@@ -16,6 +16,18 @@ in vec2  vUV;
 in vec3  vN;
 in vec3  vView;
 
+/**
+ * @file PhotoSphere.frag
+ * @brief Shades the photo-wrapped planet: the current slideshow image
+ * wraps the sphere twice, mirror-folded so the seam never shows, with
+ * day-side lighting and a key-coloured atmosphere rim.
+ *
+ * tex0/tex1 are crossfaded by interpolation so the wrap survives a photo
+ * change mid-scene. audioChromaHue sets the rim colour, audioCentroid
+ * brightens that rim, audioKick pulses a flash band at the equator, and
+ * audioDrop lights the entire globe.
+ */
+
 vec3 hueRot(vec3 c, float a)
 {
     vec3  k = vec3(0.57735026919);

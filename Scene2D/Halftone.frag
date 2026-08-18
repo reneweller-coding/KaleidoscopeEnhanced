@@ -1,5 +1,11 @@
 #version 330 core
 out vec4 fragColor;
+/**
+ * @file Halftone.frag
+ * @brief Renders the photograph as a genuine four-colour halftone print: separate CMYK screens, each rotated to its own classic press angle (15, 75, 0 and 45 degrees) so the dot grids never form a moire.
+ *
+ * The image is converted to CMYK with under-colour removal, then each channel is screened independently before being recombined subtractively onto a warm paper tint. audioKick coarsens the screen frequency and widens a colour-press-style plate misregistration, audioSubBass adds to that misregistration slip, audioAdvance slowly drifts the screen angles so the moire pattern never settles, audioChromaHue nudges the paper's tint through a bounded hue rotation, and audioBeat with audioLevel lift the overall exposure.
+ */
 // Halftone.frag — the photograph as a four-colour print screen.
 // -----------------------------------------------------------------------
 // Real halftone printing separates an image into cyan, magenta, yellow and

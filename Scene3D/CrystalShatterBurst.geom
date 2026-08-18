@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file CrystalShatterBurst.geom
+ * @brief Geometry stage companion to CrystalShatterBurst.frag -- see that file's header for
+ * this scene's description.
+ */
 // CrystalShatterBurst.geom — Geometry Shader intercepts triangles and violently
 // fractures them into floating tetrahedral crystal shards along explosion vectors on beats.
 layout(triangles) in;

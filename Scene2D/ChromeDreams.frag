@@ -2,7 +2,7 @@
 out vec4 fragColor;
 /**
  * @file ChromeDreams.frag
- * @brief Adapted from "Chrome Dreams" by @kishimisu (2022) — https://www.shadertoy.com/view/ctX3RM
+ * @brief Adapted from "Chrome Dreams" by \@kishimisu (2022) — https://www.shadertoy.com/view/ctX3RM
  * Original licensed CC BY-NC-SA 4.0 (attribution kept per the licence).
  *
  * Rotations + space repetition into a chromatic tunnel of tori.  Adapted to our

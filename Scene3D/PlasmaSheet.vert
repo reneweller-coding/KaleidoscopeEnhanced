@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file PlasmaSheet.vert
+ * @brief Vertex stage companion to PlasmaSheet.frag -- see that file's header for
+ * this scene's description.
+ */
 // PlasmaSheet.vert — a great silk sheet of plasma hanging in space,
 // rippling with two slow interference trains; the classic MilkDrop plasma
 // lives in the fragment shader.  attrA.x/.y span the sheet.

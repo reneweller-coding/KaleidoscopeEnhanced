@@ -1,4 +1,22 @@
 #version 430
+/**
+ * @file Harmonograph.comp
+ * @brief Draws a 3D harmonograph wire figure -- three damped pendulums (two
+ * driving the plane, their sum driving depth) -- whose frequency ratio is
+ * the just-intonation interval between the two loudest pitch classes right
+ * now, snapped from their semitone distance via a lookup table, so the
+ * figure's shape literally is the interval being played.
+ *
+ * The audioChroma pitch-class array picks which two pitch classes rank
+ * highest (quantized before ranking so near-tied energies don't jitter the
+ * whole figure between shapes) and sets its brightness "energy" from their
+ * combined strength; audioAdvance drives the curve's phase drift,
+ * audioSubBass speeds up the pendulum's decay/damping, and audioKick
+ * thickens the wire. Each thread walks along the curve and writes one tube
+ * segment (position, normal, along-trace coordinate, energy) into the
+ * shared Verts buffer that the paired Harmonograph.frag reads back as its
+ * draw geometry.
+ */
 // Harmonograph.comp — a wire sculpture whose shape IS the interval being played.
 // -----------------------------------------------------------------------
 // A Lissajous figure closes if and only if its frequency ratio is rational,

@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file CrystalGrowth.vert
+ * @brief Vertex stage companion to CrystalGrowth.frag -- see that file's header for
+ * this scene's description.
+ */
 // CrystalGrowth.vert — a cluster of crystal branches grows outward from a
 // central hub; each branch is only as long as the music's BUILD-UP tension
 // allows (a slow ambient drift keeps it alive without music), and a DROP

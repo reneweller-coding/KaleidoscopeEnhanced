@@ -7,6 +7,20 @@ in vec2 vUV;
 in float vQuadID;
 in float vGlint;
 
+/**
+ * @file SolarSailArmada.frag
+ * @brief Shades a fleet of reflective solar-sail panels (gold and titanium
+ * foil, picked per quad by vQuadID) with the live slideshow photo projected
+ * onto each membrane, a framed carbon-strut border, specular solar-flare
+ * glints, and a laser-mesh glow linking the sails.
+ *
+ * audioKick brightens the solar-flare glint and pulses the inter-sail laser
+ * beams; the final colour is hue-rotated by audioChromaHue plus the hueP
+ * preset. vGlint (a per-vertex specular term from SolarSailArmada.vert)
+ * drives the glint highlight, and vQuadID both selects the foil material and
+ * offsets the projected photo UV per sail.
+ */
+
 uniform float time;
 uniform sampler2D tex0;
 uniform sampler2D tex1;

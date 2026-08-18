@@ -6,6 +6,19 @@ in vec2 vUV;
 in vec3 vNormal;
 in vec3 vWorldPos;
 
+/**
+ * @file HolographicLaserDiffractionGrid.frag
+ * @brief Shades a holographic diffraction-grating surface: a sine-wave
+ * interference grating in UV space picks out bright fringe lines, blended
+ * with the current slideshow photo, plus a sharp specular "laser" glint
+ * from a fixed light direction.
+ *
+ * This fragment shader declares no audio uniforms directly; its base color
+ * and fringe tint (vCol) are computed per-vertex by the companion vertex
+ * shader, so any audio reactivity arrives already baked into that
+ * per-vertex color.
+ */
+
 uniform sampler2D tex0;
 uniform sampler2D tex1;
 uniform float interpolation;

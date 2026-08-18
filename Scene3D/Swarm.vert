@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file Swarm.vert
+ * @brief Vertex stage companion to Swarm.frag -- see that file's header for
+ * this scene's description.
+ */
 // Swarm.vert — a murmuration: 60k points trail a swooping Lissajous leader
 // path through space; onsets scatter the flock, calm passages pull it tight.
 // The "flock" illusion comes from per-bird lag along the path plus smooth

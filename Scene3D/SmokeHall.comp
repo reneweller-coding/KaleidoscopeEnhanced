@@ -51,6 +51,25 @@
 // -----------------------------------------------------------------------
 layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 
+/**
+ * @file SmokeHall.comp
+ * @brief Compute kernel that builds the opaque colonnade (floor, a
+ * COLS x ROWS grid of box pillars, lengthwise roof beams with narrow slots)
+ * plus 56 view-aligned smoke slabs for the SmokeHall light-shaft scene.
+ *
+ * audioAdvance scrolls the whole hall toward the camera (wrapping the
+ * geometry, rather than moving the camera, so every coordinate stays small
+ * and bounded inside the shadow box). The hall and smoke quads are written
+ * into the Verts SSBO (with the Cmd SSBO's atomic counter tracking the draw
+ * count) for indirect drawing across three passes selected by kind/extra:
+ * a shadow pass (hall only, since smoke must not block its own light),
+ * an opaque pass (hall only), and a transparent pass (smoke slabs only).
+ * SmokeHall.frag reads back both this geometry and the shadow map it casts:
+ * the opaque pass shades the stone, and the smoke slabs re-query that same
+ * shadow map per slice to render the light shafts as a participating
+ * medium.
+ */
+
 layout(std430, binding = 0) buffer Verts { float verts[]; };
 layout(std430, binding = 1) buffer Cmd   { uint  cmd[]; };
 

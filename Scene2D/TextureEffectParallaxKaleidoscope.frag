@@ -1,5 +1,19 @@
 #version 330 core
 out vec4 fragColor;
+/**
+ * @file TextureEffectParallaxKaleidoscope.frag
+ * @brief A mirrored-segment kaleidoscope viewed through a 32-layer retro
+ *        pixel-parallax: each depth layer is a coarsely pixellated sample of
+ *        the kaleidoscope-warped photo, offset by its own orbiting parallax
+ *        drift, composited front layer over back until a luma test decides
+ *        the ray has "hit" something.
+ *
+ * The parallax offset orbits around the frame driven by speedMovement*time
+ * plus audioAdvance (so the drift itself is jump-free), and its orbit radius
+ * (`extend`) widens on audioSwell energy swells. Inside the per-layer
+ * kaleidoscope sample, the mirrored-segment rotation angle is advanced by
+ * audioPhase on top of the base time*speed rotation.
+ */
 uniform vec2 resolution;
 uniform float time;
 uniform sampler2D tex0;

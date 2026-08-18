@@ -9,6 +9,19 @@ uniform sampler2D tex0;
 uniform sampler2D tex1;
 uniform float interpolation;
 
+/**
+ * @file AcousticLevitationMatrix.frag
+ * @brief Lit voxel cubes levitated in an acoustic standing-wave grid, each
+ * face a blend of a per-vertex colour and the current slideshow photo with a
+ * fixed-direction diffuse/specular highlight.
+ *
+ * This fragment shader carries no audio uniforms of its own -- reactivity
+ * (how the cubes jump, cluster and resonate with the beat) lives entirely in
+ * the companion vertex shader; here only the incoming vCol (already
+ * audio-modulated per vertex) and vNormal/vUV feed the lighting and photo
+ * blend.
+ */
+
 void main() {
     vec3 photo = (interpolation * texture(tex0, vUV) + (1.0 - interpolation) * texture(tex1, vUV)).rgb;
 

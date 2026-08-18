@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file TorusKnot.vert
+ * @brief Vertex stage companion to TorusKnot.frag -- see that file's header for
+ * this scene's description.
+ */
 // TorusKnot.vert — a glowing (2,3) torus knot of 60k particles streaming
 // along the curve; the whole knot turns slowly on two axes, the bass
 // breathes the tube.  Harmonic and endless — the curve closes on itself.

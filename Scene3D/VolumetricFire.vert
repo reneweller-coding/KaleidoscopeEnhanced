@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file VolumetricFire.vert
+ * @brief Vertex stage companion to VolumetricFire.frag -- see that file's header for
+ * this scene's description.
+ */
 // VolumetricFire.vert — a genuine GPU-simulated fire/smoke COLUMN rendered as
 // a stack of 20 front-facing, additively-blended depth-slice billboards (the
 // classic slice-based volume-rendering trick).  Each billboard samples ONE

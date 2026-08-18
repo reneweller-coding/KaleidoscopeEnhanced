@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file PhysarumDeposit.vert
+ * @brief Vertex stage companion to PhysarumDeposit.frag -- see that file's header for
+ * this scene's description.
+ */
 // PhysarumDeposit.vert — one point per agent: fetch the agent's position
 // from the state texture (vertex texture fetch — texture2D is legal in a
 // GL2 vertex shader and every GL3+ GPU supports it) and place a 1px point

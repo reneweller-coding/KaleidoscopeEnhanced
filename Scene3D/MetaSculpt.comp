@@ -23,6 +23,25 @@
 // -----------------------------------------------------------------------
 layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 
+/**
+ * @file MetaSculpt.comp
+ * @brief Compute shader that builds a solid metaball body out of the
+ * music every frame: twelve pitch-class blobs (one per audioChroma bin)
+ * orbit and swell, merge into one continuous surface, and are extracted
+ * by marching tetrahedra into triangles written straight into the
+ * indirect-draw vertex buffer.
+ *
+ * Each blob's size responds to its own audioChroma[i] bin so a single
+ * note grows one lobe and a chord fuses several into one body;
+ * audioSubBass strengthens a weak central core that keeps everything
+ * connected; audioKick punches the whole surface outward; audioAdvance
+ * (not raw time) drives every blob's orbit so nothing jumps with the
+ * music's level. blobP/spreadP/isoP are user presets for blob size,
+ * orbit spread and the extraction threshold. Output (position, a
+ * thickness/"strength" probe, and the field-gradient normal) feeds
+ * MetaSculpt.frag via the shared vertex buffer.
+ */
+
 // Vertex layout must match Scene3DShader's interleaved attrA/attrB:
 // 8 floats = attrA.xyzw (position + field strength), attrB.xyzw (normal + id).
 layout(std430, binding = 0) buffer Verts { float verts[]; };

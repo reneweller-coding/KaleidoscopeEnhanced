@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file LaserSpireArray.geom
+ * @brief Geometry stage companion to LaserSpireArray.frag -- see that file's header for
+ * this scene's description.
+ */
 // LaserSpireArray.geom — Extrude point seeds into 3D hexagonal crystalline spires
 // with skyward laser beams and pulsating energy rings.
 layout(points) in;

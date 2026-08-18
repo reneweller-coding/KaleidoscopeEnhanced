@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file CrystalShatterBurst.vert
+ * @brief Vertex stage companion to CrystalShatterBurst.frag -- see that file's header for
+ * this scene's description.
+ */
 // CrystalShatterBurst.vert — feeds cube / mesh triangles to Geometry Shader
 in vec4 attrA;
 in vec4 attrB;

@@ -4,6 +4,19 @@ out vec4 fragColor;
 in vec4 vCol;
 in vec3 vCorner;
 
+/**
+ * @file CubeWave.frag
+ * @brief Lighting for the neon-city cube flythrough: dark cube faces with
+ * bright edges glowing where two or three faces meet, giving each tower a
+ * Tron-style wireframe look; depth-tested and opaque.
+ *
+ * The scene's audio reactivity lives in CubeWave.vert, which sizes each
+ * column from its own band of audioSpectrum, flashes street-level columns on
+ * audioKick, lights the whole city on audioDrop, and drifts hue with
+ * audioCentroid/seed -- all baked into the incoming vCol; this fragment
+ * stage only turns that colour into the glowing-edge cube look via vCorner.
+ */
+
 void main()
 {
     vec3 a = abs(vCorner) * 2.0;                 // 0..1 toward each face

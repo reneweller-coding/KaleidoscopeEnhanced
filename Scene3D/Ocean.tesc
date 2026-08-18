@@ -1,4 +1,9 @@
 #version 400 core
+/**
+ * @file Ocean.tesc
+ * @brief Tessellation-control stage companion to Ocean.frag -- see that file's header for
+ * this scene's description.
+ */
 // Ocean.tesc — adaptive tessellation by distance.
 // -----------------------------------------------------------------------
 // This is the point of the whole stage: patches near the camera are split
