@@ -117,7 +117,8 @@ void main() {
     float transmittance = 1.0;
     float stepSize = 0.12;
 
-    float shockwaveRadius = 1.2 + audioSubBass * 1.5 + audioKick * 0.8;
+    float shockwaveRadius = 0.45 + mod(time * 0.18 * spd + audioAdvance * 0.22, 2.4)
+                          + audioKick * 0.35;
 
     for (int i = 0; i < 28; i++) {
         float depth = 1.0 + float(i) * stepSize;
@@ -130,8 +131,16 @@ void main() {
         float shockFront = smoothstep(0.3, 0.0, abs(dist - shockwaveRadius));
         float n = fbm3D(p * 1.5 + vec3(0.0, 0.0, time * 0.4 * spd));
 
-        float d = smoothstep(2.5, 0.2, dist) * n * dens;
-        d += shockFront * 0.8 * (audioKick + audioBass);
+        float d = smoothstep(2.5, 0.2, dist) * n * dens * 0.20;
+        d += shockFront * (1.6 + 1.4 * (audioKick + audioBass));
+
+        // Radial EJECTA filaments streaking away from the core, plus a
+        // white-hot centre - the difference between fog and an explosion.
+        float fil = pow(fbm3D(normalize(p) * 5.0 + vec3(7.0)), 3.5)
+                  * smoothstep(shockwaveRadius + 0.25, shockwaveRadius * 0.2, dist)
+                  * smoothstep(0.10, 0.45, dist);   // shell, not the core fill
+        d += fil * 1.4 * dens;
+        d += smoothstep(0.40, 0.05, dist) * 1.0;
 
         if (d > 0.01) {
             // Map sample point to 2D UV for source image sampling
@@ -140,7 +149,8 @@ void main() {
 
             // Plasma glow & temperature mapping
             vec3 glow = mix(imgCol, vec3(1.0, 0.4, 0.1), smoothstep(0.5, 0.0, dist));
-            glow *= (1.0 + audioKick * 1.2 + audioHigh * 0.8);
+            glow *= (1.0 + audioKick * 0.45 + audioHigh * 0.3);
+            glow += vec3(1.0, 0.85, 0.60) * shockFront * 0.9;   // golden shock rim
 
             // Emission & Absorption
             float stepDensity = d * stepSize * 2.5;
@@ -157,7 +167,7 @@ void main() {
 
     // Add chromatic lens flare at center
     float centerDist = length(uv);
-    float flare = 0.15 / (centerDist + 0.08) * flr * (audioKick * 1.5 + audioLevel);
+    float flare = 0.10 / (centerDist + 0.10) * flr * (audioKick * 0.5 + audioLevel * 0.5);
     vec3 flareCol = imgPalette(0.30 * audioCentroid) * 1.4;
     finalCol += flareCol * flare;
 
@@ -167,7 +177,7 @@ void main() {
 
     // Catalogue review: soft-knee exposure — hot audio compresses
     // instead of clipping the whole frame to white.
-    vec3 _catTone = (finalCol) * 0.45;
+    vec3 _catTone = (finalCol) * 0.34;
     _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
     fragColor = vec4(_catTone, 1.0);
 }

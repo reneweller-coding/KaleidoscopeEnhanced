@@ -52,51 +52,45 @@ vec3 imgPalette(float t)
     return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
+// USER-FEEDBACK-REDESIGN: the old fold/rotate/scale parametrisation was
+// degenerate (its attractor is space-filling, every orbit trap read ~0 and
+// the frame came out as flat mush).  Core replaced by the battle-tested
+// KALISET  p = abs(p)/dot(p,p) - c  — robust, endlessly detailed fractal
+// lace for practically any c, with the photo sampled through the final
+// folded coordinate.
 void main()
 {
     vec2 p = (gl_FragCoord.xy - 0.5 * resolution.xy) / resolution.y;
 
-    // Zoom breathes with pitch; overall rotation from smooth audio phase.
-    float zoom = 1.6 - 0.6 * audioPitch;
+    float zoom = 1.5 - 0.5 * audioPitch;
     p *= zoom;
     p  = rot(audioPhase * 0.4 + time * 0.03) * p;
 
-    float foldA = mix(PI / 3.0, PI / 5.0, audioMode);
-    mat2  R     = rot(foldA + 0.1 * sin(time * 0.2));
+    // Per-mood fractal character: mode bends the c-vector, arousal tightens it.
+    vec2 c = vec2(0.84 + 0.22 * audioMode + 0.03 * sin(time * 0.11),
+                  0.60 + 0.14 * audioArousal);
 
-    float scale = 1.0;
-    float trap  = 1e9;
-    vec2  fp    = p;
-    for (int i = 0; i < 6; i++)
+    vec2  fp   = p;
+    float acc  = 0.0;
+    float trap = 1e9;
+    for (int i = 0; i < 11; i++)
     {
-        fp  = abs(fp);
-        fp  = R * fp;
-        fp -= vec2(0.30 + 0.12 * audioLevel, 0.18);
-        float s = 1.30 + 0.10 * audioArousal;
-        fp    *= s;
-        scale *= s;
-        trap   = min(trap, length(fp));
+        fp   = abs(fp) / max(dot(fp, fp), 1e-6) - c;
+        trap = min(trap, abs(fp.y));
+        acc += exp(-8.0 * abs(fp.y));           // every layer adds filigree
     }
+    float lines = clamp(acc * 0.16, 0.0, 1.4);
 
-    float d     = trap / scale;
-    float shade = exp(-6.0 * d);
+    // The picture, shattered through the folded coordinate.
+    vec3 pic = img(fract(fp * 0.22 + 0.5));
+    vec3 lit = imgPalette(0.30 * audioValence + trap * 0.8) * 1.5;
 
-    // The picture, sampled through the final folded coordinate = fractal
-    // kaleidoscope of the image.
-    vec2 iuv = fp * 0.15 + 0.5;
-    vec3 pic = img(fract(iuv));
-
-    vec3 lit = imgPalette(0.30 * audioValence) * 1.6;
-
-    // Dark where there is no structure, lit picture where the fractal traps.
-    vec3 col = pic * mix(vec3(0.30), lit * 1.5, shade);
-    col *= (0.6 + 0.9 * audioLevel + 0.5 * audioCentroid);
-    col += shade * audioBeat * vec3(0.5, 0.4, 0.6);
+    vec3 col = pic * 0.15
+             + lit * lines * (0.55 + 0.35 * audioBeat)
+             + vec3(0.85) * pow(lines * 0.68, 3.0) * 0.30;   // white sparkle core
+    col *= (0.75 + 0.6 * audioLevel + 0.25 * audioCentroid);
     col *= (1.0 + 0.2 * audioFlux);
 
-    // Catalogue review: soft-knee exposure — hot audio compresses
-    // instead of clipping the whole frame to white.
-    vec3 _catTone = (clamp(col, 0.0, 1.0)) * 0.45;
-    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
-    fragColor = vec4(_catTone, 1.0);
+    col /= 1.0 + 0.30 * max(col.r, max(col.g, col.b));
+    fragColor = vec4(col, 1.0);
 }

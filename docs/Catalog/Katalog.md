@@ -129,8 +129,6 @@ BreathingFractalZoom.frag Forked from https://www.shadertoy.com/view/DsscWn (the
 
 `Scene/Bubble.frag` · type=normal · complexity=10
 
-void main() {
-
 ![Bubble ruhig (t=8)](img/Bubble_A.jpg) ![Bubble ruhig (t=16)](img/Bubble_B.jpg) ![Bubble audio-heiß (t=8)](img/Bubble_C.jpg)
 
 

@@ -62,7 +62,8 @@ void main()
                  - texture(texNSFluid, uv - vec2(0.0, px.y * 2.0)).rgb, vec3(0.33));
     float edge = length(vec2(gx, gy)) * 9.0;
 
-    vec3 col = dye * (0.85 + 0.9 * inkP);
+    vec3 col = dye * (1.6 + 1.1 * inkP)
+             + img(uv) * 0.14;   // dim picture ghost — tank never pure black
 
     // Fast fluid glows: speed is the solver's own output, so the highlights
     // sit exactly on the shear layers where the vortices are being born.

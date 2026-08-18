@@ -70,7 +70,9 @@ int pitchAt(vec2 n)
 float energyAt(vec2 n)
 {
     // Bins are L1-normalised (~0..0.3), so x4 brings a strong pitch class near 1.
-    return clamp(audioChroma[pitchAt(n)] * 4.0, 0.0, 1.4);
+    // Scalar floor: the lattice stays faintly visible from plain level even
+    // when no pitch class dominates (quiet passages, headless previews).
+    return clamp(0.14 + 0.30 * audioLevel + audioChroma[pitchAt(n)] * 4.0, 0.0, 1.4);
 }
 
 void main()

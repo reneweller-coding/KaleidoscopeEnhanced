@@ -117,11 +117,13 @@ void main() {
     float t = time * 0.3 * spd + audioAdvance * 0.15;
 
     // Camera setup
-    vec3 ro = vec3(t * 0.8, sin(t * 0.4) * 0.5, cos(t * 0.3) * 0.5);
-    vec3 rd = normalize(vec3(uv, 1.2 - 0.25 * audioKick));
-
-    rd.yz = rot2D(sin(t * 0.3) * 0.3) * rd.yz;
-    rd.xz = rot2D(t * 0.25) * rd.xz;
+    // USER-FEEDBACK: the old fly-through sat INSIDE the solid core (flat
+    // brown wall).  Orbit outside, looking at the metamaterial lattice.
+    vec3 ro = vec3(sin(t * 0.3) * 7.5, 2.6 * sin(t * 0.21), cos(t * 0.3) * 7.5);
+    vec3 ww = normalize(-ro);
+    vec3 uu = normalize(cross(ww, vec3(0.0, 1.0, 0.0)));
+    vec3 vv = cross(uu, ww);
+    vec3 rd = normalize(uv.x * uu + uv.y * vv + (1.25 - 0.08 * audioKick) * ww);
 
     float dO = 0.0;
     float hitDist = -1.0;
@@ -139,7 +141,7 @@ void main() {
             hitP = p;
             break;
         }
-        if (dO > 12.0) break;
+        if (dO > 22.0) break;
         dO += dS * 0.65;
     }
 

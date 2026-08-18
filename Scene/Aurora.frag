@@ -169,15 +169,15 @@ void main()
     float t  = time * 0.055 * spd + audioAdvance * 0.18;
     float energy = 0.45 + 0.85 * audioSwell + 0.25 * audioLevel;
 
-    vec3 L2 = curtainLayer(uv, t * 0.8, bands * 0.7, height * 1.15, 0.70, 1.0);
+    vec3 L2 = curtainLayer(uv, t * 0.8, bands * 0.7, height * 1.65, 0.70, 1.0);
     vec3 C2 = curtainColour(uv, 0.70, L2.y, 0.8);
     float g2 = L2.x * energy * (1.0 + 0.35 * audioOnset * L2.z);
 
-    vec3 L1 = curtainLayer(uv, t, bands, height, 0.55, 0.0);
+    vec3 L1 = curtainLayer(uv, t, bands, height * 1.45, 0.55, 0.0);
     vec3 C1 = curtainColour(uv, 0.55, L1.y, 0.0);
     float g1 = L1.x * energy * (1.0 + 0.35 * audioOnset * L1.z);
 
-    vec3 col = sky + C2 * g2 * 0.45 + C1 * g1;
+    vec3 col = sky + (C2 * g2 * 0.55 + C1 * g1) * (1.9 + 1.0 * audioLevel);
 
     // Ground silhouette with a faint aurora glow on the snow.
     float ridge = 0.06 + 0.04 * fbm(vec2(uv.x * 3.0, 7.7));

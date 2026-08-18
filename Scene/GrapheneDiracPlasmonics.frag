@@ -37,6 +37,20 @@ vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
+
+// IMG-PALETTE (house standard): colours come from a rotating arc in the
+// CURRENT slideshow image, so every activation inherits a fresh palette from
+// the photos; the arc follows the musical key (audioChromaHue is circular-
+// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+vec3 imgPalette(float t)
+{
+    float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
+    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
+    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
+    float pg  = dot(pc, vec3(0.333));
+    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+}
+
 vec3 hueRot(vec3 c, float a) {
     vec3 k = vec3(0.57735026919);
     float cs = cos(a), sn = sin(a);
@@ -84,8 +98,14 @@ void main() {
     float bandEnergy = audioSpectrum[bandIdx];
 
     // Plasmonic wavepacket traveling across the sheet
-    float plasmonWave = sin(dot(p, normalize(vec2(1.0, 0.5))) - time * 8.0) * 0.5 + 0.5;
-    plasmonWave = pow(plasmonWave, 8.0) * (1.0 + 2.0 * audioKick);
+    // USER-FEEDBACK: two CROSSING wavefronts + an expanding kick ring —
+    // the plasmons visibly travel and collide instead of one static stripe.
+    float w1 = pow(0.5 + 0.5 * sin(dot(p, normalize(vec2(1.0, 0.5))) - time * 6.0), 8.0);
+    float w2 = pow(0.5 + 0.5 * sin(dot(p, normalize(vec2(-0.6, 1.0))) - time * 4.6 - audioPhase), 8.0);
+    float ringR = fract(time * 0.45 + audioAdvance * 0.2) * 1.5;
+    float ring  = pow(max(0.0, 1.0 - abs(length(uv) - ringR) * 6.0), 2.0)
+                * (0.4 + 1.6 * audioKick);
+    float plasmonWave = (w1 + w2 * 0.8) * (1.0 + 1.2 * audioKick);
 
     // Photo projection on electronic density of states
     vec2 photoUV = cellCenter * 0.08 + vec2(0.5);
@@ -94,14 +114,16 @@ void main() {
     // Quantum colors: Graphene carbon grey + neon cyan/amber Dirac plasmons
     vec3 carbonBase = vec3(0.06, 0.08, 0.12) * photoCol;
     vec3 bondNeon = vec3(0.0, 0.85, 1.0) * (0.6 + 1.5 * diracEnergy);
-    vec3 plasmonCol = vec3(1.0, 0.45, 0.1) * plasmonWave * 3.0 * pls;
+    vec3 plasmonCol = imgPalette(0.12) * plasmonWave * 2.6 * pls + imgPalette(0.55) * ring * 2.0;
     vec3 nucleusGlow = vec3(1.0, 0.9, 0.4) * nucleus * (1.0 + 2.0 * bandEnergy);
 
     vec3 col = carbonBase + bondNeon * bondLine * 1.8 + plasmonCol + nucleusGlow;
     col += vec3(0.3, 0.8, 1.0) * audioKick * exp(-length(uv) * 3.5) * 1.5; // Quantum Hall pulse
 
-    col = hueRot(col, audioChromaHue + hue);
+    col = hueRot(col, hue);   // chromaHue handled inside imgPalette
     col = pow(col, vec3(0.88));
+    col *= 0.8;
+    col /= 1.0 + 0.30 * max(col.r, max(col.g, col.b));
 
     fragColor = vec4(col, 1.0);
 }

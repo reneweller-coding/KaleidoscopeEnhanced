@@ -27,6 +27,25 @@ uniform float audioArousal;
 uniform float audioValence;
 uniform float audioPhase;
 uniform float audioAdvance;
+uniform float audioChromaHue;
+
+vec3 img(vec2 uv) {
+    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+}
+
+
+// IMG-PALETTE (house standard): colours come from a rotating arc in the
+// CURRENT slideshow image, so every activation inherits a fresh palette from
+// the photos; the arc follows the musical key (audioChromaHue is circular-
+// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+vec3 imgPalette(float t)
+{
+    float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
+    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
+    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
+    float pg  = dot(pc, vec3(0.333));
+    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+}
 
 float hash21(vec2 p)
 {
@@ -74,8 +93,8 @@ void main()
 
     // Curtains hang from the top; brighter where ribbons are dense.
     float curtain = smoothstep(-0.6, 0.8, p.y) * (0.5 + 0.5 * ribbons);
-    float glow    = pow(curtain, 2.0 - audioArousal)
-                  * (0.6 + 1.4 * audioLevel + 0.8 * audioSubBass);
+    float glow    = pow(curtain, 1.4 - 0.6 * audioArousal)
+                  * (1.15 + 1.1 * audioLevel + 0.7 * audioSubBass);
 
     // Palette: valence warm<->cool, centroid lifts toward pale-blue tips.
     vec3 cool = vec3(0.10, 0.85, 0.70);   // teal / green
