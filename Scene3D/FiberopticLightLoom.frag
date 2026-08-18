@@ -18,5 +18,9 @@ void main() {
     vec3 col = mix(vCol.rgb * 0.55, photo * 1.35, 0.65);
     col += edge * vCol.rgb * 1.7;
 
-    fragColor = vec4(col, 1.0);
+    // Catalogue review: soft-knee exposure — hot audio compresses
+    // instead of clipping the whole frame to white.
+    vec3 _catTone = (col) * 0.6;
+    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
+    fragColor = vec4(_catTone, 1.0);
 }

@@ -125,8 +125,7 @@ void main() {
     float borderGlow = exp(-edgeDist * 30.0) * (1.0 + audioKick * 3.0 + audioHigh * 1.5);
     col += borderGlow * vec3(1.0, 0.88, 0.45);
 
-    if (audioChromaHue != 0.0) col = hueRot(col, audioChromaHue);
-    if (hue > 0.001) col = hueRot(col, hue);
+    if (audioChromaHue != 0.0)     if (hue > 0.001) col = hueRot(col, hue);
 
     // Vignette
     float vig = smoothstep(1.35, 0.3, length(uv));

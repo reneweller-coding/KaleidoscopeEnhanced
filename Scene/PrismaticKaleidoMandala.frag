@@ -152,5 +152,7 @@ void main() {
     // Soft tone-map (per-channel max keeps the hue ratio intact).
     col = col / (1.0 + 0.30 * max(col.r, max(col.g, col.b)));
 
-    fragColor = vec4(col, 1.0);
+    vec3 _catTone = (col) * 0.5;
+    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
+    fragColor = vec4(_catTone, 1.0);
 }

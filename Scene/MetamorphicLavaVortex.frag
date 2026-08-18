@@ -141,7 +141,7 @@ void main() {
     float coreGlow = exp(-rV * 2.0) * (0.4 + 0.6 * audioSwell);
     col += vec3(1.0, 0.4, 0.05) * coreGlow;
 
-    col = hueRot(col, audioChromaHue + hue);
+    col = hueRot(col, hue);   // chromaHue handled inside imgPalette
     col = pow(col, vec3(0.88));
 
     fragColor = vec4(col, 1.0);

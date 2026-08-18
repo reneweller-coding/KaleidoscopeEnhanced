@@ -162,7 +162,7 @@ void main()
         vec3 vpP = world; vpP.x -= eyeOff;
         gl_Position = projM * vec4(vpP.x, vpP.y, -vpP.z, 1.0);
         gl_Position.x += eyeOff * 0.05 * gl_Position.w;
-        vCol = vec4(hueRot(col, audioChromaHue * 0.3) * glowB * 1.4, 1.0);
+        vCol = vec4(col * glowB * 1.4, 1.0);
         vCorner = attrA.xyz;
         return;
     }
@@ -210,7 +210,7 @@ void main()
 
     // KICK SPARKS: random teeth flash white-hot on the kick (metal striking
     // metal), a drop sets the whole machine glowing.
-    col = hueRot(col, audioChromaHue * 0.3);
+    col = col;
     float sparkG = step(0.85, hash11(idx * 7.7 + floor(time * 9.0))) * audioKick;
     col += vec3(1.0, 0.9, 0.6) * sparkG * 1.8;
     vCol    = vec4(col * glowB * (0.9 + 0.3 * r4) * 1.4, 1.0);

@@ -103,8 +103,7 @@ void main() {
     // Holographic rainbow interference palette
     vec3 col = imgPalette((moire * 5.0 + t + audioPhase) * 0.159);
 
-    if (audioChromaHue != 0.0) col = hueRot(col, audioChromaHue);
-    if (hue > 0.001) col = hueRot(col, hue);
+    if (audioChromaHue != 0.0)     if (hue > 0.001) col = hueRot(col, hue);
 
     vCol = vec4(col * (0.8 + 0.6 * audioHigh), 1.0);
 }

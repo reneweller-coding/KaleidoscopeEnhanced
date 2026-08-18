@@ -127,8 +127,12 @@ void main() {
     vec3 col = photoCol * (0.8 + 0.4 * totalInversions) + gold * border * 2.5 + iridescent * ringGlow * 1.5;
     col += vec3(1.0) * audioKick * exp(-length(uv) * 4.0) * 1.5; // Central burst
 
-    col = hueRot(col, audioChromaHue + hue);
+    col = hueRot(col, hue);   // chromaHue handled inside imgPalette
     col = pow(col, vec3(0.88));
 
-    fragColor = vec4(col, 1.0);
+    // Catalogue review: soft-knee exposure — hot audio compresses
+    // instead of clipping the whole frame to white.
+    vec3 _catTone = (col) * 0.5;
+    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
+    fragColor = vec4(_catTone, 1.0);
 }

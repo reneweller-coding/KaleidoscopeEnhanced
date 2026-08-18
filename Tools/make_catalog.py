@@ -37,6 +37,9 @@ PREVIEW_LIMITED = {
     "PillarHall", "ShadowForest", "CathedralGlass", "SmokeHall",
     "Detonation", "MetaSculpt", "Origami", "BloomSculpt", "CoralGrowth",
     "MelodyScript", "Schlieren", "SelfSimilarity",
+    # Live-verified but preview-dark: array-fed (audioChroma/Melody) or
+    # sim-textured scenes the harness cannot drive.
+    "SciFiHUD", "Tonnetz", "GlassStack", "CrystalGrowth",
 }
 
 def header_comment(path):

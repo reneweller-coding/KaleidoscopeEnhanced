@@ -110,8 +110,7 @@ void main() {
     vec3 col = imgPalette((ri * 0.5 + time) * 0.159) * 1.4;
     col = mix(col, vec3(1.0, 0.95, 0.8), packetGlow * 0.6);
 
-    if (audioChromaHue != 0.0) col = hueRot(col, audioChromaHue);
-    if (hue > 0.001) col = hueRot(col, hue);
+    if (audioChromaHue != 0.0)     if (hue > 0.001) col = hueRot(col, hue);
 
     vCol = vec4(col * (1.0 + packetGlow + audioHigh * 0.8), 1.0);
 }

@@ -138,7 +138,7 @@ void main() {
     float coronaGlow = exp(-length(uv) * 2.0) * (0.4 + 0.6 * audioSwell);
     col += vec3(1.0, 0.6, 0.1) * coronaGlow;
 
-    col = hueRot(col, audioChromaHue + hue);
+    col = hueRot(col, hue);   // chromaHue handled inside imgPalette
     col = pow(col, vec3(0.85));
 
     fragColor = vec4(col, 1.0);

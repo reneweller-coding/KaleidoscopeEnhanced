@@ -114,8 +114,7 @@ void main() {
     // Hopf fiber iridescence palette
     vec3 col = imgPalette((ri * 0.35 + theta * 0.5 + time * 0.5) * 0.159);
 
-    if (audioChromaHue != 0.0) col = hueRot(col, audioChromaHue);
-    if (hue > 0.001) col = hueRot(col, hue);
+    if (audioChromaHue != 0.0)     if (hue > 0.001) col = hueRot(col, hue);
 
     vCol = vec4(col * (0.9 + 0.5 * audioHigh), 1.0);
 }

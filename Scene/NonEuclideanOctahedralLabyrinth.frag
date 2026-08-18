@@ -126,8 +126,12 @@ void main() {
     vec3 col = photoLabyrinth * (0.8 + 0.5 * audioLevel) + neonEdge * edgeGlow * (1.5 + 2.0 * audioHigh);
     col += vec3(1.0, 0.9, 0.7) * audioKick * exp(-length(uv) * 3.5) * 1.5; // Central warp flare
 
-    col = hueRot(col, audioChromaHue + hue);
+    col = hueRot(col, hue);   // chromaHue handled inside imgPalette
     col = pow(col, vec3(0.88));
 
-    fragColor = vec4(col, 1.0);
+    // Catalogue review: soft-knee exposure — hot audio compresses
+    // instead of clipping the whole frame to white.
+    vec3 _catTone = (col) * 0.65;
+    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
+    fragColor = vec4(_catTone, 1.0);
 }

@@ -123,7 +123,7 @@ void main()
     // grey regolith read as colourless (metric scan: saturation 0.12).
     col *= mix(vec3(1.12, 0.94, 0.80), vec3(0.82, 0.95, 1.14), r4);
     col = palTint(col, 0.30 * r4, 0.15);
-    col = hueRot(col, audioChromaHue * 0.2);
+    col = col;
     col *= 1.0 + 1.6 * audioDrop;
     col *= clamp(1.0 - z / 130.0, 0.0, 1.0) * 1.5;
 

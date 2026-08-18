@@ -9,9 +9,31 @@ uniform float audioBarPhase;
 uniform float audioChromaHue;
 uniform float audioSwell;
 uniform float audioDrop;
+uniform sampler2D tex0;
+uniform sampler2D tex1;
+uniform float interpolation;
+uniform float audioValence;
 
 in vec2  vPolar;
 in float vLift;
+
+vec3 img(vec2 uv) {
+    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+}
+
+
+// IMG-PALETTE (house standard): colours come from a rotating arc in the
+// CURRENT slideshow image, so every activation inherits a fresh palette from
+// the photos; the arc follows the musical key (audioChromaHue is circular-
+// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+vec3 imgPalette(float t)
+{
+    float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
+    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
+    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
+    float pg  = dot(pc, vec3(0.333));
+    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+}
 
 vec3 hueRot(vec3 c, float a)
 {
@@ -36,10 +58,7 @@ void main()
             + sin(a8 * 16.0 - r * 7.0 + flow);
     v *= 0.3333;
 
-    vec3 col = hueRot(vec3(0.6 + 0.4 * sin(v * 3.14159),
-                           0.45 + 0.4 * sin(v * 3.14159 + 2.09),
-                           0.5 + 0.4 * sin(v * 3.14159 + 4.19)),
-                      audioChromaHue + r * 1.2);
+    vec3 col = imgPalette(v * 0.5 + r * 0.19) * 1.35;
 
     // A soft ring of light breathes outward once per bar; petal edges glow.
     float ring  = exp(-abs(r - audioBarPhase) * 6.0);

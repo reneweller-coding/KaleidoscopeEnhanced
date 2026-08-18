@@ -146,5 +146,9 @@ void main() {
     float vig = smoothstep(1.3, 0.3, length(uv));
     finalCol *= vig;
 
-    fragColor = vec4(finalCol, 1.0);
+    // Catalogue review: soft-knee exposure — hot audio compresses
+    // instead of clipping the whole frame to white.
+    vec3 _catTone = (finalCol) * 0.3;
+    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
+    fragColor = vec4(_catTone, 1.0);
 }

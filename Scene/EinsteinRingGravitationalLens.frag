@@ -141,8 +141,7 @@ void main() {
     col += innerGlow * vec3(1.0, 0.85, 0.4);
 
     // Chroma rotation
-    if (audioChromaHue != 0.0) col = hueRot(col, audioChromaHue);
-    if (hue > 0.001) col = hueRot(col, hue);
+    if (audioChromaHue != 0.0)     if (hue > 0.001) col = hueRot(col, hue);
 
     // Subtle edge vignette
     float vig = smoothstep(1.4, 0.4, length(uv));

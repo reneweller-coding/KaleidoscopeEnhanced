@@ -94,7 +94,7 @@ void main()
     float caustic = 0.6 + 0.4 * sin(pos.x * 0.35 + pos.y * 0.22
                                     + time * 1.1);
     col *= 0.5 + 0.9 * caustic * (0.5 + 0.5 * t);
-    col = hueRot(col, audioChromaHue * 0.35);
+    col = col;
     col *= (0.6 + 0.5 * audioLevel + 0.4 * audioSwell)
          * clamp(1.0 - vp.z / 100.0, 0.0, 1.0) * 1.15;
 

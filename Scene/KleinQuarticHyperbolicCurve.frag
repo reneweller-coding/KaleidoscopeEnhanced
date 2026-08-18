@@ -135,8 +135,7 @@ void main() {
     vec3 col = mix(photo * 0.85, groupColor, 0.45 + 0.2 * audioSwell);
     col += lineGlow * vec3(1.0, 0.9, 0.4) * 1.5;
 
-    if (audioChromaHue != 0.0) col = hueRot(col, audioChromaHue);
-    if (hue > 0.001) col = hueRot(col, hue);
+    if (audioChromaHue != 0.0)     if (hue > 0.001) col = hueRot(col, hue);
 
     // Poincaré disk boundary vignette
     float diskR = length(uv);

@@ -35,5 +35,9 @@ void main()
 
     col *= (0.75 + 0.4 * audioSwell + 0.35 * audioKick)
          * exp(-vDist * 0.010);
-    fragColor = vec4(col * 1.5, 1.0);
+    // Catalogue review: soft-knee exposure — hot audio compresses
+    // instead of clipping the whole frame to white.
+    vec3 _catTone = (col * 1.5) * 0.7;
+    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
+    fragColor = vec4(_catTone, 1.0);
 }

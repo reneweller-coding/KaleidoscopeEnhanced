@@ -156,7 +156,7 @@ void main() {
     col += bgCol + ringGlow;
 
     // Apply chroma hue rotation & contrast grade
-    col = hueRot(col, audioChromaHue + hue);
+    col = hueRot(col, hue);   // chromaHue handled inside imgPalette
     col = pow(col, vec3(0.85)); // Contrast boost
     col += vec3(0.04, 0.02, 0.08) * audioSwell;
 

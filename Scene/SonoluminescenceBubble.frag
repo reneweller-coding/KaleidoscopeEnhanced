@@ -115,8 +115,7 @@ void main() {
     col += caustic * vec3(0.2, 0.5, 0.8) * 0.6;
     col += exp(-r * 25.0) * plasmaColor * flashInstant * 3.5;
 
-    if (audioChromaHue != 0.0) col = hueRot(col, audioChromaHue);
-    if (hue > 0.001) col = hueRot(col, hue);
+    if (audioChromaHue != 0.0)     if (hue > 0.001) col = hueRot(col, hue);
 
     // Vignette
     float vig = smoothstep(1.3, 0.3, r);

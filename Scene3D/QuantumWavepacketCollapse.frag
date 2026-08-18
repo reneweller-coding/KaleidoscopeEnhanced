@@ -58,7 +58,7 @@ void main() {
     float r = length(circ);
     if (r > 0.5) discard;
 
-    float alpha = smoothstep(0.5, 0.05, r);
+    float alpha = smoothstep(0.5, 0.10, r);
 
     // Quantum phase chromatic mapping (complex phase angle to color).
     // Saturation is pushed past the house default because thousands of these
@@ -68,7 +68,7 @@ void main() {
 
     // Probability density intensity modulation (kick gain kept moderate for
     // the same reason: the old *2.5 burned the whole cloud to white).
-    vec3 col = phaseColor * (0.55 + 0.9 * vProb) * (1.0 + audioKick * 1.1) * glw;
+    vec3 col = phaseColor * (0.30 + 0.55 * vProb) * (1.0 + audioKick * 1.1) * glw;
 
     if (hue > 0.001) col = hueRot(col, hue);
 

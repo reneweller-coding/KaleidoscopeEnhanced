@@ -92,7 +92,7 @@ void main()
         float alive = smoothstep(0.02, 0.10, u) * (1.0 - smoothstep(0.55, 0.75, u));
         float head  = exp(-t * 4.5);
         col = palTint(mix(vec3(1.0, 0.85, 0.55), vec3(0.35, 0.55, 1.0), t), 0.30 * t, 0.22);
-        col = hueRot(col, audioChromaHue * 0.5);
+        col = col;
         col *= alive * (0.40 + 0.90 * head)
              * (1.0 + 0.6 * audioOnset + 2.2 * audioDrop);
         sizeMul = 0.7 + 1.3 * head;

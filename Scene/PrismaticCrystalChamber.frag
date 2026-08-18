@@ -140,7 +140,7 @@ void main() {
         throughput *= 0.65;
     }
 
-    col = hueRot(col, audioChromaHue + hue);
+    col = hueRot(col, hue);   // chromaHue handled inside imgPalette
     col = pow(col, vec3(0.88)); // Contrast boost
     col += vec3(0.03, 0.02, 0.06) * audioSwell;
 

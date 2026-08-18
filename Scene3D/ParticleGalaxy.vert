@@ -115,7 +115,7 @@ void main()
     // Warm core -> cool arms; the music's key drifts the hue.
     vec3 col = palTint(mix(vec3(0.35, 0.55, 1.0), vec3(1.0, 0.75, 0.4), bulge), 0.30 * bulge, 0.22);
     col = mix(col, vec3(1.0, 0.5, 0.75), r3 * 0.35);
-    col = hueRot(col, audioChromaHue * 1.3 + rad * 0.012);
+    col = hueRot(col, rad * 0.012);
     col *= 0.30 + 0.55 * r4 + 1.6 * ring + 0.9 * audioDrop * bulge;
     col *= 0.75 + 0.5 * audioCentroid;
     float fog = clamp(1.0 - vp.z / 130.0, 0.0, 1.0);

@@ -65,6 +65,6 @@ void main() {
 
     vec3 col = (mix(iceCore, rainbowFacet, 0.4) * photoCol * 1.8 + glintCol) * ice * glw;
 
-    col = hueRot(col, audioChromaHue + hue);
+    col = hueRot(col, hue);   // chromaHue handled inside imgPalette
     fragColor = vec4(col, 1.0);
 }
