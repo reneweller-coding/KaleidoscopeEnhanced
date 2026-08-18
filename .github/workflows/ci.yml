@@ -140,3 +140,43 @@ jobs:
           $exe = "PresetEditor\build\Release\PresetEditor.exe"
           & $exe --cfxcheck
           if ($LASTEXITCODE -ne 0) { exit 1 }
+
+      # Startup smoke test for the MAIN app. Born from a real incident: a
+      # pushed commit crashed Kaleidoscope.exe on launch (0xC0000005 --
+      # uninitialised m_sh_prog_id read before the GL loader ran) and CI
+      # stayed green because it only ever built the app, never started it.
+      # The -x batch mode is the perfect probe: it analyses a WAV offline
+      # (no audio device needed), drives the full startup path (config load,
+      # GL 4.3 init, shader compiles, render+record loop) and exits by
+      # itself.  Deliberately BLOCKING -- a startup crash must fail CI.
+      # Skips only if the best-effort Mesa install above didn't deliver.
+      - name: Smoke test -- main app starts, renders a WAV batch, exits (software GL)
+        shell: pwsh
+        env:
+          GALLIUM_DRIVER: llvmpipe
+          MESA_GL_VERSION_OVERRIDE: '4.3'
+          MESA_GLSL_VERSION_OVERRIDE: '430'
+        run: |
+          if (-not (Test-Path "mesa\x64\opengl32.dll")) {
+            Write-Host "Mesa fehlt (best-effort Schritt) - Smoke-Test uebersprungen"
+            exit 0
+          }
+          Copy-Item mesa\x64\opengl32.dll,mesa\x64\libgallium_wgl.dll -Destination "Release\"
+          python -c "import wave,struct,math; w=wave.open('smoke.wav','wb'); w.setnchannels(2); w.setsampwidth(2); w.setframerate(44100); f=[struct.pack('<hh', *([int(12000*math.exp(-(t%11025)/1500.0)*math.sin(2*math.pi*55*t/44100)+6000*math.sin(2*math.pi*220*t/44100)*0.4)]*2)) for t in range(44100*2)]; w.writeframes(b''.join(f)); w.close()"
+          # CWD must be Release\: the app resolves ..\Configurations etc.
+          # relative to its working directory (same layout as the dist zip).
+          $wav = Join-Path (Get-Location) "smoke.wav"
+          $p = Start-Process -FilePath "Release\Kaleidoscope.exe" -ArgumentList "-x","`"$wav`"","-l" -PassThru -WorkingDirectory "Release"
+          $done = $p.WaitForExit(300000)
+          if (-not $done) {
+            Stop-Process -Id $p.Id -Force
+            Write-Error "Smoke-Test: App nach 300 s nicht beendet (haengt)"
+            if (Test-Path Release\kaleidoscope.log) { Get-Content Release\kaleidoscope.log -Tail 40 }
+            exit 1
+          }
+          if (Test-Path Release\kaleidoscope.log) { Get-Content Release\kaleidoscope.log -Tail 25 }
+          if ($p.ExitCode -ne 0) {
+            Write-Error ("Smoke-Test: App-Startup fehlgeschlagen, ExitCode=0x{0:X}" -f $p.ExitCode)
+            exit 1
+          }
+          Write-Host "Smoke-Test OK: App gestartet, WAV-Batch gerendert, sauber beendet."
