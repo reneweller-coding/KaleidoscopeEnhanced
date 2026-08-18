@@ -12,5 +12,5 @@ void main()
 {
     float body = 0.45 + 0.25 * (vSide * 0.5 + 0.5);
     float edge = exp(-pow(1.0 - vSide, 2.0) * 6.0) * 0.9;   // top rim
-    fragColor = vec4(vCol.rgb * (body + edge) * (0.85 + 0.30 * audioLevel + 0.35 * audioKick), 1.0);
+    fragColor = vec4(vCol.rgb * (body + edge) * (1.5 + 0.55 * audioLevel + 0.6 * audioKick), 1.0);
 }

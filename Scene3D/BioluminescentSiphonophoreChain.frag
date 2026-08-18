@@ -67,5 +67,5 @@ void main() {
     if (audioChromaHue != 0.0) col = hueRot(col, audioChromaHue);
     if (hue > 0.001) col = hueRot(col, hue);
 
-    fragColor = vec4(col, glow);
+    fragColor = vec4(col * 2.8, glow);
 }
