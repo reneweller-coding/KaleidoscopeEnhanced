@@ -102,10 +102,12 @@ void main() {
 
     float dO = 0.0;
     float hitDist = -1.0;
+    float minDS = 1e5;                    // closest approach of a MISS ray
     vec3 p;
     for (int i = 0; i < 48; ++i) {
         p = ro + rd * dO;
         float dS = scherkSDF(p, scale, thickness);
+        minDS = min(minDS, dS);
         if (dS < 0.003) {
             hitDist = dO;
             break;
@@ -114,7 +116,13 @@ void main() {
         dO += dS * 0.65;
     }
 
+    // Near-miss halo: rays grazing the tower glow instead of dropping to
+    // near-black (metric scan: luma 8, saturation 0, the tower is thin and
+    // most rays miss).  Level breathes it, phase spins its colour.
     vec3 col = vec3(0.02, 0.03, 0.06);
+    vec3 halo = (0.5 + 0.5 * cos(vec3(0.0, 1.9, 3.7) + minDS * 6.0 + audioPhase))
+                * exp(-minDS * 3.5) * (0.5 + 0.5 * audioLevel);
+    col += halo * 0.8;
 
     if (hitDist > 0.0) {
         vec3 n = calcNormal(p, scale, thickness);

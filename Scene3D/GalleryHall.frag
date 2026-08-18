@@ -1,5 +1,9 @@
 #version 330 core
 out vec4 fragColor;
+// Frag-side music pulse (added by the deaf-scene pass: reactivity
+// measured ~0 -- the vert-side coupling barely moved any pixels).
+uniform float audioLevel;
+uniform float audioKick;
 // GalleryHall.frag — gold-framed image crops under warm gallery light;
 // ceiling strips are soft white bars.
 uniform sampler2D tex0;
@@ -45,5 +49,5 @@ void main()
     }
 
     col *= 1.0 + 0.7 * audioDrop;
-    fragColor = vec4(col * 1.2, 1.0);
+    fragColor = vec4(col * 1.2 * (0.85 + 0.30 * audioLevel + 0.35 * audioKick), 1.0);
 }

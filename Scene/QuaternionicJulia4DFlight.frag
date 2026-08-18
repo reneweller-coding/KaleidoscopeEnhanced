@@ -140,7 +140,14 @@ void main() {
         dO += dS * 0.7;
     }
 
+    // Miss rays carry trapMin too: an orbit-trap AURA fills the frame with
+    // the fractal's energy field instead of near-black (the metric scan
+    // measured luma 6 / coverage 0 -- the set is thin at many C morphs and
+    // most rays miss).  Level breathes the aura, phase spins its colour.
     vec3 col = vec3(0.02, 0.02, 0.05);
+    vec3 aura = (0.5 + 0.5 * cos(vec3(0.0, 1.8, 3.6) + trapMin * 8.0 + audioPhase))
+                * exp(-trapMin * 2.0) * (0.55 + 0.45 * audioLevel);
+    col += aura * 0.85;
 
     if (hitDist > 0.0) {
         // Normal approximation

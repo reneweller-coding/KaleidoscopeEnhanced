@@ -129,7 +129,13 @@ void main() {
         dO += dS * 0.65;
     }
 
+    // Orbit-trap aura for miss rays: the box's energy field fills the frame
+    // instead of near-black (metric scan: luma 8, saturation 0 -- most rays
+    // miss the thin metamaterial lattice).
     vec3 col = vec3(0.02, 0.03, 0.06);
+    vec3 aura = (0.5 + 0.5 * cos(vec3(0.4, 2.2, 4.0) + trapMin * 7.0 + audioPhase))
+                * exp(-trapMin * 1.8) * (0.5 + 0.5 * audioLevel);
+    col += aura * 0.8;
 
     if (hitDist > 0.0) {
         vec2 e = vec2(0.005, 0.0);

@@ -89,7 +89,11 @@ void main() {
     vec3 synCol = mix(gabaCyan, gluViolet, sin(id * 0.1) * 0.5 + 0.5);
     synCol = mix(synCol, dopaGold, isSynapse);
 
-    float brightness = (0.4 + 1.6 * isSynapse + 1.2 * clusterEnergy + 2.0 * cognitiveSurge);
+    // Halved vs the original: the additive sprite cloud summed the old
+    // brightness (up to 5.2x) into a solid white frame (metric scan: mean
+    // luma 250, saturation 0.02) -- the neurotransmitter palette only
+    // reads if single sprites stay well below clip.
+    float brightness = (0.22 + 0.8 * isSynapse + 0.6 * clusterEnergy + 1.0 * cognitiveSurge);
     vColor = vec4(synCol * brightness, 1.0);
 
     // Stereo 3D camera projection

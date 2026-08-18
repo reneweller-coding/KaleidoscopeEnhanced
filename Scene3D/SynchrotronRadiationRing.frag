@@ -36,9 +36,11 @@ void main() {
 
     float edge = smoothstep(0.5, 0.1, abs(vUV.y - 0.5));
 
-    // High energy X-ray to EUV synchrotron radiation spectrum
-    vec3 beamColor = mix(vec3(0.1, 0.5, 1.0), vec3(1.0, 0.95, 0.8), vRadiation);
-    vec3 col = beamColor * (0.8 + 2.0 * vRadiation * rdp) * edge * glw;
+    // High energy X-ray to EUV synchrotron radiation spectrum.  The hot end
+    // is GOLDEN now, not near-white -- white x high gain bleached the whole
+    // ring (metric scan: saturation 0.06).
+    vec3 beamColor = mix(vec3(0.1, 0.5, 1.0), vec3(1.0, 0.72, 0.30), vRadiation);
+    vec3 col = beamColor * (0.5 + 0.9 * vRadiation * rdp) * edge * glw;
 
     if (hue > 0.001) col = hueRot(col, hue);
 
