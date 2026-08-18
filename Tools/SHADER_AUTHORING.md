@@ -239,6 +239,49 @@ Teilchen-Phasen über den GANZEN Zyklus streuen — teilen fast alle
 denselben `fract(time…+seed*0.1)`-Takt, fliegt alles als eine Schale
 und das Zentrum ist die meiste Zeit ein schwarzes Loch.
 
+### V8d — Kein globaler chromaHue-Dreh auf Bildfarben
+
+Das Alt-Muster `col = hueRot(col, audioChromaHue + …)` als LETZTER Schritt
+stammt aus der Zeit vor imgPalette und ist auf bildbasierten Farben
+**verboten**: imgPalette folgt der Tonart bereits intern (zirkulär geslewt),
+der zusätzliche globale Dreh rotiert die Fotofarben nur noch VOM Bild WEG —
+bei `audioChromaHue ≈ 3` um ~172°, aus warmen Fototönen wird flaches Cyan
+(so sahen PrismaticCrystalChamber und KerrNewman im Katalog-Review aus;
+54 Szenen mussten bereinigt werden). Erlaubt bleibt: der
+Per-Aktivierungs-Offset (`hueRot(col, hueP)`) und chromaHue-Dreh in REIN
+prozeduralen Szenen ohne img()/imgPalette — dort ist er die einzige
+Tonart-Kopplung und Absicht.
+
+Und als Design-Grundsatz: **Regenbogen nur als bewusste Identität.** Neue
+Szenen färben per imgPalette (VOLL) oder palTint (Identitätsfarbe bleibt);
+das volle Farbrad gibt es nur, wenn das Phänomen selbst eines ist
+(ChromaAcidTrip, PrismExplode, LaserArena, NeonTubes, OscilloRings,
+RibbonTunnel, QuantumChromaField — dokumentierte Ausnahmen).
+
+### V10 — Belichtungsbudget: gegen REALISTISCHE Hot-Werte designen
+
+Der Katalog-Review fand ~60 Szenen, die bei kräftiger Musik zu reinem Weiß
+clippten. Die gemeinsame Ursache: Helligkeits-Terme wurden gegen einzelne
+Uniforms bei 0..1 entworfen, aber live stapeln sich die Faktoren
+multiplikativ (`(1 + kick*2.5) * (0.8+1.2*x) * glow*8` …). Regeln:
+
+- **Plausibler Hot-Zustand als Designpunkt**: `kick≈1.8`, `level≈0.9`,
+  `swell≈0.8`, `snare≈1.0`, `drop≈0.25` — und zwar GLEICHZEITIG. Wenn die
+  Szene dann im Mittel unter ~0.8 Luminanz bleibt, überlebt die Palette.
+  (Alle Extreme zugleich auf Maximum ist KEIN realer Zustand — der alte
+  Scan-Hot-Vektor tat genau das und markierte den halben Katalog weiß.)
+- **Soft-Knee statt Hard-Clip** am finalen Write, wo Audio die Helligkeit
+  skaliert: `col *= gain; col /= 1.0 + 0.35 * max(col.r, max(col.g, col.b));`
+  — unter ~0.5 praktisch neutral, oben komprimierend. In ~60 Szenen als
+  `_catTone`-Block ausgerollt (Muster dort nachschlagen).
+- **Audio gehört NICHT ungebremst in `gl_PointSize`**: `+ audioKick * 6.0`
+  auf die Sprite-Größe verzwölffacht bei kick=2 die FLÄCHE — zusammen mit
+  V8c der sichere Weg ins Weiß. Kick-Anteile klein halten (≤1.5) und die
+  Caps niedrig (10-22 px bei 60k Punkten).
+- Einzelne Weiß-BLITZE (Flash-Terme wie `* 8.0`) sind ok, wenn sie räumlich
+  klein und zeitlich kurz sind — nie als Dauerfaktor auf der ganzen Fläche
+  (SuperfluidHelium-Lektion: ×8-Flash × Kick-Faktor = weiße Liniensuppe).
+
 ### V9 — Audio-Kopplung nicht im GLSL festverdrahten
 
 Welche Audio-Uniform ein Shader liest (`audioKick`, `audioSwell`, …) ist Teil
@@ -293,6 +336,29 @@ Konsequenzen fürs Autorieren:
   gebundenen Oszillationen (`0.1*sin(…)` als Rate integriert beschränkt).
 
 ---
+
+## Probe-Renders: IMMER mit echten Bildern (`--images`)
+
+`PresetEditor --render` bindet ohne Bildverzeichnis eine BUNTE prozedurale
+Testkarte als tex0/tex1 — damit sieht JEDE imgPalette-Szene nach Regenbogen
+aus, obwohl sie in der App korrekt die Fotofarben erbt (dieser Fehlschluss
+hat ein komplettes Katalog-Review gekostet). Deshalb:
+
+```
+--images "Tools/probe_images"
+```
+
+an jeden Proberender hängen. `Tools/probe_images/` enthält zwei
+deterministische Natur-Fotos (probe_a = warmer Sonnenuntergang, probe_b =
+kühle Dämmerung) — eine korrekt umgestellte Szene zeigt damit kohärente
+Warm-/Kalttöne, eine kaputte weiterhin das volle Farbrad. Sonnenuntergang
+im A-Frame = imgPalette funktioniert; Regenbogen trotz `--images` = echter
+Shader-Fehler.
+
+Fürs Qualitäts-Sweeping nach einer Welle: `Tools/catalog_check.py <scandir>`
+(flaggt WEISS >205 Luma, SCHWARZ-Triaden, REGENBOGEN ≥7 von 12 Hue-Bins)
+und `Tools/contact_sheets.py <scandir>` (5×5-Kontaktbögen für die visuelle
+Volldurchsicht — 13 Bögen statt 975 Einzelbilder).
 
 ## Batch-Rendern (und die CR-Falle)
 
