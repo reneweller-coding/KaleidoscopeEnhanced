@@ -2,18 +2,18 @@
 out vec4 fragColor;
 // EscherRelativityMatrix.frag
 // -----------------------------------------------------------------------
-// ESCHER RELATIVITY MATRIX: Raymarched infinite non-Euclidean 3D architectural
-// labyrinth inspired by M.C. Escher's "Relativity" with 3 orthogonal gravity axes,
-// intersecting neon staircases, archways, and photo projection on walls.
-//   audioPhase   -> shifts spatial gravity perspective & camera traversal
-//   audioKick    -> flashes neon architectural balustrades & arches
-//   audioBass    -> undulates hallway step displacements
-//   audioSwell   -> widens infinite spatial repeating corridors
+// PENROSE ENDLESS STAIRCASE: a real Escher, drawn as an isometric
+// lithograph after "Ascending and Descending".  Four flights of steps
+// (7-4-7-4) close into an impossible loop whose screen polygon closes
+// EXACTLY — the two short flights secretly swallow the accumulated
+// height while still showing ascending risers.  Glowing walkers climb
+// the loop forever, driven by the music.
+//   audioAdvance -> walkers march around the impossible loop
+//   audioKick    -> the stone breathes, risers flash
+//   audioLevel   -> walker glow brightness
+//   audioFlux    -> walker halo shimmer
 //
 // Per-activation variety:
-//   gridP    float architectural chamber repetition scale (0.5..2.0)
-//   archP    float archway & pillar complexity             (0.5..1.8)
-//   neonP    float glowing neon trim intensity             (0.5..2.2)
 //   hueP     float palette base hue rotation               (0..6.28)
 // -----------------------------------------------------------------------
 
@@ -66,142 +66,172 @@ vec3 hueRot(vec3 c, float a) {
     return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
 }
 
-mat2 rot2D(float a) {
-    float c = cos(a), s = sin(a);
-    return mat2(c, -s, s, c);
+// =======================================================================
+// PENROSE ENDLESS STAIRCASE — a real Escher.
+// Drawn the way Escher drew it: a 2D lithograph whose screen polygon
+// CLOSES EXACTLY.  Four flights (7-4-7-4 steps): the two long flights
+// ascend honestly, the two short flights secretly swallow the whole
+// accumulated height while still showing ascending riser faces — that IS
+// the Penrose illusion, no seam and no hiding tower needed.
+// Glowing walkers climb the loop forever, advancing with the music
+// (audioAdvance is integrated host-side = jump-free); the stone breathes
+// with the kick.
+// =======================================================================
+
+const int   N_LONG  = 7;      // steps in flights 0 and 2
+const int   N_SHORT = 4;      // steps in flights 1 and 3
+const int   N_TOTAL = 22;     // 2*(N_LONG + N_SHORT)
+const float TX      = 0.068;  // iso tread x
+const float TY      = 0.0408; // iso tread y (0.6 * TX, high viewpoint)
+const float STEP_H  = 0.024;  // riser height (screen units)
+const float COLUMN  = 0.075;  // short support skirt below each step
+
+// Solve p = P + s*e1 + t*e2; returns (s,t).
+vec2 invBilinear(vec2 p, vec2 P, vec2 e1, vec2 e2)
+{
+    float det = e1.x * e2.y - e1.y * e2.x;
+    vec2  d   = p - P;
+    return vec2(d.x * e2.y - d.y * e2.x, e1.x * d.y - e1.y * d.x) / det;
 }
+bool inQuad(vec2 st) { return st.x >= 0.0 && st.x <= 1.0 && st.y >= 0.0 && st.y <= 1.0; }
 
-float sdBox(vec3 p, vec3 b) {
-    vec3 q = abs(p) - b;
-    return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0);
+// Iso tread edge per flight (top-face advance direction).
+vec2 flightTread(int f)
+{
+    if (f == 0) return vec2( TX,  TY);
+    if (f == 1) return vec2(-TX,  TY);
+    if (f == 2) return vec2(-TX, -TY);
+    return          vec2( TX, -TY);
 }
-
-// 3D Escher maze distance field
-float map(vec3 p, float spc, float arc, out int matID, out vec2 texCoord) {
-    // 3D periodic cell repetition
-    vec3 cell = floor(p / spc);
-    vec3 q = mod(p, spc) - 0.5 * spc;
-
-    // Floor and ceiling slabs along 3 orthogonal gravity planes
-    float slabX = sdBox(q, vec3(0.08, 0.5 * spc, 0.5 * spc));
-    float slabY = sdBox(q, vec3(0.5 * spc, 0.08, 0.5 * spc));
-    float slabZ = sdBox(q, vec3(0.5 * spc, 0.5 * spc, 0.08));
-
-    // Archway cutouts in the slabs
-    float holeX = length(q.yz) - 0.32 * spc * arc;
-    float holeY = length(q.xz) - 0.32 * spc * arc;
-    float holeZ = length(q.xy) - 0.32 * spc * arc;
-
-    float archX = max(slabX, -holeX);
-    float archY = max(slabY, -holeY);
-    float archZ = max(slabZ, -holeZ);
-
-    float walls = min(archX, min(archY, archZ));
-
-    // Staircases traveling along diagonal planes
-    vec3 sq = q;
-    sq.xy = rot2D(0.785398) * sq.xy; // 45 deg staircase
-    float steps = mod(sq.x * 6.0, 1.0) - 0.5;
-    float stairs = sdBox(sq, vec3(0.5 * spc, 0.05, 0.15 * spc)) + steps * 0.02;
-
-    float d = min(walls, stairs);
-
-    if (d == stairs) {
-        matID = 1; // Neon staircase
-        texCoord = q.xy;
-    } else {
-        matID = 0; // Wall with photo
-        texCoord = (archX < archY && archX < archZ) ? q.yz : ((archY < archZ) ? q.xz : q.xy);
-    }
-
-    return d;
+// Per-step anchor lift: long flights rise by STEP_H; the short flights
+// carry the closure correction  STEP_H - N_TOTAL*STEP_H/(2*N_SHORT).
+float flightLift(int f)
+{
+    float corr = STEP_H * (1.0 - float(N_TOTAL) / float(2 * N_SHORT));
+    return (f == 0 || f == 2) ? STEP_H : corr;
+}
+// Depth edge of the tread (the other iso axis of the top rhombus).
+vec2 flightD(int f)
+{
+    if (f == 0) return vec2(-0.044,  0.026);
+    if (f == 1) return vec2(-0.044, -0.026);
+    if (f == 2) return vec2( 0.044, -0.026);
+    return          vec2( 0.044,  0.026);
 }
 
 void main() {
-    float grd = (gridP > 0.0) ? gridP : 1.0;
-    float arc = (archP > 0.0) ? archP : 1.0;
-    float neo = (neonP > 0.0) ? neonP : 1.0;
-    float hue = (hueP  > 0.0) ? hueP  : 0.0;
+    float hue = (hueP > 0.0) ? hueP : 0.0;
 
     vec2 uv = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
     vec2 st = gl_FragCoord.xy / resolution;
 
-    float spc = 2.4 * grd;
+    // The print sways almost imperceptibly; the kick makes the stone breathe.
+    float sway = 0.02 * sin(time * 0.15);
+    uv = mat2(cos(sway), -sin(sway), sin(sway), cos(sway)) * uv;
+    float breathe = 1.0 + 0.03 * audioKick;
+    uv /= (1.05 * breathe);
+    uv.y += 0.045;
 
-    // Moving camera traversing Escher non-Euclidean space
-    float travel = time * 0.4 + audioAdvance * 0.3;
-    vec3 ro = vec3(sin(travel * 0.3) * 5.5, travel * 0.4, cos(travel * 0.25) * 5.5);
-    vec3 ta = ro + vec3(cos(travel * 0.2), sin(travel * 0.15) * 0.5, sin(travel * 0.2));
+    // --- paper + faint photo ghost, Escher's warm lithograph paper -------
+    vec3 paper = vec3(0.84, 0.80, 0.72) * (0.72 + 0.28 * img(st).g);
+    paper *= 1.0 - 0.06 * sin(gl_FragCoord.y * 1.4);        // litho hatching
+    paper *= 1.0 - 0.35 * smoothstep(0.45, 1.1, length(uv));
+    vec3 col = paper;
 
-    vec3 ww = normalize(ta - ro);
-    vec3 uu = normalize(cross(ww, vec3(0.0, 1.0, 0.0)));
-    vec3 vv = cross(uu, ww);
-    vec3 rd = normalize(uv.x * uu + uv.y * vv + (1.35 - 0.10 * audioKick) * ww);
+    vec2 upv = vec2(0.0, 1.0);
 
-    float t = 0.0;
-    int hitMat = 0;
-    vec2 hitUV = vec2(0.0);
-    float glow = 0.0;
-
-    for (int i = 0; i < 64; ++i) {
-        vec3 p = ro + rd * t;
-        float d = map(p, spc, arc, hitMat, hitUV);
-
-        // Neon edge glow accumulation
-        glow += exp(-max(d, 0.0) * 8.0) * (0.015 * neo);
-
-        if (d < 0.002 || t > 25.0) break;
-        t += max(d * 0.7, 0.01);
+    // --- walk the loop once, collecting every step's anchor ---------------
+    vec2 anch[N_TOTAL];
+    int  fl  [N_TOTAL];
+    {
+        vec2 a = vec2(-0.10, -0.26);        // loop start (front corner, near)
+        int  k = 0;
+        for (int f = 0; f < 4; ++f) {
+            int n = (f == 0 || f == 2) ? N_LONG : N_SHORT;
+            vec2 adv = (flightTread(f) + vec2(0.0, flightLift(f))) * breathe;
+            for (int i = 0; i < N_LONG; ++i) {
+                if (i >= n) break;
+                anch[k] = a;  fl[k] = f;  a += adv;  ++k;
+            }
+        }
     }
 
-    vec3 col = vec3(0.02, 0.03, 0.06);
+    // --- painter's algorithm: highest anchors first (far), lowest last ----
+    float ykey[N_TOTAL];
+    for (int j = 0; j < N_TOTAL; ++j) ykey[j] = anch[j].y;
+    int hitStep = -1;
+    for (int o = 0; o < N_TOTAL; ++o) {
+        int   k  = 0;
+        float by = -1e9;
+        for (int j = 0; j < N_TOTAL; ++j)
+            if (ykey[j] > by) { by = ykey[j]; k = j; }
+        ykey[k] = -2e9;                     // consumed
 
-    if (t < 25.0) {
-        vec3 p = ro + rd * t;
+        int  f = fl[k];
+        vec2 Q = anch[k];
+        // ACTUAL anchor advance (tread + lift): using it for the top face is
+        // what makes consecutive treads connect without gaps.
+        vec2 adv = (flightTread(f) + vec2(0.0, flightLift(f))) * breathe;
+        vec2 D  = flightD(f) * breathe;
+        float hs = STEP_H * breathe;
+        // Top-face advance: riser top -> NEXT anchor.  Honest iso tread on
+        // the long flights, subtly sheared on the short ones — Penrose's
+        // hidden cheat lives exactly here.
+        vec2 topAdv = adv - upv * hs;
 
-        // Approximate normal
-        int dummyID; vec2 dummyUV;
-        float eps = 0.005;
-        vec3 n = normalize(vec3(
-            map(p + vec3(eps, 0.0, 0.0), spc, arc, dummyID, dummyUV) - map(p - vec3(eps, 0.0, 0.0), spc, arc, dummyID, dummyUV),
-            map(p + vec3(0.0, eps, 0.0), spc, arc, dummyID, dummyUV) - map(p - vec3(0.0, eps, 0.0), spc, arc, dummyID, dummyUV),
-            map(p + vec3(0.0, 0.0, eps), spc, arc, dummyID, dummyUV) - map(p - vec3(0.0, 0.0, eps), spc, arc, dummyID, dummyUV)
-        ));
-
-        // Multi-directional gravity lighting
-        vec3 light1 = normalize(vec3(1.0, 1.0, 0.5));
-        vec3 light2 = normalize(vec3(-0.5, -1.0, -1.0));
-        float diff = max(dot(n, light1), 0.0) * 0.7 + max(dot(n, light2), 0.0) * 0.4;
-
-        // Texture projection from photo
-        vec2 texP = fract(hitUV * 0.4 + 0.5);
-        vec3 texCol = img(texP);
-
-        if (hitMat == 1) {
-            // Neon glowing stairs
-            vec3 stairNeon = imgPalette((p.y * 2.0 + time * 3.0) * 0.159) * 1.5;
-            col = stairNeon * (1.2 + audioKick * 2.5);
-        } else {
-            // Architecture facade with photo
-            col = texCol * diff * (0.8 + 0.4 * audioSwell);
-            // Ambient occlusion
-            float ao = clamp(t / 20.0, 0.0, 1.0);
-            col *= (1.0 - ao * 0.6);
+        // The walkway flank facing the viewer: OUTER edge (at Q) for the two
+        // near flights, INNER edge (at Q+D) for the two far flights.  Each
+        // step's flank sits at its own height -> stepped silhouette.
+        vec2 flankO = (f == 0 || f == 3) ? vec2(0.0) : D;
+        vec2 stq = invBilinear(uv, Q + flankO - vec2(0.0, COLUMN), topAdv,
+                               vec2(0.0, COLUMN + hs));
+        if (inQuad(stq)) {
+            col = paper * (0.34 - 0.10 * stq.y) + vec3(0.02);
+            hitStep = k;
         }
 
-        // Distance fog
-        col = mix(col, vec3(0.02, 0.04, 0.08), smoothstep(10.0, 25.0, t));
+        // skirt front under the riser (spans the walkway depth)
+        stq = invBilinear(uv, Q - vec2(0.0, COLUMN), D, vec2(0.0, COLUMN));
+        if (inQuad(stq)) { col = paper * 0.24 + vec3(0.015); hitStep = k; }
+
+        // riser: spans walkway DEPTH x height at the leading edge — the
+        // ascent cue on every flight (v4 wrongly ran it along the advance).
+        stq = invBilinear(uv, Q, D, upv * hs);
+        if (inQuad(stq)) { col = paper * (0.55 + 0.12 * audioKick); hitStep = k; }
+
+        // tread (top face) — the bright rhombus, meets the next riser exactly
+        stq = invBilinear(uv, Q + upv * hs, topAdv, D);
+        if (inQuad(stq)) {
+            col = paper * (0.95 - 0.06 * stq.y);
+            hitStep = k;
+        }
     }
 
-    // Add volumetric neon glow
-    vec3 glowCol = imgPalette(0.5 + 0.2 * sin(time * 2.0)) * 1.4;
-    col += glowCol * glow * (1.0 + audioKick * 3.0);
+    // --- walkers: glowing figures climbing the loop forever --------------
+    float march = time * 0.35 + audioAdvance * 1.6;     // steps per unit
+    for (int w = 0; w < 3; ++w) {
+        float fi = fract((march + float(w) * float(N_TOTAL) / 3.0) / float(N_TOTAL));
+        float fk = fi * float(N_TOTAL);
+        int   k  = int(fk);
+        vec2  Q  = anch[k];
+        vec2  T  = (flightTread(fl[k]) + vec2(0.0, flightLift(fl[k]))) * breathe;
+        vec2  D  = flightD(fl[k]) * breathe;
+        // stand mid-tread, hop within the step
+        float hop = abs(sin(fract(fk) * 3.14159)) * 0.012;
+        vec2 wp = Q + (T - upv * STEP_H * breathe) * 0.45 + D * 0.5
+                + upv * (STEP_H * breathe + 0.016 + hop);
+        float d = length(uv - wp);
+        vec3 wcol = imgPalette(float(w) * 0.33) * 1.6;
+        col += wcol * exp(-d * d * 2600.0) * (0.9 + 0.9 * audioLevel);
+        col += wcol * exp(-d * 42.0) * 0.12 * (0.6 + 0.8 * audioFlux);
+    }
+
+    // House tint: the lithograph leans gently toward the photo's mood.
+    vec3 pal = imgPalette(0.25);
+    float lum = dot(col, vec3(0.333));
+    col = mix(col, pal * (lum / max(dot(pal, vec3(0.333)), 1e-3)), 0.12);
 
     if (hue > 0.001) col = hueRot(col, hue);
-
-    // Catalogue review: soft-knee exposure — hot audio compresses
-    // instead of clipping the whole frame to white.
-    vec3 _catTone = (col) * 0.55;
-    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
-    fragColor = vec4(_catTone, 1.0);
+    col /= 1.0 + 0.25 * max(col.r, max(col.g, col.b));
+    fragColor = vec4(col, 1.0);
 }

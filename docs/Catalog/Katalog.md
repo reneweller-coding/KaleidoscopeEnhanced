@@ -327,7 +327,7 @@ ErodedLand.frag — a landscape carving itself. Blend/CfxErosion.comp runs thous
 
 `Scene/EscherRelativityMatrix.frag` · type=normal · mood=bright,aggressive · complexity=3
 
-EscherRelativityMatrix.frag ESCHER RELATIVITY MATRIX: Raymarched infinite non-Euclidean 3D architectural labyrinth inspired by M.C. Escher's "Relativity" with 3 orthogonal gravity axes, intersecting neon staircases, archways, and photo projection on walls. audioPhase -> shifts spatial gravity perspective & camera traversal audioKick -> flashes neon architectural balustrades & arches audioBass -> undulates hallway ste…
+EscherRelativityMatrix.frag PENROSE ENDLESS STAIRCASE: a real Escher, drawn as an isometric lithograph after "Ascending and Descending". Four flights of steps (7-4-7-4) close into an impossible loop whose screen polygon closes EXACTLY — the two short flights secretly swallow the accumulated height while still showing ascending risers. Glowing walkers climb the loop forever, driven by the music. audioAdvance -> walker…
 
 ![EscherRelativityMatrix ruhig (t=8)](img/EscherRelativityMatrix_A.jpg) ![EscherRelativityMatrix ruhig (t=16)](img/EscherRelativityMatrix_B.jpg) ![EscherRelativityMatrix audio-heiß (t=8)](img/EscherRelativityMatrix_C.jpg)
 
