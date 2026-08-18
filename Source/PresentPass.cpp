@@ -1,3 +1,9 @@
+/**
+ * @file PresentPass.cpp
+ * @brief Implementation of PresentPass: FBO/program setup, the brightness
+ *        limiter, GPU auto-exposure, two-pass bloom, the frame-history ring,
+ *        and the Present.frag draw call that ties it all together.
+ */
 #include <cstdio>
 #include <cmath>
 
@@ -5,8 +11,9 @@
 #include "shader_setup.h"
 
 // Gemeinsames Fullscreen-Dreieck (gl_VertexID-VAO), definiert in filterShader.cpp.
-extern GLuint fullscreenVAO();
+extern GLuint fullscreenVAO();   ///< Shared fullscreen-triangle VAO (gl_VertexID trick), defined in filterShader.cpp.
 
+/** @brief Clear and draw the shared fullscreen triangle (gl_VertexID-based, no vertex buffer). */
 static void drawFullscreen()
 {
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
@@ -15,11 +22,20 @@ static void drawFullscreen()
 	glBindVertexArray( 0 );
 }
 
+/** @brief Placeholder framebuffer-completeness check (kept as a stub, matching FilterShader::checkFramebufferStatus's profiling behaviour).
+ * @return Always true.
+ */
 static bool fbStatusOk()
 {
 	return true; // wie FilterShader::checkFramebufferStatus (rwrwtest profiling)
 }
 
+/** @brief Clamp a value to [lo, hi].
+ * @param v Value to clamp.
+ * @param lo Lower bound.
+ * @param hi Upper bound.
+ * @return The clamped value.
+ */
 static float clampf( float v, float lo, float hi )
 {
 	return v < lo ? lo : (v > hi ? hi : v);
@@ -41,6 +57,16 @@ void PresentPass::updateFinalTexture( int w, int h, GLenum internalFmt, GLenum f
 	glBindTexture( GL_TEXTURE_2D, 0 );
 }
 
+/**
+ * @brief Create (idempotently) the final FBO/texture, the Present.frag program and all its uniform locations, and the two-pass bloom FBOs/program.
+ *
+ * ready() (m_safetyReady) only becomes true if the final FBO is complete AND
+ * the present program linked AND its "tex" uniform was found — a fail-safe
+ * so a broken shader/driver leaves the caller free to fall back to rendering
+ * the combine result directly. Bloom failure is tracked independently via
+ * m_bloomReady: Present.frag falls back to its mip-based glow path when
+ * bloom isn't available, so a bloom failure alone does not disable ready().
+ */
 void PresentPass::setup( int renderW, int renderH,
                          GLenum internalFmt, GLenum fmt, GLenum type )
 {
@@ -147,6 +173,13 @@ void PresentPass::setup( int renderW, int renderH,
 	m_bloomReady = bloomOk && (m_bloomProgId != 0) && (m_bloomTexUni >= 0);
 }
 
+/**
+ * @brief Resize the final and bloom textures in place; does nothing for a texture that setup() never created.
+ *
+ * Mirrors the old resize() behaviour exactly: this only re-targets textures
+ * that already exist (checked via the m_texFinal/m_texBloom handles being
+ * non-zero) and never (re)creates FBOs or programs.
+ */
 void PresentPass::resize( int renderW, int renderH,
                           GLenum internalFmt, GLenum fmt, GLenum type )
 {
@@ -168,6 +201,12 @@ void PresentPass::resize( int renderW, int renderH,
 
 // RGBA8-Bild in eine (ggf. neue) Textur laden - gemeinsames Muster für
 // Lyrics- und Künstlerbild-Overlay.
+/** @brief Upload an RGBA8 image into a texture, creating it on first use. Shared by the lyrics and artist-image overlays.
+ * @param tex Texture handle to (re)use or create (updated in place).
+ * @param rgba Tightly packed RGBA8 pixel data.
+ * @param w Image width in pixels.
+ * @param h Image height in pixels.
+ */
 static void uploadRGBA( GLuint &tex, const void *rgba, int w, int h )
 {
 	if( tex == 0 ) glGenTextures( 1, &tex );
@@ -185,6 +224,21 @@ static void uploadRGBA( GLuint &tex, const void *rgba, int w, int h )
 // Drittel-Auflösung reicht: Rewind trägt ohnehin einen VHS-Look (der die
 // Weichheit verkauft) und das Zeitecho ist eine Geisterschicht.  96 Layer bei
 // ~30 Aufnahmen/s = ~3.2 s Vergangenheit; bei 1080p-Rendering ~88 MB VRAM.
+/**
+ * @brief Capture the current frame into the history ring at a fixed ~30 Hz wall-clock cadence, via an FBO blit (no CPU readback).
+ *
+ * The availability check (m_histTried/m_histReady) runs only once — if the
+ * GL_TEXTURE_2D_ARRAY / glFramebufferTextureLayer / glBlitFramebuffer entry
+ * points are missing, the ring is permanently disabled for this run rather
+ * than retried every frame. The one-third-resolution array texture is
+ * (re)allocated lazily when the derived size changes, which also resets the
+ * ring (m_histHead/m_histCount) and forces an immediate capture
+ * (m_histAccum = 1.f) so the ring doesn't start out empty for ~1/30 s.
+ * Capture cadence is time-accumulated (m_histAccum += dtWall, fire once it
+ * crosses 1/30 s, keep the remainder via fmodf) rather than frame-counted,
+ * so the effective layer spacing stays close to 1/30 s regardless of the
+ * actual render frame rate.
+ */
 void PresentPass::captureHistory( GLuint sourceTex, int renderW, int renderH,
                                   float dtWall )
 {
@@ -280,6 +334,38 @@ void PresentPass::setTitleImage( const void *rgba, int w, int h )
 	m_titleAge    = 0.f;
 }
 
+/**
+ * @brief Run the full present sequence for one frame.
+ *
+ * Order of operations, and why it's this order:
+ *  1. captureHistory() runs FIRST, before anything is presented, so the
+ *     ring keeps recording the live frame even while a rewind is being
+ *     displayed elsewhere in the pipeline.
+ *  2. The brightness limiter samples a small mip of the source texture
+ *     (glGetTexImage forces a GPU->CPU sync, so it only runs every 3rd
+ *     frame — m_safetyAccumDt tracks the real elapsed time across the
+ *     skipped frames so the ~2.0 luma/s cap stays correct either way).
+ *     The computed scale can only ever darken (scale <= 1), never brighten.
+ *  3. GPU percentile auto-exposure (CfxHistogram.comp) writes straight into
+ *     an SSBO that Present.frag reads directly — no CPU sync at all, unlike
+ *     the mip-based limiter above.
+ *  4. Two-pass quarter-res Gaussian bloom (horizontal+downsample, then
+ *     vertical) if the bloom setup succeeded.
+ *  5. Present.frag draws at DISPLAY resolution (the only pass that is) —
+ *     every optional feature (bloom, title reveal, lyrics/artist overlay,
+ *     history-ring rewind/echo, scene-depth parallax) is gated both by its
+ *     own runtime readiness flag and by its uniform actually resolving, so
+ *     a shader missing an input is silently a no-op for that feature rather
+ *     than a broken draw.
+ *
+ * Sampler-unit discipline: the history-ring array sampler is pinned to unit
+ * 5 and the scene-depth sampler to unit 6, unconditionally — even when
+ * their amount is 0 and the texture is never bound for this draw, because
+ * binding two DIFFERENT sampler types (2D vs 2D array) to the same unit
+ * invalidates the whole draw call on some drivers even if the sampler in
+ * question is never actually sampled by the shader that frame.
+ * @param in Frame inputs; the call is a no-op unless ready() and in.fx is non-null.
+ */
 void PresentPass::run( const Inputs &in )
 {
 	if( !m_safetyReady || !in.fx )

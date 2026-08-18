@@ -1,3 +1,7 @@
+/**
+ * @file TrackMedia.cpp
+ * @brief Implementation of TrackMedia: the chained lyrics fetch/parse/render pipeline and the multi-source artist-image download pipeline described in TrackMedia.h.
+ */
 #include "TrackMedia.h"
 
 #include <QtCore/QCryptographicHash>
@@ -21,20 +25,22 @@
 
 // Lyrics-Textur: Breite fix, Zeilenhöhe fix - die Höhe wächst mit der
 // Zeilenzahl (gekappt, ~190 Zeilen reichen für jeden Songtext).
-static const int kLyrTexW   = 1000;
-static const int kLyrLineH  = 60;
-static const int kLyrMaxH   = 12000;
+static const int kLyrTexW   = 1000;   ///< Fixed lyrics-texture width in pixels.
+static const int kLyrLineH  = 60;     ///< Fixed per-line height in pixels (also used as the top margin).
+static const int kLyrMaxH   = 12000;  ///< Hard cap on the lyrics-texture height (~190 lines), so pathologically long lyrics can't blow up GPU memory.
 
 // Negativ-Cache ("nichts gefunden") verfällt nach 7 Tagen - vielleicht
 // trägt ja jemand die Lyrics nach.
-static const qint64 kNegCacheTtlSec = 7 * 24 * 3600;
+static const qint64 kNegCacheTtlSec = 7 * 24 * 3600;   ///< TTL for a "lyrics not found" cache entry before the chain is retried against the network.
 
+/** @brief Hex-encodes the MD5 hash of a string (used to build cache file/dir names from arbitrary artist/title text). @param s Input string (UTF-8 encoded before hashing). @return Lowercase hex MD5 digest. */
 static QString md5Hex( const QString &s )
 {
 	return QString::fromLatin1( QCryptographicHash::hash(
 		s.toUtf8(), QCryptographicHash::Md5 ).toHex() );
 }
 
+/** @brief Constructs the network manager and ensures the lyrics/artist cache directories exist. */
 TrackMedia::TrackMedia()
 {
 	m_nam = new QNetworkAccessManager();
@@ -42,11 +48,17 @@ TrackMedia::TrackMedia()
 	QDir().mkpath( "..\\cache\\artist" );
 }
 
+/** @brief Destroys the owned network manager (any in-flight QNetworkReply objects are children of it and are cleaned up via deleteLater() in their own finished() handlers). */
 TrackMedia::~TrackMedia()
 {
 	delete m_nam;
 }
 
+/**
+ * @brief Issues a GET request with the project's identifying User-Agent and a 15s transfer timeout.
+ * @param url Request URL.
+ * @return The in-flight QNetworkReply (caller connects to its finished() signal and must deleteLater() it).
+ */
 QNetworkReply *TrackMedia::get( const QString &url )
 {
 	QNetworkRequest req( (QUrl( url )) );
@@ -58,16 +70,23 @@ QNetworkReply *TrackMedia::get( const QString &url )
 	return m_nam->get( req );
 }
 
+/** @brief Path to this track's lyrics cache JSON, keyed by the MD5 of m_key. @return Cache file path under "..\\cache\\lyrics\\". */
 QString TrackMedia::lyricsCachePath() const
 {
 	return "..\\cache\\lyrics\\" + md5Hex( m_key ) + ".json";
 }
 
+/** @brief Path to this artist's image cache directory, keyed by the MD5 of the lower-cased artist name. @return Cache directory path under "..\\cache\\artist\\". */
 QString TrackMedia::artistCacheDir() const
 {
 	return "..\\cache\\artist\\" + md5Hex( m_artist.toLower() );
 }
 
+/**
+ * @brief Requests lyrics + artist images for a (possibly new) track; call on every track change.
+ * @param artist Artist name (trimmed/lower-cased internally for de-duplication and cache keys).
+ * @param title Track title; an empty (trimmed) title is ignored outright.
+ */
 void TrackMedia::requestTrack( const QString &artist, const QString &title )
 {
 	QString key = artist.trimmed().toLower() + "|" + title.trimmed().toLower();
@@ -100,6 +119,7 @@ void TrackMedia::requestTrack( const QString &artist, const QString &title )
 // Lyrics: Cache -> LRCLIB (get) -> LRCLIB (search) -> NetEase -> lyrics.ovh
 // ===========================================================================
 
+/** @brief Entry point of the lyrics chain: checks the on-disk cache (positive or still-valid negative) before falling through to the network chain (tryLrclibGet()). */
 void TrackMedia::lyricsFromCacheOrNet()
 {
 	QFile f( lyricsCachePath() );
@@ -128,6 +148,12 @@ void TrackMedia::lyricsFromCacheOrNet()
 	tryLrclibGet();
 }
 
+/**
+ * @brief Writes (or overwrites) the lyrics cache JSON for the current track.
+ * @param synced Synced lyrics text to persist (may be empty).
+ * @param plain Plain lyrics text to persist (may be empty).
+ * @param found Whether any lyrics were actually found; false writes a timestamped negative-cache entry (see kNegCacheTtlSec).
+ */
 void TrackMedia::writeLyricsCache( const QString &synced, const QString &plain, bool found )
 {
 	QJsonObject o;
@@ -140,6 +166,12 @@ void TrackMedia::writeLyricsCache( const QString &synced, const QString &plain, 
 		f.write( QJsonDocument( o ).toJson( QJsonDocument::Compact ) );
 }
 
+/**
+ * @brief Common success path once any source (cache or network) returns lyric text: parses it, renders the texture, and updates the cache.
+ * @param synced Synced (LRC-format) lyrics text, or empty if none.
+ * @param plain Plain-text lyrics, used only if synced is empty.
+ * @param quelle Human-readable source name for logging (e.g. "LRCLIB", "Cache"); the literal "Cache" suppresses re-writing the cache file.
+ */
 void TrackMedia::lyricsFound( const QString &synced, const QString &plain, const char *quelle )
 {
 	m_lyricsPending = false;
@@ -162,6 +194,7 @@ void TrackMedia::lyricsFound( const QString &synced, const QString &plain, const
 	         m_artist.toLocal8Bit().constData(), m_title.toLocal8Bit().constData() );
 }
 
+/** @brief Common failure path once every lyrics source has been exhausted: clears the pending flag and writes a negative cache entry so the chain is skipped next time (until the TTL expires). */
 void TrackMedia::lyricsGiveUp()
 {
 	m_lyricsPending = false;
@@ -170,6 +203,7 @@ void TrackMedia::lyricsGiveUp()
 	         m_artist.toLocal8Bit().constData(), m_title.toLocal8Bit().constData() );
 }
 
+/** @brief First network attempt: LRCLIB's exact get-by-artist/title endpoint; falls through to tryLrclibSearch() on a miss or error. */
 void TrackMedia::tryLrclibGet()
 {
 	QUrlQuery q;
@@ -182,7 +216,7 @@ void TrackMedia::tryLrclibGet()
 	QObject::connect( r, &QNetworkReply::finished, r, [this, r, key]()
 	{
 		r->deleteLater();
-		if( key != m_key ) return;
+		if( key != m_key ) return;   // superseded by a newer requestTrack(): ignore this callback
 		if( r->error() == QNetworkReply::NoError )
 		{
 			QJsonObject o = QJsonDocument::fromJson( r->readAll() ).object();
@@ -198,6 +232,7 @@ void TrackMedia::tryLrclibGet()
 	} );
 }
 
+/** @brief Second network attempt: LRCLIB's fuzzy search endpoint, preferring a result with synced lyrics over the first one with any plain lyrics; falls through to tryNetease() on a miss. */
 void TrackMedia::tryLrclibSearch()
 {
 	QUrlQuery q;
@@ -234,6 +269,7 @@ void TrackMedia::tryLrclibSearch()
 
 // NetEase Cloud Music: riesige, community-gepflegte LRC-Datenbank - findet
 // erstaunlich viel Nischen-Material.  Zwei Schritte: Song-Suche -> Lyric-API.
+/** @brief Third network attempt: NetEase Cloud Music song search (title-matched to avoid cover versions) followed by its lyric endpoint; falls through to tryLyricsOvh() on a miss. */
 void TrackMedia::tryNetease()
 {
 	QUrlQuery q;
@@ -297,6 +333,7 @@ void TrackMedia::tryNetease()
 	} );
 }
 
+/** @brief Last-resort network attempt: lyrics.ovh plain-text lookup; calls lyricsGiveUp() if this also fails. */
 void TrackMedia::tryLyricsOvh()
 {
 	QString url = "https://api.lyrics.ovh/v1/"
@@ -324,6 +361,10 @@ void TrackMedia::tryLyricsOvh()
 }
 
 // LRC: "[mm:ss.xx]text" - mehrere Zeitstempel pro Zeile sind erlaubt.
+/**
+ * @brief Parses LRC-format synced lyrics ("[mm:ss.xx]text", possibly multiple timestamps per line) into time-sorted LyricLine entries.
+ * @param lrc Raw LRC lyric text (one entry per '\n'-separated line).
+ */
 void TrackMedia::parseSynced( const QString &lrc )
 {
 	static const QRegularExpression reTime(
@@ -376,6 +417,10 @@ void TrackMedia::parseSynced( const QString &lrc )
 		                                           : m_lines[i].t0 + 6.0;
 }
 
+/**
+ * @brief Parses plain (unsynchronised) lyric text into LyricLine entries, one per non-empty source line.
+ * @param plain Raw plain-text lyrics.
+ */
 void TrackMedia::parsePlain( const QString &plain )
 {
 	for( const QString &raw : plain.split( '\n' ) )
@@ -391,6 +436,15 @@ void TrackMedia::parsePlain( const QString &plain )
 
 // Alle Zeilen untereinander in EINE hohe transparente Textur rendern
 // (Stil wie der Titel-Reveal: weiß mit dunklem Halo, lesbar über allem).
+/**
+ * @brief Renders every parsed lyric line into one tall transparent QImage (white text with a dark halo), truncating if the real-line budget would exceed kLyrMaxH, and fills in each line's v0/v1 texture-V band.
+ *
+ * Gap markers (empty text) never get a row of their own -- the texture
+ * height budgets by the count of REAL (non-empty) lines, and a gap
+ * marker's v0/v1 are set to whatever the previous sung line's band was,
+ * so it visually "sticks" to that line until glwidget.cpp's long-pause
+ * fade-out takes over.
+ */
 void TrackMedia::renderLyricsImage()
 {
 	// Gap markers (empty text, see parseSynced) carry timing only -- they
@@ -469,6 +523,11 @@ void TrackMedia::renderLyricsImage()
 // Künstlerbilder: Cache -> Deezer + TheAudioDB + iTunes (bis 50, gedrosselt)
 // ===========================================================================
 
+/**
+ * @brief Returns one artist image, decoding it from disk on demand.
+ * @param i Index into the available images, [0, imageCount()).
+ * @return The decoded, size-capped (max width 640) RGBA8888 image, or a null QImage if i is out of range or the file failed to decode/load.
+ */
 QImage TrackMedia::imageAt( int i ) const
 {
 	if( i < 0 || i >= int(m_imagePaths.size()) )
@@ -485,6 +544,7 @@ QImage TrackMedia::imageAt( int i ) const
 	return m_decoded;
 }
 
+/** @brief Entry point of the artist-image chain: loads any already-cached images from disk, then (unless already >= 8 cached) kicks off all three network sources in parallel. */
 void TrackMedia::imagesFromCacheOrNet()
 {
 	QDir dir( artistCacheDir() );
@@ -510,6 +570,10 @@ void TrackMedia::imagesFromCacheOrNet()
 	fetchITunes();
 }
 
+/**
+ * @brief Adds an image URL to the download queue unless it is empty, already seen, or the combined cached+queued count has reached kMaxImages.
+ * @param url Image URL to enqueue.
+ */
 void TrackMedia::enqueueImageUrl( const QString &url )
 {
 	if( url.isEmpty() || m_seenUrls.contains( url ) )
@@ -521,6 +585,7 @@ void TrackMedia::enqueueImageUrl( const QString &url )
 	startNextDownloads();
 }
 
+/** @brief Starts additional downloads from m_downloadQueue until kParallelDownloads are in flight; each completion decodes/validates (min width 200px), writes the JPEG to the artist cache dir, and recurses to keep the pipeline full. */
 void TrackMedia::startNextDownloads()
 {
 	const QString key = m_key;
@@ -558,11 +623,12 @@ void TrackMedia::startNextDownloads()
 					}
 				}
 			}
-			startNextDownloads();
+			startNextDownloads();   // keep the pipeline full: fills the slot just freed above
 		} );
 	}
 }
 
+/** @brief Queries Deezer for the best-matching artist (preferring one with a real, non-placeholder photo and the most fans) and enqueues its XL photo plus up to 25 album covers. */
 void TrackMedia::fetchDeezer()
 {
 	QUrlQuery q;
@@ -622,6 +688,7 @@ void TrackMedia::fetchDeezer()
 
 // TheAudioDB: echte BAND-FOTOS (Thumb + bis zu 4 Fanart-Stills) über den
 // öffentlichen Test-Key "2" - gerade für bekannte Nischen-Acts oft gepflegt.
+/** @brief Queries TheAudioDB (public test key) for the first matching artist and enqueues its thumbnail plus up to 4 fanart images. */
 void TrackMedia::fetchAudioDb()
 {
 	QUrlQuery q;
@@ -651,6 +718,7 @@ void TrackMedia::fetchAudioDb()
 
 // iTunes Search: weitere Album-Cover; die 100px-Artwork-URL lässt sich per
 // Namenskonvention auf 600px hochsetzen.
+/** @brief Queries iTunes Search for albums by the artist (name-matched) and enqueues each cover art URL upscaled from 100px to 600px. */
 void TrackMedia::fetchITunes()
 {
 	QUrlQuery q;

@@ -1,3 +1,44 @@
+/**
+ * @file main.cpp
+ * @brief Application entry point: command-line parsing and Qt/GL application bootstrap.
+ *
+ * @par CLI contract
+ * All options are parsed by parsecommandline() (single-character flags, some taking
+ * one parameter) before any GL/Qt objects exist, so their effects are just setting
+ * static fields on FilterShader / GLwidget / AudioAnalyzer that those classes read
+ * once the app actually starts:
+ *  - `-b`            toggle fullscreen at startup (2nd monitor if present).
+ *  - `-s <factor>`   internal render scale 0.25..2.0 (lower = faster on weak GPUs).
+ *  - `-c <name>`     start with a named configuration (e.g. "darkambient", "normal";
+ *                    also used ad hoc as a probe/test configuration name during
+ *                    development, e.g. "-c probe" -- there is no separate probe code
+ *                    path, it is just a configuration name).
+ *  - `-m <index>`    fullscreen on monitor `<index>` (0-based); implies `-b`.
+ *  - `-l`            redirect stderr to kaleidoscope.log instead of the console
+ *                    (kiosk/unattended logging, with one rotated backup).
+ *  - `-r`            start recording (visuals + music -> mp4) immediately.
+ *  - `-w <wav>`      offline mode: analyze this WAV file instead of live audio
+ *                    (deterministic testing).
+ *  - `-o`            enable Spout output: publish the frame as sender "Kaleidoscope".
+ *  - `-t <port>`     enable the embedded web remote (phone control page) on `<port>`.
+ *  - `-x <wav>`      batch render: combines `-w` + auto-record + auto-quit, used to
+ *                    deterministically render a WAV to an mp4 and exit (no separate
+ *                    "batch mode" branch here -- GLwidget itself drives the auto-quit
+ *                    once s_batchRender is set).
+ *  - `-i <sender>`   Spout INPUT: use a live Spout sender's video as the source image
+ *                    instead of photos ("any" = whichever sender is active).
+ *  - `-v <path>`     native VIDEO source image (a file or a folder of videos); `-i`
+ *                    wins if both are given.
+ *  - `-3 <mode>`     stereoscopic output mode: "sbs", "tb", or an "ana*" prefix for
+ *                    anaglyph; anything else disables it.
+ *  - `-h`            print the help/usage text and exit.
+ *
+ * There is only one runtime path after parsing: the normal windowed Qt application
+ * (QApplication + QMyWindow, shown either windowed or fullscreen). The various flags
+ * above configure that single path (e.g. `-x` makes it record-and-quit) rather than
+ * branching into distinct offline/probe/check modes.
+ */
+
 #include <iostream>
 #include <cstring>
 #include <cstdlib>
@@ -22,14 +63,24 @@
 // objidl.h becomes ambiguous (C2872).  Importing std only here avoids that.
 using namespace std;
 
-QString directory = "C:\\Users\\rene\\Pictures";
-bool fullscreen = false;
-int  monitorIndex = -1;   // -m <n>: target monitor for fullscreen (-1 = auto)
-bool logToFile = false;   // -l: redirect stderr to a rotating log file (kiosk)
+QString directory = "C:\\Users\\rene\\Pictures";	///< Default photo-source directory; overwritten with the user's Pictures folder on Windows startup.
+bool fullscreen = false;	///< Whether to start the window in fullscreen mode (`-b`, or implied by `-m`).
+int  monitorIndex = -1;   ///< `-m <n>`: target monitor for fullscreen (-1 = auto).
+bool logToFile = false;   ///< -l: redirect stderr to a rotating log file (kiosk).
 
 
 
 //rwrwtodo: Correct the options-list
+/**
+ * @brief Prints command-line usage/help text and exits the process.
+ *
+ * Reports the offending option/parameter (if any) first, then always prints the full
+ * usage text (options and in-app keyboard shortcuts). Exits with status -1 if @p cmd
+ * is non-NULL (an actual parse error), or 0 if it was called for `-h` (a clean,
+ * user-requested help exit).
+ * @param cmd Offending option string (e.g. "-x"), or NULL when invoked for `-h`.
+ * @param parm First parameter of the offending option, or NULL if not applicable.
+ */
 void commandlineerror( char *cmd, char *parm )
 {
 	if ( cmd )
@@ -92,6 +143,18 @@ void commandlineerror( char *cmd, char *parm )
 }
 
 
+/**
+ * @brief Parses the process's command-line arguments and applies each recognized
+ *        option's effect immediately (mostly by setting static fields on
+ *        FilterShader / GLwidget / AudioAnalyzer, plus the globals above).
+ *
+ * Builds a lookup table (optionchar[] / musthaveparam[]) of the valid single-letter
+ * options and whether each needs a parameter, then walks argv applying the table:
+ * an unknown option, a missing required parameter, or a non-option argument all call
+ * commandlineerror() and exit the process. `-h` always exits via commandlineerror().
+ * @param argc Argument count, as passed to main().
+ * @param argv Argument vector, as passed to main() (argv[0] is skipped/ignored).
+ */
 void parsecommandline( int argc, char *argv[] )
 {
 	/* valid option characters; last char MUST be 0 ! */
@@ -153,6 +216,10 @@ void parsecommandline( int argc, char *argv[] )
 					continue;
 				}
 
+			// Dispatch on the option letter: each case applies its effect directly to
+			// the relevant static field (FilterShader/GLwidget/AudioAnalyzer) or
+			// global; see the CLI-contract list in the file-level @brief above for
+			// what each flag means.
 			switch ( optchar )
 			{
 				case 'h': commandlineerror( NULL, NULL);  break;
@@ -222,7 +289,22 @@ void parsecommandline( int argc, char *argv[] )
 
 
 
-int main(int argc, char *argv[]) 
+/**
+ * @brief Application entry point.
+ *
+ * Sequence: resolve the platform default photo directory, load persisted look
+ * settings, parse the command line (which may override those settings and/or exit
+ * the process outright, e.g. for `-h` or a bad option), optionally redirect stderr
+ * to a rotating log file for kiosk/unattended runs, configure the OpenGL 4.3 core
+ * surface format Qt will use for every GL context, then construct and show the main
+ * window (windowed or fullscreen) and hand control to Qt's event loop. There is a
+ * single application path here; the various CLI flags configure it rather than
+ * selecting between alternate modes (see the file-level @brief for the flag list).
+ * @param argc Argument count.
+ * @param argv Argument vector.
+ * @return Qt event-loop exit code (from QApplication::exec()).
+ */
+int main(int argc, char *argv[])
 {
 
 	//Setting default image path for windows
@@ -236,7 +318,8 @@ int main(int argc, char *argv[])
 	// still take precedence over the persisted values.
 	FilterShader::loadSettings();
 
-	// parse command line options
+	// Parse command line options; may itself exit() the process (see
+	// commandlineerror()/parsecommandline() above) for -h or invalid input.
 	parsecommandline( argc, argv );
 
 	// Kiosk logging: send stderr (shader status, device reconnects, errors) to a
@@ -265,6 +348,8 @@ int main(int argc, char *argv[])
 	fmt.setDepthBufferSize( 24 );
 	QSurfaceFormat::setDefaultFormat( fmt );
 
+	// The normal windowed-app path: build the Qt application and its single top-level
+	// window, then either show it windowed or on the chosen fullscreen monitor.
 	QApplication app(argc, argv);
 	app.setOverrideCursor(Qt::BlankCursor);
 	// Stack statt new-ohne-delete: so läuft ~QMyWindow/~GLwidget (Recorder-

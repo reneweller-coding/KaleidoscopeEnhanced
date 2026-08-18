@@ -1,3 +1,7 @@
+/**
+ * @file MidiInput.cpp
+ * @brief Implementation of MidiInput: Win32 winmm device open/close, callback-thread message decode, and thread-safe event queue.
+ */
 #include "MidiInput.h"
 
 #define WIN32_LEAN_AND_MEAN
@@ -5,8 +9,12 @@
 #include <windows.h>
 #include <mmsystem.h>
 
-// winmm callback (runs on a system thread).  Forward MIM_DATA short messages to
-// the owning MidiInput instance passed as dwInstance.
+/**
+ * @brief winmm callback (runs on a system thread). Forwards MIM_DATA short messages to the owning MidiInput instance passed as dwInstance.
+ * @param wMsg The winmm callback reason; only MIM_DATA (an incoming short message) is handled.
+ * @param dwInstance The `this` pointer of the owning MidiInput, as passed to midiInOpen()'s dwCallbackInstance.
+ * @param dwParam1 The packed MIDI short message for MIM_DATA.
+ */
 static void CALLBACK midiProc( HMIDIIN, UINT wMsg, DWORD_PTR dwInstance,
                                DWORD_PTR dwParam1, DWORD_PTR /*dwParam2*/ )
 {
@@ -26,6 +34,8 @@ bool MidiInput::start()
     if ( midiInGetNumDevs() == 0 )
         return false;
 
+    // Always device index 0 ("the first available" device) — this app does not offer a device
+    // picker, so if several controllers are attached the OS-assigned first one wins.
     HMIDIIN h = nullptr;
     MMRESULT r = midiInOpen( &h, 0, (DWORD_PTR)midiProc, (DWORD_PTR)this, CALLBACK_FUNCTION );
     if ( r != MMSYSERR_NOERROR )
@@ -59,7 +69,8 @@ void MidiInput::handleMessage( unsigned long dwParam1 )
     int d2     = (dwParam1 >> 16) & 0xFF;
     int type   = status & 0xF0;
 
-    // Control-Change, or Note-On with non-zero velocity.
+    // Control-Change, or Note-On with non-zero velocity (a Note-On with velocity 0 is the
+    // conventional MIDI encoding of Note-Off, which this class ignores entirely).
     if ( type == 0xB0 || (type == 0x90 && d2 > 0) )
         push( type, d1, d2 );
 }
@@ -75,6 +86,6 @@ std::vector<MidiInput::Event> MidiInput::drain()
 {
     QMutexLocker lk(&m_mutex);
     std::vector<Event> out;
-    out.swap( m_events );
+    out.swap( m_events );   // hand off + clear atomically under the lock
     return out;
 }

@@ -1,3 +1,7 @@
+/**
+ * @file Configuration.cpp
+ * @brief Implements Configuration: XML parsing of Configurations/ *.xml presets into FilterShader/EffectShader objects, uniform-range/formula registration, and the legacy shader-path remap.
+ */
 #include <float.h>
 
 #include "shader_setup.h"
@@ -22,6 +26,15 @@
 
 #include<GL/GLU.h>
 
+/**
+ * @brief Constructs a Configuration by parsing @p configurationFile and initializing its FilterShader.
+ *
+ * Allocates m_filterShader, delegates the XML parsing to readConfiguration()
+ * (which populates it with TextureShader/CombineShader entries and the
+ * preset-wide timing fields), then names the FilterShader after the parsed
+ * preset (used as the taste-learning namespace) and calls
+ * FilterShader::init() with the parsed image directory and timing ranges.
+ */
 Configuration::Configuration( const QString &configurationFile )
 {
 	m_filterShader = new FilterShader();
@@ -32,23 +45,41 @@ Configuration::Configuration( const QString &configurationFile )
 }
 
 
+/** @brief Deletes the owned FilterShader. */
 Configuration::~Configuration( )
 {
 	delete m_filterShader;
 }
 
+/**
+ * @brief Forwards to FilterShader::start() to (re)size and start the render pipeline.
+ * @param width Viewport width in pixels.
+ * @param height Viewport height in pixels.
+ */
 void Configuration::start( int width, int height )
 {
 	m_filterShader->start( width, height );
 }
 
 
+/** @brief Forwards to FilterShader::stop(). */
 void Configuration::stop()
 {
 	m_filterShader->stop();
 }
 
 
+/**
+ * @brief Walks the direct child elements of a TextureShader/CombineShader XML node and registers each declared uniform (or expression) on @p shader.
+ *
+ * Recognised child tags: `<interpolator>` (min/max-of-min/max ramping range,
+ * see Uniform's BASE_TYPE_INTERPOLATOR_FLOAT), `<bool>` (probability of being
+ * true), `<float>`/`<int>` (a randomised value range rolled per activation),
+ * and `<expr>` (a per-frame formula-language expression — see ExprEval —
+ * that overrides a same-named `<float>` uniform with a live audio-reactive
+ * value; see EffectShader::addExpression). Every tag shares a `name`
+ * attribute identifying the target GLSL uniform.
+ */
 void Configuration::addUniforms( EffectShader *shader, QDomElement &el )
 {
 	//get all data for the element, by looping through all child elements
@@ -99,9 +130,20 @@ void Configuration::addUniforms( EffectShader *shader, QDomElement &el )
 }
 
 
-// Pre-2026-08 layout fallback: old presets on disk may still reference
-// Scene/, Combine/CombineX and Blend/ paths; map them to the new layout
-// (Scene2D/, FX/FxX, Engine/).  Idempotent for already-new paths.
+/**
+ * @brief Rewrites a shader `file` path from the pre-2026-08 folder layout to the current one, if needed.
+ * @param p Shader file path as read from a preset's `file` attribute (either legacy or current layout).
+ * @return The path with legacy `Scene/`, `Combine/CombineX` and `Blend/` segments remapped to `Scene2D/`, `FX/FxX` and `Engine/` respectively; unchanged (idempotent) if already in the new layout.
+ *
+ * Pre-2026-08 layout fallback: old presets on disk may still reference
+ * Scene/, Combine/CombineX and Blend/ paths; map them to the new layout
+ * (Scene2D/, FX/FxX, Engine/). The `Combine\Combine` -> `FX\Fx` rule (handling
+ * the `CombineX` shader-name prefix) must run before the plain
+ * `Combine\` -> `FX\` rule below it, or it would already have been consumed.
+ * The literal separators are split across string-literal concatenation
+ * (e.g. "\\Scen" "e\\") purely to dodge naive text-search tooling that
+ * greps for the old folder names verbatim.
+ */
 static QString mapLegacyShaderPath( QString p )
 {
 	p.replace( "\\Scen" "e\\", "\\Scene2D\\" );
@@ -115,6 +157,26 @@ static QString mapLegacyShaderPath( QString p )
 	return p;
 }
 
+/**
+ * @brief Parses the preset XML file into m_filterShader: root-level metadata/timing, then every TextureShader and CombineShader entry.
+ * @param filename Path to the Configurations/ *.xml preset file to parse.
+ *
+ * Loads @p filename into a QDomDocument and reads the root element's
+ * attributes (ImageDirectory, ConfigurationName, hidden, and the preset-wide
+ * solo/interpolation timing pair, each with a fallback baseline when
+ * absent or zero — see the inline comments below), then iterates all
+ * `<TextureShader>` elements followed by all `<CombineShader>` elements. For
+ * each entry it reads its own optional per-entry timing overrides (same
+ * fallback pattern), remaps its `file` path via mapLegacyShaderPath(),
+ * parses its `mood` attribute into EffectShader::MOOD_* flags, constructs
+ * the right EffectShader subclass for its `type` attribute (`normal`,
+ * `KaleidoscopeBase`, or — TextureShader only — `scene3d`), registers its
+ * uniforms via addUniforms(), and finally adds it to m_filterShader.
+ *
+ * On a missing/unreadable file this logs an error and calls exit(0) (not a
+ * recoverable failure path); on a document that fails to parse it returns
+ * early, leaving the Configuration in a partially/un-initialised state.
+ */
 void Configuration::readConfiguration( const QString &filename )
 {
 	QFile* file = new QFile( filename );
@@ -149,6 +211,12 @@ void Configuration::readConfiguration( const QString &filename )
 
 	// Image-cycling times: optional (music steering paces the show anyway);
 	// absent/0 falls back to the long-standing baseline.
+	// The two-step fallback below distinguishes "attribute wasn't given at
+	// all" from "author set min but left max unset/invalid": if min ended up
+	// at its baseline (attribute absent), max also gets its baseline
+	// (min,max) pair; but if the author explicitly customised min, an
+	// unset/too-small max is nudged to just min+1 rather than silently
+	// jumping to the unrelated wide baseline max.
 	m_timeTextureSoloMin = docElem.attribute( "timeTextureSoloMin" ).toUInt();
 	m_timeTextureSoloMax = docElem.attribute( "timeTextureSoloMax" ).toUInt();
 	if( m_timeTextureSoloMin == 0 ) m_timeTextureSoloMin = 10;

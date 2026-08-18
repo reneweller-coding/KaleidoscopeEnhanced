@@ -3,6 +3,12 @@
   \author Frank Firsching
   \date 17.03.2001
  */
+/**
+ * @file Vector4D.h
+ * @brief Small header-only 4D (homogeneous) vector math type (double xyzw), used
+ *        together with Vector3D for homogeneous-coordinate math (e.g. projecting
+ *        3D points to/from clip/homogeneous space).
+ */
 
 #ifndef VECTOR4D_H
 #define VECTOR4D_H
@@ -12,7 +18,16 @@
 
 class Vector3D;
 
-//! This class provides functions to handle 4-dimensional vectors
+/**
+ * @brief A 4-dimensional homogeneous vector of doubles (x, y, z, w).
+ *
+ * Provides the usual arithmetic operators plus conversions to/from Vector3D
+ * (constructing/assigning from a Vector3D sets w=1; converting the other way is done
+ * via Vector3D's own constructor/assignment, which divides by w). cartesian() /
+ * cartesianize() perform the perspective divide, normalizing w back to 1. Coordinates
+ * are public data members for direct access, and the class exposes a `double*` cast
+ * for interop with APIs expecting a raw `double[4]`.
+ */
 class Vector4D
 {
  public:

@@ -1,8 +1,12 @@
+/**
+ * @file QMyWindow.cpp
+ * @brief Implements QMyWindow: UI setup and the quit-action wiring.
+ */
 #include <QtWidgets/QFileDialog>
 
 #include "QMyWindow.h"
 
-QMyWindow::QMyWindow(QWidget *parent ): QMainWindow(parent) 
+QMyWindow::QMyWindow(QWidget *parent ): QMainWindow(parent)
 {
 	m_ui.setupUi( this );
 
@@ -10,12 +14,12 @@ QMyWindow::QMyWindow(QWidget *parent ): QMainWindow(parent)
 	setWindowTitle( QStringLiteral("Kaleidoscope-Visualizer") );
 
 	connect( m_ui.actionExit, SIGNAL(triggered()), SLOT(slotQuitApp()));
-}  
+}
 
 
-void QMyWindow::slotQuitApp() 
-{ 
-	emit signalQuitApp(); 
+void QMyWindow::slotQuitApp()
+{
+	emit signalQuitApp();
 }
 
 void QMyWindow::setDirectory( QString directory )

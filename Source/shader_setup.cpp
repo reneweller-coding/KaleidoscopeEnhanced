@@ -1,3 +1,7 @@
+/**
+ * @file shader_setup.cpp
+ * @brief Implementation of shader_setup.h: file-based GLSL source loading, per-stage compile/link diagnostics, and the fragment-only / vertex+fragment / full-pipeline / compute program builders.
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -8,6 +12,10 @@
 
 // Opengl feedback about shaders
 
+/**
+ * @brief Prints a shader's compile status and info log (if any) to stderr.
+ * @param sh_id The GL shader object to query (must already have glCompileShader called on it).
+ */
 void printShaderInfoLog(GLuint sh_id)
 {
     GLint infologLength = 0, status;
@@ -28,6 +36,10 @@ void printShaderInfoLog(GLuint sh_id)
     }
 }
 
+/**
+ * @brief Prints a program's link status and info log (if any) to stderr.
+ * @param prog_id The GL program object to query (must already have glLinkProgram called on it).
+ */
 void printProgramInfoLog(GLuint prog_id)
 {
     GLint infologLength = 0, status;
@@ -52,6 +64,17 @@ void printProgramInfoLog(GLuint prog_id)
 
 // load & use shaders
 
+/**
+ * @brief Loads a shader source file into an already-created shader object, compiles it, logs the result, and attaches it to a program.
+ *
+ * Fails hard: a missing source file is treated as a broken installation, not a recoverable
+ * condition, so this prints an error and calls exit(1) rather than returning an error code. A
+ * compile failure, by contrast, is only logged (via printShaderInfoLog) — the shader is attached
+ * regardless, and it is up to the caller to check the program's link status.
+ * @param program_id The GL program to attach the compiled shader to.
+ * @param shader_id An already-created (glCreateShader) shader object to fill and compile.
+ * @param filename Path to the GLSL source file to load.
+ */
 void loadAttachShader( GLuint program_id, GLuint shader_id, const char * filename )
 {
 	GLchar * shadersource = textFileRead( filename );
@@ -71,6 +94,13 @@ void loadAttachShader( GLuint program_id, GLuint shader_id, const char * filenam
 
 // The ONE shared vertex shader for every fullscreen pass (core profile has
 // no fixed-function vertex path): compiled once, attached to each program.
+/**
+ * @brief Returns the process-wide shared fullscreen-quad vertex shader, compiling it from Engine\\Fullscreen.vert on first call.
+ *
+ * Exits the process if the file is missing (see loadAttachShader()'s rationale — a missing engine
+ * asset is a broken install).
+ * @return The GL vertex shader object id (same value on every call after the first).
+ */
 static GLuint fullscreenVertShader()
 {
 	static GLuint vs = 0;
@@ -135,6 +165,16 @@ GLuint setShadersVF( const char *vert_source, const char *frag_source )
 
 // Attach one OPTIONAL stage.  Returns 1 = attached, 0 = file absent (fine),
 // -1 = present but failed to compile (the caller must abandon the program).
+/**
+ * @brief Compiles and attaches one optional pipeline stage (tess control/eval or geometry) to a program, if its source file exists.
+ *
+ * Unlike loadAttachShader(), a missing file here is a normal "this scene doesn't use the stage"
+ * outcome, not a fatal error — only an existing-but-broken file is treated as a failure.
+ * @param prog The GL program to attach the stage to.
+ * @param type The shader stage type (e.g. GL_TESS_CONTROL_SHADER, GL_GEOMETRY_SHADER).
+ * @param file Path to the stage's source file, or NULL to skip it outright.
+ * @return 1 if the stage was compiled and attached; 0 if @p file is NULL or does not exist (stage simply omitted); -1 if the file exists but failed to compile (caller must abandon the whole program).
+ */
 static int attachOptionalStage( GLuint prog, GLenum type, const char *file )
 {
 	if( file == NULL )

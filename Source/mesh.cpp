@@ -1,3 +1,7 @@
+/**
+ * @file mesh.cpp
+ * @brief Implementation of Mesh: a two-pass Wavefront .obj/.mtl text parser and a legacy fixed-function (glBegin/glEnd) renderer for the result.
+ */
 // Program from Stephan Mock 324612 and Randolf Sch�rfig 327639
 // modifiziert von cg.in.tu-clausthal
 
@@ -33,6 +37,10 @@ void Mesh::draw() {
 			glMaterialfv(GL_FRONT, GL_SPECULAR, materialList[matidx]->specular);
 			glMaterialfv(GL_FRONT, GL_SHININESS, &(materialList[matidx]->shininess));
 			// bind texture
+			// (left disabled below: texcoords are still emitted per-vertex further
+			// down whenever texcoordsAvailable, but with no glBindTexture call the
+			// currently-bound texture unit — if any — is whatever a previous
+			// caller left active, not this material's own texture.)
 			//if(materialList[matidx]->textureIndex >=0 )
 			//{
 			//	int texidx = materialList[matidx]->textureIndex;
@@ -41,6 +49,9 @@ void Mesh::draw() {
 			//	glBindTexture(GL_TEXTURE_2D,textures[texidx].textureId);
 			//}
 		} else {
+			// No material assigned to this part: fall back to a dim flat grey
+			// rather than leaving whatever GL color state the previous part left
+			// behind.
 			glColor3f(0.1f, 0.1f, 0.1f);
 		}
 		int from = meshPartInfo[mesh_Counter]->fromFace;
@@ -90,6 +101,10 @@ void Mesh::clear() {
 }
 
 
+// Sequential line-based .mtl parser: "newmtl" starts a new MaterialNode and
+// pushes the PREVIOUS one (matnode) onto materialList, so the node currently
+// being filled is always one line behind what's already committed; the last
+// material only gets pushed after the loop ends (see below).
 void Mesh::loadMaterials( const char* sFilename)
 {
 
@@ -209,6 +224,9 @@ int Mesh::getTextureNode(char *filename)
 	return idx;
 }
 
+// Two-pass .obj parser: this first pass only COUNTS vertices/texcoords/faces
+// (below) so the second pass — the one that actually fills the vectors — can
+// reserve() up front instead of growing/reallocating one element at a time.
 void Mesh::readObj( const char* sFilename)
 {
 	this->clear();
@@ -273,6 +291,12 @@ void Mesh::readObj( const char* sFilename)
 				facecounter++;
 			}
 
+			// NOTE: facecounter is incremented once more here, unconditionally,
+			// on top of whatever the matched branch above already added — so a
+			// recognised "f " line counts twice (and an unrecognised one still
+			// counts once). Harmless: facecounter only sizes the reserve() calls
+			// below, so over-counting merely reserves a bit more capacity than
+			// is strictly needed, it never affects how many triangles get parsed.
 			facecounter++;
 		}
 	}
@@ -376,7 +400,14 @@ void Mesh::readObj( const char* sFilename)
 
 			}
 		}
-		// face
+		// face — cascade of sscanf attempts, most specific format first, to cover
+		// every face notation the OBJ spec allows: "v/vt/vn", "v//vn" (no
+		// texcoord), "v/vn" (a looser variant some exporters emit) and bare "v"
+		// (position only), each in both triangle and quad form. Formats with no
+		// texcoord index read straight into i3NI's slot and simply never touch
+		// i3TI, which stays at its {0,0,0,-1} default — the "-= 1" below then
+		// turns that unwritten 0 into -1, the "no texcoord" sentinel, exactly
+		// like the 4th (quad) slot when the face has only 3 vertices.
 		else if ( strncmp( ac_line, "f ", 2) == 0)
 		{
 			int	i3VI[4] = {0, 0, 0, -1};
@@ -449,6 +480,10 @@ void Mesh::readObj( const char* sFilename)
 			triangles.push_back( Triangle( i3VI, i3TI, i3NI ) );
 
 			//Quad-Case: Make second Triangle
+			// Fan-triangulates the quad (0,1,2,3) as (0,1,2)+(0,2,3): the first
+			// triangle was already pushed above using indices 0,1,2, so this one
+			// reuses corners 0 and 2 and adds the 4th corner — assumes the quad
+			// is convex/planar, which is the usual case for authored OBJ meshes.
 			if ( i3VI[3] >= 0 )
 			{
 				int	i3V[3],	i3N[3], i3T[3];
@@ -509,6 +544,17 @@ void Mesh::computeBoundingBox()
 	}
 }
 
+// Rebuilds tgt as "<directory of src>/<newName>", i.e. resolves newName (a
+// filename from inside an .obj/.mtl file, e.g. "map_Kd wall.png") relative to
+// the file that referenced it rather than relative to the process's working
+// directory.
+// CAUTION: if src has neither '/' nor '\\' at all (no directory component),
+// p is still NULL after the inner if-block's strcpy(tgt,newName), and the
+// unconditional `p++; strcpy(p,newName);` below then writes through that
+// stale NULL pointer. Every current call site passes sFilename (the .obj/
+// .mtl path as given to the constructor), which in practice always carries a
+// directory, so this path isn't normally exercised — but a bare filename
+// with no path prefix would hit it.
 void Mesh::replaceFilename(char *tgt, const char *src, const char *newName)
 {
 	strcpy(tgt,src);
@@ -558,6 +604,10 @@ bool Mesh::loadTexture(QImage &qimg, GLuint &textureId, const char *filename)
 		cerr << "Could not load image: " << filename << endl;
 		return false;
 	}
+	// Format_RGB32 stores each pixel in memory as B,G,R,0xFF (little-endian
+	// 0xFFrrggbb); rgbSwapped() flips it to R,G,B,0xFF, which is exactly the
+	// byte order glTexImage2D is told to expect below (GL_RGBA / UNSIGNED_BYTE)
+	// — without the swap the red and blue channels would come out exchanged.
 	QImage img2 =img.convertToFormat(QImage::Format_RGB32);
 	qimg = img2.rgbSwapped();
 	glGenTextures(1, &textureId);
@@ -590,9 +640,12 @@ bool Mesh::loadTexture(QImage &qimg, GLuint &textureId, const char *filename)
 
 void Mesh::generateSphereTexCoords()
 {
+	// Only synthesize coordinates when the .obj file didn't already supply its
+	// own materials/texcoords (objTexAvail) — this is a fallback mapping, not
+	// an override.
 	if(!objTexAvail)
 	{
-		float multp[2] = { 5.0, 5.0f };
+		float multp[2] = { 5.0, 5.0f };   // texture repeat count in theta/phi
 		textcoords.clear();
 		// generate Texture Coordinates through Spere Mapping
 		Vector3D center((bmin+bmax)/2);
@@ -616,9 +669,11 @@ void Mesh::generateSphereTexCoords()
 
 void Mesh::generateCylinderTexCoords()
 {
+	// Same "only if the .obj didn't already provide texcoords" guard as
+	// generateSphereTexCoords().
 	if(!objTexAvail)
 	{
-		float multp[2] = { 5.0, 10.0f };
+		float multp[2] = { 5.0, 10.0f };   // texture repeat count in theta/height
 		// generate Texture Coordinates throug Cylinder Mapping
 		textcoords.clear();
 		// generate Texture Coordinates through Spere Mapping
@@ -639,6 +694,12 @@ void Mesh::generateCylinderTexCoords()
 	}
 }
 
+// Called right after generateSphereTexCoords()/generateCylinderTexCoords(),
+// which emit exactly one texcoord per vertex in vertex order — so at this
+// point triangle.t (still whatever readObj() parsed from the file, usually
+// unset/-1 since these generators only run when objTexAvail is false) can
+// simply be replaced with a copy of triangle.v, because index i in vertices
+// and index i in textcoords now refer to the same point.
 void Mesh::correctTheta(float multp)
 {
 	Vector3D center((bmin+bmax)/2);
@@ -659,6 +720,14 @@ void Mesh::correctTheta(float multp)
 			if(delta.z >= 0) frontVert = true;
 			if(delta.x < 0) leftVert = true;
 		}
+		// Heuristic seam test: theta = atan2(z,x)/(2*PI)+0.5 wraps from ~1 back
+		// to ~0 across the negative-x/z==0 line, so a triangle that has corners
+		// on BOTH sides of z==0 while also reaching into the left (x<0) half is
+		// the shape a seam-crossing triangle takes under this mapping. For such
+		// a triangle, the corner(s) behind the seam (z<0) get their OWN, newly
+		// appended texcoord shifted by +multp (one extra theta "wrap") instead
+		// of sharing the original one — so interpolation walks smoothly past
+		// 1.0 instead of tearing back across the whole texture to 0.0.
 		if(backVert && frontVert && leftVert)
 		{
 			for ( int j = 0; j < 3; j++)

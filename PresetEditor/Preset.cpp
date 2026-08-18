@@ -1,3 +1,7 @@
+/**
+ * @file Preset.cpp
+ * @brief Implements Preset/PresetEntry XML load and save (see Preset.h for the schema).
+ */
 #include "Preset.h"
 
 #include <QtCore/QFile>
@@ -6,7 +10,11 @@
 #include <QtXml/QDomDocument>
 #include <QtXml/QDomElement>
 
-// Strip a leading "..\" or "../" that the configs use in the file= attribute.
+/**
+ * @brief Strip a leading "..\" or "../" (and any deeper path) from a file= attribute.
+ * @param f Raw file= attribute value, e.g. "..\\Scene2D\\Kaleidoscope.frag".
+ * @return The bare filename only, e.g. "Kaleidoscope.frag".
+ */
 static QString bareFile(QString f)
 {
     f.replace('\\', '/');
@@ -14,10 +22,15 @@ static QString bareFile(QString f)
     return (slash >= 0) ? f.mid(slash + 1) : f;
 }
 
-// Folder segment of the file= attribute ("..\Scene3D\X.frag" -> "Scene3D").
-// The configs write DOUBLE backslashes ("..\\Scene3D\\X.frag"), the editor's
-// own save single ones -- splitting on separators and skipping the empty
-// segments handles both spellings.
+/**
+ * @brief Extract the folder segment of a file= attribute ("..\Scene3D\X.frag" -> "Scene3D").
+ * @param f Raw file= attribute value.
+ * @return The immediate parent folder name, or an empty string if it can't be determined.
+ *
+ * The configs write DOUBLE backslashes ("..\\Scene3D\\X.frag"), the editor's
+ * own save single ones -- splitting on separators and skipping the empty
+ * segments handles both spellings.
+ */
 static QString folderOf(QString f)
 {
     f.replace('\\', '/');
@@ -27,6 +40,11 @@ static QString folderOf(QString f)
     return QString();
 }
 
+/**
+ * @brief Read every `<bool>`/`<int>`/`<float>`/`<interpolator>`/`<expr>` child of a shader element into @p e.params.
+ * @param el The `<TextureShader>` or `<CombineShader>` DOM element to scan.
+ * @param e Entry whose @c params vector child elements are appended to, in document order.
+ */
 static void readParams(const QDomElement &el, PresetEntry &e)
 {
     for (QDomNode n = el.firstChild(); !n.isNull(); n = n.nextSibling())
@@ -69,6 +87,8 @@ bool Preset::load(const QString &path, Preset &out, QString *err)
     }
     QDomElement root = doc.documentElement();
 
+    // Reset out to defaults first so a failed/partial re-load of an existing
+    // Preset instance never leaves stale fields (or entries) behind.
     out = Preset();
     out.imageDirectory = root.attribute("ImageDirectory");
     out.name = root.attribute("ConfigurationName");
@@ -78,6 +98,9 @@ bool Preset::load(const QString &path, Preset &out, QString *err)
     out.timeTextureInterpolationMin = root.attribute("timeTextureInterpolationMin").toInt();
     out.timeTextureInterpolationMax = root.attribute("timeTextureInterpolationMax").toInt();
 
+    // Local lambda: read every `<TextureShader>` or `<CombineShader>` element into
+    // a PresetEntry and append it, tagging isCombine so the two element kinds
+    // share the exact same field-parsing logic below.
     auto readList = [&](const QString &tag, bool combine)
     {
         QDomNodeList list = root.elementsByTagName(tag);
@@ -130,6 +153,9 @@ bool Preset::save(const QString &path, QString *err) const
     w.writeAttribute("timeTextureInterpolationMin", QString::number(timeTextureInterpolationMin));
     w.writeAttribute("timeTextureInterpolationMax", QString::number(timeTextureInterpolationMax));
 
+    // Local lambda: write one `<TextureShader>`/`<CombineShader>` element and its
+    // param children; shared by both passes below so texture and combine
+    // entries serialize identically save for the element tag name.
     auto writeEntry = [&](const PresetEntry &e)
     {
         w.writeStartElement(e.isCombine ? "CombineShader" : "TextureShader");

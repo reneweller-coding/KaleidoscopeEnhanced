@@ -1,3 +1,11 @@
+/**
+ * @file filterShader.cpp
+ * @brief Implements FilterShader: the per-frame render/present pipeline (see paint()) —
+ *        texture-effect and combine-effect rendering, the SceneScheduler-driven cross-fade
+ *        state machines, feedback/trails, shadow and order-independent-transparency passes,
+ *        the 2D camera rig, true-stereo per-eye rendering, and the background ImageLoader
+ *        thread that streams new photos in without stalling the render thread.
+ */
 #include <float.h>
 #include <math.h>
 #include <algorithm>
@@ -313,6 +321,12 @@ void FilterShader::stop()
 	// without a current GL context).  GLwidget's destructor releases them
 	// once at shutdown.
 
+	// NOTE: terminate() hard-kills the loader thread immediately rather than
+	// asking it to exit its poll loop cooperatively — there is no cooperative
+	// stop flag (ImageLoader::run() only checks m_triggerImageload). Safe in
+	// practice because run() never holds a mutex; the worst case is an image
+	// decode aborted partway, and the ImageLoader object itself is deleted
+	// right below anyway.
 	m_imageLoader->terminate();
 
 	cleanTextures();
@@ -735,6 +749,23 @@ static int   s_fakeDrops   = 0;
 static float s_fakePulse   = 0.f;
 static float s_forceDropAt = -2.f;
 
+// ---------------------------------------------------------------------------
+// paint(): the whole per-frame pipeline.  Rough order (see the section
+// comments below for each): (1) live Spout/video input + timing-scale smoothing;
+// (2) VJ freeze/pin + DJ-stop dt manipulation; (3) title-reveal upload/advance;
+// (4) the big audio-reactive block that turns raw AudioFeatures into continuous,
+// slew-limited phases/envelopes (audioFx) — beat PLL, bar phase, onset/kick/
+// snare/hat envelopes, swell, fade-out, melody ring, virtual-camera "Regie",
+// Zeit-Regie rewind/echo/breath, chroma-hue slew; (5) the image cross-fade state
+// machine and the SceneScheduler tick (effect selection); (6) GpuSims/ComputeFX
+// stepping, gated to only what the active/incoming effects actually sample;
+// (7) shadow pass, the two texture-effect passes (optional true-stereo/OIT) and
+// the two combine passes, with the SceneScheduler combine tick running in
+// between (it needs m_trueStereoHold, computed just before the texture passes);
+// (8) the legacy outer "combine of combines" (FxPlain) cross-fade; (9) the
+// phosphor feedback/trails pass; (10) PresentPass::run() for tone-mapping,
+// bloom, camera transform, stereo packing, overlays and final display.
+// ---------------------------------------------------------------------------
 void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
                          const AudioFeatures &audio)
 {
@@ -2654,6 +2685,12 @@ void FilterShader::setupTexture( const GLuint texID, const QImage &image )
 
 
 	// upload image data
+	// WHY glTexImage2D only the first two times: m_actTex and m_nextTex are the
+	// only two textures this ever writes, and prepareImage() (Utils.cpp) always
+	// hands back a fixed 1024x1024 ARGB32 image regardless of the source photo's
+	// size — so the storage glTexImage2D allocates on those first two calls is
+	// guaranteed to fit every later photo too, and glTexSubImage2D can safely
+	// reuse it (cheaper: no reallocation) for every subsequent load.
 	if( m_nrTextureUploads < 2 )
 	{
 		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA8, 
@@ -2711,6 +2748,10 @@ void FilterShader::initGLSL()
 void FilterShader::checkGLErrors( const char *label )
 {
 	return;//rwrwtest profiling
+	// WHY this early return: glGetError() can force a GPU/driver sync, and this
+	// function is called from dozens of sites every frame, so the check below
+	// is disabled for normal runs (label "profiling").  Remove the line above
+	// to re-enable GL error diagnostics while debugging.
 
     GLenum errCode = glGetError();
     if ( errCode == GL_NO_ERROR )
@@ -2730,6 +2771,9 @@ void FilterShader::checkGLErrors( const char *label )
 bool FilterShader::checkFramebufferStatus(void)
 {
 	return true; //rwrwtest profiling
+	// WHY this early return: like checkGLErrors(), disabled for normal runs
+	// (label "profiling"); the switch below is only exercised if this guard
+	// is removed while debugging an incomplete-FBO problem.
 
     GLenum status;
     status = (GLenum) glCheckFramebufferStatus(GL_FRAMEBUFFER);

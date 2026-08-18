@@ -1,3 +1,7 @@
+/**
+ * @file SpoutIn.cpp
+ * @brief Implementation of the Spout receive facade (SpoutIn.h); wraps the Spout2 SDK's Spout class.
+ */
 // SpoutIn.cpp — see SpoutIn.h.  Includes Spout headers (like SpoutOut.cpp,
 // never mixed with GLee translation units).
 #include "SpoutIn.h"
@@ -5,9 +9,9 @@
 
 #include <cstring>
 
-static Spout   *s_rx  = nullptr;
-static GLuint   s_tex = 0;
-static unsigned s_w   = 0, s_h = 0;
+static Spout   *s_rx  = nullptr;   ///< The Spout2 SDK receiver object; nullptr until spoutInInit() creates it.
+static GLuint   s_tex = 0;         ///< GL texture id that receives the sender's frame; 0 until allocTexture() first runs.
+static unsigned s_w   = 0, s_h = 0;   ///< Current size of s_tex, as of the last allocTexture() call.
 
 bool spoutInInit( const char *senderName )
 {
@@ -21,6 +25,11 @@ bool spoutInInit( const char *senderName )
 	return true;
 }
 
+/**
+ * @brief (Re)allocates s_tex at the given size, GL_RGBA8, and sets its sampling/wrap parameters.
+ * @param w New texture width in pixels.
+ * @param h New texture height in pixels.
+ */
 static void allocTexture( unsigned w, unsigned h )
 {
 	if( !s_tex ) glGenTextures( 1, &s_tex );
@@ -41,11 +50,15 @@ unsigned int spoutInReceive( unsigned int *width, unsigned int *height )
 	if( !s_rx )
 		return 0;
 	if( !s_tex )
-		allocTexture( 16, 16 );
+		allocTexture( 16, 16 );   // placeholder size until the first real sender frame arrives
 	if( s_rx->ReceiveTexture( s_tex, GL_TEXTURE_2D ) )
 	{
 		if( s_rx->IsUpdated() )               // sender (re)connected / resized
 		{
+			// The SDK just reallocated its own shared texture at the new size, so this frame's
+			// ReceiveTexture() copy target is stale; reallocate s_tex to match and skip this
+			// frame (return 0) — the caller falls back to its previous source for one frame,
+			// then gets valid data starting next call.
 			allocTexture( s_rx->GetSenderWidth(), s_rx->GetSenderHeight() );
 			return 0;                          // valid from the next frame on
 		}

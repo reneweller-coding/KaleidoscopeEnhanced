@@ -8,6 +8,36 @@
 // pointers.  Call glcoreInit() once with the context current (initializeGL).
 //
 // MUST be included before any other gl.h path (same rule as GLee before it).
+/**
+ * @file glcore.h
+ * @brief Hand-rolled OpenGL 4.3 core-profile function-pointer loader that replaces
+ *        GLEW/GLee.
+ *
+ * @par The problem this solves
+ * On Windows, `<GL/gl.h>` only exports the fixed-function GL 1.1 API; every entry
+ * point added since then (buffers, shaders, framebuffers, compute, ...) must be
+ * resolved at runtime via wglGetProcAddress. The codebase used to rely on GLee for
+ * that, but GLee predates GL 4.3 compute shaders and actively breaks on a CORE
+ * profile context: it probes the (compatibility-only) `GL_EXTENSIONS` string, which
+ * a core context no longer exposes. Since a core profile also has no fixed-function
+ * pipeline (no glBegin/glEnd, no matrix stack, everything goes through shaders and
+ * buffers), this loader only ever needs to resolve the "modern" entry points this
+ * codebase actually calls.
+ *
+ * @par How it works
+ * This header declares exactly the GL entry points the codebase uses as function
+ * pointers named `glcore_<name>` (via the GLC_FN macro), plus the GL tokens/typedefs
+ * missing from the GL 1.1 headers. `#define`s then remap the standard GL call-site
+ * names (e.g. `glActiveTexture`) onto the loaded pointers (`glcore_glActiveTexture`),
+ * so callers elsewhere in the codebase keep writing ordinary-looking GL calls.
+ * glcoreInit() (see glcore.cpp) resolves every pointer once, with a GL context
+ * current (called from initializeGL); glcoreHasCompute / glcoreHasTess then report
+ * whether the optional compute/tessellation entry points were actually available, so
+ * callers can gate those code paths and fall back gracefully.
+ *
+ * This header must be included before any other path that pulls in `<GL/gl.h>`,
+ * the same rule that applied to GLee before it.
+ */
 
 #pragma once
 
@@ -23,12 +53,20 @@
 #include <GL/gl.h>
 
 // ---- Types missing from GL 1.1 headers ----
-#include <stddef.h>
+/// @name Types missing from the GL 1.1 headers, needed by the shader/buffer API below.
+///@{
 typedef char      GLchar;
 typedef ptrdiff_t GLsizeiptr;
 typedef ptrdiff_t GLintptr;
+///@}
 
 // ---- Tokens beyond GL 1.1 (only what the codebase touches) ----
+/// @name GL enum/token values beyond GL 1.1.
+/// Hard-coded because the GL 1.1 headers don't declare them; values are only the
+/// ones this codebase actually passes to GL calls (texture wrap/compare modes,
+/// texture units, buffer targets/usage hints, shader stages, framebuffer/renderbuffer
+/// enums and status codes, texture internal/pixel formats, and memory-barrier bits).
+///@{
 #define GL_CLAMP_TO_EDGE                  0x812F
 // Shadow-map sampling.  With COMPARE_REF_TO_TEXTURE the sampler returns the
 // RESULT of a depth comparison, so a LINEAR filter averages four booleans and
@@ -131,16 +169,40 @@ typedef ptrdiff_t GLintptr;
 #define GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT 0x00000001
 #define GL_COMMAND_BARRIER_BIT             0x00000040
 #define GL_ALL_BARRIER_BITS                0xFFFFFFFF
+///@}
 
 // ---- Function pointers (loaded in glcoreInit) ----
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+/**
+ * @brief Declares one loadable GL entry point.
+ *
+ * For entry point @p name, defines its function-pointer typedef `PFN_<name>` (with
+ * signature `ret args`) and declares the global pointer variable `glcore_<name>` that
+ * glcoreInit() (see glcore.cpp) resolves via wglGetProcAddress/GetProcAddress. Used
+ * only for the duration of the declaration list below; undef'd immediately after.
+ * @param ret Return type of the GL function.
+ * @param name Name of the GL function (e.g. glActiveTexture).
+ * @param args Parenthesized parameter-type list of the GL function.
+ */
 #define GLC_FN(ret, name, args) \
     typedef ret (APIENTRY *PFN_##name) args; \
     extern PFN_##name glcore_##name;
 
+/// @name Loadable GL entry points, grouped by area.
+/// Buffers/VAOs (glGenBuffers..glVertexAttribPointer/glGetAttribLocation), shader and
+/// program objects (glCreateShader..glGetUniformLocation, glUniform*), framebuffers
+/// and renderbuffers (glGenFramebuffers..glGenerateMipmap), GL 4.3 compute (
+/// glDispatchCompute, glBindImageTexture, glMemoryBarrier, glBindBufferBase,
+/// glClearBufferData, glDrawArraysIndirect, glDispatchComputeIndirect),
+/// tessellation (glPatchParameteri), order-independent-transparency blending
+/// (glBlendFunci, glDrawBuffers, glClearBufferfv), and the Frame-History-Ring
+/// texture-array/blit path (glTexImage3D, glFramebufferTextureLayer,
+/// glBlitFramebuffer). See glcoreInit() in glcore.cpp for which of these are
+/// mandatory vs. optional.
+///@{
 GLC_FN(void,   glActiveTexture, (GLenum))
 GLC_FN(void,   glGenBuffers, (GLsizei, GLuint*))
 GLC_FN(void,   glBindBuffer, (GLenum, GLuint))
@@ -214,10 +276,16 @@ GLC_FN(void,   glClearBufferfv, (GLenum, GLint, const GLfloat *))
 GLC_FN(void,   glTexImage3D, (GLenum, GLint, GLint, GLsizei, GLsizei, GLsizei, GLint, GLenum, GLenum, const void*))
 GLC_FN(void,   glFramebufferTextureLayer, (GLenum, GLenum, GLuint, GLint, GLint))
 GLC_FN(void,   glBlitFramebuffer, (GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLbitfield, GLenum))
+///@}
 
 #undef GLC_FN
 
 // Call-site remaps: the code keeps using the standard names.
+/// @name Call-site remaps.
+/// Redefines each standard GL function name to the corresponding loaded pointer
+/// (`glcore_<name>`), so the rest of the codebase can keep calling e.g.
+/// `glActiveTexture(...)` unmodified instead of `glcore_glActiveTexture(...)`.
+///@{
 #define glActiveTexture            glcore_glActiveTexture
 #define glGenBuffers               glcore_glGenBuffers
 #define glBindBuffer               glcore_glBindBuffer
@@ -286,16 +354,30 @@ GLC_FN(void,   glBlitFramebuffer, (GLint, GLint, GLint, GLint, GLint, GLint, GLi
 #define glTexImage3D               glcore_glTexImage3D
 #define glFramebufferTextureLayer  glcore_glFramebufferTextureLayer
 #define glBlitFramebuffer          glcore_glBlitFramebuffer
+///@}
 
-// True when every entry point the compute pipeline needs resolved (set by
-// glcoreInit).  Callers gate their compute path on this and keep a fallback.
+/**
+ * @brief True when every entry point the compute pipeline needs resolved (set by
+ *        glcoreInit()). Callers gate their compute path on this and keep a fallback.
+ */
 extern int glcoreHasCompute;
-// True when tessellation is usable (glPatchParameteri resolved).  Geometry
-// shaders need no extra entry point, so they ride on the core 3.2 context.
+/**
+ * @brief True when tessellation is usable (glPatchParameteri resolved). Geometry
+ *        shaders need no extra entry point, so they ride on the core 3.2 context.
+ */
 extern int glcoreHasTess;
 
-// Resolve every pointer above; returns false (and logs the names) if any
-// required function is missing.  GL context must be current.
+/**
+ * @brief Resolves every GL function pointer declared above.
+ *
+ * Must be called once with a GL context current (e.g. from initializeGL), before any
+ * of the remapped GL calls are used. Required entry points that fail to resolve are
+ * logged by name; optional (compute/tessellation/frame-history) ones are logged but
+ * don't fail the call. Also sets glcoreHasCompute / glcoreHasTess based on which
+ * optional pointers resolved.
+ * @return Non-zero (true) if every required (non-optional) entry point resolved,
+ *         zero if any is missing.
+ */
 int glcoreInit(void);
 
 #ifdef __cplusplus

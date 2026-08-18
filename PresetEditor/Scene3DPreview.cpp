@@ -1,4 +1,10 @@
-// See Scene3DPreview.h for why this file stands alone.
+/**
+ * @file Scene3DPreview.cpp
+ * @brief Implementation of Scene3DPreview: shader (re)compilation with
+ *        captured stderr, FBO/shadow-map/OIT target setup, and the
+ *        shadow -> main -> OIT render sequence. See Scene3DPreview.h for why
+ *        this file stands alone.
+ */
 #include "../Source/glcore.h"      // MUST be the first GL-touching include (see .h)
 #include "Scene3DPreview.h"
 
@@ -14,15 +20,20 @@
 #include <functional>
 #include <io.h>
 
-// EffectShader is a CONCRETE class (draw()/checkGLErrors() are virtual but not
-// pure), so its own vtable -- emitted once, in EffectShader.obj -- keeps
-// EffectShader::draw() reachable even though every scene this editor actually
-// renders is a Scene3DShader whose OWN draw() override replaces it.  That
-// unreachable-in-practice function still calls an `extern GLuint
-// fullscreenVAO()` that normally lives in filterShader.cpp, which is not
-// linked here (it is almost entirely Qt-widget code).  A second definition in
-// any linked translation unit satisfies the linker; it is never actually
-// invoked.
+/**
+ * @brief Link-time-only stand-in for filterShader.cpp's `fullscreenVAO()`.
+ *
+ * EffectShader is a CONCRETE class (draw()/checkGLErrors() are virtual but not
+ * pure), so its own vtable -- emitted once, in EffectShader.obj -- keeps
+ * EffectShader::draw() reachable even though every scene this editor actually
+ * renders is a Scene3DShader whose OWN draw() override replaces it.  That
+ * unreachable-in-practice function still calls an `extern GLuint
+ * fullscreenVAO()` that normally lives in filterShader.cpp, which is not
+ * linked here (it is almost entirely Qt-widget code).  A second definition in
+ * any linked translation unit satisfies the linker; it is never actually
+ * invoked.
+ * @return A lazily-created, process-lifetime empty VAO name.
+ */
 GLuint fullscreenVAO()
 {
     static GLuint vao = 0;
@@ -81,12 +92,16 @@ void Scene3DPreview::addExpr( const QString &name, const QString &formula )
         m_scene->addExpression( name.toStdString(), formula.toStdString() );
 }
 
-// Redirect stderr to a temp file for the duration of one compile call, then
-// read it back as the status-panel log.  Every compiler/linker message in
-// this codebase goes straight to stderr (printShaderInfoLog / printProgram-
-// InfoLog in shader_setup.cpp) with no string-returning alternative — this is
-// the least invasive way to surface it in the editor's UI without changing
-// that shared, shipped code path.
+/**
+ * @brief Redirect stderr to a temp file for the duration of one call, then read it back as a log string.
+ *
+ * Every compiler/linker message in this codebase goes straight to stderr
+ * (printShaderInfoLog / printProgramInfoLog in shader_setup.cpp) with no
+ * string-returning alternative -- this is the least invasive way to surface
+ * it in the editor's UI without changing that shared, shipped code path.
+ * @param body Callable to run with stderr redirected (typically a shader compile/link call).
+ * @return Everything @p body wrote to stderr while redirected, trimmed; empty on a clean run or if the redirect/restore failed.
+ */
 static QString captureStderr( const std::function<void()> &body )
 {
     fflush( stderr );
@@ -151,6 +166,11 @@ bool Scene3DPreview::setShader( const QString &fragPathRelative, const QString &
 
 // ---- geometry: a single empty VAO, matching Engine/Fullscreen.vert's
 // gl_VertexID-driven big triangle (no vertex attributes at all) ----
+/**
+ * @brief Lazily create (and return) an empty VAO for a gl_VertexID-driven fullscreen triangle.
+ * @param vao In/out GL object name; created on first call (when 0), reused afterwards.
+ * @return The VAO's GL object name.
+ */
 static unsigned ensureQuadVao( unsigned &vao )
 {
     if( vao == 0 )
@@ -158,6 +178,10 @@ static unsigned ensureQuadVao( unsigned &vao )
     return vao;
 }
 
+/**
+ * @brief Check the currently bound FBO's completeness, logging a diagnostic on failure.
+ * @return True if GL_FRAMEBUFFER_COMPLETE; false otherwise (status is printed to stderr).
+ */
 static bool checkFbo()
 {
     GLenum s = glCheckFramebufferStatus( GL_FRAMEBUFFER );
@@ -248,6 +272,12 @@ bool Scene3DPreview::ensureShadowMap()
     return ok;
 }
 
+// Hand-rolled view + orthographic-projection matrices (no matrix library is
+// linked into this translation unit): V is a look-at built from the light
+// direction with an up-vector fallback when the light is near-vertical, P is
+// a symmetric ortho frustum sized by the scene's own shadowExtent E. Both
+// are laid out COLUMN-MAJOR (M[col*4+row]) to match GLSL's mat4 convention,
+// since s_lightM is uploaded to the shader as-is.
 void Scene3DPreview::updateLightMatrix( float t )
 {
     const float E = EffectShader::s_shadowExtent;

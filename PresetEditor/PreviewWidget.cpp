@@ -1,3 +1,9 @@
+/**
+ * @file PreviewWidget.cpp
+ * @brief Implementation of PreviewWidget: shader (re)compilation, the
+ *        synthetic and WAV-timeline audio-uniform pipelines, the 2D camera
+ *        rig, and the combined 2D/scene3d two-pass render in paintGL().
+ */
 #include "PreviewWidget.h"
 
 #include <QtOpenGL/QOpenGLShaderProgram>
@@ -19,21 +25,31 @@
 #include "../Source/EffectShader.h"
 #include "../Source/ExprEval.h"
 
-// Trivial fullscreen-quad vertex shader (330 core, matching the migrated
-// .frag files; they use gl_FragCoord, so no texcoords / matrices are needed).
+/**
+ * @brief Trivial fullscreen-quad vertex shader (330 core, matching the migrated .frag files).
+ *
+ * They use gl_FragCoord, so no texcoords / matrices are needed here.
+ */
 static const char *kVert =
     "#version 330 core\n"
     "in vec2 aPos;\n"
     "void main() { gl_Position = vec4(aPos, 0.0, 1.0); }\n";
 
-// Look up the <int>/<float> ranges Komplett.xml registers for one fragment
-// file (it registers every shader with sensible min/max values).  An
-// independent copy of EditorWindow.cpp's komplettParamsFor(), which only
-// feeds the slider panel -- this one feeds Scene3DShader::addUniform()
-// directly so a scene3d shader gets a real per-activation roll instead of
-// GLSL's zero default, in BOTH the GUI and the headless --render/self-test
-// paths that never touch EditorWindow at all.
+/// One `<int>`/`<float>` range entry parsed out of Komplett.xml for a single shader file; see komplettRangesFor().
 struct KomplettRange { QString kind, name; float minV, maxV; };
+/**
+ * @brief Look up the `<int>`/`<float>` ranges Komplett.xml registers for one fragment file.
+ *
+ * Komplett.xml registers every shader with sensible min/max values. An
+ * independent copy of EditorWindow.cpp's komplettParamsFor(), which only
+ * feeds the slider panel -- this one feeds Scene3DShader::addUniform()
+ * directly so a scene3d shader gets a real per-activation roll instead of
+ * GLSL's zero default, in BOTH the GUI and the headless --render/self-test
+ * paths that never touch EditorWindow at all.
+ * @param root Project root Configurations/Komplett.xml is resolved against.
+ * @param frag Bare shader filename to look up (matched against the file="..\\...\\<frag>" attribute).
+ * @return The `<int>`/`<float>` ranges declared for @p frag's `<TextureShader>`/`<CombineShader>` entry, or empty if none were found.
+ */
 static QVector<KomplettRange> komplettRangesFor(const QString &root, const QString &frag)
 {
     QVector<KomplettRange> out;
@@ -209,6 +225,9 @@ GLuint PreviewWidget::makeTexture(const QString &path)
                 img.setPixel(x, y, qRgb(r, g, b));
             }
     }
+    // Flip vertically: QImage's row 0 is the TOP of the picture, but GL
+    // texture (s,t)=(0,0) samples the BOTTOM-left texel -- without this the
+    // image would upload upside down relative to every shader's uv origin.
     img = img.convertToFormat(QImage::Format_RGBA8888).mirrored(false, true);
 
     GLuint id = 0;
@@ -606,7 +625,7 @@ AudioFeatures PreviewWidget::synthFeatures(float t) const
     return f;
 }
 
-// Mirrors EffectShader.cpp's per-activation <expr> uniform upload -- same
+// Mirrors EffectShader.cpp's per-activation `<expr>` uniform upload -- same
 // AudioFeatures field -> ExprVars::Index mapping, so a formula previewed
 // here evaluates the same way it would in the shipped app given the same
 // audio state. Fields synthFeatures() never sets (bassRel/midRel/trebRel,
@@ -733,6 +752,13 @@ void PreviewWidget::drawFullscreenQuad(QOpenGLShaderProgram *)
 
 void PreviewWidget::paintGL()
 {
+    // m_fixedTime pins the clock for the headless probe paths (--render
+    // --time, --transcheck): main.cpp calls setFixedTime() then grabs the
+    // framebuffer after a fixed QTimer::singleShot delay, so every repaint
+    // in between renders the exact same "time" uniform -- the grab is
+    // reproducible regardless of how long the GL driver actually took to
+    // warm up. Live GUI preview leaves m_fixedTime < 0 and free-runs off
+    // m_clock instead.
     m_time = (m_fixedTime >= 0.f) ? m_fixedTime : m_clock.elapsed() * 0.001f;
 
     const qreal dpr = devicePixelRatioF();

@@ -1,3 +1,7 @@
+/**
+ * @file Scene3DShader.h
+ * @brief EffectShader subclass rendering a real 3D scene: procedural geometry animated by a scene-specific vertex shader, drawn through a perspective camera into the shared effect FBO.
+ */
 // Scene3DShader.h
 // ---------------------------------------------------------------------------
 // A REAL 3D scene effect: procedural geometry in a static VBO, animated
@@ -32,17 +36,46 @@
 #include "EffectShader.h"
 #include <string>
 
+/**
+ * @brief EffectShader specialization that renders a real 3D scene: procedural geometry driven entirely by a scene-specific vertex shader.
+ *
+ * Each instance owns one VBO/VAO of host-built (or, for geom="indirect", compute-generated)
+ * geometry, a perspective camera it assembles itself in draw() (including an optional
+ * formula-driven camera rig), and an optional tessellation / geometry / compute pipeline that a
+ * scene opts into simply by dropping the matching sibling file (X.tesc/X.tese/X.geom/X.comp)
+ * next to its X.vert/X.frag. Every (re)activation rolls a fresh set of "per-activation variety"
+ * parameters (time offset, speed factor, hue offset, scene seed) via resetParameters(), so the
+ * same scene reads as a whole family of variations rather than always looking identical. Used by
+ * the preset/effect system like any other EffectShader; is3D() is the only extra signal the host
+ * needs, to route true-stereo per-eye rendering.
+ */
 class Scene3DShader : public EffectShader
 {
 public:
+	/**
+	 * @brief Constructs a 3D scene bound to one fragment shader and geometry kind, and rolls its first per-activation variation.
+	 * @param filenameFragmentShader Path to the scene's X.frag; sibling X.vert/.tesc/.tese/.geom/.comp filenames are derived from it by replacing the extension.
+	 * @param geom Geometry kind from the preset's geom= attribute ("points","cubes","ribbon","grid","quads","patches","scatter","indirect"); unrecognised values fall back to "points".
+	 * @param minTimeSolo Minimum time (ms) this effect stays solo before crossfading; forwarded to EffectShader.
+	 * @param maxTimeSolo Maximum time (ms) this effect stays solo; forwarded to EffectShader.
+	 * @param minTimeInterpolation Minimum crossfade duration (ms); forwarded to EffectShader.
+	 * @param maxTimeInterpolation Maximum crossfade duration (ms); forwarded to EffectShader.
+	 */
 	Scene3DShader( const std::string &filenameFragmentShader, const std::string &geom,
 	               unsigned int minTimeSolo, unsigned int maxTimeSolo,
 	               unsigned int minTimeInterpolation, unsigned int maxTimeInterpolation );
+	/** @brief Releases this scene's GL objects: geometry VBO, indirect command buffer, persistent generator-state buffer and compute generator program. */
 	~Scene3DShader();
 
+	/**
+	 * @brief Compiles the full shader pipeline (vertex + optional tess/geom stages + fragment), resolves uniform/attribute locations, and builds/uploads the geometry and VAO.
+	 * @param width Render-target width in pixels.
+	 * @param height Render-target height in pixels.
+	 */
 	void initUniforms( int width, int height ) override;
+	/** @brief Renders one frame: builds the projection/camera matrix (applying any rig* formulas), sets the depth/blend state appropriate to this scene's geometry kind, and issues its draw call(s). */
 	void draw() override;
-	bool is3D() const override { return true; }
+	bool is3D() const override { return true; }   ///< @return true — this is a real 3D scene, so the host uses the true-stereo per-eye render path.
 
 	// PER-ACTIVATION VARIETY: every time the scene is (re)activated it rolls
 	// a fresh epoch — a large time offset (different camera/burst phases), a
@@ -50,24 +83,34 @@ public:
 	// flickers), a hue rotation and a generic `sceneSeed` uniform some scenes
 	// use structurally (sector counts, knot type).  The same scene becomes a
 	// whole family of variations.
+	/** @brief Rolls a fresh per-activation variation epoch (time offset, speed factor, hue offset, scene seed) on top of the base class's own parameter reset. */
 	void resetParameters() override;
 	// Also true when only the compute generator reads the spectrogram — the
 	// base class can only see the render program.
+	/** @brief Whether this scene reads the spectrogram history texture. @return true if the render program (base class check) OR, for geom="indirect" scenes, the compute generator declares `texSpectro`. */
 	bool usesSpectro() override;
-	void  setStateBytes( int b ) { m_stateBytes = b; }
-	void  setShadowExtent( float e ) { m_shadowExtent = e; }
-	float shadowExtent() const override { return m_shadowExtent; }
+	void  setStateBytes( int b ) { m_stateBytes = b; }   ///< @param b Size in bytes of the persistent SSBO a geom="indirect" generator keeps across frames (0 = none); allocated and zeroed once in setupIndirect().
+	void  setShadowExtent( float e ) { m_shadowExtent = e; }   ///< @param e Half-width of the shadow-map light box for this scene (overrides EffectShader::kShadowExtent).
+	float shadowExtent() const override { return m_shadowExtent; }   ///< @return This scene's shadow-map light box half-width.
+	/**
+	 * @brief Forwards to EffectShader::setUniforms(), first folding in this activation's time offset/speed factor.
+	 * @param time Raw host time in seconds.
+	 * @param interpolation Crossfade interpolation factor (0..1) between the outgoing and incoming effect.
+	 * @param texLoc1 Texture unit bound as `tex0` (current image).
+	 * @param texLoc2 Texture unit bound as `tex1` (incoming crossfade image).
+	 */
 	void setUniforms( float time, float interpolation,
 	                  GLint texLoc1, GLint texLoc2 ) override;
+	/** @brief Applies this activation's hue offset to the chroma hue and audio rotation/advance phases before forwarding the features to EffectShader, and caches the adjusted snapshot for the (separate-program) indirect generator. @param f Live audio-analysis snapshot for the current frame. */
 	void applyAudioFeatures( const AudioFeatures &f );
 
 	// True-stereo eye offset in world units (0 = mono).  Set by the host
 	// between the two per-eye draw() calls.
-	void setEyeOffset( float e ) { m_eyeOffset = e; }
+	void setEyeOffset( float e ) { m_eyeOffset = e; }   ///< @param e Stereo eye offset in world units (0 = mono) to use for the next draw() call.
 
 	// FPS-driven detail budget for the heavy cube scenes (1.0 = all cubes,
 	// 0.5 = every 2nd).  Maintained by FilterShader from the frame rate.
-	static float s_cubeBudget;
+	static float s_cubeBudget;   ///< Global FPS-driven detail budget (1.0 = draw everything, 0.5 = every 2nd, ...), uploaded to shaders as the `cubeBudget` uniform.
 
 private:
 	// GEOM_PATCHES feeds GL_PATCHES (4 control points per quad) instead of
@@ -78,20 +121,39 @@ private:
 	// GEOM_INDIRECT has NO host-built geometry at all: a compute shader writes
 	// the vertices and the draw call's own argument list into buffers, and the
 	// vertex count never travels back to the CPU.  See runGenerator().
+	/**
+	 * @brief Which procedural geometry buildGeometry() produces and how draw() renders it.
+	 *
+	 * Selected from the preset's geom= string in the constructor; see the file-level comment
+	 * and buildGeometry()'s per-branch comments for the exact vertex counts and layout.
+	 */
 	enum GeomKind { GEOM_POINTS = 0, GEOM_CUBES = 1, GEOM_RIBBON = 2,
 	                GEOM_GRID = 3, GEOM_QUADS = 4, GEOM_PATCHES = 5,
 	                GEOM_SCATTER = 6, GEOM_INDIRECT = 7 };
+	/** @brief Builds and uploads this scene's static geometry into m_vbo according to m_geomKind (or, for GEOM_INDIRECT, allocates the empty capacity buffer a compute generator will fill every frame). */
 	void buildGeometry();
 
 	// ---- compute -> indirect draw ----
 	// The generator is the scene's own "X.comp", opted into the same way as the
 	// tessellation and geometry stages: by the file being there.
-	char   *m_compFilename = 0;
+	char   *m_compFilename = 0;   ///< Path to this scene's optional X.comp generator shader (sibling of the fragment file); the file need not exist.
 	GLuint  m_genProg      = 0;   // generator compute program (0 = none/failed)
 	GLuint  m_cmdBuf       = 0;   // DrawArraysIndirectCommand, written on the GPU
-	bool    m_genTried     = false;
+	bool    m_genTried     = false;   ///< True once setupIndirect() has run; compilation is attempted exactly once and the outcome cached in m_genProg.
 	int     m_meshCapacity = 0;   // vertices the VBO can hold
-	bool    setupIndirect();      // allocate buffers + compile the generator
+	/**
+	 * @brief Compiles this scene's compute generator (and the process-shared clamp pass), and allocates the indirect command buffer plus, if requested, the persistent-state SSBO.
+	 *
+	 * Idempotent (guarded by m_genTried) and fails soft in every direction — missing compute
+	 * support, no .comp file, or a compile error all simply leave the scene drawing nothing
+	 * rather than aborting the app.
+	 * @return true if the generator program is ready to be dispatched by runGenerator().
+	 */
+	bool    setupIndirect();
+	/**
+	 * @brief Dispatches this frame's compute generator run (one or two passes if it declares `genPass`), then clamps its vertex counter and inserts the memory barriers the vertex fetch / indirect draw / later readback all depend on.
+	 * @param time Raw host time in seconds; the activation's time offset and speed factor are applied internally before upload.
+	 */
 	void    runGenerator( float time );
 	int     m_genSpectro   = -1;  // cached: does the generator read texSpectro?
 
@@ -102,30 +164,31 @@ private:
 	// cannot: what it looks like now depends on what it did before.  Requested
 	// with the stateBytes attribute; zeroed once, then never touched by the
 	// host again.
-	GLuint  m_stateBuf   = 0;
-	int     m_stateBytes = 0;
-	unsigned int m_frameIndex = 0;
-	AudioFeatures m_lastAudio;    // this scene's features, for the generator
-	float   m_lastTime     = 0.f; // raw time from setUniforms, ditto
-	float   m_shadowExtent = EffectShader::kShadowExtent;
+	GLuint  m_stateBuf   = 0;   ///< Persistent SSBO (bind point 2) surviving across frames for a stateful generator; 0 if unused.
+	int     m_stateBytes = 0;   ///< Requested size of m_stateBuf in bytes (0 = no persistent state); set via setStateBytes().
+	unsigned int m_frameIndex = 0;   ///< Running frame counter uploaded to the generator as `frameIndex`; incremented once per runGenerator() call.
+	AudioFeatures m_lastAudio;    ///< this scene's features, for the generator
+	float   m_lastTime     = 0.f; ///< raw time from setUniforms, ditto
+	float   m_shadowExtent = EffectShader::kShadowExtent;   ///< This scene's shadow-map light box half-width (see setShadowExtent()/shadowExtent()).
 	// The counter-clamp pass is identical for every indirect scene, so it is
 	// compiled once for the process.
-	static GLuint s_clampProg;
+	static GLuint s_clampProg;   ///< Shared "IndirectClamp.comp" program that clamps a generator's overflowed vertex counter back into range; compiled once for the whole process.
 
 	// Optional pipeline stages, named after the fragment shader
 	// (X.frag -> X.tesc / X.tese / X.geom).  A scene opts in by the file
 	// simply EXISTING; absent files leave the stage out of the program.
-	char *m_tescFilename = nullptr;
-	char *m_teseFilename = nullptr;
-	char *m_geomFilename = nullptr;
+	char *m_tescFilename = nullptr;   ///< Sibling X.tesc filename (tessellation control stage); used only if the file exists on disk.
+	char *m_teseFilename = nullptr;   ///< Sibling X.tese filename (tessellation evaluation stage); used only if the file exists on disk.
+	char *m_geomFilename = nullptr;   ///< Sibling X.geom filename (geometry-shader stage); used only if the file exists on disk.
+	/** @brief Rolls a fresh per-activation epoch: scene seed, large time offset, mild (±20%) speed factor and hue offset, all held constant for the whole activation so nothing flickers. */
 	void rollVariation();
 
-	int    m_geomKind    = GEOM_POINTS;
-	GLuint m_vbo         = 0;
+	int    m_geomKind    = GEOM_POINTS;   ///< This instance's GeomKind, fixed at construction from the preset's geom= attribute.
+	GLuint m_vbo         = 0;   ///< Vertex buffer holding this scene's geometry (host-built for most kinds; GPU-filled every frame for GEOM_INDIRECT).
 	GLuint m_vao         = 0;   // core profile: attrib state container
-	int    m_vertexCount = 0;
-	GLint  m_projUni     = -1;
-	GLint  m_eyeUni      = -1;
+	int    m_vertexCount = 0;   ///< Vertex count in m_vbo to draw (meaningless for GEOM_INDIRECT, whose count instead lives in m_cmdBuf on the GPU).
+	GLint  m_projUni     = -1;   ///< Location of the `projM` (projection * camera-rig) matrix uniform.
+	GLint  m_eyeUni      = -1;   ///< Location of the `eyeOff` stereo eye-offset uniform.
 	// CAMERA RIG (formula layer, no shader edits): <expr> entries named
 	// rigPitch/rigYaw/rigRoll/rigDolly (absolute, radians / world units) and
 	// rigPitchV/rigYawV/rigRollV/rigDollyV (rates, HOST-INTEGRATED so an
@@ -133,17 +196,17 @@ private:
 	// evaluated CPU-side in draw() and composed into projM.  Accumulators
 	// for the V channels + the last integration time (draw() runs several
 	// times per frame for shadow/OIT passes; integrate only on a NEW time).
-	float  m_rigAcc[4]   = { 0.f, 0.f, 0.f, 0.f };   // pitch yaw roll dolly
-	float  m_rigLastT    = -1.0e9f;
-	GLint  m_attrA       = -1;
-	GLint  m_attrB       = -1;
-	GLint  m_seedUni     = -1;
-	GLint  m_budgetUni   = -1;
-	float  m_eyeOffset   = 0.f;
+	float  m_rigAcc[4]   = { 0.f, 0.f, 0.f, 0.f };   ///< Integrated camera-rig rate accumulators, indices [pitch, yaw, roll, dolly].
+	float  m_rigLastT    = -1.0e9f;   ///< m_exprTime at the last rig-rate integration step; guards against double-integrating within one frame's multiple draw() calls (shadow/OIT passes).
+	GLint  m_attrA       = -1;   ///< Location of the `attrA` vertex attribute (xyz = local corner/strip params, w = per-primitive index).
+	GLint  m_attrB       = -1;   ///< Location of the `attrB` vertex attribute (four random seeds in [0,1)).
+	GLint  m_seedUni     = -1;   ///< Location of the `sceneSeed` uniform.
+	GLint  m_budgetUni   = -1;   ///< Location of the `cubeBudget` uniform.
+	float  m_eyeOffset   = 0.f;   ///< Current stereo eye offset in world units (0 = mono); set by setEyeOffset().
 
 	// Per-activation variation state (see resetParameters()).
-	float  m_sceneSeed   = 0.f;
-	float  m_timeOffset  = 0.f;
-	float  m_speedFactor = 1.f;
-	float  m_hueOffset   = 0.f;
+	float  m_sceneSeed   = 0.f;   ///< Generic per-activation seed uploaded as `sceneSeed`; some scenes use it structurally (sector counts, knot type).
+	float  m_timeOffset  = 0.f;   ///< Per-activation large time offset added to the raw time, giving each activation a different camera/burst phase.
+	float  m_speedFactor = 1.f;   ///< Per-activation speed multiplier (~0.82..1.18), constant for the whole activation.
+	float  m_hueOffset   = 0.f;   ///< Per-activation hue rotation applied to chroma hue and audio rotation/advance phases.
 };

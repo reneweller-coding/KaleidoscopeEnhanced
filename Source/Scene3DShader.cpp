@@ -1,3 +1,7 @@
+/**
+ * @file Scene3DShader.cpp
+ * @brief Implementation of Scene3DShader: per-geom-kind procedural mesh generation, the compute-generator ("indirect") pipeline, the CPU-side formula-driven camera rig, and the per-geom-kind draw state (blend/depth, shadow pass, OIT pass).
+ */
 // Scene3DShader.cpp — see Scene3DShader.h.
 #include "glcore.h"          // MUST come before any gl.h include (Qt's qopengl.h)
 #include "shader_setup.h"
@@ -16,8 +20,15 @@
 #define GL_VERTEX_PROGRAM_POINT_SIZE 0x8642
 #endif
 
-// Deterministic hash — the geometry must be identical every run (the vertex
-// shader animates it; re-rolled variety comes from the per-activation params).
+/**
+ * @brief Deterministic integer hash producing a pseudo-random float in [0,1).
+ *
+ * The geometry must be identical every run (the vertex shader animates it; re-rolled variety
+ * comes from the per-activation params), so this is a fixed bit-mixing hash rather than a PRNG
+ * with hidden state.
+ * @param n Input key (typically a vertex/primitive index combined with a small seed slot).
+ * @return Pseudo-random value in [0,1).
+ */
 static float hash01( unsigned int n )
 {
 	n = (n ^ 61u) ^ (n >> 16);
@@ -34,6 +45,7 @@ float Scene3DShader::s_cubeBudget = 1.f;
 // Shared by all geom="indirect" scenes (see setupIndirect()).
 GLuint Scene3DShader::s_clampProg = 0;
 
+/** @brief Basic uniform random float in [0,1) using the C standard library RNG (used only for one-shot per-activation rolls, not per-vertex geometry). @return Pseudo-random value in [0,1). */
 static float rand01() { return float(rand()) / float(RAND_MAX); }
 
 // Roll a fresh activation epoch: time offset, gentle speed factor, hue
@@ -66,6 +78,10 @@ Scene3DShader::Scene3DShader( const std::string &filenameFragmentShader, const s
 
 	// The matching vertex shader sits next to the fragment shader
 	// ("..\Scene3D\X.frag" -> "..\Scene3D\X.vert").
+	// sibling(): replaces the ".frag" suffix with another extension and
+	// returns a malloc'd C string, matching the ownership convention of
+	// EffectShader::m_vertexShaderFilename / m_fragmentShaderFilename (plain
+	// char* rather than std::string) so this class can be freed the same way.
 	auto sibling = []( const std::string &frag, const char *ext ) -> char *
 	{
 		std::string s = frag;
@@ -117,6 +133,10 @@ void Scene3DShader::setUniforms( float time, float interpolation,
 void Scene3DShader::applyAudioFeatures( const AudioFeatures &f )
 {
 	AudioFeatures v = f;
+	// Different (non-1:1) multipliers on rotation vs. advance phase so the
+	// three offset channels drift out of lockstep with each other across
+	// activations, instead of every hue-driven phase just being m_hueOffset
+	// again under a different name.
 	v.chromaHue    = f.chromaHue + m_hueOffset;
 	v.audioRotPhase = f.audioRotPhase + m_hueOffset * 3.1f;
 	v.audioAdvance  = f.audioAdvance  + m_hueOffset * 2.3f;

@@ -1,8 +1,12 @@
+/**
+ * @file SpoutOut.cpp
+ * @brief Implementation of the Spout send facade (SpoutOut.h); wraps the Spout2 SDK's Spout class.
+ */
 // SpoutOut.cpp — see SpoutOut.h.  The ONLY file that includes Spout headers.
 #include "SpoutOut.h"
 #include "../ThirdParty/SpoutGL/Spout.h"
 
-static Spout *s_spout = nullptr;
+static Spout *s_spout = nullptr;   ///< The Spout2 SDK sender object; nullptr until spoutOutInit() creates it.
 
 bool spoutOutInit( const char *senderName )
 {

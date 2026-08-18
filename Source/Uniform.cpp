@@ -1,5 +1,6 @@
 //=============================================================================
 /** @file:		uniform.cpp
+ * @brief Implements Uniform: value rolling (resetParameters), GL upload (setUniform/setGLValueScaled), and the interpolator ramp timing.
  *
  * Implements CUniform.
  *
@@ -19,6 +20,9 @@
 
 #include<GL/GLU.h>
 
+/**
+ * @brief Stores the name and type; all data fields are left uninitialised until setMinMax()/setInterpolator()/setProbability() and resetParameters() are called.
+ */
 Uniform::Uniform( const std::string &name, baseType_e type )
 {
 	m_name = name;
@@ -26,10 +30,18 @@ Uniform::Uniform( const std::string &name, baseType_e type )
 }
 
 
+/** @brief No-op (no owned resources). */
 Uniform::~Uniform(  )
 {
 }
 
+/**
+ * @brief Rolls a fresh random value for the current type (or fresh interpolator bounds), using whatever m_totalTime is already set.
+ *
+ * BASE_TYPE_INT guards against `minValue == maxValue` (range == 0), which
+ * used to crash with an integer division by zero in `rand() % range`; it now
+ * just pins the value to the min instead.
+ */
 void Uniform::resetParameters()
 {
 	if( m_type == BASE_TYPE_FLOAT )
@@ -67,6 +79,16 @@ void Uniform::resetParameters()
 	}
 }
 
+/**
+ * @brief Like resetParameters(), but for BASE_TYPE_INTERPOLATOR_FLOAT also overrides the ramp duration with @p time before rolling new min/max bounds.
+ * @param time New ramp duration in seconds (BASE_TYPE_INTERPOLATOR_FLOAT only; ignored for the other types, which behave exactly like resetParameters()).
+ *
+ * Note this overload does NOT recompute m_delta/m_data here (those two
+ * lines are commented out below) — it only rolls fresh m_dataMin/m_dataMax
+ * bounds and stores the new m_totalTime; the actual delta/start-value
+ * (re)computation happens lazily in setUniform() the next time m_initTimer
+ * is set (see startInterpolator()).
+ */
 void Uniform::resetParameters( float time )
 {
 	if( m_type == BASE_TYPE_FLOAT )
@@ -106,14 +128,16 @@ void Uniform::resetParameters( float time )
 	}
 }
 
+/** @brief Looks up and caches m_location for m_name in the given linked GL program. */
 void Uniform::initUniform( unsigned int sh_prog_id )
 {
-	
+
 	const char* name = m_name.c_str();
 
 	m_location = glGetUniformLocation( sh_prog_id, name );
 }
 
+/** @brief Arms the ramp: the next setUniform() call will (re-)start the wall clock and recompute m_delta/m_data from the current m_dataMin/m_dataMax before advancing. No-op for non-interpolator types. */
 void Uniform::startInterpolator()
 {
 	if( m_type == BASE_TYPE_INTERPOLATOR_FLOAT )
@@ -124,6 +148,18 @@ void Uniform::startInterpolator()
 }
 
 
+/**
+ * @brief Uploads the current value to the cached GL location; for BASE_TYPE_INTERPOLATOR_FLOAT this is also where the ramp is timed and advanced.
+ *
+ * Interpolator timing: m_delta.vf is expressed as "value change per
+ * millisecond" (computed as (max-min)/totalTime, i.e. per-second, times
+ * 0.001), so multiplying it directly by m_time.elapsed() (milliseconds since
+ * the previous call) gives the correct per-frame increment regardless of
+ * frame rate — this call is expected to run every frame, and each call both
+ * consumes the elapsed time AND restarts the clock for the next one. The
+ * "decrease after half the time" ping-pong behaviour is commented out: as
+ * shipped, the ramp only ever counts up and is not clamped at m_dataMax.
+ */
 void Uniform::setUniform()
 {
 	if( m_type == BASE_TYPE_BOOL )
@@ -176,6 +212,10 @@ void Uniform::setUniform()
 // setGLValueScaled – audio reactivity override
 // Call after setUniform() to modulate the uploaded float value.
 // ---------------------------------------------------------------------------
+/**
+ * @brief Re-uploads m_data.vf * @p scale to the GL location, without altering the stored value — a non-destructive way to layer audio reactivity on top of the rolled/ramped base value.
+ * @param scale Multiplier applied to the current float value for this upload only.
+ */
 void Uniform::setGLValueScaled(float scale)
 {
 	if (m_location < 0) return;
@@ -186,6 +226,12 @@ void Uniform::setGLValueScaled(float scale)
 }
 
 
+// Reference-only: the original "Shader Maker" CUniform this class was
+// trimmed down from (see the file-header NOTE in Uniform.h). Disabled via
+// #if 0 rather than deleted — kept as documentation of the fuller
+// vector/matrix uniform API (applyToGL, getColumnVector/setColumnVector,
+// getBaseType, etc.) that this project's stripped-down Uniform no longer
+// implements. Not compiled; already carries its own Doxygen comments.
 #if 0
 //=============================================================================
 //	CUniform implementation

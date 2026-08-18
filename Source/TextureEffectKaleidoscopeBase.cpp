@@ -1,3 +1,9 @@
+/**
+ * @file TextureEffectKaleidoscopeBase.cpp
+ * @brief Implementation of TextureEffectKaleidoscopeBase: the power ramp state machine
+ *        and the (currently disabled) continuous-rotation state machine that drive
+ *        Kaleidoscope.frag's `power` and `interpolationRotation` uniforms.
+ */
 #include <float.h>
 
 #include "shader_setup.h"
@@ -9,7 +15,7 @@
 
 #include<GL/GLU.h>
 
-// Constructor
+// Constructor: timing ranges only, uses the hardcoded default fragment shader.
 TextureEffectKaleidoscopeBase::TextureEffectKaleidoscopeBase( unsigned int  minTimeSolo, unsigned int  maxTimeSolo, unsigned int  minTimeInterpolation, unsigned int  maxTimeInterpolation ): 
 EffectShader( minTimeSolo, maxTimeSolo, minTimeInterpolation, maxTimeInterpolation )
 , m_minSides(2)
@@ -59,7 +65,8 @@ EffectShader( minTimeSolo, maxTimeSolo, minTimeInterpolation, maxTimeInterpolati
 
 
 
-// Constructor
+// Constructor: explicit fragment shader filename + timing ranges. Member-init list
+// duplicates the timing-ranges-only ctor above verbatim (both set the same defaults).
 TextureEffectKaleidoscopeBase::TextureEffectKaleidoscopeBase( const std::string &filename, unsigned int minTimeSolo, unsigned int  maxTimeSolo, unsigned int  minTimeInterpolation, unsigned int  maxTimeInterpolation ): 
 EffectShader( minTimeSolo, maxTimeSolo, minTimeInterpolation, maxTimeInterpolation )
 , m_minSides(2)
@@ -120,6 +127,19 @@ TextureEffectKaleidoscopeBase::~TextureEffectKaleidoscopeBase()
 {
 }
 
+/**
+ * @brief Advances the power ramp state machine and uploads interpolationRotation/power.
+ *
+ * The power value seen by the shader is not a single random pick per activation: it
+ * cycles through a 4-phase state machine timed against m_timePower (a free-running
+ * WallClock, independent of the base class's solo/interpolation timers):
+ *   0 full-power hold -> 1 decreasing ramp -> 2 no-power hold -> 3 increasing ramp -> 0 ...
+ * Each hold phase (0/2) rolls a fresh duration and, on leaving the no-power hold (2),
+ * rolls a new m_power target and an m_powerRotationAllowed coin flip. This is why the
+ * "power" uniform breathes in and out over the effect's lifetime rather than jumping.
+ * The rotation state machine below it is entirely commented out (dead code) - only the
+ * static m_interpolationRotation value set by resetParameters() reaches the shader.
+ */
 void TextureEffectKaleidoscopeBase::setUniforms( float time, float interpolation, GLint texLoc1, GLint texLoc2 )
 {
 	EffectShader::setUniforms( time, interpolation, texLoc1, texLoc2 );
@@ -266,7 +286,11 @@ void TextureEffectKaleidoscopeBase::setUniforms( float time, float interpolation
 
 
 /**
- * Sets up the GLSL runtime and creates shader.
+ * @brief Sets up the GLSL runtime and creates shader.
+ *
+ * Chains to EffectShader::initUniforms() then resolves this class's own uniforms.
+ * Note: the "sides" and "speed" locations are intentionally left unresolved
+ * (commented out) - matching their commented-out upload in setUniforms() above.
  */
 void TextureEffectKaleidoscopeBase::initUniforms(int width, int height)
 {	
@@ -280,6 +304,14 @@ void TextureEffectKaleidoscopeBase::initUniforms(int width, int height)
 	checkGLErrors("loadShader 2");
 }
 
+/**
+ * @brief Re-rolls speed and sides, and picks a fixed rotation offset for the next activation.
+ *
+ * Chains to EffectShader::resetParameters() first. m_interpolationRotation is set
+ * to either 0 or pi/4 with roughly 60%/40% odds - since the rotation state machine
+ * in setUniforms() is disabled, this flip-flopped value IS the effective (static,
+ * non-animated) kaleidoscope rotation offset for the whole activation.
+ */
 void TextureEffectKaleidoscopeBase::resetParameters()
 {
 	EffectShader::resetParameters();
