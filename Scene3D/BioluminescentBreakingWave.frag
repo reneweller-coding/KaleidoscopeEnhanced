@@ -1,13 +1,13 @@
 #version 330 core
 out vec4 fragColor;
-// BioluminescentBreakingWave.frag
-// -----------------------------------------------------------------------
-// BIOLUMINESCENT BREAKING WAVE: rolling Gerstner swell seen from above the
-// surf line; the crests break into glowing dinoflagellate foam CELLS (not a
-// full-width neon bar), dark troughs carry the photo tint.
-//   audioBass -> swell height    audioKick -> breaker splash + glow surge
-//   audioHigh -> cross-chop      audioAdvance -> wave phase (jump-free)
-// -----------------------------------------------------------------------
+/**
+ * @file BioluminescentBreakingWave.frag
+ * @brief BIOLUMINESCENT BREAKING WAVE: rolling Gerstner swell seen from above the
+ * surf line; the crests break into glowing dinoflagellate foam CELLS (not a
+ * full-width neon bar), dark troughs carry the photo tint.
+ *   audioBass -> swell height    audioKick -> breaker splash + glow surge
+ *   audioHigh -> cross-chop      audioAdvance -> wave phase (jump-free)
+ */
 
 in vec4 vCol;
 in vec2 vUV;

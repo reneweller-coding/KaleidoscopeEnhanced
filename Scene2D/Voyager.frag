@@ -1,21 +1,21 @@
 #version 330 core
 out vec4 fragColor;
-// Voyager.frag
-// -----------------------------------------------------------------------
-// Adapted from "Voyager" by @kishimisu (2024) — https://www.shadertoy.com/view/M33XDH
-// Original licensed CC BY-NC-SA 4.0 (attribution kept per the licence).
-//
-// A volumetric fly-through of glowing, endlessly-repeating cells — like a deep-
-// space probe drifting through a field of light.  Adapted to our engine:
-//   * Shadertoy conventions -> ours (gl_FragCoord/resolution/time/tex0, texture2D).
-//   * IMAGE-FORWARD: the source image is sampled through the mirror-folded screen
-//     coordinate; it colours the light field, shifts the palette along the ray
-//     (image-linked, like the original's channel texture) and drifts through as a
-//     faint nebula, so the picture is part of the scene.
-//   * Music drives the travel, glow and palette.  Motion is JUMP-FREE: the
-//     forward travel uses the host-integrated audioAdvance and rotation uses
-//     audioPhase, never time*audio (anti-flicker).
-// -----------------------------------------------------------------------
+/**
+ * @file Voyager.frag
+ * @brief Adapted from "Voyager" by @kishimisu (2024) — https://www.shadertoy.com/view/M33XDH
+ * Original licensed CC BY-NC-SA 4.0 (attribution kept per the licence).
+ *
+ * A volumetric fly-through of glowing, endlessly-repeating cells — like a deep-
+ * space probe drifting through a field of light.  Adapted to our engine:
+ *   * Shadertoy conventions -> ours (gl_FragCoord/resolution/time/tex0, texture2D).
+ *   * IMAGE-FORWARD: the source image is sampled through the mirror-folded screen
+ *     coordinate; it colours the light field, shifts the palette along the ray
+ *     (image-linked, like the original's channel texture) and drifts through as a
+ *     faint nebula, so the picture is part of the scene.
+ *   * Music drives the travel, glow and palette.  Motion is JUMP-FREE: the
+ *     forward travel uses the host-integrated audioAdvance and rotation uses
+ *     audioPhase, never time*audio (anti-flicker).
+ */
 
 uniform vec2  resolution;
 uniform float time;

@@ -1,21 +1,21 @@
 #version 330 core
 out vec4 fragColor;
-// EscherRelativityMatrix.frag
-// -----------------------------------------------------------------------
-// PENROSE ENDLESS STAIRCASE: a real Escher, drawn as an isometric
-// lithograph after "Ascending and Descending".  Four flights of steps
-// (7-4-7-4) close into an impossible loop whose screen polygon closes
-// EXACTLY — the two short flights secretly swallow the accumulated
-// height while still showing ascending risers.  Glowing walkers climb
-// the loop forever, driven by the music.
-//   audioAdvance -> walkers march around the impossible loop
-//   audioKick    -> the stone breathes, risers flash
-//   audioLevel   -> walker glow brightness
-//   audioFlux    -> walker halo shimmer
-//
-// Per-activation variety:
-//   hueP     float palette base hue rotation               (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file EscherRelativityMatrix.frag
+ * @brief PENROSE ENDLESS STAIRCASE: a real Escher, drawn as an isometric
+ * lithograph after "Ascending and Descending".  Four flights of steps
+ * (7-4-7-4) close into an impossible loop whose screen polygon closes
+ * EXACTLY — the two short flights secretly swallow the accumulated
+ * height while still showing ascending risers.  Glowing walkers climb
+ * the loop forever, driven by the music.
+ *   audioAdvance -> walkers march around the impossible loop
+ *   audioKick    -> the stone breathes, risers flash
+ *   audioLevel   -> walker glow brightness
+ *   audioFlux    -> walker halo shimmer
+ *
+ * Per-activation variety:
+ *   hueP     float palette base hue rotation               (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

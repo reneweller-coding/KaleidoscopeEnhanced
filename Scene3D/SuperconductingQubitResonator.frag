@@ -1,13 +1,13 @@
 #version 330 core
 out vec4 fragColor;
-// SuperconductingQubitResonator.frag
-// -----------------------------------------------------------------------
-// SUPERCONDUCTING QUBIT RESONATOR: microwave standing waves meandering
-// along a superconducting coplanar resonator strip, seen at a 3/4 orbit;
-// blue/pink photon-number states glow along the line.
-//   audioSpectrum -> mode amplitudes    audioKick -> readout pulse
-//   audioAdvance  -> orbit
-// -----------------------------------------------------------------------
+/**
+ * @file SuperconductingQubitResonator.frag
+ * @brief SUPERCONDUCTING QUBIT RESONATOR: microwave standing waves meandering
+ * along a superconducting coplanar resonator strip, seen at a 3/4 orbit;
+ * blue/pink photon-number states glow along the line.
+ *   audioSpectrum -> mode amplitudes    audioKick -> readout pulse
+ *   audioAdvance  -> orbit
+ */
 
 in vec3 vWorldPos;
 in vec2 vTexCoord;

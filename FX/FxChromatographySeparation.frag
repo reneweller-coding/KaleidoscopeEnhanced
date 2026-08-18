@@ -1,21 +1,21 @@
 #version 330 core
 out vec4 fragColor;
-// FxChromatographySeparation.frag
-// -----------------------------------------------------------------------
-// FX CHROMATOGRAPHY SEPARATION: Paper chromatography capillary transition.
-// A liquid solvent front climbs capillary paper fibers, separating the scene's
-// pigments into distinct chromatic bands based on chemical retention factors (Rf),
-// resolving into the incoming scene.
-//   interpolation -> drives solvent front capillary migration across the frame
-//   audioKick     -> flashes sharp chromatographic pigment separation bands
-//   audioBass     -> undulates capillary paper fiber texture
-//
-// Per-activation variety:
-//   solventP float solvent front migration velocity (0.5..2.2)
-//   retardP  float retention factor (Rf) split width (0.5..2.0)
-//   speedP   float animation speed multiplier        (0.5..2.0)
-//   hueP     float pigment spectral hue offset       (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file FxChromatographySeparation.frag
+ * @brief FX CHROMATOGRAPHY SEPARATION: Paper chromatography capillary transition.
+ * A liquid solvent front climbs capillary paper fibers, separating the scene's
+ * pigments into distinct chromatic bands based on chemical retention factors (Rf),
+ * resolving into the incoming scene.
+ *   interpolation -> drives solvent front capillary migration across the frame
+ *   audioKick     -> flashes sharp chromatographic pigment separation bands
+ *   audioBass     -> undulates capillary paper fiber texture
+ *
+ * Per-activation variety:
+ *   solventP float solvent front migration velocity (0.5..2.2)
+ *   retardP  float retention factor (Rf) split width (0.5..2.0)
+ *   speedP   float animation speed multiplier        (0.5..2.0)
+ *   hueP     float pigment spectral hue offset       (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

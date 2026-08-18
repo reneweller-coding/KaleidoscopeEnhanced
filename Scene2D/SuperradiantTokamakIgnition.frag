@@ -1,12 +1,12 @@
 #version 330 core
 out vec4 fragColor;
-// SuperradiantTokamakIgnition.frag
-// -----------------------------------------------------------------------
-// SUPERRADIANT TOKAMAK IGNITION: 100% viewport-filling volumetric view
-// from inside a burning magnetic confinement thermonuclear fusion core.
-// Toroidal magnetic flux surfaces, helical runaway electron beams, turbulent
-// Alfven wave filaments, glowing divertor plates, and D-T fusion plasma.
-// -----------------------------------------------------------------------
+/**
+ * @file SuperradiantTokamakIgnition.frag
+ * @brief SUPERRADIANT TOKAMAK IGNITION: 100% viewport-filling volumetric view
+ * from inside a burning magnetic confinement thermonuclear fusion core.
+ * Toroidal magnetic flux surfaces, helical runaway electron beams, turbulent
+ * Alfven wave filaments, glowing divertor plates, and D-T fusion plasma.
+ */
 
 uniform vec2  resolution;
 uniform float time;

@@ -1,6 +1,8 @@
 #version 330 core
-// SolarSailArmada.vert
-// attrA.xy = quad UV (0..1), attrA.w = quad ID (0..2999), attrB = seeds (GEOM_QUADS).
+/**
+ * @file SolarSailArmada.vert
+ * @brief attrA.xy = quad UV (0..1), attrA.w = quad ID (0..2999), attrB = seeds (GEOM_QUADS).
+ */
 in vec4 attrA;
 in vec4 attrB;
 

@@ -1,21 +1,21 @@
 #version 330 core
 out vec4 fragColor;
-// NeonFluidDynamics.frag
-// -----------------------------------------------------------------------
-// NEON FLUID DYNAMICS: Multi-scale Navier-Stokes curl-noise vorticity fluid
-// advection. High-luminance neon ink plumes, collision shockwaves, turbulent
-// viscous marbling, and audio-driven dye injection pulses over photos.
-//   audioKick    -> injects explosive new expanding neon dye vortex rings
-//   audioBass    -> swirls macroscopic fluid bodies and advection currents
-//   audioHigh    -> creates fine turbulent viscous tendrils and sparkling eddies
-//   audioSwell   -> thickens fluid viscosity & increases color saturation
-//
-// Per-activation variety:
-//   viscosityP  float fluid drag / viscosity modifier     (0.5..1.8)
-//   swirlP      float curl vortex rotation intensity      (0.5..2.2)
-//   flowP       float overall advection velocity          (0.4..1.8)
-//   hueP        float dye color palette shift             (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file NeonFluidDynamics.frag
+ * @brief NEON FLUID DYNAMICS: Multi-scale Navier-Stokes curl-noise vorticity fluid
+ * advection. High-luminance neon ink plumes, collision shockwaves, turbulent
+ * viscous marbling, and audio-driven dye injection pulses over photos.
+ *   audioKick    -> injects explosive new expanding neon dye vortex rings
+ *   audioBass    -> swirls macroscopic fluid bodies and advection currents
+ *   audioHigh    -> creates fine turbulent viscous tendrils and sparkling eddies
+ *   audioSwell   -> thickens fluid viscosity & increases color saturation
+ *
+ * Per-activation variety:
+ *   viscosityP  float fluid drag / viscosity modifier     (0.5..1.8)
+ *   swirlP      float curl vortex rotation intensity      (0.5..2.2)
+ *   flowP       float overall advection velocity          (0.4..1.8)
+ *   hueP        float dye color palette shift             (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

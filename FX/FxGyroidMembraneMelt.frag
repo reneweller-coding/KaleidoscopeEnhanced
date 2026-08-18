@@ -1,20 +1,20 @@
 #version 330 core
 out vec4 fragColor;
-// FxGyroidMembraneMelt.frag
-// -----------------------------------------------------------------------
-// FX GYROID MEMBRANE MELT: Triply periodic minimal surface (TPMS) gyroid transition.
-// A mathematical gyroid labyrinth surface divides space into two continuous
-// interlocking fluid channels, shifting its isovalue to smoothly transfer scenes.
-//   interpolation -> sweeps gyroid isovalue threshold from -1.4 to +1.4
-//   audioKick     -> flashes gyroid minimal surface nodal line boundaries
-//   audioBass     -> undulates gyroid spatial labyrinth frequency
-//
-// Per-activation variety:
-//   gyroidP float gyroid spatial frequency & density (0.5..2.2)
-//   isoP    float membrane thickness & sharpness    (0.5..2.0)
-//   speedP  float animation speed multiplier        (0.5..2.0)
-//   hueP    float membrane glow hue offset          (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file FxGyroidMembraneMelt.frag
+ * @brief FX GYROID MEMBRANE MELT: Triply periodic minimal surface (TPMS) gyroid transition.
+ * A mathematical gyroid labyrinth surface divides space into two continuous
+ * interlocking fluid channels, shifting its isovalue to smoothly transfer scenes.
+ *   interpolation -> sweeps gyroid isovalue threshold from -1.4 to +1.4
+ *   audioKick     -> flashes gyroid minimal surface nodal line boundaries
+ *   audioBass     -> undulates gyroid spatial labyrinth frequency
+ *
+ * Per-activation variety:
+ *   gyroidP float gyroid spatial frequency & density (0.5..2.2)
+ *   isoP    float membrane thickness & sharpness    (0.5..2.0)
+ *   speedP  float animation speed multiplier        (0.5..2.0)
+ *   hueP    float membrane glow hue offset          (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

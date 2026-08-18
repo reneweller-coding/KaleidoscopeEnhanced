@@ -1,16 +1,18 @@
 #version 330 core
 out vec4 fragColor;
-// Starfield.frag
-// Flying INTO the source image: the picture rushes past in looping nebula
-// layers while a star warp-field sparkles on top.  Now with:
-//   * WARP STREAKS: on each beat the stars stretch into radial light trails
-//     (classic warp-jump), longer for nearer stars;
-//   * image-coloured, twinkling stars (imgPal tint);
-//   * THREE nebula layers with differential roll (parallax) and per-depth
-//     hue rotation, swept gently once per bar;
-//   * a soft core glow breathing with the slow swell.
-// Accelerates with the music (audioAdvance), rolls with the audio phase
-// (jump-free); per-activation star density / speed / roll variety.
+/**
+ * @file Starfield.frag
+ * @brief Flying INTO the source image: the picture rushes past in looping nebula
+ * layers while a star warp-field sparkles on top.  Now with:
+ *   * WARP STREAKS: on each beat the stars stretch into radial light trails
+ *     (classic warp-jump), longer for nearer stars;
+ *   * image-coloured, twinkling stars (imgPal tint);
+ *   * THREE nebula layers with differential roll (parallax) and per-depth
+ *     hue rotation, swept gently once per bar;
+ *   * a soft core glow breathing with the slow swell.
+ * Accelerates with the music (audioAdvance), rolls with the audio phase
+ * (jump-free); per-activation star density / speed / roll variety.
+ */
 uniform vec2  resolution;
 uniform float time;
 uniform sampler2D tex0;

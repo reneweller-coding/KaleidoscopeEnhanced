@@ -1,10 +1,12 @@
 #version 330 core
 out vec4 fragColor;
-// CombineShader.frag
-// The FINAL pass blending the outgoing and incoming combine outputs - with the
-// same 25-style transition library as CombinePlain.frag (host-rolled
-// transStyle; 0/absent = classic linear mix; see CombinePlain.frag for the
-// style list).  interpolation: 1 = old (tex0) .. 0 = new (tex1).
+/**
+ * @file CombineShader.frag
+ * @brief The FINAL pass blending the outgoing and incoming combine outputs - with the
+ * same 25-style transition library as CombinePlain.frag (host-rolled
+ * transStyle; 0/absent = classic linear mix; see CombinePlain.frag for the
+ * style list).  interpolation: 1 = old (tex0) .. 0 = new (tex1).
+ */
 uniform vec2 resolution;
 uniform float time;
 uniform sampler2D tex0;

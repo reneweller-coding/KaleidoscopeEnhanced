@@ -1,12 +1,12 @@
 #version 330 core
 out vec4 fragColor;
-// LiquidCrystalOptics.frag
-// -----------------------------------------------------------------------
-// LIQUID CRYSTAL OPTICS: Polarized optical microscopy of dynamic nematic
-// liquid crystal phases with topological Schlieren brushes, disclination
-// vortex defects, optical retardation birefringence (Michel-Levy colors),
-// electro-hydrodynamic convection rolls, and polarized photo texturing.
-// -----------------------------------------------------------------------
+/**
+ * @file LiquidCrystalOptics.frag
+ * @brief LIQUID CRYSTAL OPTICS: Polarized optical microscopy of dynamic nematic
+ * liquid crystal phases with topological Schlieren brushes, disclination
+ * vortex defects, optical retardation birefringence (Michel-Levy colors),
+ * electro-hydrodynamic convection rolls, and polarized photo texturing.
+ */
 
 uniform vec2  resolution;
 uniform float time;

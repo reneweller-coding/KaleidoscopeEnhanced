@@ -1,13 +1,13 @@
 #version 330 core
 out vec4 fragColor;
-// SpectrumRadial.frag
-// -----------------------------------------------------------------------
-// Radial spectrum analyzer with 32 frequency bands (mirrored into 64 wedges)
-// radiating around a central disc that shows the source image.  Each wedge is a
-// bar whose length tracks that band's live level, filled with the image and
-// tinted across the rainbow by frequency; the whole ring pulses on the beat.
-// Far more bands and far more movement than the old 6-band version.
-// -----------------------------------------------------------------------
+/**
+ * @file SpectrumRadial.frag
+ * @brief Radial spectrum analyzer with 32 frequency bands (mirrored into 64 wedges)
+ * radiating around a central disc that shows the source image.  Each wedge is a
+ * bar whose length tracks that band's live level, filled with the image and
+ * tinted across the rainbow by frequency; the whole ring pulses on the beat.
+ * Far more bands and far more movement than the old 6-band version.
+ */
 
 uniform vec2  resolution;
 uniform float time;

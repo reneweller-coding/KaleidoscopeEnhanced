@@ -1,21 +1,21 @@
 #version 330 core
 out vec4 fragColor;
-// ChromaAcidTrip.frag
-// -----------------------------------------------------------------------
-// CHROMA ACID TRIP: Hypnotic psychedelic feedback vortex with melting contour
-// lines, reaction-diffusion spirals, liquid rainbow gradients, optical
-// warp displacement, and high-energy audio-driven color state transformations.
-//   audioLevel   -> drives feedback displacement velocity & melt intensity
-//   audioKick    -> triggers chromatic inversion flash & color ripple shockwaves
-//   audioChromaHue-> rotates liquid psychedelic color spectrum
-//   audioSwell   -> widens feedback vortex expansion & saturation
-//
-// Per-activation variety:
-//   meltP      float liquid contour melting intensity     (0.5..2.2)
-//   feedbackP  float recursive feedback zoom factor       (0.5..1.8)
-//   speedP     float psychedelic swirl velocity           (0.5..1.8)
-//   hueP       float base hue palette shift               (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file ChromaAcidTrip.frag
+ * @brief CHROMA ACID TRIP: Hypnotic psychedelic feedback vortex with melting contour
+ * lines, reaction-diffusion spirals, liquid rainbow gradients, optical
+ * warp displacement, and high-energy audio-driven color state transformations.
+ *   audioLevel   -> drives feedback displacement velocity & melt intensity
+ *   audioKick    -> triggers chromatic inversion flash & color ripple shockwaves
+ *   audioChromaHue-> rotates liquid psychedelic color spectrum
+ *   audioSwell   -> widens feedback vortex expansion & saturation
+ *
+ * Per-activation variety:
+ *   meltP      float liquid contour melting intensity     (0.5..2.2)
+ *   feedbackP  float recursive feedback zoom factor       (0.5..1.8)
+ *   speedP     float psychedelic swirl velocity           (0.5..1.8)
+ *   hueP       float base hue palette shift               (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

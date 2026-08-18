@@ -1,12 +1,12 @@
 #version 330 core
 out vec4 fragColor;
-// QuantumChromodynamicsGluonPlasma.frag
-// -----------------------------------------------------------------------
-// QUANTUM CHROMODYNAMICS GLUON PLASMA: 100% viewport-filling relativistic
-// heavy-ion collision simulation (RHIC / CERN LHC). Ultra-high temperature
-// deconfined quark-gluon fireball with SU(3) non-abelian color flux tubes,
-// asymptotic freedom string breaking, and gluon Cherenkov radiation.
-// -----------------------------------------------------------------------
+/**
+ * @file QuantumChromodynamicsGluonPlasma.frag
+ * @brief QUANTUM CHROMODYNAMICS GLUON PLASMA: 100% viewport-filling relativistic
+ * heavy-ion collision simulation (RHIC / CERN LHC). Ultra-high temperature
+ * deconfined quark-gluon fireball with SU(3) non-abelian color flux tubes,
+ * asymptotic freedom string breaking, and gluon Cherenkov radiation.
+ */
 
 uniform vec2  resolution;
 uniform float time;

@@ -1,22 +1,22 @@
 #version 330 core
 out vec4 fragColor;
-// BismuthLabyrinth.frag
-// -----------------------------------------------------------------------
-// BISMUTH LABYRINTH: Raymarched infinite 3D hopper crystal labyrinth of metallic
-// elemental bismuth. Stepped 90-degree geometric terraces, thin-film optical
-// interference rainbow oxidation layers, specular metallic reflections, and
-// audio-reactive architectural fractals filling the screen.
-//   audioSwell   -> pulses fractal hopper terrace depth & step density
-//   audioKick    -> flashes chromatic iridescent oxidation reflection
-//   audioCentroid-> shifts thin-film rainbow oxide thickness
-//   audioSubBass -> expands geometric chamber scale & bass vibration
-//
-// Per-activation variety:
-//   iterP         float fractal iteration / step scale    (0.6..1.8)
-//   stepP         float terrace hopper step depth         (0.5..1.6)
-//   iridescenceP  float rainbow oxidation glow intensity  (0.5..2.2)
-//   hueP          float global hue rotation               (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file BismuthLabyrinth.frag
+ * @brief BISMUTH LABYRINTH: Raymarched infinite 3D hopper crystal labyrinth of metallic
+ * elemental bismuth. Stepped 90-degree geometric terraces, thin-film optical
+ * interference rainbow oxidation layers, specular metallic reflections, and
+ * audio-reactive architectural fractals filling the screen.
+ *   audioSwell   -> pulses fractal hopper terrace depth & step density
+ *   audioKick    -> flashes chromatic iridescent oxidation reflection
+ *   audioCentroid-> shifts thin-film rainbow oxide thickness
+ *   audioSubBass -> expands geometric chamber scale & bass vibration
+ *
+ * Per-activation variety:
+ *   iterP         float fractal iteration / step scale    (0.6..1.8)
+ *   stepP         float terrace hopper step depth         (0.5..1.6)
+ *   iridescenceP  float rainbow oxidation glow intensity  (0.5..2.2)
+ *   hueP          float global hue rotation               (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

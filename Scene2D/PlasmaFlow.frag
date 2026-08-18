@@ -1,18 +1,18 @@
 #version 330 core
 out vec4 fragColor;
-// PlasmaFlow.frag
-// -----------------------------------------------------------------------
-// The source image MARBLED and refracted by a flowing plasma field, folded
-// into mirror symmetry so it reads like liquid stained glass.  The plasma is
-// no longer the picture (it used to be a full-screen sine field with the image
-// as a 40% tint) - instead the plasma is a FLOW that warps the actual picture,
-// and its iridescence tints the folded image.  So the *image* is the star.
-//   sidesP/scaleP/flowAmtP -> per-activation character (fold, scale, marbling)
-//   audioSwell   -> plasma scale + warp breathing (slow; loudness -> size)
-//   audioValence -> iridescence saturation; audioCentroid -> slow hue drift
-//   audioPhase   -> smooth flow (jump-free); audioBarPhase -> per-bar hue sweep
-//   audioBeat    -> sheen; audioLevel -> picture brightness
-// -----------------------------------------------------------------------
+/**
+ * @file PlasmaFlow.frag
+ * @brief The source image MARBLED and refracted by a flowing plasma field, folded
+ * into mirror symmetry so it reads like liquid stained glass.  The plasma is
+ * no longer the picture (it used to be a full-screen sine field with the image
+ * as a 40% tint) - instead the plasma is a FLOW that warps the actual picture,
+ * and its iridescence tints the folded image.  So the *image* is the star.
+ *   sidesP/scaleP/flowAmtP -> per-activation character (fold, scale, marbling)
+ *   audioSwell   -> plasma scale + warp breathing (slow; loudness -> size)
+ *   audioValence -> iridescence saturation; audioCentroid -> slow hue drift
+ *   audioPhase   -> smooth flow (jump-free); audioBarPhase -> per-bar hue sweep
+ *   audioBeat    -> sheen; audioLevel -> picture brightness
+ */
 
 uniform vec2  resolution;
 uniform float time;

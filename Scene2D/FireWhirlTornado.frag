@@ -1,21 +1,21 @@
 #version 330 core
 out vec4 fragColor;
-// FireWhirlTornado.frag
-// -----------------------------------------------------------------------
-// FIRE WHIRL TORNADO: Volumetric 3D rotating fire tornado with helical
-// flame column, turbulent soot/ash advection, rising ember sparks, and
-// blackbody thermal radiation gradient with audio-reactive explosive bursts.
-//   audioAdvance -> accelerates tornado vortex swirl & thermal updraft
-//   audioKick    -> triggers explosive fireball detonations in the core
-//   audioBass    -> widens tornado base and convective vortex reach
-//   audioCentroid-> shifts flame temperature (deep orange to white-hot)
-//
-// Per-activation variety:
-//   tornadoP float fire vortex radius & height         (0.5..2.2)
-//   heatP    float blackbody core thermal radiance    (0.5..2.0)
-//   speedP   float vortex angular rotation speed      (0.5..2.0)
-//   hueP     float thermal chromatic palette offset   (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file FireWhirlTornado.frag
+ * @brief FIRE WHIRL TORNADO: Volumetric 3D rotating fire tornado with helical
+ * flame column, turbulent soot/ash advection, rising ember sparks, and
+ * blackbody thermal radiation gradient with audio-reactive explosive bursts.
+ *   audioAdvance -> accelerates tornado vortex swirl & thermal updraft
+ *   audioKick    -> triggers explosive fireball detonations in the core
+ *   audioBass    -> widens tornado base and convective vortex reach
+ *   audioCentroid-> shifts flame temperature (deep orange to white-hot)
+ *
+ * Per-activation variety:
+ *   tornadoP float fire vortex radius & height         (0.5..2.2)
+ *   heatP    float blackbody core thermal radiance    (0.5..2.0)
+ *   speedP   float vortex angular rotation speed      (0.5..2.0)
+ *   hueP     float thermal chromatic palette offset   (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

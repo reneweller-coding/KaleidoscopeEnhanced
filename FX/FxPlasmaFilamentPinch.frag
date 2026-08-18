@@ -1,21 +1,21 @@
 #version 330 core
 out vec4 fragColor;
-// FxPlasmaFilamentPinch.frag
-// -----------------------------------------------------------------------
-// FX PLASMA FILAMENT PINCH: Magnetohydrodynamic Z-pinch plasma transition.
-// Axial electric currents generate azimuthal magnetic fields, compressing
-// plasma into ultra-dense filaments that develop sausage and kink instabilities
-// before bursting into the incoming scene.
-//   interpolation -> sweeps magnetic Bennett pinch compression & burst
-//   audioKick     -> triggers full-pinch thermonuclear radiation flash
-//   audioBass     -> drives radial Lorentz force compression amplitude
-//
-// Per-activation variety:
-//   pinchP float Z-pinch compression ratio & filament thickness (0.5..2.2)
-//   kinkP  float m=1 kink instability helical twist             (0.5..2.0)
-//   speedP float animation speed multiplier                     (0.5..2.0)
-//   hueP   float plasma emission hue offset                     (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file FxPlasmaFilamentPinch.frag
+ * @brief FX PLASMA FILAMENT PINCH: Magnetohydrodynamic Z-pinch plasma transition.
+ * Axial electric currents generate azimuthal magnetic fields, compressing
+ * plasma into ultra-dense filaments that develop sausage and kink instabilities
+ * before bursting into the incoming scene.
+ *   interpolation -> sweeps magnetic Bennett pinch compression & burst
+ *   audioKick     -> triggers full-pinch thermonuclear radiation flash
+ *   audioBass     -> drives radial Lorentz force compression amplitude
+ *
+ * Per-activation variety:
+ *   pinchP float Z-pinch compression ratio & filament thickness (0.5..2.2)
+ *   kinkP  float m=1 kink instability helical twist             (0.5..2.0)
+ *   speedP float animation speed multiplier                     (0.5..2.0)
+ *   hueP   float plasma emission hue offset                     (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

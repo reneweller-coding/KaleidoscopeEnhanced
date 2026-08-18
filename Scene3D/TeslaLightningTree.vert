@@ -1,7 +1,9 @@
 #version 330 core
-// TeslaLightningTree.vert
-// attrA.xyz = world pos, attrA.w = heat
-// attrB.w = boltSeed (GEOM_INDIRECT, 8-float layout)
+/**
+ * @file TeslaLightningTree.vert
+ * @brief attrA.xyz = world pos, attrA.w = heat
+ * attrB.w = boltSeed (GEOM_INDIRECT, 8-float layout)
+ */
 in vec4 attrA;
 in vec4 attrB;
 

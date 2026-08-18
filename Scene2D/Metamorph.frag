@@ -1,21 +1,21 @@
 #version 330 core
 out vec4 fragColor;
-// Metamorph.frag
-// -----------------------------------------------------------------------
-// The music-type ADAPTIVE effect: cross-fades between two personalities using
-// the audioAmbient classifier (0 = beat music, 1 = drone/ambient), which
-// changes over seconds — so the morph itself is a slow, seamless transition.
-//
-// Research-informed (crossmodal correspondence literature):
-//   percussive music -> ANGULAR, crisp, spiky forms  => beat personality:
-//     hard mirrored shards of the image, pulsing on the beat, a bar-phase
-//     highlight sweeping the wedges;
-//   harmonic/sustained music -> ROUND, soft forms    => drone personality:
-//     softly domain-warped image clouds, breathing with the slow swell
-//     (loudness -> looming/expansion).
-// Image-forward + imgPal/hueRot colour variance like the rest of the set;
-// jump-free motion (audioPhase/audioAdvance, never time*audio).
-// -----------------------------------------------------------------------
+/**
+ * @file Metamorph.frag
+ * @brief The music-type ADAPTIVE effect: cross-fades between two personalities using
+ * the audioAmbient classifier (0 = beat music, 1 = drone/ambient), which
+ * changes over seconds — so the morph itself is a slow, seamless transition.
+ *
+ * Research-informed (crossmodal correspondence literature):
+ *   percussive music -> ANGULAR, crisp, spiky forms  => beat personality:
+ *     hard mirrored shards of the image, pulsing on the beat, a bar-phase
+ *     highlight sweeping the wedges;
+ *   harmonic/sustained music -> ROUND, soft forms    => drone personality:
+ *     softly domain-warped image clouds, breathing with the slow swell
+ *     (loudness -> looming/expansion).
+ * Image-forward + imgPal/hueRot colour variance like the rest of the set;
+ * jump-free motion (audioPhase/audioAdvance, never time*audio).
+ */
 
 uniform vec2  resolution;
 uniform float time;

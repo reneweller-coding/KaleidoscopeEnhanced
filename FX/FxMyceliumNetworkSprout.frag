@@ -1,20 +1,20 @@
 #version 330 core
 out vec4 fragColor;
-// FxMyceliumNetworkSprout.frag
-// -----------------------------------------------------------------------
-// FX MYCELIUM NETWORK SPROUT: Branching fungal hyphae network transition.
-// Organic fungal mycelial threads sprout and branch across the screen, conducting
-// bioluminescent action-potential pulses that bridge and cross-fade the scenes.
-//   interpolation -> sweeps mycelial growth front from center to boundaries
-//   audioKick     -> flashes action potential electrical pulses along hyphae cords
-//   audioBass     -> widens mycelial thread network thickness
-//
-// Per-activation variety:
-//   hyphaeP float mycelial network branch density (0.5..2.2)
-//   branchP float tip branching angle divergence  (0.5..2.0)
-//   speedP  float growth velocity multiplier      (0.5..2.0)
-//   hueP    float bioluminescent hyphae hue offset (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file FxMyceliumNetworkSprout.frag
+ * @brief FX MYCELIUM NETWORK SPROUT: Branching fungal hyphae network transition.
+ * Organic fungal mycelial threads sprout and branch across the screen, conducting
+ * bioluminescent action-potential pulses that bridge and cross-fade the scenes.
+ *   interpolation -> sweeps mycelial growth front from center to boundaries
+ *   audioKick     -> flashes action potential electrical pulses along hyphae cords
+ *   audioBass     -> widens mycelial thread network thickness
+ *
+ * Per-activation variety:
+ *   hyphaeP float mycelial network branch density (0.5..2.2)
+ *   branchP float tip branching angle divergence  (0.5..2.0)
+ *   speedP  float growth velocity multiplier      (0.5..2.0)
+ *   hueP    float bioluminescent hyphae hue offset (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

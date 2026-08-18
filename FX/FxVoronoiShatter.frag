@@ -1,20 +1,20 @@
 #version 330 core
 out vec4 fragColor;
-// FxVoronoiShatter.frag
-// -----------------------------------------------------------------------
-// FX VORONOI SHATTER: Smooth transition where the scene dissolves through
-// a floating Voronoi cell mosaic. Each polygonal cell smoothly lifts, rotates,
-// and cross-fades with glowing cell boundaries that pulse to the audio.
-//   interpolation -> controls continuous cross-fade & cell lift progress
-//   audioKick     -> flashes cell boundary edges
-//   audioBass     -> undulates cell rotation amplitude
-//
-// Per-activation variety:
-//   cellP  float Voronoi cell grid density (0.5..2.2)
-//   liftP  float cell lift & displacement  (0.5..2.0)
-//   speedP float cell rotation velocity    (0.5..2.0)
-//   hueP   float edge glow hue offset      (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file FxVoronoiShatter.frag
+ * @brief FX VORONOI SHATTER: Smooth transition where the scene dissolves through
+ * a floating Voronoi cell mosaic. Each polygonal cell smoothly lifts, rotates,
+ * and cross-fades with glowing cell boundaries that pulse to the audio.
+ *   interpolation -> controls continuous cross-fade & cell lift progress
+ *   audioKick     -> flashes cell boundary edges
+ *   audioBass     -> undulates cell rotation amplitude
+ *
+ * Per-activation variety:
+ *   cellP  float Voronoi cell grid density (0.5..2.2)
+ *   liftP  float cell lift & displacement  (0.5..2.0)
+ *   speedP float cell rotation velocity    (0.5..2.0)
+ *   hueP   float edge glow hue offset      (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

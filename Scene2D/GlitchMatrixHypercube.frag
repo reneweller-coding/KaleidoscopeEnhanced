@@ -1,21 +1,21 @@
 #version 330 core
 out vec4 fragColor;
-// GlitchMatrixHypercube.frag
-// -----------------------------------------------------------------------
-// GLITCH MATRIX HYPERCUBE: 4D Tesseract projection intersecting 3D/2D space,
-// combined with cybernetic data moshing, digital glitch slices, ASCII/Matrix
-// data streams, chromatic aberration, and multi-planar photo texture projection.
-//   audioAdvance -> drives 4D hyper-rotations across XY/XW/YW planes
-//   audioKick    -> triggers temporal buffer slice glitches & matrix flash
-//   audioSpectrum-> modulates 4D hyper-facet tessellation depth
-//   audioHigh    -> excites high-frequency digital noise & green glyph rain
-//
-// Per-activation variety:
-//   glitchP   float digital glitch slice intensity    (0.4..2.0)
-//   rotSpdP   float 4D hyper-rotation speed           (0.5..1.8)
-//   facetP    float hypercube wireframe thickness     (0.5..2.2)
-//   hueP      float color spectrum offset             (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file GlitchMatrixHypercube.frag
+ * @brief GLITCH MATRIX HYPERCUBE: 4D Tesseract projection intersecting 3D/2D space,
+ * combined with cybernetic data moshing, digital glitch slices, ASCII/Matrix
+ * data streams, chromatic aberration, and multi-planar photo texture projection.
+ *   audioAdvance -> drives 4D hyper-rotations across XY/XW/YW planes
+ *   audioKick    -> triggers temporal buffer slice glitches & matrix flash
+ *   audioSpectrum-> modulates 4D hyper-facet tessellation depth
+ *   audioHigh    -> excites high-frequency digital noise & green glyph rain
+ *
+ * Per-activation variety:
+ *   glitchP   float digital glitch slice intensity    (0.4..2.0)
+ *   rotSpdP   float 4D hyper-rotation speed           (0.5..1.8)
+ *   facetP    float hypercube wireframe thickness     (0.5..2.2)
+ *   hueP      float color spectrum offset             (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

@@ -1,9 +1,11 @@
 #version 330 core
 out vec4 fragColor;
-// FxWater2.frag
-// FX WATER 2: raymarched 3D water surface -- the scene is projected as
-// the reflection/refraction texture of a small raymarched wave field,
-// seen from a fixed aerial camera.
+/**
+ * @file FxWater2.frag
+ * @brief FX WATER 2: raymarched 3D water surface -- the scene is projected as
+ * the reflection/refraction texture of a small raymarched wave field,
+ * seen from a fixed aerial camera.
+ */
 uniform vec2 resolution;
 uniform float time;
 uniform sampler2D tex0;

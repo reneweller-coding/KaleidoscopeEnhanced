@@ -1,15 +1,15 @@
 #version 330 core
 out vec4 fragColor;
-// TheCore.frag
-// -----------------------------------------------------------------------
-// Adapted from "The Core" by @kishimisu (2023) — https://www.shadertoy.com/view/cdy3Dd
-// Original licensed CC BY-NC-SA 4.0 (attribution kept per the licence).
-//
-// A glowing warm "core" seen down a twisting, domain-repeating tunnel of tubes.
-// Adapted to our engine: image-forward (the picture colours the glow + drifts as
-// a faint nebula), audio-reactive & jump-free (tunnel scroll via audioAdvance,
-// twist via audioPhase; beats brighten; centroid/valence grade).
-// -----------------------------------------------------------------------
+/**
+ * @file TheCore.frag
+ * @brief Adapted from "The Core" by @kishimisu (2023) — https://www.shadertoy.com/view/cdy3Dd
+ * Original licensed CC BY-NC-SA 4.0 (attribution kept per the licence).
+ *
+ * A glowing warm "core" seen down a twisting, domain-repeating tunnel of tubes.
+ * Adapted to our engine: image-forward (the picture colours the glow + drifts as
+ * a faint nebula), audio-reactive & jump-free (tunnel scroll via audioAdvance,
+ * twist via audioPhase; beats brighten; centroid/valence grade).
+ */
 
 uniform vec2  resolution;
 uniform float time;

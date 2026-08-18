@@ -1,20 +1,20 @@
 #version 330 core
 out vec4 fragColor;
-// FxBioluminescentPhytoplanktonBloom.frag
-// -----------------------------------------------------------------------
-// FX BIOLUMINESCENT PHYTOPLANKTON BLOOM: Marine algal bloom current transition.
-// Millions of single-celled phytoplankton form luminous cyan-turquoise swirling
-// bloom currents that illuminate fluid vortex streamlines and reveal the next scene.
-//   interpolation -> sweeps phytoplankton algal density buildup & dissipation
-//   audioKick     -> flashes shear-stress enzymatic luciferin light emission
-//   audioBass     -> undulates oceanic fluid vortex swirl velocity
-//
-// Per-activation variety:
-//   bloomP float phytoplankton bloom density scale  (0.5..2.2)
-//   swirlP float ocean eddy streamline swirl ratio  (0.5..2.0)
-//   speedP float animation speed multiplier         (0.5..2.0)
-//   hueP   float bioluminescent turquoise hue offset(0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file FxBioluminescentPhytoplanktonBloom.frag
+ * @brief FX BIOLUMINESCENT PHYTOPLANKTON BLOOM: Marine algal bloom current transition.
+ * Millions of single-celled phytoplankton form luminous cyan-turquoise swirling
+ * bloom currents that illuminate fluid vortex streamlines and reveal the next scene.
+ *   interpolation -> sweeps phytoplankton algal density buildup & dissipation
+ *   audioKick     -> flashes shear-stress enzymatic luciferin light emission
+ *   audioBass     -> undulates oceanic fluid vortex swirl velocity
+ *
+ * Per-activation variety:
+ *   bloomP float phytoplankton bloom density scale  (0.5..2.2)
+ *   swirlP float ocean eddy streamline swirl ratio  (0.5..2.0)
+ *   speedP float animation speed multiplier         (0.5..2.0)
+ *   hueP   float bioluminescent turquoise hue offset(0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

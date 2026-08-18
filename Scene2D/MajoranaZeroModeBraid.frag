@@ -1,22 +1,22 @@
 #version 330 core
 out vec4 fragColor;
-// MajoranaZeroModeBraid.frag
-// -----------------------------------------------------------------------
-// MAJORANA ZERO MODE BRAID: 1D topological superconductor nanowire array
-// executing non-abelian Majorana zero-mode braiding operations. Spacetime
-// worldline braids, non-local qubit state encoding, topological phase
-// protection, and continuous photo texture reflections.
-//   audioAdvance -> executes non-abelian Majorana braiding exchanges
-//   audioKick    -> flashes topological quantum gate phase flips & qubit readout
-//   audioBass    -> undulates superconducting proximity gap and wire width
-//   audioChromaHue-> shifts non-abelian topological phase color grading
-//
-// Per-activation variety:
-//   braidP    float Majorana braiding frequency & twist  (0.5..2.2)
-//   junctionP float nanowire junction cross spacing      (0.5..2.0)
-//   speedP    float braiding operation velocity          (0.5..2.0)
-//   hueP      float quantum state chromatic hue offset   (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file MajoranaZeroModeBraid.frag
+ * @brief MAJORANA ZERO MODE BRAID: 1D topological superconductor nanowire array
+ * executing non-abelian Majorana zero-mode braiding operations. Spacetime
+ * worldline braids, non-local qubit state encoding, topological phase
+ * protection, and continuous photo texture reflections.
+ *   audioAdvance -> executes non-abelian Majorana braiding exchanges
+ *   audioKick    -> flashes topological quantum gate phase flips & qubit readout
+ *   audioBass    -> undulates superconducting proximity gap and wire width
+ *   audioChromaHue-> shifts non-abelian topological phase color grading
+ *
+ * Per-activation variety:
+ *   braidP    float Majorana braiding frequency & twist  (0.5..2.2)
+ *   junctionP float nanowire junction cross spacing      (0.5..2.0)
+ *   speedP    float braiding operation velocity          (0.5..2.0)
+ *   hueP      float quantum state chromatic hue offset   (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

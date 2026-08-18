@@ -1,10 +1,10 @@
 #version 330 core
-// HypercubeLatticePillars.vert
-// -----------------------------------------------------------------------
-// 4,900 cubes (geom="cubes") arranged into monolithic architectural towers
-// rising in concentric rings with sci-fi neon edge lighting and dynamic
-// audio-reactive height extrusions.
-// -----------------------------------------------------------------------
+/**
+ * @file HypercubeLatticePillars.vert
+ * @brief 4,900 cubes (geom="cubes") arranged into monolithic architectural towers
+ * rising in concentric rings with sci-fi neon edge lighting and dynamic
+ * audio-reactive height extrusions.
+ */
 
 layout(location = 0) in vec4 attrA; // xyz = local cube vertex [-0.5, 0.5], w = cube ID [0..4899]
 layout(location = 1) in vec4 attrB; // seeds

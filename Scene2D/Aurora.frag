@@ -1,26 +1,26 @@
 #version 330 core
 out vec4 fragColor;
-// Aurora.frag
-// -----------------------------------------------------------------------
-// AURORA BOREALIS v2: TWO waving curtain layers over a starfield with a
-// moon — the back layer higher, dimmer and hue-shifted for real depth.
-// The display DANCES: kicks surge the rays, onsets flare the active
-// regions, the swell breathes the whole sky, and rare high-reaching parts
-// tip into the classic red top fringe.  The image glows through the
-// curtains as their colour texture; a faint aurora glow warms the ground.
-//   swell    -> sky-wide flare-up (aurora "breathing")
-//   kick     -> ray surge (slew-limited envelope, no strobe)
-//   onset    -> brief flare of the bright regions
-//   centroid -> curtain reach / brightness
-//   chroma   -> hue drift; pitch -> curtain altitude
-// Jump-free: all wave fields ride time + audioPhase (integrated).
-//
-// Per-activation variety (0 = default):
-//   bandsP   float curtain frequency multiplier (0 -> 1.0; 0.7..1.8)
-//   hueP     float hue rotation                 (0 -> classic green; 0..6.28)
-//   heightP  float curtain height multiplier    (0 -> 1.0; 0.7..1.5)
-//   speedP   float wave speed multiplier        (0 -> 1.0; 0.6..1.6)
-// -----------------------------------------------------------------------
+/**
+ * @file Aurora.frag
+ * @brief AURORA BOREALIS v2: TWO waving curtain layers over a starfield with a
+ * moon — the back layer higher, dimmer and hue-shifted for real depth.
+ * The display DANCES: kicks surge the rays, onsets flare the active
+ * regions, the swell breathes the whole sky, and rare high-reaching parts
+ * tip into the classic red top fringe.  The image glows through the
+ * curtains as their colour texture; a faint aurora glow warms the ground.
+ *   swell    -> sky-wide flare-up (aurora "breathing")
+ *   kick     -> ray surge (slew-limited envelope, no strobe)
+ *   onset    -> brief flare of the bright regions
+ *   centroid -> curtain reach / brightness
+ *   chroma   -> hue drift; pitch -> curtain altitude
+ * Jump-free: all wave fields ride time + audioPhase (integrated).
+ *
+ * Per-activation variety (0 = default):
+ *   bandsP   float curtain frequency multiplier (0 -> 1.0; 0.7..1.8)
+ *   hueP     float hue rotation                 (0 -> classic green; 0..6.28)
+ *   heightP  float curtain height multiplier    (0 -> 1.0; 0.7..1.5)
+ *   speedP   float wave speed multiplier        (0 -> 1.0; 0.6..1.6)
+ */
 
 uniform vec2  resolution;
 uniform float time;

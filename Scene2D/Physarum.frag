@@ -1,16 +1,16 @@
 #version 330 core
 out vec4 fragColor;
-// Physarum.frag
-// -----------------------------------------------------------------------
-// The living Physarum (slime mould) vein network, simulated on the GPU
-// (see Blend\PhysarumAgents/Deposit/Diffuse) and exposed on "texPhysarum":
-// 65k agents lay and follow pheromone trails, so glowing veins grow, merge
-// and constantly rebuild — one of the most organic images a computer can
-// make.  Two species live in R and G; here they get warm/cool hues around
-// the musical key, the veins are lit like embossed relief, and the picture
-// is stained through the strongest lanes.  Kicks scatter the swarm in the
-// SIM (the network visibly explodes and re-forms).
-// -----------------------------------------------------------------------
+/**
+ * @file Physarum.frag
+ * @brief The living Physarum (slime mould) vein network, simulated on the GPU
+ * (see Blend\PhysarumAgents/Deposit/Diffuse) and exposed on "texPhysarum":
+ * 65k agents lay and follow pheromone trails, so glowing veins grow, merge
+ * and constantly rebuild — one of the most organic images a computer can
+ * make.  Two species live in R and G; here they get warm/cool hues around
+ * the musical key, the veins are lit like embossed relief, and the picture
+ * is stained through the strongest lanes.  Kicks scatter the swarm in the
+ * SIM (the network visibly explodes and re-forms).
+ */
 
 uniform vec2  resolution;
 uniform float time;

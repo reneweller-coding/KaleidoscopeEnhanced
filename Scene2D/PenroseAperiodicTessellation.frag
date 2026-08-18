@@ -1,22 +1,22 @@
 #version 330 core
 out vec4 fragColor;
-// PenroseAperiodicTessellation.frag
-// -----------------------------------------------------------------------
-// PENROSE APERIODIC TESSELLATION: Infinite 5-fold aperiodic Penrose tiling
-// (kites and darts / rhombs) governed by the Golden Ratio phi (1.618...).
-// Recursive tile deflation, photoelastic stress birefringence colors,
-// and sacred non-repeating geometric photo segment mapping.
-//   audioAdvance -> rotates aperiodic deflation hierarchy
-//   audioKick    -> flashes photoelastic stress fringes across tile edges
-//   audioBeatPhase-> animates golden ratio recursive tile expansion
-//   audioChromaHue-> shifts birefringence spectrum colors
-//
-// Per-activation variety:
-//   tileP  float aperiodic tiling density / scale  (0.5..2.2)
-//   foldP  float 5-fold recursive folding depth    (0.5..2.0)
-//   speedP float kaleidoscopic swirl speed         (0.5..2.0)
-//   hueP   float structural color hue offset       (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file PenroseAperiodicTessellation.frag
+ * @brief PENROSE APERIODIC TESSELLATION: Infinite 5-fold aperiodic Penrose tiling
+ * (kites and darts / rhombs) governed by the Golden Ratio phi (1.618...).
+ * Recursive tile deflation, photoelastic stress birefringence colors,
+ * and sacred non-repeating geometric photo segment mapping.
+ *   audioAdvance -> rotates aperiodic deflation hierarchy
+ *   audioKick    -> flashes photoelastic stress fringes across tile edges
+ *   audioBeatPhase-> animates golden ratio recursive tile expansion
+ *   audioChromaHue-> shifts birefringence spectrum colors
+ *
+ * Per-activation variety:
+ *   tileP  float aperiodic tiling density / scale  (0.5..2.2)
+ *   foldP  float 5-fold recursive folding depth    (0.5..2.0)
+ *   speedP float kaleidoscopic swirl speed         (0.5..2.0)
+ *   hueP   float structural color hue offset       (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

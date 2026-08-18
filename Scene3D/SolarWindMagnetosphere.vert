@@ -1,9 +1,9 @@
 #version 330 core
-// SolarWindMagnetosphere.vert
-// -----------------------------------------------------------------------
-// 220x120 heightfield grid (geom="grid") simulating a planetary magnetosphere
-// bow shock in the supersonic solar wind with auroral emission curtains.
-// -----------------------------------------------------------------------
+/**
+ * @file SolarWindMagnetosphere.vert
+ * @brief 220x120 heightfield grid (geom="grid") simulating a planetary magnetosphere
+ * bow shock in the supersonic solar wind with auroral emission curtains.
+ */
 
 layout(location = 0) in vec4 attrA; // xy = grid UV [0,1], w = cell ID
 layout(location = 1) in vec4 attrB; // seeds

@@ -1,9 +1,11 @@
 #version 330 core
 out vec4 fragColor;
-// FxLichtenstein.frag
-// FX LICHTENSTEIN: halftone-dot pop-art look -- the scene is quantized
-// into a grid of circular dots (Ben-Day dots), flat grey outside each
-// dot's radius.
+/**
+ * @file FxLichtenstein.frag
+ * @brief FX LICHTENSTEIN: halftone-dot pop-art look -- the scene is quantized
+ * into a grid of circular dots (Ben-Day dots), flat grey outside each
+ * dot's radius.
+ */
 uniform vec2 resolution;
 uniform float time;
 uniform sampler2D tex0;

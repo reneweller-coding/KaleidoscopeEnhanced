@@ -1,21 +1,21 @@
 #version 330 core
 out vec4 fragColor;
-// MandelbulbHyperRealm.frag
-// -----------------------------------------------------------------------
-// MANDELBULB HYPER REALM: Raymarched infinite 3D Mandelbulb fractal realm (z^N + c)
-// with audio-reactive power N morphing, internal crystalline cave traversal,
-// and thin-film metallic specular iridescence with photo texture blending.
-//   audioSwell   -> dynamically morphs fractal power N (2.0 to 8.0)
-//   audioKick    -> ignites metallic specular core flare & laser beams
-//   audioPhase   -> rotates higher-dimensional 3D slicing planes
-//   audioCentroid-> shifts thin-film metallic iridescence palette
-//
-// Per-activation variety:
-//   powerP   float base Mandelbulb power N                 (4.0..8.0)
-//   zoomP    float camera flight zoom depth                (0.5..1.8)
-//   glowP    float interior crystal glow intensity         (0.5..2.2)
-//   hueP     float spectrum base hue rotation              (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file MandelbulbHyperRealm.frag
+ * @brief MANDELBULB HYPER REALM: Raymarched infinite 3D Mandelbulb fractal realm (z^N + c)
+ * with audio-reactive power N morphing, internal crystalline cave traversal,
+ * and thin-film metallic specular iridescence with photo texture blending.
+ *   audioSwell   -> dynamically morphs fractal power N (2.0 to 8.0)
+ *   audioKick    -> ignites metallic specular core flare & laser beams
+ *   audioPhase   -> rotates higher-dimensional 3D slicing planes
+ *   audioCentroid-> shifts thin-film metallic iridescence palette
+ *
+ * Per-activation variety:
+ *   powerP   float base Mandelbulb power N                 (4.0..8.0)
+ *   zoomP    float camera flight zoom depth                (0.5..1.8)
+ *   glowP    float interior crystal glow intensity         (0.5..2.2)
+ *   hueP     float spectrum base hue rotation              (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

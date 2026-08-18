@@ -1,22 +1,22 @@
 #version 330 core
 out vec4 fragColor;
-// ReactionDiffusion.frag
-// -----------------------------------------------------------------------
-// The living Gray-Scott reaction-diffusion field (simulated on the GPU into
-// "texSim") rendered as ORGANIC LIQUID METAL over the source image:
-//   * the B-concentration reveals and stains the picture where the reaction
-//     is active;
-//   * the field gradient displaces the image GENTLY (the old raw-gradient
-//     x4 displacement threw the picture around with every sim step — the
-//     "Gezappel"; now the gradient is blurred and scaled way down);
-//   * fake 3D lighting from the smoothed gradient gives the fronts glossy
-//     specular highlights — the pattern reads as embossed liquid metal;
-//   * optionally the whole field is FOLDED into an n-segment kaleidoscopic
-//     mandala (per-activation), so the reaction grows radially symmetric;
-//   * front colour comes from a drifting crop of the IMAGE (imgPal), warmed/
-//     cooled by valence, with a gentle once-per-bar hue sweep.
-// If the simulation is unavailable, texSim reads 0 -> a dim image remains.
-// -----------------------------------------------------------------------
+/**
+ * @file ReactionDiffusion.frag
+ * @brief The living Gray-Scott reaction-diffusion field (simulated on the GPU into
+ * "texSim") rendered as ORGANIC LIQUID METAL over the source image:
+ *   * the B-concentration reveals and stains the picture where the reaction
+ *     is active;
+ *   * the field gradient displaces the image GENTLY (the old raw-gradient
+ *     x4 displacement threw the picture around with every sim step — the
+ *     "Gezappel"; now the gradient is blurred and scaled way down);
+ *   * fake 3D lighting from the smoothed gradient gives the fronts glossy
+ *     specular highlights — the pattern reads as embossed liquid metal;
+ *   * optionally the whole field is FOLDED into an n-segment kaleidoscopic
+ *     mandala (per-activation), so the reaction grows radially symmetric;
+ *   * front colour comes from a drifting crop of the IMAGE (imgPal), warmed/
+ *     cooled by valence, with a gentle once-per-bar hue sweep.
+ * If the simulation is unavailable, texSim reads 0 -> a dim image remains.
+ */
 
 uniform vec2  resolution;
 uniform float time;

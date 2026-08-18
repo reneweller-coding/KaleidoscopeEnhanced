@@ -1,20 +1,20 @@
 #version 330 core
 out vec4 fragColor;
-// FxHologramScanInterference.frag
-// -----------------------------------------------------------------------
-// FX HOLOGRAM SCAN INTERFERENCE: Volumetric laser holographic scanline
-// transition. Laser interference fringes and horizontal spatial-light-modulator
-// scanlines reconstruct the incoming scene with chromatic hologram diffraction.
-//   interpolation -> sweeps holographic phase modulation & reconstruction
-//   audioKick     -> flashes laser interference fringe lines
-//   audioHigh     -> sharpens holographic scanline resolution
-//
-// Per-activation variety:
-//   scanP  float scanline density & line frequency (0.5..2.2)
-//   holoP  float holographic depth displacement   (0.5..2.0)
-//   speedP float scan velocity multiplier          (0.5..2.0)
-//   hueP   float hologram laser hue offset         (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file FxHologramScanInterference.frag
+ * @brief FX HOLOGRAM SCAN INTERFERENCE: Volumetric laser holographic scanline
+ * transition. Laser interference fringes and horizontal spatial-light-modulator
+ * scanlines reconstruct the incoming scene with chromatic hologram diffraction.
+ *   interpolation -> sweeps holographic phase modulation & reconstruction
+ *   audioKick     -> flashes laser interference fringe lines
+ *   audioHigh     -> sharpens holographic scanline resolution
+ *
+ * Per-activation variety:
+ *   scanP  float scanline density & line frequency (0.5..2.2)
+ *   holoP  float holographic depth displacement   (0.5..2.0)
+ *   speedP float scan velocity multiplier          (0.5..2.0)
+ *   hueP   float hologram laser hue offset         (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

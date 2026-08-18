@@ -1,18 +1,18 @@
 #version 330 core
 out vec4 fragColor;
-// DarkAmbientTunnel.frag
-// -----------------------------------------------------------------------
-// Atmospheric void tunnel designed for dark ambient and drone music.
-// (Christoph Heemann, Thomas Köner, Lustmord aesthetics)
-//
-// Audio mapping:
-//   audioSubBass  → heavy vignette (darkness closing in from edges)
-//   audioFlux     → forward motion (still on held drone, moves when layers change)
-//   audioLowMid   → harmonic wave distortion along tunnel walls
-//   audioCentroid → colour temperature: void-blue (dark) → deep amber (warm)
-//   audioBeat     → subtle flash (only relevant in hybrid beat+ambient works)
-//   audioLevel    → slow breathing luminance
-// -----------------------------------------------------------------------
+/**
+ * @file DarkAmbientTunnel.frag
+ * @brief Atmospheric void tunnel designed for dark ambient and drone music.
+ * (Christoph Heemann, Thomas Köner, Lustmord aesthetics)
+ *
+ * Audio mapping:
+ *   audioSubBass  → heavy vignette (darkness closing in from edges)
+ *   audioFlux     → forward motion (still on held drone, moves when layers change)
+ *   audioLowMid   → harmonic wave distortion along tunnel walls
+ *   audioCentroid → colour temperature: void-blue (dark) → deep amber (warm)
+ *   audioBeat     → subtle flash (only relevant in hybrid beat+ambient works)
+ *   audioLevel    → slow breathing luminance
+ */
 
 uniform vec2  resolution;
 uniform float time;

@@ -1,6 +1,8 @@
 #version 430 core
-// CrystallineCavernTessellation.vert
-// attrA.xy = corner uv (0..1), attrA.w = cell ID; attrB = per-cell seeds
+/**
+ * @file CrystallineCavernTessellation.vert
+ * @brief attrA.xy = corner uv (0..1), attrA.w = cell ID; attrB = per-cell seeds
+ */
 in vec4 attrA;
 in vec4 attrB;
 

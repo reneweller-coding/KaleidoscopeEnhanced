@@ -1,32 +1,32 @@
 #version 330 core
 out vec4 fragColor;
-// HarmonicRings.frag
-// -----------------------------------------------------------------------
-// 6 concentric Gaussian glow rings, one per frequency band.
-// A visual spectrograph tuned for drone and dark ambient music:
-// overtone structures, sub-bass rumble, and metallic harmonics all
-// appear as distinct glowing rings against a near-black field.
-//
-// Band → ring radius mapping (inner to outer):
-//   Ring 0  r≈0.10  subBass   (20-60 Hz)   – inner void-blue pulse
-//   Ring 1  r≈0.24  bass      (60-150 Hz)  – drone fundamental
-//   Ring 2  r≈0.41  lowMid    (150-500 Hz) – harmonic warmth
-//   Ring 3  r≈0.60  mid       (0.5-2k Hz)  – melody / texture
-//   Ring 4  r≈0.82  upperMid  (2k-6k Hz)   – metallic overtones
-//   Ring 5  r≈1.10  high      (6k+ Hz)     – air shimmer (outer edge)
-//
-// Image is used as texture inside each ring (ring-arc UV sampling).
-// Background remains dark – the image only appears where rings glow.
-//
-// Audio mapping:
-//   audioSubBass  → Ring 0 width + brightness
-//   audioLowMid   → Ring 2 width + brightness
-//   audioUpperMid → Ring 4 width + brightness
-//   audioLevel    → Rings 1, 3 (approximated bass and mid)
-//   audioFlux     → Ring 5 (approximated high shimmer)
-//   audioCentroid → Colour temperature gradient across all rings
-//   audioBeat     → All rings briefly flare
-// -----------------------------------------------------------------------
+/**
+ * @file HarmonicRings.frag
+ * @brief 6 concentric Gaussian glow rings, one per frequency band.
+ * A visual spectrograph tuned for drone and dark ambient music:
+ * overtone structures, sub-bass rumble, and metallic harmonics all
+ * appear as distinct glowing rings against a near-black field.
+ *
+ * Band → ring radius mapping (inner to outer):
+ *   Ring 0  r≈0.10  subBass   (20-60 Hz)   – inner void-blue pulse
+ *   Ring 1  r≈0.24  bass      (60-150 Hz)  – drone fundamental
+ *   Ring 2  r≈0.41  lowMid    (150-500 Hz) – harmonic warmth
+ *   Ring 3  r≈0.60  mid       (0.5-2k Hz)  – melody / texture
+ *   Ring 4  r≈0.82  upperMid  (2k-6k Hz)   – metallic overtones
+ *   Ring 5  r≈1.10  high      (6k+ Hz)     – air shimmer (outer edge)
+ *
+ * Image is used as texture inside each ring (ring-arc UV sampling).
+ * Background remains dark – the image only appears where rings glow.
+ *
+ * Audio mapping:
+ *   audioSubBass  → Ring 0 width + brightness
+ *   audioLowMid   → Ring 2 width + brightness
+ *   audioUpperMid → Ring 4 width + brightness
+ *   audioLevel    → Rings 1, 3 (approximated bass and mid)
+ *   audioFlux     → Ring 5 (approximated high shimmer)
+ *   audioCentroid → Colour temperature gradient across all rings
+ *   audioBeat     → All rings briefly flare
+ */
 
 uniform vec2  resolution;
 uniform float time;

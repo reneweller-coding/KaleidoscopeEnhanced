@@ -1,22 +1,22 @@
 #version 330 core
 out vec4 fragColor;
-// MantleConvectionPlume.frag
-// -----------------------------------------------------------------------
-// MANTLE CONVECTION PLUME: Deep Earth core-mantle boundary (D'' layer)
-// thermal plumes rising through Rayleigh-Bénard viscous convection cells.
-// Mushrooming basaltic magma diapir heads, subducting tectonic slabs,
-// 3000°C thermal upwelling, and molten rock photo texture distortion.
-//   audioAdvance -> drives viscous mantle convection vorticity flow
-//   audioKick    -> triggers explosive magma diapir eruptions at the lithosphere
-//   audioBass    -> undulates thermal plume stem thickness & buoyancy
-//   audioCentroid-> shifts magma temperature (deep basaltic red to incandescent gold)
-//
-// Per-activation variety:
-//   plumeP   float mantle thermal plume buoyancy & height  (0.5..2.2)
-//   convectP float Rayleigh-Bénard convection cell density  (0.5..2.0)
-//   speedP   float viscous mantle flow velocity            (0.5..2.0)
-//   hueP     float thermal radiation hue offset            (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file MantleConvectionPlume.frag
+ * @brief MANTLE CONVECTION PLUME: Deep Earth core-mantle boundary (D'' layer)
+ * thermal plumes rising through Rayleigh-Bénard viscous convection cells.
+ * Mushrooming basaltic magma diapir heads, subducting tectonic slabs,
+ * 3000°C thermal upwelling, and molten rock photo texture distortion.
+ *   audioAdvance -> drives viscous mantle convection vorticity flow
+ *   audioKick    -> triggers explosive magma diapir eruptions at the lithosphere
+ *   audioBass    -> undulates thermal plume stem thickness & buoyancy
+ *   audioCentroid-> shifts magma temperature (deep basaltic red to incandescent gold)
+ *
+ * Per-activation variety:
+ *   plumeP   float mantle thermal plume buoyancy & height  (0.5..2.2)
+ *   convectP float Rayleigh-Bénard convection cell density  (0.5..2.0)
+ *   speedP   float viscous mantle flow velocity            (0.5..2.0)
+ *   hueP     float thermal radiation hue offset            (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

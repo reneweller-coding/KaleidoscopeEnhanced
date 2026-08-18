@@ -1,20 +1,20 @@
 #version 330 core
 out vec4 fragColor;
-// FxWormholeSpaceFold.frag
-// -----------------------------------------------------------------------
-// FX WORMHOLE SPACE FOLD: Traversable Morris-Thorne wormhole transition.
-// The camera plunges through a traversable Lorentzian wormhole throat that
-// smoothly folds the geometry of Universe 1 (tex1) into Universe 2 (tex0).
-//   interpolation -> navigates camera through the wormhole throat tunnel
-//   audioKick     -> flashes exotic matter throat stabilization rings
-//   audioBass     -> undulates wormhole throat diameter & metric curvature
-//
-// Per-activation variety:
-//   throatP float wormhole throat radius scale   (0.5..2.2)
-//   curveP  float spacetime curvature distortion (0.5..2.0)
-//   speedP  float traversal velocity multiplier  (0.5..2.0)
-//   hueP    float throat chromatic hue offset    (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file FxWormholeSpaceFold.frag
+ * @brief FX WORMHOLE SPACE FOLD: Traversable Morris-Thorne wormhole transition.
+ * The camera plunges through a traversable Lorentzian wormhole throat that
+ * smoothly folds the geometry of Universe 1 (tex1) into Universe 2 (tex0).
+ *   interpolation -> navigates camera through the wormhole throat tunnel
+ *   audioKick     -> flashes exotic matter throat stabilization rings
+ *   audioBass     -> undulates wormhole throat diameter & metric curvature
+ *
+ * Per-activation variety:
+ *   throatP float wormhole throat radius scale   (0.5..2.2)
+ *   curveP  float spacetime curvature distortion (0.5..2.0)
+ *   speedP  float traversal velocity multiplier  (0.5..2.0)
+ *   hueP    float throat chromatic hue offset    (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

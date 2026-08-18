@@ -1,19 +1,19 @@
 #version 330 core
 out vec4 fragColor;
-// HexKaleido.frag
-// -----------------------------------------------------------------------
-// Adapted from an untitled Shadertoy hex-kaleidoscope — https://www.shadertoy.com/view/Xljczw
-// (author not specified on the page; adapted under the site's standard terms).
-//
-// A layered hexagonal kaleidoscope: each iteration re-tiles the plane into
-// hexagons and rings glow at a shifting radius, giving a jewel-like radiating
-// lattice.  Adapted to our engine: GLSL 1.20 (gl_FragCoord/resolution/time),
-// jump-free audio motion (the host-integrated audioAdvance added to time,
-// never time*audio), beat/onset brightness, mood grade, and IMAGE-DRIVEN
-// colour: a slowly-drifting crop of the source picture (imgPal) rotates the
-// palette's hue (hueRot) so the jewel colours come from the ever-changing
-// image, exactly like the other adapted shaders in this set.
-// -----------------------------------------------------------------------
+/**
+ * @file HexKaleido.frag
+ * @brief Adapted from an untitled Shadertoy hex-kaleidoscope — https://www.shadertoy.com/view/Xljczw
+ * (author not specified on the page; adapted under the site's standard terms).
+ *
+ * A layered hexagonal kaleidoscope: each iteration re-tiles the plane into
+ * hexagons and rings glow at a shifting radius, giving a jewel-like radiating
+ * lattice.  Adapted to our engine: GLSL 1.20 (gl_FragCoord/resolution/time),
+ * jump-free audio motion (the host-integrated audioAdvance added to time,
+ * never time*audio), beat/onset brightness, mood grade, and IMAGE-DRIVEN
+ * colour: a slowly-drifting crop of the source picture (imgPal) rotates the
+ * palette's hue (hueRot) so the jewel colours come from the ever-changing
+ * image, exactly like the other adapted shaders in this set.
+ */
 
 uniform vec2  resolution;
 uniform float time;

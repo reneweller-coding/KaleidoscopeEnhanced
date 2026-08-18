@@ -1,20 +1,20 @@
 #version 330 core
 out vec4 fragColor;
-// FxKerrSchildWarpSheet.frag
-// -----------------------------------------------------------------------
-// FX KERR SCHILD WARP SHEET: Exact Kerr-Schild spacetime metric transition.
-// Spacetime geometry deforms continuously along null vector congruences
-// (g_ab = eta_ab + 2 H k_a k_b), stretching and shearing light rays to bridge the scenes.
-//   interpolation -> sweeps Kerr-Schild gravitational profile scalar H(r)
-//   audioKick     -> flashes null geodesic caustic focus lines
-//   audioBass     -> drives Kerr-Schild metric distortion amplitude
-//
-// Per-activation variety:
-//   warpP  float Kerr-Schild metric scalar scale  (0.5..2.2)
-//   nullP  float null vector k_a shear direction  (0.5..2.0)
-//   speedP float animation speed multiplier       (0.5..2.0)
-//   hueP   float spacetime caustic hue offset     (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file FxKerrSchildWarpSheet.frag
+ * @brief FX KERR SCHILD WARP SHEET: Exact Kerr-Schild spacetime metric transition.
+ * Spacetime geometry deforms continuously along null vector congruences
+ * (g_ab = eta_ab + 2 H k_a k_b), stretching and shearing light rays to bridge the scenes.
+ *   interpolation -> sweeps Kerr-Schild gravitational profile scalar H(r)
+ *   audioKick     -> flashes null geodesic caustic focus lines
+ *   audioBass     -> drives Kerr-Schild metric distortion amplitude
+ *
+ * Per-activation variety:
+ *   warpP  float Kerr-Schild metric scalar scale  (0.5..2.2)
+ *   nullP  float null vector k_a shear direction  (0.5..2.0)
+ *   speedP float animation speed multiplier       (0.5..2.0)
+ *   hueP   float spacetime caustic hue offset     (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

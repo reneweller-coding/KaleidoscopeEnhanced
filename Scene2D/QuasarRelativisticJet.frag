@@ -1,22 +1,22 @@
 #version 330 core
 out vec4 fragColor;
-// QuasarRelativisticJet.frag
-// -----------------------------------------------------------------------
-// QUASAR RELATIVISTIC JET: Raymarched look down the magnetic confinement
-// funnel of an ultra-luminous active galactic nucleus. Relativistic synchrotron
-// plasma jets shoot along helical magnetic field lines with shock diamonds,
-// Cherenkov beaming cones, and multi-tier accretion disk photo reflections.
-//   audioAdvance -> accelerates plasma packets down the relativistic jet
-//   audioKick    -> fires shock diamond detonations and synchrotron flashes
-//   audioSubBass -> expands accretion magnetic field throat
-//   audioHigh    -> intensifies Cherenkov radiation ring glow
-//
-// Per-activation variety:
-//   jetP         float jet core radiance and length      (0.5..2.2)
-//   collimationP float magnetic funnel tight confinement (0.5..2.0)
-//   speedP       float plasma helical swirl velocity     (0.5..2.0)
-//   hueP         float spectral synchrotron hue offset   (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file QuasarRelativisticJet.frag
+ * @brief QUASAR RELATIVISTIC JET: Raymarched look down the magnetic confinement
+ * funnel of an ultra-luminous active galactic nucleus. Relativistic synchrotron
+ * plasma jets shoot along helical magnetic field lines with shock diamonds,
+ * Cherenkov beaming cones, and multi-tier accretion disk photo reflections.
+ *   audioAdvance -> accelerates plasma packets down the relativistic jet
+ *   audioKick    -> fires shock diamond detonations and synchrotron flashes
+ *   audioSubBass -> expands accretion magnetic field throat
+ *   audioHigh    -> intensifies Cherenkov radiation ring glow
+ *
+ * Per-activation variety:
+ *   jetP         float jet core radiance and length      (0.5..2.2)
+ *   collimationP float magnetic funnel tight confinement (0.5..2.0)
+ *   speedP       float plasma helical swirl velocity     (0.5..2.0)
+ *   hueP         float spectral synchrotron hue offset   (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

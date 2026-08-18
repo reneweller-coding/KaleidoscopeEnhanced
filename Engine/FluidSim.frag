@@ -1,20 +1,20 @@
 #version 330 core
 out vec4 fragColor;
-// FluidSim.frag
-// -----------------------------------------------------------------------
-// GPU "ink" simulation step: an RGB dye field is advected semi-Lagrangian
-// along the CURL of a noise potential.  A curl field is divergence-free by
-// construction, so the dye flows like an incompressible fluid (smoke / ink
-// in water) WITHOUT a pressure solve — one texture, one pass, runs on any
-// iGPU.  The source image is continuously injected as fresh dye, so the
-// picture itself becomes the ink that swirls, folds and dissolves.
-//
-// Driven by FilterShader::stepFluid():
-//   flowPhase = integrated (time + audioAdvance) -> jump-free evolution
-//   impulse   = slew-limited bass/beat -> stronger swirl on heavy passages
-//   injectAmt = dye refresh rate (onsets pour in extra ink)
-//   seedMode 1 -> first frame: initialise the dye with the image
-// -----------------------------------------------------------------------
+/**
+ * @file FluidSim.frag
+ * @brief GPU "ink" simulation step: an RGB dye field is advected semi-Lagrangian
+ * along the CURL of a noise potential.  A curl field is divergence-free by
+ * construction, so the dye flows like an incompressible fluid (smoke / ink
+ * in water) WITHOUT a pressure solve — one texture, one pass, runs on any
+ * iGPU.  The source image is continuously injected as fresh dye, so the
+ * picture itself becomes the ink that swirls, folds and dissolves.
+ *
+ * Driven by FilterShader::stepFluid():
+ *   flowPhase = integrated (time + audioAdvance) -> jump-free evolution
+ *   impulse   = slew-limited bass/beat -> stronger swirl on heavy passages
+ *   injectAmt = dye refresh rate (onsets pour in extra ink)
+ *   seedMode 1 -> first frame: initialise the dye with the image
+ */
 
 uniform sampler2D texPrev;   // dye state (RGB)
 uniform sampler2D tex0;      // source images

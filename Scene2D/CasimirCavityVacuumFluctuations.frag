@@ -1,22 +1,22 @@
 #version 330 core
 out vec4 fragColor;
-// CasimirCavityVacuumFluctuations.frag
-// -----------------------------------------------------------------------
-// CASIMIR CAVITY VACUUM FLUCTUATIONS: Nanoscale optical cavity between two
-// reflecting mirrors displaying zero-point quantum field fluctuations,
-// dynamical Casimir photon pair production, standing-wave mode quantization,
-// and thin-film dielectric photo reflections.
-//   audioAdvance -> drives vacuum electromagnetic field mode evolution
-//   audioKick    -> triggers dynamical Casimir photon pair creation flashes
-//   audioSubBass -> modulates nanoscale cavity gap distance
-//   audioHigh    -> excites high-frequency ultraviolet quantum modes
-//
-// Per-activation variety:
-//   gapP    float cavity plate separation gap        (0.5..2.2)
-//   fluctP  float vacuum fluctuation amplitude       (0.5..2.0)
-//   speedP  float quantum phase evolution velocity   (0.5..2.0)
-//   hueP    float dielectric color hue offset        (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file CasimirCavityVacuumFluctuations.frag
+ * @brief CASIMIR CAVITY VACUUM FLUCTUATIONS: Nanoscale optical cavity between two
+ * reflecting mirrors displaying zero-point quantum field fluctuations,
+ * dynamical Casimir photon pair production, standing-wave mode quantization,
+ * and thin-film dielectric photo reflections.
+ *   audioAdvance -> drives vacuum electromagnetic field mode evolution
+ *   audioKick    -> triggers dynamical Casimir photon pair creation flashes
+ *   audioSubBass -> modulates nanoscale cavity gap distance
+ *   audioHigh    -> excites high-frequency ultraviolet quantum modes
+ *
+ * Per-activation variety:
+ *   gapP    float cavity plate separation gap        (0.5..2.2)
+ *   fluctP  float vacuum fluctuation amplitude       (0.5..2.0)
+ *   speedP  float quantum phase evolution velocity   (0.5..2.0)
+ *   hueP    float dielectric color hue offset        (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

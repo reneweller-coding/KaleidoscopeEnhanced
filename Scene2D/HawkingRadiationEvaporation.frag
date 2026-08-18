@@ -1,22 +1,22 @@
 #version 330 core
 out vec4 fragColor;
-// HawkingRadiationEvaporation.frag
-// -----------------------------------------------------------------------
-// HAWKING RADIATION EVAPORATION: Micro-black hole event horizon displaying
-// quantum tunneling evaporation. Virtual particle-antiparticle pairs separate
-// at the horizon boundary, emitting thermal Hawking photons with extreme
-// gravitational redshift, photon sphere light deflection, and photo mapping.
-//   audioAdvance -> accelerates quantum horizon entanglement & particle flux
-//   audioKick    -> triggers explosive micro-black hole evaporation bursts
-//   audioSubBass -> pulses Schwarzschild radius & gravitational lens depth
-//   audioChromaHue-> shifts Hawking thermal emission temperature spectrum
-//
-// Per-activation variety:
-//   evapP    float Hawking radiation flux & burst intensity (0.5..2.2)
-//   horizonP float Schwarzschild event horizon scale        (0.5..2.0)
-//   speedP   float quantum tunneling phase velocity         (0.5..2.0)
-//   hueP     float thermal radiation hue offset             (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file HawkingRadiationEvaporation.frag
+ * @brief HAWKING RADIATION EVAPORATION: Micro-black hole event horizon displaying
+ * quantum tunneling evaporation. Virtual particle-antiparticle pairs separate
+ * at the horizon boundary, emitting thermal Hawking photons with extreme
+ * gravitational redshift, photon sphere light deflection, and photo mapping.
+ *   audioAdvance -> accelerates quantum horizon entanglement & particle flux
+ *   audioKick    -> triggers explosive micro-black hole evaporation bursts
+ *   audioSubBass -> pulses Schwarzschild radius & gravitational lens depth
+ *   audioChromaHue-> shifts Hawking thermal emission temperature spectrum
+ *
+ * Per-activation variety:
+ *   evapP    float Hawking radiation flux & burst intensity (0.5..2.2)
+ *   horizonP float Schwarzschild event horizon scale        (0.5..2.0)
+ *   speedP   float quantum tunneling phase velocity         (0.5..2.0)
+ *   hueP     float thermal radiation hue offset             (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

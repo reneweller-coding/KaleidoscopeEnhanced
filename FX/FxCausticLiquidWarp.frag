@@ -1,20 +1,20 @@
 #version 330 core
 out vec4 fragColor;
-// FxCausticLiquidWarp.frag
-// -----------------------------------------------------------------------
-// FX CAUSTIC LIQUID WARP: Underwater optical caustic refraction transition.
-// Overlapping fluid wave harmonics generate shimmering light caustics and
-// refraction warps that dissolve the outgoing scene into the incoming one.
-//   interpolation -> controls water surface submergence & clearing progress
-//   audioKick     -> flashes sharp caustic refraction focus lines
-//   audioBass     -> undulates water wave height & refraction amplitude
-//
-// Per-activation variety:
-//   causticP float caustic sharpness & intensity (0.5..2.2)
-//   rippleP  float water ripple wave frequency   (0.5..2.0)
-//   speedP   float fluid wave velocity           (0.5..2.0)
-//   hueP     float aquatic caustic hue offset    (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file FxCausticLiquidWarp.frag
+ * @brief FX CAUSTIC LIQUID WARP: Underwater optical caustic refraction transition.
+ * Overlapping fluid wave harmonics generate shimmering light caustics and
+ * refraction warps that dissolve the outgoing scene into the incoming one.
+ *   interpolation -> controls water surface submergence & clearing progress
+ *   audioKick     -> flashes sharp caustic refraction focus lines
+ *   audioBass     -> undulates water wave height & refraction amplitude
+ *
+ * Per-activation variety:
+ *   causticP float caustic sharpness & intensity (0.5..2.2)
+ *   rippleP  float water ripple wave frequency   (0.5..2.0)
+ *   speedP   float fluid wave velocity           (0.5..2.0)
+ *   hueP     float aquatic caustic hue offset    (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

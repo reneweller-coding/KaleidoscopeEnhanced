@@ -1,18 +1,18 @@
 #version 330 core
 out vec4 fragColor;
-// BeatLattice.frag
-// -----------------------------------------------------------------------
-// A BEAT-FIRST primary effect, built for rhythmic music.  Research-informed:
-//   onsets/beats -> impulsive pulsation (envelope-followed pops — fast attack,
-//                   organic release, exactly the "pip-and-pop" kinetic);
-//   percussive material -> ANGULAR geometry (crisp folded shards);
-//   beatPhase (continuous) -> an expanding ring wave that rides the tempo grid;
-//   barPhase -> a slow per-bar rotation of the highlight;
-//   downbeat -> a brighter, wider ring on the bar's "1".
-// The image fills the angular shards (image-forward) with imgPal/hueRot colour
-// variance; all motion is continuous (no snapping) and strobe-safe (the beat
-// values arrive slew-limited from the host).
-// -----------------------------------------------------------------------
+/**
+ * @file BeatLattice.frag
+ * @brief A BEAT-FIRST primary effect, built for rhythmic music.  Research-informed:
+ *   onsets/beats -> impulsive pulsation (envelope-followed pops — fast attack,
+ *                   organic release, exactly the "pip-and-pop" kinetic);
+ *   percussive material -> ANGULAR geometry (crisp folded shards);
+ *   beatPhase (continuous) -> an expanding ring wave that rides the tempo grid;
+ *   barPhase -> a slow per-bar rotation of the highlight;
+ *   downbeat -> a brighter, wider ring on the bar's "1".
+ * The image fills the angular shards (image-forward) with imgPal/hueRot colour
+ * variance; all motion is continuous (no snapping) and strobe-safe (the beat
+ * values arrive slew-limited from the host).
+ */
 
 uniform vec2  resolution;
 uniform float time;

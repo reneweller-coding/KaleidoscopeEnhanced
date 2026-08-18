@@ -1,21 +1,21 @@
 #version 330 core
 out vec4 fragColor;
-// SupercellMesocyclone.frag
-// -----------------------------------------------------------------------
-// SUPERCELL MESOCYCLONE: Volumetric rotating supercell storm cloud with
-// helical updraft mesocyclone, lowering wall cloud, anvil overhang,
-// crepuscular god rays, and audio-reactive intracloud lightning illumination.
-//   audioAdvance -> rotates mesocyclone cloud tiers & anvil shear
-//   audioKick    -> flashes branched intracloud lightning & illuminates storm
-//   audioBass    -> undulates cloud density and storm pressure depression
-//   audioCentroid-> shifts sunset backlighting color temperature
-//
-// Per-activation variety:
-//   cloudP float cloud density & vortex tiering       (0.5..2.2)
-//   stormP float lightning flash & turbulence scale   (0.5..2.0)
-//   speedP float storm rotation velocity             (0.5..2.0)
-//   hueP   float atmospheric sky hue offset          (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file SupercellMesocyclone.frag
+ * @brief SUPERCELL MESOCYCLONE: Volumetric rotating supercell storm cloud with
+ * helical updraft mesocyclone, lowering wall cloud, anvil overhang,
+ * crepuscular god rays, and audio-reactive intracloud lightning illumination.
+ *   audioAdvance -> rotates mesocyclone cloud tiers & anvil shear
+ *   audioKick    -> flashes branched intracloud lightning & illuminates storm
+ *   audioBass    -> undulates cloud density and storm pressure depression
+ *   audioCentroid-> shifts sunset backlighting color temperature
+ *
+ * Per-activation variety:
+ *   cloudP float cloud density & vortex tiering       (0.5..2.2)
+ *   stormP float lightning flash & turbulence scale   (0.5..2.0)
+ *   speedP float storm rotation velocity             (0.5..2.0)
+ *   hueP   float atmospheric sky hue offset          (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

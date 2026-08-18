@@ -1,20 +1,20 @@
 #version 330 core
 out vec4 fragColor;
-// PhysarumAgents.frag
-// -----------------------------------------------------------------------
-// Physarum polycephalum (slime mould) agent update — the classic Jones
-// (2010) model on the GPU: each texel of the 256x256 agent texture IS one
-// agent (R = x, G = y in trail-map space, B = heading, A = species).  The
-// agent samples the trail map at three sensor points (ahead, left, right),
-// turns toward the strongest pheromone OF ITS OWN SPECIES, moves, and
-// wraps toroidally.  Together with the deposit + diffuse passes this
-// grows the signature living vein networks that constantly rebuild.
-//
-// Audio (from FilterShader::stepPhysarum): sensor angle follows the
-// spectral centroid (bright -> tighter, more directed veins), speed rides
-// the level/kick, and a strong kick SCATTERS a fraction of the agents
-// (random new heading) so the net visibly explodes and re-forms.
-// -----------------------------------------------------------------------
+/**
+ * @file PhysarumAgents.frag
+ * @brief Physarum polycephalum (slime mould) agent update — the classic Jones
+ * (2010) model on the GPU: each texel of the 256x256 agent texture IS one
+ * agent (R = x, G = y in trail-map space, B = heading, A = species).  The
+ * agent samples the trail map at three sensor points (ahead, left, right),
+ * turns toward the strongest pheromone OF ITS OWN SPECIES, moves, and
+ * wraps toroidally.  Together with the deposit + diffuse passes this
+ * grows the signature living vein networks that constantly rebuild.
+ *
+ * Audio (from FilterShader::stepPhysarum): sensor angle follows the
+ * spectral centroid (bright -> tighter, more directed veins), speed rides
+ * the level/kick, and a strong kick SCATTERS a fraction of the agents
+ * (random new heading) so the net visibly explodes and re-forms.
+ */
 
 uniform sampler2D texAgents;   // previous agent state
 uniform sampler2D texTrail;    // trail map (R = species A, G = species B)

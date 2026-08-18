@@ -1,20 +1,20 @@
 #version 330 core
 out vec4 fragColor;
-// FxQuadtreeSubdivide.frag
-// -----------------------------------------------------------------------
-// FX QUADTREE SUBDIVIDE: Hierarchical recursive quadtree partitioning
-// dividing the viewport into multi-scale tiles. Smaller sub-quads flip and
-// resolve with cybernetic neon boundary grids to reveal the incoming scene.
-//   interpolation -> drives recursive quadtree depth & tile flip progress
-//   audioKick     -> flashes quadtree partition grid lines
-//   audioBass     -> undulates subdivision threshold
-//
-// Per-activation variety:
-//   depthP float maximum quadtree recursion depth (0.5..2.2)
-//   gridP  float partition grid line intensity   (0.5..2.0)
-//   speedP float animation speed multiplier      (0.5..2.0)
-//   hueP   float partition line hue offset       (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file FxQuadtreeSubdivide.frag
+ * @brief FX QUADTREE SUBDIVIDE: Hierarchical recursive quadtree partitioning
+ * dividing the viewport into multi-scale tiles. Smaller sub-quads flip and
+ * resolve with cybernetic neon boundary grids to reveal the incoming scene.
+ *   interpolation -> drives recursive quadtree depth & tile flip progress
+ *   audioKick     -> flashes quadtree partition grid lines
+ *   audioBass     -> undulates subdivision threshold
+ *
+ * Per-activation variety:
+ *   depthP float maximum quadtree recursion depth (0.5..2.2)
+ *   gridP  float partition grid line intensity   (0.5..2.0)
+ *   speedP float animation speed multiplier      (0.5..2.0)
+ *   hueP   float partition line hue offset       (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

@@ -1,9 +1,11 @@
 #version 330 core
 out vec4 fragColor;
-// FxLens.frag
-// FX LENS: four orbiting refractive lens bubbles bend the scene through
-// a spherical-cap refraction model, like magnifying glasses drifting
-// around the frame in a slow circle.
+/**
+ * @file FxLens.frag
+ * @brief FX LENS: four orbiting refractive lens bubbles bend the scene through
+ * a spherical-cap refraction model, like magnifying glasses drifting
+ * around the frame in a slow circle.
+ */
 uniform vec2 resolution;
 uniform float time;
 uniform sampler2D tex0;

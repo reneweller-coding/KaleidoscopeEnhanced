@@ -1,20 +1,20 @@
 #version 330 core
 out vec4 fragColor;
-// FxEventHorizonSwirl.frag
-// -----------------------------------------------------------------------
-// FX EVENT HORIZON SWIRL: Kerr black hole ergosphere frame-dragging transition.
-// Spacetime frame-dragging twists the outgoing scene into a relativistic
-// spiral vortex around a rotating event horizon, drawing the new scene out.
-//   interpolation -> controls frame-dragging angular momentum & horizon size
-//   audioKick     -> flashes ergosphere frame-dragging boundary
-//   audioBass     -> undulates Kerr black hole spin parameter (a/M)
-//
-// Per-activation variety:
-//   spinP  float Kerr black hole spin parameter    (0.5..2.2)
-//   dragP  float frame dragging spiral distortion  (0.5..2.0)
-//   speedP float animation speed multiplier        (0.5..2.0)
-//   hueP   float ergosphere emission hue offset    (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file FxEventHorizonSwirl.frag
+ * @brief FX EVENT HORIZON SWIRL: Kerr black hole ergosphere frame-dragging transition.
+ * Spacetime frame-dragging twists the outgoing scene into a relativistic
+ * spiral vortex around a rotating event horizon, drawing the new scene out.
+ *   interpolation -> controls frame-dragging angular momentum & horizon size
+ *   audioKick     -> flashes ergosphere frame-dragging boundary
+ *   audioBass     -> undulates Kerr black hole spin parameter (a/M)
+ *
+ * Per-activation variety:
+ *   spinP  float Kerr black hole spin parameter    (0.5..2.2)
+ *   dragP  float frame dragging spiral distortion  (0.5..2.0)
+ *   speedP float animation speed multiplier        (0.5..2.0)
+ *   hueP   float ergosphere emission hue offset    (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

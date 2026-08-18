@@ -1,7 +1,9 @@
 #version 330 core
-// LorenzAttractorTurbulence.vert
-// attrA.x = t (0..1 along ribbon), attrA.y = side (-1..+1 across ribbon),
-// attrA.w = ribbon ID (0..19), attrB = seeds (Scene3DShader.cpp GEOM_RIBBON).
+/**
+ * @file LorenzAttractorTurbulence.vert
+ * @brief attrA.x = t (0..1 along ribbon), attrA.y = side (-1..+1 across ribbon),
+ * attrA.w = ribbon ID (0..19), attrB = seeds (Scene3DShader.cpp GEOM_RIBBON).
+ */
 in vec4 attrA;
 in vec4 attrB;
 

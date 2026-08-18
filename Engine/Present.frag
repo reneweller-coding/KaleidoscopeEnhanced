@@ -13,17 +13,19 @@ out vec4 fragColor;
 layout(std430, binding = 3) readonly buffer AutoExp {
     float autoExposure; float lumaP50; float lumaP98; float autoPad;
 };
-// Present.frag
-// Final present pass.  Two jobs:
-//  1) A GLOBAL MOOD GRADE applied once to the finished frame, so EVERY effect
-//     (not just Tunnel/Kaleidoscope) reacts to the music's mood:
-//       audioCentroid -> colour temperature (dark=cool blue, bright=warm amber)
-//       audioValence  -> saturation (minor/rough muted, major/consonant vivid)
-//       audioLevel    -> brightness (loudness)
-//       audioFlux     -> shimmer on spectral change
-//     The host feeds GATED values, so in non-music mode they sit at neutral
-//     (centroid/valence 0.5, level/flux 0) and the grade is a no-op.
-//  2) The photosensitivity brightness limit (uniform `scale`), applied last.
+/**
+ * @file Present.frag
+ * @brief Final present pass.  Two jobs:
+ *  1) A GLOBAL MOOD GRADE applied once to the finished frame, so EVERY effect
+ *     (not just Tunnel/Kaleidoscope) reacts to the music's mood:
+ *       audioCentroid -> colour temperature (dark=cool blue, bright=warm amber)
+ *       audioValence  -> saturation (minor/rough muted, major/consonant vivid)
+ *       audioLevel    -> brightness (loudness)
+ *       audioFlux     -> shimmer on spectral change
+ *     The host feeds GATED values, so in non-music mode they sit at neutral
+ *     (centroid/valence 0.5, level/flux 0) and the grade is a no-op.
+ *  2) The photosensitivity brightness limit (uniform `scale`), applied last.
+ */
 uniform sampler2D tex;
 uniform vec2  resolution;
 uniform float scale;

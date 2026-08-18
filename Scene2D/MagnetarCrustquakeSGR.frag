@@ -1,22 +1,22 @@
 #version 330 core
 out vec4 fragColor;
-// MagnetarCrustquakeSGR.frag
-// -----------------------------------------------------------------------
-// MAGNETAR CRUSTQUAKE SGR: Ultra-magnetic neutron star ($10^{15}$ Gauss)
-// displaying tectonic crust fractures (starquakes). Torsional Alfvén waves
-// twist the magnetosphere, triggering giant Soft Gamma Repeater (SGR) flares,
-// positron pair-plasma fountains, and relativistic synchrotron photo mapping.
-//   audioAdvance -> rotates magnetosphere dipolar magnetic field lines
-//   audioKick    -> triggers catastrophic starquake crust fractures & gamma flashes
-//   audioBass    -> undulates torsional Alfvén wave shear amplitude
-//   audioCentroid-> shifts synchrotron radiation emission frequency
-//
-// Per-activation variety:
-//   crustP  float crust fracture density & fault lines    (0.5..2.2)
-//   burstP  float gamma-ray burst & flare radiance        (0.5..2.0)
-//   speedP  float magnetar rotation velocity              (0.5..2.0)
-//   hueP    float synchrotron chromatic hue offset        (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file MagnetarCrustquakeSGR.frag
+ * @brief MAGNETAR CRUSTQUAKE SGR: Ultra-magnetic neutron star ($10^{15}$ Gauss)
+ * displaying tectonic crust fractures (starquakes). Torsional Alfvén waves
+ * twist the magnetosphere, triggering giant Soft Gamma Repeater (SGR) flares,
+ * positron pair-plasma fountains, and relativistic synchrotron photo mapping.
+ *   audioAdvance -> rotates magnetosphere dipolar magnetic field lines
+ *   audioKick    -> triggers catastrophic starquake crust fractures & gamma flashes
+ *   audioBass    -> undulates torsional Alfvén wave shear amplitude
+ *   audioCentroid-> shifts synchrotron radiation emission frequency
+ *
+ * Per-activation variety:
+ *   crustP  float crust fracture density & fault lines    (0.5..2.2)
+ *   burstP  float gamma-ray burst & flare radiance        (0.5..2.0)
+ *   speedP  float magnetar rotation velocity              (0.5..2.0)
+ *   hueP    float synchrotron chromatic hue offset        (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

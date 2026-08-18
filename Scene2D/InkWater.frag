@@ -1,23 +1,23 @@
 #version 330 core
 out vec4 fragColor;
-// InkWater.frag
-// -----------------------------------------------------------------------
-// INK IN WATER: coloured ink plumes sink into still water and billow into
-// slow, marbled clouds (procedural — unrelated to the FluidSim pass).  The
-// image IS the ink: every plume carries the colours of a drifting crop of
-// the source picture.  Calm, hypnotic, ambient-first.
-//   swell     -> the water "breathes", plumes billow wider
-//   bass      -> deep slow swirl of the whole volume (slew-limited)
-//   onset     -> fresh ink visibly wells out of the plume heads
-//   centroid  -> water brightness / temperature
-// Jump-free: all motion rides time + audioPhase/audioAdvance (integrated).
-//
-// Per-activation variety (0 = default):
-//   plumesP  int   number of ink plumes        (0 -> 3; 2..5)
-//   inkHueP  float ink hue rotation            (0 -> none; 0..6.28)
-//   swirlP   float swirl strength multiplier   (0 -> 1.0; 0.6..1.8)
-//   speedP   float sink/billow speed multiplier(0 -> 1.0; 0.6..1.5)
-// -----------------------------------------------------------------------
+/**
+ * @file InkWater.frag
+ * @brief INK IN WATER: coloured ink plumes sink into still water and billow into
+ * slow, marbled clouds (procedural — unrelated to the FluidSim pass).  The
+ * image IS the ink: every plume carries the colours of a drifting crop of
+ * the source picture.  Calm, hypnotic, ambient-first.
+ *   swell     -> the water "breathes", plumes billow wider
+ *   bass      -> deep slow swirl of the whole volume (slew-limited)
+ *   onset     -> fresh ink visibly wells out of the plume heads
+ *   centroid  -> water brightness / temperature
+ * Jump-free: all motion rides time + audioPhase/audioAdvance (integrated).
+ *
+ * Per-activation variety (0 = default):
+ *   plumesP  int   number of ink plumes        (0 -> 3; 2..5)
+ *   inkHueP  float ink hue rotation            (0 -> none; 0..6.28)
+ *   swirlP   float swirl strength multiplier   (0 -> 1.0; 0.6..1.8)
+ *   speedP   float sink/billow speed multiplier(0 -> 1.0; 0.6..1.5)
+ */
 
 uniform vec2  resolution;
 uniform float time;

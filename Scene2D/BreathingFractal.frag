@@ -1,25 +1,25 @@
 #version 330 core
 out vec4 fragColor;
-// BreathingFractal.frag
-// -----------------------------------------------------------------------
-// Adapted from an untitled Shadertoy fractal (pasted by the user; exact page/
-// author not given) — very likely the same base as, or the direct parent of,
-// https://www.shadertoy.com/view/DsscWn (identified later from two forks of
-// that page the user also shared; see BreathingFractalZoom.frag / Noir.frag,
-// which share this exact fold/rotate core).  A "breathing" abs/fract
-// kaleidoscope with a per-iteration rotation, producing a tight, glowing
-// lattice of folded lines that pulses and spirals into deep, self-similar
-// layers.
-//
-// Adapted to our engine: GLSL 1.20 (gl_FragCoord/resolution/time); the
-// original's comma-operator loop body de-golfed into ordinary statements; its
-// mouse-driven per-iteration detune (iMouse.x) replaced by the (smoothed)
-// spectral centroid, since this engine has no mouse input; jump-free audio
-// motion (host-integrated audioAdvance added to time, never time*audio);
-// beat-driven breathing/brightness; mood grade; and IMAGE-DRIVEN colour: a
-// drifting crop of the source picture (imgPal) rotates the palette's hue
-// (hueRot) so the lattice colours come from the ever-changing image.
-// -----------------------------------------------------------------------
+/**
+ * @file BreathingFractal.frag
+ * @brief Adapted from an untitled Shadertoy fractal (pasted by the user; exact page/
+ * author not given) — very likely the same base as, or the direct parent of,
+ * https://www.shadertoy.com/view/DsscWn (identified later from two forks of
+ * that page the user also shared; see BreathingFractalZoom.frag / Noir.frag,
+ * which share this exact fold/rotate core).  A "breathing" abs/fract
+ * kaleidoscope with a per-iteration rotation, producing a tight, glowing
+ * lattice of folded lines that pulses and spirals into deep, self-similar
+ * layers.
+ *
+ * Adapted to our engine: GLSL 1.20 (gl_FragCoord/resolution/time); the
+ * original's comma-operator loop body de-golfed into ordinary statements; its
+ * mouse-driven per-iteration detune (iMouse.x) replaced by the (smoothed)
+ * spectral centroid, since this engine has no mouse input; jump-free audio
+ * motion (host-integrated audioAdvance added to time, never time*audio);
+ * beat-driven breathing/brightness; mood grade; and IMAGE-DRIVEN colour: a
+ * drifting crop of the source picture (imgPal) rotates the palette's hue
+ * (hueRot) so the lattice colours come from the ever-changing image.
+ */
 
 uniform vec2  resolution;
 uniform float time;

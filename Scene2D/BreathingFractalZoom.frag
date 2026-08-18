@@ -1,22 +1,22 @@
 #version 330 core
 out vec4 fragColor;
-// BreathingFractalZoom.frag
-// -----------------------------------------------------------------------
-// Forked from https://www.shadertoy.com/view/DsscWn (the same fold/rotate
-// fractal core as BreathingFractal.frag, extended here with an oscillating
-// zoom and a final palette remap).  Palette from
-// https://www.shadertoy.com/view/dlVSDK (iq-style cosine palette).
-//
-// Adapted to our engine: GLSL 1.20 (gl_FragCoord/resolution/time); the
-// original's comma-operator loop body de-golfed into ordinary statements; its
-// mouse-driven per-iteration detune (iMouse.x) replaced by the (smoothed)
-// spectral centroid, since this engine has no mouse input; jump-free audio
-// motion (host-integrated audioAdvance added to time, never time*audio);
-// beat-driven breathing/brightness; mood grade; and IMAGE-DRIVEN colour: a
-// drifting crop of the source picture (imgPal) rotates the palette's hue
-// (hueRot) so the lattice colours come from the ever-changing image, on top
-// of the shader's own cosine palette remap.
-// -----------------------------------------------------------------------
+/**
+ * @file BreathingFractalZoom.frag
+ * @brief Forked from https://www.shadertoy.com/view/DsscWn (the same fold/rotate
+ * fractal core as BreathingFractal.frag, extended here with an oscillating
+ * zoom and a final palette remap).  Palette from
+ * https://www.shadertoy.com/view/dlVSDK (iq-style cosine palette).
+ *
+ * Adapted to our engine: GLSL 1.20 (gl_FragCoord/resolution/time); the
+ * original's comma-operator loop body de-golfed into ordinary statements; its
+ * mouse-driven per-iteration detune (iMouse.x) replaced by the (smoothed)
+ * spectral centroid, since this engine has no mouse input; jump-free audio
+ * motion (host-integrated audioAdvance added to time, never time*audio);
+ * beat-driven breathing/brightness; mood grade; and IMAGE-DRIVEN colour: a
+ * drifting crop of the source picture (imgPal) rotates the palette's hue
+ * (hueRot) so the lattice colours come from the ever-changing image, on top
+ * of the shader's own cosine palette remap.
+ */
 
 uniform vec2  resolution;
 uniform float time;

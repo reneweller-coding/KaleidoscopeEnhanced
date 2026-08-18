@@ -1,20 +1,20 @@
 #version 330 core
 out vec4 fragColor;
-// FxMagmaCrustFracture.frag
-// -----------------------------------------------------------------------
-// FX MAGMA CRUST FRACTURE: Tectonic basalt magma crust transition.
-// The outgoing scene solidifies into black obsidian crust plates that fracture
-// apart, revealing glowing 1500°C molten magma rivers that solidify into the new scene.
-//   interpolation -> controls crust fracture opening & magma cooling progress
-//   audioKick     -> flashes incandescent magma crack eruptions
-//   audioBass     -> widens tectonic fault lines
-//
-// Per-activation variety:
-//   crustP float crust tectonic plate density    (0.5..2.2)
-//   heatP  float magma thermal glow intensity    (0.5..2.0)
-//   speedP float animation speed multiplier      (0.5..2.0)
-//   hueP   float magma thermal hue offset        (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file FxMagmaCrustFracture.frag
+ * @brief FX MAGMA CRUST FRACTURE: Tectonic basalt magma crust transition.
+ * The outgoing scene solidifies into black obsidian crust plates that fracture
+ * apart, revealing glowing 1500°C molten magma rivers that solidify into the new scene.
+ *   interpolation -> controls crust fracture opening & magma cooling progress
+ *   audioKick     -> flashes incandescent magma crack eruptions
+ *   audioBass     -> widens tectonic fault lines
+ *
+ * Per-activation variety:
+ *   crustP float crust tectonic plate density    (0.5..2.2)
+ *   heatP  float magma thermal glow intensity    (0.5..2.0)
+ *   speedP float animation speed multiplier      (0.5..2.0)
+ *   hueP   float magma thermal hue offset        (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

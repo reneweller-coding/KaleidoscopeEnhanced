@@ -1,20 +1,20 @@
 #version 330 core
 out vec4 fragColor;
-// FxHyperspaceStreak.frag
-// -----------------------------------------------------------------------
-// FX HYPERSPACE STREAK: Relativistic warp speed streak transition.
-// As the warp drive engages, the outgoing scene stretches into radial light
-// streaks with intense Lorentz contraction, arriving cleanly into the incoming scene.
-//   interpolation -> sweeps sub-light to warp factor 9.9 and decelerates
-//   audioKick     -> flashes warp drive entry/exit relativistic burst
-//   audioHigh     -> sharpens hyperspace star streak lines
-//
-// Per-activation variety:
-//   warpP   float warp speed stretch magnitude   (0.5..2.2)
-//   streakP float radial star streak ray density (0.5..2.0)
-//   speedP  float animation speed multiplier     (0.5..2.0)
-//   hueP    float Cherenkov warp hue offset      (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file FxHyperspaceStreak.frag
+ * @brief FX HYPERSPACE STREAK: Relativistic warp speed streak transition.
+ * As the warp drive engages, the outgoing scene stretches into radial light
+ * streaks with intense Lorentz contraction, arriving cleanly into the incoming scene.
+ *   interpolation -> sweeps sub-light to warp factor 9.9 and decelerates
+ *   audioKick     -> flashes warp drive entry/exit relativistic burst
+ *   audioHigh     -> sharpens hyperspace star streak lines
+ *
+ * Per-activation variety:
+ *   warpP   float warp speed stretch magnitude   (0.5..2.2)
+ *   streakP float radial star streak ray density (0.5..2.0)
+ *   speedP  float animation speed multiplier     (0.5..2.0)
+ *   hueP    float Cherenkov warp hue offset      (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

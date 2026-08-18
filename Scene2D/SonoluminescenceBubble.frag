@@ -1,22 +1,22 @@
 #version 330 core
 out vec4 fragColor;
-// SonoluminescenceBubble.frag
-// -----------------------------------------------------------------------
-// SONOLUMINESCENCE BUBBLE: Acoustic cavitation bubble collapse in an
-// ultrasonic standing wave field. Adiabatic gas compression generates a
-// picosecond-duration 20,000K plasma flash with spherical acoustic shockwaves,
-// water refraction caustics, and liquid photo distortion.
-//   audioAdvance -> cycles ultrasonic acoustic compression phases
-//   audioKick    -> triggers maximum adiabatic bubble collapse & plasma flash
-//   audioBass    -> drives ultrasonic standing wave amplitude
-//   audioCentroid-> shifts plasma blackbody emission temperature
-//
-// Per-activation variety:
-//   cavityP float cavitation bubble scale & radius       (0.5..2.2)
-//   shockP  float acoustic shockwave ring intensity      (0.5..2.0)
-//   speedP  float ultrasonic frequency velocity          (0.5..2.0)
-//   hueP    float plasma spectrum chromatic hue offset   (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file SonoluminescenceBubble.frag
+ * @brief SONOLUMINESCENCE BUBBLE: Acoustic cavitation bubble collapse in an
+ * ultrasonic standing wave field. Adiabatic gas compression generates a
+ * picosecond-duration 20,000K plasma flash with spherical acoustic shockwaves,
+ * water refraction caustics, and liquid photo distortion.
+ *   audioAdvance -> cycles ultrasonic acoustic compression phases
+ *   audioKick    -> triggers maximum adiabatic bubble collapse & plasma flash
+ *   audioBass    -> drives ultrasonic standing wave amplitude
+ *   audioCentroid-> shifts plasma blackbody emission temperature
+ *
+ * Per-activation variety:
+ *   cavityP float cavitation bubble scale & radius       (0.5..2.2)
+ *   shockP  float acoustic shockwave ring intensity      (0.5..2.0)
+ *   speedP  float ultrasonic frequency velocity          (0.5..2.0)
+ *   hueP    float plasma spectrum chromatic hue offset   (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

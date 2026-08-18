@@ -1,13 +1,13 @@
 #version 330 core
 out vec4 fragColor;
-// NonEuclideanDodecahedronLoom.frag
-// -----------------------------------------------------------------------
-// NON-EUCLIDEAN DODECAHEDRON LOOM: glowing thread-loops woven around
-// dodecahedral symmetry axes, tumbling around all three axes; each strand
-// takes its colour from the photo-palette arc.
-//   audioPhase -> thread colour drift    audioAdvance + time -> tumble
-//   (additive threads, source-level gains)
-// -----------------------------------------------------------------------
+/**
+ * @file NonEuclideanDodecahedronLoom.frag
+ * @brief NON-EUCLIDEAN DODECAHEDRON LOOM: glowing thread-loops woven around
+ * dodecahedral symmetry axes, tumbling around all three axes; each strand
+ * takes its colour from the photo-palette arc.
+ *   audioPhase -> thread colour drift    audioAdvance + time -> tumble
+ *   (additive threads, source-level gains)
+ */
 
 in vec3 vWorldPos;
 in vec2 vTexCoord;

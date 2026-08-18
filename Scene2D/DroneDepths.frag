@@ -1,19 +1,19 @@
 #version 330 core
 out vec4 fragColor;
-// DroneDepths.frag
-// -----------------------------------------------------------------------
-// An AMBIENT-FIRST primary effect, built for drone / dark-ambient music (no
-// beat dependence at all).  Research-informed mappings:
-//   swell (slow loudness build)  -> luminous breathing + LOOMING zoom
-//                                   (loudness -> expansion/approach);
-//   dominantPitch                -> vertical drift of the whole nebula
-//                                   (pitch -> elevation);
-//   centroid                     -> brightness / colour temperature;
-//   harmonicChange               -> slow morphs of the cloud structure.
-// The image is the substance of the nebula (image-forward), softly rounded
-// (harmonic material -> round, curved forms), with imgPal/hueRot colour
-// variance.  Jump-free motion (audioPhase/audioAdvance).
-// -----------------------------------------------------------------------
+/**
+ * @file DroneDepths.frag
+ * @brief An AMBIENT-FIRST primary effect, built for drone / dark-ambient music (no
+ * beat dependence at all).  Research-informed mappings:
+ *   swell (slow loudness build)  -> luminous breathing + LOOMING zoom
+ *                                   (loudness -> expansion/approach);
+ *   dominantPitch                -> vertical drift of the whole nebula
+ *                                   (pitch -> elevation);
+ *   centroid                     -> brightness / colour temperature;
+ *   harmonicChange               -> slow morphs of the cloud structure.
+ * The image is the substance of the nebula (image-forward), softly rounded
+ * (harmonic material -> round, curved forms), with imgPal/hueRot colour
+ * variance.  Jump-free motion (audioPhase/audioAdvance).
+ */
 
 uniform vec2  resolution;
 uniform float time;

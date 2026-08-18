@@ -1,21 +1,21 @@
 #version 330 core
 out vec4 fragColor;
-// CalabiYauManifold.frag
-// -----------------------------------------------------------------------
-// CALABI-YAU MANIFOLD: 3D raymarched projection of a 6-dimensional Calabi-Yau
-// Kähler manifold (quintic threefold z1^5 + z2^5 + z3^5 + z4^5 + z5^5 = 0)
-// with audio-reactive topological genus morphing and iridescent metallic highlights.
-//   audioPhase   -> rotates 6D slicing angle into 3D Euclidean space
-//   audioKick    -> flashes Ricci-flat curvature metric energy pulses
-//   audioCentroid-> morphs complex moduli parameters
-//   audioSwell   -> expands manifold genus chambers
-//
-// Per-activation variety:
-//   genusP   float topological complexity parameter        (0.5..2.0)
-//   zoomP    float camera viewing distance                 (0.5..1.8)
-//   glowP    float manifold internal glow intensity        (0.5..2.2)
-//   hueP     float color spectrum phase offset             (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file CalabiYauManifold.frag
+ * @brief CALABI-YAU MANIFOLD: 3D raymarched projection of a 6-dimensional Calabi-Yau
+ * Kähler manifold (quintic threefold z1^5 + z2^5 + z3^5 + z4^5 + z5^5 = 0)
+ * with audio-reactive topological genus morphing and iridescent metallic highlights.
+ *   audioPhase   -> rotates 6D slicing angle into 3D Euclidean space
+ *   audioKick    -> flashes Ricci-flat curvature metric energy pulses
+ *   audioCentroid-> morphs complex moduli parameters
+ *   audioSwell   -> expands manifold genus chambers
+ *
+ * Per-activation variety:
+ *   genusP   float topological complexity parameter        (0.5..2.0)
+ *   zoomP    float camera viewing distance                 (0.5..1.8)
+ *   glowP    float manifold internal glow intensity        (0.5..2.2)
+ *   hueP     float color spectrum phase offset             (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

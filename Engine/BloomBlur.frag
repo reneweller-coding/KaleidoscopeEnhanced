@@ -1,14 +1,14 @@
 #version 330 core
 out vec4 fragColor;
-// BloomBlur.frag
-// -----------------------------------------------------------------------
-// One pass of the two-pass Gaussian bloom (quarter-resolution).
-//   Pass 1 (dir = (1,0), threshold > 0): samples the full-res frame, extracts
-//     the bright parts (per tap) and blurs horizontally while downsampling.
-//   Pass 2 (dir = (0,1), threshold = 0): blurs the result vertically.
-// The blurred bright field is added back in Present.frag — a proper soft glow
-// instead of the old single-tap mip hack (which showed blocky artefacts).
-// -----------------------------------------------------------------------
+/**
+ * @file BloomBlur.frag
+ * @brief One pass of the two-pass Gaussian bloom (quarter-resolution).
+ *   Pass 1 (dir = (1,0), threshold > 0): samples the full-res frame, extracts
+ *     the bright parts (per tap) and blurs horizontally while downsampling.
+ *   Pass 2 (dir = (0,1), threshold = 0): blurs the result vertically.
+ * The blurred bright field is added back in Present.frag — a proper soft glow
+ * instead of the old single-tap mip hack (which showed blocky artefacts).
+ */
 
 uniform sampler2D tex;
 uniform vec2  resolution;   // TARGET (bloom buffer) resolution

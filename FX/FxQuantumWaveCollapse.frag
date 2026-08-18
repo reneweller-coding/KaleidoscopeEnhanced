@@ -1,20 +1,20 @@
 #version 330 core
 out vec4 fragColor;
-// FxQuantumWaveCollapse.frag
-// -----------------------------------------------------------------------
-// FX QUANTUM WAVE COLLAPSE: Quantum state superposition & wavefunction
-// collapse transition. Complex probability wavepackets interference patterns
-// collapse abruptly from superposition into the definite incoming state.
-//   interpolation -> sweeps quantum superposition to eigenstate measurement
-//   audioKick     -> triggers wavefunction collapse flash
-//   audioBass     -> undulates de Broglie wavelength & interference fringe spacing
-//
-// Per-activation variety:
-//   waveP     float matter wave frequency & interference density (0.5..2.2)
-//   collapseP float wavefunction collapse sharpness              (0.5..2.0)
-//   speedP    float quantum phase velocity multiplier            (0.5..2.0)
-//   hueP      float quantum probability phase hue offset         (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file FxQuantumWaveCollapse.frag
+ * @brief FX QUANTUM WAVE COLLAPSE: Quantum state superposition & wavefunction
+ * collapse transition. Complex probability wavepackets interference patterns
+ * collapse abruptly from superposition into the definite incoming state.
+ *   interpolation -> sweeps quantum superposition to eigenstate measurement
+ *   audioKick     -> triggers wavefunction collapse flash
+ *   audioBass     -> undulates de Broglie wavelength & interference fringe spacing
+ *
+ * Per-activation variety:
+ *   waveP     float matter wave frequency & interference density (0.5..2.2)
+ *   collapseP float wavefunction collapse sharpness              (0.5..2.0)
+ *   speedP    float quantum phase velocity multiplier            (0.5..2.0)
+ *   hueP      float quantum probability phase hue offset         (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

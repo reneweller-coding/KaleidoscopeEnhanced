@@ -1,21 +1,21 @@
 #version 330 core
 out vec4 fragColor;
-// AbyssalLuminescence.frag
-// -----------------------------------------------------------------------
-// ABYSSAL LUMINESCENCE: Deep ocean bioluminescent ecosystem with undulating
-// siphonophores, translucent glowing tentacles, underwater volumetric caustic
-// sunbeams, deep thermal marine snow, and organic fluid currents.
-//   audioBass    -> pulses organism bell contraction & tentacle wave velocity
-//   audioHigh    -> sparks bioluminescent marine snow & plankton flashes
-//   audioSwell   -> thickens volumetric oceanic mist & caustic ray depth
-//   audioKick    -> ignites bright chromatic bioluminescent discharge
-//
-// Per-activation variety:
-//   depthP     float ocean abyss fog density           (0.6..1.8)
-//   tentacleP  float tentacle curl complexity          (0.5..2.0)
-//   glowP      float bioluminescent emission intensity (0.5..2.0)
-//   hueP       float marine color grading offset       (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file AbyssalLuminescence.frag
+ * @brief ABYSSAL LUMINESCENCE: Deep ocean bioluminescent ecosystem with undulating
+ * siphonophores, translucent glowing tentacles, underwater volumetric caustic
+ * sunbeams, deep thermal marine snow, and organic fluid currents.
+ *   audioBass    -> pulses organism bell contraction & tentacle wave velocity
+ *   audioHigh    -> sparks bioluminescent marine snow & plankton flashes
+ *   audioSwell   -> thickens volumetric oceanic mist & caustic ray depth
+ *   audioKick    -> ignites bright chromatic bioluminescent discharge
+ *
+ * Per-activation variety:
+ *   depthP     float ocean abyss fog density           (0.6..1.8)
+ *   tentacleP  float tentacle curl complexity          (0.5..2.0)
+ *   glowP      float bioluminescent emission intensity (0.5..2.0)
+ *   hueP       float marine color grading offset       (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

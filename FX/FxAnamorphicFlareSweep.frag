@@ -1,20 +1,20 @@
 #version 330 core
 out vec4 fragColor;
-// FxAnamorphicFlareSweep.frag
-// -----------------------------------------------------------------------
-// FX ANAMORPHIC FLARE SWEEP: Cinematic anamorphic lens flare transition.
-// A horizontal laser streak and luminous cylindrical flare bar sweeps across
-// the frame, wiping the outgoing scene and leaving the incoming scene behind.
-//   interpolation -> drives the horizontal anamorphic flare position across screen
-//   audioKick     -> flashes intense laser core emission and horizontal streaks
-//   audioHigh     -> sharpens anamorphic lens flare lines
-//
-// Per-activation variety:
-//   flareP float flare beam width & intensity     (0.5..2.2)
-//   sweepP float sweep angle tilt                 (0.5..2.0)
-//   speedP float animation speed multiplier       (0.5..2.0)
-//   hueP   float anamorphic flare hue offset      (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file FxAnamorphicFlareSweep.frag
+ * @brief FX ANAMORPHIC FLARE SWEEP: Cinematic anamorphic lens flare transition.
+ * A horizontal laser streak and luminous cylindrical flare bar sweeps across
+ * the frame, wiping the outgoing scene and leaving the incoming scene behind.
+ *   interpolation -> drives the horizontal anamorphic flare position across screen
+ *   audioKick     -> flashes intense laser core emission and horizontal streaks
+ *   audioHigh     -> sharpens anamorphic lens flare lines
+ *
+ * Per-activation variety:
+ *   flareP float flare beam width & intensity     (0.5..2.2)
+ *   sweepP float sweep angle tilt                 (0.5..2.0)
+ *   speedP float animation speed multiplier       (0.5..2.0)
+ *   hueP   float anamorphic flare hue offset      (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

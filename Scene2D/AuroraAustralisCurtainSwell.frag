@@ -1,22 +1,22 @@
 #version 330 core
 out vec4 fragColor;
-// AuroraAustralisCurtainSwell.frag
-// -----------------------------------------------------------------------
-// AURORA AUSTRALIS CURTAIN SWELL: Volumetric double-sheet Antarctic Aurora
-// Australis waving along geomagnetic field lines. Atomic oxygen green emission
-// (557.7nm) and high-altitude molecular nitrogen crimson rays (630.0nm),
-// magnetic substorm surges, and polar ice pack photo reflections.
-//   audioAdvance -> drives geomagnetic auroral curtain wave undulations
-//   audioKick    -> triggers explosive geomagnetic substorm brightening
-//   audioBass    -> undulates auroral curtain vertical height & bottom fold
-//   audioCentroid-> shifts balance between oxygen green and nitrogen red
-//
-// Per-activation variety:
-//   curtainP float auroral curtain folding & sheet count (0.5..2.2)
-//   rayP     float vertical ray filament sharpness       (0.5..2.0)
-//   speedP   float auroral drift velocity                (0.5..2.0)
-//   hueP     float atmospheric ion emission hue offset   (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file AuroraAustralisCurtainSwell.frag
+ * @brief AURORA AUSTRALIS CURTAIN SWELL: Volumetric double-sheet Antarctic Aurora
+ * Australis waving along geomagnetic field lines. Atomic oxygen green emission
+ * (557.7nm) and high-altitude molecular nitrogen crimson rays (630.0nm),
+ * magnetic substorm surges, and polar ice pack photo reflections.
+ *   audioAdvance -> drives geomagnetic auroral curtain wave undulations
+ *   audioKick    -> triggers explosive geomagnetic substorm brightening
+ *   audioBass    -> undulates auroral curtain vertical height & bottom fold
+ *   audioCentroid-> shifts balance between oxygen green and nitrogen red
+ *
+ * Per-activation variety:
+ *   curtainP float auroral curtain folding & sheet count (0.5..2.2)
+ *   rayP     float vertical ray filament sharpness       (0.5..2.0)
+ *   speedP   float auroral drift velocity                (0.5..2.0)
+ *   hueP     float atmospheric ion emission hue offset   (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

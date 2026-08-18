@@ -1,10 +1,10 @@
 #version 330 core
-// NeuralAxonSynapseCloud.vert
-// -----------------------------------------------------------------------
-// 60,000 particles (geom="points") simulating the human cerebral cortex connectome.
-// Action potentials race along axonal pathways, igniting synaptic neurotransmitter
-// flares in an interactive 3D neural cloud.
-// -----------------------------------------------------------------------
+/**
+ * @file NeuralAxonSynapseCloud.vert
+ * @brief 60,000 particles (geom="points") simulating the human cerebral cortex connectome.
+ * Action potentials race along axonal pathways, igniting synaptic neurotransmitter
+ * flares in an interactive 3D neural cloud.
+ */
 
 layout(location = 0) in vec4 attrA; // w = point ID [0..59999]
 layout(location = 1) in vec4 attrB; // seeds

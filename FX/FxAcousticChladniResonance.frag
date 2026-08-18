@@ -1,20 +1,20 @@
 #version 330 core
 out vec4 fragColor;
-// FxAcousticChladniResonance.frag
-// -----------------------------------------------------------------------
-// FX ACOUSTIC CHLADNI RESONANCE: 2D vibrating plate Chladni resonance transition.
-// Acoustic standing wave eigenmodes vibrate the image plane, collecting sand
-// grains along nodal zero-vibration lines that morph and cross-fade between scenes.
-//   interpolation -> sweeps acoustic resonance frequency & Chladni mode transitions
-//   audioKick     -> flashes acoustic antinodal acceleration peaks
-//   audioBass     -> drives vibrating plate amplitude & mode numbers (n, m)
-//
-// Per-activation variety:
-//   modeP  float Chladni eigenmode harmonic multiplier (0.5..2.2)
-//   nodalP float nodal line sand line sharpness        (0.5..2.0)
-//   speedP float animation speed multiplier            (0.5..2.0)
-//   hueP   float acoustic glow hue offset              (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file FxAcousticChladniResonance.frag
+ * @brief FX ACOUSTIC CHLADNI RESONANCE: 2D vibrating plate Chladni resonance transition.
+ * Acoustic standing wave eigenmodes vibrate the image plane, collecting sand
+ * grains along nodal zero-vibration lines that morph and cross-fade between scenes.
+ *   interpolation -> sweeps acoustic resonance frequency & Chladni mode transitions
+ *   audioKick     -> flashes acoustic antinodal acceleration peaks
+ *   audioBass     -> drives vibrating plate amplitude & mode numbers (n, m)
+ *
+ * Per-activation variety:
+ *   modeP  float Chladni eigenmode harmonic multiplier (0.5..2.2)
+ *   nodalP float nodal line sand line sharpness        (0.5..2.0)
+ *   speedP float animation speed multiplier            (0.5..2.0)
+ *   hueP   float acoustic glow hue offset              (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

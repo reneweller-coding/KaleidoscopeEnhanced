@@ -1,9 +1,9 @@
 #version 430 core
-// BioluminescentMyceliumCave.comp
-// -----------------------------------------------------------------------
-// GPU compute shader generating 4,096 bioluminescent mycelial filaments
-// hanging from cavern ceiling stalactites and conducting bio-electric pulses.
-// -----------------------------------------------------------------------
+/**
+ * @file BioluminescentMyceliumCave.comp
+ * @brief GPU compute shader generating 4,096 bioluminescent mycelial filaments
+ * hanging from cavern ceiling stalactites and conducting bio-electric pulses.
+ */
 
 layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 

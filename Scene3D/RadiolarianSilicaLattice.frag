@@ -1,14 +1,14 @@
 #version 330 core
 out vec4 fragColor;
-// RadiolarianSilicaLattice.frag
-// -----------------------------------------------------------------------
-// RADIOLARIAN SILICA LATTICE: concentric glass micro-skeleton shells
-// rotating against each other, seen from a safe distance (no camera
-// collisions); silica cards tinted by the photo palette, star sparkles
-// on the kick.
-//   audioKick -> shell burst    audioSwell -> lattice breathing
-//   latticeP  -> shell spacing
-// -----------------------------------------------------------------------
+/**
+ * @file RadiolarianSilicaLattice.frag
+ * @brief RADIOLARIAN SILICA LATTICE: concentric glass micro-skeleton shells
+ * rotating against each other, seen from a safe distance (no camera
+ * collisions); silica cards tinted by the photo palette, star sparkles
+ * on the kick.
+ *   audioKick -> shell burst    audioSwell -> lattice breathing
+ *   latticeP  -> shell spacing
+ */
 
 in vec4 vCol;
 in vec2 vUV;

@@ -1,20 +1,20 @@
 #version 330 core
 out vec4 fragColor;
-// FxEbruMarblingRake.frag
-// -----------------------------------------------------------------------
-// FX EBRU MARBLING RAKE: Turkish paper marbling (Ebru) rake transition.
-// Fine comb teeth sweep through floating pigments in alternating directions,
-// drawing elegant capillary plumes and chevron folds that reveal the next scene.
-//   interpolation -> drives rake comb sweep across the liquid surface
-//   audioKick     -> flashes sharp pigment boundary swirls
-//   audioBass     -> undulates comb teeth displacement depth
-//
-// Per-activation variety:
-//   rakeP  float comb teeth frequency & density (0.5..2.2)
-//   swirlP float capillary vortex curl intensity (0.5..2.0)
-//   speedP float animation speed multiplier      (0.5..2.0)
-//   hueP   float pigment color hue offset        (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file FxEbruMarblingRake.frag
+ * @brief FX EBRU MARBLING RAKE: Turkish paper marbling (Ebru) rake transition.
+ * Fine comb teeth sweep through floating pigments in alternating directions,
+ * drawing elegant capillary plumes and chevron folds that reveal the next scene.
+ *   interpolation -> drives rake comb sweep across the liquid surface
+ *   audioKick     -> flashes sharp pigment boundary swirls
+ *   audioBass     -> undulates comb teeth displacement depth
+ *
+ * Per-activation variety:
+ *   rakeP  float comb teeth frequency & density (0.5..2.2)
+ *   swirlP float capillary vortex curl intensity (0.5..2.0)
+ *   speedP float animation speed multiplier      (0.5..2.0)
+ *   hueP   float pigment color hue offset        (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

@@ -1,24 +1,24 @@
 #version 330 core
 out vec4 fragColor;
-// LavaLamp.frag
-// -----------------------------------------------------------------------
-// A REAL lava lamp this time: glowing wax blobs rise and sink inside a
-// tapered glass vessel over a hot bulb.  What sells the illusion:
-//   * blobs ELONGATE while they move and round off at the turnarounds
-//     (gooey vertical stretch from their velocity) and wobble slightly;
-//   * they merge/split through a shared metaball field;
-//   * a bright heated pool sits at the base, lit by a warm bulb glow that
-//     breathes with the bass;
-//   * the vessel tapers toward the top, with a soft glass rim light.
-// The wax LENSES the source image (the picture swims inside the blobs) and
-// the wax palette is hue-rotatable per activation.  All motion uses the
-// jump-free integrated phases (anti-flicker): sizes breathe only with the
-// SLOW swell (+ a whisper of bass), never with per-beat pops.
-//
-// Music mapping: swell -> wax volume & rise energy (via audioAdvance),
-// bass -> bulb glow / pool, beatPhase -> a tiny in-tempo bob,
-// valence/centroid -> mood grade, barPhase -> slow liquid hue sweep.
-// -----------------------------------------------------------------------
+/**
+ * @file LavaLamp.frag
+ * @brief A REAL lava lamp this time: glowing wax blobs rise and sink inside a
+ * tapered glass vessel over a hot bulb.  What sells the illusion:
+ *   * blobs ELONGATE while they move and round off at the turnarounds
+ *     (gooey vertical stretch from their velocity) and wobble slightly;
+ *   * they merge/split through a shared metaball field;
+ *   * a bright heated pool sits at the base, lit by a warm bulb glow that
+ *     breathes with the bass;
+ *   * the vessel tapers toward the top, with a soft glass rim light.
+ * The wax LENSES the source image (the picture swims inside the blobs) and
+ * the wax palette is hue-rotatable per activation.  All motion uses the
+ * jump-free integrated phases (anti-flicker): sizes breathe only with the
+ * SLOW swell (+ a whisper of bass), never with per-beat pops.
+ *
+ * Music mapping: swell -> wax volume & rise energy (via audioAdvance),
+ * bass -> bulb glow / pool, beatPhase -> a tiny in-tempo bob,
+ * valence/centroid -> mood grade, barPhase -> slow liquid hue sweep.
+ */
 
 uniform vec2  resolution;
 uniform float time;

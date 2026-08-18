@@ -1,9 +1,11 @@
 #version 330 core
 out vec4 fragColor;
-// FxDarkRed.frag
-// Monochrome colour-tint overlay: desaturates the blended scene to
-// luminance, then recolours it into a single channel (red/blue/green,
-// picked by uniform) -- a stark, flat colour wash.
+/**
+ * @file FxDarkRed.frag
+ * @brief Monochrome colour-tint overlay: desaturates the blended scene to
+ * luminance, then recolours it into a single channel (red/blue/green,
+ * picked by uniform) -- a stark, flat colour wash.
+ */
 uniform vec2 resolution;
 uniform float time;
 uniform sampler2D tex0;

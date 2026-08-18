@@ -1,21 +1,21 @@
 #version 330 core
 out vec4 fragColor;
-// FerrofluidSpikeForest.frag
-// -----------------------------------------------------------------------
-// FERROFLUID SPIKE FOREST: 3D raymarched pool of magnetic liquid ferrofluid
-// rising into sharp Rosensweig instability spikes under dynamic electromagnets.
-// Metallic liquid specular reflections, oily rainbow thin-film sheen, and photo projection.
-//   audioSubBass -> pulls ferrofluid spikes up into tall sharp needles
-//   audioKick    -> triggers magnetic pulse shockwaves across the fluid pool
-//   audioCentroid-> shifts thin-film oil-slick iridescent colors
-//   audioSwell   -> undulates electromagnetic coil magnetic fields
-//
-// Per-activation variety:
-//   spikeP   float Rosensweig spike height & sharpness     (0.5..2.2)
-//   ringP    float concentric magnetic mandala rings       (0.5..2.0)
-//   oilP     float rainbow thin-film iridescence           (0.5..2.0)
-//   hueP     float specular reflection color offset        (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file FerrofluidSpikeForest.frag
+ * @brief FERROFLUID SPIKE FOREST: 3D raymarched pool of magnetic liquid ferrofluid
+ * rising into sharp Rosensweig instability spikes under dynamic electromagnets.
+ * Metallic liquid specular reflections, oily rainbow thin-film sheen, and photo projection.
+ *   audioSubBass -> pulls ferrofluid spikes up into tall sharp needles
+ *   audioKick    -> triggers magnetic pulse shockwaves across the fluid pool
+ *   audioCentroid-> shifts thin-film oil-slick iridescent colors
+ *   audioSwell   -> undulates electromagnetic coil magnetic fields
+ *
+ * Per-activation variety:
+ *   spikeP   float Rosensweig spike height & sharpness     (0.5..2.2)
+ *   ringP    float concentric magnetic mandala rings       (0.5..2.0)
+ *   oilP     float rainbow thin-film iridescence           (0.5..2.0)
+ *   hueP     float specular reflection color offset        (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

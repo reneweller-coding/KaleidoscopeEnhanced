@@ -1,20 +1,20 @@
 #version 330 core
 out vec4 fragColor;
-// VoronoiPulse.frag
-// -----------------------------------------------------------------------
-// The source image SHATTERED into a kaleidoscopic stained-glass mosaic.  The
-// picture is first folded into n-fold mirror symmetry (like the kaleidoscope),
-// then broken into drifting Voronoi shards; each shard acts as a little glass
-// LENS that bulges the image, and the seams between shards glow and flare on
-// the beat like backlit leading.  So the *image* is the star (not a faint
-// tint), and it carries the same radiating symmetry as the star shaders.
-//   audioCentroid -> symmetry fold count (brighter = more mirrors)
-//   audioPitch    -> shard density (higher pitch = more, smaller shards)
-//   audioBeat     -> seam flare + shard "pop" / lens bulge (slew-limited)
-//   audioFlux     -> shard drift; audioPhase -> smooth rotation of the mosaic
-//   audioValence  -> seam colour (cool blue .. warm orange)
-//   audioLevel    -> overall brightness
-// -----------------------------------------------------------------------
+/**
+ * @file VoronoiPulse.frag
+ * @brief The source image SHATTERED into a kaleidoscopic stained-glass mosaic.  The
+ * picture is first folded into n-fold mirror symmetry (like the kaleidoscope),
+ * then broken into drifting Voronoi shards; each shard acts as a little glass
+ * LENS that bulges the image, and the seams between shards glow and flare on
+ * the beat like backlit leading.  So the *image* is the star (not a faint
+ * tint), and it carries the same radiating symmetry as the star shaders.
+ *   audioCentroid -> symmetry fold count (brighter = more mirrors)
+ *   audioPitch    -> shard density (higher pitch = more, smaller shards)
+ *   audioBeat     -> seam flare + shard "pop" / lens bulge (slew-limited)
+ *   audioFlux     -> shard drift; audioPhase -> smooth rotation of the mosaic
+ *   audioValence  -> seam colour (cool blue .. warm orange)
+ *   audioLevel    -> overall brightness
+ */
 
 uniform vec2  resolution;
 uniform float time;

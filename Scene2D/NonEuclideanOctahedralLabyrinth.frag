@@ -1,12 +1,12 @@
 #version 330 core
 out vec4 fragColor;
-// NonEuclideanOctahedralLabyrinth.frag
-// -----------------------------------------------------------------------
-// NON-EUCLIDEAN OCTAHEDRAL LABYRINTH: 100% viewport-filling infinite
-// 3D hyperbolic mirror maze constructed from {3,4} octahedral Coxeter
-// chambers. Forward flight through recursive non-Euclidean corridors
-// reflecting the loaded photo across infinite internal mirror planes.
-// -----------------------------------------------------------------------
+/**
+ * @file NonEuclideanOctahedralLabyrinth.frag
+ * @brief NON-EUCLIDEAN OCTAHEDRAL LABYRINTH: 100% viewport-filling infinite
+ * 3D hyperbolic mirror maze constructed from {3,4} octahedral Coxeter
+ * chambers. Forward flight through recursive non-Euclidean corridors
+ * reflecting the loaded photo across infinite internal mirror planes.
+ */
 
 uniform vec2  resolution;
 uniform float time;

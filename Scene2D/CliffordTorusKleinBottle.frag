@@ -1,21 +1,21 @@
 #version 330 core
 out vec4 fragColor;
-// CliffordTorusKleinBottle.frag
-// -----------------------------------------------------------------------
-// CLIFFORD TORUS KLEIN BOTTLE: 4D non-orientable Klein bottle and flat Clifford
-// torus rotating in 4D space with glass refraction, internal self-intersection,
-// chromatic dispersion, and live photo distortion.
-//   audioAdvance -> drives continuous 4D isometric rotation
-//   audioKick    -> flashes glass refraction shockwaves and caustic sparkles
-//   audioBass    -> pulses figure-8 Klein bottle tube thickness
-//   audioSwell   -> increases chromatic aberration dispersion
-//
-// Per-activation variety:
-//   radiusP  float torus major/minor radius ratio          (0.5..1.8)
-//   glassP   float glass transparency & refraction index   (0.5..2.0)
-//   rotSpdP  float 4D plane rotation speed                 (0.5..2.2)
-//   hueP     float dispersion hue offset                   (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file CliffordTorusKleinBottle.frag
+ * @brief CLIFFORD TORUS KLEIN BOTTLE: 4D non-orientable Klein bottle and flat Clifford
+ * torus rotating in 4D space with glass refraction, internal self-intersection,
+ * chromatic dispersion, and live photo distortion.
+ *   audioAdvance -> drives continuous 4D isometric rotation
+ *   audioKick    -> flashes glass refraction shockwaves and caustic sparkles
+ *   audioBass    -> pulses figure-8 Klein bottle tube thickness
+ *   audioSwell   -> increases chromatic aberration dispersion
+ *
+ * Per-activation variety:
+ *   radiusP  float torus major/minor radius ratio          (0.5..1.8)
+ *   glassP   float glass transparency & refraction index   (0.5..2.0)
+ *   rotSpdP  float 4D plane rotation speed                 (0.5..2.2)
+ *   hueP     float dispersion hue offset                   (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

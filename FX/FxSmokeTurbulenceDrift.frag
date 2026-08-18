@@ -1,20 +1,20 @@
 #version 330 core
 out vec4 fragColor;
-// FxSmokeTurbulenceDrift.frag
-// -----------------------------------------------------------------------
-// FX SMOKE TURBULENCE DRIFT: Atmospheric smoke and turbulent vapor transition.
-// Volumetric smoke plumes billow across the viewport, catching soft light
-// scattering and dissolving the outgoing scene into the incoming one.
-//   interpolation -> drives smoke density buildup & atmospheric dissipation
-//   audioKick     -> flashes forward light scattering through the smoke
-//   audioBass     -> drives turbulent smoke eddy swirl radius
-//
-// Per-activation variety:
-//   smokeP float smoke density & curl turbulence scale (0.5..2.2)
-//   driftP float upward buoyancy drift speed            (0.5..2.0)
-//   speedP float animation speed multiplier             (0.5..2.0)
-//   hueP   float smoke atmospheric tint hue offset      (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file FxSmokeTurbulenceDrift.frag
+ * @brief FX SMOKE TURBULENCE DRIFT: Atmospheric smoke and turbulent vapor transition.
+ * Volumetric smoke plumes billow across the viewport, catching soft light
+ * scattering and dissolving the outgoing scene into the incoming one.
+ *   interpolation -> drives smoke density buildup & atmospheric dissipation
+ *   audioKick     -> flashes forward light scattering through the smoke
+ *   audioBass     -> drives turbulent smoke eddy swirl radius
+ *
+ * Per-activation variety:
+ *   smokeP float smoke density & curl turbulence scale (0.5..2.2)
+ *   driftP float upward buoyancy drift speed            (0.5..2.0)
+ *   speedP float animation speed multiplier             (0.5..2.0)
+ *   hueP   float smoke atmospheric tint hue offset      (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;

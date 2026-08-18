@@ -1,20 +1,20 @@
 #version 330 core
 out vec4 fragColor;
-// FxDichroicMirrorSlide.frag
-// -----------------------------------------------------------------------
-// FX DICHROIC MIRROR SLIDE: Dichroic glass beam-splitter transition.
-// Angled optical dichroic mirror planes slide across the screen, transmitting
-// complementary wavelengths and reflecting the outgoing scene into the incoming one.
-//   interpolation -> slides dichroic mirror boundary across the diagonal
-//   audioKick     -> flashes dichroic spectral transmission spikes
-//   audioBass     -> undulates optical thin-film interference thickness
-//
-// Per-activation variety:
-//   dichroP float dichroic spectral split intensity (0.5..2.2)
-//   slideP  float slide angle tilt                  (0.5..2.0)
-//   speedP  float animation speed multiplier        (0.5..2.0)
-//   hueP    float dichroic coating hue offset       (0..6.28)
-// -----------------------------------------------------------------------
+/**
+ * @file FxDichroicMirrorSlide.frag
+ * @brief FX DICHROIC MIRROR SLIDE: Dichroic glass beam-splitter transition.
+ * Angled optical dichroic mirror planes slide across the screen, transmitting
+ * complementary wavelengths and reflecting the outgoing scene into the incoming one.
+ *   interpolation -> slides dichroic mirror boundary across the diagonal
+ *   audioKick     -> flashes dichroic spectral transmission spikes
+ *   audioBass     -> undulates optical thin-film interference thickness
+ *
+ * Per-activation variety:
+ *   dichroP float dichroic spectral split intensity (0.5..2.2)
+ *   slideP  float slide angle tilt                  (0.5..2.0)
+ *   speedP  float animation speed multiplier        (0.5..2.0)
+ *   hueP    float dichroic coating hue offset       (0..6.28)
+ */
 
 uniform vec2  resolution;
 uniform float time;
