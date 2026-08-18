@@ -20,7 +20,10 @@
  *                                            frame to a PNG (optional --geom/
  *                                            --stateBytes/--shadowExtent for scene3d,
  *                                            --param name=value, --expr name=formula,
- *                                            --time seconds, --images dir, "drone")
+ *                                            --time seconds, --images dir, "drone",
+ *                                            --trans d to pin a transition's progress
+ *                                            in [0,1] -- comb.frag should then be a
+ *                                            folder-qualified "Transitions/X.frag")
  *   PresetEditor.exe --transcheck            verify every shader in Transitions/:
  *                                            exact A at d=0 / exact B at d=1 and
  *                                            no temporal jumps across the sweep
@@ -271,6 +274,14 @@ int main(int argc, char *argv[])
         else
             w->setTextureShader(args[1]);
         w->setCombineShader(args[2]);
+        // --trans d: pin the transition test bench to progress d in [0,1]
+        // (0 = old scene fully visible, 1 = new scene) -- the same knob
+        // --transcheck sweeps.  This is how the catalogue renders a
+        // MID-transition frame of a Transitions/ shader; without it the
+        // combine runs at the overlay's pinned interpolation=1.0 and a
+        // transition would just show the untouched reference scene.
+        const QString transArg = flagValue("--trans");
+        if (!transArg.isEmpty()) w->setTransTest(0, transArg.toFloat());
         if (args.contains("drone"))
             w->setMusicMode(PreviewWidget::Drone);
         QVector<PreviewWidget::ParamOverride> overrides;
