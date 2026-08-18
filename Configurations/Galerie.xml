@@ -1315,158 +1315,158 @@
     <expr name="hueP" formula="chromaHue + seed3*6.28"/>
     <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <CombineShader file="..\\FX\\FxDeformationFlow.frag" type="normal" mood="calm,dreamy" probability="0.15" complexity="5">
+  <CombineShader file="..\\FX\\FxDeformationFlow.frag" type="normal" mood="calm,dreamy" probability="0.06" complexity="5">
     <bool name="directionPositive" probability="0.15"></bool>
     <bool name="leftRight" probability="0.15"></bool>
     <bool name="displayGrid" probability="0.15"></bool>
     <float name="copies" minValue="3.0" maxValue="10.0"></float>
     <float name="speed" minValue="0.005" maxValue="0.05"></float>
   </CombineShader>
-  <CombineShader file="..\\FX\\FxOilPaint.frag" type="normal" mood="calm,dreamy" probability="0.1" complexity="10">
+  <CombineShader file="..\\FX\\FxOilPaint.frag" type="normal" mood="calm,dreamy" probability="0.08" complexity="10">
   </CombineShader>
-  <CombineShader file="..\\FX\\FxOilPaintFlow.frag" type="normal" mood="calm,dreamy" probability="0.15" complexity="10">
+  <CombineShader file="..\\FX\\FxOilPaintFlow.frag" type="normal" mood="calm,dreamy" probability="0.05" complexity="10">
   </CombineShader>
-  <CombineShader file="..\\FX\\FxPlain.frag" type="normal" mood="calm,bright" probability="1" complexity="1">
+  <CombineShader file="..\\FX\\FxPlain.frag" type="normal" mood="calm,bright" probability="1.00" complexity="1">
   </CombineShader>
-  <CombineShader file="..\\FX\\FxRotate.frag" type="normal" mood="calm,bright" probability="0.15" complexity="1">
+  <CombineShader file="..\\FX\\FxRotate.frag" type="normal" mood="calm,bright" probability="0.07" complexity="1">
     <bool name="direction" probability="0.15"></bool>
     <float name="speed" minValue="0.01" maxValue="0.02"></float>
   </CombineShader>
-  <CombineShader file="..\\FX\\FxSphere.frag" type="normal" mood="calm,bright" probability="0.15" complexity="5">
+  <CombineShader file="..\\FX\\FxSphere.frag" type="normal" mood="calm,bright" probability="0.04" complexity="5">
     <bool name="rot" probability="0.15"></bool>
     <float name="radius" minValue="0.5" maxValue="1.0"></float>
     <float name="nrCopies" minValue="1.0" maxValue="8.0"></float>
     <float name="speed" minValue="0.01" maxValue="0.15"></float>
   </CombineShader>
-  <CombineShader file="..\\FX\\FxWater.frag" type="normal" mood="calm,dreamy" probability="0.1" complexity="10">
+  <CombineShader file="..\\FX\\FxWater.frag" type="normal" mood="calm,dreamy" probability="0.07" complexity="10">
   </CombineShader>
-  <CombineShader file="..\\FX\\FxGrey.frag" type="normal" mood="dark,calm" probability="0.12" complexity="1">
+  <CombineShader file="..\\FX\\FxGrey.frag" type="normal" mood="dark,calm" probability="0.05" complexity="1">
   </CombineShader>
-  <CombineShader file="..\\FX\\FxLens.frag" type="normal" mood="calm,dreamy" probability="0.12" complexity="1">
+  <CombineShader file="..\\FX\\FxLens.frag" type="normal" mood="calm,dreamy" probability="0.10" complexity="1">
   </CombineShader>
-  <CombineShader file="..\\FX\\FxParallax.frag" type="normal" mood="calm,dreamy" probability="0.12" complexity="1">
+  <CombineShader file="..\\FX\\FxParallax.frag" type="normal" mood="calm,dreamy" probability="0.07" complexity="1">
   </CombineShader>
-  <CombineShader file="..\\FX\\FxPlaneFlight.frag" type="normal" mood="dreamy,bright" probability="0.12" complexity="1">
+  <CombineShader file="..\\FX\\FxPlaneFlight.frag" type="normal" mood="dreamy,bright" probability="0.04" complexity="1">
   </CombineShader>
-  <CombineShader file="..\\FX\\FxWater2.frag" type="normal" mood="calm,dreamy" probability="0.12" complexity="1">
+  <CombineShader file="..\\FX\\FxWater2.frag" type="normal" mood="calm,dreamy" probability="0.04" complexity="1">
   </CombineShader>
-  <CombineShader file="..\\FX\\FxWave.frag" type="normal" mood="calm,dreamy" probability="0.12" complexity="1">
+  <CombineShader file="..\\FX\\FxWave.frag" type="normal" mood="calm,dreamy" probability="0.10" complexity="1">
   </CombineShader>
-  <CombineShader file="..\\FX\\FxDepthField.frag" type="normal" mood="calm,dreamy" probability="0.3" complexity="4">
+  <CombineShader file="..\\FX\\FxDepthField.frag" type="normal" mood="calm,dreamy" probability="0.09" complexity="4">
     <float name="focusP"    minValue="0.7"  maxValue="1.4"></float>
     <float name="apertureP" minValue="0.35" maxValue="0.9"></float>
     <float name="bokehP"    minValue="0.3"  maxValue="1.0"></float>
   </CombineShader>
-  <CombineShader file="..\\FX\\FxSunShafts.frag" type="normal" mood="bright,dreamy" probability="0.3" complexity="4">
+  <CombineShader file="..\\FX\\FxSunShafts.frag" type="normal" mood="bright,dreamy" probability="0.08" complexity="4">
     <float name="shaftP"  minValue="0.5" maxValue="1.1"></float>
     <float name="lengthP" minValue="0.6" maxValue="1.1"></float>
     <float name="dustP"   minValue="0.3" maxValue="0.9"></float>
   </CombineShader>
-  <CombineShader file="..\\FX\\FxAmbientOcclusion.frag" type="normal" mood="calm,dark" probability="0.3" complexity="4">
+  <CombineShader file="..\\FX\\FxAmbientOcclusion.frag" type="normal" mood="calm,dark" probability="0.09" complexity="4">
     <float name="radiusP"   minValue="0.6"  maxValue="1.6"></float>
     <float name="strengthP" minValue="0.4"  maxValue="1.0"></float>
     <float name="tintP"     minValue="0.25" maxValue="0.8"></float>
   </CombineShader>
-  <CombineShader file="..\\FX\\FxDepthFog.frag" type="normal" mood="dark,calm,dreamy" probability="0.32" complexity="4">
+  <CombineShader file="..\\FX\\FxDepthFog.frag" type="normal" mood="dark,calm,dreamy" probability="0.10" complexity="4">
     <float name="densityP" minValue="0.5" maxValue="1.5"></float>
     <float name="heightP"  minValue="0.4" maxValue="1.6"></float>
     <float name="glowP"    minValue="0.3" maxValue="1.0"></float>
   </CombineShader>
-  <CombineShader file="..\\FX\\FxEdgeInk.frag" type="normal" mood="dark,calm" probability="0.28" complexity="3">
+  <CombineShader file="..\\FX\\FxEdgeInk.frag" type="normal" mood="dark,calm" probability="0.08" complexity="3">
     <float name="inkP"   minValue="0.50" maxValue="1.60"></float>
     <float name="bandsP" minValue="0.15" maxValue="0.90"></float>
     <float name="paperP" minValue="0.00" maxValue="1.00"></float>
   </CombineShader>
-  <CombineShader file="..\\FX\\FxRimLight.frag" type="normal" mood="bright,dreamy" probability="0.32" complexity="3">
+  <CombineShader file="..\\FX\\FxRimLight.frag" type="normal" mood="bright,dreamy" probability="0.07" complexity="3">
     <float name="rimP"   minValue="0.50" maxValue="1.50"></float>
     <float name="sharpP" minValue="0.25" maxValue="0.90"></float>
     <float name="fillP"  minValue="0.30" maxValue="1.00"></float>
   </CombineShader>
-  <CombineShader file="..\FX\FxGoldenNautilus.frag" type="normal" mood="calm,dreamy" probability="0.32" complexity="3">
+  <CombineShader file="..\FX\FxGoldenNautilus.frag" type="normal" mood="calm,dreamy" probability="0.05" complexity="3">
     <float name="phiP"   minValue="0.5" maxValue="2.2"></float>
     <float name="sweepP" minValue="0.5" maxValue="2.0"></float>
     <float name="speedP" minValue="0.5" maxValue="2.0"></float>
     <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
   </CombineShader>
-  <CombineShader file="..\FX\FxDreamyBokehBloom.frag" type="normal" mood="dreamy,calm,bright" probability="0.32" complexity="3">
+  <CombineShader file="..\FX\FxDreamyBokehBloom.frag" type="normal" mood="dreamy,calm,bright" probability="0.09" complexity="3">
     <float name="bokehP" minValue="0.5" maxValue="2.2"></float>
     <float name="bloomP" minValue="0.5" maxValue="2.0"></float>
     <float name="speedP" minValue="0.5" maxValue="2.0"></float>
     <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
   </CombineShader>
-  <CombineShader file="..\FX\FxNavierStokesMelt.frag" type="normal" mood="calm,dreamy" probability="0.35" complexity="3">
+  <CombineShader file="..\FX\FxNavierStokesMelt.frag" type="normal" mood="calm,dreamy" probability="0.08" complexity="3">
     <float name="viscP"   minValue="0.5" maxValue="2.2"></float>
     <float name="vortexP" minValue="0.5" maxValue="2.0"></float>
     <float name="speedP"  minValue="0.5" maxValue="2.0"></float>
     <float name="hueP"    minValue="0.0" maxValue="6.28"></float>
   </CombineShader>
-  <CombineShader file="..\FX\FxEbruMarblingRake.frag" type="normal" mood="dreamy,calm" probability="0.32" complexity="3">
+  <CombineShader file="..\FX\FxEbruMarblingRake.frag" type="normal" mood="dreamy,calm" probability="0.06" complexity="3">
     <float name="rakeP"  minValue="0.5" maxValue="2.2"></float>
     <float name="swirlP" minValue="0.5" maxValue="2.0"></float>
     <float name="speedP" minValue="0.5" maxValue="2.0"></float>
     <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
   </CombineShader>
-  <CombineShader file="..\FX\FxSmokeTurbulenceDrift.frag" type="normal" mood="dark,calm,dreamy" probability="0.32" complexity="3">
+  <CombineShader file="..\FX\FxSmokeTurbulenceDrift.frag" type="normal" mood="dark,calm,dreamy" probability="0.07" complexity="3">
     <float name="smokeP" minValue="0.5" maxValue="2.2"></float>
     <float name="driftP" minValue="0.5" maxValue="2.0"></float>
     <float name="speedP" minValue="0.5" maxValue="2.0"></float>
     <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
   </CombineShader>
-  <CombineShader file="..\FX\FxFrostDendriteFreeze.frag" type="normal" mood="calm,dark" probability="0.32" complexity="3">
+  <CombineShader file="..\FX\FxFrostDendriteFreeze.frag" type="normal" mood="calm,dark" probability="0.05" complexity="3">
     <float name="frostP"  minValue="0.5" maxValue="2.2"></float>
     <float name="branchP" minValue="0.5" maxValue="2.0"></float>
     <float name="speedP"  minValue="0.5" maxValue="2.0"></float>
     <float name="hueP"    minValue="0.0" maxValue="6.28"></float>
   </CombineShader>
-  <CombineShader file="..\FX\FxBioluminescentSparkle.frag" type="normal" mood="dreamy,dark,bright" probability="0.32" complexity="3">
+  <CombineShader file="..\FX\FxBioluminescentSparkle.frag" type="normal" mood="dreamy,dark,bright" probability="0.06" complexity="3">
     <float name="sparkleP" minValue="0.5" maxValue="2.2"></float>
     <float name="densityP" minValue="0.5" maxValue="2.0"></float>
     <float name="speedP"   minValue="0.5" maxValue="2.0"></float>
     <float name="hueP"     minValue="0.0" maxValue="6.28"></float>
   </CombineShader>
-  <CombineShader file="..\FX\FxSandRippleAeolian.frag" type="normal" mood="calm,dreamy" probability="0.32" complexity="3">
+  <CombineShader file="..\FX\FxSandRippleAeolian.frag" type="normal" mood="calm,dreamy" probability="0.06" complexity="3">
     <float name="rippleP" minValue="0.5" maxValue="2.2"></float>
     <float name="windP"   minValue="0.5" maxValue="2.0"></float>
     <float name="speedP"  minValue="0.5" maxValue="2.0"></float>
     <float name="hueP"    minValue="0.0" maxValue="6.28"></float>
   </CombineShader>
-  <CombineShader file="..\FX\FxCellularMitosis.frag" type="normal" mood="calm,dreamy" probability="0.32" complexity="3">
+  <CombineShader file="..\FX\FxCellularMitosis.frag" type="normal" mood="calm,dreamy" probability="0.05" complexity="3">
     <float name="mitosisP" minValue="0.5" maxValue="2.2"></float>
     <float name="cleaveP"  minValue="0.5" maxValue="2.0"></float>
     <float name="speedP"   minValue="0.5" maxValue="2.0"></float>
     <float name="hueP"     minValue="0.0" maxValue="6.28"></float>
   </CombineShader>
-  <CombineShader file="..\FX\FxMyceliumNetworkSprout.frag" type="normal" mood="dark,dreamy,calm" probability="0.32" complexity="3">
+  <CombineShader file="..\FX\FxMyceliumNetworkSprout.frag" type="normal" mood="dark,dreamy,calm" probability="0.06" complexity="3">
     <float name="hyphaeP" minValue="0.5" maxValue="2.2"></float>
     <float name="branchP" minValue="0.5" maxValue="2.0"></float>
     <float name="speedP"  minValue="0.5" maxValue="2.0"></float>
     <float name="hueP"    minValue="0.0" maxValue="6.28"></float>
   </CombineShader>
-  <CombineShader file="..\FX\FxAuroraCurtainFold.frag" type="normal" mood="dreamy,calm,bright" probability="0.35" complexity="3">
+  <CombineShader file="..\FX\FxAuroraCurtainFold.frag" type="normal" mood="dreamy,calm,bright" probability="0.06" complexity="3">
     <float name="curtainP" minValue="0.5" maxValue="2.2"></float>
     <float name="rayP"     minValue="0.5" maxValue="2.0"></float>
     <float name="speedP"   minValue="0.5" maxValue="2.0"></float>
     <float name="hueP"     minValue="0.0" maxValue="6.28"></float>
   </CombineShader>
-  <CombineShader file="..\FX\FxHelicoidMinimalSurface.frag" type="normal" mood="calm,dreamy" probability="0.35" complexity="3">
+  <CombineShader file="..\FX\FxHelicoidMinimalSurface.frag" type="normal" mood="calm,dreamy" probability="0.03" complexity="3">
     <float name="pitchP" minValue="0.5" maxValue="2.2"></float>
     <float name="screwP" minValue="0.5" maxValue="2.0"></float>
     <float name="speedP" minValue="0.5" maxValue="2.0"></float>
     <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
   </CombineShader>
-  <CombineShader file="..\FX\FxBioluminescentPhytoplanktonBloom.frag" type="normal" mood="dreamy,bright,dark" probability="0.35" complexity="3">
+  <CombineShader file="..\FX\FxBioluminescentPhytoplanktonBloom.frag" type="normal" mood="dreamy,bright,dark" probability="0.05" complexity="3">
     <float name="bloomP" minValue="0.5" maxValue="2.2"></float>
     <float name="swirlP" minValue="0.5" maxValue="2.0"></float>
     <float name="speedP" minValue="0.5" maxValue="2.0"></float>
     <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
   </CombineShader>
-  <CombineShader file="..\FX\FxSuperfluidHe4Fountain.frag" type="normal" mood="dreamy,bright" probability="0.35" complexity="3">
+  <CombineShader file="..\FX\FxSuperfluidHe4Fountain.frag" type="normal" mood="dreamy,bright" probability="0.05" complexity="3">
     <float name="fountP" minValue="0.5" maxValue="2.2"></float>
     <float name="creepP" minValue="0.5" maxValue="2.0"></float>
     <float name="speedP" minValue="0.5" maxValue="2.0"></float>
     <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
   </CombineShader>
-  <CombineShader file="..\FX\FxCosmicStringLensing.frag" type="normal" mood="dark,dreamy" probability="0.35" complexity="3">
+  <CombineShader file="..\FX\FxCosmicStringLensing.frag" type="normal" mood="dark,dreamy" probability="0.06" complexity="3">
     <float name="tensionP" minValue="0.5" maxValue="2.2"></float>
     <float name="deficitP" minValue="0.5" maxValue="2.0"></float>
     <float name="speedP"   minValue="0.5" maxValue="2.0"></float>
