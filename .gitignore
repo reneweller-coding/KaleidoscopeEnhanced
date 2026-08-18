@@ -49,3 +49,7 @@ Tools/broadband120.wav
 Tools/probe_*.jpg
 cache/
 indirect_diag.log
+
+# Szenen-Katalog: PDF ist generiert (Katalog.md + img/ sind die Quelle)
+Docs/Catalog/Katalog.pdf
+Docs/Catalog/Katalog.html
