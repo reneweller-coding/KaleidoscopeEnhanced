@@ -97,9 +97,11 @@ void main() {
 
     vec4 col = mix(c1, c0, tProg);
 
-    // Liquid specular highlight
-    float liquidGlint = length(curl) * 15.0 * midTransition;
-    col.rgb += liquidGlint * vec3(0.2, 0.85, 1.0) * (1.0 + audioKick * 2.0);
+    // Liquid specular highlight -- capped: curl magnitude reaches ~0.5 at
+    // audio-hot, so the old *15 gain pushed the add to ~25x and blew the
+    // whole frame out.
+    float liquidGlint = min(length(curl) * 2.0, 0.5) * midTransition;
+    col.rgb += liquidGlint * vec3(0.2, 0.85, 1.0) * (0.4 + audioKick * 0.4);
 
     if (audioChromaHue != 0.0) col.rgb = hueRot(col.rgb, audioChromaHue);
     if (hue > 0.001) col.rgb = hueRot(col.rgb, hue);

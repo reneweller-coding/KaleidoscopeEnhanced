@@ -94,9 +94,11 @@ void main() {
 
     vec4 col = mix(c1, c0, tileProg);
 
-    // Glowing Penrose grid lines
-    float gridGlow = exp(-edgeMin * 25.0) * midTransition;
-    col.rgb += gridGlow * vec3(1.0, 0.9, 0.4) * (1.2 + audioKick * 3.0);
+    // Glowing Penrose grid lines -- thin and calibrated: the pentagrid's
+    // edgeMin covers much of the frame, so the old wide exp(-x*25) falloff
+    // at 1.2+kick*3 gain buried the scene in gold.
+    float gridGlow = exp(-edgeMin * 55.0) * midTransition;
+    col.rgb += gridGlow * vec3(1.0, 0.9, 0.4) * (0.3 + audioKick * 0.35);
 
     if (audioChromaHue != 0.0) col.rgb = hueRot(col.rgb, audioChromaHue);
     if (hue > 0.001) col.rgb = hueRot(col.rgb, hue);

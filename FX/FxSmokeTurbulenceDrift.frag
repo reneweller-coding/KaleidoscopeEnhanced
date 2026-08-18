@@ -102,9 +102,13 @@ void main() {
 
     vec4 col = mix(c1, c0, tProg);
 
-    // Forward light scattering through smoke plumes
+    // Smoke occludes rather than adds: fog-blend the scene toward the smoke
+    // colour (the old pure add at kick gain ~3x overexposed the frame), then
+    // a small scatter add lets kicks light the plumes from within.
     vec3 smokeGlow = mix(vec3(0.3, 0.4, 0.6), vec3(0.9, 0.85, 0.8), smokeDensity);
-    col.rgb += smokeDensity * smokeGlow * 0.6 * (1.0 + audioKick * 2.0);
+    float dens = clamp(smokeDensity, 0.0, 1.0);
+    col.rgb = mix(col.rgb, smokeGlow, dens * 0.55);
+    col.rgb += dens * dens * smokeGlow * (0.08 + audioKick * 0.15);
 
     if (audioChromaHue != 0.0) col.rgb = hueRot(col.rgb, audioChromaHue);
     if (hue > 0.001) col.rgb = hueRot(col.rgb, hue);

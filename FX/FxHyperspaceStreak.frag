@@ -83,13 +83,17 @@ void main() {
 
     vec3 col = mix(c1, c0, tProg);
 
-    // Radial hyperspace star streaks
+    // Radial hyperspace star streaks -- calibrated so the scene stays
+    // readable underneath (the old 1.5+kick*3.5 gain whited it out) and
+    // anchored to the scene's own brightness so streaks read as ITS light
+    // being stretched, not a foreign overlay.
     float rayStreak = pow(max(0.0, sin(angle * 40.0 * str + t * 4.0)), 12.0) * midTransition;
     vec3 streakCyan = vec3(0.3, 0.9, 1.0);
-    col += rayStreak * streakCyan * (1.5 + audioKick * 3.5);
+    float sceneLum = dot(col, vec3(0.333));
+    col += rayStreak * streakCyan * (0.2 + 0.5 * sceneLum) * (0.6 + audioKick * 0.6);
 
     // Center arrival flash on kick
-    float centerFlash = exp(-r * 8.0) * midTransition * (1.0 + audioKick * 3.0);
+    float centerFlash = exp(-r * 8.0) * midTransition * (0.25 + audioKick * 0.35);
     col += centerFlash * vec3(1.0, 0.98, 0.9);
 
     if (audioChromaHue != 0.0) col = hueRot(col, audioChromaHue);

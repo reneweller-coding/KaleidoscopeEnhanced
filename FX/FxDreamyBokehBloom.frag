@@ -64,7 +64,8 @@ void main() {
 
     vec3 c1Acc = vec3(0.0);
     vec3 c0Acc = vec3(0.0);
-    float totalWeight = 0.0;
+    float w1Sum = 0.0;
+    float w0Sum = 0.0;
 
     // 12-tap golden angle Fermat spiral disc
     float goldenAngle = 2.39996323;
@@ -82,16 +83,22 @@ void main() {
 
         c1Acc += s1 * w1;
         c0Acc += s0 * w0;
-        totalWeight += (w1 + w0) * 0.5;
+        w1Sum += w1;
+        w0Sum += w0;
     }
 
-    vec3 c1 = c1Acc / (totalWeight * 0.5);
-    vec3 c0 = c0Acc / (totalWeight * 0.5);
+    // Each accumulator carries ITS OWN weights -- a shared normalizer
+    // brightens whichever scene has the stronger highlights and washed
+    // the whole frame toward white.
+    vec3 c1 = c1Acc / w1Sum;
+    vec3 c0 = c0Acc / w0Sum;
 
     vec3 col = mix(c1, c0, tProg);
 
-    // Luminous bloom glow on kick
-    float bloomGlow = midTransition * (audioKick * 0.5 + audioSwell * 0.3);
+    // Luminous bloom glow on kick -- masked to the frame's own highlights;
+    // a flat full-frame add whited the whole picture out at strong kicks.
+    float hi = smoothstep(0.55, 1.0, dot(col, vec3(0.333)));
+    float bloomGlow = midTransition * hi * (audioKick * 0.15 + audioSwell * 0.10);
     col += bloomGlow * vec3(1.0, 0.95, 0.85);
 
     if (audioChromaHue != 0.0) col = hueRot(col, audioChromaHue);

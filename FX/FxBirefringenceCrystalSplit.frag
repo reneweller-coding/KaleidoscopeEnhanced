@@ -85,9 +85,12 @@ void main() {
 
     vec4 col = mix(c1, c0, tProg);
 
-    // Polarization interference fringe highlights
-    float fringeIntensity = pow(sin(phaseDiff), 4.0) * midTransition;
-    col.rgb += fringeIntensity * isochromatic * (1.4 + audioKick * 3.0);
+    // Polarization interference fringe highlights.  Square before pow:
+    // pow() with a negative base is undefined in GLSL (NaN -> black frame),
+    // and the old 1.4+kick*3 gain overexposed the fringes.
+    float sPhase = sin(phaseDiff);
+    float fringeIntensity = pow(sPhase * sPhase, 4.0) * midTransition;
+    col.rgb += fringeIntensity * isochromatic * (0.3 + audioKick * 0.3);
 
     if (audioChromaHue != 0.0) col.rgb = hueRot(col.rgb, audioChromaHue);
     if (hue > 0.001) col.rgb = hueRot(col.rgb, hue);

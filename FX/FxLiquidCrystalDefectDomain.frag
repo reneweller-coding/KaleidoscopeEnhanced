@@ -3,8 +3,9 @@ out vec4 fragColor;
 // FxLiquidCrystalDefectDomain.frag
 // -----------------------------------------------------------------------
 // FX LIQUID CRYSTAL DEFECT DOMAIN: Nematic liquid crystal Schlieren transition.
-// Topological point defects (disclinations with strength s = +/-1/2) and
-// dark extinction brushes rotate and annihilate as the director field aligns,
+// Topological point defects (disclinations with strength s = +/-1/2), rainbow
+// birefringence interference tints on the domains between them, and dark
+// extinction brushes rotate and annihilate as the director field aligns,
 // seamlessly transitioning into the incoming scene.
 //   interpolation -> sweeps director field alignment & defect annihilation
 //   audioKick     -> flashes topological disclination core singularities
@@ -77,8 +78,11 @@ void main() {
     // Director angle: phi = 0.5 * theta1 - 0.5 * theta2
     float directorAngle = 0.5 * theta1 - 0.5 * theta2 + tProg * 3.14159265;
 
-    // Cross-polarizer extinction brushes: I ~ sin^2(2*phi)
-    float schlierenBrush = pow(sin(2.0 * directorAngle), 2.0 * brs);
+    // Cross-polarizer extinction brushes: I ~ sin^2(2*phi).
+    // Square BEFORE pow: pow() with a negative base is undefined in GLSL
+    // and produced NaNs that rendered half the frame solid black.
+    float s2phi = sin(2.0 * directorAngle);
+    float schlierenBrush = pow(s2phi * s2phi, brs);
 
     // Director field coordinate distortion
     vec2 directorDisp = vec2(cos(directorAngle), sin(directorAngle)) * 0.03 * midTransition * (1.0 + audioBass * 0.7);
@@ -88,12 +92,21 @@ void main() {
 
     vec4 col = mix(c1, c0, tProg);
 
-    // Extinction brushes overlay
+    // Birefringence interference colours: between crossed polarizers each
+    // director orientation retards the light differently, so the domains
+    // around the defects take on rotating rainbow interference tints --
+    // THE signature look of a nematic Schlieren texture.
+    vec3 biref = 0.5 + 0.5 * cos(4.0 * directorAngle + tProg * 3.14159265
+                                 + vec3(0.0, 2.094, 4.189));
+    col.rgb *= mix(vec3(1.0), biref, 0.45 * midTransition);
+
+    // Extinction brushes overlay (dark crossed brushes between the domains)
     col.rgb *= mix(1.0, 0.3 + 0.7 * schlierenBrush, midTransition);
 
-    // Defect core singularity glow
+    // Defect core singularity glow -- small and local; the old 1.5+kick*3
+    // gain turned both cores into giant white blobs.
     float coreGlow = (exp(-length(p - d1) * 30.0) + exp(-length(p - d2) * 30.0)) * midTransition;
-    col.rgb += coreGlow * vec3(1.0, 0.85, 0.4) * (1.5 + audioKick * 3.0);
+    col.rgb += coreGlow * vec3(1.0, 0.85, 0.4) * (0.25 + audioKick * 0.3);
 
     if (audioChromaHue != 0.0) col.rgb = hueRot(col.rgb, audioChromaHue);
     if (hue > 0.001) col.rgb = hueRot(col.rgb, hue);
