@@ -881,6 +881,12 @@
     <expr name="rigDolly" formula="0.5*swell"/>
   </TextureShader>
 
+  <TextureShader file="..\\Scene\\CrystalGrowth.frag" type="normal" probability="0.4" mood="calm,bright" complexity="2">
+    <expr name="glowP" formula="clamp(0.55 + 0.1*(seed2*2.0-1.0) + 0.225*(0.6*kick+0.4*snare), 0.3, 0.8)"/>
+    <float name="glowP" minValue="0.3" maxValue="0.8"></float>
+    <float name="sharpP" minValue="0.3" maxValue="0.9"></float>
+  </TextureShader>
+
   <TextureShader file="..\\Scene3D\\CrystalGrowth.frag" type="scene3d" geom="cubes" probability="0.3" mood="calm,dark" complexity="3">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
     <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>

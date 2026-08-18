@@ -107,7 +107,14 @@ int main(int argc, char *argv[])
             {
                 const PresetEntry *ref = nullptr;
                 for (const PresetEntry &k : komplett.entries)
-                    if (k.file == e.file && k.isCombine == e.isCombine) { ref = &k; break; }
+                    if (k.file == e.file && k.isCombine == e.isCombine
+                        // Folder-aware: Scene/X.frag and Scene3D/X.frag are
+                        // DIFFERENT scenes sharing a bare name (CrystalGrowth)
+                        // -- a bare-name match checked one against the other's
+                        // params.  Empty folder (legacy) matches anything.
+                        && (k.folder.isEmpty() || e.folder.isEmpty()
+                            || k.folder.compare(e.folder, Qt::CaseInsensitive) == 0))
+                    { ref = &k; break; }
                 if (!ref) continue;   // not (or no longer) in Komplett.xml -- nothing to compare against
                 for (const ShaderParam &kp : ref->params)
                 {

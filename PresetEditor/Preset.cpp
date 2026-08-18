@@ -14,6 +14,19 @@ static QString bareFile(QString f)
     return (slash >= 0) ? f.mid(slash + 1) : f;
 }
 
+// Folder segment of the file= attribute ("..\Scene3D\X.frag" -> "Scene3D").
+// The configs write DOUBLE backslashes ("..\\Scene3D\\X.frag"), the editor's
+// own save single ones -- splitting on separators and skipping the empty
+// segments handles both spellings.
+static QString folderOf(QString f)
+{
+    f.replace('\\', '/');
+    const QStringList parts = f.split('/', Qt::SkipEmptyParts);
+    if (parts.size() >= 2 && parts[parts.size() - 2] != "..")
+        return parts[parts.size() - 2];
+    return QString();
+}
+
 static void readParams(const QDomElement &el, PresetEntry &e)
 {
     for (QDomNode n = el.firstChild(); !n.isNull(); n = n.nextSibling())
@@ -74,6 +87,7 @@ bool Preset::load(const QString &path, Preset &out, QString *err)
             PresetEntry e;
             e.isCombine = combine;
             e.file = bareFile(el.attribute("file"));
+            e.folder = folderOf(el.attribute("file"));
             e.type = el.attribute("type", "normal");
             e.minTimeSolo = el.attribute("minTimeSolo").toInt();
             e.maxTimeSolo = el.attribute("maxTimeSolo").toInt();
@@ -124,10 +138,13 @@ bool Preset::save(const QString &path, QString *err) const
         w.writeAttribute("minTimeInterpolation", QString::number(e.minTimeInterpolation));
         w.writeAttribute("maxTimeInterpolation", QString::number(e.maxTimeInterpolation));
         // Shaders live in Scene/, Scene3D/ and Combine/ since the 2026-07 reorg.
-        w.writeAttribute("file", QString("..\\%1\\%2")
-                                 .arg(e.isCombine ? "Combine"
-                                     : (e.type == "scene3d" ? "Scene3D" : "Scene"))
-                                 .arg(e.file));
+        // Prefer the folder the file actually came from (bare names alias:
+        // Scene/ and Scene3D/ both carry a CrystalGrowth.frag).
+        const QString folder = !e.folder.isEmpty() ? e.folder
+                             : (e.isCombine ? QStringLiteral("Combine")
+                               : (e.type == "scene3d" ? QStringLiteral("Scene3D")
+                                                      : QStringLiteral("Scene")));
+        w.writeAttribute("file", QString("..\\%1\\%2").arg(folder).arg(e.file));
         w.writeAttribute("type", e.type);
         if (!e.geom.isEmpty())
             w.writeAttribute("geom", e.geom);
