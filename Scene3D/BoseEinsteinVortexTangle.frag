@@ -58,7 +58,10 @@ void main() {
     vec3 tangleColor = mix(becCyan, becRuby, sin(vVortexPhase * 12.56 + audioPhase) * 0.5 + 0.5);
 
     vec3 col = mix(photo, tangleColor, 0.6) * glow;
-    col += glow * vec3(1.0, 0.98, 0.92) * (1.0 + audioKick * 2.5);
+    // Hot core TINTED by the palette: the old near-white additive term
+    // swamped the ruby/cyan entirely (metric scan: saturation 0.00).
+    col += glow * mix(tangleColor, vec3(1.0, 0.98, 0.92), 0.35)
+               * (0.45 + audioKick * 1.8);
 
     if (audioChromaHue != 0.0) col = hueRot(col, audioChromaHue);
     if (hue > 0.001) col = hueRot(col, hue);

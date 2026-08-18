@@ -49,7 +49,11 @@ void main() {
         specColor = vec3(1.0, 0.2, 0.7); // Higgs decay cascades
     }
 
-    vec3 col = specColor * vEnergy * enp * glw * 2.0;
+    // Lower gain + soft compression: thousands of additive tracks summed the
+    // old x2.0 into pure white (metric scan: saturation 0.01) -- the species
+    // colours only survive if a single fragment stays below clip.
+    vec3 col = specColor * vEnergy * enp * glw * 0.6;
+    col = col / (1.0 + 0.45 * max(col.r, max(col.g, col.b)));
 
     if (hue > 0.001) col = hueRot(col, hue);
 

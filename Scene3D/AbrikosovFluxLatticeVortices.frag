@@ -56,7 +56,10 @@ void main() {
     vec3 vortexColor = mix(fluxCyan, fluxViolet, sin(vVortexPhase * 12.56 + audioPhase) * 0.5 + 0.5);
 
     vec3 col = mix(photo, vortexColor, 0.6) * spriteGlow;
-    col += spriteGlow * vec3(1.0, 0.98, 0.9) * (1.0 + audioKick * 2.5);
+    // Hot core TINTED by the palette (white additive term drowned the
+    // cyan/violet; metric scan: saturation 0.11).
+    col += spriteGlow * mix(vortexColor, vec3(1.0, 0.98, 0.9), 0.35)
+                     * (0.45 + audioKick * 1.8);
 
     if (audioChromaHue != 0.0) col = hueRot(col, audioChromaHue);
     if (hue > 0.001) col = hueRot(col, hue);

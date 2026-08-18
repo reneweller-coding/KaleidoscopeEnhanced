@@ -88,6 +88,9 @@ void main()
     float lit = clamp(dot(n, normalize(vec3(0.7, 0.5, -0.4))), 0.06, 1.0);
     vec3 col = mix(vec3(0.38, 0.33, 0.28), vec3(0.55, 0.53, 0.50), r4)
              * lit * (1.1 + 0.5 * audioSwell + 0.5 * audioKick);
+    // Mineral variety: warm iron-oxide vs cool ice-bearing rocks -- pure
+    // grey regolith read as colourless (metric scan: saturation 0.12).
+    col *= mix(vec3(1.12, 0.94, 0.80), vec3(0.82, 0.95, 1.14), r4);
     col = hueRot(col, audioChromaHue * 0.2);
     col *= 1.0 + 1.6 * audioDrop;
     col *= clamp(1.0 - z / 130.0, 0.0, 1.0) * 1.5;

@@ -77,5 +77,6 @@ void main()
 
     col *= 1.0 + 0.18 * audioBeat + 0.20 * audioSubBass;
     col = col / (1.0 + col * 0.28);
+    col *= (0.85 + 0.30 * audioLevel + 0.35 * audioKick);
     fragColor = vec4(col, interpolation);
 }
