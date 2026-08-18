@@ -32,5 +32,9 @@ void main()
 
     vec4 c0 = texture(tex0, p0);
     vec4 c1 = texture(tex1, p1);
-    fragColor = blend4(c0, c1, w1) * dark;
+    // Dim RGB only: alpha carries scene depth for 3D scenes, and a scaled
+    // alpha also renders as a milky (not dark) frame anywhere the output
+    // is composited straight.
+    fragColor = blend4(c0, c1, w1);
+    fragColor.rgb *= dark;
 }

@@ -3324,12 +3324,16 @@ TRANSITION BIREFRINGENCE CRYSTAL SPLIT: Calcite crystal optical birefringence tr
 
 Venetian blinds: staggered vertical strips reveal the incoming scene one by one. Scene TRANSITION shader (Transitions/): blends the outgoing scene (tex0) into the incoming one (tex1) over one cross-fade. interpolation: 1 = old scene fully visible .. 0 = new scene. Extracted from the former FxPlain.frag 28-style library.
 
+![Blinds über TunnelPlain (2D)](img/Blinds_2D.jpg) ![Blinds über AuroraBorealisOverFjord (3D)](img/Blinds_3D.jpg)
+
 
 ### BlurThrough
 
 `Transitions/BlurThrough.frag` · mood=dreamy,calm · probability=0.12
 
 Blur-through: both scenes melt through a soft-focus dip and resolve into the new one. Scene TRANSITION shader (Transitions/): blends the outgoing scene (tex0) into the incoming one (tex1) over one cross-fade. interpolation: 1 = old scene fully visible .. 0 = new scene. Extracted from the former FxPlain.frag 28-style library.
+
+![BlurThrough über TunnelPlain (2D)](img/BlurThrough_2D.jpg) ![BlurThrough über AuroraBorealisOverFjord (3D)](img/BlurThrough_3D.jpg)
 
 
 ### CausticLiquidWarp
@@ -3356,6 +3360,8 @@ TRANSITION CELLULAR MITOSIS: Biological cell division & cytokinesis transition. 
 
 Chromatic dissolve: red, green and blue cross over to the new scene at slightly different times. Scene TRANSITION shader (Transitions/): blends the outgoing scene (tex0) into the incoming one (tex1) over one cross-fade. interpolation: 1 = old scene fully visible .. 0 = new scene. Extracted from the former FxPlain.frag 28-style library.
 
+![Chromatic über TunnelPlain (2D)](img/Chromatic_2D.jpg) ![Chromatic über AuroraBorealisOverFjord (3D)](img/Chromatic_3D.jpg)
+
 
 ### ChromatographySeparation
 
@@ -3371,6 +3377,8 @@ TRANSITION CHROMATOGRAPHY SEPARATION: Paper chromatography capillary transition.
 `Transitions/ClockSweep.frag` · mood=bright · probability=0.06
 
 Clock sweep: a soft radial hand sweeps once around the centre, revealing the new scene behind it. Scene TRANSITION shader (Transitions/): blends the outgoing scene (tex0) into the incoming one (tex1) over one cross-fade. interpolation: 1 = old scene fully visible .. 0 = new scene. Extracted from the former FxPlain.frag 28-style library.
+
+![ClockSweep über TunnelPlain (2D)](img/ClockSweep_2D.jpg) ![ClockSweep über AuroraBorealisOverFjord (3D)](img/ClockSweep_3D.jpg)
 
 
 ### CosmicStringLensing
@@ -3388,6 +3396,8 @@ TRANSITION COSMIC STRING LENSING: Relativistic topological cosmic string deficit
 
 The classic linear cross-fade between outgoing (tex0) and incoming (tex1) scene. Scene TRANSITION shader (Transitions/): blends the outgoing scene (tex0) into the incoming one (tex1) over one cross-fade. interpolation: 1 = old scene fully visible .. 0 = new scene. Extracted from the former FxPlain.frag 28-style library.
 
+![Crossfade über TunnelPlain (2D)](img/Crossfade_2D.jpg) ![Crossfade über AuroraBorealisOverFjord (3D)](img/Crossfade_3D.jpg)
+
 
 ### Datamosh
 
@@ -3395,12 +3405,16 @@ The classic linear cross-fade between outgoing (tex0) and incoming (tex1) scene.
 
 Datamosh glitch: RGB-split, stuttering block-shifted 'corrupted P-frame' look, most intense mid-fade. Scene TRANSITION shader (Transitions/): blends the outgoing scene (tex0) into the incoming one (tex1) over one cross-fade. interpolation: 1 = old scene fully visible .. 0 = new scene. Extracted from the former FxPlain.frag 28-style library.
 
+![Datamosh über TunnelPlain (2D)](img/Datamosh_2D.jpg) ![Datamosh über AuroraBorealisOverFjord (3D)](img/Datamosh_3D.jpg)
+
 
 ### DiagonalWipe
 
 `Transitions/DiagonalWipe.frag` · mood=calm · probability=0.08
 
 Soft diagonal wipe travelling corner to corner (overshoots the widescreen extent so no corner is left behind). Scene TRANSITION shader (Transitions/): blends the outgoing scene (tex0) into the incoming one (tex1) over one cross-fade. interpolation: 1 = old scene fully visible .. 0 = new scene. Extracted from the former FxPlain.frag 28-style library.
+
+![DiagonalWipe über TunnelPlain (2D)](img/DiagonalWipe_2D.jpg) ![DiagonalWipe über AuroraBorealisOverFjord (3D)](img/DiagonalWipe_3D.jpg)
 
 
 ### DichroicMirrorSlide
@@ -3418,6 +3432,8 @@ TRANSITION DICHROIC MIRROR SLIDE: Dichroic glass beam-splitter transition. Angle
 
 Dip through darkness: a gentle brightness dip at mid-transition separates the two scenes. Scene TRANSITION shader (Transitions/): blends the outgoing scene (tex0) into the incoming one (tex1) over one cross-fade. interpolation: 1 = old scene fully visible .. 0 = new scene. Extracted from the former FxPlain.frag 28-style library.
 
+![DipToDark über TunnelPlain (2D)](img/DipToDark_2D.jpg) ![DipToDark über AuroraBorealisOverFjord (3D)](img/DipToDark_3D.jpg)
+
 
 ### DopplerBeamingWipe
 
@@ -3434,12 +3450,16 @@ TRANSITION DOPPLER BEAMING WIPE: Relativistic Doppler shift & headlamp effect. A
 
 Double exposure: a dreamy screen-blend peak at mid-transition layers both scenes. Scene TRANSITION shader (Transitions/): blends the outgoing scene (tex0) into the incoming one (tex1) over one cross-fade. interpolation: 1 = old scene fully visible .. 0 = new scene. Extracted from the former FxPlain.frag 28-style library.
 
+![DoubleExposure über TunnelPlain (2D)](img/DoubleExposure_2D.jpg) ![DoubleExposure über AuroraBorealisOverFjord (3D)](img/DoubleExposure_3D.jpg)
+
 
 ### DrainVortex
 
 `Transitions/DrainVortex.frag` · mood=aggressive,psychedelic · probability=0.08
 
 Drain vortex: the old scene magnifies and spirals away like water down a drain. Scene TRANSITION shader (Transitions/): blends the outgoing scene (tex0) into the incoming one (tex1) over one cross-fade. interpolation: 1 = old scene fully visible .. 0 = new scene. Extracted from the former FxPlain.frag 28-style library.
+
+![DrainVortex über TunnelPlain (2D)](img/DrainVortex_2D.jpg) ![DrainVortex über AuroraBorealisOverFjord (3D)](img/DrainVortex_3D.jpg)
 
 
 ### DreamyBokehBloom
@@ -3520,6 +3540,8 @@ TRANSITION FROST DENDRITE FREEZE: Hexagonal dendritic ice crystal freeze & melt.
 
 Ghost multi-exposure: layered ghost copies of both scenes drift apart and resolve into the new one. Scene TRANSITION shader (Transitions/): blends the outgoing scene (tex0) into the incoming one (tex1) over one cross-fade. interpolation: 1 = old scene fully visible .. 0 = new scene. Extracted from the former FxPlain.frag 28-style library.
 
+![GhostExposure über TunnelPlain (2D)](img/GhostExposure_2D.jpg) ![GhostExposure über AuroraBorealisOverFjord (3D)](img/GhostExposure_3D.jpg)
+
 
 ### GlitchPixelSort
 
@@ -3563,6 +3585,8 @@ TRANSITION GYROID MEMBRANE MELT: Triply periodic minimal surface (TPMS) gyroid t
 
 Heat-shimmer morph: turbulent haze dissolves one scene into the other. Scene TRANSITION shader (Transitions/): blends the outgoing scene (tex0) into the incoming one (tex1) over one cross-fade. interpolation: 1 = old scene fully visible .. 0 = new scene. Extracted from the former FxPlain.frag 28-style library.
 
+![HeatShimmer über TunnelPlain (2D)](img/HeatShimmer_2D.jpg) ![HeatShimmer über AuroraBorealisOverFjord (3D)](img/HeatShimmer_3D.jpg)
+
 
 ### HelicoidMinimalSurface
 
@@ -3597,12 +3621,16 @@ TRANSITION HYPERSPACE STREAK: Relativistic warp speed streak transition. As the 
 
 Jelly wobble: the whole frame wobbles like gelatine while the scenes blend. Scene TRANSITION shader (Transitions/): blends the outgoing scene (tex0) into the incoming one (tex1) over one cross-fade. interpolation: 1 = old scene fully visible .. 0 = new scene. Extracted from the former FxPlain.frag 28-style library.
 
+![Jelly über TunnelPlain (2D)](img/Jelly_2D.jpg) ![Jelly über AuroraBorealisOverFjord (3D)](img/Jelly_3D.jpg)
+
 
 ### KaleidoFold
 
 `Transitions/KaleidoFold.frag` · mood=psychedelic,bright · probability=0.1
 
 Kaleidoscope fold-through: both scenes fold into a 6-mirror rosette mid-transition and unfold into the new scene. Scene TRANSITION shader (Transitions/): blends the outgoing scene (tex0) into the incoming one (tex1) over one cross-fade. interpolation: 1 = old scene fully visible .. 0 = new scene. Extracted from the former FxPlain.frag 28-style library.
+
+![KaleidoFold über TunnelPlain (2D)](img/KaleidoFold_2D.jpg) ![KaleidoFold über AuroraBorealisOverFjord (3D)](img/KaleidoFold_3D.jpg)
 
 
 ### KaleidoscopicPolytope
@@ -3619,6 +3647,8 @@ TRANSITION KALEIDOSCOPIC POLYTOPE: Coxeter reflection group 4D polytope transiti
 `Transitions/KaleidoSpin.frag` · mood=psychedelic,bright · probability=0.08
 
 Spinning 8-mirror kaleido fold: an 8-fold rosette that also rotates carries the frame through the blend. Scene TRANSITION shader (Transitions/): blends the outgoing scene (tex0) into the incoming one (tex1) over one cross-fade. interpolation: 1 = old scene fully visible .. 0 = new scene. Extracted from the former FxPlain.frag 28-style library.
+
+![KaleidoSpin über TunnelPlain (2D)](img/KaleidoSpin_2D.jpg) ![KaleidoSpin über AuroraBorealisOverFjord (3D)](img/KaleidoSpin_3D.jpg)
 
 
 ### KerrSchildWarpSheet
@@ -3663,6 +3693,8 @@ TRANSITION LOGARITHMIC SPIRAL: Equiangular logarithmic spiral vortex (r = a * ex
 
 Luminance-ordered dissolve: dark areas give way to the new scene first, highlights last. Scene TRANSITION shader (Transitions/): blends the outgoing scene (tex0) into the incoming one (tex1) over one cross-fade. interpolation: 1 = old scene fully visible .. 0 = new scene. Extracted from the former FxPlain.frag 28-style library.
 
+![Luminance über TunnelPlain (2D)](img/Luminance_2D.jpg) ![Luminance über AuroraBorealisOverFjord (3D)](img/Luminance_3D.jpg)
+
 
 ### MagmaCrustFracture
 
@@ -3679,6 +3711,8 @@ TRANSITION MAGMA CRUST FRACTURE: Tectonic basalt magma crust transition. The out
 
 Melt: the old scene drips downward like wax in noise-driven columns while the new one appears behind. Scene TRANSITION shader (Transitions/): blends the outgoing scene (tex0) into the incoming one (tex1) over one cross-fade. interpolation: 1 = old scene fully visible .. 0 = new scene. Extracted from the former FxPlain.frag 28-style library.
 
+![Melt über TunnelPlain (2D)](img/Melt_2D.jpg) ![Melt über AuroraBorealisOverFjord (3D)](img/Melt_3D.jpg)
+
 
 ### MoireInterference
 
@@ -3694,6 +3728,8 @@ TRANSITION MOIRE INTERFERENCE: Optical Moiré superlattice interference fringes 
 `Transitions/MosaicDissolve.frag` · mood=calm · probability=0.08
 
 Mosaic dissolve: the frame flips to the new scene cell by cell in random order. Scene TRANSITION shader (Transitions/): blends the outgoing scene (tex0) into the incoming one (tex1) over one cross-fade. interpolation: 1 = old scene fully visible .. 0 = new scene. Extracted from the former FxPlain.frag 28-style library.
+
+![MosaicDissolve über TunnelPlain (2D)](img/MosaicDissolve_2D.jpg) ![MosaicDissolve über AuroraBorealisOverFjord (3D)](img/MosaicDissolve_3D.jpg)
 
 
 ### MyceliumNetworkSprout
@@ -3747,6 +3783,8 @@ TRANSITION PENROSE MORPH: 5-fold aperiodic Penrose tiling morphing between scene
 
 Pixelation morph: the frame coarsens into blocks, swaps scenes, and sharpens back. Scene TRANSITION shader (Transitions/): blends the outgoing scene (tex0) into the incoming one (tex1) over one cross-fade. interpolation: 1 = old scene fully visible .. 0 = new scene. Extracted from the former FxPlain.frag 28-style library.
 
+![Pixelation über TunnelPlain (2D)](img/Pixelation_2D.jpg) ![Pixelation über AuroraBorealisOverFjord (3D)](img/Pixelation_3D.jpg)
+
 
 ### PlasmaFilamentPinch
 
@@ -3772,12 +3810,16 @@ TRANSITION POINCARE SPIN: Conformal hyperbolic Poincaré disk inversion and cont
 
 Portal: the new scene opens along the OLD scene's real depth - near geometry peels away first, a glowing rim rides the depth threshold (3D scenes only; falls back to a linear mix without valid depth). Scene TRANSITION shader (Transitions/): blends the outgoing scene (tex0) into the incoming one (tex1) over one cross-fade. interpolation: 1 = old scene fully visible .. 0 = new scene. Extracted from the former FxPlain.f…
 
+![Portal über TunnelPlain (2D)](img/Portal_2D.jpg) ![Portal über AuroraBorealisOverFjord (3D)](img/Portal_3D.jpg)
+
 
 ### Push
 
 `Transitions/Push.frag` · mood=aggressive · probability=0.06
 
 Push: the incoming scene shoves the old one out to the left, film-splice style. Scene TRANSITION shader (Transitions/): blends the outgoing scene (tex0) into the incoming one (tex1) over one cross-fade. interpolation: 1 = old scene fully visible .. 0 = new scene. Extracted from the former FxPlain.frag 28-style library.
+
+![Push über TunnelPlain (2D)](img/Push_2D.jpg) ![Push über AuroraBorealisOverFjord (3D)](img/Push_3D.jpg)
 
 
 ### QuadtreeSubdivide
@@ -3803,6 +3845,8 @@ TRANSITION QUANTUM WAVE COLLAPSE: Quantum state superposition & wavefunction col
 `Transitions/RadialIris.frag` · mood=bright,calm · probability=0.12
 
 Radial iris-open wipe: the incoming scene grows from the centre in a soft-edged circle. Scene TRANSITION shader (Transitions/): blends the outgoing scene (tex0) into the incoming one (tex1) over one cross-fade. interpolation: 1 = old scene fully visible .. 0 = new scene. Extracted from the former FxPlain.frag 28-style library.
+
+![RadialIris über TunnelPlain (2D)](img/RadialIris_2D.jpg) ![RadialIris über AuroraBorealisOverFjord (3D)](img/RadialIris_3D.jpg)
 
 
 ### RayleighTaylorInstability
@@ -3838,12 +3882,16 @@ TRANSITION SAND RIPPLE AEOLIAN: Desert sand ripple saltation & wind shear transi
 
 Shatter: the old scene breaks into Voronoi shards that fly apart, spin and fall; the new scene stands behind. Scene TRANSITION shader (Transitions/): blends the outgoing scene (tex0) into the incoming one (tex1) over one cross-fade. interpolation: 1 = old scene fully visible .. 0 = new scene. Extracted from the former FxPlain.frag 28-style library.
 
+![Shatter über TunnelPlain (2D)](img/Shatter_2D.jpg) ![Shatter über AuroraBorealisOverFjord (3D)](img/Shatter_3D.jpg)
+
 
 ### SlidingDoors
 
 `Transitions/SlidingDoors.frag` · mood=calm · probability=0.06
 
 Sliding doors: the old scene splits at the centre and both halves slide apart to reveal the new one. Scene TRANSITION shader (Transitions/): blends the outgoing scene (tex0) into the incoming one (tex1) over one cross-fade. interpolation: 1 = old scene fully visible .. 0 = new scene. Extracted from the former FxPlain.frag 28-style library.
+
+![SlidingDoors über TunnelPlain (2D)](img/SlidingDoors_2D.jpg) ![SlidingDoors über AuroraBorealisOverFjord (3D)](img/SlidingDoors_3D.jpg)
 
 
 ### SmokeTurbulenceDrift
@@ -3879,6 +3927,8 @@ TRANSITION SPECTRAL PRISM SPLIT: Optical prism dispersion transition. The image 
 
 Spin-zoom cross-fade: the old scene twists away while the new one untwists in. Scene TRANSITION shader (Transitions/): blends the outgoing scene (tex0) into the incoming one (tex1) over one cross-fade. interpolation: 1 = old scene fully visible .. 0 = new scene. Extracted from the former FxPlain.frag 28-style library.
 
+![SpinZoom über TunnelPlain (2D)](img/SpinZoom_2D.jpg) ![SpinZoom über AuroraBorealisOverFjord (3D)](img/SpinZoom_3D.jpg)
+
 
 ### SuperfluidHe4Fountain
 
@@ -3903,6 +3953,8 @@ TRANSITION SUPERNOVA SHOCKWAVE: Spherical supernova blast wave transition. A hyp
 `Transitions/Swirl.frag` · mood=psychedelic,dreamy · probability=0.1
 
 Whirlpool swirl: the frame twists around the centre mid-transition while the scenes cross-fade. Scene TRANSITION shader (Transitions/): blends the outgoing scene (tex0) into the incoming one (tex1) over one cross-fade. interpolation: 1 = old scene fully visible .. 0 = new scene. Extracted from the former FxPlain.frag 28-style library.
+
+![Swirl über TunnelPlain (2D)](img/Swirl_2D.jpg) ![Swirl über AuroraBorealisOverFjord (3D)](img/Swirl_3D.jpg)
 
 
 ### Tesseract4DRotation
@@ -3929,6 +3981,8 @@ TRANSITION VORONOI SHATTER: Smooth transition where the scene dissolves through 
 
 Water ripple: concentric waves radiate from the centre and carry the new scene in. Scene TRANSITION shader (Transitions/): blends the outgoing scene (tex0) into the incoming one (tex1) over one cross-fade. interpolation: 1 = old scene fully visible .. 0 = new scene. Extracted from the former FxPlain.frag 28-style library.
 
+![WaterRipple über TunnelPlain (2D)](img/WaterRipple_2D.jpg) ![WaterRipple über AuroraBorealisOverFjord (3D)](img/WaterRipple_3D.jpg)
+
 
 ### WormholeSpaceFold
 
@@ -3944,3 +3998,5 @@ TRANSITION WORMHOLE SPACE FOLD: Traversable Morris-Thorne wormhole transition. T
 `Transitions/ZoomThrough.frag` · mood=aggressive,bright · probability=0.12
 
 Zoom-through flight: the old scene magnifies past the camera while the new one flies in from depth. Scene TRANSITION shader (Transitions/): blends the outgoing scene (tex0) into the incoming one (tex1) over one cross-fade. interpolation: 1 = old scene fully visible .. 0 = new scene. Extracted from the former FxPlain.frag 28-style library.
+
+![ZoomThrough über TunnelPlain (2D)](img/ZoomThrough_2D.jpg) ![ZoomThrough über AuroraBorealisOverFjord (3D)](img/ZoomThrough_3D.jpg)

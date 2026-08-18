@@ -435,6 +435,19 @@ kollidiert (z.B. `VoronoiShatter.frag`), wird dann still als SZENE
 kompiliert. Übergänge daher immer ordner-qualifiziert angeben:
 `"Transitions/X.frag"`.
 
+**Katalog-/Proberender eines Übergangs:** `--render <Szene>
+"Transitions/X.frag" out.png 480 300 --images <ABSOLUTER Pfad zu
+Tools/probe_images> --trans 0.5` — `--trans d` pinnt den Fortschritt
+(0 = alte Szene, 1 = neue); ohne das Flag läuft der Combine bei
+interpolation=1.0 und man sieht nur die nackte Referenzszene.
+`--images` braucht hier einen ABSOLUTEN Pfad (die CWD ist
+`PresetEditor/`, ein relativer Pfad läuft still ins Leere → Testkarte
+statt Fotos). Zwei weitere Fallen aus dem ersten Katalog-Batch: bei
+Tiefen-Sweeps (Portal) ist d=0.5 oft schon „durch" — früheren Moment
+wählen (0.25–0.3); und ein Dim-Faktor gehört auf `fragColor.rgb`, NIE
+auf das ganze vec4 (Alpha trägt bei 3D-Szenen die Tiefe, und ein
+skaliertes Alpha macht das Katalog-PNG milchig statt dunkel).
+
 ---
 
 ## Probe-Renders: IMMER mit echten Bildern (`--images`)
