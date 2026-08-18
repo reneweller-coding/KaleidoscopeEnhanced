@@ -2774,12 +2774,12 @@ Reorganised 2026-07 into folders:
   StainedGlassRosette, SciFiHUD, VolumetricFire + research scenes
   SpectralOrb, SpectralTorus, CymaticsPlate, Planet4D, SpiralArray,
   JellyBody, StrangeAttractor, MelodyScript)
-- `FX\*.frag` — the 21 combine passes (incl. `FxPlain.frag`, which
+- `FX\*.frag` — the 84 combine passes (incl. `FxPlain.frag`, which
   carries the 28-style transition library)
 - `Engine\*.frag` — internal pipeline passes: `Present.frag` (mood grade +
   safety + dither), `Feedback.frag` (echo-warp trails), `BloomBlur.frag`,
   `ReactionDiffusionSim.frag` / `FluidSim.frag` / `Smoke3DSim.frag` (the GPU
-  simulations), `CombineShader.frag`, `default.frag`
+  simulations), plus every `Cfx*.comp` compute kernel behind `ComputeFX`
 - `standard.vert` stays in the root (single shared vertex shader; the editor
   also locates the project root by it)
 - `ThirdParty\SpoutGL\` — vendored Spout2 SDK; `PresetEditor\` — the editor;
