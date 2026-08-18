@@ -4,6 +4,10 @@
   <!-- PROBE: nur Tornado, fuer Unstetigkeiten- und Bildfuellungs-Check. -->
 
   <TextureShader file="..\\Scene3D\\Tornado.frag" type="scene3d" geom="points" probability="1.0" complexity="2">
+    <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigDolly" formula="0.5*swell"/>
   </TextureShader>
 
 </configuration>
