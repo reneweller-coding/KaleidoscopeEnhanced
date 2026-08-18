@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
@@ -30,6 +30,9 @@
     </Filter>
     <Filter Include="Shaders\Combine">
       <UniqueIdentifier>{389f641d-137e-49b1-8292-7b9c2d3ef029}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\Transitions">
+      <UniqueIdentifier>{6d37c53d-7f4f-450b-93da-27713abfe32b}</UniqueIdentifier>
     </Filter>
     <Filter Include="Shaders\Blend">
       <UniqueIdentifier>{2cbfe523-84e8-4dee-a547-b19fa868ab46}</UniqueIdentifier>
@@ -584,6 +587,255 @@
     </None>
     <None Include="FX\FxPlain.frag">
       <Filter>Shaders\Combine</Filter>
+    </None>
+    <None Include="Transitions\AbrikosovVortexLatticeSweep.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\AcousticChladniResonance.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\AnamorphicFlareSweep.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\AuroraCurtainFold.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\BioluminescentPhytoplanktonBloom.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\BioluminescentSparkle.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\BirefringenceCrystalSplit.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\Blinds.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\BlurThrough.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\CausticLiquidWarp.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\CellularMitosis.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\Chromatic.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\ChromatographySeparation.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\ClockSweep.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\CosmicStringLensing.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\Crossfade.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\Datamosh.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\DiagonalWipe.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\DichroicMirrorSlide.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\DipToDark.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\DopplerBeamingWipe.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\DoubleExposure.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\DrainVortex.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\DreamyBokehBloom.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\EbruMarblingRake.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\EventHorizonSwirl.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\FaradayWaveLattice.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\FerroelectricDomainFlip.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\FerrofluidSpikes.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\FresnelDiffractionEdge.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\FrostDendriteFreeze.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\GhostExposure.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\GlitchPixelSort.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\GoldenNautilus.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\GravitationalLensWarp.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\GyroidMembraneMelt.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\HeatShimmer.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\HelicoidMinimalSurface.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\HologramScanInterference.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\HyperspaceStreak.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\Jelly.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\KaleidoFold.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\KaleidoSpin.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\KaleidoscopicPolytope.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\KerrSchildWarpSheet.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\LichtenbergLightningWipe.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\LiquidCrystalDefectDomain.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\LogarithmicSpiral.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\Luminance.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\MagmaCrustFracture.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\Melt.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\MoireInterference.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\MosaicDissolve.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\MyceliumNetworkSprout.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\NavierStokesMelt.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\NewtonRingsInterference.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\OceanBreakerWave.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\PenroseMorph.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\Pixelation.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\PlasmaFilamentPinch.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\PoincareSpin.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\Portal.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\Push.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\QuadtreeSubdivide.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\QuantumWaveCollapse.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\RadialIris.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\RayleighTaylorInstability.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\ReactionDiffusionTuring.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\SandRippleAeolian.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\Shatter.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\SlidingDoors.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\SmokeTurbulenceDrift.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\SolitonWaveCollision.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\SpectralPrismSplit.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\SpinZoom.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\SuperfluidHe4Fountain.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\SupernovaShockwave.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\Swirl.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\Tesseract4DRotation.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\VoronoiShatter.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\WaterRipple.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\WormholeSpaceFold.frag">
+      <Filter>Shaders\Transitions</Filter>
+    </None>
+    <None Include="Transitions\ZoomThrough.frag">
+      <Filter>Shaders\Transitions</Filter>
     </None>
     <None Include="FX\FxPlaneFlight.frag">
       <Filter>Shaders\Combine</Filter>

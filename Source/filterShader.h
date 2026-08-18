@@ -332,10 +332,12 @@ public:
 	/** @brief Tears down this instance's GL resources and background thread: terminates and deletes the ImageLoader, then releases textures and shader programs. Deliberately does NOT release the global Spout sender/receiver (see the definition for why). */
 	void stop();
 
-	/** @brief Registers a combine-effect shader with this instance (ownership passes to FilterShader). @param shader Combine-effect shader to add. */
+	/** @brief Registers a combine-effect (overlay) shader with this instance (ownership passes to FilterShader). @param shader Combine-effect shader to add. */
 	void addCombineShader( EffectShader * shader );
 	/** @brief Registers a texture-effect shader with this instance (ownership passes to FilterShader). @param shader Texture-effect shader to add. */
 	void addTextureShader( EffectShader * shader );
+	/** @brief Registers a scene-transition shader (Transitions/) with this instance (ownership passes to FilterShader). @param shader Transition shader to add. */
+	void addTransitionShader( EffectShader * shader );
 
 
     bool        m_triggerImageload;      ///< Set by the render thread to request the next background photo from the ImageLoader thread; cleared by ImageLoader once m_nextImage is filled.
@@ -412,6 +414,7 @@ private:
 	GLuint			m_fboEffectTexture2 = 0; ///< FBO of the incoming (cross-fading) texture-effect pass.
 	GLuint			m_fboEffectCombine1 = 0; ///< FBO of the active combine-effect pass.
 	GLuint			m_fboEffectCombine2 = 0; ///< FBO of the incoming (cross-fading) combine-effect pass.
+	GLuint			m_fboTransition = 0;     ///< FBO of the scene-transition pass (blends scene A/B during a fade; skipped while solo).
 	GLuint			m_depthFbo = 0;          ///< Reserved depth-only FBO id; not assigned by the code in this file (the shadow map has its own m_shadowFbo).
 	GLenum			m_attachmentpoint;   ///< where to attach framebuffer objects — colour attachment point used for every FBO colour texture (GL_COLOR_ATTACHMENT0).
 	GLuint			m_texID1 = 0;   ///< texture ids of read/write Textures — legacy read/write texture id; unused in the current build (only ever set in the constructor initializer list).
@@ -420,6 +423,7 @@ private:
 	GLuint			m_texIDFBOEffectTexture2 = 0;  ///< Colour texture attached to m_fboEffectTexture2.
 	GLuint			m_texIDFBOEffectCombine1 = 0;  ///< Colour texture attached to m_fboEffectCombine1.
 	GLuint			m_texIDFBOEffectCombine2 = 0;  ///< Colour texture attached to m_fboEffectCombine2.
+	GLuint			m_texIDFBOTransition = 0;      ///< Colour texture attached to m_fboTransition (the finished, blended scene the overlays read).
 
 	// Target framebuffer for the final on-screen pass (QOpenGLWidget's FBO, not 0).
 	GLuint			m_defaultFBO = 0;   ///< Target framebuffer for the final on-screen pass; see setDefaultFBO().
@@ -723,7 +727,8 @@ private:
 
 
 
-	std::vector<EffectShader *> m_effectCombines;   ///< All configured combine-effect shaders for this preset (registered via addCombineShader()); indexed by the SceneScheduler.
+	std::vector<EffectShader *> m_effectCombines;   ///< All configured combine-effect (overlay) shaders for this preset (registered via addCombineShader()); indexed by the SceneScheduler.
+	std::vector<EffectShader *> m_effectTransitions;   ///< All configured scene-transition shaders (Transitions/) for this preset (registered via addTransitionShader()); one is rolled per scene fade.
 
 
 	unsigned int m_effectCombineTimeInterpolation;   ///< Declared but not referenced anywhere in filterShader.cpp — unused leftover from before timing moved to SceneScheduler/EffectShader.

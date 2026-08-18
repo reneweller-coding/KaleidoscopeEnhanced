@@ -388,6 +388,53 @@ Vor dem Commit: `python Tools/find_comment_breaks.py <geänderte Dateien>`
 wenn Zeit ist, `doxygen Doxyfile` im Repo-Root laufen lassen — die
 Warnungsliste sollte nach einer Änderung nicht länger werden als vorher.
 
+### V12 — Übergänge (`Transitions/`): Endpunkt-Identität ist Pflicht
+
+Seit dem Transitions-Split gibt es zwei getrennte Shader-Sorten über der
+Szene:
+
+- **FX-Overlay** (`FX/`, `<CombineShader>`): läuft DAUERHAFT über der
+  fertigen Szene, `interpolation` ist fest 1.0, tex0 und tex1 zeigen
+  dasselbe Bild. Darf permanent färben/verzerren — das ist sein Zweck.
+- **Übergang** (`Transitions/`, `<TransitionShader>`): läuft NUR während
+  einer Szenen-Überblendung. `interpolation` läuft von 1 (alte Szene,
+  tex0) nach 0 (neue Szene, tex1).
+
+Der Vertrag für Übergänge: **bei `interpolation=1` exakt tex0 liefern, bei
+`interpolation=0` exakt tex1** — der Pass wird an den Endpunkten hart zu-
+bzw. abgeschaltet, jede Abweichung ist ein sichtbarer Bild-Sprung ("Pop").
+`PresetEditor --transcheck` erzwingt das dateibasiert über alle
+`Transitions/*.frag` (Endpunkt-Differenz ≤1.5/255 gegen Crossfade als
+Referenz, kein Frame-Sprung >6× Median).
+
+Die Falle, die beim Umzug der 55 Spektakel-Combines 55 von 83 Dateien
+betraf: **jeder Term, der nicht selbst von `interpolation` abhängt, läuft
+an den Endpunkten weiter.** Ein als Dauer-Combine harmloses finales
+`hueRot(col.rgb, audioChromaHue)`, eine `time`-getriebene Rotation, ein
+Glüh-Term — als Übergang ist jedes davon ein Pop. Deshalb: alle
+Zusatz-Terme (Färbung, Glow, Warp, Zeit-Rotation) mit der Envelope
+fenstern:
+
+```glsl
+float tProg = clamp(interpolation, 0.0, 1.0);
+float midTransition = sin(tProg * 3.14159265);   // 0 an beiden Endpunkten
+col.rgb += glow * midTransition;
+col.rgb  = hueRot(col.rgb, audioChromaHue * midTransition);
+```
+
+Wipe-Fronten müssen den SICHTBAREN Wertebereich ihrer Sweep-Koordinate
+vollständig überstreichen (GoldenNautilus: Spiral-Theta läuft über den
+Frame ca. −15..+11 — ein 0..8-Sweep lässt an beiden Endpunkten Restzonen
+der falschen Szene stehen). Im Zweifel Endpunkt-Frames rendern und
+differenzieren; genau das tut `--transcheck`.
+
+**Vorschau-Namensauflösung:** `PreviewWidget::compile()` sucht blanke
+Dateinamen in der Reihenfolge `Scene2D/` → `FX/` → `Transitions/` →
+`Engine/` → Root. Eine Transition, deren Name mit einer 2D-Szene
+kollidiert (z.B. `VoronoiShatter.frag`), wird dann still als SZENE
+kompiliert. Übergänge daher immer ordner-qualifiziert angeben:
+`"Transitions/X.frag"`.
+
 ---
 
 ## Probe-Renders: IMMER mit echten Bildern (`--images`)
@@ -445,7 +492,9 @@ done < meta.txt
    `..\Scene3D\<file>`) — ein zusätzlich mitgegebenes `Scene3D/`- oder
    `..\Scene3D\`-Präfix verdoppelt das Segment, die Datei wird nie gefunden,
    und ohne `--geom` (2D-Pfad) sucht `compile()` ohnehin selbst in
-   `Scene2D/`/`FX/`/`Engine/` — auch dort **kein** Präfix voranstellen. Bis
+   `Scene2D/`/`FX/`/`Transitions/`/`Engine/` — auch dort **kein** Präfix
+   voranstellen (Ausnahme: Übergänge, siehe V12 — immer
+   `Transitions/X.frag`, sonst gewinnt eine gleichnamige 2D-Szene). Bis
    Version 1.2.1 lief das komplett stumm auf ein schwarzes Bild hinaus (die
    Diagnose "missing X.vert" ging als Qt-Signal ins Leere, weil nur die
    Editor-GUI zuhörte); seitdem druckt `--render` sie auf stderr.

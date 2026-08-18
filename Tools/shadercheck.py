@@ -218,7 +218,7 @@ def main():
                  if p.endswith((".frag", ".vert", ".comp"))]
     else:
         files = []
-        for d in ("Scene2D", "Scene3D", "FX", "Engine"):
+        for d in ("Scene2D", "Scene3D", "FX", "Engine", "Transitions"):
             dp = os.path.join(ROOT, d)
             if not os.path.isdir(dp):
                 continue

@@ -106,7 +106,7 @@ jobs:
           & "C:\Program Files\7-Zip\7z.exe" x mesa.7z -omesa -y | Out-Null
           Copy-Item mesa\x64\opengl32.dll,mesa\x64\libgallium_wgl.dll -Destination "PresetEditor\build\Release\"
 
-      - name: Self-test -- transcheck (28 transition styles, software GL)
+      - name: Self-test -- transcheck (all Transitions/*.frag, software GL)
         shell: pwsh
         continue-on-error: true
         env:

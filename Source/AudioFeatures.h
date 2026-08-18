@@ -440,15 +440,6 @@ struct AudioFeatures
     float breakSlam = 0.f;
 
     /**
-     * @brief Transition style for the CURRENT effect cross-fade.
-     *
-     * Host-rolled when a change fires; uploaded as "transStyle" (FxPlain
-     * styles the blend): 0 linear, 1 radial wipe, 2 kaleido fold-through,
-     * 3 zoom-through.
-     */
-    int transStyle = 0;
-
-    /**
      * @brief Slow loudness-swell envelope (host-filled).
      *
      * The difference between a fast (~1.5 s) and a slow (~8 s) loudness

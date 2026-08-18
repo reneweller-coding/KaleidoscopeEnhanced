@@ -98,10 +98,11 @@ bool Preset::load(const QString &path, Preset &out, QString *err)
     out.timeTextureInterpolationMin = root.attribute("timeTextureInterpolationMin").toInt();
     out.timeTextureInterpolationMax = root.attribute("timeTextureInterpolationMax").toInt();
 
-    // Local lambda: read every `<TextureShader>` or `<CombineShader>` element into
-    // a PresetEntry and append it, tagging isCombine so the two element kinds
-    // share the exact same field-parsing logic below.
-    auto readList = [&](const QString &tag, bool combine)
+    // Local lambda: read every `<TextureShader>`, `<CombineShader>` or
+    // `<TransitionShader>` element into a PresetEntry and append it, tagging
+    // the kind flags so all three element kinds share the exact same
+    // field-parsing logic below.
+    auto readList = [&](const QString &tag, bool combine, bool transition)
     {
         QDomNodeList list = root.elementsByTagName(tag);
         for (int i = 0; i < list.count(); ++i)
@@ -109,6 +110,7 @@ bool Preset::load(const QString &path, Preset &out, QString *err)
             QDomElement el = list.at(i).toElement();
             PresetEntry e;
             e.isCombine = combine;
+            e.isTransition = transition;
             e.file = bareFile(el.attribute("file"));
             e.folder = folderOf(el.attribute("file"));
             e.type = el.attribute("type", "normal");
@@ -126,8 +128,9 @@ bool Preset::load(const QString &path, Preset &out, QString *err)
             out.entries.push_back(e);
         }
     };
-    readList("TextureShader", false);
-    readList("CombineShader", true);
+    readList("TextureShader", false, false);
+    readList("CombineShader", true, false);
+    readList("TransitionShader", false, true);
     return true;
 }
 
@@ -158,18 +161,20 @@ bool Preset::save(const QString &path, QString *err) const
     // entries serialize identically save for the element tag name.
     auto writeEntry = [&](const PresetEntry &e)
     {
-        w.writeStartElement(e.isCombine ? "CombineShader" : "TextureShader");
+        w.writeStartElement(e.isTransition ? "TransitionShader"
+                          : (e.isCombine ? "CombineShader" : "TextureShader"));
         w.writeAttribute("minTimeSolo", QString::number(e.minTimeSolo));
         w.writeAttribute("maxTimeSolo", QString::number(e.maxTimeSolo));
         w.writeAttribute("minTimeInterpolation", QString::number(e.minTimeInterpolation));
         w.writeAttribute("maxTimeInterpolation", QString::number(e.maxTimeInterpolation));
-        // Shaders live in Scene2D/, Scene3D/ and FX/ since the 2026-07 reorg.
-        // Prefer the folder the file actually came from (bare names alias:
-        // Scene2D/ and Scene3D/ both carry a CrystalGrowth.frag).
+        // Shaders live in Scene2D/, Scene3D/, FX/ and Transitions/ since the
+        // reorgs.  Prefer the folder the file actually came from (bare names
+        // alias: Scene2D/ and Scene3D/ both carry a CrystalGrowth.frag).
         const QString folder = !e.folder.isEmpty() ? e.folder
-                             : (e.isCombine ? QStringLiteral("FX")
-                               : (e.type == "scene3d" ? QStringLiteral("Scene3D")
-                                                      : QStringLiteral("Scene2D")));
+                             : (e.isTransition ? QStringLiteral("Transitions")
+                               : (e.isCombine ? QStringLiteral("FX")
+                                 : (e.type == "scene3d" ? QStringLiteral("Scene3D")
+                                                        : QStringLiteral("Scene2D"))));
         w.writeAttribute("file", QString("..\\%1\\%2").arg(folder).arg(e.file));
         w.writeAttribute("type", e.type);
         if (!e.geom.isEmpty())
@@ -207,9 +212,11 @@ bool Preset::save(const QString &path, QString *err) const
         w.writeEndElement();
     };
 
-    // Texture entries first, then combine — matching the main app's grouping.
-    for (const PresetEntry &e : entries) if (!e.isCombine) writeEntry(e);
-    for (const PresetEntry &e : entries) if (e.isCombine)  writeEntry(e);
+    // Texture entries first, then combine, then transitions — matching the
+    // main app's grouping.
+    for (const PresetEntry &e : entries) if (!e.isCombine && !e.isTransition) writeEntry(e);
+    for (const PresetEntry &e : entries) if (e.isCombine)    writeEntry(e);
+    for (const PresetEntry &e : entries) if (e.isTransition) writeEntry(e);
 
     w.writeEndElement();   // configuration
     w.writeEndDocument();

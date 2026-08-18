@@ -27,7 +27,8 @@ or grab the portable ZIP and just unzip-and-run; see
 | ![Kaleidoscope](docs/screenshots/kaleidoscope.png) | ![PrismExplode](docs/screenshots/prismexplode.png) |
 | ![FeatherStorm](docs/screenshots/featherstorm.png) | ![AuroraBorealisOverFjord](docs/screenshots/aurora.png) |
 
-*Four of the 326 scenes + 84 FX overlays in the [scene catalogue](docs/Catalog/Katalog.md)
+*Four of the 326 scenes + 29 FX overlays + 83 scene transitions in the
+[scene catalogue](docs/Catalog/Katalog.md)
 — a classic kaleidoscope fold, a compute-driven prism-shatter scene, a
 volumetric feather storm (real 3D geometry + shadow map), and a hardware-
 tessellated arctic fjord under the northern lights. Renders like these are
@@ -575,14 +576,15 @@ of the visualizer) for **building and editing presets** with a **live preview**:
   benches ship hidden.  The editor round-trips the flag and exposes it as
   a *verborgen (hidden)* checkbox in the Preset box.
 
-- **Transition test bench:** the *Übergangs-Zeitlupe* checkbox plays any of
-  the 28 FxPlain transition styles in slow motion (the blend sweeps
-  back and forth over ~10 s) — for tuning styles visually.  Headless:
-  `PresetEditor.exe --transcheck` sweeps ALL 28 styles with a pinned clock
-  and verifies both endpoint identity (exactly scene A at the start,
-  exactly scene B at the end — no leaks or snaps) and temporal continuity
-  (no single step may dwarf the style's typical step); exits non-zero on
-  failure, so it can guard future style additions.
+- **Transition test bench:** the *Übergangs-Zeitlupe* checkbox plays the
+  transition currently selected in the combine combo in slow motion (the
+  blend sweeps back and forth over ~10 s) — for tuning transitions
+  visually.  Headless: `PresetEditor.exe --transcheck` sweeps EVERY
+  `Transitions/*.frag` with a pinned clock and verifies both endpoint
+  identity (exactly scene A at the start, exactly scene B at the end — no
+  leaks or snaps) and temporal continuity (no single step may dwarf the
+  transition's typical step); exits non-zero on failure, so it guards
+  every future transition addition.
 
 Build it with MSBuild (`msbuild PresetEditor\PresetEditor.vcxproj
 /p:Configuration=Release /p:Platform=x64`) or add it to the solution in Visual
@@ -748,7 +750,7 @@ is mixed into all the other adapted shaders above, including the three latest.
 
 ### Scene catalogue
 
-**[Browse all 326 scenes + 84 FX overlays](docs/Catalog/Katalog.md)** — every
+**[Browse all 326 scenes + 29 FX overlays + 83 transitions](docs/Catalog/Katalog.md)** — every
 shader in the repository with a description (extracted from its own file
 header) and three example frames rendered against real photos. A printable
 version ships with each release
@@ -987,21 +989,24 @@ Audio is captured via WASAPI loopback (`AudioAnalyzer`) and analysed in real tim
   analysis + render + scanout lag the heard audio by ~40–80 ms; the display
   phase (tempo pulse, beat/bar phase) is led by an adjustable amount
   (default 50 ms) so pulses land ON the beat you hear.
-- **Transition styles (28):** each cross-fade rolls one of 28 blend styles
-  (linear stays the most common at ~20%).  Wipes/reveals: radial iris,
+- **Scene transitions (`Transitions/`, 83):** each scene change rolls one
+  shader from the `Transitions/` folder (mood- and probability-weighted per
+  preset; the plain cross-fade stays the most common).  The classic styles
+  live here as individual small shaders: wipes/reveals (radial iris,
   diagonal wipe, staggered blinds, mosaic dissolve, push, sliding doors,
-  clock sweep, dip-to-dark.  Edge-free full-frame morphs: kaleido folds
-  (6- and spinning 8-mirror), zoom-through, swirl, water ripple,
-  blur-through, wax melt, heat shimmer, pixelation, spin-zoom, chromatic
-  (RGB staggered), luminance-ordered dissolve, double-exposure peak,
-  jelly wobble, drain vortex, ghost multi-exposure, **datamosh** (row-banded
-  glitch stutter with per-row RGB-channel-split shift and "stuck block"
-  P-frame smear), **shatter** (the frame breaks into Voronoi shards that
-  fly, spin and fall away to reveal the next scene) and **portal** (the new
-  scene opens along the old scene's real depth — a glowing threshold rim
-  expanding outward — with a 3D-only effect; falls back to the zoom-through
-  style when neither scene has depth) — all gated by the same `sin(π·d)`
-  envelope every style uses, so it still lands on an exact endpoint match.
+  clock sweep, dip-to-dark), edge-free full-frame morphs (kaleido folds,
+  zoom-through, swirl, water ripple, blur-through, wax melt, heat shimmer,
+  pixelation, spin-zoom, chromatic RGB stagger, luminance-ordered dissolve,
+  double-exposure, jelly wobble, drain vortex, ghost multi-exposure),
+  **datamosh** (row-banded glitch stutter with "stuck block" P-frame
+  smear), **shatter** (the frame breaks into Voronoi shards that fly, spin
+  and fall away) and **portal** (the new scene opens along the old scene's
+  real depth — 3D-only, falls back to zoom-through otherwise) — plus 55
+  spectacle transitions (wormholes, supernovae, nautilus sweeps, …) that
+  formerly ran as combine effects.  All of them honour the same contract:
+  exact scene A at the start, exact scene B at the end, every extra term
+  windowed by the `sin(π·d)` envelope; `PresetEditor --transcheck` enforces
+  it file-by-file.
   Applied to both the effect and the combine blends.  On a drop specifically,
   the scheduler picks shatter for about half of the cuts instead of always
   hard-cutting (see Build-up/drop below).
@@ -2774,8 +2779,12 @@ Reorganised 2026-07 into folders:
   StainedGlassRosette, SciFiHUD, VolumetricFire + research scenes
   SpectralOrb, SpectralTorus, CymaticsPlate, Planet4D, SpiralArray,
   JellyBody, StrangeAttractor, MelodyScript)
-- `FX\*.frag` — the 84 combine passes (incl. `FxPlain.frag`, which
-  carries the 28-style transition library)
+- `FX\*.frag` — the 29 FX overlays: full-time effect passes over the
+  finished scene (incl. `FxPlain.frag`, the pass-through that runs ~90%
+  of the time)
+- `Transitions\*.frag` — the 83 scene transitions: shaders that blend the
+  outgoing scene (tex0, `interpolation`=1) into the incoming one (tex1,
+  `interpolation`=0) during a scene change only
 - `Engine\*.frag` — internal pipeline passes: `Present.frag` (mood grade +
   safety + dither), `Feedback.frag` (echo-warp trails), `BloomBlur.frag`,
   `ReactionDiffusionSim.frag` / `FluidSim.frag` / `Smoke3DSim.frag` (the GPU
@@ -2784,7 +2793,7 @@ Reorganised 2026-07 into folders:
   also locates the project root by it)
 - `ThirdParty\SpoutGL\` — vendored Spout2 SDK; `PresetEditor\` — the editor;
   `Configurations\*.xml` — presets (entries reference `..\Scene2D\...` /
-  `..\FX\...`)
+  `..\FX\...` / `..\Transitions\...`)
 - `docs\screenshots\` — the README gallery images, rendered headlessly via
   `PresetEditor.exe --render` (see [Preset editor](#preset-editor-standalone-tool))
 - `Tools\verify.ps1` — a committed PowerShell verification loop: `-Smoke`
