@@ -151,6 +151,20 @@ uvec3 g = gl_GlobalInvocationID;
 uint idx = g.x + 64u * (g.y + 64u * g.z);
 ```
 
+### V5b — Nie ein lokales `fragColor` deklarieren
+
+```glsl
+out vec4 fragColor;          // die echte Ausgabe
+void main() {
+    vec4 fragColor = ...;    // FALSCH: verschattet das out, KEIN Compilerfehler
+```
+
+Die out-Variable bleibt ungeschrieben, die Szene rendert still schwarz.
+Genau so war `MobiusOrbs` seit der Core-Migration unbemerkt komplett
+schwarz (gefunden per Metrik-Scan, nicht per Log — es gibt keinen Log).
+Shadertoy-Portierungen sind besonders gefährdet (dort ist fragColor ein
+Parameter). Akkumulator-Variablen immer anders nennen (`acc`).
+
 ### V6 — Jede benutzte Uniform muss deklariert sein
 
 Ein nicht deklarierter Bezeichner ist ein **harter GLSL-Compile-Fehler**. Die
@@ -219,6 +233,15 @@ Konsequenzen fürs Autorieren:
   `--param` auch über den Scene3D-Pfad).
 - V7 (Anti-Flimmer) gilt unverändert auch für Formeln: nie eine Formel auf
   eine Uniform legen, die im Shader mit `time` multipliziert wird.
+- **Kamera-Rig (nur Scene3D, keine Shader-Änderung nötig):** Formeln namens
+  `rigPitch`/`rigYaw`/`rigRoll` (Radiant) und `rigDolly` (Welt-Einheiten,
+  >0 = näher) werden CPU-seitig ausgewertet und in `projM` komponiert;
+  `rig…V`-Varianten sind RATEN, die der Host INTEGRIERT — audio-variable
+  Raten sind dadurch konstruktionsbedingt flimmerfrei. Schatten bleiben
+  weltverankert (Shadow-Pass rendert über `lightM`). Grenzen beachten:
+  Yaw/Pitch schwenken die Szene um die KAMERA — große Winkel schieben sie
+  aus dem Bild; Dauerrotation nur über `rigRollV` (Bildebene) oder mit
+  gebundenen Oszillationen (`0.1*sin(…)` als Rate integriert beschränkt).
 
 ---
 

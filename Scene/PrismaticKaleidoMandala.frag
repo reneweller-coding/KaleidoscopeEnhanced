@@ -128,8 +128,11 @@ void main() {
     vec2 photoUV = p * 0.5 + vec2(0.5);
     vec3 photo = img(clamp(photoUV, 0.0, 1.0));
 
-    // Combine sacred mandala
-    vec3 col = crystalCol * 0.6 + photo * 0.8 + facetGlow * vec3(1.0, 0.9, 0.7);
+    // Combine sacred mandala.  The three additive sources summed past 1.0
+    // almost everywhere and clipped to WHITE (metric scan: meanLuma 252,
+    // saturation 0.01) -- rebalanced, with a soft tone-map at the end
+    // instead of the hard clip so hue and saturation survive.
+    vec3 col = crystalCol * 0.45 + photo * 0.55 + facetGlow * vec3(1.0, 0.9, 0.7) * 0.6;
 
     // Jewel burst pulse on heavy kick
     if (audioKick > 0.6) {
@@ -145,6 +148,9 @@ void main() {
     vec2 vUV = st * (1.0 - st.yx);
     float vig = vUV.x * vUV.y * 15.0;
     col *= clamp(pow(vig, 0.22), 0.0, 1.0);
+
+    // Soft tone-map (per-channel max keeps the hue ratio intact).
+    col = col / (1.0 + 0.30 * max(col.r, max(col.g, col.b)));
 
     fragColor = vec4(col, 1.0);
 }
