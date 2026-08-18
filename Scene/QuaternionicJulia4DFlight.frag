@@ -118,11 +118,14 @@ void main() {
     rd.xz = rot2D(t * 0.5) * rd.xz;
 
     // 4D Quaternion constant C morphing
+    // Morph kept INSIDE the filled-set regime: the old wide excursions
+    // pushed C into dust territory where the Julia set is empty and the
+    // frame went black (t=16 in the catalogue).
     vec4 C = vec4(
-        -0.4 + 0.15 * sin(t * 0.7),
-        0.5 + 0.12 * cos(t * 0.5),
-        -0.2 + 0.1 * sin(t * 0.9),
-        -0.1 + 0.1 * cos(t * 1.1) + audioKick * 0.25
+        -0.45 + 0.06 * sin(t * 0.7),
+         0.40 + 0.05 * cos(t * 0.5),
+        -0.18 + 0.05 * sin(t * 0.9),
+        -0.08 + 0.05 * cos(t * 1.1) + audioKick * 0.06
     );
 
     // 4D Slice coordinate w
@@ -160,7 +163,7 @@ void main() {
     // most rays miss).  Level breathes the aura, phase spins its colour.
     vec3 col = vec3(0.02, 0.02, 0.05);
     vec3 aura = imgPalette((trapMin * 8.0 + audioPhase) * 0.159)
-                * exp(-trapMin * 2.0) * (0.55 + 0.45 * audioLevel);
+                * exp(-trapMin * 1.4) * (0.9 + 0.4 * audioLevel);
     col += aura * 0.85;
 
     if (hitDist > 0.0) {

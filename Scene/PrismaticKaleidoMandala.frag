@@ -40,9 +40,24 @@ uniform float symmetryP;
 uniform float zoomP;
 uniform float facetP;
 uniform float hueP;
+uniform float audioChromaHue;
 
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+}
+
+
+// IMG-PALETTE (house standard): colours come from a rotating arc in the
+// CURRENT slideshow image, so every activation inherits a fresh palette from
+// the photos; the arc follows the musical key (audioChromaHue is circular-
+// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+vec3 imgPalette(float t)
+{
+    float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
+    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
+    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
+    float pg  = dot(pc, vec3(0.333));
+    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
 vec3 hueRot(vec3 c, float a) {
@@ -70,6 +85,10 @@ vec2 kaleidoFold(vec2 p, float sectors) {
     return vec2(cos(a), sin(a)) * r;
 }
 
+// USER-FEEDBACK-REDESIGN: an actual sacral photo kaleidoscope.  The old
+// version stacked five additive crystal-fog layers that clipped to white —
+// now ONE clean angular mirror fold carries the picture, mandala rings
+// breathe over it, and thin bevel lines spark on the wedge seams.
 void main() {
     float sym = (symmetryP > 0.0) ? symmetryP : 1.0;
     float zm  = (zoomP     > 0.0) ? zoomP     : 1.0;
@@ -77,82 +96,40 @@ void main() {
     float hue = (hueP      > 0.0) ? hueP      : 0.0;
 
     vec2 uv = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
-    vec2 st = gl_FragCoord.xy / resolution;
+    float t = time * 0.2 + audioAdvance * 0.12;
+    uv = mat2(cos(t * 0.3), -sin(t * 0.3), sin(t * 0.3), cos(t * 0.3)) * uv;
 
-    float t = time * 0.2 + audioAdvance * 0.1;
+    // Classic kaleidoscope: fold the ANGLE into one mirrored wedge.
+    float sectors = floor(5.0 * sym + 0.5) * 2.0;      // even = clean mirrors
+    float r   = length(uv);
+    float ang = atan(uv.y, uv.x);
+    float sec = 6.2831853 / sectors;
+    ang = abs(mod(ang, sec) - sec * 0.5);
+    vec2 kp = vec2(cos(ang), sin(ang)) * r;
 
-    // Multi-scale kaleidoscope folding
-    float sectors = floor(6.0 * sym + 0.5) * 2.0; // Even sector count for clean mirror
-    vec2 p = uv * (1.8 / zm) * (1.0 - 0.15 * sin(t * 0.5) - audioSwell * 0.2);
+    // The photo lives in the wedge; slow drift keeps fresh image regions
+    // flowing in, swell breathes the zoom.
+    vec2 puv = kp * (0.55 / zm) * (1.0 - 0.10 * sin(t * 0.5) - 0.12 * audioSwell)
+             + vec2(0.5) + 0.07 * vec2(sin(t * 0.37), cos(t * 0.29));
+    vec3 mand = img(fract(puv));
 
-    // Continuous rotation
-    mat2 rot1 = mat2(cos(t * 0.3), -sin(t * 0.3), sin(t * 0.3), cos(t * 0.3));
-    p = rot1 * p;
+    // Mandala rings + petal modulation.
+    float petals = cos(ang * sectors * 0.5) * 0.5 + 0.5;
+    float rings  = 0.5 + 0.5 * cos(r * (9.0 * fct) - t * 2.0 - audioPhase);
+    float band   = smoothstep(0.35, 0.9, rings) * (0.45 + 0.55 * petals);
 
-    // Iterative Sacred Geometry Folding
-    float accumBevel = 0.0;
-    vec3 crystalCol = vec3(0.0);
+    vec3 lit = imgPalette(r * 0.5 + hue * 0.1) * 1.4;
 
-    for (int i = 0; i < 5; i++) {
-        p = kaleidoFold(p, sectors);
-        p = poincareFold(p, 1.2);
+    // Bevel sparks exactly on the mirror seams.
+    float seams = exp(-ang * 55.0 * (0.3 + r))
+                + exp(-abs(ang - sec * 0.5) * 55.0 * (0.3 + r));
 
-        // Translational mirror offset
-        p -= vec2(0.35 + 0.1 * sin(t + float(i)), 0.2 * cos(t * 0.8 + float(i)));
-        
-        // Secondary rotation per iteration
-        float aIter = t * 0.4 + float(i) * 0.628 + audioPhase * 0.5;
-        mat2 rIter = mat2(cos(aIter), -sin(aIter), sin(aIter), cos(aIter));
-        p = rIter * p;
+    vec3 col = mand * (0.75 + 0.75 * band)
+             + lit * band * 0.40
+             + (lit * 0.6 + vec3(0.45)) * seams * (0.45 + 0.5 * audioFlux)
+             + lit * exp(-r * 4.5) * (0.25 + 0.45 * audioKick);   // glowing heart
 
-        // Faceted crystal bevel lines
-        float bevel = abs(p.x) * abs(p.y);
-        accumBevel += smoothstep(0.06, 0.0, bevel);
-
-        // Chromatic dispersion per harmonic layer
-        float layerPhase = float(i) * 1.256 + t * 0.5 + audioCentroid;
-        vec3 layerC = mix(
-            vec3(1.0, 0.1, 0.5),
-            vec3(0.0, 0.8, 1.0),
-            sin(layerPhase) * 0.5 + 0.5
-        );
-        layerC = mix(layerC, vec3(1.0, 0.8, 0.1), cos(layerPhase * 1.5) * 0.5 + 0.5);
-
-        crystalCol += layerC * exp(-length(p) * 2.0);
-    }
-
-    // Facet lines glow
-    float facetGlow = (accumBevel * 0.25) * fct * (0.8 + audioKick * 1.2);
-
-    // Sample active photo through kaleidoscope symmetry
-    vec2 photoUV = p * 0.5 + vec2(0.5);
-    vec3 photo = img(clamp(photoUV, 0.0, 1.0));
-
-    // Combine sacred mandala.  The three additive sources summed past 1.0
-    // almost everywhere and clipped to WHITE (metric scan: meanLuma 252,
-    // saturation 0.01) -- rebalanced, with a soft tone-map at the end
-    // instead of the hard clip so hue and saturation survive.
-    vec3 col = crystalCol * 0.45 + photo * 0.55 + facetGlow * vec3(1.0, 0.9, 0.7) * 0.6;
-
-    // Jewel burst pulse on heavy kick
-    if (audioKick > 0.6) {
-        float burstR = length(uv);
-        float star = sin(atan(uv.y, uv.x) * sectors + time * 4.0);
-        float jewel = exp(-burstR * 3.0) * (0.7 + 0.3 * star) * audioKick * 2.0;
-        col += vec3(1.0, 0.85, 0.95) * jewel;
-    }
-
-    if (hue > 0.001) col = hueRot(col, hue);
-
-    // Vignette
-    vec2 vUV = st * (1.0 - st.yx);
-    float vig = vUV.x * vUV.y * 15.0;
-    col *= clamp(pow(vig, 0.22), 0.0, 1.0);
-
-    // Soft tone-map (per-channel max keeps the hue ratio intact).
-    col = col / (1.0 + 0.30 * max(col.r, max(col.g, col.b)));
-
-    vec3 _catTone = (col) * 0.5;
-    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
-    fragColor = vec4(_catTone, 1.0);
+    col *= 0.85 + 0.5 * audioLevel;
+    col /= 1.0 + 0.30 * max(col.r, max(col.g, col.b));   // soft knee
+    fragColor = vec4(col, 1.0);
 }

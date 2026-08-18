@@ -73,16 +73,20 @@ void main() {
     float logR = log(max(r, 1e-4));
 
     // Logarithmic spiral transformation parameters
-    float spiralAngle = 0.35 * spi;
+    // Droste condition: quantise the twist so one full turn advances u by
+    // an INTEGER number of octaves — otherwise the octave blend tears at
+    // the atan branch cut (the sharp edge on the left).
+    float spiralAngle = max(1.0, floor(0.35 * spi * 6.2831853 / log(2.0) + 0.5))
+                      * log(2.0) / 6.2831853;
     float scaleFactor = 2.0; // Zoom octave scale
     float logScale = log(scaleFactor);
 
     // Continuous forward zoom & spiral rotation
-    float zoomProg = (time * 0.4 * spd + audioAdvance * 0.25) * zm;
+    float zoomProg = (time * 0.6 * spd + audioAdvance * 0.35) * zm;
     
     // Droste spiral coordinates
     float u = (logR - zoomProg * logScale + angle * spiralAngle) / logScale;
-    float v = angle / 6.2831853 + u * 0.15 + audioPhase * 0.1;
+    float v = angle / 6.2831853 + audioPhase * 0.1;
 
     // Multi-octave blending to ensure 100% seamless continuity without pop-in
     float oct = fract(u);

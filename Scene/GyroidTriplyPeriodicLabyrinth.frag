@@ -102,8 +102,8 @@ void main() {
 
     // Smooth winding camera path through the gyroid labyrinth
     vec3 ro = vec3(
-        sin(t * 0.5) * 3.5,
-        cos(t * 0.35) * 3.5,
+        sin(t * 0.5) * 1.15,
+        cos(t * 0.35) * 1.15,
         t * 2.5
     );
     vec3 lookTarget = ro + vec3(sin(t * 0.6) * 0.4, cos(t * 0.4) * 0.4, 1.0);
@@ -115,14 +115,14 @@ void main() {
     vec3 rd = normalize(uv.x * uu + uv.y * vv + (1.2 - 0.25 * audioKick) * ww);
 
     // Dynamic wall thickness
-    float thickness = (0.22 + 0.12 * sin(t * 1.5) + 0.15 * audioBass) * wll;
-    float scale = 1.35 * scl;
+    float thickness = (0.15 + 0.05 * sin(t * 1.5) + 0.07 * audioBass) * wll;
+    float scale = 0.85 * scl;   // bigger cells = walkable corridors, not wall soup
 
     // Raymarching
-    float dO = 0.0;
+    float dO = 0.12;
     float hitDist = -1.0;
     vec3 p;
-    for (int i = 0; i < 50; ++i) {
+    for (int i = 0; i < 72; ++i) {
         p = ro + rd * dO;
         float dS = gyroidSDF(p, scale, thickness);
         if (dS < 0.003) {
@@ -130,16 +130,19 @@ void main() {
             break;
         }
         if (dO > 15.0) break;
-        dO += dS * 0.65;
+        dO += dS * 0.85;
     }
 
     vec3 col = vec3(0.02, 0.03, 0.06);
 
     if (hitDist > 0.0) {
         vec3 n = calcNormal(p, scale, thickness);
-        vec3 lightDir = normalize(vec3(0.5, 0.8, -0.6));
-        float diff = max(dot(n, lightDir), 0.0);
-        float spec = pow(max(dot(reflect(-lightDir, n), -rd), 0.0), 24.0);
+        // Headlamp: the light travels WITH the camera, so corridor walls fall
+        // off naturally into the dark ahead - that reads as a labyrinth.
+        vec3 lightDir = normalize(ro - p);
+        float atten = exp(-hitDist * 0.22) * (1.4 + 0.6 * audioLevel);
+        float diff = max(dot(n, lightDir), 0.0) * atten + 0.10;
+        float spec = pow(max(dot(reflect(-lightDir, n), -rd), 0.0), 24.0) * atten;
 
         // UV projection for photo texture onto gyroid surface
         vec2 photoUV = fract(vec2(atan(n.z, n.x) * 0.3183, p.z * 0.15 + dot(p.xy, n.yx) * 0.1));
@@ -152,14 +155,15 @@ void main() {
         col = col * (0.3 + 0.7 * diff) + spec * vec3(1.0, 0.95, 0.85);
 
         // Neon edge caustic glow on kick
-        float edge = smoothstep(thickness * 0.8, thickness, abs(dot(sin(p * scale), cos((p * scale).zxy))));
-        col += edge * vec3(0.2, 0.8, 1.0) * (1.2 + audioKick * 2.5);
+        float edge = smoothstep(thickness * 1.45, thickness * 1.75,
+                                abs(dot(sin(p * scale), cos((p * scale).zxy))));
+        col += edge * imgPalette(0.45) * (0.5 + audioKick * 0.8);
 
         // Volumetric distance fog
         col = mix(col, vec3(0.02, 0.03, 0.08), 1.0 - exp(-hitDist * 0.15));
     }
 
-    if (audioChromaHue != 0.0)     if (hue > 0.001) col = hueRot(col, hue);
+    if (hue > 0.001) col = hueRot(col, hue);
 
     // Catalogue review: soft-knee exposure — hot audio compresses
     // instead of clipping the whole frame to white.

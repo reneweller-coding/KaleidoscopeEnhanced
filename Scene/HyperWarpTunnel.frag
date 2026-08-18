@@ -129,7 +129,9 @@ void main() {
 
     // Dynamic lighting and depth shading (light at tunnel horizon)
     float depthFade = smoothstep(0.0, 1.5, r);
-    float centerGlow = 0.25 / (r + 0.1) * (1.0 + audioKick * 0.6);
+    float centerGlow = 0.13 / (r + 0.16) * (1.0 + audioKick * 0.6);
+    float rings  = pow(0.5 + 0.5 * cos(z * 1.1 - (time * 2.6 * spd + audioAdvance * 4.0)), 6.0);
+    float spokes = pow(abs(cos(a * 9.0 + z * 0.4)), 5.0);
     vec3 glowCol = imgPalette(0.30 * audioCentroid) * 1.4;
 
     col = col * depthFade + glowCol * centerGlow * (0.4 + 0.6 * audioMid);
@@ -138,6 +140,11 @@ void main() {
     vec2 caOffset = uv * 0.02 * (audioHigh + audioKick);
     col.r = img(fract(tunnelUV + caOffset)).r * depthFade + centerGlow * glowCol.r;
     col.b = img(fract(tunnelUV - caOffset)).b * depthFade + centerGlow * glowCol.b;
+
+    // The tunnel itself: racing depth rings + spokes (added after the CA
+    // block — that block rebuilds col.r/col.b and would eat them).
+    col += glowCol * rings * (0.25 + 0.75 * depthFade) * (0.9 + 0.8 * audioKick);
+    col += imgPalette(0.5) * spokes * (0.25 + 0.75 * depthFade) * 0.35;
 
     // Apply hue rotation if configured
     if (hueP > 0.0) {

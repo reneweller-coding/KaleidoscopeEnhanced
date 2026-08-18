@@ -79,6 +79,14 @@ vec3 sphereInversion(vec3 p, vec3 c, float r) {
     return c + v * (r * r / max(dot(v, v), 1e-5));
 }
 
+vec2 cmul(vec2 a, vec2 b) { return vec2(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x); }
+vec2 cdiv(vec2 a, vec2 b) { return cmul(a, vec2(b.x, -b.y)) / max(dot(b, b), 1e-9); }
+
+// USER-FEEDBACK-REDESIGN: an actual hyperbolic MIRROR tessellation on the
+// Poincaré disk (the old 3D fold-walk produced smeared noise).  Radial
+// mirrors + a circle-inversion mirror generate the {6,q} honeycomb; a slow
+// Möbius translation swims the camera through hyperbolic space, and the
+// photo lives inside every fundamental cell.
 void main() {
     float ply = (polyP  > 0.0) ? polyP  : 1.0;
     float zm  = (zoomP  > 0.0) ? zoomP  : 1.0;
@@ -86,68 +94,60 @@ void main() {
     float hue = (hueP   > 0.0) ? hueP   : 0.0;
 
     vec2 uv = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
-    vec2 st = gl_FragCoord.xy / resolution;
+    float t = time * 0.10 + audioAdvance * 0.10;
 
-    // Poincaré 3D Ray setup
-    float t = time * 0.3 + audioAdvance * 0.2;
-    vec3 ro = vec3(0.0, 0.0, -1.8 / zm);
-    vec3 rd = normalize(vec3(uv, 1.2 - 0.3 * audioKick));
+    // Poincaré disk coordinates; gentle breathing zoom.
+    vec2 z = uv * (1.06 / zm) * (1.0 - 0.05 * audioSwell);
+    float rr0 = dot(z, z);
+    float inDisk = smoothstep(1.02, 0.985, sqrt(rr0));
 
-    // Rotate ray in 3D
-    rd.yz = rot2D(sin(t * 0.4) * 0.4) * rd.yz;
-    rd.xz = rot2D(t * 0.5) * rd.xz;
+    // Möbius translation = swim through the hyperbolic plane (jump-free).
+    vec2 a = 0.28 * vec2(cos(t), sin(t * 0.77));
+    z = cdiv(z + a, vec2(1.0, 0.0) + cmul(vec2(a.x, -a.y), z));
+    z = mat2(cos(t * 0.5), -sin(t * 0.5), sin(t * 0.5), cos(t * 0.5)) * z;
 
-    // Poincaré ball traversal
-    vec3 p = ro;
-    float totalDist = 0.0;
-    float edgeGlow = 0.0;
-    float reflections = 0.0;
+    // Reflection group: N radial mirrors + one inversion circle.
+    float N   = floor(5.0 + 2.0 * ply + 0.5);
+    float sec = 3.1415927 / N;
+    vec2  ic  = vec2(1.04, 0.0);                    // inversion circle centre
+    float irad = 0.55 + 0.06 * sin(t * 0.9);        // breathing cell size
 
-    // Hyperbolic Coxeter reflection planes
-    float cAngle = 0.628318 * ply; // 36 degrees (golden ratio / dodecahedral symmetry)
-    vec3 n1 = vec3(1.0, 0.0, 0.0);
-    vec3 n2 = vec3(-cos(cAngle), sin(cAngle), 0.0);
-    vec3 n3 = vec3(0.0, -cos(cAngle), sin(cAngle));
+    float refl = 0.0;
+    float edgeMin = 1e9;
+    for (int i = 0; i < 34; ++i) {
+        // fold the angle into one sector (radial mirrors)
+        float ang = atan(z.y, z.x);
+        float folded = abs(mod(ang, 2.0 * sec) - sec);
+        if (abs(folded - abs(ang)) > 1e-6) refl += 1.0;
+        z = vec2(cos(folded), sin(folded)) * length(z);
 
-    for (int i = 0; i < 48; ++i) {
-        p += rd * 0.06;
-
-        // Hyperbolic Coxeter group reflections
-        for (int k = 0; k < 4; ++k) {
-            p = abs(p);
-            float d1 = dot(p, n1); if (d1 < 0.0) { p -= 2.0 * d1 * n1; reflections += 1.0; }
-            float d2 = dot(p, n2); if (d2 < 0.0) { p -= 2.0 * d2 * n2; reflections += 1.0; }
-            float d3 = dot(p, n3); if (d3 < 0.0) { p -= 2.0 * d3 * n3; reflections += 1.0; }
-
-            // Hyperbolic boundary sphere inversion
-            float r2 = dot(p, p);
-            if (r2 > 1.0) {
-                p /= r2;
-                reflections += 1.0;
-            }
-        }
-
-        // Facet edge distance
-        float edgeDist = min(min(abs(p.x), abs(p.y)), abs(p.z));
-        edgeGlow += exp(-edgeDist * 40.0 / fct) * 0.04;
+        // invert across the mirror circle if inside it
+        vec2 dz = z - ic;
+        float d2 = dot(dz, dz);
+        edgeMin = min(edgeMin, abs(sqrt(d2) - irad));
+        if (d2 < irad * irad) {
+            z = ic + dz * (irad * irad / max(d2, 1e-7));
+            refl += 1.0;
+        } else if (i > 0) break;
     }
 
-    // Photo projection sampled from folded hyperbolic coordinates
-    vec2 photoUV = fract(p.xy * 0.5 + 0.5);
-    vec3 photo = img(photoUV);
+    // Photo inside the fundamental cell; parity checkers the mirror copies.
+    vec3 cell = img(fract(z * (0.85 * fct) + vec2(0.5) + 0.03 * t));
+    float parity = mod(refl, 2.0);
+    cell *= 0.72 + 0.28 * parity;
 
-    // Jewel facet iridescent coloring
-    vec3 facetColor = imgPalette((reflections * 0.4 + audioPhase) * 0.159);
+    // Mirror seams glow; hyperbolic depth fog toward the disk rim.
+    float seam = exp(-edgeMin * (26.0 + 14.0 * audioHigh));
+    vec3 lit = imgPalette(0.30 + 0.10 * refl) * 1.4;
+    float fog = 1.0 - smoothstep(0.55, 1.0, sqrt(rr0));
 
-    // Combine visualizer
-    vec3 col = mix(photo, facetColor, 0.5 * (1.0 + audioSwell * 0.5));
-    col += vec3(1.0, 0.9, 0.7) * edgeGlow * (1.0 + audioKick * 3.0);
-
-    // Border vignette
-    float len = length(uv);
-    col *= smoothstep(1.2, 0.2, len);
+    vec3 col = cell * (0.55 + 0.45 * fog) * (0.85 + 0.5 * audioLevel)
+             + lit * seam * (0.7 + 0.9 * audioKick)
+             + lit * 0.12;
+    col *= inDisk;
+    col += imgPalette(0.6) * (1.0 - inDisk) * 0.08;   // faint halo outside
 
     if (hue > 0.001) col = hueRot(col, hue);
-
+    col /= 1.0 + 0.30 * max(col.r, max(col.g, col.b));
     fragColor = vec4(col, 1.0);
 }

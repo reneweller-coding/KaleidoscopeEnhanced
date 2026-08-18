@@ -96,9 +96,9 @@ void main() {
     // Flight camera
     float camZ = time * 3.5 * spd + audioAdvance * 6.0;
     float camH = 1.2 + 0.8 * sin(time * 0.15) + audioSwell * 0.6;
-    float camX = sin(time * 0.12) * 1.5;
+    float camX = sin(time * 0.12) * 0.55;
     vec3 ro = vec3(camX, camH, camZ);
-    vec3 ta = vec3(camX + sin(time * 0.12 + 0.3) * 0.8, camH * 0.7 - 0.2, camZ + 8.0);
+    vec3 ta = vec3(camX * 0.35, camH * 0.7 - 0.2, camZ + 8.0);
 
     vec3 ww = normalize(ta - ro);
     vec3 uu = normalize(cross(ww, vec3(0.0, 1.0, 0.0)));

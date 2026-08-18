@@ -68,7 +68,7 @@ void main() {
     // Camera setup with orbit angle
     float camAngle = time * 0.2 + audioAdvance * 0.15;
     float camPitch = 0.35 + 0.15 * sin(time * 0.15);
-    vec3 ro = vec3(sin(camAngle) * cos(camPitch), sin(camPitch), cos(camAngle) * cos(camPitch)) * 5.2;
+    vec3 ro = vec3(sin(camAngle) * cos(camPitch), sin(camPitch), cos(camAngle) * cos(camPitch)) * 6.4;
     vec3 ta = vec3(0.0, 0.0, 0.0);
     vec3 ww = normalize(ta - ro);
     vec3 uu = normalize(cross(ww, vec3(0.0, 1.0, 0.0)));
@@ -76,7 +76,7 @@ void main() {
     vec3 rd = normalize(uv.x * uu + uv.y * vv + 1.6 * ww);
 
     // Black hole parameters
-    float M = 1.0 + 0.3 * audioBass; // Mass
+    float M = 1.0 + 0.08 * audioBass; // Mass (kept stable — a pumping horizon swallows the view)
     float a = 0.88 * spin;            // Spin parameter (Kerr parameter)
     float rHorizon = M + sqrt(max(M * M - a * a, 0.01)); // Event horizon radius
     float rErgo = M + sqrt(max(M * M - a * a * (ro.y * ro.y / dot(ro, ro)), 0.01));
@@ -84,7 +84,7 @@ void main() {
     vec3 col = vec3(0.0);
     vec3 p = ro;
     vec3 v = rd;
-    float dt = 0.04;
+    float dt = 0.10;   // ray budget must actually REACH the hole from r=6.4
     float totalDist = 0.0;
 
     // Relativistic ray tracing with curved geodesics
@@ -113,8 +113,8 @@ void main() {
         // Accretion disk intersection (Y ~ 0 plane)
         float diskDist = abs(p.y);
         float diskR = length(p.xz);
-        if (diskDist < 0.12 && diskR > rHorizon * 1.2 && diskR < 4.8) {
-            float diskDensity = exp(-diskDist * 20.0) * smoothstep(4.8, 2.5, diskR) * smoothstep(rHorizon * 1.1, rHorizon * 1.8, diskR);
+        if (diskDist < 0.14 && diskR > rHorizon * 1.2 && diskR < 6.0) {
+            float diskDensity = exp(-diskDist * 18.0) * smoothstep(6.0, 2.8, diskR) * smoothstep(rHorizon * 1.1, rHorizon * 1.8, diskR);
             
             // Keplerian orbital velocity for Doppler beaming
             float vOrb = sqrt(M / (diskR + 1e-3));
@@ -130,7 +130,7 @@ void main() {
             vec3 glowColor = imgPalette(0.30 * smoothstep(1.5, 3.0, doppler)) * 1.5;
             vec3 emission = (diskColor * 1.5 + glowColor * 2.0) * diskDensity * doppler * disk * (0.8 + 0.6 * audioLevel);
 
-            col += emission * (1.0 - col.r * 0.7) * 0.35;
+            col += emission * (1.0 - col.r * 0.7) * 0.55;
         }
 
         // Polar relativistic synchrotron plasma jets

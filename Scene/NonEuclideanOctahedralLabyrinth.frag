@@ -66,72 +66,74 @@ vec3 foldOctahedron(vec3 p) {
     return p;
 }
 
+// USER-FEEDBACK-REDESIGN: an actual mirror labyrinth.  The old loop was a
+// pseudo-march that mostly stalled near the camera (one big smooth surface).
+// Now: hollow octahedral chambers repeated through space, sphere-traced from
+// inside — photo-textured walls, glowing edge lines exactly on the mirror
+// seams, headlamp falloff into the deeper chambers.
+float chamber(vec3 q, float size)
+{
+    q = mod(q + 2.0, 4.0) - 2.0;                 // infinite chamber lattice
+    vec3 a = abs(q);
+    return -((a.x + a.y + a.z - size) * 0.57735);  // hollow: inside the room
+}
+
 void main() {
-    float spd = (speedP > 0.0) ? speedP : 1.0;
-    float fld = (foldP  > 0.0) ? foldP  : 1.0;
     float scl = (scaleP > 0.0) ? scaleP : 1.0;
+    float fld = (foldP  > 0.0) ? foldP  : 1.0;
+    float spd = (speedP > 0.0) ? speedP : 1.0;
     float hue = (hueP   > 0.0) ? hueP   : 0.0;
 
     vec2 uv = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
-
     float t = time * 0.3 * spd + audioAdvance * 0.2;
+    float size = 2.55 + 0.35 * sin(t * 0.4) * fld;
 
-    // Ray setup inside 3D hyperbolic octahedral chamber
-    vec3 ro = vec3(0.0, 0.0, -2.2);
-    vec3 rd = normalize(vec3(uv, 1.3));
+    // Drift through the chamber lattice, gently yawing.
+    vec3 ro = vec3(0.35 * sin(t * 0.5), 0.30 * cos(t * 0.4), t * 0.9);
+    float yaw = t * 0.35 + audioPhase * 0.2;
+    vec3 rd = normalize(vec3(uv, 1.25));
+    rd.xz = vec2(rd.x * cos(yaw) - rd.z * sin(yaw), rd.x * sin(yaw) + rd.z * cos(yaw));
 
-    // Dynamic rotation of mirror chamber
-    float yaw = t * 0.4 + audioPhase * 0.2;
-    float pitch = sin(t * 0.3) * 0.4;
-    float cy = cos(yaw), sy = sin(yaw);
-    float cp = cos(pitch), sp = sin(pitch);
-
-    rd.xz = vec2(rd.x * cy - rd.z * sy, rd.x * sy + rd.z * cy);
-    rd.yz = vec2(rd.y * cp - rd.z * sp, rd.y * sp + rd.z * cp);
-
-    // Iterative raymarch through octahedral folding space
+    float dO = 0.02;
+    float hitDist = -1.0;
     vec3 p = ro;
-    float totalDist = 0.0;
-    float minEdgeDist = 1000.0;
-    float totalFolds = 0.0;
-
-    for (int i = 0; i < 40; ++i) {
-        vec3 curP = p * scl;
-        
-        // Non-Euclidean octahedral space folding
-        for (int k = 0; k < 4; ++k) {
-            curP = foldOctahedron(curP);
-            curP -= vec3(0.6, 0.4, 0.2) * fld;
-            totalFolds += 0.25;
-        }
-
-        // Distance to octahedral face
-        float d = (curP.x + curP.y + curP.z - 1.2) * 0.57735;
-        minEdgeDist = min(minEdgeDist, abs(d));
-
-        totalDist += max(d * 0.5, 0.02);
-        p = ro + rd * totalDist;
-        if (totalDist > 8.0) break;
+    for (int i = 0; i < 64; ++i) {
+        p = ro + rd * dO;
+        float dS = chamber(p * scl, size) / scl;
+        if (dS < 0.004) { hitDist = dO; break; }
+        if (dO > 14.0) break;
+        dO += dS * 0.85;
     }
 
-    // Sample photo texture in folded octahedral space
-    vec2 photoUV = vec2(p.x + p.y, p.z) * 0.3 + vec2(0.5);
-    vec3 photoLabyrinth = img(fract(photoUV));
+    vec3 col = vec3(0.02, 0.03, 0.05);
+    if (hitDist > 0.0) {
+        vec2 e = vec2(0.006, 0.0);
+        vec3 n = normalize(vec3(
+            chamber((p + e.xyy) * scl, size) - chamber((p - e.xyy) * scl, size),
+            chamber((p + e.yxy) * scl, size) - chamber((p - e.yxy) * scl, size),
+            chamber((p + e.yyx) * scl, size) - chamber((p - e.yyx) * scl, size)));
 
-    // Octahedral mirror edge glow
-    float edgeGlow = exp(-minEdgeDist * 25.0);
-    vec3 neonEdge = imgPalette((totalFolds * 1.5 + audioPhase) * 0.159);
+        vec3 q = mod(p * scl + 2.0, 4.0) - 2.0;
+        vec3 a = abs(q);
 
-    // Chamber lighting
-    vec3 col = photoLabyrinth * (0.8 + 0.5 * audioLevel) + neonEdge * edgeGlow * (1.5 + 2.0 * audioHigh);
-    col += vec3(1.0, 0.9, 0.7) * audioKick * exp(-length(uv) * 3.5) * 1.5; // Central warp flare
+        // Photo on the mirror faces, projected per face orientation.
+        vec2 photoUV = fract(vec2(dot(p.xy, n.yx) * 0.22 + 0.5, p.z * 0.22 + 0.5));
+        vec3 photo = img(photoUV);
 
-    col = hueRot(col, hue);   // chromaHue handled inside imgPalette
-    col = pow(col, vec3(0.88));
+        // Edge seams: octahedron faces meet where one coordinate crosses 0.
+        float edge = exp(-min(a.x, min(a.y, a.z)) * (14.0 + 8.0 * audioHigh));
+        vec3 neon = imgPalette(0.35 + 0.25 * sin(p.z * 0.7));
 
-    // Catalogue review: soft-knee exposure — hot audio compresses
-    // instead of clipping the whole frame to white.
-    vec3 _catTone = (col) * 0.65;
-    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
-    fragColor = vec4(_catTone, 1.0);
+        // Headlamp: rooms ahead fall into darkness = labyrinth depth.
+        float atten = exp(-hitDist * 0.30) * (1.5 + 0.6 * audioLevel);
+        float diff = max(dot(n, normalize(ro - p)), 0.0) * atten + 0.10;
+
+        col = photo * diff * (0.9 + 0.4 * audioLevel);
+        col += neon * edge * (0.9 + 1.1 * audioKick) * (0.4 + 0.6 * atten);
+    }
+
+    if (hue > 0.001) col = hueRot(col, hue);
+    col = pow(col, vec3(0.9));
+    col /= 1.0 + 0.30 * max(col.r, max(col.g, col.b));
+    fragColor = vec4(col, 1.0);
 }

@@ -47,6 +47,20 @@ vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
+
+// IMG-PALETTE (house standard): colours come from a rotating arc in the
+// CURRENT slideshow image, so every activation inherits a fresh palette from
+// the photos; the arc follows the musical key (audioChromaHue is circular-
+// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+vec3 imgPalette(float t)
+{
+    float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
+    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
+    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
+    float pg  = dot(pc, vec3(0.333));
+    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+}
+
 vec3 hueRot(vec3 c, float a) {
     vec3 k = vec3(0.57735026919);
     float cs = cos(a), sn = sin(a);
@@ -89,9 +103,16 @@ void main() {
     vec3 photo = img(fract(photoUV));
 
     // Valley polarization colors: K valley (Emerald/Cyan), K' valley (Magenta/Gold)
-    vec3 valleyK  = vec3(0.0, 0.95, 0.6);
-    vec3 valleyK2 = vec3(1.0, 0.2, 0.7);
+    vec3 valleyK  = imgPalette(0.15) * 1.5;
+    vec3 valleyK2 = imgPalette(0.65) * 1.5;
     vec3 berryGlow = vec3(1.0, 0.95, 0.4);
+
+    // USER-FEEDBACK: pseudo-3D relief of the Dirac energy landscape (the
+    // cones get actual depth) + plasmon pulses radiating from the nodes.
+    float gEx = dFdx(diracEnergy), gEy = dFdy(diracEnergy);
+    float relief = clamp(0.65 + 55.0 * (gEx * 0.8 - gEy * 0.6), 0.30, 1.55);
+    float pulse  = pow(0.5 + 0.5 * sin(diracEnergy * 9.0 - t * 5.0), 6.0)
+                 * exp(-hexBand * 1.3) * (0.8 + 1.4 * audioKick);
 
     vec3 valleyCol = mix(valleyK, valleyK2, valleyPolarization * 0.5 + 0.5);
 
@@ -99,8 +120,9 @@ void main() {
     vec3 col = mix(photo * 0.8, valleyCol, 0.45 + 0.25 * audioSwell);
     col += fermiSurface * vec3(0.3, 0.85, 1.0) * (1.0 + audioHigh * 1.2);
     col += berryCurvature * berryGlow * 2.2;
+    col *= relief;
+    col += imgPalette(0.40) * pulse * 1.3;
 
-    if (audioChromaHue != 0.0) col = hueRot(col, audioChromaHue);
     if (hue > 0.001) col = hueRot(col, hue);
 
     // Vignette

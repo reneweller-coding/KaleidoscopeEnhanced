@@ -102,17 +102,17 @@ void main() {
     float t = time * 0.3 * spd + audioAdvance * 0.15;
 
     // Smooth winding camera trajectory
-    vec3 ro = vec3(sin(t * 0.4) * 2.5, cos(t * 0.3) * 2.5, t * 2.0);
-    vec3 lookTarget = ro + vec3(sin(t * 0.5) * 0.3, cos(t * 0.4) * 0.3, 1.0);
+    vec3 ro = vec3(sin(t * 0.35) * 12.5, 2.2 * sin(t * 0.21) + 1.5, cos(t * 0.35) * 12.5);
+    vec3 lookTarget = vec3(0.0, 0.9 * sin(t * 0.27), 0.0);
 
     vec3 ww = normalize(lookTarget - ro);
     vec3 uu = normalize(cross(ww, vec3(0.0, 1.0, 0.0)));
     vec3 vv = cross(uu, ww);
 
-    vec3 rd = normalize(uv.x * uu + uv.y * vv + (1.2 - 0.25 * audioKick) * ww);
+    vec3 rd = normalize(uv.x * uu + uv.y * vv + (1.25 - 0.08 * audioKick) * ww);
 
-    float scale = 1.2 * twr;
-    float thickness = (0.18 + 0.1 * sin(t) + 0.12 * audioBass) * sdl;
+    float scale = 1.7 * twr;
+    float thickness = (0.13 + 0.04 * sin(t) + 0.05 * audioBass) * sdl;
 
     float dO = 0.0;
     float hitDist = -1.0;
@@ -120,28 +120,32 @@ void main() {
     vec3 p;
     for (int i = 0; i < 48; ++i) {
         p = ro + rd * dO;
-        float dS = scherkSDF(p, scale, thickness);
+        // bound the infinite Scherk field to a COLUMN -> an actual tower
+        float dS = max(scherkSDF(p, scale, thickness), length(p.xz) - 2.2);
         minDS = min(minDS, dS);
         if (dS < 0.003) {
             hitDist = dO;
             break;
         }
-        if (dO > 12.0) break;
+        if (dO > 26.0) break;
         dO += dS * 0.65;
     }
 
     // Near-miss halo: rays grazing the tower glow instead of dropping to
     // near-black (metric scan: luma 8, saturation 0, the tower is thin and
     // most rays miss).  Level breathes it, phase spins its colour.
-    vec3 col = vec3(0.02, 0.03, 0.06);
+    vec3 col = img(clamp(vec2(st.x, 1.0 - st.y * 0.85), 0.0, 1.0)) * 0.30
+             + vec3(0.02, 0.03, 0.06);
     vec3 halo = imgPalette((minDS * 6.0 + audioPhase) * 0.159)
                 * exp(-minDS * 3.5) * (0.5 + 0.5 * audioLevel);
-    col += halo * 0.8;
+    col += halo * 0.6;
 
     if (hitDist > 0.0) {
         vec3 n = calcNormal(p, scale, thickness);
         vec3 lightDir = normalize(vec3(0.4, 0.9, -0.5));
-        float diff = max(dot(n, lightDir), 0.0);
+        vec3 fillDir  = normalize(ro - p);            // camera fill light
+        float diff = max(dot(n, lightDir), 0.0) * 0.75
+                   + max(dot(n, fillDir), 0.0) * 0.55 + 0.16;
         float spec = pow(max(dot(reflect(-lightDir, n), -rd), 0.0), 32.0);
 
         // UV coordinates on saddle surface

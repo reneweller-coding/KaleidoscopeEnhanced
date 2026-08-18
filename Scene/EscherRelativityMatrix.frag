@@ -130,13 +130,13 @@ void main() {
 
     // Moving camera traversing Escher non-Euclidean space
     float travel = time * 0.4 + audioAdvance * 0.3;
-    vec3 ro = vec3(sin(travel * 0.3) * 3.0, travel * 0.8, cos(travel * 0.25) * 3.0);
+    vec3 ro = vec3(sin(travel * 0.3) * 5.5, travel * 0.4, cos(travel * 0.25) * 5.5);
     vec3 ta = ro + vec3(cos(travel * 0.2), sin(travel * 0.15) * 0.5, sin(travel * 0.2));
 
     vec3 ww = normalize(ta - ro);
-    vec3 uu = normalize(cross(ww, vec3(sin(time * 0.1), 1.0, 0.0)));
+    vec3 uu = normalize(cross(ww, vec3(0.0, 1.0, 0.0)));
     vec3 vv = cross(uu, ww);
-    vec3 rd = normalize(uv.x * uu + uv.y * vv + (1.4 - 0.3 * audioKick) * ww);
+    vec3 rd = normalize(uv.x * uu + uv.y * vv + (1.35 - 0.10 * audioKick) * ww);
 
     float t = 0.0;
     int hitMat = 0;
