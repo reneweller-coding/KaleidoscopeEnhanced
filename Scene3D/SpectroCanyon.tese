@@ -34,6 +34,7 @@ uniform float spectroHead;      // T coordinate of "now", continuous
 uniform float spectroFill;
 
 uniform float camHP;        // preset: eye height above the floor
+uniform float time;
 uniform float heightP;      // preset: how tall the music builds
 uniform float wallP;        // preset: the canyon's own V profile
 
@@ -58,6 +59,17 @@ float terrain(vec2 uv, out float energy, out float freq)
     // filling, so a fresh start rises out of a flat plain instead of showing a
     // wall of zeroes.
     energy *= smoothstep(0.0, 0.12, spectroFill);
+
+    // FALLBACK: with an empty spectrogram ring (probe render, fresh start)
+    // synthesize a plausible sliding spectrum so the canyon is never a bare
+    // V-groove — and the slide keeps the flight illusion alive.
+    if (spectroFill < 0.05)
+    {
+        float tt = time * 0.10 - uv.y * AGE_SPAN;
+        float n1 = sin(freq * 21.0 + tt * 40.0) * 0.5 + 0.5;
+        float n2 = sin(freq *  9.0 - tt * 23.0 + 1.7) * 0.5 + 0.5;
+        energy = pow(n1 * 0.55 + n2 * 0.45, 2.0) * (0.85 - 0.35 * freq);
+    }
 
     // The canyon's own V, so there are walls even in silence.
     float v = abs(uv.x - 0.5) * 2.0;

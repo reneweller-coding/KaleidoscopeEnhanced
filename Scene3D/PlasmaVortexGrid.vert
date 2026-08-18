@@ -74,9 +74,13 @@ void main() {
     float r = sqrt(x * x + z * z);
     float a = atan(z, x);
 
-    // Relativistic vortex rotation (differential angular velocity)
-    float vortexSpin = (6.0 / (r + 2.0)) * (time * 1.5 + audioAdvance * 2.0);
-    float twistedA = a + vortexSpin;
+    // Vortex swirl as a TRAVELING SPIRAL WAVE: rigid base rotation plus a
+    // bounded radial wave.  The old cumulative differential twist sheared
+    // neighbouring grid rings apart without limit — after a few seconds the
+    // mesh tore into the hard glitch shards the user reported.
+    float T = time * 1.5 + audioAdvance * 2.0;
+    float twistedA = a + 0.35 * T
+                   + 1.6 * sin(r * 0.22 - T * 0.30) * (4.0 / (r * 0.3 + 3.0));
 
     // Gravitational funnel depth
     float funnel = - (18.0 * dpth) / (r * 0.25 + 1.2) - audioSubBass * 4.0;

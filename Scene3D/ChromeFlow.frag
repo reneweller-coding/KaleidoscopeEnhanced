@@ -53,29 +53,35 @@ vec3 hueRot(vec3 c, float a)
 
 void main()
 {
-    // "Environment" lookup: horizon stripes indexed by the normal.  The
-    // normals are gentle, so the stripe frequency is high enough that the
-    // rolling surface sweeps through several bands.
-    float envY = vNrm.y * 2.2 + vNrm.x * 3.0 + vNrm.z * 2.6;
-    float band1 = pow(clamp(sin(envY * 9.0 + time * 0.2) * 0.5 + 0.5,
-                            0.0, 1.0), 3.0);
-    float band2 = pow(clamp(sin(envY * 4.0 - time * 0.13 + 2.0) * 0.5 + 0.5,
-                            0.0, 1.0), 5.0);
+    vec3 n = normalize(vNrm);
 
-    vec3 base = mix(vec3(0.03, 0.04, 0.06), vec3(0.12, 0.13, 0.17),
-                    clamp(envY * 0.5 + 0.4, 0.0, 1.0));
+    // TRUE mirror: reflect the view ray and look the reflection up in the
+    // photo as a wrap-around environment — this is what makes it CHROME.
+    vec3 rd = normalize(vec3((vUV.x - 0.5) * 1.6, -0.35, 1.0));
+    vec3 R  = reflect(rd, n);
+    vec2 envUV = vec2(atan(R.x, R.z) / 6.2831853 + 0.5,
+                      clamp(0.55 - R.y * 0.55, 0.02, 0.98));
+    vec3 envPhoto = img(envUV);
+    float fres = pow(1.0 - clamp(dot(-rd, n), 0.0, 1.0), 3.0);
+
+    // Sheen bands sweep with the reflection vector (metal polish streaks)
+    float envY = R.y * 3.0 + R.x * 1.6;
+    float band1 = pow(clamp(sin(envY * 9.0 + time * 0.2) * 0.5 + 0.5, 0.0, 1.0), 3.0);
+    float band2 = pow(clamp(sin(envY * 4.0 - time * 0.13 + 2.0) * 0.5 + 0.5, 0.0, 1.0), 5.0);
+
     vec3 warm = palTint(vec3(0.95, 0.65, 0.30), 0.10, 0.30);
     vec3 cool = palTint(vec3(0.30, 0.50, 0.95), 0.60, 0.30);
 
-    vec3 col = base
-             + warm * band1 * (0.55 + 0.25 * audioSwell)
-             + cool * band2 * (0.40 + 0.20 * audioCentroid);
+    vec3 col = envPhoto * (0.50 + 0.85 * fres)
+             + warm * band1 * (0.40 + 0.22 * audioSwell)
+             + cool * band2 * (0.30 + 0.18 * audioCentroid);
 
     // Broad specular from a fixed moon-light.
-    float spec = pow(clamp(dot(vNrm, normalize(vec3(0.35, 0.9, -0.25))),
+    float spec = pow(clamp(dot(n, normalize(vec3(0.35, 0.9, -0.25))),
                            0.0, 1.0), 24.0);
     col += vec3(0.9, 0.92, 0.95) * spec * 0.7;
 
     col *= exp(-vDist * 0.008);
-    fragColor = vec4(col * 1.1, 1.0);
+    col /= 1.0 + 0.28 * max(col.r, max(col.g, col.b));
+    fragColor = vec4(col * 1.15, 1.0);
 }

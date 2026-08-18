@@ -41,6 +41,10 @@ void main()
     int   band = int(clamp(abs(x) / 90.0 * 31.0, 0.0, 31.0));
     float h    = base * wave * (1.0 + 0.9 * audioSpectrum[band])
                * (1.0 + 0.15 * audioSwell);
+    // Mid-frequency relief: smooth extra detail so the ridges stop
+    // reading as bare low-poly facets (no aliasing micro-noise).
+    h += (sin(zAbs * 0.055 + x * 0.085) * 1.6 + sin(zAbs * 0.031 - x * 0.047) * 2.3)
+       * wave * clamp(abs(x) / 40.0, 0.0, 1.0);
 
     // KICK QUAKE: every kick rolls a ground shockwave down the valley
     // toward the camera; a DROP ruptures the whole terrain upward once.
@@ -50,9 +54,9 @@ void main()
 
     // CAMERA: banking low-level flight — swings across the valley and rolls
     // into the turns instead of gliding straight down the middle.
-    float swing = sin(time * 0.11) * 18.0;
+    float swing = sin(time * 0.11) * 13.0;
     float roll  = -cos(time * 0.11) * 0.14;
-    vec3 vp = vec3(x - swing, h - 6.0 + sin(time * 0.23) * 1.5, zRel);
+    vec3 vp = vec3(x - swing, h - 9.5 + sin(time * 0.23) * 1.2, zRel);
     vp.xy = mat2(cos(roll), -sin(roll), sin(roll), cos(roll)) * vp.xy;
     vp.x -= eyeOff;
     gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);

@@ -47,7 +47,7 @@ void main() {
 
     // 20 helical cholesteric molecular director ribbons
     float xBase = (float(ribbonIdx) - 10.0) * 0.35;
-    float z = (s - 0.5) * 5.0;
+    float z = (s - 0.5) * 7.5;
 
     // Helical molecular twist along Z axis: director n(z) = (cos(qz), sin(qz), 0)
     float qz = z * 4.0 * ptc * tws + t * 2.0;
@@ -64,9 +64,16 @@ void main() {
     vec3 worldPos = p0 + binormal * (side * ribbonWidth);
     vWorldPos = worldPos;
 
-    // Camera transform: projM expects NEGATIVE view-space z (clip-w = -z_view),
-    // so push the scene away along +z and negate.  eyeOff is the stereo shift.
+    // Camera: the helices run along z — seen end-on they were just a row of
+    // circles.  Orbit AROUND the bundle so the cholesteric twist shows from
+    // the side, with a gentle pitch.
     vec3 vp = worldPos;
+    float yaw = 1.25 + time * 0.12 + audioAdvance * 0.06;
+    float cy = cos(yaw), sy = sin(yaw);
+    vp.xz = mat2(cy, -sy, sy, cy) * vp.xz;
+    float pit = -0.35 + 0.10 * sin(time * 0.17);
+    float cp = cos(pit), sp = sin(pit);
+    vp.yz = mat2(cp, -sp, sp, cp) * vp.yz;
     vp.z += 7.0;
     vp.x -= eyeOff;
     gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);

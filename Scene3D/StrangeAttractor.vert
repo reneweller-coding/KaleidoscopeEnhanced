@@ -137,7 +137,15 @@ void main()
     float tilt = 0.35;
     world.yz = mat2(cos(tilt), -sin(tilt), sin(tilt), cos(tilt)) * world.yz;
 
-    vec3 vp = world + vec3(0.0, 0.0, 30.0);
+    // ORBIT (user feedback): the camera circles the attractor
+    vec3 vp = world;
+    float yaw = time * 0.16 + audioAdvance * 0.08;
+    float cy = cos(yaw), sy = sin(yaw);
+    vp.xz = mat2(cy, -sy, sy, cy) * vp.xz;
+    float pit = 0.30 * sin(time * 0.12);
+    float pc2 = cos(pit), ps2 = sin(pit);
+    vp.yz = mat2(pc2, -ps2, ps2, pc2) * vp.yz;
+    vp += vec3(0.0, 0.0, 30.0);
     vp.x -= eyeOff;
     gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
     gl_Position.x += eyeOff * 0.05 * gl_Position.w;

@@ -5,6 +5,8 @@ layout(location = 1) in vec4 attrB;
 uniform mat4  projM;
 uniform float eyeOff;
 uniform float audioKick;
+uniform float time;
+uniform float audioAdvance;
 
 out vec3 vWorldPos;
 out vec3 vNormal;
@@ -25,8 +27,15 @@ void main() {
 
     // Camera transform: projM expects NEGATIVE view-space z (clip-w = -z_view),
     // so push the scene away along +z and negate.  eyeOff is the stereo shift.
+    // Camera: closer + slow orbit around the tangle
     vec3 vp = pos;
-    vp.z += 7.5;
+    float yaw = time * 0.14 + audioAdvance * 0.07;
+    float cy = cos(yaw), sy = sin(yaw);
+    vp.xz = mat2(cy, -sy, sy, cy) * vp.xz;
+    float pit = 0.35 * sin(time * 0.11);
+    float cp = cos(pit), sp = sin(pit);
+    vp.yz = mat2(cp, -sp, sp, cp) * vp.yz;
+    vp.z += 4.6;
     vp.x -= eyeOff;
     gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;

@@ -26,18 +26,25 @@ void main()
     float x = (u - 0.5) * 130.0;
     float z = 6.0 + w * 110.0;
 
-    // Two broad, slow wave trains — liquid metal, not water.
+    // Four wave trains: two broad rollers plus two short chops — liquid
+    // chrome needs CURVATURE, or the mirror has nothing to bend.
     float ph = time * 0.35 + audioAdvance * 0.3;
     float wgt = 1.0 + 1.2 * audioBass + 0.5 * audioSwell;
-    float h  = sin(x * 0.045 + z * 0.030 + ph)       * 2.6
-             + sin(x * 0.020 - z * 0.050 + ph * 0.6) * 3.4;
+    float h  = sin(x * 0.045 + z * 0.030 + ph)        * 2.6
+             + sin(x * 0.020 - z * 0.050 + ph * 0.6)  * 3.4
+             + sin(x * 0.130 + z * 0.095 - ph * 1.7)  * 0.85
+             + sin(x * 0.075 - z * 0.160 + ph * 1.2)  * 1.1;
     h *= wgt;
 
-    // Analytic normal from the derivatives (for the sheen in the frag).
-    float dhx = (cos(x * 0.045 + z * 0.030 + ph) * 0.045
-               + cos(x * 0.020 - z * 0.050 + ph * 0.6) * 0.020) * wgt;
-    float dhz = (cos(x * 0.045 + z * 0.030 + ph) * 0.030
-               - cos(x * 0.020 - z * 0.050 + ph * 0.6) * 0.050) * wgt;
+    // Analytic normal from the derivatives (for the mirror in the frag).
+    float dhx = (cos(x * 0.045 + z * 0.030 + ph)       * 0.045 * 2.6
+               + cos(x * 0.020 - z * 0.050 + ph * 0.6) * 0.020 * 3.4
+               + cos(x * 0.130 + z * 0.095 - ph * 1.7) * 0.130 * 0.85
+               + cos(x * 0.075 - z * 0.160 + ph * 1.2) * 0.075 * 1.1) * wgt;
+    float dhz = (cos(x * 0.045 + z * 0.030 + ph)       * 0.030 * 2.6
+               - cos(x * 0.020 - z * 0.050 + ph * 0.6) * 0.050 * 3.4
+               + cos(x * 0.130 + z * 0.095 - ph * 1.7) * 0.095 * 0.85
+               - cos(x * 0.075 - z * 0.160 + ph * 1.2) * 0.160 * 1.1) * wgt;
 
     vec3 vp = vec3(x, h - 8.0, z);
     vp.x -= eyeOff;

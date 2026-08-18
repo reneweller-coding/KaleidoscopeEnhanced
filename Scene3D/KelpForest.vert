@@ -64,8 +64,12 @@ void main()
     float side = attrA.y;
     float r1 = attrB.x, r2 = attrB.y, r3 = attrB.z, r4 = attrB.w;
 
-    // Frond anchors scattered on the floor ahead of the camera.
-    vec3 root = vec3((r1 - 0.5) * 90.0, -12.0, 12.0 + r2 * 70.0);
+    // Frond anchors scattered on the floor ahead of the camera — packed
+    // TIGHTER than before (user: plants stood too far apart), and the
+    // whole forest streams toward the camera: an endless glide THROUGH it.
+    float flight = time * 2.2 + audioAdvance * 1.6;
+    float rz = mod(r2 * 46.0 - flight, 46.0) + 6.0;
+    vec3 root = vec3((r1 - 0.5) * 34.0, -12.0, rz);
     float H   = 22.0 + 14.0 * r3;
 
     // Surge: one broad push per bar plus fine flutter, growing toward
@@ -90,13 +94,14 @@ void main()
         gl_Position = vec4(0.0, 0.0, -3.0, 1.0);
 
     // Deep green-teal, sunlit toward the tips, caustic bands wandering.
-    vec3 col = palTint(mix(vec3(0.02, 0.16, 0.10), vec3(0.10, 0.55, 0.30), t), 0.20 * t, 0.18);
+    vec3 col = palTint(mix(vec3(0.04, 0.24, 0.15), vec3(0.16, 0.80, 0.44), t), 0.20 * t, 0.18);
     float caustic = 0.6 + 0.4 * sin(pos.x * 0.35 + pos.y * 0.22
                                     + time * 1.1);
     col *= 0.5 + 0.9 * caustic * (0.5 + 0.5 * t);
     col = col;
-    col *= (0.6 + 0.5 * audioLevel + 0.4 * audioSwell)
-         * clamp(1.0 - vp.z / 100.0, 0.0, 1.0) * 1.15;
+    col *= (0.85 + 0.5 * audioLevel + 0.4 * audioSwell)
+         * clamp(1.0 - vp.z / 100.0, 0.0, 1.0) * 1.15
+         * smoothstep(6.0, 10.0, vp.z);   // fade fronds out as they pass us
 
     vCol  = vec4(col, 1.0);
     vSide = side;

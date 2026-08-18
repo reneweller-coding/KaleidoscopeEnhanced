@@ -19,7 +19,7 @@ void main() {
     float spec = pow(max(dot(reflect(-lightDir, n), vec3(0, 0, 1)), 0.0), 32.0);
 
     vec3 col = mix(vCol.rgb, photo * 1.2, 0.45);
-    col += vBioGlow * vec3(0.1, 0.95, 1.0) * 2.0;
+    col += pow(vBioGlow, 1.8) * vec3(0.1, 0.95, 1.0) * 1.0;
     col += spec * vec3(0.9, 0.95, 1.0);
 
     // Catalogue review: soft-knee exposure — hot audio compresses

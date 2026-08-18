@@ -71,7 +71,14 @@ void main() {
 
     // Camera transform: projM expects NEGATIVE view-space z (clip-w = -z_view),
     // so push the scene away along +z and negate.  eyeOff is the stereo shift.
+    // 3-axis tumble (user feedback: static view was dull)
     vec3 vp = worldPos;
+    float lyaw = time * 0.18 + audioAdvance * 0.07;
+    float lcy = cos(lyaw), lsy = sin(lyaw);
+    vp.xz = mat2(lcy, -lsy, lsy, lcy) * vp.xz;
+    float lpit = 0.4 * sin(time * 0.13);
+    float lpc = cos(lpit), lps = sin(lpit);
+    vp.yz = mat2(lpc, -lps, lps, lpc) * vp.yz;
     vp.z += 6.5;
     vp.x -= eyeOff;
     gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);

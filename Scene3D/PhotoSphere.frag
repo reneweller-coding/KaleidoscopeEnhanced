@@ -4,6 +4,8 @@ out vec4 fragColor;
 // so the seam never shows); day-side lighting, a key-coloured rim, and an
 // equator flash band on the kick.
 uniform sampler2D tex0;
+uniform sampler2D tex1;
+uniform float interpolation;
 uniform float time;
 uniform float audioKick;
 uniform float audioDrop;
@@ -25,7 +27,10 @@ vec2 mfold(vec2 uv) { return abs(fract(uv * 0.5) * 2.0 - 1.0); }
 void main()
 {
     vec2 uv = vec2(vUV.x * 2.0, vUV.y);
-    vec3 col = texture(tex0, mfold(uv)).rgb;
+    // Blend tex0/tex1 by interpolation — sampling tex0 alone showed the
+    // WRONG slot for half the crossfade (user: no photo on the sphere).
+    vec2 fuv = mfold(uv);
+    vec3 col = mix(texture(tex1, fuv).rgb, texture(tex0, fuv).rgb, interpolation);
 
     // Day side toward a fixed sun; soft terminator.
     float lit = clamp(dot(vN, normalize(vec3(0.7, 0.45, -0.55))), 0.0, 1.0);

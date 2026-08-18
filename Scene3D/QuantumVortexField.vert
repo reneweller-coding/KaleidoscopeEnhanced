@@ -68,7 +68,7 @@ void main() {
 
     // Quantum flux ribbon color: Cyan, Violet, Gold
     vec3 fluxCol = imgPalette(0.30 * hue) * 1.4;
-    fluxCol = mix(fluxCol, vec3(1.0, 0.8, 0.2), sin(hue * 6.28 + time) * 0.5 + 0.5);
+    fluxCol = mix(fluxCol, vec3(1.0, 0.8, 0.2), 0.28 * (sin(hue * 6.28 + time) * 0.5 + 0.5));
 
     float h = (hueP > 0.0) ? hueP : 0.0;
     if (h > 0.001) fluxCol = hueRot(fluxCol, h);

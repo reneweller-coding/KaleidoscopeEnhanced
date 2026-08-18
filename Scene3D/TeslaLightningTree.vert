@@ -7,6 +7,7 @@ in vec4 attrB;
 
 uniform mat4 projM;
 uniform float eyeOff;
+uniform float audioAdvance;
 uniform float time;
 uniform float audioKick;
 
@@ -21,7 +22,14 @@ void main() {
     vBoltID = attrB.w;
 
     // Stereoscopic 3D camera projection
+    // ORBIT (user feedback): the camera circles the structure
     vec3 vp = worldP;
+    float oyaw = time * 0.15 + audioAdvance * 0.07;
+    float ocy = cos(oyaw), osy = sin(oyaw);
+    vp.xz = mat2(ocy, -osy, osy, ocy) * vp.xz;
+    float opit = -0.12 + 0.10 * sin(time * 0.11);
+    float opc = cos(opit), ops = sin(opit);
+    vp.yz = mat2(opc, -ops, ops, opc) * vp.yz;
     vp.z += 6.5;
     vp.x -= eyeOff;
 

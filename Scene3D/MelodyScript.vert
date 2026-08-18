@@ -41,13 +41,32 @@ vec3 hueRot(vec3 c, float a)
 float hashH(float n) { return fract(sin(n * 127.1) * 43758.5453); }
 
 // Melody sample at history position h (0 oldest .. 1 newest), ring-unwrapped.
-float melodyAt(float h)
+float melodyRing(float h)
 {
     float idx = mod(h * 95.0 + audioMelodyHead * 96.0, 96.0);
     int   i0  = int(idx);
     float fr  = fract(idx);
     int   i1  = int(mod(float(i0 + 1), 96.0));
     return mix(audioMelody[i0], audioMelody[i1], fr);
+}
+
+// FALLBACK tune: when the host's melody history is empty (probe render,
+// silence, instrumental with no dominant pitch) the pen still writes — a
+// quantised wandering line with rests, so the scene never shows just the
+// empty stave the user reported.
+float synthMelody(float h)
+{
+    float ph   = h * 11.0 - time * 1.4;
+    float stp  = floor(ph);
+    float note = 0.5 + 0.30 * sin(stp * 1.7) * sin(stp * 0.61 + 2.0);
+    float rest = step(0.13, fract(stp * 0.377));
+    return note * rest;
+}
+
+float melodyAt(float h)
+{
+    float energy = audioMelody[0] + audioMelody[24] + audioMelody[48] + audioMelody[72];
+    return (energy < 0.02) ? synthMelody(h) : melodyRing(h);
 }
 
 void main()

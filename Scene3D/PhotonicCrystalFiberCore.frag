@@ -15,6 +15,7 @@ uniform float audioAdvance;
 uniform float audioSwell;
 uniform float audioLevel;
 uniform float audioKick;
+uniform float time;
 uniform float audioCentroid;
 uniform float audioValence;
 uniform float audioSubBass;
@@ -66,13 +67,19 @@ void main() {
     vec3 silicaCyan = vec3(0.2, 0.85, 1.0);
 
     vec3 col = mix(photo, silicaCyan, 0.4);
+    // LIGHT PULSES race down the fiber core on the kick — the point of a
+    // photonic crystal fiber is guided light, so SHOW the light.
+    float pz = fract(vWorldPos.z * 0.06 - time * 0.9 - audioAdvance * 0.4);
+    float pulse = exp(-pz * 7.0) * (0.5 + 1.1 * audioKick);
+    float coreDist = length(vWorldPos.xy);
+    col += supercontinuum * pulse * exp(-coreDist * 0.35) * 2.2;
     col += exp(-vCoreDist * 3.0) * supercontinuum * (1.5 + audioKick * 3.0);
 
     // Distance fog
     float dist = length(vWorldPos);
     col = mix(col, vec3(0.02, 0.03, 0.06), 1.0 - exp(-dist * 0.15));
 
-    if (audioChromaHue != 0.0)     if (hue > 0.001) col = hueRot(col, hue);
+    if (hue > 0.001) col = hueRot(col, hue);
 
     fragColor = vec4(col, 1.0);
 }

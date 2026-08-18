@@ -107,7 +107,7 @@ void main()
     float sheen = 1.0 - clamp(dot(n, V), 0.0, 1.0);
     float hue = fract(0.06 + 0.62 * hueP + 0.30 * vAcross + 0.22 * sheen
                       + 0.10 * vFold + 0.06 * sin(audioChromaHue));
-    vec3 foil = mix(hue2rgb(hue), vec3(1.0), 0.26);
+    vec3 foil = mix(hue2rgb(hue), vec3(1.0), 0.16);
     vec3 base = mix(foil * 0.78, foil, 1.0 - 0.45 * back);
 
     // Wrap the key light rather than clipping it at the terminator.  Panels here
@@ -116,7 +116,7 @@ void main()
     float wrap = 0.5 + 0.5 * dot(n, L);
 
     vec3 col = base * (0.26 + 0.10 * audioAmbient);
-    col += base * ndl * sh * (1.25 + 0.45 * audioLevel);
+    col += base * ndl * sh * (0.85 + 0.30 * audioLevel);
     col += base * wrap * wrap * sh * 0.45;
     col += base * max(dot(n, L2), 0.0) * vec3(0.40, 0.52, 0.72) * 0.62;
 
@@ -125,14 +125,14 @@ void main()
     vec3 H  = normalize(L + V);
     vec3 H2 = normalize(L2 + V);
     col += vec3(1.0, 0.97, 0.90) * pow(max(dot(n, H), 0.0), 78.0) * sh
-         * (0.9 + 2.2 * audioHigh) * (0.5 + 1.1 * glowP);
+         * (0.5 + 0.9 * audioHigh) * (0.5 + 1.1 * glowP);
     col += foil * pow(max(dot(n, H2), 0.0), 16.0) * 0.30;
 
     // A rim along the crease silhouettes: grazing panels catch a thin line.
     col += hue2rgb(fract(hue + 0.5)) * pow(sheen, 5.0)
          * (0.30 + 0.8 * glowP) * (0.5 + 1.0 * audioKick);
 
-    col *= 1.0 + 0.16 * audioBeat + 0.12 * audioSubBass;
-    col = col / (1.0 + col * 0.26);
+    col *= 0.80 + 0.13 * audioBeat + 0.10 * audioSubBass;
+    col = col / (1.0 + col * 0.55);
     fragColor = vec4(col, interpolation);
 }

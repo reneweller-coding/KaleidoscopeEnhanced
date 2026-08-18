@@ -56,11 +56,45 @@ vec3 hueRot(vec3 c, float a)
     return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
 }
 
+uniform float time;
+uniform float audioKick;
+
+float fhash(vec2 p) {
+    return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+}
+float fnoise(vec2 p) {
+    vec2 i = floor(p), f = fract(p);
+    f = f * f * (3.0 - 2.0 * f);
+    return mix(mix(fhash(i), fhash(i + vec2(1, 0)), f.x),
+               mix(fhash(i + vec2(0, 1)), fhash(i + vec2(1, 1)), f.x), f.y);
+}
+
 void main()
 {
     vec4  sim  = texture(texSmoke3D, vAtlasUV);
     float temp = sim.r;
     float dens = sim.g;
+
+    // FALLBACK: when the smoke sim texture is absent/black (probe renders,
+    // sim unit disabled), synthesize a procedural flame so the scene NEVER
+    // shows an empty frame.  Four atlas taps decide whether the sim lives.
+    float simAlive = texture(texSmoke3D, vec2(0.1, 0.6)).r
+                   + texture(texSmoke3D, vec2(0.5, 0.4)).r
+                   + texture(texSmoke3D, vec2(0.9, 0.6)).r
+                   + texture(texSmoke3D, vec2(0.3, 0.2)).g;
+    if (simAlive < 0.01)
+    {
+        float lx = fract(vAtlasUV.x * 5.0);        // local slice x (0..1)
+        float v  = vHeightFrac;
+        float flick = fnoise(vec2(lx * 4.0, v * 5.0 - time * 2.2))
+                    * 0.65 + fnoise(vec2(lx * 9.0 + 7.0, v * 11.0 - time * 4.0)) * 0.35;
+        float core = 1.0 - abs(lx - 0.5) * (3.2 + 4.6 * v);   // narrowing tongue
+        temp = clamp(core, 0.0, 1.0) * (1.0 - v * 0.8) * (0.85 + 0.75 * flick)
+             * (1.1 + 0.5 * audioKick);
+        // 20 slices ADD, so each contributes a twentieth of the column
+        temp = max(temp - 0.18, 0.0) * 0.26;
+        dens = clamp(temp * 0.5 + flick * 0.10 * (1.0 - v * 0.4), 0.0, 0.4);
+    }
 
     // Fire ramp: ember -> flame -> white-hot core.
     vec3 fire = palTint(mix(vec3(0.09, 0.01, 0.0), vec3(1.0, 0.35, 0.03), clamp(temp * 1.1, 0.0, 1.0)), 0.06 * clamp(temp * 1.1, 0.0, 1.0), 0.18);

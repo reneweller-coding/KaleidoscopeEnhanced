@@ -38,7 +38,7 @@ void main() {
     vec3 orbitCenter = vec3(r * cos(ringAngle), sin(tAlong * 3.0 + ribbonID) * 0.2, r * sin(ringAngle));
 
     // Relativistic synchrotron radiation beam emission
-    float radiation = abs(cos(tAlong * wiggles)) * (1.0 + audioKick * 3.0);
+    float radiation = abs(cos(tAlong * wiggles)) * (1.0 + audioKick * 0.7);
 
     // Ribbon cross-section width
     vec3 tangent = normalize(vec3(-sin(ringAngle), 0.0, cos(ringAngle)));
@@ -47,6 +47,20 @@ void main() {
     float width = (0.05 + 0.03 * radiation) * (1.0 + audioSwell * 0.5);
     vec3 pos = orbitCenter + normal * (attrA.y * 0.5) * width;
 
+    // Half the ribbons are TANGENTIAL RADIATION JETS: light thrown off
+    // along the tangent wherever the beam is bent — that IS synchrotron
+    // radiation, and it is what ties the picture to the name.
+    if (ribbonID >= 10.0)
+    {
+        float srcA = (ribbonID - 10.0) * 0.628318 + time * 0.5 + audioAdvance * 0.3;
+        vec3 src = vec3(R0 * cos(srcA), 0.0, R0 * sin(srcA));
+        vec3 jt  = normalize(vec3(-sin(srcA), 0.0, cos(srcA)));
+        float lt = attrA.x;
+        pos = src + jt * lt * 3.4;
+        pos.y += (attrA.y * 0.5) * (0.04 + lt * 0.45);   // the fan opens up
+        radiation = (1.0 - lt * 0.65) * (1.8 + audioKick * 0.8);
+    }
+
     vPos = pos;
     vUV = vec2(attrA.x, attrA.y * 0.5 + 0.5);
     vRadiation = radiation;
@@ -54,7 +68,15 @@ void main() {
 
     // Stereoscopic 3D camera projection
     vec3 vp = pos;
-    vp.z += 5.5;
+    // Orbit + pitch: the storage ring was seen edge-on as a thin band
+    float yaw = time * 0.11 + audioAdvance * 0.05;
+    float cy = cos(yaw), sy = sin(yaw);
+    vp.xz = mat2(cy, -sy, sy, cy) * vp.xz;
+    float pit = -0.55 + 0.10 * sin(time * 0.13);
+    float cp = cos(pit), sp = sin(pit);
+    vp.yz = mat2(cp, -sp, sp, cp) * vp.yz;
+    vp.y += 1.3;
+    vp.z += 5.0;
     vp.x -= eyeOff;
 
     gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);

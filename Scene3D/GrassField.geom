@@ -41,11 +41,11 @@ const float FIELD_D = 55.0;
 // narrow band with the horizon across the middle.  Tilting the view down here
 // — a rotation in view space, nothing the engine needs to know about — lifts
 // the horizon into the upper third and lets the field open out into the frame.
-const float PITCH = 0.17;
+const float PITCH = 0.30;
 
 vec4 project(vec3 world)
 {
-    vec3 vp = vec3(world.x - eyeOff, world.y - camHP, world.z);
+    vec3 vp = vec3(world.x - eyeOff, world.y - (camHP + 1.7), world.z);
     float cs = cos(PITCH), sn = sin(PITCH);
     vp = vec3(vp.x, vp.y * cs + vp.z * sn, -vp.y * sn + vp.z * cs);
     vec4 c = projM * vec4(vp.x, vp.y, -vp.z, 1.0);

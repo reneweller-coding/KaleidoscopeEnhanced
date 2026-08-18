@@ -71,7 +71,10 @@ void main() {
     vec3 photo = img(vUV);
 
     // Fluorescent Green/Pink/Orange protein emission colors (GFP / RFP)
-    vec3 gfpColor = palTint(mix(vec3(0.0, 1.0, 0.5), vec3(1.0, 0.1, 0.6), sin(vUV.x * 10.0 + vUV.y * 8.0) * 0.5 + 0.5), 0.15, 0.25);
+    // Fluorescence colours come from the PHOTO palette arc (house
+    // standard) — the old neon green/magenta pair read as rainbow.
+    vec3 gfpColor = mix(imgPalette(0.12), imgPalette(0.55),
+                        sin(vUV.x * 10.0 + vUV.y * 8.0) * 0.5 + 0.5) * 1.35;
     vec3 fluorGlow = gfpColor * max(vFluorescence, 0.0) * flr;
 
     // Deep ocean blue ambient

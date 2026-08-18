@@ -38,9 +38,16 @@ void main()
     col += hueRot(vec3(1.0, 0.45, 0.55), vHue) * vDefo
          * (0.8 + 1.0 * audioSwell + 1.6 * audioDrop);
 
-    // Gummy rim + wet highlight.
-    col += hueRot(vec3(1.0, 0.6, 0.75), vHue) * fres * 0.9;
-    col += vec3(1.0) * spec * 1.1;
+    // TRANSLUCENCY: light passing THROUGH the body from behind — this is
+    // what makes it read as jelly rather than painted rubber.
+    float through = pow(max(dot(-N, L), 0.0), 2.0);
+    col += hueRot(vec3(1.0, 0.5, 0.62), vHue) * through * 0.65;
 
-    fragColor = vec4(col * 1.7, 1.0);
+    // Gummy rim + a restrained wet highlight (the old 1.1 white blob).
+    col += hueRot(vec3(1.0, 0.6, 0.75), vHue) * fres * 0.9;
+    col += vec3(1.0) * spec * 0.40;
+
+    vec3 outc = col * 1.35;
+    outc /= 1.0 + 0.35 * max(outc.r, max(outc.g, outc.b));
+    fragColor = vec4(outc, 1.0);
 }

@@ -86,7 +86,7 @@ void main() {
     float sinTheta = sqrt(max(0.0, 1.0 - cosTheta * cosTheta));
     vec3 sphereDir = vec3(cos(phi) * sinTheta, sin(phi) * sinTheta, cosTheta);
 
-    float shellRadius = (3.0 + shellIdx * 1.8) * ltc + audioSwell * 2.0;
+    float shellRadius = (2.5 + shellIdx * 1.4) * ltc + audioSwell * 1.2;
     float rotSpeed = (0.8 / (1.0 + shellIdx * 0.3)) * ((mod(shellIdx, 2.0) > 0.5) ? 1.0 : -1.0);
     float angle = time * rotSpeed * 0.4 + audioAdvance * 0.1;
 
@@ -107,7 +107,9 @@ void main() {
     vec3 worldP = centerPos + localPos;
 
     // Camera space
-    vec3 camPos = vec3(0.0, 0.0, -18.0);
+    // Camera pulled back: the outer shell (r~15 + swell + kick) must NEVER
+    // reach the eye (user saw shells colliding with the camera).
+    vec3 camPos = vec3(0.0, 0.0, -30.0);
     vec3 relP = worldP - camPos;
     relP.x -= eyeOff;
 
@@ -119,7 +121,7 @@ void main() {
     vWorldPos = worldP;
 
     // Transparent silica glass palette (pale aqua, crystal amethyst, sunlight gold)
-    vec3 col = palTint(mix(vec3(0.2, 0.9, 1.0), vec3(0.8, 0.4, 1.0), shellIdx / 10.0), 0.30 * shellIdx / 10.0, 0.28);
+    vec3 col = palTint(mix(vec3(0.2, 0.9, 1.0), vec3(0.8, 0.4, 1.0), shellIdx / 10.0), 0.30 * shellIdx / 10.0, 0.55);
     col = mix(col, vec3(1.0, 0.95, 0.6), seeds.w);
 
     if (hue > 0.001) col = hueRot(col, hue);

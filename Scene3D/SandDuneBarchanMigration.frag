@@ -53,11 +53,13 @@ void main() {
     float spec = pow(max(dot(reflect(-lightDir, vNormal), vec3(0.0, 1.0, 0.0)), 0.0), 16.0);
 
     vec3 sandCol = mix(shadowSand, sandGold, diff);
-    vec3 col = mix(photo, sandCol, 0.45);
-    col = col * (0.35 + 0.65 * diff) + spec * vec3(1.0, 0.95, 0.8) * (1.0 + audioKick * 2.0);
+    vec3 col = mix(photo, sandCol, 0.55);
+    col = col * (0.35 + 0.65 * diff) + spec * vec3(1.0, 0.95, 0.8) * (0.5 + audioKick * 0.6);
 
-    if (audioChromaHue != 0.0) col = hueRot(col, audioChromaHue);
+    // NO global chromaHue rotation: dunes must stay SAND-coloured — the
+    // musical key only drifts the photo blend, not the identity gold.
     if (hue > 0.001) col = hueRot(col, hue);
 
+    col /= 1.0 + 0.30 * max(col.r, max(col.g, col.b));
     fragColor = vec4(col, 1.0);
 }

@@ -69,14 +69,18 @@ void main() {
     // Surface normal estimation
     vNormal = normalize(vec3(-gridUV.x * 0.3, 1.0, -gridUV.y * 0.3));
 
-    // Camera transform: this surface lies in the XZ plane, so pitch it down
-    // first (otherwise it is seen edge-on), then push away along +z and negate
-    // -- projM expects NEGATIVE view-space z (clip-w = -z_view).
+    // Camera: slow ORBIT around the central hole, then pitch DOWN onto the
+    // disk (negative tilt — the old +0.45 tipped it into a ceiling) and push
+    // away along +z; projM expects NEGATIVE view-space z (clip-w = -z_view).
     vec3 vp = pos;
-    float camTilt = 0.45;
+    float yaw = time * 0.10 * spd + audioAdvance * 0.06;
+    float cy = cos(yaw), sy = sin(yaw);
+    vp.xz = mat2(cy, -sy, sy, cy) * vp.xz;
+    vp.y -= 1.1;
+    float camTilt = -0.55;
     float cosT = cos(camTilt), sinT = sin(camTilt);
     vp = vec3(vp.x, vp.y * cosT - vp.z * sinT, vp.y * sinT + vp.z * cosT);
-    vp.z += 7.0;
+    vp.z += 7.5;
     vp.x -= eyeOff;
     gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;

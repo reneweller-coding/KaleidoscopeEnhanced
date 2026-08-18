@@ -20,6 +20,7 @@ in vec4 attrB;
 uniform mat4  projM;
 uniform float eyeOff;
 uniform float time;
+uniform float audioAdvance;
 uniform float sceneSeed;
 
 uniform float audioKick;
@@ -86,6 +87,18 @@ vec3 jellyPoint(float u, float v)
     return p;
 }
 
+
+// 3-AXIS TUMBLE (user feedback): slow rolls around x and z on top of the
+// body's own y-spin, so the pattern is seen from ever-new angles.
+vec3 tumble(vec3 q)
+{
+    float tx = time * 0.19 + audioAdvance * 0.05;
+    float tz = time * 0.13;
+    q.yz = mat2(cos(tx), -sin(tx), sin(tx), cos(tx)) * q.yz;
+    q.xy = mat2(cos(tz), -sin(tz), sin(tz), cos(tz)) * q.xy;
+    return q;
+}
+
 void main()
 {
     float u = attrA.x, v = attrA.y;
@@ -95,6 +108,8 @@ void main()
     vec3 pu = jellyPoint(u + 0.004, v);
     vec3 pv = jellyPoint(u, v + 0.004);
     vec3 nrm = normalize(cross(pu - p, pv - p));
+    p   = tumble(p);
+    nrm = tumble(nrm);
 
     vec3 vp = p + vec3(0.0, 0.0, 27.0);
     vp.x -= eyeOff;
