@@ -84,10 +84,13 @@ void main() {
 
     vec4 col = mix(c1, c0, tProg);
 
-    // Tesseract 4D hypercube wireframe edge glow
+    // Tesseract 4D hypercube wireframe edge glow -- genuinely thin lines
+    // (smoothstep window on the sine peak; any pow() of |sin| still leaves
+    // wide bands) and gentle gain: the old 1.2+kick*3 turned the whole frame
+    // into a glowing grid with the scene gone underneath.
     float wireEdge = max(abs(sin(p.x * 12.0 * slc)), abs(sin(p.y * 12.0 * slc)));
-    float wireGlow = pow(wireEdge, 8.0) * midTransition;
-    col.rgb += wireGlow * vec3(0.2, 0.9, 1.0) * (1.2 + audioKick * 3.0);
+    float wireGlow = smoothstep(0.985, 1.0, wireEdge) * midTransition;
+    col.rgb += wireGlow * vec3(0.2, 0.9, 1.0) * (0.3 + audioKick * 0.4);
 
     if (audioChromaHue != 0.0) col.rgb = hueRot(col.rgb, audioChromaHue);
     if (hue > 0.001) col.rgb = hueRot(col.rgb, hue);

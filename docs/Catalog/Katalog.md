@@ -3287,7 +3287,7 @@ FxLichtenstein.frag FX LICHTENSTEIN: halftone-dot pop-art look -- the scene is q
 
 `FX/FxLiquidCrystalDefectDomain.frag` · mood=psychedelic,dreamy · probability=0.32
 
-FxLiquidCrystalDefectDomain.frag FX LIQUID CRYSTAL DEFECT DOMAIN: Nematic liquid crystal Schlieren transition. Topological point defects (disclinations with strength s = +/-1/2) and dark extinction brushes rotate and annihilate as the director field aligns, seamlessly transitioning into the incoming scene. interpolation -> sweeps director field alignment & defect annihilation audioKick -> flashes topological disclina…
+FxLiquidCrystalDefectDomain.frag FX LIQUID CRYSTAL DEFECT DOMAIN: Nematic liquid crystal Schlieren transition. Topological point defects (disclinations with strength s = +/-1/2), rainbow birefringence interference tints on the domains between them, and dark extinction brushes rotate and annihilate as the director field aligns, seamlessly transitioning into the incoming scene. interpolation -> sweeps director field al…
 
 ![FxLiquidCrystalDefectDomain über TunnelPlain (2D)](img/FxLiquidCrystalDefectDomain_2D.jpg) ![FxLiquidCrystalDefectDomain über AuroraBorealisOverFjord (3D)](img/FxLiquidCrystalDefectDomain_3D.jpg)
 

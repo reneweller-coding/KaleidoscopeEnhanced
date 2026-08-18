@@ -77,9 +77,10 @@ void main() {
 
         tileSeed += hash21(cell + float(lvl) * 13.7) * (1.0 / float(lvl + 1));
 
-        // Border detection
+        // Border detection -- sharp falloff: four overlaid levels of the
+        // old exp(-b*30) glow covered most of the frame.
         float b = min(min(f.x, 1.0 - f.x), min(f.y, 1.0 - f.y));
-        gridBorder = max(gridBorder, exp(-b * 30.0));
+        gridBorder = max(gridBorder, exp(-b * 80.0));
 
         scale *= 2.0;
     }
@@ -98,9 +99,10 @@ void main() {
 
     vec4 col = mix(c1, c0, tileProg);
 
-    // Neon grid border glow
+    // Neon grid border glow -- calibrated so the tiles' content stays
+    // visible between the lines (old gain 1.2+kick*3 washed it cyan).
     float borderGlow = gridBorder * midTransition * grd;
-    col.rgb += borderGlow * vec3(0.1, 0.9, 1.0) * (1.2 + audioKick * 3.0);
+    col.rgb += borderGlow * vec3(0.1, 0.9, 1.0) * (0.3 + audioKick * 0.35);
 
     if (audioChromaHue != 0.0) col.rgb = hueRot(col.rgb, audioChromaHue);
     if (hue > 0.001) col.rgb = hueRot(col.rgb, hue);
