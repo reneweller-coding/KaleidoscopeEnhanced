@@ -191,12 +191,22 @@ void EffectShader::checkGLErrors( const char *label )
 }
 
 
+// LATE REGISTRATION: initUniforms() binds each Uniform's GL location exactly
+// once, at compile time.  A Uniform added AFTER the program was compiled (the
+// editor's Scene3DPreview registers ranges right after setShader()) therefore
+// never got a location and its per-frame upload silently no-opped — every
+// per-activation param sat at GLSL's 0.0 in the whole scene3d preview, which
+// degenerated camera-height/extent scenes (Ocean at swell 0 from eye level =
+// black) and skewed the metric scan.  Binding immediately when a program
+// already exists fixes that; in the shipped app registration happens BEFORE
+// the compile, so m_sh_prog_id is 0 here and nothing changes.
 void EffectShader::addUniform( const std::string &name, float minf, float maxf )
 {
 	Uniform *u = new Uniform( name, BASE_TYPE_FLOAT );
 	u->setMinMax( minf, maxf );
 	u->resetParameters();
 	m_uniforms.push_back( u );
+	if( m_sh_prog_id ) u->initUniform( m_sh_prog_id );
 }
 
 void EffectShader::addUniform( const std::string &name, int minf, int maxf )
@@ -205,6 +215,7 @@ void EffectShader::addUniform( const std::string &name, int minf, int maxf )
 	u->setMinMax( minf, maxf );
 	u->resetParameters();
 	m_uniforms.push_back( u );
+	if( m_sh_prog_id ) u->initUniform( m_sh_prog_id );
 }
 
 void EffectShader::addUniform( const std::string &name, float pro )
@@ -213,6 +224,7 @@ void EffectShader::addUniform( const std::string &name, float pro )
 	u->setProbability( pro );
 	u->resetParameters();
 	m_uniforms.push_back( u );
+	if( m_sh_prog_id ) u->initUniform( m_sh_prog_id );
 }
 
 
@@ -226,6 +238,7 @@ void EffectShader::addUniformInterpolator( const std::string &name, float interp
 	u->setInterpolator( interpolatorMinMinf, interpolatorMinMaxf, interpolatorMaxMinf, interpolatorMaxMaxf, (float) ( m_timeSolo + 2* m_timeInterpolation ) );
 	u->resetParameters();
 	m_uniforms.push_back( u );
+	if( m_sh_prog_id ) u->initUniform( m_sh_prog_id );
 }
 
 
