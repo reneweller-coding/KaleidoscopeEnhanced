@@ -31,11 +31,26 @@ uniform float audioPhase;
 uniform int   sidesP;          // mirror fold count (0 -> 6; 4..10)
 uniform float twistP;          // spiral twist of the fold per depth unit (0 -> none)
 uniform float snakeP;          // tunnel snaking amplitude (0 -> 0.35; 0.15..0.55)
+uniform float audioChromaHue;
 
 const float PI = 3.14159265358979;
 
 vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
                           + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
+
+
+// IMG-PALETTE (house standard): colours come from a rotating arc in the
+// CURRENT slideshow image, so every activation inherits a fresh palette from
+// the photos; the arc follows the musical key (audioChromaHue is circular-
+// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+vec3 imgPalette(float t)
+{
+    float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
+    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
+    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
+    float pg  = dot(pc, vec3(0.333));
+    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+}
 
 vec3 imgPal(float x)
 {
@@ -105,12 +120,12 @@ void main()
     // Tempo-locked light rings racing down the bore: positioned by the
     // CONTINUOUS beat phase, so they travel smoothly and land on the beat.
     float ring = pow(0.5 + 0.5 * cos(2.0 * PI * (hit.z * 0.25 - audioBeatPhase - fly * 0.25)), 12.0);
-    vec3  ringCol = mix(vec3(0.4, 0.7, 1.2), vec3(1.2, 0.7, 0.35), audioValence);
+    vec3  ringCol = imgPalette(0.30 * audioValence) * 1.7;
     col += ringCol * ring * fog * (0.25 + 0.75 * audioBeat);
 
     // Warm light at the end of the tunnel, breathing with the slow swell.
     float glow = exp(-2.6 * dot(uv, uv) / (0.4 + fog));
-    col += mix(vec3(1.0, 0.75, 0.45), vec3(0.6, 0.75, 1.1), audioCentroid)
+    col += imgPalette(0.30 * audioCentroid) * 1.7
          * glow * (1.0 - fog) * (0.25 + 0.45 * audioSwell);
 
     col += fog * audioBeat * 0.25;

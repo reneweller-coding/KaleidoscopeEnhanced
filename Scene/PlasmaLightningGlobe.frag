@@ -40,9 +40,24 @@ uniform float arcP;
 uniform float branchP;
 uniform float glassP;
 uniform float hueP;
+uniform float audioChromaHue;
 
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+}
+
+
+// IMG-PALETTE (house standard): colours come from a rotating arc in the
+// CURRENT slideshow image, so every activation inherits a fresh palette from
+// the photos; the arc follows the musical key (audioChromaHue is circular-
+// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+vec3 imgPalette(float t)
+{
+    float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
+    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
+    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
+    float pg  = dot(pc, vec3(0.333));
+    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
 vec3 hueRot(vec3 c, float a) {
@@ -112,7 +127,7 @@ void main() {
         float arcGlow = (0.0012 / (distToArc * distToArc + 0.0001)) * step(0.06, r) * step(r, glassR);
 
         // Neon magenta/electric cyan ionization gradient
-        vec3 aCol = mix(vec3(1.0, 0.1, 0.8), vec3(0.1, 0.8, 1.0), arcRadius);
+        vec3 aCol = imgPalette(0.30 * arcRadius) * 1.5;
         filamentCol += aCol * arcGlow;
     }
 

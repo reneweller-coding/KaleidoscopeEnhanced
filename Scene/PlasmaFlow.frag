@@ -32,6 +32,8 @@ uniform float audioBarPhase;   // 0..1 per bar -> gentle per-bar hue sweep
 uniform int   sidesP;          // mirror fold count (0 -> 4; 2..8)
 uniform float scaleP;          // plasma scale      (0 -> 6.0; 3.5 = broad, 8 = busy)
 uniform float flowAmtP;        // marbling strength (0 -> 0.10; 0.06..0.16)
+uniform float audioChromaHue;
+uniform float audioAdvance;
 
 const float PI = 3.14159265358979;
 
@@ -39,10 +41,24 @@ mat2 rot(float a) { float c = cos(a), s = sin(a); return mat2(c, -s, s, c); }
 vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
                           + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
 
+
+// IMG-PALETTE (house standard): colours come from a rotating arc in the
+// CURRENT slideshow image, so every activation inherits a fresh palette from
+// the photos; the arc follows the musical key (audioChromaHue is circular-
+// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+vec3 imgPalette(float t)
+{
+    float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
+    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
+    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
+    float pg  = dot(pc, vec3(0.333));
+    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+}
+
 vec3 hsv2rgb(vec3 c)
 {
-    vec3 p = abs(fract(c.xxx + vec3(0.0, 2.0 / 3.0, 1.0 / 3.0)) * 6.0 - 3.0);
-    return c.z * mix(vec3(1.0), clamp(p - 1.0, 0.0, 1.0), c.y);
+    vec3 p = imgPalette(c.x) * 1.35;   // photo-arc palette (house standard)
+    return c.z * mix(vec3(1.0), p, c.y);
 }
 
 vec2 kaleido(vec2 p, float sides)

@@ -20,8 +20,30 @@ uniform float audioSwell;
 uniform float audioChromaHue;
 uniform float audioDrop;
 uniform float audioKick;
+uniform sampler2D tex0;
+uniform sampler2D tex1;
+uniform float interpolation;
+uniform float audioValence;
 
 out vec4 vCol;
+
+vec3 img(vec2 uv) {
+    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+}
+
+
+// IMG-PALETTE (house standard): colours come from a rotating arc in the
+// CURRENT slideshow image, so every activation inherits a fresh palette from
+// the photos; the arc follows the musical key (audioChromaHue is circular-
+// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+vec3 imgPalette(float t)
+{
+    float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
+    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
+    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
+    float pg  = dot(pc, vec3(0.333));
+    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+}
 
 vec3 hueRot(vec3 c, float a)
 {
@@ -62,9 +84,7 @@ void main()
         world = spine + (R * cos(th) + U * sin(th)) * prof * (0.75 + 0.3 * r3);
 
         // Emerald scales, golden belly, hue breathing with the key.
-        vec3 scale = mix(vec3(0.10, 0.75, 0.35), vec3(0.95, 0.75, 0.20),
-                         smoothstep(-0.6, -1.0, sin(th)));
-        col = hueRot(scale, audioChromaHue * 0.5 + s * 0.7);
+        col = imgPalette(0.11 * s + 0.10 * smoothstep(-0.6, -1.0, sin(th))) * 1.3;
         glow = 0.95 + 0.55 * r4;
     }
     else if (r1 < 0.80)
@@ -86,7 +106,7 @@ void main()
         world = spine + wing * span * (11.0 + 3.0 * audioSwell)
               + T * chord + U * 0.6;
 
-        col = hueRot(vec3(0.20, 0.85, 0.55), audioChromaHue * 0.5);
+        col = imgPalette(0.35) * 1.3;
         glow = (0.22 + 0.35 * (1.0 - span))
              * (0.8 + 0.5 * sin(6.2831853 * audioBeatPhase));
     }

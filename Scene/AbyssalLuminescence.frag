@@ -40,9 +40,24 @@ uniform float depthP;
 uniform float tentacleP;
 uniform float glowP;
 uniform float hueP;
+uniform float audioChromaHue;
 
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+}
+
+
+// IMG-PALETTE (house standard): colours come from a rotating arc in the
+// CURRENT slideshow image, so every activation inherits a fresh palette from
+// the photos; the arc follows the musical key (audioChromaHue is circular-
+// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+vec3 imgPalette(float t)
+{
+    float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
+    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
+    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
+    float pg  = dot(pc, vec3(0.333));
+    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
 vec3 hueRot(vec3 c, float a) {
@@ -129,8 +144,8 @@ void main() {
         float glow = 0.003 / (tentDist * tentDist + 0.00015);
         
         // Color variation along tentacle length: cyan to magenta/electric blue
-        vec3 armC = mix(vec3(0.0, 1.0, 0.8), vec3(0.9, 0.1, 1.0), sin(r * 6.0 + armPhase) * 0.5 + 0.5);
-        armC = mix(armC, vec3(0.2, 0.6, 1.0), sin(float(i) + t) * 0.5 + 0.5);
+        vec3 armC = imgPalette((r * 6.0 + armPhase) * 0.159) * 1.4;
+        armC = mix(armC, imgPalette(0.5 + 0.1 * float(i)) * 1.3, sin(float(i) + t) * 0.35 + 0.35);
 
         // Bell nodes & pulsating photophores along the filament
         float nodes = pow(sin(r * 24.0 - armPhase * 3.0) * 0.5 + 0.5, 8.0);

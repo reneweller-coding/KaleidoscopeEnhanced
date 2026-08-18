@@ -55,11 +55,32 @@ uniform float audioUpperMid;   // 2k-6k Hz
 // Integrated, jump-free audio rotation phase (computed once per frame on host)
 uniform float audioPhase;
 
+uniform float audioChromaHue;
+uniform float audioAdvance;
+uniform float audioValence;
 const float PI = 3.14159265358979;
 
 // Gaussian glow ring intensity at radius r for a ring centred at ri.
 // wBase: structural minimum half-width.
 // energy: band energy 0..1, widens and brightens the ring.
+vec3 img(vec2 uv) {
+    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+}
+
+
+// IMG-PALETTE (house standard): colours come from a rotating arc in the
+// CURRENT slideshow image, so every activation inherits a fresh palette from
+// the photos; the arc follows the musical key (audioChromaHue is circular-
+// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+vec3 imgPalette(float t)
+{
+    float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
+    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
+    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
+    float pg  = dot(pc, vec3(0.333));
+    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+}
+
 float ringGlow(float r, float ri, float wBase, float energy)
 {
     float w    = wBase + energy * 0.045;
@@ -202,7 +223,7 @@ void main()
         float shockR = audioBeatPhase * 1.35;
         float shock  = exp(-abs(r - shockR) * 22.0)
                      * audioKick * (1.0 - audioBeatPhase * 0.6);
-        vec3 sc = mix(vec3(1.0, 0.85, 0.55), vec3(0.6, 0.8, 1.0), audioCentroid);
+        vec3 sc = imgPalette(0.30 * audioCentroid) * 1.9;
         accColor += sc * shock * 1.6;
         accAlpha += shock;
     }

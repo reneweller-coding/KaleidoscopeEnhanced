@@ -47,6 +47,20 @@ vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
+
+// IMG-PALETTE (house standard): colours come from a rotating arc in the
+// CURRENT slideshow image, so every activation inherits a fresh palette from
+// the photos; the arc follows the musical key (audioChromaHue is circular-
+// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+vec3 imgPalette(float t)
+{
+    float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
+    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
+    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
+    float pg  = dot(pc, vec3(0.333));
+    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+}
+
 vec3 hueRot(vec3 c, float a) {
     vec3 k = vec3(0.57735026919);
     float cs = cos(a), sn = sin(a);
@@ -117,7 +131,7 @@ void main() {
     vec3 photo = img(fract(sampledCoord + 0.5));
 
     // Core relativistic beam color (Cherenkov electric blue / violet / white)
-    vec3 beamColor = mix(vec3(0.1, 0.4, 1.0), vec3(0.8, 0.95, 1.0), shockDiamonds * 0.5);
+    vec3 beamColor = imgPalette(0.25 * shockDiamonds) * 1.3;
     beamColor = mix(beamColor, vec3(1.0, 0.3, 0.8), sin(t + accumDensity * 2.0) * 0.5 + 0.5);
 
     // Combine visualizer

@@ -19,11 +19,36 @@ uniform float audioSwell;
 uniform float glowP;
 uniform float bioP;
 uniform float hueP;
+uniform float audioAdvance;
+uniform float audioValence;
 
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
+
+// IMG-PALETTE (house standard): colours come from a rotating arc in the
+// CURRENT slideshow image, so every activation inherits a fresh palette from
+// the photos; the arc follows the musical key (audioChromaHue is circular-
+// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+vec3 imgPalette(float t)
+{
+    float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
+    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
+    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
+    float pg  = dot(pc, vec3(0.333));
+    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+}
+
+
+// House tint: bend a colour toward the photo palette while keeping its
+// luminance -- the identity look survives, only the hue follows the photos.
+vec3 palTint(vec3 c, float t, float k)
+{
+    vec3 tp = imgPalette(t);
+    tp *= dot(c, vec3(0.3333)) / max(dot(tp, vec3(0.3333)), 1e-3);
+    return mix(c, tp, k);
+}
 vec3 hueRot(vec3 c, float a) {
     vec3 k = vec3(0.57735026919);
     float cs = cos(a), sn = sin(a);
@@ -56,7 +81,7 @@ void main() {
 
     // Bioluminescent dinoflagellate blue-cyan glow on wave crests
     float bioIntensity = smoothstep(0.4, 1.6, vCrest);
-    vec3 bioGlowCol = mix(vec3(0.0, 0.8, 1.0), vec3(0.1, 1.0, 0.6), sin(vPos.x * 2.0 + time * 3.0) * 0.5 + 0.5);
+    vec3 bioGlowCol = palTint(mix(vec3(0.0, 0.8, 1.0), vec3(0.1, 1.0, 0.6), sin(vPos.x * 2.0 + time * 3.0) * 0.5 + 0.5), 0.15, 0.25);
     vec3 bioEmission = bioGlowCol * bioIntensity * (1.5 + 3.0 * audioKick) * bio * glw;
 
     // Subsurface scattering glow

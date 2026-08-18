@@ -40,9 +40,24 @@ uniform float densityP;
 uniform float speedP;
 uniform float flareP;
 uniform float hueP;
+uniform float audioChromaHue;
 
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+}
+
+
+// IMG-PALETTE (house standard): colours come from a rotating arc in the
+// CURRENT slideshow image, so every activation inherits a fresh palette from
+// the photos; the arc follows the musical key (audioChromaHue is circular-
+// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+vec3 imgPalette(float t)
+{
+    float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
+    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
+    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
+    float pg  = dot(pc, vec3(0.333));
+    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
 vec3 hueRot(vec3 c, float a) {
@@ -143,7 +158,7 @@ void main() {
     // Add chromatic lens flare at center
     float centerDist = length(uv);
     float flare = 0.15 / (centerDist + 0.08) * flr * (audioKick * 1.5 + audioLevel);
-    vec3 flareCol = mix(vec3(0.2, 0.6, 1.0), vec3(1.0, 0.5, 0.2), audioCentroid);
+    vec3 flareCol = imgPalette(0.30 * audioCentroid) * 1.4;
     finalCol += flareCol * flare;
 
     if (hueP > 0.0) {

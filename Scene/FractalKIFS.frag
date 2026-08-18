@@ -29,12 +29,28 @@ uniform float audioPitch;    // 0..1
 uniform float audioArousal;
 uniform float audioValence;
 uniform float audioPhase;
+uniform float audioChromaHue;
+uniform float audioAdvance;
 
 const float PI = 3.14159265358979;
 
 mat2 rot(float a) { float c = cos(a), s = sin(a); return mat2(c, -s, s, c); }
 vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
                           + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
+
+
+// IMG-PALETTE (house standard): colours come from a rotating arc in the
+// CURRENT slideshow image, so every activation inherits a fresh palette from
+// the photos; the arc follows the musical key (audioChromaHue is circular-
+// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+vec3 imgPalette(float t)
+{
+    float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
+    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
+    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
+    float pg  = dot(pc, vec3(0.333));
+    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+}
 
 void main()
 {
@@ -70,7 +86,7 @@ void main()
     vec2 iuv = fp * 0.15 + 0.5;
     vec3 pic = img(fract(iuv));
 
-    vec3 lit = mix(vec3(0.95, 0.55, 0.20), vec3(0.40, 0.80, 1.05), audioValence);
+    vec3 lit = imgPalette(0.30 * audioValence) * 1.6;
 
     // Dark where there is no structure, lit picture where the fractal traps.
     vec3 col = pic * mix(vec3(0.30), lit * 1.5, shade);

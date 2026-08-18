@@ -47,6 +47,20 @@ vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
+
+// IMG-PALETTE (house standard): colours come from a rotating arc in the
+// CURRENT slideshow image, so every activation inherits a fresh palette from
+// the photos; the arc follows the musical key (audioChromaHue is circular-
+// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+vec3 imgPalette(float t)
+{
+    float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
+    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
+    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
+    float pg  = dot(pc, vec3(0.333));
+    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+}
+
 vec3 hueRot(vec3 c, float a) {
     vec3 k = vec3(0.57735026919);
     float cs = cos(a), sn = sin(a);
@@ -141,7 +155,7 @@ void main() {
 
         // Metallic palette (liquid mercury silver + oily thin-film sheen)
         vec3 mercuryBase = vec3(0.85, 0.9, 0.95);
-        vec3 oilySheen = 0.5 + 0.5 * cos(vec3(0.0, 1.8, 3.6) + p.y * 12.0 + audioPhase);
+        vec3 oilySheen = imgPalette((p.y * 12.0 + audioPhase) * 0.159);
 
         col = mix(mercuryBase, oilySheen, 0.35);
         col = mix(col * 0.4, photo * 1.2, 0.65 + 0.25 * fresnel);

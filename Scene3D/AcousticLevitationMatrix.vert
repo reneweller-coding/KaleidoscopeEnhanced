@@ -22,10 +22,33 @@ uniform float nodeP;
 uniform float liftP;
 uniform float speedP;
 uniform float hueP;
+uniform sampler2D tex0;
+uniform sampler2D tex1;
+uniform float interpolation;
+uniform float audioChromaHue;
+uniform float audioValence;
 
 out vec4 vCol;
 out vec2 vUV;
 out vec3 vNormal;
+
+vec3 img(vec2 uv) {
+    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+}
+
+
+// IMG-PALETTE (house standard): colours come from a rotating arc in the
+// CURRENT slideshow image, so every activation inherits a fresh palette from
+// the photos; the arc follows the musical key (audioChromaHue is circular-
+// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+vec3 imgPalette(float t)
+{
+    float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
+    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
+    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
+    float pg  = dot(pc, vec3(0.333));
+    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+}
 
 vec3 hueRot(vec3 c, float a) {
     vec3 k = vec3(0.57735026919);
@@ -79,7 +102,7 @@ void main() {
     vNormal = rotY * normalize(corner);
 
     // Acoustic levitation ultrasound color gradient
-    vec3 col = mix(vec3(0.1, 0.6, 1.0), vec3(1.0, 0.3, 0.8), gridCoord.y);
+    vec3 col = imgPalette(0.30 * gridCoord.y) * 1.4;
     col = mix(col, vec3(1.0, 0.95, 0.4), abs(standingWave));
 
     if (hue > 0.001) col = hueRot(col, hue);

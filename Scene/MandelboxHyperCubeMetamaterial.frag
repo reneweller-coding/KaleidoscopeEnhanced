@@ -47,6 +47,20 @@ vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
+
+// IMG-PALETTE (house standard): colours come from a rotating arc in the
+// CURRENT slideshow image, so every activation inherits a fresh palette from
+// the photos; the arc follows the musical key (audioChromaHue is circular-
+// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+vec3 imgPalette(float t)
+{
+    float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
+    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
+    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
+    float pg  = dot(pc, vec3(0.333));
+    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+}
+
 vec3 hueRot(vec3 c, float a) {
     vec3 k = vec3(0.57735026919);
     float cs = cos(a), sn = sin(a);
@@ -133,7 +147,7 @@ void main() {
     // instead of near-black (metric scan: luma 8, saturation 0 -- most rays
     // miss the thin metamaterial lattice).
     vec3 col = vec3(0.02, 0.03, 0.06);
-    vec3 aura = (0.5 + 0.5 * cos(vec3(0.4, 2.2, 4.0) + trapMin * 7.0 + audioPhase))
+    vec3 aura = imgPalette((trapMin * 7.0 + audioPhase) * 0.159 + 0.05)
                 * exp(-trapMin * 1.8) * (0.5 + 0.5 * audioLevel);
     col += aura * 0.8;
 
@@ -155,7 +169,7 @@ void main() {
         vec3 photo = img(photoUV);
 
         // Cyberpunk neon architecture palette
-        vec3 cyber = 0.5 + 0.5 * cos(vec3(0.0, 1.8, 3.6) + trapMin * 10.0 + audioPhase);
+        vec3 cyber = imgPalette((trapMin * 10.0 + audioPhase) * 0.159);
 
         col = mix(photo * 0.85, cyber, 0.45);
         col = col * (0.35 + 0.65 * diff) + spec * vec3(1.0, 0.95, 0.85);

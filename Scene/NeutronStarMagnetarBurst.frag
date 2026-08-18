@@ -38,6 +38,29 @@ vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
+
+// IMG-PALETTE (house standard): colours come from a rotating arc in the
+// CURRENT slideshow image, so every activation inherits a fresh palette from
+// the photos; the arc follows the musical key (audioChromaHue is circular-
+// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+vec3 imgPalette(float t)
+{
+    float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
+    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
+    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
+    float pg  = dot(pc, vec3(0.333));
+    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+}
+
+
+// House tint: bend a colour toward the photo palette while keeping its
+// luminance -- the identity look survives, only the hue follows the photos.
+vec3 palTint(vec3 c, float t, float k)
+{
+    vec3 tp = imgPalette(t);
+    tp *= dot(c, vec3(0.3333)) / max(dot(tp, vec3(0.3333)), 1e-3);
+    return mix(c, tp, k);
+}
 vec3 hueRot(vec3 c, float a) {
     vec3 k = vec3(0.57735026919);
     float cs = cos(a), sn = sin(a);
@@ -110,7 +133,7 @@ void main() {
     vec3 photoCrust = img(fract(crustUV));
 
     // Neutron star crust colors: Ultra-dense metallic chrome + glowing mantle faults
-    vec3 crustBase = mix(vec3(0.05, 0.06, 0.09), vec3(0.12, 0.15, 0.22), photoCrust.r);
+    vec3 crustBase = palTint(mix(vec3(0.05, 0.06, 0.09), vec3(0.12, 0.15, 0.22), photoCrust.r), 0.40 * photoCrust.r, 0.20);
     
     // Glowing fault lines: Blinding blue-white Cherenkov radiation + ultra-hot cyan
     vec3 cherenkovCol = vec3(0.3, 0.7, 1.0) * 2.5 + vec3(1.0) * 1.5;

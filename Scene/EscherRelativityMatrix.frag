@@ -40,9 +40,24 @@ uniform float gridP;
 uniform float archP;
 uniform float neonP;
 uniform float hueP;
+uniform float audioChromaHue;
 
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+}
+
+
+// IMG-PALETTE (house standard): colours come from a rotating arc in the
+// CURRENT slideshow image, so every activation inherits a fresh palette from
+// the photos; the arc follows the musical key (audioChromaHue is circular-
+// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+vec3 imgPalette(float t)
+{
+    float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
+    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
+    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
+    float pg  = dot(pc, vec3(0.333));
+    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
 vec3 hueRot(vec3 c, float a) {
@@ -164,7 +179,7 @@ void main() {
 
         if (hitMat == 1) {
             // Neon glowing stairs
-            vec3 stairNeon = mix(vec3(1.0, 0.2, 0.8), vec3(0.0, 0.9, 1.0), sin(p.y * 2.0 + time * 3.0) * 0.5 + 0.5);
+            vec3 stairNeon = imgPalette((p.y * 2.0 + time * 3.0) * 0.159) * 1.5;
             col = stairNeon * (1.2 + audioKick * 2.5);
         } else {
             // Architecture facade with photo
@@ -179,7 +194,7 @@ void main() {
     }
 
     // Add volumetric neon glow
-    vec3 glowCol = mix(vec3(0.1, 0.8, 1.0), vec3(1.0, 0.3, 0.7), sin(time * 2.0) * 0.5 + 0.5);
+    vec3 glowCol = imgPalette(0.5 + 0.2 * sin(time * 2.0)) * 1.4;
     col += glowCol * glow * (1.0 + audioKick * 3.0);
 
     if (hue > 0.001) col = hueRot(col, hue);

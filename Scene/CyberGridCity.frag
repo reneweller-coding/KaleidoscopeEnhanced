@@ -42,9 +42,24 @@ uniform float speedP;
 uniform float densityP;
 uniform float neonP;
 uniform float hueP;
+uniform float audioChromaHue;
 
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+}
+
+
+// IMG-PALETTE (house standard): colours come from a rotating arc in the
+// CURRENT slideshow image, so every activation inherits a fresh palette from
+// the photos; the arc follows the musical key (audioChromaHue is circular-
+// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+vec3 imgPalette(float t)
+{
+    float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
+    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
+    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
+    float pg  = dot(pc, vec3(0.333));
+    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
 vec3 hueRot(vec3 c, float a) {
@@ -106,7 +121,7 @@ void main() {
             float slice = sin(rd.y * 140.0 - time * 2.0);
             if (slice < -0.2) sunDisc *= 0.15;
         }
-        vec3 sunCol = mix(vec3(1.0, 0.1, 0.5), vec3(1.0, 0.8, 0.1), clamp((rd.y - sunY + 0.1) * 4.0, 0.0, 1.0));
+        vec3 sunCol = imgPalette(0.10 + 0.25 * clamp((rd.y - sunY + 0.1) * 4.0, 0.0, 1.0)) * 1.6;
         col += sunDisc * sunCol * 2.0 + sunGlow * vec3(1.0, 0.2, 0.6);
 
         // Cyber stars
@@ -181,14 +196,14 @@ void main() {
             float trafficBeam = smoothstep(0.08, 0.0, abs(hp.x - 0.5)) * exp(-trafficZ * 3.0);
             float trafficBeamL = smoothstep(0.08, 0.0, abs(hp.x + 0.5)) * exp(-fract(-hp.z * 0.2 - time * 2.0 * spd) * 3.0);
 
-            vec3 gridCol = mix(vec3(0.0, 0.8, 1.0), vec3(1.0, 0.0, 0.8), sin(hp.z * 0.1) * 0.5 + 0.5);
+            vec3 gridCol = imgPalette((hp.z * 0.1) * 0.159) * 1.5;
             matCol = vec3(0.02, 0.02, 0.04);
             matCol += gridGlow * gridCol * (1.2 + audioKick * 1.5) * neo;
             matCol += trafficBeam * vec3(0.0, 1.0, 0.9) * 3.0 + trafficBeamL * vec3(1.0, 0.2, 0.2) * 3.0;
 
             // Puddle reflection
             vec3 reflDir = reflect(rd, vec3(0.0, 1.0, 0.0));
-            vec3 reflSky = mix(vec3(1.0, 0.0, 0.6), vec3(0.1, 0.8, 1.0), sin(reflDir.z * 2.0 + time) * 0.5 + 0.5);
+            vec3 reflSky = imgPalette((reflDir.z * 2.0 + time) * 0.159) * 1.4;
             matCol += reflSky * 0.3 * (0.8 + audioSwell * 0.5);
         } else {
             // Skyscraper facade
@@ -224,7 +239,7 @@ void main() {
 
         // Volumetric fog & distance atmospheric fade
         float fog = 1.0 - exp(-hitDist * (0.04 + audioSwell * 0.03));
-        vec3 fogCol = mix(vec3(0.05, 0.0, 0.15), vec3(0.0, 0.4, 0.8), clamp(hp.y * 0.2, 0.0, 1.0));
+        vec3 fogCol = imgPalette(0.60 + 0.30 * clamp(hp.y * 0.2, 0.0, 1.0)) * 0.45;
         col = mix(matCol, fogCol, fog);
     }
 

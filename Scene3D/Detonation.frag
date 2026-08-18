@@ -40,9 +40,39 @@ uniform float audioAmbient;
 
 uniform float glowP;
 uniform float blastP;
+uniform sampler2D tex1;
+uniform float audioAdvance;
+uniform float audioValence;
 
 // Same normal-offset lookup as PillarHall; the offset is in world units, so it
 // follows this scene's much smaller shadow box automatically.
+vec3 img(vec2 uv) {
+    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+}
+
+
+// IMG-PALETTE (house standard): colours come from a rotating arc in the
+// CURRENT slideshow image, so every activation inherits a fresh palette from
+// the photos; the arc follows the musical key (audioChromaHue is circular-
+// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+vec3 imgPalette(float t)
+{
+    float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
+    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
+    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
+    float pg  = dot(pc, vec3(0.333));
+    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+}
+
+
+// House tint: bend a colour toward the photo palette while keeping its
+// luminance -- the identity look survives, only the hue follows the photos.
+vec3 palTint(vec3 c, float t, float k)
+{
+    vec3 tp = imgPalette(t);
+    tp *= dot(c, vec3(0.3333)) / max(dot(tp, vec3(0.3333)), 1e-3);
+    return mix(c, tp, k);
+}
 float shadowAt(vec3 world, vec3 n, float ndl)
 {
     float lift = (2.0 * shadowExtent * shadowTexel) * 2.2 / max(ndl, 0.15);
@@ -111,7 +141,7 @@ void main()
         // Only the shards that really travelled carry heat.  A gentle exponent
         // here lights every plate at rest and the shell turns into a disco
         // ball; the steep one keeps the glow as a signal that something moved.
-        vec3 hot = mix(vec3(1.0, 0.32, 0.05), vec3(1.0, 0.78, 0.25), vEdge);
+        vec3 hot = palTint(mix(vec3(1.0, 0.32, 0.05), vec3(1.0, 0.78, 0.25), vEdge), 0.08 * vEdge, 0.18);
         col += hot * pow(vShard, 3.0) * (0.25 + 0.7 * glowP)
              * (0.5 + 0.9 * audioKick);
     }
@@ -119,8 +149,8 @@ void main()
     {
         // --- inside: molten, seen through the gaps the shards left behind ---
         float band = 0.5 + 0.5 * sin(vUV.y * 42.0 + time * 0.6 + vUV.x * 9.0);
-        vec3 magma = mix(vec3(1.0, 0.22, 0.03), vec3(1.0, 0.85, 0.35),
-                         band * (0.35 + 0.5 * audioLevel));
+        vec3 magma = palTint(mix(vec3(1.0, 0.22, 0.03), vec3(1.0, 0.85, 0.35),
+                         band * (0.35 + 0.5 * audioLevel)), 0.08, 0.18);
         col = magma * (0.35 + 0.8 * glowP) * (0.4 + 1.0 * audioSubBass);
 
         // A shard's own back face only glows once it has actually flown; at

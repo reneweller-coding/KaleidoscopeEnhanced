@@ -44,10 +44,34 @@ uniform float waxHueP;    // wax palette hue rotation (0 -> classic orange; 0..6
 uniform float speedP;     // circulation speed multiplier (0 -> 1.0; 0.6..1.6)
 uniform float sizeP;      // blob size multiplier         (0 -> 1.0; 0.8..1.4)
 uniform int   countP;     // number of blobs              (0 -> 6; 4..8)
+uniform float audioChromaHue;
 
 vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
                           + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
 
+
+// IMG-PALETTE (house standard): colours come from a rotating arc in the
+// CURRENT slideshow image, so every activation inherits a fresh palette from
+// the photos; the arc follows the musical key (audioChromaHue is circular-
+// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+vec3 imgPalette(float t)
+{
+    float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
+    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
+    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
+    float pg  = dot(pc, vec3(0.333));
+    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+}
+
+
+// House tint: bend a colour toward the photo palette while keeping its
+// luminance -- the identity look survives, only the hue follows the photos.
+vec3 palTint(vec3 c, float t, float k)
+{
+    vec3 tp = imgPalette(t);
+    tp *= dot(c, vec3(0.3333)) / max(dot(tp, vec3(0.3333)), 1e-3);
+    return mix(c, tp, k);
+}
 // Hue rotation around the luminance axis (keeps brightness + saturation).
 vec3 hueRot(vec3 c, float a)
 {
@@ -155,7 +179,7 @@ void main()
     // Classic wax palette (hot core -> cooler top), hue-rotated per activation,
     // modulated by the lensed picture so the image glows inside the wax.
     float hotness = clamp(1.2 - p.y + 0.35 * m, 0.0, 1.5);
-    vec3 waxPal = mix(vec3(1.0, 0.62, 0.16), vec3(1.0, 0.25, 0.10), hotness * 0.7);
+    vec3 waxPal = palTint(mix(vec3(1.0, 0.62, 0.16), vec3(1.0, 0.25, 0.10), hotness * 0.7), 0.15 * hotness, 0.20);
     waxPal = hueRot(waxPal, waxHueP + 0.25 * sin(audioBarPhase * 6.2831));
     // Each blob wears its own subtle tint (varies smoothly with its centre,
     // so neighbouring blobs shimmer in different shades of the palette).
