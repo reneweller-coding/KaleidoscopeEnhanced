@@ -335,6 +335,59 @@ Konsequenzen fürs Autorieren:
   aus dem Bild; Dauerrotation nur über `rigRollV` (Bildebene) oder mit
   gebundenen Oszillationen (`0.1*sin(…)` als Rate integriert beschränkt).
 
+### V11 — Datei-Header: Doxygen-Format, keine freie Prosa mehr
+
+Alle 689 Shader-Dateien (`.frag`/`.vert`/`.comp`/`.tesc`/`.tese`/`.geom`)
+tragen inzwischen einen `/** @file @brief */`-Block statt der alten
+`// Name.ext` / `// -----` / `// TITLE: …`-Prosa. Ein neuer Shader zieht
+denselben Block:
+
+```glsl
+#version 330 core
+out vec4 fragColor;
+/**
+ * @file MeineSzene.frag
+ * @brief Ein Satz, was die Szene zeigt und wie Audio sie treibt
+ * (welche audio*-Uniforms was tun).  Weitere Absätze für Kontext, den ein
+ * Doxygen-Leser braucht (z.B. `Per-activation variety`-Parameter).
+ */
+
+uniform vec2 resolution;
+...
+```
+
+**Platzierung:** nach `#version` (+ etwaigen `#extension`-Zeilen) und den
+`in`/`out`-Varyings, vor der ersten `uniform`-Deklaration — bei `.comp`-
+Dateien direkt nach `#version` (oder nach `layout(local_size…) in;`, wenn
+die Datei bereits so eine Konvention von einer Nachbardatei geerbt hat).
+Ein `.vert`/`.tesc`/`.tese`/`.geom`, das nur die Companion-Datei eines
+bereits dokumentierten `.frag`/`.comp` ist, bekommt einen Ein-Zeiler-Stub
+statt einer eigenen Beschreibung:
+
+```glsl
+/**
+ * @file MeineSzene.vert
+ * @brief Vertex stage companion to MeineSzene.frag -- see that file's
+ * header for this scene's description.
+ */
+```
+
+**Die eine echte Falle dabei:** `/* */`-Blöcke verschachteln in C/GLSL
+NICHT — das ERSTE `*/`, das irgendwo in der Prosa auftaucht, schließt den
+Kommentar vorzeitig. Ein Pfadbeispiel wie `"rec_*/frame.jpg"` oder
+`"replay_*/replay.mp4"` in der Beschreibung reißt den Block an genau dieser
+Stelle auf — alles danach wird echter (kaputter) Code. Immer mit einem
+Platzhalter statt Sternchen schreiben (`rec_TIMESTAMP/frame_NNNNNN.jpg`)
+oder den Pfad in Backticks setzen. Ein `#define`/`<Tag>`/`@irgendwas`/
+`\irgendwas` in der Prosa löst KEINEN Compile-Fehler aus, aber eine
+Doxygen-Warnung (Auto-Link- bzw. Befehls-Fehlinterpretation) — in Backticks
+setzen oder mit `\@`/`\#` escapen, wenn es kein echter Verweis sein soll.
+
+Vor dem Commit: `python Tools/find_comment_breaks.py <geänderte Dateien>`
+(erkennt genau diese `*/`-Kollision, kein Teil von shadercheck.py) und,
+wenn Zeit ist, `doxygen Doxyfile` im Repo-Root laufen lassen — die
+Warnungsliste sollte nach einer Änderung nicht länger werden als vorher.
+
 ---
 
 ## Probe-Renders: IMMER mit echten Bildern (`--images`)
