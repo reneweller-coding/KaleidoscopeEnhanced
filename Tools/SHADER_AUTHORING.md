@@ -427,7 +427,7 @@ while IFS='|' read -r name file type geom; do
 done < meta.txt
 ```
 
-**Zwei Fallen, die schon zu falschen Diagnosen geführt haben:**
+**Drei Fallen, die schon zu falschen Diagnosen geführt haben:**
 
 1. **CR/LF.** Eine unter Windows von Python geschriebene Metadaten-Datei endet
    auf `\r\n`. Beim `IFS='|' read` landet das `\r` im **letzten** Feld. Steht
@@ -438,6 +438,17 @@ done < meta.txt
 
 2. **Nicht parallel zu anderen GPU-Tests laufen lassen.** Ein Batch-Render
    gleichzeitig mit `--validate`/`--transcheck` kann in Timeouts laufen.
+
+3. **Bei `--geom` (Scene3D) ist `$file` der BLOSSE Dateiname, kein Pfad.**
+   `PreviewWidget::paintGL()` baut den echten Pfad selbst als
+   `<root>/Scene3D/<file>` (und den `.comp`/`.vert`-Sibling-Pfad als
+   `..\Scene3D\<file>`) — ein zusätzlich mitgegebenes `Scene3D/`- oder
+   `..\Scene3D\`-Präfix verdoppelt das Segment, die Datei wird nie gefunden,
+   und ohne `--geom` (2D-Pfad) sucht `compile()` ohnehin selbst in
+   `Scene2D/`/`FX/`/`Engine/` — auch dort **kein** Präfix voranstellen. Bis
+   Version 1.2.1 lief das komplett stumm auf ein schwarzes Bild hinaus (die
+   Diagnose "missing X.vert" ging als Qt-Signal ins Leere, weil nur die
+   Editor-GUI zuhörte); seitdem druckt `--render` sie auf stderr.
 
 Schwarz-Erkennung: mittlere Luminanz eines heruntergerechneten Bildes; unter
 ~3.0 ist verdächtig. **Aber:** Ein dünner, spärlicher Effekt (z.B.
