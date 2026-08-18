@@ -1,6 +1,20 @@
 #version 330 core
 out vec4 fragColor;
-// Snowfall.frag — a blizzard in front of the photograph.
+/**
+ * @file Snowfall.frag
+ * @brief A blizzard of four depth-layered flake sheets falling in front of a
+ *        darkened, cooled photograph, with per-layer blur standing in for
+ *        depth of field.
+ *
+ * A shared wind field (function of screen height, strengthened by
+ * audioSubBass and audioKick) gusts every layer together; audioAdvance
+ * integrates the fall/drift phase for all layers so speed changes never
+ * jump. audioLevel and a slight audioChromaHue hue-rotation tint the flakes,
+ * audioHigh adds sparkle to the two nearest layers, audioBeat brightens the
+ * frame, and audioAmbient lifts the haze behind the storm. Flake and haze
+ * colours are bent toward imgPalette (a photo-sampled palette arc driven by
+ * audioChromaHue/audioAdvance/audioValence) via the palTint helper.
+ */
 // -----------------------------------------------------------------------
 // Depth here is bought with layers rather than with geometry: several sheets of
 // flakes, each with its own size, speed and blur.  The near sheets are big,

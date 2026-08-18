@@ -16,6 +16,27 @@ in vec3  vView;
 in float vKind;
 in float vLevel;
 
+/**
+ * @file CathedralGlass.frag
+ * @brief Two-pass shader for the CathedralGlass.comp rose window: an opaque
+ * pass shades the stone tracery with a simple key light, and an
+ * order-independent-transparency (weighted-blended OIT) pass shades the
+ * glass panes as backlit, emissive stained glass rather than reflective
+ * plastic, writing to the accumulation/revealage targets.
+ *
+ * audioAmbient brightens both the stone and the glass's emissive glow;
+ * audioLevel and audioKick both brighten the glass panes and the oculus's
+ * light-pouring-through glow; audioHigh strengthens the glass sheen
+ * highlight; audioBeat and audioSubBass add a final brightness pulse to the
+ * glass. audioChromaHue drives imgPalette()'s rotating photo-arc sample
+ * point (via hue2rgb()) so each pane's colour tracks the musical key, with
+ * audioValence shaping saturation and audioAdvance slowly drifting the
+ * sampled arc. glowP scales overall glass brightness and hueP offsets the
+ * base hue-per-petal layout. vKind/vLevel/vObj/vNormal (written by the
+ * compute kernel via the vertex stage) select which of the three wheels a
+ * pane belongs to and how bright its assigned spectrum band is.
+ */
+
 uniform sampler2D tex0;
 uniform float interpolation;
 uniform float time;

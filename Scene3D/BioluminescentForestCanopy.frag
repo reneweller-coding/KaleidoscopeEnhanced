@@ -5,6 +5,22 @@ in float vBioGlow;
 
 out vec4 fragColor;
 
+/**
+ * @file BioluminescentForestCanopy.frag
+ * @brief Shades an alien rainforest canopy of bioluminescent flora, mixing
+ * an emerald/magenta base palette (chosen per-vertex via vFloraType) with a
+ * time-driven cyan pulse and the house photo-arc palette drawn from the
+ * current slideshow image.
+ *
+ * audioChromaHue drives imgPalette()'s rotating photo-arc sample point (so
+ * the plant colours track the musical key), audioValence shapes that
+ * palette's saturation, and audioAdvance slowly drifts the sampled arc over
+ * time; audioKick/audioBass/audioMid/audioHigh/audioSwell/audioPhase are
+ * declared for the vertex-side glow/motion coupling (vBioGlow arrives here
+ * already audio-modulated). The hueP preset applies a final uniform hue
+ * rotation via hueRot().
+ */
+
 uniform float time;
 uniform sampler2D tex0;
 uniform sampler2D tex1;

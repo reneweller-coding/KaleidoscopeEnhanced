@@ -5,6 +5,21 @@ in vec4  vCol;
 in float vSide;
 in float vLength;
 
+/**
+ * @file QuantumHallEdgeCurrents.frag
+ * @brief Shades the 20 chiral edge-current ribbons of the Quantum Hall
+ * scene: a soft-edged glowing strip per ribbon, blended with a scrolling
+ * sample of the live slideshow photo and brightened toward its edges.
+ *
+ * This fragment stage reads no audio uniforms directly — all of the audio
+ * reactivity (cyclotron skipping-orbit radius from audioBass, kick phase
+ * jumps from audioKick, chiral pulse timing, hue rotation from
+ * audioChromaHue/audioSwell) is computed per-vertex in
+ * QuantumHallEdgeCurrents.vert and arrives here already baked into vCol;
+ * this shader only uses vSide for the cross-ribbon edge glow and vLength to
+ * scroll the photo sample lengthwise along the ribbon.
+ */
+
 uniform sampler2D tex0;
 uniform sampler2D tex1;
 uniform float interpolation;

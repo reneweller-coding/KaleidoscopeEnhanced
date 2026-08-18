@@ -144,14 +144,14 @@ private:
 	void setupReactionDiffusion();
 	/**
 	 * @brief Advances the Gray-Scott reaction-diffusion sim by one PDE step into the next ping-pong buffer.
-	 * @param a Current audio features; drives the feed/kill parameter wander and the reagent-injection trigger.
+	 * @param audio Current audio features; drives the feed/kill parameter wander and the reagent-injection trigger.
 	 */
 	void stepReactionDiffusion( const AudioFeatures &a );
 	/** @brief Creates the fluid-dye ping-pong FBOs/textures and compiles the curl-noise advection shader. Idempotent and fail-safe: on any failure m_fluidReady stays false. */
 	void setupFluid();
 	/**
 	 * @brief Advances the curl-noise dye advection by one step, blending the current/next source image in as dye.
-	 * @param a Current audio features; drives the swirl impulse and dye-injection amount.
+	 * @param audio Current audio features; drives the swirl impulse and dye-injection amount.
 	 * @param f Per-frame context supplying the integrated flow phase and the two dye source textures.
 	 */
 	void stepFluid( const AudioFeatures &a, const Frame &f );
@@ -159,13 +159,13 @@ private:
 	void setupSmoke3D();
 	/**
 	 * @brief Advances the smoke/fire volume by one full frame: a horizontal pass (turbulence/injection) followed by a vertical pass (buoyancy), each its own ping-pong swap.
-	 * @param a Current audio features; drives turbulence and fuel-injection strength.
+	 * @param audio Current audio features; drives turbulence and fuel-injection strength.
 	 * @param f Per-frame context supplying time and the integrated emitter-wander phase.
 	 */
 	void stepSmoke3D( const AudioFeatures &a, const Frame &f );
 	/**
 	 * @brief Runs one sub-step of the smoke/fire PDE (horizontal or vertical half) into the next ping-pong buffer.
-	 * @param a Current audio features; drives per-cell turbulence and base-cell fuel injection.
+	 * @param audio Current audio features; drives per-cell turbulence and base-cell fuel injection.
 	 * @param f Per-frame context (time, integrated emitter-wander phase).
 	 * @param subStep Which half of the PDE this pass computes (0 = horizontal turbulence/injection/decay, 1 = vertical buoyant rise/cross-cell softening); forwarded to the shader as-is.
 	 */
@@ -174,7 +174,7 @@ private:
 	void setupPhysarum();
 	/**
 	 * @brief Advances the Physarum slime-mould sim by one frame: agents sense/turn/move, deposit pheromone points, then the trail map diffuses and evaporates.
-	 * @param a Current audio features; drives agent speed/sensor angle/turn rate/scatter and deposit amount.
+	 * @param audio Current audio features; drives agent speed/sensor angle/turn rate/scatter and deposit amount.
 	 * @param f Per-frame context; supplies time to the agent-update shader.
 	 */
 	void stepPhysarum( const AudioFeatures &a, const Frame &f );

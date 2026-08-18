@@ -11,6 +11,22 @@ in vec3  vView;
 in float vDepth;      // 0 = trunk, 1 = tip
 in float vKind;       // 0 = wood, 1 = leaf
 
+/**
+ * @file GrowthTree.frag
+ * @brief Shades the grown tree with two materials picked by vKind: bark
+ * that warms from dark trunk to lighter young wood along vDepth with an
+ * inner sap-glow near the tips, and leaves lit mainly by backlit
+ * translucency; a cool counter-light keeps the far side of the trunk from
+ * going flat black.
+ *
+ * audioChromaHue picks the sap-glow and leaf hue from the photo-arc
+ * palette (imgPalette), audioKick and audioSubBass run a surge of the sap
+ * glow up toward the growing tips, audioHigh brightens the leaf's inner
+ * glow, audioAmbient lifts leaf backlight translucency, audioLevel
+ * strengthens the sky-reflection rim light, and audioBeat pulses the
+ * final brightness.
+ */
+
 uniform sampler2D tex0;
 uniform float interpolation;
 uniform float time;

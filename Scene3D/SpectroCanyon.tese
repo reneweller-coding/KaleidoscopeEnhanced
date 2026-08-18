@@ -1,4 +1,9 @@
 #version 400 core
+/**
+ * @file SpectroCanyon.tese
+ * @brief Tessellation-evaluation stage companion to SpectroCanyon.frag -- see that file's header for
+ * this scene's description.
+ */
 // SpectroCanyon.tese — a landscape whose terrain IS the music's history.
 // -----------------------------------------------------------------------
 // texSpectro holds a scrolling spectrogram: 32 log-spaced bands across, ~20 s

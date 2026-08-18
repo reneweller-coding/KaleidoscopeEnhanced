@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file SuperfluidHeliumVortexTurbulence.vert
+ * @brief Vertex stage companion to SuperfluidHeliumVortexTurbulence.frag -- see that file's header for
+ * this scene's description.
+ */
 // attrA.xyz = world pos (baked by the compute generator), attrA.w = kelvinAmp
 // attrB.w   = circulation (Scene3DShader.cpp GEOM_INDIRECT, 8-float layout)
 in vec4 attrA;

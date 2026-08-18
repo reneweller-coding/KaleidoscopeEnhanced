@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file ParticleGalaxy.vert
+ * @brief Vertex stage companion to ParticleGalaxy.frag -- see that file's header for
+ * this scene's description.
+ */
 // ParticleGalaxy.vert — a REAL 3D spiral galaxy of 60k point sprites.
 // The camera orbits the core; the bass pumps the central bulge, every kick
 // sends a bright shock ring rolling outward along the beat phase, and a drop

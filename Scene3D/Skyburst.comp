@@ -12,6 +12,25 @@
 // -----------------------------------------------------------------------
 layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 
+/**
+ * @file Skyburst.comp
+ * @brief Compute kernel that simulates fireworks shells and their sparks
+ * with closed-form ballistics (no stored particle state): a shell rises on a
+ * mortar trail, bursts into a Fibonacci-sphere spread of sparks, and each
+ * spark's current and past positions are evaluated directly from its launch
+ * velocity and elapsed time to build a trail on the fly.
+ *
+ * audioAdvance is the master clock that phases each shell's launch/rise/
+ * burst life cycle so shells fire on a musical grid; audioSubBass raises the
+ * shell's apex height; audioKick widens the spark burst speed; audioHigh
+ * thickens the spark trails; audioChroma[12] picks each shell's hue from its
+ * own musical pitch class. The resulting trail-quad vertices (position, age,
+ * hue, brightness) are written into the Verts SSBO (with the Cmd SSBO's
+ * atomic counter tracking the draw count) for indirect drawing, and
+ * Skyburst.frag reads that per-vertex age/hue/brightness back to render the
+ * blackbody-style ember cooling along each streak.
+ */
+
 layout(std430, binding = 0) buffer Verts { float verts[]; };
 layout(std430, binding = 1) buffer Cmd   { uint  cmd[]; };
 

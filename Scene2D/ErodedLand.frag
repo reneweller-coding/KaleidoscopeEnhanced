@@ -1,5 +1,11 @@
 #version 330 core
 out vec4 fragColor;
+/**
+ * @file ErodedLand.frag
+ * @brief A relief-shaded landscape being carved by simulated water erosion, viewed from a slowly drifting aerial camera.
+ *
+ * texErosion (written by the CfxErosion compute pass, R = height, G = water) is lit with a travelling sun and shaded from its own height gradient; water is found geometrically as concave dips in the terrain rather than stored separately. audioAdvance drives the camera's pan and zoom over the terrain, integrated so it never jump-cuts, audioKick flashes the freshly carved water channels, audioBeat gives the whole image a light pulse, and audioAmbient tints the pooled water. Altitude bands (valley floor, rock, snow) are recoloured with a sample from the photo itself.
+ */
 // ErodedLand.frag — a landscape carving itself.  Blend/CfxErosion.comp runs
 // thousands of droplets downhill every frame; this pass shades the result as
 // a relief map with a travelling sun, water in the valleys and the photo's

@@ -1,6 +1,19 @@
 #version 330 core
+/**
+ * @file OitResolve.frag
+ * @brief Resolves weighted-blended order-independent transparency: combines the colour-accumulation and reveal buffers into one final image.
+ *
+ * Fullscreen fragment pass reading two textures written earlier by a
+ * transparent-geometry accumulation pass: texAccum (RGBA16F sum of
+ * colour*alpha*weight in RGB, sum of alpha*weight in A) and texReveal (R16F
+ * product of (1-alpha) across all layers). Divides accumulated colour by its
+ * accumulated weight (guarded against denormal weights blowing up into
+ * infinities), discards fully-uncovered pixels, and outputs the weighted-
+ * average layer colour with alpha = 1-reveal. Because both accumulation
+ * operations are commutative, the result never depends on draw order, so no
+ * depth sorting of transparent geometry is needed.
+ */
 out vec4 fragColor;
-// OitResolve.frag — turn the two accumulation targets back into one image.
 // -----------------------------------------------------------------------
 // Weighted-blended OIT never sorts anything.  Each transparent fragment adds
 // its premultiplied colour into an accumulation buffer, scaled by a weight that

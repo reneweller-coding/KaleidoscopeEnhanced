@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file MetaSculpt.vert
+ * @brief Vertex stage companion to MetaSculpt.frag -- see that file's header for
+ * this scene's description.
+ */
 // MetaSculpt.vert — the vertices arrive straight from MetaSculpt.comp, so
 // there is nothing to generate here: place the body and pass the shading data.
 

@@ -2,7 +2,7 @@
 out vec4 fragColor;
 /**
  * @file NeonTubes.frag
- * @brief Adapted from a @kishimisu code-golf raymarch (2022, CC BY-NC-SA 4.0).
+ * @brief Adapted from a \@kishimisu code-golf raymarch (2022, CC BY-NC-SA 4.0).
  * "A nice mix between an intended result and happy bugs integrated as features."
  *
  * A fly-through of pulsing neon rings/tubes in a repeating domain.  Adapted to

@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file DrumSkin.vert
+ * @brief Vertex stage companion to DrumSkin.frag -- see that file's header for
+ * this scene's description.
+ */
 // DrumSkin.vert — look across the head, not down at it.  Seen from directly
 // above, a membrane mode is a flat pattern and could have been drawn; seen at a
 // low angle the displacement becomes a silhouette and the surface is obviously

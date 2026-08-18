@@ -1,5 +1,22 @@
 #version 330 core
 out vec4 fragColor;
+/**
+ * @file FxWiggle.frag
+ * @brief FX WIGGLE: hand-drawn "boil" -- the frame-to-frame line wobble of
+ * traditional cel animation shot on twos/threes.
+ *
+ * A noise field re-seeds only on quantised time holds, never every frame
+ * and never at a rate the music can shift, so the whole drawing steps as
+ * one instead of dissolving into per-pixel video noise; a secondary coarse
+ * field adds a registration drift and paper grain, also held.
+ *   interpolation -> cross-fades the two wiggled scene layers
+ *   audioLevel    -> strengthens the line-boil displacement
+ *   audioKick     -> punches the displacement briefly
+ *   audioChromaHue-> sets the hue of the highlight tint added in the highs
+ *   audioHigh     -> adds a touch of that harmonic-hue tint
+ *   audioSubBass  -> subtle overall brightness pulse
+ *   audioBeat     -> subtle overall brightness pulse
+ */
 // FxWiggle.frag — the boil of hand-drawn animation.
 // -----------------------------------------------------------------------
 // Drawn animation wobbles because each frame was drawn separately: the line

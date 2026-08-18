@@ -20,6 +20,21 @@ in vec3  vView;
 in vec3  vObj;
 in vec2  vFeather;      // x = quill..tip, y = -1..1 across
 
+/**
+ * @file FeatherStorm.frag
+ * @brief Cuts a single feather's silhouette out of its quad and shades it as
+ * a backlit, barbed vane rather than a flat leaf shape.
+ *
+ * audioLevel brightens the through-vane translucency, audioKick strengthens
+ * the fresnel rim, audioHigh brightens the specular highlight, audioAmbient
+ * adds a flat ambient tint, and audioBeat/audioSubBass pulse the final
+ * brightness; hue comes from the rotating photo-arc palette (imgPalette),
+ * whose arc position follows audioChromaHue with a slow audioAdvance drift
+ * and audioValence-controlled saturation. Reads back the quad geometry
+ * (position, normal, quill-to-tip / across-vane UV) that the paired
+ * FeatherStorm.comp regenerates every frame.
+ */
+
 uniform sampler2D tex0;
 uniform float interpolation;
 uniform float time;

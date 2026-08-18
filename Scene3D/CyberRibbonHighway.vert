@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file CyberRibbonHighway.vert
+ * @brief Vertex stage companion to CyberRibbonHighway.frag -- see that file's header for
+ * this scene's description.
+ */
 // CyberRibbonHighway.vert — 20 intertwined neon hyper-loop highway ribbons
 // spiraling through 3D space with high-speed pulse packets and lane markings.
 //   attrA.x = t along ribbon, attrA.y = side (-1/+1), attrA.w = ribbon index

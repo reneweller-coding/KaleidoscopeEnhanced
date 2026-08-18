@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file Detonation.geom
+ * @brief Geometry stage companion to Detonation.frag -- see that file's header for
+ * this scene's description.
+ */
 // Detonation.geom — break a shell into its own triangles and blow them apart.
 // -----------------------------------------------------------------------
 // The vertex buffer is an ordinary closed mesh.  Only a geometry shader can

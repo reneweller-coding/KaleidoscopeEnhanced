@@ -2,7 +2,7 @@
 out vec4 fragColor;
 /**
  * @file Vortex.frag
- * @brief Adapted from "Vortex" by @kishimisu (2024) — https://www.shadertoy.com/view/MX33Dr
+ * @brief Adapted from "Vortex" by \@kishimisu (2024) — https://www.shadertoy.com/view/MX33Dr
  * Original licensed CC BY-NC-SA 4.0 (attribution kept per the licence).
  *
  * A kaleidoscopic raymarched vortex/tunnel.  Reconstructed from the code-golfed

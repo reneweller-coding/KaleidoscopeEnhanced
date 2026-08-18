@@ -10,6 +10,23 @@ uniform float audioKick;
 in vec4  vCol;
 in float vSide;
 
+/**
+ * @file SciFiHUD.frag
+ * @brief Shades the 20 ribbons of the diegetic sci-fi cockpit HUD (bezel
+ * rings, radar sweep, live oscilloscope trace, spectrum arc, compass ticks,
+ * target reticle with corner brackets, onset lock-on rings) as crisp glowing
+ * lines: a bright core plus a soft halo, using vSide as the distance from
+ * the ribbon's centreline. vCol already carries the vertex shader's fade
+ * (crosshair gaps, sweep trail, lock-ring pulses) baked in.
+ *
+ * audioLevel and audioKick give this fragment stage its own extra pulse on
+ * top of vCol — added after a reactivity pass found the vertex-side coupling
+ * alone barely moved any pixels. The HUD's real audio response (the live
+ * waveform trace from audioWave, the spectrum arc from audioSpectrum, lock-on
+ * pulses from audioOnset, sweep/hue drift from audioAdvance/audioChromaHue)
+ * is computed in SciFiHUD.vert.
+ */
+
 void main()
 {
     float d    = abs(vSide);

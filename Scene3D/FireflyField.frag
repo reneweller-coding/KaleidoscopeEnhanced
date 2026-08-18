@@ -3,6 +3,17 @@ out vec4 fragColor;
 // FireflyField.frag — soft glowing point (additive blending).
 in vec4 vCol;
 
+/**
+ * @file FireflyField.frag
+ * @brief Shades one firefly as a soft radial glow sprite (a Gaussian
+ * falloff from the point-sprite center), meant to be additively blended so
+ * overlapping fireflies pool into brighter light.
+ *
+ * This fragment shader declares no audio uniforms of its own; its
+ * audio-reactive color and brightness (vCol) are computed per-vertex by the
+ * companion vertex shader and only shaped here by the radial falloff.
+ */
+
 void main()
 {
     vec2  d = gl_PointCoord - 0.5;

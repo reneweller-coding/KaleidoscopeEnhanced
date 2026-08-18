@@ -1,5 +1,18 @@
 #version 330 core
 out vec4 fragColor;
+/**
+ * @file Rorschach.frag
+ * @brief An ever-morphing Rorschach inkblot: an fbm noise field mirrored on
+ *        the vertical axis, rendered as dark ink on a warm paper ghost of
+ *        the photo (or inverted to a "positive plate" when `positive` is set).
+ *
+ * The blot's shape is not static: audioAdvance integrates into the fbm noise
+ * phase so it continuously morphs in step with the music (never snaps),
+ * audioKick dilates the ink field so the blot pulses outward on kicks, and
+ * audioLevel both densifies the ink field and raises the ink's opacity over
+ * the paper. Legacy per-activation uniforms (fiOffset, posX/Y/Z, divisor)
+ * seed the blot's noise offset and scale so each activation looks distinct.
+ */
 uniform vec2 resolution;
 uniform float time;
 uniform sampler2D tex0;

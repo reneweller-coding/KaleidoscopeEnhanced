@@ -11,6 +11,21 @@ in vec3  vNormal;
 in vec3  vView;
 in float vHeight;
 
+/**
+ * @file VideoRelief.frag
+ * @brief Lights the image-as-terrain relief built in VideoRelief.vert (the
+ * slideshow photo's luminance raised into height) while keeping the source
+ * picture itself the dominant term, so the result reads as the photo
+ * standing up rather than a shaded landscape.
+ *
+ * audioHigh sharpens a specular highlight; audioKick and audioChromaHue
+ * drive a rim-light wash along the ridge lines, coloured from the rotating
+ * photo-arc palette; audioBeat and audioSubBass pulse overall exposure;
+ * audioAmbient adds a flat fill from the source image; and inkP (a preset)
+ * controls how strongly the directional lighting is allowed to bite into
+ * the picture versus leaving it untouched.
+ */
+
 uniform sampler2D tex0;
 uniform float interpolation;
 uniform float time;

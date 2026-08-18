@@ -1,4 +1,18 @@
 #version 430
+/**
+ * @file CfxLightningStep.comp
+ * @brief Advances every active lightning tip one step downward with random wander, splats its travelled segment into the accumulation buffer, and probabilistically branches new tips.
+ *
+ * Per-frame step following CfxLightningSeed.comp's initial three leaders.
+ * Each invocation owns one slot in the `Tips` SSBO (binding 1, life <= 0
+ * means free); it advances position/angle, colors the segment from a
+ * white-hot core cooling to violet-blue with age, and splats it via atomic
+ * adds into the `Accum` SSBO (binding 0). With probability `branchP` it
+ * claims a fresh slot by atomically incrementing `tipCount` in the `Ctrl`
+ * SSBO (binding 2) — the tree's branching width is therefore decided by the
+ * GPU at runtime rather than fixed host-side allocation — undoing the
+ * increment if the buffer is already full.
+ */
 // CfxLightningStep.comp — branching electrical discharge.
 // -----------------------------------------------------------------------
 // A population of TIPS advances one step per frame and occasionally splits.

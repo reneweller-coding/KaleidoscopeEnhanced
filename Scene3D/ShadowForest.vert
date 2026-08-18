@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file ShadowForest.vert
+ * @brief Vertex stage companion to ShadowForest.frag -- see that file's header for
+ * this scene's description.
+ */
 // ShadowForest.vert — eye height on the forest floor, looking level into the
 // stand.  No rotation: the motion is the trunks drifting past, which is what
 // makes their shadows sweep.

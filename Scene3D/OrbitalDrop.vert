@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file OrbitalDrop.vert
+ * @brief Vertex stage companion to OrbitalDrop.frag -- see that file's header for
+ * this scene's description.
+ */
 // OrbitalDrop.vert — atmospheric re-entry, looping forever: the fall
 // begins among the stars, plasma fire streaks past the view, then a cloud
 // deck bursts open and a city of lights rushes up — fade to black, and the

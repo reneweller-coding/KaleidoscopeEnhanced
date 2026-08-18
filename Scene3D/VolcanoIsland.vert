@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file VolcanoIsland.vert
+ * @brief Vertex stage companion to VolcanoIsland.frag -- see that file's header for
+ * this scene's description.
+ */
 // VolcanoIsland.vert — an island volcano at night: ballistic lava bombs
 // arc from the crater (every kick feeds the fountain, a DROP is the big
 // eruption), lava rivers crawl down seeded channels, embers spiral up into

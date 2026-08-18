@@ -1,4 +1,21 @@
 #version 430
+
+/**
+ * @file BioluminescentSwarm.comp
+ * @brief Compute kernel that simulates 4096 winged bioluminescent creatures
+ * flowing through an emergent double-torus murmuration in 3D space.
+ *
+ * audioAdvance drives each creature's orbital angle and the murmuration's
+ * slow torus breathing; audioKick scatters creatures radially outward on
+ * each hit; audioSpectrum[] (one band per creature, picked from its random
+ * seed) drives that creature's individual emission glow, layered with a
+ * general audioKick boost; swarmP scales the orbit radius, speedP scales the
+ * orbital/torus speed, and glowP scales overall brightness. Each invocation
+ * emits one faceted diamond creature (two triangles, 6 vertices) into the
+ * shared vertex/command buffers, which the sibling BioluminescentSwarm.frag
+ * reads back and lights with a simple directional diffuse + specular term.
+ */
+
 // BioluminescentSwarm.comp — GPU Compute Simulation of 12,000 bioluminescent
 // creatures exhibiting emergent flocking and murmuration vortices in 3D.
 layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;

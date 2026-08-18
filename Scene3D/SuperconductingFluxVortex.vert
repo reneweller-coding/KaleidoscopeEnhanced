@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file SuperconductingFluxVortex.vert
+ * @brief Vertex stage companion to SuperconductingFluxVortex.frag -- see that file's header for
+ * this scene's description.
+ */
 // SuperconductingFluxVortex.vert
 
 layout(location = 0) in vec4 attrA; // xyz = pos, w = vortexID

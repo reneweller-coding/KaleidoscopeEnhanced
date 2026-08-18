@@ -1,4 +1,16 @@
 #version 430
+/**
+ * @file CfxFFTLoad.comp
+ * @brief Converts the source image's luminance into a checkerboard-signed complex field, ready for CfxFFT.comp's transform.
+ *
+ * First stage of the FFT-filter pipeline. Samples `texSrc`, computes
+ * Rec.601 luma, and writes it as the real component (imaginary = 0) into the
+ * `Data` SSBO (binding 0) that CfxFFT.comp then transforms in place. The
+ * per-texel sign flip (+1/-1 checkerboard) is the standard trick that shifts
+ * the zero-frequency term to the center of the spectrum, so CfxFFTMask.comp
+ * can filter by a plain radial distance test instead of wrapping around the
+ * corners.
+ */
 // CfxFFTLoad.comp — photo luminance -> complex field, ready for the FFT.
 // The checkerboard sign flip centres the zero frequency in the middle of the
 // spectrum, so the radial mask in CfxFFTMask can be a plain distance test.

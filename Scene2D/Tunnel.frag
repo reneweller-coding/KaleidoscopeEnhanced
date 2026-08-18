@@ -1,5 +1,20 @@
 #version 330 core
 out vec4 fragColor;
+/**
+ * @file Tunnel.frag
+ * @brief The classic forward-scrolling mirrored-segment kaleidoscope tunnel:
+ *        polar coordinates from the frame centre are folded into `sides`
+ *        mirrored wedges, then mapped to a UV that scrolls inward over time.
+ *
+ * audioPhase (integrated, jump-free) adds to the wedge rotation on top of the
+ * base time*speed spin, audioAdvance adds to the forward scroll, and
+ * audioBeat drives a very subtle radial zoom/breath by blending toward a
+ * slightly zoomed resample. Several other audio uniforms (audioLevel,
+ * audioCentroid, audioFlux, audioValence, audioFlip) are still declared here
+ * but are no longer read in main() -- the mood-tint/brightness logic they
+ * once drove was moved to the global present pass so every effect reacts
+ * consistently.
+ */
 uniform vec2 resolution;
 uniform float time;
 uniform sampler2D tex0;

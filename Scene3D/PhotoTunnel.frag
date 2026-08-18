@@ -15,6 +15,19 @@ in vec2  vUV;
 in float vDist;
 in float vAng;
 
+/**
+ * @file PhotoTunnel.frag
+ * @brief Shades the tunnel wall as the current slideshow image (tex0),
+ * kaleidoscope-folded into 6/8/10/12 mirrored sectors and scrolled toward
+ * the camera.
+ *
+ * sceneSeed picks the sector count per activation. audioAdvance drives
+ * both the slow sector rotation and the image's inward scroll speed;
+ * audioKick and audioDrop flash the walls brighter; a luminous ring keyed
+ * to audioBarPhase sweeps down the tunnel once per bar, coloured by
+ * audioChromaHue.
+ */
+
 vec3 hueRot(vec3 c, float a)
 {
     vec3  k = vec3(0.57735026919);

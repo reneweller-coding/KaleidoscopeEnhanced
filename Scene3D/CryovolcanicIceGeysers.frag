@@ -4,6 +4,19 @@ out vec4 fragColor;
 in vec4 vColor;
 in vec2 vTexCoord;
 
+/**
+ * @file CryovolcanicIceGeysers.frag
+ * @brief Fragment shader for the cryovolcanic ice-geyser plume particles:
+ * blends the incoming per-particle colour with a slideshow photo sample and
+ * adds a soft glow toward the centre of each plume ribbon.
+ *
+ * The plume colouring itself (icy cyan/white/sun-gold mix, audioChromaHue and
+ * hueP hue rotation, audioLevel brightness) is computed upstream in
+ * CryovolcanicIceGeysers.vert and passed in via vColor; this stage only
+ * re-textures it with the current photo (tex0/tex1, cross-faded by
+ * interpolation) and shapes the edge falloff.
+ */
+
 uniform sampler2D tex0;
 uniform sampler2D tex1;
 uniform float interpolation;

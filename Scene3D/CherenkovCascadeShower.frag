@@ -4,6 +4,19 @@ out vec4 fragColor;
 in vec4 vCol;
 in vec2 vUV;
 
+/**
+ * @file CherenkovCascadeShower.frag
+ * @brief Shades a single point-sprite particle in a Cherenkov air-shower
+ * cascade as a soft circular glow, blending its per-vertex colour with the
+ * slideshow photo, then applying a soft-knee tone-map so hot audio
+ * compresses instead of clipping to white.
+ *
+ * This fragment stage carries no audio uniforms of its own -- vCol (the
+ * per-particle colour and alpha, already audio-modulated per vertex, e.g. by
+ * cascade energy or beat timing) is the only reactive input; the shower's
+ * response to the music is driven by the companion vertex shader.
+ */
+
 uniform sampler2D tex0;
 uniform sampler2D tex1;
 uniform float interpolation;

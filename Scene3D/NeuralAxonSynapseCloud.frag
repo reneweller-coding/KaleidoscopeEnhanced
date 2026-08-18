@@ -10,6 +10,20 @@ uniform float hueP;
 in vec4 vColor;
 in float vSize;
 
+/**
+ * @file NeuralAxonSynapseCloud.frag
+ * @brief Renders one particle of the 60,000-point cortical-connectome cloud
+ * as a soft gaussian point sprite, then hue-rotates it.
+ *
+ * Per-particle position, cluster/dendrite placement and the
+ * action-potential flash brightness are all computed upstream in
+ * NeuralAxonSynapseCloud.vert from a wide set of audio uniforms; this
+ * fragment shader only discards outside the circular sprite, shapes the
+ * gaussian core, and applies a final hueRot() driven directly by
+ * audioChromaHue plus the hueP preset, so the whole connectome's colour
+ * can still be nudged live.
+ */
+
 vec3 hueRot(vec3 c, float a) {
     vec3 k = vec3(0.57735026919);
     float cs = cos(a), sn = sin(a);

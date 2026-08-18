@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file BlackHole.vert
+ * @brief Vertex stage companion to BlackHole.frag -- see that file's header for
+ * this scene's description.
+ */
 // BlackHole.vert — an accretion disk around an invisible black hole:
 // white-hot inner rim, red-cool outer edge, Doppler-bright approaching
 // side, a thin photon ring, and infalling streams.  A DROP fires the

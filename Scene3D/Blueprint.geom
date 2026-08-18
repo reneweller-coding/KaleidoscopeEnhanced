@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file Blueprint.geom
+ * @brief Geometry stage companion to Blueprint.frag -- see that file's header for
+ * this scene's description.
+ */
 // Blueprint.geom — hand every triangle its own barycentric coordinates.
 // -----------------------------------------------------------------------
 // Drawing a mesh as a wireframe normally means a second pass in GL_LINES, with

@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file Harmonograph.vert
+ * @brief Vertex stage companion to Harmonograph.frag -- see that file's header for
+ * this scene's description.
+ */
 // Harmonograph.vert — the wire arrives finished; turn the sculpture slowly so
 // its three-dimensionality is visible rather than implied.
 

@@ -16,6 +16,20 @@ in vec3  vWorld;
 in float vSpec;
 in float vDist;
 
+/**
+ * @file OceanNight.frag
+ * @brief Shades a night ocean: deep blue water, a moon-glitter lane
+ * running to the horizon, and foam sparkle on the crests.
+ *
+ * audioDrop flashes the whole surface brighter, audioCentroid warms or
+ * cools the overall tint, and audioChromaHue turns the deep-water base
+ * colour through a hue rotation. Colour is further pulled toward the
+ * house imgPalette (a rotating sample arc over the current slideshow
+ * photo, tex0/tex1 crossfaded by interpolation) whose sampling angle
+ * follows audioChromaHue with an audioAdvance drift and whose saturation
+ * follows audioValence.
+ */
+
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }

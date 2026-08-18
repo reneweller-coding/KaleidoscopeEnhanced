@@ -10,6 +10,19 @@ in vec3  vWorld;
 in float vSlope;
 in float vDist;
 
+/**
+ * @file RainOnWater.frag
+ * @brief Shades a still night pond: near-black water, a trembling moon-lane
+ * reflection, and pale rings where raindrops (simulated in RainOnWater.vert)
+ * are still expanding across the surface.
+ *
+ * audioChromaHue tints the base water colour and the ring-crest skylight via
+ * hueRot; audioSwell brightens the ring-crest skylight term so the ripples
+ * read a little more alive when the music swells. The moon-lane reflection
+ * itself flares wherever vSlope (the ripple surface slope from the vertex
+ * shader) is non-zero, and everything fades with vDist toward the horizon.
+ */
+
 vec3 hueRot(vec3 c, float a)
 {
     vec3  k = vec3(0.57735026919);

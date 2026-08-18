@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file BloomSculpt.vert
+ * @brief Vertex stage companion to BloomSculpt.frag -- see that file's header for
+ * this scene's description.
+ */
 // BloomSculpt.vert — pass the patch corner through; the sphere is built and
 // displaced per generated vertex in the evaluation shader.
 

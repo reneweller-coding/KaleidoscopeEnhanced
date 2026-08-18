@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file PillarHall.vert
+ * @brief Vertex stage companion to PillarHall.frag -- see that file's header for
+ * this scene's description.
+ */
 // PillarHall.vert — a field of pillars on a floor, and the first scene to sign
 // the shadow-map contract.
 // -----------------------------------------------------------------------

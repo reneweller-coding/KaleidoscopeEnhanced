@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file AuroraVeil.vert
+ * @brief Vertex stage companion to AuroraVeil.frag -- see that file's header for
+ * this scene's description.
+ */
 // AuroraVeil.vert — true 3D aurora curtains: each ribbon is a tall veil
 // hanging in the night sky, slowly folding on itself; the swell drives the
 // wave amplitude, everything drifts, nothing jumps.

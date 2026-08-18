@@ -1,5 +1,11 @@
 #version 330 core
 out vec4 fragColor;
+/**
+ * @file LiquidMetal.frag
+ * @brief Screen-space fluid rendering of 32k cohesive metal particles as a single molten, reflective body.
+ *
+ * texMetal's density, compute-splatted by CfxMetalStep, is smoothed over a 5-tap kernel and thresholded into a surface; the gradient of that smoothed density gives the surface normal used for specular highlights and a photo reflection distorted along the normal, so the metal mirrors the room it sits in. audioKick and audioHigh intensify the specular highlight, audioBeat adds a light overall pulse, and the highlight/reflection tint comes from an imgPalette arc sampled from the photo, rotated by audioChromaHue and audioAdvance with audioValence setting its saturation.
+ */
 // LiquidMetal.frag — screen-space fluid rendering.  Blend/CfxMetalStep.comp
 // splats 32k cohesive particles into a DENSITY field (alpha channel); the
 // surface is reconstructed here by thresholding that density and taking its

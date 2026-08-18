@@ -1,5 +1,11 @@
 #version 330 core
 out vec4 fragColor;
+/**
+ * @file IceCrack.frag
+ * @brief The photograph seen through a sheet of ice that keeps shattering into Voronoi shards, each shard refracting the picture like a separate slab of glass.
+ *
+ * The crack lines use a two-pass Voronoi, a true bisector distance rather than the naive F2-F1 gap, so every crack keeps an even width even where three shards meet. audioKick and audioSubBass drive a shatter impulse that widens the cracks and pushes each shard outward from its seed; the seeds themselves drift permanently on audioAdvance, never on raw time, so they stay jump-free. audioAmbient thickens the frost gathering along the cracks, audioBeat and audioLevel lift overall brightness, audioHigh adds a touch of crack-coloured sparkle, and the crack colour comes from an imgPalette arc rotated by audioChromaHue with audioValence setting its saturation.
+ */
 // IceCrack.frag — the photograph behind a sheet of ice that keeps breaking.
 // -----------------------------------------------------------------------
 // The shards are a Voronoi tessellation, and getting a clean crack out of one is

@@ -5,6 +5,22 @@ in float vBioGlow;
 
 out vec4 fragColor;
 
+/**
+ * @file JellyfishBioluminescenceAbyss.frag
+ * @brief Shades the abyssal medusae bells and tentacle curtains generated
+ * by JellyfishBioluminescenceAbyss.comp: translucent cyan-to-violet bell
+ * material blended toward a warm pulse colour wherever bioluminescence
+ * fires along a tentacle.
+ *
+ * Per-vertex vTentacle (0..1 across a strand) and vBioGlow (pulse
+ * strength), both baked by the compute generator, mix the bell and pulse
+ * colours and scale overall brightness. Colour is tinted toward the
+ * current photo palette via the house imgPalette/palTint helpers, which
+ * follow audioChromaHue (musical key) with an audioAdvance drift and
+ * audioValence-controlled saturation; glowP and hueP presets scale
+ * brightness and apply an optional constant hue rotation.
+ */
+
 uniform float time;
 uniform sampler2D tex0;
 uniform sampler2D tex1;

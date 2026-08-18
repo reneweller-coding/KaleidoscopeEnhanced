@@ -12,6 +12,20 @@ in float vEnergy;
 in float vBand;
 in float vDist;
 
+/**
+ * @file SpectroWeave.frag
+ * @brief Shades a bundle of glowing tube strands, one per frequency band, so
+ * the audio spectrum reads as a woven cable of light the camera flies past.
+ *
+ * Each strand's hue comes from its band (vBand, bass deep red through violet)
+ * combined with audioChromaHue; its brightness and bloom scale with the
+ * band's live energy (vEnergy), further pulsed by audioBeat, audioSubBass
+ * and audioKick. audioHigh sharpens the specular highlight, audioAmbient
+ * adds a flat fill, and audioValence controls how saturated the rotating
+ * photo-arc palette (audioAdvance-driven) looks. Distance fog (vDist) fades
+ * the far end of the bundle to black so depth reads correctly.
+ */
+
 uniform sampler2D tex0;
 uniform float interpolation;
 uniform float time;

@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file HolographicLaserDiffractionGrid.vert
+ * @brief Vertex stage companion to HolographicLaserDiffractionGrid.frag -- see that file's header for
+ * this scene's description.
+ */
 // HolographicLaserDiffractionGrid.vert — 3,000 spatial light modulator (SLM)
 // holographic cards reconstructing 3D Fourier optical diffraction patterns.
 //   attrA.xy = corner u/v (0..1), attrA.w = quad index

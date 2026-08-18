@@ -1,5 +1,19 @@
 #version 330 core
-// Rig2D.frag — the 2D camera rig: rotate / zoom / pan a finished 2D scene
+/**
+ * @file Rig2D.frag
+ * @brief Applies a 2D camera rig (roll, zoom, pan) as an extra fullscreen pass over an already-rendered 2D scene frame.
+ *
+ * Samples tex at a UV transformed by rigRoll (rotation), rigZoom, and rigPan,
+ * driven per-preset by the rig2Roll/rig2Zoom/rig2X/rig2Y formulas plus their
+ * host-integrated rate channels; this is the 2D counterpart of the Scene3D
+ * projM camera rig and is inserted by FilterShader only while such a formula
+ * is active, before the combine stage consumes the frame. Out-of-frame
+ * samples are mirror-folded (fract-then-reflect) rather than clamped or
+ * wrapped, so a rotated or zoomed-out frame never exposes a hard border.
+ * Reads UV from gl_FragCoord rather than a texcoord varying because the
+ * preset editor's fullscreen vertex stage supplies none, while the main
+ * engine's does; gl_FragCoord works under both.
+ */
 // frame before the combine stage consumes it.  Driven per preset by formulas
 // named rig2Roll (radians), rig2Zoom (>0 = closer), rig2X/rig2Y (pan, UV
 // units) plus host-INTEGRATED rig2…V rate channels — the 2D counterpart of

@@ -22,6 +22,22 @@ in float vHeightFrac;
 in float vHue;
 in float vGlow;
 
+/**
+ * @file VolumetricFire.frag
+ * @brief Companion to VolumetricFire.vert: samples the live GPU fire/smoke
+ * simulation (R = temperature, G = density) at this depth-slice billboard's
+ * atlas cell and maps it through a black -> red -> orange -> yellow ->
+ * white-hot ramp, with a grey smoke haze wherever density outlives heat.
+ *
+ * audioKick intensifies the procedural fallback flame used whenever the
+ * simulation texture is absent or black (so the scene never shows an empty
+ * frame); vHue (an audioChromaHue-derived offset baked in the vertex stage)
+ * gives the flame a small colour wobble without breaking the fire look;
+ * vGlow scales overall brightness. Additive blending across 20 stacked
+ * depth-slices (see Scene3DShader::draw) sums into one soft volumetric fire
+ * column with no depth sorting needed.
+ */
+
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }

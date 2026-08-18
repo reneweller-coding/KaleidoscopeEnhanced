@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file SynthTerrain.vert
+ * @brief Vertex stage companion to SynthTerrain.frag -- see that file's header for
+ * this scene's description.
+ */
 // SynthTerrain.vert — a synthwave wireframe terrain flythrough: the camera
 // glides down a valley between mountain ridges whose heights ride the 32
 // spectrum bands.  The grid mesh (attrA.xy = u/v) is displaced here; the

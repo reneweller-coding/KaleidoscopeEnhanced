@@ -5,6 +5,20 @@ in float vFiberID;
 in float vEnergy;
 
 out vec4 fragColor;
+/**
+ * @file HopfFibrationToruses.frag
+ * @brief Shades one fiber of a Hopf-fibration torus arrangement (Villarceau
+ * circles) as a glowing strand with a soft cross-section falloff
+ * (crossEdge) and a light pulse that visibly travels along the fiber over
+ * time.
+ *
+ * Each fiber's chromatic hue comes from the photo-arc palette (imgPalette)
+ * offset by its fiber ID (vFiberID) and audioPhase, so the phase of the
+ * music shifts which color sits where along the fibration; the per-vertex
+ * vEnergy supplied by the companion vertex shader scales overall
+ * brightness, and glowP scales it further. The palette's arc also carries
+ * an audioAdvance drift and audioValence-controlled saturation.
+ */
 
 uniform float time;
 uniform sampler2D tex0;

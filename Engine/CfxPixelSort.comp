@@ -1,6 +1,17 @@
 #version 430
-// CfxPixelSort.comp — the glitch-art classic: every row of the image sorted
-// by luminance, one workgroup per row.
+/**
+ * @file CfxPixelSort.comp
+ * @brief Sorts every row of the source image by luminance (the pixel-sort glitch-art effect), one workgroup per row.
+ *
+ * One workgroup handles one image row: it histograms the row's pixels into
+ * 256 luminance buckets in shared memory using atomics, computes an exclusive
+ * prefix sum over the histogram on a single thread, then scatters each pixel
+ * to the output position (image binding 0) its bucket has earned. Samples
+ * texSrc rather than an image binding for input. The bias uniform rotates the
+ * sort key over time so the melt direction drifts, and reverse flips
+ * dark-to-bright versus bright-to-dark; the display/combine stage decides
+ * where in the frame the sorted result is revealed.
+ */
 // -----------------------------------------------------------------------
 // A counting sort in SHARED MEMORY: histogram the row's 256 luminance
 // buckets with atomics, prefix-sum them, then SCATTER each pixel to the

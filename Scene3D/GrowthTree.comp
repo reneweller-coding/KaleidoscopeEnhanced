@@ -1,4 +1,22 @@
 #version 430
+/**
+ * @file GrowthTree.comp
+ * @brief Grows an L-system tree entirely on the GPU, one binary-tree branch
+ * per thread: each thread decodes its own path from the trunk using the
+ * heap-numbering of its invocation index (no recursion, no shared state),
+ * then walks down and emits its branch as a tapered tube plus a leaf quad
+ * at fully-grown tips.
+ *
+ * audioAdvance drives a growth wave that sweeps outward through the tree's
+ * depth levels (each level unfurls only once the wave passes it);
+ * audioKick and audioSubBass shove that wave forward so the crown bursts
+ * open on the beat, audioLevel widens the branching angle, the per-pitch-
+ * class audioChroma array widens the angle at whichever branch depth is
+ * tied to that pitch (a bright chord opens the crown), and audioHigh
+ * scales leaf size. Each thread writes its branch/leaf triangles (position,
+ * normal, normalized depth, wood-or-leaf kind) into the shared Verts
+ * buffer that the paired GrowthTree.frag reads back as its draw geometry.
+ */
 // GrowthTree.comp — an L-system tree, grown on the GPU, one branch per thread.
 // -----------------------------------------------------------------------
 // A compute shader cannot recurse, which is the obvious way to build a tree and

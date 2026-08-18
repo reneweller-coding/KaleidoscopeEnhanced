@@ -1,5 +1,16 @@
 #version 330 core
 out vec4 fragColor;
+/**
+ * @file TunnelAcceleration.frag
+ * @brief A variant of the mirrored-segment kaleidoscope tunnel with its own,
+ *        independently tunable forward scroll speed (`speedTunnelAccel`),
+ *        used to make the tunnel appear to accelerate relative to the plain
+ *        Tunnel.frag pass.
+ *
+ * audioPhase (integrated, jump-free) adds to the wedge rotation on top of
+ * the base time*speed spin, audioAdvance adds to the forward scroll speed,
+ * and audioKick gives the final image a subtle brightness pulse on kicks.
+ */
 uniform vec2 resolution;
 uniform float time;
 uniform sampler2D tex0;

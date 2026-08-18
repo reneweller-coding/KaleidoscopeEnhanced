@@ -1,4 +1,9 @@
 #version 430
+/**
+ * @file QuantumVortexField.comp
+ * @brief Compute stage companion to QuantumVortexField.frag -- see that file's header for
+ * this scene's description.
+ */
 // QuantumVortexField.comp — GPU Compute Shader generating dynamic 3D toroidal
 // magnetic vortex filaments and Lorenz attractor streamlines with glowing ribbons.
 layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;

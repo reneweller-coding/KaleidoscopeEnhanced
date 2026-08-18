@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file QuantumHallEdgeCurrents.vert
+ * @brief Vertex stage companion to QuantumHallEdgeCurrents.frag -- see that file's header for
+ * this scene's description.
+ */
 // QuantumHallEdgeCurrents.vert — 20 chiral topological edge channels
 // in a 2D electron gas executing cyclotron skipping orbits with quantum phase transitions.
 //   attrA.x = t along ribbon, attrA.y = side (-1/+1), attrA.w = ribbon index

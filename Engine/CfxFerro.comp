@@ -1,4 +1,19 @@
 #version 430
+/**
+ * @file CfxFerro.comp
+ * @brief Advances a ferrofluid height field one step via the (symmetry-broken) Swift-Hohenberg pattern-forming equation, producing hexagonal Rosensweig-instability spikes.
+ *
+ * Self-contained per-frame update: reads the previous height field from
+ * `imgSrc` (binding 0) and writes the new one to `imgDst` (binding 1),
+ * expecting the host to ping-pong the two images across frames. Evaluates a
+ * 13-point stencil to approximate the biharmonic operator needed by
+ * (1+laplacian)^2, adds a quadratic term that breaks the +/-h symmetry so
+ * the field settles into hexagonal peaks rather than a labyrinth pattern,
+ * and injects PCG-hashed noise each frame (scaled by `seedAmp`, boosted by
+ * `kick`) so the instability has something to amplify. `rParam` (bass-driven)
+ * is the bifurcation control: below zero the surface stays flat, above it
+ * spikes stand up.
+ */
 // CfxFerro.comp — ferrofluid spikes via the Swift-Hohenberg equation.
 // -----------------------------------------------------------------------
 //   dh/dt = r*h - (1 + laplacian)^2 h - h^3

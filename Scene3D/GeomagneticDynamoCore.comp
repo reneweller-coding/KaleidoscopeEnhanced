@@ -1,4 +1,9 @@
 #version 430 core
+/**
+ * @file GeomagneticDynamoCore.comp
+ * @brief Compute stage companion to GeomagneticDynamoCore.frag -- see that file's header for
+ * this scene's description.
+ */
 // GeomagneticDynamoCore.comp — helical convective columns of the outer core.
 // -----------------------------------------------------------------------
 // Emits ONE SMALL BILLBOARD QUAD (2 triangles, 6 vertices) per column point.

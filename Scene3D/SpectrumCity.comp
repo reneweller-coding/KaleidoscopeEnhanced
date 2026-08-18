@@ -1,4 +1,22 @@
 #version 430
+/**
+ * @file SpectrumCity.comp
+ * @brief Compute kernel that procedurally builds a night-city skyline whose
+ * building heights encode the music's recent spectrogram history, emitting
+ * finished box geometry (four walls plus a roof, no floor) into a shared
+ * vertex buffer.
+ *
+ * One thread handles one potential building lot on a COLS x ROWS grid: a
+ * lot's distance from the central avenue maps to frequency, its row maps to
+ * a time offset into the scrolling spectrogram ring (sampled from
+ * texSpectro at spectroHead, which advances continuously so the skyline
+ * flows toward the camera), and the sampled band energy sets the tower's
+ * height (scaled by heightP, punched by audioKick). densityP and avenueP
+ * gate which lots are built on and how wide the central corridor is, and
+ * sceneSeed reseeds the per-lot hash so each activation gets a different
+ * layout. The emitted vertices are consumed by an indirect draw and shaded
+ * by SpectrumCity.vert/.frag.
+ */
 // SpectrumCity.comp — a night city whose skyline is the music's history.
 // -----------------------------------------------------------------------
 // One thread per building lot.  Depth into the scene is TIME (rows of the

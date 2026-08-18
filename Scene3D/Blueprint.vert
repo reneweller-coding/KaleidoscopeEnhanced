@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file Blueprint.vert
+ * @brief Vertex stage companion to Blueprint.frag -- see that file's header for
+ * this scene's description.
+ */
 // Blueprint.vert — wrap the flat grid onto a body that morphs between a torus,
 // a sphere and a trefoil-ish knot, driven by the music.
 

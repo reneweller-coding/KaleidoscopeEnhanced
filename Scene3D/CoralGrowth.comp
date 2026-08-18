@@ -1,4 +1,27 @@
 #version 430
+
+/**
+ * @file CoralGrowth.comp
+ * @brief Compute kernel that simulates a branching coral colony growing by
+ * diffusion-limited aggregation (random walkers freezing onto contact) in a
+ * persistent state buffer that survives across frames, then meshes the
+ * frozen nodes into tapered branch tubes.
+ *
+ * audioLevel widens each walker's random step size; audioKick and
+ * audioSubBass both raise the probability that a touching walker sticks
+ * immediately rather than bouncing off, so the reef visibly surges and
+ * thickens on the beat (audioKick also thickens the meshed branch radius);
+ * audioAdvance is read as a general uniform but the growth itself is driven
+ * by the persistent walker simulation rather than by time directly. stickP
+ * scales the contact/bond radius, thickP scales branch thickness, and reachP
+ * scales how far walkers spawn from the colony. The kernel runs two passes
+ * per frame (genPass 0 advances the DLA simulation, genPass 1 meshes the
+ * frozen nodes into geometry) and writes into the shared vertex/command
+ * buffers that the sibling CoralGrowth.frag reads back, using the emitted
+ * age/height attributes to shade older, bleached core versus younger,
+ * pigmented tips.
+ */
+
 // CoralGrowth.comp — a coral accreting over a minute, in a buffer that survives.
 // -----------------------------------------------------------------------
 // Every other generator here derives its whole output from this frame's inputs.

@@ -1,4 +1,23 @@
 #version 430
+/**
+ * @file DrumSkin.comp
+ * @brief Compute kernel that simulates a vibrating circular drum membrane
+ * (not a plate like CymaticsPlate): sums the first eight Bessel-mode shapes
+ * of the 2D wave equation (J_n(alpha_nm * r/R) * cos(n*theta) * cos(omega*t),
+ * clamped to zero at the rim) into a per-vertex height field, then writes out
+ * a triangulated ring/sector mesh.
+ *
+ * Each mode is driven by its own slice of audioSpectrum so a strike bright in
+ * the top end excites the high modes while a soft one leaves the fundamental
+ * ringing; audioLevel and audioKick scale the overall displacement amplitude,
+ * and audioAdvance (not raw time) advances each mode's phase at a rate
+ * proportional to its own Bessel-zero frequency, keeping the motion
+ * audio-synced without flicker. The preset uniforms ampP/modeP/tensionP scale
+ * amplitude, active mode count and mode speed. Results are appended, via an
+ * atomic vertex counter in the Cmd/indirect-draw buffer, into the Verts SSBO
+ * (position, height, normal, radius per vertex) that DrumSkin.frag's mesh
+ * reads back as its geometry each frame.
+ */
 // DrumSkin.comp — a circular membrane vibrating in its real modes.
 // -----------------------------------------------------------------------
 // The project already has CymaticsPlate, which is a PLATE: it obeys the

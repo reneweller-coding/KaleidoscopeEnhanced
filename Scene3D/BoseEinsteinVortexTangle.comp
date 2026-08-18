@@ -1,4 +1,9 @@
 #version 430 core
+/**
+ * @file BoseEinsteinVortexTangle.comp
+ * @brief Compute stage companion to BoseEinsteinVortexTangle.frag -- see that file's header for
+ * this scene's description.
+ */
 // BoseEinsteinVortexTangle.comp — quantized vortex filaments in a BEC.
 // -----------------------------------------------------------------------
 // Emits ONE SMALL BILLBOARD QUAD (2 triangles, 6 vertices) per tangle point.

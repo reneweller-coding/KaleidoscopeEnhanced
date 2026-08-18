@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file Fireworks.vert
+ * @brief Vertex stage companion to Fireworks.frag -- see that file's header for
+ * this scene's description.
+ */
 // Fireworks.vert — a night sky of procedural fireworks at real 3D depths,
 // with DISTINCT SHELL TYPES: every burst re-rolls its kind each cycle —
 //   0 PEONY     classic uniform sphere

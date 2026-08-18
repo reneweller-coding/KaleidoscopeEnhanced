@@ -1,4 +1,16 @@
 #version 430
+/**
+ * @file CfxLightningSeed.comp
+ * @brief Clears the tip buffer and spawns three initial leader tips at the top edge, starting a fresh bolt for CfxLightningStep.comp to grow.
+ *
+ * Runs once (or on re-trigger) before CfxLightningStep.comp's per-frame
+ * advance-and-branch steps. Invocation 0 resets `tipCount` in the `Ctrl`
+ * SSBO (binding 2) to 3 and writes three downward-heading leader tips
+ * (position/angle/life) into the `Tips` SSBO (binding 1) around `startX`;
+ * every other invocation clears its own slot, avoiding a race between
+ * invocation 0's writes to slots 0..2 and a naive "everyone clears
+ * everything" pattern.
+ */
 // CfxLightningSeed.comp — clear the tip buffer and start a fresh bolt.
 layout(local_size_x = 128) in;
 

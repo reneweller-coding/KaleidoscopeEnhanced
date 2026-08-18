@@ -5,6 +5,20 @@ in float vStrand;
 
 out vec4 fragColor;
 
+/**
+ * @file TokamakFusionCore.frag
+ * @brief Draws the magnetically confined plasma filaments of a tokamak
+ * fusion core (geometry baked by a compute generator and passed in as
+ * vPos/vHeat/vStrand) as glowing point sprites shading from the rotating
+ * photo-arc palette toward white-hot at high heat.
+ *
+ * vHeat (per-point plasma temperature) mixes the core colour toward
+ * near-white and scales overall intensity; audioKick adds an extra
+ * brightness surge; vStrand selects the point's position along the
+ * photo-palette arc; hueP rotates the final colour. A soft-knee tone map
+ * keeps loud passages from clipping to flat white.
+ */
+
 uniform float time;
 uniform sampler2D tex0;
 uniform sampler2D tex1;

@@ -19,6 +19,24 @@ in float vShard;
 in float vEdge;
 in vec2  vUV;
 
+/**
+ * @file Detonation.frag
+ * @brief Two-sided lighting for a shattering, exploding sphere: the outer
+ * shell reads as a shadow-mapped rock/mineral crust with an environment
+ * reflection and specular highlight, while the far side -- visible through
+ * gaps once a shard has lifted away -- is shaded as a glowing molten interior.
+ * Which side is which is decided from the shard's outward-oriented normal
+ * (dot(N, V)) rather than gl_FrontFacing, since the source mesh winds inward.
+ *
+ * audioKick heats the underside glow of shards that have actually flown
+ * (vShard) and pumps the molten interior; audioHigh sharpens the specular
+ * highlight; audioLevel and audioSubBass drive the interior magma brightness;
+ * audioBeat and audioAmbient give the whole image a final exposure pulse; and
+ * audioChromaHue nudges the fire's hue within a bounded range. A companion
+ * shadowPass early-out skips shading during the depth-only pass that feeds
+ * the sampler2DShadow lookup used for shard-on-shard shadowing.
+ */
+
 uniform sampler2D tex0;
 // Declaring this is what asks the engine for the extra depth pass.
 uniform sampler2DShadow texShadow;

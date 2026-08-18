@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file CryovolcanicIceGeysers.vert
+ * @brief Vertex stage companion to CryovolcanicIceGeysers.frag -- see that file's header for
+ * this scene's description.
+ */
 // CryovolcanicIceGeysers.vert
 
 layout(location = 0) in vec4 attrA; // xyz = pos, w = plumeID

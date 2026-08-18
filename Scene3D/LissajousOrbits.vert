@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file LissajousOrbits.vert
+ * @brief Vertex stage companion to LissajousOrbits.frag -- see that file's header for
+ * this scene's description.
+ */
 // LissajousOrbits.vert — six particle streams trace closed 3D Lissajous
 // figures whose phase relation drifts imperceptibly, so the figures morph
 // through their whole family over minutes.  Classic scope art, floating.

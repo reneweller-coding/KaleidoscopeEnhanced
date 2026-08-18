@@ -11,6 +11,22 @@ in vec3  vView;
 in float vAlong;      // 0 at the start of the trace, 1 at the end
 in float vEnergy;
 
+/**
+ * @file Harmonograph.frag
+ * @brief Shades the harmonograph's wire trace as a drawn line rather than a
+ * lit object: hue sweeps three full turns along the trace (vAlong) so the
+ * pendulum's start and its wound-down finish read as distinct colors, with
+ * brightness carrying most of the shape information.
+ *
+ * audioLevel and the per-vertex vEnergy (the chroma-driven strength from
+ * the companion compute pass) brighten the glow, audioHigh adds a sharp
+ * white highlight core, audioKick brightens the trace's newest/widest end,
+ * audioAmbient adds a flat tint, and audioBeat/audioSubBass pulse the
+ * final brightness. Hue comes from the rotating photo-arc palette
+ * (imgPalette) keyed by audioChromaHue with an audioAdvance drift and
+ * audioValence-controlled saturation.
+ */
+
 uniform sampler2D tex0;
 uniform float interpolation;
 uniform float time;

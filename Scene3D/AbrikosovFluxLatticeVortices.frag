@@ -4,6 +4,20 @@ out vec4 fragColor;
 in vec3 vWorldPos;
 in float vVortexPhase;
 
+/**
+ * @file AbrikosovFluxLatticeVortices.frag
+ * @brief Point-sprite lattice of superconducting flux vortices, each a soft
+ * circular glow blending a cyan/violet vortex palette with the slideshow
+ * photo sampled from the vortex's own world position.
+ *
+ * audioPhase drives the cyan-to-violet oscillation of each vortex's colour;
+ * audioKick punches up a hot, palette-tinted core on every hit; audioChromaHue
+ * and the hueP preset both rotate the final hue. Vertex-side uniforms
+ * (audioSubBass, audioBass, audioFlux, etc.) shape the lattice's own motion in
+ * the companion .vert. The fragment ends with a soft-knee tone-mapping step
+ * so loud audio compresses instead of clipping to white.
+ */
+
 uniform sampler2D tex0;
 uniform sampler2D tex1;
 uniform float interpolation;

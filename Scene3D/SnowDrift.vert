@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file SnowDrift.vert
+ * @brief Vertex stage companion to SnowDrift.frag -- see that file's header for
+ * this scene's description.
+ */
 // SnowDrift.vert — slow snowfall through a blue night; every flake sways
 // on its own pendulum, a faint ground glow catches them as they land.
 // The music only leans on the wind and the sparkle — never shakes it.

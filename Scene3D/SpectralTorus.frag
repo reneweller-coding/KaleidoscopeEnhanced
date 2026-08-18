@@ -13,6 +13,18 @@ in vec3  vView;
 in float vDefo;
 in float vHue;
 
+/**
+ * @file SpectralTorus.frag
+ * @brief Companion to SpectralTorus.vert. Uses the same physical-body
+ * lighting language as SpectralOrb.frag (dark nodal lines, radiant
+ * antinodes) but in a warmer key, so the two manifold-harmonics scenes read
+ * as siblings rather than twins.
+ *
+ * audioSwell and audioDrop scale the antinode glow driven by the absolute
+ * displacement vDefo; vHue (from SpectralTorus.vert) keys the body metal
+ * tint, the glow colour and the rim colour to the current musical hue.
+ */
+
 vec3 hueRot(vec3 c, float a)
 {
     vec3  k = vec3(0.57735026919);

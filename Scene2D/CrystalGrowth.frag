@@ -1,5 +1,11 @@
 #version 330 core
 out vec4 fragColor;
+/**
+ * @file CrystalGrowth.frag
+ * @brief Frost spreading across the frame, its growth front picked out by geometry rather than a stored value.
+ *
+ * texCrystal (from the CfxCrystal diffusion-limited-aggregation compute pass) stores only solid/hue per texel; this pass finds the growing tips itself by testing how many neighbours of a solid texel are still unfrozen. audioLevel brightens the frozen body, audioHigh and audioKick spark the growth tips where new crystal is being laid down this frame, and audioAmbient lifts the un-frozen "glass" area where the photo still shows through, cooled and dimmed. The frost colour comes from an imgPalette arc sampled from the photo, nudged directly by audioChromaHue and drifting with audioAdvance, with audioValence setting its saturation.
+ */
 // CrystalGrowth.frag — frost growing across the frame by diffusion-limited
 // aggregation (Blend/CfxCrystal.comp).  The field stores solid/hue only; the
 // growth FRONT is found here geometrically — a solid texel with few solid

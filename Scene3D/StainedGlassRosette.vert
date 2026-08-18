@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file StainedGlassRosette.vert
+ * @brief Vertex stage companion to StainedGlassRosette.frag -- see that file's header for
+ * this scene's description.
+ */
 // StainedGlassRosette.vert — a great cathedral rose window fills the view:
 // a flat polar disc facing the camera, slowly turning, lit from behind by
 // a light that pulses with the swell.  The glass mosaic + lead lines + god

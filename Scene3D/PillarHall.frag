@@ -19,6 +19,21 @@ in float vKind;
 in float vTint;
 in float vHeight;
 
+/**
+ * @file PillarHall.frag
+ * @brief Shades the shadow-mapped pillar hall: a sun-and-sky lit floor
+ * and colonnade, with an emissive band climbing the pillars.
+ *
+ * audioLevel brightens the sun term, audioHigh sharpens the specular
+ * highlight, audioKick drives the emissive band climbing the pillars,
+ * audioSubBass and audioBeat add a final overall pulse, audioAmbient
+ * lifts the unshadowed sky term, and audioChromaHue nudges the hue. The
+ * pillar and emissive-band hue is drawn from the house imgPalette (a
+ * rotating sample arc over the current slideshow photo, tex0/tex1
+ * crossfaded by interpolation) driven by audioAdvance and audioValence;
+ * camHP sets the eye height and softP the shadow's softness.
+ */
+
 uniform sampler2D tex0;
 uniform sampler2DShadow texShadow;
 uniform mat4  lightM;

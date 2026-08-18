@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file KelpForest.vert
+ * @brief Vertex stage companion to KelpForest.frag -- see that file's header for
+ * this scene's description.
+ */
 // KelpForest.vert — an underwater kelp forest swaying in the surge: each
 // ribbon is one kelp frond anchored on the sea floor; the swell IS the
 // surge, caustic light ripples from above.  attrA.x = height 0..1,

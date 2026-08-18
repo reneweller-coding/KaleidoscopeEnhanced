@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file SineTunnel.vert
+ * @brief Vertex stage companion to SineTunnel.frag -- see that file's header for
+ * this scene's description.
+ */
 // SineTunnel.vert — a smooth procedural warp tunnel (the MilkDrop classic
 // without the image): the tube's radius carries slow harmonic ripples
 // travelling toward the camera; colours flow along the walls in the frag.

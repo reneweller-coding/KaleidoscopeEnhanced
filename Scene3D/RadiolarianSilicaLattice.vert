@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file RadiolarianSilicaLattice.vert
+ * @brief Vertex stage companion to RadiolarianSilicaLattice.frag -- see that file's header for
+ * this scene's description.
+ */
 // RadiolarianSilicaLattice.vert — 3,000 transparent icosahedral silica skeleton
 // cards floating in deep-sea suspension with crystalline glass refractions.
 //   attrA.xy = corner u/v (0..1), attrA.w = quad index

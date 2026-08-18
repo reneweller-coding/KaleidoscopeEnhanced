@@ -1,5 +1,22 @@
 #version 330 core
 out vec4 fragColor;
+/**
+ * @file FxSunShafts.frag
+ * @brief FX SUN SHAFTS: volumetric light shafts (godrays) that march toward
+ * a wandering light source and are occluded by the scene's real depth
+ * buffer, so shafts fall behind objects and cut off at their silhouettes.
+ *
+ * Falls back to no shafts where depth isn't valid (2D layers); shaft
+ * intensity fades with distance from the light source, and a separate
+ * unoccluded bloom marks the source itself.
+ *   interpolation -> cross-fades the two scene layers and their shaft-occlusion terms
+ *   audioKick     -> nudges the light source's position
+ *   audioLevel    -> brightens the shafts
+ *   audioChromaHue-> tints the shaft/bloom colour with the harmonic hue
+ *   audioHigh     -> brightens the bloom around the light source
+ *   audioSubBass  -> subtle overall brightness pulse
+ *   audioBeat     -> subtle overall brightness pulse
+ */
 // FxSunShafts.frag — volumetric light shafts occluded by real geometry.
 // -----------------------------------------------------------------------
 // The classic radial-blur godray marches from each pixel toward the light and

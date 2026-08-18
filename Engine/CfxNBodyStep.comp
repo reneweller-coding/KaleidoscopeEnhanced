@@ -1,5 +1,19 @@
 #version 430
-// CfxNBodyStep.comp — gravitational N-body with shared-memory tiling.
+/**
+ * @file CfxNBodyStep.comp
+ * @brief Integrates one frame of the N-body galaxy collision and splats stars into the accumulator.
+ *
+ * Reads and updates the position (binding 1) and velocity (binding 2) buffers
+ * seeded by CfxNBodyInit.comp. Gravity is evaluated against a strided sample of
+ * the population (every 32nd body) using workgroup shared memory to tile the
+ * O(n^2) force loop, so it stays affordable while remaining time-averaged
+ * correct; bass tightens the gravity constant and a kick adds outward pressure
+ * from the barycentre. Each body is then projected through a slowly tumbling
+ * camera and additively splatted (atomicAdd) into the uint accumulator at
+ * binding 0, which CfxResolve.comp later tonemaps into the display texture.
+ * Star colour is derived from speed (fast/deep-well stars read blue-white,
+ * slow outer stars read warm) rather than a free hue cycle.
+ */
 // -----------------------------------------------------------------------
 // The textbook use of workgroup shared memory: each tile of 256 bodies is
 // loaded ONCE per workgroup and reused by all 256 threads, turning a

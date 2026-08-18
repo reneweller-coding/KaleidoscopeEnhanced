@@ -1,5 +1,17 @@
 #version 330 core
 out vec4 fragColor;
+/**
+ * @file TunnelPlain.frag
+ * @brief A stripped-down mirrored-segment kaleidoscope tunnel: no base
+ *        rotation/tilt, just the polar fold into `sides` wedges mapped onto a
+ *        forward-scrolling UV. Includes an unused `clampQuadratic` helper
+ *        (its call site is commented out) left over from an aspect-correction
+ *        experiment.
+ *
+ * audioAdvance (integrated, jump-free) adds to the forward scroll speed, and
+ * audioBeat plus audioLevel both brighten the final colour. audioFlip is
+ * declared but not read in main().
+ */
 uniform vec2 resolution;
 uniform float time;
 uniform sampler2D tex0;

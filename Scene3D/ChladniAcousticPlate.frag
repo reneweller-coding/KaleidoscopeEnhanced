@@ -5,6 +5,22 @@ in float vPlateEnergy;
 
 out vec4 fragColor;
 
+/**
+ * @file ChladniAcousticPlate.frag
+ * @brief Shades a single grain of sand settling into a Chladni acoustic
+ * resonance pattern, as a soft circular point sprite whose colour shifts
+ * between a gold/bronze "resting on a nodal line" hue and an electric-azure
+ * "in flight" hue.
+ *
+ * vNodalDist (distance from the nearest vibration node, set per vertex)
+ * selects that gold-to-azure mix, and vPlateEnergy (the plate's local
+ * vibration energy) drives the grain's brightness; both already carry the
+ * scene's audio reactivity from the vertex stage. hueP applies a final
+ * uniform hue rotation via hueRot(), and glowP is available to scale overall
+ * brightness. Ends with a soft-knee tone-map so loud audio compresses
+ * instead of clipping to white.
+ */
+
 uniform float time;
 uniform sampler2D tex0;
 uniform sampler2D tex1;

@@ -1,5 +1,11 @@
 #version 330 core
 out vec4 fragColor;
+/**
+ * @file EventHorizon.frag
+ * @brief A Schwarzschild black hole with gravitational lensing and a Keplerian accretion disk, integrated per-pixel from the actual light-bending equation rather than an approximation.
+ *
+ * Each pixel's photon is stepped through d2u/dphi2 = 3 M u^2 - u in its own orbit plane until it escapes, falls in, or crosses the disk; the photo becomes the background starfield, so lensed pixels visibly smear the slideshow around the shadow. audioSubBass and audioBass deepen the black hole's mass so the shadow breathes, audioAdvance drives the camera's orbit and the disk's turbulent banding, integrated so it stays jump-free, audioLevel pulls the camera closer, audioKick brightens the photon ring at the shadow's edge, audioHigh adds point-star sparkle from the photo's own highlights, audioMusic and audioDrop lift the sky and overall exposure, audioBeat adds a light pulse, and audioChromaHue nudges the disk's colour through a bounded hue rotation.
+ */
 // BlackHole.frag — Schwarzschild lensing with an accretion disk.
 // -----------------------------------------------------------------------
 // Photons are integrated in the orbit plane using the standard relativistic

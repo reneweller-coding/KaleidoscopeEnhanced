@@ -20,6 +20,23 @@ in float vAlong;
 in float vTint;
 in float vKind;
 
+/**
+ * @file HairCurtain.frag
+ * @brief Shades a curtain of hair strands with Kajiya-Kay anisotropic
+ * shading: two materials picked by vKind, a soft photo-tinted backdrop
+ * behind the curtain, and individual strands lit by a ring-integral
+ * diffuse term plus a primary root-shifted highlight and a secondary,
+ * pigment-tinted, glinting highlight shifted the other way.
+ *
+ * audioAmbient tints the backdrop and lifts the strand diffuse floor,
+ * audioHigh brightens the primary highlight, audioLevel strengthens the
+ * glinting secondary highlight, audioKick and audioSubBass brighten a wave
+ * of light that continually travels down the curtain, audioChromaHue picks
+ * the pigment hue (kept to a narrow black-to-blond range) and the
+ * traveling wave's hue, and audioBeat pulses the final brightness. camHP
+ * sets the view height used to build the view vector.
+ */
+
 uniform sampler2D tex0;
 uniform float interpolation;
 uniform float time;

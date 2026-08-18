@@ -10,6 +10,19 @@ uniform float audioDrop;
 in vec4 vCol;
 in vec3 vCorner;
 
+/**
+ * @file CrystalGrowth.frag
+ * @brief Lighting for the growing crystal-branch cluster: faceted gem faces
+ * with luminous edges where three faces meet, depth-tested; a drop blows the
+ * edges out into a blinding sparkle.
+ *
+ * audioDrop widens and brightens the edge glow directly in this fragment
+ * stage, while audioLevel and audioKick apply a further overall brightness
+ * multiplier. The branch colour, growth length and drop-triggered ice-white
+ * flash (vCol) are computed upstream in CrystalGrowth.vert from
+ * audioBuildUp, audioDrop, audioSwell and audioChromaHue.
+ */
+
 void main()
 {
     vec3 a = abs(vCorner) * 2.0;

@@ -1,6 +1,20 @@
 #version 330 core
 out vec4 fragColor;
 
+/**
+ * @file LaserSpireArray.frag
+ * @brief Shades the crystalline laser-spire array extruded by
+ * LaserSpireArray.geom: lit hexagonal pillar facets, or (where gBeam
+ * marks a beam quad) a pure emissive skyward laser column.
+ *
+ * All colour, including the audioSpectrum-driven per-spire height/hue
+ * and the audioKick pulse baked into gCol by the geometry stage, arrives
+ * pre-computed; this fragment stage only adds a fixed-direction diffuse
+ * and specular term to the pillar facets and adds a height-based energy
+ * glow (brighter with world-space Y) on top, while beam quads are
+ * written out unlit.
+ */
+
 in vec3  gNormal;
 in vec3  gWorld;
 in vec4  gCol;

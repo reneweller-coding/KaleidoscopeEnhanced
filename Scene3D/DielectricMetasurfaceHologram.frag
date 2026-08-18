@@ -5,6 +5,19 @@ in vec3 vWorldPos;
 in vec2 vTexCoord;
 in float vMetaPhase;
 
+/**
+ * @file DielectricMetasurfaceHologram.frag
+ * @brief Lighting for a metasurface hologram made of nanopillar meta-atoms:
+ * discards outside each pillar's circular aperture, mixes a slideshow photo
+ * with a cyan/violet laser-diffraction colour that oscillates per meta-atom
+ * (vMetaPhase), and glows brightest at each pillar's centre, fading into
+ * distance fog.
+ *
+ * audioPhase drives the per-meta-atom colour oscillation, audioKick
+ * brightens the pillar glow, and audioChromaHue plus hueP both rotate the
+ * final hue.
+ */
+
 uniform sampler2D tex0;
 uniform sampler2D tex1;
 uniform float interpolation;

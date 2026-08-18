@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file BioluminescentSiphonophoreChain.vert
+ * @brief Vertex stage companion to BioluminescentSiphonophoreChain.frag -- see that file's header for
+ * this scene's description.
+ */
 layout(location = 0) in vec4 attrA;
 layout(location = 1) in vec4 attrB;
 

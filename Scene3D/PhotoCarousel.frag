@@ -11,6 +11,17 @@ in vec2  vUV;
 in vec4  vSeed;
 in float vGlow;
 
+/**
+ * @file PhotoCarousel.frag
+ * @brief Shades one card of the photo carousel: a seeded crop of the
+ * current slideshow image (tex0) with a thin glowing frame.
+ *
+ * audioChromaHue sets the frame's hue (offset per card by its seed),
+ * audioKick brightens the frame flashes, and audioDrop lifts the whole
+ * card's exposure; vGlow (from the vertex shader) additionally modulates
+ * per-card brightness.
+ */
+
 vec3 hueRot(vec3 c, float a)
 {
     vec3  k = vec3(0.57735026919);

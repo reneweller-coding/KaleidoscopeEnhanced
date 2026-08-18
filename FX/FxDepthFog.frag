@@ -1,5 +1,23 @@
 #version 330 core
 out vec4 fragColor;
+/**
+ * @file FxDepthFog.frag
+ * @brief FX DEPTH FOG: physically modelled atmospheric haze that separates
+ * light absorbed by the fog from light scattered into the ray from a
+ * wandering sun (Henyey-Greenstein phase function), read against the
+ * scene's real depth buffer.
+ *
+ * Height falloff gives the fog a layer with a surface rather than a
+ * uniform fill; the sun's direction and colour drift with dayPhase and the
+ * harmonic hue.
+ *   interpolation -> cross-fades the two fogged scene layers
+ *   audioSubBass  -> thickens the fog density and widens the forward-scatter halo
+ *   audioKick     -> flashes the sun colour brighter
+ *   audioLevel    -> brightens the sun colour
+ *   audioChromaHue-> tints the sun and air colour with the harmonic hue
+ *   audioAmbient  -> lifts the ambient air colour
+ *   audioBeat     -> subtle overall brightness pulse
+ */
 // FxDepthFog.frag — atmospheric depth, done as physics rather than as a
 // distance-keyed colour ramp.
 // -----------------------------------------------------------------------

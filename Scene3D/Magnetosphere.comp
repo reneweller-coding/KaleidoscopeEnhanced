@@ -14,6 +14,25 @@
 // -----------------------------------------------------------------------
 layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 
+/**
+ * @file Magnetosphere.comp
+ * @brief Compute shader generating a planet's dipole magnetic field as
+ * lit tube geometry: 18 nested field-line shells (each an analytic
+ * r = L sin^2(theta) curve, no simulation) plus the planet sphere itself,
+ * written straight into the indirect-draw vertex buffer.
+ *
+ * Each shell is tied to one band of audioSpectrum, so bass lights the
+ * tight inner shells and treble streams the far outer ones; audioKick
+ * fattens every tube's radius and punches the planet's radius outward;
+ * audioSubBass strengthens the central "core" term that keeps the field
+ * one connected mass; audioAdvance (not raw time) drives the dipole's
+ * slow tumble and an equator-to-pole plasma pulse, so nothing jumps when
+ * the music's level changes. shellsP/tubeP/tiltP are user presets for
+ * reach, thickness and axial tilt. Output feeds Magnetosphere.frag via
+ * the shared vertex buffer (position, shell-energy, normal, shell/planet
+ * id).
+ */
+
 layout(std430, binding = 0) buffer Verts { float verts[]; };
 layout(std430, binding = 1) buffer Cmd   { uint  cmd[]; };
 

@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file StrangeAttractor.vert
+ * @brief Vertex stage companion to StrangeAttractor.frag -- see that file's header for
+ * this scene's description.
+ */
 // StrangeAttractor.vert — 600 trajectories x 100 steps on a CHAOTIC
 // ATTRACTOR: each vertex (trajectory, step) Euler-integrates its `step`
 // count of iterations (<= 100, so chaotic divergence stays bounded and the

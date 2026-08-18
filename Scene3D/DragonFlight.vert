@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file DragonFlight.vert
+ * @brief Vertex stage companion to DragonFlight.frag -- see that file's header for
+ * this scene's description.
+ */
 // DragonFlight.vert — a serpentine particle dragon undulates through the
 // night, flying TOWARD the chasing camera: scaled body tube with a belly
 // glow, two wing membranes beating IN TIME (locked to the beat phase), and

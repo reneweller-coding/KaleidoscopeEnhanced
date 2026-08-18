@@ -14,6 +14,23 @@
 // -----------------------------------------------------------------------
 layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 
+/**
+ * @file SpectroWeave.comp
+ * @brief Compute kernel that builds a braided cable of 32 separate strand
+ * tubes, one per spectrogram frequency band, helixed around a common axis so
+ * each band is its own visible thread rather than a landscape.
+ *
+ * Each strand's radius comes from texSpectro, a scrolling spectrogram ring
+ * texture indexed by spectroHead/spectroFill, so a band's thread visibly
+ * swells where that frequency was loud. audioAdvance drives the bundle's
+ * braid-twist rotation and the along-axis scroll; audioKick briefly
+ * thickens every strand. The resulting tube-segment vertices (position,
+ * normal, per-vertex energy, band index) are written into the Verts SSBO
+ * (with the Cmd SSBO's atomic counter tracking the draw count) for indirect
+ * drawing, and SpectroWeave.frag reads that per-vertex energy and band data
+ * back to shade the woven bundle.
+ */
+
 layout(std430, binding = 0) buffer Verts { float verts[]; };
 layout(std430, binding = 1) buffer Cmd   { uint  cmd[]; };
 

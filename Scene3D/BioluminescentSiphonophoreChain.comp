@@ -1,4 +1,23 @@
 #version 430 core
+
+/**
+ * @file BioluminescentSiphonophoreChain.comp
+ * @brief Compute kernel that generates the billboard-quad geometry for a
+ * winding colonial siphonophore stem made of 4096 pulsating nectophore
+ * zooids and their trailing tentilla, drifting through deep ocean.
+ *
+ * audioAdvance drives the stem's winding drift and slow forward motion;
+ * audioKick and audioBass both widen each zooid's sprite radius (a punchy
+ * flare on the beat); audioKick additionally sharpens each zooid's pulsation
+ * amplitude. The chainP preset scales the stem's overall length, pulseP
+ * scales the zooid pulsation frequency, and speedP scales the stem's
+ * animation speed. Each invocation emits one camera-facing quad (6 vertices)
+ * per zooid point into the shared vertex/command buffers, which the sibling
+ * BioluminescentSiphonophoreChain.frag reads back as billboarded sprites
+ * (via vQuadUV) to render the glowing chain with an action-potential pulse
+ * wave.
+ */
+
 // BioluminescentSiphonophoreChain.comp — a colonial siphonophore stem.
 // -----------------------------------------------------------------------
 // Emits ONE SMALL BILLBOARD QUAD (2 triangles, 6 vertices) per zooid point.

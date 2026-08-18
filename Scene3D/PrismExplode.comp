@@ -13,6 +13,22 @@
 // -----------------------------------------------------------------------
 layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 
+/**
+ * @file PrismExplode.comp
+ * @brief Compute kernel that builds the shell of triangular glass-prism
+ * shards for the PrismExplode scene: one wedge per shard, launched outward
+ * from a sphere and pulled back by a spring.
+ *
+ * Each shard gets a Fibonacci-sphere direction, a decaying outward impulse
+ * (fract(audioAdvance * 0.11 + seed) drives its per-shard launch phase), and
+ * a facet spin driven by audioAdvance. audioKick and audioSubBass scale the
+ * burst strength so the shell blows apart harder on transients. The wedge
+ * corners, normal and wedge angle are written into the Verts SSBO (with the
+ * Cmd SSBO's atomic counter tracking the draw count) for indirect drawing;
+ * PrismExplode.frag consumes that per-vertex wedge angle and seed to compute
+ * physically based dispersion.
+ */
+
 layout(std430, binding = 0) buffer Verts { float verts[]; };
 layout(std430, binding = 1) buffer Cmd   { uint  cmd[]; };
 

@@ -1,5 +1,11 @@
 #version 330 core
 out vec4 fragColor;
+/**
+ * @file InkTank.frag
+ * @brief Dye billowing in a real 2D Navier-Stokes fluid, pressure-solved so it can shed vortices and push back off walls, unlike a divergence-free curl-noise flow.
+ *
+ * texNSFluid (RGB = dye colour, A = speed, written by the compute Navier-Stokes solver) is shaded with a Schlieren-style edge from its own density gradient so the dye filaments read as sharp sheets rather than a soft cloud. audioLevel brightens a highlight glow that rides the solver's own speed output, landing exactly on the shear layers where vortices are born, audioHigh strengthens the schlieren edge glow, audioKick brightens the soft halo bloom, and audioAmbient lifts a dim photo backdrop that shows through wherever the ink is thin.
+ */
 // InkTank.frag — dye in a REAL fluid.  Unlike the older curl-noise Fluid
 // (divergence-free by construction, so it can only ever swirl), the solver
 // behind texNSFluid advects, then solves the pressure Poisson equation and

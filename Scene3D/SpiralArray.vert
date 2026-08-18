@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file SpiralArray.vert
+ * @brief Vertex stage companion to SpiralArray.frag -- see that file's header for
+ * this scene's description.
+ */
 // SpiralArray.vert — a DNA DOUBLE HELIX of light (the recognisable motif
 // the abstract tonality helix never managed to be): two glowing strands
 // wind around each other, connected by base-pair rungs that light up in

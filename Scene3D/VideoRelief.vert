@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file VideoRelief.vert
+ * @brief Vertex stage companion to VideoRelief.frag -- see that file's header for
+ * this scene's description.
+ */
 // VideoRelief.vert — the picture as terrain.
 // -----------------------------------------------------------------------
 // The image source (a photograph, a Spout feed, or a decoded video with -v) is

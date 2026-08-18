@@ -10,6 +10,19 @@ uniform float hueP;
 in vec4 vColor;
 in vec2 vTexCoord;
 
+/**
+ * @file PlasmaFilamentTornado.frag
+ * @brief Shades one strand segment of the plasma-filament tornado as a
+ * glowing cross-section profile, brightest along the strand's centre
+ * line and fading toward its edges.
+ *
+ * The per-strand cyan/violet/white colour mix and its audio-reactive
+ * brightness (audioKick, audioLevel) are computed upstream in
+ * PlasmaFilamentTornado.vert and arrive here as vColor; this shader
+ * applies a further hueRot() driven directly by audioChromaHue plus the
+ * hueP preset before shaping the glow with vTexCoord.
+ */
+
 vec3 hueRot(vec3 c, float a) {
     vec3 k = vec3(0.57735026919);
     float cs = cos(a), sn = sin(a);

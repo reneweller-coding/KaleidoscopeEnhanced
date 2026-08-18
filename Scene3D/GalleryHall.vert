@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file GalleryHall.vert
+ * @brief Vertex stage companion to GalleryHall.frag -- see that file's header for
+ * this scene's description.
+ */
 // GalleryHall.vert — an endless museum corridor at night: framed pictures
 // on both walls, each a different crop of the current image.  The camera
 // strolls forward with the music; the picture nearest the camera lights up

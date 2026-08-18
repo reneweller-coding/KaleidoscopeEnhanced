@@ -1,4 +1,19 @@
 #version 430
+/**
+ * @file CfxBoidsStep.comp
+ * @brief Advances the flock one frame with Reynolds flocking (separation, alignment, cohesion) and splats each boid as a motion streak into the accumulation buffer.
+ *
+ * Final stage of the boids pipeline, run after CfxBoidsInit.comp (one-time
+ * seed) and CfxBoidsGrid.comp (per-frame spatial hash rebuild). Reads/writes
+ * the `Boids` SSBO (binding 1) and reads the `Grid` SSBO (binding 2) built
+ * by CfxBoidsGrid.comp to only test the 3x3 neighbouring cells per boid; the
+ * uncapped raw cell counts additionally drive a density-pressure term that
+ * keeps working at any crowd density where the capped per-cell index list
+ * saturates. Five slowly orbiting per-boid-hashed attractors keep the flock
+ * split into travelling bands, and audio kicks/drops scatter or collapse it.
+ * Output color/coverage splats accumulate atomically into the `Accum` SSBO
+ * (binding 0) for the present pass to resolve.
+ */
 // CfxBoidsStep.comp — Reynolds flocking over a spatial-hash neighbourhood.
 // -----------------------------------------------------------------------
 // Separation / alignment / cohesion evaluated against the 3x3 cells around

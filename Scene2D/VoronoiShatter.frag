@@ -1,6 +1,21 @@
 #version 330 core
 out vec4 fragColor;
-// VoronoiShatter.frag — the photograph breaking into Voronoi shards.
+/**
+ * @file VoronoiShatter.frag
+ * @brief The photograph fracturing along a Voronoi diagram: each cell is a
+ *        rigid shard that samples the photo through its own shifted, rotated
+ *        transform so the seams stop lining up once the shards move.
+ *
+ * A "blast" amount (how far shards fly outward from frame centre and spin
+ * about their own centre) is driven mainly by audioDrop (a full blow-apart)
+ * and audioBuildUp (loosening in advance), with smaller contributions from
+ * audioKick and audioSubBass; audioAdvance slowly drifts the Voronoi seed
+ * positions so the fracture pattern is never the same twice. The crack lines
+ * between shards stay dark while touching and glow (via imgPalette, a
+ * photo-sampled arc driven by audioChromaHue/audioAdvance/audioValence) once
+ * they part, brightened by audioHigh; audioBeat and audioLevel add a final
+ * overall pulse.
+ */
 // -----------------------------------------------------------------------
 // A Voronoi diagram is what a real fracture pattern looks like, because both
 // come from the same rule: every point belongs to the nearest seed / the

@@ -12,6 +12,21 @@ in vec3  vView;
 in float vAge;        // 1 = oldest branches, 0 = newest tips
 in float vHeight;
 
+/**
+ * @file CoralGrowth.frag
+ * @brief Lighting for a growing coral colony: bleached, hard old wood in the
+ * interior giving way to pigmented, translucent young tips at the growing
+ * edge, wrapped in a cold underwater volume.
+ *
+ * Colour is driven by growth age (vAge/vHeight) rather than position, with
+ * hue taken from a photo-palette arc (imgPalette, keyed by audioChromaHue and
+ * audioAdvance, saturation shaped by audioValence). audioKick and audioLevel
+ * pump the fluorescent glow of the newest tips, audioHigh adds a tight
+ * specular highlight, audioAmbient brightens the cool counter-light and the
+ * depth fog, and audioBeat plus audioSubBass give the final image a soft
+ * overall pulse.
+ */
+
 uniform sampler2D tex0;
 uniform float interpolation;
 uniform float time;

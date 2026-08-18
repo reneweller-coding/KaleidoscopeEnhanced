@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file ThunderCloud.vert
+ * @brief Vertex stage companion to ThunderCloud.frag -- see that file's header for
+ * this scene's description.
+ */
 // ThunderCloud.vert — inside a night thunderstorm: a towering cloud mass
 // broods overhead, and jagged lightning bolts tear through it — every
 // SNARE can trigger a strike, a DROP is the full discharge.  The cloud

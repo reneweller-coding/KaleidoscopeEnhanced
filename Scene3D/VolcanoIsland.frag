@@ -3,6 +3,18 @@ out vec4 fragColor;
 // VolcanoIsland.frag — soft glowing point (additive blending).
 in vec4 vCol;
 
+/**
+ * @file VolcanoIsland.frag
+ * @brief Additive glow-sprite shader for the night volcano-island scene
+ * (lava fountain, cone rock, lava rivers, rising embers, and stars): renders
+ * each of the 60k points as a soft round point of light.
+ *
+ * No audio uniforms are read here; the eruption strength (kick-fed fountain,
+ * drop-triggered full eruption), lava-river pulsing, and day/night star
+ * fade are all computed in the companion vertex shader (VolcanoIsland.vert)
+ * and arrive pre-baked in vCol.
+ */
+
 void main()
 {
     vec2  d = gl_PointCoord - 0.5;

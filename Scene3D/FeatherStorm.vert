@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file FeatherStorm.vert
+ * @brief Vertex stage companion to FeatherStorm.frag -- see that file's header for
+ * this scene's description.
+ */
 // FeatherStorm.vert — the quads arrive oriented; this only places the column.
 
 in vec4 attrA;      // xyz = object position, w = u (quill to tip)

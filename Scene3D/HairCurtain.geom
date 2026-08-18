@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file HairCurtain.geom
+ * @brief Geometry stage companion to HairCurtain.frag -- see that file's header for
+ * this scene's description.
+ */
 // HairCurtain.geom — hang a strand of hair from every point.
 // -----------------------------------------------------------------------
 // Same trick as GrassField — 60000 bare points become 60000 ribbons on the

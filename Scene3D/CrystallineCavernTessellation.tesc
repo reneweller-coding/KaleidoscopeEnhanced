@@ -1,4 +1,9 @@
 #version 430 core
+/**
+ * @file CrystallineCavernTessellation.tesc
+ * @brief Tessellation-control stage companion to CrystallineCavernTessellation.frag -- see that file's header for
+ * this scene's description.
+ */
 layout(vertices = 4) out;
 
 in vec3 vControlPos[];

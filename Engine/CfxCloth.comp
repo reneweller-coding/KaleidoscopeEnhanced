@@ -1,4 +1,18 @@
 #version 430
+/**
+ * @file CfxCloth.comp
+ * @brief Advances a mass-spring cloth sheet one Verlet-integration step, one grid particle per texel.
+ *
+ * Per-frame update following CfxClothInit.comp's flat rest state. Reads the
+ * current and previous displacement fields (`imgCur`/`imgPrev`, bindings
+ * 0/1) to recover velocity implicitly (v = current - previous), applies a
+ * four-neighbour Laplacian as the structural spring pull plus gravity, a
+ * travelling wind pressure wave, and beat-driven gusts/kicks, then writes
+ * the new displacement to `imgOut` (binding 2). The top row is pinned so the
+ * sheet hangs like a curtain; the host ping-pongs imgCur/imgPrev/imgOut
+ * across frames since the constraint solve needs neighbours' current
+ * positions, which a single in-place image cannot provide.
+ */
 // CfxCloth.comp — a mass-spring sheet with Verlet integration and Jacobi
 // distance constraints, one particle per texel.
 // -----------------------------------------------------------------------

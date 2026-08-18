@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file AsteroidBelt.vert
+ * @brief Vertex stage companion to AsteroidBelt.frag -- see that file's header for
+ * this scene's description.
+ */
 // AsteroidBelt.vert — drifting through an asteroid belt: 4900 tumbling
 // rocks at every scale, sunlight from one side, kicks kick the throttle,
 // a drop lights every rock's rim like a solar flare.

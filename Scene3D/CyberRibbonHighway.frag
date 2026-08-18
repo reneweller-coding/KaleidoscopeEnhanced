@@ -5,6 +5,19 @@ in vec4  vCol;
 in float vSide;
 in float vLength;
 
+/**
+ * @file CyberRibbonHighway.frag
+ * @brief Lighting for the neon multi-lane highway ribbons: an additive glow
+ * that brightens toward each ribbon's outer edge, plus a dashed, glowing
+ * lane-divider stripe running down the centre.
+ *
+ * The ribbons' colour and pulse packets (vCol) are computed upstream in
+ * CyberRibbonHighway.vert from audioAdvance (lane speed), audioKick (radius
+ * pulses and pulse-packet brightness), audioSwell (highway radius) and
+ * audioChromaHue/hueP (hue); this fragment stage only shapes that colour
+ * into the glowing ribbon-edge and lane-marking look via vSide/vLength.
+ */
+
 void main() {
     // Additive glowing ribbon edges & center stripe
     float edge = 1.0 - abs(vSide);

@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file PhotoVortex.vert
+ * @brief Vertex stage companion to PhotoVortex.frag -- see that file's header for
+ * this scene's description.
+ */
 // PhotoVortex.vert — the current image spirals down a whirlpool funnel;
 // kicks make the vortex gulp, the music's advance drives the swirl.
 // attrA.x = angle around the funnel, attrA.y = radius (0 = throat).

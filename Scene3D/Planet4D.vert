@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file Planet4D.vert
+ * @brief Vertex stage companion to Planet4D.frag -- see that file's header for
+ * this scene's description.
+ */
 // Planet4D.vert — the harmony as a four-dimensional object (after the
 // Planet-4D music-space idea): the 12 pitch classes sit on the CLIFFORD
 // TORUS in S³ — one circle is the circle of FIFTHS, the other the

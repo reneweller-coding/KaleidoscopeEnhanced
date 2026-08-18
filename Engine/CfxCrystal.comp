@@ -1,4 +1,17 @@
 #version 430
+/**
+ * @file CfxCrystal.comp
+ * @brief Advances one diffusion-limited-aggregation step per random-walker thread, freezing walkers onto the growing crystal structure on contact.
+ *
+ * Per-frame step following CfxCrystalSeed.comp's initial nuclei. Each
+ * invocation owns one walker in the `Walkers` SSBO (binding 1, xy =
+ * position) and takes several random sub-steps (with a weak inward drift)
+ * against the `imgField` image (binding 0, R = solid occupancy, G = freeze
+ * time, B = hue); on touching an already-solid neighbour it probabilistically
+ * freezes into `imgField` at its own discovered position — a scatter write a
+ * fragment shader cannot express — then respawns on an outer ring to keep
+ * the walker population constant.
+ */
 // CfxCrystal.comp — diffusion-limited aggregation (frost / coral growth).
 // -----------------------------------------------------------------------
 // Random walkers drift until they touch the existing structure, then FREEZE

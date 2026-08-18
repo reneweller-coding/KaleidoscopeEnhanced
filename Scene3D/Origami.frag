@@ -13,6 +13,23 @@ in vec3  vWorld;
 in float vFold;         // 0 = flat here, 1 = deeply folded here
 in float vAcross;       // 0..1 across the sheet
 
+/**
+ * @file Origami.frag
+ * @brief Shades the folded Miura-ori sheet as tight-specular metallic
+ * foil, so each flat panel reads as a distinct brightness against its
+ * neighbours.
+ *
+ * audioLevel lifts the diffuse response, audioHigh sharpens the tight
+ * specular highlight, audioKick brightens the rim light along crease
+ * silhouettes, audioSubBass and audioBeat add a final overall pulse, and
+ * audioChromaHue nudges the foil's hue. The hue itself is drawn from the
+ * house imgPalette (a rotating sample arc over the current slideshow
+ * photo, tex0/tex1 crossfaded by interpolation) driven by audioAdvance
+ * and audioValence; vFold and vAcross (fed from Origami.comp by way of
+ * Origami.vert) shift the hue and drive the travelling colour shift along
+ * the fold, and audioAmbient lifts the unshadowed base light.
+ */
+
 uniform sampler2D tex0;
 uniform sampler2DShadow texShadow;
 uniform mat4  lightM;

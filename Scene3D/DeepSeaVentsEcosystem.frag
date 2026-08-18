@@ -5,6 +5,19 @@ in float vBioGlow;
 
 out vec4 fragColor;
 
+/**
+ * @file DeepSeaVentsEcosystem.frag
+ * @brief Lighting for a hydrothermal-vent ecosystem's particles: colours each
+ * one by species (vSpecies) -- sulfur-mineral smoker particles, bioluminescent
+ * siphonophores, or tube-worm plume tips -- tinted toward the house photo
+ * palette and brightened by its own bio-glow value (vBioGlow).
+ *
+ * audioKick pumps the overall brightness of every organism, and hueP applies
+ * a final preset hue rotation; the photo palette itself follows the musical
+ * key via audioChromaHue/audioAdvance inside imgPalette, with audioValence
+ * shaping its saturation.
+ */
+
 uniform float time;
 uniform sampler2D tex0;
 uniform sampler2D tex1;

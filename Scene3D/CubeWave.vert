@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file CubeWave.vert
+ * @brief Vertex stage companion to CubeWave.frag -- see that file's header for
+ * this scene's description.
+ */
 // CubeWave.vert — an endless neon-city flythrough of REAL cubes.
 // A 70x70 field of depth-tested cubes repeats forever along the flight path;
 // each column's height rides one of the 32 spectrum bands (the whole city IS

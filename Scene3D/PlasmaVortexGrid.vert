@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file PlasmaVortexGrid.vert
+ * @brief Vertex stage companion to PlasmaVortexGrid.frag -- see that file's header for
+ * this scene's description.
+ */
 // PlasmaVortexGrid.vert — 220x120 heightfield grid deformed into a swirling
 // relativistic energy whirlpool with Bessel wave harmonics and glowing grid lines.
 //   attrA.xy = u/v, attrA.w = cell index

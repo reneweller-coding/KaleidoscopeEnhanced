@@ -1,4 +1,17 @@
 #version 430
+/**
+ * @file CfxFFTMask.comp
+ * @brief Multiplies the image's frequency-domain field by a radial mask driven by the live 32-band audio spectrum.
+ *
+ * Runs between the two CfxFFT.comp transform passes (forward then inverse)
+ * in the FFT-filter pipeline, operating in place on the `Data` SSBO (binding
+ * 0). Maps each texel's distance from the centered DC term to one of the 32
+ * `spec` audio bands via a log-ish radius curve, so bass energy broadens
+ * (softens) the image's low frequencies while treble energy sharpens the
+ * high ones; a mild angle-dependent anisotropy avoids a plain radial-blur
+ * look, and the DC term is always forced to weight 1 to prevent whole-frame
+ * brightness flicker.
+ */
 // CfxFFTMask.comp — the MUSIC's spectrum filters the IMAGE's spectrum.
 // -----------------------------------------------------------------------
 // Distance from the (centred) DC term is spatial frequency: the middle is

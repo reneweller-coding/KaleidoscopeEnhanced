@@ -1,5 +1,11 @@
 #version 330 core
 out vec4 fragColor;
+/**
+ * @file LightningStorm.frag
+ * @brief Displays the branching electrical discharge simulated in Blend/CfxLightningStep, built around the fact that a real bolt reads mostly as afterglow rather than as the thin flash itself.
+ *
+ * texLightning is bloomed at two scales, a tight halo for the filament and a very wide one for the sheet-lightning glow, and that far halo's brightness gates how much of the photo is briefly revealed, cold and desaturated, as if lit by the storm. audioDrop punches up the overall exposure on a drop; audioLevel, audioKick, audioBeat and audioChromaHue are declared but not read by this pass itself, since the bolt's own timing and shape are already driven by audio inside the CfxLightningStep compute simulation.
+ */
 // LightningStorm.frag — the branching discharge from Blend/CfxLightningStep.
 // A bolt is mostly AFTERGLOW: the visible event is short, the bloom and the
 // lit-up surroundings are what the eye actually reads, so most of the work

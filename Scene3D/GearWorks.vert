@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file GearWorks.vert
+ * @brief Vertex stage companion to GearWorks.frag -- see that file's header for
+ * this scene's description.
+ */
 // GearWorks.vert — a colossal clockwork wall: eight brass gears mesh and
 // turn (small ones spin fast, big ones stately), a pendulum swings one
 // full period per BAR, and a piston hammers with the beat.  Cubes are the

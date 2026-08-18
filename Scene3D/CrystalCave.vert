@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file CrystalCave.vert
+ * @brief Vertex stage companion to CrystalCave.frag -- see that file's header for
+ * this scene's description.
+ */
 // CrystalCave.vert — a flight through a cave of glowing crystal shards.
 // Each "cube" is stretched into a long faceted crystal pointing inward from
 // the cave wall; the kick makes the crystals just ahead flare, the swell

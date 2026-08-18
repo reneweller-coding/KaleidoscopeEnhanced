@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file RoseOrbit.vert
+ * @brief Vertex stage companion to RoseOrbit.frag -- see that file's header for
+ * this scene's description.
+ */
 // RoseOrbit.vert — a rose curve (r = cos(k*theta)) drawn by orbiting
 // particle streams on a tilted plane, petals slowly precessing; a second
 // faint rose spins counterwise behind it.  Spirograph serenity.

@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file CoralReefFluorescence.vert
+ * @brief Vertex stage companion to CoralReefFluorescence.frag -- see that file's header for
+ * this scene's description.
+ */
 // attrA.xy = grid uv (0..1), attrB = per-cell seeds (Scene3DShader.cpp GEOM_GRID)
 in vec4 attrA;
 in vec4 attrB;

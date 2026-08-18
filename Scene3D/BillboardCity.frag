@@ -12,6 +12,19 @@ in vec4  vSeed;
 in float vBand;
 in float vFade;
 
+/**
+ * @file BillboardCity.frag
+ * @brief Shades one animated billboard screen in a night-city block: a
+ * kaleido-mirrored, slowly sliding crop of the slideshow photo behind a neon
+ * border, each screen carrying its own flicker and per-vertex spectrum band.
+ *
+ * audioChromaHue rotates the neon border's hue; audioDrop punches a burst of
+ * extra brightness into every screen on a drop. The per-board brightness
+ * (vBand) and fade-in/out (vFade) are already audio- and lifetime-modulated
+ * per vertex by the companion vertex shader; time drives both the crop's
+ * slow slide and each screen's individual flicker rate.
+ */
+
 vec3 hueRot(vec3 c, float a)
 {
     vec3  k = vec3(0.57735026919);

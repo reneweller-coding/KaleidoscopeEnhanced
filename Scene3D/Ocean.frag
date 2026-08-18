@@ -11,6 +11,22 @@ in float vFoam;
 in vec3  vNormal;
 in float vDist;
 
+/**
+ * @file Ocean.frag
+ * @brief Shades the tessellated ocean surface: a Fresnel mix between the
+ * water body colour and a reflected sky built from the current slideshow
+ * photo.
+ *
+ * audioLevel lifts the water body's brightness, audioHigh sharpens the sun
+ * glitter's specular lobe, audioKick pumps the foam on breaking crests,
+ * audioSubBass drives a subsurface glow in the wave backs, audioBeat adds
+ * a final overall pulse, and audioChromaHue nudges the water's hue within
+ * a bounded range so a full turn of the musical key cannot push the sea
+ * into purple. audioAmbient lifts the water body colour independently of
+ * the Fresnel term, and camHP sets the eye height used to build the view
+ * vector.
+ */
+
 uniform sampler2D tex0;      // the slideshow photo = the sky this sea reflects
 uniform float interpolation;
 uniform float time;

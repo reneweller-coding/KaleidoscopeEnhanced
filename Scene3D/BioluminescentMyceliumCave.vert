@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file BioluminescentMyceliumCave.vert
+ * @brief Vertex stage companion to BioluminescentMyceliumCave.frag -- see that file's header for
+ * this scene's description.
+ */
 // BioluminescentMyceliumCave.vert
 
 layout(location = 0) in vec4 attrA; // xyz = pos, w = strandID

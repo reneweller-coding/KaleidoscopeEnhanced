@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file CosmicStringHyperspaceWeb.vert
+ * @brief Vertex stage companion to CosmicStringHyperspaceWeb.frag -- see that file's header for
+ * this scene's description.
+ */
 // CosmicStringHyperspaceWeb.vert — 20 hyper-dimensional cosmic strings
 // spanning a 3D web with standing Kelvin wave vibrations and metric deficit angles.
 //   attrA.x = t along ribbon, attrA.y = side (-1/+1), attrA.w = ribbon index

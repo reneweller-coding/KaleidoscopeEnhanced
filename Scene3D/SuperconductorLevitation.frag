@@ -6,6 +6,21 @@ in vec3 vNormal;
 in vec3 vWorldPos;
 in vec2 vUV;
 
+/**
+ * @file SuperconductorLevitation.frag
+ * @brief Lights the 70x70 field of levitating superconductor tiles from
+ * SuperconductorLevitation.vert as metallic plates: a directional key light
+ * plus specular highlight, a glowing grid-edge trim per tile, and the
+ * current slideshow photo reflected faintly across each tile's top face.
+ *
+ * This fragment stage itself reads no audio uniforms; the tiles' levitation
+ * height, tilt, and per-tile colour (audioSpectrum band level, audioKick
+ * magnetic shockwave, audioChromaHue/hueP rotation) are all computed in the
+ * companion vertex shader and arrive pre-baked in vCol, so here audio only
+ * shows through as whatever normal/position that vertex work already
+ * produced.
+ */
+
 uniform sampler2D tex0;
 uniform sampler2D tex1;
 uniform float interpolation;

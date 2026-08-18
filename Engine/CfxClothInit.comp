@@ -1,4 +1,13 @@
 #version 430
+/**
+ * @file CfxClothInit.comp
+ * @brief Clears both displacement images to a flat sheet at rest, seeding the cloth simulation for CfxCloth.comp.
+ *
+ * Runs once before CfxCloth.comp's per-frame Verlet updates begin. Writes
+ * zero displacement (RGB = 0, A = 1) to both `imgCur` and `imgPrev`
+ * (bindings 0/1) so the first simulated frame starts with zero velocity
+ * (current equals previous) and every grid node at its rest position.
+ */
 // CfxClothInit.comp — a flat sheet at rest.
 // Each texel is one cloth particle: RGB = displacement from its rest
 // position, A unused.  Keeping the cloth on a GRID means the display can

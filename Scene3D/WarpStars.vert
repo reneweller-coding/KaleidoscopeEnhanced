@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file WarpStars.vert
+ * @brief Vertex stage companion to WarpStars.frag -- see that file's header for
+ * this scene's description.
+ */
 // WarpStars.vert — warp-speed starfield with REAL parallax.  The camera
 // races down a star tube; audioAdvance IS the throttle (fast music = warp),
 // a drop fires a hyperjump flash.  attrA.w = index, attrB = seeds.

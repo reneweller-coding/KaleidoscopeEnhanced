@@ -13,6 +13,23 @@ in float vAlong;
 in float vRnd;
 in float vDist;
 
+/**
+ * @file FlowRibbons.frag
+ * @brief Shades a twisting flow ribbon as a thin, two-sided, iridescent
+ * surface -- lit from both faces since a ribbon has no volume, with a
+ * tight specular flash that fires when a twisting face swings toward the
+ * camera and a fresnel-driven iridescent hue shift like a thin film.
+ *
+ * audioHigh brightens the specular flash, audioLevel strengthens the
+ * iridescent fresnel glow, audioKick brightens a pulse that continually
+ * travels along each ribbon, audioAmbient adds a flat tint, and
+ * audioBeat/audioSubBass pulse the final brightness. Hue comes from the
+ * rotating photo-arc palette (imgPalette) keyed by audioChromaHue with an
+ * audioAdvance drift and audioValence-controlled saturation, and
+ * per-ribbon randomness (vRnd) spreads the flow into distinguishable
+ * colored strands; distance fog (vDist) fades far ribbons into haze.
+ */
+
 uniform sampler2D tex0;
 uniform float interpolation;
 uniform float time;

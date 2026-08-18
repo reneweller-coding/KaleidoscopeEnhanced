@@ -1,4 +1,19 @@
 #version 430
+/**
+ * @file FlowRibbons.comp
+ * @brief Generates thousands of ribbon streamlines through a
+ * divergence-free curl-noise flow field, integrating each ribbon's path
+ * with midpoint integration and parallel-transporting its cross-section
+ * frame so the ribbon twists without flipping.
+ *
+ * audioAdvance drives the flow field's drift and reseeds ribbons flowing
+ * through a slab in front of the camera; audioSubBass widens the field's
+ * slow background rotation (the vortex driving the whole flow), and
+ * audioKick widens each ribbon's cross-sectional width. Each thread
+ * integrates and writes one entire ribbon's triangles (position, normal,
+ * along-length coordinate, per-ribbon random seed) into the shared Verts
+ * buffer that the paired FlowRibbons.frag reads back as its draw geometry.
+ */
 // FlowRibbons.comp — thousands of streamlines through a curl-noise field.
 // -----------------------------------------------------------------------
 // The field is CURL noise, which is the curl of a vector potential and is

@@ -1,4 +1,18 @@
 #version 430
+/**
+ * @file CfxFFT.comp
+ * @brief Performs an in-place radix-2 Cooley-Tukey FFT (or inverse FFT) of a single row or column, entirely in workgroup shared memory.
+ *
+ * Core transform stage of the FFT-filter pipeline, run after
+ * CfxFFTLoad.comp has placed a complex field in the `Data` SSBO (binding 0)
+ * and before CfxFFTMask.comp filters it; dispatched four times by the host
+ * (rows forward, columns forward, columns inverse, rows inverse — or
+ * equivalent order) to build a full 2D transform, selected per-dispatch via
+ * the `axis` and `inverse` uniforms. One workgroup handles one line of N=256
+ * samples with 128 threads (each owning one butterfly per stage); the eight
+ * stages are separated by `barrier()` calls, which is the synchronization a
+ * fragment shader cannot provide and the reason this pass exists as compute.
+ */
 // CfxFFT.comp — in-place radix-2 Cooley-Tukey FFT of one line, entirely in
 // workgroup SHARED MEMORY.
 // -----------------------------------------------------------------------

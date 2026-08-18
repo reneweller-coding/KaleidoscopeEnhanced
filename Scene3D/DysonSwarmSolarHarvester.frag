@@ -6,6 +6,20 @@ in float vLaserRelay;
 
 out vec4 fragColor;
 
+/**
+ * @file DysonSwarmSolarHarvester.frag
+ * @brief Lighting for a Dyson-swarm solar-collector panel: discards outside
+ * a hexagonal boundary, blends a reflected slideshow photo with a gold/blue
+ * photovoltaic-cell colour that varies by ring (vRingIdx), adds a bright
+ * hexagon-edge rim, and overlays a high-energy laser relay pulse
+ * (vLaserRelay).
+ *
+ * audioSwell brightens the photovoltaic colour mix, relayP scales the laser
+ * relay's intensity, and hueP rotates the final hue; the photovoltaic colour
+ * itself is tinted toward the house photo palette (palTint/imgPalette),
+ * which tracks the musical key via audioChromaHue/audioAdvance.
+ */
+
 uniform float time;
 uniform sampler2D tex0;
 uniform sampler2D tex1;

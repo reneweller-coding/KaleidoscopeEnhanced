@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file SpectralTorus.vert
+ * @brief Vertex stage companion to SpectralTorus.frag -- see that file's header for
+ * this scene's description.
+ */
 // SpectralTorus.vert — the second manifold-harmonics body: on the (flat)
 // torus the Laplace-Beltrami eigenfunctions are EXACTLY the 2D Fourier
 // modes cos(2π(n·u + m·v)) — closed form, zero precomputation, and their

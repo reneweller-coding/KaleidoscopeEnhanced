@@ -1,5 +1,19 @@
 #version 330 core
 out vec4 fragColor;
+/**
+ * @file FxDepthField.frag
+ * @brief FX DEPTH FIELD: physically based depth-of-field blur driven by the
+ * scene's real depth buffer, with a 12-tap bokeh kernel and a focal plane
+ * that racks with the music.
+ *
+ * Layers without valid depth (2D scenes) pass through unblurred. A
+ * foreground-stays-sharp occlusion test keeps in-focus objects from
+ * smearing into the blurred background behind them.
+ *   interpolation -> cross-fades the two independently blurred scene layers
+ *   audioSubBass  -> pulls the focal plane in toward the camera
+ *   audioKick     -> snaps the focal plane back out (rack focus)
+ *   audioBeat     -> subtle overall brightness pulse
+ */
 // FxDepthField.frag — depth of field, using the 3D scene's real depth.
 // -----------------------------------------------------------------------
 // This is the first effect that reads what the scene actually wrote into the

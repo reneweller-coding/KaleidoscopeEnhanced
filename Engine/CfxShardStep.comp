@@ -1,5 +1,18 @@
 #version 430
-// CfxShardStep.comp — shatter and reassemble.
+/**
+ * @file CfxShardStep.comp
+ * @brief Integrates every shard's spring-and-gravity motion and splats its patch of the source photo at its current pose.
+ *
+ * Reads and updates the ShardA/ShardB state buffers (bindings 1 and 2) that
+ * CfxShardInit.comp launches: a critically-damped spring pulls each shard
+ * back toward its home grid cell while gravity acts on it in flight, and
+ * rotation relaxes back to square as it returns. Each shard then samples an
+ * 8x8 grid of texels from its home rectangle of texPhoto, rotates and
+ * translates them by the shard's current offset/rotation, and additively
+ * splats (atomicAdd, with a small dilation kernel to fill gaps) into the uint
+ * accumulator at binding 0. CfxResolve.comp tonemaps that accumulator into
+ * the display texture. Shards that leave the frame simply stop being drawn.
+ */
 // -----------------------------------------------------------------------
 // Each shard is an independent rigid piece of the frame with its own
 // offset, rotation and spin.  It splats its patch of the photo wherever it

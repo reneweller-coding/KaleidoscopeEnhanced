@@ -9,6 +9,18 @@ uniform float audioKick;
 // figures instead of a soft blur.
 in vec4 vCol;
 
+/**
+ * @file CymaticsPlate.frag
+ * @brief Point-sprite shader for the Chladni-figure sand grains: a small,
+ * fairly hard-edged additive dot (tight core plus a faint halo) so grains
+ * that have converged onto a nodal line read as crisp bright figures rather
+ * than a soft blur.
+ *
+ * audioLevel and audioKick both boost the sprite's overall brightness; the
+ * grain's own colour (vCol) and its position on the vibrating plate are
+ * computed upstream in this scene's vertex/compute stage.
+ */
+
 void main()
 {
     vec2  d = gl_PointCoord - 0.5;

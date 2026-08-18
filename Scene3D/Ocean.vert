@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file Ocean.vert
+ * @brief Vertex stage companion to Ocean.frag -- see that file's header for
+ * this scene's description.
+ */
 // Ocean.vert — pass the patch corner through to the tessellation stage.
 // With a tessellation pipeline the vertex shader does almost nothing: the
 // real placement happens per generated vertex in the evaluation shader, so

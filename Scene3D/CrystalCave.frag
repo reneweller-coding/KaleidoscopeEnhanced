@@ -4,6 +4,20 @@ out vec4 fragColor;
 in vec4 vCol;
 in vec3 vCorner;
 
+/**
+ * @file CrystalCave.frag
+ * @brief Lighting for a flight through a cave lined with glowing crystal
+ * shards: dark faceted cube faces with luminous edges where three faces meet,
+ * depth-tested so nearer crystals occlude the ones behind.
+ *
+ * The colour and brightness of each shard (vCol) already carry the scene's
+ * audio reactivity from CrystalCave.vert -- audioKick flares crystals just
+ * ahead of the camera, audioSnare sparkles a hashed subset, audioSwell
+ * breathes the ambient glow, audioDrop flashes the whole cave, and
+ * audioChromaHue drifts the gem hue with the musical key; this fragment stage
+ * only turns that colour into the edge-lit facet look.
+ */
+
 void main()
 {
     vec3 a = abs(vCorner) * 2.0;

@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file SynchrotronRadiationRing.vert
+ * @brief Vertex stage companion to SynchrotronRadiationRing.frag -- see that file's header for
+ * this scene's description.
+ */
 // attrA.x = t along ribbon (0..1), attrA.y = side (-1..+1), attrA.w = ribbon
 // id, attrB = per-ribbon seeds (Scene3DShader.cpp GEOM_RIBBON).
 in vec4 attrA;

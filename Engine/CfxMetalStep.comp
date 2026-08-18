@@ -1,4 +1,19 @@
 #version 430
+/**
+ * @file CfxMetalStep.comp
+ * @brief Simulates SPH-flavoured liquid-metal particles (short-range repulsion, mid-range attraction) and splats their density into the accumulation buffer for screen-space fluid rendering.
+ *
+ * Self-contained dual-mode kernel dispatched twice per frame via the
+ * `buildGrid` uniform, mirroring the boids grid/step split: with
+ * `buildGrid == 1` it only bins particles from the `Parts` SSBO (binding 1)
+ * into the `Grid` SSBO (binding 2) using the same uniform-grid atomic
+ * technique as CfxBoidsGrid.comp; with `buildGrid == 0` it uses that grid to
+ * find the 3x3-cell neighbourhood, applies a Lennard-Jones-like force
+ * (repel very close, attract at mid range, which produces surface tension
+ * and droplet cohesion) plus a swirling rotational field and gravity, then
+ * splats a small density disc per particle atomically into the `Accum` SSBO
+ * (binding 0) for the display to threshold into a smooth metal surface.
+ */
 // CfxMetalStep.comp — SPH-flavoured blobs of liquid metal.
 // Particles attract into cohesive drops and repel at short range, so the
 // population behaves like a fluid with surface tension rather than a gas.

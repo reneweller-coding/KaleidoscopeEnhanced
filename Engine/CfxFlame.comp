@@ -1,4 +1,19 @@
 #version 430
+/**
+ * @file CfxFlame.comp
+ * @brief Runs Draves' fractal-flame chaos game — thousands of walker threads iterating random non-linear IFS transforms — and splats each plotted point's color and density atomically into the accumulation buffer.
+ *
+ * Self-contained per-frame pass (single kernel, no seed/init sibling): each
+ * of 256-per-group threads picks a starting point, iterates ITERS times
+ * through one of four affine maps (whose coefficients breathe on
+ * host-integrated phase/warp/spin uniforms, never raw audio-scaled time, to
+ * avoid attractor jitter) blended between two of eight classic flame
+ * variations, and after a warmup period splats the resulting point's palette
+ * color into the `Accum` SSBO (binding 0) with atomic adds — the
+ * runtime-discovered scatter write that a fragment shader cannot perform.
+ * The present pass resolves the accumulated density histogram into the
+ * final image.
+ */
 // CfxFlame.comp — fractal flames (Draves' chaos game) in real time.
 // -----------------------------------------------------------------------
 // 65k walkers each iterate a randomly chosen non-linear transform and plot

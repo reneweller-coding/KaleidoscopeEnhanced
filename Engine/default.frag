@@ -1,4 +1,16 @@
 #version 330 core
+/**
+ * @file default.frag
+ * @brief Fallback/placeholder fullscreen pass: renders a polar-coordinate kaleidoscope-style warp of tex0.
+ *
+ * Converts each fragment's centred screen position to polar form (radius r,
+ * angle a) and remaps it to a UV where x is driven by 1/r plus a time-scrolled
+ * offset and y by the normalised angle, producing a swirling tunnel-like
+ * distortion of tex0 sampled at that UV. tex1 and tex2 plus a three-way blend
+ * with interpValue are declared and were evidently used by an earlier version
+ * of this pass (see the commented-out block below) but are unused in the
+ * current main(); only tex0 and time actually affect the output.
+ */
 out vec4 fragColor;
 uniform sampler2D tex0;
 uniform sampler2D tex1;

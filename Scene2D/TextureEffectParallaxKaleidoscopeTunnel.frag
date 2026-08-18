@@ -1,5 +1,20 @@
 #version 330 core
 out vec4 fragColor;
+/**
+ * @file TextureEffectParallaxKaleidoscopeTunnel.frag
+ * @brief The same 32-layer retro pixel-parallax as
+ *        TextureEffectParallaxKaleidoscope.frag, but each layer's kaleidoscope
+ *        sample is remapped into a scrolling tunnel UV (radius feeds a forward
+ *        scroll coordinate, angle feeds the cross coordinate) instead of a
+ *        direct planar sample, so the parallax reads as flying down a
+ *        mirrored tunnel rather than orbiting over a flat mosaic.
+ *
+ * The parallax offset orbits driven by speedMovement*time plus audioAdvance
+ * (jump-free drift), with the orbit radius (`extend`) widening on audioSwell
+ * energy swells. The tunnel's forward scroll coordinate itself also advances
+ * with audioAdvance, and the mirrored-segment rotation angle is advanced by
+ * audioPhase on top of the base time*speed rotation.
+ */
 uniform vec2 resolution;
 uniform float time;
 uniform sampler2D tex0;

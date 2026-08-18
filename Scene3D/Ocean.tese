@@ -1,4 +1,9 @@
 #version 400 core
+/**
+ * @file Ocean.tese
+ * @brief Tessellation-evaluation stage companion to Ocean.frag -- see that file's header for
+ * this scene's description.
+ */
 // Ocean.tese — place and displace every generated vertex.
 // -----------------------------------------------------------------------
 // Gerstner waves: unlike a plain sine heightfield, each wave also moves the

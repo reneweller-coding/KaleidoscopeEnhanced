@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file CosmicBoidsVortex.vert
+ * @brief Vertex stage companion to CosmicBoidsVortex.frag -- see that file's header for
+ * this scene's description.
+ */
 // CosmicBoidsVortex.vert — Full-screen 3D particle swarm vortex.
 // Thousands of particles swirling in a massive 3D vortex surrounding the camera.
 //   audioKick       -> explosive radial impulse pushing particles towards the camera lens

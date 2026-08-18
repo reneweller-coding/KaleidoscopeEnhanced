@@ -1,4 +1,9 @@
 #version 400 core
+/**
+ * @file BloomSculpt.tese
+ * @brief Tessellation-evaluation stage companion to BloomSculpt.frag -- see that file's header for
+ * this scene's description.
+ */
 // BloomSculpt.tese — a sphere grown into a flower by the twelve chroma bins.
 // -----------------------------------------------------------------------
 // The patch sheet's (u,v) is read as (azimuth, polar angle), so the flat grid

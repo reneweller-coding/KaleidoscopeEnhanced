@@ -1,5 +1,15 @@
 #version 430
-// CfxShardInit.comp — cut the frame into shards and give each one a launch.
+/**
+ * @file CfxShardInit.comp
+ * @brief Launches every shard of the shatter effect outward from its home cell with a random burst velocity and spin.
+ *
+ * Writes the two shard state buffers CfxShardStep.comp animates each frame:
+ * ShardA (binding 1: xy offset from home, z rotation, w unused here, reset to
+ * zero) and ShardB (binding 2: xy launch velocity, z angular velocity, w a
+ * per-shard random seed), scaled by the burst uniform. Runs once per shatter
+ * trigger; the spring-and-gravity integration and photo splatting that follow
+ * live entirely in CfxShardStep.comp.
+ */
 // vec4 A: xy = current offset from home, z = rotation, w = spin
 // vec4 B: xy = velocity, z = angular velocity, w = seed
 layout(local_size_x = 256) in;

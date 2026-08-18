@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file MyceliumNeuralPulse.vert
+ * @brief Vertex stage companion to MyceliumNeuralPulse.frag -- see that file's header for
+ * this scene's description.
+ */
 // attrA.xyz = world pos (baked by the compute generator), attrA.w = pulse
 // attrB.w   = branchLevel (Scene3DShader.cpp GEOM_INDIRECT, 8-float layout)
 in vec4 attrA;

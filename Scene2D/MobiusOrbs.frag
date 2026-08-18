@@ -11,7 +11,7 @@ out vec4 fragColor;
  * beat/onset brightness, mood grade, and IMAGE-DRIVEN colour: a drifting crop
  * of the source picture (imgPal) rotates the palette's hue (hueRot) so the orb
  * colours come from the ever-changing image.  Only "Variant 01" of the
- * original's three #define presets is used (the other two were commented out
+ * original's three `#define` presets is used (the other two were commented out
  * in the source and would just swap the numeric constants below).
  */
 

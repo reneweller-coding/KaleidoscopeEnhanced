@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file ConcertCrowd.vert
+ * @brief Vertex stage companion to ConcertCrowd.frag -- see that file's header for
+ * this scene's description.
+ */
 // ConcertCrowd.vert — YOU are on stage, looking out at a silhouetted crowd
 // under backlight.  A "wave" of raised arms rolls through the rows on the
 // beat phase (each person's own small phase offset keeps it human, not

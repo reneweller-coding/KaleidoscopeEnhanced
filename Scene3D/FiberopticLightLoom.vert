@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file FiberopticLightLoom.vert
+ * @brief Vertex stage companion to FiberopticLightLoom.frag -- see that file's header for
+ * this scene's description.
+ */
 // FiberopticLightLoom.vert — 20 woven fiberoptic ribbons flowing in 3D
 // warp-and-weft patterns transmitting high-speed data pulse packets.
 //   attrA.x = t along ribbon, attrA.y = side (-1/+1), attrA.w = ribbon index

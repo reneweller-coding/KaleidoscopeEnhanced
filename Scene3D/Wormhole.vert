@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file Wormhole.vert
+ * @brief Vertex stage companion to Wormhole.frag -- see that file's header for
+ * this scene's description.
+ */
 // Wormhole.vert — flying through a chain of gravitational-lensing throats:
 // the tube's radius pinches toward zero at a periodic "event horizon" that
 // slides toward the camera and loops, so the flight reads as passing

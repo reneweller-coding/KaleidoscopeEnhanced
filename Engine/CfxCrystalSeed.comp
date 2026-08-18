@@ -1,4 +1,15 @@
 #version 430
+/**
+ * @file CfxCrystalSeed.comp
+ * @brief Clears the crystal field image and stamps five solid seed nuclei that CfxCrystal.comp's random walkers will grow from.
+ *
+ * Runs once before CfxCrystal.comp's per-frame diffusion-limited-aggregation
+ * steps. Writes to `imgField` (binding 0): one central nucleus plus four
+ * scattered ones (positions hashed from `seed`) so multiple branch
+ * structures grow toward each other and eventually knit together, versus a
+ * single edge-aligned seed line which would grow a flat Eden-growth wall
+ * instead of DLA branching.
+ */
 // CfxCrystalSeed.comp — clear the crystal field and drop the seed nuclei.
 // R = solid, G = unused, B = hue index.
 //

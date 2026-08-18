@@ -1,5 +1,11 @@
 #version 330 core
 out vec4 fragColor;
+/**
+ * @file CausticPool.frag
+ * @brief The photograph seen as a pool floor through a rippling water surface lit by caustics.
+ *
+ * texCaustics (written by the CfxPhoton compute pass) supplies both the refraction, whose gradient bends the tex0 lookup so the floor appears to wobble under moving water, and the light pattern itself, blurred into a soft glow and blended in multiplicatively so it reveals the floor rather than sitting on top of it. audioSubBass strengthens the refraction, audioLevel and audioBeat brighten the caustic light and its squared glow term, and audioAmbient dims or lifts the whole image. The warpP and glowP presets scale refraction strength and blur radius.
+ */
 // CausticPool.frag — the photo as a pool floor under a rippling surface.
 // Blend/CfxPhoton.comp splats refracted photons into texCaustics; here the
 // same caustic field also displaces the floor, so the picture appears to be

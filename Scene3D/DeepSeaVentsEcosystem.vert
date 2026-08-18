@@ -1,4 +1,9 @@
 #version 330 core
+/**
+ * @file DeepSeaVentsEcosystem.vert
+ * @brief Vertex stage companion to DeepSeaVentsEcosystem.frag -- see that file's header for
+ * this scene's description.
+ */
 // attrA.xyz = world pos (baked by the compute generator), attrA.w = species
 // attrB.w   = bioGlow (Scene3DShader.cpp GEOM_INDIRECT, 8-float vertex layout)
 in vec4 attrA;

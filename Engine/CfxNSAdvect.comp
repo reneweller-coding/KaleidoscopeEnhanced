@@ -1,7 +1,17 @@
 #version 430
-// CfxNSAdvect.comp — semi-Lagrangian advection of velocity AND dye, plus the
-// music's forces.  Step 1 of a real Navier-Stokes solve.
-// vel texture: RG = velocity.  dye texture: RGB = colour, A = density.
+/**
+ * @file CfxNSAdvect.comp
+ * @brief Step 1 of the Navier-Stokes fluid solve: semi-Lagrangian advection of velocity and dye, plus force injection.
+ *
+ * For every texel, traces backward along the current velocity field to sample
+ * the previous velocity (image bindings 0 to 1) and dye (bindings 2 to 3,
+ * RGB colour + A density) with a hand-rolled bilinear fetch, since imageLoad
+ * has no filtering. Adds a wandering, audio-driven jet force and buoyancy from
+ * dye density, and injects fresh dye tinted from texPhoto at the jet position.
+ * Border velocity is pinned to zero so the later pressure projection can
+ * converge. Output feeds CfxNSDiv.comp next in the pipeline (advect, then
+ * divergence, then Jacobi pressure iterations, then CfxNSProject.comp).
+ */
 layout(local_size_x = 16, local_size_y = 16) in;
 
 layout(rgba16f, binding = 0) readonly  uniform image2D velSrc;
