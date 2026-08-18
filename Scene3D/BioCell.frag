@@ -11,5 +11,5 @@ void main()
 {
     vec2  d = gl_PointCoord - 0.5;
     float a = exp(-dot(d, d) * 9.0);
-    fragColor = vec4(vCol.rgb * a * (0.85 + 0.30 * audioLevel + 0.35 * audioKick), 1.0);
+    fragColor = vec4(vCol.rgb * a * (2.2 + 0.8 * audioLevel + 0.9 * audioKick), 1.0);
 }

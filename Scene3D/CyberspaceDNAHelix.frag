@@ -54,5 +54,5 @@ void main() {
 
     if (hue > 0.001) col = hueRot(col, hue);
 
-    fragColor = vec4(col, edge * 0.95);
+    fragColor = vec4(col * 1.7, edge * 0.95);
 }

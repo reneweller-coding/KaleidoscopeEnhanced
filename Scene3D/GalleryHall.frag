@@ -49,5 +49,5 @@ void main()
     }
 
     col *= 1.0 + 0.7 * audioDrop;
-    fragColor = vec4(col * 1.2 * (0.85 + 0.30 * audioLevel + 0.35 * audioKick), 1.0);
+    fragColor = vec4(col * 1.8 * (0.85 + 0.30 * audioLevel + 0.35 * audioKick), 1.0);
 }
