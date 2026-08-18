@@ -90,6 +90,8 @@ PreviewWidget::~PreviewWidget()
     delete m_texProg;
     delete m_combProg;
     delete m_fbo;
+    delete m_fboRig;
+    delete m_rigProg;
     if (m_img0) glDeleteTextures(1, &m_img0);
     if (m_img1) glDeleteTextures(1, &m_img1);
     if (m_vbo)  glDeleteBuffers(1, &m_vbo);
@@ -243,6 +245,68 @@ void PreviewWidget::loadImages()
 // Set every uniform any of the effect shaders might declare.  Unused ones resolve
 // to location -1 and are silently ignored, so one call works for all shaders.
 // Editor slider values override the per-activation params (after defaults).
+// 2D CAMERA RIG preview parity -- see FilterShader::rig2Transform for the
+// engine-side twin.  Values come from the selected entry's rig2* formulas
+// (absolute channels + rate channels integrated on the preview clock).
+GLuint PreviewWidget::rig2Apply(GLuint srcTex, int w, int h)
+{
+    static const char *kAbs[4] = { "rig2Roll",  "rig2Zoom",  "rig2X",  "rig2Y"  };
+    static const char *kVel[4] = { "rig2RollV", "rig2ZoomV", "rig2XV", "rig2YV" };
+    float absv[4] = { 0, 0, 0, 0 }, vel[4] = { 0, 0, 0, 0 };
+    bool active = false;
+    for (const SceneExpr &se : m_sceneExprs)
+    {
+        if (!se.prog || !se.prog->valid()) continue;
+        for (int i = 0; i < 4; ++i)
+        {
+            if (se.name == QLatin1String(kAbs[i])) { absv[i] = evalExpr(*se.prog); active = true; }
+            if (se.name == QLatin1String(kVel[i])) { vel[i]  = evalExpr(*se.prog); active = true; }
+        }
+    }
+    if (!active)
+        return srcTex;
+
+    if (!m_rigProg && !m_rigProgTried)
+    {
+        m_rigProgTried = true;
+        QString log;
+        m_rigProg = compile("Rig2D.frag", log);   // compile() searches Blend/
+    }
+    if (!m_rigProg)
+        return srcTex;                            // fail open
+
+    const float t = (m_fixedTime >= 0.f) ? m_fixedTime : m_time;
+    if (t != m_rig2LastT)
+    {
+        float dt = t - m_rig2LastT;
+        if (dt < 0.f || dt > 0.1f) dt = 0.f;
+        for (int i = 0; i < 4; ++i) m_rig2Acc[i] += vel[i] * dt;
+        m_rig2LastT = t;
+    }
+
+    if (!m_fboRig || m_fboRig->width() != w || m_fboRig->height() != h)
+    {
+        delete m_fboRig;
+        m_fboRig = new QOpenGLFramebufferObject(w, h);
+    }
+    m_fboRig->bind();
+    glViewport(0, 0, w, h);
+    glDisable(GL_BLEND);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, srcTex);
+    m_rigProg->bind();
+    m_rigProg->setUniformValue("tex", 0);
+    m_rigProg->setUniformValue("resolution", QVector2D(float(w), float(h)));
+    m_rigProg->setUniformValue("rigRoll", absv[0] + m_rig2Acc[0]);
+    m_rigProg->setUniformValue("rigZoom", absv[1] + m_rig2Acc[1]);
+    m_rigProg->setUniformValue("rigPan",
+        QVector2D(absv[2] + m_rig2Acc[2], absv[3] + m_rig2Acc[3]));
+    drawFullscreenQuad(m_rigProg);
+    m_rigProg->release();
+    m_fboRig->release();
+    return m_fboRig->texture();
+}
+
 void PreviewWidget::setSceneExprs(QVector<QPair<QString, QString>> exprs)
 {
     // Called on every panel refresh -- rebuild (and re-dirty the scene3d
@@ -816,6 +880,13 @@ void PreviewWidget::paintGL()
         m_fbo->release();
     }
 
+    // ---- 2D CAMERA RIG (preview parity with FilterShader::rig2Transform):
+    // rig2* formulas of the selected entry transform the pass-1 frame before
+    // the combine samples it.  3D scenes have their own projM rig instead.
+    GLuint pass1Tex = (m_texProg && m_fbo) ? m_fbo->texture() : 0;
+    if (!(is3D && sceneColorTex != 0) && pass1Tex)
+        pass1Tex = rig2Apply(pass1Tex, w, h);
+
     // ---- Pass 2: combine shader (samples pass-1 as tex0) -> widget FBO ----
     glBindFramebuffer(GL_FRAMEBUFFER, defaultFramebufferObject());
     glViewport(0, 0, w, h);
@@ -825,7 +896,7 @@ void PreviewWidget::paintGL()
     if (m_combProg && (haveScene || m_texProg))
     {
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, haveScene ? sceneColorTex : m_fbo->texture());
+        glBindTexture(GL_TEXTURE_2D, haveScene ? sceneColorTex : pass1Tex);
         glActiveTexture(GL_TEXTURE1); glBindTexture(GL_TEXTURE_2D, m_img1);
         // A depth-reading combine (fog, AO, sun shafts, the edge/rim/heat-
         // shimmer trio) needs the SAME depthValid/texDepth0/nearFar/tanHalfFov

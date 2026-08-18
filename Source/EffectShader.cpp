@@ -387,6 +387,38 @@ void EffectShader::applyAudioFeatures(const AudioFeatures &f)
             if (e.loc >= 0 && e.prog.valid())
                 glUniform1f(e.loc, e.prog.eval(v));
         }
+
+        // ---- 2D CAMERA RIG: formulas named rig2Roll/rig2Zoom/rig2X/rig2Y
+        // (absolute) and rig2…V (rates, HOST-INTEGRATED so audio-varying
+        // rates are jump-free) are not shader uniforms — FilterShader reads
+        // the result via rig2() and runs the Blend/Rig2D.frag transform pass
+        // over this scene's finished frame.  Rates integrate once per FRAME
+        // (m_exprTime is per-frame; guard against multiple passes).
+        m_rig2Active = false;
+        float absv[4] = { 0, 0, 0, 0 };            // roll zoom x y
+        float vel[4]  = { 0, 0, 0, 0 };
+        static const char *kAbs2[4] = { "rig2Roll",  "rig2Zoom",  "rig2X",  "rig2Y"  };
+        static const char *kVel2[4] = { "rig2RollV", "rig2ZoomV", "rig2XV", "rig2YV" };
+        for (ExprEntry &e : m_exprs)
+        {
+            if (!e.prog.valid()) continue;
+            for (int i = 0; i < 4; ++i)
+            {
+                if (e.name == kAbs2[i]) { absv[i] = e.prog.eval(v); m_rig2Active = true; }
+                if (e.name == kVel2[i]) { vel[i]  = e.prog.eval(v); m_rig2Active = true; }
+            }
+        }
+        if (m_rig2Active)
+        {
+            if (m_exprTime != m_rig2LastT)
+            {
+                float dt = m_exprTime - m_rig2LastT;
+                if (dt < 0.f || dt > 0.1f) dt = 0.f;   // activation / reset
+                for (int i = 0; i < 4; ++i) m_rig2Acc[i] += vel[i] * dt;
+                m_rig2LastT = m_exprTime;
+            }
+            for (int i = 0; i < 4; ++i) m_rig2[i] = absv[i] + m_rig2Acc[i];
+        }
     }
     if (L[AL_TEXSIM]      >= 0) glUniform1i(L[AL_TEXSIM],      7);   // RD field (unit 7)
     if (L[AL_TEXFLUID]    >= 0) glUniform1i(L[AL_TEXFLUID],    8);   // fluid dye (unit 8)

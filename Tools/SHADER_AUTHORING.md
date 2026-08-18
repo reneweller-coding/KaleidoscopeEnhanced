@@ -233,6 +233,11 @@ Konsequenzen fürs Autorieren:
   `--param` auch über den Scene3D-Pfad).
 - V7 (Anti-Flimmer) gilt unverändert auch für Formeln: nie eine Formel auf
   eine Uniform legen, die im Shader mit `time` multipliziert wird.
+- **2D-Kamera-Rig (alle 2D-Szenen):** Formeln `rig2Roll`/`rig2Zoom`/
+  `rig2X`/`rig2Y` (+ integrierte `rig2…V`-Raten) — FilterShader schiebt das
+  fertige Szenen-FBO durch `Blend/Rig2D.frag` (Spiegel-Faltung an den
+  Rändern), bevor der Combine es liest. Nur aktiv, wenn eine Formel
+  existiert; auf gepackten Stereo-Frames grundsätzlich aus.
 - **Kamera-Rig (nur Scene3D, keine Shader-Änderung nötig):** Formeln namens
   `rigPitch`/`rigYaw`/`rigRoll` (Radiant) und `rigDolly` (Welt-Einheiten,
   >0 = näher) werden CPU-seitig ausgewertet und in `projM` komponiert;

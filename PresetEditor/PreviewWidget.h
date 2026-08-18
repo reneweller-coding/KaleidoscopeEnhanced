@@ -169,6 +169,17 @@ private:
     struct SceneExpr { QString name; QString formula; std::shared_ptr<ExprProgram> prog; };
     QVector<SceneExpr> m_sceneExprs;      // formula layer of the selected entry
 
+    // 2D CAMERA RIG preview parity: mirrors FilterShader::rig2Transform for
+    // the 2D path -- rig2* formulas rotate/zoom/pan the pass-1 frame before
+    // the combine samples it.  Returns srcTex unchanged when no rig2 formula
+    // is active.
+    GLuint rig2Apply(GLuint srcTex, int w, int h);
+    QOpenGLFramebufferObject *m_fboRig  = nullptr;
+    QOpenGLShaderProgram     *m_rigProg = nullptr;
+    bool  m_rigProgTried = false;
+    float m_rig2Acc[4]  = { 0.f, 0.f, 0.f, 0.f };
+    float m_rig2LastT   = -1.0e9f;
+
     // Transition test bench state (see setTransTest/setFixedTime).
     int    m_transStyle  = -1;
     float  m_transFixedD = -1.f;

@@ -1183,6 +1183,16 @@ Audio is captured via WASAPI loopback (`AudioAnalyzer`) and analysed in real tim
   gentle `rigDolly = 0.5*swell` push-in; shadows stay world-anchored
   (the shadow pass renders through `lightM`).  The editor shows the eight
   rig rows for every scene3d entry.
+- **2D CAMERA RIG for every 2D scene (8 more formula channels):** the 2D
+  counterpart of the projM rig — formulas named `rig2Roll` (radians),
+  `rig2Zoom` (>0 = closer), `rig2X`/`rig2Y` (pan) plus host-integrated
+  `rig2…V` rates.  `FilterShader` runs the scene's finished frame through
+  `Blend/Rig2D.frag` (rotate/zoom/pan with seamless mirror-folded edges)
+  before the combine consumes it — an extra fullscreen pass ONLY while a
+  formula is active, zero cost otherwise, and skipped on eye-packed stereo
+  frames on principle.  All presets ship subtle defaults (roll sway on the
+  integrated phase + `rig2Zoom = 0.05*swell`); the editor shows the eight
+  rows for every 2D entry and the preview applies the identical transform.
 - **~330 generated per-scene couplings on tunable params:** a canonical
   generator classified every registered float param by name (hue → musical
   key, glow → kick/snare, warp → flux, amp → relative bass, size → swell,

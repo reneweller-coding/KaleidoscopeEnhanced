@@ -362,6 +362,16 @@ private:
 	// ---- Feedback / trails (phosphor-style ping-pong) ----
 	GLuint			m_fboTrail[2]   = { 0, 0 };
 	GLuint			m_texTrail[2]   = { 0, 0 };
+
+	// 2D CAMERA RIG scratch targets (one per effect slot; lazily created and
+	// size-checked EVERY use, so FilterShader::resize() needs no extra case).
+	// rig2Transform() renders src through Blend/Rig2D.frag when the effect
+	// has active rig2 formulas and returns the texture the combine should
+	// bind instead; src unchanged otherwise.
+	GLuint			m_rig2Fbo[2]    = { 0, 0 };
+	GLuint			m_rig2Tex[2]    = { 0, 0 };
+	int				m_rig2W = 0, m_rig2H = 0;
+	GLuint			rig2Transform( EffectShader *fx, GLuint srcTex, int slot );
 	int				m_trailIdx      = 0;
 	GLuint			m_trailProgId   = 0;
 	GLint			m_trailCurUni   = -1;
