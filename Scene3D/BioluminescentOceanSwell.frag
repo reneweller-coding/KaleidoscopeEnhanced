@@ -90,6 +90,6 @@ void main() {
 
     vec3 col = waterBase + photoSky * fresnel * 0.8 + vec3(1.0) * spec * 0.9 + bioEmission + sssCol;
 
-    col = hueRot(col, audioChromaHue + hue);
+    col = hueRot(col, hue);   // chromaHue handled inside imgPalette
     fragColor = vec4(col, 1.0);
 }

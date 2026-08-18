@@ -80,6 +80,6 @@ void main() {
     vec3 col = silicon * (diff * 0.7 + 0.2) + basePhoto * 0.25 + gold * spec * 0.8 + emission;
     col += vec3(1.0) * audioKick * smoothstep(0.8, 1.5, vEnergy) * 1.5; // Gate flash
 
-    col = hueRot(col, audioChromaHue + hue);
+    col = hueRot(col, hue);   // chromaHue handled inside imgPalette
     fragColor = vec4(col, 1.0);
 }

@@ -219,6 +219,8 @@ CosmicRayAirShowerCherenkov.frag COSMIC RAY AIR SHOWER CHERENKOV: Ultra-high-ene
 
 `Scene/CrystalGrowth.frag` · type=normal · mood=calm,bright · complexity=2
 
+_(Vorschau eingeschränkt: Sim-Textur/Mehrpass — Bilder unterschätzen die echte App)_
+
 CrystalGrowth.frag — frost growing across the frame by diffusion-limited aggregation (Blend/CfxCrystal.comp). The field stores solid/hue only; the growth FRONT is found here geometrically — a solid texel with few solid neighbours is a tip, and tips are what glow.
 
 ![CrystalGrowth ruhig (t=8)](img/CrystalGrowth_A.jpg) ![CrystalGrowth ruhig (t=16)](img/CrystalGrowth_B.jpg) ![CrystalGrowth audio-heiß (t=8)](img/CrystalGrowth_C.jpg)
@@ -1278,6 +1280,8 @@ TheCore.frag Adapted from "The Core" by @kishimisu (2023) — https://www.shader
 
 `Scene/Tonnetz.frag` · type=normal · mood=dreamy · complexity=2
 
+_(Vorschau eingeschränkt: Sim-Textur/Mehrpass — Bilder unterschätzen die echte App)_
+
 Tonnetz.frag — the harmonic lattice, lit by what is actually being played. The Tonnetz is a map of pitch classes on a triangular grid, laid out so that the three axes are the three consonant intervals: a perfect fifth one way, a major third another, a minor third the third way. Its point is that TRIADS BECOME TRIANGLES — every major and minor chord is one small triangle of the lattice, and chords that share notes sit…
 
 ![Tonnetz ruhig (t=8)](img/Tonnetz_A.jpg) ![Tonnetz ruhig (t=16)](img/Tonnetz_B.jpg) ![Tonnetz audio-heiß (t=8)](img/Tonnetz_C.jpg)
@@ -1850,6 +1854,8 @@ GearWorks.frag — brass faces with machined luminous edges (depth-tested).
 ### GlassStack
 
 `Scene3D/GlassStack.frag` · type=scene3d · geom=cubes · mood=dreamy · complexity=3
+
+_(Vorschau eingeschränkt: Sim-Textur/Mehrpass — Bilder unterschätzen die echte App)_
 
 GlassStack.frag — one shader, two very different jobs. In the opaque pass it writes an ordinary colour. In the transparent pass it writes into the two OIT accumulation targets instead, and what it writes is not a colour but a CONTRIBUTION: premultiplied colour times a weight, and the alpha that eats into the revealage. The weight is the whole technique. It has to fall off with depth so that nearer layers dominate — t…
 
@@ -2485,6 +2491,8 @@ RoseOrbit.frag — soft glowing point (additive blending).
 ### SciFiHUD
 
 `Scene3D/SciFiHUD.frag` · type=scene3d · geom=ribbon · mood=aggressive · complexity=1
+
+_(Vorschau eingeschränkt: Sim-Textur/Mehrpass — Bilder unterschätzen die echte App)_
 
 Frag-side music pulse (added by the deaf-scene pass: reactivity measured ~0 -- the vert-side coupling barely moved any pixels).
 

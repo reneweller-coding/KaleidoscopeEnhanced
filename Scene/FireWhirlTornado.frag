@@ -168,8 +168,7 @@ void main() {
     float embers = pow(fireFBM(vec3(uv * 12.0, t * 3.0)), 4.0) * (audioKick * 3.0 + audioHigh * 1.5);
     col += embers * vec3(1.0, 0.8, 0.3) * 2.0;
 
-    if (audioChromaHue != 0.0) col = hueRot(col, audioChromaHue);
-    if (hue > 0.001) col = hueRot(col, hue);
+    if (audioChromaHue != 0.0)     if (hue > 0.001) col = hueRot(col, hue);
 
     // Vignette
     float vig = smoothstep(1.3, 0.35, length(uv));

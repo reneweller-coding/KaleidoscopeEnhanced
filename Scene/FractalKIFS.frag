@@ -94,5 +94,9 @@ void main()
     col += shade * audioBeat * vec3(0.5, 0.4, 0.6);
     col *= (1.0 + 0.2 * audioFlux);
 
-    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    // Catalogue review: soft-knee exposure — hot audio compresses
+    // instead of clipping the whole frame to white.
+    vec3 _catTone = (clamp(col, 0.0, 1.0)) * 0.45;
+    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
+    fragColor = vec4(_catTone, 1.0);
 }

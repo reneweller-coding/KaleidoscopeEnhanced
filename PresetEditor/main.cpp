@@ -208,6 +208,12 @@ int main(int argc, char *argv[])
             return (i >= 0 && i + 1 < args.size()) ? args[i + 1] : QString();
         };
         const QString geom = flagValue("--geom");
+        // --images <dir>: bind real photos as tex0/tex1 instead of the
+        // colourful procedural test card.  Essential for catalogue renders:
+        // with the test card every imgPalette scene LOOKS rainbow-coloured
+        // even though in the app it inherits the current photo's palette.
+        const QString imgDir = flagValue("--images");
+        if (!imgDir.isEmpty()) w->setImageDirectory(imgDir);
         if (!geom.isEmpty())
             w->setTextureShader(args[1], "scene3d", geom,
                                  flagValue("--stateBytes").toInt(),

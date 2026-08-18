@@ -68,5 +68,7 @@ void main() {
     gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 
-    gl_PointSize = clamp((2.5 + 4.0 * prob + audioKick * 6.0) * (6.0 / vp.z), 1.0, 32.0);
+    // Small cap on purpose: the collapsed packet stacks thousands of sprites
+    // on one spot — area is the exposure control (kick x6 burned it white).
+    gl_PointSize = clamp((2.0 + 3.0 * prob + audioKick * 1.5) * (6.0 / vp.z), 1.0, 12.0);
 }

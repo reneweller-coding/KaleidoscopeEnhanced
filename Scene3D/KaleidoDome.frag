@@ -52,5 +52,9 @@ void main()
     float seam = exp(-abs(ang - sector * 0.5) * 24.0);
     col += hueRot(vec3(0.35, 0.5, 0.7), audioChromaHue) * seam * 0.30;
 
-    fragColor = vec4(col * 1.30, 1.0);
+    // Catalogue review: soft-knee exposure — hot audio compresses
+    // instead of clipping the whole frame to white.
+    vec3 _catTone = (col * 1.30) * 0.55;
+    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
+    fragColor = vec4(_catTone, 1.0);
 }

@@ -80,8 +80,7 @@ void main() {
     float dist = length(vWorldPos);
     col = mix(col, vec3(0.01, 0.03, 0.07), 1.0 - exp(-dist * 0.15));
 
-    if (audioChromaHue != 0.0) col = hueRot(col, audioChromaHue);
-    if (hue > 0.001) col = hueRot(col, hue);
+    if (audioChromaHue != 0.0)     if (hue > 0.001) col = hueRot(col, hue);
 
     fragColor = vec4(col, 0.85);
 }

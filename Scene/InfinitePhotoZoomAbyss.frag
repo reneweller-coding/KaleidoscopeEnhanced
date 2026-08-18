@@ -116,9 +116,13 @@ void main() {
     vec3 col = photoMix * (0.85 + 0.35 * octaveTint) * (0.8 + 0.5 * audioLevel);
     col += (vec3(1.0, 0.85, 0.6) * col1 + vec3(0.6, 0.9, 1.0)) * centerVortex;
 
-    col = hueRot(col, audioChromaHue + hue);
+    col = hueRot(col, hue);   // chromaHue handled inside imgPalette
     col = pow(col, vec3(0.9)); // Saturation boost
     col += vec3(0.03, 0.02, 0.05) * audioSwell;
 
-    fragColor = vec4(col, 1.0);
+    // Catalogue review: soft-knee exposure — hot audio compresses
+    // instead of clipping the whole frame to white.
+    vec3 _catTone = (col) * 0.5;
+    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
+    fragColor = vec4(_catTone, 1.0);
 }

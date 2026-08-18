@@ -106,8 +106,7 @@ void main() {
     // Holographic laser diffraction palette (laser red, neon emerald, optical violet)
     vec3 col = imgPalette((angle * 2.0 + ringIdx * 0.5 + audioPhase) * 0.159);
 
-    if (audioChromaHue != 0.0) col = hueRot(col, audioChromaHue);
-    if (hue > 0.001) col = hueRot(col, hue);
+    if (audioChromaHue != 0.0)     if (hue > 0.001) col = hueRot(col, hue);
 
     vCol = vec4(col * (0.85 + 0.5 * audioHigh), 1.0);
 }

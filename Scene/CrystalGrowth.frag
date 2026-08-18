@@ -20,6 +20,27 @@ uniform float audioAmbient;
 
 uniform float glowP;
 uniform float sharpP;
+uniform sampler2D tex1;
+uniform float audioAdvance;
+uniform float audioValence;
+
+vec3 img(vec2 uv) {
+    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+}
+
+
+// IMG-PALETTE (house standard): colours come from a rotating arc in the
+// CURRENT slideshow image, so every activation inherits a fresh palette from
+// the photos; the arc follows the musical key (audioChromaHue is circular-
+// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+vec3 imgPalette(float t)
+{
+    float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
+    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
+    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
+    float pg  = dot(pc, vec3(0.333));
+    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+}
 
 float solidAt(vec2 uv) { return texture(texCrystal, uv).r; }
 
@@ -53,9 +74,7 @@ void main()
     halo /= 8.0;
 
     // Frost palette: cold body, hot rim.  Bounded hue nudge from the music.
-    vec3 body = 0.5 + 0.5 * cos(6.2831853 * (0.58 + hue * 0.12
-                                             + vec3(0.0, 0.33, 0.67))
-                                + 0.35 * sin(audioChromaHue));
+    vec3 body = imgPalette(0.58 + hue * 0.12 + 0.056 * sin(audioChromaHue)) * 1.35;
     body = mix(vec3(0.55, 0.72, 0.95), body, 0.45);
 
     vec3 col = body * solid * (0.30 + 0.35 * audioLevel);

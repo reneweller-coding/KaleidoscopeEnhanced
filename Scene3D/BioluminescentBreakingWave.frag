@@ -22,5 +22,9 @@ void main() {
     col += vBioGlow * vec3(0.1, 0.95, 1.0) * 2.0;
     col += spec * vec3(0.9, 0.95, 1.0);
 
-    fragColor = vec4(col, 1.0);
+    // Catalogue review: soft-knee exposure — hot audio compresses
+    // instead of clipping the whole frame to white.
+    vec3 _catTone = (col) * 0.5;
+    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
+    fragColor = vec4(_catTone, 1.0);
 }

@@ -108,8 +108,7 @@ void main() {
     col += allWires * vec3(0.1, 0.9, 1.0) * (1.0 + audioHigh * 1.2);
     col += majoranaFlash * vec3(1.0, 0.95, 0.4) * 2.0;
 
-    if (audioChromaHue != 0.0) col = hueRot(col, audioChromaHue);
-    if (hue > 0.001) col = hueRot(col, hue);
+    if (audioChromaHue != 0.0)     if (hue > 0.001) col = hueRot(col, hue);
 
     // Vignette
     float vig = smoothstep(1.35, 0.35, length(uv));

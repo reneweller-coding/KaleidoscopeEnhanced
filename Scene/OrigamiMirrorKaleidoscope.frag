@@ -112,5 +112,7 @@ void main() {
     col = hueRot(col, audioChromaHue + hue);
     col = pow(col, vec3(0.88));
 
-    fragColor = vec4(col, 1.0);
+    vec3 _catTone = (col) * 0.6;
+    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
+    fragColor = vec4(_catTone, 1.0);
 }

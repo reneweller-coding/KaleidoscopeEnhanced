@@ -135,5 +135,9 @@ void main() {
     col = hueRot(col, audioChromaHue + hue);
     col = pow(col, vec3(0.88)); // Contrast boost
 
-    fragColor = vec4(col, 1.0);
+    // Catalogue review: soft-knee exposure — hot audio compresses
+    // instead of clipping the whole frame to white.
+    vec3 _catTone = (col) * 0.45;
+    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
+    fragColor = vec4(_catTone, 1.0);
 }

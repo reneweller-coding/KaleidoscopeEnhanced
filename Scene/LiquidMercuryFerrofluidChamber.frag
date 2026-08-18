@@ -165,8 +165,7 @@ void main() {
         col = mix(col, vec3(0.04, 0.05, 0.08), 1.0 - exp(-hitDist * 0.2));
     }
 
-    if (audioChromaHue != 0.0) col = hueRot(col, audioChromaHue);
-    if (hue > 0.001) col = hueRot(col, hue);
+    if (audioChromaHue != 0.0)     if (hue > 0.001) col = hueRot(col, hue);
 
     fragColor = vec4(col, 1.0);
 }

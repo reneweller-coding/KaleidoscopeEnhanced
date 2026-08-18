@@ -17,5 +17,9 @@ void main() {
     vec3 photo = (interpolation * texture(tex0, vUV) + (1.0 - interpolation) * texture(tex1, vUV)).rgb;
 
     vec3 col = mix(vCol.rgb, photo * 1.5, 0.4) * core;
-    fragColor = vec4(col, vCol.a * core);
+    // Catalogue review: soft-knee exposure — hot audio compresses
+    // instead of clipping the whole frame to white.
+    vec3 _catTone = (col) * 0.5;
+    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
+    fragColor = vec4(_catTone, vCol.a * core);
 }

@@ -151,7 +151,7 @@ void main() {
     float beacon = pow(max(sin(angle * 2.0 + t * 4.0), 0.0), 12.0) * (0.5 + 1.5 * audioMid);
     col += vec3(0.4, 0.8, 1.0) * beacon * (0.8 + 0.5 * audioLevel);
 
-    col = hueRot(col, audioChromaHue + hue);
+    col = hueRot(col, hue);   // chromaHue handled inside imgPalette
     col = pow(col, vec3(0.85)); // Contrast boost
     col += vec3(0.03, 0.02, 0.06) * audioSwell;
 

@@ -85,7 +85,7 @@ void main()
     // White-blue stars with a scatter of warm/violet ones; the music's key
     // tints the whole field.
     vec3 col = palTint(mix(vec3(1.0), vec3(0.55, 0.7, 1.0), r4 * 0.7), 0.30 * r4, 0.20);
-    col = hueRot(col, audioChromaHue * 0.4 + (r1 - 0.5) * 1.1);
+    col = hueRot(col, (r1 - 0.5) * 1.1);
     float fadeFar  = clamp(1.0 - z / L, 0.0, 1.0);
     float fadeNear = smoothstep(1.0, 6.0, z);
     col *= (0.45 + 0.65 * r2) * fadeFar * fadeNear

@@ -129,12 +129,15 @@ void main() {
     vec3 col = mix(photo * 0.8, vacColor, 0.5 + 0.2 * audioLevel);
     col += pairCreation * vec3(1.0, 0.95, 0.85);
 
-    if (audioChromaHue != 0.0) col = hueRot(col, audioChromaHue);
-    if (hue > 0.001) col = hueRot(col, hue);
+    if (audioChromaHue != 0.0)     if (hue > 0.001) col = hueRot(col, hue);
 
     // Cavity edge mirrors
     float edgeMirror = smoothstep(0.0, 0.15, abs(uv.y) - cavityGap * 0.8);
     col = mix(col, vec3(0.9, 0.95, 1.0) * (photo + 0.3), edgeMirror * 0.4);
 
-    fragColor = vec4(col, 1.0);
+    // Catalogue review: soft-knee exposure — hot audio compresses
+    // instead of clipping the whole frame to white.
+    vec3 _catTone = (col) * 0.6;
+    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
+    fragColor = vec4(_catTone, 1.0);
 }

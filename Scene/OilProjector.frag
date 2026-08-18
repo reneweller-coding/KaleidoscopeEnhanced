@@ -31,12 +31,27 @@ uniform float audioSwell;     // slow loudness swell -> the "heat" of the oil
 // Per-activation variety (re-rolled each activation; 0 = default):
 uniform int   sidesP;         // mirror fold count (0 -> 4; 2..8)
 uniform float cellP;          // oil cell scale    (0 -> 2.0; 1.4 = broad, 3.0 = fine)
+uniform float audioChromaHue;
 
 const float PI = 3.14159265358979;
 
 mat2 rot(float a) { float c = cos(a), s = sin(a); return mat2(c, -s, s, c); }
 vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
                           + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
+
+
+// IMG-PALETTE (house standard): colours come from a rotating arc in the
+// CURRENT slideshow image, so every activation inherits a fresh palette from
+// the photos; the arc follows the musical key (audioChromaHue is circular-
+// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+vec3 imgPalette(float t)
+{
+    float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
+    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
+    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
+    float pg  = dot(pc, vec3(0.333));
+    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+}
 
 float hash(vec2 p) { return fract(sin(dot(p, vec2(41.3, 289.1))) * 43758.5453); }
 float noise(vec2 p)
@@ -101,7 +116,7 @@ void main()
     // SLOW terms (the jumpy chroma-hue snap was the "abrupt colour change").
     float hue  = fract(cells * 1.2 + time * 0.012 + audioPhase * 0.03
                        + 0.15 * audioValence);
-    vec3  tint = 0.5 + 0.5 * cos(6.2831 * (hue + vec3(0.0, 0.33, 0.67)));
+    vec3  tint = imgPalette(hue) * 1.35;
 
     vec3 col = pic * (0.6 + 0.7 * cells);
     col = mix(col, col * tint * 1.8, 0.55);            // stain the picture

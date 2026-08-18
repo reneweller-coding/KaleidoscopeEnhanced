@@ -182,3 +182,22 @@ Namensbasierte Vorklassifikation - vor jeder Welle pro Szene pruefen!
 - [x] BreathingFractalNoir (Scene) — LASSEN bestaetigt: bewusst eigener/monochromer Look
 - [x] Schlieren (Scene) — LASSEN bestaetigt: bewusst eigener/monochromer Look
 
+## Nachzuegler (Katalog-Fehlerdurchsicht 2026-08-18)
+
+Von der namensbasierten Vorklassifikation uebersehen, gefunden per
+cos-Paletten-Grep bei der Katalog-Durchsicht; alle auf imgPalette umgestellt:
+
+- [x] BismuthHyperLabyrinth (Scene) — Duennfilm-Regenbogen -> Foto-Bogen-Banding
+- [x] ClothDrape (Scene) — Ein-Farb-HSV-Akzent -> imgPalette(0.0)
+- [x] CrystalGrowth (Scene) — Frost-cos-Palette -> imgPalette, Eisblau-Mix bleibt
+- [x] FerroSpikes (Scene) — Ein-Farb-HSV-Akzent -> imgPalette(0.0)
+- [x] HyperCube (Scene) — pal()-Funktion retargetiert
+- [x] InkTank (Scene) — Shear-Layer-Gluehen -> imgPalette(0.15)
+- [x] LiquidMetal (Scene) — Specular-Tint -> imgPalette(0.0)
+- [x] OilProjector (Scene) — Zell-Regenbogen -> imgPalette(hue), Orts-Bogen
+- [x] ShatterField (Scene) — Kanten-Tint -> imgPalette(0.0)
+- [x] SpectrumFilter (Scene) — Filter-Tint -> imgPalette(0.0)
+
+GalleryHall war KEIN Shader-Regenbogen: die "bunten Gemaelde" waren die
+prozedurale Testkarte des Editors (kein --images beim Katalog-Render) —
+seit Tools/probe_images + --images zeigen die Rahmen echte Fotos.

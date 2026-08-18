@@ -123,7 +123,7 @@ void main()
     float hNorm = clamp(h / 16.0, 0.0, 1.0);
     vec3 col = imgPalette(0.30 * hNorm) * 1.4;
     col = mix(col, vec3(1.0, 0.8, 0.3), audioCentroid * 0.4);
-    col = hueRot(col, audioChromaHue * 1.2 + seed * 0.8);
+    col = hueRot(col, seed * 0.8);
     col *= 0.8 + 1.2 * audioDrop + 0.8 * audioKick * exp(-abs(gx) * 0.10);
     float fog = exp(-z * 0.014);
     vCol    = vec4(col * fog, 1.0);

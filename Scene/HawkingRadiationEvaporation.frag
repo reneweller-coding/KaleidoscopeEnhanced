@@ -123,12 +123,15 @@ void main() {
     col += photonRing * vec3(0.4, 0.9, 1.0) * 1.5;
     col += evaporationBurst * vec3(1.0, 0.98, 0.92) * 2.0;
 
-    if (audioChromaHue != 0.0) col = hueRot(col, audioChromaHue);
-    if (hue > 0.001) col = hueRot(col, hue);
+    if (audioChromaHue != 0.0)     if (hue > 0.001) col = hueRot(col, hue);
 
     // Vignette
     float vig = smoothstep(1.35, 0.35, r);
     col *= vig;
 
-    fragColor = vec4(col, 1.0);
+    // Catalogue review: soft-knee exposure — hot audio compresses
+    // instead of clipping the whole frame to white.
+    vec3 _catTone = (col) * 0.6;
+    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
+    fragColor = vec4(_catTone, 1.0);
 }

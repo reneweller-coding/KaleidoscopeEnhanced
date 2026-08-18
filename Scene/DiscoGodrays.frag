@@ -34,10 +34,35 @@ uniform float audioCentroid;
 uniform float audioValence;
 uniform float audioKick;   // kick -> the rays PUMP (boom = light burst)
 uniform float audioHat;    // hats -> glittering sparkle on the ray tips
+uniform float audioChromaHue;
+uniform float audioAdvance;
 
 mat2 rot(float a) { float c = cos(a), s = sin(a); return mat2(c, -s, s, c); }
 vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
                           + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
+
+// IMG-PALETTE (house standard): colours come from a rotating arc in the
+// CURRENT slideshow image, so every activation inherits a fresh palette from
+// the photos; the arc follows the musical key (audioChromaHue is circular-
+// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+vec3 imgPalette(float t)
+{
+    float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
+    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
+    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
+    float pg  = dot(pc, vec3(0.333));
+    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+}
+
+
+// House tint: bend a colour toward the photo palette while keeping its
+// luminance -- the identity look survives, only the hue follows the photos.
+vec3 palTint(vec3 c, float t, float k)
+{
+    vec3 tp = imgPalette(t);
+    tp *= dot(c, vec3(0.3333)) / max(dot(tp, vec3(0.3333)), 1e-3);
+    return mix(c, tp, k);
+}
 float hash(vec2 p) { return fract(sin(dot(p, vec2(41.3, 289.1))) * 43758.5453); }
 
 // Colour from a slowly-drifting crop of the picture, indexed by a scalar so the
@@ -111,7 +136,7 @@ void main()
     vec2 uv  = gl_FragCoord.xy / resolution;
     float himg = dot(imgPal(dot(col, vec3(0.333)) * 6.0
                  + length(gl_FragCoord.xy / resolution - 0.5) * 4.0), vec3(0.333));
-    col = hueRot(col, (himg - 0.5) * 3.0 + time * 0.05);
+    col = hueRot(col, (himg - 0.5) * 1.2 + time * 0.05);
 
     fragColor = vec4(col, 1.0);
 }

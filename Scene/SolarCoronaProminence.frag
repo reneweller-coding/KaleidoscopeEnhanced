@@ -150,8 +150,7 @@ void main() {
     col += loopAccum * loopColor * (1.0 + audioSwell * 0.8);
     col += flare * vec3(1.0, 0.98, 0.85) * 1.8;
 
-    if (audioChromaHue != 0.0) col = hueRot(col, audioChromaHue);
-    if (hue > 0.001) col = hueRot(col, hue);
+    if (audioChromaHue != 0.0)     if (hue > 0.001) col = hueRot(col, hue);
 
     // Vignette
     float vig = smoothstep(1.3, 0.4, length(uv));

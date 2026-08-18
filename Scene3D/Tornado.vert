@@ -152,7 +152,7 @@ void main()
     // Farbdrift (kuehl unten, warm oben) fuer mehr visuelle Tiefe/Interesse.
     vec3 col = palTint(mix(vec3(0.45, 0.38, 0.33), vec3(0.60, 0.58, 0.62), r2), 0.30 * r2, 0.15);
     col = mix(col, col * vec3(1.05, 0.95, 1.20), clamp((y + 18.0) / 48.0, 0.0, 1.0));
-    col = hueRot(col, audioChromaHue * 0.3);
+    col = col;
     // Ebenfalls kontinuierlich wandernd statt per floor()-Sprung (gleicher
     // Grund wie beim Blitz-Bogen oben).
     float flashY = 7.0 + 25.0 * sin(time * 1.15 + 2.1);

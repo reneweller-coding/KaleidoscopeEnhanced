@@ -155,5 +155,9 @@ void main() {
     float vig = vUV.x * vUV.y * 15.0;
     col *= clamp(pow(vig, 0.25), 0.0, 1.0);
 
-    fragColor = vec4(col, 1.0);
+    // Catalogue review: soft-knee exposure — hot audio compresses
+    // instead of clipping the whole frame to white.
+    vec3 _catTone = (col) * 0.7;
+    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
+    fragColor = vec4(_catTone, 1.0);
 }

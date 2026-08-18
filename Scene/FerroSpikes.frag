@@ -20,6 +20,27 @@ uniform float audioHigh;
 
 uniform float shineP;
 uniform float reflectP;
+uniform sampler2D tex1;
+uniform float audioAdvance;
+uniform float audioValence;
+
+vec3 img(vec2 uv) {
+    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+}
+
+
+// IMG-PALETTE (house standard): colours come from a rotating arc in the
+// CURRENT slideshow image, so every activation inherits a fresh palette from
+// the photos; the arc follows the musical key (audioChromaHue is circular-
+// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+vec3 imgPalette(float t)
+{
+    float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
+    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
+    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
+    float pg  = dot(pc, vec3(0.333));
+    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+}
 
 float hAt(vec2 uv) { return texture(texFerro, uv).r; }
 
@@ -49,8 +70,7 @@ void main()
 
     // Body is nearly black; almost all the light is specular + reflection.
     vec3 body = vec3(0.075, 0.080, 0.105) * (0.5 + 1.6 * diff);
-    vec3 tint = 0.5 + 0.5 * cos(6.2831853 * (vec3(0.0, 0.33, 0.67))
-                                + 0.6 * sin(audioChromaHue));
+    vec3 tint = imgPalette(0.0) * 1.35;
 
     vec3 col = body
              + refl * fres * (0.55 + 0.9 * reflectP)

@@ -82,7 +82,7 @@ void main()
         float lit  = clamp(dot(n, normalize(vec3(1.0, 0.4, 0.6))), 0.05, 1.0);
         float band = 0.5 + 0.5 * sin(ph * 11.0 + sin(th * 3.0 + ra) * 0.4);
         col = palTint(mix(vec3(0.85, 0.55, 0.30), vec3(0.95, 0.85, 0.65), band), 0.20 * band, 0.18);
-        col = hueRot(col, audioChromaHue * 0.8) * lit * 1.7;
+        col = col * lit * 1.7;
         baseSize = 110.0;
     }
     else if (r1 < 0.80)

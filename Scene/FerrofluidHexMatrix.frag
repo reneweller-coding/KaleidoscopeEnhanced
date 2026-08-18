@@ -176,7 +176,7 @@ void main() {
         col = mix(col, vec3(0.01, 0.01, 0.02), 1.0 - exp(-t * 0.1));
     }
 
-    col = hueRot(col, audioChromaHue + hue);
+    col = hueRot(col, hue);   // chromaHue handled inside imgPalette
     col = pow(col, vec3(0.9));
 
     fragColor = vec4(col, 1.0);
