@@ -88,9 +88,9 @@ New-Item -ItemType Directory -Path $binDir -Force | Out-Null
 
 # --- 2. copy assets (parent of bin, mirroring the dev "..\" layout) ----------
 # Shaders live in subfolders since the 2026-07 reorg (Scene / Combine / Blend);
-# the exe references them as "..\Scene\...", so the folder structure must be
+# the exe references them as "..\Scene2D\...", so the folder structure must be
 # mirrored in the package.
-foreach ($d in @("Scene", "Scene3D", "Combine", "Blend")) {
+foreach ($d in @("Scene2D", "Scene3D", "FX", "Engine")) {
     Copy-Item (Join-Path $root $d) $pkgDir -Recurse
 }
 Copy-Item (Join-Path $root "*.vert") $pkgDir

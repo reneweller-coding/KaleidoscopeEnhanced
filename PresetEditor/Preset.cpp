@@ -137,13 +137,13 @@ bool Preset::save(const QString &path, QString *err) const
         w.writeAttribute("maxTimeSolo", QString::number(e.maxTimeSolo));
         w.writeAttribute("minTimeInterpolation", QString::number(e.minTimeInterpolation));
         w.writeAttribute("maxTimeInterpolation", QString::number(e.maxTimeInterpolation));
-        // Shaders live in Scene/, Scene3D/ and Combine/ since the 2026-07 reorg.
+        // Shaders live in Scene2D/, Scene3D/ and FX/ since the 2026-07 reorg.
         // Prefer the folder the file actually came from (bare names alias:
-        // Scene/ and Scene3D/ both carry a CrystalGrowth.frag).
+        // Scene2D/ and Scene3D/ both carry a CrystalGrowth.frag).
         const QString folder = !e.folder.isEmpty() ? e.folder
-                             : (e.isCombine ? QStringLiteral("Combine")
+                             : (e.isCombine ? QStringLiteral("FX")
                                : (e.type == "scene3d" ? QStringLiteral("Scene3D")
-                                                      : QStringLiteral("Scene")));
+                                                      : QStringLiteral("Scene2D")));
         w.writeAttribute("file", QString("..\\%1\\%2").arg(folder).arg(e.file));
         w.writeAttribute("type", e.type);
         if (!e.geom.isEmpty())

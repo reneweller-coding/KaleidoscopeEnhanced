@@ -98,6 +98,23 @@ void Configuration::addUniforms( EffectShader *shader, QDomElement &el )
 	}
 }
 
+
+// Pre-2026-08 layout fallback: old presets on disk may still reference
+// Scene/, Combine/CombineX and Blend/ paths; map them to the new layout
+// (Scene2D/, FX/FxX, Engine/).  Idempotent for already-new paths.
+static QString mapLegacyShaderPath( QString p )
+{
+	p.replace( "\\Scen" "e\\", "\\Scene2D\\" );
+	p.replace( "/Scen" "e/", "/Scene2D/" );
+	p.replace( "\\Blen" "d\\", "\\Engine\\" );
+	p.replace( "/Blen" "d/", "/Engine/" );
+	p.replace( "\\Combin" "e\\Combin" "e", "\\FX\\Fx" );
+	p.replace( "/Combin" "e/Combin" "e", "/FX/Fx" );
+	p.replace( "\\Combin" "e\\", "\\FX\\" );
+	p.replace( "/Combin" "e/", "/FX/" );
+	return p;
+}
+
 void Configuration::readConfiguration( const QString &filename )
 {
 	QFile* file = new QFile( filename );
@@ -165,7 +182,7 @@ void Configuration::readConfiguration( const QString &filename )
 		if( minTimeInterpolation == 0 ) minTimeInterpolation = 15;
 		if( maxTimeInterpolation <= minTimeInterpolation ) maxTimeInterpolation = (minTimeInterpolation == 15) ? 50 : minTimeInterpolation + 1;
 
-		QString shaderFile = el.attribute("file");
+		QString shaderFile = mapLegacyShaderPath( el.attribute("file") );
 
 		QString type = el.attribute("type");
 
@@ -250,7 +267,7 @@ void Configuration::readConfiguration( const QString &filename )
 		if( minTimeInterpolation == 0 ) minTimeInterpolation = 20;
 		if( maxTimeInterpolation <= minTimeInterpolation ) maxTimeInterpolation = (minTimeInterpolation == 20) ? 60 : minTimeInterpolation + 1;
 
-		QString shaderFile = el.attribute("file");
+		QString shaderFile = mapLegacyShaderPath( el.attribute("file") );
 
 		float probability = el.attribute("probability").toFloat();
 		unsigned int complexity = el.attribute("complexity").toFloat();

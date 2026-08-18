@@ -149,7 +149,7 @@ bool Scene3DPreview::setShader( const QString &fragPathRelative, const QString &
     return true;
 }
 
-// ---- geometry: a single empty VAO, matching Blend/Fullscreen.vert's
+// ---- geometry: a single empty VAO, matching Engine/Fullscreen.vert's
 // gl_VertexID-driven big triangle (no vertex attributes at all) ----
 static unsigned ensureQuadVao( unsigned &vao )
 {
@@ -376,7 +376,7 @@ bool Scene3DPreview::ensureOitTargets( int w, int h )
     glBindTexture( GL_TEXTURE_2D, 0 );
 
     if( ok && m_oitResolveProg == 0 )
-        m_oitResolveProg = setShaders( "..\\standard.vert", "..\\Blend\\OitResolve.frag" );
+        m_oitResolveProg = setShaders( "..\\standard.vert", "..\\Engine\\OitResolve.frag" );
 
     if( !ok )
     {

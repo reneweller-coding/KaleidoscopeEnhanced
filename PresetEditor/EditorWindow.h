@@ -55,7 +55,7 @@ private:
     void metaToUi();
     void uiToMeta();
     void stepCombo(QComboBox *c, int delta);
-    // True if fileName was found under Scene3D/ (not Scene/) by scanShaders().
+    // True if fileName was found under Scene3D/ (not Scene2D/) by scanShaders().
     bool isScene3D(const QString &fileName) const { return m_scene3DFiles.contains(fileName); }
     void pushPreviewTexture();   // send the full type/geom/stateBytes/shadowExtent to m_preview
 

@@ -2,7 +2,7 @@
 #
 #   .\Tools\verify.ps1 -Smoke                 # run every preset 9 s, grep the log
 #   .\Tools\verify.ps1 -Roundtrip             # PresetEditor --roundtrip per preset
-#   .\Tools\verify.ps1 -Transcheck            # sweep all CombinePlain styles
+#   .\Tools\verify.ps1 -Transcheck            # sweep all FxPlain styles
 #   .\Tools\verify.ps1 -Scenes Physarum,JellyBody   # probe single visuals
 #       (Scene3D names need -Geom to match: points|cubes|ribbon|grid|quads;
 #        2D Scene effects are detected automatically)
@@ -112,13 +112,13 @@ if ($Transcheck) {
 foreach ($s in $Scenes) {
     Make-Wav
     $is3D  = Test-Path (Join-Path $root "Scene3D\$s.frag")
-    $dir   = if ($is3D) { "Scene3D" } else { "Scene" }
+    $dir   = if ($is3D) { "Scene3D" } else { "Scene2D" }
     $attrs = if ($is3D) { "type=`"scene3d`" geom=`"$Geom`"" } else { "type=`"normal`"" }
     $cfg   = Join-Path $cfgD "_verify.xml"
     $xml = '<configuration ImageDirectory="C:\Users\rene\Desktop\BilderPhotoechoes" ConfigurationName="verify">' + "`n" +
            '  <TextureShader file="..\\' + $dir + '\\' + $s + '.frag" ' + $attrs + ' probability="1.0" complexity="1" minTimeSolo="100" maxTimeSolo="120" minTimeInterpolation="20" maxTimeInterpolation="30">' + "`n" +
            "  </TextureShader>`n" +
-           '  <CombineShader file="..\\Combine\\CombinePlain.frag" type="normal" probability="1.0" complexity="1" minTimeSolo="100" maxTimeSolo="120" minTimeInterpolation="20" maxTimeInterpolation="30">' + "`n" +
+           '  <CombineShader file="..\\FX\\FxPlain.frag" type="normal" probability="1.0" complexity="1" minTimeSolo="100" maxTimeSolo="120" minTimeInterpolation="20" maxTimeInterpolation="30">' + "`n" +
            "  </CombineShader>`n</configuration>"
     [IO.File]::WriteAllText($cfg, $xml)
     $fail += Run-One $s "-c _verify -w `"$wav`" -r -l" $Seconds

@@ -18,7 +18,7 @@ TextureEffectKaleidoscopeBase(minTimeSolo, maxTimeSolo, minTimeInterpolation, ma
 , m_speedTunnelMax(0.08)//0.4
 {
 	m_vertexShaderFilename = "..\\standard.vert";
-	m_fragmentShaderFilename = "..\\Scene\\Tunnel.frag";
+	m_fragmentShaderFilename = "..\\Scene2D\\Tunnel.frag";
 }
 
 // Destructor

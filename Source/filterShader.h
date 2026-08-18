@@ -365,7 +365,7 @@ private:
 
 	// 2D CAMERA RIG scratch targets (one per effect slot; lazily created and
 	// size-checked EVERY use, so FilterShader::resize() needs no extra case).
-	// rig2Transform() renders src through Blend/Rig2D.frag when the effect
+	// rig2Transform() renders src through Engine/Rig2D.frag when the effect
 	// has active rig2 formulas and returns the texture the combine should
 	// bind instead; src unchanged otherwise.
 	GLuint			m_rig2Fbo[2]    = { 0, 0 };

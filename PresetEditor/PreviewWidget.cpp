@@ -155,8 +155,8 @@ QOpenGLShaderProgram *PreviewWidget::compile(const QString &fileName, QString &l
     // Blend); bare filenames are resolved by searching them (root last, for
     // throwaway probe shaders).
     QString path;
-    for (const QString &dir : { QString("Scene/"), QString("Combine/"),
-                                QString("Blend/"), QString("") })
+    for (const QString &dir : { QString("Scene2D/"), QString("FX/"),
+                                QString("Engine/"), QString("") })
     {
         if (QFile::exists(m_root + "/" + dir + fileName))
         {
@@ -270,7 +270,7 @@ GLuint PreviewWidget::rig2Apply(GLuint srcTex, int w, int h)
     {
         m_rigProgTried = true;
         QString log;
-        m_rigProg = compile("Rig2D.frag", log);   // compile() searches Blend/
+        m_rigProg = compile("Rig2D.frag", log);   // compile() searches Engine/
     }
     if (!m_rigProg)
         return srcTex;                            // fail open

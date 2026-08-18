@@ -391,7 +391,7 @@ void EffectShader::applyAudioFeatures(const AudioFeatures &f)
         // ---- 2D CAMERA RIG: formulas named rig2Roll/rig2Zoom/rig2X/rig2Y
         // (absolute) and rig2…V (rates, HOST-INTEGRATED so audio-varying
         // rates are jump-free) are not shader uniforms — FilterShader reads
-        // the result via rig2() and runs the Blend/Rig2D.frag transform pass
+        // the result via rig2() and runs the Engine/Rig2D.frag transform pass
         // over this scene's finished frame.  Rates integrate once per FRAME
         // (m_exprTime is per-frame; guard against multiple passes).
         m_rig2Active = false;

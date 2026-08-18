@@ -130,7 +130,7 @@ private:
     QString m_vertSrc;
 
     QString m_texFile = "Kaleidoscope.frag";
-    QString m_combFile = "CombinePlain.frag";
+    QString m_combFile = "FxPlain.frag";
     bool    m_texDirty = true, m_combDirty = true;
 
     // scene3d texture-shader path.

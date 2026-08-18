@@ -208,7 +208,7 @@ protected:
 	int     m_moodBucket      = -1;     // current mood bucket (see .cpp)
 	qint64  m_moodBucketSince = 0;      // when the bucket last changed
 
-	// Shader hot-reload (dev aid): saved .frag files in Scene\/Combine\ are
+	// Shader hot-reload (dev aid): saved .frag files in Scene2D\/FX\ are
 	// recompiled live on the next frame (GL context current in paintGL).
 	class QFileSystemWatcher *m_shaderWatcher = nullptr;
 	QSet<QString>             m_pendingReloads;

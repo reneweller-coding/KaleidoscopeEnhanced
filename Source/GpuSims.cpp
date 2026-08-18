@@ -103,7 +103,7 @@ void GpuSims::setupReactionDiffusion()
 {
 	if( m_rdProgId == 0 )
 	{
-		m_rdProgId    = setShaders( "..\\standard.vert", "..\\Blend\\ReactionDiffusionSim.frag" );
+		m_rdProgId    = setShaders( "..\\standard.vert", "..\\Engine\\ReactionDiffusionSim.frag" );
 		m_rdPrevUni   = glGetUniformLocation( m_rdProgId, "texPrev" );
 		m_rdResUni    = glGetUniformLocation( m_rdProgId, "resolution" );
 		m_rdSeedUni   = glGetUniformLocation( m_rdProgId, "seedMode" );
@@ -144,7 +144,7 @@ void GpuSims::setupFluid()
 {
 	if( m_fluidProgId == 0 )
 	{
-		m_fluidProgId     = setShaders( "..\\standard.vert", "..\\Blend\\FluidSim.frag" );
+		m_fluidProgId     = setShaders( "..\\standard.vert", "..\\Engine\\FluidSim.frag" );
 		m_fluidPrevUni    = glGetUniformLocation( m_fluidProgId, "texPrev" );
 		m_fluidTex0Uni    = glGetUniformLocation( m_fluidProgId, "tex0" );
 		m_fluidTex1Uni    = glGetUniformLocation( m_fluidProgId, "tex1" );
@@ -229,7 +229,7 @@ void GpuSims::setupSmoke3D()
 {
 	if( m_smoke3DProgId == 0 )
 	{
-		m_smoke3DProgId       = setShaders( "..\\standard.vert", "..\\Blend\\Smoke3DSim.frag" );
+		m_smoke3DProgId       = setShaders( "..\\standard.vert", "..\\Engine\\Smoke3DSim.frag" );
 		m_smoke3DPrevUni      = glGetUniformLocation( m_smoke3DProgId, "texPrev" );
 		m_smoke3DResUni       = glGetUniformLocation( m_smoke3DProgId, "resolution" );
 		m_smoke3DSeedUni      = glGetUniformLocation( m_smoke3DProgId, "seedMode" );
@@ -322,7 +322,7 @@ void GpuSims::setupPhysarum()
 {
 	if( m_physAgentProgId == 0 )
 	{
-		m_physAgentProgId   = setShaders( "..\\standard.vert", "..\\Blend\\PhysarumAgents.frag" );
+		m_physAgentProgId   = setShaders( "..\\standard.vert", "..\\Engine\\PhysarumAgents.frag" );
 		m_physAgentTexUni   = glGetUniformLocation( m_physAgentProgId, "texAgents" );
 		m_physAgentTrailUni = glGetUniformLocation( m_physAgentProgId, "texTrail" );
 		m_physAgentResUni   = glGetUniformLocation( m_physAgentProgId, "resolution" );
@@ -337,22 +337,22 @@ void GpuSims::setupPhysarum()
 	if( m_physDepositProgId == 0 )
 	{
 		// The deposit pass needs a REAL vertex shader (VTF) — setShadersVF.
-		m_physDepositProgId = setShadersVF( "..\\Blend\\PhysarumDeposit.vert",
-		                                    "..\\Blend\\PhysarumDeposit.frag" );
+		m_physDepositProgId = setShadersVF( "..\\Engine\\PhysarumDeposit.vert",
+		                                    "..\\Engine\\PhysarumDeposit.frag" );
 		m_physDepAgentsUni  = glGetUniformLocation( m_physDepositProgId, "texAgents" );
 		m_physDepAmtUni     = glGetUniformLocation( m_physDepositProgId, "depositAmt" );
 		m_physDepAttr       = glGetAttribLocation(  m_physDepositProgId, "aTexel" );
 	}
 	if( m_physDiffuseProgId == 0 )
 	{
-		m_physDiffuseProgId = setShaders( "..\\standard.vert", "..\\Blend\\PhysarumDiffuse.frag" );
+		m_physDiffuseProgId = setShaders( "..\\standard.vert", "..\\Engine\\PhysarumDiffuse.frag" );
 		m_physDifTrailUni   = glGetUniformLocation( m_physDiffuseProgId, "texTrail" );
 		m_physDifResUni     = glGetUniformLocation( m_physDiffuseProgId, "resolution" );
 		m_physDifDecayUni   = glGetUniformLocation( m_physDiffuseProgId, "decay" );
 
 		// Proof port of the GL 4.3 compute path: same diffuse as an image-
 		// store kernel.  Soft-fails to 0 -> the fragment pass above stays.
-		m_physDiffuseCompId = setComputeShader( "..\\Blend\\PhysarumDiffuse.comp" );
+		m_physDiffuseCompId = setComputeShader( "..\\Engine\\PhysarumDiffuse.comp" );
 		if( m_physDiffuseCompId )
 		{
 			m_physDifCTrailUni = glGetUniformLocation( m_physDiffuseCompId, "texTrail" );
