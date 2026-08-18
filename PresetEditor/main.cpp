@@ -239,6 +239,17 @@ int main(int argc, char *argv[])
     if (args.value(0) == "--render" && args.size() >= 4)
     {
         PreviewWidget *w = new PreviewWidget(root);
+        // Only the GUI (EditorWindow) normally listens to this signal, so a
+        // headless --render run silently dropped every "missing X.vert" /
+        // shader-compile-error message it carries -- a scene3d shader whose
+        // fragment/vertex pair could not be found (e.g. --geom used with a
+        // path-prefixed filename instead of the bare "X.frag" this CLI
+        // expects; see setTextureShader()'s scene3d branch) rendered a plain
+        // black frame with zero diagnostic output. Surface it on stderr here
+        // so a bad --render invocation is loud instead of silently wrong.
+        QObject::connect(w, &PreviewWidget::statusChanged, [](const QString &s) {
+            fprintf(stderr, "%s\n", qPrintable(s));
+        });
         const int W = args.value(4, "960").toInt();
         const int H = args.value(5, "600").toInt();
         auto flagValue = [&](const QString &flag) -> QString {

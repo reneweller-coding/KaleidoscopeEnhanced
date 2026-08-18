@@ -25,13 +25,14 @@ or grab the portable ZIP and just unzip-and-run; see
 |  |  |
 |---|---|
 | ![Kaleidoscope](docs/screenshots/kaleidoscope.png) | ![PrismExplode](docs/screenshots/prismexplode.png) |
-| ![FeatherStorm](docs/screenshots/featherstorm.png) | ![Metamorph](docs/screenshots/metamorph.png) |
+| ![FeatherStorm](docs/screenshots/featherstorm.png) | ![AuroraBorealisOverFjord](docs/screenshots/aurora.png) |
 
 *Four of the 326 scenes + 84 FX overlays in the [scene catalogue](docs/Catalog/Katalog.md)
 — a classic kaleidoscope fold, a compute-driven prism-shatter scene, a
-volumetric feather storm (real 3D geometry + shadow map), and a domain-warped
-fractal cloud. Renders like these are reproducible headlessly via
-`PresetEditor.exe --render` (see [Preset editor](#preset-editor-standalone-tool)).*
+volumetric feather storm (real 3D geometry + shadow map), and a hardware-
+tessellated arctic fjord under the northern lights. Renders like these are
+reproducible headlessly via `PresetEditor.exe --render` (see
+[Preset editor](#preset-editor-standalone-tool)).*
 
 ---
 
