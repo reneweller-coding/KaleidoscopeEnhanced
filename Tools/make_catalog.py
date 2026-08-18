@@ -50,13 +50,32 @@ PREVIEW_LIMITED = {
 }
 
 def header_comment(path):
-    """First // comment block of a shader = its self-description."""
+    """First comment block of a shader = its self-description.
+
+    Two header styles occur in the wild: the original plain "// Name.ext
+    ... prose ..." block, and the Doxygen "/** @file ... @brief ... */"
+    block every shader was converted to. Both are handled so the catalogue
+    keeps working regardless of which one a given file carries.
+    """
     if not os.path.exists(path):
         return ""
     lines = open(path, encoding="utf-8", errors="replace").read().splitlines()
-    block, started = [], False
+    block, started, in_doxy = [], False, False
     for ln in lines[:45]:
         s = ln.strip()
+        if in_doxy:
+            if s.startswith("*/"):
+                break
+            t = s.lstrip("*").strip()
+            if t.startswith("@file"):
+                continue
+            t = re.sub(r"^@brief\s*", "", t)
+            if t:
+                block.append(t)
+            continue
+        if s == "/**" or s.startswith("/**"):
+            in_doxy = True
+            continue
         if s.startswith("//"):
             t = s.lstrip("/").strip()
             if t.strip("-— =*"):
