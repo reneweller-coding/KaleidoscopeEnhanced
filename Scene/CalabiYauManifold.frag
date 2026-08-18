@@ -41,8 +41,25 @@ uniform float zoomP;
 uniform float glowP;
 uniform float hueP;
 
+
+uniform float audioChromaHue;
+
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+}
+
+
+// IMG-PALETTE (house standard): colours come from a rotating arc in the
+// CURRENT slideshow image, so every activation inherits a fresh palette from
+// the photos; the arc follows the musical key (audioChromaHue is circular-
+// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+vec3 imgPalette(float t)
+{
+    float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
+    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
+    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
+    float pg  = dot(pc, vec3(0.333));
+    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
 vec3 hueRot(vec3 c, float a) {
@@ -137,13 +154,13 @@ void main() {
         vec2 photoUV = fract(vec2(atan(p.y, p.x), p.z) * 0.5 + 0.5);
         vec3 photo = img(photoUV);
 
-        vec3 manifoldColor = 0.5 + 0.5 * cos(vec3(0.0, 1.8, 3.6) + gField * 8.0 + audioCentroid * 3.0);
+        vec3 manifoldColor = imgPalette((gField * 8.0 + audioCentroid * 3.0) * 0.159);
         col = mix(manifoldColor, photo, 0.35) * (diff * 0.8 + 0.2);
         col += vec3(1.0, 0.95, 0.8) * spec * (1.5 + audioKick * 3.0);
     }
 
     // Add internal energy glow
-    vec3 glowCol = mix(vec3(0.1, 0.9, 0.8), vec3(1.0, 0.2, 0.7), sin(time * 2.0) * 0.5 + 0.5);
+    vec3 glowCol = imgPalette(0.45 + 0.20 * sin(time * 2.0));
     col += glowCol * glow * (1.0 + audioKick * 2.5);
 
     if (hue > 0.001) col = hueRot(col, hue);

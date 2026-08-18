@@ -22,10 +22,32 @@ uniform float weaveP;
 uniform float densityP;
 uniform float widthP;
 uniform float hueP;
+uniform sampler2D tex0;
+uniform sampler2D tex1;
+uniform float interpolation;
+uniform float audioValence;
 
 out vec4  vCol;
 out float vSide;
 out float vLength;
+
+vec3 img(vec2 uv) {
+    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+}
+
+
+// IMG-PALETTE (house standard): colours come from a rotating arc in the
+// CURRENT slideshow image, so every activation inherits a fresh palette from
+// the photos; the arc follows the musical key (audioChromaHue is circular-
+// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+vec3 imgPalette(float t)
+{
+    float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
+    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
+    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
+    float pg  = dot(pc, vec3(0.333));
+    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+}
 
 vec3 hueRot(vec3 c, float a) {
     vec3 k = vec3(0.57735026919);
@@ -82,7 +104,7 @@ void main() {
     float pulseGlow = exp(-pulse * 6.0) * 2.5;
 
     // Fiberoptic cyan, violet, neon gold palette
-    vec3 col = mix(vec3(0.0, 0.8, 1.0), vec3(0.9, 0.1, 0.9), sin(ri * 0.5 + time) * 0.5 + 0.5);
+    vec3 col = imgPalette((ri * 0.5 + time) * 0.159) * 1.5;
     col = mix(col, vec3(1.0, 0.9, 0.2), pulseGlow * 0.5);
 
     if (audioChromaHue != 0.0) col = hueRot(col, audioChromaHue);

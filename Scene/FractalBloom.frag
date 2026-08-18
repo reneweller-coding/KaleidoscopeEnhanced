@@ -32,14 +32,33 @@ uniform float audioLevel;
 uniform float audioCentroid;
 uniform float audioValence;
 
+
+uniform float audioChromaHue;
+uniform float audioAdvance;
+
 mat2 rot(float a) { float c = cos(a), s = sin(a); return mat2(c, -s, s, c); }
 vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
                           + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
 
+// IMG-PALETTE (house standard): colours come from a rotating arc in the
+// CURRENT slideshow image, so every activation inherits a fresh palette from
+// the photos; the arc follows the musical key (audioChromaHue is circular-
+// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+vec3 imgPalette(float t)
+{
+    float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
+    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
+    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
+    float pg  = dot(pc, vec3(0.333));
+    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+}
 vec3 palette(float t)
 {
-    return 0.5 + 0.5 * cos(6.28318 * (t + vec3(0.263, 0.416, 0.557)));
+    return imgPalette(t);
 }
+
+
+
 
 void main()
 {

@@ -23,8 +23,26 @@ uniform float glowP;
 uniform float laserP;
 uniform float hueP;
 
+
+uniform float audioChromaHue;
+uniform float audioValence;
+
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+}
+
+
+// IMG-PALETTE (house standard): colours come from a rotating arc in the
+// CURRENT slideshow image, so every activation inherits a fresh palette from
+// the photos; the arc follows the musical key (audioChromaHue is circular-
+// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+vec3 imgPalette(float t)
+{
+    float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
+    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
+    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
+    float pg  = dot(pc, vec3(0.333));
+    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
 vec3 hueRot(vec3 c, float a) {
@@ -54,7 +72,7 @@ void main() {
     photo *= (0.7 + 0.3 * tracks);
 
     // Holographic quartz crystal iridescence
-    vec3 irid = 0.5 + 0.5 * cos(vec3(0.0, 1.8, 3.6) + vTier * 6.28 + vUV.x * 4.0);
+    vec3 irid = imgPalette(vTier + vUV.x * 0.64);
 
     // Laser read pulse illumination
     vec3 laserCol = vec3(0.0, 1.0, 0.8) * vReadLaser * lsr * (1.0 + audioKick * 3.0);

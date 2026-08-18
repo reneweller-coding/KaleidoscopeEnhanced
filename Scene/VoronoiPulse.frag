@@ -32,13 +32,29 @@ uniform float audioSwell;     // slow loudness swell -> shard field breathes
 // Per-activation variety (re-rolled each activation; 0 = default):
 uniform int   sidesP;         // mirror fold count (0 -> 4; 3..8)
 uniform float scaleP;         // shard density     (0 -> 3.0; 2.2 = big shards, 4.5 = fine)
-uniform float driftP;         // shard drift speed multiplier (0 -> 1.0)
+uniform float driftP;
+uniform float audioChromaHue;
+uniform float audioAdvance;         // shard drift speed multiplier (0 -> 1.0)
 
 const float PI = 3.14159265358979;
 
 mat2 rot(float a) { float c = cos(a), s = sin(a); return mat2(c, -s, s, c); }
 vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
                           + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
+
+
+// IMG-PALETTE (house standard): colours come from a rotating arc in the
+// CURRENT slideshow image, so every activation inherits a fresh palette from
+// the photos; the arc follows the musical key (audioChromaHue is circular-
+// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+vec3 imgPalette(float t)
+{
+    float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
+    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
+    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
+    float pg  = dot(pc, vec3(0.333));
+    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+}
 
 vec2 hash22(vec2 p)
 {
@@ -108,7 +124,7 @@ void main()
     vec3 col = pic * (0.55 + 0.8 * audioLevel) * (1.0 + 0.15 * audioBeat);
 
     // Backlit seams: warm/cool by valence, glowing softly (not a hard flare).
-    vec3 seamCol = mix(vec3(0.25, 0.55, 1.0), vec3(1.0, 0.55, 0.2), audioValence);
+    vec3 seamCol = imgPalette(0.30 * audioValence) * 1.5;
     col = mix(col, seamCol * (0.6 + 0.7 * audioBeat + 0.3 * audioCentroid),
               seam * (0.30 + 0.25 * audioBeat));
 

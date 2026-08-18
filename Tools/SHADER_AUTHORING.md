@@ -207,6 +207,38 @@ eine frische Palette aus den Fotos, der Bogen folgt der Tonart
 alter Skalar-Phasenanteil × 0.159 (= /2π) als `t`. Benötigt `img()` +
 `audioChromaHue`/`audioAdvance`/`audioValence`-Deklarationen.
 
+Seit der Palette-Kampagne (2026-08, Docs/palette_plan.md) ist das
+flächendeckend umgesetzt; dabei etablierte Konventionen:
+
+- **hue2rgb/hsv2rgb-Helfer retargetieren statt Aufrufer anfassen**: die
+  HSV-Boilerplate-Helfer geben jetzt `imgPalette(h) * 1.35` zurück — alle
+  fract(hue+x)-Offsets der Aufrufer werden automatisch Bogen-Positionen.
+  Der 1.35-Gain kompensiert die geringere Durchschnitts-Luminanz der
+  Fotofarben gegenüber dem reinen HSV-Regenbogen.
+- **palTint(c, t, k)** ist der Haus-Standard für Szenen mit
+  Identitätsfarbe (Feuer, Lava, Bio-Glow, Metall): biegt die Farbe
+  luminanzerhaltend um `k` (0.15–0.28) Richtung Foto-Bogen — Feuer bleibt
+  Feuer, der Farbton lehnt sich ans Bild an. Snippet in den
+  TOENUNG-Szenen (z. B. `Scene/Aurora.frag`).
+- Auch **Vertex-Shader** dürfen imgPalette nutzen (Vertex-Texture-Fetch,
+  Beweis: VideoRelief.vert und die ganze Punkt/Ribbon-Familie) — Sampler-
+  und Audio-Deklarationen dann im .vert.
+
+### V8c — Additive Punkt-Sprites: die Fläche IST die Belichtung
+
+Bei additiv gezeichneten Punktwolken (geom="points", 60k Sprites)
+integriert der Framebuffer `Sprite-Fläche × Helligkeit × Überdeckung`.
+Ein 64-px-Cap bedeutet bei 60k Sprites >100-fache Überzeichnung — dann
+brennt JEDE Palette zu Weiß aus, und **Gain-Senkungen wirken nicht**,
+weil sie linear sind, die Fläche aber quadratisch. Regel: erst
+`gl_PointSize` klein halten (Cap 10–22 px bei 60k Punkten), ruhende
+Partikel dunkel lassen (Basis ≤ 0.1), erst DANN am Gain drehen.
+Lehrstück: NeuralAxonSynapseCloud (Luma 250 → 18 bei satten Farben),
+LargeHadronCollision, NeuroSynapseNetwork. Zweites Lehrstück (LHC):
+Teilchen-Phasen über den GANZEN Zyklus streuen — teilen fast alle
+denselben `fract(time…+seed*0.1)`-Takt, fliegt alles als eine Schale
+und das Zentrum ist die meiste Zeit ein schwarzes Loch.
+
 ### V9 — Audio-Kopplung nicht im GLSL festverdrahten
 
 Welche Audio-Uniform ein Shader liest (`audioKick`, `audioSwell`, …) ist Teil

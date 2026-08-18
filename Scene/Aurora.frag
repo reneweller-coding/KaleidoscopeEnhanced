@@ -46,6 +46,29 @@ uniform float speedP;
 
 vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
                           + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
+
+// IMG-PALETTE (house standard): colours come from a rotating arc in the
+// CURRENT slideshow image, so every activation inherits a fresh palette from
+// the photos; the arc follows the musical key (audioChromaHue is circular-
+// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+vec3 imgPalette(float t)
+{
+    float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
+    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
+    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
+    float pg  = dot(pc, vec3(0.333));
+    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+}
+
+
+// House tint: bend a colour toward the photo palette while keeping its
+// luminance -- the identity look survives, only the hue follows the photos.
+vec3 palTint(vec3 c, float t, float k)
+{
+    vec3 tp = imgPalette(t);
+    tp *= dot(c, vec3(0.3333)) / max(dot(tp, vec3(0.3333)), 1e-3);
+    return mix(c, tp, k);
+}
 vec3 hueRot(vec3 c, float a)
 {
     vec3  k = vec3(0.57735026919);
@@ -103,8 +126,8 @@ vec3 curtainLayer(vec2 uv, float t, float bands, float height,
 // Colour a curtain layer: green core -> purple fringe -> RED top, image-lit.
 vec3 curtainColour(vec2 uv, float base, float fringe, float hueOff)
 {
-    vec3 acol = mix(vec3(0.10, 0.95, 0.45), vec3(0.55, 0.20, 0.85),
-                    fringe * fringe);
+    vec3 acol = palTint(mix(vec3(0.10, 0.95, 0.45), vec3(0.55, 0.20, 0.85),
+                    fringe * fringe), hueOff + 0.15 * fringe, 0.22);
     // Classic red top fringe on the highest-reaching parts.
     acol = mix(acol, vec3(0.95, 0.18, 0.30),
                smoothstep(0.70, 1.00, fringe) * 0.55);

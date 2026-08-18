@@ -40,9 +40,24 @@ uniform float spinP;
 uniform float beamP;
 uniform float fieldP;
 uniform float hueP;
+uniform float audioChromaHue;
 
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+}
+
+
+// IMG-PALETTE (house standard): colours come from a rotating arc in the
+// CURRENT slideshow image, so every activation inherits a fresh palette from
+// the photos; the arc follows the musical key (audioChromaHue is circular-
+// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+vec3 imgPalette(float t)
+{
+    float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
+    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
+    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
+    float pg  = dot(pc, vec3(0.333));
+    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
 vec3 hueRot(vec3 c, float a) {
@@ -79,7 +94,7 @@ void main() {
     float dot2 = max(dot(normalize(uv), beamDir2), 0.0);
     float beamPass = pow(max(dot1, dot2), 24.0) * bm * (1.0 + audioKick * 3.5);
 
-    vec3 beamCol = mix(vec3(0.2, 0.7, 1.0), vec3(1.0, 0.95, 0.8), beamPass * 0.5) * beamPass * 3.0;
+    vec3 beamCol = imgPalette(0.25 * beamPass) * 1.4 * beamPass * 3.0;
 
     // Dipole magnetic field lines (r = R0 * sin^2(theta))
     float magTheta = a - rotAngle;

@@ -1,0 +1,184 @@
+# Palette-Kampagne: Klassifikation (generiert, Stand 2026-08-18, Wellen 2-6 abgeschlossen 2026-08-18)
+
+Behandlungen: **VOLL** = imgPalette ersetzt die Hardcode-Palette; **TOENUNG** = Identitaetsfarbe bleibt, imgPalette wird 15-30% beigemischt; **LASSEN** = bewusst monochrome/eigene Looks.
+Namensbasierte Vorklassifikation - vor jeder Welle pro Szene pruefen!
+
+## VOLL (119)
+
+- [x] AbyssalLuminescence (Scene) — Welle 4: Zweiton-mix -> imgPalette-Bogen
+- [x] AcousticLevitationMatrix (Scene3D) — Welle 4: Zweiton-mix -> imgPalette-Bogen
+- [x] ApollonianSpherePackingGasket (Scene) — Welle 2: cos-Regenbogen -> imgPalette
+- [x] BauhausGeo (Scene) — geprueft: bereits bildbasiert, nichts umzustellen
+- [x] BismuthLabyrinth (Scene) — geprueft: bereits bildbasiert, nichts umzustellen
+- [x] BloomSculpt (Scene3D) — Welle 3: hue2rgb/hsv2rgb-Helfer auf imgPalette retargetiert
+- [x] BreathingFractal (Scene) — geprueft: bereits bildbasiert, nichts umzustellen
+- [x] BreathingFractalZoom (Scene) — Welle 2: cos-Regenbogen -> imgPalette
+- [x] CalabiYauManifold (Scene) — Welle 2: cos-Regenbogen -> imgPalette
+- [x] CasimirCavityVacuumFluctuations (Scene) — Welle 4: Zweiton-mix -> imgPalette-Bogen
+- [x] CathedralGlass (Scene3D) — Welle 3: hue2rgb/hsv2rgb-Helfer auf imgPalette retargetiert
+- [x] ChiralLiquidCrystalCholesteric (Scene3D) — Welle 2: cos-Regenbogen -> imgPalette
+- [x] CityBokeh (Scene) — geprueft: bereits bildbasiert, nichts umzustellen
+- [x] CliffordTorusKleinBottle (Scene) — Welle 2: cos-Regenbogen -> imgPalette
+- [x] CliffordTorusVillarceauLinks (Scene3D) — Welle 2: cos-Regenbogen -> imgPalette
+- [x] CosmicBoidsVortex (Scene3D) — Welle 5: Vert-Farben -> imgPalette (Vertex-Texture-Fetch)
+- [x] CosmicStringHyperspaceWeb (Scene3D) — Welle 5: Vert-Farben -> imgPalette (Vertex-Texture-Fetch)
+- [x] CrystalMirrorGrid (Scene) — Welle 4: Zweiton-mix -> imgPalette-Bogen
+- [x] CrystalMonoliths (Scene3D) — Welle 5: Vert-Farben -> imgPalette (Vertex-Texture-Fetch)
+- [x] CubeWave (Scene3D) — Welle 5: Vert-Farben -> imgPalette (Vertex-Texture-Fetch)
+- [x] CyberGridCity (Scene) — Welle 4: Zweiton-mix -> imgPalette-Bogen
+- [x] CyberRibbonHighway (Scene3D) — Welle 5: Vert-Farben -> imgPalette (Vertex-Texture-Fetch)
+- [x] CyberVoxelTerraform (Scene3D) — Welle 4: Zweiton-mix -> imgPalette-Bogen
+- [x] Detonation (Scene3D) — Welle 6: als Toenung behandelt (Farbe IST das Phaenomen)
+- [x] DichroicInfinityPrismVault (Scene) — Welle 2: cos-Regenbogen -> imgPalette
+- [x] DiscoGodrays (Scene) — geprueft: bereits bildbasiert, nichts umzustellen
+- [x] DragonFlight (Scene3D) — Welle 5: Vert-Farben -> imgPalette (Vertex-Texture-Fetch)
+- [x] DroneDepths (Scene) — geprueft: bereits bildbasiert, nichts umzustellen
+- [x] DrumSkin (Scene3D) — Welle 3: hue2rgb/hsv2rgb-Helfer auf imgPalette retargetiert
+- [x] EinsteinRingGravitationalLens (Scene) — Welle 6: als Toenung behandelt (Farbe IST das Phaenomen)
+- [x] EscherRelativityMatrix (Scene) — Welle 4: Zweiton-mix -> imgPalette-Bogen
+- [x] FiberopticLightLoom (Scene3D) — Welle 5: Vert-Farben -> imgPalette (Vertex-Texture-Fetch)
+- [x] FlowRibbons (Scene3D) — Welle 3: hue2rgb/hsv2rgb-Helfer auf imgPalette retargetiert
+- [x] FlowingWires (Scene) — geprueft: bereits bildbasiert, nichts umzustellen
+- [x] Fluid (Scene) — geprueft: bereits bildbasiert, nichts umzustellen
+- [x] FluidInkMarble (Scene) — Welle 4: Zweiton-mix -> imgPalette-Bogen
+- [x] FractalBloom (Scene) — Welle 2: cos-Regenbogen -> imgPalette
+- [x] FractalKIFS (Scene) — Welle 4: Zweiton-mix -> imgPalette-Bogen
+- [x] GearWorks (Scene3D) — Welle 6: palTint (Identitaet bleibt, Farbton folgt Fotos)
+- [x] GlassStack (Scene3D) — Welle 3: hue2rgb/hsv2rgb-Helfer auf imgPalette retargetiert
+- [x] GlitchMatrixHypercube (Scene) — Welle 4: Zweiton-mix -> imgPalette-Bogen
+- [x] GyroidTriplyPeriodicLabyrinth (Scene) — Welle 2: cos-Regenbogen -> imgPalette
+- [x] HairCurtain (Scene3D) — Welle 3: hue2rgb/hsv2rgb-Helfer auf imgPalette retargetiert
+- [x] HarmonicRings (Scene) — Welle 2: cos-Regenbogen -> imgPalette
+- [x] HarmonicStrings (Scene3D) — Welle 5: Vert-Farben -> imgPalette (Vertex-Texture-Fetch)
+- [x] Harmonograph (Scene3D) — Welle 3: hue2rgb/hsv2rgb-Helfer auf imgPalette retargetiert
+- [x] HawkingRadiationEvaporation (Scene) — Welle 4: Zweiton-mix -> imgPalette-Bogen
+- [x] HexKaleido (Scene) — Welle 2: cos-Regenbogen -> imgPalette
+- [x] HolographicLaserDiffractionGrid (Scene3D) — Welle 2: cos-Regenbogen -> imgPalette
+- [x] HolographicMemoryCore (Scene3D) — Welle 2: cos-Regenbogen -> imgPalette
+- [x] HopfFibrationToruses (Scene3D) — Welle 2: cos-Regenbogen -> imgPalette
+- [x] HopfTorusCliffordKlein (Scene3D) — Welle 2: cos-Regenbogen -> imgPalette
+- [x] HyperWarpTunnel (Scene) — Welle 4: Zweiton-mix -> imgPalette-Bogen
+- [x] HyperbolicHoneycombTessellation (Scene) — Welle 2: cos-Regenbogen -> imgPalette
+- [x] HyperbolicPoincareTunnel (Scene) — Welle 2: cos-Regenbogen -> imgPalette
+- [x] InfinitePhotoZoomAbyss (Scene) — Welle 2: cos-Regenbogen -> imgPalette
+- [x] InsideSystem (Scene) — geprueft: bereits bildbasiert, nichts umzustellen
+- [x] KerrNewmanSingularity (Scene) — Welle 4: Zweiton-mix -> imgPalette-Bogen
+- [x] KineticMirrorHexagonArray (Scene3D) — Welle 2: cos-Regenbogen -> imgPalette
+- [x] KineticTesseractOrigami (Scene3D) — Welle 2: cos-Regenbogen -> imgPalette
+- [x] KleinQuarticHyperbolicCurve (Scene) — Welle 2: cos-Regenbogen -> imgPalette
+- [x] LiquidMercuryFerrofluidChamber (Scene) — Welle 2: cos-Regenbogen -> imgPalette
+- [x] Magnetosphere (Scene3D) — Welle 3: hue2rgb/hsv2rgb-Helfer auf imgPalette retargetiert
+- [x] MajoranaZeroModeBraid (Scene) — Welle 2: cos-Regenbogen -> imgPalette
+- [x] MandelboxHyperCubeMetamaterial (Scene) — Welle 2: cos-Regenbogen -> imgPalette
+- [x] MetaSculpt (Scene3D) — Welle 3: hue2rgb/hsv2rgb-Helfer auf imgPalette retargetiert
+- [x] Metamorph (Scene) — geprueft: bereits bildbasiert, nichts umzustellen
+- [x] MobiusOrbs (Scene) — Welle 2: cos-Regenbogen -> imgPalette
+- [x] MoireHyperInterference (Scene3D) — Welle 2: cos-Regenbogen -> imgPalette
+- [x] NeuroSynapseNetwork (Scene3D) — Struktur-Redesign + imgPalette (Overdraw-Fix)
+- [x] NoiseSpiral (Scene) — geprueft: bereits bildbasiert, nichts umzustellen
+- [x] NonEuclideanDodecahedronLoom (Scene3D) — Welle 2: cos-Regenbogen -> imgPalette
+- [x] NonEuclideanOctahedralLabyrinth (Scene) — Welle 2: cos-Regenbogen -> imgPalette
+- [x] OrbitalDrop (Scene3D) — Welle 5: Vert-Farben -> imgPalette (Vertex-Texture-Fetch)
+- [x] Origami (Scene3D) — Welle 3: hue2rgb/hsv2rgb-Helfer auf imgPalette retargetiert
+- [x] PhotonicCrystalFiberCore (Scene3D) — Welle 2: cos-Regenbogen -> imgPalette
+- [x] PillarHall (Scene3D) — Welle 3: hue2rgb/hsv2rgb-Helfer auf imgPalette retargetiert
+- [x] PlasmaFlow (Scene) — Welle 3: hue2rgb/hsv2rgb-Helfer auf imgPalette retargetiert
+- [x] PlasmaLightningGlobe (Scene) — Welle 4: Zweiton-mix -> imgPalette-Bogen
+- [x] PlasmaVortexGrid (Scene3D) — Welle 5: Vert-Farben -> imgPalette (Vertex-Texture-Fetch)
+- [x] PrismExplode (Scene3D) — Welle 3: hue2rgb/hsv2rgb-Helfer auf imgPalette retargetiert
+- [x] PrismaticCrystalChamber (Scene) — Welle 2: cos-Regenbogen -> imgPalette
+- [x] PrismaticKaleidoMandala (Scene) — geprueft: bereits bildbasiert, nichts umzustellen
+- [x] PrismaticLaserVault (Scene) — Welle 2: cos-Regenbogen -> imgPalette
+- [x] PsychedelicPills (Scene) — Welle 2: cos-Regenbogen -> imgPalette
+- [x] PulsarMagnetosphereJets (Scene) — Welle 4: Zweiton-mix -> imgPalette-Bogen
+- [x] QuantumHallEdgeCurrents (Scene3D) — Welle 5: Vert-Farben -> imgPalette (Vertex-Texture-Fetch)
+- [x] QuantumQubitArray (Scene3D) — Welle 4: Zweiton-mix -> imgPalette-Bogen
+- [x] QuantumVortexField (Scene3D) — Welle 5: Vert-Farben -> imgPalette (Vertex-Texture-Fetch)
+- [x] QuantumWavepacketCollapse (Scene3D) — Welle 2: cos-Regenbogen -> imgPalette
+- [x] QuasarRelativisticJet (Scene) — Welle 4: Zweiton-mix -> imgPalette-Bogen
+- [x] QuaternionicJulia4DFlight (Scene) — Welle 2: cos-Regenbogen -> imgPalette
+- [x] RaymarchTunnel (Scene) — Welle 4: Zweiton-mix -> imgPalette-Bogen
+- [x] ScherkMinimalSurfaceTower (Scene) — Welle 2: cos-Regenbogen -> imgPalette
+- [x] SchwarzschildWormholeTunnel (Scene) — Welle 4: Zweiton-mix -> imgPalette-Bogen
+- [x] SmokeHall (Scene3D) — Welle 3: hue2rgb/hsv2rgb-Helfer auf imgPalette retargetiert
+- [x] SonoluminescenceBubble (Scene) — Welle 4: Zweiton-mix -> imgPalette-Bogen
+- [x] SpectroCanyon (Scene3D) — Welle 3: hue2rgb/hsv2rgb-Helfer auf imgPalette retargetiert
+- [x] SpectroWeave (Scene3D) — Welle 3: hue2rgb/hsv2rgb-Helfer auf imgPalette retargetiert
+- [x] SpectrumCity (Scene3D) — Welle 3: hue2rgb/hsv2rgb-Helfer auf imgPalette retargetiert
+- [x] SpectrumRadial (Scene) — Welle 3: hue2rgb/hsv2rgb-Helfer auf imgPalette retargetiert
+- [x] SphereGrid (Scene) — geprueft: bereits bildbasiert, nichts umzustellen
+- [x] StereoSpectrum (Scene) — Welle 3: hue2rgb/hsv2rgb-Helfer auf imgPalette retargetiert
+- [x] StrangeAttractor (Scene3D) — Welle 5: Vert-Farben -> imgPalette (Vertex-Texture-Fetch)
+- [x] SupercellMesocyclone (Scene) — Welle 4: Zweiton-mix -> imgPalette-Bogen
+- [x] SuperconductorLevitation (Scene3D) — Welle 5: Vert-Farben -> imgPalette (Vertex-Texture-Fetch)
+- [x] SuperfluidHeliumVortexTurbulence (Scene3D) — Welle 4: Zweiton-mix -> imgPalette-Bogen
+- [x] SuperheatedCoronalLoop (Scene) — Welle 6: als Toenung behandelt (Farbe IST das Phaenomen)
+- [x] SupermassiveAccretionDisk (Scene) — Welle 4: Zweiton-mix -> imgPalette-Bogen
+- [x] SynthTerrain (Scene3D) — Welle 4: Zweiton-mix -> imgPalette-Bogen
+- [x] TheCore (Scene) — geprueft: bereits bildbasiert, nichts umzustellen
+- [x] TokamakFusionCore (Scene3D) — Welle 4: Zweiton-mix -> imgPalette-Bogen
+- [x] Tonnetz (Scene) — Welle 3: hue2rgb/hsv2rgb-Helfer auf imgPalette retargetiert
+- [x] VideoRelief (Scene3D) — Welle 3: hue2rgb/hsv2rgb-Helfer auf imgPalette retargetiert
+- [x] VolumetricSupernova (Scene) — Welle 4: Zweiton-mix -> imgPalette-Bogen
+- [x] VoronoiPulse (Scene) — Welle 4: Zweiton-mix -> imgPalette-Bogen
+- [x] VoronoiShatter (Scene) — Welle 3: hue2rgb/hsv2rgb-Helfer auf imgPalette retargetiert
+- [x] Vortex (Scene) — geprueft: bereits bildbasiert, nichts umzustellen
+- [x] Voyager (Scene) — geprueft: bereits bildbasiert, nichts umzustellen
+
+## TOENUNG (48)
+
+- [x] AsteroidBelt (Scene3D) — Welle 6: palTint (Identitaet bleibt, Farbton folgt Fotos)
+- [x] Aurora (Scene) — Welle 6: palTint (Identitaet bleibt, Farbton folgt Fotos)
+- [x] BeatLattice (Scene) — geprueft: bereits bildbasiert, nichts umzustellen
+- [x] BioluminescentForestCanopy (Scene3D) — Welle 6: palTint (Identitaet bleibt, Farbton folgt Fotos)
+- [x] BioluminescentOceanSwell (Scene3D) — Welle 6: palTint (Identitaet bleibt, Farbton folgt Fotos)
+- [x] BioluminescentSwarm (Scene3D) — Welle 6: palTint (Identitaet bleibt, Farbton folgt Fotos)
+- [x] ChromeDreams (Scene) — geprueft: bereits bildbasiert, nichts umzustellen
+- [x] ChromeFlow (Scene3D) — Welle 6: palTint (Identitaet bleibt, Farbton folgt Fotos)
+- [x] CoralGrowth (Scene3D) — Welle 3: Helfer-Retarget = Toenung (Mischgewichte blieben)
+- [x] CoralReefFluorescence (Scene3D) — Welle 6: palTint (Identitaet bleibt, Farbton folgt Fotos)
+- [x] DeepSeaVentsEcosystem (Scene3D) — Welle 6: palTint (Identitaet bleibt, Farbton folgt Fotos)
+- [x] DendriticSnowCrystal (Scene3D) — Welle 2: Regenbogen-Akzent -> imgPalette
+- [x] DiatomSilicaMicrofrustule (Scene3D) — Welle 2: Regenbogen-Akzent -> imgPalette
+- [x] DysonSwarmSolarHarvester (Scene3D) — Welle 6: palTint (Identitaet bleibt, Farbton folgt Fotos)
+- [x] FeatherStorm (Scene3D) — Welle 3: Helfer-Retarget = Toenung (Mischgewichte blieben)
+- [x] FireWhirlTornado (Scene) — Welle 6: palTint (Identitaet bleibt, Farbton folgt Fotos)
+- [x] Fireworks (Scene3D) — Welle 6: palTint (Identitaet bleibt, Farbton folgt Fotos)
+- [x] GalaxyCollision (Scene) — geprueft: bereits bildbasiert, nichts umzustellen
+- [x] GrowthTree (Scene3D) — Welle 3: Helfer-Retarget = Toenung (Mischgewichte blieben)
+- [x] IceCrack (Scene) — Welle 3: Helfer-Retarget = Toenung (Mischgewichte blieben)
+- [x] InkWater (Scene) — geprueft: bereits bildbasiert, nichts umzustellen
+- [x] JellyfishBioluminescenceAbyss (Scene3D) — Welle 6: palTint (Identitaet bleibt, Farbton folgt Fotos)
+- [x] JosephsonVortexLattice (Scene) — Welle 2: Regenbogen-Akzent -> imgPalette
+- [x] KelpForest (Scene3D) — Welle 6: palTint (Identitaet bleibt, Farbton folgt Fotos)
+- [x] LavaLamp (Scene) — Welle 6: palTint (Identitaet bleibt, Farbton folgt Fotos)
+- [x] MagnetarCrustquakeSGR (Scene) — Welle 6: palTint (Identitaet bleibt, Farbton folgt Fotos)
+- [x] MetamorphicLavaVortex (Scene) — Welle 6: palTint (Identitaet bleibt, Farbton folgt Fotos)
+- [x] MeteorStorm (Scene3D) — Welle 6: palTint (Identitaet bleibt, Farbton folgt Fotos)
+- [x] MyceliumNeuralPulse (Scene3D) — Welle 6: palTint (Identitaet bleibt, Farbton folgt Fotos)
+- [x] NeonTubes (Scene) — Welle 6: palTint (Identitaet bleibt, Farbton folgt Fotos)
+- [x] NeutronStarMagnetarBurst (Scene) — Welle 6: palTint (Identitaet bleibt, Farbton folgt Fotos)
+- [x] OceanNight (Scene3D) — Welle 6: palTint (Identitaet bleibt, Farbton folgt Fotos)
+- [x] ParticleGalaxy (Scene3D) — Welle 6: palTint (Identitaet bleibt, Farbton folgt Fotos)
+- [x] PlanetRings (Scene3D) — Welle 6: palTint (Identitaet bleibt, Farbton folgt Fotos)
+- [x] RadiolarianSilicaLattice (Scene3D) — Welle 6: palTint (Identitaet bleibt, Farbton folgt Fotos)
+- [x] ShadowForest (Scene3D) — Welle 3: Helfer-Retarget = Toenung (Mischgewichte blieben)
+- [x] Skyburst (Scene3D) — Welle 3: Helfer-Retarget = Toenung (Mischgewichte blieben)
+- [x] Snowfall (Scene) — Welle 6: palTint (Identitaet bleibt, Farbton folgt Fotos)
+- [x] SolarCoronaProminence (Scene) — Welle 6: palTint (Identitaet bleibt, Farbton folgt Fotos)
+- [x] SolarFlareCorona (Scene) — Welle 6: palTint (Identitaet bleibt, Farbton folgt Fotos)
+- [x] StargateWormhole (Scene) — Welle 6: palTint (Identitaet bleibt, Farbton folgt Fotos)
+- [x] SynchrotronRadiationRing (Scene3D) — Welle 6: palTint (Identitaet bleibt, Farbton folgt Fotos)
+- [x] ThunderCloud (Scene3D) — Welle 6: palTint (Identitaet bleibt, Farbton folgt Fotos)
+- [x] Tornado (Scene3D) — Welle 6: palTint (Identitaet bleibt, Farbton folgt Fotos)
+- [x] VolcanicLightningPlume (Scene) — Welle 6: palTint (Identitaet bleibt, Farbton folgt Fotos)
+- [x] VolcanoIsland (Scene3D) — Welle 6: palTint (Identitaet bleibt, Farbton folgt Fotos)
+- [x] VolumetricFire (Scene3D) — Welle 6: palTint (Identitaet bleibt, Farbton folgt Fotos)
+- [x] WarpStars (Scene3D) — Welle 6: palTint (Identitaet bleibt, Farbton folgt Fotos)
+
+## LASSEN (3)
+
+- [x] Blueprint (Scene3D) — LASSEN bestaetigt: bewusst eigener/monochromer Look
+- [x] BreathingFractalNoir (Scene) — LASSEN bestaetigt: bewusst eigener/monochromer Look
+- [x] Schlieren (Scene) — LASSEN bestaetigt: bewusst eigener/monochromer Look
+

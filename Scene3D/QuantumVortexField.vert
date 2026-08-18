@@ -9,10 +9,33 @@ uniform float time;
 uniform float audioAdvance;
 uniform float audioSwell;
 uniform float hueP;
+uniform sampler2D tex0;
+uniform sampler2D tex1;
+uniform float interpolation;
+uniform float audioChromaHue;
+uniform float audioValence;
 
 out vec4 vCol;
 out vec3 vNormal;
 out vec3 vWorld;
+
+vec3 img(vec2 uv) {
+    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+}
+
+
+// IMG-PALETTE (house standard): colours come from a rotating arc in the
+// CURRENT slideshow image, so every activation inherits a fresh palette from
+// the photos; the arc follows the musical key (audioChromaHue is circular-
+// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+vec3 imgPalette(float t)
+{
+    float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
+    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
+    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
+    float pg  = dot(pc, vec3(0.333));
+    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+}
 
 vec3 hueRot(vec3 c, float a) {
     vec3 k = vec3(0.57735026919);
@@ -44,7 +67,7 @@ void main() {
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 
     // Quantum flux ribbon color: Cyan, Violet, Gold
-    vec3 fluxCol = mix(vec3(0.1, 0.8, 1.0), vec3(1.0, 0.1, 0.6), hue);
+    vec3 fluxCol = imgPalette(0.30 * hue) * 1.4;
     fluxCol = mix(fluxCol, vec3(1.0, 0.8, 0.2), sin(hue * 6.28 + time) * 0.5 + 0.5);
 
     float h = (hueP > 0.0) ? hueP : 0.0;

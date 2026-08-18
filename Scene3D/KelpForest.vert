@@ -15,10 +15,42 @@ uniform float audioSwell;
 uniform float audioLevel;
 uniform float audioChromaHue;
 uniform float audioBarPhase;
+uniform sampler2D tex0;
+uniform sampler2D tex1;
+uniform float interpolation;
+uniform float audioAdvance;
+uniform float audioValence;
 
 out vec4  vCol;
 out float vSide;
 
+vec3 img(vec2 uv) {
+    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+}
+
+
+// IMG-PALETTE (house standard): colours come from a rotating arc in the
+// CURRENT slideshow image, so every activation inherits a fresh palette from
+// the photos; the arc follows the musical key (audioChromaHue is circular-
+// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+vec3 imgPalette(float t)
+{
+    float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
+    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
+    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
+    float pg  = dot(pc, vec3(0.333));
+    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+}
+
+
+// House tint: bend a colour toward the photo palette while keeping its
+// luminance -- the identity look survives, only the hue follows the photos.
+vec3 palTint(vec3 c, float t, float k)
+{
+    vec3 tp = imgPalette(t);
+    tp *= dot(c, vec3(0.3333)) / max(dot(tp, vec3(0.3333)), 1e-3);
+    return mix(c, tp, k);
+}
 vec3 hueRot(vec3 c, float a)
 {
     vec3  k = vec3(0.57735026919);
@@ -58,7 +90,7 @@ void main()
         gl_Position = vec4(0.0, 0.0, -3.0, 1.0);
 
     // Deep green-teal, sunlit toward the tips, caustic bands wandering.
-    vec3 col = mix(vec3(0.02, 0.16, 0.10), vec3(0.10, 0.55, 0.30), t);
+    vec3 col = palTint(mix(vec3(0.02, 0.16, 0.10), vec3(0.10, 0.55, 0.30), t), 0.20 * t, 0.18);
     float caustic = 0.6 + 0.4 * sin(pos.x * 0.35 + pos.y * 0.22
                                     + time * 1.1);
     col *= 0.5 + 0.9 * caustic * (0.5 + 0.5 * t);

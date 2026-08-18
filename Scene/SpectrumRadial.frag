@@ -26,17 +26,33 @@ uniform float audioBarPhase;       // 0..1 per bar -> gentle rainbow sweep
 // Per-activation variety (re-rolled each activation; 0 = default):
 uniform int   wedgesP;             // wedge count       (0 -> 64; 44..96)
 uniform float petalLenP;           // petal max length  (0 -> 0.72; 0.5..0.95)
-uniform float rotP;                // ring rotation speed multiplier (0 -> 1.0)
+uniform float rotP;
+uniform float audioChromaHue;
+uniform float audioAdvance;                // ring rotation speed multiplier (0 -> 1.0)
 
 const float PI = 3.14159265358979;
 
 vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
                           + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
 
+
+// IMG-PALETTE (house standard): colours come from a rotating arc in the
+// CURRENT slideshow image, so every activation inherits a fresh palette from
+// the photos; the arc follows the musical key (audioChromaHue is circular-
+// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+vec3 imgPalette(float t)
+{
+    float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
+    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
+    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
+    float pg  = dot(pc, vec3(0.333));
+    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+}
+
 vec3 hsv2rgb(vec3 c)
 {
-    vec3 p = abs(fract(c.xxx + vec3(0.0, 2.0 / 3.0, 1.0 / 3.0)) * 6.0 - 3.0);
-    return c.z * mix(vec3(1.0), clamp(p - 1.0, 0.0, 1.0), c.y);
+    vec3 p = imgPalette(c.x) * 1.35;   // photo-arc palette (house standard)
+    return c.z * mix(vec3(1.0), p, c.y);
 }
 
 void main()

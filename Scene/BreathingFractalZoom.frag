@@ -31,6 +31,7 @@ uniform float audioOnset;
 uniform float audioLevel;
 uniform float audioCentroid;
 uniform float audioValence;
+uniform float audioChromaHue;
 uniform float audioSwell;      // slow loudness swell -> breathing deepens
 uniform float audioBarPhase;   // 0..1 per bar -> palette wanders per bar
 
@@ -56,6 +57,20 @@ vec2 kaleido(vec2 p, float sides)
     return vec2(cos(a), sin(a)) * r;
 }
 
+
+// IMG-PALETTE (house standard): colours come from a rotating arc in the
+// CURRENT slideshow image, so every activation inherits a fresh palette from
+// the photos; the arc follows the musical key (audioChromaHue is circular-
+// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+vec3 imgPalette(float t)
+{
+    float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
+    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
+    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
+    float pg  = dot(pc, vec3(0.333));
+    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+}
+
 vec3 imgPal(float x)
 {
     vec2 cc = vec2(0.5) + 0.32 * vec2(cos(time * 0.045 + audioPhase * 0.12),
@@ -77,7 +92,7 @@ vec3 palette(float t)
     vec3 b = vec3(0.5, 0.8, 0.5);
     vec3 c = vec3(1.0, 2.0, 1.0);
     vec3 d = vec3(0.0, 0.33333, 0.66666);
-    return a + b * cos(6.28318 * (c * t + d));
+    return imgPalette(t);
 }
 
 void main()

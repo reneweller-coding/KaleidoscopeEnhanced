@@ -29,6 +29,7 @@ uniform float audioLevel;
 uniform float audioCentroid;
 uniform float audioValence;
 
+uniform float audioChromaHue;
 // Per-activation variety (re-rolled each activation; 0 = default):
 uniform float zoomP;    // hex-lattice scale        (0 -> 1.0; 0.7 = coarser, 1.6 = finer)
 uniform float swirlP;   // radius-coupled swirl amt (0 -> none; curves the lattice)
@@ -48,6 +49,20 @@ vec3 imgPal(float x)
     return img(fract(cc + 0.24 * vec2(cos(x), sin(x * 1.31))));
 }
 
+
+// IMG-PALETTE (house standard): colours come from a rotating arc in the
+// CURRENT slideshow image, so every activation inherits a fresh palette from
+// the photos; the arc follows the musical key (audioChromaHue is circular-
+// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+vec3 imgPalette(float t)
+{
+    float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
+    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
+    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
+    float pg  = dot(pc, vec3(0.333));
+    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+}
+
 // Hue rotation around the luminance axis (keeps brightness + saturation).
 vec3 hueRot(vec3 c, float a)
 {
@@ -59,7 +74,7 @@ vec3 hueRot(vec3 c, float a)
 // Palette by iq (https://iquilezles.org/articles/palettes)
 vec3 palette(float t)
 {
-    return 0.5 + 0.5 * cos(6.28318 * (t + vec3(0.263, 0.416, 0.557)));
+    return imgPalette(t);
 }
 
 vec4 getHex(vec2 p)

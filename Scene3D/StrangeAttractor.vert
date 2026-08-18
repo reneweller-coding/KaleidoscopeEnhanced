@@ -25,8 +25,30 @@ uniform float audioKick;
 uniform float audioChromaHue;
 uniform float audioDrop;
 uniform float audioAdvance;
+uniform sampler2D tex0;
+uniform sampler2D tex1;
+uniform float interpolation;
+uniform float audioValence;
 
 out vec4 vCol;
+
+vec3 img(vec2 uv) {
+    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+}
+
+
+// IMG-PALETTE (house standard): colours come from a rotating arc in the
+// CURRENT slideshow image, so every activation inherits a fresh palette from
+// the photos; the arc follows the musical key (audioChromaHue is circular-
+// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+vec3 imgPalette(float t)
+{
+    float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
+    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
+    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
+    float pg  = dot(pc, vec3(0.333));
+    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+}
 
 vec3 hueRot(vec3 c, float a)
 {
@@ -129,8 +151,7 @@ void main()
     // Velocity magnitude -> colour heat; the head of each trajectory glows.
     float sp = clamp(length(vel) * 0.05, 0.0, 1.0);
     float head = smoothstep(70.0, 99.0, stp);
-    vec3 col = hueRot(mix(vec3(0.15, 0.30, 0.9), vec3(1.0, 0.55, 0.15), sp),
-                      audioChromaHue + traj * 0.002);
+    vec3 col = imgPalette(0.30 * sp + traj * 0.0003) * 1.4;
     col *= (0.35 + 0.85 * sp + 0.9 * head)
          * (0.8 + 0.4 * audioSwell + 0.3 * audioKick + 0.9 * audioDrop);
 

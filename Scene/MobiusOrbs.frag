@@ -30,6 +30,7 @@ uniform float audioBass;
 uniform float audioCentroid;
 uniform float audioValence;
 
+uniform float audioChromaHue;
 // Per-activation variety (re-rolled by the engine each time the effect comes
 // on): the original's three #define "variants" differed mainly in these very
 // numbers, so rolling them turns one shader into a whole family of looks.
@@ -58,6 +59,20 @@ vec3 imgPal(float x)
     vec2 cc = vec2(0.5) + 0.32 * vec2(cos(time * 0.045 + audioPhase * 0.12),
                                       sin(time * 0.033 + audioPhase * 0.09));
     return img(fract(cc + 0.24 * vec2(cos(x), sin(x * 1.31))));
+}
+
+
+// IMG-PALETTE (house standard): colours come from a rotating arc in the
+// CURRENT slideshow image, so every activation inherits a fresh palette from
+// the photos; the arc follows the musical key (audioChromaHue is circular-
+// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+vec3 imgPalette(float t)
+{
+    float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
+    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
+    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
+    float pg  = dot(pc, vec3(0.333));
+    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
 vec3 hueRot(vec3 c, float a)
@@ -126,8 +141,9 @@ void main()
         float x = radiusV * tan(t);
         float y = radiusV * cos(t + tt / 10.0);
         vec2  position = vec2(x, y);
-        vec3  color = cos(0.02 * uv.x + 0.02 * uv.y * vec3(-2.0, 0.0, -1.0) * PI * 2.0 / 3.0
-                          + PI * (i / COLORSHIFT)) * 0.5 + 0.5;
+        // NO gain here: orb() consumes 1.0-color, so brightening the palette
+        // DARKENS the orbs' occlusion and the accumulator runs to white.
+        vec3  color = imgPalette(0.0032 * (uv.x + uv.y) + 0.5 * i / COLORSHIFT);
         acc += 0.65 - orb(uv, orbSize, position, 1.0 - color, CONTRAST,
                           i, stretchV, shapeV);
     }
