@@ -27,11 +27,11 @@ or grab the portable ZIP and just unzip-and-run; see
 | ![Kaleidoscope](docs/screenshots/kaleidoscope.png) | ![PrismExplode](docs/screenshots/prismexplode.png) |
 | ![FeatherStorm](docs/screenshots/featherstorm.png) | ![Metamorph](docs/screenshots/metamorph.png) |
 
-*Four of the ~200 shaders in the catalogue — a classic kaleidoscope fold, a
-compute-driven prism-shatter scene, a volumetric feather storm (real 3D
-geometry + shadow map), and a domain-warped fractal cloud. Renders like these
-are reproducible headlessly via `PresetEditor.exe --render` (see
-[Preset editor](#preset-editor-standalone-tool)).*
+*Four of the 326 scenes + 84 FX overlays in the [scene catalogue](docs/Catalog/Katalog.md)
+— a classic kaleidoscope fold, a compute-driven prism-shatter scene, a
+volumetric feather storm (real 3D geometry + shadow map), and a domain-warped
+fractal cloud. Renders like these are reproducible headlessly via
+`PresetEditor.exe --render` (see [Preset editor](#preset-editor-standalone-tool)).*
 
 ---
 
@@ -42,6 +42,7 @@ are reproducible headlessly via `PresetEditor.exe --render` (see
 - [Controls](#controls)
 - [Configurations](#configurations)
   - [Preset editor (standalone tool)](#preset-editor-standalone-tool)
+  - [Scene catalogue](#scene-catalogue)
 - [Live control](#live-control)
 - [How the audio reactivity works](#how-the-audio-reactivity-works)
 - [GPU reaction-diffusion (live simulation effect)](#gpu-reaction-diffusion-live-simulation-effect)
@@ -743,6 +744,23 @@ depth takes its colour from a slowly-drifting crop of the source image
 the harmony (much like the Kaleidoscope folding different crops).  The same
 image-crop colouring (there: `hueRot` shifting the palette's hue by the image)
 is mixed into all the other adapted shaders above, including the three latest.
+
+### Scene catalogue
+
+**[Browse all 326 scenes + 84 FX overlays](docs/Catalog/Katalog.md)** — every
+shader in the repository with a description (extracted from its own file
+header) and three example frames rendered against real photos. A printable
+version ships with each release
+([`Katalog.pdf`](https://github.com/reneweller-coding/KaleidoscopeEnhanced/releases/latest)).
+Regenerate it after adding or reworking scenes with:
+
+```powershell
+python Tools\make_catalog.py <scan-dir> [<fx-scan-dir>]
+```
+
+(`<scan-dir>` holds the batch-rendered frames — the harness that produces
+them is not part of this repo; see the script's own header for the expected
+file-naming convention.)
 
 ---
 
