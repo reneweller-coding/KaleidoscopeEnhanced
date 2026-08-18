@@ -1172,6 +1172,26 @@ Audio is captured via WASAPI loopback (`AudioAnalyzer`) and analysed in real tim
   a Scene3D compute generator too, so both programs of a scene always see
   the same value.  `PresetEditor --render ... --expr audioKick=0.0`
   A/B-tests a mapping headlessly through the real engine path.
+- **CAMERA RIG for every 3D scene (8 formula channels, no shader edits):**
+  preset formulas named `rigPitch`/`rigYaw`/`rigRoll` (radians) and
+  `rigDolly` (world units, >0 = closer) are evaluated CPU-side by
+  `Scene3DShader` and composed into the projection matrix — plus
+  `rigPitchV`/`rigYawV`/`rigRollV`/`rigDollyV` RATE channels that the host
+  INTEGRATES, so an audio-varying rate is jump-free by construction (the
+  anti-flicker rule holds).  All presets ship subtle defaults: bounded
+  roll/yaw/pitch sway on the integrated `phase`/`advance` clocks plus a
+  gentle `rigDolly = 0.5*swell` push-in; shadows stay world-anchored
+  (the shadow pass renders through `lightM`).  The editor shows the eight
+  rig rows for every scene3d entry.
+- **~330 generated per-scene couplings on tunable params:** a canonical
+  generator classified every registered float param by name (hue → musical
+  key, glow → kick/snare, warp → flux, amp → relative bass, size → swell,
+  sat → valence, fog → ambient), screened each against the anti-flicker
+  rule in the shader source, and wrote
+  `clamp(seedBase + audioTerm, lo, hi)` formulas built from each preset's
+  OWN range — the value can never leave the curated band, so a scene can
+  only get more alive, never off-model.  Motion-rate, framing and count
+  params are excluded on principle.
 - **All 325 scenes are audio-coupled:** the last six uncoupled legacy scenes
   (Bubble, Rorschach, TunnelAcceleration, TunnelReverse, and both parallax
   kaleidoscopes) now read the integrated `audioPhase`/`audioAdvance` phases
