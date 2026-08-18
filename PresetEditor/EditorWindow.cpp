@@ -579,14 +579,17 @@ static QString identityVarFor(const QString &uniform)
 // mid-edit included.  Array/vec uniforms are excluded: a formula evaluates to
 // one float.
 // Shader source files of an entry (frag only for 2D, all stages for Scene3D).
+// PresetEntry.file is the BARE name; the folder comes from e.folder (parsed
+// from the file= attribute at load), with the isCombine/type inference as the
+// fallback for entries created in the GUI before their first save.
 static QStringList shaderSourceFiles(const QString &root, const PresetEntry &e)
 {
-    QString rel = e.file;
-    rel.replace('\\', '/');
-    while (rel.startsWith("../")) rel = rel.mid(3);
-    const QFileInfo fi(rel);
-    const QString folder = fi.path();          // "Scene" | "Scene3D" | "Combine"
-    const QString stem   = fi.completeBaseName();
+    QString folder = e.folder;
+    if (folder.isEmpty())
+        folder = e.isCombine ? QStringLiteral("Combine")
+               : (e.type.compare("scene3d", Qt::CaseInsensitive) == 0
+                      ? QStringLiteral("Scene3D") : QStringLiteral("Scene"));
+    const QString stem = QFileInfo(e.file).completeBaseName();
     QStringList files;
     if (folder.compare("Scene3D", Qt::CaseInsensitive) == 0)
         for (const char *ext : { ".frag", ".vert", ".comp", ".tesc", ".tese", ".geom" })
