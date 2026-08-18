@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 fragColor;
-// CombineOceanBreakerWave.frag
+// FxOceanBreakerWave.frag
 // -----------------------------------------------------------------------
-// COMBINE OCEAN BREAKER WAVE: Ocean breaker wave rolling & foam wash transition.
+// FX OCEAN BREAKER WAVE: Ocean breaker wave rolling & foam wash transition.
 // A powerful ocean swell rolls across the frame, cresting into a curling breaker
 // wave that crashes with turbulent sea foam and washes into the incoming scene.
 //   interpolation -> sweeps the rolling breaker wave front across the viewport

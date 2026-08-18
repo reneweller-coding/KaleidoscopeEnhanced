@@ -1,6 +1,6 @@
 #version 330 core
 out vec4 fragColor;
-// CombineRimLight.frag — relight the frame from behind, using only depth.
+// FxRimLight.frag — relight the frame from behind, using only depth.
 // -----------------------------------------------------------------------
 // A rim needs a surface normal, and the depth buffer does not store one.  It can
 // be recovered: unproject three neighbouring pixels into view space and cross

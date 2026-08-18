@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 fragColor;
-// CombineEbruMarblingRake.frag
+// FxEbruMarblingRake.frag
 // -----------------------------------------------------------------------
-// COMBINE EBRU MARBLING RAKE: Turkish paper marbling (Ebru) rake transition.
+// FX EBRU MARBLING RAKE: Turkish paper marbling (Ebru) rake transition.
 // Fine comb teeth sweep through floating pigments in alternating directions,
 // drawing elegant capillary plumes and chevron folds that reveal the next scene.
 //   interpolation -> drives rake comb sweep across the liquid surface

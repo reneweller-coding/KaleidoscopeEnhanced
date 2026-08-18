@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 fragColor;
-// CombineAcousticChladniResonance.frag
+// FxAcousticChladniResonance.frag
 // -----------------------------------------------------------------------
-// COMBINE ACOUSTIC CHLADNI RESONANCE: 2D vibrating plate Chladni resonance transition.
+// FX ACOUSTIC CHLADNI RESONANCE: 2D vibrating plate Chladni resonance transition.
 // Acoustic standing wave eigenmodes vibrate the image plane, collecting sand
 // grains along nodal zero-vibration lines that morph and cross-fade between scenes.
 //   interpolation -> sweeps acoustic resonance frequency & Chladni mode transitions

@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 fragColor;
-// CombineRayleighTaylorInstability.frag
+// FxRayleighTaylorInstability.frag
 // -----------------------------------------------------------------------
-// COMBINE RAYLEIGH TAYLOR INSTABILITY: Fluid density stratification transition.
+// FX RAYLEIGH TAYLOR INSTABILITY: Fluid density stratification transition.
 // A denser fluid layer sinks into a lighter fluid layer under gravity, forming
 // mushrooming Rayleigh-Taylor instability fingers and curling vortex plumes.
 //   interpolation -> drives finger penetration depth & vortex roll-up growth

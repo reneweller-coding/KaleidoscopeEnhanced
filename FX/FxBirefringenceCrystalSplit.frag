@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 fragColor;
-// CombineBirefringenceCrystalSplit.frag
+// FxBirefringenceCrystalSplit.frag
 // -----------------------------------------------------------------------
-// COMBINE BIREFRINGENCE CRYSTAL SPLIT: Calcite crystal optical birefringence transition.
+// FX BIREFRINGENCE CRYSTAL SPLIT: Calcite crystal optical birefringence transition.
 // An anisotropic uniaxial crystal splits light rays into ordinary (o-ray) and
 // extraordinary (e-ray) polarized components that separate, display polarization
 // color fringes, and recombine seamlessly into the incoming scene.

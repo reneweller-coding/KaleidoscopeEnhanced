@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 fragColor;
-// CombineLogarithmicSpiral.frag
+// FxLogarithmicSpiral.frag
 // -----------------------------------------------------------------------
-// COMBINE LOGARITHMIC SPIRAL: Equiangular logarithmic spiral vortex
+// FX LOGARITHMIC SPIRAL: Equiangular logarithmic spiral vortex
 // (r = a * exp(b * theta)). The outgoing scene winds inward along spiral
 // streamlines while the incoming scene unwinds outwards from the center.
 //   interpolation -> controls spiral vortex winding angle & depth

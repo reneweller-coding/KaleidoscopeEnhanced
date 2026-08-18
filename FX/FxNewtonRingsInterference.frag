@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 fragColor;
-// CombineNewtonRingsInterference.frag
+// FxNewtonRingsInterference.frag
 // -----------------------------------------------------------------------
-// COMBINE NEWTON RINGS INTERFERENCE: Optical thin-film Newton's rings transition.
+// FX NEWTON RINGS INTERFERENCE: Optical thin-film Newton's rings transition.
 // Interference between a spherical lens surface and an optical flat produces
 // concentric chromatic interference rings that expand radially to reveal the incoming scene.
 //   interpolation -> sweeps air gap thickness & expanding interference fringe radius

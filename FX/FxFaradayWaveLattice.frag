@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 fragColor;
-// CombineFaradayWaveLattice.frag
+// FxFaradayWaveLattice.frag
 // -----------------------------------------------------------------------
-// COMBINE FARADAY WAVE LATTICE: Parametric fluid surface Faraday wave transition.
+// FX FARADAY WAVE LATTICE: Parametric fluid surface Faraday wave transition.
 // Vertical oscillation of a fluid layer excites subharmonic standing wave lattices
 // (Faraday crispatio), whose undulating nodal grids cross-fade and morph between scenes.
 //   interpolation -> sweeps Faraday standing wave amplitude & lattice modes

@@ -1,5 +1,9 @@
 #version 330 core
 out vec4 fragColor;
+// FxShroom.frag
+// FX SHROOM: psychedelic "trip" warp -- a Lissajous-style offset field
+// displaces the UVs frame to frame, smeared by a short motion-blur
+// accumulation for a breathing, hallucinatory wobble.
 uniform vec2 resolution;
 uniform float time;
 uniform sampler2D tex0;

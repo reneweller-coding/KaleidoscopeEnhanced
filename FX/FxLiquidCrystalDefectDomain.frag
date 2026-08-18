@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 fragColor;
-// CombineLiquidCrystalDefectDomain.frag
+// FxLiquidCrystalDefectDomain.frag
 // -----------------------------------------------------------------------
-// COMBINE LIQUID CRYSTAL DEFECT DOMAIN: Nematic liquid crystal Schlieren transition.
+// FX LIQUID CRYSTAL DEFECT DOMAIN: Nematic liquid crystal Schlieren transition.
 // Topological point defects (disclinations with strength s = +/-1/2) and
 // dark extinction brushes rotate and annihilate as the director field aligns,
 // seamlessly transitioning into the incoming scene.

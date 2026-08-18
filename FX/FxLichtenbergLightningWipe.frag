@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 fragColor;
-// CombineLichtenbergLightningWipe.frag
+// FxLichtenbergLightningWipe.frag
 // -----------------------------------------------------------------------
-// COMBINE LICHTENBERG LIGHTNING WIPE: High-voltage electrical dielectric breakdown.
+// FX LICHTENBERG LIGHTNING WIPE: High-voltage electrical dielectric breakdown.
 // Luminous fractal Lichtenberg discharge trees branch violently across the
 // glass plate, conducting electrical arcs that ionize and cross-fade between scenes.
 //   interpolation -> sweeps dielectric breakdown wave front across the viewport

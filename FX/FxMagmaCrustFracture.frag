@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 fragColor;
-// CombineMagmaCrustFracture.frag
+// FxMagmaCrustFracture.frag
 // -----------------------------------------------------------------------
-// COMBINE MAGMA CRUST FRACTURE: Tectonic basalt magma crust transition.
+// FX MAGMA CRUST FRACTURE: Tectonic basalt magma crust transition.
 // The outgoing scene solidifies into black obsidian crust plates that fracture
 // apart, revealing glowing 1500°C molten magma rivers that solidify into the new scene.
 //   interpolation -> controls crust fracture opening & magma cooling progress

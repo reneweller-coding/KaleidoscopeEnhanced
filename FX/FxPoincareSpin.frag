@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 fragColor;
-// CombinePoincareSpin.frag
+// FxPoincareSpin.frag
 // -----------------------------------------------------------------------
-// COMBINE POINCARE SPIN: Conformal hyperbolic Poincaré disk inversion and
+// FX POINCARE SPIN: Conformal hyperbolic Poincaré disk inversion and
 // continuous Möbius transformation. The outgoing scene turns inside out
 // through hyperbolic circle inversions while the incoming scene expands
 // smoothly from the non-Euclidean horizon.

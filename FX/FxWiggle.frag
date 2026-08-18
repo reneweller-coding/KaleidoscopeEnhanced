@@ -1,6 +1,6 @@
 #version 330 core
 out vec4 fragColor;
-// CombineWiggle.frag — the boil of hand-drawn animation.
+// FxWiggle.frag — the boil of hand-drawn animation.
 // -----------------------------------------------------------------------
 // Drawn animation wobbles because each frame was drawn separately: the line
 // never lands in quite the same place twice.  Two properties make that read as

@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 fragColor;
-// CombineBioluminescentSparkle.frag
+// FxBioluminescentSparkle.frag
 // -----------------------------------------------------------------------
-// COMBINE BIOLUMINESCENT SPARKLE: Marine dinoflagellate bioluminescence transition.
+// FX BIOLUMINESCENT SPARKLE: Marine dinoflagellate bioluminescence transition.
 // Thousands of sparkling blue-green bioluminescent cellular flashes ignite
 // across fluid wave currents, illuminating and transitioning between scenes.
 //   interpolation -> sweeps bioluminescent sparkling wave front

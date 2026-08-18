@@ -1,6 +1,6 @@
 #version 330 core
 out vec4 fragColor;
-// CombinePulse.frag
+// FxPulse.frag
 // -----------------------------------------------------------------------
 // The first BEAT-reactive combine pass.  Classic combines are static folds;
 // this one breathes with the music (research: loudness/beat -> expansion,

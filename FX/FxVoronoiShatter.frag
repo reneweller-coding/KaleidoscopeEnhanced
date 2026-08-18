@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 fragColor;
-// CombineVoronoiShatter.frag
+// FxVoronoiShatter.frag
 // -----------------------------------------------------------------------
-// COMBINE VORONOI SHATTER: Smooth transition where the scene dissolves through
+// FX VORONOI SHATTER: Smooth transition where the scene dissolves through
 // a floating Voronoi cell mosaic. Each polygonal cell smoothly lifts, rotates,
 // and cross-fades with glowing cell boundaries that pulse to the audio.
 //   interpolation -> controls continuous cross-fade & cell lift progress

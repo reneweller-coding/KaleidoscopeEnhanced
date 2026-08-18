@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 fragColor;
-// CombineHelicoidMinimalSurface.frag
+// FxHelicoidMinimalSurface.frag
 // -----------------------------------------------------------------------
-// COMBINE HELICOID MINIMAL SURFACE: Ruled helicoid minimal surface screw transition.
+// FX HELICOID MINIMAL SURFACE: Ruled helicoid minimal surface screw transition.
 // A continuous helical ramp surface (z = c * theta) rotates and screws the outgoing
 // scene along its ruled geodesics, seamlessly unfurling into the incoming scene.
 //   interpolation -> sweeps helicoid rotation & helical screw pitch

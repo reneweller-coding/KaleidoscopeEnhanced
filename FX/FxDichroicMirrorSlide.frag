@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 fragColor;
-// CombineDichroicMirrorSlide.frag
+// FxDichroicMirrorSlide.frag
 // -----------------------------------------------------------------------
-// COMBINE DICHROIC MIRROR SLIDE: Dichroic glass beam-splitter transition.
+// FX DICHROIC MIRROR SLIDE: Dichroic glass beam-splitter transition.
 // Angled optical dichroic mirror planes slide across the screen, transmitting
 // complementary wavelengths and reflecting the outgoing scene into the incoming one.
 //   interpolation -> slides dichroic mirror boundary across the diagonal

@@ -1,6 +1,6 @@
 #version 330 core
 out vec4 fragColor;
-// CombineEdgeInk.frag — ink outlines from depth, flat wash inside them.
+// FxEdgeInk.frag — ink outlines from depth, flat wash inside them.
 // -----------------------------------------------------------------------
 // The whole quality of a line-art filter is in what counts as an edge.  The
 // obvious test — threshold the difference between neighbouring depths — is

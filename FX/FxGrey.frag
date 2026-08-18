@@ -1,5 +1,7 @@
 #version 330 core
 out vec4 fragColor;
+// FxGrey.frag
+// Flat greyscale desaturation of the blended scene -- no motion, no params.
 uniform vec2 resolution;
 uniform float time;
 uniform sampler2D tex0;

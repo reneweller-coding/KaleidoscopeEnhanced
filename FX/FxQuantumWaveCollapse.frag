@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 fragColor;
-// CombineQuantumWaveCollapse.frag
+// FxQuantumWaveCollapse.frag
 // -----------------------------------------------------------------------
-// COMBINE QUANTUM WAVE COLLAPSE: Quantum state superposition & wavefunction
+// FX QUANTUM WAVE COLLAPSE: Quantum state superposition & wavefunction
 // collapse transition. Complex probability wavepackets interference patterns
 // collapse abruptly from superposition into the definite incoming state.
 //   interpolation -> sweeps quantum superposition to eigenstate measurement

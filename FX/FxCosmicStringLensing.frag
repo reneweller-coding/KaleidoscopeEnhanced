@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 fragColor;
-// CombineCosmicStringLensing.frag
+// FxCosmicStringLensing.frag
 // -----------------------------------------------------------------------
-// COMBINE COSMIC STRING LENSING: Relativistic topological cosmic string deficit angle.
+// FX COSMIC STRING LENSING: Relativistic topological cosmic string deficit angle.
 // A 1D GUT-scale cosmic string passes across spacetime, cutting a conical deficit angle
 // (Delta_theta = 8 pi G mu) that duplicates and shears the image into dual wedge copies,
 // fusing smoothly into the incoming scene.

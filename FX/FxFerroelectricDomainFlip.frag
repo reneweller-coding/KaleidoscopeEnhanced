@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 fragColor;
-// CombineFerroelectricDomainFlip.frag
+// FxFerroelectricDomainFlip.frag
 // -----------------------------------------------------------------------
-// COMBINE FERROELECTRIC DOMAIN FLIP: Perovskite crystal domain wall transition.
+// FX FERROELECTRIC DOMAIN FLIP: Perovskite crystal domain wall transition.
 // Spontaneous electric polarization domains (180° and 90° domain walls)
 // nucleate and propagate across crystal grains, flipping polarization and scenes.
 //   interpolation -> sweeps coercive electric field & polarization reversal

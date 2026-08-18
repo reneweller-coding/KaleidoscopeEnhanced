@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 fragColor;
-// CombineCellularMitosis.frag
+// FxCellularMitosis.frag
 // -----------------------------------------------------------------------
-// COMBINE CELLULAR MITOSIS: Biological cell division & cytokinesis transition.
+// FX CELLULAR MITOSIS: Biological cell division & cytokinesis transition.
 // A parent biological cell elongates, forms a pinching cleavage furrow, and
 // divides into daughter cells that separate and morph into the incoming scene.
 //   interpolation -> controls cell elongation, cleavage furrow & cytokinesis

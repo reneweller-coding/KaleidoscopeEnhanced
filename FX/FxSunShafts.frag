@@ -1,6 +1,6 @@
 #version 330 core
 out vec4 fragColor;
-// CombineSunShafts.frag — volumetric light shafts occluded by real geometry.
+// FxSunShafts.frag — volumetric light shafts occluded by real geometry.
 // -----------------------------------------------------------------------
 // The classic radial-blur godray marches from each pixel toward the light and
 // accumulates whatever the colour buffer holds.  It fails the moment anything

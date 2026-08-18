@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 fragColor;
-// CombineGlitchPixelSort.frag
+// FxGlitchPixelSort.frag
 // -----------------------------------------------------------------------
-// COMBINE GLITCH PIXEL SORT: Directional luminance pixel-sorting transition.
+// FX GLITCH PIXEL SORT: Directional luminance pixel-sorting transition.
 // Pixels stretch and sort into horizontal crystalline streaks based on
 // luminance thresholds, glitching and resolving seamlessly into the incoming scene.
 //   interpolation -> sweeps pixel-sort threshold & glitch severity

@@ -1,6 +1,6 @@
 #version 330 core
 out vec4 fragColor;
-// CombineAmbientOcclusion.frag — screen-space ambient occlusion from depth.
+// FxAmbientOcclusion.frag — screen-space ambient occlusion from depth.
 // -----------------------------------------------------------------------
 // SSAO asks, for every pixel, how much of the hemisphere above its surface is
 // blocked by nearby geometry.  Answering that needs a POSITION and a NORMAL,

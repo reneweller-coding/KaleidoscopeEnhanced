@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 fragColor;
-// CombineSpectralPrismSplit.frag
+// FxSpectralPrismSplit.frag
 // -----------------------------------------------------------------------
-// COMBINE SPECTRAL PRISM SPLIT: Optical prism dispersion transition.
+// FX SPECTRAL PRISM SPLIT: Optical prism dispersion transition.
 // The image splits into red, green, and blue spectral sub-images that
 // disperse across the screen with chromatic aberration and recombine
 // smoothly into the incoming scene.

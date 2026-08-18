@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 fragColor;
-// CombineGoldenNautilus.frag
+// FxGoldenNautilus.frag
 // -----------------------------------------------------------------------
-// COMBINE GOLDEN NAUTILUS: Fibonacci golden spiral nautilus chamber sweep.
+// FX GOLDEN NAUTILUS: Fibonacci golden spiral nautilus chamber sweep.
 // Logarithmic chambers unfurl across the screen in golden ratio proportions
 // (phi = 1.618), sweeping the old scene away and breathing in the new one.
 //   interpolation -> sweeps the golden spiral chamber wipe across the screen

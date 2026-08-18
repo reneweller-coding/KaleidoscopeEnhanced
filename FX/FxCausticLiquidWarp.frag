@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 fragColor;
-// CombineCausticLiquidWarp.frag
+// FxCausticLiquidWarp.frag
 // -----------------------------------------------------------------------
-// COMBINE CAUSTIC LIQUID WARP: Underwater optical caustic refraction transition.
+// FX CAUSTIC LIQUID WARP: Underwater optical caustic refraction transition.
 // Overlapping fluid wave harmonics generate shimmering light caustics and
 // refraction warps that dissolve the outgoing scene into the incoming one.
 //   interpolation -> controls water surface submergence & clearing progress

@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 fragColor;
-// CombineKerrSchildWarpSheet.frag
+// FxKerrSchildWarpSheet.frag
 // -----------------------------------------------------------------------
-// COMBINE KERR SCHILD WARP SHEET: Exact Kerr-Schild spacetime metric transition.
+// FX KERR SCHILD WARP SHEET: Exact Kerr-Schild spacetime metric transition.
 // Spacetime geometry deforms continuously along null vector congruences
 // (g_ab = eta_ab + 2 H k_a k_b), stretching and shearing light rays to bridge the scenes.
 //   interpolation -> sweeps Kerr-Schild gravitational profile scalar H(r)

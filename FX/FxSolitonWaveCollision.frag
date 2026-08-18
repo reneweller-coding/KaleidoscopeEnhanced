@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 fragColor;
-// CombineSolitonWaveCollision.frag
+// FxSolitonWaveCollision.frag
 // -----------------------------------------------------------------------
-// COMBINE SOLITON WAVE COLLISION: Non-linear Korteweg-de Vries (KdV) soliton transition.
+// FX SOLITON WAVE COLLISION: Non-linear Korteweg-de Vries (KdV) soliton transition.
 // Two non-linear solitary waves (sech^2 solitons) propagate toward each other,
 // collide with non-linear phase shifts without dispersing, and leave the incoming scene behind.
 //   interpolation -> sweeps soliton wave collision trajectory across viewport

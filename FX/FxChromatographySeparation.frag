@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 fragColor;
-// CombineChromatographySeparation.frag
+// FxChromatographySeparation.frag
 // -----------------------------------------------------------------------
-// COMBINE CHROMATOGRAPHY SEPARATION: Paper chromatography capillary transition.
+// FX CHROMATOGRAPHY SEPARATION: Paper chromatography capillary transition.
 // A liquid solvent front climbs capillary paper fibers, separating the scene's
 // pigments into distinct chromatic bands based on chemical retention factors (Rf),
 // resolving into the incoming scene.

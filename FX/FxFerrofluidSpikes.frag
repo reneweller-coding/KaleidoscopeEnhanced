@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 fragColor;
-// CombineFerrofluidSpikes.frag
+// FxFerrofluidSpikes.frag
 // -----------------------------------------------------------------------
-// COMBINE FERROFLUID SPIKES: Magnetic ferrofluid Rosensweig instability transition.
+// FX FERROFLUID SPIKES: Magnetic ferrofluid Rosensweig instability transition.
 // Applied magnetic fields pull the scene into an array of sharp conical spikes,
 // reflecting metallic gloss and dissolving into the incoming scene as spikes relax.
 //   interpolation -> sweeps magnetic field strength & spike eruption/relaxation

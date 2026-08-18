@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 fragColor;
-// CombineGravitationalLensWarp.frag
+// FxGravitationalLensWarp.frag
 // -----------------------------------------------------------------------
-// COMBINE GRAVITATIONAL LENS WARP: Relativistic black-hole gravitational lensing.
+// FX GRAVITATIONAL LENS WARP: Relativistic black-hole gravitational lensing.
 // A dark matter singularity opens at the center of the frame, bending spacetime,
 // forming Einstein rings, swallowing the outgoing scene and expanding the new one.
 //   interpolation -> sweeps Schwarzschild radius from 0 to maximum and back

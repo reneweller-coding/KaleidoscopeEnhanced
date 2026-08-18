@@ -1,5 +1,9 @@
 #version 330 core
 out vec4 fragColor;
+// FxDeformationFlow.frag
+// Polar radial-flow warp (Inigo Quilez, iq/2013): unwraps the scene into
+// polar coordinates around a moving point pair and scrolls it, tiled into
+// "copies" mirrored repeats; an optional grid overlay shows the seams.
 uniform vec2 resolution;
 uniform float time;
 uniform sampler2D tex0;

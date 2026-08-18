@@ -1,5 +1,9 @@
 #version 330 core
 out vec4 fragColor;
+// FxPlaneFlight.frag (Inigo Quilez, iq/2013)
+// FX PLANE FLIGHT: a forward-flight perspective warp -- the scene is
+// projected as if streaming past on either side of a travelling flight
+// path, brightened near the horizon line.
 uniform vec2 resolution;
 uniform float time;
 uniform sampler2D tex0;
