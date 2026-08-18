@@ -21,7 +21,36 @@ uniform float audioSwell;
 uniform float glowP;
 uniform float energyP;
 uniform float hueP;
+uniform float audioChromaHue;
+uniform float audioValence;
 
+vec3 img(vec2 uv) {
+    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+}
+
+
+// IMG-PALETTE (house standard): colours come from a rotating arc in the
+// CURRENT slideshow image, so every activation inherits a fresh palette from
+// the photos; the arc follows the musical key (audioChromaHue is circular-
+// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+vec3 imgPalette(float t)
+{
+    float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
+    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
+    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
+    float pg  = dot(pc, vec3(0.333));
+    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+}
+
+
+// House tint: bend a colour toward the photo palette while keeping its
+// luminance -- the identity look survives, only the hue follows the photos.
+vec3 palTint(vec3 c, float t, float k)
+{
+    vec3 tp = imgPalette(t);
+    tp *= dot(c, vec3(0.3333)) / max(dot(tp, vec3(0.3333)), 1e-3);
+    return mix(c, tp, k);
+}
 vec3 hueRot(vec3 c, float a) {
     vec3 k = vec3(0.57735026919);
     float cs = cos(a), sn = sin(a);
@@ -49,10 +78,13 @@ void main() {
         specColor = vec3(1.0, 0.2, 0.7); // Higgs decay cascades
     }
 
+    // A breath of the photo palette on top of the species identity.
+    specColor = palTint(specColor, vSpecies, 0.20);
+
     // Lower gain + soft compression: thousands of additive tracks summed the
     // old x2.0 into pure white (metric scan: saturation 0.01) -- the species
     // colours only survive if a single fragment stays below clip.
-    vec3 col = specColor * vEnergy * enp * glw * 0.6;
+    vec3 col = specColor * min(vEnergy, 1.6) * enp * glw * 0.45;
     col = col / (1.0 + 0.45 * max(col.r, max(col.g, col.b)));
 
     if (hue > 0.001) col = hueRot(col, hue);

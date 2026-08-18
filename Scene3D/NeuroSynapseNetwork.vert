@@ -24,9 +24,32 @@ uniform float densityP;
 uniform float sparkP;
 uniform float camDistP;
 uniform float hueP;
+uniform sampler2D tex0;
+uniform sampler2D tex1;
+uniform float interpolation;
+uniform float audioChromaHue;
+uniform float audioValence;
 
 out vec4  vCol;
 out float vLife;
+
+vec3 img(vec2 uv) {
+    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+}
+
+
+// IMG-PALETTE (house standard): colours come from a rotating arc in the
+// CURRENT slideshow image, so every activation inherits a fresh palette from
+// the photos; the arc follows the musical key (audioChromaHue is circular-
+// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+vec3 imgPalette(float t)
+{
+    float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
+    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
+    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
+    float pg  = dot(pc, vec3(0.333));
+    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+}
 
 vec3 hueRot(vec3 c, float a) {
     vec3 k = vec3(0.57735026919);
@@ -89,12 +112,15 @@ void main() {
     gl_Position = projM * vec4(viewP.x, viewP.y, -viewP.z, 1.0);
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 
-    // Point sprite size by depth and action potential
-    float pSize = (3.5 + actionPotential * 12.0 + audioHigh * 4.0) * (30.0 / max(viewP.z, 1.0));
-    gl_PointSize = clamp(pSize, 1.0, 64.0);
+    // Point sprite size by depth and action potential — capped low: the
+    // additive network integrates sprite AREA, the old 64 px cap was the
+    // real reason the palette washed to white.
+    float pSize = (2.0 + actionPotential * 9.0 + audioHigh * 2.0) * (16.0 / max(viewP.z, 1.0));
+    gl_PointSize = clamp(pSize, 1.0, 16.0);
 
-    // Synaptic Color: Cyan resting potential -> Magenta/Gold action potential
-    vec3 baseCol = mix(vec3(0.05, 0.5, 1.0), vec3(0.8, 0.1, 1.0), brainWave * 0.5 + 0.5);
+    // Synaptic colour from the photo arc (house standard); action potentials
+    // still flash the classic gold so spikes read as events.
+    vec3 baseCol = imgPalette(0.30 * (brainWave * 0.5 + 0.5)) * 1.35;
     baseCol = mix(baseCol, vec3(1.0, 0.95, 0.4), actionPotential);
 
     if (hue > 0.001) baseCol = hueRot(baseCol, hue);

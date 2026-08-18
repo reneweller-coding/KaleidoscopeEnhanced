@@ -88,9 +88,11 @@ void main()
     p += vec2(hash11(idx * 3.1) - 0.5, hash11(idx * 7.7) - 0.5) * sc;
 
     // Gradient descent of F² onto the nodal lines of the BLENDED field.
-    // r3 varies the step count 5..9: most grains converge sharply, a dust
-    // fraction stays diffuse for depth.
-    float steps = 5.0 + floor(r3 * 4.99);
+    // ~1/5 of the grains take only 1-2 steps and stay a diffuse dust field —
+    // that dust is what makes the PLATE itself visible (the scan showed the
+    // fully-converged version as thin lines floating in a void, 2 % cover).
+    float steps = (r3 < 0.22) ? 1.0 + floor(r3 * 9.0)
+                              : 5.0 + floor((r3 - 0.22) * 6.4);
     for (int i = 0; i < 9; ++i)
     {
         if (float(i) >= steps) break;
@@ -114,13 +116,16 @@ void main()
     float vib = Ff * sin(time * 47.0) * (0.25 + 1.1 * audioLevel) * 0.55;
     vec3 world = vec3(q.x, vib + 0.15, q.y);
 
-    // Slow orbit around the plate, camera looking down at a tilt.
+    // Slow orbit around the plate, camera looking down at a tilt.  The
+    // framing is deliberately tight (steeper tilt, closer dolly): the metric
+    // scan showed the old 30-unit distance left the plate at 2 % coverage —
+    // a Chladni figure the size of a postage stamp.
     float oa = time * 0.045;
     world.xz = mat2(cos(oa), -sin(oa), sin(oa), cos(oa)) * world.xz;
-    float tilt = 0.95;
+    float tilt = 1.15;
     world.yz = mat2(cos(tilt), -sin(tilt), sin(tilt), cos(tilt)) * world.yz;
 
-    vec3 vp = world + vec3(0.0, 2.0, 30.0);
+    vec3 vp = world + vec3(0.0, 1.5, 21.0);
     vp.x -= eyeOff;
     gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
     gl_Position.x += eyeOff * 0.05 * gl_Position.w;
@@ -129,15 +134,16 @@ void main()
 
     float px   = resolution.y / 1080.0;
     float dist = max(vp.z, 0.5);
-    gl_PointSize = clamp(95.0 * (0.4 + 0.5 * r4) * px / dist, 1.5, 9.0 * px);
+    gl_PointSize = clamp(150.0 * (0.4 + 0.5 * r4) * px / dist, 1.5, 13.0 * px);
 
     // Sand: warm off-white, brightest ON the nodal line (|F| small); the
-    // scattered dust stays dim.  A hint of the musical hue in the shadow.
+    // scattered dust glows dimly too, so the whole plate reads as a surface
+    // instead of thin lines floating in the void.
     float onLine = exp(-abs(Ff) * 6.0);
-    vec3 col = mix(hueRot(vec3(0.10, 0.09, 0.14), audioChromaHue),
+    vec3 col = mix(hueRot(vec3(0.16, 0.14, 0.19), audioChromaHue),
                    vec3(1.0, 0.94, 0.80),
                    onLine);
-    col *= (0.35 + 0.85 * onLine) * (0.75 + 0.5 * audioSwell + 0.9 * audioDrop);
+    col *= (0.50 + 0.80 * onLine) * (0.75 + 0.5 * audioSwell + 0.9 * audioDrop);
 
     vCol = vec4(col * 3.0, 1.0);
 }

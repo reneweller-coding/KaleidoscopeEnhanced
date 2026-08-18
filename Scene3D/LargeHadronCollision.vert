@@ -30,9 +30,14 @@ void main() {
     float seed2 = hash11(id + 1000.0);
     float seed3 = hash11(id + 2000.0);
 
-    // Collision event cycle: particles spray outwards from center (0,0,0)
-    float tCollision = fract(time * 0.8 + audioAdvance * 0.3 + seed * 0.1);
-    float burstSpeed = (2.0 + 3.0 * seed2) * (1.0 + audioKick * 1.5);
+    // Continuous collision stream: the phase spread over the FULL cycle
+    // matters — with a shared phase (the old seed * 0.1) every particle flew
+    // out as one shell and the vertex sat in a black hole for most of each
+    // cycle.  Fully spread, tracks of every age coexist: a bright vertex,
+    // helical arcs mid-flight, fading ends.  Kick gain on the speed is
+    // moderate for the same reason (x1.5 blew everything off-screen).
+    float tCollision = fract(time * 0.8 + audioAdvance * 0.3 + seed);
+    float burstSpeed = (2.0 + 3.0 * seed2) * (1.0 + audioKick * 0.5);
 
     // Initial ejection direction (isotropic spherical spray)
     float theta = acos(seed2 * 2.0 - 1.0);
@@ -60,5 +65,8 @@ void main() {
     gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 
-    gl_PointSize = clamp((3.0 + 4.0 * vEnergy + audioHigh * 4.0) * (5.5 / vp.z), 1.0, 32.0);
+    // Small sprites on purpose: every track converges at the vertex, so the
+    // centre integrates ~1/r overdraw — area, not gain, decides whether the
+    // species colours survive (the old 32 px cap summed to pure white).
+    gl_PointSize = clamp((1.5 + 2.5 * vEnergy + audioHigh * 1.5) * (5.5 / vp.z), 1.0, 10.0);
 }
