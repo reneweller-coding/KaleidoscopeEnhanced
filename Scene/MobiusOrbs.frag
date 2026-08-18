@@ -109,7 +109,11 @@ void main()
     float shapeV   = (shapeP   <= 0.001) ? 0.6  : shapeP;
 
     vec2 uv = (2.0 * fragCoord - resolution) / resolution.y;
-    vec4 fragColor = vec4(0.0);
+    // NOTE: accumulate in a LOCAL (acc), not in a shadowing "vec4 fragColor"
+    // -- a local of that name hides the out variable, the real output is
+    // never written and the scene renders solid black (found by the metric
+    // scan; core-migration artefact).
+    vec4 acc = vec4(0.0);
     uv *= zoomV;
     uv /= max(dot(uv, uv), 1e-6);             // Mobius inversion (guarded)
     uv  = uv * rotate(tt / 10.0 + audioPhase * 0.05);
@@ -124,11 +128,11 @@ void main()
         vec2  position = vec2(x, y);
         vec3  color = cos(0.02 * uv.x + 0.02 * uv.y * vec3(-2.0, 0.0, -1.0) * PI * 2.0 / 3.0
                           + PI * (i / COLORSHIFT)) * 0.5 + 0.5;
-        fragColor += 0.65 - orb(uv, orbSize, position, 1.0 - color, CONTRAST,
-                                i, stretchV, shapeV);
+        acc += 0.65 - orb(uv, orbSize, position, 1.0 - color, CONTRAST,
+                          i, stretchV, shapeV);
     }
 
-    vec3 col = max(fragColor.rgb, 0.0);
+    vec3 col = max(acc.rgb, 0.0);
     col *= 1.0 + 0.5 * audioBeat + 0.3 * audioOnset;
 
     // Mood grade.
