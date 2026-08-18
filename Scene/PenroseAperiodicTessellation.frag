@@ -49,6 +49,21 @@ vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
+// IMG-PALETTE (house standard, replaces the generic cos-rainbow): colours
+// come from a rotating arc in the CURRENT slideshow image, so every
+// activation inherits a fresh palette from the photos, and the arc follows
+// the musical key (chromaHue is circular-slewed = jump-free) with a slow
+// advance drift.  Valence shapes saturation toward the mood.
+vec3 imgPalette(float t)
+{
+    float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
+    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
+    vec3  col = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
+    float g   = dot(col, vec3(0.333));
+    return mix(vec3(g), col, 0.55 + 0.45 * audioValence);
+}
+
+
 vec3 hueRot(vec3 c, float a) {
     vec3 k = vec3(0.57735026919);
     float cs = cos(a), sn = sin(a);
@@ -97,7 +112,7 @@ void main() {
 
     // Photoelastic birefringence stress fringes (isochromatics)
     float stress = sin(edgeDist * 40.0 + audioPhase * 4.0);
-    vec3 stressColor = 0.5 + 0.5 * cos(vec3(0.0, 1.5, 3.0) + stress * 3.0 + tileType * 0.3);
+    vec3 stressColor = imgPalette((stress * 3.0 + tileType * 0.3) * 0.159);
 
     // Photo texturing mapped into aperiodic cell frames
     vec2 cellUV = fract(p * 0.25 + sumOffset);

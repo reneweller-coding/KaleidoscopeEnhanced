@@ -195,6 +195,18 @@ dass alle Stimmungs-Presets die deklarierten Parameter vollständig haben.
 Ausnahme: `<expr name="audio…">`-Einträge (Audio-Mapping-Overrides, siehe V9)
 sind bewusst **pro Preset optional** und werden von `--validate` übersprungen.
 
+### V8b — Farben aus dem Bild, nicht aus der Regenbogen-Formel
+
+Statt der generischen `0.5 + 0.5*cos(vec3(0, 2, 4) + phase)`-Palette den
+Haus-Standard **imgPalette(t)** verwenden (Snippet in den umgestellten
+Szenen, z. B. `Scene/FerrofluidSpikeForest.frag`): Farben kommen von einem
+rotierenden Kreisbogen im AKTUELLEN Diashow-Bild — jede Aktivierung erbt
+eine frische Palette aus den Fotos, der Bogen folgt der Tonart
+(`audioChromaHue`, zirkulär geslewt = sprungfrei) mit langsamem
+`advance`-Drift, `audioValence` formt die Sättigung zum Mood. Übergabe:
+alter Skalar-Phasenanteil × 0.159 (= /2π) als `t`. Benötigt `img()` +
+`audioChromaHue`/`audioAdvance`/`audioValence`-Deklarationen.
+
 ### V9 — Audio-Kopplung nicht im GLSL festverdrahten
 
 Welche Audio-Uniform ein Shader liest (`audioKick`, `audioSwell`, …) ist Teil
