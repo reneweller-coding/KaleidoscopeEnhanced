@@ -612,12 +612,6 @@
     <None Include="Engine\BloomBlur.frag">
       <Filter>Shaders\Blend</Filter>
     </None>
-    <None Include="Engine\FxShader.frag">
-      <Filter>Shaders\Blend</Filter>
-    </None>
-    <None Include="Engine\default.frag">
-      <Filter>Shaders\Blend</Filter>
-    </None>
     <None Include="Engine\CfxBoidsGrid.comp">
       <Filter>Shaders\Blend</Filter>
     </None>

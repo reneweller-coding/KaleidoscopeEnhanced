@@ -486,8 +486,6 @@ exit /b 0</Command>
     <None Include="FX\FxWater2.frag" />
     <None Include="FX\FxWave.frag" />
     <None Include="Engine\BloomBlur.frag" />
-    <None Include="Engine\FxShader.frag" />
-    <None Include="Engine\default.frag" />
     <None Include="Engine\CfxBoidsGrid.comp" />
     <None Include="Engine\CfxBoidsInit.comp" />
     <None Include="Engine\CfxBoidsStep.comp" />
