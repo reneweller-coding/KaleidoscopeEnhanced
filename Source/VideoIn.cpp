@@ -1,3 +1,7 @@
+/**
+ * @file VideoIn.cpp
+ * @brief Implementation of VideoIn: Qt6Multimedia-backed playlist playback, frame-to-GL-texture upload, and end-of-clip advance.
+ */
 #include "glcore.h"
 #include "VideoIn.h"
 
@@ -19,29 +23,36 @@
 
 namespace {
 
-// One decoder for the whole process, created on first use.  Everything here
-// lives on the GUI thread: QMediaPlayer emits its frames there, and paint()
-// runs there too, so the newest frame can simply be held in a member with no
-// lock at all.  Adding one would only add a way to get it wrong.
+/**
+ * @brief Process-wide video decoder/playlist state, deliberately unsynchronized.
+ *
+ * One decoder for the whole process, created on first use.  Everything here
+ * lives on the GUI thread: QMediaPlayer emits its frames there, and paint()
+ * runs there too, so the newest frame can simply be held in a member with no
+ * lock at all.  Adding one would only add a way to get it wrong.
+ */
 struct VideoState
 {
-	QMediaPlayer  *player = nullptr;
-	QVideoSink    *sink   = nullptr;
+	QMediaPlayer  *player = nullptr;   ///< The single Qt6Multimedia decoder/player, created on first videoInInit() call.
+	QVideoSink    *sink   = nullptr;   ///< Receives decoded frames from player via videoFrameChanged.
 	QAudioOutput  *audio  = nullptr;   // muted; the visualiser has its own sound
 
-	QStringList    files;
-	int            index  = 0;
-	QString        openedPath;
+	QStringList    files;              ///< The current playlist (one entry for a single file, or every playable file in a directory).
+	int            index  = 0;         ///< Index into files of the clip currently playing.
+	QString        openedPath;         ///< The path last passed to videoInInit(), used to detect a redundant re-init as a no-op.
 
 	QImage         latest;             // newest decoded frame, RGBA
 	bool           dirty  = false;     // a frame arrived since the last upload
-	GLuint         tex    = 0;
-	int            texW   = 0, texH = 0;
-	bool           failed = false;
+	GLuint         tex    = 0;         ///< GL texture holding the last-uploaded frame; 0 until the first upload.
+	int            texW   = 0, texH = 0;   ///< Size of tex as last allocated; used to decide glTexImage2D vs. glTexSubImage2D.
+	bool           failed = false;     ///< Set once videoInInit() found nothing playable; latches further calls to fail fast.
 };
 
-VideoState g;
+VideoState g;   ///< The (sole) process-wide VideoState instance; see its class comment for the threading rationale.
 
+/**
+ * @brief Sets the player's source to the playlist entry at g.index and starts playback.
+ */
 void playCurrent()
 {
 	if( g.files.isEmpty() || !g.player )
@@ -56,6 +67,9 @@ void playCurrent()
 
 bool videoInInit( const char *path )
 {
+	// g.failed latches permanently once set: after any call finds nothing playable, EVERY later
+	// call fails immediately without even inspecting the new path, until videoInRelease() resets
+	// it. Only one video source is configured per app run in practice, so this is not revisited.
 	if( g.failed )
 		return false;
 	QString p = QString::fromLocal8Bit( path );
@@ -98,6 +112,9 @@ bool videoInInit( const char *path )
 		g.player->setAudioOutput( g.audio );
 		g.player->setVideoSink( g.sink );
 
+		// No explicit context object on these connect() calls: the lambdas only touch the
+		// process-wide `g` (never dangling), and g.sink/g.player are torn down together in
+		// videoInRelease(), so there is no risk of a callback firing against a deleted object.
 		QObject::connect( g.sink, &QVideoSink::videoFrameChanged,
 		                  [] ( const QVideoFrame &frame )
 		{

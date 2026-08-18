@@ -1,16 +1,33 @@
-// PresetEditor — a standalone editor for the visualizer's preset XMLs, with a
-// live preview of each texture/combine shader.  Independent of the main app.
-//
-// Usage:
-//   PresetEditor.exe                         launch the editor GUI
-//   PresetEditor.exe --roundtrip in.xml out.xml   headless load+save (self-test)
-//   PresetEditor.exe --render tex.frag comb.frag out.png [W H]   grab one preview
-//   PresetEditor.exe --transcheck            verify all 28 transition styles:
-//                                            exact A at d=0 / exact B at d=1 and
-//                                            no temporal jumps across the sweep
-//   PresetEditor.exe --cfxcheck              verify the GL 4.3 compute-FX
-//                                            2D shaders don't render solid
-//                                            black (regression guard)
+/**
+ * @file main.cpp
+ * @brief Entry point and CLI dispatch for the standalone Preset Editor.
+ *
+ * PresetEditor — a standalone editor for the visualizer's preset XMLs, with a
+ * live preview of each texture/combine shader.  Independent of the main app.
+ *
+ * main() first checks argv for one of several headless self-test/probe
+ * flags (each returns without ever opening the QMainWindow); if none match,
+ * it falls through to launching the normal windowed editor (EditorWindow).
+ *
+ * Usage:
+ *   PresetEditor.exe                         launch the editor GUI
+ *   PresetEditor.exe --roundtrip in.xml out.xml   headless load+save (self-test)
+ *   PresetEditor.exe --validate [preset.xml]      headless completeness check: every
+ *                                            preset entry must carry every param its
+ *                                            shader declares in Komplett.xml (checks
+ *                                            all Configurations/ *.xml if no file given)
+ *   PresetEditor.exe --render tex.frag comb.frag out.png [W H]   grab one preview
+ *                                            frame to a PNG (optional --geom/
+ *                                            --stateBytes/--shadowExtent for scene3d,
+ *                                            --param name=value, --expr name=formula,
+ *                                            --time seconds, --images dir, "drone")
+ *   PresetEditor.exe --transcheck            verify all 28 transition styles:
+ *                                            exact A at d=0 / exact B at d=1 and
+ *                                            no temporal jumps across the sweep
+ *   PresetEditor.exe --cfxcheck              verify the GL 4.3 compute-FX
+ *                                            2D shaders don't render solid
+ *                                            black (regression guard)
+ */
 #include <QtWidgets/QApplication>
 #include <QtGui/QSurfaceFormat>
 #include <QtGui/QImage>
@@ -31,9 +48,14 @@
 #include "PreviewWidget.h"
 #include "Preset.h"
 
-// Find the project root (the folder holding standard.vert + Configurations) by
-// searching up from the exe dir and the current dir.  Keeps the editor working
-// whether it's run from its own out-dir, the project root, or Release\.
+/**
+ * @brief Locate the visualizer project root directory.
+ * @return Absolute path of the first ancestor of the exe dir or the current dir that contains both standard.vert and a Configurations folder; falls back to the current working directory if none is found.
+ *
+ * Find the project root (the folder holding standard.vert + Configurations) by
+ * searching up from the exe dir and the current dir.  Keeps the editor working
+ * whether it's run from its own out-dir, the project root, or Release\.
+ */
 static QString findRoot()
 {
     QStringList cands;
@@ -48,6 +70,18 @@ static QString findRoot()
     return QDir::currentPath();
 }
 
+/**
+ * @brief Program entry point: dispatches to a headless CLI probe mode, or launches the windowed editor.
+ * @param argc Argument count (as passed by the OS).
+ * @param argv Argument values (as passed by the OS); argv[0] is the exe path.
+ * @return Process exit code: 0 on success, non-zero (or a probe's own failure count) on failure; for the GUI/probe modes that run a Qt event loop this is QApplication::exec()'s return value.
+ *
+ * See the file-level comment above for the CLI contract. Every headless
+ * branch below returns before a QApplication with a full GUI is ever shown
+ * (the --render/--cfxcheck/--transcheck probes still run a QApplication
+ * event loop to drive an offscreen-ish GL widget, but never construct the
+ * EditorWindow).
+ */
 int main(int argc, char *argv[])
 {
     QStringList args;
@@ -74,7 +108,7 @@ int main(int argc, char *argv[])
     // already: TestShatter.xml's LavaLamp.frag entry was missing sizeP and
     // both <expr> lines every other preset has). This checks presence, never
     // equality, so deliberately different tuning across presets is not flagged.
-    //   --validate                 checks every Configurations/*.xml (except
+    //   --validate                 checks every Configurations/ *.xml (except
     //                               Komplett.xml itself)
     //   --validate <preset.xml>    checks just that one file
     if (args.value(0) == "--validate")
@@ -149,6 +183,10 @@ int main(int argc, char *argv[])
         return gaps ? 1 : 0;
     }
 
+    // Shared GL/app setup for every remaining path below (--render,
+    // --cfxcheck, --transcheck, and the normal windowed editor): the
+    // --roundtrip and --validate modes above never reach this point since
+    // they need no GL context at all.
     QSurfaceFormat fmt;
     // 4.3, matching the main app: several texture shaders (FractalFlame,
     // VolumetricFire, PixelSort/PixelMelt, SpectrumFilter, InkTank, ...) are
@@ -379,6 +417,8 @@ int main(int argc, char *argv[])
         return app.exec();
     }
 
+    // Default mode: none of the headless CLI flags matched above, so launch
+    // the normal windowed editor.
     EditorWindow win(root);
     win.show();
     return app.exec();

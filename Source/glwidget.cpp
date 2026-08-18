@@ -1,3 +1,9 @@
+/**
+ * @file glwidget.cpp
+ * @brief Implements GLwidget: the timer-driven render loop, configuration
+ *        loading/switching, keyboard/mouse input, the MIDI/audio-menu/lyrics
+ *        overlays, and persisted UI settings.
+ */
 #include <math.h>
 
 #include <QtCore/QFile>
@@ -156,7 +162,7 @@ GLwidget::GLwidget( QWidget *parent )
 	// the (dropped) watch path is re-added shortly after each change.
 	{
 		QStringList watch;
-		for( const QString &d : { QString("..\\Scene"), QString("..\\Combine") } )
+		for( const QString &d : { QString("..\\Scene2D"), QString("..\\FX") } )
 			for( const QFileInfo &fi : QDir(d).entryInfoList({"*.frag"}, QDir::Files) )
 				watch << fi.absoluteFilePath();
 		if( !watch.isEmpty() )
@@ -697,7 +703,7 @@ void GLwidget::showSelectConfigurationsMenu( QPainter *painter )
 
 }
 
-// Settings file shared with FilterShader (next to the Configurations folder).
+/// Settings file shared with FilterShader (next to the Configurations folder).
 static const char *kUiSettingsPath = "..\\kaleidoscope_settings.ini";
 
 void GLwidget::loadUiSettings()
@@ -845,6 +851,10 @@ void GLwidget::mouseDoubleClickEvent(QMouseEvent *e) {
   saveAllSettings();   // exit() unten läuft an keinem Destruktor vorbei
   exit( 0 );
 
+  // NOTE: exit(0) above never returns, so the fullscreen/maximize toggle below
+  // is unreachable dead code left over from an earlier behavior (double-click
+  // used to toggle fullscreen; it now quits instead). Kept as-is since this is
+  // a comment-only documentation pass, not a behavior change.
   if(isFullScreen()) {
      setWindowState(Qt::WindowMaximized);
   } else {
@@ -1061,6 +1071,8 @@ void GLwidget::drawHelpOverlay( QPainter *painter )
 	}
 }
 
+/// Display names for the MIDI_* learn targets (GLwidget::MIDI_REACT etc.), used
+/// in the "MIDI learn" stderr prompts.
 static const char *kMidiTargetNames[] =
 	{ "Reactivity", "Trails", "Mood", "Latenz-Vorlauf", "Naechster Effekt",
 	  "Tap-Tempo", "Blackout" };
@@ -1122,12 +1134,23 @@ void GLwidget::applyMidi()
 	}
 }
 
-// Cover-Palette: die zwei dominanten Farben eines Kuenstlerbilds.  12 Hue-
-// Eimer, gewichtet mit Saettigung*Helligkeit (Grau/Schwarz zaehlt nicht);
-// Sieger = gewichtetes RGB-Mittel seines Eimers, Zweitfarbe = bester Eimer
-// mit Kreis-Abstand >= 2 (sonst dunkle Schattierung der Ersten).  Liefert
-// false fuer praktisch farblose Cover (S/W-Fotos) - dann bleibt das Grading
-// neutral statt einen Zufallston zu erfinden.
+/**
+ * @brief Extracts a two-color dominant palette from an artist/cover image.
+ *
+ * Cover-Palette: die zwei dominanten Farben eines Kuenstlerbilds.  12 Hue-
+ * Eimer, gewichtet mit Saettigung*Helligkeit (Grau/Schwarz zaehlt nicht);
+ * Sieger = gewichtetes RGB-Mittel seines Eimers, Zweitfarbe = bester Eimer
+ * mit Kreis-Abstand >= 2 (sonst dunkle Schattierung der Ersten).  Liefert
+ * false fuer praktisch farblose Cover (S/W-Fotos) - dann bleibt das Grading
+ * neutral statt einen Zufallston zu erfinden.
+ *
+ * @param src Source image (any format/size; downscaled internally to 24x24).
+ * @param palA Output: dominant color as RGB in 0..1.
+ * @param palB Output: secondary color as RGB in 0..1 (or a darkened shade of
+ *             palA when no sufficiently distinct second hue bucket exists).
+ * @return True if a usable (sufficiently colorful) palette was found; false
+ *         for near-greyscale images, in which case palA/palB are unmodified.
+ */
 static bool extractPalette( const QImage &src, float *palA, float *palB )
 {
 	if( src.isNull() )

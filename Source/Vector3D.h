@@ -3,6 +3,12 @@
   \author Frank Firsching
   \date 17.03.2001
  */
+/**
+ * @file Vector3D.h
+ * @brief Small 3D vector math type (float xyz) with the usual arithmetic, geometric
+ *        (cross/dot product, angle, reflect/refract) and normalization operations,
+ *        used throughout the engine's math/geometry code.
+ */
 
 #ifndef VECTOR3D_H
 #define VECTOR3D_H
@@ -13,7 +19,16 @@
 // forward-declaration of the 4-dimensional vector
 class Vector4D;
 
-//! This class provides functions to handle 3-dimensional vectors
+/**
+ * @brief A 3-dimensional vector of floats (x, y, z).
+ *
+ * Provides the standard set of vector-math operators (add/subtract/scale, dot and
+ * cross product, length/normalization, reflection and refraction) plus interop with
+ * the homogeneous Vector4D type (construction from / assignment from / to a Vector4D
+ * performs the perspective divide by w). Coordinates are public data members for
+ * efficient, direct access, and the class exposes a `float*` cast so instances can be
+ * passed straight into OpenGL calls that expect a `float[3]`.
+ */
 class Vector3D
 {
  public:
@@ -109,18 +124,40 @@ class Vector3D
   //! return the normalized vector as a copy
   inline Vector3D normalized() const;
 
-  //! if the angle between the two vectors is greater than 90° flip the calling one
+  //! if the angle between the two vectors is greater than 90ï¿½ flip the calling one
   /*! for speed-purposes, this routine assumes, that the two vectors are normalized */
   inline void faceForward(const Vector3D& b);
 
-  //! reflect the vector using the given normal
+  /**
+   * @brief Reflect the vector in place using the given normal.
+   * @param n Reflection normal (assumed normalized).
+   */
   inline void reflect(const Vector3D& n);
-  //! return the reflected vector using the given normal
+  /**
+   * @brief Return the reflected vector using the given normal.
+   * @param n Reflection normal (assumed normalized).
+   * @return The reflected vector; the calling vector is left unmodified.
+   */
   Vector3D reflected(const Vector3D& n) const;
 
-  //! refract the vector using the given normal and the index of refraction eta
+  /**
+   * @brief Refract the vector in place using the given normal and index of refraction.
+   * @param n Interface normal (assumed normalized).
+   * @param eta Ratio of indices of refraction (incident / transmitted medium).
+   * @param totalInternalReflection Set to true if the refraction produced total
+   *        internal reflection (no transmitted ray); in that case the vector is left
+   *        unmodified.
+   */
   inline void refract(const Vector3D& n, float eta, bool& totalInternalReflection);
-  //! return the refracted vector using the given normal and the index of refraction eta
+  /**
+   * @brief Return the refracted vector using the given normal and index of refraction.
+   * @param n Interface normal (assumed normalized).
+   * @param eta Ratio of indices of refraction (incident / transmitted medium).
+   * @param totalInternalReflection Set to true if the refraction produced total
+   *        internal reflection (no transmitted ray); in that case the original vector
+   *        is returned unchanged.
+   * @return The refracted vector, or the original vector on total internal reflection.
+   */
   Vector3D refracted(const Vector3D& n, float eta, bool& totalInternalReflection) const;
 
   //! cast the vector to a pointer of floats (used to load the vector to OpenGL)
@@ -133,7 +170,7 @@ class Vector3D
 // INLINE-functions for general use
 // ********************************
 
-// cot of angle between two vectors
+//! cot of angle between two vectors
 inline float angleCot(const Vector3D& a, const Vector3D& b) {
 	return ( (a*b) / (a^b).length() );
 }

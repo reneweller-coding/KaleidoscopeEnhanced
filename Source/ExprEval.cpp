@@ -1,5 +1,8 @@
-// ExprEval.cpp — see ExprEval.h.  Classic shunting-yard to RPN, evaluated
-// on a small value stack.  No allocations at eval time.
+/**
+ * @file ExprEval.cpp
+ * @brief Implements ExprProgram — see ExprEval.h. Classic shunting-yard to RPN, evaluated
+ *   on a small value stack. No allocations at eval time.
+ */
 #include "ExprEval.h"
 
 #include <cstdio>
@@ -8,6 +11,7 @@
 
 namespace {
 
+/** @brief Variable identifier strings, in ExprVars::Index order; the only place that names must match ExprVars::Index for compile()'s identifier lookup to work. */
 const char *kVarNames[ExprVars::V_COUNT] = {
     "time", "bass", "mid", "treb", "bassRel", "midRel", "trebRel",
     "subBass", "high", "level", "kick", "snare", "hat", "onset", "beat",
@@ -27,6 +31,7 @@ namespace {
 
 // RPN op codes (>= 0).  Negative codes in Op.code mean:
 //   OP_CONST (-1): push Op.value;  OP_VAR (-2): push vars[(int)Op.value].
+/** @brief Operator/function opcodes stored in a non-negative Op::code (see OP_CONST/OP_VAR for the two negative "push" codes). F_SIN..F_SIGN are unary, F_MIN..F_ATAN2 binary, F_CLAMP/F_MIX ternary — see the arity table in compile()'s stack-depth sanity check and the dispatch in eval(). */
 enum {
     OP_ADD, OP_SUB, OP_MUL, OP_DIV, OP_POW, OP_NEG,
     F_SIN, F_COS, F_TAN, F_ABS, F_SQRT, F_EXP, F_LOG, F_FLOOR, F_FRACT,
@@ -34,10 +39,12 @@ enum {
     F_MIN, F_MAX, F_POWF, F_ATAN2,
     F_CLAMP, F_MIX
 };
-const int OP_CONST = -1;
-const int OP_VAR   = -2;
+const int OP_CONST = -1; ///< Op::code sentinel: push Op::value onto the eval stack as a literal constant.
+const int OP_VAR   = -2; ///< Op::code sentinel: push vars[(int)Op::value] onto the eval stack.
 
+/** @brief One entry in the function table: source-text name, its opcode, and its argument count (used both to consume the right number of comma-separated args and by compile()'s stack-depth sanity check). */
 struct FuncDef { const char *name; int code; int arity; };
+/** @brief All formula-language built-in functions, matched by name during tokenising. */
 const FuncDef kFuncs[] = {
     { "sin", F_SIN, 1 }, { "cos", F_COS, 1 }, { "tan", F_TAN, 1 },
     { "abs", F_ABS, 1 }, { "sqrt", F_SQRT, 1 }, { "exp", F_EXP, 1 },
@@ -48,13 +55,20 @@ const FuncDef kFuncs[] = {
     { "clamp", F_CLAMP, 3 }, { "mix", F_MIX, 3 }
 };
 
+/** @brief One lexical token produced by compile()'s tokeniser and consumed by its shunting-yard pass. */
 struct Token
 {
-    enum Kind { NUM, VAR, FUNC, OP, LPAREN, RPAREN, COMMA } kind;
-    float num = 0.f;
+    enum Kind { NUM, VAR, FUNC, OP, LPAREN, RPAREN, COMMA } kind; ///< Which of the token forms this is.
+    float num = 0.f;    ///< Literal value, valid only when kind == NUM.
     int   idx = 0;      // var index / func table index / op char
+                         ///< Meaning depends on kind: ExprVars index (VAR), kFuncs table index (FUNC), or the operator character — including the synthetic 'n' for unary minus (OP).
 };
 
+/**
+ * @brief Binding strength of an operator, for the shunting-yard pop-while-higher-or-equal-precedence rule.
+ * @param opChar The operator character (as stored in Token::idx / Op-building switch): '+','-','*','/','^', or the synthetic 'n' for unary minus.
+ * @return Higher number binds tighter (^ > unary minus > * / > + -); 0 for anything not a recognised operator.
+ */
 int precedence( int opChar )
 {
     switch (opChar) {
@@ -65,10 +79,39 @@ int precedence( int opChar )
     }
     return 0;
 }
+/** @brief Whether an operator is right-associative (so equal-precedence chains pop the OTHER way in shunting-yard).
+ * @param opChar The operator character (see precedence()).
+ * @return True for '^' and unary minus ('n'); false (left-associative) for all others. */
 bool rightAssoc( int opChar ) { return opChar == '^' || opChar == 'n'; }
 
 } // namespace
 
+/**
+ * @brief Compiles @p formula into m_prog via tokenising then shunting-yard, with a final stack-depth sanity pass.
+ * @param formula The expression source text.
+ * @param context Label used only in stderr diagnostics to identify which formula failed.
+ * @return True on success (m_ok is also set true); false on any lexical or structural error, leaving m_ok false so eval() safely returns 0.
+ *
+ * Three passes over the token stream:
+ *  1. Tokenise: scans @p formula into NUM/VAR/FUNC/OP/LPAREN/RPAREN/COMMA
+ *     tokens. A '-' is classified as unary (op char 'n') rather than binary
+ *     subtraction whenever it does NOT immediately follow a value-producing
+ *     token (prevWasValue) — i.e. at the start of the expression, after '(',
+ *     another operator, or a comma.
+ *  2. Shunting-yard: converts the infix token stream to RPN in m_prog,
+ *     popping lower-or-equal precedence operators before pushing a new one
+ *     (see precedence()/rightAssoc() — '^' and unary minus are
+ *     right-associative so chains like `-x^y` or `2^3^2` nest correctly).
+ *     A FUNC token sits on the operator stack until its matching ')' is
+ *     popped, at which point it too is emitted to m_prog (functions are
+ *     RPN-encoded as a single opcode consuming their fixed arity, not as
+ *     a call with an argument count).
+ *  3. Sanity check: replays m_prog counting stack depth per opcode's arity
+ *     (1 for OP_NEG/F_SIN..F_SIGN, 3 for F_CLAMP/F_MIX, 2 otherwise) to catch
+ *     malformed programs (e.g. a function invoked with the wrong argument
+ *     count) that the shunting-yard pass alone wouldn't reject; a compiled
+ *     program must reduce to exactly one value on the stack.
+ */
 bool ExprProgram::compile( const std::string &formula, const std::string &context )
 {
     m_prog.clear();
@@ -247,6 +290,20 @@ bool ExprProgram::compile( const std::string &formula, const std::string &contex
     return true;
 }
 
+/**
+ * @brief Runs the compiled RPN program (m_prog) against @p vars on a small fixed-size stack.
+ * @param vars Array of ExprVars::V_COUNT floats indexed by ExprVars::Index; supplies the live audio/time feature values.
+ * @return The single value left on the stack after executing every instruction, or 0 if compile() had failed or the program didn't reduce to exactly one value.
+ *
+ * The stack is a fixed `float st[32]` with no bounds-checked growth — pushes
+ * beyond depth 32 are silently dropped (`if (sp < 32)`); this is safe only
+ * because compile()'s stack-depth sanity pass already rejects any program
+ * whose evaluation could underflow, and formulas short enough to be preset
+ * `<expr>` attributes never come close to depth 32. Division guards against
+ * a near-zero divisor (returns 0 instead of Inf/NaN) and log()/sqrt() clamp
+ * their argument into a domain-safe range, so a pathological live feature
+ * value can't poison the uniform with a NaN.
+ */
 float ExprProgram::eval( const float *vars ) const
 {
     if (!m_ok) return 0.f;

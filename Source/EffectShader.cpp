@@ -1,3 +1,9 @@
+/**
+ * @file EffectShader.cpp
+ * @brief Implementation of EffectShader: shader compile/uniform plumbing, solo/interpolation
+ *        timing, the audio-feature and formula-layer uniform uploads, and the cached
+ *        "usesXxx" shader-capability queries.
+ */
 #include <float.h>
 
 #include "shader_setup.h"
@@ -26,6 +32,8 @@ m_minTimeSolo(minTimeSolo)
 	//m_fragmentShaderFilename = filenameFragmentShader.c_str();//filenameFragmentShader.toLocal8Bit().data();
 
 	m_fragmentShaderFilename = (char *) malloc(sizeof(char)*(filenameFragmentShader.size()+1) );
+	// The embedded "\0" in the format string is redundant: sprintf() already NUL-terminates
+	// after substituting %s, so parsing stops there regardless. Harmless, kept as-is.
 	sprintf( m_fragmentShaderFilename, "%s\0", filenameFragmentShader.c_str() );
 
 
@@ -84,6 +92,11 @@ void EffectShader::resetParameters()
 	m_timeSolo = getInterpolatedTime( m_minTimeSolo, m_maxTimeSolo );
 	m_timeInterpolation = getInterpolatedTime( m_minTimeInterpolation, m_maxTimeInterpolation );
 
+	// The "life" budget handed to each Uniform is solo + 2*interpolation: one
+	// interpolation span to fade IN, the solo span held at full value, and one
+	// interpolation span to fade back OUT — so a Uniform's own randomised
+	// min/max sweep can be timed to complete exactly once across the effect's
+	// whole active lifetime rather than per solo/interpolation phase.
 	for( unsigned int i = 0; i < m_uniforms.size(); i++ )
 		m_uniforms[i]->resetParameters( (float) ( m_timeSolo + 2 * m_timeInterpolation ) );
 
@@ -145,7 +158,11 @@ void EffectShader::drawWindow()
 
 
 /**
- * Sets up the GLSL runtime and creates shader.
+ * @brief Sets up the GLSL runtime and creates shader.
+ *
+ * Compiles the vertex+fragment program (setShaders), resolves the common
+ * uniform locations, and lets every already-registered Uniform resolve its
+ * own location.
  */
 void EffectShader::initUniforms(int width, int height)
 {	
@@ -173,9 +190,11 @@ void EffectShader::initUniforms(int width, int height)
 
 
 /**
- * Checks for OpenGL errors.
- * Extremely useful debugging function: When developing, 
+ * @brief Checks for OpenGL errors.
+ *
+ * Extremely useful debugging function: when developing,
  * make sure to call this after almost every GL call.
+ * @param label Short tag identifying the call site, included in the printed message.
  */
 void EffectShader::checkGLErrors( const char *label )
 {
@@ -641,6 +660,9 @@ unsigned int EffectShader::cfxMask()
 	{
 		m_cfxProg = m_sh_prog_id;
 		m_cfxMask = 0;
+		// Save/restore GL_CURRENT_PROGRAM: this query can run mid-frame (first time
+		// a shader is drawn), so binding this program to read+set its sampler units
+		// must not leave some OTHER program active for the caller's next GL call.
 		GLint prev = 0;
 		glGetIntegerv( GL_CURRENT_PROGRAM, &prev );
 		glUseProgram( m_sh_prog_id );

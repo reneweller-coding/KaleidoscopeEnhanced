@@ -53,3 +53,6 @@ indirect_diag.log
 # Szenen-Katalog: PDF ist generiert (Katalog.md + img/ sind die Quelle)
 Docs/Catalog/Katalog.pdf
 Docs/Catalog/Katalog.html
+
+# Doxygen-Ausgabe ist generiert (Doxyfile + Kommentare im Quelltext sind die Quelle)
+Docs/Doxygen/

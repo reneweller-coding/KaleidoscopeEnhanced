@@ -1,3 +1,7 @@
+/**
+ * @file NowPlaying.cpp
+ * @brief Implementation of NowPlaying: WinRT SMTC polling thread, VLC window-title fallback, and playback-position settling/smoothing.
+ */
 // C++/WinRT's await adapters pull in <experimental/coroutine> under C++17, which
 // MSVC now flags as deprecated.  We only block on the async results with .get()
 // (no real coroutines), so silence it.
@@ -27,8 +31,16 @@ using namespace winrt::Windows::Media::Control;
 // (Spotify, browsers and foobar2000-with-Media-Controls-component all speak
 // SMTC and never reach this fallback.)
 namespace {
-struct VlcScan { std::wstring text; };
+/** @brief Result accumulator for vlcEnumProc(): the matched window's media title, if any. */
+struct VlcScan { std::wstring text; };   ///< Non-empty once a VLC window title has been matched.
 
+/**
+ * @brief EnumWindows callback that scans top-level windows for a classic-VLC title suffix.
+ *
+ * @param hwnd The window handle being visited.
+ * @param lp A `VlcScan*` cast to LPARAM; receives the matched title (minus the VLC suffix).
+ * @return TRUE to keep enumerating, FALSE to stop (a match was found).
+ */
 BOOL CALLBACK vlcEnumProc(HWND hwnd, LPARAM lp)
 {
     if (!IsWindowVisible(hwnd)) return TRUE;
@@ -46,8 +58,15 @@ BOOL CALLBACK vlcEnumProc(HWND hwnd, LPARAM lp)
     return TRUE;
 }
 
-// "<artist> - <title>" metadata split + filename cleanup (drop the extension,
-// underscores become spaces) so a raw file name still reads like a title.
+/**
+ * @brief "<artist> - <title>" metadata split + filename cleanup for the VLC fallback.
+ *
+ * Drops a known media-file extension and turns underscores into spaces, so a raw file name still
+ * reads like a title; then splits on the first " - " into artist/title if present.
+ * @param raw The VLC window title with the " - VLC media player" suffix already stripped.
+ * @param title Receives the parsed (or cleaned raw) title.
+ * @param artist Receives the parsed artist, left untouched if no " - " separator was found.
+ */
 void parseVlcTitle(const std::wstring &raw, QString &title, QString &artist)
 {
     QString w = QString::fromStdWString(raw).trimmed();
@@ -105,6 +124,8 @@ NowPlaying::Timeline NowPlaying::timeline() const
     return m_timeline;
 }
 
+// Extrapolates the last published Timeline forward to "now" using the local clock and the
+// settled extrapolation rate, rather than returning the (possibly seconds-stale) raw SMTC value.
 double NowPlaying::positionNowSec() const
 {
     Timeline tl = timeline();
@@ -119,6 +140,10 @@ double NowPlaying::positionNowSec() const
     return p;
 }
 
+// See NowPlaying.h for the class-level summary. This is the ~1s poll loop: query SMTC (or fall
+// back to the VLC window-title scan), then run the two-stage "settle" state machine below that
+// turns the raw, sometimes-stale-for-1-2-polls position reports into a monotonic, smoothly
+// extrapolated Timeline (see the German inline comments for the detailed reasoning per branch).
 void NowPlaying::threadFunc()
 {
     // WinRT must be initialised per-thread.  SMTC works in the multi-threaded

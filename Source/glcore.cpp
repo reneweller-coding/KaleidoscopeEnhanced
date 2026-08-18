@@ -1,10 +1,23 @@
 // glcore.cpp — see glcore.h.  Pointers resolve via wglGetProcAddress with an
 // opengl32.dll fallback (GL 1.1 exports are not returned by wgl).
+/**
+ * @file glcore.cpp
+ * @brief Implements the glcore.h function-pointer loader: defines storage for every
+ *        `glcore_<name>` pointer and glcoreInit(), which resolves them all via
+ *        wglGetProcAddress (falling back to GetProcAddress on opengl32.dll for the
+ *        GL 1.1 entry points wgl doesn't return).
+ */
 #include "glcore.h"
 #include <stdio.h>
 
+/**
+ * @brief Defines the storage (zero-initialized) for one loaded GL function pointer.
+ * @param name Name of the GL function whose `glcore_<name>` pointer is defined.
+ */
 #define GLC_DEF(name) PFN_##name glcore_##name = 0;
 
+/// @name Storage for every GL function pointer declared in glcore.h; see there for grouping.
+///@{
 GLC_DEF(glActiveTexture)
 GLC_DEF(glGenBuffers)
 GLC_DEF(glBindBuffer)
@@ -73,12 +86,23 @@ GLC_DEF(glClearBufferfv)
 GLC_DEF(glTexImage3D)
 GLC_DEF(glFramebufferTextureLayer)
 GLC_DEF(glBlitFramebuffer)
+///@}
 
 #undef GLC_DEF
 
-int glcoreHasCompute = 0;
-int glcoreHasTess    = 0;
+int glcoreHasCompute = 0; ///< Definition of glcoreHasCompute; set by glcoreInit() once the compute pointers are resolved.
+int glcoreHasTess    = 0; ///< Definition of glcoreHasTess; set by glcoreInit() once glPatchParameteri is resolved.
 
+/**
+ * @brief Resolves a single GL entry point by name.
+ *
+ * Tries wglGetProcAddress() first; some drivers return small sentinel values (1, 2,
+ * 3, or -1 cast to a pointer) instead of NULL to signal failure for the older GL 1.1
+ * entry points wgl doesn't handle, so those are treated as failures too and the
+ * lookup falls back to GetProcAddress() on a lazily-loaded opengl32.dll.
+ * @param name Name of the GL function to resolve.
+ * @return The resolved function pointer, or NULL if it could not be found either way.
+ */
 static void *glcGet(const char *name)
 {
     void *p = (void *)wglGetProcAddress(name);
@@ -92,6 +116,18 @@ static void *glcGet(const char *name)
     return p;
 }
 
+/**
+ * @brief Resolves every declared GL function pointer, with the GL context current.
+ *
+ * Uses the local GLC_LOAD/GLC_LOAD_OPT macros: GLC_LOAD resolves a required entry
+ * point and clears the overall success flag (and logs to stderr) if missing;
+ * GLC_LOAD_OPT resolves an optional one (compute, tessellation, order-independent
+ * transparency blending, frame-history-ring) and only logs, without failing the call.
+ * Finishes by deriving glcoreHasCompute (all five core compute entry points present)
+ * and glcoreHasTess (glPatchParameteri present), and logging a one-line summary of
+ * which optional subsystems are available.
+ * @return Non-zero (true) if every required entry point resolved, zero otherwise.
+ */
 int glcoreInit(void)
 {
     int ok = 1;

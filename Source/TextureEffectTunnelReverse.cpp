@@ -1,3 +1,8 @@
+/**
+ * @file TextureEffectTunnelReverse.cpp
+ * @brief Implementation of TextureEffectTunnelReverse: the counter-scrolling
+ *        `speedTunnelReverse` uniform layered on top of TextureEffectTunnel.
+ */
 #include <float.h>
 
 #include "shader_setup.h"
@@ -26,6 +31,7 @@ TextureEffectTunnelReverse::~TextureEffectTunnelReverse()
 {
 }
 
+/// Uploads `speedTunnelReverse` after chaining to TextureEffectTunnel::setUniforms().
 void TextureEffectTunnelReverse::setUniforms( float time, float interpolation, GLint texLoc1, GLint texLoc2 )
 {
 	TextureEffectTunnel::setUniforms( time, interpolation, texLoc1, texLoc2 );
@@ -34,7 +40,9 @@ void TextureEffectTunnelReverse::setUniforms( float time, float interpolation, G
 
 
 /**
- * Sets up the GLSL runtime and creates shader.
+ * @brief Sets up the GLSL runtime and creates shader.
+ *
+ * Chains to TextureEffectTunnel::initUniforms() then resolves `speedTunnelReverse`.
  */
 void TextureEffectTunnelReverse::initUniforms(int width, int height)
 {	
@@ -45,6 +53,18 @@ void TextureEffectTunnelReverse::initUniforms(int width, int height)
 }
 
 
+/**
+ * @brief Re-rolls the reverse tunnel scroll speed.
+ *
+ * Chains to TextureEffectTunnel::resetParameters() first. m_speedTunnelReverseMin/Max
+ * are declared with min(-0.001) NUMERICALLY GREATER than max(-0.08) - unlike every
+ * other min/max pair in this hierarchy. That still lands in the intended negative
+ * range because (max - min) is negative here too: at qrand()==0 the result is min
+ * (-0.001), and at qrand()==RAND_MAX it is min + (max-min) = max (-0.08). So the lerp
+ * direction flips along with the flipped bounds and the result stays in [-0.08,
+ * -0.001] as intended - just via a less obvious route than TextureEffectTunnel's.
+ * Unlike the base class, there is no near-zero clamp here.
+ */
 void TextureEffectTunnelReverse::resetParameters()
 {
 	TextureEffectTunnel::resetParameters();

@@ -1,3 +1,7 @@
+/**
+ * @file WebRemote.cpp
+ * @brief Implementation of WebRemote: the embedded phone-remote HTML/JS page and its GET-only JSON/JPEG /api/ endpoints.
+ */
 // WebRemote.cpp — see WebRemote.h.
 #include "WebRemote.h"
 #include "glwidget.h"
@@ -8,7 +12,15 @@
 #include <QtCore/QUrl>
 #include <QtCore/QUrlQuery>
 
-// The phone page: dark, thumb-sized controls, fetch()-driven, self-refreshing.
+/**
+ * @brief The single-page HTML/CSS/JS remote-control UI served for GET "/".
+ *
+ * The phone page: dark, thumb-sized controls, fetch()-driven, self-refreshing. Polls
+ * /api/state and /api/snapshot every 2s and posts user actions to the other /api/ endpoints
+ * implemented in handleConnection(). Entirely self-contained (inline CSS/JS, no external
+ * assets), so the server never has to serve anything besides this string and the JSON/JPEG
+ * API responses.
+ */
 static const char *kPage = R"HTML(<!DOCTYPE html>
 <html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -112,14 +124,24 @@ void WebRemote::handleConnection()
 {
 	while( QTcpSocket *sock = m_server->nextPendingConnection() )
 	{
+		// Reads the entire request on the FIRST readyRead and processes it immediately — no
+		// buffering across multiple reads. Fine here because every client is this page's own
+		// fetch() calls issuing tiny GET requests that always arrive in a single TCP segment;
+		// a general-purpose HTTP server would need to handle a request split across reads.
 		QObject::connect( sock, &QTcpSocket::readyRead, sock, [this, sock]()
 		{
 			const QByteArray req = sock->readAll();
 			const int eol = req.indexOf( "\r\n" );
 			const QList<QByteArray> parts = req.left( eol < 0 ? req.size() : eol ).split( ' ' );
+			// Default response for an unmatched GET path (or a non-GET request): 200 OK with an
+			// empty JSON object, rather than a 404 — the page's polling fetches never hit this.
 			QByteArray body = "{}";
 			QByteArray ctype = "application/json";
 
+			// GET-only dispatch: the request line's method/target, then one branch per route.
+			// Every branch either fills body/ctype for the response below, or (for the
+			// fire-and-forget action routes) just calls straight into GLwidget/FilterShader
+			// and leaves body as the default "{}" acknowledgement.
 			if( parts.size() >= 2 && parts[0] == "GET" )
 			{
 				const QUrl url = QUrl::fromEncoded( parts[1] );
@@ -195,6 +217,8 @@ void WebRemote::handleConnection()
 				}
 			}
 
+			// "Connection: close" on every response: the client (this page's fetch() calls)
+			// opens a fresh TCP connection per request, so there is no keep-alive to manage.
 			QByteArray resp = "HTTP/1.1 200 OK\r\nContent-Type: " + ctype +
 			                  "\r\nContent-Length: " + QByteArray::number( body.size() ) +
 			                  "\r\nConnection: close\r\n\r\n" + body;

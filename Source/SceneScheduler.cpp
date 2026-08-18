@@ -1,3 +1,9 @@
+/**
+ * @file SceneScheduler.cpp
+ * @brief Implementation of SceneScheduler: initial random pick, the
+ *        effect/combine Solo-Fade state machines, musical trigger handling,
+ *        and the mood-weighted rejection-sampling selection.
+ */
 #include <algorithm>
 #include <cctype>
 #include <cstdio>
@@ -8,6 +14,10 @@
 #include "EffectShader.h"
 
 // Basename eines Fragment-Pfads, case-insensitiver Vergleich (Review-Sortierung).
+/** @brief Return the basename (after the last slash/backslash) of a fragment path.
+ * @param p Path string (may be null).
+ * @return Pointer into @p p at the basename, or "?" if @p p is null.
+ */
 static const char *fragBase( const char *p )
 {
 	if( !p ) return "?";
@@ -18,6 +28,11 @@ static const char *fragBase( const char *p )
 	return b;
 }
 
+/** @brief Case-insensitive "basename of a < basename of b" comparator for the review-mode sort.
+ * @param a First fragment path.
+ * @param b Second fragment path.
+ * @return True if basename(a) sorts before basename(b).
+ */
 static bool baseLess( const char *a, const char *b )
 {
 	const char *x = fragBase( a ), *y = fragBase( b );
@@ -30,6 +45,17 @@ static bool baseLess( const char *a, const char *b )
 	return *y != 0;
 }
 
+/**
+ * @brief Roll the initial act/next effect and combine picks and start both clocks.
+ *
+ * Mirrors the old inline start() block exactly, including its slightly
+ * different (looser) complexity budgets for the very first pick: 12 for the
+ * texture pair alone, 20 once the combine pair is added in. Each pick is a
+ * bounded rejection-sampling loop (up to #kMaxSearch tries) that requires
+ * useShader() and, for "next", a distinct index from "act" within the
+ * complexity budget; if the loop still lands on the same index as "act" it
+ * is nudged forward by one (wrapping) rather than retried further.
+ */
 void SceneScheduler::reset()
 {
 	// Initiale Zufallswahl - exakt der alte start()-Block (inkl. der etwas
@@ -97,6 +123,15 @@ void SceneScheduler::reset()
 
 // Remote-Szenen-Browser: DIREKT zu Szene idx springen (gleicher Sofort-Pfad
 // wie ein manueller 'n'-Cut, aber mit gewähltem Ziel statt Zufalls-Roll).
+/**
+ * @brief Jump directly to effect index @p idx (remote scene browser).
+ *
+ * Takes the same immediate path as a manual 'n' cut (forceEffectChange),
+ * but with a chosen target instead of a random roll; the actual switch is
+ * still applied at fade-end in tick() (see m_forcedNextTexture handling).
+ * @param idx Index into the attached texture list; out-of-range or missing
+ *            attach() is silently ignored.
+ */
 void SceneScheduler::forceScene( int idx )
 {
 	if( !m_textures || idx < 0 || idx >= (int)m_textures->size() )
@@ -110,6 +145,19 @@ void SceneScheduler::forceScene( int idx )
 //   2. Mood-TAGS (config mood="dark,bright,calm,aggressive"): Bonus bei
 //      Übereinstimmung, Malus bei klarem Widerspruch; ungetaggte bleiben
 //      neutral.  Probabilistisch - ein Bias, kein harter Filter.
+/**
+ * @brief Probabilistic mood-based accept test for a selection candidate.
+ *
+ * Combines three signals into an acceptance probability, then rolls a
+ * uniform random draw against it: (1) busyness match, how close the
+ * shader's complexity is to an arousal-derived target of 1..10; (2) the
+ * learned taste multiplier from tasteOf(); (3) mood-tag bonus/malus for
+ * bright/dark/aggressive/calm tags weighted by valence/arousal/ambient.
+ * A floor (0.05..0.15, scaled down further for disliked shaders) keeps
+ * every shader reachable — this is a bias, never a hard exclusion.
+ * @param s Candidate effect or combine shader.
+ * @return True if the random draw falls below the computed acceptance probability.
+ */
 bool SceneScheduler::moodAccept( EffectShader *s ) const
 {
 	float target = 1.f + m_lastArousal * 9.f;               // desired busyness 1..10
@@ -141,6 +189,32 @@ bool SceneScheduler::moodAccept( EffectShader *s ) const
 	return (float(rand()) / float(RAND_MAX)) < accept;
 }
 
+/**
+ * @brief Evaluate musical triggers, then advance the effect (texture) Solo/Fade state machine.
+ *
+ * Trigger handling (novelty, section change with song-structure memory,
+ * drop, pin) runs first and only sets/clears the forced-change flags; the
+ * actual Solo/Fade transition logic follows and is symmetric with
+ * tickCombine()'s combine version. Key subtleties:
+ *  - Novelty and section triggers are rate-limited by m_noveltyCooldown
+ *    (~8 s) so they don't fight the beat-quantised pending mechanism.
+ *  - A recognised, already-known section whose stored shader is already on
+ *    screen deliberately does NOT re-apply its stored parameters immediately
+ *    (that used to cause a hard mid-shot jump); it only replays them the
+ *    NEXT time that shader is faded into, via m_pendingSectionRestore.
+ *  - Pending changes are held until the next downbeat (beat quantisation),
+ *    but escape via a 2.5 s timeout or a low music-presence gate; a forced
+ *    (manual/drop) change instead fires as soon as a short 0.6 s minimum
+ *    solo time has elapsed, so cuts never come back-to-back.
+ *  - The cross-fade duration is normally the shorter of the two shaders'
+ *    configured interpolation times, optionally clamped to ~4 beats when
+ *    rhythm confidence is high, then shortened further for staccato
+ *    material (logAttackTime). A drop cut overrides all of that afterwards
+ *    with either a near-instant hard cut or the shatter transition.
+ *  - Section-memory parameter restore happens at FADE START (not fade end)
+ *    so the incoming shader blends in already showing the stored look,
+ *    instead of snapping to it the instant the fade completes.
+ */
 void SceneScheduler::tick( const Tick &t )
 {
 	std::vector<EffectShader *> &tex  = *m_textures;
@@ -428,6 +502,20 @@ void SceneScheduler::tick( const Tick &t )
 	}
 }
 
+/**
+ * @brief Advance the combine Solo/Fade state machine.
+ *
+ * Structurally the same two-phase machine as the effect side in tick(),
+ * with one addition: @p trueStereoHold freezes the combine machine outright
+ * (no pending-change accrual, no beat-quantised firing) for as long as an
+ * eye-packed true-stereo 3D frame is on screen, since a combine cross-fade
+ * mid-frame would corrupt the packed stereo pair; the pending change simply
+ * resumes accruing once the hold lifts. Unlike the effect side, the combine
+ * machine has no review-mode fast path and no song-structure memory of its
+ * own (its "which combine replays with a section" wiring lives in tick()).
+ * @param t Frame inputs (timing, triggers, gate).
+ * @param trueStereoHold True while an eye-packed true-stereo frame must not enter a combine cross-fade.
+ */
 void SceneScheduler::tickCombine( const Tick &t, bool trueStereoHold )
 {
 	std::vector<EffectShader *> &tex  = *m_textures;

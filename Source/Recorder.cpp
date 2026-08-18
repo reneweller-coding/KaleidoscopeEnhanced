@@ -1,3 +1,9 @@
+/**
+ * @file Recorder.cpp
+ * @brief Implementation of Recorder: the PBO async-readback capture path,
+ *        the shared encoder worker thread, recording start/stop lifecycle,
+ *        and instant-replay ring save.
+ */
 #include <algorithm>
 
 #include <QtCore/QBuffer>
@@ -30,6 +36,17 @@ Recorder::~Recorder()
 	shutdown();
 }
 
+/**
+ * @brief Finalise any in-progress recording, or otherwise just stop the worker thread, and forget the audio analyzer.
+ *
+ * If a recording is in progress it goes through the normal
+ * finishRecording() path (drain + mux) so it ends up complete even if the
+ * caller forgot to call shutdown() before destroying the AudioAnalyzer. If
+ * no recording is running but the worker is still alive (e.g. servicing the
+ * replay ring), it is asked to quit and joined directly. Either way,
+ * m_audio is cleared last so nothing after this call can dereference a
+ * soon-to-be-destroyed analyzer.
+ */
 void Recorder::shutdown()
 {
 	if( m_recording )
@@ -49,6 +66,16 @@ void Recorder::shutdown()
 	m_audio = nullptr;
 }
 
+/**
+ * @brief Start or stop a full recording.
+ *
+ * On start: creates a fresh timestamped recordings/rec_* directory, resets
+ * the frame counter/concat list/carry duration, starts the audio WAV
+ * capture (if an analyzer is set), and ensures the shared encoder worker is
+ * running. On stop: hands off to finishRecording() to drain and mux, then
+ * restarts the worker if the replay ring is still armed (the worker was
+ * shared and finishRecording() joins it).
+ */
 void Recorder::toggle()
 {
 	if( !m_recording )
@@ -77,6 +104,13 @@ void Recorder::toggle()
 	}
 }
 
+/**
+ * @brief Arm/disarm the instant-replay ring.
+ *
+ * Arming starts the shared encoder worker (if not already running) and
+ * resets the replay pacing clock so the first captured frame doesn't get a
+ * bogus huge duration.
+ */
 void Recorder::toggleReplayArm()
 {
 	m_replayArmed = !m_replayArmed;
@@ -98,6 +132,19 @@ void Recorder::captureIfDue( int w, int h )
 
 // Encoder-Worker: spiegelt, skaliert und JPEG-encodiert die Frames abseits
 // des GL-Threads, damit die Aufnahme das Rendern nicht mehr ausbremst.
+/**
+ * @brief Encoder worker thread loop.
+ *
+ * Waits on m_cv for either a queued job or a quit request; on quit it still
+ * drains the queue completely before returning, so every frame that was
+ * ever accepted into the queue gets written before shutdown()/
+ * finishRecording() proceeds to mux. Each job is bottom-up mirrored (GL
+ * readback is bottom-up) and downscaled to at most 720 px tall. A job with
+ * an empty @c path is a replay-ring job: it's JPEG-encoded straight into
+ * memory and appended to m_replayFrames, after which the ring is trimmed
+ * from the front to stay under ~31 s of total duration. A job with a path
+ * is a recording frame and is saved to disk as a JPEG at that path.
+ */
 void Recorder::worker()
 {
 	for(;;)
@@ -151,6 +198,14 @@ void Recorder::ensureWorker()
 
 // Instant Replay: ~15 fps in den rollenden Ring, solange scharf (und nicht
 // ohnehin aufgenommen wird — der Recording-Pfad erfasst mit 30 fps).
+/**
+ * @brief Rate-limit and dispatch one replay-ring capture (~15 fps).
+ *
+ * Skips the frame if less than ~66 ms (1/15 s) has elapsed since the last
+ * replay capture. The measured inter-frame duration is clamped to 0.5 s so
+ * a pause or the very first frame doesn't inject a huge gap into the replay
+ * timeline.
+ */
 void Recorder::captureReplayFrame( int w, int h )
 {
 	qint64 now = nowMs();
@@ -166,6 +221,27 @@ void Recorder::captureReplayFrame( int w, int h )
 // PBO-doppelt-gepufferter Async-Readback — siehe Header-Kommentar. Stellt den
 // glReadPixels DIESES Frames in PBO[cur] ein (kehrt sofort zurück) und
 // konsumiert den fertigen Transfer des VORHERIGEN Frames aus PBO[prev].
+/**
+ * @brief Issue this frame's async PBO readback and consume the previous frame's completed transfer into the encoder queue.
+ *
+ * This is the core of the "one frame of latency, zero GPU->CPU stall"
+ * design: glReadPixels into PBO[cur] with a NULL client pointer queues a
+ * DMA transfer and returns immediately (glBufferData with NULL data also
+ * orphans the buffer, so a resolution change doesn't corrupt an in-flight
+ * transfer). PBO[prev] holds LAST frame's transfer, which by now has had a
+ * full frame to complete, so glMapBuffer on it does not block. The mapped
+ * data is copied into a QImage and pushed onto the shared job queue (capped
+ * at 8 pending jobs); if the queue is full the frame is dropped and its
+ * duration is carried (m_repCarryDur / m_recCarryDur) into whichever frame
+ * of the same kind (replay vs. recording) is queued next, so the resulting
+ * video's total duration still matches wall-clock time despite the drop.
+ * Successfully queued recording frames also grow the ffmpeg concat-list
+ * string (m_recConcat) with their filename and duration right here.
+ * @param dur Output duration in seconds this frame should occupy in the timeline.
+ * @param toReplay True to route the frame into the replay ring; false to write it as a numbered recording frame.
+ * @param w Framebuffer width in pixels (readback size).
+ * @param h Framebuffer height in pixels (readback size).
+ */
 void Recorder::asyncCapture( float dur, bool toReplay, int w, int h )
 {
 	if( w < 2 || h < 2 ) return;
@@ -235,6 +311,18 @@ void Recorder::asyncCapture( float dur, bool toReplay, int w, int h )
 }
 
 // Replay-Ring (Frames + rollendes Audio) speichern und wie eine Aufnahme muxen.
+/**
+ * @brief Save the current replay ring to disk and mux it (with trimmed audio) into replays/replay_TIMESTAMP/replay.mp4.
+ *
+ * Bails out (with a stderr hint) if fewer than 15 frames are buffered.
+ * Otherwise snapshots the ring under its mutex, writes every frame as a
+ * numbered JPEG plus an ffmpeg concat list (frames.txt), and asks the audio
+ * analyzer for a WAV dump covering the ring's total video duration (+0.5 s
+ * slack). Because the audio ring typically holds MORE history than the
+ * video ring, the WAV input is trimmed from the front via ffmpeg's -ss so
+ * both streams end bündig (flush) together at the end. The mux itself runs
+ * as a detached ffmpeg process, exactly like finishRecording()'s.
+ */
 void Recorder::saveReplay()
 {
 	std::deque<ReplayFrame> frames;
@@ -292,6 +380,15 @@ void Recorder::saveReplay()
 // Das frisch gerenderte Bild (sauber, vor jedem Overlay) mit ~30 fps erfassen
 // und dem Encoder-Worker übergeben; auf dem GL-Thread bleiben nur glReadPixels
 // + ein memcpy. Die ffmpeg-concat-Liste entsteht hier mit den echten Dauern.
+/**
+ * @brief Rate-limit and dispatch one recording capture (~30 fps).
+ *
+ * Skips the frame if less than ~33 ms (1/30 s) has elapsed since the last
+ * recording capture. Duration for the very first frame is assumed to be
+ * exactly 1/30 s; every subsequent frame uses the real measured delta so
+ * the concat-list durations (built in asyncCapture()) reflect actual
+ * pacing, not a nominal frame rate.
+ */
 void Recorder::captureFrame( int w, int h )
 {
 	qint64 now = nowMs();
@@ -305,6 +402,25 @@ void Recorder::captureFrame( int w, int h )
 
 // Finalisieren: WAV schließen, concat-Liste + make_video.bat schreiben und
 // ffmpeg detacht die Frames + Audio zu kaleidoscope.mp4 muxen lassen.
+/**
+ * @brief Finalise a recording: drop any in-flight PBO frame, drain and stop the worker, close the audio WAV, write the concat list and a fallback batch file, and launch a detached ffmpeg mux.
+ *
+ * Order matters here:
+ *  1. Both m_pboMeta[] pending flags are cleared FIRST so a frame that was
+ *     still in flight in the PBO pipeline is discarded rather than being
+ *     consumed and appended to frames.txt after that file has already been
+ *     finalised (which would desync the concat list from what's on disk).
+ *  2. The worker thread is asked to quit and joined; since worker() only
+ *     returns once its queue is empty, every frame that WAS already queued
+ *     is guaranteed to be written to disk before the mux starts reading it.
+ *  3. The audio WAV is stopped (flushed and closed) only after the worker
+ *     has drained, so encoding never races the file being finalised.
+ *  4. frames.txt gets a final duplicate of the last frame entry (without a
+ *     duration) because the ffmpeg concat demuxer requires one; a
+ *     make_video.bat is also written as a manual fallback in case the
+ *     immediately-launched detached ffmpeg mux doesn't run (e.g. not on
+ *     PATH in some environment).
+ */
 void Recorder::finishRecording()
 {
 	// Zuerst jeden In-Flight-PBO-Frame verwerfen: er darf nicht als

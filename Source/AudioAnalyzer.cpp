@@ -1,3 +1,7 @@
+/**
+ * @file AudioAnalyzer.cpp
+ * @brief Implementation of AudioAnalyzer: WASAPI loopback capture, the per-block DSP pipeline (processBlock), and offline/replay/recording helpers.
+ */
 #include "AudioAnalyzer.h"
 
 // Windows / WASAPI headers
@@ -16,33 +20,31 @@
 
 #include <QtCore/QElapsedTimer>
 
-// ---------------------------------------------------------------------------
-// Helper: one-pole IIR low-pass coefficient for given cutoff and sample rate.
-//   a = exp(-2*pi*fc/fs)
-//   y[n] = a*y[n-1] + (1-a)*x[n]
-// Larger 'a' → slower response (lower cutoff).
-// ---------------------------------------------------------------------------
+/**
+ * @brief One-pole IIR low-pass coefficient for given cutoff and sample rate.
+ *
+ *   a = exp(-2*pi*fc/fs)
+ *   y[n] = a*y[n-1] + (1-a)*x[n]
+ * Larger 'a' → slower response (lower cutoff).
+ */
 float AudioAnalyzer::coeff(float cutoffHz, int sampleRate)
 {
     return std::exp(-2.f * 3.14159265f * cutoffHz / float(sampleRate));
 }
 
-// ---------------------------------------------------------------------------
-// radix2fft – in-place Radix-2 Cooley-Tukey Decimation-In-Time FFT.
-//
-// Parameters:
-//   re  – real part array, length N.  Input: windowed audio samples.
-//          Output: real part of DFT coefficients X[0..N-1].
-//   im  – imag part array, length N.  Input: all zeros for real-valued audio.
-//          Output: imaginary part of X[0..N-1].
-//   N   – transform size, MUST be a power of two (e.g. 2048).
-//
-// After the call, the magnitude of the k-th frequency bin is:
-//   |X[k]| = sqrt(re[k]^2 + im[k]^2),  frequency = k * sampleRate / N.
-//
-// For real-valued input the spectrum is conjugate-symmetric:
-//   X[N-k] = conj(X[k]),  so only bins 0..N/2 carry unique information.
-// ---------------------------------------------------------------------------
+/**
+ * @brief In-place Radix-2 Cooley-Tukey Decimation-In-Time FFT.
+ *
+ * After the call, the magnitude of the k-th frequency bin is:
+ *   |X[k]| = sqrt(re[k]^2 + im[k]^2),  frequency = k * sampleRate / N.
+ *
+ * For real-valued input the spectrum is conjugate-symmetric:
+ *   X[N-k] = conj(X[k]),  so only bins 0..N/2 carry unique information.
+ *
+ * @param re Real part array, length N. Input: windowed audio samples. Output: real part of DFT coefficients X[0..N-1].
+ * @param im Imaginary part array, length N. Input: all zeros for real-valued audio. Output: imaginary part of X[0..N-1].
+ * @param N Transform size, MUST be a power of two (e.g. 2048).
+ */
 /*static*/ void AudioAnalyzer::radix2fft(float *re, float *im, int N)
 {
     // ---- Bit-reversal permutation ----
@@ -90,7 +92,9 @@ float AudioAnalyzer::coeff(float cutoffHz, int sampleRate)
     }
 }
 
-// ---------------------------------------------------------------------------
+/**
+ * @brief Constructs the analyzer: zeroes all DSP state and precomputes the FFT window.
+ */
 AudioAnalyzer::AudioAnalyzer(QObject *parent)
     : QThread(parent)
 {
@@ -110,17 +114,20 @@ AudioAnalyzer::AudioAnalyzer(QObject *parent)
             2.f * 3.14159265358979f * float(i) / float(kFFTSize - 1)));
 }
 
+/** @brief Stops capture and waits for the thread to finish. */
 AudioAnalyzer::~AudioAnalyzer()
 {
     stop();
     wait();
 }
 
+/** @brief Requests the capture/analysis loop in run() to exit (does not block; see the destructor's wait()). */
 void AudioAnalyzer::stop()
 {
     m_running = false;
 }
 
+/** @brief Returns a thread-safe copy of the latest published AudioFeatures. */
 AudioFeatures AudioAnalyzer::getFeatures() const
 {
     QMutexLocker lk(&m_mutex);
@@ -130,6 +137,10 @@ AudioFeatures AudioAnalyzer::getFeatures() const
 // ---------------------------------------------------------------------------
 // Device enumeration + accessors (runtime audio-source selection)
 // ---------------------------------------------------------------------------
+/**
+ * @brief (Re)populates m_devices with every active render (output/loopback) and capture (input) endpoint.
+ * @param pEnum WASAPI device enumerator to query.
+ */
 void AudioAnalyzer::enumerateDevices( IMMDeviceEnumerator *pEnum )
 {
     QList<AudioDevice> devs;
@@ -165,12 +176,14 @@ void AudioAnalyzer::enumerateDevices( IMMDeviceEnumerator *pEnum )
     m_devices = devs;
 }
 
+/** @brief Returns a thread-safe copy of the current selectable-device list. */
 QList<AudioDevice> AudioAnalyzer::devices() const
 {
     QMutexLocker lk(&m_mutex);
     return m_devices;
 }
 
+/** @brief Returns the friendly name of the source currently being captured. */
 QString AudioAnalyzer::currentDeviceName() const
 {
     QMutexLocker lk(&m_mutex);
@@ -181,9 +194,15 @@ QString AudioAnalyzer::currentDeviceName() const
 // Audio recording: capture the loopback (the music) to a 16-bit stereo WAV.
 // open / write / close all happen on the capture (run) thread.
 // ---------------------------------------------------------------------------
+/** @brief Writes one little-endian 32-bit value to a raw file (WAV header/chunk-size helper). */
 static void wr32(FILE *f, unsigned int v) { fwrite(&v, 4, 1, f); }
+/** @brief Writes one little-endian 16-bit value to a raw file (WAV header helper). */
 static void wr16(FILE *f, unsigned short v) { fwrite(&v, 2, 1, f); }
 
+/**
+ * @brief Opens m_wavFile at the requested path and writes a placeholder 44-byte PCM16 stereo WAV header.
+ * @param sampleRate Sample rate to record at (written into the header; chunk sizes are fixed up on close by recClose()).
+ */
 void AudioAnalyzer::recOpen( int sampleRate )
 {
     QString p; { QMutexLocker lk(&m_mutex); p = m_recWavPath; }
@@ -197,6 +216,12 @@ void AudioAnalyzer::recOpen( int sampleRate )
     m_wavFile = f; m_wavDataBytes = 0; m_wavOpen = true;
 }
 
+/**
+ * @brief Converts and appends captured samples to the currently open recording as interleaved 16-bit stereo PCM.
+ * @param src Interleaved float samples, range roughly [-1, 1].
+ * @param numFrames Number of frames in `src`.
+ * @param numChannels Number of interleaved channels in `src` (channel 2+ ignored; mono is mirrored to both output channels).
+ */
 void AudioAnalyzer::recWrite( const float *src, int numFrames, int numChannels )
 {
     FILE *f = (FILE*)m_wavFile;
@@ -211,6 +236,7 @@ void AudioAnalyzer::recWrite( const float *src, int numFrames, int numChannels )
     m_wavDataBytes += (unsigned)(numFrames * 4);
 }
 
+/** @brief Finalises the WAV header's chunk sizes and closes the recording file. */
 void AudioAnalyzer::recClose()
 {
     FILE *f = (FILE*)m_wavFile;
@@ -221,12 +247,17 @@ void AudioAnalyzer::recClose()
     m_wavFile = nullptr; m_wavOpen = false;
 }
 
+/**
+ * @brief Requests that the capture thread start recording to a WAV file (opened lazily on the next captured block).
+ * @param wavPath Destination path for the 16-bit stereo WAV.
+ */
 void AudioAnalyzer::startRecording( const QString &wavPath )
 {
     { QMutexLocker lk(&m_mutex); m_recWavPath = wavPath; }
     m_recReq = true;
 }
 
+/** @brief Requests recording to stop and blocks (up to ~500 ms) until the capture thread has flushed and closed the file. */
 void AudioAnalyzer::stopRecording()
 {
     m_recReq = false;
@@ -235,6 +266,11 @@ void AudioAnalyzer::stopRecording()
         QThread::msleep(5);
 }
 
+/**
+ * @brief Requests that the capture loop switch to a different audio source.
+ * @param id Endpoint id to capture; empty reverts to the default loopback device.
+ * @param isCapture true if `id` names an input (capture) endpoint, false for an output (loopback) endpoint.
+ */
 void AudioAnalyzer::requestDevice( const QString &id, bool isCapture )
 {
     {
@@ -245,11 +281,12 @@ void AudioAnalyzer::requestDevice( const QString &id, bool isCapture )
     m_deviceChangeReq = true;     // ask the capture loop to re-initialise now
 }
 
-// ---------------------------------------------------------------------------
-// TAP TEMPO (key 't', GUI thread): the median inter-tap interval overrides
-// the estimated tempo + beat phase (applied at publish time) for ~45 s after
-// the last tap.  A pause > 2.5 s starts a fresh series.
-// ---------------------------------------------------------------------------
+/**
+ * @brief TAP TEMPO (key 't', GUI thread): registers one tap; the median inter-tap interval overrides tempo + beat phase for ~45 s.
+ *
+ * A pause > 2.5 s starts a fresh series. The override is applied at publish
+ * time in processBlock() (see the "Manual TAP tempo" block near the end).
+ */
 void AudioAnalyzer::tapTempo()
 {
     qint64 now = m_tapClock.elapsed();
@@ -277,12 +314,17 @@ void AudioAnalyzer::tapTempo()
     fprintf(stderr, "TAP tempo: %.1f BPM (%d taps)\n", 60000.f / med, cnt);
 }
 
+/** @brief Definition of the static offline-WAV path flag (see AudioAnalyzer::s_offlineWav in the header). */
 QString AudioAnalyzer::s_offlineWav;
 
-// Offline analysis (CLI -w): feed a 16-bit PCM WAV through processBlock() in
-// 480-frame chunks — block-for-block identical to live capture (all smoothing
-// constants are per-block), but deterministic and immune to whatever the
-// system happens to be playing.  Used to test/calibrate the classifiers.
+/**
+ * @brief Offline analysis (CLI -w): feeds a 16-bit PCM WAV through processBlock() in 480-frame chunks, paced to real time.
+ *
+ * Block-for-block identical to live capture (all smoothing constants are
+ * per-block), but deterministic and immune to whatever the system happens to
+ * be playing.  Used to test/calibrate the classifiers.
+ * @param path Path to a 16-bit PCM WAV file.
+ */
 void AudioAnalyzer::analyzeWavOffline( const QString &path )
 {
     FILE *f = fopen( path.toLocal8Bit().constData(), "rb" );
@@ -350,8 +392,12 @@ void AudioAnalyzer::analyzeWavOffline( const QString &path )
     fprintf( stderr, "OFFLINE: done\n" );
 }
 
-// Instant replay: write the last `seconds` of the rolling PCM ring as a
-// 16-bit stereo WAV (see kReplaySeconds).
+/**
+ * @brief Instant replay: writes the last `seconds` of the rolling PCM ring (see kReplaySeconds) as a 16-bit stereo WAV.
+ * @param path Destination WAV path.
+ * @param seconds How many trailing seconds to dump (clamped to what has actually been captured).
+ * @return false if nothing has been captured yet or the file could not be opened, true on success.
+ */
 bool AudioAnalyzer::dumpReplayWav( const QString &path, float seconds )
 {
     QMutexLocker rl(&m_replayMx);
@@ -385,9 +431,14 @@ bool AudioAnalyzer::dumpReplayWav( const QString &path, float seconds )
     return true;
 }
 
-// Offline (Preset-Editor) analysis: full pipeline, full speed, one snapshot
-// per 10 ms block.  A local, never-started analyzer instance keeps this
-// completely independent of any live capture.
+/**
+ * @brief Offline (Preset-Editor) analysis: runs the full pipeline at full speed, returning one AudioFeatures snapshot per 10 ms block.
+ *
+ * A local, never-started AudioAnalyzer instance (`az`) keeps this completely
+ * independent of any live capture.
+ * @param path Path to a 16-bit PCM WAV file.
+ * @return One AudioFeatures snapshot per 10 ms block of audio (empty if the file could not be read).
+ */
 std::vector<AudioFeatures> AudioAnalyzer::analyzeWavToTimeline( const QString &path )
 {
     std::vector<AudioFeatures> timeline;
@@ -445,9 +496,15 @@ std::vector<AudioFeatures> AudioAnalyzer::analyzeWavToTimeline( const QString &p
     return timeline;
 }
 
-// ---------------------------------------------------------------------------
-// run() – WASAPI loopback capture loop
-// ---------------------------------------------------------------------------
+/**
+ * @brief QThread entry point: the WASAPI loopback capture loop (or, if s_offlineWav is set, delegates to analyzeWavOffline() and returns).
+ *
+ * Contains an outer reconnect loop: if the capture device is invalidated (the
+ * user switches the default output, unplugs headphones, an HDMI display
+ * sleeps, …), the per-device COM objects are released and the default (or
+ * requested) endpoint is re-acquired, so audio reactivity recovers
+ * automatically instead of dying.
+ */
 void AudioAnalyzer::run()
 {
     m_running = true;
@@ -614,9 +671,40 @@ void AudioAnalyzer::run()
     CoUninitialize();
 }
 
-// ---------------------------------------------------------------------------
-// processBlock – 6-band IIR analysis, beat detection, ambient classification
-// ---------------------------------------------------------------------------
+/**
+ * @brief Core per-block DSP pipeline: 6-band IIR analysis, beat/onset/tempo/section/drop detection, FFT features, mood proxies — publishes AudioFeatures.
+ *
+ * Called once per captured (or offline-simulated) audio block, roughly every
+ * 10 ms. Order of operations (each stage builds on the smoothed state left by
+ * the previous call):
+ *   1. Feed the instant-replay ring and the 5-band IIR cascade, accumulate
+ *      per-sample RMS/ZCR/stereo statistics over the block.
+ *   2. Ambient-adaptive attack/release smoothing of the 6 band energies, then
+ *      dB-normalisation for display.
+ *   3. Time-domain beat detection on raw (unsmoothed) sub+bass RMS, with an
+ *      ambient-adaptive threshold and a rising-edge test.
+ *   4. AGC (loudness-normalised) outputs, spectral flux/centroid, sharpness,
+ *      stereo width, the ambient/beat classifier, speed/power envelopes.
+ *   5. Full-spectrum FFT (radix2fft) → magnitude spectrum → harmonicity,
+ *      32-band spectrum, FFT-based onset detection (global + per instrument
+ *      group), section-change / song-structure detection, rolloff, spread,
+ *      roughness, chroma/key/mode, chroma hue, dominant pitch.
+ *   6. Higher-level classifiers built from the above: music/speech gate,
+ *      build-up/drop (EDM dramaturgy), DJ-stop/slam, relative band levels,
+ *      waveform downsample.
+ *   7. Publish every derived value into m_features under m_mutex.
+ *
+ * All internal EMA/threshold constants are tuned per-block (not per-second),
+ * so this function must be called at a fixed ~10 ms cadence for the smoothing
+ * time constants documented on the member variables (in AudioAnalyzer.h) to
+ * hold; analyzeWavOffline()/analyzeWavToTimeline() preserve this by feeding
+ * fixed 480-sample chunks.
+ *
+ * @param data Interleaved float PCM samples for this block.
+ * @param numFrames Number of frames in `data`.
+ * @param numChannels Number of interleaved channels in `data` (1 or 2).
+ * @param sampleRate Sample rate of `data`, in Hz.
+ */
 void AudioAnalyzer::processBlock(const float *data, int numFrames,
                                  int numChannels, int sampleRate)
 {

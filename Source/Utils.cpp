@@ -1,3 +1,8 @@
+/**
+ * @file Utils.cpp
+ * @brief Implements NanoTimer (a Windows QueryPerformanceCounter-based nanosecond
+ *        timer) and prepareImage() (QImage -> GL-texture-ready conversion).
+ */
 
 #include <stdlib.h>
 #include <time.h>
@@ -14,7 +19,7 @@
 
 /** @class NanoTimer
  *
- * Timer with nanoseconds resolution.
+ * @brief Timer with nanoseconds resolution.
  *
  * The units of this timer are always nanoseconds,
  * but on some platforms, the actual resolution might be less (microseconds or
@@ -43,12 +48,12 @@
  **/
 
 
-/**  Create a new timer with nanoseconds resolution
+/**
+ * @brief Create a new timer with nanoseconds resolution.
  *
  * Saves the current time stamp, too.
  *
- * @sideeffects
- *   See @a checkFrequency().
+ * @note Side effects: see @a checkFrequency().
  *
  **/
 
@@ -61,7 +66,8 @@ NanoTimer::NanoTimer(void)
 
 
 
-/**  Save the current time (stamp) in the timer
+/**
+ * @brief Save the current time (stamp) in the timer.
  *
  **/
 
@@ -72,7 +78,9 @@ void NanoTimer::start( void )
 
 
 
-/**  Return the time elapsed since the last @a start() in nanoseconds.
+/**
+ * @brief Return the time elapsed since the last @a start() in nanoseconds.
+ * @return Elapsed nanoseconds (or raw counter ticks if no high-frequency counter).
  *
  **/
 
@@ -90,11 +98,14 @@ double NanoTimer::elapsed( void ) const
 
 
 
-/**  Return current time stamp
+/**
+ * @brief Return current time stamp.
  *
  * Should be used only internally by this class,
  * because the meaning of the return value is different depending on whether
  * @a M_Use_High_Frequ is true or not.
+ *
+ * @return Raw QueryPerformanceCounter tick count.
  *
  * @warning
  *   We don't check whether checkFrequency succeded!
@@ -110,7 +121,8 @@ long long unsigned int NanoTimer::getTimeStamp( void )
 }
 
 
-/**  Determine the clock frequency of the CPU
+/**
+ * @brief Determine the clock frequency of the CPU.
  *
  * Try to determine the speed at which the CPUs time-stamp counter is running
  * (on those plastforms where NanoTimer uses this counter),
@@ -119,18 +131,17 @@ long long unsigned int NanoTimer::getTimeStamp( void )
  * @pre
  *   Assumes that all CPUs in one system run with the same clock frequency!
  *
- * @sideeffects
- *   Class variable M_GHz.
+ * @note Side effects: sets the class variable M_GHz.
  *
  * @todo
  * - SGI
  *
- * @implementation
+ * @par Implementation
  *   Under Linux, we parse /proc/cpuinfo (if __pentiumpro was defined at compile
  *   time); under Windoze, we use QueryPerformanceFrequency.
  *
  * @see
- *   getTimeStamp(). The #ifdef's must match!
+ *   getTimeStamp(). The ifdefs must match!
  *
  **/
 
@@ -163,7 +174,9 @@ void NanoTimer::checkFrequency( void )
 
 
 
-/**  Tells whether or not the NanoTimer use the high frequency counter
+/**
+ * @brief Tells whether or not the NanoTimer use the high frequency counter.
+ * @return True if the high-frequency counter path is active.
  *
  * @warning
  *   Valid only after the first NanoTimer has been created!
@@ -176,7 +189,9 @@ bool NanoTimer::usesHighFrequ( void )
 
 
 
-/**  Returns the frequency (resolution) of the counter in GHz
+/**
+ * @brief Returns the frequency (resolution) of the counter in GHz.
+ * @return Counter frequency in GHz.
  *
  * @warning
  *   Valid only if @a NanoTimer::usesHighFrequ() = @a true !
@@ -188,14 +203,18 @@ double NanoTimer::frequ( void )
 }
 
 
-bool	NanoTimer::M_Use_High_Frequ		= false;
-double	NanoTimer::M_GHz				= 0.001;
-bool	NanoTimer::M_FrequencyChecked	= false;
+bool	NanoTimer::M_Use_High_Frequ		= false;	///< Definition of NanoTimer::M_Use_High_Frequ.
+double	NanoTimer::M_GHz				= 0.001;	///< Definition of NanoTimer::M_GHz.
+bool	NanoTimer::M_FrequencyChecked	= false;	///< Definition of NanoTimer::M_FrequencyChecked.
 
 
 
 
-//Prepare Image to use as texture
+/**
+ * @brief Prepare an image to use as an OpenGL texture.
+ * @param image Source image to convert.
+ * @return Converted QImage (ARGB32, byte-swapped, scaled to at most 1024x1024).
+ */
 QImage prepareImage( const QImage &image )
 {
 	GLint maxSize = 1024;

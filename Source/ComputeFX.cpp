@@ -1,3 +1,8 @@
+/**
+ * @file ComputeFX.cpp
+ * @brief Implements ComputeFX: per-kind GPU resource management and the
+ *        compute-shader dispatch sequence for every simulation kind.
+ */
 // ComputeFX.cpp — see ComputeFX.h.
 #include "ComputeFX.h"
 #include "shader_setup.h"
@@ -10,6 +15,7 @@
 
 // Global sampler units.  Units 0..11 are taken by the slideshow images and the
 // older sims (texSim 7, texFluid 8, texSmoke3D 9, texSSM 10, texPhysarum 11).
+/// Per-kind sampler name + texture unit table, indexed by CfxKind (see CfxTypes.h).
 const CfxInfo kCfxInfo[CFX_COUNT] = {
 	{ "texFlame",     12 },
 	{ "texParticles", 13 },
@@ -34,13 +40,18 @@ namespace {
 // Fixed-point scale for the uint accumulator: atomicAdd on floats needs an
 // optional extension, uint atomics are core.  256 keeps ~2 decimal digits of
 // colour precision and still allows ~16M accumulated units per pixel.
+/// @brief Fixed-point multiplier the splat shaders use before atomicAdd into a Canvas::ssbo.
 const float kSplatScale = 256.f;
 
 // Splat canvases run at a fixed short side; they are smooth density fields, so
 // rendering them at display resolution buys nothing and costs a lot.
+/// @brief Fixed short-side width (texels) used for every splat Canvas, regardless of display resolution.
 const int kCanvasW = 1280;
 
 // Compute-program slots (index into ComputeFX::m_prog).
+/// @brief Indices into ComputeFX::m_prog / m_progTried, one per distinct .comp shader file.
+/// Not every slot is used by a shipped kind: P_METAL_SPLAT and P_SCULPT are
+/// reserved but currently unreferenced (stepSculpt is a stub).
 enum {
 	P_RESOLVE = 0, P_FLAME, P_PART_INIT, P_PART_STEP, P_NBODY_INIT, P_NBODY_STEP,
 	P_BOIDS_INIT, P_BOIDS_GRID, P_BOIDS_STEP, P_CRYSTAL, P_CRYSTAL_SEED,
@@ -51,10 +62,14 @@ enum {
 	P_SCULPT
 };
 
+/// @brief Ceiling-divides `n` by `local` to get the compute-dispatch group count for a given workgroup size.
 inline int groups( int n, int local ) { return ( n + local - 1 ) / local; }
 
 } // namespace
 
+// Unconditionally tears down every kind's GPU resources, whether or not that
+// kind was ever actually requested (freeXxx()/glDelete* on a zero handle is a
+// harmless no-op), plus the whole compute-program cache.
 ComputeFX::~ComputeFX()
 {
 	for( int k = 0; k < CFX_COUNT; ++k )
@@ -76,6 +91,9 @@ void ComputeFX::init()
 	glGetIntegerv( GL_MAX_TEXTURE_IMAGE_UNITS, &m_maxTexUnits );
 	fprintf( stderr, "ComputeFX: %s, %d fragment texture units\n",
 	         m_ok ? "enabled" : "disabled", m_maxTexUnits );
+	// Kinds are pre-emptively killed here (once) rather than checked every
+	// step(): a GPU with few fragment texture units cannot bind that kind's
+	// unit at all, so retrying per frame would just fail identically forever.
 	if( m_ok )
 		for( int k = 0; k < CFX_COUNT; ++k )
 			if( kCfxInfo[k].unit >= m_maxTexUnits )
@@ -89,6 +107,10 @@ void ComputeFX::init()
 GLuint ComputeFX::prog( int slot, const char *file )
 {
 	if( slot < 0 || slot >= kProgSlots ) return 0;
+	// m_progTried latches on the FIRST attempt regardless of outcome, so a
+	// compile failure is reported once to stderr and then silently returns 0
+	// on every later call instead of re-attempting (and re-spamming) the
+	// same doomed compile every frame.
 	if( !m_progTried[slot] )
 	{
 		m_progTried[slot] = 1;
@@ -105,7 +127,7 @@ GLuint ComputeFX::prog( int slot, const char *file )
 
 bool ComputeFX::ensureBuffer( GLuint &b, size_t bytes )
 {
-	if( b ) return true;
+	if( b ) return true;   // never resizes: callers pass a fixed byte count per kind
 	glGenBuffers( 1, &b );
 	glBindBuffer( GL_SHADER_STORAGE_BUFFER, b );
 	glBufferData( GL_SHADER_STORAGE_BUFFER, GLsizeiptr(bytes), NULL, GL_DYNAMIC_COPY );
@@ -152,6 +174,10 @@ void ComputeFX::freeCanvas( Canvas &c )
 	c.w = c.h = 0; c.seeded = false;
 }
 
+// Every kind that owns a Canvas clears its accumulator at the start of each
+// frame and re-scatters from scratch; there is no cross-frame accumulation
+// at the uint level.  Any persistence across frames (motion trails) instead
+// happens in resolve()'s `decay` blend into the RGBA16F texture below.
 void ComputeFX::clearAccum( const Canvas &c )
 {
 	const unsigned int zero = 0;
@@ -260,6 +286,11 @@ GLuint ComputeFX::step( int k, const AudioFeatures &a, float dt, float t,
 		case CFX_SCULPT:    tex = stepSculpt( a, dt, t ); break;
 	}
 	if( !tex ) m_dead[k] = true;    // a failed program never becomes good again
+	// Stamped unconditionally on all three per-kind containers even though a
+	// given kind only ever allocates one or two of them — harmless, since
+	// retireIdle() only acts on a container whose GL handle is non-zero, and
+	// it keeps this bookkeeping a single unconditional write instead of a
+	// per-kind "which resources does this one actually use" branch.
 	m_canvas[k].lastUse = t;
 	m_field[k].lastUse  = t;
 	m_field2[k].lastUse = t;
@@ -268,6 +299,7 @@ GLuint ComputeFX::step( int k, const AudioFeatures &a, float dt, float t,
 }
 
 // Canvas geometry for the splat sims: fixed short side, display aspect kept.
+/// @brief Computes a splat Canvas's texel size: fixed kCanvasW short side, display aspect, clamped and rounded to whole 16-texel workgroups.
 static void canvasSize( int outW, int outH, int &w, int &h )
 {
 	w = kCanvasW;
@@ -760,6 +792,9 @@ GLuint ComputeFX::stepFFT( const AudioFeatures &a, float dt, float t, GLuint src
 	GLuint ps = prog( P_FFT_STORE, "..\\Engine\\CfxFFTStore.comp" );
 	if( !pl || !pf || !pm || !ps ) return 0;
 
+	// Bound once: the SSBO binding at index 0 persists across the glUseProgram
+	// switches below, so every stage (load/transform/mask/store) reads and
+	// writes the same NxN complex scratch buffer without re-binding it.
 	glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 0, m_buf[CFX_FFT] );
 
 	// 1) photo luminance -> complex
@@ -1010,6 +1045,10 @@ GLuint ComputeFX::stepNSFluid( const AudioFeatures &a, float dt, float t,
 // 13. Liquid metal — cohesive particles rendered as a screen-space surface.
 // ---------------------------------------------------------------------------
 
+// The trailing GLuint (srcImage) is intentionally unnamed: this kind's
+// particles are self-contained and never sample the photo, but the parameter
+// is kept so step()'s call site stays uniform with the other photo-consuming
+// kinds.
 GLuint ComputeFX::stepMetal( const AudioFeatures &a, float dt, float t, GLuint )
 {
 	const int kParts = 1 << 16;              // 65,536
