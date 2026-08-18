@@ -50,18 +50,18 @@ void main() {
     vec3 redShift  = vec3(0.9, 0.15, 0.05) * 0.6;
     vec3 dopplerColor = mix(redShift, blueShift, vDoppler * 0.5 + 0.5);
 
-    // Accretion disk incandescent glow
+    // Accretion disk incandescent glow — a rim around the ISCO edge, not a
+    // frame-filling flood (old gain washed everything white).
     float r = length(vWorldPos.xz);
-    float innerGlow = exp(-r * 0.8) * (1.0 + audioKick * 3.0 + audioHigh * 1.2);
+    float innerGlow = exp(-abs(r - 1.1) * 2.2) * (0.7 + audioKick * 0.7 + audioHigh * 0.4);
 
     // Lighting
     vec3 lightDir = normalize(vec3(0.0, 1.0, 0.0));
     float diff = max(dot(vNormal, lightDir), 0.0);
 
     vec3 col = mix(photo, dopplerColor, 0.55);
-    col = col * (0.4 + 0.6 * diff) + innerGlow * vec3(1.0, 0.95, 0.7) * 1.5;
+    col = col * (0.4 + 0.6 * diff) + innerGlow * vec3(1.0, 0.95, 0.7) * 1.1;
 
-    if (audioChromaHue != 0.0) col = hueRot(col, audioChromaHue);
     if (hue > 0.001) col = hueRot(col, hue);
 
     // Catalogue review: soft-knee exposure — hot audio compresses

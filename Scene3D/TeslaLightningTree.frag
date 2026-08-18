@@ -45,8 +45,9 @@ void main() {
     vec2 photoUV = vPos.xy * 0.2 + 0.5;
     vec3 photoCol = img(fract(photoUV));
 
-    vec3 col = (plasmaCol * 2.5 + photoCol * 0.3) * (0.8 + 1.2 * vHeat) * arc * glw;
+    vec3 col = (plasmaCol * 1.1 + photoCol * 0.3) * (0.55 + 0.7 * vHeat) * arc * glw;
+    col /= 1.0 + 0.35 * max(col.r, max(col.g, col.b));
 
-    col = hueRot(col, audioChromaHue + hue);
+    col = hueRot(col, sin(audioChromaHue) * 0.25 + hue);   // bounded tint, no full rainbow spin
     fragColor = vec4(col, 1.0);
 }

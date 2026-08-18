@@ -82,7 +82,7 @@ void main()
     // edge visible against the mass behind it.
     float fres = pow(1.0 - clamp(dot(n, V), 0.0, 1.0), 3.0);
     col += flesh * pow(tip, 2.2) * (0.5 + 1.6 * glowP)
-         * (0.4 + 1.3 * audioKick + 0.6 * audioLevel);
+         * (0.35 + 0.45 * audioKick + 0.35 * audioLevel);
     col += hue2rgb(fract(hue + 0.45)) * fres * (0.25 + 0.7 * glowP);
 
     vec3 H = normalize(L + V);
@@ -94,6 +94,6 @@ void main()
     col = mix(water, col, clamp(0.35 + 0.65 * vHeight, 0.0, 1.0));
 
     col *= 1.0 + 0.18 * audioBeat + 0.14 * audioSubBass;
-    col = col / (1.0 + col * 0.27);
+    col = col / (1.0 + col * 0.36);
     fragColor = vec4(col, interpolation);
 }

@@ -61,14 +61,13 @@ void main() {
     // Hot core TINTED by the palette: the old near-white additive term
     // swamped the ruby/cyan entirely (metric scan: saturation 0.00).
     col += glow * mix(tangleColor, vec3(1.0, 0.98, 0.92), 0.35)
-               * (0.45 + audioKick * 1.8);
+               * (0.35 + audioKick * 0.55);
 
-    if (audioChromaHue != 0.0) col = hueRot(col, audioChromaHue);
     if (hue > 0.001) col = hueRot(col, hue);
 
     // Catalogue review: soft-knee exposure — hot audio compresses
     // instead of clipping the whole frame to white.
-    vec3 _catTone = (col * 2.8) * 0.55;
+    vec3 _catTone = (col * 0.9) * 0.55;
     _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
     fragColor = vec4(_catTone, glow);
 }

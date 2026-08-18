@@ -65,13 +65,14 @@ void main() {
     float edgeGlow = pow(abs(vTexCoord.y - 0.5) * 2.0, 3.0);
 
     vec3 col = mix(photo, ribbonColor, 0.45);
-    col += edgeGlow * vec3(1.0, 0.9, 0.4) * (1.0 + audioKick * 2.5);
+    col += edgeGlow * imgPalette(0.5 + vRibbonIndex * 0.3) * (0.35 + audioKick * 0.35);
 
     // Distance fog
     float dist = length(vWorldPos);
     col = mix(col, vec3(0.02, 0.02, 0.05), 1.0 - exp(-dist * 0.2));
 
-    if (audioChromaHue != 0.0)     if (hue > 0.001) col = hueRot(col, hue);
+    if (hue > 0.001) col = hueRot(col, hue);
+    col /= 1.0 + 0.45 * max(col.r, max(col.g, col.b));
 
-    fragColor = vec4(col, 1.0);
+    fragColor = vec4(col * 0.55, 1.0);   // dozens of additive threads overlap
 }

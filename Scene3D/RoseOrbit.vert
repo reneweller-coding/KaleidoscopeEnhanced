@@ -47,9 +47,15 @@ void main()
     p += vec2(r3 - 0.5, r4 - 0.5) * 1.1;
 
     float tilt = 0.75;
-    vec3 vp = vec3(p.x,
-                   p.y * cos(tilt),
-                   p.y * sin(tilt) + (back ? 46.0 : 38.0));
+    // 3-AXIS SPIN (user feedback): the rose turns around all of its axes
+    float rx = tilt + time * 0.17;
+    float ry = time * 0.23 + audioAdvance * 0.08;
+    float rz = time * 0.11;
+    vec3 q = vec3(p, 0.0);
+    q.xz = mat2(cos(ry), -sin(ry), sin(ry), cos(ry)) * q.xz;
+    q.yz = mat2(cos(rx), -sin(rx), sin(rx), cos(rx)) * q.yz;
+    q.xy = mat2(cos(rz), -sin(rz), sin(rz), cos(rz)) * q.xy;
+    vec3 vp = q + vec3(0.0, 0.0, (back ? 46.0 : 38.0));
 
     vp.x -= eyeOff;
     gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);

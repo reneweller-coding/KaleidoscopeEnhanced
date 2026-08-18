@@ -52,7 +52,7 @@ vec3 vortexField(vec3 p, float t) {
         10.0 * (p.y - p.x),
         p.x * (28.0 - p.z) - p.y,
         p.x * p.y - (8.0 / 3.0) * p.z
-    ) * 0.015;
+    ) * 0.004;   // was 0.015: Lorenz noise overpowered the ordered vortex = shredded scribble
 
     return vToroidal + vPoloidal + lorenz;
 }
@@ -76,11 +76,11 @@ void main() {
 
     vec3 curP = vec3(cos(a0) * r0, y0, sin(a0) * r0);
     float dt = 0.15;
-    float ribWidth = 0.18 * (1.0 + 0.5 * audioKick);
+    float ribWidth = 0.09 * (1.0 + 0.4 * audioKick);
 
     float filHue = fract(seed.x * 0.6 + time * 0.05);
     int band = int(clamp(seed.x * 31.0, 0.0, 31.0));
-    float filGlow = (0.6 + audioSpectrum[band] * 2.0 + audioKick * 1.0) * glw;
+    float filGlow = (0.45 + audioSpectrum[band] * 0.8 + audioKick * 0.35) * glw;
 
     // Integrate streamline path through the vector field
     vec3 pts[STEPS + 1];

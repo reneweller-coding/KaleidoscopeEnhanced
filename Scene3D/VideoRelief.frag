@@ -61,7 +61,7 @@ void main()
     vec3 L  = normalize(vec3(-0.55, 0.68, -0.48));
     vec3 L2 = normalize(vec3(0.62, 0.22, -0.75));
 
-    vec3 src = texture(tex0, vUv).rgb;
+    vec3 src = img(vUv);
 
     float diff = max(dot(n, L), 0.0);
     float wrap = 0.5 + 0.5 * dot(n, L);

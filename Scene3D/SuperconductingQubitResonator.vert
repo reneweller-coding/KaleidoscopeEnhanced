@@ -66,7 +66,14 @@ void main() {
     // Camera transform: projM expects NEGATIVE view-space z (clip-w = -z_view),
     // so push the scene away along +z and negate.  eyeOff is the stereo shift.
     vec3 vp = worldPos;
-    vp.z += 6.5;
+    // Orbit + pitch: the resonator strip was seen edge-on as a thin band
+    float yaw = 0.9 + time * 0.13 + audioAdvance * 0.06;
+    float cy = cos(yaw), sy = sin(yaw);
+    vp.xz = mat2(cy, -sy, sy, cy) * vp.xz;
+    float pit = -0.5 + 0.12 * sin(time * 0.15);
+    float cp = cos(pit), sp = sin(pit);
+    vp.yz = mat2(cp, -sp, sp, cp) * vp.yz;
+    vp.z += 5.2;
     vp.x -= eyeOff;
     gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;

@@ -86,12 +86,12 @@ vec3 environment(vec3 d, float hueBase)
     // These bands are that edge, and they are what turns the wedges into
     // spectra.
     float band = sin(d.y * 17.0 + d.x * 6.5) * 0.5 + 0.5;
-    sky += vec3(1.0, 0.95, 0.85) * pow(band, 14.0) * 1.9;
+    sky += vec3(1.0, 0.95, 0.85) * pow(band, 14.0) * 0.9;
 
     vec3 key = normalize(vec3(0.42, 0.78, -0.46));
     sky += vec3(1.0, 0.96, 0.90) * pow(max(dot(d, key), 0.0), 90.0) * 6.0;
     vec3 key2 = normalize(vec3(-0.66, 0.18, -0.72));
-    sky += hue2rgb(fract(hueBase + 0.45)) * pow(max(dot(d, key2), 0.0), 40.0) * 2.2;
+    sky += hue2rgb(fract(hueBase + 0.45)) * pow(max(dot(d, key2), 0.0), 40.0) * 1.1;
     return sky;
 }
 
@@ -139,7 +139,9 @@ void main()
 
     // Fresnel: glass is a mirror at grazing incidence and a window head-on.
     float f = pow(1.0 - clamp(dot(n, V), 0.0, 1.0), 4.0);
-    col = mix(col, environment(mir, hueBase), clamp(f * 0.85, 0.0, 0.85));
+    // Flat facets carry the dispersion split as SOLID complementary
+    // colours (candy shards) — blend well toward the unsplit mirror.
+    col = mix(col, environment(mir, hueBase), clamp(0.55 + f * 0.35, 0.0, 0.95));
 
     // Facet edges catch the light: without them a shard is a smooth blob and the
     // shell reads as a cloud rather than as broken glass.

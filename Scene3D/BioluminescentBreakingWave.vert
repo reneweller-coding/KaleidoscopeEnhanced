@@ -48,13 +48,16 @@ void main() {
     float t = time * 0.45 * spd + audioAdvance * 0.2;
 
     // Primary breaking wave (Gerstner harmonic with steep crest)
-    float k = 0.35;
+    float k = 0.72;
     float phase = z0 * k - t * 3.0;
     float crestProfile = exp(-pow(sin(phase * 0.5), 2.0) * 8.0 * stp);
+    // Break the crest into patches along x — a real breaker foams in cells,
+    // not as one full-width neon bar.
+    crestProfile *= 0.35 + 0.65 * pow(0.5 + 0.5 * sin(x0 * 0.7 + phase * 0.9), 2.0);
 
     // Wave curling forward as it breaks
     float dx = sin(phase) * 0.8 * stp;
-    float dy = (cos(phase) + crestProfile * 2.5) * (1.2 * hgt + 0.5 * audioBass);
+    float dy = (cos(phase) + crestProfile * 2.0) * (0.85 * hgt + 0.35 * audioBass);
     float dz = -sin(phase) * 1.2 * stp;
 
     // Cross-swell ripples
@@ -63,10 +66,10 @@ void main() {
     vec3 worldP = vec3(x0 + dx, dy + ripple, z0 + dz);
 
     // Kick breaker explosion
-    worldP.y += audioKick * 1.8 * crestProfile;
+    worldP.y += audioKick * 0.8 * crestProfile;
 
     // Camera space
-    vec3 camPos = vec3(0.0, 3.5, -4.0);
+    vec3 camPos = vec3(0.0, 6.5, -9.0);
     vec3 relP = worldP - camPos;
     relP.x -= eyeOff;
 
@@ -74,7 +77,7 @@ void main() {
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 
     vUV = gridUV;
-    vBioGlow = crestProfile * (1.0 + audioKick * 3.0);
+    vBioGlow = crestProfile * (1.0 + audioKick * 0.8);
 
     // Normal approximation
     vNormal = normalize(vec3(-dx * 0.5, 1.0, -dz * 0.8));
@@ -82,9 +85,8 @@ void main() {
     // Ocean deep navy / bioluminescent cyan palette
     vec3 deepOcean = vec3(0.02, 0.05, 0.12);
     vec3 bioCyan   = vec3(0.0, 0.95, 1.0);
-    vec3 col = mix(deepOcean, bioCyan, vBioGlow * 0.8);
+    vec3 col = mix(deepOcean, bioCyan, clamp(pow(vBioGlow, 1.7) * 0.7, 0.0, 1.0));
 
-    if (audioChromaHue != 0.0) col = hueRot(col, audioChromaHue);
     if (hue > 0.001) col = hueRot(col, hue);
 
     vCol = vec4(col, 1.0);

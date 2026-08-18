@@ -66,7 +66,11 @@ void main() {
 
     // Camera transform: projM expects NEGATIVE view-space z (clip-w = -z_view),
     // so push the scene away along +z and negate.  eyeOff is the stereo shift.
+    // Gentle roll around the fiber axis (flight is carried by the light
+    // pulses racing down the core, see the frag)
     vec3 vp = worldPos;
+    float fro = time * 0.06;
+    vp.xy = mat2(cos(fro), -sin(fro), sin(fro), cos(fro)) * vp.xy;
     vp.z += 7.0;
     vp.x -= eyeOff;
     gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);

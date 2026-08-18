@@ -79,10 +79,11 @@ void main() {
     vec3 halfVec = normalize(lightDir + viewDir);
     float spec = pow(max(dot(n, halfVec), 0.0), 64.0);
 
-    // Bioluminescent dinoflagellate blue-cyan glow on wave crests
-    float bioIntensity = smoothstep(0.4, 1.6, vCrest);
+    // Bioluminescent dinoflagellate blue-cyan glow on wave crests — a
+    // narrow crest band, hot audio brightens WITHOUT washing to white.
+    float bioIntensity = smoothstep(0.7, 2.2, vCrest);
     vec3 bioGlowCol = palTint(mix(vec3(0.0, 0.8, 1.0), vec3(0.1, 1.0, 0.6), sin(vPos.x * 2.0 + time * 3.0) * 0.5 + 0.5), 0.15, 0.25);
-    vec3 bioEmission = bioGlowCol * bioIntensity * (1.5 + 3.0 * audioKick) * bio * glw;
+    vec3 bioEmission = bioGlowCol * bioIntensity * (0.9 + 1.1 * audioKick) * bio * glw;
 
     // Subsurface scattering glow
     float sss = smoothstep(-0.2, 0.8, vHeight) * (1.0 - n.y);
@@ -91,5 +92,6 @@ void main() {
     vec3 col = waterBase + photoSky * fresnel * 0.8 + vec3(1.0) * spec * 0.9 + bioEmission + sssCol;
 
     col = hueRot(col, hue);   // chromaHue handled inside imgPalette
+    col /= 1.0 + 0.32 * max(col.r, max(col.g, col.b));
     fragColor = vec4(col, 1.0);
 }

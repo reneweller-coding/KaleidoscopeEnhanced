@@ -65,11 +65,13 @@ void main() {
     // Resting mycelium hyphae bioluminescent green/cyan color
     vec3 baseColor = palTint(mix(vec3(0.1, 0.5, 0.3), vec3(0.2, 0.7, 0.8), vLevel), 0.30 * vLevel, 0.25);
 
-    // Bio-electric action potential gold/white flash
-    vec3 pulseColor = vec3(1.0, 0.95, 0.5);
+    // Bio-electric action potential: flash colour drawn from the PHOTO
+    // palette so the network is never a monotone white/green thicket
+    vec3 pulseColor = imgPalette(0.22) * 1.5;
 
     vec3 col = mix(baseColor, pulseColor, vPulse * pls);
-    col *= (0.6 + 1.8 * vPulse) * glw;
+    col *= (0.5 + 0.9 * vPulse) * glw;
+    col /= 1.0 + 0.32 * max(col.r, max(col.g, col.b));
 
     if (hue > 0.001) col = hueRot(col, hue);
 

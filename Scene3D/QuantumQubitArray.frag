@@ -68,9 +68,9 @@ void main() {
         circuitLine = exp(-ring * 20.0);
     }
 
-    // State coloring: 0 = cyan, 1 = magenta/gold
-    vec3 stateCol = imgPalette(0.30 * (vQubitState * 0.5 + 0.5)) * 1.4;
-    vec3 emission = (stateCol * (0.6 + 1.5 * vEnergy) + gold * circuitLine * 3.0) * glw * neo;
+    // State coloring: the qubit state slides along the photo palette
+    vec3 stateCol = imgPalette(0.30 * (vQubitState * 0.5 + 0.5));
+    vec3 emission = (stateCol * (0.25 + 0.55 * vEnergy) + gold * circuitLine * 1.2) * glw * neo;
 
     // Specular highlight
     vec3 viewDir = normalize(vec3(0.0, 1.0, 2.0));
@@ -78,8 +78,9 @@ void main() {
     float spec = pow(max(dot(ref, viewDir), 0.0), 32.0);
 
     vec3 col = silicon * (diff * 0.7 + 0.2) + basePhoto * 0.25 + gold * spec * 0.8 + emission;
-    col += vec3(1.0) * audioKick * smoothstep(0.8, 1.5, vEnergy) * 1.5; // Gate flash
+    col += stateCol * audioKick * smoothstep(0.8, 1.5, vEnergy) * 0.6; // Gate flash
 
     col = hueRot(col, hue);   // chromaHue handled inside imgPalette
+    col /= 1.0 + 0.32 * max(col.r, max(col.g, col.b));
     fragColor = vec4(col, 1.0);
 }

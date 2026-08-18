@@ -11,6 +11,7 @@ out float gIndex;
 
 uniform float audioAdvance;
 uniform float sceneSeed;
+uniform float time;
 
 // Field size.  z runs ahead of the camera (the engine projects with -z).
 const float FIELD_W = 26.0;
@@ -30,7 +31,7 @@ void main()
     // The wrap has to happen BEFORE x is derived from z: a blade that wraps
     // from the far edge to the near one would otherwise keep the wide spread
     // it was given at the back, and the foreground stays bald.
-    z = mod(z - audioAdvance * 0.35 - 0.6, FIELD_D) + 0.6;
+    z = mod(z - time * 0.9 - audioAdvance * 0.35 - 0.6, FIELD_D) + 0.6;
 
     // Spread the blades in a cone that follows the view frustum, capped so the
     // far rows do not scatter into an empty plain.

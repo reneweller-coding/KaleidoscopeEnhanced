@@ -15,6 +15,7 @@ uniform mat4  projM;
 uniform float eyeOff;
 uniform float audioAdvance;
 uniform float audioLevel;
+uniform float time;
 
 uniform float camDistP;
 
@@ -22,11 +23,14 @@ void main()
 {
     vec3 p = attrA.xyz;
 
-    float ya = audioAdvance * 0.12;
-    float pa = 0.36 * sin(audioAdvance * 0.07);
+    // 3-axis tumble (user feedback): continuous turn on all axes
+    float ya = time * 0.20 + audioAdvance * 0.12;
+    float pa = 0.55 * sin(time * 0.12 + audioAdvance * 0.07);
     mat3 yaw   = mat3(cos(ya), 0.0, -sin(ya), 0.0, 1.0, 0.0, sin(ya), 0.0, cos(ya));
     mat3 pitch = mat3(1.0, 0.0, 0.0, 0.0, cos(pa), sin(pa), 0.0, -sin(pa), cos(pa));
-    mat3 rot = yaw * pitch;
+    float ro = time * 0.09;
+    mat3 roll = mat3(cos(ro), sin(ro), 0.0, -sin(ro), cos(ro), 0.0, 0.0, 0.0, 1.0);
+    mat3 rot = yaw * pitch * roll;
 
     vec3 pw = rot * p;
     float dist = camDistP * (1.0 - 0.05 * audioLevel);

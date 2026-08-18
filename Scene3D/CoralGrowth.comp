@@ -123,11 +123,12 @@ void main()
     // ---------------- pass 0: advance the colony ----------------
     if (genPass < 0.5)
     {
-        // Frame zero plants a floor: a jittered disc of nodes the colony can
-        // rise from.  A single seed point would give a sphere hanging in the
-        // void; a plane of seeds gives a reef standing on a bed, which is the
-        // silhouette that reads as coral.
-        if (frameIndex == 0u)
+        // SELF-HEALING init: the state buffer arrives un-zeroed and the
+        // harness does not promise frameIndex==0 ever runs, so re-plant the
+        // floor whenever nodeCount is implausible instead of trusting frame
+        // zero (the old check left the scene permanently black in probes).
+        bool needInit = (nodeCount < uint(SEEDS)) || (nodeCount > uint(NODES + 64));
+        if (needInit)
         {
             if (id < uint(SEEDS))
             {
@@ -149,6 +150,42 @@ void main()
                     radiusQ = uint(0.9 * 4096.0);
                 }
             }
+            return;
+        }
+
+        // BOOTSTRAP: right after the seeds are planted, one invocation grows
+        // a starter colony serially (mini-DLA without the walk).  The reef is
+        // THERE from its first visible frame — the walkers then keep growing
+        // it live on top.
+        if (nodeCount == uint(SEEDS))
+        {
+            if (id != 0u)
+                return;
+            uint cnt = nodeCount;
+            float s = sceneSeed * 137.0 + 7.0;
+            float rmax = 0.9;
+            for (int k = 0; k < 1400; ++k)
+            {
+                vec3 h = hash3(s + float(k) * 1.618034);
+                int pick = int(h.x * float(cnt));
+                vec3 pp = nodePos(pick);
+                vec3 dir = normalize(vec3(h.y - 0.5,
+                                          0.28 + 0.72 * h.z,
+                                          fract(h.x * 7.31) - 0.5));
+                vec3 np = pp + dir * contact * 0.92;
+                int o = OFF_NODES + int(cnt) * 4;
+                setF(o,     np.x);
+                setF(o + 1, np.y);
+                setF(o + 2, np.z);
+                setF(o + 3, float(pick));
+                int c = cellIndex(cellCoord(np));
+                if (c >= 0)
+                    st[OFF_GRID + c] = cnt + 1u;
+                rmax = max(rmax, distance(np, BASE));
+                ++cnt;
+            }
+            nodeCount = cnt;
+            atomicMax(radiusQ, uint(rmax * 4096.0));
             return;
         }
 
@@ -276,7 +313,7 @@ void main()
 
     // ---------------- pass 1: mesh the colony ----------------
     int count = int(min(nodeCount, uint(NODES)));
-    if (id >= uint(count) || id < uint(SEEDS))
+    if (id >= uint(count))
         return;
 
     // The simulation works in its own small units — bond length 0.07, reach
@@ -291,11 +328,13 @@ void main()
     float sc = 2.2 / max(colonyR, 0.85);
 
     int parent = int(getF(OFF_NODES + int(id) * 4 + 3));
-    if (parent < 0 || parent >= count)
+    if (parent >= count)
         return;
 
     vec3 a = nodePos(int(id));
-    vec3 b = nodePos(parent);
+    // Floor seeds (parent -1) render as short stubs: the coral BED is
+    // visible from frame one, and doubles as a liveness probe.
+    vec3 b = (parent < 0) ? a - vec3(0.0, 0.06, 0.0) : nodePos(parent);
     vec3 dir = a - b;
     float L = length(dir);
     if (L < 1e-5 || L > 0.3)

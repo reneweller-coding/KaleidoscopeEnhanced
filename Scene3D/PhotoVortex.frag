@@ -3,6 +3,8 @@ out vec4 fragColor;
 // PhotoVortex.frag — the image is dragged into the throat: texture rings
 // stream inward, stretching as they fall; the throat glows on the drop.
 uniform sampler2D tex0;
+uniform sampler2D tex1;
+uniform float interpolation;
 uniform float time;
 uniform float audioAdvance;
 uniform float audioDrop;
@@ -28,7 +30,8 @@ void main()
     a = abs(fract(a) * 2.0 - 1.0);
     vec2 uv = vec2(a * 1.4,
                    vUV.y * 4.5 + time * 0.35 + audioAdvance * 1.3);
-    vec3 col = texture(tex0, mfold(uv)).rgb;
+    vec2 fuv = mfold(uv);
+    vec3 col = mix(texture(tex1, fuv).rgb, texture(tex0, fuv).rgb, interpolation);
 
     // Darker toward the throat, with a glowing vortex eye that answers the
     // kick and blazes on a drop.

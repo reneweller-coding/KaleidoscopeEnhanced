@@ -80,8 +80,9 @@ void main()
         gl_Position = vec4(0.0, 0.0, -3.0, 1.0);      // behind camera: clipped
 
     // Neon colour per ribbon, key-hue drift, distance fog + kick highlight.
+    // Bounded hue spread (was a full-circle rainbow across the ribbons)
     vec3 col = hueRot(vec3(0.2, 0.7, 1.0),
-                      attrB.z * 4.5 + audioChromaHue * 1.4);
+                      attrB.z * 0.9 + sin(audioChromaHue) * 0.5);
     float kickGlow = audioKick * exp(-abs(z - 14.0) * 0.10);
     col *= (0.5 + 0.5 * attrB.w)
          * (1.0 + 1.5 * kickGlow + 1.2 * audioDrop);

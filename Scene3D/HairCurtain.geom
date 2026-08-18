@@ -29,6 +29,7 @@ out float vKind;        // 0 = backdrop, 1 = strand
 uniform mat4  projM;
 uniform float eyeOff;
 uniform float audioAdvance;
+uniform float time;
 uniform float audioSubBass;
 uniform float audioKick;
 uniform float audioLevel;
@@ -78,12 +79,12 @@ void main()
     vec4 h = gRnd[0];
 
     float len   = lengthP * (5.2 + 1.6 * h.z);
-    float width = 0.008 + 0.010 * h.w;
+    float width = 0.005 + 0.006 * h.w;
 
     // The wave runs across the curtain and DOWN each strand.  Amplitude grows
     // with distance from the root, because that is what being limp means.
     float amp   = swayP * (0.35 + 0.55 * audioSubBass + 0.45 * audioKick);
-    float phase = root.x * 0.55 + root.z * 0.3 - audioAdvance * 1.35;
+    float phase = root.x * 0.55 + root.z * 0.3 - time * 0.8 - audioAdvance * 1.35;
 
     vec3 prev = root;
     for (int i = 0; i <= SEG; ++i)

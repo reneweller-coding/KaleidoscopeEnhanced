@@ -42,14 +42,14 @@ void main() {
     float bandVal = audioSpectrum[bandIdx];
 
     // Qubit superposition state & Bloch sphere angle theta
-    float theta = (sin(gridX * 0.4 + time * 2.0) * cos(gridZ * 0.4 - audioAdvance * 0.5)) * 1.5;
+    float theta = (sin(gridX * 0.4 + time * 2.0) * cos(gridZ * 0.4 - audioAdvance * 0.5)) * 0.55;
     float phi = (gridUV.x * 3.0 + gridUV.y * 3.0 + audioPhase);
 
     // Gate flip transient on kick
-    float gateFlip = exp(-abs(dist - fract(time * 0.9) * 1.4) * 6.0) * audioKick * 3.0;
+    float gateFlip = exp(-abs(dist - fract(time * 0.9) * 1.4) * 6.0) * audioKick * 0.8;
 
     // Tower height
-    float height = (0.2 + bandVal * 1.8 + abs(sin(theta)) * 0.6 + gateFlip) * (0.7 + 0.6 * audioBass);
+    float height = (0.2 + bandVal * 1.2 + abs(sin(theta)) * 0.5 + gateFlip * 0.6) * (0.7 + 0.5 * audioBass);
 
     // Local qubit cube rotation (Bloch sphere rotation around Y and X)
     vec3 localP = attrA.xyz;
@@ -60,7 +60,7 @@ void main() {
     // Scale cube into rectangular monolith
     localP *= vec3(0.055, 0.06 + height * 0.18, 0.055);
 
-    vec3 cubeCenter = vec3(gridUV.x * 5.2, height - 1.0, gridUV.y * 5.2);
+    vec3 cubeCenter = vec3(gridUV.x * 4.4, height * 0.5 - 1.0, gridUV.y * 4.4);
     vec3 pos = cubeCenter + localP;
 
     vPos = pos;
@@ -71,11 +71,12 @@ void main() {
 
     // Stereoscopic 3D camera projection
     vec3 vp = pos;
-    float tiltAngle = 0.52;
+    vp.y -= 1.5;
+    float tiltAngle = -0.62;
     float cosT = cos(tiltAngle), sinT = sin(tiltAngle);
     vec3 rotatedVP = vec3(vp.x, vp.y * cosT - vp.z * sinT, vp.y * sinT + vp.z * cosT);
 
-    rotatedVP.z += 6.5;
+    rotatedVP.z += 9.5;
     rotatedVP.x -= eyeOff;
 
     gl_Position = projM * vec4(rotatedVP.x, rotatedVP.y, -rotatedVP.z, 1.0);

@@ -55,11 +55,16 @@ void main() {
 
     vNormal = normalize(vec3(-gridUV.x * 0.4, 1.0, -gridUV.y * 0.4));
 
-    // Camera transform: this surface lies in the XZ plane, so pitch it down
-    // first (otherwise it is seen edge-on), then push away along +z and negate
-    // -- projM expects NEGATIVE view-space z (clip-w = -z_view).
+    // Camera: slow ORBIT around the brine basin (yaw), then pitch DOWN onto
+    // it (negative tilt — the old +0.45 tipped the pool into a ceiling seen
+    // from below), then push away along +z and negate -- projM expects
+    // NEGATIVE view-space z (clip-w = -z_view).
     vec3 vp = pos;
-    float camTilt = 0.45;
+    float yaw = time * 0.12 * spd + audioAdvance * 0.06;
+    float cy = cos(yaw), sy = sin(yaw);
+    vp.xz = mat2(cy, -sy, sy, cy) * vp.xz;
+    vp.y -= 1.4;
+    float camTilt = -0.5;
     float cosT = cos(camTilt), sinT = sin(camTilt);
     vp = vec3(vp.x, vp.y * cosT - vp.z * sinT, vp.y * sinT + vp.z * cosT);
     vp.z += 7.0;

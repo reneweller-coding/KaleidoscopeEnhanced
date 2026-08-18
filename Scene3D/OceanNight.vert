@@ -33,7 +33,10 @@ void main()
     float t1 = time * 0.9 + audioAdvance * 1.2;
     float h = sin(x * 0.055 + z * 0.030 + t1)        * 1.35
             + sin(x * 0.021 - z * 0.043 + t1 * 0.7)  * 2.10
-            + sin(x * 0.110 + z * 0.089 - t1 * 1.3)  * 0.55;
+            + sin(x * 0.110 + z * 0.089 - t1 * 1.3)  * 0.55
+            // short chop: the surface detail the flat version lacked
+            + sin(x * 0.230 + z * 0.170 - t1 * 2.1)  * 0.30
+            + sin(x * 0.310 - z * 0.260 + t1 * 1.7)  * 0.20;
     h *= sea;
 
     // Kick ring rolling outward from the moon's reflection point.
@@ -47,7 +50,8 @@ void main()
 
     // Analytic slope -> moon-glitter term (moon sits high, far, dead ahead).
     float ddz = cos(x * 0.055 + z * 0.030 + t1) * 0.030 * 1.35
-              - cos(x * 0.021 - z * 0.043 + t1 * 0.7) * 0.043 * 2.10;
+              - cos(x * 0.021 - z * 0.043 + t1 * 0.7) * 0.043 * 2.10
+              + cos(x * 0.230 + z * 0.170 - t1 * 2.1) * 0.170 * 0.30;
     vSpec = clamp(1.0 - abs(ddz * sea * 3.0 + x * 0.004), 0.0, 1.0);
 
     vWorld = vec3(x, h, z);

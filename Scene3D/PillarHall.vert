@@ -101,7 +101,9 @@ void main()
 
     // Slow lateral drift, applied to the WORLD so the shadow pass sees the
     // same geometry the camera does.
-    world.x += 6.0 * sin(audioAdvance * 0.05);
+    // Drift stays INSIDE the corridor between two pillar columns
+    // (spacing 6.5, pillar half-width up to 1.8): +-1.2 never collides.
+    world.x += 1.2 * sin(audioAdvance * 0.05);
 
     vWorld  = world;
     vNormal = n;

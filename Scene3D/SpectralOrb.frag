@@ -42,5 +42,7 @@ void main()
     col += vec3(0.9, 0.95, 1.0) * spec * 0.8;
     col += hueRot(vec3(0.9, 0.45, 0.20), vHue) * rim * 0.55;
 
-    fragColor = vec4(col * 1.8, 1.0);
+    vec3 outc = col * 1.8;
+    outc /= 1.0 + 0.35 * max(outc.r, max(outc.g, outc.b));
+    fragColor = vec4(outc, 1.0);
 }

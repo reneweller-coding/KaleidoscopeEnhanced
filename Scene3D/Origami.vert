@@ -20,6 +20,7 @@ uniform float shadowPass;
 uniform float eyeOff;
 uniform float audioAdvance;
 uniform float audioLevel;
+uniform float time;
 
 uniform float camDistP;
 
@@ -27,14 +28,17 @@ void main()
 {
     vec3 p = attrA.xyz;
 
-    float ya = 0.22 * sin(audioAdvance * 0.037);
-    float pa = -0.62 + 0.10 * sin(audioAdvance * 0.029);
+    // Slow continuous turn + pitch DOWN onto the sheet (the old -0.62
+    // showed the corrugation from below, as a ceiling).
+    float ya = time * 0.09 + 0.22 * sin(audioAdvance * 0.037);
+    float pa = -1.05 + 0.10 * sin(audioAdvance * 0.029);
     mat3 yaw   = mat3(cos(ya), 0.0, -sin(ya), 0.0, 1.0, 0.0, sin(ya), 0.0, cos(ya));
     mat3 pitch = mat3(1.0, 0.0, 0.0, 0.0, cos(pa), sin(pa), 0.0, -sin(pa), cos(pa));
     mat3 rot = yaw * pitch;
 
     vec3 pw = rot * p;
-    float dist = camDistP * (1.0 - 0.04 * audioLevel);
+    float cd = (camDistP > 0.0) ? camDistP : 7.0;   // param defaults to 0 -> guard
+    float dist = cd * 1.35 * (1.0 - 0.04 * audioLevel);
     vec3 vp = vec3(pw.x - eyeOff, pw.y, pw.z + dist);
 
     vObj    = p;

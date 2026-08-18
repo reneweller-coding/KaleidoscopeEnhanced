@@ -65,7 +65,8 @@ void main() {
     // first (otherwise it is seen edge-on), then push away along +z and negate
     // -- projM expects NEGATIVE view-space z (clip-w = -z_view).
     vec3 vp = pos;
-    float camTilt = 0.45;
+    vp.y -= 1.3;
+    float camTilt = -0.45;
     float cosT = cos(camTilt), sinT = sin(camTilt);
     vp = vec3(vp.x, vp.y * cosT - vp.z * sinT, vp.y * sinT + vp.z * cosT);
     vp.z += 7.0;

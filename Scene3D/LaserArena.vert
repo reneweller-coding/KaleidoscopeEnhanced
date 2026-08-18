@@ -66,8 +66,10 @@ void main()
         gl_Position = vec4(0.0, 0.0, -3.0, 1.0);
 
     // Beam colour cycles per beam; kick strobe; fog fade along the beam.
+    // Bounded hue spread (was a full-circle rainbow): the beams stay in
+    // one laser-family, the musical key only wobbles the tint.
     vec3 col = hueRot(vec3(1.0, 0.15, 0.25),
-                      bi * 0.9 + audioChromaHue * 1.6);
+                      mod(bi, 10.0) / 9.0 * 0.7 + sin(audioChromaHue) * 0.45);
     float strobe = 0.55 + 0.45 * sin(6.2831853 * audioBeatPhase);
     col *= (0.55 + 0.65 * strobe + 1.1 * audioKick + 1.4 * audioDrop)
          * exp(-t * 1.3) * 2.4;
