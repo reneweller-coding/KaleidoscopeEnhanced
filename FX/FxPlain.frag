@@ -1,6 +1,6 @@
 #version 330 core
 out vec4 fragColor;
-// CombinePlain.frag
+// FxPlain.frag
 // The plain effect blend — with a LIBRARY of 26 per-transition styles.  The
 // host rolls a style whenever a cross-fade starts (transStyle; 0/absent =
 // classic linear mix):

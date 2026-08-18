@@ -1,6 +1,6 @@
 #version 330 core
 out vec4 fragColor;
-// CombineDepthField.frag — depth of field, using the 3D scene's real depth.
+// FxDepthField.frag — depth of field, using the 3D scene's real depth.
 // -----------------------------------------------------------------------
 // This is the first effect that reads what the scene actually wrote into the
 // depth attachment.  Everything a 2D visualiser can do with "fake" depth —

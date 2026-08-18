@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 fragColor;
-// CombineReactionDiffusionTuring.frag
+// FxReactionDiffusionTuring.frag
 // -----------------------------------------------------------------------
-// COMBINE REACTION DIFFUSION TURING: Morphogenetic Turing pattern transition.
+// FX REACTION DIFFUSION TURING: Morphogenetic Turing pattern transition.
 // Chemical activator-inhibitor reaction-diffusion spots and labyrinthine stripes
 // spontaneously organize across the frame, carrying the cross-fade between scenes.
 //   interpolation -> sweeps chemical reaction equilibrium & pattern growth

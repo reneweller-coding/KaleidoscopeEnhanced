@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 fragColor;
-// CombineTesseract4DRotation.frag
+// FxTesseract4DRotation.frag
 // -----------------------------------------------------------------------
-// COMBINE TESSERACT 4D ROTATION: 4D hypercube rotation & W-axis slice transition.
+// FX TESSERACT 4D ROTATION: 4D hypercube rotation & W-axis slice transition.
 // The image is embedded as a 3D hyperplane in 4D Euclidean space. Double
 // rotations in XW and YZ planes rotate Universe 1 into the 4th dimension and
 // project Universe 2 onto the 3D screen.

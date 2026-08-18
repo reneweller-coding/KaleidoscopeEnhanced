@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 fragColor;
-// CombinePlasmaFilamentPinch.frag
+// FxPlasmaFilamentPinch.frag
 // -----------------------------------------------------------------------
-// COMBINE PLASMA FILAMENT PINCH: Magnetohydrodynamic Z-pinch plasma transition.
+// FX PLASMA FILAMENT PINCH: Magnetohydrodynamic Z-pinch plasma transition.
 // Axial electric currents generate azimuthal magnetic fields, compressing
 // plasma into ultra-dense filaments that develop sausage and kink instabilities
 // before bursting into the incoming scene.

@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 fragColor;
-// CombineMyceliumNetworkSprout.frag
+// FxMyceliumNetworkSprout.frag
 // -----------------------------------------------------------------------
-// COMBINE MYCELIUM NETWORK SPROUT: Branching fungal hyphae network transition.
+// FX MYCELIUM NETWORK SPROUT: Branching fungal hyphae network transition.
 // Organic fungal mycelial threads sprout and branch across the screen, conducting
 // bioluminescent action-potential pulses that bridge and cross-fade the scenes.
 //   interpolation -> sweeps mycelial growth front from center to boundaries

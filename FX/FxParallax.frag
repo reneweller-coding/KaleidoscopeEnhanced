@@ -1,5 +1,9 @@
 #version 330 core
 out vec4 fragColor;
+// FxParallax.frag
+// FX PARALLAX: 32-layer depth parallax -- the scene is resampled at
+// increasing depths along a circling offset, retro-pixellated, each
+// layer masked by its own luminance so nearer layers occlude farther ones.
 uniform vec2 resolution;
 uniform float time;
 uniform sampler2D tex0;

@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 fragColor;
-// CombineGyroidMembraneMelt.frag
+// FxGyroidMembraneMelt.frag
 // -----------------------------------------------------------------------
-// COMBINE GYROID MEMBRANE MELT: Triply periodic minimal surface (TPMS) gyroid transition.
+// FX GYROID MEMBRANE MELT: Triply periodic minimal surface (TPMS) gyroid transition.
 // A mathematical gyroid labyrinth surface divides space into two continuous
 // interlocking fluid channels, shifting its isovalue to smoothly transfer scenes.
 //   interpolation -> sweeps gyroid isovalue threshold from -1.4 to +1.4

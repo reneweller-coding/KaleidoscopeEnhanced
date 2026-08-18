@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 fragColor;
-// CombineAnamorphicFlareSweep.frag
+// FxAnamorphicFlareSweep.frag
 // -----------------------------------------------------------------------
-// COMBINE ANAMORPHIC FLARE SWEEP: Cinematic anamorphic lens flare transition.
+// FX ANAMORPHIC FLARE SWEEP: Cinematic anamorphic lens flare transition.
 // A horizontal laser streak and luminous cylindrical flare bar sweeps across
 // the frame, wiping the outgoing scene and leaving the incoming scene behind.
 //   interpolation -> drives the horizontal anamorphic flare position across screen

@@ -1,5 +1,9 @@
 #version 330 core
 out vec4 fragColor;
+// FxOilPaint.frag
+// FX OIL PAINT: Kuwahara-style edge-preserving smoothing -- each pixel
+// picks the least-variance quadrant of its neighbourhood, giving a
+// painterly, brushstroke-flattened look.
 uniform vec2 resolution;
 uniform float time;
 uniform sampler2D tex0;

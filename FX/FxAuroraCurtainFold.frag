@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 fragColor;
-// CombineAuroraCurtainFold.frag
+// FxAuroraCurtainFold.frag
 // -----------------------------------------------------------------------
-// COMBINE AURORA CURTAIN FOLD: Geomagnetic auroral curtain fold wipe transition.
+// FX AURORA CURTAIN FOLD: Geomagnetic auroral curtain fold wipe transition.
 // Luminous curtains of emerald-green and violet polar light ripple across
 // geomagnetic field lines, folding and weaving the dual scenes together.
 //   interpolation -> sweeps auroral curtain wave front across the sky

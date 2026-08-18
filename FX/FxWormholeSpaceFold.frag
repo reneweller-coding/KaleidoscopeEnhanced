@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 fragColor;
-// CombineWormholeSpaceFold.frag
+// FxWormholeSpaceFold.frag
 // -----------------------------------------------------------------------
-// COMBINE WORMHOLE SPACE FOLD: Traversable Morris-Thorne wormhole transition.
+// FX WORMHOLE SPACE FOLD: Traversable Morris-Thorne wormhole transition.
 // The camera plunges through a traversable Lorentzian wormhole throat that
 // smoothly folds the geometry of Universe 1 (tex1) into Universe 2 (tex0).
 //   interpolation -> navigates camera through the wormhole throat tunnel

@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 fragColor;
-// CombineEventHorizonSwirl.frag
+// FxEventHorizonSwirl.frag
 // -----------------------------------------------------------------------
-// COMBINE EVENT HORIZON SWIRL: Kerr black hole ergosphere frame-dragging transition.
+// FX EVENT HORIZON SWIRL: Kerr black hole ergosphere frame-dragging transition.
 // Spacetime frame-dragging twists the outgoing scene into a relativistic
 // spiral vortex around a rotating event horizon, drawing the new scene out.
 //   interpolation -> controls frame-dragging angular momentum & horizon size

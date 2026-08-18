@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 fragColor;
-// CombineKaleidoscopicPolytope.frag
+// FxKaleidoscopicPolytope.frag
 // -----------------------------------------------------------------------
-// COMBINE KALEIDOSCOPIC POLYTOPE: Coxeter reflection group 4D polytope transition.
+// FX KALEIDOSCOPIC POLYTOPE: Coxeter reflection group 4D polytope transition.
 // Multiple hyper-plane reflection mirrors fold and unfurl space across regular
 // Coxeter symmetry facets, tessellating and transitioning between scenes.
 //   interpolation -> sweeps kaleidoscopic fold angle & facet recursion

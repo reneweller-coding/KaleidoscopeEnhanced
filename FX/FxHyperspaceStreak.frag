@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 fragColor;
-// CombineHyperspaceStreak.frag
+// FxHyperspaceStreak.frag
 // -----------------------------------------------------------------------
-// COMBINE HYPERSPACE STREAK: Relativistic warp speed streak transition.
+// FX HYPERSPACE STREAK: Relativistic warp speed streak transition.
 // As the warp drive engages, the outgoing scene stretches into radial light
 // streaks with intense Lorentz contraction, arriving cleanly into the incoming scene.
 //   interpolation -> sweeps sub-light to warp factor 9.9 and decelerates

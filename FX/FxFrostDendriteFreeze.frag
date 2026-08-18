@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 fragColor;
-// CombineFrostDendriteFreeze.frag
+// FxFrostDendriteFreeze.frag
 // -----------------------------------------------------------------------
-// COMBINE FROST DENDRITE FREEZE: Hexagonal dendritic ice crystal freeze & melt.
+// FX FROST DENDRITE FREEZE: Hexagonal dendritic ice crystal freeze & melt.
 // Feathery ice frostwork branches rapidly across the viewport, freezing the
 // outgoing scene into crystalline frost and melting away into the incoming scene.
 //   interpolation -> sweeps freezing crystallization to melting thaw

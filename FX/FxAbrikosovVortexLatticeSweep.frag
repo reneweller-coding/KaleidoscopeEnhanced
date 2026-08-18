@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 fragColor;
-// CombineAbrikosovVortexLatticeSweep.frag
+// FxAbrikosovVortexLatticeSweep.frag
 // -----------------------------------------------------------------------
-// COMBINE ABRIKOSOV VORTEX LATTICE SWEEP: Type-II superconductor vortex lattice.
+// FX ABRIKOSOV VORTEX LATTICE SWEEP: Type-II superconductor vortex lattice.
 // A triangular lattice of quantized magnetic flux vortices (Abrikosov lattice)
 // sweeps across the screen, each vortex carrying 2pi phase winding that rotates
 // and transitions between scenes.

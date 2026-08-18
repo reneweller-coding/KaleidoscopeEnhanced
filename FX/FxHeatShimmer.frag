@@ -1,6 +1,6 @@
 #version 330 core
 out vec4 fragColor;
-// CombineHeatShimmer.frag — air that has been heated, and bends light because of
+// FxHeatShimmer.frag — air that has been heated, and bends light because of
 // it.
 // -----------------------------------------------------------------------
 // Refraction through a turbulent medium is a gradient effect: a ray is bent by

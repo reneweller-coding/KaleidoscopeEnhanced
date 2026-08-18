@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 fragColor;
-// CombineSupernovaShockwave.frag
+// FxSupernovaShockwave.frag
 // -----------------------------------------------------------------------
-// COMBINE SUPERNOVA SHOCKWAVE: Spherical supernova blast wave transition.
+// FX SUPERNOVA SHOCKWAVE: Spherical supernova blast wave transition.
 // A hyper-velocity relativistic blast wave detonates at the center, expanding
 // radially outward with glowing shock compression and revealing the new scene.
 //   interpolation -> sweeps the spherical shockwave radius across the viewport

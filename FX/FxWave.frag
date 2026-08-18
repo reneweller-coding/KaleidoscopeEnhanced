@@ -1,5 +1,8 @@
 #version 330 core
 out vec4 fragColor;
+// FxWave.frag
+// FX WAVE: a soft radial ripple offsets the scene's UVs outward from the
+// centre and blends the displaced copy back with the original.
 uniform vec2 resolution;
 uniform float time;
 uniform sampler2D tex0;

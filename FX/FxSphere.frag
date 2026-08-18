@@ -1,5 +1,9 @@
 #version 330 core
 out vec4 fragColor;
+// FxSphere.frag (Inigo Quilez, iq/2013)
+// FX SPHERE: a circular lens region tiles the scene into "copies"
+// concentric repeats radiating from the centre, drifting and optionally
+// rotated; outside the lens the scene passes through unchanged.
 uniform vec2 resolution;
 uniform float time;
 uniform sampler2D tex0;

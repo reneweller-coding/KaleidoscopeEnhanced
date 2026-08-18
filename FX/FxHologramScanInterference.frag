@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 fragColor;
-// CombineHologramScanInterference.frag
+// FxHologramScanInterference.frag
 // -----------------------------------------------------------------------
-// COMBINE HOLOGRAM SCAN INTERFERENCE: Volumetric laser holographic scanline
+// FX HOLOGRAM SCAN INTERFERENCE: Volumetric laser holographic scanline
 // transition. Laser interference fringes and horizontal spatial-light-modulator
 // scanlines reconstruct the incoming scene with chromatic hologram diffraction.
 //   interpolation -> sweeps holographic phase modulation & reconstruction

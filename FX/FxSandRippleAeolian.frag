@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 fragColor;
-// CombineSandRippleAeolian.frag
+// FxSandRippleAeolian.frag
 // -----------------------------------------------------------------------
-// COMBINE SAND RIPPLE AEOLIAN: Desert sand ripple saltation & wind shear transition.
+// FX SAND RIPPLE AEOLIAN: Desert sand ripple saltation & wind shear transition.
 // Aeolian wind gusts blow golden sand ripples across the desert dunes,
 // carrying fine grain saltation waves that wipe between the scenes.
 //   interpolation -> sweeps sandstorm wind front across the frame

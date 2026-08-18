@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 fragColor;
-// CombineDopplerBeamingWipe.frag
+// FxDopplerBeamingWipe.frag
 // -----------------------------------------------------------------------
-// COMBINE DOPPLER BEAMING WIPE: Relativistic Doppler shift & headlamp effect.
+// FX DOPPLER BEAMING WIPE: Relativistic Doppler shift & headlamp effect.
 // Approaching scene elements experience intense blue-shifting and relativistic
 // beaming brightness amplification while receding elements red-shift away.
 //   interpolation -> sweeps relativistic velocity beta = v/c across screen

@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 fragColor;
-// CombineSmokeTurbulenceDrift.frag
+// FxSmokeTurbulenceDrift.frag
 // -----------------------------------------------------------------------
-// COMBINE SMOKE TURBULENCE DRIFT: Atmospheric smoke and turbulent vapor transition.
+// FX SMOKE TURBULENCE DRIFT: Atmospheric smoke and turbulent vapor transition.
 // Volumetric smoke plumes billow across the viewport, catching soft light
 // scattering and dissolving the outgoing scene into the incoming one.
 //   interpolation -> drives smoke density buildup & atmospheric dissipation

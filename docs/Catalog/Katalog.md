@@ -1,6 +1,6 @@
 # Kaleidoscope Enhanced — Szenen-Katalog
 
-_325 Szenen. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren, Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200)._
+_325 Szenen, 84 FX-Effekte. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
 
 
 ---
@@ -2878,3 +2878,766 @@ WaveRibbon.frag — glowing line: bright core, soft halo.
 Wormhole.frag — the wall image is bent around each throat: near the horizon the angular coordinate smears (extra rotation growing with lensAmt, like light dragged around a photon sphere) and the three colour channels sample at slightly different bend amounts (chromatic aberration). A bright photon ring traces the horizon itself.
 
 ![Wormhole ruhig (t=8)](img/Wormhole_A.jpg) ![Wormhole ruhig (t=16)](img/Wormhole_B.jpg) ![Wormhole audio-heiß (t=8)](img/Wormhole_C.jpg)
+
+
+---
+
+## FX-Effekte (FX/)
+
+_Overlays, keine eigenen Szenen — angewendet über TunnelPlain (2D) und AuroraBorealisOverFjord (3D) als feste Referenz, damit der Effekt selbst vergleichbar bleibt._
+
+
+### FxAbrikosovVortexLatticeSweep
+
+`FX/FxAbrikosovVortexLatticeSweep.frag` · mood=aggressive,bright,psychedelic · probability=0.35
+
+FxAbrikosovVortexLatticeSweep.frag FX ABRIKOSOV VORTEX LATTICE SWEEP: Type-II superconductor vortex lattice. A triangular lattice of quantized magnetic flux vortices (Abrikosov lattice) sweeps across the screen, each vortex carrying 2pi phase winding that rotates and transitions between scenes. interpolation -> sweeps superconducting flux penetration front across viewport audioKick -> flashes quantized vortex core ma…
+
+![FxAbrikosovVortexLatticeSweep über TunnelPlain (2D)](img/FxAbrikosovVortexLatticeSweep_2D.jpg) ![FxAbrikosovVortexLatticeSweep über AuroraBorealisOverFjord (3D)](img/FxAbrikosovVortexLatticeSweep_3D.jpg)
+
+
+### FxAcousticChladniResonance
+
+`FX/FxAcousticChladniResonance.frag` · mood=calm,psychedelic · probability=0.32
+
+FxAcousticChladniResonance.frag FX ACOUSTIC CHLADNI RESONANCE: 2D vibrating plate Chladni resonance transition. Acoustic standing wave eigenmodes vibrate the image plane, collecting sand grains along nodal zero-vibration lines that morph and cross-fade between scenes. interpolation -> sweeps acoustic resonance frequency & Chladni mode transitions audioKick -> flashes acoustic antinodal acceleration peaks audioBass ->…
+
+![FxAcousticChladniResonance über TunnelPlain (2D)](img/FxAcousticChladniResonance_2D.jpg) ![FxAcousticChladniResonance über AuroraBorealisOverFjord (3D)](img/FxAcousticChladniResonance_3D.jpg)
+
+
+### FxAmbientOcclusion
+
+`FX/FxAmbientOcclusion.frag` · mood=calm,dark · probability=0.3
+
+FxAmbientOcclusion.frag — screen-space ambient occlusion from depth. SSAO asks, for every pixel, how much of the hemisphere above its surface is blocked by nearby geometry. Answering that needs a POSITION and a NORMAL, and the only thing available here is a depth buffer — so both are rebuilt. A depth sample plus the projection's field of view gives the view-space position: the pixel's screen coordinate is a ray direc…
+
+![FxAmbientOcclusion über TunnelPlain (2D)](img/FxAmbientOcclusion_2D.jpg) ![FxAmbientOcclusion über AuroraBorealisOverFjord (3D)](img/FxAmbientOcclusion_3D.jpg)
+
+
+### FxAnamorphicFlareSweep
+
+`FX/FxAnamorphicFlareSweep.frag` · mood=aggressive,bright · probability=0.35
+
+FxAnamorphicFlareSweep.frag FX ANAMORPHIC FLARE SWEEP: Cinematic anamorphic lens flare transition. A horizontal laser streak and luminous cylindrical flare bar sweeps across the frame, wiping the outgoing scene and leaving the incoming scene behind. interpolation -> drives the horizontal anamorphic flare position across screen audioKick -> flashes intense laser core emission and horizontal streaks audioHigh -> sharpe…
+
+![FxAnamorphicFlareSweep über TunnelPlain (2D)](img/FxAnamorphicFlareSweep_2D.jpg) ![FxAnamorphicFlareSweep über AuroraBorealisOverFjord (3D)](img/FxAnamorphicFlareSweep_3D.jpg)
+
+
+### FxAuroraCurtainFold
+
+`FX/FxAuroraCurtainFold.frag` · mood=dreamy,calm,bright · probability=0.35
+
+FxAuroraCurtainFold.frag FX AURORA CURTAIN FOLD: Geomagnetic auroral curtain fold wipe transition. Luminous curtains of emerald-green and violet polar light ripple across geomagnetic field lines, folding and weaving the dual scenes together. interpolation -> sweeps auroral curtain wave front across the sky audioKick -> flashes intense substorm auroral rays audioBass -> undulates geomagnetic curtain folding frequency …
+
+![FxAuroraCurtainFold über TunnelPlain (2D)](img/FxAuroraCurtainFold_2D.jpg) ![FxAuroraCurtainFold über AuroraBorealisOverFjord (3D)](img/FxAuroraCurtainFold_3D.jpg)
+
+
+### FxBioluminescentPhytoplanktonBloom
+
+`FX/FxBioluminescentPhytoplanktonBloom.frag` · mood=dreamy,bright,dark · probability=0.35
+
+FxBioluminescentPhytoplanktonBloom.frag FX BIOLUMINESCENT PHYTOPLANKTON BLOOM: Marine algal bloom current transition. Millions of single-celled phytoplankton form luminous cyan-turquoise swirling bloom currents that illuminate fluid vortex streamlines and reveal the next scene. interpolation -> sweeps phytoplankton algal density buildup & dissipation audioKick -> flashes shear-stress enzymatic luciferin light emissio…
+
+![FxBioluminescentPhytoplanktonBloom über TunnelPlain (2D)](img/FxBioluminescentPhytoplanktonBloom_2D.jpg) ![FxBioluminescentPhytoplanktonBloom über AuroraBorealisOverFjord (3D)](img/FxBioluminescentPhytoplanktonBloom_3D.jpg)
+
+
+### FxBioluminescentSparkle
+
+`FX/FxBioluminescentSparkle.frag` · mood=dreamy,dark,bright · probability=0.32
+
+FxBioluminescentSparkle.frag FX BIOLUMINESCENT SPARKLE: Marine dinoflagellate bioluminescence transition. Thousands of sparkling blue-green bioluminescent cellular flashes ignite across fluid wave currents, illuminating and transitioning between scenes. interpolation -> sweeps bioluminescent sparkling wave front audioKick -> triggers full-screen dinoflagellate flash cascade audioHigh -> ignites sharp point sparkle gl…
+
+![FxBioluminescentSparkle über TunnelPlain (2D)](img/FxBioluminescentSparkle_2D.jpg) ![FxBioluminescentSparkle über AuroraBorealisOverFjord (3D)](img/FxBioluminescentSparkle_3D.jpg)
+
+
+### FxBirefringenceCrystalSplit
+
+`FX/FxBirefringenceCrystalSplit.frag` · mood=psychedelic,bright · probability=0.35
+
+FxBirefringenceCrystalSplit.frag FX BIREFRINGENCE CRYSTAL SPLIT: Calcite crystal optical birefringence transition. An anisotropic uniaxial crystal splits light rays into ordinary (o-ray) and extraordinary (e-ray) polarized components that separate, display polarization color fringes, and recombine seamlessly into the incoming scene. interpolation -> sweeps optical crystal thickness & o/e ray displacement audioKick ->…
+
+![FxBirefringenceCrystalSplit über TunnelPlain (2D)](img/FxBirefringenceCrystalSplit_2D.jpg) ![FxBirefringenceCrystalSplit über AuroraBorealisOverFjord (3D)](img/FxBirefringenceCrystalSplit_3D.jpg)
+
+
+### FxCausticLiquidWarp
+
+`FX/FxCausticLiquidWarp.frag` · mood=aggressive,psychedelic,bright · probability=0.32
+
+FxCausticLiquidWarp.frag FX CAUSTIC LIQUID WARP: Underwater optical caustic refraction transition. Overlapping fluid wave harmonics generate shimmering light caustics and refraction warps that dissolve the outgoing scene into the incoming one. interpolation -> controls water surface submergence & clearing progress audioKick -> flashes sharp caustic refraction focus lines audioBass -> undulates water wave height & ref…
+
+![FxCausticLiquidWarp über TunnelPlain (2D)](img/FxCausticLiquidWarp_2D.jpg) ![FxCausticLiquidWarp über AuroraBorealisOverFjord (3D)](img/FxCausticLiquidWarp_3D.jpg)
+
+
+### FxCellularMitosis
+
+`FX/FxCellularMitosis.frag` · mood=calm,dreamy · probability=0.32
+
+FxCellularMitosis.frag FX CELLULAR MITOSIS: Biological cell division & cytokinesis transition. A parent biological cell elongates, forms a pinching cleavage furrow, and divides into daughter cells that separate and morph into the incoming scene. interpolation -> controls cell elongation, cleavage furrow & cytokinesis audioKick -> flashes mitotic spindle fiber glowing microtubules audioBass -> undulates cell membrane …
+
+![FxCellularMitosis über TunnelPlain (2D)](img/FxCellularMitosis_2D.jpg) ![FxCellularMitosis über AuroraBorealisOverFjord (3D)](img/FxCellularMitosis_3D.jpg)
+
+
+### FxChromatographySeparation
+
+`FX/FxChromatographySeparation.frag` · mood=psychedelic,dreamy · probability=0.32
+
+FxChromatographySeparation.frag FX CHROMATOGRAPHY SEPARATION: Paper chromatography capillary transition. A liquid solvent front climbs capillary paper fibers, separating the scene's pigments into distinct chromatic bands based on chemical retention factors (Rf), resolving into the incoming scene. interpolation -> drives solvent front capillary migration across the frame audioKick -> flashes sharp chromatographic pigm…
+
+![FxChromatographySeparation über TunnelPlain (2D)](img/FxChromatographySeparation_2D.jpg) ![FxChromatographySeparation über AuroraBorealisOverFjord (3D)](img/FxChromatographySeparation_3D.jpg)
+
+
+### FxCosmicStringLensing
+
+`FX/FxCosmicStringLensing.frag` · mood=dark,dreamy · probability=0.35
+
+FxCosmicStringLensing.frag FX COSMIC STRING LENSING: Relativistic topological cosmic string deficit angle. A 1D GUT-scale cosmic string passes across spacetime, cutting a conical deficit angle (Delta_theta = 8 pi G mu) that duplicates and shears the image into dual wedge copies, fusing smoothly into the incoming scene. interpolation -> sweeps cosmic string position across the cosmological horizon audioKick -> flashes…
+
+![FxCosmicStringLensing über TunnelPlain (2D)](img/FxCosmicStringLensing_2D.jpg) ![FxCosmicStringLensing über AuroraBorealisOverFjord (3D)](img/FxCosmicStringLensing_3D.jpg)
+
+
+### FxDarkRed
+
+`FX/FxDarkRed.frag` · mood=dark,aggressive · probability=0.15
+
+FxDarkRed.frag Monochrome colour-tint overlay: desaturates the blended scene to luminance, then recolours it into a single channel (red/blue/green, picked by uniform) -- a stark, flat colour wash.
+
+![FxDarkRed über TunnelPlain (2D)](img/FxDarkRed_2D.jpg) ![FxDarkRed über AuroraBorealisOverFjord (3D)](img/FxDarkRed_3D.jpg)
+
+
+### FxDeformationFlow
+
+`FX/FxDeformationFlow.frag` · mood=calm,dreamy · probability=0.15
+
+FxDeformationFlow.frag Polar radial-flow warp (Inigo Quilez, iq/2013): unwraps the scene into polar coordinates around a moving point pair and scrolls it, tiled into "copies" mirrored repeats; an optional grid overlay shows the seams.
+
+![FxDeformationFlow über TunnelPlain (2D)](img/FxDeformationFlow_2D.jpg) ![FxDeformationFlow über AuroraBorealisOverFjord (3D)](img/FxDeformationFlow_3D.jpg)
+
+
+### FxDepthField
+
+`FX/FxDepthField.frag` · mood=calm,dreamy · probability=0.3
+
+FxDepthField.frag — depth of field, using the 3D scene's real depth. This is the first effect that reads what the scene actually wrote into the depth attachment. Everything a 2D visualiser can do with "fake" depth — radial blur, luminance-keyed softening — puts the blur in the wrong places; with the real buffer the focal plane is a physical distance, so the blur grows correctly on both sides of it and stops exactly a…
+
+![FxDepthField über TunnelPlain (2D)](img/FxDepthField_2D.jpg) ![FxDepthField über AuroraBorealisOverFjord (3D)](img/FxDepthField_3D.jpg)
+
+
+### FxDepthFog
+
+`FX/FxDepthFog.frag` · mood=dark,calm,dreamy · probability=0.32
+
+FxDepthFog.frag — atmospheric depth, done as physics rather than as a distance-keyed colour ramp. Two things happen to light crossing a hazy volume: some is absorbed, and some is scattered INTO the ray from the sun. A simple lerp toward a fog colour models only the first, which is why it flattens a scene into a wash. Keeping them separate is what gives aerial perspective its direction — the haze glows toward the ligh…
+
+![FxDepthFog über TunnelPlain (2D)](img/FxDepthFog_2D.jpg) ![FxDepthFog über AuroraBorealisOverFjord (3D)](img/FxDepthFog_3D.jpg)
+
+
+### FxDichroicMirrorSlide
+
+`FX/FxDichroicMirrorSlide.frag` · mood=psychedelic,bright · probability=0.32
+
+FxDichroicMirrorSlide.frag FX DICHROIC MIRROR SLIDE: Dichroic glass beam-splitter transition. Angled optical dichroic mirror planes slide across the screen, transmitting complementary wavelengths and reflecting the outgoing scene into the incoming one. interpolation -> slides dichroic mirror boundary across the diagonal audioKick -> flashes dichroic spectral transmission spikes audioBass -> undulates optical thin-fil…
+
+![FxDichroicMirrorSlide über TunnelPlain (2D)](img/FxDichroicMirrorSlide_2D.jpg) ![FxDichroicMirrorSlide über AuroraBorealisOverFjord (3D)](img/FxDichroicMirrorSlide_3D.jpg)
+
+
+### FxDopplerBeamingWipe
+
+`FX/FxDopplerBeamingWipe.frag` · mood=aggressive,psychedelic,bright · probability=0.32
+
+FxDopplerBeamingWipe.frag FX DOPPLER BEAMING WIPE: Relativistic Doppler shift & headlamp effect. Approaching scene elements experience intense blue-shifting and relativistic beaming brightness amplification while receding elements red-shift away. interpolation -> sweeps relativistic velocity beta = v/c across screen audioKick -> flashes relativistic Lorentz headlamp focus audioBass -> widens Doppler spectral frequenc…
+
+![FxDopplerBeamingWipe über TunnelPlain (2D)](img/FxDopplerBeamingWipe_2D.jpg) ![FxDopplerBeamingWipe über AuroraBorealisOverFjord (3D)](img/FxDopplerBeamingWipe_3D.jpg)
+
+
+### FxDreamyBokehBloom
+
+`FX/FxDreamyBokehBloom.frag` · mood=dreamy,calm,bright · probability=0.32
+
+FxDreamyBokehBloom.frag FX DREAMY BOKEH BLOOM: Smooth depth-of-field bokeh blur and lens bloom transition. The outgoing scene melts into a soft out-of-focus bokeh field of luminous circular aperture discs and resolves into the incoming scene. interpolation -> sweeps camera focus distance & circle-of-confusion blur audioKick -> flashes luminous bokeh highlight discs audioSwell -> broadens dreamy lens bloom radius Per-…
+
+![FxDreamyBokehBloom über TunnelPlain (2D)](img/FxDreamyBokehBloom_2D.jpg) ![FxDreamyBokehBloom über AuroraBorealisOverFjord (3D)](img/FxDreamyBokehBloom_3D.jpg)
+
+
+### FxDroneWarp
+
+`FX/FxDroneWarp.frag` · mood=aggressive,psychedelic,dark · probability=0.35
+
+FxDroneWarp.frag The first AMBIENT-reactive combine pass: a slow, round, liquid domain warp of the combined frame (research: harmonic/sustained material -> soft, curved forms; loudness swell -> gentle expansion). audioSwell -> warp amplitude + a slow looming zoom breathe; audioAmbient -> overall engagement (in beat music it stays nearly plain, so it can safely sit in any preset); audioPhase -> slow jump-free drift of…
+
+![FxDroneWarp über TunnelPlain (2D)](img/FxDroneWarp_2D.jpg) ![FxDroneWarp über AuroraBorealisOverFjord (3D)](img/FxDroneWarp_3D.jpg)
+
+
+### FxEbruMarblingRake
+
+`FX/FxEbruMarblingRake.frag` · mood=dreamy,calm · probability=0.32
+
+FxEbruMarblingRake.frag FX EBRU MARBLING RAKE: Turkish paper marbling (Ebru) rake transition. Fine comb teeth sweep through floating pigments in alternating directions, drawing elegant capillary plumes and chevron folds that reveal the next scene. interpolation -> drives rake comb sweep across the liquid surface audioKick -> flashes sharp pigment boundary swirls audioBass -> undulates comb teeth displacement depth Pe…
+
+![FxEbruMarblingRake über TunnelPlain (2D)](img/FxEbruMarblingRake_2D.jpg) ![FxEbruMarblingRake über AuroraBorealisOverFjord (3D)](img/FxEbruMarblingRake_3D.jpg)
+
+
+### FxEdgeInk
+
+`FX/FxEdgeInk.frag` · mood=dark,calm · probability=0.28
+
+FxEdgeInk.frag — ink outlines from depth, flat wash inside them. The whole quality of a line-art filter is in what counts as an edge. The obvious test — threshold the difference between neighbouring depths — is wrong, and wrong in a way that looks almost right at first: a floor receding from the camera has a large depth difference between EVERY pair of adjacent pixels, so the ground inks solid black while a wall faci…
+
+![FxEdgeInk über TunnelPlain (2D)](img/FxEdgeInk_2D.jpg) ![FxEdgeInk über AuroraBorealisOverFjord (3D)](img/FxEdgeInk_3D.jpg)
+
+
+### FxEventHorizonSwirl
+
+`FX/FxEventHorizonSwirl.frag` · mood=dark,aggressive · probability=0.35
+
+FxEventHorizonSwirl.frag FX EVENT HORIZON SWIRL: Kerr black hole ergosphere frame-dragging transition. Spacetime frame-dragging twists the outgoing scene into a relativistic spiral vortex around a rotating event horizon, drawing the new scene out. interpolation -> controls frame-dragging angular momentum & horizon size audioKick -> flashes ergosphere frame-dragging boundary audioBass -> undulates Kerr black hole spin…
+
+![FxEventHorizonSwirl über TunnelPlain (2D)](img/FxEventHorizonSwirl_2D.jpg) ![FxEventHorizonSwirl über AuroraBorealisOverFjord (3D)](img/FxEventHorizonSwirl_3D.jpg)
+
+
+### FxFaradayWaveLattice
+
+`FX/FxFaradayWaveLattice.frag` · mood=psychedelic,aggressive · probability=0.32
+
+FxFaradayWaveLattice.frag FX FARADAY WAVE LATTICE: Parametric fluid surface Faraday wave transition. Vertical oscillation of a fluid layer excites subharmonic standing wave lattices (Faraday crispatio), whose undulating nodal grids cross-fade and morph between scenes. interpolation -> sweeps Faraday standing wave amplitude & lattice modes audioKick -> flashes parametric resonance wave crest peaks audioBass -> drives …
+
+![FxFaradayWaveLattice über TunnelPlain (2D)](img/FxFaradayWaveLattice_2D.jpg) ![FxFaradayWaveLattice über AuroraBorealisOverFjord (3D)](img/FxFaradayWaveLattice_3D.jpg)
+
+
+### FxFerroelectricDomainFlip
+
+`FX/FxFerroelectricDomainFlip.frag` · mood=psychedelic,dark · probability=0.32
+
+FxFerroelectricDomainFlip.frag FX FERROELECTRIC DOMAIN FLIP: Perovskite crystal domain wall transition. Spontaneous electric polarization domains (180° and 90° domain walls) nucleate and propagate across crystal grains, flipping polarization and scenes. interpolation -> sweeps coercive electric field & polarization reversal audioKick -> flashes domain wall Barkhausen jump pulses audioBass -> undulates piezoelectric c…
+
+![FxFerroelectricDomainFlip über TunnelPlain (2D)](img/FxFerroelectricDomainFlip_2D.jpg) ![FxFerroelectricDomainFlip über AuroraBorealisOverFjord (3D)](img/FxFerroelectricDomainFlip_3D.jpg)
+
+
+### FxFerrofluidSpikes
+
+`FX/FxFerrofluidSpikes.frag` · mood=aggressive,dark · probability=0.32
+
+FxFerrofluidSpikes.frag FX FERROFLUID SPIKES: Magnetic ferrofluid Rosensweig instability transition. Applied magnetic fields pull the scene into an array of sharp conical spikes, reflecting metallic gloss and dissolving into the incoming scene as spikes relax. interpolation -> sweeps magnetic field strength & spike eruption/relaxation audioKick -> flashes sharp metallic spike apex specular highlights audioBass -> dri…
+
+![FxFerrofluidSpikes über TunnelPlain (2D)](img/FxFerrofluidSpikes_2D.jpg) ![FxFerrofluidSpikes über AuroraBorealisOverFjord (3D)](img/FxFerrofluidSpikes_3D.jpg)
+
+
+### FxFresnelDiffractionEdge
+
+`FX/FxFresnelDiffractionEdge.frag` · mood=psychedelic,bright · probability=0.32
+
+FxFresnelDiffractionEdge.frag FX FRESNEL DIFFRACTION EDGE: Straight knife-edge optical Fresnel diffraction. A straight absorbing edge sweeps across the optical field, creating decaying sinusoidal diffraction fringes governed by Cornu spirals that bridge the transition. interpolation -> sweeps knife-edge shadow boundary across the screen audioKick -> flashes principal diffraction fringe maxima audioBass -> undulates F…
+
+![FxFresnelDiffractionEdge über TunnelPlain (2D)](img/FxFresnelDiffractionEdge_2D.jpg) ![FxFresnelDiffractionEdge über AuroraBorealisOverFjord (3D)](img/FxFresnelDiffractionEdge_3D.jpg)
+
+
+### FxFrostDendriteFreeze
+
+`FX/FxFrostDendriteFreeze.frag` · mood=calm,dark · probability=0.32
+
+FxFrostDendriteFreeze.frag FX FROST DENDRITE FREEZE: Hexagonal dendritic ice crystal freeze & melt. Feathery ice frostwork branches rapidly across the viewport, freezing the outgoing scene into crystalline frost and melting away into the incoming scene. interpolation -> sweeps freezing crystallization to melting thaw audioKick -> flashes sharp dendritic ice needle growth audioHigh -> sharpens crystalline frostwork fa…
+
+![FxFrostDendriteFreeze über TunnelPlain (2D)](img/FxFrostDendriteFreeze_2D.jpg) ![FxFrostDendriteFreeze über AuroraBorealisOverFjord (3D)](img/FxFrostDendriteFreeze_3D.jpg)
+
+
+### FxGlitchPixelSort
+
+`FX/FxGlitchPixelSort.frag` · mood=aggressive,psychedelic · probability=0.30
+
+FxGlitchPixelSort.frag FX GLITCH PIXEL SORT: Directional luminance pixel-sorting transition. Pixels stretch and sort into horizontal crystalline streaks based on luminance thresholds, glitching and resolving seamlessly into the incoming scene. interpolation -> sweeps pixel-sort threshold & glitch severity audioKick -> triggers sharp horizontal glitch slice displacements audioHigh -> intensifies high-frequency glitch …
+
+![FxGlitchPixelSort über TunnelPlain (2D)](img/FxGlitchPixelSort_2D.jpg) ![FxGlitchPixelSort über AuroraBorealisOverFjord (3D)](img/FxGlitchPixelSort_3D.jpg)
+
+
+### FxGoldenNautilus
+
+`FX/FxGoldenNautilus.frag` · mood=calm,dreamy · probability=0.32
+
+FxGoldenNautilus.frag FX GOLDEN NAUTILUS: Fibonacci golden spiral nautilus chamber sweep. Logarithmic chambers unfurl across the screen in golden ratio proportions (phi = 1.618), sweeping the old scene away and breathing in the new one. interpolation -> sweeps the golden spiral chamber wipe across the screen audioKick -> flashes golden spiral septum chamber walls audioBass -> pulses chamber expansion rate Per-activat…
+
+![FxGoldenNautilus über TunnelPlain (2D)](img/FxGoldenNautilus_2D.jpg) ![FxGoldenNautilus über AuroraBorealisOverFjord (3D)](img/FxGoldenNautilus_3D.jpg)
+
+
+### FxGravitationalLensWarp
+
+`FX/FxGravitationalLensWarp.frag` · mood=aggressive,psychedelic · probability=0.35
+
+FxGravitationalLensWarp.frag FX GRAVITATIONAL LENS WARP: Relativistic black-hole gravitational lensing. A dark matter singularity opens at the center of the frame, bending spacetime, forming Einstein rings, swallowing the outgoing scene and expanding the new one. interpolation -> sweeps Schwarzschild radius from 0 to maximum and back audioKick -> flashes bright photon sphere ring emission audioBass -> drives gravitat…
+
+![FxGravitationalLensWarp über TunnelPlain (2D)](img/FxGravitationalLensWarp_2D.jpg) ![FxGravitationalLensWarp über AuroraBorealisOverFjord (3D)](img/FxGravitationalLensWarp_3D.jpg)
+
+
+### FxGrey
+
+`FX/FxGrey.frag` · mood=dark,calm · probability=0.12
+
+FxGrey.frag Flat greyscale desaturation of the blended scene -- no motion, no params.
+
+![FxGrey über TunnelPlain (2D)](img/FxGrey_2D.jpg) ![FxGrey über AuroraBorealisOverFjord (3D)](img/FxGrey_3D.jpg)
+
+
+### FxGyroidMembraneMelt
+
+`FX/FxGyroidMembraneMelt.frag` · mood=psychedelic,dreamy,calm · probability=0.35
+
+FxGyroidMembraneMelt.frag FX GYROID MEMBRANE MELT: Triply periodic minimal surface (TPMS) gyroid transition. A mathematical gyroid labyrinth surface divides space into two continuous interlocking fluid channels, shifting its isovalue to smoothly transfer scenes. interpolation -> sweeps gyroid isovalue threshold from -1.4 to +1.4 audioKick -> flashes gyroid minimal surface nodal line boundaries audioBass -> undulates …
+
+![FxGyroidMembraneMelt über TunnelPlain (2D)](img/FxGyroidMembraneMelt_2D.jpg) ![FxGyroidMembraneMelt über AuroraBorealisOverFjord (3D)](img/FxGyroidMembraneMelt_3D.jpg)
+
+
+### FxHeatShimmer
+
+`FX/FxHeatShimmer.frag` · mood=aggressive,bright · probability=0.30
+
+FxHeatShimmer.frag — air that has been heated, and bends light because of it. Refraction through a turbulent medium is a gradient effect: a ray is bent by the SLOPE of the refractive index, not by its value. So the displacement here is the gradient of a noise field rather than the field itself. Displacing by the field directly is the common shortcut and it looks wrong in a way that is hard to name — the image slides …
+
+![FxHeatShimmer über TunnelPlain (2D)](img/FxHeatShimmer_2D.jpg) ![FxHeatShimmer über AuroraBorealisOverFjord (3D)](img/FxHeatShimmer_3D.jpg)
+
+
+### FxHelicoidMinimalSurface
+
+`FX/FxHelicoidMinimalSurface.frag` · mood=calm,dreamy · probability=0.35
+
+FxHelicoidMinimalSurface.frag FX HELICOID MINIMAL SURFACE: Ruled helicoid minimal surface screw transition. A continuous helical ramp surface (z = c * theta) rotates and screws the outgoing scene along its ruled geodesics, seamlessly unfurling into the incoming scene. interpolation -> sweeps helicoid rotation & helical screw pitch audioKick -> flashes helicoid minimal surface ruling lines audioBass -> undulates helic…
+
+![FxHelicoidMinimalSurface über TunnelPlain (2D)](img/FxHelicoidMinimalSurface_2D.jpg) ![FxHelicoidMinimalSurface über AuroraBorealisOverFjord (3D)](img/FxHelicoidMinimalSurface_3D.jpg)
+
+
+### FxHexagon
+
+`FX/FxHexagon.frag` · mood=psychedelic,bright · probability=0.15
+
+FxHexagon.frag FX HEXAGON: snaps the scene onto a honeycomb of hexagonal cells. audioBeat -> thin dark cell borders flash on each beat audioOnset -> percussive hits brighten the cell interiors sizeP -> per-activation hex density
+
+![FxHexagon über TunnelPlain (2D)](img/FxHexagon_2D.jpg) ![FxHexagon über AuroraBorealisOverFjord (3D)](img/FxHexagon_3D.jpg)
+
+
+### FxHologramScanInterference
+
+`FX/FxHologramScanInterference.frag` · mood=psychedelic · probability=0.32
+
+FxHologramScanInterference.frag FX HOLOGRAM SCAN INTERFERENCE: Volumetric laser holographic scanline transition. Laser interference fringes and horizontal spatial-light-modulator scanlines reconstruct the incoming scene with chromatic hologram diffraction. interpolation -> sweeps holographic phase modulation & reconstruction audioKick -> flashes laser interference fringe lines audioHigh -> sharpens holographic scanli…
+
+![FxHologramScanInterference über TunnelPlain (2D)](img/FxHologramScanInterference_2D.jpg) ![FxHologramScanInterference über AuroraBorealisOverFjord (3D)](img/FxHologramScanInterference_3D.jpg)
+
+
+### FxHyperspaceStreak
+
+`FX/FxHyperspaceStreak.frag` · mood=aggressive,psychedelic,bright · probability=0.35
+
+FxHyperspaceStreak.frag FX HYPERSPACE STREAK: Relativistic warp speed streak transition. As the warp drive engages, the outgoing scene stretches into radial light streaks with intense Lorentz contraction, arriving cleanly into the incoming scene. interpolation -> sweeps sub-light to warp factor 9.9 and decelerates audioKick -> flashes warp drive entry/exit relativistic burst audioHigh -> sharpens hyperspace star stre…
+
+![FxHyperspaceStreak über TunnelPlain (2D)](img/FxHyperspaceStreak_2D.jpg) ![FxHyperspaceStreak über AuroraBorealisOverFjord (3D)](img/FxHyperspaceStreak_3D.jpg)
+
+
+### FxKaleidoscope
+
+`FX/FxKaleidoscope.frag` · mood=psychedelic,bright · probability=0.2
+
+FxKaleidoscope.frag FX KALEIDOSCOPE: classic radial mirror-fold -- the polar angle is wrapped and mirrored into "sides" repeating wedges, slowly rotating.
+
+![FxKaleidoscope über TunnelPlain (2D)](img/FxKaleidoscope_2D.jpg) ![FxKaleidoscope über AuroraBorealisOverFjord (3D)](img/FxKaleidoscope_3D.jpg)
+
+
+### FxKaleidoscopicPolytope
+
+`FX/FxKaleidoscopicPolytope.frag` · mood=psychedelic,bright · probability=0.35
+
+FxKaleidoscopicPolytope.frag FX KALEIDOSCOPIC POLYTOPE: Coxeter reflection group 4D polytope transition. Multiple hyper-plane reflection mirrors fold and unfurl space across regular Coxeter symmetry facets, tessellating and transitioning between scenes. interpolation -> sweeps kaleidoscopic fold angle & facet recursion audioKick -> flashes mirror facet intersection reflection planes audioBass -> undulates Coxeter pol…
+
+![FxKaleidoscopicPolytope über TunnelPlain (2D)](img/FxKaleidoscopicPolytope_2D.jpg) ![FxKaleidoscopicPolytope über AuroraBorealisOverFjord (3D)](img/FxKaleidoscopicPolytope_3D.jpg)
+
+
+### FxKerrSchildWarpSheet
+
+`FX/FxKerrSchildWarpSheet.frag` · mood=aggressive,psychedelic · probability=0.35
+
+FxKerrSchildWarpSheet.frag FX KERR SCHILD WARP SHEET: Exact Kerr-Schild spacetime metric transition. Spacetime geometry deforms continuously along null vector congruences (g_ab = eta_ab + 2 H k_a k_b), stretching and shearing light rays to bridge the scenes. interpolation -> sweeps Kerr-Schild gravitational profile scalar H(r) audioKick -> flashes null geodesic caustic focus lines audioBass -> drives Kerr-Schild metr…
+
+![FxKerrSchildWarpSheet über TunnelPlain (2D)](img/FxKerrSchildWarpSheet_2D.jpg) ![FxKerrSchildWarpSheet über AuroraBorealisOverFjord (3D)](img/FxKerrSchildWarpSheet_3D.jpg)
+
+
+### FxLens
+
+`FX/FxLens.frag` · mood=calm,dreamy · probability=0.12
+
+FxLens.frag FX LENS: four orbiting refractive lens bubbles bend the scene through a spherical-cap refraction model, like magnifying glasses drifting around the frame in a slow circle.
+
+![FxLens über TunnelPlain (2D)](img/FxLens_2D.jpg) ![FxLens über AuroraBorealisOverFjord (3D)](img/FxLens_3D.jpg)
+
+
+### FxLichtenbergLightningWipe
+
+`FX/FxLichtenbergLightningWipe.frag` · mood=aggressive,bright · probability=0.35
+
+FxLichtenbergLightningWipe.frag FX LICHTENBERG LIGHTNING WIPE: High-voltage electrical dielectric breakdown. Luminous fractal Lichtenberg discharge trees branch violently across the glass plate, conducting electrical arcs that ionize and cross-fade between scenes. interpolation -> sweeps dielectric breakdown wave front across the viewport audioKick -> triggers full-screen high-voltage lightning discharge arcs audioHi…
+
+![FxLichtenbergLightningWipe über TunnelPlain (2D)](img/FxLichtenbergLightningWipe_2D.jpg) ![FxLichtenbergLightningWipe über AuroraBorealisOverFjord (3D)](img/FxLichtenbergLightningWipe_3D.jpg)
+
+
+### FxLichtenstein
+
+`FX/FxLichtenstein.frag` · mood=bright,psychedelic · probability=0.15
+
+FxLichtenstein.frag FX LICHTENSTEIN: halftone-dot pop-art look -- the scene is quantized into a grid of circular dots (Ben-Day dots), flat grey outside each dot's radius.
+
+![FxLichtenstein über TunnelPlain (2D)](img/FxLichtenstein_2D.jpg) ![FxLichtenstein über AuroraBorealisOverFjord (3D)](img/FxLichtenstein_3D.jpg)
+
+
+### FxLiquidCrystalDefectDomain
+
+`FX/FxLiquidCrystalDefectDomain.frag` · mood=psychedelic,dreamy · probability=0.32
+
+FxLiquidCrystalDefectDomain.frag FX LIQUID CRYSTAL DEFECT DOMAIN: Nematic liquid crystal Schlieren transition. Topological point defects (disclinations with strength s = +/-1/2) and dark extinction brushes rotate and annihilate as the director field aligns, seamlessly transitioning into the incoming scene. interpolation -> sweeps director field alignment & defect annihilation audioKick -> flashes topological disclina…
+
+![FxLiquidCrystalDefectDomain über TunnelPlain (2D)](img/FxLiquidCrystalDefectDomain_2D.jpg) ![FxLiquidCrystalDefectDomain über AuroraBorealisOverFjord (3D)](img/FxLiquidCrystalDefectDomain_3D.jpg)
+
+
+### FxLogarithmicSpiral
+
+`FX/FxLogarithmicSpiral.frag` · mood=psychedelic,dreamy · probability=0.32
+
+FxLogarithmicSpiral.frag FX LOGARITHMIC SPIRAL: Equiangular logarithmic spiral vortex (r = a * exp(b * theta)). The outgoing scene winds inward along spiral streamlines while the incoming scene unwinds outwards from the center. interpolation -> controls spiral vortex winding angle & depth audioKick -> flashes spiral arm streamline highlights audioBass -> undulates spiral pitch & radial breathing Per-activation variet…
+
+![FxLogarithmicSpiral über TunnelPlain (2D)](img/FxLogarithmicSpiral_2D.jpg) ![FxLogarithmicSpiral über AuroraBorealisOverFjord (3D)](img/FxLogarithmicSpiral_3D.jpg)
+
+
+### FxMagmaCrustFracture
+
+`FX/FxMagmaCrustFracture.frag` · mood=aggressive,dark · probability=0.35
+
+FxMagmaCrustFracture.frag FX MAGMA CRUST FRACTURE: Tectonic basalt magma crust transition. The outgoing scene solidifies into black obsidian crust plates that fracture apart, revealing glowing 1500°C molten magma rivers that solidify into the new scene. interpolation -> controls crust fracture opening & magma cooling progress audioKick -> flashes incandescent magma crack eruptions audioBass -> widens tectonic fault l…
+
+![FxMagmaCrustFracture über TunnelPlain (2D)](img/FxMagmaCrustFracture_2D.jpg) ![FxMagmaCrustFracture über AuroraBorealisOverFjord (3D)](img/FxMagmaCrustFracture_3D.jpg)
+
+
+### FxMoireInterference
+
+`FX/FxMoireInterference.frag` · mood=psychedelic · probability=0.30
+
+FxMoireInterference.frag FX MOIRE INTERFERENCE: Optical Moiré superlattice interference fringes bridging the transition between scenes. Overlapping rotating line gratings produce dynamic macroscopic interference waves that carry the cross-fade. interpolation -> controls grating rotation angle & interference phase audioKick -> flashes Moiré constructive interference maxima audioBass -> undulates grating spatial freque…
+
+![FxMoireInterference über TunnelPlain (2D)](img/FxMoireInterference_2D.jpg) ![FxMoireInterference über AuroraBorealisOverFjord (3D)](img/FxMoireInterference_3D.jpg)
+
+
+### FxMulti
+
+`FX/FxMulti.frag` · mood=psychedelic,aggressive · probability=0.1
+
+FxMulti.frag FX MULTI: mirrored tile grid -- the scene repeats into a "copies" x "copies" grid of mirrored tiles, optionally rotated 45 deg. audioPhase -> per-activation continuous grid spin (spinP) audioSwell -> the whole grid looms slightly closer on loudness swells
+
+![FxMulti über TunnelPlain (2D)](img/FxMulti_2D.jpg) ![FxMulti über AuroraBorealisOverFjord (3D)](img/FxMulti_3D.jpg)
+
+
+### FxMyceliumNetworkSprout
+
+`FX/FxMyceliumNetworkSprout.frag` · mood=dark,dreamy,calm · probability=0.32
+
+FxMyceliumNetworkSprout.frag FX MYCELIUM NETWORK SPROUT: Branching fungal hyphae network transition. Organic fungal mycelial threads sprout and branch across the screen, conducting bioluminescent action-potential pulses that bridge and cross-fade the scenes. interpolation -> sweeps mycelial growth front from center to boundaries audioKick -> flashes action potential electrical pulses along hyphae cords audioBass -> w…
+
+![FxMyceliumNetworkSprout über TunnelPlain (2D)](img/FxMyceliumNetworkSprout_2D.jpg) ![FxMyceliumNetworkSprout über AuroraBorealisOverFjord (3D)](img/FxMyceliumNetworkSprout_3D.jpg)
+
+
+### FxNavierStokesMelt
+
+`FX/FxNavierStokesMelt.frag` · mood=calm,dreamy · probability=0.35
+
+FxNavierStokesMelt.frag FX NAVIER STOKES MELT: Fluid advection vorticity melting transition. The outgoing scene liquifies into turbulent curl-noise fluid vortices, melting and swirling seamlessly to reveal the incoming scene underneath. interpolation -> drives fluid viscosity reduction & melting progress audioKick -> injects turbulent fluid velocity impulses audioBass -> undulates large-scale convective vortex rolls …
+
+![FxNavierStokesMelt über TunnelPlain (2D)](img/FxNavierStokesMelt_2D.jpg) ![FxNavierStokesMelt über AuroraBorealisOverFjord (3D)](img/FxNavierStokesMelt_3D.jpg)
+
+
+### FxNewtonRingsInterference
+
+`FX/FxNewtonRingsInterference.frag` · mood=psychedelic · probability=0.35
+
+FxNewtonRingsInterference.frag FX NEWTON RINGS INTERFERENCE: Optical thin-film Newton's rings transition. Interference between a spherical lens surface and an optical flat produces concentric chromatic interference rings that expand radially to reveal the incoming scene. interpolation -> sweeps air gap thickness & expanding interference fringe radius audioKick -> flashes constructive interference rainbow rings audioB…
+
+![FxNewtonRingsInterference über TunnelPlain (2D)](img/FxNewtonRingsInterference_2D.jpg) ![FxNewtonRingsInterference über AuroraBorealisOverFjord (3D)](img/FxNewtonRingsInterference_3D.jpg)
+
+
+### FxOceanBreakerWave
+
+`FX/FxOceanBreakerWave.frag` · mood=aggressive,bright · probability=0.35
+
+FxOceanBreakerWave.frag FX OCEAN BREAKER WAVE: Ocean breaker wave rolling & foam wash transition. A powerful ocean swell rolls across the frame, cresting into a curling breaker wave that crashes with turbulent sea foam and washes into the incoming scene. interpolation -> sweeps the rolling breaker wave front across the viewport audioKick -> flashes churning sea foam spray on wave break audioBass -> drives ocean swell…
+
+![FxOceanBreakerWave über TunnelPlain (2D)](img/FxOceanBreakerWave_2D.jpg) ![FxOceanBreakerWave über AuroraBorealisOverFjord (3D)](img/FxOceanBreakerWave_3D.jpg)
+
+
+### FxOilPaint
+
+`FX/FxOilPaint.frag` · mood=calm,dreamy · probability=0.1
+
+FxOilPaint.frag FX OIL PAINT: Kuwahara-style edge-preserving smoothing -- each pixel picks the least-variance quadrant of its neighbourhood, giving a painterly, brushstroke-flattened look.
+
+![FxOilPaint über TunnelPlain (2D)](img/FxOilPaint_2D.jpg) ![FxOilPaint über AuroraBorealisOverFjord (3D)](img/FxOilPaint_3D.jpg)
+
+
+### FxOilPaintFlow
+
+`FX/FxOilPaintFlow.frag` · mood=calm,dreamy · probability=0.15
+
+FxOilPaintFlow.frag FX OIL PAINT FLOW: FxOilPaint's Kuwahara smoothing plus a flowing fBm warp field and Photoshop-style blend-mode compositing (overlay/screen), giving the brushstrokes a slow marbled drift.
+
+![FxOilPaintFlow über TunnelPlain (2D)](img/FxOilPaintFlow_2D.jpg) ![FxOilPaintFlow über AuroraBorealisOverFjord (3D)](img/FxOilPaintFlow_3D.jpg)
+
+
+### FxParallax
+
+`FX/FxParallax.frag` · mood=calm,dreamy · probability=0.12
+
+FxParallax.frag FX PARALLAX: 32-layer depth parallax -- the scene is resampled at increasing depths along a circling offset, retro-pixellated, each layer masked by its own luminance so nearer layers occlude farther ones.
+
+![FxParallax über TunnelPlain (2D)](img/FxParallax_2D.jpg) ![FxParallax über AuroraBorealisOverFjord (3D)](img/FxParallax_3D.jpg)
+
+
+### FxPenroseMorph
+
+`FX/FxPenroseMorph.frag` · mood=psychedelic,calm · probability=0.32
+
+FxPenroseMorph.frag FX PENROSE MORPH: 5-fold aperiodic Penrose tiling morphing between scenes through recursive golden-ratio deflation (phi = 1.618). Kite and dart tiles subdivide smoothly, with glowing aperiodic grid lines guiding the cross-fade. interpolation -> drives recursive deflation hierarchy & scene swap audioKick -> flashes 5-fold golden ratio reflection lines audioBass -> undulates pentagonal tiling inflat…
+
+![FxPenroseMorph über TunnelPlain (2D)](img/FxPenroseMorph_2D.jpg) ![FxPenroseMorph über AuroraBorealisOverFjord (3D)](img/FxPenroseMorph_3D.jpg)
+
+
+### FxPlain
+
+`FX/FxPlain.frag` · mood=calm,bright · probability=1
+
+FxPlain.frag The plain effect blend — with a LIBRARY of 26 per-transition styles. The host rolls a style whenever a cross-fade starts (transStyle; 0/absent = classic linear mix): Wipes / reveals (soft moving edges): 1 radial iris 2 kaleido fold 3 zoom-through 4 diagonal wipe 5 blinds 6 mosaic dissolve 7 swirl 8 water ripple 9 push 10 sliding doors 11 clock sweep 12 dip to dark EDGE-FREE full-frame morphs: 13 blur-thr…
+
+![FxPlain über TunnelPlain (2D)](img/FxPlain_2D.jpg) ![FxPlain über AuroraBorealisOverFjord (3D)](img/FxPlain_3D.jpg)
+
+
+### FxPlaneFlight
+
+`FX/FxPlaneFlight.frag` · mood=dreamy,bright · probability=0.12
+
+FxPlaneFlight.frag (Inigo Quilez, iq/2013) FX PLANE FLIGHT: a forward-flight perspective warp -- the scene is projected as if streaming past on either side of a travelling flight path, brightened near the horizon line.
+
+![FxPlaneFlight über TunnelPlain (2D)](img/FxPlaneFlight_2D.jpg) ![FxPlaneFlight über AuroraBorealisOverFjord (3D)](img/FxPlaneFlight_3D.jpg)
+
+
+### FxPlasmaFilamentPinch
+
+`FX/FxPlasmaFilamentPinch.frag` · mood=aggressive,bright · probability=0.35
+
+FxPlasmaFilamentPinch.frag FX PLASMA FILAMENT PINCH: Magnetohydrodynamic Z-pinch plasma transition. Axial electric currents generate azimuthal magnetic fields, compressing plasma into ultra-dense filaments that develop sausage and kink instabilities before bursting into the incoming scene. interpolation -> sweeps magnetic Bennett pinch compression & burst audioKick -> triggers full-pinch thermonuclear radiation flash…
+
+![FxPlasmaFilamentPinch über TunnelPlain (2D)](img/FxPlasmaFilamentPinch_2D.jpg) ![FxPlasmaFilamentPinch über AuroraBorealisOverFjord (3D)](img/FxPlasmaFilamentPinch_3D.jpg)
+
+
+### FxPoincareSpin
+
+`FX/FxPoincareSpin.frag` · mood=psychedelic,dark · probability=0.32
+
+FxPoincareSpin.frag FX POINCARE SPIN: Conformal hyperbolic Poincaré disk inversion and continuous Möbius transformation. The outgoing scene turns inside out through hyperbolic circle inversions while the incoming scene expands smoothly from the non-Euclidean horizon. interpolation -> sweeps hyperbolic Möbius translation from 0 to 1 audioKick -> flashes hyperbolic geodesic boundaries audioBass -> pulses Poincaré metri…
+
+![FxPoincareSpin über TunnelPlain (2D)](img/FxPoincareSpin_2D.jpg) ![FxPoincareSpin über AuroraBorealisOverFjord (3D)](img/FxPoincareSpin_3D.jpg)
+
+
+### FxPulse
+
+`FX/FxPulse.frag` · mood=aggressive,bright · probability=0.5
+
+FxPulse.frag The first BEAT-reactive combine pass. Classic combines are static folds; this one breathes with the music (research: loudness/beat -> expansion, impulsive pulsation with envelope release): audioBeat -> a gentle centre zoom "breath" (slew-limited upstream); audioBeatPhase -> a subtle radial shock-wave expanding outward each beat (CONTINUOUS phase - no snapping); audioPhase -> slow jump-free rotation; audi…
+
+![FxPulse über TunnelPlain (2D)](img/FxPulse_2D.jpg) ![FxPulse über AuroraBorealisOverFjord (3D)](img/FxPulse_3D.jpg)
+
+
+### FxQuadtreeSubdivide
+
+`FX/FxQuadtreeSubdivide.frag` · mood=psychedelic,aggressive · probability=0.30
+
+FxQuadtreeSubdivide.frag FX QUADTREE SUBDIVIDE: Hierarchical recursive quadtree partitioning dividing the viewport into multi-scale tiles. Smaller sub-quads flip and resolve with cybernetic neon boundary grids to reveal the incoming scene. interpolation -> drives recursive quadtree depth & tile flip progress audioKick -> flashes quadtree partition grid lines audioBass -> undulates subdivision threshold Per-activation…
+
+![FxQuadtreeSubdivide über TunnelPlain (2D)](img/FxQuadtreeSubdivide_2D.jpg) ![FxQuadtreeSubdivide über AuroraBorealisOverFjord (3D)](img/FxQuadtreeSubdivide_3D.jpg)
+
+
+### FxQuantumWaveCollapse
+
+`FX/FxQuantumWaveCollapse.frag` · mood=dark,psychedelic · probability=0.32
+
+FxQuantumWaveCollapse.frag FX QUANTUM WAVE COLLAPSE: Quantum state superposition & wavefunction collapse transition. Complex probability wavepackets interference patterns collapse abruptly from superposition into the definite incoming state. interpolation -> sweeps quantum superposition to eigenstate measurement audioKick -> triggers wavefunction collapse flash audioBass -> undulates de Broglie wavelength & interfere…
+
+![FxQuantumWaveCollapse über TunnelPlain (2D)](img/FxQuantumWaveCollapse_2D.jpg) ![FxQuantumWaveCollapse über AuroraBorealisOverFjord (3D)](img/FxQuantumWaveCollapse_3D.jpg)
+
+
+### FxRayleighTaylorInstability
+
+`FX/FxRayleighTaylorInstability.frag` · mood=aggressive,dark · probability=0.35
+
+FxRayleighTaylorInstability.frag FX RAYLEIGH TAYLOR INSTABILITY: Fluid density stratification transition. A denser fluid layer sinks into a lighter fluid layer under gravity, forming mushrooming Rayleigh-Taylor instability fingers and curling vortex plumes. interpolation -> drives finger penetration depth & vortex roll-up growth audioKick -> flashes turbulent finger tip vortex swirls audioBass -> widens Rayleigh-Tayl…
+
+![FxRayleighTaylorInstability über TunnelPlain (2D)](img/FxRayleighTaylorInstability_2D.jpg) ![FxRayleighTaylorInstability über AuroraBorealisOverFjord (3D)](img/FxRayleighTaylorInstability_3D.jpg)
+
+
+### FxReactionDiffusionTuring
+
+`FX/FxReactionDiffusionTuring.frag` · mood=psychedelic,dark · probability=0.32
+
+FxReactionDiffusionTuring.frag FX REACTION DIFFUSION TURING: Morphogenetic Turing pattern transition. Chemical activator-inhibitor reaction-diffusion spots and labyrinthine stripes spontaneously organize across the frame, carrying the cross-fade between scenes. interpolation -> sweeps chemical reaction equilibrium & pattern growth audioKick -> flashes Turing chemical reaction boundary fronts audioBass -> undulates mo…
+
+![FxReactionDiffusionTuring über TunnelPlain (2D)](img/FxReactionDiffusionTuring_2D.jpg) ![FxReactionDiffusionTuring über AuroraBorealisOverFjord (3D)](img/FxReactionDiffusionTuring_3D.jpg)
+
+
+### FxRimLight
+
+`FX/FxRimLight.frag` · mood=bright,dreamy · probability=0.32
+
+FxRimLight.frag — relight the frame from behind, using only depth. A rim needs a surface normal, and the depth buffer does not store one. It can be recovered: unproject three neighbouring pixels into view space and cross the two edge vectors. The catch is what happens at a silhouette, where the neighbour belongs to a completely different surface — the reconstructed normal there is garbage, and since a silhouette is e…
+
+![FxRimLight über TunnelPlain (2D)](img/FxRimLight_2D.jpg) ![FxRimLight über AuroraBorealisOverFjord (3D)](img/FxRimLight_3D.jpg)
+
+
+### FxRotate
+
+`FX/FxRotate.frag` · mood=calm,bright · probability=0.15
+
+FxRotate.frag FX ROTATE: plain continuous rotation of the scene around its centre, direction and speed set per activation.
+
+![FxRotate über TunnelPlain (2D)](img/FxRotate_2D.jpg) ![FxRotate über AuroraBorealisOverFjord (3D)](img/FxRotate_3D.jpg)
+
+
+### FxSandRippleAeolian
+
+`FX/FxSandRippleAeolian.frag` · mood=calm,dreamy · probability=0.32
+
+FxSandRippleAeolian.frag FX SAND RIPPLE AEOLIAN: Desert sand ripple saltation & wind shear transition. Aeolian wind gusts blow golden sand ripples across the desert dunes, carrying fine grain saltation waves that wipe between the scenes. interpolation -> sweeps sandstorm wind front across the frame audioKick -> flashes golden mineral glints in the blowing sand audioBass -> undulates sand dune ripple frequency & wave …
+
+![FxSandRippleAeolian über TunnelPlain (2D)](img/FxSandRippleAeolian_2D.jpg) ![FxSandRippleAeolian über AuroraBorealisOverFjord (3D)](img/FxSandRippleAeolian_3D.jpg)
+
+
+### FxShroom
+
+`FX/FxShroom.frag` · mood=psychedelic,dreamy · probability=0.15
+
+FxShroom.frag FX SHROOM: psychedelic "trip" warp -- a Lissajous-style offset field displaces the UVs frame to frame, smeared by a short motion-blur accumulation for a breathing, hallucinatory wobble.
+
+![FxShroom über TunnelPlain (2D)](img/FxShroom_2D.jpg) ![FxShroom über AuroraBorealisOverFjord (3D)](img/FxShroom_3D.jpg)
+
+
+### FxSmokeTurbulenceDrift
+
+`FX/FxSmokeTurbulenceDrift.frag` · mood=dark,calm,dreamy · probability=0.32
+
+FxSmokeTurbulenceDrift.frag FX SMOKE TURBULENCE DRIFT: Atmospheric smoke and turbulent vapor transition. Volumetric smoke plumes billow across the viewport, catching soft light scattering and dissolving the outgoing scene into the incoming one. interpolation -> drives smoke density buildup & atmospheric dissipation audioKick -> flashes forward light scattering through the smoke audioBass -> drives turbulent smoke edd…
+
+![FxSmokeTurbulenceDrift über TunnelPlain (2D)](img/FxSmokeTurbulenceDrift_2D.jpg) ![FxSmokeTurbulenceDrift über AuroraBorealisOverFjord (3D)](img/FxSmokeTurbulenceDrift_3D.jpg)
+
+
+### FxSolitonWaveCollision
+
+`FX/FxSolitonWaveCollision.frag` · mood=aggressive,psychedelic · probability=0.32
+
+FxSolitonWaveCollision.frag FX SOLITON WAVE COLLISION: Non-linear Korteweg-de Vries (KdV) soliton transition. Two non-linear solitary waves (sech^2 solitons) propagate toward each other, collide with non-linear phase shifts without dispersing, and leave the incoming scene behind. interpolation -> sweeps soliton wave collision trajectory across viewport audioKick -> flashes maximum non-linear wave crest superposition …
+
+![FxSolitonWaveCollision über TunnelPlain (2D)](img/FxSolitonWaveCollision_2D.jpg) ![FxSolitonWaveCollision über AuroraBorealisOverFjord (3D)](img/FxSolitonWaveCollision_3D.jpg)
+
+
+### FxSpectralPrismSplit
+
+`FX/FxSpectralPrismSplit.frag` · mood=psychedelic,bright · probability=0.35
+
+FxSpectralPrismSplit.frag FX SPECTRAL PRISM SPLIT: Optical prism dispersion transition. The image splits into red, green, and blue spectral sub-images that disperse across the screen with chromatic aberration and recombine smoothly into the incoming scene. interpolation -> sweeps dispersion angle & channel separation audioKick -> flashes spectral rainbow flare streaks audioBass -> widens chromatic channel separation …
+
+![FxSpectralPrismSplit über TunnelPlain (2D)](img/FxSpectralPrismSplit_2D.jpg) ![FxSpectralPrismSplit über AuroraBorealisOverFjord (3D)](img/FxSpectralPrismSplit_3D.jpg)
+
+
+### FxSphere
+
+`FX/FxSphere.frag` · mood=calm,bright · probability=0.15
+
+FxSphere.frag (Inigo Quilez, iq/2013) FX SPHERE: a circular lens region tiles the scene into "copies" concentric repeats radiating from the centre, drifting and optionally rotated; outside the lens the scene passes through unchanged.
+
+![FxSphere über TunnelPlain (2D)](img/FxSphere_2D.jpg) ![FxSphere über AuroraBorealisOverFjord (3D)](img/FxSphere_3D.jpg)
+
+
+### FxSunShafts
+
+`FX/FxSunShafts.frag` · mood=bright,dreamy · probability=0.3
+
+FxSunShafts.frag — volumetric light shafts occluded by real geometry. The classic radial-blur godray marches from each pixel toward the light and accumulates whatever the colour buffer holds. It fails the moment anything bright sits in front of the light, because a colour buffer cannot say what is NEARER — a bright foreground object smears rays out of itself as if it were a hole in the sky. With the depth buffer the …
+
+![FxSunShafts über TunnelPlain (2D)](img/FxSunShafts_2D.jpg) ![FxSunShafts über AuroraBorealisOverFjord (3D)](img/FxSunShafts_3D.jpg)
+
+
+### FxSuperfluidHe4Fountain
+
+`FX/FxSuperfluidHe4Fountain.frag` · mood=dreamy,bright · probability=0.35
+
+FxSuperfluidHe4Fountain.frag FX SUPERFLUID HE4 FOUNTAIN: Cryogenic Helium-II thermomechanical fountain. Below the Lambda point (2.17 K), zero-viscosity superfluid Helium-4 surges through a porous plug in a towering fountain geyser, wetting surfaces with quantum creep films and transitioning cleanly between scenes. interpolation -> sweeps thermomechanical fountain geyser pressure & height audioKick -> flashes cryogeni…
+
+![FxSuperfluidHe4Fountain über TunnelPlain (2D)](img/FxSuperfluidHe4Fountain_2D.jpg) ![FxSuperfluidHe4Fountain über AuroraBorealisOverFjord (3D)](img/FxSuperfluidHe4Fountain_3D.jpg)
+
+
+### FxSupernovaShockwave
+
+`FX/FxSupernovaShockwave.frag` · mood=aggressive,bright · probability=0.35
+
+FxSupernovaShockwave.frag FX SUPERNOVA SHOCKWAVE: Spherical supernova blast wave transition. A hyper-velocity relativistic blast wave detonates at the center, expanding radially outward with glowing shock compression and revealing the new scene. interpolation -> sweeps the spherical shockwave radius across the viewport audioKick -> detonates primary supernova core explosion flash audioBass -> drives shockwave displac…
+
+![FxSupernovaShockwave über TunnelPlain (2D)](img/FxSupernovaShockwave_2D.jpg) ![FxSupernovaShockwave über AuroraBorealisOverFjord (3D)](img/FxSupernovaShockwave_3D.jpg)
+
+
+### FxTesseract4DRotation
+
+`FX/FxTesseract4DRotation.frag` · mood=psychedelic,dark · probability=0.32
+
+FxTesseract4DRotation.frag FX TESSERACT 4D ROTATION: 4D hypercube rotation & W-axis slice transition. The image is embedded as a 3D hyperplane in 4D Euclidean space. Double rotations in XW and YZ planes rotate Universe 1 into the 4th dimension and project Universe 2 onto the 3D screen. interpolation -> sweeps 4D hyper-rotation angle from 0 to pi/2 audioKick -> flashes 4D tesseract edge boundary vertices audioBass -> …
+
+![FxTesseract4DRotation über TunnelPlain (2D)](img/FxTesseract4DRotation_2D.jpg) ![FxTesseract4DRotation über AuroraBorealisOverFjord (3D)](img/FxTesseract4DRotation_3D.jpg)
+
+
+### FxVoronoiShatter
+
+`FX/FxVoronoiShatter.frag` · mood=aggressive · probability=0.35
+
+FxVoronoiShatter.frag FX VORONOI SHATTER: Smooth transition where the scene dissolves through a floating Voronoi cell mosaic. Each polygonal cell smoothly lifts, rotates, and cross-fades with glowing cell boundaries that pulse to the audio. interpolation -> controls continuous cross-fade & cell lift progress audioKick -> flashes cell boundary edges audioBass -> undulates cell rotation amplitude Per-activation variety…
+
+![FxVoronoiShatter über TunnelPlain (2D)](img/FxVoronoiShatter_2D.jpg) ![FxVoronoiShatter über AuroraBorealisOverFjord (3D)](img/FxVoronoiShatter_3D.jpg)
+
+
+### FxWater
+
+`FX/FxWater.frag` · mood=calm,dreamy · probability=0.1
+
+FxWater.frag FX WATER: multi-directional ripple interference pattern refracts and specular-highlights the scene like light through a rippling water surface.
+
+![FxWater über TunnelPlain (2D)](img/FxWater_2D.jpg) ![FxWater über AuroraBorealisOverFjord (3D)](img/FxWater_3D.jpg)
+
+
+### FxWater2
+
+`FX/FxWater2.frag` · mood=calm,dreamy · probability=0.12
+
+FxWater2.frag FX WATER 2: raymarched 3D water surface -- the scene is projected as the reflection/refraction texture of a small raymarched wave field, seen from a fixed aerial camera.
+
+![FxWater2 über TunnelPlain (2D)](img/FxWater2_2D.jpg) ![FxWater2 über AuroraBorealisOverFjord (3D)](img/FxWater2_3D.jpg)
+
+
+### FxWave
+
+`FX/FxWave.frag` · mood=calm,dreamy · probability=0.12
+
+FxWave.frag FX WAVE: a soft radial ripple offsets the scene's UVs outward from the centre and blends the displaced copy back with the original.
+
+![FxWave über TunnelPlain (2D)](img/FxWave_2D.jpg) ![FxWave über AuroraBorealisOverFjord (3D)](img/FxWave_3D.jpg)
+
+
+### FxWiggle
+
+`FX/FxWiggle.frag` · mood=psychedelic,bright · probability=0.26
+
+FxWiggle.frag — the boil of hand-drawn animation. Drawn animation wobbles because each frame was drawn separately: the line never lands in quite the same place twice. Two properties make that read as hand-made rather than as a glitch, and both are easy to get wrong. It HOLDS. Traditional animation is shot on twos or threes — the same drawing is exposed for two or three frames — so the wobble steps at eight to twelve …
+
+![FxWiggle über TunnelPlain (2D)](img/FxWiggle_2D.jpg) ![FxWiggle über AuroraBorealisOverFjord (3D)](img/FxWiggle_3D.jpg)
+
+
+### FxWormholeSpaceFold
+
+`FX/FxWormholeSpaceFold.frag` · mood=dark,psychedelic · probability=0.35
+
+FxWormholeSpaceFold.frag FX WORMHOLE SPACE FOLD: Traversable Morris-Thorne wormhole transition. The camera plunges through a traversable Lorentzian wormhole throat that smoothly folds the geometry of Universe 1 (tex1) into Universe 2 (tex0). interpolation -> navigates camera through the wormhole throat tunnel audioKick -> flashes exotic matter throat stabilization rings audioBass -> undulates wormhole throat diameter…
+
+![FxWormholeSpaceFold über TunnelPlain (2D)](img/FxWormholeSpaceFold_2D.jpg) ![FxWormholeSpaceFold über AuroraBorealisOverFjord (3D)](img/FxWormholeSpaceFold_3D.jpg)

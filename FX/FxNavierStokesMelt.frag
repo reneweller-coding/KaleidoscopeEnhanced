@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 fragColor;
-// CombineNavierStokesMelt.frag
+// FxNavierStokesMelt.frag
 // -----------------------------------------------------------------------
-// COMBINE NAVIER STOKES MELT: Fluid advection vorticity melting transition.
+// FX NAVIER STOKES MELT: Fluid advection vorticity melting transition.
 // The outgoing scene liquifies into turbulent curl-noise fluid vortices,
 // melting and swirling seamlessly to reveal the incoming scene underneath.
 //   interpolation -> drives fluid viscosity reduction & melting progress

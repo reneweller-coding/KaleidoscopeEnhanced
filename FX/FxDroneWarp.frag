@@ -1,6 +1,6 @@
 #version 330 core
 out vec4 fragColor;
-// CombineDroneWarp.frag
+// FxDroneWarp.frag
 // -----------------------------------------------------------------------
 // The first AMBIENT-reactive combine pass: a slow, round, liquid domain warp
 // of the combined frame (research: harmonic/sustained material -> soft, curved

@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 fragColor;
-// CombineSuperfluidHe4Fountain.frag
+// FxSuperfluidHe4Fountain.frag
 // -----------------------------------------------------------------------
-// COMBINE SUPERFLUID HE4 FOUNTAIN: Cryogenic Helium-II thermomechanical fountain.
+// FX SUPERFLUID HE4 FOUNTAIN: Cryogenic Helium-II thermomechanical fountain.
 // Below the Lambda point (2.17 K), zero-viscosity superfluid Helium-4 surges
 // through a porous plug in a towering fountain geyser, wetting surfaces with
 // quantum creep films and transitioning cleanly between scenes.

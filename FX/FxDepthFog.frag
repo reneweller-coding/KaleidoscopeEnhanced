@@ -1,6 +1,6 @@
 #version 330 core
 out vec4 fragColor;
-// CombineDepthFog.frag — atmospheric depth, done as physics rather than as a
+// FxDepthFog.frag — atmospheric depth, done as physics rather than as a
 // distance-keyed colour ramp.
 // -----------------------------------------------------------------------
 // Two things happen to light crossing a hazy volume: some is absorbed, and

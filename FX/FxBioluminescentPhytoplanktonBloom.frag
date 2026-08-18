@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 fragColor;
-// CombineBioluminescentPhytoplanktonBloom.frag
+// FxBioluminescentPhytoplanktonBloom.frag
 // -----------------------------------------------------------------------
-// COMBINE BIOLUMINESCENT PHYTOPLANKTON BLOOM: Marine algal bloom current transition.
+// FX BIOLUMINESCENT PHYTOPLANKTON BLOOM: Marine algal bloom current transition.
 // Millions of single-celled phytoplankton form luminous cyan-turquoise swirling
 // bloom currents that illuminate fluid vortex streamlines and reveal the next scene.
 //   interpolation -> sweeps phytoplankton algal density buildup & dissipation

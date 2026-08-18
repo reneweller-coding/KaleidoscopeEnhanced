@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 fragColor;
-// CombineMoireInterference.frag
+// FxMoireInterference.frag
 // -----------------------------------------------------------------------
-// COMBINE MOIRE INTERFERENCE: Optical Moiré superlattice interference fringes
+// FX MOIRE INTERFERENCE: Optical Moiré superlattice interference fringes
 // bridging the transition between scenes. Overlapping rotating line gratings
 // produce dynamic macroscopic interference waves that carry the cross-fade.
 //   interpolation -> controls grating rotation angle & interference phase

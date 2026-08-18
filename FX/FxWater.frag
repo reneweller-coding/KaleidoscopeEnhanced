@@ -1,5 +1,8 @@
 #version 330 core
 out vec4 fragColor;
+// FxWater.frag
+// FX WATER: multi-directional ripple interference pattern refracts and
+// specular-highlights the scene like light through a rippling water surface.
 uniform vec2 resolution;
 uniform float time;
 uniform sampler2D tex0;

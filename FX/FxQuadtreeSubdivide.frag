@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 fragColor;
-// CombineQuadtreeSubdivide.frag
+// FxQuadtreeSubdivide.frag
 // -----------------------------------------------------------------------
-// COMBINE QUADTREE SUBDIVIDE: Hierarchical recursive quadtree partitioning
+// FX QUADTREE SUBDIVIDE: Hierarchical recursive quadtree partitioning
 // dividing the viewport into multi-scale tiles. Smaller sub-quads flip and
 // resolve with cybernetic neon boundary grids to reveal the incoming scene.
 //   interpolation -> drives recursive quadtree depth & tile flip progress

@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 fragColor;
-// CombineFresnelDiffractionEdge.frag
+// FxFresnelDiffractionEdge.frag
 // -----------------------------------------------------------------------
-// COMBINE FRESNEL DIFFRACTION EDGE: Straight knife-edge optical Fresnel diffraction.
+// FX FRESNEL DIFFRACTION EDGE: Straight knife-edge optical Fresnel diffraction.
 // A straight absorbing edge sweeps across the optical field, creating decaying
 // sinusoidal diffraction fringes governed by Cornu spirals that bridge the transition.
 //   interpolation -> sweeps knife-edge shadow boundary across the screen

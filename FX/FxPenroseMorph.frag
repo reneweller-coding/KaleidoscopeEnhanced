@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 fragColor;
-// CombinePenroseMorph.frag
+// FxPenroseMorph.frag
 // -----------------------------------------------------------------------
-// COMBINE PENROSE MORPH: 5-fold aperiodic Penrose tiling morphing between
+// FX PENROSE MORPH: 5-fold aperiodic Penrose tiling morphing between
 // scenes through recursive golden-ratio deflation (phi = 1.618). Kite and dart
 // tiles subdivide smoothly, with glowing aperiodic grid lines guiding the cross-fade.
 //   interpolation -> drives recursive deflation hierarchy & scene swap

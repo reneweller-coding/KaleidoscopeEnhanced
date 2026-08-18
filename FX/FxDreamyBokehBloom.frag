@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 fragColor;
-// CombineDreamyBokehBloom.frag
+// FxDreamyBokehBloom.frag
 // -----------------------------------------------------------------------
-// COMBINE DREAMY BOKEH BLOOM: Smooth depth-of-field bokeh blur and lens bloom
+// FX DREAMY BOKEH BLOOM: Smooth depth-of-field bokeh blur and lens bloom
 // transition. The outgoing scene melts into a soft out-of-focus bokeh field
 // of luminous circular aperture discs and resolves into the incoming scene.
 //   interpolation -> sweeps camera focus distance & circle-of-confusion blur
