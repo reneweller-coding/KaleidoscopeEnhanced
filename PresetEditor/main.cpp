@@ -112,11 +112,13 @@ int main(int argc, char *argv[])
                 for (const ShaderParam &kp : ref->params)
                 {
                     // Audio-mapping overrides (<expr name="audioKick"> etc.)
+                    // and camera-rig formulas (<expr name="rigRoll"> etc.)
                     // are deliberately PER-PRESET: absence means "raw engine
-                    // value", the correct default -- not a completeness gap.
-                    // Requiring them everywhere would force every preset to
-                    // copy whatever mapping Komplett.xml happens to carry.
-                    if (kp.kind == "expr" && kp.name.startsWith("audio"))
+                    // value" / "rig off", the correct default -- not a
+                    // completeness gap.  Requiring them everywhere would
+                    // force every preset to copy Komplett's mapping.
+                    if (kp.kind == "expr" && (kp.name.startsWith("audio")
+                                               || kp.name.startsWith("rig")))
                         continue;
                     // Match on (name, kind): a shader can carry an <expr> AND
                     // a <float> of the same name (formula + declared clamp

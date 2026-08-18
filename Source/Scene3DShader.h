@@ -126,6 +126,15 @@ private:
 	int    m_vertexCount = 0;
 	GLint  m_projUni     = -1;
 	GLint  m_eyeUni      = -1;
+	// CAMERA RIG (formula layer, no shader edits): <expr> entries named
+	// rigPitch/rigYaw/rigRoll/rigDolly (absolute, radians / world units) and
+	// rigPitchV/rigYawV/rigRollV/rigDollyV (rates, HOST-INTEGRATED so an
+	// audio-varying rate is jump-free per the anti-flicker rule) are
+	// evaluated CPU-side in draw() and composed into projM.  Accumulators
+	// for the V channels + the last integration time (draw() runs several
+	// times per frame for shadow/OIT passes; integrate only on a NEW time).
+	float  m_rigAcc[4]   = { 0.f, 0.f, 0.f, 0.f };   // pitch yaw roll dolly
+	float  m_rigLastT    = -1.0e9f;
 	GLint  m_attrA       = -1;
 	GLint  m_attrB       = -1;
 	GLint  m_seedUni     = -1;

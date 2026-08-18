@@ -609,6 +609,63 @@ void Scene3DShader::draw()
 		0.f,        0.f, (2.f * zf * zn) / (zn - zf),    0.f
 	};
 
+	// CAMERA RIG: preset formulas named rig* steer the view.  Evaluated
+	// CPU-side against the same variable set as every other formula, then
+	// composed INTO projM, so all Scene3D scenes get pitch/yaw/roll/dolly
+	// (+ host-integrated V rates) without touching a single shader.  The
+	// shadow pass renders through lightM, so shadows stay world-anchored.
+	{
+		bool hasRig = false;
+		for( ExprEntry &e : m_exprs )
+			if( e.prog.valid() && e.name.rfind( "rig", 0 ) == 0 ) { hasRig = true; break; }
+		if( hasRig )
+		{
+			float ev[ExprVars::V_COUNT];
+			fillExprVars( m_lastAudio, m_exprTime, m_exprSeeds, ev );
+			float absv[4] = { 0, 0, 0, 0 };            // pitch yaw roll dolly
+			float vel[4]  = { 0, 0, 0, 0 };
+			static const char *kAbs[4] = { "rigPitch",  "rigYaw",  "rigRoll",  "rigDolly"  };
+			static const char *kVel[4] = { "rigPitchV", "rigYawV", "rigRollV", "rigDollyV" };
+			for( ExprEntry &e : m_exprs )
+			{
+				if( !e.prog.valid() ) continue;
+				for( int i = 0; i < 4; ++i )
+				{
+					if( e.name == kAbs[i] ) absv[i] = e.prog.eval( ev );
+					if( e.name == kVel[i] ) vel[i]  = e.prog.eval( ev );
+				}
+			}
+			// integrate rates once per FRAME (same m_exprTime across the
+			// shadow/opaque/OIT draws of one frame)
+			if( m_exprTime != m_rigLastT )
+			{
+				float dt = m_exprTime - m_rigLastT;
+				if( dt < 0.f || dt > 0.1f ) dt = 0.f;   // activation / reset
+				for( int i = 0; i < 4; ++i ) m_rigAcc[i] += vel[i] * dt;
+				m_rigLastT = m_exprTime;
+			}
+			const float px = absv[0] + m_rigAcc[0], yw = absv[1] + m_rigAcc[1];
+			const float rl = absv[2] + m_rigAcc[2], dl = absv[3] + m_rigAcc[3];
+			// M = T(0,0,dolly) * Rz(roll) * Ry(yaw) * Rx(pitch), column-major.
+			// dolly > 0 pushes the camera IN (view-space z is negative ahead).
+			const float cx = cosf( px ), sx = sinf( px );
+			const float cy = cosf( yw ), sy = sinf( yw );
+			const float cz = cosf( rl ), sz = sinf( rl );
+			const float R[16] = {                       // Rz*Ry*Rx
+				 cz*cy,            sz*cy,            -sy,    0.f,
+				 cz*sy*sx - sz*cx, sz*sy*sx + cz*cx,  cy*sx, 0.f,
+				 cz*sy*cx + sz*sx, sz*sy*cx - cz*sx,  cy*cx, 0.f,
+				 0.f,              0.f,               dl,    1.f
+			};
+			float pr[16];
+			for( int c = 0; c < 4; ++c )
+				for( int r = 0; r < 4; ++r )
+					pr[c*4+r] = proj[0*4+r]*R[c*4+0] + proj[1*4+r]*R[c*4+1]
+					          + proj[2*4+r]*R[c*4+2] + proj[3*4+r]*R[c*4+3];
+			memcpy( proj, pr, sizeof(proj) );
+		}
+	}
+
 	if( m_projUni   >= 0 ) glUniformMatrix4fv( m_projUni, 1, GL_FALSE, proj );
 	if( m_eyeUni    >= 0 ) glUniform1f( m_eyeUni,    m_eyeOffset );
 	if( m_seedUni   >= 0 ) glUniform1f( m_seedUni,   m_sceneSeed );

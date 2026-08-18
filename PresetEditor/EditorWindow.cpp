@@ -578,12 +578,9 @@ static QString identityVarFor(const QString &uniform)
 // some registry) means the list is always true for the shader as it is NOW,
 // mid-edit included.  Array/vec uniforms are excluded: a formula evaluates to
 // one float.
-static QStringList usedAudioUniforms(const QString &root, const PresetEntry &e)
+// Shader source files of an entry (frag only for 2D, all stages for Scene3D).
+static QStringList shaderSourceFiles(const QString &root, const PresetEntry &e)
 {
-    static const QSet<QString> kNonScalar = {
-        "audioSpectrum", "audioWave", "audioChroma", "audioMelody",
-        "audioStereoBandL", "audioStereoBandR"
-    };
     QString rel = e.file;
     rel.replace('\\', '/');
     while (rel.startsWith("../")) rel = rel.mid(3);
@@ -596,10 +593,74 @@ static QStringList usedAudioUniforms(const QString &root, const PresetEntry &e)
             files << root + "/Scene3D/" + stem + ext;
     else
         files << root + "/" + folder + "/" + stem + ".frag";
+    return files;
+}
 
+// All scalar float uniforms the entry's shaders DECLARE that the host never
+// supplies and no param row covers: dormant knobs, sitting at GLSL's 0.0
+// default in the shipped app.  Each becomes a formula-mapping row, so music
+// can drive them per preset without any shader edit.
+static QStringList dormantFloatUniforms(const QString &root, const PresetEntry &e,
+                                        const QSet<QString> &covered)
+{
+    // Host-supplied names (kAudioLocNames in EffectShader.cpp + the fixed
+    // engine set).  Anything here is uploaded every frame by the engine and
+    // gets its mapping row from the AUDIO section (audio*) or nowhere.
+    static const QSet<QString> kHost = {
+        "audioPhase","audioAdvance","audioBeat","audioLevel","sides",
+        "audioFlip","audioCentroid","audioFlux","audioSubBass","audioBass",
+        "audioLowMid","audioMid","audioUpperMid","audioHigh","audioRolloff",
+        "audioSpread","audioMode","audioPitch","audioArousal","audioValence",
+        "audioHarmChange","audioRoughness","audioSharpness","audioOnset",
+        "audioDownbeat","audioBeatPhase","audioStereo","audioDeltaPitch",
+        "audioMusic","audioStereoL","audioStereoR","audioChromaHue",
+        "audioSwell","audioBarPhase","audioAmbient","audioKick","audioSnare",
+        "audioHat","transStyle","audioSpectrum","texSim","texFluid",
+        "audioBuildUp","audioDrop","audioWave","audioBassRel","audioMidRel",
+        "audioTrebRel","dayPhase","texSmoke3D","audioChroma","audioFlatness",
+        "audioZCR","texSSM","ssmHead","ssmFill","texPhysarum",
+        "audioFadeOut","audioMelody","audioMelodyHead",
+        "texSpectro","spectroHead","spectroFill",
+        "texDepth0","texDepth1","depthValid","nearFar","tanHalfFov",
+        "texShadow","lightM","shadowPass","lightDir","shadowTexel",
+        "oitPass","shadowExtent",
+        "time","resolution","interpolation","interpolationRotation",
+        "tex0","tex1","projM","maxVertices","sceneSeed","cubeBudget",
+        // set by C++ code outside the audio path: eyeOff per stereo eye
+        // (an override would BREAK stereo), power by the KaleidoscopeBase
+        // class, genPass by the Scene3D generator loop
+        "eyeOff","power","genPass"
+    };
+    static const QRegularExpression decl("\\buniform\\s+float\\s+(\\w+)\\s*;");
+    QSet<QString> found;
+    for (const QString &fp : shaderSourceFiles(root, e))
+    {
+        QFile f(fp);
+        if (!f.open(QIODevice::ReadOnly)) continue;
+        const QString src = QString::fromUtf8(f.readAll());
+        auto it = decl.globalMatch(src);
+        while (it.hasNext())
+        {
+            const QString u = it.next().captured(1);
+            if (!kHost.contains(u) && !covered.contains(u)
+                && !u.startsWith("audio"))
+                found.insert(u);
+        }
+    }
+    QStringList out = found.values();
+    out.sort();
+    return out;
+}
+
+static QStringList usedAudioUniforms(const QString &root, const PresetEntry &e)
+{
+    static const QSet<QString> kNonScalar = {
+        "audioSpectrum", "audioWave", "audioChroma", "audioMelody",
+        "audioStereoBandL", "audioStereoBandR"
+    };
     QSet<QString> found;
     static const QRegularExpression re("\\baudio[A-Z]\\w*");
-    for (const QString &fp : files)
+    for (const QString &fp : shaderSourceFiles(root, e))
     {
         QFile f(fp);
         if (!f.open(QIODevice::ReadOnly)) continue;
@@ -682,6 +743,37 @@ void EditorWindow::rebuildRangeEditor()
             if (have) continue;
             ShaderParam fp; fp.kind = "expr"; fp.name = nm;  // empty = random-in-range
             combined.push_back({ fp, false });
+        }
+    }
+    // ---- DORMANT UNIFORMS: float uniforms the shaders declare that neither
+    // the host nor any registered param supplies -- they sit at GLSL's 0.0
+    // default in the shipped app.  A formula row wakes them per preset.
+    {
+        QSet<QString> covered;
+        for (const Row &r : combined) covered.insert(r.param.name);
+        for (const QString &du : dormantFloatUniforms(m_root, entry, covered))
+        {
+            ShaderParam dp; dp.kind = "expr"; dp.name = du;  // empty = 0.0
+            combined.push_back({ dp, false });
+        }
+    }
+    // ---- CAMERA RIG (scene3d only): 8 formula channels Scene3DShader
+    // composes into projM -- pitch/yaw/roll (radians), dolly (world units,
+    // >0 = closer) plus host-INTEGRATED V rates (audio-varying rates are
+    // jump-free by construction).  Empty = rig off.
+    if (entry.type.compare("scene3d", Qt::CaseInsensitive) == 0)
+    {
+        static const char *kRig[8] = { "rigPitch", "rigYaw", "rigRoll", "rigDolly",
+                                       "rigPitchV", "rigYawV", "rigRollV", "rigDollyV" };
+        for (const char *rn : kRig)
+        {
+            bool have = false;
+            for (const Row &r : combined)
+                if (r.param.kind == "expr" && r.param.name == QLatin1String(rn))
+                { have = true; break; }
+            if (have) continue;
+            ShaderParam rp; rp.kind = "expr"; rp.name = rn;
+            combined.push_back({ rp, false });
         }
     }
     // Order: value rows, then param-formula rows, then audio-mapping rows --
@@ -850,7 +942,23 @@ void EditorWindow::rebuildRangeEditor()
                                                       : iv + tr("   (Engine-Rohwert)"));
             }
             else if (defFormula.isEmpty())
-                edit->setPlaceholderText(tr("z.B. 1.0 + 0.5*kick   (leer = Zufallswert aus Bereich)"));
+            {
+                // Distinguish: rig channel / ranged param (empty = the usual
+                // random roll) / dormant uniform (empty = GLSL 0.0).
+                bool hasRange = false;
+                for (const Row &r2 : combined)
+                    if (r2.param.name == p.name
+                        && (r2.param.kind == "float" || r2.param.kind == "int"))
+                    { hasRange = true; break; }
+                if (p.name.startsWith("rig"))
+                    edit->setPlaceholderText(p.name.endsWith("V")
+                        ? tr("Rate, wird integriert – z.B. 0.1*swell   (leer = Rig aus)")
+                        : tr("z.B. 0.05*sin(0.2*phase)   (leer = Rig aus)"));
+                else
+                    edit->setPlaceholderText(hasRange
+                        ? tr("z.B. 1.0 + 0.5*kick   (leer = Zufallswert aus Bereich)")
+                        : tr("z.B. 0.5*swell   (leer = 0.0, Uniform ungenutzt)"));
+            }
             connect(edit, &QLineEdit::editingFinished, this, [=]{
                 if (!edit->text().trimmed().isEmpty())
                     writeParam(p.name, "expr", {}, {}, {}, edit->text());
