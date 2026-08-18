@@ -37,6 +37,21 @@ vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
+// IMG-PALETTE (house standard, replaces the generic cos-rainbow): colours
+// come from a rotating arc in the CURRENT slideshow image, so every
+// activation inherits a fresh palette from the photos, and the arc follows
+// the musical key (chromaHue is circular-slewed = jump-free) with a slow
+// advance drift.  Valence shapes saturation toward the mood.
+vec3 imgPalette(float t)
+{
+    float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
+    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
+    vec3  col = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
+    float g   = dot(col, vec3(0.333));
+    return mix(vec3(g), col, 0.55 + 0.45 * audioValence);
+}
+
+
 vec3 hueRot(vec3 c, float a) {
     vec3 k = vec3(0.57735026919);
     float cs = cos(a), sn = sin(a);
@@ -107,7 +122,7 @@ void main() {
     float ringGlow = exp(-abs(innerRings) * 6.0) * (0.8 + 1.2 * audioHigh);
 
     vec3 gold = vec3(1.0, 0.82, 0.35);
-    vec3 iridescent = 0.5 + 0.5 * cos(vec3(0.0, 2.0, 4.0) + totalInversions * 1.2 + audioPhase);
+    vec3 iridescent = imgPalette((totalInversions * 1.2 + audioPhase) * 0.159);
 
     vec3 col = photoCol * (0.8 + 0.4 * totalInversions) + gold * border * 2.5 + iridescent * ringGlow * 1.5;
     col += vec3(1.0) * audioKick * exp(-length(uv) * 4.0) * 1.5; // Central burst

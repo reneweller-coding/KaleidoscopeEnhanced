@@ -30,6 +30,7 @@ uniform float audioLevel;
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
+uniform float audioChromaHue;
 uniform float audioSubBass;
 uniform float audioBass;
 uniform float audioMid;
@@ -44,6 +45,21 @@ uniform float hueP;
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
+
+// IMG-PALETTE (house standard, replaces the generic cos-rainbow): colours
+// come from a rotating arc in the CURRENT slideshow image, so every
+// activation inherits a fresh palette from the photos, and the arc follows
+// the musical key (chromaHue is circular-slewed = jump-free) with a slow
+// advance drift.  Valence shapes saturation toward the mood.
+vec3 imgPalette(float t)
+{
+    float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
+    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
+    vec3  col = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
+    float g   = dot(col, vec3(0.333));
+    return mix(vec3(g), col, 0.55 + 0.45 * audioValence);
+}
+
 
 vec3 hueRot(vec3 c, float a) {
     vec3 k = vec3(0.57735026919);
@@ -145,7 +161,7 @@ void main() {
         float spec = pow(max(dot(ref, lightDir), 0.0), 32.0);
 
         // Orbit trap color mapping
-        vec3 baseCol = 0.5 + 0.5 * cos(vec3(0.0, 2.0, 4.0) + minTrap * 8.0 + audioCentroid * 3.0);
+        vec3 baseCol = imgPalette((minTrap * 8.0 + audioCentroid * 3.0) * 0.159);
 
         // Photo mapping from triplanar surface
         vec2 photoCoord = fract(p.xy * 0.8 + 0.5);

@@ -1183,6 +1183,14 @@ Audio is captured via WASAPI loopback (`AudioAnalyzer`) and analysed in real tim
   gentle `rigDolly = 0.5*swell` push-in; shadows stay world-anchored
   (the shadow pass renders through `lightM`).  The editor shows the eight
   rig rows for every scene3d entry.
+- **IMG-PALETTE — colours from the photos, not from a formula:** the house
+  standard `imgPalette(t)` replaces the generic cos-rainbow: colours are
+  sampled from a rotating arc in the CURRENT slideshow image, so every
+  activation inherits a fresh palette from the photos; the arc follows the
+  musical key (`chromaHue`, jump-free) with a slow advance drift, and
+  valence shapes saturation toward the mood.  First wave: both Ferrofluid
+  scenes, PrismaticRainbowCloud, MandelbulbHyperRealm,
+  NonEuclideanHyperbolicMandala, PenroseAperiodicTessellation.
 - **2D CAMERA RIG for every 2D scene (8 more formula channels):** the 2D
   counterpart of the projM rig — formulas named `rig2Roll` (radians),
   `rig2Zoom` (>0 = closer), `rig2X`/`rig2Y` (pan) plus host-integrated
