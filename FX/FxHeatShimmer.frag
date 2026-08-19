@@ -45,7 +45,6 @@ uniform vec2  depthValid;
 uniform vec2  nearFar;
 uniform float tanHalfFov;
 uniform float interpolation;
-uniform int   transStyle;
 
 uniform float audioLevel;
 uniform float audioBeat;

@@ -41,7 +41,6 @@ uniform sampler2D texDepth1;
 uniform vec2  depthValid;
 uniform vec2  nearFar;
 uniform float interpolation;
-uniform int   transStyle;
 
 uniform float audioLevel;
 uniform float audioBeat;
