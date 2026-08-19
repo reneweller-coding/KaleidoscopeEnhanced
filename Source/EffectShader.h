@@ -141,7 +141,7 @@ public:
 		initUniforms( m_width, m_height );   // virtual: derived locations too
 		m_glReady = true;
 		m_usesSim = m_usesFluid = m_usesSmoke3D = m_usesSSM = m_usesPhysarum = -1;
-		m_usesSpectro = m_usesShadow = m_usesOit = -1;
+		m_usesSpectro = m_usesShadow = m_usesShadow2 = m_usesOit = -1;
 	}
 	/// @return True once ensureCompiled() has successfully built the GL program.
 	bool isCompiled() const { return m_glReady; }
@@ -374,6 +374,20 @@ public:
 	/// @return True if this effect's compiled fragment shader declares the "texShadow" sampler (shadow map). Cached after first query.
 	bool usesShadow();
 
+	// ---- second, independent shadow-casting light ("studio" two-light setup) ----
+	// Same contract as the light above, entirely separate state: a scene opts
+	// in by ALSO declaring "texShadow2" (lookup) and, in its .vert, an extra
+	// "if (shadowPass2 > 0.5) gl_Position = lightM2 * ..." branch (its OWN
+	// depth-only projection) alongside the existing shadowPass branch -- the
+	// host cannot add that branch for a scene, since the depth pass IS the
+	// scene's own vertex shader running with a different matrix bound. Reuses
+	// shadowExtent/shadowTexel (same box, same map resolution as light 1).
+	static float s_shadowPass2;       ///< 1 during light 2's depth-only pass (kept separate from s_shadowPass so a shader's .vert can tell which matrix to project with).
+	static float s_lightM2[16];       ///< Light 2's view-projection, column-major.
+	static float s_lightDir2[3];      ///< Light 2's direction.
+	/// @return True if this effect's compiled fragment shader declares the "texShadow2" sampler (second shadow map). Cached after first query.
+	bool usesShadow2();
+
 	// ---- order-independent transparency ----
 	// Same shape of contract as the shadow pass.  oitPass is 0 for the scene's
 	// opaque geometry and 1 for its transparent geometry, which is drawn into
@@ -470,6 +484,7 @@ protected:
 	int		m_usesSSM = -1;      // same caching for the self-similarity matrix
 	int		m_usesSpectro = -1;  // ... and for the scrolling spectrogram history
 	int		m_usesShadow = -1;   // ... and for the shadow map
+	int		m_usesShadow2 = -1;   // ... and for the second, independent shadow map
 	int		m_usesOit = -1;      // ... and for order-independent transparency
 	int		m_usesPhysarum = -1; // same caching for the Physarum trail map
 	unsigned int	m_cfxMask = 0;   ///< Compute-FX sampler bits (see cfxMask()); cached result, resolved once per compiled program (see m_cfxProg).

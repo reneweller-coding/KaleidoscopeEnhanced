@@ -28,6 +28,11 @@ out float vHeight;      // 0 at the base, 1 at the top of this pillar
 uniform mat4  projM;
 uniform mat4  lightM;
 uniform float shadowPass;
+// Second, independent shadow-casting light (cool rim/fill) -- its own depth
+// pass needs its own matrix here for the same reason light 1 does: the host
+// cannot re-derive it, only the scene knows how it places its own camera.
+uniform mat4  lightM2;
+uniform float shadowPass2;
 uniform float eyeOff;
 uniform float audioAdvance;
 uniform float audioLevel;
@@ -116,9 +121,14 @@ void main()
     vTint   = attrB.w;
     vHeight = height;
 
-    if (shadowPass > 0.5)
+    if (shadowPass2 > 0.5)
     {
-        // The depth pass: same geometry, the light's matrix.
+        // Light 2's depth pass: same geometry, its OWN matrix.
+        gl_Position = lightM2 * vec4(world, 1.0);
+    }
+    else if (shadowPass > 0.5)
+    {
+        // Light 1's depth pass: same geometry, the light's matrix.
         gl_Position = lightM * vec4(world, 1.0);
     }
     else

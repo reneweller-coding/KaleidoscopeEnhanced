@@ -1227,6 +1227,15 @@ void RenderPipeline::paint(const float *rotMatrix, float tx, float ty, float tz,
 		renderShadowPass( m_effectTextures[m_scheduler.actTexture()] );
 		glBindFramebuffer( GL_FRAMEBUFFER, msaaTex1 ? m_msaaFbo : m_fboEffectTexture1 );
 	}
+	// Second, independent shadow-casting light (studio-style two-light setup);
+	// same scope as light 1 -- the active scene only, never the cross-fading
+	// "next" one.
+	updateLightMatrix2( m_globaltime );
+	if( m_effectTextures[m_scheduler.actTexture()]->usesShadow2() )
+	{
+		renderShadowPass2( m_effectTextures[m_scheduler.actTexture()] );
+		glBindFramebuffer( GL_FRAMEBUFFER, msaaTex1 ? m_msaaFbo : m_fboEffectTexture1 );
+	}
 
 	EffectShader::s_depthValid[0] = tex1Is3D ? 1.f : 0.f;
 	if( EffectShader::s_depthValid[0] == 0.f )
@@ -1806,13 +1815,13 @@ void RenderPipeline::blitTexture( GLuint tex )
 
 // Create the shadow map's depth-only framebuffer.  Lazy: only a scene that
 // declares "texShadow" ever triggers it, and most never do.
-bool RenderPipeline::ensureShadowMap()
+bool RenderPipeline::ensureShadowMapGeneric( GLuint &fbo, GLuint &tex )
 {
-	if( m_shadowFbo != 0 )
+	if( fbo != 0 )
 		return true;
 
-	glGenTextures( 1, &m_shadowTex );
-	glBindTexture( GL_TEXTURE_2D, m_shadowTex );
+	glGenTextures( 1, &tex );
+	glBindTexture( GL_TEXTURE_2D, tex );
 	// LINEAR is deliberate: with GL_TEXTURE_COMPARE_MODE set, the hardware
 	// filters the RESULT of four depth comparisons rather than the depths
 	// themselves — free 2x2 percentage-closer filtering, which is what turns a
@@ -1831,10 +1840,10 @@ bool RenderPipeline::ensureShadowMap()
 	glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, kShadowSize, kShadowSize,
 	              0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL );
 
-	glGenFramebuffers( 1, &m_shadowFbo );
-	glBindFramebuffer( GL_FRAMEBUFFER, m_shadowFbo );
+	glGenFramebuffers( 1, &fbo );
+	glBindFramebuffer( GL_FRAMEBUFFER, fbo );
 	glFramebufferTexture2D( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-	                        GL_TEXTURE_2D, m_shadowTex, 0 );
+	                        GL_TEXTURE_2D, tex, 0 );
 	// No colour attachment at all; without telling GL that, the framebuffer is
 	// incomplete.
 	glDrawBuffer( GL_NONE );
@@ -1846,9 +1855,9 @@ bool RenderPipeline::ensureShadowMap()
 	if( !ok )
 	{
 		fputs( "shadow map FBO incomplete - shadows disabled\n", stderr );
-		glDeleteFramebuffers( 1, &m_shadowFbo );
-		glDeleteTextures( 1, &m_shadowTex );
-		m_shadowFbo = m_shadowTex = 0;
+		glDeleteFramebuffers( 1, &fbo );
+		glDeleteTextures( 1, &tex );
+		fbo = tex = 0;
 	}
 	return ok;
 }
@@ -1857,7 +1866,13 @@ bool RenderPipeline::ensureShadowMap()
 // fixed cube at the origin.  Orthographic and not perspective because this is a
 // SUN: its rays are parallel, and a perspective shadow frustum would give the
 // shadows a vanishing point that the shading does not have.
-void RenderPipeline::updateLightMatrix(float t)
+//
+// Shared by both lights: angleOffset phase-shifts the orbit so light 2 never
+// moves in lockstep with light 1, and tiltY lowers the base elevation (0 for
+// the overhead "sun", >0 for a cooler, more side-on second light) -- see the
+// updateLightMatrix()/updateLightMatrix2() wrappers in the header for the
+// actual per-light parameters.
+void RenderPipeline::updateLightMatrixGeneric( float t, float angleOffset, float tiltY, float *outM, float *outDir )
 {
 	// The ACTIVE scene's box, not the default: the map's resolution is spent
 	// across it, so a small scene must get a small box or its shadows come out
@@ -1867,16 +1882,18 @@ void RenderPipeline::updateLightMatrix(float t)
 	// Kept fairly high on purpose.  A low sun is more dramatic per shadow, but
 	// shadow length goes as 1/tan(elevation) — at 37 degrees a tall object
 	// throws a shadow longer than itself, and in any scene with repeated
-	// geometry the ground ends up entirely dark.
-	float a = t * 0.06f;
+	// geometry the ground ends up entirely dark.  (tiltY pulls this down for a
+	// second light on purpose -- a lower, cooler fill reads as a second
+	// distinct source rather than a copy of the sun.)
+	float a = t * 0.06f + angleOffset;
 	float lx = 0.42f * sinf( a );
-	float ly = 1.15f + 0.16f * sinf( a * 0.43f );
+	float ly = ( 1.15f - tiltY ) + 0.16f * sinf( a * 0.43f );
 	float lz = -0.42f * cosf( a ) - 0.18f;
 	float ln = sqrtf( lx * lx + ly * ly + lz * lz );
 	lx /= ln; ly /= ln; lz /= ln;
-	EffectShader::s_lightDir[0] = lx;
-	EffectShader::s_lightDir[1] = ly;
-	EffectShader::s_lightDir[2] = lz;
+	outDir[0] = lx;
+	outDir[1] = ly;
+	outDir[2] = lz;
 
 	// Look-at from the light toward the origin.  f points from the eye into the
 	// scene, so it is the NEGATED light direction.
@@ -1918,25 +1935,26 @@ void RenderPipeline::updateLightMatrix(float t)
 		0.f,     0.f,    -( zf + zn ) / ( zf - zn ), 1.f
 	};
 
-	// s_lightM = P * V, column-major.
-	float *M = EffectShader::s_lightM;
+	// outM = P * V, column-major.
 	for( int c = 0; c < 4; ++c )
 		for( int r = 0; r < 4; ++r )
 		{
 			float sum = 0.f;
 			for( int k = 0; k < 4; ++k )
 				sum += P[k * 4 + r] * V[c * 4 + k];
-			M[c * 4 + r] = sum;
+			outM[c * 4 + r] = sum;
 		}
 }
 
-// Draw one 3D scene into the shadow map, depth only.
-void RenderPipeline::renderShadowPass(EffectShader *fx)
+// Draw one 3D scene into a shadow map, depth only. Shared by both lights --
+// see renderShadowPass()/renderShadowPass2() in the header for which FBO/
+// texture/unit/pass-flag each one binds.
+void RenderPipeline::renderShadowPassGeneric( EffectShader *fx, GLuint &fbo, GLuint tex, int texUnit, float &passFlag )
 {
-	if( !ensureShadowMap() )
+	if( !ensureShadowMapGeneric( fbo, tex ) )
 		return;
 
-	glBindFramebuffer( GL_FRAMEBUFFER, m_shadowFbo );
+	glBindFramebuffer( GL_FRAMEBUFFER, fbo );
 	glViewport( 0, 0, kShadowSize, kShadowSize );
 	glClearDepth( 1.0 );
 	glClear( GL_DEPTH_BUFFER_BIT );
@@ -1950,15 +1968,15 @@ void RenderPipeline::renderShadowPass(EffectShader *fx)
 	// normal instead, which needs no assumption about winding at all.
 	glDisable( GL_CULL_FACE );
 
-	EffectShader::s_shadowPass = 1.f;
+	passFlag = 1.f;
 	fx->enableShader();
 	fx->setUniforms( m_globaltime, m_interpolationTexture, 0, 1 );
 	fx->applyAudioFeatures( m_lastAudioFx );
 	fx->draw();
-	EffectShader::s_shadowPass = 0.f;
+	passFlag = 0.f;
 
-	glActiveTexture( GL_TEXTURE0 + 31 );
-	glBindTexture( GL_TEXTURE_2D, m_shadowTex );
+	glActiveTexture( GL_TEXTURE0 + texUnit );
+	glBindTexture( GL_TEXTURE_2D, tex );
 	glActiveTexture( GL_TEXTURE0 );
 
 	glViewport( 0, 0, m_width, m_height );

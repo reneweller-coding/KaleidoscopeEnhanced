@@ -21,17 +21,19 @@ in float vHeight;
 
 /**
  * @file PillarHall.frag
- * @brief Shades the shadow-mapped pillar hall: a sun-and-sky lit floor
- * and colonnade, with an emissive band climbing the pillars.
+ * @brief Shades the shadow-mapped pillar hall: a warm sun-and-sky lit floor
+ * and colonnade with a cool second shadow-casting rim/fill light, plus an
+ * emissive band climbing the pillars.
  *
  * audioLevel brightens the sun term, audioHigh sharpens the specular
  * highlight, audioKick drives the emissive band climbing the pillars,
- * audioSubBass and audioBeat add a final overall pulse, audioAmbient
- * lifts the unshadowed sky term, and audioChromaHue nudges the hue. The
- * pillar and emissive-band hue is drawn from the house imgPalette (a
- * rotating sample arc over the current slideshow photo, tex0/tex1
- * crossfaded by interpolation) driven by audioAdvance and audioValence;
- * camHP sets the eye height and softP the shadow's softness.
+ * audioSubBass and audioBeat add a final overall pulse, audioAmbient lifts
+ * both the unshadowed sky term and the second light's strength, and
+ * audioChromaHue nudges the hue. The pillar and emissive-band hue is drawn
+ * from the house imgPalette (a rotating sample arc over the current
+ * slideshow photo, tex0/tex1 crossfaded by interpolation) driven by
+ * audioAdvance and audioValence; camHP sets the eye height and softP the
+ * shadow's softness (shared by both lights' maps).
  */
 
 uniform sampler2D tex0;
@@ -39,6 +41,12 @@ uniform sampler2DShadow texShadow;
 uniform mat4  lightM;
 uniform vec3  lightDir;
 uniform float shadowPass;
+// Second, independent shadow-casting light: a cool, lower rim/fill opposite
+// the warm sun, its own map so it casts real (not painted-on) shadows too.
+uniform sampler2DShadow texShadow2;
+uniform mat4  lightM2;
+uniform vec3  lightDir2;
+uniform float shadowPass2;
 uniform float shadowTexel;
 uniform float interpolation;
 uniform float time;
@@ -87,7 +95,11 @@ vec3 hue2rgb(float h)
 uniform float shadowExtent;
 #define SHADOW_WORLD_TEXEL (2.0 * shadowExtent * shadowTexel)
 
-float shadowAt(vec3 world, vec3 n, float ndl)
+// Generalised over WHICH light's map/matrix to sample -- lights 1 and 2 are
+// otherwise shaded identically, just from different directions and maps.
+// Passing a sampler2DShadow by value is fine in GLSL (opaque handle, not the
+// texture data itself), so this stays one function instead of two copies.
+float shadowAt(vec3 world, vec3 n, float ndl, sampler2DShadow shadowTex, mat4 lm)
 {
     // Normal offset.  A shadow texel covers a patch of surface, and the depth
     // recorded for that patch is one single value — so a surface almost always
@@ -96,7 +108,7 @@ float shadowAt(vec3 world, vec3 n, float ndl)
     // patch entirely, and unlike a depth bias it works the same on every
     // orientation and needs no knowledge of the geometry's winding.
     float lift = SHADOW_WORLD_TEXEL * 2.2 / max(ndl, 0.15);
-    vec4 lp = lightM * vec4(world + n * lift, 1.0);
+    vec4 lp = lm * vec4(world + n * lift, 1.0);
     vec3 proj = lp.xyz / lp.w * 0.5 + 0.5;      // clip space -> texture space
     if (proj.z > 1.0)
         return 1.0;                             // beyond the light's far plane
@@ -110,7 +122,7 @@ float shadowAt(vec3 world, vec3 n, float ndl)
     float r = shadowTexel * (0.8 + 2.6 * softP);
     for (int y = -1; y <= 1; ++y)
         for (int x = -1; x <= 1; ++x)
-            s += texture(texShadow,
+            s += texture(shadowTex,
                          vec3(proj.xy + vec2(float(x), float(y)) * r,
                               proj.z - bias));
     return s / 9.0;
@@ -118,8 +130,8 @@ float shadowAt(vec3 world, vec3 n, float ndl)
 
 void main()
 {
-    // Depth pass: write nothing but depth.
-    if (shadowPass > 0.5)
+    // Depth pass (either light): write nothing but depth.
+    if (shadowPass > 0.5 || shadowPass2 > 0.5)
     {
         fragColor = vec4(0.0);
         return;
@@ -128,9 +140,14 @@ void main()
     vec3 n = normalize(vNormal);
     vec3 V = normalize(vec3(0.0, camHP, 0.0) - vWorld);
     vec3 L = normalize(lightDir);
+    vec3 L2 = normalize(lightDir2);
 
     float ndl = max(dot(n, L), 0.0);
-    float shadow = shadowAt(vWorld, n, ndl);
+    float shadow = shadowAt(vWorld, n, ndl, texShadow, lightM);
+    // Light 2's own diffuse term + its own shadow lookup -- real occlusion,
+    // not a flat rim tint painted on regardless of what's in the way.
+    float ndl2 = max(dot(n, L2), 0.0);
+    float shadow2 = shadowAt(vWorld, n, ndl2, texShadow2, lightM2);
 
     float hue = fract(0.58 + 0.22 * hueP + 0.10 * vTint + 0.05 * sin(audioChromaHue));
     // The floor is deliberately the brightest surface in the scene: it is what
@@ -143,6 +160,14 @@ void main()
     // Sun: warm, and the only thing the shadow term touches.
     vec3 sun = vec3(1.0, 0.90, 0.72) * (1.5 + 1.4 * audioLevel);
     vec3 col = base * sun * ndl * shadow;
+
+    // Studio second light: a cool moonlit rim/fill, lower and from roughly the
+    // opposite side (see updateLightMatrix2's angleOffset/tiltY) -- picks out
+    // edges the warm sun leaves flat, and its own shadow term keeps it from
+    // reading as a flat rim-light hack. Weaker than the sun so it reads as
+    // fill, not a second competing key.
+    vec3 rim = vec3(0.45, 0.60, 0.85) * (0.55 + 0.55 * audioAmbient);
+    col += base * rim * ndl2 * shadow2;
 
     // Sky ambient from above, unshadowed — an occlusion term is what darkens
     // the shadowed areas, not the absence of any light at all.  Killing the
