@@ -108,9 +108,13 @@ public:
 	// between the two per-eye draw() calls.
 	void setEyeOffset( float e ) { m_eyeOffset = e; }   ///< @param e Stereo eye offset in world units (0 = mono) to use for the next draw() call.
 
-	// FPS-driven detail budget for the heavy cube scenes (1.0 = all cubes,
-	// 0.5 = every 2nd).  Maintained by RenderPipeline from the frame rate.
-	static float s_cubeBudget;   ///< Global FPS-driven detail budget (1.0 = draw everything, 0.5 = every 2nd, ...), uploaded to shaders as the `cubeBudget` uniform.
+	// FPS-driven detail budget (1.0 = full detail, 0.5 = half), maintained by
+	// RenderPipeline from the frame rate. Two consumers: GEOM_CUBES scenes
+	// read it directly as the `cubeBudget` uniform (every 2nd cube dropped at
+	// 0.5); geom="indirect" generators never see it themselves -- it reaches
+	// them indirectly, via the shared IndirectClamp.comp pass capping the
+	// drawn vertex count to maxVertices*budget (see runGenerator()).
+	static float s_cubeBudget;   ///< Global FPS-driven detail budget (1.0 = draw everything, 0.5 = every 2nd/half, ...); GEOM_CUBES reads it as the `cubeBudget` uniform, geom="indirect" scenes get it via IndirectClamp.comp's `budget` uniform instead.
 
 private:
 	// GEOM_PATCHES feeds GL_PATCHES (4 control points per quad) instead of
