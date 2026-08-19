@@ -558,13 +558,49 @@ private:
 	static const int kShadowSize = 2048;    ///< Width/height of the (square) shadow map, in texels.
 	GLuint			m_shadowFbo = 0;    ///< Depth-only FBO for the shadow map (created lazily by ensureShadowMap()).
 	GLuint			m_shadowTex = 0;    ///< Depth texture backing m_shadowFbo; sampled with hardware percentage-closer filtering.
+	// Second, independent shadow-casting light -- same shape of state, entirely
+	// separate FBO/texture/matrix so it can move on its own path. A scene opts
+	// in via EffectShader::usesShadow2() (declares "texShadow2").
+	GLuint			m_shadowFbo2 = 0;   ///< Depth-only FBO for the second shadow map.
+	GLuint			m_shadowTex2 = 0;   ///< Depth texture backing m_shadowFbo2.
 	AudioFeatures	m_lastAudioFx;   ///< this frame's features, for the shadow pass — cached so renderShadowPass()/renderOitPass() can re-apply them outside the main uniform-setting flow.
-	/** @brief Lazily creates the shadow map's depth-only FBO/texture on first use. @return true if the shadow map is ready (already existed or was just created successfully); false if creation failed (shadows disabled). */
-	bool			ensureShadowMap();
-	/** @brief Recomputes the directional-light view-projection matrix (EffectShader::s_lightM) and light direction (s_lightDir) for the current time and the active scene's shadow extent. Orthographic (parallel-ray "sun" light), not perspective. @param t Current global time in seconds, driving the slow light-direction orbit. */
-	void			updateLightMatrix(float t);
-	/** @brief Renders one 3D scene's geometry into the shadow map, depth only (no colour, no face culling). @param fx Scene to render into the shadow map. */
-	void			renderShadowPass(EffectShader *fx);
+	/**
+	 * @brief Lazily creates a shadow map's depth-only FBO/texture on first use (shared implementation for both lights).
+	 * @param fbo In/out FBO id (created here if 0).
+	 * @param tex In/out depth-texture id (created here if 0).
+	 * @return true if the shadow map is ready (already existed or was just created successfully); false if creation failed (shadows disabled for this light).
+	 */
+	bool			ensureShadowMapGeneric( GLuint &fbo, GLuint &tex );
+	/**
+	 * @brief Recomputes an orthographic light's view-projection matrix and direction for the current time (shared implementation for both lights).
+	 * @param t Current global time in seconds, driving the slow light-direction orbit.
+	 * @param angleOffset Radians added to the orbit phase, so a second light doesn't move in lockstep with the first.
+	 * @param tiltY Base upward tilt of the light direction (>0 = from above); lets the second light read as a cooler, lower fill/rim instead of a second overhead sun.
+	 * @param outM Column-major 4x4 view-projection matrix to write (16 floats).
+	 * @param outDir Light direction to write (3 floats).
+	 */
+	void			updateLightMatrixGeneric( float t, float angleOffset, float tiltY, float *outM, float *outDir );
+	/**
+	 * @brief Renders one 3D scene's geometry into a shadow map, depth only (shared implementation for both lights).
+	 * @param fx Scene to render into the shadow map.
+	 * @param fbo Target shadow FBO (ensureShadowMapGeneric()'d first).
+	 * @param tex Depth texture backing @p fbo, bound to @p texUnit afterward.
+	 * @param texUnit Texture unit the shader-side sampler expects this light's map on (31 for light 1, 32 for light 2).
+	 * @param passFlag EffectShader::s_shadowPass or s_shadowPass2 -- set to 1 for the draw, restored to 0 after, so the scene's own shaders know which light's depth pass this is.
+	 */
+	void			renderShadowPassGeneric( EffectShader *fx, GLuint &fbo, GLuint tex, int texUnit, float &passFlag );
+	/** @brief Light 1 (the "sun"): lazily creates its shadow map. @return See ensureShadowMapGeneric(). */
+	bool			ensureShadowMap() { return ensureShadowMapGeneric( m_shadowFbo, m_shadowTex ); }
+	/** @brief Light 1 (the "sun"): recomputes EffectShader::s_lightM/s_lightDir. @param t Current global time in seconds. */
+	void			updateLightMatrix(float t) { updateLightMatrixGeneric( t, 0.f, 0.f, EffectShader::s_lightM, EffectShader::s_lightDir ); }
+	/** @brief Light 1 (the "sun"): renders @p fx into the shadow map. @param fx Scene to render. */
+	void			renderShadowPass(EffectShader *fx) { renderShadowPassGeneric( fx, m_shadowFbo, m_shadowTex, 31, EffectShader::s_shadowPass ); }
+	/** @brief Light 2 (cool rim/fill): lazily creates its shadow map. @return See ensureShadowMapGeneric(). */
+	bool			ensureShadowMap2() { return ensureShadowMapGeneric( m_shadowFbo2, m_shadowTex2 ); }
+	/** @brief Light 2 (cool rim/fill): recomputes EffectShader::s_lightM2/s_lightDir2, offset in phase and tilted lower/cooler than light 1. @param t Current global time in seconds. */
+	void			updateLightMatrix2(float t) { updateLightMatrixGeneric( t, 2.4f, 0.35f, EffectShader::s_lightM2, EffectShader::s_lightDir2 ); }
+	/** @brief Light 2 (cool rim/fill): renders @p fx into its shadow map. @param fx Scene to render. */
+	void			renderShadowPass2(EffectShader *fx) { renderShadowPassGeneric( fx, m_shadowFbo2, m_shadowTex2, 32, EffectShader::s_shadowPass2 ); }
 
 	// ---- order-independent transparency (weighted blended) ----
 	// Two extra targets the transparent geometry accumulates into, sharing the

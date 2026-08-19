@@ -80,6 +80,10 @@ float EffectShader::s_shadowExtent = EffectShader::kShadowExtent;
 float EffectShader::s_lightDir[3] = { 0.45f, 0.80f, -0.40f };
 float EffectShader::s_lightM[16] = { 1.f, 0.f, 0.f, 0.f,  0.f, 1.f, 0.f, 0.f,
                                      0.f, 0.f, 1.f, 0.f,  0.f, 0.f, 0.f, 1.f };
+float EffectShader::s_shadowPass2 = 0.f;
+float EffectShader::s_lightDir2[3] = { -0.35f, 0.55f, 0.60f };
+float EffectShader::s_lightM2[16] = { 1.f, 0.f, 0.f, 0.f,  0.f, 1.f, 0.f, 0.f,
+                                      0.f, 0.f, 1.f, 0.f,  0.f, 0.f, 0.f, 1.f };
 
 void EffectShader::cleanShaderPrograms()
 {
@@ -317,7 +321,8 @@ enum AudioLoc {
     AL_TEXSPECTRO, AL_SPECTROHEAD, AL_SPECTROFILL,
     AL_TEXDEPTH0, AL_TEXDEPTH1, AL_DEPTHVALID, AL_NEARFAR, AL_TANHALFFOV,
     AL_TEXSHADOW, AL_LIGHTM, AL_SHADOWPASS, AL_LIGHTDIR, AL_SHADOWTEXEL,
-    AL_OITPASS, AL_SHADOWEXTENT, AL_COUNT
+    AL_OITPASS, AL_SHADOWEXTENT,
+    AL_TEXSHADOW2, AL_LIGHTM2, AL_SHADOWPASS2, AL_LIGHTDIR2, AL_COUNT
 };
 const char *kAudioLocNames[AL_COUNT] = {
     "audioPhase", "audioAdvance", "audioBeat", "audioLevel", "sides",
@@ -336,7 +341,8 @@ const char *kAudioLocNames[AL_COUNT] = {
     "texSpectro", "spectroHead", "spectroFill",
     "texDepth0", "texDepth1", "depthValid", "nearFar", "tanHalfFov",
     "texShadow", "lightM", "shadowPass", "lightDir", "shadowTexel",
-    "oitPass", "shadowExtent"
+    "oitPass", "shadowExtent",
+    "texShadow2", "lightM2", "shadowPass2", "lightDir2"
 };
 }
 
@@ -466,6 +472,13 @@ void EffectShader::applyAudioFeatures(const AudioFeatures &f)
     if (L[AL_SHADOWTEXEL] >= 0) glUniform1f(L[AL_SHADOWTEXEL], 1.f / 2048.f);
     if (L[AL_OITPASS]     >= 0) glUniform1f(L[AL_OITPASS],     s_oitPass);
     if (L[AL_SHADOWEXTENT]>= 0) glUniform1f(L[AL_SHADOWEXTENT], s_shadowExtent);
+    // Second, independent shadow-casting light (see usesShadow2()). Shares
+    // shadowExtent/shadowTexel with light 1 (same box, same map resolution).
+    if (L[AL_TEXSHADOW2]  >= 0) glUniform1i(L[AL_TEXSHADOW2], 32);
+    if (L[AL_LIGHTM2]     >= 0) glUniformMatrix4fv(L[AL_LIGHTM2], 1, GL_FALSE, s_lightM2);
+    if (L[AL_SHADOWPASS2] >= 0) glUniform1f(L[AL_SHADOWPASS2], s_shadowPass2);
+    if (L[AL_LIGHTDIR2]   >= 0) glUniform3f(L[AL_LIGHTDIR2], s_lightDir2[0],
+                                            s_lightDir2[1], s_lightDir2[2]);
     if (L[AL_SSMHEAD]     >= 0) glUniform1f(L[AL_SSMHEAD],  f.ssmHead);
     if (L[AL_SSMFILL]     >= 0) glUniform1f(L[AL_SSMFILL],  f.ssmFill);
     if (L[AL_SPECTROHEAD] >= 0) glUniform1f(L[AL_SPECTROHEAD], f.spectroHead);
@@ -625,6 +638,16 @@ bool EffectShader::usesShadow()
 		m_usesShadow = ( m_sh_prog_id != 0 &&
 		                 glGetUniformLocation( m_sh_prog_id, "texShadow" ) >= 0 ) ? 1 : 0;
 	return m_usesShadow == 1;
+}
+
+bool EffectShader::usesShadow2()
+{
+	if( !m_glReady )
+		return false;
+	if( m_usesShadow2 < 0 )
+		m_usesShadow2 = ( m_sh_prog_id != 0 &&
+		                  glGetUniformLocation( m_sh_prog_id, "texShadow2" ) >= 0 ) ? 1 : 0;
+	return m_usesShadow2 == 1;
 }
 
 bool EffectShader::usesSpectro()
