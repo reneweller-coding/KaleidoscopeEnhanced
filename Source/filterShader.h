@@ -22,6 +22,7 @@
 #include "EffectShader.h"
 #include "TextureEffectKaleidoscopeBase.h"
 #include "Utils.h"
+#include "AudioConditioner.h"
 #include "AudioFeatures.h"
 #include "ComputeFX.h"
 #include "GpuSims.h"
@@ -453,17 +454,7 @@ private:
 	bool			m_pendingImgChange = false;   ///< True while a background-photo cross-fade is pending, waiting to be released on the next downbeat (or timeout/no-music escape).
 	float			m_pendingImgAge    = 0.f;     ///< Seconds since m_pendingImgChange was set; forces release after ~2.5 s even without a downbeat.
 
-	// Key colour: chroma hue slewed AROUND the colour circle (shortest way,
-	// max ~20 deg/s) so key changes glide instead of jumping the palette.
-	float			m_chromaHueSlew = 0.f;   ///< Slewed chroma hue (0..1, wraps), eased toward audio.chromaHue at up to ~20 deg/s so key changes glide.
-
 	// Latest mood state for moodAccept (tag-based shader selection).
-
-	// Instrument-separated onset envelopes (kick / snare / hat): peak-hold +
-	// slew, exactly like the global beat/onset envelopes above them.
-	float			m_kickEnv = 0.f,  m_kickSmooth = 0.f;    ///< Kick-drum onset: peak-hold envelope and its slew-limited (photosensitivity-safe) display value.
-	float			m_snareEnv = 0.f, m_snareSmooth = 0.f;   ///< Snare onset: peak-hold envelope and its slew-limited display value.
-	float			m_hatEnv = 0.f,   m_hatSmooth = 0.f;     ///< Hi-hat onset: peak-hold envelope and its slew-limited display value.
 
 	// Finaler Present (Limiter, AutoExposure, Bloom, Titel-Reveal, Stereo):
 	// komplett im PresentPass gekapselt.
@@ -473,34 +464,10 @@ private:
 	// ---- Track-title reveal state (see showTitle) ----
 	QImage			m_titlePending;          ///< Rendered "title / artist" text image awaiting GL upload (consumed and cleared at the top of the next paint()).
 
-	// ---- Virtual camera (global "Regie" layer, applied in the present pass) --
-	// A single slow-moving transform over the finished frame: micro drift,
-	// downbeat punch-in (decaying), per-bar sway, build-up tension zoom and a
-	// kick/drop shake.  Makes every effect feel "filmed" instead of static.
-	float			m_camPunch = 0.f;   ///< decaying punch-in envelope — downbeat/drop "punch-in" envelope for the virtual camera.
-	float			m_camZoom  = 1.f;    ///< Current virtual-camera zoom factor, passed to PresentPass.
-	float			m_camRot   = 0.f;    ///< Current virtual-camera roll (per-bar sway), passed to PresentPass.
-	float			m_camOffX  = 0.f, m_camOffY = 0.f;   ///< Current virtual-camera pixel offset (drift + shake + film gate-weave), passed to PresentPass.
-
-	// ---- Zeit-Regie (History-Ring im PresentPass) ----
-	// Drop-Rewind-Race: auf ~40% der Drops springt das Bild ~1.6 s zurueck
-	// und holt sichtbar auf; waehrend eines DJ-Stops (breakHold) scrubbt es
-	// rueckwaerts und schnappt beim Slam zurueck auf live.  Dazu Zeitecho
-	// (Ambient/Drop-Flashback) und das Build-up-"Atem anhalten".
-	float			m_rewindBack  = 0.f;   ///< Sekunden hinter live (0 = live) — seconds behind live the display currently reads from the PresentPass history ring.
-	float			m_rewindMixSm = 0.f;   ///< weiche Sichtbarkeit des Rewinds — slewed visibility (0..1) of the rewind effect.
-	bool			m_rewindRace  = false;   ///< true = Drop-Race (langsameres Aufholen) — a drop-triggered "rewind race" catch-up is in progress (slower catch-up rate than a DJ-stop release).
-	int				m_lastDropSeen = -1;   ///< dropCount-Stand (-1 = noch nie) — last-seen audio.dropCount (+ forced drops).
-	float			m_breathSm    = 0.f;   ///< geslewtes Atem-anhalten 0..1 — driven by the upper half of build-up.
-	float			m_echoOverride = -1.f;   ///< KALEIDO_REGIE_TEST: erzwungenes Echo — forced time-echo amount for the dev hook; -1 = no override.
-	// CinemaScope-Letterbox: Balken kriechen im Build-up herein (langsam)
-	// und reissen auf den Drop auf (sehr schnell).
-	float			m_letterSm    = 0.f;   ///< Slewed letterbox-bar amount (0..1): creeps in during build-up, snaps open on a drop.
-	// Bass-Schockwelle: expandierender Verzerrungsring (Radius/Amplitude).
-	float			m_shockR      = 9.f;   ///< Current radius of the expanding bass-shockwave distortion ring.
-	float			m_shockAmp    = 0.f;   ///< Current amplitude of the bass-shockwave distortion ring (decays exponentially).
-	float			m_prevShockKick = 0.f;  ///< Previous frame's m_kickSmooth, for kick rising-edge detection (triggers a small shockwave).
-	float			m_prevShockDrop = 0.f;  ///< Previous frame's dropPulse, for drop rising-edge detection (triggers a large shockwave).
+	// Virtual camera + Zeit-Regie (drop-rewind, break-scrub, echo, letterbox,
+	// shockwave) state now lives in m_audioConditioner (see AudioConditioner.h);
+	// paint() reads it back via camZoom()/camRot()/rewindBack()/... after
+	// calling update().
 
 
 	// ---- Feedback / trails (phosphor-style ping-pong) ----
@@ -605,17 +572,6 @@ private:
 
 
 
-	// ---- Visual spectrum ballistics (anti-jitter for geometry scenes) ----
-	float			m_specVis[32] = {};   ///< Meter-ballistics-smoothed copy of the audio spectrum (fast attack, slow release), used to drive geometry so towers/surfaces don't tremble on raw detector jitter.
-
-	// ---- Song-end dramaturgy + melody history (host state) ----
-	float			m_fadeSlow6   = 0.f;    ///< 6 s loudness average — exponential average of overallLevel, for song-end fade-out detection.
-	float			m_fadeSlow20  = 0.f;    ///< 20 s loudness average — exponential average of overallLevel, for song-end fade-out detection.
-	float			m_fadeOutEnv  = 0.f;    ///< slewed fade-out envelope (0..1) — derived from m_fadeSlow6 sinking below m_fadeSlow20.
-	float			m_melody[96]  = {};     ///< dominantPitch ring (~7.7 s) — samples taken every 80 ms.
-	int				m_melodyHead  = 0;      ///< Current write position in m_melody.
-	float			m_melodyAccum = 0.f;    ///< Seconds accumulated since the last m_melody sample; triggers the next sample at 0.08 s.
-
 	ComputeFX		m_cfx;                     ///< GL 4.3 compute-shader sims — generic; effects opt in via their cfxMask().
 
 
@@ -624,6 +580,9 @@ private:
 	GpuSims			m_sims;   ///< Older GPU/host simulations (reaction-diffusion, fluid, smoke3D, Physarum, self-similarity matrix, spectrogram): fully encapsulated in GpuSims; paint() only reports demand.
 	// Szenen-/Combine-Wahl, Trigger, Review, Song-Struktur: SceneScheduler.
 	SceneScheduler	m_scheduler;   ///< Scene/combine selection, triggers (novelty/section/drop), review mode and song-structure memory: fully encapsulated in SceneScheduler.
+	// Audio-Konditionierung (Envelopes, Slews, integrierte Phasen, Beat-PLL,
+	// virtuelle Kamera, Zeit-Regie): komplett in AudioConditioner gekapselt.
+	AudioConditioner m_audioConditioner;   ///< Turns each frame's raw AudioFeatures into the anti-flicker copy + camera/Zeit-Regie signals paint() reads back; fully encapsulated in AudioConditioner.
 
 	// Live-tunable look parameters (static → one shared setting across all configs).
 	static float	s_reactivity;    ///< audio-motion master gain (default 1.0) — shared across all loaded configurations.
@@ -653,8 +612,6 @@ private:
 	/** @brief Clamps @p v to the inclusive range [@p lo, @p hi]. @param v Value to clamp. @param lo Lower bound. @param hi Upper bound. @return The clamped value. */
 	static float	clampParam( float v, float lo, float hi )
 	{ return v < lo ? lo : (v > hi ? hi : v); }
-
-	float			m_smoothedSides = 6.f;   ///< eased kaleidoscope symmetry (no snap) — gradually steps toward the beat-chosen target instead of snapping.
 
 	// Internal render resolution = display resolution × s_renderScale.  All the
 	// expensive offscreen passes use m_width/m_height (= render res); only the final
@@ -738,46 +695,10 @@ private:
     // > 1.0 → all times scaled shorter (energetic beat music)
     float m_timingScale = 1.f;   ///< Smoothed dynamic timing-scale multiplier (from AudioFeatures::timingScale, gated by musicPresence): <1.0 stretches scene/image durations (ambient), >1.0 shortens them (energetic).
 
-    // ---- Audio-reactive motion integration (anti-flicker) ----
-    // The old mapping multiplied the absolute 'time' uniform by an audio-varying
-    // speed and a flipping sign (audioFlip), so every audio change remapped the
-    // entire accumulated phase at once → seizure-grade flicker.  We now integrate
-    // the audio-driven *rate* over each frame's dt into these continuous phase
-    // accumulators (passed to shaders via AudioFeatures::audioRotPhase / advance).
-    float m_audioRotPhase = 0.f;   ///< accumulated rotation phase (radians) — integrated from a rate each frame so audio changes never jump the phase.
-    float m_audioAdvance  = 0.f;   ///< accumulated tunnel forward offset — integrated from a rate each frame.
-    float m_audioDir      = 1.f;   ///< eased rotation direction (-1..+1) — smoothly follows audio.audioFlip's sign so reversals never snap.
-    // Slew-rate-limited brightness signals so beats pulse instead of strobing
-    // (photosensitive-epilepsy safety).
-    float m_audioBeatSmooth  = 0.f;   ///< Slew-limited beat-strength display value (photosensitivity-safe), blended from the peak-hold envelope and the tempo-locked pulse.
-    float m_audioLevelSmooth = 0.f;   ///< Slew-limited overall-loudness display value.
-    float m_audioFluxSmooth  = 0.f;   ///< Slew-limited spectral-flux display value.
-    float m_rotEnergy        = 0.f;   ///< slowly-slewed rotation-speed envelope (no per-beat jerk) — drives most of the rotation rate.
-    float m_chasePhase       = 0.f;   ///< 0..1, advances 1/4 each onset -> corner-cone colour chase.
-    float m_prevChaseOnset   = 0.f;   ///< previous onset value (rising-edge detect for the chase).
-    // Peak-hold + exponential-release envelopes for the transient pulses.  The
-    // analyzer's raw pulses decay at audio-block rate (gone within ~60 ms), far
-    // faster than the photosensitivity rise-slew can follow, so beats looked
-    // flattened; and onset/downbeat used to be uploaded raw (a 0->1 jump within
-    // a single frame).  The envelope holds each peak and releases exponentially,
-    // giving the slew a stable target: visible, smooth pulses.
-    float m_beatEnv          = 0.f;   ///< Peak-hold + exponential-release envelope for audio.beatDecay.
-    float m_onsetEnv         = 0.f;   ///< Peak-hold + exponential-release envelope for audio.onsetStrength.
-    float m_onsetSmooth      = 0.f;   ///< Slew-limited display value of m_onsetEnv.
-    float m_downbeatEnv      = 0.f;   ///< Peak-hold + exponential-release envelope for audio.downbeat.
-    float m_downbeatSmooth   = 0.f;   ///< Slew-limited display value of m_downbeatEnv.
-    float m_gateSmooth       = 0.f;   ///< slewed music gate (no global reactivity pumping) — multiplies every audio-reactive signal so classifier wobble near its threshold doesn't pump the show.
-    float m_beatPhasePLL     = 0.f;   ///< continuous beat phase (no per-beat resync snap) — pulled gently toward audio.beatPhase instead of resyncing/snapping on every detection.
-    // Swell: slow loudness-build envelope (fast avg minus slow avg) — the one
-    // signal that captures AMBIENT dynamics; drives bloom/brightness breathing.
-    float m_swellFast        = 0.f;   ///< Fast (~1.5 s) exponential average of overallLevel, for the swell envelope.
-    float m_swellSlow        = 0.f;   ///< Slow (~8 s) exponential average of overallLevel, for the swell envelope.
-    // Bar tracking on the host: barBeat advances on each PLL wrap and re-syncs
-    // to the analyzer's downbeat; barPhase = (barBeat + pllPhase) / 4.
-    int   m_barBeatHost      = 0;     ///< Current beat-within-bar count (0..3), advanced on each m_beatPhasePLL wrap and re-synced on a downbeat tick.
-    float m_prevPllPhase     = 0.f;   ///< Previous frame's m_beatPhasePLL, for wrap detection.
-    float m_prevRawDownbeat  = 0.f;   ///< Previous frame's raw audio.downbeat, for downbeat rising-edge detection (m_downbeatTick).
-    bool  m_downbeatTick     = false;   ///< true for THIS frame when a downbeat lands — drives beat-quantised scene/image cuts.
+    // Audio-reactive motion integration, slew-limited envelopes, the beat PLL
+    // and the colour-chase phase all now live in m_audioConditioner (see
+    // AudioConditioner.h) — paint() reads m_audioConditioner.downbeatTick()/
+    // gate()/chasePhase() back where it used to read these directly.
     // Beat-quantised scene changes: when a change becomes due it is held PENDING
     // until the next downbeat (or a timeout / no music), so cuts land on the "1".
 	//unsigned int m_effectCombineMinTimeInterpolation;

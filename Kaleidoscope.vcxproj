@@ -216,6 +216,7 @@ exit /b 0</Command>
     <ClCompile Include="Source\filterShader.cpp" />
     <ClCompile Include="Source\ComputeFX.cpp" />
     <ClCompile Include="Source\glcore.cpp" />
+    <ClCompile Include="Source\AudioConditioner.cpp" />
     <ClCompile Include="Source\GpuSims.cpp" />
     <ClCompile Include="Source\PresentPass.cpp" />
     <ClCompile Include="Source\SceneScheduler.cpp" />
@@ -255,6 +256,7 @@ exit /b 0</Command>
   <ItemGroup>
     <ClInclude Include="Source\Configuration.h" />
     <ClInclude Include="Source\Recorder.h" />
+    <ClInclude Include="Source\AudioConditioner.h" />
     <ClInclude Include="Source\GpuSims.h" />
     <ClInclude Include="Source\PresentPass.h" />
     <ClInclude Include="Source\SceneScheduler.h" />
