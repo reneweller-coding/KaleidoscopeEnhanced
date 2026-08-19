@@ -366,6 +366,27 @@ private:
 	 * @param depthRb If non-null, also (re)creates and attaches a depth TEXTURE (not a renderbuffer, despite the parameter name — the combine stage needs to read it) at the id it points to; needed by the 3D scene effects. Null for plain 2D effects.
 	 */
 	void initFBO(GLuint &fboEffect, GLuint &texIDEffect, GLuint *depthRb = nullptr);
+	/**
+	 * @brief (Re)creates the shared multisample scratch FBO used to anti-alias 3D scene draws, at the given render resolution.
+	 *
+	 * One shared MS colour+depth target, reused for whichever 3D scene is
+	 * currently drawing (texture1's pass, then texture2's, sequentially --
+	 * never both at once, so one scratch target is enough). Soft-fails (does
+	 * nothing, leaves m_msaaReady false) if glTexImage2DMultisample wasn't
+	 * loaded or GL_MAX_SAMPLES is 0; every 3D draw call site checks
+	 * m_msaaReady and falls back to drawing straight into the regular
+	 * (unaliased) FBO exactly as before this existed.
+	 * @param w Render-resolution width.
+	 * @param h Render-resolution height.
+	 */
+	void ensureMsaaTargets( int w, int h );
+	/**
+	 * @brief Resolves the shared multisample scratch FBO (colour + depth) into a destination FBO of the same size via glBlitFramebuffer.
+	 * @param dstFbo Destination FBO, already sized and attached to match (w, h) exactly.
+	 * @param w Width shared by both FBOs.
+	 * @param h Height shared by both FBOs.
+	 */
+	void resolveMsaa( GLuint dstFbo, int w, int h );
 	/** @brief Generates (if needed) and configures an FBO colour texture via setupFBOTexture(). @param texID Texture id, reused if already non-zero, otherwise created here. */
 	void createFBOTexture( GLuint &texID );
 	/** @brief Configures an existing texture id as an FBO colour target: linear filtering, mirrored-repeat wrap, storage sized to m_width x m_height. @param texID Texture id to configure. */
@@ -519,6 +540,16 @@ private:
 	// renderbuffers, so the combine stage can READ what the 3D scene wrote
 	// ("texDepth0"/"texDepth1", units 29/30).
 	GLuint			m_depthTexEffect1 = 0, m_depthTexEffect2 = 0;   ///< Depth textures attached to m_fboEffectTexture1/2 (readable by the combine stage as texDepth0/texDepth1, units 29/30).
+
+	// ---- MSAA scratch target for 3D scene draws (see ensureMsaaTargets()) ----
+	static const int kMsaaSamples = 4;   ///< Fixed sample count for the 3D-scene anti-aliasing pass; clamped down to GL_MAX_SAMPLES if the driver reports fewer.
+	GLuint			m_msaaFbo      = 0;   ///< Shared multisample FBO, reused by whichever 3D scene (texture1's pass, then texture2's) is currently drawing.
+	GLuint			m_msaaColorTex = 0;   ///< GL_TEXTURE_2D_MULTISAMPLE colour attachment (GL_RGBA8, matching m_texInternalFormat).
+	GLuint			m_msaaDepthTex = 0;   ///< GL_TEXTURE_2D_MULTISAMPLE depth attachment.
+	int				m_msaaW = 0, m_msaaH = 0;   ///< Current size of the MSAA scratch target; ensureMsaaTargets() reallocates on mismatch.
+	int				m_msaaActualSamples = 0;   ///< Sample count actually used (<= kMsaaSamples, clamped to GL_MAX_SAMPLES); 0 = not yet created.
+	bool			m_msaaTried = false;   ///< True once creation has been attempted (attempted only once; glTexImage2DMultisample missing is a permanent soft-fail, not retried every frame).
+	bool			m_msaaReady = false;   ///< True once the MSAA scratch FBO exists and is complete; every 3D draw call site checks this and falls back to the regular (unaliased) FBO when false.
 
 	// ---- shadow map ----
 	// A single depth-only target, shared by whichever 3D scene wants it.

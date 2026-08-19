@@ -86,6 +86,7 @@ GLC_DEF(glClearBufferfv)
 GLC_DEF(glTexImage3D)
 GLC_DEF(glFramebufferTextureLayer)
 GLC_DEF(glBlitFramebuffer)
+GLC_DEF(glTexImage2DMultisample)
 ///@}
 
 #undef GLC_DEF
@@ -209,6 +210,9 @@ int glcoreInit(void)
     GLC_LOAD_OPT(glTexImage3D)
     GLC_LOAD_OPT(glFramebufferTextureLayer)
     GLC_LOAD_OPT(glBlitFramebuffer)
+    // MSAA for 3D scenes (optional: without it, scenes just render unaliased
+    // as before -- see RenderPipeline::ensureMsaaTargets()).
+    GLC_LOAD_OPT(glTexImage2DMultisample)
 
     glcoreHasCompute = ( glcore_glDispatchCompute && glcore_glBindImageTexture
                       && glcore_glMemoryBarrier   && glcore_glBindBufferBase

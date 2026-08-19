@@ -276,6 +276,10 @@ GLC_FN(void,   glClearBufferfv, (GLenum, GLint, const GLfloat *))
 GLC_FN(void,   glTexImage3D, (GLenum, GLint, GLint, GLsizei, GLsizei, GLsizei, GLint, GLenum, GLenum, const void*))
 GLC_FN(void,   glFramebufferTextureLayer, (GLenum, GLenum, GLuint, GLint, GLint))
 GLC_FN(void,   glBlitFramebuffer, (GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLbitfield, GLenum))
+// MSAA for the opaque 3D geometry pass: render into a multisample texture,
+// resolve (blit) down to the regular render targets before anything
+// downstream (combine, depth-based post) ever samples them.
+GLC_FN(void,   glTexImage2DMultisample, (GLenum, GLsizei, GLenum, GLsizei, GLsizei, GLboolean))
 ///@}
 
 #undef GLC_FN
@@ -354,6 +358,7 @@ GLC_FN(void,   glBlitFramebuffer, (GLint, GLint, GLint, GLint, GLint, GLint, GLi
 #define glTexImage3D               glcore_glTexImage3D
 #define glFramebufferTextureLayer  glcore_glFramebufferTextureLayer
 #define glBlitFramebuffer          glcore_glBlitFramebuffer
+#define glTexImage2DMultisample    glcore_glTexImage2DMultisample
 ///@}
 
 /**
