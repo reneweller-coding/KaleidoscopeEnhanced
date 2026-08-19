@@ -59,16 +59,16 @@ class EffectShader;
 class SceneScheduler
 {
 public:
-	/** @brief Bind the effect/combine/transition lists to iterate (ownership stays with the caller).
+	/** @brief Bind the effect/FX/transition lists to iterate (ownership stays with the caller).
 	 * @param textures Pointer to the pipeline's effect-shader list (the "texture" slot).
-	 * @param combines Pointer to the pipeline's combine/overlay-shader list.
+	 * @param fxShaders Pointer to the pipeline's FX/overlay-shader list.
 	 * @param transitions Pointer to the pipeline's scene-transition shader list
 	 *        (Transitions/ — one shader per blend style, rolled per fade).
 	 */
 	void attach( std::vector<EffectShader *> *textures,
-	             std::vector<EffectShader *> *combines,
+	             std::vector<EffectShader *> *fxShaders,
 	             std::vector<EffectShader *> *transitions )
-	{ m_textures = textures; m_combines = combines; m_transitions = transitions; }
+	{ m_textures = textures; m_fxShaders = fxShaders; m_transitions = transitions; }
 
 	/** @brief Roll the initial act/next scene and combine picks and (re)start both clocks (the old start() block). */
 	void reset();
@@ -95,10 +95,10 @@ public:
 
 	// ---- VJ / Remote ----
 	/** @brief Request an early cut on the next tick (manual 'n' or remote request).
-	 * @param alsoCombine If true, also force the combine slot to change (not just the effect).
+	 * @param alsoFx If true, also force the FX slot to change (not just the effect).
 	 */
-	void requestChange( bool alsoCombine )
-	{ m_forceEffectChange = true; if( alsoCombine ) m_forceCombineChange = true; }
+	void requestChange( bool alsoFx )
+	{ m_forceEffectChange = true; if( alsoFx ) m_forceFxChange = true; }
 	/** @brief Jump directly to a given effect index, pre-empting the normal selection (remote scene browser).
 	 * @param idx Index into the attached texture/effect list to jump to.
 	 */
@@ -108,9 +108,9 @@ public:
 	/** Freeze/Pin: Effekt-/Combine-Uhren re-armen, damit hinter dem
 	 *  gehaltenen Bild kein Wechsel "fällig" wird. */
 	/** @brief Re-arm both effect/combine clocks so no change is "due" the moment a freeze/pin lifts. */
-	void rearmEffectClocks() { restart( m_clockEffectTexture ); restart( m_clockEffectCombine ); }
+	void rearmEffectClocks() { restart( m_clockEffectTexture ); restart( m_clockEffectFx ); }
 
-	/** @brief Per-frame inputs consumed by tick()/tickCombine(). */
+	/** @brief Per-frame inputs consumed by tick()/tickFx(). */
 	struct Tick
 	{
 		float dt            = 0.f;    ///< timeSinceLastFrameSec (break-skaliert)
@@ -138,17 +138,17 @@ public:
 	 * @param t Frame inputs (timing, triggers, gate).
 	 * @param trueStereoHold True while an eye-packed true-stereo 3D frame must not enter a combine cross-fade; freezes combine switching until it lifts.
 	 */
-	void tickCombine( const Tick &t, bool trueStereoHold );
+	void tickFx( const Tick &t, bool trueStereoHold );
 
 	// ---- Abfragen der Pipeline ----
 	unsigned int actTexture()  const { return m_actTexture; }    ///< Index of the currently active (solo or fade-from) effect/texture shader.
 	unsigned int nextTexture() const { return m_nextTexture; }   ///< Index of the effect/texture shader being faded to (or picked for next).
-	unsigned int actCombine()  const { return m_actCombine; }    ///< Index of the currently active combine shader.
-	unsigned int nextCombine() const { return m_nextCombine; }   ///< Index of the combine shader being faded to (or picked for next).
+	unsigned int actFx()  const { return m_actFx; }    ///< Index of the currently active combine shader.
+	unsigned int nextFx() const { return m_nextFx; }   ///< Index of the combine shader being faded to (or picked for next).
 	int   texState()   const { return m_texState; }    // 0 = Solo, 1 = Fade   ///< Effect state machine phase: 0 = Solo, 1 = Fade.
-	int   combState()  const { return m_combState; }   ///< Combine state machine phase: 0 = Solo, 1 = Fade.
+	int   fxState()  const { return m_fxState; }   ///< Combine state machine phase: 0 = Solo, 1 = Fade.
 	float texInterp()  const { return m_texInterp; }   // 1 -> 0 während des Fades   ///< Effect cross-fade blend factor, 1 -> 0 over the fade.
-	float combInterp() const { return m_combInterp; }  ///< Combine cross-fade blend factor, 1 -> 0 over the fade.
+	float fxInterp() const { return m_fxInterp; }  ///< Combine cross-fade blend factor, 1 -> 0 over the fade.
 	unsigned int actTransition() const { return m_actTransition; }   ///< Index of the transition shader rolled for the current/last scene fade.
 
 private:
@@ -179,34 +179,34 @@ private:
 	int findTransition( const char *basename ) const;
 
 	std::vector<EffectShader *> *m_textures    = nullptr;   ///< Effect/texture shader list (not owned).
-	std::vector<EffectShader *> *m_combines    = nullptr;   ///< Combine/overlay shader list (not owned).
+	std::vector<EffectShader *> *m_fxShaders    = nullptr;   ///< FX/overlay shader list (not owned).
 	std::vector<EffectShader *> *m_transitions = nullptr;   ///< Scene-transition shader list (not owned).
 
 	// Auswahl-Zustand
 	unsigned int m_actTexture  = 0;   ///< Currently active effect/texture shader index.
 	unsigned int m_nextTexture = 0;   ///< Effect/texture shader index being faded to.
-	unsigned int m_actCombine  = 0;   ///< Currently active combine shader index.
-	unsigned int m_nextCombine = 0;   ///< Combine shader index being faded to.
+	unsigned int m_actFx  = 0;   ///< Currently active combine shader index.
+	unsigned int m_nextFx = 0;   ///< Combine shader index being faded to.
 	int   m_texState   = 0;    ///< Effect state machine phase: 0 = Solo, 1 = Fade.
-	int   m_combState  = 0;    ///< Combine state machine phase: 0 = Solo, 1 = Fade.
+	int   m_fxState  = 0;    ///< Combine state machine phase: 0 = Solo, 1 = Fade.
 	float m_texInterp  = 1.f;  ///< Effect cross-fade blend factor.
-	float m_combInterp = 1.f;  ///< Combine cross-fade blend factor.
+	float m_fxInterp = 1.f;  ///< Combine cross-fade blend factor.
 	float m_texFadeDur  = 10.f;   // aktuelle Solo- BZW. Fade-Dauer (wie zuvor doppelt genutzt)   ///< Current Solo *or* Fade duration for the effect slot (dual-purpose, as before).
-	float m_combFadeDur = 10.f;   ///< Current Solo *or* Fade duration for the combine slot.
+	float m_fxFadeDur = 10.f;   ///< Current Solo *or* Fade duration for the combine slot.
 	Clock::time_point m_clockEffectTexture = Clock::now();   ///< Reference clock for the effect slot's Solo/Fade timing.
-	Clock::time_point m_clockEffectCombine = Clock::now();   ///< Reference clock for the combine slot's Solo/Fade timing.
+	Clock::time_point m_clockEffectFx = Clock::now();   ///< Reference clock for the combine slot's Solo/Fade timing.
 	static const unsigned int kMaxSearch = 100;   ///< Retry bound for every rejection-sampling selection loop.
 
 	// Erzwungene Wechsel + Beat-Quantisierung
 	bool  m_forceEffectChange   = false;   ///< Set by requestChange()/forceScene()/triggers; consumed at the next Solo-phase check.
-	bool  m_forceCombineChange  = false;   ///< Set by requestChange(alsoCombine)/triggers; consumed at the next combine Solo-phase check.
+	bool  m_forceFxChange  = false;   ///< Set by requestChange(alsoFx)/triggers; consumed at the next FX Solo-phase check.
 	int   m_forcedNextTexture   = -1;      ///< Remote direct-jump target index (-1 = none); wins over review mode and random pick.
 	bool  m_pendingEffectChange = false;   ///< True while an effect change is due but waiting on beat quantisation.
 	bool  m_pendingEffectForced = false;   ///< True if the pending effect change was manual/forced (fires immediately, skips the downbeat wait).
 	float m_pendingEffectAge    = 0.f;     ///< Seconds the pending effect change has been waiting (timeout escape at 2.5 s).
-	bool  m_pendingCombineChange = false;  ///< True while a combine change is due but waiting on beat quantisation.
-	bool  m_pendingCombineForced = false;  ///< True if the pending combine change was manual/forced.
-	float m_pendingCombineAge    = 0.f;    ///< Seconds the pending combine change has been waiting.
+	bool  m_pendingFxChange = false;  ///< True while a combine change is due but waiting on beat quantisation.
+	bool  m_pendingFxForced = false;  ///< True if the pending combine change was manual/forced.
+	float m_pendingFxAge    = 0.f;    ///< Seconds the pending combine change has been waiting.
 
 	// Trigger-Buchhaltung
 	float m_noveltyCooldown  = 0.f;   ///< Seconds until another harmonic-novelty/section trigger is allowed to fire (rate limit).
@@ -219,7 +219,7 @@ private:
 
 	// Song-Struktur-Gedächtnis
 	std::map<int, unsigned int>       m_sectionEffect;    ///< Section id -> effect/texture index last played during that section.
-	std::map<int, unsigned int>       m_sectionCombine;   ///< Section id -> combine index last played during that section.
+	std::map<int, unsigned int>       m_sectionFx;   ///< Section id -> combine index last played during that section.
 	std::map<int, std::vector<float>> m_sectionParams;    ///< Section id -> snapshotted shader parameters to restore on replay.
 	int   m_pendingSectionStore   = -1;   ///< Section id whose final look should be stored at the next fade-end (-1 = none pending).
 	int   m_pendingSectionRestore = -1;   ///< Section id whose stored look should be restored at the next fade-start (-1 = none pending).

@@ -18,8 +18,8 @@
  *        headers so callers get a consistent base set of declarations.
  */
 
-#ifndef SRDINC_H
-#define SRDINC_H
+#ifndef STDINC_H
+#define STDINC_H
 
 //! Fallback definition of pi, in case the platform's math.h doesn't provide one.
 #ifndef M_PI

@@ -357,7 +357,7 @@ void Configuration::readConfiguration( const QString &filename )
 			shader->setComplexity( complexity );
 			shader->setProbability( probability );
 			shader->setMoodFlags( moodFlags );
-			m_filterShader->addCombineShader( shader );
+			m_filterShader->addFxShader( shader );
 		}
      }
 

@@ -166,15 +166,15 @@ FilterShader::FilterShader( )
 // values (1/2) made those guards skip creation -> invalid FBOs -> black frames.
 , m_fboEffectTexture1(0)
 , m_fboEffectTexture2(0)
-, m_fboEffectCombine1(0)
-, m_fboEffectCombine2(0)
+, m_fboEffectFx1(0)
+, m_fboEffectFx2(0)
 , m_attachmentpoint(GL_COLOR_ATTACHMENT0)
 , m_texID1(0)
 , m_texID2(0)
 , m_texIDFBOEffectTexture1(0)
 , m_texIDFBOEffectTexture2(0)
-, m_texIDFBOEffectCombine1(0)
-, m_texIDFBOEffectCombine2(0)
+, m_texIDFBOEffectFx1(0)
+, m_texIDFBOEffectFx2(0)
 , m_imageList()
 , m_imageListIterator()
 , m_time()
@@ -197,7 +197,7 @@ FilterShader::FilterShader( )
 , m_nrTextureUploads(0)
 {
 	m_effectTextures.clear();
-	m_effectCombines.clear();
+	m_effectFx.clear();
 	m_effectTransitions.clear();
 }
 
@@ -257,7 +257,7 @@ void FilterShader::start( int width, int height )
 		fb->setComplexity( 1 );
 		m_effectTextures.push_back( fb );
 	}
-	if( m_effectCombines.empty() )
+	if( m_effectFx.empty() )
 	{
 		fprintf( stderr, "WARNING: configuration has no valid <CombineShader> "
 		                 "entries (they need the SAME attribute names as "
@@ -265,7 +265,7 @@ void FilterShader::start( int width, int height )
 		EffectShader *fb = new EffectShader( "..\\FX\\FxPlain.frag", 30, 60, 20, 40 );
 		fb->setProbability( 1.f );
 		fb->setComplexity( 1 );
-		m_effectCombines.push_back( fb );
+		m_effectFx.push_back( fb );
 	}
 	// Presets from before the Transitions/ split (or with a typo'd element
 	// name) carry no <TransitionShader> entries; scene fades then fall back
@@ -281,7 +281,7 @@ void FilterShader::start( int width, int height )
 	}
 
 	// Initiale Effekt-/Combine-Wahl + Szenen-Uhren: SceneScheduler.
-	m_scheduler.attach( &m_effectTextures, &m_effectCombines, &m_effectTransitions );
+	m_scheduler.attach( &m_effectTextures, &m_effectFx, &m_effectTransitions );
 	m_scheduler.setTasteCallback( [this]( const char *f ){ return tasteFor( f ); } );
 	m_scheduler.reset();
 
@@ -315,13 +315,13 @@ QString FilterShader::activeShaderInfo() const
 			       .arg(int((1.0f - m_scheduler.texInterp()) * 100.0f + 0.5f));
 	}
 	out += "\n";
-	if (!m_effectCombines.empty())
+	if (!m_effectFx.empty())
 	{
-		out += "COMB  " + base(m_effectCombines[m_scheduler.actCombine()]->fragmentName());
-		if (m_scheduler.combState() != 0)
+		out += "COMB  " + base(m_effectFx[m_scheduler.actFx()]->fragmentName());
+		if (m_scheduler.fxState() != 0)
 			out += QString("   → %1  (%2%)")
-			       .arg(base(m_effectCombines[m_scheduler.nextCombine()]->fragmentName()))
-			       .arg(int((1.0f - m_scheduler.combInterp()) * 100.0f + 0.5f));
+			       .arg(base(m_effectFx[m_scheduler.nextFx()]->fragmentName()))
+			       .arg(int((1.0f - m_scheduler.fxInterp()) * 100.0f + 0.5f));
 	}
 	// The transition only ACTS during a scene fade; showing it outside one
 	// would just name the stale last roll.
@@ -378,8 +378,8 @@ void FilterShader::cleanTextures()
 {
 	glDeleteFramebuffers( 1, &m_fboEffectTexture1 );		// clean up framebuffer object
 	glDeleteFramebuffers( 1, &m_fboEffectTexture2 );		// clean up framebuffer object
-	glDeleteFramebuffers( 1, &m_fboEffectCombine1 );		// clean up framebuffer object
-	glDeleteFramebuffers( 1, &m_fboEffectCombine2 );		// clean up framebuffer object
+	glDeleteFramebuffers( 1, &m_fboEffectFx1 );		// clean up framebuffer object
+	glDeleteFramebuffers( 1, &m_fboEffectFx2 );		// clean up framebuffer object
 	glDeleteFramebuffers( 1, &m_fboTransition );		// clean up framebuffer object
 	glDeleteTextures( 1, &m_actTex );         // clean up textures
 	glDeleteTextures( 1, &m_nextTex );
@@ -388,7 +388,7 @@ void FilterShader::cleanTextures()
 
 void FilterShader::cleanShaderPrograms()
 {
-	glDeleteProgram(m_sh_prog_id_combine);
+	glDeleteProgram(m_sh_prog_id_fx);
 
 
 	for( unsigned int i = 0; i < m_effectTextures.size(); i++ )
@@ -397,9 +397,9 @@ void FilterShader::cleanShaderPrograms()
 	}
 
 
-	for( unsigned int i = 0; i < m_effectCombines.size(); i++ )
+	for( unsigned int i = 0; i < m_effectFx.size(); i++ )
 	{
-		m_effectCombines[i]->cleanShaderPrograms();
+		m_effectFx[i]->cleanShaderPrograms();
 	}
 
 	for( unsigned int i = 0; i < m_effectTransitions.size(); i++ )
@@ -480,9 +480,9 @@ void FilterShader::reinit(int width, int height)
 	}
 
 	
-	for( unsigned int i = 0; i < m_effectCombines.size(); i++ )
+	for( unsigned int i = 0; i < m_effectFx.size(); i++ )
 	{
-		m_effectCombines[i]->prepare( m_width, m_height );   // lazy compile
+		m_effectFx[i]->prepare( m_width, m_height );   // lazy compile
 	}
 
 	for( unsigned int i = 0; i < m_effectTransitions.size(); i++ )
@@ -495,13 +495,13 @@ void FilterShader::reinit(int width, int height)
 
 	createFBOTexture( m_texIDFBOEffectTexture1 );
 	createFBOTexture( m_texIDFBOEffectTexture2 );
-	createFBOTexture( m_texIDFBOEffectCombine1 );
-	createFBOTexture( m_texIDFBOEffectCombine2 );
+	createFBOTexture( m_texIDFBOEffectFx1 );
+	createFBOTexture( m_texIDFBOEffectFx2 );
 	createFBOTexture( m_texIDFBOTransition );
 	initFBO(  m_fboEffectTexture1, m_texIDFBOEffectTexture1, &m_depthTexEffect1 );
 	initFBO(  m_fboEffectTexture2, m_texIDFBOEffectTexture2, &m_depthTexEffect2 );
-	initFBO(  m_fboEffectCombine1, m_texIDFBOEffectCombine1 );
-	initFBO(  m_fboEffectCombine2, m_texIDFBOEffectCombine2 );
+	initFBO(  m_fboEffectFx1, m_texIDFBOEffectFx1 );
+	initFBO(  m_fboEffectFx2, m_texIDFBOEffectFx2 );
 	initFBO(  m_fboTransition,     m_texIDFBOTransition );
 	
 	//	initFBO();
@@ -532,16 +532,16 @@ void FilterShader::resize(int width, int height)
 	// Effect shaders only need their reported resolution updated (no recompile).
 	for( unsigned int i = 0; i < m_effectTextures.size(); i++ )
 		m_effectTextures[i]->setSize( m_width, m_height );
-	for( unsigned int i = 0; i < m_effectCombines.size(); i++ )
-		m_effectCombines[i]->setSize( m_width, m_height );
+	for( unsigned int i = 0; i < m_effectFx.size(); i++ )
+		m_effectFx[i]->setSize( m_width, m_height );
 	for( unsigned int i = 0; i < m_effectTransitions.size(); i++ )
 		m_effectTransitions[i]->setSize( m_width, m_height );
 
 	// Re-allocate the off-screen colour buffers to the new size, reusing IDs.
 	setupFBOTexture( m_texIDFBOEffectTexture1 );
 	setupFBOTexture( m_texIDFBOEffectTexture2 );
-	setupFBOTexture( m_texIDFBOEffectCombine1 );
-	setupFBOTexture( m_texIDFBOEffectCombine2 );
+	setupFBOTexture( m_texIDFBOEffectFx1 );
+	setupFBOTexture( m_texIDFBOEffectFx2 );
 	setupFBOTexture( m_texIDFBOTransition );
 
 	// The 3D-scene DEPTH textures must track the colour size, or the effect
@@ -734,7 +734,7 @@ void FilterShader::compileAllShaders()
 		fprintf( stderr, "COMPILEALL %s\n", s->fragmentName() );
 		s->ensureCompiled();
 	}
-	for( EffectShader *s : m_effectCombines )
+	for( EffectShader *s : m_effectFx )
 	{
 		fprintf( stderr, "COMPILEALL %s\n", s->fragmentName() );
 		s->ensureCompiled();
@@ -745,7 +745,7 @@ void FilterShader::compileAllShaders()
 		s->ensureCompiled();
 	}
 	fprintf( stderr, "COMPILEALL done (%d textures, %d combines, %d transitions)\n",
-	         (int)m_effectTextures.size(), (int)m_effectCombines.size(),
+	         (int)m_effectTextures.size(), (int)m_effectFx.size(),
 	         (int)m_effectTransitions.size() );
 }
 
@@ -818,7 +818,7 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 		for( EffectShader *s : m_effectTextures )
 			if( !s->isCompiled() ) { s->ensureCompiled(); warmed = true; break; }
 		if( !warmed )
-			for( EffectShader *s : m_effectCombines )
+			for( EffectShader *s : m_effectFx )
 				if( !s->isCompiled() ) { s->ensureCompiled(); break; }
 	}
 
@@ -1046,7 +1046,7 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 /*********************** Szenen-Wahl: SceneScheduler ***********************/
 
 	// Trigger (Novelty/Section/Drop, Pin) + Effekt-Zustandsmaschine.  Der
-	// Combine-Teil (tickCombine) laeuft weiter NACH den Effekt-Passes, weil
+	// Combine-Teil (tickFx) laeuft weiter NACH den Effekt-Passes, weil
 	// erst dort m_trueStereoHold entsteht.
 	SceneScheduler::Tick schedTick;
 	schedTick.dt             = timeSinceLastFrameSec;
@@ -1158,7 +1158,7 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 		const bool next3D   = m_effectTextures[m_scheduler.nextTexture()]->is3D();
 		m_trueStereoHold   = stereoOn && act3D && ( texSolo || next3D );
 		m_trueStereoPacked = m_trueStereoHold
-		                   && m_scheduler.combState() == 0;
+		                   && m_scheduler.fxState() == 0;
 		m_trueStereoNow    = m_trueStereoPacked && texSolo;
 	}
 
@@ -1289,34 +1289,34 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 /***********************************Plain and Full*****************************************/
 
 	// Combine-Zustandsmaschine (an der alten Stelle, s.o.).
-	m_scheduler.tickCombine( schedTick, m_trueStereoHold );
+	m_scheduler.tickFx( schedTick, m_trueStereoHold );
 
 	
 	// restore render destination to regular frame buffer
 	glViewport( 0, 0, m_width, m_height );
 
-	// 2D CAMERA RIG: if a scene carries rig2* formulas, the combine gets the
+	// 2D CAMERA RIG: if a scene carries rig2* formulas, the FX pass gets the
 	// TRANSFORMED frame instead.  Never on eye-packed frames (warping a
 	// packed stereo frame shears the two eyes against each other), and the
 	// "next" slot only when its pass actually rendered this frame.
-	GLuint combineTex1 = m_texIDFBOEffectTexture1;
-	GLuint combineTex2 = m_texIDFBOEffectTexture2;
+	GLuint fxTex1 = m_texIDFBOEffectTexture1;
+	GLuint fxTex2 = m_texIDFBOEffectTexture2;
 	if( !m_trueStereoPacked )
 	{
-		combineTex1 = rig2Transform( m_effectTextures[m_scheduler.actTexture()],
+		fxTex1 = rig2Transform( m_effectTextures[m_scheduler.actTexture()],
 		                             m_texIDFBOEffectTexture1, 0 );
 		if( m_scheduler.texState() != 0 )
-			combineTex2 = rig2Transform( m_effectTextures[m_scheduler.nextTexture()],
+			fxTex2 = rig2Transform( m_effectTextures[m_scheduler.nextTexture()],
 			                             m_texIDFBOEffectTexture2, 1 );
 		glBindFramebuffer( GL_FRAMEBUFFER, m_defaultFBO );
 		glViewport( 0, 0, m_width, m_height );
 	}
 
 	glActiveTexture(GL_TEXTURE3);
-	glBindTexture( GL_TEXTURE_2D, combineTex1 );
+	glBindTexture( GL_TEXTURE_2D, fxTex1 );
 
 	glActiveTexture(GL_TEXTURE4);
-	glBindTexture( GL_TEXTURE_2D, combineTex2 );
+	glBindTexture( GL_TEXTURE_2D, fxTex2 );
 
 	// The matching depth buffers.  Bound unconditionally: they are two texture
 	// binds, and a shader that ignores them never declares the samplers.
@@ -1327,9 +1327,9 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 	glActiveTexture(GL_TEXTURE0);
 
 	//Do the FBO Stuff
-	glBindFramebuffer( GL_FRAMEBUFFER, m_fboEffectCombine1 );
+	glBindFramebuffer( GL_FRAMEBUFFER, m_fboEffectFx1 );
 
-    //glFramebufferCombine2DEXT( GL_FRAMEBUFFER, m_attachmentpoint, GL_Combine_2D, m_texIDFBOEffectCombine1, 0);
+    //glFramebufferCombine2DEXT( GL_FRAMEBUFFER, m_attachmentpoint, GL_Combine_2D, m_texIDFBOEffectFx1, 0);
 
 	if( m_trueStereoNow )
 	{
@@ -1357,7 +1357,7 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 		// shader blends outgoing (tex0, unit 3) and incoming (tex1, unit 4)
 		// scene into its own FBO.  While a scene plays solo the pass is
 		// skipped entirely and the overlays read the scene frame directly.
-		GLuint sceneTex = combineTex1;
+		GLuint sceneTex = fxTex1;
 		if( m_scheduler.texState() != 0 && !m_effectTransitions.empty() )
 		{
 			glBindFramebuffer( GL_FRAMEBUFFER, m_fboTransition );
@@ -1367,7 +1367,7 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 			tr->applyAudioFeatures( audioFx );
 			tr->draw();
 			sceneTex = m_texIDFBOTransition;
-			glBindFramebuffer( GL_FRAMEBUFFER, m_fboEffectCombine1 );
+			glBindFramebuffer( GL_FRAMEBUFFER, m_fboEffectFx1 );
 		}
 
 		// OVERLAY pass: the combine/FX shader reads the FINISHED scene.  Both
@@ -1380,21 +1380,21 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 		glBindTexture( GL_TEXTURE_2D, sceneTex );
 		glActiveTexture(GL_TEXTURE0);
 
-		m_effectCombines[m_scheduler.actCombine()]->enableShader();
-		m_effectCombines[m_scheduler.actCombine()]->setUniforms( m_globaltime, 1.0f, 3, 4 );
-		m_effectCombines[m_scheduler.actCombine()]->applyAudioFeatures( audioFx );
-		m_effectCombines[m_scheduler.actCombine()]->draw();
+		m_effectFx[m_scheduler.actFx()]->enableShader();
+		m_effectFx[m_scheduler.actFx()]->setUniforms( m_globaltime, 1.0f, 3, 4 );
+		m_effectFx[m_scheduler.actFx()]->applyAudioFeatures( audioFx );
+		m_effectFx[m_scheduler.actFx()]->draw();
 	}
 
 
-	checkGLErrors("createCombines() 1");
+	checkGLErrors("createFx() 1");
 
 
-    /*glFramebufferCombine2DEXT( GL_FRAMEBUFFER, m_attachmentpoint, GL_Combine_2D, m_texIDFBOEffectCombine2, 0);
+    /*glFramebufferCombine2DEXT( GL_FRAMEBUFFER, m_attachmentpoint, GL_Combine_2D, m_texIDFBOEffectFx2, 0);
 
-	m_effectCombines[m_scheduler.nextCombine()]->enableShader();
-	m_effectCombines[m_scheduler.nextCombine()]->setUniforms( m_globaltime, m_interpolationCombine );
-	m_effectCombines[m_scheduler.nextCombine()]->draw();*/
+	m_effectFx[m_scheduler.nextFx()]->enableShader();
+	m_effectFx[m_scheduler.nextFx()]->setUniforms( m_globaltime, m_interpolationFx );
+	m_effectFx[m_scheduler.nextFx()]->draw();*/
 
 
 	//Now Use Final Rendering
@@ -1402,42 +1402,42 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 	checkFramebufferStatus();
 
 	//Do the FBO Stuff
-	glBindFramebuffer( GL_FRAMEBUFFER, m_fboEffectCombine2 );
+	glBindFramebuffer( GL_FRAMEBUFFER, m_fboEffectFx2 );
 
 	// Skip the "next" combine while NOT cross-fading combines: the final blend
-	// pass (Engine/CombineBlend.frag) weights this output by (1-interpolation),
+	// pass (Engine/OverlayBlend.frag) weights this output by (1-interpolation),
 	// which is 0 at interpolation==1.0, so it is invisible.  Saves the second
 	// combine pass.  Units 3/4 still hold the finished scene from the pass
 	// above; interpolation stays pinned at 1.0 like for the active overlay.
-	if( m_scheduler.combState() != 0 )
+	if( m_scheduler.fxState() != 0 )
 	{
-		m_effectCombines[m_scheduler.nextCombine()]->enableShader();
-		m_effectCombines[m_scheduler.nextCombine()]->setUniforms( m_globaltime, 1.0f, 3, 4 );
-		m_effectCombines[m_scheduler.nextCombine()]->applyAudioFeatures( audioFx );
-		m_effectCombines[m_scheduler.nextCombine()]->draw();
+		m_effectFx[m_scheduler.nextFx()]->enableShader();
+		m_effectFx[m_scheduler.nextFx()]->setUniforms( m_globaltime, 1.0f, 3, 4 );
+		m_effectFx[m_scheduler.nextFx()]->applyAudioFeatures( audioFx );
+		m_effectFx[m_scheduler.nextFx()]->draw();
 	}
 
 	
 	//Now Use Final Rendering — into the safety FBO if active, else to the screen.
-	GLuint combineTarget = m_present.ready() ? m_present.targetFbo() : m_defaultFBO;
-	glBindFramebuffer( GL_FRAMEBUFFER, combineTarget );
+	GLuint fxTarget = m_present.ready() ? m_present.targetFbo() : m_defaultFBO;
+	glBindFramebuffer( GL_FRAMEBUFFER, fxTarget );
 	checkFramebufferStatus();
 
 	/*******************************************************************************/
 
-	glUseProgram( m_sh_prog_id_combine );
+	glUseProgram( m_sh_prog_id_fx );
 	// restore render destination to regular frame buffer
 	glViewport( 0, 0, m_width, m_height );
 
 
 	//rwrw
-	//glUniform1i( m_texPointCombineUni1, 3 );		// texture Unit 0, nicht mit texId verwechseln
-	//glUniform1i( m_texPointCombineUni2, 4 );		// texture Unit 0, nicht mit texId verwechseln
-	glUniform1i( m_texPointCombineUni1, 5 );		// texture Unit 0, nicht mit texId verwechseln
-	glUniform1i( m_texPointCombineUni2, 6 );		// texture Unit 0, nicht mit texId verwechseln
-	glUniform2f( m_texSizeRcpCombineUni, (float) m_width, (float) m_height );
-    glUniform1f( m_interpolationCombineUni, m_scheduler.combInterp() );
-	glUniform1f( m_timeCombineUni, m_globaltime );
+	//glUniform1i( m_texPointFxUni1, 3 );		// texture Unit 0, nicht mit texId verwechseln
+	//glUniform1i( m_texPointFxUni2, 4 );		// texture Unit 0, nicht mit texId verwechseln
+	glUniform1i( m_texPointFxUni1, 5 );		// texture Unit 0, nicht mit texId verwechseln
+	glUniform1i( m_texPointFxUni2, 6 );		// texture Unit 0, nicht mit texId verwechseln
+	glUniform2f( m_texSizeRcpFxUni, (float) m_width, (float) m_height );
+    glUniform1f( m_interpolationFxUni, m_scheduler.fxInterp() );
+	glUniform1f( m_timeFxUni, m_globaltime );
 
 
 
@@ -1450,10 +1450,10 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 
 
 	glActiveTexture(GL_TEXTURE5);
-	glBindTexture( GL_TEXTURE_2D, m_texIDFBOEffectCombine1 );
+	glBindTexture( GL_TEXTURE_2D, m_texIDFBOEffectFx1 );
 	
 	glActiveTexture(GL_TEXTURE6);
-	glBindTexture( GL_TEXTURE_2D, m_texIDFBOEffectCombine2 );
+	glBindTexture( GL_TEXTURE_2D, m_texIDFBOEffectFx2 );
 
 	drawWindow();
 
@@ -2369,16 +2369,16 @@ void FilterShader::initGLSL()
 	// load and compile shader — the final pass that blends the outgoing and
 	// incoming OVERLAY outputs during a combine switch (a plain linear mix;
 	// the styled variety lives in Transitions/ and fires on SCENE fades).
-	m_sh_prog_id_combine = setShaders( "standard.vert", "..\\Engine\\CombineBlend.frag" );
+	m_sh_prog_id_fx = setShaders( "standard.vert", "..\\Engine\\OverlayBlend.frag" );
 	// Get location of the texture samplers and point vector for future use
-	m_texPointCombineUni1 = glGetUniformLocation( m_sh_prog_id_combine, "tex0" );
-	m_texPointCombineUni2 = glGetUniformLocation( m_sh_prog_id_combine, "tex1" );
-	m_texSizeRcpCombineUni = glGetUniformLocation( m_sh_prog_id_combine, "resolution" );
-	m_timeCombineUni = glGetUniformLocation( m_sh_prog_id_combine, "time" );
-    m_interpolationCombineUni = glGetUniformLocation( m_sh_prog_id_combine, "interpolation" );
+	m_texPointFxUni1 = glGetUniformLocation( m_sh_prog_id_fx, "tex0" );
+	m_texPointFxUni2 = glGetUniformLocation( m_sh_prog_id_fx, "tex1" );
+	m_texSizeRcpFxUni = glGetUniformLocation( m_sh_prog_id_fx, "resolution" );
+	m_timeFxUni = glGetUniformLocation( m_sh_prog_id_fx, "time" );
+    m_interpolationFxUni = glGetUniformLocation( m_sh_prog_id_fx, "interpolation" );
 
 	
-    glUseProgram( m_sh_prog_id_combine );
+    glUseProgram( m_sh_prog_id_fx );
 
 	//rwrw m_screenHeightUni = glGetUniformLocation( ;
 
@@ -2465,7 +2465,7 @@ void FilterShader::reloadFragment( const QString &bareName )
 	int n = 0;
 	for( EffectShader *s : m_effectTextures )
 		if( matches( s ) ) { s->reloadShader(); ++n; }
-	for( EffectShader *s : m_effectCombines )
+	for( EffectShader *s : m_effectFx )
 		if( matches( s ) ) { s->reloadShader(); ++n; }
 	if( n )
 		fprintf( stderr, "HOT-RELOAD: %s (%d program%s)\n",
@@ -2478,9 +2478,9 @@ void FilterShader::addTextureShader( EffectShader * shader )
 }
 
 
-void FilterShader::addCombineShader( EffectShader * shader )
+void FilterShader::addFxShader( EffectShader * shader )
 {
-	m_effectCombines.push_back( shader );
+	m_effectFx.push_back( shader );
 }
 
 void FilterShader::addTransitionShader( EffectShader * shader )
