@@ -305,6 +305,12 @@ void Configuration::readConfiguration( const QString &filename )
 			// accumulates something across frames needs it.
 			if( el.hasAttribute("stateBytes") )
 				shader->setStateBytes( el.attribute("stateBytes").toInt() );
+			// Multi-stage compute generator (clear/splat/integrate/mesh, ...):
+			// how many genPass=0..N-1 dispatches to run, barrier between each.
+			// Only scenes whose generator pipeline needs more than "advance,
+			// then mesh" declare this.
+			if( el.hasAttribute("genPasses") )
+				shader->setGenPassCount( el.attribute("genPasses").toInt() );
 
 			addUniforms( shader, el );
 			shader->setComplexity( complexity );

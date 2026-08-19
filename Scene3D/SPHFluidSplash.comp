@@ -1,0 +1,261 @@
+#version 430
+/**
+ * @file SPHFluidSplash.comp
+ * @brief Real SPH (Smoothed Particle Hydrodynamics) fluid: 3000 particles in
+ * a box, density/pressure computed from actual neighbours found via a 3D
+ * spatial hash grid (same binning technique ComputeFX's Boids uses in 2D,
+ * here extended to 3D), then meshed as one small tetrahedron per particle.
+ *
+ * Five genPass stages (see Scene3DShader::runGenerator()'s genPassCount
+ * extension -- this is the first generator in the engine that needs more
+ * than the original "advance state, then mesh" two passes):
+ *   0: clear the grid's per-cell particle counts
+ *   1: bin every particle into its grid cell (atomic slot reservation)
+ *   2: density + pressure per particle (sum a smoothing kernel over the
+ *      27 neighbouring cells)
+ *   3: pressure-gradient + viscosity forces, gravity, integrate velocity
+ *      and position, bounce off the container's floor/walls
+ *   4: emit a tetrahedron per particle into the indirect vertex buffer
+ *
+ * The particle array and the grid share ONE persistent SSBO (m_stateBuf,
+ * sized via setGenPassCount()'s sibling setStateBytes()) as two array
+ * members of the same std430 block -- simplest way to get two differently-
+ * typed persistent regions out of the one buffer binding runGenerator()
+ * already provides, no engine change needed for a second buffer.
+ */
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+
+const int   N          = 3000;    // particles
+const int   GRID_RES   = 16;
+const int   CELL_CAP   = 12;      // max particles tracked per cell
+const float DOMAIN     = 3.2;     // box half-width: [-DOMAIN, DOMAIN]^3
+const float FLOOR_Y    = -3.0;    // particles rest on this plane
+const float CELL_SIZE  = (2.0 * DOMAIN) / float(GRID_RES);
+const float H          = CELL_SIZE;         // SPH smoothing radius
+const float REST_DENS  = 6.0;               // target rest density
+const float STIFFNESS  = 2.4;               // pressure = STIFFNESS*(density-REST_DENS)
+const float PARTICLE_M = 1.0;
+const float VISCOSITY  = 0.8;
+const float GRAV       = -9.0;
+
+// std430: particles first (N*8 floats: pos.xyz, density, vel.xyz, pressure),
+// then the grid (GRID_RES^3 cells * (1 count + CELL_CAP indices) uints).
+layout(std430, binding = 2) buffer StateBuf
+{
+    float particles[N * 8];
+    uint  grid[GRID_RES * GRID_RES * GRID_RES * (1 + CELL_CAP)];
+};
+
+// Output: the shared indirect vertex/command contract every geom="indirect"
+// generator writes (see Scene3DShader.h) -- attrA.xyz = vertex position,
+// attrA.w = particle index (for per-particle colour/seed lookups in the
+// fragment stage via imgPalette-style hashing); attrB unused here.
+struct Vertex { vec4 attrA; vec4 attrB; };
+layout(std430, binding = 0) buffer VBO       { Vertex verts[]; };
+layout(std430, binding = 1) buffer CmdBuf    { uint cmd[]; };   // [0]=count [4]=rawCount (atomic)
+
+uniform float genPass;
+uniform float time;
+uniform float sceneSeed;
+uniform float audioKick;
+uniform float audioLevel;
+uniform float audioSubBass;
+uniform uint  maxVertices;
+
+float hash11(float x) { return fract(sin(x * 127.1 + sceneSeed * 311.7) * 43758.5453); }
+vec3  hash13(float x)
+{
+    return vec3( hash11(x), hash11(x + 71.17), hash11(x + 143.71) );
+}
+
+int cellIndex(ivec3 c)
+{
+    c = clamp(c, ivec3(0), ivec3(GRID_RES - 1));
+    return (c.z * GRID_RES + c.y) * GRID_RES + c.x;
+}
+ivec3 cellOf(vec3 p)
+{
+    return ivec3(floor((p - vec3(-DOMAIN, FLOOR_Y, -DOMAIN)) / CELL_SIZE));
+}
+
+vec3  posOf(int i)   { int b = i * 8; return vec3(particles[b+0], particles[b+1], particles[b+2]); }
+float densOf(int i)  { return particles[i * 8 + 3]; }
+vec3  velOf(int i)   { int b = i * 8; return vec3(particles[b+4], particles[b+5], particles[b+6]); }
+float presOf(int i)  { return particles[i * 8 + 7]; }
+void  setPos(int i, vec3 p)  { int b = i * 8; particles[b+0]=p.x; particles[b+1]=p.y; particles[b+2]=p.z; }
+void  setDens(int i, float d){ particles[i * 8 + 3] = d; }
+void  setVel(int i, vec3 v)  { int b = i * 8; particles[b+4]=v.x; particles[b+5]=v.y; particles[b+6]=v.z; }
+void  setPres(int i, float p){ particles[i * 8 + 7] = p; }
+
+// Poly6 (density) and spiky-gradient (pressure force) kernels -- the
+// standard SPH pair, chosen because poly6 is smooth (good for a scalar
+// density sum) while spiky avoids poly6's vanishing gradient at short range
+// (which would let particles pile up with no repulsion).
+float poly6(float r2, float h2)
+{
+    if (r2 >= h2) return 0.0;
+    float t = h2 - r2;
+    return 1.5666814711 / pow(sqrt(h2), 9.0) * t * t * t;   // 315/(64*pi) folded in
+}
+vec3 spikyGrad(vec3 rij, float r, float h)
+{
+    if (r <= 1e-5 || r >= h) return vec3(0.0);
+    float t = h - r;
+    float coeff = -14.32394487 / pow(h, 6.0) * t * t;       // -45/pi folded in
+    return coeff * (rij / r);
+}
+
+void main()
+{
+    uint gid = gl_GlobalInvocationID.x
+             + gl_GlobalInvocationID.y * 64u
+             + gl_GlobalInvocationID.z * 64u * 64u;
+    int  i   = int(gid);
+
+    if (genPass < 0.5)
+    {
+        // Pass 0: clear grid counts (one invocation per cell; extra
+        // invocations beyond the grid size simply have nothing to clear).
+        int cells = GRID_RES * GRID_RES * GRID_RES;
+        if (i < cells) grid[i * (1 + CELL_CAP)] = 0u;
+        return;
+    }
+
+    if (genPass < 1.5)
+    {
+        // Pass 1: seed on frame 0 (time==0 never recurs once running, so a
+        // oneshot "not yet seeded" flag isn't needed -- the very first bake
+        // always has i's slot at the origin, which every subsequent frame
+        // immediately moves away from), then bin every particle into its cell.
+        if (i >= N) return;
+        vec3 p = posOf(i);
+        // First-ever touch for this particle: the persistent buffer starts
+        // zeroed, and gravity guarantees velocity.y != 0 after this particle's
+        // very first integrate pass -- so "still exactly at rest at the
+        // origin" only ever happens once, regardless of what "time" (a
+        // per-activation-offset value, NOT seconds-since-seed) happens to be.
+        if (p == vec3(0.0) && velOf(i) == vec3(0.0))
+        {
+            vec3 h3 = hash13(float(i));
+            p = (h3 - 0.5) * vec3(DOMAIN * 1.2, 1.0, DOMAIN * 1.2)
+              + vec3(0.0, DOMAIN * 0.6, 0.0);   // drop from a loose cloud up top
+            setPos(i, p);
+            setVel(i, vec3(0.0));
+        }
+        int ci = cellIndex(cellOf(p));
+        uint slot = atomicAdd(grid[ci * (1 + CELL_CAP)], 1u);
+        if (slot < uint(CELL_CAP))
+            grid[ci * (1 + CELL_CAP) + 1u + slot] = uint(i);
+        return;
+    }
+
+    if (genPass < 2.5)
+    {
+        // Pass 2: density (poly6 sum over the 27 neighbouring cells) and the
+        // resulting pressure (a stiff equation of state -- simple, stable
+        // enough at this particle count, not a physically exact gas law).
+        if (i >= N) return;
+        vec3 pi = posOf(i);
+        ivec3 c = cellOf(pi);
+        float dens = 0.0;
+        for (int dz = -1; dz <= 1; ++dz)
+        for (int dy = -1; dy <= 1; ++dy)
+        for (int dx = -1; dx <= 1; ++dx)
+        {
+            int ci = cellIndex(c + ivec3(dx, dy, dz));
+            uint cnt = min(grid[ci * (1 + CELL_CAP)], uint(CELL_CAP));
+            for (uint s = 0u; s < cnt; ++s)
+            {
+                int j = int(grid[ci * (1 + CELL_CAP) + 1u + s]);
+                float r2 = dot(pi - posOf(j), pi - posOf(j));
+                dens += PARTICLE_M * poly6(r2, H * H);
+            }
+        }
+        setDens(i, dens);
+        setPres(i, max(STIFFNESS * (dens - REST_DENS), 0.0));
+        return;
+    }
+
+    if (genPass < 3.5)
+    {
+        // Pass 3: pressure-gradient + a simple velocity-averaging viscosity,
+        // gravity, semi-implicit Euler integration, box collision.
+        if (i >= N) return;
+        vec3 pi = posOf(i), vi = velOf(i);
+        float rhoI = max(densOf(i), 1e-3), presI = presOf(i);
+        ivec3 c = cellOf(pi);
+        vec3 fPress = vec3(0.0), fVisc = vec3(0.0);
+        for (int dz = -1; dz <= 1; ++dz)
+        for (int dy = -1; dy <= 1; ++dy)
+        for (int dx = -1; dx <= 1; ++dx)
+        {
+            int ci = cellIndex(c + ivec3(dx, dy, dz));
+            uint cnt = min(grid[ci * (1 + CELL_CAP)], uint(CELL_CAP));
+            for (uint s = 0u; s < cnt; ++s)
+            {
+                int j = int(grid[ci * (1 + CELL_CAP) + 1u + s]);
+                if (j == i) continue;
+                vec3 rij = pi - posOf(j);
+                float r = length(rij);
+                float rhoJ = max(densOf(j), 1e-3);
+                fPress -= PARTICLE_M * (presI / (rhoI * rhoI) + presOf(j) / (rhoJ * rhoJ))
+                        * spikyGrad(rij, r, H);
+                if (r < H)
+                    fVisc += VISCOSITY * PARTICLE_M * (velOf(j) - vi) / rhoJ * (1.0 - r / H);
+            }
+        }
+        vec3 accel = fPress + fVisc + vec3(0.0, GRAV, 0.0);
+        // A kick punches the whole pool upward from underneath -- a splash,
+        // not just a colour change (photosensitivity-safe: bounded impulse,
+        // not a brightness spike).
+        accel.y += audioKick * 5.0 * exp(-max(pi.y - FLOOR_Y, 0.0) * 0.8);
+
+        float dt = 0.016;   // fixed step: independent of the host frame rate,
+                             // which would otherwise feed back into the sim
+        vi += accel * dt;
+        vi *= 0.999;         // tiny numerical damping, keeps long runs stable
+        pi += vi * dt;
+
+        // Box collision: reflect + damp on any wall/floor penetration.
+        if (pi.x < -DOMAIN) { pi.x = -DOMAIN; vi.x *= -0.4; }
+        if (pi.x >  DOMAIN) { pi.x =  DOMAIN; vi.x *= -0.4; }
+        if (pi.z < -DOMAIN) { pi.z = -DOMAIN; vi.z *= -0.4; }
+        if (pi.z >  DOMAIN) { pi.z =  DOMAIN; vi.z *= -0.4; }
+        if (pi.y < FLOOR_Y) { pi.y = FLOOR_Y; vi.y *= -0.35; }
+        if (pi.y > DOMAIN * 2.0) { pi.y = DOMAIN * 2.0; vi.y *= -0.2; }   // soft lid
+
+        setPos(i, pi);
+        setVel(i, vi);
+        return;
+    }
+
+    // Pass 4: mesh -- one small tetrahedron per particle, scaled slightly by
+    // local density (denser = fuller droplet) and audioLevel (breathing
+    // size with the music). 4 triangles = 12 vertices reserved atomically,
+    // same slot-reservation contract every geom="indirect" generator uses.
+    if (i >= N) return;
+    vec3 p = posOf(i);
+    float r = 0.052 * (0.7 + 0.25 * clamp(densOf(i) / REST_DENS, 0.0, 2.0))
+            * (1.0 + 0.15 * audioLevel);
+
+    vec3 h3 = hash13(float(i) + 91.3);
+    vec3 a = vec3( 0.0,        r,        0.0);
+    vec3 b = vec3( r,         -r * 0.6,  r);
+    vec3 cc= vec3(-r,         -r * 0.6,  r);
+    vec3 d = vec3( 0.0,       -r * 0.6, -r * 1.3);
+    // 4 outward-wound faces of the tetrahedron.
+    vec3 verts9[12] = vec3[](
+        a, cc, b,     // top-front
+        a, b, d,      // top-right
+        a, d, cc,     // top-left
+        b, cc, d      // bottom
+    );
+
+    uint base = atomicAdd(cmd[4], 12u);
+    if (base + 12u > maxVertices) return;
+    for (int v = 0; v < 12; ++v)
+    {
+        verts[base + uint(v)].attrA = vec4(p + verts9[v], float(i));
+        verts[base + uint(v)].attrB = vec4(h3, densOf(i) / max(REST_DENS, 1e-3));
+    }
+}

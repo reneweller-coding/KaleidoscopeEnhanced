@@ -509,7 +509,29 @@ void Scene3DShader::runGenerator( float time )
 	// one dispatch would race, because invocations within a dispatch have no
 	// ordering, and the meshing half would read state the stepping half had not
 	// finished writing.
-	if( passLoc >= 0 && m_stateBuf )
+	//
+	// A scene that called setGenPassCount(N > 0) (the "genPasses" preset
+	// attribute) gets N passes instead of the fixed 2 (0..N-1, barrier
+	// between each) -- for pipelines that need more than "advance, then
+	// mesh" (a grid-based fluid sim needs e.g. clear-density / splat /
+	// integrate-forces / mesh, four passes that each depend on the previous
+	// one having finished writing). A GLSL shader can't tell the host how
+	// many passes it wants -- uniforms are host-to-shader, not the other way
+	// around -- so this is scene-configured (like stateBytes/shadowExtent),
+	// not shader-declared. Purely additive: a scene that never calls
+	// setGenPassCount() is completely unaffected, still runs through the
+	// exact branch below it always did.
+	if( passLoc >= 0 && m_genPassCount > 0 )
+	{
+		for( int p = 0; p < m_genPassCount; ++p )
+		{
+			glUniform1f( passLoc, float(p) );
+			glDispatchCompute( 16, 16, 16 );
+			glMemoryBarrier( GL_SHADER_STORAGE_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT
+			                | GL_SHADER_IMAGE_ACCESS_BARRIER_BIT );
+		}
+	}
+	else if( passLoc >= 0 && m_stateBuf )
 	{
 		glUniform1f( passLoc, 0.f );
 		glDispatchCompute( 16, 16, 16 );
