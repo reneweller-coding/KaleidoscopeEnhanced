@@ -112,10 +112,22 @@ bool rightAssoc( int opChar ) { return opChar == '^' || opChar == 'n'; }
  *     count) that the shunting-yard pass alone wouldn't reject; a compiled
  *     program must reduce to exactly one value on the stack.
  */
-bool ExprProgram::compile( const std::string &formula, const std::string &context )
+bool ExprProgram::compile( const std::string &formula, const std::string &context, std::string *outError )
 {
     m_prog.clear();
     m_ok = false;
+
+    // Every parse-error site reports through this: stderr always gets the
+    // context-prefixed line (unchanged behaviour for every existing caller),
+    // and outError -- when a caller passed one, e.g. the editor's UI -- gets
+    // just the message, so it can show something more specific than a bare
+    // "invalid" indicator without also owning the "Expr [context]:" framing.
+    auto fail = [&]( const std::string &msg )
+    {
+        fprintf( stderr, "Expr [%s]: %s\n", context.c_str(), msg.c_str() );
+        if( outError ) *outError = msg;
+        return false;
+    };
 
     const char *s = formula.c_str();
     const int   n = (int)formula.size();
@@ -163,11 +175,7 @@ bool ExprProgram::compile( const std::string &formula, const std::string &contex
             for (int v = 0; v < ExprVars::V_COUNT; ++v)
                 if (ident == kVarNames[v]) { vidx = v; break; }
             if (vidx < 0)
-            {
-                fprintf(stderr, "Expr [%s]: unknown identifier '%s'\n",
-                        context.c_str(), ident.c_str());
-                return false;
-            }
+                return fail("unknown identifier '" + ident + "'");
             Token t; t.kind = Token::VAR; t.idx = vidx;
             toks.push_back(t);
             prevWasValue = true;
@@ -185,9 +193,7 @@ bool ExprProgram::compile( const std::string &formula, const std::string &contex
             ++i;
             continue;
         }
-        fprintf(stderr, "Expr [%s]: unexpected character '%c'\n",
-                context.c_str(), ch);
-        return false;
+        return fail(std::string("unexpected character '") + ch + "'");
     }
 
     // ---- Shunting-yard ----
@@ -227,10 +233,7 @@ bool ExprProgram::compile( const std::string &formula, const std::string &contex
             while (!stack.empty() && stack.back().kind != Token::LPAREN)
             { popOpToProg(stack.back()); stack.pop_back(); }
             if (stack.empty())
-            {
-                fprintf(stderr, "Expr [%s]: misplaced comma\n", context.c_str());
-                return false;
-            }
+                return fail("misplaced comma");
             break;
         case Token::OP:
             while (!stack.empty() && stack.back().kind == Token::OP
@@ -244,10 +247,7 @@ bool ExprProgram::compile( const std::string &formula, const std::string &contex
             while (!stack.empty() && stack.back().kind != Token::LPAREN)
             { popOpToProg(stack.back()); stack.pop_back(); }
             if (stack.empty())
-            {
-                fprintf(stderr, "Expr [%s]: unbalanced ')'\n", context.c_str());
-                return false;
-            }
+                return fail("unbalanced ')'");
             stack.pop_back();                          // the '('
             if (!stack.empty() && stack.back().kind == Token::FUNC)
             { popOpToProg(stack.back()); stack.pop_back(); }
@@ -257,10 +257,7 @@ bool ExprProgram::compile( const std::string &formula, const std::string &contex
     while (!stack.empty())
     {
         if (stack.back().kind == Token::LPAREN)
-        {
-            fprintf(stderr, "Expr [%s]: unbalanced '('\n", context.c_str());
-            return false;
-        }
+            return fail("unbalanced '('");
         popOpToProg(stack.back());
         stack.pop_back();
     }
@@ -274,17 +271,11 @@ bool ExprProgram::compile( const std::string &formula, const std::string &contex
         if (op.code == OP_NEG || (op.code >= F_SIN && op.code <= F_SIGN)) arity = 1;
         else if (op.code == F_CLAMP || op.code == F_MIX) arity = 3;
         if (depth < arity)
-        {
-            fprintf(stderr, "Expr [%s]: malformed expression\n", context.c_str());
-            return false;
-        }
+            return fail("malformed expression");
         depth -= arity - 1;
     }
     if (depth != 1)
-    {
-        fprintf(stderr, "Expr [%s]: malformed expression\n", context.c_str());
-        return false;
-    }
+        return fail("malformed expression");
 
     m_ok = true;
     return true;

@@ -62,9 +62,10 @@ public:
      * @brief Parses and compiles @p formula into the internal RPN program.
      * @param formula The expression source, e.g. "0.5 + 0.3*bassRel*sin(6.28*barPhase)".
      * @param context A label identifying the formula's origin (e.g. uniform/shader name), used only to prefix stderr error messages.
+     * @param outError Optional: on failure, receives the same message logged to stderr (without the "Expr [context]: " prefix) — e.g. for surfacing in a UI tooltip. Left untouched on success or when null.
      * @return True on success; false on a parse error (unknown identifier, unexpected character, unbalanced parens, misplaced comma, or a malformed/unbalanced RPN stack) — the program then evaluates to 0 via eval().
      */
-    bool compile( const std::string &formula, const std::string &context );
+    bool compile( const std::string &formula, const std::string &context, std::string *outError = nullptr );
 
     /**
      * @brief Runs the compiled RPN program against a filled variable array.
