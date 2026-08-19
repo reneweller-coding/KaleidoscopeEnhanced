@@ -145,6 +145,47 @@ def check(paths, reg):
                              "for NEGATIVE z past the near plane. Use: vp.z += <dist>; "
                              "gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);")
 
+            # --- R12 geom="patches" requires a .tesc/.tese pair -----------
+            # GL_PATCHES only reaches the fragment stage through a
+            # tessellation control+evaluation pair; without both, the
+            # driver has no tessellation levels to work from and the
+            # patch draws NOTHING -- solid black, zero diagnostic output.
+            # (Found by hand across 9 scenes in the 2026-08-19 batch, all
+            # of which actually wanted geom="grid" -- their vert already
+            # read attrA.xy as a dense per-vertex UV, not four patch
+            # corners.)
+            if geom == "patches":
+                have_tesc = os.path.exists(os.path.join(ROOT, "Scene3D", stem + ".tesc"))
+                have_tese = os.path.exists(os.path.join(ROOT, "Scene3D", stem + ".tese"))
+                if not (have_tesc and have_tese):
+                    missing = ", ".join(e for e, have in
+                                         ((".tesc", have_tesc), (".tese", have_tese)) if not have)
+                    err(rel, f"geom=\"patches\" but Scene3D/{stem} is missing {missing} -- "
+                             f"GL_PATCHES needs both stages to tessellate; without them "
+                             f"nothing is drawn. If this scene's attrA is really a dense "
+                             f"per-vertex UV (not four patch corners), the fix is "
+                             f"geom=\"grid\" in Komplett.xml, not writing a tesc/tese pair")
+
+            # --- R13 time-driven rotation must precede the camera translate
+            # A `cos(t*k)`/`sin(t*k)` spin applied to vp AFTER `vp.z += dist`
+            # rotates the whole scene around the CAMERA (radius = dist),
+            # not around its own centre -- it spends most of the cycle
+            # outside the frustum. (Found across 27 verts in the
+            # 2026-08-19 batch: every one read "// 3D rotation" / "Smooth
+            # rotation in 3D" as intent, but applied it post-translate.)
+            # A FIXED angle (e.g. "float tilt = 0.55;") applied after the
+            # translate is deliberate framing, not this bug, and is not
+            # flagged.
+            m_translate = re.search(r'vp\.z\s*\+=', body)
+            if m_translate:
+                tail = body[m_translate.end():]
+                m_rot = re.search(r'cos\s*\([^()]*\b(?:t|time)\b[^()]*\)', tail)
+                if m_rot and re.search(r'\bvp\s*=\s*vec3\s*\(', tail[m_rot.end():m_rot.end() + 400]):
+                    err(rel, "rotates vp by a TIME-driven angle after 'vp.z += ...' -- this "
+                             "orbits the whole scene around the camera (radius = the z "
+                             "offset) instead of spinning it in place. Move the rotation "
+                             "before the translate: rotate vp, THEN vp.z += dist")
+
             # --- R7 grid/quads attrA.xy domain is [0,1], not [-1,1] -------
             if geom in ("grid", "quads") and re.search(r'=\s*attrA\.xy\s*;', body):
                 # Any of the accepted re-centring idioms is fine:
