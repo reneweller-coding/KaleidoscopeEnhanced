@@ -4,8 +4,8 @@
  *        timer (NanoTimer) and a QImage helper used to prepare textures.
  */
 
-#ifndef Utils_H
-#define Utils_H
+#ifndef UTILS_H
+#define UTILS_H
 
 #include <QtGui/QImage>
 

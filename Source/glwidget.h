@@ -3,8 +3,8 @@
  * @brief Declares GLwidget, the QOpenGLWidget subclass that owns the render loop,
  *        input handling and the audio/MIDI/track-media wiring for the visualizer.
  */
-#ifndef CG_RENDERAREA_H
-#define CG_RENDERAREA_H
+#ifndef GLWIDGET_H
+#define GLWIDGET_H
 
 #include <vector>
 #include <iostream>

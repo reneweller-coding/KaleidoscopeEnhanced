@@ -3,8 +3,8 @@
  * @brief FX-overlay EffectShader subclass wrapping FxMulti.frag: a "multiply/tile the
  *        image N times" combine effect.
  */
-#ifndef COMBINE_EFFECT_MULTI_H
-#define COMBINE_EFFECT_MULTI_H
+#ifndef FX_EFFECT_MULTI_H
+#define FX_EFFECT_MULTI_H
 
 #include <QtOpenGL/QGLWidget>
 #include <QtCore/QTime>

@@ -88,37 +88,37 @@ void SceneScheduler::reset()
 
 	for( unsigned int i = 0; i < kMaxSearch; i++ )
 	{
-		m_actCombine = rand() % m_combines->size();
-		if( (*m_combines)[m_actCombine]->useShader() )
+		m_actFx = rand() % m_fxShaders->size();
+		if( (*m_fxShaders)[m_actFx]->useShader() )
 			break;
 	}
 	for( unsigned int i = 0; i < kMaxSearch; i++ )
 	{
-		m_nextCombine = rand() % m_combines->size();
-		if( m_nextCombine != m_actCombine &&
+		m_nextFx = rand() % m_fxShaders->size();
+		if( m_nextFx != m_actFx &&
 			(( (*m_textures)[m_actTexture]->getComplexity() +
 			(*m_textures)[m_nextTexture]->getComplexity() +
-			(*m_combines)[m_actCombine]->getComplexity() +
-			(*m_combines)[m_nextCombine]->getComplexity() ) < 20 )
-			&& (*m_combines)[m_nextCombine]->useShader()
+			(*m_fxShaders)[m_actFx]->getComplexity() +
+			(*m_fxShaders)[m_nextFx]->getComplexity() ) < 20 )
+			&& (*m_fxShaders)[m_nextFx]->useShader()
 			)
 			break;
 	}
-	if( m_nextCombine == m_actCombine )
+	if( m_nextFx == m_actFx )
 	{
-		m_nextCombine += 1;
-		if( m_nextCombine == m_combines->size() )
-			m_nextCombine = 0;
+		m_nextFx += 1;
+		if( m_nextFx == m_fxShaders->size() )
+			m_nextFx = 0;
 	}
 
-	m_combFadeDur = (float) ((*m_combines)[m_actCombine]->getTimeSolo());
+	m_fxFadeDur = (float) ((*m_fxShaders)[m_actFx]->getTimeSolo());
 
 	m_texState  = 0;
-	m_combState = 0;
+	m_fxState = 0;
 	m_texInterp  = 1.f;
-	m_combInterp = 1.f;
+	m_fxInterp = 1.f;
 	restart( m_clockEffectTexture );
-	restart( m_clockEffectCombine );
+	restart( m_clockEffectFx );
 }
 
 // Remote-Szenen-Browser: DIREKT zu Szene idx springen (gleicher Sofort-Pfad
@@ -221,7 +221,7 @@ bool SceneScheduler::moodAccept( EffectShader *s ) const
  * Trigger handling (novelty, section change with song-structure memory,
  * drop, pin) runs first and only sets/clears the forced-change flags; the
  * actual Solo/Fade transition logic follows and is symmetric with
- * tickCombine()'s combine version. Key subtleties:
+ * tickFx()'s combine version. Key subtleties:
  *  - Novelty and section triggers are rate-limited by m_noveltyCooldown
  *    (~8 s) so they don't fight the beat-quantised pending mechanism.
  *  - A recognised, already-known section whose stored shader is already on
@@ -244,7 +244,7 @@ bool SceneScheduler::moodAccept( EffectShader *s ) const
 void SceneScheduler::tick( const Tick &t )
 {
 	std::vector<EffectShader *> &tex  = *m_textures;
-	std::vector<EffectShader *> &comb = *m_combines;
+	std::vector<EffectShader *> &comb = *m_fxShaders;
 
 	// Musical novelty: a strong harmonic / section change (a drop, a key
 	// change) forces an early cross-fade - rate-limited, only while music
@@ -281,20 +281,20 @@ void SceneScheduler::tick( const Tick &t )
 			{
 				m_nextTexture           = it->second;   // replay that section's shader
 				m_pendingSectionRestore = id;           //   ... with its exact params
-				auto ic = m_sectionCombine.find( id );
-				if( ic != m_sectionCombine.end()
+				auto ic = m_sectionFx.find( id );
+				if( ic != m_sectionFx.end()
 				    && ic->second < comb.size()
-				    && ic->second != m_actCombine )
+				    && ic->second != m_actFx )
 				{
-					m_nextCombine        = ic->second;
-					m_forceCombineChange = true;
+					m_nextFx        = ic->second;
+					m_forceFxChange = true;
 				}
 			}
 			else
 			{
 				m_pendingSectionStore = id;             // remember the new look
 				if( (t.sectionCount & 1) == 0 )
-					m_forceCombineChange = true;        // bigger scenery change
+					m_forceFxChange = true;        // bigger scenery change
 			}
 			m_forceEffectChange = true;
 		}
@@ -316,7 +316,7 @@ void SceneScheduler::tick( const Tick &t )
 	if( t.pinned )
 	{
 		m_forceEffectChange  = false;
-		m_forceCombineChange = false;
+		m_forceFxChange = false;
 		m_dropCutPending     = false;
 		// A pending section store/restore must not attach to some LATER,
 		// unrelated switch after unpinning - drop it.
@@ -485,8 +485,8 @@ void SceneScheduler::tick( const Tick &t )
 			if( m_pendingSectionStore >= 0 )
 			{
 				m_sectionEffect[m_pendingSectionStore]  = m_actTexture;
-				m_sectionCombine[m_pendingSectionStore] =
-					(m_combState != 0) ? m_nextCombine : m_actCombine;
+				m_sectionFx[m_pendingSectionStore] =
+					(m_fxState != 0) ? m_nextFx : m_actFx;
 				m_sectionParams[m_pendingSectionStore]  =
 					tex[m_actTexture]->snapshotParameters();
 				m_pendingSectionStore = -1;
@@ -529,8 +529,8 @@ void SceneScheduler::tick( const Tick &t )
 				if( m_nextTexture != m_actTexture &&
 					(( tex[m_actTexture]->getComplexity() +
 					tex[m_nextTexture]->getComplexity() +
-					comb[m_actCombine]->getComplexity() +
-					comb[m_nextCombine]->getComplexity() ) < 20 )
+					comb[m_actFx]->getComplexity() +
+					comb[m_nextFx]->getComplexity() ) < 20 )
 					&& tex[m_nextTexture]->useShader()
 					&& moodAccept( tex[m_nextTexture] )
 					)
@@ -567,46 +567,46 @@ void SceneScheduler::tick( const Tick &t )
  * @param t Frame inputs (timing, triggers, gate).
  * @param trueStereoHold True while an eye-packed true-stereo frame must not enter a combine cross-fade.
  */
-void SceneScheduler::tickCombine( const Tick &t, bool trueStereoHold )
+void SceneScheduler::tickFx( const Tick &t, bool trueStereoHold )
 {
 	std::vector<EffectShader *> &tex  = *m_textures;
-	std::vector<EffectShader *> &comb = *m_combines;
+	std::vector<EffectShader *> &comb = *m_fxShaders;
 
 	// ---- Combine-Zustandsmaschine: Solo ----
-	if( m_combState == 0 )
+	if( m_fxState == 0 )
 	{
-		m_combInterp = 1.0;
+		m_fxInterp = 1.0;
 
-		float ts = secsSince( m_clockEffectCombine );
-		bool forcedC = m_forceCombineChange;
+		float ts = secsSince( m_clockEffectFx );
+		bool forcedC = m_forceFxChange;
 		// The true-stereo hold freezes combine switching: an eye-packed 3D
 		// frame must not enter a combine cross-fade (the pending change fires
 		// as soon as the hold lifts).
 		if( !trueStereoHold
-		    && (ts > m_combFadeDur || (forcedC && ts > 0.6f)) )
+		    && (ts > m_fxFadeDur || (forcedC && ts > 0.6f)) )
 		{
-			m_forceCombineChange   = false;
-			m_pendingCombineChange = true;
-			m_pendingCombineForced = m_pendingCombineForced || forcedC;
+			m_forceFxChange   = false;
+			m_pendingFxChange = true;
+			m_pendingFxForced = m_pendingFxForced || forcedC;
 		}
 
 		// Beat-quantised, like the texture-effect change (manual cuts fire
 		// immediately here too).
-		if( m_pendingCombineChange && !trueStereoHold )
+		if( m_pendingFxChange && !trueStereoHold )
 		{
-			m_pendingCombineAge += t.dt;
-			if( m_pendingCombineForced || t.downbeatTick
-			    || m_pendingCombineAge > 2.5f || t.gateSmooth < 0.25f )
+			m_pendingFxAge += t.dt;
+			if( m_pendingFxForced || t.downbeatTick
+			    || m_pendingFxAge > 2.5f || t.gateSmooth < 0.25f )
 			{
-				bool forcedGo          = m_pendingCombineForced;
-				m_pendingCombineChange = false;
-				m_pendingCombineForced = false;
-				m_pendingCombineAge    = 0.f;
+				bool forcedGo          = m_pendingFxForced;
+				m_pendingFxChange = false;
+				m_pendingFxForced = false;
+				m_pendingFxAge    = 0.f;
 
-				m_combState = 1;
+				m_fxState = 1;
 
-				unsigned int timeAct  = comb[m_actCombine]->getTimeInterpolation();
-				unsigned int timeNext = comb[m_nextCombine]->getTimeInterpolation();
+				unsigned int timeAct  = comb[m_actFx]->getTimeInterpolation();
+				unsigned int timeNext = comb[m_nextFx]->getTimeInterpolation();
 
 				{
 					float cfgT = (float) (std::min( timeAct, timeNext)) / t.timingScale;
@@ -617,55 +617,55 @@ void SceneScheduler::tickCombine( const Tick &t, bool trueStereoHold )
 						cfgT = fminf(fmaxf(fourBeats, 1.2f), cfgT);
 					}
 					cfgT *= 1.f - 0.35f * t.logAttackTime;
-					m_combFadeDur = forcedGo ? 0.8f : cfgT;
+					m_fxFadeDur = forcedGo ? 0.8f : cfgT;
 				}
 
-				comb[m_nextCombine]->startInterpolators();
+				comb[m_nextFx]->startInterpolators();
 
-				restart( m_clockEffectCombine );
+				restart( m_clockEffectFx );
 			}
 		}
 	}
 	// ---- Combine-Zustandsmaschine: Fade läuft ----
 	else
 	{
-		float ts = secsSince( m_clockEffectCombine );
+		float ts = secsSince( m_clockEffectFx );
 
-		m_combInterp = (1 - ts / m_combFadeDur);
+		m_fxInterp = (1 - ts / m_fxFadeDur);
 
-		if( ts > m_combFadeDur )
+		if( ts > m_fxFadeDur )
 		{
-			m_combState = 0;
+			m_fxState = 0;
 
-			comb[m_actCombine]->resetParameters();
-			m_actCombine = m_nextCombine;
+			comb[m_actFx]->resetParameters();
+			m_actFx = m_nextFx;
 
 			for( unsigned int i = 0; i < kMaxSearch; i++ )
 			{
-				m_nextCombine = rand() % comb.size();
-				if( m_nextCombine != m_actCombine &&
+				m_nextFx = rand() % comb.size();
+				if( m_nextFx != m_actFx &&
 					(( tex[m_actTexture]->getComplexity() +
 					tex[m_nextTexture]->getComplexity() +
-					comb[m_actCombine]->getComplexity() +
-					comb[m_nextCombine]->getComplexity() ) < 20 )
-					&& comb[m_nextCombine]->useShader()
-					&& moodAccept( comb[m_nextCombine] )
+					comb[m_actFx]->getComplexity() +
+					comb[m_nextFx]->getComplexity() ) < 20 )
+					&& comb[m_nextFx]->useShader()
+					&& moodAccept( comb[m_nextFx] )
 					)
 					break;
 			}
 
-			if( m_nextCombine == m_actCombine )
+			if( m_nextFx == m_actFx )
 			{
-				m_nextCombine += 1;
-				if( m_nextCombine == comb.size() )
-					m_nextCombine = 0;
+				m_nextFx += 1;
+				if( m_nextFx == comb.size() )
+					m_nextFx = 0;
 			}
 
-			m_combInterp = 1.0;
+			m_fxInterp = 1.0;
 
-			m_combFadeDur = (float) (comb[m_actCombine]->getTimeSolo()) / t.timingScale;
+			m_fxFadeDur = (float) (comb[m_actFx]->getTimeSolo()) / t.timingScale;
 
-			restart( m_clockEffectCombine );
+			restart( m_clockEffectFx );
 		}
 	}
 }

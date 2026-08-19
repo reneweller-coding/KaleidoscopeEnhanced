@@ -2,8 +2,8 @@
  * @file mesh.h
  * @brief Legacy Wavefront .obj mesh loader/renderer (fixed-function immediate-mode GL): parses vertices/normals/texcoords/faces and per-face materials, and can draw the result with glBegin/glEnd.
  */
-#ifndef SIMPLEMESH_H
-#define SIMPLEMESH_H
+#ifndef MESH_H
+#define MESH_H
 
 #include <vector>
 #include <QtGui/QImage>
@@ -132,4 +132,4 @@ private:
 	bool objTexAvail;   ///< Whether the .obj file itself defined materials/textures (via usemtl), set at the end of readObj()/assignTexture(); gates whether generateSphereTexCoords()/generateCylinderTexCoords()/assignTexture() are allowed to override them.
 };
 
-#endif // SIMPLEMESH_H
+#endif // MESH_H

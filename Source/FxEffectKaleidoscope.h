@@ -4,8 +4,8 @@
  *        kaleidoscope combine effect (distinct from the TextureEffectKaleidoscopeBase
  *        family - no power/rotation state, just sides + speed).
  */
-#ifndef COMBINE_EFFECT_KALEIDOSCOPE_H
-#define COMBINE_EFFECT_KALEIDOSCOPE_H
+#ifndef FX_EFFECT_KALEIDOSCOPE_H
+#define FX_EFFECT_KALEIDOSCOPE_H
 
 #include <QtOpenGL/QGLWidget>
 #include <QtCore/QTime>

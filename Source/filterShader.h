@@ -334,7 +334,7 @@ public:
 	void stop();
 
 	/** @brief Registers a combine-effect (overlay) shader with this instance (ownership passes to FilterShader). @param shader Combine-effect shader to add. */
-	void addCombineShader( EffectShader * shader );
+	void addFxShader( EffectShader * shader );
 	/** @brief Registers a texture-effect shader with this instance (ownership passes to FilterShader). @param shader Texture-effect shader to add. */
 	void addTextureShader( EffectShader * shader );
 	/** @brief Registers a scene-transition shader (Transitions/) with this instance (ownership passes to FilterShader). @param shader Transition shader to add. */
@@ -413,8 +413,8 @@ private:
 	// generating fresh ones (leak-proof if a rebuild path is ever re-entered).
 	GLuint			m_fboEffectTexture1 = 0; ///< FBO of the active texture-effect pass.
 	GLuint			m_fboEffectTexture2 = 0; ///< FBO of the incoming (cross-fading) texture-effect pass.
-	GLuint			m_fboEffectCombine1 = 0; ///< FBO of the active combine-effect pass.
-	GLuint			m_fboEffectCombine2 = 0; ///< FBO of the incoming (cross-fading) combine-effect pass.
+	GLuint			m_fboEffectFx1 = 0; ///< FBO of the active combine-effect pass.
+	GLuint			m_fboEffectFx2 = 0; ///< FBO of the incoming (cross-fading) combine-effect pass.
 	GLuint			m_fboTransition = 0;     ///< FBO of the scene-transition pass (blends scene A/B during a fade; skipped while solo).
 	GLuint			m_depthFbo = 0;          ///< Reserved depth-only FBO id; not assigned by the code in this file (the shadow map has its own m_shadowFbo).
 	GLenum			m_attachmentpoint;   ///< where to attach framebuffer objects — colour attachment point used for every FBO colour texture (GL_COLOR_ATTACHMENT0).
@@ -422,8 +422,8 @@ private:
 	GLuint			m_texID2 = 0;   ///< Legacy read/write texture id; unused in the current build (only ever set in the constructor initializer list).
 	GLuint			m_texIDFBOEffectTexture1 = 0;  ///< Colour texture attached to m_fboEffectTexture1.
 	GLuint			m_texIDFBOEffectTexture2 = 0;  ///< Colour texture attached to m_fboEffectTexture2.
-	GLuint			m_texIDFBOEffectCombine1 = 0;  ///< Colour texture attached to m_fboEffectCombine1.
-	GLuint			m_texIDFBOEffectCombine2 = 0;  ///< Colour texture attached to m_fboEffectCombine2.
+	GLuint			m_texIDFBOEffectFx1 = 0;  ///< Colour texture attached to m_fboEffectFx1.
+	GLuint			m_texIDFBOEffectFx2 = 0;  ///< Colour texture attached to m_fboEffectFx2.
 	GLuint			m_texIDFBOTransition = 0;      ///< Colour texture attached to m_fboTransition (the finished, blended scene the overlays read).
 
 	// Target framebuffer for the final on-screen pass (QOpenGLWidget's FBO, not 0).
@@ -637,15 +637,15 @@ private:
 
 
 	//Combination of FBOs
-	GLuint			m_sh_prog_id_combine;    ///< Legacy outer "combine of combines" shader program (FxPlain.frag): cross-fades the two combine-effect outputs into the final present source.
-	GLuint			m_texPointCombineUni1;   ///< Uniform location of "tex0" in m_sh_prog_id_combine (bound to texture unit 5 = m_texIDFBOEffectCombine1's output).
-	GLuint			m_texPointCombineUni2;   ///< Uniform location of "tex1" in m_sh_prog_id_combine (bound to texture unit 6 = m_texIDFBOEffectCombine2's output).
-	GLuint			m_texSizeRcpCombineUni;  ///< Uniform location of "resolution" in m_sh_prog_id_combine.
-	GLuint			m_timeCombineUni;        ///< Uniform location of "time" in m_sh_prog_id_combine.
-    GLuint			m_interpolationCombineUni;   ///< Uniform location of "interpolation" (combine1/combine2 cross-fade weight) in m_sh_prog_id_combine.
+	GLuint			m_sh_prog_id_fx;    ///< Legacy outer "combine of combines" shader program (FxPlain.frag): cross-fades the two combine-effect outputs into the final present source.
+	GLuint			m_texPointFxUni1;   ///< Uniform location of "tex0" in m_sh_prog_id_fx (bound to texture unit 5 = m_texIDFBOEffectFx1's output).
+	GLuint			m_texPointFxUni2;   ///< Uniform location of "tex1" in m_sh_prog_id_fx (bound to texture unit 6 = m_texIDFBOEffectFx2's output).
+	GLuint			m_texSizeRcpFxUni;  ///< Uniform location of "resolution" in m_sh_prog_id_fx.
+	GLuint			m_timeFxUni;        ///< Uniform location of "time" in m_sh_prog_id_fx.
+    GLuint			m_interpolationFxUni;   ///< Uniform location of "interpolation" (fxTex1/fxTex2 cross-fade weight) in m_sh_prog_id_fx.
 
 
-    float			m_interpolationCombine;   ///< Between 0 and 1 — legacy combine-of-combines cross-fade weight; unused in the current build (only referenced inside a commented-out code block in paint()) — m_scheduler.combInterp() is used instead.
+    float			m_interpolationFx;   ///< Between 0 and 1 — legacy combine-of-combines cross-fade weight; unused in the current build (only referenced inside a commented-out code block in paint()) — m_scheduler.fxInterp() is used instead.
 
 
 	QElapsedTimer		m_timeTexture;                       ///< Timer driving the background-photo solo/cross-fade state machine (see m_stateTexture).
@@ -684,11 +684,11 @@ private:
 
 
 
-	std::vector<EffectShader *> m_effectCombines;   ///< All configured combine-effect (overlay) shaders for this preset (registered via addCombineShader()); indexed by the SceneScheduler.
+	std::vector<EffectShader *> m_effectFx;   ///< All configured combine-effect (overlay) shaders for this preset (registered via addFxShader()); indexed by the SceneScheduler.
 	std::vector<EffectShader *> m_effectTransitions;   ///< All configured scene-transition shaders (Transitions/) for this preset (registered via addTransitionShader()); one is rolled per scene fade.
 
 
-	unsigned int m_effectCombineTimeInterpolation;   ///< Declared but not referenced anywhere in filterShader.cpp — unused leftover from before timing moved to SceneScheduler/EffectShader.
+	unsigned int m_effectFxTimeInterpolation;   ///< Declared but not referenced anywhere in filterShader.cpp — unused leftover from before timing moved to SceneScheduler/EffectShader.
 
     // Dynamic timing scale from AudioAnalyzer (via AudioFeatures::timingScale).
     // < 1.0 → all times scaled longer (ambient mode)
