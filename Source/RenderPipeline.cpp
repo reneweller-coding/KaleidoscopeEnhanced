@@ -1191,8 +1191,21 @@ void RenderPipeline::paint(const float *rotMatrix, float tx, float ty, float tz,
 		glViewport( 0, 0, m_width, m_height );
 	};
 
+	// MSAA: 3D scenes draw into the shared multisample scratch target instead
+	// of the regular FBO, then resolve (blit) into it once opaque drawing is
+	// done -- OIT/rig2/combine/depth-post all keep reading the same regular
+	// textures as always, unaware AA ever happened. 2D effects never touch
+	// this at all (no geometric edges to smooth). True-stereo eye-packed
+	// frames are excluded too: the scissored halves would each need their own
+	// resolve, and the packed frame already halves the sampling rate per eye.
+	bool tex1Is3D = m_effectTextures[m_scheduler.actTexture()]->is3D();
+	bool msaaTex1 = tex1Is3D && !m_trueStereoPacked;
+	if( msaaTex1 )
+		ensureMsaaTargets( m_width, m_height );
+	msaaTex1 = msaaTex1 && m_msaaReady;
+
 	//Do the FBO Stuff
-	glBindFramebuffer( GL_FRAMEBUFFER, m_fboEffectTexture1 );
+	glBindFramebuffer( GL_FRAMEBUFFER, msaaTex1 ? m_msaaFbo : m_fboEffectTexture1 );
 
     //glFramebufferTexture2D( GL_FRAMEBUFFER, m_attachmentpoint, GL_TEXTURE_2D, m_texIDFBOEffectTexture1, 0);
 
@@ -1212,11 +1225,10 @@ void RenderPipeline::paint(const float *rotMatrix, float tx, float ty, float tz,
 	if( m_effectTextures[m_scheduler.actTexture()]->usesShadow() )
 	{
 		renderShadowPass( m_effectTextures[m_scheduler.actTexture()] );
-		glBindFramebuffer( GL_FRAMEBUFFER, m_fboEffectTexture1 );
+		glBindFramebuffer( GL_FRAMEBUFFER, msaaTex1 ? m_msaaFbo : m_fboEffectTexture1 );
 	}
 
-	EffectShader::s_depthValid[0] =
-	    m_effectTextures[m_scheduler.actTexture()]->is3D() ? 1.f : 0.f;
+	EffectShader::s_depthValid[0] = tex1Is3D ? 1.f : 0.f;
 	if( EffectShader::s_depthValid[0] == 0.f )
 	{
 		glClearDepth( 1.0 );
@@ -1231,6 +1243,12 @@ void RenderPipeline::paint(const float *rotMatrix, float tx, float ty, float tz,
 	else
 		m_effectTextures[m_scheduler.actTexture()]->draw();
 
+	if( msaaTex1 )
+	{
+		resolveMsaa( m_fboEffectTexture1, m_width, m_height );
+		checkGLErrors("resolveMsaa() 1");
+	}
+
 	// Transparent geometry goes in afterwards, over the opaque frame this scene
 	// just produced and against the depth it just wrote.
 	if( !m_trueStereoPacked && m_effectTextures[m_scheduler.actTexture()]->usesOit() )
@@ -1243,17 +1261,22 @@ void RenderPipeline::paint(const float *rotMatrix, float tx, float ty, float tz,
 	glBindFramebuffer( GL_FRAMEBUFFER, m_defaultFBO );
 	checkFramebufferStatus();
 
-	//Do the FBO Stuff
-	glBindFramebuffer( GL_FRAMEBUFFER, m_fboEffectTexture2 );
-
 	// Skip the "next" texture effect while NOT cross-fading: every combine weights
 	// this output (tex1) by (1-interpolation), which is 0 at interpolation==1.0, so
 	// it is invisible.  Saves a whole effect pass during the common solo periods.
 	EffectShader::s_depthValid[1] = 0.f;
 	if( m_scheduler.texState() != 0 )
 	{
-		EffectShader::s_depthValid[1] =
-		    m_effectTextures[m_scheduler.nextTexture()]->is3D() ? 1.f : 0.f;
+		bool tex2Is3D = m_effectTextures[m_scheduler.nextTexture()]->is3D();
+		bool msaaTex2 = tex2Is3D && !m_trueStereoPacked;
+		if( msaaTex2 )
+			ensureMsaaTargets( m_width, m_height );
+		msaaTex2 = msaaTex2 && m_msaaReady;
+
+		//Do the FBO Stuff
+		glBindFramebuffer( GL_FRAMEBUFFER, msaaTex2 ? m_msaaFbo : m_fboEffectTexture2 );
+
+		EffectShader::s_depthValid[1] = tex2Is3D ? 1.f : 0.f;
 		if( EffectShader::s_depthValid[1] == 0.f )
 		{
 			glClearDepth( 1.0 );
@@ -1266,6 +1289,12 @@ void RenderPipeline::paint(const float *rotMatrix, float tx, float ty, float tz,
 			renderSceneStereo( m_effectTextures[m_scheduler.nextTexture()] );  // eye-packed too
 		else
 			m_effectTextures[m_scheduler.nextTexture()]->draw();
+
+		if( msaaTex2 )
+		{
+			resolveMsaa( m_fboEffectTexture2, m_width, m_height );
+			checkGLErrors("resolveMsaa() 2");
+		}
 	}
 
 	
@@ -2107,6 +2136,73 @@ void RenderPipeline::initFBO(GLuint &fboEffect, GLuint &texIDEffectTexture, GLui
 		fputs( "glFramebufferTexture2D() FAILED!\n", stderr );
 		exit(1);
 	}
+}
+
+
+void RenderPipeline::ensureMsaaTargets( int w, int h )
+{
+	if( m_msaaReady && m_msaaW == w && m_msaaH == h )
+		return;
+
+	if( !m_msaaTried )
+	{
+		m_msaaTried = true;
+		if( !glTexImage2DMultisample )
+		{
+			fputs( "MSAA: glTexImage2DMultisample unavailable -- 3D scenes render unaliased\n", stderr );
+			return;
+		}
+		GLint maxSamples = 0;
+		glGetIntegerv( GL_MAX_SAMPLES, &maxSamples );
+		m_msaaActualSamples = std::min( kMsaaSamples, maxSamples );
+		if( m_msaaActualSamples < 2 )
+		{
+			fputs( "MSAA: GL_MAX_SAMPLES < 2 -- 3D scenes render unaliased\n", stderr );
+			m_msaaActualSamples = 0;
+			return;
+		}
+	}
+	if( m_msaaActualSamples == 0 )   // permanent soft-fail from the first attempt
+		return;
+
+	m_msaaW = w; m_msaaH = h;
+
+	if( m_msaaColorTex == 0 ) glGenTextures( 1, &m_msaaColorTex );
+	glBindTexture( GL_TEXTURE_2D_MULTISAMPLE, m_msaaColorTex );
+	glTexImage2DMultisample( GL_TEXTURE_2D_MULTISAMPLE, m_msaaActualSamples,
+	                          m_texInternalFormat, w, h, GL_TRUE );
+
+	if( m_msaaDepthTex == 0 ) glGenTextures( 1, &m_msaaDepthTex );
+	glBindTexture( GL_TEXTURE_2D_MULTISAMPLE, m_msaaDepthTex );
+	glTexImage2DMultisample( GL_TEXTURE_2D_MULTISAMPLE, m_msaaActualSamples,
+	                          GL_DEPTH_COMPONENT24, w, h, GL_TRUE );
+	glBindTexture( GL_TEXTURE_2D_MULTISAMPLE, 0 );
+
+	if( m_msaaFbo == 0 ) glGenFramebuffers( 1, &m_msaaFbo );
+	glBindFramebuffer( GL_FRAMEBUFFER, m_msaaFbo );
+	glFramebufferTexture2D( GL_FRAMEBUFFER, m_attachmentpoint,
+	                         GL_TEXTURE_2D_MULTISAMPLE, m_msaaColorTex, 0 );
+	glFramebufferTexture2D( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+	                         GL_TEXTURE_2D_MULTISAMPLE, m_msaaDepthTex, 0 );
+	m_msaaReady = checkFramebufferStatus();
+	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
+
+	if( !m_msaaReady )
+		fputs( "MSAA: scratch FBO incomplete -- 3D scenes render unaliased\n", stderr );
+}
+
+
+void RenderPipeline::resolveMsaa( GLuint dstFbo, int w, int h )
+{
+	glBindFramebuffer( GL_READ_FRAMEBUFFER, m_msaaFbo );
+	glBindFramebuffer( GL_DRAW_FRAMEBUFFER, dstFbo );
+	// Straight 1:1 pixel resolve (source and destination are the same size),
+	// so the filter argument never actually interpolates anything -- GL_NEAREST
+	// because glBlitFramebuffer requires it for the depth bits regardless, and
+	// blitting colour and depth together needs one shared filter.
+	glBlitFramebuffer( 0, 0, w, h, 0, 0, w, h,
+	                    GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST );
+	glBindFramebuffer( GL_FRAMEBUFFER, dstFbo );
 }
 
 
