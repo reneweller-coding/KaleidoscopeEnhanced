@@ -187,11 +187,18 @@ def check(paths, reg):
                              "before the translate: rotate vp, THEN vp.z += dist")
 
             # --- R7 grid/quads attrA.xy domain is [0,1], not [-1,1] -------
-            if geom in ("grid", "quads") and re.search(r'=\s*attrA\.xy\s*;', body):
+            # A bare "xUV = attrA.xy;" straight to a texcoord-shaped varying is
+            # the common, correct case (fragment stage wants [0,1]) -- only
+            # worth flagging when the raw value feeds something that is NOT a
+            # uv/texcoord passthrough (e.g. a "corner" used for position math).
+            m_direct = re.search(r'(\w+)\s*=\s*attrA\.xy\s*;', body)
+            if geom in ("grid", "quads") and m_direct \
+                    and not re.search(r'(?i)uv|texcoord', m_direct.group(1)):
                 # Any of the accepted re-centring idioms is fine:
-                #   attrA.xy * 2.0 - 1.0   |   (uv.x - 0.5)   |   uv - vec2(0.5)
+                #   attrA.xy * 2.0 - 1.0   |   attrA.xy - 0.5   |   uv - vec2(0.5)
                 recentred = (re.search(r'attrA\.xy\s*\*\s*2\.0\s*-\s*1\.0', body)
-                             or re.search(r'\w+\.[xy]\s*-\s*0\.5', body)
+                             or re.search(r'attrA\.xy\s*-\s*0?\.5', body)
+                             or re.search(r'\w+\.(?:xy|[xy])\s*-\s*0\.5', body)
                              or re.search(r'\w+\s*-\s*vec2\s*\(\s*0?\.5', body))
                 if not recentred:
                     warn(rel, f"geom=\"{geom}\" supplies attrA.xy in [0,1]; this file uses "
