@@ -1,0 +1,6 @@
+# Scene catalogue renders (docs/Catalog/img/): a couple hundred KB to a
+# few MB of new/changed JPEGs land here with every scene batch, forever.
+# LFS from here on so the packed .git history stops growing with it --
+# already-committed images are NOT retroactively migrated (that needs a
+# history rewrite + force-push, a separate, explicitly-authorized step).
+docs/Catalog/img/*.jpg filter=lfs diff=lfs merge=lfs -text
