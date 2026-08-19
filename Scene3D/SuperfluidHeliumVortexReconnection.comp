@@ -1,0 +1,103 @@
+#version 430
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+
+/**
+ * @file SuperfluidHeliumVortexReconnection.comp
+ * @brief Compute generator companion to SuperfluidHeliumVortexReconnection.frag --
+ * generates 3D quantized vortex filaments undergoing crossing, topological reconnection,
+ * and helical Kelvin-wave radiation cascades in superfluid liquid Helium-4.
+ */
+
+layout(std430, binding = 0) buffer Verts {
+    float verts[]; // 8 floats per vertex: attrA.xyzw (pos, depth), attrB.xyzw (pad, reconnGlow)
+};
+
+// DrawArraysIndirectCommand: [0] count, [1] instanceCount, [2] first, [3] baseInstance, [4] rawCount
+layout(std430, binding = 1) buffer Cmd { uint cmd[]; };
+
+uniform uint  maxVertices;
+uniform float time;
+uniform float audioPhase;
+uniform float audioAdvance;
+uniform float audioKick;
+uniform float audioBass;
+uniform float audioMid;
+uniform float audioHigh;
+uniform float audioSwell;
+
+float hash11(float p) {
+    p = fract(p * 0.1031);
+    p *= p + 47.19;
+    p *= p + p;
+    return fract(p);
+}
+
+void writeVertex(uint slot, vec3 p, float e1, float e2) {
+    uint o = slot * 8u;
+    verts[o + 0u] = p.x;  verts[o + 1u] = p.y;  verts[o + 2u] = p.z;
+    verts[o + 3u] = e1;
+    verts[o + 4u] = 0.0;  verts[o + 5u] = 0.0;  verts[o + 6u] = 0.0;
+    verts[o + 7u] = e2;
+}
+
+void emitSegment(vec3 pA, vec3 pB, float e1, float e2, float thickness) {
+    uint base = atomicAdd(cmd[4], 6u);
+    if (base + 6u > maxVertices) return;
+
+    vec3 dir = pB - pA;
+    float len = length(dir);
+    dir = (len > 1e-5) ? dir / len : vec3(0.0, 1.0, 0.0);
+    vec3 upv = (abs(dir.y) > 0.95) ? vec3(1.0, 0.0, 0.0) : vec3(0.0, 1.0, 0.0);
+    vec3 side = normalize(cross(dir, upv)) * thickness;
+
+    vec3 a0 = pA - side, a1 = pA + side, b0 = pB - side, b1 = pB + side;
+    writeVertex(base + 0u, a0, e1, e2);
+    writeVertex(base + 1u, a1, e1, e2);
+    writeVertex(base + 2u, b0, e1, e2);
+    writeVertex(base + 3u, a1, e1, e2);
+    writeVertex(base + 4u, b1, e1, e2);
+    writeVertex(base + 5u, b0, e1, e2);
+}
+
+void main() {
+    uvec3 g = gl_GlobalInvocationID;
+    uint idx = g.x + 64u * (g.y + 64u * g.z);
+    
+    // 64 quantized vortex filament lines with 64 segments each
+    uint lineIdx = idx / 64u;
+    uint segIdx  = idx % 64u;
+    if (lineIdx >= 64u) return;
+
+    float t = time * 0.4 + audioAdvance * 0.35;
+    float seed = hash11(float(lineIdx) * 19.87);
+    
+    float s0 = float(segIdx) / 64.0;
+    float s1 = float(segIdx + 1u) / 64.0;
+
+    // Vortex filament trajectory: crossing and reconnection geometry
+    float z0 = (s0 - 0.5) * 3.6;
+    float z1 = (s1 - 0.5) * 3.6;
+
+    // Helical Kelvin wave cascade: high-frequency helical perturbations
+    float kelvinFreq = 20.0 + seed * 10.0;
+    float kelvinAmp = 0.12 * (1.0 + 0.5 * sin(t * 2.0 + seed * 6.28));
+
+    // Two approaching filament rings reconnecting at z ~ 0
+    float reconnZone0 = exp(-z0 * z0 * 4.0);
+    float reconnZone1 = exp(-z1 * z1 * 4.0);
+
+    float angle0 = s0 * 6.2831853 * 2.0 + t * 0.8 + seed * 3.14;
+    float angle1 = s1 * 6.2831853 * 2.0 + t * 0.8 + seed * 3.14;
+
+    float r0 = 0.8 + 0.4 * sin(angle0 * 3.0) + sin(z0 * kelvinFreq - t * 5.0) * kelvinAmp;
+    float r1 = 0.8 + 0.4 * sin(angle1 * 3.0) + sin(z1 * kelvinFreq - t * 5.0) * kelvinAmp;
+
+    vec3 p0 = vec3(cos(angle0) * r0, sin(angle0) * r0, z0);
+    vec3 p1 = vec3(cos(angle1) * r1, sin(angle1) * r1, z1);
+
+    // Quantum reconnection flash at cusp points
+    float glow = (1.0 + reconnZone0 * 3.0) * (1.0 + 3.0 * audioKick);
+    float thick = (0.02 * (1.0 + 0.5 * reconnZone0)) * (1.0 + 0.3 * audioSwell);
+
+    emitSegment(p0, p1, s0, glow, thick);
+}

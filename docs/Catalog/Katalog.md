@@ -1,6 +1,6 @@
 # Kaleidoscope Enhanced — Szenen-Katalog
 
-_325 Szenen, 29 FX-Overlays, 83 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
+_427 Szenen, 29 FX-Overlays, 83 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
 
 
 ---
@@ -15,6 +15,33 @@ _325 Szenen, 29 FX-Overlays, 83 Übergänge. Generiert von `Tools/make_catalog.p
 ABYSSAL LUMINESCENCE: Deep ocean bioluminescent ecosystem with undulating siphonophores, translucent glowing tentacles, underwater volumetric caustic sunbeams, deep thermal marine snow, and organic fluid currents. audioBass -> pulses organism bell contraction & tentacle wave velocity audioHigh -> sparks bioluminescent marine snow & plankton flashes audioSwell -> thickens volumetric oceanic mist & caustic ray depth au…
 
 ![AbyssalLuminescence ruhig (t=8)](img/AbyssalLuminescence_A.jpg) ![AbyssalLuminescence ruhig (t=16)](img/AbyssalLuminescence_B.jpg) ![AbyssalLuminescence audio-heiß (t=8)](img/AbyssalLuminescence_C.jpg)
+
+
+### AcousticBlackHoleEventHorizon
+
+`Scene2D/AcousticBlackHoleEventHorizon.frag` · type=normal · mood=dark,psychedelic · complexity=4
+
+ACOUSTIC BLACK HOLE EVENT HORIZON: Sonic black hole (Dumb Hole) in a transsonic superfluid Laval nozzle. Inflowing fluid accelerates past the local speed of sound (Mach > 1), trapping acoustic phonons behind the acoustic event horizon and radiating analog Hawking radiation. audioAdvance -> accelerates fluid inflow velocity across transsonic Laval nozzle audioKick -> flashes spontaneous quantum phonon pair emission (H…
+
+![AcousticBlackHoleEventHorizon ruhig (t=8)](img/AcousticBlackHoleEventHorizon_A.jpg) ![AcousticBlackHoleEventHorizon ruhig (t=16)](img/AcousticBlackHoleEventHorizon_B.jpg) ![AcousticBlackHoleEventHorizon audio-heiß (t=8)](img/AcousticBlackHoleEventHorizon_C.jpg)
+
+
+### AlfvenWavePlasmaFilamentation
+
+`Scene2D/AlfvenWavePlasmaFilamentation.frag` · type=normal · mood=aggressive,bright · complexity=4
+
+ALFVÉN WAVE PLASMA FILAMENTATION: Torsional shear Alfvén waves in solar coronal flux tubes. Magnetohydrodynamic wave propagation along magnetic field lines undergoes non-linear filamentation, creating phase-mixed current sheets, turbulent plasma heating channels, and coronal photo texturing. audioAdvance -> propagates Alfvén wave packets along magnetized coronal flux tubes audioKick -> flashes phase-mixed current she…
+
+![AlfvenWavePlasmaFilamentation ruhig (t=8)](img/AlfvenWavePlasmaFilamentation_A.jpg) ![AlfvenWavePlasmaFilamentation ruhig (t=16)](img/AlfvenWavePlasmaFilamentation_B.jpg) ![AlfvenWavePlasmaFilamentation audio-heiß (t=8)](img/AlfvenWavePlasmaFilamentation_C.jpg)
+
+
+### AnomalousFloquetTopologicalInsulator
+
+`Scene2D/AnomalousFloquetTopologicalInsulator.frag` · type=normal · mood=bright,psychedelic · complexity=3
+
+ANOMALOUS FLOQUET TOPOLOGICAL INSULATOR: Out-of-equilibrium Floquet topological state driven by circularly polarized light. High-frequency time-periodic driving breaks time-reversal symmetry, creating chiral edge states traversing bulk bandgaps with photo-derived quasienergy spectra. audioAdvance -> drives Floquet drive frequency & quasienergy phase integration audioKick -> flashes Floquet band inversion topological …
+
+![AnomalousFloquetTopologicalInsulator ruhig (t=8)](img/AnomalousFloquetTopologicalInsulator_A.jpg) ![AnomalousFloquetTopologicalInsulator ruhig (t=16)](img/AnomalousFloquetTopologicalInsulator_B.jpg) ![AnomalousFloquetTopologicalInsulator audio-heiß (t=8)](img/AnomalousFloquetTopologicalInsulator_C.jpg)
 
 
 ### ApollonianSpherePackingGasket
@@ -44,6 +71,15 @@ AURORA AUSTRALIS CURTAIN SWELL: Volumetric double-sheet Antarctic Aurora Austral
 ![AuroraAustralisCurtainSwell ruhig (t=8)](img/AuroraAustralisCurtainSwell_A.jpg) ![AuroraAustralisCurtainSwell ruhig (t=16)](img/AuroraAustralisCurtainSwell_B.jpg) ![AuroraAustralisCurtainSwell audio-heiß (t=8)](img/AuroraAustralisCurtainSwell_C.jpg)
 
 
+### BallisticGrapheneElectronFocussing
+
+`Scene2D/BallisticGrapheneElectronFocussing.frag` · type=normal · mood=bright,psychedelic · complexity=3
+
+BALLISTIC GRAPHENE ELECTRON FOCUSSING: Veselago electron-optic lens in monolayer graphene. Relativistic Dirac electrons undergo negative refraction at p-n junction interfaces, forming caustic cusp focal points, Klein tunneling fringes, and quantum interference lattices. audioAdvance -> steers ballistic electron trajectory wavefronts across p-n interface audioKick -> flashes Klein tunneling transmission focal hot-spot…
+
+![BallisticGrapheneElectronFocussing ruhig (t=8)](img/BallisticGrapheneElectronFocussing_A.jpg) ![BallisticGrapheneElectronFocussing ruhig (t=16)](img/BallisticGrapheneElectronFocussing_B.jpg) ![BallisticGrapheneElectronFocussing audio-heiß (t=8)](img/BallisticGrapheneElectronFocussing_C.jpg)
+
+
 ### BallLightningPlasmoid
 
 `Scene2D/BallLightningPlasmoid.frag` · type=normal · mood=aggressive,bright · complexity=4
@@ -71,6 +107,15 @@ A BEAT-FIRST primary effect, built for rhythmic music. Research-informed: onsets
 ![BeatLattice ruhig (t=8)](img/BeatLattice_A.jpg) ![BeatLattice ruhig (t=16)](img/BeatLattice_B.jpg) ![BeatLattice audio-heiß (t=8)](img/BeatLattice_C.jpg)
 
 
+### BelousovZhabotinskyChemicalWave
+
+`Scene2D/BelousovZhabotinskyChemicalWave.frag` · type=normal · mood=psychedelic,bright · complexity=3
+
+BELOUSOV-ZHABOTINSKY CHEMICAL WAVE: Classic Belousov-Zhabotinsky (BZ) non-equilibrium chemical oscillator. Spontaneous formation of rotating Archimedean spiral waves and concentric target patterns undergoing mutual wave annihilation with photo-derived redox color gradients. audioAdvance -> drives chemical reaction diffusion phase rotation velocity audioKick -> flashes autocatalytic oxidation wave burst fronts audioSw…
+
+![BelousovZhabotinskyChemicalWave ruhig (t=8)](img/BelousovZhabotinskyChemicalWave_A.jpg) ![BelousovZhabotinskyChemicalWave ruhig (t=16)](img/BelousovZhabotinskyChemicalWave_B.jpg) ![BelousovZhabotinskyChemicalWave audio-heiß (t=8)](img/BelousovZhabotinskyChemicalWave_C.jpg)
+
+
 ### BioluminescentAbyssalTrenches
 
 `Scene2D/BioluminescentAbyssalTrenches.frag` · type=normal · mood=calm,bright,dreamy · complexity=4
@@ -96,6 +141,15 @@ BISMUTH HYPER LABYRINTH: Raymarched infinite 3D/4D hopper crystal maze of elemen
 BISMUTH LABYRINTH: Raymarched infinite 3D hopper crystal labyrinth of metallic elemental bismuth. Stepped 90-degree geometric terraces, thin-film optical interference rainbow oxidation layers, specular metallic reflections, and audio-reactive architectural fractals filling the screen. audioSwell -> pulses fractal hopper terrace depth & step density audioKick -> flashes chromatic iridescent oxidation reflection audioC…
 
 ![BismuthLabyrinth ruhig (t=8)](img/BismuthLabyrinth_A.jpg) ![BismuthLabyrinth ruhig (t=16)](img/BismuthLabyrinth_B.jpg) ![BismuthLabyrinth audio-heiß (t=8)](img/BismuthLabyrinth_C.jpg)
+
+
+### BoseEinsteinGiantVortexTurbulence
+
+`Scene2D/BoseEinsteinGiantVortexTurbulence.frag` · type=normal · mood=calm,psychedelic · complexity=3
+
+BOSE-EINSTEIN GIANT VORTEX TURBULENCE: 2D quantum turbulence in a trapped Bose-Einstein condensate. Multiple counter-rotating quantized vortex pairs undergo an inverse energy cascade, clustering into giant macroscopic Onsager vortex storms with photo-derived phase texturing. audioAdvance -> integrates Gross-Pitaevskii macroscopic wavefunction phase audioKick -> excites vortex-antivortex pair annihilation shockwaves a…
+
+![BoseEinsteinGiantVortexTurbulence ruhig (t=8)](img/BoseEinsteinGiantVortexTurbulence_A.jpg) ![BoseEinsteinGiantVortexTurbulence ruhig (t=16)](img/BoseEinsteinGiantVortexTurbulence_B.jpg) ![BoseEinsteinGiantVortexTurbulence audio-heiß (t=8)](img/BoseEinsteinGiantVortexTurbulence_C.jpg)
 
 
 ### BreathingFractal
@@ -152,6 +206,15 @@ CASIMIR CAVITY VACUUM FLUCTUATIONS: Nanoscale optical cavity between two reflect
 ![CasimirCavityVacuumFluctuations ruhig (t=8)](img/CasimirCavityVacuumFluctuations_A.jpg) ![CasimirCavityVacuumFluctuations ruhig (t=16)](img/CasimirCavityVacuumFluctuations_B.jpg) ![CasimirCavityVacuumFluctuations audio-heiß (t=8)](img/CasimirCavityVacuumFluctuations_C.jpg)
 
 
+### CatatumboRelightningTower
+
+`Scene2D/CatatumboRelightningTower.frag` · type=normal · mood=aggressive,bright,dark · complexity=4
+
+CATATUMBO RELIGHTNING TOWER: Nocturnal continuous electrical storm column above Lake Maracaibo. Kilometers-tall intra-cloud lightning arcs, methane-ionized plasma channels, volumetric anvil cloud illuminations, and thunderous photo reflections. audioAdvance -> navigates atmospheric storm updrafts & cloud turbulence audioKick -> fires explosive stepped leader lightning arc detonations audioSnare -> triggers spiderweb …
+
+![CatatumboRelightningTower ruhig (t=8)](img/CatatumboRelightningTower_A.jpg) ![CatatumboRelightningTower ruhig (t=16)](img/CatatumboRelightningTower_B.jpg) ![CatatumboRelightningTower audio-heiß (t=8)](img/CatatumboRelightningTower_C.jpg)
+
+
 ### CausticPool
 
 `Scene2D/CausticPool.frag` · type=normal · mood=calm,bright,dreamy · complexity=2
@@ -159,6 +222,33 @@ CASIMIR CAVITY VACUUM FLUCTUATIONS: Nanoscale optical cavity between two reflect
 The photograph seen as a pool floor through a rippling water surface lit by caustics. texCaustics (written by the CfxPhoton compute pass) supplies both the refraction, whose gradient bends the tex0 lookup so the floor appears to wobble under moving water, and the light pattern itself, blurred into a soft glow and blended in multiplicatively so it reveals the floor rather than sitting on top of it. audioSubBass streng…
 
 ![CausticPool ruhig (t=8)](img/CausticPool_A.jpg) ![CausticPool ruhig (t=16)](img/CausticPool_B.jpg) ![CausticPool audio-heiß (t=8)](img/CausticPool_C.jpg)
+
+
+### CavityOptomechanicsPhononLasing
+
+`Scene2D/CavityOptomechanicsPhononLasing.frag` · type=normal · mood=bright,psychedelic · complexity=3
+
+CAVITY OPTOMECHANICS PHONON LASING: Optomechanical optical microcavity with movable nanomechanical membrane mirrors. Radiation pressure creates parametric phonon amplification, stimulated Brillouin acoustic shockwaves, laser optical frequency combs, and photo texturing. audioAdvance -> navigates optomechanical limit-cycle oscillations audioKick -> flashes stimulated phonon-lasing threshold burst peaks audioSwell -> w…
+
+![CavityOptomechanicsPhononLasing ruhig (t=8)](img/CavityOptomechanicsPhononLasing_A.jpg) ![CavityOptomechanicsPhononLasing ruhig (t=16)](img/CavityOptomechanicsPhononLasing_B.jpg) ![CavityOptomechanicsPhononLasing audio-heiß (t=8)](img/CavityOptomechanicsPhononLasing_C.jpg)
+
+
+### CherenkovRadiationWakefield
+
+`Scene2D/CherenkovRadiationWakefield.frag` · type=normal · mood=bright,aggressive · complexity=4
+
+CHERENKOV RADIATION WAKEFIELD: Relativistic charged particle wakefield traversing a dense dielectric medium. Emits superluminal Cherenkov shockwave cones, plasma bubble cavitation cavities, travelling optical Mach fringes, and photo-driven dielectric polarization glow. audioAdvance -> drives relativistic particle beam & shockwave propagation audioKick -> triggers high-gradient plasma cavitation detonations audioCentr…
+
+![CherenkovRadiationWakefield ruhig (t=8)](img/CherenkovRadiationWakefield_A.jpg) ![CherenkovRadiationWakefield ruhig (t=16)](img/CherenkovRadiationWakefield_B.jpg) ![CherenkovRadiationWakefield audio-heiß (t=8)](img/CherenkovRadiationWakefield_C.jpg)
+
+
+### ChiralNematicBeetleCuticle
+
+`Scene2D/ChiralNematicBeetleCuticle.frag` · type=normal · mood=bright,psychedelic · complexity=3
+
+CHIRAL NEMATIC BEETLE CUTICLE: Biomimetic jewel scarab beetle cuticle (Chrysina resplendens). Helical cholesteric liquid-crystal chitin nanofibril multilayers generate circular polarization, angle-dependent Bragg structural color, hexagonal cellular micro-faceting, and metallic iridescence. audioAdvance -> rotates cholesteric helical director pitch & viewing angle audioPhase -> shifts chiral nematic polarization phas…
+
+![ChiralNematicBeetleCuticle ruhig (t=8)](img/ChiralNematicBeetleCuticle_A.jpg) ![ChiralNematicBeetleCuticle ruhig (t=16)](img/ChiralNematicBeetleCuticle_B.jpg) ![ChiralNematicBeetleCuticle audio-heiß (t=8)](img/ChiralNematicBeetleCuticle_C.jpg)
 
 
 ### ChromaAcidTrip
@@ -213,6 +303,15 @@ A silk curtain whose folds are a real Verlet mass-spring simulation, printed wit
 COSMIC RAY AIR SHOWER CHERENKOV: Ultra-high-energy cosmic ray striking the upper atmosphere, generating a cascading air shower of billions of relativistic secondary particles, nitrogen fluorescence in near-UV, and forward-directed atmospheric Cherenkov light cones. audioAdvance -> drives relativistic particle cascade propagation audioKick -> fires primary cosmic ray impact & giant Cherenkov shock flash audioBass -> w…
 
 ![CosmicRayAirShowerCherenkov ruhig (t=8)](img/CosmicRayAirShowerCherenkov_A.jpg) ![CosmicRayAirShowerCherenkov ruhig (t=16)](img/CosmicRayAirShowerCherenkov_B.jpg) ![CosmicRayAirShowerCherenkov audio-heiß (t=8)](img/CosmicRayAirShowerCherenkov_C.jpg)
+
+
+### CosmicRayTransitionRadiation
+
+`Scene2D/CosmicRayTransitionRadiation.frag` · type=normal · mood=bright,aggressive · complexity=3
+
+COSMIC RAY TRANSITION RADIATION: Ultra-relativistic charged particles traversing periodic multilayer foil stacks (mylar/polypropylene radiator). Sudden dielectric boundary crossings emit highly collimated forward X-ray transition radiation cones with photo-derived interference fringes. audioAdvance -> accelerates relativistic particle beam traversing radiator stack audioKick -> flashes boundary crossing X-ray photon …
+
+![CosmicRayTransitionRadiation ruhig (t=8)](img/CosmicRayTransitionRadiation_A.jpg) ![CosmicRayTransitionRadiation ruhig (t=16)](img/CosmicRayTransitionRadiation_B.jpg) ![CosmicRayTransitionRadiation audio-heiß (t=8)](img/CosmicRayTransitionRadiation_C.jpg)
 
 
 ### CrystalGrowth
@@ -343,6 +442,15 @@ A Schwarzschild black hole with gravitational lensing and a Keplerian accretion 
 ![EventHorizon ruhig (t=8)](img/EventHorizon_A.jpg) ![EventHorizon ruhig (t=16)](img/EventHorizon_B.jpg) ![EventHorizon audio-heiß (t=8)](img/EventHorizon_C.jpg)
 
 
+### FerroelectricDomainVortexArray
+
+`Scene2D/FerroelectricDomainVortexArray.frag` · type=normal · mood=bright,psychedelic · complexity=3
+
+FERROELECTRIC DOMAIN VORTEX ARRAY: 2D square array of nanoscale electric polarization vortices and antivortices in PbTiO3/SrTiO3 oxide superlattices. Continuous curling of electric dipoles creates localized piezoelectric shear strain, toroidal dipole moments, and photo texturing. audioAdvance -> rotates ferroelectric polarization curl vectors & domain wall drift audioKick -> flashes piezoelectric stress-release polar…
+
+![FerroelectricDomainVortexArray ruhig (t=8)](img/FerroelectricDomainVortexArray_A.jpg) ![FerroelectricDomainVortexArray ruhig (t=16)](img/FerroelectricDomainVortexArray_B.jpg) ![FerroelectricDomainVortexArray audio-heiß (t=8)](img/FerroelectricDomainVortexArray_C.jpg)
+
+
 ### FerrofluidHexMatrix
 
 `Scene2D/FerrofluidHexMatrix.frag` · type=normal · mood=dark,aggressive · complexity=4
@@ -359,6 +467,15 @@ FERROFLUID HEX MATRIX: Raymarched magnetic liquid ferrofluid pool rising into sh
 FERROFLUID SPIKE FOREST: 3D raymarched pool of magnetic liquid ferrofluid rising into sharp Rosensweig instability spikes under dynamic electromagnets. Metallic liquid specular reflections, oily rainbow thin-film sheen, and photo projection. audioSubBass -> pulls ferrofluid spikes up into tall sharp needles audioKick -> triggers magnetic pulse shockwaves across the fluid pool audioCentroid-> shifts thin-film oil-slic…
 
 ![FerrofluidSpikeForest ruhig (t=8)](img/FerrofluidSpikeForest_A.jpg) ![FerrofluidSpikeForest ruhig (t=16)](img/FerrofluidSpikeForest_B.jpg) ![FerrofluidSpikeForest audio-heiß (t=8)](img/FerrofluidSpikeForest_C.jpg)
+
+
+### FerrohydrodynamicRosensweigSpikes
+
+`Scene2D/FerrohydrodynamicRosensweigSpikes.frag` · type=normal · mood=dark,aggressive · complexity=4
+
+FERROHYDRODYNAMIC ROSENSWEIG SPIKES: Normal-field Rosensweig instability in magnetic ferrofluids. Critical magnetic threshold breaks liquid surface into a highly ordered hexagonal array of needle-sharp ferrofluid spikes with specular oily sheen and magnetic field texturing. audioAdvance -> navigates magnetic spike tip precession & ferrofluid surface wave modulation audioKick -> flashes magnetic field pulse sharp spik…
+
+![FerrohydrodynamicRosensweigSpikes ruhig (t=8)](img/FerrohydrodynamicRosensweigSpikes_A.jpg) ![FerrohydrodynamicRosensweigSpikes ruhig (t=16)](img/FerrohydrodynamicRosensweigSpikes_B.jpg) ![FerrohydrodynamicRosensweigSpikes audio-heiß (t=8)](img/FerrohydrodynamicRosensweigSpikes_C.jpg)
 
 
 ### FerroSpikes
@@ -543,6 +660,15 @@ HYPERBOLIC HONEYCOMB TESSELLATION: Raymarched true 3D hyperbolic non-Euclidean s
 ![HyperbolicHoneycombTessellation ruhig (t=8)](img/HyperbolicHoneycombTessellation_A.jpg) ![HyperbolicHoneycombTessellation ruhig (t=16)](img/HyperbolicHoneycombTessellation_B.jpg) ![HyperbolicHoneycombTessellation audio-heiß (t=8)](img/HyperbolicHoneycombTessellation_C.jpg)
 
 
+### HyperbolicMetamaterialSpacetime
+
+`Scene2D/HyperbolicMetamaterialSpacetime.frag` · type=normal · mood=psychedelic,dark · complexity=4
+
+HYPERBOLIC METAMATERIAL SPACETIME: Anisotropic dielectric tensor metamaterial emulating an effective (2+1)D Minkowski spacetime with hyperbolic dispersion relations. Light rays trace relativistic null geodesics around artificial singularities, forming nested hyperbolic resonance cones and chromatic phase-fronts. audioAdvance -> navigates through anisotropic spacetime layers audioBass -> bends dielectric principal ten…
+
+![HyperbolicMetamaterialSpacetime ruhig (t=8)](img/HyperbolicMetamaterialSpacetime_A.jpg) ![HyperbolicMetamaterialSpacetime ruhig (t=16)](img/HyperbolicMetamaterialSpacetime_B.jpg) ![HyperbolicMetamaterialSpacetime audio-heiß (t=8)](img/HyperbolicMetamaterialSpacetime_C.jpg)
+
+
 ### HyperbolicPoincareTunnel
 
 `Scene2D/HyperbolicPoincareTunnel.frag` · type=normal · mood=bright,psychedelic · complexity=4
@@ -635,6 +761,15 @@ IRIDESCENT CHITIN MORPHO: 100% viewport-filling bio-photonic dielectric nanostru
 ![IridescentChitinMorpho ruhig (t=8)](img/IridescentChitinMorpho_A.jpg) ![IridescentChitinMorpho ruhig (t=16)](img/IridescentChitinMorpho_B.jpg) ![IridescentChitinMorpho audio-heiß (t=8)](img/IridescentChitinMorpho_C.jpg)
 
 
+### JosephsonVortexFluxonLattice
+
+`Scene2D/JosephsonVortexFluxonLattice.frag` · type=normal · mood=bright,aggressive · complexity=3
+
+JOSEPHSON VORTEX FLUXON LATTICE: Layered high-Tc superconductor stacked Josephson junctions. Sine-Gordon magnetic fluxons (Josephson vortices) driven by relativistic Lorentz currents race through insulator barriers, emitting coherent terahertz Cherenkov radiation fringes. audioAdvance -> accelerates fluxon velocity towards Swihart relativistic velocity audioKick -> flashes Josephson fluxon collision & annihilation ra…
+
+![JosephsonVortexFluxonLattice ruhig (t=8)](img/JosephsonVortexFluxonLattice_A.jpg) ![JosephsonVortexFluxonLattice ruhig (t=16)](img/JosephsonVortexFluxonLattice_B.jpg) ![JosephsonVortexFluxonLattice audio-heiß (t=8)](img/JosephsonVortexFluxonLattice_C.jpg)
+
+
 ### JosephsonVortexLattice
 
 `Scene2D/JosephsonVortexLattice.frag` · type=normal · mood=bright,psychedelic · complexity=3
@@ -660,6 +795,15 @@ The classic kaleidoscope fold: photo pixels are read back through a polar mirror
 KERR-NEWMAN SINGULARITY: Relativistic raymarching of a rotating charged black hole with Kerr-Schild spacetime metric, ergosphere frame dragging, gravitational light bending around the photon sphere, Doppler beaming, polar synchrotron plasma jets, and double-warped photo disk projections.
 
 ![KerrNewmanSingularity ruhig (t=8)](img/KerrNewmanSingularity_A.jpg) ![KerrNewmanSingularity ruhig (t=16)](img/KerrNewmanSingularity_B.jpg) ![KerrNewmanSingularity audio-heiß (t=8)](img/KerrNewmanSingularity_C.jpg)
+
+
+### KilonovaRadioactiveAfterglow
+
+`Scene2D/KilonovaRadioactiveAfterglow.frag` · type=normal · mood=aggressive,bright,dreamy · complexity=4
+
+KILONOVA RADIOACTIVE AFTERGLOW: Binary neutron star merger fireball. Expanding relativistic ejecta cloud synthesis of heavy r-process elements (gold, platinum), lanthanide-rich line opacity absorption, shock break-out gamma flash, and photo texturing. audioAdvance -> drives relativistic ejecta fireball expansion & turbulent billows audioKick -> ignites gamma-ray burst shock break-out flashes audioSwell -> swells dens…
+
+![KilonovaRadioactiveAfterglow ruhig (t=8)](img/KilonovaRadioactiveAfterglow_A.jpg) ![KilonovaRadioactiveAfterglow ruhig (t=16)](img/KilonovaRadioactiveAfterglow_B.jpg) ![KilonovaRadioactiveAfterglow audio-heiß (t=8)](img/KilonovaRadioactiveAfterglow_C.jpg)
 
 
 ### KineticTileMosaicMatrix
@@ -689,6 +833,24 @@ A REAL lava lamp this time: glowing wax blobs rise and sink inside a tapered gla
 ![LavaLamp ruhig (t=8)](img/LavaLamp_A.jpg) ![LavaLamp ruhig (t=16)](img/LavaLamp_B.jpg) ![LavaLamp audio-heiß (t=8)](img/LavaLamp_C.jpg)
 
 
+### LiebLatticeFlatBandLocalization
+
+`Scene2D/LiebLatticeFlatBandLocalization.frag` · type=normal · mood=bright,calm · complexity=3
+
+LIEB LATTICE FLAT BAND LOCALIZATION: 2D line-centered square Lieb lattice with a strictly dispersionless flat band at zero energy. Destructive quantum interference creates compactly localized loop states (Aharonov-Bohm cages) with photo-derived wavepacket phase texturing. audioAdvance -> navigates compact localized state phase rotation & hopping dynamics audioKick -> flashes flat-band excitation & dispersive Dirac co…
+
+![LiebLatticeFlatBandLocalization ruhig (t=8)](img/LiebLatticeFlatBandLocalization_A.jpg) ![LiebLatticeFlatBandLocalization ruhig (t=16)](img/LiebLatticeFlatBandLocalization_B.jpg) ![LiebLatticeFlatBandLocalization audio-heiß (t=8)](img/LiebLatticeFlatBandLocalization_C.jpg)
+
+
+### LiesegangPrecipitationRingArray
+
+`Scene2D/LiesegangPrecipitationRingArray.frag` · type=normal · mood=calm,psychedelic · complexity=3
+
+LIESEGANG PRECIPITATION RING ARRAY: Self-organized periodic mineral precipitation rings in porous gel media. Non-linear reaction-diffusion supersaturation nucleation creates geometric ring bands obeying the Jablczynski spacing law with colloidal turbidity and photo texturing. audioAdvance -> drives chemical precursor ion diffusion front velocity audioKick -> flashes supersaturation nucleation threshold precipitate bu…
+
+![LiesegangPrecipitationRingArray ruhig (t=8)](img/LiesegangPrecipitationRingArray_A.jpg) ![LiesegangPrecipitationRingArray ruhig (t=16)](img/LiesegangPrecipitationRingArray_B.jpg) ![LiesegangPrecipitationRingArray audio-heiß (t=8)](img/LiesegangPrecipitationRingArray_C.jpg)
+
+
 ### LightningStorm
 
 `Scene2D/LightningStorm.frag` · type=normal · mood=aggressive,dark · complexity=2
@@ -696,6 +858,15 @@ A REAL lava lamp this time: glowing wax blobs rise and sink inside a tapered gla
 Displays the branching electrical discharge simulated in Blend/CfxLightningStep, built around the fact that a real bolt reads mostly as afterglow rather than as the thin flash itself. texLightning is bloomed at two scales, a tight halo for the filament and a very wide one for the sheet-lightning glow, and that far halo's brightness gates how much of the photo is briefly revealed, cold and desaturated, as if lit by th…
 
 ![LightningStorm ruhig (t=8)](img/LightningStorm_A.jpg) ![LightningStorm ruhig (t=16)](img/LightningStorm_B.jpg) ![LightningStorm audio-heiß (t=8)](img/LightningStorm_C.jpg)
+
+
+### LiquidCrystalBluePhaseLattice
+
+`Scene2D/LiquidCrystalBluePhaseLattice.frag` · type=normal · mood=bright,psychedelic · complexity=3
+
+LIQUID CRYSTAL BLUE PHASE LATTICE: 3D cubic network of double-twist cylinders in highly chiral liquid crystals (Blue Phase I / II). Cubic defect disclination lines form a 3D periodic photonic bandgap lattice with selective Bragg reflection of deep blue light. audioAdvance -> rotates chiral director double-twist cylinders & disclination lattice flow audioKick -> flashes cubic unit cell orientation switching & selectiv…
+
+![LiquidCrystalBluePhaseLattice ruhig (t=8)](img/LiquidCrystalBluePhaseLattice_A.jpg) ![LiquidCrystalBluePhaseLattice ruhig (t=16)](img/LiquidCrystalBluePhaseLattice_B.jpg) ![LiquidCrystalBluePhaseLattice audio-heiß (t=8)](img/LiquidCrystalBluePhaseLattice_C.jpg)
 
 
 ### LiquidCrystalOptics
@@ -725,6 +896,15 @@ Screen-space fluid rendering of 32k cohesive metal particles as a single molten,
 ![LiquidMetal ruhig (t=8)](img/LiquidMetal_A.jpg) ![LiquidMetal ruhig (t=16)](img/LiquidMetal_B.jpg) ![LiquidMetal audio-heiß (t=8)](img/LiquidMetal_C.jpg)
 
 
+### LuciferinBioluminescentWavefront
+
+`Scene2D/LuciferinBioluminescentWavefront.frag` · type=normal · mood=calm,dark,dreamy · complexity=4
+
+LUCIFERIN BIOLUMINESCENT WAVEFRONT: Nocturnal ocean surf populated by dinoflagellates (Noctiluca scintillans). Hydrodynamic shear stresses on breaking wave crests trigger enzymatic luciferase-luciferin blue-green photon flashes, foam caustics, and water ripples. audioAdvance -> drives oceanic swell drift & shoreward wave-breaking velocity audioKick -> triggers violent wave crest collapse & explosive shear light burst…
+
+![LuciferinBioluminescentWavefront ruhig (t=8)](img/LuciferinBioluminescentWavefront_A.jpg) ![LuciferinBioluminescentWavefront ruhig (t=16)](img/LuciferinBioluminescentWavefront_B.jpg) ![LuciferinBioluminescentWavefront audio-heiß (t=8)](img/LuciferinBioluminescentWavefront_C.jpg)
+
+
 ### MagnetarCrustquakeSGR
 
 `Scene2D/MagnetarCrustquakeSGR.frag` · type=normal · mood=aggressive,bright · complexity=4
@@ -732,6 +912,24 @@ Screen-space fluid rendering of 32k cohesive metal particles as a single molten,
 MAGNETAR CRUSTQUAKE SGR: Ultra-magnetic neutron star ($10^{15}$ Gauss) displaying tectonic crust fractures (starquakes). Torsional Alfvén waves twist the magnetosphere, triggering giant Soft Gamma Repeater (SGR) flares, positron pair-plasma fountains, and relativistic synchrotron photo mapping. audioAdvance -> rotates magnetosphere dipolar magnetic field lines audioKick -> triggers catastrophic starquake crust fractu…
 
 ![MagnetarCrustquakeSGR ruhig (t=8)](img/MagnetarCrustquakeSGR_A.jpg) ![MagnetarCrustquakeSGR ruhig (t=16)](img/MagnetarCrustquakeSGR_B.jpg) ![MagnetarCrustquakeSGR audio-heiß (t=8)](img/MagnetarCrustquakeSGR_C.jpg)
+
+
+### MagnetohydrodynamicSolarGranulation
+
+`Scene2D/MagnetohydrodynamicSolarGranulation.frag` · type=normal · mood=bright,aggressive · complexity=3
+
+MAGNETOHYDRODYNAMIC SOLAR GRANULATION: Solar photosphere turbulent thermal convection. Rising hot plasma plumes form bright polygonal convective granules, sinking dark intergranular magnetic lanes, high-frequency acoustic p-mode waves, and magnetic micro-flare brightenings. audioAdvance -> drives turbulent plasma convective turnover velocity audioKick -> ignites explosive magnetic reconnection micro-flares in lanes a…
+
+![MagnetohydrodynamicSolarGranulation ruhig (t=8)](img/MagnetohydrodynamicSolarGranulation_A.jpg) ![MagnetohydrodynamicSolarGranulation ruhig (t=16)](img/MagnetohydrodynamicSolarGranulation_B.jpg) ![MagnetohydrodynamicSolarGranulation audio-heiß (t=8)](img/MagnetohydrodynamicSolarGranulation_C.jpg)
+
+
+### MagnetosphericBowShockTurbulence
+
+`Scene2D/MagnetosphericBowShockTurbulence.frag` · type=normal · mood=aggressive,bright · complexity=3
+
+MAGNETOSPHERIC BOW SHOCK TURBULENCE: Planetary magnetosphere collision with supersonic solar wind. Features hyperbolic bow shock compression fronts, turbulent magnetosheath eddies, ion cyclotron whistler wave ripples, and photo-derived auroral particle flux curtains. audioAdvance -> drives supersonic solar wind plasma inflow & magnetosheath turbulence audioKick -> flashes geomagnetic substorm reconnection & auroral p…
+
+![MagnetosphericBowShockTurbulence ruhig (t=8)](img/MagnetosphericBowShockTurbulence_A.jpg) ![MagnetosphericBowShockTurbulence ruhig (t=16)](img/MagnetosphericBowShockTurbulence_B.jpg) ![MagnetosphericBowShockTurbulence audio-heiß (t=8)](img/MagnetosphericBowShockTurbulence_C.jpg)
 
 
 ### MajoranaZeroModeBraid
@@ -770,6 +968,24 @@ MANTLE CONVECTION PLUME: Deep Earth core-mantle boundary (D'' layer) thermal plu
 ![MantleConvectionPlume ruhig (t=8)](img/MantleConvectionPlume_A.jpg) ![MantleConvectionPlume ruhig (t=16)](img/MantleConvectionPlume_B.jpg) ![MantleConvectionPlume audio-heiß (t=8)](img/MantleConvectionPlume_C.jpg)
 
 
+### MarangoniConvectionTearsOfWine
+
+`Scene2D/MarangoniConvectionTearsOfWine.frag` · type=normal · mood=calm,dreamy,bright · complexity=3
+
+MARANGONI CONVECTION TEARS OF WINE: Solutal Marangoni effect on glass surfaces. Alcohol evaporation gradients create surface tension differentials, driving climbing thin liquid films, capillary rim instability beads, and cascading droplet rivulets (tears of wine). audioAdvance -> drives upward climbing film velocity & droplet rivulet cascade flow audioKick -> flashes capillary bead pinch-off & falling droplet impacts…
+
+![MarangoniConvectionTearsOfWine ruhig (t=8)](img/MarangoniConvectionTearsOfWine_A.jpg) ![MarangoniConvectionTearsOfWine ruhig (t=16)](img/MarangoniConvectionTearsOfWine_B.jpg) ![MarangoniConvectionTearsOfWine audio-heiß (t=8)](img/MarangoniConvectionTearsOfWine_C.jpg)
+
+
+### MetamaterialCloakingHorizon
+
+`Scene2D/MetamaterialCloakingHorizon.frag` · type=normal · mood=psychedelic,calm · complexity=3
+
+METAMATERIAL CLOAKING HORIZON: Transformation-optics invisibility cloaking shell. Coordinates are smoothly deformed by an inhomogeneous anisotropic permittivity/permeability tensor, routing light rays around a central hidden core with compressed boundary caustics. audioAdvance -> navigates through continuous optical transformation coordinates audioPhase -> rotates cloaking anisotropy axes audioKick -> flashes metamat…
+
+![MetamaterialCloakingHorizon ruhig (t=8)](img/MetamaterialCloakingHorizon_A.jpg) ![MetamaterialCloakingHorizon ruhig (t=16)](img/MetamaterialCloakingHorizon_B.jpg) ![MetamaterialCloakingHorizon audio-heiß (t=8)](img/MetamaterialCloakingHorizon_C.jpg)
+
+
 ### Metamorph
 
 `Scene2D/Metamorph.frag` · type=normal · mood=psychedelic,dreamy · complexity=1
@@ -795,6 +1011,15 @@ METAMORPHIC LAVA VORTEX: 100% viewport-filling viscous basalt magma ocean. Solid
 Adapted from an untitled Shadertoy Möbius-inversion orb field (pasted by the user; exact page/author not given). A ring of glowing orbs seen through a Möbius (1/r^2) inversion, swirling into a hypnotic kaleidoscopic knot. Adapted to our engine: GLSL 1.20 (gl_FragCoord/resolution/time), jump-free audio motion (host-integrated audioAdvance added to time, never time*audio), beat/onset brightness, mood grade, and IMAGE-D…
 
 ![MobiusOrbs ruhig (t=8)](img/MobiusOrbs_A.jpg) ![MobiusOrbs ruhig (t=16)](img/MobiusOrbs_B.jpg) ![MobiusOrbs audio-heiß (t=8)](img/MobiusOrbs_C.jpg)
+
+
+### MoireTwistedBilayerGraphene
+
+`Scene2D/MoireTwistedBilayerGraphene.frag` · type=normal · mood=psychedelic,bright · complexity=3
+
+MOIRE TWISTED BILAYER GRAPHENE: Magic-angle (~1.1 deg) twisted bilayer graphene. Creates massive macroscopic Moiré superlattices, localized flat-band electron density islands, Dirac cone topological splitting, and correlated quantum interference fringes. audioAdvance -> rotates bilayer twist angle smoothly around magic-angle resonance audioKick -> discharges correlated Mott insulator electron conduction bursts audioC…
+
+![MoireTwistedBilayerGraphene ruhig (t=8)](img/MoireTwistedBilayerGraphene_A.jpg) ![MoireTwistedBilayerGraphene ruhig (t=16)](img/MoireTwistedBilayerGraphene_B.jpg) ![MoireTwistedBilayerGraphene audio-heiß (t=8)](img/MoireTwistedBilayerGraphene_C.jpg)
 
 
 ### Murmuration
@@ -860,6 +1085,24 @@ NON-EUCLIDEAN OCTAHEDRAL LABYRINTH: 100% viewport-filling infinite 3D hyperbolic
 ![NonEuclideanOctahedralLabyrinth ruhig (t=8)](img/NonEuclideanOctahedralLabyrinth_A.jpg) ![NonEuclideanOctahedralLabyrinth ruhig (t=16)](img/NonEuclideanOctahedralLabyrinth_B.jpg) ![NonEuclideanOctahedralLabyrinth audio-heiß (t=8)](img/NonEuclideanOctahedralLabyrinth_C.jpg)
 
 
+### NonlinearKerrOpticalSolitonCollision
+
+`Scene2D/NonlinearKerrOpticalSolitonCollision.frag` · type=normal · mood=psychedelic,bright · complexity=4
+
+NONLINEAR KERR OPTICAL SOLITON COLLISION: Spatial optical solitons in a self-focusing Kerr medium. Stable self-trapped wavepackets undergo elastic and inelastic collisions, generating four-wave mixing fringes, dispersive shock waves, and photo-derived optical spectra. audioAdvance -> propels spatial soliton trajectories towards collision center audioKick -> flashes nonlinear four-wave mixing energy peak detonation au…
+
+![NonlinearKerrOpticalSolitonCollision ruhig (t=8)](img/NonlinearKerrOpticalSolitonCollision_A.jpg) ![NonlinearKerrOpticalSolitonCollision ruhig (t=16)](img/NonlinearKerrOpticalSolitonCollision_B.jpg) ![NonlinearKerrOpticalSolitonCollision audio-heiß (t=8)](img/NonlinearKerrOpticalSolitonCollision_C.jpg)
+
+
+### NonlinearSchrodingerRogueWave
+
+`Scene2D/NonlinearSchrodingerRogueWave.frag` · type=normal · mood=dark,aggressive,calm · complexity=4
+
+NONLINEAR SCHRÖDINGER ROGUE WAVE: Peregrine breather soliton / oceanic freak monster wave. Non-linear modulational instability (Benjamin-Feir) focuses continuous background wave trains into a sudden triple-height oceanic rogue wave wall with foaming crests and deep abyssal troughs. audioAdvance -> navigates Peregrine breather non-linear focusing spacetime coordinates audioKick -> flashes catastrophic rogue wave break…
+
+![NonlinearSchrodingerRogueWave ruhig (t=8)](img/NonlinearSchrodingerRogueWave_A.jpg) ![NonlinearSchrodingerRogueWave ruhig (t=16)](img/NonlinearSchrodingerRogueWave_B.jpg) ![NonlinearSchrodingerRogueWave audio-heiß (t=8)](img/NonlinearSchrodingerRogueWave_C.jpg)
+
+
 ### OilProjector
 
 `Scene2D/OilProjector.frag` · type=normal · mood=calm · complexity=2
@@ -905,6 +1148,33 @@ PENROSE APERIODIC TESSELLATION: Infinite 5-fold aperiodic Penrose tiling (kites 
 ![PenroseAperiodicTessellation ruhig (t=8)](img/PenroseAperiodicTessellation_A.jpg) ![PenroseAperiodicTessellation ruhig (t=16)](img/PenroseAperiodicTessellation_B.jpg) ![PenroseAperiodicTessellation audio-heiß (t=8)](img/PenroseAperiodicTessellation_C.jpg)
 
 
+### PenroseProcessErgosphereExtraction
+
+`Scene2D/PenroseProcessErgosphereExtraction.frag` · type=normal · mood=psychedelic,bright · complexity=4
+
+PENROSE PROCESS ERGOSPHERE EXTRACTION: Relativistic rotational energy extraction from a spinning Kerr black hole inside its oblate ergosphere. Decaying infalling geodesics, negative-energy orbits, extreme Doppler blueshifted escaping photon fans, and photo lensing. audioAdvance -> accelerates black hole spin & frame-dragging swirl audioKick -> injects high-energy matter chunks triggering Penrose bursts audioCentroid-…
+
+![PenroseProcessErgosphereExtraction ruhig (t=8)](img/PenroseProcessErgosphereExtraction_A.jpg) ![PenroseProcessErgosphereExtraction ruhig (t=16)](img/PenroseProcessErgosphereExtraction_B.jpg) ![PenroseProcessErgosphereExtraction audio-heiß (t=8)](img/PenroseProcessErgosphereExtraction_C.jpg)
+
+
+### PhotonicCrystalDiracConeDispersion
+
+`Scene2D/PhotonicCrystalDiracConeDispersion.frag` · type=normal · mood=bright,psychedelic · complexity=3
+
+PHOTONIC CRYSTAL DIRAC CONE DISPERSION: Zero-refractive-index (n = 0) photonic crystal. Accidental degeneracy of electric and magnetic dipole modes at the Brillouin zone center (Gamma) forms a linear Dirac cone dispersion, creating infinite phase velocity and spatially uniform fields. audioAdvance -> navigates zero-index tunneling & Bloch phase dispersion audioKick -> flashes accidental degeneracy Dirac point resonan…
+
+![PhotonicCrystalDiracConeDispersion ruhig (t=8)](img/PhotonicCrystalDiracConeDispersion_A.jpg) ![PhotonicCrystalDiracConeDispersion ruhig (t=16)](img/PhotonicCrystalDiracConeDispersion_B.jpg) ![PhotonicCrystalDiracConeDispersion audio-heiß (t=8)](img/PhotonicCrystalDiracConeDispersion_C.jpg)
+
+
+### PhotonicMetasurfacePhaseGradient
+
+`Scene2D/PhotonicMetasurfacePhaseGradient.frag` · type=normal · mood=bright,calm · complexity=3
+
+PHOTONIC METASURFACE PHASE GRADIENT: Dielectric subwavelength gradient metasurface. Spatial variation of nanoantenna phase shifts implements generalized Snell's laws of reflection and refraction, forming anomalous optical beams, orbital angular momentum vortices, and photo spectra. audioAdvance -> navigates phase gradient translation & orbital angular momentum beam rotation audioKick -> flashes anomalous wavefront de…
+
+![PhotonicMetasurfacePhaseGradient ruhig (t=8)](img/PhotonicMetasurfacePhaseGradient_A.jpg) ![PhotonicMetasurfacePhaseGradient ruhig (t=16)](img/PhotonicMetasurfacePhaseGradient_B.jpg) ![PhotonicMetasurfacePhaseGradient audio-heiß (t=8)](img/PhotonicMetasurfacePhaseGradient_C.jpg)
+
+
 ### Physarum
 
 `Scene2D/Physarum.frag` · type=normal · mood=dark,psychedelic · complexity=2
@@ -941,6 +1211,15 @@ The source image MARBLED and refracted by a flowing plasma field, folded into mi
 PLASMA LIGHTNING GLOBE: Dielectric breakdown plasma globe with dozens of snaking, branching high-voltage filament arcs striking the glass sphere, central electrode glow, and electric neon magenta/cyan gas ionization trails. audioHigh -> sparks new dielectric breakdown plasma filament branches audioKick -> flashes high-energy arc discharges to glass boundary audioSwell -> thickens noble gas ionization luminescence aud…
 
 ![PlasmaLightningGlobe ruhig (t=8)](img/PlasmaLightningGlobe_A.jpg) ![PlasmaLightningGlobe ruhig (t=16)](img/PlasmaLightningGlobe_B.jpg) ![PlasmaLightningGlobe audio-heiß (t=8)](img/PlasmaLightningGlobe_C.jpg)
+
+
+### PlasmonicMetamaterialBlackHole
+
+`Scene2D/PlasmonicMetamaterialBlackHole.frag` · type=normal · mood=psychedelic,dark · complexity=4
+
+PLASMONIC METAMATERIAL BLACK HOLE: Omnidirectional optical absorber in graded-index metamaterials. Continuous radial variation of dielectric permittivity and magnetic permeability curves light rays into logarithmic spiral orbits toward a central plasmonic absorbing core. audioAdvance -> rotates spiral Poynting vector energy trajectories towards core audioKick -> flashes central plasmonic core resistive dissipation ho…
+
+![PlasmonicMetamaterialBlackHole ruhig (t=8)](img/PlasmonicMetamaterialBlackHole_A.jpg) ![PlasmonicMetamaterialBlackHole ruhig (t=16)](img/PlasmonicMetamaterialBlackHole_B.jpg) ![PlasmonicMetamaterialBlackHole audio-heiß (t=8)](img/PlasmonicMetamaterialBlackHole_C.jpg)
 
 
 ### PrismaticCrystalChamber
@@ -1006,6 +1285,15 @@ PULSAR MAGNETOSPHERE JETS: Rapidly spinning millisecond pulsar with twisted dipo
 ![PulsarMagnetosphereJets ruhig (t=8)](img/PulsarMagnetosphereJets_A.jpg) ![PulsarMagnetosphereJets ruhig (t=16)](img/PulsarMagnetosphereJets_B.jpg) ![PulsarMagnetosphereJets audio-heiß (t=8)](img/PulsarMagnetosphereJets_C.jpg)
 
 
+### PyroclasticDensityCurrentSurge
+
+`Scene2D/PyroclasticDensityCurrentSurge.frag` · type=normal · mood=aggressive,dark,bright · complexity=4
+
+PYROCLASTIC DENSITY CURRENT SURGE: Supersonic fluidized volcanic ash-gas avalanche. Billowing turbulent shear lobes, internal incandescent pumice blocks, triboelectric friction lightning sparks, and thick ash-cloud photo obscuration across the screen. audioAdvance -> drives turbulent ash surge avalanche roll & vortex cascades audioKick -> ignites internal triboelectric ash lightning & explosive gas expansions audioBa…
+
+![PyroclasticDensityCurrentSurge ruhig (t=8)](img/PyroclasticDensityCurrentSurge_A.jpg) ![PyroclasticDensityCurrentSurge ruhig (t=16)](img/PyroclasticDensityCurrentSurge_B.jpg) ![PyroclasticDensityCurrentSurge audio-heiß (t=8)](img/PyroclasticDensityCurrentSurge_C.jpg)
+
+
 ### QuantumChromaField
 
 `Scene2D/QuantumChromaField.frag` · type=normal · mood=bright,psychedelic · complexity=3
@@ -1024,6 +1312,24 @@ QUANTUM CHROMODYNAMICS GLUON PLASMA: 100% viewport-filling relativistic heavy-io
 ![QuantumChromodynamicsGluonPlasma ruhig (t=8)](img/QuantumChromodynamicsGluonPlasma_A.jpg) ![QuantumChromodynamicsGluonPlasma ruhig (t=16)](img/QuantumChromodynamicsGluonPlasma_B.jpg) ![QuantumChromodynamicsGluonPlasma audio-heiß (t=8)](img/QuantumChromodynamicsGluonPlasma_C.jpg)
 
 
+### QuantumHallFractionalAnyonBraiding
+
+`Scene2D/QuantumHallFractionalAnyonBraiding.frag` · type=normal · mood=bright,psychedelic · complexity=3
+
+QUANTUM HALL FRACTIONAL ANYON BRAIDING: 2D fractional quantum Hall liquid near filling factor nu = 5/2. Non-Abelian Moore-Read Ising anyons orbit lithographic antidot islands, braiding fractional statistics worldlines with Berry phase quantum interference ribbons. audioAdvance -> drives anyon orbital trajectory circulation & Berry phase accumulation audioKick -> flashes non-Abelian topological state fusion & interfer…
+
+![QuantumHallFractionalAnyonBraiding ruhig (t=8)](img/QuantumHallFractionalAnyonBraiding_A.jpg) ![QuantumHallFractionalAnyonBraiding ruhig (t=16)](img/QuantumHallFractionalAnyonBraiding_B.jpg) ![QuantumHallFractionalAnyonBraiding audio-heiß (t=8)](img/QuantumHallFractionalAnyonBraiding_C.jpg)
+
+
+### QuantumHallSkyrmionCrystal
+
+`Scene2D/QuantumHallSkyrmionCrystal.frag` · type=normal · mood=calm,bright,dreamy · complexity=3
+
+QUANTUM HALL SKYRMION CRYSTAL: 2D triangular crystal of spin-textured Skyrmions in a quantum Hall ferromagnet near filling factor nu = 1. Features entangled electron spin textures, fractional quantized Hall current ripples, and Landau level photo texturing. audioAdvance -> navigates chiral Hall drift & cyclotron phase evolution audioKick -> flashes fractional quasiparticle injection & annihilation bursts audioBass ->…
+
+![QuantumHallSkyrmionCrystal ruhig (t=8)](img/QuantumHallSkyrmionCrystal_A.jpg) ![QuantumHallSkyrmionCrystal ruhig (t=16)](img/QuantumHallSkyrmionCrystal_B.jpg) ![QuantumHallSkyrmionCrystal audio-heiß (t=8)](img/QuantumHallSkyrmionCrystal_C.jpg)
+
+
 ### QuasarRelativisticJet
 
 `Scene2D/QuasarRelativisticJet.frag` · type=normal · mood=aggressive,bright · complexity=4
@@ -1031,6 +1337,15 @@ QUANTUM CHROMODYNAMICS GLUON PLASMA: 100% viewport-filling relativistic heavy-io
 QUASAR RELATIVISTIC JET: Raymarched look down the magnetic confinement funnel of an ultra-luminous active galactic nucleus. Relativistic synchrotron plasma jets shoot along helical magnetic field lines with shock diamonds, Cherenkov beaming cones, and multi-tier accretion disk photo reflections. audioAdvance -> accelerates plasma packets down the relativistic jet audioKick -> fires shock diamond detonations and synch…
 
 ![QuasarRelativisticJet ruhig (t=8)](img/QuasarRelativisticJet_A.jpg) ![QuasarRelativisticJet ruhig (t=16)](img/QuasarRelativisticJet_B.jpg) ![QuasarRelativisticJet audio-heiß (t=8)](img/QuasarRelativisticJet_C.jpg)
+
+
+### QuaternionFractalHopfLoom
+
+`Scene2D/QuaternionFractalHopfLoom.frag` · type=normal · mood=psychedelic,bright · complexity=4
+
+QUATERNION FRACTAL HOPF LOOM: 4D hypercomplex quaternion Julia fractal sliced dynamically and projected via continuous Hopf fibration into interlocking self-similar 3D/2D nested torus weaves and iridescent optical filaments. audioAdvance -> navigates hypercomplex 4D slice coordinates (w-axis orbit) audioPhase -> twists Hopf fibration projection angles audioKick -> flashes fractal boundary orbit-trap contact points au…
+
+![QuaternionFractalHopfLoom ruhig (t=8)](img/QuaternionFractalHopfLoom_A.jpg) ![QuaternionFractalHopfLoom ruhig (t=16)](img/QuaternionFractalHopfLoom_B.jpg) ![QuaternionFractalHopfLoom audio-heiß (t=8)](img/QuaternionFractalHopfLoom_C.jpg)
 
 
 ### QuaternionicJulia4DFlight
@@ -1058,6 +1373,33 @@ A ray-marched wormhole papered with the SOURCE IMAGE, mirror-folded around the b
 The living Gray-Scott reaction-diffusion field (simulated on the GPU into "texSim") rendered as ORGANIC LIQUID METAL over the source image: * the B-concentration reveals and stains the picture where the reaction is active; * the field gradient displaces the image GENTLY (the old raw-gradient x4 displacement threw the picture around with every sim step — the "Gezappel"; now the gradient is blurred and scaled way down)…
 
 ![ReactionDiffusion ruhig (t=8)](img/ReactionDiffusion_A.jpg) ![ReactionDiffusion ruhig (t=16)](img/ReactionDiffusion_B.jpg) ![ReactionDiffusion audio-heiß (t=8)](img/ReactionDiffusion_C.jpg)
+
+
+### RelativisticKelvinHelmholtzShear
+
+`Scene2D/RelativisticKelvinHelmholtzShear.frag` · type=normal · mood=aggressive,bright · complexity=4
+
+RELATIVISTIC KELVIN-HELMHOLTZ SHEAR: Relativistic shear instability at the boundary of collimated astrophysical radio jets. Fast internal plasma flow past ambient medium generates non-linear cat's-eye vortex trains, magnetic field compression ribbons, and synchrotron glow. audioAdvance -> drives relativistic jet shear flow velocity & vortex rolling audioKick -> flashes magnetic reconnection & synchrotron shock detona…
+
+![RelativisticKelvinHelmholtzShear ruhig (t=8)](img/RelativisticKelvinHelmholtzShear_A.jpg) ![RelativisticKelvinHelmholtzShear ruhig (t=16)](img/RelativisticKelvinHelmholtzShear_B.jpg) ![RelativisticKelvinHelmholtzShear audio-heiß (t=8)](img/RelativisticKelvinHelmholtzShear_C.jpg)
+
+
+### RelativisticPlasmaZpinchInstability
+
+`Scene2D/RelativisticPlasmaZpinchInstability.frag` · type=normal · mood=aggressive,bright · complexity=4
+
+RELATIVISTIC PLASMA Z-PINCH INSTABILITY: Megampere relativistic pulsed-power Z-pinch. Intense axial plasma current self-compresses via azimuthal Lorentz force, degenerating into violent m=0 (sausage) and m=1 (kink) magneto-Rayleigh-Taylor instabilities and fusion hot spots. audioAdvance -> drives relativistic axial current flow & magnetic pinch dynamics audioKick -> ignites thermonuclear fusion hotspot micro-detonati…
+
+![RelativisticPlasmaZpinchInstability ruhig (t=8)](img/RelativisticPlasmaZpinchInstability_A.jpg) ![RelativisticPlasmaZpinchInstability ruhig (t=16)](img/RelativisticPlasmaZpinchInstability_B.jpg) ![RelativisticPlasmaZpinchInstability audio-heiß (t=8)](img/RelativisticPlasmaZpinchInstability_C.jpg)
+
+
+### RelativisticSynchrotronPulsarWind
+
+`Scene2D/RelativisticSynchrotronPulsarWind.frag` · type=normal · mood=aggressive,bright · complexity=4
+
+RELATIVISTIC SYNCHROTRON PULSAR WIND: Pulsar wind nebula (Crab Nebula PWN). Magnetized electron-positron relativistic plasma wind undergoes termination shock, forming equatorial synchrotron torus rings, polar collimated plasma jets, and magnetic wisps. audioAdvance -> accelerates pulsar rotational frequency & relativistic wind outflow audioKick -> flashes central pulsar lighthouse beam & magnetic reconnection flares …
+
+![RelativisticSynchrotronPulsarWind ruhig (t=8)](img/RelativisticSynchrotronPulsarWind_A.jpg) ![RelativisticSynchrotronPulsarWind ruhig (t=16)](img/RelativisticSynchrotronPulsarWind_B.jpg) ![RelativisticSynchrotronPulsarWind audio-heiß (t=8)](img/RelativisticSynchrotronPulsarWind_C.jpg)
 
 
 ### Rorschach
@@ -1118,6 +1460,24 @@ The photo blown apart into 1300 rigid shards (posed upstream in texShards) that 
 ![ShatterField ruhig (t=8)](img/ShatterField_A.jpg) ![ShatterField ruhig (t=16)](img/ShatterField_B.jpg) ![ShatterField audio-heiß (t=8)](img/ShatterField_C.jpg)
 
 
+### SiphonophoreBioluminescentCurtain
+
+`Scene2D/SiphonophoreBioluminescentCurtain.frag` · type=normal · mood=calm,dark,dreamy · complexity=4
+
+SIPHONOPHORE BIOLUMINESCENT CURTAIN: Massive colonial siphonophore (Praya dubia / Apolemia) cascading through deep abyssal oceanic trenches. Translucent swimming bells (nectophores), bioluminescent glowing tentilla curtains, and rhythmic contraction light waves. audioAdvance -> drives oceanic current drift & tentacle undulating waves audioKick -> flashes defensive bioluminescent luminescence cascades audioSwell -> th…
+
+![SiphonophoreBioluminescentCurtain ruhig (t=8)](img/SiphonophoreBioluminescentCurtain_A.jpg) ![SiphonophoreBioluminescentCurtain ruhig (t=16)](img/SiphonophoreBioluminescentCurtain_B.jpg) ![SiphonophoreBioluminescentCurtain audio-heiß (t=8)](img/SiphonophoreBioluminescentCurtain_C.jpg)
+
+
+### SkyrmionChiralSpinLattice
+
+`Scene2D/SkyrmionChiralSpinLattice.frag` · type=normal · mood=psychedelic,aggressive · complexity=3
+
+SKYRMION CHIRAL SPIN LATTICE: Dense 2D triangular lattice of topological magnetic skyrmion vortices governed by chiral Dzyaloshinskii-Moriya exchange interactions. Displays swirling out-of-plane magnetization cores, gyrotropic Skyrmion Hall drift, and holographic magneto-optical Faraday rotation patterns. audioAdvance -> drives gyrotropic Skyrmion Hall angle drift & spin precession audioKick -> compresses lattice spa…
+
+![SkyrmionChiralSpinLattice ruhig (t=8)](img/SkyrmionChiralSpinLattice_A.jpg) ![SkyrmionChiralSpinLattice ruhig (t=16)](img/SkyrmionChiralSpinLattice_B.jpg) ![SkyrmionChiralSpinLattice audio-heiß (t=8)](img/SkyrmionChiralSpinLattice_C.jpg)
+
+
 ### Snowfall
 
 `Scene2D/Snowfall.frag` · type=normal · mood=calm · complexity=2
@@ -1143,6 +1503,15 @@ SOLAR CORONA PROMINENCE: Volumetric solar magnetic coronal loops arching over a 
 SOLAR FLARE CORONA: Extreme close-up of a turbulent stellar photosphere, incandescent plasma convection cells, magnetic coronal loops, and explosive coronal mass ejections erupting across the screen. audioSubBass -> expands radial solar flare shockwaves audioKick -> flashes incandescent core nuclear ignition audioMid -> ripples magnetic flux loops & plasma convection audioHigh -> excites fine coronal filaments & sola…
 
 ![SolarFlareCorona ruhig (t=8)](img/SolarFlareCorona_A.jpg) ![SolarFlareCorona ruhig (t=16)](img/SolarFlareCorona_B.jpg) ![SolarFlareCorona audio-heiß (t=8)](img/SolarFlareCorona_C.jpg)
+
+
+### SolitonInternalWaveAndamanSea
+
+`Scene2D/SolitonInternalWaveAndamanSea.frag` · type=normal · mood=calm,dreamy,bright · complexity=3
+
+SOLITON INTERNAL WAVE ANDAMAN SEA: Giant oceanic internal gravity wave soliton packets generated by tidal flow over submarine sills. Massive subsurface pycnocline depressions create distinctive surface wave roughness strips, refractive sun glitter bands, and ocean photo texturing. audioAdvance -> propels internal wave packet propagation across Andaman pycnocline audioKick -> flashes surface wave breaking foam & turbu…
+
+![SolitonInternalWaveAndamanSea ruhig (t=8)](img/SolitonInternalWaveAndamanSea_A.jpg) ![SolitonInternalWaveAndamanSea ruhig (t=16)](img/SolitonInternalWaveAndamanSea_B.jpg) ![SolitonInternalWaveAndamanSea audio-heiß (t=8)](img/SolitonInternalWaveAndamanSea_C.jpg)
 
 
 ### SonoluminescenceBubble
@@ -1179,6 +1548,15 @@ Radial spectrum analyzer with 32 frequency bands (mirrored into 64 wedges) radia
 Adapted from an untitled \@kishimisu raymarch (CC BY-NC-SA 4.0): a fly-through of an infinite lattice of spheres down a bright corridor. Adapted to our engine, and COLOURED BY THE IMAGE: instead of a fixed cosine palette, each depth takes its colour from a slowly-drifting crop of the source picture (imgPal), so the palette is the image itself and keeps changing (like the kaleidoscope folding different crops). Audio-r…
 
 ![SphereGrid ruhig (t=8)](img/SphereGrid_A.jpg) ![SphereGrid ruhig (t=16)](img/SphereGrid_B.jpg) ![SphereGrid audio-heiß (t=8)](img/SphereGrid_C.jpg)
+
+
+### SpintronicDomainWallRacetrack
+
+`Scene2D/SpintronicDomainWallRacetrack.frag` · type=normal · mood=bright,aggressive · complexity=3
+
+SPINTRONIC DOMAIN WALL RACETRACK: Nanowire racetrack memory array. Topologically protected chiral magnetic domain walls driven by spin-transfer torque pulses race across parallel tracks with magnetoresistive fringes and spin-wave ripples. audioAdvance -> drives spin-polarized electrical current & domain wall drift audioKick -> flashes Barkhausen depinning transitions and magnetic pulses audioSwell -> widens magnetic …
+
+![SpintronicDomainWallRacetrack ruhig (t=8)](img/SpintronicDomainWallRacetrack_A.jpg) ![SpintronicDomainWallRacetrack ruhig (t=16)](img/SpintronicDomainWallRacetrack_B.jpg) ![SpintronicDomainWallRacetrack audio-heiß (t=8)](img/SpintronicDomainWallRacetrack_C.jpg)
 
 
 ### StainedGlassCathedralCaustics
@@ -1226,6 +1604,15 @@ SUPERCELL MESOCYCLONE: Volumetric rotating supercell storm cloud with helical up
 ![SupercellMesocyclone ruhig (t=8)](img/SupercellMesocyclone_A.jpg) ![SupercellMesocyclone ruhig (t=16)](img/SupercellMesocyclone_B.jpg) ![SupercellMesocyclone audio-heiß (t=8)](img/SupercellMesocyclone_C.jpg)
 
 
+### SupercriticalFluidOpalescence
+
+`Scene2D/SupercriticalFluidOpalescence.frag` · type=normal · mood=calm,dreamy,bright · complexity=3
+
+SUPERCRITICAL FLUID OPALESCENCE: Thermodynamic critical point in a supercritical fluid (CO2/Xenon). Diverging correlation length and scale-invariant density fluctuations scatter all wavelengths of visible light, creating milky iridescent opalescent clouds and liquid-gas fog. audioAdvance -> churns supercritical density fluctuation clusters & thermal diffusion audioKick -> flashes critical phase transition condensatio…
+
+![SupercriticalFluidOpalescence ruhig (t=8)](img/SupercriticalFluidOpalescence_A.jpg) ![SupercriticalFluidOpalescence ruhig (t=16)](img/SupercriticalFluidOpalescence_B.jpg) ![SupercriticalFluidOpalescence audio-heiß (t=8)](img/SupercriticalFluidOpalescence_C.jpg)
+
+
 ### SuperheatedCoronalLoop
 
 `Scene2D/SuperheatedCoronalLoop.frag` · type=normal · mood=aggressive,bright · complexity=4
@@ -1242,6 +1629,15 @@ SUPERHEATED CORONAL LOOP: 100% viewport-filling volumetric view of solar coronal
 SUPERMASSIVE ACCRETION DISK: Raymarched Kerr rotating black hole with extreme gravitational frame-dragging, Doppler-boosted photon sphere, relativistic polar plasma jets, and gravitational lensing warping background starfields & photos. audioSubBass -> expands ergosphere & singularity gravitational lens ring audioKick -> ignites explosive polar relativistic jet bursts audioHigh -> sparks synchrotron radiation in accr…
 
 ![SupermassiveAccretionDisk ruhig (t=8)](img/SupermassiveAccretionDisk_A.jpg) ![SupermassiveAccretionDisk ruhig (t=16)](img/SupermassiveAccretionDisk_B.jpg) ![SupermassiveAccretionDisk audio-heiß (t=8)](img/SupermassiveAccretionDisk_C.jpg)
+
+
+### SuperradiantBlackHoleBomb
+
+`Scene2D/SuperradiantBlackHoleBomb.frag` · type=normal · mood=psychedelic,aggressive · complexity=4
+
+SUPERRADIANT BLACK HOLE BOMB: Massive bosonic field trapped in an artificial reflecting mirror cavity around a rapidly rotating Kerr black hole. Superradiant scattering exponentially extracts rotational energy, creating violent photon amplification and ergosphere detonation rings. audioAdvance -> accelerates black hole spin & bosonic wavefield superradiant amplification audioKick -> triggers runaway superradiant cavi…
+
+![SuperradiantBlackHoleBomb ruhig (t=8)](img/SuperradiantBlackHoleBomb_A.jpg) ![SuperradiantBlackHoleBomb ruhig (t=16)](img/SuperradiantBlackHoleBomb_B.jpg) ![SuperradiantBlackHoleBomb audio-heiß (t=8)](img/SuperradiantBlackHoleBomb_C.jpg)
 
 
 ### SuperradiantTokamakIgnition
@@ -1336,6 +1732,15 @@ Two mirrored-segment kaleidoscope tunnels blended 50/50: a forward layer (same c
 ![TunnelReverse ruhig (t=8)](img/TunnelReverse_A.jpg) ![TunnelReverse ruhig (t=16)](img/TunnelReverse_B.jpg) ![TunnelReverse audio-heiß (t=8)](img/TunnelReverse_C.jpg)
 
 
+### VolcanicLightningAshColumn
+
+`Scene2D/VolcanicLightningAshColumn.frag` · type=normal · mood=aggressive,dark,bright · complexity=4
+
+VOLCANIC LIGHTNING ASH COLUMN: Plinian volcanic eruption column. Boiling turbulent tephra ash vortices rise violently, triboelectrically charging to gigavolt potentials and discharging in thousands of branching volcanic lightning bolts, incandescent lava bombs, and glow. audioAdvance -> churns convective ash plume turbulence & upward eruption velocity audioKick -> detonates explosive volcanic lightning flash discharg…
+
+![VolcanicLightningAshColumn ruhig (t=8)](img/VolcanicLightningAshColumn_A.jpg) ![VolcanicLightningAshColumn ruhig (t=16)](img/VolcanicLightningAshColumn_B.jpg) ![VolcanicLightningAshColumn audio-heiß (t=8)](img/VolcanicLightningAshColumn_C.jpg)
+
+
 ### VolcanicLightningPlume
 
 `Scene2D/VolcanicLightningPlume.frag` · type=normal · mood=aggressive,bright,dark · complexity=3
@@ -1390,6 +1795,15 @@ Adapted from "Voyager" by \@kishimisu (2024) — https://www.shadertoy.com/view/
 ![Voyager ruhig (t=8)](img/Voyager_A.jpg) ![Voyager ruhig (t=16)](img/Voyager_B.jpg) ![Voyager audio-heiß (t=8)](img/Voyager_C.jpg)
 
 
+### WhisperingGalleryMicrocavity
+
+`Scene2D/WhisperingGalleryMicrocavity.frag` · type=normal · mood=bright,psychedelic · complexity=3
+
+WHISPERING GALLERY MICROCAVITY: Deformed optical microcavity resonator exhibiting quantum chaos, ray-wave correspondence, and whispering gallery modes. Total internal reflection orbits create rich caustic networks and evanescent boundary tunneling light rays across the whole viewport. audioAdvance -> rotates chaotic Poincaré ray trajectory phase audioPhase -> deforms microcavity boundary quadropole / octupole shape a…
+
+![WhisperingGalleryMicrocavity ruhig (t=8)](img/WhisperingGalleryMicrocavity_A.jpg) ![WhisperingGalleryMicrocavity ruhig (t=16)](img/WhisperingGalleryMicrocavity_B.jpg) ![WhisperingGalleryMicrocavity audio-heiß (t=8)](img/WhisperingGalleryMicrocavity_C.jpg)
+
+
 ---
 
 ## 3D-Szenen (Scene3D/)
@@ -1431,6 +1845,15 @@ AsteroidBelt.frag — matte rock faces; a faint cool rim keeps silhouettes reada
 ![AsteroidBelt ruhig (t=8)](img/AsteroidBelt_A.jpg) ![AsteroidBelt ruhig (t=16)](img/AsteroidBelt_B.jpg) ![AsteroidBelt audio-heiß (t=8)](img/AsteroidBelt_C.jpg)
 
 
+### AtmosphericGravityWaveUndularBore
+
+`Scene3D/AtmosphericGravityWaveUndularBore.frag` · type=scene3d · geom=grid · mood=calm,dreamy,bright · complexity=3
+
+ATMOSPHERIC GRAVITY WAVE UNDULAR BORE: 220x120 heightfield grid of mesospheric undular bore gravity wave solitons. Emits emerald hydroxyl airglow emission lines, atmospheric curvature depth, and photo texturing. audioAdvance -> drives mesospheric gravity wave soliton propagation audioKick -> flashes wave crest chemiluminescent airglow surges audioSwell -> thickens atmospheric airglow layer & wave amplitude audioCentr…
+
+![AtmosphericGravityWaveUndularBore ruhig (t=8)](img/AtmosphericGravityWaveUndularBore_A.jpg) ![AtmosphericGravityWaveUndularBore ruhig (t=16)](img/AtmosphericGravityWaveUndularBore_B.jpg) ![AtmosphericGravityWaveUndularBore audio-heiß (t=8)](img/AtmosphericGravityWaveUndularBore_C.jpg)
+
+
 ### AuroraBorealisOverFjord
 
 `Scene3D/AuroraBorealisOverFjord.frag` · type=scene3d · geom=patches · mood=calm,dreamy,bright · complexity=4
@@ -1447,6 +1870,15 @@ AURORA BOREALIS OVER FJORD: night flight down a fjord - mountains on both sides,
 AuroraVeil.frag — translucent curtain: bright lower hem, airy top.
 
 ![AuroraVeil ruhig (t=8)](img/AuroraVeil_A.jpg) ![AuroraVeil ruhig (t=16)](img/AuroraVeil_B.jpg) ![AuroraVeil audio-heiß (t=8)](img/AuroraVeil_C.jpg)
+
+
+### BacteriophageIcosahedralCapsidInjection
+
+`Scene3D/BacteriophageIcosahedralCapsidInjection.frag` · type=scene3d · geom=grid · mood=bright,calm · complexity=3
+
+BACTERIOPHAGE ICOSAHEDRAL CAPSID INJECTION: T4 Bacteriophage viral injection nanomachine. Icosahedral protein capsid, contractile tail sheath, baseplate spikes, and high-pressure viral DNA genome injection pulse into a host bacterium with cryo-EM photo texturing. audioAdvance -> navigates viral tail sheath contraction & DNA translocation drift audioKick -> flashes high-pressure viral DNA genome ejection & baseplate p…
+
+![BacteriophageIcosahedralCapsidInjection ruhig (t=8)](img/BacteriophageIcosahedralCapsidInjection_A.jpg) ![BacteriophageIcosahedralCapsidInjection ruhig (t=16)](img/BacteriophageIcosahedralCapsidInjection_B.jpg) ![BacteriophageIcosahedralCapsidInjection audio-heiß (t=8)](img/BacteriophageIcosahedralCapsidInjection_C.jpg)
 
 
 ### BillboardCity
@@ -1474,6 +1906,15 @@ Frag-side music pulse (added by the deaf-scene pass: reactivity measured ~0 -- t
 BIOLUMINESCENT BREAKING WAVE: rolling Gerstner swell seen from above the surf line; the crests break into glowing dinoflagellate foam CELLS (not a full-width neon bar), dark troughs carry the photo tint. audioBass -> swell height audioKick -> breaker splash + glow surge audioHigh -> cross-chop audioAdvance -> wave phase (jump-free)
 
 ![BioluminescentBreakingWave ruhig (t=8)](img/BioluminescentBreakingWave_A.jpg) ![BioluminescentBreakingWave ruhig (t=16)](img/BioluminescentBreakingWave_B.jpg) ![BioluminescentBreakingWave audio-heiß (t=8)](img/BioluminescentBreakingWave_C.jpg)
+
+
+### BioluminescentCombJellyCydippid
+
+`Scene3D/BioluminescentCombJellyCydippid.frag` · type=scene3d · geom=ribbon · mood=calm,dark,dreamy · complexity=3
+
+BIOLUMINESCENT COMB JELLY CYDIPPID: Abyssal ctenophore (Mertensia ovum / Beroe cucumis). 8 meridional rows of coordinated metachronal beating ciliated comb plates (ctenes) producing rainbow diffraction iridescence, bioelectric green fluorescent flashes, and photo texturing. audioAdvance -> accelerates metachronal ciliary comb plate beating wave speed audioKick -> flashes defensive coelenterazine bioluminescent shock …
+
+![BioluminescentCombJellyCydippid ruhig (t=8)](img/BioluminescentCombJellyCydippid_A.jpg) ![BioluminescentCombJellyCydippid ruhig (t=16)](img/BioluminescentCombJellyCydippid_B.jpg) ![BioluminescentCombJellyCydippid audio-heiß (t=8)](img/BioluminescentCombJellyCydippid_C.jpg)
 
 
 ### BioluminescentForestCanopy
@@ -1521,6 +1962,15 @@ Lights the winged creature triangles generated by BioluminescentSwarm.comp with 
 ![BioluminescentSwarm ruhig (t=8)](img/BioluminescentSwarm_A.jpg) ![BioluminescentSwarm ruhig (t=16)](img/BioluminescentSwarm_B.jpg) ![BioluminescentSwarm audio-heiß (t=8)](img/BioluminescentSwarm_C.jpg)
 
 
+### BismuthFerriteMultiferroicDomains
+
+`Scene3D/BismuthFerriteMultiferroicDomains.frag` · type=scene3d · geom=quads · mood=bright,aggressive · complexity=3
+
+BISMUTH FERRITE MULTIFERROIC DOMAINS: 3D quad terraces of multiferroic domain walls in BiFeO3. Displays cross-coupled ferroelectric polarization terraces, conductive domain wall channels, metallic ceramic reflections, and photo texturing. audioAdvance -> switches ferroelectric domain wall polarization states audioKick -> flashes conductive domain wall nano-channel current pulses audioSwell -> thickens multiferroic te…
+
+![BismuthFerriteMultiferroicDomains ruhig (t=8)](img/BismuthFerriteMultiferroicDomains_A.jpg) ![BismuthFerriteMultiferroicDomains ruhig (t=16)](img/BismuthFerriteMultiferroicDomains_B.jpg) ![BismuthFerriteMultiferroicDomains audio-heiß (t=8)](img/BismuthFerriteMultiferroicDomains_C.jpg)
+
+
 ### BlackHole
 
 `Scene3D/BlackHole.frag` · type=scene3d · geom=points · mood=dark · complexity=2
@@ -1559,6 +2009,33 @@ BOSE-EINSTEIN VORTEX TANGLE: an ultracold condensate cloud of ruby/cyan quantum 
 ![BoseEinsteinVortexTangle ruhig (t=8)](img/BoseEinsteinVortexTangle_A.jpg) ![BoseEinsteinVortexTangle ruhig (t=16)](img/BoseEinsteinVortexTangle_B.jpg) ![BoseEinsteinVortexTangle audio-heiß (t=8)](img/BoseEinsteinVortexTangle_C.jpg)
 
 
+### BoySurfaceCrossCapImmersion
+
+`Scene3D/BoySurfaceCrossCapImmersion.frag` · type=scene3d · geom=grid · mood=bright,calm · complexity=3
+
+BOY SURFACE CROSS-CAP IMMERSION: 3D non-orientable immersion of the real projective plane RP^2 without singular points. Displays three-fold rotational symmetry, self-intersecting triple-point core, double-sided Fresnel glow, and continuous photo-palette texturing. audioAdvance -> rotates non-orientable surface sheets through 3D space audioKick -> flashes triple-point self-intersection contact core audioSwell -> enric…
+
+![BoySurfaceCrossCapImmersion ruhig (t=8)](img/BoySurfaceCrossCapImmersion_A.jpg) ![BoySurfaceCrossCapImmersion ruhig (t=16)](img/BoySurfaceCrossCapImmersion_B.jpg) ![BoySurfaceCrossCapImmersion audio-heiß (t=8)](img/BoySurfaceCrossCapImmersion_C.jpg)
+
+
+### CalabiYauSixDimensionalManifoldCrossSection
+
+`Scene3D/CalabiYauSixDimensionalManifoldCrossSection.frag` · type=scene3d · geom=grid · mood=bright,psychedelic · complexity=4
+
+CALABI-YAU SIX-DIMENSIONAL MANIFOLD CROSS SECTION: 220x120 heightfield grid of a 3D projection of a 6-dimensional Ricci-flat Calabi-Yau compactification manifold (quintic threefold). Toric folds, complex Käler metric modulations, glass specular sheen, and string-theory photo texturing. audioAdvance -> navigates complex structure moduli space deformation & rotation audioKick -> flashes singular conifold transition & m…
+
+![CalabiYauSixDimensionalManifoldCrossSection ruhig (t=8)](img/CalabiYauSixDimensionalManifoldCrossSection_A.jpg) ![CalabiYauSixDimensionalManifoldCrossSection ruhig (t=16)](img/CalabiYauSixDimensionalManifoldCrossSection_B.jpg) ![CalabiYauSixDimensionalManifoldCrossSection audio-heiß (t=8)](img/CalabiYauSixDimensionalManifoldCrossSection_C.jpg)
+
+
+### CarbonNanotubeChiralityArmchairZigzag
+
+`Scene3D/CarbonNanotubeChiralityArmchairZigzag.frag` · type=scene3d · geom=ribbon · mood=bright,calm · complexity=3
+
+CARBON NANOTUBE CHIRALITY ARMCHAIR ZIGZAG: Single-walled carbon nanotube (SWCNT) lattice with tunable chiral vector (n,m). Armchair, zigzag, and chiral helicities with ballistic 1D pi-electron conduction pulses, metallic sp2 luster, and photo texturing. audioAdvance -> drives ballistic pi-electron current drift & tube rotation audioKick -> flashes 1D Van Hove singularity electronic transition bursts audioSwell -> thi…
+
+![CarbonNanotubeChiralityArmchairZigzag ruhig (t=8)](img/CarbonNanotubeChiralityArmchairZigzag_A.jpg) ![CarbonNanotubeChiralityArmchairZigzag ruhig (t=16)](img/CarbonNanotubeChiralityArmchairZigzag_B.jpg) ![CarbonNanotubeChiralityArmchairZigzag audio-heiß (t=8)](img/CarbonNanotubeChiralityArmchairZigzag_C.jpg)
+
+
 ### CathedralGlass
 
 `Scene3D/CathedralGlass.frag` · type=scene3d · geom=indirect · mood=calm,bright · complexity=3
@@ -1586,6 +2063,15 @@ Shades a single point-sprite particle in a Cherenkov air-shower cascade as a sof
 CHIRAL LIQUID CRYSTAL (CHOLESTERIC): 20 helical director ribbons seen from the SIDE at a slow orbit - layered golden wave-sheets whose twist period (the cholesteric pitch) reads directly in the picture; Bragg colours come from the photo palette. audioAdvance -> orbit + helix twist audioKick -> ribbon width pitchP/twistP -> cholesteric pitch and twist rate
 
 ![ChiralLiquidCrystalCholesteric ruhig (t=8)](img/ChiralLiquidCrystalCholesteric_A.jpg) ![ChiralLiquidCrystalCholesteric ruhig (t=16)](img/ChiralLiquidCrystalCholesteric_B.jpg) ![ChiralLiquidCrystalCholesteric audio-heiß (t=8)](img/ChiralLiquidCrystalCholesteric_C.jpg)
+
+
+### Chladni3DAcousticLevitation
+
+`Scene3D/Chladni3DAcousticLevitation.frag` · type=scene3d · geom=cubes · mood=bright,calm · complexity=3
+
+CHLADNI 3D ACOUSTIC LEVITATION: 3D acoustic levitation in a multi-emitter ultrasound standing wave array. Hundreds of levitating microparticle clusters trap at 3D Chladni acoustic Gor'kov radiation force nodes with ultrasonic field glows and photo texturing. audioAdvance -> navigates 3D acoustic trap focal shifting & particle rotation audioKick -> flashes ultrasonic standing wave acoustic pressure antinode bursts aud…
+
+![Chladni3DAcousticLevitation ruhig (t=8)](img/Chladni3DAcousticLevitation_A.jpg) ![Chladni3DAcousticLevitation ruhig (t=16)](img/Chladni3DAcousticLevitation_B.jpg) ![Chladni3DAcousticLevitation audio-heiß (t=8)](img/Chladni3DAcousticLevitation_C.jpg)
 
 
 ### ChladniAcousticPlate
@@ -1662,6 +2148,33 @@ CosmicBoidsVortex.frag — Soft glowing 3D energy particle (additive blending).
 ![CosmicBoidsVortex ruhig (t=8)](img/CosmicBoidsVortex_A.jpg) ![CosmicBoidsVortex ruhig (t=16)](img/CosmicBoidsVortex_B.jpg) ![CosmicBoidsVortex audio-heiß (t=8)](img/CosmicBoidsVortex_C.jpg)
 
 
+### CosmicInflationaryTensorModes
+
+`Scene3D/CosmicInflationaryTensorModes.frag` · type=scene3d · geom=grid · mood=calm,dreamy,bright · complexity=3
+
+COSMIC INFLATIONARY TENSOR MODES: 220x120 heightfield grid of primordial gravitational wave tensor fluctuations from the inflationary epoch. Plus (+) and cross (x) polarization metric strains stretch and squeeze spacetime grid lines with cosmic microwave background photo texturing. audioAdvance -> propagates cosmological tensor gravitational wave perturbations audioKick -> flashes quantum metric fluctuation horizon r…
+
+![CosmicInflationaryTensorModes ruhig (t=8)](img/CosmicInflationaryTensorModes_A.jpg) ![CosmicInflationaryTensorModes ruhig (t=16)](img/CosmicInflationaryTensorModes_B.jpg) ![CosmicInflationaryTensorModes audio-heiß (t=8)](img/CosmicInflationaryTensorModes_C.jpg)
+
+
+### CosmicRayCherenkovAirShowerCascade
+
+`Scene3D/CosmicRayCherenkovAirShowerCascade.frag` · type=scene3d · geom=indirect · mood=aggressive,bright · complexity=5
+
+COSMIC RAY CHERENKOV AIR SHOWER CASCADE: Ultra-high-energy cosmic ray extensive air shower (EAS) cascade in the upper atmosphere. Relativistic secondary electron/positron avalanche, nitrogen fluorescence tracks, Cherenkov light cones, and atmospheric photo texturing. audioAdvance -> drives relativistic particle cascade propagation down atmospheric depth audioKick -> flashes shower maximum (X_max) catastrophic ionizat…
+
+![CosmicRayCherenkovAirShowerCascade ruhig (t=8)](img/CosmicRayCherenkovAirShowerCascade_A.jpg) ![CosmicRayCherenkovAirShowerCascade ruhig (t=16)](img/CosmicRayCherenkovAirShowerCascade_B.jpg) ![CosmicRayCherenkovAirShowerCascade audio-heiß (t=8)](img/CosmicRayCherenkovAirShowerCascade_C.jpg)
+
+
+### CosmicStringCuspKinkGravitationalRadiation
+
+`Scene3D/CosmicStringCuspKinkGravitationalRadiation.frag` · type=scene3d · geom=indirect · mood=aggressive,bright · complexity=5
+
+COSMIC STRING CUSP KINK GRAVITATIONAL RADIATION: Relativistic cosmic string loops formed in early universe phase transitions. Sub-luminal loop oscillations periodically form light-speed cusps and kinks, emitting beamed gravitational wave bursts and spacetime lensing halos. audioAdvance -> navigates relativistic string loop oscillation & cusp formation audioKick -> flashes light-speed cusp gravitational radiation burs…
+
+![CosmicStringCuspKinkGravitationalRadiation ruhig (t=8)](img/CosmicStringCuspKinkGravitationalRadiation_A.jpg) ![CosmicStringCuspKinkGravitationalRadiation ruhig (t=16)](img/CosmicStringCuspKinkGravitationalRadiation_B.jpg) ![CosmicStringCuspKinkGravitationalRadiation audio-heiß (t=8)](img/CosmicStringCuspKinkGravitationalRadiation_C.jpg)
+
+
 ### CosmicStringHyperspaceWeb
 
 `Scene3D/CosmicStringHyperspaceWeb.frag` · type=scene3d · geom=ribbon · mood=bright,aggressive · complexity=3
@@ -1669,6 +2182,24 @@ CosmicBoidsVortex.frag — Soft glowing 3D energy particle (additive blending).
 Fragment shader for the cosmic-string web ribbons: blends the per-vertex colour with a photo sample scrolling along the ribbon length, then adds a bright edge rim and a hot core beam down the ribbon centre. The scene's audio reactivity (string tension/vibration, kick jolts, swell, hue) is computed upstream in CosmicStringHyperspaceWeb.vert and arrives here baked into vCol; this stage only re-samples the slideshow pho…
 
 ![CosmicStringHyperspaceWeb ruhig (t=8)](img/CosmicStringHyperspaceWeb_A.jpg) ![CosmicStringHyperspaceWeb ruhig (t=16)](img/CosmicStringHyperspaceWeb_B.jpg) ![CosmicStringHyperspaceWeb audio-heiß (t=8)](img/CosmicStringHyperspaceWeb_C.jpg)
+
+
+### CosmicWebFilamentAnisotropy
+
+`Scene3D/CosmicWebFilamentAnisotropy.frag` · type=scene3d · geom=points · mood=calm,dark,dreamy · complexity=3
+
+COSMIC WEB FILAMENT ANISOTROPY: 60,000-particle large-scale dark matter structure. Intersecting cosmic web filaments connect massive galaxy cluster nodes with soft halo glow, gravitational lens distortions, and photo-derived cosmological spectra. audioAdvance -> drives cosmic expansion & large-scale structure flow audioKick -> flashes gravitational cluster merger shockwaves audioSwell -> enriches cosmic void backgrou…
+
+![CosmicWebFilamentAnisotropy ruhig (t=8)](img/CosmicWebFilamentAnisotropy_A.jpg) ![CosmicWebFilamentAnisotropy ruhig (t=16)](img/CosmicWebFilamentAnisotropy_B.jpg) ![CosmicWebFilamentAnisotropy audio-heiß (t=8)](img/CosmicWebFilamentAnisotropy_C.jpg)
+
+
+### CryogenicBrinicleStalactite
+
+`Scene3D/CryogenicBrinicleStalactite.frag` · type=scene3d · geom=indirect · mood=calm,dark,dreamy · complexity=4
+
+CRYOGENIC BRINICLE STALACTITE: Hollow ice stalactite tubes (brinicles) descending from polar sea ice into supercooled seawater. Freezing brine channels, benthic frost webs, refractive ice crystal glints, and polar deep ocean photo texturing. audioAdvance -> drives descending brine icicle growth & polar current drift audioKick -> flashes brittle ice crystal fracturing & spark glints audioSwell -> thickens hollow icicl…
+
+![CryogenicBrinicleStalactite ruhig (t=8)](img/CryogenicBrinicleStalactite_A.jpg) ![CryogenicBrinicleStalactite ruhig (t=16)](img/CryogenicBrinicleStalactite_B.jpg) ![CryogenicBrinicleStalactite audio-heiß (t=8)](img/CryogenicBrinicleStalactite_C.jpg)
 
 
 ### CryovolcanicIceGeysers
@@ -1761,6 +2292,15 @@ Frag-side music pulse (added by the deaf-scene pass: reactivity measured ~0 -- t
 ![CymaticsPlate ruhig (t=8)](img/CymaticsPlate_A.jpg) ![CymaticsPlate ruhig (t=16)](img/CymaticsPlate_B.jpg) ![CymaticsPlate audio-heiß (t=8)](img/CymaticsPlate_C.jpg)
 
 
+### DeepSeaHydrothermalChimneyPillar
+
+`Scene3D/DeepSeaHydrothermalChimneyPillar.frag` · type=scene3d · geom=grid · mood=dark,aggressive,calm · complexity=4
+
+DEEP SEA HYDROTHERMAL CHIMNEY PILLAR: Abyssal black smoker mineral chimney tower. 400C mineral-laden superheated hydrothermal fluid vents into near-freezing ocean water, precipitating anhydrite, chalcopyrite, and pyrite crystals with deep-sea photo texturing. audioAdvance -> drives hydrothermal fluid convective ascent & gas plume eruption audioKick -> flashes superheated hydrothermal steam cavitation bursts audioSwel…
+
+![DeepSeaHydrothermalChimneyPillar ruhig (t=8)](img/DeepSeaHydrothermalChimneyPillar_A.jpg) ![DeepSeaHydrothermalChimneyPillar ruhig (t=16)](img/DeepSeaHydrothermalChimneyPillar_B.jpg) ![DeepSeaHydrothermalChimneyPillar audio-heiß (t=8)](img/DeepSeaHydrothermalChimneyPillar_C.jpg)
+
+
 ### DeepSeaVentsEcosystem
 
 `Scene3D/DeepSeaVentsEcosystem.frag` · type=scene3d · geom=indirect · mood=calm,dark,dreamy · complexity=4
@@ -1777,6 +2317,15 @@ Lighting for a hydrothermal-vent ecosystem's particles: colours each one by spec
 Lighting for growing dendritic snow-crystal facets: mixes an icy- white core with a rainbow-dispersion tint per facet (vRefract), overlays a refracted slideshow photo through the ice, and scatters bright hashed specular sparkle glints across the surface. audioKick intensifies the sparkle glints, and the facet's rainbow tint (imgPalette) follows the musical key through audioChromaHue/audioAdvance with audioValence sha…
 
 ![DendriticSnowCrystal ruhig (t=8)](img/DendriticSnowCrystal_A.jpg) ![DendriticSnowCrystal ruhig (t=16)](img/DendriticSnowCrystal_B.jpg) ![DendriticSnowCrystal audio-heiß (t=8)](img/DendriticSnowCrystal_C.jpg)
+
+
+### DendriticSnowflakeIceCrystalHabit
+
+`Scene3D/DendriticSnowflakeIceCrystalHabit.frag` · type=scene3d · geom=grid · mood=calm,dreamy,bright · complexity=3
+
+DENDRITIC SNOWFLAKE ICE CRYSTAL HABIT: Hexagonal 6-fold dendritic snowflake growth (stellar dendrite / fernlike crystal habit). Non-linear diffusion-limited aggregation, faceted ice prism specular highlights, prismatic refraction, and cryogenic photo texturing. audioAdvance -> navigates supersaturated ice vapor diffusion & branch growth audioKick -> flashes ice crystal facet specular glints & diamond sparkles audioSw…
+
+![DendriticSnowflakeIceCrystalHabit ruhig (t=8)](img/DendriticSnowflakeIceCrystalHabit_A.jpg) ![DendriticSnowflakeIceCrystalHabit ruhig (t=16)](img/DendriticSnowflakeIceCrystalHabit_B.jpg) ![DendriticSnowflakeIceCrystalHabit audio-heiß (t=8)](img/DendriticSnowflakeIceCrystalHabit_C.jpg)
 
 
 ### Detonation
@@ -1808,6 +2357,24 @@ Lighting for a metasurface hologram made of nanopillar meta-atoms: discards outs
 ![DielectricMetasurfaceHologram ruhig (t=8)](img/DielectricMetasurfaceHologram_A.jpg) ![DielectricMetasurfaceHologram ruhig (t=16)](img/DielectricMetasurfaceHologram_B.jpg) ![DielectricMetasurfaceHologram audio-heiß (t=8)](img/DielectricMetasurfaceHologram_C.jpg)
 
 
+### DielectricResonatorMetagrating
+
+`Scene3D/DielectricResonatorMetagrating.frag` · type=scene3d · geom=quads · mood=bright,aggressive · complexity=3
+
+DIELECTRIC RESONATOR METAGRATING: 2D array of resonant high-refractive-index silicon dielectric nanopillars. High-Q electric and magnetic Mie dipole resonances, polarimetric phase retardation, diffraction beam splitting, and photo-derived optical texturing. audioAdvance -> navigates dielectric polarimetric phase wavefront translation audioKick -> flashes high-Q Mie dipole resonance optical transmission bursts audioSw…
+
+![DielectricResonatorMetagrating ruhig (t=8)](img/DielectricResonatorMetagrating_A.jpg) ![DielectricResonatorMetagrating ruhig (t=16)](img/DielectricResonatorMetagrating_B.jpg) ![DielectricResonatorMetagrating audio-heiß (t=8)](img/DielectricResonatorMetagrating_C.jpg)
+
+
+### DNAOrigamiNanotubeLattice
+
+`Scene3D/DNAOrigamiNanotubeLattice.frag` · type=scene3d · geom=ribbon · mood=bright,psychedelic · complexity=3
+
+DNA ORIGAMI NANOTUBE LATTICE: Bionanotechnological self-assembled 6-helix bundle DNA origami nanotube. Interweaving phosphoribosyl double helices, staple strand crossovers, Cy5/Cy3 fluorophore tagging pulses, and biomolecular photo texturing. audioAdvance -> drives DNA helicoidal rotation & molecular conformational dynamics audioKick -> flashes fluorophore Förster resonance energy transfer (FRET) bursts audioSwell ->…
+
+![DNAOrigamiNanotubeLattice ruhig (t=8)](img/DNAOrigamiNanotubeLattice_A.jpg) ![DNAOrigamiNanotubeLattice ruhig (t=16)](img/DNAOrigamiNanotubeLattice_B.jpg) ![DNAOrigamiNanotubeLattice audio-heiß (t=8)](img/DNAOrigamiNanotubeLattice_C.jpg)
+
+
 ### DragonFlight
 
 `Scene3D/DragonFlight.frag` · type=scene3d · geom=points · mood=aggressive,bright · complexity=2
@@ -1835,6 +2402,15 @@ Lighting for a Dyson-swarm solar-collector panel: discards outside a hexagonal b
 ![DysonSwarmSolarHarvester ruhig (t=8)](img/DysonSwarmSolarHarvester_A.jpg) ![DysonSwarmSolarHarvester ruhig (t=16)](img/DysonSwarmSolarHarvester_B.jpg) ![DysonSwarmSolarHarvester audio-heiß (t=8)](img/DysonSwarmSolarHarvester_C.jpg)
 
 
+### E8LieAlgebraRootLattice
+
+`Scene3D/E8LieAlgebraRootLattice.frag` · type=scene3d · geom=cubes · mood=aggressive,bright,psychedelic · complexity=4
+
+E8 LIE ALGEBRA ROOT LATTICE: 240 root vectors of the exceptional 8D Lie group E8, projected into 3D as rotatable faceted Gosset polytope cube clusters with sharp Bragg reflections, edge bevel glows, and dynamic photo-palette mapping. audioAdvance -> rotates 8D Lie algebra projection planes audioKick -> flashes root lattice Bragg diffraction resonance peaks audioSwell -> widens polytope cluster radius & facet luminanc…
+
+![E8LieAlgebraRootLattice ruhig (t=8)](img/E8LieAlgebraRootLattice_A.jpg) ![E8LieAlgebraRootLattice ruhig (t=16)](img/E8LieAlgebraRootLattice_B.jpg) ![E8LieAlgebraRootLattice audio-heiß (t=8)](img/E8LieAlgebraRootLattice_C.jpg)
+
+
 ### EchoSpiral
 
 `Scene3D/EchoSpiral.frag` · type=scene3d · geom=ribbon · mood=psychedelic,dreamy · complexity=1
@@ -1842,6 +2418,15 @@ Lighting for a Dyson-swarm solar-collector panel: discards outside a hexagonal b
 EchoSpiral.frag — wide soft band with a luminous centre line.
 
 ![EchoSpiral ruhig (t=8)](img/EchoSpiral_A.jpg) ![EchoSpiral ruhig (t=16)](img/EchoSpiral_B.jpg) ![EchoSpiral audio-heiß (t=8)](img/EchoSpiral_C.jpg)
+
+
+### EnneperMinimalSurfaceHyperfold
+
+`Scene3D/EnneperMinimalSurfaceHyperfold.frag` · type=scene3d · geom=grid · mood=calm,dreamy,bright · complexity=3
+
+ENNEPER MINIMAL SURFACE HYPERFOLD: 220x120 parametric grid of a higher-order self-intersecting Enneper minimal surface. Gaussian curvature shading, double-sided specular glints, and photo texturing mapped along isothermal coordinate patches. audioAdvance -> rotates isometric parameter domain through 3D space audioKick -> flashes Gaussian curvature focal point highlights audioSwell -> widens self-intersecting hyperfol…
+
+![EnneperMinimalSurfaceHyperfold ruhig (t=8)](img/EnneperMinimalSurfaceHyperfold_A.jpg) ![EnneperMinimalSurfaceHyperfold ruhig (t=16)](img/EnneperMinimalSurfaceHyperfold_B.jpg) ![EnneperMinimalSurfaceHyperfold audio-heiß (t=8)](img/EnneperMinimalSurfaceHyperfold_C.jpg)
 
 
 ### FeatherStorm
@@ -1889,6 +2474,15 @@ FlowRibbons.frag — thin, two-sided, iridescent. A ribbon has no inside, so bot
 ![FlowRibbons ruhig (t=8)](img/FlowRibbons_A.jpg) ![FlowRibbons ruhig (t=16)](img/FlowRibbons_B.jpg) ![FlowRibbons audio-heiß (t=8)](img/FlowRibbons_C.jpg)
 
 
+### FullereneC60BuckyballCrystalLattice
+
+`Scene3D/FullereneC60BuckyballCrystalLattice.frag` · type=scene3d · geom=cubes · mood=bright,calm · complexity=3
+
+FULLERENE C60 BUCKYBALL CRYSTAL LATTICE: Buckminsterfullerene C60 crystal lattice (fullerite). Truncated icosahedral carbon cages arranged in a 3D FCC crystal structure. Pentagonal/hexagonal ring vibrations, metallic carbon luster, and fullerene photo texturing. audioAdvance -> rotates fullerite crystal orientation & intramolecular cage tumbling audioKick -> flashes C60 intramolecular vibrational mode resonance burst…
+
+![FullereneC60BuckyballCrystalLattice ruhig (t=8)](img/FullereneC60BuckyballCrystalLattice_A.jpg) ![FullereneC60BuckyballCrystalLattice ruhig (t=16)](img/FullereneC60BuckyballCrystalLattice_B.jpg) ![FullereneC60BuckyballCrystalLattice audio-heiß (t=8)](img/FullereneC60BuckyballCrystalLattice_C.jpg)
+
+
 ### GalleryHall
 
 `Scene3D/GalleryHall.frag` · type=scene3d · geom=quads · mood=dark,calm · complexity=1
@@ -1916,6 +2510,15 @@ GEOMAGNETIC DYNAMO CORE: the flux-tube strings of a planetary dynamo - gold and 
 ![GeomagneticDynamoCore ruhig (t=8)](img/GeomagneticDynamoCore_A.jpg) ![GeomagneticDynamoCore ruhig (t=16)](img/GeomagneticDynamoCore_B.jpg) ![GeomagneticDynamoCore audio-heiß (t=8)](img/GeomagneticDynamoCore_C.jpg)
 
 
+### GeothermalFumaroleMineralSpires
+
+`Scene3D/GeothermalFumaroleMineralSpires.frag` · type=scene3d · geom=grid · mood=dark,aggressive,calm · complexity=4
+
+GEOTHERMAL FUMAROLE MINERAL SPIRES: Deep-sea hydrothermal vent chimneys and volcanic solfatara mineral towers. Sulfide mineral precipitations, superheated black smoker hydrothermal venting, mineral crust crystalline sheen, and geothermal photo texturing. audioAdvance -> drives hydrothermal fluid convective ascent & gas plume eruption audioKick -> flashes superheated hydrothermal steam cavitation bursts audioSwell -> …
+
+![GeothermalFumaroleMineralSpires ruhig (t=8)](img/GeothermalFumaroleMineralSpires_A.jpg) ![GeothermalFumaroleMineralSpires ruhig (t=16)](img/GeothermalFumaroleMineralSpires_B.jpg) ![GeothermalFumaroleMineralSpires audio-heiß (t=8)](img/GeothermalFumaroleMineralSpires_C.jpg)
+
+
 ### GlacierTessellation
 
 `Scene3D/GlacierTessellation.frag` · type=scene3d · geom=patches · mood=calm,bright · complexity=4
@@ -1934,6 +2537,15 @@ _(Vorschau eingeschränkt: Sim-Textur/Mehrpass — Bilder unterschätzen die ech
 GlassStack.frag — one shader, two very different jobs. In the opaque pass it writes an ordinary colour. In the transparent pass it writes into the two OIT accumulation targets instead, and what it writes is not a colour but a CONTRIBUTION: premultiplied colour times a weight, and the alpha that eats into the revealage. The weight is the whole technique. It has to fall off with depth so that nearer layers dominate — t…
 
 ![GlassStack ruhig (t=8)](img/GlassStack_A.jpg) ![GlassStack ruhig (t=16)](img/GlassStack_B.jpg) ![GlassStack audio-heiß (t=8)](img/GlassStack_C.jpg)
+
+
+### GrapheneGyroidTriplyPeriodicMinimalSurface
+
+`Scene3D/GrapheneGyroidTriplyPeriodicMinimalSurface.frag` · type=scene3d · geom=grid · mood=calm,dreamy,bright · complexity=3
+
+GRAPHENE GYROID TRIPLY PERIODIC MINIMAL SURFACE: 220x120 heightfield grid of a continuous 3D Gyroid minimal surface (TPMS). Endless interpenetrating non-self-intersecting labyrinth channels, sp2 carbon honeycomb sheen, and crystallographic photo texturing. audioAdvance -> navigates gyroid minimal surface isometric deformation & rotation audioKick -> flashes gyroid neck opening & saddle-point specular reflections audi…
+
+![GrapheneGyroidTriplyPeriodicMinimalSurface ruhig (t=8)](img/GrapheneGyroidTriplyPeriodicMinimalSurface_A.jpg) ![GrapheneGyroidTriplyPeriodicMinimalSurface ruhig (t=16)](img/GrapheneGyroidTriplyPeriodicMinimalSurface_B.jpg) ![GrapheneGyroidTriplyPeriodicMinimalSurface audio-heiß (t=8)](img/GrapheneGyroidTriplyPeriodicMinimalSurface_C.jpg)
 
 
 ### GrassField
@@ -1990,6 +2602,15 @@ Harmonograph.frag — a drawn line, not a lit object. The wire is thinner than t
 ![Harmonograph ruhig (t=8)](img/Harmonograph_A.jpg) ![Harmonograph ruhig (t=16)](img/Harmonograph_B.jpg) ![Harmonograph audio-heiß (t=8)](img/Harmonograph_C.jpg)
 
 
+### HelicoidMinimalSurfaceTunnel
+
+`Scene3D/HelicoidMinimalSurfaceTunnel.frag` · type=scene3d · geom=grid · mood=calm,dreamy,bright · complexity=3
+
+HELICOID MINIMAL SURFACE TUNNEL: 220x120 heightfield grid of an infinite double-helical minimal surface (the only ruled minimal surface besides the plane). Ruled spiral ramps, zero mean curvature lighting, specular sheen, and photo texturing. audioAdvance -> drives continuous helical winding & camera spiral advance audioKick -> flashes ruled line reflection glints & caustic highlights audioSwell -> widens minimal sur…
+
+![HelicoidMinimalSurfaceTunnel ruhig (t=8)](img/HelicoidMinimalSurfaceTunnel_A.jpg) ![HelicoidMinimalSurfaceTunnel ruhig (t=16)](img/HelicoidMinimalSurfaceTunnel_B.jpg) ![HelicoidMinimalSurfaceTunnel audio-heiß (t=8)](img/HelicoidMinimalSurfaceTunnel_C.jpg)
+
+
 ### HelixTower
 
 `Scene3D/HelixTower.frag` · type=scene3d · geom=points · mood=calm · complexity=2
@@ -2035,6 +2656,24 @@ Shades one strand of a Hopf-torus / Clifford-torus tube lattice: blends its per-
 ![HopfTorusCliffordKlein ruhig (t=8)](img/HopfTorusCliffordKlein_A.jpg) ![HopfTorusCliffordKlein ruhig (t=16)](img/HopfTorusCliffordKlein_B.jpg) ![HopfTorusCliffordKlein audio-heiß (t=8)](img/HopfTorusCliffordKlein_C.jpg)
 
 
+### HyperbolicHelicoidCatenaMinimalSheet
+
+`Scene3D/HyperbolicHelicoidCatenaMinimalSheet.frag` · type=scene3d · geom=grid · mood=calm,dreamy,bright · complexity=3
+
+HYPERBOLIC HELICOID CATENA MINIMAL SHEET: 220x120 heightfield grid of the continuous isometric Bonnet deformation between a catenoid and a helicoid. Zero mean curvature throughout deformation, saddle-point glass specular sheen, and minimal surface photo texturing. audioAdvance -> navigates Bonnet isometric morphing parameter & minimal surface rotation audioKick -> flashes minimal surface waist throat & helicoid ramp …
+
+![HyperbolicHelicoidCatenaMinimalSheet ruhig (t=8)](img/HyperbolicHelicoidCatenaMinimalSheet_A.jpg) ![HyperbolicHelicoidCatenaMinimalSheet ruhig (t=16)](img/HyperbolicHelicoidCatenaMinimalSheet_B.jpg) ![HyperbolicHelicoidCatenaMinimalSheet audio-heiß (t=8)](img/HyperbolicHelicoidCatenaMinimalSheet_C.jpg)
+
+
+### HyperbolicPseudosphereTractroid
+
+`Scene3D/HyperbolicPseudosphereTractroid.frag` · type=scene3d · geom=grid · mood=bright,calm · complexity=3
+
+HYPERBOLIC PSEUDOSPHERE TRACTROID: Pseudosphere of constant negative Gaussian curvature (K = -1, the surface of revolution of the tractrix). Flared trumpet horn cusps, hyperbolic geodesic streamlines, glass specular sheen, and non-Euclidean photo texturing. audioAdvance -> navigates hyperbolic tractrix geodesic flow & horn rotation audioKick -> flashes singular equator rim & cusp specular reflections audioSwell -> wi…
+
+![HyperbolicPseudosphereTractroid ruhig (t=8)](img/HyperbolicPseudosphereTractroid_A.jpg) ![HyperbolicPseudosphereTractroid ruhig (t=16)](img/HyperbolicPseudosphereTractroid_B.jpg) ![HyperbolicPseudosphereTractroid audio-heiß (t=8)](img/HyperbolicPseudosphereTractroid_C.jpg)
+
+
 ### HypercubeLatticePillars
 
 `Scene3D/HypercubeLatticePillars.frag` · type=scene3d · geom=cubes · mood=aggressive,bright · complexity=3
@@ -2042,6 +2681,15 @@ Shades one strand of a Hopf-torus / Clifford-torus tube lattice: blends its per-
 HypercubeLatticePillars.frag
 
 ![HypercubeLatticePillars ruhig (t=8)](img/HypercubeLatticePillars_A.jpg) ![HypercubeLatticePillars ruhig (t=16)](img/HypercubeLatticePillars_B.jpg) ![HypercubeLatticePillars audio-heiß (t=8)](img/HypercubeLatticePillars_C.jpg)
+
+
+### InterstellarMHDShockFront
+
+`Scene3D/InterstellarMHDShockFront.frag` · type=scene3d · geom=grid · mood=calm,bright · complexity=3
+
+INTERSTELLAR MHD SHOCK FRONT: 3D tessellated stellar wind bow shock front impacting a dense interstellar molecular cloud. Magnetohydrodynamic ripples, compression heating, emission lines, and dynamic photo-palette reflection sheets. audioAdvance -> drives supersonic stellar wind flow velocity audioKick -> flashes bow shock compression boundary detonations audioSwell -> thickens interstellar molecular cloud emission h…
+
+![InterstellarMHDShockFront ruhig (t=8)](img/InterstellarMHDShockFront_A.jpg) ![InterstellarMHDShockFront ruhig (t=16)](img/InterstellarMHDShockFront_B.jpg) ![InterstellarMHDShockFront audio-heiß (t=8)](img/InterstellarMHDShockFront_C.jpg)
 
 
 ### JellyBody
@@ -2096,6 +2744,15 @@ KelpForest.frag — soft blade: bright midrib, translucent edges.
 Shades a 220x120 heightfield of rolling cloud billows shaped by Kelvin-Helmholtz shear instability, lit as a sunset sky (dusk indigo troughs, amber crests, white cloud caps). The billow geometry, palette mixing and audio response (audioBass swelling the wave height, audioKick puffing the crests, audioChromaHue and hueP rotating the sky hue, audioLevel scaling brightness) are all computed upstream in KelvinHelmholtzCl…
 
 ![KelvinHelmholtzCloudWaves ruhig (t=8)](img/KelvinHelmholtzCloudWaves_A.jpg) ![KelvinHelmholtzCloudWaves ruhig (t=16)](img/KelvinHelmholtzCloudWaves_B.jpg) ![KelvinHelmholtzCloudWaves audio-heiß (t=8)](img/KelvinHelmholtzCloudWaves_C.jpg)
+
+
+### KelvinWakeShipWavePattern
+
+`Scene3D/KelvinWakeShipWavePattern.frag` · type=scene3d · geom=grid · mood=calm,bright,dreamy · complexity=3
+
+KELVIN WAKE SHIP WAVE PATTERN: 220x120 heightfield grid of the classical hydrodynamic Kelvin ship wake pattern. Divergent and transverse wave systems bounded by the universal 19.47-degree Mach wedge, foamy crest highlights, specular ocean sheen, and photo texturing. audioAdvance -> propels ship wake propagation & hydrodynamic phase velocity audioKick -> flashes wave crest foam cavitation & whitecap glints audioSwell …
+
+![KelvinWakeShipWavePattern ruhig (t=8)](img/KelvinWakeShipWavePattern_A.jpg) ![KelvinWakeShipWavePattern ruhig (t=16)](img/KelvinWakeShipWavePattern_B.jpg) ![KelvinWakeShipWavePattern audio-heiß (t=8)](img/KelvinWakeShipWavePattern_C.jpg)
 
 
 ### KineticMirrorHexagonArray
@@ -2170,6 +2827,33 @@ Shades one ribbon-tube segment of the strange-attractor flow traced in LorenzAtt
 ![LorenzAttractorTurbulence ruhig (t=8)](img/LorenzAttractorTurbulence_A.jpg) ![LorenzAttractorTurbulence ruhig (t=16)](img/LorenzAttractorTurbulence_B.jpg) ![LorenzAttractorTurbulence audio-heiß (t=8)](img/LorenzAttractorTurbulence_C.jpg)
 
 
+### LuttingerLiquidSpinChargeSeparation
+
+`Scene3D/LuttingerLiquidSpinChargeSeparation.frag` · type=scene3d · geom=ribbon · mood=calm,psychedelic · complexity=3
+
+LUTTINGER LIQUID SPIN-CHARGE SEPARATION: 1D quantum wire Tomonaga-Luttinger liquid. Electrons split into independent holon (charge) and spinon (spin) density waves propagating at different velocities along 3D ribbon channels with photo-palette interference. audioAdvance -> drives spinon/holon collective wave velocities audioKick -> flashes electron injection quantum tunnel pulses audioSwell -> widens 1D wire cross-se…
+
+![LuttingerLiquidSpinChargeSeparation ruhig (t=8)](img/LuttingerLiquidSpinChargeSeparation_A.jpg) ![LuttingerLiquidSpinChargeSeparation ruhig (t=16)](img/LuttingerLiquidSpinChargeSeparation_B.jpg) ![LuttingerLiquidSpinChargeSeparation audio-heiß (t=8)](img/LuttingerLiquidSpinChargeSeparation_C.jpg)
+
+
+### MagnetarCrustalQuakeAlfvenResonance
+
+`Scene3D/MagnetarCrustalQuakeAlfvenResonance.frag` · type=scene3d · geom=indirect · mood=aggressive,bright · complexity=5
+
+MAGNETAR CRUSTAL QUAKE ALFVÉN RESONANCE: Crustal fracture and global seismic oscillations on an ultrastrong magnetar (SGR / AXP). Relativistic shear fractures inject high-frequency torsional Alfven waves into the magnetosphere, igniting giant gamma-ray flare fireballs. audioAdvance -> drives magnetospheric Alfven wave propagation & crustal strain buildup audioKick -> flashes catastrophic crustal rupture & gamma-ray f…
+
+![MagnetarCrustalQuakeAlfvenResonance ruhig (t=8)](img/MagnetarCrustalQuakeAlfvenResonance_A.jpg) ![MagnetarCrustalQuakeAlfvenResonance ruhig (t=16)](img/MagnetarCrustalQuakeAlfvenResonance_B.jpg) ![MagnetarCrustalQuakeAlfvenResonance audio-heiß (t=8)](img/MagnetarCrustalQuakeAlfvenResonance_C.jpg)
+
+
+### MagnetoRotationalHypernovaInstability
+
+`Scene3D/MagnetoRotationalHypernovaInstability.frag` · type=scene3d · geom=indirect · mood=aggressive,bright · complexity=5
+
+MAGNETOROTATIONAL HYPERNOVA INSTABILITY: Relativistic bipolar plasma jets launched by core collapse in rapidly rotating magnetized hypernovae. Helical magnetic flux tubes, Alfven wave turbulences, magnetic reconnection flares, and synchrotron photo texturing. audioAdvance -> accelerates helical magnetic jet outflow & rotation rate audioKick -> ignites explosive magnetic reconnection flash detonations audioBass -> pul…
+
+![MagnetoRotationalHypernovaInstability ruhig (t=8)](img/MagnetoRotationalHypernovaInstability_A.jpg) ![MagnetoRotationalHypernovaInstability ruhig (t=16)](img/MagnetoRotationalHypernovaInstability_B.jpg) ![MagnetoRotationalHypernovaInstability audio-heiß (t=8)](img/MagnetoRotationalHypernovaInstability_C.jpg)
+
+
 ### Magnetosphere
 
 `Scene3D/Magnetosphere.frag` · type=scene3d · geom=indirect · mood=dark · complexity=4
@@ -2177,6 +2861,24 @@ Shades one ribbon-tube segment of the strange-attractor flow traced in LorenzAtt
 Magnetosphere.frag — a dark planet inside self-luminous plasma. The field lines are emissive, not lit: a plasma tube glows on its own and shading it like a solid would flatten it into wire. The planet is the opposite — nearly black, lit only by its star and by the field around it.
 
 ![Magnetosphere ruhig (t=8)](img/Magnetosphere_A.jpg) ![Magnetosphere ruhig (t=16)](img/Magnetosphere_B.jpg) ![Magnetosphere audio-heiß (t=8)](img/Magnetosphere_C.jpg)
+
+
+### MagnetotacticBacteriaChains
+
+`Scene3D/MagnetotacticBacteriaChains.frag` · type=scene3d · geom=cubes · mood=bright,psychedelic · complexity=3
+
+MAGNETOTACTIC BACTERIA CHAINS: Helical swimming chains of magnetotactic bacteria containing biomineralized magnetite nanocrystal cubes aligned along 3D geomagnetic field lines. Octahedral crystal faceting, magnetic dipole orientation glints, and photo texturing. audioAdvance -> drives swimming flagellar propulsion & helical precession audioKick -> flashes magnetic dipole alignment specular glints audioSwell -> thicke…
+
+![MagnetotacticBacteriaChains ruhig (t=8)](img/MagnetotacticBacteriaChains_A.jpg) ![MagnetotacticBacteriaChains ruhig (t=16)](img/MagnetotacticBacteriaChains_B.jpg) ![MagnetotacticBacteriaChains audio-heiß (t=8)](img/MagnetotacticBacteriaChains_C.jpg)
+
+
+### MajoranaNanowireBraiding
+
+`Scene3D/MajoranaNanowireBraiding.frag` · type=scene3d · geom=ribbon · mood=bright,psychedelic · complexity=3
+
+MAJORANA NANOWIRE BRAIDING: Topological quantum computing braid worldlines. 1D topological superconductor nanowires undergo non-Abelian braiding permutations in 3D spacetime, carrying localized Majorana zero modes at wire endpoints with photo texturing. audioAdvance -> drives non-Abelian braiding worldline evolution velocity audioKick -> flashes Majorana zero mode quantum gate operation bursts audioSwell -> thickens …
+
+![MajoranaNanowireBraiding ruhig (t=8)](img/MajoranaNanowireBraiding_A.jpg) ![MajoranaNanowireBraiding ruhig (t=16)](img/MajoranaNanowireBraiding_B.jpg) ![MajoranaNanowireBraiding audio-heiß (t=8)](img/MajoranaNanowireBraiding_C.jpg)
 
 
 ### MandalaGrid
@@ -2300,6 +3002,24 @@ NON-EUCLIDEAN DODECAHEDRON LOOM: glowing thread-loops woven around dodecahedral 
 ![NonEuclideanDodecahedronLoom ruhig (t=8)](img/NonEuclideanDodecahedronLoom_A.jpg) ![NonEuclideanDodecahedronLoom ruhig (t=16)](img/NonEuclideanDodecahedronLoom_B.jpg) ![NonEuclideanDodecahedronLoom audio-heiß (t=8)](img/NonEuclideanDodecahedronLoom_C.jpg)
 
 
+### NonEuclideanKleinQuarticTile
+
+`Scene3D/NonEuclideanKleinQuarticTile.frag` · type=scene3d · geom=grid · mood=bright,calm · complexity=3
+
+NON-EUCLIDEAN KLEIN QUARTIC TILE: Hyperbolic tiling of the Klein quartic Riemann surface (genus 3) by 24 regular heptagons with PSL(2,7) symmetry group of order 168. Features glassy hyperbolic heptagon facets, specular reflections, and photo-derived geometric texturing. audioAdvance -> drives non-Euclidean hyperbolic geodesic isometry flow audioKick -> flashes specular facet reflections & symmetry axis pulses audioSw…
+
+![NonEuclideanKleinQuarticTile ruhig (t=8)](img/NonEuclideanKleinQuarticTile_A.jpg) ![NonEuclideanKleinQuarticTile ruhig (t=16)](img/NonEuclideanKleinQuarticTile_B.jpg) ![NonEuclideanKleinQuarticTile audio-heiß (t=8)](img/NonEuclideanKleinQuarticTile_C.jpg)
+
+
+### NonlinearLaserPlasmaWakefieldAccelerator
+
+`Scene3D/NonlinearLaserPlasmaWakefieldAccelerator.frag` · type=scene3d · geom=ribbon · mood=aggressive,bright · complexity=4
+
+NONLINEAR LASER PLASMA WAKEFIELD ACCELERATOR: Laser plasma wakefield acceleration (LWFA) in the non-linear bubble (blowout) regime. Relativistic laser ponderomotive force expels ambient electrons, creating a spherical accelerating ion bubble with trapped GeV electron bunch injection. audioAdvance -> accelerates laser pulse & accelerating cavity co-moving frame drift audioKick -> flashes relativistic electron self-inj…
+
+![NonlinearLaserPlasmaWakefieldAccelerator ruhig (t=8)](img/NonlinearLaserPlasmaWakefieldAccelerator_A.jpg) ![NonlinearLaserPlasmaWakefieldAccelerator ruhig (t=16)](img/NonlinearLaserPlasmaWakefieldAccelerator_B.jpg) ![NonlinearLaserPlasmaWakefieldAccelerator audio-heiß (t=8)](img/NonlinearLaserPlasmaWakefieldAccelerator_C.jpg)
+
+
 ### Ocean
 
 `Scene3D/Ocean.frag` · type=scene3d · geom=patches · mood=calm · complexity=3
@@ -2383,6 +3103,15 @@ PhotoCarousel.frag — each card is a seeded crop of the current image with a th
 ![PhotoCarousel ruhig (t=8)](img/PhotoCarousel_A.jpg) ![PhotoCarousel ruhig (t=16)](img/PhotoCarousel_B.jpg) ![PhotoCarousel audio-heiß (t=8)](img/PhotoCarousel_C.jpg)
 
 
+### PhotonicChiralMetamaterialGyroidHelix
+
+`Scene3D/PhotonicChiralMetamaterialGyroidHelix.frag` · type=scene3d · geom=ribbon · mood=bright,psychedelic · complexity=3
+
+PHOTONIC CHIRAL METAMATERIAL GYROID HELIX: 3D chiral metamaterial micro-helix array. Helical metallic nano-springs exhibit giant circular dichroism and optical activity, selectively transmitting left vs right circularly polarized light with chiral plasmonic photo texturing. audioAdvance -> rotates chiral micro-helices & optical polarization rotation angle audioKick -> flashes circular dichroism resonance & plasmonic …
+
+![PhotonicChiralMetamaterialGyroidHelix ruhig (t=8)](img/PhotonicChiralMetamaterialGyroidHelix_A.jpg) ![PhotonicChiralMetamaterialGyroidHelix ruhig (t=16)](img/PhotonicChiralMetamaterialGyroidHelix_B.jpg) ![PhotonicChiralMetamaterialGyroidHelix audio-heiß (t=8)](img/PhotonicChiralMetamaterialGyroidHelix_C.jpg)
+
+
 ### PhotonicCrystalFiberCore
 
 `Scene3D/PhotonicCrystalFiberCore.frag` · type=scene3d · geom=cubes · mood=bright,psychedelic · complexity=3
@@ -2390,6 +3119,15 @@ PhotoCarousel.frag — each card is a seeded crop of the current image with a th
 PHOTONIC CRYSTAL FIBER CORE: the cross-section lattice of a holey fiber (hexagonal cladding, hollow core) slowly rolling; LIGHT PULSES race down the guided core on the kick, supercontinuum colours from the photo arc. audioKick -> guided light pulse audioPhase -> supercontinuum drift time -> slow roll around the fiber axis
 
 ![PhotonicCrystalFiberCore ruhig (t=8)](img/PhotonicCrystalFiberCore_A.jpg) ![PhotonicCrystalFiberCore ruhig (t=16)](img/PhotonicCrystalFiberCore_B.jpg) ![PhotonicCrystalFiberCore audio-heiß (t=8)](img/PhotonicCrystalFiberCore_C.jpg)
+
+
+### PhotonicTopologicalEdgeStates
+
+`Scene3D/PhotonicTopologicalEdgeStates.frag` · type=scene3d · geom=ribbon · mood=bright,psychedelic · complexity=3
+
+PHOTONIC TOPOLOGICAL EDGE STATES: 3D ribbon lattice of coupled optical waveguides. Demonstrates robust, backscattering-immune topological edge currents routing light pulses around defects, with core laser pulses and iridescent photo texturing. audioAdvance -> drives edge current photon propagation velocity audioKick -> flashes high-energy laser pulse injection bursts audioSwell -> thickens waveguide ribbon width & cl…
+
+![PhotonicTopologicalEdgeStates ruhig (t=8)](img/PhotonicTopologicalEdgeStates_A.jpg) ![PhotonicTopologicalEdgeStates ruhig (t=16)](img/PhotonicTopologicalEdgeStates_B.jpg) ![PhotonicTopologicalEdgeStates audio-heiß (t=8)](img/PhotonicTopologicalEdgeStates_C.jpg)
 
 
 ### PhotoShatter
@@ -2493,6 +3231,15 @@ PLASMA VORTEX GRID: a glowing funnel grid swirled by a TRAVELING SPIRAL WAVE (ri
 ![PlasmaVortexGrid ruhig (t=8)](img/PlasmaVortexGrid_A.jpg) ![PlasmaVortexGrid ruhig (t=16)](img/PlasmaVortexGrid_B.jpg) ![PlasmaVortexGrid audio-heiß (t=8)](img/PlasmaVortexGrid_C.jpg)
 
 
+### PolaritonCondensateVortexLattice
+
+`Scene3D/PolaritonCondensateVortexLattice.frag` · type=scene3d · geom=grid · mood=calm,dreamy,bright · complexity=3
+
+POLARITON CONDENSATE VORTEX LATTICE: 220x120 heightfield grid of an exciton-polariton quantum condensate. Quantized vortices create macroscopic phase dislocations, superfluid density dips, Bogoliubov phonon ripples, and dynamic photo-palette interference. audioAdvance -> integrates macroscopic polariton condensate phase evolution audioKick -> excites quantized vortex-antivortex pair creation bursts audioSwell -> lift…
+
+![PolaritonCondensateVortexLattice ruhig (t=8)](img/PolaritonCondensateVortexLattice_A.jpg) ![PolaritonCondensateVortexLattice ruhig (t=16)](img/PolaritonCondensateVortexLattice_B.jpg) ![PolaritonCondensateVortexLattice audio-heiß (t=8)](img/PolaritonCondensateVortexLattice_C.jpg)
+
+
 ### PolyDance
 
 `Scene3D/PolyDance.frag` · type=scene3d · geom=cubes · mood=bright,aggressive · complexity=3
@@ -2520,6 +3267,15 @@ PrismExplode.frag — real dispersion, from Cauchy's equation. A prism makes a s
 ![PrismExplode ruhig (t=8)](img/PrismExplode_A.jpg) ![PrismExplode ruhig (t=16)](img/PrismExplode_B.jpg) ![PrismExplode audio-heiß (t=8)](img/PrismExplode_C.jpg)
 
 
+### QuantumHallEdgeChiralRibbon
+
+`Scene3D/QuantumHallEdgeChiralRibbon.frag` · type=scene3d · geom=ribbon · mood=bright,calm · complexity=3
+
+QUANTUM HALL EDGE CHIRAL RIBBON: Topologically protected 1D chiral edge channels in the integer and fractional Quantum Hall effects. Dissipationless skipping orbits, quantized Hall conductance plates, ballistic wavepacket pulses, and photo texturing. audioAdvance -> accelerates chiral electron skipping orbit velocity along boundary audioKick -> flashes quantized Hall conductance plateau transition bursts audioSwell -…
+
+![QuantumHallEdgeChiralRibbon ruhig (t=8)](img/QuantumHallEdgeChiralRibbon_A.jpg) ![QuantumHallEdgeChiralRibbon ruhig (t=16)](img/QuantumHallEdgeChiralRibbon_B.jpg) ![QuantumHallEdgeChiralRibbon audio-heiß (t=8)](img/QuantumHallEdgeChiralRibbon_C.jpg)
+
+
 ### QuantumHallEdgeCurrents
 
 `Scene3D/QuantumHallEdgeCurrents.frag` · type=scene3d · geom=ribbon · mood=bright,calm · complexity=3
@@ -2536,6 +3292,15 @@ Shades the 20 chiral edge-current ribbons of the Quantum Hall scene: a soft-edge
 QUANTUM QUBIT ARRAY: a 70x70 quantum-processor die seen from above - thousands of Josephson qubit plates whose Bloch rotations ripple across the chip in waves, gold circuit substrate beneath. audioSpectrum -> plate heights by band audioKick -> gate-flip wave audioBass -> overall lift (state colours from the photo palette)
 
 ![QuantumQubitArray ruhig (t=8)](img/QuantumQubitArray_A.jpg) ![QuantumQubitArray ruhig (t=16)](img/QuantumQubitArray_B.jpg) ![QuantumQubitArray audio-heiß (t=8)](img/QuantumQubitArray_C.jpg)
+
+
+### QuantumSpinLiquidKagomeSpinonLattice
+
+`Scene3D/QuantumSpinLiquidKagomeSpinonLattice.frag` · type=scene3d · geom=points · mood=calm,psychedelic · complexity=3
+
+QUANTUM SPIN LIQUID KAGOME SPINON LATTICE: 60,000 geometrically frustrated quantum spins in a Kagome-pyrochlore lattice (Herbertsmithite). Long-range quantum entanglement prevents magnetic ordering down to absolute zero, hosting fractionalized spinon excitations and emergent gauge fields. audioAdvance -> navigates spinon continuum dispersion & emergent gauge field fluctuations audioKick -> flashes fractionalized spin…
+
+![QuantumSpinLiquidKagomeSpinonLattice ruhig (t=8)](img/QuantumSpinLiquidKagomeSpinonLattice_A.jpg) ![QuantumSpinLiquidKagomeSpinonLattice ruhig (t=16)](img/QuantumSpinLiquidKagomeSpinonLattice_B.jpg) ![QuantumSpinLiquidKagomeSpinonLattice audio-heiß (t=8)](img/QuantumSpinLiquidKagomeSpinonLattice_C.jpg)
 
 
 ### QuantumVortexField
@@ -2556,6 +3321,24 @@ Additive point-sprite shader for a cloud of particles representing a superposed 
 ![QuantumWavepacketCollapse ruhig (t=8)](img/QuantumWavepacketCollapse_A.jpg) ![QuantumWavepacketCollapse ruhig (t=16)](img/QuantumWavepacketCollapse_B.jpg) ![QuantumWavepacketCollapse audio-heiß (t=8)](img/QuantumWavepacketCollapse_C.jpg)
 
 
+### QuasicrystalPenroseRhomb3D
+
+`Scene3D/QuasicrystalPenroseRhomb3D.frag` · type=scene3d · geom=cubes · mood=bright,psychedelic · complexity=4
+
+QUASICRYSTAL PENROSE RHOMB 3D: 3D icosahedral Penrose quasicrystal (Ammann-Kramer-Neri tiling). Rhombohedral building blocks with 5-fold non-crystallographic aperiodic order, Bragg diffraction glints, golden ratio shell scaling, and photo texturing. audioAdvance -> rotates 6D-to-3D projection slice & aperiodic phason dynamics audioKick -> flashes 5-fold Bragg diffraction specular reflections audioSwell -> thickens rh…
+
+![QuasicrystalPenroseRhomb3D ruhig (t=8)](img/QuasicrystalPenroseRhomb3D_A.jpg) ![QuasicrystalPenroseRhomb3D ruhig (t=16)](img/QuasicrystalPenroseRhomb3D_B.jpg) ![QuasicrystalPenroseRhomb3D audio-heiß (t=8)](img/QuasicrystalPenroseRhomb3D_C.jpg)
+
+
+### RadiolarianMicrotubuleExoskeleton
+
+`Scene3D/RadiolarianMicrotubuleExoskeleton.frag` · type=scene3d · geom=indirect · mood=calm,dreamy,bright · complexity=4
+
+RADIOLARIAN MICROTUBULE EXOSKELETON: Intricate geometric silica micro-exoskeleton of deep-sea radiolaria. 3D compute-generated porous icosahedral lattices, radiating axopodia spicules, iridescent biosilica glass refraction, and photo texturing. audioAdvance -> rotates silica skeleton lattice & axopodia fluid flow audioKick -> flashes cytoplasmic bioluminescence & spicule tip glints audioSwell -> swells concentric ico…
+
+![RadiolarianMicrotubuleExoskeleton ruhig (t=8)](img/RadiolarianMicrotubuleExoskeleton_A.jpg) ![RadiolarianMicrotubuleExoskeleton ruhig (t=16)](img/RadiolarianMicrotubuleExoskeleton_B.jpg) ![RadiolarianMicrotubuleExoskeleton audio-heiß (t=8)](img/RadiolarianMicrotubuleExoskeleton_C.jpg)
+
+
 ### RadiolarianSilicaLattice
 
 `Scene3D/RadiolarianSilicaLattice.frag` · type=scene3d · geom=quads · mood=bright,calm,dreamy · complexity=3
@@ -2572,6 +3355,15 @@ RADIOLARIAN SILICA LATTICE: concentric glass micro-skeleton shells rotating agai
 RainOnWater.frag — ink-dark water, ripple rings caught by a low moon, its long reflection trembling where the rings pass.
 
 ![RainOnWater ruhig (t=8)](img/RainOnWater_A.jpg) ![RainOnWater ruhig (t=16)](img/RainOnWater_B.jpg) ![RainOnWater audio-heiß (t=8)](img/RainOnWater_C.jpg)
+
+
+### RelativisticAccretionTorusMHD
+
+`Scene3D/RelativisticAccretionTorusMHD.frag` · type=scene3d · geom=grid · mood=aggressive,bright · complexity=4
+
+RELATIVISTIC ACCRETION TORUS MHD: Thick geometrically-inflated accretion torus (Polish Donut) around a Kerr black hole. Relativistic Doppler beaming boost, turbulent magnetohydrodynamic spiral ripples, event horizon shadow illumination, and photo texturing. audioAdvance -> drives Keplerian accretion orbital rotation velocity audioKick -> flashes magnetic reconnection flares & relativistic plasma hot spots audioSwell …
+
+![RelativisticAccretionTorusMHD ruhig (t=8)](img/RelativisticAccretionTorusMHD_A.jpg) ![RelativisticAccretionTorusMHD ruhig (t=16)](img/RelativisticAccretionTorusMHD_B.jpg) ![RelativisticAccretionTorusMHD audio-heiß (t=8)](img/RelativisticAccretionTorusMHD_C.jpg)
 
 
 ### RibbonTunnel
@@ -2601,6 +3393,15 @@ RoseOrbit.frag — soft glowing point (additive blending).
 ![RoseOrbit ruhig (t=8)](img/RoseOrbit_A.jpg) ![RoseOrbit ruhig (t=16)](img/RoseOrbit_B.jpg) ![RoseOrbit audio-heiß (t=8)](img/RoseOrbit_C.jpg)
 
 
+### RydbergAtomQuantumSimulatorArray
+
+`Scene3D/RydbergAtomQuantumSimulatorArray.frag` · type=scene3d · geom=points · mood=calm,bright,dreamy · complexity=3
+
+RYDBERG ATOM QUANTUM SIMULATOR ARRAY: 60,000 neutral alkali atoms trapped in a 3D optical tweezer array. Laser driving to high principal quantum number Rydberg states (n ~ 70) creates strong Van der Waals Rydberg blockade interactions, crystalline quantum states, and photo texturing. audioAdvance -> navigates Rabi frequency detuning & quantum simulator adiabatic sweeps audioKick -> flashes collective Rydberg excitati…
+
+![RydbergAtomQuantumSimulatorArray ruhig (t=8)](img/RydbergAtomQuantumSimulatorArray_A.jpg) ![RydbergAtomQuantumSimulatorArray ruhig (t=16)](img/RydbergAtomQuantumSimulatorArray_B.jpg) ![RydbergAtomQuantumSimulatorArray audio-heiß (t=8)](img/RydbergAtomQuantumSimulatorArray_C.jpg)
+
+
 ### SandDuneBarchanMigration
 
 `Scene3D/SandDuneBarchanMigration.frag` · type=scene3d · geom=grid · mood=calm,dreamy,bright · complexity=3
@@ -2619,6 +3420,15 @@ _(Vorschau eingeschränkt: Sim-Textur/Mehrpass — Bilder unterschätzen die ech
 Frag-side music pulse (added by the deaf-scene pass: reactivity measured ~0 -- the vert-side coupling barely moved any pixels).
 
 ![SciFiHUD ruhig (t=8)](img/SciFiHUD_A.jpg) ![SciFiHUD ruhig (t=16)](img/SciFiHUD_B.jpg) ![SciFiHUD audio-heiß (t=8)](img/SciFiHUD_C.jpg)
+
+
+### SeifertSurfaceBraidKnot
+
+`Scene3D/SeifertSurfaceBraidKnot.frag` · type=scene3d · geom=ribbon · mood=bright,psychedelic · complexity=3
+
+SEIFERT SURFACE BRAID KNOT: 3D orientable minimal surface bounded by a complex (3,5) torus braid knot. Interlocking mathematical ribbons, normal sheen, edge glints, and photo texturing flowing along topological geodesics. audioAdvance -> navigates ribbon trajectory through torus knot loops audioKick -> flashes ribbon edge specular reflection glints audioSwell -> widens Seifert ribbon width & subsurface translucency a…
+
+![SeifertSurfaceBraidKnot ruhig (t=8)](img/SeifertSurfaceBraidKnot_A.jpg) ![SeifertSurfaceBraidKnot ruhig (t=16)](img/SeifertSurfaceBraidKnot_B.jpg) ![SeifertSurfaceBraidKnot audio-heiß (t=8)](img/SeifertSurfaceBraidKnot_C.jpg)
 
 
 ### ShadowForest
@@ -2677,6 +3487,15 @@ SmokeHall.frag — stone in the opaque pass, participating medium in the transpa
 SnowDrift.frag — soft glowing point (additive blending).
 
 ![SnowDrift ruhig (t=8)](img/SnowDrift_A.jpg) ![SnowDrift ruhig (t=16)](img/SnowDrift_B.jpg) ![SnowDrift audio-heiß (t=8)](img/SnowDrift_C.jpg)
+
+
+### SolarProminenceHelicalMagneticRope
+
+`Scene3D/SolarProminenceHelicalMagneticRope.frag` · type=scene3d · geom=ribbon · mood=aggressive,bright · complexity=3
+
+SOLAR PROMINENCE HELICAL MAGNETIC ROPE: Arching solar coronal magnetic flux rope supporting dense chromospheric plasma. Torsional magnetic helicity, kink instabilities, coronal mass ejection (CME) flare reconnection bursts, and extreme ultraviolet solar photo texturing. audioAdvance -> navigates solar prominence magnetic flux rope ascent & twist rotation audioKick -> flashes solar flare magnetic reconnection & corona…
+
+![SolarProminenceHelicalMagneticRope ruhig (t=8)](img/SolarProminenceHelicalMagneticRope_A.jpg) ![SolarProminenceHelicalMagneticRope ruhig (t=16)](img/SolarProminenceHelicalMagneticRope_B.jpg) ![SolarProminenceHelicalMagneticRope audio-heiß (t=8)](img/SolarProminenceHelicalMagneticRope_C.jpg)
 
 
 ### SolarSailArmada
@@ -2753,6 +3572,15 @@ SpectrumCity.frag — night city. Almost all of the light in the frame comes fro
 ![SpectrumCity ruhig (t=8)](img/SpectrumCity_A.jpg) ![SpectrumCity ruhig (t=16)](img/SpectrumCity_B.jpg) ![SpectrumCity audio-heiß (t=8)](img/SpectrumCity_C.jpg)
 
 
+### SpinGlassFrustrationLattice
+
+`Scene3D/SpinGlassFrustrationLattice.frag` · type=scene3d · geom=points · mood=calm,psychedelic · complexity=3
+
+SPIN GLASS FRUSTRATION LATTICE: 60,000 geometrically frustrated electron spins on a 3D Kagome/pyrochlore lattice. Complex energy landscapes, non-ergodic aging dynamics, Barkhausen spin-flip avalanches, and photo-derived magnetic order texturing. audioAdvance -> navigates non-ergodic spin-glass energy landscape valley transitions audioKick -> flashes macroscopic Barkhausen spin-flip avalanche avalanches audioSwell -> …
+
+![SpinGlassFrustrationLattice ruhig (t=8)](img/SpinGlassFrustrationLattice_A.jpg) ![SpinGlassFrustrationLattice ruhig (t=16)](img/SpinGlassFrustrationLattice_B.jpg) ![SpinGlassFrustrationLattice audio-heiß (t=8)](img/SpinGlassFrustrationLattice_C.jpg)
+
+
 ### SpiralArray
 
 `Scene3D/SpiralArray.frag` · type=scene3d · geom=points · mood=dreamy,bright · complexity=2
@@ -2789,6 +3617,24 @@ StrangeAttractor.frag — soft additive glow sprite; the attractor's strands sum
 ![StrangeAttractor ruhig (t=8)](img/StrangeAttractor_A.jpg) ![StrangeAttractor ruhig (t=16)](img/StrangeAttractor_B.jpg) ![StrangeAttractor audio-heiß (t=8)](img/StrangeAttractor_C.jpg)
 
 
+### SubglacialVolcanicPillowLava
+
+`Scene3D/SubglacialVolcanicPillowLava.frag` · type=scene3d · geom=grid · mood=dark,aggressive,calm · complexity=4
+
+SUBGLACIAL VOLCANIC PILLOW LAVA: 220x120 heightfield grid of basaltic pillow lava extruding under glacial ice sheets. Glassy quenching basalt crust, incandescent magma fissure glows, hydrothermal steam cavitation, and photo texturing. audioAdvance -> drives subglacial lava lobe extrusion & spreading audioKick -> fractures glassy basalt crust with molten magma flashes audioSwell -> widens incandescent fissure thicknes…
+
+![SubglacialVolcanicPillowLava ruhig (t=8)](img/SubglacialVolcanicPillowLava_A.jpg) ![SubglacialVolcanicPillowLava ruhig (t=16)](img/SubglacialVolcanicPillowLava_B.jpg) ![SubglacialVolcanicPillowLava audio-heiß (t=8)](img/SubglacialVolcanicPillowLava_C.jpg)
+
+
+### SuperconductingFluxoniumQubitCircuit
+
+`Scene3D/SuperconductingFluxoniumQubitCircuit.frag` · type=scene3d · geom=ribbon · mood=bright,psychedelic · complexity=3
+
+SUPERCONDUCTING FLUXONIUM QUBIT CIRCUIT: Fluxonium superconducting quantum circuit. Small Josephson junction shunted by a high-inductance array of larger Josephson junctions (superinductance). Quantum phase slips, microwave gate pulses, and niobium metallic photo texturing. audioAdvance -> navigates external magnetic flux bias evolution & qubit rotation audioKick -> flashes microwave quantum gate transitions & phase-…
+
+![SuperconductingFluxoniumQubitCircuit ruhig (t=8)](img/SuperconductingFluxoniumQubitCircuit_A.jpg) ![SuperconductingFluxoniumQubitCircuit ruhig (t=16)](img/SuperconductingFluxoniumQubitCircuit_B.jpg) ![SuperconductingFluxoniumQubitCircuit audio-heiß (t=8)](img/SuperconductingFluxoniumQubitCircuit_C.jpg)
+
+
 ### SuperconductingFluxVortex
 
 `Scene3D/SuperconductingFluxVortex.frag` · type=scene3d · geom=indirect · mood=bright,calm · complexity=4
@@ -2796,6 +3642,15 @@ StrangeAttractor.frag — soft additive glow sprite; the attractor's strands sum
 SuperconductingFluxVortex.frag
 
 ![SuperconductingFluxVortex ruhig (t=8)](img/SuperconductingFluxVortex_A.jpg) ![SuperconductingFluxVortex ruhig (t=16)](img/SuperconductingFluxVortex_B.jpg) ![SuperconductingFluxVortex audio-heiß (t=8)](img/SuperconductingFluxVortex_C.jpg)
+
+
+### SuperconductingLevitationMeissnerPinch
+
+`Scene3D/SuperconductingLevitationMeissnerPinch.frag` · type=scene3d · geom=grid · mood=bright,calm · complexity=3
+
+SUPERCONDUCTING LEVITATION MEISSNER PINCH: Stable magnetic levitation via Meissner-Ochsenfeld effect and flux pinning over a high-Tc YBCO superconducting disc. Expelled magnetic flux lines, fluxon vortex pinning channels, metallic mirror sheen, and cryogenic photo texturing. audioAdvance -> navigates magnetic flux pinning creep & levitating magnet precession audioKick -> flashes magnetic flux expulsion compression & …
+
+![SuperconductingLevitationMeissnerPinch ruhig (t=8)](img/SuperconductingLevitationMeissnerPinch_A.jpg) ![SuperconductingLevitationMeissnerPinch ruhig (t=16)](img/SuperconductingLevitationMeissnerPinch_B.jpg) ![SuperconductingLevitationMeissnerPinch audio-heiß (t=8)](img/SuperconductingLevitationMeissnerPinch_C.jpg)
 
 
 ### SuperconductingQubitResonator
@@ -2807,6 +3662,15 @@ SUPERCONDUCTING QUBIT RESONATOR: microwave standing waves meandering along a sup
 ![SuperconductingQubitResonator ruhig (t=8)](img/SuperconductingQubitResonator_A.jpg) ![SuperconductingQubitResonator ruhig (t=16)](img/SuperconductingQubitResonator_B.jpg) ![SuperconductingQubitResonator audio-heiß (t=8)](img/SuperconductingQubitResonator_C.jpg)
 
 
+### SuperconductingVortexLatticeMelting
+
+`Scene3D/SuperconductingVortexLatticeMelting.frag` · type=scene3d · geom=points · mood=calm,dark,dreamy · complexity=3
+
+SUPERCONDUCTING VORTEX LATTICE MELTING: 60,000 magnetic flux quanta (Abrikosov vortices) in a high-Tc cuprate superconductor. Ordered triangular vortex solid undergoes thermal melting into entangled vortex liquid and vortex glass phases with photo texturing. audioAdvance -> accelerates thermal vortex fluctuations & vortex liquid drift velocity audioKick -> flashes vortex depinning avalanches & flux-flow voltage spike…
+
+![SuperconductingVortexLatticeMelting ruhig (t=8)](img/SuperconductingVortexLatticeMelting_A.jpg) ![SuperconductingVortexLatticeMelting ruhig (t=16)](img/SuperconductingVortexLatticeMelting_B.jpg) ![SuperconductingVortexLatticeMelting audio-heiß (t=8)](img/SuperconductingVortexLatticeMelting_C.jpg)
+
+
 ### SuperconductorLevitation
 
 `Scene3D/SuperconductorLevitation.frag` · type=scene3d · geom=cubes · mood=bright,aggressive · complexity=3
@@ -2816,6 +3680,15 @@ Lights the 70x70 field of levitating superconductor tiles from SuperconductorLev
 ![SuperconductorLevitation ruhig (t=8)](img/SuperconductorLevitation_A.jpg) ![SuperconductorLevitation ruhig (t=16)](img/SuperconductorLevitation_B.jpg) ![SuperconductorLevitation audio-heiß (t=8)](img/SuperconductorLevitation_C.jpg)
 
 
+### SuperfluidHeliumVortexReconnection
+
+`Scene3D/SuperfluidHeliumVortexReconnection.frag` · type=scene3d · geom=indirect · mood=calm,bright,dreamy · complexity=4
+
+SUPERFLUID HELIUM VORTEX RECONNECTION: Quantized vortex filament reconnection events in superfluid liquid Helium-4 (He-II). Singular vortex line crossing, topological reconnection cusps, Kelvin-wave phonon sound radiation, and superfluid photo texturing. audioAdvance -> drives vortex line hydrodynamic Biot-Savart velocity audioKick -> flashes singular reconnection cusp energy dissipation bursts audioSwell -> widens v…
+
+![SuperfluidHeliumVortexReconnection ruhig (t=8)](img/SuperfluidHeliumVortexReconnection_A.jpg) ![SuperfluidHeliumVortexReconnection ruhig (t=16)](img/SuperfluidHeliumVortexReconnection_B.jpg) ![SuperfluidHeliumVortexReconnection audio-heiß (t=8)](img/SuperfluidHeliumVortexReconnection_C.jpg)
+
+
 ### SuperfluidHeliumVortexTurbulence
 
 `Scene3D/SuperfluidHeliumVortexTurbulence.frag` · type=scene3d · geom=indirect · mood=bright,aggressive · complexity=4
@@ -2823,6 +3696,15 @@ Lights the 70x70 field of levitating superconductor tiles from SuperconductorLev
 Draws quantized vortex lines in turbulent superfluid helium as glowing point sprites, coloured from the rotating photo-arc palette and flashed white-hot where local "kelvin wave" amplitude (vKelvin) spikes. vCirculation (the vortex line's local circulation strength, from the vertex stage) sets both the palette sample position and the brightness multiplier; audioKick adds an overall brightness pulse; hueP rotates the …
 
 ![SuperfluidHeliumVortexTurbulence ruhig (t=8)](img/SuperfluidHeliumVortexTurbulence_A.jpg) ![SuperfluidHeliumVortexTurbulence ruhig (t=16)](img/SuperfluidHeliumVortexTurbulence_B.jpg) ![SuperfluidHeliumVortexTurbulence audio-heiß (t=8)](img/SuperfluidHeliumVortexTurbulence_C.jpg)
+
+
+### SuperfluidVortexRingPinchOff
+
+`Scene3D/SuperfluidVortexRingPinchOff.frag` · type=scene3d · geom=indirect · mood=calm,bright,dreamy · complexity=4
+
+SUPERFLUID VORTEX RING PINCH OFF: Quantized vortex filament reconnection and ring pinch-off in superfluid Helium-II. Crow instability on anti-parallel vortex pairs undergoes topological reconnection, launching stable self-propelling quantized vortex rings with Kelvin wave cascades. audioAdvance -> propels vortex rings along self-induced velocity drift axes audioKick -> flashes vortex core reconnection topological pin…
+
+![SuperfluidVortexRingPinchOff ruhig (t=8)](img/SuperfluidVortexRingPinchOff_A.jpg) ![SuperfluidVortexRingPinchOff ruhig (t=16)](img/SuperfluidVortexRingPinchOff_B.jpg) ![SuperfluidVortexRingPinchOff audio-heiß (t=8)](img/SuperfluidVortexRingPinchOff_C.jpg)
 
 
 ### SuperfluidVortexTangle
@@ -2897,6 +3779,15 @@ Draws the magnetically confined plasma filaments of a tokamak fusion core (geome
 ![TokamakFusionCore ruhig (t=8)](img/TokamakFusionCore_A.jpg) ![TokamakFusionCore ruhig (t=16)](img/TokamakFusionCore_B.jpg) ![TokamakFusionCore audio-heiß (t=8)](img/TokamakFusionCore_C.jpg)
 
 
+### TopologicalDiracSemimetalFermiArcs
+
+`Scene3D/TopologicalDiracSemimetalFermiArcs.frag` · type=scene3d · geom=ribbon · mood=bright,psychedelic · complexity=3
+
+TOPOLOGICAL DIRAC SEMIMETAL FERMI ARCS: Open disjoint Fermi surface arcs in Dirac and Weyl semimetals (TaAs / Cd3As2). Non-closed contours on opposite crystal surfaces connect projections of bulk Weyl nodes of opposite chirality with chiral anomaly current texturing. audioAdvance -> navigates Fermi arc surface state dispersion & Weyl node pumping audioKick -> flashes chiral anomaly quantum Adler-Bell-Jackiw charge pu…
+
+![TopologicalDiracSemimetalFermiArcs ruhig (t=8)](img/TopologicalDiracSemimetalFermiArcs_A.jpg) ![TopologicalDiracSemimetalFermiArcs ruhig (t=16)](img/TopologicalDiracSemimetalFermiArcs_B.jpg) ![TopologicalDiracSemimetalFermiArcs audio-heiß (t=8)](img/TopologicalDiracSemimetalFermiArcs_C.jpg)
+
+
 ### Tornado
 
 `Scene3D/Tornado.frag` · type=scene3d · geom=points · mood=aggressive,dark · complexity=2
@@ -2931,6 +3822,15 @@ Frag-side music pulse (added by the deaf-scene pass: reactivity measured ~0 -- t
 VideoRelief.frag — light the terrain, but keep the picture readable. The temptation is to shade it like rock, which buries the source; the image has to stay the dominant term and the lighting has to sit on top of it, so the relief reads as the picture standing up rather than as a landscape that happens to be coloured.
 
 ![VideoRelief ruhig (t=8)](img/VideoRelief_A.jpg) ![VideoRelief ruhig (t=16)](img/VideoRelief_B.jpg) ![VideoRelief audio-heiß (t=8)](img/VideoRelief_C.jpg)
+
+
+### VolcanicBasaltColumnarJointingHexagon
+
+`Scene3D/VolcanicBasaltColumnarJointingHexagon.frag` · type=scene3d · geom=cubes · mood=dark,aggressive,calm · complexity=3
+
+VOLCANIC BASALT COLUMNAR JOINTING HEXAGON: Hexagonal columnar jointed basalt terraces (Giant's Causeway / Fingal's Cave). Thermal contraction cracking during slow basaltic lava cooling creates stepped polygonal stone prisms with volcanic fracture magma glow and basalt photo texturing. audioAdvance -> navigates lava cooling thermal stress fracture propagation & terrace drift audioKick -> flashes subsurface molten magm…
+
+![VolcanicBasaltColumnarJointingHexagon ruhig (t=8)](img/VolcanicBasaltColumnarJointingHexagon_A.jpg) ![VolcanicBasaltColumnarJointingHexagon ruhig (t=16)](img/VolcanicBasaltColumnarJointingHexagon_B.jpg) ![VolcanicBasaltColumnarJointingHexagon audio-heiß (t=8)](img/VolcanicBasaltColumnarJointingHexagon_C.jpg)
 
 
 ### VolcanoIsland
@@ -2971,6 +3871,15 @@ WaveRibbon.frag — glowing line: bright core, soft halo.
 ![WaveRibbon ruhig (t=8)](img/WaveRibbon_A.jpg) ![WaveRibbon ruhig (t=16)](img/WaveRibbon_B.jpg) ![WaveRibbon audio-heiß (t=8)](img/WaveRibbon_C.jpg)
 
 
+### WignerCrystalElectronLattice
+
+`Scene3D/WignerCrystalElectronLattice.frag` · type=scene3d · geom=points · mood=calm,bright,dreamy · complexity=3
+
+WIGNER CRYSTAL ELECTRON LATTICE: Triangular 2D/3D quantum electron crystal formed by pure Coulomb repulsion at ultralow temperatures. Zero-point quantum fluctuations, propagating acoustic phonon waves, and photo-palette dispersion halos. audioAdvance -> propagates phonon acoustic wave modes across the crystal audioKick -> excites quantum melting fluctuation bursts audioSwell -> widens electron wavepacket cloud halo a…
+
+![WignerCrystalElectronLattice ruhig (t=8)](img/WignerCrystalElectronLattice_A.jpg) ![WignerCrystalElectronLattice ruhig (t=16)](img/WignerCrystalElectronLattice_B.jpg) ![WignerCrystalElectronLattice audio-heiß (t=8)](img/WignerCrystalElectronLattice_C.jpg)
+
+
 ### Wormhole
 
 `Scene3D/Wormhole.frag` · type=scene3d · geom=grid · mood=aggressive,dark · complexity=2
@@ -2978,6 +3887,15 @@ WaveRibbon.frag — glowing line: bright core, soft halo.
 Wormhole.frag — the wall image is bent around each throat: near the horizon the angular coordinate smears (extra rotation growing with lensAmt, like light dragged around a photon sphere) and the three colour channels sample at slightly different bend amounts (chromatic aberration). A bright photon ring traces the horizon itself.
 
 ![Wormhole ruhig (t=8)](img/Wormhole_A.jpg) ![Wormhole ruhig (t=16)](img/Wormhole_B.jpg) ![Wormhole audio-heiß (t=8)](img/Wormhole_C.jpg)
+
+
+### XenophyophoreGiantProtistSarcodina
+
+`Scene3D/XenophyophoreGiantProtistSarcodina.frag` · type=scene3d · geom=ribbon · mood=dark,calm,dreamy · complexity=3
+
+XENOPHYOPHORE GIANT PROTIST SARCODINA: Hadal zone giant single-celled xenophyophore (Syringammina fragilissima). Complex branching networks of agglutinated sediment granellare tubes, streaming translucent reticulopodia plasma strands, bioelectric waves, and photo texturing. audioAdvance -> drives protoplasmic cytoplasmic streaming velocity audioKick -> flashes bioelectric membrane depolarization waves audioSwell -> t…
+
+![XenophyophoreGiantProtistSarcodina ruhig (t=8)](img/XenophyophoreGiantProtistSarcodina_A.jpg) ![XenophyophoreGiantProtistSarcodina ruhig (t=16)](img/XenophyophoreGiantProtistSarcodina_B.jpg) ![XenophyophoreGiantProtistSarcodina audio-heiß (t=8)](img/XenophyophoreGiantProtistSarcodina_C.jpg)
 
 
 ---

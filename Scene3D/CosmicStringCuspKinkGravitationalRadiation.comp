@@ -1,0 +1,107 @@
+#version 430
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+
+/**
+ * @file CosmicStringCuspKinkGravitationalRadiation.comp
+ * @brief Compute generator companion to CosmicStringCuspKinkGravitationalRadiation.frag --
+ * generates 3D oscillating relativistic cosmic string loops with relativistic cusps reaching
+ * light speed and emitting beamed gravitational radiation bursts.
+ */
+
+layout(std430, binding = 0) buffer Verts {
+    float verts[]; // 8 floats per vertex: attrA.xyzw (pos, depth), attrB.xyzw (pad, cuspGlow)
+};
+
+// DrawArraysIndirectCommand: [0] count, [1] instanceCount, [2] first, [3] baseInstance, [4] rawCount
+layout(std430, binding = 1) buffer Cmd { uint cmd[]; };
+
+uniform uint  maxVertices;
+uniform float time;
+uniform float audioPhase;
+uniform float audioAdvance;
+uniform float audioKick;
+uniform float audioBass;
+uniform float audioMid;
+uniform float audioHigh;
+uniform float audioSwell;
+
+float hash11(float p) {
+    p = fract(p * 0.1031);
+    p *= p + 47.19;
+    p *= p + p;
+    return fract(p);
+}
+
+void writeVertex(uint slot, vec3 p, float e1, float e2) {
+    uint o = slot * 8u;
+    verts[o + 0u] = p.x;  verts[o + 1u] = p.y;  verts[o + 2u] = p.z;
+    verts[o + 3u] = e1;
+    verts[o + 4u] = 0.0;  verts[o + 5u] = 0.0;  verts[o + 6u] = 0.0;
+    verts[o + 7u] = e2;
+}
+
+void emitSegment(vec3 pA, vec3 pB, float e1, float e2, float thickness) {
+    uint base = atomicAdd(cmd[4], 6u);
+    if (base + 6u > maxVertices) return;
+
+    vec3 dir = pB - pA;
+    float len = length(dir);
+    dir = (len > 1e-5) ? dir / len : vec3(0.0, 1.0, 0.0);
+    vec3 upv = (abs(dir.y) > 0.95) ? vec3(1.0, 0.0, 0.0) : vec3(0.0, 1.0, 0.0);
+    vec3 side = normalize(cross(dir, upv)) * thickness;
+
+    vec3 a0 = pA - side, a1 = pA + side, b0 = pB - side, b1 = pB + side;
+    writeVertex(base + 0u, a0, e1, e2);
+    writeVertex(base + 1u, a1, e1, e2);
+    writeVertex(base + 2u, b0, e1, e2);
+    writeVertex(base + 3u, a1, e1, e2);
+    writeVertex(base + 4u, b1, e1, e2);
+    writeVertex(base + 5u, b0, e1, e2);
+}
+
+void main() {
+    uvec3 g = gl_GlobalInvocationID;
+    uint idx = g.x + 64u * (g.y + 64u * g.z);
+    
+    // 64 cosmic string loops with 64 segments each
+    uint loopIdx = idx / 64u;
+    uint segIdx  = idx % 64u;
+    if (loopIdx >= 64u) return;
+
+    float t = time * 0.45 + audioAdvance * 0.4;
+    float seed = hash11(float(loopIdx) * 33.71);
+    
+    float s0 = float(segIdx) / 64.0;
+    float s1 = float(segIdx + 1u) / 64.0;
+
+    float phi0 = s0 * 6.2831853;
+    float phi1 = s1 * 6.2831853;
+
+    // Relativistic Kibble-Turok oscillating cosmic string loop solution:
+    // x(sigma, t) = 0.5 * (a(sigma - t) + b(sigma + t))
+    float omega = 1.5;
+    float rLoop = 0.8 + seed * 0.6;
+
+    // Right and left-moving wave modes producing cusps.  A per-loop
+    // phase offset on the left-mover staggers the loops' breathing:
+    // with identical phases the xy radius of EVERY loop is
+    // cos(phi)*cos(omega*t), so twice per period the whole ensemble
+    // collapsed to a point and the scene went black.
+    float phaseL = seed * 6.2831853;
+    vec3 a0 = vec3(cos(phi0 - t * omega), sin(phi0 - t * omega), sin(2.0 * (phi0 - t * omega)) * 0.5) * rLoop;
+    vec3 b0 = vec3(cos(phi0 + t * omega + phaseL), sin(phi0 + t * omega + phaseL), cos(2.0 * (phi0 + t * omega + phaseL)) * 0.5) * rLoop;
+    vec3 p0 = 0.5 * (a0 + b0);
+
+    vec3 a1 = vec3(cos(phi1 - t * omega), sin(phi1 - t * omega), sin(2.0 * (phi1 - t * omega)) * 0.5) * rLoop;
+    vec3 b1 = vec3(cos(phi1 + t * omega + phaseL), sin(phi1 + t * omega + phaseL), cos(2.0 * (phi1 + t * omega + phaseL)) * 0.5) * rLoop;
+    vec3 p1 = 0.5 * (a1 + b1);
+
+    // Relativistic cusp velocity ~ |dx/dt| -> c
+    float cuspSpeed = length(0.5 * (a0 - b0));
+    float isCusp = pow(clamp(cuspSpeed * 1.2, 0.0, 1.0), 4.0);
+
+    float cuspFlash = (1.0 + isCusp * 4.0) * (1.0 + 3.0 * audioKick);
+    float thick = (0.02 * (1.0 + isCusp)) * (1.0 + 0.3 * audioSwell);
+
+    emitSegment(p0, p1, s0, cuspFlash, thick);
+}

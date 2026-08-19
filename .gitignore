@@ -56,3 +56,4 @@ Docs/Catalog/Katalog.html
 
 # Doxygen-Ausgabe ist generiert (Doxyfile + Kommentare im Quelltext sind die Quelle)
 Docs/Doxygen/
+__pycache__/

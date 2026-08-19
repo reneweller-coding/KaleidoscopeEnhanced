@@ -1,0 +1,110 @@
+#version 430
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+
+/**
+ * @file MagnetarCrustalQuakeAlfvenResonance.comp
+ * @brief Compute generator companion to MagnetarCrustalQuakeAlfvenResonance.frag --
+ * generates 3D magnetar crustal fracture lines, magnetic field loops, and relativistic
+ * Alfven wave shear resonances in ultrastrong magnetic fields (B > 10^14 G).
+ */
+
+layout(std430, binding = 0) buffer Verts {
+    float verts[]; // 8 floats per vertex: attrA.xyzw (pos, depth), attrB.xyzw (pad, quakeGlow)
+};
+
+// DrawArraysIndirectCommand: [0] count, [1] instanceCount, [2] first, [3] baseInstance, [4] rawCount
+layout(std430, binding = 1) buffer Cmd { uint cmd[]; };
+
+uniform uint  maxVertices;
+uniform float time;
+uniform float audioPhase;
+uniform float audioAdvance;
+uniform float audioKick;
+uniform float audioBass;
+uniform float audioMid;
+uniform float audioHigh;
+uniform float audioSwell;
+
+float hash11(float p) {
+    p = fract(p * 0.1031);
+    p *= p + 47.19;
+    p *= p + p;
+    return fract(p);
+}
+
+void writeVertex(uint slot, vec3 p, float e1, float e2) {
+    uint o = slot * 8u;
+    verts[o + 0u] = p.x;  verts[o + 1u] = p.y;  verts[o + 2u] = p.z;
+    verts[o + 3u] = e1;
+    verts[o + 4u] = 0.0;  verts[o + 5u] = 0.0;  verts[o + 6u] = 0.0;
+    verts[o + 7u] = e2;
+}
+
+void emitSegment(vec3 pA, vec3 pB, float e1, float e2, float thickness) {
+    uint base = atomicAdd(cmd[4], 6u);
+    if (base + 6u > maxVertices) return;
+
+    vec3 dir = pB - pA;
+    float len = length(dir);
+    dir = (len > 1e-5) ? dir / len : vec3(0.0, 1.0, 0.0);
+    vec3 upv = (abs(dir.y) > 0.95) ? vec3(1.0, 0.0, 0.0) : vec3(0.0, 1.0, 0.0);
+    vec3 side = normalize(cross(dir, upv)) * thickness;
+
+    vec3 a0 = pA - side, a1 = pA + side, b0 = pB - side, b1 = pB + side;
+    writeVertex(base + 0u, a0, e1, e2);
+    writeVertex(base + 1u, a1, e1, e2);
+    writeVertex(base + 2u, b0, e1, e2);
+    writeVertex(base + 3u, a1, e1, e2);
+    writeVertex(base + 4u, b1, e1, e2);
+    writeVertex(base + 5u, b0, e1, e2);
+}
+
+void main() {
+    uvec3 g = gl_GlobalInvocationID;
+    uint idx = g.x + 64u * (g.y + 64u * g.z);
+    
+    // 64 magnetospheric Alfven resonance flux loops with 64 segments each
+    uint loopIdx = idx / 64u;
+    uint segIdx  = idx % 64u;
+    if (loopIdx >= 64u) return;
+
+    float t = time * 0.45 + audioAdvance * 0.4;
+    float seed = hash11(float(loopIdx) * 29.13);
+    
+    float s0 = float(segIdx) / 64.0;
+    float s1 = float(segIdx + 1u) / 64.0;
+
+    // Dipolar magnetic field loop: r(theta) = L * sin^2(theta)
+    float theta0 = s0 * 3.14159265;
+    float theta1 = s1 * 3.14159265;
+
+    float L_shell = 1.0 + seed * 1.5;
+    float r0 = L_shell * pow(sin(theta0), 2.0);
+    float r1 = L_shell * pow(sin(theta1), 2.0);
+
+    // Azimuthal loop orientation
+    float phi = seed * 6.2831853 + t * 0.5;
+
+    // High-frequency torsional shear Alfven wave ripple along magnetic loop
+    float alfvenWaves0 = sin(s0 * 24.0 - t * 6.0 + seed * 5.0) * 0.06;
+    float alfvenWaves1 = sin(s1 * 24.0 - t * 6.0 + seed * 5.0) * 0.06;
+
+    vec3 p0 = vec3(
+        (r0 + alfvenWaves0) * sin(theta0) * cos(phi),
+        (r0 + alfvenWaves0) * sin(theta0) * sin(phi),
+        (r0 + alfvenWaves0) * cos(theta0)
+    );
+
+    vec3 p1 = vec3(
+        (r1 + alfvenWaves1) * sin(theta1) * cos(phi),
+        (r1 + alfvenWaves1) * sin(theta1) * sin(phi),
+        (r1 + alfvenWaves1) * cos(theta1)
+    );
+
+    // Crustal quake rupture flash (near footpoints where theta ~ 0 or pi)
+    float footpoint = max(exp(-theta0 * theta0 * 8.0), exp(-pow(theta0 - 3.14159, 2.0) * 8.0));
+    float glow = (1.0 + footpoint * 3.5) * (1.0 + 3.5 * audioKick);
+    float thick = (0.02 * (1.0 + footpoint)) * (1.0 + 0.3 * audioSwell);
+
+    emitSegment(p0, p1, s0, glow, thick);
+}
