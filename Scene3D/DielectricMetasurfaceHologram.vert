@@ -44,7 +44,7 @@ void main() {
     // packs the per-unit index into attrA.w instead (see buildGeometry).
     int quadIndex = int(attrA.w);
     vMetaPhase = float(quadIndex) / 3000.0;
-    vec2 corner = attrA.xy;
+    vec2 corner = attrA.xy * 2.0 - 1.0;
     vTexCoord = corner * 0.5 + 0.5;
 
     float t = time * 0.4 * spd + audioAdvance * 0.2;
