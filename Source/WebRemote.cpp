@@ -9,8 +9,19 @@
 
 #include <QtNetwork/QTcpServer>
 #include <QtNetwork/QTcpSocket>
+#include <QtNetwork/QUdpSocket>
+#include <QtNetwork/QHostAddress>
 #include <QtCore/QUrl>
 #include <QtCore/QUrlQuery>
+#include <QtCore/QSysInfo>
+#include <QtCore/QCoreApplication>
+
+/// LAN discovery: fixed UDP port + magic request string the Android app
+/// broadcasts. Bound with ShareAddress so several Kaleidoscope instances on
+/// the SAME PC can all listen here and each answer for itself (Windows
+/// delivers a copy of every broadcast datagram to every bound socket).
+static const quint16 kDiscoveryPort  = 45677;
+static const char   *kDiscoveryMagic = "KALEIDO_DISCOVER_V1";
 
 /**
  * @brief The single-page HTML/CSS/JS remote-control UI served for GET "/".
@@ -127,11 +138,70 @@ WebRemote::WebRemote( GLwidget *widget, int port )
 	m_server = new QTcpServer( this );
 	QObject::connect( m_server, &QTcpServer::newConnection,
 	                  this, [this]() { handleConnection(); } );
-	if( m_server->listen( QHostAddress::Any, quint16(port) ) )
-		fprintf( stderr, "WEB REMOTE: http://<this-pc>:%d/\n", port );
+
+	m_httpPort = bindFreePort( port );
+	if( m_httpPort )
+		fprintf( stderr, "WEB REMOTE: http://<this-pc>:%d/\n", m_httpPort );
 	else
-		fprintf( stderr, "WEB REMOTE: could not listen on port %d (%s)\n",
+		fprintf( stderr, "WEB REMOTE: could not find a free port near %d (%s)\n",
 		         port, m_server->errorString().toLocal8Bit().constData() );
+
+	// LAN auto-discovery, so the Android app never needs a typed IP. Runs
+	// independently of whether the HTTP bind above succeeded — a discovery
+	// reply that carries port 0 is harmless (the app would just fail to
+	// connect, same as today), and it costs nothing to still answer.
+	m_discoverySocket = new QUdpSocket( this );
+	if( m_discoverySocket->bind( QHostAddress::AnyIPv4, kDiscoveryPort,
+	                              QUdpSocket::ShareAddress | QUdpSocket::ReuseAddressHint ) )
+	{
+		QObject::connect( m_discoverySocket, &QUdpSocket::readyRead,
+		                  this, [this]() { handleDiscovery(); } );
+		fprintf( stderr, "WEB REMOTE: LAN auto-discovery listening on UDP %d\n", kDiscoveryPort );
+	}
+	else
+		fprintf( stderr, "WEB REMOTE: could not bind discovery UDP %d (%s) "
+		         "- the phone app will need the address typed in manually.\n",
+		         kDiscoveryPort, m_discoverySocket->errorString().toLocal8Bit().constData() );
+}
+
+int WebRemote::bindFreePort( int preferred )
+{
+	// A handful of instances on one PC is the realistic ceiling; beyond that
+	// something else is wrong and failing loudly (port 0 => the log message
+	// above) is more useful than silently trying dozens of ports.
+	for( int p = preferred; p < preferred + 20; ++p )
+		if( m_server->listen( QHostAddress::Any, quint16(p) ) )
+			return p;
+	return 0;
+}
+
+void WebRemote::handleDiscovery()
+{
+	while( m_discoverySocket->hasPendingDatagrams() )
+	{
+		QByteArray buf;
+		buf.resize( int( m_discoverySocket->pendingDatagramSize() ) );
+		QHostAddress sender;
+		quint16      senderPort;
+		m_discoverySocket->readDatagram( buf.data(), buf.size(), &sender, &senderPort );
+
+		if( buf != kDiscoveryMagic )
+			continue;   // stray traffic on the port - not our protocol
+
+		QString activeConfig;
+		const int active = m_widget->remoteActiveConfig();
+		const QStringList cfgs = m_widget->remoteConfigNames();
+		if( active >= 0 && active < cfgs.size() )
+			activeConfig = cfgs[active];
+
+		const QByteArray reply = QString(
+		    "{\"name\":\"%1\",\"port\":%2,\"pid\":\"%3\",\"config\":\"%4\"}" )
+		        .arg( QSysInfo::machineHostName() )
+		        .arg( m_httpPort )
+		        .arg( QCoreApplication::applicationPid() )
+		        .arg( activeConfig ).toUtf8();
+		m_discoverySocket->writeDatagram( reply, sender, senderPort );
+	}
 }
 
 void WebRemote::handleConnection()

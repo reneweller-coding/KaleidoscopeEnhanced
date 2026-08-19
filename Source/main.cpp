@@ -20,7 +20,12 @@
  *  - `-w <wav>`      offline mode: analyze this WAV file instead of live audio
  *                    (deterministic testing).
  *  - `-o`            enable Spout output: publish the frame as sender "Kaleidoscope".
- *  - `-t <port>`     enable the embedded web remote (phone control page) on `<port>`.
+ *  - `-t <port>`     web remote (phone control page) port; ON BY DEFAULT at 8080 even
+ *                    without this flag (LAN-only, unauthenticated by design, and
+ *                    auto-discoverable — see WebRemote's UDP responder). `-t 0` disables
+ *                    it; `-t <port>` picks a different port. If the chosen port is busy
+ *                    (e.g. a second instance on the same PC), WebRemote quietly retries
+ *                    the next few ports so multiple instances each still get one.
  *  - `-x <wav>`      batch render: combines `-w` + auto-record + auto-quit, used to
  *                    deterministically render a WAV to an mp4 and exit (no separate
  *                    "batch mode" branch here -- GLwidget itself drives the auto-quit
@@ -99,7 +104,8 @@ void commandlineerror( char *cmd, char *parm )
 	"-w <wav>      offline: analyze this WAV instead of live audio (testing)\n"
 	"-o            Spout output: publish the frame as sender 'Kaleidoscope'\n"
 	"              (for OBS / Resolume / any Spout receiver)\n"
-	"-t <port>     web remote: phone control page at http://<this-pc>:<port>/\n"
+	"-t <port>     web remote port (phone control page); ON by default at 8080,\n"
+	"              auto-discovered by the Kaleidoscope Remote app - '-t 0' disables\n"
 	"-x <wav>      batch render: record this WAV deterministically to an mp4\n"
 	"              (recordings\\rec_*), then exit automatically\n"
 	"-i <sender>   Spout INPUT: the sender's live video (OBS, Resolume, a\n"

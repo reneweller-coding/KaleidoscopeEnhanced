@@ -38,7 +38,7 @@
 
 // Start configuration requested on the command line (-c <name>); empty = default.
 QString GLwidget::s_startConfig;
-int     GLwidget::s_remotePort  = 0;
+int     GLwidget::s_remotePort  = 8080;   // on by default (LAN-only, auto-discovered); -t 0 disables
 bool    GLwidget::s_batchRender = false;
 
 // ---- Web-remote hooks (called from WebRemote on the main thread) ----
