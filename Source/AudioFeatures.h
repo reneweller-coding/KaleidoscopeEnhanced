@@ -5,7 +5,7 @@
 #pragma once
 
 /**
- * @brief Snapshot of all real-time audio-analysis results, produced by AudioAnalyzer and consumed by FilterShader / EffectShader.
+ * @brief Snapshot of all real-time audio-analysis results, produced by AudioAnalyzer and consumed by RenderPipeline / EffectShader.
  *
  * All float fields normalised to [0, 1] (unless the field's comment says
  * otherwise). Access is protected by AudioAnalyzer's QMutex — always obtain a
@@ -13,7 +13,7 @@
  * instance. Most fields are filled once per ~10 ms capture block by
  * AudioAnalyzer::processBlock(); a smaller group explicitly marked
  * "host-filled" below is instead written once per render frame by
- * FilterShader::paint() from information AudioAnalyzer alone cannot know
+ * RenderPipeline::paint() from information AudioAnalyzer alone cannot know
  * (wall-clock day/night cycle, integrated motion phases, history-ring
  * bookkeeping for the SSM/spectrogram/melody textures, etc).
  *
@@ -349,7 +349,7 @@ struct AudioFeatures
     float dominantPitch = 0.f;
 
     /**
-     * @brief Scalar passed to filterShader for adaptive shader-switch / cross-fade timing.
+     * @brief Scalar passed to RenderPipeline for adaptive shader-switch / cross-fade timing.
      *
      * < 1.0 → longer times (ambient: e.g. 0.15 = 6.7× slower than default).
      * > 1.0 → shorter times (energetic beat music: e.g. 1.4 = 30% faster).
@@ -501,7 +501,7 @@ struct AudioFeatures
      * @brief Host-integrated motion phases.
      *
      * NOT produced by AudioAnalyzer; filled in once per frame by
-     * FilterShader::paint(). Audio-driven motion must never be expressed as a
+     * RenderPipeline::paint(). Audio-driven motion must never be expressed as a
      * factor multiplied by the absolute 'time' uniform: changing such a
      * factor (or flipping its sign) remaps the whole accumulated phase in a
      * single frame, which is exactly what caused the violent flicker. Instead

@@ -1,9 +1,9 @@
 #version 330 core
 out vec4 fragColor;
 /**
- * @file CombineBlend.frag
+ * @file OverlayBlend.frag
  * @brief The FINAL pass blending the outgoing and incoming OVERLAY outputs
- * during a combine switch: a plain linear mix.
+ * during an FX-overlay switch: a plain linear mix.
  *
  * The styled transition variety lives in Transitions/ and fires on SCENE
  * fades; overlay switches are deliberately a simple dissolve (they are

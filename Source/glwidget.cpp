@@ -67,27 +67,27 @@ void GLwidget::remoteSelectConfig( int idx )
 
 void GLwidget::remoteNextEffect()
 {
-	if( m_actConfiguration && m_actConfiguration->m_filterShader )
-		m_actConfiguration->m_filterShader->requestSceneChange();
+	if( m_actConfiguration && m_actConfiguration->m_renderPipeline )
+		m_actConfiguration->m_renderPipeline->requestSceneChange();
 }
 
 void GLwidget::remoteFavorite()
 {
-	if( m_actConfiguration && m_actConfiguration->m_filterShader )
-		m_actConfiguration->m_filterShader->favoriteCurrentEffect();
+	if( m_actConfiguration && m_actConfiguration->m_renderPipeline )
+		m_actConfiguration->m_renderPipeline->favoriteCurrentEffect();
 }
 
 QStringList GLwidget::remoteSceneNames()
 {
-	if( m_actConfiguration && m_actConfiguration->m_filterShader )
-		return m_actConfiguration->m_filterShader->sceneNames();
+	if( m_actConfiguration && m_actConfiguration->m_renderPipeline )
+		return m_actConfiguration->m_renderPipeline->sceneNames();
 	return QStringList();
 }
 
 void GLwidget::remoteForceScene( int idx )
 {
-	if( m_actConfiguration && m_actConfiguration->m_filterShader )
-		m_actConfiguration->m_filterShader->forceScene( idx );
+	if( m_actConfiguration && m_actConfiguration->m_renderPipeline )
+		m_actConfiguration->m_renderPipeline->forceScene( idx );
 }
 
 QByteArray GLwidget::remoteSnapshot()
@@ -274,7 +274,7 @@ GLwidget::~GLwidget()
 	spoutInRelease();
 	videoInRelease();
 	// Keep the context current across the Configuration deletes too: each
-	// ~FilterShader runs cleanTextures()/cleanShaderPrograms() (glDelete*), which
+	// ~RenderPipeline runs cleanTextures()/cleanShaderPrograms() (glDelete*), which
 	// need a current GL context — otherwise those deletes are silently dropped
 	// (GL_INVALID_OPERATION) and the cleanup is meaningless.
 	for( unsigned int i = 0; i < m_configurationList.size(); i++ )
@@ -286,14 +286,14 @@ GLwidget::~GLwidget()
 
 /*void GLwidget::slotReloadShader(void)
 {
-	m_filterShader->loadShader();
+	m_renderPipeline->loadShader();
 	updateGL();
 }*/
 
 
 bool GLwidget::slotSetDirectory(const QString &filename)
 {
-	//bool success = m_filterShader->loadObj(filename.toAscii().data());
+	//bool success = m_renderPipeline->loadObj(filename.toAscii().data());
 	//updateGL();
 
 	m_directory = filename;
@@ -326,8 +326,8 @@ void GLwidget::initializeGL()
 	// eagerly, then quit — the log holds one verdict per shader.
 	if( qEnvironmentVariableIsSet( "KALEIDO_COMPILE_ALL" ) )
 	{
-		if( m_actConfiguration->m_filterShader )
-			m_actConfiguration->m_filterShader->compileAllShaders();
+		if( m_actConfiguration->m_renderPipeline )
+			m_actConfiguration->m_renderPipeline->compileAllShaders();
 		fflush( stderr );
 		exit( 0 );
 	}
@@ -386,7 +386,7 @@ void GLwidget::initializeGL()
 	m_fpsCounter    = 0;
 
 	// Adaptive render scale never goes above whatever -s the user launched with.
-	m_autoScaleMax  = FilterShader::renderScale();
+	m_autoScaleMax  = RenderPipeline::renderScale();
 
 	// start periodic refesh timer
 	startTimer( 16.666666666666 );
@@ -441,8 +441,8 @@ void GLwidget::draw()
 		audio = m_audioAnalyzer->getFeatures();
 
 	// Track-change: a fresh track (after a silent gap) gets a clean transition.
-	if( audio.trackChange && m_actConfiguration && m_actConfiguration->m_filterShader )
-		m_actConfiguration->m_filterShader->requestSceneChange();
+	if( audio.trackChange && m_actConfiguration && m_actConfiguration->m_renderPipeline )
+		m_actConfiguration->m_renderPipeline->requestSceneChange();
 
 	// Apply any queued MIDI control messages.
 	applyMidi();
@@ -468,8 +468,8 @@ void GLwidget::draw()
 		for( const QString &n : m_pendingReloads )
 			for( const auto *lst : { &m_configurationList, &m_hiddenConfigurations } )
 				for( Configuration *c : *lst )
-					if( c && c->m_filterShader )
-						c->m_filterShader->reloadFragment( n );
+					if( c && c->m_renderPipeline )
+						c->m_renderPipeline->reloadFragment( n );
 		m_pendingReloads.clear();
 	}
 
@@ -478,9 +478,9 @@ void GLwidget::draw()
 
 	// QOpenGLWidget renders into its own FBO, not framebuffer 0.  Tell the
 	// pipeline where the final image must land, otherwise it draws off-screen.
-	m_actConfiguration->m_filterShader->setDefaultFBO( defaultFramebufferObject() );
+	m_actConfiguration->m_renderPipeline->setDefaultFBO( defaultFramebufferObject() );
 
-	m_actConfiguration->m_filterShader->paint(m_RotationMatrix, m_xTrans, m_yTrans, m_zTrans, audio);
+	m_actConfiguration->m_renderPipeline->paint(m_RotationMatrix, m_xTrans, m_yTrans, m_zTrans, audio);
 
 	// Capture the clean frame (before any overlay is drawn) while recording
 	// or while the instant-replay ring is armed.
@@ -533,8 +533,8 @@ void GLwidget::draw()
 		{
 			m_lastNpTitle = npTitle;
 			m_npShownAt   = m_fpsTimer.elapsed();
-			if( m_actConfiguration && m_actConfiguration->m_filterShader )
-				m_actConfiguration->m_filterShader->showTitle( npTitle,
+			if( m_actConfiguration && m_actConfiguration->m_renderPipeline )
+				m_actConfiguration->m_renderPipeline->showTitle( npTitle,
 				                                               m_nowPlaying->artist() );
 			// Trackwechsel: Lyrics + Künstlerbilder für den neuen Titel holen
 			// (nur wenn ein Modus aktiv ist - sonst keine Netz-Anfragen).
@@ -551,8 +551,8 @@ void GLwidget::draw()
 
 	// Lyrics-/Künstlerbild-Overlay: Zustand berechnen + Texturen hochladen
 	// (GL-Kontext ist hier aktuell), dann an den PresentPass durchreichen.
-	if( m_actConfiguration && m_actConfiguration->m_filterShader )
-		updateTrackOverlays( m_actConfiguration->m_filterShader );
+	if( m_actConfiguration && m_actConfiguration->m_renderPipeline )
+		updateTrackOverlays( m_actConfiguration->m_renderPipeline );
 	// Demo/test hook: KALEIDO_TITLE_TEST=1 fires one reveal a few seconds in
 	// (lets the reveal be tuned without a real media session running).
 	{
@@ -560,8 +560,8 @@ void GLwidget::draw()
 		if( titleTest && m_fpsTimer.elapsed() > 3000 )
 		{
 			titleTest = false;
-			if( m_actConfiguration && m_actConfiguration->m_filterShader )
-				m_actConfiguration->m_filterShader->showTitle( "Neon Cathedral",
+			if( m_actConfiguration && m_actConfiguration->m_renderPipeline )
+				m_actConfiguration->m_renderPipeline->showTitle( "Neon Cathedral",
 				                                               "The Prisms" );
 		}
 	}
@@ -589,9 +589,9 @@ void GLwidget::draw()
 			drawHelpOverlay( &painter );
 		if( m_showAudioMenu )
 			drawAudioMenu( &painter );
-		if( m_showShaderInfo && m_actConfiguration && m_actConfiguration->m_filterShader )
+		if( m_showShaderInfo && m_actConfiguration && m_actConfiguration->m_renderPipeline )
 		{
-			QString info = m_actConfiguration->m_filterShader->activeShaderInfo();
+			QString info = m_actConfiguration->m_renderPipeline->activeShaderInfo();
 			QStringList rows = info.split('\n');
 			int y = height() - 120;
 			painter.fillRect( 20, y - 24, 720, 28 * rows.size() + 16, QColor(0, 0, 0, 175) );
@@ -704,7 +704,7 @@ void GLwidget::showSelectConfigurationsMenu( QPainter *painter )
 
 }
 
-/// Settings file shared with FilterShader (next to the Configurations folder).
+/// Settings file shared with RenderPipeline (next to the Configurations folder).
 static const char *kUiSettingsPath = "..\\kaleidoscope_settings.ini";
 
 void GLwidget::loadUiSettings()
@@ -718,7 +718,7 @@ void GLwidget::loadUiSettings()
 	m_lyricsKinetic  = s.value( "lyricsKinetic", m_lyricsKinetic ).toBool();
 	for( int i = 0; i < MIDI_TARGETS; ++i )
 		m_midiMap[i] = s.value( QString("midiMap%1").arg(i), m_midiMap[i] ).toInt();
-	FilterShader::setLightShow( s.value( "lightShow", FilterShader::lightShow() ).toBool() );
+	RenderPipeline::setLightShow( s.value( "lightShow", RenderPipeline::lightShow() ).toBool() );
 	// A persisted active config is the default start config, unless -c overrode it.
 	if( s_startConfig.isEmpty() )
 		s_startConfig = s.value( "activeConfig", QString() ).toString();
@@ -737,13 +737,13 @@ void GLwidget::saveUiSettings()
 	s.setValue( "lyricsKinetic", m_lyricsKinetic );
 	for( int i = 0; i < MIDI_TARGETS; ++i )
 		s.setValue( QString("midiMap%1").arg(i), m_midiMap[i] );
-	s.setValue( "lightShow",  FilterShader::lightShow() );
+	s.setValue( "lightShow",  RenderPipeline::lightShow() );
 	s.sync();
 }
 
 void GLwidget::saveAllSettings()
 {
-	FilterShader::saveSettings();
+	RenderPipeline::saveSettings();
 	saveUiSettings();
 }
 
@@ -825,7 +825,7 @@ void GLwidget::updateAdaptiveScale()
 		return;
 
 	const float minScale = 0.35f;
-	float scale = FilterShader::renderScale();
+	float scale = RenderPipeline::renderScale();
 	float next  = scale;
 
 	if( m_fpsValue < 45 && scale > minScale )
@@ -838,9 +838,9 @@ void GLwidget::updateAdaptiveScale()
 
 	if( next != scale )
 	{
-		FilterShader::setRenderScale( next );
-		if( m_actConfiguration && m_actConfiguration->m_filterShader )
-			m_actConfiguration->m_filterShader->resize( m_width, m_height );
+		RenderPipeline::setRenderScale( next );
+		if( m_actConfiguration && m_actConfiguration->m_renderPipeline )
+			m_actConfiguration->m_renderPipeline->resize( m_width, m_height );
 		m_lastScaleAdjust = now;
 		fprintf( stderr, "Adaptive scale: %.2f (%d FPS)\n", next, m_fpsValue );
 	}
@@ -895,7 +895,7 @@ void GLwidget::resizeGL( int /*wLogical*/, int /*hLogical*/ )
 	// Lightweight resize: keeps the loaded image textures + shader programs and
 	// only re-sizes the off-screen buffers (no reload, no GL-object leak).
 	// (The one-time full build happens in Configuration::start -> reinit.)
-	m_actConfiguration->m_filterShader->resize( m_width, m_height );
+	m_actConfiguration->m_renderPipeline->resize( m_width, m_height );
 }
 
 // set rotation Matrix for trackball to Identity
@@ -987,11 +987,11 @@ void GLwidget::drawFeatureOverlay( QPainter *painter, const AudioFeatures &f )
 	painter->setFont( QFont("Consolas", 10) );
 	painter->setPen( QColor(170, 205, 170) );
 	painter->drawText( x, 54, QString("react[] %1  trail,. %2  mood-= %3  auto-a %4  scale %5 g:%6")
-		.arg(FilterShader::reactivity(), 0, 'f', 1)
-		.arg(FilterShader::trails(),     0, 'f', 2)
-		.arg(FilterShader::mood(),       0, 'f', 1)
+		.arg(RenderPipeline::reactivity(), 0, 'f', 1)
+		.arg(RenderPipeline::trails(),     0, 'f', 2)
+		.arg(RenderPipeline::mood(),       0, 'f', 1)
 		.arg(m_autoConfig ? "ON" : "off")
-		.arg(FilterShader::renderScale(), 0, 'f', 2)
+		.arg(RenderPipeline::renderScale(), 0, 'f', 2)
 		.arg(m_autoScale ? "ON" : "off") );
 
 	painter->setFont( QFont("Consolas", 11) );
@@ -1110,10 +1110,10 @@ void GLwidget::applyMidi()
 		if( e.type == 0xB0 )                       // Control Change -> mapped knobs
 		{
 			float v = e.data2 / 127.f;             // 0..1
-			if      ( e.data1 == m_midiMap[MIDI_REACT]   ) FilterShader::setReactivity( v * 3.0f  );
-			else if ( e.data1 == m_midiMap[MIDI_TRAILS]  ) FilterShader::setTrails     ( v * 0.95f );
-			else if ( e.data1 == m_midiMap[MIDI_MOOD]    ) FilterShader::setMood       ( v * 2.5f  );
-			else if ( e.data1 == m_midiMap[MIDI_LATENCY] ) FilterShader::setLatency    ( v * 0.25f );
+			if      ( e.data1 == m_midiMap[MIDI_REACT]   ) RenderPipeline::setReactivity( v * 3.0f  );
+			else if ( e.data1 == m_midiMap[MIDI_TRAILS]  ) RenderPipeline::setTrails     ( v * 0.95f );
+			else if ( e.data1 == m_midiMap[MIDI_MOOD]    ) RenderPipeline::setMood       ( v * 2.5f  );
+			else if ( e.data1 == m_midiMap[MIDI_LATENCY] ) RenderPipeline::setLatency    ( v * 0.25f );
 		}
 		else if( e.type == 0x90 )                  // Note On -> mapped pads
 		{
@@ -1126,11 +1126,11 @@ void GLwidget::applyMidi()
 			}
 			else if( m_midiMap[MIDI_BLACKOUT] >= 0 && e.data1 == m_midiMap[MIDI_BLACKOUT] )
 			{
-				FilterShader::toggleBlackout();
+				RenderPipeline::toggleBlackout();
 			}
 			else if( m_midiMap[MIDI_NEXT] < 0 || e.data1 == m_midiMap[MIDI_NEXT] )
-				if( m_actConfiguration && m_actConfiguration->m_filterShader )
-					m_actConfiguration->m_filterShader->requestSceneChange();
+				if( m_actConfiguration && m_actConfiguration->m_renderPipeline )
+					m_actConfiguration->m_renderPipeline->requestSceneChange();
 		}
 	}
 }
@@ -1205,9 +1205,9 @@ static bool extractPalette( const QImage &src, float *palA, float *palB )
 // Sync-Quelle ist die SMTC-Playback-Position (extrapoliert); ohne sie (VLC-
 // Fallback, Testmodus) läuft eine lokale Uhr ab Trackwechsel.  Alle Blenden
 // sind geslewt, damit nichts hart aufpoppt.
-void GLwidget::updateTrackOverlays( FilterShader *fs )
+void GLwidget::updateTrackOverlays( RenderPipeline *fs )
 {
-	FilterShader::OverlayFrame o;
+	RenderPipeline::OverlayFrame o;
 	if( !m_trackMedia )
 	{
 		fs->setOverlayFrame( o );
@@ -1707,32 +1707,32 @@ void GLwidget::keyPressEvent(QKeyEvent* event)
 			m_recorder.toggle();   // record visuals + music to an mp4
 			break;
 		case Qt::Key_L:
-			FilterShader::toggleLightShow();   // corner lamps / light-show on/off
-			fprintf( stderr, "Stage lamps: %s\n", FilterShader::lightShow() ? "ON" : "OFF" );
+			RenderPipeline::toggleLightShow();   // corner lamps / light-show on/off
+			fprintf( stderr, "Stage lamps: %s\n", RenderPipeline::lightShow() ? "ON" : "OFF" );
 			break;
 		case Qt::Key_N:
 			// Manually advance to the next effect (texture + combine), snappy cut.
-			if( m_actConfiguration && m_actConfiguration->m_filterShader )
+			if( m_actConfiguration && m_actConfiguration->m_renderPipeline )
 			{
-				m_actConfiguration->m_filterShader->requestSceneChange();
+				m_actConfiguration->m_renderPipeline->requestSceneChange();
 				fprintf( stderr, "n: next effect requested\n" );
 			}
 			break;
 
 		// ---- Live tuning (values shared across all configs) ----
-		case Qt::Key_BracketLeft:  FilterShader::adjustReactivity(-0.10f); break;  // [  less reactive
-		case Qt::Key_BracketRight: FilterShader::adjustReactivity(+0.10f); break;  // ]  more reactive
-		case Qt::Key_Comma:        FilterShader::adjustTrails(-0.05f);     break;  // ,  shorter trails
-		case Qt::Key_Period:       FilterShader::adjustTrails(+0.05f);     break;  // .  longer trails
-		case Qt::Key_Minus:        FilterShader::adjustMood(-0.10f);       break;  // -  less mood colour
-		case Qt::Key_Equal:        FilterShader::adjustMood(+0.10f);       break;  // =  more mood colour
+		case Qt::Key_BracketLeft:  RenderPipeline::adjustReactivity(-0.10f); break;  // [  less reactive
+		case Qt::Key_BracketRight: RenderPipeline::adjustReactivity(+0.10f); break;  // ]  more reactive
+		case Qt::Key_Comma:        RenderPipeline::adjustTrails(-0.05f);     break;  // ,  shorter trails
+		case Qt::Key_Period:       RenderPipeline::adjustTrails(+0.05f);     break;  // .  longer trails
+		case Qt::Key_Minus:        RenderPipeline::adjustMood(-0.10f);       break;  // -  less mood colour
+		case Qt::Key_Equal:        RenderPipeline::adjustMood(+0.10f);       break;  // =  more mood colour
 		case Qt::Key_Semicolon:                                                    // ;  less latency lead
-			FilterShader::adjustLatency(-0.01f);
-			fprintf( stderr, "Latency lead: %.0f ms\n", FilterShader::latency() * 1000.f );
+			RenderPipeline::adjustLatency(-0.01f);
+			fprintf( stderr, "Latency lead: %.0f ms\n", RenderPipeline::latency() * 1000.f );
 			break;
 		case Qt::Key_Apostrophe:                                                   // '  more latency lead
-			FilterShader::adjustLatency(+0.01f);
-			fprintf( stderr, "Latency lead: %.0f ms\n", FilterShader::latency() * 1000.f );
+			RenderPipeline::adjustLatency(+0.01f);
+			fprintf( stderr, "Latency lead: %.0f ms\n", RenderPipeline::latency() * 1000.f );
 			break;
 
 		// ---- Persist the current look + UI state as the startup default ----
@@ -1750,45 +1750,45 @@ void GLwidget::keyPressEvent(QKeyEvent* event)
 
 		// ---- VJ handbrakes ----
 		case Qt::Key_B:
-			FilterShader::toggleBlackout();
-			fprintf( stderr, "Blackout: %s\n", FilterShader::blackout() ? "AN" : "AUS" );
+			RenderPipeline::toggleBlackout();
+			fprintf( stderr, "Blackout: %s\n", RenderPipeline::blackout() ? "AN" : "AUS" );
 			break;
 		case Qt::Key_E:
-			FilterShader::toggleFreeze();
-			fprintf( stderr, "Freeze: %s\n", FilterShader::frozen() ? "AN" : "AUS" );
+			RenderPipeline::toggleFreeze();
+			fprintf( stderr, "Freeze: %s\n", RenderPipeline::frozen() ? "AN" : "AUS" );
 			break;
 		case Qt::Key_T:
 			if( m_audioAnalyzer )
 				m_audioAnalyzer->tapTempo();
 			break;
 		case Qt::Key_U:
-			FilterShader::togglePin();
+			RenderPipeline::togglePin();
 			fprintf( stderr, "Effekt-Pin: %s\n",
-			         FilterShader::pinned() ? "AN (haelt den aktuellen Effekt)" : "AUS" );
+			         RenderPipeline::pinned() ? "AN (haelt den aktuellen Effekt)" : "AUS" );
 			break;
 
 		// ---- Taste learning: favourite the current effect ----
 		case Qt::Key_F:
-			if( m_actConfiguration && m_actConfiguration->m_filterShader )
-				m_actConfiguration->m_filterShader->favoriteCurrentEffect();
+			if( m_actConfiguration && m_actConfiguration->m_renderPipeline )
+				m_actConfiguration->m_renderPipeline->favoriteCurrentEffect();
 			break;
 
 		// ---- Stereoscopic output ----
 		case Qt::Key_Z:
 		{
-			FilterShader::cycleStereo();
+			RenderPipeline::cycleStereo();
 			static const char *kStereoNames[] =
 				{ "AUS", "Side-by-Side", "Top-Bottom", "Anaglyph (rot/cyan)" };
-			fprintf( stderr, "Stereo: %s\n", kStereoNames[FilterShader::stereoMode() & 3] );
+			fprintf( stderr, "Stereo: %s\n", kStereoNames[RenderPipeline::stereoMode() & 3] );
 			break;
 		}
 		case Qt::Key_C:
-			FilterShader::adjustStereoDepth( -0.2f );
-			fprintf( stderr, "Stereo-Tiefe: %.1f\n", FilterShader::stereoDepth() );
+			RenderPipeline::adjustStereoDepth( -0.2f );
+			fprintf( stderr, "Stereo-Tiefe: %.1f\n", RenderPipeline::stereoDepth() );
 			break;
 		case Qt::Key_M:
-			FilterShader::adjustStereoDepth( +0.2f );
-			fprintf( stderr, "Stereo-Tiefe: %.1f\n", FilterShader::stereoDepth() );
+			RenderPipeline::adjustStereoDepth( +0.2f );
+			fprintf( stderr, "Stereo-Tiefe: %.1f\n", RenderPipeline::stereoDepth() );
 			break;
 
 		// ---- MIDI learn: cycle through the assignable targets ----

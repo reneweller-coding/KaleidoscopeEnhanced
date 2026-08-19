@@ -265,7 +265,7 @@ void PreviewWidget::loadImages()
 // Set every uniform any of the effect shaders might declare.  Unused ones resolve
 // to location -1 and are silently ignored, so one call works for all shaders.
 // Editor slider values override the per-activation params (after defaults).
-// 2D CAMERA RIG preview parity -- see FilterShader::rig2Transform for the
+// 2D CAMERA RIG preview parity -- see RenderPipeline::rig2Transform for the
 // engine-side twin.  Values come from the selected entry's rig2* formulas
 // (absolute channels + rate channels integrated on the preview clock).
 GLuint PreviewWidget::rig2Apply(GLuint srcTex, int w, int h)
@@ -390,7 +390,7 @@ void PreviewWidget::setAudioTimeline(std::vector<AudioFeatures> tl)
 void PreviewWidget::applyCommonUniforms(QOpenGLShaderProgram *p)
 {
     // ---- REAL audio preview: play back the analyzer's feature timeline ----
-    // Applies a compact version of the host's mapping (FilterShader::paint):
+    // Applies a compact version of the host's mapping (RenderPipeline::paint):
     // peak-hold + slew envelopes, integrated motion phases, fast-vs-slow swell,
     // continuous beat phase.  Loops with the (looped) sound.
     if (!m_timeline.empty())
@@ -907,7 +907,7 @@ void PreviewWidget::paintGL()
         m_fbo->release();
     }
 
-    // ---- 2D CAMERA RIG (preview parity with FilterShader::rig2Transform):
+    // ---- 2D CAMERA RIG (preview parity with RenderPipeline::rig2Transform):
     // rig2* formulas of the selected entry transform the pass-1 frame before
     // the combine samples it.  3D scenes have their own projM rig instead.
     GLuint pass1Tex = (m_texProg && m_fbo) ? m_fbo->texture() : 0;

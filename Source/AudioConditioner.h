@@ -8,12 +8,12 @@
 #ifndef AUDIOCONDITIONER_H
 #define AUDIOCONDITIONER_H
 
-// Audio-Konditionierung, herausgelöst aus FilterShader::paint() (Refactor,
+// Audio-Konditionierung, herausgelöst aus RenderPipeline::paint() (Refactor,
 // 2026-08-19). Reiner Zustandsautomat: liest rohe AudioFeatures + Zeitdelta,
 // schreibt eine integrierte/geslewte Kopie plus ein paar Regie-Signale, die
 // keinen Platz in AudioFeatures haben (Kamera-Drift, Rewind, Letterbox,
 // Shockwave). Rührt selbst keinen GL-Zustand an -- der einzige GL-Touch in
-// der Nähe (Title-Reveal-Upload) blieb bewusst in FilterShader::paint(),
+// der Nähe (Title-Reveal-Upload) blieb bewusst in RenderPipeline::paint(),
 // weil er echt mit dem Wandzeit-Teil dort verzahnt ist.
 //
 // Bewusst Qt-frei (RendererCore-Baustein, wie GpuSims/PresentPass/
@@ -40,7 +40,7 @@ public:
 	 * @brief Per-frame inputs this class needs but does not own the source of.
 	 *
 	 * Everything here is read-only from AudioConditioner's point of view --
-	 * globalTime and trailDepth3D are FilterShader members, reactivity/
+	 * globalTime and trailDepth3D are RenderPipeline members, reactivity/
 	 * latencyLead are its live-tunable hotkey statics, and the four sim-head
 	 * values come from GpuSims's ring-buffer accessors. Passed as plain
 	 * values (not references to those owning classes) to keep this class
@@ -49,9 +49,9 @@ public:
 	struct Context
 	{
 		float globalTime   = 0.f;   ///< Wall-clock seconds since start (day/night cycle, camera drift/gate-weave, KALEIDO_REGIE_TEST timing).
-		float trailDepth3D = 0.f;   ///< Previous frame's "a 3D scene is up" blend (FilterShader::m_trailDepth3D) -- widens the virtual camera's safety zoom.
-		float reactivity   = 1.f;   ///< Global audio-motion master gain (FilterShader::s_reactivity).
-		float latencyLead  = 0.f;   ///< Display-phase lead in seconds, for loopback/analysis/render latency compensation (FilterShader::s_latencyLead).
+		float trailDepth3D = 0.f;   ///< Previous frame's "a 3D scene is up" blend (RenderPipeline::m_trailDepth3D) -- widens the virtual camera's safety zoom.
+		float reactivity   = 1.f;   ///< Global audio-motion master gain (RenderPipeline::s_reactivity).
+		float latencyLead  = 0.f;   ///< Display-phase lead in seconds, for loopback/analysis/render latency compensation (RenderPipeline::s_latencyLead).
 		float ssmHead      = 0.f;   ///< GpuSims::ssmHeadNorm() -- self-similarity-matrix ring write head.
 		float ssmFill      = 0.f;   ///< GpuSims::ssmFillNorm() -- self-similarity-matrix ring fill.
 		float spectroHead  = 0.f;   ///< GpuSims::spectroHeadNorm() -- spectrogram ring write head.

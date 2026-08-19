@@ -321,7 +321,7 @@ Konsequenzen fürs Autorieren:
 - V7 (Anti-Flimmer) gilt unverändert auch für Formeln: nie eine Formel auf
   eine Uniform legen, die im Shader mit `time` multipliziert wird.
 - **2D-Kamera-Rig (alle 2D-Szenen):** Formeln `rig2Roll`/`rig2Zoom`/
-  `rig2X`/`rig2Y` (+ integrierte `rig2…V`-Raten) — FilterShader schiebt das
+  `rig2X`/`rig2Y` (+ integrierte `rig2…V`-Raten) — RenderPipeline schiebt das
   fertige Szenen-FBO durch `Engine/Rig2D.frag` (Spiegel-Faltung an den
   Rändern), bevor der Combine es liest. Nur aktiv, wenn eine Formel
   existiert; auf gepackten Stereo-Frames grundsätzlich aus.

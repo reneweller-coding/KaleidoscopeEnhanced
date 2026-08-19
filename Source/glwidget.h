@@ -18,7 +18,7 @@
 #include <QtGui/QPixmap>
 #include <QtCore/QSet>
 
-#include "filterShader.h"
+#include "RenderPipeline.h"
 #include "Configuration.h"
 #include "AudioAnalyzer.h"
 #include "NowPlaying.h"
@@ -32,7 +32,7 @@
  *        and the audio/MIDI/track-media wiring.
  *
  * GLwidget owns the timer-driven render loop (paintGL()/timerEvent()), the active
- * Configuration (a loaded preset made of a FilterShader pipeline), and the
+ * Configuration (a loaded preset made of a RenderPipeline pipeline), and the
  * AudioAnalyzer that feeds it per-frame AudioFeatures. It also owns the optional
  * peripherals: MIDI control surface mapping (MidiInput), "now playing" title/
  * artist polling (NowPlaying), synced lyrics + artist-image overlays (TrackMedia),
@@ -180,7 +180,7 @@ protected:
     virtual void timerEvent( QTimerEvent* );
 
 	/// Renders one frame: audio features, MIDI, batch-render exit check, shader
-	/// hot-reload, auto-config, the FilterShader pipeline, recording capture,
+	/// hot-reload, auto-config, the RenderPipeline pipeline, recording capture,
 	/// web-remote snapshot, config cross-fade, now-playing reveal, lyrics/
 	/// artist-image overlays, and any QPainter overlays (menus, help, REC dot).
 	void draw();
@@ -225,15 +225,15 @@ protected:
 	// Taste 'w' schaltet den Lyrics-Modus (aus -> Scroll -> Karaoke), Taste
 	// 'o' die Künstlerbilder.  updateTrackOverlays() berechnet pro Frame den
 	// Overlay-Zustand (Playback-Sync, Blenden, Bildrotation) und reicht ihn
-	// samt Texturen an den FilterShader/PresentPass durch.
+	// samt Texturen an den RenderPipeline/PresentPass durch.
 	/**
 	 * @brief Computes this frame's lyrics/artist-image overlay state (sync
 	 *        position via a consumer PLL, karaoke line, fades, palette) and
 	 *        uploads any changed textures, then hands the result to the given
-	 *        FilterShader's present pass.
-	 * @param fs FilterShader (present pass) to upload overlay textures/state to.
+	 *        RenderPipeline's present pass.
+	 * @param fs RenderPipeline (present pass) to upload overlay textures/state to.
 	 */
-	void			updateTrackOverlays( FilterShader *fs );
+	void			updateTrackOverlays( RenderPipeline *fs );
 	TrackMedia	   *m_trackMedia     = nullptr;   ///< Fetches synced lyrics + artist images (LRCLIB/Deezer) for the current track.
 	// Default beim allerersten Start (keine gespeicherten Settings): Karaoke
 	// + Künstlerbilder an - ab dann persistiert loadUiSettings()/saveUiSettings()
@@ -289,11 +289,11 @@ protected:
 	// PLL-Simulation mit realistischem Referenz-Rauschen nachgestellt.
 	qint64			m_fwdJumpSince   = -1;   ///< m_fpsTimer timestamp when a forward reference jump was first observed; -1 = none pending.
 	double			m_fwdJumpRef     = 0.0;  ///< Reference position of the pending forward jump candidate.
-	// An WELCHEN FilterShader die Overlay-Texturen zuletzt hochgeladen wurden:
+	// An WELCHEN RenderPipeline die Overlay-Texturen zuletzt hochgeladen wurden:
 	// jede Konfiguration hat ihren EIGENEN PresentPass - nach einem Preset-
 	// Wechsel müssen Lyrics-/Künstlerbild-Texturen dort neu hochgeladen
 	// werden, sonst sind sie "verloren".
-	FilterShader   *m_overlayFs      = nullptr;   ///< FilterShader that last received the overlay textures, to detect a preset switch.
+	RenderPipeline   *m_overlayFs      = nullptr;   ///< RenderPipeline that last received the overlay textures, to detect a preset switch.
 
 	// Optional MIDI control (knobs -> look params, pads -> next effect).
 	// MIDI LEARN (key 'j'): cycles through the targets below; the next CC
@@ -385,7 +385,7 @@ protected:
 	qint64  m_lastAutoSwitch  = 0;      ///< when auto-config last switched
 
 	// Persist / restore UI state (active config, auto-config, auto-scale) in the
-	// same settings file FilterShader uses.  Saved with 'k', loaded at startup.
+	// same settings file RenderPipeline uses.  Saved with 'k', loaded at startup.
 	/// Restores persisted UI state (active config name, auto-config, auto-scale,
 	/// now-playing/lyrics/artist toggles, MIDI mapping) from the shared settings
 	/// INI, called once from the constructor.
@@ -393,15 +393,15 @@ protected:
 	/// Writes the current UI state to the shared settings INI (key 'k' and every
 	/// quit path).
 	void    saveUiSettings();
-	// Bündelt saveUiSettings() + FilterShader::saveSettings() - ruft die
+	// Bündelt saveUiSettings() + RenderPipeline::saveSettings() - ruft die
 	// Taste 'k' auf UND jeder Quit-Pfad (auch die harten exit(0)-Stellen,
 	// die keine C++-Destruktoren mehr durchlaufen), damit der zuletzt
 	// gewählte Zustand wirklich immer übersteht.
 	void    saveAllSettings();
 
-	// Adaptive render scale: nudge FilterShader's internal render scale to keep
+	// Adaptive render scale: nudge RenderPipeline's internal render scale to keep
 	// the frame rate near target, never exceeding the launch -s value.
-	/// Nudges FilterShader's render scale down when the frame rate is struggling
+	/// Nudges RenderPipeline's render scale down when the frame rate is struggling
 	/// (< 45 FPS) and back up when there's headroom (> 57 FPS), clamped between
 	/// a fixed floor and the launch -s ceiling, with a settle delay between steps.
 	void    updateAdaptiveScale();
@@ -417,7 +417,7 @@ protected:
 
 	void resetRotation(); ///< Sets the rotation matrix to identity (currently a no-op stub; body is commented out).
 
-	FilterShader	*m_filterShader;   ///< Unused legacy member (the active pipeline is Configuration::m_filterShader instead).
+	RenderPipeline	*m_renderPipeline;   ///< Unused legacy member (the active pipeline is Configuration::m_renderPipeline instead).
     ImageLoader     *m_imageLoader;   ///< Unused legacy member.
 
 
@@ -430,7 +430,7 @@ protected:
 
 	QString			m_directory;   ///< Working directory set via slotSetDirectory(); currently only stored, not consumed.
 
-	Configuration  *m_actConfiguration;   ///< Currently active configuration (owns the live FilterShader pipeline).
+	Configuration  *m_actConfiguration;   ///< Currently active configuration (owns the live RenderPipeline pipeline).
 
 	AudioAnalyzer  *m_audioAnalyzer;   ///< WASAPI loopback/capture audio analyzer; produces the per-frame AudioFeatures.
 

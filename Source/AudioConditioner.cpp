@@ -2,7 +2,7 @@
  * @file AudioConditioner.cpp
  * @brief Implements AudioConditioner — see AudioConditioner.h. Verbatim port of
  *        the audio-conditioning block that used to live inline in
- *        FilterShader::paint(); only the storage (now member variables) and
+ *        RenderPipeline::paint(); only the storage (now member variables) and
  *        the external inputs (now Context fields) changed, never the maths
  *        or the order of operations.
  */
@@ -13,9 +13,9 @@
 #include <cstdlib>
 #include <algorithm>
 
-// Local copies of two tiny helpers also used elsewhere in FilterShader.cpp
+// Local copies of two tiny helpers also used elsewhere in RenderPipeline.cpp
 // (both file-scope `static` there too) -- duplicated rather than shared so
-// this class stays fully decoupled from FilterShader/Qt, matching the same
+// this class stays fully decoupled from RenderPipeline/Qt, matching the same
 // call this codebase already made for GpuSims/PresentPass/SceneScheduler.
 static float slewToward( float cur, float target, float rate, float dt )
 {

@@ -109,7 +109,7 @@ public:
 	void setEyeOffset( float e ) { m_eyeOffset = e; }   ///< @param e Stereo eye offset in world units (0 = mono) to use for the next draw() call.
 
 	// FPS-driven detail budget for the heavy cube scenes (1.0 = all cubes,
-	// 0.5 = every 2nd).  Maintained by FilterShader from the frame rate.
+	// 0.5 = every 2nd).  Maintained by RenderPipeline from the frame rate.
 	static float s_cubeBudget;   ///< Global FPS-driven detail budget (1.0 = draw everything, 0.5 = every 2nd, ...), uploaded to shaders as the `cubeBudget` uniform.
 
 private:

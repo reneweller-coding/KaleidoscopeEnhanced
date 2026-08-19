@@ -241,7 +241,7 @@ public:
 	 * Called AFTER setUniforms() has run, while the shader program is still active.
 	 *
 	 * Motion is delivered as pre-integrated, continuous phase offsets
-	 * (audioPhase / audioAdvance from FilterShader::paint) rather than by scaling
+	 * (audioPhase / audioAdvance from RenderPipeline::paint) rather than by scaling
 	 * the speed/speedTunnel uniforms.  Scaling those used to remap the whole
 	 * time*speed phase per-frame and caused violent flicker; the base speeds are
 	 * now left untouched so they advance smoothly.
@@ -348,8 +348,8 @@ public:
 	static constexpr float kSceneTanHalfFovY = 0.52056705f; ///< tan(55 deg / 2); with near/far and aspect, enough to reconstruct a view-space position from a depth sample.
 
 	// Whether each texture-effect FBO's depth attachment holds real geometry
-	// this frame (set by FilterShader; [0] = tex0's scene, [1] = tex1's).
-	static float s_depthValid[2]; ///< Per-slot (tex0/tex1) flag: whether that FBO's depth attachment holds real 3D geometry this frame. Set by FilterShader.
+	// this frame (set by RenderPipeline; [0] = tex0's scene, [1] = tex1's).
+	static float s_depthValid[2]; ///< Per-slot (tex0/tex1) flag: whether that FBO's depth attachment holds real 3D geometry this frame. Set by RenderPipeline.
 
 	// ---- shadow mapping ----
 	// A scene cannot simply be re-projected by the engine: every scene places
@@ -428,7 +428,7 @@ protected:
 	 * @return minTime when minTime == maxTime, otherwise a value in [minTime, maxTime).
 	 */
 	unsigned int getInterpolatedTime( unsigned int minTime, unsigned int maxTime );
-	/// Clears the framebuffer and draws the shared fullscreen triangle (core-profile VAO from filterShader.cpp).
+	/// Clears the framebuffer and draws the shared fullscreen triangle (core-profile VAO from RenderPipeline.cpp).
 	void drawWindow();
 
 	unsigned int	m_width; ///< Combine width: render target width in pixels, as last set by prepare()/initUniforms()/setSize().
@@ -501,7 +501,7 @@ protected:
 
 	// 2D CAMERA RIG state (formulas rig2Roll/rig2Zoom/rig2X/rig2Y + the
 	// host-integrated rig2…V rates), evaluated in applyAudioFeatures and
-	// consumed by FilterShader's Engine/Rig2D.frag transform pass.
+	// consumed by RenderPipeline's Engine/Rig2D.frag transform pass.
 	bool  m_rig2Active   = false; ///< True once any rig2* formula (absolute or rate) is present; enables the Rig2D transform pass.
 	float m_rig2[4]      = { 0.f, 0.f, 0.f, 0.f };   ///< Roll zoom x y: current 2D camera rig transform {roll, zoom, panX, panY}, consumed via rig2().
 	float m_rig2Acc[4]   = { 0.f, 0.f, 0.f, 0.f }; ///< Host-integrated accumulator for the rig2*V rate formulas (roll, zoom, panX, panY).

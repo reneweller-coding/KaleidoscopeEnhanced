@@ -213,7 +213,7 @@ exit /b 0</Command>
     <ClCompile Include="Source\Configuration.cpp" />
     <ClCompile Include="Source\AudioAnalyzer.cpp" />
     <ClCompile Include="Source\EffectShader.cpp" />
-    <ClCompile Include="Source\filterShader.cpp" />
+    <ClCompile Include="Source\RenderPipeline.cpp" />
     <ClCompile Include="Source\ComputeFX.cpp" />
     <ClCompile Include="Source\glcore.cpp" />
     <ClCompile Include="Source\AudioConditioner.cpp" />
@@ -289,7 +289,7 @@ exit /b 0</Command>
     <ClInclude Include="Source\ComputeFX.h" />
     <ClInclude Include="Source\CfxTypes.h" />
     <ClInclude Include="Source\glcore.h" />
-    <ClInclude Include="Source\filterShader.h" />
+    <ClInclude Include="Source\RenderPipeline.h" />
     <CustomBuild Include="Source\glwidget.h">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">MOCing glwidget.h ...</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MOCing glwidget.h ...</Message>

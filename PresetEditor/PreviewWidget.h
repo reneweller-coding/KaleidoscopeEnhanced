@@ -306,12 +306,12 @@ private:
     struct SceneExpr { QString name; QString formula; std::shared_ptr<ExprProgram> prog; };   ///< One formula-layer entry: uniform name, source text, and its compiled program (null if the formula failed to compile).
     QVector<SceneExpr> m_sceneExprs;      // formula layer of the selected entry
 
-    // 2D CAMERA RIG preview parity: mirrors FilterShader::rig2Transform for
+    // 2D CAMERA RIG preview parity: mirrors RenderPipeline::rig2Transform for
     // the 2D path -- rig2* formulas rotate/zoom/pan the pass-1 frame before
     // the combine samples it.  Returns srcTex unchanged when no rig2 formula
     // is active.
     /**
-     * @brief 2D CAMERA RIG preview parity: mirrors FilterShader::rig2Transform for the 2D path.
+     * @brief 2D CAMERA RIG preview parity: mirrors RenderPipeline::rig2Transform for the 2D path.
      *
      * rig2* formulas of the selected entry rotate/zoom/pan the pass-1 frame
      * before the combine samples it.

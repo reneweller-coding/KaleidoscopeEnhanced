@@ -148,7 +148,7 @@ void EffectShader::draw( )
 void EffectShader::drawWindow()
 {
 	// Core profile: fullscreen triangle via the shared Fullscreen.vert
-	// (the VAO lives in filterShader.cpp — one empty VAO for all passes).
+	// (the VAO lives in RenderPipeline.cpp — one empty VAO for all passes).
 	extern GLuint fullscreenVAO();
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 	glBindVertexArray( fullscreenVAO() );
@@ -293,7 +293,7 @@ unsigned int EffectShader::getInterpolatedTime( unsigned int minTime, unsigned i
 //   the WHOLE accumulated phase every time the audio changed, producing large
 //   discontinuous jumps – the "wild flicker".  Audio-driven motion is now
 //   delivered as pre-integrated, continuous phase offsets (audioPhase /
-//   audioAdvance), computed once per frame in FilterShader::paint().  The base
+//   audioAdvance), computed once per frame in RenderPipeline::paint().  The base
 //   speed/speedTunnel uniforms keep advancing smoothly and untouched.
 //
 // This function only uploads dedicated audio uniforms.  glGetUniformLocation
@@ -408,7 +408,7 @@ void EffectShader::applyAudioFeatures(const AudioFeatures &f)
 
         // ---- 2D CAMERA RIG: formulas named rig2Roll/rig2Zoom/rig2X/rig2Y
         // (absolute) and rig2…V (rates, HOST-INTEGRATED so audio-varying
-        // rates are jump-free) are not shader uniforms — FilterShader reads
+        // rates are jump-free) are not shader uniforms — RenderPipeline reads
         // the result via rig2() and runs the Engine/Rig2D.frag transform pass
         // over this scene's finished frame.  Rates integrate once per FRAME
         // (m_exprTime is per-frame; guard against multiple passes).

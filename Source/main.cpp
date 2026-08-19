@@ -5,7 +5,7 @@
  * @par CLI contract
  * All options are parsed by parsecommandline() (single-character flags, some taking
  * one parameter) before any GL/Qt objects exist, so their effects are just setting
- * static fields on FilterShader / GLwidget / AudioAnalyzer that those classes read
+ * static fields on RenderPipeline / GLwidget / AudioAnalyzer that those classes read
  * once the app actually starts:
  *  - `-b`            toggle fullscreen at startup (2nd monitor if present).
  *  - `-s <factor>`   internal render scale 0.25..2.0 (lower = faster on weak GPUs).
@@ -45,7 +45,7 @@
 #include <cstdio>
 #include <ctime>
 
-#include "filterShader.h"
+#include "RenderPipeline.h"
 #include "glwidget.h"
 
 #include <QtWidgets/QApplication>
@@ -146,7 +146,7 @@ void commandlineerror( char *cmd, char *parm )
 /**
  * @brief Parses the process's command-line arguments and applies each recognized
  *        option's effect immediately (mostly by setting static fields on
- *        FilterShader / GLwidget / AudioAnalyzer, plus the globals above).
+ *        RenderPipeline / GLwidget / AudioAnalyzer, plus the globals above).
  *
  * Builds a lookup table (optionchar[] / musthaveparam[]) of the valid single-letter
  * options and whether each needs a parameter, then walks argv applying the table:
@@ -217,7 +217,7 @@ void parsecommandline( int argc, char *argv[] )
 				}
 
 			// Dispatch on the option letter: each case applies its effect directly to
-			// the relevant static field (FilterShader/GLwidget/AudioAnalyzer) or
+			// the relevant static field (RenderPipeline/GLwidget/AudioAnalyzer) or
 			// global; see the CLI-contract list in the file-level @brief above for
 			// what each flag means.
 			switch ( optchar )
@@ -226,7 +226,7 @@ void parsecommandline( int argc, char *argv[] )
 				//case 'b': benchmark = true; break;
 				//case 'f': directory = argv[1]; break;
 				case 'b': fullscreen = !fullscreen; break;
-				case 's': FilterShader::setRenderScale( (float) atof( argv[1] ) ); break;
+				case 's': RenderPipeline::setRenderScale( (float) atof( argv[1] ) ); break;
 				case 'c': GLwidget::s_startConfig = QString::fromLocal8Bit( argv[1] ); break;
 				case 'm': monitorIndex = atoi( argv[1] ); fullscreen = true; break;
 				case 'l': logToFile = true; break;
@@ -235,7 +235,7 @@ void parsecommandline( int argc, char *argv[] )
 				// capturing live audio (deterministic classifier testing).
 				case 'w': AudioAnalyzer::s_offlineWav = QString::fromLocal8Bit( argv[1] ); break;
 				// Spout output: publish the displayed frame to other apps.
-				case 'o': FilterShader::s_spoutEnabled = true; break;
+				case 'o': RenderPipeline::s_spoutEnabled = true; break;
 				// Embedded web remote (phone control page).
 				case 't': GLwidget::s_remotePort = atoi( argv[1] ); break;
 				// Batch render: offline WAV + auto-record + auto-quit at the end.
@@ -246,20 +246,20 @@ void parsecommandline( int argc, char *argv[] )
 					break;
 				// Spout INPUT: a live sender replaces the photos as source image.
 				case 'i':
-					FilterShader::s_spoutInEnabled = true;
-					FilterShader::s_spoutInSender  = QString::fromLocal8Bit( argv[1] );
+					RenderPipeline::s_spoutInEnabled = true;
+					RenderPipeline::s_spoutInSender  = QString::fromLocal8Bit( argv[1] );
 					break;
 				// Native VIDEO input: a file, or a directory played in turn.
 				// Same slot as -i; Spout wins if both are given.
 				case 'v':
-					FilterShader::s_videoPath = QString::fromLocal8Bit( argv[1] );
+					RenderPipeline::s_videoPath = QString::fromLocal8Bit( argv[1] );
 					break;
 				// Stereoscopic output: sbs (side-by-side), tb (top-bottom),
 				// ana (red-cyan anaglyph); anything else = off.
 				case '3':
 				{
 					QString m3 = QString::fromLocal8Bit( argv[1] ).toLower();
-					FilterShader::s_stereoMode = (m3 == "sbs") ? 1
+					RenderPipeline::s_stereoMode = (m3 == "sbs") ? 1
 					                           : (m3 == "tb")  ? 2
 					                           : (m3.startsWith("ana")) ? 3 : 0;
 					break;
@@ -316,7 +316,7 @@ int main(int argc, char *argv[])
 
 	// Restore saved look settings first, so explicit command-line flags (e.g. -s)
 	// still take precedence over the persisted values.
-	FilterShader::loadSettings();
+	RenderPipeline::loadSettings();
 
 	// Parse command line options; may itself exit() the process (see
 	// commandlineerror()/parsecommandline() above) for -h or invalid input.

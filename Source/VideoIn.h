@@ -8,7 +8,7 @@
 // Native video as an image source.
 // -----------------------------------------------------------------------
 // Slots into exactly the same place as the Spout input: it hands the renderer
-// a GL texture id, and FilterShader puts that in m_liveTex, where it replaces
+// a GL texture id, and RenderPipeline puts that in m_liveTex, where it replaces
 // both photo slots.  Every effect that samples tex0/tex1 then works on moving
 // footage without knowing anything changed.
 //

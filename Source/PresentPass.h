@@ -8,7 +8,7 @@
 #ifndef PRESENTPASS_H
 #define PRESENTPASS_H
 
-// Finaler Present-Pass, herausgelöst aus FilterShader (Refactor 3/4 Teil b).
+// Finaler Present-Pass, herausgelöst aus RenderPipeline (Refactor 3/4 Teil b).
 //
 // Aufgaben (unverändert aus dem alten paint()-Schwanz):
 //  - Photosensitivitäts-Limiter: mittlere Frame-Luminanz (grobe Mip, Readback
@@ -34,7 +34,7 @@
  * @brief The final present/composite stage of the render pipeline.
  *
  * PresentPass owns everything that used to live at the tail of
- * FilterShader::paint(): the photosensitivity brightness limiter, the GPU
+ * RenderPipeline::paint(): the photosensitivity brightness limiter, the GPU
  * percentile auto-exposure compute pass, a two-pass quarter-resolution
  * Gaussian bloom, a frame-history ring (for time-echo/rewind), and finally
  * Present.frag itself, which upscales the render-resolution result to
@@ -121,9 +121,9 @@ public:
 	void setArtistImage( const void *rgba, int w, int h );
 
 	/** Frame-Eingaben für run() - alles Werte, die weiterhin der Pipeline/
-	 *  den Statics von FilterShader gehören. */
+	 *  den Statics von RenderPipeline gehören. */
 	/**
-	 * @brief Per-frame inputs to run(); everything here still belongs to the pipeline/FilterShader's statics, not to PresentPass itself.
+	 * @brief Per-frame inputs to run(); everything here still belongs to the pipeline/RenderPipeline's statics, not to PresentPass itself.
 	 */
 	struct Inputs
 	{
