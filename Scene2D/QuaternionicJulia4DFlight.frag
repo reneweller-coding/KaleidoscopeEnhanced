@@ -16,6 +16,13 @@ out vec4 fragColor;
  *   sliceP  float 4D hyperspace slice offset            (0.5..2.2)
  *   speedP  float 4D rotation velocity                 (0.5..2.0)
  *   hueP    float metallic iridescence hue offset      (0..6.28)
+ *
+ * The distance field itself is BAKED by the companion QuaternionicJulia4DFlight.comp
+ * into texBake (a 96^3 RG32F volume: R = distance, G = orbit trap), re-baked
+ * every few frames rather than evaluated live at every one of the march's 48
+ * steps -- see EffectShader::stepBake(). The 9-iteration quaternion-squaring
+ * formula itself now lives ONLY in the .comp file; this file just samples the
+ * result, so a change to the fractal formula belongs there, not here.
  */
 
 uniform vec2  resolution;
@@ -42,6 +49,7 @@ uniform float iterP;
 uniform float sliceP;
 uniform float speedP;
 uniform float hueP;
+uniform sampler3D texBake;
 
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
@@ -72,42 +80,34 @@ mat2 rot2D(float a) {
     return mat2(c, -s, s, c);
 }
 
-// 4D Quaternion Multiplication: q1 * q2
-vec4 qMul(vec4 q1, vec4 q2) {
-    return vec4(
-        q1.x * q2.x - dot(q1.yzw, q2.yzw),
-        q1.x * q2.yzw + q2.x * q1.yzw + cross(q1.yzw, q2.yzw)
-    );
+// The bake cube spans [-BAKE_EXTENT, BAKE_EXTENT] on every axis -- MUST match
+// QuaternionicJulia4DFlight.comp's EXTENT constant.
+const float BAKE_EXTENT = 2.2;
+vec3 worldToUV(vec3 p) {
+    return (p + BAKE_EXTENT) / (2.0 * BAKE_EXTENT);
 }
 
-// Distance estimator for 4D Quaternion Julia set
-float qJuliaSDF(vec4 p, vec4 c, out float trap) {
-    vec4 q = p;
-    vec4 qp = vec4(1.0, 0.0, 0.0, 0.0);
-    trap = 1e5;
-
-    for (int i = 0; i < 9; ++i) {
-        qp = 2.0 * qMul(q, qp);
-        q = qMul(q, q) + c;
-
-        float r2 = dot(q, q);
-        trap = min(trap, abs(q.x * q.y));
-        if (r2 > 8.0) break;
-    }
-
-    float r = length(q);
-    return 0.5 * r * log(r) / max(length(qp), 1e-4);
+// Distance + orbit-trap lookup against the baked field (see the .comp file):
+// the 4D hyper-rotation and the qJulia formula itself were already applied
+// PER VOXEL when it was baked, so a lookup by plain 3D world position "p"
+// already accounts for both -- nothing here needs to know about C, wCoord,
+// or the rotation at all.
+vec2 fieldAt(vec3 p) {
+    return texture(texBake, worldToUV(p)).rg;
 }
 
 void main() {
-    float itr = (iterP  > 0.0) ? iterP  : 1.0;
-    float slc = (sliceP > 0.0) ? sliceP : 1.0;
-    float spd = (speedP > 0.0) ? speedP : 1.0;
     float hue = (hueP   > 0.0) ? hueP   : 0.0;
+    float spd = (speedP > 0.0) ? speedP : 1.0;
 
     vec2 uv = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
     vec2 st = gl_FragCoord.xy / resolution;
 
+    // Only needed here for the camera ray's own rotation now -- the fractal
+    // formula, its C/wCoord morph and its 4D hyper-rotation all moved into
+    // QuaternionicJulia4DFlight.comp (see fieldAt() above). MUST still match
+    // the .comp's own "t" so the baked rotation and this live camera stay in
+    // sync (kept in step deliberately, not shared code -- see that file).
     float t = time * 0.3 * spd + audioAdvance * 0.15;
 
     // Raymarching setup
@@ -117,20 +117,6 @@ void main() {
     rd.yz = rot2D(sin(t * 0.4) * 0.3) * rd.yz;
     rd.xz = rot2D(t * 0.5) * rd.xz;
 
-    // 4D Quaternion constant C morphing
-    // Morph kept INSIDE the filled-set regime: the old wide excursions
-    // pushed C into dust territory where the Julia set is empty and the
-    // frame went black (t=16 in the catalogue).
-    vec4 C = vec4(
-        -0.45 + 0.06 * sin(t * 0.7),
-         0.40 + 0.05 * cos(t * 0.5),
-        -0.18 + 0.05 * sin(t * 0.9),
-        -0.08 + 0.05 * cos(t * 1.1) + audioKick * 0.06
-    );
-
-    // 4D Slice coordinate w
-    float wCoord = sin(t * 0.6) * 0.4 * slc;
-
     float dO = 0.0;
     float hitDist = -1.0;
     float trapMin = 1e5;
@@ -138,15 +124,10 @@ void main() {
 
     for (int i = 0; i < 48; ++i) {
         vec3 p = ro + rd * dO;
-        vec4 p4D = vec4(p, wCoord);
 
-        // Hyper-rotation in 4D (xw and yw planes)
-        p4D.xw = rot2D(t * 0.4) * p4D.xw;
-        p4D.yw = rot2D(t * 0.3) * p4D.yw;
-
-        float curTrap;
-        float dS = qJuliaSDF(p4D, C, curTrap);
-        trapMin = min(trapMin, curTrap);
+        vec2 field = fieldAt(p);
+        float dS = field.r;
+        trapMin = min(trapMin, field.g);
 
         if (dS < 0.003) {
             hitDist = dO;
@@ -167,14 +148,15 @@ void main() {
     col += aura * 0.85;
 
     if (hitDist > 0.0) {
-        // Normal approximation
-        vec2 e = vec2(0.005, 0.0);
-        float tUnused;
-        vec4 hp = vec4(hitP, wCoord);
+        // Normal approximation: central differences on the baked field
+        // (the voxel grid caps the achievable detail -- a softer normal than
+        // the old live analytic one, in exchange for not evaluating the
+        // 9-iteration formula three more times per hit pixel).
+        vec3 e = vec3(0.01, 0.0, 0.0);
         vec3 n = normalize(vec3(
-            qJuliaSDF(hp + e.xyyy, C, tUnused) - qJuliaSDF(hp - e.xyyy, C, tUnused),
-            qJuliaSDF(hp + e.yxyy, C, tUnused) - qJuliaSDF(hp - e.yxyy, C, tUnused),
-            qJuliaSDF(hp + e.yyxy, C, tUnused) - qJuliaSDF(hp - e.yyxy, C, tUnused)
+            fieldAt(hitP + e.xyy).r - fieldAt(hitP - e.xyy).r,
+            fieldAt(hitP + e.yxy).r - fieldAt(hitP - e.yxy).r,
+            fieldAt(hitP + e.yyx).r - fieldAt(hitP - e.yyx).r
         ));
 
         vec3 lightDir = normalize(vec3(0.6, 0.8, -0.5));
