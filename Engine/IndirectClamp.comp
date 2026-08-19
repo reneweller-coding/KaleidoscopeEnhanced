@@ -1,21 +1,26 @@
 #version 430
 /**
  * @file IndirectClamp.comp
- * @brief Single-invocation pass that clamps a vertex generator's raw slot-reservation count into a safe indirect draw count.
+ * @brief Single-invocation pass that clamps a vertex generator's raw slot-reservation count into a safe, FPS-budgeted indirect draw count.
  *
  * Operates on a DrawArraysIndirectCommand buffer (binding 1) with a fifth
  * slot appended for the generator's raw atomicAdd counter: cmd[0] (the count
- * the draw call actually reads) is set to min(cmd[4], maxVertices), and
- * cmd[4] is reset to zero, armed for the next frame. This exists because
- * atomicAdd keeps incrementing even after a generator invocation finds no
- * room, so the raw counter can exceed the buffer's capacity; handing that raw
- * number straight to a draw call would read past the end of the vertex
- * buffer. Shared by every geometry-generator scene in Source/Scene3DShader
- * that draws with an indirect command (reservations are always made 3
- * vertices/one triangle at a time, so the clamp can never fall inside a
- * partially written triangle).
+ * the draw call actually reads) is set to min(cmd[4], maxVertices*budget),
+ * and cmd[4] is reset to zero, armed for the next frame. The maxVertices
+ * clamp exists because atomicAdd keeps incrementing even after a generator
+ * invocation finds no room, so the raw counter can exceed the buffer's
+ * capacity; handing that raw number straight to a draw call would read past
+ * the end of the vertex buffer. The budget factor is the SAME FPS-driven
+ * detail knob GEOM_CUBES scenes already use (Scene3DShader::s_cubeBudget,
+ * 1.0 = full detail, 0.5 = half under sustained low FPS) -- indirect
+ * generators had no equivalent lever before, so a heavy scene's frame cost
+ * could never be traded down under load. Shared by every geometry-generator
+ * scene in Source/Scene3DShader that draws with an indirect command
+ * (reservations are always made 3 vertices/one triangle at a time, so the
+ * clamp can never fall inside a partially written triangle, at either
+ * threshold).
  */
-// safe draw count.  Shared by every geom="indirect" scene.
+// safe, budgeted draw count.  Shared by every geom="indirect" scene.
 //
 // A generator hands out vertex slots with atomicAdd, and atomicAdd keeps
 // counting even after the shader has stopped writing: an invocation that finds
@@ -26,17 +31,24 @@
 //
 // Capacity is always a multiple of 3 and reservations are 3 at a time, so a
 // reservation either fits entirely or starts at or beyond the end — no
-// half-written triangle can ever fall inside the clamped range.
+// half-written triangle can ever fall inside the clamped range, whichever of
+// the two clamps (hard capacity vs. soft budget) ends up smaller.
 layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 
 // DrawArraysIndirectCommand + our own counter:
 //   [0] count  [1] instanceCount  [2] first  [3] baseInstance  [4] rawCount
 layout(std430, binding = 1) buffer Cmd { uint cmd[]; };
 
-uniform uint maxVertices;
+uniform uint  maxVertices;
+uniform float budget;   // 0..1, defaults to 1 (host omits it on old call sites)
 
 void main()
 {
-    cmd[0] = min(cmd[4], maxVertices);
+    // Round DOWN to the nearest multiple of 3: a partial triangle at the
+    // budgeted cutoff would draw two of its three vertices, reading whatever
+    // garbage float sits just past them as the third -- a visible stray spike
+    // rather than the mesh cleanly ending one triangle earlier.
+    uint budgeted = (uint(float(maxVertices) * budget) / 3u) * 3u;
+    cmd[0] = min(cmd[4], min(maxVertices, budgeted));
     cmd[4] = 0u;            // armed for the next frame; the host never touches it
 }

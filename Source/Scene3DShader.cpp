@@ -533,6 +533,16 @@ void Scene3DShader::runGenerator( float time )
 		GLint l = glGetUniformLocation( s_clampProg, "maxVertices" );
 		if( l >= 0 ) glUniform1ui( l, GLuint(m_meshCapacity) );
 	}
+	{
+		// Same FPS-driven detail knob GEOM_CUBES scenes already read as
+		// `cubeBudget` -- indirect generators had no way to shed triangles
+		// under load before this. GLSL floats default to 0 (not 1) when never
+		// set, so this MUST be uploaded every dispatch, not just when it
+		// changes -- a missed upload after a program relink would silently
+		// clamp every indirect scene to zero vertices.
+		GLint l = glGetUniformLocation( s_clampProg, "budget" );
+		if( l >= 0 ) glUniform1f( l, s_cubeBudget );
+	}
 	glDispatchCompute( 1, 1, 1 );
 
 	// Three consumers to fence against: the vertex puller, the indirect command
