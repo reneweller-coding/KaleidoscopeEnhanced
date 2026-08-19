@@ -1,13 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Kaleidoscope Remote: a thin fullscreen WebView around the visualizer's
-     embedded web remote (CLI -t <port>).  All UI/logic comes from the PC, so
-     the app never needs updating when the remote grows new controls. -->
+     embedded web remote, auto-discovered via UDP broadcast on the LAN (the
+     PC side starts it automatically, no -t <port> needed anymore).  All
+     UI/logic comes from the PC, so the app never needs updating when the
+     remote grows new controls. -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="de.kaleidoscope.remote"
-    android:versionCode="1"
-    android:versionName="1.0">
+    android:versionCode="2"
+    android:versionName="1.1">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Needed to read the WiFi subnet's directed broadcast address for discovery. -->
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
 
     <!-- The remote is plain HTTP on the LAN -> cleartext must be allowed. -->
     <application
