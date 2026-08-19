@@ -1,0 +1,104 @@
+#version 430
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+
+/**
+ * @file CosmicRayCherenkovAirShowerCascade.comp
+ * @brief Compute generator companion to CosmicRayCherenkovAirShowerCascade.frag --
+ * generates 3D relativistic cosmic ray extensive air shower (EAS) cascade tracks.
+ */
+
+layout(std430, binding = 0) buffer Verts {
+    float verts[]; // 8 floats per vertex: attrA.xyzw (pos, depth), attrB.xyzw (pad, cherenkovGlow)
+};
+
+// DrawArraysIndirectCommand: [0] count, [1] instanceCount, [2] first, [3] baseInstance, [4] rawCount
+layout(std430, binding = 1) buffer Cmd { uint cmd[]; };
+
+uniform uint  maxVertices;
+uniform float time;
+uniform float audioPhase;
+uniform float audioAdvance;
+uniform float audioKick;
+uniform float audioBass;
+uniform float audioMid;
+uniform float audioHigh;
+uniform float audioSwell;
+
+float hash11(float p) {
+    p = fract(p * 0.1031);
+    p *= p + 47.19;
+    p *= p + p;
+    return fract(p);
+}
+
+void writeVertex(uint slot, vec3 p, float e1, float e2) {
+    uint o = slot * 8u;
+    verts[o + 0u] = p.x;  verts[o + 1u] = p.y;  verts[o + 2u] = p.z;
+    verts[o + 3u] = e1;
+    verts[o + 4u] = 0.0;  verts[o + 5u] = 0.0;  verts[o + 6u] = 0.0;
+    verts[o + 7u] = e2;
+}
+
+void emitSegment(vec3 pA, vec3 pB, float e1, float e2, float thickness) {
+    uint base = atomicAdd(cmd[4], 6u);
+    if (base + 6u > maxVertices) return;
+
+    vec3 dir = pB - pA;
+    float len = length(dir);
+    dir = (len > 1e-5) ? dir / len : vec3(0.0, 1.0, 0.0);
+    vec3 upv = (abs(dir.y) > 0.95) ? vec3(1.0, 0.0, 0.0) : vec3(0.0, 1.0, 0.0);
+    vec3 side = normalize(cross(dir, upv)) * thickness;
+
+    vec3 a0 = pA - side, a1 = pA + side, b0 = pB - side, b1 = pB + side;
+    writeVertex(base + 0u, a0, e1, e2);
+    writeVertex(base + 1u, a1, e1, e2);
+    writeVertex(base + 2u, b0, e1, e2);
+    writeVertex(base + 3u, a1, e1, e2);
+    writeVertex(base + 4u, b1, e1, e2);
+    writeVertex(base + 5u, b0, e1, e2);
+}
+
+void main() {
+    uvec3 g = gl_GlobalInvocationID;
+    uint idx = g.x + 64u * (g.y + 64u * g.z);
+    
+    // 64 secondary particle cascade branches with 64 segments each
+    uint branchIdx = idx / 64u;
+    uint segIdx    = idx % 64u;
+    if (branchIdx >= 64u) return;
+
+    float t = time * 0.45 + audioAdvance * 0.4;
+    float seed = hash11(float(branchIdx) * 23.41);
+    
+    // Primary cosmic ray enters from top (+z = 2.0) down towards detector floor (-z = -2.0)
+    float s0 = float(segIdx) / 64.0;
+    float s1 = float(segIdx + 1u) / 64.0;
+
+    // Atmospheric depth along -z
+    float z0 = 2.0 - s0 * 4.0;
+    float z1 = 2.0 - s1 * 4.0;
+
+    // Secondary cascade cone angle (opening angle increases with depth)
+    float coneAngle = seed * 6.2831853;
+    float coneSpread = (0.2 + s0 * 1.5) * hash11(seed * 37.1);
+
+    // Moliere multiple Coulomb scattering fluctuations
+    vec2 scatt0 = vec2(sin(s0 * 16.0 + seed * 8.0), cos(s0 * 16.0 + seed * 8.0)) * (0.08 * s0);
+    vec2 scatt1 = vec2(sin(s1 * 16.0 + seed * 8.0), cos(s1 * 16.0 + seed * 8.0)) * (0.08 * s1);
+
+    vec2 xy0 = vec2(cos(coneAngle), sin(coneAngle)) * coneSpread + scatt0;
+    vec2 xy1 = vec2(cos(coneAngle), sin(coneAngle)) * ((0.2 + s1 * 1.5) * hash11(seed * 37.1)) + scatt1;
+
+    // Fall axis on Y (vertical IN FRAME): with the shower axis on z the
+    // cascade ran along the view depth and only a few stray tracks
+    // clipped into the bottom of the picture.
+    vec3 p0 = vec3(xy0.x, z0, xy0.y);
+    vec3 p1 = vec3(xy1.x, z1, xy1.y);
+
+    // Relativistic Cherenkov radiation cone glow (peaks at shower maximum X_max near s = 0.5)
+    float showerMax = exp(-pow((s0 - 0.5) * 3.5, 2.0));
+    float glow = showerMax * (1.0 + 3.0 * audioKick) * (1.0 + 0.5 * sin(s0 * 20.0 - t * 6.0));
+    float thick = (0.02 * (1.0 + showerMax)) * (1.0 + 0.3 * audioSwell);
+
+    emitSegment(p0, p1, s0, glow, thick);
+}

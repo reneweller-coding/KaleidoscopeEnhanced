@@ -1,0 +1,103 @@
+#version 330 core
+/**
+ * @file Chladni3DAcousticLevitation.vert
+ * @brief Vertex stage companion to Chladni3DAcousticLevitation.frag -- see that file's
+ * header for this scene's description.
+ */
+
+in vec4 attrA; // xyz = cube corner (-0.5..0.5), w = cube index
+in vec4 attrB; // 4 seeds in [0,1)
+
+out vec3 vNormal;
+out vec3 vCol;
+out float vAcousticNode;
+out vec3 vLocalPos;
+
+uniform mat4 projM;
+uniform float eyeOff;
+uniform float time;
+
+uniform float audioPhase;
+uniform float audioAdvance;
+uniform float audioKick;
+uniform float audioSwell;
+uniform float audioCentroid;
+uniform float audioValence;
+uniform float audioChromaHue;
+
+uniform sampler2D tex0;
+uniform sampler2D tex1;
+uniform float interpolation;
+
+uniform float nodeDensityP;
+uniform float particleSizeP;
+
+vec3 img(vec2 uv) {
+    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+}
+
+vec3 imgPalette(float t)
+{
+    float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
+    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
+    vec3  col = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
+    float g   = dot(col, vec3(0.333));
+    return mix(vec3(g), col, 0.55 + 0.45 * audioValence);
+}
+
+void main()
+{
+    vec3 corner = attrA.xyz;
+    float cIndex = attrA.w;
+    vLocalPos = corner;
+    
+    float t = time * 0.35 + audioAdvance * 0.3;
+    
+    // 3D acoustic standing wave pressure field in ultrasonic levitation chamber
+    // P(x,y,z) = cos(nx*x)*cos(ny*y)*cos(nz*z)
+    float kNodes = (nodeDensityP > 0.01 ? nodeDensityP : 3.0);
+    
+    // Distribute particle clusters across 3D acoustic nodal traps
+    float totalParticles = 256.0;
+    float pSeed = cIndex / totalParticles;
+    
+    float theta = pSeed * 6.2831853 * 13.0;
+    float phi = acos(fract(pSeed * 29.0) * 2.0 - 1.0);
+    float rad = 0.8 + 0.4 * sin(pSeed * 17.0 + t * 0.5);
+    
+    // Chladni 3D nodal trap positioning: particles collect at pressure nodes
+    vec3 baseP = vec3(
+        sin(phi) * cos(theta),
+        sin(phi) * sin(theta),
+        cos(phi)
+    ) * rad;
+    
+    // Acoustic Gor'kov potential force pulls particles towards nodal surfaces
+    float gorkovX = cos(baseP.x * kNodes + t * 0.5);
+    float gorkovY = cos(baseP.y * kNodes - t * 0.4);
+    float gorkovZ = cos(baseP.z * kNodes + t * 0.3);
+    float pressureNode = gorkovX * gorkovY * gorkovZ;
+    vAcousticNode = pressureNode;
+    
+    // Acoustic levitation trapped cluster position
+    vec3 trapPos = baseP + vec3(gorkovX, gorkovY, gorkovZ) * 0.15;
+    
+    // Microparticle cube size
+    float sz = (particleSizeP > 0.001 ? particleSizeP : 0.055) * (1.0 + 0.3 * audioSwell);
+    vec3 cubePos = trapPos + corner * sz;
+    
+    vNormal = normalize(corner);
+    vCol = imgPalette(fract(pSeed + pressureNode * 0.3 + audioCentroid));
+    
+    // Camera Transform (V3)
+    vec3 vp = cubePos;
+    
+    // 3D rotation
+    float c = cos(t * 0.2), s = sin(t * 0.2);
+    vp = vec3(vp.x * c - vp.z * s, vp.y, vp.x * s + vp.z * c);
+    vp.z += 4.5;
+    vp.x -= eyeOff;
+    
+    gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
+    gl_Position.x += eyeOff * 0.045 * gl_Position.w;
+}

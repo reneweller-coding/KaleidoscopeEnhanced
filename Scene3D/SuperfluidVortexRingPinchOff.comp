@@ -1,0 +1,107 @@
+#version 430
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+
+/**
+ * @file SuperfluidVortexRingPinchOff.comp
+ * @brief Compute generator companion to SuperfluidVortexRingPinchOff.frag --
+ * generates 3D quantized vortex filaments undergoing Crow instability pinch-off into
+ * propagating toroidal vortex rings in superfluid liquid Helium-II.
+ */
+
+layout(std430, binding = 0) buffer Verts {
+    float verts[]; // 8 floats per vertex: attrA.xyzw (pos, depth), attrB.xyzw (pad, pinchGlow)
+};
+
+// DrawArraysIndirectCommand: [0] count, [1] instanceCount, [2] first, [3] baseInstance, [4] rawCount
+layout(std430, binding = 1) buffer Cmd { uint cmd[]; };
+
+uniform uint  maxVertices;
+uniform float time;
+uniform float audioPhase;
+uniform float audioAdvance;
+uniform float audioKick;
+uniform float audioBass;
+uniform float audioMid;
+uniform float audioHigh;
+uniform float audioSwell;
+
+float hash11(float p) {
+    p = fract(p * 0.1031);
+    p *= p + 47.19;
+    p *= p + p;
+    return fract(p);
+}
+
+void writeVertex(uint slot, vec3 p, float e1, float e2) {
+    uint o = slot * 8u;
+    verts[o + 0u] = p.x;  verts[o + 1u] = p.y;  verts[o + 2u] = p.z;
+    verts[o + 3u] = e1;
+    verts[o + 4u] = 0.0;  verts[o + 5u] = 0.0;  verts[o + 6u] = 0.0;
+    verts[o + 7u] = e2;
+}
+
+void emitSegment(vec3 pA, vec3 pB, float e1, float e2, float thickness) {
+    uint base = atomicAdd(cmd[4], 6u);
+    if (base + 6u > maxVertices) return;
+
+    vec3 dir = pB - pA;
+    float len = length(dir);
+    dir = (len > 1e-5) ? dir / len : vec3(0.0, 1.0, 0.0);
+    vec3 upv = (abs(dir.y) > 0.95) ? vec3(1.0, 0.0, 0.0) : vec3(0.0, 1.0, 0.0);
+    vec3 side = normalize(cross(dir, upv)) * thickness;
+
+    vec3 a0 = pA - side, a1 = pA + side, b0 = pB - side, b1 = pB + side;
+    writeVertex(base + 0u, a0, e1, e2);
+    writeVertex(base + 1u, a1, e1, e2);
+    writeVertex(base + 2u, b0, e1, e2);
+    writeVertex(base + 3u, a1, e1, e2);
+    writeVertex(base + 4u, b1, e1, e2);
+    writeVertex(base + 5u, b0, e1, e2);
+}
+
+void main() {
+    uvec3 g = gl_GlobalInvocationID;
+    uint idx = g.x + 64u * (g.y + 64u * g.z);
+    
+    // 64 quantized vortex rings with 64 segments each
+    uint ringIdx = idx / 64u;
+    uint segIdx  = idx % 64u;
+    if (ringIdx >= 64u) return;
+
+    float t = time * 0.45 + audioAdvance * 0.4;
+    float seed = hash11(float(ringIdx) * 31.17);
+    
+    float s0 = float(segIdx) / 64.0;
+    float s1 = float(segIdx + 1u) / 64.0;
+
+    float ang0 = s0 * 6.2831853;
+    float ang1 = s1 * 6.2831853;
+
+    // Toroidal vortex ring radius
+    float ringR = 0.5 + seed * 0.8;
+    
+    // Ring propagating along Z-axis: z = v_self * t
+    float zTravel = fract(seed + t * 0.3) * 4.0 - 2.0;
+
+    // Crow instability azimuthal wavy perturbations: delta R = epsilon * cos(m * phi)
+    float crowWavy0 = sin(ang0 * 5.0 - t * 4.0) * 0.06;
+    float crowWavy1 = sin(ang1 * 5.0 - t * 4.0) * 0.06;
+
+    vec3 p0 = vec3(
+        (ringR + crowWavy0) * cos(ang0),
+        (ringR + crowWavy0) * sin(ang0),
+        zTravel
+    );
+
+    vec3 p1 = vec3(
+        (ringR + crowWavy1) * cos(ang1),
+        (ringR + crowWavy1) * sin(ang1),
+        zTravel
+    );
+
+    // Pinch-off reconnection flash
+    float pinchFlash = (1.0 + sin(ang0 * 5.0 - t * 4.0) * 1.5) * (1.0 + 3.0 * audioKick);
+    float thick = (0.02 * (1.0 + 0.3 * audioSwell));
+
+    emitSegment(p0, p1, s0, pinchFlash, thick);
+}
