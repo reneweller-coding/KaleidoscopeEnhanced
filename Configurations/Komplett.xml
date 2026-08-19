@@ -4833,4 +4833,13 @@
     <float name="specularP" minValue="0.8" maxValue="2.5"></float>
   </TextureShader>
 
+  <TextureShader file="..\Scene3D\SPHFluidSplash.frag" type="scene3d" geom="indirect" stateBytes="308992" genPasses="5" probability="0.4" mood="calm,bright,dreamy" complexity="4">
+    <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigDolly" formula="0.5*swell"/>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
 </configuration>

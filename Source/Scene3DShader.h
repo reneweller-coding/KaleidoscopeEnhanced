@@ -90,6 +90,7 @@ public:
 	/** @brief Whether this scene reads the spectrogram history texture. @return true if the render program (base class check) OR, for geom="indirect" scenes, the compute generator declares `texSpectro`. */
 	bool usesSpectro() override;
 	void  setStateBytes( int b ) { m_stateBytes = b; }   ///< @param b Size in bytes of the persistent SSBO a geom="indirect" generator keeps across frames (0 = none); allocated and zeroed once in setupIndirect().
+	void  setGenPassCount( int n ) { m_genPassCount = n; }   ///< @param n Number of compute passes (genPass = 0..n-1, barrier between each) runGenerator() dispatches this generator through per frame; 0 (default) keeps the original "1 pass, or 2 if stateful" behaviour. For pipelines needing more than "advance, then mesh" (e.g. a multi-stage grid-based fluid sim).
 	void  setShadowExtent( float e ) { m_shadowExtent = e; }   ///< @param e Half-width of the shadow-map light box for this scene (overrides EffectShader::kShadowExtent).
 	float shadowExtent() const override { return m_shadowExtent; }   ///< @return This scene's shadow-map light box half-width.
 	/**
@@ -170,6 +171,7 @@ private:
 	// host again.
 	GLuint  m_stateBuf   = 0;   ///< Persistent SSBO (bind point 2) surviving across frames for a stateful generator; 0 if unused.
 	int     m_stateBytes = 0;   ///< Requested size of m_stateBuf in bytes (0 = no persistent state); set via setStateBytes().
+	int     m_genPassCount = 0;   ///< Number of compute passes runGenerator() dispatches (0 = original 1-or-2-pass behaviour); set via setGenPassCount().
 	unsigned int m_frameIndex = 0;   ///< Running frame counter uploaded to the generator as `frameIndex`; incremented once per runGenerator() call.
 	AudioFeatures m_lastAudio;    ///< this scene's features, for the generator
 	float   m_lastTime     = 0.f; ///< raw time from setUniforms, ditto
