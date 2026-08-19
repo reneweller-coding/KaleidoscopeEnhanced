@@ -115,6 +115,12 @@ public:
 	 * @param idx Index into the list returned by remoteSceneNames().
 	 */
 	void        remoteForceScene( int idx );
+	/**
+	 * @brief Cached JPEG thumbnail for one scene in the remote's browser grid, if one has been captured yet.
+	 * @param idx Index into the list returned by remoteSceneNames().
+	 * @return A small JPEG, or an empty QByteArray if that scene hasn't been on screen (with the remote open) yet this session.
+	 */
+	QByteArray  remoteThumb( int idx ) const;
 	bool        autoConfigEnabled() const   { return m_autoConfig; }   ///< Whether auto-config-by-mood is currently on.
 	void        setAutoConfigEnabled( bool on ) { m_autoConfig = on; m_moodBucket = -1; }   ///< Toggles auto-config-by-mood and resets the mood bucket so it re-evaluates from scratch.
 	/// Live preview: returns the cached small JPEG of the output and keeps the
@@ -380,6 +386,16 @@ protected:
 	QByteArray m_snapJpg;             ///< Cached JPEG-encoded downscaled output frame for the web remote's live preview.
 	qint64     m_snapWantedUntil = 0; ///< m_fpsTimer deadline until which the snapshot keeps refreshing (extended by remoteSnapshot()).
 	qint64     m_snapLast        = 0; ///< m_fpsTimer timestamp of the last snapshot refresh (throttles to ~1 Hz).
+
+	/// Per-scene thumbnail cache for the web remote's scene browser, indexed by
+	/// the active configuration's texture-effect index (same order as
+	/// RenderPipeline::sceneNames()). Filled opportunistically off the SAME
+	/// downscaled readback as m_snapJpg — no extra glReadPixels — so it only
+	/// grows while someone has the remote page open; entries for scenes not
+	/// visited yet in this session stay empty (the remote page just shows no
+	/// image for those). Reset on every config switch, since the indices mean
+	/// a different scene list.
+	std::vector<QByteArray> m_sceneThumbs;
 
 	bool m_batchStopping = false;   ///< batch render: shutdown initiated
 	qint64  m_lastAutoSwitch  = 0;      ///< when auto-config last switched

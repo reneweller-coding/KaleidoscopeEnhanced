@@ -90,6 +90,13 @@ void GLwidget::remoteForceScene( int idx )
 		m_actConfiguration->m_renderPipeline->forceScene( idx );
 }
 
+QByteArray GLwidget::remoteThumb( int idx ) const
+{
+	if( idx >= 0 && idx < int( m_sceneThumbs.size() ) )
+		return m_sceneThumbs[idx];
+	return QByteArray();
+}
+
 QByteArray GLwidget::remoteSnapshot()
 {
 	m_snapWantedUntil = m_fpsTimer.elapsed() + 10000;
@@ -504,6 +511,30 @@ void GLwidget::draw()
 		buf.open( QIODevice::WriteOnly );
 		out.save( &buf, "JPG", 70 );
 		m_snapJpg = jpg;
+
+		// Piggy-back a per-scene thumbnail off the same readback (no extra
+		// glReadPixels): skip mid-transition frames (a crossfade blend isn't a
+		// representative shot of either scene) and blackout. This only ever
+		// grows the cache while the remote page is open, which is fine — the
+		// scene browser just shows no image yet for scenes nobody has landed
+		// on this session.
+		RenderPipeline *rp = m_actConfiguration ? m_actConfiguration->m_renderPipeline : nullptr;
+		if( rp && !rp->sceneTransitioning() && !RenderPipeline::blackout() )
+		{
+			const int sceneIdx = rp->activeSceneIndex();
+			if( sceneIdx >= 0 )
+			{
+				QImage thumb = img.mirrored( false, true )
+				                  .scaledToHeight( 120, Qt::SmoothTransformation );
+				QByteArray tjpg;
+				QBuffer tbuf( &tjpg );
+				tbuf.open( QIODevice::WriteOnly );
+				thumb.save( &tbuf, "JPG", 65 );
+				if( sceneIdx >= int( m_sceneThumbs.size() ) )
+					m_sceneThumbs.resize( sceneIdx + 1 );
+				m_sceneThumbs[sceneIdx] = tjpg;
+			}
+		}
 	}
 
 	// Config cross-fade: draw the captured previous frame on top, fading out.
@@ -873,6 +904,7 @@ void GLwidget::timerEvent( QTimerEvent* )
 		m_actConfiguration->stop();
 		m_actConfiguration = m_pendingConfig;
 		m_actConfiguration->start( m_width, m_height );
+		m_sceneThumbs.clear();   // indices now name a different config's scene list
 		m_pendingConfig = nullptr;
 	}
 
