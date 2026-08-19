@@ -1091,9 +1091,10 @@ void EditorWindow::rebuildRangeEditor()
                     return;
                 }
                 auto prog = std::make_shared<ExprProgram>();
-                const bool ok = prog->compile(er.edit->text().toStdString(), "editor");
+                std::string err;
+                const bool ok = prog->compile(er.edit->text().toStdString(), "editor", &err);
                 er.edit->setStyleSheet(ok ? QString() : "background: #663333;");
-                er.edit->setToolTip(ok ? QString() : tr("Syntaxfehler (Details in der Konsole)"));
+                er.edit->setToolTip(ok ? QString() : QString::fromStdString(err));
                 er.prog = ok ? prog : nullptr;
                 er.valueLbl->setText(ok ? QString::number(m_preview->evalExpr(*prog), 'f', 3)
                                         : tr("Fehler"));
