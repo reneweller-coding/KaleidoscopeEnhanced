@@ -36,6 +36,18 @@ m_minTimeSolo(minTimeSolo)
 	// after substituting %s, so parsing stops there regardless. Harmless, kept as-is.
 	sprintf( m_fragmentShaderFilename, "%s\0", filenameFragmentShader.c_str() );
 
+	// Optional per-scene bake compute shader: "X.frag" -> "X.comp", sibling of
+	// the fragment file (same convention as Scene3DShader's .vert/.tesc/.comp
+	// derivation); the file need not exist, checked lazily in ensureBakeProg().
+	{
+		std::string s = filenameFragmentShader;
+		size_t p = s.rfind( ".frag" );
+		if( p != std::string::npos )
+			s.replace( p, 5, ".comp" );
+		m_bakeCompFilename = (char *) malloc( sizeof(char) * (s.size() + 1) );
+		strcpy( m_bakeCompFilename, s.c_str() );
+	}
+
 
 	m_uniforms.clear();
 
@@ -88,6 +100,8 @@ float EffectShader::s_lightM2[16] = { 1.f, 0.f, 0.f, 0.f,  0.f, 1.f, 0.f, 0.f,
 void EffectShader::cleanShaderPrograms()
 {
 	glDeleteProgram(m_sh_prog_id);
+	if( m_bakeProg ) glDeleteProgram( m_bakeProg );
+	if( m_bakeTex )  glDeleteTextures( 1, &m_bakeTex );
 }
 
 
@@ -145,6 +159,8 @@ void EffectShader::startInterpolators()
 
 void EffectShader::draw( )
 {
+	if( usesBake() )
+		stepBake( m_exprTime, m_lastAudioForBake );
 	drawWindow();
 }
 
@@ -348,6 +364,10 @@ const char *kAudioLocNames[AL_COUNT] = {
 
 void EffectShader::applyAudioFeatures(const AudioFeatures &f)
 {
+    // Cached for stepBake(), called later from draw() -- which, unlike this
+    // function, takes no AudioFeatures parameter.
+    m_lastAudioForBake = f;
+
     // Per-program LOCATION CACHE: this used to perform ~45 string-keyed
     // glGetUniformLocation lookups per shader per FRAME - the single biggest
     // CPU cost in the render loop.  Locations are looked up once per program
@@ -628,6 +648,105 @@ bool EffectShader::usesOit()
 		m_usesOit = ( m_sh_prog_id != 0 &&
 		              glGetUniformLocation( m_sh_prog_id, "oitPass" ) >= 0 ) ? 1 : 0;
 	return m_usesOit == 1;
+}
+
+bool EffectShader::usesBake()
+{
+	if( !m_glReady )
+		return false;
+	if( m_usesBake < 0 )
+		m_usesBake = ( m_sh_prog_id != 0 &&
+		               glGetUniformLocation( m_sh_prog_id, "texBake" ) >= 0 ) ? 1 : 0;
+	return m_usesBake == 1;
+}
+
+void EffectShader::ensureBakeProg()
+{
+	if( m_bakeTried )
+		return;
+	m_bakeTried = true;
+
+	if( !glcoreHasCompute || !glTexImage3D || !m_bakeCompFilename )
+		return;
+
+	m_bakeProg = setComputeShader( m_bakeCompFilename );   // 0 on any failure (incl. missing file)
+	if( m_bakeProg == 0 )
+		return;
+
+	glGenTextures( 1, &m_bakeTex );
+	glBindTexture( GL_TEXTURE_3D, m_bakeTex );
+	glTexParameteri( GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+	glTexParameteri( GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+	glTexParameteri( GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+	glTexParameteri( GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+	glTexParameteri( GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE );
+	// RG32F: R = distance estimate, G = whatever per-texel extra scalar the
+	// bake shader wants to carry through (e.g. an orbit-trap value for a
+	// fractal's aura shading) -- the scene's own .comp decides what G means,
+	// this class only owns the format and the texture's lifetime.
+	glTexImage3D( GL_TEXTURE_3D, 0, GL_RG32F, kBakeRes, kBakeRes, kBakeRes,
+	              0, GL_RGBA, GL_FLOAT, nullptr );
+	glBindTexture( GL_TEXTURE_3D, 0 );
+	m_bakeFrame = kBakeIntervalFrames;   // bake on the very first draw, not one interval late
+}
+
+void EffectShader::stepBake( float time, const AudioFeatures &audio )
+{
+	ensureBakeProg();
+	if( m_bakeProg == 0 )
+		return;
+
+	// texBake always reads unit 33 -- set on the FRAGMENT program (already
+	// current: draw() runs after enableShader()), not the compute one. Cheap
+	// enough to just set every frame rather than adding a separate
+	// once-per-recompile cache for one uniform.
+	GLint lTexBake = glGetUniformLocation( m_sh_prog_id, "texBake" );
+	if( lTexBake >= 0 ) glUniform1i( lTexBake, 33 );
+
+	// Re-bake only every kBakeIntervalFrames frames: the bake shader itself
+	// decides how much of its field is actually time-varying (typically a
+	// slowly audio-morphed parameter, not the whole shape), so this interval
+	// trades a small, usually imperceptible step in that drift for a large
+	// reduction in how often the (comparatively expensive) bake pass runs.
+	if( ++m_bakeFrame < kBakeIntervalFrames )
+	{
+		glActiveTexture( GL_TEXTURE0 + 33 );
+		glBindTexture( GL_TEXTURE_3D, m_bakeTex );
+		glActiveTexture( GL_TEXTURE0 );
+		return;
+	}
+	m_bakeFrame = 0;
+
+	glUseProgram( m_bakeProg );
+	GLint lt = glGetUniformLocation( m_bakeProg, "time" );
+	if( lt >= 0 ) glUniform1f( lt, time );
+	GLint lk = glGetUniformLocation( m_bakeProg, "audioKick" );
+	if( lk >= 0 ) glUniform1f( lk, audio.onsetKick );
+	GLint lb = glGetUniformLocation( m_bakeProg, "audioBass" );
+	if( lb >= 0 ) glUniform1f( lb, audio.bassLevel );
+	GLint la = glGetUniformLocation( m_bakeProg, "audioAdvance" );
+	if( la >= 0 ) glUniform1f( la, audio.audioAdvance );
+	// This scene's own per-activation params (e.g. a "speedP" the fragment
+	// shader ALSO reads to build its camera's own time-dependent rotation) --
+	// without these, the bake shader's rotation phase can drift out of sync
+	// with what the fragment shader's live camera math expects to see, since
+	// both derive their own "t" from the same raw time but scaled by params
+	// the compute program has no other way to know. Same by-name upload
+	// Scene3DShader::runGenerator() uses for its generator.
+	for( unsigned int i = 0; i < m_uniforms.size(); ++i )
+	{
+		GLint l = glGetUniformLocation( m_bakeProg, m_uniforms[i]->getName().c_str() );
+		if( l >= 0 ) glUniform1f( l, m_uniforms[i]->snapshotValue() );
+	}
+
+	glBindImageTexture( 0, m_bakeTex, 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RG32F );
+	const int groups = ( kBakeRes + 3 ) / 4;   // matches the bake shaders' local_size 4x4x4
+	glDispatchCompute( groups, groups, groups );
+	glMemoryBarrier( GL_TEXTURE_FETCH_BARRIER_BIT );
+
+	glActiveTexture( GL_TEXTURE0 + 33 );
+	glBindTexture( GL_TEXTURE_3D, m_bakeTex );
+	glActiveTexture( GL_TEXTURE0 );
 }
 
 bool EffectShader::usesShadow()

@@ -1,0 +1,91 @@
+#version 430
+/**
+ * @file QuaternionicJulia4DFlight.comp
+ * @brief Bakes QuaternionicJulia4DFlight.frag's distance field into a 96^3
+ * RG32F 3D texture (R = distance estimate, G = orbit-trap value), so the
+ * fragment shader's per-pixel march samples a texture instead of
+ * re-evaluating 9 quaternion-squaring iterations at every one of its 48
+ * steps. Re-baked every EffectShader::kBakeIntervalFrames frames (see
+ * EffectShader::stepBake), not every frame -- the SHAPE (the C constant and
+ * the 4D hyper-rotation) still keeps morphing with the music, just in small
+ * per-interval steps rather than continuously; at the ~6-frame interval this
+ * engine reuses everywhere the step is far below what a beat-driven visual
+ * needs to read as smooth.
+ *
+ * Must stay byte-for-byte in step with the C/wCoord/hyper-rotation formulas
+ * in QuaternionicJulia4DFlight.frag's main() -- this is the SAME field,
+ * just computed once per voxel instead of once per ray step.
+ */
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+layout(rg32f, binding = 0) uniform image3D bakeField;
+
+uniform float time;
+uniform float audioKick;
+uniform float audioAdvance;
+uniform float speedP;   // per-activation param the .frag also reads; MUST
+                         // match its "t" formula or the baked hyper-rotation
+                         // drifts out of sync with the live camera rotation
+uniform float sliceP;   // 4D hyperspace slice offset (feeds wCoord below)
+
+const int   RES = 96;
+const float EXTENT = 2.2;   // bake cube spans [-EXTENT, EXTENT] on every axis
+
+mat2 rot2D(float a) {
+    float c = cos(a), s = sin(a);
+    return mat2(c, -s, s, c);
+}
+
+vec4 qMul(vec4 q1, vec4 q2) {
+    return vec4(
+        q1.x * q2.x - dot(q1.yzw, q2.yzw),
+        q1.x * q2.yzw + q2.x * q1.yzw + cross(q1.yzw, q2.yzw)
+    );
+}
+
+float qJuliaSDF(vec4 p, vec4 c, out float trap) {
+    vec4 q = p;
+    vec4 qp = vec4(1.0, 0.0, 0.0, 0.0);
+    trap = 1e5;
+
+    for (int i = 0; i < 9; ++i) {
+        qp = 2.0 * qMul(q, qp);
+        q = qMul(q, q) + c;
+
+        float r2 = dot(q, q);
+        trap = min(trap, abs(q.x * q.y));
+        if (r2 > 8.0) break;
+    }
+
+    float r = length(q);
+    return 0.5 * r * log(r) / max(length(qp), 1e-4);
+}
+
+void main() {
+    ivec3 gid = ivec3(gl_GlobalInvocationID);
+    if (gid.x >= RES || gid.y >= RES || gid.z >= RES)
+        return;
+
+    // Same "t" as QuaternionicJulia4DFlight.frag's main() -- it drives the
+    // live camera-ray rotation there too, so this MUST match or the baked
+    // hyper-rotation and the camera looking at it fall out of sync.
+    float spd = (speedP > 0.0) ? speedP : 1.0;
+    float t = time * 0.3 * spd + audioAdvance * 0.15;
+    vec4 C = vec4(
+        -0.45 + 0.06 * sin(t * 0.7),
+         0.40 + 0.05 * cos(t * 0.5),
+        -0.18 + 0.05 * sin(t * 0.9),
+        -0.08 + 0.05 * cos(t * 1.1) + audioKick * 0.06
+    );
+    float slc = (sliceP > 0.0) ? sliceP : 1.0;
+    float wCoord = sin(t * 0.6) * 0.4 * slc;
+
+    vec3 p = mix(vec3(-EXTENT), vec3(EXTENT), vec3(gid) / float(RES - 1));
+    vec4 p4D = vec4(p, wCoord);
+    p4D.xw = rot2D(t * 0.4) * p4D.xw;
+    p4D.yw = rot2D(t * 0.3) * p4D.yw;
+
+    float trap;
+    float d = qJuliaSDF(p4D, C, trap);
+
+    imageStore(bakeField, gid, vec4(d, trap, 0.0, 0.0));
+}

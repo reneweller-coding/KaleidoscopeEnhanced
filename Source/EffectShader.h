@@ -141,7 +141,7 @@ public:
 		initUniforms( m_width, m_height );   // virtual: derived locations too
 		m_glReady = true;
 		m_usesSim = m_usesFluid = m_usesSmoke3D = m_usesSSM = m_usesPhysarum = -1;
-		m_usesSpectro = m_usesShadow = m_usesShadow2 = m_usesOit = -1;
+		m_usesSpectro = m_usesShadow = m_usesShadow2 = m_usesOit = m_usesBake = -1;
 	}
 	/// @return True once ensureCompiled() has successfully built the GL program.
 	bool isCompiled() const { return m_glReady; }
@@ -396,6 +396,20 @@ public:
 	/// @return True if this effect's compiled fragment shader declares the "oitPass" uniform (order-independent transparency). Cached after first query.
 	bool usesOit();
 
+	// ---- per-scene baked field (X.comp companion, opt-in) ----
+	// Unlike ComputeFX's shared, fixed-algorithm simulations (texFlame,
+	// texParticles, ...) this is SCENE-OWNED: a 2D effect that ships its own
+	// "X.comp" next to "X.frag" gets it compiled and dispatched automatically,
+	// writing whatever it wants into a per-instance 3D texture the fragment
+	// shader reads back as "texBake" (unit 33) -- e.g. a raymarcher pre-baking
+	// its distance field so the per-pixel march samples a texture instead of
+	// live-evaluating an expensive SDF at every step. Re-baked periodically
+	// (not every frame, see kBakeIntervalFrames) rather than once, so slowly
+	// audio-morphing parameters stay visibly reactive without paying the bake
+	// cost 60 times a second.
+	/// @return True if this effect's compiled fragment shader declares the "texBake" sampler. Cached after first query.
+	bool usesBake();
+
 	// ---- Song-structure memory ----
 	// Snapshot / restore of all rolled per-activation parameter values, so a
 	// recognised section (chorus #2 = chorus #1) replays the exact same look.
@@ -461,6 +475,24 @@ protected:
 	GLint			m_timeUni; ///< Location of the `time` uniform.
     GLint			m_interpolationUni; ///< Interpolation between the Combines: location of the `interpolation` uniform (cross-fade weight).
 
+	// ---- per-scene baked field (see usesBake() above) ----
+	char   *m_bakeCompFilename = 0;   ///< Path to this scene's optional X.comp bake shader (sibling of the fragment file, derived in the constructor); the file need not exist.
+	GLuint  m_bakeProg  = 0;    ///< Compiled companion compute program (0 = none, or compilation failed/not yet attempted).
+	bool    m_bakeTried = false;   ///< True once compilation has been attempted (attempted only once; a missing/broken X.comp is a permanent soft-fail, not retried every frame).
+	GLuint  m_bakeTex   = 0;    ///< GL_TEXTURE_3D the compute shader writes and the fragment shader samples as "texBake" (unit 33).
+	int     m_bakeFrame = 0;    ///< Frames since attach; modulo kBakeIntervalFrames decides whether THIS frame re-bakes.
+	AudioFeatures m_lastAudioForBake;   ///< This frame's features, cached by applyAudioFeatures() so stepBake() -- called from draw(), which takes no audio parameter -- has them.
+	static const int kBakeRes = 96;             ///< Cube resolution of the baked 3D texture (96^3 texels).
+	static const int kBakeIntervalFrames = 6;   ///< Re-bake every N frames: amortizes the compute cost while keeping slow parameter drift (e.g. an audio-morphed fractal constant) visibly continuous rather than frozen.
+	/** @brief Lazily compiles the companion X.comp (if present) and allocates the 3D texture backing "texBake". Attempted once; soft-fails (usesBake() draws will silently see an all-zero field) if there is no companion file or it fails to compile. */
+	void ensureBakeProg();
+	/**
+	 * @brief Dispatches the bake compute program on the kBakeIntervalFrames cadence and binds the result to texture unit 33.
+	 * @param time Global shader time, passed through to the compute shader as "time".
+	 * @param audio This frame's audio features (see m_lastAudioForBake), for whatever audio-driven parameters the specific bake shader reads.
+	 */
+	void stepBake( float time, const AudioFeatures &audio );
+
 	char*			m_vertexShaderFilename; ///< Path to the vertex shader source (always "..\\standard.vert" in practice).
 	char*			m_fragmentShaderFilename; ///< Path to this effect's fragment shader source.
 
@@ -486,6 +518,7 @@ protected:
 	int		m_usesShadow = -1;   // ... and for the shadow map
 	int		m_usesShadow2 = -1;   // ... and for the second, independent shadow map
 	int		m_usesOit = -1;      // ... and for order-independent transparency
+	int		m_usesBake = -1;     // ... and for the per-scene baked-field texture
 	int		m_usesPhysarum = -1; // same caching for the Physarum trail map
 	unsigned int	m_cfxMask = 0;   ///< Compute-FX sampler bits (see cfxMask()); cached result, resolved once per compiled program (see m_cfxProg).
 	GLuint		m_cfxProg = 0;   ///< Program the mask was resolved for: id m_cfxMask was last computed for; mismatch triggers re-resolution in cfxMask().
