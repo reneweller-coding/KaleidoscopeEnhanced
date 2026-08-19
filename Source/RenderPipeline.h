@@ -184,6 +184,10 @@ public:
 	QStringList sceneNames() const;
 	/** @brief Jumps directly to texture effect @p idx (instant, unquantised cut). Ignored while PIN or FREEZE is active, or if @p idx is out of range. @param idx Index into the texture-effect list, as returned by sceneNames(). */
 	void forceScene( int idx );
+	/** @brief Index of the currently active texture effect, into the same list as sceneNames(). @return An index into sceneNames(), or -1 if none is active yet. */
+	int activeSceneIndex() const { return m_effectTextures.empty() ? -1 : int(m_scheduler.actTexture()); }
+	/** @brief Whether a scene cross-fade is currently in flight (mid-transition frames blend two scenes, so callers wanting a clean single-scene snapshot should skip them). */
+	bool sceneTransitioning() const { return m_scheduler.texState() != 0; }
 
 	/** Review mode (Test* presets): scenes run alphabetically, 8 s each,
 	 *  'n' steps to the next in order.  No mood/taste filtering, no beat

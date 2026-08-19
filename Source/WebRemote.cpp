@@ -97,14 +97,28 @@ function toggleScenes(){
  scenesOpen=!scenesOpen;
  const d=document.getElementById('scenes');
  if(!scenesOpen){d.style.display='none';return;}
+ d.style.display='grid';
+ loadScenes();}
+function loadScenes(){
+ if(!scenesOpen) return;
  fetch('/api/scenes').then(r=>r.json()).then(s=>{
-  d.innerHTML=''; d.style.display='grid';
+  const d=document.getElementById('scenes');
+  d.innerHTML='';
   s.scenes.forEach((n,i)=>{const b=document.createElement('button');
-   b.textContent=n; b.style.margin='0'; b.style.padding='10px 6px';
-   b.style.fontSize='.85em';
+   b.style.cssText='margin:0;padding:0;display:flex;flex-direction:column;'+
+                    'align-items:stretch;overflow:hidden';
+   const im=document.createElement('img');
+   im.src='/api/thumb?i='+i+'&ts='+Date.now();
+   im.style.cssText='width:100%;height:52px;object-fit:cover;background:#1a1a26';
+   im.onerror=()=>{im.style.display='none';};
+   const lbl=document.createElement('div');
+   lbl.textContent=n;
+   lbl.style.cssText='padding:6px 4px;font-size:.78em';
+   b.appendChild(im); b.appendChild(lbl);
    b.onclick=()=>{cmd('/api/force?i='+i);};
    d.appendChild(b);});
  });}
+setInterval(loadScenes,5000);
 </script></body></html>)HTML";
 
 WebRemote::WebRemote( GLwidget *widget, int port )
@@ -191,6 +205,12 @@ void WebRemote::handleConnection()
 				}
 				else if( path == "/api/force" )
 					m_widget->remoteForceScene( q.queryItemValue( "i" ).toInt() );
+				else if( path == "/api/thumb" )
+				{
+					body = m_widget->remoteThumb( q.queryItemValue( "i" ).toInt() );
+					ctype = "image/jpeg";
+					if( body.isEmpty() ) { body = "{}"; ctype = "application/json"; }
+				}
 				else if( path == "/api/fav" )
 					m_widget->remoteFavorite();
 				else if( path == "/api/replay" )
