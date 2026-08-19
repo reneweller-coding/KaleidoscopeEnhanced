@@ -1,12 +1,12 @@
 /**
- * @file filterShader.h
- * @brief Declares FilterShader, the central per-frame render/present pipeline of one
+ * @file RenderPipeline.h
+ * @brief Declares RenderPipeline, the central per-frame render/present pipeline of one
  *        loaded preset (texture-effect + combine-effect scheduling, cross-fade
  *        compositing, feedback/trails, shadow and OIT passes, 2D camera rig, stereo
  *        output, track-title reveal) and its background ImageLoader helper thread.
  */
-#ifndef GENPROC_H
-#define GENPROC_H
+#ifndef RENDERPIPELINE_H
+#define RENDERPIPELINE_H
 
 #include <QtGui/qopengl.h>
 #include <QtCore/QElapsedTimer>
@@ -34,7 +34,7 @@ class ImageLoader;   ///< Forward declaration; background image-loading thread, 
 /**
  * @brief Owns and drives the whole per-frame render/present pipeline of one loaded preset.
  *
- * FilterShader renders the two texture-effect FBOs (the active effect and, while cross-fading,
+ * RenderPipeline renders the two texture-effect FBOs (the active effect and, while cross-fading,
  * the incoming one), composites them through a combine-shader stage (itself cross-fadable),
  * accumulates phosphor-style feedback trails, and hands the result to PresentPass for
  * tone-mapping/bloom/title-reveal/lyrics-overlay/stereo output and final display. It owns all
@@ -46,13 +46,13 @@ class ImageLoader;   ///< Forward declaration; background image-loading thread, 
  * build the GL state, and paint() is called once per displayed frame with the current rotation
  * matrix and audio analysis.
  */
-class FilterShader
+class RenderPipeline
 {
 public:
-	/** @brief Constructs a FilterShader with all GL object ids zeroed ("not yet created"); call init() then start() before painting. */
-	FilterShader( );
+	/** @brief Constructs a RenderPipeline with all GL object ids zeroed ("not yet created"); call init() then start() before painting. */
+	RenderPipeline( );
 	/** @brief Releases every GL texture/program owned by this instance and deletes the legacy mesh. */
-	~FilterShader();
+	~RenderPipeline();
 	/** @brief Loads/links the GLSL runtime programs needed up front (currently just the legacy outer combine program via initGLSL()); the per-effect and per-combine programs themselves compile lazily on first use. */
 	void loadShader(); // load shader from file, compile and link them to programs, get variable locations
 	/**
@@ -317,7 +317,7 @@ public:
 	/**
 	 * @brief Queries and prints any pending OpenGL error, tagged with a call-site label.
 	 * @note Currently short-circuited (unconditional early `return;` at the top of the
-	 *       definition in filterShader.cpp) — GL error checking is disabled for normal
+	 *       definition in RenderPipeline.cpp) — GL error checking is disabled for normal
 	 *       runs; the check code below the early return is dead unless that guard is removed.
 	 * @param label Short tag identifying the call site, printed together with the error.
 	 */
@@ -333,11 +333,11 @@ public:
 	/** @brief Tears down this instance's GL resources and background thread: terminates and deletes the ImageLoader, then releases textures and shader programs. Deliberately does NOT release the global Spout sender/receiver (see the definition for why). */
 	void stop();
 
-	/** @brief Registers a combine-effect (overlay) shader with this instance (ownership passes to FilterShader). @param shader Combine-effect shader to add. */
+	/** @brief Registers a combine-effect (overlay) shader with this instance (ownership passes to RenderPipeline). @param shader Combine-effect shader to add. */
 	void addFxShader( EffectShader * shader );
-	/** @brief Registers a texture-effect shader with this instance (ownership passes to FilterShader). @param shader Texture-effect shader to add. */
+	/** @brief Registers a texture-effect shader with this instance (ownership passes to RenderPipeline). @param shader Texture-effect shader to add. */
 	void addTextureShader( EffectShader * shader );
-	/** @brief Registers a scene-transition shader (Transitions/) with this instance (ownership passes to FilterShader). @param shader Transition shader to add. */
+	/** @brief Registers a scene-transition shader (Transitions/) with this instance (ownership passes to RenderPipeline). @param shader Transition shader to add. */
 	void addTransitionShader( EffectShader * shader );
 
 
@@ -372,7 +372,7 @@ private:
 	void setupFBOTexture( const GLuint texID );
 	/** @brief Creates the two background "photo" textures (m_actTex/m_nextTex) and uploads their initial images (or the procedural fallback if the image list is empty). */
 	void createTexture();  // create and setup textures
-	/** @brief Uploads a prepared QImage into an existing texture id, with mipmaps. @param texID Destination texture id. @param image Source image; must already be GL-ready (see prepareImage()) — every FilterShader caller passes a 1024x1024 ARGB32 image, which is why later uploads can reuse glTexSubImage2D (see the definition). */
+	/** @brief Uploads a prepared QImage into an existing texture id, with mipmaps. @param texID Destination texture id. @param image Source image; must already be GL-ready (see prepareImage()) — every RenderPipeline caller passes a 1024x1024 ARGB32 image, which is why later uploads can reuse glTexSubImage2D (see the definition). */
 	void setupTexture( const GLuint texID, const QImage &image ); // needed by createTextures()
 public:
 	// Procedural texture used when the image directory is missing/empty (robustness).
@@ -475,7 +475,7 @@ private:
 	GLuint			m_texTrail[2]   = { 0, 0 };   ///< Ping-pong colour textures backing m_fboTrail (mipmapped: the present pass reads them).
 
 	// 2D CAMERA RIG scratch targets (one per effect slot; lazily created and
-	// size-checked EVERY use, so FilterShader::resize() needs no extra case).
+	// size-checked EVERY use, so RenderPipeline::resize() needs no extra case).
 	// rig2Transform() renders src through Engine/Rig2D.frag when the effect
 	// has active rig2 formulas and returns the texture the combine should
 	// bind instead; src unchanged otherwise.
@@ -659,7 +659,7 @@ private:
 	unsigned int		m_timeTextureSoloMax;                ///< Maximum rolled solo duration (seconds), set via init().
 	GLuint      m_actTex  = 0;    ///< Currently displayed background-photo texture.
 	GLuint		m_nextTex = 0;    ///< Incoming background-photo texture (cross-fade target / next solo image).
-	int			m_state;          ///< Declared but not read/written anywhere in filterShader.cpp — unused leftover (distinct from m_stateTexture, which is the field actually driving the image state machine).
+	int			m_state;          ///< Declared but not read/written anywhere in RenderPipeline.cpp — unused leftover (distinct from m_stateTexture, which is the field actually driving the image state machine).
 
     float       m_lastTime;      ///< Declared and initialised but otherwise only referenced inside a commented-out debug printf in paint() — effectively unused in the current build.
 	float		m_globaltime;     ///< Accumulated wall time (seconds, paused while frozen) driving every time-based shader uniform; advanced once per frame in paint().
@@ -675,7 +675,7 @@ private:
 	std::vector<EffectShader *> m_effectTextures;   ///< All configured texture-effect shaders for this preset (registered via addTextureShader()); indexed by the SceneScheduler.
 
 
-	unsigned int m_effectTextureTimeInterpolation;   ///< Declared but not referenced anywhere in filterShader.cpp — unused leftover from before timing moved to SceneScheduler/EffectShader.
+	unsigned int m_effectTextureTimeInterpolation;   ///< Declared but not referenced anywhere in RenderPipeline.cpp — unused leftover from before timing moved to SceneScheduler/EffectShader.
 	//unsigned int m_effectTextureMinTimeInterpolation;
 	//unsigned int m_effectTextureMaxTimeInterpolation;
 
@@ -688,7 +688,7 @@ private:
 	std::vector<EffectShader *> m_effectTransitions;   ///< All configured scene-transition shaders (Transitions/) for this preset (registered via addTransitionShader()); one is rolled per scene fade.
 
 
-	unsigned int m_effectFxTimeInterpolation;   ///< Declared but not referenced anywhere in filterShader.cpp — unused leftover from before timing moved to SceneScheduler/EffectShader.
+	unsigned int m_effectFxTimeInterpolation;   ///< Declared but not referenced anywhere in RenderPipeline.cpp — unused leftover from before timing moved to SceneScheduler/EffectShader.
 
     // Dynamic timing scale from AudioAnalyzer (via AudioFeatures::timingScale).
     // < 1.0 → all times scaled longer (ambient mode)
@@ -717,23 +717,23 @@ private:
 /**
  * @brief Background thread that loads and prepares background-photo images off the render thread.
  *
- * Runs a tight poll loop: whenever the owning FilterShader sets m_triggerImageload, it picks
+ * Runs a tight poll loop: whenever the owning RenderPipeline sets m_triggerImageload, it picks
  * the next image (mood-matched: probes a few random candidates and scores them against the
  * live music mood via cached brightness/colourfulness thumbnail stats), decodes and GL-prepares
  * it into m_shader->m_nextImage, and clears the trigger flag. Idles with a short sleep otherwise.
- * One instance is owned per FilterShader, started in start() and terminated in stop().
+ * One instance is owned per RenderPipeline, started in start() and terminated in stop().
  */
 class ImageLoader : public QThread
 {
 public:
-    /** @brief Constructs an ImageLoader bound to its owning FilterShader (not yet running; call start()). @param shader Owning FilterShader whose m_triggerImageload/m_nextImage/m_imageList/mood snapshot fields this thread reads and writes. */
-    explicit ImageLoader( FilterShader *shader );
+    /** @brief Constructs an ImageLoader bound to its owning RenderPipeline (not yet running; call start()). @param shader Owning RenderPipeline whose m_triggerImageload/m_nextImage/m_imageList/mood snapshot fields this thread reads and writes. */
+    explicit ImageLoader( RenderPipeline *shader );
     //explicit Writer(const QString& mark) : mark_(mark) {}
 
-    /** @brief Thread entry point: polls m_shader->m_triggerImageload and, when set, mood-matches and loads the next background photo into m_shader->m_nextImage. Loops forever until the thread is terminated (see FilterShader::stop(), which calls QThread::terminate() — a hard kill, not a cooperative exit request). */
+    /** @brief Thread entry point: polls m_shader->m_triggerImageload and, when set, mood-matches and loads the next background photo into m_shader->m_nextImage. Loops forever until the thread is terminated (see RenderPipeline::stop(), which calls QThread::terminate() — a hard kill, not a cooperative exit request). */
     void run();
 private:
-    FilterShader *m_shader;   ///< Owning FilterShader; see the constructor.
+    RenderPipeline *m_shader;   ///< Owning RenderPipeline; see the constructor.
 
     // Mood-matched image choice: cached tiny-thumbnail stats per image path
     // (brightness, colourfulness) — loader-thread only, no locking needed.

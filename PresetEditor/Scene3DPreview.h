@@ -163,7 +163,7 @@ private:
     /**
      * @brief Recompute the sun-style directional light's view-projection matrix for time @p t.
      *
-     * Ported from FilterShader::updateLightMatrix; writes the shared
+     * Ported from RenderPipeline::updateLightMatrix; writes the shared
      * EffectShader::s_lightDir / s_lightM statics the shadow pass and the
      * main draw both read.
      * @param t Scene time in seconds, driving the light's slow orbital sweep.

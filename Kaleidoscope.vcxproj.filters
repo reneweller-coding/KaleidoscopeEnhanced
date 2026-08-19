@@ -51,7 +51,7 @@
     <ClCompile Include="Source\EffectShader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\filterShader.cpp">
+    <ClCompile Include="Source\RenderPipeline.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\ComputeFX.cpp">
@@ -182,7 +182,7 @@
     <ClInclude Include="Source\glcore.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Source\filterShader.h">
+    <ClInclude Include="Source\RenderPipeline.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\mainwindow.h">

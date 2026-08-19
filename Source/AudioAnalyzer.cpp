@@ -1376,7 +1376,7 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
                   + (1.f - m_sSFM)     * 0.10f   // tonal (not noisy) = more pleasant
                   + (1.f - m_sRoughness) * 0.25f; // consonant (not beating) = pleasant
 
-    // ---- Dynamic timing scale (for filterShader / EffectShader) ----
+    // ---- Dynamic timing scale (for RenderPipeline / EffectShader) ----
     // Drives how fast scenes/shaders cycle:
     //   timingScale < 1 → ALL times scaled longer (longer solos, slower cross-fades)
     //   timingScale > 1 → times shortened (quicker cuts)
@@ -1384,7 +1384,7 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
     // energetic track cuts fast; ambient/drone collapses to very long holds.
     // Range: ~0.10 (pure drone) .. ~2.8 (fast, high-arousal beat music).
     // Tempo is now a primary driver, so faster music = shorter scenes AND shorter
-    // cross-fades (both are divided by timingScale in filterShader), arousal adds
+    // cross-fades (both are divided by timingScale in RenderPipeline), arousal adds
     // intensity on top.  estimatedBPM is normalised 0..1 over 40..200 BPM.
     float beatScale   = 0.7f + 0.9f * arousal + 1.2f * estimatedBPM;   // 0.7 .. ~2.8
     float timingScale = beatScale * (1.f - m_ambientFactor)

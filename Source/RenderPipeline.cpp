@@ -1,6 +1,6 @@
 /**
- * @file filterShader.cpp
- * @brief Implements FilterShader: the per-frame render/present pipeline (see paint()) —
+ * @file RenderPipeline.cpp
+ * @brief Implements RenderPipeline: the per-frame render/present pipeline (see paint()) —
  *        texture-effect and combine-effect rendering, the SceneScheduler-driven cross-fade
  *        state machines, feedback/trails, shadow and order-independent-transparency passes,
  *        the 2D camera rig, true-stereo per-eye rendering, and the background ImageLoader
@@ -11,7 +11,7 @@
 #include <algorithm>
 
 #include "shader_setup.h"
-#include "filterShader.h"
+#include "RenderPipeline.h"
 #include "SpoutOut.h"
 #include "SpoutIn.h"
 #include "VideoIn.h"
@@ -38,22 +38,22 @@ static unsigned int maxSides = 14;
 #endif
 
 // Live-tunable look parameters (shared across all configs, set by hotkeys).
-float FilterShader::s_reactivity  = 1.0f;
-float FilterShader::s_trailAmount = 0.6f;
-float FilterShader::s_moodStrength = 1.0f;
-float FilterShader::s_renderScale = 1.0f;
-float FilterShader::s_lightShow   = 0.0f;   // corner lamps / light-show OFF by default
-bool  FilterShader::s_spoutEnabled = false; // Spout sender (CLI -o)
-float FilterShader::s_latencyLead  = 0.05f; // display-phase lead vs. heard audio
-int   FilterShader::s_stereoMode  = 0;      // stereoscopic output (CLI -3 / 'z')
-float FilterShader::s_stereoDepth = 1.0f;   // disparity strength
-bool  FilterShader::s_blackout = false;     // VJ blackout ('b')
-bool  FilterShader::s_freeze   = false;     // VJ freeze ('e')
-bool  FilterShader::s_pinned   = false;     // VJ pin ('u')
-QHash<QString, float> FilterShader::s_taste;  // taste learning (skip/favourite)
-bool    FilterShader::s_spoutInEnabled = false;  // Spout input (CLI -i)
-QString FilterShader::s_spoutInSender;
-QString FilterShader::s_videoPath;                // native video input (CLI -v)
+float RenderPipeline::s_reactivity  = 1.0f;
+float RenderPipeline::s_trailAmount = 0.6f;
+float RenderPipeline::s_moodStrength = 1.0f;
+float RenderPipeline::s_renderScale = 1.0f;
+float RenderPipeline::s_lightShow   = 0.0f;   // corner lamps / light-show OFF by default
+bool  RenderPipeline::s_spoutEnabled = false; // Spout sender (CLI -o)
+float RenderPipeline::s_latencyLead  = 0.05f; // display-phase lead vs. heard audio
+int   RenderPipeline::s_stereoMode  = 0;      // stereoscopic output (CLI -3 / 'z')
+float RenderPipeline::s_stereoDepth = 1.0f;   // disparity strength
+bool  RenderPipeline::s_blackout = false;     // VJ blackout ('b')
+bool  RenderPipeline::s_freeze   = false;     // VJ freeze ('e')
+bool  RenderPipeline::s_pinned   = false;     // VJ pin ('u')
+QHash<QString, float> RenderPipeline::s_taste;  // taste learning (skip/favourite)
+bool    RenderPipeline::s_spoutInEnabled = false;  // Spout input (CLI -i)
+QString RenderPipeline::s_spoutInSender;
+QString RenderPipeline::s_videoPath;                // native video input (CLI -v)
 
 // Settings file lives next to the Configurations folder (parent of Debug/Release),
 // matching how shaders and configs are loaded ("..\\...").
@@ -62,7 +62,7 @@ static QString settingsFilePath()
 	return QString( "..\\kaleidoscope_settings.ini" );
 }
 
-void FilterShader::loadSettings()
+void RenderPipeline::loadSettings()
 {
 	QSettings s( settingsFilePath(), QSettings::IniFormat );
 	s_reactivity   = clampParam( s.value( "reactivity",  s_reactivity  ).toFloat(), 0.f, 3.0f  );
@@ -95,13 +95,13 @@ static QString tasteBase( const char *fragPath )
 	return f.mid( cut + 1 );
 }
 
-float FilterShader::tasteFor( const char *fragPath ) const
+float RenderPipeline::tasteFor( const char *fragPath ) const
 {
 	auto it = s_taste.constFind( m_presetName + "/" + tasteBase( fragPath ) );
 	return ( it == s_taste.constEnd() ) ? 1.f : it.value();
 }
 
-void FilterShader::bumpTaste( const char *fragPath, float mul )
+void RenderPipeline::bumpTaste( const char *fragPath, float mul )
 {
 	QString key = m_presetName + "/" + tasteBase( fragPath );
 	float v = clampParam( ( s_taste.value( key, 1.f ) ) * mul, 0.3f, 2.5f );
@@ -114,7 +114,7 @@ void FilterShader::bumpTaste( const char *fragPath, float mul )
 	fprintf( stderr, "Taste: %s -> %.2f\n", key.toLocal8Bit().constData(), v );
 }
 
-void FilterShader::saveSettings()
+void RenderPipeline::saveSettings()
 {
 	QSettings s( settingsFilePath(), QSettings::IniFormat );
 	s.setValue( "reactivity",  s_reactivity   );
@@ -153,7 +153,7 @@ static float slewToward(float cur, float target, float rate, float dt)
 
 
 // Constructor
-FilterShader::FilterShader( )
+RenderPipeline::RenderPipeline( )
 : m_mesh(0)
 , m_npot_supported(false)
 , m_width(100)
@@ -204,7 +204,7 @@ FilterShader::FilterShader( )
 
 
 
-void FilterShader::init( const QString &directory, unsigned int timeTextureSoloMin, unsigned int timeTextureSoloMax, unsigned int timeTextureInterpolationMin, unsigned int timeTextureInterpolationMax )
+void RenderPipeline::init( const QString &directory, unsigned int timeTextureSoloMin, unsigned int timeTextureSoloMax, unsigned int timeTextureInterpolationMin, unsigned int timeTextureInterpolationMax )
 {
 	m_imageDirectory = directory;
 
@@ -214,7 +214,7 @@ void FilterShader::init( const QString &directory, unsigned int timeTextureSoloM
 	m_timeTextureInterpolationMax = timeTextureInterpolationMax;
 }
 
-void FilterShader::start( int width, int height )
+void RenderPipeline::start( int width, int height )
 {
 	// Revisiting an already-built configuration: just resize, don't rebuild.
 	// (Rebuilding leaked GL programs/textures/FBOs and spawned a duplicate
@@ -290,7 +290,7 @@ void FilterShader::start( int width, int height )
 	m_timeTexture.start();
 
 	
-	//m_filterShader = new FilterShader(100,100, directory);
+	//m_renderPipeline = new RenderPipeline(100,100, directory);
 	m_imageLoader = new ImageLoader( this );
     m_imageLoader->start();
 
@@ -298,7 +298,7 @@ void FilterShader::start( int width, int height )
 	reinit( width, height );
 }
 
-QString FilterShader::activeShaderInfo() const
+QString RenderPipeline::activeShaderInfo() const
 {
 	auto base = [](const char *p) -> QString {
 		QString s = QString::fromLatin1(p ? p : "?");
@@ -331,7 +331,7 @@ QString FilterShader::activeShaderInfo() const
 	return out;
 }
 
-void FilterShader::stop()
+void RenderPipeline::stop()
 {
 	// NOTE: the global Spout facades are deliberately NOT released here —
 	// stop() runs on every preset switch, which made the Spout sender vanish
@@ -367,14 +367,14 @@ void FilterShader::stop()
 
 
 // Destructor
-FilterShader::~FilterShader()
+RenderPipeline::~RenderPipeline()
 {
 	cleanTextures();
 	cleanShaderPrograms();
 	delete m_mesh;
 }
 
-void FilterShader::cleanTextures()
+void RenderPipeline::cleanTextures()
 {
 	glDeleteFramebuffers( 1, &m_fboEffectTexture1 );		// clean up framebuffer object
 	glDeleteFramebuffers( 1, &m_fboEffectTexture2 );		// clean up framebuffer object
@@ -386,7 +386,7 @@ void FilterShader::cleanTextures()
 	//glDeleteTextures( 1, &m_texID3 );
 }
 
-void FilterShader::cleanShaderPrograms()
+void RenderPipeline::cleanShaderPrograms()
 {
 	glDeleteProgram(m_sh_prog_id_fx);
 
@@ -410,7 +410,7 @@ void FilterShader::cleanShaderPrograms()
 
 
 
-void FilterShader::loadShader()
+void RenderPipeline::loadShader()
 {
 	//checkGLErrors("loadShader 0");
 	//cleanShaderPrograms();
@@ -419,7 +419,7 @@ void FilterShader::loadShader()
 	checkGLErrors("loadShader 2");
 }
 
-bool FilterShader::loadObj(const char *filename)
+bool RenderPipeline::loadObj(const char *filename)
 {
 	delete m_mesh;
 	m_mesh = new Mesh(filename);
@@ -430,7 +430,7 @@ bool FilterShader::loadObj(const char *filename)
 	return true;
 }
 
-void FilterShader::reinit(int width, int height)
+void RenderPipeline::reinit(int width, int height)
 {
 	fprintf(stderr,"\nreinit start\n");
 	checkGLErrors("reinit() 0");
@@ -518,7 +518,7 @@ void FilterShader::reinit(int width, int height)
 // re-allocates the storage of an EXISTING texture ID via glTexImage2D, so the
 // FBOs that already reference these IDs simply render at the new size.  No
 // glGen*/glCreate* is issued, hence no leak and no image reload.
-void FilterShader::resize(int width, int height)
+void RenderPipeline::resize(int width, int height)
 {
 	if( width <= 0 || height <= 0 )
 		return;
@@ -577,7 +577,7 @@ void FilterShader::resize(int width, int height)
 
 // Create the final FBO + present shader.  If anything fails, m_safetyReady stays
 // false and paint() falls back to drawing the combine result straight to screen.
-void FilterShader::setupSafety()
+void RenderPipeline::setupSafety()
 {
 	// Finaler FBO, Present-Programm und Bloom: alles im PresentPass.
 	m_present.setup( m_width, m_height, m_texInternalFormat, m_texFormat, m_texType );
@@ -652,7 +652,7 @@ void FilterShader::setupSafety()
 // Track-title reveal: render "title / artist" into a transparent image; the
 // GL upload happens at the next paint() (context current there).  A soft dark
 // halo keeps the text readable over any content.
-void FilterShader::showTitle( const QString &title, const QString &artist )
+void RenderPipeline::showTitle( const QString &title, const QString &artist )
 {
 	// 2x Auflösung ggü. dem ursprünglichen 1024x256 (gleiches Seitenverhältnis
 	// 4:1, alle Maße/Schriftgrade proportional mitskaliert): mehrere Einflug-
@@ -705,7 +705,7 @@ void FilterShader::showTitle( const QString &title, const QString &artist )
 
 // Manual "next" (key 'n', MIDI pad, web remote): skipping an effect that has
 // only just come on screen reads as a dislike — remember it (soft, decaying).
-void FilterShader::requestSceneChange()
+void RenderPipeline::requestSceneChange()
 {
 	// Tell the user WHY nothing will happen instead of silently ignoring
 	// the key (a pinned/frozen show swallowing 'n' looks like a bug).
@@ -727,7 +727,7 @@ void FilterShader::requestSceneChange()
 
 // Validation aid: compile EVERYTHING now (lazy compilation would otherwise
 // only exercise shaders that actually come on screen).
-void FilterShader::compileAllShaders()
+void RenderPipeline::compileAllShaders()
 {
 	for( EffectShader *s : m_effectTextures )
 	{
@@ -750,7 +750,7 @@ void FilterShader::compileAllShaders()
 }
 
 // Remote scene browser: list the preset's texture shaders (file basenames).
-QStringList FilterShader::sceneNames() const
+QStringList RenderPipeline::sceneNames() const
 {
 	QStringList out;
 	for( EffectShader *s : m_effectTextures )
@@ -766,7 +766,7 @@ QStringList FilterShader::sceneNames() const
 
 // Remote scene browser: jump DIRECTLY to scene idx (same instant path as a
 // manual 'n' cut, but with a chosen target instead of a random roll).
-void FilterShader::forceScene( int idx )
+void RenderPipeline::forceScene( int idx )
 {
 	if( idx < 0 || idx >= (int)m_effectTextures.size() )
 		return;
@@ -776,7 +776,7 @@ void FilterShader::forceScene( int idx )
 }
 
 // Key 'f': the user LIKES what is on screen — persistent selection bonus.
-void FilterShader::favoriteCurrentEffect()
+void RenderPipeline::favoriteCurrentEffect()
 {
 	if( m_scheduler.actTexture() < m_effectTextures.size() )
 		bumpTaste( m_effectTextures[m_scheduler.actTexture()]->fragmentName(), 1.25f );
@@ -800,7 +800,7 @@ void FilterShader::favoriteCurrentEffect()
 // phosphor feedback/trails pass; (10) PresentPass::run() for tone-mapping,
 // bloom, camera transform, stereo packing, overlays and final display.
 // ---------------------------------------------------------------------------
-void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
+void RenderPipeline::paint(const float *rotMatrix, float tx, float ty, float tz,
                          const AudioFeatures &audio)
 {
 	m_scheduler.setMood( audio.arousal, audio.valence, audio.ambientFactor );
@@ -1637,7 +1637,7 @@ void FilterShader::paint(const float *rotMatrix, float tx, float ty, float tz,
 	checkGLErrors("paint() 2");
 }
 
-void FilterShader::drawScene(const float *rotMatrix, float tx, float ty, float tz)
+void RenderPipeline::drawScene(const float *rotMatrix, float tx, float ty, float tz)
 {
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 	
@@ -1671,7 +1671,7 @@ GLuint fullscreenVAO()
 	return vao;
 }
 
-void FilterShader::drawWindow()
+void RenderPipeline::drawWindow()
 {
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 	glBindVertexArray( fullscreenVAO() );
@@ -1693,7 +1693,7 @@ void FilterShader::drawWindow()
 // binds the returned id, so nothing is copied back and no other consumer
 // of the original texture is affected.  Off (returns src) when the scene
 // has no rig2 formulas — zero extra cost for the whole existing catalogue.
-GLuint FilterShader::rig2Transform( EffectShader *fx, GLuint srcTex, int slot )
+GLuint RenderPipeline::rig2Transform( EffectShader *fx, GLuint srcTex, int slot )
 {
 	float rig[4];
 	if( !fx || !fx->rig2( rig ) )
@@ -1752,11 +1752,11 @@ GLuint FilterShader::rig2Transform( EffectShader *fx, GLuint srcTex, int slot )
 	glBindVertexArray( fullscreenVAO() );
 	glDrawArrays( GL_TRIANGLES, 0, 3 );
 	glBindVertexArray( 0 );
-	checkGLErrors( "FilterShader::rig2Transform" );
+	checkGLErrors( "RenderPipeline::rig2Transform" );
 	return m_rig2Tex[slot];
 }
 
-void FilterShader::blitTexture( GLuint tex )
+void RenderPipeline::blitTexture( GLuint tex )
 {
 	// Tiny dedicated blit program (fixed-function texturing is gone in core).
 	static GLuint blitProg = 0;
@@ -1777,7 +1777,7 @@ void FilterShader::blitTexture( GLuint tex )
 
 // Create the shadow map's depth-only framebuffer.  Lazy: only a scene that
 // declares "texShadow" ever triggers it, and most never do.
-bool FilterShader::ensureShadowMap()
+bool RenderPipeline::ensureShadowMap()
 {
 	if( m_shadowFbo != 0 )
 		return true;
@@ -1828,7 +1828,7 @@ bool FilterShader::ensureShadowMap()
 // fixed cube at the origin.  Orthographic and not perspective because this is a
 // SUN: its rays are parallel, and a perspective shadow frustum would give the
 // shadows a vanishing point that the shading does not have.
-void FilterShader::updateLightMatrix(float t)
+void RenderPipeline::updateLightMatrix(float t)
 {
 	// The ACTIVE scene's box, not the default: the map's resolution is spent
 	// across it, so a small scene must get a small box or its shadows come out
@@ -1902,7 +1902,7 @@ void FilterShader::updateLightMatrix(float t)
 }
 
 // Draw one 3D scene into the shadow map, depth only.
-void FilterShader::renderShadowPass(EffectShader *fx)
+void RenderPipeline::renderShadowPass(EffectShader *fx)
 {
 	if( !ensureShadowMap() )
 		return;
@@ -1936,7 +1936,7 @@ void FilterShader::renderShadowPass(EffectShader *fx)
 }
 
 // Allocate the two accumulation targets weighted-blended OIT needs.
-bool FilterShader::ensureOitTargets()
+bool RenderPipeline::ensureOitTargets()
 {
 	if( m_oitFbo != 0 )
 		return true;
@@ -1993,7 +1993,7 @@ bool FilterShader::ensureOitTargets()
 
 // Draw the scene's transparent geometry into the accumulation targets, then
 // composite the result back over the already-rendered opaque frame.
-void FilterShader::renderOitPass(EffectShader *fx, GLuint depthTex, GLuint targetFbo)
+void RenderPipeline::renderOitPass(EffectShader *fx, GLuint depthTex, GLuint targetFbo)
 {
 	if( !ensureOitTargets() )
 		return;
@@ -2060,7 +2060,7 @@ void FilterShader::renderOitPass(EffectShader *fx, GLuint depthTex, GLuint targe
 	glDisable( GL_BLEND );
 }
 
-void FilterShader::initFBO(GLuint &fboEffect, GLuint &texIDEffectTexture, GLuint *depthRb)
+void RenderPipeline::initFBO(GLuint &fboEffect, GLuint &texIDEffectTexture, GLuint *depthRb)
 {
 	// create FBO (off-screen framebuffer) — reuse the id if it already exists
 	// (re-entering this path must re-attach, not leak a fresh FBO)
@@ -2110,7 +2110,7 @@ void FilterShader::initFBO(GLuint &fboEffect, GLuint &texIDEffectTexture, GLuint
 }
 
 
-void FilterShader::loadNewTexture( GLuint &texID )
+void RenderPipeline::loadNewTexture( GLuint &texID )
 {
 	NanoTimer timer;
 	timer.start();
@@ -2139,7 +2139,7 @@ void FilterShader::loadNewTexture( GLuint &texID )
 }
 
 
-void FilterShader::createFBOTexture( GLuint &texID )
+void RenderPipeline::createFBOTexture( GLuint &texID )
 {
 	checkGLErrors("createTextures() 0");
 
@@ -2160,7 +2160,7 @@ void FilterShader::createFBOTexture( GLuint &texID )
 // Procedural texture used when the configured image directory is missing or empty,
 // so the visualizer still produces colourful kaleidoscope content instead of
 // crashing on an empty image list (former end()-deref / div-by-zero).
-QImage FilterShader::fallbackImage()
+QImage RenderPipeline::fallbackImage()
 {
 	const int N = 256;
 	QImage img( N, N, QImage::Format_ARGB32 );
@@ -2179,7 +2179,7 @@ QImage FilterShader::fallbackImage()
 	return img;
 }
 
-void FilterShader::createTexture()
+void RenderPipeline::createTexture()
 {
 	checkGLErrors("createTextures() 0");
 
@@ -2221,7 +2221,7 @@ void FilterShader::createTexture()
     checkGLErrors("createTextures() 1");
 }
 
-void FilterShader::traverse( const QString& dirname, QStringList& imageList )
+void RenderPipeline::traverse( const QString& dirname, QStringList& imageList )
 {
   QDir dir( dirname );
   dir.setFilter( QDir::Dirs | QDir::Files | QDir::NoSymLinks );
@@ -2252,7 +2252,7 @@ void FilterShader::traverse( const QString& dirname, QStringList& imageList )
 }
 
 
-void FilterShader::setupFBOTexture( const GLuint texID )
+void RenderPipeline::setupFBOTexture( const GLuint texID )
 {
 	
 	// make active and bind
@@ -2279,7 +2279,7 @@ void FilterShader::setupFBOTexture( const GLuint texID )
 
 
 
-void FilterShader::setupTexture( const GLuint texID, const QImage &image )
+void RenderPipeline::setupTexture( const GLuint texID, const QImage &image )
 {
     //NanoTimer timer;
 	//timer.start();
@@ -2364,7 +2364,7 @@ void FilterShader::setupTexture( const GLuint texID, const QImage &image )
 /**
  * Sets up the GLSL runtime and creates shader.
  */
-void FilterShader::initGLSL()
+void RenderPipeline::initGLSL()
 {	
 	// load and compile shader — the final pass that blends the outgoing and
 	// incoming OVERLAY outputs during a combine switch (a plain linear mix;
@@ -2391,7 +2391,7 @@ void FilterShader::initGLSL()
  * Extremely useful debugging function: When developing, 
  * make sure to call this after almost every GL call.
  */
-void FilterShader::checkGLErrors( const char *label )
+void RenderPipeline::checkGLErrors( const char *label )
 {
 	return;//rwrwtest profiling
 	// WHY this early return: glGetError() can force a GPU/driver sync, and this
@@ -2414,7 +2414,7 @@ void FilterShader::checkGLErrors( const char *label )
  * Checks framebuffer status.
  * Copied directly out of the spec, modified to deliver a return value.
  */
-bool FilterShader::checkFramebufferStatus(void)
+bool RenderPipeline::checkFramebufferStatus(void)
 {
 	return true; //rwrwtest profiling
 	// WHY this early return: like checkGLErrors(), disabled for normal runs
@@ -2453,7 +2453,7 @@ bool FilterShader::checkFramebufferStatus(void)
 
 
 // Hot-reload (dev aid): recompile every program using the given fragment file.
-void FilterShader::reloadFragment( const QString &bareName )
+void RenderPipeline::reloadFragment( const QString &bareName )
 {
 	auto matches = [&bareName]( EffectShader *s ) {
 		QString f = QString::fromLocal8Bit( s->fragmentName() );
@@ -2472,24 +2472,24 @@ void FilterShader::reloadFragment( const QString &bareName )
 		         qPrintable( bareName ), n, (n == 1) ? "" : "s" );
 }
 
-void FilterShader::addTextureShader( EffectShader * shader )
+void RenderPipeline::addTextureShader( EffectShader * shader )
 {
 	m_effectTextures.push_back( shader );
 }
 
 
-void FilterShader::addFxShader( EffectShader * shader )
+void RenderPipeline::addFxShader( EffectShader * shader )
 {
 	m_effectFx.push_back( shader );
 }
 
-void FilterShader::addTransitionShader( EffectShader * shader )
+void RenderPipeline::addTransitionShader( EffectShader * shader )
 {
 	m_effectTransitions.push_back( shader );
 }
 
 
-ImageLoader::ImageLoader( FilterShader *shader )
+ImageLoader::ImageLoader( RenderPipeline *shader )
 {
     m_shader = shader;
 }
@@ -2530,7 +2530,7 @@ void ImageLoader::run()
 			// instead of dividing by zero / dereferencing end().
 			if( m_shader->m_imageList.isEmpty() )
 			{
-				m_shader->m_nextImage = prepareImage( FilterShader::fallbackImage() );
+				m_shader->m_nextImage = prepareImage( RenderPipeline::fallbackImage() );
 				m_shader->m_triggerImageload = false;
 				continue;
 			}

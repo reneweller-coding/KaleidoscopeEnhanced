@@ -28,7 +28,7 @@ class QTcpServer;
  * Listens on a TCP port (CLI `-t <port>`) and serves one self-contained HTML/CSS/JS page plus a
  * small set of GET-only JSON/JPEG API endpoints under /api/. All request handling runs on the
  * Qt main thread (QTcpServer's signals fire on the Qt event loop), so it can call straight into
- * GLwidget and FilterShader the same way the keyboard shortcut handler does — no cross-thread
+ * GLwidget and RenderPipeline the same way the keyboard shortcut handler does — no cross-thread
  * synchronization is needed. Deliberately unauthenticated: it is meant as a LAN convenience
  * remote only and should not be port-forwarded to the internet.
  */
@@ -47,7 +47,7 @@ private:
 	 * @brief Accepts pending TCP connections and wires up one-shot request handling for each.
 	 *
 	 * For every new connection, reads the request on the first readyRead, parses the request
-	 * line, dispatches "/" and the GET /api/ routes by calling into GLwidget / FilterShader,
+	 * line, dispatches "/" and the GET /api/ routes by calling into GLwidget / RenderPipeline,
 	 * writes a single HTTP/1.1 response, and closes the connection (no keep-alive, no chunked
 	 * request bodies).
 	 */

@@ -835,7 +835,7 @@ void EditorWindow::rebuildRangeEditor()
     // jump-free by construction).  Empty = rig off.
     {
         // scene3d gets the projM rig; every OTHER texture scene gets the 2D
-        // rig (FilterShader's Rig2D transform pass).  Combines get neither.
+        // rig (RenderPipeline's Rig2D transform pass).  Combines get neither.
         static const char *kRig3[8] = { "rigPitch", "rigYaw", "rigRoll", "rigDolly",
                                         "rigPitchV", "rigYawV", "rigRollV", "rigDollyV" };
         static const char *kRig2[8] = { "rig2Roll", "rig2Zoom", "rig2X", "rig2Y",

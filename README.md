@@ -1218,7 +1218,7 @@ Audio is captured via WASAPI loopback (`AudioAnalyzer`) and analysed in real tim
 - **2D CAMERA RIG for every 2D scene (8 more formula channels):** the 2D
   counterpart of the projM rig — formulas named `rig2Roll` (radians),
   `rig2Zoom` (>0 = closer), `rig2X`/`rig2Y` (pan) plus host-integrated
-  `rig2…V` rates.  `FilterShader` runs the scene's finished frame through
+  `rig2…V` rates.  `RenderPipeline` runs the scene's finished frame through
   `Engine/Rig2D.frag` (rotate/zoom/pan with seamless mirror-folded edges)
   before the combine consumes it — an extra fullscreen pass ONLY while a
   formula is active, zero cost otherwise, and skipped on eye-packed stereo
@@ -2753,7 +2753,7 @@ Reorganised 2026-07 into folders:
   fallback), `TrackMedia` (lyrics + artist-image fetch/cache/rotation —
   LRCLIB/NetEase/lyrics.ovh and Deezer/TheAudioDB/iTunes), `MidiInput`
   (MIDI + learn), `glwidget` (`QOpenGLWidget`, input, overlays, replay,
-  web-remote hooks), `filterShader` (FBO pipeline + audio→visual mapping),
+  web-remote hooks), `RenderPipeline` (FBO pipeline + audio→visual mapping),
   `EffectShader` / `Uniform` (per-effect shader + params), `Configuration`
   (XML loading), `WebRemote`, `SpoutOut` / `SpoutIn`, …  The Visual Studio
   project mirrors this layout in its Solution Explorer filters (Source Files / Header Files /

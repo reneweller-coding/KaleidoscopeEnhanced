@@ -39,7 +39,7 @@ static float hash01( unsigned int n )
 	return float(n & 0xffffff) / float(0x1000000);
 }
 
-// FPS-driven cube budget (see FilterShader::paint's hysteresis).
+// FPS-driven cube budget (see RenderPipeline::paint's hysteresis).
 float Scene3DShader::s_cubeBudget = 1.f;
 
 // Shared by all geom="indirect" scenes (see setupIndirect()).
@@ -581,7 +581,7 @@ void Scene3DShader::initUniforms( int width, int height )
 		buildGeometry();
 
 	// Built here rather than lazily on the first draw, so the generator program
-	// exists before FilterShader asks which host textures this scene needs —
+	// exists before RenderPipeline asks which host textures this scene needs —
 	// usesSpectro() inspects the generator too.
 	if( m_geomKind == GEOM_INDIRECT )
 		setupIndirect();
@@ -691,7 +691,7 @@ void Scene3DShader::draw()
 	if( m_seedUni   >= 0 ) glUniform1f( m_seedUni,   m_sceneSeed );
 	if( m_budgetUni >= 0 ) glUniform1f( m_budgetUni, s_cubeBudget );
 
-	// During the OIT accumulation pass, the caller (FilterShader::renderOitPass
+	// During the OIT accumulation pass, the caller (RenderPipeline::renderOitPass
 	// / Scene3DPreview::renderOitPass) has ALREADY bound the two-target OIT
 	// FBO, cleared it to its own per-attachment values (0 for accumulation,
 	// 1 for revealage -- NOT the same value, so a blanket glClear here would

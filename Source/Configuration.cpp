@@ -1,6 +1,6 @@
 /**
  * @file Configuration.cpp
- * @brief Implements Configuration: XML parsing of Configurations/ *.xml presets into FilterShader/EffectShader objects, uniform-range/formula registration, and the legacy shader-path remap.
+ * @brief Implements Configuration: XML parsing of Configurations/ *.xml presets into RenderPipeline/EffectShader objects, uniform-range/formula registration, and the legacy shader-path remap.
  */
 #include <float.h>
 
@@ -27,45 +27,45 @@
 #include<GL/GLU.h>
 
 /**
- * @brief Constructs a Configuration by parsing @p configurationFile and initializing its FilterShader.
+ * @brief Constructs a Configuration by parsing @p configurationFile and initializing its RenderPipeline.
  *
- * Allocates m_filterShader, delegates the XML parsing to readConfiguration()
+ * Allocates m_renderPipeline, delegates the XML parsing to readConfiguration()
  * (which populates it with TextureShader/CombineShader entries and the
- * preset-wide timing fields), then names the FilterShader after the parsed
+ * preset-wide timing fields), then names the RenderPipeline after the parsed
  * preset (used as the taste-learning namespace) and calls
- * FilterShader::init() with the parsed image directory and timing ranges.
+ * RenderPipeline::init() with the parsed image directory and timing ranges.
  */
 Configuration::Configuration( const QString &configurationFile )
 {
-	m_filterShader = new FilterShader();
+	m_renderPipeline = new RenderPipeline();
 	readConfiguration( configurationFile );
 	// Namespace for the per-preset taste learning (skip-malus / favourite).
-	m_filterShader->setPresetName( m_configurationName );
-	m_filterShader->init( m_imageDirectory, m_timeTextureSoloMin, m_timeTextureSoloMax, m_timeTextureInterpolationMin, m_timeTextureInterpolationMax );
+	m_renderPipeline->setPresetName( m_configurationName );
+	m_renderPipeline->init( m_imageDirectory, m_timeTextureSoloMin, m_timeTextureSoloMax, m_timeTextureInterpolationMin, m_timeTextureInterpolationMax );
 }
 
 
-/** @brief Deletes the owned FilterShader. */
+/** @brief Deletes the owned RenderPipeline. */
 Configuration::~Configuration( )
 {
-	delete m_filterShader;
+	delete m_renderPipeline;
 }
 
 /**
- * @brief Forwards to FilterShader::start() to (re)size and start the render pipeline.
+ * @brief Forwards to RenderPipeline::start() to (re)size and start the render pipeline.
  * @param width Viewport width in pixels.
  * @param height Viewport height in pixels.
  */
 void Configuration::start( int width, int height )
 {
-	m_filterShader->start( width, height );
+	m_renderPipeline->start( width, height );
 }
 
 
-/** @brief Forwards to FilterShader::stop(). */
+/** @brief Forwards to RenderPipeline::stop(). */
 void Configuration::stop()
 {
-	m_filterShader->stop();
+	m_renderPipeline->stop();
 }
 
 
@@ -158,7 +158,7 @@ static QString mapLegacyShaderPath( QString p )
 }
 
 /**
- * @brief Parses the preset XML file into m_filterShader: root-level metadata/timing, then every TextureShader and CombineShader entry.
+ * @brief Parses the preset XML file into m_renderPipeline: root-level metadata/timing, then every TextureShader and CombineShader entry.
  * @param filename Path to the Configurations/ *.xml preset file to parse.
  *
  * Loads @p filename into a QDomDocument and reads the root element's
@@ -171,7 +171,7 @@ static QString mapLegacyShaderPath( QString p )
  * parses its `mood` attribute into EffectShader::MOOD_* flags, constructs
  * the right EffectShader subclass for its `type` attribute (`normal`,
  * `KaleidoscopeBase`, or — TextureShader only — `scene3d`), registers its
- * uniforms via addUniforms(), and finally adds it to m_filterShader.
+ * uniforms via addUniforms(), and finally adds it to m_renderPipeline.
  *
  * On a missing/unreadable file this logs an error and calls exit(0) (not a
  * recoverable failure path); on a document that fails to parse it returns
@@ -207,7 +207,7 @@ void Configuration::readConfiguration( const QString &filename )
 	// REVIEW MODE for the Test* presets: scenes run ALPHABETICALLY, 8 s
 	// each, and 'n' steps to the next in order — a systematic viewing
 	// bench, not a show.  Only presets whose name starts with "Test".
-	m_filterShader->setReviewMode( m_configurationName.startsWith( "Test" ) );
+	m_renderPipeline->setReviewMode( m_configurationName.startsWith( "Test" ) );
 
 	// Image-cycling times: optional (music steering paces the show anyway);
 	// absent/0 falls back to the long-standing baseline.
@@ -274,7 +274,7 @@ void Configuration::readConfiguration( const QString &filename )
 			shader->setComplexity( complexity );
 			shader->setProbability( probability );
 			shader->setMoodFlags( moodFlags );
-			m_filterShader->addTextureShader( shader );
+			m_renderPipeline->addTextureShader( shader );
 
 		}
 		else if( type == "KaleidoscopeBase" )
@@ -285,7 +285,7 @@ void Configuration::readConfiguration( const QString &filename )
 			shader->setComplexity( complexity );
 			shader->setProbability( probability );
 			shader->setMoodFlags( moodFlags );
-			m_filterShader->addTextureShader( shader );
+			m_renderPipeline->addTextureShader( shader );
 		}
 		else if( type == "scene3d" )
 		{
@@ -310,7 +310,7 @@ void Configuration::readConfiguration( const QString &filename )
 			shader->setComplexity( complexity );
 			shader->setProbability( probability );
 			shader->setMoodFlags( moodFlags );
-			m_filterShader->addTextureShader( shader );
+			m_renderPipeline->addTextureShader( shader );
 		}
      }
 
@@ -357,7 +357,7 @@ void Configuration::readConfiguration( const QString &filename )
 			shader->setComplexity( complexity );
 			shader->setProbability( probability );
 			shader->setMoodFlags( moodFlags );
-			m_filterShader->addFxShader( shader );
+			m_renderPipeline->addFxShader( shader );
 		}
      }
 
@@ -365,7 +365,7 @@ void Configuration::readConfiguration( const QString &filename )
 	// combine entries, but they feed the dedicated transition pass that
 	// blends outgoing/incoming scene during a fade.  One is rolled per fade
 	// (probability + mood weighted); absent entries fall back to the plain
-	// Crossfade inside FilterShader::start().
+	// Crossfade inside RenderPipeline::start().
 	nodeList = docElem.elementsByTagName("TransitionShader");
 
 	for(int i = 0; i < nodeList.count(); i++)
@@ -404,7 +404,7 @@ void Configuration::readConfiguration( const QString &filename )
 			shader->setComplexity( complexity );
 			shader->setProbability( probability );
 			shader->setMoodFlags( moodFlags );
-			m_filterShader->addTransitionShader( shader );
+			m_renderPipeline->addTransitionShader( shader );
 		}
      }
 

@@ -10,8 +10,8 @@
 #include "PresentPass.h"
 #include "shader_setup.h"
 
-// Gemeinsames Fullscreen-Dreieck (gl_VertexID-VAO), definiert in filterShader.cpp.
-extern GLuint fullscreenVAO();   ///< Shared fullscreen-triangle VAO (gl_VertexID trick), defined in filterShader.cpp.
+// Gemeinsames Fullscreen-Dreieck (gl_VertexID-VAO), definiert in RenderPipeline.cpp.
+extern GLuint fullscreenVAO();   ///< Shared fullscreen-triangle VAO (gl_VertexID trick), defined in RenderPipeline.cpp.
 
 /** @brief Clear and draw the shared fullscreen triangle (gl_VertexID-based, no vertex buffer). */
 static void drawFullscreen()
@@ -22,12 +22,12 @@ static void drawFullscreen()
 	glBindVertexArray( 0 );
 }
 
-/** @brief Placeholder framebuffer-completeness check (kept as a stub, matching FilterShader::checkFramebufferStatus's profiling behaviour).
+/** @brief Placeholder framebuffer-completeness check (kept as a stub, matching RenderPipeline::checkFramebufferStatus's profiling behaviour).
  * @return Always true.
  */
 static bool fbStatusOk()
 {
-	return true; // wie FilterShader::checkFramebufferStatus (rwrwtest profiling)
+	return true; // wie RenderPipeline::checkFramebufferStatus (rwrwtest profiling)
 }
 
 /** @brief Clamp a value to [lo, hi].

@@ -15,18 +15,18 @@
 
 #include "stdinc.h"
 #include "Uniform.h"
-#include "FilterShader.h"
+#include "RenderPipeline.h"
 
 /**
- * @brief Parses one preset XML file and builds the FilterShader/EffectShader object graph it describes.
+ * @brief Parses one preset XML file and builds the RenderPipeline/EffectShader object graph it describes.
  *
  * A Configuration corresponds 1:1 to a Configurations/ *.xml preset file: its
  * constructor parses the document (readConfiguration()) into a freshly
- * allocated FilterShader, wiring up every TextureShader / CombineShader entry
+ * allocated RenderPipeline, wiring up every TextureShader / CombineShader entry
  * (including their per-uniform ranges and `<expr>` formulas) and the preset's
- * image-cycling timing/mood metadata. It owns that FilterShader for the
+ * image-cycling timing/mood metadata. It owns that RenderPipeline for the
  * lifetime of the Configuration and deletes it in the destructor. start()/
- * stop() just forward to the owned FilterShader; isHidden() exposes whether
+ * stop() just forward to the owned RenderPipeline; isHidden() exposes whether
  * this preset is a reference/test-bench build that should be excluded from
  * user-facing selection.
  */
@@ -38,7 +38,7 @@ public:
 	 * @param configurationFile Path to the Configurations/ *.xml preset file to load.
 	 */
 	Configuration( const QString &configurationFile );
-	/** @brief Destroys the owned FilterShader (and, transitively, everything it built). */
+	/** @brief Destroys the owned RenderPipeline (and, transitively, everything it built). */
 	~Configuration( );
 
 	QString getConfigurationName() { return m_configurationName; }; ///< @return The preset's display name (root element's ConfigurationName attribute).
@@ -49,20 +49,20 @@ public:
 	 * @return True if the root element had `hidden="true"`. */
 	bool isHidden() const { return m_hidden; }
 	/**
-	 * @brief Starts the owned FilterShader's GL resources/scheduler for the given viewport size.
+	 * @brief Starts the owned RenderPipeline's GL resources/scheduler for the given viewport size.
 	 * @param width Viewport width in pixels.
 	 * @param height Viewport height in pixels.
 	 */
 	void start( int width, int height );
-	/** @brief Stops the owned FilterShader (releases its running state). */
+	/** @brief Stops the owned RenderPipeline (releases its running state). */
 	void stop();
 
-	FilterShader *m_filterShader; ///< The shader/scene pipeline built by readConfiguration(); owned (deleted in the destructor).
+	RenderPipeline *m_renderPipeline; ///< The shader/scene pipeline built by readConfiguration(); owned (deleted in the destructor).
 
 private:
 
 	/**
-	 * @brief Parses the preset XML document and populates m_filterShader with its TextureShader/CombineShader entries.
+	 * @brief Parses the preset XML document and populates m_renderPipeline with its TextureShader/CombineShader entries.
 	 * @param filename Path to the Configurations/ *.xml preset file.
 	 */
 	void readConfiguration( const QString &filename );
@@ -73,7 +73,7 @@ private:
 	 */
 	void addUniforms( EffectShader *shader, QDomElement &el );
 
-	QString m_imageDirectory;      ///< Root image directory for this preset (root element's ImageDirectory attribute), passed to FilterShader::init().
+	QString m_imageDirectory;      ///< Root image directory for this preset (root element's ImageDirectory attribute), passed to RenderPipeline::init().
 	QString m_configurationName;   ///< Preset display name (root element's ConfigurationName attribute); also used as the taste-learning namespace.
 	bool    m_hidden = false;      ///< True when the root element has hidden="true" (excluded from user-facing preset selection).
 

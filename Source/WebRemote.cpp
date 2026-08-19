@@ -5,7 +5,7 @@
 // WebRemote.cpp — see WebRemote.h.
 #include "WebRemote.h"
 #include "glwidget.h"
-#include "filterShader.h"
+#include "RenderPipeline.h"
 
 #include <QtNetwork/QTcpServer>
 #include <QtNetwork/QTcpSocket>
@@ -140,7 +140,7 @@ void WebRemote::handleConnection()
 
 			// GET-only dispatch: the request line's method/target, then one branch per route.
 			// Every branch either fills body/ctype for the response below, or (for the
-			// fire-and-forget action routes) just calls straight into GLwidget/FilterShader
+			// fire-and-forget action routes) just calls straight into GLwidget/RenderPipeline
 			// and leaves body as the default "{}" acknowledgement.
 			if( parts.size() >= 2 && parts[0] == "GET" )
 			{
@@ -163,15 +163,15 @@ void WebRemote::handleConnection()
 					                "\"active\":%7,\"blackout\":%8,\"replayArmed\":%9,"
 					                "\"fps\":%10,\"renderScale\":%11,"
 					                "\"configs\":[%12]}" )
-					       .arg( FilterShader::reactivity() ).arg( FilterShader::trails() )
-					       .arg( FilterShader::mood() ).arg( FilterShader::latency() )
-					       .arg( FilterShader::lightShow() ? 1 : 0 )
+					       .arg( RenderPipeline::reactivity() ).arg( RenderPipeline::trails() )
+					       .arg( RenderPipeline::mood() ).arg( RenderPipeline::latency() )
+					       .arg( RenderPipeline::lightShow() ? 1 : 0 )
 					       .arg( m_widget->autoConfigEnabled() ? 1 : 0 )
 					       .arg( m_widget->remoteActiveConfig() )
-					       .arg( FilterShader::blackout() ? 1 : 0 )
+					       .arg( RenderPipeline::blackout() ? 1 : 0 )
 					       .arg( m_widget->remoteReplayArmed() ? 1 : 0 )
 					       .arg( m_widget->fpsValue() )
-					       .arg( FilterShader::renderScale() )
+					       .arg( RenderPipeline::renderScale() )
 					       .arg( cfgs.join( "," ) ).toUtf8();
 				}
 				else if( path == "/api/snapshot" )
@@ -201,16 +201,16 @@ void WebRemote::handleConnection()
 				{
 					const QString k = q.queryItemValue( "k" );
 					const float   v = q.queryItemValue( "v" ).toFloat();
-					if      ( k == "reactivity" ) FilterShader::setReactivity( v );
-					else if ( k == "trails"     ) FilterShader::setTrails( v );
-					else if ( k == "mood"       ) FilterShader::setMood( v );
-					else if ( k == "latency"    ) FilterShader::setLatency( v );
+					if      ( k == "reactivity" ) RenderPipeline::setReactivity( v );
+					else if ( k == "trails"     ) RenderPipeline::setTrails( v );
+					else if ( k == "mood"       ) RenderPipeline::setMood( v );
+					else if ( k == "latency"    ) RenderPipeline::setLatency( v );
 				}
 				else if( path == "/api/toggle" )
 				{
 					const QString k = q.queryItemValue( "k" );
-					if      ( k == "lightshow"  ) FilterShader::toggleLightShow();
-					else if ( k == "blackout"   ) FilterShader::toggleBlackout();
+					if      ( k == "lightshow"  ) RenderPipeline::toggleLightShow();
+					else if ( k == "blackout"   ) RenderPipeline::toggleBlackout();
 					else if ( k == "replayarm"  ) m_widget->remoteToggleReplayArm();
 					else if ( k == "autoconfig" )
 						m_widget->setAutoConfigEnabled( !m_widget->autoConfigEnabled() );

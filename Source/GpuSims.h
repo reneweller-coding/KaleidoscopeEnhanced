@@ -5,7 +5,7 @@
 #ifndef GPUSIMS_H
 #define GPUSIMS_H
 
-// GPU-Simulationen, herausgelöst aus FilterShader (Refactor 3/4, 2026-08-14).
+// GPU-Simulationen, herausgelöst aus RenderPipeline (Refactor 3/4, 2026-08-14).
 //
 // Fünf lebende Felder + zwei Host-Historien, die Effekte über globale
 // Sampler-Units anzapfen:
@@ -84,13 +84,13 @@ public:
 	};
 
 	/** Alle Sim-Ressourcen anlegen (GL-Kontext aktuell); idempotent, wird aus
-	 *  FilterShader::setupSafety()/reinit gerufen. */
+	 *  RenderPipeline::setupSafety()/reinit gerufen. */
 	/**
 	 * @brief Creates/validates all GPU simulation resources (FBOs, textures, shader programs).
 	 *
 	 * Idempotent: existing GL objects are reused rather than recreated on a
 	 * repeated call. Requires a current GL context. Called from
-	 * FilterShader::setupSafety() and whenever the GL context is
+	 * RenderPipeline::setupSafety() and whenever the GL context is
 	 * reinitialised.
 	 */
 	void setupAll();
@@ -107,7 +107,7 @@ public:
 	 * @param f Per-frame pipeline context (integrated phases, dye source images).
 	 *
 	 * Leaves GL_TEXTURE0 as the active unit on return, matching the old
-	 * inline FilterShader::paint() code -- the caller's follow-up passes
+	 * inline RenderPipeline::paint() code -- the caller's follow-up passes
 	 * set their own units.
 	 */
 	void run( const AudioFeatures &audio, float dt, const Demand &need, const Frame &f );

@@ -21,14 +21,14 @@
 #include <io.h>
 
 /**
- * @brief Link-time-only stand-in for filterShader.cpp's `fullscreenVAO()`.
+ * @brief Link-time-only stand-in for RenderPipeline.cpp's `fullscreenVAO()`.
  *
  * EffectShader is a CONCRETE class (draw()/checkGLErrors() are virtual but not
  * pure), so its own vtable -- emitted once, in EffectShader.obj -- keeps
  * EffectShader::draw() reachable even though every scene this editor actually
  * renders is a Scene3DShader whose OWN draw() override replaces it.  That
  * unreachable-in-practice function still calls an `extern GLuint
- * fullscreenVAO()` that normally lives in filterShader.cpp, which is not
+ * fullscreenVAO()` that normally lives in RenderPipeline.cpp, which is not
  * linked here (it is almost entirely Qt-widget code).  A second definition in
  * any linked translation unit satisfies the linker; it is never actually
  * invoked.
@@ -227,13 +227,13 @@ void Scene3DPreview::ensureFbo( int w, int h )
     glBindTexture( GL_TEXTURE_2D, 0 );
 }
 
-// ---- shadow map: ported from FilterShader::ensureShadowMap/updateLightMatrix/
-// renderShadowPass, adapted to this class's own members.  See filterShader.cpp
+// ---- shadow map: ported from RenderPipeline::ensureShadowMap/updateLightMatrix/
+// renderShadowPass, adapted to this class's own members.  See RenderPipeline.cpp
 // for the reasoning behind every choice here (LINEAR+COMPARE for free PCF,
 // CLAMP_TO_BORDER=white so "no occluder" reads as lit, no face culling because
 // the geometry's winding is not guaranteed, orthographic because the light is
 // a sun).  Kept in lock-step with that file rather than shared, because the
-// main app's versions are private FilterShader members reaching into its own
+// main app's versions are private RenderPipeline members reaching into its own
 // FBO bookkeeping. ----
 bool Scene3DPreview::ensureShadowMap()
 {
@@ -349,7 +349,7 @@ void Scene3DPreview::renderShadowPass( float time, float interpolation, const Au
     // glDepthMask says -- so the "shadow map" comes back as the clear value
     // (far plane) EVERYWHERE, and every receiver's lookup passes as fully lit.
     // The main app's own renderShadowPass never sets this either, because by
-    // the time it runs, an earlier pass in FilterShader::paint() has already
+    // the time it runs, an earlier pass in RenderPipeline::paint() has already
     // left depth testing on for the whole frame.  This class has no such
     // earlier pass to inherit from -- worse, the previous frame's OWN opaque
     // pass explicitly disables it again right after drawing -- so leaving
@@ -370,7 +370,7 @@ void Scene3DPreview::renderShadowPass( float time, float interpolation, const Au
     glActiveTexture( GL_TEXTURE0 );
 }
 
-// ---- OIT: ported from FilterShader::ensureOitTargets/renderOitPass ----
+// ---- OIT: ported from RenderPipeline::ensureOitTargets/renderOitPass ----
 bool Scene3DPreview::ensureOitTargets( int w, int h )
 {
     if( m_oitFbo != 0 && m_oitW == w && m_oitH == h )

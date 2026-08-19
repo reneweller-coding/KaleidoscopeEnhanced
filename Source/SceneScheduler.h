@@ -7,7 +7,7 @@
 #ifndef SCENESCHEDULER_H
 #define SCENESCHEDULER_H
 
-// Szenen-Scheduler, herausgelöst aus FilterShader (Refactor 3/4 Teil c).
+// Szenen-Scheduler, herausgelöst aus RenderPipeline (Refactor 3/4 Teil c).
 //
 // Entscheidet WANN gewechselt wird und WOHIN - die Render-Pipeline fragt nur
 // noch ab (actTexture/nextTexture/texInterp/...):
@@ -39,7 +39,7 @@ class EffectShader;
  * @brief Chooses which effect/combine shader plays next and owns the
  *        cross-fade timing between them.
  *
- * SceneScheduler is the "director" that used to live inline in FilterShader:
+ * SceneScheduler is the "director" that used to live inline in RenderPipeline:
  * it runs two parallel Solo/Fade state machines (one for the texture/effect
  * slot, one for the combine slot), each beat-quantised to the next downbeat
  * with a timeout and a no-music escape hatch. Effect selection is

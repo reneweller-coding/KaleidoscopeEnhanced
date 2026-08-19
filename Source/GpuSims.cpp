@@ -11,25 +11,25 @@
 #include "GpuSims.h"
 #include "shader_setup.h"
 
-// Gemeinsames Fullscreen-Dreieck (gl_VertexID-VAO), definiert in filterShader.cpp.
-extern GLuint fullscreenVAO();   ///< Shared gl_VertexID-based fullscreen-triangle VAO, defined in filterShader.cpp and reused by every sim pass via drawFullscreen().
+// Gemeinsames Fullscreen-Dreieck (gl_VertexID-VAO), definiert in RenderPipeline.cpp.
+extern GLuint fullscreenVAO();   ///< Shared gl_VertexID-based fullscreen-triangle VAO, defined in RenderPipeline.cpp and reused by every sim pass via drawFullscreen().
 
 #ifndef GL_VERTEX_PROGRAM_POINT_SIZE
 #define GL_VERTEX_PROGRAM_POINT_SIZE 0x8642
 #endif
 
 // Lokale Pendants der (aus Performance-Gründen ohnehin stillgelegten)
-// FilterShader-Prüfhelfer - identisches Verhalten, keine Abhängigkeit.
-/** @brief Local stand-in for FilterShader's framebuffer-completeness check; always returns true (the real check is disabled for profiling reasons, see FilterShader::checkFramebufferStatus). @return Always true. */
+// RenderPipeline-Prüfhelfer - identisches Verhalten, keine Abhängigkeit.
+/** @brief Local stand-in for RenderPipeline's framebuffer-completeness check; always returns true (the real check is disabled for profiling reasons, see RenderPipeline::checkFramebufferStatus). @return Always true. */
 static bool fbStatusOk()
 {
-	return true; // wie FilterShader::checkFramebufferStatus (rwrwtest profiling)
+	return true; // wie RenderPipeline::checkFramebufferStatus (rwrwtest profiling)
 }
 
-/** @brief Local stand-in for FilterShader's glGetError polling; intentionally a no-op (disabled for profiling reasons, see FilterShader::checkGLErrors). Its unnamed call-site-label parameter is unused. */
+/** @brief Local stand-in for RenderPipeline's glGetError polling; intentionally a no-op (disabled for profiling reasons, see RenderPipeline::checkGLErrors). Its unnamed call-site-label parameter is unused. */
 static void glErrCheck( const char * /*label*/ )
 {
-	// wie FilterShader::checkGLErrors: deaktiviert (rwrwtest profiling)
+	// wie RenderPipeline::checkGLErrors: deaktiviert (rwrwtest profiling)
 }
 
 /** @brief Clears the currently-bound FBO and draws the shared fullscreen triangle. Common draw call issued by every simulation's fragment-shader step. */
@@ -67,7 +67,7 @@ void GpuSims::setupAll()
 void GpuSims::run( const AudioFeatures &audio, float dt, const Demand &need, const Frame &f )
 {
 	// Reihenfolge, Sub-Step-Zahlen und Unit-Bindings exakt wie der alte
-	// Inline-Block in FilterShader::paint().
+	// Inline-Block in RenderPipeline::paint().
 	if( need.rd && m_rdReady )
 	{
 		// Several PDE sub-steps per frame so the pattern develops quickly and
