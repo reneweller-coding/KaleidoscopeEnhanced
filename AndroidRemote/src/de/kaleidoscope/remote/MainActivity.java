@@ -25,6 +25,8 @@ import android.graphics.Color;
 import android.net.DhcpInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.InputType;
 import android.view.Gravity;
 import android.view.View;
@@ -45,9 +47,11 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class MainActivity extends Activity
 {
@@ -56,10 +60,23 @@ public class MainActivity extends Activity
     private static final int    DISCOVERY_WINDOW_MS   = 1300;
     private static final int    DISCOVERY_SEND_COUNT  = 3;
 
+    private static final int  MAX_AUTO_RETRIES  = 2;      // consecutive failures before we stop auto-redialling
+    private static final long PICKER_REFRESH_MS = 4000;   // background re-scan cadence while the picker is open
+
     private WebView           m_web;
     private TextView          m_status;
     private SharedPreferences m_prefs;
-    private boolean           m_failed = false;   // one dialog/rescan per failure
+    private boolean           m_failed     = false;   // one dialog/rescan per failure
+    private int               m_failStreak = 0;       // consecutive connect failures with no successful load in between
+
+    private final Handler  m_handler = new Handler(Looper.getMainLooper());
+    private AlertDialog    m_pickerDialog;             // currently-shown instance picker, if any
+    private List<Instance> m_pickerShown = new ArrayList<>();   // the set it's currently listing
+    private final Runnable m_pickerRefreshTick = () ->
+        new Thread(() -> {
+            final List<Instance> found = discover();
+            runOnUiThread(() -> refreshPickerIfChanged(found));
+        }).start();
 
     /** One PC found by a discovery scan. */
     private static class Instance
@@ -94,12 +111,32 @@ public class MainActivity extends Activity
             @Override public void onReceivedError(WebView v, WebResourceRequest r,
                                                   WebResourceError e)
             {
-                if (r.isForMainFrame() && !m_failed)
+                if (!r.isForMainFrame() || m_failed) return;
+                m_failed = true;
+                m_failStreak++;
+
+                // A discovered/remembered instance that keeps failing to
+                // connect (its HTTP bind failed but it still answers
+                // discovery, its process died mid-session, ...) must not
+                // redial itself forever: past MAX_AUTO_RETRIES, drop it as
+                // the remembered choice and force the picker/manual-entry
+                // path instead of silently re-picking the same target.
+                if (m_failStreak > MAX_AUTO_RETRIES)
                 {
-                    m_failed = true;
+                    m_prefs.edit().remove("lastId").apply();
+                    m_status.setText("Verbindung wiederholt fehlgeschlagen — bitte wählen …");
+                    startDiscoveryAndConnect(true);
+                }
+                else
+                {
                     m_status.setText("Verbindung verloren — suche erneut …");
                     startDiscoveryAndConnect(false);
                 }
+            }
+
+            @Override public void onPageFinished(WebView v, String url)
+            {
+                m_failStreak = 0;   // a real page loaded - this target is good again
             }
         });
 
@@ -216,12 +253,15 @@ public class MainActivity extends Activity
 
     private void showPicker(final List<Instance> found)
     {
+        m_pickerShown = found;
         final String[] labels = new String[found.size() + 1];
         for (int k = 0; k < found.size(); k++) labels[k] = found.get(k).label();
         labels[found.size()] = "Manuelle Eingabe …";
 
         m_status.setVisibility(View.GONE);
-        new AlertDialog.Builder(this)
+        if (m_pickerDialog != null && m_pickerDialog.isShowing())
+            m_pickerDialog.dismiss();
+        m_pickerDialog = new AlertDialog.Builder(this)
             .setTitle("Welches Kaleidoscope?")
             .setCancelable(false)
             .setItems(labels, (d, which) -> {
@@ -229,6 +269,35 @@ public class MainActivity extends Activity
                 else                        pick(found.get(which));
             })
             .show();
+
+        // Keep discovering in the background while the user is deciding, so
+        // an instance started just after this dialog opened still shows up
+        // without them having to back out and hit BACK to re-scan.
+        m_handler.postDelayed(m_pickerRefreshTick, PICKER_REFRESH_MS);
+    }
+
+    /**
+     * Re-scans while the picker is open and rebuilds it if the result set
+     * actually changed. Never acts on an EMPTY scan (a single dropped
+     * broadcast/reply is common and must not collapse an already-good list
+     * down to the manual-entry dialog), and stops rescheduling itself as
+     * soon as the picker is no longer showing (picked, or replaced by
+     * another dialog).
+     */
+    private void refreshPickerIfChanged(List<Instance> found)
+    {
+        if (m_pickerDialog == null || !m_pickerDialog.isShowing()) return;
+        if (found.isEmpty()) { m_handler.postDelayed(m_pickerRefreshTick, PICKER_REFRESH_MS); return; }
+
+        final Set<String> shownKeys = new HashSet<>();
+        for (Instance i : m_pickerShown) shownKeys.add(i.key());
+        final Set<String> foundKeys = new HashSet<>();
+        for (Instance i : found) foundKeys.add(i.key());
+
+        if (!shownKeys.equals(foundKeys))
+            showPicker(found);   // rebuilds the dialog and reschedules itself
+        else
+            m_handler.postDelayed(m_pickerRefreshTick, PICKER_REFRESH_MS);
     }
 
     /** Broadcasts the discovery request a few times and collects replies until the window elapses. */
@@ -266,9 +335,18 @@ public class MainActivity extends Activity
                     sock.receive(resp);
                     final JSONObject j = new JSONObject(
                         new String(resp.getData(), 0, resp.getLength(), "UTF-8"));
+                    // port<=0 means that instance's HTTP server never
+                    // actually bound (the PC side now suppresses this reply
+                    // entirely, but stay defensive against an older PC
+                    // build or a malformed packet) -- connecting there
+                    // would just fail immediately, so drop it here rather
+                    // than surfacing an unusable target to auto-pick/pick().
+                    final int port = j.optInt("port", 8080);
+                    if (port <= 0) continue;
+
                     final Instance inst = new Instance();
                     inst.ip     = resp.getAddress().getHostAddress();
-                    inst.port   = j.optInt("port", 8080);
+                    inst.port   = port;
                     inst.name   = j.optString("name", inst.ip);
                     inst.config = j.optString("config", "");
                     inst.pid    = j.optString("pid", "");

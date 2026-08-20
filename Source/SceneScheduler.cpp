@@ -126,9 +126,15 @@ void SceneScheduler::reset()
 /**
  * @brief Jump directly to effect index @p idx (remote scene browser).
  *
- * Takes the same immediate path as a manual 'n' cut (forceEffectChange),
- * but with a chosen target instead of a random roll; the actual switch is
- * still applied at fade-end in tick() (see m_forcedNextTexture handling).
+ * Takes the same immediate path as a manual 'n' cut (forceEffectChange).
+ * m_nextTexture is decided one fade cycle in advance (rolled/forced at the
+ * PREVIOUS fade's end, see tick()'s fade-end branch) -- while idle (Solo),
+ * that value is just sitting there waiting for the next fade to start, so
+ * it is safe and correct to overwrite it right here for an immediate jump
+ * to @p idx. Mid-fade, the current fade is already committed to its
+ * outgoing/incoming pair (retargeting it would jump the interpolation), so
+ * @p idx is instead queued in m_forcedNextTexture and only applied once
+ * that fade finishes, exactly as before.
  * @param idx Index into the attached texture list; out-of-range or missing
  *            attach() is silently ignored.
  */
@@ -136,7 +142,13 @@ void SceneScheduler::forceScene( int idx )
 {
 	if( !m_textures || idx < 0 || idx >= (int)m_textures->size() )
 		return;
-	m_forcedNextTexture = idx;
+	if( m_texState == 0 )
+	{
+		m_nextTexture       = idx;
+		m_forcedNextTexture = -1;
+	}
+	else
+		m_forcedNextTexture = idx;
 	m_forceEffectChange = true;
 }
 

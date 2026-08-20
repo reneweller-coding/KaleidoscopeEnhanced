@@ -426,46 +426,70 @@ void Scene3DShader::runGenerator( float time )
 	// uniforms.  It takes a deliberately small set by hand, plus the scene's
 	// own preset <float> params looked up by name — which is what lets a
 	// generator be tuned from the preset exactly like the render stages.
-	auto setF = [&]( const char *n, float v )
+	// Per-program location cache (mirrors EffectShader::applyAudioFeatures's
+	// m_audioLocs -- see GenLocCache's doc comment in the header for why this
+	// is a SEPARATE cache rather than a reuse of m_exprs' own loc/progId
+	// fields). Re-resolved once whenever m_genProg changes (first run, or a
+	// hot-reload recompile), never per frame.
+	if( m_genLocs.progId != m_genProg )
 	{
-		GLint l = glGetUniformLocation( m_genProg, n );
-		if( l >= 0 ) glUniform1f( l, v );
-	};
+		GLuint p = m_genProg;
+		m_genLocs.time          = glGetUniformLocation( p, "time" );
+		m_genLocs.sceneSeed     = glGetUniformLocation( p, "sceneSeed" );
+		m_genLocs.audioAdvance  = glGetUniformLocation( p, "audioAdvance" );
+		m_genLocs.audioLevel    = glGetUniformLocation( p, "audioLevel" );
+		m_genLocs.audioBeat     = glGetUniformLocation( p, "audioBeat" );
+		m_genLocs.audioKick     = glGetUniformLocation( p, "audioKick" );
+		m_genLocs.audioSubBass  = glGetUniformLocation( p, "audioSubBass" );
+		m_genLocs.audioHigh     = glGetUniformLocation( p, "audioHigh" );
+		m_genLocs.audioBass     = glGetUniformLocation( p, "audioBass" );
+		m_genLocs.audioMid      = glGetUniformLocation( p, "audioMid" );
+		m_genLocs.audioChroma   = glGetUniformLocation( p, "audioChroma" );
+		m_genLocs.audioSpectrum = glGetUniformLocation( p, "audioSpectrum" );
+		m_genLocs.texSpectro    = glGetUniformLocation( p, "texSpectro" );
+		m_genLocs.spectroHead   = glGetUniformLocation( p, "spectroHead" );
+		m_genLocs.spectroFill   = glGetUniformLocation( p, "spectroFill" );
+		m_genLocs.maxVertices   = glGetUniformLocation( p, "maxVertices" );
+		m_genLocs.frameIndex    = glGetUniformLocation( p, "frameIndex" );
+		m_genLocs.genPass       = glGetUniformLocation( p, "genPass" );
+
+		m_genUniformLocs.resize( m_uniforms.size() );
+		for( size_t i = 0; i < m_uniforms.size(); ++i )
+			m_genUniformLocs[i] = glGetUniformLocation( p, m_uniforms[i]->getName().c_str() );
+
+		m_genExprLocs.resize( m_exprs.size() );
+		for( size_t i = 0; i < m_exprs.size(); ++i )
+			m_genExprLocs[i] = glGetUniformLocation( p, m_exprs[i].name.c_str() );
+
+		m_genLocs.progId = m_genProg;
+	}
+
+	auto setF = [&]( GLint l, float v ) { if( l >= 0 ) glUniform1f( l, v ); };
 	const AudioFeatures &a = m_lastAudio;      // already carries this scene's offsets
-	setF( "time",         m_timeOffset + time * m_speedFactor );
-	setF( "sceneSeed",    m_sceneSeed );
-	setF( "audioAdvance", a.audioAdvance );
-	setF( "audioLevel",   a.overallLevel );
-	setF( "audioBeat",    a.beatDecay );
-	setF( "audioKick",    a.onsetKick );
-	setF( "audioSubBass", a.subBassLevel );
-	setF( "audioHigh",    a.highLevel );
-	setF( "audioBass",    a.bassLevel );
-	setF( "audioMid",     a.midLevel );
-	{
-		GLint l = glGetUniformLocation( m_genProg, "audioChroma" );
-		if( l >= 0 ) glUniform1fv( l, 12, a.chroma );
-	}
-	{
-		GLint l = glGetUniformLocation( m_genProg, "audioSpectrum" );
-		if( l >= 0 ) glUniform1fv( l, AudioFeatures::kSpectrumBands, a.spectrum );
-	}
+	setF( m_genLocs.time,         m_timeOffset + time * m_speedFactor );
+	setF( m_genLocs.sceneSeed,    m_sceneSeed );
+	setF( m_genLocs.audioAdvance, a.audioAdvance );
+	setF( m_genLocs.audioLevel,   a.overallLevel );
+	setF( m_genLocs.audioBeat,    a.beatDecay );
+	setF( m_genLocs.audioKick,    a.onsetKick );
+	setF( m_genLocs.audioSubBass, a.subBassLevel );
+	setF( m_genLocs.audioHigh,    a.highLevel );
+	setF( m_genLocs.audioBass,    a.bassLevel );
+	setF( m_genLocs.audioMid,     a.midLevel );
+	if( m_genLocs.audioChroma >= 0 )
+		glUniform1fv( m_genLocs.audioChroma, 12, a.chroma );
+	if( m_genLocs.audioSpectrum >= 0 )
+		glUniform1fv( m_genLocs.audioSpectrum, AudioFeatures::kSpectrumBands, a.spectrum );
 	// The host binds the spectrogram to unit 28 whenever usesSpectro() says
 	// somebody wants it — which, for an indirect scene, includes this program.
-	{
-		GLint l = glGetUniformLocation( m_genProg, "texSpectro" );
-		if( l >= 0 ) glUniform1i( l, 28 );
-	}
-	setF( "spectroHead", a.spectroHead );
-	setF( "spectroFill", a.spectroFill );
-	{
-		GLint l = glGetUniformLocation( m_genProg, "maxVertices" );
-		if( l >= 0 ) glUniform1ui( l, GLuint(m_meshCapacity) );
-	}
-	for( unsigned int i = 0; i < m_uniforms.size(); ++i )
-	{
-		setF( m_uniforms[i]->getName().c_str(), m_uniforms[i]->snapshotValue() );
-	}
+	if( m_genLocs.texSpectro >= 0 )
+		glUniform1i( m_genLocs.texSpectro, 28 );
+	setF( m_genLocs.spectroHead, a.spectroHead );
+	setF( m_genLocs.spectroFill, a.spectroFill );
+	if( m_genLocs.maxVertices >= 0 )
+		glUniform1ui( m_genLocs.maxVertices, GLuint(m_meshCapacity) );
+	for( size_t i = 0; i < m_uniforms.size(); ++i )
+		setF( m_genUniformLocs[i], m_uniforms[i]->snapshotValue() );
 
 	// FORMULA-LAYER CONSISTENCY: the render stages get their uniforms
 	// remapped by the formula layer — applyAudioFeatures evaluates the
@@ -479,12 +503,11 @@ void Scene3DShader::runGenerator( float time )
 	{
 		float ev[ExprVars::V_COUNT];
 		fillExprVars( a, m_exprTime, m_exprSeeds, ev );
-		for( ExprEntry &e : m_exprs )
+		for( size_t i = 0; i < m_exprs.size(); ++i )
 		{
-			if( !e.prog.valid() )
+			if( !m_exprs[i].prog.valid() || m_genExprLocs[i] < 0 )
 				continue;
-			GLint l = glGetUniformLocation( m_genProg, e.name.c_str() );
-			if( l >= 0 ) glUniform1f( l, e.prog.eval( ev ) );
+			glUniform1f( m_genExprLocs[i], m_exprs[i].prog.eval( ev ) );
 		}
 	}
 
@@ -493,11 +516,9 @@ void Scene3DShader::runGenerator( float time )
 	if( m_stateBuf )
 		glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 2, m_stateBuf );
 
-	{
-		GLint l = glGetUniformLocation( m_genProg, "frameIndex" );
-		if( l >= 0 ) glUniform1ui( l, GLuint(m_frameIndex) );
-	}
-	GLint passLoc = glGetUniformLocation( m_genProg, "genPass" );
+	if( m_genLocs.frameIndex >= 0 )
+		glUniform1ui( m_genLocs.frameIndex, GLuint(m_frameIndex) );
+	GLint passLoc = m_genLocs.genPass;
 
 	// A fixed invocation budget: 64^3 = 262144, in 4x4x4 blocks.  What one
 	// invocation MEANS is entirely the generator's business — a voxel for an
@@ -551,20 +572,30 @@ void Scene3DShader::runGenerator( float time )
 	glMemoryBarrier( GL_SHADER_STORAGE_BARRIER_BIT );
 
 	glUseProgram( s_clampProg );
+	// s_clampProg is process-shared (one compute program for every indirect
+	// scene), so its two locations are cached in function-local statics
+	// rather than per-instance -- resolved once for the program's whole
+	// lifetime (it is compiled once and never relinked; the progId guard is
+	// just cheap insurance against that changing later).
+	static GLuint s_clampLocProg   = 0;
+	static GLint  s_clampLocMaxV   = -1;
+	static GLint  s_clampLocBudget = -1;
+	if( s_clampLocProg != s_clampProg )
 	{
-		GLint l = glGetUniformLocation( s_clampProg, "maxVertices" );
-		if( l >= 0 ) glUniform1ui( l, GLuint(m_meshCapacity) );
+		s_clampLocMaxV   = glGetUniformLocation( s_clampProg, "maxVertices" );
+		s_clampLocBudget = glGetUniformLocation( s_clampProg, "budget" );
+		s_clampLocProg   = s_clampProg;
 	}
-	{
-		// Same FPS-driven detail knob GEOM_CUBES scenes already read as
-		// `cubeBudget` -- indirect generators had no way to shed triangles
-		// under load before this. GLSL floats default to 0 (not 1) when never
-		// set, so this MUST be uploaded every dispatch, not just when it
-		// changes -- a missed upload after a program relink would silently
-		// clamp every indirect scene to zero vertices.
-		GLint l = glGetUniformLocation( s_clampProg, "budget" );
-		if( l >= 0 ) glUniform1f( l, s_cubeBudget );
-	}
+	if( s_clampLocMaxV >= 0 )
+		glUniform1ui( s_clampLocMaxV, GLuint(m_meshCapacity) );
+	// Same FPS-driven detail knob GEOM_CUBES scenes already read as
+	// `cubeBudget` -- indirect generators had no way to shed triangles under
+	// load before this. GLSL floats default to 0 (not 1) when never set, so
+	// this MUST be uploaded every dispatch, not just when it changes -- a
+	// missed upload after a program relink would silently clamp every
+	// indirect scene to zero vertices.
+	if( s_clampLocBudget >= 0 )
+		glUniform1f( s_clampLocBudget, s_cubeBudget );
 	glDispatchCompute( 1, 1, 1 );
 
 	// Three consumers to fence against: the vertex puller, the indirect command

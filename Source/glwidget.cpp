@@ -7,6 +7,7 @@
 #include <math.h>
 
 #include <QtCore/QFile>
+#include <QtCore/QFileInfo>
 #include <QtCore/QBuffer>
 #include <QtCore/QDateTime>
 #include <QtCore/QFileSystemWatcher>
@@ -90,10 +91,37 @@ void GLwidget::remoteForceScene( int idx )
 		m_actConfiguration->m_renderPipeline->forceScene( idx );
 }
 
+// On-disk thumbnail cache path for one (config, scene) pair. Sibling of
+// Configurations\/kaleidoscope_settings.ini (relative to the Release/Debug
+// CWD), keyed by NAME rather than index since indices aren't stable across
+// restarts (a config edit reorders/adds entries) but names are.
+static QString thumbCachePath( const QString &config, const QString &scene )
+{
+	return "..\\ThumbCache\\" + config + "\\" + scene + ".jpg";
+}
+
 QByteArray GLwidget::remoteThumb( int idx ) const
 {
-	if( idx >= 0 && idx < int( m_sceneThumbs.size() ) )
+	if( idx >= 0 && idx < int( m_sceneThumbs.size() ) && !m_sceneThumbs[idx].isEmpty() )
 		return m_sceneThumbs[idx];
+
+	// Not captured yet THIS session -- fall back to a thumbnail persisted by
+	// a past one, if this exact scene was ever landed on before. Read fresh
+	// each time rather than caching into m_sceneThumbs: misses are rare
+	// (fires once per not-yet-revisited scene while the browser is open)
+	// and this keeps remoteThumb() const.
+	if( idx >= 0 && m_actConfiguration )
+	{
+		const QStringList names = m_actConfiguration->m_renderPipeline
+		                               ? m_actConfiguration->m_renderPipeline->sceneNames()
+		                               : QStringList();
+		if( idx < names.size() )
+		{
+			QFile f( thumbCachePath( m_actConfiguration->getConfigurationName(), names[idx] ) );
+			if( f.open( QIODevice::ReadOnly ) )
+				return f.readAll();
+		}
+	}
 	return QByteArray();
 }
 
@@ -533,6 +561,23 @@ void GLwidget::draw()
 				if( sceneIdx >= int( m_sceneThumbs.size() ) )
 					m_sceneThumbs.resize( sceneIdx + 1 );
 				m_sceneThumbs[sceneIdx] = tjpg;
+
+				// Persist to disk too, so a scene browsed in a PAST session
+				// already has a thumbnail on the very first /api/thumb
+				// request of this one (see remoteThumb()'s disk fallback)
+				// instead of showing blank until the scheduler happens to
+				// land on it again. Keyed by config+scene NAME (stable
+				// across restarts), not index (isn't).
+				const QStringList names = rp->sceneNames();
+				if( sceneIdx < names.size() )
+				{
+					const QString path = thumbCachePath(
+					    m_actConfiguration->getConfigurationName(), names[sceneIdx] );
+					QDir().mkpath( QFileInfo( path ).absolutePath() );
+					QFile f( path );
+					if( f.open( QIODevice::WriteOnly ) )
+						f.write( tjpg );
+				}
 			}
 		}
 	}
