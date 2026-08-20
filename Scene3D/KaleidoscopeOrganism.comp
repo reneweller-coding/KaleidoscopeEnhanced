@@ -1,0 +1,339 @@
+#version 430
+
+/**
+ * @file KaleidoscopeOrganism.comp
+ * @brief A branching organism grown by diffusion-limited aggregation (the same proven walker-
+ * freezes-on-contact rule as CoralGrowth.comp, adapted to grow radially outward from a central
+ * seed cluster instead of upward from a floor), then meshed with a REAL n-fold mirror-kaleidoscope
+ * replication: every generated branch tube is emitted NFOLD times, rotated around the vertical
+ * axis with alternating copies mirrored, so the living, still-growing structure reads as a mandala
+ * built from its own biology rather than a static procedural fold. No existing scene in this
+ * catalogue applies symmetric replication to compute-GENERATED (geom="indirect") geometry -- every
+ * other kaleidoscope here folds a texture sample or a fragment-domain coordinate instead.
+ *
+ * audioLevel widens each walker's random step size; audioKick/audioSubBass raise the immediate-
+ * stick probability so the organism visibly surges on the beat (audioKick also thickens the
+ * meshed branch radius); nfoldP sets the mirror-copy count. Two passes per frame: genPass 0
+ * advances the DLA simulation, genPass 1 meshes frozen nodes into NFOLD mirrored tube copies.
+ */
+
+// KaleidoscopeOrganism.comp -- see CoralGrowth.comp for the full derivation of WHY this exact DLA
+// rule (mild inward pull, hash-grid contact, near-certain sticking) produces organic branching;
+// that reasoning is unchanged here. What's new is confined to pass 1: instead of meshing each
+// frozen node once, it meshes it NFOLD times under a rotation+mirror around the Y axis, so a
+// single growing organism becomes a real 3D kaleidoscope of itself.
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+
+layout(std430, binding = 0) buffer Verts { float verts[]; };
+layout(std430, binding = 1) buffer Cmd   { uint  cmd[]; };
+
+layout(std430, binding = 2) buffer State
+{
+    uint nodeCount;
+    uint radiusQ;                // colony reach from BASE, fixed point x4096
+    uint pad0, pad1;
+    uint st[];
+};
+
+uniform uint  maxVertices;
+uniform uint  frameIndex;
+uniform float genPass;
+uniform float time;
+uniform float sceneSeed;
+uniform float audioAdvance;
+uniform float audioLevel;
+uniform float audioKick;
+uniform float audioSubBass;
+uniform float audioHigh;
+
+uniform float stickP;       // preset: contact radius, so bond length
+uniform float thickP;       // preset: branch thickness
+uniform float reachP;       // preset: how far the organism is allowed to spread
+uniform float nfoldP;       // preset: mirror-copy count around the Y axis (generator uniforms
+                             // always arrive as float -- see runGenerator()'s setF() -- an
+                             // `int` declaration here throws GL_INVALID_OPERATION on upload)
+
+const int   NODES   = 1800;
+const int   WALKERS = 512;
+const int   SEEDS   = 24;
+const int   SIDES   = 6;
+const int   GRID    = 38;
+const float GH      = 2.6;                      // half extent of the hash grid
+const vec3  BASE    = vec3(0.0, 0.0, 0.0);      // grows radially outward from the centre
+
+const int OFF_NODES = 0;
+const int OFF_WALK  = 4 * NODES;
+const int OFF_GRID  = 4 * NODES + 4 * WALKERS;
+
+float hash1(float n) { return fract(sin(n * 91.3458) * 47453.5453); }
+vec3  hash3(float n)
+{
+    return fract(sin(vec3(n * 91.3458, n * 47.1234, n * 13.9871)) * 43758.5453);
+}
+
+float getF(int i)          { return uintBitsToFloat(st[i]); }
+void  setF(int i, float v) { st[i] = floatBitsToUint(v); }
+
+vec3 nodePos(int i)
+{
+    int o = OFF_NODES + i * 4;
+    return vec3(getF(o), getF(o + 1), getF(o + 2));
+}
+
+ivec3 cellCoord(vec3 p)
+{
+    return ivec3(floor((p + GH) / (2.0 * GH) * float(GRID)));
+}
+
+int cellIndex(ivec3 c)
+{
+    if (any(lessThan(c, ivec3(0))) || any(greaterThanEqual(c, ivec3(GRID))))
+        return -1;
+    return c.x + GRID * (c.y + GRID * c.z);
+}
+
+void writeVertex(uint slot, vec3 p, vec3 n, float age, float depth)
+{
+    uint o = slot * 8u;
+    verts[o + 0u] = p.x;  verts[o + 1u] = p.y;  verts[o + 2u] = p.z;
+    verts[o + 3u] = age;
+    verts[o + 4u] = n.x;  verts[o + 5u] = n.y;  verts[o + 6u] = n.z;
+    verts[o + 7u] = depth;
+}
+
+void main()
+{
+    uvec3 g = gl_GlobalInvocationID;
+    uint id = g.x + 64u * (g.y + 64u * g.z);
+
+    float contact = clamp(stickP, 0.4, 2.0) * 0.075;
+
+    // ---------------- pass 0: advance the organism (unchanged DLA rule) ----------------
+    if (genPass < 0.5)
+    {
+        bool needInit = (nodeCount < uint(SEEDS)) || (nodeCount > uint(NODES + 64));
+        if (needInit)
+        {
+            if (id < uint(SEEDS))
+            {
+                vec3 h = hash3(float(id) * 7.13 + 1.7 + sceneSeed * 31.0);
+                vec3 p = BASE + (h - 0.5) * 0.28;
+                int o = OFF_NODES + int(id) * 4;
+                setF(o,     p.x);
+                setF(o + 1, p.y);
+                setF(o + 2, p.z);
+                setF(o + 3, -1.0);
+                int c = cellIndex(cellCoord(p));
+                if (c >= 0)
+                    st[OFF_GRID + c] = id + 1u;
+                if (id == 0u)
+                {
+                    nodeCount = uint(SEEDS);
+                    radiusQ = uint(0.5 * 4096.0);
+                }
+            }
+            return;
+        }
+
+        if (nodeCount == uint(SEEDS))
+        {
+            if (id != 0u)
+                return;
+            uint cnt = nodeCount;
+            float s = sceneSeed * 137.0 + 7.0;
+            float rmax = 0.5;
+            for (int k = 0; k < 700; ++k)
+            {
+                vec3 h = hash3(s + float(k) * 1.618034);
+                int pick = int(h.x * float(cnt));
+                vec3 pp = nodePos(pick);
+                vec3 dir = normalize(h - 0.5 + 1e-5);
+                vec3 np = pp + dir * contact * 0.92;
+                int o = OFF_NODES + int(cnt) * 4;
+                setF(o,     np.x);
+                setF(o + 1, np.y);
+                setF(o + 2, np.z);
+                setF(o + 3, float(pick));
+                int c = cellIndex(cellCoord(np));
+                if (c >= 0)
+                    st[OFF_GRID + c] = cnt + 1u;
+                rmax = max(rmax, distance(np, BASE));
+                ++cnt;
+            }
+            nodeCount = cnt;
+            atomicMax(radiusQ, uint(rmax * 4096.0));
+            return;
+        }
+
+        if (id >= uint(WALKERS))
+            return;
+
+        int count = int(nodeCount);
+        if (count >= NODES)
+            return;
+
+        int wo = OFF_WALK + int(id) * 4;
+        vec3 w = vec3(getF(wo), getF(wo + 1), getF(wo + 2));
+        float seed = getF(wo + 3);
+
+        float colonyR = float(radiusQ) / 4096.0;
+        float spawnR = min(colonyR + 0.35, GH * 1.05 * clamp(reachP, 0.5, 1.6));
+        float killR = spawnR * 1.6 + 0.6;
+
+        // Radially symmetric attractor: aim straight at the centre (not
+        // lifted, unlike CoralGrowth's floor-to-mid-height bias), so growth
+        // spreads spherically outward -- what makes it look right once
+        // pass 1 mirrors it into a kaleidoscope around the Y axis.
+        vec3 aim = BASE;
+
+        if (!(seed > 0.5) || distance(w, BASE) > killR)
+        {
+            seed = hash1(float(id) * 3.7 + float(frameIndex) * 0.017
+                         + sceneSeed * 91.0) + 1.0;
+            vec3 h = hash3(seed * 17.3);
+            float th = h.x * 6.2831853;
+            float cph = h.y * 2.0 - 1.0;
+            float sph = sqrt(max(1.0 - cph * cph, 0.0));
+            w = BASE + vec3(sph * cos(th), cph, sph * sin(th)) * spawnR;
+        }
+
+        vec3 r = hash3(seed * 31.7 + float(frameIndex) * 0.311) - 0.5;
+        float step = 0.055 * (1.0 + 0.6 * audioLevel);
+        w += normalize(r + 1e-5) * step
+           + normalize(aim - w + 1e-5) * step * 0.14;
+
+        ivec3 c0 = cellCoord(w);
+        bool touched = false;
+        int hitNode = 0;
+        for (int dz = -1; dz <= 1 && !touched; ++dz)
+        for (int dy = -1; dy <= 1 && !touched; ++dy)
+        for (int dx = -1; dx <= 1 && !touched; ++dx)
+        {
+            int c = cellIndex(c0 + ivec3(dx, dy, dz));
+            if (c < 0)
+                continue;
+            uint e = st[OFF_GRID + c];
+            if (e == 0u)
+                continue;
+            int n = int(e) - 1;
+            if (n >= count)
+                continue;
+            if (distance(w, nodePos(n)) < contact)
+            {
+                touched = true;
+                hitNode = n;
+            }
+        }
+
+        if (touched)
+        {
+            vec3 hp = nodePos(hitNode);
+            vec3 out1 = normalize(w - hp + vec3(1e-5, 1e-5, 1e-5));
+
+            float pStick = clamp(0.50 + 0.45 * audioKick + 0.15 * audioSubBass,
+                                 0.0, 0.97);
+            if (hash1(seed * 13.7 + float(frameIndex) * 0.713) < pStick)
+            {
+                vec3 np = hp + out1 * contact * 0.92;
+                uint slot = atomicAdd(nodeCount, 1u);
+                if (slot < uint(NODES))
+                {
+                    int o = OFF_NODES + int(slot) * 4;
+                    setF(o,     np.x);
+                    setF(o + 1, np.y);
+                    setF(o + 2, np.z);
+                    setF(o + 3, float(hitNode));
+                    int c = cellIndex(cellCoord(np));
+                    if (c >= 0)
+                        st[OFF_GRID + c] = slot + 1u;
+                    atomicMax(radiusQ, uint(distance(np, BASE) * 4096.0));
+                }
+                else
+                {
+                    atomicAdd(nodeCount, uint(-1));
+                }
+                seed = 0.0;
+                w = BASE;
+            }
+            else
+            {
+                w = hp + out1 * contact * 1.7;
+            }
+        }
+
+        setF(wo,     w.x);
+        setF(wo + 1, w.y);
+        setF(wo + 2, w.z);
+        setF(wo + 3, seed);
+        return;
+    }
+
+    // ---------------- pass 1: mesh the organism, NFOLD mirror-kaleidoscope ----------------
+    int count = int(min(nodeCount, uint(NODES)));
+    if (id >= uint(count))
+        return;
+
+    int nfold = clamp(int(nfoldP), 3, 8);
+
+    float colonyR = float(radiusQ) / 4096.0;
+    float sc = 2.0 / max(colonyR, 0.6);
+
+    int parent = int(getF(OFF_NODES + int(id) * 4 + 3));
+    if (parent >= count)
+        return;
+
+    vec3 a = nodePos(int(id));
+    vec3 b = (parent < 0) ? a * 0.9 : nodePos(parent);
+    vec3 dir0 = a - b;
+    float L = length(dir0);
+    if (L < 1e-5 || L > 0.3)
+        return;
+
+    vec3 ea0 = (a - BASE) * sc;
+    vec3 eb0 = (b - BASE) * sc;
+
+    float age = 1.0 - float(id) / float(max(count, 1));
+    float r = clamp(thickP, 0.3, 2.5) * (0.020 + 0.026 * age) * sc
+            * (1.0 + 0.25 * audioKick);
+    float depth = clamp(length(a - BASE) / max(colonyR, 0.6), 0.0, 1.0);
+
+    uint need = uint(SIDES) * 6u * uint(nfold);
+    uint base = atomicAdd(cmd[4], need);
+    if (base + need > maxVertices)
+        return;
+
+    for (int w = 0; w < nfold; ++w)
+    {
+        float ang = 6.2831853 * float(w) / float(nfold);
+        float cs = cos(ang), sn = sin(ang);
+        bool mirror = (w % 2) == 1;
+
+        vec3 ea = ea0, eb = eb0;
+        if (mirror) { ea.x = -ea.x; eb.x = -eb.x; }
+        ea.xz = mat2(cs, -sn, sn, cs) * ea.xz;
+        eb.xz = mat2(cs, -sn, sn, cs) * eb.xz;
+
+        vec3 dir = normalize(ea - eb + 1e-6);
+        vec3 up = abs(dir.y) < 0.9 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0);
+        vec3 u = normalize(cross(dir, up));
+        vec3 v = cross(dir, u);
+
+        uint wbase = base + uint(w) * uint(SIDES) * 6u;
+        for (int s = 0; s < SIDES; ++s)
+        {
+            float t0 = 6.2831853 * float(s)     / float(SIDES);
+            float t1 = 6.2831853 * float(s + 1) / float(SIDES);
+            vec3 n0 = u * cos(t0) + v * sin(t0);
+            vec3 n1 = u * cos(t1) + v * sin(t1);
+            vec3 A = eb + n0 * r * 1.15, B = eb + n1 * r * 1.15;
+            vec3 C = ea + n1 * r,        D = ea + n0 * r;
+            uint o = wbase + uint(s) * 6u;
+            writeVertex(o + 0u, A, n0, age, depth);
+            writeVertex(o + 1u, B, n1, age, depth);
+            writeVertex(o + 2u, C, n1, age, depth);
+            writeVertex(o + 3u, A, n0, age, depth);
+            writeVertex(o + 4u, C, n1, age, depth);
+            writeVertex(o + 5u, D, n0, age, depth);
+        }
+    }
+}

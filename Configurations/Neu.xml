@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <configuration ImageDirectory="C:\\Users\\rene\\Desktop\\BilderPhotoechoes" ConfigurationName="Neu" >
 
-  <!-- The 6 scenes added in this session: deep-zoom Mandelbrot, video-feedback
+  <!-- 11 scenes added across two sessions: deep-zoom Mandelbrot, video-feedback
        kaleidoscope, particle tunnel, mirror-shard kaleidoscope, reaction-
-       diffusion mandala, neon highway drive. FX overlays and transitions are
-       the FULL unfiltered set (same as Allround) so scene changes still look
-       good; only the SCENE rotation itself is restricted to just these 6. -->
+       diffusion mandala, neon highway drive, audio-morphing Julia set,
+       Mobius/circle-inversion kaleidoscope, geometry-shader mirror-shatter
+       explosion, compute-grown mirror-symmetric organism, mirror-weave
+       wormhole tunnel. FX overlays and transitions are the FULL unfiltered
+       set (same as Allround) so scene changes still look good; only the
+       SCENE rotation itself is restricted to just these 11. -->
 
   <TextureShader file="..\Scene2D\MandelbrotDeepZoom.frag" type="normal" mood="psychedelic,bright" probability="0.42" complexity="2">
     <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
@@ -68,6 +71,63 @@
     <float name="pylonP" minValue="0.6" maxValue="1.6"></float>
     <float name="terrainP" minValue="0.5" maxValue="1.5"></float>
     <expr name="hueP" formula="chromaHue + seed3*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene2D\JuliaAudioMorph.frag" type="normal" mood="psychedelic,bright" probability="0.42" complexity="2">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
+    <float name="zoomP" minValue="0.7" maxValue="1.6"></float>
+    <float name="speedP" minValue="0.5" maxValue="1.8"></float>
+    <float name="glowP" minValue="0.7" maxValue="1.4"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene2D\MobiusInversionKaleidoscope.frag" type="normal" mood="psychedelic,dark" probability="0.4" complexity="2">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
+    <int name="circlesP" minValue="3" maxValue="7"></int>
+    <float name="ringP" minValue="0.45" maxValue="0.8"></float>
+    <float name="overlapP" minValue="1.0" maxValue="1.25"></float>
+    <float name="glowP" minValue="0.7" maxValue="1.4"></float>
+    <expr name="hueP" formula="chromaHue + seed2*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene3D\MirrorShatterExplosion.frag" type="scene3d" geom="scatter" probability="0.45" mood="aggressive,bright,psychedelic" complexity="4">
+    <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigDolly" formula="0.5*swell"/>
+    <int name="sidesP" minValue="4" maxValue="9"></int>
+    <float name="explodeP" minValue="2.2" maxValue="4.5"></float>
+    <float name="shardP" minValue="0.6" maxValue="1.5"></float>
+    <float name="camDistP" minValue="0.85" maxValue="1.2"></float>
+    <expr name="hueP" formula="chromaHue + seed3*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene3D\KaleidoscopeOrganism.frag" type="scene3d" geom="indirect" stateBytes="393216" probability="0.42" mood="psychedelic,dreamy" complexity="4">
+    <float name="stickP" minValue="0.7" maxValue="1.5"></float>
+    <float name="thickP" minValue="0.6" maxValue="1.6"></float>
+    <float name="reachP" minValue="0.7" maxValue="1.4"></float>
+    <int name="nfoldP" minValue="4" maxValue="7"></int>
+    <float name="camDistP" minValue="3.5" maxValue="5.5"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene3D\WormholeMirrorWeave.frag" type="scene3d" geom="ribbon" probability="0.45" mood="psychedelic,bright,aggressive" complexity="3">
+    <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigDolly" formula="0.5*swell"/>
+    <int name="sidesP" minValue="4" maxValue="8"></int>
+    <float name="speedP" minValue="0.6" maxValue="1.7"></float>
+    <float name="pinchP" minValue="0.4" maxValue="0.8"></float>
+    <int name="throatsP" minValue="2" maxValue="5"></int>
+    <expr name="hueP" formula="chromaHue + seed2*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
 
