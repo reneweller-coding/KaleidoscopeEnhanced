@@ -671,10 +671,28 @@ void RenderPipeline::showTitle( const QString &title, const QString &artist )
 	p.setRenderHint( QPainter::Antialiasing );
 	p.setRenderHint( QPainter::TextAntialiasing );
 
-	QFont ft( "Segoe UI", int(52 * S), QFont::Bold );
-	QFont fa( "Segoe UI", int(26 * S) );
-	QString t = QFontMetrics( ft ).elidedText( title,  Qt::ElideRight, W - int(80 * S) );
-	QString a = QFontMetrics( fa ).elidedText( artist, Qt::ElideRight, W - int(80 * S) );
+	// Auto-shrink instead of eliding with "...": most real track/artist names
+	// fit once the font gives a little, and a slightly smaller-but-complete
+	// title reads better than a truncated one on a reveal that's only on
+	// screen for ~8s anyway. Floors at ~55% of the nominal size (still
+	// legible); eliding stays as the last resort for the rare title that
+	// doesn't fit even there.
+	const int maxW = W - int(80 * S);
+	auto fitFont = [&]( const char *family, int nominalPt, bool bold, const QString &text ) -> QFont
+	{
+		const int minPt = int( nominalPt * 0.55f );
+		QFont f( family, nominalPt, bold ? QFont::Bold : QFont::Normal );
+		while( f.pointSize() > minPt && QFontMetrics( f ).horizontalAdvance( text ) > maxW )
+			f.setPointSize( f.pointSize() - 1 );
+		return f;
+	};
+	QFont ft = fitFont( "Segoe UI", int(52 * S), true,  title );
+	QFont fa = fitFont( "Segoe UI", int(26 * S), false, artist );
+	QString t = title, a = artist;
+	if( QFontMetrics( ft ).horizontalAdvance( t ) > maxW )
+		t = QFontMetrics( ft ).elidedText( t, Qt::ElideRight, maxW );
+	if( QFontMetrics( fa ).horizontalAdvance( a ) > maxW )
+		a = QFontMetrics( fa ).elidedText( a, Qt::ElideRight, maxW );
 
 	const QRect rT( int(40 * S), int(24 * S), W - int(80 * S), int(132 * S) );
 	const QRect rA( int(40 * S), int(156 * S), W - int(80 * S), int(68 * S) );
@@ -1605,6 +1623,10 @@ void RenderPipeline::paint(const float *rotMatrix, float tx, float ty, float tz,
 		pin.lyricsHlV0    = m_overlay.lyricsHlV0;
 		pin.lyricsHlV1    = m_overlay.lyricsHlV1;
 		pin.lyricsHlProg  = m_overlay.lyricsHlProg;
+		pin.lyricsUScale  = m_overlay.lyricsUScale;
+		pin.lyricsFocusV0 = m_overlay.lyricsFocusV0;
+		pin.lyricsFocusV1 = m_overlay.lyricsFocusV1;
+		pin.lyricsScrollU = m_overlay.lyricsScrollU;
 		pin.artistAlpha   = m_overlay.artistAlpha;
 		pin.artistAspect  = m_overlay.artistAspect;
 		// Zeit-Regie: Rewind/Echo/Breath.  Das Zeitecho traeumt in Ambient-

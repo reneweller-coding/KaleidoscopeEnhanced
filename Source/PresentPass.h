@@ -167,6 +167,10 @@ public:
 		float  lyricsHlV0    = -1.f;   ///< Karaoke highlight band start V (< 0 = no highlight).
 		float  lyricsHlV1    = -1.f;   ///< Karaoke highlight band end V.
 		float  lyricsHlProg  = 0.f;    ///< Karaoke highlight progress 0..1 across the band.
+		float  lyricsUScale  = 1.f;    ///< Nominal / actual lyrics-texture width (<=1); keeps text size stable when the texture was widened for an overflowing line.
+		float  lyricsFocusV0 = -1.f;   ///< Vertical band of the line currently being read (-1 = none); the horizontal marquee applies only here.
+		float  lyricsFocusV1 = -1.f;   ///< End of the focused line's vertical band.
+		float  lyricsScrollU = 0.f;    ///< Horizontal marquee offset (texture-U units) for the focused line.
 		// Künstlerbild-Overlay
 		float  artistAlpha   = 0.f;    ///< Artist-image overlay opacity (0 = off).
 		float  artistAspect  = 1.f;    ///< Artist image aspect ratio.
@@ -344,6 +348,9 @@ private:
 	GLint	m_presentLyricsScrollUni = -1;   ///< Uniform location: lyrics scroll position ("lyricsScrollV").
 	GLint	m_presentLyricsAspectUni = -1;   ///< Uniform location: lyrics image aspect ratio ("lyricsAspect").
 	GLint	m_presentLyricsHlUni     = -1;   ///< Uniform location: karaoke highlight band + progress ("lyricsHl").
+	GLint	m_presentLyricsUScaleUni = -1;   ///< Uniform location: nominal/actual texture width ratio ("lyricsUScale").
+	GLint	m_presentLyricsFocusUni  = -1;   ///< Uniform location: focused-line vertical band ("lyricsFocusV").
+	GLint	m_presentLyricsScrollUUni = -1;  ///< Uniform location: focused-line horizontal marquee offset ("lyricsScrollU").
 	GLint	m_presentArtistTexUni    = -1;   ///< Uniform location: artist-image texture ("artistTex").
 	GLint	m_presentArtistAlphaUni  = -1;   ///< Uniform location: artist-image opacity ("artistAlpha").
 	GLint	m_presentArtistAspectUni = -1;   ///< Uniform location: artist-image aspect ratio ("artistAspect").

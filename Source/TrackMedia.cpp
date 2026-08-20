@@ -27,9 +27,11 @@
 
 // Lyrics-Textur: Breite fix, Zeilenhöhe fix - die Höhe wächst mit der
 // Zeilenzahl (gekappt, ~190 Zeilen reichen für jeden Songtext).
-static const int kLyrTexW   = 1000;   ///< Fixed lyrics-texture width in pixels.
+static const int kLyrTexW   = 1000;   ///< Nominal (normally-visible) lyrics-texture width in pixels; the actual image can be wider (see renderLyricsImage()) but this fixed value is what the on-screen text size is scaled against.
 static const int kLyrLineH  = 60;     ///< Fixed per-line height in pixels (also used as the top margin).
 static const int kLyrMaxH   = 12000;  ///< Hard cap on the lyrics-texture height (~190 lines), so pathologically long lyrics can't blow up GPU memory.
+
+int TrackMedia::lyricsNominalTexWidth() { return kLyrTexW; }
 
 // Negativ-Cache ("nichts gefunden") verfällt nach 7 Tagen - vielleicht
 // trägt ja jemand die Lyrics nach.
@@ -465,6 +467,16 @@ void TrackMedia::parsePlain( const QString &plain )
  * marker's v0/v1 are set to whatever the previous sung line's band was,
  * so it visually "sticks" to that line until glwidget.cpp's long-pause
  * fade-out takes over.
+ *
+ * Lines are no longer elided with "...": a line that fits within the
+ * nominal (kLyrTexW) window is centred as before, but one that doesn't is
+ * drawn LEFT-aligned at its FULL natural width, extending the canvas past
+ * kLyrTexW just far enough to hold the single widest overflowing line (not
+ * every line unconditionally, so a song with one long line doesn't shrink
+ * every other line's apparent size -- see lyricsNominalTexWidth()). The
+ * per-line overflowU records how far past the nominal window that line's
+ * text reaches, in texture-U units; glwidget.cpp uses it to slowly scroll
+ * the currently-focused line into view instead of just cutting it off.
  */
 void TrackMedia::renderLyricsImage()
 {
@@ -494,15 +506,32 @@ void TrackMedia::renderLyricsImage()
 		h = nReal * kLyrLineH + kLyrLineH;
 	}
 
-	QImage img( kLyrTexW, h, QImage::Format_ARGB32 );
+	QFont f( "Segoe UI", 26, QFont::Bold );
+	QFontMetrics fm( f );
+	const int boxW = kLyrTexW - 60;
+
+	// First pass: measure every real line so the canvas can be widened just
+	// enough for the single widest overflow, and each line already knows
+	// whether it needs the left-aligned/full-width treatment below.
+	int texW = kLyrTexW;
+	for( LyricLine &l : m_lines )
+	{
+		if( l.text.isEmpty() ) { l.overflowU = 0.f; continue; }
+		const int textW = fm.horizontalAdvance( l.text );
+		const int over  = textW - boxW;
+		if( over > 0 )
+		{
+			const int needW = 30 + textW + 30;
+			if( needW > texW ) texW = needW;
+		}
+	}
+
+	QImage img( texW, h, QImage::Format_ARGB32 );
 	img.fill( Qt::transparent );
 	QPainter p( &img );
 	p.setRenderHint( QPainter::Antialiasing );
 	p.setRenderHint( QPainter::TextAntialiasing );
-
-	QFont f( "Segoe UI", 26, QFont::Bold );
 	p.setFont( f );
-	QFontMetrics fm( f );
 
 	int row = 0;
 	float lastV0 = 0.f, lastV1 = 0.f;
@@ -517,18 +546,37 @@ void TrackMedia::renderLyricsImage()
 			m_lines[i].v1 = lastV1;
 			continue;
 		}
-		const int yTop = row * kLyrLineH + kLyrLineH / 2;
-		QRect r( 30, yTop, kLyrTexW - 60, kLyrLineH );
-		QString t = fm.elidedText( m_lines[i].text, Qt::ElideRight, r.width() );
+		const int yTop  = row * kLyrLineH + kLyrLineH / 2;
+		const int textW = fm.horizontalAdvance( m_lines[i].text );
+		const int over  = textW - boxW;
+		QRect r;
+		Qt::Alignment al;
+		if( over > 0 )
+		{
+			// Overflows: left-aligned at its full natural width so the whole
+			// line actually exists in the texture; the host scrolls it into
+			// view over time instead of eliding it.
+			r  = QRect( 30, yTop, textW, kLyrLineH );
+			al = Qt::AlignLeft | Qt::AlignVCenter;
+			m_lines[i].overflowU = float(over) / float(texW);
+		}
+		else
+		{
+			// Fits: centred within the nominal (non-scrolling) window, same
+			// as before.
+			r  = QRect( 30, yTop, boxW, kLyrLineH );
+			al = Qt::AlignHCenter | Qt::AlignVCenter;
+			m_lines[i].overflowU = 0.f;
+		}
+		const QString &t = m_lines[i].text;
 
 		p.setPen( QColor( 0, 0, 0, 165 ) );
 		for( int dy = -2; dy <= 2; ++dy )
 			for( int dx = -2; dx <= 2; ++dx )
 				if( dx || dy )
-					p.drawText( r.translated( dx, dy ),
-					            Qt::AlignHCenter | Qt::AlignVCenter, t );
+					p.drawText( r.translated( dx, dy ), al, t );
 		p.setPen( QColor( 255, 255, 255, 235 ) );
-		p.drawText( r, Qt::AlignHCenter | Qt::AlignVCenter, t );
+		p.drawText( r, al, t );
 
 		m_lines[i].v0 = float(yTop)             / float(h);
 		m_lines[i].v1 = float(yTop + kLyrLineH) / float(h);

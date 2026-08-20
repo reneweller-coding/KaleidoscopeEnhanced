@@ -1525,8 +1525,17 @@ void GLwidget::updateTrackOverlays( RenderPipeline *fs )
 		const auto  &lines = m_trackMedia->lines();
 		const QImage &img  = m_trackMedia->lyricsImage();
 		o.lyricsAlpha  = m_lyricsAlphaSm * 0.92f;
+		// Aspect bewusst gegen die NOMINALE (nicht die tatsaechliche) Breite
+		// gerechnet: eine einzelne ueberlange Zeile kann die Textur breiter
+		// machen (siehe TrackMedia::renderLyricsImage()), soll aber nicht
+		// alle anderen Zeilen sichtbar verkleinern. lyricsUScale traegt die
+		// Differenz in den Shader (Present.frag rechnet die Sample-Koordinate
+		// damit zurueck auf die tatsaechliche Texturbreite).
+		const int nomW = TrackMedia::lyricsNominalTexWidth();
 		o.lyricsAspect = img.isNull() ? 1.f
-		               : float(img.width()) / float(img.height());
+		               : float(nomW) / float(img.height());
+		o.lyricsUScale = ( img.isNull() || img.width() <= 0 ) ? 1.f
+		               : float(nomW) / float(img.width());
 
 		float targetV = m_scrollVSm;
 		if( m_trackMedia->syncedLyrics() )
@@ -1590,6 +1599,35 @@ void GLwidget::updateTrackOverlays( RenderPipeline *fs )
 				o.lyricsHlV0   = L.v0;
 				o.lyricsHlV1   = L.v1;
 				o.lyricsHlProg = lineFrac;   // bereits auf 0..1 geklemmt
+			}
+
+			// Marquee: die gerade gelesene Zeile (beide Modi -- L ist auch im
+			// reinen Scroll die per Hysterese stabile "aktive" Zeile) wird,
+			// falls sie beim Rendern nicht ins Fenster passte (L.overflowU),
+			// statt abgeschnitten langsam horizontal durchgescrollt: Pause -
+			// hinscrollen - Pause - zurueckscrollen, unabhaengig vom Kinetik-
+			// Schalter (eigenstaendige Einstellung). m_lineChangeMs wird
+			// oben ohnehin schon bei jedem Zeilenwechsel aktualisiert, also
+			// beginnt jede neu fokussierte Zeile automatisch mit einer
+			// frischen Lesepause statt mitten im Zyklus einzusteigen.
+			o.lyricsFocusV0 = L.v0;
+			o.lyricsFocusV1 = L.v1;
+			if( L.overflowU > 0.f && m_lineChangeMs >= 0 )
+			{
+				const float lineAgeSec = float( m_fpsTimer.elapsed() - m_lineChangeMs ) * 0.001f;
+				const float pauseSec = 1.2f;
+				const float speed    = 0.05f;   // Textur-U/Sek. -- bewusst langsam
+				const float travel   = L.overflowU / speed;
+				const float period   = 2.f * ( pauseSec + travel );
+				const float tp       = fmodf( lineAgeSec, period );
+				if( tp < pauseSec )
+					o.lyricsScrollU = 0.f;
+				else if( tp < pauseSec + travel )
+					o.lyricsScrollU = ( tp - pauseSec ) * speed;
+				else if( tp < 2.f * pauseSec + travel )
+					o.lyricsScrollU = L.overflowU;
+				else
+					o.lyricsScrollU = L.overflowU - ( tp - 2.f * pauseSec - travel ) * speed;
 			}
 		}
 		else
