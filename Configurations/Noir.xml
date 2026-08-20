@@ -1538,7 +1538,7 @@
   </TextureShader>
   <CombineShader file="..\\FX\\FxDarkRed.frag" type="normal" mood="dark,aggressive" probability="0.002" complexity="1">
     <bool name="red" probability="0.15"></bool>
-    <bool name="rotate" probability="0.15"></bool>
+    <bool name="blue" probability="0.15"></bool>
   </CombineShader>
   <CombineShader file="..\\FX\\FxDroneWarp.frag" type="normal" mood="aggressive,psychedelic,dark" probability="0.003" complexity="1">
     <expr name="warpAmtP" formula="clamp(0.7 + 0.7*swell + 0.4*ambient, 0.5, 1.8)"/>

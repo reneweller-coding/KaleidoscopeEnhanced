@@ -160,6 +160,7 @@
     <bool name="rotate" probability="0.6"></bool>
     <int name="sides" minValue="2" maxValue="14"></int>
     <float name="speed" minValue="0.04" maxValue="0.09"></float>
+    <float name="power" minValue="1.0" maxValue="4.0"></float>
   </TextureShader>
 
   <TextureShader file="..\\Scene2D\\LavaLamp.frag" type="normal" probability="0.35" mood="calm" complexity="1">
@@ -320,6 +321,7 @@
     <float name="extend" minValue="2000.0" maxValue="8000.0"></float>
     <int name="sides" minValue="2" maxValue="14"></int>
     <float name="speed" minValue="0.02" maxValue="0.09"></float>
+    <float name="power" minValue="1.0" maxValue="4.0"></float>
   </TextureShader>
 
   <TextureShader file="..\\Scene2D\\TextureEffectParallaxKaleidoscopeTunnel.frag" type="KaleidoscopeBase" mood="psychedelic,bright" probability="0.15" complexity="10">
@@ -332,6 +334,7 @@
     <int name="sides" minValue="2" maxValue="14"></int>
     <float name="speed" minValue="0.02" maxValue="0.09"></float>
     <float name="speedTunnel" minValue="0.01" maxValue="0.06"></float>
+    <float name="power" minValue="1.0" maxValue="4.0"></float>
   </TextureShader>
 
   <TextureShader file="..\\Scene2D\\TheCore.frag" type="normal" probability="0.4" mood="aggressive" complexity="2">
@@ -353,6 +356,7 @@
     <float name="speedTunnel" minValue="0.005" maxValue="0.07"></float>
     <int name="sides" minValue="2" maxValue="14"></int>
     <float name="speed" minValue="0.01" maxValue="0.09"></float>
+    <float name="power" minValue="1.0" maxValue="4.0"></float>
   </TextureShader>
 
   <TextureShader file="..\\Scene2D\\TunnelAcceleration.frag" type="KaleidoscopeBase" mood="aggressive,psychedelic" probability="0.1" complexity="1">
@@ -363,6 +367,7 @@
     <interpolator name="speedTunnelAccel" minMin="0.0" maxMin="0.0005" minMax="0.01" maxMax="0.07"></interpolator>
     <int name="sides" minValue="2" maxValue="14"></int>
     <float name="speed" minValue="0.02" maxValue="0.09"></float>
+    <float name="power" minValue="1.0" maxValue="4.0"></float>
   </TextureShader>
 
   <TextureShader file="..\\Scene2D\\TunnelPlain.frag" type="normal" mood="calm,bright" probability="0.15" complexity="10">
@@ -381,6 +386,7 @@
     <float name="speedTunnelReverse" minValue="0.0001" maxValue="0.01"></float>
     <int name="sides" minValue="2" maxValue="14"></int>
     <float name="speed" minValue="0.02" maxValue="0.09"></float>
+    <float name="power" minValue="1.0" maxValue="4.0"></float>
   </TextureShader>
 
   <TextureShader file="..\\Scene2D\\VoronoiPulse.frag" type="normal" mood="aggressive,psychedelic" probability="0.4" complexity="1">
@@ -411,7 +417,7 @@
 
   <CombineShader file="..\\FX\\FxDarkRed.frag" type="normal" mood="dark,aggressive" probability="0.002" complexity="1">
     <bool name="red" probability="0.15"></bool>
-    <bool name="rotate" probability="0.15"></bool>
+    <bool name="blue" probability="0.15"></bool>
   </CombineShader>
 
   <CombineShader file="..\\FX\\FxDeformationFlow.frag" type="normal" mood="calm,dreamy" probability="0.003" complexity="5">
@@ -4947,6 +4953,7 @@
     <float name="reachP" minValue="0.7" maxValue="1.4"></float>
     <int name="nfoldP" minValue="4" maxValue="7"></int>
     <float name="camDistP" minValue="3.5" maxValue="5.5"></float>
+    <float name="glowP" minValue="0.7" maxValue="1.4"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>

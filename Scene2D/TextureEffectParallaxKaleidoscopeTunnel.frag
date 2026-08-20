@@ -63,7 +63,11 @@ vec3 getKaleidoscopeColor( vec2 coord )
     p = rot*p;
 //rwrwtest
 
-    float r = pow( pow(p.x*p.x,power) + pow(p.y*p.y,power), 1.0/(2.0*power) );
+    // power was never registered in any preset (always 0, GL's unset-uniform
+    // default) -- 1.0/(2.0*power) divided by zero, sending r to infinity for
+    // every pixel. 1.0 reproduces the plain Euclidean length() case.
+    float powV = (power > 0.01) ? power : 1.0;
+    float r = pow( pow(p.x*p.x,powV) + pow(p.y*p.y,powV), 1.0/(2.0*powV) );
 
     // cartesian to polar coordinates
     //float r = length(p);
