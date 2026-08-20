@@ -30,6 +30,7 @@
 static const int kLyrTexW   = 1000;   ///< Nominal (normally-visible) lyrics-texture width in pixels; the actual image can be wider (see renderLyricsImage()) but this fixed value is what the on-screen text size is scaled against.
 static const int kLyrLineH  = 60;     ///< Fixed per-line height in pixels (also used as the top margin).
 static const int kLyrMaxH   = 12000;  ///< Hard cap on the lyrics-texture height (~190 lines), so pathologically long lyrics can't blow up GPU memory.
+static const int kLyrMaxTexW = 6000;  ///< Hard cap on the lyrics-texture width (well under any real GPU's GL_MAX_TEXTURE_SIZE) -- a single malformed/no-whitespace line from a scraped lyrics source must not be able to grow the canvas without bound; a line that still doesn't fit at this cap falls back to eliding, same as before this file's marquee change.
 
 int TrackMedia::lyricsNominalTexWidth() { return kLyrTexW; }
 
@@ -521,7 +522,7 @@ void TrackMedia::renderLyricsImage()
 		const int over  = textW - boxW;
 		if( over > 0 )
 		{
-			const int needW = 30 + textW + 30;
+			const int needW = std::min( 30 + textW + 30, kLyrMaxTexW );
 			if( needW > texW ) texW = needW;
 		}
 	}
@@ -551,14 +552,28 @@ void TrackMedia::renderLyricsImage()
 		const int over  = textW - boxW;
 		QRect r;
 		Qt::Alignment al;
-		if( over > 0 )
+		QString t = m_lines[i].text;
+		if( over > 0 && 30 + textW + 30 <= texW )
 		{
-			// Overflows: left-aligned at its full natural width so the whole
-			// line actually exists in the texture; the host scrolls it into
-			// view over time instead of eliding it.
+			// Overflows, and fits within the (possibly capped) canvas: left-
+			// aligned at its full natural width so the whole line actually
+			// exists in the texture; the host scrolls it into view over time
+			// instead of eliding it.
 			r  = QRect( 30, yTop, textW, kLyrLineH );
 			al = Qt::AlignLeft | Qt::AlignVCenter;
 			m_lines[i].overflowU = float(over) / float(texW);
+		}
+		else if( over > 0 )
+		{
+			// Overflows so far that even kLyrMaxTexW couldn't hold it whole
+			// (a pathological/malformed source line) -- fall back to the old
+			// elide-with-"..." behaviour, sized to what the capped canvas can
+			// actually show, rather than growing the texture without bound.
+			const int availW = texW - 60;
+			t  = fm.elidedText( t, Qt::ElideRight, availW );
+			r  = QRect( 30, yTop, availW, kLyrLineH );
+			al = Qt::AlignLeft | Qt::AlignVCenter;
+			m_lines[i].overflowU = 0.f;
 		}
 		else
 		{
@@ -568,7 +583,6 @@ void TrackMedia::renderLyricsImage()
 			al = Qt::AlignHCenter | Qt::AlignVCenter;
 			m_lines[i].overflowU = 0.f;
 		}
-		const QString &t = m_lines[i].text;
 
 		p.setPen( QColor( 0, 0, 0, 165 ) );
 		for( int dy = -2; dy <= 2; ++dy )
