@@ -148,8 +148,18 @@ foreach ($s in $Scenes) {
            '  <CombineShader file="..\\FX\\FxPlain.frag" type="normal" probability="1.0" complexity="1" minTimeSolo="100" maxTimeSolo="120" minTimeInterpolation="20" maxTimeInterpolation="30">' + "`n" +
            "  </CombineShader>`n</configuration>"
     [IO.File]::WriteAllText($cfg, $xml)
+    # Recording folders are named by wall-clock second; if this run's own
+    # folder doesn't appear (recorder not flushed yet, slow shader compile
+    # eating the window, ...), "newest folder" silently falls back to the
+    # PREVIOUS scene's -- two adjacent scenes then get byte-identical probes
+    # that read as a real (and misleading) bug in whichever one runs second.
+    # Snapshotting what already exists and requiring the picked folder to be
+    # new turns that into a clean "no probe" instead of a false frame.
+    $before = @(Get-ChildItem (Join-Path $rel "recordings") -Directory -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Name)
     $fail += Run-One $s "-c _verify -w `"$wav`" -r -l" $Seconds
-    $d = Get-ChildItem (Join-Path $rel "recordings") -Directory | Sort-Object Name | Select-Object -Last 1
+    $d = Get-ChildItem (Join-Path $rel "recordings") -Directory -ErrorAction SilentlyContinue |
+         Where-Object { $before -notcontains $_.Name } | Sort-Object Name | Select-Object -Last 1
+    if (-not $d) { Write-Host "$s : NO NEW RECORDING (stale-folder guard) -- probe skipped" }
     if ($d) {
         $jpgs = @(Get-ChildItem $d.FullName -Filter *.jpg | Sort-Object Name)
         if ($jpgs.Count -gt 0) {
