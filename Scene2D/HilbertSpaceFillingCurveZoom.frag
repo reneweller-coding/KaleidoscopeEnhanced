@@ -66,7 +66,13 @@ float hilbert2D(vec2 p, float t, out float curvePhase) {
     float d = 1e4;
     curvePhase = 0.0;
 
-    for (int i = 0; i < 4; i++) {
+    // A true space-filling curve gets arbitrarily close to every point as
+    // subdivision depth grows, so unconditionally min()-ing 4 octaves of this
+    // motif together (each only 2x finer than the last) makes SOME octave's
+    // segment sit within line-thickness of virtually every pixel -- the
+    // "curve" floods the whole frame instead of tracing a sparse path. 2
+    // octaves keeps the self-similar zoom feel without over-densifying it.
+    for (int i = 0; i < 2; i++) {
         vec2 cell = floor(q);
         vec2 f = fract(q) - 0.5;
 
@@ -111,7 +117,14 @@ void main() {
     // Glowing Hilbert path line
     float lineGlow = exp(-abs(dLine) * (26.0 + 12.0 * audioCentroid)) * glw;
 
-    // Electric pulse traveling along curve
+    // Electric pulse traveling along curve. curvePhase is CONSTANT across an
+    // entire grid cell (it only changes at cell boundaries via floor()), so
+    // pulseGlow is really a per-CELL flag rather than a per-pixel highlight
+    // -- this was the uncaught separate additive term: whenever a cell's
+    // phase crossed the 0.85 threshold the WHOLE cell lit up uniformly, and
+    // with up to 3.5x kick and a 2.0-peak tint channel that flooded roughly
+    // half the visible tiles to solid white while only the (distance-based,
+    // genuinely thin) line glow survived at the borders. See the cap below.
     float pulse = abs(sin(curvePhase * 4.0 - t * 6.0));
     float pulseGlow = smoothstep(0.85, 1.0, pulse) * (1.0 + 2.5 * audioKick);
 
@@ -126,12 +139,16 @@ void main() {
 
     col = mix(col, texCol, 0.35 + 0.15 * audioValence);
 
-    // Add glowing Hilbert lines and pulse sparks
-    vec3 lineTint = vec3(1.3, 1.1, 1.8) * lineGlow * (1.0 + 2.0 * audioKick);
-    vec3 sparkTint = vec3(1.6, 1.5, 2.0) * pulseGlow;
+    // Add glowing Hilbert lines and pulse sparks -- cap each FINAL tinted
+    // term (not just the underlying glow scalar), since the tint constants
+    // themselves already exceed 1.0 per channel.
+    vec3 lineTint = vec3(1.3, 1.1, 1.8) * min(lineGlow * (1.0 + 2.0 * audioKick), 0.75);
+    vec3 sparkTint = vec3(1.6, 1.5, 2.0) * min(pulseGlow, 0.35);
 
     col += lineTint + sparkTint;
 
     col = pow(col, vec3(0.88));
-    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    vec3 _catTone = clamp(col, 0.0, 1.0);
+    _catTone /= 1.0 + 0.85 * max(_catTone.r, max(_catTone.g, _catTone.b));
+    fragColor = vec4(_catTone, 1.0);
 }

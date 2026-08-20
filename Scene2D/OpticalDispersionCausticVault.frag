@@ -67,9 +67,14 @@ float causticIntensity(vec2 p, float t, float wlOffset, float wScale) {
         grad += dir * cos(phase);
     }
 
-    // Caustic focusing occurs where wave gradient is stationary (Jacobian determinant peak)
+    // Caustic focusing occurs where wave gradient is stationary (Jacobian
+    // determinant peak). Near-perfect cancellation of the 4 wave trains
+    // drives length(grad) down toward its 0.08 floor, sending jacobian up
+    // to ~12.5 and pow(.,1.8) up past 90 -- an effectively unbounded spike
+    // that was flooding whole caustic focal regions to solid white. Cap the
+    // returned intensity so focal points stay bright highlights instead.
     float jacobian = 1.0 / max(0.08, length(grad));
-    return pow(jacobian, 1.8);
+    return min(pow(jacobian, 1.8), 3.0);
 }
 
 void main() {
@@ -97,22 +102,32 @@ void main() {
     vec2 floorUV = fract(uv * 0.4 + causticRGB.xy * 0.05 + 0.5);
     vec3 floorTex = img(floorUV);
 
-    // Crystal vault ambient palette
+    // Crystal vault ambient palette. This base mix alone sat close to the
+    // tonemap ceiling across most of the frame, leaving no headroom for the
+    // caustic highlights to read as highlights -- give it room to breathe.
     vec3 palBase = imgPalette(length(uv) * 0.3 + 0.2);
-    vec3 col = mix(floorTex, palBase, 0.4);
+    vec3 col = mix(floorTex, palBase, 0.4) * 0.55;
 
-    // Add glowing chromatic caustic webs
-    col += causticRGB * (1.0 + 3.0 * audioKick) * glw;
+    // Add glowing chromatic caustic webs (causticIntensity is capped above,
+    // but the kick multiplier can still push it past 1.0 -- clamp the
+    // applied term too, tighter than before since it still washed the frame).
+    col += min(causticRGB * (1.0 + 3.0 * audioKick) * glw, vec3(0.7));
 
-    // Specular wave glints
+    // Specular wave glints -- the first pass capped the SCALAR to 1.0, but
+    // the 1.6-peak tint channel still turned a "capped" glint into a value
+    // above 1.0 per channel, the same class of bug as the neutron-star and
+    // Clifford-torus files: cap the FINAL tinted vector, not just the
+    // scalar feeding it.
     float totalCaustic = (causticR + causticG + causticB) * 0.3333;
     float specularGlint = pow(clamp(totalCaustic * 0.8, 0.0, 1.0), 4.0) * (1.0 + 3.0 * audioKick);
-    col += vec3(1.4, 1.4, 1.6) * specularGlint;
+    col += min(vec3(1.0, 1.0, 1.15) * specularGlint, vec3(0.55));
 
     // Edge water vignette
     float vig = 1.0 - smoothstep(0.85, 1.4, length(uv));
     col *= vig;
 
     col = pow(col, vec3(0.88));
-    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    vec3 _catTone = clamp(col, 0.0, 1.0);
+    _catTone /= 1.0 + 1.3 * max(_catTone.r, max(_catTone.g, _catTone.b));
+    fragColor = vec4(_catTone, 1.0);
 }

@@ -136,8 +136,16 @@ void main() {
             totalDist += max(0.02, d * 0.65);
         }
 
-        // Volumetric facet edge glow
+        // Volumetric facet edge glow -- minD tracks the closest approach
+        // over the ENTIRE march for this dispersion channel, so it reads
+        // near-zero for almost any ray landing inside the polychoron's
+        // octagonal silhouette (which the facets nearly fill from this
+        // camera distance), not just true facet-edge hits. Left uncapped
+        // this saturated the additive tint across the whole interior,
+        // clipping to white; only rays that actually miss the shape
+        // (outside the octagon) kept a large minD and stayed dark.
         float edgeGlow = exp(-minD * (24.0 + 10.0 * audioCentroid)) * glw;
+        edgeGlow = min(edgeGlow, 0.45);
         vec3 spectralTint = (c == 0) ? vec3(1.2, 0.3, 0.2) : ((c == 1) ? vec3(0.2, 1.2, 0.4) : vec3(0.3, 0.5, 1.4));
         
         accCol += (colChannel + edgeGlow * spectralTint * (1.0 + 2.0 * audioKick)) * 0.3333;
@@ -148,9 +156,17 @@ void main() {
     vec3 bgCol = imgPalette(length(uv) * 0.5 + t * 0.1) * 0.25;
     vec3 finalCol = mix(bgCol, accCol, clamp(length(accCol), 0.0, 1.0));
 
-    // Contrast & saturation enhancement
-    finalCol = pow(finalCol, vec3(0.88));
-    finalCol += vec3(0.1, 0.15, 0.25) * glowAcc * audioSwell;
+    // Center flare tint -- glowAcc is already bounded by the edgeGlow cap
+    // above, but audioSwell itself is an unbounded audio-energy scalar
+    // (used raw elsewhere in this file), so cap its contribution here too
+    // rather than letting a strong swell alone blow this additive term out.
+    finalCol += vec3(0.1, 0.15, 0.25) * glowAcc * min(audioSwell, 1.5);
 
-    fragColor = vec4(clamp(finalCol, 0.0, 1.0), 1.0);
+    // Contrast & saturation enhancement with a soft-knee compression so
+    // the facet-edge glow compresses gracefully instead of clipping
+    // straight to white.
+    finalCol = pow(finalCol, vec3(0.88));
+    vec3 _catTone = clamp(finalCol, 0.0, 1.0);
+    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
+    fragColor = vec4(_catTone, 1.0);
 }

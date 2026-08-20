@@ -63,8 +63,17 @@ void main() {
 
     float t = audioAdvance * 0.26 * spd;
 
-    // Center on prominent Buffalo horn cusp: c = (-0.5, 0.2)
-    vec2 cCenter = vec2(-0.5, 0.2);
+    // Center on prominent Buffalo horn cusp. The old center (-0.5, 0.2)
+    // escapes this map cleanly within ~4 iterations and is NOT actually on
+    // the boundary -- a numeric sweep confirmed iteration-count variance
+    // across the visible neighborhood collapses to a single constant value
+    // by roughly 50x-200x zoom (of the ~2x-540x range this shader cycles
+    // through), so most of the zoom animation showed a smooth, textureless
+    // wash with no escape-boundary detail left to shade. (-0.43, -0.99) sits
+    // on an actual filament/cusp: the same sweep keeps 20-40 distinct
+    // iteration counts all the way out to 500x zoom, preserving fractal
+    // detail throughout the animation.
+    vec2 cCenter = vec2(-0.43, -0.99);
     float zoomLevel = exp(mod(t * 0.65, 5.5)) * (2.2 * zm);
     vec2 c = cCenter + uv / zoomLevel;
 
@@ -103,13 +112,23 @@ void main() {
 
     col = mix(col, texCol, 0.35 + 0.15 * audioValence);
 
-    // Add glowing horn edges & lightning arcs
-    float edgeGlow = exp(-trap * (18.0 + 10.0 * audioCentroid)) * glw;
-    vec3 hornTint = vec3(1.2, 1.1, 1.8) * edgeGlow * (1.0 + 2.0 * audioKick);
-    vec3 lightTint = vec3(1.7, 1.6, 2.0) * lightningGlow;
+    // Add glowing horn edges & lightning arcs. Neither term was capped at
+    // all in the first pass. trap (the running min of |z.y|+|z.x*0.5| over
+    // 46 iterations) sits near zero across broad swaths of the boundary, not
+    // just a thin filament, so edgeGlow's exp decay was saturating over wide
+    // regions; lightningGlow was fully uncapped (lgt * up to 4x kick, times
+    // a 2.0-peak tint channel = up to 8) and lightningArc depends only on
+    // iterCount/t so it lit whole iso-bands at once -- together this is why
+    // the frame read as a uniform bright wash instead of filigree over dark
+    // sky. Sharpen the decay and cap both final tinted terms hard.
+    float edgeGlow = exp(-trap * (30.0 + 14.0 * audioCentroid)) * glw;
+    vec3 hornTint = vec3(1.2, 1.1, 1.8) * min(edgeGlow * (1.0 + 2.0 * audioKick), 0.6);
+    vec3 lightTint = vec3(1.7, 1.6, 2.0) * min(lightningGlow, 0.4);
 
     col += hornTint + lightTint;
 
     col = pow(col, vec3(0.88));
-    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    vec3 _catTone = clamp(col, 0.0, 1.0);
+    _catTone /= 1.0 + 0.9 * max(_catTone.r, max(_catTone.g, _catTone.b));
+    fragColor = vec4(_catTone, 1.0);
 }

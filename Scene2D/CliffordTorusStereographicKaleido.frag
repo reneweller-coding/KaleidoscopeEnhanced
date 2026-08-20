@@ -109,16 +109,29 @@ void main() {
     vec3 col = mix(palA, palB, 0.5 + 0.5 * sin(u * 2.0));
 
     col = mix(col, texCol, 0.35 + 0.15 * audioValence);
+    // The gaps between Villarceau rays (where ringGlow correctly decays to
+    // ~0) were still reading flat and pale because this base palette/photo
+    // mix alone sits close to the tonemap's ceiling across wide bands of
+    // the frame -- the rays need somewhere darker to stand out against.
+    col *= 0.6;
 
-    // Add glowing Villarceau rings & intersection node flashes
-    vec3 ringTint = vec3(1.3, 1.1, 1.7) * ringGlow * (1.0 + 2.5 * audioKick);
-    float nodeFlash = exp(-vGrid * 40.0) * audioKick * 2.0;
-    col += ringTint + vec3(1.5, 1.4, 1.8) * nodeFlash;
+    // Add glowing Villarceau rings & intersection node flashes. The first
+    // pass's 0.85 cap plus a 0.4 knee still let ~50% of the frame clip,
+    // matching the re-verification's "flat white in the ray gaps" -- vGrid's
+    // ray pattern (product of two sine sunburst terms) stays small across
+    // WIDE angular bands, not just thin lines, and the 1.7-peak tint channel
+    // survived even the 0.85 cap. Tighten the cap and lower the tint
+    // constants themselves so a fully-lit ring band stays well under 1.0.
+    vec3 ringTint = vec3(1.0, 0.85, 1.3) * min(ringGlow * (1.0 + 2.0 * audioKick), 0.5);
+    float nodeFlash = min(exp(-vGrid * 40.0) * audioKick * 2.0, 0.6);
+    col += ringTint + vec3(1.2, 1.1, 1.4) * nodeFlash;
 
     // Center focal bloom
-    float centerBloom = exp(-r2 * 4.0) * (0.6 + 1.2 * audioLevel);
+    float centerBloom = min(exp(-r2 * 4.0) * (0.6 + 1.2 * audioLevel), 0.6);
     col += imgPalette(0.85) * centerBloom;
 
     col = pow(col, vec3(0.88));
-    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    vec3 _catTone = clamp(col, 0.0, 1.0);
+    _catTone /= 1.0 + 1.6 * max(_catTone.r, max(_catTone.g, _catTone.b));
+    fragColor = vec4(_catTone, 1.0);
 }

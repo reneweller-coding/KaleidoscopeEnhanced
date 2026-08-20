@@ -95,8 +95,11 @@ void main() {
         float laserGlow = exp(-laserLine * 25.0) * step(plateDist, 0.0);
         laserAcc += laserGlow * (1.0 + 3.0 * audioKick);
 
-        // Glass plate edge bevel glow
-        float edgeGlow = exp(-abs(plateDist) * (20.0 + 10.0 * audioCentroid)) * glw;
+        // Glass plate edge bevel glow. The first pass capped the glow*kick
+        // product to 1.0, but the 1.8-peak blue tint channel still turned
+        // that "capped" value into 1.8 -- lower both the cap and the tint
+        // constants so the final tinted term stays under 1.0.
+        float edgeGlow = min(exp(-abs(plateDist) * (20.0 + 10.0 * audioCentroid)) * glw * (1.0 + 2.0 * audioKick), 0.5);
 
         // Sample texture mapped through the dichroic plate
         vec2 sampleUV = fract(pPlate * 0.4 + 0.5);
@@ -104,7 +107,7 @@ void main() {
         vec3 palCol = imgPalette(kf * 0.2 + t * 0.05);
 
         vec3 plateCol = mix(texCol, palCol, 0.4) * dichroicColor;
-        plateCol += vec3(1.3, 1.1, 1.8) * edgeGlow * (1.0 + 2.0 * audioKick);
+        plateCol += vec3(0.9, 0.8, 1.2) * edgeGlow;
 
         float w = smoothstep(0.08, -0.05, plateDist);
         colAcc += plateCol * w;
@@ -113,8 +116,18 @@ void main() {
 
     vec3 finalCol = colAcc / max(0.001, totalWeight);
 
-    // Add bright slicing laser beams
-    vec3 laserTint = vec3(1.6, 1.4, 2.0) * laserAcc * glw;
+    // Add bright slicing laser beams. laserAcc sums UNWEIGHTED across up to
+    // 5 overlapping rotated plates, each contributing up to ~4 on a strong
+    // kick. The first pass capped the ACCUMULATOR to 1.4, but the 2.0-peak
+    // tint channel still turned that into up to 2.8 per channel -- the
+    // accumulator cap alone wasn't the fix, the tinted term needed its own
+    // ceiling too. laserTint is also added across the whole frame wherever
+    // ANY plate is lit (unlike plateCol it isn't weight-blended against the
+    // background), which is why this read as an almost uniform pale wash
+    // rather than isolated beams. Tighten the cap and lower the tint
+    // constants.
+    laserAcc = min(laserAcc, 0.6);
+    vec3 laserTint = vec3(1.1, 1.0, 1.4) * laserAcc * glw;
     finalCol += laserTint;
 
     // Background optical dispersion
@@ -122,5 +135,7 @@ void main() {
     finalCol = mix(bgCol, finalCol, clamp(totalWeight, 0.0, 1.0));
 
     finalCol = pow(finalCol, vec3(0.88));
-    fragColor = vec4(clamp(finalCol, 0.0, 1.0), 1.0);
+    vec3 _catTone = clamp(finalCol, 0.0, 1.0);
+    _catTone /= 1.0 + 1.6 * max(_catTone.r, max(_catTone.g, _catTone.b));
+    fragColor = vec4(_catTone, 1.0);
 }
