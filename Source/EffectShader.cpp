@@ -161,6 +161,16 @@ void EffectShader::draw( )
 {
 	if( usesBake() )
 		stepBake( m_exprTime, m_lastAudioForBake );
+	// texMandelbrot always reads unit 35 (RenderPipeline.cpp binds the
+	// compute result there -- see ComputeFX::stepMandelbrot()'s comment for
+	// why this bypasses the generic cfxMask() unit table); same one-line-
+	// per-draw pattern as texBake just above, no per-program location cache
+	// needed for a single constant.
+	if( usesMandelbrot() )
+	{
+		GLint lTexMandelbrot = glGetUniformLocation( m_sh_prog_id, "texMandelbrot" );
+		if( lTexMandelbrot >= 0 ) glUniform1i( lTexMandelbrot, 35 );
+	}
 	drawWindow();
 }
 
@@ -338,7 +348,7 @@ enum AudioLoc {
     AL_TEXDEPTH0, AL_TEXDEPTH1, AL_DEPTHVALID, AL_NEARFAR, AL_TANHALFFOV,
     AL_TEXSHADOW, AL_LIGHTM, AL_SHADOWPASS, AL_LIGHTDIR, AL_SHADOWTEXEL,
     AL_OITPASS, AL_SHADOWEXTENT,
-    AL_TEXSHADOW2, AL_LIGHTM2, AL_SHADOWPASS2, AL_LIGHTDIR2, AL_COUNT
+    AL_TEXSHADOW2, AL_LIGHTM2, AL_SHADOWPASS2, AL_LIGHTDIR2, AL_TEXPREVFRAME, AL_COUNT
 };
 const char *kAudioLocNames[AL_COUNT] = {
     "audioPhase", "audioAdvance", "audioBeat", "audioLevel", "sides",
@@ -358,7 +368,7 @@ const char *kAudioLocNames[AL_COUNT] = {
     "texDepth0", "texDepth1", "depthValid", "nearFar", "tanHalfFov",
     "texShadow", "lightM", "shadowPass", "lightDir", "shadowTexel",
     "oitPass", "shadowExtent",
-    "texShadow2", "lightM2", "shadowPass2", "lightDir2"
+    "texShadow2", "lightM2", "shadowPass2", "lightDir2", "texPrevFrame"
 };
 }
 
@@ -484,6 +494,11 @@ void EffectShader::applyAudioFeatures(const AudioFeatures &f)
     // a handful of these active at once, so the per-stage unit limit is never
     // the binding constraint — the numbering just has to stay collision-free.
     if (L[AL_TEXSPECTRO]  >= 0) glUniform1i(L[AL_TEXSPECTRO], 28);   // spectrogram history
+    // Unit 34: last frame's fully composited image (RenderPipeline binds
+    // m_texTrail[1-m_trailIdx] there once per frame, before any scene draws,
+    // since the trails pass itself hasn't swapped m_trailIdx for this frame
+    // yet). Opt-in the same way as texSim/texSpectro -- just declare it.
+    if (L[AL_TEXPREVFRAME] >= 0) glUniform1i(L[AL_TEXPREVFRAME], 34);
     // The two scene depth buffers, as the combine stage sees them.  depthValid
     // says whether each one actually holds a 3D scene's geometry — a 2D effect
     // leaves the far plane there, and a depth-driven combine has to know the
@@ -669,6 +684,16 @@ bool EffectShader::usesBake()
 		m_usesBake = ( m_sh_prog_id != 0 &&
 		               glGetUniformLocation( m_sh_prog_id, "texBake" ) >= 0 ) ? 1 : 0;
 	return m_usesBake == 1;
+}
+
+bool EffectShader::usesMandelbrot()
+{
+	if( !m_glReady )
+		return false;
+	if( m_usesMandelbrot < 0 )
+		m_usesMandelbrot = ( m_sh_prog_id != 0 &&
+		                     glGetUniformLocation( m_sh_prog_id, "texMandelbrot" ) >= 0 ) ? 1 : 0;
+	return m_usesMandelbrot == 1;
 }
 
 void EffectShader::ensureBakeProg()

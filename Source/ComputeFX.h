@@ -89,6 +89,31 @@ public:
 	GLuint step( int k, const AudioFeatures &a, float dt, float time,
 	             GLuint srcImage, int outW, int outH );
 
+	/**
+	 * @brief Advances the deep-zoom Mandelbrot fractal by one frame.
+	 *
+	 * Called DIRECTLY (not through step()/CfxKind) -- see the definition's
+	 * comment for why: units 0-31 are already fully claimed on a 32-unit
+	 * GPU, so this sim is bound to its own dedicated unit straight from
+	 * RenderPipeline.cpp, the same way texBake/texPrevFrame already are,
+	 * rather than competing for the generic kCfxInfo table's headroom. A
+	 * per-pixel escape-time iteration using double-single (Dekker/Knuth
+	 * error-free-transformation) emulated precision for the complex
+	 * coordinate, so the zoom can go roughly 10,000x deeper than plain
+	 * float32 before banding sets in. Zoom depth is a host-integrated log
+	 * accumulator (audio-modulated rate, never time*audio -- see
+	 * Tools/SHADER_AUTHORING.md V7); once it reaches the double-single
+	 * precision ceiling, it resets to a shallow zoom and advances to the
+	 * next of a small set of hand-picked interesting boundary coordinates.
+	 * @param a Current audio features driving zoom rate and iteration count.
+	 * @param dt Frame delta time in seconds.
+	 * @param t Elapsed time in seconds (unused directly; zoom depth is its own integrator).
+	 * @param outW Output width, used to size the field to the display aspect.
+	 * @param outH Output height, used to size the field to the display aspect.
+	 * @return The resolved Mandelbrot field texture, or 0 on failure.
+	 */
+	GLuint stepMandelbrot( const AudioFeatures &a, float dt, float t, int outW, int outH );
+
 	// Free a sim's GPU memory when it has not been on screen for a while.
 	/**
 	 * @brief Frees GPU memory for any kind that has been idle too long.
@@ -458,6 +483,9 @@ private:
 	Field  m_field2[CFX_COUNT]; ///< second per-kind field; only Navier-Stokes uses it, for the dye field (m_field holds velocity)
 	// The Navier-Stokes solver needs a third: the pressure it iterates on.
 	Field  m_nsPressure; ///< shared third ping-pong field, used only by stepNSFluid for the pressure Jacobi iteration
+	// Deliberately outside the per-CfxKind arrays -- see stepMandelbrot()'s
+	// comment for why this sim is not a registered CfxKind.
+	Field  m_mandelbrotField; ///< dedicated field for stepMandelbrot(), bound directly by RenderPipeline.cpp rather than through the generic kCfxInfo unit table
 
 	bool   m_ok = false;          ///< true once init() has detected usable GL compute support
 	int    m_maxTexUnits = 16;    ///< cached GL_MAX_TEXTURE_IMAGE_UNITS, used to decide which kinds fit

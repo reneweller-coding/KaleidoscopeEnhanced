@@ -59,7 +59,7 @@ enum {
 	P_SORT, P_FFT_H, P_FFT_V, P_FFT_MASK, P_FFT_STORE, P_FERRO, P_EROSION,
 	P_EROSION_SEED, P_METAL_STEP, P_METAL_SPLAT, P_SHARD_INIT, P_SHARD_STEP,
 	P_NS_ADVECT, P_NS_DIV, P_NS_JACOBI, P_NS_PROJECT, P_CLOTH_INIT, P_CLOTH_STEP,
-	P_SCULPT
+	P_SCULPT, P_MANDELBROT
 };
 
 /// @brief Ceiling-divides `n` by `local` to get the compute-dispatch group count for a given workgroup size.
@@ -81,6 +81,7 @@ ComputeFX::~ComputeFX()
 		if( m_buf2[k] ) glDeleteBuffers( 1, &m_buf2[k] );
 	}
 	freeField( m_nsPressure );
+	freeField( m_mandelbrotField );
 	for( int i = 0; i < kProgSlots; ++i )
 		if( m_prog[i] ) glDeleteProgram( m_prog[i] );
 }
@@ -1230,3 +1231,89 @@ GLuint ComputeFX::stepCloth( const AudioFeatures &a, float dt, float t )
 }
 
 GLuint ComputeFX::stepSculpt( const AudioFeatures &, float, float ) { return 0; }
+
+// ---------------------------------------------------------------------------
+// 17. Deep-zoom Mandelbrot — double-single emulated precision per pixel.
+// ---------------------------------------------------------------------------
+
+// A small set of hand-picked boundary coordinates known to have interesting
+// filament/spiral structure at depth; cycled through on each zoom-depth
+// reset so the dive never repeats the same neighbourhood twice in a row.
+// Split into a (hi, lo) float32 pair at file-load time via real double
+// arithmetic -- exact to full double precision, which is all the
+// double-single GLSL representation can use anyway.
+namespace {
+struct MbTarget { double re, im; };
+const MbTarget kMbTargets[] = {
+	{ -0.7453983606667815,  0.1125046349959942 },   // "seahorse valley" spiral
+	{ -0.235125,            0.827215           },   // mini-Mandelbrot approach
+	{ -1.7490597277748394,  0.0000005996817   },   // deep filament off the main cusp
+	{ -0.16070135,         -1.0375665         },   // dendrite cluster
+};
+const int kMbTargetCount = int( sizeof(kMbTargets) / sizeof(kMbTargets[0]) );
+
+inline void dsSplit( double v, float &hi, float &lo )
+{
+	hi = float( v );
+	lo = float( v - double( hi ) );
+}
+}
+
+GLuint ComputeFX::stepMandelbrot( const AudioFeatures &a, float dt, float t, int outW, int outH )
+{
+	// Deliberately NOT a registered CfxKind/kCfxInfo entry (unlike every
+	// other sim in this file): units 0-31 are already fully claimed by
+	// existing features on a 32-texture-unit GPU (the common NVIDIA fragment-
+	// stage cap), and ComputeFX::init()'s kind-gating pre-emptively kills any
+	// kind whose unit doesn't fit under that -- a deliberate safety margin
+	// for the OTHER kinds that this one has no room left to share. Bound to
+	// its own dedicated unit directly by RenderPipeline.cpp instead, exactly
+	// like texBake/texPrevFrame (EffectShader.cpp) already do -- best-effort
+	// on GPUs with more headroom, gracefully absent (not force-killed) on
+	// GPUs at the 32-unit cap.
+	Field &f = m_mandelbrotField;
+	int w, h; canvasSize( outW, outH, w, h );
+	if( !ensureField( f, w, h, GL_RGBA16F ) ) return 0;
+	GLuint p = prog( P_MANDELBROT, "..\\Engine\\CfxMandelbrot.comp" );
+	if( !p ) return 0;
+
+	// Log-zoom depth: an integrated accumulator, audio modulates the RATE
+	// (never time*audio directly -- V7). Resets to kMinZoomLog (NOT 0 -- the
+	// hand-picked targets sit at real boundary filaments, so a truly wide
+	// zoomLog=0 view shows mostly the flat exterior "lake" around them; a
+	// small starting depth skips straight to filled boundary detail, which
+	// is what "screen-filling" actually wants) and advances to the next
+	// target once double-single precision runs out.
+	static float zoomLog  = 3.5f;
+	static int   targetSel = 0;
+	const float kMinZoomLog = 3.5f;
+	const float kMaxZoomLog = 19.0f;   // e^19 =~ 1.8e-9 window -- inside ds precision headroom
+	zoomLog += dt * ( 0.16f + 0.30f * a.overallLevel );
+	if( zoomLog > kMaxZoomLog )
+	{
+		zoomLog   = kMinZoomLog;
+		targetSel = ( targetSel + 1 ) % kMbTargetCount;
+	}
+	const float zoomScale = expf( -zoomLog );
+
+	float cxHi, cxLo, cyHi, cyLo;
+	dsSplit( kMbTargets[targetSel].re, cxHi, cxLo );
+	dsSplit( kMbTargets[targetSel].im, cyHi, cyLo );
+
+	int maxIter = int( 90.0f + zoomLog * 14.0f );
+	if( maxIter > 620 ) maxIter = 620;
+
+	glUseProgram( p );
+	glBindImageTexture( 0, f.tex[0], 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA16F );
+	glUniform2i( glGetUniformLocation( p, "size" ), f.w, f.h );
+	glUniform2f( glGetUniformLocation( p, "centerHi" ), cxHi, cyHi );
+	glUniform2f( glGetUniformLocation( p, "centerLo" ), cxLo, cyLo );
+	glUniform1f( glGetUniformLocation( p, "zoomScale" ), zoomScale );
+	glUniform1i( glGetUniformLocation( p, "maxIter" ), maxIter );
+	glUniform1f( glGetUniformLocation( p, "rot" ), zoomLog * 0.05f + a.spectralCentroid * 0.3f );
+	glDispatchCompute( groups( f.w, 16 ), groups( f.h, 16 ), 1 );
+	glMemoryBarrier( GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT );
+
+	f.lastUse = t;   // bespoke field, not covered by step()'s generic per-kind stamping
+	return f.tex[0];
+}

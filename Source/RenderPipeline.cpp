@@ -1141,6 +1141,39 @@ void RenderPipeline::paint(const float *rotMatrix, float tx, float ty, float tz,
 		m_cfx.retireIdle( m_globaltime );
 	}
 
+	// ---- Previous-frame feedback (opt-in via texPrevFrame) ----
+	// m_texTrail[] is otherwise an internal detail of the global echo-warp
+	// trails pass below (Engine/Feedback.frag); a scene can additionally
+	// sample LAST frame's fully composited image directly by declaring
+	// texPrevFrame. m_trailIdx has not been swapped for THIS frame yet at
+	// this point in paint(), so m_texTrail[1-m_trailIdx] still holds exactly
+	// that (the trails pass swaps it further down, after drawWindow()).
+	glActiveTexture( GL_TEXTURE0 + 34 );
+	glBindTexture( GL_TEXTURE_2D, m_texTrail[1 - m_trailIdx] );
+	glActiveTexture( GL_TEXTURE0 );
+
+	// ---- Deep-zoom Mandelbrot (opt-in via texMandelbrot) ----
+	// Bound directly here rather than through the generic ComputeFX kind
+	// table (see ComputeFX::stepMandelbrot()'s comment): units 0-31 are
+	// already fully claimed on a 32-texture-unit GPU, so this sim gets its
+	// own dedicated unit the same way texBake/texPrevFrame already do.
+	{
+		bool wantMandelbrot = m_effectTextures[m_scheduler.actTexture()]->usesMandelbrot();
+		if( m_scheduler.texState() != 0 )
+			wantMandelbrot |= m_effectTextures[m_scheduler.nextTexture()]->usesMandelbrot();
+		if( wantMandelbrot )
+		{
+			GLuint mbTex = m_cfx.stepMandelbrot( audio, timeSinceLastFrameSec,
+			                                     m_globaltime, m_width, m_height );
+			if( mbTex )
+			{
+				glActiveTexture( GL_TEXTURE0 + 35 );
+				glBindTexture( GL_TEXTURE_2D, mbTex );
+				glActiveTexture( GL_TEXTURE0 );
+			}
+		}
+	}
+
 	// restore render destination to regular frame buffer
 	glViewport( 0, 0, m_width, m_height );
 
