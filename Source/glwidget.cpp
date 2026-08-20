@@ -1367,6 +1367,18 @@ void GLwidget::updateTrackOverlays( RenderPipeline *fs )
 		}
 		else if( pllNow - m_fwdJumpSince > 400 )
 		{
+			// Forensic trail for the NEXT reported "jump": earlier rounds only
+			// logged a resulting BACKWARD line-index flip (see below), which
+			// stays silent for a snap that lands inside the CURRENT line's own
+			// span (no index change, but the scroll position inside it still
+			// jumps) or a forward multi-line skip. Log every actual PLL snap
+			// itself, unconditionally -- these are rare by construction (only
+			// after 0.4/2s of confirmation), so this costs nothing in the
+			// common case and finally makes every discontinuity source visible
+			// in kaleidoscope.log instead of just this one already-fixed kind.
+			fprintf( stderr, "[Lyrics] PLL-Sprung VORWAERTS: posSmooth %.3f -> %.3f "
+			         "(nach %.0fms Bestaetigung)\n",
+			         m_posSmooth, pos, double( pllNow - ( m_fwdJumpSince ) ) );
 			m_posSmooth    = pos;            // 0.4s konsistent: echter Seek
 			m_fwdJumpSince = -1;
 		}
@@ -1387,6 +1399,12 @@ void GLwidget::updateTrackOverlays( RenderPipeline *fs )
 		}
 		else if( pllNow - m_backJumpSince > 2000 )
 		{
+			// See the matching forward-snap log above for why this is
+			// unconditional now (was previously silent, unlike the resulting
+			// backward line-index flip below).
+			fprintf( stderr, "[Lyrics] PLL-Sprung RUECKWAERTS: posSmooth %.3f -> %.3f "
+			         "(nach %.0fms Bestaetigung)\n",
+			         m_posSmooth, pos, double( pllNow - ( m_backJumpSince ) ) );
 			m_posSmooth     = pos;           // 2s konsistent: echter Seek
 			m_backJumpSince = -1;
 		}
@@ -1496,15 +1514,19 @@ void GLwidget::updateTrackOverlays( RenderPipeline *fs )
 			while( i + 1 < n && pos >= lines[i].t1 ) ++i;
 			while( i > 0     && pos <  lines[i].t0 - 0.3 ) --i;
 			// A line index going BACKWARD is exactly the "flip to the previous
-			// line" symptom three earlier rounds already tried to fix (monotone
+			// line" symptom earlier rounds already tried to fix (monotone
 			// NowPlaying publish, consumer PLL, this hysteresis). If it still
 			// happens, this is the forensic trail: with -l, it lands in
 			// kaleidoscope.log correlated with the exact pos/m_posSmooth that
-			// caused it, instead of having to guess at a fourth blind fix.
-			if( i < m_karaokeLine )
-				fprintf( stderr, "[Lyrics] Zeile RUECKWAERTS: %d -> %d  "
+			// caused it, instead of having to guess at another blind fix.
+			// ALSO logged now: a forward skip of more than one line at once --
+			// same visible "jump" symptom, just never instrumented before
+			// because only the backward direction had been reported.
+			if( m_karaokeLine >= 0 && ( i < m_karaokeLine || i > m_karaokeLine + 1 ) )
+				fprintf( stderr, "[Lyrics] Zeile-SPRUNG %s: %d -> %d  "
 				         "pos=%.3f posSmooth=%.3f  t0[alt]=%.3f t1[alt]=%.3f "
 				         "t0[neu]=%.3f t1[neu]=%.3f\n",
+				         ( i < m_karaokeLine ) ? "RUECKWAERTS" : "VORWAERTS(>1)",
 				         m_karaokeLine, i, pos, m_posSmooth,
 				         lines[m_karaokeLine].t0, lines[m_karaokeLine].t1,
 				         lines[i].t0, lines[i].t1 );
@@ -1559,7 +1581,21 @@ void GLwidget::updateTrackOverlays( RenderPipeline *fs )
 		// NowPlaying nicht abgefangene Korrektur) mit deutlich höherer Rate,
 		// damit es "schnell aufholt" statt zu schneiden. Ein Sprung über die
 		// halbe Textur braucht damit ~0.2s statt eines Einzelframe-Cuts.
-		float rate = ( fabsf( targetV - m_scrollVSm ) > 0.08f ) ? 2.5f : 0.10f;
+		const bool bigGap = fabsf( targetV - m_scrollVSm ) > 0.08f;
+		// Edge-triggered (once per episode, not every frame of a ~0.2-0.5s
+		// catch-up): this is the "visible but not instant" jump candidate --
+		// a real seek looks exactly like this by design, but so would any
+		// OTHER cause that displaces targetV by more than a normal single-
+		// line step (see the two PLL-snap logs above and the RUECKWAERTS/
+		// VORWAERTS(>1) line-index log for the other candidates).
+		static bool s_wasBigGap = false;
+		if( bigGap && !s_wasBigGap )
+			fprintf( stderr, "[Lyrics] Scroll-Sprung: targetV=%.4f scrollV=%.4f "
+			         "(delta=%.4f) karaokeLine=%d pos=%.3f\n",
+			         targetV, m_scrollVSm, targetV - m_scrollVSm, m_karaokeLine, pos );
+		s_wasBigGap = bigGap;
+
+		float rate = bigGap ? 2.5f : 0.10f;
 		m_scrollVSm = slew( m_scrollVSm, targetV, rate, dt );
 		o.lyricsScrollV = m_scrollVSm;
 	}

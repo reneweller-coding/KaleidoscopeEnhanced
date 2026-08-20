@@ -160,6 +160,23 @@ void NowPlaying::threadFunc()
     bool     posConfirmed  = false;  // erst TRUE, sobald zwei Meldungen zueinander passen
     Timeline candidate;               // erste (noch unbestätigte) Meldung des neuen Tracks
 
+    // Titel-Bestätigung (analog zur Positions-Bestätigung oben, aber bisher
+    // NIE existiert): der publizierte Titel wechselt erst, wenn zwei
+    // aufeinanderfolgende Polls dasselbe (Titel,Artist)-Paar liefern. Ohne
+    // das löste ein einzelner falscher/leerer SMTC-Read (OS liefert kurz
+    // eine stale oder leere Property, üblich rund um Play/Pause-Flackern
+    // oder App-interne Übergänge) in glwidget.cpp einen kompletten
+    // "neuer Track"-Reset aus - PLL neu aufgesetzt, Lyrics+Künstlerbild neu
+    // geladen, Scroll auf 0 - und der NÄCHSTE Poll (SMTC korrigiert sich
+    // von selbst) kehrte das wieder um: ein einzelner Ausreißer wurde so zu
+    // ZWEI sichtbaren Sprüngen. Trifft nur das PUBLIZIERTE m_title/m_artist;
+    // istNeuerTrack/die Positions-Bestätigung unten bleiben unverändert auf
+    // dem rohen `t` (ein spuriges istNeuerTrack=true bei einem Titel-Blip
+    // ist harmlos - es liefert höchstens kurz positionSec=-1, und der
+    // Aufrufer fällt dafür schon auf seine eigene Uhr zurück).
+    QString pendingTitle, pendingArtist;
+    QString publishedTitle, publishedArtist;
+
     while (m_running)
     {
         QString t, a;
@@ -280,7 +297,20 @@ void NowPlaying::threadFunc()
         prevTl    = tl;
         prevTitle = t;
 
-        { QMutexLocker l(&m_mutex); m_title = t; m_artist = a; m_timeline = tl; }
+        if( t == pendingTitle && a == pendingArtist )
+        {
+            publishedTitle  = t;
+            publishedArtist = a;
+        }
+        else
+        {
+            pendingTitle  = t;
+            pendingArtist = a;
+            // publishedTitle/publishedArtist stay at the last CONFIRMED
+            // value this poll -- see the declaration comment above.
+        }
+
+        { QMutexLocker l(&m_mutex); m_title = publishedTitle; m_artist = publishedArtist; m_timeline = tl; }
 
         // ~1 s poll, but wake every 100 ms so stop() is responsive.
         for (int i = 0; i < 10 && m_running; ++i)
