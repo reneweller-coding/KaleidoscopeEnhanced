@@ -23,6 +23,36 @@
 static const quint16 kDiscoveryPort  = 45677;
 static const char   *kDiscoveryMagic = "KALEIDO_DISCOVER_V1";
 
+/// Escapes a string for embedding inside a JSON double-quoted string literal
+/// (backslash, quote, and control characters). Every JSON string this file
+/// builds carries user-authored text at some remove (a preset's
+/// ConfigurationName, a scene's bare filename) via plain QString::arg()
+/// interpolation with no escaping of its own -- a name containing a `"`
+/// would otherwise break the whole response for every client (fetch()'s
+/// .json() throws, the Android app's JSONObject parse throws).
+static QString jsonEscape( const QString &s )
+{
+	QString out;
+	out.reserve( s.size() + 8 );
+	for( QChar c : s )
+	{
+		switch( c.unicode() )
+		{
+			case '"':  out += "\\\""; break;
+			case '\\': out += "\\\\"; break;
+			case '\n': out += "\\n";  break;
+			case '\r': out += "\\r";  break;
+			case '\t': out += "\\t";  break;
+			default:
+				if( c.unicode() < 0x20 )
+					out += QString( "\\u%1" ).arg( int(c.unicode()), 4, 16, QChar('0') );
+				else
+					out += c;
+		}
+	}
+	return out;
+}
+
 /**
  * @brief The single-page HTML/CSS/JS remote-control UI served for GET "/".
  *
@@ -188,6 +218,15 @@ void WebRemote::handleDiscovery()
 		if( buf != kDiscoveryMagic )
 			continue;   // stray traffic on the port - not our protocol
 
+		// Don't advertise an instance nobody could actually connect to: the
+		// app would auto-pick it (by identity, or as the sole result) and
+		// loop forever redialling a port that was never open. Silence here
+		// just makes this instance invisible to discovery, same as if its
+		// UDP reply never arrived at all -- the app's normal "none found"
+		// fallback (last known address / manual entry) takes over.
+		if( m_httpPort == 0 )
+			continue;
+
 		QString activeConfig;
 		const int active = m_widget->remoteActiveConfig();
 		const QStringList cfgs = m_widget->remoteConfigNames();
@@ -196,10 +235,10 @@ void WebRemote::handleDiscovery()
 
 		const QByteArray reply = QString(
 		    "{\"name\":\"%1\",\"port\":%2,\"pid\":\"%3\",\"config\":\"%4\"}" )
-		        .arg( QSysInfo::machineHostName() )
+		        .arg( jsonEscape( QSysInfo::machineHostName() ) )
 		        .arg( m_httpPort )
 		        .arg( QCoreApplication::applicationPid() )
-		        .arg( activeConfig ).toUtf8();
+		        .arg( jsonEscape( activeConfig ) ).toUtf8();
 		m_discoverySocket->writeDatagram( reply, sender, senderPort );
 	}
 }
@@ -241,7 +280,7 @@ void WebRemote::handleConnection()
 				{
 					QStringList cfgs;
 					for( const QString &n : m_widget->remoteConfigNames() )
-						cfgs << ("\"" + n + "\"");
+						cfgs << ("\"" + jsonEscape( n ) + "\"");
 					body = QString( "{\"reactivity\":%1,\"trails\":%2,\"mood\":%3,"
 					                "\"latency\":%4,\"lightShow\":%5,\"autoConfig\":%6,"
 					                "\"active\":%7,\"blackout\":%8,\"replayArmed\":%9,"
@@ -270,7 +309,7 @@ void WebRemote::handleConnection()
 				{
 					QStringList names;
 					for( const QString &n : m_widget->remoteSceneNames() )
-						names << ("\"" + n + "\"");
+						names << ("\"" + jsonEscape( n ) + "\"");
 					body = ("{\"scenes\":[" + names.join( "," ) + "]}").toUtf8();
 				}
 				else if( path == "/api/force" )

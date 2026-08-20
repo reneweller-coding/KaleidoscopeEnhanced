@@ -162,6 +162,32 @@ private:
 	void    runGenerator( float time );
 	int     m_genSpectro   = -1;  // cached: does the generator read texSpectro?
 
+	/**
+	 * @brief Cached uniform locations for m_genProg, so runGenerator() doesn't repeat ~18
+	 *        glGetUniformLocation string lookups (plus one per registered Uniform/expr) every
+	 *        frame -- the exact anti-pattern EffectShader::applyAudioFeatures's m_audioLocs
+	 *        cache already exists to avoid for the fragment-stage program.
+	 *
+	 * A SEPARATE cache from that one is required (not a reuse of m_exprs' own
+	 * ExprEntry::loc/progId fields): m_uniforms/m_exprs are inherited from EffectShader and are
+	 * ALSO resolved every frame against m_sh_prog_id by applyAudioFeatures() for the fragment
+	 * stage of this very scene, so a single shared progId-tagged cache slot per entry would
+	 * thrash between the two programs every frame (m_sh_prog_id, then m_genProg, then back) and
+	 * never actually hit.
+	 */
+	struct GenLocCache
+	{
+		GLuint progId       = 0;
+		GLint  time         = -1, sceneSeed    = -1, audioAdvance = -1, audioLevel   = -1;
+		GLint  audioBeat    = -1, audioKick    = -1, audioSubBass = -1, audioHigh    = -1;
+		GLint  audioBass    = -1, audioMid     = -1, audioChroma  = -1, audioSpectrum= -1;
+		GLint  texSpectro   = -1, spectroHead  = -1, spectroFill  = -1, maxVertices  = -1;
+		GLint  frameIndex   = -1, genPass      = -1;
+	};
+	GenLocCache m_genLocs;
+	std::vector<GLint> m_genUniformLocs; ///< Parallel to m_uniforms, resolved for m_genProg (refreshed alongside m_genLocs).
+	std::vector<GLint> m_genExprLocs;    ///< Parallel to m_exprs, resolved for m_genProg (refreshed alongside m_genLocs).
+
 	// ---- persistent generator state ----
 	// A buffer that SURVIVES between frames, bound at SSBO 2.  Every generator
 	// so far derives its whole output from the current frame's inputs, which is
