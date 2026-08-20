@@ -68,20 +68,27 @@ void main() {
     // Horizontal glitch block slices
     float sliceY = floor(uv.y * 25.0 * glt);
     float sliceNoise = hash21(vec2(sliceY, floor(t * 8.0)));
-    float isGlitchSlice = step(0.65, sliceNoise);
+    // audioHigh intensifies the glitch noise: more slices trip the threshold
+    // and the ones that do displace harder.  Both are gated by midTransition,
+    // which is zero at the fade endpoints — there the threshold is exactly 0.65
+    // again and every consumer of isGlitchSlice is itself multiplied by
+    // midTransition, so the frame is untouched.
+    float isGlitchSlice = step(0.65 - audioHigh * 0.18 * midTransition, sliceNoise);
 
     // Pixel sorting streak displacement based on luminance
     vec4 baseSample = mix(texture(tex1, uv), texture(tex0, uv), tProg);
     float lum = dot(baseSample.rgb, vec3(0.299, 0.587, 0.114));
 
     float streakOffset = (lum - 0.5) * 0.15 * str * midTransition * (1.0 + audioKick * 1.5);
-    streakOffset += isGlitchSlice * (sliceNoise - 0.5) * 0.08 * midTransition;
+    streakOffset += isGlitchSlice * (sliceNoise - 0.5) * 0.08 * midTransition * (1.0 + audioHigh * 0.9);
 
     vec2 warpUV = uv + vec2(streakOffset, 0.0);
 
-    // Chromatic aberration on glitch edges
-    vec2 rUV = warpUV - vec2(0.015 * midTransition, 0.0);
-    vec2 bUV = warpUV + vec2(0.015 * midTransition, 0.0);
+    // Chromatic aberration on glitch edges -- widened by audioHigh, still
+    // riding on midTransition so the split closes to zero at both endpoints.
+    float aberr = 0.015 * midTransition * (1.0 + audioHigh * 0.6);
+    vec2 rUV = warpUV - vec2(aberr, 0.0);
+    vec2 bUV = warpUV + vec2(aberr, 0.0);
 
     float r1 = texture(tex1, fract(rUV)).r;
     float g1 = texture(tex1, fract(warpUV)).g;

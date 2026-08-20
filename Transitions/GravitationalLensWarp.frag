@@ -69,8 +69,11 @@ void main() {
     float rSchwarzschild = 0.25 * midTransition * mss;
     float rPhotonRing = rSchwarzschild * 1.5;
 
-    // Relativistic gravitational deflection: r' = r - r_s^2 / r
-    float deflection = (rSchwarzschild * rSchwarzschild) / max(r * r, 0.001) * lns;
+    // Relativistic gravitational deflection: r' = r - r_s^2 / r.
+    // audioBass drives the deflection depth.  r_s is itself scaled by
+    // midTransition, so the deflection is exactly zero at both fade endpoints —
+    // and warpUV is blended in by midTransition there on top of that.
+    float deflection = (rSchwarzschild * rSchwarzschild) / max(r * r, 0.001) * lns * (1.0 + audioBass * 0.7);
     vec2 pLensed = p * (1.0 - deflection * 0.7);
     pLensed = rot2D(deflection * 1.2 + t * 0.3) * pLensed;
 

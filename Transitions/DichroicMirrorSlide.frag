@@ -72,8 +72,13 @@ void main() {
     float slidePos = mix(-1.2, 1.2, tProg);
     float distToMirror = proj - slidePos;
 
-    // Thin-film interference color on glass edge: lambda = 2 n d cos(theta)
-    vec3 dichroicReflect = 0.5 + 0.5 * cos(vec3(0.0, 2.0, 4.0) + distToMirror * 15.0 * dch + audioPhase);
+    // Thin-film interference color on glass edge: lambda = 2 n d cos(theta).
+    // audioBass undulates the film thickness d, which sets the fringe spacing.
+    // midTransition gates it, so at both fade endpoints the thickness is the
+    // un-driven one — and dichroicReflect only reaches the frame through the
+    // midTransition-gated glassEdge term anyway.
+    float filmThickness = 15.0 * dch * (1.0 + audioBass * 0.7 * midTransition);
+    vec3 dichroicReflect = 0.5 + 0.5 * cos(vec3(0.0, 2.0, 4.0) + distToMirror * filmThickness + audioPhase);
 
     // Glass refraction displacement
     float refrOffset = exp(-abs(distToMirror) * 10.0) * sign(distToMirror) * 0.03 * midTransition;

@@ -60,15 +60,24 @@ void main() {
     float tProg = clamp(interpolation, 0.0, 1.0);
     float midTransition = sin(tProg * 3.14159265);
 
-    // Multi-scale harmonic approximation of Turing reaction-diffusion
-    vec2 q = p * 15.0 * scl;
+    // Multi-scale harmonic approximation of Turing reaction-diffusion.
+    // audioBass undulates the morphogenesis spot/stripe scale.  It is a purely
+    // spatial factor on q -- the t terms inside the sines are untouched, so the
+    // pattern's drift rate stays audio-independent -- and midTransition
+    // restores the base scale exactly at both fade endpoints.
+    vec2 q = p * 15.0 * scl * (1.0 + audioBass * 0.35 * midTransition);
     float f1 = sin(q.x + sin(q.y * 1.5 + t));
     float f2 = sin(q.y + sin(q.x * 1.5 - t));
     float f3 = sin((q.x + q.y) * 0.707 * trn + t * 1.5);
     float turingPattern = (f1 + f2 + f3) / 3.0;
 
-    // Morphogenetic boundary mask
-    float mask = smoothstep(-0.2, 0.2, turingPattern + (tProg - 0.5) * 2.0);
+    // Morphogenetic boundary mask. turingPattern is the mean of three sines,
+    // so it spans exactly [-1, 1]; the old +-1.0 sweep therefore left an
+    // extreme pixel sitting at argument 0 -- the MIDDLE of the smoothstep band
+    // -- at the endpoints, resolving to a half-blend instead of fully to one
+    // scene. Sweeping +-1.3 pushes the whole pattern clear of the +-0.2 band at
+    // both ends, so the endpoints are exact for every scaleP.
+    float mask = smoothstep(-0.2, 0.2, turingPattern + (tProg - 0.5) * 2.6);
 
     // Chemical displacement
     vec2 chemDisp = vec2(f1 - f2, f3) * 0.02 * midTransition;

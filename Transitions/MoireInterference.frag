@@ -72,8 +72,14 @@ void main() {
     vec2 p1 = rot2D(rot1) * p;
     vec2 p2 = rot2D(rot2) * p;
 
-    float g1 = sin(p1.x * 60.0 * frq + t * 2.0);
-    float g2 = sin(p2.x * 60.0 * frq - t * 2.0);
+    // audioBass undulates the grating spatial frequency.  It multiplies the
+    // SPATIAL term only — the +/- t*2.0 phase is untouched, so the gratings'
+    // drift rate stays audio-independent.  midTransition restores the base
+    // frequency at both fade endpoints, where `blend` self-clamps to 0/1 and
+    // both the displacement and the fringe glow are multiplied out.
+    float gratingFreq = 60.0 * frq * (1.0 + audioBass * 0.35 * midTransition);
+    float g1 = sin(p1.x * gratingFreq + t * 2.0);
+    float g2 = sin(p2.x * gratingFreq - t * 2.0);
 
     // Moiré superlattice product: cos(k1 - k2)
     float moireWave = g1 * g2;

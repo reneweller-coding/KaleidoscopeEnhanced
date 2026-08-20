@@ -85,9 +85,14 @@ void main() {
         scale *= 2.0;
     }
 
-    // Staggered tile flip
+    // Staggered tile flip.  audioBass undulates the subdivision threshold, i.e.
+    // how far apart the tiles' flip times are spread.  The (tProg - d*s)/(1-s)
+    // form is written so the divisor tracks the threshold: it still self-clamps
+    // to exactly 0 at tProg = 0 and exactly 1 at tProg = 1 for any s < 1, and
+    // midTransition additionally returns s to its base 0.35 at both endpoints.
+    float subdivThreshold = 0.35 * (1.0 + audioBass * 0.5 * midTransition);
     float tileDelay = fract(tileSeed * 3.1415);
-    float tileProg = clamp((tProg - tileDelay * 0.35) / 0.65, 0.0, 1.0);
+    float tileProg = clamp((tProg - tileDelay * subdivThreshold) / (1.0 - subdivThreshold), 0.0, 1.0);
     tileProg = smoothstep(0.0, 1.0, tileProg);
 
     // Tile flip 3D illusion

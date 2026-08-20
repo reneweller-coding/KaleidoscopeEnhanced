@@ -73,8 +73,13 @@ void main() {
     float yNew = p.y * cos(angleYZ);
     float zNew = p.y * sin(angleYZ);
 
-    // 4D perspective projection back to 2D: (x, y) / (2 - w)
-    float d4D = max(1.8 - wNew * 0.5, 0.4);
+    // 4D perspective projection back to 2D: (x, y) / (2 - w).
+    // audioBass undulates the hyper-volume projection perspective -- how hard
+    // the 4th coordinate w foreshortens.  midTransition gates it back to the
+    // base 0.5 at both fade endpoints, and warpUV is blended in by
+    // midTransition there as well, so the frame is exactly tex0 / tex1.
+    float perspW = 0.5 * (1.0 + audioBass * 0.75 * midTransition);
+    float d4D = max(1.8 - wNew * perspW, 0.4);
     vec2 pProj = vec2(xNew, yNew) / d4D;
 
     vec2 warpUV = (pProj * resolution.y + 0.5 * resolution) / resolution;

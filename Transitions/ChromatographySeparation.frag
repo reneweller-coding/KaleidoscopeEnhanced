@@ -70,9 +70,17 @@ void main() {
     float rf_G = 0.65 * rtd;
     float rf_B = 0.4 * rtd;
 
-    float rDisp = max(0.0, solventFront * rf_R - p.y) * 0.04 * midTransition;
-    float gDisp = max(0.0, solventFront * rf_G - p.y) * 0.04 * midTransition;
-    float bDisp = max(0.0, solventFront * rf_B - p.y) * 0.04 * midTransition;
+    // Capillary paper fibre texture: fine vertical striations in the sheet that
+    // deflect the climbing pigment bands.  audioBass undulates how pronounced
+    // the weave is.  The whole term is multiplied by midTransition, so it is
+    // exactly zero at both fade endpoints and cannot shift the solvent front,
+    // the wipe mask, or the sampled UVs there.
+    float fibre = sin(p.x * 85.0 + sin(p.y * 5.0 + t * 0.7) * 1.6);
+    float fibreDisp = fibre * 0.006 * (1.0 + audioBass * 0.8) * midTransition;
+
+    float rDisp = max(0.0, solventFront * rf_R - p.y) * 0.04 * midTransition + fibreDisp;
+    float gDisp = max(0.0, solventFront * rf_G - p.y) * 0.04 * midTransition + fibreDisp;
+    float bDisp = max(0.0, solventFront * rf_B - p.y) * 0.04 * midTransition + fibreDisp;
 
     float r1 = texture(tex1, fract(uv + vec2(0.0, rDisp))).r;
     float g1 = texture(tex1, fract(uv + vec2(0.0, gDisp))).g;

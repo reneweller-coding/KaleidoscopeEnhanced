@@ -72,13 +72,19 @@ void main() {
 
     vec2 q = rot2D(tProg * 1.5 + t * 0.2) * p;
 
+    // audioBass undulates the pentagonal tiling inflation scale.  It scales the
+    // spatial projection only (the rotation's t term is untouched), and
+    // midTransition gates it, so at tProg 0 and 1 the pentagrid -- and with it
+    // the staggered tileProg and the grid glow -- is exactly the un-driven one.
+    float inflate = fld * (1.0 + audioBass * 0.3 * midTransition);
+
     for (int i = 0; i < 5; ++i) {
         float theta = float(i) * angle5;
         vec2 dir = vec2(cos(theta), sin(theta));
         float proj = dot(q, dir);
-        float gridLine = abs(fract(proj * fld) - 0.5);
+        float gridLine = abs(fract(proj * inflate) - 0.5);
         edgeMin = min(edgeMin, gridLine);
-        tileIndex += floor(proj * fld);
+        tileIndex += floor(proj * inflate);
     }
 
     // Tile-based staggered transition delay

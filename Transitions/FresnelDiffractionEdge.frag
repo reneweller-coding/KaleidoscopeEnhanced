@@ -64,11 +64,19 @@ void main() {
     float edgePos = mix(-1.2, 1.2, tProg);
     float v = (p.x - edgePos) * 20.0 * edg; // Dimensionless Fresnel parameter
 
+    // audioBass undulates the Fresnel zone distance, i.e. the spacing of the
+    // diffraction zones inside the fringe term.  It is deliberately kept OUT of
+    // v itself, which is the knife-edge coordinate driving the wipe mask.
+    // midTransition returns it to exactly 1.0 at both fade endpoints, and
+    // fresnelIntensity only reaches the frame through the midTransition-gated
+    // diffDisp below.
+    float zoneDist = 1.0 + audioBass * 0.6 * midTransition;
+
     // Analytical approximation of straight-edge Fresnel diffraction intensity
     float fresnelIntensity;
     if (v > 0.0) {
         // Illuminated region: decaying oscillations
-        fresnelIntensity = 1.0 + (sin(0.5 * 3.14159265 * v * v) / (3.14159265 * v + 1e-3)) * frg;
+        fresnelIntensity = 1.0 + (sin(0.5 * 3.14159265 * v * v * zoneDist) / (3.14159265 * v + 1e-3)) * frg;
     } else {
         // Geometrical shadow: exponential decay
         fresnelIntensity = exp(v * 2.0) * 0.25;
