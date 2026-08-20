@@ -314,6 +314,11 @@ void PresentPass::setArtistImage( const void *rgba, int w, int h )
 	uploadRGBA( m_artistTex, rgba, w, h );
 }
 
+void PresentPass::setArtistExternalTexture( GLuint texId )
+{
+	m_artistExternalTex = texId;
+}
+
 // Frisch gerenderten Titel hochladen; Reveal-Uhr auf 0 (Stil/Seed setzt der
 // Aufrufer separat - die Musik-Zuordnung der Stile bleibt seine Sache).
 void PresentPass::setTitleImage( const void *rgba, int w, int h )
@@ -543,12 +548,16 @@ void PresentPass::run( const Inputs &in )
 	}
 	if( m_presentArtistAlphaUni >= 0 )
 	{
-		float aa = ( m_artistTex != 0 ) ? in.artistAlpha : 0.f;
+		// The music-video PiP override takes priority when active (see
+		// setArtistExternalTexture()) -- same corner slot, "instead of" the
+		// photo rotation, not alongside it.
+		const GLuint artistTexToUse = m_artistExternalTex ? m_artistExternalTex : m_artistTex;
+		float aa = ( artistTexToUse != 0 ) ? in.artistAlpha : 0.f;
 		glUniform1f( m_presentArtistAlphaUni, aa );
 		if( aa > 0.001f && m_presentArtistTexUni >= 0 )
 		{
 			glActiveTexture( GL_TEXTURE4 );
-			glBindTexture( GL_TEXTURE_2D, m_artistTex );
+			glBindTexture( GL_TEXTURE_2D, artistTexToUse );
 			glUniform1i( m_presentArtistTexUni, 4 );
 			glActiveTexture( GL_TEXTURE0 );
 			if( m_presentArtistAspectUni >= 0 ) glUniform1f( m_presentArtistAspectUni, in.artistAspect );

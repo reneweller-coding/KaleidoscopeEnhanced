@@ -1,6 +1,6 @@
 /**
  * @file TrackMedia.h
- * @brief Optional internet extras for the currently-playing track: chained multi-source lyrics fetching (rendered to a texture) and deduplicated artist-photo downloads, both disk-cached and polled asynchronously from the GL widget.
+ * @brief Optional internet extras for the currently-playing track: chained multi-source lyrics fetching (rendered to a texture), deduplicated artist-photo downloads, and an official-music-video search+download (via yt-dlp), all disk-cached and polled asynchronously from the GL widget.
  */
 #pragma once
 
@@ -18,13 +18,23 @@
 //    TheAudioDB (echte Band-Fotos: Thumb + Fanarts, freier Test-Key)
 //    iTunes Search (weitere Album-Cover, auf 600px hochskalierte URLs)
 //
+//  MUSIKVIDEO (optional, braucht yt-dlp auf PATH) - für Songs unter
+//  kVideoMaxDurationSec: sucht per yt-dlp-Suche nach dem OFFIZIELLEN
+//  Musikvideo (Text-/Kanal-Heuristik + Längenabgleich, siehe
+//  scoreCandidate()), lädt es herunter und übernimmt danach denselben
+//  Künstlerbild-Eck-Slot (GLwidget spielt es via Source/VideoPiP synchron
+//  zur echten Song-Position ab). Fehlt yt-dlp, degradiert das Feature still
+//  (kein Absturz, einfach keine Videos) - siehe m_ytdlpProc/errorOccurred.
+//
 //  CACHE - alles landet neben den Configurations unter ..\cache\:
 //    cache\lyrics\<md5>.json      (auch "nicht gefunden", TTL 7 Tage)
 //    cache\artist\<md5>\NN.jpg    (Bilder; lazy von Platte dekodiert)
+//    cache\video\<md5>\video.mp4  (oder negative.json, TTL 14 Tage)
 //  Ein erneut gespielter Track kommt damit komplett ohne Netz aus.
 //
-// Alles asynchron über QNetworkAccessManager auf dem Qt-Hauptthread;
-// GLwidget pollt die Ergebnisse pro Frame.  Fehler degradieren still.
+// Lyrics/Bilder laufen asynchron über QNetworkAccessManager, das Musikvideo
+// über QProcess (yt-dlp) - beides auf dem Qt-Hauptthread; GLwidget pollt die
+// Ergebnisse pro Frame. Fehler degradieren in jedem Zweig still.
 
 #include <QtCore/QString>
 #include <QtCore/QStringList>
@@ -33,16 +43,21 @@
 
 class QNetworkAccessManager;
 class QNetworkReply;
+class QProcess;
 
 /**
- * @brief Fetches, caches, and renders optional online extras (synced/plain lyrics, artist photos) for the currently-playing track.
+ * @brief Fetches, caches, and renders optional online extras (synced/plain lyrics, artist photos, an official music video) for the currently-playing track.
  *
- * On requestTrack() it kicks off two independent async chains over
- * QNetworkAccessManager: a lyrics chain that tries a disk cache then falls
+ * On requestTrack() it kicks off up to three independent async chains: a
+ * lyrics chain (QNetworkAccessManager) that tries a disk cache then falls
  * through LRCLIB (get, then search) -> NetEase -> lyrics.ovh until one
- * source returns text, and an artist-image chain that queries Deezer,
- * TheAudioDB and iTunes Search in parallel (deduplicated by URL, throttled
- * to kParallelDownloads concurrent downloads, capped at kMaxImages).
+ * source returns text, an artist-image chain (also QNetworkAccessManager)
+ * that queries Deezer, TheAudioDB and iTunes Search in parallel
+ * (deduplicated by URL, throttled to kParallelDownloads concurrent
+ * downloads, capped at kMaxImages), and -- for tracks under
+ * kVideoMaxDurationSec, when a duration is passed in -- a music-video chain
+ * (QProcess, shelling out to yt-dlp) that searches YouTube, scores the
+ * candidates, and downloads the best-scoring one.
  * Synced lyrics are parsed into timestamped LyricLine entries and rendered
  * into one tall transparent QImage (lyricsImage()) for GPU upload; artist
  * images are cached as JPEGs on disk under "..\\cache\\artist\\<md5>\\" and
@@ -75,7 +90,16 @@ public:
 	 * reload) and both the lyrics and artist-image fetch chains restart
 	 * from cache.
 	 */
-	void requestTrack( const QString &artist, const QString &title );
+	/**
+	 * @brief Requests lyrics + artist images (+ an optional music video) for a (possibly new) track; call on every track change.
+	 * @param artist Artist name.
+	 * @param title Track title.
+	 * @param durationSec The track's known duration in seconds, or <=0 if not (yet) known. Gates the
+	 *        music-video search: only attempted for tracks under kVideoMaxDurationSec, and skipped
+	 *        entirely (not just deferred) when the duration is unknown at call time, since guessing
+	 *        wrong here means silently downloading something the user didn't ask for.
+	 */
+	void requestTrack( const QString &artist, const QString &title, double durationSec = -1.0 );
 
 	// ---- Lyrics ----
 	/**
@@ -110,6 +134,14 @@ public:
 	 */
 	QImage imageAt( int i ) const;
 	int    imagesRevision() const { return m_imagesRevision; }   ///< Increments each time a new artist image finishes downloading and is added to m_imagePaths.
+
+	// ---- Musikvideo (optional, via yt-dlp) ----
+	/** Tracks longer than this are never searched for a video -- picked
+	 *  because the request explicitly framed it as "songs, not DJ sets". */
+	static const int kVideoMaxDurationSec = 20 * 60;
+	bool    videoReady()    const { return !m_videoPath.isEmpty(); }   ///< True once a cached music video is ready to play for the CURRENT track (from disk cache or a finished download).
+	QString videoPath()     const { return m_videoPath; }   ///< Absolute path to the cached mp4, or empty if none is ready.
+	int     videoRevision() const { return m_videoRevision; }   ///< Increments whenever videoPath() changes for the current track (cache hit, or a background download just finished); consumers use it to notice new content the same way as lyricsRevision()/imagesRevision().
 
 private:
 	// Lyrics-Quellen-Kette
@@ -178,6 +210,25 @@ private:
 	QString lyricsCachePath() const;
 	/** @brief Path to this artist's image cache directory, keyed by the MD5 of the lower-cased artist name. @return Cache directory path under "..\\cache\\artist\\". */
 	QString artistCacheDir()  const;
+
+	// Musikvideo
+	/** @brief Path to this track's video cache directory, keyed by the MD5 of m_key. @return Cache directory path under "..\\cache\\video\\". */
+	QString videoCacheDir() const;
+	/**
+	 * @brief Entry point of the video search: checks the on-disk cache (a ready video, or a still-valid negative marker) before shelling out to yt-dlp.
+	 * @param durationSec The requesting call's known track duration, already gated (>0 and <= kVideoMaxDurationSec) by the caller.
+	 */
+	void    videoFromCacheOrNet( double durationSec );
+	/** @brief One candidate returned by the yt-dlp search step, before scoring. */
+	struct VideoCandidate { QString id, title, channel; double duration = 0.0; };
+	/** @brief Shells out to `yt-dlp ytsearchN:...` (no download, just metadata) for up to kVideoSearchCount candidates; parses its stdout on completion and picks a candidate via scoreCandidate(), then either starts the download or gives up (writing a negative cache entry). */
+	void    startVideoSearch();
+	/** @brief Scores one search candidate against the target duration and "does this look like the OFFICIAL music video" text signals in its title/channel. @return A score where higher is better; callers reject anything <= 0. */
+	static double scoreCandidate( const VideoCandidate &c, const QString &artist, double targetDurationSec );
+	/** @brief Shells out to `yt-dlp <watch-url> -f ...` to download the chosen candidate into a temp file in videoCacheDir(), then atomically renames it to video.mp4 on success. */
+	void    startVideoDownload( const QString &videoId );
+	/** @brief Writes a timestamped "no acceptable video found" marker so repeated plays of the same track don't re-search every time (see kVideoNegCacheTtlSec). */
+	void    writeVideoNegativeCache();
 	/**
 	 * @brief Writes (or overwrites) the lyrics cache JSON for the current track.
 	 * @param synced Synced lyrics text to persist (may be empty).
@@ -205,4 +256,20 @@ private:
 	int         m_nextImageNr     = 0;    // Dateinummer im Cache-Ordner   ///< Next zero-padded filename number to use when writing a downloaded image into the artist cache dir.
 	mutable int    m_decodedIdx = -1;     // Mini-LRU für imageAt()   ///< Index currently held in the one-slot decode cache (-1 = empty); mutable because imageAt() is const.
 	mutable QImage m_decoded;   ///< The single decoded QImage cached by imageAt() for m_decodedIdx; mutable for the same reason.
+
+	// Musikvideo: at most ONE yt-dlp process (search or download) in flight
+	// at a time, process-wide -- if a track change comes in while one is
+	// already running for a DIFFERENT track, the new track's video is simply
+	// skipped for this play-through (a later replay retries from scratch).
+	// Keeps process lifetime management simple; lyrics/artist-images don't
+	// need this because QNetworkAccessManager already handles many
+	// concurrent requests safely, but a single QProcess member can't.
+	static const int kVideoSearchCount = 8;      ///< Candidates requested from yt-dlp's search step.
+	static const qint64 kVideoNegCacheTtlSec = 14 * 24 * 3600;   ///< TTL for a "no acceptable video found" cache entry.
+	QString  m_videoPath;         ///< Absolute path to the ready cached video for the CURRENT track, or empty.
+	int      m_videoRevision = 0;   ///< Bumped whenever m_videoPath changes for the current track.
+	double   m_videoDurationSec = -1.0;   ///< The current track's duration, captured at requestTrack() time, used to score search candidates.
+	QString  m_videoKeyAtRequest;   ///< m_key snapshot when the in-flight search/download started; a result is discarded (not applied) if m_key has since moved on to a different track.
+	QProcess *m_ytdlpProc = nullptr;   ///< The in-flight yt-dlp search-or-download process, if any (see the class comment above).
+	bool     m_ytdlpUpdateTried = false;   ///< One-shot: fires a best-effort background `yt-dlp -U` the first time this run actually needs the video feature (YouTube's extraction breaks on a stale yt-dlp often enough that silent staleness would otherwise slowly kill this feature).
 };

@@ -32,6 +32,7 @@
 #include "SpoutOut.h"    // global facades, released once in ~GLwidget
 #include "SpoutIn.h"
 #include "VideoIn.h"
+#include "VideoPiP.h"
 
  #ifndef GL_MULTISAMPLE
  #define GL_MULTISAMPLE  0x809D
@@ -308,6 +309,7 @@ GLwidget::~GLwidget()
 	spoutOutRelease();
 	spoutInRelease();
 	videoInRelease();
+	videoPipRelease();
 	// Keep the context current across the Configuration deletes too: each
 	// ~RenderPipeline runs cleanTextures()/cleanShaderPrograms() (glDelete*), which
 	// need a current GL context — otherwise those deletes are silently dropped
@@ -395,7 +397,9 @@ void GLwidget::initializeGL()
 				QByteArray md = qgetenv( "KALEIDO_LYRICS_MODE" );
 				m_lyricsMode = md.isEmpty() ? 2 : qBound( 0, md.toInt(), 2 );
 				m_trackStartMs = 0;
-				m_trackMedia->requestTrack( parts[0], parts[1] );
+				QByteArray durEnv = qgetenv( "KALEIDO_VIDEO_TEST_DURATION" );
+				double dur = durEnv.isEmpty() ? -1.0 : durEnv.toDouble();
+				m_trackMedia->requestTrack( parts[0], parts[1], dur );
 				fprintf( stderr, "[Lyrics] TESTMODUS: %s - %s (Modus %d)\n",
 				         parts[0].toLocal8Bit().constData(),
 				         parts[1].toLocal8Bit().constData(), m_lyricsMode );
@@ -621,7 +625,15 @@ void GLwidget::draw()
 			m_lineChangeMs = -1;
 			if( m_trackMedia && !m_lyricsTest
 			    && ( m_lyricsMode > 0 || m_artistShow ) )
-				m_trackMedia->requestTrack( m_nowPlaying->artist(), npTitle );
+			{
+				// Music-video search only makes sense (and is only worth the
+				// download) when the artist-image corner is actually shown --
+				// that's the slot it takes over. Passing <=0 when it's off
+				// makes requestTrack() skip the video gate entirely (see
+				// TrackMedia.h), no separate flag needed there.
+				const double durSec = m_artistShow ? m_nowPlaying->timeline().durationSec : -1.0;
+				m_trackMedia->requestTrack( m_nowPlaying->artist(), npTitle, durSec );
+			}
 		}
 	}
 
@@ -1601,7 +1613,9 @@ void GLwidget::updateTrackOverlays( RenderPipeline *fs )
 	}
 
 	// ---- Künstlerbilder: Rotation, alle ~45 s für ~14 s eingeblendet ----
-	bool artistOn = m_artistShow && m_trackMedia->imageCount() > 0;
+	// (weicht dem Musikvideo-PiP unten, falls für den Song eins bereit ist —
+	// gleicher Eck-Slot, siehe setArtistExternalTexture()).
+	bool artistOn = m_artistShow && !m_trackMedia->videoReady() && m_trackMedia->imageCount() > 0;
 	float artistTarget = 0.f;
 	if( artistOn )
 	{
@@ -1654,6 +1668,62 @@ void GLwidget::updateTrackOverlays( RenderPipeline *fs )
 		const QImage &img = m_trackMedia->imageAt( m_artistIdxUploaded );
 		o.artistAlpha  = m_artistAlphaSm * 0.9f;
 		o.artistAspect = float(img.width()) / float(std::max( img.height(), 1 ));
+	}
+
+	// ---- Musikvideo-PiP: übernimmt dieselbe Ecke, sobald TrackMedia ein
+	// gecachtes Video für den laufenden Song bereit hat (siehe TrackMedia::
+	// requestTrack()'s Download-Kette). Läuft per Seek synchron zur echten
+	// Song-Position statt einer eigenen Uhr — ein Video, das kürzer ist als
+	// der Song, loopt einfach (siehe VideoPiP::videoPipLoad()'s Infinite-
+	// Loop-Setting) und bleibt trotzdem an der richtigen Stelle.
+	bool videoOn = m_artistShow && m_trackMedia->videoReady();
+	if( videoOn )
+	{
+		if( m_trackMedia->videoPath() != m_videoPathLoaded )
+		{
+			videoPipLoad( m_trackMedia->videoPath().toLocal8Bit().constData() );
+			m_videoPathLoaded = m_trackMedia->videoPath();
+		}
+		// `pos` (computed above: SMTC position if available, PLL-smoothed,
+		// else the local test-mode clock) is already the SAME authoritative
+		// position the lyrics scroll/karaoke highlight are synced to -- reuse
+		// it here too instead of re-querying NowPlaying directly, so the
+		// video and the lyrics can never disagree about "where we are", and
+		// KALEIDO_LYRICS_TEST's local clock fallback works for video sync too.
+		// 400ms tolerance: don't hard-seek on every tiny position nudge (same
+		// lesson as the lyrics scroll above) -- only a real jump snaps it.
+		videoPipSeek( (long long)( pos * 1000.0 ), 400 );
+		const bool songIsPlaying = m_lyricsTest
+		                         || ( m_nowPlaying && m_nowPlaying->timeline().playing );
+		videoPipSetPlaying( songIsPlaying );
+	}
+	else if( !m_videoPathLoaded.isEmpty() )
+	{
+		videoPipRelease();
+		m_videoPathLoaded.clear();
+	}
+	// Nur der Einblend-Ramp ist geglättet; das Ausblenden ist absichtlich
+	// hart (kein slew auf dem Lesezugriff unten) — sobald videoOn false wird,
+	// löscht videoPipRelease() gerade dessen GL-Textur, ein weiches Ausfaden
+	// würde also eine bereits gelöschte Textur zu binden versuchen.
+	m_videoAlphaSm = slew( m_videoAlphaSm, videoOn ? 1.f : 0.f, 1.2f, dt );
+	if( videoOn && m_videoAlphaSm > 0.001f )
+	{
+		unsigned int vw = 0, vh = 0;
+		const unsigned int vtex = videoPipFrame( &vw, &vh );
+		if( vtex != 0 )
+		{
+			fs->setArtistExternalTexture( vtex );
+			o.artistAlpha  = m_videoAlphaSm * 0.9f;
+			o.artistAspect = ( vh > 0 ) ? float(vw) / float(vh) : 16.f / 9.f;
+		}
+		// vtex==0: decoder hasn't produced a frame yet (just loaded) -- leave
+		// whatever the artist-image block above wrote (or nothing) in place
+		// for this one frame rather than flashing an empty corner.
+	}
+	else
+	{
+		fs->setArtistExternalTexture( 0 );   // clears any stale override
 	}
 
 	fs->setOverlayFrame( o );
