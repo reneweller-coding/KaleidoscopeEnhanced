@@ -853,18 +853,6 @@ void RenderPipeline::paint(const float *rotMatrix, float tx, float ty, float tz,
     // Guard against zero to avoid division-by-zero below.
     if (m_timingScale < 0.05f) m_timingScale = 0.05f;
 
-	// -------------------------
-	// ----- render pass 1 -----
-	// -------------------------
-
-	/*glBindTexture( GL_TEXTURE_2D, 0 );
-	glBindFramebuffer( GL_FRAMEBUFFER, m_fbo );
-	//glBindFramebuffer( GL_FRAMEBUFFER, 0 );
-	glViewport( 0, 0, m_width, m_height );
-	glUseProgram( 0 );
-	drawScene( rotMatrix, tx, ty, tz );
-	glBindFramebuffer( GL_FRAMEBUFFER, m_defaultFBO );
-	checkFramebufferStatus();*/
 	float timeSinceLastFrame = m_nanotimer.elapsed();
 	//if( timeSinceLastFrame > 20.0 )
 	//printf( "%f\n", timeSinceLastFrame );
@@ -1367,8 +1355,6 @@ void RenderPipeline::paint(const float *rotMatrix, float tx, float ty, float tz,
 	//Do the FBO Stuff
 	glBindFramebuffer( GL_FRAMEBUFFER, m_fboEffectFx1 );
 
-    //glFramebufferCombine2DEXT( GL_FRAMEBUFFER, m_attachmentpoint, GL_Combine_2D, m_texIDFBOEffectFx1, 0);
-
 	if( m_trueStereoNow )
 	{
 		// True stereo: the eye-packed 3D frame passes through UNTOUCHED (any
@@ -1427,14 +1413,6 @@ void RenderPipeline::paint(const float *rotMatrix, float tx, float ty, float tz,
 
 	checkGLErrors("createFx() 1");
 
-
-    /*glFramebufferCombine2DEXT( GL_FRAMEBUFFER, m_attachmentpoint, GL_Combine_2D, m_texIDFBOEffectFx2, 0);
-
-	m_effectFx[m_scheduler.nextFx()]->enableShader();
-	m_effectFx[m_scheduler.nextFx()]->setUniforms( m_globaltime, m_interpolationFx );
-	m_effectFx[m_scheduler.nextFx()]->draw();*/
-
-
 	//Now Use Final Rendering
 	glBindFramebuffer( GL_FRAMEBUFFER, m_defaultFBO );
 	checkFramebufferStatus();
@@ -1468,23 +1446,12 @@ void RenderPipeline::paint(const float *rotMatrix, float tx, float ty, float tz,
 	glViewport( 0, 0, m_width, m_height );
 
 
-	//rwrw
-	//glUniform1i( m_texPointFxUni1, 3 );		// texture Unit 0, nicht mit texId verwechseln
-	//glUniform1i( m_texPointFxUni2, 4 );		// texture Unit 0, nicht mit texId verwechseln
 	glUniform1i( m_texPointFxUni1, 5 );		// texture Unit 0, nicht mit texId verwechseln
 	glUniform1i( m_texPointFxUni2, 6 );		// texture Unit 0, nicht mit texId verwechseln
 	glUniform2f( m_texSizeRcpFxUni, (float) m_width, (float) m_height );
     glUniform1f( m_interpolationFxUni, m_scheduler.fxInterp() );
 	glUniform1f( m_timeFxUni, m_globaltime );
 
-
-
-	//rwrw
-	/*glActiveTexture(GL_TEXTURE3);
-	glBindTexture( GL_TEXTURE_2D, m_texIDFBOEffectTexture1 );
-	
-	glActiveTexture(GL_TEXTURE4);
-	glBindTexture( GL_TEXTURE_2D, m_texIDFBOEffectTexture2 );*/
 
 
 	glActiveTexture(GL_TEXTURE5);
@@ -2293,6 +2260,27 @@ QImage RenderPipeline::fallbackImage()
 	return img;
 }
 
+// Robustness: a corrupt/unreadable photo (bad JPEG, a file caught mid-copy,
+// a dropped network share) makes QImage's load fail and return a null 0x0
+// image. prepareImage() would then hand back a null image too (scaled() on
+// null stays null), and setupTexture() relies on ALWAYS getting a real
+// 1024x1024 image on the first two uploads to size the GL texture storage
+// correctly for every later glTexSubImage2D reuse -- a null image there
+// permanently breaks the photo texture (0x0 storage, GL_INVALID_VALUE from
+// then on). Load through here instead of a bare QImage(path) wherever the
+// result feeds setupTexture()/prepareImage().
+static QImage loadImageOrFallback( const QString &path )
+{
+	QImage img( path );
+	if( img.isNull() )
+	{
+		fprintf( stderr, "WARNING: unreadable image '%s' - using the "
+		                 "procedural fallback for this slot.\n", qPrintable( path ) );
+		img = RenderPipeline::fallbackImage();
+	}
+	return img;
+}
+
 void RenderPipeline::createTexture()
 {
 	checkGLErrors("createTextures() 0");
@@ -2314,13 +2302,13 @@ void RenderPipeline::createTexture()
 	//m_imageListIterator++;
     if(m_imageListIterator == m_imageList.end() )
         m_imageListIterator = m_imageList.begin();
-    setupTexture( m_actTex, prepareImage( QImage( (*m_imageListIterator) ) ) );
+    setupTexture( m_actTex, prepareImage( loadImageOrFallback( *m_imageListIterator ) ) );
     printf( "%s\n", qPrintable((*m_imageListIterator)) );
 
 	m_imageListIterator++;
     if(m_imageListIterator == m_imageList.end() )
         m_imageListIterator = m_imageList.begin();
-    setupTexture( m_nextTex, prepareImage( QImage( (*m_imageListIterator) ) ) );
+    setupTexture( m_nextTex, prepareImage( loadImageOrFallback( *m_imageListIterator ) ) );
     printf( "%s\n", qPrintable((*m_imageListIterator)) );
 
 	/*m_imageListIterator++;
@@ -2507,11 +2495,14 @@ void RenderPipeline::initGLSL()
  */
 void RenderPipeline::checkGLErrors( const char *label )
 {
-	return;//rwrwtest profiling
-	// WHY this early return: glGetError() can force a GPU/driver sync, and this
-	// function is called from dozens of sites every frame, so the check below
-	// is disabled for normal runs (label "profiling").  Remove the line above
-	// to re-enable GL error diagnostics while debugging.
+	// glGetError() can force a GPU/driver sync, and this is called from
+	// dozens of sites every frame, so it is a no-op unless explicitly asked
+	// for (KALEIDO_GL_DEBUG=1) -- e.g. while chasing exactly the kind of
+	// silent failure a disabled check would otherwise hide (a null texture
+	// upload, an unlinked shader program bound anyway, ...).
+	static const bool enabled = qEnvironmentVariableIsSet( "KALEIDO_GL_DEBUG" );
+	if( !enabled )
+		return;
 
     GLenum errCode = glGetError();
     if ( errCode == GL_NO_ERROR )
@@ -2530,10 +2521,10 @@ void RenderPipeline::checkGLErrors( const char *label )
  */
 bool RenderPipeline::checkFramebufferStatus(void)
 {
-	return true; //rwrwtest profiling
-	// WHY this early return: like checkGLErrors(), disabled for normal runs
-	// (label "profiling"); the switch below is only exercised if this guard
-	// is removed while debugging an incomplete-FBO problem.
+	// Same KALEIDO_GL_DEBUG gate as checkGLErrors() -- see there for why.
+	static const bool enabled = qEnvironmentVariableIsSet( "KALEIDO_GL_DEBUG" );
+	if( !enabled )
+		return true;
 
     GLenum status;
     status = (GLenum) glCheckFramebufferStatus(GL_FRAMEBUFFER);
@@ -2679,7 +2670,7 @@ void ImageLoader::run()
 			}
 			m_shader->m_imageListIterator = m_shader->m_imageList.begin() + bestIdx;
 
-            m_shader->m_nextImage = prepareImage( QImage( (*m_shader->m_imageListIterator)  ) );
+            m_shader->m_nextImage = prepareImage( loadImageOrFallback( *m_shader->m_imageListIterator ) );
 			printf("%s\n", qPrintable((*m_shader->m_imageListIterator)));
             m_shader->m_triggerImageload = false;
 

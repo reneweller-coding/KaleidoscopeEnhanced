@@ -377,8 +377,19 @@ void EffectShader::applyAudioFeatures(const AudioFeatures &f)
         for (int i = 0; i < AL_COUNT; ++i)
             m_audioLocs.L[i] = glGetUniformLocation(m_sh_prog_id, kAudioLocNames[i]);
         m_audioLocs.progId = m_sh_prog_id;
+
+        m_powerUniform = nullptr;
+        for (Uniform *u : m_uniforms)
+            if (u->getName() == "power") { m_powerUniform = u; break; }
     }
     const GLint *L = m_audioLocs.L;
+
+    // Live-modulate this scene's own "power" (superellipse/fold exponent)
+    // with the beat/ambient-driven powerScale -- safe because it is a plain
+    // per-frame shape parameter, not integrated over time like speed/
+    // speedTunnel (see the big comment above on why those stay untouched).
+    if (m_powerUniform)
+        m_powerUniform->setGLValueScaled(f.powerScale);
 
     if (L[AL_KICK]     >= 0) glUniform1f(L[AL_KICK],     f.onsetKick);
     if (L[AL_SNARE]    >= 0) glUniform1f(L[AL_SNARE],    f.onsetSnare);

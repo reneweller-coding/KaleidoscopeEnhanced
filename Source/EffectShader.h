@@ -534,6 +534,17 @@ protected:
 	struct AudioLocCache { GLuint progId = 0; GLint L[96]; };
 	AudioLocCache m_audioLocs; ///< applyAudioFeatures()'s location cache; auto-refreshes when m_sh_prog_id changes (recompile/hot reload).
 
+	/// A scene's own "power" uniform (superellipse/distortion exponent, e.g.
+	/// Kaleidoscope.frag/DarkAmbientTunnel.frag's polar fold shape) is a plain
+	/// per-frame value with no time-integrated state, so -- unlike speed/
+	/// speedTunnel (see applyAudioFeatures()'s big comment on why those are
+	/// NOT touched here) -- it is safe to modulate live: re-scaled by
+	/// AudioFeatures::powerScale every frame via Uniform::setGLValueScaled(),
+	/// on top of whatever value that scene's own <float name="power"> range
+	/// rolled for this activation. Resolved by name alongside the AL_* cache
+	/// above (nullptr if this program has no "power" uniform).
+	Uniform *m_powerUniform = nullptr;
+
 	// Formula-layer expressions (uniform name -> compiled program).
 	/// One compiled formula-layer expression bound to a target uniform name.
 	struct ExprEntry

@@ -1049,17 +1049,6 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
     // via the autocorrelation tempo too); here we just decay the pulse.
     m_downbeatPulse = std::max(m_downbeatPulse * 0.92f, 0.f);
 
-    float beatSpeed = 1.f + m_beatPulse;
-
-    // Spectral flux is not yet computed here, so we use the previous m_sFlux.
-    // This is fine since flux is smoothed and the one-frame lag is imperceptible.
-    float fluxContrib = std::min(m_sFlux / 0.15f, 1.f);
-    float ambientSpd  = 0.1f + fluxContrib * 2.0f + level * 0.5f;
-
-    float speedScale = beatSpeed * (1.f - m_ambientFactor)
-                     + ambientSpd * m_ambientFactor;
-    speedScale = std::max(speedScale, 0.05f);
-
     // ---- Power (distortion) scale ----
     float powerScale = (1.f + high * 2.f)    * (1.f - m_ambientFactor)
                      + (1.f + level * 0.5f)  * m_ambientFactor;
@@ -2085,7 +2074,6 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
     m_features.beatStrength   = beatStr;
     m_features.beatDecay      = beatDecay;
     m_features.ambientFactor  = m_ambientFactor;
-    m_features.speedScale     = speedScale;
     m_features.powerScale     = powerScale;
     m_features.beatSidesHint  = beatSidesHint;
     m_features.audioFlip      = audioFlip;
