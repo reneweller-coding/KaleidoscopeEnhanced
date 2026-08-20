@@ -55,7 +55,13 @@ void main()
 
     // Paper.  Cyanotype blue, with a faint plate grid that stays put in SCREEN
     // space — a drawing's grid belongs to the sheet, not to the object.
-    vec3 paper = vec3(0.055, 0.135, 0.265) * (1.0 + 0.35 * audioAmbient);
+    // Cyanotype blue with a real red/green floor rather than a near-pure blue.
+    // The old vec3(0.055, 0.135, 0.265) sits at HSV saturation 0.79 by itself,
+    // and the bounded r/b hue nudge at the bottom of this shader ROTATES red
+    // down into blue -- pushing the sheet past 0.87 and making the whole plate
+    // read as garish primary blue. Lifting the floor keeps the identical hue
+    // and value while leaving headroom for that nudge.
+    vec3 paper = vec3(0.085, 0.155, 0.262) * (1.0 + 0.35 * audioAmbient);
     vec2 sp = gl_FragCoord.xy / max(resolution.y, 1.0);
     float plate = step(0.985, max(fract(sp.x * 26.0), fract(sp.y * 26.0)));
     paper += vec3(0.05, 0.10, 0.16) * plate * 0.6;
@@ -75,8 +81,11 @@ void main()
     }
 
     // The body itself: barely there, just enough to hide the far side.
+    // Same reasoning as the paper above: the facing term needs its own red and
+    // green floor, otherwise the body wash is an even purer blue than the sheet
+    // it sits on.
     float facing = clamp(dot(n, V), 0.0, 1.0);
-    vec3 col = paper * 0.75 + vec3(0.02, 0.06, 0.10) * facing;
+    vec3 col = paper * 0.75 + vec3(0.035, 0.065, 0.10) * facing;
 
     // ---- wireframe from the barycentric coordinates ----
     // fwidth turns "distance to the edge" into "distance in pixels", so the
@@ -111,8 +120,12 @@ void main()
          * pow(max(1.0 - abs(sweep - 0.5) * 22.0, 0.0), 2.0)
          * (0.35 + 1.5 * audioKick);
 
-    // Bounded hue nudge — blueprints are blue, so this stays small.
-    float hr = 0.07 * sin(audioChromaHue);
+    // Bounded hue nudge — blueprints are blue, so this stays small.  It is a
+    // rotation in the r/b plane, which preserves magnitude but not the r:b
+    // RATIO, so it always costs saturation headroom in one direction; kept
+    // tighter now that it is the last thing standing between the sheet and a
+    // pure-primary blue.
+    float hr = 0.055 * sin(audioChromaHue);
     col.rb = mat2(cos(hr), -sin(hr), sin(hr), cos(hr)) * col.rb;
 
     col *= 1.0 + 0.16 * audioBeat;

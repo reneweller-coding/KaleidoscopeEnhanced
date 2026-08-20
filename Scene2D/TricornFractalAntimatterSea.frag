@@ -65,10 +65,15 @@ void main() {
 
     // Center on prominent Tricorn dragon fin: c = (-1.25, 0.0)
     vec2 cCenter = vec2(-1.25, 0.0);
+    // Zoom cycle. exp(mod(t * 0.65, 5.5)) snapped from e^5.5 (245x) back to
+    // e^0 every ~8.5 s -- a hard cut. A raised cosine over the same period
+    // dives in and eases back out instead: continuous in value AND velocity
+    // (the derivative vanishes at both turns), so no seam anywhere.
     // Sub-bass magnifies the current zoom level, so the dragon scales swell on
     // drones. It multiplies the exp() RESULT, not its t-driven exponent --
     // scaling the exponent would jump the whole dive position in one frame.
-    float zoomLevel = exp(mod(t * 0.65, 5.5)) * (2.2 * zm) * (1.0 + 0.35 * audioSubBass);
+    float zc = 0.5 - 0.5 * cos(6.2831853 * fract(t * 0.65 / 5.5));   // 0..1..0
+    float zoomLevel = exp(zc * 5.5) * (2.2 * zm) * (1.0 + 0.35 * audioSubBass);
     vec2 c = cCenter + uv / zoomLevel;
 
     vec2 z = c;

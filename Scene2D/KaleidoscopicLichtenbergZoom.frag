@@ -75,8 +75,13 @@ void main() {
 
     float t = audioAdvance * 0.35 * spd;
 
-    // Logarithmic continuous zoom into discharge core
-    float zoomLevel = exp(mod(t * 0.7, 5.0));
+    // Logarithmic zoom into the discharge core, ping-ponged. The old
+    // exp(mod(t * 0.7, 5.0)) snapped from e^5 (148x) back to e^0 every
+    // ~7.1 s -- a hard cut. A raised cosine over the same period dives in and
+    // eases back out instead: continuous in value AND velocity (the
+    // derivative vanishes at both turns), so no seam anywhere.
+    float zc = 0.5 - 0.5 * cos(6.2831853 * fract(t * 0.7 / 5.0));   // 0..1..0
+    float zoomLevel = exp(zc * 5.0);
     vec2 p = uv / zoomLevel;
 
     // 6-Fold hexagonal kaleidoscope symmetry

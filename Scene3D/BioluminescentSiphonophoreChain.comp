@@ -2,23 +2,32 @@
 
 /**
  * @file BioluminescentSiphonophoreChain.comp
- * @brief Compute kernel that generates the billboard-quad geometry for a
- * winding colonial siphonophore stem made of 4096 pulsating nectophore
- * zooids and their trailing tentilla, drifting through deep ocean.
+ * @brief Compute kernel that generates the billboard-quad geometry for a BLOOM of
+ * fifteen colonial siphonophores -- winding stems of pulsating nectophore zooids
+ * and their trailing tentilla -- drifting through a deep ocean threaded with
+ * marine snow.
  *
- * audioAdvance drives the stem's winding drift and slow forward motion;
+ * audioAdvance drives the stems' winding drift and slow forward motion;
  * audioKick and audioBass both widen each zooid's sprite radius (a punchy
  * flare on the beat); audioKick additionally sharpens each zooid's pulsation
- * amplitude. The chainP preset scales the stem's overall length, pulseP
- * scales the zooid pulsation frequency, and speedP scales the stem's
- * animation speed. Each invocation emits one camera-facing quad (6 vertices)
- * per zooid point into the shared vertex/command buffers, which the sibling
+ * amplitude. The chainP preset scales the stems' overall length, pulseP
+ * scales the zooid pulsation frequency, and speedP scales the animation
+ * speed. Each invocation emits one camera-facing quad (6 vertices) per zooid
+ * point into the shared vertex/command buffers, which the sibling
  * BioluminescentSiphonophoreChain.frag reads back as billboarded sprites
  * (via vQuadUV) to render the glowing chain with an action-potential pulse
  * wave.
+ *
+ * SCREEN-FILL PASS: there used to be ONE colony, its stem laid along the view
+ * axis and its lateral wander capped at +-1 world unit at depth 7 -- a small
+ * squiggle in the middle of a black frame (occ 0.11).  The bloom is now placed
+ * on a jittered 5 x 3 lattice in FRUSTUM coordinates (lateral slot, stem
+ * length, tentilla spread and sprite radius all scale with the colony's depth),
+ * each stem hangs along its own axis, and a field of marine snow carries the
+ * water between them.
  */
 
-// BioluminescentSiphonophoreChain.comp — a colonial siphonophore stem.
+// BioluminescentSiphonophoreChain.comp — a bloom of colonial siphonophores.
 // -----------------------------------------------------------------------
 // Emits ONE SMALL BILLBOARD QUAD (2 triangles, 6 vertices) per zooid point.
 // The geom="indirect" path always issues glDrawArraysIndirect(GL_TRIANGLES),
@@ -45,13 +54,38 @@ uniform float chainP;
 uniform float pulseP;
 uniform float speedP;
 
-const uint POINTS = 4096u;      // 64 zooids x 64 points
+// The scene projection: 55 deg vertical FOV, and the camera distance the
+// companion .vert applies (vp.z += kCam).  A generator program gets no
+// `resolution` uniform, so the layout assumes 16:9; a narrower frame simply
+// pushes the outer lattice column past the edge.
+const float kTanY   = 0.5206;
+const float kAspect = 1.7778;
+const float kCam    = 7.0;
 
-// attrA = (pos.xyz, 1.0), attrB = (normal.xyz, phase) -- the 8-float stride
+const uint ZOOIDS    = 64u;
+const uint PER_ZOOID = 32u;
+const uint PER_COL   = ZOOIDS * PER_ZOOID;      // 2048 points per colony
+const uint COLS      = 5u;
+const uint ROWS      = 3u;
+const uint COLONIES  = COLS * ROWS;             // 15 colonies
+const uint CHAIN_PTS = PER_COL * COLONIES;      // 30720
+const uint SNOW      = 6000u;                   // marine snow motes
+const uint TOTAL     = CHAIN_PTS + SNOW;        // 36720 quads = 220320 vertices
+
+float hash11(float p) {
+    p = fract(p * 0.1031);
+    p *= p + 33.33;
+    p *= p + p;
+    return fract(p);
+}
+
+// attrA = (pos.xyz, corner), attrB = (normal.xyz, phase) -- the 8-float stride
 // Scene3DShader binds as attrA/attrB.
 // corner: 0=(-1,-1) 1=(1,-1) 2=(1,1) 3=(-1,1).  The fragment shader needs a
 // quad-local coordinate for its round sprite falloff -- gl_PointCoord is NOT
 // available here because geom="indirect" draws GL_TRIANGLES, not GL_POINTS.
+// A NEGATIVE normal.z marks a marine-snow mote for the fragment stage; every
+// zooid normal has a fixed +0.5 z component before normalisation.
 void writeVertex(uint slot, vec3 p, vec3 n, float phase, float corner)
 {
     uint o = slot * 8u;
@@ -84,31 +118,101 @@ void emitQuad(vec3 c, vec3 n, float phase, float r)
 void main() {
     uvec3 g = gl_GlobalInvocationID;
     uint idx = g.x + 64u * (g.y + 64u * g.z);
-    if (idx >= POINTS) return;
+    if (idx >= TOTAL) return;
 
-    float pNorm = float(idx) / float(POINTS);
     float t = time * 0.4 * (speedP > 0.0 ? speedP : 1.0) + audioAdvance * 0.2;
 
-    // 64 zooids with 64 points each along a winding siphonophore stem
-    uint zooidID = idx / 64u;
-    float zNorm = float(idx % 64u) / 64.0;
-    float s = (float(zooidID) + zNorm) / 64.0; // [0, 1] along the chain
+    if (idx >= CHAIN_PTS)
+    {
+        // ---- MARINE SNOW --------------------------------------------
+        // Detritus drifting through the whole water volume, so the space
+        // between the colonies reads as ocean instead of as nothing.
+        float fi = float(idx - CHAIN_PTS);
+        float s0 = hash11(fi * 1.731 + 0.13);
+        float s1 = hash11(fi * 3.917 + 4.71);
+        float s2 = hash11(fi * 7.311 + 9.27);
+        float s3 = hash11(fi * 5.109 + 2.53);
 
-    // Winding sinusoidal siphonophore stem in deep ocean
-    float stemZ = (s - 0.5) * 5.0 * (chainP > 0.0 ? chainP : 1.0);
-    float stemX = sin(s * 10.0 + t * 2.0) * 0.8 + sin(s * 25.0 - t * 3.0) * 0.2;
-    float stemY = cos(s * 8.0 - t * 1.5) * 0.8 + cos(s * 20.0 + t * 2.5) * 0.2;
+        float dz    = 3.2 + 12.5 * s0;
+        float halfH = dz * kTanY;
+        float halfW = halfH * kAspect;
+
+        // Slow sink with a lateral sway; wrapping keeps the field uniform.
+        float fall = fract(s1 + t * 0.035 * (0.5 + s3));
+        float sway = sin(t * 0.5 + s2 * 6.2831853) * 0.05;
+
+        vec3 pos = vec3((s2 * 2.0 - 1.0 + sway) * halfW * 1.04,
+                        (1.04 - 2.08 * fall) * halfH,
+                        dz - kCam);
+        float r = halfH * 0.0026 * (0.6 + 0.9 * s3) * (1.0 + 0.35 * audioHigh);
+        emitQuad(pos, vec3(0.0, 0.0, -1.0), s1, r);
+        return;
+    }
+
+    // ---- ONE COLONY OF THE BLOOM ------------------------------------
+    uint colony  = idx / PER_COL;
+    uint li      = idx % PER_COL;
+    uint zooidID = li / PER_ZOOID;
+    uint ringIdx = li % PER_ZOOID;
+
+    float zNorm = float(ringIdx) / float(PER_ZOOID);
+    float s = (float(zooidID) + zNorm) / float(ZOOIDS);   // [0,1] along the stem
+    float pNorm = float(li) / float(PER_COL);
+
+    float fc = float(colony);
+    float c0 = hash11(fc * 13.77 + 2.10);
+    float c1 = hash11(fc *  6.41 + 8.30);
+    float c2 = hash11(fc * 21.09 + 1.70);
+    float c3 = hash11(fc *  4.63 + 5.90);
+    float c4 = hash11(fc * 17.23 + 3.30);
+
+    uint  gx = colony % COLS;
+    uint  gy = (colony / COLS) % ROWS;
+
+    float dz    = 4.6 + 8.2 * c0;                 // this colony's view depth
+    float halfH = dz * kTanY;
+    float halfW = halfH * kAspect;
+    float fx = ((float(gx) + 0.5) / float(COLS) - 0.5) * 2.0 + (c1 - 0.5) * 0.24;
+    float fy = ((float(gy) + 0.5) / float(ROWS) - 0.5) * 2.0 + (c2 - 0.5) * 0.30;
+    vec3  ctr = vec3(fx * halfW * 1.02, fy * halfH * 1.02, dz - kCam);
+
+    // Everything about the colony is a fraction of the frame at ITS depth, so a
+    // far colony reads the same size as a near one instead of shrinking away.
+    float scale = halfH;
+
+    // The stem hangs along its own axis, leaning off vertical per colony.
+    float lean = (c3 - 0.5) * 1.5;
+    vec3  axis = normalize(vec3(sin(lean), -cos(lean) * 0.9, (c4 - 0.5) * 0.8));
+    vec3  e1   = normalize(cross(axis, vec3(0.0, 0.0, 1.0)));
+    vec3  e2   = cross(axis, e1);
+
+    // chainP runs to 2.0, and the stem axis carries up to 0.39 of its length in
+    // z -- so the half-length has to stay short enough that the nearest colony
+    // cannot reach through the near plane whatever the preset rolls.
+    float chain = clamp((chainP > 0.0 ? chainP : 1.0), 0.5, 2.0);
+    float lenS  = scale * (0.75 + 0.45 * c1) * chain;
+    float phase = c2 * 6.2831853;
+
+    // Winding sinusoidal stem, undulating in its own two lateral directions.
+    float amp = scale * 0.30;
+    vec3 alongV = axis * ((s - 0.5) * 2.0 * lenS);
+    vec3 wob = e1 * (sin(s * 10.0 + t * 2.0 + phase) * amp
+                   + sin(s * 25.0 - t * 3.0 + phase) * amp * 0.25)
+             + e2 * (cos(s *  8.0 - t * 1.5 + phase) * amp
+                   + cos(s * 20.0 + t * 2.5 + phase) * amp * 0.25);
 
     // Pulsating nectophores & trailing tentilla tentacles
-    float zooidAngle = float(idx % 64u) * 0.09817477;
-    float pulse = (0.2 + 0.1 * sin(s * 40.0 * (pulseP > 0.0 ? pulseP : 1.0) - t * 8.0)) * (1.0 + audioKick * 0.6);
-    float tentacleX = cos(zooidAngle) * pulse;
-    float tentacleY = sin(zooidAngle) * pulse;
+    float zooidAngle = float(ringIdx) * (6.2831853 / float(PER_ZOOID));
+    float pulse = (0.20 + 0.10 * sin(s * 40.0 * (pulseP > 0.0 ? pulseP : 1.0) - t * 8.0))
+                * (1.0 + audioKick * 0.6) * scale * 0.55;
 
-    vec3 pos = vec3(stemX + tentacleX, stemY + tentacleY, stemZ);
+    vec3 pos = ctr + alongV + wob
+             + e1 * (cos(zooidAngle) * pulse)
+             + e2 * (sin(zooidAngle) * pulse);
     vec3 normal = normalize(vec3(cos(zooidAngle), sin(zooidAngle), 0.5));
 
-    // Each nectophore flares with the beat.
-    float r = 0.020 * (1.0 + 0.8 * audioBass + 1.5 * audioKick + 0.4 * audioHigh);
+    // Each nectophore flares with the beat; the radius is a constant fraction
+    // of the frame at this colony's depth.
+    float r = scale * 0.0072 * (1.0 + 0.6 * audioBass + 1.1 * audioKick + 0.3 * audioHigh);
     emitQuad(pos, normal, pNorm, r);
 }

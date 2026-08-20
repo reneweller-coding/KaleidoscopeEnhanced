@@ -3,7 +3,8 @@ out vec4 fragColor;
 /**
  * @file CarbonNanotubeChiralityArmchairZigzag.frag
  * @brief CARBON NANOTUBE CHIRALITY ARMCHAIR ZIGZAG: Single-walled carbon nanotube (SWCNT)
- * lattice with tunable chiral vector (n,m). Armchair, zigzag, and chiral helicities with
+ * network -- seven crossing tubes of a buckypaper mat, each with a tunable chiral vector
+ * (n,m). Armchair, zigzag, and chiral helicities with
  * ballistic 1D pi-electron conduction pulses, metallic sp2 luster, and photo texturing.
  *   audioAdvance -> drives ballistic pi-electron current drift & tube rotation
  *   audioKick    -> flashes 1D Van Hove singularity electronic transition bursts
@@ -38,18 +39,25 @@ vec3 img(vec2 uv) {
 
 void main()
 {
-    float core = pow(1.0 - abs(vSide), 2.2);
-    float edge = exp(-abs(abs(vSide) - 0.9) * 14.0);
-    
+    // The quad is wider than the sp2 wall: |s| < 0.38 is the carbon ribbon
+    // itself, everything outside it is the metallic sheen around it.
+    float s    = abs(vSide);
+    float core = pow(max(0.0, 1.0 - s / 0.38), 2.2);
+    float edge = exp(-abs(s - 0.32) * 24.0);
+    float sheen = exp(-s * 2.3) * 0.15;
+
     vec3 photo = img(vUV);
-    
+
     vec3 col = vCol * (0.6 + 0.4 * photo) * core * 1.3;
-    col += vec3(0.95, 0.95, 1.0) * vConductPulse * (conductGlowP > 0.01 ? conductGlowP : 1.4) * 2.2;
-    col += vCol * edge * 1.5;
+    col += vec3(0.95, 0.95, 1.0) * vConductPulse * (conductGlowP > 0.01 ? conductGlowP : 1.4)
+         * 2.2 * (core + 0.30 * sheen);
+    col += vCol * edge * 1.4;
+    col += vCol * sheen * (0.85 + 0.55 * audioSwell);
     col *= (0.85 + 0.35 * audioSwell);
-    col += vCol * (audioKick * 0.3);
-    
-    // Soft knee compression
-    col /= 1.0 + 0.35 * max(col.r, max(col.g, col.b));
+    col += vCol * (audioKick * 0.3) * (core + sheen);
+
+    // Additive geometry: cap the tinted vec3, then soft-knee it
+    col = min(col, vec3(1.5));
+    col /= 1.0 + 0.45 * max(col.r, max(col.g, col.b));
     fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }

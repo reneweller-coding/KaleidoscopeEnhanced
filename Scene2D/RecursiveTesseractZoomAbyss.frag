@@ -53,6 +53,19 @@ vec3 imgPalette(float t) {
     return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
+// Overall level of the photo currently on the texture units, from a fixed 5-tap
+// grid. Every base colour here is photo-derived and the accumulator below sums
+// up to six of them, so a bright photo pushed the frame to a uniform white wash
+// with no readable hypercube structure. The probe rides the tex0/tex1 crossfade
+// so the gain can never pop, and one number per frame moves exposure without
+// touching local contrast.
+float photoLevel() {
+    vec3 s = img(vec2(0.25, 0.25)) + img(vec2(0.75, 0.25))
+           + img(vec2(0.25, 0.75)) + img(vec2(0.75, 0.75))
+           + img(vec2(0.50, 0.50));
+    return dot(s * 0.2, vec3(0.299, 0.587, 0.114));
+}
+
 // 4D Box distance estimator
 float sdBox4D(vec4 p, vec4 b) {
     vec4 d = abs(p) - b;
@@ -67,7 +80,10 @@ void main() {
     float wireW = (wireP > 0.01) ? wireP : 1.0;
     float glw = (glowP > 0.01) ? glowP : 1.0;
 
-    float t = audioAdvance * 0.32 * spd;
+    // The dive only advanced on audioAdvance (~0.25 units/s on quiet material),
+    // so the plunge was effectively frozen. Constant base rate + audio surge; the
+    // coefficient on `time` is a per-activation constant, so anti-flicker safe.
+    float t = time * 0.34 * spd + audioAdvance * 0.32 * spd;
 
     // Logarithmic scale dive for infinite zoom through tesseract layers
     float zoomSpeed = t * 0.8;
@@ -75,12 +91,19 @@ void main() {
 
     vec3 colAcc = vec3(0.0);
     float glowAcc = 0.0;
+    float wSum = 0.0;
 
-    // Sum over multiple nested recursive 4D tesseract frames
-    for (int k = 0; k < 6; k++) {
+    // Sum over multiple nested recursive 4D tesseract frames.
+    // The old log step of 1.1 put successive frames a factor e^1.1 = 3.0 apart, so
+    // only ONE nested square ever landed inside the visible band and everything
+    // else collapsed into a knot of hairlines at the centre - a small motif on a
+    // big empty field. A step of 0.62 (factor 1.86) with more layers puts four to
+    // five frames across the screen at once, which is the same infinite dive, just
+    // actually filling it.
+    for (int k = 0; k < 9; k++) {
         float kf = float(k);
-        float layerScale = exp((kf - cellPhase) * 1.1) * dpth;
-        float layerFade = smoothstep(0.0, 0.3, kf - cellPhase) * smoothstep(5.5, 3.5, kf - cellPhase);
+        float layerScale = exp((kf - cellPhase) * 0.62) * dpth;
+        float layerFade = smoothstep(0.0, 0.3, kf - cellPhase) * smoothstep(8.6, 6.0, kf - cellPhase);
 
         if (layerFade <= 0.001) continue;
 
@@ -133,30 +156,70 @@ void main() {
         // hyper-plane spin was invisible and no audio mapping on it could show.
         vec2 q2 = abs(p4.xy);
         float wire = min(abs(q2.x - frameR), abs(q2.y - frameR));
-        float edgeGlow = exp(-wire * (25.0 * layerScale * 0.15)) * layerFade * glw;
+
+        // `wire` is measured in LAYER units and spans roughly 0..1.3, while the
+        // old decay constant was 25*layerScale*0.15 = 0.4..3.8. exp() of that
+        // never actually decays: every pixel of every layer returned 0.1..1.0,
+        // six layers summed past 1.0, and min(glowAcc,1.0) then pinned the whole
+        // frame to full-intensity wireTint -- a flat white-violet flood with no
+        // wires visible in it at all.
+        // Converting to SCREEN units (pLayer = uv*layerScale, so screen distance
+        // is wire/layerScale) gives a line of constant on-screen thickness, and a
+        // decay constant matched to that range makes it an actual thin edge.
+        float wireScreen = wire / max(layerScale, 1e-4);
+        // 78 rather than 46: the layer count went from 6 to 9 above, so the same
+        // line width would have put half again as much lit area on screen and the
+        // capped glow sum would flatten out into a solid violet field. Thinner
+        // lines, more of them -- which is what a receding hypercube stack is.
+        float edgeGlow = exp(-wireScreen * (78.0 / wireW)) * layerFade * glw;
 
         // Sample texture inside the tesseract cell face
         vec2 sampleUV = fract(pLayer * 0.25 + 0.5);
         vec3 texCol = img(sampleUV);
         vec3 palCol = imgPalette(kf * 0.2 + t * 0.1);
 
-        vec3 cellCol = mix(texCol, palCol, 0.5);
-        colAcc += cellCol * layerFade * 0.3;
+        // Depth shading: near cells bright, far cells sinking into the abyss.
+        // Six equally-lit layers averaged to one flat mid-level.
+        // (exponent rescaled with the smaller log step above so the dive still
+        // fades over the same physical depth, not over the same layer index)
+        float depthShade = exp(-(kf - cellPhase) * 0.31);
+        // Deep layers are sampled at pLayer = uv * layerScale with layerScale up
+        // to ~145, i.e. the photo tiles dozens of times across the frame and
+        // aliases into its own average -- a flat wash that swamps the near
+        // layers. Only the resolvable octaves carry a photo crop; the far ones
+        // contribute the flat palette tone.
+        float resolvable = smoothstep(4.6, 1.6, kf - cellPhase);
+        vec3 cellCol = mix(palCol, texCol, 0.55 * resolvable);
+        float w = layerFade * depthShade;
+        colAcc += cellCol * w;
+        wSum   += w;
 
         glowAcc += edgeGlow;
     }
+
+    // Weighted average rather than a raw sum: nine layers of a bright photo used
+    // to stack straight past white (measured luma 0.823 at contrast 0.012 - one
+    // flat wash). Normalising keeps the depth ordering while bounding exposure.
+    colAcc /= max(wSum, 1e-3);
+    colAcc *= 0.62 * clamp(0.40 / max(0.06, photoLevel()), 0.55, 1.70);
 
     // Add glowing hypercube wireframe lines once, from the TOTAL glow
     // accumulated across layers (capped) rather than per-layer -- several
     // octaves' frames can still overlap near true wire crossings, and an
     // uncapped per-layer add let those crossings stack past white.
-    vec3 wireTint = vec3(1.3, 1.0, 1.8) * min(glowAcc, 1.0) * (1.0 + 2.5 * audioKick);
+    vec3 wireTint = min(vec3(1.3, 1.0, 1.8) * min(glowAcc, 1.2) * (1.0 + 2.0 * audioKick),
+                        vec3(1.0, 0.85, 1.0));
     colAcc += wireTint;
 
     // Portal dimension crossing flash (when cellPhase wraps around)
     float portalFlash = pow(max(0.0, 1.0 - abs(cellPhase - 0.5) * 4.0), 4.0) * (0.4 + 1.2 * audioKick);
-    colAcc += imgPalette(0.7) * portalFlash;
+    colAcc += min(imgPalette(0.7) * portalFlash, vec3(0.55));
 
-    colAcc = pow(colAcc, vec3(0.88));
-    fragColor = vec4(clamp(colAcc, 0.0, 1.0), 1.0);
+    colAcc = pow(min(colAcc, vec3(1.0)), vec3(0.88));
+    // Soft knee on top of the hard cap: pow(x, 0.88) lifts the midtones, so a
+    // wire crossing landing on an already-lit cell face still stacked flat
+    // against the ceiling. The knee bends those crests over instead.
+    vec3 _catTone = clamp(colAcc, 0.0, 1.0);
+    _catTone /= 1.0 + 0.26 * max(_catTone.r, max(_catTone.g, _catTone.b));
+    fragColor = vec4(_catTone, 1.0);
 }

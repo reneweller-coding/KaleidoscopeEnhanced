@@ -53,6 +53,19 @@ vec3 imgPalette(float t) {
     return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
+// Overall level of the photo currently on the texture units, from a fixed
+// 5-tap grid. The conformal map paints the photo straight onto the spiral, so
+// a bright photo left the arm filaments and the core bloom no headroom at all.
+// The probe rides the tex0/tex1 crossfade, so the gain it feeds can never pop,
+// and being one number for the whole frame it rescales exposure without
+// touching local contrast.
+float photoLevel() {
+    vec3 s = img(vec2(0.25, 0.25)) + img(vec2(0.75, 0.25))
+           + img(vec2(0.25, 0.75)) + img(vec2(0.75, 0.75))
+           + img(vec2(0.50, 0.50));
+    return dot(s * 0.2, vec3(0.299, 0.587, 0.114));
+}
+
 void main() {
     vec2 uv = (gl_FragCoord.xy - 0.5 * resolution.xy) / min(resolution.x, resolution.y);
 
@@ -95,7 +108,12 @@ void main() {
         weightAcc += w;
     }
 
+    // Hold the galactic disc back to a fixed dark base: spiral arms only read
+    // against dark inter-arm space, and with a bright photo the octave-blended
+    // base alone already sat near 1.0.
     vec3 finalCol = colAcc / max(0.001, weightAcc);
+    float expGain = clamp(0.27 / max(0.05, photoLevel()), 0.27, 2.4);
+    finalCol *= expGain;
 
     // Glowing logarithmic spiral arm filaments
     float armDist = abs(sin(lnR * 4.0 - a * nArms * spiralAngle + t * 4.0));
@@ -104,12 +122,19 @@ void main() {
     // peak intensity for that extra area so the widened arms don't clip.
     float armEdge = 0.85 - 0.22 * audioSubBass;
     float armGlow = smoothstep(armEdge, 1.0, armDist) * glw * (1.0 + 2.5 * audioKick) / (1.0 + 0.35 * audioSubBass);
-    finalCol += vec3(1.3, 1.1, 1.8) * armGlow * 0.7;
+    // The tint constant exceeds 1.0 on two channels, so the TINTED vector
+    // carries the cap -- bounding only armGlow still let vec3(1.3,1.1,1.8) * it
+    // run past white on every kick.
+    finalCol += min(vec3(1.3, 1.1, 1.8) * armGlow * 0.7, vec3(0.85));
 
-    // Center singularity core bloom
+    // Center singularity core bloom. imgPalette() is a photo sample, so it
+    // rides the same exposure gain as the base and is capped as well -- a
+    // kick used to multiply a near-white palette by 3.7 right at the core.
     float centerBloom = exp(-r * 8.0) * (1.2 + 2.5 * audioKick);
-    finalCol += imgPalette(0.85) * centerBloom;
+    finalCol += min(imgPalette(0.85) * expGain * centerBloom, vec3(0.90));
 
     finalCol = pow(finalCol, vec3(0.88));
-    fragColor = vec4(clamp(finalCol, 0.0, 1.0), 1.0);
+    vec3 _catTone = clamp(finalCol, 0.0, 1.0);
+    _catTone /= 1.0 + 0.28 * max(_catTone.r, max(_catTone.g, _catTone.b));
+    fragColor = vec4(_catTone, 1.0);
 }

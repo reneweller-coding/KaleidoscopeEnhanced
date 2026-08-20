@@ -5,6 +5,16 @@ layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
  * @file CryogenicBrinicleStalactite.comp
  * @brief Compute generator companion to CryogenicBrinicleStalactite.frag --
  * generates 3D hollow cryogenic brine icicles descending from sea ice into polar depths.
+ *
+ * THREE structural bugs used to hide this scene: emitSegment widened every
+ * ribbon along the VIEW AXIS (see there), so a tube hanging straight down the
+ * frame rendered as a zero-width sliver whatever thickness was asked for; the
+ * tubes descended along WORLD Z (into the view depth, not down the frame); and
+ * the vertex stage's 0.55 rad tilt was applied AFTER the +4.8 translate, which
+ * swung the whole bundle sin(0.55)*4.8 = 2.5 units below the picture.  The
+ * descent is now along -Y and the tubes are placed in FRUSTUM coordinates --
+ * lateral offset, length and girth all scale with depth -- so the curtain
+ * fills the frame at every layer.
  */
 
 layout(std430, binding = 0) buffer Verts {
@@ -23,6 +33,15 @@ uniform float audioBass;
 uniform float audioMid;
 uniform float audioHigh;
 uniform float audioSwell;
+
+// The scene projection: 55 deg vertical FOV (see Scene3DShader::draw).  The
+// generator has no `resolution`; it lays the curtain out for 16:9 and the
+// vertex stage stretches x for the actual aspect.
+const float kTanY = 0.5206;
+const float kAsp  = 1.7778;
+
+const uint kTubes    = 160u;   // brinicles in the curtain
+const uint kBranches = 288u;   // + 128 frost-mote branches; x 64 x 6 = 110592 verts
 
 float hash11(float p) {
     p = fract(p * 0.1031);
@@ -46,8 +65,19 @@ void emitSegment(vec3 pA, vec3 pB, float e1, float e2, float thickness) {
     vec3 dir = pB - pA;
     float len = length(dir);
     dir = (len > 1e-5) ? dir / len : vec3(0.0, 1.0, 0.0);
-    vec3 upv = (abs(dir.y) > 0.95) ? vec3(1.0, 0.0, 0.0) : vec3(0.0, 1.0, 0.0);
-    vec3 side = normalize(cross(dir, upv)) * thickness;
+
+    // Widen the ribbon ACROSS THE SCREEN, not along the view axis.
+    // The old `cross(dir, worldUp)` (with a (1,0,0) fallback for near-vertical
+    // segments) always lands in the XZ plane, and the camera looks along +z:
+    // a tube descending straight down the frame -- which is every brinicle in
+    // this scene -- got side = (0,0,1), i.e. a quad EXACTLY EDGE-ON to the
+    // lens, rendering as a zero-width sliver whatever thickness was asked for.
+    // The vertex stage applies no tilt, so the view axis is plain +z.
+    vec3 side = cross(dir, vec3(0.0, 0.0, 1.0));
+    float sl = length(side);
+    // Degenerate only when the segment runs straight at the lens, where any
+    // perpendicular is equally good.
+    side = (sl > 1e-4) ? side * (thickness / sl) : vec3(thickness, 0.0, 0.0);
 
     vec3 a0 = pA - side, a1 = pA + side, b0 = pB - side, b1 = pB + side;
     writeVertex(base + 0u, a0, e1, e2);
@@ -61,37 +91,97 @@ void emitSegment(vec3 pA, vec3 pB, float e1, float e2, float thickness) {
 void main() {
     uvec3 g = gl_GlobalInvocationID;
     uint idx = g.x + 64u * (g.y + 64u * g.z);
-    
-    // 64 descending brinicle icicle tubes with 64 segments each = 4096 invocations
+
     uint tubeIdx = idx / 64u;
     uint segIdx  = idx % 64u;
-    if (tubeIdx >= 64u) return;
+    if (tubeIdx >= kBranches) return;
 
     float t = time * 0.35 + audioAdvance * 0.3;
-    float seed = hash11(float(tubeIdx) * 19.83);
-    
-    // Ice tube root position on pack ice ceiling
-    float rootAngle = seed * 6.2831853;
-    float rootR = sqrt(hash11(seed * 31.7)) * 2.2;
-    vec2 rootPos = vec2(cos(rootAngle), sin(rootAngle)) * rootR;
-    
+
+    if (tubeIdx >= kTubes)
+    {
+        // ---- SUSPENDED FROST MOTES ------------------------------------
+        // One speck per (branch, segment) slot, scattered through the whole
+        // supercooled water column so the polar dark still carries texture
+        // between the tubes.  A background layer: dim, but never so dim that
+        // a tile of the picture reads as black.
+        float hid = float(tubeIdx) * 64.0 + float(segIdx);
+        float g1 = hash11(hid * 1.41 + 0.9);
+        float g2 = hash11(hid * 2.83 + 4.1);
+        float g3 = hash11(hid * 5.29 + 8.7);
+        float g4 = hash11(hid * 7.13 + 12.3);
+
+        float dzh  = 16.0 + g3 * 74.0;
+        float hH   = dzh * kTanY;
+        float hW   = hH * kAsp;
+        // 2.0 fits the frustum exactly; 2.35 so the field still reaches past
+        // all four edges when the preset camera rig rolls and yaws.
+        float open = 2.35;
+        // Polar current drift -- pre-integrated advance only, never a factor
+        // on absolute time.
+        float ph = g1 * 6.2831853 + t * 0.09;
+
+        vec3 c = vec3((g1 - 0.5) * open * hW + 0.035 * hW * cos(ph),
+                      (g2 - 0.5) * open * hH - 0.030 * hH * fract(ph * 0.15),
+                      dzh);
+
+        float sl = hH * 0.010 * (0.5 + g4);
+        float glowH = (0.10 + 0.16 * g4) * (1.0 + 0.7 * audioSwell)
+                    * (1.0 + 0.9 * audioKick * g2);
+        emitSegment(c - vec3(0.0, sl, 0.0), c + vec3(0.0, sl, 0.0),
+                    0.30 + 0.55 * g2, min(glowH, 0.50), hH * 0.0058 * (0.6 + 0.8 * g4));
+        return;
+    }
+
+    // ---- ONE BRINICLE OF THE CURTAIN ----------------------------------
+    float sd   = float(tubeIdx);
+    float seed = hash11(sd * 19.83);
+    float q1 = hash11(sd * 11.3 + 2.1);
+    float q2 = hash11(sd * 27.7 + 6.5);
+    float q3 = hash11(sd *  5.9 + 13.1);
+    float q4 = hash11(sd * 37.1 + 3.9);
+
+    // FRUSTUM-COORDINATE placement: a tube 30 units back subtends the same
+    // angle as one at 5, so all layers of the curtain cover the picture.
+    float dz    = 4.5 + q3 * q3 * 30.0;
+    float halfH = dz * kTanY;
+    float halfW = halfH * kAsp;
+    float open  = 2.25;
+    float ox    = (q1 - 0.5) * open * halfW;
+    float oz    = (q4 - 0.5) * 0.35 * halfW;   // a little depth inside the layer
+
+    // Root up on the pack-ice ceiling, above the top edge; the tube reaches
+    // well past the bottom of the frame.
+    float rootY = halfH * (0.88 + 0.55 * q2);
+    float len   = halfH * (1.60 + 1.30 * q4);
+
     float s0 = float(segIdx) / 64.0;
     float s1 = float(segIdx + 1u) / 64.0;
 
-    // Descending downward trajectory along -z
-    float z0 = 1.8 - s0 * 3.6;
-    float z1 = 1.8 - s1 * 3.6;
+    // Wandering sinking brine plume trajectory, widening as it descends.
+    vec2 wander0 = vec2(sin(s0 * 8.0 + seed * 5.0 + t * 0.5),
+                        cos(s0 * 8.0 + seed * 5.0 - t * 0.4)) * (0.13 * s0 * halfH);
+    vec2 wander1 = vec2(sin(s1 * 8.0 + seed * 5.0 + t * 0.5),
+                        cos(s1 * 8.0 + seed * 5.0 - t * 0.4)) * (0.13 * s1 * halfH);
 
-    // Wandering sinking brine plume trajectory
-    vec2 wander0 = vec2(sin(s0 * 8.0 + seed * 5.0 + t * 0.5), cos(s0 * 8.0 + seed * 5.0 - t * 0.4)) * (0.15 * s0);
-    vec2 wander1 = vec2(sin(s1 * 8.0 + seed * 5.0 + t * 0.5), cos(s1 * 8.0 + seed * 5.0 - t * 0.4)) * (0.15 * s1);
+    vec3 p0 = vec3(ox + wander0.x, rootY - s0 * len, dz + oz + wander0.y);
+    vec3 p1 = vec3(ox + wander1.x, rootY - s1 * len, dz + oz + wander1.y);
 
-    vec3 p0 = vec3(rootPos + wander0, z0);
-    vec3 p1 = vec3(rootPos + wander1, z1);
+    // Crystallisation glow, with a FREEZE FRONT running down each tube so the
+    // curtain keeps moving instead of standing still.
+    float front = fract(seed + t * 0.10);
+    float pulse = exp(-pow((s0 - front) * 5.0, 2.0));
+    float glow = (0.55 + 0.45 * sin(s0 * 12.0 - t * 2.0) + 0.85 * pulse)
+               * (1.0 + 2.0 * audioKick);
+    // The far layers sink toward the colour of the water column.
+    glow *= clamp(1.0 - dz / 76.0, 0.30, 1.0);
 
-    // Ice thickness and crystallization glow
-    float glow = (1.0 + 0.5 * sin(s0 * 12.0 - t * 2.0)) * (1.0 + 2.0 * audioKick);
-    float thick = (0.025 * (1.0 - s0 * 0.4)) * (1.0 + 0.4 * audioSwell);
+    // Tube width, as a fraction of the half-height at this tube's own depth:
+    // ~4-8 px whatever dz is, so 160 of them make a curtain with real water
+    // between them rather than one solid wall.  (It reads as thin because the
+    // ribbon is now actually FACING the camera -- see emitSegment; before the
+    // fix, any thickness at all came out as a zero-width sliver.)
+    float thick = halfH * 0.0050 * (1.0 - s0 * 0.4) * (1.0 + 0.4 * audioSwell);
 
-    emitSegment(p0, p1, s0, glow, thick);
+    emitSegment(p0, p1, s0, min(glow, 3.0), thick);
 }

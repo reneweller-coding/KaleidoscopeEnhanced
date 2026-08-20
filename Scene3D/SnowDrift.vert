@@ -69,9 +69,17 @@ void main()
     // additive sprites together and brighten the frame.
     float curtain = 120.0 * (1.0 + 0.38 * clamp(audioFlatness, 0.0, 1.0));
 
+    // Depth distribution biased hard toward the camera.
+    // With a flat 8..88 spread, four flakes in five sat past 40 units, where the
+    // sprite is one or two pixels wide -- below the size at which a flake can be
+    // SEEN as a flake. The snowfall integrated into an even grey veil covering
+    // the whole frame, which is exactly the occ 1.00 / contrast 0.051 the metric
+    // reported: perfectly filled, and perfectly featureless. Squaring r3 keeps
+    // the same depth range but puts most of the flakes near enough to read
+    // individually, with the far ones still there as haze behind them.
     vec3 world = vec3((r1 - 0.5) * curtain + sway + wind * (28.0 - y) * 0.02,
                       y,
-                      8.0 + r3 * 80.0);
+                      3.5 + r3 * r3 * 74.0);
 
     vec3 vp = world;
     vp.x -= eyeOff;
@@ -82,8 +90,11 @@ void main()
 
     float px   = resolution.y / 1080.0;
     float dist = max(vp.z, 0.5);
-    gl_PointSize = clamp(115.0 * (0.35 + 0.75 * r4) * px / dist,
-                         1.5, 13.0 * px);
+    // Ceiling raised from 13 px: it was clipping the near flakes back down to
+    // the same apparent size as the mid-field ones, which flattened out the very
+    // depth cue the new distribution creates.
+    gl_PointSize = clamp(150.0 * (0.30 + 0.85 * r4) * px / dist,
+                         2.0, 30.0 * px);
 
     // Cold moonlit white with the faintest key tint; flakes glint gently
     // as they tumble; a soft glow near the ground plane.
@@ -102,6 +113,8 @@ void main()
     col *= (0.30 + 0.35 * r4) * glint
          * (0.7 + 0.35 * audioSwell + 0.2 * audioLevel)
          * (1.0 + ground)
-         * clamp(1.0 - vp.z / 100.0, 0.0, 1.0);
-    vCol = vec4(col * 3.2, 1.0);
+         // Steeper depth falloff: near flakes now carry the picture, the far
+         // field stays a dim haze behind them. That separation IS the contrast.
+         * clamp(1.30 - vp.z / 58.0, 0.07, 1.35);
+    vCol = vec4(min(col * 3.2, vec3(2.6)), 1.0);
 }

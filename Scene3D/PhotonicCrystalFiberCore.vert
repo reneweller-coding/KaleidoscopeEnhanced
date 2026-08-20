@@ -34,6 +34,7 @@ out vec3 vWorldPos;
 out vec3 vNormal;
 out vec2 vTexCoord;
 out float vCoreDist;
+out float vKind;      // 0 = capillary, 1 = the glass slab behind the lattice
 
 void main() {
     float pcf = (pcfP  > 0.0) ? pcfP  : 1.0;
@@ -50,22 +51,53 @@ void main() {
 
     float t = time * 0.4 * spd + audioAdvance * 0.2;
 
-    // 70x70 hexagonal honeycomb lattice array
-    int row = cubeIndex / 70;
-    int col = cubeIndex % 70;
-    float x = (float(col) - 35.0 + mod(float(row), 2.0) * 0.5) * 0.08 * pcf;
-    float y = (float(row) - 35.0) * 0.06928 * pcf;
+    // Cube 0 is spent on the bulk glass BEHIND the lattice.  A photonic
+    // crystal fibre is a solid rod with holes in it, but the scene only ever
+    // drew the holes -- so the glass between them was black, and a lattice of
+    // 5 px specks over a black field is what the "too dark, not filling"
+    // measurement was actually looking at.  Big enough to still cover the
+    // frame's corners when the slow roll turns it.
+    if (cubeIndex == 0)
+    {
+        vKind = 1.0;
+        vCoreDist = 0.0;
+        vec3 slab = cubeCorner * vec3(30.0, 30.0, 0.2) + vec3(0.0, 0.0, 6.0);
+        vWorldPos = slab;
+        vec3 vps = slab;
+        float fro0 = time * 0.06;
+        vps.xy = mat2(cos(fro0), -sin(fro0), sin(fro0), cos(fro0)) * vps.xy;
+        vps.z += 7.0;
+        vps.x -= eyeOff;
+        gl_Position = projM * vec4(vps.x, vps.y, -vps.z, 1.0);
+        gl_Position.x += eyeOff * 0.045 * gl_Position.w;
+        return;
+    }
+    vKind = 0.0;
 
-    // Hollow core radius (central air hole)
+    // 70x70 hexagonal honeycomb lattice array.  The pitch was 0.08, which put
+    // the whole cladding inside a 5.6-unit disc seven units from the camera --
+    // under half the frame's width.  pcf still sets the lattice density, but
+    // at 30% leverage: at full leverage its 0.5..2.0 preset range swung the
+    // lattice between a fifth of the frame and four times its width.
+    int li = cubeIndex - 1;
+    int row = li / 70;
+    int col = li % 70;
+    float sp = 0.185 * (0.7 + 0.3 * pcf);
+    float x = (float(col) - 34.5 + mod(float(row), 2.0) * 0.5) * sp;
+    float y = (float(row) - 34.5) * sp * 0.866;
+
+    // Hollow core radius (central air hole), in step with the new pitch
     float r = length(vec2(x, y));
     vCoreDist = r;
-    float isHollow = smoothstep(0.3 * cor, 0.45 * cor, r);
+    float isHollow = smoothstep(0.70 * cor, 1.05 * cor, r);
 
     // Z-axis longitudinal wave
-    float z = (float(cubeIndex % 20) / 20.0 - 0.5) * 4.0;
-    float pulse = sin(z * 8.0 - t * 6.0) * (0.04 + 0.03 * audioBass);
+    float z = (float(li % 20) / 20.0 - 0.5) * 4.0;
+    float pulse = sin(z * 8.0 - t * 6.0) * (0.10 + 0.09 * audioBass);
 
-    float cubeScale = 0.035 * isHollow * (1.0 + audioKick * 0.5);
+    // Capillary walls as a fixed FRACTION of the pitch, so the cladding keeps
+    // its density whatever the lattice is scaled to.
+    float cubeScale = sp * 0.60 * isHollow * (1.0 + audioKick * 0.5);
     vec3 worldPos = vec3(x, y + pulse, z) + cubeCorner * cubeScale;
     vWorldPos = worldPos;
 

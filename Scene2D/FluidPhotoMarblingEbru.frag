@@ -43,6 +43,19 @@ vec3 hueRot(vec3 c, float a) {
     return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
 }
 
+// Overall level of the photo currently on the texture units, from a fixed
+// 5-tap grid. The whole picture here IS the photo, floated on the water bath,
+// so a bright photo left the gold veins and the surface specular no headroom
+// at all. The probe rides the tex0/tex1 crossfade, so the gain it feeds can
+// never pop, and being one number for the whole frame it rescales exposure
+// without touching the marbling's local contrast.
+float photoLevel() {
+    vec3 s = img(vec2(0.25, 0.25)) + img(vec2(0.75, 0.25))
+           + img(vec2(0.25, 0.75)) + img(vec2(0.75, 0.75))
+           + img(vec2(0.50, 0.50));
+    return dot(s * 0.2, vec3(0.299, 0.587, 0.114));
+}
+
 // Mathematical Ebru Comb / Rake transformation
 vec2 ebruRake(vec2 p, vec2 dir, float spacing, float speed) {
     float proj = dot(p, vec2(-dir.y, dir.x)); // Distance perpendicular to rake motion
@@ -110,15 +123,24 @@ void main() {
 
     float spec = pow(max(dot(normal, halfVec), 0.0), 32.0);
 
-    // Gold pigment veins floating in marbled swirls
+    // Gold pigment veins floating in marbled swirls. The scalar was bounded
+    // only by audioHigh's range while the TINTED vector was free, so on a
+    // bright passage the veins alone added up to 2.1 per channel.
     float veinMask = smoothstep(0.7, 0.85, abs(sin(lum0 * 20.0)));
-    vec3 goldVein = vec3(1.0, 0.82, 0.35) * (1.5 + 2.0 * audioHigh);
+    vec3 goldVein = min(vec3(1.0, 0.82, 0.35) * (1.5 + 2.0 * audioHigh) * veinMask * 0.6, vec3(0.80));
 
-    vec3 col = photoMarbled * (0.85 + 0.4 * audioLevel) + goldVein * veinMask * 0.6;
-    col += vec3(1.0) * spec * (0.6 + 0.8 * audioMid);
+    // Hold the oil film back to a fixed exposure. The bath is one flat sample
+    // of the picture, so a light photo pinned the entire viewport near 1.0 and
+    // both the veins and the water sheen were clipped away on top of it.
+    float expGain = clamp(0.32 / max(0.05, photoLevel()), 0.32, 2.4);
+
+    vec3 col = photoMarbled * expGain * (0.85 + 0.4 * audioLevel) + goldVein;
+    col += min(vec3(1.0) * spec * (0.6 + 0.8 * audioMid), vec3(0.70));
 
     col = hueRot(col, audioChromaHue + hue);
-    col = pow(col, vec3(0.9));
 
-    fragColor = vec4(col, 1.0);
+    col = pow(max(col, 0.0), vec3(0.9));
+    vec3 _catTone = clamp(col, 0.0, 1.0);
+    _catTone /= 1.0 + 0.26 * max(_catTone.r, max(_catTone.g, _catTone.b));
+    fragColor = vec4(_catTone, 1.0);
 }

@@ -53,6 +53,19 @@ vec3 imgPalette(float t) {
     return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
+// Overall level of the photo currently on the texture units, from a fixed
+// 5-tap grid. Every base colour here is photo-derived, so a bright photo left
+// the marble ridge filaments and the liquid specular no headroom at all. The
+// probe rides the tex0/tex1 crossfade, so the gain it feeds can never pop, and
+// being one number for the whole frame it rescales exposure without touching
+// local contrast.
+float photoLevel() {
+    vec3 s = img(vec2(0.25, 0.25)) + img(vec2(0.75, 0.25))
+           + img(vec2(0.25, 0.75)) + img(vec2(0.75, 0.75))
+           + img(vec2(0.50, 0.50));
+    return dot(s * 0.2, vec3(0.299, 0.587, 0.114));
+}
+
 // Ebru peacock comb displacement algorithm: displaces coordinate along sinusoidal tines
 vec2 ebruComb(vec2 p, float t, float freq, float dir) {
     float tine = sin(p.x * freq + t * 2.0) * 0.25;
@@ -98,14 +111,24 @@ void main() {
 
     marbCol = mix(marbCol, texCol, 0.35 + 0.15 * audioValence);
 
-    // Add glowing marble ridge filaments & kick flash
-    vec3 ridgeTint = vec3(1.4, 1.1, 1.7) * ringGlow * (1.0 + 2.5 * audioKick);
+    // Hold the oil film back to a fixed exposure. The base is entirely
+    // mix(imgPalette, photo), so a light photo pinned the whole bath near 1.0
+    // and the ridges and sheen were clipped away on top of it.
+    float expGain = clamp(0.28 / max(0.05, photoLevel()), 0.28, 2.4);
+    marbCol *= expGain;
+
+    // Add glowing marble ridge filaments & kick flash. The tint constants
+    // exceed 1.0 per channel, so the TINTED vectors carry the caps -- bounding
+    // only the scalars left them unbounded.
+    vec3 ridgeTint = min(vec3(1.4, 1.1, 1.7) * ringGlow * (1.0 + 2.5 * audioKick), vec3(0.85));
     marbCol += ridgeTint;
 
     // Specular liquid reflection
     float spec = pow(clamp(1.0 - abs(dropRings) * 2.0, 0.0, 1.0), 4.0);
-    marbCol += vec3(1.3, 1.3, 1.5) * spec * (0.5 + 1.0 * audioLevel);
+    marbCol += min(vec3(1.3, 1.3, 1.5) * spec * (0.5 + 1.0 * audioLevel), vec3(0.70));
 
     marbCol = pow(marbCol, vec3(0.88));
-    fragColor = vec4(clamp(marbCol, 0.0, 1.0), 1.0);
+    vec3 _catTone = clamp(marbCol, 0.0, 1.0);
+    _catTone /= 1.0 + 0.28 * max(_catTone.r, max(_catTone.g, _catTone.b));
+    fragColor = vec4(_catTone, 1.0);
 }

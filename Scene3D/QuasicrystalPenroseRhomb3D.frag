@@ -52,7 +52,17 @@ void main()
     col += vCol * edgeGlow * 1.5;
     col *= (0.85 + 0.35 * audioSwell);
     col += vCol * (audioKick * 0.3);
-    
+
+    // Shell depth cue.  vQuasiShell (the rhomb's distance from the lattice
+    // centre) was passed through and never read; with the whole 4900-cube
+    // lattice now drawing, the inner shells would otherwise be buried in an
+    // undifferentiated mass.  Outer shells sit back a stop, which is both the
+    // depth read and the guard against the dense core over-exposing.
+    // 0.68, not 0.55: most of a sqrt-distributed ball IS the outer shells, so
+    // the old figure was really a global -45% exposure on a frame that already
+    // measured luma 0.011.
+    col *= mix(1.0, 0.68, clamp(vQuasiShell / 3.8, 0.0, 1.0));
+
     // Soft knee compression
     col /= 1.0 + 0.35 * max(col.r, max(col.g, col.b));
     fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);

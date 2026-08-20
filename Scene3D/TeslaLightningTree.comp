@@ -38,84 +38,210 @@ vec3 hash31(float p) {
     return fract((p3.xxy + p3.yzz) * p3.zyx);
 }
 
-void writeVertex(uint slot, vec3 p, float heat, float branchID) {
+// The camera's own axis, expressed in WORLD space.  The companion .vert orbits
+// everything (yaw about y, then a shallow pitch) before pushing it out to 6.5,
+// so this is that orbit's inverse applied to the view direction (0,0,1).  Set
+// once at the top of main(); the generator is handed the very same `time` and
+// `audioAdvance` the render program gets (Scene3DShader uploads
+// m_timeOffset + time*m_speedFactor to both), so the two agree exactly.
+vec3 gViewAxis = vec3(0.0, 0.0, 1.0);
+
+// attrB.x carries a per-segment GAIN.  The draw is opaque (no additive
+// blending), so a faint element cannot be made faint by drawing less of it --
+// the shading floor in the .frag lights every fragment it covers.  The gain is
+// what lets the surface creep and the corona sparks sit BEHIND the strokes in
+// brightness instead of competing with them.
+void writeVertex(uint slot, vec3 p, float heat, float branchID, float gain) {
     uint o = slot * 8u;
     verts[o + 0u] = p.x;  verts[o + 1u] = p.y;  verts[o + 2u] = p.z;
     verts[o + 3u] = heat;
-    verts[o + 4u] = 0.0;  verts[o + 5u] = 0.0;  verts[o + 6u] = 0.0;
+    verts[o + 4u] = gain; verts[o + 5u] = 0.0;  verts[o + 6u] = 0.0;
     verts[o + 7u] = branchID;
 }
 
-void emitSegment(vec3 pA, vec3 pB, float heat, float branchID, float thickness) {
+void emitSegment(vec3 pA, vec3 pB, float heat, float branchID, float thickness,
+                 float gain) {
     uint base = atomicAdd(cmd[4], 6u);
     if (base + 6u > maxVertices) return;
 
     vec3 dir = pB - pA;
     float len = length(dir);
     dir = (len > 1e-5) ? dir / len : vec3(0.0, 1.0, 0.0);
-    vec3 upv = (abs(dir.y) > 0.95) ? vec3(1.0, 0.0, 0.0) : vec3(0.0, 1.0, 0.0);
-    vec3 side = normalize(cross(dir, upv)) * thickness;
+    // The ribbon has to be widened ACROSS THE SCREEN.  Crossing dir with world
+    // UP -- as this did -- always lands the side vector in the XZ plane, so
+    // every channel running along x came out edge-on to the camera and drew a
+    // zero-width sliver however thick it was asked to be.  Worse, the .vert
+    // ORBITS the whole tree, so which bolts vanish changes as it turns.
+    // Crossing with the camera's own axis faces every ribbon at the lens.
+    vec3 side = cross(dir, gViewAxis);
+    float sl = length(side);
+    side = (sl > 1e-4) ? side * (thickness / sl)
+                       : normalize(cross(dir, vec3(1.0, 0.0, 0.0))) * thickness;
 
     vec3 a0 = pA - side, a1 = pA + side, b0 = pB - side, b1 = pB + side;
-    writeVertex(base + 0u, a0, heat, branchID);
-    writeVertex(base + 1u, a1, heat, branchID);
-    writeVertex(base + 2u, b0, heat, branchID);
-    writeVertex(base + 3u, a1, heat, branchID);
-    writeVertex(base + 4u, b1, heat, branchID);
-    writeVertex(base + 5u, b0, heat, branchID);
+    writeVertex(base + 0u, a0, heat, branchID, gain);
+    writeVertex(base + 1u, a1, heat, branchID, gain);
+    writeVertex(base + 2u, b0, heat, branchID, gain);
+    writeVertex(base + 3u, a1, heat, branchID, gain);
+    writeVertex(base + 4u, b1, heat, branchID, gain);
+    writeVertex(base + 5u, b0, heat, branchID, gain);
 }
+
+// Where bolt `b` strikes the ground.  Shared by the bolt itself and by the
+// surface creep that runs outward from the same point.
+vec2 strikePoint(float b) {
+    float a = hash11(b * 43.3) * 6.2831853;
+    float r = 1.1 + 4.7 * sqrt(hash11(b * 89.1));
+    return vec2(cos(a), sin(a)) * r;
+}
+
+// The discharge is built in three families.  The scan measured the old scene
+// as a narrow 4-unit column of bolts in the middle of a black frame (38 % of
+// the tiles carrying anything): the bolts now strike a ground DISC that
+// crosses the whole picture, surface creep runs outward from each strike, and
+// a sparse corona fills the dielectric volume around the tree.
+const uint BOLT_COUNT  = 128u;
+const uint BOLT_STEPS  = 64u;
+const uint BOLT_SEGS   = BOLT_COUNT * BOLT_STEPS;      // 8192
+const uint CREEP_ARMS  = 192u;
+const uint CREEP_STEPS = 24u;
+const uint CREEP_SEGS  = CREEP_ARMS * CREEP_STEPS;     // 4608
+const uint SPARK_SEGS  = 3072u;
+const float GROUND_Y   = -2.7;
 
 void main() {
     uvec3 g = gl_GlobalInvocationID;
     uint id = g.x + 64u * (g.y + 64u * g.z);
-    const uint TOTAL_SEGMENTS = 4096u;
-    if (id >= TOTAL_SEGMENTS) return;
+    if (id >= BOLT_SEGS + CREEP_SEGS + SPARK_SEGS) return;
+
+    // Mirror of the .vert's orbit, inverted, so emitSegment() can widen every
+    // ribbon across the SCREEN rather than around an arbitrary world axis.
+    float oyaw = time * 0.15 + audioAdvance * 0.07;
+    float ocy = cos(oyaw), osy = sin(oyaw);
+    float opit = -0.12 + 0.10 * sin(time * 0.11);
+    float opc = cos(opit), ops = sin(opit);
+    // mat2(a,b,c,d) is COLUMN-major, so the .vert's two mat2s are R(-oyaw) and
+    // R(-opit); the inverse of the pair applied to the view direction (0,0,1)
+    // is therefore this, pitch undone first and yaw second.
+    gViewAxis = vec3(-osy * opc, -ops, ocy * opc);
 
     float seed = float(id);
-    uint boltIdx = id / 64u;      // 64 main lightning bolts
-    uint stepIdx = id % 64u;      // 64 segment steps per bolt
 
-    float boltSeed = float(boltIdx);
-    vec3 boltOrigin = vec3(
-        (hash11(boltSeed * 13.1) - 0.5) * 1.5,
-        3.2,
-        (hash11(boltSeed * 27.7) - 0.5) * 1.5
-    );
+    if (id < BOLT_SEGS)
+    {
+        // ---- MAIN DISCHARGE TREE ---------------------------------------
+        uint boltIdx = id / BOLT_STEPS;
+        uint stepIdx = id % BOLT_STEPS;
 
-    // Main bolt target ground point
-    vec3 boltTarget = vec3(
-        (hash11(boltSeed * 43.3) - 0.5) * 4.0,
-        -2.5,
-        (hash11(boltSeed * 89.1) - 0.5) * 4.0
-    );
+        float boltSeed = float(boltIdx);
+        vec3 boltOrigin = vec3(
+            (hash11(boltSeed * 13.1) - 0.5) * 1.6,
+            3.4,
+            (hash11(boltSeed * 27.7) - 0.5) * 1.6
+        );
 
-    float t0 = float(stepIdx) / 64.0;
-    float t1 = float(stepIdx + 1u) / 64.0;
+        // Strike points are spread over a disc reaching out to ~5.8 units, so
+        // the fan of bolts opens across the frame instead of hanging in a
+        // narrow column down the middle.
+        vec2 sp = strikePoint(boltSeed);
+        vec3 boltTarget = vec3(sp.x, GROUND_Y, sp.y);
 
-    // Stepped leader jitter / fractal branching
-    vec3 p0 = mix(boltOrigin, boltTarget, t0);
-    vec3 p1 = mix(boltOrigin, boltTarget, t1);
+        float t0 = float(stepIdx) / float(BOLT_STEPS);
+        float t1 = float(stepIdx + 1u) / float(BOLT_STEPS);
 
-    // Fractal lightning noise offset
-    float jitterAmp = sin(t0 * 3.14159) * 0.7 * (1.0 + 0.3 * audioHigh);
-    vec3 jitter0 = (hash31(boltSeed * 100.0 + float(stepIdx)) - vec3(0.5)) * jitterAmp;
-    vec3 jitter1 = (hash31(boltSeed * 100.0 + float(stepIdx + 1u)) - vec3(0.5)) * jitterAmp;
+        // Stepped leader jitter / fractal branching
+        vec3 p0 = mix(boltOrigin, boltTarget, t0);
+        vec3 p1 = mix(boltOrigin, boltTarget, t1);
 
-    p0 += jitter0;
-    p1 += jitter1;
+        // Fractal lightning noise offset; a bolt reaching further out wanders
+        // more on its way there.
+        float wide = 0.55 + 0.13 * length(sp);
+        float jitterAmp = sin(t0 * 3.14159) * 0.7 * wide * (1.0 + 0.3 * audioHigh);
+        vec3 jitter0 = (hash31(boltSeed * 100.0 + float(stepIdx)) - vec3(0.5)) * jitterAmp;
+        vec3 jitter1 = (hash31(boltSeed * 100.0 + float(stepIdx + 1u)) - vec3(0.5)) * jitterAmp;
 
-    // Secondary branching branch creation on higher steps
-    if (stepIdx > 20u && hash11(seed * 7.7) > 0.6) {
-        vec3 branchDir = normalize(p1 - p0 + (hash31(seed * 19.3) - vec3(0.5)) * 1.8);
-        p1 = p0 + branchDir * 0.25;
+        p0 += jitter0;
+        p1 += jitter1;
+
+        // Secondary branching branch creation on higher steps
+        if (stepIdx > 20u && hash11(seed * 7.7) > 0.6) {
+            vec3 branchDir = normalize(p1 - p0 + (hash31(seed * 19.3) - vec3(0.5)) * 1.8);
+            p1 = p0 + branchDir * 0.25;
+        }
+
+        // Return stroke heat / ionization flash
+        float isMainStroke = step(0.85, hash11(boltSeed + floor(time * 3.0)));
+        float heat = (1.0 - t0) * (0.6 + 2.0 * audioKick * isMainStroke);
+
+        float thickness = (0.02 + 0.03 * isMainStroke + 0.015 * audioKick) * (1.0 - t0 * 0.5);
+
+        emitSegment(p0, p1, heat, boltSeed, thickness,
+                    0.60 + 0.40 * isMainStroke);
     }
+    else if (id < BOLT_SEGS + CREEP_SEGS)
+    {
+        // ---- SURFACE CREEP ---------------------------------------------
+        // Lichtenberg figures crawling outward from each strike point along
+        // the dielectric surface: the real behaviour of a discharge that has
+        // run out of gap, and what carries the bottom corners of the frame.
+        uint c    = id - BOLT_SEGS;
+        uint arm  = c / CREEP_STEPS;
+        uint sIdx = c % CREEP_STEPS;
+        float aS  = float(arm);
 
-    // Return stroke heat / ionization flash
-    float boltFlash = fract(time * 3.0 + boltSeed * 0.2);
-    float isMainStroke = step(0.85, hash11(boltSeed + floor(time * 3.0)));
-    float heat = (1.0 - t0) * (0.6 + 2.0 * audioKick * isMainStroke);
+        float bSel = floor(hash11(aS * 5.7) * float(BOLT_COUNT));
+        vec2 anchor = strikePoint(bSel);
 
-    float thickness = (0.02 + 0.03 * isMainStroke + 0.015 * audioKick) * (1.0 - t0 * 0.5);
+        float dir   = hash11(aS * 3.3) * 6.2831853;
+        float curl  = (hash11(aS * 8.9) - 0.5) * 2.2;
+        float reach = 1.2 + 3.6 * hash11(aS * 11.9);
 
-    emitSegment(p0, p1, heat, boltSeed, thickness);
+        float u0 = float(sIdx) / float(CREEP_STEPS);
+        float u1 = float(sIdx + 1u) / float(CREEP_STEPS);
+        float a0 = dir + curl * u0, a1 = dir + curl * u1;
+        vec2 q0 = anchor + vec2(cos(a0), sin(a0)) * reach * u0;
+        vec2 q1 = anchor + vec2(cos(a1), sin(a1)) * reach * u1;
+
+        float jit = 0.11 * (1.0 + 0.4 * audioHigh);
+        vec3 j0 = (hash31(aS * 61.0 + float(sIdx))      - vec3(0.5)) * jit;
+        vec3 j1 = (hash31(aS * 61.0 + float(sIdx + 1u)) - vec3(0.5)) * jit;
+
+        vec3 p0 = vec3(q0.x, GROUND_Y, q0.y) + vec3(j0.x, j0.y * 0.25, j0.z);
+        vec3 p1 = vec3(q1.x, GROUND_Y, q1.y) + vec3(j1.x, j1.y * 0.25, j1.z);
+
+        // Dies away toward the tip, and lights with the same kick as the tree.
+        float fade = 1.0 - u0;
+        float heat = fade * (0.35 + 1.1 * audioKick);
+        emitSegment(p0, p1, heat, bSel, 0.012 + 0.014 * fade,
+                    (0.20 + 0.30 * fade) * (0.8 + 0.5 * audioKick));
+    }
+    else
+    {
+        // ---- CORONA ----------------------------------------------------
+        // Single ionised streamers hanging in the dielectric around the tree.
+        // Placed evenly BY VOLUME (cube root of a uniform variate) inside a
+        // 6-unit ball, which is what the camera's 6.5-unit orbit distance sees
+        // as a full frame; short and thin, so they fill the empty tiles
+        // without covering the strokes behind them.
+        float sf  = float(id - BOLT_SEGS - CREEP_SEGS);
+        vec3  h   = hash31(sf * 1.7 + 3.0);
+        vec3  h2  = hash31(sf * 9.3 + 41.0);
+
+        float rr  = 1.6 * pow(1.0 + 40.0 * h.x, 0.3333);   // 1.6 .. ~5.6
+        float th  = h.y * 6.2831853;
+        float el  = acos(2.0 * h.z - 1.0);
+        vec3  c0  = vec3(sin(el) * cos(th), cos(el) * 0.9 + 0.35, sin(el) * sin(th)) * rr;
+
+        vec3 dirv = normalize(hash31(sf * 3.1 + 7.0) - vec3(0.5) + vec3(0.0, 0.01, 0.0));
+        float len = 0.10 + 0.30 * h2.x;
+        vec3 p0 = c0;
+        vec3 p1 = c0 + dirv * len;
+
+        // Twinkle: a fixed-rate ionisation flicker (absolute time may never be
+        // scaled by an audio value), lifted as a whole by the kick.
+        float tw = pow(fract(h2.y + time * 0.55), 7.0);
+        float heat = 0.05 + 0.45 * tw;
+        emitSegment(p0, p1, heat, floor(h2.z * 64.0), 0.010 + 0.010 * tw,
+                    (0.16 + 0.34 * tw) * (0.85 + 0.45 * audioKick));
+    }
 }

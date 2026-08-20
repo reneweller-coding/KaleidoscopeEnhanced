@@ -67,16 +67,50 @@ void main() {
     vec3 iceCore = vec3(0.85, 0.95, 1.0); // Crystalline white/cyan
     vec3 rainbowFacet = imgPalette(vRefract + time * 0.159);
 
-    // Photo reflection through ice crystal prism
-    vec2 photoUV = vPos.xy * 0.2 + 0.5;
+    // Photo reflection through ice crystal prism. Multiplying the ice by the photo
+    // outright meant a dark slide rendered the whole crystal black; the photo now
+    // TINTS light that the ice carries on its own.
+    // 0.2 was tuned for a single flake sitting on the origin; with the drift now
+    // spread across the whole frustum the same rate tiled the slide a dozen
+    // times over and read as noise.
+    vec2 photoUV = vPos.xy * 0.035 + 0.5;
     vec3 photoCol = img(fract(photoUV));
+    vec3 prism = mix(vec3(1.0), photoCol * 1.7, 0.55);
 
-    // Sparkling specular glints
-    float sparkle = pow(fract(sin(dot(vPos.xy, vec2(12.9898, 78.233)) + time * 4.0) * 43758.5453), 16.0);
-    vec3 glintCol = vec3(1.0) * sparkle * (1.5 + 3.0 * audioKick);
+    // Sparkling specular glints. The hash used to be reseeded by `time * 4.0`
+    // INSIDE the sin, so every frame drew a completely different noise field --
+    // full-rate white-noise flicker. Quantising the seed to ~2 twinkles/second
+    // and anchoring the hash to a fixed spatial cell makes them read as glints
+    // on the ice instead of as video noise (well inside the 8 Hz detail budget).
+    vec2 cell = floor(vPos.xy * 8.0);
+    float twinkle = floor(time * 2.0 + vSector * 0.7);
+    float sh = fract(sin(dot(cell, vec2(12.9898, 78.233)) + twinkle * 1.7) * 43758.5453);
+    float sparkle = pow(sh, 14.0);
+    vec3 glintCol = vec3(1.0) * sparkle * (1.2 + 2.5 * audioKick);
 
-    vec3 col = (mix(iceCore, rainbowFacet, 0.4) * photoCol * 1.8 + glintCol) * ice * glw;
+    // Radial shading along the arm so the crystal has bright core / cool tips
+    // instead of one uniform tone.
+    float radial = 0.45 + 0.75 * (1.0 - vRefract) + 0.35 * pow(vRefract, 3.0);
+
+    vec3 col = (mix(iceCore, rainbowFacet, 0.4) * prism * radial * 0.85 + glintCol)
+               * ice * glw;
+
+    // The generator marks the far ice-dust haze with armID 7 (the flakes use
+    // sector 0..5).  It is a background layer: it must carry the frame's empty
+    // tiles without ever reading as bright as the crystals themselves.
+    float dust = step(6.5, vSector);
+    col *= mix(1.0, 0.34, dust);
+
+    // Aerial perspective. The drift now runs from just in front of the lens out
+    // to ~36 units, and the vert stage adds 6.5 to reach view depth, so
+    // D = vPos.z + 6.5. Lit identically, near and far flakes read as one flat
+    // sheet of confetti; sinking the far ones back restores the depth of a
+    // real snowfall and keeps the many added crystals from summing too bright.
+    float viewD = max(vPos.z + 6.5, 1.0);
+    col *= clamp(7.0 / viewD, 0.26, 1.0);
+
+    col = min(col, vec3(1.25));
 
     col = hueRot(col, hue);   // chromaHue handled inside imgPalette
-    fragColor = vec4(col, 1.0);
+    fragColor = vec4(min(col, vec3(1.0)), 1.0);
 }

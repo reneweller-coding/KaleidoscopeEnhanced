@@ -72,6 +72,15 @@ void main()
                     0.114 + 0.886 * cs - 0.203 * sn);
     col = clamp(hue * col, 0.0, 4.0);
 
+    // The chaos game writes its density in fully-saturated primaries and the
+    // knee above is a per-channel divide, so it compresses the bright channel
+    // harder than the dark ones and SHARPENS hue rather than softening it: over
+    // 47% of the frame came out past HSV saturation 0.8. Pulling a fixed
+    // fraction back toward the flame's own luminance keeps the palette and the
+    // filament structure exactly as the sim drew them, only less screaming.
+    float _fl = dot(col, vec3(0.299, 0.587, 0.114));
+    col = mix(vec3(_fl), col, 0.68);
+
     // The photo only shows where the flame is dark, so it reads as the room
     // the fractal is burning in rather than a competing layer.
     vec3 photo = texture(tex0, uv).rgb;

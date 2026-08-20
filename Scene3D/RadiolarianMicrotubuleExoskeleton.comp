@@ -5,6 +5,12 @@ layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
  * @file RadiolarianMicrotubuleExoskeleton.comp
  * @brief Compute generator companion to RadiolarianMicrotubuleExoskeleton.frag --
  * generates 3D porous icosahedral biosilica skeletons and radial axopodia spicules.
+ *
+ * Builds a PLANKTON FIELD of seven radiolaria spread through the view frustum,
+ * plus a fine silica-dust haze.  Previously one skeleton sat on the origin and
+ * consisted of nothing but 64 radial hairlines -- the porous shell the header
+ * promises was never actually generated -- so the frame was a small spiky ball
+ * adrift in black (measured occ 0.34, luma 0.013).
  */
 
 layout(std430, binding = 0) buffer Verts {
@@ -24,11 +30,42 @@ uniform float audioMid;
 uniform float audioHigh;
 uniform float audioSwell;
 
+// The scene projection: 55 deg vertical FOV (see Scene3DShader::draw), and the
+// camera distance the companion .vert applies.  A generator program gets no
+// `resolution` uniform, so the layout assumes 16:9 -- the house fallback.
+const float kTanY   = 0.5206;
+const float kAspect = 1.7778;
+const float kCam    = 4.8;
+
+const uint ORGS     = 7u;
+const uint SPIC_N   = 48u;                      // radial axopodia per skeleton
+const uint SPIC_S   = 32u;                      // segments per spicule
+const uint SPIC_TOT = SPIC_N * SPIC_S;          // 1536
+const uint ARC_N    = 72u;                      // great-circle shell struts
+const uint ARC_S    = 24u;                      // segments per strut
+const uint ARC_TOT  = ARC_N * ARC_S;            // 1728
+const uint PER_ORG  = SPIC_TOT + ARC_TOT;       // 3264
+const uint ORG_TOT  = PER_ORG * ORGS;           // 22848
+const uint DUST     = 5000u;                    // silica dust motes
+const uint TOTAL    = ORG_TOT + DUST;           // 27848 segs = 167088 vertices
+
 float hash11(float p) {
     p = fract(p * 0.1031);
     p *= p + 53.19;
     p *= p + p;
     return fract(p);
+}
+
+// Each skeleton turns on its own two axes, about ITS OWN centre.  The spin used
+// to live in the vertex stage, where it rotated every position about the world
+// origin -- harmless for a single skeleton sitting there, but it would swing a
+// whole field of them right out of the frustum.
+vec3 spin(vec3 p, float a, float b) {
+    float ca = cos(a), sa = sin(a);
+    p = vec3(p.x * ca - p.z * sa, p.y, p.x * sa + p.z * ca);
+    float cb = cos(b), sb = sin(b);
+    p = vec3(p.x, p.y * cb - p.z * sb, p.y * sb + p.z * cb);
+    return p;
 }
 
 void writeVertex(uint slot, vec3 p, float e1, float e2) {
@@ -46,8 +83,16 @@ void emitSegment(vec3 pA, vec3 pB, float e1, float e2, float thickness) {
     vec3 dir = pB - pA;
     float len = length(dir);
     dir = (len > 1e-5) ? dir / len : vec3(0.0, 1.0, 0.0);
-    vec3 upv = (abs(dir.y) > 0.95) ? vec3(1.0, 0.0, 0.0) : vec3(0.0, 1.0, 0.0);
-    vec3 side = normalize(cross(dir, upv)) * thickness;
+
+    // The ribbon has to be widened ACROSS THE SCREEN, not along the view axis.
+    // Crossing dir with world UP -- as this did -- points the side vector
+    // straight down +Z for every strut that happens to lie in the XY plane, and
+    // those quads come out exactly edge-on to the camera: roughly half the
+    // skeleton was drawn as zero-width slivers whatever thickness was asked
+    // for.  Crossing with the VIEW axis faces every ribbon at the lens.
+    vec3 side = cross(dir, vec3(0.0, 0.0, 1.0));
+    float sl = length(side);
+    side = (sl > 1e-4) ? side * (thickness / sl) : vec3(thickness, 0.0, 0.0);
 
     vec3 a0 = pA - side, a1 = pA + side, b0 = pB - side, b1 = pB + side;
     writeVertex(base + 0u, a0, e1, e2);
@@ -61,35 +106,129 @@ void emitSegment(vec3 pA, vec3 pB, float e1, float e2, float thickness) {
 void main() {
     uvec3 g = gl_GlobalInvocationID;
     uint idx = g.x + 64u * (g.y + 64u * g.z);
-    
-    // 64 radial spicules and 64 concentric strut segments = 4096 invocations
-    uint strutIdx = idx / 64u;
-    uint segIdx   = idx % 64u;
-    if (strutIdx >= 64u) return;
+    if (idx >= TOTAL) return;
 
     float t = time * 0.35 + audioAdvance * 0.3;
-    float seed = hash11(float(strutIdx) * 23.41);
-    
-    // Golden spiral sphere distribution of strut anchors
-    float phi0 = acos(1.0 - 2.0 * (float(strutIdx) + 0.5) / 64.0);
-    float theta0 = 3.14159265 * (1.0 + sqrt(5.0)) * float(strutIdx) + audioPhase * 0.2;
-    
-    vec3 dir0 = vec3(sin(phi0) * cos(theta0), sin(phi0) * sin(theta0), cos(phi0));
-    
-    float s0 = float(segIdx) / 64.0;
-    float s1 = float(segIdx + 1u) / 64.0;
 
-    // Shell radius with undulating breathing
-    float rShell = (1.2 + 0.3 * sin(t * 0.5 + float(strutIdx) * 0.1)) * (1.0 + 0.3 * audioSwell);
-    float rSpicule = rShell + s0 * 1.5;
-    float rSpicule1 = rShell + s1 * 1.5;
+    // ------------------------------------------------------------------
+    // SILICA DUST -- shed spicule fragments drifting through the whole water
+    // volume, spread evenly over the FRUSTUM so the space between the
+    // skeletons reads as ocean rather than as nothing.  The fragment stage
+    // shades these dimmer via a low silicaGlow.
+    // ------------------------------------------------------------------
+    if (idx >= ORG_TOT) {
+        float fi = float(idx - ORG_TOT);
+        float d0 = hash11(fi * 1.731 + 0.13);
+        float d1 = hash11(fi * 3.917 + 4.71);
+        float d2 = hash11(fi * 7.311 + 9.27);
+        float d3 = hash11(fi * 5.109 + 2.53);
 
-    vec3 p0 = dir0 * rSpicule;
-    vec3 p1 = dir0 * rSpicule1;
+        float dz    = 3.0 + 15.0 * d0;
+        float halfH = dz * kTanY;
+        float halfW = halfH * kAspect;
 
-    // Silica glass glow and kick pulse
-    float glow = (1.0 - s0 * 0.5) * (1.0 + 2.5 * audioKick);
-    float thick = (0.015 * (1.0 - s0 * 0.5)) * (1.0 + 0.4 * audioSwell);
+        // Slow sink with a lateral sway; the wrap keeps the field uniform.
+        // Only CONSTANT per-mote factors ever multiply the clock.
+        float fall = fract(d1 + t * 0.030 * (0.5 + d3));
+        float sway = sin(t * 0.5 + d2 * 6.2831853) * 0.05;
 
-    emitSegment(p0, p1, rSpicule / 2.7, glow, thick);
+        vec3 c = vec3((d2 * 2.0 - 1.0 + sway) * halfW * 1.05,
+                      (1.05 - 2.10 * fall) * halfH,
+                      dz - kCam);
+        float ang = d3 * 6.2831853 + t * 0.4;
+        vec3  dd  = vec3(cos(ang), sin(ang), 0.0);
+        float hl  = halfH * 0.0065;
+        emitSegment(c - dd * hl, c + dd * hl,
+                    d1, 0.30 * (0.6 + 0.8 * d3) * (1.0 + 0.6 * audioKick),
+                    halfH * 0.0035);
+        return;
+    }
+
+    // ------------------------------------------------------------------
+    // ONE SKELETON OF THE BLOOM
+    // ------------------------------------------------------------------
+    uint org = idx / PER_ORG;
+    uint li  = idx % PER_ORG;
+
+    float fo = float(org);
+    float o0 = hash11(fo * 13.77 + 2.10);
+    float o1 = hash11(fo *  6.41 + 8.30);
+    float o2 = hash11(fo * 21.09 + 1.70);
+    float o3 = hash11(fo *  4.63 + 5.90);
+    float o4 = hash11(fo * 17.23 + 3.30);
+
+    // FRUSTUM placement: a skeleton's size is a fixed fraction of the frame at
+    // ITS depth, so a far one reads the same size as a near one instead of
+    // shrinking away into the dark.
+    float dz    = 4.0 + 13.0 * o0;
+    float halfH = dz * kTanY;
+    float halfW = halfH * kAspect;
+    vec3  ctr = vec3((o1 * 2.0 - 1.0) * halfW * 0.86,
+                     (o2 * 2.0 - 1.0) * halfH * 0.80,
+                     dz - kCam);
+    float scale = halfH * (0.30 + 0.20 * o3);
+
+    float sa = time * (0.10 + 0.10 * o3) + o4 * 6.2831853 + audioAdvance * 0.10;
+    float sb = time * (0.07 + 0.06 * o4) + o1 * 6.2831853;
+
+    // Shell radius with undulating breathing (in units of `scale`).
+    float rShell = (0.62 + 0.10 * sin(t * 0.5 + fo * 1.7)) * (1.0 + 0.3 * audioSwell);
+
+    vec3  p0, p1;
+    float radiusOut, glow, thick;
+
+    if (li < SPIC_TOT) {
+        // ---- RADIAL AXOPODIA SPICULES --------------------------------
+        uint strutIdx = li / SPIC_S;
+        uint segIdx   = li % SPIC_S;
+
+        float phi0   = acos(1.0 - 2.0 * (float(strutIdx) + 0.5) / float(SPIC_N));
+        float theta0 = 3.14159265 * (1.0 + sqrt(5.0)) * float(strutIdx)
+                     + audioPhase * 0.2 + fo * 1.13;
+        vec3 dir0 = vec3(sin(phi0) * cos(theta0), sin(phi0) * sin(theta0), cos(phi0));
+
+        float s0 = float(segIdx)      / float(SPIC_S);
+        float s1 = float(segIdx + 1u) / float(SPIC_S);
+        float rA = rShell + s0 * 0.75;
+        float rB = rShell + s1 * 0.75;
+
+        p0 = dir0 * rA;
+        p1 = dir0 * rB;
+        radiusOut = rA / 1.4;
+        glow  = (1.0 - s0 * 0.5) * (1.0 + 2.5 * audioKick);
+        thick = halfH * 0.0062 * (1.0 - s0 * 0.5) * (1.0 + 0.4 * audioSwell);
+    } else {
+        // ---- POROUS SHELL LATTICE ------------------------------------
+        // Great circles woven around the shell.  This is the "concentric
+        // icosahedral lattice" the scene is named for and it was simply never
+        // built: without it the skeleton is a bare sea-urchin of hairlines
+        // with nothing between the spines.
+        uint a  = (li - SPIC_TOT) / ARC_S;
+        uint sg = (li - SPIC_TOT) % ARC_S;
+
+        float phiA   = acos(1.0 - 2.0 * (float(a) + 0.5) / float(ARC_N));
+        float thetaA = 3.14159265 * (1.0 + sqrt(5.0)) * float(a) + fo * 2.31;
+        vec3 axis = vec3(sin(phiA) * cos(thetaA), sin(phiA) * sin(thetaA), cos(phiA));
+        vec3 ref  = (abs(axis.z) > 0.9) ? vec3(1.0, 0.0, 0.0) : vec3(0.0, 0.0, 1.0);
+        vec3 e1   = normalize(cross(axis, ref));
+        vec3 e2   = cross(axis, e1);
+
+        float u0 = (float(sg)      / float(ARC_S)) * 6.2831853;
+        float u1 = (float(sg + 1u) / float(ARC_S)) * 6.2831853;
+        // A slow ripple over the shell keeps the lattice breathing rather than
+        // reading as a rigid wire globe.
+        float rr0 = rShell * (1.0 + 0.055 * sin(u0 * 3.0 + t * 0.8 + fo));
+        float rr1 = rShell * (1.0 + 0.055 * sin(u1 * 3.0 + t * 0.8 + fo));
+
+        p0 = (e1 * cos(u0) + e2 * sin(u0)) * rr0;
+        p1 = (e1 * cos(u1) + e2 * sin(u1)) * rr1;
+        radiusOut = rShell / 1.4;
+        glow  = 0.70 * (1.0 + 1.6 * audioKick);
+        thick = halfH * 0.0042 * (1.0 + 0.4 * audioSwell);
+    }
+
+    p0 = ctr + spin(p0, sa, sb) * scale;
+    p1 = ctr + spin(p1, sa, sb) * scale;
+
+    emitSegment(p0, p1, radiusOut, glow, thick);
 }

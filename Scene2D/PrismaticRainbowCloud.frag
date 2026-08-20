@@ -67,6 +67,19 @@ vec3 hueRot(vec3 c, float a) {
     return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
 }
 
+// Overall level of the photo currently on the texture units, from a fixed
+// 5-tap grid. The nacreous colour is imgPalette (a photo sample) and the
+// cirrus layer is the photo itself, so a bright photo left the god rays and
+// the sparkles no headroom at all. The probe rides the tex0/tex1 crossfade, so
+// the gain it feeds can never pop, and being one number for the whole frame it
+// rescales exposure without touching local contrast.
+float photoLevel() {
+    vec3 s = img(vec2(0.25, 0.25)) + img(vec2(0.75, 0.25))
+           + img(vec2(0.25, 0.75)) + img(vec2(0.75, 0.75))
+           + img(vec2(0.50, 0.50));
+    return dot(s * 0.2, vec3(0.299, 0.587, 0.114));
+}
+
 float hash21(vec2 p) {
     p = fract(p * vec2(219.78, 483.12));
     p += dot(p, p + 67.21);
@@ -126,29 +139,40 @@ void main() {
     float sunDist = length(toSun);
     float sunAngle = atan(toSun.y, toSun.x);
     float godRay = (0.5 + 0.5 * sin(sunAngle * 18.0 + t * 0.5)) * exp(-sunDist * 1.5) * ry;
-    vec3 rayColor = vec3(1.0, 0.85, 0.6) * godRay * (1.0 + audioKick * 2.0);
+    // rayP alone reaches 2.2 and a kick trebles it, so the TINTED vector
+    // carries the cap; bounding the scalar would have left the tint free.
+    vec3 rayColor = min(vec3(1.0, 0.85, 0.6) * godRay * (1.0 + audioKick * 2.0), vec3(1.05));
+
+    // Hold the sheet back to a fixed exposure: both the cirrus layer and the
+    // iridescence are photo samples, so a light photo used to pin the whole sky
+    // near 1.0 with nothing left for the rays.
+    float expGain = clamp(0.30 / max(0.05, photoLevel()), 0.30, 2.4);
 
     // Twilight deep blue to violet background sky
     vec3 skyColor = mix(vec3(0.02, 0.05, 0.15), vec3(0.12, 0.08, 0.22), st.y);
 
     // Input photo blend as high-altitude cirrus texture
     vec3 photo = img(st);
-    skyColor += photo * 0.25;
+    skyColor += photo * expGain * 0.55;
 
     // Combine nacreous cloud shading
-    vec3 nacreous = iridColor * cloudDensity * 1.6;
+    vec3 nacreous = iridColor * expGain * cloudDensity * 2.1;
     vec3 col = mix(skyColor, nacreous, clamp(cloudDensity * 1.2, 0.0, 1.0));
-    col += rayColor * 0.6;
+    col += rayColor * 0.5;
 
     // Lens sparkle on beats
     if (audioHigh > 0.4) {
         float sparkle = hash21(floor(uv * 40.0) + floor(time * 20.0));
         if (sparkle > 0.97 && cloudDensity > 0.3) {
-            col += vec3(1.2, 1.1, 1.0) * audioHigh * 1.5;
+            col += min(vec3(1.2, 1.1, 1.0) * audioHigh * 1.5, vec3(0.85));
         }
     }
 
     if (hue > 0.001) col = hueRot(col, hue);
 
-    fragColor = vec4(col, 1.0);
+    // Soft-knee exposure so a thick, sunlit cloud bank compresses instead of
+    // clipping the whole stratosphere to paper white.
+    vec3 _catTone = clamp(col, 0.0, 1.0);
+    _catTone /= 1.0 + 0.26 * max(_catTone.r, max(_catTone.g, _catTone.b));
+    fragColor = vec4(_catTone, 1.0);
 }

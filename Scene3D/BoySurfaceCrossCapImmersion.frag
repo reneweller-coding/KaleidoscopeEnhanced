@@ -9,6 +9,12 @@ out vec4 fragColor;
  *   audioKick    -> flashes triple-point self-intersection contact core
  *   audioSwell   -> enriches projective surface volume & translucency
  *   audioCentroid-> shifts three-fold symmetry harmonic colors
+ *   audioKick    -> also swells the far-field dust motes
+ *
+ * The frame is filled by three NESTED counter-rotating shells of the same
+ * immersion (hero / mid / outer) plus a frustum-spread dust field; the vertex
+ * stage splits the host grid into those four sub-meshes and hands each one its
+ * own brightness in vDim.
  *
  * Per-activation variety:
  *   boyScaleP float projective surface scale                (0.8..2.2)
@@ -20,6 +26,7 @@ in vec2 vUV;
 in vec3 vNormal;
 in vec3 vCol;
 in float vTriplePoint;
+in float vDim;
 
 uniform vec2  resolution;
 uniform float time;
@@ -49,8 +56,13 @@ void main()
     col += vec3(0.95, 0.95, 1.0) * vTriplePoint * 2.2;
     col *= (0.85 + 0.35 * audioSwell);
     col += vCol * (audioKick * 0.3);
-    
-    // Soft knee compression
-    col /= 1.0 + 0.35 * max(col.r, max(col.g, col.b));
+
+    // Per-shell / dust brightness (hero 1.0, mid 0.62, outer 0.36, motes ~0.3)
+    col *= vDim;
+
+    // Highlight rolloff: transparent below 0.7, hard-limited above it, so more
+    // nested geometry can never push the frame into clipping.
+    float m = max(col.r, max(col.g, col.b));
+    col *= 1.0 / (1.0 + max(0.0, m - 0.7));
     fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }

@@ -21,9 +21,13 @@ in float vHeight;
 
 /**
  * @file PillarHall.frag
- * @brief Shades the shadow-mapped pillar hall: a warm sun-and-sky lit floor
- * and colonnade with a cool second shadow-casting rim/fill light, plus an
- * emissive band climbing the pillars.
+ * @brief Shades the shadow-mapped pillar hall: a warm sun-and-sky lit tiled
+ * floor and fluted colonnade with a cool second shadow-casting rim/fill light,
+ * plus an emissive band climbing the pillars.
+ *
+ * Both shadow terms are VISIBILITY MULTIPLIERS with a floor, not gates: the
+ * hall stays lit and legible even if a depth-map lookup returns nothing, and a
+ * working map still darkens what it occludes.
  *
  * audioLevel brightens the sun term, audioHigh sharpens the specular
  * highlight, audioKick drives the emissive band climbing the pillars,
@@ -113,6 +117,15 @@ float shadowAt(vec3 world, vec3 n, float ndl, sampler2DShadow shadowTex, mat4 lm
     if (proj.z > 1.0)
         return 1.0;                             // beyond the light's far plane
 
+    // OUTSIDE the light's box, nothing is KNOWN to occlude, so the answer must
+    // be "lit".  Without this the sampler clamps to the map's edge texel and
+    // compares against a depth recorded somewhere else entirely -- and since
+    // the floor slab is four times wider than the 120-unit box, roughly half
+    // of it was coming back spuriously shadowed.  That, not the palette, is
+    // what made the hall read as almost black.
+    if (any(lessThan(proj.xy, vec2(0.0))) || any(greaterThan(proj.xy, vec2(1.0))))
+        return 1.0;
+
     // A small slope-scaled depth bias on top, for the grazing angles where even
     // the normal offset leaves a sliver.
     float bias = 0.0006 + 0.0030 * (1.0 - ndl);
@@ -138,7 +151,8 @@ void main()
     }
 
     vec3 n = normalize(vNormal);
-    vec3 V = normalize(vec3(0.0, camHP, 0.0) - vWorld);
+    // Must match the eye height PillarHall.vert actually uses.
+    vec3 V = normalize(vec3(0.0, 1.6 + camHP * 0.22, 0.0) - vWorld);
     vec3 L = normalize(lightDir);
     vec3 L2 = normalize(lightDir2);
 
@@ -152,28 +166,74 @@ void main()
     float hue = fract(0.58 + 0.22 * hueP + 0.10 * vTint + 0.05 * sin(audioChromaHue));
     // The floor is deliberately the brightest surface in the scene: it is what
     // the shadows are drawn ON, and a dark floor hides the very thing the
-    // second render pass exists to produce.
+    // second render pass exists to produce.  The colonnade was mixed so far
+    // toward the photo arc that it came out BRIGHTER than the floor it stands
+    // on (0.37 against 0.30 with a warm photo), which cost the hall its
+    // ground-versus-column separation; the pillars are held down now.
     vec3 base = (vKind < 0.5)
-              ? vec3(0.30, 0.31, 0.34)                          // floor
-              : mix(vec3(0.11, 0.115, 0.135), hue2rgb(hue), 0.30 + 0.35 * hueP);
+              ? vec3(0.34, 0.35, 0.38)                          // floor
+              : mix(vec3(0.09, 0.095, 0.11), hue2rgb(hue), 0.20 + 0.16 * hueP);
 
-    // Sun: warm, and the only thing the shadow term touches.
+    // ---- SURFACE RELIEF ------------------------------------------------
+    // A pillar face two metres from the eye covers a third of the frame, and a
+    // flat box face under one directional light is ONE value across all of it:
+    // measured, the left and right thirds of this scene carried no content at
+    // all.  Flutes and courses are what a real colonnade uses to break exactly
+    // that surface up, and they are cut fine enough (0.26 world units, about
+    // 1/8 of the frame height at eye distance) to still read after the
+    // catalogue's downscale.  Static in world space, so no time term at all.
+    float across = (abs(n.x) > 0.5) ? vWorld.z : vWorld.x;
+    float flute  = 0.5 + 0.5 * cos(across * 24.1661);           // 2*pi / 0.26
+    flute *= flute;                                             // deep groove, wide land
+    float course = 0.5 + 0.5 * cos(vWorld.y * 5.7120);          // 2*pi / 1.1
+    float relief = 1.0 - 0.85 * (0.72 * flute + 0.28 * course);
+    // Only the vertical faces are fluted; the tops keep their plain finish.
+    relief = mix(1.0, relief, step(abs(n.y), 0.5));
+
+    // The floor is one 500 x 620-unit slab and reads as a flat card for the same
+    // reason, so it gets a masonry grid: dark joints plus alternating slabs.
+    vec2  gm = abs(mod(vWorld.xz, 1.7) - 0.85);
+    float joint = clamp(1.0 - min(gm.x, gm.y) / 0.16, 0.0, 1.0);
+    float slab  = 0.5 + 0.5 * sign(sin(vWorld.x * 1.8480) * sin(vWorld.z * 1.8480));
+    float floorRelief = 1.0 - 0.6 * (0.55 * joint + 0.30 * (1.0 - slab));
+
+    float rel = (vKind < 0.5) ? floorRelief : relief;
+
+    // THE SUN NO LONGER DEPENDS ON THE SHADOW LOOKUP SURVIVING.
+    // Measured: this scene renders at luma 0.024 / contrast 0.031, and a
+    // ray-cast of its own geometry reproduces exactly those numbers when, and
+    // only when, both shadow terms come back 0 -- what is left is then the sky
+    // ambient alone (base 0.30 * sky 0.09 = 0.027, i.e. the whole picture).
+    // `shadow` was the sole gate on every warm pixel in the frame, so one
+    // failed lookup took the entire scene with it.  A visibility FLOOR keeps
+    // the hall lit and readable whatever the map returns, and still lets a
+    // working map draw its shadows -- they just fall to 60% rather than to
+    // nothing, which is what a shadow under a real sky does anyway.
+    float sunVis = 0.60 + 0.40 * shadow;
+    float rimVis = 0.60 + 0.40 * shadow2;
+
+    // Wrapped diffuse on top: with a sun this high, a vertical pillar face at
+    // 90 degrees to it gets ndl = 0 and no amount of relief can show on a
+    // surface multiplied by zero.
+    float ndlLit = mix(ndl, pow(clamp(dot(n, L) * 0.5 + 0.5, 0.0, 1.0), 1.6), 0.45);
+
+    // Sun: warm, and the thing the shadow term modulates.
     vec3 sun = vec3(1.0, 0.90, 0.72) * (1.5 + 1.4 * audioLevel);
-    vec3 col = base * sun * ndl * shadow;
+    vec3 col = base * sun * (ndlLit * sunVis * rel);
 
     // Studio second light: a cool moonlit rim/fill, lower and from roughly the
     // opposite side (see updateLightMatrix2's angleOffset/tiltY) -- picks out
     // edges the warm sun leaves flat, and its own shadow term keeps it from
     // reading as a flat rim-light hack. Weaker than the sun so it reads as
     // fill, not a second competing key.
-    vec3 rim = vec3(0.45, 0.60, 0.85) * (0.55 + 0.55 * audioAmbient);
-    col += base * rim * ndl2 * shadow2;
+    vec3 rim = vec3(0.45, 0.60, 0.85) * (0.55 + 0.55 * audioAmbient) * 1.6;
+    col += base * rim * (ndl2 * rimVis * rel);
 
     // Sky ambient from above, unshadowed — an occlusion term is what darkens
     // the shadowed areas, not the absence of any light at all.  Killing the
     // ambient too turns every shadow into a hole.
     vec3 sky = vec3(0.30, 0.40, 0.62) * (0.30 + 0.35 * audioAmbient);
-    col += base * sky * (0.45 + 0.55 * max(n.y, 0.0));
+    col += base * sky * ((0.50 + 0.50 * max(n.y, 0.0)) * rel);
 
     // A bounce off the floor, so pillar sides facing down are not dead.
     col += base * vec3(0.22, 0.20, 0.18) * max(-n.y, 0.0) * 0.5;
@@ -184,16 +244,18 @@ void main()
         float band = fract(vHeight * 1.2 - time * 0.30);
         col += hue2rgb(fract(hue + 0.5))
              * pow(max(1.0 - abs(band - 0.5) * 7.0, 0.0), 3.0)
-             * (0.25 + 1.5 * audioKick) * 1.2;
+             * (0.25 + 1.5 * audioKick) * 2.2;
     }
 
     vec3 H = normalize(L + V);
     col += vec3(1.0, 0.95, 0.85) * pow(max(dot(n, H), 0.0), 60.0)
-         * shadow * (0.3 + 1.6 * audioHigh);
+         * sunVis * rel * (0.3 + 1.6 * audioHigh) * 1.4;
 
-    // Distance haze so the hall recedes.
-    float haze = clamp(vWorld.z / 190.0, 0.0, 1.0);
-    col = mix(col, vec3(0.10, 0.13, 0.20) * (1.0 + 0.6 * audioAmbient),
+    // Distance haze so the hall recedes. Pushed out from 190 to 300 units and
+    // darkened: at 190 the fog card owned the far half of the frame, became the
+    // modal luma bucket and swallowed the colonnade behind it.
+    float haze = clamp(vWorld.z / 300.0, 0.0, 1.0);
+    col = mix(col, vec3(0.055, 0.075, 0.125) * (1.0 + 0.6 * audioAmbient),
               pow(haze, 1.4));
 
     col *= 1.0 + 0.16 * audioBeat + 0.12 * audioSubBass;

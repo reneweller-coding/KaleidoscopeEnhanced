@@ -2,9 +2,10 @@
 out vec4 fragColor;
 /**
  * @file HyperbolicPseudosphereTractroid.frag
- * @brief HYPERBOLIC PSEUDOSPHERE TRACTROID: Pseudosphere of constant negative Gaussian curvature
- * (K = -1, the surface of revolution of the tractrix). Flared trumpet horn cusps, hyperbolic geodesic
- * streamlines, glass specular sheen, and non-Euclidean photo texturing.
+ * @brief HYPERBOLIC PSEUDOSPHERE TRACTROID: a 5 x 4 LATTICE of pseudospheres of constant negative
+ * Gaussian curvature (K = -1, the surface of revolution of the tractrix), each turning on its own
+ * axis and hung in frustum coordinates so the lattice spans the whole frame. Flared trumpet horn
+ * cusps, hyperbolic geodesic streamlines, glass specular sheen, and non-Euclidean photo texturing.
  *   audioAdvance -> navigates hyperbolic tractrix geodesic flow & horn rotation
  *   audioKick    -> flashes singular equator rim & cusp specular reflections
  *   audioSwell   -> widens pseudosphere trumpet flare radius & wall transmission

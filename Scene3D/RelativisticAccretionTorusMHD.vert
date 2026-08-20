@@ -52,6 +52,36 @@ vec3 palTint(vec3 c, float t, float k)
     return mix(c, tp, k);
 }
 
+// ---- Cross-section of the accretion structure ------------------------------
+// (rho, h) traced as v runs once around the tube.  For |v| < pi/2 this is the
+// plain Polish-donut tube; past that the INNER half of the tube flares
+// smoothly outward into the thin, tapering, spiral-corrugated accretion flow
+// that feeds it.  One continuous surface, so the grid mesh never has to
+// stretch a row of quads between two separate bodies -- and the flow is what
+// carries the picture out to its edges instead of leaving the donut as a
+// small bright ring in the middle of a black frame.
+vec2 crossSection(float v, float u, float R, float r, float Rout, float t)
+{
+    float s     = min(abs(v) * 0.31830989, 1.0);          // |v| / pi
+    float skirt = smoothstep(0.50, 1.0, s);
+    float ripple = sin(u * 6.0 - v * 4.0 - t * 3.0) * 0.12;   // MHD turbulence
+    float rr  = r * (1.0 + ripple);
+    float rho = R + rr * cos(v) + skirt * (Rout - R - rr);
+    // sin(v) -> 0 at the seam, so the two skirt sheets close into a tapered
+    // outer rim instead of landing on each other and z-fighting.
+    float h   = rr * sin(v) * (1.0 - 0.82 * skirt);
+    // Spiral density waves warp the flow (and give the outer disc the local
+    // shading variation that stops it reading as one flat plate).
+    h += skirt * 0.05 * rho * sin(u * 3.0 - rho * 2.0 - t * 1.6);
+    return vec2(rho, h);
+}
+
+vec3 surfacePos(float u, float v, float R, float r, float Rout, float t)
+{
+    vec2 c = crossSection(v, u, R, r, Rout, t);
+    return vec3(c.x * cos(u), c.x * sin(u), c.y);
+}
+
 void main()
 {
     // Remap patch UV [0,1] to centered [-1,1] domain
@@ -66,29 +96,32 @@ void main()
     
     float R_torus = (torusRadiusP > 0.01 ? torusRadiusP : 1.3);
     float r_tube  = (torusThickP > 0.01 ? torusThickP : 0.65) * (0.85 + 0.3 * audioSwell);
-    
-    // Magnetohydrodynamic spiral turbulent ripples on torus surface
-    float mhdWaves = sin(u * 6.0 - v * 4.0 - t * 3.0) * 0.12;
-    float currentR = r_tube * (1.0 + mhdWaves);
-    
-    float cu = cos(u), su = sin(u);
-    float cv = cos(v), sv = sin(v);
-    
-    vec3 worldPos = vec3(
-        (R_torus + currentR * cv) * cu,
-        (R_torus + currentR * cv) * su,
-        currentR * sv
-    );
-    
-    vNormal = normalize(vec3(cv * cu, cv * su, sv));
-    
+    // Outer edge of the accretion flow, sized against the camera distance
+    // below so the flow always reaches the left and right frame edges.
+    float R_out = 4.6 + 1.6 * R_torus;
+
+    float su = sin(u);
+
+    vec3 worldPos = surfacePos(u, v, R_torus, r_tube, R_out, t);
+
+    // True geometric normal of whatever the cross-section builds (the analytic
+    // torus normal is wrong everywhere on the flared skirt).
+    const float du = 0.006, dv = 0.006;
+    vec3 pU = surfacePos(u + du, v, R_torus, r_tube, R_out, t);
+    vec3 pV = surfacePos(u, v + dv, R_torus, r_tube, R_out, t);
+    vNormal = normalize(cross(pU - worldPos, pV - worldPos));
+
     // Relativistic Doppler beaming factor: g = 1 / (gamma * (1 - v/c * cos(theta)))
     // Material moving towards observer on left side is blueshifted & boosted
     float doppler = -su * 0.45;
     vDoppler = doppler;
     
-    // Accretion plasma color
-    vec3 plasmaCol = mix(vec3(1.0, 0.4, 0.1), vec3(0.3, 0.8, 1.0), clamp(doppler + 0.5, 0.0, 1.0));
+    // Accretion plasma color, with the radial temperature gradient of a real
+    // disc: the inner flow is the hot bright part, the outer flow cools off.
+    float rho  = length(worldPos.xy);
+    float temp = clamp(1.35 - rho / R_out, 0.0, 1.0);
+    vec3 plasmaCol = mix(vec3(1.0, 0.4, 0.1), vec3(0.3, 0.8, 1.0), clamp(doppler + 0.5, 0.0, 1.0))
+                   * (0.50 + 0.60 * temp);
     vCol = palTint(plasmaCol, u * 0.15 + audioCentroid, 0.25);
     
     // Camera Transform (V3): tilt BEFORE the translate -- applied after,
@@ -98,9 +131,14 @@ void main()
     float tilt = 0.65;
     float c = cos(tilt), s = sin(tilt);
     vp = vec3(vp.x, vp.y * c - vp.z * s, vp.y * s + vp.z * c);
-    vp.z += 4.5;
+    // 6.5 rather than 4.5: with the flow now reaching R_out the frame is filled
+    // from this distance, and the near rim still stays well in front of the
+    // camera (6.5 - R_out*sin(tilt) is about 2 units at the widest preset).
+    vp.z += 6.5;
     vp.x -= eyeOff;
-    
+
     gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
+    if (vp.z < 0.4)
+        gl_Position = vec4(0.0, 0.0, -3.0, 1.0);
 }

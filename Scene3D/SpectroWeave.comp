@@ -51,10 +51,14 @@ uniform float spreadP;      // preset: bundle radius
 uniform float thickP;       // preset: strand thickness
 
 const int BANDS = 32;
-const int SEGS  = 128;
+const int SEGS  = 112;               // 32 x 112 = 3584 of the 4096 threads
 const int SIDES = 5;
 const float DEPTH    = 170.0;
 const float AGE_SPAN = 0.84;
+// The remaining 512 threads become the dust the cable hangs in.  A bundle,
+// however wide, is a CONE on screen -- it converges on the vanishing point and
+// leaves the corners of the frame black.  The dust is what fills them.
+const uint DUST_BASE = uint(BANDS * SEGS);
 
 // Energy of band b at the given age, straight from the ring.
 float energyAt(int b, float age)
@@ -70,7 +74,11 @@ float energyAt(int b, float age)
 // like a rolled-up sheet.
 vec3 strandAt(int b, float z)
 {
-    float r = spreadP * (1.6 + 4.6 * fract(float(b) * 0.6180339));
+    // Bundle radius.  At 1.6..6.2 the whole cable fitted inside a third of the
+    // frame's height by the time it was far enough away to be in focus; this
+    // spread lets the outer strands sweep past the camera at the frame's edges
+    // while the inner ones still read as a braid.
+    float r = spreadP * (4.0 + 13.0 * fract(float(b) * 0.6180339));
     float th = float(b) * 2.39996323 + twistP * z * 0.055 + audioAdvance * 0.11;
     return vec3(r * cos(th), r * sin(th), z);
 }
@@ -88,8 +96,32 @@ void main()
 {
     uvec3 g = gl_GlobalInvocationID;
     uint id = g.x + 64u * (g.y + 64u * g.z);
-    if (id >= uint(BANDS * SEGS))
+    if (id >= 4096u)
         return;
+
+    // ---- DUST ---------------------------------------------------------
+    // Only the seeds are produced here; SpectroWeave.vert lays the motes out
+    // across the FRUSTUM, because it is the stage that knows the aspect
+    // ratio.  band = -1 is the marker both later stages test.
+    if (id >= DUST_BASE)
+    {
+        float fh = float(id - DUST_BASE);
+        float hx = fract(sin(fh * 1.113 + 0.37) * 43758.5453);
+        float hy = fract(sin(fh * 2.371 + 5.11) * 24634.6345);
+        float hz = fract(sin(fh * 0.733 + 9.73) * 31415.9265);
+        float hs = fract(sin(fh * 3.191 + 2.29) * 19937.1234);
+
+        uint dbase = atomicAdd(cmd[4], 6u);
+        if (dbase + 6u > maxVertices)
+            return;
+
+        vec2 cn[6] = vec2[6](vec2(0.0, 0.0), vec2(1.0, 0.0), vec2(0.0, 1.0),
+                             vec2(1.0, 0.0), vec2(1.0, 1.0), vec2(0.0, 1.0));
+        for (uint i = 0u; i < 6u; ++i)
+            writeVertex(dbase + i, vec3(hx, hy, hz),
+                        vec3(cn[i], 0.0), hs, -1.0);
+        return;
+    }
 
     int band = int(id) % BANDS;
     int seg  = int(id) / BANDS;
@@ -112,8 +144,21 @@ void main()
     // Kept thin.  A strand's job is to be one thread among thirty-two, and at
     // the thickness a single tube would want, the near ones swallow the frame
     // and the braid stops being visible at all.
-    float r0 = thickP * (0.020 + 0.155 * e0) * (1.0 + 0.25 * audioKick);
-    float r1 = thickP * (0.020 + 0.155 * e1) * (1.0 + 0.25 * audioKick);
+    //
+    // ...but "thin" has a hard floor, and it is a SCREEN-SPACE one.  The bundle
+    // runs from z = 6 to z = 176, and at a world-constant radius a strand's
+    // on-screen width falls off as 1/z: measured, a mid-loudness band came out
+    // 3.4 px wide at 1080p by z = 60 and 1.4 px by z = 150.  The frame is
+    // downscaled ~6x before anything -- eye or scan -- looks at it, so
+    // everything past the near quarter of the cable was averaged straight out
+    // of the picture, which is why the scene read as a dark, empty frame with
+    // a bright knot in the middle.  Scaling the floor by the segment's own
+    // depth pins the far strands at ~7 px at 1080p while leaving the near ones
+    // (where the energy term is already far above the floor) untouched.
+    float r0 = max(thickP * (0.045 + 0.300 * e0) * (1.0 + 0.25 * audioKick),
+                   0.0034 * z0);
+    float r1 = max(thickP * (0.045 + 0.300 * e1) * (1.0 + 0.25 * audioKick),
+                   0.0034 * z1);
 
     vec3 dir = p1 - p0;
     float L = length(dir);

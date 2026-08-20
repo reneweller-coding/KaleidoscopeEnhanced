@@ -74,8 +74,15 @@ mat2 rot2D(float a) {
 
 // Ferrofluid heightfield function
 float ferroHeight(vec2 p, float t, float spk, float far) {
-    // Hexagonal magnetic lattice pattern
-    vec2 hex = p * 4.0;
+    // Hexagonal magnetic lattice pattern.
+    // Lattice and ripple frequencies both dropped (4.0 -> 2.4, 18.0 -> 7.0).
+    // At the old rates the surface slope changed faster than the picture can
+    // resolve: neighbouring pixels got completely unrelated normals, so the
+    // mirror lookup below sampled unrelated parts of the photo and the whole
+    // pool averaged down to one flat mid grey (measured contrast 0.034). At
+    // these rates the spike lattice and the standing waves are individually
+    // VISIBLE, which is the entire point of the scene.
+    vec2 hex = p * 2.4;
     float h1 = sin(hex.x);
     float h2 = sin(-0.5 * hex.x + 0.866 * hex.y);
     float h3 = sin(-0.5 * hex.x - 0.866 * hex.y);
@@ -86,7 +93,7 @@ float ferroHeight(vec2 p, float t, float spk, float far) {
 
     // Faraday standing waves
     float r = length(p);
-    float faraday = sin(r * 18.0 - t * 6.0) * cos(atan(p.y, p.x) * 6.0) * 0.08 * far * (1.0 + audioBass);
+    float faraday = sin(r * 7.0 - t * 6.0) * cos(atan(p.y, p.x) * 6.0) * 0.09 * far * (1.0 + audioBass);
 
     return spikes + faraday;
 }
@@ -132,18 +139,34 @@ void main() {
     vec3 col = vec3(0.04, 0.05, 0.08);
 
     if (hitDist > 0.0) {
-        // Normal computation via finite differences
-        vec2 e = vec2(0.005, 0.0);
+        // Normal computation via finite differences. eps widened to band-limit
+        // the slope: a 0.005 stencil resolved detail finer than a pixel, which
+        // is what turned the mirror into noise.
+        vec2 e = vec2(0.014, 0.0);
         float hL = ferroHeight(p.xz - e.xy, t, spk, far);
         float hR = ferroHeight(p.xz + e.xy, t, spk, far);
         float hD = ferroHeight(p.xz - e.yx, t, spk, far);
         float hU = ferroHeight(p.xz + e.yx, t, spk, far);
         vec3 n = normalize(vec3(hL - hR, 2.0 * e.x, hD - hU));
 
-        // Chrome mirror reflection
+        // Chrome mirror reflection.
+        // fract() wrapped the whole photo every 2 units of refl.xz, so the
+        // slightest change of slope jumped to an unrelated crop -- clamping to a
+        // single, gently-scaled window keeps neighbouring pixels reflecting
+        // neighbouring parts of the image, which is what a mirror does.
         vec3 refl = reflect(rd, n);
-        vec2 reflUV = fract(refl.xz * 0.5 + 0.5);
+        vec2 reflUV = clamp(refl.xz * 0.34 + 0.5, 0.0, 1.0);
         vec3 photo = img(reflUV);
+
+        // Environment: a mirror pool reflects a bright ceiling and a dark rim.
+        // This is the term that gives the surface its large-scale light/dark --
+        // refl.y is a genuine per-point quantity (it swings the full -1..1 as the
+        // Rosensweig cones tip the normal over) whereas the photo crop alone was
+        // near-constant in average once the picture was resolved.
+        float envUp = refl.y * 0.5 + 0.5;
+        vec3 envCol = mix(vec3(0.035, 0.045, 0.075),
+                          imgPalette(0.25 + audioPhase * 0.05) * 1.15,
+                          smoothstep(0.30, 0.92, envUp));
 
         // Specular highlight from overhead magnetic coil
         vec3 lightDir = normalize(vec3(0.2, 0.9, 0.1));
@@ -157,15 +180,24 @@ void main() {
         vec3 mercuryBase = vec3(0.85, 0.9, 0.95);
         vec3 oilySheen = imgPalette((p.y * 12.0 + audioPhase) * 0.159);
 
-        col = mix(mercuryBase, oilySheen, 0.35);
-        col = mix(col * 0.4, photo * 1.2, 0.65 + 0.25 * fresnel);
+        vec3 metal = mix(mercuryBase, oilySheen, 0.35);
+        // The mirror image is the environment gradient MODULATED by the photo,
+        // not the photo alone; a mirror that only ever shows one crop of one
+        // picture has no light and dark of its own.
+        vec3 mirror = envCol * (0.45 + 0.95 * photo);
+        col = mix(metal * 0.28, mirror, 0.60 + 0.32 * fresnel);
+        col += metal * diff * 0.22;
         col += spec * vec3(1.0, 1.0, 1.0) * (1.2 + audioKick * 2.5);
 
-        // Distance fog
-        col = mix(col, vec3(0.04, 0.05, 0.08), 1.0 - exp(-hitDist * 0.2));
+        // Distance fog. At 0.2/unit the far half of the pool -- which is most of
+        // the frame at this grazing camera angle -- was already 60-80% dissolved
+        // into the flat background colour.
+        col = mix(col, vec3(0.05, 0.06, 0.10), min(1.0 - exp(-hitDist * 0.085), 0.55));
     }
 
     if (audioChromaHue != 0.0)     if (hue > 0.001) col = hueRot(col, hue);
 
-    fragColor = vec4(col, 1.0);
+    col = min(col, vec3(1.35));
+    col /= 1.0 + 0.30 * max(col.r, max(col.g, col.b));
+    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }

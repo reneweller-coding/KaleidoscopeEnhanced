@@ -107,8 +107,13 @@ void main()
     float diag  = exp(-dDiag * 70.0) * (0.35 + 0.8 * audioBeat);
 
     // Stain the structure with the image; keep dissimilar cells near-black.
+    // Bounded hue nudge.  audioChromaHue * 0.6 is a 0..3.8 rad sweep, which
+    // takes a photo colour right around the wheel and drives channels negative
+    // on the way -- and a clipped negative channel IS a fully saturated pixel,
+    // which is what the scan flagged.  The house model nudges around the
+    // scene's own hue instead of sweeping through every hue there is.
     vec3 stain = imgPal(v * 4.0 + h.x * 2.0) * 1.5;
-    stain = hueRot(stain, audioChromaHue * 0.6);
+    stain = hueRot(stain, 0.22 * sin(audioChromaHue));
     vec3 col = stain * pow(v, 1.35) * (0.85 + 0.5 * audioSwell);
 
     // Bright stripe cores glow, but stay below burn-out so uniformly
@@ -116,8 +121,17 @@ void main()
     col += vec3(0.9, 0.95, 1.0) * pow(v, 4.0) * 0.30;
 
     // The now-beam and a soft vignette of the raw image below everything.
-    col += hueRot(vec3(1.0, 0.75, 0.35), audioChromaHue) * diag;
-    col += img(uv) * 0.10;
+    // Same bounded rotation as the stain: a full-range one turned the warm
+    // beam into an arbitrary primary as the key slewed.
+    col += hueRot(vec3(1.0, 0.80, 0.48), 0.22 * sin(audioChromaHue)) * diag;
+
+    // The picture bed under the matrix.  The unfilled-history darkness this
+    // file's header describes is deliberate dramaturgy, but at a flat 0.10 the
+    // frame measured luma 0.034 over a quarter-filled picture -- black, not
+    // calm.  ssmFill is exactly the signal for this: while there is little
+    // history the picture carries the frame, and it recedes to its original
+    // whisper as the matrix fills in and takes over.
+    col += img(uv) * (0.11 + 0.27 * (1.0 - clamp(ssmFill, 0.0, 1.0)));
 
     col *= 1.0 + 0.15 * audioOnset + 0.9 * audioDrop;
     col *= 0.9 + 0.3 * audioLevel;

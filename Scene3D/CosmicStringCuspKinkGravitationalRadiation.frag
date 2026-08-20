@@ -5,6 +5,8 @@ out vec4 fragColor;
  * @brief COSMIC STRING CUSP KINK GRAVITATIONAL RADIATION: Relativistic cosmic string loops
  * formed in early universe phase transitions. Sub-luminal loop oscillations periodically form
  * light-speed cusps and kinks, emitting beamed gravitational wave bursts and spacetime lensing halos.
+ * A NETWORK of 160 loops scattered through the whole view volume (frustum-spread, so a far loop is
+ * drawn as large as a near one) rather than the single central tangle it used to be.
  *   audioAdvance -> navigates relativistic string loop oscillation & cusp formation
  *   audioKick    -> flashes light-speed cusp gravitational radiation burst beams
  *   audioSwell   -> widens string tension energy density & gravitational lensing halo
@@ -18,6 +20,7 @@ out vec4 fragColor;
 in vec3 vPos;
 in float vDepth;
 in float vGlow;
+in float vSideT;   // -1 .. +1 across the cord
 
 uniform vec2  resolution;
 uniform float time;
@@ -60,13 +63,29 @@ void main() {
     vec3 stringCol = vec3(0.2, 0.7, 1.0);
     vec3 cuspCol   = palTint(stringCol, vDepth * 0.4 + audioCentroid, 0.25);
     
-    vec2 photoUv = fract(vPos.xy * 0.3 + 0.5);
+    // The network now spans the whole view volume, so the photo lookup runs
+    // at a much gentler scale -- at the old 0.3 it wrapped many times per
+    // loop and read as noise instead of as photograph.
+    vec2 photoUv = fract(vPos.xy * 0.03 + 0.5);
     vec3 photoSample = img(photoUv);
-    
-    vec3 col = cuspCol * (0.6 + 0.4 * photoSample) * vGlow;
+
+    // Transverse profile across the cord: cylindrical shading, bright along
+    // the spine and falling to a lit rim rather than to nothing.  The pass is
+    // opaque and depth-tested, so the cord must stay a solid lit cord all the
+    // way to its edge -- fading it out would leave dark bands sitting in front
+    // of every loop behind it.  The gravitational-lensing rim is the first
+    // thing lensingP has ever actually driven (it widens the cord upstream).
+    float x    = clamp(vSideT, -1.0, 1.0);
+    float lens = (lensingP > 0.01 ? lensingP : 1.2);
+    float prof = 0.42 + 0.58 * sqrt(max(0.0, 1.0 - x * x))
+               + 0.10 * lens * smoothstep(0.72, 1.0, abs(x));
+
+    vec3 col = cuspCol * (0.6 + 0.4 * photoSample) * vGlow * prof;
     col *= (cuspGlowP > 0.01 ? cuspGlowP : 1.2) * (0.85 + 0.35 * audioSwell);
-    col += vec3(1.0, 0.95, 0.8) * (audioKick * 0.35);
-    
+    // The kick flash rides the same profile: applied flat it would have lit
+    // the entire halo band on every beat.
+    col += vec3(1.0, 0.95, 0.8) * (audioKick * 0.35) * prof;
+
     // Soft knee compression
     col /= 1.0 + 0.35 * max(col.r, max(col.g, col.b));
     fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);

@@ -101,9 +101,11 @@ void main() {
 
     float t = time * 0.3 * spd + audioAdvance * 0.15;
 
-    // Smooth winding camera trajectory
-    vec3 ro = vec3(sin(t * 0.35) * 12.5, 2.2 * sin(t * 0.21) + 1.5, cos(t * 0.35) * 12.5);
-    vec3 lookTarget = vec3(0.0, 0.9 * sin(t * 0.27), 0.0);
+    // Smooth winding camera trajectory. The old 12.5-unit orbit radius left the
+    // 2.2-unit column subtending barely a fifth of the frame; closing in and
+    // widening the column is what actually fills the picture.
+    vec3 ro = vec3(sin(t * 0.45) * 7.4, 2.4 * sin(t * 0.27) + 1.5, cos(t * 0.45) * 7.4);
+    vec3 lookTarget = vec3(0.0, 0.9 * sin(t * 0.31), 0.0);
 
     vec3 ww = normalize(lookTarget - ro);
     vec3 uu = normalize(cross(ww, vec3(0.0, 1.0, 0.0)));
@@ -118,10 +120,10 @@ void main() {
     float hitDist = -1.0;
     float minDS = 1e5;                    // closest approach of a MISS ray
     vec3 p;
-    for (int i = 0; i < 48; ++i) {
+    for (int i = 0; i < 72; ++i) {
         p = ro + rd * dO;
         // bound the infinite Scherk field to a COLUMN -> an actual tower
-        float dS = max(scherkSDF(p, scale, thickness), length(p.xz) - 2.2);
+        float dS = max(scherkSDF(p, scale, thickness), length(p.xz) - 3.1);
         minDS = min(minDS, dS);
         if (dS < 0.003) {
             hitDist = dO;
@@ -134,11 +136,33 @@ void main() {
     // Near-miss halo: rays grazing the tower glow instead of dropping to
     // near-black (metric scan: luma 8, saturation 0, the tower is thin and
     // most rays miss).  Level breathes it, phase spins its colour.
-    vec3 col = img(clamp(vec2(st.x, 1.0 - st.y * 0.85), 0.0, 1.0)) * 0.30
-             + vec3(0.02, 0.03, 0.06);
+    // Backdrop: a vertical sky gradient over the photo so the field behind the
+    // tower carries its own light/dark structure rather than one dim flat tone.
+    float sky = 0.30 + 0.55 * pow(1.0 - st.y, 1.4);
+    vec3 col = img(clamp(vec2(st.x, 1.0 - st.y * 0.85), 0.0, 1.0)) * (0.34 + 0.34 * sky)
+             + imgPalette(0.42) * sky * 0.30
+             + vec3(0.03, 0.045, 0.09);
     vec3 halo = imgPalette((minDS * 6.0 + audioPhase) * 0.159)
                 * exp(-minDS * 3.5) * (0.5 + 0.5 * audioLevel);
-    col += halo * 0.6;
+    col += halo * 0.75;
+
+    // ---- distant tower forest -------------------------------------------
+    // The hero column can only ever occupy the middle of the frame; everything
+    // outside it was smooth backdrop with no structure for the tile scan to
+    // find (measured occ 0.02). Evaluating the SAME Scherk surface on two
+    // distant shells along the ray paints the rest of the picture with more
+    // towers receding into the haze -- the scene's own geometry, spread wide,
+    // at the cost of two extra field evaluations rather than a second march.
+    float forest = 0.0;
+    for (int j = 0; j < 2; ++j) {
+        float fz = 15.0 + float(j) * 14.0;
+        vec3  fp = ro + rd * fz;
+        float fs = scale * (0.50 - 0.16 * float(j));
+        float ff = exp(sin(fp.z * fs)) * cos(fp.x * fs) - cos(fp.y * fs);
+        forest += smoothstep(0.80, 0.05, abs(ff)) * (0.62 - 0.24 * float(j));
+    }
+    forest = min(forest, 1.0);
+    col += imgPalette(0.42 + audioPhase * 0.05) * forest * (0.13 + 0.07 * audioLevel);
 
     if (hitDist > 0.0) {
         vec3 n = calcNormal(p, scale, thickness);
@@ -155,8 +179,8 @@ void main() {
         // Iridescent structural color
         vec3 irid = imgPalette((dot(p, vec3(0.35)) + audioPhase) * 0.159);
 
-        col = mix(photo * 0.85, irid, 0.45);
-        col = col * (0.35 + 0.65 * diff) + spec * vec3(1.0, 0.95, 0.85);
+        col = mix(photo * 0.95, irid, 0.45);
+        col = col * (0.22 + 0.95 * diff) + spec * vec3(1.0, 0.95, 0.85);
 
         // Caustic edge glow on kick
         float edge = smoothstep(thickness * 0.7, thickness, abs(exp(sin(p.z * scale)) * cos(p.x * scale) - cos(p.y * scale)));
@@ -170,7 +194,12 @@ void main() {
 
     // Catalogue review: soft-knee exposure — hot audio compresses
     // instead of clipping the whole frame to white.
-    vec3 _catTone = (col) * 0.5;
+    // The blanket *0.5 in front of the knee was doing the real damage: on top of
+    // an already dim 0.30x-photo backdrop it crushed the ENTIRE frame into the
+    // bottom 6% of the range (measured luma 0.056, contrast 0.022), where no
+    // neighbouring values are far enough apart to read as structure. The knee
+    // alone already guarantees the highlights cannot clip.
+    vec3 _catTone = col;
     _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
-    fragColor = vec4(_catTone, 1.0);
+    fragColor = vec4(clamp(_catTone, 0.0, 1.0), 1.0);
 }

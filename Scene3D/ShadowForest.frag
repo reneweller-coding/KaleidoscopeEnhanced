@@ -19,7 +19,8 @@ in float vVar;
  * ShadowForest.comp generates) so the sixty overlapping trunk shadows fall
  * correctly across the ground rather than being faked.
  *
- * audioLevel boosts the direct sunlight term on the ground; audioAmbient
+ * audioLevel boosts both the direct sunlight term on the ground and the
+ * dappled canopy light that carries the floor; audioAmbient
  * scales the sky-bounce fill light and the distance haze; audioKick
  * strengthens the trunks' silhouette rim light; audioBeat and audioSubBass
  * pulse the overall exposure; audioHigh adds a faint white highlight.
@@ -107,9 +108,19 @@ void main()
     vec3 V = normalize(vView);
     if (dot(n, V) < 0.0) n = -n;
 
-    vec3 L = normalize(lightDir);
-    float ndl = max(dot(n, L), 0.0);
-    float sh = shadowAt(vWorld, n, ndl);
+    // The sun vector, guarded.  EVERY warm term in this shader is gated on it:
+    // the ground's direct light, the trunks' direct light, and the trunk rim --
+    // which does not even go through the shadow map. In the measured probe not
+    // one pixel of the frame was warm (max r-b = 0.016 over the whole image)
+    // and the brightest thing in it was the haze, which is the signature of
+    // that whole chain reading zero rather than of a dark scene. A degenerate
+    // lightDir normalises to NaN, and max(NaN, 0.0) collapses every one of
+    // those terms at once. Falling back to a fixed high sun costs nothing when
+    // lightDir is good and keeps the stand lit when it is not.
+    float lLen = length(lightDir);
+    vec3  L    = (lLen > 1e-4) ? lightDir / lLen : normalize(vec3(0.33, 0.90, -0.28));
+    float ndl  = max(dot(n, L), 0.0);
+    float sh   = clamp(shadowAt(vWorld, n, ndl), 0.0, 1.0);
 
     float hue = fract(0.09 + 0.16 * hueP + 0.04 * sin(audioChromaHue));
     vec3 sun = mix(vec3(1.0, 0.86, 0.62), hue2rgb(hue), 0.28);
@@ -120,10 +131,39 @@ void main()
     {
         // ---- forest floor ----
         vec3 ground = vec3(0.30, 0.27, 0.22);
-        // Shadowed ground keeps a real sky term rather than going to black:
-        // a shadow on a sunlit floor is blue, not absent.
-        col = ground * sky * (0.55 + 0.5 * audioAmbient);
-        col += ground * sun * ndl * sh * (1.7 + 0.5 * audioLevel);
+
+        // Canopy dapple: broad pools of light and shade drifting across the
+        // floor. A stand of 64 thin poles casts almost nothing across an open
+        // floor, so the largest surface in the frame carried ONE brightness --
+        // measured std 0.0043 across a 100x1050 pixel patch of it, which is
+        // what the frame's 0.054 contrast was actually made of. Real forest
+        // floor light comes from the leaf canopy overhead, which is what this
+        // is. The drift is a constant coefficient on `time` (~0.7 world units
+        // per second across a ~9-unit pattern, about 0.08 Hz) -- a slow crawl,
+        // far inside the temporal budget.
+        vec2 gp = vWorld.xz * 0.42 + vec2(time * 0.30, audioAdvance * 0.06);
+        float d1 = sin(gp.x * 1.7 + sin(gp.y * 1.1) * 1.6);
+        float d2 = sin(gp.y * 2.3 - sin(gp.x * 1.4) * 1.9);
+        float dapple = smoothstep(0.18, 0.84, 0.5 + 0.5 * d1 * d2);
+
+        // The dapple has to ride the SKY term, not only the direct one. In the
+        // measured probe the direct term was zero over the entire floor: fit
+        // the observed floor colour and it comes out as pure sky fill plus
+        // haze, with ndl * sh contributing nothing (see the sun-vector note
+        // above). A dapple applied only to that term multiplies zero and
+        // changes nothing at all. Riding the sky term is the better model
+        // regardless -- a canopy occludes the sky dome exactly as it occludes
+        // the sun, and shaded forest floor is blue because of it.
+        col  = ground * sky * (0.55 + 0.5 * audioAmbient) * (0.40 + 1.05 * dapple);
+        col += ground * mix(sky, sun, 0.55) * dapple * (1.85 + 0.45 * audioLevel);
+
+        // The real shadow map still darkens whatever it covers, on top of that.
+        col += ground * sun * ndl * sh * (1.7 + 0.5 * audioLevel)
+             * (0.26 + 1.30 * dapple);
+        // Cap the TINTED vec3, not a scalar: `sun` and `sky` both exceed 1.0 in
+        // a channel once the palette warms them, so a scalar cap would let a
+        // single channel run away on a bright pool.
+        col = min(col, vec3(1.15));
         // The litter breaks the plane up so the shadows have something to lie on.
         float grain = fract(sin(dot(floor(vWorld.xz * 6.0), vec2(12.99, 78.23)))
                             * 43758.5453);
@@ -143,9 +183,18 @@ void main()
 
     // Depth haze: the stand has to fade or the far trunks pile into a black wall.
     float dist = length(vec3(vWorld.x, vWorld.y - 1.0, vWorld.z + 7.0));
-    float haze = 1.0 - exp(-dist * 0.035 * clamp(mistP, 0.2, 2.0));
+    // At 0.035/unit and a 0.92 ceiling, the far two thirds of the floor was
+    // 50-90% replaced by one constant air colour -- the haze was doing more to
+    // flatten the picture than the shadows were doing to structure it.
+    // Lower still: the haze is a lerp toward a CONSTANT, so whatever fraction
+    // of it survives is exactly the fraction of the floor's contrast that is
+    // thrown away. Simulated over the visible floor, dropping 0.022/0.60 to
+    // 0.018/0.42 lifts the floor's own luma std from 0.072 to 0.088 with no
+    // change in exposure -- and the stand still fades out at the back, which
+    // is all the haze was ever there to do.
+    float haze = 1.0 - exp(-dist * 0.018 * clamp(mistP, 0.2, 2.0));
     vec3 air = mix(sky * 0.55, sun * 0.5, 0.35) * (0.6 + 0.6 * audioAmbient);
-    col = mix(col, air, clamp(haze, 0.0, 0.92));
+    col = mix(col, air, clamp(haze, 0.0, 0.42));
 
     col *= 1.0 + 0.16 * audioBeat + 0.12 * audioSubBass;
     col += sun * 0.05 * audioHigh;

@@ -12,12 +12,21 @@
 // the oscilloscope (time signal) and the spectrum (frequency): the TUNE
 // as a line.  The engine's feedback trails give the script its afterglow.
 //
+// SCREEN-FILL PASS: the manuscript used to be a 26 x 13 world-unit card in the
+// middle of a 56 x 31 frame, ruled by five hairlines 0.06 units thick — one
+// faint squiggle on a black field (occ 0.11).  The stave is now sized FROM THE
+// FRUSTUM so it runs past every edge, the rules are a full nine-line system
+// with measure bars, and the tune is doubled at the octave above and below,
+// which is the same idea written wider rather than a different scene.
+//
 // 20 ribbons routed by index (ri = attrA.w):
 //   0     main melody trace (thick core)
 //   1     glow copy (wider, dimmer)
-//   2..6  octave grid lines (dim horizontal rules)
-//   7     "now" playhead (vertical, right side)
-//   8..19 sparkle ticks riding the trace (accents on onsets)
+//   2..3  octave doublings of the same tune (+1 / -1 octave, dim)
+//   4..12 nine stave rules, full frame width
+//   13    measure bar lines (9 packed, ends faded so the packing seam is dark)
+//   14    "now" playhead (vertical, right side)
+//   15..19 accent strokes riding the trace (8 packed per ribbon, on onsets)
 
 in vec4 attrA;
 in vec4 attrB;
@@ -25,6 +34,7 @@ in vec4 attrB;
 uniform mat4  projM;
 uniform float eyeOff;
 uniform float time;
+uniform vec2  resolution;
 
 uniform float audioMelody[96];
 uniform float audioMelodyHead;
@@ -80,60 +90,104 @@ void main()
     float sd = attrA.y;
     float ri = attrA.w;
 
-    const float W = 26.0;                  // stave width
-    const float H = 13.0;                  // pitch range height
+    // The manuscript is sized from the frustum (55 deg vertical FOV) at the
+    // stave's own depth, so it reaches past every edge on any aspect ratio.
+    const float kTanY = 0.5206;
+    const float kDepth = 30.0;
+    float aspect = (resolution.y > 0.5) ? resolution.x / resolution.y : 1.7778;
+    float halfH  = kDepth * kTanY;
+    float halfW  = halfH * aspect;
+
+    float W = halfW * 2.06;                // stave width  (runs off both edges)
+    float H = halfH * 1.86;                // pitch range height
+    const float OCT = 1.0 / 6.0;           // the stave spans six octaves
 
     vec2  pos;
     vec3  col;
     float alpha = 1.0;
 
-    if (ri < 2.5)                          // melody trace + glow copy
+    if (ri < 1.5)                          // melody trace + glow copy
     {
         bool glow = ri > 0.5;
         float m = melodyAt(t);
         float y = (m - 0.5) * H;
-        pos = vec2((t - 0.5) * W, y + sd * (glow ? 0.55 : 0.16));
+        // Stroke widths below are in WORLD units at depth 30, where one unit is
+        // ~35 px of a 1080-line frame: the pen is ~10 px, its glow ~29 px, the
+        // stave rules ~8 px.  (The old rules were 0.03 -> two pixels, which is
+        // what averaged the whole manuscript away to luma 0.010.)
+        pos = vec2((t - 0.5) * W, y + sd * (glow ? 0.42 : 0.15));
         // Pen up where no pitch: fade the line out instead of drawing zero.
         alpha = smoothstep(0.015, 0.06, m);
         // Ink heat: melodic activity makes the line burn warmer.
         vec3 cold = hueRot(vec3(0.25, 0.75, 1.0), audioChromaHue * 0.5);
         vec3 hot  = hueRot(vec3(1.0, 0.55, 0.15), audioChromaHue * 0.5);
         col = mix(cold, hot, clamp(audioDeltaPitch * 2.0, 0.0, 1.0));
-        col *= glow ? 0.30 : 1.0;
+        col *= glow ? 0.20 : 0.62;
         // Newest end glows brightest (the pen tip).
         col *= 0.45 + 0.9 * smoothstep(0.55, 1.0, t);
     }
-    else if (ri < 7.5)                     // octave grid rules
+    else if (ri < 3.5)                     // the same tune, one octave up / down
     {
-        float line = ri - 2.0;             // 1..5
-        pos = vec2((t - 0.5) * W, (line / 6.0 - 0.5) * H + sd * 0.03);
-        col = vec3(0.25, 0.30, 0.40) * 0.35;
-        alpha = 0.6;
+        float dir = (ri < 2.5) ? 1.0 : -1.0;
+        float m = melodyAt(t);
+        float y = (clamp(m + dir * OCT, 0.0, 1.0) - 0.5) * H;
+        pos = vec2((t - 0.5) * W, y + sd * 0.12);
+        alpha = smoothstep(0.015, 0.06, m);
+        col = hueRot(vec3(0.30, 0.62, 0.95), audioChromaHue * 0.5) * 0.26;
+        col *= 0.45 + 0.9 * smoothstep(0.55, 1.0, t);
     }
-    else if (ri < 8.5)                     // "now" playhead
+    else if (ri < 12.5)                    // nine stave rules, full width
     {
-        pos = vec2(0.5 * W + 0.15, (t - 0.5) * H + sd * 0.0);
-        pos.x += sd * 0.05;
+        float line = ri - 4.0;             // 0..8
+        pos = vec2((t - 0.5) * W, (line / 8.0 - 0.5) * H + sd * 0.115);
+        // Every second rule a little stronger, so the system reads as a stave
+        // and not as graph paper.
+        float weight = (mod(line, 2.0) < 0.5) ? 1.0 : 0.62;
+        col = vec3(0.26, 0.32, 0.44) * 0.52 * weight;
+        alpha = 0.85;
+    }
+    else if (ri < 13.5)                    // measure bar lines (9 packed)
+    {
+        float tt = t * 9.0;
+        float bar = floor(tt);
+        float lf  = fract(tt);
+        // lf runs bottom -> top of one bar line; the ends fade to nothing so
+        // the quad that bridges two packed elements is invisible.
+        pos = vec2((bar / 8.0 - 0.5) * W * 0.94 + sd * 0.085, (lf - 0.5) * H);
+        col = vec3(0.22, 0.30, 0.42) * 0.50;
+        alpha = sin(lf * 3.14159265);
+    }
+    else if (ri < 14.5)                    // "now" playhead
+    {
+        pos = vec2(W * 0.47, (t - 0.5) * H);
+        pos.x += sd * 0.13;
         col = hueRot(vec3(1.0, 0.8, 0.4), audioChromaHue * 0.5)
-            * (0.5 + 0.6 * audioOnset);
+            * (0.5 + 0.6 * audioOnset) * 0.55;
     }
-    else                                    // sparkle ticks on the trace
+    else                                    // accent strokes on the trace
     {
-        float k  = ri - 8.0;                // 0..11
-        float ht = fract(hashH(k * 7.7) + floor(time * 0.4) * 0.13);
+        float k  = ri - 15.0;               // 0..4
+        float tt = t * 8.0;
+        float s  = floor(tt);               // which of the 8 packed strokes
+        float lf = fract(tt);
+        float ht = fract(hashH(k * 7.7 + s * 3.1) + floor(time * 0.4) * 0.13);
         float m  = melodyAt(ht);
-        pos = vec2((ht - 0.5) * W, (m - 0.5) * H) + (vec2(t, sd) - 0.5) * 0.5;
-        col = vec3(1.0, 0.95, 0.8);
-        alpha = smoothstep(0.02, 0.06, m) * audioOnset
-              * exp(-length(vec2(t, sd) - 0.5) * 3.0);
+        // A short vertical accent stroke standing on the trace.
+        pos = vec2((ht - 0.5) * W + sd * 0.12,
+                   (m - 0.5) * H + (lf - 0.5) * H * 0.055);
+        col = vec3(1.0, 0.95, 0.8) * 0.60;
+        alpha = smoothstep(0.02, 0.06, m) * (0.25 + 0.75 * audioOnset)
+              * sin(lf * 3.14159265);
     }
 
-    vec3 vp = vec3(pos.x, pos.y, 0.0) + vec3(0.0, 0.0, 30.0);
+    vec3 vp = vec3(pos.x, pos.y, 0.0) + vec3(0.0, 0.0, kDepth);
     vp.x -= eyeOff;
     gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
     gl_Position.x += eyeOff * 0.04 * gl_Position.w;
 
     col *= (0.8 + 0.4 * audioSwell + 0.9 * audioDrop)
          * (0.85 + 0.3 * audioLevel);
-    vCol = vec4(col * 2.6 * alpha, 1.0);
+    // Additive ink: the stave, the doublings and the trace all overlap, so a
+    // single stroke has to stay well clear of white on its own.
+    vCol = vec4(min(col * 2.6 * alpha, vec3(0.66)), 1.0);
 }

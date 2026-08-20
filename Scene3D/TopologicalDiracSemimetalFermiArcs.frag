@@ -5,6 +5,9 @@ out vec4 fragColor;
  * @brief TOPOLOGICAL DIRAC SEMIMETAL FERMI ARCS: Open disjoint Fermi surface arcs in Dirac and
  * Weyl semimetals (TaAs / Cd3As2). Non-closed contours on opposite crystal surfaces connect
  * projections of bulk Weyl nodes of opposite chirality with chiral anomaly current texturing.
+ * The twenty ribbons are dealt out as ten nested arcs per crystal surface -- even indices bowing
+ * up out of the top face, odd ones mirroring them out of the bottom face -- so the fan opens
+ * across the whole frame instead of bundling into one small knot at its centre.
  *   audioAdvance -> navigates Fermi arc surface state dispersion & Weyl node pumping
  *   audioKick    -> flashes chiral anomaly quantum Adler-Bell-Jackiw charge pumping bursts
  *   audioSwell   -> widens Fermi arc ribbon width & topological surface state glow
@@ -48,7 +51,13 @@ void main()
     col += vCol * edge * 1.5;
     col *= (0.85 + 0.35 * audioSwell);
     col += vCol * (audioKick * 0.3);
-    
+
+    // Ceiling just under the knee's clipping point (1.47 in -> 0.97 out).  The
+    // chiral-anomaly pulse is unbounded (up to ~22 before the knee) and there
+    // are twenty arcs carrying it across the whole frame now, not one small
+    // bundle in the middle, so it has to be held short of flat white.
+    col = min(col, vec3(1.40));
+
     // Soft knee compression
     col /= 1.0 + 0.35 * max(col.r, max(col.g, col.b));
     fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);

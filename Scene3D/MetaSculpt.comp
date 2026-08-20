@@ -63,7 +63,14 @@ uniform float spreadP;      // preset: how far they orbit
 uniform float isoP;         // preset: surface threshold
 
 const int   GRID   = 64;
-const float HALF   = 1.65;          // the field spans [-HALF, HALF]^3
+// SCREEN FILL: the field used to span only [-1.65, 1.65]^3 AND the blobs kept a
+// floor weight of just 0.13*blobP -- a blob radius of about 0.09 world units.
+// On anything but a very loud bar the "sculpture" was therefore twelve specks
+// plus a 0.18-radius marble, adrift in a black frame (occ 0.17, luma 0.008).
+// The domain, the orbit spread, the blob floor and the central core have all
+// been grown so the body genuinely spans the picture, and the leftover margins
+// are covered by a far-field panel (see emitBackdrop below).
+const float HALF   = 2.70;          // the field spans [-HALF, HALF]^3
 
 // Metaball field.  Sums to a large value inside a blob and falls off as 1/r^2,
 // which is what makes neighbouring blobs blend into one skin instead of
@@ -75,24 +82,36 @@ float field(vec3 p)
     {
         float fi = float(i);
         // Each pitch class rides its own slow orbit.  The phases are mutually
-        // irrational so the constellation never repeats.
-        float a = audioAdvance * (0.13 + 0.021 * fi) + fi * 2.3999632;
-        float b = audioAdvance * (0.09 + 0.017 * fi) + fi * 1.7;
-        vec3 c = spreadP * 1.15 * vec3(cos(a) * (0.55 + 0.35 * sin(b)),
-                                       sin(b) * 0.75,
-                                       sin(a) * (0.55 + 0.35 * cos(b)));
+        // irrational so the constellation never repeats.  The constant * time
+        // term keeps the constellation turning through a quiet passage (the
+        // orbits used to depend on audioAdvance ALONE, which is why the scene
+        // measured STATIC); the audio-driven part stays on the pre-integrated
+        // accumulator, never audio * time.
+        // Base rates raised from 0.075 / 0.058: those turn the constellation by
+        // only about half a radian over a whole probe, so the body still
+        // measured static (motion 0.0051) even after the constant terms were
+        // added. At 0.24 / 0.185 rad/s the lobes visibly swim around each other
+        // -- 0.04 Hz, nowhere near any temporal limit.
+        float a = time * 0.240 + audioAdvance * (0.13 + 0.021 * fi) + fi * 2.3999632;
+        float b = time * 0.185 + audioAdvance * (0.09 + 0.017 * fi) + fi * 1.7;
+        vec3 c = spreadP * 1.25 * vec3(cos(a) * (0.62 + 0.34 * sin(b)),
+                                       sin(b) * 0.80,
+                                       sin(a) * (0.62 + 0.34 * cos(b)));
 
         // Bins are L1-normalised (~0..0.3); every blob keeps a floor so the
-        // body never vanishes into nothing during a quiet bar.
-        float w = blobP * (0.13 + 0.85 * audioChroma[i] * 4.0);
+        // body never vanishes into nothing during a quiet bar.  That floor is
+        // now large enough to actually BE a lobe (radius ~0.26..0.42 instead
+        // of ~0.09), and the loud end still roughly doubles it.
+        float w = blobP * (0.50 + 0.58 * audioChroma[i] * 4.0);
         vec3 d = p - c;
         f += w * w / (dot(d, d) + 0.012);
     }
     // A core, so there is always one connected mass at the centre for the
-    // lobes to grow out of.  Kept deliberately weak: a strong core swallows
-    // every blob and the body is a featureless ball no matter what plays.
+    // lobes to grow out of.  Still deliberately weaker than the lobes -- it
+    // reaches ~0.5 units against orbits out at 1.5, so it anchors the body
+    // without swallowing it into a featureless ball.
     float r2 = dot(p, p);
-    f += (0.13 + 0.10 * audioSubBass) / (r2 + 0.05);
+    f += (0.55 + 0.35 * audioSubBass) / (r2 + 0.10);
 
     // Kick punches the whole surface outward for a moment.
     return f * (1.0 + 0.20 * audioKick);
@@ -129,7 +148,9 @@ float thickness(vec3 p, vec3 n)
     return clamp(field(p - n * 0.18) / max(iso(), 1e-3) - 1.0, 0.0, 1.0);
 }
 
-void writeVertex(uint slot, vec3 p, vec3 n, float strength)
+// kind: 0 = isosurface vertex (attrB.xyz is the field normal),
+//       1 = far-field backdrop vertex (attrB.xy carries a 0..1 panel u/v).
+void writeVertex(uint slot, vec3 p, vec3 n, float strength, float kind)
 {
     uint o = slot * 8u;
     verts[o + 0u] = p.x;
@@ -139,7 +160,32 @@ void writeVertex(uint slot, vec3 p, vec3 n, float strength)
     verts[o + 4u] = n.x;
     verts[o + 5u] = n.y;
     verts[o + 6u] = n.z;
-    verts[o + 7u] = 0.0;
+    verts[o + 7u] = kind;
+}
+
+// One oversized panel far behind the sculpture, laid out directly in VIEW
+// space -- the vertex stage recognises kind = 1 and skips the body's tumble
+// for it, so it stays put while the sculpture turns.  Without it the whole
+// margin of the frame is the clear colour, i.e. nothing at all.
+void emitBackdrop()
+{
+    const float D  = 15.0;                       // view depth (far plane is 220)
+    float hh = D * 0.5206 * 1.30;                // 1.30 = margin for the camera rig
+    float hw = hh * 1.7778 * 1.25;               // and for wider-than-16:9 frames
+
+    vec3 q00 = vec3(-hw, -hh, D), q10 = vec3( hw, -hh, D);
+    vec3 q11 = vec3( hw,  hh, D), q01 = vec3(-hw,  hh, D);
+
+    uint base = atomicAdd(cmd[4], 6u);           // still a multiple of 3
+    if (base + 6u > maxVertices)
+        return;
+
+    writeVertex(base + 0u, q00, vec3(0.0, 0.0, 0.0), 0.0, 1.0);
+    writeVertex(base + 1u, q10, vec3(1.0, 0.0, 0.0), 0.0, 1.0);
+    writeVertex(base + 2u, q11, vec3(1.0, 1.0, 0.0), 0.0, 1.0);
+    writeVertex(base + 3u, q00, vec3(0.0, 0.0, 0.0), 0.0, 1.0);
+    writeVertex(base + 4u, q11, vec3(1.0, 1.0, 0.0), 0.0, 1.0);
+    writeVertex(base + 5u, q01, vec3(0.0, 1.0, 0.0), 0.0, 1.0);
 }
 
 // Where the surface crosses the segment a-b, by linear interpolation of the
@@ -162,9 +208,9 @@ void emitTri(vec3 a, vec3 b, vec3 c)
         return;
 
     vec3 na = fieldNormal(a), nb = fieldNormal(b), nc = fieldNormal(c);
-    writeVertex(base + 0u, a, na, thickness(a, na));
-    writeVertex(base + 1u, b, nb, thickness(b, nb));
-    writeVertex(base + 2u, c, nc, thickness(c, nc));
+    writeVertex(base + 0u, a, na, thickness(a, na), 0.0);
+    writeVertex(base + 1u, b, nb, thickness(b, nb), 0.0);
+    writeVertex(base + 2u, c, nc, thickness(c, nc), 0.0);
 }
 
 // One tetrahedron.  Rather than a 16-case table, the vertices are sorted into
@@ -226,6 +272,11 @@ void main()
     uvec3 g = gl_GlobalInvocationID;
     if (g.x >= uint(GRID) || g.y >= uint(GRID) || g.z >= uint(GRID))
         return;
+
+    // The dispatch is exactly GRID^3, so there is no spare invocation to give
+    // the backdrop: the first cell emits it alongside its own triangles.
+    if (g.x == 0u && g.y == 0u && g.z == 0u)
+        emitBackdrop();
 
     float step = 2.0 * HALF / float(GRID);
     vec3 base = vec3(g) * step - vec3(HALF);

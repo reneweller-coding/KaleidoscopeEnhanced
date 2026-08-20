@@ -18,5 +18,7 @@ void main()
 {
     vec2  d = gl_PointCoord - 0.5;
     float a = exp(-dot(d, d) * 9.0);
-    fragColor = vec4(vCol.rgb * a, 1.0);
+    // Additive pass: cap the tinted vector so a dense burst core cannot stack
+    // past white on a loud downbeat.
+    fragColor = vec4(min(vCol.rgb * a, vec3(1.0)), 1.0);
 }

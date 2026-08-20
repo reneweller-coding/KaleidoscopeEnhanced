@@ -65,9 +65,14 @@ void main() {
 
     // Deep zoom target on a prominent Burning Ship mast cusp: c_center = (-0.45, -0.6)
     vec2 cCenter = vec2(-0.45, -0.6);
+    // Zoom cycle. exp(mod(t * 0.7, 6.0)) snapped from e^6 (403x) back to e^0
+    // every ~8.6 s -- a hard cut. A raised cosine over the same period dives
+    // in and eases back out instead: continuous in value AND velocity (the
+    // derivative vanishes at both turns), so no seam anywhere.
     // Sub-bass makes the hull swell by tightening the visible c-window. The
     // factor sits OUTSIDE the exp(), so the running zoom phase is untouched.
-    float zoomLevel = exp(mod(t * 0.7, 6.0)) * (2.0 * zm) * (1.0 + 0.35 * audioSubBass);
+    float zc = 0.5 - 0.5 * cos(6.2831853 * fract(t * 0.7 / 6.0));   // 0..1..0
+    float zoomLevel = exp(zc * 6.0) * (2.0 * zm) * (1.0 + 0.35 * audioSubBass);
     vec2 c = cCenter + uv / zoomLevel;
 
     // Invert Y to orient the "ship" right-side up

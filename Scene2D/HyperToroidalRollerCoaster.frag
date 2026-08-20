@@ -12,6 +12,13 @@ out vec4 fragColor;
  *   audioCentroid-> sharpens tubular rail line resolution & track sparks
  *   audioSubBass -> expands torus knot spatial envelope breathing
  *   audioChromaHue-> rotates the luminous hyperspace track spectrum
+ *
+ * The (3,7) knot has THREE strands at every azimuth; the old distance estimate
+ * only ever found one of them, so two thirds of the track was invisible and the
+ * ride happened inside an empty frame.  All three lobes are searched now, the
+ * rail carries a volumetric haze and quantised support gantries, and the
+ * hyperspace around it is filled with the chromatic speed streaks this header
+ * always promised.
  */
 
 uniform vec2  resolution;
@@ -99,42 +106,102 @@ void main() {
     // rail, which is worse (fully blank instead of just off-centre).
     vec3 ro = trackPos - up * (rW * 3.0 + 0.15);
 
-    vec3 rd = normalize(uv.x * right + uv.y * up + (1.25 + 0.2 * sin(audioSwell * 2.0)) * T);
+    // Wider lens: at 1.25 the ride occupied a small central cone of the frame.
+    vec3 rd = normalize(uv.x * right + uv.y * up + (1.00 + 0.15 * sin(audioSwell * 2.0)) * T);
 
     // Raymarching through track tube
     float totDist = 0.0;
     float minTrackDist = 1e4;
+    float railHaze = 0.0;
+    float gantryAcc = 0.0;
     vec3 hitCol = vec3(0.0);
+    bool hit = false;
 
-    for (int i = 0; i < 48; i++) {
+    for (int i = 0; i < 36; i++) {
         vec3 p = ro + rd * totDist;
 
-        // Approximate distance to closest point on torus knot
-        float uNear = atan(p.y, p.x) / 3.0;
-        vec3 pTrack = torusKnotPoint(uNear, R, r);
-        float dTrack = length(p - pTrack) - rW;
+        // Distance to the closest point on the knot.  gamma(u) has azimuth 3u
+        // exactly, so the three curve points sharing this pixel's azimuth are
+        // u = (az + 2*pi*k)/3, k = 0,1,2 -- checking only k = 0 threw away two
+        // thirds of the (3,7) track.
+        float az = atan(p.y, p.x);
+        float bestD = 1e4;
+        float bestU = 0.0;
+        for (int k = 0; k < 3; k++) {
+            float uk = (az + 6.2831853 * float(k)) / 3.0;
+            vec3  pk = torusKnotPoint(uk, R, r);
+            float dk = length(p - pk);
+            if (dk < bestD) { bestD = dk; bestU = uk; }
+        }
+        float dTrack = bestD - rW;
         minTrackDist = min(minTrackDist, dTrack);
 
-        if (dTrack < 0.005 || totDist > 10.0) {
-            vec2 sampleUV = fract(vec2(uNear * 0.5, p.z * 0.3));
-            vec3 texCol = img(sampleUV);
-            vec3 palCol = imgPalette(uNear * 0.2 + t * 0.05);
+        float stepLen = max(0.02, dTrack * 0.6);
 
+        // The chase cam rides within half a unit of its own rail, so the first
+        // samples are identical for EVERY pixel: without this ramp they would
+        // pump the whole frame up and down together as the camera passed each
+        // gantry, which is exactly the sort of frame-wide jump the catalogue
+        // scan penalises.
+        float nearFade = smoothstep(0.0, 0.85, totDist);
+
+        // Volumetric rail haze: every strand the ray passes near now leaves
+        // light in the frame, not just the single nearest one.
+        railHaze += exp(-max(dTrack, 0.0) * 4.5) * stepLen * 0.65 * nearFade;
+
+        // Support gantries: rings clamped around the tube, 28 per turn of u.
+        float gfrac = abs(fract(bestU * 4.4563) - 0.5);
+        gantryAcc += exp(-gfrac * 18.0) * exp(-abs(bestD - rW * 3.0) * 8.0)
+                   * stepLen * 1.7 * nearFade;
+
+        if (dTrack < 0.005) {
+            // Mirrored wrap -- fract() left a seam sliding through the tube.
+            vec2 sampleUV = abs(fract(vec2(bestU * 0.25, p.z * 0.15)) * 2.0 - 1.0);
+            vec3 texCol = img(sampleUV);
+            vec3 palCol = imgPalette(bestU * 0.2 + t * 0.05);
             hitCol = mix(texCol, palCol, 0.5) * (0.7 + 0.4 * (1.0 - dTrack));
+            hit = true;
             break;
         }
 
-        totDist += max(0.02, dTrack * 0.7);
+        totDist += stepLen;
+        if (totDist > 12.0) break;
     }
 
     // Glowing laser track rails & support rings
     float railGlow = exp(-minTrackDist * (24.0 + 12.0 * audioCentroid)) * glw;
-    vec3 railTint = vec3(1.4, 1.1, 1.8) * railGlow * (1.0 + 2.5 * audioKick);
+    vec3 railTint = min(vec3(1.4, 1.1, 1.8) * railGlow * (1.0 + 1.6 * audioKick), vec3(1.1));
 
-    vec3 bgCol = imgPalette(length(uv) * 0.4 + 0.2) * (0.2 + 0.15 * audioLevel);
-    vec3 finalCol = mix(bgCol, hitCol, clamp(length(hitCol), 0.0, 1.0));
+    // --- hyperspace: chromatic speed streaks over the whole frame ----------
+    float ang = atan(uv.y, uv.x);
+    float rad = length(uv);
+    float streak = 0.0;
+    for (int s = 0; s < 3; s++) {
+        float fs = float(s);
+        float kAng = 17.0 + fs * 26.0;
+        float radial = pow(max(0.0, sin(ang * kAng + fs * 1.73)), 18.0 - fs * 4.0);
+        // cos() instead of a fract() ramp: the streak heads sweep outward
+        // continuously instead of popping when the ramp wraps.
+        float head = pow(0.5 + 0.5 * cos(6.2831853 * (rad * 2.2 - t * (0.9 + 0.4 * fs) + fs * 0.37)), 6.0);
+        streak += radial * head * (0.50 - fs * 0.12);
+    }
+    streak *= smoothstep(0.04, 0.42, rad) * (0.55 + 0.75 * audioLevel + 0.6 * audioHigh);
+
+    vec3 pal = imgPalette(length(uv) * 0.4 + 0.2);
+    vec3 bgCol = pal * (0.17 + 0.13 * audioLevel);
+    // Far hyperspace shell so the corners read as depth, not as nothing.
+    bgCol += imgPalette(0.63 - rad * 0.3) * (0.09 + 0.06 * audioSwell) * smoothstep(0.10, 0.70, rad);
+    bgCol += min(streak, 1.0) * mix(pal, vec3(0.75, 0.72, 0.95), 0.45) * 0.55;
+
+    vec3 finalCol = bgCol;
+    if (hit) finalCol = mix(finalCol, hitCol, 0.88);
+    finalCol += min(railHaze, 2.0) * mix(pal, vec3(0.80, 0.70, 1.00), 0.5) * 0.32;
+    finalCol += min(gantryAcc, 1.4) * vec3(0.95, 0.84, 1.00) * 0.26 * (0.55 + 0.9 * audioKick);
     finalCol += railTint;
 
-    finalCol = pow(finalCol, vec3(0.88));
+    finalCol = pow(max(finalCol, 0.0), vec3(0.88));
+    // Highlight rolloff: more track light in the frame must not clip it white.
+    float mx = max(finalCol.r, max(finalCol.g, finalCol.b));
+    finalCol *= 1.0 / (1.0 + max(0.0, mx - 0.80));
     fragColor = vec4(clamp(finalCol, 0.0, 1.0), 1.0);
 }

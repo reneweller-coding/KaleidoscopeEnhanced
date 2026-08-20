@@ -53,6 +53,18 @@ vec3 imgPalette(float t) {
     return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
+// Overall level of the photo currently on the texture units, from a fixed
+// 5-tap grid. Every base colour here is photo-derived, so a bright photo left
+// the gemstone facet glow no headroom at all. The probe rides the tex0/tex1
+// crossfade, so the gain it feeds can never pop, and being one number for the
+// whole frame it rescales exposure without touching local contrast.
+float photoLevel() {
+    vec3 s = img(vec2(0.25, 0.25)) + img(vec2(0.75, 0.25))
+           + img(vec2(0.25, 0.75)) + img(vec2(0.75, 0.75))
+           + img(vec2(0.50, 0.50));
+    return dot(s * 0.2, vec3(0.299, 0.587, 0.114));
+}
+
 // Distance estimator for geode crystal cavern
 float mapGeode(vec3 p, float t, float cDens, out float crystalFacet) {
     float r = length(p.xy);
@@ -92,6 +104,16 @@ void main() {
     float minD = 1e4;
     float hitFacet = 0.0;
     vec3 hitCol = vec3(0.0);
+    // Composite on an explicit hit flag rather than on length(hitCol): once the
+    // rock is held down to a dark exposure a legitimately dark crystal face has
+    // a short colour vector, and a length() mask would fade those faces back
+    // into the cavern haze.
+    float hitMask = 0.0;
+
+    // Hold the cavern back to a fixed dark base -- a geode reads as gemstones
+    // catching a lamp in the dark, and with a bright photo the wall base alone
+    // already sat near 1.0 with no room left for the facet glow.
+    float expGain = clamp(0.25 / max(0.05, photoLevel()), 0.25, 2.4);
 
     for (int i = 0; i < 52; i++) {
         vec3 p = ro + rd * totDist;
@@ -100,12 +122,13 @@ void main() {
         minD = min(minD, abs(d));
 
         if (abs(d) < 0.003 || totDist > 10.0) {
+            hitMask = 1.0;
             hitFacet = curFacet;
             vec2 sampleUV = fract(p.xy * 0.3 + p.z * 0.2 + 0.5);
             vec3 texCol = img(sampleUV);
             vec3 palCol = imgPalette(p.z * 0.1 + hitFacet * 0.3);
 
-            hitCol = mix(texCol, palCol, 0.55) * (0.7 + 0.4 * (1.0 - d));
+            hitCol = mix(texCol, palCol, 0.55) * (0.7 + 0.4 * (1.0 - d)) * expGain;
             break;
         }
 
@@ -113,17 +136,22 @@ void main() {
     }
 
     // Glowing gemstone facets & specular sparks
+    // The tint constant exceeds 1.0 on two channels, so the TINTED vector
+    // carries the cap -- bounding only crystalGlow still let
+    // vec3(1.3,1.1,1.8) * it run past white on every kick.
     float crystalGlow = exp(-minD * (25.0 + 12.0 * audioCentroid)) * glw;
-    vec3 glowTint = vec3(1.3, 1.1, 1.8) * crystalGlow * (1.0 + 2.5 * audioKick);
+    vec3 glowTint = min(vec3(1.3, 1.1, 1.8) * crystalGlow * (1.0 + 2.5 * audioKick), vec3(0.90));
 
-    vec3 bgCol = imgPalette(0.3) * 0.2;
-    vec3 finalCol = mix(bgCol, hitCol, clamp(length(hitCol), 0.0, 1.0));
+    vec3 bgCol = imgPalette(0.3) * expGain * 0.55;
+    vec3 finalCol = mix(bgCol, hitCol, hitMask);
     finalCol += glowTint;
 
-    // Cavern depth fog
+    // Cavern depth fog -- also a photo sample, so on the same exposure gain.
     float fog = 1.0 - exp(-totDist * 0.18);
-    finalCol = mix(finalCol, imgPalette(0.8) * 0.3, fog);
+    finalCol = mix(finalCol, imgPalette(0.8) * expGain * 0.75, fog);
 
     finalCol = pow(finalCol, vec3(0.88));
-    fragColor = vec4(clamp(finalCol, 0.0, 1.0), 1.0);
+    vec3 _catTone = clamp(finalCol, 0.0, 1.0);
+    _catTone /= 1.0 + 0.28 * max(_catTone.r, max(_catTone.g, _catTone.b));
+    fragColor = vec4(_catTone, 1.0);
 }

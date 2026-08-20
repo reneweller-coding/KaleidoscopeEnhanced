@@ -78,7 +78,10 @@ void main() {
     float wWidth = (wallWidthP > 0.01) ? wallWidthP : 1.0;
     float glw = (glowP > 0.01) ? glowP : 1.0;
 
-    float t = audioAdvance * 0.35 * spd;
+    // The dive only advanced on audioAdvance (~0.25 units/s on quiet material).
+    // Constant base rate + audio surge; the coefficient on `time` is a
+    // per-activation constant, so this is anti-flicker safe.
+    float t = time * 0.32 * spd + audioAdvance * 0.35 * spd;
 
     // Logarithmic scale dive for seamless infinite honeycomb zoom
     float zoomProg = t * 0.8;
@@ -87,11 +90,20 @@ void main() {
     vec3 colAcc = vec3(0.0);
     float weightAcc = 0.0;
 
-    // Accumulate across 5 nested honeycomb octaves
+    // Accumulate across 5 nested honeycomb octaves.
+    // The old ladder ran layerScale = exp((k - zoomFrac)*1.2)*2.5 over k=0..4:
+    //   - k=0 had (k - zoomFrac) < 0 for EVERY zoomFrac, so smoothstep(0.0,0.3,.)
+    //     was 0 and the nearest, most readable octave was `continue`d away always;
+    //   - the surviving octaves reached layerScale 90..300, i.e. 100+ hex cells
+    //     across the frame, far past what the picture can resolve -- they aliased
+    //     into a flat wash of the photo's average colour.
+    // A gentler log step over a depth that starts at the near plane keeps every
+    // octave at a scale the eye can actually read.
     for (int k = 0; k < 5; k++) {
         float kf = float(k);
-        float layerScale = exp((kf - zoomFrac) * 1.2) * (2.5 * scMod);
-        float layerFade = smoothstep(0.0, 0.3, kf - zoomFrac) * smoothstep(4.5, 3.0, kf - zoomFrac);
+        float lz = kf + 0.55 - zoomFrac;            // 0.55 .. 4.55, always > 0
+        float layerScale = exp(lz * 0.85) * (1.5 * scMod);
+        float layerFade = smoothstep(0.0, 0.55, lz) * smoothstep(4.6, 3.1, lz);
 
         if (layerFade <= 0.001) continue;
 
@@ -117,26 +129,43 @@ void main() {
         // outward with them); centroid steepens the wall falloff so bright
         // material resolves a thin crisp grid instead of a soft one.
         float dWall = abs(-sdHex(hPos, 0.52 * (1.0 + 0.30 * audioSubBass))) - 0.04 * wWidth;
-        float wallGlow = exp(-abs(dWall) * ((25.0 + 14.0 * audioCentroid) * layerScale * 0.3)) * glw;
 
-        // Sample texture inside honeycomb cell
+        // Wall thickness in SCREEN units. hPos lives in layer space (pHex =
+        // uv*layerScale), so a fixed decay constant times layerScale made the glow
+        // line thinner and thinner the deeper the octave -- exactly the octaves
+        // that dominate the sum -- until it was sub-pixel and vanished, leaving
+        // nothing but the aliased cell fill. Dividing by layerScale instead holds
+        // the apparent wall thickness constant at every depth, which is what the
+        // original comment was reaching for.
+        float dScreen = abs(dWall) / max(layerScale, 1e-4);
+        float wallGlow = exp(-dScreen * ((80.0 + 45.0 * audioCentroid) / wWidth)) * glw;
+
+        // Cell fill. Only the near octaves can resolve a photo crop; deeper ones
+        // contribute the flat palette tone, dimmed with depth so the stack reads
+        // as a tunnel receding into darkness rather than as one averaged level.
+        float resolvable = smoothstep(3.6, 1.6, lz);
         vec2 sampleUV = fract(hPos * 0.4 + 0.5);
         vec3 texCol = img(sampleUV);
         vec3 palCol = imgPalette(sin(dot(hID, vec2(12.3, 45.6))) * 0.5 + 0.5);
 
-        vec3 cellCol = mix(texCol, palCol, 0.5);
-        cellCol += vec3(1.3, 1.1, 1.8) * wallGlow * (1.0 + 2.5 * audioKick);
+        float depthDim = exp(-lz * 0.62);
+        vec3 cellCol = mix(palCol, texCol, 0.55 * resolvable) * (0.20 + 0.80 * depthDim);
+        cellCol += vec3(1.3, 1.1, 1.8) * wallGlow * (0.55 + 0.45 * depthDim)
+                                       * (1.0 + 2.0 * audioKick);
 
         colAcc += cellCol * layerFade;
         weightAcc += layerFade;
     }
 
-    vec3 finalCol = colAcc / max(0.001, weightAcc);
+    // Composite, not average: dividing by weightAcc blended four octaves of hex
+    // lattice into a single uniform tone (measured contrast 0.017). A bounded sum
+    // keeps the near octave's structure on top of the receding ones.
+    vec3 finalCol = min(colAcc * 0.62, vec3(1.0));
 
     // Center portal burst
     float portalPulse = pow(max(0.0, 1.0 - abs(zoomFrac - 0.5) * 4.0), 3.0) * (0.5 + 1.2 * audioKick);
-    finalCol += imgPalette(0.85) * portalPulse;
+    finalCol += min(imgPalette(0.85) * portalPulse, vec3(0.5));
 
-    finalCol = pow(finalCol, vec3(0.88));
+    finalCol = pow(min(finalCol, vec3(1.0)), vec3(0.88));
     fragColor = vec4(clamp(finalCol, 0.0, 1.0), 1.0);
 }

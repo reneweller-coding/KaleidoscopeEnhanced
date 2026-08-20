@@ -85,7 +85,12 @@ void main() {
     // same reason: the old exp(mod(t, 5.5)) reached 244x on top of the base
     // scale, far narrower than the filigree it is supposed to fly through.
     vec2 cCenter = vec2(-0.02, 0.34);
-    float zoomLevel = exp(mod(t * 0.65, 2.0)) * (1.6 * zm);
+    // exp(mod(t * 0.65, 2.0)) snapped from e^2 (7x) back to e^0 every ~3.1 s
+    // -- a hard cut. A raised cosine over the same period dives in and eases
+    // back out instead: continuous in value AND velocity (the derivative
+    // vanishes at both turns), so no seam anywhere.
+    float zc = 0.5 - 0.5 * cos(6.2831853 * fract(t * 0.65 / 2.0));   // 0..1..0
+    float zoomLevel = exp(zc * 2.0) * (1.6 * zm);
     // Sub-bass narrows the sampled c-window across the nave axis only, so the
     // arches widen sideways instead of the whole vault simply zooming.
     vec2 c = cCenter + vec2(uv.x / (1.0 + 0.3 * audioSubBass), uv.y) / zoomLevel;

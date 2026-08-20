@@ -56,13 +56,46 @@ void main()
     vec2 px = 1.0 / resolution;
     float h = hAt(c);
 
-    float hx = hAt(c + vec2(px.x * 1.5, 0.0)) - hAt(c - vec2(px.x * 1.5, 0.0));
-    float hy = hAt(c + vec2(0.0, px.y * 1.5)) - hAt(c - vec2(0.0, px.y * 1.5));
+    // Relief normal from TWO scales.  A single 1.5-pixel stencil only sees the
+    // finest ripples, and after erosion the height field's whole range is narrow
+    // (the palette comment below already noticed this), so hx and hy came out
+    // tiny, the normal sat at almost exactly +Z everywhere, and `diff` was the
+    // same number for the entire frame -- one flat lit wash, measured contrast
+    // 0.047. The coarse stencil picks up the LANDFORMS, which is where a relief
+    // map's contrast actually lives, and the steeper constant compensates for
+    // the compressed range.
+    float hx1 = hAt(c + vec2(px.x * 1.5, 0.0)) - hAt(c - vec2(px.x * 1.5, 0.0));
+    float hy1 = hAt(c + vec2(0.0, px.y * 1.5)) - hAt(c - vec2(0.0, px.y * 1.5));
+    float hx2 = hAt(c + vec2(px.x * 7.0, 0.0)) - hAt(c - vec2(px.x * 7.0, 0.0));
+    float hy2 = hAt(c + vec2(0.0, px.y * 7.0)) - hAt(c - vec2(0.0, px.y * 7.0));
+    float hx = hx1 + hx2 * 0.42;
+    float hy = hy1 + hy2 * 0.42;
     // Sensory dissonance exaggerates the gradient: smooth, consonant music
     // shades the land gently, rough clusters make it read as jagged, harshly
     // lit rock.  A pure shape parameter -- nothing here reaches 'time'.
-    float relief = 90.0 * (1.0 + 0.45 * clamp(audioRoughness, 0.0, 1.0));
+    float relief = 230.0 * (1.0 + 0.45 * clamp(audioRoughness, 0.0, 1.0));
     vec3 n = normalize(vec3(-hx * relief, -hy * relief, 1.0));
+
+    // Locally normalised height, from a wide 8-tap neighbourhood.  The altitude
+    // bands below (valley / rock / stone / snow) are cut at fixed thresholds
+    // 0.15 / 0.50 / 0.72, but an eroded field lives inside a narrow band, so
+    // every pixel landed in the SAME band -- `snow` in particular was
+    // identically zero over the whole map. Measuring each point against its own
+    // surroundings puts the bands back onto the terrain, whatever absolute
+    // range the simulation happens to settle into.
+    float r18x = px.x * 18.0, r18y = px.y * 18.0;
+    float s0 = hAt(c + vec2( r18x, 0.0)),   s1 = hAt(c + vec2(-r18x, 0.0));
+    float s2 = hAt(c + vec2(0.0,  r18y)),   s3 = hAt(c + vec2(0.0, -r18y));
+    float s4 = hAt(c + vec2( r18x * 0.7,  r18y * 0.7));
+    float s5 = hAt(c + vec2(-r18x * 0.7,  r18y * 0.7));
+    float s6 = hAt(c + vec2( r18x * 0.7, -r18y * 0.7));
+    float s7 = hAt(c + vec2(-r18x * 0.7, -r18y * 0.7));
+    float hLo = min(min(min(s0, s1), min(s2, s3)), min(min(s4, s5), min(s6, s7)));
+    float hHi = max(max(max(s0, s1), max(s2, s3)), max(max(s4, s5), max(s6, s7)));
+    hLo = min(hLo, h); hHi = max(hHi, h);
+    float hN = (h - hLo) / max(hHi - hLo, 1e-4);
+    // Keep some absolute altitude so the map still has a real high ground.
+    float hb = clamp(mix(h, hN, 0.70), 0.0, 1.0);
 
     // Water lives where the terrain is CONCAVE — the carved channels — which
     // the erosion writes into the shape itself.  Measured over a WIDE radius
@@ -72,7 +105,7 @@ void main()
     float lap = hAt(c + vec2(px.x * 5.0, 0.0)) + hAt(c - vec2(px.x * 5.0, 0.0))
               + hAt(c + vec2(0.0, px.y * 5.0)) + hAt(c - vec2(0.0, px.y * 5.0))
               - 4.0 * h;
-    float water = smoothstep(0.004, 0.030, lap) * smoothstep(0.55, 0.15, h);
+    float water = smoothstep(0.004, 0.030, lap) * smoothstep(0.58, 0.15, hb);
 
     // A sun that travels: the relief reads completely differently at different
     // grazing angles, and the movement is what shows the erosion at work.
@@ -81,19 +114,21 @@ void main()
     float diff = max(dot(n, L), 0.0);
 
     // Cheap ambient occlusion from the height itself: valleys sit in shadow.
-    float ao = clamp(0.35 + 0.8 * h, 0.0, 1.0);
+    // Against the LOCALLY normalised height, so a valley reads as a valley even
+    // when the whole map sits inside a narrow absolute band.
+    float ao = clamp(0.22 + 0.95 * hb, 0.0, 1.0);
 
     // A proper altitude ramp, tinted by the photo's palette.  Sampling the
     // photo AT fract(h) was the first idea and gave a near-uniform dark wash,
     // because after erosion the height range is narrow and the lookup lands in
     // essentially one spot of the picture.
-    vec3 pal = texture(tex0, vec2(0.5, clamp(h, 0.0, 1.0))).rgb;
+    vec3 pal = texture(tex0, vec2(0.5, hb)).rgb;
     pal = mix(vec3(dot(pal, vec3(0.33))), pal, 0.5) + 0.12;
     vec3 lowC  = vec3(0.20, 0.26, 0.16) * 2.0;      // valley floor
     vec3 midC  = vec3(0.42, 0.34, 0.26) * 2.0;      // rock
     vec3 highC = vec3(0.62, 0.60, 0.58) * 2.0;      // bare stone
-    vec3 rock = mix(lowC, midC, smoothstep(0.15, 0.50, h));
-    rock = mix(rock, highC, smoothstep(0.50, 0.78, h));
+    vec3 rock = mix(lowC, midC, smoothstep(0.15, 0.50, hb));
+    rock = mix(rock, highC, smoothstep(0.50, 0.78, hb));
     rock *= pal;
 
     // The musical mode sets the WEATHER: minor keys give a cold, blue-grey
@@ -105,7 +140,7 @@ void main()
     vec3 col = rock * (0.25 + 1.35 * diff * sunCol) * ao;
 
     // Snow on the peaks, catching the sun.
-    float snow = smoothstep(0.72, 0.95, h);
+    float snow = smoothstep(0.74, 0.96, hb);
     col = mix(col, vec3(0.92, 0.95, 1.02) * sunCol * (0.35 + diff), snow * 0.8);
 
     // Water pooling in the carved channels.

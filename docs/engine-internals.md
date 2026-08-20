@@ -727,6 +727,52 @@ slew-limited at the source.
 
 ---
 
+## Temporal budget: how fast a scene may change
+
+A visualiser that changes faster than the music reads as hectic strobing rather
+than as dancing. What counts as "too fast" depends on *what* is changing, so the
+ceilings differ per class. Reference tempo is 120 BPM = 2 Hz.
+
+| what changes | ceiling | why |
+|---|---|---|
+| full-field brightness flashing | **3 Hz** | photosensitivity guidance caps general flashing at 3 flashes/s; the 15–25 Hz band is the most provocative |
+| global hue / palette cycling | **2 Hz** | one beat. Colour is meant to track harmony (`audioChromaHue`), not outrun it |
+| camera / whole-image geometry | **4 Hz** | 2× the beat: fast, but the eye can still follow it |
+| local detail / texture ripple | **8 Hz** | 4× the beat. Small, low-contrast, spatially dense features tolerate more than the whole frame does |
+
+A term `sin(D * K)` oscillates at `K * rate(D) / 2π`, where `rate(D)` is how fast
+its driver advances per second:
+
+| driver | rate | note |
+|---|---|---|
+| `time` | 1.0 /s | the raw wall-clock uniform |
+| `audioPhase` | ~1.2 rad/s | accumulated rotation phase (`AudioConditioner.cpp`), at full musical energy |
+| `audioAdvance` | ~0.25 /s | accumulated tunnel advance, at its maximum |
+| `audioBeatPhase` | 1 cycle / beat | musical by construction — an *integer* cycle count stays continuous across its 0→1 wrap |
+| `audioBarPhase` | 1 cycle / bar | ditto, four times slower |
+
+So on the raw `time` uniform: **K ≈ 19 is 3 Hz, K ≈ 25 is 4 Hz, K ≈ 50 is 8 Hz.**
+Those audio rates are worst-case at reactivity 1.0; the user's `reactivity`
+setting scales them (clamped 0–2.5), which is why the ceilings are conservative.
+
+`Tools/temporal_budget.py` enforces this across every scene and stage, and
+`docs/temporal-budget.txt` lists the fastest oscillating term of every scene.
+Only *oscillating* uses count — a large coefficient driving a monotonic
+translation is a fast pan, not a strobe, and is judged on its own merits.
+
+This is checked statically rather than by measuring rendered frames on purpose:
+the probe recorder captures at only ~10–15 fps, so anything above ~5–7 Hz
+**aliases downward** and masquerades as calm motion. A rendered scan can
+therefore never prove the absence of fast flicker; reading the coefficients out
+of the GLSL can.
+
+Prefer tempo-locked motion over a hard-coded rate wherever the effect is meant
+to feel musical — `sin(audioBeatPhase * 6.2831853 * N)` gives exactly N cycles
+per beat, follows the tempo automatically, and is continuous across the wrap for
+integer N.
+
+---
+
 ## GPU reaction-diffusion (live simulation effect)
 
 `ReactionDiffusion` is a genuinely *simulated* effect, not a procedural pattern:

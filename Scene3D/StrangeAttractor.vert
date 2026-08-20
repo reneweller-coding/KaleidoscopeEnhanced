@@ -5,7 +5,9 @@
  * this scene's description.
  */
 // StrangeAttractor.vert — 600 trajectories x 100 steps on a CHAOTIC
-// ATTRACTOR: each vertex (trajectory, step) Euler-integrates its `step`
+// ATTRACTOR, drawn as two nested counter-rotating shells (a core body and a
+// larger copy of the same system behind it, which is what carries the
+// picture out to its edges): each vertex (trajectory, step) Euler-integrates its `step`
 // count of iterations (<= 100, so chaotic divergence stays bounded and the
 // shape evolves smoothly) from a seeded start.  The activation's sceneSeed
 // picks the dynamical system — Lorenz, Thomas, Aizawa or Halvorsen — so
@@ -108,6 +110,14 @@ void main()
     float traj = floor(idx / STEPS);          // 0..599
     float stp  = mod(idx, STEPS);             // 0..99 along the trajectory
 
+    // ---- TWO NESTED SHELLS ------------------------------------------
+    // One attractor is a small knot in the middle of a black frame: at the
+    // old 30-unit camera distance the whole body covered barely a quarter of
+    // the picture.  9 of every 20 trajectories now draw a SECOND, larger,
+    // counter-rotating copy of the SAME system a little further back, so the
+    // scene reaches the edges without becoming anything other than what it is.
+    float outer = step(11.0, mod(traj, 20.0));   // 0 = core body, 1 = outer shell
+
     float sys = floor(mod(sceneSeed * 7.9, 4.0));
 
     // Trajectory start: seeded cloud near the attractor; the whole cloud
@@ -137,9 +147,13 @@ void main()
     else if (sys < 2.5) world = p * 5.0;
     else                world = p * 1.05;
 
-    float oa = time * 0.055;
+    // The outer shell is bigger and spins the other way, so the two bodies
+    // slide through each other instead of moving as one rigid lump.
+    world *= mix(1.0, 2.15, outer);
+
+    float oa = time * 0.055 * mix(1.0, -1.6, outer);
     world.xz = mat2(cos(oa), -sin(oa), sin(oa), cos(oa)) * world.xz;
-    float tilt = 0.35;
+    float tilt = mix(0.35, -0.22, outer);
     world.yz = mat2(cos(tilt), -sin(tilt), sin(tilt), cos(tilt)) * world.yz;
 
     // ORBIT (user feedback): the camera circles the attractor
@@ -150,7 +164,10 @@ void main()
     float pit = 0.30 * sin(time * 0.12);
     float pc2 = cos(pit), ps2 = sin(pit);
     vp.yz = mat2(pc2, -ps2, ps2, pc2) * vp.yz;
-    vp += vec3(0.0, 0.0, 30.0);
+    // 20 instead of 30: at 30 units the attractor spanned 0.64 of the frame
+    // height and barely a third of its width.  The outer shell sits a little
+    // further back so it reads as being BEHIND the core body.
+    vp += vec3(0.0, 0.0, mix(20.0, 27.0, outer));
     vp.x -= eyeOff;
     gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
     gl_Position.x += eyeOff * 0.05 * gl_Position.w;
@@ -159,14 +176,20 @@ void main()
 
     float px   = resolution.y / 1080.0;
     float dist = max(vp.z, 0.5);
-    gl_PointSize = clamp(95.0 * (0.5 + 0.5 * r4) * px / dist, 1.5, 10.0 * px);
+    // 130 instead of 95: at the old distance every sprite sat near the 1.5 px
+    // floor and the strands never joined into ribbons of light.
+    gl_PointSize = clamp(130.0 * (0.5 + 0.5 * r4) * px / dist, 1.8, 14.0 * px);
 
     // Velocity magnitude -> colour heat; the head of each trajectory glows.
     float sp = clamp(length(vel) * 0.05, 0.0, 1.0);
     float head = smoothstep(70.0, 99.0, stp);
     vec3 col = imgPalette(0.30 * sp + traj * 0.0003) * 1.4;
-    col *= (0.35 + 0.85 * sp + 0.9 * head)
+    col *= (0.35 + 0.85 * sp + 0.7 * head)
          * (0.8 + 0.4 * audioSwell + 0.3 * audioKick + 0.9 * audioDrop);
+    col *= mix(1.0, 0.62, outer);       // the far shell reads as further away
 
-    vCol = vec4(col * 2.9, 1.0);
+    // The sprites now cover several times the area they used to, so the same
+    // per-point gain would blow the whole body out to flat white: the gain
+    // comes down and the sum is capped as a TINTED vec3, not as a scalar.
+    vCol = vec4(min(col * 1.6, vec3(1.7)), 1.0);
 }

@@ -8,7 +8,16 @@
 // broods overhead, and jagged lightning bolts tear through it — every
 // SNARE can trigger a strike, a DROP is the full discharge.  The cloud
 // billows around each bolt are lit from within by "their" bolt.
-// 60k points: 60 % cloud, 25 % bolts (12 of them), 15 % rain.
+// 60k points: 52 % cloud, 25 % bolts (12 of them), 11 % rain, 12 % the far
+// storm sky that flickers with sheet lightning behind everything.
+//
+// The cloud used to be a thin fog of 2 px specks -- present all over the
+// frame, but so sparse and so evenly dim that the picture read as flat
+// near-black.  The billow sprites are now several times wider (and
+// correspondingly fainter each) so they fuse into real cloud mass, the bolt
+// glow inside the cloud falls off much faster so lit cores stand against dark
+// broil, and the far sky layer keeps the gaps between the billows off pure
+// black.
 
 in vec4 attrA;
 in vec4 attrB;
@@ -90,11 +99,18 @@ void main()
 {
     float r1 = attrB.x, r2 = attrB.y, r3 = attrB.z, r4 = attrB.w;
 
-    vec3  world;
+    // The scene projection: 55 deg vertical FOV (see Scene3DShader::draw).
+    const float kTanY = 0.5206;
+    float aspect = (resolution.y > 0.5) ? resolution.x / resolution.y : 1.7778;
+
+    vec3  world = vec3(0.0);
+    vec3  vpView = vec3(0.0);
+    bool  inView = false;          // layer already given in view space
     vec3  col;
     float glow = 1.0;
+    float sizeBase = 155.0, sizeMin = 1.5, sizeCap = 22.0, fadeD = 190.0;
 
-    if (r1 < 0.60)
+    if (r1 < 0.52)
     {
         // ---- Cloud mass: clumpy billows, kneaded slowly, bottom heavy.
         float knot = floor(r2 * 32.0);
@@ -105,19 +121,29 @@ void main()
         world.x += sin(world.y * 0.08 + time * 0.10) * 4.0;
         world.z += sin(world.x * 0.06 + time * 0.08) * 4.0;
 
-        // Lit from inside by "its" bolt; otherwise near-black broil.
+        // Lit from inside by "its" bolt; otherwise near-black broil.  The
+        // 0.016 falloff washed the flash evenly over the whole cloud, which
+        // is what made the storm read FLAT -- 0.034 keeps the discharge a
+        // bright core inside dark billows.
         float b   = mod(knot, 12.0);
         float lit = boltEnv(b) * (0.55 + 1.8 * audioSnare + 1.2 * audioKick
                                   + 3.0 * audioDrop);
         float d   = length(world.xz - boltPos(b, 0.2).xz);
-        col = mix(vec3(0.17, 0.20, 0.30),
-                  vec3(0.75, 0.78, 1.0), clamp(lit * exp(-d * 0.016), 0.0, 1.0));
-        glow = 0.95 + 0.45 * r4 + 0.4 * audioBass * (22.0 / max(world.y, 8.0));
+        col = mix(vec3(0.15, 0.18, 0.27),
+                  vec3(0.85, 0.88, 1.0), clamp(lit * exp(-d * 0.034), 0.0, 1.0));
+        // Cold rim light on the cloud TOPS: vertical structure the flat
+        // uniform broil never had.
+        col += vec3(0.09, 0.12, 0.19) * smoothstep(26.0, 44.0, world.y);
+        glow = (0.95 + 0.45 * r4 + 0.4 * audioBass * (22.0 / max(world.y, 8.0)))
+             * 0.42;   // wide sprites carry far more energy each -- see below
+        // Billows have to FUSE, not speckle: several times the old width, and
+        // never below the ~2.6 px an additive sprite needs to stay legible.
+        sizeBase = 430.0; sizeMin = 2.6; sizeCap = 55.0;
     }
-    else if (r1 < 0.85)
+    else if (r1 < 0.77)
     {
         // ---- The bolts: 12 jagged columns with branches. ----
-        float b = floor((r1 - 0.60) * 48.0);       // 0..11
+        float b = floor((r1 - 0.52) * 48.0);       // 0..11
         float h = r2;
         world = boltPos(b, h);
         if (r3 > 0.72)                             // side branch
@@ -133,7 +159,7 @@ void main()
         col  = vec3(0.80, 0.85, 1.0);
         glow = env * (0.8 + 0.4 * r4) * 3.0;
     }
-    else
+    else if (r1 < 0.88)
     {
         // ---- Rain sheets under the cloud. ----
         float fall = fract(r2 * 7.0 + time * (0.5 + 0.3 * r3));
@@ -141,8 +167,30 @@ void main()
                      18.0 - fall * 44.0,
                      (r4 - 0.5) * 150.0);
         col  = vec3(0.35, 0.45, 0.60);
-        glow = (0.10 + 0.20 * audioLevel + 0.25 * audioSwell)
+        glow = (0.16 + 0.22 * audioLevel + 0.28 * audioSwell)
              * (0.4 + 0.6 * fract(r2 * 17.0));
+        sizeBase = 210.0; sizeMin = 2.2; sizeCap = 24.0;
+    }
+    else
+    {
+        // ---- The far storm sky. ----
+        // A frustum-placed sheet of overcast behind the whole storm: it keeps
+        // the gaps between the billows off pure black, and the same bolt
+        // clocks flicker across it as distant SHEET lightning.  Placed
+        // straight in view space -- it is atmosphere, it needs no parallax.
+        inView = true;
+        float hz = 96.0 + 92.0 * r3;
+        // 2.0 would fit the frustum exactly; 2.35 so the sheet still reaches
+        // past all four edges when the preset camera rig rolls the view.
+        vpView = vec3((r2 - 0.5) * 2.35 * kTanY * aspect * hz,
+                      (r4 - 0.5) * 2.35 * kTanY * hz,
+                      hz);
+        float b   = floor(fract(r2 * 6.13 + r4 * 2.71) * 12.0);
+        float env = boltEnv(b) * (0.45 + 1.4 * audioSnare + 2.2 * audioDrop);
+        col  = mix(vec3(0.10, 0.12, 0.20), vec3(0.60, 0.64, 0.88),
+                   clamp(env * 0.45, 0.0, 1.0));
+        glow = 0.30 + 0.28 * r4;
+        sizeBase = 2200.0; sizeMin = 3.5; sizeCap = 46.0; fadeD = 900.0;
     }
 
     // Low camera looking up into the storm, drifting slowly.
@@ -151,8 +199,17 @@ void main()
     vec3 fwd  = normalize(vec3(0.0, 14.0, 0.0) - camP);
     vec3 rgt  = normalize(cross(fwd, vec3(0.0, 1.0, 0.0)));
     vec3 up   = cross(rgt, fwd);
-    vec3 rel  = world - camP;
-    vec3 vp   = vec3(dot(rel, rgt), dot(rel, up), dot(rel, fwd));
+
+    vec3 vp;
+    if (inView)
+    {
+        vp = vpView;
+    }
+    else
+    {
+        vec3 rel = world - camP;
+        vp = vec3(dot(rel, rgt), dot(rel, up), dot(rel, fwd));
+    }
 
     vp.x -= eyeOff;
     gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
@@ -162,8 +219,11 @@ void main()
 
     float px   = resolution.y / 1080.0;
     float dist = max(vp.z, 0.5);
-    gl_PointSize = clamp(155.0 * (0.4 + 0.8 * r4) * px / dist, 1.5, 22.0 * px);
+    gl_PointSize = clamp(sizeBase * (0.4 + 0.8 * r4) * px / dist,
+                         sizeMin, max(sizeCap * px, sizeMin));
 
-    col *= glow * clamp(1.0 - vp.z / 190.0, 0.0, 1.0);
-    vCol = vec4(palTint(col, 0.25 * r1, 0.18) * 3.0, 1.0);
+    col *= glow * clamp(1.0 - vp.z / fadeD, 0.0, 1.0);
+    // Cap the TINTED vec3, not the scalar feeding it: the flash colours run
+    // past 1.0 per channel on their own.
+    vCol = vec4(min(palTint(col, 0.25 * r1, 0.18) * 3.0, vec3(3.2)), 1.0);
 }

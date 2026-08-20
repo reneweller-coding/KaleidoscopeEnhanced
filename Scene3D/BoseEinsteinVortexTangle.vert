@@ -17,6 +17,7 @@ out vec3 vWorldPos;
 out vec3 vNormal;
 out float vVortexPhase;
 out vec2 vQuadUV;
+out float vViewZ;
 
 void main() {
     vec3 pos = attrA.xyz;
@@ -40,9 +41,22 @@ void main() {
     float pit = 0.35 * sin(time * 0.11);
     float cp = cos(pit), sp = sin(pit);
     vp.yz = mat2(cp, -sp, sp, cp) * vp.yz;
-    vp.z += 4.6;
+    // 6.4, not 4.6: the tangle now spans the frustum instead of sitting in it
+    // as a small knot, and the orbit swings its z extent through +-6 units --
+    // at the old distance the near half of it would pass behind the lens.
+    vp.z += 6.4;
+
+    // BILLBOARD IN VIEW SPACE.  The generator hands every one of the six
+    // vertices the sprite's CENTRE plus its radius in attrB.x; spreading the
+    // corners here, after the orbit, is what keeps each sprite square-on to the
+    // lens.  Done in the generator (in world space) instead, the quads went
+    // exactly edge-on -- invisible -- every quarter turn of the yaw above.
+    vViewZ = vp.z;
+    vp.xy += vQuadUV * attrB.x;
+
     vp.x -= eyeOff;
     gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
-
+    if (vp.z < 0.4)
+        gl_Position = vec4(0.0, 0.0, -3.0, 1.0);
 }

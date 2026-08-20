@@ -5,7 +5,8 @@
  * header for this scene's description.
  */
 
-// attrA.xyz = world pos, attrA.w = depthNorm
+// attrA.xyz = VIEW-space position, attrA.w = parameter along the loop
+// attrB.x   = transverse coordinate across the cord (-1 .. +1)
 // attrB.w   = cuspGlow
 in vec4 attrA;
 in vec4 attrB;
@@ -17,24 +18,23 @@ uniform float time;
 out vec3 vPos;
 out float vDepth;
 out float vGlow;
+out float vSideT;
 
 void main() {
-    vec3 worldP = attrA.xyz;
-    vPos = worldP;
+    vec3 vp = attrA.xyz;
+    vPos = vp;
     vDepth = attrA.w;
+    vSideT = attrB.x;
     vGlow = attrB.w;
 
-    // Stereoscopic 3D camera projection (V3).  Tilt BEFORE the
-    // translate: this scene is compact (loops within ~1.4), and applied
-    // after the translate the tilt swung the centre down by
-    // sin(tilt)*4.5 -- the whole tangle sat below the frame edge.
-    vec3 vp = worldP;
-    float tilt = 0.55;
-    float c = cos(tilt), s = sin(tilt);
-    vp = vec3(vp.x, vp.y * c - vp.z * s, vp.y * s + vp.z * c);
-    vp.z += 4.5;
+    // The generator now lays the whole network out in VIEW space (frustum
+    // coordinates, so the loops stay evenly spread at every depth), which
+    // makes this stage a pass-through: the old tilt-then-translate rig would
+    // swing the far half of the network straight out of the picture.
     vp.x -= eyeOff;
 
     gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
+    if (vp.z < 0.4)
+        gl_Position = vec4(0.0, 0.0, -3.0, 1.0);
 }

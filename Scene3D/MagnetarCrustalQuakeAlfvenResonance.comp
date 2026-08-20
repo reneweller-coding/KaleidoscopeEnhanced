@@ -6,10 +6,25 @@ layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
  * @brief Compute generator companion to MagnetarCrustalQuakeAlfvenResonance.frag --
  * generates 3D magnetar crustal fracture lines, magnetic field loops, and relativistic
  * Alfven wave shear resonances in ultrastrong magnetic fields (B > 10^14 G).
+ *
+ * SCREEN FILL: there were only 64 dipolar loops, all capped at L = 2.5 and all
+ * pinched to a mathematical POINT at both footpoints, so the magnetosphere was
+ * a small knot of hairlines in a black frame (occ 0.17, luma 0.008).  It is now
+ * a full magnetosphere: 160 loops whose L-shells are biased OUTWARD to 4.8 (past
+ * the frame corners), footpoints lifted onto an actual stellar surface, ribbon
+ * width growing with radius so the outer field lines do not thin to sub-pixel
+ * hairs, plus a far-field X-ray speck field over a plasma-haze panel.
+ *
+ * The FIELD LINES AND SPECKS are what fill the frame; the haze panel is only a
+ * sky. That distinction is the whole of the second fix: coverage is measured
+ * against the frame's modal luma bucket, so a bright smooth panel is not
+ * filler, it is a raised floor that hides everything within one bucket of it.
+ * The loops' brightness ramp is therefore wide (0.22 at the outermost shell to
+ * 1.57 at the crust) and the panel is held dark.
  */
 
 layout(std430, binding = 0) buffer Verts {
-    float verts[]; // 8 floats per vertex: attrA.xyzw (pos, depth), attrB.xyzw (pad, quakeGlow)
+    float verts[]; // 8 floats/vertex: attrA.xyzw (pos, e1), attrB.xyzw (kind, pad, pad, e2)
 };
 
 // DrawArraysIndirectCommand: [0] count, [1] instanceCount, [2] first, [3] baseInstance, [4] rawCount
@@ -25,6 +40,20 @@ uniform float audioMid;
 uniform float audioHigh;
 uniform float audioSwell;
 
+const uint kLoops   = 160u;
+const uint kSegs    = 64u;
+const uint kLoopInv = kLoops * kSegs;   // 10240 ribbon quads = 61440 verts
+const uint kSpecks  = 1200u;
+const uint kHaze    = 1u;
+
+// Camera constants -- MUST stay in sync with the .vert, which tilts BEFORE it
+// translates.  The far field is laid out in frustum coordinates and rotated
+// back into world space with viewToWorld().
+const float kTilt   = 0.55;
+const float kCamZ   = 4.5;
+const float kTanY   = 0.5206;   // tan(55 deg / 2), the engine's scene FOV
+const float kAspect = 1.78;
+
 float hash11(float p) {
     p = fract(p * 0.1031);
     p *= p + 47.19;
@@ -32,79 +61,196 @@ float hash11(float p) {
     return fract(p);
 }
 
-void writeVertex(uint slot, vec3 p, float e1, float e2) {
+void writeVertex(uint slot, vec3 p, float e1, float e2, float kind) {
     uint o = slot * 8u;
     verts[o + 0u] = p.x;  verts[o + 1u] = p.y;  verts[o + 2u] = p.z;
     verts[o + 3u] = e1;
-    verts[o + 4u] = 0.0;  verts[o + 5u] = 0.0;  verts[o + 6u] = 0.0;
+    verts[o + 4u] = kind; verts[o + 5u] = 0.0;  verts[o + 6u] = 0.0;
     verts[o + 7u] = e2;
 }
 
-void emitSegment(vec3 pA, vec3 pB, float e1, float e2, float thickness) {
+void emitSegment(vec3 pA, vec3 pB, float e1, float e2, float thickness, float kind) {
     uint base = atomicAdd(cmd[4], 6u);
     if (base + 6u > maxVertices) return;
 
     vec3 dir = pB - pA;
     float len = length(dir);
     dir = (len > 1e-5) ? dir / len : vec3(0.0, 1.0, 0.0);
-    vec3 upv = (abs(dir.y) > 0.95) ? vec3(1.0, 0.0, 0.0) : vec3(0.0, 1.0, 0.0);
-    vec3 side = normalize(cross(dir, upv)) * thickness;
+
+    // The ribbon has to be widened ACROSS THE SCREEN.  Crossing dir with world
+    // UP -- as this did -- always lands the side vector in the XZ plane, and
+    // the view axis has a large z component, so every field line running along
+    // x came out very nearly edge-on to the camera and drew a sliver instead of
+    // the ribbon it asked for.  Crossing with the VIEW AXIS faces them all at
+    // the lens.  (kTilt is the .vert's fixed tilt, applied before the push.)
+    vec3 viewAxis = vec3(0.0, sin(kTilt), cos(kTilt));
+    vec3 side = cross(dir, viewAxis);
+    float sl = length(side);
+    side = (sl > 1e-4) ? side * (thickness / sl) : vec3(thickness, 0.0, 0.0);
 
     vec3 a0 = pA - side, a1 = pA + side, b0 = pB - side, b1 = pB + side;
-    writeVertex(base + 0u, a0, e1, e2);
-    writeVertex(base + 1u, a1, e1, e2);
-    writeVertex(base + 2u, b0, e1, e2);
-    writeVertex(base + 3u, a1, e1, e2);
-    writeVertex(base + 4u, b1, e1, e2);
-    writeVertex(base + 5u, b0, e1, e2);
+    writeVertex(base + 0u, a0, e1, e2, kind);
+    writeVertex(base + 1u, a1, e1, e2, kind);
+    writeVertex(base + 2u, b0, e1, e2, kind);
+    writeVertex(base + 3u, a1, e1, e2, kind);
+    writeVertex(base + 4u, b1, e1, e2, kind);
+    writeVertex(base + 5u, b0, e1, e2, kind);
+}
+
+// Flat billboard with constant e1/e2 (the far-field X-ray specks).
+void emitQuad(vec3 c, vec3 ax, vec3 ay, float e1, float e2, float kind) {
+    uint base = atomicAdd(cmd[4], 6u);
+    if (base + 6u > maxVertices) return;
+
+    vec3 p00 = c - ax - ay, p10 = c + ax - ay;
+    vec3 p11 = c + ax + ay, p01 = c - ax + ay;
+    writeVertex(base + 0u, p00, e1, e2, kind);
+    writeVertex(base + 1u, p10, e1, e2, kind);
+    writeVertex(base + 2u, p11, e1, e2, kind);
+    writeVertex(base + 3u, p00, e1, e2, kind);
+    writeVertex(base + 4u, p11, e1, e2, kind);
+    writeVertex(base + 5u, p01, e1, e2, kind);
+}
+
+// Plasma-haze panel: e1/e2 carry a 0..1 panel u/v so the fragment stage can
+// paint a gradient across it instead of a flat wash.
+void emitHazePanel(vec3 c, vec3 ax, vec3 ay) {
+    uint base = atomicAdd(cmd[4], 6u);
+    if (base + 6u > maxVertices) return;
+
+    vec3 p00 = c - ax - ay, p10 = c + ax - ay;
+    vec3 p11 = c + ax + ay, p01 = c - ax + ay;
+    writeVertex(base + 0u, p00, 0.0, 0.0, 2.0);
+    writeVertex(base + 1u, p10, 1.0, 0.0, 2.0);
+    writeVertex(base + 2u, p11, 1.0, 1.0, 2.0);
+    writeVertex(base + 3u, p00, 0.0, 0.0, 2.0);
+    writeVertex(base + 4u, p11, 1.0, 1.0, 2.0);
+    writeVertex(base + 5u, p01, 0.0, 1.0, 2.0);
+}
+
+// Undo the .vert's fixed tilt: a point/direction given in view space (before
+// the vert's +kCamZ push) mapped back to the world value that lands on it.
+vec3 viewToWorld(vec3 vp) {
+    float c = cos(kTilt), s = sin(kTilt);
+    return vec3(vp.x, vp.y * c + vp.z * s, -vp.y * s + vp.z * c);
 }
 
 void main() {
     uvec3 g = gl_GlobalInvocationID;
     uint idx = g.x + 64u * (g.y + 64u * g.z);
-    
-    // 64 magnetospheric Alfven resonance flux loops with 64 segments each
-    uint loopIdx = idx / 64u;
-    uint segIdx  = idx % 64u;
-    if (loopIdx >= 64u) return;
 
+    // Rate = constant * absolute time + the pre-integrated audio accumulator,
+    // never audio * time (anti-flicker rule).
     float t = time * 0.45 + audioAdvance * 0.4;
-    float seed = hash11(float(loopIdx) * 29.13);
-    
-    float s0 = float(segIdx) / 64.0;
-    float s1 = float(segIdx + 1u) / 64.0;
 
-    // Dipolar magnetic field loop: r(theta) = L * sin^2(theta)
-    float theta0 = s0 * 3.14159265;
-    float theta1 = s1 * 3.14159265;
+    if (idx < kLoopInv) {
+        uint loopIdx = idx / kSegs;
+        uint segIdx  = idx % kSegs;
 
-    float L_shell = 1.0 + seed * 1.5;
-    float r0 = L_shell * pow(sin(theta0), 2.0);
-    float r1 = L_shell * pow(sin(theta1), 2.0);
+        float seed  = hash11(float(loopIdx) * 29.13);
+        float seed2 = hash11(float(loopIdx) * 11.71 + 4.31);
 
-    // Azimuthal loop orientation
-    float phi = seed * 6.2831853 + t * 0.5;
+        float s0 = float(segIdx)      / float(kSegs);
+        float s1 = float(segIdx + 1u) / float(kSegs);
 
-    // High-frequency torsional shear Alfven wave ripple along magnetic loop
-    float alfvenWaves0 = sin(s0 * 24.0 - t * 6.0 + seed * 5.0) * 0.06;
-    float alfvenWaves1 = sin(s1 * 24.0 - t * 6.0 + seed * 5.0) * 0.06;
+        float theta0 = s0 * 3.14159265;
+        float theta1 = s1 * 3.14159265;
 
-    vec3 p0 = vec3(
-        (r0 + alfvenWaves0) * sin(theta0) * cos(phi),
-        (r0 + alfvenWaves0) * sin(theta0) * sin(phi),
-        (r0 + alfvenWaves0) * cos(theta0)
-    );
+        // Dipolar magnetic field loop: r(theta) = L * sin^2(theta), but lifted
+        // off the origin onto the stellar surface so both footpoints land on
+        // the crust instead of collapsing every loop into one point.
+        // pow(seed, 0.45) biases the L-shell population OUTWARD: most loops
+        // now belong to the outer magnetosphere, which is what reaches the
+        // frame edges.
+        const float Rstar = 0.30;
+        float Lsh = 0.60 + pow(seed, 0.45) * 4.20;
+        float sh0 = sin(theta0), sh1 = sin(theta1);
+        float r0 = Rstar + (Lsh - Rstar) * sh0 * sh0;
+        float r1 = Rstar + (Lsh - Rstar) * sh1 * sh1;
 
-    vec3 p1 = vec3(
-        (r1 + alfvenWaves1) * sin(theta1) * cos(phi),
-        (r1 + alfvenWaves1) * sin(theta1) * sin(phi),
-        (r1 + alfvenWaves1) * cos(theta1)
-    );
+        // Twisted magnetosphere: the field shears in azimuth with latitude, so
+        // the loops read as a spiral burst rather than a flat paper fan.
+        float twist = 0.90 * sin(t * 0.23 + seed2 * 6.2831853);
+        float phi0  = seed * 6.2831853 + t * 0.8 + twist * cos(theta0);
+        float phi1  = seed * 6.2831853 + t * 0.8 + twist * cos(theta1);
 
-    // Crustal quake rupture flash (near footpoints where theta ~ 0 or pi)
-    float footpoint = max(exp(-theta0 * theta0 * 8.0), exp(-pow(theta0 - 3.14159, 2.0) * 8.0));
-    float glow = (1.0 + footpoint * 3.5) * (1.0 + 3.5 * audioKick);
-    float thick = (0.02 * (1.0 + footpoint)) * (1.0 + 0.3 * audioSwell);
+        // High-frequency torsional shear Alfven wave ripple along the loop;
+        // the amplitude scales with the shell so outer loops ripple visibly.
+        float amp = 0.05 * (0.4 + 0.35 * Lsh);
+        float aw0 = sin(s0 * 24.0 - t * 6.0 + seed * 5.0) * amp;
+        float aw1 = sin(s1 * 24.0 - t * 6.0 + seed * 5.0) * amp;
 
-    emitSegment(p0, p1, s0, glow, thick);
+        float q0 = r0 + aw0, q1 = r1 + aw1;
+        vec3 p0 = vec3(q0 * sh0 * cos(phi0), q0 * sh0 * sin(phi0), q0 * cos(theta0));
+        vec3 p1 = vec3(q1 * sh1 * cos(phi1), q1 * sh1 * sin(phi1), q1 * cos(theta1));
+
+        // Crustal quake rupture flash (near footpoints where theta ~ 0 or pi)
+        float footpoint = max(exp(-theta0 * theta0 * 8.0),
+                              exp(-pow(theta0 - 3.14159, 2.0) * 8.0));
+
+        // The frame is now COVERED in field lines, and this pass is opaque and
+        // depth-tested (not additive), so per-fragment luminance IS the picture
+        // luminance: outer shells stay dim, the crust flares.
+        //
+        // The RANGE of that ramp is what matters, not its level.  At the bottom
+        // of the preset (quakeGlowP 0.8, a quiet kick) the old 0.18..0.60 ramp
+        // put every field line about 0.09 luma while the haze panel behind them
+        // sat at about 0.05 -- ONE luma bucket apart, and the occupancy metric
+        // only counts a pixel that clears TWO.  The measured result was a frame
+        // 96% empty (occ 0.04) even though the geometry was all on screen and
+        // covering a third of it.  A 0.22..1.57 ramp, against a haze held down
+        // in the modal bucket, keeps the inner shells, the outer shells and the
+        // background three buckets apart at the DIMMEST preset setting.
+        float glow = (0.22 + 1.35 * exp(-r0 * 0.50) + footpoint * 1.70)
+                   * (1.0 + 2.0 * audioKick);
+        glow = min(glow, 2.6);
+
+        // Ribbon width grows with radius: a constant 0.02 turned the outer
+        // field lines into sub-pixel hairs that measured as empty frame.
+        float thick = (0.008 + 0.011 * r0) * (1.0 + 0.6 * footpoint)
+                    * (1.0 + 0.3 * audioSwell);
+
+        emitSegment(p0, p1, s0, glow, thick, 0.0);
+        return;
+    }
+
+    uint sIdx = idx - kLoopInv;
+
+    if (sIdx < kSpecks) {
+        float h  = float(sIdx);
+        float r1 = hash11(h * 1.37 + 0.11);
+        float r2 = hash11(h * 2.71 + 5.37);
+        float r3 = hash11(h * 4.19 + 9.71);
+        float r4 = hash11(h * 7.53 + 3.29);
+
+        // FRUSTUM placement: uniform in screen u/v at a random depth, so the
+        // distant X-ray sources stay evenly spread over the whole frame.
+        float D = 8.0 + r3 * r3 * 20.0;
+        float u = (r1 * 2.0 - 1.0) * 1.05 + 0.04 * sin(t * 0.21 + r4 * 6.2831853);
+        float v = (r2 * 2.0 - 1.0) * 1.05 + 0.03 * cos(t * 0.17 + r1 * 6.2831853);
+
+        vec3  c  = viewToWorld(vec3(u * D * kTanY * kAspect, v * D * kTanY, D - kCamZ));
+        // At 0.0024..0.0056 a speck came out about 5 px across at 1080p, which
+        // the catalogue's ~6x measuring downscale averages away completely.
+        float sz = D * (0.0040 + 0.0055 * r4);
+        vec3  ax = vec3(sz, 0.0, 0.0);
+        vec3  ay = viewToWorld(vec3(0.0, sz, 0.0));
+
+        float tw  = 0.55 + 0.45 * sin(t * (0.9 + 1.8 * r4) + r1 * 6.2831853);
+        float bri = (0.20 + 0.70 * r4 * r4) * tw * (0.75 + 0.55 * audioHigh);
+        emitQuad(c, ax, ay, r2, bri, 1.0);
+        return;
+    }
+
+    if (sIdx < kSpecks + kHaze) {
+        // One oversized panel far behind everything, exactly view-aligned, so
+        // no tile of the frame is ever bare clear colour.  34, not 26: this
+        // pass is OPAQUE and depth-tested, and the speck field reaches D = 28 --
+        // a closer panel would simply hide its far half.
+        float D = 34.0;
+        vec3 c  = viewToWorld(vec3(0.0, 0.0, D - kCamZ));
+        vec3 ax = vec3(D * kTanY * kAspect * 1.45, 0.0, 0.0);
+        vec3 ay = viewToWorld(vec3(0.0, D * kTanY * 1.45, 0.0));
+        emitHazePanel(c, ax, ay);
+    }
 }

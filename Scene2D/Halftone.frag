@@ -48,8 +48,16 @@ float screenDot(vec2 p, float ang, float value, float freq)
     // Distance from the cell's centre, against a radius that grows with the
     // ink value.  sqrt because dot AREA should follow the value, not its
     // radius — without it the midtones come out far too dark.
+    //
+    // The constant is 1/sqrt(pi) = 0.564, not an eyeballed 0.72: at 0.72 a
+    // full-value dot has area pi*0.72^2 = 1.63, i.e. 163% of its own cell, so
+    // all four separations reached total coverage well before the picture was
+    // actually solid and every one of them subtracted at once.  That is what
+    // drove the frame to mean luma 0.034 with the leftovers reading as pure
+    // press primaries.  At 0.564 coverage equals the ink value exactly, which
+    // is what a press actually does.
     vec2 cell = fract(rp) - 0.5;
-    float r = sqrt(clamp(value, 0.0, 1.0)) * 0.72;
+    float r = sqrt(clamp(value, 0.0, 1.0)) * 0.564;
     float d = length(cell);
 
     // Antialias against the actual pixel footprint, so the screen stays clean
@@ -83,7 +91,11 @@ void main()
     // RGB -> CMYK.  K is pulled out first (under-colour removal), which is what
     // gives print its deep blacks instead of a muddy three-ink overlap.
     float kC = 1.0 - max(max(rgbK.r, rgbK.g), rgbK.b);
-    float ink = 0.55 + 1.1 * inkP;
+    // inkP runs to 1.0, so the old expression reached 1.65 — every separation
+    // clamped to full value across most of the picture, which is the second
+    // half of the black-frame problem above.  Bounded to a range a press could
+    // actually hold.
+    float ink = clamp(0.55 + 0.55 * inkP, 0.40, 1.10);
     float c = (1.0 - rgbC.r - kC) / max(1.0 - kC, 1e-3);
     float m = (1.0 - rgbM.g - kC) / max(1.0 - kC, 1e-3);
     float y = (1.0 - rgbY.b - kC) / max(1.0 - kC, 1e-3);
@@ -101,15 +113,35 @@ void main()
     float dk = screenDot(p, radians(45.0) + drift * 0.5, k, freq);
 
     // Subtractive recombination: each ink SUBTRACTS its complement.
+    //
+    // Real process inks are not the ideal block dyes these coefficients assumed:
+    // at 0.92 a single cyan dot took green and blue to zero and left pure
+    // saturated red-free cyan behind, so every isolated dot in the picture read
+    // as a press primary at HSV saturation 0.9+.  Real cyan, magenta and yellow
+    // all pass a fraction of the light they nominally stop, and modelling that
+    // is what makes a print look printed rather than like a colour-bar chart.
+    // Black keeps most of its density — that is the ink that actually carries
+    // the drawing.
+    // Each ink absorbs ONE primary: cyan takes red, magenta takes green,
+    // yellow takes blue.  The old vectors were the inks' complements --
+    // vec3(0,1,1) for cyan -- so the cyan plate was subtracting green and blue
+    // and printing RED, and every separation came out as the opposite of what
+    // it separated.  That is why single dots read as screaming complementary
+    // primaries and why two-ink overprints drove a whole channel to zero:
+    // cyan + magenta annihilated blue instead of producing it.  With the
+    // correct assignment an overprint is the colour it should be, and no
+    // combination can exceed 1 - density in saturation.
     vec3 col = vec3(1.0);
-    col -= vec3(0.0, 1.0, 1.0) * dc * 0.92;
-    col -= vec3(1.0, 0.0, 1.0) * dm * 0.92;
-    col -= vec3(1.0, 1.0, 0.0) * dy * 0.88;
-    col -= vec3(1.0) * dk * 0.95;
+    col -= vec3(1.0, 0.0, 0.0) * dc * 0.72;
+    col -= vec3(0.0, 1.0, 0.0) * dm * 0.72;
+    col -= vec3(0.0, 0.0, 1.0) * dy * 0.68;
+    col -= vec3(1.0) * dk * 0.88;
     col = clamp(col, 0.0, 1.0);
 
-    // Paper: not pure white, and slightly warm.
-    vec3 paper = vec3(0.96, 0.945, 0.90);
+    // Paper: not pure white, and slightly warm.  Uncoated stock rather than
+    // bleached, so a mostly-unprinted area sits inside the catalogue's exposure
+    // band instead of glaring next to the scenes around it.
+    vec3 paper = vec3(0.72, 0.705, 0.665);
     col *= paper;
 
     // A whisper of harmonic tint in the paper stock itself.

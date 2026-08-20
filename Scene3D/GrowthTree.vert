@@ -32,7 +32,10 @@ void main()
     mat3 yaw = mat3(cos(ya), 0.0, -sin(ya), 0.0, 1.0, 0.0, sin(ya), 0.0, cos(ya));
     vec3 pw = yaw * p;
 
-    float dist = camDistP * (1.0 - 0.04 * audioLevel);
+    // The grove needs the camera much further back than the single tree did:
+    // its ring reaches ~9.8 units out from the centre, and the eye has to sit
+    // clear of that or a trunk swings straight through it as the grove turns.
+    float dist = camDistP * 2.15 * (1.0 - 0.04 * audioLevel);
     vec3 vp = vec3(pw.x - eyeOff, pw.y - camHP, pw.z + dist);
 
     vObj    = p;

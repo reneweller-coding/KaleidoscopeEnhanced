@@ -3,8 +3,9 @@ out vec4 fragColor;
 /**
  * @file Chladni3DAcousticLevitation.frag
  * @brief CHLADNI 3D ACOUSTIC LEVITATION: 3D acoustic levitation in a multi-emitter ultrasound
- * standing wave array. Hundreds of levitating microparticle clusters trap at 3D Chladni acoustic
- * Gor'kov radiation force nodes with ultrasonic field glows and photo texturing.
+ * standing wave array. Thousands of levitating microparticle clusters fill the whole working
+ * volume of the chamber, trapped on the 3D Chladni acoustic Gor'kov radiation force nodal
+ * surfaces, with ultrasonic field glows and photo texturing.
  *   audioAdvance -> navigates 3D acoustic trap focal shifting & particle rotation
  *   audioKick    -> flashes ultrasonic standing wave acoustic pressure antinode bursts
  *   audioSwell   -> enriches acoustic radiation force field strength & particle glow

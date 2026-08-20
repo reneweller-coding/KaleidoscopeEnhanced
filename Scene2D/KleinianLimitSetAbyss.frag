@@ -67,8 +67,13 @@ void main() {
 
     float t = audioAdvance * 0.25 * spd;
 
-    // Deep continuous zoom into Kleinian cusp
-    float zoomLevel = exp(mod(t * 0.6, 6.0)) * zm;
+    // Deep zoom into the Kleinian cusp, ping-ponged. The old
+    // exp(mod(t * 0.6, 6.0)) snapped from e^6 (403x) back to e^0 every ~10 s
+    // -- a hard cut. A raised cosine over the same period dives in and eases
+    // back out instead: continuous in value AND velocity (the derivative
+    // vanishes at both turns), so no seam anywhere.
+    float zc = 0.5 - 0.5 * cos(6.2831853 * fract(t * 0.6 / 6.0));   // 0..1..0
+    float zoomLevel = exp(zc * 6.0) * zm;
     vec2 z = uv / zoomLevel;
 
     // Moduli parameter mu for Maskit slice: mu = (mu_r, mu_i)

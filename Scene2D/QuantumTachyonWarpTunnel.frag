@@ -53,6 +53,19 @@ vec3 imgPalette(float t) {
     return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
+// Overall level of the photo currently on the texture units, from a fixed
+// 5-tap grid. The tunnel wall is the photo itself, so a bright photo left the
+// Cherenkov rings, the streaks and the singularity flare no headroom at all.
+// The probe rides the tex0/tex1 crossfade, so the gain it feeds can never pop,
+// and being one number for the whole frame it rescales exposure without
+// touching local contrast.
+float photoLevel() {
+    vec3 s = img(vec2(0.25, 0.25)) + img(vec2(0.75, 0.25))
+           + img(vec2(0.25, 0.75)) + img(vec2(0.75, 0.75))
+           + img(vec2(0.50, 0.50));
+    return dot(s * 0.2, vec3(0.299, 0.587, 0.114));
+}
+
 void main() {
     vec2 uv = (gl_FragCoord.xy - 0.5 * resolution.xy) / min(resolution.x, resolution.y);
 
@@ -94,23 +107,34 @@ void main() {
 
     // Cherenkov electric-blue / violet / magenta palette
     vec3 palBase = imgPalette(zTunnel * 0.1 + 0.2);
-    vec3 col = mix(texCol, palBase, 0.45);
+    // Hold the tunnel wall back to a fixed dark base -- Cherenkov light only
+    // reads against dark spacetime, and with a bright photo the wall alone
+    // already sat near 1.0 so every glow below was clipped away on top of it.
+    float expGain = clamp(0.22 / max(0.05, photoLevel()), 0.22, 2.4);
+    vec3 col = mix(texCol, palBase, 0.45) * expGain;
 
     // Add glowing Cherenkov shock rings & tachyon streaks
-    vec3 cherenkovTint = vec3(0.2, 1.3, 1.9) * coneGlow * (1.0 + 2.5 * audioKick);
+    // The tint constants exceed 1.0 per channel, so the TINTED vectors carry
+    // the caps -- bounding only the scalar glows left vec3(0.2,1.3,1.9) * it
+    // free to reach 6.7 on a kick.
+    vec3 cherenkovTint = min(vec3(0.2, 1.3, 1.9) * coneGlow * (1.0 + 2.5 * audioKick), vec3(1.0));
     // Colour temperature follows the same brightness cue: dark lows tint the
     // streaks amber, bright highs push them to cold hyperviolet. Both ends
     // stay at or below the original tint peaks, so no extra light is added.
     vec3 streakTemp = mix(vec3(1.6, 1.3, 1.0), vec3(1.2, 1.4, 1.9), audioCentroid);
-    vec3 streakTint = streakTemp * streakGlow * (0.8 + 1.5 * audioKick);
+    vec3 streakTint = min(streakTemp * streakGlow * (0.8 + 1.5 * audioKick), vec3(0.95));
 
     col += cherenkovTint + streakTint;
 
-    // Center hyperdrive singularity flare
+    // Center hyperdrive singularity flare. It stays the brightest thing on
+    // screen, but bounded: 2.0 + 4.0 * kick on a tint peaking at 2.0 put this
+    // single term at 12.0 per channel over the whole tunnel throat.
     float centerFlare = exp(-r * 12.0) * (2.0 + 4.0 * audioKick);
-    col += vec3(1.6, 1.7, 2.0) * centerFlare;
+    col += min(vec3(1.6, 1.7, 2.0) * centerFlare, vec3(1.35));
 
     // Vignette & gamma
     col = pow(col, vec3(0.88));
-    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    vec3 _catTone = clamp(col, 0.0, 1.0);
+    _catTone /= 1.0 + 0.30 * max(_catTone.r, max(_catTone.g, _catTone.b));
+    fragColor = vec4(_catTone, 1.0);
 }

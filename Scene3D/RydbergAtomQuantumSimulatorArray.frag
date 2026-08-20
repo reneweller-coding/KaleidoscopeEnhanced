@@ -2,13 +2,15 @@
 out vec4 fragColor;
 /**
  * @file RydbergAtomQuantumSimulatorArray.frag
- * @brief RYDBERG ATOM QUANTUM SIMULATOR ARRAY: 60,000 neutral alkali atoms trapped in a 3D optical
- * tweezer array. Laser driving to high principal quantum number Rydberg states (n ~ 70) creates
+ * @brief RYDBERG ATOM QUANTUM SIMULATOR ARRAY: 59,319 neutral alkali atoms trapped in a 3D optical
+ * tweezer array -- a WIDE SLAB of tweezer planes that overflows both frame edges. Laser driving to
+ * high principal quantum number Rydberg states (n ~ 70) creates
  * strong Van der Waals Rydberg blockade interactions, crystalline quantum states, and photo texturing.
  *   audioAdvance -> navigates Rabi frequency detuning & quantum simulator adiabatic sweeps
  *   audioKick    -> flashes collective Rydberg excitation & quantum Zeno blockade avalanches
  *   audioSwell   -> widens Rydberg blockade radius sphere & atom cloud fluorescence
- *   audioCentroid-> shifts atomic D2 line / Rydberg laser transition color spectra
+ *   audioCentroid-> shifts atomic D2 line / Rydberg laser transition color spectra (damped, so a
+ *                   transient tints the array rather than lurching every atom's hue at once)
  *
  * Per-activation variety:
  *   pointGainP float point sprite base luminance gain (0.5..1.8)
@@ -43,22 +45,27 @@ void main()
     
     float hScale = (haloP > 0.01 ? haloP : 1.2);
     float core = exp(-r2 * 18.0 / hScale);
-    
-    // Controlled low luminance per point sprite (V8c)
-    float baseLum = (pointGainP > 0.01 ? pointGainP : 0.08) * 0.12;
-    
+
+    // EXPOSURE REBALANCE: the array used to heap ~20 layers of sprites into one
+    // small central disc, so every sprite had to be near-black to keep that
+    // disc off the clip point.  Now that the slab spans the whole frame the
+    // stack is only ~1 deep, so each sprite carries roughly 6x the luminance --
+    // the same total light, spread over the picture instead of piled up.
+    float baseLum = (pointGainP > 0.01 ? pointGainP : 1.1) * 0.26;
+
     vec2 photoUv = fract(gl_PointCoord + vBlockade * 0.3);
     vec3 photo = img(photoUv);
-    
+
     vec3 col = vCol * (0.6 + 0.4 * photo) * core * baseLum;
-    col += vec3(0.95, 0.95, 1.0) * core * baseLum * (1.0 + 3.0 * audioKick) * vBlockade;
+    col += vec3(0.95, 0.95, 1.0) * core * baseLum
+         * min(1.0 + 1.6 * audioKick, 2.2) * vBlockade * 0.7;
     col *= (0.85 + 0.35 * audioSwell);
-    col += vCol * (audioKick * 0.03);
-    
-    // additive pass dim: this geom renders GL_ONE/GL_ONE without
-    // depth -- overlapping layers ADD, so each fragment must stay
-    // well below 1.0 or the stack burns to white.
-    col *= 0.35;
+    col += vCol * min(audioKick * 0.03, 0.05);
+
+    // Still an additive GL_ONE/GL_ONE pass with no depth test: overlapping
+    // tweezer planes ADD, so cap the FINAL tinted vec3 (not just the scalar
+    // feeding it) well below 1.0 or the stack burns to white.
+    col = min(col, vec3(0.50));
 
     // Soft knee compression
     col /= 1.0 + 0.35 * max(col.r, max(col.g, col.b));

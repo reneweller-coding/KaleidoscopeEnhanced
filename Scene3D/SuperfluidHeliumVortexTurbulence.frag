@@ -68,15 +68,27 @@ void main() {
     // low on purpose: the old x8 kelvin flash times the kick factor pushed
     // every line to pure white — no palette survives a x20 multiplier.
     vec3 vortexColor = imgPalette(0.30 * vCirculation) * 1.2;
-    vec3 kelvinFlash = vec3(1.0, 0.95, 0.7) * abs(vKelvin) * 2.5;
+    // vKelvin is the raw Kelvin-wave amplitude, whose magnitude only ever spans
+    // 0..0.10 -- times 2.5 that is a 0..0.25 sliver, so every filament carried
+    // essentially the same flash and the tangle had no bright cores in it.
+    // Mapping the amplitude's ACTUAL range onto 0..1 makes the wave crests
+    // genuinely white-hot against dim troughs.
+    float kw = smoothstep(0.015, 0.105, abs(vKelvin));
+    vec3 kelvinFlash = vec3(1.0, 0.95, 0.7) * kw * 0.85;
 
     vec3 col = (vortexColor + kelvinFlash) * (0.8 + 1.2 * vCirculation) * (1.0 + audioKick * 0.9) * glw;
+
+    // Depth cue.  Now that the filaments are camera-facing ribbons rather than
+    // edge-on hairlines they cover real area, and a tangle rendered at one flat
+    // brightness across its whole depth reads as a mat, not as a volume.
+    float camZ = vPos.z + 5.5;
+    col *= clamp(1.20 - camZ / 13.0, 0.30, 1.0);
 
     if (hue > 0.001) col = hueRot(col, hue);
 
     // Catalogue review: soft-knee exposure — hot audio compresses
     // instead of clipping the whole frame to white.
-    vec3 _catTone = (col) * 0.55;
+    vec3 _catTone = min(col, vec3(2.2)) * 0.78;
     _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
-    fragColor = vec4(_catTone, 0.9);
+    fragColor = vec4(clamp(_catTone, 0.0, 1.0), 0.9);
 }
