@@ -156,6 +156,13 @@ typedef ptrdiff_t GLintptr;
 #define GL_R32UI                          0x8236
 #define GL_RED_INTEGER                    0x8D94
 #define GL_MAX_TEXTURE_IMAGE_UNITS        0x8872
+// NOTE the difference, it matters for the shadow/prev-frame/Mandelbrot units:
+// GL_MAX_TEXTURE_IMAGE_UNITS caps how many samplers ONE fragment stage may use,
+// while GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS is what bounds the legal UNIT INDEX
+// for glActiveTexture() and for a sampler's glUniform1i() value. They are very
+// different numbers (32 vs 192 on this machine), so a unit index above the
+// former is not automatically invalid.
+#define GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS 0x8B4D
 #define GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS 0x90EB
 
 #define GL_PROGRAM_POINT_SIZE             0x8642

@@ -2522,7 +2522,34 @@ void RenderPipeline::setupTexture( const GLuint texID, const QImage &image )
  * Sets up the GLSL runtime and creates shader.
  */
 void RenderPipeline::initGLSL()
-{	
+{
+	// ---- texture-unit budget diagnostic -------------------------------------
+	// The pipeline hands out fixed unit numbers well above 31 (shadow map 2 on
+	// 32, texPrevFrame on 34, the deep-zoom Mandelbrot on 35). Whether that is
+	// legal depends on GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, NOT on the much
+	// smaller GL_MAX_TEXTURE_IMAGE_UNITS that ComputeFX prints -- the latter
+	// only caps how many samplers a single fragment stage may use at once.
+	// Confusing the two led to a "shadow light 2 is out of range" report that
+	// the numbers below disprove. Log both, and say plainly whether the highest
+	// unit we hand out actually fits, so nobody has to guess again.
+	{
+		GLint maxCombined = 0, maxFragment = 0;
+		glGetIntegerv( GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &maxCombined );
+		glGetIntegerv( GL_MAX_TEXTURE_IMAGE_UNITS,          &maxFragment );
+		const int kHighestUnitUsed = 35;   // Mandelbrot; see paint()
+		fprintf( stderr,
+		         "GL texture units: %d combined (legal indices 0..%d), "
+		         "%d per fragment stage; pipeline uses up to %d -> %s\n",
+		         maxCombined, maxCombined - 1, maxFragment, kHighestUnitUsed,
+		         (kHighestUnitUsed < maxCombined) ? "fits"
+		                                          : "OUT OF RANGE, bindings will be dropped" );
+		if( kHighestUnitUsed >= maxCombined )
+			fprintf( stderr,
+			         "  WARNING: shadow map 2 (unit 32), texPrevFrame (34) and the "
+			         "Mandelbrot sim (35) cannot bind on this GPU; those features "
+			         "will silently read black. Re-map them below %d.\n", maxCombined );
+	}
+
 	// load and compile shader — the final pass that blends the outgoing and
 	// incoming OVERLAY outputs during a combine switch (a plain linear mix;
 	// the styled variety lives in Transitions/ and fires on SCENE fades).

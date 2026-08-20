@@ -49,8 +49,23 @@ void emitSegment(vec3 pA, vec3 pB, float e1, float e2, float thickness) {
     vec3 dir = pB - pA;
     float len = length(dir);
     dir = (len > 1e-5) ? dir / len : vec3(0.0, 1.0, 0.0);
-    vec3 upv = (abs(dir.y) > 0.95) ? vec3(1.0, 0.0, 0.0) : vec3(0.0, 1.0, 0.0);
-    vec3 side = normalize(cross(dir, upv)) * thickness;
+    // Widen the ribbon ACROSS THE SCREEN, not along the view axis.
+    // The old `cross(dir, worldUp)` (with a (1,0,0) fallback for near-vertical
+    // segments) always returns a vector with y == 0, i.e. one that lies in the
+    // xz plane -- and this scene's vert only pushes the world down +z (vp.z += 6.5), so the
+    // camera looks along (0,0,1). A segment
+    // running along x therefore got side = (0,0,1) and a vertical one got the
+    // fallback (0,0,-1): both point straight at the lens, so those quads
+    // rasterised edge-on and drew nothing at all, however thick they were set.
+    // Most filaments in this scene are vertical or horizontal, so a large part
+    // of the geometry was simply invisible.
+    const vec3 kViewAxis = vec3(0.0, 0.0, 1.0);
+    vec3 side = cross(dir, kViewAxis);
+    float sl = length(side);
+    // Degenerate only when the segment runs straight at the lens, where any
+    // perpendicular is equally good.
+    side = (sl > 1e-4) ? side * (thickness / sl)
+                       : normalize(cross(dir, vec3(1.0, 0.0, 0.0))) * thickness;
 
     vec3 a0 = pA - side, a1 = pA + side, b0 = pB - side, b1 = pB + side;
     writeVertex(base + 0u, a0, e1, e2);
