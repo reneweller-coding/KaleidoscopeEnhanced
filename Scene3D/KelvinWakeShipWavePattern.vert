@@ -30,7 +30,6 @@ uniform sampler2D tex1;
 uniform float interpolation;
 
 uniform float waveScaleP;
-uniform float wakeAngleP;
 
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;

@@ -128,6 +128,7 @@
     <float name="reachP" minValue="0.7" maxValue="1.4"></float>
     <int name="nfoldP" minValue="4" maxValue="7"></int>
     <float name="camDistP" minValue="3.5" maxValue="5.5"></float>
+    <float name="glowP" minValue="0.7" maxValue="1.4"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
@@ -1147,7 +1148,7 @@
 
   <CombineShader file="..\\FX\\FxDarkRed.frag" type="normal" mood="dark,aggressive" probability="0.002" complexity="1">
     <bool name="red" probability="0.15"></bool>
-    <bool name="rotate" probability="0.15"></bool>
+    <bool name="blue" probability="0.15"></bool>
   </CombineShader>
   <CombineShader file="..\\FX\\FxDeformationFlow.frag" type="normal" mood="calm,dreamy" probability="0.003" complexity="5">
     <bool name="directionPositive" probability="0.15"></bool>

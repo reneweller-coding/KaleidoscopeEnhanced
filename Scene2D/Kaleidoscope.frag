@@ -52,7 +52,13 @@ void main() {
     p = rot*p;
 //rwrwtest
 
-    float r = pow( pow(p.x*p.x,power) + pow(p.y*p.y,power), 1.0/(2.0*power) );
+    // power was never registered in any preset, so it was always 0 (GL's
+    // unset-uniform default) -- 1.0/(2.0*power) is a division by zero,
+    // sending r to infinity for every pixel and blanking the whole fold.
+    // 1.0 reproduces the plain Euclidean length() case (the commented-out
+    // fallback below), the correct "no warp" default.
+    float powV = (power > 0.01) ? power : 1.0;
+    float r = pow( pow(p.x*p.x,powV) + pow(p.y*p.y,powV), 1.0/(2.0*powV) );
 
     // cartesian to polar coordinates
     //float r = length(p);

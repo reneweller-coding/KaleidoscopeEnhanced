@@ -1690,6 +1690,7 @@
     <float name="reachP" minValue="0.7" maxValue="1.4"></float>
     <int name="nfoldP" minValue="4" maxValue="7"></int>
     <float name="camDistP" minValue="3.5" maxValue="5.5"></float>
+    <float name="glowP" minValue="0.7" maxValue="1.4"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>

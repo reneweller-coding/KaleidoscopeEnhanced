@@ -12,7 +12,6 @@ uniform float time;
 uniform sampler2D tex0;
 uniform sampler2D tex1;
 uniform float interpolation;
-uniform float size;
 
 uniform float audioBeat;       // beat -> thin dark borders flash between cells
 uniform float audioOnset;      // percussive hits -> cells brighten

@@ -29,7 +29,6 @@ uniform sampler2D tex0;
 uniform sampler2D tex1;
 uniform float interpolation;
 
-uniform float chainCountP;
 uniform float magnetosomeSizeP;
 
 vec3 img(vec2 uv) {
