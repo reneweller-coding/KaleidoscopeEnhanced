@@ -3,6 +3,20 @@
  * @file Phyllotaxis.vert
  * @brief Vertex stage companion to Phyllotaxis.frag -- see that file's header for
  * this scene's description.
+ *
+ * Audio Reactivity:
+ *   audioBarPhase  -> ring of light rolling centre -> rim once per bar
+ *   audioSwell     -> dome breath, divergence-angle drift, overall glow
+ *   audioBass      -> small radius pulse of the whole head
+ *   audioChromaHue -> hue wind along the spiral (musical key)
+ *   audioSpread    -> how far the head OPENS: a narrow spectrum (pure tone)
+ *                     keeps the florets packed, rich wide harmonics spread
+ *                     the whole seed head outward.  Only ever expands, so the
+ *                     60k additive points can never bunch up and blow out
+ *   audioRolloff   -> dome height: bass-heavy music presses the head flat,
+ *                     energy reaching into the highs lifts the crown
+ *   audioMode      -> floret colour temperature: minor harmony turns the head
+ *                     to a cold blue-violet, major to its warm sunflower gold
  */
 // Phyllotaxis.vert — the sunflower head: 60k florets placed by the golden
 // angle (137.5 deg), doming gently in 3D; soft rings of light breathe
@@ -29,6 +43,9 @@ uniform float audioBarPhase;
 uniform float audioSwell;
 uniform float audioBass;
 uniform float audioChromaHue;
+uniform float audioSpread;
+uniform float audioRolloff;
+uniform float audioMode;
 uniform float sceneSeed;
 
 out vec4 vCol;
@@ -55,10 +72,18 @@ void main()
               * sin(time * 0.017 + sceneSeed * 6.2831853);
     float th = n * div + time * 0.02;
     float fr = sqrt(n / 60000.0);            // 0 centre .. 1 rim
-    float R  = fr * 24.0 * (1.0 + 0.03 * audioBass);
+    // SPECTRAL SPREAD opens the head: a narrow spectrum keeps the florets
+    // packed tight, rich wide harmonics push the whole disc outward.  The
+    // factor only ever grows from 1.0 -- shrinking would concentrate 60k
+    // additive sprites into a smaller disc and brighten the frame.
+    float R  = fr * 24.0 * (1.0 + 0.03 * audioBass)
+             * (1.0 + 0.30 * clamp(audioSpread, 0.0, 1.0));
 
-    // Gentle dome; it breathes with the swell.
-    float dome = (1.0 - fr * fr) * (4.0 + 3.0 * audioSwell);
+    // Gentle dome; it breathes with the swell, and ROLLOFF sets its resting
+    // height -- bass-heavy music presses the head flat, energy reaching up
+    // into the highs lifts the crown.  (Neutral rolloff 0.5 -> factor 1.0.)
+    float dome = (1.0 - fr * fr) * (4.0 + 3.0 * audioSwell)
+               * (0.72 + 0.56 * clamp(audioRolloff, 0.0, 1.0));
 
     vec2 p = vec2(cos(th), sin(th)) * R;
     float tilt = 0.65;
@@ -79,8 +104,12 @@ void main()
     // A soft ring of light rolls from the centre to the rim once per bar;
     // floret hue winds slowly along the spiral.
     float ring = exp(-abs(fr - audioBarPhase) * 7.0);
-    vec3 col = hueRot(vec3(0.95, 0.65, 0.20),
-                      audioChromaHue + fr * 1.8);
+    // MODE sets the head's temperature before the key's hue wind is applied:
+    // a minor key cools the sunflower to a blue-violet seed head, a major key
+    // restores its warm gold.  The two ends are luminance-matched.
+    vec3 seedCol = mix(vec3(0.45, 0.55, 0.95), vec3(0.95, 0.65, 0.20),
+                       clamp(audioMode, 0.0, 1.0));
+    vec3 col = hueRot(seedCol, audioChromaHue + fr * 1.8);
     col *= (0.40 + 0.50 * r4 + 1.4 * ring)
          * (0.8 + 0.4 * audioSwell);
     vCol = vec4(col * 3.4, 1.0);

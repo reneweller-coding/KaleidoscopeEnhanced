@@ -8,11 +8,22 @@ out vec4 fragColor;
  *        drift, composited front layer over back until a luma test decides
  *        the ray has "hit" something.
  *
- * The parallax offset orbits around the frame driven by speedMovement*time
- * plus audioAdvance (so the drift itself is jump-free), and its orbit radius
- * (`extend`) widens on audioSwell energy swells. Inside the per-layer
- * kaleidoscope sample, the mirrored-segment rotation angle is advanced by
- * audioPhase on top of the base time*speed rotation.
+ * Audio Reactivity:
+ *  - audioAdvance  -> adds to the parallax orbit angle (integrated, jump-free), on
+ *                     top of the base speedMovement*time drift
+ *  - audioPhase    -> adds to the mirrored-segment rotation angle inside the
+ *                     per-layer kaleidoscope sample (integrated, jump-free)
+ *  - audioSwell    -> widens the orbit radius (`extend`) on slow energy swells
+ *  - audioZCR      -> RETRO PIXEL GRAIN: broadband noisiness coarsens the parallax
+ *                     quantisation grid, so a harsh mix breaks the image into fat
+ *                     lo-fi blocks and a pure tone keeps it fine. The grid step is
+ *                     divided out again when the layer UV is rebuilt, so the framing
+ *                     and orbit radius are untouched -- only the blockiness moves
+ *  - audioFlatness -> PARALLAX DEPTH: a tonal spectrum makes the ray "hit" early, so
+ *                     few layers composite and the mosaic reads crisp and near; a
+ *                     noise-like one lets it fall deep into the stack, hazing out
+ *  - audioMode     -> HAZE COLOUR: the depth fog the deep layers fade into is a cold
+ *                     blue-grey in minor keys and a warm sand-grey in major ones
  */
 uniform vec2 resolution;
 uniform float time;
@@ -30,6 +41,9 @@ uniform int direction;
 uniform float audioPhase;     // integrated audio rotation phase (radians, jump-free)
 uniform float audioAdvance;   // integrated parallax-orbit drift (jump-free)
 uniform float audioSwell;     // slow energy envelope widens the orbit
+uniform float audioZCR;       // 0=pure tone .. 1=broadband noise -> retro pixel grain
+uniform float audioFlatness;  // 0=tonal .. 1=noise-like -> how deep the parallax stack reads
+uniform float audioMode;      // 0=minor/cold .. 1=major/warm -> depth-haze colour
 
 
 const float M_PI = 3.141592653589793;
@@ -98,12 +112,18 @@ void main(void)
 	//float speedMovement = 5.0;
 	//float extend = 4000;
 	
-	// pixellate
+	// pixellate.  audioZCR coarsens the quantisation STEP: noisy, broadband
+	// material breaks the parallax into fat lo-fi blocks, a pure tone keeps it
+	// fine.  The same step is divided back out when the layer UV is rebuilt
+	// below (and the orbit offset is expressed in the same grid units), so the
+	// framing, zoom and orbit radius are all unchanged -- only the block size
+	// moves.  A plain per-frame grid parameter; it never scales a time term.
 	const float pixelSize = 0.25;
-	pixel = floor(pixel/pixelSize);
-	
-	
-	
+	float quant = pixelSize * (1.0 + 0.70*clamp(audioZCR, 0.0, 1.0));
+	pixel = floor(pixel/quant);
+
+
+
 	float rotDir = 1.0;
 	if( direction > 0 )
 		rotDir = -1.0;
@@ -112,11 +132,21 @@ void main(void)
 	//vec2 offset = vec2(pow(cos(time*.2),2.0)*16000.0,pow(sin(time*.2),2.0)*16000.0)/pixelSize;
 	float orbit = speedMovement*time*.2 + 0.15*audioAdvance;      // jump-free audio drift
 	float ext   = extend*(1.0 + 0.12*audioSwell);                 // orbit widens on swells
-	vec2 offset = vec2(cos(orbit)*ext,sin(rotDir*orbit)*ext)/pixelSize;
+	vec2 offset = vec2(cos(orbit)*ext,sin(rotDir*orbit)*ext)/quant;
 	//vec2 offset = vec2(cos(speedMovement*.2)*extend,sin(speedMovement*.2)*extend)/pixelSize;
-	
+
 	//resolution.y/resolution.x*
-	
+
+	// Spectral flatness decides how DEEP the ray falls into the 32-layer stack
+	// before it counts as a hit: a tonal, single-band spectrum hits early (crisp,
+	// near mosaic), a noise-like one sinks deep and hazes out.
+	// (centred on the original 1.0; the `i == 31` guard below keeps the last
+	// layer always hitting, which the fixed threshold used to do implicitly.)
+	float hitScale = 1.15 - 0.30*clamp(audioFlatness, 0.0, 1.0);
+	// ...and the musical mode colours the depth fog those deep layers fade into.
+	vec3 haze = mix( vec3(0.42,0.46,0.58), vec3(0.58,0.52,0.42),
+	                 clamp(audioMode, 0.0, 1.0) );
+
 	vec3 col = vec3(0.0);
 	for ( int i=0; i < 32; i++ )
 	{
@@ -124,19 +154,19 @@ void main(void)
 		//float depth = 20.0+float(i);
 		float depth = 37.5+float(i);
 		vec2 uv = pixel + floor(offset/depth);
-		
+
 		uv /= resolution.xy;
 		uv *= depth/40.0;
 		//uv *= 0.4*pixelSize;
-		uv *= 0.8*pixelSize;
-		
+		uv *= 0.8*quant;
+
 		col = getKaleidoscopeColor( uv+.5 );//interpolation * texture(tex0,uv+.5) + (1.0-interpolation)*texture(tex1, uv+.5);
 //texture( iChannel0, uv+.5 ).rgb;
-		
-		if ( 1.0-col.y < float(i+1)/32.0 )
+
+		if ( 1.0-col.y < float(i+1)/32.0 * hitScale || i == 31 )
 		{
 			//col = mix( vec3(.4,.6,.7), col, exp2(-float(i)*.1) );
-			col = mix( vec3(.5,.5,.5), col, exp2(-float(i)*.1) );
+			col = mix( haze, col, exp2(-float(i)*.1) );
 			break;
 		}
 	}

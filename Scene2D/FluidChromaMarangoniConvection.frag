@@ -72,7 +72,9 @@ void main() {
     float t = audioAdvance * 0.32 * spd;
 
     // Convection coordinates
-    vec2 pConv = uv * (6.0 * cSc);
+    // Dividing the convection lattice frequency widens every Benard cell, so
+    // the honeycomb swells with the drone instead of just brightening.
+    vec2 pConv = uv * (6.0 * cSc) / (1.0 + 0.4 * audioSubBass);
 
     // Evaluate Bénard convection thermal upwelling
     float tempField = benardCell(pConv, t);

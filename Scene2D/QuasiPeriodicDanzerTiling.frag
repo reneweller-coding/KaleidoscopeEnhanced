@@ -53,6 +53,19 @@ vec3 imgPalette(float t) {
     return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
+// Overall level of the photo currently bound, from a fixed 5-tap grid. The
+// quasicrystal's cell colour is entirely photo-derived and the library spans
+// near-black to near-white, so a bright photo left the vertex nodes no
+// headroom. The probe rides the tex0/tex1 crossfade so the gain can never
+// pop, and one number for the whole frame rescales exposure without touching
+// local contrast.
+float photoLevel() {
+    vec3 s = img(vec2(0.25, 0.25)) + img(vec2(0.75, 0.25))
+           + img(vec2(0.25, 0.75)) + img(vec2(0.75, 0.75))
+           + img(vec2(0.50, 0.50));
+    return dot(s * 0.2, vec3(0.299, 0.587, 0.114));
+}
+
 void main() {
     vec2 uv = (gl_FragCoord.xy - 0.5 * resolution.xy) / min(resolution.x, resolution.y);
 
@@ -67,7 +80,10 @@ void main() {
     const float PHI = 1.6180339887;
 
     // 6 Basis vectors projected onto 2D from icosahedral 6D hyper-space
-    vec2 p = uv * (8.0 * sc);
+    // Sub-bass breathes the lattice: dividing the projection scale enlarges
+    // every quasicrystal cell on screen (the cut-plane drift, which lives in
+    // `offset`, is left alone so the aperiodic pattern keeps flowing evenly).
+    vec2 p = uv * (8.0 * sc) / (1.0 + 0.35 * audioSubBass);
 
     float fieldSum = 0.0;
     float minDist = 1e4;
@@ -91,8 +107,13 @@ void main() {
     // Quasicrystal aperiodic potential
     float potential = fieldSum / 6.0;
 
-    // Luminous aperiodic lattice nodes
-    float nodeGlow = exp(-minDist * (18.0 + 10.0 * audioCentroid)) * glw;
+    // Luminous aperiodic lattice nodes. minDist is the minimum of six
+    // |fract(x)-0.5| terms, so its density piles up hard against zero (mean
+    // ~0.07): with the old 18.0 falloff the glow still averaged ~0.4 across
+    // the WHOLE frame and, tinted, clipped roughly half the pixels to white
+    // grout. A falloff matched to that scale keeps the lattice as thin lit
+    // seams -- bright where they land, black in between.
+    float nodeGlow = exp(-minDist * (60.0 + 30.0 * audioCentroid)) * glw;
     float peakStar = pow(max(0.0, potential), 6.0) * (1.0 + 3.0 * audioKick);
 
     // Sample distorted background photo
@@ -106,10 +127,19 @@ void main() {
 
     col = mix(col, texCol, 0.35 + 0.15 * audioValence);
 
-    // Add glowing aperiodic stars & vertex nodes
-    vec3 starTint = vec3(1.4, 1.2, 1.8) * nodeGlow * (1.0 + 2.0 * audioKick);
-    col += starTint + vec3(1.6, 1.5, 1.9) * peakStar;
+    // Hold the crystal cells to a fixed dark level so the diffraction facets
+    // read as light against the lattice, whatever photo happens to be bound.
+    col *= clamp(0.20 / max(0.05, photoLevel()), 0.20, 2.4);
+
+    // Add glowing aperiodic stars & vertex nodes. Both tints exceed 1.0 per
+    // channel on their own, so the TINTED vectors are capped -- peakStar in
+    // particular reaches 1.0 on a kick and its tinted result ran to ~6.
+    vec3 starTint = min(vec3(1.4, 1.2, 1.8) * nodeGlow * (1.0 + 2.0 * audioKick), vec3(1.2));
+    vec3 peakTint = min(vec3(1.6, 1.5, 1.9) * peakStar, vec3(1.4));
+    col += starTint + peakTint;
 
     col = pow(col, vec3(0.88));
-    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    vec3 _catTone = clamp(col, 0.0, 1.0);
+    _catTone /= 1.0 + 0.33 * max(_catTone.r, max(_catTone.g, _catTone.b));
+    fragColor = vec4(_catTone, 1.0);
 }

@@ -82,7 +82,10 @@ void main() {
         if (k >= numS) break;
         float kf = float(k);
         float aCenter = t * 0.3 + kf * (6.2831853 / float(numS));
-        float rCenter = 0.35 + 0.15 * sin(t * 0.4 + kf);
+        // Sub-bass drives the spiral cores apart: rCenter is the orbit radius
+        // of each phase singularity, so scaling it breathes the whole core
+        // constellation outward without touching its rotation phase.
+        float rCenter = (0.35 + 0.15 * sin(t * 0.4 + kf)) * (1.0 + 0.38 * audioSubBass);
         vec2 cPos = vec2(cos(aCenter), sin(aCenter)) * rCenter;
 
         float dir = (k % 2 == 0) ? 1.0 : -1.0;

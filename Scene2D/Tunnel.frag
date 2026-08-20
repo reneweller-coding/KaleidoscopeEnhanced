@@ -6,14 +6,26 @@ out vec4 fragColor;
  *        polar coordinates from the frame centre are folded into `sides`
  *        mirrored wedges, then mapped to a UV that scrolls inward over time.
  *
- * audioPhase (integrated, jump-free) adds to the wedge rotation on top of the
- * base time*speed spin, audioAdvance adds to the forward scroll, and
- * audioBeat drives a very subtle radial zoom/breath by blending toward a
- * slightly zoomed resample. Several other audio uniforms (audioLevel,
- * audioCentroid, audioFlux, audioValence, audioFlip) are still declared here
- * but are no longer read in main() -- the mood-tint/brightness logic they
- * once drove was moved to the global present pass so every effect reacts
- * consistently.
+ * Several audio uniforms (audioLevel, audioCentroid, audioFlux, audioValence,
+ * audioFlip) are still declared here but are no longer read in main() -- the
+ * mood-tint/brightness logic they once drove was moved to the global present
+ * pass so every effect reacts consistently.
+ *
+ * Audio Reactivity:
+ *  - audioPhase     -> adds to the wedge rotation on top of the base time*speed spin
+ *                      (integrated, jump-free)
+ *  - audioAdvance   -> adds to the forward scroll (integrated, jump-free)
+ *  - audioBeat      -> a very subtle radial zoom/breath toward a zoomed resample
+ *  - audioSpread    -> THROAT DEPTH: the radial term's weight, i.e. how strongly
+ *                      perspective compresses the wall toward the vanishing point.
+ *                      A narrow spectrum stretches the tunnel long and shallow, a
+ *                      wide one compresses it into a deep, steep throat. Added
+ *                      alongside the scroll term, never multiplied into it
+ *  - audioRoughness -> WALL RIPPLE: dissonance ripples the wall's angular coordinate
+ *                      along the radius, so consonant passages give clean straight
+ *                      wedges and rough clusters buckle them
+ *  - audioRolloff   -> WALL COLOUR TEMPERATURE: bass-bound music tints the tunnel
+ *                      cold blue, energy reaching into the highs warms it amber
  */
 uniform vec2 resolution;
 uniform float time;
@@ -35,6 +47,9 @@ uniform float audioFlux;       // spectral flux 0..1     (how fast spectrum chan
 uniform float audioPhase;      // integrated audio rotation phase (radians, jump-free)
 uniform float audioAdvance;    // integrated audio tunnel advance (jump-free)
 uniform float audioValence;    // mood pleasantness 0..1 (low=tense/dark, high=happy)
+uniform float audioSpread;     // 0=narrow spectrum .. 1=wide -> throat depth compression
+uniform float audioRoughness;  // 0=consonant .. 1=dissonant -> wall ripple
+uniform float audioRolloff;    // 0=bass-bound .. 1=reaching into the highs -> wall colour
 
 const float M_PI = 3.141592653589793;
 
@@ -80,10 +95,19 @@ void main() {
     a = abs(a - tau/sidesK/2.);
     a += time * speed + audioPhase; // base rotation + jump-free audio rotation
 
+    // Spectral spread sets how steeply perspective compresses the wall toward
+    // the vanishing point: a narrow spectrum stretches the tunnel long and
+    // shallow, a wide one packs it into a deep throat.  This scales only the
+    // radial term, which is ADDED to the scroll -- 'time' keeps its own,
+    // untouched coefficient, so no accumulated phase is ever remapped.
+    float throat = 0.10 * (0.80 + 0.40*clamp(audioSpread, 0.0, 1.0));
+
 	vec2 uv;
-    uv.x = (speedTunnel*time + audioAdvance + .1/r);
-    uv.y = (a/M_PI);
-    
+    uv.x = (speedTunnel*time + audioAdvance + throat/r);
+    // Dissonance buckles the wall: a purely radial ripple on the angular
+    // coordinate, so consonant passages keep the wedges dead straight.
+    uv.y = (a/M_PI) + 0.030*clamp(audioRoughness, 0.0, 1.0)*sin(r*7.5);
+
     vec4 col = interpolation * texture(tex0,uv) + (1.0-interpolation)*texture(tex1,uv);
 
     // --- Beat: a VERY subtle radial breath only ---
@@ -101,5 +125,13 @@ void main() {
     // Mood colour / saturation / loudness-brightness / flux-shimmer are now applied
     // GLOBALLY in the final present pass, so every effect reacts consistently.
     // No per-effect brightness flash here (moved to the present-pass spotlights).
+
+    // ...but the tunnel's own WALL still takes a colour temperature from the
+    // spectral rolloff: bass-bound music makes it a cold blue shaft, energy
+    // reaching into the highs warms it to amber.  Luminance-matched, so this
+    // recolours without changing the exposure the present pass then grades.
+    col.rgb *= mix(vec3(0.86, 0.94, 1.14), vec3(1.12, 1.00, 0.86),
+                   clamp(audioRolloff, 0.0, 1.0));
+
     fragColor = clamp(col, 0.0, 1.0);
 }

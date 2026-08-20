@@ -93,8 +93,11 @@ void main() {
 
         pLorenz += vec3(dx, dy, dz) * dt;
 
-        // Project 3D Lorenz attractor onto screen plane
-        vec2 pProj = pLorenz.xy - vec2(0.0, 5.0);
+        // Project 3D Lorenz attractor onto screen plane. Sub-bass widens the
+        // projection, driving the two fixed-point lobes apart on screen; done
+        // here rather than on beta so the ODE integration itself stays at its
+        // tuned, stable parameters.
+        vec2 pProj = pLorenz.xy * (1.0 + 0.35 * audioSubBass) - vec2(0.0, 5.0);
         float d = length(pRot - pProj);
         minDist = min(minDist, d);
         energyAcc += exp(-d * 0.4);

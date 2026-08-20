@@ -75,8 +75,10 @@ void main() {
     vec2 uvWarp = uv * (1.0 + fWarp * 2.5 * wFactor);
 
     // Exotic matter warp ring containment pulses
-    float ringPhase = r * (12.0 * (nRings / 6.0)) - t * 6.0;
-    float ringGlow = smoothstep(0.8, 1.0, abs(sin(ringPhase))) * glw;
+    // Brightness raises the RADIAL frequency only; the t-coefficient stays fixed
+    // so the travelling phase is never remapped mid-flight.
+    float ringPhase = r * (12.0 * (nRings / 6.0)) * (1.0 + 0.4 * audioCentroid) - t * 6.0;
+    float ringGlow = smoothstep(0.8 + 0.12 * audioCentroid, 1.0, abs(sin(ringPhase))) * glw;
 
     // Radial hyper-speed star streaks
     float streaks = abs(sin(a * 20.0 + sin(r * 15.0) * 2.0));
@@ -89,7 +91,7 @@ void main() {
     // Doppler shift: center blueshift (hot cyan/white), edge redshift (magenta/amber)
     vec3 blueshiftCol = vec3(0.3, 1.4, 2.0);
     vec3 redshiftCol  = vec3(1.8, 0.4, 0.6);
-    vec3 dopplerCol = mix(blueshiftCol, redshiftCol, clamp(r / R_warp, 0.0, 1.0));
+    vec3 dopplerCol = mix(blueshiftCol, redshiftCol, clamp(r / R_warp - 0.3 * audioCentroid, 0.0, 1.0));
 
     vec3 palBase = imgPalette(r * 0.8 + 0.2);
     vec3 col = mix(texCol, palBase, 0.45) * dopplerCol;

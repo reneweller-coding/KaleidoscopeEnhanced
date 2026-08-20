@@ -3,6 +3,16 @@
  * @file CyberspaceDNAHelix.vert
  * @brief Vertex stage companion to CyberspaceDNAHelix.frag -- see that file's header for
  * this scene's description.
+ *
+ * Audio Reactivity:
+ *   audioAdvance   -> helix twist phase (pre-integrated, jump-free)
+ *   audioKick      -> transcription-pulse flash + backbone ribbon thickness
+ *   audioSwell     -> width of the unzipping replication fork
+ *   audioHarmChange-> a chord/key change forces the strands further apart --
+ *                     the fork tears open on every harmonic turn
+ *   audioUpperMid  -> 2-6 kHz metallic edge focuses the transcription
+ *                     read-head from a broad wash to a razor scan line
+ *   audioMode      -> (fragment stage) warm/cold nucleotide palette
  */
 // attrA.x = t along ribbon (0..1), attrA.y = side (-1..+1), attrA.w = ribbon
 // id, attrB = per-ribbon seeds (Scene3DShader.cpp GEOM_RIBBON).
@@ -19,6 +29,8 @@ uniform float audioBass;
 uniform float audioMid;
 uniform float audioHigh;
 uniform float audioSwell;
+uniform float audioHarmChange;   // spikes on chord / key changes
+uniform float audioUpperMid;     // 2-6 kHz metallic / industrial edge
 
 out vec3 vPos;
 out vec2 vUV;
@@ -37,8 +49,11 @@ void main() {
     float isStrandB = (ribbonID >= 10.0) ? 1.0 : 0.0;
     float strandPhase = (isStrandB > 0.5) ? 3.14159265 : 0.0;
 
-    // Unzipping replication fork at center
-    float unzip = exp(-pow(tAlong - 10.0, 2.0) * 0.1) * (0.8 + 0.5 * audioSwell);
+    // Unzipping replication fork at center — every chord/key change tears the
+    // strands further apart, so the helix "re-reads" itself on each harmonic
+    // turn and closes again as the new harmony settles.
+    float unzip = exp(-pow(tAlong - 10.0, 2.0) * 0.1)
+                * (0.8 + 0.5 * audioSwell + 0.6 * clamp(audioHarmChange, 0.0, 1.0));
     float r = radius * (1.0 + unzip);
 
     float x = r * cos(helixAngle + strandPhase);
@@ -54,8 +69,13 @@ void main() {
     float width = (0.06 + 0.03 * sin(tAlong * 4.0)) * (1.0 + audioKick * 0.5);
     vec3 pos = helixPos + normal * (attrA.y * 0.5) * width;
 
-    // Transcription pulse traveling along DNA
-    float transPulse = exp(-abs(tAlong - mod(time * 6.0, 20.0)) * 2.0) * (1.0 + audioKick * 2.5);
+    // Transcription pulse traveling along DNA.  The 2-6 kHz metallic edge
+    // focuses the read-head: a dull mix smears it into a broad glowing wash,
+    // an industrial-bright one cuts it to a razor scan line.  The travel RATE
+    // is audio-free; only the falloff width moves (and tightening only ever
+    // removes glow, never adds).
+    float pulseTight = 2.0 * (1.0 + 1.3 * clamp(audioUpperMid, 0.0, 1.0));
+    float transPulse = exp(-abs(tAlong - mod(time * 6.0, 20.0)) * pulseTight) * (1.0 + audioKick * 2.5);
 
     vPos = pos;
     vUV = vec2(attrA.x, attrA.y * 0.5 + 0.5);

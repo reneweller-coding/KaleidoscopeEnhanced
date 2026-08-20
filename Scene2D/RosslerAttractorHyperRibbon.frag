@@ -71,7 +71,11 @@ void main() {
     // Screen coordinate frame
     float rotA = t * 0.15 + audioPhase * 0.1;
     float cs = cos(rotA), sn = sin(rotA);
-    vec2 pRot = mat2(cs, -sn, sn, cs) * uv * (22.0 + 4.0 * sin(audioSwell * 2.0));
+    // Sub-bass shrinks the world-units-per-screen factor, which magnifies the
+    // spiral disk on screen -- the attractor state itself must stay untouched,
+    // since its trajectory is an integration and rescaling it mid-flight would
+    // jump the traced curve.
+    vec2 pRot = mat2(cs, -sn, sn, cs) * uv * (22.0 + 4.0 * sin(audioSwell * 2.0)) / (1.0 + 0.35 * audioSubBass);
 
     // Numerical integration along a Rössler trajectory seeded from a FIXED
     // point shared by every pixel -- not the pixel's own position -- so the

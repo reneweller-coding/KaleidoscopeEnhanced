@@ -65,7 +65,9 @@ void main() {
 
     // Deep zoom target on a prominent Burning Ship mast cusp: c_center = (-0.45, -0.6)
     vec2 cCenter = vec2(-0.45, -0.6);
-    float zoomLevel = exp(mod(t * 0.7, 6.0)) * (2.0 * zm);
+    // Sub-bass makes the hull swell by tightening the visible c-window. The
+    // factor sits OUTSIDE the exp(), so the running zoom phase is untouched.
+    float zoomLevel = exp(mod(t * 0.7, 6.0)) * (2.0 * zm) * (1.0 + 0.35 * audioSubBass);
     vec2 c = cCenter + uv / zoomLevel;
 
     // Invert Y to orient the "ship" right-side up

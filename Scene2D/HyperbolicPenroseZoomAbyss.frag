@@ -84,7 +84,10 @@ void main() {
     // Accumulate across 4 nested Penrose scale octaves
     for (int k = 0; k < 4; k++) {
         float kf = float(k);
-        float layerScale = pow(PHI, kf - zoomProg + 2.0) * (2.0 * scMod);
+        // Sub-bass dilates every octave's star cluster: a smaller layer scale fits
+        // fewer kites across the frame, so the pentagonal clusters swell. zoomProg
+        // itself is untouched, keeping the golden-ratio octave crossfade seamless.
+        float layerScale = pow(PHI, kf - zoomProg + 2.0) * (2.0 * scMod) / (1.0 + 0.3 * audioSubBass);
         float layerFade = smoothstep(0.0, 0.3, kf - zoomProg) * smoothstep(3.8, 2.5, kf - zoomProg);
 
         if (layerFade <= 0.001) continue;

@@ -79,8 +79,11 @@ void main() {
     float skyMask = smoothstep(0.28, 0.22, dSky);
 
     // Swirling inner plasma turbulence inside event horizon
-    float plasmaNoise = sin(pTidal.x * 12.0 + t * 4.0) * cos(pTidal.y * 12.0 - t * 3.5);
-    float plasmaSpiral = sin(a * 6.0 - (1.0 / max(0.05, r)) * 4.0 + t * 6.0);
+    // Brightness raises the SPATIAL frequency of the accretion filaments only;
+    // the t-driven terms keep their fixed rate so the phase is never remapped.
+    float filamentFreq = 12.0 * (1.0 + 0.45 * audioCentroid);
+    float plasmaNoise = sin(pTidal.x * filamentFreq + t * 4.0) * cos(pTidal.y * filamentFreq - t * 3.5);
+    float plasmaSpiral = sin(a * filamentFreq * 0.5 - (1.0 / max(0.05, r)) * 4.0 + t * 6.0);
 
     // Sample slideshow texture on outer universe disk vs inner plasma
     vec2 skyUV = fract(skyPos * 1.5 + 0.5);

@@ -446,6 +446,8 @@ void Scene3DShader::runGenerator( float time )
 		m_genLocs.audioMid      = glGetUniformLocation( p, "audioMid" );
 		m_genLocs.audioChroma   = glGetUniformLocation( p, "audioChroma" );
 		m_genLocs.audioSpectrum = glGetUniformLocation( p, "audioSpectrum" );
+		m_genLocs.audioPhase    = glGetUniformLocation( p, "audioPhase" );
+		m_genLocs.audioSwell    = glGetUniformLocation( p, "audioSwell" );
 		m_genLocs.texSpectro    = glGetUniformLocation( p, "texSpectro" );
 		m_genLocs.spectroHead   = glGetUniformLocation( p, "spectroHead" );
 		m_genLocs.spectroFill   = glGetUniformLocation( p, "spectroFill" );
@@ -476,6 +478,8 @@ void Scene3DShader::runGenerator( float time )
 	setF( m_genLocs.audioHigh,    a.highLevel );
 	setF( m_genLocs.audioBass,    a.bassLevel );
 	setF( m_genLocs.audioMid,     a.midLevel );
+	setF( m_genLocs.audioPhase,   a.audioRotPhase );
+	setF( m_genLocs.audioSwell,   a.swell );
 	if( m_genLocs.audioChroma >= 0 )
 		glUniform1fv( m_genLocs.audioChroma, 12, a.chroma );
 	if( m_genLocs.audioSpectrum >= 0 )

@@ -183,6 +183,11 @@ private:
 		GLint  audioBass    = -1, audioMid     = -1, audioChroma  = -1, audioSpectrum= -1;
 		GLint  texSpectro   = -1, spectroHead  = -1, spectroFill  = -1, maxVertices  = -1;
 		GLint  frameIndex   = -1, genPass      = -1;
+		// audioPhase/audioSwell were missing from this list while 10 compute
+		// generators already declared and used them -- glGetUniformLocation was
+		// never called for them, so they silently stayed 0 for the generator's
+		// whole lifetime and that reactivity simply never happened.
+		GLint  audioPhase   = -1, audioSwell   = -1;
 	};
 	GenLocCache m_genLocs;
 	std::vector<GLint> m_genUniformLocs; ///< Parallel to m_uniforms, resolved for m_genProg (refreshed alongside m_genLocs).

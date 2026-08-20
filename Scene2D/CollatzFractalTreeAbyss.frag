@@ -120,7 +120,10 @@ void main() {
     // reserve for actual boundary needles -- so exp(-trap*K) saturates to
     // ~1 across the ENTIRE non-escaping interior, not just its filigree
     // edge, and flooded the whole centre with full-strength white tint.
-    float needleGlow = exp(-trap * (20.0 + 10.0 * audioCentroid) * ndl) * glw;
+    // Sub-bass divides the falloff constant rather than adding light: a smaller
+    // exponent widens the trap band each needle occupies, so the filigree
+    // breathes THICKER on drones without raising its peak brightness.
+    float needleGlow = exp(-trap * (20.0 + 10.0 * audioCentroid) * ndl / (1.0 + 0.45 * audioSubBass)) * glw;
     if (iterCount >= 23.5) needleGlow *= 0.15;
 
     // Palette mixing

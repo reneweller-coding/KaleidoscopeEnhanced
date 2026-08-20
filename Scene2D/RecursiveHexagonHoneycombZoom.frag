@@ -96,7 +96,10 @@ void main() {
         if (layerFade <= 0.001) continue;
 
         // Rotating coordinate per honeycomb level
-        float rotA = t * 0.15 * (k % 2 == 0 ? 1.0 : -1.0) + kf * 0.5;
+        // Centroid enters as a static phase OFFSET, never as a factor on the
+        // t-driven term -- scaling the rate would remap the whole accumulated
+        // spin in one frame and strobe.
+        float rotA = t * 0.15 * (k % 2 == 0 ? 1.0 : -1.0) + kf * 0.5 + 0.5 * audioCentroid;
         float cs = cos(rotA), sn = sin(rotA);
         vec2 pHex = mat2(cs, -sn, sn, cs) * uv * layerScale;
 
@@ -110,8 +113,11 @@ void main() {
         // its ENTIRE cell instead of tracing just the wall -- flooding the
         // accumulated average with near-white. Multiplying keeps apparent
         // wall thickness roughly constant in screen space at every depth.
-        float dWall = abs(-sdHex(hPos, 0.52)) - 0.04 * wWidth;
-        float wallGlow = exp(-abs(dWall) * (25.0 * layerScale * 0.3)) * glw;
+        // Sub-bass swells the cell circumradius (cells grow, walls ride
+        // outward with them); centroid steepens the wall falloff so bright
+        // material resolves a thin crisp grid instead of a soft one.
+        float dWall = abs(-sdHex(hPos, 0.52 * (1.0 + 0.30 * audioSubBass))) - 0.04 * wWidth;
+        float wallGlow = exp(-abs(dWall) * ((25.0 + 14.0 * audioCentroid) * layerScale * 0.3)) * glw;
 
         // Sample texture inside honeycomb cell
         vec2 sampleUV = fract(hPos * 0.4 + 0.5);

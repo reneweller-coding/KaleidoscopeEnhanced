@@ -97,6 +97,11 @@ void main() {
 
     float tubeRadius = (tR + 0.02 * audioSubBass);
 
+    // Brightness packs more streamline ribs onto each fiber. Only the (u-v)
+    // frequency is scaled -- the t*4.0 flow phase inside streamRib is a separate
+    // summand, so the ribs keep sliding smoothly while their spacing tightens.
+    float fDensA = fDens * (1.0 + 0.5 * audioCentroid);
+
     // Raymarching through Hopf fiber field
     float totDist = 0.0;
     float hitPhase = 0.0;
@@ -106,7 +111,7 @@ void main() {
     for (int i = 0; i < 52; i++) {
         vec3 p = ro + rd * totDist;
         float curPhase;
-        float d = mapHopf(p, t, fDens, tubeRadius, curPhase);
+        float d = mapHopf(p, t, fDensA, tubeRadius, curPhase);
 
         // A ray that never gets close to the fiber torus (d stays large,
         // totDist runs out to 8.0) was previously falling into this SAME
@@ -142,8 +147,10 @@ void main() {
             vec4 q4h = vec4(2.0 * p, r2h - 1.0) / (r2h + 1.0);
             float uh = atan(q4h.y, q4h.x);
             float vh = atan(q4h.w, q4h.z);
-            float streamRib = abs(sin((uh - vh) * (6.0 * fDens) + t * 4.0));
-            fiberGlow = (1.0 - streamRib) * glw;
+            float streamRib = abs(sin((uh - vh) * (6.0 * fDensA) + t * 4.0));
+            // Exponent >= 1 on a 0..1 signal only ever narrows the rib, so a
+            // bright mix resolves finer streamlines without adding any light.
+            fiberGlow = pow(1.0 - streamRib, 1.0 + 1.2 * audioCentroid) * glw;
 
             vec2 sampleUV = fract(vec2(atan(p.y, p.x) / 6.2831853 + 0.5, p.z * 0.3));
             vec3 texCol = img(sampleUV);

@@ -24,6 +24,8 @@ uniform float audioMid;
 uniform float audioHigh;
 uniform float audioFlux;
 uniform float audioChromaHue;
+uniform float audioRoughness;
+uniform float audioBassRel;
 
 uniform float toroidP;
 uniform float iscoP;
@@ -61,8 +63,19 @@ void main() {
     float omega = (1.5 / max(sqrt(r), 0.5)) * t;
     float spiralTheta = theta - omega;
 
-    // Toroidal disk height profile: h(r) = r * sin(spiralTheta * 2) * exp(-r * 0.5)
-    float diskHeight = exp(-abs(r - 2.5) * 1.2) * (0.8 + 0.4 * sin(spiralTheta * 3.0 + t)) * (1.0 + 0.4 * audioBass);
+    // Toroidal disk height profile: bass thickens the torus, and audioBassRel
+    // ("as loud as usual right now") adds a mix-independent low-end punch on
+    // top so quiet productions still breathe.
+    float bassPunch = clamp(audioBassRel - 1.0, -1.0, 1.0);
+    float diskHeight = exp(-abs(r - 2.5) * 1.2) * (0.8 + 0.4 * sin(spiralTheta * 3.0 + t))
+                     * (1.0 + 0.4 * audioBass + 0.30 * bassPunch);
+
+    // Sensory dissonance churns the smooth spiral density waves into ragged
+    // convective turbulence; a consonant passage lets the torus lie flat.
+    float turb = 0.20 + 0.55 * audioRoughness;
+    diskHeight += sin(r * 5.3 + spiralTheta * 4.0) * cos(spiralTheta * 2.0 - r * 3.1)
+                * 0.50 * turb * exp(-abs(r - 2.5) * 0.9);
+
     diskHeight += iscoPlunge;
 
     vec3 pos = vec3(gridUV.x * 3.5, diskHeight, gridUV.y * 3.5);

@@ -55,15 +55,18 @@ vec3 imgPalette(float t) {
 
 // Rosensweig magnetic spike height function
 float ferroHeight(vec2 p, float t, float sDens, float sHeight) {
-    vec2 pGrid = p * (6.0 * sDens);
+    // Two ends of the same lattice scale: brightness subdivides the Rosensweig
+    // pattern into more, finer cones, sub-bass widens each fluid pool cell.
+    vec2 pGrid = p * (6.0 * sDens) * (1.0 + 0.25 * audioCentroid) / (1.0 + 0.35 * audioSubBass);
     vec2 gridFract = fract(pGrid) - 0.5;
     float rSpike = length(gridFract);
 
-    // Conical spike profile with magnetic modulation
-    float cone = max(0.0, 0.45 - rSpike);
+    // Conical spike profile with magnetic modulation. A narrower cone base over
+    // the same tip height is a steeper, sharper magnetic needle.
+    float cone = max(0.0, 0.45 * (1.0 - 0.25 * audioCentroid) - rSpike);
     float pulse = sin(p.x * 2.0 + t * 3.0) * cos(p.y * 2.0 - t * 2.5);
 
-    return cone * (1.2 + 0.8 * pulse + 1.2 * audioBass) * sHeight;
+    return cone * (1.2 + 0.8 * pulse + 1.2 * audioBass) * sHeight * (1.0 + 0.4 * audioSubBass);
 }
 
 void main() {

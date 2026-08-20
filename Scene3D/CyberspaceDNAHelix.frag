@@ -16,8 +16,15 @@ out vec4 fragColor;
  * brightness boost and the colour mix toward the pulse colour) is generated
  * per-vertex in CyberspaceDNAHelix.vert, where audioKick sharpens it and
  * audioSwell widens the strand-unzipping fork at the helix's centre; this
- * fragment stage only reads vTranscription back and applies the preset hue
- * rotation (hueP).
+ * fragment stage reads vTranscription back, colours the bases by musical
+ * mode, and applies the preset hue rotation (hueP).
+ *
+ * Audio Reactivity:
+ *   audioMode      -> nucleotide palette temperature: a minor key cools the
+ *                     whole A/T/C/G set toward steel-cyan, a major key lets
+ *                     the full warm base spectrum through
+ *   (audioKick / audioSwell / audioAdvance / audioHarmChange / audioUpperMid
+ *    all act upstream in CyberspaceDNAHelix.vert -- see that file.)
  */
 
 uniform float time;
@@ -32,6 +39,7 @@ uniform float audioBass;
 uniform float audioMid;
 uniform float audioHigh;
 uniform float audioSwell;
+uniform float audioMode;   // 0 = minor / dark, 1 = major / resolved (slow ~3 s)
 
 uniform float glowP;
 uniform float helixP;
@@ -60,6 +68,12 @@ void main() {
     else if (baseIdx == 1.0) baseColor = vec3(1.0, 0.2, 0.3); // Thymine
     else if (baseIdx == 2.0) baseColor = vec3(0.1, 0.8, 1.0); // Cytosine
     else baseColor = vec3(1.0, 0.8, 0.2); // Guanine
+
+    // Musical mode sets the sequencer's colour temperature: minor keys drain
+    // the four bases toward a cold steel-cyan readout, major keys let the full
+    // warm A/T/C/G spectrum come back. Colour only -- luminance never rises.
+    vec3 coldBase = mix(vec3(0.15, 0.55, 0.85), baseColor, 0.35);
+    baseColor = mix(coldBase, baseColor, clamp(audioMode, 0.0, 1.0));
 
     // Transcription laser pulse
     vec3 pulseColor = vec3(1.0, 1.0, 0.8);

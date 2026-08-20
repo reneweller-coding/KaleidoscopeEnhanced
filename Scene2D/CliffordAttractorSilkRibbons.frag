@@ -66,8 +66,12 @@ void main() {
     // Clifford attractor parameters modulated smoothly across time
     float a = -1.4 + 0.4 * sin(t * 0.3) + 0.2 * audioCentroid;
     float b = 1.6 + 0.3 * cos(t * 0.25);
-    float c = 1.0 + 0.3 * sin(t * 0.4 + audioFlux);
-    float d = 0.7 + 0.3 * cos(t * 0.35);
+    // c/d scale the cosine terms, i.e. how far each Clifford step folds the
+    // sheet back on itself; sub-bass swells that fold depth. Bounded well
+    // under the |x|,|y| <= 1+c limit so the attractor stays finite.
+    float foldAmp = 1.0 + 0.35 * audioSubBass;
+    float c = (1.0 + 0.3 * sin(t * 0.4 + audioFlux)) * foldAmp;
+    float d = (0.7 + 0.3 * cos(t * 0.35)) * foldAmp;
 
     // Screen coordinate frame with gentle rotation
     float rotA = t * 0.15 + audioPhase * 0.1;

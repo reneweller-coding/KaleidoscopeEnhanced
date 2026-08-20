@@ -86,9 +86,13 @@ void main() {
 
         vec2 pLayer = uv * layerScale;
 
-        // 4D Rotation angles
-        float rotXY = t * 0.2 + kf * 0.4;
-        float rotZW = t * 0.15 + audioPhase * 0.1;
+        // 4D Rotation angles. Brightness may not scale the accumulated angle
+        // itself (that would remap the whole phase in one frame); it rides on
+        // top as a bounded extra offset, so a rising centroid still swings the
+        // hyper-plane forward -- i.e. it adds to the rotation RATE for as long
+        // as the timbre keeps brightening, then relaxes.
+        float rotXY = t * 0.2 + kf * 0.4 + 1.6 * audioCentroid;
+        float rotZW = t * 0.15 + audioPhase * 0.1 + 1.2 * audioCentroid;
 
         // Project 2D screen into 4D tesseract coordinates
         vec4 p4 = vec4(pLayer, sin(kf * 1.2 + t * 0.4), cos(kf * 1.2 + t * 0.4));
@@ -99,10 +103,15 @@ void main() {
         float c2 = cos(rotZW), s2 = sin(rotZW);
         p4.zw = vec2(c2 * p4.z - s2 * p4.w, s2 * p4.z + c2 * p4.w);
 
+        // Sub-bass swells the frame's half-extent. It is a plain per-frame
+        // size parameter (no accumulated phase runs through it), so it can
+        // breathe freely -- unlike the rotation angles above.
+        float frameR = 1.2 * (1.0 + 0.32 * audioSubBass);
+
         // Compute distance to 4D wireframe edges
         vec4 q = abs(p4);
-        float dOuter = max(max(q.x, q.y), max(q.z, q.w)) - 1.2;
-        float dInner = max(max(q.x, q.y), max(q.z, q.w)) - 1.05;
+        float dOuter = max(max(q.x, q.y), max(q.z, q.w)) - frameR;
+        float dInner = max(max(q.x, q.y), max(q.z, q.w)) - (frameR - 0.15);
         float dFrame = max(dOuter, -dInner);
 
         // 2D Projection edge distance for wireframe lines. The old
@@ -119,8 +128,11 @@ void main() {
         // ~4.0-4.6 for EVERY cellPhase, which is why the earlier fix
         // produced no visible change. edgeDist alone already gives the
         // correct thin-outline falloff both inside and outside the frame.
-        vec2 q2 = abs(pLayer);
-        float wire = min(abs(q2.x - 1.2), abs(q2.y - 1.2));
+        // Taken from the ROTATED p4.xy, not from raw pLayer: the 4D rotation
+        // above only ever fed dFrame, which nothing consumes, so the whole
+        // hyper-plane spin was invisible and no audio mapping on it could show.
+        vec2 q2 = abs(p4.xy);
+        float wire = min(abs(q2.x - frameR), abs(q2.y - frameR));
         float edgeGlow = exp(-wire * (25.0 * layerScale * 0.15)) * layerFade * glw;
 
         // Sample texture inside the tesseract cell face

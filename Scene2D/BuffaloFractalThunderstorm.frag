@@ -74,7 +74,10 @@ void main() {
     // iteration counts all the way out to 500x zoom, preserving fractal
     // detail throughout the animation.
     vec2 cCenter = vec2(-0.43, -0.99);
-    float zoomLevel = exp(mod(t * 0.65, 5.5)) * (2.2 * zm);
+    // Sub-bass swells the horn cavity by tightening the visible c-window. It
+    // multiplies the zoom OUTSIDE the exp(), so the running zoom phase itself
+    // is never rescaled.
+    float zoomLevel = exp(mod(t * 0.65, 5.5)) * (2.2 * zm) * (1.0 + 0.35 * audioSubBass);
     vec2 c = cCenter + uv / zoomLevel;
 
     vec2 z = c;

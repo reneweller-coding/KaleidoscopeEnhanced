@@ -87,8 +87,12 @@ void main() {
     float u = atan(p4.y, p4.x);
     float v = atan(p4.w, p4.z);
 
-    // Distance to Clifford Torus surface in S3: |p4.x^2 + p4.y^2 - 0.5|
-    float dClifford = abs(dot(p4.xy, p4.xy) - 0.5);
+    // Distance to Clifford Torus surface in S3: |p4.x^2 + p4.y^2 - R2|.
+    // R2 = 0.5 is the canonical (equal-radius) torus; sub-bass breathes that
+    // major radius. dot(p4.xy,p4.xy) spans 0..1 for the normalized p4, so the
+    // swollen radius stays inside the hypersphere.
+    float torusR2 = 0.5 * (1.0 + 0.30 * audioSubBass);
+    float dClifford = abs(dot(p4.xy, p4.xy) - torusR2);
 
     // Villarceau nested circular streamlines
     float villarceau1 = sin((u + v) * 4.0 * rDens + t * 2.0 * twst);
@@ -109,11 +113,13 @@ void main() {
     vec3 col = mix(palA, palB, 0.5 + 0.5 * sin(u * 2.0));
 
     col = mix(col, texCol, 0.35 + 0.15 * audioValence);
-    // The gaps between Villarceau rays (where ringGlow correctly decays to
-    // ~0) were still reading flat and pale because this base palette/photo
-    // mix alone sits close to the tonemap's ceiling across wide bands of
-    // the frame -- the rays need somewhere darker to stand out against.
-    col *= 0.6;
+    // The ray gaps used to read as a flat pale wash because this base
+    // palette/photo mix sat near the tonemap ceiling across the frame, so it
+    // is held back to give the rays something darker to stand against. 0.6
+    // was too deep once the surfaceGlow gate below started attenuating the
+    // rings as well -- the two stacked and the whole scene went muddy
+    // (measured luma 0.124, contrast 0.033).
+    col *= 0.82;
 
     // Add glowing Villarceau rings & intersection node flashes. The first
     // pass's 0.85 cap plus a 0.4 knee still let ~50% of the frame clip,
@@ -122,7 +128,10 @@ void main() {
     // WIDE angular bands, not just thin lines, and the 1.7-peak tint channel
     // survived even the 0.85 cap. Tighten the cap and lower the tint
     // constants themselves so a fully-lit ring band stays well under 1.0.
-    vec3 ringTint = vec3(1.0, 0.85, 1.3) * min(ringGlow * (1.0 + 2.0 * audioKick), 0.5);
+    // Gate the rings by proximity to the torus surface -- they live ON it, so
+    // the lit band visibly travels outward as sub-bass swells torusR2. Pure
+    // attenuation (max factor 1.0), so it cannot re-open the clipping problem.
+    vec3 ringTint = vec3(1.0, 0.85, 1.3) * min(ringGlow * (1.0 + 2.0 * audioKick), 0.5) * (0.55 + 0.45 * surfaceGlow);
     float nodeFlash = min(exp(-vGrid * 40.0) * audioKick * 2.0, 0.6);
     col += ringTint + vec3(1.2, 1.1, 1.4) * nodeFlash;
 
@@ -132,6 +141,6 @@ void main() {
 
     col = pow(col, vec3(0.88));
     vec3 _catTone = clamp(col, 0.0, 1.0);
-    _catTone /= 1.0 + 1.6 * max(_catTone.r, max(_catTone.g, _catTone.b));
+    _catTone /= 1.0 + 0.85 * max(_catTone.r, max(_catTone.g, _catTone.b));
     fragColor = vec4(_catTone, 1.0);
 }

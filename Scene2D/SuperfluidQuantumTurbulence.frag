@@ -64,7 +64,10 @@ vec2 superfluidField(vec2 p, float t, float nVortices, out float minCoreDist) {
         float kf = float(k);
         // Vortex core orbital motion + reconnection oscillation
         float aOrbit = t * 0.4 * (k % 2 == 0 ? 1.0 : -1.0) + kf * (6.2831853 / float(numV));
-        float rOrbit = 0.45 + 0.2 * sin(t * 0.5 + kf * 1.5);
+        // Sub-bass swells the orbit RADIUS only, never the orbit angle: the
+        // condensate cloud breathes wider on drones while each core keeps
+        // travelling along its own continuous t-driven phase.
+        float rOrbit = (0.45 + 0.2 * sin(t * 0.5 + kf * 1.5)) * (1.0 + 0.35 * audioSubBass);
         vec2 vCore = vec2(cos(aOrbit), sin(aOrbit)) * rOrbit;
 
         vec2 diff = p - vCore;

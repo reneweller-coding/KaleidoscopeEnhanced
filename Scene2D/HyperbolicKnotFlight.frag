@@ -53,6 +53,19 @@ vec3 imgPalette(float t) {
     return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
+// Overall level of the photo currently bound, from a fixed 5-tap grid. The
+// mirror-chamber walls and the palette are entirely photo-derived and the
+// library spans near-black to near-white, which is half of why this flight
+// sat at a tenth of its intended exposure. The probe rides the tex0/tex1
+// crossfade so the gain can never pop, and one number for the whole frame
+// rescales exposure without touching local contrast.
+float photoLevel() {
+    vec3 s = img(vec2(0.25, 0.25)) + img(vec2(0.75, 0.25))
+           + img(vec2(0.25, 0.75)) + img(vec2(0.75, 0.75))
+           + img(vec2(0.50, 0.50));
+    return dot(s * 0.2, vec3(0.299, 0.587, 0.114));
+}
+
 // Parametric (p, q) torus knot position: r(s)
 vec3 knotCurve(float s, float pParam, float qParam) {
     float rMajor = 2.4;
@@ -108,8 +121,9 @@ void main() {
     float minTrackDist = 1e4;
     vec3 hitCol = vec3(0.0);
     float ringGlowAcc = 0.0;
+    bool hit = false;
 
-    for (int i = 0; i < 48; i++) {
+    for (int i = 0; i < 56; i++) {
         vec3 p = ro + rd * totDist;
 
         // Distance to surrounding reflective cubic mirror chamber
@@ -124,16 +138,32 @@ void main() {
 
         // Periodic glowing neon rings along the rail
         float ringDist = abs(sin(sApprox * 25.0 - t * 4.0));
-        ringGlowAcc += exp(-dRail * 10.0) * smoothstep(0.8, 1.0, ringDist) * (0.03 + 0.05 * audioKick);
+        // Sub-bass softens the radial falloff instead of adding light: the ring
+        // reaches further out from the rail (a visibly fatter plasma hoop) while
+        // its on-rail peak, which the tint constants are balanced against, is
+        // exactly unchanged.
+        ringGlowAcc += exp(-max(0.0, dRail) * 10.0 / (1.0 + 0.4 * audioSubBass)) * smoothstep(0.8, 1.0, ringDist) * (0.06 + 0.09 * audioKick);
 
         float d = min(dRail, abs(dRoom));
         minTrackDist = min(minTrackDist, dRail);
 
-        if (d < 0.005 || totDist > 14.0) {
+        // dRail is measured against a curve point that slides FORWARD with the
+        // march (sApprox tracks totDist), so it is not a conservative distance
+        // and for the whole forward cone it sat near-constant around 0.35,
+        // pinning the step size. The far-plane arm therefore has to be
+        // reachable within the iteration budget, and `i >= 55` guarantees the
+        // pixel resolves to chamber colour rather than falling out of the loop
+        // unshaded.
+        if (d < 0.005 || totDist > 11.0 || i >= 55) {
+            hit = true;
             vec2 sampleUV = fract(p.xy * 0.2 + p.z * 0.2 + 0.5);
             vec3 texCol = img(sampleUV);
             vec3 pal = imgPalette(sApprox * 0.1 + t * 0.05);
-            hitCol = mix(texCol, pal, 0.5) * (0.7 + 0.4 * (1.0 - d));
+            // d is ~0 at every hit, so the old (0.7 + 0.4 * (1.0 - d)) term
+            // was a constant 1.1 and the chamber had no depth cue at all.
+            // Fade with travelled distance instead: near rail-side geometry
+            // stays bright, the far end of the chamber falls away.
+            hitCol = mix(texCol, pal, 0.5) * (0.55 + 0.70 * exp(-totDist * 0.22));
             break;
         }
 
@@ -141,13 +171,28 @@ void main() {
     }
 
     // Glowing rail lines & plasma rings
-    float railGlow = exp(-minTrackDist * (24.0 + 12.0 * audioCentroid)) * glw;
-    vec3 railTint = vec3(1.3, 1.0, 1.7) * (railGlow + ringGlowAcc) * (1.0 + 2.5 * audioKick);
+    float railGlow = exp(-max(0.0, minTrackDist) * (24.0 + 12.0 * audioCentroid)) * glw;
+    // The tint exceeds 1.0 per channel on its own and ringGlowAcc accumulates
+    // over the whole march, so the TINTED vector is what has to be capped.
+    vec3 railTint = min(vec3(1.3, 1.0, 1.7) * (railGlow + ringGlowAcc) * (1.0 + 2.5 * audioKick), vec3(1.3));
 
-    // Background laser chamber grid
-    vec3 finalCol = mix(imgPalette(0.3) * 0.2, hitCol, clamp(length(hitCol), 0.0, 1.0));
+    // Background laser chamber grid. The old selector was
+    // mix(bg, hitCol, clamp(length(hitCol), 0, 1)): intended as a "did we
+    // hit?" test, it doubles as a brightness crusher -- with a dark photo a
+    // genuine wall hit has length ~0.18, so it blended 82% of the (even
+    // darker, 0.2-scaled) background back over the top. That, not the march,
+    // is what left this flight at a tenth of its intended exposure. Select on
+    // the march's own hit flag instead.
+    vec3 bgCol = imgPalette(0.3) * (0.30 + 0.18 * audioLevel);
+    vec3 finalCol = hit ? hitCol : bgCol;
+
+    // Everything above is photo-derived: put the chamber on a fixed exposure
+    // rather than inheriting whatever image happens to be bound.
+    finalCol *= clamp(0.30 / max(0.05, photoLevel()), 0.40, 3.0);
     finalCol += railTint;
 
     finalCol = pow(finalCol, vec3(0.88));
-    fragColor = vec4(clamp(finalCol, 0.0, 1.0), 1.0);
+    vec3 _catTone = clamp(finalCol, 0.0, 1.0);
+    _catTone /= 1.0 + 0.26 * max(_catTone.r, max(_catTone.g, _catTone.b));
+    fragColor = vec4(_catTone, 1.0);
 }

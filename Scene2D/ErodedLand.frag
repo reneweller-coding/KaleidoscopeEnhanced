@@ -4,7 +4,20 @@ out vec4 fragColor;
  * @file ErodedLand.frag
  * @brief A relief-shaded landscape being carved by simulated water erosion, viewed from a slowly drifting aerial camera.
  *
- * texErosion (written by the CfxErosion compute pass, R = height, G = water) is lit with a travelling sun and shaded from its own height gradient; water is found geometrically as concave dips in the terrain rather than stored separately. audioAdvance drives the camera's pan and zoom over the terrain, integrated so it never jump-cuts, audioKick flashes the freshly carved water channels, audioBeat gives the whole image a light pulse, and audioAmbient tints the pooled water. Altitude bands (valley floor, rock, snow) are recoloured with a sample from the photo itself.
+ * texErosion (written by the CfxErosion compute pass, R = height, G = water) is lit with a travelling sun and shaded from its own height gradient; water is found geometrically as concave dips in the terrain rather than stored separately. Altitude bands (valley floor, rock, snow) are recoloured with a sample from the photo itself.
+ *
+ * Audio Reactivity:
+ *  - audioAdvance   -> camera pan and zoom over the terrain (integrated, never jump-cuts)
+ *  - audioKick      -> flashes the freshly carved water channels
+ *  - audioBeat      -> light pulse over the whole image
+ *  - audioAmbient   -> tints the pooled water
+ *  - audioRoughness -> RELIEF STEEPNESS: consonant, smooth music shades the terrain
+ *                      gently, dissonant clusters exaggerate the height gradient into
+ *                      jagged, harshly lit rock
+ *  - audioSharpness -> SPECULAR TIGHTNESS of the sun glint on water and snow: a dull
+ *                      mix gives a broad wet sheen, cymbals pull it into hard sparkles
+ *  - audioMode      -> SUNLIGHT COLOUR TEMPERATURE: minor keys light the land with a
+ *                      cold blue-grey overcast, major keys with a warm golden sun
  */
 // ErodedLand.frag — a landscape carving itself.  Blend/CfxErosion.comp runs
 // thousands of droplets downhill every frame; this pass shades the result as
@@ -23,6 +36,9 @@ uniform float audioKick;
 uniform float audioAmbient;
 uniform float audioChromaHue;
 uniform float audioAdvance;
+uniform float audioRoughness;   // 0=consonant .. 1=dissonant -> relief steepness
+uniform float audioSharpness;   // 0=dull .. 1=bright/harsh -> sun-glint tightness
+uniform float audioMode;        // 0=minor/cold .. 1=major/warm -> sunlight colour
 
 uniform float sunP;
 uniform float waterP;
@@ -42,7 +58,11 @@ void main()
 
     float hx = hAt(c + vec2(px.x * 1.5, 0.0)) - hAt(c - vec2(px.x * 1.5, 0.0));
     float hy = hAt(c + vec2(0.0, px.y * 1.5)) - hAt(c - vec2(0.0, px.y * 1.5));
-    vec3 n = normalize(vec3(-hx * 90.0, -hy * 90.0, 1.0));
+    // Sensory dissonance exaggerates the gradient: smooth, consonant music
+    // shades the land gently, rough clusters make it read as jagged, harshly
+    // lit rock.  A pure shape parameter -- nothing here reaches 'time'.
+    float relief = 90.0 * (1.0 + 0.45 * clamp(audioRoughness, 0.0, 1.0));
+    vec3 n = normalize(vec3(-hx * relief, -hy * relief, 1.0));
 
     // Water lives where the terrain is CONCAVE — the carved channels — which
     // the erosion writes into the shape itself.  Measured over a WIDE radius
@@ -76,16 +96,26 @@ void main()
     rock = mix(rock, highC, smoothstep(0.50, 0.78, h));
     rock *= pal;
 
-    vec3 col = rock * (0.25 + 1.35 * diff) * ao;
+    // The musical mode sets the WEATHER: minor keys give a cold, blue-grey
+    // overcast light, major keys a warm golden sun.  Luminance-neutral, so it
+    // recolours the land without touching the exposure.
+    vec3 sunCol = mix(vec3(0.78, 0.86, 1.08), vec3(1.10, 0.99, 0.82),
+                      clamp(audioMode, 0.0, 1.0));
+
+    vec3 col = rock * (0.25 + 1.35 * diff * sunCol) * ao;
 
     // Snow on the peaks, catching the sun.
     float snow = smoothstep(0.72, 0.95, h);
-    col = mix(col, vec3(0.92, 0.95, 1.02) * (0.35 + diff), snow * 0.8);
+    col = mix(col, vec3(0.92, 0.95, 1.02) * sunCol * (0.35 + diff), snow * 0.8);
 
     // Water pooling in the carved channels.
     vec3 wcol = vec3(0.10, 0.35, 0.55) * (0.6 + 0.8 * audioAmbient);
     float wm = clamp(water * (0.5 + 0.8 * waterP), 0.0, 1.0);
-    col = mix(col, wcol + vec3(pow(max(dot(n, L), 0.0), 40.0)) * 0.7, wm * 0.55);
+    // Zwicker sharpness tightens the sun glint on the water: a dull, dark mix
+    // leaves a broad wet sheen, cymbals and hats pull it into hard sparkles.
+    // Exponent only -- the glint's peak brightness is unchanged.
+    float specPow = mix(22.0, 72.0, clamp(audioSharpness, 0.0, 1.0));
+    col = mix(col, wcol + vec3(pow(max(dot(n, L), 0.0), specPow)) * 0.7, wm * 0.55);
 
     // Kicks flash the freshly cut channels.
     col += wcol * wm * audioKick * 0.8;

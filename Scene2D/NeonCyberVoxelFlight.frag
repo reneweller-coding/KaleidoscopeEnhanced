@@ -109,7 +109,10 @@ void main() {
         // Compute glowing window grid on building facade
         vec2 winGrid = fract(hitPos.xy * vec2(8.0, 4.0)) - 0.5;
         float winDist = max(abs(winGrid.x), abs(winGrid.y));
-        float winMask = smoothstep(0.4, 0.25, winDist);
+        // Tonal brightness crisps the window edges: raising the inner stop
+        // narrows the smoothstep band, so bright material gives hard-edged
+        // voxel windows and dark material leaves them soft/blurred.
+        float winMask = smoothstep(0.4, 0.25 + 0.11 * audioCentroid, winDist);
 
         // Random window light on/off pattern
         float winRand = fract(sin(dot(floor(hitPos.xy * vec2(8.0, 4.0)), vec2(12.3, 45.6))) * 43758.5453);

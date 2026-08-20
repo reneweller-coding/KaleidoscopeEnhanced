@@ -86,7 +86,9 @@ void main() {
 
     // Zoom into classic Lyapunov bio-space cusp around (3.8, 3.8)
     vec2 abCenter = vec2(3.6, 3.6);
-    float zoomLevel = (1.5 + 0.3 * sin(audioSwell * 2.0)) * zm;
+    // Sub-bass magnifies the (A,B) window, so each cellular stability basin
+    // swells across more screen area -- the basins breathe, the light doesn't.
+    float zoomLevel = (1.5 + 0.3 * sin(audioSwell * 2.0)) * zm * (1.0 + 0.3 * audioSubBass);
     vec2 ab = abCenter + uv / zoomLevel;
 
     // Calculate Lyapunov exponent

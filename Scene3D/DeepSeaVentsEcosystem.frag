@@ -16,6 +16,16 @@ out vec4 fragColor;
  * a final preset hue rotation; the photo palette itself follows the musical
  * key via audioChromaHue/audioAdvance inside imgPalette, with audioValence
  * shaping its saturation.
+ *
+ * Audio Reactivity:
+ *   audioKick      -> brightness pump on every organism
+ *   audioChromaHue -> rotates the photo palette arc with the musical key
+ *   audioValence   -> saturation of that palette
+ *   audioAdvance   -> slow palette drift (pre-integrated)
+ *   audioMode      -> water temperature: a minor key sinks the whole vent
+ *                     field into cold abyssal blue, a major key lets the
+ *                     sulfur golds and hemoglobin reds burn through
+ *   (audioLowMid / audioRoughness shape the plume upstream in the .vert.)
  */
 
 uniform float time;
@@ -35,6 +45,7 @@ uniform float glowP;
 uniform float hueP;
 uniform float audioChromaHue;
 uniform float audioValence;
+uniform float audioMode;   // 0 = minor / cold, 1 = major / warm (slow ~3 s)
 
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
@@ -85,6 +96,12 @@ void main() {
         // Deep-sea tube worm hemoglobin plume tips (crimson/magenta)
         col = palTint(mix(vec3(0.9, 0.05, 0.3), vec3(1.0, 0.3, 0.8), vBioGlow), 0.80, 0.22);
     }
+
+    // WATER TEMPERATURE: a minor key sinks the whole vent field into cold
+    // abyssal blue-green; a major key lets the sulfur golds and hemoglobin
+    // reds burn back through.  Luminance-preserving, so exposure is untouched.
+    vec3 abyssal = vec3(dot(col, vec3(0.30, 0.42, 0.28))) * vec3(0.45, 0.80, 1.15);
+    col = mix(abyssal, col, 0.62 + 0.38 * clamp(audioMode, 0.0, 1.0));
 
     col *= (0.8 + 0.6 * vBioGlow) * (1.0 + audioKick * 2.5) * glw;
 

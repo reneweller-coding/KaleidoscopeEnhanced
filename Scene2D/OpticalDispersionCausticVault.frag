@@ -63,7 +63,10 @@ float causticIntensity(vec2 p, float t, float wlOffset, float wScale) {
     for (int i = 0; i < 4; i++) {
         float a = float(i) * 0.785398 + tWarp * 0.1;
         vec2 dir = vec2(cos(a), sin(a));
-        float phase = dot(pWarp, dir) * 4.0 + tWarp * 2.5;
+        // Tonal brightness raises the SPATIAL wave number only (the tWarp*2.5
+        // drift term is left alone, so the flow phase is never remapped):
+        // bright material packs the interference into a finer caustic filigree.
+        float phase = dot(pWarp, dir) * (4.0 * (1.0 + 0.45 * audioCentroid)) + tWarp * 2.5;
         grad += dir * cos(phase);
     }
 
@@ -98,8 +101,12 @@ void main() {
 
     vec3 causticRGB = vec3(causticR, causticG, causticB) * (0.12 + 0.18 * audioLevel);
 
-    // Sample distorted background photo texture on the pool floor
-    vec2 floorUV = fract(uv * 0.4 + causticRGB.xy * 0.05 + 0.5);
+    // Sample distorted background photo texture on the pool floor. This
+    // refraction offset is the only place the water's wave AMPLITUDE is
+    // visible, so sub-bass swells it here; scaling the wave trains inside
+    // causticIntensity instead would fight the jacobian floor and just dim
+    // the caustic web rather than making it heave.
+    vec2 floorUV = fract(uv * 0.4 + causticRGB.xy * (0.05 * (1.0 + 0.9 * audioSubBass)) + 0.5);
     vec3 floorTex = img(floorUV);
 
     // Crystal vault ambient palette. This base mix alone sat close to the

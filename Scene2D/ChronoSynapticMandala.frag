@@ -85,7 +85,9 @@ void main() {
     vec2 pFold = vec2(cos(rotA), sin(rotA)) * r;
 
     // Synaptic neural energy conduits (wavy pulses)
-    float wave = sin(r * 28.0 - ringTime * 4.0 + ringIdx) * (0.03 + 0.04 * audioKick);
+    // Only the amplitude is audio-driven -- the phase term stays untouched so
+    // the ring echo cannot be remapped mid-flight by a sub-bass swell.
+    float wave = sin(r * 28.0 - ringTime * 4.0 + ringIdx) * (0.03 + 0.04 * audioKick) * (1.0 + 0.6 * audioSubBass);
     pFold += vec2(sin(pFold.y * 15.0), cos(pFold.x * 15.0)) * wave;
 
     // Sampling image at chrono-delayed coordinates

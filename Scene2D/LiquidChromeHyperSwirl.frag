@@ -97,7 +97,11 @@ void main() {
     float hX = liquidHeight(uv + vec2(eps, 0.0), t, nV);
     float hY = liquidHeight(uv + vec2(0.0, eps), t, nV);
 
-    vec3 normal = normalize(vec3((hX - hC) * chrm, (hY - hC) * chrm, eps * 2.0));
+    // Brightness steepens the height gradient fed into the normal, so the
+    // mercury surface curves harder and the mirrored environment compresses
+    // into tighter, sharper reflection bands.
+    float reflCurv = chrm * (1.0 + 0.4 * audioCentroid);
+    vec3 normal = normalize(vec3((hX - hC) * reflCurv, (hY - hC) * reflCurv, eps * 2.0));
 
     // View vector and reflection vector on liquid surface
     vec3 viewDir = normalize(vec3(uv, 1.2));

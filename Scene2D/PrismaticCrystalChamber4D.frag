@@ -68,12 +68,16 @@ vec4 rotate4D(vec4 p, float a1, float a2) {
 // Distance estimator for 4D Polychoron (Hyper-Octahedron / 16-Cell & 24-Cell cross-section)
 float map4D(vec4 p, float facet) {
     vec4 q = abs(p);
+    // Sub-bass breathes the chamber open. These constants are pure facet
+    // OFFSETS, so scaling them moves every wall outward together without
+    // touching the estimator's Lipschitz bound -- the march stays conservative.
+    float grow = 1.0 + 0.25 * audioSubBass;
     // 16-Cell SDF in 4D: (sum |x_i|) - R
-    float d16 = (q.x + q.y + q.z + q.w - 2.2) * 0.5;
+    float d16 = (q.x + q.y + q.z + q.w - 2.2 * grow) * 0.5;
     // Hypercube bounds
-    float dBox = max(max(q.x, q.y), max(q.z, q.w)) - 1.35;
+    float dBox = max(max(q.x, q.y), max(q.z, q.w)) - 1.35 * grow;
     // Intersection of 24-cell facets
-    float d24 = max(d16, (max(q.x + q.y, q.z + q.w) - 1.8) * 0.7071);
+    float d24 = max(d16, (max(q.x + q.y, q.z + q.w) - 1.8 * grow) * 0.7071);
     return mix(d24, dBox, facet * 0.4);
 }
 

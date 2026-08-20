@@ -80,12 +80,16 @@ void main() {
         vec2 orbitPixel = vec2(z.y / 1.6, -(z.x + 0.45) / 1.6);
         float d = length(uv - orbitPixel);
 
+        // Tonal brightness tightens every exposure kernel at once: thinner, finer
+        // filaments -- and because it only steepens the decay it can never raise
+        // the accumulated exposure above what the darker setting already gave.
+        float expo = dens * (1.0 + 0.45 * audioCentroid);
         // Channel R: long orbits (deep inner details)
-        if (i >= 18) orbitDensity.r += exp(-d * (35.0 * dens));
+        if (i >= 18) orbitDensity.r += exp(-d * (35.0 * expo));
         // Channel G: medium orbits (body of Buddha)
-        if (i >= 8)  orbitDensity.g += exp(-d * (25.0 * dens));
+        if (i >= 8)  orbitDensity.g += exp(-d * (25.0 * expo));
         // Channel B: short orbits (halo and aura)
-        orbitDensity.b += exp(-d * (15.0 * dens));
+        orbitDensity.b += exp(-d * (15.0 * expo));
 
         if (r2 > 16.0) break;
     }

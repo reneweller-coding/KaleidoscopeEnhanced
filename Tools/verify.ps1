@@ -122,11 +122,20 @@ foreach ($s in $Scenes) {
     # distance with no safe GLSL-side fallback) default to 0 when unset can
     # render pure black in a probe despite being correctly wired up, which
     # cost real debugging time chasing a non-existent shader bug.
-    $needle = "..\$dir\$s.frag"
+    # Komplett.xml contains BOTH "..\Scene3D\X.frag" and "..\\Scene3D\\X.frag"
+    # (200 of 641 entries use the doubled form; the loader accepts either).  A
+    # literal compare therefore missed every doubled entry and silently fell
+    # through to the synthetic tag below -- which defaults to geom="points".
+    # Probing e.g. a geom="cubes" scene as points renders a pure black frame,
+    # i.e. exactly the "false black screen" this block exists to prevent.
+    # Collapse runs of backslashes on both sides before comparing.
+    $needle = ("..\$dir\$s.frag" -replace '\\+', '\')
     $srcNode = $null
     try {
         [xml]$komplett = Get-Content (Join-Path $cfgD "Komplett.xml") -Raw
-        $srcNode = $komplett.configuration.TextureShader | Where-Object { $_.file -eq $needle } | Select-Object -First 1
+        $srcNode = $komplett.configuration.TextureShader |
+                   Where-Object { ($_.file -replace '\\+', '\') -eq $needle } |
+                   Select-Object -First 1
     } catch {}
 
     if ($srcNode) {

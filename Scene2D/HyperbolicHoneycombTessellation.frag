@@ -74,8 +74,10 @@ void main() {
 
     float t = audioAdvance * 0.32 * spd;
 
-    // Scale disk
-    vec2 z = uv * (1.8 * sc);
+    // Scale disk. Sub-bass shrinks the coordinate multiplier, which pushes the
+    // rDisk==1 boundary (and the rim halo that rings it) further out on screen --
+    // the Poincare disk itself breathes wider on drones.
+    vec2 z = uv * (1.8 * sc) / (1.0 + 0.3 * audioSubBass);
     float rDisk = length(z);
 
     // Hyperbolic translation offset in unit disk

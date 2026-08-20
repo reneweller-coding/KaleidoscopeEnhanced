@@ -4,7 +4,21 @@ out vec4 fragColor;
  * @file CausticPool.frag
  * @brief The photograph seen as a pool floor through a rippling water surface lit by caustics.
  *
- * texCaustics (written by the CfxPhoton compute pass) supplies both the refraction, whose gradient bends the tex0 lookup so the floor appears to wobble under moving water, and the light pattern itself, blurred into a soft glow and blended in multiplicatively so it reveals the floor rather than sitting on top of it. audioSubBass strengthens the refraction, audioLevel and audioBeat brighten the caustic light and its squared glow term, and audioAmbient dims or lifts the whole image. The warpP and glowP presets scale refraction strength and blur radius.
+ * texCaustics (written by the CfxPhoton compute pass) supplies both the refraction, whose gradient bends the tex0 lookup so the floor appears to wobble under moving water, and the light pattern itself, blurred into a soft glow and blended in multiplicatively so it reveals the floor rather than sitting on top of it. The warpP and glowP presets scale refraction strength and blur radius.
+ *
+ * Audio Reactivity:
+ *  - audioSubBass   -> strengthens the refraction, so the floor wobbles harder
+ *  - audioLevel     -> brightens the multiplicative caustic light
+ *  - audioBeat      -> brightens the squared caustic glow term
+ *  - audioAmbient   -> dims or lifts the whole image
+ *  - audioSharpness -> caustic-net CRISPNESS: a bright, incisive mix tightens the
+ *                      glow blur radius to a sharp filigree net, a dull mix lets
+ *                      it bloom into a soft wide shimmer
+ *  - audioRolloff   -> water COLOUR TEMPERATURE: bass-concentrated music gives a
+ *                      deep, cold blue pool, energy reaching into the highs turns
+ *                      it into shallow bright turquoise
+ *  - audioLowMid    -> harmonic warmth thickens the water: more low-mid body means
+ *                      a denser depth tint away from the lit caustic lines
  */
 // CausticPool.frag — the photo as a pool floor under a rippling surface.
 // Blend/CfxPhoton.comp splats refracted photons into texCaustics; here the
@@ -23,6 +37,9 @@ uniform float audioKick;
 uniform float audioSubBass;
 uniform float audioChromaHue;
 uniform float audioAmbient;
+uniform float audioSharpness;   // 0=dull/dark .. 1=sharp/bright -> caustic-net crispness
+uniform float audioRolloff;     // 0=bass-bound .. 1=reaching into the highs -> water colour temperature
+uniform float audioLowMid;      // 150-500 Hz harmonic warmth -> water body / depth-tint density
 
 uniform float warpP;              // refraction strength
 uniform float glowP;
@@ -44,9 +61,11 @@ void main()
 
     vec3 floorCol = texture(tex0, uv + refr).rgb;
 
-    // Caustic glow, slightly blurred so the net has body.
+    // Caustic glow, slightly blurred so the net has body.  A sharp, incisive
+    // mix (cymbals, bright transients) pulls the blur in so the net reads as a
+    // crisp filigree; a dull, dark mix lets it bloom soft and wide.
     vec3 soft = vec3(0.0);
-    float r = 0.003 + 0.005 * glowP;
+    float r = (0.003 + 0.005 * glowP) * (1.28 - 0.46 * audioSharpness);
     for (int i = 0; i < 6; ++i)
     {
         float a = float(i) * 1.0472;
@@ -57,9 +76,15 @@ void main()
     vec3 light = caus + soft * 0.7;
 
     // Water tint deepens with distance from the light: the classic pool look.
-    vec3 water = vec3(0.30, 0.62, 0.72);
+    // Spectral rolloff sets the water's COLOUR TEMPERATURE -- a bass-bound mix
+    // reads as a deep, cold blue basin, energy reaching into the highs as
+    // shallow bright turquoise.  Low-mid warmth thickens the water body, so a
+    // fat harmonic pad makes the unlit areas visibly denser.
+    vec3 water = mix(vec3(0.16, 0.44, 0.74), vec3(0.40, 0.76, 0.70),
+                     clamp(audioRolloff, 0.0, 1.0));
     float depthT = 1.0 - clamp(dot(light, vec3(0.4)), 0.0, 1.0);
-    vec3 col = floorCol * mix(vec3(1.0), water, 0.45 * depthT);
+    float depthMix = (0.36 + 0.22 * clamp(audioLowMid, 0.0, 1.0)) * depthT;
+    vec3 col = floorCol * mix(vec3(1.0), water, depthMix);
 
     // Multiplicative caustics: light REVEALS the floor, it does not sit on it.
     col *= 1.0 + light * (1.6 + 1.2 * audioLevel);

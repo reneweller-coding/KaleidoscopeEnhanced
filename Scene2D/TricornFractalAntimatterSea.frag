@@ -65,7 +65,10 @@ void main() {
 
     // Center on prominent Tricorn dragon fin: c = (-1.25, 0.0)
     vec2 cCenter = vec2(-1.25, 0.0);
-    float zoomLevel = exp(mod(t * 0.65, 5.5)) * (2.2 * zm);
+    // Sub-bass magnifies the current zoom level, so the dragon scales swell on
+    // drones. It multiplies the exp() RESULT, not its t-driven exponent --
+    // scaling the exponent would jump the whole dive position in one frame.
+    float zoomLevel = exp(mod(t * 0.65, 5.5)) * (2.2 * zm) * (1.0 + 0.35 * audioSubBass);
     vec2 c = cCenter + uv / zoomLevel;
 
     vec2 z = c;

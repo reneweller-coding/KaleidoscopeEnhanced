@@ -4,7 +4,24 @@ out vec4 fragColor;
  * @file Kaleidoscope.frag
  * @brief The classic kaleidoscope fold: photo pixels are read back through a polar mirror-and-repeat of `sides` segments, with an optional superellipse warp via the `power` exponent.
  *
- * audioPhase is an integrated, jump-free rotation angle added directly to the segment angle, so the whole pattern spins in step with the music without ever snapping. audioBeat adds a very subtle radial zoom-breath, blended in at low strength by design (an earlier, stronger beat flash was tiring on the eyes). audioLevel, audioFlip, audioCentroid, audioFlux and audioValence are declared and documented here but are not read by this shader's own logic; the mood colour, saturation and loudness brightness they describe are applied globally afterwards, in the final present pass.
+ * audioLevel, audioFlip, audioCentroid, audioFlux and audioValence are declared and documented here but are not read by this shader's own logic; the mood colour, saturation and loudness brightness they describe are applied globally afterwards, in the final present pass.
+ *
+ * Audio Reactivity:
+ *  - audioPhase      -> integrated, jump-free rotation angle added directly to the
+ *                       segment angle, so the pattern spins in step with the music
+ *                       without ever snapping
+ *  - audioBeat       -> a very subtle radial zoom-breath, blended in at low strength
+ *                       by design (an earlier, stronger beat flash was tiring)
+ *  - audioMode       -> ROSETTE SHAPE: the superellipse exponent of the radial metric.
+ *                       Minor keys pinch the fold into a spiky, star-like rosette,
+ *                       major keys round it out into full, blooming petals
+ *  - audioHarmChange -> CHORD-CHANGE BREATH: every chord/key move gives the rosette a
+ *                       visible zoom pulse, so the harmony -- not just the drums --
+ *                       drives the pattern's punctuation
+ *  - audioRoughness  -> WAVY MIRROR GLASS: sensory dissonance ripples the folded
+ *                       segment angle along the radius, so consonant passages have
+ *                       perfectly straight mirror seams and rough clusters bend them
+ *                       like old, warped kaleidoscope glass
  */
 uniform vec2 resolution;
 uniform float time;
@@ -24,6 +41,9 @@ uniform float audioCentroid;  // tonal brightness 0=dark drone, 1=bright shimmer
 uniform float audioFlux;      // spectral flux 0..1
 uniform float audioPhase;     // integrated audio rotation phase (radians, jump-free)
 uniform float audioValence;   // mood pleasantness 0..1 (low=tense/dark, high=happy)
+uniform float audioMode;      // 0=minor/dark .. 1=major/bright -> rosette superellipse shape
+uniform float audioHarmChange;// spikes on chord/key changes -> zoom breath
+uniform float audioRoughness; // 0=consonant .. 1=dissonant -> wavy mirror-glass ripple
 
 const float M_PI = 3.141592653589793;
 
@@ -58,6 +78,11 @@ void main() {
     // 1.0 reproduces the plain Euclidean length() case (the commented-out
     // fallback below), the correct "no warp" default.
     float powV = (power > 0.01) ? power : 1.0;
+    // The musical mode reshapes the radial metric itself: minor keys push the
+    // superellipse exponent below 1 (a pinched, spiky star rosette), major keys
+    // above it (full, rounded petals).  A pure per-frame SHAPE parameter -- it
+    // never touches 'time', so no accumulated phase can be remapped by it.
+    powV *= 0.82 + 0.36 * clamp(audioMode, 0.0, 1.0);
     float r = pow( pow(p.x*p.x,powV) + pow(p.y*p.y,powV), 1.0/(2.0*powV) );
 
     // cartesian to polar coordinates
@@ -70,6 +95,10 @@ void main() {
     a = mod(a, tau/sidesK);
     a = abs(a - tau/sidesK/2.);
     a += time * speed + audioPhase; // base rotation + jump-free audio rotation
+    // Dissonance bends the mirror seams: a radius-dependent ripple, so straight
+    // segment borders turn into warped, old-glass edges on rough clusters.
+    // Purely spatial (function of r only) -- no time term is involved.
+    a += 0.055 * clamp(audioRoughness, 0.0, 1.0) * sin(r * 8.5);
 
     // polar to cartesian coordinates
     p = r * vec2(cos(a), sin(a));
@@ -79,10 +108,14 @@ void main() {
     // --- Beat: a VERY subtle radial breath only ---
     // The strong beat zoom/brightness flash was tiring on the eyes; the rhythmic
     // accent now lives in the gentle corner spotlights of the final present pass.
-    float zoomK  = 1.0 + audioBeat * 0.06;
+    // Harmonic changes punctuate the rosette the way beats punctuate the drums:
+    // every chord/key move rides the same gentle zoom breath, so the pattern
+    // answers the HARMONY as well as the rhythm.
+    float hcdf   = clamp(audioHarmChange, 0.0, 1.0);
+    float zoomK  = 1.0 + audioBeat * 0.06 + hcdf * 0.09;
     vec2 pZoomed = p / zoomK;
     vec4 colZoomed = interpolation * texture(tex0, pZoomed+0.5) + (1.0-interpolation)*texture(tex1, pZoomed+0.5);
-    col = mix(col, colZoomed, audioBeat * 0.18);
+    col = mix(col, colZoomed, min(audioBeat * 0.18 + hcdf * 0.30, 0.45));
 
     // Mood colour / saturation / loudness-brightness are applied GLOBALLY in the
     // final present pass; no per-effect brightness flash here.

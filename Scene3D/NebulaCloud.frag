@@ -8,11 +8,19 @@ in vec4 vCol;
  * @brief Renders one particle of the gas-nebula point cloud as a soft, wide
  * additive glow sprite.
  *
- * This shader reads no audio uniforms itself; the cloud's rotation, its
- * emission/reflection colour mix, embedded hot stars, and its overall
- * brightness (driven by audioSwell, audioLevel and audioCentroid in the
- * paired NebulaCloud.vert) are all baked into the incoming vCol per
- * particle. The wide falloff exponent (7, versus roughly 10-12 on sharper
+ * This shader reads no audio uniforms itself; every audio mapping lives in
+ * the paired NebulaCloud.vert and arrives baked into vCol / the point size.
+ *
+ * Audio Reactivity (all applied in NebulaCloud.vert):
+ *   audioChromaHue -> hue of both nebula colour families
+ *   audioSwell     -> overall glow of the gas
+ *   audioLevel     -> overall glow of the gas
+ *   audioCentroid  -> brightness lift with spectral centre of mass
+ *   audioFlatness  -> knot condensation (tight clumps vs diffuse fog)
+ *   audioRolloff   -> vertical extent (flat disc vs tall column)
+ *   audioMode      -> emission (major, warm) vs reflection (minor, cold) mix
+ *
+ * The wide falloff exponent (7, versus roughly 10-12 on sharper
  * sprites elsewhere) is what gives this cloud its extra-diffuse, gaseous
  * look.
  */

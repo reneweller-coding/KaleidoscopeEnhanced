@@ -79,7 +79,10 @@ void main() {
         vec2 pPlate = mat2(cs, -sn, sn, cs) * uv;
 
         // Bounded rectangular glass plate SDF
-        vec2 dBox = abs(pPlate) - vec2(0.7, 0.45 + 0.1 * sin(audioSwell * 2.0 + kf));
+        // Sub-bass swells the plate half-extents on top of the per-plate swell
+        // breathing -- the glass itself grows, the film/laser pattern on it does not.
+        vec2 plateHalf = vec2(0.7, 0.45 + 0.1 * sin(audioSwell * 2.0 + kf)) * (1.0 + 0.30 * audioSubBass);
+        vec2 dBox = abs(pPlate) - plateHalf;
         float plateDist = max(dBox.x, dBox.y);
 
         // Dichroic thin-film transmission phase (wavelength-dependent interference)

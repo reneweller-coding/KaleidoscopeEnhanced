@@ -57,7 +57,10 @@ vec3 imgPalette(float t) {
 float glyph(vec2 p, float seed) {
     vec2 grid = fract(p) - 0.5;
     float d = max(abs(grid.x), abs(grid.y));
-    float glyphChar = sin(grid.x * (12.0 + sin(seed) * 6.0)) * cos(grid.y * (12.0 + cos(seed) * 6.0));
+    // Brightness widens the seed->frequency spread, so neighbouring cells draw
+    // more dissimilar symbols: that spread IS the glyph alphabet's entropy.
+    float ent = 6.0 + 6.0 * audioCentroid;
+    float glyphChar = sin(grid.x * (12.0 + sin(seed) * ent)) * cos(grid.y * (12.0 + cos(seed) * ent));
     return smoothstep(0.4, 0.1, d) * step(0.0, glyphChar);
 }
 
@@ -82,10 +85,14 @@ void main() {
     a = mod(a + seg * 0.5, seg) - seg * 0.5;
     a = abs(a);
 
-    vec2 pFold = vec2(cos(a), sin(a)) * r;
+    // Sub-bass drones push the whole folded mandala outward (radius divided),
+    // a slow swell of the figure rather than of its light.
+    vec2 pFold = vec2(cos(a), sin(a)) * (r / (1.0 + 0.3 * audioSubBass));
 
-    // Digital matrix rain streaming down the folded coordinates
-    vec2 pGrid = pFold * (12.0 * dens);
+    // Digital matrix rain streaming down the folded coordinates. Only the
+    // spatial term carries the density factor; the t*8.0 stream offset below
+    // is added afterwards so column density cannot rescale the stream phase.
+    vec2 pGrid = pFold * (12.0 * dens * (1.0 + 0.35 * audioCentroid));
     pGrid.y += t * 8.0; // Fast downward streaming velocity
 
     vec2 cellID = floor(pGrid);

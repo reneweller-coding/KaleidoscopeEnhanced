@@ -7,11 +7,23 @@ out vec4 fragColor;
  *        rotation and radial mapping run in the opposite sense, so the two
  *        tunnels shear against each other rather than simply co-scrolling.
  *
- * audioPhase (integrated, jump-free) adds to the wedge rotation of both
- * layers; audioAdvance adds to the forward layer's scroll but is SUBTRACTED
- * (opposite sign, half weight) from the reverse layer's, so the reverse
- * tunnel visibly recedes against the forward one on energetic passages;
- * audioKick gives the combined result a subtle brightness pulse.
+ * Audio Reactivity:
+ *  - audioPhase     -> adds to the wedge rotation of BOTH layers (integrated, jump-free)
+ *  - audioAdvance   -> adds to the forward layer's scroll but is SUBTRACTED (opposite
+ *                      sign, half weight) from the reverse layer's, so the reverse
+ *                      tunnel visibly recedes on energetic passages
+ *  - audioKick      -> subtle brightness pulse on the combined result
+ *  - audioBuildUp   -> LAYER TAKEOVER: as tension climbs the 50/50 blend tips toward
+ *                      the RECEDING layer, so a build-up visibly pulls the image
+ *                      backwards against the forward tunnel before the release
+ *  - audioSpread    -> DEPTH MISMATCH: the reverse layer's radial term gets its own
+ *                      spread-driven weight, so a wide spectrum pushes the two
+ *                      tunnels' perspectives apart and the shear becomes obvious.
+ *                      It scales only the radial term, which is ADDED to the scroll;
+ *                      'time' keeps its own untouched coefficient
+ *  - audioRoughness -> GRIND: dissonance ripples the reverse layer's angular
+ *                      coordinate along the radius (the forward layer stays
+ *                      straight), so the two tunnels visibly grate against each other
  */
 uniform vec2 resolution;
 uniform float time;
@@ -28,6 +40,9 @@ uniform float rotate;
 uniform float audioPhase;     // integrated audio rotation phase (radians, jump-free)
 uniform float audioAdvance;   // integrated audio tunnel advance (jump-free)
 uniform float audioKick;      // subtle brightness pulse on kicks
+uniform float audioBuildUp;   // 0..1 EDM tension -> blend tips toward the receding layer
+uniform float audioSpread;    // 0=narrow spectrum .. 1=wide -> depth mismatch between the layers
+uniform float audioRoughness; // 0=consonant .. 1=dissonant -> the reverse layer grinds
 
 const float M_PI = 3.141592653589793;
 
@@ -103,12 +118,21 @@ void main() {
     a += time*speed + audioPhase; // base rotation + jump-free audio rotation
 
     // the reverse layer RECEDES with the music (opposite sign), so the two
-    // tunnels shear against each other on energetic passages
-    uv.x = (speedTunnelReverse*time - 0.5*audioAdvance + .1/r);
-    uv.y = (a/M_PI);
+    // tunnels shear against each other on energetic passages.  Spectral spread
+    // additionally pushes the two layers' PERSPECTIVES apart: only the reverse
+    // layer's radial weight moves, so a wide, rich spectrum makes the depth
+    // mismatch -- and with it the shear -- unmistakable.  The radial term is
+    // ADDED to the scroll; 'time' keeps its own untouched coefficient.
+    float throat2 = 0.10 * (0.78 + 0.44*clamp(audioSpread, 0.0, 1.0));
+    uv.x = (speedTunnelReverse*time - 0.5*audioAdvance + throat2/r);
+    // Dissonance makes the two tunnels GRATE: only the reverse layer's angular
+    // coordinate ripples (radially, no time term), so the layers grind visibly.
+    uv.y = (a/M_PI) + 0.035*clamp(audioRoughness, 0.0, 1.0)*sin(r*6.5);
 
     vec4 color2 =  interpolation * texture(tex0,uv) + (1.0-interpolation)*texture(tex1,uv);
 
-    //Combine Plain and Reverse
-    fragColor = (0.5*color1+0.5*color2) * (1.0 + 0.10*audioKick);
+    //Combine Plain and Reverse.  A build-up tips the 50/50 blend toward the
+    //RECEDING layer, so rising tension visibly pulls the image backwards.
+    float mixRev = 0.5 + 0.22*clamp(audioBuildUp, 0.0, 1.0);
+    fragColor = mix(color1, color2, mixRev) * (1.0 + 0.10*audioKick);
 }

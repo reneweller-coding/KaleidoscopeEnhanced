@@ -53,6 +53,19 @@ vec3 imgPalette(float t) {
     return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
+// Overall level of the photo currently on the texture units, from a fixed
+// 5-tap grid. Every base colour here is photo-derived and the library spans
+// near-black to near-white, so a bright photo left the additive discharge
+// arcs no headroom at all. The probe rides the tex0/tex1 crossfade, so the
+// gain it feeds can never pop, and because it is one number for the whole
+// frame it rescales exposure without touching local contrast.
+float photoLevel() {
+    vec3 s = img(vec2(0.25, 0.25)) + img(vec2(0.75, 0.25))
+           + img(vec2(0.25, 0.75)) + img(vec2(0.75, 0.75))
+           + img(vec2(0.50, 0.50));
+    return dot(s * 0.2, vec3(0.299, 0.587, 0.114));
+}
+
 void main() {
     vec2 uv = (gl_FragCoord.xy - 0.5 * resolution.xy) / min(resolution.x, resolution.y);
 
@@ -108,8 +121,14 @@ void main() {
     // just ones truly near an arc) -- matching the normalisation constant to
     // the fold's real scale factor (see minArcDist above) wasn't enough on
     // its own, the decay here also has to be sharp enough to turn that
-    // near-zero-everywhere value back into real near/far contrast.
-    float arcGlow = exp(-minArcDist * (160.0 + 80.0 * audioCentroid)) * glw;
+    // near-zero-everywhere value back into real near/far contrast. It is
+    // slightly shallower than before because the arcs were never actually
+    // missing -- they were being drawn on top of a photo base already sitting
+    // near 1.0, so the entire dynamic range of this term was clipped away.
+    // Sub-bass divides the falloff instead of adding light: a shallower
+    // exponent widens the band each arc occupies, so the discharge tree's
+    // corona swells on drones without lifting its peak.
+    float arcGlow = exp(-minArcDist * (130.0 + 60.0 * audioCentroid) / (1.0 + 0.4 * audioSubBass)) * glw;
     float coreSpark = exp(-minArcDist * 500.0);
 
     // Palette mixing
@@ -119,14 +138,27 @@ void main() {
 
     col = mix(col, texCol, 0.35 + 0.15 * audioValence);
 
-    // Add high-voltage electric blue/violet arcs & white spark cores
-    vec3 arcColor = vec3(1.1, 1.4, 1.9) * arcGlow * (1.0 + 2.5 * audioKick);
-    vec3 sparkColor = vec3(1.8, 1.8, 2.0) * coreSpark * (1.5 + 3.5 * audioKick);
+    // Hold the dielectric field back to a fixed dark base. A Lichtenberg
+    // figure only reads if the medium around it is dark: with a bright photo
+    // the base alone sat near 1.0 and the arcs had nowhere left to go, which
+    // is what flattened the whole frame to a near-white wash.
+    float expGain = clamp(0.22 / max(0.05, photoLevel()), 0.22, 2.4);
+    col *= expGain;
+
+    // Add high-voltage electric blue/violet arcs & white spark cores. The tint
+    // constants exceed 1.0 per channel on their own, so the TINTED vectors are
+    // capped -- capping only the scalar glow left them unbounded.
+    vec3 arcColor = min(vec3(1.1, 1.4, 1.9) * arcGlow * (1.0 + 2.5 * audioKick), vec3(1.25));
+    vec3 sparkColor = min(vec3(1.8, 1.8, 2.0) * coreSpark * (1.5 + 3.5 * audioKick), vec3(1.5));
     col += arcColor + sparkColor;
 
-    // Ambient discharge haze
-    col += imgPalette(0.8) * plasmaEnergy * 0.08 * audioLevel;
+    // Ambient discharge haze (on the same exposure gain as the base, since it
+    // is a photo sample too -- plasmaEnergy can reach 8 and a bright photo
+    // would otherwise re-introduce an unbounded lift here)
+    col += imgPalette(0.8) * expGain * plasmaEnergy * 0.08 * audioLevel;
 
     col = pow(col, vec3(0.86));
-    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    vec3 _catTone = clamp(col, 0.0, 1.0);
+    _catTone /= 1.0 + 0.30 * max(_catTone.r, max(_catTone.g, _catTone.b));
+    fragColor = vec4(_catTone, 1.0);
 }

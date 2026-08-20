@@ -86,7 +86,9 @@ void main() {
     vec2 termInter = z * psi * 2.5;
     vec2 fVal = z5 - termInter + vec2(cos(t * 0.5), sin(t * 0.5)) * 0.3;
 
-    float dManifold = abs(length(fVal) - 0.7);
+    // Sub-bass inflates the compactification radius itself, so the whole
+    // manifold shell breathes outward rather than merely getting brighter.
+    float dManifold = abs(length(fVal) - 0.7 * (1.0 + 0.4 * audioSubBass));
 
     // Glowing string manifold contour bands
     float stringGlow = exp(-dManifold * (12.0 + 8.0 * audioCentroid)) * glw;

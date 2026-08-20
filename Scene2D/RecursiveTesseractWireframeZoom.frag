@@ -83,6 +83,12 @@ void main() {
     // Continuous 4D forward plunge: w component advances continuously
     float wPlunge = mod(t * 0.8, 2.0) - 1.0;
 
+    // Sub-bass swells the projected hypercube itself. It scales the final 2D
+    // projection radius, NOT the 4D rotation or plunge phase -- a plain
+    // per-frame size factor can breathe freely without remapping any
+    // accumulated angle.
+    float volBreath = 1.0 + 0.35 * audioSubBass;
+
     // Project 16 vertices of 4D Tesseract (+-1, +-1, +-1, +-1)
     vec2 projV[16];
     float rotA1 = t * 0.25 * r4D + audioPhase * 0.1;
@@ -104,7 +110,7 @@ void main() {
         vec3 v3 = v4.xyz / max(0.2, d4);
 
         float d3 = 2.0 - v3.z * 0.3;
-        projV[i] = (v3.xy / max(0.2, d3)) * (0.8 * tScale);
+        projV[i] = (v3.xy / max(0.2, d3)) * (0.8 * tScale * volBreath);
     }
 
     // Accumulate distance to 32 Tesseract wireframe edges

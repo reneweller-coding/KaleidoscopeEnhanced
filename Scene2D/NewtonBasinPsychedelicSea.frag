@@ -53,6 +53,19 @@ vec3 imgPalette(float t) {
     return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
+// Overall level of the photo currently bound, from a fixed 5-tap grid. The
+// basin colour is entirely photo-derived and the library spans near-black to
+// near-white, so a bright photo left the sea glints and boundary lines no
+// headroom. The probe rides the tex0/tex1 crossfade so the gain can never
+// pop, and one number for the whole frame rescales exposure without touching
+// local contrast.
+float photoLevel() {
+    vec3 s = img(vec2(0.25, 0.25)) + img(vec2(0.75, 0.25))
+           + img(vec2(0.25, 0.75)) + img(vec2(0.75, 0.75))
+           + img(vec2(0.50, 0.50));
+    return dot(s * 0.2, vec3(0.299, 0.587, 0.114));
+}
+
 // Complex arithmetic helpers
 vec2 cMul(vec2 a, vec2 b) { return vec2(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x); }
 vec2 cDiv(vec2 a, vec2 b) { return vec2(dot(a, b), a.y * b.x - a.x * b.y) / max(1e-6, dot(b, b)); }
@@ -91,8 +104,6 @@ void main() {
     vec2 z = mat2(cs, -sn, sn, cs) * uv * zoom;
 
     float iterCount = 0.0;
-    float minRootDist = 1e5;
-    int closestRoot = 0;
 
     // Newton-Raphson iteration: z -> z - (z^n - c) / (n * z^(n-1))
     for (int i = 0; i < 22; i++) {
@@ -112,7 +123,6 @@ void main() {
         }
 
         iterCount += 1.0;
-        minRootDist = min(minRootDist, stepLen);
     }
 
     // Determine root angle sector
@@ -123,9 +133,13 @@ void main() {
     float eps = 0.005;
     vec2 zDx = uv + vec2(eps, 0.0);
     vec2 zDy = uv + vec2(0.0, eps);
-    float hCenter = iterCount + sin(rootAngle * float(nPower) * 2.0 + t);
-    float hDx = iterCount + sin(atan(zDx.y, zDx.x) * float(nPower) * 2.0 + t);
-    float hDy = iterCount + sin(atan(zDy.y, zDy.x) * float(nPower) * 2.0 + t);
+    // The sin() term is the sea swell riding on the iteration terrain; sub-bass
+    // scales its amplitude only (never its phase), so heavy lows deepen the
+    // wave relief that the normal -- and therefore the glints -- are built from.
+    float waveAmp = 1.0 + 0.5 * audioSubBass;
+    float hCenter = iterCount + waveAmp * sin(rootAngle * float(nPower) * 2.0 + t);
+    float hDx = iterCount + waveAmp * sin(atan(zDx.y, zDx.x) * float(nPower) * 2.0 + t);
+    float hDy = iterCount + waveAmp * sin(atan(zDy.y, zDy.x) * float(nPower) * 2.0 + t);
 
     vec3 normal = normalize(vec3((hDx - hCenter) * rel, (hDy - hCenter) * rel, eps * 3.0));
     vec3 lightDir = normalize(vec3(cos(t * 0.5), sin(t * 0.5), 1.2));
@@ -147,11 +161,27 @@ void main() {
 
     basinCol = mix(basinCol, texCol, 0.35 + 0.15 * audioValence);
 
-    // Apply lighting and glowing root boundary lines
-    float rootEdgeGlow = exp(-minRootDist * 50.0) * glw;
-    basinCol = basinCol * (0.5 + 0.5 * diff) + vec3(1.2, 1.3, 1.5) * spec;
-    basinCol += vec3(1.4, 0.9, 1.6) * rootEdgeGlow * (1.0 + 2.5 * audioKick);
+    // Hold the sea surface to a fixed level so the relief, the glints and the
+    // basin boundaries are what carries the light, whatever photo is bound.
+    basinCol *= clamp(0.32 / max(0.05, photoLevel()), 0.20, 2.4);
+
+    // Glowing root boundary lines. The old metric was min(stepLen) fed into
+    // exp(-d * 50) -- but Newton converges QUADRATICALLY, so every pixel's
+    // smallest step is ~1e-4..1e-2 and that exponential evaluated to ~0.9
+    // across the entire frame: an unbroken magenta flood that clipped the
+    // basin interiors to white and left the boundaries (which converge
+    // slowly, i.e. large steps) as the only DARK part of the picture -- the
+    // exact inverse of the intent. A basin boundary is where convergence is
+    // slow, so key the glow off the iteration count instead.
+    float convergeSlow = clamp(iterCount / 22.0, 0.0, 1.0);
+    float rootEdgeGlow = smoothstep(0.45, 1.0, convergeSlow) * glw;
+
+    basinCol = basinCol * (0.25 + 0.75 * diff)
+             + min(vec3(1.2, 1.3, 1.5) * spec, vec3(1.15));
+    basinCol += min(vec3(1.4, 0.9, 1.6) * rootEdgeGlow * (1.0 + 2.5 * audioKick), vec3(1.25));
 
     basinCol = pow(basinCol, vec3(0.87));
-    fragColor = vec4(clamp(basinCol, 0.0, 1.0), 1.0);
+    vec3 _catTone = clamp(basinCol, 0.0, 1.0);
+    _catTone /= 1.0 + 0.28 * max(_catTone.r, max(_catTone.g, _catTone.b));
+    fragColor = vec4(_catTone, 1.0);
 }

@@ -70,8 +70,13 @@ void main() {
 
     float t = audioAdvance * 0.4 * spd;
 
-    float R = 2.2 * kR;
-    float r = 0.85 * kR * (1.0 + 0.1 * sin(audioSwell * 2.0));
+    // Sub-bass swells the knot's spatial envelope -- major and minor radius
+    // together, so the track keeps its (3,7) shape and simply breathes outward.
+    // The chase camera is built from the same parametrisation, so it breathes
+    // with the rail instead of being left inside/outside the tube.
+    float envB = 1.0 + 0.25 * audioSubBass;
+    float R = 2.2 * kR * envB;
+    float r = 0.85 * kR * envB * (1.0 + 0.1 * sin(audioSwell * 2.0));
 
     // Camera track progression parameter u
     float uCam = t * 0.5;
