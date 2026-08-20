@@ -1604,30 +1604,25 @@ void GLwidget::updateTrackOverlays( RenderPipeline *fs )
 			// Marquee: die gerade gelesene Zeile (beide Modi -- L ist auch im
 			// reinen Scroll die per Hysterese stabile "aktive" Zeile) wird,
 			// falls sie beim Rendern nicht ins Fenster passte (L.overflowU),
-			// statt abgeschnitten langsam horizontal durchgescrollt: Pause -
-			// hinscrollen - Pause - zurueckscrollen, unabhaengig vom Kinetik-
-			// Schalter (eigenstaendige Einstellung). m_lineChangeMs wird
-			// oben ohnehin schon bei jedem Zeilenwechsel aktualisiert, also
-			// beginnt jede neu fokussierte Zeile automatisch mit einer
-			// frischen Lesepause statt mitten im Zyklus einzusteigen.
+			// statt abgeschnitten horizontal durchgescrollt -- gekoppelt an
+			// lineFrac (0..1 durch die Sing-Dauer DIESER Zeile, oben schon
+			// berechnet) statt an eine feste px/s-Geschwindigkeit: die ersten
+			// 30% steht der Text still (Lesezeit fuer den Anfang), von 30%
+			// bis 90% scrollt er (mit Ease-in/out) bis ganz ans Ende, die
+			// letzten 10% steht er dort. Kein Zurueckscrollen noetig, da die
+			// naechste Zeile ohnehin bei 0 neu beginnt -- und laengere Zeilen
+			// (die typischerweise laenger klingen) bekommen automatisch mehr
+			// Zeit zum Scrollen als kurze, statt einer fuer alle gleich
+			// schnellen, unabhaengig von der Zeilendauer wirkenden Animation.
 			o.lyricsFocusV0 = L.v0;
 			o.lyricsFocusV1 = L.v1;
-			if( L.overflowU > 0.f && m_lineChangeMs >= 0 )
+			if( L.overflowU > 0.f )
 			{
-				const float lineAgeSec = float( m_fpsTimer.elapsed() - m_lineChangeMs ) * 0.001f;
-				const float pauseSec = 1.2f;
-				const float speed    = 0.05f;   // Textur-U/Sek. -- bewusst langsam
-				const float travel   = L.overflowU / speed;
-				const float period   = 2.f * ( pauseSec + travel );
-				const float tp       = fmodf( lineAgeSec, period );
-				if( tp < pauseSec )
-					o.lyricsScrollU = 0.f;
-				else if( tp < pauseSec + travel )
-					o.lyricsScrollU = ( tp - pauseSec ) * speed;
-				else if( tp < 2.f * pauseSec + travel )
-					o.lyricsScrollU = L.overflowU;
-				else
-					o.lyricsScrollU = L.overflowU - ( tp - 2.f * pauseSec - travel ) * speed;
+				const float startFrac = 0.30f, endFrac = 0.90f;
+				float sp = ( lineFrac - startFrac ) / ( endFrac - startFrac );
+				sp = std::min( std::max( sp, 0.f ), 1.f );
+				const float eased = sp * sp * ( 3.f - 2.f * sp );   // smoothstep
+				o.lyricsScrollU = L.overflowU * eased;
 			}
 		}
 		else
