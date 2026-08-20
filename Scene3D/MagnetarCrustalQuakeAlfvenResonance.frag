@@ -119,7 +119,19 @@ void main() {
     float photoL = dot(img(photoUv), vec3(0.299, 0.587, 0.114));
 
     vec3 col = flareCol * (0.6 + 0.4 * photoL) * vGlow;
-    col *= (quakeGlowP > 0.01 ? quakeGlowP : 1.2) * (0.85 + 0.35 * audioSwell);
+
+    // quakeGlowP spans 0.8..2.5 in the preset and the verification render came
+    // back sitting at the BOTTOM of it: luma 0.162, contrast 0.078. Contrast in
+    // a dark frame is bounded by its own level -- the standard deviation of a
+    // picture scales with the picture -- so widening the brightness ramp in the
+    // generator barely moved it (swept: 0.106 -> 0.128 for a ramp nearly three
+    // times steeper). Remapping the preset into a NARROW, HIGHER band lifts the
+    // dim end without pushing the loud end any brighter: the bottom roughly
+    // doubles while the top actually comes down, which keeps luma inside range
+    // at both ends instead of trading one failure for the other.
+    float qg    = (quakeGlowP > 0.01 ? quakeGlowP : 1.2);
+    float qGain = 1.30 + 0.40 * clamp((qg - 0.8) / 1.7, 0.0, 1.0);
+    col *= qGain * (0.85 + 0.35 * audioSwell);
     // Gated on the crust flare so a kick lights the rupture, not the whole
     // (now frame-filling) magnetosphere at once.
     col += vec3(1.0, 0.95, 0.9) * min(audioKick * 0.35, 0.4)
