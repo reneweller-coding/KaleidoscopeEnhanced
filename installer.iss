@@ -15,15 +15,15 @@
 ; The app loads its shaders/configs from "..\" relative to the exe, so the
 ; exe lives in {app}\bin and the assets in {app}; the shortcut's working
 ; directory is therefore {app}\bin.  The staged package also contains the
-; PresetEditor (bin\PresetEditor.exe + the PresetEditor\ CWD-anchor folder);
-; the recursive [Files] entry picks all of that up, and [Icons] adds a
-; start-menu shortcut for it.
+; PresetEditor (bin\PresetEditor.exe + the PresetEditor\ CWD-anchor folder)
+; and the SetupTool (bin\KaleidoscopeSetup.exe); the recursive [Files] entry
+; picks all of that up, and [Icons] adds a start-menu shortcut for each.
 ; ---------------------------------------------------------------------------
 
 #define MyAppName "Kaleidoscope Enhanced"
 #define MyAppExeName "Kaleidoscope.exe"
 #define MyAppPublisher "Rene Weller"
-#define MyAppVersion "1.0"
+#define MyAppVersion "1.3"
 ; Staged package produced by deploy.ps1:
 #define SrcDir "dist\KaleidoscopeVisualizer"
 
@@ -63,6 +63,9 @@ Name: "{group}\{#MyAppName} (Vollbild)"; Filename: "{app}\bin\{#MyAppExeName}"; 
 ; shows shader-compile/formula logs on purpose. The exe re-anchors its CWD to
 ; {app}\PresetEditor itself, so bin\ as WorkingDir is only the starting point.
 Name: "{group}\{#MyAppName} Preset-Editor"; Filename: "{app}\bin\PresetEditor.exe"; WorkingDir: "{app}\bin"
+; Settings tool (bundled since the deploy.ps1 3c step): edits kaleidoscope_settings.ini
+; offline (lyrics/artist images/video/language/...); needs no CWD anchor of its own.
+Name: "{group}\{#MyAppName} Setup"; Filename: "{app}\bin\KaleidoscopeSetup.exe"; WorkingDir: "{app}\bin"
 Name: "{autodesktop}\{#MyAppName}";      Filename: "{app}\bin\{#MyAppExeName}"; WorkingDir: "{app}\bin"; Tasks: desktopicon
 
 [Run]

@@ -16,10 +16,13 @@
             PresetEditor\             <- empty CWD anchor for the editor (its
                                          "..\Scene3D\..." asset paths resolve
                                          against this, mirroring the dev layout)
+            Setup-starten.bat         <- settings tool launcher (optional extras)
             bin\
                 Kaleidoscope.exe      <- the app
                 PresetEditor.exe      <- preset authoring GUI (live preview,
                                          ranges, formula/audio mappings)
+                KaleidoscopeSetup.exe <- offline kaleidoscope_settings.ini editor
+                                         (lyrics/artist images/video/language/...)
                 Qt6*.dll, platforms\, ...  <- Qt runtime (via windeployqt)
                 vcruntime140*.dll, msvcp140.dll  <- MSVC runtime
                 icon.ico                  <- window icon (multi-res); also
@@ -71,6 +74,9 @@ if ($Build) {
     Info "Building PresetEditor Release|x64 ..."
     cmd /c "`"$vcvars`" && msbuild PresetEditor\PresetEditor.vcxproj /p:Configuration=Release /p:Platform=x64 /p:QTDIR=$QtDir /m /nologo /v:minimal"
     if ($LASTEXITCODE -ne 0) { throw "PresetEditor build failed." }
+    Info "Building SetupTool Release|x64 ..."
+    cmd /c "`"$vcvars`" && msbuild SetupTool\SetupTool.vcxproj /p:Configuration=Release /p:Platform=x64 /p:QTDIR=$QtDir /m /nologo /v:minimal"
+    if ($LASTEXITCODE -ne 0) { throw "SetupTool build failed." }
 }
 
 if (-not (Test-Path $exeSrc))    { throw "Release\Kaleidoscope.exe not found - build first (use -Build)." }
@@ -149,6 +155,23 @@ aus auf den Paket-Stammordner zeigen. Bitte nicht loeschen.
     Info "Bundled PresetEditor.exe"
 } else {
     Info "PresetEditor\build\Release\PresetEditor.exe not found - packaging WITHOUT the editor"
+}
+
+# --- 3c. bundle the SetupTool (offline kaleidoscope_settings.ini editor) -----
+# Needs no CWD anchor (unlike PresetEditor): SetupWindow::findRootDir() walks
+# UP from its own exe directory looking for a "Configurations" landmark, and
+# bin\'s parent (the package root) already has one.
+$setupSrc = Join-Path $root "SetupTool\build\Release\KaleidoscopeSetup.exe"
+if (Test-Path $setupSrc) {
+    Copy-Item $setupSrc $binDir
+    $ErrorActionPreference = "Continue"
+    & $windeploy --release --no-translations --no-opengl-sw --no-system-d3d-compiler (Join-Path $binDir "KaleidoscopeSetup.exe") | Out-Null
+    $deployExit = $LASTEXITCODE
+    $ErrorActionPreference = $prevEap
+    if ($deployExit -ne 0) { throw "windeployqt (SetupTool) failed with exit code $deployExit" }
+    Info "Bundled KaleidoscopeSetup.exe"
+} else {
+    Info "SetupTool\build\Release\KaleidoscopeSetup.exe not found - packaging WITHOUT the setup tool"
 }
 
 # --- 4. bundle the FULL C++ runtime so the package is standalone everywhere ---
@@ -264,6 +287,16 @@ start "" /D "%~dp0bin" "%~dp0bin\PresetEditor.exe" %*
 '@
     Set-Content -Path (Join-Path $pkgDir "PresetEditor-starten.bat") -Value $batEd -Encoding Ascii
 }
+if (Test-Path (Join-Path $binDir "KaleidoscopeSetup.exe")) {
+    $batSetup = @'
+@echo off
+rem Startet das Setup-Programm: optionale Extras (Songtexte, Kuenstlerbilder,
+rem Musikvideo, Sprache, Web-Remote-Port, ...) EIN/AUS ohne die Visualizer-App
+rem zu starten. Aenderungen wirken beim naechsten Start von Kaleidoscope.exe.
+start "" /D "%~dp0bin" "%~dp0bin\KaleidoscopeSetup.exe" %*
+'@
+    Set-Content -Path (Join-Path $pkgDir "Setup-starten.bat") -Value $batSetup -Encoding Ascii
+}
 
 $readme = @'
 Kaleidoscope Enhanced - Music Visualizer (portable / standalone)
@@ -296,6 +329,12 @@ Preset editor:
     a live shader preview: per-preset parameter ranges, and formula/audio
     mappings (which music signal drives which shader parameter). The console
     window it opens shows shader-compile and formula logs.
+
+Setup tool:
+  - Double-click  Setup-starten.bat  to switch the optional online extras
+    (lyrics, artist images, music video, language DE/EN, web-remote port, ...)
+    on or off without starting the visualizer itself. Takes effect the next
+    time Kaleidoscope.exe starts.
 
 It captures whatever is playing on the system (WASAPI loopback) and reacts to
 the music. Requires a GPU with OpenGL 2.0+ (FBO); RGBA16F for the reaction-
