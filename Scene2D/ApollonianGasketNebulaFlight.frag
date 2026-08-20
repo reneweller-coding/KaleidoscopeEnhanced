@@ -274,7 +274,16 @@ void main() {
         vec2 sampleUV = fract(p.xz * 0.25 + 0.5);
         vec3 texCol = img(sampleUV);
         vec3 pal = imgPalette(trap * 2.0 + t * 0.1);
-        vec3 base = mix(texCol, pal, 0.55) * expGain * 0.66;
+        // 1.55, not 0.66. The verification render came back at luma 0.095 with
+        // occupancy 0.51 -- the shading was right but the whole picture sat too
+        // low on the scale, and occupancy is gated on an ABSOLUTE luma step
+        // (two of sixteen buckets, i.e. 0.125). At luma 0.095 the entire
+        // histogram is compressed under that step, so detail that is plainly
+        // there fails to count; multiplying the frame lifts every luma
+        // DIFFERENCE by the same factor. Swept in simulation: occupancy climbs
+        // 0.69 -> 0.87 from gain 0.66 to 1.4 while clipHi stays at 0.000,
+        // because the soft knee at the end of main() absorbs the top.
+        vec3 base = mix(texCol, pal, 0.55) * expGain * 1.55;
 
         // Two structure terms. The orbit trap bands the shells by which sphere
         // of the packing they belong to; the world-space grain keeps even a
