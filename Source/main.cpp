@@ -231,7 +231,8 @@ void parsecommandline( int argc, char *argv[] )
 				//case 'b': benchmark = true; break;
 				//case 'f': directory = argv[1]; break;
 				case 'b': fullscreen = !fullscreen; break;
-				case 's': RenderPipeline::setRenderScale( (float) atof( argv[1] ) ); break;
+				case 's': RenderPipeline::setRenderScale( (float) atof( argv[1] ) );
+				          RenderPipeline::s_renderScaleFromCli = true; break;
 				case 'c': GLwidget::s_startConfig = QString::fromLocal8Bit( argv[1] ); break;
 				case 'm': monitorIndex = atoi( argv[1] ); fullscreen = true; break;
 				case 'l': logToFile = true; break;

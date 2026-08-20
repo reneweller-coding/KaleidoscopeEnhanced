@@ -17,6 +17,7 @@
 #include <QtCore/QProcess>
 #include <QtCore/QDir>
 #include <QtGui/QMouseEvent>
+#include <QtGui/QScreen>
 #include <QtGui/QPainter>
 #include <QtWidgets/QMessageBox>
 #include <QtGui/QImage>
@@ -426,11 +427,49 @@ void GLwidget::initializeGL()
 	m_fpsLastPeriod = 0;
 	m_fpsCounter    = 0;
 
-	// Adaptive render scale never goes above whatever -s the user launched with.
-	m_autoScaleMax  = RenderPipeline::renderScale();
+	// Ceiling for the adaptive render scale.
+	//
+	// This used to be `renderScale()` unconditionally, which made the adaptation
+	// a ONE-WAY RATCHET: the controller lowers the scale when it sees < 45 fps,
+	// RenderPipeline persists that lowered value to the settings file, and the
+	// next launch then adopted it as the CEILING as well. Floor and ceiling met
+	// at the 0.35 minimum and the scale could never climb back -- the app stayed
+	// at 12% of the pixel count on hardware idling at 60 fps, with no way out but
+	// hand-editing the ini. Measured here: 61-63 fps at scale 0.35 and not one
+	// upward adjustment, because `scale < m_autoScaleMax` was 0.35 < 0.35.
+	//
+	// An EXPLICIT -s is still honoured as a hard ceiling, which was the original
+	// intent; the persisted working value no longer is.
+	m_autoScaleMax  = RenderPipeline::s_renderScaleFromCli
+	                ? RenderPipeline::renderScale()
+	                : 1.0f;
 
-	// start periodic refesh timer
-	startTimer( 16.666666666666 );
+	// Periodic refresh timer, paced to the DISPLAY, not to a hard-coded 60 Hz.
+	//
+	// This was startTimer(16.666666666666) -- and startTimer takes an int, so it
+	// truncated to 16 ms and pinned the whole app to ~62 Hz no matter what the
+	// panel could do. On a 120/144/240 Hz monitor or TV that threw away most of
+	// the refresh rate for no reason: measured here, the renderer sits at 60-63
+	// fps with the render scale still at its 0.35 floor, i.e. there is plenty of
+	// GPU headroom going unused.
+	//
+	// Animation is unaffected by the change of rate: both time bases integrate a
+	// MEASURED delta (RenderPipeline::paint adds m_nanotimer.elapsed() to
+	// m_globaltime, and AudioConditioner::update takes the same dt for the
+	// audioPhase/audioAdvance accumulators), so motion speed is wall-clock based
+	// and identical at any frame rate.
+	int refreshMs = 16;
+	if( QScreen *sc = screen() )
+	{
+		const qreal hz = sc->refreshRate();
+		if( hz > 20.0 )                       // ignore bogus/unknown values
+			refreshMs = int( 1000.0 / hz );   // 60 Hz -> 16, 144 Hz -> 6, 240 Hz -> 4
+	}
+	if( refreshMs < 1 ) refreshMs = 1;
+	m_displayHz = ( refreshMs > 0 ) ? 1000.0f / float( refreshMs ) : 60.0f;
+	fprintf( stderr, "Render timer: %d ms (%.1f Hz display)\n",
+	         refreshMs, screen() ? screen()->refreshRate() : 0.0 );
+	startTimer( refreshMs );
 
 	// CLI -r: begin recording straight away (for testing / debugging).
 	if( s_autoRecord )
@@ -462,6 +501,15 @@ void GLwidget::paintGL()
 		m_fpsValue      = int( m_fpsCounter * 1000.0 / double(now - m_fpsLastPeriod) + 0.5 );
 		m_fpsCounter    = 0;
 		m_fpsLastPeriod = now;
+		// KALEIDO_FPS_LOG=1 also puts it in the log, with the render scale next
+		// to it -- the two only mean something together, since updateAdaptiveScale()
+		// trades one for the other and persists the result to the settings file.
+		// Without this pairing a "slow" report is unattributable: a scale pinned
+		// at its 0.35 floor and a genuinely expensive frame look identical.
+		static const bool fpsLog = qEnvironmentVariableIsSet( "KALEIDO_FPS_LOG" );
+		if( fpsLog )
+			fprintf( stderr, "[fps] %d fps  renderScale %.2f\n",
+			         m_fpsValue, RenderPipeline::renderScale() );
 	}
 	m_fpsCounter++;
 
@@ -928,9 +976,20 @@ void GLwidget::updateAdaptiveScale()
 	float scale = RenderPipeline::renderScale();
 	float next  = scale;
 
-	if( m_fpsValue < 45 && scale > minScale )
+	// Thresholds relative to what the DISPLAY can actually show, not the fixed
+	// 45/57 that assumed a 60 Hz panel. On a 30 Hz TV the frame rate can never
+	// exceed 57, so the scale could never climb and the app would sit at its
+	// 0.35 floor forever -- the same one-way trap the ceiling had.
+	//
+	// The target is capped at 72 on purpose: on a 144/240 Hz panel, chasing the
+	// full refresh rate would trade away resolution for frames nobody asked for.
+	// Above ~72 fps the extra smoothness is worth less than the pixels.
+	const float target = ( m_displayHz > 20.f )
+	                   ? ( m_displayHz < 72.f ? m_displayHz : 72.f )
+	                   : 60.f;
+	if( m_fpsValue < 0.75f * target && scale > minScale )
 		next = scale - 0.10f;                       // struggling -> coarser, recover FPS
-	else if( m_fpsValue > 57 && scale < m_autoScaleMax )
+	else if( m_fpsValue > 0.95f * target && scale < m_autoScaleMax )
 		next = scale + 0.05f;                        // headroom -> finer, up to the ceiling
 
 	if( next < minScale )         next = minScale;

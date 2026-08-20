@@ -698,6 +698,15 @@ private:
 	int				m_displayH = 100;   ///< Display (window) height in pixels, as passed to reinit()/resize().
 	static float	s_renderScale;           ///< 0.25 .. 2.0 (1.0 = native; set via -s) — internal render scale relative to display resolution.
 public:
+	/**
+	 * @brief True only when -s was given on the command line.
+	 *
+	 * The adaptive controller is allowed to treat an EXPLICIT -s as a ceiling,
+	 * but it must not treat the persisted s_renderScale that way: that value is
+	 * whatever the controller itself last wrote, so using it as the ceiling makes
+	 * the adaptation one-way (see GLwidget::updateAdaptiveScale()).
+	 */
+	static bool 	s_renderScaleFromCli;
 	/** @brief Sets the internal render scale (clamped to [0.25, 2.0]) used by every subsequent reinit()/resize(). @param s Desired render scale (1.0 = native display resolution). */
 	static void setRenderScale( float s )
 	{ s_renderScale = (s < 0.25f) ? 0.25f : (s > 2.0f ? 2.0f : s); }

@@ -159,6 +159,7 @@ private:
 	std::mutex              m_mx;        ///< Guards m_queue and m_quit.
 	std::condition_variable m_cv;        ///< Signals a worker when a job is queued or quit is requested.
 	std::deque<RecJob>      m_queue;     ///< Bounded pending encode jobs (cap scales with the pool).
+	double                  m_recDue = 0.0;  ///< Next capture deadline (ms). Advanced by a fixed period, never reset to 'now' -- see captureFrame().
 	unsigned long long      m_seq = 0;   ///< Monotonic job counter (GL thread), orders replay frames.
 	unsigned long long      m_dropped = 0; ///< Frames discarded because the queue was full; reported on stop.
 	bool                    m_quit = false;   ///< Set to request the workers to exit once the queue drains.
