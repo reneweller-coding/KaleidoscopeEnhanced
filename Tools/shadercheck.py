@@ -98,6 +98,77 @@ def check(paths, reg):
             err(rel, f"uses '{u}' but never declares it (undeclared identifier = "
                      f"compile error, renders black with an empty log)")
 
+        # --- R11 anti-flicker: never scale absolute time by an audio value --
+        # Only a DIRECT multiplicative chain counts: "time * 0.4 * audioLevel".
+        # "time * 0.4 + audioAdvance * 0.2" is the correct idiom, so the span
+        # must not cross a + or - (that was a 128-false-positive regex once),
+        # nor a ',' -- "vec2(time * 0.05, audioPhase * 0.1)" is two SEPARATE
+        # function arguments, not a product, and the comma-less exclusion set
+        # let the scan run straight through it (found once this rule was
+        # moved to actually run against Scene2D files, below).
+        # Applies to every shader stage, 2D or 3D -- previously lived below
+        # the "in3d only" guard and so never actually ran against a single
+        # Scene2D file; moved up here to close that gap.
+        for m in re.finditer(r'\btime\s*\*[^;+\-,)\n]*\baudio\w+', body):
+            warn(rel, "multiplies absolute 'time' by an audio-varying value -- the phase "
+                      "jumps whenever the level changes (flicker). Integrate the rate "
+                      "into a phase instead (audioAdvance) and add, don't multiply")
+
+        # --- R14 self-referential trajectory/attractor seed -----------------
+        # Seeding an integrated ODE/orbit trajectory FROM the same
+        # screen-position variable later used to measure distance-to-it makes
+        # that distance trivially ~0 at the very first step for EVERY pixel
+        # (it starts equal to itself by construction) -- a flat wash instead
+        # of a glowing curve. (Found across 4 attractor visualizers in the
+        # 2026-08-20 batch, all Scene2D fragment shaders: pAiz = vec3(pRot.x,
+        # pRot.y, ...) then later length(pRot - pAiz.xy).)
+        for m in re.finditer(r'\b(\w+)\s*=\s*vec[23]\s*\(\s*(\w+)\.x\s*,\s*\2\.y\b', body):
+            trajVar, screenVar = m.group(1), m.group(2)
+            if trajVar == screenVar:
+                continue
+            tail = body[m.end():]
+            if re.search(rf'\b{screenVar}\s*-\s*{trajVar}(?:\.xy)?\b', tail) \
+               or re.search(rf'\b{trajVar}(?:\.xy)?\s*-\s*{screenVar}\b', tail):
+                warn(rel, f"seeds '{trajVar}' from the screen-position variable "
+                          f"'{screenVar}' and later appears to measure distance "
+                          f"between them -- that distance starts at ~0 for EVERY "
+                          f"pixel by construction, washing the whole frame to a "
+                          f"near-uniform glow instead of tracing a real curve. "
+                          f"Seed the trajectory from a FIXED point shared by all "
+                          f"pixels instead")
+
+        # --- R15 camera possibly embedded in its own track/curve geometry ---
+        # A ray origin computed by calling the SAME parametric function used
+        # again later to find "the nearest point on the track" is suspicious:
+        # if the camera literally sits ON that curve, the very first raymarch
+        # step (p = ro, totDist = 0) trivially satisfies "distance to track <
+        # threshold" for every pixel regardless of ray direction -- an
+        # instant, uniform hit instead of a tube flying past. (Found across 2
+        # roller-coaster/knot-flight scenes in the 2026-08-20 batch, both
+        # Scene2D fragment shaders.) Lower confidence than the other rules --
+        # an offset combined in the same statement (ro = curve(...) +
+        # right*off) is NOT the bug and is excluded, but a camera
+        # legitimately allowed to ride the curve via some other safeguard
+        # would still false-positive here.
+        m_ro = re.search(r'\bvec3\s+ro\s*=\s*(\w+)\s*\(([^;]*)\)\s*;', body)
+        if m_ro:
+            trackFunc = m_ro.group(1)
+            combined_offset = re.search(r'[+\-]\s*\w', body[m_ro.start():m_ro.end()])
+            # Only the second call ACTUALLY INSIDE a later for-loop counts --
+            # a call between ro's assignment and the loop (e.g. computing a
+            # look-at target for fdir/rd) is normal camera setup, not this bug.
+            m_for = re.search(r'\bfor\s*\(', body[m_ro.end():])
+            loop_body = body[m_ro.end() + m_for.end():] if m_for else ""
+            if not combined_offset and trackFunc not in ("vec3", "normalize", "mix", "clamp") \
+               and re.search(rf'\b{trackFunc}\s*\(', loop_body):
+                warn(rel, f"ray origin 'ro' is exactly {trackFunc}(...) with no "
+                          f"offset applied, and the same function is called "
+                          f"again inside a raymarch loop to find the nearest "
+                          f"track point -- if the camera sits ON that curve, "
+                          f"the first raymarch step hits instantly for every "
+                          f"pixel. Verify the camera is actually offset off "
+                          f"the curve (chase-cam pull-back/lateral shift)")
+
         # --- rules below only apply to the scene3d vertex/compute stages ---
         if not in3d:
             continue
@@ -242,15 +313,6 @@ def check(paths, reg):
                 warn(rel, "indexes by gl_GlobalInvocationID.x only. With a 3D dispatch "
                           "that covers just 1/4096 of the invocations -- flatten all "
                           "three: g.x + 64u*(g.y + 64u*g.z)")
-
-        # --- R11 anti-flicker: never scale absolute time by an audio value --
-        # Only a DIRECT multiplicative chain counts: "time * 0.4 * audioLevel".
-        # "time * 0.4 + audioAdvance * 0.2" is the correct idiom, so the span
-        # must not cross a + or - (that was a 128-false-positive regex once).
-        for m in re.finditer(r'\btime\s*\*[^;+\-)\n]*\baudio\w+', body):
-            warn(rel, "multiplies absolute 'time' by an audio-varying value -- the phase "
-                      "jumps whenever the level changes (flicker). Integrate the rate "
-                      "into a phase instead (audioAdvance) and add, don't multiply")
 
     return errors, warnings
 
