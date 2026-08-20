@@ -54,14 +54,15 @@ void Recorder::shutdown()
 		m_recording = false;
 		finishRecording();
 	}
-	else if( m_thread.joinable() )
+	else if( !m_threads.empty() )
 	{
 		{
 			std::lock_guard<std::mutex> lk( m_mx );
 			m_quit = true;
 		}
 		m_cv.notify_all();
-		m_thread.join();
+		for( std::thread &t : m_threads ) if( t.joinable() ) t.join();
+		m_threads.clear();
 	}
 	m_audio = nullptr;
 }
@@ -169,7 +170,11 @@ void Recorder::worker()
 		}
 		int h = job.img.height();
 		QImage out = job.img.mirrored( false, true )               // GL ist bottom-up
-		                .scaledToHeight( h > 720 ? 720 : h, Qt::SmoothTransformation );
+		                // FastTransformation, not Smooth: this is a 1080->720 downscale
+	                // that is then JPEG-encoded at quality 80-85, where the
+	                // difference is not visible, and Smooth was a large share of
+	                // the per-frame encode cost.
+	                .scaledToHeight( h > 720 ? 720 : h, Qt::FastTransformation );
 
 		if( job.path.isEmpty() )
 		{
@@ -179,7 +184,15 @@ void Recorder::worker()
 			buf.open( QIODevice::WriteOnly );
 			out.save( &buf, "JPG", 80 );
 			std::lock_guard<std::mutex> rl( m_replayMx );
-			m_replayFrames.push_back( ReplayFrame{ jpg, job.dur } );
+			// Recording jobs are order-independent (their index is in the path),
+			// but this ring IS the replay timeline, so with a pool the frames
+			// have to go back in `seq` order. They arrive nearly sorted, so the
+			// scan from the back is O(1) in practice.
+			{
+				auto it = m_replayFrames.end();
+				while( it != m_replayFrames.begin() && (it - 1)->seq > job.seq ) --it;
+				m_replayFrames.insert( it, ReplayFrame{ jpg, job.dur, job.seq } );
+			}
 			float total = 0.f;
 			for( const ReplayFrame &r : m_replayFrames ) total += r.dur;
 			while( total > 31.f && m_replayFrames.size() > 1 )
@@ -196,10 +209,17 @@ void Recorder::worker()
 
 void Recorder::ensureWorker()
 {
-	if( m_thread.joinable() )
+	if( !m_threads.empty() )
 		return;
 	m_quit = false;
-	m_thread = std::thread( &Recorder::worker, this );
+	// One encoder thread could not keep up with the 30 fps cap (measured ~11 fps
+	// sustained, near-identical for every scene). Leave two cores for the GL and
+	// audio threads; the pool is small on purpose, encoding is memory-bound.
+	unsigned hw = std::thread::hardware_concurrency();
+	unsigned n  = ( hw > 4u ) ? ( hw - 2u ) : 2u;
+	if( n > 6u ) n = 6u;
+	for( unsigned i = 0; i < n; ++i )
+		m_threads.emplace_back( &Recorder::worker, this );
 }
 
 // Instant Replay: ~15 fps in den rollenden Ring, solange scharf (und nicht
@@ -285,11 +305,18 @@ void Recorder::asyncCapture( float dur, bool toReplay, int w, int h )
 				fn = QString("%1/frame_%2.jpg").arg(m_recDir).arg(m_recFrame, 6, 10, QChar('0'));
 			{
 				std::lock_guard<std::mutex> lk( m_mx );
-				if( m_queue.size() < 8 )
+				// Bound scales with the pool so the extra threads actually have
+				// work in flight. A full queue still drops the frame (never
+				// stalls the GL thread) but now it is counted, not silent.
+				if( m_queue.size() < 6 * m_threads.size() + 2 )
 				{
 					float carry = pm.replay ? m_repCarryDur : 0.f;
-					m_queue.push_back( RecJob{ img.copy(), fn, pm.dur + carry } );
+					m_queue.push_back( RecJob{ img.copy(), fn, pm.dur + carry, m_seq++ } );
 					queued = true;
+				}
+				else
+				{
+					++m_dropped;   // encoder saturated; frame discarded, never a GL stall
 				}
 			}
 			glUnmapBuffer( GL_PIXEL_PACK_BUFFER );
@@ -433,17 +460,24 @@ void Recorder::finishRecording()
 	// verirrter Recording-Job konsumiert werden, nachdem frames.txt final ist.
 	m_pboMeta[0].pending = false;
 	m_pboMeta[1].pending = false;
+	if( m_dropped )
+		fprintf( stderr, "[recorder] %llu frame(s) dropped: the encoder pool could not "
+		                 "keep up. Video pacing stays correct (frames.txt carries the real "
+		                 "durations), but the capture rate was below the 30 fps cap.\n",
+		         (unsigned long long) m_dropped );
+	m_dropped = 0;
 
 	// Worker drainen + beenden (er endet erst bei leerer Queue, jeder
 	// eingereihte Frame wird also noch geschrieben, bevor der Mux startet).
-	if( m_thread.joinable() )
+	if( !m_threads.empty() )
 	{
 		{
 			std::lock_guard<std::mutex> lk( m_mx );
 			m_quit = true;
 		}
 		m_cv.notify_all();
-		m_thread.join();
+		for( std::thread &t : m_threads ) if( t.joinable() ) t.join();
+		m_threads.clear();
 	}
 
 	if( m_audio )
