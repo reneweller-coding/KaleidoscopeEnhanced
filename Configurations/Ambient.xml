@@ -1698,8 +1698,8 @@
     <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
     <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="speedP" minValue="0.6" maxValue="1.6"></float>
-    <float name="cteneRowsP" minValue="0.6" maxValue="1.6"></float>
-    <float name="iridescenceP" minValue="0.6" maxValue="1.6"></float>
+    <float name="cteneRowsP" minValue="6.0" maxValue="10.0"></float>
+    <float name="iridescenceP" minValue="0.8" maxValue="1.6"></float>
     <float name="glowP" minValue="0.7" maxValue="1.4"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
@@ -1708,8 +1708,8 @@
     <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
     <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="speedP" minValue="0.6" maxValue="1.6"></float>
-    <float name="canyonWidthP" minValue="0.6" maxValue="1.6"></float>
-    <float name="bioDensityP" minValue="0.6" maxValue="1.6"></float>
+    <float name="canyonWidthP" minValue="0.7" maxValue="1.4"></float>
+    <float name="bioDensityP" minValue="0.7" maxValue="1.5"></float>
     <float name="glowP" minValue="0.7" maxValue="1.4"></float>
     <expr name="hueP" formula="chromaHue + seed2*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
@@ -1718,8 +1718,8 @@
     <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
     <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="speedP" minValue="0.6" maxValue="1.6"></float>
-    <float name="pitchFreqP" minValue="0.6" maxValue="1.6"></float>
-    <float name="defectDensityP" minValue="0.6" maxValue="1.6"></float>
+    <float name="pitchFreqP" minValue="0.7" maxValue="1.5"></float>
+    <float name="defectDensityP" minValue="0.7" maxValue="1.4"></float>
     <float name="glowP" minValue="0.7" maxValue="1.4"></float>
     <expr name="hueP" formula="chromaHue + seed2*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
@@ -1728,8 +1728,8 @@
     <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
     <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="speedP" minValue="0.6" maxValue="1.6"></float>
-    <float name="densityP" minValue="0.6" maxValue="1.6"></float>
-    <float name="silkP" minValue="0.6" maxValue="1.6"></float>
+    <float name="densityP" minValue="0.7" maxValue="1.5"></float>
+    <float name="silkP" minValue="0.7" maxValue="1.4"></float>
     <float name="glowP" minValue="0.7" maxValue="1.4"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
@@ -1738,8 +1738,8 @@
     <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
     <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="speedP" minValue="0.6" maxValue="1.6"></float>
-    <float name="spikeDensityP" minValue="0.6" maxValue="1.6"></float>
-    <float name="spikeHeightP" minValue="0.6" maxValue="1.6"></float>
+    <float name="spikeDensityP" minValue="0.7" maxValue="1.5"></float>
+    <float name="spikeHeightP" minValue="0.8" maxValue="1.6"></float>
     <float name="glowP" minValue="0.7" maxValue="1.4"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
@@ -1748,8 +1748,8 @@
     <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
     <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="speedP" minValue="0.6" maxValue="1.6"></float>
-    <float name="foldAngleP" minValue="0.6" maxValue="1.6"></float>
-    <float name="branchP" minValue="0.6" maxValue="1.6"></float>
+    <float name="foldAngleP" minValue="0.7" maxValue="1.4"></float>
+    <float name="branchP" minValue="0.8" maxValue="1.5"></float>
     <float name="glowP" minValue="0.7" maxValue="1.4"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
@@ -1758,8 +1758,8 @@
     <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
     <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="speedP" minValue="0.6" maxValue="1.6"></float>
-    <float name="vortexCountP" minValue="0.6" maxValue="1.6"></float>
-    <float name="chromeP" minValue="0.6" maxValue="1.6"></float>
+    <float name="vortexCountP" minValue="2.0" maxValue="4.0"></float>
+    <float name="chromeP" minValue="0.8" maxValue="1.6"></float>
     <float name="glowP" minValue="0.7" maxValue="1.4"></float>
     <expr name="hueP" formula="chromaHue + seed2*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
@@ -1768,8 +1768,8 @@
     <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
     <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="speedP" minValue="0.6" maxValue="1.6"></float>
-    <float name="combFreqP" minValue="0.6" maxValue="1.6"></float>
-    <float name="acidMeltP" minValue="0.6" maxValue="1.6"></float>
+    <float name="combFreqP" minValue="0.7" maxValue="1.5"></float>
+    <float name="acidMeltP" minValue="0.7" maxValue="1.5"></float>
     <float name="glowP" minValue="0.7" maxValue="1.4"></float>
     <expr name="hueP" formula="chromaHue + seed3*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
@@ -1779,7 +1779,7 @@
     <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="speedP" minValue="0.6" maxValue="1.6"></float>
     <float name="densityP" minValue="0.6" maxValue="1.6"></float>
-    <float name="radiusP" minValue="0.6" maxValue="1.6"></float>
+    <float name="radiusP" minValue="0.7" maxValue="1.3"></float>
     <float name="glowP" minValue="0.7" maxValue="1.4"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
@@ -1788,8 +1788,8 @@
     <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
     <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="speedP" minValue="0.6" maxValue="1.6"></float>
-    <float name="vortexCountP" minValue="0.6" maxValue="1.6"></float>
-    <float name="kelvinP" minValue="0.6" maxValue="1.6"></float>
+    <float name="vortexCountP" minValue="4.0" maxValue="8.0"></float>
+    <float name="kelvinP" minValue="0.7" maxValue="1.4"></float>
     <float name="glowP" minValue="0.7" maxValue="1.4"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>

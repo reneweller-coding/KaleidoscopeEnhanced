@@ -102,9 +102,15 @@ void main() {
     vec2 sampleUV = fract(z * 0.25 + 0.5);
     vec3 texCol = img(sampleUV);
 
-    // Glowing lightning arc lines
-    float arcGlow = exp(-minArcDist * (35.0 + 20.0 * audioCentroid)) * glw;
-    float coreSpark = exp(-minArcDist * 120.0);
+    // Glowing lightning arc lines. minArcDist's per-iteration numerator stays
+    // a bounded, O(0.01-0.1) quantity while its pow(1.45,fi) divisor keeps
+    // growing, so by i=7 it's crushed near zero for almost every pixel (not
+    // just ones truly near an arc) -- matching the normalisation constant to
+    // the fold's real scale factor (see minArcDist above) wasn't enough on
+    // its own, the decay here also has to be sharp enough to turn that
+    // near-zero-everywhere value back into real near/far contrast.
+    float arcGlow = exp(-minArcDist * (160.0 + 80.0 * audioCentroid)) * glw;
+    float coreSpark = exp(-minArcDist * 500.0);
 
     // Palette mixing
     vec3 palA = imgPalette(plasmaEnergy * 0.15 + t * 0.1);

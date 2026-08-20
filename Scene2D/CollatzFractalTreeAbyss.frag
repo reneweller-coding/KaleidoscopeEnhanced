@@ -79,8 +79,15 @@ void main() {
 
     float t = audioAdvance * 0.25 * spd;
 
-    // Zoom into Collatz fractal spire boundary
-    float zoomLevel = exp(mod(t * 0.6, 5.0)) * (2.2 * zm);
+    // Zoom into Collatz fractal spire boundary. The old base multiplier
+    // (2.2) kept |z| under ~0.4 at screen edges even at zoomProg=0 -- well
+    // inside this map's basin of convergence, so almost every pixel just
+    // spirals toward a fixed point without ever crossing r2>64. iterCount
+    // then hits the "never escaped" fallback (=24) for nearly the whole
+    // frame, and only the weak trap term was left to vary the flat wash.
+    // A smaller base multiplier widens the visible |z| range enough to
+    // actually reach the escape boundary.
+    float zoomLevel = exp(mod(t * 0.6, 5.0)) * (0.55 * zm);
     vec2 z = uv / zoomLevel;
 
     // Translation along real axis
@@ -107,8 +114,14 @@ void main() {
     vec2 sampleUV = fract(z * 0.25 + 0.5);
     vec3 texCol = img(sampleUV);
 
-    // Glowing spiky needle lines
+    // Glowing spiky needle lines. Deep interior points (the ones that never
+    // escape, iterCount==24) also tend to spiral toward the real axis where
+    // trap approaches 0 -- the same near-zero trap this glow was meant to
+    // reserve for actual boundary needles -- so exp(-trap*K) saturates to
+    // ~1 across the ENTIRE non-escaping interior, not just its filigree
+    // edge, and flooded the whole centre with full-strength white tint.
     float needleGlow = exp(-trap * (20.0 + 10.0 * audioCentroid) * ndl) * glw;
+    if (iterCount >= 23.5) needleGlow *= 0.15;
 
     // Palette mixing
     vec3 palA = imgPalette(iterCount * 0.08 + trap * 0.2);
@@ -122,5 +135,7 @@ void main() {
     col += needleTint;
 
     col = pow(col, vec3(0.88));
-    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    vec3 _catTone = clamp(col, 0.0, 1.0);
+    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
+    fragColor = vec4(_catTone, 1.0);
 }

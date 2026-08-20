@@ -127,23 +127,30 @@ void main() {
     vec2 sampleUV = fract(uv * 0.4 + 0.5);
     vec3 texCol = img(sampleUV);
 
-    // Glowing 4D struts and vertex sparks
-    float edgeGlow = exp(-minEdgeDist * (30.0 + 15.0 * audioCentroid)) * glw;
-    float vertexGlow = exp(-minVertexDist * 20.0) * (1.2 + 3.0 * audioKick);
+    // Glowing 4D struts and vertex sparks. Near the vanishing point many of
+    // the 32 projected edges cluster together, so minEdgeDist/minVertexDist
+    // sit near 0 across a wide area -- and the tint constants alone (1.8,
+    // 2.0) already exceed 1.0 even with NO kick, which is why the rounded
+    // hypercube silhouette was blowing out to solid white on every frame,
+    // not just on beats. Cap the glow*audio products directly.
+    float edgeGlow = min(exp(-minEdgeDist * (30.0 + 15.0 * audioCentroid)) * glw * (1.0 + 2.5 * audioKick), 0.75);
+    float vertexGlow = min(exp(-minVertexDist * 20.0) * (1.2 + 3.0 * audioKick), 0.9);
 
     // 4D hypercube neon palette
     vec3 palBase = imgPalette(minEdgeDist * 0.5 + t * 0.05);
     vec3 col = mix(texCol * 0.3, palBase, 0.45);
 
-    vec3 strutTint = vec3(1.3, 1.1, 1.8) * edgeGlow * (1.0 + 2.5 * audioKick);
+    vec3 strutTint = vec3(1.3, 1.1, 1.8) * edgeGlow;
     vec3 sparkTint = vec3(1.8, 1.6, 2.0) * vertexGlow;
 
     col += strutTint + sparkTint;
 
     // Center 4D singularity burst
-    float centerBloom = exp(-length(uv) * 6.0) * (0.8 + 2.0 * audioKick);
+    float centerBloom = min(exp(-length(uv) * 6.0) * (0.8 + 2.0 * audioKick), 0.8);
     col += imgPalette(0.85) * centerBloom;
 
     col = pow(col, vec3(0.88));
-    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    vec3 _catTone = clamp(col, 0.0, 1.0);
+    _catTone /= 1.0 + 0.4 * max(_catTone.r, max(_catTone.g, _catTone.b));
+    fragColor = vec4(_catTone, 1.0);
 }

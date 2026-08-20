@@ -104,9 +104,14 @@ void main() {
         vec2 hPos = hInfo.xy;
         vec2 hID = hInfo.zw;
 
-        // Distance to hexagon wall
+        // Distance to hexagon wall. Decay must SHARPEN (not soften) at deeper
+        // octaves: dividing by layerScale made the falloff gentler the further
+        // zoomed-in a layer was, so every deep octave's glow bloomed across
+        // its ENTIRE cell instead of tracing just the wall -- flooding the
+        // accumulated average with near-white. Multiplying keeps apparent
+        // wall thickness roughly constant in screen space at every depth.
         float dWall = abs(-sdHex(hPos, 0.52)) - 0.04 * wWidth;
-        float wallGlow = exp(-abs(dWall) * (25.0 / (layerScale * 0.3))) * glw;
+        float wallGlow = exp(-abs(dWall) * (25.0 * layerScale * 0.3)) * glw;
 
         // Sample texture inside honeycomb cell
         vec2 sampleUV = fract(hPos * 0.4 + 0.5);

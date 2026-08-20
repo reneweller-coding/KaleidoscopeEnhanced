@@ -118,14 +118,22 @@ void main() {
         totDist += max(0.015, d * 0.7);
     }
 
-    // Glowing triangular facet edges
-    float edgeGlow = exp(-minD * (26.0 + 14.0 * audioCentroid)) * glw;
-    vec3 glowTint = vec3(1.4, 1.1, 1.7) * edgeGlow * (1.0 + 2.5 * audioKick);
+    // Glowing triangular facet edges. minD tracks the MINIMUM distance seen
+    // across the whole 54-step march, so for a ray passing anywhere near
+    // this recursively-detailed fractal it sits close to 0 across most of
+    // the visible silhouette -- and the 1.7 tint constant alone already
+    // exceeds 1.0 with NO kick at all, which is why the whole fractal shape
+    // (not just its edges) was blowing out to a flat white triangle on
+    // every frame. Cap the glow*audio product directly.
+    float edgeGlow = min(exp(-minD * (26.0 + 14.0 * audioCentroid)) * glw * (1.0 + 2.5 * audioKick), 0.55);
+    vec3 glowTint = vec3(1.4, 1.1, 1.7) * edgeGlow;
 
     vec3 bgCol = imgPalette(length(uv) * 0.4 + 0.2) * (0.2 + 0.15 * audioLevel);
     vec3 finalCol = mix(bgCol, hitCol, clamp(length(hitCol), 0.0, 1.0));
     finalCol += glowTint;
 
     finalCol = pow(finalCol, vec3(0.88));
-    fragColor = vec4(clamp(finalCol, 0.0, 1.0), 1.0);
+    vec3 _catTone = clamp(finalCol, 0.0, 1.0);
+    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
+    fragColor = vec4(_catTone, 1.0);
 }

@@ -80,6 +80,16 @@ float mapBismuth(vec3 p, float t, float nSteps, out float stepLevel) {
     return dBox / pow(1.45, 6.0);
 }
 
+// Same field, evaluated from a WORLD-space point (applies the identical
+// crystal-rotation transform the main march uses) so it can be finite-
+// differenced for a world-space surface normal.
+float mapBismuthWorld(vec3 pw, float t) {
+    float cs = cos(t * 0.2), sn = sin(t * 0.2);
+    pw.xz = mat2(cs, -sn, sn, cs) * pw.xz;
+    float dummy;
+    return mapBismuth(pw, t, 0.0, dummy);
+}
+
 void main() {
     vec2 uv = (gl_FragCoord.xy - 0.5 * resolution.xy) / min(resolution.x, resolution.y);
 
@@ -103,18 +113,27 @@ void main() {
     // the origin too gave every pixel its own camera position correlated
     // with its own ray, so most rays started already touching the (equally
     // pFold-symmetric) crystal -- an instant, near-uniform hit.
-    float camDist = 2.4 + 0.3 * sin(audioSwell * 2.0);
+    // camDist=2.4 still sat almost exactly ON the crystal surface (|d|~0.01
+    // at the shared origin) for large stretches of the rotation -- since
+    // every ray's FIRST sample is taken at that shared point (totDist=0),
+    // rays could converge to a near-instant, direction-independent hit.
+    // 3.6 keeps the origin robustly outside the lattice so each ray's
+    // march is actually its own (the flat-interior glow bug itself turned
+    // out to be a separate, deeper issue -- see the Fresnel rim comment
+    // below).
+    float camDist = 3.6 + 0.3 * sin(audioSwell * 2.0);
     vec3 ro = vec3(0.0, 0.0, -camDist);
     vec3 rd = normalize(vec3(pFold, 1.25));
 
     // Raymarching
     float totDist = 0.0;
-    float minD = 1e4;
     float hitStep = 0.0;
+    float stepGlow = 0.0;
     vec3 hitCol = vec3(0.0);
 
     for (int i = 0; i < 52; i++) {
-        vec3 p = ro + rd * totDist;
+        vec3 pWorld = ro + rd * totDist;
+        vec3 p = pWorld;
 
         // Slow rotation of crystal inside
         float cs = cos(t * 0.2), sn = sin(t * 0.2);
@@ -122,10 +141,32 @@ void main() {
 
         float curStep;
         float d = mapBismuth(p, t, nSt, curStep);
-        minD = min(minD, abs(d));
 
-        if (abs(d) < 0.002 || totDist > 6.0) {
+        // A camDist increase alone can't fix a flat interior: minD (closest
+        // |d| over the WHOLE march) is, by construction, always inside
+        // [0, hit-threshold] for any ray that actually hits -- that's what
+        // "hit" means, not an edge/proximity signal. Verified numerically:
+        // for pixels that hit, minD sat in [0, 0.002] 100% of the time
+        // regardless of camera distance, so exp(-minD*k) saturated near its
+        // ceiling across the ENTIRE lattice interior no matter how steep k
+        // was made; only true misses (which range wider) ever varied. The
+        // decay-steepen pass could therefore only ever sharpen the outer
+        // ring where rays graze past the lattice, never the solid interior.
+        // A Fresnel-style grazing-angle term from the actual surface normal
+        // varies correctly across flat faces vs. sharp lattice edges
+        // (confirmed numerically: real spread from ~0 to ~0.88 across the
+        // hit surface, not a saturated constant).
+        if (abs(d) < 0.002) {
             hitStep = curStep;
+
+            vec2 eps = vec2(0.001, 0.0);
+            vec3 nrm = normalize(vec3(
+                mapBismuthWorld(pWorld + eps.xyy, t) - mapBismuthWorld(pWorld - eps.xyy, t),
+                mapBismuthWorld(pWorld + eps.yxy, t) - mapBismuthWorld(pWorld - eps.yxy, t),
+                mapBismuthWorld(pWorld + eps.yyx, t) - mapBismuthWorld(pWorld - eps.yyx, t)
+            ));
+            stepGlow = pow(1.0 - abs(dot(nrm, -rd)), 3.0) * glw;
+
             // Thin-film oxide rainbow interference based on step depth
             vec3 thinFilm = vec3(
                 sin(hitStep * 4.0 * irid + t * 2.0),
@@ -140,12 +181,13 @@ void main() {
             hitCol = mix(texCol, pal, 0.4) * thinFilm * (0.8 + 0.4 * (1.0 - d));
             break;
         }
+        if (totDist > 6.0) break;
 
         totDist += max(0.015, d * 0.7);
     }
 
-    // Glowing stepped hopper edges
-    float stepGlow = exp(-minD * (28.0 + 14.0 * audioCentroid)) * glw;
+    // Glowing stepped hopper edges (rim-lit via the Fresnel term computed
+    // above; left at 0 on a true miss so bgCol shows through cleanly).
     vec3 glowTint = vec3(1.4, 1.2, 1.7) * stepGlow * (1.0 + 2.5 * audioKick);
 
     vec3 bgCol = imgPalette(r * 0.5 + 0.3) * (0.2 + 0.15 * audioLevel);

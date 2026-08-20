@@ -105,13 +105,23 @@ void main() {
         float dInner = max(max(q.x, q.y), max(q.z, q.w)) - 1.05;
         float dFrame = max(dOuter, -dInner);
 
-        // 2D Projection edge distance for wireframe lines
+        // 2D Projection edge distance for wireframe lines. The old
+        // cornerDist = length(max(q2-1.2,0)) is the correct SDF for OUTSIDE
+        // a box, but it is identically 0 for EVERY point still inside the
+        // frame (q2.x<1.2 AND q2.y<1.2) -- not just near an actual corner.
+        // min(edgeDist, cornerDist) then picked that spurious 0 over
+        // edgeDist's real, positive interior falloff across the WHOLE
+        // inside of the frame, on every layer, regardless of the
+        // layerScale decay-direction fix (which only reshapes falloff for
+        // wire>0, i.e. outside the frame -- it can't touch a value that's
+        // hard-pinned to 0 inside). Verified numerically: at screen centre
+        // the summed edgeGlow across active layers was a near-constant
+        // ~4.0-4.6 for EVERY cellPhase, which is why the earlier fix
+        // produced no visible change. edgeDist alone already gives the
+        // correct thin-outline falloff both inside and outside the frame.
         vec2 q2 = abs(pLayer);
-        float edgeDist = min(abs(q2.x - 1.2), abs(q2.y - 1.2));
-        float cornerDist = length(max(q2 - vec2(1.2), 0.0));
-        float wire = min(edgeDist, cornerDist);
-
-        float edgeGlow = exp(-wire * (25.0 / layerScale)) * layerFade * glw;
+        float wire = min(abs(q2.x - 1.2), abs(q2.y - 1.2));
+        float edgeGlow = exp(-wire * (25.0 * layerScale * 0.15)) * layerFade * glw;
 
         // Sample texture inside the tesseract cell face
         vec2 sampleUV = fract(pLayer * 0.25 + 0.5);
@@ -121,11 +131,15 @@ void main() {
         vec3 cellCol = mix(texCol, palCol, 0.5);
         colAcc += cellCol * layerFade * 0.3;
 
-        // Add glowing hypercube wireframe lines
-        vec3 wireTint = vec3(1.3, 1.0, 1.8) * edgeGlow * (1.0 + 2.5 * audioKick);
-        colAcc += wireTint;
         glowAcc += edgeGlow;
     }
+
+    // Add glowing hypercube wireframe lines once, from the TOTAL glow
+    // accumulated across layers (capped) rather than per-layer -- several
+    // octaves' frames can still overlap near true wire crossings, and an
+    // uncapped per-layer add let those crossings stack past white.
+    vec3 wireTint = vec3(1.3, 1.0, 1.8) * min(glowAcc, 1.0) * (1.0 + 2.5 * audioKick);
+    colAcc += wireTint;
 
     // Portal dimension crossing flash (when cellPhase wraps around)
     float portalFlash = pow(max(0.0, 1.0 - abs(cellPhase - 0.5) * 4.0), 4.0) * (0.4 + 1.2 * audioKick);
