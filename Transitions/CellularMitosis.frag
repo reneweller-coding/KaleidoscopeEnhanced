@@ -60,8 +60,14 @@ void main() {
     float tProg = clamp(interpolation, 0.0, 1.0);
     float midTransition = sin(tProg * 3.14159265);
 
+    // audioBass undulates membrane elasticity & expansion.  Both factors are
+    // folded in through midTransition, so at tProg 0 and 1 they collapse to the
+    // un-driven values; the daughter-cell geometry only ever reaches the frame
+    // through pinchDisp and the membrane glow, which are midTransition-gated.
+    float bassPulse = audioBass * midTransition;
+
     // Cleavage furrow: distance to dual daughter cell centers
-    float sep = mix(0.0, 0.5, tProg) * mts;
+    float sep = mix(0.0, 0.5, tProg) * mts * (1.0 + bassPulse * 0.35);
     vec2 cLeft  = vec2(-sep, 0.0);
     vec2 cRight = vec2( sep, 0.0);
 
@@ -70,7 +76,8 @@ void main() {
 
     // Metaball fusion of two cell membranes: 1/d1^2 + 1/d2^2 = threshold
     float meta = (0.12 / max(d1 * d1, 0.001)) + (0.12 / max(d2 * d2, 0.001));
-    float cellIso = smoothstep(1.0 - 0.2 * clv, 1.0 + 0.2 * clv, meta);
+    float elasticity = 0.2 * clv * (1.0 + bassPulse * 0.7);
+    float cellIso = smoothstep(1.0 - elasticity, 1.0 + elasticity, meta);
 
     // Membrane pinch displacement
     vec2 pinchDisp = normalize(p + 1e-4) * (1.0 - cellIso) * 0.04 * midTransition;

@@ -83,8 +83,17 @@ void main() {
     vec4 c1 = texture(tex1, fract(uv + vortexDisp));
     vec4 c0 = texture(tex0, fract(uv - vortexDisp));
 
-    // Sweep front
-    float sweepFront = mix(-1.2, 1.2, tProg) * swp;
+    // Sweep front. `swp` used to multiply the front's POSITION, so it also set
+    // where the sweep ends: at the bottom of sweepP's 0.5..2.0 registration the
+    // front stopped at 0.6 while the frame reaches |p.x| = 0.889, leaving the
+    // right ~18% of the picture showing the NEW scene on the first frame of the
+    // fade (measured mean endpoint error 26/255). The travel is now a fixed
+    // span that always clears the frame, and the parameter reshapes the PACING
+    // instead -- pow keeps 0->0 and 1->1 exactly, so both endpoints stay
+    // pixel-exact for every sweepP.
+    // Guarded because GLSL evaluates pow as exp2(y*log2(x)): pow(0.0, y) goes
+    // through log2(0) = -inf and can return NaN on some drivers.
+    float sweepFront = mix(-1.2, 1.2, (tProg > 0.0) ? pow(tProg, 1.0 / swp) : 0.0);
     float distToFront = p.x - sweepFront;
     float wipeMask = smoothstep(-0.04, 0.04, distToFront);
 

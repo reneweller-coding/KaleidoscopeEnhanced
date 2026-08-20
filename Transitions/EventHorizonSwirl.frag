@@ -67,8 +67,12 @@ void main() {
 
     float r = length(p);
 
-    // Frame-dragging swirl angle: omega_drag ~ a / (r^3 + a^2 * r + 2M*a^2)
-    float dragAngle = (0.35 / max(pow(r, 1.5), 0.04)) * midTransition * spn * drg * 3.14159265;
+    // Frame-dragging swirl angle: omega_drag ~ a / (r^3 + a^2 * r + 2M*a^2).
+    // audioBass undulates the Kerr spin parameter a/M.  The whole angle is
+    // already multiplied by midTransition, so it is exactly zero at both fade
+    // endpoints — and warpUV is additionally blended in by midTransition there.
+    float spinAM = spn * drg * (1.0 + audioBass * 0.7);
+    float dragAngle = (0.35 / max(pow(r, 1.5), 0.04)) * midTransition * spinAM * 3.14159265;
     vec2 pSwirled = rot2D(dragAngle + t * 0.5) * p;
 
     vec2 warpUV = (pSwirled * resolution.y + 0.5 * resolution) / resolution;

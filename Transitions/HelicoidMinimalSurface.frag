@@ -68,13 +68,21 @@ void main() {
     float r = length(p);
     float theta = atan(p.y, p.x);
 
-    // Helicoid minimal surface coordinate: z = c * theta + rotation
-    float helicoidZ = (theta + tProg * 6.2831853 * scr + t * 0.8) / 3.14159265 * ptc;
+    // Helicoid minimal surface coordinate: z = c * theta + rotation.
+    // audioBass undulates the helical pitch dz/dtheta.  It is applied to the
+    // SPATIAL theta term only — never to the t term — so the screw rate stays
+    // audio-independent (anti-flicker).  midTransition returns the pitch to its
+    // base value at both fade endpoints, where the ramp wipe is blended out.
+    float pitchMod = 1.0 + audioBass * 0.45 * midTransition;
+    float helicoidZ = (theta * pitchMod + tProg * 6.2831853 * scr + t * 0.8) / 3.14159265 * ptc;
     float rampPhase = fract(helicoidZ);
     float rampDist = min(rampPhase, 1.0 - rampPhase);
 
-    // Helical screw coordinate warp
-    float warpAngle = (1.0 - smoothstep(0.0, 0.9, r)) * midTransition * 3.14159265;
+    // Helical screw coordinate warp; audioBass breathes the radial extent of
+    // the screw.  The angle already carries midTransition and warpUV is blended
+    // in by midTransition, so both endpoints are exact.
+    float screwRadius = 0.9 * (1.0 + audioBass * 0.4 * midTransition);
+    float warpAngle = (1.0 - smoothstep(0.0, screwRadius, r)) * midTransition * 3.14159265;
     vec2 pWarp = rot2D(warpAngle) * p;
     vec2 warpUV = (pWarp * resolution.y + 0.5 * resolution) / resolution;
 

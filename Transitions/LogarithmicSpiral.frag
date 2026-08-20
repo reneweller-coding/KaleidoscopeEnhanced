@@ -68,12 +68,18 @@ void main() {
     float r = length(p);
     float angle = atan(p.y, p.x);
 
-    // Logarithmic spiral mapping: log(r) vs theta
+    // Logarithmic spiral mapping: log(r) vs theta.  audioBass undulates the
+    // spiral pitch via the log(r) coefficient — a spatial term, so the arm
+    // rotation rate stays audio-independent — and, below, the radial breathing
+    // radius.  Both ride on midTransition and are therefore the un-driven
+    // values at tProg 0 and 1, where `blend` self-clamps to 0/1 anyway.
+    float pitchMod = 1.0 + audioBass * 0.5 * midTransition;
     float logR = log(max(r, 0.001));
-    float spiralAngle = angle * arm * 2.0 - logR * 3.0 * spr + tProg * 6.2831853;
+    float spiralAngle = angle * arm * 2.0 - logR * 3.0 * spr * pitchMod + tProg * 6.2831853;
 
     // Spiral swirl displacement
-    float swirl = (1.0 - smoothstep(0.0, 0.8, r)) * midTransition * 3.14159265;
+    float breatheR = 0.8 * (1.0 + audioBass * 0.4 * midTransition);
+    float swirl = (1.0 - smoothstep(0.0, breatheR, r)) * midTransition * 3.14159265;
     vec2 pWarped = rot2D(swirl) * p;
     vec2 uvWarped = (pWarped * resolution.y + 0.5 * resolution) / resolution;
 

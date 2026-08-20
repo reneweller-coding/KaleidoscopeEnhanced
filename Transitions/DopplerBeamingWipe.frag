@@ -79,11 +79,17 @@ void main() {
     vec4 c1 = texture(tex1, fract(uv + aberrDisp));
     vec4 c0 = texture(tex0, fract(uv - aberrDisp));
 
-    // Doppler color shift: Blue shift (approaching) vs Red shift (receding)
+    // Doppler color shift: Blue shift (approaching) vs Red shift (receding).
+    // audioBass widens the spectral shift — it scales the tint AMOUNT only,
+    // never beta itself (which sets the aberration).  midTransition drives the
+    // amount to exactly 0 at both fade endpoints, where the tint is vec3(1.0)
+    // and the frame is untinted; the clamp keeps mix() from extrapolating past
+    // the tint colour.
+    float shiftAmount = clamp(abs(beta) * midTransition * (1.0 + audioBass * 0.7), 0.0, 1.0);
     vec3 blueTint = vec3(0.3, 0.85, 1.2);
     vec3 redTint  = vec3(1.2, 0.4, 0.2);
-    vec3 dopplerTint = (beta > 0.0) ? mix(vec3(1.0), blueTint, abs(beta) * midTransition)
-                                    : mix(vec3(1.0), redTint,  abs(beta) * midTransition);
+    vec3 dopplerTint = (beta > 0.0) ? mix(vec3(1.0), blueTint, shiftAmount)
+                                    : mix(vec3(1.0), redTint,  shiftAmount);
 
     vec4 col = mix(c1, c0, tProg);
     col.rgb *= dopplerTint;

@@ -60,11 +60,17 @@ void main() {
     float hue = (hueP   > 0.0) ? hueP   : 0.0;
 
     vec2 uv = gl_FragCoord.xy / resolution.xy;
-    vec2 z = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y * (1.8 * dsk);
 
     float t = time * 0.4 * spd + audioAdvance * 0.2;
     float tProg = clamp(interpolation, 0.0, 1.0);
     float midTransition = sin(tProg * 3.14159265);
+
+    // audioBass pulses the Poincare metric radius (the disk scale).  Gated by
+    // midTransition, so at both fade endpoints the disk is the un-driven one --
+    // and uvWarped is blended in by midTransition there anyway, collapsing to
+    // plain uv.
+    float diskRadius = 1.8 * dsk * (1.0 + audioBass * 0.4 * midTransition);
+    vec2 z = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y * diskRadius;
 
     // Hyperbolic rotation & translation: z' = (z - a) / (1 - conj(a)*z)
     float rotAngle = (tProg * 3.14159265 + t * 0.5) * spn;

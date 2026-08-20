@@ -87,7 +87,12 @@ void main() {
     // readable underneath (the old 1.5+kick*3.5 gain whited it out) and
     // anchored to the scene's own brightness so streaks read as ITS light
     // being stretched, not a foreign overlay.
-    float rayStreak = pow(max(0.0, sin(angle * 40.0 * str + t * 4.0)), 12.0) * midTransition;
+    // audioHigh sharpens the streak lines by raising the ray exponent: a pure
+    // profile change (thinner, crisper rays), never a brightness boost, and the
+    // t phase inside the sine is left alone.  midTransition returns the
+    // exponent to exactly 12.0 at both fade endpoints.
+    float streakSharp = 12.0 * (1.0 + audioHigh * 0.9 * midTransition);
+    float rayStreak = pow(max(0.0, sin(angle * 40.0 * str + t * 4.0)), streakSharp) * midTransition;
     vec3 streakCyan = vec3(0.3, 0.9, 1.0);
     float sceneLum = dot(col, vec3(0.333));
     col += rayStreak * streakCyan * (0.2 + 0.5 * sceneLum) * (0.6 + audioKick * 0.6);

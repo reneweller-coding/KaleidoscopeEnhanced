@@ -72,10 +72,15 @@ void main() {
     a = mod(a, angle6) - angle6 * 0.5;
     vec2 hexCoord = vec2(cos(a), sin(a)) * r * 15.0 * frs;
 
-    // Dendritic side branchings
+    // Dendritic side branchings.  audioHigh sharpens the crystalline facet
+    // lines by steepening both dendrite falloffs; the peak value is unchanged,
+    // only the edge crispness.  midTransition is zero at both fade endpoints,
+    // so the pattern there is exactly the un-driven one — and frostPattern is
+    // only ever consumed through midTransition-gated terms anyway.
+    float facetSharp = 1.0 + audioHigh * 0.8 * midTransition;
     float mainSpine = abs(hexCoord.y);
     float sideBranches = abs(sin(hexCoord.x * 2.0 * brn - hexCoord.y * 3.0));
-    float frostPattern = exp(-mainSpine * 8.0) + exp(-sideBranches * 6.0) * 0.6;
+    float frostPattern = exp(-mainSpine * 8.0 * facetSharp) + exp(-sideBranches * 6.0 * facetSharp) * 0.6;
 
     // Crystal refraction warp
     vec2 frostWarp = vec2(cos(a * 6.0), sin(a * 6.0)) * 0.02 * frostPattern * midTransition;

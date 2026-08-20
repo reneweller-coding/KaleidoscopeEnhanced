@@ -71,8 +71,13 @@ void main() {
 
     float foldAngle = (tProg * 1.5707963 + t * 0.2) * mir;
 
+    // audioBass undulates the Coxeter breathing radius (the fold offset).  The
+    // offset already carries midTransition, so it collapses to exactly 0 at
+    // both fade endpoints, where warpUV is blended out by midTransition too.
+    float breathe = 0.25 * fld * midTransition * (1.0 + audioBass * 0.7);
+
     for (int i = 0; i < 4; ++i) {
-        q = abs(q) - 0.25 * fld * midTransition;
+        q = abs(q) - breathe;
         q = rot2D(foldAngle) * q;
         mirrorDist = min(mirrorDist, min(abs(q.x), abs(q.y)));
     }

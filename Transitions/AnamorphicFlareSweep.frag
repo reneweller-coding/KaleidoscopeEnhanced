@@ -58,19 +58,24 @@ void main() {
 
     float t = time * 0.4 * spd + audioAdvance * 0.2;
     float tProg = clamp(interpolation, 0.0, 1.0);
+    float midT = sin(tProg * 3.14159265);
 
     // Flare sweep front moving left to right
     float sweepX = mix(-0.2, 1.2, tProg);
     float distToFlare = uv.x - sweepX + p.y * 0.15 * (swp - 1.0);
 
-    // Horizontal anamorphic streak: exp(-|y| * scale)
-    float horizStreak = exp(-abs(p.y) * 20.0) * exp(-abs(distToFlare) * 8.0);
-    float verticalBar  = exp(-abs(distToFlare) * 25.0 / flr);
+    // Horizontal anamorphic streak: exp(-|y| * scale).  audioHigh sharpens the
+    // lens flare lines by steepening the exponential falloffs — a pure profile
+    // change, no position moves.  midT is zero at both fade endpoints, so the
+    // profile there is exactly the un-driven one (and both terms are only ever
+    // added through midTransition anyway).
+    float lineSharp = 1.0 + audioHigh * 0.8 * midT;
+    float horizStreak = exp(-abs(p.y) * 20.0 * lineSharp) * exp(-abs(distToFlare) * 8.0 * lineSharp);
+    float verticalBar  = exp(-abs(distToFlare) * 25.0 * lineSharp / flr);
 
     // Cylindrical lens distortion near the flare — windowed by the envelope:
     // ungated, its exponential tail still warped the frame edge while the
     // sweep was parked just off-screen at the fade endpoints.
-    float midT = sin(tProg * 3.14159265);
     float lensDistort = exp(-abs(distToFlare) * 10.0) * sign(distToFlare) * 0.04 * midT;
     vec2 warpUV = uv + vec2(lensDistort, 0.0);
 

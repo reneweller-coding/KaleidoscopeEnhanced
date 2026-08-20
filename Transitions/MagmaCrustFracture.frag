@@ -81,9 +81,15 @@ void main() {
     float tProg = clamp(interpolation, 0.0, 1.0);
     float midTransition = sin(tProg * 3.14159265);
 
-    // Crust fractures
+    // Crust fractures.  audioBass widens the tectonic fault lines by softening
+    // the crack falloff; the peak stays 1.0 at v = 0, only the line gets
+    // thicker.  The voronoi distance v itself is untouched, so the staggered
+    // plate blend below is unaffected, and midTransition gates the widening to
+    // exactly the base width at both fade endpoints (where the magma glow is
+    // multiplied out by midTransition anyway).
     float v = voronoiDist(p * 8.0 * crs);
-    float cracks = exp(-v * 15.0);
+    float faultWidth = 1.0 + audioBass * 0.6 * midTransition;
+    float cracks = exp(-v * 15.0 / faultWidth);
 
     // Plate shift displacement
     vec2 plateDisp = vec2(sin(p.y * 6.0 + t), cos(p.x * 6.0 - t)) * 0.03 * midTransition;

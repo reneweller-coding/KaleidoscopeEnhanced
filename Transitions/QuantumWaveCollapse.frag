@@ -60,9 +60,16 @@ void main() {
     float tProg = clamp(interpolation, 0.0, 1.0);
     float midTransition = sin(tProg * 3.14159265);
 
-    // Dual-state wavefunction superposition: psi = psi_1 + psi_2
-    float psi1 = sin(length(p - vec2(0.3, 0.0)) * 25.0 * wav - t * 4.0);
-    float psi2 = sin(length(p + vec2(0.3, 0.0)) * 25.0 * wav - t * 4.0);
+    // Dual-state wavefunction superposition: psi = psi_1 + psi_2.
+    // audioBass undulates the de Broglie wavenumber and the slit separation
+    // that sets the interference fringe spacing.  Both are spatial factors --
+    // the -t*4.0 phase is untouched, so the wave drift rate stays
+    // audio-independent -- and midTransition returns both to their base values
+    // at the fade endpoints, where phaseDisp and the ring glow are zero.
+    float deBroglieK = 25.0 * wav * (1.0 + audioBass * 0.35 * midTransition);
+    float slitSep    = 0.3 * (1.0 + audioBass * 0.3 * midTransition);
+    float psi1 = sin(length(p - vec2(slitSep, 0.0)) * deBroglieK - t * 4.0);
+    float psi2 = sin(length(p + vec2(slitSep, 0.0)) * deBroglieK - t * 4.0);
 
     // Probability density: |psi|^2 = (psi1 + psi2)^2
     float probDensity = (psi1 + psi2) * 0.5;

@@ -60,9 +60,15 @@ void main() {
     float tProg = clamp(interpolation, 0.0, 1.0);
     float midTransition = sin(tProg * 3.14159265);
 
-    // Holographic horizontal scanlines
+    // Holographic horizontal scanlines.  audioHigh sharpens the scanline
+    // resolution by narrowing the smoothstep window on the line profile (the
+    // spatial/temporal phase is untouched, so no aliasing race and no
+    // audio-driven scroll rate).  midTransition restores the base 0.8 window at
+    // both fade endpoints, where scanIntense is added through midTransition
+    // anyway.
     float scanline = sin(uv.y * 240.0 * scn - t * 12.0);
-    float scanIntense = smoothstep(0.0, 0.8, scanline);
+    float scanEdge = 0.8 / (1.0 + audioHigh * 0.9 * midTransition);
+    float scanIntense = smoothstep(0.0, scanEdge, scanline);
 
     // Laser phase shift displacement
     float phaseShift = sin(uv.y * 30.0 + t * 4.0) * 0.03 * midTransition * hlo;

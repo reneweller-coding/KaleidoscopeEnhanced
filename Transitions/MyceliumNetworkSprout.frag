@@ -69,7 +69,13 @@ void main() {
     float r = length(p);
     float angle = atan(p.y, p.x);
 
-    // Multi-angle branching hyphae lines
+    // Multi-angle branching hyphae lines.  audioBass widens the mycelial thread
+    // network by softening the perpendicular falloff (peak unchanged, cords get
+    // thicker).  midTransition gates the widening back to the base thickness at
+    // both fade endpoints, where hyphaePattern's only consumers -- the cord
+    // displacement and the bioluminescent glow -- are multiplied out anyway.
+    float threadWidth = 1.0 + audioBass * 0.7 * midTransition;
+
     float hyphaePattern = 0.0;
     for (int i = 0; i < 6; ++i) {
         float theta = float(i) * 1.0471975 + sin(float(i) * 3.7 + t * 0.5) * 0.2 * brn;
@@ -77,7 +83,7 @@ void main() {
         float proj = dot(p, dir);
         float perp = abs(dot(p, vec2(-dir.y, dir.x)));
 
-        float branch = exp(-perp * 45.0 * hyp) * smoothstep(0.0, 0.1, proj);
+        float branch = exp(-perp * 45.0 * hyp / threadWidth) * smoothstep(0.0, 0.1, proj);
         hyphaePattern = max(hyphaePattern, branch);
     }
 
