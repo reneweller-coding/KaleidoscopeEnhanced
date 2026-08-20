@@ -75,7 +75,6 @@ bool logToFile = false;   ///< -l: redirect stderr to a rotating log file (kiosk
 
 
 
-//rwrwtodo: Correct the options-list
 /**
  * @brief Prints command-line usage/help text and exits the process.
  *

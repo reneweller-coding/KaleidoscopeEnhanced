@@ -121,6 +121,32 @@ static GLuint fullscreenVertShader()
 	return vs;
 }
 
+// A program that fails to LINK (as opposed to a missing FILE, which
+// loadAttachShader() already treats as fatal) used to be returned anyway:
+// initUniforms() would resolve every uniform to -1 on it, and the first
+// glUseProgram() on that non-zero-but-unlinked id is invalid per the GL
+// spec, so the driver silently leaves whatever program was PREVIOUSLY bound
+// active — the broken scene ends up rendering the last-good scene's shader
+// under its own (wrong) audio-reactive parameters, with no diagnostic
+// beyond the easily-missed "Linking: FAILED!" log line. Returning 0 instead
+// (mirroring setShadersPipeline()'s existing convention below) turns that
+// into a clean glUseProgram(0) at draw time -- the broken scene just draws
+// nothing, which is what Scene3DShader's pipeline path already does today.
+static GLuint linkOrFail( GLuint prog )
+{
+	glLinkProgram( prog );
+	printProgramInfoLog( prog );
+	GLint linked = 0;
+	glGetProgramiv( prog, GL_LINK_STATUS, &linked );
+	if( !linked )
+	{
+		glDeleteProgram( prog );
+		return 0;
+	}
+	glUseProgram( prog );
+	return prog;
+}
+
 GLuint setShaders( const char *vert_source, const char * frag_source )
 {
 	GLuint s_id, sh_prog_id;
@@ -133,12 +159,7 @@ GLuint setShaders( const char *vert_source, const char * frag_source )
 	s_id = glCreateShader( GL_FRAGMENT_SHADER );
 	loadAttachShader( sh_prog_id, s_id, frag_source );
 
-	glLinkProgram( sh_prog_id );
-	printProgramInfoLog( sh_prog_id );
-
-	glUseProgram( sh_prog_id );
-
-	return sh_prog_id;
+	return linkOrFail( sh_prog_id );
 }
 
 // Vertex + fragment pair (the REAL 3D scene effects): unlike setShaders()
@@ -153,12 +174,7 @@ GLuint setShadersVF( const char *vert_source, const char *frag_source )
 	GLuint f_id = glCreateShader( GL_FRAGMENT_SHADER );
 	loadAttachShader( sh_prog_id, f_id, frag_source );
 
-	glLinkProgram( sh_prog_id );
-	printProgramInfoLog( sh_prog_id );
-
-	glUseProgram( sh_prog_id );
-
-	return sh_prog_id;
+	return linkOrFail( sh_prog_id );
 }
 
 
@@ -223,14 +239,7 @@ GLuint setShadersPipeline( const char *vert_source, const char *tesc_source,
 	GLuint f = glCreateShader( GL_FRAGMENT_SHADER );
 	loadAttachShader( prog, f, frag_source );
 
-	glLinkProgram( prog );
-	printProgramInfoLog( prog );
-	GLint linked = 0;
-	glGetProgramiv( prog, GL_LINK_STATUS, &linked );
-	if( !linked ) { glDeleteProgram( prog ); return 0; }
-
-	glUseProgram( prog );
-	return prog;
+	return linkOrFail( prog );
 }
 
 // GL 4.3 compute program.  Unlike the exit-on-error loaders above this one

@@ -146,8 +146,16 @@ struct AudioFeatures
     float audioFlip     = 1.f;  ///< Rotation direction ±1 (flips on strong beats).
 
     // ---- Derived motion helpers ----
-    float speedScale  = 1.f;   ///< Multiplier for speed / speedTunnel uniforms.
-    float powerScale  = 1.f;   ///< Multiplier for power (distortion) uniform.
+    // NOTE: there used to be a speedScale here too (a multiplier meant for
+    // speed/speedTunnel uniforms), removed 2026-08-20 as dead AND hazardous:
+    // those uniforms are multiplied by the absolute 'time' uniform inside
+    // the shaders, so scaling them per-frame remaps the whole accumulated
+    // phase on every audio change -- the "wild flicker" bug EffectShader::
+    // applyAudioFeatures()'s comment already documents. The safe, correct
+    // way to make motion audio-reactive is the pre-integrated, continuous
+    // audioPhase/audioAdvance uniforms computed once per frame in
+    // RenderPipeline::paint() -- see [[audio-reactive-phase-constraint]].
+    float powerScale  = 1.f;   ///< Multiplier for a scene's own "power" (superellipse/distortion exponent) uniform -- safe to scale live since it's a plain per-frame shape parameter, not time-integrated. Applied via EffectShader::applyAudioFeatures()'s Uniform::setGLValueScaled().
 
     // ---- Timbral texture features (from paper: spectrum + temporal groups) ----
 
