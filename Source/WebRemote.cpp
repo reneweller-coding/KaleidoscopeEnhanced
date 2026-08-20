@@ -104,6 +104,15 @@ static const char *kPage = R"HTML(<!DOCTYPE html>
 <div class="row">
  <button id="lightshow" onclick="cmd('/api/toggle?k=lightshow')">Lightshow</button>
  <button id="autoconfig" onclick="cmd('/api/toggle?k=autoconfig')">Auto-Preset</button>
+ <button id="autoscale" onclick="cmd('/api/toggle?k=autoscale')">Auto-Skalierung</button>
+</div>
+<div class="row">
+ <button id="nowplaying" onclick="cmd('/api/toggle?k=nowplaying')">Titel-Einblendung</button>
+ <button id="lyrics" onclick="cmd('/api/toggle?k=lyrics')">Songtexte: ?</button>
+</div>
+<div class="row">
+ <button id="artistimages" onclick="cmd('/api/toggle?k=artistimages')">K&uuml;nstlerbilder</button>
+ <button id="video" onclick="cmd('/api/toggle?k=video')">Musikvideo</button>
 </div>
 <div class="row">
  <button class="big" id="scenetoggle" onclick="toggleScenes()">&#127916; Szenen-Browser</button>
@@ -126,6 +135,14 @@ function refresh(){ if(Date.now()<hold) return;
   document.getElementById('autoconfig').className=s.autoConfig?'active':'';
   document.getElementById('blackout').className=s.blackout?'active':'';
   document.getElementById('replayarm').className=s.replayArmed?'active':'';
+  document.getElementById('autoscale').className=s.autoScale?'active':'';
+  document.getElementById('nowplaying').className=s.nowPlaying?'active':'';
+  document.getElementById('artistimages').className=s.artistImages?'active':'';
+  document.getElementById('video').className=s.videoEnabled?'active':'';
+  const lyricsNames=['Aus','Scroll','Karaoke'];
+  const lb=document.getElementById('lyrics');
+  lb.textContent='Songtexte: '+lyricsNames[s.lyricsMode];
+  lb.className=s.lyricsMode>0?'active':'';
   const c=document.getElementById('cfgs'); c.innerHTML='';
   s.configs.forEach((n,i)=>{const b=document.createElement('button');
    b.textContent=n; if(i==s.active)b.className='active';
@@ -285,7 +302,9 @@ void WebRemote::handleConnection()
 					                "\"latency\":%4,\"lightShow\":%5,\"autoConfig\":%6,"
 					                "\"active\":%7,\"blackout\":%8,\"replayArmed\":%9,"
 					                "\"fps\":%10,\"renderScale\":%11,"
-					                "\"configs\":[%12]}" )
+					                "\"autoScale\":%12,\"nowPlaying\":%13,"
+					                "\"lyricsMode\":%14,\"artistImages\":%15,\"videoEnabled\":%16,"
+					                "\"configs\":[%17]}" )
 					       .arg( RenderPipeline::reactivity() ).arg( RenderPipeline::trails() )
 					       .arg( RenderPipeline::mood() ).arg( RenderPipeline::latency() )
 					       .arg( RenderPipeline::lightShow() ? 1 : 0 )
@@ -295,6 +314,11 @@ void WebRemote::handleConnection()
 					       .arg( m_widget->remoteReplayArmed() ? 1 : 0 )
 					       .arg( m_widget->fpsValue() )
 					       .arg( RenderPipeline::renderScale() )
+					       .arg( m_widget->autoScaleEnabled() ? 1 : 0 )
+					       .arg( m_widget->nowPlayingEnabled() ? 1 : 0 )
+					       .arg( m_widget->lyricsModeValue() )
+					       .arg( m_widget->artistImagesEnabled() ? 1 : 0 )
+					       .arg( m_widget->videoPipEnabled() ? 1 : 0 )
 					       .arg( cfgs.join( "," ) ).toUtf8();
 				}
 				else if( path == "/api/snapshot" )
@@ -343,6 +367,16 @@ void WebRemote::handleConnection()
 					else if ( k == "replayarm"  ) m_widget->remoteToggleReplayArm();
 					else if ( k == "autoconfig" )
 						m_widget->setAutoConfigEnabled( !m_widget->autoConfigEnabled() );
+					else if ( k == "autoscale" )
+						m_widget->setAutoScaleEnabled( !m_widget->autoScaleEnabled() );
+					else if ( k == "nowplaying" )
+						m_widget->setNowPlayingEnabled( !m_widget->nowPlayingEnabled() );
+					else if ( k == "artistimages" )
+						m_widget->setArtistImagesEnabled( !m_widget->artistImagesEnabled() );
+					else if ( k == "video" )
+						m_widget->setVideoPipEnabled( !m_widget->videoPipEnabled() );
+					else if ( k == "lyrics" )   // cycles: off -> scroll -> karaoke -> off
+						m_widget->setLyricsModeValue( ( m_widget->lyricsModeValue() + 1 ) % 3 );
 				}
 			}
 

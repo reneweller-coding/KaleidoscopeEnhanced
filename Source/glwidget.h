@@ -77,7 +77,13 @@ public:
 	static bool s_autoRecord;
 
 	/// CLI -t \<port\>: start the embedded web remote on this port (0 = off).
+	/// Defaults to 8080 (on); a PERSISTED port (see loadUiSettings()) only
+	/// applies if s_remotePortFromCli stays false, same "-c wins" precedence
+	/// as s_startConfig.
 	static int  s_remotePort;
+	/// Set true by parsecommandline() when -t was actually passed, so a
+	/// persisted remotePort setting doesn't override an explicit CLI choice.
+	static bool s_remotePortFromCli;
 
 	/// CLI -x \<wav\>: batch render — record the offline WAV deterministically,
 	/// then auto-quit once it ends (the mp4 mux continues detached).
@@ -123,6 +129,20 @@ public:
 	QByteArray  remoteThumb( int idx ) const;
 	bool        autoConfigEnabled() const   { return m_autoConfig; }   ///< Whether auto-config-by-mood is currently on.
 	void        setAutoConfigEnabled( bool on ) { m_autoConfig = on; m_moodBucket = -1; }   ///< Toggles auto-config-by-mood and resets the mood bucket so it re-evaluates from scratch.
+
+	// ---- Remote-/Setup-Tool-Schalter für die optionalen Online-Extras ----
+	// (Web-Remote /api/toggle + /api/set; the keyboard shortcuts 'w'/'o'/'g'/
+	// 'p' set the same members directly, these just add a remote-safe API.)
+	bool        autoScaleEnabled() const    { return m_autoScale; }   ///< Whether adaptive render-scale (key 'g') is currently on.
+	void        setAutoScaleEnabled( bool on ) { m_autoScale = on; }
+	bool        nowPlayingEnabled() const   { return m_showNowPlaying; }   ///< Whether the now-playing title reveal (key 'p') is currently on.
+	void        setNowPlayingEnabled( bool on ) { m_showNowPlaying = on; }
+	bool        artistImagesEnabled() const { return m_artistShow; }   ///< Whether the artist-image corner (key 'o') is currently on.
+	void        setArtistImagesEnabled( bool on );
+	bool        videoPipEnabled() const     { return m_videoEnabled; }   ///< Whether the music-video search/download (independent of, but gated by, artistImagesEnabled()) is currently on.
+	void        setVideoPipEnabled( bool on );
+	int         lyricsModeValue() const     { return m_lyricsMode; }   ///< 0 = off, 1 = scroll, 2 = karaoke (key 'w' cycles).
+	void        setLyricsModeValue( int mode );
 	/// Live preview: returns the cached small JPEG of the output and keeps the
 	/// ~1 Hz refresh in paintGL alive for the next few seconds.  All on the
 	/// GUI thread (QTcpServer + paintGL), so no locking is needed.
@@ -240,12 +260,27 @@ protected:
 	 * @param fs RenderPipeline (present pass) to upload overlay textures/state to.
 	 */
 	void			updateTrackOverlays( RenderPipeline *fs );
+	/// Re-requests lyrics/artist-images/video for whatever NowPlaying reports
+	/// right now (same m_key-dedup as a real track change, so this is a
+	/// harmless no-op if nothing actually needs (re)fetching) -- shared by
+	/// the 'w'/'o' key handlers and the new setArtistImagesEnabled()/
+	/// setVideoPipEnabled()/setLyricsModeValue() so turning an extra ON from
+	/// ANY live control surface (keyboard, web remote) picks it up for the
+	/// currently-playing track immediately, not just on the next track
+	/// change. (The standalone setup tool only edits the settings file for
+	/// the NEXT app start, so it never needs this.)
+	void			requestCurrentTrackMedia();
 	TrackMedia	   *m_trackMedia     = nullptr;   ///< Fetches synced lyrics + artist images (LRCLIB/Deezer) for the current track.
 	// Default beim allerersten Start (keine gespeicherten Settings): Karaoke
 	// + Künstlerbilder an - ab dann persistiert loadUiSettings()/saveUiSettings()
 	// den zuletzt gewählten Zustand.
 	int				m_lyricsMode     = 2;      ///< 0 aus, 1 Scroll, 2 Karaoke (persistiert)
 	bool			m_artistShow     = true;   ///< Künstlerbilder an/aus (persistiert)
+	// Eigener Schalter, UNABHÄNGIG von m_artistShow: wer Künstlerbilder will,
+	// aber keine automatischen YouTube-Downloads (Netzwerk/Platte), kann das
+	// hier separat abschalten -- der Video-PiP braucht trotzdem BEIDE Flags
+	// (siehe updateTrackOverlays()), weil er sich denselben Eck-Slot teilt.
+	bool			m_videoEnabled   = true;   ///< Musikvideo-Suche/-Wiedergabe an/aus (persistiert), zusätzlich zu m_artistShow.
 	// Kinetischer Zeilen-Slam beim Karaoke-Zeilenwechsel: per User-Feedback
 	// ("springt zuviel") standardmäßig AUS, per Umschalt+W zuschaltbar
 	// (persistiert wie die anderen Overlay-Einstellungen).

@@ -41,6 +41,7 @@
 // Start configuration requested on the command line (-c <name>); empty = default.
 QString GLwidget::s_startConfig;
 int     GLwidget::s_remotePort  = 8080;   // on by default (LAN-only, auto-discovered); -t 0 disables
+bool    GLwidget::s_remotePortFromCli = false;
 bool    GLwidget::s_batchRender = false;
 
 // ---- Web-remote hooks (called from WebRemote on the main thread) ----
@@ -631,7 +632,8 @@ void GLwidget::draw()
 				// that's the slot it takes over. Passing <=0 when it's off
 				// makes requestTrack() skip the video gate entirely (see
 				// TrackMedia.h), no separate flag needed there.
-				const double durSec = m_artistShow ? m_nowPlaying->timeline().durationSec : -1.0;
+				const double durSec = ( m_artistShow && m_videoEnabled )
+				                      ? m_nowPlaying->timeline().durationSec : -1.0;
 				m_trackMedia->requestTrack( m_nowPlaying->artist(), npTitle, durSec );
 			}
 		}
@@ -803,6 +805,7 @@ void GLwidget::loadUiSettings()
 	m_showNowPlaying = s.value( "nowPlaying",  m_showNowPlaying ).toBool();
 	m_lyricsMode     = qBound( 0, s.value( "lyricsMode", m_lyricsMode ).toInt(), 2 );
 	m_artistShow     = s.value( "artistImages", m_artistShow ).toBool();
+	m_videoEnabled   = s.value( "videoEnabled", m_videoEnabled ).toBool();
 	m_lyricsKinetic  = s.value( "lyricsKinetic", m_lyricsKinetic ).toBool();
 	for( int i = 0; i < MIDI_TARGETS; ++i )
 		m_midiMap[i] = s.value( QString("midiMap%1").arg(i), m_midiMap[i] ).toInt();
@@ -810,6 +813,9 @@ void GLwidget::loadUiSettings()
 	// A persisted active config is the default start config, unless -c overrode it.
 	if( s_startConfig.isEmpty() )
 		s_startConfig = s.value( "activeConfig", QString() ).toString();
+	// Same "CLI wins" precedence for the web-remote port.
+	if( !s_remotePortFromCli )
+		s_remotePort = s.value( "remotePort", s_remotePort ).toInt();
 }
 
 void GLwidget::saveUiSettings()
@@ -822,10 +828,12 @@ void GLwidget::saveUiSettings()
 	s.setValue( "nowPlaying", m_showNowPlaying );
 	s.setValue( "lyricsMode",   m_lyricsMode );
 	s.setValue( "artistImages", m_artistShow );
+	s.setValue( "videoEnabled", m_videoEnabled );
 	s.setValue( "lyricsKinetic", m_lyricsKinetic );
 	for( int i = 0; i < MIDI_TARGETS; ++i )
 		s.setValue( QString("midiMap%1").arg(i), m_midiMap[i] );
 	s.setValue( "lightShow",  RenderPipeline::lightShow() );
+	s.setValue( "remotePort", s_remotePort );
 	s.sync();
 }
 
@@ -1615,7 +1623,9 @@ void GLwidget::updateTrackOverlays( RenderPipeline *fs )
 	// ---- Künstlerbilder: Rotation, alle ~45 s für ~14 s eingeblendet ----
 	// (weicht dem Musikvideo-PiP unten, falls für den Song eins bereit ist —
 	// gleicher Eck-Slot, siehe setArtistExternalTexture()).
-	bool artistOn = m_artistShow && !m_trackMedia->videoReady() && m_trackMedia->imageCount() > 0;
+	bool artistOn = m_artistShow
+	              && !( m_videoEnabled && m_trackMedia->videoReady() )
+	              && m_trackMedia->imageCount() > 0;
 	float artistTarget = 0.f;
 	if( artistOn )
 	{
@@ -1676,7 +1686,7 @@ void GLwidget::updateTrackOverlays( RenderPipeline *fs )
 	// Song-Position statt einer eigenen Uhr — ein Video, das kürzer ist als
 	// der Song, loopt einfach (siehe VideoPiP::videoPipLoad()'s Infinite-
 	// Loop-Setting) und bleibt trotzdem an der richtigen Stelle.
-	bool videoOn = m_artistShow && m_trackMedia->videoReady();
+	bool videoOn = m_artistShow && m_videoEnabled && m_trackMedia->videoReady();
 	if( videoOn )
 	{
 		if( m_trackMedia->videoPath() != m_videoPathLoaded )
@@ -1727,6 +1737,36 @@ void GLwidget::updateTrackOverlays( RenderPipeline *fs )
 	}
 
 	fs->setOverlayFrame( o );
+}
+
+void GLwidget::requestCurrentTrackMedia()
+{
+	if( !m_trackMedia || !m_nowPlaying || m_nowPlaying->title().isEmpty() )
+		return;
+	const double durSec = ( m_artistShow && m_videoEnabled )
+	                      ? m_nowPlaying->timeline().durationSec : -1.0;
+	m_trackMedia->requestTrack( m_nowPlaying->artist(), m_nowPlaying->title(), durSec );
+}
+
+void GLwidget::setArtistImagesEnabled( bool on )
+{
+	m_artistShow = on;
+	if( on )
+		requestCurrentTrackMedia();
+}
+
+void GLwidget::setVideoPipEnabled( bool on )
+{
+	m_videoEnabled = on;
+	if( on )
+		requestCurrentTrackMedia();
+}
+
+void GLwidget::setLyricsModeValue( int mode )
+{
+	m_lyricsMode = qBound( 0, mode, 2 );
+	if( m_lyricsMode > 0 )
+		requestCurrentTrackMedia();
 }
 
 void GLwidget::selectAudioDevice( int index )
@@ -1852,7 +1892,7 @@ void GLwidget::keyPressEvent(QKeyEvent* event)
 			m_showAudioMenu = true;   // closed again from the modal handler above
 			break;
 		case Qt::Key_P:
-			m_showNowPlaying = !m_showNowPlaying;
+			setNowPlayingEnabled( !m_showNowPlaying );
 			fprintf( stderr, "Now-playing display: %s\n", m_showNowPlaying ? "ON" : "OFF" );
 			break;
 
@@ -1868,23 +1908,16 @@ void GLwidget::keyPressEvent(QKeyEvent* event)
 				         m_lyricsKinetic ? "AN" : "AUS" );
 				break;
 			}
-			m_lyricsMode = ( m_lyricsMode + 1 ) % 3;
+			setLyricsModeValue( ( m_lyricsMode + 1 ) % 3 );
 			static const char *kLyricsNames[] = { "AUS", "Scroll", "Karaoke" };
 			fprintf( stderr, "Lyrics: %s\n", kLyricsNames[m_lyricsMode] );
-			// Beim Einschalten sofort für den laufenden Track nachladen.
-			if( m_lyricsMode > 0 && m_trackMedia && m_nowPlaying
-			    && !m_nowPlaying->title().isEmpty() )
-				m_trackMedia->requestTrack( m_nowPlaying->artist(), m_nowPlaying->title() );
 			break;
 		}
 
 		// ---- Künstlerbilder an/aus ----
 		case Qt::Key_O:
-			m_artistShow = !m_artistShow;
+			setArtistImagesEnabled( !m_artistShow );
 			fprintf( stderr, "Kuenstlerbilder: %s\n", m_artistShow ? "AN" : "AUS" );
-			if( m_artistShow && m_trackMedia && m_nowPlaying
-			    && !m_nowPlaying->title().isEmpty() )
-				m_trackMedia->requestTrack( m_nowPlaying->artist(), m_nowPlaying->title() );
 			break;
 		case Qt::Key_R:
 			m_recorder.toggle();   // record visuals + music to an mp4
@@ -1994,7 +2027,7 @@ void GLwidget::keyPressEvent(QKeyEvent* event)
 
 		// ---- Adaptive render-scale toggle ----
 		case Qt::Key_G:
-			m_autoScale = !m_autoScale;
+			setAutoScaleEnabled( !m_autoScale );
 			fprintf( stderr, "Adaptive render scale: %s\n", m_autoScale ? "ON" : "OFF" );
 			break;
 
