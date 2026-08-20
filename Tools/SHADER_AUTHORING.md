@@ -532,3 +532,124 @@ Bild ansehen, bevor man „kaputt" sagt.
 - `KALEIDO_INDIRECT_LOG=1` schreibt die tatsächliche, von der GPU
   zurückgelesene Vertex-Anzahl nach `indirect_diag.log` — das beste Mittel,
   um „Generator kaputt" von „Generator ok, aber unsichtbar" zu trennen.
+
+---
+
+## Messbare Qualitätskriterien (Stand 2026-08-21)
+
+Der ganze Katalog (528 Szenen) wird mit `Tools/scan_scenes.ps1` gerendert und
+mit `Tools/scene_metrics.py` vermessen. Die Schwellen sind **an der eigenen
+Verteilung des Katalogs kalibriert**, nicht an einem abstrakten Ideal — dieser
+Katalog ist bewusst dunkel und filmisch (Median-Luma 0.189, Kontrast 0.158,
+Bildfüllung 0.745). Ein absoluter Helligkeitsmaßstab würde ein Drittel
+fälschlich anmahnen.
+
+Zielwerte: `luma` 0.06–0.55 · `contrast` > 0.10 · `occ` > 0.55 ·
+`clipHi` < 0.10 · `satHi` < 0.35 · `motion` > 0.01.
+
+### Der mit Abstand häufigste Bildfehler
+
+**Ein additiver Term, der über das Bild fast konstant ist.** Immer wieder in
+verschiedenen Verkleidungen aufgetreten:
+
+- ein Glühen aus dem Raymarch-`minD` — das ist per Konstruktion für *jedes*
+  getroffene Pixel nahe null (es ist die Trefferschwelle, kein Abstandssignal),
+  also flutet `exp(-minD*k)` die ganze Fläche mit demselben Wert;
+- ein `min()`-Cap, das überall sättigt;
+- `edgeGlow = smoothstep(...)` auf einer Würfel*fläche* — dort immer exakt 1.0;
+- eine **Summe** vieler weicher Exponentialterme, die der zentrale Grenzwertsatz
+  zu einer Konstanten glättet;
+- ein Abfall-Koeffizient, der gegen die Verteilung bei *flachem* Zoom abgestimmt
+  wurde und in der Tiefe fast konstant wird.
+
+Vor dem Aufhellen prüfen, ob der Term, den man treibt, überhaupt **variiert** —
+und zwar über den ganzen Animationszyklus, nicht an einem Einzelbild.
+
+### Belichtung
+
+- Farbige Tints wie `vec3(1.8,1.6,2.0)` überschreiten schon allein 1.0 pro
+  Kanal. **Immer den fertig eingefärbten `vec3` cappen, nie nur den Skalar
+  davor** — das war der häufigste Überbelichtungsfehler.
+- `clamp(col,0,1)` vor dem Soft-Knee ist selbst ein sättigender Deckel. Sobald
+  Pixel ihn erreichen, fügt mehr Helligkeit Luma hinzu und **entfernt Kontrast**.
+  Helligkeit ist also kein Hebel für Kontrast (gemessen: contrast 0.098→0.087).
+- Die Basisfarbe ist meist ein Foto-Sample, und die Bibliothek reicht von
+  fast-schwarz bis fast-weiß. Wer davon abhängt, normalisiert gegen eine
+  5-Punkt-Sonde, **durch `img()` gesampelt**, damit sie die tex0/tex1-Blende
+  mitmacht und nicht springt:
+  `col *= clamp(ziel / max(0.05, photoLevel()), lo, hi);`
+
+### Bildfüllung (`occ`) — nicht „nicht-schwarz"
+
+`occ` vergleicht gegen den **Modalwert des Bildes** (`q=round(luma*16)`,
+interessant ab `|q-modal| > 1`, Kachel zählt ab 2 % ihrer Pixel). Folgen:
+
+- Ein weicher Vollbild-Schleier bringt **null** — er wird selbst zum Modalwert
+  und kann sogar schaden, weil echter Inhalt dann zwei Buckets überwinden muss.
+  Füllmaterial braucht **Struktur** mit ≥0.10 Luma-Abstand auf Kachelgröße.
+- Vor dem Messen wird ~6× herunterskaliert: Striche unter ~6 px (bei 1080p)
+  verschwinden vollständig — meist ein echtes Sichtbarkeitsproblem, kein
+  Messartefakt.
+- Dünn-aber-überall ist *kein* Fehler: Schneefall/Glühwürmchen erreichen occ
+  1.00 bei Luma 0.04. Der echte Mangel ist ein kleines Motiv auf toter Fläche.
+
+### Geometrie-Fallen (Scene3D)
+
+- `side = cross(dir, vec3(0,1,0))` hat immer `y == 0` — für jedes Filament in
+  der Bildebene zeigt der Vektor **entlang der Blickachse** und das Quad wird
+  zum nulldicken Splitter. „thickness erhöhen" hilft nie. Gegen die
+  tatsächliche Blickachse billboarden.
+- `vp.z += camDist` **gefolgt** von einem Tilt, der y und z mischt, dreht die
+  Kameradistanz in einen Höhenversatz von `sin(tilt)·camDist` — das Motiv landet
+  unter dem Bildrand. Erst tilten, dann verschieben.
+- Projektion: `tan(halfFovY) = 0.5206`. Ein Motiv mit Radius R in Tiefe D deckt
+  `R/(0.5206·D)` der Bildhöhe. Für gleichmäßige Verteilung in *Frustum*-Koordinaten
+  platzieren (x,y mit der Tiefe skalieren) und Instanzgröße mit D mitskalieren.
+- Bei `geom="grid"` Blöcke über den **Zellindex** (`attrA.w`) trennen, nie über
+  `attrA.xy` — sonst spannt ein Dreieck quer durchs Bild.
+- `indirect`/`grid`/`cubes`/`quads`/`patches`/`scatter` sind tiefengetestet und
+  **opak**: ein blasses breites Quad stanzt ein dunkles Rechteck in alles
+  dahinter. Nur `ribbon` und `points` sind additiv ohne Tiefentest.
+- Die Vertex-Anzahl muss zur gelieferten passen: eine Szene deklarierte 256
+  Cubes, die Engine liefert 4900 — jeder Index darüber trieb `acos()` über −1
+  in NaN, 95 % des Gitters wurde nie gezeichnet.
+- `pow(x,y)` mit möglicherweise negativer Basis ist in GLSL **undefiniert**
+  (`exp2(y*log2(x))`) → NaN. Für Quadrate `x*x` schreiben.
+
+### Farbe
+
+Der Hausstil nimmt den Farbton aus dem Foto (`imgPalette`) oder aus der
+Harmonie (`audioChromaHue`) — kein freier Regenbogen. Ein schmales Band um
+einen festen szenen-eigenen Basiston ist die übliche Form, z.B.
+`fract(0.58 + 0.22*hueP + 0.10*vTint + 0.05*sin(audioChromaHue))`.
+
+**Achtung Gamut:** eine volle Farbkreis-Rotation (`hueRot(col, audioChromaHue)`)
+treibt Kanäle **negativ**, und ein geclippter negativer Kanal *ist* ein voll
+gesättigtes Pixel. Genau daher kamen die „kunterbunten" Bonbonfarben. Rotation
+auf einen kleinen Anteil begrenzen (`0.20*sin(...)`).
+
+### Zeitverhalten
+
+Siehe „Temporal budget" in `docs/engine-internals.md` und die Tabelle je Shader
+in `docs/temporal-budget.txt`; geprüft von `Tools/temporal_budget.py`.
+Kurz: Vollbild-Helligkeit ≤3 Hz, Farbwechsel ≤2 Hz, Kamera/Geometrie ≤4 Hz,
+feines Detail ≤8 Hz. Bei `sin(time*K)` ist die Frequenz `K/(2π)`, also
+**K ≤ 25 für Globales, K ≤ 50 für feines Detail**.
+
+- Musikalisch statt fest verdrahtet: `sin(audioBeatPhase * 6.2831853 * N)` gibt
+  exakt N Zyklen pro Beat, folgt dem Tempo und ist bei ganzzahligem N über den
+  0→1-Wrap **stetig**.
+- `exp(mod(t, K))` als zyklischer Zoom ist ein Sägezahn — beim Wrap springt der
+  Zoom um `e^K` (bis ×403). Stattdessen ein Raised-Cosine über dieselbe Periode:
+  `zc = 0.5 - 0.5*cos(6.2831853 * fract(t*rate/K)); zoom = exp(zc*K);`
+  stetig in Wert **und** Geschwindigkeit, kostet nichts.
+
+### Messen: zwei Fallstricke
+
+- Der Recorder schafft nur ~10–15 fps. Alles über ~5–7 Hz **aliast nach unten**
+  und sieht dann ruhig aus — ein Render-Scan kann Flackern grundsätzlich nicht
+  ausschließen. Frequenzen deshalb statisch aus dem GLSL lesen.
+- `jump`/`hueJump` in `scene_metrics.py` werden **angezeigt, aber nie geflaggt**:
+  dieselbe Szene zweimal gerendert ergibt völlig andere Werte, weil die App pro
+  Lauf ein anderes Foto zieht und die Überblendung die Frame-Differenz
+  dominiert. Auch `luma` schwankt dadurch um ±0.1 zwischen Läufen.
