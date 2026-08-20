@@ -14,6 +14,7 @@
 param(
     [string[]] $Scenes = @(),
     [string]   $Geom = "points",
+    [int]      $StateBytes = 0,
     [switch]   $Smoke,
     [switch]   $Roundtrip,
     [switch]   $Transcheck,
@@ -113,11 +114,37 @@ foreach ($s in $Scenes) {
     Make-Wav
     $is3D  = Test-Path (Join-Path $root "Scene3D\$s.frag")
     $dir   = if ($is3D) { "Scene3D" } else { "Scene2D" }
-    $attrs = if ($is3D) { "type=`"scene3d`" geom=`"$Geom`"" } else { "type=`"normal`"" }
     $cfg   = Join-Path $cfgD "_verify.xml"
+
+    # Prefer the scene's REAL, already-registered <TextureShader> block from
+    # Komplett.xml (with its own <float>/<int>/<expr> children) over a bare
+    # synthetic tag -- a scene whose custom preset uniforms (e.g. a camera
+    # distance with no safe GLSL-side fallback) default to 0 when unset can
+    # render pure black in a probe despite being correctly wired up, which
+    # cost real debugging time chasing a non-existent shader bug.
+    $needle = "..\$dir\$s.frag"
+    $srcNode = $null
+    try {
+        [xml]$komplett = Get-Content (Join-Path $cfgD "Komplett.xml") -Raw
+        $srcNode = $komplett.configuration.TextureShader | Where-Object { $_.file -eq $needle } | Select-Object -First 1
+    } catch {}
+
+    if ($srcNode) {
+        $srcNode.SetAttribute("probability", "1.0")
+        $srcNode.SetAttribute("minTimeSolo", "100")
+        $srcNode.SetAttribute("maxTimeSolo", "120")
+        $srcNode.SetAttribute("minTimeInterpolation", "20")
+        $srcNode.SetAttribute("maxTimeInterpolation", "30")
+        if ($StateBytes -gt 0) { $srcNode.SetAttribute("stateBytes", "$StateBytes") }
+        $body = $srcNode.OuterXml
+    } else {
+        $sbAttr = if ($StateBytes -gt 0) { " stateBytes=`"$StateBytes`"" } else { "" }
+        $attrs = if ($is3D) { "type=`"scene3d`" geom=`"$Geom`"$sbAttr" } else { "type=`"normal`"" }
+        $body = '<TextureShader file="..\\' + $dir + '\\' + $s + '.frag" ' + $attrs + ' probability="1.0" complexity="1" minTimeSolo="100" maxTimeSolo="120" minTimeInterpolation="20" maxTimeInterpolation="30">' + "`n  </TextureShader>"
+    }
+
     $xml = '<configuration ImageDirectory="C:\Users\rene\Desktop\BilderPhotoechoes" ConfigurationName="verify">' + "`n" +
-           '  <TextureShader file="..\\' + $dir + '\\' + $s + '.frag" ' + $attrs + ' probability="1.0" complexity="1" minTimeSolo="100" maxTimeSolo="120" minTimeInterpolation="20" maxTimeInterpolation="30">' + "`n" +
-           "  </TextureShader>`n" +
+           $body + "`n" +
            '  <CombineShader file="..\\FX\\FxPlain.frag" type="normal" probability="1.0" complexity="1" minTimeSolo="100" maxTimeSolo="120" minTimeInterpolation="20" maxTimeInterpolation="30">' + "`n" +
            "  </CombineShader>`n</configuration>"
     [IO.File]::WriteAllText($cfg, $xml)
