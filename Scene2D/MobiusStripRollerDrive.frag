@@ -74,13 +74,20 @@ void main() {
     float uCam = t * 0.6;
     float vCam = 0.0; // Riding in the center of the ribbon
 
-    vec3 ro = mobiusPoint(uCam, vCam, rB, sW);
+    vec3 trackPos = mobiusPoint(uCam, vCam, rB, sW);
     vec3 ta = mobiusPoint(uCam + 0.08, vCam, rB, sW);
 
-    vec3 T = normalize(ta - ro);
-    vec3 upVec = normalize(mobiusPoint(uCam, 0.5, rB, sW) - ro);
+    vec3 T = normalize(ta - trackPos);
+    vec3 upVec = normalize(mobiusPoint(uCam, 0.5, rB, sW) - trackPos);
     vec3 right = normalize(cross(T, upVec));
     vec3 up = cross(right, T);
+
+    // Chase-cam offset: riding the ribbon's own centerline puts the camera's
+    // start position ON the surface it's raymarching, so the very first
+    // step (p = ro, totDist = 0) trivially satisfies "distance to ribbon <
+    // threshold" for EVERY pixel regardless of ray direction -- an instant,
+    // uniform hit that reads as a flat wash instead of a strip flying past.
+    vec3 ro = trackPos - up * 0.35;
 
     vec3 rd = normalize(uv.x * right + uv.y * up + (1.25 + 0.2 * sin(audioSwell * 2.0)) * T);
 
