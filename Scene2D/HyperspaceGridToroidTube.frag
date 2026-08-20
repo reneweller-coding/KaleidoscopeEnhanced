@@ -108,8 +108,11 @@ void main() {
         totDist += max(0.02, d * 0.7);
     }
 
-    // Kinetic polygon grid lines on toroid wall
-    vec2 gridP_UV = hitUV * vec2(16.0 * gFreq, 12.0 * gFreq) + vec2(t * 3.0, 0.0);
+    // Kinetic polygon grid lines on toroid wall. Brightness scales only the
+    // wall-space term -- the t*3.0 scroll offset stays outside the factor so a
+    // changing tessellation frequency cannot remap the accumulated scroll phase.
+    float tess = 1.0 + 0.4 * audioCentroid;
+    vec2 gridP_UV = hitUV * vec2(16.0 * gFreq * tess, 12.0 * gFreq * tess) + vec2(t * 3.0, 0.0);
     vec2 gridFract = abs(fract(gridP_UV - 0.5) - 0.5);
     float gridLine = smoothstep(0.08, 0.0, min(gridFract.x, gridFract.y));
 

@@ -62,7 +62,11 @@ float fbm3D(vec3 p, float t) {
     for (int i = 0; i < 4; i++) {
         f += amp * (sin(q.x) * cos(q.y) + sin(q.y) * cos(q.z) + sin(q.z) * cos(q.x));
         q = q * 2.05 + vec3(1.2, 3.4, 5.6);
-        amp *= 0.5;
+        // Persistence, NOT lacunarity, carries the brightness: q already holds
+        // the drift offset t*0.2, so an audio-varying lacunarity would rescale
+        // that accumulated phase every frame. Holding more amplitude in the
+        // upper octaves sharpens the dust-lane filigree the same way.
+        amp *= 0.5 + 0.12 * audioCentroid;
     }
     return f;
 }
@@ -90,7 +94,10 @@ void main() {
         vec3 p = ro + rd * totDist;
 
         float gasNoise = fbm3D(p * 0.8, t);
-        float gasDensity = smoothstep(-0.2, 0.8, gasNoise) * (0.04 * dens + 0.03 * audioLevel);
+        // Sub-bass swells the cloud volume; the same factor also feeds the
+        // Beer-Lambert absorption below, so thicker gas self-shadows instead of
+        // simply glowing brighter.
+        float gasDensity = smoothstep(-0.2, 0.8, gasNoise) * (0.04 * dens + 0.03 * audioLevel) * (1.0 + 0.3 * audioSubBass);
 
         if (gasDensity > 0.001) {
             // Protostellar core sparkle inside dense regions

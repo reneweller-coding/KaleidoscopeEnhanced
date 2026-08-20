@@ -112,7 +112,13 @@ void main() {
     vec2 pZoom = uv * zoomScale;
 
     float curvePhase;
-    float dLine = hilbert2D(pZoom + vec2(t * 0.2, 0.0), t, curvePhase) - 0.02 * lThk;
+
+    // Sub-bass dilates the cubic cell lattice the curve folds through. The
+    // divisor is applied to the zoom coordinate BEFORE the t drift is added --
+    // scaling the already-translated coordinate would multiply the drift phase
+    // by audio and teleport the whole path sideways every frame.
+    vec2 pCell = pZoom / (1.0 + 0.3 * audioSubBass);
+    float dLine = hilbert2D(pCell + vec2(t * 0.2, 0.0), t, curvePhase) - 0.02 * lThk;
 
     // Glowing Hilbert path line
     float lineGlow = exp(-abs(dLine) * (26.0 + 12.0 * audioCentroid)) * glw;

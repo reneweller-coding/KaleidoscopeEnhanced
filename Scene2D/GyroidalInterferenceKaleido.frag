@@ -80,9 +80,12 @@ void main() {
     vec2 p1 = mat2(cs1, -sn1, sn1, cs1) * uv * (8.0 * sc);
     vec2 p2 = mat2(cs2, -sn2, sn2, cs2) * uv * (8.0 * sc);
 
-    // Evaluate Gyroid surface 1 and surface 2
-    float g1 = sdGyroid(vec3(p1, t * 0.5), thk, t);
-    float g2 = sdGyroid(vec3(p2, -t * 0.5), thk, -t);
+    // Evaluate Gyroid surface 1 and surface 2. Sub-bass swells the TPMS wall
+    // thickness itself, so the fluid channels carved between the two sheets
+    // visibly breathe wider on drones instead of just glowing harder.
+    float thkB = thk * (1.0 + 0.4 * audioSubBass);
+    float g1 = sdGyroid(vec3(p1, t * 0.5), thkB, t);
+    float g2 = sdGyroid(vec3(p2, -t * 0.5), thkB, -t);
 
     // Moiré interference field between both gyroids
     float moire = g1 * g2;

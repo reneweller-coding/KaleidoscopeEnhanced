@@ -113,8 +113,10 @@ void main() {
     // Voronoi cell coordinates
     vec2 pVor = pFold * (6.0 * cDens);
 
-    // Shatter displacement shockwave on kicks
-    vec2 shatterOffset = (pFold / max(0.1, r)) * (audioKick * 0.4 * shtr);
+    // Shatter displacement shockwave on kicks, plus a slow sub-bass swell that
+    // pushes the cells outward along the same radial axis -- the crystal
+    // breathes apart on drones between the sharp kick bursts.
+    vec2 shatterOffset = (pFold / max(0.1, r)) * ((audioKick * 0.4 + 0.35 * audioSubBass) * shtr);
     pVor += shatterOffset;
 
     vec4 vInfo = voronoi(pVor, t);

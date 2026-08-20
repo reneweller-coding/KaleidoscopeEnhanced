@@ -6,12 +6,22 @@ out vec4 fragColor;
  *        the vertical axis, rendered as dark ink on a warm paper ghost of
  *        the photo (or inverted to a "positive plate" when `positive` is set).
  *
- * The blot's shape is not static: audioAdvance integrates into the fbm noise
- * phase so it continuously morphs in step with the music (never snaps),
- * audioKick dilates the ink field so the blot pulses outward on kicks, and
- * audioLevel both densifies the ink field and raises the ink's opacity over
- * the paper. Legacy per-activation uniforms (fiOffset, posX/Y/Z, divisor)
- * seed the blot's noise offset and scale so each activation looks distinct.
+ * Legacy per-activation uniforms (fiOffset, posX/Y/Z, divisor) seed the blot's
+ * noise offset and scale so each activation looks distinct.
+ *
+ * Audio Reactivity:
+ *  - audioAdvance   -> integrates into the fbm noise phase, so the blot continuously
+ *                      morphs in step with the music (never snaps)
+ *  - audioKick      -> dilates the ink field, so the blot pulses outward on kicks
+ *  - audioLevel     -> densifies the ink field and raises the ink's opacity
+ *  - audioFlatness  -> INK BLEED: a tonal, single-band spectrum gives razor-crisp,
+ *                      printed-looking ink edges; a noise-like, evenly spread one
+ *                      lets the ink bleed softly into the paper
+ *  - audioRoughness -> TORTURED SHAPE: sensory dissonance raises the fbm domain-warp
+ *                      strength, so consonant music yields smooth, rounded lobes and
+ *                      rough clusters twist the blot into knotted, agitated forms
+ *  - audioMode      -> PAPER MOOD: minor keys cool the plate to a cold clinical grey,
+ *                      major keys warm it to aged cream
  */
 uniform vec2 resolution;
 uniform float time;
@@ -28,6 +38,9 @@ uniform float fiOffset;//original = 0.1
 uniform float audioAdvance;   // integrated drift: the inkblot morphs with the music (jump-free)
 uniform float audioKick;      // kick throb on the blot intensity
 uniform float audioLevel;     // louder music = denser ink
+uniform float audioFlatness;  // 0=tonal/one band .. 1=noise-like -> crisp vs bleeding ink edges
+uniform float audioRoughness; // 0=consonant .. 1=dissonant -> fbm domain-warp / knotted shape
+uniform float audioMode;      // 0=minor/cold .. 1=major/warm -> paper colour
 
 
 vec3 img(vec2 uv) {
@@ -65,23 +78,36 @@ void main(void)
     // The blot MORPHS continuously: slow base clock + music advance.
     float mt = time * 0.05 + audioAdvance * 0.35;
     vec2  q  = p * scale + vec2(seed, seed * 0.7);
+    // Sensory dissonance drives the DOMAIN WARP: consonant music leaves smooth,
+    // rounded lobes, rough clusters twist the blot into knotted, agitated forms.
+    float warp = 1.5 * (1.0 + 0.55 * clamp(audioRoughness, 0.0, 1.0));
     float f1 = fbm(q + vec2(mt, mt * 0.6));
-    float f2 = fbm(q * 1.9 - vec2(mt * 0.7, mt) + f1 * 1.5);
+    float f2 = fbm(q * 1.9 - vec2(mt * 0.7, mt) + f1 * warp);
 
     // Ink field: noise minus a centre-weighted falloff keeps the blot compact;
     // kick dilates it, level densifies the ink.
     float field = f1 * 0.85 + f2 * 0.55
                 - dot(p, p) * (2.1 - 0.3 * audioLevel)
                 + 0.05 * audioKick;
-    float inkEdge = smoothstep(0.30, 0.40, field);          // main blot
+    // Spectral flatness sets how the ink meets the paper: a tonal, single-band
+    // spectrum prints a razor-crisp edge, a noise-like one lets it BLEED.  The
+    // threshold band stays centred on 0.35, so total ink coverage is unchanged
+    // -- only its softness moves.
+    float w = mix(0.030, 0.078, clamp(audioFlatness, 0.0, 1.0));
+    float inkEdge = smoothstep(0.35 - w, 0.35 + w, field);  // main blot
     float spots   = smoothstep(0.24, 0.27, field)
                   * (1.0 - smoothstep(0.27, 0.30, field));  // satellite droplets
-    float inner   = smoothstep(0.40, 0.75, field);          // dense core
+    float inner   = smoothstep(0.35 + w, 0.75, field);      // dense core
 
     // Warm paper with a faint photo ghost; ink is a deep blue-black whose
     // edges pick up a whisper of the photo-arc colour.
     vec2 suv = gl_FragCoord.xy / resolution;
-    vec3 paper = vec3(0.86, 0.82, 0.74) * (0.75 + 0.25 * img(suv));
+    // The musical mode colours the PLATE: minor keys cool it to a clinical
+    // grey, major keys warm it to aged cream.  Luminance-matched, so the
+    // paper's brightness never moves.
+    vec3 paperTone = mix(vec3(0.76, 0.80, 0.86), vec3(0.90, 0.83, 0.68),
+                         clamp(audioMode, 0.0, 1.0));
+    vec3 paper = paperTone * (0.75 + 0.25 * img(suv));
     vec3 inkCol = vec3(0.035, 0.030, 0.055)
                 + img(clamp(vec2(0.5) + p * 0.2, 0.0, 1.0)) * 0.10 * (1.0 - inner);
 

@@ -65,18 +65,24 @@ float mapBismuth(vec3 p, float t, float nSteps, out float stepLevel) {
         if (q.x < q.z) q.xz = q.zx;
         if (q.y < q.z) q.yz = q.zy;
 
-        // Stepped hopper offset
-        q.x -= 0.65;
-        q.y -= 0.45;
-        q.z -= 0.35;
+        // Stepped hopper offset. Brightness pulls the offsets in, which packs
+        // more terraces into the same screen area -- the fold scale (1.45) is
+        // deliberately left alone: it also normalises the DE below, so audio on
+        // it would shorten every march step and starve the 52-iteration loop.
+        float stepDens = 1.0 - 0.18 * audioCentroid;
+        q.x -= 0.65 * stepDens;
+        q.y -= 0.45 * stepDens;
+        q.z -= 0.35 * stepDens;
 
         // Scale
         q *= 1.45;
         stepLevel += dot(q, q) * 0.1;
     }
 
-    // Manhattan box step edge distance
-    float dBox = max(max(q.x, q.y), q.z) - 1.2;
+    // Manhattan box step edge distance. A smaller box radius on sub-bass sinks
+    // the hopper pits deeper into each terrace (still an exact box DE, just for
+    // the shrunken box), so drones breathe the cavity depth.
+    float dBox = max(max(q.x, q.y), q.z) - (1.2 - 0.2 * audioSubBass);
     return dBox / pow(1.45, 6.0);
 }
 

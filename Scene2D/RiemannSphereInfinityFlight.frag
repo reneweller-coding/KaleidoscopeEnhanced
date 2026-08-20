@@ -92,9 +92,13 @@ void main() {
     float theta = acos(clamp(spherePt.z, -1.0, 1.0)); // 0 = North Pole, pi = South Pole
     float phi = atan(spherePt.y, spherePt.x);
 
-    // Glowing coordinate grid lines (meridians and parallels)
-    float meridians = abs(sin(phi * 12.0 + t * 2.0));
-    float parallels = abs(sin(theta * 16.0 - t * 3.0));
+    // Glowing coordinate grid lines (meridians and parallels). Brightness
+    // multiplies only the phi/theta wave numbers -- both are bounded angles,
+    // so a finer grid stays a pure spatial refinement and never touches the
+    // t-driven drift phase added next to them.
+    float gridRes = 1.0 + 0.6 * audioCentroid;
+    float meridians = abs(sin(phi * 12.0 * gridRes + t * 2.0));
+    float parallels = abs(sin(theta * 16.0 * gridRes - t * 3.0));
     float grid = min(smoothstep(0.88, 1.0, meridians), smoothstep(0.88, 1.0, parallels));
 
     // Sample texture in spherical Mercator projection

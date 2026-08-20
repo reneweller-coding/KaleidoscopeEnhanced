@@ -69,7 +69,10 @@ void main() {
     // 3D Orbital rotation of screen plane
     float rotA = t * 0.2 + audioPhase * 0.1;
     float cs = cos(rotA), sn = sin(rotA);
-    vec2 pRot = mat2(cs, -sn, sn, cs) * uv * (8.0 + 1.5 * sin(audioSwell * 2.0));
+    // Sub-bass shrinks the world-units-per-screen factor, so the labyrinth
+    // volume swells into the frame. The integrated attractor state itself is
+    // left alone -- rescaling a trajectory mid-flight would jump the curve.
+    vec2 pRot = mat2(cs, -sn, sn, cs) * uv * (8.0 + 1.5 * sin(audioSwell * 2.0)) / (1.0 + 0.35 * audioSubBass);
 
     // Multi-step numerical RK2 integration along the Thomas attractor curve,
     // seeded from a FIXED point shared by every pixel -- not the pixel's own

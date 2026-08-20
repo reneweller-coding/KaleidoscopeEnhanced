@@ -3,6 +3,15 @@
  * @file LaserSpireArray.geom
  * @brief Geometry stage companion to LaserSpireArray.frag -- see that file's header for
  * this scene's description.
+ *
+ * Audio Reactivity:
+ *   audioSpectrum -> per-spire height (each spire reads its own FFT band)
+ *   audioKick     -> height punch on a subset of spires + gold tint
+ *   audioAdvance  -> ring rotation + camera orbit (pre-integrated, jump-free)
+ *   audioBuildUp  -> rising EDM tension stretches the sky beams upward, the
+ *                    classic riser, and they fall back after the drop
+ *   audioTrebRel  -> mix-independent treble punch thickens the laser columns
+ *   audioUpperMid -> (fragment stage) metallic chrome glint on the facets
  */
 // LaserSpireArray.geom — Extrude point seeds into 3D hexagonal crystalline spires
 // with skyward laser beams and pulsating energy rings.
@@ -27,6 +36,8 @@ uniform float audioKick;
 uniform float audioSubBass;
 uniform float audioHigh;
 uniform float audioSpectrum[32];
+uniform float audioBuildUp;   // EDM tension rising toward the drop
+uniform float audioTrebRel;   // 0..2.5, treble "as loud as usual right now"
 
 uniform float heightP;
 uniform float beamP;
@@ -108,14 +119,24 @@ void main() {
     }
     EndPrimitive();
 
-    // Laser sky beam extending from apex
+    // Laser sky beam extending from apex.  An EDM build-up is the RISER: the
+    // beams stretch further and further into the sky as the tension climbs,
+    // then settle back once the drop releases it.  (The beam fades to black
+    // along its length, so the extra reach stays dim -- no exposure blow-out.)
     if (seeds.z > 0.5) {
+        float riser = 1.0 + 0.40 * clamp(audioBuildUp, 0.0, 1.0);
+
+        // Treble punch relative to this mix's own average thickens the columns
+        // — a hi-hat-heavy bar fattens the lasers regardless of master level.
+        float trebPunch = clamp(audioTrebRel - 1.0, -0.8, 1.0);
+        float beamW = 0.12 * (1.0 + 0.45 * trebPunch);
+
         vec3 tipPos = basePos + vec3(0.0, spireH, 0.0);
-        vec3 beamEnd = tipPos + vec3(0.0, 35.0 * bm, 0.0);
+        vec3 beamEnd = tipPos + vec3(0.0, 35.0 * bm * riser, 0.0);
         vec3 beamCol = mix(vec3(0.2, 1.0, 0.8), vec3(1.0, 0.3, 0.9), seeds.w);
 
-        vec3 bOff1 = vec3(0.12, 0.0, 0.0);
-        vec3 bOff2 = vec3(-0.12, 0.0, 0.0);
+        vec3 bOff1 = vec3(beamW, 0.0, 0.0);
+        vec3 bOff2 = vec3(-beamW, 0.0, 0.0);
 
         emitVert(tipPos + bOff1, vec3(0.0, 1.0, 0.0), beamCol * 2.5, 1.0, camPos, uu, vv, ww);
         emitVert(tipPos + bOff2, vec3(0.0, 1.0, 0.0), beamCol * 2.5, 1.0, camPos, uu, vv, ww);

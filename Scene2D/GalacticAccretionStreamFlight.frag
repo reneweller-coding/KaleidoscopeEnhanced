@@ -91,8 +91,12 @@ void main() {
 
         // Relativistic spiral arms in accretion disk
         float diskAngle = atan(p.z, p.x) + (3.0 / max(0.5, rDisk)) - t * 2.5;
-        float spiralRibbon = sin(diskAngle * 4.0) * 0.5 + 0.5;
-        diskDensity *= (0.6 + 0.4 * spiralRibbon);
+        // Brightness raises the synchrotron harmonic by crossfading a coarse and a
+        // fine ribbon instead of scaling diskAngle -- diskAngle carries a t term, so
+        // an audio-varying frequency multiplier would remap the whole accumulated
+        // phase every frame (flicker). Contrast rises with it, tightening filaments.
+        float spiralRibbon = mix(sin(diskAngle * 4.0), sin(diskAngle * 11.0), 0.55 * audioCentroid) * 0.5 + 0.5;
+        diskDensity *= (0.6 - 0.15 * audioCentroid) + (0.4 + 0.15 * audioCentroid) * spiralRibbon;
 
         plasmaAcc += diskDensity * (0.04 + 0.05 * audioLevel);
 

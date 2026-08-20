@@ -81,7 +81,9 @@ void main() {
             float kf = float(k);
 
             // Curtain baseline position along X
-            float curtainX = sin(p.z * 0.4 + t * 0.8 + kf * 1.5) * (1.2 * wv) + (kf - 1.5) * 1.0;
+            // Sub-bass swells the sway AMPLITUDE only -- the wave's phase terms
+            // stay untouched so the curtains never jump sideways on a bass hit.
+            float curtainX = sin(p.z * 0.4 + t * 0.8 + kf * 1.5) * (1.2 * wv) * (1.0 + 0.4 * audioSubBass) + (kf - 1.5) * 1.0;
             float dCurtain = abs(p.x - curtainX);
 
             // Vertical height envelope: Aurora glows brightest between y = -0.5 and y = 1.5

@@ -74,7 +74,10 @@ void main() {
 
     // Second crossed helical director wave
     float crossPitch = sin(uv.x * basePitch * 0.8 + t * 2.0) * cos(uv.y * basePitch * 0.8 - t * 2.0);
-    helicalPhase += crossPitch * 1.5;
+    // Elastic distortion amplitude of the domain texture -- sub-bass lets the
+    // crossed director wave deform the fingerprint pattern further, i.e. a
+    // softer (more elastic) crystal, without touching the pitch itself.
+    helicalPhase += crossPitch * 1.5 * (1.0 + 0.5 * audioSubBass);
 
     // Bragg diffraction selective color reflection formula: lambda = 2 * n * p * cos(theta)
     vec3 braggColor = vec3(

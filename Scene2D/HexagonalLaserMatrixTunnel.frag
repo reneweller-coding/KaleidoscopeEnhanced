@@ -89,9 +89,15 @@ void main() {
         float dWall = rHex - sdHexagon(p.xy, rHex);
 
         // Volumetric laser cross-beams inside tunnel
+        // Brightness selects the grid harmonic by crossfading a coarse and a 3x
+        // finer gate lattice instead of scaling p.z -- p.z carries the flight
+        // distance, so an audio-varying frequency there would relocate every gate
+        // in a single frame (flicker). The 3x lattice shares gate planes with the
+        // coarse one, so the crossfade stays continuous.
         float zGate = fract(p.z * (0.8 * lDens)) - 0.5;
-        float dLaser = min(abs(p.x), abs(p.y)) + abs(zGate) * 0.4;
-        laserBeamsAcc += exp(-dLaser * 18.0) * 0.04;
+        float zGateFine = fract(p.z * (2.4 * lDens)) - 0.5;
+        float dLaser = min(abs(p.x), abs(p.y)) + mix(abs(zGate), abs(zGateFine), 0.6 * audioCentroid) * 0.4;
+        laserBeamsAcc += exp(-dLaser * (18.0 + 12.0 * audioCentroid)) * 0.04;
 
         if (dWall < 0.005 || totDist > 14.0) {
             hitPos = p;

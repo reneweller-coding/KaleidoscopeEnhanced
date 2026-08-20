@@ -3,6 +3,15 @@
  * @file CrystalShatterBurst.geom
  * @brief Geometry stage companion to CrystalShatterBurst.frag -- see that file's header for
  * this scene's description.
+ *
+ * Audio Reactivity:
+ *   audioKick     -> explosive outward shard flight + gold tint
+ *   audioSubBass  -> extra low-end shove on the fracture
+ *   audioAdvance  -> shard tumble phase (pre-integrated, jump-free)
+ *   audioSwell    -> camera pushes in
+ *   audioSnare    -> snares/claps crack a SECOND subset of shards loose and
+ *                    jolt their tumble
+ *   audioBuildUp  -> rising EDM tension clenches the geode shut before the drop
  */
 // CrystalShatterBurst.geom — Geometry Shader intercepts triangles and violently
 // fractures them into floating tetrahedral crystal shards along explosion vectors on beats.
@@ -27,6 +36,8 @@ uniform float audioKick;
 uniform float audioSubBass;
 uniform float audioHigh;
 uniform float audioSwell;
+uniform float audioSnare;     // snare / clap onset envelope
+uniform float audioBuildUp;   // EDM tension rising toward the drop
 
 uniform float burstP;
 uniform float spinP;
@@ -64,13 +75,23 @@ void main() {
     float geodeY = sin(r * 0.12) * 6.0 + (seeds.y - 0.5) * 3.0;
     vec3 cubeCenter = vec3(gx * 0.45, geodeY, gz * 0.45);
 
-    // Explosive fracture outward displacement on audioKick
+    // Explosive fracture outward displacement on audioKick.  Snares/claps
+    // crack a DIFFERENT subset of shards loose (seeds.z decides which drum a
+    // shard answers to), so the gem fractures in two interleaved rhythms.
     vec3 explodeDir = normalize(cubeCenter + vec3(0.0, 1.0, 0.0));
-    float shardFlight = (audioKick * 6.0 + audioSubBass * 2.5) * brst * (0.5 + 0.5 * seeds.x);
+    float snareCrack = clamp(audioSnare, 0.0, 1.0) * step(0.5, seeds.z);
+    float shardFlight = (audioKick * 6.0 + audioSubBass * 2.5 + snareCrack * 3.5)
+                      * brst * (0.5 + 0.5 * seeds.x);
 
-    // Shard tumbling rotation
+    // An EDM build-up hauls the whole geode back in on itself — the gem
+    // clenches shut under the rising tension, then blows apart at the drop.
+    shardFlight *= 1.0 - 0.38 * clamp(audioBuildUp, 0.0, 1.0);
+
+    // Shard tumbling rotation (rate stays audio-free; the snare only adds a
+    // decaying ANGLE jolt, so the tumble kicks and settles without flicker).
     vec3 spinAxis = normalize(seeds.yzw - 0.5);
-    float spinAngle = (time * 3.0 + audioAdvance * 4.0) * spn * seeds.x;
+    float spinAngle = (time * 3.0 + audioAdvance * 4.0) * spn * seeds.x
+                    + snareCrack * 0.9;
 
     // Center of this triangle face
     vec3 faceCenter = (vObjPos[0] + vObjPos[1] + vObjPos[2]) / 3.0;

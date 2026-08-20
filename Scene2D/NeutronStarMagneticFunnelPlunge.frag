@@ -67,10 +67,15 @@ void main() {
     float a = atan(uv.y, uv.x);
 
     // Magnetic dipole field line parameterization: r = L * sin^2(theta) -> coordinates along funnel
-    float zFunnel = (1.0 / pow(r, pnch)) * 0.4 - t * 3.0;
+    // Sub-bass widens the funnel throat by dilating the radial coordinate the
+    // dipole mapping is built from -- the -t*3.0 plunge term stays untouched
+    // so the flight phase is never remapped.
+    float rf = max(0.01, r / (1.0 + 0.35 * audioSubBass));
+    float zFunnel = (1.0 / pow(rf, pnch)) * 0.4 - t * 3.0;
 
-    // Helical magnetic field line twisting
-    float fieldLines = abs(sin(a * (16.0 * mag) + zFunnel * 2.0));
+    // Helical magnetic field line twisting; tonal brightness thickens the
+    // angular line count (spatial term only, never the z advance).
+    float fieldLines = abs(sin(a * (16.0 * mag) * (1.0 + 0.45 * audioCentroid) + zFunnel * 2.0));
     float lineGlow = smoothstep(0.85, 1.0, fieldLines) * glw;
 
     // Synchrotron relativistic radiation rings

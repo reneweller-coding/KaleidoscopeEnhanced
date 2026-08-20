@@ -3,6 +3,21 @@
  * @file NebulaCloud.vert
  * @brief Vertex stage companion to NebulaCloud.frag -- see that file's header for
  * this scene's description.
+ *
+ * Audio Reactivity:
+ *   audioChromaHue -> hue of both nebula colour families (musical key)
+ *   audioSwell     -> overall glow of the gas
+ *   audioLevel     -> overall glow of the gas
+ *   audioCentroid  -> brightness lift with spectral centre of mass
+ *   audioFlatness  -> knot condensation: a tonal, single-band sound draws the
+ *                     particles into tight bright clumps, broadband noise
+ *                     lets each clump disperse into diffuse fog
+ *   audioRolloff   -> vertical extent: bass-concentrated music flattens the
+ *                     nebula into a pancake, energy reaching into the highs
+ *                     stretches it into a tall column
+ *   audioMode      -> emission-vs-reflection balance: major harmony biases
+ *                     the cloud toward the warm emission family, minor toward
+ *                     the cold blue reflection family
  */
 // NebulaCloud.vert — a soft nebula: particles gathered in seeded clumps,
 // the whole cloud kneaded by slow sine winds and turning around its axis;
@@ -20,6 +35,9 @@ uniform float audioSwell;
 uniform float audioLevel;
 uniform float audioChromaHue;
 uniform float audioCentroid;
+uniform float audioFlatness;
+uniform float audioRolloff;
+uniform float audioMode;
 
 out vec4 vCol;
 
@@ -37,11 +55,23 @@ void main()
 
     // Clumpy distribution: 40 seeded knots, particles gaussian-ish around
     // them (sum of two uniforms leans centre-heavy).
+    //
+    // ROLLOFF shapes the nebula's PROFILE: with the energy sitting low the
+    // knot field flattens toward a disc, with energy reaching into the highs
+    // it stands up into a column.  (Neutral rolloff ~0.5 reproduces the
+    // original 0.55 flattening factor.)
+    float vExt = 0.36 + 0.40 * clamp(audioRolloff, 0.0, 1.0);   // 0.36 .. 0.76
     float knot = floor(attrA.w / 1500.0);
     vec3 Ck = vec3(hash11(knot * 3.1 + 0.7) - 0.5,
-                   (hash11(knot * 5.3 + 1.9) - 0.5) * 0.55,
+                   (hash11(knot * 5.3 + 1.9) - 0.5) * vExt,
                    hash11(knot * 7.7 + 3.2) - 0.5) * 44.0;
-    vec3 world = Ck + (vec3(r1 + r2, r2 + r3, r3 + r4) - 1.0) * 9.0;
+
+    // FLATNESS condenses or disperses each knot: a held tone (flatness -> 0)
+    // pulls the gas into tight clumps, broadband noise (-> 1) blows them out
+    // into diffuse fog.  Dispersing only ever thins the additive overlap, so
+    // the wide end cannot brighten the frame.
+    float clump = 9.0 * (0.92 + 0.50 * clamp(audioFlatness, 0.0, 1.0));
+    vec3 world = Ck + (vec3(r1 + r2, r2 + r3, r3 + r4) - 1.0) * clump;
 
     // Slow sine winds knead the cloud; the whole nebula rotates.
     float ph = time * 0.06;
@@ -66,7 +96,13 @@ void main()
     // nebula); a few hot young stars pierce through.
     vec3 emis = hueRot(vec3(0.85, 0.30, 0.45), audioChromaHue * 0.6);
     vec3 refl = hueRot(vec3(0.25, 0.45, 0.90), audioChromaHue * 0.6);
-    vec3 col  = mix(emis, refl, hash11(knot * 9.9 + 0.3));
+    // MODE tips the balance between the two families: a major key warms the
+    // cloud toward the emission pinks, a minor key cools it toward the blue
+    // reflection nebula.  A pure re-weighting of the existing mix -- both
+    // families sit at the same brightness, so nothing is gained here.
+    float mixK = clamp(hash11(knot * 9.9 + 0.3)
+                       + (0.5 - clamp(audioMode, 0.0, 1.0)) * 0.5, 0.0, 1.0);
+    vec3 col  = mix(emis, refl, mixK);
     if (r4 > 0.985)
         col = vec3(0.95, 0.97, 1.0) * 2.2;   // embedded stars
     col *= (0.22 + 0.30 * r3)

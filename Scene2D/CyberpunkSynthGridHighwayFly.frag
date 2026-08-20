@@ -125,7 +125,9 @@ void main() {
         // Compute neon wireframe grid lines on terrain
         vec2 gridCoord = pGround.xz * (2.0 * gDens);
         vec2 gridFract = abs(fract(gridCoord - 0.5) - 0.5);
-        float lineWidth = 0.06 * (1.0 + 0.05 * tGround);
+        // Bright tonal content pulls the smoothstep edge in, so the neon grid
+        // resolves to hard hairlines instead of soft fat bands.
+        float lineWidth = 0.06 * (1.0 - 0.35 * audioCentroid) * (1.0 + 0.05 * tGround);
         float lineDist = min(gridFract.x, gridFract.y);
         float gridLine = smoothstep(lineWidth, 0.0, lineDist);
 

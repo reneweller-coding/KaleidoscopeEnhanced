@@ -89,7 +89,9 @@ void main() {
     // Accumulate across 5 nested star polygon vault shells
     for (int k = 0; k < 5; k++) {
         float kf = float(k);
-        float starScale = (0.5 + kf * 0.45) * dpth * (1.0 + 0.15 * sin(audioSwell * 2.5 + kf));
+        // Sub-bass breathes the whole shell stack open: starScale is the
+        // octagram's circumradius, i.e. the dome's aperture.
+        float starScale = (0.5 + kf * 0.45) * dpth * (1.0 + 0.15 * sin(audioSwell * 2.5 + kf)) * (1.0 + 0.32 * audioSubBass);
 
         // Facet fold sharpness
         float mSharp = (0.7 + 0.3 * sin(t * 0.5 + kf) + 0.2 * audioFlux) * fld;

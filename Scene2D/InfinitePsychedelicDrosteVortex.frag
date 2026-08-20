@@ -79,6 +79,10 @@ void main() {
     vec3 colAcc = vec3(0.0);
     float weightAcc = 0.0;
 
+    // Sub-bass swells the radius of the recursive sample ring, so the whole
+    // vortex breathes wider on drones while the zoom phase stays untouched.
+    float vortexScale = 0.35 * (1.0 + 0.32 * audioSubBass);
+
     for (int k = -1; k <= 1; k++) {
         float f1 = zoomPhase1 + float(k);
         float w1 = exp(-4.0 * (f1 - 0.5) * (f1 - 0.5));
@@ -86,7 +90,7 @@ void main() {
         // Coordinate in exponential spiral space
         float rad1 = exp(f1 * 2.0);
         float ang1 = a + f1 * alpha * 6.2831853 + t * 0.2;
-        vec2 uv1 = vec2(0.5) + vec2(cos(ang1), sin(ang1)) * rad1 * 0.35;
+        vec2 uv1 = vec2(0.5) + vec2(cos(ang1), sin(ang1)) * rad1 * vortexScale;
 
         vec3 sample1 = img(fract(uv1));
         vec3 pal1 = imgPalette(f1 * 0.3 + a / 6.2831853);
@@ -98,7 +102,7 @@ void main() {
         float w2 = exp(-4.0 * (f2 - 0.5) * (f2 - 0.5)) * 0.6;
         float rad2 = exp(f2 * 2.0);
         float ang2 = -a - f2 * alpha * 6.2831853 - t * 0.15;
-        vec2 uv2 = vec2(0.5) + vec2(cos(ang2), sin(ang2)) * rad2 * 0.35;
+        vec2 uv2 = vec2(0.5) + vec2(cos(ang2), sin(ang2)) * rad2 * vortexScale;
 
         vec3 sample2 = img(fract(uv2));
         vec3 pal2 = imgPalette(f2 * 0.3 + 0.5 - a / 6.2831853);

@@ -21,6 +21,8 @@ uniform float audioBass;
 uniform float audioSwell;
 uniform float audioChromaHue;
 uniform float audioHigh;
+uniform float audioZCR;      // 0 = pure tone, 1 = broadband hiss
+uniform float audioLowMid;   // 150-500 Hz harmonic warmth / pad body
 
 uniform float waveHeightP;
 uniform float steepnessP;
@@ -57,12 +59,24 @@ void main() {
     float phase = z0 * k - t * 3.0;
     float crestProfile = exp(-pow(sin(phase * 0.5), 2.0) * 8.0 * stp);
     // Break the crest into patches along x — a real breaker foams in cells,
-    // not as one full-width neon bar.
-    crestProfile *= 0.35 + 0.65 * pow(0.5 + 0.5 * sin(x0 * 0.7 + phase * 0.9), 2.0);
+    // not as one full-width neon bar.  Surf hiss IS broadband noise, so the
+    // noisier the signal (audioZCR) the more those long smooth foam rolls
+    // shatter into fine, scattered cells; a pure held tone leaves them whole.
+    // Only the cell WEIGHTING moves, never a spatial frequency, so nothing
+    // slides when the feature jumps.
+    float cellBig  = pow(0.5 + 0.5 * sin(x0 * 0.7 + phase * 0.9), 2.0);
+    float cellFine = pow(0.5 + 0.5 * sin(x0 * 3.1 - phase * 1.7 + z0 * 1.3), 2.0);
+    float cells    = mix(cellBig, cellBig * (0.30 + 0.70 * cellFine),
+                         clamp(audioZCR * 1.4, 0.0, 1.0));
+    crestProfile *= 0.35 + 0.65 * cells;
 
     // Wave curling forward as it breaks
     float dx = sin(phase) * 0.8 * stp;
-    float dy = (cos(phase) + crestProfile * 2.0) * (0.85 * hgt + 0.35 * audioBass);
+    // Harmonic warmth (pads, low strings, bass guitar body) is the deep ocean
+    // swell underneath the breaker — it lifts the whole water column, where
+    // audioBass only pumps the crest.
+    float dy = (cos(phase) + crestProfile * 2.0)
+             * (0.85 * hgt + 0.35 * audioBass + 0.30 * audioLowMid);
     float dz = -sin(phase) * 1.2 * stp;
 
     // Cross-swell ripples

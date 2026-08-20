@@ -8,13 +8,20 @@ in vec4 vCol;
  * @brief Renders one floret of the 60,000-point golden-angle sunflower
  * head as a soft additive glow sprite.
  *
- * Reads no audio uniforms directly. The paired Phyllotaxis.vert places
- * each floret by a divergence angle that drifts slowly with audioSwell
- * (on top of a per-activation sceneSeed offset), breathes the dome height
- * with audioSwell, nudges the radius with audioBass, sweeps a ring of
- * light out from the centre once per bar via audioBarPhase, and colours
- * the head via audioChromaHue; this shader only shapes the resulting
- * vCol into a gaussian point.
+ * Reads no audio uniforms directly -- every mapping lives in the paired
+ * Phyllotaxis.vert and arrives here baked into vCol / the point size. This
+ * shader only shapes the result into a gaussian point.
+ *
+ * Audio Reactivity (all applied in Phyllotaxis.vert):
+ *   audioBarPhase  -> ring of light rolling centre -> rim once per bar
+ *   audioSwell     -> dome breath, divergence-angle drift, overall glow
+ *   audioBass      -> small radius pulse of the whole head
+ *   audioChromaHue -> hue wind along the spiral (musical key)
+ *   audioSpread    -> how far the seed head opens (narrow tone = packed,
+ *                     rich harmonics = spread wide)
+ *   audioRolloff   -> dome height (bass-heavy = flat, highs = lifted crown)
+ *   audioMode      -> floret temperature (minor = cold blue-violet head,
+ *                     major = warm sunflower gold)
  */
 
 void main()

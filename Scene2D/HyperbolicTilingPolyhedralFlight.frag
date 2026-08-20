@@ -117,6 +117,12 @@ void main() {
 
     float strutWidth = (0.04 + 0.02 * audioLevel) * strt;
 
+    // Sub-bass widens the curvature radius that sets both the reflection-plane
+    // offset and the strut ring radius, so the whole H^3 cell -- the cathedral
+    // vault the camera flies through -- breathes outward on drones. Strut width
+    // stays fixed, so the DE keeps its conservative step size.
+    float crvB = crv * (1.0 + 0.3 * audioSubBass);
+
     // Raymarching through hyperbolic space
     float totDist = 0.0;
     float minD = 1e4;
@@ -126,7 +132,7 @@ void main() {
     for (int i = 0; i < 56; i++) {
         vec3 p = ro + rd * totDist;
         float curCell;
-        float d = mapHyperbolic(p, crv, strutWidth, curCell);
+        float d = mapHyperbolic(p, crvB, strutWidth, curCell);
         minD = min(minD, abs(d));
 
         if (abs(d) < 0.003 || totDist > 10.0) {

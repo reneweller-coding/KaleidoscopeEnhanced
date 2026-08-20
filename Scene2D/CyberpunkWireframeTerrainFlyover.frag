@@ -86,7 +86,10 @@ void main() {
 
         // Neon wireframe grid calculation
         vec2 grid = fract(groundPos * (0.8 * gDens)) - 0.5;
-        float gridLine = smoothstep(0.08, 0.0, min(abs(grid.x), abs(grid.y)));
+        // Bright tonal content narrows the smoothstep edge -- crisper wireframe
+        // hairlines on shimmer-heavy material, soft wide bands on dark drones.
+        float gridEdge = 0.08 * (1.0 - 0.35 * audioCentroid);
+        float gridLine = smoothstep(gridEdge, 0.0, min(abs(grid.x), abs(grid.y)));
 
         // Sample distorted background photo on ground
         vec2 sampleUV = fract(groundPos * 0.1 + 0.5);
@@ -116,9 +119,31 @@ void main() {
             vec3 sunCol = mix(vec3(1.9, 0.2, 0.8), vec3(1.9, 1.6, 0.2), clamp(sunUV.y / 0.28 + 0.5, 0.0, 1.0));
             finalCol = sunCol * sunMask * (1.2 + 1.8 * audioKick);
         } else {
-            // Sky gradient with stars
+            // Sky gradient with stars. The comment and the catalog's
+            // "starfield sparkles" promise were both here, but no star was
+            // ever drawn -- only the plain two-colour gradient below.
             float skyT = clamp((uv.y - horizon) / 0.8, 0.0, 1.0);
             vec3 skyCol = mix(vec3(0.15, 0.05, 0.25), vec3(0.02, 0.01, 0.08), skyT);
+
+            // Static star lattice: one candidate per cell, kept sparse by the
+            // hash threshold. Scrolls sideways with the flight (a fixed rate,
+            // never audio-scaled), and audioCentroid sharpens each point --
+            // a brighter mix resolves finer, harder sparkles. The exponent
+            // rides on a 0..1 falloff so this can only narrow the star, and
+            // the whole term is capped well below the sun so the sky cannot
+            // wash out.
+            vec2 starCell = uv * 26.0 + vec2(t * 0.35, 0.0);
+            vec2 starId   = floor(starCell);
+            float h = fract(sin(dot(starId, vec2(127.1, 311.7))) * 43758.5453);
+            if (h > 0.90) {
+                vec2  starF = fract(starCell) - 0.5;
+                float sd    = 1.0 - clamp(length(starF) * 3.4, 0.0, 1.0);
+                float twink = 0.55 + 0.45 * sin(audioPhase * 2.0 + h * 43.0);
+                float star  = pow(sd, 6.0 + 10.0 * audioCentroid) * twink;
+                // Fade the field out toward the horizon haze so stars sit in
+                // the deep sky only, matching the gradient underneath them.
+                skyCol += vec3(0.75, 0.80, 1.0) * min(star * skyT, 0.5);
+            }
             finalCol = skyCol;
         }
 

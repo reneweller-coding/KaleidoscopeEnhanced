@@ -99,7 +99,11 @@ void main() {
 
     // Glowing logarithmic spiral arm filaments
     float armDist = abs(sin(lnR * 4.0 - a * nArms * spiralAngle + t * 4.0));
-    float armGlow = smoothstep(0.85, 1.0, armDist) * glw * (1.0 + 2.5 * audioKick);
+    // Sub-bass drops the smoothstep edge, widening the band of armDist that
+    // counts as "inside an arm" -- the arms breathe fatter. The divisor trades
+    // peak intensity for that extra area so the widened arms don't clip.
+    float armEdge = 0.85 - 0.22 * audioSubBass;
+    float armGlow = smoothstep(armEdge, 1.0, armDist) * glw * (1.0 + 2.5 * audioKick) / (1.0 + 0.35 * audioSubBass);
     finalCol += vec3(1.3, 1.1, 1.8) * armGlow * 0.7;
 
     // Center singularity core bloom

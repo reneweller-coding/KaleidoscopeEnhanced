@@ -67,10 +67,15 @@ void main() {
     float a = atan(uv.y, uv.x);
 
     // Log-polar spiral coordinate: theta_spiral = a - ln(r)/b
-    float thetaSpiral = a - (log(r) / sGrowth) + t * 2.0;
+    float thetaSpiral = a - (log(r) / sGrowth);
 
-    // Chamber phase along logarithmic spiral
-    float chamberIndex = thetaSpiral * (nChamb / 6.2831853);
+    // Chamber phase along the logarithmic spiral. Sub-bass thins the chamber
+    // count, i.e. widens each chamber. The t*2.0 plunge is added afterwards at
+    // a FIXED rate rather than riding inside thetaSpiral: multiplied by an
+    // audio-varying chamber factor it would remap the whole accumulated spiral
+    // phase in one frame.
+    float chamberW = nChamb / (1.0 + 0.3 * audioSubBass);
+    float chamberIndex = thetaSpiral * (chamberW / 6.2831853) + t * 2.0 * (nChamb / 6.2831853);
     float chamberFrac = fract(chamberIndex);
 
     // Distance to chamber septum wall

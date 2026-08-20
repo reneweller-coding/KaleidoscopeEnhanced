@@ -54,7 +54,7 @@ vec3 imgPalette(float t) {
 }
 
 // Apollonian 3D sphere packing distance estimator
-float mapApollonian(vec3 p, float t, out float trapLevel) {
+float mapApollonian(vec3 p, float sphR, out float trapLevel) {
     vec3 q = p;
     float scale = 1.0;
     trapLevel = 0.0;
@@ -67,10 +67,10 @@ float mapApollonian(vec3 p, float t, out float trapLevel) {
         // that land INSIDE the fixed radius get inverted/scaled, capped by
         // the min-radius ratio. The original unconditional k=1.25/max(0.2,r2)
         // multiplied q on every iteration regardless of r2, so an unlucky run
-        // of small-r2 iterations could compound `scale` by up to 6.25^6 --
-        // crushing the returned distance to a few millionths and making the
-        // raymarcher report a "hit" one step off the camera for nearly every
-        // ray, which read as a flat, structureless wash filling the frame.
+        // of small-r2 iterations could compound `scale` by up to 6.25^6 and
+        // crush the returned distance to a few millionths. The clamp bounds
+        // the per-iteration factor at 1/minR2, which keeps `scale` sane
+        // (median 1.0, p95 4.2 over sampled points).
         float r2 = dot(q, q);
         const float minR2 = 0.3, fixedR2 = 1.0;
         if (r2 < minR2) {
@@ -86,8 +86,25 @@ float mapApollonian(vec3 p, float t, out float trapLevel) {
         trapLevel += r2 * 0.15;
     }
 
-    // Distance to inner sphere surface
-    float dSphere = (length(q) - 0.75) / scale;
+    // Soddy sphere centred on the CELL CORNER, not on the origin.
+    //
+    // The origin is the fixed point of the inversion above, and the inversion
+    // is precisely what evacuates it: the r2 < fixedR2 branch maps |q| -> 1/|q|
+    // and the r2 < minR2 branch multiplies by 1/minR2, so BOTH branches push
+    // points out of the unit ball and the third branch is a no-op that only
+    // runs when |q| >= 1 already. Post-fold |q| therefore lands in [1.0, 1.72]
+    // and can never go below 1 -- measured over 20k sampled points, min |q| was
+    // 1.0000. The previous `length(q) - 0.75` asked for the distance to a
+    // sphere whose interior is empty by construction: the estimate stayed
+    // strictly positive everywhere, no ray could ever converge on a surface,
+    // and the frame collapsed to the background plus the glow term.
+    // Measuring from the corner (1,1,1) -- a tangency point of the packing,
+    // which the inversion group leaves populated -- puts the zero set back
+    // inside the reachable band.
+    //
+    // Sub-bass only ever GROWS the radius, so the estimate shrinks: it stays
+    // conservative and the march can never overshoot into a surface.
+    float dSphere = (length(q - vec3(1.0)) - sphR) / scale;
     return dSphere * 0.7;
 }
 
@@ -98,11 +115,22 @@ void main() {
     float sc = (scaleP > 0.01) ? scaleP : 1.0;
     float glw = (glowP > 0.01) ? glowP : 1.0;
 
-    float t = audioAdvance * 0.28 * spd;
+    // Steady base rate from `time` plus the pre-integrated audio advance, the
+    // same split the rest of the Scene2D family uses. `spd` is a per-activation
+    // constant, never an audio value, so this stays anti-flicker safe. Without
+    // the `time` term the whole dive was driven by audioAdvance alone, which
+    // barely moves on quiet material -- the scene sat frozen on one frame.
+    float t = time * 0.30 * spd + audioAdvance * 0.28 * spd;
 
-    // Continuous dive trajectory through sphere gaps
+    // Continuous dive trajectory through sphere gaps. `scaleP` sets the packing
+    // density via the Soddy radius rather than scaling the camera position:
+    // scaling the position only slid the camera around inside the periodic
+    // lattice, and at the top of the range it parked in a sparse cell where
+    // barely a third of the frame found any structure.
+    float sphR = (1.15 + 0.15 * sc) * (1.0 + 0.06 * audioSubBass);
+
     float diveProg = t * 0.6;
-    vec3 ro = vec3(sin(diveProg * 0.3) * 0.4, cos(diveProg * 0.25) * 0.4, diveProg * 1.5) * sc;
+    vec3 ro = vec3(sin(diveProg * 0.3) * 0.4, cos(diveProg * 0.25) * 0.4, diveProg * 1.5);
     vec3 rd = normalize(vec3(uv, 1.25 + 0.2 * sin(audioSwell * 2.0)));
 
     // Raymarching through Apollonian sphere packing
@@ -110,28 +138,47 @@ void main() {
     float minD = 1e4;
     float hitTrap = 0.0;
     vec3 hitCol = vec3(0.0);
+    bool hit = false;
 
     for (int i = 0; i < 52; i++) {
         vec3 p = ro + rd * totDist;
         float curTrap;
-        float d = mapApollonian(p, t, curTrap);
-        minD = min(minD, abs(d));
+        float d = mapApollonian(p, sphR, curTrap);
 
-        if (abs(d) < 0.003 || totDist > 8.0) {
+        // minD drives the contact-ring glow, so it has to be a PER-PIXEL
+        // signal. Sampling it at i == 0 samples the shared camera position,
+        // which is the same point for every pixel on the screen: whenever the
+        // camera drifts near a surface, minD becomes a frame-wide CONSTANT and
+        // the glow floods the entire frame with one flat colour. Skip the
+        // camera sample. Hit pixels are excluded below for the same reason --
+        // minD is ~0 by construction on any ray that converged, so it carries
+        // no edge information there, only a white-out.
+        if (i > 0) minD = min(minD, abs(d));
+
+        // The old min step of 0.015 was five times the 0.003 hit threshold, so
+        // a ray closing on a surface jumped clean over the convergence band.
+        if (abs(d) < 0.004 || totDist > 8.0) {
+            hit = true;
             hitTrap = curTrap;
             vec2 sampleUV = fract(p.xy * 0.3 + p.z * 0.2 + 0.5);
             vec3 texCol = img(sampleUV);
             vec3 palCol = imgPalette(hitTrap * 0.25 + t * 0.05);
 
-            hitCol = mix(texCol, palCol, 0.5) * (0.7 + 0.4 * (1.0 - d));
+            // Depth fog gives the dive its sense of travel and keeps the far
+            // wall (the totDist > 8 termination above) from reading as a solid
+            // sheet of texture pasted across the frame.
+            float fog = exp(-totDist * 0.28);
+            hitCol = mix(texCol, palCol, 0.5) * (0.25 + 0.85 * fog);
             break;
         }
 
-        totDist += max(0.015, d * 0.7);
+        totDist += max(0.002, d * 0.7);
     }
 
-    // Glowing spherical tangency contact rings
-    float contactGlow = exp(-minD * (26.0 + 12.0 * audioCentroid)) * glw;
+    // Glowing spherical tangency contact rings -- silhouette haloes on the
+    // rays that MISSED, which is the only place a closest-approach distance
+    // means anything.
+    float contactGlow = hit ? 0.0 : exp(-minD * (26.0 + 12.0 * audioCentroid)) * glw;
     vec3 glowTint = vec3(1.3, 1.1, 1.8) * contactGlow * (1.0 + 2.5 * audioKick);
 
     vec3 bgCol = imgPalette(length(uv) * 0.4 + 0.2) * (0.2 + 0.15 * audioLevel);

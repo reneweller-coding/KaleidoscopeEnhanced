@@ -4,7 +4,21 @@ out vec4 fragColor;
  * @file GalaxyCollision.frag
  * @brief Displays the compute N-body simulation of two colliding galaxies (32k gravitating bodies) as a star field with a tight stellar glow and a wide galactic haze.
  *
- * texNBody holds the simulated star field; this pass adds a two-scale halo, a near one for star glow and a far one for galactic dust haze, and grades the result. audioSubBass widens the far halo and pulses the whole field like a slow breath, audioBeat adds to that pulse, and audioDrop flashes the star cores white-hot on a drop. The photo appears only as a heavily darkened deep-space backdrop showing through the sparser regions.
+ * texNBody holds the simulated star field; this pass adds a two-scale halo, a near one for star glow and a far one for galactic dust haze, and grades the result. The photo appears only as a heavily darkened deep-space backdrop showing through the sparser regions.
+ *
+ * Audio Reactivity:
+ *  - audioSubBass -> widens the far halo and pulses the whole field like a slow breath
+ *  - audioBeat    -> adds to that pulse
+ *  - audioDrop    -> flashes the star cores white-hot on a drop
+ *  - audioSpread  -> DUST DISPERSION: a narrow spectrum keeps the galactic haze tight
+ *                    around the arms, a wide, harmonically rich one lets it sprawl far
+ *                    out into intergalactic space
+ *  - audioRolloff -> STELLAR COLOUR TEMPERATURE: bass-bound music reddens the field
+ *                    into old giants, energy reaching into the highs turns it into
+ *                    blue-hot young stars
+ *  - audioTrebRel -> STAR-GLOW PUNCH: the tight halo's weight rides the treble's
+ *                    instant/slow-average ratio, so cymbals and shimmer make the
+ *                    individual stars flare and a dull passage lets them recede
  */
 // GalaxyCollision.frag — 32k gravitating bodies from the compute N-body sim.
 // Star fields need the opposite grading from a fluid: tiny bright points with
@@ -22,6 +36,9 @@ uniform float audioKick;
 uniform float audioSubBass;
 uniform float audioChromaHue;
 uniform float audioDrop;
+uniform float audioSpread;      // 0=narrow spectrum .. 1=wide -> dust-haze dispersion
+uniform float audioRolloff;     // 0=bass-bound .. 1=reaching into the highs -> star colour
+uniform float audioTrebRel;     // 0..2.5, ~1 = "as loud as usual" -> star-glow punch
 
 uniform float glowP;             // preset: halo width
 uniform float dustP;             // preset: interstellar dust haze
@@ -35,7 +52,10 @@ void main()
     // galactic haze.  Both cheap ring taps, no separable blur needed.
     vec3 near = vec3(0.0), far = vec3(0.0);
     float r1 = 0.004 + 0.004 * glowP;
-    float r2 = 0.030 + 0.045 * glowP + 0.02 * audioSubBass;
+    // Spectral spread = how far the dust sprawls: a pure, narrow spectrum keeps
+    // the haze hugging the arms, rich broadband material scatters it outward.
+    float r2 = 0.030 + 0.045 * glowP + 0.02 * audioSubBass
+             + 0.024 * clamp(audioSpread, 0.0, 1.0);
     for (int i = 0; i < 8; ++i)
     {
         float t = float(i) * 0.7854;
@@ -45,7 +65,12 @@ void main()
     }
     near /= 8.0; far /= 8.0;
 
-    vec3 col = core + near * 0.55 + far * (0.22 + 0.30 * dustP);
+    // The tight star glow rides the treble's instant/slow-average ratio, so the
+    // individual stars flare on shimmer and recede in dull passages.  Modulates
+    // the EXISTING halo weight (0.33..0.77 around 0.55), no new light added.
+    float glowPunch = 0.55 + 0.22 * clamp(audioTrebRel - 1.0, -1.0, 1.0);
+
+    vec3 col = core + near * glowPunch + far * (0.22 + 0.30 * dustP);
 
     // Sub-bass makes the whole field pulse like a slow breath.
     col *= 1.0 + 0.30 * audioSubBass + 0.20 * audioBeat;
@@ -55,9 +80,13 @@ void main()
 
     // The sim already assigns physically motivated star colours; only a light
     // touch here, otherwise the two gradings fight and the arms turn garish.
+    // Spectral rolloff biases that grading: bass-bound music pushes the whole
+    // field toward old red giants, energy reaching into the highs toward
+    // blue-hot young stars.
     float lum = dot(col, vec3(0.299, 0.587, 0.114));
-    col *= mix(vec3(0.88, 0.94, 1.10), vec3(1.06, 1.00, 0.94),
-               clamp(lum * 1.4, 0.0, 1.0));
+    float temp = clamp(lum * 1.4 + (0.5 - clamp(audioRolloff, 0.0, 1.0)) * 0.55,
+                       0.0, 1.0);
+    col *= mix(vec3(0.88, 0.94, 1.10), vec3(1.06, 1.00, 0.94), temp);
 
     col = col / (1.0 + col * 0.40);
 

@@ -5,8 +5,21 @@ out vec4 fragColor;
  * @brief TESLA LIGHTNING TREE: a branching discharge tree grown fresh every
  * frame, camera ORBITING the trunk; plasma tinted by a bounded hue wobble
  * (never a full rainbow spin), photo colours in the corona.
- *   audioKick -> branch flash    audioHigh -> arc jitter
- *   audioAdvance + time -> orbit
+ *
+ * Audio Reactivity:
+ *   audioKick      -> branch flash (heat + thickness, .comp generator)
+ *   audioHigh      -> arc jitter (.comp generator)
+ *   audioAdvance   -> camera orbit around the trunk
+ *   audioChromaHue -> bounded plasma tint (never a full rainbow spin)
+ *   audioSnare     -> return stroke: snares/claps flare the tree and drive
+ *                     its ionisation heat (see .vert)
+ *   audioTrebRel   -> stepped-leader wander, self-normalising per mix (.vert)
+ *   audioSharpness -> CORONA vs CORE: dull dark material keeps the discharge
+ *                     a broad violet/cyan corona, bright harsh material
+ *                     (cymbals, crackle) collapses it into a hard white
+ *                     ionised core with the corona pushed to the edges.
+ *                     Only the core threshold and its width move -- the
+ *                     existing tonemap below is untouched
  */
 
 in vec3 vPos;
@@ -21,6 +34,7 @@ uniform float interpolation;
 uniform float audioKick;
 uniform float audioChromaHue;
 uniform float audioSwell;
+uniform float audioSharpness;
 
 uniform float glowP;
 uniform float arcP;
@@ -47,7 +61,15 @@ void main() {
     vec3 coronaViolet = vec3(0.7, 0.1, 1.0); // Nitrogen ionization violet
 
     vec3 plasmaCol = mix(coronaViolet, coronaCyan, fract(vBoltID * 0.15 + time * 0.5));
-    plasmaCol = mix(plasmaCol, coreHot, clamp(vHeat - 0.5, 0.0, 1.0));
+
+    // CORONA vs CORE: sharp, harsh material collapses the discharge into a
+    // hard white ionised core; dull dark material leaves it a broad violet /
+    // cyan corona.  Neutral sharpness (0.5) reproduces the original
+    // clamp(vHeat - 0.5, 0, 1) curve exactly.
+    float shp   = clamp(audioSharpness, 0.0, 1.0);
+    float coreT = clamp((vHeat - (0.58 - 0.16 * shp)) / (1.30 - 0.60 * shp),
+                        0.0, 1.0);
+    plasmaCol = mix(plasmaCol, coreHot, coreT);
 
     // Photo reflection modulation
     vec2 photoUV = vPos.xy * 0.2 + 0.5;

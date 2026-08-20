@@ -74,15 +74,19 @@ void main() {
 
     // Accretion disk inner radius (ISCO) and outer envelope
     float rISCO = 0.25;
-    float rOuter = 1.1 * (1.0 + 0.15 * sin(audioSwell * 2.0));
+    float rOuter = 1.1 * (1.0 + 0.15 * sin(audioSwell * 2.0)) * (1.0 + 0.32 * audioSubBass);
     float diskMask = smoothstep(rISCO - 0.02, rISCO + 0.05, r) * smoothstep(rOuter + 0.2, rOuter - 0.1, r);
 
     // Relativistic Doppler beaming: approaching side (x < 0) boosted by factor (1 + v/c)^4
     float vOrbital = sqrt(1.0 / max(0.1, r));
     float dopplerFactor = pow(1.0 - (pDisk.x / max(0.1, r)) * vOrbital * 0.45 * dBeaming, 3.5);
 
-    // Plasma spiral turbulence
-    float plasmaTurb = sin(phiRot * 6.0 + r * 15.0 - t * 4.0) * cos(phiRot * 4.0 - r * 8.0);
+    // Plasma spiral turbulence. Brightness raises only the RADIAL wave
+    // numbers -- the phiRot factors must stay fixed because phiRot already
+    // carries the t*3.0 spin phase, and scaling that would remap the whole
+    // accumulated rotation on every audio change.
+    float turbFreq = 1.0 + 0.55 * audioCentroid;
+    float plasmaTurb = sin(phiRot * 6.0 + r * 15.0 * turbFreq - t * 4.0) * cos(phiRot * 4.0 - r * 8.0 * turbFreq);
 
     // Sample distorted background photo
     vec2 sampleUV = fract(vec2(phiRot / 6.2831853 + 0.5, r * 0.5));

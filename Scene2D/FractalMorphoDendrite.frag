@@ -125,8 +125,11 @@ void main() {
     vec2 sampleUV = fract(z * 0.2 + 0.5);
     vec3 texCol = img(sampleUV);
 
-    // Glowing dendrite filament lines
-    float filamentGlow = exp(-minDendriteDist * (32.0 + 18.0 * audioCentroid)) * glw;
+    // Glowing dendrite filament lines. Sub-bass divides the falloff constant
+    // rather than adding light: a gentler exponent widens the distance band each
+    // trunk occupies, so the branches breathe THICKER on drones without raising
+    // their peak brightness (the caps below depend on that peak staying put).
+    float filamentGlow = exp(-minDendriteDist * (32.0 + 18.0 * audioCentroid) / (1.0 + 0.45 * audioSubBass)) * glw;
 
     // Palette mixing
     vec3 palA = imgPalette(branchAccum * 0.1 + t * 0.05);

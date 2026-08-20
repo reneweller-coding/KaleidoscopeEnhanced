@@ -109,6 +109,12 @@ void main() {
     vec3 vv = cross(uu, ww);
     vec3 rd = normalize(uv.x * uu + uv.y * vv + (1.2 + 0.2 * sin(audioSwell)) * ww);
 
+    // Sub-bass swells the bulb itself. Evaluating the DE in a shrunken space
+    // and re-multiplying by the same factor keeps the estimator conservative,
+    // which a naive "d * k" would not.
+    float bulbScale = 1.0 + 0.30 * audioSubBass;
+    float invBulb   = 1.0 / bulbScale;
+
     // Raymarching loop
     float totDist = 0.0;
     float trap = 0.0;
@@ -118,7 +124,7 @@ void main() {
     for (int i = 0; i < 54; i++) {
         vec3 p = ro + rd * totDist;
         float curTrap;
-        float d = mapMandelbulb(p, power, curTrap);
+        float d = mapMandelbulb(p * invBulb, power, curTrap) * bulbScale;
 
         // Capping rimGlow at 0.45 bounded its MAGNITUDE but not its shape:
         // minD (closest |d| over the WHOLE march) is, by construction,
@@ -141,10 +147,11 @@ void main() {
 
             vec2 eps = vec2(0.001, 0.0);
             float dxTrap, dyTrap, dzTrap;
+            vec3 ps = p * invBulb;
             vec3 nrm = normalize(vec3(
-                mapMandelbulb(p + eps.xyy, power, dxTrap) - mapMandelbulb(p - eps.xyy, power, dxTrap),
-                mapMandelbulb(p + eps.yxy, power, dyTrap) - mapMandelbulb(p - eps.yxy, power, dyTrap),
-                mapMandelbulb(p + eps.yyx, power, dzTrap) - mapMandelbulb(p - eps.yyx, power, dzTrap)
+                mapMandelbulb(ps + eps.xyy, power, dxTrap) - mapMandelbulb(ps - eps.xyy, power, dxTrap),
+                mapMandelbulb(ps + eps.yxy, power, dyTrap) - mapMandelbulb(ps - eps.yxy, power, dyTrap),
+                mapMandelbulb(ps + eps.yyx, power, dzTrap) - mapMandelbulb(ps - eps.yyx, power, dzTrap)
             ));
             rimGlow = pow(1.0 - abs(dot(nrm, -rd)), 3.0) * glw;
 

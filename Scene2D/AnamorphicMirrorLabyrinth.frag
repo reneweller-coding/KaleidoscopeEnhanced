@@ -105,7 +105,9 @@ void main() {
 
         // Specular chrome edge and focal caustic
         float edge = smoothstep(0.08, 0.0, reflectionDist);
-        float caustic = pow(clamp(1.0 - reflectionDist * 8.0, 0.0, 1.0), 3.0);
+        // Tonal brightness tightens the focal falloff instead of boosting it --
+        // a sharper caustic must not also become a brighter one.
+        float caustic = pow(clamp(1.0 - reflectionDist * (8.0 + 5.0 * audioCentroid), 0.0, 1.0), 3.0 + 1.5 * audioCentroid);
         causticAccum += caustic * (1.0 + 2.0 * audioKick);
 
         // Mix palette tint with chrome reflection

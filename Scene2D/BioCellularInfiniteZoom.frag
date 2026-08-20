@@ -112,9 +112,13 @@ void main() {
         pScale = mat2(cs, -sn, sn, cs) * pScale;
 
         // Cellular membranes & organelle structure
-        vec3 cellInfo = cellularNoise(pScale * 1.5, t + sf);
+        // Brightness drives the organelle lattice frequency (finer ripple),
+        // sub-bass pushes the glowing membrane shell outward so the cells
+        // visibly inflate and relax -- both are pure shape terms, so neither
+        // can remap the accumulated swirl phase.
+        vec3 cellInfo = cellularNoise(pScale * (1.5 + 0.6 * audioCentroid), t + sf);
         float dMemb = cellInfo.x;
-        float membGlow = exp(-abs(dMemb - 0.45) * 12.0 * memb) * glw;
+        float membGlow = exp(-abs(dMemb - 0.45 * (1.0 + 0.3 * audioSubBass)) * 12.0 * memb) * glw;
 
         // Sample texture on cellular coordinate
         vec2 sampleUV = fract(pScale * 0.2 + cellInfo.yz * 0.1 + 0.5);

@@ -68,7 +68,11 @@ void main() {
 
     // Relativistic headlight compression towards center: r -> r^(1/gamma)
     float gamma = 1.6 + 0.5 * audioLevel;
-    float rRel = pow(r, 1.0 / gamma);
+    // Sub-bass widens the tunnel throat by dilating the radial coordinate the
+    // cylindrical mapping is built from -- the -t*4.0 flight term stays
+    // untouched so the accumulated warp phase is never remapped.
+    float rTun = max(0.01, r / (1.0 + 0.35 * audioSubBass));
+    float rRel = pow(rTun, 1.0 / gamma);
 
     // Warp tunnel cylindrical coordinates: (angle a, depth z = 1/r)
     float zTunnel = (1.0 / rRel) * wrp - t * 4.0;
@@ -78,8 +82,11 @@ void main() {
     float coneGlow = exp(-cherenkovCone * 8.0) * glw;
 
     // High-speed radial tachyon light streaks
-    float streaks = abs(sin(a * (24.0 * strk) + sin(zTunnel * 0.5) * 3.0));
-    float streakGlow = smoothstep(0.85, 1.0, streaks) * (1.0 + 2.0 * audioHigh);
+    // Tonal brightness raises the angular streak count and narrows the
+    // smoothstep band, so bright material resolves into many thin filaments
+    // while dark material leaves a few soft ones.
+    float streaks = abs(sin(a * (24.0 * strk) * (1.0 + 0.4 * audioCentroid) + sin(zTunnel * 0.5) * 3.0));
+    float streakGlow = smoothstep(0.85 + 0.1 * audioCentroid, 1.0, streaks) * (1.0 + 2.0 * audioHigh);
 
     // Sample distorted background photo
     vec2 sampleUV = fract(vec2(a / 6.2831853 + 0.5, zTunnel * 0.15));
@@ -91,7 +98,11 @@ void main() {
 
     // Add glowing Cherenkov shock rings & tachyon streaks
     vec3 cherenkovTint = vec3(0.2, 1.3, 1.9) * coneGlow * (1.0 + 2.5 * audioKick);
-    vec3 streakTint = vec3(1.5, 1.4, 1.9) * streakGlow * (0.8 + 1.5 * audioKick);
+    // Colour temperature follows the same brightness cue: dark lows tint the
+    // streaks amber, bright highs push them to cold hyperviolet. Both ends
+    // stay at or below the original tint peaks, so no extra light is added.
+    vec3 streakTemp = mix(vec3(1.6, 1.3, 1.0), vec3(1.2, 1.4, 1.9), audioCentroid);
+    vec3 streakTint = streakTemp * streakGlow * (0.8 + 1.5 * audioKick);
 
     col += cherenkovTint + streakTint;
 

@@ -86,6 +86,12 @@ void main() {
     float minCuspDist = 1e5;
     float trap = 1e5;
 
+    // Radius of the inversion circle of generator b. Sub-bass has to drive BOTH
+    // the generator and the pearl-line distance below -- moving only the
+    // measured radius would slide the highlight off the orbit points that
+    // actually exist and simply extinguish the necklace.
+    float circR = 1.0 + 0.18 * audioSubBass;
+
     // Iterated Kleinian group generator transformations:
     // a: z -> z + 2
     // b: z -> -1/z + mu
@@ -95,7 +101,7 @@ void main() {
 
         // Circle inversion fold (generator b)
         vec2 zInv = cInv(z);
-        vec2 zNext = -zInv + mu;
+        vec2 zNext = -zInv * (circR * circR) + mu;
 
         // Check if inside fundamental domain circle
         if (dot(zNext, zNext) < dot(z, z)) {
@@ -103,7 +109,7 @@ void main() {
             iterCount += 1.0;
         }
 
-        float dCircle = abs(length(z) - 1.0);
+        float dCircle = abs(length(z) - circR);
         minCuspDist = min(minCuspDist, dCircle);
         trap = min(trap, dot(z, z));
     }

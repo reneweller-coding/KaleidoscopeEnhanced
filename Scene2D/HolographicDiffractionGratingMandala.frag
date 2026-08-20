@@ -83,8 +83,14 @@ void main() {
     float interfer = (w1 + w2 + w3) / 3.0;
     float interferI = interfer * interfer;
 
+    // Sub-bass dilates the radial coordinate the seal is etched in, so the whole
+    // mandala swells outward on drones. Only the radius term is scaled -- the t
+    // phase terms below stay untouched so the rings keep drifting smoothly.
+    float r = length(uv);
+    float rBreath = r / (1.0 + 0.35 * audioSubBass);
+
     // Holographic rainbow dispersion across view angle & position
-    float foilAngle = atan(uv.y, uv.x) + length(uv) * 4.0 + t * 0.5;
+    float foilAngle = atan(uv.y, uv.x) + rBreath * 4.0 + t * 0.5;
     vec3 foilRainbow = vec3(
         sin(foilAngle * rBow),
         sin(foilAngle * rBow + 2.094),
@@ -92,8 +98,7 @@ void main() {
     ) * 0.5 + 0.5;
 
     // Micro-etched mandala rings
-    float r = length(uv);
-    float rings = sin(r * 35.0 - t * 4.0);
+    float rings = sin(rBreath * 35.0 - t * 4.0);
     float ringGlow = smoothstep(0.8, 1.0, abs(rings));
 
     // Sample distorted background photo

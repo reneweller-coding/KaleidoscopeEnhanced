@@ -14,11 +14,20 @@ in float vGlint;
  * onto each membrane, a framed carbon-strut border, specular solar-flare
  * glints, and a laser-mesh glow linking the sails.
  *
- * audioKick brightens the solar-flare glint and pulses the inter-sail laser
- * beams; the final colour is hue-rotated by audioChromaHue plus the hueP
- * preset. vGlint (a per-vertex specular term from SolarSailArmada.vert)
- * drives the glint highlight, and vQuadID both selects the foil material and
- * offsets the projected photo UV per sail.
+ * vGlint (a per-vertex specular term from SolarSailArmada.vert) drives the
+ * glint highlight, and vQuadID both selects the foil material and offsets the
+ * projected photo UV per sail.
+ *
+ * Audio Reactivity:
+ *   audioKick      -> solar-flare glint flash + inter-sail laser pulse
+ *   audioChromaHue -> hue rotation of the finished frame (musical key)
+ *   audioSwell     -> base amplitude of the sails' tacking (see .vert)
+ *   audioAdvance   -> orbital phase of the fleet (see .vert)
+ *   audioSpread    -> fleet dispersion: tight formation on a narrow spectrum,
+ *                     scattered to the far orbits on rich harmonics (.vert)
+ *   audioBuildUp   -> the sails tack harder as an EDM build climbs (.vert)
+ *   audioSharpness -> glint lobe, broad soft sheen vs hard narrow star, with
+ *                     the gain scaled inversely to the width (see .vert)
  */
 
 uniform float time;

@@ -100,10 +100,16 @@ void main() {
     float hitTrap = 0.0;
     vec3 hitCol = vec3(0.0);
 
+    // Sub-bass breathes the whole octahedron lattice. Done as the textbook
+    // uniform-scale wrap (divide the sample point, multiply the returned
+    // distance) so the estimator stays conservative -- scaling only one side
+    // would overshoot the surface and punch holes in the fractal.
+    float breath = 1.0 + 0.30 * audioSubBass;
+
     for (int i = 0; i < 54; i++) {
         vec3 p = ro + rd * totDist;
         float curTrap;
-        float d = mapSierpinski(p, t, curTrap);
+        float d = mapSierpinski(p / breath, t, curTrap) * breath;
         minD = min(minD, abs(d));
 
         if (abs(d) < 0.003 || totDist > 8.0) {
