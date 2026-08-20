@@ -31,6 +31,15 @@ void main()
 {
     float d    = abs(vSide);
     float core = exp(-d * d * 30.0);
-    float halo = exp(-d * d * 6.0) * 0.35;
-    fragColor = vec4(vCol.rgb * (core + halo) * (0.85 + 0.30 * audioLevel + 0.35 * audioKick), 1.0);
+    // Slightly fuller halo: the strokes are still thin glowing lines on a dark
+    // canopy, and the halo is what stops them aliasing away to nothing.
+    float halo = exp(-d * d * 6.0) * 0.45;
+    vec3 c = vCol.rgb * (core + halo)
+           * (1.05 + 0.30 * audioLevel + 0.35 * audioKick);
+    // The strokes are much wider now, so their cores cover real area instead of
+    // a hairline.  Roll the whole colour back together once it would clip, so a
+    // hot line stays a bright CYAN line rather than turning into a white one.
+    float m = max(c.r, max(c.g, c.b));
+    c *= (m > 0.94) ? (0.94 / m) : 1.0;
+    fragColor = vec4(c, 1.0);
 }

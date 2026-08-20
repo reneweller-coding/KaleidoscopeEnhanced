@@ -3,8 +3,10 @@ out vec4 fragColor;
 /**
  * @file BioluminescentCombJellyCydippid.frag
  * @brief BIOLUMINESCENT COMB JELLY CYDIPPID: Abyssal ctenophore (Mertensia ovum / Beroe cucumis).
- * 8 meridional rows of coordinated metachronal beating ciliated comb plates (ctenes) producing
- * rainbow diffraction iridescence, bioelectric green fluorescent flashes, and photo texturing.
+ * A BLOOM of five animals drifting at different depths, each carrying 20 meridional rows of
+ * coordinated metachronal beating ciliated comb plates (ctenes) producing rainbow diffraction
+ * iridescence, bioelectric green fluorescent flashes, and photo texturing -- with the long
+ * sticky tentacles trailing off past the edges of the picture between them.
  *   audioAdvance -> accelerates metachronal ciliary comb plate beating wave speed
  *   audioKick    -> flashes defensive coelenterazine bioluminescent shock pulses
  *   audioSwell   -> thickens gelatinous mesoglea body volume & refraction glow
@@ -44,7 +46,12 @@ void main()
     vec3 photo = img(vUV);
     
     vec3 col = vCol * (0.6 + 0.4 * photo) * core * 1.3;
-    col += vec3(0.95, 0.95, 1.0) * vCiliaWave * (cteneGlowP > 0.01 ? cteneGlowP : 1.4) * 2.2;
+    // The comb-plate crest is the brightest thing in the scene and the kick
+    // drives it hard; with a whole bloom on screen the crests would otherwise
+    // stack up into white.  Cap the additive term (a scalar cap is enough
+    // here -- the tint below is under 1.0 in every channel).
+    float glow = (cteneGlowP > 0.01 ? cteneGlowP : 1.4);
+    col += vec3(0.95, 0.95, 1.0) * min(vCiliaWave * glow * 1.7, 2.0);
     col += vCol * edge * 1.5;
     col *= (0.85 + 0.35 * audioSwell);
     col += vCol * (audioKick * 0.3);

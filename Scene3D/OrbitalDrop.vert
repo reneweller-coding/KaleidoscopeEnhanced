@@ -56,34 +56,76 @@ vec3 hueRot(vec3 c, float a)
     return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
 }
 
+float hsh(float a, float b, float s)
+{
+    return fract(sin(a * 91.73 + b * 47.31 + s) * 43758.5453);
+}
+
 void main()
 {
     float r1 = attrB.x, r2 = attrB.y, r3 = attrB.z, r4 = attrB.w;
+
+    // The scene projection: 55 deg vertical FOV (see Scene3DShader::draw).
+    const float kTanY = 0.5206;
+    float aspect = (resolution.y > 0.5) ? resolution.x / resolution.y : 1.7778;
 
     // Altitude 1 (orbit) -> 0 (ground), ~35 s per drop; every layer fades
     // around the wrap so the reset is invisible.
     float alt = 1.0 - fract(time * 0.028 + audioAdvance * 0.004);
 
-    vec3  world;
+    // Initialised: the star branch below leaves `world` unused (it builds its
+    // position straight in view space), and reading an undefined vec3 through
+    // the shared transform below would be a NaN waiting to happen.
+    vec3  world = vec3(0.0);
     vec3  col;
     float glow = 1.0;
+    // The star field is placed straight in VIEW space (see below), so it skips
+    // the fall transform the world layers go through.
+    bool  viewSpace = false;
+    vec3  vpDirect  = vec3(0.0);
+    float sizeBase = 105.0, sizeCap = 16.0, sizeMin = 1.5;
 
     if (r1 < 0.20)
     {
-        // ---- Star dome above (fades as the air thickens). ----
-        float th = r2 * 6.2831853;
-        float ph = acos(2.0 * r3 - 1.0);
-        world = vec3(sin(ph) * cos(th), abs(cos(ph)), sin(ph) * sin(th)) * 150.0;
-        world.y = -world.y;                       // "down" is ahead
+        // ---- Star field / high-air dust ----
+        // Was a 150-unit dome: at that distance every star clamped to a 1.5 px
+        // speck and lost 80 % of its brightness to the depth fade, so the whole
+        // high-altitude half of the loop played out over a black frame.  In
+        // FRUSTUM coordinates (x,y scaled by depth) the field stays evenly
+        // spread over the picture at every distance, and a speck stays legible.
+        float hx = hsh(r2, r3, 0.41);
+        float hy = hsh(r3, r4, 1.83);
+        float hz = hsh(r4, r2, 3.07);
+        float dz = 14.0 + hz * 76.0;
+        float ph = r2 * 6.2831853 + time * 0.05 + audioAdvance * 0.04;
+        // 2.0 would fit the frustum exactly; 2.25 so the field still reaches
+        // past all four edges when the preset camera rig rolls and yaws.
+        float open = 2.25;
+        vpDirect = vec3((hx - 0.5) * open * dz * kTanY * aspect + 1.8 * cos(ph),
+                        (hy - 0.5) * open * dz * kTanY          + 1.8 * sin(ph * 0.79),
+                        dz);
+        viewSpace = true;
+
         col  = vec3(0.8, 0.85, 1.0) * (0.35 + 0.6 * r4);
-        glow = smoothstep(0.35, 0.65, alt) * 1.4;
+        // Stars up high; the same specks stay on as a dim ionised-air dust all
+        // the way down, so no altitude leaves the frame empty.
+        glow = 0.30 + 0.85 * smoothstep(0.25, 0.62, alt);
+        // A speck must stay legible at any distance -- below ~2.5 px an
+        // additive sprite averages away to nothing and the field reads black.
+        sizeBase = 84.0; sizeCap = 9.0; sizeMin = 2.6;
     }
     else if (r1 < 0.45)
     {
         // ---- Plasma streaks racing past during the burn window. ----
         float rad = 2.0 + 26.0 * pow(r2, 1.6);
         float ang = r3 * 6.2831853;
-        float z   = mod(r4 * 120.0 + time * (60.0 + 30.0 * audioLevel), 120.0);
+        // ANTI-FLICKER: `time * (60.0 + 30.0 * audioLevel)` multiplied the
+        // ABSOLUTE clock by an audio-varying factor, so every change in level
+        // remapped several hundred seconds of accumulated phase in a single
+        // frame and the whole streak field jumped.  The music's contribution to
+        // the streak RATE now rides the host's pre-integrated accumulator
+        // instead, which is the same acceleration with no discontinuity.
+        float z   = mod(r4 * 120.0 + time * 60.0 + audioAdvance * 22.0, 120.0);
         world = vec3(cos(ang) * rad, -z + 30.0, sin(ang) * rad);
         world.xz += vec2(sin(z * 0.2), cos(z * 0.17)) * 0.8;
         col = imgPalette(0.25 * r2) * 1.5;
@@ -100,7 +142,10 @@ void main()
                      (0.30 - alt) * 420.0 + (r4 - 0.5) * 14.0,
                      sin(ang) * spread);
         col  = vec3(0.75, 0.80, 0.90);
-        glow = exp(-pow((alt - 0.28) * 6.0, 2.0)) * (0.25 + 0.45 * r4);
+        // Wider altitude window than the original 6.0: the deck used to snap
+        // in and out over a tenth of the fall and left a gap where nothing but
+        // the star dust was on screen.
+        glow = exp(-pow((alt - 0.28) * 4.2, 2.0)) * (0.25 + 0.45 * r4);
     }
     else if (r1 < 0.97)
     {
@@ -133,6 +178,7 @@ void main()
                    world.y * cos(pitch) - world.z * sin(pitch),
                    world.y * sin(pitch) + world.z * cos(pitch));
     vp.z += 40.0;
+    if (viewSpace) vp = vpDirect;
 
     vp.x -= eyeOff;
     gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
@@ -142,7 +188,8 @@ void main()
 
     float px   = resolution.y / 1080.0;
     float dist = max(vp.z, 0.5);
-    gl_PointSize = clamp(105.0 * (0.4 + 0.8 * r4) * px / dist, 1.5, 16.0 * px);
+    gl_PointSize = clamp(sizeBase * (0.4 + 0.8 * r4) * px / dist,
+                         sizeMin, max(sizeCap * px, sizeMin));
 
     col *= glow * clamp(1.0 - vp.z / 190.0, 0.0, 1.0);
     vCol = vec4(col * 2.8, 1.0);

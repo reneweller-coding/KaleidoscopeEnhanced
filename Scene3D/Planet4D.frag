@@ -11,7 +11,8 @@ in vec4 vCol;
  * sprite with a bright core and a broad secondary halo.
  *
  * Reads no audio uniforms directly. The paired Planet4D.vert places the
- * 12 pitch-class node clouds and their 36 interval edges, brightening
+ * 12 pitch-class node clouds, their 36 interval edges and the surrounding
+ * dust field the structure hangs in, brightening
  * each node by its live audioChroma[] energy, lighting an edge only when
  * both of its notes sound, sending a pulse along the edges on
  * audioDownbeat, and scaling brightness with audioSwell/audioKick/

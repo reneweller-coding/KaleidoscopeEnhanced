@@ -50,7 +50,10 @@ void main()
     col *= (0.85 + 0.35 * audioSwell);
     col += vCol * (audioKick * 0.3);
     
-    // Soft knee compression
-    col /= 1.0 + 0.35 * max(col.r, max(col.g, col.b));
+    // Soft knee compression.  The network is drawn ADDITIVELY with no depth
+    // test, and the reticulate mesh crosses itself far more often than the old
+    // twenty-spoke star did, so the knee has to bite a little harder to keep
+    // the crossings off the clip.
+    col /= 1.0 + 0.48 * max(col.r, max(col.g, col.b));
     fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }

@@ -13,6 +13,7 @@ in vec3 vWorldPos;
 in vec3 vNormal;
 in float vVortexPhase;
 in vec2 vQuadUV;
+in float vViewZ;
 
 uniform sampler2D tex0;
 uniform sampler2D tex1;
@@ -56,9 +57,17 @@ void main() {
     if (r2 > 1.0) discard;
     float glow = exp(-r2 * 3.5);
 
-    // Photo texture mapping from world coords
-    vec2 photoUV = fract(vWorldPos.xy * 0.25 + 0.5);
+    // Photo texture mapping from world coords.  0.25 was tuned for a 2-unit
+    // knot; the tangle now spans the frustum and that rate tiled the slide
+    // many times over.
+    vec2 photoUV = fract(vWorldPos.xy * 0.07 + 0.5);
     vec3 photo = img(photoUV);
+
+    // attrB = (sprite radius, layer marker, 0).  A NEGATIVE marker is the
+    // surrounding thermal cloud (every vortex-core normal carried a fixed +0.5
+    // z before normalisation).  It is a background layer: it fills the corners
+    // without ever reading as bright as a vortex core.
+    float haze = step(vNormal.y, -0.5);
 
     // Ultra-cold rubidium condensate ruby & cyan palette
     vec3 becRuby = vec3(0.95, 0.1, 0.35);
@@ -71,11 +80,18 @@ void main() {
     col += glow * mix(tangleColor, vec3(1.0, 0.98, 0.92), 0.35)
                * (0.35 + audioKick * 0.55);
 
+    col *= mix(1.0, 0.30, haze);
+
+    // Aerial perspective: the tangle and its cloud now run from just in front
+    // of the lens out to ~16 units.  Without it near and far sprites read as
+    // one flat sheet.  vViewZ is the true post-orbit view depth.
+    col *= clamp(6.5 / max(vViewZ, 1.0), 0.30, 1.0);
+
     if (hue > 0.001) col = hueRot(col, hue);
 
     // Catalogue review: soft-knee exposure — hot audio compresses
     // instead of clipping the whole frame to white.
-    vec3 _catTone = (col * 0.9) * 0.55;
+    vec3 _catTone = (col * 1.5) * 0.55;
     _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
     fragColor = vec4(_catTone, glow);
 }

@@ -10,6 +10,7 @@ in vec3  vNormal;
 in vec3  vView;
 in vec3  vWorld;
 in float vStrength;      // 0..1 thickness probe from the generator
+in float vKind;          // 0 = isosurface, 1 = far-field backdrop panel
 
 /**
  * @file MetaSculpt.frag
@@ -23,6 +24,10 @@ in float vStrength;      // 0..1 thickness probe from the generator
  * audioHigh sharpens the specular highlight, audioLevel and audioKick
  * brighten the rim light, and audioBeat adds a final overall pulse.
  * glossP scales the environment-reflection strength and specular size.
+ *
+ * A far-field backdrop panel (attrB.w = 1, emitted by the generator) fills
+ * the frame margins with a slow nebula wash from the same photo palette:
+ * audioAmbient sets its brightness and audioAdvance drifts its bands.
  */
 
 uniform sampler2D tex0;
@@ -79,6 +84,12 @@ float shadowAt(vec3 world, vec3 n, float ndl)
     vec3 proj = lp.xyz / lp.w * 0.5 + 0.5;
     if (proj.z > 1.0)
         return 1.0;
+    // The body now reaches out past the light box (shadowExtent 2.8), and a
+    // sampler2DShadow clamps to its edge texel outside [0,1] -- which paints a
+    // hard band of borrowed shadow down the sides.  Anything outside the map
+    // is simply unshadowed.
+    if (any(lessThan(proj.xy, vec2(0.0))) || any(greaterThan(proj.xy, vec2(1.0))))
+        return 1.0;
     float bias = 0.0006 + 0.0030 * (1.0 - ndl);
     float s = 0.0;
     float r = shadowTexel * 1.6;
@@ -94,6 +105,34 @@ void main()
     if (shadowPass > 0.5)
     {
         fragColor = vec4(0.0);
+        return;
+    }
+
+    if (vKind > 0.5)
+    {
+        // FAR-FIELD BACKDROP: a slow, bounded nebula wash built from the same
+        // photo-arc palette the body uses, so the margins of the frame read as
+        // atmosphere the sculpture hangs in rather than as dead clear colour.
+        vec2 uv = clamp(vObj.xy, 0.0, 1.0);
+        float a  = audioAdvance * 0.05;
+        float n1 = sin(uv.x * 4.3 + a * 1.1) * sin(uv.y * 3.1 - a * 0.8);
+        float n2 = sin(uv.x * 9.7 - a * 0.6 + 1.9) * sin(uv.y * 7.3 + a * 0.9);
+        float fb = clamp(0.55 + 0.30 * n1 + 0.15 * n2, 0.0, 1.0);
+
+        vec3 bg = imgPalette(fract(0.31 + 0.22 * fb + 0.10 * uv.x));
+        // A soft pool of light behind the body, never a hard vignette.
+        float rad = length((uv - 0.5) * vec2(1.7, 1.0));
+        float vig = mix(1.0, 0.62, smoothstep(0.25, 1.05, rad));
+
+        // Levels chosen so even the darkest corner of the wash sits above the
+        // step at which a tile stops registering as carrying anything -- a
+        // backdrop that measures as black is no backdrop at all.
+        vec3 bcol = bg * (0.16 + 0.22 * fb) * vig * (0.80 + 0.45 * audioAmbient);
+        bcol += imgPalette(fract(0.62 + 0.30 * uv.y)) * 0.050
+              * (0.5 + min(audioLevel, 1.0));
+        // Cap the FINAL tinted colour: the palette can already exceed 1.0 per
+        // channel before any of this is applied.
+        fragColor = vec4(min(bcol, vec3(0.30)), interpolation);
         return;
     }
 
@@ -139,8 +178,8 @@ void main()
     col = mix(col, env * (0.55 + 0.8 * glossP), fres * (0.35 + 0.45 * glossP));
 
     vec3 H = normalize(L + V);
-    col += vec3(1.0, 0.96, 0.9) * pow(max(dot(n, H), 0.0), 45.0 + 300.0 * glossP)
-         * shadow * (0.9 + 2.2 * audioHigh);
+    col += min(vec3(1.0, 0.96, 0.9) * pow(max(dot(n, H), 0.0), 45.0 + 300.0 * glossP)
+             * shadow * (0.9 + 2.2 * audioHigh), vec3(1.5));
 
     // Rim, so the silhouette survives against the black background.
     col += hue2rgb(fract(hue + 0.5)) * pow(fres, 1.7)

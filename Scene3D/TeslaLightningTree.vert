@@ -2,6 +2,7 @@
 /**
  * @file TeslaLightningTree.vert
  * @brief attrA.xyz = world pos, attrA.w = heat
+ * attrB.x = per-segment gain (1 = main stroke .. ~0.2 = surface creep/corona),
  * attrB.w = boltSeed (GEOM_INDIRECT, 8-float layout)
  *
  * Audio Reactivity (geometry; see the .frag header for the plasma shading):
@@ -37,9 +38,15 @@ uniform float audioTrebRel;
 out vec3 vPos;
 out float vHeat;
 out float vBoltID;
+out float vGain;
 
 void main() {
     vec3 worldP = attrA.xyz;
+    // Generator-side brightness class: the draw is opaque, so the faint
+    // families (surface creep, corona) have to be dimmed here rather than by
+    // drawing less of them.  Old bakes carried 0 in this slot -- treat that as
+    // a full-strength stroke so a stale buffer never renders black.
+    vGain = (attrB.x > 0.001) ? attrB.x : 1.0;
 
     // RETURN STROKE on the backbeat: a snare/clap flares the whole discharge
     // tree outward as its channel ionises.

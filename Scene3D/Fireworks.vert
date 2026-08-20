@@ -15,7 +15,10 @@
 // below, brightness fed by the kick channel), then the shell explodes; the
 // explosion pop is scaled by the music's accents (downbeat/kick), and a
 // drop turns the whole sky on.
-//   attrA.w = particle index (24 bursts x 2500), attrB = per-particle seeds.
+//   attrA.w = particle index: the first 10000 are the night sky itself --
+//   frustum-spread across three layers (wide soft haze puffs that carry the
+//   sky, a star field, and a band of city glow along the horizon) -- and the
+//   remaining 50000 are 50 bursts of 1000.  attrB = per-particle seeds.
 
 in vec4 attrA;
 in vec4 attrB;
@@ -77,18 +80,112 @@ void main()
 {
     float r1 = attrB.x, r2 = attrB.y, r3 = attrB.z, r4 = attrB.w;
 
-    float burst = floor(attrA.w / 2500.0);
+    // The scene projection: 55 deg vertical FOV (see Scene3DShader::draw).
+    const float kTanY = 0.5206;
+    float aspect = (resolution.y > 0.5) ? resolution.x / resolution.y : 1.7778;
+
+    // ------------------------------------------------------------------
+    // THE NIGHT ITSELF.  A shell is only actually bright for a fraction of its
+    // cycle, so at any instant only a handful of the bursts are lit and the
+    // rest of the sky was literally nothing (measured occ 0.18).  The first
+    // 10000 particles are the sky the fireworks go off IN: a star field spread
+    // over the FRUSTUM so it stays even at every depth, and a low band of
+    // city glow along the horizon.  Deliberately far dimmer than any shell --
+    // this is the floor of the picture, not a subject.
+    // ------------------------------------------------------------------
+    if (attrA.w < 10000.0)
+    {
+        float dz = 34.0 + r3 * 108.0;
+        // 2.0 would fit the frustum exactly; 2.2 keeps the field past all four
+        // edges when the preset camera rig rolls and yaws the view.
+        float open = 2.2;
+
+        // THREE LAYERS, picked by r4.  A pure star field did NOT rescue the
+        // measurement (still occ 0.18): 10000 sprites of 2.6 px at luma 0.02
+        // come to 3% of the frame at 2% brightness, which is nothing a tile
+        // measurement can see.  The sky is now carried by a layer of wide,
+        // soft, very dim HAZE puffs -- screen-space sized, so they stay big at
+        // any depth -- with the stars and the city ember band on top of it.
+        bool haze     = (r4 < 0.040);                      // ~400 puffs
+        bool cityGlow = (!haze && r4 < 0.36);
+
+        float fy = cityGlow ? (-0.62 - 0.28 * r2)          // along the horizon
+                            : (r2 - 0.5) * open;
+        vec3  vpS = vec3((r1 - 0.5) * open * dz * kTanY * aspect,
+                         fy * dz * kTanY,
+                         dz);
+
+        vpS.x -= eyeOff;
+        gl_Position = projM * vec4(vpS.x, vpS.y, -vpS.z, 1.0);
+        gl_Position.x += eyeOff * 0.04 * gl_Position.w;
+
+        float pxS = resolution.y / 1080.0;
+        // A star has to stay a legible speck: below roughly three pixels an
+        // additive sprite averages away to nothing again.  A haze puff is the
+        // opposite -- a wide soft blob, sized in SCREEN space so the far ones
+        // do not shrink away.
+        gl_PointSize = haze
+            ? clamp((110.0 + 60.0 * r1) * pxS, 8.0, 160.0 * pxS)
+            : clamp(70.0 * (0.4 + 0.8 * r4) * pxS / dz, 3.2, 6.5 * pxS);
+
+        // Slow twinkle / ember flicker on jump-free clocks only.
+        float tw = 0.62 + 0.38 * sin(time * (0.5 + 1.4 * r4) + r1 * 30.0);
+        vec3  sc = haze    ? vec3(0.34, 0.42, 0.72)
+                 : cityGlow ? vec3(1.00, 0.62, 0.30)
+                            : vec3(0.72, 0.80, 1.00);
+        sc = palTint(sc, 0.40 * r2, 0.28);
+        // A puff is spread over ~20000 px, a star over ~10, so the puff's
+        // per-pixel figure is far lower even though it carries the sky.
+        // Haze level up from 0.100. At that figure a puff contributed about
+        // 0.006 per pixel and even four overlapping puffs came to ~0.024 luma --
+        // under the 1/16 step at which a tile registers as carrying anything, so
+        // the layer built to be "the floor of the picture" measured as black.
+        // The per-puff spread is widened too: uniform puffs would just raise the
+        // modal value, and it is the VARIATION between them that fills tiles.
+        float lay = haze ? 0.26 : (cityGlow ? 0.34 : 0.30);
+        sc *= lay * (haze ? (0.45 + 1.15 * r2) : tw)
+            * (0.8 + 0.35 * audioSwell + 0.5 * audioDrop)
+            * clamp(1.0 - dz / 190.0, 0.0, 1.0);
+        // Additive pass: cap the FINAL tinted colour, so no amount of puff
+        // overlap can push the sky itself toward white.
+        vCol = vec4(min(sc, vec3(0.30)), 1.0);
+        return;
+    }
+
+    // 50 bursts of 1000 instead of 24 of 2500: twice as many shells are in the
+    // air at once, which is what actually spreads the light across the sky.
+    float burst = floor((attrA.w - 10000.0) / 1000.0);
     float hb1 = hash11(burst * 3.17 + 0.31);
     float hb2 = hash11(burst * 7.91 + 1.73);
     float hb3 = hash11(burst * 5.53 + 2.61);
     float hb4 = hash11(burst * 9.13 + 3.97);
 
-    // Burst position in the sky (varied depth -> real stereo layering).
-    vec3 Cb = vec3((hb1 - 0.5) * 90.0, 16.0 + hb2 * 22.0, 22.0 + hb3 * 60.0);
+    // Burst position in the sky.  Laid out in FRUSTUM coordinates so the
+    // shells stay evenly spread across the picture at every depth -- the old
+    // fixed world box put the near bursts off both sides and stacked every one
+    // of them into the top third of the frame.
+    // View depth, biased toward the camera. A flat 26..100 spread put the median
+    // shell 63 units out, where the size formula below yields a 2.4-pixel spark:
+    // 50 000 sparks at 2.4 px cover about 2% of the frame, which is why a sky
+    // full of shells still measured luma 0.011. Squaring hb3 keeps the same far
+    // reach while most shells break near enough to have real sparks.
+    float cbz = 16.0 + hb3 * hb3 * 62.0;                // view depth
+    // 2.00 / 1.55 (was 1.85 / 1.45): shells now also break just past the left
+    // and right edges and reach lower down the frame, so the sky is lit corner
+    // to corner instead of in a band across the middle.
+    vec3 Cb = vec3((hb1 - 0.5) * 2.00 * cbz * kTanY * aspect,
+                   // 10.0 is added back by the camera transform below.
+                   10.0 + (hb2 - 0.42) * 1.55 * cbz * kTanY,
+                   cbz - 12.0);
 
     // Cycle clock: music energy (integrated advance) drives the firing rate,
     // so busy passages genuinely fire more shells.
-    float clockv = (time * 0.075 + audioAdvance * 0.30) * (0.8 + 0.5 * hb4)
+    // Base rate up from 0.075: a shell's whole life took 10-17 seconds, so over
+    // any given stretch most of the fifty bursts were sitting in the dim tail of
+    // their fade with nothing happening. At 0.16 a shell rises, breaks and dies
+    // in about 5-8 seconds, which is both what a firework does and what puts
+    // light in the sky. Constant coefficient on `time`, so anti-flicker safe.
+    float clockv = (time * 0.16 + audioAdvance * 0.30) * (0.8 + 0.5 * hb4)
                  + hb1 * 7.0;
     float u   = fract(clockv);
     float cyc = floor(clockv);
@@ -113,7 +210,12 @@ void main()
             return;
         }
         float ur = u / RISE;
-        float yy = mix(-14.0, Cb.y, ur * ur * (3.0 - 2.0 * ur));
+        // Start the climb just below the frame AT THIS SHELL'S DEPTH.  A fixed
+        // world-space -14.0 is below the picture for a near shell but a third
+        // of the way UP it for one 100 units back, so the distant rockets used
+        // to pop into existence in mid-air.
+        float yBase = 10.0 - 1.15 * cbz * kTanY;
+        float yy = mix(yBase, Cb.y, ur * ur * (3.0 - 2.0 * ur));
         world = vec3(Cb.x + sin(ur * 9.0 + hb2 * 6.0) * 0.6,
                      yy - r1 * 2.5 * ur,          // short trail behind the head
                      Cb.z);
@@ -174,7 +276,9 @@ void main()
 
     float px   = resolution.y / 1080.0;
     float dist = max(vp.z, 0.5);
-    gl_PointSize = clamp(110.0 * (0.4 + 0.8 * r4) * px / dist, 1.5, 24.0 * px)
+    // 2.4 px floor, not 1.5: below roughly two and a half pixels an additive
+    // sprite averages away to nothing and the far half of the sky reads black.
+    gl_PointSize = clamp(210.0 * (0.4 + 0.8 * r4) * px / dist, 3.0, 30.0 * px)
                  * (0.6 + 0.7 * B);
 
     // Colour by type: peony = key-hued family, willow = gold, ring = cool

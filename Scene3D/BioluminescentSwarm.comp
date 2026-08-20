@@ -38,6 +38,14 @@ uniform float speedP;
 uniform float glowP;
 
 const int CREATURES = 64 * 64; // 4096 boid creatures, each emitted as a 3D faceted diamond (6 vertices)
+// Marine snow: 1,600 soft camera-facing motes hanging in the water BEHIND the
+// swarm.  The murmuration is a band across the middle of the frame however
+// large it gets -- a torus seen from outside always is -- so on its own it
+// left the top and bottom of the picture black.  Only the seeds are made
+// here; BioluminescentSwarm.vert places them across the frustum, because it
+// is the stage that knows the aspect ratio.  glow = -1 is the marker.
+const uint SNOW      = 1600u;
+const uint SNOW_BASE = uint(CREATURES);
 
 float hash1(float n) { return fract(sin(n * 123.456) * 43758.5453); }
 vec3  hash3(float n) { return fract(sin(vec3(n * 91.34, n * 47.12, n * 73.56)) * 43758.5453); }
@@ -80,7 +88,24 @@ void emitBoid(vec3 center, vec3 forward, float size, float hue, float glow) {
 void main() {
     uvec3 g = gl_GlobalInvocationID;
     uint id = g.x + 64u * (g.y + 64u * g.z);
-    if (id >= uint(CREATURES)) return;
+    if (id >= SNOW_BASE + SNOW) return;
+
+    // ---- MARINE SNOW --------------------------------------------------
+    if (id >= SNOW_BASE)
+    {
+        float fh = float(id - SNOW_BASE);
+        vec3  hs3 = hash3(fh + 17.0);
+        float hs  = hash1(fh * 3.191 + 2.29);
+
+        uint sbase = atomicAdd(cmd[4], 6u);
+        if (sbase + 6u > maxVertices) return;
+
+        vec2 cn[6] = vec2[6](vec2(0.0, 0.0), vec2(1.0, 0.0), vec2(0.0, 1.0),
+                             vec2(1.0, 0.0), vec2(1.0, 1.0), vec2(0.0, 1.0));
+        for (uint k = 0u; k < 6u; ++k)
+            writeVertex(sbase + k, hs3, vec3(cn[k], hs), hash1(fh * 1.7 + 0.9), -1.0);
+        return;
+    }
 
     float i = float(id);
     vec3 seed = hash3(i);
@@ -98,9 +123,12 @@ void main() {
     float phi = seed.x * 6.2831853 + sin(time * 0.5 + seed.y * 3.0) * 1.5;
     float torusR = 3.5 + 1.5 * sin(time * 0.8 + seed.z * 6.28);
 
+    // The murmuration was only +-7.5 units tall against a camera whose frame
+    // is 29 units tall at that distance, so it read as a thin band with black
+    // above and below it.  A real murmuration towers.
     vec3 boidPos = vec3(
         (orbitRadius + torusR * cos(phi)) * cos(angle),
-        torusR * sin(phi) + sin(angle * 2.0) * 2.5,
+        torusR * sin(phi) * 1.9 + sin(angle * 2.0) * 6.0,
         (orbitRadius + torusR * cos(phi)) * sin(angle)
     );
 
@@ -119,9 +147,22 @@ void main() {
     int band = int(clamp(seed.x * 31.0, 0.0, 31.0));
     float specPulse = audioSpectrum[band];
     float boidHue = fract(seed.x * 0.4 + time * 0.05 + audioAdvance * 0.02);
-    float glowAmp = (0.5 + specPulse * 2.0 + audioKick * 1.5) * glw;
 
-    float boidSize = 0.25 * (0.8 + 0.4 * seed.y);
+    // Individual bioluminescent FLASH: sharp attack, exponential decay, on each
+    // creature's own slow cycle. Without it every creature sat at the same
+    // baseline emission on quiet material -- 4096 identical dim specks, which is
+    // a swarm with no light in it (measured luma 0.023, contrast 0.054). The
+    // cycle is per-creature, so nothing here is a full-field brightness change;
+    // the rate is a constant coefficient on `time`, so it is anti-flicker safe.
+    float flashRate = 0.11 + 0.17 * seed.z;
+    float flashPh = fract(seed.y * 7.31 + time * flashRate + audioAdvance * 0.05);
+    float flash = exp(-flashPh * 5.5) * 2.4;
+
+    float glowAmp = (0.55 + flash + specPulse * 2.0 + audioKick * 1.5) * glw;
+
+    // Bigger creatures: at the 28-unit camera distance a 0.25-unit diamond is a
+    // handful of pixels, so the swarm read as dust rather than as animals.
+    float boidSize = 0.40 * (0.8 + 0.4 * seed.y);
 
     emitBoid(boidPos, forward, boidSize, boidHue, glowAmp);
 }

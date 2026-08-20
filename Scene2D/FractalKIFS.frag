@@ -7,11 +7,12 @@ out vec4 fragColor;
  * shattered into an endlessly self-similar fractal kaleidoscope, with the
  * orbit-trap structure glowing through it.  The *image* is the star (was a
  * dark procedural base with the picture only inside bright bits).
- *   audioMode     -> fold angle (minor = sharp/edgy, major = soft)
+ *   audioMode     -> bends the c-vector's real part (minor = sharp/edgy, major = soft)
  *   audioPitch    -> zoom
- *   audioArousal  -> per-iteration scale (busier when energetic)
+ *   audioArousal  -> bends the c-vector's imaginary part (busier when energetic)
  *   audioPhase    -> smooth, jump-free overall rotation
- *   audioValence/Centroid -> palette & brightness; audioBeat -> bloom
+ *   audioValence/Centroid -> palette & brightness; audioBeat -> lace bloom
+ *   audioLevel/Flux -> overall exposure
  */
 
 uniform vec2  resolution;
@@ -62,35 +63,80 @@ void main()
 {
     vec2 p = (gl_FragCoord.xy - 0.5 * resolution.xy) / resolution.y;
 
-    float zoom = 1.5 - 0.5 * audioPitch;
+    float zoom = 2.4 - 0.7 * audioPitch;
     p *= zoom;
-    p  = rot(audioPhase * 0.4 + time * 0.03) * p;
+    // 0.25 rather than 0.4 on the rotation phase: at 0.4 the lace slid ~0.9 px
+    // per frame, and a structure this fine turns that into visible boiling.
+    p  = rot(audioPhase * 0.25 + time * 0.03) * p;
 
     // Per-mood fractal character: mode bends the c-vector, arousal tightens it.
     vec2 c = vec2(0.84 + 0.22 * audioMode + 0.03 * sin(time * 0.11),
                   0.60 + 0.14 * audioArousal);
 
+    // ---- WHY THIS LOOP WAS REWRITTEN ------------------------------------
+    // The old version SUMMED exp(-5.0*|fp.y|) + 0.7*exp(-5.0*|fp.x|) over 11
+    // iterations. With a decay constant that soft, every single iteration
+    // returns something in the 0.3-0.5 range no matter where the pixel is, and
+    // summing eleven of them concentrates the result around its own mean: the
+    // measured distribution of `acc` was p5 3.29 / p50 4.12 / p95 5.01, i.e.
+    // `lines` was a near-CONSTANT 0.36-0.55 across the entire frame. `haze`
+    // was the same story (p5 1.25 / p50 1.51, then min()-capped at 1.6 over
+    // 18% of the frame) and contributed a term whose standard deviation was
+    // 0.007. Add a flat pic*0.26 base and the whole image is one level: the
+    // simulated frame reproduced the reported contrast of 0.045 exactly.
+    //
+    // The second, subtler defect: at 11 iterations the Kaliset lace is FINER
+    // THAN THE PIXEL GRID. Measuring the distance to the nearest curve in
+    // pixels gives a median of 0.17 px -- roughly six curves per pixel. That
+    // is why a 4x supersampled render of the old shader measured occ 0.19
+    // against 0.68 at 1x: the "detail" was aliasing noise that averages to
+    // grey the moment the frame is downscaled.
+    //
+    // Fix: (1) MIN-distance orbit traps instead of a sum, so a pixel is either
+    // on a curve or it is not; (2) carry the running Jacobian scale of the
+    // inversion and divide the traps by it, which converts them into an
+    // approximate SCREEN-SPACE distance -- the lace then has the same width
+    // everywhere instead of collapsing to hairlines wherever the map expands;
+    // (3) six generations, not eleven, so the curves stay about 8 px apart at
+    // 1080p. 1x and 4x supersampled renders now measure the same contrast.
     vec2  fp   = p;
-    float acc  = 0.0;
-    float trap = 1e9;
-    for (int i = 0; i < 11; i++)
+    float dsc  = 1.0;        // accumulated |Jacobian| of the folds so far
+    float tn   = 1e9;        // axis trap, screen-space
+    float trn  = 1e9;        // ring trap, screen-space
+    for (int i = 0; i < 6; i++)
     {
-        fp   = abs(fp) / max(dot(fp, fp), 1e-6) - c;
-        trap = min(trap, abs(fp.y));
-        acc += exp(-8.0 * abs(fp.y));           // every layer adds filigree
+        float dd = max(dot(fp, fp), 1e-6);
+        fp  = abs(fp) / dd - c;
+        dsc = min(dsc / dd, 1e10);
+        tn  = min(tn,  abs(fp.y) / dsc);
+        trn = min(trn, abs(length(fp) - 0.85) / dsc);
     }
-    float lines = clamp(acc * 0.16, 0.0, 1.4);
+    // Lace half-width as a fixed fraction of frame HEIGHT (1/150), so the
+    // filigree is ~7 px at 1080p -- thick enough to survive the ~6x downscale
+    // the scan measures at, and identical at any output resolution.
+    float w = zoom / 150.0;
+    tn /= w;
+    trn /= w;
 
-    // The picture, shattered through the folded coordinate.
+    float lace  = exp(-tn)       + 0.7 * exp(-trn);         // the curves
+    float halo  = exp(-tn / 2.2) + 0.7 * exp(-trn / 2.2);   // their near field
+    float spark = exp(-tn / 0.45);                          // white hot cores
+
+    // The picture, shattered through the folded coordinate -- gated on `halo`
+    // so the photo lives ON the lace and the field between the curves stays
+    // dark. Written flat (the old pic*0.26) it was a full-frame pedestal that
+    // became the modal luma bucket and swallowed everything else.
     vec3 pic = img(fract(fp * 0.22 + 0.5));
-    vec3 lit = imgPalette(0.30 * audioValence + trap * 0.8) * 1.5;
+    vec3 lit = imgPalette(0.30 * audioValence + clamp(tn * 0.02, 0.0, 2.0)) * 1.5;
 
-    vec3 col = pic * 0.15
-             + lit * lines * (0.55 + 0.35 * audioBeat)
-             + vec3(0.85) * pow(lines * 0.68, 3.0) * 0.30;   // white sparkle core
-    col *= (0.75 + 0.6 * audioLevel + 0.25 * audioCentroid);
+    vec3 col = pic * (0.03 + 0.16 * halo)
+             + lit * lace * (0.60 + 0.20 * audioBeat)
+             + vec3(0.9) * spark * 0.26;                    // white sparkle core
+    // The old audio gain swung from 0.87 in silence to 1.49 at full level,
+    // which dragged the quiet passages below the contrast floor. Narrower now.
+    col *= 0.55 * (0.95 + 0.35 * audioLevel + 0.15 * audioCentroid);
     col *= (1.0 + 0.2 * audioFlux);
 
     col /= 1.0 + 0.30 * max(col.r, max(col.g, col.b));
-    fragColor = vec4(col, 1.0);
+    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }

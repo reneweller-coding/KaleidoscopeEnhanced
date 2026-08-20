@@ -90,8 +90,7 @@ mat2 rotate(float a) { return mat2(cos(a), -sin(a), sin(a), cos(a)); }
 // crossmodal-correspondence research), and a per-orb SHAPE that blends from
 // round toward a soft superellipse (squarish) - so the field is a mixture of
 // long streaks, plump ovals and rounded lozenges instead of uniform circles.
-vec4 orb(vec2 uv, float s, vec2 p, vec3 color, float c, float i,
-         float stretchAmt, float shapeAmt)
+float orbDist(vec2 uv, vec2 p, float i, float stretchAmt, float shapeAmt)
 {
     vec2 d = uv + p;
 
@@ -106,9 +105,7 @@ vec4 orb(vec2 uv, float s, vec2 p, vec3 color, float c, float i,
 
     // Shape variance: exponent 2 = circle, higher = soft superellipse.
     float k = 2.0 + shapeAmt * (0.5 + 0.5 * sin(i * 2.3 - time * 0.07)) * 2.0;
-    float dist = pow(pow(abs(d.x), k) + pow(abs(d.y), k), 1.0 / k);
-
-    return pow(vec4(s / max(dist, 1e-4) * color, 1.0), vec4(c));
+    return pow(pow(abs(d.x), k) + pow(abs(d.y), k), 1.0 / k);
 }
 
 void main()
@@ -130,7 +127,16 @@ void main()
     // scan; core-migration artefact).
     vec4 acc = vec4(0.0);
     uv *= zoomV;
-    uv /= max(dot(uv, uv), 1e-6);             // Mobius inversion (guarded)
+    // CAPPED Mobius inversion.  A bare 1/r^2 inversion sends the screen centre
+    // to infinity: every orb then sits at an effectively infinite distance and
+    // the whole central disc collapsed to one hot singularity while the rest of
+    // the picture sat outside the orb field entirely (measured occ 0.01).
+    // Flooring dot(uv,uv) at rMin^2 caps |uv| at 1/rMin and -- because the cap
+    // engages exactly where |uv| == rMin -- does it continuously, so the centre
+    // becomes a smooth plateau of orbs instead of a blown-out point.  rMin
+    // tracks zoomV so a rolled zoom keeps the same proportions.
+    float rMin = 0.28 * zoomV;
+    uv /= max(dot(uv, uv), rMin * rMin);
     uv  = uv * rotate(tt / 10.0 + audioPhase * 0.05);
 
     for (float i = 0.0; i < ORBS; i += 1.0)
@@ -138,17 +144,38 @@ void main()
         uv.x += cos(uv.y / Y_DIVIDE - tt);
         uv.y += COS_MUL * cos(uv.x * X_MUL) - sin(uv.x / X_DIVIDE - tt);
         float t = i * PI / ORBS * 2.0;
-        float x = radiusV * tan(t);
+        // tan() runs away near t = pi/2 and 3pi/2: two of the twenty orbs were
+        // being flung ~3e7 units off screen, contributing a flat constant and
+        // leaving that side of the ring empty.  Clamping keeps the projective
+        // sweep of the ring but holds every orb inside the picture.
+        float x = radiusV * clamp(tan(t), -4.0, 4.0);
         float y = radiusV * cos(t + tt / 10.0);
         vec2  position = vec2(x, y);
-        // NO gain here: orb() consumes 1.0-color, so brightening the palette
-        // DARKENS the orbs' occlusion and the accumulator runs to white.
         vec3  color = imgPalette(0.0032 * (uv.x + uv.y) + 0.5 * i / COLORSHIFT);
-        acc += 0.65 - orb(uv, orbSize, position, 1.0 - color, CONTRAST,
-                          i, stretchV, shapeV);
+        // Normalise the palette to a fixed LEVEL and keep only its chroma, so the
+        // orb field's exposure no longer rides on whichever slide happens to be up.
+        vec3  oc = color / max(dot(color, vec3(0.3333)), 0.15) * 0.55;
+
+        // Accumulate the orbs' glow DIRECTLY.
+        // The old form was `acc += 0.65 - pow(orbSize/dist * colour, 0.13)`, a
+        // difference of two near-equal numbers: an exponent of 0.13 crushes the
+        // three decades that orbSize/dist actually spans (0.1 .. 60 here) into the
+        // range 0.62 .. 0.77, i.e. the "glow" was essentially the SAME VALUE at
+        // every pixel by construction. Subtracting a 0.65 bias from it left a
+        // residual that hovered around zero and whose sign flipped on nothing more
+        // than orb distance, so `max(-acc, 0.0)` clipped almost the entire frame to
+        // black (measured luma 0.002, occ 0.01) and what survived had no range.
+        // A plain inverse-distance falloff with a softening gap gives real bright
+        // cores and real dark gaps, and is independent of the photo's exposure.
+        float dist = orbDist(uv, position, i, stretchV, shapeV);
+        float g = orbSize / (dist + 0.45);
+        acc.rgb += oc * pow(g, 1.8);
     }
 
-    vec3 col = max(acc.rgb, 0.0);
+    // Exponential tone-map: responds logarithmically, so the exposure stays sane
+    // across the wide range of glow sums the rolled parameters produce, and it can
+    // never exceed 1.0 no matter how hot the field gets.
+    vec3 col = 1.0 - exp(-max(acc.rgb, 0.0) * 0.070);
     col *= 1.0 + 0.5 * audioBeat + 0.3 * audioOnset;
 
     // Mood grade.

@@ -109,7 +109,14 @@ void main()
              * (1.1 + 0.5 * audioKick);
         // 20 slices ADD, so each contributes a twentieth of the column
         temp = max(temp - 0.18, 0.0) * 0.26;
-        dens = clamp(temp * 0.5 + flick * 0.10 * (1.0 - v * 0.4), 0.0, 0.4);
+        // The smoke plume above the flame tip: a much wider, slower column
+        // than the tongue, so the upper half of the frame is haze rather than
+        // black.  Bounded -- 20 slices sum into it.
+        float plume = fnoise(vec2(lx * 3.0 + 3.1, v * 3.2 - time * 1.05));
+        float wide  = clamp(1.0 - abs(lx - 0.5) * (2.1 + 1.1 * v), 0.0, 1.0);
+        dens = clamp(temp * 0.5
+                   + plume * wide * 0.30 * smoothstep(0.04, 0.45, v),
+                     0.0, 0.45);
     }
 
     // Fire ramp: ember -> flame -> white-hot core.
@@ -117,11 +124,7 @@ void main()
     fire      = mix(fire, vec3(1.0, 0.85, 0.35), clamp((temp - 0.55) * 1.6, 0.0, 1.0));
     fire      = mix(fire, vec3(1.3, 1.25, 1.05), clamp((temp - 1.15) * 2.0, 0.0, 1.0));
 
-    // Smoke haze: only where density lingers after the heat has cooled away
-    // (the rising column above the visible flame tip).
-    vec3 smoke = vec3(0.16, 0.15, 0.15) * clamp(dens - temp * 0.4, 0.0, 1.0);
-
-    vec3 col = fire * clamp(temp, 0.0, 1.6) + smoke * 0.55;
+    vec3 col = fire * clamp(temp, 0.0, 1.6);
     // vHue (audioChromaHue) carries a large per-activation offset (up to a
     // full turn) by design elsewhere in the engine -- sin() bounds it to a
     // small +-tint wobble instead of a wide hue swing, so this stays looking
@@ -135,6 +138,20 @@ void main()
                                         + floor(vHeightFrac * 40.0)) * 43758.5453));
     col += vec3(1.3, 1.1, 0.8) * spark * clamp(temp - 0.5, 0.0, 1.0) * 2.0;
 
-    float bright = clamp(temp * 1.15 + dens * 0.45, 0.0, 3.2) * vGlow;
-    fragColor = vec4(col * bright, 1.0);
+    float bright = clamp(temp * 1.15, 0.0, 3.2) * vGlow;
+    vec3 outc = col * bright;
+
+    // Smoke haze: only where density lingers after the heat has cooled away
+    // (the rising column above the visible flame tip).  It is added OUTSIDE
+    // the `bright` term on purpose -- folding density into a brightness that
+    // then multiplied a density-scaled colour made the plume vanish
+    // quadratically, which is why everything above the flame tip used to read
+    // as dead black.  Capped, because 20 depth slices sum into every pixel.
+    float haze = min(clamp(dens - temp * 0.35, 0.0, 1.0), 0.5);
+    outc += vec3(0.17, 0.15, 0.16) * haze * 0.30 * (0.8 + 0.25 * min(vGlow, 2.0));
+
+    // Per-slice soft knee: five fires overlapping used to be able to stack
+    // their white-hot cores into a flat blown-out patch.
+    outc /= 1.0 + 0.28 * max(outc.r, max(outc.g, outc.b));
+    fragColor = vec4(outc, 1.0);
 }

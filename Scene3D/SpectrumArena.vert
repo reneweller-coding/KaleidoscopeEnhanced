@@ -109,10 +109,17 @@ void main()
 
     // Band hue sweeps around the arena; the meter head burns white-hot;
     // dead cubes are a dim blue-grey skeleton.
-    vec3 hue = hueRot(vec3(1.0, 0.25, 0.4),
-                      float(band) * 0.16 + audioChromaHue * 1.4);
+    // Band hue moves in a NARROW band around the arena's own colour rather
+    // than sweeping the wheel: float(band) * 0.16 spanned 4.96 rad across the
+    // 32 bands and audioChromaHue * 1.4 added more than a full extra turn on
+    // top, so the arena was a running rainbow whose rotated colours fell out of
+    // gamut, clipped, and came back as flat primaries -- 57% of the frame past
+    // HSV saturation 0.8.  The base is also pulled off the ceiling.
+    float bandHue = float(band) / 31.0;
+    vec3 hue = hueRot(vec3(1.0, 0.42, 0.52),
+                      0.55 * (bandHue - 0.5) + 0.22 * sin(audioChromaHue));
     vec3 col = hue * (0.55 + 0.6 * (row / 46.0)) * lit
-             + vec3(0.05, 0.06, 0.09) * (1.0 - lit);
+             + vec3(0.075, 0.085, 0.115) * (1.0 - lit);
     col = mix(col, hue * 1.6 + vec3(0.5), head);
     col *= 1.0 + 1.2 * audioDrop;
     col *= clamp(1.0 - vp.z / 90.0, 0.15, 1.0);

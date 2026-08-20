@@ -2,15 +2,17 @@
 out vec4 fragColor;
 /**
  * @file FractalMorphoDendrite.frag
- * @brief FRACTAL MORPHO DENDRITE: Growing bio-luminescent coral & electric dendrite
- * KIFS fractal with dynamic angular branch unfolding, synaptic discharge tips,
- * and high-voltage organic pulsations.
+ * @brief FRACTAL MORPHO DENDRITE: A whole COLONY of growing bio-luminescent coral &
+ * electric dendrite KIFS fractals, one per lattice cell across the frame, with dynamic
+ * angular branch unfolding, synaptic discharge tips, and high-voltage organic pulsations.
  *
  * Audio Reactivity:
- *   audioAdvance -> continuous branch unfolding & growth progression
+ *   audioAdvance -> surges the branch unfolding & growth on top of a steady base growth
  *   audioKick    -> flashes electric branch tip discharges & shoots lightning arcs
- *   audioCentroid-> modulates branch folding complexity and fine tendrils
+ *   audioCentroid-> sharpens the branch/gap falloff (finer tendrils)
  *   audioSubBass -> expands branch trunk thickness breathing
+ *   audioLevel   -> plasma in the water between the colonies
+ *   audioValence -> photo-vs-palette mix on the branch surface
  *   audioChromaHue-> rotates the bio-fluorescent color spectrum
  */
 
@@ -61,16 +63,46 @@ void main() {
     float brn = (branchP > 0.01) ? branchP : 1.0;
     float glw = (glowP > 0.01) ? glowP : 1.0;
 
-    float t = audioAdvance * 0.28 * spd;
+    // Growth clock. audioAdvance alone integrates at only ~0.1 units/s, so
+    // t*0.28 moved by ~0.02 over a whole 7 s probe -- the colony was, for all
+    // practical purposes, a still image (measured motion 0.0081, barely over
+    // the 0.006 static floor). A CONSTANT coefficient on `time` carries the
+    // steady growth and the audio phase is ADDED on top (anti-flicker rule:
+    // no audio value ever multiplies `time`).
+    float t = time * 0.09 * spd + audioAdvance * 0.28 * spd;
 
-    // Center coordinate zoom & rotation. The old base multiplier (2.2) left
-    // |z| small enough that the abs-fold/scale/offset loop below pulls almost
-    // every pixel's trajectory close to the trunk line (x=0) well before the
-    // 9th iteration, so filamentGlow/tipGlow saturate to ~1 across nearly the
-    // whole frame instead of tracing a thin dendrite network. Starting further
-    // out gives the chaotic fold room to actually separate near/far pixels.
-    float scale = (7.0 + 0.4 * sin(audioSwell * 2.0)) * brn;
-    vec2 z = uv * scale;
+    // ---- COLONY LATTICE ------------------------------------------------
+    // One dendrite is a specimen; coral grows as a COLONY.  Everything below
+    // used to run on screen coordinates directly, which put the whole KIFS
+    // basin of attraction into a small rosette in the middle of the frame --
+    // outside it the iteration simply diverges and the picture goes flat.
+    // The plane is now cut into cells and every cell raises its own dendrite,
+    // each with its own twist, size and growth phase, so the structure reaches
+    // all four edges. branchP now sets how MANY colonies there are rather than
+    // how far out the (empty) coordinate field starts.
+    float latFreq = (2.35 + 0.12 * sin(t * 0.11)) * brn;
+    vec2  g   = uv * latFreq;
+    vec2  cid = floor(g) + 0.5;                    // cell centre
+    vec2  q   = g - cid;                           // -0.5 .. 0.5 inside a cell
+    float cellH  = fract(sin(dot(cid, vec2(41.7, 289.1))) * 43758.5453);
+    float cellH2 = fract(sin(dot(cid, vec2(73.3,  11.9))) * 24634.6345);
+
+    // per-colony twist, so the field never looks stamped from one die
+    float cRot = (cellH - 0.5) * 2.4 + 0.10 * sin(t * 0.23 + cellH2 * 6.2831853);
+    q = mat2(cos(cRot), -sin(cRot), sin(cRot), cos(cRot)) * q;
+
+    // each colony breathes at its own pace
+    float cellScale = 0.86 + 0.28 * cellH2 + 0.06 * sin(t * 0.7 + cellH * 6.2831853);
+
+    // 3.4 across ONE CELL. The old multiplier of 2.2 across the WHOLE FRAME
+    // left |z| so small that the abs-fold/scale/offset loop below pulled
+    // nearly every pixel onto the trunk line before the 9th iteration and the
+    // glows saturated to flat white; the later 7.0 fixed that but threw most
+    // of the frame outside the basin entirely. Per cell, 3.4 puts the basin
+    // edge just inside the cell corners: the rosettes nearly touch, and the
+    // little that is left between them is what keeps the contrast up.
+    float scale = 3.4 * (1.0 + 0.05 * sin(audioSwell * 2.0));
+    vec2 z = q * scale * cellScale;
 
     // Symmetrical 6-fold radial mirroring
     float a = atan(z.y, z.x);
@@ -85,7 +117,7 @@ void main() {
     float branchAccum = 0.0;
     float tipGlow = 0.0;
 
-    float foldAngle = (0.75 + 0.25 * sin(t * 0.4) + 0.15 * audioFlux) * fAng;
+    float foldAngle = (0.75 + 0.25 * sin(t * 0.4 + cellH * 6.2831853) + 0.15 * audioFlux) * fAng;
     mat2 rotFold = mat2(cos(foldAngle), -sin(foldAngle), sin(foldAngle), cos(foldAngle));
 
     float branchScale = 1.0;
@@ -112,10 +144,19 @@ void main() {
         float dSeg = length(vec2(z.x, max(0.0, abs(z.y) - 0.4))) / branchScale;
         minDendriteDist = min(minDendriteDist, dSeg);
 
-        // Accumulate branch tips
+        // Accumulate branch tips. dTip USED to be divided by branchScale too,
+        // and that is what flattened the frame: branchScale reaches 1.38^9 ~ 22
+        // by the last iteration, so dTip collapsed to ~0 for EVERY pixel and
+        // exp(-dTip*35) returned ~1 regardless of position. Measured on the
+        // real folded field, the old tipGlow had median 0.667 / p75 0.92 --
+        // i.e. more than half the frame sat above the 0.467 point where the
+        // min(...,0.7) cap below saturates, handing that half an IDENTICAL
+        // additive vec3 of luma 0.70. That is the uniform lift that pushed
+        // luma 0.242 -> 0.404 while contrast fell 0.081 -> 0.043.
+        // The folded coordinate z is already O(1), so use it directly: a
+        // gaussian around the fold attractor is a real tip detector.
         if (i >= 5) {
-            float dTip = length(z) / branchScale;
-            tipGlow += exp(-dTip * 35.0);
+            tipGlow += exp(-dot(z, z) * 3.0);
         }
 
         branchAccum += dot(z, z) * 0.05;
@@ -125,37 +166,49 @@ void main() {
     vec2 sampleUV = fract(z * 0.2 + 0.5);
     vec3 texCol = img(sampleUV);
 
-    // Glowing dendrite filament lines. Sub-bass divides the falloff constant
-    // rather than adding light: a gentler exponent widens the distance band each
-    // trunk occupies, so the branches breathe THICKER on drones without raising
-    // their peak brightness (the caps below depend on that peak staying put).
-    float filamentGlow = exp(-minDendriteDist * (32.0 + 18.0 * audioCentroid) / (1.0 + 0.45 * audioSubBass)) * glw;
+    // Distance to the nearest dendrite, normalised into a shading variable.
+    // Sub-bass divides the falloff constant rather than adding light: a gentler
+    // exponent widens the distance band each trunk occupies, so the branches
+    // breathe THICKER on drones without raising their peak brightness.
+    float dN   = minDendriteDist * (55.0 + 16.0 * audioCentroid) / (1.0 + 0.45 * audioSubBass);
+    float body = exp(-dN);            // the branch itself: ~1 on a trunk, ~0 in the gap
+    float core = exp(-dN * dN * 3.0); // the hot filament core, much tighter than body
 
     // Palette mixing
-    vec3 palA = imgPalette(branchAccum * 0.1 + t * 0.05);
-    vec3 palB = imgPalette(branchAccum * 0.1 + 0.5);
+    vec3 palA = imgPalette(branchAccum * 0.1 + t * 0.05 + cellH * 0.37);
+    vec3 palB = imgPalette(branchAccum * 0.1 + 0.5 + cellH * 0.37);
     vec3 col = mix(palA, palB, 0.5 + 0.5 * sin(branchAccum * 0.5 + t));
 
     col = mix(col, texCol, 0.35 + 0.15 * audioValence);
 
-    // Glowing electric filaments and discharge tips. tipGlow sums 4 fully
-    // UNCAPPED exp(-dTip*35) terms (i=5..8) -- this is the second additive
-    // term the first pass never touched (only filamentGlow got attention).
-    // It commonly reached ~3-4 before any audio boost because the KIFS fold
-    // pulls z toward the same tip attractor for a wide range of starting
-    // pixels near the frame center, and with the 1.6-peak tint channel and
-    // up to 4.5x kick multiplier that alone explains the flat white
-    // hexagonal core. Cap both the raw accumulator and the final tinted term.
-    vec3 electricTint = vec3(1.1, 1.4, 1.8) * min(filamentGlow * (1.0 + 2.5 * audioKick), 0.75);
-    vec3 tipDischarge = vec3(1.5, 0.8, 1.6) * min(min(tipGlow, 1.0) * (1.5 + 3.0 * audioKick), 0.7);
+    // THE PHOTO/PALETTE BASE IS NOT A BACKDROP -- IT IS THE BRANCH SURFACE.
+    // Written flat it covered all 100% of the frame at luma ~0.53 (measured),
+    // which is a textbook uniform lift: it becomes the modal bucket, the
+    // dendrites have to clear two buckets to count, and occ collapses. Gating
+    // it on `body` puts the coral colour ON the branches and leaves genuinely
+    // dark water between them. Measured branch/gap split: body p50 0.24,
+    // p25 0.00 -- roughly a third of the frame stays near black.
+    col *= 0.045 + 0.70 * body;
+
+    // Electric filaments and discharge tips ride ON TOP of that, tightly
+    // localised. Both caps are applied to the TINTED vec3 (house rule) and
+    // sized so the brightest channel peaks at 0.76 -- clipHi stays 0.000.
+    vec3 electricTint = min(vec3(1.1, 1.4, 1.8) * core * glw * (0.28 + 1.6 * audioKick),
+                            vec3(0.46, 0.59, 0.76));
+    vec3 tipDischarge = min(vec3(1.5, 0.8, 1.6) * (tipGlow * 0.12) * (0.9 + 2.0 * audioKick),
+                            vec3(0.48, 0.26, 0.51));
     col += electricTint + tipDischarge;
 
-    // Background organic plasma haze
-    float haze = sin(uv.x * 8.0 + t) * cos(uv.y * 8.0 - t);
-    col += imgPalette(0.3) * (0.15 + 0.1 * haze) * audioLevel;
+    // Faint organic plasma in the water between the colonies. Kept to a 0.04
+    // ceiling: this term is a smooth full-frame field, so any more of it just
+    // re-creates the flat wash it is supposed to hint at.
+    float haze = sin(uv.x * 8.0 + t) * cos(uv.y * 8.0 - t)
+               + 0.5 * sin(uv.x * 3.1 - uv.y * 4.3 + t * 0.7);
+    col += imgPalette(0.3) * (0.04 * (0.5 + 0.5 * haze)) * (0.45 + 0.55 * audioLevel);
 
-    col = pow(col, vec3(0.86));
+    // No gamma lift here any more -- pow(col, 0.86) raised the dark water by a
+    // quarter, which is exactly the wrong end of the picture to touch.
     vec3 _catTone = clamp(col, 0.0, 1.0);
-    _catTone /= 1.0 + 0.8 * max(_catTone.r, max(_catTone.g, _catTone.b));
+    _catTone /= 1.0 + 0.30 * max(_catTone.r, max(_catTone.g, _catTone.b));
     fragColor = vec4(_catTone, 1.0);
 }

@@ -18,8 +18,17 @@
 // up when BOTH endpoints sound — chords literally light up their shape —
 // and the downbeat sends a pulse travelling along the edges.
 //
-// Points budget (60k): 12 nodes x 2500 grains (glow clouds), then 36 edges
-// x ~833 grains (great-circle SLERP arcs on S³).
+// Points budget (60k): 12 nodes x 2250 grains (glow clouds), 36 edges x 750
+// grains (great-circle SLERP arcs on S³), and 6000 grains of the dust field
+// the structure hangs in.
+//
+// The node clouds used to be 2500 grains packed into a half-unit ball 30
+// units out -- a handful of tiny blown-white dots on black, with the rest of
+// the picture empty (occupancy 0.35).  The clouds are now real glowing
+// planets, several times wider and correspondingly fainter per grain, the
+// whole projection is larger, the edge filaments never fall under the ~2.6 px
+// an additive sprite needs to stay legible, and the dust field carries the
+// corners the projected torus can never reach.
 
 in vec4 attrA;
 in vec4 attrB;
@@ -66,7 +75,7 @@ vec3 project4(vec4 q)
     q.xy = mat2(cos(a1), -sin(a1), sin(a1), cos(a1)) * q.xy;
     q.zw = mat2(cos(a2), -sin(a2), sin(a2), cos(a2)) * q.zw;
     q.xz = mat2(cos(a3), -sin(a3), sin(a3), cos(a3)) * q.xz;
-    return q.xyz * (1.55 / (1.35 - q.w)) * 6.5;
+    return q.xyz * (1.55 / (1.35 - q.w)) * 8.4;
 }
 
 // SLERP between two (unit) points on S³ — the geodesic edge.
@@ -84,38 +93,51 @@ void main()
     float idx = attrA.w;
     float r1 = attrB.x, r2 = attrB.y, r3 = attrB.z, r4 = attrB.w;
 
-    vec3  world;
+    // The scene projection: 55 deg vertical FOV (see Scene3DShader::draw).
+    const float kTanY = 0.5206;
+    float aspect = (resolution.y > 0.5) ? resolution.x / resolution.y : 1.7778;
+
+    vec3  world = vec3(0.0);
+    vec3  vpView = vec3(0.0);
+    bool  inView = false;          // layer already given in view space
     vec3  col;
     float bright;
     float sizeMul = 1.0;
+    float sizeMin = 1.5, sizeCap = 13.0;
 
-    if (idx < 30000.0)
+    if (idx < 27000.0)
     {
-        // ---- Node glow clouds: 12 x 2500 grains ----
-        float node = floor(idx / 2500.0);
-        float e = audioChroma[int(node)] * 4.0;        // L1-norm bins ~0..0.3
+        // ---- Node glow clouds: 12 x 2250 grains ----
+        float node = floor(idx / 2250.0);
+        float e = audioChroma[int(min(node, 11.0))] * 4.0;  // L1-norm bins ~0..0.3
 
         vec4 q = nodePos4(node);
         vec3 c3 = project4(q);
 
         // Gaussian cloud around the node; radius swells with its energy.
+        // Three times the old radius: the grains used to pile into a ball a
+        // couple of dozen pixels wide, which clipped to flat white in the
+        // core and left the picture black everywhere else.
         float u = r1 * 6.2831853, v = acos(2.0 * r2 - 1.0);
-        float rad = (0.45 + 0.75 * e) * pow(r3, 0.6);
+        float rad = (1.55 + 2.30 * e) * pow(r3, 0.6);
         world = c3 + vec3(sin(v) * cos(u), cos(v), sin(v) * sin(u)) * rad;
 
         // Node hue = position on the colour wheel (pitch class), rotated by
         // the global musical key hue.
         col = hueRot(vec3(1.0, 0.35, 0.25),
                      node / 12.0 * 6.2831853 * 0.5 + audioChromaHue);
-        bright = (0.20 + 2.6 * e) * (0.8 + 0.4 * audioSwell);
+        // Per-grain brightness drops with the spread, so a planet gains total
+        // light while losing its blown-out core.
+        bright = (0.44 + 1.55 * e) * (0.8 + 0.4 * audioSwell) * 0.46;
         sizeMul = 0.9 + 0.9 * e;
+        sizeMin = 2.2;
     }
-    else
+    else if (idx < 54000.0)
     {
-        // ---- Edge arcs: 36 edges x 833 grains ----
-        float ei   = idx - 30000.0;
-        float edge = floor(ei / 833.0);                // 0..35
-        float t    = fract(ei / 833.0);
+        // ---- Edge arcs: 36 edges x 750 grains ----
+        float ei   = idx - 27000.0;
+        float edge = floor(ei / 750.0);                // 0..35
+        float t    = fract(ei / 750.0);
         edge = min(edge, 35.0);
 
         float a = mod(edge, 12.0);                     // start pitch class
@@ -142,11 +164,36 @@ void main()
                   : (typ < 1.5) ? vec3(1.0, 0.65, 0.20)       // maj 3rd: amber
                                 : vec3(0.75, 0.35, 1.0);      // min 3rd: violet
         col = hueRot(tint, audioChromaHue * 0.5);
-        bright = 0.05 + 2.0 * act + 1.6 * pulse;
-        sizeMul = 0.55;
+        // A silent interval used to leave its filament at 0.05 -- invisible.
+        // The graph itself is the scene's shape, so it stays faintly drawn.
+        bright = 0.30 + 1.9 * act + 1.6 * pulse;
+        sizeMul = 0.85;
+        sizeMin = 2.2; sizeCap = 8.0;
+    }
+    else
+    {
+        // ---- The dust field the structure hangs in: 6000 grains ----
+        // Placed in FRUSTUM coordinates (x,y scaled by depth) rather than in a
+        // world box, which is what keeps it even across the picture at every
+        // distance -- including the corners the projected torus never reaches.
+        inView = true;
+        float dz = 14.0 + r3 * 82.0;
+        float ph = r1 * 6.2831853 + time * 0.06 + audioRotPhase * 0.05;
+        // 2.0 would fit the frustum exactly; 2.25 so the field still reaches
+        // past all four edges when the preset camera rig rolls the view.
+        const float open = 2.25;
+        vpView = vec3((r1 - 0.5) * open * dz * kTanY * aspect + 2.0 * cos(ph),
+                      (r2 - 0.5) * open * dz * kTanY          + 2.0 * sin(ph * 0.79),
+                      dz);
+        col = hueRot(vec3(0.34, 0.48, 0.92), audioChromaHue * 0.5);
+        bright = (0.085 + 0.10 * r3) * (0.8 + 0.4 * audioSwell)
+               * clamp(1.0 - dz / 150.0, 0.0, 1.0);
+        // A speck must stay legible at any distance -- below ~2.6 px an
+        // additive sprite averages away and the far field reads black again.
+        sizeMul = 0.78; sizeMin = 2.6; sizeCap = 9.0;
     }
 
-    vec3 vp = world + vec3(0.0, 0.0, 30.0);
+    vec3 vp = inView ? vpView : world + vec3(0.0, 0.0, 30.0);
     vp.x -= eyeOff;
     gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
     gl_Position.x += eyeOff * 0.05 * gl_Position.w;
@@ -156,8 +203,10 @@ void main()
     float px   = resolution.y / 1080.0;
     float dist = max(vp.z, 0.5);
     gl_PointSize = clamp(110.0 * sizeMul * (0.5 + 0.5 * r4) * px / dist,
-                         1.5, 13.0 * px);
+                         sizeMin, max(sizeCap * px, sizeMin));
 
     col *= bright * (1.0 + 0.25 * audioKick + 0.9 * audioDrop);
-    vCol = vec4(col * 2.8, 1.0);
+    // Cap the TINTED vec3, not the scalar feeding it: a hue-rotated node
+    // colour runs past 1.0 per channel on its own.
+    vCol = vec4(min(col * 2.8, vec3(3.0)), 1.0);
 }

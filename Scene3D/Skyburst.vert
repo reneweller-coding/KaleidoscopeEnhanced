@@ -6,14 +6,15 @@
  */
 // Skyburst.vert — sparks arrive finished; place them under a night sky.
 
-in vec4 attrA;      // xyz = world position, w = age along the trail
-in vec4 attrB;      // x = shell hue, y = brightness
+in vec4 attrA;      // xyz = world position, w = age along the trail / sky elevation
+in vec4 attrB;      // x = shell hue / sky azimuth, y = brightness, z = kind
 
 out vec3  vWorld;
 out float vAge;
 out float vHue;
 out float vBright;
 out float vDist;
+out float vKind;    // 0 = spark trail, 1 = sky dome
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -37,6 +38,7 @@ void main()
     vAge    = attrA.w;
     vHue    = attrB.x;
     vBright = attrB.y;
+    vKind   = attrB.z;
     vDist   = p.z;
 
     gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);

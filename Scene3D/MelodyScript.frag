@@ -8,8 +8,9 @@ in vec4 vCol;
  * @brief Additive ink shader for the scrolling melody-handwriting scene:
  * outputs each ribbon vertex's colour unchanged.
  *
- * All drawing — the pitch trace, octave grid, playhead and onset sparkle
- * ticks, and their audio response (audioMelody history, audioDeltaPitch,
+ * All drawing — the pitch trace, its octave doublings, the nine-line stave with
+ * measure bars, the playhead and the onset accent strokes, and their audio
+ * response (audioMelody history, audioDeltaPitch,
  * audioOnset, audioSwell, audioChromaHue, audioDrop, audioLevel) — is
  * computed upstream in MelodyScript.vert and arrives fully baked in vCol;
  * this stage is a pass-through so the additive blend can build up the

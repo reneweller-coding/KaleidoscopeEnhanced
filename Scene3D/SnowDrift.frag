@@ -26,6 +26,10 @@ in vec4 vCol;
 void main()
 {
     vec2  d = gl_PointCoord - 0.5;
-    float a = exp(-dot(d, d) * 9.0);
-    fragColor = vec4(vCol.rgb * a * 2.2, 1.0);
+    // Tighter Gaussian: at 9.0 the sprite was a soft blob out to its own edge,
+    // so overlapping flakes smeared into a continuous veil. A crisper core
+    // keeps each flake a distinct point of light with dark between them.
+    float a = exp(-dot(d, d) * 15.0);
+    // Additive pass: cap the tinted vector.
+    fragColor = vec4(min(vCol.rgb * a * 2.4, vec3(1.0)), 1.0);
 }

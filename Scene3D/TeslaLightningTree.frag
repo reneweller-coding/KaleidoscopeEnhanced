@@ -6,6 +6,13 @@ out vec4 fragColor;
  * frame, camera ORBITING the trunk; plasma tinted by a bounded hue wobble
  * (never a full rainbow spin), photo colours in the corona.
  *
+ * Three families come out of the generator, told apart by their per-segment
+ * gain (attrB.x): the main bolts striking a wide ground disc, the Lichtenberg
+ * SURFACE CREEP running outward from each strike, and a sparse CORONA of
+ * ionised streamers hanging in the dielectric around the tree.  The latter two
+ * are deliberately far dimmer -- they exist to carry the frame's outer tiles,
+ * which the bare bolt column left black.
+ *
  * Audio Reactivity:
  *   audioKick      -> branch flash (heat + thickness, .comp generator)
  *   audioHigh      -> arc jitter (.comp generator)
@@ -25,6 +32,7 @@ out vec4 fragColor;
 in vec3 vPos;
 in float vHeat;
 in float vBoltID;
+in float vGain;
 
 uniform float time;
 uniform sampler2D tex0;
@@ -75,7 +83,11 @@ void main() {
     vec2 photoUV = vPos.xy * 0.2 + 0.5;
     vec3 photoCol = img(fract(photoUV));
 
-    vec3 col = (plasmaCol * 1.1 + photoCol * 0.3) * (0.55 + 0.7 * vHeat) * arc * glw;
+    // vGain separates the families: main strokes at full strength, the ground
+    // creep and the corona streamers well behind them, so the added fill never
+    // competes with the discharge itself.
+    vec3 col = (plasmaCol * 1.1 + photoCol * 0.3) * (0.55 + 0.7 * vHeat)
+             * vGain * arc * glw;
     col /= 1.0 + 0.35 * max(col.r, max(col.g, col.b));
 
     col = hueRot(col, sin(audioChromaHue) * 0.25 + hue);   // bounded tint, no full rainbow spin

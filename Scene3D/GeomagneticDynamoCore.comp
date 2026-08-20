@@ -11,6 +11,12 @@
 // so a generator that writes one loose vertex per unit produces nothing
 // usable -- the points have to be widened into real triangles here.
 //
+// Only the quad's CENTRE is written; the four corners are spread in VIEW space
+// by the vertex stage.  Building the quad here in the XY plane used to work
+// only while the camera was unrotated: the vertex stage's continuous yaw turns
+// an XY quad edge-on every ~11 s, and the whole column field thinned away to
+// nothing each time round.
+//
 // The draw count MUST be published through atomicAdd(cmd[4], n): the shared
 // Blend/IndirectClamp.comp runs after every generator and overwrites cmd[0]
 // with min(cmd[4], maxVertices), so a generator that writes cmd[0] itself has
@@ -27,73 +33,125 @@ uniform float audioAdvance;
 uniform float audioKick;
 uniform float audioBass;
 uniform float audioHigh;
+uniform float audioSwell;
 uniform float dynamoP;
 uniform float coriolisP;
 uniform float speedP;
 
-const uint POINTS = 4096u;      // 64 columns x 64 points
+// The scene projection: 55 deg vertical FOV (see Scene3DShader::draw).  The
+// generator has no `resolution`; the flux haze is laid out for 16:9 and the
+// vertex stage stretches x for the actual aspect.
+const float kTanY = 0.5206;
+const float kAsp  = 1.7778;
 
-// attrA = (pos.xyz, 1.0), attrB = (normal.xyz, phase) -- the 8-float stride
-// Scene3DShader binds as attrA/attrB.
+const uint COLS     = 160u;     // convective columns
+const uint PTS      = 96u;      // points along each column
+const uint CORE_PTS = 15360u;   // COLS * PTS
+const uint HAZE_PTS = 6144u;    // flux-fog motes filling the frustum
+const uint TOTAL    = 21504u;   // x 6 = 129024 vertices
+
+float hash11(float p) {
+    p = fract(p * 0.1031);
+    p *= p + 47.19;
+    p *= p + p;
+    return fract(p);
+}
+
+// attrA = (centre.xyz, corner), attrB = (radius, phase, isHaze, spare).
 // corner: 0=(-1,-1) 1=(1,-1) 2=(1,1) 3=(-1,1).  The fragment shader needs a
 // quad-local coordinate for its round sprite falloff -- gl_PointCoord is NOT
 // available here because geom="indirect" draws GL_TRIANGLES, not GL_POINTS.
-void writeVertex(uint slot, vec3 p, vec3 n, float phase, float corner)
+void writeVertex(uint slot, vec3 c, float radius, float phase, float isHaze, float corner)
 {
     uint o = slot * 8u;
-    verts[o + 0u] = p.x;  verts[o + 1u] = p.y;  verts[o + 2u] = p.z;
+    verts[o + 0u] = c.x;     verts[o + 1u] = c.y;     verts[o + 2u] = c.z;
     verts[o + 3u] = corner;
-    verts[o + 4u] = n.x;  verts[o + 5u] = n.y;  verts[o + 6u] = n.z;
-    verts[o + 7u] = phase;
+    verts[o + 4u] = radius;  verts[o + 5u] = phase;   verts[o + 6u] = isHaze;
+    verts[o + 7u] = 0.0;
 }
 
-// A camera-facing quad: the scene camera looks down -z, so an XY-plane quad
-// always faces it without needing a view matrix in here.
-void emitQuad(vec3 c, vec3 n, float phase, float r)
+void emitSprite(vec3 c, float radius, float phase, float isHaze)
 {
     uint base = atomicAdd(cmd[4], 6u);
     if (base + 6u > maxVertices) return;
 
-    vec3 a = c + vec3(-r, -r, 0.0);
-    vec3 b = c + vec3( r, -r, 0.0);
-    vec3 d = c + vec3( r,  r, 0.0);
-    vec3 e = c + vec3(-r,  r, 0.0);
-
-    writeVertex(base + 0u, a, n, phase, 0.0);
-    writeVertex(base + 1u, b, n, phase, 1.0);
-    writeVertex(base + 2u, d, n, phase, 2.0);
-    writeVertex(base + 3u, a, n, phase, 0.0);
-    writeVertex(base + 4u, d, n, phase, 2.0);
-    writeVertex(base + 5u, e, n, phase, 3.0);
+    writeVertex(base + 0u, c, radius, phase, isHaze, 0.0);
+    writeVertex(base + 1u, c, radius, phase, isHaze, 1.0);
+    writeVertex(base + 2u, c, radius, phase, isHaze, 2.0);
+    writeVertex(base + 3u, c, radius, phase, isHaze, 0.0);
+    writeVertex(base + 4u, c, radius, phase, isHaze, 2.0);
+    writeVertex(base + 5u, c, radius, phase, isHaze, 3.0);
 }
 
 void main() {
     uvec3 g = gl_GlobalInvocationID;
     uint idx = g.x + 64u * (g.y + 64u * g.z);
-    if (idx >= POINTS) return;
+    if (idx >= TOTAL) return;
 
-    float pNorm = float(idx) / float(POINTS);
     float t = time * 0.4 * (speedP > 0.0 ? speedP : 1.0) + audioAdvance * 0.2;
 
-    // 64 helical convective columns with 64 points each
-    uint columnID = idx / 64u;
-    float zNorm = float(idx % 64u) / 64.0;
-    float z = (zNorm - 0.5) * 4.5;
+    if (idx >= CORE_PTS)
+    {
+        // ---- FLUX FOG -------------------------------------------------
+        // Motes of dissolved field filling the mantle around the core, placed
+        // in FRUSTUM coordinates so the field stays even across the picture at
+        // every depth.  Flagged isHaze = 1: the vertex stage leaves these out
+        // of the camera's orbit, since a background layer must not swing with
+        // the core it sits behind.
+        float hid = float(idx - CORE_PTS);
+        float g1 = hash11(hid * 1.27 + 0.3);
+        float g2 = hash11(hid * 3.11 + 7.9);
+        float g3 = hash11(hid * 5.73 + 2.5);
+        float g4 = hash11(hid * 8.17 + 11.1);
 
-    float colAngle = float(columnID) * 0.09817477;
-    float rCore = (0.8 + 0.5 * sin(float(columnID) * 1.8)) * (dynamoP > 0.0 ? dynamoP : 1.0);
+        float dzh = 12.0 + g3 * 78.0;
+        float hH  = dzh * kTanY;
+        float hW  = hH * kAsp;
+        // 2.0 fits the frustum exactly; 2.35 so the fog still reaches past all
+        // four edges when the preset camera rig rolls and yaws the view.
+        float open = 2.35;
+        float ph = g1 * 6.2831853 + t * 0.10;
 
-    // Coriolis helical column rotation: theta(z) = omega * z
-    float coriolisTheta = z * 2.5 * (coriolisP > 0.0 ? coriolisP : 1.0) + t * 2.0;
-    float columnRadius = 0.25 + 0.1 * sin(z * 4.0 + t * 3.0);
+        vec3 c = vec3((g1 - 0.5) * open * hW + 0.04 * hW * cos(ph),
+                      (g2 - 0.5) * open * hH + 0.04 * hH * sin(ph * 0.81),
+                      dzh);
 
-    float x = cos(colAngle + t * 0.3) * rCore + cos(coriolisTheta) * columnRadius;
-    float y = sin(colAngle + t * 0.3) * rCore + sin(coriolisTheta) * columnRadius;
+        // Sized as a fraction of the half-height at its own depth, so a mote
+        // stays a legible speck however far back it sits.
+        float r = hH * 0.010 * (0.55 + 0.8 * g4);
+        emitSprite(c, r, fract(g2 * 3.0 + 0.15), 1.0);
+        return;
+    }
 
-    vec3 pos = vec3(x, y, z);
-    vec3 normal = normalize(vec3(cos(coriolisTheta), sin(coriolisTheta), 0.5));
+    // ---- HELICAL CONVECTIVE COLUMNS -----------------------------------
+    uint  columnID = idx / PTS;
+    float aNorm = float(idx % PTS) / float(PTS);
+    float cf = float(columnID);
+    float pNorm = float(idx) / float(CORE_PTS);
+
+    float dp = clamp((dynamoP > 0.0 ? dynamoP : 1.0), 0.5, 2.0);
+    float cp = clamp((coriolisP > 0.0 ? coriolisP : 1.0), 0.5, 2.0);
+
+    // FOUR concentric shells rather than one thin annulus: the columns reach
+    // out past the frame edges instead of huddling in the middle.
+    float ring     = mod(cf, 4.0);
+    float colAngle = cf * 2.39996323;        // golden angle -- no visible spokes
+    float rCore    = (0.50 + 0.85 * ring + 0.22 * sin(cf * 1.8)) * (0.75 + 0.35 * dp);
+
+    // The rotation axis is VERTICAL in frame, so the camera's yaw spins the
+    // shell instead of ever turning the whole column field edge-on.
+    float axial = (aNorm - 0.5) * 5.8 * (0.78 + 0.40 * hash11(cf * 13.7));
+
+    float coriolisTheta = axial * 2.5 * cp + t * 2.0 + cf * 0.7;
+    float columnRadius  = (0.26 + 0.12 * sin(axial * 4.0 + t * 3.0)) * (0.8 + 0.5 * dp);
+
+    float spin = t * 0.3;
+    vec3 pos = vec3(cos(colAngle + spin) * rCore + cos(coriolisTheta) * columnRadius,
+                    axial,
+                    sin(colAngle + spin) * rCore + sin(coriolisTheta) * columnRadius);
 
     // Flux blobs thicken with the low end and flare on kicks.
-    float r = 0.022 * (1.0 + 0.9 * audioBass + 1.4 * audioKick + 0.5 * audioHigh);
-    emitQuad(pos, normal, pNorm, r);
+    float r = 0.030 * (1.0 + 0.55 * audioBass + 0.90 * audioKick + 0.30 * audioHigh)
+                    * (1.0 + 0.25 * audioSwell);
+    emitSprite(pos, min(r, 0.075), pNorm, 0.0);
 }

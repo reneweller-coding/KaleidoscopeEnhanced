@@ -65,6 +65,15 @@ void main()
 
     col = col / (1.0 + col * 0.45);
 
+    // The sim carries the photo's colours but the per-channel knee above is a
+    // divide, so it compresses each filament's bright channel harder than its
+    // dark ones and comes out MORE saturated than the picture it started from:
+    // 57% of the frame past HSV saturation 0.8. Pulling a fixed fraction back
+    // toward the filament's own luminance restores the photo's own colour
+    // relationship without touching the flow structure or its brightness.
+    float _pl = dot(col, vec3(0.299, 0.587, 0.114));
+    col = mix(vec3(_pl), col, 0.66);
+
     // A very dark version of the photo underneath keeps the frame from going
     // black in the gaps between filaments — but only just: any more and the
     // slideshow reads as the subject and the particles as an overlay.

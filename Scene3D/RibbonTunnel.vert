@@ -5,9 +5,11 @@
  * this scene's description.
  */
 // RibbonTunnel.vert — a REAL 3D tunnel of 20 glowing ribbons twisting around
-// the flight path.  The tube weaves through space, the bar phase swings the
-// twist, every kick bulges the tunnel just ahead of the camera, drops light
-// all ribbons.  Additive glow, no depth test (order-independent).
+// the flight path, each on its own nested shell (radius 2.5 to 10.6) so the
+// tube reads as a depth of layers rather than one hollow wall.  The tube
+// weaves through space, the bar phase swings the twist, every kick bulges the
+// tunnel just ahead of the camera, drops light all ribbons.  Additive glow, no
+// depth test (order-independent).
 //   attrA.x = t along the tube, attrA.y = side (-1/+1), attrA.w = ribbon index
 //   attrB   = per-ribbon seeds
 // True stereo: eyeOff shifts the view; convergence re-centres after proj.
@@ -62,13 +64,20 @@ void main()
               + 0.5 * sin(6.2831853 * audioBarPhase)
               + time * 0.05 + attrB.x * 6.2831853;
 
+    // NESTED radii: one shared radius drew all 20 ribbons onto a single tube
+    // wall, which left the vanishing point and the four corners of the frame
+    // empty (the scan measured a third of the picture black).  A golden-ratio
+    // spread gives every ribbon its own shell, from a tight one that carries
+    // the centre of the view out to wide ones that sweep the edges.
+    float rmul = 0.42 + 1.35 * fract(ri * 0.6180339);
+
     // Radius: swell breathes it, the kick bulges the tunnel just ahead.
-    float rad = 6.0 * (1.0 + 0.10 * audioSwell + 0.06 * audioBass)
-              + 1.6 * audioKick * exp(-abs(z - 14.0) * 0.10);
+    float rad = 6.0 * rmul * (1.0 + 0.10 * audioSwell + 0.06 * audioBass)
+              + 1.6 * audioKick * rmul * exp(-abs(z - 14.0) * 0.10);
 
     vec2 c2 = cw + vec2(cos(ang), sin(ang)) * rad;
     vec2 tangent = vec2(-sin(ang), cos(ang));
-    c2 += tangent * side * (0.35 + 0.25 * attrB.y);
+    c2 += tangent * side * (0.35 + 0.25 * attrB.y) * (0.6 + 0.5 * rmul);
 
     // Camera rides the SAME weave slightly ahead of its own position (it
     // flies inside the slalom) and rolls into the curves.
@@ -91,7 +100,10 @@ void main()
     float kickGlow = audioKick * exp(-abs(z - 14.0) * 0.10);
     col *= (0.5 + 0.5 * attrB.w)
          * (1.0 + 1.5 * kickGlow + 1.2 * audioDrop);
-    float fog = exp(-z * 0.020);
-    vCol  = vec4(col * fog * 1.1, 1.0);
+    // A touch less fog than the old 0.020: with the ribbons spread over nested
+    // shells, the far half of the tunnel is what carries the frame's edges,
+    // and at 0.020 it had faded to nothing before it got there.
+    float fog = exp(-z * 0.016);
+    vCol  = vec4(col * fog * 1.15, 1.0);
     vSide = side;
 }

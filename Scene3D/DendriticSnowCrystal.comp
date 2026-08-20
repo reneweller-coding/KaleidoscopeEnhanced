@@ -5,6 +5,11 @@ layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
  * @file DendriticSnowCrystal.comp
  * @brief Compute shader simulating 6-fold non-equilibrium dendritic ice snowflake
  * growth and branching hexagonal prism facets in 3D space.
+ *
+ * Builds a DRIFT of fourteen flakes spread through the view frustum plus a fine
+ * ice-dust haze behind them.  A single flake pinned to the origin could only
+ * ever occupy the middle of the picture, and its ribbons were extruded along
+ * the view axis, which made them invisible however thick they were set.
  */
 
 layout(std430, binding = 0) buffer Verts {
@@ -45,8 +50,16 @@ void emitSegment(vec3 pA, vec3 pB, float ice, float armID, float thickness) {
     vec3 dir = pB - pA;
     float len = length(dir);
     dir = (len > 1e-5) ? dir / len : vec3(0.0, 1.0, 0.0);
-    vec3 upv = (abs(dir.y) > 0.95) ? vec3(1.0, 0.0, 0.0) : vec3(0.0, 1.0, 0.0);
-    vec3 side = normalize(cross(dir, upv)) * thickness;
+
+    // The ribbon has to be widened ACROSS THE SCREEN, not along the view axis.
+    // The old code crossed dir with world UP, and for an arm lying in the XY
+    // plane -- which every arm of a flat snowflake does -- that gives a side
+    // vector pointing straight down +Z: every quad came out exactly edge-on to
+    // the camera, so however thick the ribs were set they rendered as
+    // zero-width slivers.  Crossing with the VIEW axis faces them at the lens.
+    vec3 side = cross(dir, vec3(0.0, 0.0, 1.0));
+    float sl = length(side);
+    side = (sl > 1e-4) ? side * (thickness / sl) : vec3(thickness, 0.0, 0.0);
 
     vec3 a0 = pA - side, a1 = pA + side, b0 = pB - side, b1 = pB + side;
     writeVertex(base + 0u, a0, ice, armID);
@@ -57,24 +70,104 @@ void emitSegment(vec3 pA, vec3 pB, float ice, float armID, float thickness) {
     writeVertex(base + 5u, b0, ice, armID);
 }
 
+// The scene projection: 55 deg vertical FOV (see Scene3DShader::draw).  The
+// compute stage gets no `resolution` uniform, so the house 16:9 fallback stands
+// in for the aspect -- the same value TorusKnot.vert falls back to.
+const float kTanY   = 0.5206;
+const float kAspect = 1.7778;
+const float kCamZ   = 6.5;      // the vert stage adds this back on
+
+const uint SEG_SECT    = 682u;
+const uint SEG_FLAKE   = SEG_SECT * 6u;              // 4092
+const uint FLAKES      = 14u;
+const uint FLAKE_TOTAL = SEG_FLAKE * FLAKES;         // 57288
+const uint DUST        = 4000u;
+const uint TOTAL_SEGMENTS = FLAKE_TOTAL + DUST;      // 61288 segs, 367728 verts
+
 void main() {
     uvec3 g = gl_GlobalInvocationID;
     uint id = g.x + 64u * (g.y + 64u * g.z);
-    const uint TOTAL_SEGMENTS = 4096u;
     if (id >= TOTAL_SEGMENTS) return;
 
-    // 6 primary snowflake sectors
-    uint flakeSector = (id / 682u) % 6u;
-    uint segIdx = id % 682u;
+    // ------------------------------------------------------------------
+    // ICE DUST -- a fine frozen haze spread evenly over the FRUSTUM, from just
+    // in front of the lens out to the far dark, drifting down.  A background
+    // layer (the fragment stage shades armID 7 dimmer), but dense enough that
+    // no tile of the picture is ever empty between the flakes.
+    // ------------------------------------------------------------------
+    if (id >= FLAKE_TOTAL) {
+        float di = float(id - FLAKE_TOTAL);
+        float d1 = hash11(di * 1.13 + 0.71);
+        float d2 = hash11(di * 2.37 + 1.93);
+        float d3 = hash11(di * 3.71 + 2.31);
+        float d4 = hash11(di * 4.91 + 3.17);
 
-    float baseAngle = (float(flakeSector) / 6.0) * 6.2831853 + time * 0.15;
+        float dz    = 6.0 + d3 * 30.0;
+        // 1.0 would fit the frustum exactly; 1.12 keeps the field reaching past
+        // all four edges when the preset camera rig rolls and yaws the view.
+        float halfW = 1.12 * dz * kTanY * kAspect;
+        float halfH = 1.12 * dz * kTanY;
+        float fallH = 2.0 * halfH;
+
+        // Only CONSTANT per-speck factors ever multiply the absolute clock; the
+        // audio contribution rides the pre-integrated advance.
+        float fall = (0.45 + 0.55 * d4) * (0.4 + 0.05 * dz);
+        float x = (d1 - 0.5) * 2.0 * halfW
+                + 0.5 * cos(d4 * 6.2831853 + time * 0.5 + audioPhase * 0.2);
+        float y = halfH - mod(d2 * fallH + time * fall + audioAdvance * 0.6 * fall,
+                              fallH);
+
+        vec3  c   = vec3(x, y, dz - kCamZ);
+        float ang = d4 * 6.2831853 + time * 0.25;
+        vec3  dd  = vec3(cos(ang), sin(ang), 0.0);
+        float hl  = dz * 0.0060;                  // ~6 px long at any depth
+        emitSegment(c - dd * hl, c + dd * hl, d1, 7.0, dz * 0.0035);
+        return;
+    }
+
+    // ------------------------------------------------------------------
+    // THE FLAKES -- a whole drift of them, not one pinned to the origin.  A
+    // single flake could only ever occupy the middle of the frame; placing the
+    // drift in FRUSTUM coordinates keeps it evenly spread at every depth.
+    // ------------------------------------------------------------------
+    uint fid = id / SEG_FLAKE;
+    uint rem = id % SEG_FLAKE;
+    uint flakeSector = rem / SEG_SECT;
+    uint segIdx      = rem % SEG_SECT;
+
+    float ff = float(fid);
+    float h1 = hash11(ff * 1.37 + 0.11);
+    float h2 = hash11(ff * 2.71 + 0.53);
+    float h3 = hash11(ff * 3.93 + 1.27);
+    float h4 = hash11(ff * 5.17 + 2.09);
+
+    float vpz    = 5.0 + h3 * 26.0;
+    float halfWf = 1.10 * vpz * kTanY * kAspect;
+    float halfHf = 1.10 * vpz * kTanY;
+    vec3  centre = vec3((h1 - 0.5) * 2.0 * halfWf,
+                        (h2 - 0.5) * 2.0 * halfHf,
+                        vpz - kCamZ);
+
+    // The world size grows with the distance, so a far flake still reads at a
+    // comparable size on screen instead of shrinking away to nothing.
+    float sc = vpz * (0.045 + 0.055 * h4);
+
+    float baseAngle = (float(flakeSector) / 6.0) * 6.2831853
+                    + h2 * 6.2831853
+                    + time * (0.10 + 0.10 * h1);
     vec3 armDir = vec3(cos(baseAngle), sin(baseAngle), 0.0);
     vec3 side60A = vec3(cos(baseAngle + 1.0471975), sin(baseAngle + 1.0471975), 0.0); // +60 deg
     vec3 side60B = vec3(cos(baseAngle - 1.0471975), sin(baseAngle - 1.0471975), 0.0); // -60 deg
 
-    // Growth extension length
+    // Growth extension length.
+    // `growthProgress` used to be computed here and then never read -- the
+    // documented dendritic GROWTH simply never happened, the flake stood fully
+    // formed and only crept round on baseAngle's time*0.15. It now drives a
+    // smooth crystallise/sublimate breath (no fract() wrap, so no jump), which
+    // is the scene's main source of movement.
     float maxGrowth = 3.5 * (0.8 + 0.5 * audioBass);
-    float growthProgress = fract(time * 0.08 + audioAdvance * 0.05);
+    float growthProgress = 0.58 + 0.42 * sin(time * 0.33 + audioAdvance * 0.30
+                                             + h4 * 6.2831853);
 
     vec3 p0 = vec3(0.0);
     vec3 p1 = vec3(0.0);
@@ -88,22 +181,35 @@ void main() {
         p1 = armDir * t1;
         armDist = t0;
     } else {
-        // Secondary & tertiary branching side needles
-        uint branchIdx = (segIdx - 120u) / 28u;
-        uint subSeg = (segIdx - 120u) % 28u;
-        
-        float branchPos = (float(branchIdx) / 20.0) * maxGrowth;
+        // Secondary & tertiary branching side needles.
+        // 14 sub-segments instead of 28 doubles the number of side needles
+        // (20 -> 40) at the same segment budget: the old flake was a bare
+        // skeleton of 0.02-unit hairlines that covered almost no pixels at all
+        // (measured occ 0.00, luma 0.004).
+        uint branchIdx = (segIdx - 120u) / 14u;
+        uint subSeg = (segIdx - 120u) % 14u;
+
+        float branchPos = (float(branchIdx) / 40.0) * maxGrowth;
         vec3 branchOrigin = armDir * branchPos;
 
         vec3 branchDir = (branchIdx % 2u == 0u) ? side60A : side60B;
         float branchLen = (maxGrowth - branchPos) * 0.55 * (1.0 + 0.3 * audioHigh);
 
-        float bt0 = (float(subSeg) / 28.0) * branchLen;
-        float bt1 = (float(subSeg + 1u) / 28.0) * branchLen;
+        float bt0 = (float(subSeg) / 14.0) * branchLen;
+        float bt1 = (float(subSeg + 1u) / 14.0) * branchLen;
 
         p0 = branchOrigin + branchDir * bt0;
         p1 = branchOrigin + branchDir * bt1;
         armDist = branchPos + bt0;
+    }
+
+    // Growth front: everything past it has not crystallised yet. Collapsing the
+    // segment onto the front (rather than dropping it) keeps the vertex slots
+    // stable and gives a clean advancing/retreating tip.
+    float front = growthProgress * maxGrowth;
+    if (armDist > front) {
+        float shrink = clamp(1.0 - (armDist - front) * 3.0, 0.0, 1.0);
+        p1 = mix(p0, p1, shrink);
     }
 
     // 3D snowflake thickness & Z fluting
@@ -111,8 +217,16 @@ void main() {
     p0.z += zFlute;
     p1.z += zFlute;
 
-    float thickness = (0.025 + 0.015 * audioKick) * (1.0 - armDist / (maxGrowth + 1.0));
-    float iceRefract = armDist / maxGrowth;
+    // Local flake space -> world.
+    p0 = centre + p0 * sc;
+    p1 = centre + p1 * sc;
+
+    // Ribs wide enough to actually read as ice plates rather than as wireframe.
+    // Scaled with the flake, so a far flake's arms stay just as legible on
+    // screen as a near one's.
+    float thickness = sc * (0.075 + 0.030 * audioKick)
+                    * (1.0 - 0.55 * armDist / (maxGrowth + 1.0));
+    float iceRefract = clamp(armDist / max(maxGrowth, 1e-3), 0.0, 1.0);
 
     emitSegment(p0, p1, iceRefract, float(flakeSector), thickness);
 }

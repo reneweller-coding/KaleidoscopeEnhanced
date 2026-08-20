@@ -3,10 +3,12 @@ out vec4 fragColor;
 /**
  * @file RelativisticAccretionTorusMHD.frag
  * @brief RELATIVISTIC ACCRETION TORUS MHD: Thick geometrically-inflated accretion torus
- * (Polish Donut) around a Kerr black hole. Relativistic Doppler beaming boost, turbulent
- * magnetohydrodynamic spiral ripples, event horizon shadow illumination, and photo texturing.
+ * (Polish Donut) around a Kerr black hole, with the wide spiral-corrugated accretion flow
+ * that feeds it flaring out of the tube's inner wall to the frame edges. Relativistic Doppler
+ * beaming boost, turbulent magnetohydrodynamic spiral ripples, a radial temperature gradient,
+ * event horizon shadow illumination, and photo texturing.
  *   audioAdvance -> drives Keplerian accretion orbital rotation velocity
- *   audioKick    -> flashes magnetic reconnection flares & relativistic plasma hot spots
+ *   audioKick    -> flares three drifting magnetic reconnection hot spots on the torus
  *   audioSwell   -> thickens radiation-pressure-supported torus funnel & cross-section
  *   audioCentroid-> shifts synchrotron / bremsstrahlung emission spectra
  *
@@ -49,12 +51,31 @@ void main()
     vec3 photo = img(vUV);
 
     vec3 col = vCol * (0.6 + 0.4 * photo) * (0.4 + 0.6 * diff) * boost;
-    col += vec3(1.0, 0.95, 0.85) * (0.25 + 2.5 * audioKick) * (flareGlowP > 0.01 ? flareGlowP : 1.3) * 0.4;
+
+    // Magnetic reconnection flares. These used to be a FLAT full-surface term:
+    // every kick lifted the whole structure's brightness in a single frame, so
+    // the scene's largest frame-to-frame luma step was ~129x its median one
+    // (the JUMP flag) even though nothing about the picture had moved. Real
+    // reconnection is local, so the flare now lives in three slowly drifting
+    // hot spots -- same audio wiring, a fraction of the global step.
+    float hs = 0.0;
+    for (int i = 0; i < 3; ++i)
+    {
+        float fi = float(i);
+        vec2 c = vec2(fract(0.31 * fi + time * 0.037),
+                      0.5 + 0.30 * sin(time * 0.11 + fi * 2.1));
+        vec2 d = vUV - c;
+        d.x -= round(d.x);                       // u wraps around the torus
+        d *= vec2(5.5, 3.0);
+        hs += exp(-dot(d, d));
+    }
+    col += vec3(1.0, 0.95, 0.85) * (0.12 + 1.8 * audioKick)
+         * (flareGlowP > 0.01 ? flareGlowP : 1.3) * 0.4 * min(hs, 1.6);
     col *= (0.85 + 0.35 * audioSwell);
     col += vCol * (audioKick * 0.3);
-    
+
     // Base shading still saturated past the knee on the full tube -- dim at source.
-    col *= 0.55;
+    col *= 0.60;
 
     // Soft knee compression
     col /= 1.0 + 0.35 * max(col.r, max(col.g, col.b));

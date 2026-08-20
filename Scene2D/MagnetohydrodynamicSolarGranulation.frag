@@ -120,9 +120,13 @@ void main()
     float granuleHeat = sqrt(max(0.001, 1.0 - d1 * 2.0)) * lane;
     granuleHeat += (1.0 - v2.x) * 0.25; // Sub-granular detail
     
-    // Magnetic micro-flares localized in intergranular lanes
-    float flareActive = (1.0 - lane) * (flareP > 0.01 ? flareP : 1.5);
-    float microFlare = pow(flareActive, 4.0) * (1.0 + 4.0 * audioKick);
+    // Magnetic micro-flares localized in intergranular lanes. flareActive can
+    // reach flareP's full 2.5, and raising THAT to the fourth power before a
+    // kick multiplies it again put this term near 500 -- the single biggest
+    // reason the photosphere clipped to a flat white sheet. The base is
+    // saturated before the power, and the result is bounded afterwards.
+    float flareActive = (1.0 - lane) * (flareP > 0.01 ? min(flareP, 2.5) : 1.5);
+    float microFlare = min(pow(min(flareActive, 1.25), 4.0) * (1.0 + 4.0 * audioKick), 2.2);
     
     // Color synthesis: Incandescent solar plasma identity tinted with photo palette
     vec3 hotPlasma = vec3(1.0, 0.9, 0.6);
@@ -138,10 +142,19 @@ void main()
     vec3 bg = img(bgUv) * 0.25;
     
     vec3 col = bg;
-    col += mix(laneCol, plasmaCol, lane) * (0.85 + 0.45 * audioSwell);
-    col += flareCol * microFlare * 2.5;
-    col += plasmaCol * (audioKick * 0.35);
-    
+
+    // Granule shading is driven by granuleHeat, not laid on flat: `lane` is at
+    // or near 1 over almost every cell interior, so mix(laneCol, plasmaCol,
+    // lane) was painting the full incandescent plasmaCol across essentially the
+    // whole frame -- a uniform near-white sheet with the lanes as the only
+    // structure. Weighting it by the convective heat profile keeps the rising
+    // cell cores hot and lets their shoulders fall away, which is both darker
+    // overall and higher in real contrast.
+    float heatMask = clamp(granuleHeat, 0.0, 1.4);
+    col += mix(laneCol, plasmaCol * (0.12 + 0.48 * heatMask), lane) * (0.85 + 0.45 * audioSwell);
+    col += min(flareCol * microFlare * 1.1, vec3(0.95));
+    col += plasmaCol * (audioKick * 0.22);
+
     // Soft knee compression
     col /= 1.0 + 0.35 * max(col.r, max(col.g, col.b));
     fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);

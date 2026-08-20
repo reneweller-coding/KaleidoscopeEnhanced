@@ -60,19 +60,30 @@ vec3 hueRot(vec3 c, float a) {
 void main() {
     float r1 = attrB.x, r2 = attrB.y, r3 = attrB.z, r4 = attrB.w;
 
-    // Radius and angle of the particle vortex
-    float radius = 5.0 + r1 * 45.0 + audioSwell * 12.0;
-    float angle  = r2 * 6.2831853 + time * (0.3 + r3 * 0.5) + audioAdvance * 0.4;
-    float height = (r3 - 0.5) * 60.0 + sin(time * 0.5 + r1 * 20.0) * 4.0;
+    // The vortex is a tube around the VIEW axis, with the camera inside it.
+    // It used to be a ring in the XZ plane, radius 5..50, centred 15 units ahead:
+    // a particle is only on screen while |x| < 0.93*z, so with x = cos(a)*radius
+    // and z = 15 + sin(a)*radius the overwhelming majority of the swarm sat far
+    // outside the frustum (and a further ~30% was culled behind the near plane by
+    // the vp.z < 0.3 test). What survived was a sparse, dark arc -- measured luma
+    // 0.011 on a mostly black frame, which is not the "vortex surrounding the
+    // camera" the header describes.
+    float radius = (1.6 + r1 * r1 * 13.5) * (1.0 + 0.22 * audioSwell);
+    float angle  = r2 * 6.2831853 + time * (0.30 + r3 * 0.5) + audioAdvance * 0.4;
 
-    // Radial kick explosion impulse towards lens
-    float impulse = audioKick * exp(-abs(r1 - 0.5) * 4.0) * 15.0;
+    // Radial kick explosion impulse
+    float impulse = audioKick * exp(-abs(r1 - 0.5) * 4.0) * 2.6;
     radius += impulse;
+
+    // Streaming down the tube. Each particle wraps individually at the far end,
+    // where its own alpha has already faded to zero, so no frame-wide jump.
+    const float Z_LEN = 74.0;
+    float zDrift = fract(r4 + time * 0.045 + audioAdvance * 0.05) * Z_LEN + 0.7;
 
     vec3 world = vec3(
         cos(angle) * radius,
-        height,
-        15.0 + sin(angle) * radius + r4 * 10.0
+        sin(angle) * radius + (r3 - 0.5) * 3.0,
+        zDrift
     );
 
     vec3 vp = world;
@@ -90,10 +101,17 @@ void main() {
     gl_PointSize = clamp(180.0 * (0.5 + 0.8 * r4) * px / dist, 2.0, 24.0 * px)
                  * (1.0 + 0.8 * audioKick);
 
-    // Dynamic particle color spectrum
+    // Dynamic particle color spectrum. Depth tint keeps near sparks hot and the
+    // far end of the tube cool, so the swarm has real range instead of one tone.
     vec3 baseCol = imgPalette(0.30 * r2) * 1.4;
     baseCol = hueRot(baseCol, audioChromaHue + r3 * 1.5);
+    float near = exp(-vp.z * 0.055);
+    baseCol *= 0.40 + 1.25 * near;
 
-    float alpha = clamp(1.0 - vp.z / 90.0, 0.0, 1.0) * (0.6 + 0.4 * audioLevel);
-    vCol = vec4(baseCol * (2.5 + audioKick * 2.0), alpha);
+    // Fade in at the mouth and out at the far end: the far fade is what hides the
+    // per-particle wrap of zDrift.
+    float alpha = smoothstep(0.0, 5.0, vp.z)
+                * clamp(1.0 - vp.z / Z_LEN, 0.0, 1.0)
+                * (0.6 + 0.4 * audioLevel);
+    vCol = vec4(baseCol * (2.0 + audioKick * 1.6), alpha);
 }

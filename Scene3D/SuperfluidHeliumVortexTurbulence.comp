@@ -39,6 +39,10 @@ void writeVertex(uint slot, vec3 p, float e1, float e2) {
     verts[o + 7u] = e2;
 }
 
+// Where the eye sits in this scene's world space: the vertex stage pushes the
+// tangle away with vp.z += 5.5, which puts the camera at z = -5.5.
+const vec3 CAMERA = vec3(0.0, 0.0, -5.5);
+
 // A vortex-ring segment is a line from p1 to p2; GL_TRIANGLES needs a real
 // triangle, so it is emitted as a thin two-triangle ribbon.
 void emitSegment(vec3 pA, vec3 pB, float e1, float e2, float thickness) {
@@ -48,8 +52,18 @@ void emitSegment(vec3 pA, vec3 pB, float e1, float e2, float thickness) {
     vec3 dir = pB - pA;
     float len = length(dir);
     dir = (len > 1e-5) ? dir / len : vec3(0.0, 1.0, 0.0);
+
+    // The ribbon has to FACE THE CAMERA.  Widening it along cross(dir, +Y)
+    // put it in the same plane as the ring it belongs to -- and these rings
+    // lie in the xz plane, so every ribbon was presented to the eye EDGE ON
+    // and rasterised to a hairline or to nothing at all.  Four thousand
+    // filaments were being drawn and almost none of them covered a pixel;
+    // that, not the palette, is why this scene measured near-black.
+    vec3 toCam = CAMERA - 0.5 * (pA + pB);
+    vec3 sd = cross(dir, toCam);
+    float sl = length(sd);
     vec3 upv = (abs(dir.y) > 0.95) ? vec3(1.0, 0.0, 0.0) : vec3(0.0, 1.0, 0.0);
-    vec3 side = normalize(cross(dir, upv)) * thickness;
+    vec3 side = ((sl > 1e-5) ? sd / sl : normalize(cross(dir, upv))) * thickness;
 
     vec3 a0 = pA - side, a1 = pA + side, b0 = pB - side, b1 = pB + side;
     writeVertex(base + 0u, a0, e1, e2);
@@ -63,35 +77,46 @@ void emitSegment(vec3 pA, vec3 pB, float e1, float e2, float thickness) {
 void main() {
     uvec3 g = gl_GlobalInvocationID;
     uint id = g.x + 64u * (g.y + 64u * g.z);
-    const uint TOTAL_SEGMENTS = 4096u;
+    // 96 vortex rings of 64 segments.  A denser tangle spread over a wider
+    // volume: 64 rings inside a 2-unit box left the frame's corners empty.
+    const uint TOTAL_SEGMENTS = 6144u;
     if (id >= TOTAL_SEGMENTS) return;
 
     float seed = float(id);
-    float ringID = floor(seed / 64.0); // 64 vortex rings
+    float ringID = floor(seed / 64.0);
     float segIdx = mod(seed, 64.0);
 
     // Vortex ring parameters
-    float ringRadius = (0.5 + 0.5 * hash11(ringID)) * 1.5;
+    float ringRadius = (0.45 + 0.75 * hash11(ringID)) * 2.0;
     float ringAngle = (segIdx / 64.0) * 6.2831853;
 
     // Self-induced translational motion of vortex ring along its axis
     float ringSpeed = 1.0 / max(ringRadius, 0.2);
     float t = time * 0.4 * ringSpeed + audioAdvance * 0.2;
 
-    vec3 ringCenter = vec3(sin(ringID * 2.0) * 2.0, mod(t * 2.0 + ringID * 0.5, 6.0) - 3.0, cos(ringID * 3.0) * 2.0);
+    vec3 ringCenter = vec3(sin(ringID * 2.0) * 3.4,
+                           mod(t * 2.0 + ringID * 0.5, 5.2) - 2.6,
+                           cos(ringID * 3.0) * 2.6);
 
     // Helical Kelvin wave excitations along the vortex core
-    float kelvinAmp = (0.08 + 0.05 * audioHigh) * sin(ringAngle * 12.0 - time * 8.0);
+    float kelvinAmp = (0.10 + 0.07 * audioHigh) * sin(ringAngle * 12.0 - time * 8.0);
     float r = ringRadius + kelvinAmp;
 
-    vec3 p1 = ringCenter + vec3(r * cos(ringAngle), sin(ringAngle * 6.0) * 0.1, r * sin(ringAngle));
+    vec3 p1 = ringCenter + vec3(r * cos(ringAngle), sin(ringAngle * 6.0) * 0.25, r * sin(ringAngle));
 
     // Next segment endpoint
     float nextAngle = ringAngle + (6.2831853 / 64.0);
-    float r2 = ringRadius + (0.08 + 0.05 * audioHigh) * sin(nextAngle * 12.0 - time * 8.0);
-    vec3 p2 = ringCenter + vec3(r2 * cos(nextAngle), sin(nextAngle * 6.0) * 0.1, r2 * sin(nextAngle));
+    float r2 = ringRadius + (0.10 + 0.07 * audioHigh) * sin(nextAngle * 12.0 - time * 8.0);
+    vec3 p2 = ringCenter + vec3(r2 * cos(nextAngle), sin(nextAngle * 6.0) * 0.25, r2 * sin(nextAngle));
 
     float circulation = 0.5 + 0.5 * sin(ringID + time * 3.0 + audioKick * 3.0);
 
-    emitSegment(p1, p2, kelvinAmp, circulation, 0.015);
+    // Ribbon width.  0.015 was a hairline at the ~5.5-unit camera distance,
+    // and worse, the ribbon used to be built EDGE ON to the eye (see
+    // emitSegment), which threw most of even that away.  Widening and
+    // camera-facing multiply, so this sits well below the ~0.042 that width
+    // alone would want: at that combination 6144 filaments cover more than the
+    // whole frame and the tangle rasterises into one solid mat with no gaps
+    // between the vortex lines to read as depth.
+    emitSegment(p1, p2, kelvinAmp, circulation, 0.026);
 }

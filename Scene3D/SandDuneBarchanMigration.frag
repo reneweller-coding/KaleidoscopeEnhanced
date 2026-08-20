@@ -6,9 +6,15 @@ out vec4 fragColor;
  * late light - crescent slip faces, wind-ripple specular, photo blended
  * into the sand.  The gold stays gold (no global hue spin).
  *
+ * The field is a perspective carpet that runs to the horizon (see the .vert),
+ * so the dune sea fills the frame; distance is carried by a dark dusk haze
+ * whose temperature follows the same audioMode as the shadows.
+ *
  * Audio Reactivity:
  *   audioBass      -> dune swell
  *   audioKick      -> sand-glint flash
+ *   audioSwell     -> lift of the far dusk haze (distance breathes with the
+ *                     music's overall energy)
  *   audioAdvance   -> slow downwind dune migration
  *   audioHigh      -> saltation-ripple amplitude (see .vert)
  *   audioZCR       -> sand grain: noisy material rakes the field into wind
@@ -95,6 +101,15 @@ void main() {
     vec3 col = mix(photo, sandCol, 0.55);
     col = col * (0.35 + 0.65 * diff)
         + spec * vec3(1.0, 0.95, 0.8) * (0.5 + audioKick * 0.6) * specAmp;
+
+    // AERIAL PERSPECTIVE.  The field now runs all the way to the horizon, and
+    // without haze the far rows read as one flat sheet of gold with the
+    // sampling grain crawling through it.  The haze air is deliberately DARK
+    // (a dusk desert, not a white-out) and follows the same mode temperature
+    // as the shadows, so the distance recedes instead of glowing.
+    vec3  duskAir = mix(vec3(0.10, 0.10, 0.15), vec3(0.17, 0.12, 0.07), mmaj);
+    float aer = clamp(vWorldPos.z / 34.0, 0.0, 1.0);
+    col = mix(col, duskAir * (0.85 + 0.4 * audioSwell), aer * 0.72);
 
     // NO global chromaHue rotation: dunes must stay SAND-coloured — the
     // musical key only drifts the photo blend, not the identity gold.

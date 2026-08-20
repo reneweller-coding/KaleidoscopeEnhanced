@@ -5,6 +5,8 @@ out vec4 fragColor;
  * @brief SUPERCONDUCTING FLUXONIUM QUBIT CIRCUIT: Fluxonium superconducting quantum circuit.
  * Small Josephson junction shunted by a high-inductance array of larger Josephson junctions
  * (superinductance). Quantum phase slips, microwave gate pulses, and niobium metallic photo texturing.
+ * A whole DIE of them: five qubit loops spread across the chip in frustum coordinates, wired
+ * together by twenty meandering coplanar-waveguide readout traces that cross the full frame.
  *   audioAdvance -> navigates external magnetic flux bias evolution & qubit rotation
  *   audioKick    -> flashes microwave quantum gate transitions & phase-slip bursts
  *   audioSwell   -> widens microstrip waveguide ribbon width & persistent current glow
@@ -44,7 +46,11 @@ void main()
     vec3 photo = img(vUV);
     
     vec3 col = vCol * (0.6 + 0.4 * photo) * core * 1.3;
-    col += vec3(0.95, 0.95, 1.0) * vQubitPulse * (qubitGlowP > 0.01 ? qubitGlowP : 1.4) * 2.2;
+    // The microwave pulse is the brightest thing here and the kick drives it
+    // to 4x; with twenty z-layers of the same loop ADDING on top of each
+    // other it would burn a white bead into the ring.  Cap the additive term.
+    float qg = (qubitGlowP > 0.01 ? qubitGlowP : 1.4);
+    col += vec3(0.95, 0.95, 1.0) * min(vQubitPulse * qg * 1.8, 1.9);
     col += vCol * edge * 1.5;
     col *= (0.85 + 0.35 * audioSwell);
     col += vCol * (audioKick * 0.3);

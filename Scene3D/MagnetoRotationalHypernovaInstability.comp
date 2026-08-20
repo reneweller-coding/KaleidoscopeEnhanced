@@ -5,10 +5,16 @@ layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
  * @file MagnetoRotationalHypernovaInstability.comp
  * @brief Compute generator companion to MagnetoRotationalHypernovaInstability.frag --
  * generates 3D helical magnetic flux tubes and collimated relativistic plasma jets.
+ *
+ * The strand count is up from 64 to 192 and the torus reaches out past the
+ * frame edges; 96 further branches draw a far-field ejecta haze in FRUSTUM
+ * coordinates (flagged attrB.x = 1, which exempts them from the camera tilt).
+ * The real reason the earlier widening pass did not show up in the metrics was
+ * in the VERTEX stage, not here -- see that file.
  */
 
 layout(std430, binding = 0) buffer Verts {
-    float verts[]; // 8 floats per vertex: attrA.xyzw (pos, fluxIdx), attrB.xyzw (pad, fieldEnergy)
+    float verts[]; // 8 floats per vertex: attrA.xyzw (pos, fluxIdx), attrB.xyzw (isHaze, -, -, fieldEnergy)
 };
 
 // DrawArraysIndirectCommand: [0] count, [1] instanceCount, [2] first, [3] baseInstance, [4] rawCount
@@ -24,6 +30,15 @@ uniform float audioMid;
 uniform float audioHigh;
 uniform float audioSwell;
 
+// The scene projection: 55 deg vertical FOV (see Scene3DShader::draw).  The
+// generator has no `resolution`; the ejecta haze is laid out for 16:9 and the
+// vertex stage stretches x for the actual aspect.
+const float kTanY = 0.5206;
+const float kAsp  = 1.7778;
+
+const uint kStrands  = 192u;   // jet + torus strands
+const uint kBranches = 288u;   // + 96 ejecta-haze branches; x 64 x 6 = 110592 verts
+
 float hash11(float p) {
     p = fract(p * 0.1031);
     p *= p + 81.37;
@@ -31,67 +46,149 @@ float hash11(float p) {
     return fract(p);
 }
 
-void writeVertex(uint slot, vec3 p, float e1, float e2) {
+void writeVertex(uint slot, vec3 p, float e1, float e2, float isHaze) {
     uint o = slot * 8u;
     verts[o + 0u] = p.x;  verts[o + 1u] = p.y;  verts[o + 2u] = p.z;
     verts[o + 3u] = e1;
-    verts[o + 4u] = 0.0;  verts[o + 5u] = 0.0;  verts[o + 6u] = 0.0;
+    verts[o + 4u] = isHaze;  verts[o + 5u] = 0.0;  verts[o + 6u] = 0.0;
     verts[o + 7u] = e2;
 }
 
-void emitSegment(vec3 pA, vec3 pB, float e1, float e2, float thickness) {
+// The vert stage tilts the world by 0.55 rad about X before projecting, so the
+// camera looks along this world-space axis.
+const vec3 kViewAxis = vec3(0.0, 0.52269, 0.85252);
+
+void emitSegment(vec3 pA, vec3 pB, float e1, float e2, float thickness, float isHaze) {
     uint base = atomicAdd(cmd[4], 6u);
     if (base + 6u > maxVertices) return;
 
     vec3 dir = pB - pA;
     float len = length(dir);
     dir = (len > 1e-5) ? dir / len : vec3(0.0, 1.0, 0.0);
-    vec3 upv = (abs(dir.y) > 0.95) ? vec3(1.0, 0.0, 0.0) : vec3(0.0, 1.0, 0.0);
-    vec3 side = normalize(cross(dir, upv)) * thickness;
+
+    // Widen the ribbon ACROSS THE SCREEN, not along the view axis.
+    // The old `cross(dir, worldUp)` (with a (1,0,0) fallback for near-vertical
+    // segments) produces a side vector that points straight down the view axis
+    // for any segment lying in the screen plane: dir=(1,0,0) -> side=(0,0,1),
+    // dir=(0,1,0) -> side=(0,0,-1). Those quads came out exactly edge-on to the
+    // camera and rendered as zero-width slivers however thick they were set --
+    // which is most of the torus and a large share of the jet helices.
+    vec3 axis = (isHaze > 0.5) ? vec3(0.0, 0.0, 1.0) : kViewAxis;
+    vec3 side = cross(dir, axis);
+    float sl = length(side);
+    // Degenerate only when the segment runs straight at the lens, where any
+    // perpendicular is equally good.
+    side = (sl > 1e-4) ? side * (thickness / sl) : normalize(cross(dir, vec3(1.0, 0.0, 0.0))) * thickness;
 
     vec3 a0 = pA - side, a1 = pA + side, b0 = pB - side, b1 = pB + side;
-    writeVertex(base + 0u, a0, e1, e2);
-    writeVertex(base + 1u, a1, e1, e2);
-    writeVertex(base + 2u, b0, e1, e2);
-    writeVertex(base + 3u, a1, e1, e2);
-    writeVertex(base + 4u, b1, e1, e2);
-    writeVertex(base + 5u, b0, e1, e2);
+    writeVertex(base + 0u, a0, e1, e2, isHaze);
+    writeVertex(base + 1u, a1, e1, e2, isHaze);
+    writeVertex(base + 2u, b0, e1, e2, isHaze);
+    writeVertex(base + 3u, a1, e1, e2, isHaze);
+    writeVertex(base + 4u, b1, e1, e2, isHaze);
+    writeVertex(base + 5u, b0, e1, e2, isHaze);
 }
 
 void main() {
     uvec3 g = gl_GlobalInvocationID;
     uint idx = g.x + 64u * (g.y + 64u * g.z);
-    
-    // We simulate 64 flux tube streamlines with 64 segments each = 4096 strands
+
     uint strandIdx = idx / 64u;
     uint segIdx    = idx % 64u;
-    if (strandIdx >= 64u) return;
+    if (strandIdx >= kBranches) return;
 
     float t = time * 0.45 + audioAdvance * 0.35;
+
+    if (strandIdx >= kStrands)
+    {
+        // ---- FAR EJECTA HAZE ------------------------------------------
+        // One speck per (branch, segment) slot, spread over the frustum from
+        // behind the engine out to the far dark: a background layer, dim, but
+        // enough that no tile of the picture is ever empty.
+        float hid = float(strandIdx) * 64.0 + float(segIdx);
+        float g1 = hash11(hid * 1.19 + 0.5);
+        float g2 = hash11(hid * 3.37 + 6.1);
+        float g3 = hash11(hid * 5.91 + 2.9);
+        float g4 = hash11(hid * 9.23 + 14.7);
+
+        float dzh = 14.0 + g3 * 80.0;
+        float hH  = dzh * kTanY;
+        float hW  = hH * kAsp;
+        // 2.0 fits the frustum exactly; 2.35 so the field still reaches past
+        // all four edges when the preset camera rig rolls and yaws.
+        float open = 2.35;
+        float ph = g1 * 6.2831853 + t * 0.05;
+
+        vec3 c = vec3((g1 - 0.5) * open * hW + 0.035 * hW * cos(ph),
+                      (g2 - 0.5) * open * hH + 0.035 * hH * sin(ph * 0.77),
+                      dzh);
+
+        float sl = hH * 0.011 * (0.5 + g4);
+        float e  = (0.09 + 0.13 * g4) * (1.0 + 0.8 * audioSwell)
+                 * (1.0 + 0.9 * audioKick * g2);
+        emitSegment(c - vec3(0.0, sl, 0.0), c + vec3(0.0, sl, 0.0),
+                    fract(g2 * 3.0), min(e, 0.42), hH * 0.0060 * (0.6 + 0.8 * g4), 1.0);
+        return;
+    }
+
     float strandSeed = hash11(float(strandIdx) * 17.31);
-    
+
     float s0 = float(segIdx) / 64.0;
     float s1 = float(segIdx + 1u) / 64.0;
 
-    // Helical relativistic jet trajectory along z-axis
-    float jetSign = (strandIdx % 2u == 0u) ? 1.0 : -1.0;
     float baseAngle = strandSeed * 6.2831853;
-    
-    // Position 0
-    float z0 = (s0 * 3.5 - 0.2) * jetSign;
-    float r0 = (0.15 + s0 * 0.8) * (1.0 + 0.3 * audioBass);
-    float theta0 = baseAngle + s0 * 18.0 + t * 2.0 * jetSign;
-    vec3 p0 = vec3(cos(theta0) * r0, sin(theta0) * r0, z0);
+    float bassR = 1.0 + 0.3 * audioBass;
 
-    // Position 1
-    float z1 = (s1 * 3.5 - 0.2) * jetSign;
-    float r1 = (0.15 + s1 * 0.8) * (1.0 + 0.3 * audioBass);
-    float theta1 = baseAngle + s1 * 18.0 + t * 2.0 * jetSign;
-    vec3 p1 = vec3(cos(theta1) * r1, sin(theta1) * r1, z1);
+    vec3 p0, p1;
+    float energy, thick;
 
-    // Magnetic energy & reconnection glow
-    float energy = (1.0 - s0 * 0.6) * (1.0 + 2.5 * audioKick);
-    float thick = (0.015 + 0.02 * (1.0 - s0)) * (1.0 + 0.5 * audioSwell);
+    if (strandIdx % 4u == 3u) {
+        // ---- Equatorial accretion torus (a quarter of the strands).
+        // Without it the whole scene was one thin pencil of helices hugging the
+        // z axis: it filled about a sixth of the frame (measured occ 0.16) and
+        // everything else was black. The torus is the other half of the object
+        // the header already describes ("accretion torus diameter").  Its outer
+        // rings now reach past the frame edges instead of stopping short.
+        float ringSeed = hash11(float(strandIdx) * 3.77);
+        float ringR = (1.55 + ringSeed * 2.55) * bassR;
+        float a0 = s0 * 6.2831853 + baseAngle + t * 0.55;
+        float a1 = s1 * 6.2831853 + baseAngle + t * 0.55;
+        float zTilt = (ringSeed - 0.5) * 0.75;
+        p0 = vec3(cos(a0) * ringR, sin(a0) * ringR, sin(a0 * 3.0 + t) * 0.22 + zTilt);
+        p1 = vec3(cos(a1) * ringR, sin(a1) * ringR, sin(a1 * 3.0 + t) * 0.22 + zTilt);
+        energy = (0.55 + 0.45 * ringSeed) * (1.0 + 2.0 * audioKick);
+        thick = (0.030 + 0.020 * ringSeed) * (1.0 + 0.5 * audioSwell);
+    } else {
+        // ---- Helical relativistic jet trajectory along z-axis.
+        // The old radius law 0.15 + s*0.8 held the outflow inside a 1-unit
+        // cylinder for its whole 3.5-unit length -- a straight pencil, not a
+        // collimated-then-flaring jet. A quadratic flare opens the cone out to
+        // ~2.8 units at the head, which is what actually fills the frame.
+        float jetSign = (strandIdx % 2u == 0u) ? 1.0 : -1.0;
 
-    emitSegment(p0, p1, float(strandIdx) / 64.0, energy, thick);
+        float r0 = (0.14 + s0 * 0.62 + s0 * s0 * 1.75) * bassR;
+        float r1 = (0.14 + s1 * 0.62 + s1 * s1 * 1.75) * bassR;
+        float z0 = (s0 * 4.4 - 0.25) * jetSign;
+        float z1 = (s1 * 4.4 - 0.25) * jetSign;
+        float theta0 = baseAngle + s0 * 18.0 + t * 2.0 * jetSign;
+        float theta1 = baseAngle + s1 * 18.0 + t * 2.0 * jetSign;
+
+        // Alfven-wave kink: the header promises "Alfven wave turbulences" but
+        // nothing perturbed the helix, so all 48 strands traced the same clean
+        // spiral and the bundle read as one solid, featureless shaft.
+        float kAmp = (0.10 + 0.60 * s0 * s0) * (1.0 + 0.6 * audioMid);
+        float kPh = strandSeed * 9.4 + t * 1.3;
+        vec2 k0 = vec2(sin(s0 * 7.0 + kPh), cos(s0 * 5.5 - kPh)) * kAmp;
+        vec2 k1 = vec2(sin(s1 * 7.0 + kPh), cos(s1 * 5.5 - kPh)) * kAmp;
+
+        p0 = vec3(cos(theta0) * r0 + k0.x, sin(theta0) * r0 + k0.y, z0);
+        p1 = vec3(cos(theta1) * r1 + k1.x, sin(theta1) * r1 + k1.y, z1);
+
+        energy = (1.0 - s0 * 0.5) * (1.0 + 2.5 * audioKick);
+        // Hairline ribbons (0.015..0.035) barely registered; widened so the
+        // flux tubes read as plasma rope.
+        thick = (0.038 + 0.045 * (1.0 - s0)) * (1.0 + 0.5 * audioSwell);
+    }
+
+    emitSegment(p0, p1, float(strandIdx) / float(kStrands), energy, thick, 0.0);
 }

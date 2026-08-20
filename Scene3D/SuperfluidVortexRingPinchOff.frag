@@ -5,6 +5,8 @@ out vec4 fragColor;
  * @brief SUPERFLUID VORTEX RING PINCH OFF: Quantized vortex filament reconnection and ring pinch-off
  * in superfluid Helium-II. Crow instability on anti-parallel vortex pairs undergoes topological
  * reconnection, launching stable self-propelling quantized vortex rings with Kelvin wave cascades.
+ * A ring GAS of 168 rings fills the cell, laid out on a jittered lattice in frustum
+ * coordinates by the sibling .comp so it covers the frame at every depth.
  *   audioAdvance -> propels vortex rings along self-induced velocity drift axes
  *   audioKick    -> flashes vortex core reconnection topological pinch-off bursts
  *   audioSwell   -> widens vortex ring core diameter & superfluid luminescence
@@ -66,7 +68,12 @@ void main() {
     vec3 col = coreCol * (0.6 + 0.4 * photoSample) * vGlow;
     col *= (pinchGlowP > 0.01 ? pinchGlowP : 1.2) * (0.85 + 0.35 * audioSwell);
     col += vec3(0.95, 0.95, 1.0) * (audioKick * 0.35);
-    
+
+    // The frame now carries 168 rings instead of one central knot, so the hot
+    // end of the range has to be held BELOW the knee's clipping point (1.47
+    // in, 0.97 out) rather than being left to the clamp.
+    col = min(col, vec3(1.40));
+
     // Soft knee compression
     col /= 1.0 + 0.35 * max(col.r, max(col.g, col.b));
     fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);

@@ -121,10 +121,21 @@ void main() {
     vec3 photoObsidian = img(fract(photoUV));
 
     // Lava temperatures: 1500°C White-Hot Molten Core, 1000°C Yellow/Orange, 700°C Cherry Red, Black Obsidian
-    vec3 lavaWhite  = vec3(1.0, 0.98, 0.90) * 3.5;
-    vec3 lavaYellow = vec3(1.0, 0.75, 0.15) * 2.5;
-    vec3 lavaRed    = vec3(1.0, 0.15, 0.02) * 2.0;
-    vec3 obsidianCrust = palTint(mix(vec3(0.04, 0.05, 0.06), vec3(0.15, 0.12, 0.10), photoObsidian.r), 0.70, 0.18) * photoObsidian;
+    //
+    // HSV saturation is scale-invariant, so multiplying these by 2.0-3.5 never
+    // cost them any: at vec3(1.0, 0.15, 0.02) the cherry red measures 0.98 and
+    // stayed there through the whole shader, which is how a frame at mean luma
+    // 0.09 still came out with 93% of its pixels over-saturated.  Same three
+    // temperatures in the same order, given the green/blue floor that real
+    // incandescence has.
+    vec3 lavaWhite  = vec3(1.0, 0.98, 0.90) * 3.0;
+    vec3 lavaYellow = vec3(1.0, 0.78, 0.34) * 2.2;
+    vec3 lavaRed    = vec3(1.0, 0.38, 0.24) * 1.8;
+    // The crust was the palette-tinted rock MULTIPLIED by the photo, i.e. the
+    // picture squared, which drove the obsidian to near-black and left the
+    // orange terms below as the only colour in the frame.
+    vec3 obsidianCrust = palTint(mix(vec3(0.05, 0.055, 0.065), vec3(0.17, 0.15, 0.135), photoObsidian.r), 0.70, 0.18)
+                       * (0.35 + 0.65 * photoObsidian);
 
     // Molten fault line coloring
     vec3 faultMagma = mix(lavaRed, lavaYellow, smoothstep(0.4, 0.8, faultLine));
@@ -135,14 +146,25 @@ void main() {
 
     // Shading composition
     vec3 col = mix(obsidianCrust, faultMagma, faultLine);
-    col += lavaWhite * eruptionFlash;
+    col += min(lavaWhite * eruptionFlash, vec3(1.6));
 
-    // Convective magma surface glow
+    // Convective magma surface glow.  This is the single biggest source of the
+    // garish reading: exp(-rV * 2.0) covers most of the frame, so a near-pure
+    // orange at saturation 0.95 was laid over EVERY pixel including the crust
+    // that is meant to read as cold rock.  Same warm glow, off the ceiling.
     float coreGlow = exp(-rV * 2.0) * (0.4 + 0.6 * audioSwell);
-    col += vec3(1.0, 0.4, 0.05) * coreGlow;
+    col += vec3(1.0, 0.55, 0.26) * coreGlow * 0.85;
 
     col = hueRot(col, hue);   // chromaHue handled inside imgPalette
-    col = pow(col, vec3(0.88));
 
-    fragColor = vec4(col, 1.0);
+    // A last bounded pull off the saturation ceiling: lava IS orange, so this
+    // is deliberately gentle -- just enough that the incandescent half of the
+    // frame stops reading as a single flat primary.
+    float _lum = dot(col, vec3(0.299, 0.587, 0.114));
+    col = mix(vec3(_lum), col, 0.80);
+
+    col = pow(max(col, 0.0), vec3(0.88));
+    vec3 _catTone = clamp(col, 0.0, 1.0);
+    _catTone /= 1.0 + 0.26 * max(_catTone.r, max(_catTone.g, _catTone.b));
+    fragColor = vec4(_catTone, 1.0);
 }

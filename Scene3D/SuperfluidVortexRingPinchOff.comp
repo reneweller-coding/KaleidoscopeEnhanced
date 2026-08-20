@@ -6,6 +6,19 @@ layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
  * @brief Compute generator companion to SuperfluidVortexRingPinchOff.frag --
  * generates 3D quantized vortex filaments undergoing Crow instability pinch-off into
  * propagating toroidal vortex rings in superfluid liquid Helium-II.
+ *
+ * SCREEN-FILL PASS.  Three faults kept this scene to occ 0.11:
+ *   1. every ring was concentric about the view axis, so the whole tangle was one
+ *      small disc in the middle of the frame;
+ *   2. emitSegment built its width vector as cross(dir, (0,1,0)) -- for a ring
+ *      lying in the XY plane that comes out along +z, i.e. EDGE ON to the camera,
+ *      so the filaments rendered as near-zero-width slivers;
+ *   3. the companion .vert tilted the scene AFTER pushing it down the view axis,
+ *      which swung the whole tangle below the bottom edge (fixed there).
+ * The rings are now laid out on a jittered 14 x 12 lattice in FRUSTUM coordinates
+ * -- lateral slot, ring radius and filament thickness all scale with depth -- and
+ * each ring carries its own axis, so the ring gas fills the picture at every
+ * distance.  The width vector is billboarded against the view direction.
  */
 
 layout(std430, binding = 0) buffer Verts {
@@ -24,6 +37,22 @@ uniform float audioBass;
 uniform float audioMid;
 uniform float audioHigh;
 uniform float audioSwell;
+// Documented in the .frag's per-activation block but read by nobody until now:
+// the Kelvin-wave cascade is a property of the FILAMENT, so it belongs here.
+uniform float kelvinP;
+
+// The scene projection: 55 deg vertical FOV, and the camera distance the
+// companion .vert applies (vp.z += kCam).  No `resolution` uniform reaches a
+// generator program, so the layout assumes a 16:9 frame; a narrower frame simply
+// pushes the outermost lattice column past the edge.
+const float kTanY  = 0.5206;
+const float kAspect = 1.7778;
+const float kCam   = 4.5;
+
+const uint  COLS  = 14u;
+const uint  ROWS  = 12u;
+const uint  RINGS = COLS * ROWS;      // 168 rings
+const uint  SEGS  = 64u;
 
 float hash11(float p) {
     p = fract(p * 0.1031);
@@ -47,8 +76,13 @@ void emitSegment(vec3 pA, vec3 pB, float e1, float e2, float thickness) {
     vec3 dir = pB - pA;
     float len = length(dir);
     dir = (len > 1e-5) ? dir / len : vec3(0.0, 1.0, 0.0);
-    vec3 upv = (abs(dir.y) > 0.95) ? vec3(1.0, 0.0, 0.0) : vec3(0.0, 1.0, 0.0);
-    vec3 side = normalize(cross(dir, upv)) * thickness;
+    // BILLBOARD the width against the view direction (+z away from the camera),
+    // never against a fixed up-vector: a filament lying in the XY plane would
+    // otherwise get a width vector pointing straight at the camera and vanish.
+    vec3 view = vec3(0.0, 0.0, 1.0);
+    vec3 side = cross(dir, view);
+    if (dot(side, side) < 1e-6) side = cross(dir, vec3(0.0, 1.0, 0.0));
+    side = normalize(side) * thickness;
 
     vec3 a0 = pA - side, a1 = pA + side, b0 = pB - side, b1 = pB + side;
     writeVertex(base + 0u, a0, e1, e2);
@@ -62,46 +96,68 @@ void emitSegment(vec3 pA, vec3 pB, float e1, float e2, float thickness) {
 void main() {
     uvec3 g = gl_GlobalInvocationID;
     uint idx = g.x + 64u * (g.y + 64u * g.z);
-    
-    // 64 quantized vortex rings with 64 segments each
-    uint ringIdx = idx / 64u;
-    uint segIdx  = idx % 64u;
-    if (ringIdx >= 64u) return;
 
-    float t = time * 0.45 + audioAdvance * 0.4;
-    float seed = hash11(float(ringIdx) * 31.17);
-    
-    float s0 = float(segIdx) / 64.0;
-    float s1 = float(segIdx + 1u) / 64.0;
+    uint ringIdx = idx / SEGS;
+    uint segIdx  = idx % SEGS;
+    if (ringIdx >= RINGS) return;
+
+    float t  = time * 0.45 + audioAdvance * 0.4;
+    float fi = float(ringIdx);
+    float h0 = hash11(fi * 31.17);
+    float h1 = hash11(fi * 12.71 +  5.30);
+    float h2 = hash11(fi *  7.93 + 11.10);
+    float h3 = hash11(fi * 23.41 +  3.70);
+    float h4 = hash11(fi *  3.19 + 19.70);
+
+    // ---- FRUSTUM PLACEMENT --------------------------------------------
+    float dz    = 2.7 + 8.6 * h0;                 // view-space depth of this ring
+    float halfH = dz * kTanY;
+    float halfW = halfH * kAspect;
+
+    uint  gx = ringIdx % COLS;
+    uint  gy = (ringIdx / COLS) % ROWS;
+    float fx = ((float(gx) + 0.5) / float(COLS) - 0.5) * 2.0 + (h1 - 0.5) * 0.13;
+    float fy = ((float(gy) + 0.5) / float(ROWS) - 0.5) * 2.0 + (h2 - 0.5) * 0.15;
+
+    vec3 ctr = vec3(fx * halfW * 1.02, fy * halfH * 1.02, dz - kCam);
+
+    // Toroidal ring, sized as a constant fraction of the frame at its own depth.
+    float ringR = halfH * (0.085 + 0.155 * h3);
+
+    // Each ring carries its own circulation axis and self-propels along it.
+    float aTh = h3 * 3.14159265;
+    float aPh = h4 * 6.2831853;
+    vec3  axis = vec3(sin(aTh) * cos(aPh), sin(aTh) * sin(aPh), cos(aTh));
+    vec3  ref  = (abs(axis.z) > 0.9) ? vec3(1.0, 0.0, 0.0) : vec3(0.0, 0.0, 1.0);
+    vec3  uAx  = normalize(cross(axis, ref));
+    vec3  wAx  = cross(axis, uAx);
+
+    // Self-induced drift along the ring's own axis, wrapping through its slot.
+    float travel = (fract(h0 + t * 0.26 * (0.6 + 0.8 * h4)) - 0.5) * halfH * 0.85;
+    vec3  base   = ctr + axis * travel;
+
+    float s0 = float(segIdx) / float(SEGS);
+    float s1 = float(segIdx + 1u) / float(SEGS);
 
     float ang0 = s0 * 6.2831853;
     float ang1 = s1 * 6.2831853;
 
-    // Toroidal vortex ring radius
-    float ringR = 0.5 + seed * 0.8;
-    
-    // Ring propagating along Z-axis: z = v_self * t
-    float zTravel = fract(seed + t * 0.3) * 4.0 - 2.0;
-
     // Crow instability azimuthal wavy perturbations: delta R = epsilon * cos(m * phi)
-    float crowWavy0 = sin(ang0 * 5.0 - t * 4.0) * 0.06;
-    float crowWavy1 = sin(ang1 * 5.0 - t * 4.0) * 0.06;
+    float kelvin = clamp((kelvinP > 0.01 ? kelvinP : 1.0), 0.6, 2.2);
+    float crow0 = sin(ang0 * 5.0 - t * 4.0 + fi) * 0.11 * ringR * kelvin;
+    float crow1 = sin(ang1 * 5.0 - t * 4.0 + fi) * 0.11 * ringR * kelvin;
 
-    vec3 p0 = vec3(
-        (ringR + crowWavy0) * cos(ang0),
-        (ringR + crowWavy0) * sin(ang0),
-        zTravel
-    );
+    vec3 p0 = base + (uAx * cos(ang0) + wAx * sin(ang0)) * (ringR + crow0);
+    vec3 p1 = base + (uAx * cos(ang1) + wAx * sin(ang1)) * (ringR + crow1);
 
-    vec3 p1 = vec3(
-        (ringR + crowWavy1) * cos(ang1),
-        (ringR + crowWavy1) * sin(ang1),
-        zTravel
-    );
-
-    // Pinch-off reconnection flash
-    float pinchFlash = (1.0 + sin(ang0 * 5.0 - t * 4.0) * 1.5) * (1.0 + 3.0 * audioKick);
-    float thick = (0.02 * (1.0 + 0.3 * audioSwell));
+    // Pinch-off reconnection flash.  Clamped at BOTH ends: the top so a loud
+    // beat cannot flatten all 168 rings to white, the bottom because the old
+    // expression went negative over a quarter of every ring's circumference and
+    // clamped to black there -- a quantized vortex filament is continuous, and
+    // the gaps were throwing away a quarter of the scene's coverage.
+    float pinchFlash = clamp((1.0 + sin(ang0 * 5.0 - t * 4.0 + fi) * 1.5)
+                           * (1.0 + 3.0 * audioKick), 0.22, 2.2);
+    float thick = halfH * 0.0065 * (1.0 + 0.3 * audioSwell);
 
     emitSegment(p0, p1, s0, pinchFlash, thick);
 }

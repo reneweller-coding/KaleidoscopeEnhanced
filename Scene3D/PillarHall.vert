@@ -45,7 +45,10 @@ uniform float camHP;
 uniform float heightP;
 uniform float spacingP;
 
-const int GRID = 16;                // 16 x 16 pillars = 256 of the 4900 cubes
+// 30 x 30 pillars = 900 of the 4900 cubes.  At 16 x 16 the colonnade ran out
+// long before the horizon did and most of the frame was empty floor and empty
+// sky; a hall wants to recede until the haze closes it off.
+const int GRID = 30;
 
 void main()
 {
@@ -60,7 +63,12 @@ void main()
     // rectangle.
     if (idx < 0.5)
     {
-        world = c * vec3(240.0, 0.6, 240.0) + vec3(0.0, -0.3, 30.0);
+        // Long enough to reach the 220-unit far plane in one piece: at
+        // 400 x 400 centred on z = 80 the slab ended at z = 280 in front but
+        // its FAR edge fell inside the frustum only because the haze hid it --
+        // with the haze pushed out to 300 units the clipped edge would show as
+        // a bare sliver of black sky just under the horizon line.
+        world = c * vec3(500.0, 0.6, 620.0) + vec3(0.0, -0.3, 140.0);
         n = normalize(vec3(0.0, 1.0, 0.0));
         kind = 0.0;
     }
@@ -79,24 +87,33 @@ void main()
 
         float gx = mod(i, float(GRID));
         float gz = floor(i / float(GRID));
-        // The hall is sized and CENTRED to fit inside the light's 120-unit
-        // box.  Running it from the camera outward the way a corridor wants to
-        // go would push most of the pillars past the map's edge, where the
-        // border reads as "lit" and the shadows simply stop.
+        // The hall now runs well past the light's 120-unit box, the way a
+        // colonnade wants to: everything outside the box simply comes back
+        // unshadowed (see the explicit bounds test in PillarHall.frag's
+        // shadowAt), so the crisp shadow play happens around the camera and
+        // the far hall recedes into flat haze -- which is what distance looks
+        // like anyway.
         float sp = spacingP * 6.5;
 
         // The spectrum sets each pillar's height, banded across the hall so a
-        // chord raises a whole row rather than scattering.
+        // chord raises a whole row rather than scattering.  These are COLUMNS
+        // now, not the knee-high stubs they were: at 2..14 units they all sat
+        // below an eye placed 6..13 up, so the camera looked out over the top
+        // of the whole hall into an empty black sky.
         int band = int(clamp(gx / float(GRID) * 31.0, 0.0, 31.0));
         float e = audioSpectrum[band];
-        float h = heightP * (2.0 + 12.0 * e * (0.5 + 0.9 * attrB.x))
+        // Kept under ~47 units at the loudest: the shadow light's box is 120
+        // tall about the origin, and a pillar whose top leaves it stops
+        // casting.
+        float h = heightP * (7.0 + 20.0 * e * (0.5 + 0.9 * attrB.x))
                 * (1.0 + 0.12 * audioKick);
-        h = max(h, 1.2);
+        h = max(h, 6.0);
 
         vec3 size = vec3(2.2 + 1.4 * attrB.y, h, 2.2 + 1.4 * attrB.z);
-        vec3 base = vec3((gx - float(GRID - 1) * 0.5) * sp,
+        // Only four rows sit behind the eye; the rest recede into the haze.
+        vec3 base = vec3((gx - float(GRID) * 0.5 + 0.5) * sp,
                          0.0,
-                         (gz - float(GRID - 1) * 0.35) * sp);
+                         (gz - 4.0) * sp);
 
         world = c * size + base + vec3(0.0, h * 0.5, 0.0);
 
@@ -133,7 +150,11 @@ void main()
     }
     else
     {
-        vec3 vp = vec3(world.x - eyeOff, world.y - camHP, world.z);
+        // Eye height, down INSIDE the colonnade.  camHP's 6..13 preset range
+        // put the camera above nearly every pillar; at 1.6..4.5 the columns
+        // tower over it and carry the picture to its top edge.
+        float eyeY = 1.6 + camHP * 0.22;
+        vec3 vp = vec3(world.x - eyeOff, world.y - eyeY, world.z);
         gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
         gl_Position.x += eyeOff * 0.045 * gl_Position.w;
     }

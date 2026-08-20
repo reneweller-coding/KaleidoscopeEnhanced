@@ -2,11 +2,13 @@
 out vec4 fragColor;
 /**
  * @file NonEuclideanDodecahedronLoom.frag
- * @brief NON-EUCLIDEAN DODECAHEDRON LOOM: glowing thread-loops woven around
- * dodecahedral symmetry axes, tumbling around all three axes; each strand
- * takes its colour from the photo-palette arc.
+ * @brief NON-EUCLIDEAN DODECAHEDRON LOOM: a frame-spanning shell of twenty
+ * glowing thread-knots, one woven around each vertex axis of a real
+ * dodecahedron, tumbling around all three axes; each strand takes its colour
+ * from the photo-palette arc.
  *   audioPhase -> thread colour drift    audioAdvance + time -> tumble
- *   (additive threads, source-level gains)
+ *   audioKick  -> swells the ribbon width
+ *   (additive threads, source-level gains, final colour capped)
  */
 
 in vec3 vWorldPos;
@@ -75,12 +77,21 @@ void main() {
     vec3 col = mix(photo, ribbonColor, 0.45);
     col += edgeGlow * imgPalette(0.5 + vRibbonIndex * 0.3) * (0.35 + audioKick * 0.35);
 
-    // Distance fog
+    // Distance fog.  The shell now reaches out to ~4.7 units, and the old
+    // 0.2 coefficient toward near-black swallowed everything but the nearest
+    // strand: gentler now, and toward a faint palette haze instead of the
+    // clear colour, so the outer knots stay legible.
     float dist = length(vWorldPos);
-    col = mix(col, vec3(0.02, 0.02, 0.05), 1.0 - exp(-dist * 0.2));
+    col = mix(col, imgPalette(0.15 + vRibbonIndex * 0.2) * 0.10,
+              clamp(1.0 - exp(-dist * 0.085), 0.0, 0.55));
 
     if (hue > 0.001) col = hueRot(col, hue);
     col /= 1.0 + 0.45 * max(col.r, max(col.g, col.b));
 
-    fragColor = vec4(col * 0.55, 1.0);   // dozens of additive threads overlap
+    // Additive (GL_ONE/GL_ONE, no depth test): cap the FINAL tinted colour so
+    // that the dense knot cores cannot stack past white. Headroom raised from
+    // 0.68/0.40: those were set while most of the ribbon area was being thrown
+    // away edge-on (see the .vert), so the few strands that did survive had to
+    // be held down for a density that never actually arrived.
+    fragColor = vec4(min(col * 0.85, vec3(0.55)), 1.0);
 }

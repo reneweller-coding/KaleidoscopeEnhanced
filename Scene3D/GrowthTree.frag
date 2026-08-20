@@ -8,23 +8,24 @@ out vec4 fragColor;
 in vec3  vObj;
 in vec3  vNormal;
 in vec3  vView;
-in float vDepth;      // 0 = trunk, 1 = tip
-in float vKind;       // 0 = wood, 1 = leaf
+in float vDepth;      // 0 = trunk, 1 = tip  (on the ground: 0 = near, 1 = far)
+in float vKind;       // 0 = wood, 1 = leaf, 2 = forest floor
 
 /**
  * @file GrowthTree.frag
- * @brief Shades the grown tree with two materials picked by vKind: bark
+ * @brief Shades the grown grove with three materials picked by vKind: bark
  * that warms from dark trunk to lighter young wood along vDepth with an
- * inner sap-glow near the tips, and leaves lit mainly by backlit
- * translucency; a cool counter-light keeps the far side of the trunk from
- * going flat black.
+ * inner sap-glow near the tips, leaves lit mainly by backlit translucency,
+ * and the forest floor, whose far reaches dissolve into a palette-tinted
+ * mist; a cool counter-light keeps the far side of the trunks from going
+ * flat black.
  *
- * audioChromaHue picks the sap-glow and leaf hue from the photo-arc
- * palette (imgPalette), audioKick and audioSubBass run a surge of the sap
- * glow up toward the growing tips, audioHigh brightens the leaf's inner
- * glow, audioAmbient lifts leaf backlight translucency, audioLevel
- * strengthens the sky-reflection rim light, and audioBeat pulses the
- * final brightness.
+ * audioChromaHue picks the sap-glow, leaf and ground-mist hues from the
+ * photo-arc palette (imgPalette), audioKick and audioSubBass run a surge of
+ * the sap glow up toward the growing tips, audioHigh brightens the leaf's
+ * inner glow, audioAmbient lifts leaf backlight translucency AND the ground
+ * mist, audioLevel strengthens the sky-reflection rim light, and audioBeat
+ * pulses the final brightness.
  */
 
 uniform sampler2D tex0;
@@ -79,7 +80,18 @@ void main()
 
     vec3 col;
 
-    if (vKind > 0.5)
+    if (vKind > 1.5)
+    {
+        // --- forest floor: dark needle litter that dissolves into mist ---
+        // The far ground lifts toward the palette's own haze instead of
+        // falling to black; that ramp is what gives the grove its depth and
+        // what keeps the bottom half of the frame from reading as empty.
+        vec3 soil = mix(vec3(0.105, 0.115, 0.080), vec3(0.055, 0.070, 0.085), vDepth);
+        col = soil * (0.55 + 0.75 * diff + 0.25 * wrap);
+        vec3 mist = imgPalette(0.55) * 0.17 * (0.75 + 0.5 * audioAmbient);
+        col = mix(col, mist, clamp(vDepth * 1.25, 0.0, 1.0) * 0.85);
+    }
+    else if (vKind > 0.5)
     {
         // --- leaf: thin, so most of its light comes THROUGH it ---
         float hue = fract(0.26 + 0.10 * sin(audioChromaHue) + 0.05 * vObj.y);

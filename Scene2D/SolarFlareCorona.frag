@@ -112,13 +112,26 @@ float fbmPlasma(vec2 p, float turb) {
     return v;
 }
 
-// Blackbody thermal incandescent color curve
+// Blackbody thermal incandescent color curve.
+//
+// The ramps used to be 0.0-0.8 / 0.3-1.4 / 0.8-2.2 while `totalThermal` below
+// never dropped under about 1.2 anywhere in the frame -- a constant coreHeat
+// floor plus a granule term whose MEAN was 0.77. So the red channel's
+// smoothstep was hard at 1.0 for every single pixel, green nearly so, and the
+// Reinhardt tone-map then squeezed what little was left into a band about 0.05
+// wide: one uniform orange, measured contrast 0.035. The scene had no
+// temperature range at all, because the curve's whole working range sat below
+// the coldest point of the picture.
+//
+// The ramps now span the temperature distribution the scene ACTUALLY produces
+// (about -1.1 at the cold limb to +3.3 in the core), so the photosphere runs
+// black -> deep red -> orange -> white-hot across the frame.
 vec3 blackbody(float t) {
-    t = clamp(t, 0.0, 3.0);
+    t = clamp(t, -2.0, 3.4);
     vec3 c = vec3(0.0);
-    c.r = smoothstep(0.0, 0.8, t) * 1.5;
-    c.g = smoothstep(0.3, 1.4, t) * 1.2;
-    c.b = smoothstep(0.8, 2.2, t) * 1.6;
+    c.r = smoothstep(-0.15, 1.35, t) * 1.5;
+    c.g = smoothstep( 0.45, 2.05, t) * 1.2;
+    c.b = smoothstep( 1.25, 3.00, t) * 1.5;
     return c;
 }
 
@@ -164,9 +177,15 @@ void main() {
         promenGlow += (0.012 / (dArch * dArch + 0.003)) * (0.8 + audioKick * 1.5);
     }
 
-    // Solar thermal temperature calculation
-    float coreHeat = exp(-r * (1.8 / heat)) * 2.2;
-    float surfaceHeat = granules * 1.6 + promenGlow * 0.5;
+    // Solar thermal temperature calculation.
+    // `granules` is a positive fbm with mean ~0.44, so `granules * 1.6` was a
+    // uniform +0.7 pedestal under the whole frame rather than a convection
+    // pattern. Centring it makes the intergranular lanes genuinely COLDER than
+    // their surroundings -- which is what a photosphere looks like, and what
+    // gives the surface its contrast. coreHeat falls off faster so the limb and
+    // corona are dark instead of already saturated.
+    float coreHeat = exp(-r * (2.4 / heat)) * 2.1;
+    float surfaceHeat = (granules - 0.44) * 2.4 + promenGlow * 0.45;
     float shockwave = sin(r * 20.0 - t * 6.0 - audioSubBass * 8.0) * exp(-r * 2.0) * audioKick * 1.8;
 
     float totalThermal = coreHeat + surfaceHeat + shockwave;
@@ -188,12 +207,16 @@ void main() {
     vec3 photo = img(clamp(photoUV, 0.0, 1.0));
     col += photo * (0.25 + 0.3 * audioLevel) * vec3(1.2, 0.9, 0.4);
 
-    // Incandescent solar flares & sparks
-    if (audioHigh > 0.4) {
-        float spark = hash21(floor(uv * 50.0) + vec2(floor(time * 25.0), 3.0));
-        if (spark > 0.97) {
-            col += vec3(1.5, 1.2, 0.8) * audioHigh * 1.8;
-        }
+    // Incandescent solar flares & sparks.
+    // The seed used to step at floor(time * 25.0) -- a completely new noise
+    // field 25 times a second, i.e. video static, well past the 8 Hz ceiling for
+    // fine detail. 6 steps/second reads as sparks; the hard audioHigh > 0.4 gate
+    // is now a smoothstep so the whole spark field cannot pop on and off.
+    float sparkGate = smoothstep(0.32, 0.55, audioHigh);
+    if (sparkGate > 0.001) {
+        float spark = hash21(floor(uv * 50.0) + vec2(floor(time * 6.0), 3.0));
+        col += vec3(1.5, 1.2, 0.8) * smoothstep(0.965, 0.985, spark)
+             * audioHigh * 1.8 * sparkGate;
     }
 
     if (hue > 0.001) col = hueRot(col, hue);

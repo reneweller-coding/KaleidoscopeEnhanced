@@ -2,12 +2,15 @@
 out vec4 fragColor;
 /**
  * @file CryogenicBrinicleStalactite.frag
- * @brief CRYOGENIC BRINICLE STALACTITE: Hollow ice stalactite tubes (brinicles) descending
- * from polar sea ice into supercooled seawater. Freezing brine channels, benthic frost webs,
- * refractive ice crystal glints, and polar deep ocean photo texturing.
- *   audioAdvance -> drives descending brine icicle growth & polar current drift
+ * @brief CRYOGENIC BRINICLE STALACTITE: a CURTAIN of hollow ice stalactite tubes (brinicles)
+ * descending from polar sea ice into supercooled seawater at every depth, through a suspended
+ * field of frost motes. Freezing brine channels, benthic frost webs, refractive ice crystal
+ * glints, and polar deep ocean photo texturing.
+ *   audioAdvance -> drives descending brine icicle growth, the freeze front running down each
+ *                   tube, & polar current drift of the frost motes
  *   audioKick    -> flashes brittle ice crystal fracturing & spark glints
- *   audioSwell   -> thickens hollow icicle tube diameter & frost web density
+ *   audioSwell   -> thickens hollow icicle tube diameter & frost web density, and brightens
+ *                   the suspended motes
  *   audioCentroid-> shifts polar ice crystal refraction colors
  *
  * Per-activation variety:
@@ -60,12 +63,17 @@ void main() {
     vec3 iceCyan = vec3(0.25, 0.85, 1.0);
     vec3 iceCol = palTint(iceCyan, vDepth * 0.4 + audioCentroid, 0.25);
     
-    vec2 photoUv = fract(vPos.xy * 0.3 + 0.5);
+    // The curtain now spans tens of world units laterally, so the photo is
+    // sampled in SCREEN-relative coordinates -- a fixed world scale wrapped the
+    // picture dozens of times across the far layers.
+    vec2 photoUv = fract(vPos.xy / max(vPos.z, 0.5) * 0.85 + 0.5);
     vec3 photoSample = img(photoUv);
-    
+
     vec3 col = iceCol * (0.6 + 0.4 * photoSample) * vGlow;
     col *= (iceGlowP > 0.01 ? iceGlowP : 1.2) * (0.85 + 0.35 * audioSwell);
-    col += iceCol * (audioKick * 0.35);
+    // Fracture glint: gated on the tubes, so a kick does not flash the whole
+    // mote field white.
+    col += iceCol * min(audioKick * 0.35, 0.4) * smoothstep(0.55, 0.95, vGlow);
     
     // Soft knee compression
     col /= 1.0 + 0.35 * max(col.r, max(col.g, col.b));

@@ -18,5 +18,8 @@ void main()
 {
     vec2  d = gl_PointCoord - 0.5;
     float a = exp(-dot(d, d) * 10.0);
-    fragColor = vec4(vCol.rgb * a, 1.0);
+    // Blending is additive, so a single sprite is capped here: overlapping
+    // strand points still pool into brighter light, but no one sprite can
+    // drive a pixel to white on its own.
+    fragColor = vec4(min(vCol.rgb * a, vec3(0.9)), 1.0);
 }

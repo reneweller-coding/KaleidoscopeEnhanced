@@ -62,21 +62,45 @@ void main()
     // Topological Dirac/Weyl semimetal Fermi Arcs: open disjoint arcs connecting Weyl nodes (+ and - chirality)
     float dNodes = (nodeDistP > 0.01 ? nodeDistP : 1.4);
     float kCurv  = (arcCurvP > 0.01 ? arcCurvP : 1.2);
-    
-    // Disjoint open Fermi arc from node (-d/2, 0) to (+d/2, 0).
-    // The engine builds 20 ribbons (indices 0..19) -- the layer spread
-    // must centre on 9.5, not 2.5, or 14 of the arcs stack away into the
-    // view depth.  Nested arc heights give the fan its layering instead.
-    float xPos = (tCoord - 0.5) * dNodes;
-    float yPos = (1.0 - 4.0 * (tCoord - 0.5) * (tCoord - 0.5)) * 0.6 * kCurv * (0.55 + 0.045 * rIndex) - 0.3;
-    float zLayer = (rIndex - 9.5) * 0.09 + sin(tCoord * 12.0 - t * 2.5) * 0.08;
-    
+
+    // Disjoint open Fermi arcs, on BOTH crystal surfaces.  The engine builds
+    // 20 ribbons (indices 0..19); the old layout drew all twenty as one small
+    // nested bundle around the origin -- 1.4 units wide in a view 8 units
+    // across, which is why the scan found 86 % of the picture empty.  The
+    // ribbons are now dealt out as ten nested arcs per surface: even indices
+    // curve up out of the top face, odd ones mirror them out of the bottom
+    // face (opposite chirality, which is what the two surfaces really carry),
+    // each successive lane sitting further out and bowing harder, so the fan
+    // opens across the whole frame instead of stacking in the middle of it.
+    float lane   = floor(rIndex * 0.5);        // 0..9
+    float ln     = lane / 9.0;                 // 0..1, inner .. outer
+    float surf   = (mod(rIndex, 2.0) < 0.5) ? 1.0 : -1.0;
+    float arcSc  = 1.0 + 1.35 * ln;
+
+    // 1.45: the outer lanes have to run PAST the left and right edges.  Without
+    // it the fan stopped at 70 % of the frame width and the outermost two tile
+    // columns on each side stayed empty however tall the arcs were bowed.
+    float xHalf = (0.9 + 0.55 * dNodes) * arcSc * 1.45;
+    float xPos  = (tCoord - 0.5) * 2.0 * xHalf;
+
+    float bow   = 1.0 - 4.0 * (tCoord - 0.5) * (tCoord - 0.5);
+    float yAmp  = 0.45 * (0.6 + kCurv) * arcSc;
+    float yPos  = surf * (0.25 + 0.85 * ln + bow * yAmp);
+
+    float zLayer = (lane - 4.5) * 0.22 * surf + sin(tCoord * 12.0 - t * 2.5) * 0.10 * arcSc;
+
     vec3 centerPos = vec3(xPos, yPos, zLayer);
-    
-    vec3 tangent = normalize(vec3(dNodes, -8.0 * (tCoord - 0.5) * 0.6 * kCurv, 0.0));
+
+    vec3 tangent = normalize(vec3(2.0 * xHalf,
+                                  surf * (-8.0 * (tCoord - 0.5)) * yAmp,
+                                  0.0));
     vec3 binormal = normalize(cross(tangent, vec3(0.0, 0.0, 1.0)));
     
-    float width = (ribbonWidthP > 0.001 ? ribbonWidthP : 0.05) * (1.0 + 0.3 * audioSwell);
+    // 1.7: the arcs sit further back now (z 6.2 rather than 4.5) and span a much
+    // wider fan, so the original hairline width came out at barely two pixels of
+    // a 1080-line frame -- a lane that thin averages away to nothing.
+    float width = (ribbonWidthP > 0.001 ? ribbonWidthP : 0.05)
+                * 1.7 * (1.0 + 0.3 * audioSwell);
     vec3 worldPos = centerPos + binormal * (side * width);
     
     // Chiral anomaly / Weyl node current pulse
@@ -87,13 +111,22 @@ void main()
     
     // Camera Transform (V3)
     vec3 vp = worldPos;
-    
-    // 3D rotation
-    float c = cos(t * 0.15), s = sin(t * 0.15);
+
+    // 3D rotation -- a BOUNDED sway, not a turntable.  A full turn takes the
+    // fan (which is now nearly twelve units wide and only two deep) edge on
+    // every ~30 s, and edge on it collapses to a vertical bar in the middle of
+    // a black frame.  +-0.3 rad keeps the parallax without ever losing the face.
+    float rot = 0.30 * sin(t * 0.13);
+    float c = cos(rot), s = sin(rot);
     vp = vec3(vp.x * c - vp.z * s, vp.y, vp.x * s + vp.z * c);
-    vp.z += 4.5;
+    // Far enough back that the widened fan cannot swing through the eye when
+    // the rotation turns it edge-on (its half-span is now ~4.6 units), and
+    // close enough that the outer arcs still run off the top and bottom.
+    vp.z += 6.2;
     vp.x -= eyeOff;
-    
+
     gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
+    if (vp.z < 0.4)
+        gl_Position = vec4(0.0, 0.0, -3.0, 1.0);
 }

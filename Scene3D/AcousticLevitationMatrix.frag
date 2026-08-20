@@ -20,6 +20,10 @@ uniform float interpolation;
  * the companion vertex shader; here only the incoming vCol (already
  * audio-modulated per vertex) and vNormal/vUV feed the lighting and photo
  * blend.
+ *
+ * vCol.a carries the vertex stage's per-primitive brightness: 1.0 down to 0.42
+ * for voxels fading into the depth of the trap, ~0.26 for the far transducer
+ * panel wall that fills the space between them.
  */
 
 void main() {
@@ -33,6 +37,11 @@ void main() {
 
     vec3 col = mix(vCol.rgb * 0.4, photo * 1.3, 0.7);
     col = col * (0.4 + 0.6 * diff) + spec * vec3(1.0, 0.98, 0.9);
+    col *= vCol.a;
 
-    fragColor = vec4(col, 1.0);
+    // Highlight rolloff: a frame this much fuller must not clip to white.
+    float m = max(col.r, max(col.g, col.b));
+    col *= 1.0 / (1.0 + max(0.0, m - 0.78));
+
+    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }

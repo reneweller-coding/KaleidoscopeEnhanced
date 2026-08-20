@@ -24,6 +24,14 @@ void main()
     float e2 = smoothstep(0.80, 0.99, a.y);
     float e3 = smoothstep(0.80, 0.99, a.z);
     float edge = clamp(e1 * e2 + e2 * e3 + e1 * e3, 0.0, 1.0);
-    vec3 col = vCol.rgb * (0.22 + 1.5 * edge);
-    fragColor = vec4(col, 1.0);
+    vec3 col = vCol.rgb * (0.30 + 1.5 * edge);
+
+    // Soft knee instead of a bare hard clip.  A luminous rim multiplies vCol by
+    // up to 1.8, and clipping that per channel is precisely what turns a bright
+    // tinted edge into a flat saturated primary: the brightest channel pins at
+    // 1.0 while the others keep their values, so the hue's ratio is destroyed
+    // exactly where the picture is brightest.  The knee compresses all three
+    // together, so the rims stay bright and keep their colour.
+    col /= 1.0 + 0.30 * max(col.r, max(col.g, col.b));
+    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }

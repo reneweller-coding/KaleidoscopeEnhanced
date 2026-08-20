@@ -53,6 +53,19 @@ vec3 imgPalette(float t) {
     return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
+// Overall level of the photo currently on the texture units, from a fixed
+// 5-tap grid. Every base colour here is photo-derived, so a bright photo left
+// the additive membrane/nucleus glows no headroom at all. The probe rides the
+// tex0/tex1 crossfade, so the gain it feeds can never pop, and being one
+// number for the whole frame it rescales exposure without touching local
+// contrast.
+float photoLevel() {
+    vec3 s = img(vec2(0.25, 0.25)) + img(vec2(0.75, 0.25))
+           + img(vec2(0.25, 0.75)) + img(vec2(0.75, 0.75))
+           + img(vec2(0.50, 0.50));
+    return dot(s * 0.2, vec3(0.299, 0.587, 0.114));
+}
+
 // Procedural cellular Voronoi / membrane noise
 vec3 cellularNoise(vec2 p, float t) {
     vec2 ip = floor(p);
@@ -95,6 +108,12 @@ void main() {
     vec3 colAcc = vec3(0.0);
     float weightAcc = 0.0;
 
+    // Hold the cytoplasm back to a fixed dark base. Every scale's colour is
+    // mix(photo, imgPalette) -- with a bright photo that base alone already sat
+    // near 1.0 and the glowing membranes had nowhere left to go, which flattened
+    // the whole dive to a milky wash.
+    float expGain = clamp(0.26 / max(0.05, photoLevel()), 0.26, 2.4);
+
     for (int s = 0; s < 3; s++) {
         float sf = float(s);
         float relScale = mod(sf - logScale + 3.0, 3.0);
@@ -125,12 +144,16 @@ void main() {
         vec3 texCol = img(sampleUV);
         vec3 palCol = imgPalette(sf * 0.33 + dMemb * 0.3);
 
-        vec3 scaleCol = mix(texCol, palCol, 0.5);
+        vec3 scaleCol = mix(texCol, palCol, 0.5) * expGain;
 
-        // Add glowing membrane walls & nucleus
+        // Add glowing membrane walls & nucleus. The tint constants exceed 1.0
+        // per channel, so the TINTED vectors carry the caps -- bounding only
+        // the scalar glow left vec3(1.2,1.4,1.8) * it running past white. The
+        // nucleus rides the same exposure gain as the base, since imgPalette()
+        // is a photo sample too.
         float nucleusGlow = exp(-length(pScale) * 3.5) * (1.0 + 2.0 * audioKick);
-        scaleCol += vec3(1.2, 1.4, 1.8) * membGlow * (0.8 + 1.5 * audioKick);
-        scaleCol += imgPalette(0.85) * nucleusGlow;
+        scaleCol += min(vec3(1.2, 1.4, 1.8) * membGlow * (0.8 + 1.5 * audioKick), vec3(0.85));
+        scaleCol += min(imgPalette(0.85) * expGain * nucleusGlow, vec3(0.70));
 
         colAcc += scaleCol * w;
         weightAcc += w;
@@ -140,7 +163,9 @@ void main() {
 
     // Respiration pulse
     finalCol *= (0.85 + 0.15 * sin(audioSwell * 3.0));
-    finalCol = pow(finalCol, vec3(0.88));
 
-    fragColor = vec4(clamp(finalCol, 0.0, 1.0), 1.0);
+    finalCol = pow(finalCol, vec3(0.88));
+    vec3 _catTone = clamp(finalCol, 0.0, 1.0);
+    _catTone /= 1.0 + 0.28 * max(_catTone.r, max(_catTone.g, _catTone.b));
+    fragColor = vec4(_catTone, 1.0);
 }

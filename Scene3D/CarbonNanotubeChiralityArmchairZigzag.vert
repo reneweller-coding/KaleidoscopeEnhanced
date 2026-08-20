@@ -17,6 +17,7 @@ out float vConductPulse;
 uniform mat4 projM;
 uniform float eyeOff;
 uniform float time;
+uniform vec2 resolution;
 
 uniform float audioPhase;
 uniform float audioAdvance;
@@ -59,49 +60,79 @@ void main()
     
     float t = time * 0.35 + audioAdvance * 0.3;
     
-    // Single-walled carbon nanotube (SWCNT) cylindrical geometry
-    // Multiple helical ribbons wrapping at chiral angle theta_c (0 = zigzag, 30 deg = armchair)
+    // Single-walled carbon nanotubes (SWCNT) -- a crossing NETWORK of them.
+    // Nanotubes never grow alone: they form aligned bundles and buckypaper
+    // mats.  The 20 ribbons are therefore split into 7 tubes of 3 helical
+    // strands each; every tube is longer than the frame is wide and the tubes
+    // are laid out on a FRUSTUM ladder (y scaled by the tube's own depth), so
+    // the mat crosses the whole picture instead of sitting as one lone pipe.
     float chiralAngle = (chiralAngleP > 0.01 ? chiralAngleP : 0.52359877); // 30 deg default
-    float nStrands = 8.0;
-    float strandOffset = rIndex * (6.2831853 / nStrands);
-    
-    float zPos = (tCoord - 0.5) * 3.6;
-    float tubeR = (tubeRadiusP > 0.01 ? tubeRadiusP : 0.75);
-    
-    // Helical winding around cylinder
-    float phi = zPos * tan(chiralAngle) * 6.0 + strandOffset + t * 1.5;
-    
+    float nStrands = 3.0;
+    float tubeI  = floor(rIndex / nStrands);          // 0..6
+    float strandOffset = mod(rIndex, nStrands) * (6.2831853 / nStrands);
+
+    // Per-TUBE constants (attrB is per-ribbon, so the strands of one tube must
+    // derive their shared numbers from the tube index alone).
+    float h1 = fract(sin(tubeI * 12.9898 + 4.13) * 43758.5453);
+    float h2 = fract(sin(tubeI * 78.2330 + 1.77) * 43758.5453);
+    float h3 = fract(sin(tubeI * 39.4250 + 9.31) * 43758.5453);
+
+    const float kTanY = 0.5206;                       // 55 deg vertical FOV
+    float aspect = (resolution.y > 0.5) ? resolution.x / resolution.y : 1.7778;
+
+    float dz    = 5.0 + h3 * 2.6;                     // depth ladder
+    float halfH = dz * kTanY;
+    float halfW = halfH * aspect;
+
+    // Tube centre: one rung per tube up the frame, gently drifting
+    float cyN = ((tubeI + 0.5) / 7.0) * 2.0 - 1.0;    // -0.857..0.857
+    vec3 cellC = vec3((h1 - 0.5) * 0.70 * halfW + 0.10 * halfW * sin(t * 0.40 + tubeI * 1.7),
+                      cyN * 1.02 * halfH + 0.07 * halfH * cos(t * 0.33 + tubeI * 2.3),
+                      dz);
+
+    // Tube axis: mostly in the picture plane, slowly scissoring, slightly
+    // tilted into depth so the mat reads as three-dimensional.
+    float ang  = (h2 - 0.5) * 1.10 + 0.13 * sin(t * 0.23 + tubeI * 1.9);
+    float tilt = (h3 - 0.5) * 0.50;
+    vec3  A = normalize(vec3(cos(ang), sin(ang), tilt));
+    vec3  U = normalize(cross(A, vec3(0.0, 0.0, 1.0)));
+    vec3  V = cross(A, U);
+
+    float tubeR = halfH * 0.155 * clamp((tubeRadiusP > 0.01 ? tubeRadiusP : 0.75) / 0.75, 0.6, 1.5);
+    float tubeL = 2.7 * halfW;                        // longer than the frame
+    float sAxis = (tCoord - 0.5) * tubeL;
+
+    // Helical winding at the chiral angle theta_c (0 = zigzag, 30 deg = armchair)
+    float phi = sAxis * tan(chiralAngle) * 2.2 + strandOffset + t * 1.5;
+
     // Hexagonal sp2 carbon bond corrugation ripples
-    float hexRipples = sin(zPos * 28.0) * cos(phi * 6.0) * 0.03;
+    float hexRipples = sin(sAxis * 9.0) * cos(phi * 6.0) * 0.045 * tubeR;
     float currentR = tubeR + hexRipples;
-    
-    vec3 centerPos = vec3(
-        cos(phi) * currentR,
-        sin(phi) * currentR,
-        zPos
-    );
-    
-    vec3 tangent = normalize(vec3(-sin(phi) * tan(chiralAngle) * 6.0, cos(phi) * tan(chiralAngle) * 6.0, 1.0));
+
+    vec3 centerLocal = vec3(cos(phi) * currentR, sin(phi) * currentR, sAxis);
+
+    vec3 tangent = normalize(vec3(-sin(phi) * tan(chiralAngle) * 2.2 * tubeR,
+                                   cos(phi) * tan(chiralAngle) * 2.2 * tubeR, 1.0));
     vec3 binormal = normalize(cross(tangent, vec3(cos(phi), sin(phi), 0.0)));
-    
-    float width = (ribbonWidthP > 0.001 ? ribbonWidthP : 0.045) * (1.0 + 0.3 * audioSwell);
-    vec3 worldPos = centerPos + binormal * (side * width);
-    
+
+    // The quad is ~2.6x the sp2 wall: the fragment stage paints the inner
+    // third as the wall and the rest as its metallic sheen, which is screen
+    // coverage for free (no extra geometry).
+    float width = (ribbonWidthP > 0.001 ? ribbonWidthP : 0.045)
+                * clamp(tubeR / 0.75, 0.35, 1.6) * 2.6 * (1.0 + 0.3 * audioSwell);
+    vec3 local = centerLocal + binormal * (side * width);
+
     // Ballistic pi-electron conduction pulse along nanotube axis
     float pulse = exp(-abs(fract(tCoord * 4.0 - t * 3.0 + rIndex * 0.125) - 0.5) * 16.0) * (1.0 + 3.0 * audioKick);
     vConductPulse = pulse;
-    
+
     vCol = imgPalette(fract(rIndex * 0.125 + tCoord * 0.3 + audioCentroid));
-    
+
     // Camera Transform (V3)
-    vec3 vp = worldPos;
-    
-    // 3D rotation
-    float c = cos(t * 0.15), s = sin(t * 0.15);
-    vp = vec3(vp.x * c - vp.z * s, vp.y, vp.x * s + vp.z * c);
-    vp.z += 4.5;
+    vec3 vp = cellC + U * local.x + V * local.y + A * local.z;
+    vp.z = max(vp.z, 0.9);
     vp.x -= eyeOff;
-    
+
     gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 }

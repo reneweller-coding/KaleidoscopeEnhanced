@@ -87,7 +87,12 @@ void main() {
     // frame, and only the weak trap term was left to vary the flat wash.
     // A smaller base multiplier widens the visible |z| range enough to
     // actually reach the escape boundary.
-    float zoomLevel = exp(mod(t * 0.6, 5.0)) * (0.55 * zm);
+    // exp(mod(t * 0.6, 5.0)) snapped from e^5 (148x) back to e^0 every ~8.3 s
+    // -- a hard cut. A raised cosine over the same period dives in and eases
+    // back out instead: continuous in value AND velocity (the derivative
+    // vanishes at both turns), so no seam anywhere.
+    float zc = 0.5 - 0.5 * cos(6.2831853 * fract(t * 0.6 / 5.0));   // 0..1..0
+    float zoomLevel = exp(zc * 5.0) * (0.55 * zm);
     vec2 z = uv / zoomLevel;
 
     // Translation along real axis

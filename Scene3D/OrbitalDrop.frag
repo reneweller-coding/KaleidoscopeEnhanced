@@ -12,7 +12,8 @@ in vec4 vCol;
  * Reads no audio uniforms directly. Which of the five layers a particle
  * belongs to, its motion, and its colour are all decided in the paired
  * OrbitalDrop.vert, which reacts to audioAdvance (falls the camera through
- * the loop), audioKick and audioSwell (plasma-burn intensity), audioLevel
+ * the loop and drifts the frustum-spread star field),
+ * audioKick and audioSwell (plasma-burn intensity), audioLevel
  * (streak speed), audioChromaHue (city neon colour) and audioDrop (the
  * sonic-boom ring); this shader only turns the resulting vCol into a
  * round gaussian point.

@@ -39,8 +39,10 @@ void main() {
     if (distSq > 1.0) discard;
 
     float alpha = exp(-distSq * 5.0);
-    vec3 col = vColor.rgb * alpha * 0.5;
+    vec3 col = vColor.rgb * alpha * 0.80;
 
     col = hueRot(col, audioChromaHue + hue);
-    fragColor = vec4(col, alpha);
+    // Cap the TINTED colour, not the scalar that fed it: hueRot can push a
+    // single channel above the value that went in.
+    fragColor = vec4(min(max(col, vec3(0.0)), vec3(1.35)), alpha);
 }
