@@ -140,13 +140,21 @@ void SetupWindow::buildContent()
 	// the new language, and reloads every field from the ini it just wrote
 	// -- a full round-trip through the same load/save machinery every other
 	// field already uses, rather than a separate value-preservation path.
+	// Deferred via singleShot(0, ...) rather than called directly: buildContent()
+	// deletes m_content, which owns THIS combo box -- doing that synchronously
+	// from inside the combo's own currentIndexChanged emission would destroy
+	// the sender while Qt's signal machinery is still unwinding through it
+	// (use-after-free). Queuing it lets the emission finish first.
 	QObject::connect( m_language, QOverload<int>::of( &QComboBox::currentIndexChanged ),
 	                  this, [this]( int )
 	{
-		saveToIni();
-		buildContent();
-		retranslateChrome();
-		loadFromIni();
+		QTimer::singleShot( 0, this, [this]()
+		{
+			saveToIni();
+			buildContent();
+			retranslateChrome();
+			loadFromIni();
+		} );
 	} );
 	fLang->addRow( S( S_SETUP_LANGUAGE_LABEL ), m_language );
 	root->addWidget( gLang );
