@@ -52,6 +52,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class MainActivity extends Activity
 {
@@ -72,11 +73,24 @@ public class MainActivity extends Activity
     private final Handler  m_handler = new Handler(Looper.getMainLooper());
     private AlertDialog    m_pickerDialog;             // currently-shown instance picker, if any
     private List<Instance> m_pickerShown = new ArrayList<>();   // the set it's currently listing
-    private final Runnable m_pickerRefreshTick = () ->
+
+    // Bumped by every startDiscoveryAndConnect() call. A scan's background
+    // thread can take up to DISCOVERY_WINDOW_MS to return; without this, two
+    // overlapping scans (e.g. BACK pressed twice quickly, or a periodic
+    // picker refresh still in flight when a fresh forced scan starts) could
+    // race on the UI thread and have the STALE one win -- e.g. silently
+    // re-opening a picker the user already dismissed, or connecting to a
+    // no-longer-relevant instance. Each scan captures the generation it was
+    // started at and only acts on its result if nothing newer has started
+    // since.
+    private final AtomicInteger m_scanGen = new AtomicInteger(0);
+    private final Runnable m_pickerRefreshTick = () -> {
+        final int gen = m_scanGen.get();
         new Thread(() -> {
             final List<Instance> found = discover();
-            runOnUiThread(() -> refreshPickerIfChanged(found));
+            runOnUiThread(() -> { if (gen == m_scanGen.get()) refreshPickerIfChanged(found); });
         }).start();
+    };
 
     /** One PC found by a discovery scan. */
     private static class Instance
@@ -216,11 +230,12 @@ public class MainActivity extends Activity
      */
     private void startDiscoveryAndConnect(final boolean forcePicker)
     {
+        final int gen = m_scanGen.incrementAndGet();   // supersedes any scan already in flight
         m_status.setVisibility(View.VISIBLE);
         m_status.setText(R.string.status_searching);
         new Thread(() -> {
             final List<Instance> found = discover();
-            runOnUiThread(() -> onDiscoveryDone(found, forcePicker));
+            runOnUiThread(() -> { if (gen == m_scanGen.get()) onDiscoveryDone(found, forcePicker); });
         }).start();
     }
 
