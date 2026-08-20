@@ -6,6 +6,7 @@
 #include "WebRemote.h"
 #include "glwidget.h"
 #include "RenderPipeline.h"
+#include "Strings.h"
 
 #include <QtNetwork/QTcpServer>
 #include <QtNetwork/QTcpSocket>
@@ -54,18 +55,23 @@ static QString jsonEscape( const QString &s )
 }
 
 /**
- * @brief The single-page HTML/CSS/JS remote-control UI served for GET "/".
+ * @brief The single-page HTML/CSS/JS remote-control UI template served for GET "/".
  *
  * The phone page: dark, thumb-sized controls, fetch()-driven, self-refreshing. Polls
  * /api/state and /api/snapshot every 2s and posts user actions to the other /api/ endpoints
  * implemented in handleConnection(). Entirely self-contained (inline CSS/JS, no external
  * assets), so the server never has to serve anything besides this string and the JSON/JPEG
  * API responses.
+ *
+ * Every user-visible label is a @@TOKEN@@ placeholder, filled in by buildPage() from
+ * Strings::T() in the CURRENT language -- see buildPage() below. Keeping the template as one
+ * readable raw string (rather than building the HTML via C++ string concatenation) means the
+ * markup/CSS/JS structure stays exactly as easy to read and edit as before.
  */
-static const char *kPage = R"HTML(<!DOCTYPE html>
+static const char *kPageTemplate = R"HTML(<!DOCTYPE html>
 <html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Kaleidoscope Remote</title>
+<title>@@TITLE@@</title>
 <style>
  body{background:#101018;color:#eee;font-family:sans-serif;margin:0;padding:12px}
  h1{font-size:1.1em;color:#8cf;margin:4px 0 12px}
@@ -78,44 +84,44 @@ static const char *kPage = R"HTML(<!DOCTYPE html>
  label{display:block;color:#9ab;font-size:.85em;margin-top:8px}
  .val{color:#8cf;float:right}
 </style></head><body>
-<h1>Kaleidoscope Remote</h1>
+<h1>@@H1@@</h1>
 <img id="prev" style="width:100%;border-radius:10px;background:#000;min-height:80px"
      src="/api/snapshot" alt="">
-<button class="big" onclick="cmd('/api/next')">&#9193; N&auml;chster Effekt</button>
+<button class="big" onclick="cmd('/api/next')">&#9193; @@NEXT@@</button>
 <div class="row">
- <button id="blackout" onclick="cmd('/api/toggle?k=blackout')">&#9899; Blackout</button>
- <button onclick="cmd('/api/fav')">&#11088; Favorit</button>
- <button id="replayarm" onclick="cmd('/api/toggle?k=replayarm')">Replay-Puffer</button>
- <button onclick="cmd('/api/replay')">&#128190; Replay speichern</button>
+ <button id="blackout" onclick="cmd('/api/toggle?k=blackout')">&#9899; @@BLACKOUT@@</button>
+ <button onclick="cmd('/api/fav')">&#11088; @@FAVORITE@@</button>
+ <button id="replayarm" onclick="cmd('/api/toggle?k=replayarm')">@@REPLAYBUF@@</button>
+ <button onclick="cmd('/api/replay')">&#128190; @@REPLAYSAVE@@</button>
 </div>
 <div class="row" id="cfgs"></div>
-<label>Reactivity <span class="val" id="vreactivity"></span></label>
+<label>@@REACTIVITY@@ <span class="val" id="vreactivity"></span></label>
 <input type="range" id="reactivity" min="0" max="3" step="0.05"
        oninput="setv('reactivity',this.value)">
-<label>Trails <span class="val" id="vtrails"></span></label>
+<label>@@TRAILS@@ <span class="val" id="vtrails"></span></label>
 <input type="range" id="trails" min="0" max="0.95" step="0.05"
        oninput="setv('trails',this.value)">
-<label>Mood <span class="val" id="vmood"></span></label>
+<label>@@MOOD@@ <span class="val" id="vmood"></span></label>
 <input type="range" id="mood" min="0" max="2.5" step="0.05"
        oninput="setv('mood',this.value)">
-<label>Latenz-Vorlauf (ms) <span class="val" id="vlatency"></span></label>
+<label>@@LATENCY@@ <span class="val" id="vlatency"></span></label>
 <input type="range" id="latency" min="0" max="250" step="5"
        oninput="setv('latency',this.value/1000)">
 <div class="row">
- <button id="lightshow" onclick="cmd('/api/toggle?k=lightshow')">Lightshow</button>
- <button id="autoconfig" onclick="cmd('/api/toggle?k=autoconfig')">Auto-Preset</button>
- <button id="autoscale" onclick="cmd('/api/toggle?k=autoscale')">Auto-Skalierung</button>
+ <button id="lightshow" onclick="cmd('/api/toggle?k=lightshow')">@@LIGHTSHOW@@</button>
+ <button id="autoconfig" onclick="cmd('/api/toggle?k=autoconfig')">@@AUTOPRESET@@</button>
+ <button id="autoscale" onclick="cmd('/api/toggle?k=autoscale')">@@AUTOSCALE@@</button>
 </div>
 <div class="row">
- <button id="nowplaying" onclick="cmd('/api/toggle?k=nowplaying')">Titel-Einblendung</button>
- <button id="lyrics" onclick="cmd('/api/toggle?k=lyrics')">Songtexte: ?</button>
+ <button id="nowplaying" onclick="cmd('/api/toggle?k=nowplaying')">@@TITLEREVEAL@@</button>
+ <button id="lyrics" onclick="cmd('/api/toggle?k=lyrics')">@@LYRICSPREFIX@@?</button>
 </div>
 <div class="row">
- <button id="artistimages" onclick="cmd('/api/toggle?k=artistimages')">K&uuml;nstlerbilder</button>
- <button id="video" onclick="cmd('/api/toggle?k=video')">Musikvideo</button>
+ <button id="artistimages" onclick="cmd('/api/toggle?k=artistimages')">@@ARTISTIMAGES@@</button>
+ <button id="video" onclick="cmd('/api/toggle?k=video')">@@VIDEO@@</button>
 </div>
 <div class="row">
- <button class="big" id="scenetoggle" onclick="toggleScenes()">&#127916; Szenen-Browser</button>
+ <button class="big" id="scenetoggle" onclick="toggleScenes()">&#127916; @@SCENEBROWSER@@</button>
  <div id="scenes" style="display:none;max-height:45vh;overflow-y:auto;
       display:none;grid-template-columns:1fr 1fr;gap:4px"></div>
 </div>
@@ -139,9 +145,9 @@ function refresh(){ if(Date.now()<hold) return;
   document.getElementById('nowplaying').className=s.nowPlaying?'active':'';
   document.getElementById('artistimages').className=s.artistImages?'active':'';
   document.getElementById('video').className=s.videoEnabled?'active':'';
-  const lyricsNames=['Aus','Scroll','Karaoke'];
+  const lyricsNames=@@LYRICSARR@@;
   const lb=document.getElementById('lyrics');
-  lb.textContent='Songtexte: '+lyricsNames[s.lyricsMode];
+  lb.textContent='@@LYRICSPREFIX@@'+lyricsNames[s.lyricsMode];
   lb.className=s.lyricsMode>0?'active':'';
   const c=document.getElementById('cfgs'); c.innerHTML='';
   s.configs.forEach((n,i)=>{const b=document.createElement('button');
@@ -178,6 +184,51 @@ function loadScenes(){
  });}
 setInterval(loadScenes,5000);
 </script></body></html>)HTML";
+
+/**
+ * @brief Fills in kPageTemplate's @@TOKEN@@ placeholders from Strings::T() in the CURRENT
+ *        language, rebuilt fresh on every GET "/" so a language change in the setup tool takes
+ *        effect on the phone the next time it (re)loads the page -- no server restart needed.
+ */
+static QByteArray buildPage()
+{
+	QString page = QString::fromUtf8( kPageTemplate );
+	auto sub = [&page]( const char *token, StrId id )
+	{
+		page.replace( QLatin1String( token ), QString::fromUtf8( Strings::T( id ) ) );
+	};
+	sub( "@@TITLE@@",        S_WR_TITLE );
+	sub( "@@H1@@",           S_WR_H1 );
+	sub( "@@NEXT@@",         S_WR_NEXT );
+	sub( "@@BLACKOUT@@",     S_WR_BLACKOUT );
+	sub( "@@FAVORITE@@",     S_WR_FAVORITE );
+	sub( "@@REPLAYBUF@@",    S_WR_REPLAY_BUFFER );
+	sub( "@@REPLAYSAVE@@",   S_WR_REPLAY_SAVE );
+	sub( "@@REACTIVITY@@",   S_WR_REACTIVITY );
+	sub( "@@TRAILS@@",       S_WR_TRAILS );
+	sub( "@@MOOD@@",         S_WR_MOOD );
+	sub( "@@LATENCY@@",      S_WR_LATENCY );
+	sub( "@@LIGHTSHOW@@",    S_WR_LIGHTSHOW );
+	sub( "@@AUTOPRESET@@",   S_WR_AUTOPRESET );
+	sub( "@@AUTOSCALE@@",    S_WR_AUTOSCALE );
+	sub( "@@TITLEREVEAL@@",  S_WR_TITLEREVEAL );
+	sub( "@@ARTISTIMAGES@@", S_WR_ARTISTIMAGES );
+	sub( "@@VIDEO@@",        S_WR_VIDEO );
+	sub( "@@SCENEBROWSER@@", S_WR_SCENEBROWSER );
+	// @@LYRICSPREFIX@@ appears twice (the initial button text and the JS
+	// template literal) -- QString::replace() with no count limit handles
+	// both occurrences from one call, same as every sub() above.
+	sub( "@@LYRICSPREFIX@@", S_WR_LYRICS_PREFIX );
+	// The JS array literal: these three words are our OWN fixed translation
+	// strings (never user data), so no JS-string escaping is needed -- see
+	// Strings.cpp, none of them contain a quote/backslash.
+	page.replace( QLatin1String( "@@LYRICSARR@@" ),
+	              QString( "['%1','%2','%3']" )
+	                  .arg( QString::fromUtf8( Strings::T( S_WR_LYRICS_OFF ) ) )
+	                  .arg( QString::fromUtf8( Strings::T( S_WR_LYRICS_SCROLL ) ) )
+	                  .arg( QString::fromUtf8( Strings::T( S_WR_LYRICS_KARAOKE ) ) ) );
+	return page.toUtf8();
+}
 
 WebRemote::WebRemote( GLwidget *widget, int port )
 	: QObject( widget ), m_widget( widget )
@@ -290,7 +341,7 @@ void WebRemote::handleConnection()
 
 				if( path == "/" )
 				{
-					body = kPage;
+					body = buildPage();
 					ctype = "text/html; charset=utf-8";
 				}
 				else if( path == "/api/state" )

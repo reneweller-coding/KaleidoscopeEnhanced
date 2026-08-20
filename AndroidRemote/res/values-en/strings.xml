@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Kaleidoscope Remote</string>
+
+    <string name="status_searching">Searching for Kaleidoscope on the network …</string>
+    <string name="status_connection_lost_retrying">Connection lost — searching again …</string>
+    <string name="status_connection_failed_repeatedly">Connection kept failing — please choose …</string>
+
+    <string name="dialog_pc_title">Kaleidoscope PC</string>
+    <string name="dialog_pc_message">Address[:port] of the PC (Kaleidoscope listens there on port 8080 by default):</string>
+    <string name="dialog_pc_message_none_found">No Kaleidoscope instance found on the network. Is the app running (it auto-starts the remote since version 2)? Enter the address manually if needed:</string>
+    <string name="hint_address">192.168.1.20:8080</string>
+
+    <string name="btn_connect">Connect</string>
+    <string name="btn_quit">Quit</string>
+    <string name="btn_manual_entry">Manual entry …</string>
+
+    <string name="dialog_picker_title">Which Kaleidoscope?</string>
+</resources>
