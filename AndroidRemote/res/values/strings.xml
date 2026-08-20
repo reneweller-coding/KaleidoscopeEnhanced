@@ -1,4 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- German (default/fallback) strings. English override: res/values-en/strings.xml.
+     No in-app language picker on Android: this follows the OS/device locale,
+     the standard Android mechanism (unlike the desktop app's own Setup dropdown). -->
 <resources>
     <string name="app_name">Kaleidoscope Remote</string>
+
+    <string name="status_searching">Suche Kaleidoscope im Netzwerk …</string>
+    <string name="status_connection_lost_retrying">Verbindung verloren — suche erneut …</string>
+    <string name="status_connection_failed_repeatedly">Verbindung wiederholt fehlgeschlagen — bitte wählen …</string>
+
+    <string name="dialog_pc_title">Kaleidoscope-PC</string>
+    <string name="dialog_pc_message">Adresse[:Port] des PCs (Kaleidoscope läuft dort standardmäßig auf Port 8080):</string>
+    <string name="dialog_pc_message_none_found">Keine Kaleidoscope-Instanz im Netzwerk gefunden. Läuft die App (sie startet den Fernzugriff seit Version 2 automatisch)? Adresse notfalls manuell eingeben:</string>
+    <string name="hint_address">192.168.1.20:8080</string>
+
+    <string name="btn_connect">Verbinden</string>
+    <string name="btn_quit">Beenden</string>
+    <string name="btn_manual_entry">Manuelle Eingabe …</string>
+
+    <string name="dialog_picker_title">Welches Kaleidoscope?</string>
 </resources>

@@ -5,21 +5,27 @@
 #pragma once
 
 #include <QtWidgets/QWidget>
+#include "Strings.h"
 
 class QCheckBox;
 class QComboBox;
 class QDoubleSpinBox;
 class QSpinBox;
 class QLabel;
+class QPushButton;
+class QScrollArea;
+class QVBoxLayout;
 
 /**
  * @brief A small standalone settings editor for kaleidoscope_settings.ini.
  *
  * Deliberately NOT a live remote control (that's the embedded web remote's job, see
  * Source/WebRemote.cpp) -- this edits the persisted STARTUP DEFAULTS the main app's
- * GLwidget::loadUiSettings()/RenderPipeline::loadSettings() read once at launch. Changes here
- * only take effect the next time Kaleidoscope.exe starts. No GL/audio/shader dependency at all;
- * a plain Qt Widgets form.
+ * GLwidget::loadUiSettings()/RenderPipeline::loadSettings() read once at launch. Most changes
+ * only take effect the next time Kaleidoscope.exe starts; the one exception is the language
+ * dropdown, which retranslates THIS window's own labels immediately (via buildContent()
+ * tearing down and rebuilding the form) so picking a language is a WYSIWYG action, not a "trust
+ * me, it worked" one. No GL/audio/shader dependency at all; a plain Qt Widgets form.
  */
 class SetupWindow : public QWidget
 {
@@ -34,9 +40,20 @@ private:
 	/** @brief Scans findRootDir()/Configurations/*.xml for ConfigurationName values, skipping hidden="true" presets (dev/review builds), for the start-configuration dropdown. */
 	static QStringList discoverConfigNames();
 
+	/** @brief (Re)builds the scrollable form (every group except the fixed Save/Close row) in the CURRENT language, preserving whichever field values are already set. Called once from the constructor and again whenever the language dropdown changes. */
+	void buildContent();
+	/** @brief Updates the window title and the two fixed action-button labels to the current language (the parts NOT inside the rebuildable content). */
+	void retranslateChrome();
 	void loadFromIni();
 	void saveToIni();
 
+	QVBoxLayout *m_outerLayout  = nullptr;   ///< Persistent top-level layout (this widget's only layout).
+	QScrollArea *m_scrollArea   = nullptr;   ///< Persistent scroll container; its content widget is swapped out by buildContent().
+	QWidget     *m_content      = nullptr;   ///< The rebuildable form content; deleted and recreated by buildContent().
+	QPushButton *m_saveBtn      = nullptr;
+	QPushButton *m_closeBtn     = nullptr;
+
+	QComboBox      *m_language      = nullptr;
 	QComboBox      *m_startConfig   = nullptr;
 	QSpinBox        *m_remotePort    = nullptr;
 

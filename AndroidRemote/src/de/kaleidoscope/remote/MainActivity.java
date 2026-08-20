@@ -124,12 +124,12 @@ public class MainActivity extends Activity
                 if (m_failStreak > MAX_AUTO_RETRIES)
                 {
                     m_prefs.edit().remove("lastId").apply();
-                    m_status.setText("Verbindung wiederholt fehlgeschlagen — bitte wählen …");
+                    m_status.setText(R.string.status_connection_failed_repeatedly);
                     startDiscoveryAndConnect(true);
                 }
                 else
                 {
-                    m_status.setText("Verbindung verloren — suche erneut …");
+                    m_status.setText(R.string.status_connection_lost_retrying);
                     startDiscoveryAndConnect(false);
                 }
             }
@@ -189,19 +189,18 @@ public class MainActivity extends Activity
         in.setInputType(InputType.TYPE_CLASS_TEXT
                       | InputType.TYPE_TEXT_VARIATION_URI);
         in.setText(m_prefs.getString("addr", ""));
-        in.setHint("192.168.1.20:8080");
+        in.setHint(R.string.hint_address);
         new AlertDialog.Builder(this)
-            .setTitle("Kaleidoscope-PC")
-            .setMessage(hint != null ? hint
-                : "Adresse[:Port] des PCs (Kaleidoscope läuft dort standardmäßig auf Port 8080):")
+            .setTitle(R.string.dialog_pc_title)
+            .setMessage(hint != null ? hint : getString(R.string.dialog_pc_message))
             .setView(in)
             .setCancelable(false)
-            .setPositiveButton("Verbinden", (d, w) -> {
+            .setPositiveButton(R.string.btn_connect, (d, w) -> {
                 String a = in.getText().toString().trim();
                 m_prefs.edit().putString("addr", a).remove("lastId").apply();
                 connect(a);
             })
-            .setNegativeButton("Beenden", (d, w) -> finish())
+            .setNegativeButton(R.string.btn_quit, (d, w) -> finish())
             .show();
     }
 
@@ -218,7 +217,7 @@ public class MainActivity extends Activity
     private void startDiscoveryAndConnect(final boolean forcePicker)
     {
         m_status.setVisibility(View.VISIBLE);
-        m_status.setText("Suche Kaleidoscope im Netzwerk …");
+        m_status.setText(R.string.status_searching);
         new Thread(() -> {
             final List<Instance> found = discover();
             runOnUiThread(() -> onDiscoveryDone(found, forcePicker));
@@ -241,10 +240,7 @@ public class MainActivity extends Activity
         {
             final String addr = m_prefs.getString("addr", "");
             if (!addr.isEmpty() && !forcePicker) { connect(addr); return; }
-            askAddress(forcePicker ? null
-                : "Keine Kaleidoscope-Instanz im Netzwerk gefunden. Läuft die App " +
-                  "(sie startet den Fernzugriff seit Version 2 automatisch)? " +
-                  "Adresse notfalls manuell eingeben:");
+            askAddress(forcePicker ? null : getString(R.string.dialog_pc_message_none_found));
             return;
         }
 
@@ -256,13 +252,13 @@ public class MainActivity extends Activity
         m_pickerShown = found;
         final String[] labels = new String[found.size() + 1];
         for (int k = 0; k < found.size(); k++) labels[k] = found.get(k).label();
-        labels[found.size()] = "Manuelle Eingabe …";
+        labels[found.size()] = getString(R.string.btn_manual_entry);
 
         m_status.setVisibility(View.GONE);
         if (m_pickerDialog != null && m_pickerDialog.isShowing())
             m_pickerDialog.dismiss();
         m_pickerDialog = new AlertDialog.Builder(this)
-            .setTitle("Welches Kaleidoscope?")
+            .setTitle(R.string.dialog_picker_title)
             .setCancelable(false)
             .setItems(labels, (d, which) -> {
                 if (which == found.size()) askAddress(null);

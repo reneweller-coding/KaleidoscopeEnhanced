@@ -33,6 +33,7 @@
 #include "SpoutIn.h"
 #include "VideoIn.h"
 #include "VideoPiP.h"
+#include "Strings.h"
 
  #ifndef GL_MULTISAMPLE
  #define GL_MULTISAMPLE  0x809D
@@ -699,7 +700,7 @@ void GLwidget::draw()
 			painter.drawEllipse( width() - 150, 26, 16, 16 );
 			painter.setPen( QColor(255, 255, 255) );
 			painter.setFont( QFont("Consolas", 12, QFont::Bold) );
-			painter.drawText( width() - 126, 39, QString("REC %1").arg(m_recorder.frameCount()) );
+			painter.drawText( width() - 126, 39, QString::fromUtf8( Strings::T( S_REC_FMT ) ).arg(m_recorder.frameCount()) );
 		}
 		painter.end();
 	}
@@ -816,6 +817,8 @@ void GLwidget::loadUiSettings()
 	// Same "CLI wins" precedence for the web-remote port.
 	if( !s_remotePortFromCli )
 		s_remotePort = s.value( "remotePort", s_remotePort ).toInt();
+	Strings::setLanguage( Strings::fromCode(
+	    s.value( "language", Strings::toCode( Strings::language() ) ).toString().toLocal8Bit().constData() ) );
 }
 
 void GLwidget::saveUiSettings()
@@ -834,6 +837,7 @@ void GLwidget::saveUiSettings()
 		s.setValue( QString("midiMap%1").arg(i), m_midiMap[i] );
 	s.setValue( "lightShow",  RenderPipeline::lightShow() );
 	s.setValue( "remotePort", s_remotePort );
+	s.setValue( "language",  Strings::toCode( Strings::language() ) );
 	s.sync();
 }
 
@@ -1078,18 +1082,18 @@ void GLwidget::drawFeatureOverlay( QPainter *painter, const AudioFeatures &f )
 	painter->fillRect( x - 14, 14, 360, n * lh + 68, QColor(0, 0, 0, 160) );
 	painter->setFont( QFont("Consolas", 12, QFont::Bold) );
 	painter->setPen( QColor(120, 200, 255) );
-	painter->drawText( x, 34, QString("AUDIO FEATURES   %1 FPS   (i to hide)").arg(m_fpsValue) );
+	painter->drawText( x, 34, QString::fromUtf8( Strings::T( S_FEATURE_TITLE_FMT ) ).arg(m_fpsValue) );
 
 	// Live-tunable look knobs (hotkeys).
 	painter->setFont( QFont("Consolas", 10) );
 	painter->setPen( QColor(170, 205, 170) );
-	painter->drawText( x, 54, QString("react[] %1  trail,. %2  mood-= %3  auto-a %4  scale %5 g:%6")
+	painter->drawText( x, 54, QString::fromUtf8( Strings::T( S_FEATURE_STATUS_FMT ) )
 		.arg(RenderPipeline::reactivity(), 0, 'f', 1)
 		.arg(RenderPipeline::trails(),     0, 'f', 2)
 		.arg(RenderPipeline::mood(),       0, 'f', 1)
-		.arg(m_autoConfig ? "ON" : "off")
+		.arg(m_autoConfig ? Strings::T(S_ON) : Strings::T(S_OFF))
 		.arg(RenderPipeline::renderScale(), 0, 'f', 2)
-		.arg(m_autoScale ? "ON" : "off") );
+		.arg(m_autoScale ? Strings::T(S_ON) : Strings::T(S_OFF)) );
 
 	painter->setFont( QFont("Consolas", 11) );
 	for ( int i = 0; i < n; ++i )
@@ -1113,42 +1117,45 @@ void GLwidget::drawFeatureOverlay( QPainter *painter, const AudioFeatures &f )
 
 void GLwidget::drawHelpOverlay( QPainter *painter )
 {
-	struct Line { const char *key; const char *desc; };
+	struct Line { const char *key; StrId desc; };
 	static const Line lines[] = {
-		{ "h",       "show / hide this help" },
-		{ "0",       "configuration menu" },
-		{ "1 - 9",   "switch configuration" },
-		{ "n",       "next effect" },
-		{ "i",       "audio-feature overlay (+ FPS)" },
-		{ "v",       "show active shader names (debug)" },
-		{ "d",       "choose audio source (output / mic)" },
-		{ "p",       "now-playing title on/off" },
-		{ "w",       "Lyrics: aus / Scroll / Karaoke (Internet)" },
-		{ "o",       "Kuenstlerbilder ein/aus (Internet)" },
-		{ "a",       "auto-config by mood on/off" },
-		{ "g",       "adaptive render scale on/off" },
-		{ "l",       "stage lamps / light-show on/off" },
-		{ "[  ]",    "reactivity  - less / more" },
-		{ ",  .",    "trails       - shorter / longer" },
-		{ "-  =",    "mood         - weaker / stronger" },
-		{ ";  '",    "latency     - earlier / later" },
-		{ "b",       "BLACKOUT (soft fade to black)" },
-		{ "e",       "FREEZE the picture" },
-		{ "t",       "tap tempo (tap the beat)" },
-		{ "u",       "pin / unpin the current effect" },
-		{ "f",       "favourite the current effect" },
-		{ "z",       "stereo 3D: off / SBS / TB / anaglyph" },
-		{ "c  m",    "stereo depth - weaker / stronger" },
-		{ "j",       "MIDI learn (cycle targets)" },
-		{ "y  x",    "arm / save the instant replay" },
-		{ "k",       "save current look + state as default" },
-		{ "r",       "record video + music to mp4" },
-		{ "s",       "save a screenshot (PNG)" },
-		{ "Esc / q", "quit" },
+		{ "h",       S_HELP_H },
+		{ "0",       S_HELP_0 },
+		{ "1 - 9",   S_HELP_1_9 },
+		{ "n",       S_HELP_N },
+		{ "i",       S_HELP_I },
+		{ "v",       S_HELP_V },
+		{ "d",       S_HELP_D },
+		{ "p",       S_HELP_P },
+		{ "w",       S_HELP_W },
+		{ "o",       S_HELP_O },
+		{ "a",       S_HELP_A },
+		{ "g",       S_HELP_G },
+		{ "l",       S_HELP_L },
+		{ "[  ]",    S_HELP_REACTIVITY },
+		{ ",  .",    S_HELP_TRAILS },
+		{ "-  =",    S_HELP_MOOD },
+		{ ";  '",    S_HELP_LATENCY },
+		{ "b",       S_HELP_B },
+		{ "e",       S_HELP_E },
+		{ "t",       S_HELP_T },
+		{ "u",       S_HELP_U },
+		{ "f",       S_HELP_F },
+		{ "z",       S_HELP_Z },
+		{ "c  m",    S_HELP_CM },
+		{ "j",       S_HELP_J },
+		{ "y  x",    S_HELP_YX },
+		{ "k",       S_HELP_K },
+		{ "r",       S_HELP_R },
+		{ "s",       S_HELP_S },
+		{ "Esc / q", S_HELP_ESC },
 	};
 	const int n = int(sizeof(lines) / sizeof(lines[0]));
 
-	const int boxW = 430, lh = 26;
+	// A bit wider than the English text alone would need -- several German
+	// descriptions run noticeably longer (e.g. "aktuellen Look + Zustand
+	// als Standard speichern").
+	const int boxW = 480, lh = 26;
 	const int boxH = lh * (n + 1) + 24;
 	const int x0 = (width()  - boxW) / 2;
 	const int y0 = (height() - boxH) / 2;
@@ -1156,7 +1163,7 @@ void GLwidget::drawHelpOverlay( QPainter *painter )
 	painter->fillRect( x0, y0, boxW, boxH, QColor(0, 0, 0, 190) );
 	painter->setPen( QColor(120, 200, 255) );
 	painter->setFont( QFont("Consolas", 14, QFont::Bold) );
-	painter->drawText( x0 + 20, y0 + 32, QString("KALEIDOSCOPE  -  Tastatur / keys") );
+	painter->drawText( x0 + 20, y0 + 32, QString::fromUtf8( Strings::T( S_HELP_TITLE ) ) );
 
 	painter->setFont( QFont("Consolas", 12) );
 	for ( int i = 0; i < n; ++i )
@@ -1165,7 +1172,7 @@ void GLwidget::drawHelpOverlay( QPainter *painter )
 		painter->setPen( QColor(150, 230, 150) );
 		painter->drawText( x0 + 24, ry, QString(lines[i].key) );
 		painter->setPen( QColor(210, 218, 232) );
-		painter->drawText( x0 + 150, ry, QString(lines[i].desc) );
+		painter->drawText( x0 + 150, ry, QString::fromUtf8( Strings::T( lines[i].desc ) ) );
 	}
 }
 
@@ -1805,7 +1812,7 @@ void GLwidget::drawAudioMenu( QPainter *painter )
 	painter->fillRect( x0, y0, boxW, boxH, QColor(0, 0, 0, 200) );
 	painter->setPen( QColor(120, 200, 255) );
 	painter->setFont( QFont("Consolas", 14, QFont::Bold) );
-	painter->drawText( x0 + 20, y0 + 32, QString("AUDIOQUELLE   (0-9 wählen,  d schließen)") );
+	painter->drawText( x0 + 20, y0 + 32, QString::fromUtf8( Strings::T( S_AUDIOMENU_TITLE ) ) );
 
 	painter->setFont( QFont("Consolas", 12) );
 	auto entry = [&]( int i, const QString &label, bool active ) {
@@ -1813,11 +1820,14 @@ void GLwidget::drawAudioMenu( QPainter *painter )
 		painter->setPen( active ? QColor(150, 230, 150) : QColor(210, 218, 232) );
 		painter->drawText( x0 + 24, ry, QString::number(i) + ".  " + label + (active ? "   ←" : "") );
 	};
-	entry( 0, "Standard-Ausgabe (Loopback)", current.startsWith("Standard") );
+	// current.isEmpty() means "the default device" -- see the language-
+	// neutral sentinel comment in AudioAnalyzer::run().
+	entry( 0, QString::fromUtf8( Strings::T( S_AUDIOMENU_DEFAULT_OUTPUT ) ), current.isEmpty() );
 	for ( int i = 0; i < shown; ++i )
 	{
-		QString tag = devs[i].isCapture ? "  [Eingang]" : "  [Ausgabe]";
-		entry( i + 1, devs[i].name + tag, !current.startsWith("Standard") && current == devs[i].name );
+		QString tag = QString::fromUtf8( devs[i].isCapture ? Strings::T( S_AUDIOMENU_INPUT_TAG )
+		                                                    : Strings::T( S_AUDIOMENU_OUTPUT_TAG ) );
+		entry( i + 1, devs[i].name + tag, !current.isEmpty() && current == devs[i].name );
 	}
 }
 

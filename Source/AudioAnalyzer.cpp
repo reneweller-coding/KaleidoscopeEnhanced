@@ -593,12 +593,18 @@ void AudioAnalyzer::run()
             continue;
         }
 
-        // Publish the friendly name of what we're now capturing.
+        // Publish the friendly name of what we're now capturing. Left EMPTY
+        // for the default device on purpose -- a language-neutral sentinel
+        // (this used to be the literal display string "Standard-Ausgabe
+        // (Loopback)", which broke the moment that label became
+        // translatable: drawAudioMenu()'s "is this the default entry"
+        // check compared against it directly, so an English UI would never
+        // have matched). currentDeviceName() has exactly one consumer
+        // (GLwidget::drawAudioMenu()), which now checks isEmpty() instead.
         {
             QMutexLocker lk(&m_mutex);
             m_curDeviceName.clear();
-            if (!useReq) m_curDeviceName = QStringLiteral("Standard-Ausgabe (Loopback)");
-            else for (const AudioDevice &ad : m_devices)
+            if (useReq) for (const AudioDevice &ad : m_devices)
                 if (ad.id == reqId) { m_curDeviceName = ad.name; break; }
         }
 
