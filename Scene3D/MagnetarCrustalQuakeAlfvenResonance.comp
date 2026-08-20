@@ -19,8 +19,8 @@ layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
  * sky. That distinction is the whole of the second fix: coverage is measured
  * against the frame's modal luma bucket, so a bright smooth panel is not
  * filler, it is a raised floor that hides everything within one bucket of it.
- * The loops' brightness ramp is therefore wide (0.22 at the outermost shell to
- * 1.57 at the crust) and the panel is held dark.
+ * The loops' brightness ramp is therefore wide (0.27 at the outermost shell to
+ * 2.6 at the crust, where it caps) and the panel is held dark.
  */
 
 layout(std430, binding = 0) buffer Verts {
@@ -201,7 +201,7 @@ void main() {
         // covering a third of it.  A 0.22..1.57 ramp, against a haze held down
         // in the modal bucket, keeps the inner shells, the outer shells and the
         // background three buckets apart at the DIMMEST preset setting.
-        float glow = (0.22 + 1.35 * exp(-r0 * 0.50) + footpoint * 1.70)
+        float glow = (0.16 + 2.50 * exp(-r0 * 0.66) + footpoint * 2.70)
                    * (1.0 + 2.0 * audioKick);
         glow = min(glow, 2.6);
 

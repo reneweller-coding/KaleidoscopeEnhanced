@@ -150,9 +150,16 @@ void main() {
     float cw = sin(uv.x * 26.0 + t * 0.7) * cos(uv.y * 22.0 - t * 0.5)
              + 0.55 * sin(uv.x * 47.0 - uv.y * 39.0 + t * 0.9);
     cw = clamp(0.5 + 0.34 * cw, 0.0, 1.0);
-    float cloud = 0.05 + 0.16 * stripe + 0.66 * cw * cw;
 
-    float shade = mix(0.14 + 1.15 * ridge, cloud, interior);
+    // Both ranges widened about 1.37x from 0.05..0.87 and 0.14..1.29. The
+    // verification render measured contrast 0.098 against a 0.10 target -- the
+    // structure was right, its swing was just short. Widening the shade term
+    // scales the picture's standard deviation almost directly, and it cannot
+    // clip: the final write clamps to 1.0 BEFORE the 0.30 soft knee, so no
+    // pixel can leave main() above 1/1.30 = 0.77 luma whatever `shade` does.
+    float cloud = 0.02 + 0.13 * stripe + 0.92 * cw * cw;
+
+    float shade = mix(0.06 + 1.58 * ridge, cloud, interior);
 
     // Sample distorted background photo
     vec2 sampleUV = fract(z * 0.2 + 0.5);
@@ -166,21 +173,30 @@ void main() {
     col = mix(col, texCol, 0.35 + 0.15 * audioValence);
     col *= shade;
 
-    // Horn-cavity glow: trap never approaches zero at this centre (measured
-    // p5 0.32 / p95 1.47), so the old exp(-trap*30) fired essentially nowhere
-    // -- it contributed a mean luma of 0.02 while the description promised
-    // glowing horn edges. A 3.0 falloff puts it in its useful range.
-    float edgeGlow = exp(-trap * (3.0 + 2.0 * audioCentroid)) * glw;
-    vec3 hornTint = min(vec3(1.2, 1.1, 1.8) * edgeGlow * (0.28 + 0.8 * audioKick),
+    // Horn-cavity glow. `trap` never approaches zero at this centre (measured
+    // p5 0.32 / p95 1.47), so the original exp(-trap*30) fired essentially
+    // nowhere. Rescaling it to exp(-trap*3.0) over-corrected in the other
+    // direction: at depth `trap` is NARROWLY distributed (edgeGlow p5/p50/p95
+    // 0.070/0.122/0.142), so a shallow exponent turns the horn glow into an
+    // almost frame-wide additive PEDESTAL -- 45% of all light in the frame at
+    // only half the spatial spread of the lit term, which flattens the
+    // picture. It is additive and photo-independent, so widening the lit
+    // `shade` term cannot compensate (measured: 2.5x shade bought +17%
+    // contrast). Subtracting a floor before a steep exponent turns the wash
+    // back into a rim and moves the light budget into tighter, brighter cores.
+    float edgeGlow = exp(-max(trap - 0.36, 0.0) * (16.0 + 2.0 * audioCentroid)) * glw;
+    vec3 hornTint = min(vec3(1.2, 1.1, 1.8) * edgeGlow * (0.50 + 0.8 * audioKick),
                         vec3(0.42, 0.39, 0.63));
 
     // Lightning rides the CRESTS of the escape-time bands -- thin arcs that
     // follow the boundary contours, outside the set only. The previous
     // formulation keyed on abs(sin(iterCount*1.5 + t*4)) with no spatial
-    // localisation at all, so entire iso-bands lit up together.
-    float lightningGlow = smoothstep(0.965, 1.0, band) * (1.0 - interior)
-                        * lgt * (0.32 + 1.44 * audioKick);
-    vec3 lightTint = min(vec3(1.7, 1.6, 2.0) * lightningGlow, vec3(0.51, 0.48, 0.60));
+    // localisation at all, so entire iso-bands lit up together. It carries ~5x
+    // the spatial spread per unit of mean brightness of any other term here,
+    // so it is the cheapest place to buy contrast: narrowed and brightened.
+    float lightningGlow = smoothstep(0.976, 1.0, band) * (1.0 - interior)
+                        * lgt * (1.05 + 4.80 * audioKick);
+    vec3 lightTint = min(vec3(1.7, 1.6, 2.0) * lightningGlow, vec3(1.02, 0.96, 1.20));
 
     col += hornTint + lightTint;
 
