@@ -242,7 +242,10 @@ void parsecommandline( int argc, char *argv[] )
 				// Spout output: publish the displayed frame to other apps.
 				case 'o': RenderPipeline::s_spoutEnabled = true; break;
 				// Embedded web remote (phone control page).
-				case 't': GLwidget::s_remotePort = atoi( argv[1] ); break;
+				case 't':
+					GLwidget::s_remotePort = atoi( argv[1] );
+					GLwidget::s_remotePortFromCli = true;
+					break;
 				// Batch render: offline WAV + auto-record + auto-quit at the end.
 				case 'x':
 					AudioAnalyzer::s_offlineWav = QString::fromLocal8Bit( argv[1] );
