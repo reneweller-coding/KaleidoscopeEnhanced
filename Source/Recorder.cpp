@@ -80,7 +80,13 @@ void Recorder::toggle()
 {
 	if( !m_recording )
 	{
-		QString ts = QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss");
+		// Millisecond resolution: two short-lived recordings (e.g. back-to-back
+		// verify.ps1 probes) starting in the same wall-clock SECOND used to
+		// compute the identical rec_YYYYMMDD_HHMMSS name; QDir().mkpath() on an
+		// already-existing directory is a silent no-op, so the second run's
+		// frames landed in the first run's folder, numbered from 0 and
+		// overwriting/interleaving with the first scene's frames.
+		QString ts = QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss_zzz");
 		m_recDir = QString("recordings/rec_%1").arg(ts);
 		QDir().mkpath( m_recDir );
 		m_recFrame = 0;

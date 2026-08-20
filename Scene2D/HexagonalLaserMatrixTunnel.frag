@@ -1,0 +1,121 @@
+#version 330 core
+out vec4 fragColor;
+/**
+ * @file HexagonalLaserMatrixTunnel.frag
+ * @brief HEXAGONAL LASER MATRIX TUNNEL: High-speed flight through a 6-sided mirror tunnel
+ * laced with intersecting 3D laser projector beams, opening geometric light portals,
+ * and high-voltage laser matrix scanning grids.
+ *
+ * Audio Reactivity:
+ *   audioAdvance -> drives continuous forward flight speed through the laser tunnel
+ *   audioKick    -> flashes laser portal gates & triggers radial matrix beam bursts
+ *   audioCentroid-> modulates laser grid frequency & beam sharpness
+ *   audioSubBass -> expands hexagonal tunnel lumen diameter
+ *   audioChromaHue-> rotates the glowing RGB laser matrix spectrum
+ */
+
+uniform vec2  resolution;
+uniform float time;
+uniform sampler2D tex0;
+uniform sampler2D tex1;
+uniform float interpolation;
+
+uniform float audioPhase;
+uniform float audioAdvance;
+uniform float audioSwell;
+uniform float audioLevel;
+uniform float audioKick;
+uniform float audioCentroid;
+uniform float audioValence;
+uniform float audioSubBass;
+uniform float audioBass;
+uniform float audioMid;
+uniform float audioHigh;
+uniform float audioFlux;
+uniform float audioChromaHue;
+
+// Per-activation variety
+uniform float speedP;
+uniform float laserDensityP;
+uniform float tunnelRadiusP;
+uniform float glowP;
+uniform float hueP;
+
+vec3 img(vec2 uv) {
+    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+}
+
+vec3 imgPalette(float t) {
+    float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853 + hueP;
+    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
+    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
+    float pg  = dot(pc, vec3(0.333));
+    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+}
+
+// 2D Hexagonal boundary distance
+float sdHexagon(vec2 p, float r) {
+    const vec3 k = vec3(-0.866025404, 0.5, 0.577350269);
+    p = abs(p);
+    p -= 2.0 * min(dot(k.xy, p), 0.0) * k.xy;
+    p -= vec2(clamp(p.x, -k.z * r, k.z * r), r);
+    return length(p) * sign(p.y);
+}
+
+void main() {
+    vec2 uv = (gl_FragCoord.xy - 0.5 * resolution.xy) / min(resolution.x, resolution.y);
+
+    float spd = (speedP > 0.01) ? speedP : 1.0;
+    float lDens = (laserDensityP > 0.01) ? laserDensityP : 1.0;
+    float tRad = (tunnelRadiusP > 0.01) ? tunnelRadiusP : 1.2;
+    float glw = (glowP > 0.01) ? glowP : 1.0;
+
+    float t = audioAdvance * 0.45 * spd;
+
+    // Flight camera position
+    vec3 ro = vec3(sin(t * 0.3) * 0.2, cos(t * 0.25) * 0.2, t * 3.5);
+    vec3 rd = normalize(vec3(uv, 1.25 + 0.2 * sin(audioSwell * 2.0)));
+
+    // Raymarching to hit hexagonal tunnel wall
+    float totDist = 0.0;
+    vec3 hitPos = vec3(0.0);
+    float laserBeamsAcc = 0.0;
+
+    for (int i = 0; i < 48; i++) {
+        vec3 p = ro + rd * totDist;
+
+        // Hexagonal tunnel radius
+        float rHex = tRad * (1.0 + 0.1 * sin(audioSubBass));
+        float dWall = rHex - sdHexagon(p.xy, rHex);
+
+        // Volumetric laser cross-beams inside tunnel
+        float zGate = fract(p.z * (0.8 * lDens)) - 0.5;
+        float dLaser = min(abs(p.x), abs(p.y)) + abs(zGate) * 0.4;
+        laserBeamsAcc += exp(-dLaser * 18.0) * 0.04;
+
+        if (dWall < 0.005 || totDist > 14.0) {
+            hitPos = p;
+            break;
+        }
+
+        totDist += max(0.02, dWall * 0.65);
+    }
+
+    // Hexagonal wall mirror texture
+    vec2 sampleUV = fract(hitPos.xy * 0.3 + hitPos.z * 0.2 + 0.5);
+    vec3 texCol = img(sampleUV);
+    vec3 palCol = imgPalette(hitPos.z * 0.15 + 0.2);
+
+    vec3 wallBase = mix(texCol * 0.3, palCol, 0.45);
+
+    // Glowing laser beams & portal gate bursts
+    vec3 laserTint = vec3(1.3, 1.6, 2.0) * laserBeamsAcc * (1.0 + 3.0 * audioKick) * glw;
+    vec3 finalCol = wallBase + laserTint;
+
+    // Atmospheric depth fog
+    float depthFog = 1.0 - exp(-totDist * 0.18);
+    finalCol = mix(finalCol, imgPalette(0.8) * 0.3, depthFog);
+
+    finalCol = pow(finalCol, vec3(0.88));
+    fragColor = vec4(clamp(finalCol, 0.0, 1.0), 1.0);
+}

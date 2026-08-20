@@ -1,0 +1,126 @@
+#version 330 core
+out vec4 fragColor;
+/**
+ * @file CollatzFractalTreeAbyss.frag
+ * @brief COLLATZ FRACTAL TREE ABYSS: Analytic complex continuation of the Collatz (3n+1)
+ * map f(z) = (1 + 4z - (1+2z)cos(pi*z))/4. Infinite fractal spires, needle feathers,
+ * and high-voltage spiky branching forests.
+ *
+ * Audio Reactivity:
+ *   audioAdvance -> drives continuous complex plane zoom & spire navigation
+ *   audioKick    -> flashes Collatz parity branch singularity nodes
+ *   audioCentroid-> sharpens transcendental cosine needle oscillations
+ *   audioSubBass -> expands branch needle thickness breathing
+ *   audioChromaHue-> rotates the spiky needle forest spectrum
+ */
+
+uniform vec2  resolution;
+uniform float time;
+uniform sampler2D tex0;
+uniform sampler2D tex1;
+uniform float interpolation;
+
+uniform float audioPhase;
+uniform float audioAdvance;
+uniform float audioSwell;
+uniform float audioLevel;
+uniform float audioKick;
+uniform float audioCentroid;
+uniform float audioValence;
+uniform float audioSubBass;
+uniform float audioBass;
+uniform float audioMid;
+uniform float audioHigh;
+uniform float audioFlux;
+uniform float audioChromaHue;
+
+// Per-activation variety
+uniform float speedP;
+uniform float zoomP;
+uniform float needleP;
+uniform float glowP;
+uniform float hueP;
+
+vec3 img(vec2 uv) {
+    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+}
+
+vec3 imgPalette(float t) {
+    float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853 + hueP;
+    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
+    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
+    float pg  = dot(pc, vec3(0.333));
+    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+}
+
+// Complex arithmetic helpers
+vec2 cMul(vec2 a, vec2 b) { return vec2(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x); }
+vec2 cCos(vec2 z) {
+    return vec2(cos(z.x) * cosh(z.y), -sin(z.x) * sinh(z.y));
+}
+
+// Complex analytic Collatz map: f(z) = (1 + 4z - (1 + 2z)*cos(pi*z)) / 4
+vec2 collatzMap(vec2 z) {
+    float pi = 3.14159265;
+    vec2 piZ = z * pi;
+    vec2 cosPiZ = cCos(piZ);
+    vec2 term1 = vec2(1.0, 0.0) + 4.0 * z;
+    vec2 term2 = cMul(vec2(1.0, 0.0) + 2.0 * z, cosPiZ);
+    return (term1 - term2) * 0.25;
+}
+
+void main() {
+    vec2 uv = (gl_FragCoord.xy - 0.5 * resolution.xy) / min(resolution.x, resolution.y);
+
+    float spd = (speedP > 0.01) ? speedP : 1.0;
+    float zm = (zoomP > 0.01) ? zoomP : 1.0;
+    float ndl = (needleP > 0.01) ? needleP : 1.0;
+    float glw = (glowP > 0.01) ? glowP : 1.0;
+
+    float t = audioAdvance * 0.25 * spd;
+
+    // Zoom into Collatz fractal spire boundary
+    float zoomLevel = exp(mod(t * 0.6, 5.0)) * (2.2 * zm);
+    vec2 z = uv / zoomLevel;
+
+    // Translation along real axis
+    z.x += t * 0.2;
+
+    float iterCount = 0.0;
+    float trap = 1e5;
+
+    for (int i = 0; i < 24; i++) {
+        z = collatzMap(z);
+
+        float r2 = dot(z, z);
+        trap = min(trap, abs(z.y) + abs(sin(z.x * 3.14159)));
+
+        if (r2 > 64.0) {
+            iterCount = float(i);
+            break;
+        }
+    }
+
+    if (iterCount == 0.0) iterCount = 24.0;
+
+    // Sample texture on chaotic coordinate
+    vec2 sampleUV = fract(z * 0.25 + 0.5);
+    vec3 texCol = img(sampleUV);
+
+    // Glowing spiky needle lines
+    float needleGlow = exp(-trap * (20.0 + 10.0 * audioCentroid) * ndl) * glw;
+
+    // Palette mixing
+    vec3 palA = imgPalette(iterCount * 0.08 + trap * 0.2);
+    vec3 palB = imgPalette(iterCount * 0.08 + 0.5);
+    vec3 col = mix(palA, palB, 0.5 + 0.5 * sin(iterCount * 0.8 + t));
+
+    col = mix(col, texCol, 0.35 + 0.15 * audioValence);
+
+    // Add glowing spiky tree needles and kick flash
+    vec3 needleTint = vec3(1.2, 1.4, 1.8) * needleGlow * (1.0 + 2.5 * audioKick);
+    col += needleTint;
+
+    col = pow(col, vec3(0.88));
+    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+}
