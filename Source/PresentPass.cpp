@@ -117,6 +117,9 @@ void PresentPass::setup( int renderW, int renderH,
 		m_presentLyricsScrollUni = glGetUniformLocation( m_presentProgId, "lyricsScrollV" );
 		m_presentLyricsAspectUni = glGetUniformLocation( m_presentProgId, "lyricsAspect" );
 		m_presentLyricsHlUni     = glGetUniformLocation( m_presentProgId, "lyricsHl" );
+		m_presentLyricsUScaleUni  = glGetUniformLocation( m_presentProgId, "lyricsUScale" );
+		m_presentLyricsFocusUni   = glGetUniformLocation( m_presentProgId, "lyricsFocusV" );
+		m_presentLyricsScrollUUni = glGetUniformLocation( m_presentProgId, "lyricsScrollU" );
 		m_presentArtistTexUni    = glGetUniformLocation( m_presentProgId, "artistTex" );
 		m_presentArtistAlphaUni  = glGetUniformLocation( m_presentProgId, "artistAlpha" );
 		m_presentArtistAspectUni = glGetUniformLocation( m_presentProgId, "artistAspect" );
@@ -544,6 +547,10 @@ void PresentPass::run( const Inputs &in )
 			if( m_presentLyricsAspectUni >= 0 ) glUniform1f( m_presentLyricsAspectUni, in.lyricsAspect );
 			if( m_presentLyricsHlUni     >= 0 ) glUniform3f( m_presentLyricsHlUni,
 			                                                 in.lyricsHlV0, in.lyricsHlV1, in.lyricsHlProg );
+			if( m_presentLyricsUScaleUni  >= 0 ) glUniform1f( m_presentLyricsUScaleUni, in.lyricsUScale );
+			if( m_presentLyricsFocusUni   >= 0 ) glUniform2f( m_presentLyricsFocusUni,
+			                                                  in.lyricsFocusV0, in.lyricsFocusV1 );
+			if( m_presentLyricsScrollUUni >= 0 ) glUniform1f( m_presentLyricsScrollUUni, in.lyricsScrollU );
 		}
 	}
 	if( m_presentArtistAlphaUni >= 0 )

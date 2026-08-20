@@ -65,6 +65,9 @@ uniform float lyricsAlpha;      // 0 = aus (Host blendet weich)
 uniform float lyricsScrollV;    // Textur-V, das im Bildzentrum liegt
 uniform float lyricsAspect;     // Texturbreite / -hoehe
 uniform vec3  lyricsHl;         // Karaoke: aktive Zeile v0, v1, Fortschritt (v0<0 = aus)
+uniform float lyricsUScale;     // nominale/tatsaechliche Texturbreite (<=1, s. TrackMedia)
+uniform vec2  lyricsFocusV;     // V-Band der gerade gelesenen Zeile (x<0 = keine), beide Modi
+uniform float lyricsScrollU;    // Marquee-Versatz (Textur-U) fuer die fokussierte Zeile
 
 // ---- Kuenstlerbild-Overlay (Deezer; Taste 'o') ----
 uniform sampler2D artistTex;
@@ -524,7 +527,16 @@ void main()
                     slamGlow = rem;
                 }
             }
-            vec4 lt = texture(lyricsTex, vec2(u2, v2));
+            // Physische Textur-U (kann breiter als das nominale Fenster sein,
+            // wenn eine Zeile im Textband nicht passte, siehe TrackMedia) --
+            // lyricsUScale skaliert zurueck, damit sich dadurch keine Zeile
+            // sichtbar verkleinert; nur innerhalb des Bands der gerade
+            // gelesenen Zeile (Host, beide Modi) kommt der langsame
+            // Marquee-Versatz dazu, statt abzuschneiden.
+            float uPhys = u2 * lyricsUScale;
+            if (lyricsFocusV.x >= 0.0 && v2 >= lyricsFocusV.x && v2 <= lyricsFocusV.y)
+                uPhys += lyricsScrollU;
+            vec4 lt = texture(lyricsTex, vec2(clamp(uPhys, 0.0, 1.0), v2));
             // Weiche Raender oben/unten (Credits-Fenster).
             float edge = smoothstep(0.04, 0.22, uv.y) * smoothstep(0.96, 0.78, uv.y);
             float a = lt.a * lyricsAlpha * edge;

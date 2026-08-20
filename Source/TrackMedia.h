@@ -110,7 +110,10 @@ public:
 		double  t0 = -1.0, t1 = -1.0;   // Sekunden; <0 = unsynchronisiert   ///< Start/end time in seconds for synced lyrics; t0 < 0 means unsynchronised (plain-text mode). An empty-text entry with only t0 set is a GAP MARKER for an instrumental break (see parseSynced()).
 		QString text;                    ///< Line text; empty for a gap marker (instrumental break), never empty otherwise.
 		float   v0 = 0.f, v1 = 0.f;     // Zeilenband in Textur-V (0..1)   ///< This line's vertical [0,1] band within lyricsImage(), for sampling/highlighting; a gap marker reuses the previous sung line's band.
+		float   overflowU = 0.f;        ///< How far (in lyricsImage()-wide texture-U units) this line's full, un-elided text extends past the normally-visible window; 0 if it fits. Drives the host-side horizontal marquee scroll for the currently focused line (see glwidget.cpp).
 	};
+	/** @brief The nominal (normally-visible, pre-marquee) width of lyricsImage() in pixels -- the actual image can be wider to hold overflowing lines' full text; callers use this fixed value (not img.width()) to keep the on-screen text SIZE stable regardless of how wide any one line's overflow makes the texture. */
+	static int lyricsNominalTexWidth();
 	bool   lyricsPending() const { return m_lyricsPending; }   ///< True while the lyrics fetch chain (cache/network) for the current track is still in flight.
 	bool   hasLyrics()     const { return !m_lines.empty(); }   ///< True once at least one lyric line (synced or plain) has been found and parsed.
 	bool   syncedLyrics()  const { return hasLyrics() && m_lines[0].t0 >= 0.0; }   ///< True if the found lyrics carry real timestamps (vs. plain unsynced text).

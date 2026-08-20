@@ -128,8 +128,8 @@ public:
 	 *
 	 * Only rasterises the text with QPainter into m_titlePending here; the actual GL upload and
 	 * mood-matched reveal-style pick happen at the next paint() call, where a GL context is current.
-	 * @param title Track title (elided to fit; drawn large and bold).
-	 * @param artist Track artist (elided to fit; drawn smaller below the title, omitted if empty).
+	 * @param title Track title (font auto-shrinks to fit, falling back to eliding only if even the smallest size doesn't; drawn large and bold).
+	 * @param artist Track artist (same auto-shrink/elide fallback; drawn smaller below the title, omitted if empty).
 	 */
 	void showTitle( const QString &title, const QString &artist );
 
@@ -154,6 +154,10 @@ public:
 		float lyricsHlV0    = -1.f;  ///< Start vertical position of the current word/line highlight sweep (-1 = none).
 		float lyricsHlV1    = -1.f;  ///< End vertical position of the current word/line highlight sweep (-1 = none).
 		float lyricsHlProg  = 0.f;   ///< Progress of the highlight sweep between lyricsHlV0 and lyricsHlV1, 0..1.
+		float lyricsUScale  = 1.f;   ///< Nominal texture width / actual texture width (<=1); rescales sampling so an overflow-widened texture doesn't shrink every line's apparent size.
+		float lyricsFocusV0 = -1.f;  ///< Vertical band of the line currently being read (both scroll and karaoke mode; -1 = none) -- the one the horizontal marquee below applies to.
+		float lyricsFocusV1 = -1.f;  ///< End of the focused line's vertical band.
+		float lyricsScrollU = 0.f;   ///< Current horizontal marquee offset (texture-U units) for the focused line, 0 if it fits without scrolling.
 		float artistAlpha   = 0.f;   ///< Artist-image overlay opacity, 0 (hidden) .. 1 (fully visible).
 		float artistAspect  = 1.f;   ///< Aspect ratio of the artist-image texture.
 	};
