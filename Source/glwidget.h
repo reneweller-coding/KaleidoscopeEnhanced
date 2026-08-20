@@ -256,6 +256,8 @@ protected:
 	int				m_artistIdxUploaded = -1;   ///< Index of the artist image currently uploaded as a texture.
 	float			m_lyricsAlphaSm  = 0.f;     ///< Slewed (smoothed) lyrics overlay opacity.
 	float			m_artistAlphaSm  = 0.f;     ///< Slewed (smoothed) artist-image overlay opacity.
+	QString			m_videoPathLoaded;          ///< Path last passed to videoPipLoad(), so a still-loading/still-current video isn't reloaded every frame; cleared (and the PiP released) once no cached video applies.
+	float			m_videoAlphaSm   = 0.f;     ///< Slewed (smoothed) music-video PiP opacity; only ramps IN (see the comment at its use site for why the fade-out is an immediate cut instead).
 	float			m_scrollVSm      = 0.f;     ///< Slewed (smoothed) vertical scroll position of the lyrics texture.
 	int				m_karaokeLine    = -1;      ///< Index of the currently active/highlighted karaoke line.
 	// Kinetik: wann die aktive Karaoke-Zeile zuletzt gewechselt hat

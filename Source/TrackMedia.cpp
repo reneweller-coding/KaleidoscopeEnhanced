@@ -19,6 +19,8 @@
 #include <QtNetwork/QNetworkAccessManager>
 #include <QtNetwork/QNetworkReply>
 #include <QtNetwork/QNetworkRequest>
+#include <QtCore/QProcess>
+#include <QtCore/QFileInfo>
 
 #include <algorithm>
 #include <cmath>
@@ -46,12 +48,19 @@ TrackMedia::TrackMedia()
 	m_nam = new QNetworkAccessManager();
 	QDir().mkpath( "..\\cache\\lyrics" );
 	QDir().mkpath( "..\\cache\\artist" );
+	QDir().mkpath( "..\\cache\\video" );
 }
 
-/** @brief Destroys the owned network manager (any in-flight QNetworkReply objects are children of it and are cleaned up via deleteLater() in their own finished() handlers). */
+/** @brief Destroys the owned network manager (any in-flight QNetworkReply objects are children of it and are cleaned up via deleteLater() in their own finished() handlers), and terminates any in-flight yt-dlp process. */
 TrackMedia::~TrackMedia()
 {
 	delete m_nam;
+	if( m_ytdlpProc )
+	{
+		m_ytdlpProc->kill();
+		m_ytdlpProc->waitForFinished( 1000 );
+		delete m_ytdlpProc;
+	}
 }
 
 /**
@@ -76,6 +85,12 @@ QString TrackMedia::lyricsCachePath() const
 	return "..\\cache\\lyrics\\" + md5Hex( m_key ) + ".json";
 }
 
+/** @brief Path to this track's video cache directory, keyed by the MD5 of m_key. @return Cache directory path under "..\\cache\\video\\". */
+QString TrackMedia::videoCacheDir() const
+{
+	return "..\\cache\\video\\" + md5Hex( m_key );
+}
+
 /** @brief Path to this artist's image cache directory, keyed by the MD5 of the lower-cased artist name. @return Cache directory path under "..\\cache\\artist\\". */
 QString TrackMedia::artistCacheDir() const
 {
@@ -83,11 +98,12 @@ QString TrackMedia::artistCacheDir() const
 }
 
 /**
- * @brief Requests lyrics + artist images for a (possibly new) track; call on every track change.
+ * @brief Requests lyrics + artist images (+ an optional music video) for a (possibly new) track; call on every track change.
  * @param artist Artist name (trimmed/lower-cased internally for de-duplication and cache keys).
  * @param title Track title; an empty (trimmed) title is ignored outright.
+ * @param durationSec The track's known duration in seconds, or <=0 if not (yet) known; gates the video search (see TrackMedia.h).
  */
-void TrackMedia::requestTrack( const QString &artist, const QString &title )
+void TrackMedia::requestTrack( const QString &artist, const QString &title, double durationSec )
 {
 	QString key = artist.trimmed().toLower() + "|" + title.trimmed().toLower();
 	if( key == m_key || title.trimmed().isEmpty() )
@@ -109,10 +125,15 @@ void TrackMedia::requestTrack( const QString &artist, const QString &title )
 	m_decodedIdx  = -1;
 	m_decoded     = QImage();
 	m_lyricsPending = true;
+	m_videoPath.clear();
+	m_videoRevision++;
+	m_videoDurationSec = durationSec;
 
 	lyricsFromCacheOrNet();
 	if( !m_artist.isEmpty() )
 		imagesFromCacheOrNet();
+	if( durationSec > 0.0 && durationSec <= double(kVideoMaxDurationSec) )
+		videoFromCacheOrNet( durationSec );
 }
 
 // ===========================================================================
@@ -748,4 +769,240 @@ void TrackMedia::fetchITunes()
 			enqueueImageUrl( art );
 		}
 	} );
+}
+
+// ===========================================================================
+// Musikvideo: YouTube-Suche + Download via yt-dlp (optional, degradiert still)
+// ===========================================================================
+//
+// Unlike lyrics/artist-images (QNetworkAccessManager, many requests happily
+// in flight at once), this shells out to an external process via QProcess --
+// TrackMedia is a plain C++ class (no QObject base), so every QObject::
+// connect() below uses the process itself as the CONTEXT object (same trick
+// the lyrics/image chains already use with QNetworkReply), and lifetimes are
+// managed by hand (new/deleteLater(), no parent).
+
+void TrackMedia::videoFromCacheOrNet( double durationSec )
+{
+	// At most one yt-dlp process in flight at a time (see m_ytdlpProc's
+	// declaration comment) -- a track change while one is already running
+	// for a DIFFERENT track just skips video for this play-through; a later
+	// replay of that track retries from scratch (nothing was cached for it).
+	if( m_ytdlpProc && m_ytdlpProc->state() != QProcess::NotRunning )
+		return;
+
+	const QString dir = videoCacheDir();
+	if( QFile::exists( dir + "\\video.mp4" ) )
+	{
+		m_videoPath = QFileInfo( dir + "\\video.mp4" ).absoluteFilePath();
+		m_videoRevision++;
+		return;
+	}
+
+	QFile neg( dir + "\\negative.json" );
+	if( neg.open( QIODevice::ReadOnly ) )
+	{
+		QJsonObject o = QJsonDocument::fromJson( neg.readAll() ).object();
+		qint64 age = QDateTime::currentSecsSinceEpoch()
+		           - qint64( o.value( "ts" ).toDouble() );
+		if( age < kVideoNegCacheTtlSec )
+			return;   // bekannt kein Treffer, TTL laeuft noch
+	}
+
+	(void) durationSec;   // already captured into m_videoDurationSec by requestTrack()
+	startVideoSearch();
+}
+
+void TrackMedia::startVideoSearch()
+{
+	if( !m_ytdlpUpdateTried )
+	{
+		m_ytdlpUpdateTried = true;
+		// Best-effort, fire-and-forget, never awaited: YouTube changes its
+		// extraction requirements often enough that a yt-dlp left un-updated
+		// for a couple of months starts failing every search with HTTP 403
+		// (hit exactly this while building the feature -- `yt-dlp -U` fixed
+		// it immediately). Keeping it fresh here means the feature doesn't
+		// silently rot over a long-running install.
+		QProcess::startDetached( "yt-dlp", QStringList{ "-U" } );
+	}
+
+	m_ytdlpProc = new QProcess();
+	const QString query = QString( "ytsearch%1:%2 %3 official video" )
+	                           .arg( kVideoSearchCount ).arg( m_artist, m_title );
+	const QStringList args = {
+		query, "--skip-download", "--no-warnings",
+		"--print", "%(id)s|||%(title)s|||%(channel)s|||%(duration)s"
+	};
+	const QString key    = m_key;
+	const double  target = m_videoDurationSec;
+	const QString artist = m_artist;
+
+	QObject::connect( m_ytdlpProc, &QProcess::finished, m_ytdlpProc,
+	                  [this, key, target, artist]( int exitCode, QProcess::ExitStatus status )
+	{
+		if( !m_ytdlpProc ) return;   // errorOccurred() already cleaned this up
+		QProcess *proc = m_ytdlpProc;
+		m_ytdlpProc = nullptr;
+
+		QString out;
+		if( status == QProcess::NormalExit && exitCode == 0 )
+			out = QString::fromUtf8( proc->readAllStandardOutput() );
+		proc->deleteLater();
+
+		if( key != m_key )
+			return;   // track has since moved on; a later replay searches again
+
+		VideoCandidate best;
+		double bestScore = 0.0;
+		bool   found     = false;
+		for( const QString &line : out.split( '\n', Qt::SkipEmptyParts ) )
+		{
+			const QStringList f = line.split( "|||" );
+			if( f.size() != 4 )
+				continue;
+			VideoCandidate c;
+			c.id       = f[0];
+			c.title    = f[1];
+			c.channel  = f[2];
+			c.duration = f[3].toDouble();
+			const double s = scoreCandidate( c, artist, target );
+			if( s > 0.0 && ( !found || s > bestScore ) )
+			{
+				best = c; bestScore = s; found = true;
+			}
+		}
+
+		if( found )
+			startVideoDownload( best.id );
+		else
+			writeVideoNegativeCache();
+	} );
+	QObject::connect( m_ytdlpProc, &QProcess::errorOccurred, m_ytdlpProc,
+	                  [this]( QProcess::ProcessError )
+	{
+		// Covers e.g. yt-dlp not being installed (FailedToStart) -- finished()
+		// never fires for that case, so this is the only cleanup path for it.
+		if( m_ytdlpProc )
+		{
+			m_ytdlpProc->deleteLater();
+			m_ytdlpProc = nullptr;
+		}
+	} );
+	m_ytdlpProc->start( "yt-dlp", args );
+}
+
+/*static*/ double TrackMedia::scoreCandidate( const VideoCandidate &c, const QString &artist,
+                                              double targetDurationSec )
+{
+	// Reject anything whose length doesn't plausibly match the actual track
+	// -- a full album, a looped instrumental, or an unrelated video with the
+	// same words in its title all tend to run far longer or shorter.
+	const double durDiff      = std::fabs( c.duration - targetDurationSec );
+	const double durTolerance = std::max( 20.0, targetDurationSec * 0.15 );
+	if( c.duration <= 0.0 || durDiff > durTolerance )
+		return -1.0;
+
+	const QString title   = c.title.toLower();
+	const QString channel = c.channel.toLower();
+	const QString art     = artist.toLower();
+
+	double score = 0.0;
+	if( title.contains( "official music video" ) || title.contains( "official video" ) )
+		score += 3.0;
+	else if( title.contains( "official" ) )
+		score += 2.0;
+	if( !art.isEmpty() && channel.contains( art ) )
+		score += 2.0;   // channel name matches the artist
+	if( channel.contains( "vevo" ) )
+		score += 2.0;
+
+	// "Looks like the wrong KIND of video" signals -- lyric videos, audio
+	// uploads, covers, live performances, remixes: never what "the official
+	// music video" means, even if the title also happens to say "official".
+	static const char *kBadSignals[] = {
+		"lyric", "audio only", "cover", "reaction", "live", "remix",
+		"8d audio", "slowed", "sped up", "nightcore"
+	};
+	for( const char *bad : kBadSignals )
+		if( title.contains( bad ) )
+			score -= 3.0;
+
+	score -= durDiff * 0.05;   // tie-breaker: prefer the closer duration match
+	return score;
+}
+
+void TrackMedia::startVideoDownload( const QString &videoId )
+{
+	const QString dir       = videoCacheDir();
+	QDir().mkpath( dir );
+	const QString tmpPath   = dir + "\\video.tmp.mp4";
+	const QString finalPath = dir + "\\video.mp4";
+	QFile::remove( tmpPath );   // a stale leftover from a crashed prior attempt
+
+	m_ytdlpProc = new QProcess();
+	const QStringList args = {
+		"https://www.youtube.com/watch?v=" + videoId,
+		"-f", "bestvideo[height<=720]+bestaudio/best[height<=720]",
+		"--merge-output-format", "mp4",
+		"--no-warnings",
+		"-o", tmpPath
+	};
+	const QString key = m_key;
+
+	QObject::connect( m_ytdlpProc, &QProcess::finished, m_ytdlpProc,
+	                  [this, key, tmpPath, finalPath]( int exitCode, QProcess::ExitStatus status )
+	{
+		if( !m_ytdlpProc ) return;
+		QProcess *proc = m_ytdlpProc;
+		m_ytdlpProc = nullptr;
+		proc->deleteLater();
+
+		const bool ok = ( status == QProcess::NormalExit && exitCode == 0
+		                && QFile::exists( tmpPath ) );
+		if( ok )
+		{
+			QFile::remove( finalPath );   // defensive; single-flight makes a real race unlikely
+			QFile::rename( tmpPath, finalPath );
+			if( key == m_key )
+			{
+				m_videoPath = QFileInfo( finalPath ).absoluteFilePath();
+				m_videoRevision++;
+			}
+			fprintf( stderr, "[Video] Musikvideo gespeichert fuer \"%s - %s\"\n",
+			         m_artist.toLocal8Bit().constData(), m_title.toLocal8Bit().constData() );
+		}
+		else
+		{
+			QFile::remove( tmpPath );
+			// KEIN Negativ-Cache hier: der Download ist gescheitert (Netz,
+			// Format, geo-blockiert, ...), nicht "kein Video vorhanden" --
+			// beim naechsten Mal (Song wiederholt sich) wird es erneut
+			// versucht statt wochenlang aufzugeben.
+			fprintf( stderr, "[Video] Download fehlgeschlagen fuer \"%s - %s\"\n",
+			         m_artist.toLocal8Bit().constData(), m_title.toLocal8Bit().constData() );
+		}
+	} );
+	QObject::connect( m_ytdlpProc, &QProcess::errorOccurred, m_ytdlpProc,
+	                  [this]( QProcess::ProcessError )
+	{
+		if( m_ytdlpProc )
+		{
+			m_ytdlpProc->deleteLater();
+			m_ytdlpProc = nullptr;
+		}
+	} );
+	m_ytdlpProc->start( "yt-dlp", args );
+}
+
+void TrackMedia::writeVideoNegativeCache()
+{
+	const QString dir = videoCacheDir();
+	QDir().mkpath( dir );
+	QJsonObject o;
+	o[ "found" ] = false;
+	o[ "ts" ]    = double( QDateTime::currentSecsSinceEpoch() );
+	QFile f( dir + "\\negative.json" );
+	if( f.open( QIODevice::WriteOnly ) )
+		f.write( QJsonDocument( o ).toJson( QJsonDocument::Compact ) );
 }

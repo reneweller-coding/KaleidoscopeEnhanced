@@ -163,6 +163,8 @@ public:
 	void setLyricsTexture( const void *rgba, int w, int h ) { m_present.setLyricsImage( rgba, w, h ); }
 	/** @brief Uploads the current artist-image texture to the present pass. @param rgba Packed RGBA8 pixel data. @param w Image width in pixels. @param h Image height in pixels. */
 	void setArtistTexture( const void *rgba, int w, int h ) { m_present.setArtistImage( rgba, w, h ); }
+	/** @brief Overrides the artist-image corner slot with an externally-owned GL texture (a music-video PiP frame); 0 clears the override. @param texId GL texture id, owned by the caller. */
+	void setArtistExternalTexture( GLuint texId ) { m_present.setArtistExternalTexture( texId ); }
 
 	/** Request an early cross-fade to the next texture effect (manual 'n' key,
 	 *  MIDI pad or web remote).  Honoured at the next opportunity.  TASTE

@@ -119,6 +119,17 @@ public:
 	 * @param h Image height in pixels.
 	 */
 	void setArtistImage( const void *rgba, int w, int h );
+	/**
+	 * @brief Overrides the artist-image corner slot with an EXTERNALLY-owned GL texture (a video frame) instead of the CPU-uploaded m_artistTex, for the music-video PiP feature.
+	 * @param texId GL texture id to bind for this and subsequent frames (owned by the caller, e.g. VideoPiP -- NOT deleted by PresentPass), or 0 to clear the override and fall back to the normal artist-image texture.
+	 *
+	 * Call every frame while a video is active (the id can change frame to frame as the video
+	 * decoder produces new frames) and with 0 once it stops, so the corner reverts to the
+	 * ordinary artist-image rotation. Reuses the exact same corner position/blend GLSL in
+	 * Present.frag (artistTex/artistAlpha/artistAspect) -- from the shader's point of view this
+	 * is just a different texture, so no shader change was needed.
+	 */
+	void setArtistExternalTexture( GLuint texId );
 
 	/** Frame-Eingaben für run() - alles Werte, die weiterhin der Pipeline/
 	 *  den Statics von RenderPipeline gehören. */
@@ -327,6 +338,7 @@ private:
 	// ---- Lyrics / Künstlerbild ----
 	GLuint	m_lyricsTex = 0;   ///< Uploaded lyrics overlay texture.
 	GLuint	m_artistTex = 0;   ///< Uploaded artist-image overlay texture.
+	GLuint	m_artistExternalTex = 0;   ///< Set via setArtistExternalTexture(); 0 = no override (use m_artistTex), else a caller-owned texture (video PiP frame) shown in its place.
 	GLint	m_presentLyricsTexUni    = -1;   ///< Uniform location: lyrics texture ("lyricsTex").
 	GLint	m_presentLyricsAlphaUni  = -1;   ///< Uniform location: lyrics opacity ("lyricsAlpha").
 	GLint	m_presentLyricsScrollUni = -1;   ///< Uniform location: lyrics scroll position ("lyricsScrollV").
