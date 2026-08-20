@@ -142,6 +142,7 @@ public:
 		m_glReady = true;
 		m_usesSim = m_usesFluid = m_usesSmoke3D = m_usesSSM = m_usesPhysarum = -1;
 		m_usesSpectro = m_usesShadow = m_usesShadow2 = m_usesOit = m_usesBake = -1;
+		m_usesMandelbrot = -1;
 	}
 	/// @return True once ensureCompiled() has successfully built the GL program.
 	bool isCompiled() const { return m_glReady; }
@@ -409,6 +410,8 @@ public:
 	// cost 60 times a second.
 	/// @return True if this effect's compiled fragment shader declares the "texBake" sampler. Cached after first query.
 	bool usesBake();
+	/// @return True if this effect's compiled fragment shader declares the "texMandelbrot" sampler. Cached after first query; see ComputeFX::stepMandelbrot() for why this bypasses the generic cfxMask() system.
+	bool usesMandelbrot();
 
 	// ---- Song-structure memory ----
 	// Snapshot / restore of all rolled per-activation parameter values, so a
@@ -519,6 +522,7 @@ protected:
 	int		m_usesShadow2 = -1;   // ... and for the second, independent shadow map
 	int		m_usesOit = -1;      // ... and for order-independent transparency
 	int		m_usesBake = -1;     // ... and for the per-scene baked-field texture
+	int		m_usesMandelbrot = -1;   // ... and for the deep-zoom Mandelbrot field texture
 	int		m_usesPhysarum = -1; // same caching for the Physarum trail map
 	unsigned int	m_cfxMask = 0;   ///< Compute-FX sampler bits (see cfxMask()); cached result, resolved once per compiled program (see m_cfxProg).
 	GLuint		m_cfxProg = 0;   ///< Program the mask was resolved for: id m_cfxMask was last computed for; mismatch triggers re-resolution in cfxMask().

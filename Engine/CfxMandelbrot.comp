@@ -1,0 +1,130 @@
+#version 430
+/**
+ * @file CfxMandelbrot.comp
+ * @brief Per-pixel Mandelbrot escape-time iteration using DOUBLE-SINGLE (Dekker/Knuth error-free-
+ * transformation) emulated precision for the complex coordinate, so the deep-zoom dive driven by
+ * ComputeFX::stepMandelbrot() can go roughly 10,000x deeper than plain float32 before the classic
+ * "blocky/banded" precision breakdown sets in. Each pixel's offset from the (double-single) zoom
+ * centre is computed in plain float32 -- always small and fully representable -- and combined with
+ * the precise centre via ds_add(), which is the step that actually needs the extra precision: a
+ * naive `centerHi + offset` in plain float32 would round the offset away entirely once zoomScale
+ * gets small, since the centre coordinate's own float32 mantissa can't resolve anything that far
+ * below its own magnitude.
+ *
+ * Outputs smooth (fractional) escape-time in R, a normalised interior/orbit-trap hint in G (for
+ * extra shading detail on points that never escape), for the consuming Scene2D/MandelbrotDeepZoom.frag
+ * to colour via imgPalette rather than a raw HSV rainbow.
+ */
+
+layout(local_size_x = 16, local_size_y = 16) in;
+
+layout(rgba16f, binding = 0) writeonly uniform image2D imgOut;
+
+uniform ivec2 size;
+uniform vec2  centerHi;   // (re, im) high half of the zoom centre
+uniform vec2  centerLo;   // (re, im) low half (error term) of the zoom centre
+uniform float zoomScale;  // half-width of the sampled window, in complex-plane units
+uniform int   maxIter;
+uniform float rot;        // slow view rotation (radians), integrated host-side
+
+// ---- Double-single (Dekker/Knuth) emulated ~44-48 bit precision ----------
+// Standard error-free-transformation building blocks; see e.g. Thall,
+// "Extended-Precision Floating Point Numbers for GPU Computation".
+
+vec2 ds_quick_two_sum(float a, float b)
+{
+    float s = a + b;
+    float err = b - (s - a);
+    return vec2(s, err);
+}
+
+vec2 ds_two_sum(float a, float b)
+{
+    float s = a + b;
+    float bb = s - a;
+    float err = (a - (s - bb)) + (b - bb);
+    return vec2(s, err);
+}
+
+vec2 ds_two_prod(float a, float b)
+{
+    float p = a * b;
+    float err = fma(a, b, -p);
+    return vec2(p, err);
+}
+
+vec2 ds_add(vec2 a, vec2 b)
+{
+    vec2 s = ds_two_sum(a.x, b.x);
+    s.y += a.y + b.y;
+    return ds_quick_two_sum(s.x, s.y);
+}
+
+vec2 ds_sub(vec2 a, vec2 b) { return ds_add(a, vec2(-b.x, -b.y)); }
+
+vec2 ds_mul(vec2 a, vec2 b)
+{
+    vec2 p = ds_two_prod(a.x, b.x);
+    p.y += a.x * b.y + a.y * b.x;
+    return ds_quick_two_sum(p.x, p.y);
+}
+
+void main()
+{
+    ivec2 gid = ivec2(gl_GlobalInvocationID.xy);
+    if (gid.x >= size.x || gid.y >= size.y) return;
+
+    // Centred, aspect-correct pixel coordinate in [-1,1]-ish, scaled by the
+    // current zoom window half-width and slowly rotated.
+    vec2 uv = (vec2(gid) - 0.5 * vec2(size)) / float(size.y);
+    float cs = cos(rot), sn = sin(rot);
+    uv = mat2(cs, -sn, sn, cs) * uv;
+    vec2 offset = uv * zoomScale;
+
+    // c = centre (double-single) + offset (plain float, always small enough
+    // to be exact on its own -- only the ADDITION to the big centre value
+    // needs the error-free transform).
+    vec2 crDS = ds_add(vec2(centerHi.x, centerLo.x), vec2(offset.x, 0.0));
+    vec2 ciDS = ds_add(vec2(centerHi.y, centerLo.y), vec2(offset.y, 0.0));
+
+    vec2 zr = crDS, zi = ciDS;
+    float trapMin = 1e6;
+    int iter = 0;
+    float zr2hi = 0.0, zi2hi = 0.0;
+    for (; iter < maxIter; ++iter)
+    {
+        vec2 zr2 = ds_mul(zr, zr);
+        vec2 zi2 = ds_mul(zi, zi);
+        zr2hi = zr2.x; zi2hi = zi2.x;
+        if (zr2hi + zi2hi > 4.0) break;
+
+        vec2 zrzi = ds_mul(zr, zi);
+        vec2 newZi = ds_add(ds_add(zrzi, zrzi), ciDS);
+        vec2 newZr = ds_add(ds_sub(zr2, zi2), crDS);
+        zr = newZr;
+        zi = newZi;
+
+        // Orbit trap: distance to the real axis, for extra interior detail
+        // on points that never escape (classic deep-zoom shading trick).
+        trapMin = min(trapMin, abs(zi.x));
+    }
+
+    float smoothIter;
+    if (iter >= maxIter)
+    {
+        // Never escaped: encode as a negative value so the fragment shader
+        // can tell interior points (coloured from the orbit trap) apart from
+        // escaped ones (coloured from the iteration count).
+        smoothIter = -1.0;
+    }
+    else
+    {
+        // Standard smooth-iteration-count formula: removes the banding
+        // between discrete integer iteration levels.
+        float logZn = log(zr2hi + zi2hi) * 0.5;
+        float nu = log(logZn / log(2.0)) / log(2.0);
+        smoothIter = (float(iter) + 1.0 - nu) / float(maxIter);
+    }
+
+    imageStore(imgOut, gid, vec4(smoothIter, clamp(trapMin, 0.0, 1.0), 0.0, 1.0));
+}
