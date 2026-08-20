@@ -42,6 +42,7 @@ float RenderPipeline::s_reactivity  = 1.0f;
 float RenderPipeline::s_trailAmount = 0.6f;
 float RenderPipeline::s_moodStrength = 1.0f;
 float RenderPipeline::s_renderScale = 1.0f;
+bool  RenderPipeline::s_renderScaleFromCli = false;
 float RenderPipeline::s_lightShow   = 0.0f;   // corner lamps / light-show OFF by default
 bool  RenderPipeline::s_spoutEnabled = false; // Spout sender (CLI -o)
 float RenderPipeline::s_latencyLead  = 0.05f; // display-phase lead vs. heard audio

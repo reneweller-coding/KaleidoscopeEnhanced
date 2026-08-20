@@ -459,7 +459,8 @@ protected:
 	/// a fixed floor and the launch -s ceiling, with a settle delay between steps.
 	void    updateAdaptiveScale();
 	bool    m_autoScale       = true;   ///< toggled with key 'g'
-	float   m_autoScaleMax    = 1.f;    ///< ceiling = the launch render scale
+	float   m_autoScaleMax    = 1.f;    ///< ceiling: an explicit -s, else 1.0 (never the persisted working value)
+	float   m_displayHz       = 60.f;   ///< refresh rate the render timer was paced to; adaptation targets a fraction of it
 	qint64  m_lastScaleAdjust = 0;      ///< when the scale was last changed
 
 

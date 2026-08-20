@@ -17,6 +17,47 @@
 #include "Recorder.h"
 #include "AudioAnalyzer.h"
 
+// ---------------------------------------------------------------------------
+// Video codec selection: prefer the GPU's NVENC block over libx264.
+//
+// Every mux here used to hard-code libx264, i.e. the CPU re-encoded the whole
+// recording after the CPU had already JPEG-encoded every frame. On a machine
+// with an NVENC block that is two software encodes for a job the GPU does in
+// fixed-function silicon, and it competes for the very cores the audio
+// analysis runs on.
+//
+// Presence in `ffmpeg -encoders` is NOT sufficient: an ffmpeg build can list
+// h264_nvenc while the driver or GPU refuses it at runtime. So this actually
+// ENCODES a tiny throwaway clip once and keeps the result. Probed lazily on
+// first use, never on the render thread's critical path.
+static QStringList videoCodecArgs()
+{
+    static QStringList cached;
+    if( !cached.isEmpty() ) return cached;
+
+    QProcess probe;
+    probe.start( "ffmpeg", QStringList()
+                 << "-hide_banner" << "-loglevel" << "error"
+                 << "-f" << "lavfi" << "-i" << "nullsrc=s=64x64:d=0.1"
+                 << "-c:v" << "h264_nvenc" << "-f" << "null" << "-" );
+    bool ok = probe.waitForFinished( 8000 )
+              && probe.exitStatus() == QProcess::NormalExit
+              && probe.exitCode() == 0;
+
+    if( ok )
+        // p5 = balanced NVENC preset; cq 20 is visually transparent for this
+        // material and lets the encoder pick the bitrate.
+        cached << "-c:v" << "h264_nvenc" << "-preset" << "p5" << "-cq" << "20"
+               << "-pix_fmt" << "yuv420p";
+    else
+        cached << "-c:v" << "libx264" << "-pix_fmt" << "yuv420p";
+
+    fprintf( stderr, "[recorder] video encoder: %s\n",
+             ok ? "h264_nvenc (GPU)" : "libx264 (CPU, no working NVENC)" );
+    return cached;
+}
+
+
 #ifndef GL_PIXEL_PACK_BUFFER
 #define GL_PIXEL_PACK_BUFFER 0x88EB
 #endif
@@ -94,6 +135,7 @@ void Recorder::toggle()
 		m_recConcat.clear();
 		m_recCarryDur  = 0.f;
 		m_recLastFrame = nowMs();
+		m_recDue       = 0.0;   // re-armed on the first captured frame
 		if( m_audio )
 			m_audio->startRecording( m_recDir + "/audio.wav" );
 		// Encoder-Worker starten (EIN Thread -> Frames bleiben in Reihenfolge).
@@ -401,7 +443,7 @@ void Recorder::saveReplay()
 		args << "-ss" << QString::number( std::max(0.f, wavLen - total), 'f', 2 )
 		     << "-i" << (dir + "/audio.wav");
 	}
-	args << "-c:v" << "libx264" << "-pix_fmt" << "yuv420p";
+	args << videoCodecArgs();
 	if( haveAudio ) args << "-c:a" << "aac";
 	args << "-shortest" << (dir + "/replay.mp4");
 	QProcess::startDetached( "ffmpeg", args );
@@ -425,8 +467,29 @@ void Recorder::saveReplay()
 void Recorder::captureFrame( int w, int h )
 {
 	qint64 now = nowMs();
-	if( now - m_recLastFrame < 33 )      // ~30-fps-Deckel
+
+	// Fixed 30 fps DEADLINE, advanced by exactly one period -- not a
+	// "has 33 ms passed since the last capture?" test.
+	//
+	// That test beats against the render rate. The renderer is driven by a
+	// 16.67 ms timer, so frames arrive at 16.7, 33.4, 50.1, 66.8 ms... and a
+	// gate that resets its reference to `now` on every capture alternates
+	// between taking every 2nd and every 3rd frame as the jitter crosses the
+	// 33 ms boundary. Measured result: ~23 fps written while the renderer was
+	// comfortably doing 60 and the encoder was dropping nothing -- the
+	// shortfall was pure aliasing, not cost.
+	//
+	// Advancing a deadline by a constant period removes the beat: at 60 fps it
+	// takes exactly every second frame. The resync guard keeps a long stall
+	// (scene load, shader compile) from queueing a burst of catch-up frames.
+	if( m_recDue == 0.0 )
+		m_recDue = double( now );
+	if( double( now ) < m_recDue )
 		return;
+	m_recDue += 1000.0 / 30.0;
+	if( m_recDue < double( now ) - 200.0 )
+		m_recDue = double( now );
+
 	float dur = (m_recFrame == 0) ? (1.0f/30.0f) : float(now - m_recLastFrame) / 1000.f;
 	m_recLastFrame = now;
 
@@ -497,10 +560,13 @@ void Recorder::finishRecording()
 	QFile bf( m_recDir + "/make_video.bat" );
 	if( bf.open(QIODevice::WriteOnly | QIODevice::Text) )
 	{
-		bf.write( "@echo off\r\ncd /d \"%~dp0\"\r\n"
-		          "ffmpeg -y -f concat -safe 0 -i frames.txt -i audio.wav "
-		          "-c:v libx264 -pix_fmt yuv420p -c:a aac -shortest kaleidoscope.mp4\r\n"
-		          "pause\r\n" );
+		// Mirror whatever the probe actually selected, so the manual fallback is
+		// not silently slower than the automatic mux beside it.
+		QString batCmd = QString( "@echo off\r\ncd /d \"%~dp0\"\r\n"
+		                          "ffmpeg -y -f concat -safe 0 -i frames.txt -i audio.wav %1 "
+		                          "-c:a aac -shortest kaleidoscope.mp4\r\npause\r\n" )
+		                 .arg( videoCodecArgs().join( ' ' ) );
+		bf.write( batCmd.toLocal8Bit() );
 		bf.close();
 	}
 
@@ -509,7 +575,7 @@ void Recorder::finishRecording()
 	QStringList args;
 	args << "-y" << "-f" << "concat" << "-safe" << "0" << "-i" << listPath
 	     << "-i" << (m_recDir + "/audio.wav")
-	     << "-c:v" << "libx264" << "-pix_fmt" << "yuv420p" << "-c:a" << "aac"
+	     << videoCodecArgs() << "-c:a" << "aac"
 	     << "-shortest" << (m_recDir + "/kaleidoscope.mp4");
 	QProcess::startDetached( "ffmpeg", args );
 
