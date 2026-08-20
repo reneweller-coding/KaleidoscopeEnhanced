@@ -31,6 +31,7 @@
 #include <mutex>
 #include <condition_variable>
 #include <deque>
+#include <vector>
 
 #include <QtCore/QString>
 #include <QtCore/QElapsedTimer>
@@ -143,12 +144,24 @@ private:
 
 	// Encoder-Worker (bedient Recording UND Replay-Ring)
 	/** @brief One unit of encoder work: an image to mirror/scale/encode, its destination path (empty means "route to the replay ring instead"), and its output duration. */
-	struct RecJob { QImage img; QString path; float dur = 0.f; };  // path leer -> Replay
-	std::thread             m_thread;    ///< Single encoder worker thread (keeps frames in order).
+	/** @brief One unit of encoder work. `seq` is assigned on the GL thread and only
+	 *  orders REPLAY frames (recording frames carry their index in `path`). */
+	struct RecJob { QImage img; QString path; float dur = 0.f; unsigned long long seq = 0; };  // path leer -> Replay
+	// A POOL, not one thread. Encoding is mirror + downscale + JPEG per frame and
+	// was the pipeline's hard ceiling: measured across all 528 scenes the capture
+	// rate sat at 8.4-12.7 fps (median 10.7) against a 30 fps cap, and it barely
+	// varied with scene complexity -- the signature of a fixed per-frame cost, not
+	// of shader load. Frames beyond the queue bound were dropped silently.
+	// Recording jobs are order-independent (their frame index is baked into `path`
+	// on the GL thread, and frames.txt is written there too), so they parallelise
+	// freely; replay jobs are re-ordered by `seq` on insertion.
+	std::vector<std::thread> m_threads;  ///< Encoder worker pool.
 	std::mutex              m_mx;        ///< Guards m_queue and m_quit.
-	std::condition_variable m_cv;        ///< Signals the worker when a job is queued or quit is requested.
-	std::deque<RecJob>      m_queue;     ///< Bounded (size < 8) pending encode jobs.
-	bool                    m_quit = false;   ///< Set to request the worker thread to exit once the queue drains.
+	std::condition_variable m_cv;        ///< Signals a worker when a job is queued or quit is requested.
+	std::deque<RecJob>      m_queue;     ///< Bounded pending encode jobs (cap scales with the pool).
+	unsigned long long      m_seq = 0;   ///< Monotonic job counter (GL thread), orders replay frames.
+	unsigned long long      m_dropped = 0; ///< Frames discarded because the queue was full; reported on stop.
+	bool                    m_quit = false;   ///< Set to request the workers to exit once the queue drains.
 
 	// PBO-Doppelpuffer für den asynchronen Readback
 	GLuint m_pbo[2] = { 0, 0 };   ///< Double-buffered pixel-pack buffer objects for async glReadPixels.
@@ -160,7 +173,7 @@ private:
 
 	// Replay-Ring
 	/** @brief One buffered replay-ring frame: its JPEG bytes and output duration. */
-	struct ReplayFrame { QByteArray jpg; float dur; };
+	struct ReplayFrame { QByteArray jpg; float dur; unsigned long long seq = 0; };
 	bool                    m_replayArmed = false;   ///< True while the instant-replay ring is armed and capturing.
 	std::mutex              m_replayMx;              ///< Guards m_replayFrames.
 	std::deque<ReplayFrame> m_replayFrames;          ///< Rolling ~30 s ring of encoded replay frames (oldest at the front).
