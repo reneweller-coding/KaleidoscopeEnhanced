@@ -939,6 +939,15 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
                 + upperMid * 0.10f
                 + high     * 0.05f;
 
+    // Rolling ~6 s level history, read by the music/speech continuity test.
+    // This write was MISSING: the array was zero-initialised and read, but
+    // never filled, so `continuity` was permanently 0 for every input. Two of
+    // the classifier's inputs were therefore dead -- the "sustained material is
+    // music" veto could never fire, and `gappiness` was pinned at its maximum
+    // for speech and music alike, i.e. it discriminated nothing.
+    m_levelHistory[m_ambientIdx] = level;
+    m_ambientIdx = ( m_ambientIdx + 1 ) % kAmbientHistLen;
+
     // ---- Sharpness (Zwicker-style high-frequency weighting) ----
     // Ratio of high-frequency energy to total: dark drones → ~0, bright/harsh → ~1.
     float sharpNum = 0.40f * mid + 0.70f * upperMid + 1.00f * high;
@@ -1851,9 +1860,17 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
     continuity /= float(kAmbientHistLen);                 // 1 = no gaps (music/drone)
     float gappiness    = 1.f - continuity;                // speech: some gaps
     float midDom       = (lowMid + mid) / sharpDen;       // speech: mid-dominant (formants)
+    float highRaw      = std::min((upperMid + high) / sharpDen * 2.5f, 1.f);
+    float midConcRaw   = std::max(midDom * (1.f - highRaw), 0.f);   // formant concentration
     float highContent  = std::min((upperMid + high) / sharpDen * 2.5f, 1.f); // music has highs
     float bassPresence = std::min((subBass + bass) * 2.0f, 1.f);             // music has bass
-    float sustain      = continuity * (1.f - m_sFluxVar); // steady drone/pad = music
+    // "Sustained material is music" only holds for material that is not ALSO
+    // formant-shaped. Continuous narration is sustained too, so keying this on
+    // continuity alone inverted the test: measured over a 37 s speech sample it
+    // read 0.399 against 0.106 for the music control -- speech scored as MORE
+    // drone-like than the drone. Excluding formant-concentrated energy fixes
+    // the direction.
+    float sustain      = continuity * (1.f - m_sFluxVar) * (1.f - midConcRaw);
 
     // Core speech signature: energy concentrated in the formant band (~300-3400 Hz)
     // and lacking BOTH bass and highs.  Then VETO with traits that only music has
@@ -1862,16 +1879,33 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
     float midConc = std::max(midDom * (1.f - highContent), 0.f);   // ~1 for speech
     float speechiness = midConc
                       * (1.f - bassPresence)              // bass        -> music
-                      * (1.f - m_sRhythm)                 // steady beat -> music
+                      * (1.f - 0.75f * m_sRhythm)         // steady beat -> music
                       * (1.f - 0.7f * sustain)            // sustained   -> music
                       * (1.f - 0.5f * m_sKeyClarity)      // clear key   -> music
-                      * (0.7f + 0.3f * gappiness);        // pauses add, don't veto
+                      * (0.85f + 0.15f * gappiness);      // pauses add, don't veto
     speechiness = std::max(0.f, std::min(speechiness * 1.9f, 1.f));
     float musicConf = 1.f - speechiness;
 
     // Smooth with mild hysteresis: ease toward music a bit faster than toward
     // speech, so brief vocal samples in a song don't drop reactivity, while a
     // genuine switch to dialogue settles within a few seconds.
+    // KALEIDO_SPEECH_DEBUG=1 prints the classifier's ingredients once a second.
+    // speechiness is a PRODUCT of vetoes, so when the gate misbehaves the only
+    // useful question is which factor is collapsing it -- a single number for
+    // musicPresence cannot answer that.
+    {
+        static const bool dbg = qEnvironmentVariableIsSet( "KALEIDO_SPEECH_DEBUG" );
+        static int dbgN = 0;
+        if( dbg && ( ++dbgN % 100 ) == 0 )
+            fprintf( stderr,
+                     "SPEECH mp=%.3f speechy=%.3f | midConc=%.3f midDom=%.3f high=%.3f "
+                     "bass=%.3f rhythm=%.3f sustain=%.3f key=%.3f gap=%.3f cont=%.3f "
+                     "fluxVar=%.3f lvl=%.3f acConf=%.3f acBPM=%.0f\n",
+                     m_sMusicPresence, speechiness, midConc, midDom, highContent,
+                     bassPresence, m_sRhythm, sustain, m_sKeyClarity, gappiness,
+                     continuity, m_sFluxVar, level, m_acConf, m_acBPM );
+    }
+
     float mpSpeed = (musicConf > m_sMusicPresence) ? 0.020f : 0.012f;
     m_sMusicPresence += mpSpeed * (musicConf - m_sMusicPresence);
     m_sMusicPresence = std::max(0.f, std::min(m_sMusicPresence, 1.f));
