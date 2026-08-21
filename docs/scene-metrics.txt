@@ -1,0 +1,581 @@
+Scene metrics -- catalogue baseline, measured 2026-08-21
+=======================================================
+
+How this was produced
+---------------------
+  Tools\scan_scenes.ps1 -All -Seconds 8 -Out scan
+  python Tools\scene_metrics.py Release\scan --json Tools\scene_metrics.json
+
+Conditions, all of which matter for comparing against a later run:
+  * renderScale pinned to 1.0 and autoScale OFF. With the adaptive scaler on,
+    an expensive scene keeps its fps up by dropping resolution, so fast and
+    slow scenes both report "fine".
+  * ONE pinned background photo, the median-brightness image of the 2813 in
+    the collection (Tools\pick_scan_image.py). Scenes that fold the photo
+    inherit its brightness; with a random photo per run the worst luma delta
+    between two runs was 0.43 and only 4 of 10 flag verdicts reproduced. With
+    the photo pinned: 0.002 and 9 of 10.
+  * fps is the APP's own report (KALEIDO_FPS_LOG), not frames-on-disk divided
+    by seconds. The recorder writes constant-rate video with duplicate fill,
+    so counting frames now says nothing about scene cost.
+
+Performance
+-----------
+  526 of 528 scenes render at the full 120 fps display rate.
+  Below it: KineticMirrorHexagonArray (119 fps), NeutronStarMagneticFunnelPlunge (119 fps)
+  Caveat: the measurement is vsync-capped at 120, so it establishes "not slow"
+  but says nothing about how much headroom a scene has left.
+
+Flags
+-----
+  52 of 528 scenes flagged (9.8%).
+  The thresholds sit at the 5th-10th percentile of the CATALOGUE'S OWN
+  distribution, so roughly 5-10% is the expected rate by construction. This is
+  the tail of the house look, not a defect list -- whether a given tail scene
+  is wrong is a judgement call, and several are dark or sparse on purpose.
+
+  TOO_DARK          25
+  FLAT              20
+  GARISH            16
+  NOT_FILLING       14
+  COLOR_FLICKER      7
+  MOSTLY_BLACK       5
+  STATIC             4
+  FLICKER            1
+
+The table follows, sorted by flag then name.
+
+scene_metrics: 528 scene(s), 52 flagged
+
+scene                                          luma   cntr  motion   occ  satHi   jump hueJmp  flkHi   fps  flags
+-----------------------------------------------------------------------------------------------------------------
+BlackHole                                     0.013  0.035  0.0045  0.10  0.018    4.7    2.8  0.026 120.0  COLOR_FLICKER,TOO_DARK,MOSTLY_BLACK,FLAT,STATIC,NOT_FILLING
+ParticleTunnelFlight                          0.003  0.008  0.0046  0.00  0.005    2.4    5.0  0.540 120.0  FLICKER,TOO_DARK,MOSTLY_BLACK,FLAT,STATIC,NOT_FILLING
+RydbergAtomQuantumSimulatorArray              0.005  0.005  0.0041  0.00  0.000   11.0    0.0  0.012 120.0  TOO_DARK,MOSTLY_BLACK,FLAT,STATIC,NOT_FILLING
+WignerCrystalElectronLattice                  0.005  0.009  0.0031  0.00  0.007   12.2   26.3  0.004 120.0  TOO_DARK,MOSTLY_BLACK,FLAT,STATIC,NOT_FILLING
+AbrikosovFluxLatticeVortices                  0.013  0.028  0.0104  0.23  0.071   83.9   21.2  0.000 121.0  TOO_DARK,FLAT,NOT_FILLING
+NeuralAxonSynapseCloud                        0.017  0.026  0.0175  0.43  0.032   17.1    6.3  0.004 120.0  COLOR_FLICKER,TOO_DARK,FLAT
+QuantumVortexField                            0.031  0.052  0.0119  0.28  0.031   16.6    9.9  0.000 120.0  TOO_DARK,FLAT,NOT_FILLING
+SpinGlassFrustrationLattice                   0.013  0.015  0.0083  0.00  0.008   14.1   22.4  0.006 120.0  TOO_DARK,FLAT,NOT_FILLING
+SuperconductingVortexLatticeMelting           0.014  0.025  0.0093  0.23  0.027   21.5   13.0  0.002 120.0  TOO_DARK,FLAT,NOT_FILLING
+SynthTerrain                                  0.010  0.025  0.0110  0.29  0.280   19.3   14.8  0.001 120.0  TOO_DARK,MOSTLY_BLACK,FLAT
+CherenkovCascadeShower                        0.037  0.094  0.0168  0.21  0.033   23.9   15.9  0.001 120.0  TOO_DARK,NOT_FILLING
+CoralReefFluorescence                         0.084  0.047  0.0208  0.25  0.121   36.8   27.4  0.000 120.0  FLAT,NOT_FILLING
+CyberVoxelTerraform                           0.033  0.039  0.0265  0.60  0.198   22.5   15.5  0.000 120.0  TOO_DARK,FLAT
+HarmonicStrings                               0.021  0.057  0.0296  0.72  0.418    8.4    5.6  0.005 120.0  TOO_DARK,GARISH
+HelixTower                                    0.027  0.060  0.0245  0.59  0.237   24.6    5.8  0.004 120.0  COLOR_FLICKER,TOO_DARK
+JuliaAudioMorph                               0.079  0.051  0.0207  0.22  0.003   13.2    6.0  0.001 120.0  FLAT,NOT_FILLING
+MirrorShatterExplosion                        0.036  0.094  0.0210  0.20  0.032   17.6   27.3  0.001 120.0  TOO_DARK,NOT_FILLING
+NeuroSynapseNetwork                           0.017  0.030  0.0195  0.38  0.218   12.9   12.7  0.006 120.0  TOO_DARK,FLAT
+OrbitalDrop                                   0.021  0.037  0.0232  0.48  0.084    3.4    4.6  0.000 120.0  TOO_DARK,FLAT
+QuantumQubitArray                             0.022  0.038  0.0091  0.32  0.022   10.0    6.9  0.000 120.0  TOO_DARK,FLAT
+AbyssalLuminescence                           0.181  0.236  0.0628  0.74  0.443   35.9   27.6  0.000 120.0  GARISH
+AuroraBorealisOverFjord                       0.059  0.056  0.0134  0.26  0.121   27.9   13.5  0.000 120.0  NOT_FILLING
+BioCell                                       0.092  0.177  0.0945  0.89  0.215   12.0    2.2  0.002 120.0  COLOR_FLICKER
+BioluminescentMyceliumCave                    0.089  0.172  0.0891  0.91  0.376    4.3    3.4  0.001 120.0  GARISH
+Chladni3DAcousticLevitation                   0.040  0.086  0.0405  0.98  0.454    5.1    7.0  0.008 120.0  GARISH
+CosmicRayCherenkovAirShowerCascade            0.058  0.083  0.0362  0.85  0.462   15.3   12.5  0.000 120.0  GARISH
+CosmicStringCuspKinkGravitationalRadiation    0.154  0.221  0.1703  1.00  0.517   12.6    6.4  0.000 120.0  GARISH
+CosmicWebFilamentAnisotropy                   0.032  0.079  0.0295  0.66  0.136   16.3    6.6  0.001 120.0  TOO_DARK
+CryogenicBrinicleStalactite                   0.077  0.095  0.0496  1.00  0.475    6.5    6.5  0.001 120.0  GARISH
+CrystalCave                                   0.157  0.185  0.1561  0.99  0.356   29.5    8.3  0.000 120.0  GARISH
+FerroSpikes                                   0.094  0.042  0.0188  0.98  0.000   10.6    6.3  0.003 120.0  FLAT
+FireflyField                                  0.169  0.215  0.1597  1.00  0.358    2.0    2.8  0.000 120.0  GARISH
+HairCurtain                                   0.064  0.054  0.0137  0.29  0.000    7.3    8.4  0.000 120.0  FLAT
+Harmonograph                                  0.032  0.093  0.0337  0.50  0.158    6.3    8.8  0.001 120.0  TOO_DARK
+HeliosphericCurrentSheet                      0.246  0.197  0.1799  1.00  0.078   14.0    2.6  0.000 120.0  COLOR_FLICKER
+HyperbolicMetamaterialSpacetime               0.087  0.051  0.0282  0.29  0.000   62.2   10.5  0.005 120.0  FLAT
+LargeHadronCollision                          0.030  0.068  0.0208  0.31  0.113   31.3   11.5  0.000 120.0  TOO_DARK
+Magnetosphere                                 0.036  0.096  0.0135  0.29  0.052    9.8    6.3  0.000 120.0  TOO_DARK
+MagnetotacticBacteriaChains                   0.089  0.142  0.0555  1.00  0.356    6.2    6.0  0.005 120.0  GARISH
+MelodyScript                                  0.040  0.101  0.0365  1.00  0.477   13.2   15.7  0.000 120.0  GARISH
+MetaSculpt                                    0.061  0.042  0.0107  0.48  0.015   10.2    5.5  0.000 120.0  FLAT
+OrbitalShells                                 0.049  0.126  0.0268  0.59  0.185    7.3    3.0  0.001 120.0  COLOR_FLICKER
+OscilloRings                                  0.106  0.184  0.0516  0.71  0.389    9.0    4.1  0.003 120.0  GARISH
+PenroseAperiodicTessellation                  0.420  0.246  0.0902  0.98  0.000   10.3    2.4  0.000 120.0  COLOR_FLICKER
+PlanetRings                                   0.038  0.080  0.0211  0.46  0.066   10.5    2.3  0.000 120.0  TOO_DARK
+RoseOrbit                                     0.038  0.066  0.0366  0.63  0.046    5.9    5.4  0.001 120.0  TOO_DARK
+SciFiHUD                                      0.050  0.111  0.0454  0.86  0.491   14.2   10.3  0.000 120.0  GARISH
+SmokeHall                                     0.188  0.076  0.0115  0.27  0.010    9.5    8.8  0.000 120.0  NOT_FILLING
+SuperconductingFluxVortex                     0.186  0.204  0.1571  0.95  0.429    7.4    6.9  0.000 120.0  GARISH
+SuperfluidVortexRingPinchOff                  0.087  0.144  0.1106  0.99  0.580    7.2    4.9  0.009 120.0  GARISH
+Tornado                                       0.029  0.060  0.0145  0.38  0.015   28.3    8.8  0.000 120.0  TOO_DARK
+Tunnel                                        0.224  0.172  0.1872  0.93  0.380    7.3    4.9  0.000 120.0  GARISH
+AccretionDiskToroidVortex                     0.073  0.099  0.0152  0.49  0.031   10.8    9.5  0.005 120.0  
+AcousticBlackHoleEventHorizon                 0.677  0.196  0.0712  0.61  0.002   35.5   20.3  0.000 120.0  
+AcousticLevitationMatrix                      0.107  0.093  0.0806  1.00  0.114   14.9    3.6  0.001 120.0  
+AizawaAttractorSphereVortex                   0.300  0.178  0.0420  0.95  0.000   29.5    4.3  0.000 120.0  
+AlcubierreWarpDriveHighway                    0.603  0.264  0.0655  0.93  0.006   15.1    4.4  0.000 120.0  
+AlfvenWavePlasmaFilamentation                 0.521  0.194  0.2321  1.00  0.039   37.6    3.7  0.000 120.0  
+AnamorphicMirrorLabyrinth                     0.335  0.193  0.0323  0.96  0.001   21.3    5.2  0.002 120.0  
+AnomalousFloquetTopologicalInsulator          0.291  0.301  0.0197  0.84  0.048   54.7    8.6  0.000 120.0  
+ApollonianGasketNebulaFlight                  0.132  0.111  0.0672  0.73  0.004  130.3   21.5  0.000 120.0  
+ApollonianSpherePackingDive                   0.287  0.267  0.2321  0.75  0.004   19.7   25.2  0.000 120.0  
+ApollonianSpherePackingGasket                 0.084  0.060  0.0639  0.67  0.001   70.3   72.0  0.000 120.0  
+AsteroidBelt                                  0.078  0.114  0.0643  0.86  0.131   10.4    9.1  0.000 120.0  
+AtmosphericGravityWaveUndularBore             0.306  0.298  0.0533  0.68  0.056   11.2    3.7  0.000 120.0  
+Aurora                                        0.245  0.282  0.0464  0.69  0.077    9.6    3.6  0.000 120.0  
+AuroraAustralisCurtainSwell                   0.501  0.357  0.0515  0.75  0.044   20.2   16.9  0.000 120.0  
+AuroraBorealisCurtainFlight                   0.221  0.122  0.0186  0.61  0.002   75.5   13.6  0.000 120.0  
+AuroraVeil                                    0.240  0.303  0.0085  0.60  0.044    6.2    3.9  0.001 120.0  
+BacteriophageIcosahedralCapsidInjection       0.524  0.264  0.0231  0.71  0.012   11.2    5.1  0.000 120.0  
+BallLightningPlasmoid                         0.396  0.197  0.1050  1.00  0.038   12.8    3.7  0.000 120.0  
+BallisticGrapheneElectronFocussing            0.166  0.158  0.0415  0.82  0.025   23.9   10.1  0.000 120.0  
+BauhausGeo                                    0.329  0.120  0.0242  0.93  0.100   28.3    7.6  0.000 120.0  
+BeatLattice                                   0.338  0.211  0.1476  1.00  0.007    5.4    4.3  0.000 120.0  
+BelousovZhabotinskyChemicalWave               0.518  0.250  0.2899  1.00  0.002   13.9    5.7  0.000 120.0  
+BillboardCity                                 0.209  0.196  0.1695  0.91  0.115    3.7    4.6  0.000 120.0  
+BioCellularInfiniteZoom                       0.385  0.092  0.0642  1.00  0.000   20.4    3.8  0.000 120.0  
+BioLuminescentTendrilTunnel                   0.584  0.210  0.0548  0.97  0.110   68.7   14.2  0.000 120.0  
+BioNeuralDendriteZoom                         0.178  0.118  0.0782  1.00  0.309   26.3    8.8  0.000 120.0  
+BioluminescentAbyssalTrenches                 0.533  0.257  0.1854  1.00  0.002    7.5    2.8  0.000 120.0  
+BioluminescentBreakingWave                    0.042  0.065  0.0138  0.45  0.043    8.2    9.4  0.000 120.0  
+BioluminescentCombJellyCydippid               0.081  0.164  0.0601  0.66  0.229   18.3    5.8  0.000 120.0  
+BioluminescentDeepSeaCombJelly                0.282  0.242  0.0169  0.78  0.027   28.2    3.7  0.000 120.0  
+BioluminescentDeepSeaTrenchDive               0.351  0.080  0.0362  0.43  0.000   61.4   16.1  0.004 120.0  
+BioluminescentForestCanopy                    0.410  0.332  0.1693  0.93  0.147   14.7   22.2  0.000 120.0  
+BioluminescentOceanSwell                      0.061  0.107  0.0504  0.45  0.135   12.6   11.7  0.001 120.0  
+BioluminescentSiphonophoreChain               0.124  0.157  0.1009  0.96  0.239   27.6   11.8  0.000 120.0  
+BioluminescentSwarm                           0.114  0.172  0.1222  0.86  0.233   33.3   23.9  0.000 120.0  
+BismuthFerriteMultiferroicDomains             0.054  0.111  0.0224  0.34  0.030   12.1    3.9  0.000 120.0  
+BismuthHyperLabyrinth                         0.088  0.081  0.0781  0.36  0.111   13.7   17.8  0.003 120.0  
+BismuthLabyrinth                              0.324  0.110  0.0887  0.93  0.007  108.6   87.8  0.002 120.0  
+BloomSculpt                                   0.075  0.070  0.0122  0.73  0.044    9.3    7.2  0.001 120.0  
+Blueprint                                     0.149  0.196  0.0086  0.29  0.005   12.3    6.2  0.000 120.0  
+BoseEinsteinGiantVortexTurbulence             0.242  0.148  0.1112  0.93  0.004   12.3    8.5  0.000 120.0  
+BoseEinsteinVortexTangle                      0.093  0.088  0.0878  0.99  0.143   12.1    6.0  0.001 120.0  
+BoySurfaceCrossCapImmersion                   0.074  0.152  0.0256  0.34  0.056   19.2    5.5  0.000 120.0  
+BreathingFractal                              0.478  0.131  0.0721  1.00  0.000   11.6   17.2  0.000 120.0  
+BreathingFractalNoir                          0.505  0.196  0.1286  1.00  0.004   10.4   19.6  0.000 120.0  
+BreathingFractalZoom                          0.183  0.057  0.0495  0.81  0.000   11.6    6.5  0.000 120.0  
+Bubble                                        0.624  0.228  0.0650  0.97  0.105   17.8    7.8  0.001 120.0  
+BuddhabrotCosmicGhost                         0.461  0.223  0.0295  0.95  0.067   20.1    9.0  0.000 120.0  
+BuffaloFractalThunderstorm                    0.143  0.142  0.0672  0.81  0.039    9.7    8.2  0.000 120.0  
+BurningShipDeepVoyage                         0.507  0.246  0.0395  0.83  0.000   34.5    7.2  0.000 120.0  
+CalabiYauManifold                             0.148  0.152  0.1076  0.60  0.003   38.3   25.0  0.003 120.0  
+CalabiYauManifoldKaleido                      0.404  0.187  0.0523  0.96  0.000   14.8    3.7  0.000 120.0  
+CalabiYauSixDimensionalManifoldCrossSection   0.061  0.122  0.0365  0.59  0.058   14.1    7.2  0.003 120.0  
+CarbonNanotubeChiralityArmchairZigzag         0.054  0.126  0.0689  0.77  0.274   17.4    3.9  0.000 120.0  
+CasimirCavityVacuumFluctuations               0.407  0.238  0.1142  1.00  0.075   12.1    5.5  0.000 120.0  
+CatatumboRelightningTower                     0.287  0.194  0.0455  0.80  0.000   22.6    9.1  0.000 120.0  
+CathedralGlass                                0.340  0.197  0.0313  1.00  0.009   11.8   11.8  0.000 120.0  
+CausticPool                                   0.422  0.200  0.1006  0.99  0.032    6.8    3.1  0.000 120.0  
+CavityOptomechanicsPhononLasing               0.514  0.320  0.1674  0.89  0.059   26.2    7.5  0.000 120.0  
+CelticMandelbrotGothicVault                   0.324  0.122  0.0206  0.86  0.000   38.3    9.4  0.000 120.0  
+CherenkovRadiationWakefield                   0.349  0.196  0.0731  0.79  0.019    8.4    9.3  0.000 120.0  
+ChiralLiquidCrystalCholesteric                0.077  0.128  0.0713  0.59  0.111   12.3    4.9  0.000 120.0  
+ChiralNematicBeetleCuticle                    0.242  0.218  0.0469  1.00  0.068   11.5    7.5  0.001 120.0  
+ChiralNematicLiquidCrystal                    0.621  0.195  0.0339  0.98  0.020   15.6   17.8  0.000 120.0  
+ChladniAcousticPlate                          0.054  0.104  0.0645  0.85  0.289   15.3    6.2  0.002 120.0  
+ChromaAcidTrip                                0.543  0.259  0.2579  1.00  0.014   94.5  114.4  0.007 120.0  
+ChromeDreams                                  0.290  0.242  0.2587  0.99  0.228    6.7    4.5  0.000 120.0  
+ChromeFlow                                    0.189  0.173  0.0835  0.74  0.035    9.5    3.9  0.000 120.0  
+ChronoSynapticMandala                         0.342  0.199  0.1217  1.00  0.002   19.1    9.4  0.004 120.0  
+CityBokeh                                     0.291  0.194  0.0277  0.96  0.023   13.8    7.1  0.000 120.0  
+CliffordAttractorSilkRibbons                  0.262  0.072  0.0309  0.66  0.000   19.8    8.0  0.000 120.0  
+CliffordTorusKleinBottle                      0.227  0.197  0.1567  0.96  0.073   40.4   27.1  0.024 120.0  
+CliffordTorusStereographicKaleido             0.269  0.074  0.0305  0.67  0.000   22.9   22.6  0.000 120.0  
+CliffordTorusVillarceauLinks                  0.066  0.137  0.0586  0.54  0.047   18.7    8.9  0.000 120.0  
+ClothDrape                                    0.145  0.140  0.0810  0.66  0.019    7.9    6.9  0.000 120.0  
+CollatzFractalTreeAbyss                       0.251  0.105  0.0264  0.71  0.000   15.1   10.0  0.000 120.0  
+CometRide                                     0.073  0.178  0.0345  0.38  0.042   13.7    2.6  0.000 120.0  
+ConcertCrowd                                  0.060  0.137  0.0302  0.50  0.239    7.2    6.0  0.000 120.0  
+ConformalLogPolarDive                         0.445  0.206  0.0494  0.99  0.001   20.4    4.3  0.000 120.0  
+CoralGrowth                                   0.081  0.146  0.0392  0.44  0.056    7.6    7.0  0.000 120.0  
+CosmicBoidsVortex                             0.263  0.270  0.2238  1.00  0.329   30.0    8.9  0.000 120.0  
+CosmicInflationaryTensorModes                 0.080  0.132  0.0475  0.55  0.037   22.5    8.9  0.000 120.0  
+CosmicRayAirShowerCherenkov                   0.240  0.228  0.0849  0.94  0.027   12.6    7.9  0.000 120.0  
+CosmicRayTransitionRadiation                  0.214  0.240  0.0689  0.98  0.089   27.8    7.7  0.000 120.0  
+CosmicStringHyperspaceWeb                     0.246  0.306  0.2898  0.86  0.150    4.2    4.1  0.009 120.0  
+CryovolcanicIceGeysers                        0.184  0.278  0.2355  0.96  0.173    4.5    3.8  0.003 120.0  
+CrystalGeodeCavernFlight                      0.499  0.084  0.0427  0.98  0.000   17.3    6.9  0.001 120.0  
+CrystalGrowth                                 0.061  0.142  0.0195  0.28  0.054   13.7    2.6  0.000 120.0  
+CrystalMirrorGrid                             0.228  0.142  0.1522  0.89  0.066   17.3    8.0  0.008 120.0  
+CrystalMonoliths                              0.300  0.264  0.1429  0.74  0.034   21.1    5.1  0.000 120.0  
+CrystalShatterBurst                           0.168  0.196  0.0969  0.63  0.122   18.9   32.5  0.000 120.0  
+CrystallineCavernTessellation                 0.305  0.196  0.1311  0.78  0.001   10.0   15.1  0.000 120.0  
+CubeWave                                      0.047  0.082  0.0500  0.77  0.131    6.5    4.9  0.012 120.0  
+CurlAurora                                    0.420  0.283  0.0215  0.77  0.000    8.3    5.1  0.004 120.0  
+CyberGridCity                                 0.198  0.172  0.1253  0.98  0.064   44.0   13.4  0.000 120.0  
+CyberHologramGlitchVoxel                      0.451  0.203  0.1385  1.00  0.349    4.7    4.5  0.000 120.0  
+CyberRibbonHighway                            0.150  0.230  0.1653  0.56  0.042    8.2    9.7  0.011 120.0  
+CyberpunkSynthGridHighwayFly                  0.221  0.201  0.0738  0.87  0.096   24.3    7.8  0.000 120.0  
+CyberpunkWireframeTerrainFlyover              0.187  0.202  0.0425  0.73  0.030    8.6    7.1  0.000 120.0  
+CyberspaceDNAHelix                            0.063  0.192  0.0975  0.62  0.141   15.9    3.8  0.001 120.0  
+CymaticsPlate                                 0.082  0.204  0.0732  0.80  0.017   11.1    3.2  0.000 120.0  
+DNAOrigamiNanotubeLattice                     0.117  0.205  0.0999  0.76  0.146   21.0    3.9  0.000 120.0  
+DarkAmbientTunnel                             0.114  0.119  0.0697  0.77  0.267    6.1    5.9  0.000 120.0  
+DeepSeaHydrothermalChimneyPillar              0.220  0.255  0.0327  0.84  0.040   30.9    5.5  0.000 120.0  
+DeepSeaVentsEcosystem                         0.231  0.280  0.1366  0.66  0.089   26.4    8.8  0.000 120.0  
+DendriticSnowCrystal                          0.047  0.080  0.0228  0.47  0.047   24.5    8.9  0.000 120.0  
+DendriticSnowflakeIceCrystalHabit             0.330  0.353  0.0753  0.67  0.008   30.2   10.0  0.000 120.0  
+Detonation                                    0.068  0.091  0.0193  0.76  0.157   14.0   12.2  0.000 120.0  
+DiatomSilicaMicrofrustule                     0.071  0.138  0.0520  0.43  0.114   31.0   16.9  0.000 120.0  
+DichroicInfinityPrismVault                    0.177  0.169  0.0724  0.61  0.004   11.8   12.7  0.004 120.0  
+DichroicPrismLaserField                       0.182  0.056  0.0087  0.75  0.000   14.7    9.1  0.000 120.0  
+DielectricMetasurfaceHologram                 0.063  0.129  0.0464  0.40  0.036   14.0    3.9  0.000 120.0  
+DielectricResonatorMetagrating                0.049  0.115  0.0255  0.31  0.065    5.3    4.4  0.001 120.0  
+DiracConeGrapheneValleytronics                0.149  0.115  0.0580  0.84  0.019   12.6    4.4  0.001 120.0  
+DiscoGodrays                                  0.259  0.284  0.2695  0.86  0.068   16.4    4.1  0.000 120.0  
+DragonFlight                                  0.054  0.150  0.0466  0.30  0.072    6.8    8.9  0.000 120.0  
+DroneDepths                                   0.247  0.207  0.0866  0.98  0.027    4.4    4.8  0.002 120.0  
+DrumSkin                                      0.076  0.078  0.0062  0.62  0.017   10.0    7.4  0.001 120.0  
+DysonSwarmSolarHarvester                      0.080  0.165  0.0614  0.78  0.205    7.0    9.7  0.003 120.0  
+E8LieAlgebraRootLattice                       0.072  0.142  0.0507  0.43  0.093    6.1    6.0  0.001 120.0  
+EchoSpiral                                    0.046  0.145  0.0442  0.41  0.178   16.1    8.3  0.001 120.0  
+EinsteinRingGravitationalLens                 0.052  0.106  0.0140  0.31  0.037   11.6    7.4  0.068 120.0  
+EnneperMinimalSurfaceHyperfold                0.081  0.147  0.0270  0.46  0.057    9.2    6.6  0.000 120.0  
+ErodedLand                                    0.132  0.078  0.0402  0.97  0.021   15.7   18.6  0.000 120.0  
+EscherRelativityMatrix                        0.374  0.092  0.0124  0.66  0.000   21.5    7.2  0.001 120.0  
+EventHorizon                                  0.276  0.341  0.0146  0.53  0.019    7.2    9.6  0.000 120.0  
+EventHorizonSingularityPlunge                 0.201  0.221  0.0179  0.87  0.015   15.6    3.7  0.001 120.0  
+FeatherStorm                                  0.202  0.203  0.0919  1.00  0.145    5.2    6.1  0.001 120.0  
+FeedbackKaleidoscope                          0.536  0.095  0.0212  0.86  0.001   10.8    4.3  0.000 120.0  
+FerroelectricDomainVortexArray                0.335  0.151  0.0781  1.00  0.000   28.1    6.8  0.000 120.0  
+FerrofluidHexMatrix                           0.095  0.095  0.0889  0.99  0.060  234.9  259.7  0.002 120.0  
+FerrofluidMagneticSpikeSurge                  0.305  0.177  0.0554  1.00  0.004   31.7   32.9  0.000 120.0  
+FerrofluidSpikeForest                         0.110  0.086  0.0409  0.87  0.076   16.7    3.7  0.000 120.0  
+FerrohydrodynamicRosensweigSpikes             0.087  0.075  0.0090  0.52  0.003   13.5    7.5  0.002 120.0  
+FiberopticLightLoom                           0.148  0.203  0.1386  0.85  0.165    6.4    6.2  0.000 120.0  
+FireWhirlTornado                              0.289  0.180  0.0936  0.98  0.010   24.6    6.7  0.000 120.0  
+Fireworks                                     0.120  0.173  0.1039  1.00  0.123   12.9    3.7  0.000 120.0  
+FlowRibbons                                   0.087  0.112  0.0456  0.98  0.236    7.1    8.8  0.000 120.0  
+FlowingWires                                  0.154  0.108  0.0786  0.97  0.025    7.5   14.1  0.000 120.0  
+Fluid                                         0.277  0.120  0.0301  0.89  0.000   13.7    5.7  0.000 120.0  
+FluidChladniKaleidoResonance                  0.331  0.155  0.0559  1.00  0.000   22.1    4.2  0.001 120.0  
+FluidChromaMarangoniConvection                0.357  0.216  0.0410  0.99  0.001   19.7    4.5  0.000 120.0  
+FluidInkMarble                                0.271  0.203  0.1134  1.00  0.117   18.5    8.0  0.026 120.0  
+FluidPhotoMarblingEbru                        0.472  0.138  0.1389  1.00  0.000    7.8    4.2  0.001 120.0  
+FractalBloom                                  0.186  0.194  0.1841  0.85  0.061    6.6    5.1  0.000 120.0  
+FractalFlame                                  0.223  0.171  0.0346  0.83  0.033   37.2   10.9  0.000 120.0  
+FractalKIFS                                   0.127  0.103  0.0882  0.99  0.054    8.7   20.7  0.003 120.0  
+FractalMorphoDendrite                         0.324  0.167  0.0548  1.00  0.065   28.5   13.4  0.000 120.0  
+FractalPortalRecursionHall                    0.212  0.117  0.0163  0.67  0.000   19.1   11.0  0.000 120.0  
+FullereneC60BuckyballCrystalLattice           0.062  0.161  0.0969  0.93  0.113   11.3    5.0  0.001 120.0  
+GalacticAccretionStreamFlight                 0.382  0.273  0.0317  0.97  0.010   19.5    5.8  0.000 120.0  
+GalaxyCollision                               0.117  0.219  0.0404  0.52  0.132    3.8    2.9  0.000 120.0  
+GalleryHall                                   0.063  0.169  0.0564  0.41  0.112    4.4    4.8  0.002 120.0  
+GearWorks                                     0.154  0.203  0.1076  0.81  0.167    9.0    6.5  0.001 120.0  
+GeomagneticDynamoCore                         0.110  0.096  0.0746  0.88  0.100   19.3    6.0  0.000 120.0  
+GeothermalFumaroleMineralSpires               0.420  0.268  0.0220  0.98  0.020   17.5    7.4  0.000 120.0  
+GlacierTessellation                           0.432  0.269  0.1417  0.60  0.031   10.9   11.4  0.000 120.0  
+GlassStack                                    0.192  0.260  0.0163  0.53  0.036    9.3    6.4  0.000 120.0  
+GlitchMatrixHypercube                         0.382  0.267  0.1368  0.98  0.018    9.1   10.1  0.001 120.0  
+GrapheneDiracPlasmonics                       0.465  0.237  0.2441  1.00  0.166   24.5   19.9  0.000 120.0  
+GrapheneGyroidTriplyPeriodicMinimalSurface    0.105  0.225  0.0424  0.42  0.031   20.1   15.6  0.000 120.0  
+GrassField                                    0.223  0.066  0.0443  0.67  0.013   18.8    7.4  0.000 120.0  
+GravitationalWaveInterferometer               0.488  0.210  0.1985  0.97  0.004    8.7    8.5  0.001 120.0  
+GrowthTree                                    0.064  0.068  0.0150  0.79  0.059   47.4   54.6  0.001 120.0  
+GyroRings                                     0.055  0.111  0.0355  0.72  0.276    4.8    4.4  0.004 120.0  
+GyroidTriplyPeriodicLabyrinth                 0.229  0.098  0.0944  0.58  0.007   21.4   22.3  0.000 120.0  
+GyroidalInterferenceKaleido                   0.528  0.246  0.0890  1.00  0.000   22.6    4.7  0.000 120.0  
+Halftone                                      0.244  0.156  0.0468  1.00  0.050   13.3    3.8  0.001 120.0  
+HarmonicRings                                 0.080  0.169  0.0348  0.59  0.209    8.3    7.9  0.002 120.0  
+HawkingRadiationEvaporation                   0.240  0.149  0.0985  0.91  0.003   17.5    4.9  0.000 120.0  
+HelicoidMinimalSurfaceTunnel                  0.043  0.112  0.0276  0.39  0.071    8.9    5.0  0.005 120.0  
+HexKaleido                                    0.367  0.239  0.2808  0.88  0.000    5.1    5.5  0.000 120.0  
+HexagonalLaserMatrixTunnel                    0.149  0.055  0.0428  0.79  0.000   17.7   14.4  0.000 120.0  
+HilbertSpaceFillingCurveZoom                  0.326  0.095  0.0232  0.95  0.000   13.1    6.7  0.000 120.0  
+HolographicDiffractionGratingMandala          0.391  0.241  0.1019  1.00  0.119   25.2    6.9  0.000 120.0  
+HolographicLaserDiffractionGrid               0.238  0.213  0.1389  0.87  0.094    9.8    7.2  0.000 120.0  
+HolographicMemoryCore                         0.164  0.204  0.0810  0.81  0.177   10.3    3.8  0.000 120.0  
+HopfFibrationStreamlines                      0.201  0.153  0.1036  0.80  0.008   15.3    5.5  0.000 120.0  
+HopfFibrationToruses                          0.082  0.178  0.1106  0.95  0.207   10.6   11.3  0.000 120.0  
+HopfTorusCliffordKlein                        0.331  0.303  0.1923  0.94  0.110   19.7    4.8  0.000 120.0  
+HyperCube                                     0.380  0.240  0.1448  1.00  0.074    8.0    5.3  0.000 120.0  
+HyperDimensionalTesseractTunnel               0.259  0.077  0.0734  0.91  0.001   20.0   13.4  0.000 120.0  
+HyperToroidalRollerCoaster                    0.259  0.242  0.0584  0.86  0.001   18.0    3.9  0.000 120.0  
+HyperWarpTunnel                               0.195  0.155  0.1015  0.94  0.060    4.5    4.4  0.000 120.0  
+HyperbolicEscherCircleLimit                   0.471  0.200  0.1346  1.00  0.000   15.7   10.7  0.001 120.0  
+HyperbolicHelicoidCatenaMinimalSheet          0.050  0.070  0.0425  0.45  0.061   12.2    6.7  0.000 120.0  
+HyperbolicHoneycombTessellation               0.402  0.181  0.0629  1.00  0.003   16.2    6.0  0.000 120.0  
+HyperbolicKnotFlight                          0.255  0.168  0.0720  0.99  0.001   30.8    7.3  0.000 120.0  
+HyperbolicPenroseZoomAbyss                    0.481  0.177  0.0959  1.00  0.000   31.1   10.2  0.000 120.0  
+HyperbolicPoincareTunnel                      0.206  0.080  0.0691  0.78  0.000   15.7   19.5  0.000 120.0  
+HyperbolicPseudosphereTractroid               0.086  0.109  0.0358  0.88  0.118   19.0    8.7  0.000 120.0  
+HyperbolicTilingPolyhedralFlight              0.325  0.256  0.0803  0.91  0.000   13.2   22.0  0.000 120.0  
+HypercubeLatticePillars                       0.502  0.236  0.1879  1.00  0.035   12.4   16.6  0.000 120.0  
+HyperspaceGridToroidTube                      0.168  0.167  0.1255  1.00  0.061   37.4    8.4  0.000 120.0  
+HyperspaceKaleidoscopicMatrix                 0.127  0.161  0.0907  1.00  0.254   37.9   17.4  0.000 120.0  
+IceCrack                                      0.408  0.263  0.0545  1.00  0.007   11.6    4.4  0.000 120.0  
+InfinitePhotoZoomAbyss                        0.226  0.091  0.0781  0.94  0.003   16.0    4.9  0.000 120.0  
+InfinitePsychedelicDrosteVortex               0.463  0.244  0.0611  1.00  0.000   12.0    5.2  0.000 120.0  
+InkTank                                       0.068  0.057  0.0194  0.46  0.023   10.9    4.7  0.000 120.0  
+InkWater                                      0.144  0.173  0.0476  0.59  0.051   19.4    8.0  0.000 120.0  
+InsideSystem                                  0.259  0.170  0.1061  0.97  0.040    8.1    7.8  0.000 120.0  
+InterstellarMHDShockFront                     0.536  0.318  0.0291  0.70  0.044   11.9    7.2  0.000 120.0  
+InterstellarNebulaWarpCruise                  0.340  0.108  0.0644  0.75  0.000   87.3   33.1  0.000 120.0  
+IridescentChitinMorpho                        0.405  0.199  0.0752  1.00  0.145   15.3    6.3  0.004 120.0  
+JellyBody                                     0.080  0.173  0.0152  0.32  0.057   17.8   13.6  0.000 120.0  
+Jellyfish                                     0.044  0.090  0.0384  0.76  0.185    6.7    2.5  0.001 120.0  
+JellyfishBioluminescenceAbyss                 0.536  0.336  0.1162  0.74  0.039    4.8   13.8  0.001 120.0  
+JosephsonVortexFluxonLattice                  0.528  0.260  0.4012  0.97  0.000   17.6    6.1  0.000 120.0  
+JosephsonVortexLattice                        0.384  0.183  0.1610  1.00  0.101    8.0   13.7  0.000 120.0  
+KaleidoDome                                   0.181  0.100  0.0955  0.98  0.074   17.1    3.3  0.000 120.0  
+Kaleidoscope                                  0.285  0.194  0.2083  1.00  0.046    5.3    5.4  0.000 120.0  
+KaleidoscopeOrganism                          0.175  0.206  0.0359  0.66  0.059   15.0    9.8  0.000 120.0  
+KaleidoscopicBismuthLattice                   0.110  0.095  0.0242  0.72  0.096   14.7    3.9  0.001 120.0  
+KaleidoscopicLichtenbergZoom                  0.629  0.070  0.0412  1.00  0.000   18.9    9.5  0.000 120.0  
+KelpForest                                    0.082  0.161  0.1018  0.65  0.262   44.0   29.5  0.001 120.0  
+KelvinHelmholtzCloudWaves                     0.125  0.233  0.0837  0.37  0.027   12.4    8.4  0.001 120.0  
+KelvinWakeShipWavePattern                     0.072  0.123  0.0200  0.38  0.066   26.0    7.2  0.000 120.0  
+KerrNewmanSingularity                         0.243  0.255  0.0331  0.69  0.035   16.4    3.7  0.001 120.0  
+KilonovaRadioactiveAfterglow                  0.639  0.198  0.0346  0.79  0.000   24.9   19.2  0.000 120.0  
+KineticMirrorHexagonArray                     0.074  0.142  0.0660  1.00  0.345    5.3    2.6  0.007 119.0  
+KineticTesseractOrigami                       0.255  0.176  0.0744  0.89  0.017   15.1   10.9  0.000 120.0  
+KineticTileMosaicMatrix                       0.299  0.134  0.0659  1.00  0.008   11.0    8.0  0.001 120.0  
+KleinBottleHyperLoopDive                      0.272  0.185  0.0317  0.92  0.010   17.1    3.8  0.000 120.0  
+KleinQuarticHyperbolicCurve                   0.211  0.139  0.1176  0.90  0.002   48.7   27.0  0.004 120.0  
+KleinianLimitSetAbyss                         0.423  0.161  0.0815  0.82  0.000  125.8   24.2  0.000 120.0  
+LanternRise                                   0.029  0.063  0.0307  0.85  0.268    6.0    4.2  0.003 120.0  
+LaserArena                                    0.240  0.247  0.2160  0.97  0.141    3.7    4.1  0.000 120.0  
+LaserCavityTransverseModes                    0.279  0.269  0.0238  0.85  0.000   37.3    5.9  0.000 120.0  
+LaserSpireArray                               0.605  0.241  0.1828  0.92  0.014    6.9   11.6  0.001 120.0  
+LavaLamp                                      0.367  0.285  0.0227  0.66  0.038    7.0   28.1  0.000 120.0  
+LiebLatticeFlatBandLocalization               0.290  0.253  0.0845  1.00  0.056    6.5    7.0  0.002 120.0  
+LiesegangPrecipitationRingArray               0.386  0.191  0.1769  0.89  0.022   27.4    2.1  0.000 120.0  
+LightningStorm                                0.192  0.144  0.0933  0.81  0.001   13.9    7.1  0.000 120.0  
+LiquidChromeHyperSwirl                        0.198  0.123  0.0477  0.97  0.002   12.5    4.9  0.002 120.0  
+LiquidCrystalBluePhaseLattice                 0.306  0.213  0.0818  1.00  0.015   29.9    5.1  0.000 120.0  
+LiquidCrystalOptics                           0.150  0.146  0.0447  0.96  0.141   41.6   12.4  0.000 120.0  
+LiquidMarbleEbruAcidWash                      0.396  0.161  0.0905  1.00  0.000   25.7    6.0  0.001 120.0  
+LiquidMercuryFerrofluidChamber                0.145  0.075  0.0659  0.54  0.000   53.9   29.4  0.000 120.0  
+LiquidMetal                                   0.277  0.089  0.0806  1.00  0.000   11.2    4.6  0.000 120.0  
+LissajousOrbits                               0.071  0.122  0.0597  0.73  0.172   30.1    6.0  0.000 120.0  
+LogarithmicSpiralChamberZoom                  0.489  0.180  0.0783  1.00  0.003   16.4    5.9  0.000 120.0  
+LorenzAttractorHyperLoom                      0.262  0.138  0.0580  1.00  0.001   14.4    4.4  0.002 120.0  
+LorenzAttractorTurbulence                     0.218  0.305  0.1158  0.74  0.137   16.2    4.4  0.000 120.0  
+LuciferinBioluminescentWavefront              0.339  0.313  0.1414  0.97  0.117   20.6    8.5  0.000 120.0  
+LuttingerLiquidSpinChargeSeparation           0.230  0.282  0.1788  0.88  0.169   15.8    6.1  0.000 120.0  
+LyapunovSpaceBioLoom                          0.242  0.206  0.0323  0.92  0.001   33.7    5.2  0.000 120.0  
+MagnetarCrustalQuakeAlfvenResonance           0.243  0.134  0.0590  0.87  0.059   34.2   13.3  0.000 120.0  
+MagnetarCrustquakeSGR                         0.360  0.220  0.1108  0.98  0.025   18.4    3.6  0.000 120.0  
+MagnetoRotationalHypernovaInstability         0.070  0.072  0.0553  0.67  0.063   43.3   18.6  0.000 120.0  
+MagnetohydrodynamicSolarGranulation           0.392  0.177  0.1221  1.00  0.000   30.7   12.1  0.000 120.0  
+MagnetosphericBowShockTurbulence              0.373  0.197  0.1174  0.98  0.014   29.8   13.6  0.000 120.0  
+MajoranaNanowireBraiding                      0.183  0.207  0.1176  0.92  0.102   34.2    6.9  0.000 120.0  
+MajoranaZeroModeBraid                         0.179  0.120  0.0742  0.88  0.021   11.3   12.6  0.000 120.0  
+MandalaGrid                                   0.206  0.196  0.0803  0.76  0.046    7.7    5.2  0.000 120.0  
+MandelboxHyperCubeMetamaterial                0.117  0.085  0.0763  0.75  0.024   14.4    9.9  0.000 120.0  
+MandelbrotDeepZoom                            0.305  0.142  0.0723  0.72  0.004    8.4    4.5  0.000 120.0  
+MandelbulbHyperRealm                          0.138  0.076  0.0703  0.62  0.016   26.8   15.1  0.000 120.0  
+MandelbulbInfiniteDive                        0.352  0.131  0.1117  1.00  0.003   14.3    3.0  0.001 120.0  
+MantleConvectionPlume                         0.458  0.136  0.0229  0.60  0.000   26.8   13.1  0.000 120.0  
+MarangoniConvectionTearsOfWine                0.223  0.177  0.0508  0.87  0.013   21.4    6.5  0.000 120.0  
+MetamaterialCloakingHorizon                   0.228  0.155  0.1128  0.99  0.069   27.7    9.6  0.000 120.0  
+MetamaterialNegativeRefraction                0.064  0.090  0.0242  0.45  0.043    9.0    4.7  0.022 120.0  
+Metamorph                                     0.342  0.199  0.1265  0.99  0.004   15.7    5.7  0.000 120.0  
+MetamorphicLavaVortex                         0.139  0.100  0.0196  0.79  0.000   18.9    4.3  0.000 120.0  
+MeteorStorm                                   0.043  0.089  0.0309  0.98  0.207   10.5    3.4  0.002 120.0  
+MirrorShardKaleidoscope                       0.103  0.167  0.0717  0.57  0.101    8.7    3.5  0.005 120.0  
+MobiusInversionKaleidoscope                   0.189  0.067  0.0447  0.80  0.017   16.5    6.5  0.001 120.0  
+MobiusOrbs                                    0.474  0.225  0.1615  0.83  0.000    6.2    5.4  0.000 120.0  
+MobiusStripRollerDrive                        0.200  0.179  0.1312  0.88  0.013   11.9    4.2  0.000 120.0  
+MoireHyperInterference                        0.121  0.233  0.0543  0.31  0.044    8.2    4.8  0.000 120.0  
+MoireTwistedBilayerGraphene                   0.273  0.115  0.0656  1.00  0.001   12.3   10.7  0.000 120.0  
+MonolithField                                 0.138  0.152  0.0861  0.85  0.180   14.8   10.4  0.000 120.0  
+MosaicWave                                    0.246  0.224  0.1110  0.99  0.269    3.5   15.1  0.000 120.0  
+Murmuration                                   0.203  0.150  0.0588  0.78  0.031   12.9    9.9  0.000 120.0  
+MyceliumNeuralPulse                           0.133  0.071  0.0424  0.70  0.105    8.7    8.8  0.000 120.0  
+NebulaCloud                                   0.058  0.082  0.0367  0.80  0.202    7.9    2.6  0.003 120.0  
+NeonCyberVoxelFlight                          0.211  0.248  0.1083  0.81  0.016   20.2    9.2  0.000 120.0  
+NeonFluidDynamics                             0.455  0.079  0.0421  0.96  0.000   11.1    2.8  0.001 120.0  
+NeonHighwayDrive                              0.158  0.182  0.0246  0.68  0.051   13.1    6.4  0.000 120.0  
+NeonTubes                                     0.334  0.264  0.1916  1.00  0.150    5.5    2.9  0.000 120.0  
+NestedMandalaInfiniteDive                     0.706  0.160  0.0411  0.88  0.000   22.2   24.6  0.000 120.0  
+NeutronStarMagnetarBurst                      0.537  0.267  0.1455  0.93  0.000   26.3    5.2  0.000 120.0  
+NeutronStarMagneticFunnelPlunge               0.244  0.115  0.0403  0.87  0.009   14.7    4.0  0.000 119.0  
+NewtonBasinPsychedelicSea                     0.306  0.251  0.0297  0.91  0.016   14.1    6.6  0.000 120.0  
+NoiseSpiral                                   0.374  0.194  0.2008  1.00  0.017   10.8    6.2  0.000 120.0  
+NonEuclideanDodecahedronLoom                  0.509  0.352  0.0778  0.84  0.035    7.7    3.5  0.001 120.0  
+NonEuclideanHyperbolicMandala                 0.285  0.139  0.1032  0.99  0.050    5.9    8.5  0.000 120.0  
+NonEuclideanKleinQuarticTile                  0.060  0.121  0.0393  0.42  0.042   12.6    6.5  0.006 120.0  
+NonEuclideanOctahedralLabyrinth               0.192  0.152  0.1139  0.80  0.057    9.3   33.6  0.000 120.0  
+NonlinearKerrOpticalSolitonCollision          0.136  0.100  0.0577  0.75  0.035   14.7    9.0  0.000 120.0  
+NonlinearLaserPlasmaWakefieldAccelerator      0.107  0.199  0.0690  0.86  0.169   17.7    7.7  0.000 120.0  
+NonlinearSchrodingerRogueWave                 0.369  0.282  0.1586  0.81  0.087   22.4   22.7  0.000 120.0  
+Ocean                                         0.265  0.282  0.0138  0.61  0.111   10.9    4.1  0.000 120.0  
+OceanAbyssalBrinePool                         0.057  0.084  0.0240  0.43  0.104   12.6    9.5  0.006 120.0  
+OceanNight                                    0.202  0.196  0.1294  0.64  0.016   23.3   16.6  0.000 120.0  
+OctagrammicMirrorVault                        0.349  0.149  0.0590  0.83  0.000    8.2    9.2  0.000 120.0  
+OilProjector                                  0.171  0.123  0.0852  0.99  0.146   16.6   11.0  0.000 120.0  
+OpticalDispersionCausticVault                 0.233  0.079  0.0110  0.81  0.000   18.5    9.6  0.000 120.0  
+OrganicFlow                                   0.557  0.241  0.1733  1.00  0.091   18.0   16.5  0.000 120.0  
+Origami                                       0.161  0.142  0.0425  0.82  0.023    9.3    5.1  0.002 120.0  
+OrigamiMirrorKaleidoscope                     0.311  0.200  0.1301  1.00  0.004   11.6   14.8  0.000 120.0  
+ParticleFlow                                  0.236  0.258  0.0874  0.87  0.082   20.6   12.0  0.000 120.0  
+ParticleGalaxy                                0.046  0.104  0.0176  0.48  0.093   62.6    5.4  0.004 120.0  
+PenroseProcessErgosphereExtraction            0.115  0.140  0.0306  0.78  0.121   42.9    6.7  0.005 120.0  
+PhotoCarousel                                 0.193  0.194  0.1872  1.00  0.271    3.0    3.8  0.000 120.0  
+PhotoShatter                                  0.066  0.133  0.0542  0.67  0.272    7.6    8.2  0.005 120.0  
+PhotoSphere                                   0.157  0.241  0.0664  0.57  0.092   11.3    4.7  0.002 120.0  
+PhotoTunnel                                   0.197  0.166  0.1387  0.97  0.093   11.2    4.4  0.000 120.0  
+PhotoVortex                                   0.273  0.277  0.1788  0.78  0.154    3.5    4.2  0.007 120.0  
+PhotonicChiralMetamaterialGyroidHelix         0.090  0.139  0.0837  0.95  0.184   13.3    4.6  0.000 120.0  
+PhotonicCrystalDiracConeDispersion            0.398  0.225  0.0999  1.00  0.009    9.7    4.4  0.000 120.0  
+PhotonicCrystalFiberCore                      0.178  0.133  0.1159  0.98  0.206   15.2   13.1  0.001 120.0  
+PhotonicMetasurfacePhaseGradient              0.310  0.222  0.0939  0.99  0.010   29.0    4.4  0.000 120.0  
+PhotonicTopologicalEdgeStates                 0.180  0.304  0.1241  0.49  0.090    8.8    5.2  0.000 120.0  
+Phyllotaxis                                   0.087  0.075  0.0539  0.86  0.057    9.2    3.4  0.000 120.0  
+Physarum                                      0.214  0.296  0.1770  0.94  0.191    6.5    3.1  0.000 120.0  
+PillarHall                                    0.103  0.117  0.0396  0.33  0.011   38.4   33.9  0.000 120.0  
+PixelMelt                                     0.299  0.223  0.1025  1.00  0.126   14.3   17.1  0.000 120.0  
+Planet4D                                      0.056  0.139  0.0419  0.52  0.206   10.3    7.3  0.000 120.0  
+PlasmaFilamentTornado                         0.044  0.083  0.0199  0.37  0.140    7.6    7.8  0.000 120.0  
+PlasmaFlow                                    0.541  0.254  0.1548  1.00  0.026    9.6    8.0  0.000 120.0  
+PlasmaLightningGlobe                          0.323  0.302  0.0608  0.71  0.028   11.3    4.5  0.000 120.0  
+PlasmaSheet                                   0.215  0.181  0.0795  0.92  0.045    5.7    5.0  0.000 120.0  
+PlasmaVortexGrid                              0.323  0.147  0.1067  0.99  0.021   12.1    6.2  0.000 120.0  
+PlasmonicMetamaterialBlackHole                0.229  0.178  0.0805  0.99  0.024   36.7    6.1  0.000 120.0  
+PolaritonCondensateVortexLattice              0.113  0.187  0.0379  0.46  0.034    7.6    5.5  0.009 120.0  
+PolyDance                                     0.061  0.125  0.0517  0.72  0.320    7.3    4.6  0.000 120.0  
+PortalRush                                    0.056  0.139  0.0874  0.45  0.229    5.9    5.4  0.000 120.0  
+PrismExplode                                  0.216  0.247  0.0547  0.84  0.152    7.2    4.0  0.000 120.0  
+PrismaticCrystalChamber                       0.244  0.111  0.1075  0.82  0.003   13.6   12.6  0.001 120.0  
+PrismaticCrystalChamber4D                     0.229  0.068  0.0269  0.36  0.000   63.6    7.9  0.000 120.0  
+PrismaticKaleidoMandala                       0.502  0.205  0.1148  1.00  0.105    8.2    4.8  0.000 120.0  
+PrismaticLaserVault                           0.320  0.182  0.1780  1.00  0.000   18.7   13.6  0.000 120.0  
+PrismaticMirrorHexTunnel                      0.267  0.136  0.0463  0.99  0.000   27.8    3.6  0.000 120.0  
+PrismaticRainbowCloud                         0.664  0.108  0.0256  0.51  0.000    9.9   14.4  0.000 120.0  
+PrismaticSuperradiance                        0.108  0.077  0.0288  0.57  0.082   16.9   15.8  0.000 120.0  
+PsychedelicPills                              0.192  0.133  0.0893  0.95  0.004    7.9   11.1  0.000 120.0  
+PsychedelicReactionDiffusionWave              0.220  0.114  0.0422  0.97  0.001   23.8    4.0  0.001 120.0  
+PsychedelicReactionMelt                       0.289  0.150  0.1411  0.93  0.000   21.9    5.1  0.000 120.0  
+PulsarMagnetosphereJets                       0.325  0.285  0.1629  0.93  0.014    3.1    4.1  0.000 120.0  
+PyroclasticDensityCurrentSurge                0.430  0.228  0.2253  1.00  0.000   25.8    3.2  0.000 120.0  
+QuantumChromaField                            0.600  0.171  0.1214  0.99  0.027   22.8    6.0  0.000 120.0  
+QuantumChromodynamicFluxTube                  0.213  0.243  0.0213  0.71  0.019   38.4    4.8  0.000 120.0  
+QuantumChromodynamicsGluonPlasma              0.442  0.169  0.0624  0.99  0.001   25.6   10.5  0.000 120.0  
+QuantumHallEdgeChiralRibbon                   0.080  0.176  0.1191  0.73  0.219   19.1    3.4  0.000 120.0  
+QuantumHallEdgeCurrents                       0.237  0.262  0.2597  0.99  0.181    4.9    4.0  0.000 120.0  
+QuantumHallFractionalAnyonBraiding            0.227  0.227  0.1914  0.90  0.037   10.0    8.6  0.000 120.0  
+QuantumHallSkyrmionCrystal                    0.264  0.152  0.0863  0.99  0.003   16.4    6.8  0.000 120.0  
+QuantumSpinLiquidKagomeSpinonLattice          0.086  0.140  0.1031  1.00  0.278   23.5    2.9  0.000 120.0  
+QuantumTachyonWarpTunnel                      0.403  0.200  0.0719  0.98  0.006   16.3    4.8  0.000 120.0  
+QuantumWavepacketCollapse                     0.140  0.175  0.1312  0.96  0.342   31.1   24.3  0.000 120.0  
+QuantumWavepacketSuperposition                0.676  0.244  0.0365  0.97  0.000   24.4    9.6  0.000 120.0  
+QuantumWormholeFlythrough                     0.349  0.198  0.0784  0.97  0.007    9.8   10.4  0.002 120.0  
+QuasarRelativisticJet                         0.211  0.146  0.0537  0.45  0.000    9.0    7.4  0.000 120.0  
+QuasiPeriodicDanzerTiling                     0.284  0.182  0.0435  1.00  0.001   23.7    4.8  0.000 120.0  
+QuasicrystalPenroseKaleido                    0.289  0.143  0.0317  1.00  0.002   24.6    4.3  0.001 120.0  
+QuasicrystalPenroseRhomb3D                    0.184  0.203  0.1034  0.81  0.020    6.0    4.5  0.001 120.0  
+QuaternionFractalHopfLoom                     0.384  0.265  0.0993  0.82  0.008   13.7   13.7  0.000 120.0  
+QuaternionicJulia4DFlight                     0.124  0.112  0.0828  0.78  0.032    1.6    1.7  0.000 120.0  
+RadiolarianMicrotubuleExoskeleton             0.112  0.159  0.0368  0.66  0.090   55.9   23.2  0.000 120.0  
+RadiolarianSilicaLattice                      0.098  0.175  0.0460  0.48  0.046   14.6    4.2  0.001 120.0  
+RainOnWater                                   0.163  0.155  0.0656  0.65  0.008    8.8    5.9  0.000 120.0  
+RaymarchTunnel                                0.337  0.154  0.1450  1.00  0.007    5.9    5.2  0.000 120.0  
+ReactionDiffusion                             0.243  0.199  0.1285  1.00  0.170   20.6   20.3  0.003 120.0  
+ReactionDiffusionMandala                      0.403  0.057  0.0466  0.69  0.000   16.8   13.6  0.000 120.0  
+RecursiveHexagonHoneycombZoom                 0.554  0.131  0.1301  1.00  0.000   15.3   34.0  0.000 120.0  
+RecursiveTesseractWireframeZoom               0.305  0.210  0.0195  0.72  0.002   16.9    4.1  0.000 120.0  
+RecursiveTesseractZoomAbyss                   0.498  0.190  0.1624  0.99  0.000    6.7    7.5  0.000 120.0  
+RelativisticAccretionTorusMHD                 0.230  0.196  0.0200  0.69  0.028   35.1    8.6  0.000 120.0  
+RelativisticKelvinHelmholtzShear              0.436  0.231  0.2196  1.00  0.013   37.6    6.4  0.000 120.0  
+RelativisticKerrPlasmaDisk                    0.362  0.312  0.0248  0.72  0.036   11.8    4.7  0.000 120.0  
+RelativisticPlasmaZpinchInstability           0.223  0.214  0.1716  0.75  0.094   41.7    7.8  0.000 120.0  
+RelativisticSynchrotronPulsarWind             0.519  0.271  0.1646  0.86  0.001    4.9    5.1  0.000 120.0  
+RibbonTunnel                                  0.053  0.098  0.0762  0.68  0.305   17.5    9.0  0.002 120.0  
+RiemannSphereInfinityFlight                   0.292  0.210  0.0622  0.96  0.007   15.4    4.8  0.001 120.0  
+RollerCoaster                                 0.065  0.181  0.0486  0.47  0.238   18.6   12.3  0.000 120.0  
+Rorschach                                     0.271  0.248  0.0216  0.70  0.008   13.9    6.6  0.000 120.0  
+RosslerAttractorHyperRibbon                   0.236  0.104  0.0536  1.00  0.004   20.9    5.3  0.002 120.0  
+SPHFluidSplash                                0.086  0.195  0.0507  0.29  0.046    6.2    3.9  0.009 120.0  
+SacredGeometryFlowerOfLife3D                  0.122  0.227  0.0236  0.61  0.102   48.9    9.1  0.000 120.0  
+SandDuneBarchanMigration                      0.141  0.069  0.0385  0.70  0.002   15.1    5.0  0.000 120.0  
+ScherkMinimalSurfaceTower                     0.236  0.096  0.0528  0.90  0.026   47.2   26.3  0.000 120.0  
+Schlieren                                     0.570  0.221  0.1403  1.00  0.000   24.3    4.4  0.000 120.0  
+SchwarzschildWormholeTunnel                   0.390  0.238  0.0821  0.76  0.212    9.5    3.6  0.000 120.0  
+SeifertSurfaceBraidKnot                       0.167  0.302  0.0346  0.35  0.008    7.9    4.2  0.000 120.0  
+SelfSimilarity                                0.121  0.102  0.0271  0.94  0.233   13.5    4.9  0.000 120.0  
+ShadowForest                                  0.098  0.105  0.0179  0.84  0.049    5.4    6.6  0.000 120.0  
+ShatterField                                  0.121  0.070  0.0704  1.00  0.018    9.7   12.9  0.000 120.0  
+SierpinskiOctahedronAbyss                     0.184  0.212  0.0112  0.44  0.004   13.1    4.9  0.000 120.0  
+SilkPhoto                                     0.171  0.223  0.0791  0.73  0.108    8.0    4.2  0.000 120.0  
+SineTunnel                                    0.385  0.134  0.0475  0.67  0.003   18.5    7.6  0.000 120.0  
+SiphonophoreBioluminescentCurtain             0.382  0.309  0.1731  1.00  0.047   20.6    7.1  0.000 120.0  
+Skyburst                                      0.112  0.156  0.0278  0.60  0.022   12.8    4.5  0.000 120.0  
+SkyrmionChiralSpinLattice                     0.253  0.142  0.1123  0.99  0.003   10.3    6.4  0.001 120.0  
+SnowDrift                                     0.026  0.075  0.0412  0.95  0.006    6.2    3.6  0.000 120.0  
+Snowfall                                      0.262  0.221  0.0649  1.00  0.001   10.9    4.4  0.000 120.0  
+SolarCoronaProminence                         0.354  0.140  0.0534  1.00  0.003   15.9    5.1  0.001 120.0  
+SolarFlareCorona                              0.434  0.069  0.0433  0.85  0.002   11.8    4.1  0.000 120.0  
+SolarMagnetoPlasmaLoop                        0.484  0.233  0.0138  0.95  0.008   17.3    5.5  0.000 120.0  
+SolarProminenceHelicalMagneticRope            0.083  0.184  0.0870  0.52  0.108   17.0    5.6  0.000 120.0  
+SolarSailArmada                               0.085  0.131  0.1075  0.98  0.280   11.1    6.7  0.000 120.0  
+SolarWindMagnetosphere                        0.423  0.346  0.1508  0.89  0.101    6.0    3.4  0.000 120.0  
+SolitonInternalWaveAndamanSea                 0.278  0.256  0.0457  0.67  0.281    4.4    9.1  0.000 120.0  
+SonoluminescenceBubble                        0.508  0.244  0.2491  0.98  0.028    5.1    9.9  0.000 120.0  
+SpectralOrb                                   0.118  0.250  0.0148  0.34  0.038    9.1   10.2  0.000 120.0  
+SpectralTorus                                 0.091  0.178  0.0232  0.42  0.095    9.2    8.5  0.000 120.0  
+SpectroCanyon                                 0.090  0.105  0.0175  0.51  0.027   17.4   10.3  0.000 120.0  
+SpectroWeave                                  0.097  0.167  0.0445  0.80  0.233    5.8    5.3  0.000 120.0  
+SpectrumArena                                 0.130  0.101  0.1005  1.00  0.189    5.9    4.5  0.000 120.0  
+SpectrumCity                                  0.071  0.164  0.0425  0.49  0.059    5.8    4.4  0.000 120.0  
+SpectrumFilter                                0.369  0.301  0.0495  1.00  0.246    9.2    6.4  0.000 120.0  
+SpectrumRadial                                0.070  0.087  0.0339  0.47  0.110    9.4    7.7  0.000 120.0  
+SphereGrid                                    0.640  0.195  0.1875  1.00  0.000   11.5    4.2  0.000 120.0  
+SpintronicDomainWallRacetrack                 0.370  0.205  0.1242  0.99  0.000   20.5    8.7  0.000 120.0  
+SpiralArray                                   0.050  0.139  0.0325  0.33  0.079   17.9    6.8  0.001 120.0  
+StainedGlassCathedralCaustics                 0.622  0.231  0.1326  1.00  0.007   15.9    3.2  0.000 120.0  
+StainedGlassRosette                           0.214  0.228  0.0413  0.69  0.203   10.0    4.1  0.001 120.0  
+Starfield                                     0.289  0.087  0.0738  0.99  0.001   12.1    6.5  0.000 120.0  
+StargateWormhole                              0.143  0.247  0.0302  0.52  0.026   23.1    9.7  0.000 120.0  
+StellarNurseryCollapse                        0.080  0.158  0.0352  0.79  0.154   19.1    3.0  0.000 120.0  
+StereoSpectrum                                0.064  0.093  0.0184  0.51  0.182    9.6    6.8  0.000 120.0  
+StrangeAttractor                              0.064  0.127  0.0501  0.61  0.256    9.8    4.4  0.002 120.0  
+SubglacialVolcanicPillowLava                  0.164  0.278  0.0167  0.45  0.040   17.3   12.7  0.000 120.0  
+SupercellMesocyclone                          0.134  0.065  0.0453  0.54  0.000  120.4   19.9  0.002 120.0  
+SuperconductingFluxoniumQubitCircuit          0.087  0.194  0.0532  0.80  0.152   47.6    7.9  0.000 120.0  
+SuperconductingLevitationMeissnerPinch        0.182  0.182  0.0350  0.81  0.077   19.9   14.0  0.000 120.0  
+SuperconductingQubitResonator                 0.107  0.192  0.0901  0.56  0.162    6.3    8.5  0.000 120.0  
+SuperconductorLevitation                      0.414  0.280  0.2341  0.98  0.214   11.9    6.1  0.008 120.0  
+SupercriticalFluidOpalescence                 0.698  0.227  0.0677  0.82  0.002   19.8    6.9  0.000 120.0  
+SuperfluidHeliumVortexReconnection            0.107  0.214  0.0230  0.35  0.113   42.7   12.8  0.001 120.0  
+SuperfluidHeliumVortexTurbulence              0.285  0.257  0.2757  1.00  0.089   10.1    4.5  0.000 120.0  
+SuperfluidQuantumTurbulence                   0.239  0.133  0.0473  0.96  0.003   17.0    4.4  0.001 120.0  
+SuperfluidVortexTangle                        0.090  0.100  0.0956  0.96  0.322   15.4   17.6  0.000 120.0  
+SuperheatedCoronalLoop                        0.444  0.224  0.0366  0.98  0.087    8.1    4.1  0.000 120.0  
+SupermassiveAccretionDisk                     0.532  0.304  0.1007  0.90  0.013    7.4    3.4  0.000 120.0  
+SupernovaRemnantNebula                        0.049  0.134  0.0226  0.64  0.248    6.2    4.4  0.000 120.0  
+SuperradiantBlackHoleBomb                     0.543  0.283  0.0935  0.92  0.006   48.0   10.4  0.000 120.0  
+SuperradiantTokamakIgnition                   0.415  0.147  0.1341  1.00  0.051   26.2    3.9  0.000 120.0  
+Swarm                                         0.077  0.165  0.0307  0.37  0.051   18.3   11.2  0.000 120.0  
+SynchrotronRadiationRing                      0.053  0.167  0.0521  0.31  0.084   24.1   39.1  0.000 120.0  
+TeslaLightningTree                            0.084  0.073  0.0504  0.88  0.261   15.1   12.9  0.000 120.0  
+TextureEffectParallaxKaleidoscope             0.580  0.102  0.0911  0.97  0.000    6.1    3.7  0.000 120.0  
+TextureEffectParallaxKaleidoscopeTunnel       0.415  0.110  0.0932  0.85  0.000    5.4    5.1  0.000 120.0  
+TheCore                                       0.216  0.171  0.0978  0.94  0.022   16.9   13.1  0.000 120.0  
+ThomasAttractorCosmicLabyrinth                0.265  0.153  0.0521  0.99  0.003   17.0    4.2  0.001 120.0  
+ThunderCloud                                  0.047  0.083  0.0354  0.80  0.241   18.5    3.9  0.003 120.0  
+TokamakFusionCore                             0.154  0.152  0.1306  0.97  0.108   18.6   32.5  0.000 120.0  
+Tonnetz                                       0.081  0.088  0.0159  0.94  0.061    8.6    6.9  0.001 120.0  
+TopologicalDiracSemimetalFermiArcs            0.099  0.201  0.1271  0.74  0.158   22.2    5.4  0.000 120.0  
+TopologicalInsulatorDiracSurface              0.378  0.183  0.1834  1.00  0.008    7.5    6.1  0.001 120.0  
+TorusKnot                                     0.074  0.118  0.0592  0.71  0.053    5.0    2.4  0.003 120.0  
+TricornFractalAntimatterSea                   0.398  0.218  0.0431  0.88  0.000   12.9    7.2  0.000 120.0  
+TronCycles                                    0.050  0.146  0.0308  0.58  0.330    5.9    3.1  0.005 120.0  
+TunnelAcceleration                            0.240  0.192  0.2003  0.93  0.232    5.6    4.1  0.000 120.0  
+TunnelPlain                                   0.343  0.238  0.2239  0.99  0.200    3.5    6.7  0.000 120.0  
+TunnelReverse                                 0.209  0.126  0.1430  0.99  0.110    3.6    5.8  0.000 120.0  
+VideoRelief                                   0.168  0.210  0.0489  0.78  0.183   16.4    8.6  0.000 120.0  
+VillarceauCirclesHyperFlow                    0.589  0.277  0.0223  0.96  0.000   32.7   11.4  0.000 120.0  
+VolcanicBasaltColumnarJointingHexagon         0.174  0.151  0.1711  0.89  0.035   20.9   15.8  0.000 120.0  
+VolcanicLightningAshColumn                    0.225  0.207  0.1389  1.00  0.051   39.9   19.8  0.000 120.0  
+VolcanicLightningPlume                        0.143  0.204  0.0571  0.39  0.029    9.5    4.5  0.002 120.0  
+VolcanoIsland                                 0.068  0.148  0.0344  0.71  0.268   10.1    2.7  0.006 120.0  
+VolumetricFire                                0.336  0.298  0.0402  0.67  0.002   10.9   10.7  0.000 120.0  
+VolumetricSupernova                           0.145  0.065  0.0377  0.31  0.002    6.6    9.6  0.000 120.0  
+VoronoiPrismShatterKaleido                    0.493  0.244  0.0507  0.98  0.001   11.8   13.3  0.000 120.0  
+VoronoiPulse                                  0.515  0.279  0.1254  0.94  0.183    5.4    6.4  0.000 120.0  
+VoronoiShatter                                0.237  0.197  0.0708  1.00  0.161   16.7    9.7  0.000 120.0  
+Vortex                                        0.337  0.225  0.1903  1.00  0.043    7.3   15.0  0.000 120.0  
+Voyager                                       0.307  0.232  0.1783  1.00  0.080    9.2    3.8  0.000 120.0  
+WarpStars                                     0.033  0.072  0.0447  0.78  0.102   17.3    7.7  0.000 120.0  
+WaveRibbon                                    0.094  0.205  0.0727  0.39  0.103    3.6    4.4  0.003 120.0  
+WhisperingGalleryMicrocavity                  0.214  0.195  0.0611  0.92  0.066   31.7    6.5  0.005 120.0  
+Wormhole                                      0.304  0.234  0.1918  0.96  0.056   28.3   10.4  0.000 120.0  
+WormholeMirrorWeave                           0.213  0.216  0.0960  0.93  0.079    3.5   12.1  0.001 120.0  
+XenophyophoreGiantProtistSarcodina            0.093  0.165  0.0838  0.93  0.284   25.3    6.0  0.000 120.0  
+
+wrote Tools\scene_metrics.json

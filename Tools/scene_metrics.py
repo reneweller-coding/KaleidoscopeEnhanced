@@ -223,6 +223,22 @@ def verdicts(m):
     thresholds sit far out in the tails rather than near the median, and why
     several scenes now normalise against a photoLevel() probe instead of being
     tuned to whatever image happened to be bound.
+
+    UPDATE 2026-08-21: that noise is now largely gone -- scan_scenes.ps1 pins
+    one median-brightness photo (Tools/pick_scan_image.py), which took the
+    worst run-to-run luma delta from 0.43 down to 0.002 and raised flag
+    agreement across two runs from 4/10 to 9/10 on a flagged sample. The
+    thresholds below have NOT been retightened to match; they still sit where
+    the noisy measurement put them, so they remain conservative. Retightening
+    them is a deliberate decision to take with fresh percentiles, not a
+    side effect.
+
+    Note what a percentile-calibrated threshold means when reading the output:
+    firing at p5-p10 of the catalogue's OWN distribution guarantees that
+    roughly 5-10% of scenes are always flagged. The 2026-08-21 pinned run
+    flagged 52 of 528, i.e. 9.8% -- the expected rate, not 52 defects. The
+    flags mark the tail of the house look; whether a given tail scene is wrong
+    is a judgement call (a scene called BlackHole is supposed to be dark).
     """
     v = []
     # Hecticness, only asserted where the sampling rate can actually see it.
