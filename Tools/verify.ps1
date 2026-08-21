@@ -139,7 +139,12 @@ foreach ($s in $Scenes) {
         $srcNode = $komplett.configuration.TextureShader |
                    Where-Object { ($_.file -replace '\\+', '\') -eq $needle } |
                    Select-Object -First 1
-    } catch {}
+    } catch {
+        # A parse failure here means EVERY probe silently degrades to the
+        # synthetic tag (geom="points"), which for tessellation/geometry-stage
+        # scenes produces hundreds of phantom GL errors per probe. Say so.
+        Write-Host "verify: WARNUNG - Komplett.xml nicht parsebar ($_), Probe faellt auf synthetischen Tag zurueck"
+    }
 
     if ($srcNode) {
         $srcNode.SetAttribute("probability", "1.0")
