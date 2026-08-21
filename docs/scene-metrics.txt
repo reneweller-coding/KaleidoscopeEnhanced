@@ -18,6 +18,10 @@ Conditions, all of which matter for comparing against a later run:
   * fps is the APP's own report (KALEIDO_FPS_LOG), not frames-on-disk divided
     by seconds. The recorder writes constant-rate video with duplicate fill,
     so counting frames now says nothing about scene cost.
+  * TunnelPlain and TunnelReverse were re-measured after their uniform type
+    mismatches were fixed (see Tools/check_uniform_types.py) -- until then
+    both were rendering with a dropped uniform, so their old numbers described
+    a broken scene.
 
 Performance
 -----------
@@ -28,7 +32,7 @@ Performance
 
 Flags
 -----
-  52 of 528 scenes flagged (9.8%).
+  53 of 528 scenes flagged (10.0%).
   The thresholds sit at the 5th-10th percentile of the CATALOGUE'S OWN
   distribution, so roughly 5-10% is the expected rate by construction. This is
   the tail of the house look, not a defect list -- whether a given tail scene
@@ -36,16 +40,22 @@ Flags
 
   TOO_DARK          25
   FLAT              20
-  GARISH            16
+  GARISH            17
   NOT_FILLING       14
   COLOR_FLICKER      7
   MOSTLY_BLACK       5
   STATIC             4
   FLICKER            1
 
+  Known false positive: GARISH cannot tell "the shader invents garish colours"
+  from "the photo is saturated". TunnelPlain samples the source photo and does
+  nothing to it but mild audio gain, yet lands at satHi 0.362 (98th
+  percentile) purely because the pinned image is a vivid one. For scenes whose
+  colour IS the photo, read this flag as a property of the image.
+
 The table follows, sorted by flag then name.
 
-scene_metrics: 528 scene(s), 52 flagged
+scene_metrics: 528 scene(s), 53 flagged
 
 scene                                          luma   cntr  motion   occ  satHi   jump hueJmp  flkHi   fps  flags
 -----------------------------------------------------------------------------------------------------------------
@@ -101,6 +111,7 @@ SuperconductingFluxVortex                     0.186  0.204  0.1571  0.95  0.429 
 SuperfluidVortexRingPinchOff                  0.087  0.144  0.1106  0.99  0.580    7.2    4.9  0.009 120.0  GARISH
 Tornado                                       0.029  0.060  0.0145  0.38  0.015   28.3    8.8  0.000 120.0  TOO_DARK
 Tunnel                                        0.224  0.172  0.1872  0.93  0.380    7.3    4.9  0.000 120.0  GARISH
+TunnelPlain                                   0.458  0.243  0.2369  0.79  0.362   23.5   36.8  0.000 120.0  GARISH
 AccretionDiskToroidVortex                     0.073  0.099  0.0152  0.49  0.031   10.8    9.5  0.005 120.0  
 AcousticBlackHoleEventHorizon                 0.677  0.196  0.0712  0.61  0.002   35.5   20.3  0.000 120.0  
 AcousticLevitationMatrix                      0.107  0.093  0.0806  1.00  0.114   14.9    3.6  0.001 120.0  
@@ -556,8 +567,7 @@ TorusKnot                                     0.074  0.118  0.0592  0.71  0.053 
 TricornFractalAntimatterSea                   0.398  0.218  0.0431  0.88  0.000   12.9    7.2  0.000 120.0  
 TronCycles                                    0.050  0.146  0.0308  0.58  0.330    5.9    3.1  0.005 120.0  
 TunnelAcceleration                            0.240  0.192  0.2003  0.93  0.232    5.6    4.1  0.000 120.0  
-TunnelPlain                                   0.343  0.238  0.2239  0.99  0.200    3.5    6.7  0.000 120.0  
-TunnelReverse                                 0.209  0.126  0.1430  0.99  0.110    3.6    5.8  0.000 120.0  
+TunnelReverse                                 0.245  0.148  0.1720  0.96  0.131    5.0    3.5  0.000 120.0  
 VideoRelief                                   0.168  0.210  0.0489  0.78  0.183   16.4    8.6  0.000 120.0  
 VillarceauCirclesHyperFlow                    0.589  0.277  0.0223  0.96  0.000   32.7   11.4  0.000 120.0  
 VolcanicBasaltColumnarJointingHexagon         0.174  0.151  0.1711  0.89  0.035   20.9   15.8  0.000 120.0  
@@ -578,4 +588,4 @@ Wormhole                                      0.304  0.234  0.1918  0.96  0.056 
 WormholeMirrorWeave                           0.213  0.216  0.0960  0.93  0.079    3.5   12.1  0.001 120.0  
 XenophyophoreGiantProtistSarcodina            0.093  0.165  0.0838  0.93  0.284   25.3    6.0  0.000 120.0  
 
-wrote Tools\scene_metrics.json
+wrote Tools/scene_metrics.json
