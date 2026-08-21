@@ -232,6 +232,7 @@ protected:
 	 */
 	void drawHelpOverlay( QPainter *painter );
 	void drawAudioMenu( QPainter *painter );   ///< Draws the runtime audio-source picker overlay (key 'd').
+	int  audioMenuCount() const;               ///< Rows in that overlay: the default entry plus every enumerated device.
 	void selectAudioDevice( int index );       ///< Selects an audio input by menu index: 0 = default loopback, 1..N = the Nth listed device.
 
 	/**
@@ -499,6 +500,8 @@ protected:
 	bool			m_showFeatureOverlay;            ///< Whether the audio-feature panel is shown (key 'i').
 	bool			m_showHelp = false;              ///< Whether the keyboard-shortcut help box is shown (key 'h').
 	bool			m_showAudioMenu = false;         ///< Whether the audio-source picker overlay is shown (key 'd').
+	int				m_audioMenuCursor = 0;           ///< Highlighted row in that overlay (arrow keys move it, Enter picks it).
+	int				m_audioMenuTop    = 0;           ///< First visible row: the device list scrolls once it is taller than the window.
 	bool			m_showShaderInfo = false;   ///< debug: active shader names ('v')
 
 	int		m_width;    ///< Physical (DPI-scaled) framebuffer width, set in resizeGL().
