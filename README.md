@@ -52,6 +52,8 @@ arctic fjord under the northern lights.*
 - [Quick start](#quick-start)
 - [Controls](#controls)
 - [Configurations and presets](#configurations-and-presets)
+  - [Reviewing the shader library](#reviewing-the-shader-library)
+- [Recording](#recording)
 - [Setup tool](#setup-tool)
 - [Remote control](#remote-control)
 - [Optional online features](#optional-online-features)
@@ -107,12 +109,14 @@ keyboard reference in-app.
 | `t`        | **Tap tempo** — tap the beat to override tempo detection      |
 | `u`        | **Pin** — hold the current effect (no automatic switches)     |
 | `f`        | **Favourite** the current effect (persistent selection bonus) |
+| `Space`    | **Mark** / unmark the current scene (shortlist for review)     |
+| `Shift+Space` | Save all marked scenes as the **Marked** preset             |
 | `z`        | **Stereo 3D** — cycle off / side-by-side / top-bottom / anaglyph |
 | `c` / `m`  | Stereo depth — weaker / stronger                              |
 | `a`        | Toggle **auto-config-by-mood** (auto-switch configs)          |
 | `g`        | Toggle **adaptive render scale** (auto-FPS)                   |
 | `j`        | **MIDI learn** — bind knobs/pads to the controls              |
-| `r`        | Toggle **recording** (frames + audio → mp4)                   |
+| `r`        | Toggle **recording** (full render resolution → mp4)           |
 | `y` / `x`  | Arm the **instant replay** ring / save it as an mp4           |
 | `k`        | Save the current look **and** UI state as the startup default |
 | `s`        | Save a PNG screenshot of the window                           |
@@ -126,6 +130,34 @@ machine.
 ---
 
 ## Configurations and presets
+
+### Reviewing the shader library
+
+Two pieces that work together when you want to look *at* the shaders rather
+than enjoy them:
+
+* **`TestPlain`** — a generated preset containing every scene, 5 s each, in
+  **alphabetical order**, with `FxPlain` as the only overlay so nothing paints
+  over the picture. Regenerate it after adding shaders:
+
+  ```bash
+  python Tools/make_test_preset.py
+  ```
+
+  The alphabetical walk comes from the preset's `Test` name prefix, which
+  switches the engine into review mode — keep the prefix or it silently goes
+  back to random selection.
+
+* **Marking** — press `Space` while a scene is up to shortlist it, and
+  `Shift+Space` to write every marked scene to `Configurations\Marked.xml` as
+  a playable preset. Both are on the [remote](#remote-control) too, so you can
+  mark from a phone while the show runs on a TV. Marks live in
+  `kaleidoscope_settings.ini` and survive restarts, so an inspection pass can
+  span several sessions. The `v` overlay shows whether the current scene is
+  marked.
+
+So: run `TestPlain`, tap `Space` on anything that looks wrong, then
+`Shift+Space` and switch to `Marked` to work through the shortlist.
 
 `Configurations\*.xml` define which shaders are in rotation, their
 probabilities, mood tags, and the photo folder (`ImageDirectory`) they draw
@@ -164,6 +196,33 @@ BY-NC-SA 4.0 — see [Credits and license](#credits-and-license).
 
 ---
 
+## Recording
+
+Recording captures at the **full render resolution** (not a fixed 720p) and
+encodes once, in hardware where available: raw frames are piped straight into
+a running `ffmpeg`, and on stop the video is copied into the container beside
+the audio rather than re-encoded. `ffmpeg` must be on the `PATH`; without it
+the recorder falls back to writing JPEG frames plus a `make_video.bat` you can
+run by hand.
+
+The encoder is probed at runtime, preferring the discrete GPU's block, then
+Intel Quick Sync, then software. The output codec defaults to **H.264** —
+the one every player and editor opens — and can be changed in the Setup tool
+or via the `videoCodec` key in `kaleidoscope_settings.ini`:
+
+| `videoCodec` | Notes |
+|---|---|
+| `h264` (default) | Plays everywhere |
+| `hevc` | Roughly 2.5–3× smaller at the same quality; needs the HEVC extension on Windows |
+| `av1` | Smallest in principle, but on NVIDIA hardware HEVC beat it on both size and quality in our measurements |
+
+If the requested codec has no working encoder on the machine, it says so and
+falls back to H.264 rather than failing the recording. `KALEIDO_VIDEO_CODEC`
+overrides the setting for one run, `KALEIDO_VIDEO_ENCODER` forces one specific
+encoder (still verified before use).
+
+---
+
 ## Setup tool
 
 `KaleidoscopeSetup.exe` (Start-menu shortcut **Setup**, or
@@ -185,7 +244,7 @@ Build it with `msbuild SetupTool\SetupTool.vcxproj /p:Configuration=Release /p:P
 
 A phone-friendly **web remote** (`-t <port>`, on by default at
 `http://<pc>:8080/`) gives you a live preview image, preset buttons,
-next-effect, blackout, favourite, replay, a scene browser you can tap
+next-effect, blackout, favourite, mark/save-marked, replay, a scene browser you can tap
 straight into, and sliders for reactivity/trails/mood/latency — plus all the
 toggles from the Setup tool (lyrics mode, artist images, music video,
 auto-preset, auto-scale, …). LAN convenience only — no auth, don't expose it
@@ -274,7 +333,7 @@ $env:Path = "C:\Qt\6.11.1\msvc2022_64\bin;" + $env:Path
 | `-c <name>`   | Start with the named configuration (e.g. `darkambient`, `normal`) |
 | `-m <index>`  | Fullscreen on monitor `<index>` (0-based; implies `-b`)            |
 | `-l`          | Log to `kaleidoscope.log` instead of the console (kiosk)          |
-| `-r`          | Start recording (frames + audio) immediately on launch            |
+| `-r`          | Start recording immediately on launch                             |
 | `-w <wav>`    | Offline: analyze this WAV instead of capturing live audio (test)  |
 | `-o`          | Spout output: publish the frame as sender "Kaleidoscope"           |
 | `-t <port>`   | Web remote port (default 8080; `-t 0` disables it)                 |

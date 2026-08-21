@@ -23,6 +23,9 @@ ein Render-Durchlauf eine Stunde braucht.
 # 1. Statische Vertragsprüfung -- MUSS 0 errors zeigen
 python Tools/shadercheck.py --new HEAD~1
 
+# 1b. Uniform-Typen XML gegen GLSL (V6b) -- MUSS Exit-Code 0 liefern
+python Tools/check_uniform_types.py Configurations/*.xml
+
 # 2. Preset-Selbsttests (Registrierung + Parameter-Vollständigkeit)
 PresetEditor\build\Release\PresetEditor.exe --validate
 
@@ -174,6 +177,57 @@ erwischt (`audioChromaHue`) und danach nochmal sechs Shader (`time`,
 `audioPhase`, `audioLevel`, `audioChromaHue`).
 
 Die Liste der Host-Uniforms steht in `Source/EffectShader.cpp` (`kAudioLocs`).
+
+### V6b — Der Uniform-TYP muss zwischen XML und GLSL zusammenpassen
+
+`Uniform.cpp` lädt `<int>` und `<bool>` mit `glUniform1i`, `<float>` mit
+`glUniform1f`. Zeigt eine Deklaration auf ein GLSL-Uniform der jeweils anderen
+Sorte, **lehnt der Treiber den Upload ab** (`GL_INVALID_OPERATION`) und das
+Uniform behält seinen Vorgabewert **0**.
+
+```xml
+<float name="sides" .../>     <!-- FALSCH gegen `uniform int sides` -->
+<int   name="sides" .../>     <!-- richtig -->
+```
+
+Das ist kein Log-Rauschen, sondern ein Bildfehler — und ein unsichtbarer:
+`RenderPipeline::checkGLErrors()` ist ohne `KALEIDO_GL_DEBUG` ein No-op, also
+sieht man nichts. Gefunden am 21.08. in zwei Szenen: `TunnelPlain`s
+Faltungszahl stand dauerhaft auf 0, `TunnelReverse` konnte nie rotieren; beide
+warfen dabei **einen GL-Fehler pro Frame** (236 bzw. 245 in fünf Sekunden).
+
+Prüfung über den ganzen Katalog, Exit-Code 1 bei Fehlpaarung:
+
+```bash
+python Tools/check_uniform_types.py Configurations/*.xml
+```
+
+**Beim Bearbeiten von Konfigurations-XML per Skript:** öffnendes UND
+schließendes Tag ändern. Ein `<int ...></float>` ist für jeden XML-Parser
+fatal, aber die Regex-Werkzeuge merken es nicht — genau so fiel `verify.ps1`
+still auf einen synthetischen Tag mit `geom="points"` zurück und entwertete
+drei Folgemessungen. `check_uniform_types.py` prüft deshalb zuerst die
+Wohlgeformtheit.
+
+### V6c — Vom Compiler gemeldete uninitialisierte Variablen initialisieren
+
+NVIDIA meldet `warning C7050: "hitP" might be used before being initialized`.
+Typisch beim Raymarching: die Trefferposition wird nur im Trefferzweig gesetzt
+und danach unter `if (hitDist > 0.0)` gelesen — zur Laufzeit also korrekt
+abgesichert, der Compiler kann die Korrelation zwischen den zwei Variablen nur
+nicht beweisen.
+
+Trotzdem initialisieren (`vec3 hitP = vec3(0.0);`): der tote Store kostet
+nichts, GLSL lässt das Lesen einer uninitialisierten Variablen formal
+undefiniert, und die Warnung verdeckt sonst echte Meldungen im Log. Am 21.08.
+in sechs Shadern erledigt.
+
+> Zur Vorsicht, weil es hier schiefging: Eine A/B-Messung schien zunächst zu
+> zeigen, dass vier dieser Shader danach *anders* rendern — der Fix wäre also
+> ein echter Bildfehler gewesen. Das war ein Artefakt kaputter Konfigurations-
+> XML (siehe V6b), nicht die Initialisierung. Mit gültigem XML nachgemessen
+> decken sich alle sechs mit dem Stand davor. **Vor jeder A/B-Aussage einen
+> Kontrolllauf desselben Standes machen.**
 
 ### V7 — Anti-Flimmer: `time` nie mit einem Audiowert multiplizieren
 

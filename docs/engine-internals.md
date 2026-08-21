@@ -727,6 +727,194 @@ slew-limited at the source.
 
 ---
 
+## Recording: raw frames into ffmpeg
+
+A recording used to encode every frame **twice**. The CPU JPEG-compressed it,
+wrote it to disk, and then ffmpeg decoded all of them again to produce the
+h264 — and on the way it discarded everything above 720 px tall, so rendering
+at 2880x1620 and pressing `r` gave a 720p file.
+
+Recording frames now go straight into a running ffmpeg as raw RGBA, which is
+exactly what `glReadPixels` returned, so there is no conversion and no
+intermediate image. On stop the video stream is *copied* into the container
+beside the audio rather than re-encoded.
+
+Measured on one 30 s Komplett batch render:
+
+| | before | after |
+|---|---|---|
+| resolution | 1280x720 | 2880x1620 (full render size) |
+| JPEGs written and read back | ~890 | 0 |
+| encodes per frame | 2 | 1 |
+| threads for it | up to 6 | 1 |
+
+The writer is a **single** thread, not the pool. The pool existed only because
+JPEG encoding was the pipeline's hard ceiling; writing raw bytes is not
+expensive, and a pipe carries no frame index, so out-of-order writes would
+garble the video rather than merely reorder it. One producer and one consumer
+keep frame order for free.
+
+The output is constant-rate. Each frame's *measured* duration is converted to
+a whole number of output frames at 30 fps, with the fraction carried forward so
+rounding cannot accumulate into drift; a frame lost to a full queue is
+compensated by duplicating its predecessor. The file lands ~80–140 ms shorter
+than the audio because `finishRecording()` discards the in-flight PBO frame —
+a fixed end gap, not drift.
+
+The JPEG path remains as the fallback when ffmpeg is missing, and still leaves
+frames plus a `make_video.bat`. One rule there: that path must **not** drop
+frames when handing them to the pool, because `asyncCapture()` has already
+written the frame's line into `frames.txt`; a frame discarded at that point
+would leave the concat list pointing at a JPEG that never gets written. It
+waits for room instead, which cannot deadlock because `finishRecording()`
+joins the pipe thread before it stops the pool.
+
+### Encoder selection
+
+Encoders are probed at runtime — presence in `ffmpeg -encoders` is not
+sufficient, since a build can list `h264_nvenc` while the driver refuses it —
+by actually encoding a 0.2 s throwaway clip at 256x256 (AMF and QSV impose
+minimum dimensions; a smaller probe can be rejected by a healthy encoder and
+silently demote the machine to software).
+
+Order within a codec family: discrete GPU, then Quick Sync, then software. The
+rate-control flags are per-vendor and **not** interchangeable — NVENC wants
+`-cq`, AMF `-rc cqp` with explicit qp values, QSV `-global_quality`,
+x264/x265 `-crf`, and SVT-AV1's `-crf` is a different scale again. The wrong
+one is ignored without a warning and you get whatever default bitrate the
+encoder felt like.
+
+AV1 deserves a note, because its first configuration here was wrong: its
+quality scale runs 0..63 rather than 0..51, and NVENC needs an explicit rate
+control with `-b:v 0` or it targets a bitrate and ignores `-cq` entirely.
+Measured against one fixed 8 s source, with SSIM against that source:
+
+| setting | size | SSIM |
+|---|---|---|
+| h264 `-cq 20` | 55.4 MB | 0.9750 |
+| hevc `-cq 20` | 21.2 MB | 0.9812 |
+| av1 `-cq 20` | 60.2 MB | 0.9906 |
+| av1 `-cq 25` | 29.0 MB | 0.9736 |
+| av1 `-cq 32` | 24.2 MB | 0.9676 |
+
+HEVC beats every AV1 point on *both* axes, so on NVIDIA hardware AV1 is a
+compatibility choice, not a quality one.
+
+---
+
+## paint(), and why it is a list of calls
+
+`RenderPipeline::paint()` was a single 878-line function covering the whole
+frame. It is now ~49 lines: the ordered list of stage calls, plus the three
+statements that genuinely belong between them (the global-time advance,
+`tickFx`, and the Spout publish). Nineteen helpers hold the rest, and
+`renderFxStage` was split again into `prepareFxInputs` / `renderStereoMixPass`
+/ `renderTransitionPass` / `renderOverlayPass` / `renderNextOverlayPass`.
+
+The order of those calls **is** the render order and is load-bearing: almost
+every stage integrates state or leaves GL bindings the next one relies on, so
+they are not independently reorderable. Two constraints are worth naming
+because they look arbitrary otherwise:
+
+* `m_globaltime` advances *after* the transport modifiers, so a freeze (`e`)
+  or a DJ-stop really does stop it.
+* `tickFx` runs *after* both scene passes, because it needs `m_trueStereoHold`,
+  which only exists once they have run.
+
+Both splits were pure code motion, verified by re-inlining every helper and
+diffing the statement stream against the original: 525 vs 531 statements in
+the same order, differing only by the `return`s the value-producing helpers
+need and one dead local removed.
+
+That verification mattered more than it sounds. The renderer cannot be run
+deterministically — `qsrand(0)` is a no-op under Qt6 and every phase
+integrates a *measured* frame delta — so a pixel A/B is not a usable oracle
+here: the same binary run twice differs from itself more than two builds
+differ from each other. Statement-level equivalence plus a clean build is the
+strongest available evidence.
+
+`AudioAnalyzer::processBlock()` (1435 lines) was *not* decomposed, and the
+reason is instructive. Offline analysis IS deterministic — the same binary run
+twice produced 0 differing lines over 3000 blocks — so there a real A/B is
+possible, and it failed: lifting out ten self-contained stages, verified as
+pure code motion at statement level, still moved three of the 23 published
+features. The seed is floating-point (first difference 3.4e-6): writing a block
+as its own function changes how MSVC contracts and schedules the arithmetic,
+and the DSP's many `0.998 * prev + 0.002 * x` feedback loops amplify that
+transiently to as much as 35 % before re-converging. `__forceinline` did not
+help. Since `timingScale` is one of the three and it drives scene durations,
+the change was reverted rather than shipped. Doing it properly needs either a
+context struct (a large rename, not code motion) or pinning the FP model, which
+is itself a behaviour change against today's binary.
+
+---
+
+## Marking scenes for review
+
+`Space` marks or unmarks the scene on screen, `Shift+Space` writes every marked
+scene to `Configurations/Marked.xml`; both are also on the web remote
+(`/api/mark`, `/api/savemarked`).
+
+Marks are deliberately **not** taste. Taste biases the scheduler by degrees and
+decays a little on every start; a mark is a binary "look at this again" that
+must survive untouched. They live under `[marked]` in
+`kaleidoscope_settings.ini`, written through immediately, so an inspection pass
+can span several sessions.
+
+Saving copies each scene's **real** `<TextureShader>` node out of
+`Komplett.xml`. Synthesising a tag instead drops `geom` and every preset
+parameter and renders a working shader wrongly — the same failure mode that
+invalidated a whole measurement campaign (see below).
+
+The companion is `Tools/make_test_preset.py`, which generates `TestPlain.xml`:
+every scene, 5 s each, `FxPlain` only. It plays **alphabetically** — not
+configured in the file, but because `Configuration.cpp` switches the scheduler
+into review mode for any preset whose name starts with `Test`. The prefix is
+load-bearing.
+
+---
+
+## Measuring the catalogue
+
+`Tools/scan_scenes.ps1 -All` records every scene, `Tools/scene_metrics.py`
+turns those into per-scene numbers, and `docs/scene-metrics.txt` is the
+committed baseline. Three conditions make the numbers comparable between runs,
+and each exists because its absence produced a wrong answer first:
+
+* **renderScale pinned to 1.0, autoScale off.** With the adaptive scaler on, an
+  expensive scene keeps its fps up by dropping resolution, so fast and slow
+  scenes both report "fine".
+* **One pinned background photo** (`Tools/pick_scan_image.py` picks the
+  median-brightness image of the collection). Scenes that fold the photo
+  inherit its brightness: with a random photo per run the worst luma delta
+  between two runs was 0.43 and only 4 of 10 flag verdicts reproduced; pinned,
+  0.002 and 9 of 10.
+* **fps from the app's own report** (`KALEIDO_FPS_LOG`), not frames-on-disk
+  divided by seconds. The recorder writes constant-rate video with duplicate
+  fill, so counting frames stopped meaning anything the moment the raw pipe
+  landed — two scenes of very different cost measured as equally fast.
+
+Two traps are worth knowing before trusting any probe run:
+
+* `verify.ps1` copies each scene's real node out of `Komplett.xml`. If that XML
+  does not parse, the copy degrades to a synthetic `geom="points"` tag with no
+  preset parameters — which for tessellation and geometry-shader scenes throws
+  hundreds of phantom `GL_INVALID_OPERATION` per probe, and shifts everyone
+  else's metrics. It now warns loudly; grep a scan log for
+  `Probe faellt auf synthetischen Tag zurueck` before believing it.
+* `-c <name>` matches the config's `ConfigurationName`, **not** the filename.
+  A miss is not fatal: it falls back to the first config in the list, and since
+  underscore sorts first, a throwaway `_probe.xml` usually *becomes* that
+  default — so the mistake hides itself.
+
+`RenderPipeline::checkGLErrors()` is a no-op unless `KALEIDO_GL_DEBUG` is set,
+because `glGetError()` can force a driver sync. A "zero GL errors" claim from a
+run without that variable therefore covers much less than it sounds like. And
+because `glGetError` drains a *global* queue, a checkpoint's label names where
+the error was **noticed**, not where it was raised.
+
+---
+
 ## Temporal budget: how fast a scene may change
 
 A visualiser that changes faster than the music reads as hectic strobing rather
