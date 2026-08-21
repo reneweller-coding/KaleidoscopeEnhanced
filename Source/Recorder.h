@@ -1,31 +1,43 @@
 /**
  * @file Recorder.h
- * @brief Framebuffer-capture-to-disk recorder: full recording ('r' /
- *        CLI -r) and a rolling instant-replay ring, sharing one PBO-backed
- *        async-readback + JPEG-encoder worker thread.
+ * @brief Framebuffer-capture recorder: a full recording ('r' / CLI -r) piped
+ *        raw into ffmpeg, and a rolling instant-replay ring of JPEG frames,
+ *        both fed by one PBO-backed async readback.
  */
 #ifndef RECORDER_H
 #define RECORDER_H
 
 // Video-Recorder + Instant-Replay, herausgelöst aus GLwidget (2026-08-14).
 //
-// Zwei Betriebsarten, die sich einen Encoder-Worker teilen:
-//   RECORDING  (Taste 'r'): ~30 fps in recordings/rec_*/frame_*.jpg + Audio-WAV,
-//              am Ende detachter ffmpeg-Mux zu kaleidoscope.mp4.
+// Zwei Betriebsarten mit getrennten Ausgabewegen:
+//   RECORDING  (Taste 'r'): ~30 fps als ROHE RGBA-Frames in eine laufende
+//              ffmpeg-Instanz (recordings/rec_*/video.mp4), am Ende mit dem
+//              Audio-WAV zu kaleidoscope.mp4 gemuxt — das Video wird dabei
+//              nur KOPIERT, nicht neu kodiert.
 //   REPLAY     (Taste 'y' scharf, 'x' speichert): rollender ~30-s-Ring aus
 //              JPEG-Frames im RAM (~15 fps) + PCM-Ring des Analyzers.
+//
+// Warum roh: früher wurde jeder Frame ZWEIMAL kodiert — hier per CPU zu JPEG,
+// danach dekodierte ffmpeg alle wieder, um daraus h264 zu machen — und alles
+// über 720 px wurde vorher weggeworfen. Der JPEG-Pool (bis zu 6 Threads)
+// existierte nur, um diese Stufe überhaupt bei 30 fps zu halten. Jetzt schafft
+// EIN Schreib-Thread 30 fps bei voller Auflösung, weil er nur noch spiegelt
+// und in eine Pipe schreibt. Der Pool bedient weiterhin den Replay-Ring und
+// den Rückfallweg, falls ffmpeg nicht startet.
 //
 // GPU-seitig läuft die Erfassung über einen doppelt gepufferten PBO-Readback:
 // glReadPixels in ein Pixel-Pack-Buffer kehrt sofort zurück; konsumiert wird
 // der Puffer des VORHERIGEN Frames, dessen DMA längst fertig ist. Ein Frame
-// Latenz, kein GPU→CPU-Stall. Das Spiegeln/Skalieren/JPEG-Encodieren macht
-// ein einzelner Worker-Thread (Reihenfolge bleibt erhalten); eine begrenzte
-// Queue droppt Frames statt Speicher aufzublähen — die verlorene Zeit wandert
-// als Carry in die Dauer des nächsten Frames, die Video-Timeline stimmt.
+// Latenz, kein GPU→CPU-Stall. Begrenzte Queues droppen Frames statt Speicher
+// aufzublähen — die verlorene Zeit wandert als Carry in die Dauer des nächsten
+// Frames, und der Pipe-Schreiber rechnet gemessene Dauern in ganze Frames bei
+// fester Bildrate um, sodass die Ausgabe CFR ist und trotzdem genau so lange
+// dauert wie die Aufnahme.
 //
 // Threading-Vertrag: alle public-Methoden werden vom GL-/GUI-Thread gerufen;
-// captureIfDue() braucht einen aktuellen GL-Kontext. Der Worker fasst nur
-// Queue + Replay-Ring an (eigene Mutexe).
+// captureIfDue() braucht einen aktuellen GL-Kontext. Der Pool fasst nur Queue
+// + Replay-Ring an, der Pipe-Thread nur seine eigene Queue und den ffmpeg-
+// Prozess (QProcess ist nicht thread-sicher — er gehört diesem Thread allein).
 
 #include <thread>
 #include <mutex>
@@ -39,26 +51,26 @@
 #include <QtGui/qopengl.h>
 
 class AudioAnalyzer;
+class QProcess;
 
 /**
  * @brief Captures the rendered framebuffer to disk, either as a full
  *        recording or into a rolling instant-replay ring.
  *
  * Recorder owns a PBO-double-buffered async GL readback (captureIfDue(), one
- * frame of latency, no GPU->CPU stall) feeding a single background worker
- * thread that mirrors/scales/JPEG-encodes frames in order, shared by two
- * mutually exclusive modes: RECORDING ('r', ~30 fps to
- * recordings/rec_TIMESTAMP/frame_NNNNNN.jpg + an audio WAV, muxed to an mp4 via a
- * detached ffmpeg on stop) and instant REPLAY ('y' arms, 'x' saves; a
- * rolling ~30 s ring of JPEG frames at ~15 fps in RAM, paired with the
- * AudioAnalyzer's PCM ring, also muxed via ffmpeg on save). The encode
- * queue is bounded and drops frames under load rather than growing
- * unbounded; dropped frame durations are carried into the next queued
- * frame's duration so the resulting video's timeline still adds up.
- * Threading contract: every public method is called from the GL/GUI
- * thread, and captureIfDue() requires a current GL context; the worker
- * thread only ever touches the job queue and the replay ring, each behind
- * its own mutex.
+ * frame of latency, no GPU->CPU stall) feeding two mutually exclusive modes.
+ * RECORDING ('r', ~30 fps) streams raw RGBA frames into a running ffmpeg at
+ * the full render resolution and muxes that video with the audio WAV on stop,
+ * copying the video stream rather than re-encoding it. Instant REPLAY ('y'
+ * arms, 'x' saves) keeps a rolling ~30 s ring of JPEG frames at ~15 fps in
+ * RAM, capped at 720 px because the ring's size is the constraint there,
+ * paired with the AudioAnalyzer's PCM ring and muxed on save. Both queues are
+ * bounded and drop frames under load rather than growing unbounded; a dropped
+ * frame's duration is carried into the next queued frame so the timeline
+ * still adds up. Threading contract: every public method is called from the
+ * GL/GUI thread, and captureIfDue() requires a current GL context; the JPEG
+ * pool only ever touches its queue and the replay ring, and the pipe thread
+ * only its own queue and the ffmpeg process, each behind its own mutex.
  */
 class Recorder
 {
@@ -129,6 +141,19 @@ private:
 	void   ensureWorker();
 	/** @brief Encoder worker thread body: pulls jobs off the queue and mirrors/scales/JPEG-encodes them (to disk for recording jobs, into RAM for replay jobs) until told to quit. */
 	void   worker();
+
+	// ---- raw video pipe (the recording path) ----
+	// Recording frames no longer become JPEGs. They are written as raw RGBA
+	// straight into a running ffmpeg, which encodes them once, in hardware.
+	// The old path encoded every frame TWICE -- a CPU JPEG here, then ffmpeg
+	// decoding all of them again to make the h264 -- and threw away everything
+	// above 720 px on the way. See startVideoPipe() for why this needs its own
+	// single thread rather than the pool.
+	/** @brief Launch the ffmpeg process this recording pipes raw frames into, locking the video size to @p w x @p h. @return false if ffmpeg could not be started, which puts the recording on the JPEG fallback path. */
+	bool   startVideoPipe( int w, int h );
+	/** @brief Raw-pipe writer thread body: flips each recording frame, converts the measured frame durations into constant-rate output, and writes to ffmpeg's stdin in strict order. Finalises the ffmpeg process before returning. */
+	void   pipeWriter();
+
 	qint64 nowMs() const { return m_clock.elapsed(); }   ///< Milliseconds elapsed on the recorder's own clock since construction.
 
 	AudioAnalyzer *m_audio = nullptr;   ///< Audio source for the recording WAV / replay PCM ring; may be null (silent video).
@@ -163,6 +188,19 @@ private:
 	unsigned long long      m_seq = 0;   ///< Monotonic job counter (GL thread), orders replay frames.
 	unsigned long long      m_dropped = 0; ///< Frames discarded because the queue was full; reported on stop.
 	bool                    m_quit = false;   ///< Set to request the workers to exit once the queue drains.
+
+	QProcess               *m_ff = nullptr;   ///< The ffmpeg receiving raw frames; created, used and destroyed ONLY on the pipe thread (QProcess is not thread-safe).
+	std::thread             m_pipeThread;     ///< Single writer thread -- a pipe is a stream, so frame order is not negotiable.
+	std::mutex              m_pipeMx;         ///< Guards m_pipeQueue and m_pipeQuit.
+	std::condition_variable m_pipeCv;         ///< Signals the pipe thread that a frame is queued or that the recording is stopping.
+	std::deque<RecJob>      m_pipeQueue;      ///< Pending recording frames awaiting the pipe.
+	bool                    m_pipeQuit = false;      ///< Set to ask the pipe thread to drain, close ffmpeg's stdin and exit.
+	bool                    m_pipeFallback = false;  ///< ffmpeg unavailable: recording frames are handed to the JPEG pool instead, exactly as before this path existed.
+	int                     m_pipeW = 0;      ///< Video width the pipe was opened with; later frames are rescaled to it (a resolution change mid-recording would otherwise desynchronise the raw stream).
+	int                     m_pipeH = 0;      ///< Video height the pipe was opened with.
+	double                  m_pipeOwed = 0.0; ///< Fractional output-frame debt: measured durations are turned into whole frames at kPipeFps, so the CFR output still lasts exactly as long as the capture did.
+	std::vector<uchar>      m_pipeBuf;        ///< Reusable scratch holding one vertically flipped frame (GL readback is bottom-up).
+	QString                 m_videoPath;      ///< The video-only mp4 ffmpeg writes; muxed with the audio WAV on stop.
 
 	// PBO-Doppelpuffer für den asynchronen Readback
 	GLuint m_pbo[2] = { 0, 0 };   ///< Double-buffered pixel-pack buffer objects for async glReadPixels.
