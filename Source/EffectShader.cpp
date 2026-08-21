@@ -199,7 +199,10 @@ void EffectShader::initUniforms(int width, int height)
 	m_width = width;
 	m_height = height;
 
-	checkGLErrors("loadShader 1");
+	// Entry drain: whatever this reports happened BEFORE initUniforms, not in
+	// it. The old label ("loadShader 1") read as an accusation against the
+	// shader being loaded and cost real time chasing that.
+	checkGLErrors("entry of initUniforms");
 
 	// load and compile shader
 	m_sh_prog_id = setShaders( m_vertexShaderFilename, m_fragmentShaderFilename );
@@ -235,7 +238,15 @@ void EffectShader::checkGLErrors( const char *label )
 	// gluErrorString returns NULL for codes it does not know (newer GL) —
 	// fputs(NULL) crashed the app the moment such an error occurred.
 	const char *msg = (const char *) gluErrorString( errCode );
-	fprintf( stderr, "OpenGL ERROR: %s (0x%04x, label: %s)\n",
+	// "noticed at", not "in": glGetError drains a GLOBAL queue, so the label
+	// names the checkpoint that FOUND the error, not the call that raised it.
+	// The cause lies between the previous checkpoint and this one -- and since
+	// RenderPipeline::checkGLErrors() is a no-op unless KALEIDO_GL_DEBUG is
+	// set, in a normal run "the previous checkpoint" can be a long way back,
+	// in another subsystem entirely. Reading the label as a location has sent
+	// debugging down the wrong path here more than once.
+	fprintf( stderr, "OpenGL ERROR: %s (0x%04x, noticed at: %s; raised before "
+	                 "this checkpoint, not necessarily here)\n",
 	         msg ? msg : "?", (unsigned) errCode, label ? label : "?" );
 }
 
