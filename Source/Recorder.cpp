@@ -18,6 +18,7 @@
 #include <QtCore/QStringList>
 
 #include "glcore.h"        // Core-Profile-Einsprungpunkte (PBO-Funktionen)
+#include "shader_setup.h"  // setShaders() fuer den Akkumulations-Pass
 #include "Recorder.h"
 #include "AudioAnalyzer.h"
 
@@ -352,6 +353,12 @@ void Recorder::toggle()
 		ensureWorker();
 		warmVideoEncoderProbe();   // Codec-Probe jetzt, nicht erst beim Stoppen
 
+		{
+			QSettings st( "..\\kaleidoscope_settings.ini", QSettings::IniFormat );
+			m_mbWanted = st.value( "motionBlur", false ).toBool();
+		}
+		m_mbCount = 0;
+
 		// Raw-Pipe-Schreiber: nimmt ab jetzt die Aufnahme-Frames entgegen.
 		m_pipeQuit     = false;
 		m_pipeFallback = false;
@@ -395,9 +402,155 @@ void Recorder::toggleReplayArm()
 void Recorder::captureIfDue( int w, int h )
 {
 	if( m_recording )
+	{
+		// Sum EVERY rendered frame, not only the ones that get captured --
+		// that is the whole point. captureFrame() decides when the interval
+		// is over and reads the average back.
+		if( m_mbWanted && ensureBlurTargets( w, h ) )
+			accumulateFrame( w, h );
 		captureFrame( w, h );
+	}
 	else if( m_replayArmed )
 		captureReplayFrame( w, h );
+}
+
+bool Recorder::ensureBlurTargets( int w, int h )
+{
+	if( m_mbReady && m_mbW == w && m_mbH == h )
+		return true;
+	if( m_mbTried && !m_mbReady )
+		return false;                 // soft-failed once; do not retry per frame
+
+	m_mbTried = true;
+	if( m_mbProg == 0 )
+	{
+		m_mbProg     = setShaders( "..\\standard.vert", "..\\Engine\\Accumulate.frag" );
+		m_mbTexUni   = glGetUniformLocation( m_mbProg, "tex" );
+		m_mbScaleUni = glGetUniformLocation( m_mbProg, "scale" );
+	}
+	if( m_mbProg == 0 )
+	{
+		fputs( "[recorder] motion blur: accumulate program failed - disabled\n", stderr );
+		return false;
+	}
+
+	m_mbW = w; m_mbH = h;
+
+	// Source copy: plain RGBA8, filled by glCopyTexSubImage2D so no shader is
+	// needed just to get the rendered frame into something samplable.
+	if( m_mbSrcTex == 0 ) glGenTextures( 1, &m_mbSrcTex );
+	glBindTexture( GL_TEXTURE_2D, m_mbSrcTex );
+	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA8, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+
+	if( m_mbAccumTex == 0 ) glGenTextures( 1, &m_mbAccumTex );
+	glBindTexture( GL_TEXTURE_2D, m_mbAccumTex );
+	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA16F, w, h, 0, GL_RGBA, GL_FLOAT, NULL );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+
+	if( m_mbResolveTex == 0 ) glGenTextures( 1, &m_mbResolveTex );
+	glBindTexture( GL_TEXTURE_2D, m_mbResolveTex );
+	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA8, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+	glBindTexture( GL_TEXTURE_2D, 0 );
+
+	GLint prevFbo = 0;
+	glGetIntegerv( GL_FRAMEBUFFER_BINDING, &prevFbo );
+
+	if( m_mbAccumFbo == 0 ) glGenFramebuffers( 1, &m_mbAccumFbo );
+	glBindFramebuffer( GL_FRAMEBUFFER, m_mbAccumFbo );
+	glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_mbAccumTex, 0 );
+	const bool okA = ( glCheckFramebufferStatus( GL_FRAMEBUFFER ) == GL_FRAMEBUFFER_COMPLETE );
+
+	if( m_mbResolveFbo == 0 ) glGenFramebuffers( 1, &m_mbResolveFbo );
+	glBindFramebuffer( GL_FRAMEBUFFER, m_mbResolveFbo );
+	glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_mbResolveTex, 0 );
+	const bool okB = ( glCheckFramebufferStatus( GL_FRAMEBUFFER ) == GL_FRAMEBUFFER_COMPLETE );
+
+	glBindFramebuffer( GL_FRAMEBUFFER, (GLuint) prevFbo );
+
+	m_mbReady = okA && okB;
+	if( !m_mbReady )
+	{
+		fputs( "[recorder] motion blur: framebuffer incomplete - disabled, "
+		       "recording continues without it\n", stderr );
+		return false;
+	}
+	// Start each size fresh, or the first captured frame would average in
+	// whatever the previous resolution left behind.
+	glBindFramebuffer( GL_FRAMEBUFFER, m_mbAccumFbo );
+	glClearColor( 0.f, 0.f, 0.f, 0.f );
+	glClear( GL_COLOR_BUFFER_BIT );
+	glBindFramebuffer( GL_FRAMEBUFFER, (GLuint) prevFbo );
+	m_mbCount = 0;
+	fprintf( stderr, "[recorder] motion blur: %dx%d accumulation active\n", w, h );
+	return true;
+}
+
+void Recorder::accumulateFrame( int w, int h )
+{
+	GLint prevFbo = 0;
+	glGetIntegerv( GL_FRAMEBUFFER_BINDING, &prevFbo );
+
+	// Grab the rendered frame as a texture. No shader, no extra pass.
+	glBindTexture( GL_TEXTURE_2D, m_mbSrcTex );
+	glCopyTexSubImage2D( GL_TEXTURE_2D, 0, 0, 0, 0, 0, w, h );
+
+	glBindFramebuffer( GL_FRAMEBUFFER, m_mbAccumFbo );
+	glViewport( 0, 0, w, h );
+	glEnable( GL_BLEND );
+	glBlendFunc( GL_ONE, GL_ONE );          // sum, divided later by the real count
+	glDisable( GL_DEPTH_TEST );
+	glUseProgram( m_mbProg );
+	glActiveTexture( GL_TEXTURE0 );
+	glBindTexture( GL_TEXTURE_2D, m_mbSrcTex );
+	if( m_mbTexUni   >= 0 ) glUniform1i( m_mbTexUni, 0 );
+	if( m_mbScaleUni >= 0 ) glUniform1f( m_mbScaleUni, 1.f );
+	extern GLuint fullscreenVAO();
+	glBindVertexArray( fullscreenVAO() );
+	glDrawArrays( GL_TRIANGLES, 0, 3 );
+	glBindVertexArray( 0 );
+	glDisable( GL_BLEND );
+
+	glBindFramebuffer( GL_FRAMEBUFFER, (GLuint) prevFbo );
+	glViewport( 0, 0, w, h );
+	++m_mbCount;
+}
+
+void Recorder::resolveBlur( int w, int h )
+{
+	glBindFramebuffer( GL_FRAMEBUFFER, m_mbResolveFbo );
+	glViewport( 0, 0, w, h );
+	glDisable( GL_BLEND );
+	glUseProgram( m_mbProg );
+	glActiveTexture( GL_TEXTURE0 );
+	glBindTexture( GL_TEXTURE_2D, m_mbAccumTex );
+	if( m_mbTexUni   >= 0 ) glUniform1i( m_mbTexUni, 0 );
+	// Divide by the frames that ACTUALLY went in, not the nominal ratio: a
+	// dropped or extra render frame then changes the blur length, never the
+	// exposure.
+	if( m_mbScaleUni >= 0 ) glUniform1f( m_mbScaleUni, 1.f / float( m_mbCount > 0 ? m_mbCount : 1 ) );
+	extern GLuint fullscreenVAO();
+	glBindVertexArray( fullscreenVAO() );
+	glDrawArrays( GL_TRIANGLES, 0, 3 );
+	glBindVertexArray( 0 );
+
+	// Clear for the next interval; the resolve FBO stays bound so the caller's
+	// readback reads the averaged frame.
+	glBindFramebuffer( GL_FRAMEBUFFER, m_mbAccumFbo );
+	glClearColor( 0.f, 0.f, 0.f, 0.f );
+	glClear( GL_COLOR_BUFFER_BIT );
+	m_mbCount = 0;
+	glBindFramebuffer( GL_READ_FRAMEBUFFER, m_mbResolveFbo );
 }
 
 // Encoder-Worker: spiegelt, skaliert und JPEG-encodiert die Frames abseits
@@ -919,7 +1072,17 @@ void Recorder::captureFrame( int w, int h )
 	float dur = (m_recFrame == 0) ? (1.0f/30.0f) : float(now - m_recLastFrame) / 1000.f;
 	m_recLastFrame = now;
 
+	// With motion blur on, the readback must see the AVERAGE of the interval,
+	// not the single frame that happened to land on the deadline. resolveBlur()
+	// leaves its result bound as the read framebuffer for exactly this.
+	GLint prevRead = 0;
+	glGetIntegerv( GL_READ_FRAMEBUFFER_BINDING, &prevRead );
+	const bool blurred = ( m_mbReady && m_mbCount > 0 );
+	if( blurred ) resolveBlur( w, h );
+
 	asyncCapture( dur, false, w, h );    // PBO-Pfad: kein GPU->CPU-Stall
+
+	if( blurred ) glBindFramebuffer( GL_READ_FRAMEBUFFER, (GLuint) prevRead );
 }
 
 // Finalisieren: WAV schließen, concat-Liste + make_video.bat schreiben und
