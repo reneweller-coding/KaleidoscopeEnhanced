@@ -247,7 +247,16 @@ GLwidget::GLwidget( QWidget *parent )
 	// never appear in the user-facing selection — menu, digit keys, web
 	// remote and auto-config all index m_configurationList only.  They stay
 	// fully loadable via -c <name>; the by-name lookups search both lists.
-	for( size_t i = m_configurationList.size(); i-- > 0; )
+	// The debug setting keeps them in the normal list, so the digit keys, the
+	// menu and the web remote can reach Komplett and the Test* benches without
+	// a command line. Off by default: they are a reference and an inspection
+	// bench, not something to land on while enjoying the show.
+	bool showHidden = false;
+	{
+		QSettings s( "..\\kaleidoscope_settings.ini", QSettings::IniFormat );
+		showHidden = s.value( "showHiddenPresets", false ).toBool();
+	}
+	for( size_t i = showHidden ? 0 : m_configurationList.size(); i-- > 0; )
 		if( m_configurationList[i]->isHidden() )
 		{
 			fprintf( stderr, "Configuration '%s' is hidden (selectable only via -c).\n",

@@ -253,6 +253,12 @@ void SetupWindow::buildContent()
 	m_videoCodec->addItem( "AV1", "av1" );
 	fTune->addRow( S( S_SETUP_VIDEOCODEC ), m_videoCodec );
 
+	m_showHidden = new QCheckBox( S( S_SETUP_SHOWHIDDEN ) );
+	fTune->addRow( QString(), m_showHidden );
+	auto *shHint = new QLabel( S( S_SETUP_SHOWHIDDEN_HINT ) );
+	shHint->setWordWrap( true );
+	fTune->addRow( QString(), shHint );
+
 	m_motionBlur = new QCheckBox( S( S_SETUP_MOTIONBLUR ) );
 	fTune->addRow( QString(), m_motionBlur );
 	auto *mbHint = new QLabel( S( S_SETUP_MOTIONBLUR_HINT ) );
@@ -322,6 +328,7 @@ void SetupWindow::loadFromIni()
 	{
 		m_recFps->setCurrentIndex( s.value( "recordFps", 30 ).toInt() >= 45 ? 1 : 0 );
 		m_motionBlur->setChecked( s.value( "motionBlur", false ).toBool() );
+		m_showHidden->setChecked( s.value( "showHiddenPresets", false ).toBool() );
 	}
 	{
 		const double sv = s.value( "renderScaleMax", 1.0 ).toDouble();
@@ -370,6 +377,7 @@ void SetupWindow::saveToIni()
 	s.setValue( "renderScaleMax", m_ssaa->currentData().toDouble() );
 	s.setValue( "recordFps",      m_recFps->currentData().toInt() );
 	s.setValue( "motionBlur",     m_motionBlur->isChecked() );
+	s.setValue( "showHiddenPresets", m_showHidden->isChecked() );
 
 	s.sync();
 	if( s.status() == QSettings::NoError )
