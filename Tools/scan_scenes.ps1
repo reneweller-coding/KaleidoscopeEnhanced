@@ -50,11 +50,15 @@ Copy-Item $ini $bak -Force
 try {
     # Disable the overlays that would otherwise composite real media over frames.
     $txt = Get-Content $ini -Raw
-    foreach ($kv in @(@('nowPlaying','false'), @('artistImages','false'), @('videoEnabled','false'))) {
+    foreach ($kv in @(@('nowPlaying','false'), @('artistImages','false'), @('videoEnabled','false'),
+                      @('autoScale','false'), @('renderScale','1'))) {
         if ($txt -match "(?m)^$($kv[0])=") { $txt = $txt -replace "(?m)^$($kv[0])=.*$", "$($kv[0])=$($kv[1])" }
         else { $txt = $txt -replace "(?m)^\[General\]", "[General]`n$($kv[0])=$($kv[1])" }
     }
     [IO.File]::WriteAllText($ini, $txt)
+
+    # The app's own fps report ends up in Release\kaleidoscope.log via -l.
+    $env:KALEIDO_FPS_LOG = "1"
 
     $i = 0
     foreach ($s in $Scenes) {
@@ -69,12 +73,16 @@ try {
             $dest = Join-Path $outDir $s
             if (Test-Path $dest) { Remove-Item $dest -Recurse -Force }
             Move-Item $d.FullName $dest
+            # Keep this scene's fps report next to its frames.
+            $applog = Join-Path $rel "kaleidoscope.log"
+            if (Test-Path $applog) { Copy-Item $applog (Join-Path $dest "fps.log") -Force }
         } else {
             Write-Host "  (no recording for $s)"
         }
     }
 }
 finally {
+    Remove-Item Env:\KALEIDO_FPS_LOG -ErrorAction SilentlyContinue
     Restore-Ini
 }
 

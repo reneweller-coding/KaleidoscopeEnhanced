@@ -26,7 +26,7 @@ Usage:
 the scene name).  Frames are sampled evenly, so a long recording costs no more
 than a short one.
 """
-import os, sys, json, glob
+import os, sys, json, glob, subprocess, re, io
 import numpy as np
 from PIL import Image
 
@@ -244,6 +244,65 @@ def verdicts(m):
     return v
 
 
+
+def app_fps(folder):
+    """The app's own fps report for this scene, or None.
+
+    Preferred over counting frames: the recorder writes constant-rate video
+    with duplicate fill, so a slow scene still produces 30 frames per second
+    and the frame count says nothing about cost. Returns (median fps, render
+    scale); the scale is only meaningful paired with the fps, which is why
+    scan_scenes.ps1 pins it to 1.0 for the measurement.
+    """
+    p = os.path.join(folder, "fps.log")
+    if not os.path.isfile(p):
+        return None
+    vals, scales = [], []
+    with io.open(p, encoding="utf-8", errors="replace") as f:
+        for ln in f:
+            m = re.search(r"\[fps\]\s+(\d+)\s+fps\s+renderScale\s+([0-9.]+)", ln)
+            if m:
+                vals.append(int(m.group(1)))
+                scales.append(float(m.group(2)))
+    if not vals:
+        return None
+    # drop the first samples: shader compile and fade-in are not the scene
+    keep = vals[min(2, len(vals) - 1):]
+    keep.sort()
+    return keep[len(keep) // 2], (max(scales) if scales else 1.0)
+
+
+def frames_from_video(folder):
+    """Return frame paths for a scan folder, extracting them if needed.
+
+    The recorder used to write one JPEG per frame; since it pipes raw frames
+    into ffmpeg it writes a single video.mp4 instead. Extract at LONG_EDGE
+    directly -- frame_stats() downscales to that anyway, so decoding at the
+    full render resolution (2880x1620) would only waste time.
+    Extracted frames land in a `_frames` subfolder and are reused on a re-run.
+    """
+    cache = os.path.join(folder, "_frames")
+    jpgs = sorted(glob.glob(os.path.join(cache, "*.jpg")))
+    if jpgs:
+        return jpgs
+    mp4 = os.path.join(folder, "video.mp4")
+    if not os.path.isfile(mp4):
+        mp4 = os.path.join(folder, "kaleidoscope.mp4")
+    if not os.path.isfile(mp4):
+        return []
+    os.makedirs(cache, exist_ok=True)
+    cmd = ["ffmpeg", "-hide_banner", "-loglevel", "error", "-y", "-i", mp4,
+           "-vf", "scale=%d:-2" % LONG_EDGE, "-q:v", "3",
+           os.path.join(cache, "frame_%06d.jpg")]
+    try:
+        subprocess.run(cmd, check=True)
+    except Exception as e:
+        print("  (%s: could not extract frames from video.mp4: %s)"
+              % (os.path.basename(folder), e))
+        return []
+    return sorted(glob.glob(os.path.join(cache, "*.jpg")))
+
+
 def main():
     if len(sys.argv) < 2:
         print(__doc__)
@@ -255,6 +314,8 @@ def main():
         if not os.path.isdir(full):
             continue
         jpgs = sorted(glob.glob(os.path.join(full, "*.jpg")))
+        if not jpgs:
+            jpgs = frames_from_video(full)     # recorder now writes video.mp4
         if len(jpgs) < 3:
             continue
         # skip the first few frames: shader compile / fade-in is not the scene
@@ -266,6 +327,9 @@ def main():
             continue
         # Continuity/flicker need EVERY frame, not the 10 spatial samples.
         m.update(temporal_stats(jpgs, SECONDS))
+        af = app_fps(full)
+        if af:
+            m["fps"], m["renderScale"] = af      # the app's own number wins
         m["flags"] = verdicts(m)
         out[d] = m
 
