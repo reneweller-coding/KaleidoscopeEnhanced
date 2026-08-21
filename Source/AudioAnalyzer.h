@@ -191,11 +191,20 @@ private:
     static constexpr float kBeatCooldownFrames = 18.f;    ///< ~180 ms cooldown — a kick's decay tail must not re-trigger.
     float m_prevBeatBand = 0.f;   ///< Previous-block beat band value (rising-edge test).
 
-    // ---- Ambient detection ----
-    /** @brief Length of #m_levelHistory: ~6 s. */
-    static constexpr int kAmbientHistLen = 256;
-    float m_levelHistory[kAmbientHistLen] = {};   ///< Rolling overall-level history (used by the music/speech continuity test).
-    int   m_ambientIdx   = 0;                     ///< Next write index into #m_levelHistory.
+    // ---- Ambient detection, and the music/speech classifier's envelope ring ----
+    /** @brief Length of #m_envHistory: 600 blocks, i.e. ~6 s at the usual 10 ms block. */
+    static constexpr int kEnvHistLen = 600;
+    /** @brief Rolling RAW LINEAR broadband envelope, one entry per block (music/speech classifier).
+     *
+     *  Deliberately NOT the dB-normalised, attack/release-smoothed `level`: both of
+     *  those destroy exactly what this ring is read for. dB compression squeezes a
+     *  speech pause at -40 dB up to 0.33 of full scale, and the release smoothing
+     *  (up to ~1 s) fills the pause in before the next word starts, so gaps stop
+     *  looking like gaps. */
+    float m_envHistory[kEnvHistLen] = {};
+    int   m_envIdx   = 0;                     ///< Next write index into #m_envHistory.
+    float m_sBeatAC  = 0.f;                   ///< Envelope-autocorrelation peak over musical lags (music/speech classifier).
+    int   m_beatAcCount = 0;                  ///< Block counter that paces the #m_sBeatAC recomputation.
     float m_ambientFactor = 0.f;                  ///< 0 = beat-driven, 1 = ambient/drone; see AudioFeatures::ambientFactor.
 
     // ---- Speed / power envelope state ----
