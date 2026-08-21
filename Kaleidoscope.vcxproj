@@ -114,6 +114,14 @@
       <DataExecutionPrevention />
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
+    <PreBuildEvent>
+      <Message>Checking the Strings tables against the StrId enum...</Message>
+      <Command>where python &gt;nul 2&gt;&amp;1
+if errorlevel 1 goto skipstrings
+python "$(ProjectDir)Tools\check_strings.py"
+if errorlevel 1 exit /b 1
+:skipstrings</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -145,6 +153,14 @@
       <DataExecutionPrevention>
       </DataExecutionPrevention>
     </Link>
+    <PreBuildEvent>
+      <Message>Checking the Strings tables against the StrId enum...</Message>
+      <Command>where python &gt;nul 2&gt;&amp;1
+if errorlevel 1 goto skipstrings
+python "$(ProjectDir)Tools\check_strings.py"
+if errorlevel 1 exit /b 1
+:skipstrings</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -167,6 +183,14 @@
       <DataExecutionPrevention />
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
+    <PreBuildEvent>
+      <Message>Checking the Strings tables against the StrId enum...</Message>
+      <Command>where python &gt;nul 2&gt;&amp;1
+if errorlevel 1 goto skipstrings
+python "$(ProjectDir)Tools\check_strings.py"
+if errorlevel 1 exit /b 1
+:skipstrings</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -208,6 +232,14 @@ powershell -NoProfile -ExecutionPolicy Bypass -File "$(ProjectDir)deploy.ps1" -Q
 if errorlevel 1 echo [post-build] WARNING: standalone packaging failed - the build itself is OK.
 exit /b 0</Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Message>Checking the Strings tables against the StrId enum...</Message>
+      <Command>where python &gt;nul 2&gt;&amp;1
+if errorlevel 1 goto skipstrings
+python "$(ProjectDir)Tools\check_strings.py"
+if errorlevel 1 exit /b 1
+:skipstrings</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Source\Configuration.cpp" />

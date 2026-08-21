@@ -252,23 +252,14 @@ void SetupWindow::buildContent()
 	m_videoCodec->addItem( "HEVC (H.265)", "hevc" );
 	m_videoCodec->addItem( "AV1", "av1" );
 	fTune->addRow( S( S_SETUP_VIDEOCODEC ), m_videoCodec );
-
-	m_showHidden = new QCheckBox( S( S_SETUP_SHOWHIDDEN ) );
-	fTune->addRow( QString(), m_showHidden );
-	auto *shHint = new QLabel( S( S_SETUP_SHOWHIDDEN_HINT ) );
-	shHint->setWordWrap( true );
-	fTune->addRow( QString(), shHint );
-
-	m_motionBlur = new QCheckBox( S( S_SETUP_MOTIONBLUR ) );
-	fTune->addRow( QString(), m_motionBlur );
-	auto *mbHint = new QLabel( S( S_SETUP_MOTIONBLUR_HINT ) );
-	mbHint->setWordWrap( true );
-	fTune->addRow( QString(), mbHint );
-
-	m_recFps = new QComboBox();
-	m_recFps->addItem( "30 fps", 30 );
-	m_recFps->addItem( "60 fps", 60 );
-	fTune->addRow( S( S_SETUP_RECFPS ), m_recFps );
+	// Each hint goes directly under the control it explains. They used to be
+	// appended in a block at the end, which put the codec explanation four rows
+	// below the codec combo with the frame-rate and anti-aliasing rows in
+	// between -- unreadable, and it read as if the hint belonged to whatever
+	// happened to sit above it.
+	auto *codecHint = new QLabel( S( S_SETUP_CODEC_HINT ) );
+	codecHint->setWordWrap( true );
+	fTune->addRow( QString(), codecHint );
 
 	m_ssaa = new QComboBox();
 	m_ssaa->addItem( "1x", 1.0 );
@@ -278,9 +269,25 @@ void SetupWindow::buildContent()
 	auto *ssaaHint = new QLabel( S( S_SETUP_SSAA_HINT ) );
 	ssaaHint->setWordWrap( true );
 	fTune->addRow( QString(), ssaaHint );
-	auto *codecHint = new QLabel( S( S_SETUP_CODEC_HINT ) );
-	codecHint->setWordWrap( true );
-	fTune->addRow( QString(), codecHint );
+
+	m_recFps = new QComboBox();
+	m_recFps->addItem( "30 fps", 30 );
+	m_recFps->addItem( "60 fps", 60 );
+	fTune->addRow( S( S_SETUP_RECFPS ), m_recFps );
+
+	m_motionBlur = new QCheckBox( S( S_SETUP_MOTIONBLUR ) );
+	fTune->addRow( QString(), m_motionBlur );
+	auto *mbHint = new QLabel( S( S_SETUP_MOTIONBLUR_HINT ) );
+	mbHint->setWordWrap( true );
+	fTune->addRow( QString(), mbHint );
+
+	// Debug switch last: it is not a picture/sound setting like the rest of
+	// this group, and nobody should trip over it while adjusting recordings.
+	m_showHidden = new QCheckBox( S( S_SETUP_SHOWHIDDEN ) );
+	fTune->addRow( QString(), m_showHidden );
+	auto *shHint = new QLabel( S( S_SETUP_SHOWHIDDEN_HINT ) );
+	shHint->setWordWrap( true );
+	fTune->addRow( QString(), shHint );
 	root->addWidget( gTune );
 
 	root->addStretch( 1 );
