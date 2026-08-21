@@ -252,6 +252,15 @@ void SetupWindow::buildContent()
 	m_videoCodec->addItem( "HEVC (H.265)", "hevc" );
 	m_videoCodec->addItem( "AV1", "av1" );
 	fTune->addRow( S( S_SETUP_VIDEOCODEC ), m_videoCodec );
+
+	m_ssaa = new QComboBox();
+	m_ssaa->addItem( "1x", 1.0 );
+	m_ssaa->addItem( "1.5x", 1.5 );
+	m_ssaa->addItem( "2x", 2.0 );
+	fTune->addRow( S( S_SETUP_SSAA ), m_ssaa );
+	auto *ssaaHint = new QLabel( S( S_SETUP_SSAA_HINT ) );
+	ssaaHint->setWordWrap( true );
+	fTune->addRow( QString(), ssaaHint );
 	auto *codecHint = new QLabel( S( S_SETUP_CODEC_HINT ) );
 	codecHint->setWordWrap( true );
 	fTune->addRow( QString(), codecHint );
@@ -299,6 +308,14 @@ void SetupWindow::loadFromIni()
 		const int ci = m_videoCodec->findData( s.value( "videoCodec", "h264" ).toString().toLower() );
 		m_videoCodec->setCurrentIndex( ci >= 0 ? ci : 0 );   // unknown value -> H.264
 	}
+	{
+		const double sv = s.value( "renderScaleMax", 1.0 ).toDouble();
+		int si = 0;   // nearest listed step, so a hand-edited value still shows sensibly
+		for( int i = 1; i < m_ssaa->count(); ++i )
+			if( qAbs( m_ssaa->itemData( i ).toDouble() - sv )
+			    < qAbs( m_ssaa->itemData( si ).toDouble() - sv ) ) si = i;
+		m_ssaa->setCurrentIndex( si );
+	}
 
 	if( !QFile::exists( path ) )
 		m_status->setText( S( S_SETUP_NO_SETTINGS_YET ) );
@@ -335,6 +352,7 @@ void SetupWindow::saveToIni()
 	s.setValue( "stereoMode",  m_stereoMode->currentIndex() );
 	s.setValue( "stereoDepth", m_stereoDepth->value() );
 	s.setValue( "videoCodec",  m_videoCodec->currentData().toString() );
+	s.setValue( "renderScaleMax", m_ssaa->currentData().toDouble() );
 
 	s.sync();
 	if( s.status() == QSettings::NoError )

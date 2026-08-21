@@ -45,6 +45,7 @@ float RenderPipeline::s_reactivity  = 1.0f;
 float RenderPipeline::s_trailAmount = 0.6f;
 float RenderPipeline::s_moodStrength = 1.0f;
 float RenderPipeline::s_renderScale = 1.0f;
+float RenderPipeline::s_renderScaleMax = 1.0f;   // no supersampling unless asked for
 bool  RenderPipeline::s_renderScaleFromCli = false;
 float RenderPipeline::s_lightShow   = 0.0f;   // corner lamps / light-show OFF by default
 bool  RenderPipeline::s_spoutEnabled = false; // Spout sender (CLI -o)
@@ -76,6 +77,7 @@ void RenderPipeline::loadSettings()
 	s_stereoMode   = s.value( "stereoMode", s_stereoMode ).toInt() & 3;
 	s_stereoDepth  = clampParam( s.value( "stereoDepth", s_stereoDepth ).toFloat(), 0.f, 2.f );
 	setRenderScale( s.value( "renderScale", s_renderScale ).toFloat() );  // clamps internally
+	setRenderScaleMax( s.value( "renderScaleMax", s_renderScaleMax ).toFloat() );
 
 	// Taste learning: PER-PRESET per-shader selection-weight factors (keys
 	// "<Preset>/<file>"), decayed toward 1.0 a little on every start so old
@@ -135,6 +137,7 @@ void RenderPipeline::saveSettings()
 	s.setValue( "stereoMode",  s_stereoMode   );
 	s.setValue( "stereoDepth", s_stereoDepth  );
 	s.setValue( "renderScale", s_renderScale  );
+	s.setValue( "renderScaleMax", s_renderScaleMax );
 	s.sync();
 	fprintf( stderr, "Saved settings: react=%.2f trails=%.2f mood=%.2f lead=%.0fms scale=%.2f\n",
 	         s_reactivity, s_trailAmount, s_moodStrength, s_latencyLead * 1000.f, s_renderScale );

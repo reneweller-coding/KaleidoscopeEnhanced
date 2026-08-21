@@ -452,9 +452,17 @@ void GLwidget::initializeGL()
 	//
 	// An EXPLICIT -s is still honoured as a hard ceiling, which was the original
 	// intent; the persisted working value no longer is.
+	// A ceiling ABOVE 1.0 is a quality request, not something to creep up on:
+	// climbing 1.0 -> 2.0 in 0.05 steps would be 20 visible resolution changes
+	// over half a minute. Start AT the requested quality and let the adaptive
+	// scaler walk it back only if the machine cannot hold the target rate.
+	if( !RenderPipeline::s_renderScaleFromCli
+	    && RenderPipeline::renderScaleMax() > RenderPipeline::renderScale() )
+		RenderPipeline::setRenderScale( RenderPipeline::renderScaleMax() );
+
 	m_autoScaleMax  = RenderPipeline::s_renderScaleFromCli
 	                ? RenderPipeline::renderScale()
-	                : 1.0f;
+	                : RenderPipeline::renderScaleMax();
 
 	// Periodic refresh timer, paced to the DISPLAY, not to a hard-coded 60 Hz.
 	//
@@ -1002,7 +1010,10 @@ void GLwidget::updateAdaptiveScale()
 	if( m_fpsValue < 0.75f * target && scale > minScale )
 		next = scale - 0.10f;                       // struggling -> coarser, recover FPS
 	else if( m_fpsValue > 0.95f * target && scale < m_autoScaleMax )
-		next = scale + 0.05f;                        // headroom -> finer, up to the ceiling
+		next = scale + ( scale >= 1.0f ? 0.10f : 0.05f );   // headroom -> finer
+		// Coarser steps in the supersampling range: below 1.0 every step is
+		// visible detail the user wants back quickly, above it the steps are
+		// diminishing returns and fewer resolution changes read better.
 
 	if( next < minScale )         next = minScale;
 	if( next > m_autoScaleMax )   next = m_autoScaleMax;
