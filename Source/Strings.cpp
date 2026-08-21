@@ -53,7 +53,7 @@ const char *kDE[S_COUNT] = {
 	/* S_OFF */                "aus",
 
 	// ---- Audioquellen-Menü ----
-	/* S_AUDIOMENU_TITLE */          "AUDIOQUELLE   (0-9 wählen,  d schließen)",
+	/* S_AUDIOMENU_TITLE */          "AUDIOQUELLE",
 	/* S_AUDIOMENU_DEFAULT_OUTPUT */ "Standard-Ausgabe (Loopback)",
 	/* S_AUDIOMENU_INPUT_TAG */      "  [Eingang]",
 	/* S_AUDIOMENU_OUTPUT_TAG */     "  [Ausgabe]",
@@ -128,6 +128,7 @@ const char *kDE[S_COUNT] = {
 	/* S_WR_SAVEMARKED */         "Marked speichern",
 	/* S_MENU_CONFIG_TITLE */     "Preset wählen",
 	/* S_MENU_NAV_HINT */         "↑↓ blättern    Enter wählen    0 / Esc schließen",
+	/* S_MENU_NAV_HINT_D */       "↑↓ blättern    Enter wählen    d / Esc schließen",
 	/* S_SETUP_SSAA */            "Kantenglaettung (Supersampling):",
 	/* S_SETUP_SSAA_HINT */       "Rendert groesser als das Fenster und rechnet herunter. Glaettet auch Shader-Strukturen, was MSAA nicht kann. 2x kostet die vierfache Pixelzahl; reicht die Leistung nicht, regelt die Automatik selbst herunter.",
 	/* S_SETUP_RECFPS */          "Aufnahme-Bildrate:",
@@ -183,7 +184,7 @@ const char *kEN[S_COUNT] = {
 	/* S_OFF */                "off",
 
 	// ---- Audio-source menu ----
-	/* S_AUDIOMENU_TITLE */          "AUDIO SOURCE   (0-9 select,  d close)",
+	/* S_AUDIOMENU_TITLE */          "AUDIO SOURCE",
 	/* S_AUDIOMENU_DEFAULT_OUTPUT */ "Default output (loopback)",
 	/* S_AUDIOMENU_INPUT_TAG */      "  [input]",
 	/* S_AUDIOMENU_OUTPUT_TAG */     "  [output]",
@@ -258,6 +259,7 @@ const char *kEN[S_COUNT] = {
 	/* S_WR_SAVEMARKED */         "Save marked",
 	/* S_MENU_CONFIG_TITLE */     "Choose preset",
 	/* S_MENU_NAV_HINT */         "↑↓ scroll    Enter select    0 / Esc close",
+	/* S_MENU_NAV_HINT_D */       "↑↓ scroll    Enter select    d / Esc close",
 	/* S_SETUP_SSAA */            "Anti-aliasing (supersampling):",
 	/* S_SETUP_SSAA_HINT */       "Renders larger than the window and scales down. Smooths shader detail too, which MSAA cannot. 2x costs four times the pixels; if the machine cannot keep up, the adaptive scaler walks it back on its own.",
 	/* S_SETUP_RECFPS */          "Recording frame rate:",

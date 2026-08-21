@@ -46,6 +46,60 @@ int     GLwidget::s_remotePort  = 8080;   // on by default (LAN-only, auto-disco
 bool    GLwidget::s_remotePortFromCli = false;
 bool    GLwidget::s_batchRender = false;
 
+namespace {
+
+/// What a key press meant to a scrolling overlay menu.
+enum class MenuKey { None, Moved, Accept, Cancel };
+
+/**
+ * @brief Common key handling for the scrolling overlay menus.
+ *
+ * Shared by the preset picker and the audio-source picker so the two cannot
+ * drift apart: both had a nine-entry ceiling because selection was bound to
+ * the digit keys, and both are now driven by a cursor instead.
+ *
+ * Returns MenuKey::None for anything it does not consume, so the caller falls
+ * through to the normal handler and the digit shortcuts keep working.
+ */
+MenuKey menuNavKey( int key, int &cursor, int count )
+{
+	if( count <= 0 )
+		return MenuKey::None;
+	switch( key )
+	{
+		case Qt::Key_Up:       cursor = ( cursor - 1 + count ) % count;   return MenuKey::Moved;
+		case Qt::Key_Down:     cursor = ( cursor + 1 ) % count;           return MenuKey::Moved;
+		case Qt::Key_PageUp:   cursor = std::max( 0, cursor - 5 );        return MenuKey::Moved;
+		case Qt::Key_PageDown: cursor = std::min( count - 1, cursor + 5 ); return MenuKey::Moved;
+		case Qt::Key_Home:     cursor = 0;                                return MenuKey::Moved;
+		case Qt::Key_End:      cursor = count - 1;                        return MenuKey::Moved;
+		case Qt::Key_Return:
+		case Qt::Key_Enter:    return MenuKey::Accept;
+		// Escape quits the app everywhere else; inside a menu it has to mean
+		// "never mind, close this" instead.
+		case Qt::Key_Escape:   return MenuKey::Cancel;
+		default:               return MenuKey::None;
+	}
+}
+
+/**
+ * @brief Clamp a menu cursor and derive the first visible row.
+ *
+ * Scrolls by as little as possible, so the list does not jump around under the
+ * user when the cursor merely steps past the edge.
+ */
+void menuScroll( int &cursor, int &top, int count, int visible )
+{
+	cursor = std::max( 0, std::min( cursor, count - 1 ) );
+	if( cursor < top )
+		top = cursor;
+	if( cursor >= top + visible )
+		top = cursor - visible + 1;
+	top = std::max( 0, std::min( top, count - visible ) );
+}
+
+}   // namespace
+
 // ---- Web-remote hooks (called from WebRemote on the main thread) ----
 QStringList GLwidget::remoteConfigNames() const
 {
@@ -834,14 +888,7 @@ void GLwidget::showSelectConfigurationsMenu( QPainter *painter )
 	const int maxRows = std::max( 3, int( ( height() * 0.72 - 4 * lineH ) / lineH ) );
 	const int visible = std::min( nrConfigurations, maxRows );
 
-	// Keep the cursor inside the visible window, scrolling by as little as
-	// possible so the list does not jump around under the user.
-	m_configMenuCursor = std::max( 0, std::min( m_configMenuCursor, nrConfigurations - 1 ) );
-	if( m_configMenuCursor < m_configMenuTop )
-		m_configMenuTop = m_configMenuCursor;
-	if( m_configMenuCursor >= m_configMenuTop + visible )
-		m_configMenuTop = m_configMenuCursor - visible + 1;
-	m_configMenuTop = std::max( 0, std::min( m_configMenuTop, nrConfigurations - visible ) );
+	menuScroll( m_configMenuCursor, m_configMenuTop, nrConfigurations, visible );
 
 	const QString title = QString::fromUtf8( Strings::T( S_MENU_CONFIG_TITLE ) );
 	const QString hint  = QString::fromUtf8( Strings::T( S_MENU_NAV_HINT ) );
@@ -1964,40 +2011,116 @@ void GLwidget::selectAudioDevice( int index )
 	}
 }
 
+int GLwidget::audioMenuCount() const
+{
+	// Row 0 is "default output"; the enumerated devices follow it.
+	return 1 + ( m_audioAnalyzer ? m_audioAnalyzer->devices().size() : 0 );
+}
+
+/**
+ * @brief Draw the audio-source picker (key 'd').
+ *
+ * Scrolls, for the same reason the preset menu does: selection used to be
+ * bound to the digit keys, so the list was truncated at nine entries
+ * (`if( shown > 9 ) shown = 9`) and anything past the ninth device was not
+ * even drawn. A machine with a few virtual cables has well over nine.
+ *
+ * The highlight bar is where Enter would take you; the arrow marks the source
+ * that is actually feeding the analyzer.
+ */
 void GLwidget::drawAudioMenu( QPainter *painter )
 {
 	QList<AudioDevice> devs;
 	QString current;
-	if( m_audioAnalyzer ) { devs = m_audioAnalyzer->devices(); current = m_audioAnalyzer->currentDeviceName(); }
+	if( m_audioAnalyzer )
+	{
+		devs    = m_audioAnalyzer->devices();
+		current = m_audioAnalyzer->currentDeviceName();
+	}
 
-	int shown = devs.size(); if( shown > 9 ) shown = 9;   // 1..9 selectable
-	int n = shown + 1;                                     // + default entry
+	const int total = 1 + devs.size();          // default entry + devices
+	const int lh    = 26;
 
-	const int boxW = 580, lh = 26;
-	const int boxH = lh * (n + 1) + 30;
-	const int x0 = (width()  - boxW) / 2;
-	const int y0 = (height() - boxH) / 2;
+	// Leave room for the title and the key hint, and never fill the screen.
+	const int maxRows = std::max( 3, int( ( height() * 0.72 - 4 * lh ) / lh ) );
+	const int visible = std::min( total, maxRows );
+	menuScroll( m_audioMenuCursor, m_audioMenuTop, total, visible );
 
-	painter->fillRect( x0, y0, boxW, boxH, QColor(0, 0, 0, 200) );
-	painter->setPen( QColor(120, 200, 255) );
-	painter->setFont( QFont("Consolas", 14, QFont::Bold) );
+	const QString hint = QString::fromUtf8( Strings::T( S_MENU_NAV_HINT_D ) );
+
+	painter->setFont( QFont( "Consolas", 12 ) );
+	QFontMetrics fm( painter->font() );
+	int textW = fm.horizontalAdvance( hint );
+	for( int i = 0; i < devs.size(); ++i )
+	{
+		const QString tag = QString::fromUtf8( devs[i].isCapture ? Strings::T( S_AUDIOMENU_INPUT_TAG )
+		                                                        : Strings::T( S_AUDIOMENU_OUTPUT_TAG ) );
+		textW = std::max( textW, fm.horizontalAdvance(
+			QString( "%1.  %2%3" ).arg( i + 1 ).arg( devs[i].name ).arg( tag ) ) );
+	}
+
+	const int boxW = std::min( width() - 40, std::max( 580, textW + 70 ) );
+	const int boxH = lh * ( visible + 2 ) + 44;
+	const int x0   = ( width()  - boxW ) / 2;
+	const int y0   = ( height() - boxH ) / 2;
+
+	painter->fillRect( x0, y0, boxW, boxH, QColor( 0, 0, 0, 200 ) );
+	painter->setPen( QColor( 120, 200, 255 ) );
+	painter->setFont( QFont( "Consolas", 14, QFont::Bold ) );
 	painter->drawText( x0 + 20, y0 + 32, QString::fromUtf8( Strings::T( S_AUDIOMENU_TITLE ) ) );
 
-	painter->setFont( QFont("Consolas", 12) );
-	auto entry = [&]( int i, const QString &label, bool active ) {
-		int ry = y0 + 32 + (i + 1) * lh;
-		painter->setPen( active ? QColor(150, 230, 150) : QColor(210, 218, 232) );
-		painter->drawText( x0 + 24, ry, QString::number(i) + ".  " + label + (active ? "   ←" : "") );
-	};
-	// current.isEmpty() means "the default device" -- see the language-
-	// neutral sentinel comment in AudioAnalyzer::run().
-	entry( 0, QString::fromUtf8( Strings::T( S_AUDIOMENU_DEFAULT_OUTPUT ) ), current.isEmpty() );
-	for ( int i = 0; i < shown; ++i )
+	painter->setFont( QFont( "Consolas", 12 ) );
+	// current.isEmpty() means "the default device" -- see the language-neutral
+	// sentinel comment in AudioAnalyzer::run().
+	for( int row = 0; row < visible; ++row )
 	{
-		QString tag = QString::fromUtf8( devs[i].isCapture ? Strings::T( S_AUDIOMENU_INPUT_TAG )
-		                                                    : Strings::T( S_AUDIOMENU_OUTPUT_TAG ) );
-		entry( i + 1, devs[i].name + tag, !current.isEmpty() && current == devs[i].name );
+		const int i  = m_audioMenuTop + row;
+		const int ry = y0 + 32 + ( row + 1 ) * lh;
+
+		QString label;
+		bool    active = false;
+		if( i == 0 )
+		{
+			label  = QString::fromUtf8( Strings::T( S_AUDIOMENU_DEFAULT_OUTPUT ) );
+			active = current.isEmpty();
+		}
+		else
+		{
+			const AudioDevice &d = devs[i - 1];
+			label  = d.name + QString::fromUtf8( d.isCapture ? Strings::T( S_AUDIOMENU_INPUT_TAG )
+			                                                 : Strings::T( S_AUDIOMENU_OUTPUT_TAG ) );
+			active = !current.isEmpty() && current == d.name;
+		}
+
+		if( i == m_audioMenuCursor )
+		{
+			painter->fillRect( QRect( x0 + 6, ry - fm.ascent() - 3, boxW - 12, lh ),
+			                   QColor( 70, 120, 190, 190 ) );
+			painter->setPen( QColor( 255, 255, 255 ) );
+		}
+		else if( active ) painter->setPen( QColor( 150, 230, 150 ) );
+		else              painter->setPen( QColor( 210, 218, 232 ) );
+
+		// Only the first ten rows have a digit shortcut; numbering the rest
+		// would promise a key that does not exist.
+		const QString num = ( i <= 9 ) ? QString::number( i ) + ".  " : QString( "    " );
+		painter->drawText( x0 + 24, ry,
+		                   num + label + ( active ? QString::fromUtf8( "   \xE2\x86\x90" ) : QString() ) );
 	}
+
+	painter->setPen( QColor( 150, 150, 155, 200 ) );
+	if( m_audioMenuTop > 0 )
+		painter->drawText( x0 + boxW - 28, y0 + 32 + lh,
+		                   QString::fromUtf8( "\xE2\x96\xB2" ) );
+	if( m_audioMenuTop + visible < total )
+		painter->drawText( x0 + boxW - 28, y0 + 32 + visible * lh,
+		                   QString::fromUtf8( "\xE2\x96\xBC" ) );
+
+	painter->setFont( QFont( "Consolas", 10 ) );
+	QFontMetrics hfm( painter->font() );
+	painter->setPen( QColor( 165, 165, 172, 215 ) );
+	painter->drawText( x0 + ( boxW - hfm.horizontalAdvance( hint ) ) / 2,
+	                   y0 + boxH - 12, hint );
 }
 
 void GLwidget::drawNowPlaying( QPainter *painter, const QString &title,
@@ -2034,55 +2157,53 @@ void GLwidget::keyPressEvent(QKeyEvent* event)
 	if( m_showSelectConfigurationMenu )
 	{
 		const int n = int( m_configurationList.size() );
-		switch( event->key() )
+		switch( menuNavKey( event->key(), m_configMenuCursor, n ) )
 		{
-			case Qt::Key_Up:
-				if( n > 0 ) m_configMenuCursor = ( m_configMenuCursor - 1 + n ) % n;
+			case MenuKey::Moved:
 				return;
-			case Qt::Key_Down:
-				if( n > 0 ) m_configMenuCursor = ( m_configMenuCursor + 1 ) % n;
-				return;
-			case Qt::Key_PageUp:
-				m_configMenuCursor = std::max( 0, m_configMenuCursor - 5 );
-				return;
-			case Qt::Key_PageDown:
-				m_configMenuCursor = std::min( n - 1, m_configMenuCursor + 5 );
-				return;
-			case Qt::Key_Home:
-				m_configMenuCursor = 0;
-				return;
-			case Qt::Key_End:
-				m_configMenuCursor = std::max( 0, n - 1 );
-				return;
-			case Qt::Key_Return:
-			case Qt::Key_Enter:
+			case MenuKey::Accept:
 				m_showSelectConfigurationMenu = false;
 				if( m_configMenuCursor >= 0 && m_configMenuCursor < n
 				    && m_configurationList[m_configMenuCursor] != m_actConfiguration )
 					switchConfig( m_configurationList[m_configMenuCursor] );
 				return;
-			case Qt::Key_Escape:
-				// Close without switching. Escape quits the app everywhere else,
-				// which would be a nasty surprise for "never mind, close this".
+			case MenuKey::Cancel:
 				m_showSelectConfigurationMenu = false;
 				return;
-			default:
+			case MenuKey::None:
 				break;   // fall through to the global handler (digits, '0', ...)
 		}
 	}
 
-	// The audio-source picker is modal for number keys while it is open, so the
-	// digits choose a source instead of switching configuration.
+	// The audio-source picker is modal while it is open: arrows drive its
+	// cursor, Enter picks. The digits still work as shortcuts, but they were
+	// the ONLY way in before, which capped the list at nine sources -- a
+	// machine with a couple of virtual cables has more than that.
 	if( m_showAudioMenu )
 	{
-		int k = event->key();
+		const int k = event->key();
+		const int n = audioMenuCount();
 		if( k >= Qt::Key_0 && k <= Qt::Key_9 )
 		{
 			selectAudioDevice( k - Qt::Key_0 );
 			m_showAudioMenu = false;
 			return;
 		}
-		if( k == Qt::Key_D || k == Qt::Key_Escape )
+		switch( menuNavKey( k, m_audioMenuCursor, n ) )
+		{
+			case MenuKey::Moved:
+				return;
+			case MenuKey::Accept:
+				m_showAudioMenu = false;
+				selectAudioDevice( m_audioMenuCursor );
+				return;
+			case MenuKey::Cancel:
+				m_showAudioMenu = false;
+				return;
+			case MenuKey::None:
+				break;
+		}
+		if( k == Qt::Key_D )
 		{
 			m_showAudioMenu = false;
 			return;
@@ -2120,6 +2241,19 @@ void GLwidget::keyPressEvent(QKeyEvent* event)
 			break;
 		case Qt::Key_D:
 			m_showAudioMenu = true;   // closed again from the modal handler above
+			// Open on the source that is feeding the analyzer, so Enter right
+			// away changes nothing.
+			m_audioMenuCursor = 0;
+			if( m_audioAnalyzer )
+			{
+				const QString cur = m_audioAnalyzer->currentDeviceName();
+				if( !cur.isEmpty() )
+				{
+					const QList<AudioDevice> devs = m_audioAnalyzer->devices();
+					for( int i = 0; i < devs.size(); ++i )
+						if( devs[i].name == cur ) { m_audioMenuCursor = i + 1; break; }
+				}
+			}
 			break;
 		case Qt::Key_P:
 			setNowPlayingEnabled( !m_showNowPlaying );
