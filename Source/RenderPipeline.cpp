@@ -186,14 +186,9 @@ RenderPipeline::RenderPipeline( )
 , m_actTex(0)
 , m_nextTex(0)
 , m_stateTexture(1) //State == 1 => Solo
-, m_lastTime(0.0)
 , m_triggerImageload(false)
 , m_waitForImageToLoad(false)
 , m_globaltime(0.0)
-//, m_effectTextureMinTimeInterpolation( 10 )
-//, m_effectTextureMaxTimeInterpolation( 20 )
-//, m_effectCombineMinTimeInterpolation( 12 )
-//, m_effectCombineMaxTimeInterpolation( 27 )
 , m_nanotimer()
 , m_nrTextureUploads(0)
 {
@@ -2666,10 +2661,6 @@ void RenderPipeline::initGLSL()
 
 	
     glUseProgram( m_sh_prog_id_fx );
-
-	//rwrw m_screenHeightUni = glGetUniformLocation( ;
-
-	// ** TODO **
 }
 
 
