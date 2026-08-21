@@ -660,6 +660,16 @@ private:
 	void			renderNextScenePass( const AudioFeatures &audioFx );
 	/** @brief The 2D camera rig, the transition pass and both combine/overlay passes. @param audioFx The conditioned features. */
 	void			renderFxStage( const AudioFeatures &audioFx );
+	/** @brief Applies the 2D camera rig (rig2*) to both scene slots and binds them, plus their depth buffers, to units 3/4 and 29/30. @return The texture the transition pass must treat as the outgoing scene. */
+	GLuint			prepareFxInputs();
+	/** @brief Packed 3D<->3D cross-fade: a plain per-pixel mix of the two eye-packed frames, guaranteed warp-free (any warp would fold content across the eye boundary). */
+	void			renderStereoMixPass();
+	/** @brief Blends the outgoing and incoming scene with the rolled Transitions/ shader, but only while a scene fade is running. @param audioFx The conditioned features. @param fxTex1 The outgoing scene, used unchanged when no fade is running. @return The FINISHED scene the overlay pass must read. */
+	GLuint			renderTransitionPass( const AudioFeatures &audioFx, GLuint fxTex1 );
+	/** @brief Draws the active combine/overlay shader over the finished scene (both units carry it and interpolation is pinned to 1.0, so overlays never see a half-blended pair). @param audioFx The conditioned features. @param sceneTex The finished scene from renderTransitionPass(). */
+	void			renderOverlayPass( const AudioFeatures &audioFx, GLuint sceneTex );
+	/** @brief Draws the INCOMING combine, but only while combines are cross-fading (the final blend weights it by (1-interpolation), so it is invisible otherwise). @param audioFx The conditioned features. */
+	void			renderNextOverlayPass( const AudioFeatures &audioFx );
 	/** @brief Blends the two combine outputs into the safety FBO (or straight to screen). */
 	void			renderFinalBlend();
 	/** @brief The feedback/trails ping-pong with its MilkDrop-style warp field. @param audio This frame's raw features. @param audioFx The conditioned features. @param timeSinceLastFrameSec Scene time step. @param dtWall Wall-clock step. @return The texture the present pass must display. */

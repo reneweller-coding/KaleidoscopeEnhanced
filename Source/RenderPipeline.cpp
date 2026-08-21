@@ -1389,7 +1389,7 @@ void RenderPipeline::renderNextScenePass( const AudioFeatures &audioFx )
 	
 }
 
-void RenderPipeline::renderFxStage( const AudioFeatures &audioFx )
+GLuint RenderPipeline::prepareFxInputs()
 {
 	// restore render destination to regular frame buffer
 	glViewport( 0, 0, m_width, m_height );
@@ -1425,74 +1425,66 @@ void RenderPipeline::renderFxStage( const AudioFeatures &audioFx )
 	glBindTexture( GL_TEXTURE_2D, m_depthTexEffect2 );
 	glActiveTexture(GL_TEXTURE0);
 
-	//Do the FBO Stuff
-	glBindFramebuffer( GL_FRAMEBUFFER, m_fboEffectFx1 );
+	return fxTex1;
+}
 
-	if( m_trueStereoNow )
-	{
-		// True stereo: the eye-packed 3D frame passes through UNTOUCHED (any
-		// transition/overlay warp would fold content across the eye boundary).
-		blitTexture( m_texIDFBOEffectTexture1 );
-	}
-	else if( m_trueStereoPacked && m_stereoMixProgId != 0 )
-	{
-		// Packed 3D<->3D cross-fade: plain per-pixel mix of the two
-		// eye-packed frames — same endpoint weighting as the Crossfade
-		// transition, but guaranteed warp-free.
-		glUseProgram( m_stereoMixProgId );
-		if( m_stereoMixTexAUni >= 0 ) glUniform1i( m_stereoMixTexAUni, 3 );
-		if( m_stereoMixTexBUni >= 0 ) glUniform1i( m_stereoMixTexBUni, 4 );
-		if( m_stereoMixResUni  >= 0 ) glUniform2f( m_stereoMixResUni,
-		                                           (float)m_width, (float)m_height );
-		if( m_stereoMixWUni    >= 0 ) glUniform1f( m_stereoMixWUni,
-		                                           m_scheduler.texInterp() );
-		drawWindow();
-	}
-	else
-	{
-		// TRANSITION pass (only during a scene fade): the rolled Transitions/
-		// shader blends outgoing (tex0, unit 3) and incoming (tex1, unit 4)
-		// scene into its own FBO.  While a scene plays solo the pass is
-		// skipped entirely and the overlays read the scene frame directly.
-		GLuint sceneTex = fxTex1;
-		if( m_scheduler.texState() != 0 && !m_effectTransitions.empty() )
-		{
-			glBindFramebuffer( GL_FRAMEBUFFER, m_fboTransition );
-			EffectShader *tr = m_effectTransitions[m_scheduler.actTransition()];
-			tr->enableShader();
-			tr->setUniforms( m_globaltime, m_scheduler.texInterp(), 3, 4 );
-			tr->applyAudioFeatures( audioFx );
-			tr->draw();
-			sceneTex = m_texIDFBOTransition;
-			glBindFramebuffer( GL_FRAMEBUFFER, m_fboEffectFx1 );
-		}
+void RenderPipeline::renderStereoMixPass()
+{
+	// Packed 3D<->3D cross-fade: plain per-pixel mix of the two
+	// eye-packed frames — same endpoint weighting as the Crossfade
+	// transition, but guaranteed warp-free.
+	glUseProgram( m_stereoMixProgId );
+	if( m_stereoMixTexAUni >= 0 ) glUniform1i( m_stereoMixTexAUni, 3 );
+	if( m_stereoMixTexBUni >= 0 ) glUniform1i( m_stereoMixTexBUni, 4 );
+	if( m_stereoMixResUni  >= 0 ) glUniform2f( m_stereoMixResUni,
+	                                           (float)m_width, (float)m_height );
+	if( m_stereoMixWUni    >= 0 ) glUniform1f( m_stereoMixWUni,
+	                                           m_scheduler.texInterp() );
+	drawWindow();
+}
 
-		// OVERLAY pass: the combine/FX shader reads the FINISHED scene.  Both
-		// units carry the same texture and interpolation is pinned to 1.0
-		// ("old scene fully visible"), so overlays never see a half-blended
-		// pair — scene mixing is entirely the transition pass's job now.
-		glActiveTexture(GL_TEXTURE3);
-		glBindTexture( GL_TEXTURE_2D, sceneTex );
-		glActiveTexture(GL_TEXTURE4);
-		glBindTexture( GL_TEXTURE_2D, sceneTex );
-		glActiveTexture(GL_TEXTURE0);
-
-		m_effectFx[m_scheduler.actFx()]->enableShader();
-		m_effectFx[m_scheduler.actFx()]->setUniforms( m_globaltime, 1.0f, 3, 4 );
-		m_effectFx[m_scheduler.actFx()]->applyAudioFeatures( audioFx );
-		m_effectFx[m_scheduler.actFx()]->draw();
+GLuint RenderPipeline::renderTransitionPass( const AudioFeatures &audioFx, GLuint fxTex1 )
+{
+	// TRANSITION pass (only during a scene fade): the rolled Transitions/
+	// shader blends outgoing (tex0, unit 3) and incoming (tex1, unit 4)
+	// scene into its own FBO.  While a scene plays solo the pass is
+	// skipped entirely and the overlays read the scene frame directly.
+	GLuint sceneTex = fxTex1;
+	if( m_scheduler.texState() != 0 && !m_effectTransitions.empty() )
+	{
+		glBindFramebuffer( GL_FRAMEBUFFER, m_fboTransition );
+		EffectShader *tr = m_effectTransitions[m_scheduler.actTransition()];
+		tr->enableShader();
+		tr->setUniforms( m_globaltime, m_scheduler.texInterp(), 3, 4 );
+		tr->applyAudioFeatures( audioFx );
+		tr->draw();
+		sceneTex = m_texIDFBOTransition;
+		glBindFramebuffer( GL_FRAMEBUFFER, m_fboEffectFx1 );
 	}
 
+	return sceneTex;
+}
 
-	checkGLErrors("createFx() 1");
+void RenderPipeline::renderOverlayPass( const AudioFeatures &audioFx, GLuint sceneTex )
+{
+	// OVERLAY pass: the combine/FX shader reads the FINISHED scene.  Both
+	// units carry the same texture and interpolation is pinned to 1.0
+	// ("old scene fully visible"), so overlays never see a half-blended
+	// pair — scene mixing is entirely the transition pass's job now.
+	glActiveTexture(GL_TEXTURE3);
+	glBindTexture( GL_TEXTURE_2D, sceneTex );
+	glActiveTexture(GL_TEXTURE4);
+	glBindTexture( GL_TEXTURE_2D, sceneTex );
+	glActiveTexture(GL_TEXTURE0);
 
-	//Now Use Final Rendering
-	glBindFramebuffer( GL_FRAMEBUFFER, m_defaultFBO );
-	checkFramebufferStatus();
+	m_effectFx[m_scheduler.actFx()]->enableShader();
+	m_effectFx[m_scheduler.actFx()]->setUniforms( m_globaltime, 1.0f, 3, 4 );
+	m_effectFx[m_scheduler.actFx()]->applyAudioFeatures( audioFx );
+	m_effectFx[m_scheduler.actFx()]->draw();
+}
 
-	//Do the FBO Stuff
-	glBindFramebuffer( GL_FRAMEBUFFER, m_fboEffectFx2 );
-
+void RenderPipeline::renderNextOverlayPass( const AudioFeatures &audioFx )
+{
 	// Skip the "next" combine while NOT cross-fading combines: the final blend
 	// pass (Engine/OverlayBlend.frag) weights this output by (1-interpolation),
 	// which is 0 at interpolation==1.0, so it is invisible.  Saves the second
@@ -1505,9 +1497,41 @@ void RenderPipeline::renderFxStage( const AudioFeatures &audioFx )
 		m_effectFx[m_scheduler.nextFx()]->applyAudioFeatures( audioFx );
 		m_effectFx[m_scheduler.nextFx()]->draw();
 	}
-
-	
 }
+
+void RenderPipeline::renderFxStage( const AudioFeatures &audioFx )
+{
+	const GLuint fxTex1 = prepareFxInputs();
+
+	glBindFramebuffer( GL_FRAMEBUFFER, m_fboEffectFx1 );
+
+	if( m_trueStereoNow )
+	{
+		// True stereo: the eye-packed 3D frame passes through UNTOUCHED (any
+		// transition/overlay warp would fold content across the eye boundary).
+		blitTexture( m_texIDFBOEffectTexture1 );
+	}
+	else if( m_trueStereoPacked && m_stereoMixProgId != 0 )
+	{
+		renderStereoMixPass();
+	}
+	else
+	{
+		// Order matters: the overlay reads the FINISHED scene, so the
+		// transition has to have produced it first.
+		const GLuint sceneTex = renderTransitionPass( audioFx, fxTex1 );
+		renderOverlayPass( audioFx, sceneTex );
+	}
+
+	checkGLErrors("createFx() 1");
+
+	glBindFramebuffer( GL_FRAMEBUFFER, m_defaultFBO );
+	checkFramebufferStatus();
+
+	glBindFramebuffer( GL_FRAMEBUFFER, m_fboEffectFx2 );
+	renderNextOverlayPass( audioFx );
+}
+
 
 void RenderPipeline::renderFinalBlend()
 {
