@@ -5,6 +5,8 @@
  *        and instant-replay ring save.
  */
 #include <algorithm>
+#include <mutex>
+#include <thread>
 
 #include <QtCore/QBuffer>
 #include <QtCore/QDateTime>
@@ -30,31 +32,140 @@
 // h264_nvenc while the driver or GPU refuses it at runtime. So this actually
 // ENCODES a tiny throwaway clip once and keeps the result. Probed lazily on
 // first use, never on the render thread's critical path.
+// Does this encoder actually work HERE? Encodes a throwaway clip and checks the
+// exit code. 256x256 on purpose: NVENC, AMF and QSV all impose minimum
+// dimensions and alignment, and a 64x64 probe can be rejected by a perfectly
+// working encoder -- which would silently demote the machine to software.
+static bool probeEncoder( const QString &enc, const QStringList &encArgs )
+{
+    QProcess p;
+    QStringList a;
+    a << "-hide_banner" << "-loglevel" << "error"
+      << "-f" << "lavfi" << "-i" << "nullsrc=s=256x256:d=0.2"
+      << encArgs << "-pix_fmt" << "yuv420p" << "-f" << "null" << "-";
+    p.start( "ffmpeg", a );
+    if( !p.waitForFinished( 15000 ) )
+    {
+        p.kill();
+        p.waitForFinished( 2000 );
+        return false;
+    }
+    const bool ok = ( p.exitStatus() == QProcess::NormalExit && p.exitCode() == 0 );
+    if( !ok )
+        fprintf( stderr, "[recorder]   %s unavailable\n", qPrintable( enc ) );
+    return ok;
+}
+
+static QStringList computeVideoCodecArgs()
+{
+    QStringList cached;
+
+    // Candidates in priority order, each with the rate-control flags that
+    // vendor actually understands -- they are NOT interchangeable: NVENC wants
+    // -cq, AMF wants -rc cqp with explicit qp values, QSV wants
+    // -global_quality, x264 wants -crf. Passing the wrong one is silently
+    // ignored and you get whatever default bitrate the encoder felt like.
+    //
+    // Order: discrete-GPU encoders first, since on a machine that has one it is
+    // also the card doing the rendering, so its encode block is the one sitting
+    // idle next to the work. Intel's integrated Quick Sync next, software last.
+    struct Candidate { const char *name; QStringList args; };
+    const QList<Candidate> candidates = {
+        { "h264_nvenc", { "-c:v", "h264_nvenc", "-preset", "p5", "-cq", "20" } },
+        { "h264_amf",   { "-c:v", "h264_amf", "-quality", "balanced",
+                          "-rc", "cqp", "-qp_i", "20", "-qp_p", "20" } },
+        { "h264_qsv",   { "-c:v", "h264_qsv", "-preset", "medium",
+                          "-global_quality", "20" } },
+        { "libx264",    { "-c:v", "libx264", "-preset", "medium", "-crf", "20" } },
+    };
+
+    // Escape hatch: KALEIDO_VIDEO_ENCODER=h264_amf (or any name above, or
+    // "libx264" to force software) skips the probe order. Still verified before
+    // use, so a typo or an unsupported pick falls through to the normal search
+    // rather than producing a broken recording.
+    const QString forced = qEnvironmentVariable( "KALEIDO_VIDEO_ENCODER" ).trimmed();
+    if( !forced.isEmpty() )
+    {
+        for( const Candidate &c : candidates )
+            if( forced.compare( QLatin1String( c.name ), Qt::CaseInsensitive ) == 0
+                && probeEncoder( c.name, c.args ) )
+            {
+                cached = c.args;
+                cached << "-pix_fmt" << "yuv420p";
+                fprintf( stderr, "[recorder] video encoder: %s (forced via KALEIDO_VIDEO_ENCODER)\n",
+                         c.name );
+                return cached;
+            }
+        fprintf( stderr, "[recorder] KALEIDO_VIDEO_ENCODER=\"%s\" not usable, probing normally\n",
+                 qPrintable( forced ) );
+    }
+
+    for( const Candidate &c : candidates )
+    {
+        // libx264 is the last entry and is assumed present rather than probed:
+        // if ffmpeg exists at all it has it, and a probe here would only add a
+        // startup delay on machines that have no hardware encoder -- exactly
+        // the machines that can least afford it.
+        const bool isSoftware = ( qstrcmp( c.name, "libx264" ) == 0 );
+        if( isSoftware || probeEncoder( c.name, c.args ) )
+        {
+            cached = c.args;
+            cached << "-pix_fmt" << "yuv420p";
+            fprintf( stderr, "[recorder] video encoder: %s (%s)\n",
+                     c.name, isSoftware ? "CPU, no hardware encoder found" : "hardware" );
+            return cached;
+        }
+    }
+
+    cached << "-c:v" << "libx264" << "-pix_fmt" << "yuv420p";   // unreachable, kept safe
+    return cached;
+}
+
+// The probe spawns up to three short ffmpeg processes. finishRecording() needs
+// the answer, and finishRecording() runs on the GL thread -- so probing there
+// would stall the render loop at the exact moment the user stops a recording.
+// warmVideoEncoderProbe() therefore kicks it off on a throwaway thread when
+// recording STARTS, roughly a full recording ahead of when the answer is due.
+//
+// std::call_once, not "if( cached.isEmpty() )": with two threads reaching for
+// the same cache that check is a data race, and call_once also gives the
+// blocking behaviour we want if a recording is somehow stopped before the warm
+// probe finished -- the GL thread waits for the running probe instead of
+// starting a second one.
+static std::once_flag g_codecOnce;
+static QStringList    g_codecArgs;
+
+// NOT a bare static std::thread: ~thread() calls std::terminate() if the thread
+// is still joinable, so arming the replay ring and then closing the window
+// before anything was ever muxed would abort the process on the way out. The
+// holder joins instead. The explicit joinVideoEncoderProbe() calls below mean
+// this destructor is a backstop that normally has nothing left to do.
+struct ProbeThread
+{
+    std::thread t;
+    ~ProbeThread() { if( t.joinable() ) t.join(); }
+};
+static ProbeThread g_codecProbe;
+
 static QStringList videoCodecArgs()
 {
-    static QStringList cached;
-    if( !cached.isEmpty() ) return cached;
+    std::call_once( g_codecOnce, []{ g_codecArgs = computeVideoCodecArgs(); } );
+    return g_codecArgs;
+}
 
-    QProcess probe;
-    probe.start( "ffmpeg", QStringList()
-                 << "-hide_banner" << "-loglevel" << "error"
-                 << "-f" << "lavfi" << "-i" << "nullsrc=s=64x64:d=0.1"
-                 << "-c:v" << "h264_nvenc" << "-f" << "null" << "-" );
-    bool ok = probe.waitForFinished( 8000 )
-              && probe.exitStatus() == QProcess::NormalExit
-              && probe.exitCode() == 0;
+static void warmVideoEncoderProbe()
+{
+    if( g_codecProbe.t.joinable() ) return;       // already warming
+    g_codecProbe.t = std::thread( []{ videoCodecArgs(); } );
+}
 
-    if( ok )
-        // p5 = balanced NVENC preset; cq 20 is visually transparent for this
-        // material and lets the encoder pick the bitrate.
-        cached << "-c:v" << "h264_nvenc" << "-preset" << "p5" << "-cq" << "20"
-               << "-pix_fmt" << "yuv420p";
-    else
-        cached << "-c:v" << "libx264" << "-pix_fmt" << "yuv420p";
-
-    fprintf( stderr, "[recorder] video encoder: %s\n",
-             ok ? "h264_nvenc (GPU)" : "libx264 (CPU, no working NVENC)" );
-    return cached;
+// Must run before the process can exit: a detached probe still inside QProcess
+// while QCoreApplication tears down is a crash at shutdown. By the time this is
+// called videoCodecArgs() has already returned, so call_once is satisfied and
+// the join only waits for the thread to unwind.
+static void joinVideoEncoderProbe()
+{
+    if( g_codecProbe.t.joinable() ) g_codecProbe.t.join();
 }
 
 
@@ -140,6 +251,7 @@ void Recorder::toggle()
 			m_audio->startRecording( m_recDir + "/audio.wav" );
 		// Encoder-Worker starten (EIN Thread -> Frames bleiben in Reihenfolge).
 		ensureWorker();
+		warmVideoEncoderProbe();   // Codec-Probe jetzt, nicht erst beim Stoppen
 		m_recording = true;
 		fprintf( stderr, "REC start -> %s\n", m_recDir.toLocal8Bit().constData() );
 	}
@@ -166,6 +278,7 @@ void Recorder::toggleReplayArm()
 	if( m_replayArmed )
 	{
 		ensureWorker();
+		warmVideoEncoderProbe();   // ein Replay-Save muxt ebenfalls
 		m_repLastFrame = 0;
 	}
 	fprintf( stderr, "Instant-Replay-Puffer: %s\n", m_replayArmed ? "AN" : "AUS" );
@@ -447,6 +560,7 @@ void Recorder::saveReplay()
 	if( haveAudio ) args << "-c:a" << "aac";
 	args << "-shortest" << (dir + "/replay.mp4");
 	QProcess::startDetached( "ffmpeg", args );
+	joinVideoEncoderProbe();
 
 	fprintf( stderr, "REPLAY: %d Frames (%.1f s) -> %s (mux replay.mp4)\n",
 	         (int)frames.size(), total, dir.toLocal8Bit().constData() );
@@ -578,6 +692,7 @@ void Recorder::finishRecording()
 	     << videoCodecArgs() << "-c:a" << "aac"
 	     << "-shortest" << (m_recDir + "/kaleidoscope.mp4");
 	QProcess::startDetached( "ffmpeg", args );
+	joinVideoEncoderProbe();
 
 	fprintf( stderr, "REC stop: %d frames -> %s (muxing kaleidoscope.mp4)\n",
 	         m_recFrame, m_recDir.toLocal8Bit().constData() );
