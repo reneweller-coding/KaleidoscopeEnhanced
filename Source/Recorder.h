@@ -200,7 +200,34 @@ private:
 	int                     m_pipeH = 0;      ///< Video height the pipe was opened with.
 	double                  m_pipeOwed = 0.0; ///< Fractional output-frame debt: measured durations are turned into whole frames at kPipeFps, so the CFR output still lasts exactly as long as the capture did.
 	std::vector<uchar>      m_pipeBuf;        ///< Reusable scratch holding one vertically flipped frame (GL readback is bottom-up).
-	QString                 m_videoPath;      ///< The video-only mp4 ffmpeg writes; muxed with the audio WAV on stop.
+	QString                 m_videoPath;
+
+	// ---- motion blur ----
+	// The app renders at the display rate (120 Hz here) but records at 30 or
+	// 60, so most rendered frames are currently drawn and thrown away. Summing
+	// them into the captured frame is a temporal box filter over the capture
+	// interval -- what a shutter does -- and costs no extra rendering, because
+	// those frames exist either way.
+	/** @brief Creates or resizes the accumulation targets. @return false if they could not be created, which disables motion blur for the run. */
+	bool   ensureBlurTargets( int w, int h );
+	/** @brief Adds the frame currently in the read framebuffer to the accumulator. */
+	void   accumulateFrame( int w, int h );
+	/** @brief Divides the accumulator by the frames that went in and leaves the result in m_mbResolveFbo, ready for readback. */
+	void   resolveBlur( int w, int h );
+
+	bool   m_mbWanted   = false;   ///< Setting: motion blur requested for this run (ini key motionBlur).
+	bool   m_mbReady    = false;   ///< Targets exist and the program linked.
+	bool   m_mbTried    = false;   ///< Creation attempted; a soft failure is permanent, not retried per frame.
+	GLuint m_mbAccumTex = 0;       ///< RGBA16F sum of the frames since the last capture (8-bit would clip after ~4 frames).
+	GLuint m_mbAccumFbo = 0;
+	GLuint m_mbResolveTex = 0;     ///< RGBA8 target holding sum/N, which the PBO readback then reads.
+	GLuint m_mbResolveFbo = 0;
+	GLuint m_mbSrcTex   = 0;       ///< Copy of the rendered frame, so it can be SAMPLED (glCopyTexSubImage2D, no shader).
+	GLuint m_mbProg     = 0;
+	GLint  m_mbTexUni   = -1;
+	GLint  m_mbScaleUni = -1;
+	int    m_mbW = 0, m_mbH = 0;
+	int    m_mbCount = 0;          ///< Frames summed since the last capture; the divisor is this MEASURED count.      ///< The video-only mp4 ffmpeg writes; muxed with the audio WAV on stop.
 
 	// PBO-Doppelpuffer für den asynchronen Readback
 	GLuint m_pbo[2] = { 0, 0 };   ///< Double-buffered pixel-pack buffer objects for async glReadPixels.

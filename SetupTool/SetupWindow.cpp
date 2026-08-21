@@ -253,6 +253,12 @@ void SetupWindow::buildContent()
 	m_videoCodec->addItem( "AV1", "av1" );
 	fTune->addRow( S( S_SETUP_VIDEOCODEC ), m_videoCodec );
 
+	m_motionBlur = new QCheckBox( S( S_SETUP_MOTIONBLUR ) );
+	fTune->addRow( QString(), m_motionBlur );
+	auto *mbHint = new QLabel( S( S_SETUP_MOTIONBLUR_HINT ) );
+	mbHint->setWordWrap( true );
+	fTune->addRow( QString(), mbHint );
+
 	m_recFps = new QComboBox();
 	m_recFps->addItem( "30 fps", 30 );
 	m_recFps->addItem( "60 fps", 60 );
@@ -315,6 +321,7 @@ void SetupWindow::loadFromIni()
 	}
 	{
 		m_recFps->setCurrentIndex( s.value( "recordFps", 30 ).toInt() >= 45 ? 1 : 0 );
+		m_motionBlur->setChecked( s.value( "motionBlur", false ).toBool() );
 	}
 	{
 		const double sv = s.value( "renderScaleMax", 1.0 ).toDouble();
@@ -362,6 +369,7 @@ void SetupWindow::saveToIni()
 	s.setValue( "videoCodec",  m_videoCodec->currentData().toString() );
 	s.setValue( "renderScaleMax", m_ssaa->currentData().toDouble() );
 	s.setValue( "recordFps",      m_recFps->currentData().toInt() );
+	s.setValue( "motionBlur",     m_motionBlur->isChecked() );
 
 	s.sync();
 	if( s.status() == QSettings::NoError )
