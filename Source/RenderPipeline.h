@@ -810,36 +810,13 @@ private:
 	unsigned int		m_timeTextureSoloMax;                ///< Maximum rolled solo duration (seconds), set via init().
 	GLuint      m_actTex  = 0;    ///< Currently displayed background-photo texture.
 	GLuint		m_nextTex = 0;    ///< Incoming background-photo texture (cross-fade target / next solo image).
-	int			m_state;          ///< Declared but not read/written anywhere in RenderPipeline.cpp — unused leftover (distinct from m_stateTexture, which is the field actually driving the image state machine).
 
-    float       m_lastTime;      ///< Declared and initialised but otherwise only referenced inside a commented-out debug printf in paint() — effectively unused in the current build.
 	float		m_globaltime;     ///< Accumulated wall time (seconds, paused while frozen) driving every time-based shader uniform; advanced once per frame in paint().
-
-
-
-	//EffectShader *m_effectTextures[NR_EFFECTS_TEXTURE];
-	//unsigned int  m_effectTextureMinTimeSolo[NR_EFFECTS_TEXTURE];
-	//unsigned int  m_effectTextureMaxTimeSolo[NR_EFFECTS_TEXTURE];
-	//unsigned int  m_effectTextureMinTimeInterpolation[NR_EFFECTS_TEXTURE];
-	//unsigned int  m_effectTextureMaxTimeInterpolation[NR_EFFECTS_TEXTURE];
 
 	std::vector<EffectShader *> m_effectTextures;   ///< All configured texture-effect shaders for this preset (registered via addTextureShader()); indexed by the SceneScheduler.
 
-
-	unsigned int m_effectTextureTimeInterpolation;   ///< Declared but not referenced anywhere in RenderPipeline.cpp — unused leftover from before timing moved to SceneScheduler/EffectShader.
-	//unsigned int m_effectTextureMinTimeInterpolation;
-	//unsigned int m_effectTextureMaxTimeInterpolation;
-
-
-
-
-
-
 	std::vector<EffectShader *> m_effectFx;   ///< All configured combine-effect (overlay) shaders for this preset (registered via addFxShader()); indexed by the SceneScheduler.
 	std::vector<EffectShader *> m_effectTransitions;   ///< All configured scene-transition shaders (Transitions/) for this preset (registered via addTransitionShader()); one is rolled per scene fade.
-
-
-	unsigned int m_effectFxTimeInterpolation;   ///< Declared but not referenced anywhere in RenderPipeline.cpp — unused leftover from before timing moved to SceneScheduler/EffectShader.
 
     // Dynamic timing scale from AudioAnalyzer (via AudioFeatures::timingScale).
     // < 1.0 → all times scaled longer (ambient mode)

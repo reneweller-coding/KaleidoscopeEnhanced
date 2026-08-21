@@ -630,12 +630,6 @@ bool Mesh::loadTexture(QImage &qimg, GLuint &textureId, const char *filename)
 }
 
 
-// **********************
-// ********* TODO *******
-// **********************
-// generate texture coordinates for all vertices
-// store texture coordinates in  textcoords
-// look in this->draw() for access to datastructure
 
 
 void Mesh::generateSphereTexCoords()
