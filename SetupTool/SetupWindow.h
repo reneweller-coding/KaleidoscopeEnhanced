@@ -75,6 +75,7 @@ private:
 	QComboBox      *m_stereoMode    = nullptr;
 	QDoubleSpinBox  *m_stereoDepth   = nullptr;
 	QComboBox      *m_videoCodec    = nullptr;
+	QComboBox      *m_recFps        = nullptr;   ///< Recording frame rate (ini key recordFps).
 	QComboBox      *m_ssaa          = nullptr;   ///< Supersampling ceiling (ini key renderScaleMax).   ///< Recording codec family (ini key videoCodec: h264/hevc/av1).
 
 	QLabel          *m_status        = nullptr;

@@ -479,7 +479,22 @@ void Recorder::worker()
 // whole number of output frames at this rate, so the file stays constant-rate
 // (which every player and editor prefers) while still lasting exactly as long
 // as the capture did.
-static const double kPipeFps = 30.0;
+// Read once per process from the settings file. 30 is the default because it
+// halves the file for material that is mostly slow evolution; 60 is there for
+// fast scenes, where 30 visibly steps. Not a per-recording knob on purpose --
+// changing it mid-recording would break the constant-rate contract the pipe
+// writer relies on.
+static double recordFps()
+{
+    static double fps = 0.0;
+    if( fps == 0.0 )
+    {
+        QSettings st( "..\\kaleidoscope_settings.ini", QSettings::IniFormat );
+        const int v = st.value( "recordFps", 30 ).toInt();
+        fps = ( v >= 45 ) ? 60.0 : 30.0;     // only these two are offered
+    }
+    return fps;
+}
 
 /**
  * @brief Start the ffmpeg that this recording pipes raw frames into.
@@ -505,7 +520,7 @@ bool Recorder::startVideoPipe( int w, int h )
 	  << "-f" << "rawvideo"
 	  << "-pixel_format" << "rgba"
 	  << "-video_size" << QString( "%1x%2" ).arg( w ).arg( h )
-	  << "-framerate" << QString::number( kPipeFps )
+	  << "-framerate" << QString::number( recordFps() )
 	  << "-i" << "-"
 	  << videoCodecArgs()
 	  << m_videoPath;
@@ -522,7 +537,7 @@ bool Recorder::startVideoPipe( int w, int h )
 		return false;
 	}
 	fprintf( stderr, "[recorder] raw pipe: %dx%d @ %.0f fps, encoded once (no JPEG stage)\n",
-	         w, h, kPipeFps );
+	         w, h, recordFps() );
 	return true;
 }
 
@@ -608,7 +623,7 @@ void Recorder::pipeWriter()
 
 		// Measured duration -> whole output frames. The debt carries the
 		// fraction forward, so rounding never accumulates into drift.
-		m_pipeOwed += double( job.dur ) * kPipeFps;
+		m_pipeOwed += double( job.dur ) * recordFps();
 		int n = int( m_pipeOwed + 0.5 );
 		if( n < 1 ) n = 1;
 		if( n > 8 ) n = 8;          // a long stall must not spool out a huge run
@@ -897,7 +912,7 @@ void Recorder::captureFrame( int w, int h )
 		m_recDue = double( now );
 	if( double( now ) < m_recDue )
 		return;
-	m_recDue += 1000.0 / 30.0;
+	m_recDue += 1000.0 / recordFps();
 	if( m_recDue < double( now ) - 200.0 )
 		m_recDue = double( now );
 
@@ -939,7 +954,7 @@ void Recorder::finishRecording()
 		                 "up. Pacing stays correct (the dropped time is carried into the "
 		                 "next frame's duration), but the capture rate was below the "
 		                 "%.0f fps cap.\n",
-		         (unsigned long long) m_dropped, kPipeFps );
+		         (unsigned long long) m_dropped, recordFps() );
 	m_dropped = 0;
 
 	// Raw-Pipe zuerst schließen: der Thread schreibt die Restframes, sendet
