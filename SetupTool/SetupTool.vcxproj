@@ -74,6 +74,14 @@
            debug fprintf while iterating. -->
       <SubSystem>Console</SubSystem>
     </Link>
+    <PreBuildEvent>
+      <Message>Checking the Strings tables against the StrId enum...</Message>
+      <Command>where python &gt;nul 2&gt;&amp;1
+if errorlevel 1 goto skipstrings
+python "$(ProjectDir)..\Tools\check_strings.py"
+if errorlevel 1 exit /b 1
+:skipstrings</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -102,6 +110,14 @@
       <SubSystem>Windows</SubSystem>
       <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
     </Link>
+    <PreBuildEvent>
+      <Message>Checking the Strings tables against the StrId enum...</Message>
+      <Command>where python &gt;nul 2&gt;&amp;1
+if errorlevel 1 goto skipstrings
+python "$(ProjectDir)..\Tools\check_strings.py"
+if errorlevel 1 exit /b 1
+:skipstrings</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
