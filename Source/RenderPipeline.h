@@ -15,6 +15,7 @@
 #include <vector>
 #include <atomic>
 #include <QtCore/QHash>
+#include <QtCore/QSet>
 #include <QtCore/QPair>
 
 #include "mesh.h"
@@ -209,6 +210,29 @@ public:
 
 	/** Taste learning, positive side (key 'f'): boost the CURRENT effect's
 	 *  persistent selection weight ("Favorit"). */
+	// ---- scene marking ----
+	// A shortlist built while WATCHING, then written out as a preset. Separate
+	// from taste on purpose: taste biases the scheduler by degrees and decays,
+	// whereas a mark is a binary "look at this one again later" that must
+	// survive across sessions unchanged. Kept in kaleidoscope_settings.ini
+	// under [marked] so an inspection pass can span several runs.
+	/** @brief Marks or unmarks the scene currently on screen. @return true if it is marked afterwards. */
+	bool			toggleMarkCurrentScene();
+	/** @brief Whether the scene currently on screen is marked (drives the on-screen indicator). */
+	bool			currentSceneMarked() const;
+	/** @brief How many scenes are marked in total. */
+	int				markedCount() const { return s_marked.size(); }
+	/**
+	 * @brief Writes every marked scene to Configurations/Marked.xml as a playable preset.
+	 *
+	 * Copies each scene's REAL <TextureShader> node out of Komplett.xml rather
+	 * than synthesising a tag, so geom kind and preset parameters survive --
+	 * a synthesised tag silently drops both and renders the scene wrongly.
+	 * @param outPath Receives the written path (may be null).
+	 * @return false if nothing is marked or the file could not be written.
+	 */
+	bool			saveMarkedPreset( QString *outPath = nullptr );
+
 	/** @brief Boosts the currently active texture effect's persistent taste weight ("favourite", key 'f'). */
 	void favoriteCurrentEffect();
 
@@ -745,6 +769,7 @@ private:
 	// 1.0 so old grudges fade.  Soft bias only — moodAccept keeps a floor,
 	// no shader is ever excluded.  Storage is shared (static) across the
 	// instances; the keys carry the preset namespace.
+	static QSet<QString> s_marked;   ///< Base filenames ("Ocean.frag") of scenes marked for review; persisted under [marked] in the settings ini.
 	static QHash<QString, float> s_taste;   ///< Persistent per-"<Preset>/<file>" selection-weight factors, in [0.3, 2.5], default 1.0; shared (static) across all instances, loaded/saved via loadSettings()/bumpTaste().
 	QString			m_presetName;              ///< set by Configuration after load — this instance's preset name, namespacing its taste-learning keys; see setPresetName().
 	/** @brief Looks up the persistent taste weight for a fragment file, namespaced by m_presetName. @param fragPath Fragment shader path (only the basename is used as the key). @return The learned weight (default 1.0 if never adjusted). */

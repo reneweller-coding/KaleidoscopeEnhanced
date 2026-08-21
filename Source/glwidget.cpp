@@ -82,6 +82,18 @@ void GLwidget::remoteFavorite()
 		m_actConfiguration->m_renderPipeline->favoriteCurrentEffect();
 }
 
+void GLwidget::remoteToggleMark()
+{
+	if( m_actConfiguration && m_actConfiguration->m_renderPipeline )
+		m_actConfiguration->m_renderPipeline->toggleMarkCurrentScene();
+}
+
+void GLwidget::remoteSaveMarked()
+{
+	if( m_actConfiguration && m_actConfiguration->m_renderPipeline )
+		m_actConfiguration->m_renderPipeline->saveMarkedPreset();
+}
+
 QStringList GLwidget::remoteSceneNames()
 {
 	if( m_actConfiguration && m_actConfiguration->m_renderPipeline )
@@ -1200,6 +1212,8 @@ void GLwidget::drawHelpOverlay( QPainter *painter )
 		{ "t",       S_HELP_T },
 		{ "u",       S_HELP_U },
 		{ "f",       S_HELP_F },
+		{ "Space",   S_HELP_SPACE },
+		{ "Shift+Space", S_HELP_SHIFT_SPACE },
 		{ "z",       S_HELP_Z },
 		{ "c  m",    S_HELP_CM },
 		{ "j",       S_HELP_J },
@@ -2089,6 +2103,25 @@ void GLwidget::keyPressEvent(QKeyEvent* event)
 		case Qt::Key_F:
 			if( m_actConfiguration && m_actConfiguration->m_renderPipeline )
 				m_actConfiguration->m_renderPipeline->favoriteCurrentEffect();
+			break;
+
+		// ---- Scene marking (build a shortlist while watching) ----
+		// Space alone toggles the mark on whatever is on screen; Shift+Space
+		// writes the shortlist out as Configurations/Marked.xml. Deliberately
+		// two gestures on one key: marking happens constantly during an
+		// inspection pass, saving once at the end.
+		case Qt::Key_Space:
+			if( m_actConfiguration && m_actConfiguration->m_renderPipeline )
+			{
+				RenderPipeline *rp = m_actConfiguration->m_renderPipeline;
+				if( event->modifiers() & Qt::ShiftModifier )
+					rp->saveMarkedPreset();
+				else
+					rp->toggleMarkCurrentScene();
+				// The shader-info overlay ('v') carries the mark state, so an
+				// inspection pass gets visible feedback without a console.
+				m_showShaderInfo = true;
+			}
 			break;
 
 		// ---- Stereoscopic output ----
