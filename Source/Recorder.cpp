@@ -6,6 +6,7 @@
  */
 #include <algorithm>
 #include <mutex>
+#include <chrono>
 #include <thread>
 
 #include <QtCore/QBuffer>
@@ -216,6 +217,18 @@ void Recorder::shutdown()
 		for( std::thread &t : m_threads ) if( t.joinable() ) t.join();
 		m_threads.clear();
 	}
+	// Safety net. finishRecording() normally joins the pipe thread; if control
+	// ever reaches here with it still running, joining beats ~thread()'s
+	// std::terminate().
+	if( m_pipeThread.joinable() )
+	{
+		{
+			std::lock_guard<std::mutex> lk( m_pipeMx );
+			m_pipeQuit = true;
+		}
+		m_pipeCv.notify_all();
+		m_pipeThread.join();
+	}
 	m_audio = nullptr;
 }
 
@@ -252,6 +265,15 @@ void Recorder::toggle()
 		// Encoder-Worker starten (EIN Thread -> Frames bleiben in Reihenfolge).
 		ensureWorker();
 		warmVideoEncoderProbe();   // Codec-Probe jetzt, nicht erst beim Stoppen
+
+		// Raw-Pipe-Schreiber: nimmt ab jetzt die Aufnahme-Frames entgegen.
+		m_pipeQuit     = false;
+		m_pipeFallback = false;
+		m_pipeW = m_pipeH = 0;
+		m_pipeOwed = 0.0;
+		m_videoPath.clear();
+		if( !m_pipeThread.joinable() )
+			m_pipeThread = std::thread( &Recorder::pipeWriter, this );
 		m_recording = true;
 		fprintf( stderr, "REC start -> %s\n", m_recDir.toLocal8Bit().constData() );
 	}
@@ -323,6 +345,10 @@ void Recorder::worker()
 			job = std::move( m_queue.front() );
 			m_queue.pop_front();
 		}
+		// This pool now serves the REPLAY ring (and recording only on the ffmpeg
+		// fallback path). The 720 px cap belongs here: the ring holds ~30 s of
+		// frames in RAM, so its size is the constraint. Recordings go through
+		// the raw pipe instead and keep their full resolution.
 		int h = job.img.height();
 		QImage out = job.img.mirrored( false, true )               // GL ist bottom-up
 		                // FastTransformation, not Smooth: this is a 1080->720 downscale
@@ -359,6 +385,171 @@ void Recorder::worker()
 		}
 
 		out.save( job.path, "JPG", 85 );
+	}
+}
+
+// Nominal output frame rate of the raw pipe. It matches the capture deadline
+// in captureFrame(); the writer converts each frame's MEASURED duration into a
+// whole number of output frames at this rate, so the file stays constant-rate
+// (which every player and editor prefers) while still lasting exactly as long
+// as the capture did.
+static const double kPipeFps = 30.0;
+
+/**
+ * @brief Start the ffmpeg that this recording pipes raw frames into.
+ *
+ * The size is locked here, on the first captured frame, because rawvideo has
+ * no per-frame headers -- the decoder is told the geometry once and every
+ * subsequent byte is positional. A window resize mid-recording would shear the
+ * whole stream, so pipeWriter() rescales later frames to this size instead.
+ *
+ * Input is rgba because that is exactly what glReadPixels handed us: no
+ * conversion, no intermediate image. The encoder flags come from the same
+ * probe the mux uses, so a recording is hardware-encoded wherever a mux
+ * would have been.
+ */
+bool Recorder::startVideoPipe( int w, int h )
+{
+	m_pipeW = w;
+	m_pipeH = h;
+	m_videoPath = m_recDir + "/video.mp4";
+
+	QStringList a;
+	a << "-y" << "-hide_banner" << "-loglevel" << "error"
+	  << "-f" << "rawvideo"
+	  << "-pixel_format" << "rgba"
+	  << "-video_size" << QString( "%1x%2" ).arg( w ).arg( h )
+	  << "-framerate" << QString::number( kPipeFps )
+	  << "-i" << "-"
+	  << videoCodecArgs()
+	  << m_videoPath;
+
+	m_ff = new QProcess();
+	m_ff->setProcessChannelMode( QProcess::ForwardedErrorChannel );
+	m_ff->start( "ffmpeg", a );
+	if( !m_ff->waitForStarted( 10000 ) )
+	{
+		fprintf( stderr, "[recorder] could not start ffmpeg for the raw video pipe - "
+		                 "falling back to writing JPEG frames.\n" );
+		delete m_ff;
+		m_ff = nullptr;
+		return false;
+	}
+	fprintf( stderr, "[recorder] raw pipe: %dx%d @ %.0f fps, encoded once (no JPEG stage)\n",
+	         w, h, kPipeFps );
+	return true;
+}
+
+/**
+ * @brief Raw-pipe writer thread.
+ *
+ * Single-threaded on purpose. The pool exists because JPEG-encoding a frame
+ * was expensive; writing raw bytes is not, and a pipe carries no frame index,
+ * so out-of-order writes would garble the video rather than merely reorder it.
+ * One producer (the GL thread) and one consumer therefore keep frame order for
+ * free.
+ *
+ * On quit it drains whatever is still queued, closes ffmpeg's stdin -- which
+ * is how ffmpeg learns the stream ended -- and waits for it to finish writing
+ * the file, so finishRecording() can mux immediately afterwards.
+ */
+void Recorder::pipeWriter()
+{
+	bool tried = false;
+	for(;;)
+	{
+		RecJob job;
+		{
+			std::unique_lock<std::mutex> lk( m_pipeMx );
+			m_pipeCv.wait( lk, [this]{ return m_pipeQuit || !m_pipeQueue.empty(); } );
+			if( m_pipeQueue.empty() )
+			{
+				if( m_pipeQuit ) break;
+				continue;
+			}
+			job = std::move( m_pipeQueue.front() );
+			m_pipeQueue.pop_front();
+		}
+
+		if( !tried )
+		{
+			tried = true;
+			m_pipeFallback = !startVideoPipe( job.img.width(), job.img.height() );
+		}
+		if( m_pipeFallback )
+		{
+			// Hand it to the JPEG pool: that path is unchanged and still
+			// leaves frames + make_video.bat for a manual mux.
+			//
+			// This WAITS for room rather than dropping. Dropping here would be
+			// wrong twice over: the pool queue would otherwise grow unbounded
+			// with full-resolution images, and asyncCapture() has already
+			// written this frame's line into frames.txt, so a frame discarded
+			// at this point would leave the concat list pointing at a JPEG that
+			// never gets written -- which fails the whole mux. Blocking instead
+			// pushes the backpressure up to the bounded pipe queue, where the
+			// GL thread drops with the carry/concat accounting intact.
+			// No deadlock: finishRecording() joins this thread BEFORE it stops
+			// the pool, so the pool is always still draining.
+			for(;;)
+			{
+				{
+					std::lock_guard<std::mutex> lk( m_mx );
+					if( m_queue.size() < 6 * m_threads.size() + 2 )
+					{
+						m_queue.push_back( std::move( job ) );
+						break;
+					}
+				}
+				std::this_thread::sleep_for( std::chrono::milliseconds( 2 ) );
+			}
+			m_cv.notify_one();
+			continue;
+		}
+
+		QImage src = job.img;
+		if( src.width() != m_pipeW || src.height() != m_pipeH )
+			src = src.scaled( m_pipeW, m_pipeH, Qt::IgnoreAspectRatio, Qt::FastTransformation );
+
+		// Flip bottom-up into the scratch buffer. This replaces QImage::mirrored(),
+		// which allocated a whole image per frame.
+		const int stride = m_pipeW * 4;
+		const size_t bytes = size_t( stride ) * size_t( m_pipeH );
+		if( m_pipeBuf.size() != bytes ) m_pipeBuf.resize( bytes );
+		for( int y = 0; y < m_pipeH; ++y )
+			memcpy( m_pipeBuf.data() + size_t( y ) * stride,
+			        src.constScanLine( m_pipeH - 1 - y ), stride );
+
+		// Measured duration -> whole output frames. The debt carries the
+		// fraction forward, so rounding never accumulates into drift.
+		m_pipeOwed += double( job.dur ) * kPipeFps;
+		int n = int( m_pipeOwed + 0.5 );
+		if( n < 1 ) n = 1;
+		if( n > 8 ) n = 8;          // a long stall must not spool out a huge run
+		m_pipeOwed -= n;
+
+		for( int k = 0; k < n; ++k )
+		{
+			m_ff->write( (const char*)m_pipeBuf.data(), qint64( bytes ) );
+			// Backpressure: without this the QProcess write buffer grows without
+			// bound whenever the encoder is briefly slower than the capture.
+			while( m_ff->bytesToWrite() > qint64( 64 ) * 1024 * 1024 )
+				if( !m_ff->waitForBytesWritten( 5000 ) ) break;
+		}
+	}
+
+	if( m_ff )
+	{
+		m_ff->closeWriteChannel();          // EOF -> ffmpeg finalises the file
+		if( !m_ff->waitForFinished( 60000 ) )
+		{
+			fprintf( stderr, "[recorder] ffmpeg did not finish in time - killing it; "
+			                 "the video may be truncated.\n" );
+			m_ff->kill();
+			m_ff->waitForFinished( 5000 );
+		}
+		delete m_ff;
+		m_ff = nullptr;
 	}
 }
 
@@ -458,6 +649,7 @@ void Recorder::asyncCapture( float dur, bool toReplay, int w, int h )
 			QString fn;
 			if( !pm.replay )
 				fn = QString("%1/frame_%2.jpg").arg(m_recDir).arg(m_recFrame, 6, 10, QChar('0'));
+			if( pm.replay )
 			{
 				std::lock_guard<std::mutex> lk( m_mx );
 				// Bound scales with the pool so the extra threads actually have
@@ -465,8 +657,7 @@ void Recorder::asyncCapture( float dur, bool toReplay, int w, int h )
 				// stalls the GL thread) but now it is counted, not silent.
 				if( m_queue.size() < 6 * m_threads.size() + 2 )
 				{
-					float carry = pm.replay ? m_repCarryDur : 0.f;
-					m_queue.push_back( RecJob{ img.copy(), fn, pm.dur + carry, m_seq++ } );
+					m_queue.push_back( RecJob{ img.copy(), fn, pm.dur + m_repCarryDur, m_seq++ } );
 					queued = true;
 				}
 				else
@@ -474,14 +665,34 @@ void Recorder::asyncCapture( float dur, bool toReplay, int w, int h )
 					++m_dropped;   // encoder saturated; frame discarded, never a GL stall
 				}
 			}
+			else
+			{
+				// Recording frames go to the raw pipe, which has its own single
+				// writer (order matters on a stream). The bound is smaller than
+				// the pool's: there is no per-frame encode to hide latency
+				// behind, and each pending frame is a full uncompressed image.
+				std::lock_guard<std::mutex> lk( m_pipeMx );
+				if( m_pipeQueue.size() < 8 )
+				{
+					m_pipeQueue.push_back( RecJob{ img.copy(), fn, pm.dur + m_recCarryDur, m_seq++ } );
+					queued = true;
+				}
+				else
+				{
+					++m_dropped;
+				}
+			}
 			glUnmapBuffer( GL_PIXEL_PACK_BUFFER );
 			if( queued )
 			{
-				m_cv.notify_one();
 				if( pm.replay )
+				{
+					m_cv.notify_one();
 					m_repCarryDur = 0.f;
+				}
 				else
 				{
+					m_pipeCv.notify_one();
 					m_recConcat += QString("file 'frame_%1.jpg'\nduration %2\n")
 					               .arg(m_recFrame, 6, 10, QChar('0'))
 					               .arg(pm.dur + m_recCarryDur, 0, 'f', 4);
@@ -638,11 +849,24 @@ void Recorder::finishRecording()
 	m_pboMeta[0].pending = false;
 	m_pboMeta[1].pending = false;
 	if( m_dropped )
-		fprintf( stderr, "[recorder] %llu frame(s) dropped: the encoder pool could not "
-		                 "keep up. Video pacing stays correct (frames.txt carries the real "
-		                 "durations), but the capture rate was below the 30 fps cap.\n",
-		         (unsigned long long) m_dropped );
+		fprintf( stderr, "[recorder] %llu frame(s) dropped: the encoder could not keep "
+		                 "up. Pacing stays correct (the dropped time is carried into the "
+		                 "next frame's duration), but the capture rate was below the "
+		                 "%.0f fps cap.\n",
+		         (unsigned long long) m_dropped, kPipeFps );
 	m_dropped = 0;
+
+	// Raw-Pipe zuerst schließen: der Thread schreibt die Restframes, sendet
+	// ffmpeg EOF und wartet, bis die Videodatei fertig geschrieben ist.
+	if( m_pipeThread.joinable() )
+	{
+		{
+			std::lock_guard<std::mutex> lk( m_pipeMx );
+			m_pipeQuit = true;
+		}
+		m_pipeCv.notify_all();
+		m_pipeThread.join();
+	}
 
 	// Worker drainen + beenden (er endet erst bei leerer Queue, jeder
 	// eingereihte Frame wird also noch geschrieben, bevor der Mux startet).
@@ -660,40 +884,62 @@ void Recorder::finishRecording()
 	if( m_audio )
 		m_audio->stopRecording();      // flusht + schließt das WAV
 
-	QString listPath = m_recDir + "/frames.txt";
-	QFile lf( listPath );
-	if( lf.open(QIODevice::WriteOnly | QIODevice::Text) )
+	QStringList args;
+	QString batCmd;
+
+	if( !m_pipeFallback && !m_videoPath.isEmpty() )
 	{
-		QByteArray data = m_recConcat.toLocal8Bit();
-		if( m_recFrame > 0 )   // concat-Demuxer will den letzten Eintrag doppelt, ohne Dauer
-			data += QString("file 'frame_%1.jpg'\n").arg(m_recFrame-1, 6, 10, QChar('0')).toLocal8Bit();
-		lf.write( data );
-		lf.close();
+		// The picture is already encoded. All that is left is putting it in a
+		// container next to the audio -- the video stream is COPIED, never
+		// touched again, which is the whole point of the pipe.
+		args << "-y" << "-i" << m_videoPath
+		     << "-i" << (m_recDir + "/audio.wav")
+		     << "-c:v" << "copy" << "-c:a" << "aac"
+		     << "-shortest" << (m_recDir + "/kaleidoscope.mp4");
+		batCmd = "@echo off\r\ncd /d \"%~dp0\"\r\n"
+		         "ffmpeg -y -i video.mp4 -i audio.wav -c:v copy -c:a aac "
+		         "-shortest kaleidoscope.mp4\r\npause\r\n";
+	}
+	else
+	{
+		// Fallback: ffmpeg was not available when the recording started, so the
+		// frames went to disk as JPEGs and this is the old concat mux.
+		QString listPath = m_recDir + "/frames.txt";
+		QFile lf( listPath );
+		if( lf.open(QIODevice::WriteOnly | QIODevice::Text) )
+		{
+			QByteArray data = m_recConcat.toLocal8Bit();
+			if( m_recFrame > 0 )   // concat-Demuxer will den letzten Eintrag doppelt, ohne Dauer
+				data += QString("file 'frame_%1.jpg'\n").arg(m_recFrame-1, 6, 10, QChar('0')).toLocal8Bit();
+			lf.write( data );
+			lf.close();
+		}
+		args << "-y" << "-f" << "concat" << "-safe" << "0" << "-i" << listPath
+		     << "-i" << (m_recDir + "/audio.wav")
+		     << videoCodecArgs() << "-c:a" << "aac"
+		     << "-shortest" << (m_recDir + "/kaleidoscope.mp4");
+		// Mirror whatever the probe actually selected, so the manual fallback is
+		// not silently slower than the automatic mux beside it.
+		batCmd = QString( "@echo off\r\ncd /d \"%~dp0\"\r\n"
+		                  "ffmpeg -y -f concat -safe 0 -i frames.txt -i audio.wav %1 "
+		                  "-c:a aac -shortest kaleidoscope.mp4\r\npause\r\n" )
+		         .arg( videoCodecArgs().join( ' ' ) );
 	}
 
 	QFile bf( m_recDir + "/make_video.bat" );
 	if( bf.open(QIODevice::WriteOnly | QIODevice::Text) )
 	{
-		// Mirror whatever the probe actually selected, so the manual fallback is
-		// not silently slower than the automatic mux beside it.
-		QString batCmd = QString( "@echo off\r\ncd /d \"%~dp0\"\r\n"
-		                          "ffmpeg -y -f concat -safe 0 -i frames.txt -i audio.wav %1 "
-		                          "-c:a aac -shortest kaleidoscope.mp4\r\npause\r\n" )
-		                 .arg( videoCodecArgs().join( ' ' ) );
 		bf.write( batCmd.toLocal8Bit() );
 		bf.close();
 	}
 
 	// Sofort automatisch muxen (detacht; ffmpeg ist auf dem PATH).
 	// make_video.bat bleibt als Fallback liegen.
-	QStringList args;
-	args << "-y" << "-f" << "concat" << "-safe" << "0" << "-i" << listPath
-	     << "-i" << (m_recDir + "/audio.wav")
-	     << videoCodecArgs() << "-c:a" << "aac"
-	     << "-shortest" << (m_recDir + "/kaleidoscope.mp4");
 	QProcess::startDetached( "ffmpeg", args );
 	joinVideoEncoderProbe();
 
-	fprintf( stderr, "REC stop: %d frames -> %s (muxing kaleidoscope.mp4)\n",
-	         m_recFrame, m_recDir.toLocal8Bit().constData() );
+	fprintf( stderr, "REC stop: %d frames %s -> %s (muxing kaleidoscope.mp4)\n",
+	         m_recFrame,
+	         m_pipeFallback ? "(JPEG fallback)" : "(raw pipe, single encode)",
+	         m_recDir.toLocal8Bit().constData() );
 }
