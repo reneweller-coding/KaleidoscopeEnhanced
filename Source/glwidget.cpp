@@ -896,9 +896,8 @@ void GLwidget::showSelectConfigurationsMenu( QPainter *painter )
 	int maxTextW = std::max( fm.horizontalAdvance( title ), fm.horizontalAdvance( hint ) );
 	for( int i = 0; i < nrConfigurations; ++i )
 	{
-		const QString row = QString( "%1. %2" ).arg( i + 1 )
-		                    .arg( m_configurationList[i]->getConfigurationName() );
-		maxTextW = std::max( maxTextW, fm.horizontalAdvance( row ) );
+		maxTextW = std::max( maxTextW, fm.horizontalAdvance(
+			m_configurationList[i]->getConfigurationName() ) );
 	}
 
 	const int boxW = std::min( width() - 40, maxTextW + 96 );
@@ -931,11 +930,11 @@ void GLwidget::showSelectConfigurationsMenu( QPainter *painter )
 			painter->drawRect( QRect( boxX + 6, y - fm.ascent() - 2, boxW - 12, lineH ) );
 		}
 
-		// The running preset gets a dot, the cursor gets the bar. Numbering
-		// stays 1-based so it still matches the digit-key shortcuts.
+		// The running preset gets a dot, the cursor gets the bar. No row
+		// numbers: they only ever existed to announce the digit shortcuts,
+		// which are gone.
 		const QString mark = isActive ? QString::fromUtf8( "\xE2\x97\x8F " ) : QString( "   " );
-		const QString text = mark + QString( "%1. %2" ).arg( i + 1 )
-		                    .arg( m_configurationList[i]->getConfigurationName() );
+		const QString text = mark + m_configurationList[i]->getConfigurationName();
 
 		if( isCursor )      painter->setPen( QColor( 255, 255, 255, 255 ) );
 		else if( isActive ) painter->setPen( QColor( 150, 200, 245, 235 ) );
@@ -1302,7 +1301,6 @@ void GLwidget::drawHelpOverlay( QPainter *painter )
 	static const Line lines[] = {
 		{ "h",       S_HELP_H },
 		{ "0",       S_HELP_0 },
-		{ "1 - 9",   S_HELP_1_9 },
 		{ "n",       S_HELP_N },
 		{ "i",       S_HELP_I },
 		{ "v",       S_HELP_V },
@@ -2055,8 +2053,7 @@ void GLwidget::drawAudioMenu( QPainter *painter )
 	{
 		const QString tag = QString::fromUtf8( devs[i].isCapture ? Strings::T( S_AUDIOMENU_INPUT_TAG )
 		                                                        : Strings::T( S_AUDIOMENU_OUTPUT_TAG ) );
-		textW = std::max( textW, fm.horizontalAdvance(
-			QString( "%1.  %2%3" ).arg( i + 1 ).arg( devs[i].name ).arg( tag ) ) );
+		textW = std::max( textW, fm.horizontalAdvance( devs[i].name + tag ) );
 	}
 
 	const int boxW = std::min( width() - 40, std::max( 580, textW + 70 ) );
@@ -2101,11 +2098,9 @@ void GLwidget::drawAudioMenu( QPainter *painter )
 		else if( active ) painter->setPen( QColor( 150, 230, 150 ) );
 		else              painter->setPen( QColor( 210, 218, 232 ) );
 
-		// Only the first ten rows have a digit shortcut; numbering the rest
-		// would promise a key that does not exist.
-		const QString num = ( i <= 9 ) ? QString::number( i ) + ".  " : QString( "    " );
+		// No row numbers: they only announced the digit shortcuts, which are gone.
 		painter->drawText( x0 + 24, ry,
-		                   num + label + ( active ? QString::fromUtf8( "   \xE2\x86\x90" ) : QString() ) );
+		                   label + ( active ? QString::fromUtf8( "   \xE2\x86\x90" ) : QString() ) );
 	}
 
 	painter->setPen( QColor( 150, 150, 155, 200 ) );
@@ -2176,19 +2171,15 @@ void GLwidget::keyPressEvent(QKeyEvent* event)
 	}
 
 	// The audio-source picker is modal while it is open: arrows drive its
-	// cursor, Enter picks. The digits still work as shortcuts, but they were
-	// the ONLY way in before, which capped the list at nine sources -- a
-	// machine with a couple of virtual cables has more than that.
+	// cursor, Enter picks.
 	if( m_showAudioMenu )
 	{
 		const int k = event->key();
 		const int n = audioMenuCount();
+		// Swallow the digits. They no longer select anything, and letting them
+		// through would mean '0' opens the preset menu on top of this one.
 		if( k >= Qt::Key_0 && k <= Qt::Key_9 )
-		{
-			selectAudioDevice( k - Qt::Key_0 );
-			m_showAudioMenu = false;
 			return;
-		}
 		switch( menuNavKey( k, m_audioMenuCursor, n ) )
 		{
 			case MenuKey::Moved:
@@ -2424,18 +2415,10 @@ void GLwidget::keyPressEvent(QKeyEvent* event)
 				fprintf( stderr, "Saved screenshot: %s\n", fn.toLocal8Bit().constData() );
 			break;
 		}
-		case Qt::Key_1: case Qt::Key_2: case Qt::Key_3:
-		case Qt::Key_4: case Qt::Key_5: case Qt::Key_6:
-		case Qt::Key_7: case Qt::Key_8: case Qt::Key_9:
-		{
-			m_showSelectConfigurationMenu = false;
-			unsigned int idx = event->key() - Qt::Key_1;   // 0..8
-			if( idx < m_configurationList.size() )
-				switchConfig( m_configurationList[idx] );   // cross-fades from the old frame
-			else
-				printf( "Configuration %u not found!\n", idx + 1 );
-			break;
-		}
+		// '1'-'9' used to jump straight to a preset. The scrolling menu on '0'
+		// reaches every preset, including the ones those keys never could, so
+		// the digits are free again -- nine keys is a lot to spend on a
+		// shortcut that only covered part of the list.
 
 		default:
 			event->ignore();
