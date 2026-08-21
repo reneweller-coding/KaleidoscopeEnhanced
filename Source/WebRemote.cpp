@@ -91,6 +91,8 @@ static const char *kPageTemplate = R"HTML(<!DOCTYPE html>
 <div class="row">
  <button id="blackout" onclick="cmd('/api/toggle?k=blackout')">&#9899; @@BLACKOUT@@</button>
  <button onclick="cmd('/api/fav')">&#11088; @@FAVORITE@@</button>
+ <button onclick="cmd('/api/mark')">&#128204; @@MARK@@</button>
+ <button onclick="cmd('/api/savemarked')">&#128193; @@SAVEMARKED@@</button>
  <button id="replayarm" onclick="cmd('/api/toggle?k=replayarm')">@@REPLAYBUF@@</button>
  <button onclick="cmd('/api/replay')">&#128190; @@REPLAYSAVE@@</button>
 </div>
@@ -202,6 +204,8 @@ static QByteArray buildPage()
 	sub( "@@NEXT@@",         S_WR_NEXT );
 	sub( "@@BLACKOUT@@",     S_WR_BLACKOUT );
 	sub( "@@FAVORITE@@",     S_WR_FAVORITE );
+	sub( "@@MARK@@",         S_WR_MARK );
+	sub( "@@SAVEMARKED@@",   S_WR_SAVEMARKED );
 	sub( "@@REPLAYBUF@@",    S_WR_REPLAY_BUFFER );
 	sub( "@@REPLAYSAVE@@",   S_WR_REPLAY_SAVE );
 	sub( "@@REACTIVITY@@",   S_WR_REACTIVITY );
@@ -397,6 +401,10 @@ void WebRemote::handleConnection()
 				}
 				else if( path == "/api/fav" )
 					m_widget->remoteFavorite();
+				else if( path == "/api/mark" )
+					m_widget->remoteToggleMark();
+				else if( path == "/api/savemarked" )
+					m_widget->remoteSaveMarked();
 				else if( path == "/api/replay" )
 					m_widget->remoteSaveReplay();
 				else if( path == "/api/config" )

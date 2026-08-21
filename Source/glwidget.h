@@ -149,6 +149,10 @@ public:
 	QByteArray  remoteSnapshot();
 	/// Favorites the currently active effect (same as key 'f').
 	void        remoteFavorite();
+	/** @brief Web remote: mark or unmark the scene on screen (same as SPACE). */
+	void        remoteToggleMark();
+	/** @brief Web remote: write every marked scene to Configurations/Marked.xml (same as SHIFT+SPACE). */
+	void        remoteSaveMarked();
 	void        remoteSaveReplay()          { m_recorder.saveReplay(); }         ///< Saves the instant-replay ring buffer to disk (same as key 'x').
 	bool        remoteReplayArmed() const   { return m_recorder.replayArmed(); } ///< Whether the instant-replay ring buffer is currently armed.
 	void        remoteToggleReplayArm()     { m_recorder.toggleReplayArm(); }    ///< Arms/disarms the instant-replay ring buffer (same as key 'y').

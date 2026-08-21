@@ -18,6 +18,9 @@
 #include "Scene3DShader.h"
 #include "Utils.h"
 
+#include <QtXml/QDomDocument>
+#include <QtCore/QTextStream>
+#include <QtCore/QFileInfo>
 #include <QtGui/QImageReader>
 #include <QtGui/QPainter>
 #include <QtGui/QFontMetrics>
@@ -77,6 +80,13 @@ void RenderPipeline::loadSettings()
 	// Taste learning: PER-PRESET per-shader selection-weight factors (keys
 	// "<Preset>/<file>"), decayed toward 1.0 a little on every start so old
 	// skips/favourites slowly lose their grip.
+	s_marked.clear();
+	s.beginGroup( "marked" );
+	for( const QString &k : s.allKeys() )
+		if( s.value( k, false ).toBool() )
+			s_marked.insert( k );
+	s.endGroup();
+
 	s.beginGroup( "taste" );
 	for( const QString &k : s.allKeys() )        // recursive: Preset/File.frag
 	{
@@ -305,6 +315,8 @@ QString RenderPipeline::activeShaderInfo() const
 	if (!m_effectTextures.empty())
 	{
 		out += "TEX   " + base(m_effectTextures[m_scheduler.actTexture()]->fragmentName());
+		if( currentSceneMarked() )
+			out += QString("   [MARKIERT %1]").arg( markedCount() );
 		if (m_scheduler.texState() != 0)
 			out += QString("   → %1  (%2%)")
 			       .arg(base(m_effectTextures[m_scheduler.nextTexture()]->fragmentName()))
@@ -790,6 +802,143 @@ void RenderPipeline::forceScene( int idx )
 }
 
 // Key 'f': the user LIKES what is on screen — persistent selection bonus.
+QSet<QString> RenderPipeline::s_marked;
+
+/**
+ * @brief The settings-ini key for one marked scene.
+ *
+ * Deliberately the bare filename, NOT the preset-qualified key taste uses: a
+ * mark says "this SHADER needs another look", which is true no matter which
+ * preset it happened to appear in.
+ */
+static QString markKey( const char *fragPath )
+{
+	return QString( "marked/" ) + tasteBase( fragPath );
+}
+
+bool RenderPipeline::currentSceneMarked() const
+{
+	if( m_scheduler.actTexture() >= m_effectTextures.size() )
+		return false;
+	return s_marked.contains( tasteBase( m_effectTextures[m_scheduler.actTexture()]->fragmentName() ) );
+}
+
+bool RenderPipeline::toggleMarkCurrentScene()
+{
+	if( m_scheduler.actTexture() >= m_effectTextures.size() )
+		return false;
+	const char *frag = m_effectTextures[m_scheduler.actTexture()]->fragmentName();
+	const QString base = tasteBase( frag );
+
+	QSettings s( settingsFilePath(), QSettings::IniFormat );
+	const bool nowMarked = !s_marked.contains( base );
+	if( nowMarked )
+	{
+		s_marked.insert( base );
+		s.setValue( markKey( frag ), true );
+	}
+	else
+	{
+		s_marked.remove( base );
+		s.remove( markKey( frag ) );
+	}
+	// Persist immediately: an inspection pass is exactly the situation where
+	// the app gets closed abruptly, and losing the shortlist defeats the point.
+	s.sync();
+	fprintf( stderr, "Mark: %s %s (%d marked)\n",
+	         base.toLocal8Bit().constData(),
+	         nowMarked ? "SET" : "cleared", (int) s_marked.size() );
+	return nowMarked;
+}
+
+bool RenderPipeline::saveMarkedPreset( QString *outPath )
+{
+	if( s_marked.isEmpty() )
+	{
+		fprintf( stderr, "Marked preset: nothing marked\n" );
+		return false;
+	}
+
+	// Take the scenes' real nodes from the master catalogue. Synthesising tags
+	// here would drop geom and every preset parameter -- the exact failure that
+	// made a whole measurement campaign's probes meaningless earlier.
+	const QString cfgDir = QFileInfo( settingsFilePath() ).absolutePath() + "/Configurations";
+	QDomDocument master;
+	QFile mf( cfgDir + "/Komplett.xml" );
+	QString parseErr; int errLine = 0;
+	if( !mf.open( QIODevice::ReadOnly ) || !master.setContent( &mf, &parseErr, &errLine ) )
+	{
+		fprintf( stderr, "Marked preset: cannot read Komplett.xml (%s, line %d)\n",
+		         parseErr.toLocal8Bit().constData(), errLine );
+		return false;
+	}
+	mf.close();
+
+	QDomDocument out;
+	QDomElement root = out.createElement( "configuration" );
+	root.setAttribute( "ImageDirectory", master.documentElement().attribute( "ImageDirectory" ) );
+	root.setAttribute( "ConfigurationName", "Marked" );
+	out.appendChild( root );
+	root.appendChild( out.createComment(
+		" Scenes marked at runtime with SPACE, written with SHIFT+SPACE. "
+		"Regenerated wholesale on every save. " ) );
+
+	QDomNodeList texs = master.documentElement().elementsByTagName( "TextureShader" );
+	QSet<QString> written;
+	for( int i = 0; i < texs.count(); ++i )
+	{
+		QDomElement el = texs.at( i ).toElement();
+		const QString base = tasteBase( el.attribute( "file" ).toLocal8Bit().constData() );
+		if( !s_marked.contains( base ) || written.contains( base ) )
+			continue;
+		written.insert( base );
+		QDomElement copy = out.importNode( el, true ).toElement();
+		// Every marked scene should actually appear, and long enough to judge.
+		copy.setAttribute( "probability", "1.0" );
+		copy.setAttribute( "minTimeSolo", "12" );
+		copy.setAttribute( "maxTimeSolo", "18" );
+		copy.setAttribute( "minTimeInterpolation", "2" );
+		copy.setAttribute( "maxTimeInterpolation", "3" );
+		root.appendChild( copy );
+	}
+	if( written.isEmpty() )
+	{
+		fprintf( stderr, "Marked preset: none of the %d marked scenes are in Komplett.xml\n",
+		         (int) s_marked.size() );
+		return false;
+	}
+
+	// Plain overlay + a neutral fade, so what you see is the scene itself.
+	QDomElement comb = out.createElement( "CombineShader" );
+	comb.setAttribute( "file", "..\\FX\\FxPlain.frag" );
+	comb.setAttribute( "type", "normal" );
+	comb.setAttribute( "probability", "1.0" );
+	comb.setAttribute( "complexity", "1" );
+	root.appendChild( comb );
+	QDomElement tr = out.createElement( "TransitionShader" );
+	tr.setAttribute( "file", "..\\Transitions\\Crossfade.frag" );
+	tr.setAttribute( "type", "normal" );
+	tr.setAttribute( "probability", "1" );
+	tr.setAttribute( "complexity", "1" );
+	root.appendChild( tr );
+
+	const QString path = cfgDir + "/Marked.xml";
+	QFile f( path );
+	if( !f.open( QIODevice::WriteOnly | QIODevice::Text ) )
+	{
+		fprintf( stderr, "Marked preset: cannot write %s\n", path.toLocal8Bit().constData() );
+		return false;
+	}
+	QTextStream ts( &f );
+	ts << "<?xml version=\"1.0\" encoding=\"utf-8\" ?>\n" << out.toString( 2 );
+	f.close();
+
+	if( outPath ) *outPath = path;
+	fprintf( stderr, "Marked preset: %d scene(s) -> %s\n", (int) written.size(),
+	         path.toLocal8Bit().constData() );
+	return true;
+}
+
 void RenderPipeline::favoriteCurrentEffect()
 {
 	if( m_scheduler.actTexture() < m_effectTextures.size() )
