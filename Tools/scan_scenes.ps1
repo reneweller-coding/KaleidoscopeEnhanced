@@ -18,7 +18,11 @@ param(
     [string[]] $Scenes = @(),
     [switch]   $All,
     [int]      $Seconds = 8,
-    [string]   $Out = "scan"
+    [string]   $Out = "scan",
+    # Empty = pin ONE deterministically chosen photo (see below). Point this
+    # at the full photo folder to measure under real slideshow conditions,
+    # accepting that scenes which fold the image then vary run to run.
+    [string]   $ImageDir = ""
 )
 
 $root   = Split-Path $PSScriptRoot -Parent
@@ -35,6 +39,28 @@ if ($All) {
     ) | Sort-Object -Unique
 }
 if (-not $Scenes -or $Scenes.Count -eq 0) { Write-Host "no scenes"; exit 1 }
+
+# Pin the source image unless told otherwise. Scenes that fold the background
+# photo inherit its brightness, so a random photo per run moves luma/contrast
+# far more than any real defect -- a control re-scan of ten flagged scenes
+# reproduced only four verdicts, with luma shifting by up to 2.7x on the rest.
+if (-not $ImageDir) {
+    $ImageDir = Join-Path $env:TEMP "kaleido_scan_image"
+    New-Item -ItemType Directory -Force $ImageDir | Out-Null
+    if (-not (Get-ChildItem $ImageDir -File)) {
+        $srcPhotos = "C:\Users\rene\Desktop\BilderPhotoechoes"
+        # The MEDIAN-brightness photo, not an arbitrary one: image-folding
+        # scenes inherit the photo's brightness, so an unusually bright or dark
+        # pick would make them read TOO_BRIGHT/TOO_DARK for a reason that has
+        # nothing to do with the scene. Deterministic, and cached after the
+        # first survey.
+        & python (Join-Path $PSScriptRoot "pick_scan_image.py") $srcPhotos $ImageDir
+        if (-not (Get-ChildItem $ImageDir -File)) {
+            Write-Host "[scan] could not pick a photo from $srcPhotos"; exit 1
+        }
+    }
+    Write-Host "[scan] pinned image: $ImageDir"
+}
 
 New-Item -ItemType Directory -Force $outDir | Out-Null
 
@@ -66,7 +92,7 @@ try {
         Write-Host "[scan $i/$($Scenes.Count)] $s"
         $before = @(Get-ChildItem $recDir -Directory -ErrorAction SilentlyContinue |
                     Select-Object -ExpandProperty Name)
-        & (Join-Path $PSScriptRoot "verify.ps1") -Scenes $s -Seconds $Seconds | Out-Null
+        & (Join-Path $PSScriptRoot "verify.ps1") -Scenes $s -Seconds $Seconds -ImageDir $ImageDir | Out-Null
         $d = Get-ChildItem $recDir -Directory -ErrorAction SilentlyContinue |
              Where-Object { $before -notcontains $_.Name } | Sort-Object Name | Select-Object -Last 1
         if ($d) {
