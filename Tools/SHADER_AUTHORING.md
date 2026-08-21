@@ -32,6 +32,14 @@ PresetEditor\build\Release\PresetEditor.exe --validate
 # 3. Optische Prüfung: jeden neuen Shader rendern und auf Schwarz prüfen
 #    (siehe "Batch-Rendern" unten -- Achtung: CR-Falle!)
 
+# 3b. Regression gegen die Grundlinie -- nur die BERÜHRTEN Szenen, nicht alle:
+.\Tools\scan_scenes.ps1 -Scenes Geaendert1,Geaendert2 -Out recheck
+python Tools\scene_metrics.py Releaseecheck --json Releaseecheck\_metrics.json
+python Tools\check_scene_regression.py Releaseecheck
+#    Exit 1 = eine Metrik hat sich über das Messrauschen hinaus bewegt.
+#    War die Änderung gewollt: nochmal mit --update, das schreibt die
+#    Grundlinie für diese Szenen fort.
+
 # 4. Erst dann committen.
 ```
 
