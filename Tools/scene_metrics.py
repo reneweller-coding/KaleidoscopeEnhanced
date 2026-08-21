@@ -227,11 +227,13 @@ def verdicts(m):
     UPDATE 2026-08-21: that noise is now largely gone -- scan_scenes.ps1 pins
     one median-brightness photo (Tools/pick_scan_image.py), which took the
     worst run-to-run luma delta from 0.43 down to 0.002 and raised flag
-    agreement across two runs from 4/10 to 9/10 on a flagged sample. The
-    thresholds below have NOT been retightened to match; they still sit where
-    the noisy measurement put them, so they remain conservative. Retightening
-    them is a deliberate decision to take with fresh percentiles, not a
-    side effect.
+    agreement across two runs from 4/10 to 9/10 on a flagged sample. With a
+    trustworthy distribution the thresholds were then checked against it (see
+    the table in verdicts()). Only ONE was actually off: `motion` sat at the
+    0.8th percentile, so STATIC fired on 4 scenes where the design calls for
+    roughly the bottom 5%. It is now 0.014 = p5. The rest measured where they
+    were meant to be and were left alone -- a threshold is not improved by
+    moving it.
 
     Note what a percentile-calibrated threshold means when reading the output:
     firing at p5-p10 of the catalogue's OWN distribution guarantees that
@@ -246,12 +248,29 @@ def verdicts(m):
     if m.get("flickBand", 0) >= 8 and m.get("hueFlickHi", 0) > 0.12: v.append("COLOR_FLICKER")
     # Particle-on-black night scenes are legitimately dark and are the house
     # style, so "too dark" additionally requires the frame to be poorly filled.
+    # Where each threshold actually sits, measured against the 2026-08-21
+    # pinned-photo baseline of all 528 scenes (percentile of the catalogue):
+    #
+    #   luma   < 0.040   p5.3    relative, on target
+    #   contr  < 0.055   p3.8    relative, on target
+    #   motion < 0.014   p5.0    relative, RAISED from 0.006 (was p0.8, i.e.
+    #                            it fired on the bottom thousandth, not the
+    #                            bottom twentieth the design calls for)
+    #   satHi  > 0.35    p97     relative, top few percent
+    #   luma   > 0.72    p100    ABSOLUTE, currently unreachable
+    #   clipHi > 0.25    p100    ABSOLUTE, currently unreachable
+    #
+    # The last two are deliberately NOT percentiles. "Too bright" and "blown
+    # out" are statements about the image, not about rank: if the whole
+    # catalogue is dark, its brightest scene is still not too bright. They do
+    # not fire today, and that is a pass, not a broken check -- a percentile
+    # threshold there would manufacture failures to fill a quota.
     if m["luma"] < 0.04 and m.get("occ", 1) < 0.75:   v.append("TOO_DARK")
     if m["luma"] > 0.72:                              v.append("TOO_BRIGHT")
     if m["clipHi"] > 0.25:                            v.append("BLOWN_OUT")
     if m["clipLo"] > 0.88 and m.get("occ", 1) < 0.50: v.append("MOSTLY_BLACK")
     if m["contrast"] < 0.055:                         v.append("FLAT")
-    if m["motion"] < 0.006:                           v.append("STATIC")
+    if m["motion"] < 0.014:                           v.append("STATIC")
     # Judge "not screen-filling" on tile occupancy rather than raw pixel
     # coverage: a snowfall or firefly swarm is mostly background pixels yet
     # visually fills the frame, while a lone motif on a dead field does not.
