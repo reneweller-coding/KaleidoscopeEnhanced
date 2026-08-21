@@ -18,10 +18,15 @@ Conditions, all of which matter for comparing against a later run:
   * fps is the APP's own report (KALEIDO_FPS_LOG), not frames-on-disk divided
     by seconds. The recorder writes constant-rate video with duplicate fill,
     so counting frames now says nothing about scene cost.
-  * Eight scenes were re-measured after bug fixes, because their earlier rows
-    described a broken render: TunnelPlain and TunnelReverse (a uniform whose
-    upload the driver rejected, see Tools\check_uniform_types.py) and the six
-    raymarchers that read an uninitialised hit position.
+  * The probe copies each scene's REAL shader node (with its preset params and
+    geom kind) out of Komplett.xml. That copy silently degrades to a bare
+    synthetic tag if Komplett.xml does not parse -- which happened once during
+    this measurement campaign and invalidated three follow-up measurements
+    before it was caught. verify.ps1 now warns loudly when it happens; if a
+    scan log contains "Probe faellt auf synthetischen Tag zurueck", discard
+    the run. Eight scenes (TunnelPlain, TunnelReverse, and the six raymarchers
+    that gained an explicit hit-position initialisation) were re-measured with
+    their real nodes after that was fixed.
 
 Performance
 -----------
@@ -32,30 +37,29 @@ Performance
 
 Flags
 -----
-  54 of 528 scenes flagged (10.2%).
+  52 of 528 scenes flagged (9.8%).
   The thresholds sit at the 5th-10th percentile of the CATALOGUE'S OWN
   distribution, so roughly 5-10% is the expected rate by construction. This is
   the tail of the house look, not a defect list -- whether a given tail scene
   is wrong is a judgement call, and several are dark or sparse on purpose.
 
   TOO_DARK          25
-  FLAT              21
-  GARISH            17
+  FLAT              20
+  GARISH            16
   NOT_FILLING       14
   COLOR_FLICKER      7
   MOSTLY_BLACK       5
   STATIC             4
   FLICKER            1
 
-  Known false positive: GARISH cannot tell "the shader invents garish colours"
-  from "the photo is saturated". TunnelPlain samples the source photo and does
-  nothing to it but mild audio gain, yet lands at satHi 0.362 (98th
-  percentile) purely because the pinned image is a vivid one. For scenes whose
-  colour IS the photo, read this flag as a property of the image.
+  Reading GARISH on photo-folding scenes: the metric cannot tell "the shader
+  invents garish colours" from "the photo is saturated", so for scenes whose
+  colour IS the photo it describes the image, not the shader. The pinned
+  photo is a vivid one, which pushes such scenes toward the flag.
 
 The table follows, sorted by flag then name.
 
-scene_metrics: 528 scene(s), 54 flagged
+scene_metrics: 528 scene(s), 52 flagged
 
 scene                                          luma   cntr  motion   occ  satHi   jump hueJmp  flkHi   fps  flags
 -----------------------------------------------------------------------------------------------------------------
@@ -80,7 +84,6 @@ NeuroSynapseNetwork                           0.017  0.030  0.0195  0.38  0.218 
 OrbitalDrop                                   0.021  0.037  0.0232  0.48  0.084    3.4    4.6  0.000 120.0  TOO_DARK,FLAT
 QuantumQubitArray                             0.022  0.038  0.0091  0.32  0.022   10.0    6.9  0.000 120.0  TOO_DARK,FLAT
 AbyssalLuminescence                           0.181  0.236  0.0628  0.74  0.443   35.9   27.6  0.000 120.0  GARISH
-ApollonianSpherePackingGasket                 0.050  0.046  0.0328  0.42  0.095   63.8   49.8  0.004 120.0  FLAT
 AuroraBorealisOverFjord                       0.059  0.056  0.0134  0.26  0.121   27.9   13.5  0.000 120.0  NOT_FILLING
 BioCell                                       0.092  0.177  0.0945  0.89  0.215   12.0    2.2  0.002 120.0  COLOR_FLICKER
 BioluminescentMyceliumCave                    0.089  0.172  0.0891  0.91  0.376    4.3    3.4  0.001 120.0  GARISH
@@ -112,7 +115,6 @@ SuperconductingFluxVortex                     0.186  0.204  0.1571  0.95  0.429 
 SuperfluidVortexRingPinchOff                  0.087  0.144  0.1106  0.99  0.580    7.2    4.9  0.009 120.0  GARISH
 Tornado                                       0.029  0.060  0.0145  0.38  0.015   28.3    8.8  0.000 120.0  TOO_DARK
 Tunnel                                        0.224  0.172  0.1872  0.93  0.380    7.3    4.9  0.000 120.0  GARISH
-TunnelPlain                                   0.458  0.243  0.2369  0.79  0.362   23.5   36.8  0.000 120.0  GARISH
 AccretionDiskToroidVortex                     0.073  0.099  0.0152  0.49  0.031   10.8    9.5  0.005 120.0  
 AcousticBlackHoleEventHorizon                 0.677  0.196  0.0712  0.61  0.002   35.5   20.3  0.000 120.0  
 AcousticLevitationMatrix                      0.107  0.093  0.0806  1.00  0.114   14.9    3.6  0.001 120.0  
@@ -123,6 +125,7 @@ AnamorphicMirrorLabyrinth                     0.335  0.193  0.0323  0.96  0.001 
 AnomalousFloquetTopologicalInsulator          0.291  0.301  0.0197  0.84  0.048   54.7    8.6  0.000 120.0  
 ApollonianGasketNebulaFlight                  0.132  0.111  0.0672  0.73  0.004  130.3   21.5  0.000 120.0  
 ApollonianSpherePackingDive                   0.287  0.267  0.2321  0.75  0.004   19.7   25.2  0.000 120.0  
+ApollonianSpherePackingGasket                 0.087  0.066  0.0712  0.67  0.000   67.0  115.2  0.000 120.0  
 AsteroidBelt                                  0.078  0.114  0.0643  0.86  0.131   10.4    9.1  0.000 120.0  
 AtmosphericGravityWaveUndularBore             0.306  0.298  0.0533  0.68  0.056   11.2    3.7  0.000 120.0  
 Aurora                                        0.245  0.282  0.0464  0.69  0.077    9.6    3.6  0.000 120.0  
@@ -278,7 +281,7 @@ GrassField                                    0.223  0.066  0.0443  0.67  0.013 
 GravitationalWaveInterferometer               0.488  0.210  0.1985  0.97  0.004    8.7    8.5  0.001 120.0  
 GrowthTree                                    0.064  0.068  0.0150  0.79  0.059   47.4   54.6  0.001 120.0  
 GyroRings                                     0.055  0.111  0.0355  0.72  0.276    4.8    4.4  0.004 120.0  
-GyroidTriplyPeriodicLabyrinth                 0.229  0.121  0.0877  0.62  0.005   10.2    9.1  0.000 120.0  
+GyroidTriplyPeriodicLabyrinth                 0.212  0.095  0.0817  0.57  0.007   24.3   17.9  0.000 120.0  
 GyroidalInterferenceKaleido                   0.528  0.246  0.0890  1.00  0.000   22.6    4.7  0.000 120.0  
 Halftone                                      0.244  0.156  0.0468  1.00  0.050   13.3    3.8  0.001 120.0  
 HarmonicRings                                 0.080  0.169  0.0348  0.59  0.209    8.3    7.9  0.002 120.0  
@@ -350,7 +353,7 @@ LiquidChromeHyperSwirl                        0.198  0.123  0.0477  0.97  0.002 
 LiquidCrystalBluePhaseLattice                 0.306  0.213  0.0818  1.00  0.015   29.9    5.1  0.000 120.0  
 LiquidCrystalOptics                           0.150  0.146  0.0447  0.96  0.141   41.6   12.4  0.000 120.0  
 LiquidMarbleEbruAcidWash                      0.396  0.161  0.0905  1.00  0.000   25.7    6.0  0.001 120.0  
-LiquidMercuryFerrofluidChamber                0.173  0.115  0.1076  0.74  0.001   84.0   37.8  0.005 120.0  
+LiquidMercuryFerrofluidChamber                0.144  0.075  0.0613  0.52  0.000   34.5   27.5  0.000 120.0  
 LiquidMetal                                   0.277  0.089  0.0806  1.00  0.000   11.2    4.6  0.000 120.0  
 LissajousOrbits                               0.071  0.122  0.0597  0.73  0.172   30.1    6.0  0.000 120.0  
 LogarithmicSpiralChamberZoom                  0.489  0.180  0.0783  1.00  0.003   16.4    5.9  0.000 120.0  
@@ -367,7 +370,7 @@ MagnetosphericBowShockTurbulence              0.373  0.197  0.1174  0.98  0.014 
 MajoranaNanowireBraiding                      0.183  0.207  0.1176  0.92  0.102   34.2    6.9  0.000 120.0  
 MajoranaZeroModeBraid                         0.179  0.120  0.0742  0.88  0.021   11.3   12.6  0.000 120.0  
 MandalaGrid                                   0.206  0.196  0.0803  0.76  0.046    7.7    5.2  0.000 120.0  
-MandelboxHyperCubeMetamaterial                0.095  0.077  0.0595  0.35  0.023   38.9   30.0  0.014 120.0  
+MandelboxHyperCubeMetamaterial                0.123  0.099  0.0818  0.61  0.023   17.8   12.5  0.000 120.0  
 MandelbrotDeepZoom                            0.305  0.142  0.0723  0.72  0.004    8.4    4.5  0.000 120.0  
 MandelbulbHyperRealm                          0.138  0.076  0.0703  0.62  0.016   26.8   15.1  0.000 120.0  
 MandelbulbInfiniteDive                        0.352  0.131  0.1117  1.00  0.003   14.3    3.0  0.001 120.0  
@@ -471,7 +474,7 @@ QuasiPeriodicDanzerTiling                     0.284  0.182  0.0435  1.00  0.001 
 QuasicrystalPenroseKaleido                    0.289  0.143  0.0317  1.00  0.002   24.6    4.3  0.001 120.0  
 QuasicrystalPenroseRhomb3D                    0.184  0.203  0.1034  0.81  0.020    6.0    4.5  0.001 120.0  
 QuaternionFractalHopfLoom                     0.384  0.265  0.0993  0.82  0.008   13.7   13.7  0.000 120.0  
-QuaternionicJulia4DFlight                     0.124  0.128  0.0858  0.82  0.037    2.2    1.6  0.000 120.0  
+QuaternionicJulia4DFlight                     0.129  0.128  0.0981  0.73  0.037    1.6    1.7  0.000 120.0  
 RadiolarianMicrotubuleExoskeleton             0.112  0.159  0.0368  0.66  0.090   55.9   23.2  0.000 120.0  
 RadiolarianSilicaLattice                      0.098  0.175  0.0460  0.48  0.046   14.6    4.2  0.001 120.0  
 RainOnWater                                   0.163  0.155  0.0656  0.65  0.008    8.8    5.9  0.000 120.0  
@@ -494,7 +497,7 @@ RosslerAttractorHyperRibbon                   0.236  0.104  0.0536  1.00  0.004 
 SPHFluidSplash                                0.086  0.195  0.0507  0.29  0.046    6.2    3.9  0.009 120.0  
 SacredGeometryFlowerOfLife3D                  0.122  0.227  0.0236  0.61  0.102   48.9    9.1  0.000 120.0  
 SandDuneBarchanMigration                      0.141  0.069  0.0385  0.70  0.002   15.1    5.0  0.000 120.0  
-ScherkMinimalSurfaceTower                     0.218  0.104  0.0582  0.90  0.036   16.0   13.6  0.001 120.0  
+ScherkMinimalSurfaceTower                     0.245  0.108  0.0561  0.90  0.028   41.2   27.1  0.000 120.0  
 Schlieren                                     0.570  0.221  0.1403  1.00  0.000   24.3    4.4  0.000 120.0  
 SchwarzschildWormholeTunnel                   0.390  0.238  0.0821  0.76  0.212    9.5    3.6  0.000 120.0  
 SeifertSurfaceBraidKnot                       0.167  0.302  0.0346  0.35  0.008    7.9    4.2  0.000 120.0  
@@ -567,7 +570,8 @@ TorusKnot                                     0.074  0.118  0.0592  0.71  0.053 
 TricornFractalAntimatterSea                   0.398  0.218  0.0431  0.88  0.000   12.9    7.2  0.000 120.0  
 TronCycles                                    0.050  0.146  0.0308  0.58  0.330    5.9    3.1  0.005 120.0  
 TunnelAcceleration                            0.240  0.192  0.2003  0.93  0.232    5.6    4.1  0.000 120.0  
-TunnelReverse                                 0.245  0.148  0.1720  0.96  0.131    5.0    3.5  0.000 120.0  
+TunnelPlain                                   0.362  0.240  0.2054  0.97  0.256    4.3    7.7  0.000 120.0  
+TunnelReverse                                 0.240  0.147  0.1601  0.99  0.112    3.8    5.4  0.000 120.0  
 VideoRelief                                   0.168  0.210  0.0489  0.78  0.183   16.4    8.6  0.000 120.0  
 VillarceauCirclesHyperFlow                    0.589  0.277  0.0223  0.96  0.000   32.7   11.4  0.000 120.0  
 VolcanicBasaltColumnarJointingHexagon         0.174  0.151  0.1711  0.89  0.035   20.9   15.8  0.000 120.0  
