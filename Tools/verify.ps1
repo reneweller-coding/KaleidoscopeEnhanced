@@ -18,7 +18,10 @@ param(
     [switch]   $Smoke,
     [switch]   $Roundtrip,
     [switch]   $Transcheck,
-    [int]      $Seconds = 16
+    [int]      $Seconds = 16,
+    # Where the background photos come from. Overridable so a quantitative
+    # scan can pin ONE image and get comparable numbers between runs.
+    [string]   $ImageDir = "C:\Users\rene\Desktop\BilderPhotoechoes"
 )
 
 $root = Split-Path $PSScriptRoot -Parent
@@ -152,7 +155,7 @@ foreach ($s in $Scenes) {
         $body = '<TextureShader file="..\\' + $dir + '\\' + $s + '.frag" ' + $attrs + ' probability="1.0" complexity="1" minTimeSolo="100" maxTimeSolo="120" minTimeInterpolation="20" maxTimeInterpolation="30">' + "`n  </TextureShader>"
     }
 
-    $xml = '<configuration ImageDirectory="C:\Users\rene\Desktop\BilderPhotoechoes" ConfigurationName="verify">' + "`n" +
+    $xml = '<configuration ImageDirectory="' + $ImageDir + '" ConfigurationName="verify">' + "`n" +
            $body + "`n" +
            '  <CombineShader file="..\\FX\\FxPlain.frag" type="normal" probability="1.0" complexity="1" minTimeSolo="100" maxTimeSolo="120" minTimeInterpolation="20" maxTimeInterpolation="30">' + "`n" +
            "  </CombineShader>`n</configuration>"
