@@ -797,9 +797,22 @@ public:
 	 * the adaptation one-way (see GLwidget::updateAdaptiveScale()).
 	 */
 	static bool 	s_renderScaleFromCli;
+	static float	s_renderScaleMax;   ///< Ceiling the adaptive scaler may raise to (ini key renderScaleMax); >1.0 supersamples.
 	/** @brief Sets the internal render scale (clamped to [0.25, 2.0]) used by every subsequent reinit()/resize(). @param s Desired render scale (1.0 = native display resolution). */
 	static void setRenderScale( float s )
 	{ s_renderScale = (s < 0.25f) ? 0.25f : (s > 2.0f ? 2.0f : s); }
+
+	// Supersampling ceiling. Above 1.0 the scene is rendered larger than the
+	// window and downsampled, which is the only anti-aliasing that helps here:
+	// MSAA smooths geometric edges but still runs the fragment shader once per
+	// pixel, and in a catalogue of 528 procedural shaders most aliasing comes
+	// from shader-computed detail, not from polygon edges. It also covers the
+	// 292 Scene2D shaders, which get no MSAA at all.
+	/** @brief Sets the upper bound the adaptive scaler may raise the render scale to (1.0 = off, 2.0 = 4x the pixels). @param s Ceiling, clamped to 0.5..2.0. */
+	static void setRenderScaleMax( float s )
+	{ s_renderScaleMax = (s < 0.5f) ? 0.5f : (s > 2.0f ? 2.0f : s); }
+	/** @brief The supersampling ceiling. @return Ceiling in 0.5..2.0; 1.0 means no supersampling. */
+	static float renderScaleMax() { return s_renderScaleMax; }
 	/** @brief Returns the current internal render scale. @return Render scale, 0.25..2.0. */
 	static float renderScale() { return s_renderScale; }
 private:
