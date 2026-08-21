@@ -244,6 +244,17 @@ void SetupWindow::buildContent()
 	m_stereoDepth->setSingleStep( 0.05 );
 	m_stereoDepth->setDecimals( 2 );
 	fTune->addRow( S( S_SETUP_STEREODEPTH ), m_stereoDepth );
+
+	// Recording codec. Stored as a NAME, not an index, so the ini stays
+	// readable and the Recorder can read it without knowing this order.
+	m_videoCodec = new QComboBox();
+	m_videoCodec->addItem( "H.264", "h264" );
+	m_videoCodec->addItem( "HEVC (H.265)", "hevc" );
+	m_videoCodec->addItem( "AV1", "av1" );
+	fTune->addRow( S( S_SETUP_VIDEOCODEC ), m_videoCodec );
+	auto *codecHint = new QLabel( S( S_SETUP_CODEC_HINT ) );
+	codecHint->setWordWrap( true );
+	fTune->addRow( QString(), codecHint );
 	root->addWidget( gTune );
 
 	root->addStretch( 1 );
@@ -284,6 +295,10 @@ void SetupWindow::loadFromIni()
 	m_renderScale->setValue( s.value( "renderScale", 1.0 ).toDouble() );
 	m_stereoMode->setCurrentIndex( s.value( "stereoMode", 0 ).toInt() & 3 );
 	m_stereoDepth->setValue( s.value( "stereoDepth", 1.0 ).toDouble() );
+	{
+		const int ci = m_videoCodec->findData( s.value( "videoCodec", "h264" ).toString().toLower() );
+		m_videoCodec->setCurrentIndex( ci >= 0 ? ci : 0 );   // unknown value -> H.264
+	}
 
 	if( !QFile::exists( path ) )
 		m_status->setText( S( S_SETUP_NO_SETTINGS_YET ) );
@@ -319,6 +334,7 @@ void SetupWindow::saveToIni()
 	s.setValue( "renderScale", m_renderScale->value() );
 	s.setValue( "stereoMode",  m_stereoMode->currentIndex() );
 	s.setValue( "stereoDepth", m_stereoDepth->value() );
+	s.setValue( "videoCodec",  m_videoCodec->currentData().toString() );
 
 	s.sync();
 	if( s.status() == QSettings::NoError )

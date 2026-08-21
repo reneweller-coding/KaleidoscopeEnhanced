@@ -14,6 +14,7 @@
 #include <QtCore/QDir>
 #include <QtCore/QFile>
 #include <QtCore/QProcess>
+#include <QtCore/QSettings>
 #include <QtCore/QStringList>
 
 #include "glcore.h"        // Core-Profile-Einsprungpunkte (PBO-Funktionen)
@@ -57,21 +58,53 @@ static bool probeEncoder( const QString &enc, const QStringList &encArgs )
     return ok;
 }
 
-static QStringList computeVideoCodecArgs()
-{
-    QStringList cached;
+struct Candidate { const char *name; QStringList args; };
 
-    // Candidates in priority order, each with the rate-control flags that
-    // vendor actually understands -- they are NOT interchangeable: NVENC wants
-    // -cq, AMF wants -rc cqp with explicit qp values, QSV wants
-    // -global_quality, x264 wants -crf. Passing the wrong one is silently
-    // ignored and you get whatever default bitrate the encoder felt like.
-    //
-    // Order: discrete-GPU encoders first, since on a machine that has one it is
-    // also the card doing the rendering, so its encode block is the one sitting
-    // idle next to the work. Intel's integrated Quick Sync next, software last.
-    struct Candidate { const char *name; QStringList args; };
-    const QList<Candidate> candidates = {
+// One family per output codec. Within a family: discrete-GPU encoder first
+// (on a machine that has one it is also the card doing the rendering, so its
+// encode block is the silicon sitting idle next to the work), then Intel's
+// integrated Quick Sync, then software.
+//
+// The rate-control flags are per-vendor and NOT interchangeable: NVENC wants
+// -cq, AMF wants -rc cqp with explicit qp values, QSV wants -global_quality,
+// x264/x265 want -crf. Passing the wrong one is ignored without a warning and
+// you get whatever default bitrate the encoder felt like. SVT-AV1's -crf is a
+// different scale again -- 30 there is roughly x264's 20, not a quality drop.
+static QList<Candidate> codecFamily( const QString &fam )
+{
+    if( fam == "hevc" )
+        return {
+            { "hevc_nvenc", { "-c:v", "hevc_nvenc", "-preset", "p5", "-cq", "20",
+                              "-tag:v", "hvc1" } },
+            { "hevc_amf",   { "-c:v", "hevc_amf", "-quality", "balanced",
+                              "-rc", "cqp", "-qp_i", "20", "-qp_p", "20",
+                              "-tag:v", "hvc1" } },
+            { "hevc_qsv",   { "-c:v", "hevc_qsv", "-preset", "medium",
+                              "-global_quality", "20", "-tag:v", "hvc1" } },
+            { "libx265",    { "-c:v", "libx265", "-preset", "medium", "-crf", "20",
+                              "-tag:v", "hvc1" } },
+        };
+    if( fam == "av1" )
+        return {
+            // AV1's quality scale runs 0..63, not 0..51 like h264/hevc, and NVENC
+            // needs an explicit rate control with -b:v 0 or it targets a bitrate
+            // and ignores -cq entirely. Measured on an RTX 5090 against the same
+            // 8 s source (size / SSIM vs. source):
+            //   av1 -cq 20  60.2 MB / 0.9906     h264 -cq 20  55.4 MB / 0.9750
+            //   av1 -cq 25  29.0 MB / 0.9736     hevc -cq 20  21.2 MB / 0.9812
+            //   av1 -cq 32  24.2 MB / 0.9676
+            // cq 25 is the point that matches h264's quality at roughly half the
+            // size. Note HEVC beats every AV1 point here on BOTH axes, so on
+            // NVIDIA hardware av1 is a compatibility choice, not a quality one.
+            { "av1_nvenc",  { "-c:v", "av1_nvenc", "-preset", "p5",
+                              "-rc", "vbr", "-cq", "25", "-b:v", "0" } },
+            { "av1_amf",    { "-c:v", "av1_amf", "-quality", "balanced",
+                              "-rc", "cqp", "-qp_i", "20", "-qp_p", "20" } },
+            { "av1_qsv",    { "-c:v", "av1_qsv", "-preset", "medium",
+                              "-global_quality", "25" } },
+            { "libsvtav1",  { "-c:v", "libsvtav1", "-preset", "8", "-crf", "30" } },
+        };
+    return {
         { "h264_nvenc", { "-c:v", "h264_nvenc", "-preset", "p5", "-cq", "20" } },
         { "h264_amf",   { "-c:v", "h264_amf", "-quality", "balanced",
                           "-rc", "cqp", "-qp_i", "20", "-qp_p", "20" } },
@@ -79,42 +112,95 @@ static QStringList computeVideoCodecArgs()
                           "-global_quality", "20" } },
         { "libx264",    { "-c:v", "libx264", "-preset", "medium", "-crf", "20" } },
     };
+}
 
-    // Escape hatch: KALEIDO_VIDEO_ENCODER=h264_amf (or any name above, or
-    // "libx264" to force software) skips the probe order. Still verified before
-    // use, so a typo or an unsupported pick falls through to the normal search
-    // rather than producing a broken recording.
+// Which output codec to aim for. h264 stays the DEFAULT because it is the one
+// every player, editor and phone opens without thinking. hevc roughly halves
+// the file at the same quality, which matters now that recordings run at the
+// full render resolution rather than 720p; av1 is smaller still but slower to
+// encode and younger in playback support.
+static QString wantedCodecFamily()
+{
+    QString fam = qEnvironmentVariable( "KALEIDO_VIDEO_CODEC" ).trimmed().toLower();
+    if( fam.isEmpty() )
+    {
+        // Same file the rest of the app uses (see RenderPipeline::loadSettings
+        // and the SetupTool), read directly so the Recorder stays free of
+        // settings plumbing.
+        QSettings st( "..\\kaleidoscope_settings.ini", QSettings::IniFormat );
+        fam = st.value( "videoCodec", "h264" ).toString().trimmed().toLower();
+    }
+    if( fam == "h265" ) fam = "hevc";
+    if( fam != "hevc" && fam != "av1" ) fam = "h264";
+    return fam;
+}
+
+static QStringList computeVideoCodecArgs()
+{
+    QStringList cached;
+    const QString fam = wantedCodecFamily();
+    const QList<Candidate> candidates = codecFamily( fam );
+
+    // Escape hatch: KALEIDO_VIDEO_ENCODER=hevc_nvenc (or any encoder name in
+    // any family) skips the search. Still verified before use, so a typo or an
+    // unsupported pick falls through to the normal order rather than producing
+    // a broken recording.
     const QString forced = qEnvironmentVariable( "KALEIDO_VIDEO_ENCODER" ).trimmed();
     if( !forced.isEmpty() )
     {
-        for( const Candidate &c : candidates )
-            if( forced.compare( QLatin1String( c.name ), Qt::CaseInsensitive ) == 0
-                && probeEncoder( c.name, c.args ) )
-            {
-                cached = c.args;
-                cached << "-pix_fmt" << "yuv420p";
-                fprintf( stderr, "[recorder] video encoder: %s (forced via KALEIDO_VIDEO_ENCODER)\n",
-                         c.name );
-                return cached;
-            }
+        for( const QString &f : { QString("h264"), QString("hevc"), QString("av1") } )
+            for( const Candidate &c : codecFamily( f ) )
+                if( forced.compare( QLatin1String( c.name ), Qt::CaseInsensitive ) == 0
+                    && probeEncoder( c.name, c.args ) )
+                {
+                    cached = c.args;
+                    cached << "-pix_fmt" << "yuv420p";
+                    fprintf( stderr, "[recorder] video encoder: %s (forced via KALEIDO_VIDEO_ENCODER)\n",
+                             c.name );
+                    return cached;
+                }
         fprintf( stderr, "[recorder] KALEIDO_VIDEO_ENCODER=\"%s\" not usable, probing normally\n",
                  qPrintable( forced ) );
     }
 
     for( const Candidate &c : candidates )
     {
-        // libx264 is the last entry and is assumed present rather than probed:
-        // if ffmpeg exists at all it has it, and a probe here would only add a
-        // startup delay on machines that have no hardware encoder -- exactly
-        // the machines that can least afford it.
-        const bool isSoftware = ( qstrcmp( c.name, "libx264" ) == 0 );
-        if( isSoftware || probeEncoder( c.name, c.args ) )
+        // libx264 is the h264 family's last entry and is assumed present rather
+        // than probed: if ffmpeg exists at all it has it, and probing would only
+        // add a startup delay on machines with no hardware encoder -- exactly
+        // the ones that can least afford it. libx265/libsvtav1 get no such pass:
+        // plenty of ffmpeg builds ship without them.
+        const bool assumePresent = ( qstrcmp( c.name, "libx264" ) == 0 );
+        const bool isSoftware = assumePresent
+                             || qstrcmp( c.name, "libx265" ) == 0
+                             || qstrcmp( c.name, "libsvtav1" ) == 0;
+        if( assumePresent || probeEncoder( c.name, c.args ) )
         {
             cached = c.args;
             cached << "-pix_fmt" << "yuv420p";
             fprintf( stderr, "[recorder] video encoder: %s (%s)\n",
                      c.name, isSoftware ? "CPU, no hardware encoder found" : "hardware" );
             return cached;
+        }
+    }
+
+    // The requested family is not available on this machine at all. Fall back to
+    // h264 rather than failing the recording -- a bigger file beats no file.
+    if( fam != "h264" )
+    {
+        fprintf( stderr, "[recorder] no %s encoder available here - falling back to h264\n",
+                 qPrintable( fam ) );
+        for( const Candidate &c : codecFamily( "h264" ) )
+        {
+            const bool assumePresent = ( qstrcmp( c.name, "libx264" ) == 0 );
+            if( assumePresent || probeEncoder( c.name, c.args ) )
+            {
+                cached = c.args;
+                cached << "-pix_fmt" << "yuv420p";
+                fprintf( stderr, "[recorder] video encoder: %s (%s)\n",
+                         c.name, assumePresent ? "CPU" : "hardware" );
+                return cached;
+            }
         }
     }
 
