@@ -494,6 +494,8 @@ protected:
 
 	//QPainter		*m_painter;
 	bool			m_showSelectConfigurationMenu;   ///< Whether the configuration-selection overlay is shown (key '0').
+	int				m_configMenuCursor = 0;          ///< Highlighted row in that overlay (arrow keys move it, Enter picks it).
+	int				m_configMenuTop    = 0;          ///< First visible row: the list scrolls once it is taller than the window.
 	bool			m_showFeatureOverlay;            ///< Whether the audio-feature panel is shown (key 'i').
 	bool			m_showHelp = false;              ///< Whether the keyboard-shortcut help box is shown (key 'h').
 	bool			m_showAudioMenu = false;         ///< Whether the audio-source picker overlay is shown (key 'd').

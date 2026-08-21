@@ -797,79 +797,122 @@ void GLwidget::draw()
 }
 
 
+/**
+ * @brief Draw the configuration picker (key '0').
+ *
+ * The list scrolls: the digit keys only ever reached nine presets, so anything
+ * past the ninth -- which the hidden-preset debug switch and a saved Marked
+ * preset both push you past -- was simply unreachable. Arrow keys move the
+ * cursor, Enter activates it, and only a window of the list is drawn so the
+ * rows keep a readable size no matter how many presets exist. The font size
+ * used to be derived as height/count, which shrank every row as the list grew.
+ *
+ * Two things are marked, and they mean different things: the cursor bar is
+ * where Enter would take you, the dot marks the preset that is actually
+ * running. They coincide when the menu opens.
+ */
 void GLwidget::showSelectConfigurationsMenu( QPainter *painter )
 {
-	
-	unsigned int nrConfigurations = (unsigned int) m_configurationList.size();
+	const int nrConfigurations = int( m_configurationList.size() );
+	if( nrConfigurations <= 0 )
+		return;
 
-	unsigned int fontsize = m_height/nrConfigurations*0.3;
-	
-	QFont font = painter->font() ;
-	/* twice the size than the current font size */
+	// Sized from height(), NOT m_height: m_height is in DEVICE pixels
+	// (height() * devicePixelRatio) while QPainter works in logical ones, so
+	// deriving a point size from it scales the text up by the display's DPI
+	// factor on top of Qt's own scaling. The old code did exactly that.
+	// Clamped to the range the other overlays use (fixed 12-14 pt).
+	const int fontsize = std::max( 10, std::min( height() / 45, 18 ) );
+	QFont font = painter->font();
 	font.setPointSize( fontsize );
-	/* set the modified font to the painter */
-	painter->setFont(font);	
-	QFontMetrics fm(painter->font());
+	painter->setFont( font );
+	QFontMetrics fm( painter->font() );
 
+	const int lineH = fm.lineSpacing();
+	const int padY  = lineH / 2;
+	// Leave room for the title and the key hint, and never fill the screen.
+	const int maxRows = std::max( 3, int( ( height() * 0.72 - 4 * lineH ) / lineH ) );
+	const int visible = std::min( nrConfigurations, maxRows );
 
-	unsigned int centerX = width()/2;
-	unsigned int centerY = height()/2;
+	// Keep the cursor inside the visible window, scrolling by as little as
+	// possible so the list does not jump around under the user.
+	m_configMenuCursor = std::max( 0, std::min( m_configMenuCursor, nrConfigurations - 1 ) );
+	if( m_configMenuCursor < m_configMenuTop )
+		m_configMenuTop = m_configMenuCursor;
+	if( m_configMenuCursor >= m_configMenuTop + visible )
+		m_configMenuTop = m_configMenuCursor - visible + 1;
+	m_configMenuTop = std::max( 0, std::min( m_configMenuTop, nrConfigurations - visible ) );
 
-	unsigned int sizeSingleLine = fm.lineSpacing();
-	unsigned int totalHeight = sizeSingleLine*(nrConfigurations+1);
+	const QString title = QString::fromUtf8( Strings::T( S_MENU_CONFIG_TITLE ) );
+	const QString hint  = QString::fromUtf8( Strings::T( S_MENU_NAV_HINT ) );
 
-
-	int maxStringlength = 0;
-	for( unsigned int i = 0; i < nrConfigurations; i++ )
+	int maxTextW = std::max( fm.horizontalAdvance( title ), fm.horizontalAdvance( hint ) );
+	for( int i = 0; i < nrConfigurations; ++i )
 	{
-		if( fm.horizontalAdvance((*m_configurationList[i]).getConfigurationName()) > maxStringlength ) //fm.horizontalAdvance(str1)/2
-			maxStringlength = fm.horizontalAdvance((*m_configurationList[i]).getConfigurationName());
+		const QString row = QString( "%1. %2" ).arg( i + 1 )
+		                    .arg( m_configurationList[i]->getConfigurationName() );
+		maxTextW = std::max( maxTextW, fm.horizontalAdvance( row ) );
 	}
 
-	maxStringlength = int( maxStringlength * 1.5f );
+	const int boxW = std::min( width() - 40, maxTextW + 96 );
+	const int boxH = ( visible + 3 ) * lineH + 2 * padY;
+	const int boxX = ( width()  - boxW ) / 2;
+	const int boxY = ( height() - boxH ) / 2;
 
-	
-	 // draw the overlayed text using QPainter
-    painter->setPen(QColor(197, 197, 197, 157));
-    painter->setBrush(QColor(197, 197, 197, 127));
+	painter->setPen( QColor( 210, 210, 210, 170 ) );
+	painter->setBrush( QColor( 18, 18, 22, 210 ) );
+	painter->drawRect( QRect( boxX, boxY, boxW, boxH ) );
 
-	painter->drawRect(QRect( centerX-(maxStringlength/2), centerY-(totalHeight/2), maxStringlength, totalHeight));
-    painter->setPen(Qt::black);
-    painter->setBrush(Qt::NoBrush);
+	int y = boxY + padY + lineH;
+	painter->setPen( QColor( 150, 200, 245, 235 ) );
+	painter->drawText( boxX + ( boxW - fm.horizontalAdvance( title ) ) / 2, y, title );
+	const int firstRowY = y + lineH / 2;
 
-	for( unsigned int i = 0; i < nrConfigurations; i++ )
+	y = firstRowY;
+	for( int row = 0; row < visible; ++row )
 	{
-		QString confname = (*m_configurationList[i]).getConfigurationName();
+		const int i = m_configMenuTop + row;
+		y += lineH;
 
-		QString number = QString::number(i+1);
-		number += ". ";
+		const bool isCursor = ( i == m_configMenuCursor );
+		const bool isActive = ( m_configurationList[i] == m_actConfiguration );
 
-		QString total = number + confname;
-		painter->drawText(centerX - (fm.horizontalAdvance(total)/2), centerY-(totalHeight/2) + (i+1)*fm.lineSpacing(), QString(total) );
+		if( isCursor )
+		{
+			painter->setPen( Qt::NoPen );
+			painter->setBrush( QColor( 70, 120, 190, 190 ) );
+			painter->drawRect( QRect( boxX + 6, y - fm.ascent() - 2, boxW - 12, lineH ) );
+		}
+
+		// The running preset gets a dot, the cursor gets the bar. Numbering
+		// stays 1-based so it still matches the digit-key shortcuts.
+		const QString mark = isActive ? QString::fromUtf8( "\xE2\x97\x8F " ) : QString( "   " );
+		const QString text = mark + QString( "%1. %2" ).arg( i + 1 )
+		                    .arg( m_configurationList[i]->getConfigurationName() );
+
+		if( isCursor )      painter->setPen( QColor( 255, 255, 255, 255 ) );
+		else if( isActive ) painter->setPen( QColor( 150, 200, 245, 235 ) );
+		else                painter->setPen( QColor( 205, 205, 210, 210 ) );
+		painter->drawText( boxX + 34, y, text );
 	}
 
-    //painter->drawText(centerX - fm.horizontalAdvance(str1)/2, centerY, str1);
+	// Only claim there is more when there actually is.
+	painter->setPen( QColor( 150, 150, 155, 200 ) );
+	painter->setBrush( Qt::NoBrush );
+	if( m_configMenuTop > 0 )
+		painter->drawText( boxX + boxW - 30, firstRowY,
+		                   QString::fromUtf8( "\xE2\x96\xB2" ) );
+	if( m_configMenuTop + visible < nrConfigurations )
+		painter->drawText( boxX + boxW - 30, y + lineH / 2,
+		                   QString::fromUtf8( "\xE2\x96\xBC" ) );
 
-	/*
-	QString text = tr("Click and drag with the left mouse button "
-                       "to rotate the Qt logo.");
-     QFontMetrics metrics = QFontMetrics(font());
-     int border = qMax(4, metrics.leading());
-
-     QRect rect = metrics.boundingRect(0, 0, width() - 2*border, int(height()*0.125),
-                                       Qt::AlignCenter | Qt::TextWordWrap, text);
-     painter->setRenderHint(QPainter::TextAntialiasing);
-     painter->fillRect(QRect(0, 0, width(), rect.height() + 2*border),
-                      QColor(25, 25, 0, 127));
-     painter->setPen(Qt::white);
-     painter->fillRect(QRect(0, 0, width(), rect.height() + 2*border),
-                       QColor(25, 25, 0, 127));
-     painter->drawText((width() - rect.width())/2, border,
-                       rect.width(), rect.height(),
-                       Qt::AlignCenter | Qt::TextWordWrap, text);
-	 float radius = 0.5;
-	 //painter->drawEllipse(0, 0, int(2*radius), int(2*radius));*/
-
+	QFont hf = font;
+	hf.setPointSize( std::max( 9, int( fontsize * 0.8 ) ) );
+	painter->setFont( hf );
+	QFontMetrics hfm( hf );
+	painter->setPen( QColor( 165, 165, 172, 215 ) );
+	painter->drawText( boxX + ( boxW - hfm.horizontalAdvance( hint ) ) / 2,
+	                   boxY + boxH - padY - hfm.descent(), hint );
 }
 
 /// Settings file shared with RenderPipeline (next to the Configurations folder).
@@ -1984,6 +2027,50 @@ void GLwidget::drawNowPlaying( QPainter *painter, const QString &title,
 
 void GLwidget::keyPressEvent(QKeyEvent* event)
 {
+	// The configuration picker is modal while it is open: the arrow keys drive
+	// its cursor rather than doing whatever they normally do, and Enter picks
+	// the highlighted preset. The digit shortcuts still work and still mean the
+	// same rows, they just cannot reach past the ninth.
+	if( m_showSelectConfigurationMenu )
+	{
+		const int n = int( m_configurationList.size() );
+		switch( event->key() )
+		{
+			case Qt::Key_Up:
+				if( n > 0 ) m_configMenuCursor = ( m_configMenuCursor - 1 + n ) % n;
+				return;
+			case Qt::Key_Down:
+				if( n > 0 ) m_configMenuCursor = ( m_configMenuCursor + 1 ) % n;
+				return;
+			case Qt::Key_PageUp:
+				m_configMenuCursor = std::max( 0, m_configMenuCursor - 5 );
+				return;
+			case Qt::Key_PageDown:
+				m_configMenuCursor = std::min( n - 1, m_configMenuCursor + 5 );
+				return;
+			case Qt::Key_Home:
+				m_configMenuCursor = 0;
+				return;
+			case Qt::Key_End:
+				m_configMenuCursor = std::max( 0, n - 1 );
+				return;
+			case Qt::Key_Return:
+			case Qt::Key_Enter:
+				m_showSelectConfigurationMenu = false;
+				if( m_configMenuCursor >= 0 && m_configMenuCursor < n
+				    && m_configurationList[m_configMenuCursor] != m_actConfiguration )
+					switchConfig( m_configurationList[m_configMenuCursor] );
+				return;
+			case Qt::Key_Escape:
+				// Close without switching. Escape quits the app everywhere else,
+				// which would be a nasty surprise for "never mind, close this".
+				m_showSelectConfigurationMenu = false;
+				return;
+			default:
+				break;   // fall through to the global handler (digits, '0', ...)
+		}
+	}
+
 	// The audio-source picker is modal for number keys while it is open, so the
 	// digits choose a source instead of switching configuration.
 	if( m_showAudioMenu )
@@ -2014,6 +2101,13 @@ void GLwidget::keyPressEvent(QKeyEvent* event)
 			break;
 		case Qt::Key_0:
 			m_showSelectConfigurationMenu = !m_showSelectConfigurationMenu;
+			// Open on the preset that is running, so Enter straight away is a
+			// no-op rather than a jump to whatever happened to be first.
+			if( m_showSelectConfigurationMenu )
+			{
+				const int act = remoteActiveConfig();
+				m_configMenuCursor = ( act >= 0 ) ? act : 0;
+			}
 			break;
 		case Qt::Key_I:
 			m_showFeatureOverlay = !m_showFeatureOverlay;

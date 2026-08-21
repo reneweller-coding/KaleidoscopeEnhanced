@@ -89,8 +89,10 @@ keyboard reference in-app.
 |------------|-----------------------------------------------------------------|
 | `Esc`, `Q` | Quit                                                          |
 | `h`        | Toggle the on-screen **help** (keyboard reference)            |
-| `0`        | Toggle the configuration-select menu                          |
-| `1`–`9`    | Switch configuration (cross-fades)                            |
+| `0`        | Open/close the preset menu (see below)                        |
+| `↑` `↓`    | Move the preset cursor while the menu is open                 |
+| `Enter`    | Switch to the highlighted preset (cross-fades)                |
+| `1`–`9`    | Jump straight to preset 1-9, menu open or not                 |
 | `i`        | Toggle the live audio-feature overlay (incl. **FPS**)         |
 | `d`        | Choose the **audio source** (output / microphone) — overlay   |
 | `p`        | Toggle the **now-playing** track title display                |
@@ -121,6 +123,13 @@ keyboard reference in-app.
 | `k`        | Save the current look **and** UI state as the startup default |
 | `s`        | Save a PNG screenshot of the window                           |
 | mouse drag | (when not fullscreen) trackball / interaction                 |
+
+**The preset menu** (`0`) scrolls, so it reaches presets the digit keys
+cannot — anything past the ninth, which the hidden-preset debug switch and a
+saved `Marked` preset both push you past. It opens on the preset that is
+running, `↑`/`↓` (plus `PgUp`/`PgDn`/`Home`/`End`) move the cursor, `Enter`
+switches, and `0` or `Esc` closes without changing anything. The highlight bar
+is where `Enter` would take you; the dot marks what is actually playing.
 
 Press **`k`** to persist the tuning keys (plus render scale) to
 `kaleidoscope_settings.ini`, so they're restored next launch. The `i`
