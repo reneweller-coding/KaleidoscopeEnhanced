@@ -239,7 +239,16 @@ void parsecommandline( int argc, char *argv[] )
 				case 'r': GLwidget::s_autoRecord = true; break;
 				// Offline analysis: feed this WAV through the analyzer instead of
 				// capturing live audio (deterministic classifier testing).
-				case 'w': AudioAnalyzer::s_offlineWav = QString::fromLocal8Bit( argv[1] ); break;
+				case 'w':
+					AudioAnalyzer::s_offlineWav = QString::fromLocal8Bit( argv[1] );
+					// KALEIDO_OFFLINE_FAST drops the real-time pacing, which only makes
+					// sense for a measurement run -- nobody watches a WAV played at
+					// 100x. So it also means "quit when the file ends", which lets a
+					// sweep over dozens of tracks time itself instead of guessing a
+					// timeout per track. Unlike -x this does NOT start a recording.
+					if( qEnvironmentVariableIsSet( "KALEIDO_OFFLINE_FAST" ) )
+						GLwidget::s_batchRender = true;
+					break;
 				// Spout output: publish the displayed frame to other apps.
 				case 'o': RenderPipeline::s_spoutEnabled = true; break;
 				// Embedded web remote (phone control page).
