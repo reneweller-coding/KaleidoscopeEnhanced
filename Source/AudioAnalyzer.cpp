@@ -382,9 +382,18 @@ void AudioAnalyzer::analyzeWavOffline( const QString &path )
 
         // Pace to the wall clock: the render loop (and an -x recording) runs
         // in real time, so the features must arrive at capture speed too.
+        // KALEIDO_OFFLINE_FAST=1 drops the pacing. Everything in processBlock
+        // is per-BLOCK (EMAs, ring buffers, counters), so the analysis output
+        // is identical either way -- only the visuals, which depend on wall
+        // clock, are meaningless. That makes sweeping a few dozen tracks for
+        // classifier tuning minutes instead of hours.
+        static const bool fast = qEnvironmentVariableIsSet( "KALEIDO_OFFLINE_FAST" );
         fed += n;
-        qint64 ahead = fed * 1000 / sampleRate - clock.elapsed();
-        if( ahead > 2 ) msleep( (unsigned long)ahead );
+        if( !fast )
+        {
+            qint64 ahead = fed * 1000 / sampleRate - clock.elapsed();
+            if( ahead > 2 ) msleep( (unsigned long)ahead );
+        }
     }
     if( m_wavFile ) recClose();                     // finalise a still-open WAV
     delete[] pcm; delete[] conv;
