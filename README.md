@@ -92,7 +92,6 @@ keyboard reference in-app.
 | `0`        | Open/close the preset menu (see below)                        |
 | `↑` `↓`    | Move the preset cursor while the menu is open                 |
 | `Enter`    | Switch to the highlighted preset (cross-fades)                |
-| `1`–`9`    | Jump straight to preset 1-9, menu open or not                 |
 | `i`        | Toggle the live audio-feature overlay (incl. **FPS**)         |
 | `d`        | Choose the **audio source** (output / microphone) — overlay   |
 | `↑` `↓`    | Also drive the audio-source cursor while that overlay is open |
@@ -133,8 +132,11 @@ the preset list past nine, and a machine with a few virtual audio cables has
 well over nine sources. Each opens on the entry that is currently in use, `↑`/`↓` (plus `PgUp`/`PgDn`/`Home`/`End`) move the cursor,
 `Enter` selects, and `Esc` (or `0` / `d`) closes without changing anything.
 The highlight bar is where `Enter` would take you; the marker shows what is
-actually in use. Rows past the tenth carry no number, because there is no
-digit key that would reach them.
+actually in use.
+
+`1`–`9` used to jump straight to a preset and are now unbound: the menu reaches
+every entry, so nine keys no longer have to be spent on a shortcut that only
+covered part of the list.
 
 Press **`k`** to persist the tuning keys (plus render scale) to
 `kaleidoscope_settings.ini`, so they're restored next launch. The `i`
