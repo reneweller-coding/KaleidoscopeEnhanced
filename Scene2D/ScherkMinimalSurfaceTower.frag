@@ -119,7 +119,7 @@ void main() {
     float dO = 0.0;
     float hitDist = -1.0;
     float minDS = 1e5;                    // closest approach of a MISS ray
-    vec3 p;
+    vec3 p = vec3(0.0);   // guarded by hitDist, but the compiler cannot see that
     for (int i = 0; i < 72; ++i) {
         p = ro + rd * dO;
         // bound the infinite Scherk field to a COLUMN -> an actual tower

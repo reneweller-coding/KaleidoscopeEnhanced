@@ -114,7 +114,7 @@ void main() {
     float dO = 0.0;
     float hitDist = -1.0;
     float trapMin = 1e5;
-    vec3 hitP;
+    vec3 hitP = vec3(0.0);   // guarded by hitDist, but the compiler cannot see that
 
     for (int i = 0; i < 48; ++i) {
         vec3 p = ro + rd * dO;
