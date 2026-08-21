@@ -36,7 +36,7 @@ uniform float speed;
 uniform int sides;
 uniform float power;
 uniform float speedTunnelReverse;
-uniform float rotate;
+uniform int   rotate;   // <bool> in the config -> uploaded with glUniform1i
 uniform float audioPhase;     // integrated audio rotation phase (radians, jump-free)
 uniform float audioAdvance;   // integrated audio tunnel advance (jump-free)
 uniform float audioKick;      // subtle brightness pulse on kicks
@@ -64,7 +64,7 @@ void main() {
     
     
     float angle = 0.0; 
-    if( rotate > 0.0 )
+    if( rotate > 0 )
        angle = M_PI*0.25;
     
     // a rotation
