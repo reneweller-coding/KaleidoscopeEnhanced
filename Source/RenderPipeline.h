@@ -612,6 +612,61 @@ private:
 	/** @brief Light 2 (cool rim/fill): renders @p fx into its shadow map. @param fx Scene to render. */
 	void			renderShadowPass2(EffectShader *fx) { renderShadowPassGeneric( fx, m_shadowFbo2, m_shadowTex2, 32, EffectShader::s_shadowPass2 ); }
 
+
+	// ---- paint() stages -------------------------------------------------
+	// paint() was a single 878-line function. It is now the ordered list of
+	// calls below, one per stage; the bodies moved out VERBATIM, and each
+	// helper's parameters deliberately carry the same names the locals had.
+	// The order of these calls is the render order and is load-bearing --
+	// almost every stage integrates state or leaves GL bindings the next one
+	// relies on, so they are not independently reorderable.
+
+	/** @brief Per-frame prologue: publishes the mood snapshot the ImageLoader thread reads, and compiles ONE not-yet-compiled shader (lazy warm-up). @param audio This frame's raw features. */
+	void			beginFrame( const AudioFeatures &audio );
+	/** @brief Receives a Spout (-i) or video (-v) frame into m_liveTex, which then replaces BOTH photo slots for this frame. */
+	void			updateLiveInput();
+	/** @brief Slews m_timingScale toward the audio's suggested scene-duration multiplier (gated by musicPresence). @param audio This frame's raw features. */
+	void			updateTimingScale( const AudioFeatures &audio );
+
+	/** @brief One frame's two time bases, both MEASURED (never a fixed step). */
+	struct FrameTiming
+	{
+		float dt;       ///< Scene time step, later scaled by freeze/DJ-stop.
+		float dtWall;   ///< Wall-clock step, immune to freeze -- overlays and fades keep moving over a frozen picture.
+	};
+	/** @brief Reads the frame timer and updates the fps-driven cube detail budget. @return This frame's scene and wall-clock time steps. */
+	FrameTiming		readFrameClock();
+	/** @brief Applies VJ freeze ('e'), VJ pin ('u') and the DJ-stop break-hold to the scene time step. @param audio This frame's raw features. @param timeSinceLastFrameSec Scene time step, modified in place. @param dtWall Wall-clock step (drives the break slew, which must run even while frozen). */
+	void			applyTransportModifiers( const AudioFeatures &audio, float &timeSinceLastFrameSec, float dtWall );
+	/** @brief Uploads a pending track-title image (GL context is current here), rolls a mood-matched reveal style, and otherwise advances the reveal clock. @param audio This frame's raw features (picks the style pool). @param dtWall Wall-clock step. */
+	void			updateTitleReveal( const AudioFeatures &audio, float dtWall );
+	/** @brief Runs AudioConditioner exactly once per frame, in frame order (every signal in it is an integrator or slew limiter). @param audio This frame's raw features. @param timeSinceLastFrameSec Scene time step. @return The anti-flicker feature copy the shaders receive. */
+	AudioFeatures	conditionAudio( const AudioFeatures &audio, float timeSinceLastFrameSec );
+	/** @brief Drives the photo cross-fade state machine and requests the next image load. @param timeSinceLastFrameSec Scene time step. */
+	void			updateImageState( float timeSinceLastFrameSec );
+	/** @brief Fills the scheduler tick and runs the scene half of it (the combine half, tickFx(), must stay after the effect passes -- it needs m_trueStereoHold). @param audio This frame's raw features. @param timeSinceLastFrameSec Scene time step. @return The tick, reused for tickFx() later in the frame. */
+	SceneScheduler::Tick buildSchedulerTick( const AudioFeatures &audio, float timeSinceLastFrameSec );
+	/** @brief Steps only the simulations a visible effect actually samples (GpuSims, ComputeFX, Mandelbrot) and binds their outputs, plus last frame's composited image. @param audio This frame's raw features. @param timeSinceLastFrameSec Scene time step. @param audioFx The conditioned features. */
+	void			stepSimulations( const AudioFeatures &audio, float timeSinceLastFrameSec, const AudioFeatures &audioFx );
+	/** @brief Restores the viewport and binds the two photo slots (or the live frame) to units 0 and 1. */
+	void			bindSceneInputs();
+	/** @brief Recomputes m_trueStereoHold / m_trueStereoPacked / m_trueStereoNow for this frame. */
+	void			updateTrueStereoState();
+	/** @brief Renders one 3D scene twice into the SBS/TB halves of the bound FBO, scissored so each eye's clear stays inside its half. @param fx The 3D scene to render per eye. */
+	void			renderSceneStereo( EffectShader *fx );
+	/** @brief Renders the ACTIVE scene: shadow maps, optional MSAA target, the scene itself, MSAA resolve and the OIT pass. @param audioFx The conditioned features. */
+	void			renderActiveScenePass( const AudioFeatures &audioFx );
+	/** @brief Renders the INCOMING scene, but only while a cross-fade is running (its output is weighted by (1-interpolation), so it is invisible otherwise). @param audioFx The conditioned features. */
+	void			renderNextScenePass( const AudioFeatures &audioFx );
+	/** @brief The 2D camera rig, the transition pass and both combine/overlay passes. @param audioFx The conditioned features. */
+	void			renderFxStage( const AudioFeatures &audioFx );
+	/** @brief Blends the two combine outputs into the safety FBO (or straight to screen). */
+	void			renderFinalBlend();
+	/** @brief The feedback/trails ping-pong with its MilkDrop-style warp field. @param audio This frame's raw features. @param audioFx The conditioned features. @param timeSinceLastFrameSec Scene time step. @param dtWall Wall-clock step. @return The texture the present pass must display. */
+	GLuint			renderTrailsPass( const AudioFeatures &audio, const AudioFeatures &audioFx, float timeSinceLastFrameSec, float dtWall );
+	/** @brief Fills PresentPass::Inputs (photosensitivity safety, Zeit-Regie, lyrics/artist overlays, stereo) and runs it. @param presentSource The texture renderTrailsPass() selected for display. @param audio This frame's raw features. @param audioFx The conditioned features. @param timeSinceLastFrameSec Scene time step. @param dtWall Wall-clock step. */
+	void			runPresentPass( GLuint presentSource, const AudioFeatures &audio, const AudioFeatures &audioFx, float timeSinceLastFrameSec, float dtWall );
+
 	// ---- order-independent transparency (weighted blended) ----
 	// Two extra targets the transparent geometry accumulates into, sharing the
 	// scene's depth buffer so transparency is still occluded by opaque solids.

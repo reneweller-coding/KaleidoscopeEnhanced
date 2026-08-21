@@ -819,8 +819,7 @@ void RenderPipeline::favoriteCurrentEffect()
 // phosphor feedback/trails pass; (10) PresentPass::run() for tone-mapping,
 // bloom, camera transform, stereo packing, overlays and final display.
 // ---------------------------------------------------------------------------
-void RenderPipeline::paint(const float *rotMatrix, float tx, float ty, float tz,
-                         const AudioFeatures &audio)
+void RenderPipeline::beginFrame( const AudioFeatures &audio )
 {
 	m_scheduler.setMood( audio.arousal, audio.valence, audio.ambientFactor );
 	// Snapshot for the ImageLoader's mood-matched image choice (its thread).
@@ -841,6 +840,10 @@ void RenderPipeline::paint(const float *rotMatrix, float tx, float ty, float tz,
 				if( !s->isCompiled() ) { s->ensureCompiled(); break; }
 	}
 
+}
+
+void RenderPipeline::updateLiveInput()
+{
 	// Live input (-i): receive the Spout sender's frame; while a sender runs
 	// its texture replaces BOTH image slots below (crossfades collapse to a
 	// no-op on the image, every effect folds the LIVE picture).  No sender ->
@@ -861,6 +864,10 @@ void RenderPipeline::paint(const float *rotMatrix, float tx, float ty, float tz,
 		m_liveTex = videoInFrame( &lw, &lh );
 	}
 
+}
+
+void RenderPipeline::updateTimingScale( const AudioFeatures &audio )
+{
     // Update adaptive timing scale from audio analysis.
     // Smooth slowly so a sudden genre change doesn't cause a jarring jump.
     // The new scale only takes effect the next time a duration is randomised,
@@ -872,6 +879,10 @@ void RenderPipeline::paint(const float *rotMatrix, float tx, float ty, float tz,
     // Guard against zero to avoid division-by-zero below.
     if (m_timingScale < 0.05f) m_timingScale = 0.05f;
 
+}
+
+RenderPipeline::FrameTiming RenderPipeline::readFrameClock()
+{
 	float timeSinceLastFrame = m_nanotimer.elapsed();
 	//if( timeSinceLastFrame > 20.0 )
 	//printf( "%f\n", timeSinceLastFrame );
@@ -895,6 +906,11 @@ void RenderPipeline::paint(const float *rotMatrix, float tx, float ty, float tz,
 			Scene3DShader::s_cubeBudget = 1.f;
 	}
 
+	return { timeSinceLastFrameSec, dtWall };
+}
+
+void RenderPipeline::applyTransportModifiers( const AudioFeatures &audio, float &timeSinceLastFrameSec, float dtWall )
+{
 	// VJ FREEZE ('e'): hold the picture.  Frame time 0 stops every phase
 	// integration and envelope slew; re-arming the activation clocks each
 	// frozen frame keeps scheduled switches from falling "due" behind the
@@ -917,6 +933,10 @@ void RenderPipeline::paint(const float *rotMatrix, float tx, float ty, float tz,
 	m_breakSmooth = slewToward( m_breakSmooth, audio.breakHold, 9.f, dtWall );
 	timeSinceLastFrameSec *= 1.f - 0.95f * m_breakSmooth;
 
+}
+
+void RenderPipeline::updateTitleReveal( const AudioFeatures &audio, float dtWall )
+{
 	// Track-title reveal: upload a freshly rendered title (GL context is
 	// current here) and advance the reveal clock on the WALL time (the
 	// reveal keeps playing over a frozen/stopped picture).
@@ -958,6 +978,10 @@ void RenderPipeline::paint(const float *rotMatrix, float tx, float ty, float tz,
 		m_present.advanceTitle( dtWall );
 
 
+}
+
+AudioFeatures RenderPipeline::conditionAudio( const AudioFeatures &audio, float timeSinceLastFrameSec )
+{
     // Audio-reactive motion, envelopes, the beat PLL and the colour-chase
     // phase: all delegated to AudioConditioner (moved out of paint() to keep
     // this function to the scheduling/render pipeline). update() must be
@@ -972,9 +996,13 @@ void RenderPipeline::paint(const float *rotMatrix, float tx, float ty, float tz,
     acCtx.ssmFill      = m_sims.ssmFillNorm();
     acCtx.spectroHead  = m_sims.spectroHeadNorm();
     acCtx.spectroFill  = m_sims.spectroFillNorm();
-    AudioFeatures audioFx = m_audioConditioner.update( audio, timeSinceLastFrameSec, acCtx );
+    return m_audioConditioner.update( audio, timeSinceLastFrameSec, acCtx );
 
 
+}
+
+void RenderPipeline::updateImageState( float timeSinceLastFrameSec )
+{
     if( m_waitForImageToLoad )
     {
         if( !m_triggerImageload )
@@ -992,7 +1020,6 @@ void RenderPipeline::paint(const float *rotMatrix, float tx, float ty, float tz,
     }
 
     
-    unsigned int loadimage = 0;
 
 	//No Interpolation, solo texture 1:
 	if( m_stateTexture == 1 )
@@ -1040,7 +1067,6 @@ void RenderPipeline::paint(const float *rotMatrix, float tx, float ty, float tz,
             m_waitForImageToLoad = true;
             m_triggerImageload = true;
 
-            loadimage = 1;
 
 			m_interpolationTexture = 1.0;
 
@@ -1050,6 +1076,10 @@ void RenderPipeline::paint(const float *rotMatrix, float tx, float ty, float tz,
 		}
 	}
     
+}
+
+SceneScheduler::Tick RenderPipeline::buildSchedulerTick( const AudioFeatures &audio, float timeSinceLastFrameSec )
+{
 /*********************** Szenen-Wahl: SceneScheduler ***********************/
 
 	// Trigger (Novelty/Section/Drop, Pin) + Effekt-Zustandsmaschine.  Der
@@ -1071,19 +1101,12 @@ void RenderPipeline::paint(const float *rotMatrix, float tx, float ty, float tz,
 	schedTick.logAttackTime  = audio.logAttackTime;
 	m_scheduler.tick( schedTick );
     
-    //printf( "Rotation t n: %d %f %f\n", m_stateInterpolationTunnel, m_speedKaleidoscopeTunnelAct, m_speedTunnelAct );
 
-	// -------------------------
-	// ----- render pass 2 -----
-	// -------------------------
-	// ** TODO **
-	
-	//float t = float(m_time.elapsed()) * 0.001;
-    
-	m_globaltime += timeSinceLastFrameSec; //t//+= 0.01f;
-	//m_lastTime = t;
+	return schedTick;
+}
 
-
+void RenderPipeline::stepSimulations( const AudioFeatures &audio, float timeSinceLastFrameSec, const AudioFeatures &audioFx )
+{
 	// GPU-/Host-Simulationen (GpuSims): Bedarf ermitteln (nur steppen, was
 	// ein sichtbarer Effekt wirklich sampelt - der aktive oder, während einer
 	// Überblendung, der einblendende), Frame-Kontext übergeben, laufen lassen.
@@ -1175,6 +1198,10 @@ void RenderPipeline::paint(const float *rotMatrix, float tx, float ty, float tz,
 		}
 	}
 
+}
+
+void RenderPipeline::bindSceneInputs()
+{
 	// restore render destination to regular frame buffer
 	glViewport( 0, 0, m_width, m_height );
 
@@ -1186,6 +1213,10 @@ void RenderPipeline::paint(const float *rotMatrix, float tx, float ty, float tz,
 	glBindTexture( GL_TEXTURE_2D, m_liveTex ? m_liveTex : m_nextTex );
 
 
+}
+
+void RenderPipeline::updateTrueStereoState()
+{
 	// TRUE STEREO: a solo 3D scene in SBS/TB renders once per eye below — and
 	// since a 3D<->3D texture cross-fade can be blended per-pixel, the PACKED
 	// state now also covers that: both scenes render per-eye and a plain mix
@@ -1202,35 +1233,40 @@ void RenderPipeline::paint(const float *rotMatrix, float tx, float ty, float tz,
 		m_trueStereoNow    = m_trueStereoPacked && texSolo;
 	}
 
+}
+
 	// Per-eye scene render into the SBS/TB halves of the bound FBO
 	// (scissored, so each eye's clear stays inside its half).  Eye
 	// separation scales with the stereo-depth knob (keys c/m).
-	auto renderSceneStereo = [&]( EffectShader *fx )
+	
+void RenderPipeline::renderSceneStereo( EffectShader *fx )
+{
+	Scene3DShader *s3 = static_cast<Scene3DShader *>( fx );
+	glEnable( GL_SCISSOR_TEST );
+	for( int e = 0; e < 2; ++e )               // e 0 = left eye, 1 = right
 	{
-		Scene3DShader *s3 = static_cast<Scene3DShader *>( fx );
-		glEnable( GL_SCISSOR_TEST );
-		for( int e = 0; e < 2; ++e )               // e 0 = left eye, 1 = right
+		if( s_stereoMode == 1 )                // SBS: left half = left eye
 		{
-			if( s_stereoMode == 1 )                // SBS: left half = left eye
-			{
-				int hw = m_width / 2;
-				glViewport( e * hw, 0, hw, m_height );
-				glScissor ( e * hw, 0, hw, m_height );
-			}
-			else                                   // TB: top half = left eye
-			{
-				int hh = m_height / 2;
-				glViewport( 0, e ? 0 : hh, m_width, hh );
-				glScissor ( 0, e ? 0 : hh, m_width, hh );
-			}
-			s3->setEyeOffset( ( e ? 1.f : -1.f ) * 0.5f * s_stereoDepth );
-			s3->draw();
+			int hw = m_width / 2;
+			glViewport( e * hw, 0, hw, m_height );
+			glScissor ( e * hw, 0, hw, m_height );
 		}
-		s3->setEyeOffset( 0.f );
-		glDisable( GL_SCISSOR_TEST );
-		glViewport( 0, 0, m_width, m_height );
-	};
+		else                                   // TB: top half = left eye
+		{
+			int hh = m_height / 2;
+			glViewport( 0, e ? 0 : hh, m_width, hh );
+			glScissor ( 0, e ? 0 : hh, m_width, hh );
+		}
+		s3->setEyeOffset( ( e ? 1.f : -1.f ) * 0.5f * s_stereoDepth );
+		s3->draw();
+	}
+	s3->setEyeOffset( 0.f );
+	glDisable( GL_SCISSOR_TEST );
+	glViewport( 0, 0, m_width, m_height );
+}
 
+void RenderPipeline::renderActiveScenePass( const AudioFeatures &audioFx )
+{
 	// MSAA: 3D scenes draw into the shared multisample scratch target instead
 	// of the regular FBO, then resolve (blit) into it once opaque drawing is
 	// done -- OIT/rig2/combine/depth-post all keep reading the same regular
@@ -1310,6 +1346,10 @@ void RenderPipeline::paint(const float *rotMatrix, float tx, float ty, float tz,
 	glBindFramebuffer( GL_FRAMEBUFFER, m_defaultFBO );
 	checkFramebufferStatus();
 
+}
+
+void RenderPipeline::renderNextScenePass( const AudioFeatures &audioFx )
+{
 	// Skip the "next" texture effect while NOT cross-fading: every combine weights
 	// this output (tex1) by (1-interpolation), which is 0 at interpolation==1.0, so
 	// it is invisible.  Saves a whole effect pass during the common solo periods.
@@ -1347,29 +1387,10 @@ void RenderPipeline::paint(const float *rotMatrix, float tx, float ty, float tz,
 	}
 
 	
-	//Now Use Post Processing
-	glBindFramebuffer( GL_FRAMEBUFFER, m_defaultFBO );
-	checkFramebufferStatus();
+}
 
-	//printf( "%f %d\n", t-m_lastTime, loadimage );
-   
-
-
-
-	//Now Use Final Rendering
-	// -------------------------
-	// ----- render pass 3 -----
-	// -------------------------
-	// ** TODO **
-
-/******************State Machine for the post processing*******************************/
-	
-/***********************************Plain and Full*****************************************/
-
-	// Combine-Zustandsmaschine (an der alten Stelle, s.o.).
-	m_scheduler.tickFx( schedTick, m_trueStereoHold );
-
-	
+void RenderPipeline::renderFxStage( const AudioFeatures &audioFx )
+{
 	// restore render destination to regular frame buffer
 	glViewport( 0, 0, m_width, m_height );
 
@@ -1486,6 +1507,10 @@ void RenderPipeline::paint(const float *rotMatrix, float tx, float ty, float tz,
 	}
 
 	
+}
+
+void RenderPipeline::renderFinalBlend()
+{
 	//Now Use Final Rendering — into the safety FBO if active, else to the screen.
 	GLuint fxTarget = m_present.ready() ? m_present.targetFbo() : m_defaultFBO;
 	glBindFramebuffer( GL_FRAMEBUFFER, fxTarget );
@@ -1514,6 +1539,10 @@ void RenderPipeline::paint(const float *rotMatrix, float tx, float ty, float tz,
 
 	drawWindow();
 
+}
+
+GLuint RenderPipeline::renderTrailsPass( const AudioFeatures &audio, const AudioFeatures &audioFx, float timeSinceLastFrameSec, float dtWall )
+{
 	// -------------------------------------------------------------------------
 	// Feedback / trails pass: blend the previous displayed frame back in so bright
 	// moving structures leave glowing, fading trails.  Ping-pong of two buffers;
@@ -1609,15 +1638,11 @@ void RenderPipeline::paint(const float *rotMatrix, float tx, float ty, float tz,
 		m_trailIdx    = prev;   // swap for next frame
 	}
 
-	// Spout output (-o): publish the displayed frame for OBS / Resolume etc.
-	// (Needs the GL context, which is current here; texture-share via DX interop.)
-	if( s_spoutEnabled )
-	{
-		if( !m_spoutStarted )
-			m_spoutStarted = spoutOutInit( "Kaleidoscope" );
-		spoutOutSend( presentSource, m_width, m_height );
-	}
+	return presentSource;
+}
 
+void RenderPipeline::runPresentPass( GLuint presentSource, const AudioFeatures &audio, const AudioFeatures &audioFx, float timeSinceLastFrameSec, float dtWall )
+{
 	// -------------------------------------------------------------------------
 	// Photosensitivity-safety present pass.
 	// The frame to display now lives in presentSource.  We read its whole-frame avg
@@ -1695,6 +1720,59 @@ void RenderPipeline::paint(const float *rotMatrix, float tx, float ty, float tz,
 		m_present.run( pin );
 	}
 
+}
+
+void RenderPipeline::paint(const float *rotMatrix, float tx, float ty, float tz,
+                         const AudioFeatures &audio)
+{
+	beginFrame( audio );
+	updateLiveInput();
+	updateTimingScale( audio );
+
+	const FrameTiming ft = readFrameClock();
+	float       timeSinceLastFrameSec = ft.dt;
+	const float dtWall                = ft.dtWall;
+	applyTransportModifiers( audio, timeSinceLastFrameSec, dtWall );
+	updateTitleReveal( audio, dtWall );
+
+	const AudioFeatures audioFx = conditionAudio( audio, timeSinceLastFrameSec );
+	updateImageState( timeSinceLastFrameSec );
+
+	const SceneScheduler::Tick schedTick = buildSchedulerTick( audio, timeSinceLastFrameSec );
+
+	// The one clock every shader reads. It advances AFTER the transport
+	// modifiers above, so a freeze ('e') or a DJ-stop really does stop it.
+	m_globaltime += timeSinceLastFrameSec;
+
+	stepSimulations( audio, timeSinceLastFrameSec, audioFx );
+	bindSceneInputs();
+	updateTrueStereoState();
+
+	renderActiveScenePass( audioFx );
+	renderNextScenePass( audioFx );
+	glBindFramebuffer( GL_FRAMEBUFFER, m_defaultFBO );
+	checkFramebufferStatus();
+
+	// The combine half of the scheduler tick, deliberately AFTER both scene
+	// passes: it needs m_trueStereoHold, which only exists once they ran.
+	m_scheduler.tickFx( schedTick, m_trueStereoHold );
+
+	renderFxStage( audioFx );
+	renderFinalBlend();
+
+	const GLuint presentSource =
+		renderTrailsPass( audio, audioFx, timeSinceLastFrameSec, dtWall );
+
+	// Spout output (-o): publish the displayed frame for OBS / Resolume etc.
+	// (Needs the GL context, which is current here; texture-share via DX interop.)
+	if( s_spoutEnabled )
+	{
+		if( !m_spoutStarted )
+			m_spoutStarted = spoutOutInit( "Kaleidoscope" );
+		spoutOutSend( presentSource, m_width, m_height );
+	}
+
+	runPresentPass( presentSource, audio, audioFx, timeSinceLastFrameSec, dtWall );
 	checkGLErrors("paint() 2");
 }
 
