@@ -253,6 +253,11 @@ void SetupWindow::buildContent()
 	m_videoCodec->addItem( "AV1", "av1" );
 	fTune->addRow( S( S_SETUP_VIDEOCODEC ), m_videoCodec );
 
+	m_recFps = new QComboBox();
+	m_recFps->addItem( "30 fps", 30 );
+	m_recFps->addItem( "60 fps", 60 );
+	fTune->addRow( S( S_SETUP_RECFPS ), m_recFps );
+
 	m_ssaa = new QComboBox();
 	m_ssaa->addItem( "1x", 1.0 );
 	m_ssaa->addItem( "1.5x", 1.5 );
@@ -309,6 +314,9 @@ void SetupWindow::loadFromIni()
 		m_videoCodec->setCurrentIndex( ci >= 0 ? ci : 0 );   // unknown value -> H.264
 	}
 	{
+		m_recFps->setCurrentIndex( s.value( "recordFps", 30 ).toInt() >= 45 ? 1 : 0 );
+	}
+	{
 		const double sv = s.value( "renderScaleMax", 1.0 ).toDouble();
 		int si = 0;   // nearest listed step, so a hand-edited value still shows sensibly
 		for( int i = 1; i < m_ssaa->count(); ++i )
@@ -353,6 +361,7 @@ void SetupWindow::saveToIni()
 	s.setValue( "stereoDepth", m_stereoDepth->value() );
 	s.setValue( "videoCodec",  m_videoCodec->currentData().toString() );
 	s.setValue( "renderScaleMax", m_ssaa->currentData().toDouble() );
+	s.setValue( "recordFps",      m_recFps->currentData().toInt() );
 
 	s.sync();
 	if( s.status() == QSettings::NoError )
