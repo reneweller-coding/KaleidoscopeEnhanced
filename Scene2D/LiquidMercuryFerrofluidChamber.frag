@@ -122,7 +122,7 @@ void main() {
     // Raymarch against heightfield plane y = ferroHeight(x, z)
     float dO = 0.0;
     float hitDist = -1.0;
-    vec3 p;
+    vec3 p = vec3(0.0);   // guarded by hitDist, but the compiler cannot see that
 
     for (int i = 0; i < 45; ++i) {
         p = ro + rd * dO;

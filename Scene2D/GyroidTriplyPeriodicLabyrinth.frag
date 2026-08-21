@@ -164,7 +164,7 @@ void main() {
     float dO = 0.12;
     float hitDist = -1.0;
     float glow = 0.0;
-    vec3 p;
+    vec3 p = vec3(0.0);   // guarded by hitDist, but the compiler cannot see that
     for (int i = 0; i < 90; ++i) {
         p = ro + rd * dO;
         float dS = gyroidSDF(p, scale, thickness);
