@@ -57,6 +57,18 @@ def main():
         if not os.path.isfile(cfg):
             print("no such config: %s" % cfg)
             return 2
+        # Well-formedness first. This checker is regex-based, so without this
+        # it will happily bless a config that no XML parser accepts -- which is
+        # exactly how a mismatched closing tag (<int ...></float>) slipped
+        # through once: the regexes matched, the app's and verify.ps1's XML
+        # parsers failed, and every probe silently fell back to a synthetic
+        # geom="points" tag.
+        try:
+            import xml.dom.minidom
+            xml.dom.minidom.parse(cfg)
+        except Exception as e:
+            print("MALFORMED XML: %s -> %s" % (cfg, e))
+            return 1
         text = open(cfg, encoding="utf-8", errors="replace").read()
         for _tag, rawfile, body in SHADER.findall(text):
             path = frag_path(rawfile)

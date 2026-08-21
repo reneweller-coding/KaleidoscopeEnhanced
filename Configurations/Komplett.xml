@@ -373,7 +373,7 @@
   <TextureShader file="..\\Scene2D\\TunnelPlain.frag" type="normal" mood="calm,bright" probability="0.15" complexity="10">
     <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
     <expr name="rig2Zoom" formula="0.05*swell"/>
-    <int name="sides" minValue="2" maxValue="14"></float>
+    <int name="sides" minValue="2" maxValue="14"></int>
     <float name="speed" minValue="0.01" maxValue="0.05"></float>
     <float name="power" minValue="1.0" maxValue="4.0"></float>
   </TextureShader>
