@@ -1193,13 +1193,32 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
             acZ += z * z;
         }
         float envStd = std::sqrt(acZ / float(kOdfEnvLen));
+        // Published for KALEIDO_SPEECH_DEBUG so the state below stays checkable.
+        m_odfEnvMean = envMean;
+        m_odfEnvStd  = envStd;
+
+        // KNOWN DEAD, measured 2026-08-22 -- left in place deliberately, see
+        // docs/engine-internals.md ("Autocorrelation tempo").
+        //
+        // `envStd < 0.050f` was calibrated against the BAND-RMS onset function
+        // this block used to consume ("a kick envelope measures std ~0.14").
+        // The ODF was later swapped for the FFT-based one without re-deriving
+        // the threshold, and on that scale real music sits at 0.021..0.038 --
+        // so this gate has been closed permanently ever since and m_acConf
+        // reads exactly 0.000 on all 45 corpus clips. Since
+        // `rhythm = max(kickRhythm, m_acConf)` and the BPM fusion below is
+        // guarded by `m_acConf > 0.35f`, the entire tempo autocorrelation
+        // currently contributes nothing.
+        //
+        // Simply lowering the threshold does NOT fix it. Measured with the gate
+        // forced open across beat-driven and beatless material, neither the
+        // autocorrelation peak nor its prominence separates the two: Kai Tracid
+        // (trance) peaks at 0.609 but The Prodigy at 0.167, BELOW Alcest
+        // (ambient) at 0.427, and prominence sits at ~1.0 for everything. The
+        // onset envelope itself does not carry the distinction, so reviving
+        // this needs a different ODF, not a different constant.
         if (envMean < 0.010f || envStd < 0.050f)
         {
-            // Not enough ABSOLUTE transient energy for a rhythm verdict.  A
-            // normalised autocorrelation is amplitude-blind: the tiny (but real)
-            // periodic ripple of beating drone partials scores "confidently
-            // periodic" even though there is no audible beat (a kick envelope
-            // measures std ~0.14, drone ripple ~0.02).  Decay confidence.
             m_acConf *= 0.98f;
         }
         else
@@ -2005,10 +2024,12 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
             fprintf( stderr,
                      "SPEECH mp=%.3f speechy=%.3f score=%.3f | lowE=%.3f beatAC=%.3f midR=%.3f "
                      "bassR=%.3f highR=%.3f envMean=%.4f | rhythm=%.3f key=%.3f "
-                     "fluxVar=%.3f lvl=%.3f acConf=%.3f acBPM=%.0f\n",
+                     "fluxVar=%.3f lvl=%.3f acConf=%.3f acBPM=%.0f "
+                     "odfMean=%.4f odfStd=%.4f\n",
                      m_sMusicPresence, speechiness, speechScore,
                      lowEnergy, beatAC, midRatio, bassRatio, highRatio, envMean,
-                     m_sRhythm, m_sKeyClarity, m_sFluxVar, level, m_acConf, m_acBPM );
+                     m_sRhythm, m_sKeyClarity, m_sFluxVar, level, m_acConf, m_acBPM,
+                     m_odfEnvMean, m_odfEnvStd );
     }
 
     // Music-or-speech is a property of the SOURCE: it holds for minutes, so the
