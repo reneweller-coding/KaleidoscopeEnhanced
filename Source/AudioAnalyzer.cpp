@@ -1423,6 +1423,23 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
                   + 0.38f * ( 1.f - m_sRoughness )
                   + 0.24f * m_sMode;
 
+    // Dev hook: KALEIDO_FORCE_MOOD="v,a" pins both axes, so the colour grade
+    // and every other mood consumer can be A/B-captured against the SAME
+    // track with forced extremes -- the only way to verify a slow, subtle
+    // grade on a renderer that is not frame-deterministic.
+    {
+        static const QByteArray forced = qgetenv( "KALEIDO_FORCE_MOOD" );
+        if( !forced.isEmpty() )
+        {
+            const QList<QByteArray> parts = forced.split( ',' );
+            if( parts.size() == 2 )
+            {
+                valence = qBound( 0.f, parts[0].toFloat(), 1.f );
+                arousal = qBound( 0.f, parts[1].toFloat(), 1.f );
+            }
+        }
+    }
+
     // KALEIDO_MOOD_DEBUG=1 prints the mood model's ingredients once a second.
     // Same lesson as the speech gate: a composite score can sit at a plausible
     // value while half its inputs are dead, and only the ingredients show it.

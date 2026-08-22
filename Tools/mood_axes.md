@@ -102,6 +102,43 @@ that can respond to cleanly tonal material — solo piano, classical — which a
 corpus of produced pop/rock/metal underrepresents. If you touch it, measure
 against tracks like the Satie and "Changes" first.
 
+## The colour grade: mood → pixels (mapping canon)
+
+Extraction is only half the pipeline; the STAR literature's second half is the
+mapping, and it has one empirically dominant finding (Palmer et al. 2013,
+PNAS; Valdez & Mehrabian 1994): music-colour associations are almost entirely
+**emotion-mediated** (r ≈ 0.99, cross-cultural), and the canon that follows is
+
+* valence ↑ → warmer/yellower colour, brighter; valence ↓ → bluish, darker, muted
+* arousal ↑ → saturation (and movement density, which timingScale already does)
+* dissonance → edge sharpness (kiki/bouba, robust across 25 languages)
+
+`Engine/Present.frag`'s global mood grade had the first two **swapped**
+(centroid drove temperature, valence drove saturation) — invisible for as long
+as valence was a constant. It now follows the canon: valence carries colour
+temperature (timbre keeps a 35 % minority say) plus a deliberately small ±8 %
+brightness term, arousal carries saturation, and the gated roughness adds up to
++0.15 CAS sharpen on dissonant material. Everything scales with the existing
+Mood knob and collapses to a no-op at knob 0 or in non-music mode (gated
+inputs sit at their neutral values).
+
+Verified with `KALEIDO_FORCE_MOOD="v,a"` (a dev hook that pins both axes):
+four 20 s renders of the same clip through TestPlain (alphabetical scene
+order), measured over 40 frames each:
+
+* valence 0.95 vs 0.05: warmth (mean R−B) **+8.8 vs −16.1** — the canon
+  direction, strongly visible
+* arousal 0.95 vs 0.05 at knob 2.5: mean saturation **0.443 vs 0.060** — the
+  low run is near-greyscale; at knob 1.0 the same delta is a subtle +0.03
+* the brightness term is intentionally swallowed by the auto-exposure
+  (histogram percentiles, ±35 % range) — brightness is owned by the
+  photosensitivity chain, and the grade must not fight it
+
+Side effect worth knowing: the auto-config mood buckets (`arousal < 0.33` /
+`> 0.66`) were nearly unreachable with the old compressed arousal (0.36..0.65),
+so auto-preset effectively sat on Allround. With the rebuilt axis the
+Ambient/Galerie/Club buckets actually trigger.
+
 ## Re-running
 
 ```

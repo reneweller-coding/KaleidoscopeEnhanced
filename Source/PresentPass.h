@@ -235,6 +235,7 @@ private:
 	GLint	m_presentScaleUni= -1;   ///< Uniform location: combined brightness scale ("scale").
 	GLint	m_presentCentroidUni = -1;   ///< Uniform location: audio spectral centroid ("audioCentroid").
 	GLint	m_presentValenceUni  = -1;   ///< Uniform location: audio valence ("audioValence").
+	GLint	m_presentArousalUni  = -1;   ///< Uniform location: audio arousal ("audioArousal"); canon: arousal drives saturation.
 	GLint	m_presentLevelUni    = -1;   ///< Uniform location: audio overall level ("audioLevel").
 	GLint	m_presentFluxUni     = -1;   ///< Uniform location: audio spectral flux ("audioFlux").
 	GLint	m_presentHueUni      = -1;   ///< Uniform location: audio chroma hue ("audioChromaHue").
