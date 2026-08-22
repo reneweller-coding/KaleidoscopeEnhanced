@@ -296,29 +296,42 @@ void SceneScheduler::tick( const Tick &t )
 				                   && ic->second < comb.size()
 				                   && ic->second != m_actFx )
 				                 ? (int) ic->second : -1;
+
+				// Texture/scene slot and combine/FX slot are TWO INDEPENDENT
+				// state machines with their own Solo/Fade timing (tick() vs
+				// tickFx()) -- each retarget must be guarded by ITS OWN state,
+				// not the other one's. Retargeting m_nextTexture while
+				// m_texState==1 (or m_nextFx while m_fxState==1) makes the
+				// already-visible, currently-blending fade silently swap to a
+				// DIFFERENT destination than the one it was rolled for -- the
+				// reported "jump to a completely different scene/effect right
+				// after a switch" (this exact bug previously existed for BOTH
+				// slots sharing one m_texState guard, which incorrectly let a
+				// mid-fade COMBINE retarget through whenever the unrelated
+				// TEXTURE slot happened to be idle at that moment).
 				if( m_texState == 0 )
 				{
 					m_nextTexture           = it->second;   // replay that section's shader
 					m_pendingSectionRestore = id;           //   ... with its exact params
-					if( fxTarget >= 0 )
+				}
+				else
+				{
+					m_pendingSectionNext   = (int) it->second;
+					m_pendingSectionNextId = id;
+				}
+
+				if( fxTarget >= 0 )
+				{
+					if( m_fxState == 0 )
 					{
 						m_nextFx        = fxTarget;
 						m_forceFxChange = true;
 					}
-				}
-				else
-				{
-					// Mid-fade already: retargeting m_nextTexture/m_nextFx
-					// directly here would make the currently-visible
-					// cross-fade suddenly start blending toward a DIFFERENT
-					// scene than the one it was rolled for -- the reported
-					// "jump to a completely different scene right after a
-					// switch". Let the current fade finish; the replay is
-					// applied at ITS fade-end instead (see below).
-					m_pendingSectionNext   = (int) it->second;
-					m_pendingSectionNextId = id;
-					if( fxTarget >= 0 )
+					else
+					{
 						m_pendingSectionNextFx = fxTarget;
+						m_forceFxChange        = true;   // consumed once tickFx() is back in Solo, by which point the deferred m_nextFx has already been applied at its fade-end
+					}
 				}
 			}
 			else
