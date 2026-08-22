@@ -26,7 +26,6 @@ m_minTimeSolo(minTimeSolo)
 , m_probability(1.0)
 {
 
-	const char* name = filenameFragmentShader.c_str();
 
 	m_vertexShaderFilename = "..\\standard.vert";
 	//m_fragmentShaderFilename = filenameFragmentShader.c_str();//filenameFragmentShader.toLocal8Bit().data();
@@ -213,7 +212,6 @@ void EffectShader::initUniforms(int width, int height)
 	m_interpolationUni = glGetUniformLocation( m_sh_prog_id, "interpolation" );
 
 
-	unsigned int nr = (unsigned int) m_uniforms.size();
 	
 	for( unsigned int i = 0; i < m_uniforms.size(); i++ )
 		m_uniforms[i]->initUniform( m_sh_prog_id );

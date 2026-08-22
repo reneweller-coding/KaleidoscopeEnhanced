@@ -1705,7 +1705,7 @@ void spoutCopy::rgba_bgra_sse2(const void* rgba_source, void* bgra_dest, unsigne
 } // end rgba_bgra_sse2
 
 //
-//	Adapted from a Gist snippet by Aurélien Vallée (NewbiZ) http://newbiz.github.io/
+//	Adapted from a Gist snippet by AurÃ©lien VallÃ©e (NewbiZ) http://newbiz.github.io/
 //
 //	https://gist.github.com/NewbiZ/5541524
 //

@@ -536,7 +536,7 @@ private:
 	// bind instead; src unchanged otherwise.
 	GLuint			m_rig2Fbo[2]    = { 0, 0 };   ///< Per-slot scratch FBOs for the 2D camera rig transform (rig2Transform()).
 	GLuint			m_rig2Tex[2]    = { 0, 0 };   ///< Per-slot scratch colour textures backing m_rig2Fbo.
-	int				m_rig2W = 0, m_rig2H = 0;     ///< Size the m_rig2Fbo/m_rig2Tex scratch targets were last (re)allocated at; re-checked on every rig2Transform() call.
+	unsigned int	m_rig2W = 0, m_rig2H = 0;     ///< Size the m_rig2Fbo/m_rig2Tex scratch targets were last (re)allocated at; re-checked on every rig2Transform() call.
 	/**
 	 * @brief Applies a scene's 2D camera-rig transform (roll/zoom/pan) to a finished effect frame, if it declares one.
 	 *
