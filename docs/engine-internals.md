@@ -277,7 +277,7 @@ Audio is captured via WASAPI loopback (`AudioAnalyzer`) and analysed in real tim
   fixed-function quad).  Procedural geometry lives in one static VBO per
   scene (generic layout: corner + index + four seeds; kinds: `points`,
   `cubes`, `ribbon`, `grid`, `quads`), the vertex shader animates
-  everything from the audio uniforms.  75 scenes ship.
+  everything from the audio uniforms.  241 scenes ship.
 
   **Scene variety per activation:** every time a 3D scene comes on it rolls
   a fresh epoch — a large time offset (different camera/burst phases), a

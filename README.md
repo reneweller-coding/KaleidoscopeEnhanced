@@ -23,13 +23,13 @@ build. See [Quick start](#quick-start).
 | ![Kaleidoscope](docs/screenshots/kaleidoscope.png) | ![PrismExplode](docs/screenshots/prismexplode.png) |
 | ![FeatherStorm](docs/screenshots/featherstorm.png) | ![AuroraBorealisOverFjord](docs/screenshots/aurora.png) |
 
-*Four of the 427 scenes in the [scene catalogue](docs/Catalog/Katalog.md) —
+*Four of the 593 scenes in the [scene catalogue](docs/Catalog/Katalog.md) —
 a classic kaleidoscope fold, a compute-driven prism-shatter, a volumetric
 feather storm with real 3D geometry and shadows, and a hardware-tessellated
 arctic fjord under the northern lights.*
 
 **Highlights**
-- 427 scenes + 29 overlay effects + 83 scene transitions, all audio-reactive
+- 593 scenes + 29 overlay effects + 83 scene transitions, all audio-reactive
   and image-driven — see the [scene catalogue](docs/Catalog/Katalog.md).
 - Real signal analysis (beat/onset detection, key & mood, song-structure
   tracking) drives the visuals, not a generic FFT bar graph — see
@@ -209,6 +209,8 @@ on. Switch between them with the number keys. Included presets:
 - **Allround** — the full modern arsenal, balanced; a safe default
 - **Club** — aggressive & bright: tunnels, godrays, lattices, analyzers
 - **Ambient** — calm drift: fluid ink, lava, drones, liquid light shows
+- **SpaceAmbient** — sci-fi & deep space: starships, planets, space
+  stations, nebulae, black holes, alien worlds
 - **Galerie** — the *photos* star: kaleidoscopes, image tunnels, gentle folds
 - **Psychedelic** — breathing fractals, pills, chrome, plasma, mushrooms
 - **Noir** — dark, high-contrast: noir fractals, dark tunnels, deep drones
@@ -219,7 +221,7 @@ Every scene re-rolls its own parameters each time it's picked, so one
 shader yields many different looks over a session rather than repeating
 itself identically.
 
-**[Browse the full scene catalogue](docs/Catalog/Katalog.md)** — all 427
+**[Browse the full scene catalogue](docs/Catalog/Katalog.md)** — all 593
 scenes, 29 overlay effects and 83 transitions, each with a description and
 three example frames. A printable `Katalog.pdf` ships with every release.
 
@@ -427,7 +429,7 @@ Top-level folders:
   `TrackMedia`, `VideoPiP`), MIDI, the render pipeline (`RenderPipeline`,
   `EffectShader`), config loading, the web remote (`WebRemote`), Spout I/O,
   and the shared UI-string table (`Strings`).
-- **`Scene2D\`** / **`Scene3D\`** — 198 + 231 scene shaders (fragment-only
+- **`Scene2D\`** / **`Scene3D\`** — 352 + 241 scene shaders (fragment-only
   effects vs. real vertex/geometry/tessellation-shader 3D scenes).
 - **`FX\`** — 29 full-time overlay passes (incl. `FxPlain`, the neutral
   pass-through most of the time uses).
