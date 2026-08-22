@@ -301,8 +301,18 @@ void main()
     // showed because valence was a near-constant until the axes were rebuilt.
     // Timbre keeps a minority say in temperature: bright timbre = warm light
     // is a separately evidenced crossmodal link.
-    vec3 cool = vec3(0.65, 0.85, 1.30);
-    vec3 warm = vec3(1.35, 1.10, 0.70);
+    // LUMINANCE-NORMALISED tint vectors (each has Rec.601 weight 1.0). The
+    // original pair carried luma 0.84 (cool) and 1.13 (warm), so the
+    // temperature ramp silently brightened warm frames by 13% -- measured
+    // across all 528 scenes it lifted the catalogue's median luma by 0.08 and
+    // pushed 15 already-bright scenes over the 0.72 white-out line, because
+    // the auto-exposure bottoms out at 0.72x and has no headroom left there.
+    // Temperature must be chroma only; brightness belongs to the exposure
+    // chain and the small explicit valence term below.
+    // cool = 2*(1,1,1) - warm: luma is linear, so this makes BOTH vectors
+    // luma-1 AND their midpoint exactly white -- temp 0.5 is a true no-op.
+    vec3 cool = vec3(0.806, 1.027, 1.381);
+    vec3 warm = vec3(1.194, 0.973, 0.619);
     float temp = clamp(0.65 * audioValence + 0.35 * audioCentroid, 0.0, 1.0);
     c *= mix(cool, warm, temp);
 
@@ -314,9 +324,12 @@ void main()
     c = hueRotate(c, audioChromaHue * 0.18);
 
     // Saturation from arousal (centred so 0.5 ≈ neutral): energetic music
-    // saturates, still music washes toward grey.
+    // saturates, still music mutes. The original 0.45..1.55 range halved the
+    // catalogue's measured saturation under low-arousal material -- calm music
+    // deserves muted colour, not near-greyscale. 0.75..1.25 keeps the canon
+    // direction at half the violence; the Mood knob still scales the swing.
     float lum = dot(c, vec3(0.299, 0.587, 0.114));
-    c = mix(vec3(lum), c, 0.45 + 1.10 * audioArousal);
+    c = mix(vec3(lum), c, 0.75 + 0.50 * audioArousal);
 
     // Tone-down: the source frames are often very bright/pale, washing the whole
     // image out.  Cut the exposure and deepen the mid-tones for richer colour

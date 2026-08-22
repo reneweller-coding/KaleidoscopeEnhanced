@@ -85,6 +85,14 @@ try {
 
     # The app's own fps report ends up in Release\kaleidoscope.log via -l.
     $env:KALEIDO_FPS_LOG = "1"
+    # Pin the mood axes to neutral for the probe: the colour grade responds to
+    # the MUSIC (valence -> temperature, arousal -> saturation), so an ungraded
+    # measurement would depend on whatever mood the synthetic test tone happens
+    # to score. With 0.5,0.5 the grade is an exact no-op and the metrics
+    # measure the SCENE, not the grade. Discovered the hard way: the first
+    # graded full scan halved the catalogue's measured saturation because the
+    # test tone carries almost no arousal.
+    $env:KALEIDO_FORCE_MOOD = "0.5,0.5"
 
     $i = 0
     foreach ($s in $Scenes) {
@@ -109,6 +117,7 @@ try {
 }
 finally {
     Remove-Item Env:\KALEIDO_FPS_LOG -ErrorAction SilentlyContinue
+    Remove-Item Env:\KALEIDO_FORCE_MOOD -ErrorAction SilentlyContinue
     Restore-Ini
 }
 
