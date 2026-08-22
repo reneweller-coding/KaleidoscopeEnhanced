@@ -67,46 +67,48 @@ void main()
 {
     vec2 uv = (gl_FragCoord.xy - 0.5 * resolution) / min(resolution.x, resolution.y);
     float t = time * 0.35 + audioAdvance * 0.3;
-    
+
     // Optomechanical microcavity mirrors (Fabry-Perot cavity)
     float r = length(uv);
     float theta = atan(uv.y, uv.x);
-    
+
     // Mechanical membrane radial vibration mode (Bessel-like)
     float phononFreq = (phononFreqP > 0.01 ? phononFreqP : 12.0);
     float membraneDisp = cos(r * phononFreq - t * 3.0) * exp(-r * 1.5);
     membraneDisp *= (pressureP > 0.01 ? pressureP : 1.0) * (0.8 + 0.5 * audioSwell);
-    
+
     // Optical cavity standing waves & frequency comb fringes
     float combFreq = (combP > 0.01 ? combP : 16.0);
     float qFactor  = (cavityQ_P > 0.01 ? cavityQ_P : 1.5);
     float cavityPhase = uv.x * combFreq + membraneDisp * 4.0 - t * 2.0;
-    
+
     // Airy distribution (Fabry-Perot transmission resonance peaks)
     float airyPeak = 1.0 / (1.0 + qFactor * 16.0 * pow(sin(cavityPhase), 2.0));
-    
+
     // Stimulated phonon lasing acoustic wave bursts
     float phononLasing = pow(clamp(membraneDisp * 1.5 + 0.5, 0.0, 1.0), 3.0) * (1.0 + 3.5 * audioKick);
-    
+
     // Annular cavity mirror rings
     float mirrorRing = exp(-abs(r - 0.45) * 35.0);
-    
+
     // Laser carrier and sideband colors
     vec3 laserCore = vec3(0.15, 0.85, 1.0);
     vec3 phononRed = vec3(1.0, 0.3, 0.1);
     vec3 combCol = palTint(mix(laserCore, phononRed, clamp(membraneDisp * 2.0 + 0.5, 0.0, 1.0)), cavityPhase * 0.15, 0.25);
-    
+
     // Background photo sampling
     vec2 bgUv = gl_FragCoord.xy / resolution;
     vec3 bg = img(bgUv) * 0.25;
-    
+
     vec3 col = bg;
     col += combCol * airyPeak * 2.0;
     col += palTint(vec3(0.9, 0.95, 1.0), audioCentroid, 0.2) * phononLasing * 2.2;
     col += palTint(vec3(0.6, 0.2, 0.9), t * 0.05, 0.25) * mirrorRing * 1.6;
     col += combCol * (audioKick * 0.35);
-    
+
     // Soft knee compression
     col /= 1.0 + 0.35 * max(col.r, max(col.g, col.b));
+    col *= 0.62;   // white-ground fix
+    col /= 1.0 + 0.50 * max(col.r, max(col.g, col.b));
     fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }

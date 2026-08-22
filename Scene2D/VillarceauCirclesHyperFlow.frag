@@ -122,5 +122,7 @@ void main() {
     finalCol += nodeTint;
 
     finalCol = pow(finalCol, vec3(0.88));
+    finalCol *= 0.78;   // measured luma 0.640: knee, not a linear trim
+    finalCol /= 1.0 + 0.45 * max(finalCol.r, max(finalCol.g, finalCol.b));
     fragColor = vec4(clamp(finalCol, 0.0, 1.0), 1.0);
 }

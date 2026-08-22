@@ -40,20 +40,21 @@ void main()
     vec3 lightDir = normalize(vec3(0.5, 0.6, 0.7));
     float diff = max(0.0, dot(vNormal, lightDir));
     float spec = pow(max(0.0, dot(reflect(-lightDir, vNormal), vec3(0.0, 0.0, 1.0))), 24.0) * (specularP > 0.01 ? specularP : 1.2);
-    
+
     // Ruled surface line markings along radius
     vec2 p = vUV * 2.0 - 1.0;
     float ruledLine = exp(-abs(fract(p.x * 12.0) - 0.5) * 12.0);
-    
+
     vec3 photo = img(vUV);
-    
+
     vec3 col = vCol * (0.6 + 0.4 * photo) * (0.4 + 0.6 * diff);
     col += vec3(0.95, 0.95, 1.0) * spec * (1.0 + 3.0 * audioKick);
     col += vCol * ruledLine * 0.8;
     col *= (0.85 + 0.35 * audioSwell);
     col += vCol * (audioKick * 0.3);
-    
+
     // Soft knee compression
     col /= 1.0 + 0.35 * max(col.r, max(col.g, col.b));
+    col *= 2.65;   // measured-dark lift (visual pass)
     fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }

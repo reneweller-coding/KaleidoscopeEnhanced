@@ -186,11 +186,11 @@ void main()
     // 0.82..1.18 of the base -- used raw its 8..16 range swings the sprite AREA
     // by 4x, which is the whole exposure of the scene.
     float px    = resolution.y / 1080.0;
-    float psMax = clamp((pointSizeP > 0.01 ? pointSizeP : 12.0), 8.0, 16.0);
+    float psMax = clamp((pointSizeP > 0.01 ? pointSizeP : 18.0), 12.0, 26.0);   // sprite sweep
     float gain  = 0.45 + 0.55 * (psMax / 12.0);
-    gl_PointSize = clamp(70.0 * gain * (0.75 + 0.55 * isSpinon) * (0.55 + 0.45 * live)
+    gl_PointSize = clamp(135.0 * gain * (0.75 + 0.55 * isSpinon) * (0.55 + 0.45 * live)
                          * px / max(vp.z, 0.6),
-                         max(3.0, 6.0 * px), max(6.0, 22.0 * px));
+                         max(4.0, 8.0 * px), max(8.0, 30.0 * px));
     vPointSize = gl_PointSize;
 
     gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);

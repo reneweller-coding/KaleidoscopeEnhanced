@@ -115,5 +115,7 @@ void main() {
     vec3 finalCol = waveCol * 0.4 + fringeTint + vec3(1.7, 1.6, 2.0) * collapseFlash * 0.6;
 
     finalCol = pow(finalCol, vec3(0.88));
+    finalCol *= 0.71;   // measured luma 0.703: knee, not a linear trim
+    finalCol /= 1.0 + 0.45 * max(finalCol.r, max(finalCol.g, finalCol.b));
     fragColor = vec4(clamp(finalCol, 0.0, 1.0), 1.0);
 }

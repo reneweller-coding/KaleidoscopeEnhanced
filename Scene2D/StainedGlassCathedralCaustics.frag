@@ -115,5 +115,7 @@ void main() {
     col = hueRot(col, audioChromaHue + hue);
     col = pow(col, vec3(0.9));
 
+    col *= 0.75;   // measured luma 0.668: knee, not a linear trim
+    col /= 1.0 + 0.45 * max(col.r, max(col.g, col.b));
     fragColor = vec4(col, 1.0);
 }

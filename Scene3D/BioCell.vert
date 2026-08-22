@@ -147,8 +147,8 @@ void main()
 
     float px   = resolution.y / 1080.0;
     float dist = max(vp.z, 0.5);
-    gl_PointSize = clamp(115.0 * (0.4 + 0.8 * r4) * px / dist, 1.5, 17.0 * px);
+    gl_PointSize = clamp(260.0 * (0.4 + 0.8 * r4) * px / dist, 2.0, 30.0 * px);   // sprite sweep: organelles were 2-px dust
 
     col *= glow * clamp(1.0 - vp.z / 110.0, 0.0, 1.0);
-    vCol = vec4(col * 2.8, 1.0);
+    vCol = vec4(col * 1.8, 1.0);
 }

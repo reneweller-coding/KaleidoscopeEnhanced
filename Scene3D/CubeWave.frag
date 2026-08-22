@@ -25,5 +25,6 @@ void main()
     float e3 = smoothstep(0.86, 0.99, a.z);
     float edge = clamp(e1 * e2 + e2 * e3 + e1 * e3, 0.0, 1.0);
     vec3 col = vCol.rgb * (0.10 + 1.6 * edge);
+    col *= 2.35;   // measured-dark lift (visual pass)
     fragColor = vec4(col, 1.0);
 }

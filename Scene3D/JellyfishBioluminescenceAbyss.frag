@@ -77,7 +77,7 @@ void main() {
     float hue = (hueP  > 0.0) ? hueP  : 0.0;
 
     // Translucent pelagic jellyfish cyan & electric violet luminescence
-    vec3 bellCol = palTint(mix(vec3(0.0, 0.7, 1.0), vec3(0.8, 0.2, 1.0), vTentacle), 0.30 * vTentacle, 0.28);
+    vec3 bellCol = palTint(mix(vec3(0.0, 0.7, 1.0), vec3(0.8, 0.2, 1.0), fract(vTentacle)), 0.30 * vTentacle, 0.25);
     vec3 pulseCol = vec3(1.0, 0.9, 0.7);
 
     vec3 col = mix(bellCol, pulseCol, vBioGlow * 0.7);

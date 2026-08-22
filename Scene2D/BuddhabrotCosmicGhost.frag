@@ -120,5 +120,6 @@ void main() {
     ghostCol += vec3(1.8, 1.6, 1.2) * chakraBloom;
 
     ghostCol = pow(ghostCol, vec3(0.88));
+    ghostCol /= 1.0 + 0.55 * max(ghostCol.r, max(ghostCol.g, ghostCol.b));   // peak knee: tame local glare, keep midtones
     fragColor = vec4(clamp(ghostCol, 0.0, 1.0), 1.0);
 }

@@ -122,8 +122,10 @@ void main()
     // Rim against the dark background, plus a hint of the photo as sky light.
     float fres = pow(1.0 - clamp(dot(n, V), 0.0, 1.0), 3.0);
     vec3 R = reflect(-V, n);
-    vec2 skyUV = vec2(atan(R.x, R.z) / 6.2831853 + 0.5, clamp(R.y * 0.5 + 0.5, 0.0, 1.0));
-    vec3 sky = textureLod(tex0, fract(skyUV), 0.0).rgb;
+    // Arc-palette dome instead of a photo-tile environment: the fract()
+    // lookup tiled the picture into hard rectangle blocks whenever the
+    // reflection vector swept quickly (the glitch squares in the probe).
+    vec3 sky = imgPalette(0.15 + 0.25 * clamp(R.y, 0.0, 1.0));
     sky = mix(vec3(dot(sky, vec3(0.333))), sky, 0.5);
     col += sky * fres * 0.32 * (0.6 + 0.6 * audioLevel);
 

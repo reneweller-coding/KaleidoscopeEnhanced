@@ -99,7 +99,7 @@ void main()
 
     float px   = resolution.y / 1080.0;
     float dist = max(vp.z, 0.5);
-    gl_PointSize = clamp(120.0 * (0.5 + 0.6 * r4) * px / dist, 1.5, 14.0 * px);
+    gl_PointSize = clamp(320.0 * (0.5 + 0.6 * r4) * px / dist, 3.0, 40.0 * px);   // sprite sweep round 3: fewer-bigger
 
     // A soft ring of light rolls from the centre to the rim once per bar;
     // floret hue winds slowly along the spiral.
@@ -112,5 +112,5 @@ void main()
     vec3 col = hueRot(seedCol, audioChromaHue + fr * 1.8);
     col *= (0.40 + 0.50 * r4 + 1.4 * ring)
          * (0.8 + 0.4 * audioSwell);
-    vCol = vec4(col * 3.4, 1.0);
+    vCol = vec4(col * 1.55, 1.0);
 }

@@ -67,53 +67,55 @@ void main()
 {
     vec2 uv = (gl_FragCoord.xy - 0.5 * resolution) / min(resolution.x, resolution.y);
     float t = time * 0.4 + audioAdvance * 0.35;
-    
+
     float r = length(uv);
     float theta = atan(uv.y, uv.x);
-    
+
     // Inflowing fluid velocity field: v(r) ~ -1/r (accelerating inwards)
     float r_H = (horizonRadP > 0.01 ? horizonRadP : 0.38) * (1.0 + 0.2 * audioBass);
-    
+
     // Local Mach number: M(r) = (r_H / r)^gamma
     float gammaMach = (machGradP > 0.01 ? machGradP : 1.2);
     float Mach = pow(r_H / max(r, 0.01), gammaMach);
-    
+
     // Acoustic horizon located at Mach = 1 (where r = r_H)
     float sonicHorizon = exp(-abs(r - r_H) * 25.0);
-    
+
     // Inflowing logarithmic spiral streamlines
     float streamPhase = theta * 4.0 + log(max(r, 0.02)) * 8.0 - t * 3.0 + audioPhase;
     float streamlines = sin(streamPhase) * 0.5 + 0.5;
-    
+
     // Trapped supersonic phonon waves (inside horizon, r < r_H)
     float pFreq = (phononWaveP > 0.01 ? phononWaveP : 16.0);
     float trappedPhonons = sin(r * pFreq - t * 6.0) * smoothstep(r_H + 0.05, r_H - 0.05, r);
-    
+
     // Analog Hawking radiation (thermal emission at horizon surface)
     float hawkingGlow = exp(-abs(r - r_H) * 8.0) * (1.0 + 3.5 * audioKick) * (hawkingTempP > 0.01 ? hawkingTempP : 1.3);
-    
+
     // Supersonic shadow (interior of horizon is pitch black / absorbing)
     float shadow = smoothstep(0.05, r_H + 0.02, r);
-    
+
     // Color palettes
     vec3 hawkingCol = vec3(1.0, 0.45, 0.15);
     vec3 streamCol  = vec3(0.15, 0.75, 0.95);
-    
+
     vec3 colHawking = palTint(hawkingCol, r * 0.3 + audioCentroid, 0.28);
     vec3 colStream  = palTint(streamCol, theta * 0.15 + audioCentroid, 0.22);
-    
+
     // Background photo sampling
     vec2 bgUv = gl_FragCoord.xy / resolution;
     vec3 bg = img(bgUv) * 0.25;
-    
+
     vec3 col = bg * shadow;
     col += colStream * streamlines * shadow * (0.8 + 0.4 * audioSwell);
     col += colHawking * sonicHorizon * 2.2;
     col += vec3(0.95, 0.95, 1.0) * hawkingGlow * 2.0;
     col += colStream * abs(trappedPhonons) * 1.2;
     col += colHawking * (audioKick * 0.35);
-    
+
     // Soft knee compression
     col /= 1.0 + 0.35 * max(col.r, max(col.g, col.b));
+    col *= 0.71;   // measured luma 0.708: knee, not a linear trim
+    col /= 1.0 + 0.45 * max(col.r, max(col.g, col.b));
     fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }

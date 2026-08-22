@@ -41,20 +41,21 @@ void main()
     vec3 lightDir = normalize(vec3(0.5, 0.6, 0.7));
     float diff = max(0.0, dot(vNormal, lightDir));
     float spec = pow(max(0.0, dot(reflect(-lightDir, vNormal), vec3(0.0, 0.0, 1.0))), 24.0) * (specularP > 0.01 ? specularP : 1.2);
-    
+
     vec3 aPos = abs(vLocalPos);
     float edgeGlow = smoothstep(0.42, 0.5, max(max(aPos.x, aPos.y), aPos.z));
-    
+
     vec2 photoUv = fract(vLocalPos.xy * 2.0 + 0.5);
     vec3 photo = img(photoUv);
-    
+
     vec3 col = vCol * (0.6 + 0.4 * photo) * (0.4 + 0.6 * diff);
     col += vec3(0.95, 0.95, 1.0) * spec * (1.0 + 3.0 * audioKick);
     col += vCol * edgeGlow * 1.5;
     col *= (0.85 + 0.35 * audioSwell);
     col += vCol * (audioKick * 0.3);
-    
+
     // Soft knee compression
     col /= 1.0 + 0.35 * max(col.r, max(col.g, col.b));
+    col *= 3.06;   // measured-dark lift (visual pass)
     fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }

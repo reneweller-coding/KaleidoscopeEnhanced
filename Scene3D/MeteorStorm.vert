@@ -129,8 +129,8 @@ void main()
         col *= alive * (0.40 + 0.90 * head)
              * (1.0 + 0.6 * audioOnset + 2.2 * audioDrop);
 
-        sizeBase = 100.0 * (0.7 + 1.3 * head);
-        sizeCap  = 16.0;
+        sizeBase = 297.2 * (0.7 + 1.3 * head);
+        sizeCap  = 47.6;
         sizeMin  = 1.5;
         sizeJit  = 0.4 + 0.8 * r4;
     }
@@ -155,8 +155,8 @@ void main()
         // patch, which has to hold a constant apparent size or the far half of
         // the field collapses onto the minimum-size floor and stops being
         // haze.  Folding dz back into the jitter cancels that division.
-        sizeBase = 9.0;
-        sizeCap  = 16.0;
+        sizeBase = 26.7;
+        sizeCap  = 47.6;
         sizeMin  = 3.0;
         sizeJit  = (0.5 + 1.3 * r1) * dz;
     }
@@ -172,8 +172,8 @@ void main()
         col = vec3(0.75, 0.8, 0.95) * (0.30 + 0.70 * r4) * tw
             * (0.8 + 0.4 * audioSwell);
 
-        sizeBase = 100.0;
-        sizeCap  = 16.0;
+        sizeBase = 297.2;
+        sizeCap  = 47.6;
         sizeMin  = 1.8;
         sizeJit  = 0.4 + 0.8 * r4;
     }

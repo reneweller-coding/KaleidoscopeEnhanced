@@ -131,5 +131,7 @@ void main()
 
     col *= 0.9 + 0.5 * audioLevel;
 
+    col *= 0.80;   // measured luma 0.608: knee, not a linear trim
+    col /= 1.0 + 0.45 * max(col.r, max(col.g, col.b));
     fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }

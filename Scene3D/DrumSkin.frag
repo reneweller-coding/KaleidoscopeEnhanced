@@ -95,7 +95,7 @@ void main()
 
     // Lift the film toward white: a fully saturated hue is dark in luminance,
     // and a drumhead lit hard is a bright object.
-    film = mix(film, vec3(1.0), 0.22);
+    film = mix(film, vec3(1.0), 0.10);
     vec3 base = mix(vec3(0.18, 0.19, 0.24), film, 0.72);
 
     float diff = max(dot(n, L), 0.0);
@@ -114,7 +114,7 @@ void main()
     col += film * pow(max(dot(n, H2), 0.0), 14.0) * 0.60;
 
     // Nodal lines glow faintly: the places that are NOT moving are the pattern.
-    col += hue2rgb(fract(hue + 0.5)) * node * (0.10 + 0.35 * glowP)
+    col += hue2rgb(fract(hue + 0.5)) * node * (0.22 + 0.55 * glowP)
          * (0.4 + 1.1 * audioKick);
 
     col += film * fres * (0.20 + 0.5 * glowP);

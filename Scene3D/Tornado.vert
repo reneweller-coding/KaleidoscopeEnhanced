@@ -149,7 +149,7 @@ void main()
 
     float px   = resolution.y / 1080.0;
     float dist = max(vp.z, 0.5);
-    gl_PointSize = clamp(95.0 * (0.4 + 0.8 * r4) * px / dist, 1.5, 14.0 * px);
+    gl_PointSize = clamp(194.8 * (0.4 + 0.8 * r4) * px / dist, 1.5, 28.0 * px);   // sprite sweep 2026-08-22: measured luma 0.033, area x4.2
 
     // Dust and debris; a few crackle white on the snare.  LIGHTNING: the
     // snare also fires a flash INSIDE the funnel at a wandering height —

@@ -157,5 +157,8 @@ void main()
 
     col *= 1.0 + 0.12 * audioBeat;
     col = col / (1.0 + col * 0.25);
+    col *= 1.8;   // measured-dark lift (visual pass)
+    float _elLum = dot(col, vec3(0.299, 0.587, 0.114));
+    col = clamp(mix(vec3(_elLum), col, 1.45), 0.0, 1.0);
     fragColor = vec4(col, interpolation);
 }

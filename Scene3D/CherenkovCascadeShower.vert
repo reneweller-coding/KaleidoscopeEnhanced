@@ -98,7 +98,7 @@ void main() {
     // Point size attenuation — hi-hats/cymbals spark a scattered SUBSET of the
     // tracks into brief bright grains (bounded, so the frame cannot flood).
     float hatSpark = min(audioHat, 1.0) * step(0.62, seeds.z) * (1.0 - cycle);
-    gl_PointSize = (4.0 + 8.0 * audioKick * (1.0 - cycle) + 3.0 * hatSpark)
+    gl_PointSize = (7.0 + 12.0 * audioKick * (1.0 - cycle) + 4.5 * hatSpark)
                  * (1.0 / max(gl_Position.w * 0.1, 0.5));
 
     vUV = vec2(seeds.x, seeds.y);

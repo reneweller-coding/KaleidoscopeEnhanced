@@ -20,5 +20,6 @@ void main()
     float d    = abs(vSide);
     float core = exp(-d * d * 20.0);
     float halo = exp(-d * d * 3.0) * 0.25;
+    core *= 3.20; halo *= 3.20;   // measured-dark lift (visual pass)
     fragColor = vec4(vCol.rgb * (core + halo), 1.0);
 }

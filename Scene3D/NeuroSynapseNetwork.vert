@@ -73,7 +73,7 @@ void main() {
 
     // Connectome structure: 2 Brain Hemispheres + Neural Axon Traces
     float hemisphere = (seeds.x > 0.5) ? 1.0 : -1.0;
-    
+
     // Ellipsoidal brain lobe coordinate
     float phi   = seeds.y * 6.2831853;
     float theta = (seeds.z - 0.5) * 3.14159;
@@ -120,8 +120,8 @@ void main() {
     // Point sprite size by depth and action potential — capped low: the
     // additive network integrates sprite AREA, the old 64 px cap was the
     // real reason the palette washed to white.
-    float pSize = (2.0 + actionPotential * 9.0 + audioHigh * 2.0) * (16.0 / max(viewP.z, 1.0));
-    gl_PointSize = clamp(pSize, 1.0, 16.0);
+    float pSize = (2.0 + actionPotential * 9.0 + audioHigh * 2.0) * (25.0 / max(viewP.z, 1.0));   // sprite sweep
+    gl_PointSize = clamp(pSize, 1.0, 26.0);
 
     // Synaptic colour from the photo arc (house standard); action potentials
     // still flash the classic gold so spikes read as events.

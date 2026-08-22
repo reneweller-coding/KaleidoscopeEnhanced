@@ -101,12 +101,13 @@ void main() {
         // Rising thermal plume stem (upwelling column, widening as it rises)
         float stemX = uv.x - x0 - sin(uv.y * 4.0 - t * 1.6 + ph) * 0.10;
         float stemWidth = (0.045 + 0.032 * (uv.y + 0.5)) * plm * (0.75 + 0.6 * sd);
-        plumeStem += exp(-abs(stemX) / max(stemWidth, 0.02)) * (0.75 + 0.35 * sd);
+        float sw = max(stemWidth, 0.02);
+        plumeStem += exp(-(stemX * stemX) / (sw * sw)) * (0.75 + 0.35 * sd);   // gaussian: the |x| tail summed into a flood
 
         // Mushrooming diapir head, each one arrested at a different depth
         float headY = 0.10 + 0.32 * fract(sd * 3.7);
         float headDist = length(vec2(stemX * 1.5, uv.y - headY));
-        diapirHead += exp(-headDist * 5.0) * (0.55 + 0.45 * sd) * (1.0 + audioKick * 1.2);
+        diapirHead += exp(-headDist * 9.0) * (0.55 + 0.45 * sd) * (1.0 + audioKick * 1.2);
     }
     plumeStem  = min(plumeStem,  1.6);
     diapirHead = min(diapirHead, 1.5);
@@ -123,7 +124,8 @@ void main() {
     vec3 moltenGold   = vec3(0.97, 0.84, 0.55);
     vec3 slabCool     = vec3(0.16, 0.20, 0.26);
 
-    float tempField = clamp(plumeStem * 0.70 + diapirHead * 0.95 + hotRoll * 0.55, 0.0, 1.0);
+    float tempField = clamp(plumeStem * 0.70 + diapirHead * 0.95 + hotRoll * 0.30, 0.0, 1.0);
+    tempField = pow(tempField, 1.35);   // hot stays hot, warm mush goes dark
     vec3 thermalCol = mix(basaltDark, magmaCrimson, tempField);
     // Timbre brightness shifts the magma's colour temperature toward
     // incandescent gold -- the audioCentroid mapping this file's header
@@ -146,8 +148,12 @@ void main() {
     // Combine visualizer — the cool mantle now shows its rock texture instead
     // of reading as black.
     float mixW = clamp(0.42 + 0.45 * tempField + 0.15 * audioLevel, 0.0, 0.95);
-    vec3 col = mix(photo * 0.62, thermalCol, mixW);
-    col += diapirHead * vec3(1.0, 0.92, 0.72) * (0.45 + audioKick * 0.8);
+    // photo*0.62 made the COLD rock the brightest thing in frame (the
+    // recording showed cream-white with dark plume silhouettes -- inverted).
+    // Cold mantle is dark; brightness now belongs to temperature alone.
+    vec3 rock = photo * mix(0.14, 0.50, tempField);
+    vec3 col = mix(rock, thermalCol, mixW);
+    col += diapirHead * vec3(1.0, 0.55, 0.25) * (0.20 + audioKick * 0.5);   // was a cream flood over the whole frame
 
     // Bounded hue nudges.  Rotating by the RAW audioChromaHue swung the whole
     // frame right around the wheel as the key slewed: that is the measured

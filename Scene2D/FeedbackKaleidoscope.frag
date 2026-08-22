@@ -190,6 +190,16 @@ void main()
 
     // decay is capped at 0.996 (not 0.999): together with the contrast curve
     // above this is what keeps the loop's peak gain below 1.
+    // In-loop brightness governor: an output-stage trim would compound
+    // to black through the loop (measured: 0.65 -> 0.09 luma).  This soft
+    // ceiling bites only above 0.55 luma, so the loop settles near it
+    // instead of racing to white -- or to black.
+    float prevLum = dot(prev, vec3(0.299, 0.587, 0.114));
+    prev *= 1.0 - 0.26 * smoothstep(0.42, 0.88, prevLum);
+    // The angular blur launders chroma out of the loop (measured sat 0.09);
+    // make the INJECTION carry extra chroma so the equilibrium keeps colour.
+    float freshLum = dot(fresh, vec3(0.299, 0.587, 0.114));
+    fresh = clamp(mix(vec3(freshLum), fresh, 1.8), 0.0, 1.0);
     vec3 col = mix(prev * min(decayV, 0.996) * edge, fresh, injectHere);
 
     // ---- The mirror itself, drawn CRISP every frame ----

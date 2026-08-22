@@ -79,5 +79,8 @@ void main()
 
     // Soft knee compression
     col /= 1.0 + 0.35 * max(col.r, max(col.g, col.b));
+    col /= 1.0 + 0.45 * max(col.r, max(col.g, col.b));   // sulphur terraces clipped flat yellow
+    float _gfLum = dot(col, vec3(0.299, 0.587, 0.114));
+    col = mix(vec3(_gfLum), col, 0.80);
     fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }

@@ -154,5 +154,6 @@ void main() {
     vaultCol = pow(vaultCol, vec3(0.88));
     vec3 _catTone = clamp(vaultCol, 0.0, 1.0);
     _catTone /= 1.0 + 0.30 * max(_catTone.r, max(_catTone.g, _catTone.b));
+    _catTone = clamp((_catTone - 0.28) * 1.65 + 0.13, 0.0, 1.0);   // washed-out fix: contrast S-curve, darker fog floor
     fragColor = vec4(_catTone, 1.0);
 }

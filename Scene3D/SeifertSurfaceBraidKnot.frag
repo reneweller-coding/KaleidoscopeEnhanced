@@ -41,19 +41,19 @@ void main()
 {
     float edge = exp(-abs(abs(vSide) - 0.92) * 16.0);
     float core = pow(1.0 - abs(vSide), 2.0);
-    
+
     vec3 lightDir = normalize(vec3(0.4, 0.6, 0.8));
     float diff = max(0.0, abs(dot(vNormal, lightDir)));
     float spec = pow(max(0.0, abs(dot(vNormal, vec3(0.0, 0.0, 1.0)))), 18.0) * (sheenP > 0.01 ? sheenP : 1.2);
-    
+
     vec3 photo = img(vUV);
-    
+
     vec3 col = vCol * (0.6 + 0.4 * photo) * (0.5 + 0.5 * diff);
     col += vCol * core * (0.8 + 0.4 * audioSwell);
     col += vec3(0.9, 0.95, 1.0) * edge * (1.0 + 3.0 * audioKick);
     col += vec3(1.0, 0.9, 0.8) * spec;
     col += vCol * (audioKick * 0.3);
-    
+
     // additive pass dim: this geom renders GL_ONE/GL_ONE without
     // depth -- overlapping layers ADD, so each fragment must stay
     // well below 1.0 or the stack burns to white.
@@ -61,5 +61,7 @@ void main()
 
     // Soft knee compression
     col /= 1.0 + 0.35 * max(col.r, max(col.g, col.b));
+    float _ssLum = dot(col, vec3(0.299, 0.587, 0.114));
+    col = clamp(mix(vec3(_ssLum), col, 1.9) * 1.25, 0.0, 1.0);   // measured sat 0.03
     fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }

@@ -131,7 +131,7 @@ void main() {
         float shockFront = smoothstep(0.3, 0.0, abs(dist - shockwaveRadius));
         float n = fbm3D(p * 1.5 + vec3(0.0, 0.0, time * 0.4 * spd));
 
-        float d = smoothstep(2.5, 0.2, dist) * n * dens * 0.20;
+        float d = smoothstep(2.5, 0.2, dist) * n * dens * 0.10;
         d += shockFront * (1.6 + 1.4 * (audioKick + audioBass));
 
         // Radial EJECTA filaments streaking away from the core, plus a
@@ -147,10 +147,14 @@ void main() {
             vec2 sampleUV = vec2(atan(p.z, p.x) / 6.283185 + 0.5, p.y * 0.3 + 0.5);
             vec3 imgCol = img(fract(sampleUV));
 
-            // Plasma glow & temperature mapping
-            vec3 glow = mix(imgCol, vec3(1.0, 0.4, 0.1), smoothstep(0.5, 0.0, dist));
+            // TEMPERATURE ramp, not photo mud: white-hot core, gold shell,
+            // ember red, violet outskirts.  The photo only textures it.
+            vec3 fire = mix(vec3(1.0, 0.30, 0.06), vec3(1.0, 0.88, 0.55),
+                            smoothstep(0.95, 0.25, dist));
+            fire = mix(vec3(0.20, 0.10, 0.28), fire, smoothstep(1.9, 0.85, dist));
+            vec3 glow = fire * (0.75 + 0.5 * dot(imgCol, vec3(0.333)));
             glow *= (1.0 + audioKick * 0.45 + audioHigh * 0.3);
-            glow += vec3(1.0, 0.85, 0.60) * shockFront * 0.9;   // golden shock rim
+            glow += vec3(1.0, 0.85, 0.60) * shockFront * 1.4;   // golden shock rim
 
             // Emission & Absorption
             float stepDensity = d * stepSize * 2.5;

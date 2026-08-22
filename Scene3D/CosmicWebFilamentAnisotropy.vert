@@ -96,7 +96,7 @@ void main()
         // A speck must stay legible at any distance -- below roughly four
         // pixels an additive sprite averages away to nothing and the far
         // field reads as black again.
-        sizeBase = 140.0; sizeMin = 4.4; sizeCap = 14.0;
+        sizeBase = 510.4; sizeMin = 4.4; sizeCap = 51.0;
     }
     else
     {
@@ -144,7 +144,7 @@ void main()
         vCol = imgPalette(fract(density * 0.4 + seed.x * 0.3 + audioCentroid))
              * (0.40 + 0.80 * density);
 
-        sizeBase = 78.0; sizeMin = 2.4; sizeCap = 18.0;
+        sizeBase = 284.3; sizeMin = 2.4; sizeCap = 65.7;
 
         // Rotation of the whole structure. At t * 0.1 (t itself at 0.3/s) this
         // was 0.03 rad/s -- under two degrees over a whole probe, so the web was

@@ -136,5 +136,14 @@ void main() {
     col = pow(col, vec3(0.88));
     vec3 _catTone = clamp(col, 0.0, 1.0);
     _catTone /= 1.0 + 1.3 * max(_catTone.r, max(_catTone.g, _catTone.b));
+    _catTone = clamp((_catTone - 0.26) * 1.55 + 0.12, 0.0, 1.0);   // washed-out fix: contrast S-curve, darker fog floor
+    // "Dispersion" without a rainbow is just fog: split the caustic
+    // brightness into a spectral gradient across its own intensity.
+    float _lum = dot(_catTone, vec3(0.299, 0.587, 0.114));
+    float _sh = fract(_lum * 1.6 + 0.06);
+    vec3 _spec = clamp(vec3(abs(_sh * 6.0 - 3.0) - 1.0,
+                            2.0 - abs(_sh * 6.0 - 2.0),
+                            2.0 - abs(_sh * 6.0 - 4.0)), 0.0, 1.0);
+    _catTone = mix(_catTone, _spec * _lum * 1.35, 0.42);
     fragColor = vec4(_catTone, 1.0);
 }

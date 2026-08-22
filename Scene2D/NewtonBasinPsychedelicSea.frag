@@ -183,5 +183,8 @@ void main() {
     basinCol = pow(basinCol, vec3(0.87));
     vec3 _catTone = clamp(basinCol, 0.0, 1.0);
     _catTone /= 1.0 + 0.28 * max(_catTone.r, max(_catTone.g, _catTone.b));
+    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));   // peak knee round 2
+    float _nbLum = dot(_catTone, vec3(0.299, 0.587, 0.114));
+    _catTone = clamp(mix(vec3(_nbLum), _catTone, 1.35), 0.0, 1.0);
     fragColor = vec4(_catTone, 1.0);
 }

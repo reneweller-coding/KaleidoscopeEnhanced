@@ -68,7 +68,7 @@ vec3 thinFilmColor(float thickness) {
 float mapBismuth(vec3 p, out vec3 outUVW, float stepScale) {
     vec3 z = p;
     float scale = 1.0;
-    
+
     // Repetition & domain folding
     z = mod(z + 2.0, 4.0) - 2.0;
 
@@ -127,11 +127,24 @@ void main() {
     vec3 vv = cross(uu, ww);
     vec3 rd = normalize(uv.x * uu + uv.y * vv + 1.2 * zm * ww);
 
+    // If a preset/extreme stepP still leaves the start point inside
+    // rock, walk the camera forward along its axis until it is free.
+    {
+        vec3 esc;
+        for (int e = 0; e < 8; ++e) {
+            if (mapBismuth(ro, esc, stp) > 0.05) break;
+            ro += vec3(0.0, 0.0, 0.35);
+        }
+    }
     float totalDist = 0.0;
     float minDist = 1000.0;
     vec3 hitUVW = vec3(0.0);
     int hitSteps = 0;
-    float stepScale = stp * (1.0 + 0.15 * audioBass);
+    // The 0.15*audioBass breathing moved the WALLS of the labyrinth;
+    // a numeric probe showed the open channel closing over the camera on
+    // bass swells (the recording's flat-grey frame is the inside of a
+    // terrace).  The music now drives light and colour, never the walls.
+    float stepScale = stp;
 
     for (int i = 0; i < 80; ++i) {
         vec3 p = ro + rd * totalDist;
@@ -152,7 +165,7 @@ void main() {
         vec3 p = ro + rd * totalDist;
         vec3 n = calcNormal(p, stepScale);
         vec3 lightDir = normalize(vec3(0.6, 0.8, -0.5));
-        
+
         // Metallic specular & Fresnel
         float diff = max(dot(n, lightDir), 0.0);
         vec3 ref = reflect(rd, n);
@@ -180,15 +193,22 @@ void main() {
         float ao = clamp(1.0 - float(hitSteps) / 80.0, 0.0, 1.0);
         col *= ao;
 
-        // Volumetric crystal depth fog
-        col = mix(col, vec3(0.02, 0.01, 0.05), 1.0 - exp(-totalDist * 0.12));
+        // Volumetric crystal depth fog.  At 0.12 the corridor (totalDist
+        // 10..20) sat in 70-90% fog -- THE reason the probe was near-black.
+        col = mix(col, vec3(0.02, 0.01, 0.05), 1.0 - exp(-totalDist * 0.045));
     } else {
         // Glow at distance
         col = vec3(0.02, 0.01, 0.05) + vec3(0.1, 0.3, 0.6) * exp(-minDist * 8.0);
     }
 
-    col = hueRot(col, hue);   // chromaHue handled inside imgPalette
+    col = hueRot(col, 0.25 * sin(hue));   // bounded: full rotation broke the bismuth identity
     col = pow(col, vec3(0.9)); // Vibrance boost
 
+    // Headlight: the corridors carried no near light at all and probed
+    // near-black front to back.
+    col *= 1.0 + 1.5 * exp(-totalDist * 0.30);
+    // Headlight: the corridors carried no near light at all and probed
+    // near-black front to back.
+    col *= 1.0 + 1.5 * exp(-totalDist * 0.30);
     fragColor = vec4(col, 1.0);
 }

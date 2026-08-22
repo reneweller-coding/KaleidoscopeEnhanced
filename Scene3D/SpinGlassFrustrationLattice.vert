@@ -93,6 +93,6 @@ void main()
     
     // Point Sprite size (V8c: cap 10-18px)
     float baseSize = (pointSizeP > 1.0 ? pointSizeP : 12.0);
-    gl_PointSize = clamp(baseSize * (1.0 / max(gl_Position.w * 0.25, 0.5)), 3.0, 16.0);
+    gl_PointSize = clamp(baseSize * (1.5 / max(gl_Position.w * 0.25, 0.5)), 3.0, 24.5);   // sprite sweep 2026-08-22: measured luma 0.060, area x2.3
     vPointSize = gl_PointSize;
 }

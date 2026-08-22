@@ -52,7 +52,7 @@ float dens(vec2 uv)
 {
     // Smooth the raw splat field: individual discs must merge into one body.
     float d = texture(texMetal, uv).a * 4.0;
-    vec2 px = 1.5 / resolution;
+    vec2 px = 15.0 / resolution;   // wider smoothing round 3
     d += texture(texMetal, uv + vec2( px.x, 0.0)).a * 2.0;
     d += texture(texMetal, uv + vec2(-px.x, 0.0)).a * 2.0;
     d += texture(texMetal, uv + vec2(0.0,  px.y)).a * 2.0;
@@ -66,12 +66,12 @@ void main()
     vec2 px = 1.0 / resolution;
 
     float d = dens(uv);
-    float surf = smoothstep(0.9, 2.2 + 1.5 * thickP, d);
+    float surf = smoothstep(0.35, 1.8 + 1.5 * thickP, d);
 
     // Normal from the density gradient — the metal's shape.
-    float dx = dens(uv + vec2(px.x * 2.0, 0.0)) - dens(uv - vec2(px.x * 2.0, 0.0));
-    float dy = dens(uv + vec2(0.0, px.y * 2.0)) - dens(uv - vec2(0.0, px.y * 2.0));
-    vec3 n = normalize(vec3(-dx * 90.0, -dy * 90.0, 1.0));
+    float dx = dens(uv + vec2(px.x * 8.0, 0.0)) - dens(uv - vec2(px.x * 8.0, 0.0));
+    float dy = dens(uv + vec2(0.0, px.y * 8.0)) - dens(uv - vec2(0.0, px.y * 8.0));
+    vec3 n = normalize(vec3(-dx * 20.0, -dy * 20.0, 1.0));
 
     vec3 V = vec3(0.0, 0.0, 1.0);
     vec3 L = normalize(vec3(0.5 * sin(time * 0.13), 0.5 * cos(time * 0.10), 0.85));

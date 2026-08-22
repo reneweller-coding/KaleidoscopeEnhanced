@@ -118,5 +118,6 @@ void main() {
     tricornCol += imgPalette(0.85) * coreBloom;
 
     tricornCol = pow(tricornCol, vec3(0.88));
+    tricornCol /= 1.0 + 0.45 * max(tricornCol.r, max(tricornCol.g, tricornCol.b));   // peak knee: tame local glare, keep midtones
     fragColor = vec4(clamp(tricornCol, 0.0, 1.0), 1.0);
 }

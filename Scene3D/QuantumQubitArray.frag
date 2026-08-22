@@ -90,5 +90,6 @@ void main() {
 
     col = hueRot(col, hue);   // chromaHue handled inside imgPalette
     col /= 1.0 + 0.32 * max(col.r, max(col.g, col.b));
+    col *= 3.20;   // measured-dark lift (visual pass)
     fragColor = vec4(col, 1.0);
 }

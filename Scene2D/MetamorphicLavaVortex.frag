@@ -155,7 +155,9 @@ void main() {
     float coreGlow = exp(-rV * 2.0) * (0.4 + 0.6 * audioSwell);
     col += vec3(1.0, 0.55, 0.26) * coreGlow * 0.85;
 
-    col = hueRot(col, hue);   // chromaHue handled inside imgPalette
+    // Bounded: a full hueP rotation repainted molten rock PURPLE in the
+    // probe.  Incandescence keeps its temperature; hueP only inflects.
+    col = hueRot(col, 0.30 * sin(hue));
 
     // A last bounded pull off the saturation ceiling: lava IS orange, so this
     // is deliberately gentle -- just enough that the incandescent half of the

@@ -62,13 +62,17 @@ void main() {
 
     // Glowing crevasses: light from inside the ice, tinted by the PHOTO
     // palette (house standard) instead of a fixed neon cyan.
-    vec3 crevasseCol = mix(vec3(0.0, 1.0, 0.9), imgPalette(0.18) * 1.6, 0.65)
+    // 65% of a 1.6x photo-arc colour flooded the whole glacier with the
+    // photo's dominant hue (recorded as ORANGE ice).  The photo may only
+    // inflect the crevasse teal, never replace it.
+    vec3 crevasseCol = mix(vec3(0.0, 1.0, 0.9), imgPalette(0.18), 0.22)
                      * vCrevasse * 1.6;
 
     // Sample active photo texture
     vec3 photo = img(vUV);
 
     vec3 col = iceCol + spec * vec3(1.0, 1.0, 1.0) * 0.8 + crevasseCol;
+    col /= 1.0 + 0.45 * max(col.r, max(col.g, col.b));   // additive stack knee
     col += photo * 0.25;
     col /= 1.0 + 0.25 * max(col.r, max(col.g, col.b));
 
@@ -79,7 +83,7 @@ void main() {
     col = mix(col, fogCol, fog);
 
     float h = (hueP > 0.0) ? hueP : 0.0;
-    if (h > 0.001) col = hueRot(col, h);
+    if (h > 0.001) col = hueRot(col, 0.25 * sin(h));   // full rotation turned the ice ORANGE
 
     fragColor = vec4(col, 1.0);
 }
