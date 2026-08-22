@@ -133,7 +133,7 @@ void main() {
     // least saturated end of the ramp, so this also spends the frame's hottest
     // pixels on its calmest colour rather than its most strident one.
     thermalCol = mix(thermalCol, moltenGold,
-                     clamp(pow(tempField, 2.2) * (0.7 + 0.5 * audioSwell + 0.6 * audioCentroid), 0.0, 1.0));
+                     clamp(pow(tempField, 2.6) * (0.35 + 0.35 * audioSwell + 0.30 * audioCentroid), 0.0, 1.0));
 
     // Cold downwelling limbs = subducting slabs, so the "empty" half of every
     // convection roll carries content too.
@@ -151,7 +151,8 @@ void main() {
     // photo*0.62 made the COLD rock the brightest thing in frame (the
     // recording showed cream-white with dark plume silhouettes -- inverted).
     // Cold mantle is dark; brightness now belongs to temperature alone.
-    vec3 rock = photo * mix(0.14, 0.50, tempField);
+    vec3 rockTex = mix(vec3(dot(photo, vec3(0.333))), photo, 0.45);
+    vec3 rock = rockTex * mix(0.10, 0.22, tempField);   // the 0.50 ceiling was the cream flood
     vec3 col = mix(rock, thermalCol, mixW);
     col += diapirHead * vec3(1.0, 0.55, 0.25) * (0.20 + audioKick * 0.5);   // was a cream flood over the whole frame
 
@@ -173,7 +174,7 @@ void main() {
     // Catalogue review: pull the magma tones off the saturation ceiling
     // (the old palette left ~40% of the frame fully saturated).
     float lum = dot(col, vec3(0.299, 0.587, 0.114));
-    col = mix(vec3(lum), col, 0.66);
+    col = mix(vec3(lum), col, 0.88);   // 0.66 bleached the gold into cream
 
     // Catalogue review: soft-knee exposure — hot audio compresses
     // instead of clipping the whole frame to white.
