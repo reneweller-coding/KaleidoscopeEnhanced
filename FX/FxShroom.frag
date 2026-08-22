@@ -11,6 +11,8 @@ uniform float time;
 uniform sampler2D tex0;
 uniform sampler2D tex1;
 uniform float interpolation;
+uniform float audioAdvance; // music advances the smear flow
+uniform float audioSwell;
 uniform float scale;
 uniform float speed;
 uniform int negativeU;
@@ -44,8 +46,9 @@ void main(void)
 {
   vec2 uv = -gl_FragCoord.xy / resolution.xy;
 
-  float timeSpeed = speed * time;
-  float prevTime= speed * (time-1.0);
+  float tw = time + 0.6*audioAdvance;
+  float timeSpeed = speed * tw;
+  float prevTime= speed * (tw-1.0);
 
   // current offset
   vec2 offset = getOffset(timeSpeed, uv);	
@@ -63,7 +66,7 @@ void main(void)
 	
   // some iterations of unweighted blur
   const int steps = 3; //rwrw 20
-  float factor = scaleFactor / float(steps);
+  float factor = scaleFactor * (1.0 + 0.6*audioSwell) / float(steps);
   
   for (int i=0; i<steps; i++)
   {

@@ -15,6 +15,9 @@ uniform float time;
 uniform sampler2D tex0;
 uniform sampler2D tex1;
 uniform float interpolation;
+uniform float audioBeat;    // engine beat pulse: the wipe surges with the music
+uniform float audioLevel;   // AGC-smoothed loudness: deepens the mid-transition effect
+
 
 const float PI = 3.14159265358979;
 
@@ -27,13 +30,17 @@ void main()
 {
     vec2  p   = gl_FragCoord.xy / resolution;
     float d   = 1.0 - interpolation;          // transition progress 0..1
+    // Beat surge, endpoint-safe: sin(PI*d) is 0 at d=0 and d=1,
+    // so the contract (exact A at 0, exact B at 1) cannot break.
+    d = clamp(d + 0.05 * sin(PI * d) * audioBeat, 0.0, 1.0);
     float mid = sin(PI * d);                  // 0 at both ends, 1 mid-transition
+    mid *= 1.0 + 0.35 * audioLevel;   // loud music deepens the effect
 
     // Stutter clock: block offsets HOLD for a few frames, then jump - a
     // continuous animation would read as a wave, not a corrupted codec.
     // Everything is gated by `mid` (0 at both ends) so identity holds
     // exactly at d=0/d=1 regardless of the (time-based) stutter phase.
-    float glitchT = floor(time * 10.0);
+    float glitchT = floor(time * 8.0);
     float rowH    = 1.0 / (18.0 + 14.0 * hashT(vec2(glitchT, 0.7)));
     float row     = floor(p.y / rowH);
     float rn      = hashT(vec2(row, glitchT));

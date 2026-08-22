@@ -11,6 +11,8 @@ uniform float time;
 uniform sampler2D tex0;
 uniform sampler2D tex1;
 uniform float interpolation;
+uniform float audioAdvance; // music drives the lens orbit
+uniform float audioSwell;
 
 
 //vec2 getModifiedUV(vec2 actualUV, vec2 pointUV, float radius, float strength)
@@ -68,7 +70,8 @@ void main(void)
 	float offset = 0.3;
 	
 	float speed = 0.4;
-	vec2 cst = vec2( cos(speed*time), sin(speed*time) );
+	float orbA = speed*time + 0.20*audioAdvance;
+	vec2 cst = vec2( cos(orbA), sin(orbA) );
     mat2 rot = mat2(cst.x,-cst.y,cst.y,cst.x);
     
     vec2 pos1 = vec2( 0.0, offset );

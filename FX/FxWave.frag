@@ -10,6 +10,8 @@ uniform float time;
 uniform sampler2D tex0;
 uniform sampler2D tex1;
 uniform float interpolation;
+uniform float audioAdvance; // music advances the ring wave
+uniform float audioSwell;
 
 // Created by inigo quilez - iq/2013
 // License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
@@ -51,7 +53,7 @@ void main(void)
 	vec2 p = uv;
 	
   float len = length(p);
-  vec2 uv1 = p + offset * ((p/len)*cos(len*12.0-speed*time*4.0)*0.03);
+  vec2 uv1 = p + offset * ((p/len)*cos(len*12.0-speed*(time + 0.4*audioAdvance)*4.0)*0.03*(1.0+0.8*audioSwell));
   vec4 col2 = interpolation * texture(tex0, uv1) + (1.0-interpolation)*texture(tex1, uv1); 
   
   

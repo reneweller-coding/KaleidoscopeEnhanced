@@ -24,6 +24,8 @@ uniform float radius;
 uniform float nrCopies;
 uniform float speed;
 uniform int rot;
+uniform float audioAdvance; // music drives the radial drift
+uniform float audioSwell;
 
 // Created by inigo quilez - iq/2013
 // License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
@@ -86,7 +88,7 @@ void main(void)
   {
 	  float f = nrCopies*(1.0-sqrt(1.0-r))/(r);
 	  vec2 uv1;
-	  uv1.x = p.x*f + speed*time;
+	  uv1.x = p.x*f + speed*(time + 0.4*audioAdvance);
 	  uv1.y = p.y*f + speed*time;
 	    
 	  if( rot > 0 )

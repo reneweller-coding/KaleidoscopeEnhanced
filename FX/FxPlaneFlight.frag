@@ -20,6 +20,8 @@ uniform float time;
 uniform sampler2D tex0;
 uniform sampler2D tex1;
 uniform float interpolation;
+uniform float audioPhase;   // music banks the view
+uniform float audioAdvance;
 
 // Created by inigo quilez - iq/2013
 // License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
@@ -30,12 +32,12 @@ void main(void)
     
     p*= 2.0;
     
-    float an = time*0.1;
+    float an = time*0.1 + 0.06*audioPhase;
     float x = p.x*cos(an)-p.y*sin(an);
     float y = p.x*sin(an)+p.y*cos(an);
      
     vec2 uv = 0.2*vec2(x,1.0)/abs(y);
-    uv.xy += 0.20*time;
+    uv.xy += 0.20*time + 0.10*audioAdvance;
 	
 	float w = max(-0.1, 0.6-abs(y) );
 	

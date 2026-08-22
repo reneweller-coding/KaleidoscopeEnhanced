@@ -10,6 +10,8 @@ uniform float time;
 uniform sampler2D tex0;
 uniform sampler2D tex1;
 uniform float interpolation;
+uniform float audioAdvance; // integrated music energy: ripples speed up smoothly
+uniform float audioBeat;
 
 
 
@@ -50,8 +52,9 @@ const float reflectionIntence = 200000.;
     {
       vec2 adjc = coord;
       theta = delta_theta*float(i);
-      adjc.x += cos(theta)*time*speed + time * speed_x;
-      adjc.y -= sin(theta)*time*speed - time * speed_y;
+      float tw = time + 0.6*audioAdvance;
+      adjc.x += cos(theta)*tw*speed + tw * speed_x;
+      adjc.y -= sin(theta)*tw*speed - tw * speed_y;
       col = col + cos( (adjc.x*cos(theta) - adjc.y*sin(theta))*frequency)*intensity;
     }
 

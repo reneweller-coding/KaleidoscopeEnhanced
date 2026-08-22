@@ -11,6 +11,8 @@ uniform float time;
 uniform sampler2D tex0;
 uniform sampler2D tex1;
 uniform float interpolation;
+uniform float audioPhase;   // music adds orbital drift
+uniform float audioSwell;
 
 vec2 clampQuadratic( vec2 p )
 {
@@ -49,7 +51,9 @@ void main(void)
 	
 	//vec2 offset = vec2(time*3000.0,pow(max(-sin(time*.2),.0),2.0)*16000.0)/pixelSize;
 	//vec2 offset = vec2(pow(cos(time*.2),2.0)*16000.0,pow(sin(time*.2),2.0)*16000.0)/pixelSize;
-	vec2 offset = vec2(cos(speed*time*.2)*extend,sin(speed*time*.2)*extend)/pixelSize;
+	float oa = speed*time*.2 + 0.15*audioPhase;
+	float ex = extend * (1.0 + 0.25*audioSwell);
+	vec2 offset = vec2(cos(oa)*ex,sin(oa)*ex)/pixelSize;
 	
 	//resolution.y/resolution.x*
 	
