@@ -11,6 +11,7 @@ class QCheckBox;
 class QComboBox;
 class QDoubleSpinBox;
 class QSpinBox;
+class QLineEdit;
 class QLabel;
 class QPushButton;
 class QScrollArea;
@@ -76,7 +77,9 @@ private:
 	QDoubleSpinBox  *m_stereoDepth   = nullptr;
 	QComboBox      *m_videoCodec    = nullptr;
 	QCheckBox       *m_motionBlur   = nullptr;   ///< Motion blur for recordings (ini key motionBlur).
-	QCheckBox       *m_showHidden   = nullptr;   ///< Debug: unhide Komplett/Test* presets (ini key showHiddenPresets).   ///< Motion blur for recordings (ini key motionBlur).
+	QCheckBox       *m_showHidden   = nullptr;   ///< Debug: unhide Komplett/Test* presets (ini key showHiddenPresets).
+	QSpinBox        *m_oscPort      = nullptr;   ///< OSC output port, 0 = off (ini key oscPort).
+	QLineEdit       *m_oscHost      = nullptr;   ///< OSC target host (ini key oscHost).
 	QComboBox      *m_recFps        = nullptr;   ///< Recording frame rate (ini key recordFps).
 	QComboBox      *m_ssaa          = nullptr;   ///< Supersampling ceiling (ini key renderScaleMax).   ///< Recording codec family (ini key videoCodec: h264/hevc/av1).
 

@@ -8,6 +8,7 @@
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QDoubleSpinBox>
 #include <QtWidgets/QSpinBox>
+#include <QtWidgets/QLineEdit>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QGroupBox>
@@ -288,6 +289,17 @@ void SetupWindow::buildContent()
 	auto *shHint = new QLabel( S( S_SETUP_SHOWHIDDEN_HINT ) );
 	shHint->setWordWrap( true );
 	fTune->addRow( QString(), shHint );
+
+	m_oscPort = new QSpinBox();
+	m_oscPort->setRange( 0, 65535 );
+	m_oscPort->setSpecialValueText( "0" );
+	fTune->addRow( S( S_SETUP_OSCPORT ), m_oscPort );
+	m_oscHost = new QLineEdit();
+	m_oscHost->setPlaceholderText( "127.0.0.1" );
+	fTune->addRow( S( S_SETUP_OSCHOST ), m_oscHost );
+	auto *oscHint = new QLabel( S( S_SETUP_OSC_HINT ) );
+	oscHint->setWordWrap( true );
+	fTune->addRow( QString(), oscHint );
 	root->addWidget( gTune );
 
 	root->addStretch( 1 );
@@ -336,6 +348,8 @@ void SetupWindow::loadFromIni()
 		m_recFps->setCurrentIndex( s.value( "recordFps", 30 ).toInt() >= 45 ? 1 : 0 );
 		m_motionBlur->setChecked( s.value( "motionBlur", false ).toBool() );
 		m_showHidden->setChecked( s.value( "showHiddenPresets", false ).toBool() );
+		m_oscPort->setValue( s.value( "oscPort", 0 ).toInt() );
+		m_oscHost->setText( s.value( "oscHost", "127.0.0.1" ).toString() );
 	}
 	{
 		const double sv = s.value( "renderScaleMax", 1.0 ).toDouble();
@@ -385,6 +399,8 @@ void SetupWindow::saveToIni()
 	s.setValue( "recordFps",      m_recFps->currentData().toInt() );
 	s.setValue( "motionBlur",     m_motionBlur->isChecked() );
 	s.setValue( "showHiddenPresets", m_showHidden->isChecked() );
+	s.setValue( "oscPort", m_oscPort->value() );
+	s.setValue( "oscHost", m_oscHost->text().trimmed().isEmpty() ? "127.0.0.1" : m_oscHost->text().trimmed() );
 
 	s.sync();
 	if( s.status() == QSettings::NoError )

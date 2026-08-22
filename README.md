@@ -155,6 +155,23 @@ machine.
 
 ---
 
+## Mood detection, and OSC output for VJ tools
+
+The analyzer estimates the music's mood on Russell's two axes — valence
+(positive/negative) and arousal (calm/energetic) — and uses it everywhere:
+scene selection is biased toward matching mood tags, pacing follows arousal,
+and a global colour grade follows the empirically grounded mapping canon
+(happy = warm and vivid, sad = bluish and muted, dissonant = harder edges).
+Every ingredient was measured against an 80-track corpus rather than guessed.
+
+Other software can consume the analysis live: set `oscPort` in the settings
+(or the Setup tool) and the visualizer streams OSC/UDP — `/mood/valence`,
+`/mood/arousal`, `/mood/quadrant`, `/beat`, `/audio/bands`, `/tempo/bpm` and
+more — to TouchDesigner, Resolume, Max/MSP or anything else that speaks OSC.
+
+The full story, with the literature and the measurements, is in
+[docs/mood-and-mapping.md](docs/mood-and-mapping.md).
+
 ## Configurations and presets
 
 ### Reviewing the shader library
