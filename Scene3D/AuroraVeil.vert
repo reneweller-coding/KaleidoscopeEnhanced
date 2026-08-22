@@ -55,7 +55,9 @@ void main()
     // Each veil is a slow serpentine line across the sky; veils spread
     // well apart in x and depth so they never pile up into a white wall.
     float amp = (3.0 + 5.0 * r2) * (0.6 + 0.9 * audioSwell);
-    float ph  = time * (0.10 + 0.06 * r3) + audioAdvance * 0.15;
+    // Measured motion 0.011 (bottom 5% of the catalogue). Real aurorae are
+    // slow, but a visualiser veil may breathe: double the serpentine pace.
+    float ph  = time * (0.35 + 0.14 * r3) + audioAdvance * 0.30;   // round 2: 0.22 still measured at the static line
     float x   = (t - 0.5) * 65.0 + (r1 - 0.5) * 85.0;
     float z   = 30.0 + vi * 4.5
               + sin(t * 4.0 + ph * 3.0 + r1 * 9.0) * amp

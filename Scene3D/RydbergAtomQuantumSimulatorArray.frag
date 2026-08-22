@@ -53,20 +53,30 @@ void main()
     // the same total light, spread over the picture instead of piled up.
     float baseLum = (pointGainP > 0.01 ? pointGainP : 1.1) * 0.26;
 
-    vec2 photoUv = fract(gl_PointCoord + vBlockade * 0.3);
+    // The excitation wave used to SLIDE each sprite's photo window as it
+    // passed (photoUv += vBlockade*0.3), so every wavefront crossing re-drew
+    // every atom's colours -- measured hueFlickHi 0.30. The window is stable
+    // now; excitation still shows through the white blockade-flash term.
+    vec2 photoUv = fract(gl_PointCoord * 0.9 + 0.05);
     vec3 photo = img(photoUv);
 
     vec3 col = vCol * (0.6 + 0.4 * photo) * core * baseLum;
     col += vec3(0.95, 0.95, 1.0) * core * baseLum
-         * min(1.0 + 1.6 * audioKick, 2.2) * vBlockade * 0.7;
+         * min(1.0 + 1.1 * audioKick, 1.9) * vBlockade * 0.7;   // flash partly restored: the flicker was the racing WAVE (vert), not the flash; contrast needs it
     col *= (0.85 + 0.35 * audioSwell);
     col += vCol * min(audioKick * 0.03, 0.05);
 
     // Still an additive GL_ONE/GL_ONE pass with no depth test: overlapping
     // tweezer planes ADD, so cap the FINAL tinted vec3 (not just the scalar
     // feeding it) well below 1.0 or the stack burns to white.
+    col *= 8.0;                       // round 2: the soft knee eats half the gain
     col = min(col, vec3(0.50));
 
+    // FLAT fix: the additive white terms dominate the tinted base; push
+    // the chroma back up before the knee (luma-preserving saturation).
+    float _lum = dot(col, vec3(0.299, 0.587, 0.114));
+    col = mix(vec3(_lum), col, 1.30);
+    col = max(col, 0.0);
     // Soft knee compression
     col /= 1.0 + 0.35 * max(col.r, max(col.g, col.b));
     fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);

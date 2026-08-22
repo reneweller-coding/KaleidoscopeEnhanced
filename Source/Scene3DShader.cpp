@@ -731,6 +731,14 @@ void Scene3DShader::draw()
 				for( int i = 0; i < 4; ++i ) m_rigAcc[i] += vel[i] * dt;
 				m_rigLastT = m_exprTime;
 			}
+			// The dolly accumulator is the one rig channel that must not run
+			// away: rotations wrap harmlessly, but an integrated rigDollyV
+			// with any non-zero mean would march the camera INTO the scene's
+			// geometry without bound -- a camera collision by construction.
+			// No catalogue entry uses the V channels today (audited: all 236
+			// dolly formulas are the bounded absolute 0.5*swell), so this
+			// clamp costs nothing now and defuses the first future one.
+			m_rigAcc[3] = std::max( -1.5f, std::min( m_rigAcc[3], 1.5f ) );
 			const float px = absv[0] + m_rigAcc[0], yw = absv[1] + m_rigAcc[1];
 			const float rl = absv[2] + m_rigAcc[2], dl = absv[3] + m_rigAcc[3];
 			// M = T(0,0,dolly) * Rz(roll) * Ry(yaw) * Rx(pitch), column-major.

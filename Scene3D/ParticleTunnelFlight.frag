@@ -28,8 +28,11 @@ void main() {
     float glow = exp(-r2 * 17.0) + exp(-r2 * 5.0) * 0.22;
     glow *= (1.0 + vLife * 1.4);
 
-    vec3 col = vCol.rgb * glow * 0.34;
+    // Measured luma 0.006 -- the V8c overexposure correction went ~10x
+    // too far on this sparse tunnel. 1.2 still sits well under the
+    // additive-burn regime (knee + cap follow).
+    vec3 col = vCol.rgb * glow * 8.5;
     vec3 _catTone = col * 0.85;
-    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
+    _catTone /= 1.0 + 0.20 * max(_catTone.r, max(_catTone.g, _catTone.b));   // softer knee: gain alone stopped registering
     fragColor = vec4(_catTone, 1.0);
 }

@@ -39,7 +39,7 @@ void main() {
     if (distSq > 1.0) discard;
 
     float alpha = exp(-distSq * 5.0);
-    vec3 col = vColor.rgb * alpha * 0.80;
+    vec3 col = vColor.rgb * alpha * 2.0;   // measured luma 0.028: was *0.80
 
     col = hueRot(col, audioChromaHue + hue);
     // Cap the TINTED colour, not the scalar that fed it: hueRot can push a

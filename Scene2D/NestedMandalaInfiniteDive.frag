@@ -145,5 +145,5 @@ void main() {
     finalCol += imgPalette(0.8) * smoothstep(0.9, 1.0, shockwave) * 0.4 * audioKick;
 
     finalCol = pow(finalCol, vec3(0.88));
-    fragColor = vec4(clamp(finalCol, 0.0, 1.0), 1.0);
+    fragColor = vec4(clamp(finalCol * 0.86, 0.0, 1.0), 1.0);   // measured luma 0.748: over the white line
 }

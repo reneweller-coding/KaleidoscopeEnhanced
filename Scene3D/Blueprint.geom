@@ -38,6 +38,7 @@ out float vMorph;
 uniform mat4  projM;
 uniform float eyeOff;
 uniform float audioAdvance;
+uniform float time;
 uniform float audioLevel;
 
 uniform float camDistP;
@@ -82,7 +83,10 @@ void main()
     // Flat face normal: this is a technical drawing, so facets are the point.
     vec3 fn = normalize(cross(b - a, c - a));
 
-    float ya = audioAdvance * 0.14;
+    // Was driven by audioAdvance alone -- near-static whenever the music
+    // is calm (measured motion 0.011). A slow constant turn keeps the
+    // drawing alive; the music still adds on top.
+    float ya = time * 0.22 + audioAdvance * 0.14;   // round 2: 0.08 rad/s did not register
     float pa = 0.34 * sin(audioAdvance * 0.08);
     mat3 yaw   = mat3(cos(ya), 0.0, -sin(ya), 0.0, 1.0, 0.0, sin(ya), 0.0, cos(ya));
     mat3 pitch = mat3(1.0, 0.0, 0.0, 0.0, cos(pa), sin(pa), 0.0, -sin(pa), cos(pa));

@@ -115,5 +115,5 @@ void main()
     
     // Soft knee compression
     col /= 1.0 + 0.35 * max(col.r, max(col.g, col.b));
-    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    fragColor = vec4(clamp(col * 0.90, 0.0, 1.0), 1.0);   // measured luma 0.730: over the white line
 }
