@@ -18,8 +18,10 @@ layout(std430, binding = 3) readonly buffer AutoExp {
  * @brief Final present pass.  Two jobs:
  *  1) A GLOBAL MOOD GRADE applied once to the finished frame, so EVERY effect
  *     (not just Tunnel/Kaleidoscope) reacts to the music's mood:
- *       audioCentroid -> colour temperature (dark=cool blue, bright=warm amber)
- *       audioValence  -> saturation (minor/rough muted, major/consonant vivid)
+ *       audioValence  -> colour temperature + brightness (happy=warm/bright,
+ *                        sad=bluish/darker; Palmer 2013 mapping canon)
+ *       audioArousal  -> saturation (energetic=vivid, still=muted)
+ *       audioCentroid -> minority share of the temperature (bright timbre)
  *       audioLevel    -> brightness (loudness)
  *       audioFlux     -> shimmer on spectral change
  *     The host feeds GATED values, so in non-music mode they sit at neutral
@@ -32,6 +34,7 @@ uniform float scale;
 
 uniform float audioCentroid;
 uniform float audioValence;
+uniform float audioArousal;   // canon: arousal drives saturation
 uniform float audioLevel;
 uniform float audioFlux;
 uniform float audioChromaHue;   // harmony → global hue shift (0 = neutral in non-music)
@@ -288,17 +291,32 @@ void main()
         c = clamp(c + (4.0 * c - (n + s + e + w)) * sharpen, mn, mx);
     }
 
-    // Colour temperature (centred so centroid 0.5 ≈ neutral).
+    // Mood grade along the empirically grounded mapping canon (Palmer 2013,
+    // Valdez & Mehrabian 1994): VALENCE carries colour temperature and
+    // brightness -- happy/major music is associated with warm, bright colour,
+    // sad/minor with bluish, darker, muted colour, and the association is
+    // emotion-mediated at r~0.99 across cultures. AROUSAL carries saturation
+    // ("Erregung vor allem mit Saettigung"). The previous grade had the two
+    // swapped (centroid on temperature, valence on saturation), which never
+    // showed because valence was a near-constant until the axes were rebuilt.
+    // Timbre keeps a minority say in temperature: bright timbre = warm light
+    // is a separately evidenced crossmodal link.
     vec3 cool = vec3(0.65, 0.85, 1.30);
     vec3 warm = vec3(1.35, 1.10, 0.70);
-    c *= mix(cool, warm, audioCentroid);
+    float temp = clamp(0.65 * audioValence + 0.35 * audioCentroid, 0.0, 1.0);
+    c *= mix(cool, warm, temp);
+
+    // Valence → brightness, deliberately subtle (max ±8%): the photosensitivity
+    // pass owns hard brightness dynamics; this is a slow mood tint, not a flash.
+    c *= 1.0 + (audioValence - 0.5) * 0.16;
 
     // Harmony → hue shift (the song's key/chords tint the whole palette).
     c = hueRotate(c, audioChromaHue * 0.18);
 
-    // Saturation from valence (centred so 0.5 ≈ neutral).
+    // Saturation from arousal (centred so 0.5 ≈ neutral): energetic music
+    // saturates, still music washes toward grey.
     float lum = dot(c, vec3(0.299, 0.587, 0.114));
-    c = mix(vec3(lum), c, 0.45 + 1.10 * audioValence);
+    c = mix(vec3(lum), c, 0.45 + 1.10 * audioArousal);
 
     // Tone-down: the source frames are often very bright/pale, washing the whole
     // image out.  Cut the exposure and deepen the mid-tones for richer colour

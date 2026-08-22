@@ -88,6 +88,7 @@ void PresentPass::setup( int renderW, int renderH,
 		m_presentScaleUni = glGetUniformLocation( m_presentProgId, "scale" );
 		m_presentCentroidUni = glGetUniformLocation( m_presentProgId, "audioCentroid" );
 		m_presentValenceUni  = glGetUniformLocation( m_presentProgId, "audioValence" );
+		m_presentArousalUni  = glGetUniformLocation( m_presentProgId, "audioArousal" );
 		m_presentLevelUni    = glGetUniformLocation( m_presentProgId, "audioLevel" );
 		m_presentFluxUni     = glGetUniformLocation( m_presentProgId, "audioFlux" );
 		m_presentHueUni      = glGetUniformLocation( m_presentProgId, "audioChromaHue" );
@@ -639,6 +640,7 @@ void PresentPass::run( const Inputs &in )
 	float ms = in.moodStrength;
 	if( m_presentCentroidUni >= 0 ) glUniform1f( m_presentCentroidUni, 0.5f + (audioFx.spectralCentroid - 0.5f) * ms );
 	if( m_presentValenceUni  >= 0 ) glUniform1f( m_presentValenceUni,  0.5f + (audioFx.valence          - 0.5f) * ms );
+	if( m_presentArousalUni  >= 0 ) glUniform1f( m_presentArousalUni,  0.5f + (audioFx.arousal          - 0.5f) * ms );
 	if( m_presentLevelUni    >= 0 ) glUniform1f( m_presentLevelUni,    audioFx.overallLevel * ms );
 	if( m_presentFluxUni     >= 0 ) glUniform1f( m_presentFluxUni,     audioFx.spectralFlux * ms );
 	if( m_presentHueUni      >= 0 ) glUniform1f( m_presentHueUni,      audioFx.chromaHue    * ms );
@@ -651,6 +653,12 @@ void PresentPass::run( const Inputs &in )
 		GLint locTexel = glGetUniformLocation( m_presentProgId, "srcTexel" );
 		float amt = (in.renderScale < 0.999f)
 		          ? clampf( (1.f - in.renderScale) * 0.9f, 0.f, 0.45f ) : 0.f;
+		// Mapping canon, "Dissonanz -> Formschaerfe" (kiki/bouba, robust across
+		// 25 languages): rough, dissonant sound hardens edges a little. Only
+		// ADDS sharpness -- softening would read as a defect, not a mood.
+		// audioFx.roughness is gated, so speech/silence contributes nothing.
+		amt = clampf( amt + in.fx->roughness * 0.15f * clampf( in.moodStrength, 0.f, 1.f ),
+		              0.f, 0.5f );
 		if( locSharp >= 0 ) glUniform1f( locSharp, amt );
 		if( locTexel >= 0 ) glUniform2f( locTexel, 1.f / float(in.renderW),
 		                                            1.f / float(in.renderH) );
