@@ -95,6 +95,9 @@ def enclosing_trig(code, pos):
     return False
 
 
+QUANT = re.compile(r'\b(?:floor|round)\s*\(\s*time\s*\*\s*([0-9]+(?:\.[0-9]+)?)')
+
+
 def scan_file(path):
     code = strip_comments(open(path, encoding="utf-8", errors="replace").read())
     hits = []
@@ -105,6 +108,14 @@ def scan_file(path):
             k = float(m.group(1) or m.group(2))
             hz = k * rate / (2.0 * math.pi)
             hits.append((hz, drv, k, enclosing_trig(code, m.start())))
+    # Quantised-time re-rolls: floor(time*k) hands a hash a NEW seed k times a
+    # second -- a noise strobe no sinusoid model sees. This was the checker's
+    # blind spot: eight shaders shipped stepping at 9..30 Hz while every
+    # sinusoidal term in the catalogue was inside budget. The step rate IS the
+    # event rate, so it maps onto Hz directly (no 2*pi involved).
+    for m in QUANT.finditer(code):
+        k = float(m.group(1))
+        hits.append((k, "floor(time)", k, True))
     return hits
 
 

@@ -137,7 +137,9 @@ void main() {
     // Branched Volcanic Lightning discharges inside the ash plume
     float lightningFlash = 0.0;
     if (audioHigh > 0.35 || audioKick > 0.5) {
-        float boltSeed = floor(time * 12.0);
+        // Lightning is a large bright structure: treat as full-frame,
+        // 3 Hz. 12 re-rolls a second read as flicker, not weather.
+        float boltSeed = floor(time * 3.0);
         float boltPath = (noise(vec2(plumeCoord.y * 15.0, boltSeed)) - 0.5) * 0.3;
         float boltDist = abs(plumeCoord.x - boltPath);
         float bolt = (0.0015 * blt) / (boltDist * boltDist + 0.0001);
