@@ -201,7 +201,7 @@
     <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
   </TextureShader>
-  <TextureShader file="..\\Scene3D\\Planet4D.frag" type="scene3d" geom="points" mood="dreamy,psychedelic" probability="0.3" complexity="2">
+  <TextureShader file="..\\Scene3D\\Planet4D.frag" type="scene3d" geom="points" mood="dreamy,psychedelic,space" probability="0.3" complexity="2">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
     <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
     <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
@@ -593,7 +593,7 @@
     <expr name="hueP" formula="chromaHue + seed3*6.28"/>
     <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\Scene2D\EinsteinRingGravitationalLens.frag" type="normal" probability="0.5" mood="bright,dark,psychedelic" complexity="3">
+  <TextureShader file="..\Scene2D\EinsteinRingGravitationalLens.frag" type="normal" probability="0.5" mood="bright,dark,psychedelic,space" complexity="3">
     <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
     <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="lensP"  minValue="0.5" maxValue="2.2"></float>
@@ -1064,7 +1064,7 @@
     <float name="gapWidthP" minValue="0.4" maxValue="1.8"></float>
     <float name="edgeGlowP" minValue="0.8" maxValue="2.5"></float>
   </TextureShader>
-  <TextureShader file="..\Scene2D\AcousticBlackHoleEventHorizon.frag" type="normal" probability="0.4" mood="dark,psychedelic" complexity="4">
+  <TextureShader file="..\Scene2D\AcousticBlackHoleEventHorizon.frag" type="normal" probability="0.4" mood="dark,psychedelic,space" complexity="4">
     <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
     <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="machGradP" minValue="0.8" maxValue="2.5"></float>
@@ -2058,7 +2058,7 @@
     <expr name="hueP" formula="chromaHue + seed3*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\Scene2D\RelativisticKerrPlasmaDisk.frag" type="normal" mood="psychedelic,dark,bright" probability="0.4" complexity="2">
+  <TextureShader file="..\Scene2D\RelativisticKerrPlasmaDisk.frag" type="normal" mood="psychedelic,dark,bright,space" probability="0.4" complexity="2">
     <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
     <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="speedP" minValue="0.6" maxValue="1.6"></float>
@@ -2128,7 +2128,7 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\Scene2D\ThomasAttractorCosmicLabyrinth.frag" type="normal" mood="psychedelic,dark,bright" probability="0.4" complexity="2">
+  <TextureShader file="..\Scene2D\ThomasAttractorCosmicLabyrinth.frag" type="normal" mood="psychedelic,dark,bright,space" probability="0.4" complexity="2">
     <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
     <expr name="rig2Zoom" formula="0.05*swell"/>
     <float name="speedP" minValue="0.6" maxValue="1.6"></float>
