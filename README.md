@@ -90,8 +90,10 @@ keyboard reference in-app.
 | `Esc`, `Q` | Quit                                                          |
 | `h`        | Toggle the on-screen **help** (keyboard reference)            |
 | `0`        | Open/close the preset menu (see below)                        |
-| `↑` `↓`    | Move the preset cursor while the menu is open                 |
-| `Enter`    | Switch to the highlighted preset (cross-fades)                |
+| `↑` `↓`    | Move the cursor in whichever overlay menu is open             |
+| `Enter`    | Take the highlighted entry (cross-fades)                      |
+| type       | Narrow an open menu to matching entries                       |
+| wheel      | Scroll an open menu; click picks, click outside closes        |
 | `i`        | Toggle the live audio-feature overlay (incl. **FPS**)         |
 | `d`        | Choose the **audio source** (output / microphone) — overlay   |
 | `↑` `↓`    | Also drive the audio-source cursor while that overlay is open |
@@ -134,9 +136,17 @@ well over nine sources. Each opens on the entry that is currently in use, `↑`/
 The highlight bar is where `Enter` would take you; the marker shows what is
 actually in use.
 
+Typing narrows a menu to entries containing what you typed — useful once the
+device list runs past twenty. `Backspace` takes a character back, `Esc` clears
+the filter first and closes on the second press. The mouse works too: the wheel
+scrolls, a click takes an entry, a click outside closes.
+
 `1`–`9` used to jump straight to a preset and are now unbound: the menu reaches
 every entry, so nine keys no longer have to be spent on a shortcut that only
 covered part of the list.
+
+**Double-click** toggles fullscreen. It used to quit the app outright, which
+made a slip of the hand end the show; quitting is `Esc` or `q`.
 
 Press **`k`** to persist the tuning keys (plus render scale) to
 `kaleidoscope_settings.ini`, so they're restored next launch. The `i`

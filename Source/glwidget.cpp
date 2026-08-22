@@ -98,6 +98,48 @@ void menuScroll( int &cursor, int &top, int count, int visible )
 	top = std::max( 0, std::min( top, count - visible ) );
 }
 
+/**
+ * @brief Feeds one key into a menu's type-to-filter string.
+ *
+ * Backspace removes a character, printable characters append. Any change puts
+ * the cursor back on the first match, since the row it pointed at is usually
+ * not in the new result set.
+ */
+bool menuFilterKey( QKeyEvent *e, QString &filter, int &cursor )
+{
+	if( e->key() == Qt::Key_Backspace )
+	{
+		if( !filter.isEmpty() ) { filter.chop( 1 ); cursor = 0; }
+		return true;
+	}
+	const QString t = e->text();
+	if( t.size() != 1 || !t.at( 0 ).isPrint() )
+		return false;
+	// A leading space would only ever match everything, so ignore it; inside
+	// the filter it is meaningful, because device names are full of them.
+	if( t.at( 0 ).isSpace() && filter.isEmpty() )
+		return false;
+	filter.append( t );
+	cursor = 0;
+	return true;
+}
+
+/**
+ * @brief Which row of a menu a point falls on, or -1 for none.
+ * @param hit Geometry recorded by that menu's last draw.
+ * @param p   Point in widget coordinates.
+ */
+int menuRowAt( const MenuHit &hit, const QPoint &p )
+{
+	if( hit.rowH <= 0 || hit.rows <= 0 || !hit.box.contains( p ) )
+		return -1;
+	const int rel = p.y() - hit.rowY0;
+	if( rel < 0 )
+		return -1;
+	const int row = rel / hit.rowH;
+	return ( row < hit.rows ) ? hit.top + row : -1;
+}
+
 }   // namespace
 
 // ---- Web-remote hooks (called from WebRemote on the main thread) ----
@@ -854,12 +896,11 @@ void GLwidget::draw()
 /**
  * @brief Draw the configuration picker (key '0').
  *
- * The list scrolls: the digit keys only ever reached nine presets, so anything
- * past the ninth -- which the hidden-preset debug switch and a saved Marked
- * preset both push you past -- was simply unreachable. Arrow keys move the
- * cursor, Enter activates it, and only a window of the list is drawn so the
- * rows keep a readable size no matter how many presets exist. The font size
- * used to be derived as height/count, which shrank every row as the list grew.
+ * The list scrolls and filters: the digit keys only ever reached nine presets,
+ * so anything past the ninth -- which the hidden-preset debug switch and a
+ * saved Marked preset both push you past -- was simply unreachable. Arrow keys
+ * move the cursor, typing narrows the list, Enter activates, and only a window
+ * of the list is drawn so rows keep a readable size however many presets exist.
  *
  * Two things are marked, and they mean different things: the cursor bar is
  * where Enter would take you, the dot marks the preset that is actually
@@ -867,9 +908,8 @@ void GLwidget::draw()
  */
 void GLwidget::showSelectConfigurationsMenu( QPainter *painter )
 {
-	const int nrConfigurations = int( m_configurationList.size() );
-	if( nrConfigurations <= 0 )
-		return;
+	const QVector<int> hits = configMenuMatches();
+	const int nrConfigurations = hits.size();
 
 	// Sized from height(), NOT m_height: m_height is in DEVICE pixels
 	// (height() * devicePixelRatio) while QPainter works in logical ones, so
@@ -886,22 +926,25 @@ void GLwidget::showSelectConfigurationsMenu( QPainter *painter )
 	const int padY  = lineH / 2;
 	// Leave room for the title and the key hint, and never fill the screen.
 	const int maxRows = std::max( 3, int( ( height() * 0.72 - 4 * lineH ) / lineH ) );
-	const int visible = std::min( nrConfigurations, maxRows );
+	const int visible = std::max( 0, std::min( nrConfigurations, maxRows ) );
+	if( nrConfigurations > 0 )
+		menuScroll( m_configMenuCursor, m_configMenuTop, nrConfigurations, visible );
+	else
+		m_configMenuCursor = m_configMenuTop = 0;
 
-	menuScroll( m_configMenuCursor, m_configMenuTop, nrConfigurations, visible );
-
-	const QString title = QString::fromUtf8( Strings::T( S_MENU_CONFIG_TITLE ) );
+	const QString title = QString::fromUtf8( Strings::T( S_MENU_CONFIG_TITLE ) )
+	                    + ( m_configMenuFilter.isEmpty()
+	                        ? QString()
+	                        : QString( "   \"%1\"" ).arg( m_configMenuFilter ) );
 	const QString hint  = QString::fromUtf8( Strings::T( S_MENU_NAV_HINT ) );
 
 	int maxTextW = std::max( fm.horizontalAdvance( title ), fm.horizontalAdvance( hint ) );
-	for( int i = 0; i < nrConfigurations; ++i )
-	{
+	for( int i = 0; i < int( m_configurationList.size() ); ++i )
 		maxTextW = std::max( maxTextW, fm.horizontalAdvance(
 			m_configurationList[i]->getConfigurationName() ) );
-	}
 
 	const int boxW = std::min( width() - 40, maxTextW + 96 );
-	const int boxH = ( visible + 3 ) * lineH + 2 * padY;
+	const int boxH = ( std::max( visible, 1 ) + 3 ) * lineH + 2 * padY;
 	const int boxX = ( width()  - boxW ) / 2;
 	const int boxY = ( height() - boxH ) / 2;
 
@@ -914,6 +957,14 @@ void GLwidget::showSelectConfigurationsMenu( QPainter *painter )
 	painter->drawText( boxX + ( boxW - fm.horizontalAdvance( title ) ) / 2, y, title );
 	const int firstRowY = y + lineH / 2;
 
+	// Remember where the rows landed so a click can be mapped back to one
+	// without repeating any of this arithmetic.
+	m_configMenuHit.box   = QRect( boxX, boxY, boxW, boxH );
+	m_configMenuHit.rowY0 = firstRowY + lineH - fm.ascent() - 2;
+	m_configMenuHit.rowH  = lineH;
+	m_configMenuHit.rows  = visible;
+	m_configMenuHit.top   = m_configMenuTop;
+
 	y = firstRowY;
 	for( int row = 0; row < visible; ++row )
 	{
@@ -921,7 +972,7 @@ void GLwidget::showSelectConfigurationsMenu( QPainter *painter )
 		y += lineH;
 
 		const bool isCursor = ( i == m_configMenuCursor );
-		const bool isActive = ( m_configurationList[i] == m_actConfiguration );
+		const bool isActive = ( m_configurationList[hits[i]] == m_actConfiguration );
 
 		if( isCursor )
 		{
@@ -934,12 +985,19 @@ void GLwidget::showSelectConfigurationsMenu( QPainter *painter )
 		// numbers: they only ever existed to announce the digit shortcuts,
 		// which are gone.
 		const QString mark = isActive ? QString::fromUtf8( "\xE2\x97\x8F " ) : QString( "   " );
-		const QString text = mark + m_configurationList[i]->getConfigurationName();
+		const QString text = mark + m_configurationList[hits[i]]->getConfigurationName();
 
 		if( isCursor )      painter->setPen( QColor( 255, 255, 255, 255 ) );
 		else if( isActive ) painter->setPen( QColor( 150, 200, 245, 235 ) );
 		else                painter->setPen( QColor( 205, 205, 210, 210 ) );
 		painter->drawText( boxX + 34, y, text );
+	}
+
+	if( visible == 0 )
+	{
+		y = firstRowY + lineH;
+		painter->setPen( QColor( 200, 150, 150, 220 ) );
+		painter->drawText( boxX + 34, y, QString::fromUtf8( Strings::T( S_MENU_NO_MATCH ) ) );
 	}
 
 	// Only claim there is more when there actually is.
@@ -1126,21 +1184,21 @@ void GLwidget::updateAdaptiveScale()
 	}
 }
 
+/**
+ * @brief Double-click toggles fullscreen.
+ *
+ * It used to call exit(0) instead, with this toggle sitting unreachable
+ * underneath it -- a stray double-click on the window ended the show, which is
+ * a brutal answer to a slip of the hand. Quitting already has two deliberate
+ * keys ('Esc' and 'q'); a mouse gesture should not be a third.
+ */
 void GLwidget::mouseDoubleClickEvent(QMouseEvent *e) {
   QWidget::mouseDoubleClickEvent(e);
 
-  saveAllSettings();   // exit() unten läuft an keinem Destruktor vorbei
-  exit( 0 );
-
-  // NOTE: exit(0) above never returns, so the fullscreen/maximize toggle below
-  // is unreachable dead code left over from an earlier behavior (double-click
-  // used to toggle fullscreen; it now quits instead). Kept as-is since this is
-  // a comment-only documentation pass, not a behavior change.
-  if(isFullScreen()) {
-     setWindowState(Qt::WindowMaximized);
-  } else {
-     setWindowState(Qt::WindowFullScreen);
-  }
+  if( isFullScreen() )
+     setWindowState( Qt::WindowMaximized );
+  else
+     setWindowState( Qt::WindowFullScreen );
 }
 
 void GLwidget::timerEvent( QTimerEvent* )
@@ -1192,9 +1250,71 @@ void GLwidget::resetRotation()
 	m_RotationMatrix[0] = m_RotationMatrix[5] = m_RotationMatrix[10] = m_RotationMatrix[15] = 1.0;*/
 }
 
-void GLwidget::mousePressEvent( QMouseEvent * e /*the event*/ )
+/**
+ * @brief Click inside an open overlay menu picks a row; click outside closes it.
+ *
+ * The row geometry comes from MenuHit, filled while drawing, so this never has
+ * to reproduce the layout arithmetic -- and cannot drift out of step with it.
+ */
+void GLwidget::mousePressEvent( QMouseEvent * e )
 {
-	//m_lastPos = e->pos();
+	const QPoint p = e->position().toPoint();
+
+	if( m_showSelectConfigurationMenu )
+	{
+		const int row = menuRowAt( m_configMenuHit, p );
+		if( row >= 0 )
+		{
+			const QVector<int> hits = configMenuMatches();
+			m_showSelectConfigurationMenu = false;
+			if( row < hits.size() && m_configurationList[hits[row]] != m_actConfiguration )
+				switchConfig( m_configurationList[hits[row]] );
+			m_configMenuFilter.clear();
+		}
+		else if( !m_configMenuHit.box.contains( p ) )
+			m_showSelectConfigurationMenu = false;
+		return;
+	}
+	if( m_showAudioMenu )
+	{
+		const int row = menuRowAt( m_audioMenuHit, p );
+		if( row >= 0 )
+		{
+			const QVector<int> hits = audioMenuMatches();
+			m_showAudioMenu = false;
+			if( row < hits.size() )
+				selectAudioDevice( hits[row] );
+			m_audioMenuFilter.clear();
+		}
+		else if( !m_audioMenuHit.box.contains( p ) )
+			m_showAudioMenu = false;
+		return;
+	}
+}
+
+/**
+ * @brief The wheel scrolls whichever overlay menu is open.
+ *
+ * Without a menu open it does nothing, rather than falling through to some
+ * other meaning -- the wheel has no job in the visualiser itself.
+ */
+void GLwidget::wheelEvent( QWheelEvent *e )
+{
+	const int steps = e->angleDelta().y() / 120;
+	if( steps == 0 )
+		return;
+
+	int  *cursor = nullptr;
+	int   count  = 0;
+	if( m_showSelectConfigurationMenu ) { cursor = &m_configMenuCursor; count = configMenuMatches().size(); }
+	else if( m_showAudioMenu )          { cursor = &m_audioMenuCursor;  count = audioMenuMatches().size(); }
+	if( !cursor || count <= 0 )
+		return;
+
+	// Clamp rather than wrap: a wheel flick past the end should stop there, not
+	// reappear at the top, which is disorienting when the list is long.
+	*cursor = std::max( 0, std::min( *cursor - steps, count - 1 ) );
+	e->accept();
 }
 
 void GLwidget::mouseMoveEvent( QMouseEvent * e /*the event*/ )
@@ -2009,6 +2129,37 @@ void GLwidget::selectAudioDevice( int index )
 	}
 }
 
+QVector<int> GLwidget::configMenuMatches() const
+{
+	QVector<int> out;
+	for( int i = 0; i < int( m_configurationList.size() ); ++i )
+		if( m_configMenuFilter.isEmpty()
+		    || m_configurationList[i]->getConfigurationName()
+		           .contains( m_configMenuFilter, Qt::CaseInsensitive ) )
+			out.append( i );
+	return out;
+}
+
+QVector<int> GLwidget::audioMenuMatches() const
+{
+	QVector<int> out;
+	const QString f = m_audioMenuFilter;
+	// Row 0 is the default-output entry; it stays visible while nothing is
+	// typed, and matches on its own label once something is.
+	if( f.isEmpty()
+	    || QString::fromUtf8( Strings::T( S_AUDIOMENU_DEFAULT_OUTPUT ) )
+	           .contains( f, Qt::CaseInsensitive ) )
+		out.append( 0 );
+	if( m_audioAnalyzer )
+	{
+		const QList<AudioDevice> devs = m_audioAnalyzer->devices();
+		for( int i = 0; i < devs.size(); ++i )
+			if( f.isEmpty() || devs[i].name.contains( f, Qt::CaseInsensitive ) )
+				out.append( i + 1 );
+	}
+	return out;
+}
+
 int GLwidget::audioMenuCount() const
 {
 	// Row 0 is "default output"; the enumerated devices follow it.
@@ -2018,10 +2169,11 @@ int GLwidget::audioMenuCount() const
 /**
  * @brief Draw the audio-source picker (key 'd').
  *
- * Scrolls, for the same reason the preset menu does: selection used to be
- * bound to the digit keys, so the list was truncated at nine entries
- * (`if( shown > 9 ) shown = 9`) and anything past the ninth device was not
- * even drawn. A machine with a few virtual cables has well over nine.
+ * Scrolls and filters, for the same reason the preset menu does: selection used
+ * to be bound to the digit keys, so the list was truncated at nine entries
+ * (`if( shown > 9 ) shown = 9`) and anything past the ninth device was not even
+ * drawn. A machine with a few virtual cables has well over nine, which is also
+ * why typing to narrow the list earns its keep here.
  *
  * The highlight bar is where Enter would take you; the arrow marks the source
  * that is actually feeding the analyzer.
@@ -2036,15 +2188,17 @@ void GLwidget::drawAudioMenu( QPainter *painter )
 		current = m_audioAnalyzer->currentDeviceName();
 	}
 
-	const int total = 1 + devs.size();          // default entry + devices
+	const QVector<int> hits = audioMenuMatches();
+	const int total = hits.size();
 	const int lh    = 26;
 
 	// Leave room for the title and the key hint, and never fill the screen.
 	const int maxRows = std::max( 3, int( ( height() * 0.72 - 4 * lh ) / lh ) );
-	const int visible = std::min( total, maxRows );
-	menuScroll( m_audioMenuCursor, m_audioMenuTop, total, visible );
+	const int visible = std::max( 0, std::min( total, maxRows ) );
+	if( total > 0 ) menuScroll( m_audioMenuCursor, m_audioMenuTop, total, visible );
+	else            m_audioMenuCursor = m_audioMenuTop = 0;
 
-	const QString hint = QString::fromUtf8( Strings::T( S_MENU_NAV_HINT_D ) );
+	const QString hint = QString::fromUtf8( Strings::T( S_MENU_NAV_HINT ) );
 
 	painter->setFont( QFont( "Consolas", 12 ) );
 	QFontMetrics fm( painter->font() );
@@ -2057,21 +2211,32 @@ void GLwidget::drawAudioMenu( QPainter *painter )
 	}
 
 	const int boxW = std::min( width() - 40, std::max( 580, textW + 70 ) );
-	const int boxH = lh * ( visible + 2 ) + 44;
+	const int boxH = lh * ( std::max( visible, 1 ) + 2 ) + 44;
 	const int x0   = ( width()  - boxW ) / 2;
 	const int y0   = ( height() - boxH ) / 2;
 
 	painter->fillRect( x0, y0, boxW, boxH, QColor( 0, 0, 0, 200 ) );
 	painter->setPen( QColor( 120, 200, 255 ) );
 	painter->setFont( QFont( "Consolas", 14, QFont::Bold ) );
-	painter->drawText( x0 + 20, y0 + 32, QString::fromUtf8( Strings::T( S_AUDIOMENU_TITLE ) ) );
+	painter->drawText( x0 + 20, y0 + 32,
+	                   QString::fromUtf8( Strings::T( S_AUDIOMENU_TITLE ) )
+	                   + ( m_audioMenuFilter.isEmpty()
+	                       ? QString()
+	                       : QString( "   \"%1\"" ).arg( m_audioMenuFilter ) ) );
 
 	painter->setFont( QFont( "Consolas", 12 ) );
+
+	m_audioMenuHit.box   = QRect( x0, y0, boxW, boxH );
+	m_audioMenuHit.rowY0 = y0 + 32 + lh - fm.ascent() - 3;
+	m_audioMenuHit.rowH  = lh;
+	m_audioMenuHit.rows  = visible;
+	m_audioMenuHit.top   = m_audioMenuTop;
+
 	// current.isEmpty() means "the default device" -- see the language-neutral
 	// sentinel comment in AudioAnalyzer::run().
 	for( int row = 0; row < visible; ++row )
 	{
-		const int i  = m_audioMenuTop + row;
+		const int i  = hits[m_audioMenuTop + row];
 		const int ry = y0 + 32 + ( row + 1 ) * lh;
 
 		QString label;
@@ -2089,7 +2254,7 @@ void GLwidget::drawAudioMenu( QPainter *painter )
 			active = !current.isEmpty() && current == d.name;
 		}
 
-		if( i == m_audioMenuCursor )
+		if( m_audioMenuTop + row == m_audioMenuCursor )
 		{
 			painter->fillRect( QRect( x0 + 6, ry - fm.ascent() - 3, boxW - 12, lh ),
 			                   QColor( 70, 120, 190, 190 ) );
@@ -2101,6 +2266,13 @@ void GLwidget::drawAudioMenu( QPainter *painter )
 		// No row numbers: they only announced the digit shortcuts, which are gone.
 		painter->drawText( x0 + 24, ry,
 		                   label + ( active ? QString::fromUtf8( "   \xE2\x86\x90" ) : QString() ) );
+	}
+
+	if( visible == 0 )
+	{
+		painter->setPen( QColor( 200, 150, 150, 220 ) );
+		painter->drawText( x0 + 24, y0 + 32 + lh,
+		                   QString::fromUtf8( Strings::T( S_MENU_NO_MATCH ) ) );
 	}
 
 	painter->setPen( QColor( 150, 150, 155, 200 ) );
@@ -2151,54 +2323,71 @@ void GLwidget::keyPressEvent(QKeyEvent* event)
 	// same rows, they just cannot reach past the ninth.
 	if( m_showSelectConfigurationMenu )
 	{
-		const int n = int( m_configurationList.size() );
-		switch( menuNavKey( event->key(), m_configMenuCursor, n ) )
+		const QVector<int> hits = configMenuMatches();
+		switch( menuNavKey( event->key(), m_configMenuCursor, hits.size() ) )
 		{
 			case MenuKey::Moved:
 				return;
 			case MenuKey::Accept:
 				m_showSelectConfigurationMenu = false;
-				if( m_configMenuCursor >= 0 && m_configMenuCursor < n
-				    && m_configurationList[m_configMenuCursor] != m_actConfiguration )
-					switchConfig( m_configurationList[m_configMenuCursor] );
+				if( m_configMenuCursor >= 0 && m_configMenuCursor < hits.size()
+				    && m_configurationList[hits[m_configMenuCursor]] != m_actConfiguration )
+					switchConfig( m_configurationList[hits[m_configMenuCursor]] );
+				m_configMenuFilter.clear();
 				return;
 			case MenuKey::Cancel:
-				m_showSelectConfigurationMenu = false;
+				// Esc peels one layer at a time: clear the filter first, close
+				// second. Closing straight away would throw away the typing
+				// with no way to see what was matched.
+				if( !m_configMenuFilter.isEmpty() ) { m_configMenuFilter.clear(); m_configMenuCursor = 0; }
+				else                                  m_showSelectConfigurationMenu = false;
 				return;
 			case MenuKey::None:
-				break;   // fall through to the global handler (digits, '0', ...)
+				break;
 		}
+		// '0' still closes -- but only while nothing is typed, after which it
+		// is a character like any other. Checked BEFORE the filter, or it
+		// would be typed instead of closing.
+		if( event->key() == Qt::Key_0 && m_configMenuFilter.isEmpty() )
+		{
+			m_showSelectConfigurationMenu = false;
+			return;
+		}
+		menuFilterKey( event, m_configMenuFilter, m_configMenuCursor );
+		return;   // modal: nothing else leaks out of an open menu
 	}
 
 	// The audio-source picker is modal while it is open: arrows drive its
 	// cursor, Enter picks.
 	if( m_showAudioMenu )
 	{
-		const int k = event->key();
-		const int n = audioMenuCount();
-		// Swallow the digits. They no longer select anything, and letting them
-		// through would mean '0' opens the preset menu on top of this one.
-		if( k >= Qt::Key_0 && k <= Qt::Key_9 )
-			return;
-		switch( menuNavKey( k, m_audioMenuCursor, n ) )
+		const QVector<int> hits = audioMenuMatches();
+		switch( menuNavKey( event->key(), m_audioMenuCursor, hits.size() ) )
 		{
 			case MenuKey::Moved:
 				return;
 			case MenuKey::Accept:
 				m_showAudioMenu = false;
-				selectAudioDevice( m_audioMenuCursor );
+				if( m_audioMenuCursor >= 0 && m_audioMenuCursor < hits.size() )
+					selectAudioDevice( hits[m_audioMenuCursor] );
+				m_audioMenuFilter.clear();
 				return;
 			case MenuKey::Cancel:
-				m_showAudioMenu = false;
+				if( !m_audioMenuFilter.isEmpty() ) { m_audioMenuFilter.clear(); m_audioMenuCursor = 0; }
+				else                                 m_showAudioMenu = false;
 				return;
 			case MenuKey::None:
 				break;
 		}
-		if( k == Qt::Key_D )
+		// 'd' closes while nothing is typed; after that it is just a letter,
+		// which matters here because most device names contain one.
+		if( event->key() == Qt::Key_D && m_audioMenuFilter.isEmpty() )
 		{
 			m_showAudioMenu = false;
 			return;
 		}
+		menuFilterKey( event, m_audioMenuFilter, m_audioMenuCursor );
+		return;   // modal
 	}
 
     switch(event->key())
