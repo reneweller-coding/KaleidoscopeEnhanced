@@ -40,22 +40,22 @@ void main()
     vec2 pc = gl_PointCoord - vec2(0.5);
     float r2 = dot(pc, pc);
     if (r2 > 0.25) discard;
-    
+
     // Smooth gaussian point sprite
     float hScale = (haloP > 0.01 ? haloP : 1.2);
     float core = exp(-r2 * 18.0 / hScale);
-    
+
     // Controlled low luminance per point sprite (V8c)
     float baseLum = (pointGainP > 0.01 ? pointGainP : 0.08) * 0.38;   // measured luma 0.021: was *0.12
-    
+
     vec2 photoUv = fract(gl_PointCoord + vMeltingState * 0.3);
     vec3 photo = img(photoUv);
-    
+
     vec3 col = vCol * (0.6 + 0.4 * photo) * core * baseLum;
-    col += vec3(0.9, 0.95, 1.0) * core * baseLum * (1.0 + 0.6 * audioKick) * vMeltingState;   // round 3: still read as colour flicker at 1.4
+    col += mix(vCol, vec3(0.9, 0.95, 1.0), 0.35) * core * baseLum * (1.0 + 0.6 * audioKick) * vMeltingState;
     col *= (0.85 + 0.35 * audioSwell);
     col += vCol * (audioKick * 0.03);
-    
+
     // Soft knee compression
     col /= 1.0 + 0.35 * max(col.r, max(col.g, col.b));
     fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);

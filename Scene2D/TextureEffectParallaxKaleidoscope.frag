@@ -60,14 +60,14 @@ vec3 getKaleidoscopeColor( vec2 coord )
 	p.y /= resolution.y;
 	p.x -= 0.5*resolution.x/resolution.y;
 	p.y -= 0.5;
-    
+
     p = 4.0 * p;
-    
-    
-    float angle = 0.0; 
+
+
+    float angle = 0.0;
     if( rotate > 0 )
        angle = M_PI*0.25;
-    
+
     // a rotation
     //vec2 cst = vec2( cos(interpolationRotation), sin(interpolationRotation) );
     vec2 cst = vec2( cos(angle), sin(angle) );
@@ -94,8 +94,8 @@ vec3 getKaleidoscopeColor( vec2 coord )
 
     // polar to cartesian coordinates
     p = r * vec2(cos(a), sin(a));
-	
-    return (interpolation * texture(tex0,p+0.5) + (1.0-interpolation)*texture(tex1, p + 0.5)).rgb;    
+
+    return (interpolation * texture(tex0,p+0.5) + (1.0-interpolation)*texture(tex1, p + 0.5)).rgb;
     //return interpolation * texture(tex0,uv) + (1.0-interpolation)*texture(tex1,uv);
 }
 
@@ -111,7 +111,7 @@ void main(void)
 
 	//float speedMovement = 5.0;
 	//float extend = 4000;
-	
+
 	// pixellate.  audioZCR coarsens the quantisation STEP: noisy, broadband
 	// material breaks the parallax into fat lo-fi blocks, a pure tone keeps it
 	// fine.  The same step is divided back out when the layer UV is rebuilt
@@ -127,7 +127,7 @@ void main(void)
 	float rotDir = 1.0;
 	if( direction > 0 )
 		rotDir = -1.0;
-		
+
 	//vec2 offset = vec2(time*3000.0,pow(max(-sin(time*.2),.0),2.0)*16000.0)/pixelSize;
 	//vec2 offset = vec2(pow(cos(time*.2),2.0)*16000.0,pow(sin(time*.2),2.0)*16000.0)/pixelSize;
 	float orbit = speedMovement*time*.2 + 0.15*audioAdvance;      // jump-free audio drift
@@ -170,6 +170,7 @@ void main(void)
 			break;
 		}
 	}
-	
+
+	col /= 1.0 + 0.55 * max(col.r, max(col.g, col.b));   // over-bright tail (final review)
 	fragColor = vec4(col,1.0);//vec4( getKaleidoscopeColor( pixel+.5 ), 1.0 );//vec4(col,1.0);
 }

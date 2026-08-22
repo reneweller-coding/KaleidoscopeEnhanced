@@ -109,5 +109,6 @@ void main() {
     finalCol += imgPalette(0.85) * coreBloom;
 
     finalCol = pow(finalCol, vec3(0.88));
+    finalCol /= 1.0 + 0.60 * max(finalCol.r, max(finalCol.g, finalCol.b));   // over-bright tail (final review)
     fragColor = vec4(clamp(finalCol, 0.0, 1.0), 1.0);
 }

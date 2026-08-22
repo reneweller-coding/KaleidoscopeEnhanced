@@ -131,7 +131,7 @@ void main() {
         float shockFront = smoothstep(0.3, 0.0, abs(dist - shockwaveRadius));
         float n = fbm3D(p * 1.5 + vec3(0.0, 0.0, time * 0.4 * spd));
 
-        float d = smoothstep(2.5, 0.2, dist) * n * dens * 0.10;
+        float d = smoothstep(2.5, 0.2, dist) * n * dens * 0.045;   // the broad fog was drawing a solid ball
         d += shockFront * (1.6 + 1.4 * (audioKick + audioBass));
 
         // Radial EJECTA filaments streaking away from the core, plus a
@@ -139,8 +139,8 @@ void main() {
         float fil = pow(fbm3D(normalize(p) * 5.0 + vec3(7.0)), 3.5)
                   * smoothstep(shockwaveRadius + 0.25, shockwaveRadius * 0.2, dist)
                   * smoothstep(0.10, 0.45, dist);   // shell, not the core fill
-        d += fil * 1.4 * dens;
-        d += smoothstep(0.40, 0.05, dist) * 1.0;
+        d += fil * 2.6 * dens;   // ejecta filaments carry the explosion
+        d += smoothstep(0.40, 0.05, dist) * 0.55;
 
         if (d > 0.01) {
             // Map sample point to 2D UV for source image sampling
@@ -149,9 +149,14 @@ void main() {
 
             // TEMPERATURE ramp, not photo mud: white-hot core, gold shell,
             // ember red, violet outskirts.  The photo only textures it.
-            vec3 fire = mix(vec3(1.0, 0.30, 0.06), vec3(1.0, 0.88, 0.55),
-                            smoothstep(0.95, 0.25, dist));
-            fire = mix(vec3(0.20, 0.10, 0.28), fire, smoothstep(1.9, 0.85, dist));
+            // Temperature relative to the travelling shock front: inside it
+            // is white-hot, at the front gold, outside ember red fading to
+            // violet.  Absolute dist thresholds never fired -- the marched
+            // samples all sit past them.
+            float hot = clamp(1.0 - dist / max(shockwaveRadius, 0.25), 0.0, 1.0);
+            vec3 fire = mix(vec3(1.0, 0.32, 0.07), vec3(1.0, 0.92, 0.62),
+                            smoothstep(0.15, 0.95, hot));
+            fire = mix(vec3(0.35, 0.12, 0.30), fire, smoothstep(0.0, 0.35, hot));
             vec3 glow = fire * (0.75 + 0.5 * dot(imgCol, vec3(0.333)));
             glow *= (1.0 + audioKick * 0.45 + audioHigh * 0.3);
             glow += vec3(1.0, 0.85, 0.60) * shockFront * 1.4;   // golden shock rim
@@ -176,12 +181,12 @@ void main() {
     finalCol += flareCol * flare;
 
     if (hueP > 0.0) {
-        finalCol = hueRot(finalCol, hueP);
+        finalCol = hueRot(finalCol, 0.22 * sin(hueP));   // full rotation turned the FIRE cyan
     }
 
     // Catalogue review: soft-knee exposure — hot audio compresses
     // instead of clipping the whole frame to white.
-    vec3 _catTone = (finalCol) * 0.34;
+    vec3 _catTone = (finalCol) * 0.85;   // 0.34 crushed the explosion into a dim blue ball
     _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
     fragColor = vec4(_catTone, 1.0);
 }

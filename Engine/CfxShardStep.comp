@@ -81,11 +81,21 @@ void main()
     mat2 R = mat2(ca, -sn, sn, ca);
 
     // Draw the shard: sample its own patch of the photo and place it at the
-    // shard's current pose.  8x8 samples per shard is enough at this scale.
-    for (int sy = 0; sy < 8; ++sy)
-    for (int sx = 0; sx < 8; ++sx)
+    // shard's current pose.
+    //
+    // 8x8 samples with a 3x3 dilation was NOT enough, and the shortfall is
+    // arithmetic: one cell is about size.x/grid.x pixels wide (~48 px at
+    // 1080p), so eight samples across it land ~6 px apart while the kernel
+    // only fills 3.  Barely a third of every shard's area was ever written,
+    // and the holes between the samples are exactly the fine noise the
+    // probe recorded -- the scene never showed shards at all, it showed the
+    // gaps between their sample points.  16x16 samples cover the same cell
+    // at ~3 px spacing, which the 3x3 kernel closes completely; the weight
+    // drops by the same factor so the accumulated brightness is unchanged.
+    for (int sy = 0; sy < 16; ++sy)
+    for (int sx = 0; sx < 16; ++sx)
     {
-        vec2 loc = (vec2(sx, sy) + 0.5) / 8.0 - 0.5;      // -0.5..0.5
+        vec2 loc = (vec2(sx, sy) + 0.5) / 16.0 - 0.5;     // -0.5..0.5
         vec2 srcUV = home + loc * cell;
         vec3 col = texture(texPhoto, srcUV).rgb;
 
@@ -97,6 +107,6 @@ void main()
         // Fill the gaps between samples so the shard reads as a solid piece.
         for (int oy = 0; oy < 3; ++oy)
         for (int ox = 0; ox < 3; ++ox)
-            splat1(ip + ivec2(ox, oy), col, 0.16);
+            splat1(ip + ivec2(ox, oy), col, 0.04);
     }
 }

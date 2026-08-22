@@ -57,5 +57,6 @@ void main() {
     // Height energy glow
     col += gCol.rgb * smoothstep(-4.0, 15.0, gWorld.y) * 0.8;
 
+    col /= 1.0 + 0.60 * max(col.r, max(col.g, col.b));   // over-bright tail (final review)
     fragColor = vec4(col, 1.0);
 }

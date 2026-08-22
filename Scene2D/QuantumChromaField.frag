@@ -98,7 +98,7 @@ void main() {
 
         vec2 delta = z - pole;
         float d2 = dot(delta, delta) + 0.04;
-        
+
         // Quantum vortex phase: z / (z - pole)
         vec2 term = cDiv(z, delta);
         w += term;
@@ -155,5 +155,6 @@ void main() {
     float vig = vUV.x * vUV.y * 15.0;
     col *= clamp(pow(vig, 0.22), 0.0, 1.0);
 
+    col /= 1.0 + 0.55 * max(col.r, max(col.g, col.b));   // over-bright tail (final review)
     fragColor = vec4(col, 1.0);
 }
