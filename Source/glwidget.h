@@ -25,6 +25,7 @@
 #include "NowPlaying.h"
 #include "MidiInput.h"
 #include "Recorder.h"
+#include "OscSender.h"
 #include "TrackMedia.h"
 
 /**
@@ -372,6 +373,8 @@ protected:
 	/// blackout, or next-effect.
 	void            applyMidi();
 	MidiInput      *m_midi          = nullptr;   ///< Optional MIDI controller input; opened in initializeGL() if a device is present.
+	OscSender       m_osc;                       ///< OSC/UDP output of the analysis (mood, beats, bands); off unless oscPort is set.
+	QElapsedTimer   m_oscClock;                  ///< Wall clock for OscSender's rate limiting.
 	/// MIDI-learn targets, cycled with key 'j': controller knobs (CC-mapped) first,
 	/// then note-mapped pads.
 	enum { MIDI_REACT = 0, MIDI_TRAILS, MIDI_MOOD, MIDI_LATENCY, MIDI_NEXT,

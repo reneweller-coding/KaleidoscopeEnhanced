@@ -661,6 +661,18 @@ void GLwidget::draw()
 	// Apply any queued MIDI control messages.
 	applyMidi();
 
+	// OSC output: hand the freshly fetched features to the sender. Beat events
+	// leave immediately, the periodic layers rate-limit themselves; a render
+	// frame (~7-16 ms) is the only latency added, well under the ~100 ms the
+	// literature calls "tight" for beat-synchronous visuals.
+	if( m_osc.enabled() )
+	{
+		const float dt = m_oscClock.isValid()
+		               ? float( m_oscClock.restart() ) * 0.001f : 0.f;
+		if( !m_oscClock.isValid() ) m_oscClock.start();
+		m_osc.tick( audio, dt );
+	}
+
 	// Batch render (-x): once the offline WAV has been fully analysed, stop
 	// the recording (which kicks off the detached ffmpeg mux) and quit —
 	// unattended WAV-to-video rendering.
@@ -1041,6 +1053,9 @@ void GLwidget::loadUiSettings()
 	// Same "CLI wins" precedence for the web-remote port.
 	if( !s_remotePortFromCli )
 		s_remotePort = s.value( "remotePort", s_remotePort ).toInt();
+	// OSC analysis output (TouchDesigner/Resolume/...): off unless configured.
+	m_osc.configure( s.value( "oscHost", "127.0.0.1" ).toString(),
+	                 s.value( "oscPort", 0 ).toInt() );
 	Strings::setLanguage( Strings::fromCode(
 	    s.value( "language", Strings::toCode( Strings::language() ) ).toString().toLocal8Bit().constData() ) );
 }
