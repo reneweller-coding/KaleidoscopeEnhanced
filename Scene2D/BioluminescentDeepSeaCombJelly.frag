@@ -75,10 +75,9 @@ void main() {
     // 8 Ctene rows (comb rows) arranged around body perimeter
     float seg = 6.2831853 / nCtene;
     float aRow = mod(a + seg * 0.5, seg) - seg * 0.5;
-    float dRow = abs(aRow * r);
 
     // Running rainbow diffraction grating waves traveling along ctene rows
-    float ctenePhase = uv.y * 6.0 * irid - t * 4.0;
+    float ctenePhase = a * 3.0 * irid - t * 4.0;
     vec3 rainbowDiffraction = vec3(
         sin(ctenePhase),
         sin(ctenePhase + 2.094),
@@ -89,9 +88,13 @@ void main() {
     // Gate the rows onto the body SHELL: without the exp(-dBody...) term
     // they ran as full radial spokes from the centre -- the recording showed
     // a starburst, not an animal.
-    float rowGlow = exp(-dRow * (30.0 + 15.0 * audioCentroid))
-                  * exp(-dBody * 6.5)
-                  * smoothstep(jellyR + 0.2, jellyR - 0.35, length(pOval));
+    // Arcs on the rim, not rays through the body: the angular mask picks
+    // the row, the tight shell mask pins it to the surface, and the cilia
+    // beat scrolls along each arc.
+    float rowMask = exp(-pow(aRow / (seg * 0.18), 2.0));
+    float shellMask = exp(-pow(dBody * 14.0, 2.0));
+    float ciliaBeat = 0.55 + 0.45 * sin(a * 60.0 - t * 5.0);
+    float rowGlow = rowMask * shellMask * ciliaBeat * 1.7;
 
     // Internal bioluminescent organs (lantern nodes in center)
     float internalLantern = exp(-r * 8.0) * (0.16 + 0.35 * audioKick);

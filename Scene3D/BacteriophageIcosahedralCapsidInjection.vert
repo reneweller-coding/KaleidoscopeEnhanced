@@ -131,8 +131,8 @@ void main()
         // Level up from 0.13+0.16*gran: that landed the curtain at ~0.04 luma,
         // under the 1/16 step at which a tile counts as carrying content at all,
         // so the layer that covers the entire frame scored as empty black.
-        vCol = palTint(mix(vec3(0.14, 0.24, 0.30), vec3(0.22, 0.42, 0.34), gran * 0.5),
-                       gu * 0.4 + audioCentroid, 0.35)
+        vCol = palTint(mix(vec3(0.045, 0.085, 0.105), vec3(0.075, 0.150, 0.120), gran * 0.5),
+                       gu * 0.4 + gv * 0.2, 0.35)
              * (0.20 + 0.32 * clamp(gran, 0.0, 1.4)) * clamp(mid, 0.35, 1.0)
              * (0.85 + 0.30 * audioSwell);
     }
@@ -223,5 +223,10 @@ void main()
     gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
     if (vp.z < 0.4)
+        gl_Position = vec4(0.0, 0.0, -3.0, 1.0);
+    // Degenerate the boundary row: triangles spanning from the cytoplasm
+    // sheet (dz 112) to the nearest phage row stretched into a full-frame
+    // teal wall -- THE cyan curtain every colour fix failed to remove.
+    if (abs(attrA.y - kBackV) < 0.009)
         gl_Position = vec4(0.0, 0.0, -3.0, 1.0);
 }

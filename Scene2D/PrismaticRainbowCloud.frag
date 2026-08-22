@@ -135,8 +135,8 @@ void main() {
                                2.0 - abs(filmPh * 6.0 - 4.0)), 0.0, 1.0);
     // Real thin-film bands, photo-arc inflected; the old 35% white-wash
     // erased every band into pastel-white.
-    vec3 iridColor = mix(imgPalette(filmPh), filmSpec, 0.62);
-    iridColor = mix(iridColor, vec3(1.0, 0.95, 0.9), 0.10);
+    vec3 iridColor = mix(imgPalette(filmPh), filmSpec, 0.45);
+    iridColor = mix(iridColor, vec3(1.0, 0.95, 0.9), 0.20);
 
     // Crepuscular god rays from low horizon twilight sun
     vec2 sunPos = vec2(0.3, -0.4);
