@@ -195,7 +195,15 @@ private:
 	float m_fxFadeDur = 10.f;   ///< Current Solo *or* Fade duration for the combine slot.
 	Clock::time_point m_clockEffectTexture = Clock::now();   ///< Reference clock for the effect slot's Solo/Fade timing.
 	Clock::time_point m_clockEffectFx = Clock::now();   ///< Reference clock for the combine slot's Solo/Fade timing.
-	static const unsigned int kMaxSearch = 100;   ///< Retry bound for every rejection-sampling selection loop.
+	// Some pools (the FX/combine list, and Transitions/) are dominated by one
+	// near-probability=1.0 "carrier" entry (FxPlain, Crossfade) plus a long
+	// tail of rare accent shaders at probability ~0.002-0.08 each -- a
+	// simulation against Komplett.xml's real numbers showed 100 tries left
+	// ~10-40% of picks exhausting the search entirely (falling back to
+	// whatever the last, unweighted candidate happened to be, defeating the
+	// intended ~90% dominance). Raised well past where that simulation showed
+	// exhaustion become negligible (<1% by 300 tries).
+	static const unsigned int kMaxSearch = 300;   ///< Retry bound for every rejection-sampling selection loop.
 	// Sum-of-complexities ceiling a candidate must stay under to be accepted
 	// (busyness budget: don't stack two very busy layers at once). Complexity
 	// values run 1..5 with a handful of scenes at 10; the OLD ceiling of 20

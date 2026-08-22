@@ -92,23 +92,21 @@ void SceneScheduler::reset()
 		if( (*m_fxShaders)[m_actFx]->useShader() )
 			break;
 	}
+	// NOTE: unlike the texture pick above, this deliberately does NOT exclude
+	// m_nextFx == m_actFx -- see the long comment on the identical pick in
+	// tickFx()'s fade-end for why forbidding a dominant-probability FX (e.g.
+	// FxPlain at probability=1.0) from following itself mathematically caps
+	// it at ~50%, regardless of its configured probability.
 	for( unsigned int i = 0; i < kMaxSearch; i++ )
 	{
 		m_nextFx = rand() % m_fxShaders->size();
-		if( m_nextFx != m_actFx &&
-			(( (*m_textures)[m_actTexture]->getComplexity() +
+		if( (( (*m_textures)[m_actTexture]->getComplexity() +
 			(*m_textures)[m_nextTexture]->getComplexity() +
 			(*m_fxShaders)[m_actFx]->getComplexity() +
 			(*m_fxShaders)[m_nextFx]->getComplexity() ) < kComplexityBudget )
 			&& (*m_fxShaders)[m_nextFx]->useShader()
 			)
 			break;
-	}
-	if( m_nextFx == m_actFx )
-	{
-		m_nextFx += 1;
-		if( m_nextFx == m_fxShaders->size() )
-			m_nextFx = 0;
 	}
 
 	m_fxFadeDur = (float) ((*m_fxShaders)[m_actFx]->getTimeSolo());
@@ -711,11 +709,27 @@ void SceneScheduler::tickFx( const Tick &t, bool trueStereoHold )
 				m_pendingSectionNextFx = -1;
 			}
 			else
+			// Deliberately NOT excluding m_nextFx == m_actFx here (unlike the
+			// texture pick's equivalent loop): a preset FX pool is typically
+			// dominated by one near-probability=1.0 "carrier" (FxPlain here,
+			// probability=1.00, vs the other ~28 at 0.002-0.006 each) plus a
+			// long tail of rare accent overlays. Forbidding a candidate from
+			// following ITSELF turns "act -> exclude self -> pick next" into a
+			// two-state Markov chain where leaving the dominant candidate is
+			// mandatory and returning to it is merely LIKELY: solving that
+			// chain's stationary distribution caps the dominant candidate at
+			// ~50% NO MATTER HOW HIGH its configured probability is (verified
+			// empirically: removing the exclusion took a simulation using
+			// Komplett.xml's real FX probabilities from 44% actual Plain share
+			// up to 88%, matching its ~89% theoretical probability-weighted
+			// share). A "fade" that lands back on the same FX is visually a
+			// no-op blend anyway -- it just re-rolls that FX's own <float>/
+			// <expr> parameters and resets its solo timer, exactly like
+			// letting it simply continue.
 			for( unsigned int i = 0; i < kMaxSearch; i++ )
 			{
 				m_nextFx = rand() % comb.size();
-				if( m_nextFx != m_actFx &&
-					(( tex[m_actTexture]->getComplexity() +
+				if( (( tex[m_actTexture]->getComplexity() +
 					tex[m_nextTexture]->getComplexity() +
 					comb[m_actFx]->getComplexity() +
 					comb[m_nextFx]->getComplexity() ) < kComplexityBudget )
@@ -723,13 +737,6 @@ void SceneScheduler::tickFx( const Tick &t, bool trueStereoHold )
 					&& moodAccept( comb[m_nextFx] )
 					)
 					break;
-			}
-
-			if( m_nextFx == m_actFx )
-			{
-				m_nextFx += 1;
-				if( m_nextFx == comb.size() )
-					m_nextFx = 0;
 			}
 
 			m_fxInterp = 1.0;
