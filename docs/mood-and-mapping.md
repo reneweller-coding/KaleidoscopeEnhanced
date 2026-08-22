@@ -35,7 +35,17 @@ Herremans 2024]. Genau so arbeitet dieser Visualizer:
 | Q4 Ruhe | hoch | tief | ruhig, konsonant, legato | `calm` |
 
 Alle 529 Szenen, 29 FX und 82 von 83 Transitions sind getaggt (ungetaggt ist
-nur Crossfade, die neutrale Blende). Wichtig ist die Zielgröße: visualisiert
+nur Crossfade, die neutrale Blende). Die Tags stehen **pro Preset-Eintrag**,
+gelesen wird aus dem aktiven Preset — deshalb prüft
+`Tools/check_mood_tags.py` Abdeckung und Konsistenz gegen den Referenzkatalog
+`Komplett.xml` und kann Drift mit `--sync` reparieren. Der Fall ist real:
+`Neu.xml` trug 86 veraltete Tags aus der Zeit vor der Mess-Kampagne, der
+Mood-Bias lief dort mit den bekannt falschen Werten. Zwei Shader-Paare teilen
+sich einen Dateinamen über Verzeichnisse hinweg (`CrystalGrowth`,
+`VoronoiShatter`) — der Abgleich schlüsselt darum über den Pfad, nicht den
+Namen.
+
+Wichtig ist die Zielgröße: visualisiert
 wird die **wahrgenommene** Emotion (was die Musik ausdrückt), nicht die beim
 Hörer induzierte [Gabrielsson 2002] — das ist die richtige Größe für
 Visualisierung und zugleich die, die sich aus Audio allein schätzen lässt.
