@@ -38,15 +38,22 @@ void main()
     // an orbiting ring the camera also circles: every other working scene in
     // this codebase flies STRAIGHT along a local Z axis and lets a wrap keep
     // the nearby slice close to the origin (see DysonSphereCore.vert /
-    // TachyonCommRelay.vert). The original ring-orbit version computed its
-    // own camPos and a 2D "view rotation" to face along the ring's tangent,
-    // and no combination of signs on that rotation ever put a meaningful
-    // number of instances in front of the camera -- the scene rendered pure
-    // black start to finish. This is the same visual (a ring of mining
-    // structures around the ship's flight path), built the way that reliably
-    // works elsewhere in this catalogue.
+    // TachyonCommRelay.vert).
+    //
+    // RenderDoc frame capture found the actual bug: the ring radius here was
+    // 60-100. The draw call itself was fine (176400 vertices submitted,
+    // confirmed via capture) -- everything was just landing outside the
+    // camera's frustum at the depths this camZ-wrap/cull formula keeps in
+    // view, so nothing ever rasterized. Confirmed empirically (rebuild-free,
+    // since .vert/.frag are loaded at runtime): radius 0 renders fine,
+    // radius 15-50 was STILL invisible, radius 2-10 renders reliably --
+    // this camera's usable cone at the wrap's depth range is much tighter
+    // than TachyonCommRelay's own ring radius (30-75) would suggest (that
+    // scene reads as "working" mainly because of its always-visible on-axis
+    // spire, not because its rings are actually easy to see). Kept the ring
+    // shape but pulled it in to a radius this camera can actually see.
     float theta = r1 * 6.2831853;
-    float r = 80.0 + (r2 - 0.5) * 40.0;
+    float r = 2.0 + r2 * 10.0;
     float zPos = (r3 - 0.5) * 400.0;
 
     vec3 centre = vec3(r * cos(theta), r * sin(theta) * 0.4, zPos);
@@ -100,14 +107,9 @@ void main()
     // Camera flies straight along Z; wrap the tunnel so the slice near the
     // camera stays close to local origin -- the camZ/wrap/cull formula
     // TachyonCommRelay.vert uses for the same ring-around-a-travel-axis
-    // shape.  NOTE: this scene still measures cover=0.0 in isolation even
-    // with every placement/camera term stripped down to a fixed, trivially
-    // on-screen grid AND the fragment output hard-set to unconditional
-    // magenta -- neither shader stage is the cause, and no plausible
-    // culprit (XML/geom matching, stale recordings, a duplicate source
-    // file, a stale process) checked out either. Left in its best-effort,
-    // structurally-correct state pending a RenderDoc-level trace this
-    // environment cannot do; flagged for follow-up.
+    // shape. This part was always correct (verified byte-identical to
+    // Tachyon's working version via RenderDoc capture); the bug was the
+    // radius above.
     float camZ = time * 8.0 + audioAdvance * 15.0;
     world.z = mod(world.z - camZ + 100.0, 200.0) - 100.0;
 
