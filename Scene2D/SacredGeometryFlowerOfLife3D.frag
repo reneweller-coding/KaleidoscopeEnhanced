@@ -84,9 +84,12 @@ float mapSacred(vec3 p, float t, float rBase) {
         d = min(d, sdSphere(p - center, 0.08 + 0.03 * audioSubBass));
     }
 
-    // 3D Extrusion along Z (concentric spherical shell / merkaba struts)
+    // 3D extrusion along Z: INTERSECT with the slab (keep |z| < 0.25).
+    // The old max(d, -dZ) subtracted it -- it deleted the geometry inside
+    // the slab and kept only what stuck out, which is why the recording
+    // showed a stray strut instead of the Flower of Life.
     float dZ = abs(p.z) - 0.25;
-    d = max(d, -dZ);
+    d = max(d, dZ);
 
     // Diagonal Metatron connecting struts
     vec3 pRot = p;
@@ -108,14 +111,16 @@ void main() {
     float t = audioAdvance * 0.25 * spd;
 
     // Camera ray setup with dynamic orbital tilt
-    float camDist = 2.8 + 0.4 * sin(audioSwell * 2.0);
-    float camAngle = t * 0.3 + audioPhase * 0.1;
-    float camPitch = 1.08 + 0.16 * sin(t * 0.4);   // face the xy-plane pattern
-
-    vec3 ro = vec3(cos(camAngle) * cos(camPitch), sin(camPitch), sin(camAngle) * cos(camPitch)) * camDist;
+    float camDist = 2.9 + 0.35 * sin(audioSwell * 2.0);
+    // The rings live in the XY plane, so the camera belongs on the Z axis:
+    // a small tilt keeps it dimensional without turning the pattern edge-on.
+    float tilt = 0.28 * sin(t * 0.4);
+    float roll = 0.22 * sin(t * 0.31 + audioPhase * 0.1);
+    vec3 ro = vec3(sin(roll) * camDist, sin(tilt) * camDist,
+                   -cos(tilt) * cos(roll) * camDist);
     vec3 ta = vec3(0.0, 0.0, 0.0);
     vec3 ww = normalize(ta - ro);
-    vec3 uu = normalize(cross(ww, vec3(0.0, 1.0, 0.0)));
+    vec3 uu = normalize(cross(ww, vec3(0.0, 1.0, 0.02)));
     vec3 vv = cross(uu, ww);
     vec3 rd = normalize(uv.x * uu + uv.y * vv + (1.3 + 0.2 * sin(audioSwell)) * ww);
 

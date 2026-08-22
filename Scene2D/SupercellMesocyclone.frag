@@ -148,9 +148,11 @@ void main() {
     col += wallCloud * vec3(0.08, 0.05, 0.12);
     // Contrast: the rotation bands were reading as one flat mush.
     col = clamp((col - 0.16) * 1.35 + 0.10, 0.0, 2.0);
+    col /= 1.0 + 0.40 * max(col.r, max(col.g, col.b));   // the anvil was washing out late
     col += (lightningFlash + ambientLightning) * lightningColor;
 
-    if (audioChromaHue != 0.0)     if (hue > 0.001) col = hueRot(col, hue);
+    // Bounded: the full rotation turned the whole storm GREEN.
+    if (hue > 0.001) col = hueRot(col, 0.22 * sin(hue));
 
     // Vignette
     float vig = smoothstep(1.35, 0.35, length(uv));

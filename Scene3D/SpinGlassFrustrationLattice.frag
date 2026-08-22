@@ -40,21 +40,24 @@ void main()
     vec2 pc = gl_PointCoord - vec2(0.5);
     float r2 = dot(pc, pc);
     if (r2 > 0.25) discard;
-    
+
     float hScale = (haloP > 0.01 ? haloP : 1.2);
     float core = exp(-r2 * 18.0 / hScale);
-    
+
     // Controlled low luminance per point sprite (V8c)
     float baseLum = (pointGainP > 0.01 ? pointGainP : 0.08) * 0.42;   // measured luma 0.023: was *0.12
-    
+
     vec2 photoUv = fract(gl_PointCoord + vFrustration * 0.3);
     vec3 photo = img(photoUv);
-    
+
     vec3 col = vCol * (0.6 + 0.4 * photo) * core * baseLum;
-    col += vec3(0.95, 0.95, 1.0) * core * baseLum * (1.0 + 3.0 * audioKick) * vFrustration;
+    // Was pure white: on an additive cloud of thousands of sprites that
+    // term alone integrated the whole lattice to grey noise.
+    col += mix(vCol, vec3(0.95, 0.95, 1.0), 0.35) * core * baseLum
+         * (1.0 + 2.0 * audioKick) * vFrustration;
     col *= (0.85 + 0.35 * audioSwell);
     col += vCol * (audioKick * 0.03);
-    
+
     // Soft knee compression
     col /= 1.0 + 0.35 * max(col.r, max(col.g, col.b));
     fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);

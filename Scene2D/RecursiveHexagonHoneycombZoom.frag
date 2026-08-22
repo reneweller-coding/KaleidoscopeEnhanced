@@ -161,11 +161,15 @@ void main() {
     // lattice into a single uniform tone (measured contrast 0.017). A bounded sum
     // keeps the near octave's structure on top of the receding ones.
     vec3 finalCol = min(colAcc * 0.62, vec3(1.0));
+    // Measured contrast was near zero: the octaves summed to a uniform
+    // pale field.  Stretch about the mean so the cells read as cells.
+    finalCol = clamp((finalCol - 0.34) * 2.10 + 0.16, 0.0, 1.0);
 
     // Center portal burst
     float portalPulse = pow(max(0.0, 1.0 - abs(zoomFrac - 0.5) * 4.0), 3.0) * (0.5 + 1.2 * audioKick);
     finalCol += min(imgPalette(0.85) * portalPulse, vec3(0.5));
 
     finalCol = pow(min(finalCol, vec3(1.0)), vec3(0.88));
+    finalCol /= 1.0 + 0.55 * max(finalCol.r, max(finalCol.g, finalCol.b));   // over-bright tail (final review)
     fragColor = vec4(clamp(finalCol, 0.0, 1.0), 1.0);
 }

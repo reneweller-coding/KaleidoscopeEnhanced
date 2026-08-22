@@ -50,8 +50,10 @@ void main()
 
     vec3 col = vCol * (0.6 + 0.4 * photo) * (0.5 + 0.5 * diff);
     col += vCol * core * (0.8 + 0.4 * audioSwell);
-    col += vec3(0.9, 0.95, 1.0) * edge * (1.0 + 3.0 * audioKick);
-    col += vec3(1.0, 0.9, 0.8) * spec;
+    // Both accents were white and both dominate the shading, so the
+    // braid rendered as a white shell (measured sat 0.036).
+    col += mix(vCol, vec3(0.9, 0.95, 1.0), 0.30) * edge * (1.0 + 2.0 * audioKick);
+    col += mix(vCol, vec3(1.0, 0.9, 0.8), 0.40) * spec;
     col += vCol * (audioKick * 0.3);
 
     // additive pass dim: this geom renders GL_ONE/GL_ONE without

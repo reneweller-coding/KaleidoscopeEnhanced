@@ -68,7 +68,10 @@ void main()
     // just a memory of the photo, which is what sells the pieces as SOLID.
     vec3 bg = texture(tex0, uv).rgb;
     bg *= bg * (0.10 - 0.07 * voidP);
-    col = mix(bg, col, smoothstep(0.05, 0.35, cover));
+    // Harder shard/void decision: the soft 0.05..0.35 ramp blended every
+    // shard into its neighbours, which is what made the field read as
+    // fine noise rather than as broken glass.
+    col = mix(bg * 0.35, col, smoothstep(0.28, 0.52, cover));
 
     // Rim light on the shard edges: the gradient of the coverage mask marks
     // every break line, and a hard specular there reads as glass.
@@ -87,5 +90,9 @@ void main()
 
     col *= 1.0 + 0.15 * audioBeat;
     col = col / (1.0 + col * 0.28);
+    // The shards measured as fine noise: without a floor under the
+    // photo term and a stronger edge, no individual shard reads.
+    col = col * 1.7 + pow(max(col, 0.0), vec3(0.75)) * 0.35;
+    col /= 1.0 + 0.35 * max(col.r, max(col.g, col.b));
     fragColor = vec4(col, interpolation);
 }

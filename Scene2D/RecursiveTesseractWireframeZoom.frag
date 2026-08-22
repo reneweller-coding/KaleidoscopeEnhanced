@@ -139,26 +139,31 @@ void main() {
     // 2.0) already exceed 1.0 even with NO kick, which is why the rounded
     // hypercube silhouette was blowing out to solid white on every frame,
     // not just on beats. Cap the glow*audio products directly.
-    float edgeGlow = min(exp(-minEdgeDist * (30.0 + 15.0 * audioCentroid)) * glw * (1.0 + 2.5 * audioKick), 0.75);
-    float vertexGlow = min(exp(-minVertexDist * 20.0) * (1.2 + 3.0 * audioKick), 0.9);
+    // 30 was far too soft: with 32 edges clustering near the vanishing
+    // point the glow covered the whole silhouette and painted it solid
+    // white.  A wireframe needs a falloff that only lights the LINE.
+    float edgeGlow = min(exp(-minEdgeDist * (150.0 + 40.0 * audioCentroid)) * glw * (1.0 + 2.0 * audioKick), 0.9);
+    float vertexGlow = min(exp(-minVertexDist * 90.0) * (1.0 + 2.5 * audioKick), 0.9);
 
     // 4D hypercube neon palette
     vec3 palBase = imgPalette(minEdgeDist * 0.5 + t * 0.05);
     vec3 col = mix(texCol * 0.3, palBase, 0.45);
 
-    vec3 strutTint = vec3(1.3, 1.1, 1.8) * edgeGlow;
-    vec3 sparkTint = vec3(1.8, 1.6, 2.0) * vertexGlow;
+    vec3 strutTint = vec3(0.85, 0.95, 1.5) * edgeGlow;
+    vec3 sparkTint = vec3(1.3, 1.2, 1.6) * vertexGlow;
 
     col += strutTint + sparkTint;
 
     // Center 4D singularity burst
-    float centerBloom = min(exp(-length(uv) * 6.0) * (0.8 + 2.0 * audioKick), 0.8);
+    float centerBloom = min(exp(-length(uv) * 14.0) * (0.5 + 1.2 * audioKick), 0.35);
     col += imgPalette(0.85) * centerBloom;
 
     col = pow(col, vec3(0.88));
     vec3 _catTone = clamp(col, 0.0, 1.0);
     _catTone /= 1.0 + 0.4 * max(_catTone.r, max(_catTone.g, _catTone.b));
-    _catTone /= 1.0 + 0.55 * max(_catTone.r, max(_catTone.g, _catTone.b));   // peak knee
-    _catTone = clamp((_catTone - 0.42) * 2.00 + 0.10, 0.0, 1.0);   // wires on dark, not a grey slab
+    // One knee is enough: stacking a second one crushed the whole frame
+    // under the 0.42 S-curve foot below, which then clamped the wires to
+    // black and left only the centre bloom (the grey blob in the probe).
+    _catTone = clamp((_catTone - 0.12) * 1.45, 0.0, 1.0);
     fragColor = vec4(_catTone, 1.0);
 }

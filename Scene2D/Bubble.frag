@@ -47,7 +47,7 @@ vec3 imgPalette(float t)
   //  p.y = gl_FragCoord.y;
 //	p.x /= resolution.x;
 //	p.y /= resolution.y;
-		
+
   //  fragColor = interpolation * texture(tex0,p) + (1.0-interpolation)*texture(tex1, p);
 
 //}
@@ -128,5 +128,6 @@ void main(void)
     if (negative == 1)
         color = 1.0 - color;
 
+    color /= 1.0 + 0.60 * max(color.r, max(color.g, color.b));   // over-bright tail (final review)
     fragColor = vec4(color, 1.0);
 }

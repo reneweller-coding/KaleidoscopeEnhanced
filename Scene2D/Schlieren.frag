@@ -124,5 +124,6 @@ void main()
     col += hueRot(vec3(0.9, 0.6, 0.2), audioChromaHue)
          * clamp(gmag * gain - 0.6, 0.0, 1.0) * (0.4 + 1.2 * audioDrop);
 
+    col /= 1.0 + 0.55 * max(col.r, max(col.g, col.b));   // over-bright tail (final review)
     fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }
