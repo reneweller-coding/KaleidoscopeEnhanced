@@ -17,6 +17,8 @@
 #include <algorithm>
 #include <cstring>
 #include <cstdio>
+#include <cstdlib>
+#include <chrono>
 
 #include <QtCore/QElapsedTimer>
 
@@ -519,11 +521,25 @@ void AudioAnalyzer::run()
     m_running = true;
 
     // Offline mode: analyze the given WAV deterministically, then finish.
+    // NOTE: rand() is seeded further down, AFTER this early return -- offline
+    // analysis is deliberately relied on elsewhere as a byte-for-byte
+    // reproducible oracle (see processblock-fp-sensitivity), so this path
+    // must keep processBlock()'s rand()-driven kaleidoscope-side rerolls at
+    // their fixed default sequence.
     if( !s_offlineWav.isEmpty() )
     {
         analyzeWavOffline( s_offlineWav );
         return;
     }
+
+    // MSVC's rand()/srand() keep PER-THREAD state (verified empirically: a
+    // background thread's rand() sequence is identical run after run unless
+    // THAT thread calls srand() itself) -- main()'s srand() only seeds the
+    // main/render thread. processBlock() rolls the kaleidoscope side-count
+    // and a drop-gate coin flip via rand() and runs entirely on THIS thread,
+    // so without its own seed those two picks would replay identically on
+    // every launch even after main()'s fix.
+    srand( (unsigned) std::chrono::high_resolution_clock::now().time_since_epoch().count() );
 
     // --- COM init for this thread ---
     HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);

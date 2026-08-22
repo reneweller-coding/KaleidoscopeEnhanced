@@ -196,6 +196,16 @@ private:
 	Clock::time_point m_clockEffectTexture = Clock::now();   ///< Reference clock for the effect slot's Solo/Fade timing.
 	Clock::time_point m_clockEffectFx = Clock::now();   ///< Reference clock for the combine slot's Solo/Fade timing.
 	static const unsigned int kMaxSearch = 100;   ///< Retry bound for every rejection-sampling selection loop.
+	// Sum-of-complexities ceiling a candidate must stay under to be accepted
+	// (busyness budget: don't stack two very busy layers at once). Complexity
+	// values run 1..5 with a handful of scenes at 10; the OLD ceiling of 20
+	// (kComplexityBudget) / 12 (kComplexityBudgetInitial) meant a complexity=10
+	// scene only ever passed when the three OTHER slots were all near their
+	// minimum simultaneously -- effectively excluding it most of the time.
+	// Raised so a complexity=10 candidate stays reachable alongside a normal
+	// (non-minimal) combo, while an all-four-maxed-out combo is still capped.
+	static const unsigned int kComplexityBudget        = 28;   ///< Ceiling for the 4-term (act+next texture, act+next combine) sum used by tick()/tickFx()'s normal picks and reset()'s second (combine-inclusive) pick.
+	static const unsigned int kComplexityBudgetInitial  = 17;  ///< Ceiling for reset()'s first, texture-only (2-term) pick, before the combine pair exists yet -- kept at the same ratio to kComplexityBudget as the original 12:20.
 
 	// Erzwungene Wechsel + Beat-Quantisierung
 	bool  m_forceEffectChange   = false;   ///< Set by requestChange()/forceScene()/triggers; consumed at the next Solo-phase check.

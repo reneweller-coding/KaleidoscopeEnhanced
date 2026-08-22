@@ -325,14 +325,16 @@ void parsecommandline( int argc, char *argv[] )
  */
 int main(int argc, char *argv[])
 {
-	// Seed the C-runtime RNG ONCE for the whole process. SceneScheduler's
-	// scene/transition/mood-accept picks (and everything else in this codebase
-	// that calls rand()) were never seeded anywhere -- rand() therefore always
-	// started from the C runtime's fixed default state, so every single launch
-	// replayed the exact same "random" sequence of scene/transition picks.
-	// Across repeated sessions this reads as "only a subset of the preset ever
-	// gets used", since the reachable variety was bounded by how long a single
+	// Seed the C-runtime RNG for THIS (main/render) thread. rand() was never
+	// seeded anywhere in this codebase, so it always started from the C
+	// runtime's fixed default state -- every launch replayed the exact same
+	// "random" sequence of scene/transition/mood-accept picks. Across
+	// repeated sessions this reads as "only a subset of the preset ever gets
+	// used", since the reachable variety was bounded by how long a single
 	// sitting ran, not by the preset's actual size.
+	// NOTE: MSVC's rand()/srand() keep PER-THREAD state (verified
+	// empirically), so this does NOT seed rand() on other threads --
+	// AudioAnalyzer's capture thread seeds itself separately in ::run().
 	srand( (unsigned) std::chrono::high_resolution_clock::now().time_since_epoch().count() );
 
 	//Setting default image path for windows

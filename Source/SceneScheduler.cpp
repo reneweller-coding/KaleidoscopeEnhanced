@@ -72,7 +72,7 @@ void SceneScheduler::reset()
 		m_nextTexture = rand() % m_textures->size();
 		if( m_nextTexture != m_actTexture &&
 			(( (*m_textures)[m_actTexture]->getComplexity() +
-			(*m_textures)[m_nextTexture]->getComplexity() ) < 12 )
+			(*m_textures)[m_nextTexture]->getComplexity() ) < kComplexityBudgetInitial )
 			&& (*m_textures)[m_nextTexture]->useShader()
 			)
 			break;
@@ -99,7 +99,7 @@ void SceneScheduler::reset()
 			(( (*m_textures)[m_actTexture]->getComplexity() +
 			(*m_textures)[m_nextTexture]->getComplexity() +
 			(*m_fxShaders)[m_actFx]->getComplexity() +
-			(*m_fxShaders)[m_nextFx]->getComplexity() ) < 20 )
+			(*m_fxShaders)[m_nextFx]->getComplexity() ) < kComplexityBudget )
 			&& (*m_fxShaders)[m_nextFx]->useShader()
 			)
 			break;
@@ -579,7 +579,7 @@ void SceneScheduler::tick( const Tick &t )
 					(( tex[m_actTexture]->getComplexity() +
 					tex[m_nextTexture]->getComplexity() +
 					comb[m_actFx]->getComplexity() +
-					comb[m_nextFx]->getComplexity() ) < 20 )
+					comb[m_nextFx]->getComplexity() ) < kComplexityBudget )
 					&& tex[m_nextTexture]->useShader()
 					&& moodAccept( tex[m_nextTexture] )
 					)
@@ -705,7 +705,7 @@ void SceneScheduler::tickFx( const Tick &t, bool trueStereoHold )
 					(( tex[m_actTexture]->getComplexity() +
 					tex[m_nextTexture]->getComplexity() +
 					comb[m_actFx]->getComplexity() +
-					comb[m_nextFx]->getComplexity() ) < 20 )
+					comb[m_nextFx]->getComplexity() ) < kComplexityBudget )
 					&& comb[m_nextFx]->useShader()
 					&& moodAccept( comb[m_nextFx] )
 					)
