@@ -68,6 +68,11 @@ void main()
 
     // Gentle, bounded zoom breathing (never a deep dive -- this scene's
     // whole point is the SHAPE changing, not the view depth).
+    // Audited 2026-08-22: occupancy 0.25 was flagged, and BOTH zoom
+    // directions measured worse (the glowing boundary filament loses
+    // screen share either way -- the interior is dark, the exterior
+    // fades). The framing is the scene's optimum; the flag is accepted
+    // as the character of a thin-filament fractal.
     float zoom = (1.6 + 0.35 * sin(time * 0.05 + audioSwell * 0.6)) * zoomV;
     zoom *= 1.0 - 0.08 * audioKick;
     vec2 z = uv * zoom;

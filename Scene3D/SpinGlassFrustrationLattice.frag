@@ -45,7 +45,7 @@ void main()
     float core = exp(-r2 * 18.0 / hScale);
     
     // Controlled low luminance per point sprite (V8c)
-    float baseLum = (pointGainP > 0.01 ? pointGainP : 0.08) * 0.12;
+    float baseLum = (pointGainP > 0.01 ? pointGainP : 0.08) * 0.42;   // measured luma 0.023: was *0.12
     
     vec2 photoUv = fract(gl_PointCoord + vFrustration * 0.3);
     vec3 photo = img(photoUv);

@@ -77,7 +77,10 @@ void main()
     
     vec3 worldPos = vec3(latticePos + jitter, zCoord);
     
-    vCol = imgPalette(fract(pIndex * 0.0001 + melting * 0.3 + audioCentroid));
+    // audioChromaHue instead of raw audioCentroid: the centroid wiggles
+    // per analysis block and shifted EVERY particle's hue at once --
+    // measured as COLOR_FLICKER. chromaHue is circular-slewed for hue duty.
+    vCol = imgPalette(fract(pIndex * 0.0001 + melting * 0.3 + audioChromaHue));
     
     // Camera Transform (V3)
     vec3 vp = worldPos;

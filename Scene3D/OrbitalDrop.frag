@@ -22,6 +22,6 @@ in vec4 vCol;
 void main()
 {
     vec2  d = gl_PointCoord - 0.5;
-    float a = exp(-dot(d, d) * 10.0);
-    fragColor = vec4(vCol.rgb * a, 1.0);
+    float a = exp(-dot(d, d) * 8.0);
+    fragColor = vec4(vCol.rgb * a * 2.0, 1.0);   // measured luma 0.027: lift
 }

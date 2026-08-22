@@ -18,6 +18,9 @@ in vec4 vCol;
 void main()
 {
     vec2  d = gl_PointCoord - 0.5;
-    float a = exp(-dot(d, d) * 10.0);
-    fragColor = vec4(vCol.rgb * a, 1.0);
+    // Deliberately still a dark scene (a black hole IS the point), but the
+    // accretion dust was nearly invisible: wider sprite falloff + a mild
+    // gain make the disc readable without lighting up the void.
+    float a = exp(-dot(d, d) * 6.0);
+    fragColor = vec4(vCol.rgb * a * 1.8, 1.0);
 }

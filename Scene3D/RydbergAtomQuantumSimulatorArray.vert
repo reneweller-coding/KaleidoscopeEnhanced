@@ -98,16 +98,26 @@ void main()
     // Rydberg blockade radius (R_b): collective excitation wave propagating through atom array
     float r = length(gridPos);
     float rBlockade = (blockadeRadP > 0.01 ? blockadeRadP : 0.4);
-    float blockadePhase = sin(r * (1.6 + 3.2 * rBlockade) - t * 4.0 + audioPhase);
+    // Full audioPhase made the excitation wave RACE across the lattice at
+    // music tempo -- the white front repainting the whole grid was the real
+    // source of the measured 0.33 hue flicker (two frag-side fixes later).
+    // Quarter coupling keeps the wave musical at a watchable pace.
+    float blockadePhase = sin(r * (1.6 + 3.2 * rBlockade) - t * 2.5 + audioPhase * 0.25);
     float isRydbergExcited = smoothstep(0.3, 0.9, blockadePhase);
     vBlockade = isRydbergExcited;
 
-    // Point size capped to 8-16px (V8c)
-    float psMax = (pointSizeP > 0.01 ? pointSizeP : 12.0);
-    gl_PointSize = clamp(psMax * (0.8 + 0.4 * isRydbergExcited), 8.0, 16.0);
+    // Point size: after six rounds of gain surgery the scene still read as a
+    // faint dark texture -- the atoms were simply too small to carry light at
+    // this lattice density. Area is the honest lever: 18-34px instead of
+    // 8-16px triples the lit area per atom; the per-point cap and knee in the
+    // frag keep additive stacking from burning.
+    float psMax = (pointSizeP > 0.01 ? pointSizeP : 26.0);
+    gl_PointSize = clamp(psMax * (0.8 + 0.4 * isRydbergExcited), 18.0, 34.0);
     vPointSize = gl_PointSize;
 
-    vCol = imgPalette(fract(r * 0.14 + pId * 0.0001 + audioCentroid * 0.35));
+    // Same raw-centroid hue-flicker trap as SuperconductingVortex: the
+    // slewed chromaHue carries the harmony instead.
+    vCol = imgPalette(fract(r * 0.14 + pId * 0.0001 + audioChromaHue * 0.5));
 
     // Camera Transform (V3)
     vec3 vp = worldPos;

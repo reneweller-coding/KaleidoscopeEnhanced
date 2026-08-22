@@ -67,9 +67,11 @@ void main()
     // A bright scan pulse sweeps toward the horizon once per bar.
     float sweep = exp(-abs(fract(vWorld.y * 0.004 - audioBarPhase) - 0.5) * 14.0);
 
-    vec3 ground = mix(vec3(0.02, 0.01, 0.05), vec3(0.05, 0.02, 0.10),
+    // Measured luma 0.016 / MOSTLY_BLACK: the neon-grid look stays, but
+    // both the ground glow and the line gain come up.
+    vec3 ground = mix(vec3(0.08, 0.04, 0.16), vec3(0.15, 0.08, 0.28),
                       clamp(vWorld.z / 22.0, 0.0, 1.0));
-    vec3 lineCol = imgPalette(0.30 * clamp(vWorld.z / 20.0, 0.0, 1.0)) * 1.5;
+    vec3 lineCol = imgPalette(0.30 * clamp(vWorld.z / 20.0, 0.0, 1.0)) * 3.6;
 
     vec3 col = ground
              + lineCol * line * (0.9 + 1.1 * audioKick + 1.6 * audioDrop

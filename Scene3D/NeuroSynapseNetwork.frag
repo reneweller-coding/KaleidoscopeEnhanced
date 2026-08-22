@@ -30,7 +30,7 @@ void main() {
     float glow = exp(-r2 * 16.0) + exp(-r2 * 5.0) * 0.25;
     glow *= (1.0 + vLife * 2.0);
 
-    vec3 col = vCol.rgb * glow * 0.15;
+    vec3 col = vCol.rgb * glow * 0.40;     // measured luma 0.025: was *0.15
     // Catalogue review: soft-knee exposure — hot audio compresses
     // instead of clipping the whole frame to white.
     vec3 _catTone = (col) * 0.6;

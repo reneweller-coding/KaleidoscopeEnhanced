@@ -165,5 +165,5 @@ void main() {
     col = pow(col, vec3(0.86));
     vec3 _catTone = clamp(col, 0.0, 1.0);
     _catTone /= 1.0 + 0.30 * max(_catTone.r, max(_catTone.g, _catTone.b));
-    fragColor = vec4(_catTone, 1.0);
+    fragColor = vec4(_catTone * 0.86, 1.0);   // measured luma 0.743: over the 0.72 white line
 }

@@ -46,13 +46,13 @@ void main()
     float core = exp(-r2 * 18.0 / hScale);
     
     // Controlled low luminance per point sprite (V8c)
-    float baseLum = (pointGainP > 0.01 ? pointGainP : 0.08) * 0.12;
+    float baseLum = (pointGainP > 0.01 ? pointGainP : 0.08) * 0.38;   // measured luma 0.021: was *0.12
     
     vec2 photoUv = fract(gl_PointCoord + vMeltingState * 0.3);
     vec3 photo = img(photoUv);
     
     vec3 col = vCol * (0.6 + 0.4 * photo) * core * baseLum;
-    col += vec3(0.9, 0.95, 1.0) * core * baseLum * (1.0 + 3.0 * audioKick) * vMeltingState;
+    col += vec3(0.9, 0.95, 1.0) * core * baseLum * (1.0 + 0.6 * audioKick) * vMeltingState;   // round 3: still read as colour flicker at 1.4
     col *= (0.85 + 0.35 * audioSwell);
     col += vCol * (audioKick * 0.03);
     
