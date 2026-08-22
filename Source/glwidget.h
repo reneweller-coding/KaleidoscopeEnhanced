@@ -17,6 +17,7 @@
 #include <QtGui/QImage>
 #include <QtGui/QPixmap>
 #include <QtCore/QSet>
+#include <QtCore/QVector>
 
 #include "RenderPipeline.h"
 #include "Configuration.h"
@@ -25,6 +26,19 @@
 #include "MidiInput.h"
 #include "Recorder.h"
 #include "TrackMedia.h"
+
+/**
+ * @brief Where one overlay menu drew its rows last frame, so a mouse click can
+ *        be mapped back to a row without duplicating the layout arithmetic.
+ */
+struct MenuHit
+{
+	QRect box;        ///< The menu panel; a click outside it closes the menu.
+	int   rowY0 = 0;  ///< Top edge of the first visible row.
+	int   rowH  = 0;  ///< Row height in the same coordinates.
+	int   rows  = 0;  ///< How many rows were actually drawn.
+	int   top   = 0;  ///< Index of the first visible row within the filtered list.
+};
 
 
 /**
@@ -186,6 +200,7 @@ protected:
 	 * @param event The mouse press event.
 	 */
 	virtual void mousePressEvent( QMouseEvent *event );
+	virtual void wheelEvent( QWheelEvent *event );   ///< Scrolls whichever overlay menu is open; inert otherwise.
 	/**
 	 * @brief Mouse-move handler (currently a no-op stub; trackball code is commented out).
 	 * @param event The mouse move event.
@@ -233,6 +248,10 @@ protected:
 	void drawHelpOverlay( QPainter *painter );
 	void drawAudioMenu( QPainter *painter );   ///< Draws the runtime audio-source picker overlay (key 'd').
 	int  audioMenuCount() const;               ///< Rows in that overlay: the default entry plus every enumerated device.
+	/** @brief Indices into #m_configurationList matching #m_configMenuFilter (all of them when it is empty). */
+	QVector<int> configMenuMatches() const;
+	/** @brief Audio rows matching #m_audioMenuFilter: 0 = default output, 1..N = the device at N-1. */
+	QVector<int> audioMenuMatches() const;
 	void selectAudioDevice( int index );       ///< Selects an audio input by menu index: 0 = default loopback, 1..N = the Nth listed device.
 
 	/**
@@ -497,11 +516,15 @@ protected:
 	bool			m_showSelectConfigurationMenu;   ///< Whether the configuration-selection overlay is shown (key '0').
 	int				m_configMenuCursor = 0;          ///< Highlighted row in that overlay (arrow keys move it, Enter picks it).
 	int				m_configMenuTop    = 0;          ///< First visible row: the list scrolls once it is taller than the window.
+	QString			m_configMenuFilter;              ///< Typed substring filter; empty shows every preset.
+	MenuHit			m_configMenuHit;                 ///< Row geometry from the last draw, for mouse hit-testing.
 	bool			m_showFeatureOverlay;            ///< Whether the audio-feature panel is shown (key 'i').
 	bool			m_showHelp = false;              ///< Whether the keyboard-shortcut help box is shown (key 'h').
 	bool			m_showAudioMenu = false;         ///< Whether the audio-source picker overlay is shown (key 'd').
 	int				m_audioMenuCursor = 0;           ///< Highlighted row in that overlay (arrow keys move it, Enter picks it).
 	int				m_audioMenuTop    = 0;           ///< First visible row: the device list scrolls once it is taller than the window.
+	QString			m_audioMenuFilter;               ///< Typed substring filter; empty shows every device.
+	MenuHit			m_audioMenuHit;                  ///< Row geometry from the last draw, for mouse hit-testing.
 	bool			m_showShaderInfo = false;   ///< debug: active shader names ('v')
 
 	int		m_width;    ///< Physical (DPI-scaled) framebuffer width, set in resizeGL().
