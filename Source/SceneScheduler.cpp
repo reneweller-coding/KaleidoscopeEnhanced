@@ -291,15 +291,34 @@ void SceneScheduler::tick( const Tick &t )
 		{
 			if( known )
 			{
-				m_nextTexture           = it->second;   // replay that section's shader
-				m_pendingSectionRestore = id;           //   ... with its exact params
 				auto ic = m_sectionFx.find( id );
-				if( ic != m_sectionFx.end()
-				    && ic->second < comb.size()
-				    && ic->second != m_actFx )
+				int  fxTarget = ( ic != m_sectionFx.end()
+				                   && ic->second < comb.size()
+				                   && ic->second != m_actFx )
+				                 ? (int) ic->second : -1;
+				if( m_texState == 0 )
 				{
-					m_nextFx        = ic->second;
-					m_forceFxChange = true;
+					m_nextTexture           = it->second;   // replay that section's shader
+					m_pendingSectionRestore = id;           //   ... with its exact params
+					if( fxTarget >= 0 )
+					{
+						m_nextFx        = fxTarget;
+						m_forceFxChange = true;
+					}
+				}
+				else
+				{
+					// Mid-fade already: retargeting m_nextTexture/m_nextFx
+					// directly here would make the currently-visible
+					// cross-fade suddenly start blending toward a DIFFERENT
+					// scene than the one it was rolled for -- the reported
+					// "jump to a completely different scene right after a
+					// switch". Let the current fade finish; the replay is
+					// applied at ITS fade-end instead (see below).
+					m_pendingSectionNext   = (int) it->second;
+					m_pendingSectionNextId = id;
+					if( fxTarget >= 0 )
+						m_pendingSectionNextFx = fxTarget;
 				}
 			}
 			else
@@ -334,6 +353,9 @@ void SceneScheduler::tick( const Tick &t )
 		// unrelated switch after unpinning - drop it.
 		m_pendingSectionStore   = -1;
 		m_pendingSectionRestore = -1;
+		m_pendingSectionNext    = -1;
+		m_pendingSectionNextId  = -1;
+		m_pendingSectionNextFx  = -1;
 	}
 
 	// ---- Effekt-Zustandsmaschine: Solo ----
@@ -510,6 +532,10 @@ void SceneScheduler::tick( const Tick &t )
 			{
 				m_nextTexture       = m_forcedNextTexture;
 				m_forcedNextTexture = -1;
+				// A remote jump supersedes a deferred section replay too --
+				// it must not surface later at some unrelated fade-end.
+				m_pendingSectionNext   = -1;
+				m_pendingSectionNextId = -1;
 				fprintf( stderr, "Forced: %s\n", tex[m_nextTexture]->fragmentName() );
 				// Resume the review walk AFTER the scene that was jumped to.
 				for( unsigned int k = 0; k < m_reviewOrder.size(); ++k )
@@ -533,6 +559,17 @@ void SceneScheduler::tick( const Tick &t )
 				m_nextTexture = m_reviewOrder[ m_reviewPos % m_reviewOrder.size() ];
 				m_reviewPos = ( m_reviewPos + 1 ) % (int)m_reviewOrder.size();
 				fprintf( stderr, "Review: %s\n", tex[m_nextTexture]->fragmentName() );
+			}
+			else if( m_pendingSectionNext >= 0
+			         && (unsigned)m_pendingSectionNext < tex.size() )
+			{
+				// A section-repeat retarget that arrived mid-fade earlier:
+				// apply it now, at a safe (Solo-just-ended) point, instead of
+				// where it originally landed.
+				m_nextTexture           = (unsigned) m_pendingSectionNext;
+				m_pendingSectionRestore = m_pendingSectionNextId;
+				m_pendingSectionNext    = -1;
+				m_pendingSectionNextId  = -1;
 			}
 			else
 			for( unsigned int i = 0; i < kMaxSearch; i++ )
@@ -652,6 +689,15 @@ void SceneScheduler::tickFx( const Tick &t, bool trueStereoHold )
 			comb[m_actFx]->resetParameters();
 			m_actFx = m_nextFx;
 
+			if( m_pendingSectionNextFx >= 0
+			    && (unsigned)m_pendingSectionNextFx < comb.size() )
+			{
+				// A section-repeat combine retarget that arrived mid-fade
+				// earlier (see tick()): apply it now, at a safe point.
+				m_nextFx               = (unsigned) m_pendingSectionNextFx;
+				m_pendingSectionNextFx = -1;
+			}
+			else
 			for( unsigned int i = 0; i < kMaxSearch; i++ )
 			{
 				m_nextFx = rand() % comb.size();

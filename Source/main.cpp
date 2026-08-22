@@ -49,6 +49,7 @@
 #include <cstdlib>
 #include <cstdio>
 #include <ctime>
+#include <chrono>
 
 #include "RenderPipeline.h"
 #include "glwidget.h"
@@ -324,6 +325,15 @@ void parsecommandline( int argc, char *argv[] )
  */
 int main(int argc, char *argv[])
 {
+	// Seed the C-runtime RNG ONCE for the whole process. SceneScheduler's
+	// scene/transition/mood-accept picks (and everything else in this codebase
+	// that calls rand()) were never seeded anywhere -- rand() therefore always
+	// started from the C runtime's fixed default state, so every single launch
+	// replayed the exact same "random" sequence of scene/transition picks.
+	// Across repeated sessions this reads as "only a subset of the preset ever
+	// gets used", since the reachable variety was bounded by how long a single
+	// sitting ran, not by the preset's actual size.
+	srand( (unsigned) std::chrono::high_resolution_clock::now().time_since_epoch().count() );
 
 	//Setting default image path for windows
 #ifdef WIN32

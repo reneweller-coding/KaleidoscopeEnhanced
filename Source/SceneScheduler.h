@@ -223,6 +223,16 @@ private:
 	std::map<int, std::vector<float>> m_sectionParams;    ///< Section id -> snapshotted shader parameters to restore on replay.
 	int   m_pendingSectionStore   = -1;   ///< Section id whose final look should be stored at the next fade-end (-1 = none pending).
 	int   m_pendingSectionRestore = -1;   ///< Section id whose stored look should be restored at the next fade-start (-1 = none pending).
+	// A recurring section's replay target arriving WHILE a fade is already in
+	// flight must not overwrite m_nextTexture/m_nextFx directly -- the render
+	// pipeline reads nextTexture()/nextFx() fresh every frame, so that would
+	// silently swap the incoming scene under an already-rolled transition
+	// (the reported "jump to a completely different scene right after a
+	// switch"). Deferred here instead and applied at the next fade-END, the
+	// same mid-fade-safe pattern forceScene() already uses via m_forcedNextTexture.
+	int   m_pendingSectionNext    = -1;   ///< Deferred effect-slot replay target texture index (-1 = none pending).
+	int   m_pendingSectionNextId  = -1;   ///< Section id owning m_pendingSectionNext, so its stored params still get restored at that fade's start.
+	int   m_pendingSectionNextFx  = -1;   ///< Deferred combine-slot replay target index (-1 = none pending).
 
 	// Review-Modus
 	bool  m_reviewMode = false;             ///< True while walking scenes alphabetically instead of picking randomly.
