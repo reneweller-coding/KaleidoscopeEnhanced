@@ -2515,7 +2515,6 @@ void RenderPipeline::loadNewTexture( GLuint &texID )
     // set up texture
     setupTexture( texID, m_nextImage );
 
-	float timeSetup = timer.elapsed();
 
     //printf( "%s\n", qPrintable((*m_imageListIterator)) );
 

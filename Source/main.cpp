@@ -327,9 +327,13 @@ int main(int argc, char *argv[])
 
 	//Setting default image path for windows
 #ifdef WIN32
-	char imagePath[1024];
-    HRESULT result = SHGetFolderPath(NULL, CSIDL_MYPICTURES, NULL, SHGFP_TYPE_CURRENT, imagePath);
-	directory = imagePath;
+	// The HRESULT used to be assigned and ignored. On failure SHGetFolderPath
+	// leaves the buffer untouched, so the old code handed an uninitialised
+	// 1 KB stack buffer to `directory` -- garbage at best, a crash at worst.
+	char imagePath[1024] = {};
+	if( SUCCEEDED( SHGetFolderPath( NULL, CSIDL_MYPICTURES, NULL,
+	                                SHGFP_TYPE_CURRENT, imagePath ) ) && imagePath[0] )
+		directory = imagePath;
 #endif
 
 	// Restore saved look settings first, so explicit command-line flags (e.g. -s)
