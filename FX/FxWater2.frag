@@ -11,6 +11,8 @@ uniform float time;
 uniform sampler2D tex0;
 uniform sampler2D tex1;
 uniform float interpolation;
+uniform float audioAdvance; // music speeds the water
+uniform float audioSwell;
 
 
 
@@ -20,10 +22,11 @@ uniform float interpolation;
 float rand(vec2 n) { return 0.5 + 0.5 * fract(sin(dot(n.xy, vec2(12.9898, 78.233)))* 43758.5453); }
 
 float water(vec3 p) {
-	float t = time / 4.;
+	float t = (time + 0.5*audioAdvance) / 4.;
 	p.z += t * 2.; p.x += t * 2.;
 	//vec3 c1 = texture(iChannel1, p.xz / 30.).xyz;
-	vec3 c1 = interpolation * texture(tex0, p.xz / 30.).xyz + (1.0-interpolation)*texture(tex1, p.xz / 30.).xyz; //texture(iChannel1, p.xz / 30.).xyz;
+	float sc = 30. - 6.0*audioSwell;   // swell zooms the surface texture
+	vec3 c1 = interpolation * texture(tex0, p.xz / sc).xyz + (1.0-interpolation)*texture(tex1, p.xz / sc).xyz;
 	p.z += t * 3.; p.x += t * 0.5;
 	vec3 c2 = interpolation * texture(tex0, p.xz / 30.).xyz + (1.0-interpolation)*texture(tex1, p.xz / 30.).xyz;
 	p.z += t * 4.; p.x += t * 0.8;

@@ -12,6 +12,8 @@ uniform sampler2D tex1;
 uniform float interpolation;
 uniform float speed;
 uniform int sides;
+uniform float audioPhase;   // music advances the fold rotation
+uniform float audioSwell;
 
 
 void main() {
@@ -25,7 +27,7 @@ void main() {
 	p.x -= 0.5*resolution.x/resolution.y;
 	p.y -= 0.5;
     
-    p = 4.0 * p;
+    p = 4.0 * (1.0 - 0.08*audioSwell) * p;
 
     // cartesian to polar coordinates
     float r = length(p);
@@ -36,7 +38,7 @@ void main() {
     float tau = 1. * 1.047;
     a = mod(a, tau/sidesK);
     a = abs(a - tau/sidesK/2.);
-    a += time*speed; // rotate
+    a += time*speed + 0.15*audioPhase; // rotate, music adds spin
 
     // polar to cartesian coordinates
     p = r * vec2(cos(a), sin(a));

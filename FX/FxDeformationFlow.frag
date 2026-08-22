@@ -11,6 +11,8 @@ uniform float time;
 uniform sampler2D tex0;
 uniform sampler2D tex1;
 uniform float interpolation;
+uniform float audioAdvance; // music advances the flow
+uniform float audioBeat;
 uniform float copies;
 uniform int displayGrid;
 uniform float speed;
@@ -85,7 +87,7 @@ void main(void)
   float r2 = sqrt(dot(p+m,p+m));
 
   vec2 uv;
-  uv.x = speedl*time + (r1-r2)*0.25;
+  uv.x = speedl*(time + 0.5*audioAdvance) + (r1-r2)*0.25;
   uv.y = asin(sin(a1-a2))/3.1416;
 
 
@@ -114,7 +116,7 @@ void main(void)
   //uv.x *= resolution.x/resolution.y;
   vec3 col = (interpolation * texture(tex0,uv1) + (1.0-interpolation)*texture(tex1, uv1)).xyz;
 
-  float w = exp(-15.0*r1*r1) + exp(-15.0*r2*r2);
+  float w = (exp(-15.0*r1*r1) + exp(-15.0*r2*r2)) * (1.0 + 0.4*audioBeat);
 
   if( displayGrid > 0 )
   {

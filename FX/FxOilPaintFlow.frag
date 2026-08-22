@@ -11,6 +11,8 @@ uniform float time;
 uniform sampler2D tex0;
 uniform sampler2D tex1;
 uniform float interpolation;
+uniform float audioBeat;    // beats flatten the flow toward the pure painting
+uniform float audioAdvance;
 
 #ifdef GL_ES
 precision highp float;
@@ -59,11 +61,12 @@ vec2 cMul(vec2 a, vec2 b) {
 
 float pattern(  vec2 p, out vec2 q, out vec2 r )
 {
-	q.x = fbm( p  +0.00*time * 2.); // @SLIDER: 5. could represent velocity of water
+	float tw = time + 0.5*audioAdvance;
+	q.x = fbm( p  +0.00*tw * 2.); // @SLIDER: 5. could represent velocity of water
 	q.y = fbm( p + vec2(1.0));
 	
-	r.x = fbm( p +1.0*q + vec2(1.7,9.2)+0.15*time * 2. );
-	r.y = fbm( p+ 1.0*q + vec2(8.3,2.8)+0.126*time * 2.);
+	r.x = fbm( p +1.0*q + vec2(1.7,9.2)+0.15*tw * 2. );
+	r.y = fbm( p+ 1.0*q + vec2(8.3,2.8)+0.126*tw * 2.);
 	//r = cMul(q,q+0.1*time);
 	return fbm(p +1.0*r + 0.0* time);
 }
@@ -415,6 +418,7 @@ void main (void)
              
 	
 	fragColor = vec4(saturation(col3,res2.rgb ),1.0);
+	fragColor.rgb = mix(fragColor.rgb, result.rgb, 0.30*audioBeat);
 	 
 	// fragColor = res2;
 	 

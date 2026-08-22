@@ -11,6 +11,7 @@ uniform float time;
 uniform sampler2D tex0;
 uniform sampler2D tex1;
 uniform float interpolation;
+uniform float audioBeat;    // beats sharpen the painting toward the raw scene
  
  const int radius = 7;
 
@@ -99,4 +100,6 @@ uniform float interpolation;
          min_sigma2 = sigma2;
          fragColor = vec4(m3, 1.0);
      }
+     vec3 raw = (interpolation * texture(tex0, uv) + (1.0-interpolation)*texture(tex1, uv)).rgb;
+     fragColor.rgb = mix(fragColor.rgb, raw, 0.25*audioBeat);
  }

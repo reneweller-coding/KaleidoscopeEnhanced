@@ -12,6 +12,8 @@ uniform sampler2D tex1;
 uniform float interpolation;
 uniform float speed;
 uniform int direction;
+uniform float audioPhase;   // integrated music phase: modulates spin RATE, never jitters
+uniform float audioSwell;
 
 vec2 clampQuadratic( vec2 p )
 {
@@ -56,7 +58,9 @@ void main() {
 	
 	float spd = (direction > 0) ? -speed : speed;   // never write to a uniform
 
-	vec2 cst = vec2( cos(spd*time), sin(spd*time) );
+	float ang = spd*time + sign(spd)*0.25*audioPhase;
+	p *= 1.0 - 0.06*audioSwell;                      // gentle zoom breath
+	vec2 cst = vec2( cos(ang), sin(ang) );
     mat2 rot = mat2(cst.x*resolution.y/resolution.x,-cst.y,cst.y*resolution.y/resolution.x,cst.x);
     
     

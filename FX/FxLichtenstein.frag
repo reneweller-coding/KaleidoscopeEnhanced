@@ -12,6 +12,8 @@ uniform sampler2D tex0;
 uniform sampler2D tex1;
 uniform float interpolation;
 uniform float size;
+uniform float audioBeat;    // dots pop on the beat
+uniform float audioSwell;
 
 
 // Size of the quad in pixels
@@ -29,7 +31,7 @@ void main(void)
 	//p.x /= resolution.x;
 	//p.y /= resolution.y;	
 
-	float radius = size * 0.5 * 0.75;
+	float radius = size * 0.5 * (0.75 + 0.15*audioBeat);
 
 	// Current quad in pixels
 	vec2 quadPos = floor(gl_FragCoord.xy / size) * size;
@@ -43,7 +45,7 @@ void main(void)
 	vec4 texel =  interpolation * texture(tex0,quad) + (1.0-interpolation)*texture(tex1, quad);
 	if (dist > radius)
 	{
-		fragColor = vec4(0.25);
+		fragColor = vec4(0.25 + 0.10*audioSwell);
 	}
 	else
 	{

@@ -12,6 +12,8 @@ uniform sampler2D tex0;
 uniform sampler2D tex1;
 uniform float interpolation;
 uniform int red;
+uniform float audioBeat;    // beat lifts the wash brightness
+uniform float audioSwell;   // slow builds let the real colour bleed through
 uniform int blue;
 
 
@@ -36,7 +38,8 @@ void main() {
 	else
 		colorMul.z = 1.0;
 		
-	vec3 res = colorMul * g;
+	vec3 res = colorMul * g * (1.0 + 0.30*audioBeat);
+	res = mix(res, colres, 0.18*audioSwell);
     
     fragColor = vec4( res.x, res.y, res.z, 1.0 );
 
