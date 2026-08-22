@@ -59,8 +59,12 @@ float modes(vec3 d, float th, float ph)
     s += audioSnare * 0.07 * cos(time * 19.0 + 2.1) * (2.5 * z * z - 1.5) * z;
 
     // HAT: fine shimmer, high order, quick ring.
-    s += audioHat * 0.040 * cos(time * 31.0) * cos(8.0 * th + 1.7) * pow(sp, 6.0);
-    s += audioHat * 0.030 * cos(time * 27.0 + 0.9) * cos((10.5) * ph - 0.785);
+    // Hat shimmer. Was cos(time*31) = 4.9 Hz -- the one temporal-budget
+    // warning in the catalogue, and precisely the fast trembling the house
+    // rules forbid. 18 rad/s = 2.9 Hz keeps the nervous-hat character
+    // inside the full-frame budget.
+    s += audioHat * 0.040 * cos(time * 18.0) * cos(8.0 * th + 1.7) * pow(sp, 6.0);
+    s += audioHat * 0.030 * cos(time * 17.0 + 0.9) * cos((10.5) * ph - 0.785);
 
     // Resting breath so the body never looks dead.
     s += 0.020 * sin(time * 1.1 + sceneSeed * 6.28) * (0.6 + 0.4 * audioSwell);

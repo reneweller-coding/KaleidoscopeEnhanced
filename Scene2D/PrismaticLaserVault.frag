@@ -142,7 +142,7 @@ void main() {
     col += photo * 0.25;
 
     // Atmospheric smoke volume scattering
-    float smoke = hash21(floor(uv * 120.0) + vec2(floor(time * 15.0), 0.0));
+    float smoke = hash21(floor(uv * 120.0) + vec2(floor(time * 8.0), 0.0));
     col += laserRGB * (1.0 + audioKick * 3.0) * (0.8 + 0.4 * audioSwell * smk);
 
     if (audioHigh > 0.4) {

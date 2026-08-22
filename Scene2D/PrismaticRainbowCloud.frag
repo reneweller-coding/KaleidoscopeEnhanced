@@ -162,7 +162,7 @@ void main() {
 
     // Lens sparkle on beats
     if (audioHigh > 0.4) {
-        float sparkle = hash21(floor(uv * 40.0) + floor(time * 20.0));
+        float sparkle = hash21(floor(uv * 40.0) + floor(time * 8.0));
         if (sparkle > 0.97 && cloudDensity > 0.3) {
             col += min(vec3(1.2, 1.1, 1.0) * audioHigh * 1.5, vec3(0.85));
         }
@@ -174,5 +174,5 @@ void main() {
     // clipping the whole stratosphere to paper white.
     vec3 _catTone = clamp(col, 0.0, 1.0);
     _catTone /= 1.0 + 0.26 * max(_catTone.r, max(_catTone.g, _catTone.b));
-    fragColor = vec4(_catTone, 1.0);
+    fragColor = vec4(_catTone * 0.84, 1.0);   // measured luma 0.758: over the white line
 }

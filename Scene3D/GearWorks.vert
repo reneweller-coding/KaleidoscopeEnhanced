@@ -216,7 +216,7 @@ void main()
     // KICK SPARKS: random teeth flash white-hot on the kick (metal striking
     // metal), a drop sets the whole machine glowing.
     col = col;
-    float sparkG = step(0.85, hash11(idx * 7.7 + floor(time * 9.0))) * audioKick;
+    float sparkG = step(0.85, hash11(idx * 7.7 + floor(time * 8.0))) * audioKick;
     col += vec3(1.0, 0.9, 0.6) * sparkG * 1.8;
     vCol    = vec4(col * glowB * (0.9 + 0.3 * r4) * 1.4, 1.0);
     vCorner = attrA.xyz;
