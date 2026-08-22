@@ -91,10 +91,30 @@ void main() {
     vec3 bioEmerald  = vec3(0.1, 1.0, 0.6) * 1.8;
     vec3 ventAmber   = vec3(1.0, 0.5, 0.1) * 2.2;
 
-    vec3 col = mix(abyssalNavy, photoOcean * 0.5, 0.6 + 0.4 * audioLevel);
-    col += mix(bioCyan, bioEmerald, sin(t + uv.y * 4.0) * 0.5 + 0.5) * (bioGlow + bioFlash);
-    col += ventAmber * spireHeight * (0.6 + 1.2 * audioBass);
-    col += vec3(0.8, 0.95, 1.0) * snowParticle;
+    // CANYON GEOMETRY -- the old build painted the glow grid across the
+    // whole frame, which recorded as an LED panel, not a trench.
+    float trenchHalf = 0.06 + 0.62 * clamp(uv.y + 0.72, 0.0, 1.6);
+    float rim = abs(uv.x) - trenchHalf;          // <0 open water, >0 rock wall
+    float wallBand = smoothstep(0.0, 0.22, rim);
+    float floorBand = exp(-pow((uv.y + 0.66) * 2.6, 2.0));
+
+    // Open water: dark navy with a faint rising luciferin haze.
+    vec3 water = abyssalNavy + bioCyan * 0.03 * (1.0 + 0.6 * audioSwell)
+               * smoothstep(0.4, -0.7, uv.y);
+
+    // Rock walls carry the photo texture, crushed toward navy.
+    vec3 wallRock = mix(abyssalNavy, photoOcean * 0.55, 0.55);
+
+    vec3 col = mix(water, wallRock, wallBand);
+
+    // Bioluminescent colonies live ON the walls (gated to the rim zone).
+    float colonyZone = smoothstep(0.015, 0.10, rim) * (1.0 - smoothstep(0.28, 0.55, rim));
+    col += mix(bioCyan, bioEmerald, sin(t + uv.y * 4.0) * 0.5 + 0.5)
+         * (bioGlow + bioFlash) * (0.15 + 0.85 * colonyZone);
+
+    // Hydrothermal vents glow along the trench floor.
+    col += ventAmber * spireHeight * floorBand * (0.6 + 1.2 * audioBass);
+    col += vec3(0.8, 0.95, 1.0) * snowParticle * (1.0 - wallBand * 0.6);
 
     // Atmospheric deep-sea absorption falloff
     col = hueRot(col, audioChromaHue + hue);

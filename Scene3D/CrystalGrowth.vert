@@ -95,7 +95,7 @@ void main()
     world += facet;
 
     // User feedback: the crystal sat tiny in the frame — dolly in.
-    vec3 vp = world + vec3(0.0, -1.0, 16.0);
+    vec3 vp = world + vec3(0.0, -1.0, 10.5);
     vp.x -= eyeOff;
     gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
     gl_Position.x += eyeOff * 0.05 * gl_Position.w;

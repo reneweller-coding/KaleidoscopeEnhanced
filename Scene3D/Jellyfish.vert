@@ -85,7 +85,7 @@ void main()
 
     float px   = resolution.y / 1080.0;
     float dist = max(vp.z, 0.5);
-    gl_PointSize = clamp(95.0 * (0.4 + 0.8 * r4) * px / dist, 1.5, 15.0 * px);
+    gl_PointSize = clamp(158.2 * (0.4 + 0.8 * r4) * px / dist, 1.5, 25.0 * px);   // sprite sweep 2026-08-22: measured luma 0.051, area x2.8
 
     // Bioluminescence: cyan-violet family per jelly, keyed to the music.
     vec3 col = hueRot(vec3(0.25, 0.75, 0.95),

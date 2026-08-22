@@ -106,5 +106,7 @@ void main() {
     col += vec3(1.8, 1.8, 2.0) * apexFlare;
 
     col = pow(col, vec3(0.88));
+    col *= 0.79;   // measured luma 0.636: knee, not a linear trim
+    col /= 1.0 + 0.45 * max(col.r, max(col.g, col.b));
     fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }

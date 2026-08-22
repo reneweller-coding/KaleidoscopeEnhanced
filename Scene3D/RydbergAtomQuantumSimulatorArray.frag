@@ -42,7 +42,7 @@ void main()
     vec2 pc = gl_PointCoord - vec2(0.5);
     float r2 = dot(pc, pc);
     if (r2 > 0.25) discard;
-    
+
     float hScale = (haloP > 0.01 ? haloP : 1.2);
     float core = exp(-r2 * 18.0 / hScale);
 
@@ -70,7 +70,7 @@ void main()
     // tweezer planes ADD, so cap the FINAL tinted vec3 (not just the scalar
     // feeding it) well below 1.0 or the stack burns to white.
     col *= 8.0;                       // round 2: the soft knee eats half the gain
-    col = min(col, vec3(0.50));
+    col = min(col, vec3(0.95));   // 0.50 capped every highlight at half grey
 
     // FLAT fix: the additive white terms dominate the tinted base; push
     // the chroma back up before the knee (luma-preserving saturation).

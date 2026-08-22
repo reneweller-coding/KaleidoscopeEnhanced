@@ -55,7 +55,7 @@ void main()
     vec2 uv = gl_FragCoord.xy / resolution;
     // User feedback: the crystal sat tiny in the frame — view zoomed 2.1x
     // onto the growth centre (the sim texture itself is unchanged).
-    uv = vec2(0.5) + (uv - vec2(0.5)) / 2.1;
+    uv = vec2(0.5) + (uv - vec2(0.5)) / 2.9;
     vec4 fld = texture(texCrystal, uv);
     float solid = fld.r;
     float hue   = fld.b;

@@ -133,7 +133,7 @@ void main() {
         vDust = 0.0;
 
         vp = vWorldPos;
-        vp.z += 9.0;
+        vp.z += 7.2;   // outside the torus, close enough to fill
     }
 
     // Camera transform: projM expects NEGATIVE view-space z (clip-w = -z_view),

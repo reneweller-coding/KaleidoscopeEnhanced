@@ -83,7 +83,7 @@ void main()
     // the fall transform the world layers go through.
     bool  viewSpace = false;
     vec3  vpDirect  = vec3(0.0);
-    float sizeBase = 105.0, sizeCap = 16.0, sizeMin = 1.5;
+    float sizeBase = 196.9, sizeCap = 30.0, sizeMin = 1.5;
 
     if (r1 < 0.20)
     {
@@ -112,7 +112,7 @@ void main()
         glow = 0.30 + 0.85 * smoothstep(0.25, 0.62, alt);
         // A speck must stay legible at any distance -- below ~2.5 px an
         // additive sprite averages away to nothing and the field reads black.
-        sizeBase = 84.0; sizeCap = 9.0; sizeMin = 2.6;
+        sizeBase = 157.5; sizeCap = 16.9; sizeMin = 2.6;
     }
     else if (r1 < 0.45)
     {

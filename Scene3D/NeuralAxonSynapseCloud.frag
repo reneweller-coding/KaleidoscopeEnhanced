@@ -44,5 +44,7 @@ void main() {
     col = hueRot(col, audioChromaHue + hue);
     // Cap the TINTED colour, not the scalar that fed it: hueRot can push a
     // single channel above the value that went in.
+    col *= 1.9;   // measured-dark lift round 2
+    col *= 1.9;   // measured-dark lift round 2
     fragColor = vec4(min(max(col, vec3(0.0)), vec3(1.35)), alpha);
 }

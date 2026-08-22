@@ -124,7 +124,7 @@ void main()
         sizeCap  = 9.0;
         sizeMin  = 2.6;
 
-        vCol = vec4(col * 2.8, 1.0);
+        vCol = vec4(col * 4.4, 1.0);
     }
     else
     {
@@ -190,7 +190,7 @@ void main()
         sizeCap  = outer ?  12.0 : 14.0;
         sizeMin  = 1.5;
 
-        vCol = vec4(col * 2.8, 1.0);
+        vCol = vec4(col * 4.4, 1.0);
     }
 
     vp.x -= eyeOff;

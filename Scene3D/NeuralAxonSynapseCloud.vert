@@ -74,7 +74,7 @@ void main() {
                        dz);
 
         vec3 hcol = mix(vec3(0.0, 0.85, 1.0), vec3(0.7, 0.15, 1.0), hy);
-        hcol *= (0.24 + 0.46 * hx) * (0.75 + 0.5 * audioSwell)
+        hcol *= (0.55 + 0.95 * hx) * (0.75 + 0.5 * audioSwell)
               * (1.0 + 0.5 * audioSpectrum[int(clamp(hy * 31.0, 0.0, 31.0))])
               * clamp(1.0 - dz / 120.0, 0.0, 1.0);
         vColor = vec4(min(hcol, vec3(1.4)), 1.0);
@@ -89,7 +89,7 @@ void main() {
         // A speck must stay legible at any distance -- below about 2.5 px an
         // additive sprite averages away to nothing and the far field reads
         // black again.
-        gl_PointSize = clamp(78.0 * (0.5 + 1.0 * hz) / max(hv.z, 1.0), 2.6, 16.0);
+        gl_PointSize = clamp(133.3 * (0.5 + 1.0 * hz) / max(hv.z, 1.0), 2.6, 27.4);   // sprite sweep 2026-08-22: measured luma 0.048, area x2.9
         vSize = gl_PointSize;
         return;
     }

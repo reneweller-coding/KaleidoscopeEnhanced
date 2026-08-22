@@ -66,6 +66,7 @@ void main() {
     vec3 colAcc = vec3(0.0);
     float totalWeight = 0.0;
     float laserAcc = 0.0;
+    vec3 laserCol = vec3(0.0);
 
     // Iterate across multiple tilted dichroic glass plates
     int numP = int(clamp(nPlates, 3.0, 6.0));
@@ -95,8 +96,11 @@ void main() {
 
         // Laser beam slicing through plate
         float laserLine = abs(pPlate.y - 0.2 * sin(pPlate.x * 4.0 + t * 3.0));
-        float laserGlow = exp(-laserLine * 25.0) * step(plateDist, 0.0);
+        // Narrow beam (90, not 25) and per-plate SPECTRAL colour: five wide
+        // pale beams summed into the old uniform wash.
+        float laserGlow = exp(-laserLine * 90.0) * step(plateDist, 0.0);
         laserAcc += laserGlow * (1.0 + 3.0 * audioKick);
+        laserCol += pow(dichroicColor, vec3(1.5)) * laserGlow * (1.0 + 2.2 * audioKick);
 
         // Glass plate edge bevel glow. The first pass capped the glow*kick
         // product to 1.0, but the 1.8-peak blue tint channel still turned
@@ -129,8 +133,7 @@ void main() {
     // background), which is why this read as an almost uniform pale wash
     // rather than isolated beams. Tighten the cap and lower the tint
     // constants.
-    laserAcc = min(laserAcc, 0.6);
-    vec3 laserTint = vec3(1.1, 1.0, 1.4) * laserAcc * glw;
+    vec3 laserTint = min(laserCol, vec3(1.35)) * glw;
     finalCol += laserTint;
 
     // Background optical dispersion

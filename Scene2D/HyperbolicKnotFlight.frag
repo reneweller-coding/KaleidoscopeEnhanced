@@ -194,5 +194,6 @@ void main() {
     finalCol = pow(finalCol, vec3(0.88));
     vec3 _catTone = clamp(finalCol, 0.0, 1.0);
     _catTone /= 1.0 + 0.26 * max(_catTone.r, max(_catTone.g, _catTone.b));
+    _catTone /= 1.0 + 0.50 * max(_catTone.r, max(_catTone.g, _catTone.b));   // peak knee: tame local glare, keep midtones
     fragColor = vec4(_catTone, 1.0);
 }

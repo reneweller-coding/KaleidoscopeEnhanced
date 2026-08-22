@@ -90,11 +90,25 @@ void main()
 
     float px   = resolution.y / 1080.0;
     float dist = max(vp.z, 0.5);
+
+    // Vertex 0 is the MOON: without a single anchor object the flakes read
+    // as a starfield on black (exactly what the probe recording showed).
+    if (gl_VertexID == 0) {
+        vec3 mw = vec3(10.5, 15.0, 34.0);
+        mw.x -= eyeOff;
+        gl_Position = projM * vec4(mw.x, mw.y, -mw.z, 1.0);
+        gl_Position.x += eyeOff * 0.045 * gl_Position.w;
+        gl_PointSize = 190.0 * px;
+        vec3 moonC = mix(vec3(0.72, 0.82, 1.00), vec3(1.00, 0.93, 0.78),
+                         clamp(audioMode, 0.0, 1.0));
+        vCol = vec4(moonC * (0.85 + 0.15 * audioSwell), 2.0);
+        return;
+    }
     // Ceiling raised from 13 px: it was clipping the near flakes back down to
     // the same apparent size as the mid-field ones, which flattened out the very
     // depth cue the new distribution creates.
-    gl_PointSize = clamp(150.0 * (0.30 + 0.85 * r4) * px / dist,
-                         2.0, 30.0 * px);
+    gl_PointSize = clamp(290.0 * (0.30 + 0.85 * r4) * px / dist,
+                         2.5, 48.0 * px);
 
     // Cold moonlit white with the faintest key tint; flakes glint gently
     // as they tumble; a soft glow near the ground plane.
@@ -110,11 +124,11 @@ void main()
     vec3 moonlit = mix(vec3(0.70, 0.82, 1.00), vec3(1.00, 0.92, 0.76),
                        clamp(audioMode, 0.0, 1.0));
     vec3 col = hueRot(moonlit, audioChromaHue * 0.15);
-    col *= (0.30 + 0.35 * r4) * glint
+    col *= (0.42 + 0.40 * r4) * glint
          * (0.7 + 0.35 * audioSwell + 0.2 * audioLevel)
          * (1.0 + ground)
          // Steeper depth falloff: near flakes now carry the picture, the far
          // field stays a dim haze behind them. That separation IS the contrast.
-         * clamp(1.30 - vp.z / 58.0, 0.07, 1.35);
-    vCol = vec4(min(col * 3.2, vec3(2.6)), 1.0);
+         * clamp(1.30 - vp.z / 58.0, 0.15, 1.35);
+    vCol = vec4(min(col * 4.0, vec3(2.8)), 1.0);
 }

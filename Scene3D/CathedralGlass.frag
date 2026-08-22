@@ -116,7 +116,12 @@ void main()
     float hue = fract(0.62 * hueP + ang / 6.2831853 + 0.11 * floor(rad / 0.72)
                       + 0.07 * layer + 0.06 * sin(audioChromaHue));
     vec3 tint = hue2rgb(hue);
-    tint = mix(tint, vec3(1.0, 0.93, 0.78), 0.08 + 0.10 * layer);
+    // Deep-glass saturation: the photo arc alone hands back pastel, and the
+    // window recorded as near-monochrome silver.  Push the chroma hard (the
+    // clamp keeps it legal), then only a whisper of the warm white-wash.
+    float tl = dot(tint, vec3(0.333));
+    tint = clamp(mix(vec3(tl), tint, 2.3), 0.0, 1.0);
+    tint = mix(tint, vec3(1.0, 0.93, 0.78), 0.04 * layer);
 
     float lit = (0.30 + 1.65 * vLevel) * front;
     vec3 col = tint * lit * (0.55 + 0.9 * glowP)

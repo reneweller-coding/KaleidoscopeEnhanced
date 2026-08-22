@@ -114,7 +114,7 @@ void main() {
     // Camera space
     // Camera pulled back: the outer shell (r~15 + swell + kick) must NEVER
     // reach the eye (user saw shells colliding with the camera).
-    vec3 camPos = vec3(0.0, 0.0, -30.0);
+    vec3 camPos = vec3(0.0, 0.0, -23.0);
     vec3 relP = worldP - camPos;
     relP.x -= eyeOff;
 

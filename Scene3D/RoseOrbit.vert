@@ -117,8 +117,8 @@ void main()
         // A grain of pollen has to stay a legible speck at any distance --
         // below roughly two and a half pixels an additive sprite averages
         // away to nothing and the far half of the field reads as black again.
-        sizeBase = 86.0;
-        sizeCap  = 9.0;
+        sizeBase = 156.3;
+        sizeCap  = 16.4;
         sizeMin  = 2.8;
         gain     = 4.2;
     }
@@ -138,21 +138,21 @@ void main()
             k = 2.5;  R0 = 17.0;  zc = 34.0;  spin =  0.080;  thr = 0.090;
             bri = 0.80;
             pc = mix(vec3(0.45, 0.55, 0.95), vec3(0.95, 0.35, 0.55), mmaj);
-            sizeBase = 100.0;  sizeCap = 13.0;
+            sizeBase = 181.7;  sizeCap = 23.6;
         }
         else if (lf < 1.5)
         {
             k = 3.5;  R0 = 25.0;  zc = 45.0;  spin = -0.050;  thr = 0.062;
             bri = 0.50;
             pc = mix(vec3(0.30, 0.45, 0.85), vec3(0.85, 0.55, 0.35), mmaj);
-            sizeBase = 120.0;  sizeCap = 12.0;
+            sizeBase = 218.1;  sizeCap = 21.8;
         }
         else
         {
             k = 4.5;  R0 = 36.0;  zc = 56.0;  spin =  0.032;  thr = 0.045;
             bri = 0.40;
             pc = mix(vec3(0.35, 0.50, 0.90), vec3(0.90, 0.50, 0.40), mmaj);
-            sizeBase = 145.0;  sizeCap = 11.0;
+            sizeBase = 263.5;  sizeCap = 20.0;
         }
 
         // theta runs twice around for closure; particles stream along it.

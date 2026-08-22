@@ -89,8 +89,10 @@ float apollonianSDF(vec3 p, float gsk, float frc, out float trap) {
         scale *= k;
     }
 
-    float d = (length(p.xy) - 0.25) / scale;
-    return d;
+    // Sphere-foam cut: the tangent-sphere reading needs the classic
+    // plane cut |p.y|/scale; the old cylinder cut length(p.xy) rendered as
+    // tube spaghetti that averaged into featureless gravel on screen.
+    return 0.25 * abs(p.y) / scale;
 }
 
 void main() {
@@ -102,40 +104,51 @@ void main() {
     vec2 uv = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
     vec2 st = gl_FragCoord.xy / resolution;
 
-    float t = time * 0.3 * spd + audioAdvance * 0.15;
+    float t = time * 0.22 * spd + audioAdvance * 0.12;
 
-    // Camera setup
-    vec3 ro = vec3(t * 0.6, sin(t * 0.4) * 0.3, cos(t * 0.3) * 0.3);
-    vec3 rd = normalize(vec3(uv, 1.2 - 0.25 * audioKick));
+    // Glide along a corridor of the foam, far enough out that whole spheres
+    // stay readable (the old path sat deep inside the fold, where every ray
+    // hit within a step or two and the picture collapsed into noise).
+    vec3 ro = vec3(0.25 * sin(t * 0.5), 0.62 + 0.10 * sin(t * 0.33), t * 0.55);
+    vec3 rd = normalize(vec3(uv, 1.35 - 0.20 * audioKick));
+    rd.yz = rot2D(0.22 * sin(t * 0.27)) * rd.yz;
+    rd.xz = rot2D(t * 0.15) * rd.xz;
 
-    rd.yz = rot2D(sin(t * 0.3) * 0.3) * rd.yz;
-    rd.xz = rot2D(t * 0.2) * rd.xz;
-
+    // If the corridor start sits inside foam for this gasketP, walk free.
+    {
+        float e0;
+        for (int e = 0; e < 8; ++e) {
+            if (apollonianSDF(ro * gsk, gsk, frc, e0) > 0.01) break;
+            ro.z += 0.30;
+        }
+    }
     float dO = 0.0;
     float hitDist = -1.0;
     float trapMin = 1e5;
+    int   steps = 0;
     vec3 hitP = vec3(0.0);   // guarded by hitDist, but the compiler cannot see that
 
-    for (int i = 0; i < 48; ++i) {
+    for (int i = 0; i < 90; ++i) {
         vec3 p = ro + rd * dO;
         float curTrap;
         float dS = apollonianSDF(p * gsk, gsk, frc, curTrap);
         trapMin = min(trapMin, curTrap);
+        steps = i;
 
-        if (dS < 0.003) {
+        if (dS < 0.0008 + 0.0012 * dO) {
             hitDist = dO;
             hitP = p;
             break;
         }
-        if (dO > 10.0) break;
-        dO += dS * 0.7;
+        if (dO > 9.0) break;
+        dO += dS * 0.85;
     }
 
-    vec3 col = vec3(0.02, 0.02, 0.05);
+    vec3 deep = imgPalette(0.62) * 0.06 + vec3(0.01, 0.012, 0.03);
+    vec3 col = deep;
 
     if (hitDist > 0.0) {
-        // Normal estimation
-        vec2 e = vec2(0.005, 0.0);
+        vec2 e = vec2(0.0015, 0.0);
         float tU;
         vec3 n = normalize(vec3(
             apollonianSDF((hitP + e.xyy) * gsk, gsk, frc, tU) - apollonianSDF((hitP - e.xyy) * gsk, gsk, frc, tU),
@@ -143,22 +156,24 @@ void main() {
             apollonianSDF((hitP + e.yyx) * gsk, gsk, frc, tU) - apollonianSDF((hitP - e.yyx) * gsk, gsk, frc, tU)
         ));
 
-        vec3 lightDir = normalize(vec3(0.5, 0.8, -0.6));
+        vec3 lightDir = normalize(vec3(0.4, 0.85, -0.45));
         float diff = max(dot(n, lightDir), 0.0);
-        float spec = pow(max(dot(reflect(-lightDir, n), -rd), 0.0), 32.0);
+        float spec = pow(max(dot(reflect(-lightDir, n), -rd), 0.0), 48.0);
 
-        // Photo texture mapping from sphere normals
-        vec2 photoUV = fract(n.xy * 0.5 + 0.5 + hitP.z * 0.1);
-        vec3 photo = img(photoUV);
+        // Jewel colour from the ORBIT TRAP (constant per sphere, so each
+        // sphere reads as one gem) -- no per-pixel photo hash, which is what
+        // shredded the old picture into salt-and-pepper.
+        vec3 jewel = imgPalette(fract(trapMin * 3.1 + 0.13 * audioPhase * 0.159));
 
-        // Jewel iridescence palette
-        vec3 jewel = imgPalette((trapMin * 8.0 + audioPhase) * 0.159);
+        // Iteration-count occlusion: crevices between kissing spheres darken.
+        float ao = clamp(1.0 - float(steps) * 0.011, 0.25, 1.0);
+        float rim = pow(1.0 - max(dot(n, -rd), 0.0), 3.0);
 
-        col = mix(photo * 0.85, jewel, 0.5);
-        col = col * (0.35 + 0.65 * diff) + spec * vec3(1.0, 0.95, 0.85) * (1.0 + audioKick * 2.0);
+        col = jewel * (0.38 + 1.25 * diff) * ao;
+        col += spec * vec3(1.0, 0.96, 0.88) * (0.8 + 1.6 * audioKick);
+        col += jewel * rim * 0.55;
 
-        // Distance fog
-        col = mix(col, vec3(0.02, 0.02, 0.06), 1.0 - exp(-hitDist * 0.2));
+        col = mix(col, deep, 1.0 - exp(-hitDist * 0.30));
     }
 
     if (audioChromaHue != 0.0)     if (hue > 0.001) col = hueRot(col, hue);

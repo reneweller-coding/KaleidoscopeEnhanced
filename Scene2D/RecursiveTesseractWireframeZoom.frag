@@ -158,5 +158,7 @@ void main() {
     col = pow(col, vec3(0.88));
     vec3 _catTone = clamp(col, 0.0, 1.0);
     _catTone /= 1.0 + 0.4 * max(_catTone.r, max(_catTone.g, _catTone.b));
+    _catTone /= 1.0 + 0.55 * max(_catTone.r, max(_catTone.g, _catTone.b));   // peak knee
+    _catTone = clamp((_catTone - 0.42) * 2.00 + 0.10, 0.0, 1.0);   // wires on dark, not a grey slab
     fragColor = vec4(_catTone, 1.0);
 }

@@ -80,5 +80,6 @@ void main()
     col *= mix(vec3(0.85, 0.9, 1.1), vec3(1.1, 1.0, 0.85), audioCentroid);
     col *= exp(-vDist * 0.010);                    // horizon fog
 
+    col *= 3.20;   // measured-dark lift (visual pass)
     fragColor = vec4(col, 1.0);
 }

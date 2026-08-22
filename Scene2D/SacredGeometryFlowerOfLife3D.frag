@@ -110,7 +110,7 @@ void main() {
     // Camera ray setup with dynamic orbital tilt
     float camDist = 2.8 + 0.4 * sin(audioSwell * 2.0);
     float camAngle = t * 0.3 + audioPhase * 0.1;
-    float camPitch = 0.45 + 0.2 * sin(t * 0.4);
+    float camPitch = 1.08 + 0.16 * sin(t * 0.4);   // face the xy-plane pattern
 
     vec3 ro = vec3(cos(camAngle) * cos(camPitch), sin(camPitch), sin(camAngle) * cos(camPitch)) * camDist;
     vec3 ta = vec3(0.0, 0.0, 0.0);
@@ -146,8 +146,12 @@ void main() {
     }
 
     // Volumetric glow along all sacred geometric edges
-    float glow = exp(-minD * (22.0 + 12.0 * audioCentroid)) * glw;
-    vec3 glowTint = vec3(1.3, 1.1, 1.6) * glow * (1.0 + 2.5 * audioKick);
+    // A sharper falloff and a palette tint instead of the old white
+    // vec3(1.3,1.1,1.6)*2.5kick, which saturated into one glare pillar
+    // whenever a torus tube sat edge-on to the camera.
+    float glow = exp(-minD * (26.0 + 10.0 * audioCentroid)) * glw;
+    glow = min(glow, 0.85);
+    vec3 glowTint = imgPalette(fract(0.08 + minD * 2.0)) * glow * (0.9 + 0.9 * audioKick);
 
     // Background moiré interference field
     float moire = sin(length(uv) * (35.0 + 20.0 * audioCentroid) - t * 3.0) *

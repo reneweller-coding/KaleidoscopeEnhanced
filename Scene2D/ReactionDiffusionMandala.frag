@@ -130,5 +130,6 @@ void main()
     // of clipping the whole frame to white.
     vec3 _catTone = (clamp(col, 0.0, 1.0)) * 0.75;
     _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
+    _catTone = clamp(pow(max(_catTone, 0.0), vec3(2.0)) * 1.30, 0.0, 1.0);   // washed-out fix round 2: gamma crush
     fragColor = vec4(_catTone, 1.0);
 }

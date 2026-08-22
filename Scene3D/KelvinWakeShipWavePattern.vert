@@ -56,52 +56,52 @@ void main()
     // Remap grid UV [0,1] to centered [-1,1] domain
     vec2 uv = attrA.xy * 2.0 - 1.0;
     vUV = attrA.xy;
-    
+
     float t = time * 0.4 + audioAdvance * 0.35;
-    
+
     // Ship moving along -y axis with classical Kelvin wake pattern
     // Characteristic Kelvin wedge angle: arcsin(1/3) = 19.47 degrees
     float x = uv.x * 2.8;
     float y = uv.y * 2.8;
-    
+
     // Divergent wave system (echelon waves)
     float thetaKelvin = 0.3398369; // 19.47 degrees in radians
     float wakeCone = abs(x) - max(0.0, -y) * tan(thetaKelvin);
-    
+
     // Transverse and divergent wave phases
     float kTrans = 12.0 * (waveScaleP > 0.01 ? waveScaleP : 1.0);
     float transWave = cos(y * kTrans - t * 4.0) * exp(-abs(x) * 2.0);
-    
+
     float kDiv = 18.0;
     float divWave = cos((abs(x) * 2.0 + y) * kDiv - t * 6.0) * smoothstep(0.1, -0.1, wakeCone);
-    
+
     float totalWaveHeight = (transWave * 0.4 + divWave * 0.6) * 0.22 * (0.85 + 0.35 * audioSwell);
-    
+
     vec3 worldPos = vec3(x, y, totalWaveHeight);
-    
+
     // Wave crest spray / foam illumination
     float crest = pow(clamp(totalWaveHeight * 4.0 + 0.3, 0.0, 1.0), 3.0);
     vCrestGlow = crest * (1.0 + 3.0 * audioKick);
-    
+
     // Approximate surface normal
     float dHdx = -sin((abs(x) * 2.0 + y) * kDiv - t * 6.0) * 0.3;
     float dHdy = -sin(y * kTrans - t * 4.0) * 0.2;
     vNormal = normalize(vec3(-dHdx, -dHdy, 1.0));
-    
+
     // Ocean blue palette
     vec3 oceanBlue = vec3(0.08, 0.45, 0.75);
     vCol = palTint(oceanBlue, attrA.y * 0.3 + audioCentroid, 0.25);
-    
+
     // Camera Transform (V3)
     vec3 vp = worldPos;
-    vp.z += 4.5;
+    vp.z += 3.3;   // fill: the wake plate left 60% of the frame empty
     vp.x -= eyeOff;
-    
+
     // Isometric camera tilt looking across ship wake
     float tilt = 0.65;
     float c = cos(tilt), s = sin(tilt);
     vp = vec3(vp.x, vp.y * c - vp.z * s, vp.y * s + vp.z * c);
-    
+
     gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 }

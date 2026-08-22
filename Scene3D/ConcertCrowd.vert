@@ -19,6 +19,7 @@ uniform float time;
 uniform vec2  resolution;
 
 uniform float audioBeatPhase;
+uniform float audioPhase;
 uniform float audioKick;
 uniform float audioOnset;
 uniform float audioSwell;
@@ -77,7 +78,24 @@ void main()
     vec3  col3;
     float rim;
 
-    if (r1 < 0.45)
+    float beamK = 0.0;
+    vec3 beamCol = vec3(0.0);
+    if (r1 > 0.97)
+    {
+        // ---- Stage light beams sweeping the sky over the crowd. ----
+        float beam = floor((r1 - 0.97) * 166.0);          // 0..4
+        float a = r2;                                     // 0 stage .. 1 sky
+        float ang = (beam / 4.0 - 0.5) * 1.5
+                  + 0.45 * sin(audioPhase * 0.5 + beam * 1.7);
+        world = vec3(sin(ang) * (1.5 + a * 15.0) + (r3 - 0.5) * 0.4,
+                     1.8 + a * 10.5 + (r4 - 0.5) * 0.4,
+                     24.0 - a * 10.0);
+        rim = 1.0;
+        beamK = 1.0;
+        beamCol = hueRot(vec3(0.35, 0.75, 1.0), audioChromaHue + beam * 1.1)
+                * (0.5 + 0.5 * a) * (0.8 + 0.8 * audioSwell + 1.2 * audioDrop);
+    }
+    else if (r1 < 0.45)
     {
         // ---- Torso + head: a small vertical cluster (per-person height). ----
         float h = r2 * 1.75 * hgt;

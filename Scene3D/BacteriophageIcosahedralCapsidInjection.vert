@@ -191,7 +191,7 @@ void main()
         // SWELL widens the capsid; the whole phage is sized against its own
         // depth so near and far ones stay comparably legible on screen.
         float scale = (phageScaleP > 0.01 ? phageScaleP : 1.2) * (0.85 + 0.35 * audioSwell)
-                    * halfH * 0.205 * (0.75 + 0.5 * h4);
+                    * halfH * 0.135 * (0.75 + 0.5 * h4);
 
         // Slow drift, so no phage ever hangs perfectly still.
         vec2 bob = vec2(sin(t * 0.21 + h1 * 6.2831853),
@@ -213,7 +213,9 @@ void main()
 
         vUV  = fract(vec2(lu + h1, lv * 0.8 + h2));
         vCol = palTint(proteinTeal * (0.8 + 0.4 * h3),
-                       fract(uv.y * 0.3 + u * 0.159 + audioCentroid), 0.45);
+                       fract(uv.y * 0.3 + u * 0.159 + h1 * 0.31), 0.45);
+        // Depth dimming: without it the far rows stack into one teal wall.
+        vCol *= 1.0 - 0.72 * rowF;
         vFog = clamp((dz - 11.0) / 80.0, 0.0, 1.0);
     }
 

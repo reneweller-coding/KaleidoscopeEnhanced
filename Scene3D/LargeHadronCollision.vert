@@ -73,5 +73,5 @@ void main() {
     // Small sprites on purpose: every track converges at the vertex, so the
     // centre integrates ~1/r overdraw — area, not gain, decides whether the
     // species colours survive (the old 32 px cap summed to pure white).
-    gl_PointSize = clamp((1.5 + 2.5 * vEnergy + audioHigh * 1.5) * (5.5 / vp.z), 1.0, 10.0);
+    gl_PointSize = clamp((3.2 + 2.5 * vEnergy + audioHigh * 1.5) * (5.5 / vp.z), 1.0, 20.0);   // sprite sweep 2026-08-22: measured luma 0.031, area x4.6
 }

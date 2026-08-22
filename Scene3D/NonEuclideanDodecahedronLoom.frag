@@ -93,5 +93,7 @@ void main() {
     // 0.68/0.40: those were set while most of the ribbon area was being thrown
     // away edge-on (see the .vert), so the few strands that did survive had to
     // be held down for a density that never actually arrived.
-    fragColor = vec4(min(col * 0.85, vec3(0.55)), 1.0);
+    // Additive stack: at ~hundreds of overlapping strands even a 0.55
+    // cap integrates to one white mass (the probe showed exactly that).
+    fragColor = vec4(min(col * 0.30, vec3(0.22)), 1.0);
 }

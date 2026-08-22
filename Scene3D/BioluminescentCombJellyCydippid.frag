@@ -31,6 +31,7 @@ uniform float interpolation;
 
 uniform float audioKick;
 uniform float audioSwell;
+uniform float audioAdvance;
 
 uniform float cteneGlowP;
 
@@ -42,20 +43,28 @@ void main()
 {
     float core = pow(1.0 - abs(vSide), 2.2);
     float edge = exp(-abs(abs(vSide) - 0.9) * 14.0);
-    
+
     vec3 photo = img(vUV);
-    
-    vec3 col = vCol * (0.6 + 0.4 * photo) * core * 1.3;
+
+    vec3 col = vCol * (0.6 + 0.4 * photo) * core * 1.8;
     // The comb-plate crest is the brightest thing in the scene and the kick
     // drives it hard; with a whole bloom on screen the crests would otherwise
     // stack up into white.  Cap the additive term (a scalar cap is enough
     // here -- the tint below is under 1.0 in every channel).
     float glow = (cteneGlowP > 0.01 ? cteneGlowP : 1.4);
-    col += vec3(0.95, 0.95, 1.0) * min(vCiliaWave * glow * 1.7, 2.0);
+    // The comb rows are diffraction gratings: the beating plates scatter a
+    // SPECTRUM that scrolls along the row.  The old flat white here is what
+    // turned the whole animal monochrome on screen.
+    float sh = fract(vUV.x * 2.2 + vCiliaWave * 0.15 + audioAdvance * 0.08);
+    vec3 spectral = clamp(vec3(abs(sh * 6.0 - 3.0) - 1.0,
+                               2.0 - abs(sh * 6.0 - 2.0),
+                               2.0 - abs(sh * 6.0 - 4.0)), 0.0, 1.0);
+    spectral = mix(vec3(0.9), spectral, 0.85);
+    col += spectral * min(vCiliaWave * glow * 1.7, 2.0);
     col += vCol * edge * 1.5;
     col *= (0.85 + 0.35 * audioSwell);
     col += vCol * (audioKick * 0.3);
-    
+
     // additive pass dim: this geom renders GL_ONE/GL_ONE without
     // depth -- overlapping layers ADD, so each fragment must stay
     // well below 1.0 or the stack burns to white.

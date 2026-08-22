@@ -99,11 +99,15 @@ void main() {
     float stepSize = 0.08;
     for (int i = 0; i < 40; ++i) {
         p += rd * stepSize;
-        float z = p.z;
-        float r = length(p.xy);
+        // Side view: the old march looked straight down the jet axis and
+        // the beam recorded as a concentric glow ball.  Tilt the axis ~62
+        // degrees across the frame and mirror it (bipolar lobes).
+        vec3 pj = vec3(p.x, p.y * 0.469 - p.z * 0.883, p.y * 0.883 + p.z * 0.469);
+        float z = pj.y * 1.25;
+        float r = length(vec2(pj.x, pj.z));
 
-        // Magnetic funnel envelope: r_funnel = a * z^0.6
-        float funnelR = (0.2 + 0.35 * pow(max(z + 3.0, 0.1), 0.65)) / col;
+        // Magnetic funnel envelope, opening away from the core BOTH ways
+        float funnelR = (0.16 + 0.30 * pow(abs(z) * 1.5 + 0.10, 0.65)) / col;
         funnelR += 0.08 * sin(z * 4.0 - t * 6.0) * (1.0 + audioKick);
 
         // Helical magnetic field lines
@@ -115,9 +119,11 @@ void main() {
         float density = exp(-sheathDist * 16.0) * (1.0 + helix * 1.2);
 
         // Shock diamonds: periodic supersonic compression nodes along z
-        float diamondZ = sin(z * 6.0 - t * 8.0);
+        float diamondZ = sin(abs(z) * 6.0 - t * 8.0);
         float diamond = exp(-abs(diamondZ) * 8.0) * exp(-r * 8.0);
         shockDiamonds += diamond * (1.5 + audioKick * 3.0);
+        // Luminous beam core so the jet reads as a BEAM, not a haze.
+        accumDensity += exp(-r * 10.0) * 0.55 * stepSize * (1.0 + 0.6 * audioLevel);
 
         accumDensity += density * stepSize;
 

@@ -67,43 +67,43 @@ void main()
 {
     vec2 uv = (gl_FragCoord.xy - 0.5 * resolution) / min(resolution.x, resolution.y);
     float t = time * 0.45 + audioAdvance * 0.4;
-    
+
     // Tilted equatorial plane for synchrotron torus rings
     float tilt = 0.55;
     float cTilt = cos(tilt), sTilt = sin(tilt);
     vec2 pTorus = vec2(uv.x, uv.y / sTilt);
     float rTorus = length(pTorus);
-    
+
     // Equatorial termination shock torus
     float rShock = (torusRadiusP > 0.01 ? torusRadiusP : 0.5) * (0.85 + 0.3 * audioBass);
     float torusRing = exp(-abs(rTorus - rShock) * 18.0);
-    
+
     // Moving dynamic synchrotron wisps expanding outward from shock
     float wFreq = (wispCountP > 0.01 ? wispCountP : 8.0);
     float wisps = sin(rTorus * wFreq - t * 4.0 + audioPhase) * exp(-rTorus * 2.0);
-    
+
     // Polar collimated relativistic plasma jets along Y-axis
     float jWidth = (jetCollimP > 0.01 ? jetCollimP : 0.16);
     float polarJet = exp(-abs(uv.x) * abs(uv.x) / (jWidth * jWidth)) * smoothstep(0.05, 0.8, abs(uv.y));
-    
+
     // Central pulsar lighthouse beam rotation
     float pAngle = atan(uv.y, uv.x);
     float beam = pow(max(0.0, cos(pAngle - t * 8.0)), 12.0) * (1.0 + 3.5 * audioKick);
-    
+
     // Central pulsar neutron star core
     float core = exp(-dot(uv, uv) * 55.0) * (1.0 + 2.0 * audioKick);
-    
+
     // Synchrotron emission colors: electric blue / cyan with magnetic orange filaments
     vec3 synchBlue   = vec3(0.15, 0.8, 1.0);
     vec3 wispAmber   = vec3(1.0, 0.55, 0.15);
     vec3 pulsarWhite = vec3(1.0, 0.95, 0.9);
-    
+
     vec3 colSynch = palTint(mix(synchBlue, wispAmber, clamp(wisps + 0.5, 0.0, 1.0)), rTorus * 0.3 + audioCentroid, 0.26);
-    
+
     // Background photo sampling
     vec2 bgUv = gl_FragCoord.xy / resolution;
     vec3 bg = img(bgUv) * 0.25;
-    
+
     vec3 col = bg;
     col += colSynch * torusRing * (synchGlowP > 0.01 ? synchGlowP : 1.3) * (0.85 + 0.35 * audioSwell) * 2.2;
     col += colSynch * abs(wisps) * 1.4;
@@ -111,8 +111,9 @@ void main()
     col += pulsarWhite * beam * 2.5;
     col += pulsarWhite * core * 3.0;
     col += colSynch * (audioKick * 0.35);
-    
+
     // Soft knee compression
     col /= 1.0 + 0.35 * max(col.r, max(col.g, col.b));
+    col /= 1.0 + 0.60 * max(col.r, max(col.g, col.b));   // peak knee: tame local glare, keep midtones
     fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }

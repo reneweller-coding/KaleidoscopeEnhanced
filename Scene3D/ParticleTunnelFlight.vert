@@ -126,8 +126,8 @@ void main() {
 
     // Point sprite size by depth and shock -- capped low (V8c): 60,000
     // additive sprites integrate area, not just gain.
-    float pSize = (2.5 + shock * 5.0 + audioHigh * 1.5) * (14.0 / max(vp.z, 1.0));
-    gl_PointSize = clamp(pSize, 1.0, 18.0);
+    float pSize = (2.5 + shock * 5.0 + audioHigh * 1.5) * (26.0 / max(vp.z, 1.0));   // sprite sweep
+    gl_PointSize = clamp(pSize, 1.0, 30.0);
 
     vec3 baseCol = imgPalette(0.5 + 0.5 * sin(ang * sidesV * 0.5 + relZ * 0.1)) * 2.0;
     baseCol = mix(baseCol, vec3(1.0, 0.92, 0.55), clamp(shock * 1.5, 0.0, 1.0));

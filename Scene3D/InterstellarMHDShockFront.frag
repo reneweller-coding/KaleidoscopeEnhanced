@@ -41,16 +41,17 @@ void main()
     vec3 lightDir = normalize(vec3(0.0, 0.0, 1.0));
     float diff = max(0.0, dot(vNormal, lightDir));
     float fresnel = pow(1.0 - abs(dot(vNormal, vec3(0.0, 0.0, 1.0))), 3.0);
-    
+
     vec3 photo = img(vUV);
-    
+
     vec3 col = vCol * (0.6 + 0.4 * photo) * (0.5 + 0.5 * diff);
     col += vCol * fresnel * 1.8;
     col += vec3(0.9, 0.95, 1.0) * vShock * 2.0;
     col *= (nebulaP > 0.01 ? nebulaP : 1.2) * (0.85 + 0.35 * audioSwell);
     col += vCol * (audioKick * 0.3);
-    
+
     // Soft knee compression
     col /= 1.0 + 0.35 * max(col.r, max(col.g, col.b));
+    col /= 1.0 + 0.60 * max(col.r, max(col.g, col.b));   // peak knee: tame local glare, keep midtones
     fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }

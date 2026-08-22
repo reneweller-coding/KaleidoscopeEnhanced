@@ -104,5 +104,5 @@ void main() {
     gl_Position = projM * vec4(rotatedVP.x, rotatedVP.y, -rotatedVP.z, 1.0);
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 
-    gl_PointSize = clamp((2.5 + 3.5 * vPlateEnergy) * (5.5 / rotatedVP.z), 1.0, 32.0);
+    gl_PointSize = clamp((5.0 + 5.5 * vPlateEnergy) * (9.5 / rotatedVP.z), 2.0, 34.0);   // sprite sweep
 }

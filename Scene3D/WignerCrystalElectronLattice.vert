@@ -74,7 +74,7 @@ void main()
     vCol = imgPalette(fract(vPhononAmp * 0.4 + seed.x * 0.2 + audioCentroid));
     
     // Controlled Point Size (Rule V8c: Cap 10-16 px for 60k points)
-    gl_PointSize = clamp(11.0 + audioKick * 1.0, 4.0, 16.0);
+    gl_PointSize = clamp(18.6 + audioKick * 1.0, 4.0, 27.0);   // sprite sweep 2026-08-22: measured luma 0.049, area x2.9
     
     // Camera Transform (V3)
     vec3 vp = worldPos;

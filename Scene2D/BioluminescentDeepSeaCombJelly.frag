@@ -68,7 +68,7 @@ void main() {
     float a = atan(uv.y, uv.x);
 
     // Oval body envelope with audio respiration
-    float jellyR = (0.65 + 0.15 * sin(audioSwell * 2.5) + 0.1 * audioSubBass);
+    float jellyR = (0.33 + 0.06 * sin(audioSwell * 2.5) + 0.04 * audioSubBass);   // 0.65 was LARGER than the frame half-height
     vec2 pOval = uv * vec2(1.0, 0.75);
     float dBody = abs(length(pOval) - jellyR);
 
@@ -86,10 +86,15 @@ void main() {
     ) * 0.5 + 0.5;
 
     // Glowing comb row cilia lines
-    float rowGlow = exp(-dRow * (30.0 + 15.0 * audioCentroid)) * smoothstep(jellyR + 0.2, jellyR - 0.2, length(pOval));
+    // Gate the rows onto the body SHELL: without the exp(-dBody...) term
+    // they ran as full radial spokes from the centre -- the recording showed
+    // a starburst, not an animal.
+    float rowGlow = exp(-dRow * (30.0 + 15.0 * audioCentroid))
+                  * exp(-dBody * 6.5)
+                  * smoothstep(jellyR + 0.2, jellyR - 0.35, length(pOval));
 
     // Internal bioluminescent organs (lantern nodes in center)
-    float internalLantern = exp(-r * 8.0) * (1.2 + 2.5 * audioKick);
+    float internalLantern = exp(-r * 8.0) * (0.16 + 0.35 * audioKick);
 
     // Sample distorted background photo through transparent gelatinous body
     vec2 sampleUV = fract(uv * 0.5 + vec2(sin(a * 4.0), cos(a * 4.0)) * 0.03 + 0.5);
@@ -100,10 +105,13 @@ void main() {
     vec3 jellyBase = mix(texCol, palBase, 0.4) * 0.35;
 
     // Add rainbow ctene rows and internal bio-lantern
-    vec3 cteneColor = rainbowDiffraction * rowGlow * (1.0 + 2.5 * audioKick) * glw;
+    vec3 cteneColor = rainbowDiffraction * rowGlow * 1.6 * (1.0 + 1.8 * audioKick) * glw;
     vec3 lanternColor = vec3(1.3, 1.6, 1.9) * internalLantern;
 
-    vec3 finalCol = jellyBase + cteneColor + lanternColor;
+    // Translucent membrane so the BODY reads, not just its rows.
+    float membrane = exp(-dBody * 10.0);
+    vec3 membraneCol = imgPalette(0.62) * membrane * 2.0;
+    vec3 finalCol = jellyBase + cteneColor + lanternColor + membraneCol;
 
     // Abyss water vignette
     float vig = 1.0 - smoothstep(0.85, 1.4, r);

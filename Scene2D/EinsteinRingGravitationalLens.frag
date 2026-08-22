@@ -100,6 +100,10 @@ void main() {
 
     // Einstein radius with audio swell & mass
     float rEinstein = (0.32 + 0.12 * audioSwell + 0.08 * audioSubBass) * lns * sqrt(mss);
+    // The frame is only 0.5 uv units tall from the centre: past ~0.42 the
+    // luminous ring leaves the picture and the shadow disc below swallows
+    // everything (the recording showed exactly that -- an 85%-black frame).
+    rEinstein = min(rEinstein, 0.40);
 
     // Gravitational wave metric ripples on kick
     float gwRipple = sin(r * 35.0 - t * 8.0) * exp(-r * 3.0) * audioKick * 0.08;
@@ -128,7 +132,7 @@ void main() {
     vec3 dopplerColor = palTint(mix(vec3(0.1, 0.7, 1.0), vec3(1.0, 0.3, 0.1), clamp(doppler * 0.5, 0.0, 1.0)), 0.30 * clamp(doppler * 0.5, 0.0, 1.0), 0.22);
 
     // Event horizon shadow at the core
-    float horizonR = rEinstein * 0.35 * mss;
+    float horizonR = min(rEinstein * 0.35 * mss, 0.14);
     float shadow = smoothstep(horizonR * 0.8, horizonR * 1.2, r);
 
     // Combine visualizer

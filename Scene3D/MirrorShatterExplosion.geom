@@ -107,11 +107,11 @@ void main() {
     // Stateless explode/settle envelope: audioBeatPhase already re-triggers
     // itself every beat, so no persistent "time since last beat" is needed.
     float burst = pow(clamp(1.0 - audioBeatPhase, 0.0, 1.0), 2.2);
-    float shellR = 0.4 + 0.5 * seeds.x;
+    float shellR = 1.05 + 1.05 * seeds.x;
     // Settled (burst=0) still reads as a real shattered mass, not a
     // near-invisible dot waiting for the next beat -- only the ADDED
     // travel between beats is scaled by explodeV.
-    float rad = shellR * (1.0 + explodeV * burst) + audioKick * 0.6 * burst;
+    float rad = shellR * (1.0 + 0.45 * explodeV * burst) + audioKick * 0.4 * burst;
 
     vec3 dirFlat = normalize(vec3(cos(ang), 0.0, sin(ang)));
     vec3 basePos = dirFlat * rad + vec3(0.0, elev * (0.3 + 0.7 * burst), 0.0);
@@ -138,7 +138,7 @@ void main() {
     vec3  vv = cross(uu, ww);
 
     vec3 col = imgPalette(0.5 + 0.5 * sin(ang * sidesV * 0.5 + elev)) * 1.6;
-    col = mix(col, vec3(1.0, 0.97, 0.85), clamp(audioKick * burst * 1.6, 0.0, 1.0));
+    col = mix(col, vec3(1.0, 0.97, 0.85), clamp(audioKick * burst * 0.5, 0.0, 0.55));
     if (hueP > 0.001) col = hueRot(col, hueP);
 
     emitVert(p0, norm, col, camPos, uu, vv, ww);

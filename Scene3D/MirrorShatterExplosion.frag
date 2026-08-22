@@ -32,5 +32,6 @@ void main() {
 
     vec3 _catTone = clamp(col, 0.0, 1.0) * 0.9;
     _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
+    _catTone *= 3.13;   // measured-dark lift (visual pass)
     fragColor = vec4(_catTone, 1.0);
 }

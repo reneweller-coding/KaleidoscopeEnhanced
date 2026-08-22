@@ -146,6 +146,7 @@ void main()
          * ao * (0.35 * audioKick + 0.15 * audioSubBass) * 2.2;
 
     col *= 1.0 + 0.16 * audioBeat;
+    col *= 1.9;   // measured-dark lift (visual pass)
     col = col / (1.0 + col * 0.26);
     fragColor = vec4(col, interpolation);
 }

@@ -66,7 +66,7 @@ void main() {
     vec3 tangent = normalize(vec3(-sin(helixAngle + strandPhase), 0.4, cos(helixAngle + strandPhase)));
     vec3 normal = vec3(0.0, 1.0, 0.0);
 
-    float width = (0.06 + 0.03 * sin(tAlong * 4.0)) * (1.0 + audioKick * 0.5);
+    float width = (0.13 + 0.05 * sin(tAlong * 4.0)) * (1.0 + audioKick * 0.5);
     vec3 pos = helixPos + normal * (attrA.y * 0.5) * width;
 
     // Transcription pulse traveling along DNA.  The 2-6 kHz metallic edge
@@ -84,7 +84,7 @@ void main() {
 
     // Stereoscopic 3D camera projection
     vec3 vp = pos;
-    vp.z += 6.0;
+    vp.z += 4.6;
     vp.x -= eyeOff;
 
     gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);

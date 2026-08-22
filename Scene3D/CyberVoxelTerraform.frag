@@ -87,5 +87,6 @@ void main() {
 
     if (hue > 0.001) col = hueRot(col, hue);
 
+    col *= 3.20;   // measured-dark lift (visual pass)
     fragColor = vec4(col * glw, 1.0);
 }

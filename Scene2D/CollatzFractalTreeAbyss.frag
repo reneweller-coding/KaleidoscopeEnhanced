@@ -130,6 +130,13 @@ void main() {
     // breathes THICKER on drones without raising its peak brightness.
     float needleGlow = exp(-trap * (20.0 + 10.0 * audioCentroid) * ndl / (1.0 + 0.45 * audioSubBass)) * glw;
     if (iterCount >= 23.5) needleGlow *= 0.15;
+    // The interior was one flat colour field (iterCount pinned at 24 makes
+    // the palette constant).  Carve concentric potential bands out of the
+    // orbit trap so the abyss reads as DEPTH instead of a blob.
+    float abyssBand = 1.0;
+    if (iterCount >= 23.5)
+        abyssBand = 0.13 + 0.55 * pow(0.5 + 0.5 * sin(length(z) * 7.0 + trap * 30.0
+                                                      - t * 1.6 + audioPhase * 0.25), 2.0);
 
     // Palette mixing
     vec3 palA = imgPalette(iterCount * 0.08 + trap * 0.2);
@@ -137,6 +144,7 @@ void main() {
     vec3 col = mix(palA, palB, 0.5 + 0.5 * sin(iterCount * 0.8 + t));
 
     col = mix(col, texCol, 0.35 + 0.15 * audioValence);
+    col *= abyssBand;
 
     // Add glowing spiky tree needles and kick flash
     vec3 needleTint = vec3(1.2, 1.4, 1.8) * needleGlow * (1.0 + 2.5 * audioKick);

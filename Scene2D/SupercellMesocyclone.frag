@@ -134,13 +134,20 @@ void main() {
 
     // Dramatic sunset storm sky palette (deep indigo, bruised violet, amber anvil rim)
     vec3 skyBase = mix(vec3(0.04, 0.05, 0.1), vec3(0.12, 0.08, 0.16), uv.y + 0.5);
-    vec3 cloudColor = imgPalette(0.10 + 0.25 * clamp(uv.y * 1.5 + 0.5, 0.0, 1.0)) * 1.1;
+    // Storm ramp: slate cloud deck, bruised violet mid, amber anvil rim;
+    // the photo arc only inflects it (raw, it painted the sky olive-mud).
+    float band = clamp(uv.y * 1.5 + 0.5, 0.0, 1.0);
+    vec3 stormRamp = mix(vec3(0.16, 0.18, 0.24), vec3(0.32, 0.22, 0.34), band);
+    stormRamp = mix(stormRamp, vec3(0.85, 0.55, 0.25), smoothstep(0.75, 1.0, band) * 0.6);
+    vec3 cloudColor = mix(stormRamp, imgPalette(0.10 + 0.25 * band), 0.30) * 1.15;
     vec3 lightningColor = vec3(0.9, 0.95, 1.0);
 
     // Combine visualizer
-    vec3 col = mix(skyBase, photo * 0.8, 0.35 + 0.2 * audioLevel);
+    vec3 col = mix(skyBase, photo * 0.55, 0.30 + 0.15 * audioLevel);
     col = mix(col, cloudColor, clouds * (0.8 + 0.2 * audioSwell));
     col += wallCloud * vec3(0.08, 0.05, 0.12);
+    // Contrast: the rotation bands were reading as one flat mush.
+    col = clamp((col - 0.16) * 1.35 + 0.10, 0.0, 2.0);
     col += (lightningFlash + ambientLightning) * lightningColor;
 
     if (audioChromaHue != 0.0)     if (hue > 0.001) col = hueRot(col, hue);

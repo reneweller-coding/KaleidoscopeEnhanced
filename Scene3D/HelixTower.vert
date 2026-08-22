@@ -149,8 +149,7 @@ void main()
 
     float px   = resolution.y / 1080.0;
     float dist = max(vp.z, 0.5);
-    gl_PointSize = clamp(sizeBase * (0.5 + 0.7 * r4) * px / dist,
-                         sizeMin, max(sizeCap * px, sizeMin)) * (1.0 + 0.8 * wave);
+    gl_PointSize = clamp(sizeBase * (1.1 + 0.7 * r4) * px / dist, sizeMin, max(sizeCap * px, sizeMin)) * (2.0 + 0.8 * wave);   // sprite sweep 2026-08-22: measured luma 0.031, area x4.5
 
     vCol = vec4(col * 2.0, 1.0);
 }

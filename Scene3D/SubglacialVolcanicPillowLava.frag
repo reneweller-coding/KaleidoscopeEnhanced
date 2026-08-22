@@ -62,19 +62,23 @@ void main()
     vec3 lightDir = normalize(vec3(0.4, 0.6, 0.7));
     float diff = max(0.0, dot(vNormal, lightDir));
     float spec = pow(max(0.0, dot(reflect(-lightDir, vNormal), vec3(0.0, 0.0, 1.0))), 16.0) * (crustGlowP > 0.01 ? crustGlowP : 1.0);
-    
+
     // Molten lava fissure color
     vec3 hotLava = vec3(1.0, 0.4, 0.05);
     vec3 lavaCol = palTint(hotLava, vHeat * 0.3 + audioCentroid, 0.22);
-    
+
     vec3 photo = img(vUV);
-    
-    vec3 col = vCol * (0.6 + 0.4 * photo) * (0.4 + 0.6 * diff);
-    col += vec3(0.9, 0.95, 1.0) * spec * 0.8;
-    col += lavaCol * vHeat * (lavaHeatP > 0.01 ? lavaHeatP : 1.5) * 2.2;
+
+    // Dark glassy quench crust -- the old palette-bright crust plus a
+    // white specular read as cow-hide spots, not subglacial basalt.
+    vec3 crust = vCol * 0.20 * (0.55 + 0.45 * photo) * (0.35 + 0.65 * diff);
+    crust = mix(crust, vec3(0.05, 0.07, 0.10), 0.35);
+    vec3 col = crust;
+    col += vec3(0.55, 0.75, 1.0) * spec * 0.35;
+    col += lavaCol * vHeat * (lavaHeatP > 0.01 ? lavaHeatP : 1.5) * 3.2;
     col *= (0.85 + 0.35 * audioSwell);
     col += lavaCol * (audioKick * 0.35);
-    
+
     // Soft knee compression
     col /= 1.0 + 0.35 * max(col.r, max(col.g, col.b));
     fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);

@@ -62,16 +62,18 @@ void main()
     float diff = max(0.0, dot(vNormal, lightDir));
     float spec = pow(max(0.0, dot(reflect(-lightDir, vNormal), vec3(0.0, 0.0, 1.0))), 24.0) * (specularP > 0.01 ? specularP : 1.2);
 
-    vec3 col = vCol * (0.6 + 0.4 * photo) * (0.42 + 0.62 * diff);
+    vec3 col = vCol * (0.6 + 0.4 * photo) * (0.62 + 0.85 * diff);
     col += vec3(0.95, 0.95, 1.0) * min(spec * (1.0 + 3.0 * audioKick), 1.4);
-    col += vec3(0.3, 1.0, 0.7) * min(vInjectGlow * 2.2, 2.6);
+    col += vec3(0.3, 1.0, 0.7) * min(vInjectGlow * 0.8, 1.1);   // was the whole-frame cyan flood
     col *= (0.85 + 0.35 * audioSwell);
     col += vCol * (audioKick * 0.3);
 
     // Distance haze: the far phages sink into the same cytoplasm the curtain
     // is made of, so the swarm reads as depth instead of as dark cut-outs.
-    vec3 hazeCol = vec3(0.10, 0.19, 0.19) * (0.85 + 0.35 * audioSwell);
-    col = mix(col, hazeCol, vFog * 0.70);
+    // The old 0.10/0.19 haze at 70% mix was BRIGHTER than the phages:
+    // the whole frame recorded as one teal flood with silhouette holes.
+    vec3 hazeCol = vec3(0.02, 0.055, 0.065) * (0.85 + 0.35 * audioSwell);
+    col = mix(col, hazeCol, vFog * 0.55);
 
     // Soft knee compression
     col /= 1.0 + 0.35 * max(col.r, max(col.g, col.b));

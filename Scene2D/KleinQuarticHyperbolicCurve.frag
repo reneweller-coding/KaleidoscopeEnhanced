@@ -129,7 +129,9 @@ void main() {
     vec3 groupColor = imgPalette((reflections * 0.5 + audioPhase) * 0.159);
 
     // Glowing automorphism reflection lines
-    float lineGlow = exp(-edgeDist * 25.0) * (1.0 + audioKick * 3.0 + audioHigh * 1.5);
+    // Kick 3.0 + high 1.5 turned crescendos into one full-frame flash
+    // (the largest single-frame luma jump in the whole catalogue's scan).
+    float lineGlow = exp(-edgeDist * 25.0) * (1.0 + min(audioKick * 1.1 + audioHigh * 0.5, 1.4));
 
     // Combine visualizer
     vec3 col = mix(photo * 0.85, groupColor, 0.45 + 0.2 * audioSwell);

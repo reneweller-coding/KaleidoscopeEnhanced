@@ -26,8 +26,9 @@ void main() {
     vec3 photo = (interpolation * texture(tex0, vTexCoord) + (1.0 - interpolation) * texture(tex1, vTexCoord)).rgb;
     float filamentEdge = exp(-abs(vTexCoord.x - 0.5) * 8.0);
 
-    vec3 col = mix(vColor.rgb * 0.5, photo * 1.3, 0.6);
-    col += filamentEdge * vColor.rgb * 1.5;
+    vec3 col = mix(vColor.rgb * 0.85, photo * 1.1, 0.30);
+    col += filamentEdge * vColor.rgb * 1.8;
 
+    col *= 1.90;   // measured-dark lift (visual pass, round 2: photo was washing the rays white)
     fragColor = vec4(col, 1.0);
 }

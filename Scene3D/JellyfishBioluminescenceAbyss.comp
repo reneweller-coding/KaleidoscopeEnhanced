@@ -83,36 +83,59 @@ void main() {
 
     float seed = float(id);
     float medusaID = floor(seed / 128.0); // 32 individual jellyfish
-    float tentacleID = mod(seed, 128.0);
+    float unit = mod(seed, 128.0);
 
-    // Medusa colony roaming paths
-    float mAngle = hash11(medusaID) * 6.2831853 + time * 0.1;
-    float mRadius = (hash11(medusaID + 50.0) * 0.7 + 0.3) * 3.5;
-    float mHeight = sin(time * 0.4 + medusaID * 2.0) * 1.8;
+    // Medusa colony roaming paths -- closer and slower than the old build,
+    // so each animal reads as a body instead of an edge-on smear.
+    float mAngle = hash11(medusaID) * 6.2831853 + time * 0.06;
+    float mRadius = (hash11(medusaID + 50.0) * 0.65 + 0.25) * 3.3;
+    float mHeight = sin(time * 0.35 + medusaID * 2.0) * 1.8;
 
     vec3 medusaCenter = vec3(mRadius * cos(mAngle), mHeight, mRadius * sin(mAngle));
 
     // Jellyfish bell pulsating contraction pump driven by sub-bass
-    float pumpPhase = time * 2.0 + medusaID * 1.5 + audioAdvance * 0.5;
-    float contraction = pow(max(sin(pumpPhase), 0.0), 3.0) * (0.8 + 0.5 * audioBass);
+    float pumpPhase = time * 1.6 + medusaID * 1.5 + audioAdvance * 0.5;
+    float contraction = pow(max(sin(pumpPhase), 0.0), 3.0) * (0.7 + 0.4 * audioBass);
 
-    // Bell umbrella rim coordinates
-    float bellAngle = (tentacleID / 128.0) * 6.2831853;
-    float bellR = (0.45 - 0.15 * contraction);
-    float bellY = 0.25 * sin(bellAngle * 8.0) * (1.0 - contraction);
+    if (unit < 88.0) {
+        // BELL DOME: 8 latitude rings x 11 ribbon segments.  The old build
+        // emitted tentacles ONLY -- the medusae had no visible body at all,
+        // which is why the recording showed nothing but vertical streaks.
+        float ring = floor(unit / 11.0);
+        float segI = mod(unit, 11.0);
+        float lat = (ring + 0.15) / 8.0 * 1.45;
+        float bellR = (0.52 - 0.13 * contraction)
+                    * (0.9 + 0.2 * hash11(medusaID + 7.0));
+        float squeeze = 1.0 + 0.45 * contraction;
+        float rr = bellR * cos(lat);
+        float yy = 0.30 + bellR * sin(lat) * squeeze * 0.85;
+        float phi0 = (segI        / 11.0) * 6.2831853 + ring * 0.30;
+        float phi1 = ((segI + 1.0) / 11.0) * 6.2831853 + ring * 0.30;
+        vec3 pA = medusaCenter + vec3(rr * cos(phi0), yy, rr * sin(phi0));
+        vec3 pB = medusaCenter + vec3(rr * cos(phi1), yy, rr * sin(phi1));
+        // Rim rings glow with the pump; upper rings stay glassy-cyan.
+        float rimGlow = exp(-ring * 0.45) * (0.35 + 0.65 * contraction)
+                      * (1.0 + audioKick * 1.5);
+        // Per-medusa hue base: the whole colony rendered one flat green.
+        emitSegment(pA, pB, fract(medusaID * 0.317) * 0.85 + 0.012 * ring,
+                    rimGlow, 0.022 - 0.0014 * ring);
+    } else {
+        // TENTACLES: 40 per medusa, thin, trailing from the bell rim.
+        float tid = unit - 88.0;
+        float tAngle = (tid / 40.0) * 6.2831853;
+        float bellR = 0.52 - 0.13 * contraction;
+        vec3 rimP = medusaCenter
+                  + vec3(bellR * 0.92 * cos(tAngle), 0.32, bellR * 0.92 * sin(tAngle));
 
-    vec3 bellVertex = medusaCenter + vec3(bellR * cos(bellAngle), bellY + 0.2, bellR * sin(bellAngle));
+        float tentacleLen = 1.1 + 0.7 * hash11(seed);
+        float waveX = sin(pumpPhase - tentacleLen * 2.0 + tAngle) * 0.22;
+        float waveZ = cos(pumpPhase - tentacleLen * 2.0 + tAngle) * 0.22;
+        vec3 tip = rimP - vec3(waveX, tentacleLen, waveZ);
 
-    // Trailing tentacle tip waving in current
-    float tentacleLen = 1.2 + 0.6 * hash11(seed);
-    float waveX = sin(pumpPhase - tentacleLen * 2.0 + bellAngle) * 0.2;
-    float waveZ = cos(pumpPhase - tentacleLen * 2.0 + bellAngle) * 0.2;
+        // Bioluminescent pulse travelling down the tentacle
+        float bioGlow = exp(-abs(tentacleLen * 0.5 - mod(time * 2.2 + audioKick * 2.0, 1.6)) * 6.0);
+        bioGlow *= (1.0 + audioKick * 2.5);
 
-    vec3 tentacleTip = bellVertex - vec3(waveX, tentacleLen, waveZ);
-
-    // Bioluminescent pulse wave traveling down tentacle
-    float bioGlow = exp(-abs(tentacleLen * 0.5 - mod(time * 3.0 + audioKick * 2.0, 1.5)) * 6.0);
-    bioGlow *= (1.0 + audioKick * 2.5);
-
-    emitSegment(bellVertex, tentacleTip, tentacleID / 128.0, bioGlow, 0.02);
+        emitSegment(rimP, tip, fract(medusaID * 0.317 + 0.45), bioGlow, 0.012);
+    }
 }

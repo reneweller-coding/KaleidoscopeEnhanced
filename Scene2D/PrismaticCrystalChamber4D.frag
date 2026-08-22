@@ -94,7 +94,7 @@ void main() {
     float rot2 = t * 0.27 + audioSwell * 0.5;
 
     // Ray setup in 3D, projected into 4D with W coordinate based on focal length
-    vec3 ro3 = vec3(0.0, 0.0, -3.2 + 0.3 * sin(t * 0.5));
+    vec3 ro3 = vec3(0.0, 0.0, -3.6 + 0.3 * sin(t * 0.5));
     vec3 rd3 = normalize(vec3(uv, 1.25 + 0.25 * sin(audioSwell * 2.0)));
 
     vec3 accCol = vec3(0.0);
@@ -108,7 +108,10 @@ void main() {
         vec3 rd = normalize(rd3 * vec3(wl, wl, 1.0));
         vec3 ro = ro3;
 
-        float totalDist = 0.0;
+        // Near clip: the polychoron rotating through W periodically
+        // sweeps a cell over the camera; without this the whole frame
+        // collapsed to one flat colour sample whenever that happened.
+        float totalDist = 0.65;
         float minD = 1e4;
         vec3 colChannel = vec3(0.0);
 
@@ -151,7 +154,7 @@ void main() {
         float edgeGlow = exp(-minD * (24.0 + 10.0 * audioCentroid)) * glw;
         edgeGlow = min(edgeGlow, 0.45);
         vec3 spectralTint = (c == 0) ? vec3(1.2, 0.3, 0.2) : ((c == 1) ? vec3(0.2, 1.2, 0.4) : vec3(0.3, 0.5, 1.4));
-        
+
         accCol += (colChannel + edgeGlow * spectralTint * (1.0 + 2.0 * audioKick)) * 0.3333;
         glowAcc += edgeGlow * 0.3333;
     }

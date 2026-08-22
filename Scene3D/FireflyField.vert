@@ -136,7 +136,7 @@ void main()
     // A resting lamp keeps a low ember instead of going out completely, and
     // the haze fade reaches past the back of the field (at 100 the far third
     // of the meadow was multiplied to zero).
-    col *= (0.14 + 0.90 * blink) * (0.65 + 0.4 * audioSwell + 0.25 * audioLevel)
+    col *= (0.015 + 1.75 * blink) * (0.65 + 0.4 * audioSwell + 0.25 * audioLevel)
          * clamp(1.0 - vp.z / 165.0, 0.0, 1.0);
     // Cap the TINTED vec3, not the scalar feeding it: the green-gold lamp
     // colour runs past 1.0 in its own channels, and pooled sprites clipped to

@@ -75,16 +75,16 @@ void main()
     vec3 refl = texture(tex0, clamp(uv + n.xy * (0.10 + 0.22 * reflectP), 0.0, 1.0)).rgb;
 
     // Body is nearly black; almost all the light is specular + reflection.
-    vec3 body = vec3(0.075, 0.080, 0.105) * (0.5 + 1.6 * diff);
+    vec3 body = vec3(0.15, 0.16, 0.21) * (0.8 + 2.0 * diff);
     vec3 tint = imgPalette(0.0) * 1.35;
 
     vec3 col = body
-             + refl * fres * (0.55 + 0.9 * reflectP)
+             + refl * fres * (0.95 + 1.1 * reflectP)
              + tint * spec * (1.6 + 3.0 * audioKick + 1.2 * audioHigh);
 
     // The spikes themselves glow faintly at their tips on the bass.
     float peak = smoothstep(0.35, 1.2, h);
-    col += tint * peak * (0.10 + 0.55 * audioSubBass + 0.35 * audioBeat);
+    col += tint * peak * (0.30 + 0.85 * audioSubBass + 0.45 * audioBeat);
 
     col = col / (1.0 + col * 0.30);
     fragColor = vec4(col, interpolation);

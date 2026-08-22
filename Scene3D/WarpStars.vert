@@ -84,7 +84,7 @@ void main()
     float px   = resolution.y / 1080.0;
     float dist = max(z, 1.0);
     float hyper = audioDrop + 0.35 * audioKick;
-    gl_PointSize = clamp(90.0 * (0.4 + 0.8 * r4) * px / dist, 1.0, 16.0 * px)
+    gl_PointSize = clamp(175.0 * (0.4 + 0.8 * r4) * px / dist, 1.0, 28.0 * px)
                  * (1.0 + 0.5 * hyper);
 
     // White-blue stars with a scatter of warm/violet ones; the music's key
