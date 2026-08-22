@@ -296,6 +296,7 @@ private:
     float m_acConf      = 0.f;         ///< Confidence of #m_acBPM, 0..1.
     float m_odfEnvMean  = 0.f;         ///< Last ODF-envelope mean (diagnostic for the tempo gate).
     float m_odfEnvStd   = 0.f;         ///< Last ODF-envelope std-dev (diagnostic for the tempo gate).
+    float m_roughRaw    = 0.f;         ///< Unscaled roughness ratio (diagnostic; the scale constant came from measuring this).
 
     /**
      * @brief Smoothed chroma-hue VECTOR (cosine component).

@@ -1271,10 +1271,15 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
     m_sZCR = 0.92f * m_sZCR + 0.08f * std::min(rawZCR / 0.25f, 1.f);
 
     // ---- Spectral Flatness Measure (SFM) ----
-    // Geometric mean / Arithmetic mean of 6 band energies (all dB-normalised).
+    // Geometric mean / Arithmetic mean of the 6 band energies -- on the LINEAR
+    // band RMS. It used the dB-normalised 0..1 bands before, and at any audible
+    // level those all sit in the same 0.4..0.7 window, so the ratio read 0.994
+    // for every track in an 80-track corpus: yet another instance of the
+    // "ratios after dB compression are meaningless" trap documented at the
+    // classifier and the drop detector.
     // SFM = 0: one dominant band (pure drone), SFM = 1: even energy (noise).
     {
-        float b[6] = { subBass, bass, lowMid, mid, upperMid, high };
+        float b[6] = { m_sSubBass, m_sBass, m_sLowMid, m_sMid, m_sUpperMid, m_sHigh };
         float logSum = 0.f, sumB = 1e-6f;
         for (int k = 0; k < 6; ++k) { logSum += std::log(b[k] + 1e-6f); sumB += b[k]; }
         float geoMean   = std::exp(logSum / 6.f);
@@ -1386,22 +1391,53 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
     m_prevBeatPhase = beatPhase;
     float downbeat = m_downbeatPulse;
 
-    // ---- Arousal & Valence proxies (after Thayer's model) ----
-    // Arousal: combination of energy, rhythm presence, and spectral activity.
-    //   High in energetic beat music, low in still ambient/drone.
-    float arousal = nLevel * 0.34f             // volume-independent (AGC-normalised)
-                  + (1.f - m_ambientFactor) * estimatedBPM * 0.30f
-                  + spectralFlux * 0.21f
-                  + m_sSharpness * 0.15f;     // bright/incisive timbre = energetic
-    arousal = std::min(arousal * 1.5f, 1.f);  // scale up (most music sits low)
+    // ---- Arousal & Valence (Russell/Thayer axes) ----
+    // Every ingredient and weight below is MEASURED, not guessed: 80 corpus
+    // tracks, genre priors as ground truth (death metal IS high-arousal, a
+    // Satie Gymnopedie is not; "Shiny Happy People" IS high-valence, "Ohne
+    // dich" is not). Per-ingredient AUC decided membership, per-track-median
+    // p10/p90 provide the normalisation anchors. Tools/mood_axes.md has the
+    // full tables and how to re-run the sweep.
+    //
+    // The literature split (PVAN et al.) holds in our data too: arousal lives
+    // in rhythm/flux/tempo, valence in harmony/consonance -- and valence is
+    // the fundamentally harder axis for every system in the field.
+    auto nrm = []( float v, float lo, float hi ) {
+        return std::max( 0.f, std::min( ( v - lo ) / ( hi - lo ), 1.f ) );
+    };
 
-    // Valence: mode (major/minor) + clear tonality + consonance + brightness.
-    //   High for bright, major, tonal, consonant music; low for dark, minor, rough.
-    float valence = m_sMode            * 0.28f   // major = pleasant, minor = tense
-                  + m_sKeyClarity      * 0.17f   // a clearly implied key reads pleasant
-                  + smoothedCentroid   * 0.20f
-                  + (1.f - m_sSFM)     * 0.10f   // tonal (not noisy) = more pleasant
-                  + (1.f - m_sRoughness) * 0.25f; // consonant (not beating) = pleasant
+    // Arousal: AUC on the corpus -- flux 0.911, rhythm 0.885, tempo 0.849,
+    // sharpness 0.802. The old formula's biggest term was the AGC-normalised
+    // level at AUC 0.557: the AGC exists to remove exactly the loudness
+    // differences that term was supposed to measure, so it measured nothing.
+    float arousal = 0.30f * nrm( spectralFlux,  0.019f, 0.086f )
+                  + 0.30f * m_sRhythm
+                  + 0.22f * nrm( estimatedBPM,  0.313f, 0.578f )
+                  + 0.18f * nrm( m_sSharpness,  0.279f, 0.326f );
+
+    // Valence: key clarity 0.753, consonance (1 - roughness) 0.753, and the
+    // tonic-third major/minor estimate. Centroid (0.484) and the 6-band SFM
+    // (0.452) measured at chance level for valence and are out; both previous
+    // dead ingredients are documented at their computation sites.
+    float valence = 0.38f * nrm( m_sKeyClarity, 0.652f, 0.805f )
+                  + 0.38f * ( 1.f - m_sRoughness )
+                  + 0.24f * m_sMode;
+
+    // KALEIDO_MOOD_DEBUG=1 prints the mood model's ingredients once a second.
+    // Same lesson as the speech gate: a composite score can sit at a plausible
+    // value while half its inputs are dead, and only the ingredients show it.
+    {
+        static const bool dbg = qEnvironmentVariableIsSet( "KALEIDO_MOOD_DEBUG" );
+        static int dbgN = 0;
+        if( dbg && ( ++dbgN % 100 ) == 0 )
+            fprintf( stderr,
+                     "MOOD val=%.3f aro=%.3f | mode=%.3f keyClar=%.3f centroid=%.3f "
+                     "sfm=%.3f rough=%.3f roughRaw=%.4f rhythm=%.3f | nLvl=%.3f bpmN=%.3f flux=%.3f sharp=%.3f "
+                     "ambient=%.3f\n",
+                     valence, arousal, m_sMode, m_sKeyClarity, smoothedCentroid,
+                     m_sSFM, m_sRoughness, m_roughRaw, m_sRhythm, nLevel, estimatedBPM, spectralFlux,
+                     m_sSharpness, m_ambientFactor );
+    }
 
     // ---- Dynamic timing scale (for RenderPipeline / EffectShader) ----
     // Drives how fast scenes/shaders cycle:
@@ -1729,7 +1765,13 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
                 rough += ak * mags[j] * d;
             }
         }
-        float rawRough = std::min(rough / (totalMagSq + 1e-6f) * 4.f, 1.f);
+        // The old scale (ratio * 4, clamped at 1) saturated on every track of
+        // an 80-track corpus -- the clamp WAS the output. Keep the raw ratio
+        // for the debug trace and map through a measured range instead.
+        m_roughRaw = rough / (totalMagSq + 1e-6f);
+        // Anchors are the p10/p90 of per-track medians over the 80-track corpus
+        // (0.241 / 0.399): consonant pop sits near 0, distorted metal near 1.
+        float rawRough = std::max( 0.f, std::min( ( m_roughRaw - 0.24f ) / 0.16f, 1.f ) );
         m_sRoughness = 0.93f * m_sRoughness + 0.07f * rawRough;
     }
 
@@ -1766,30 +1808,77 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
             6.33f, 2.68f, 3.52f, 5.38f, 2.60f, 3.53f,
             2.54f, 4.75f, 3.98f, 2.69f, 3.34f, 3.17f };
 
+        // PEARSON correlation, not a raw dot product. The Krumhansl-Schmuckler
+        // algorithm mean-centres both vectors, and that is not pedantry: the
+        // profiles have large means (they sum to 41.8 and 44.5), so a dot
+        // product against any broadly-spread chroma is dominated by
+        // profileMean x chromaSum and the major/minor ratio collapses to the
+        // constant 41.8/(41.8+44.5) = 0.484. Measured over 80 tracks the old
+        // ratio sat at 0.489..0.490 for EVERYTHING -- happy pop and funeral
+        // doom alike. Mean-centring removes the shared offset, which is the
+        // whole point of the original algorithm.
+        float cMean = 0.f;
+        for (int i = 0; i < 12; ++i) cMean += m_smoothedChroma[i];
+        cMean /= 12.f;
+        float cVar = 1e-9f;
+        for (int i = 0; i < 12; ++i) {
+            const float d = m_smoothedChroma[i] - cMean;
+            cVar += d * d;
+        }
+        // Profile deviations and their variances are compile-time constants.
+        static float sMajDev[12], sMinDev[12], sMajVar = 0.f, sMinVar = 0.f;
+        static bool sProfilesReady = false;
+        if (!sProfilesReady) {
+            float mM = 0.f, mN = 0.f;
+            for (int i = 0; i < 12; ++i) { mM += kMajorKK[i]; mN += kMinorKK[i]; }
+            mM /= 12.f; mN /= 12.f;
+            for (int i = 0; i < 12; ++i) {
+                sMajDev[i] = kMajorKK[i] - mM;  sMajVar += sMajDev[i] * sMajDev[i];
+                sMinDev[i] = kMinorKK[i] - mN;  sMinVar += sMinDev[i] * sMinDev[i];
+            }
+            sProfilesReady = true;
+        }
         float bestMajor = -1e9f, bestMinor = -1e9f;
         float corrSum = 0.f, bestAny = -1e9f;
+        int bestT = 0;
         for (int t = 0; t < 12; ++t) {
-            float majCorr = 0.f, minCorr = 0.f;
+            float majCov = 0.f, minCov = 0.f;
             for (int i = 0; i < 12; ++i) {
-                majCorr += m_smoothedChroma[i] * kMajorKK[(i - t + 12) % 12];
-                minCorr += m_smoothedChroma[i] * kMinorKK[(i - t + 12) % 12];
+                const float d = m_smoothedChroma[i] - cMean;
+                majCov += d * sMajDev[(i - t + 12) % 12];
+                minCov += d * sMinDev[(i - t + 12) % 12];
             }
+            const float majCorr = majCov / std::sqrt(cVar * sMajVar);
+            const float minCorr = minCov / std::sqrt(cVar * sMinVar);
             if (majCorr > bestMajor) bestMajor = majCorr;
             if (minCorr > bestMinor) bestMinor = minCorr;
             corrSum += majCorr + minCorr;
-            bestAny  = std::max(bestAny, std::max(majCorr, minCorr));
+            if (std::max(majCorr, minCorr) > bestAny) {
+                bestAny = std::max(majCorr, minCorr);
+                bestT   = t;
+            }
         }
-        // Ratio: 0 = purely minor, 1 = purely major.
+        // Major or minor is decided at the TONIC THIRD, not by which profile
+        // correlates best. The profile contest cannot work: C major and A minor
+        // contain the same pitches, so the best match over all transpositions is
+        // always a relative pair and the difference collapsed to ~0.49 on all 80
+        // corpus tracks, twice (dot product AND Pearson). What actually differs
+        // between C major and C minor is one semitone: E versus Eb. So find the
+        // tonic from the best profile match, then compare the chroma weight on
+        // the major third against the minor third above it.
+        const float cM3 = m_smoothedChroma[(bestT + 4) % 12];
+        const float cm3 = m_smoothedChroma[(bestT + 3) % 12];
+        float rawMode = 0.5f + 0.5f * (cM3 - cm3) / (cM3 + cm3 + 1e-9f);
         // Very slow smoothing (~3 s) so mode reflects atmosphere, not noise.
-        float rawMode = bestMajor / (bestMajor + bestMinor + 1e-6f);
         m_sMode = 0.97f * m_sMode + 0.03f * rawMode;
 
-        // Key clarity: how far the best-matching key stands above the average of
-        // all 24 key correlations.  Peaked → one clear key; flat → atonal/noise.
-        float meanCorr   = corrSum / 24.f;
-        float rawClarity = (bestAny > 1e-6f)
-                         ? std::min(2.5f * (bestAny - meanCorr) / bestAny, 1.f) : 0.f;
-        rawClarity   = std::max(0.f, rawClarity);
+        // Key clarity: with proper Pearson correlations the best match IS the
+        // measure -- +1 means the chroma matches a key profile exactly, ~0
+        // means no key explains it. The old "peak above mean, divided by the
+        // peak" form is unstable now that correlations are signed: bestAny can
+        // legitimately sit near 0 (atonal), where that division explodes.
+        (void)corrSum;
+        float rawClarity = std::max(0.f, std::min(bestAny, 1.f));
         m_sKeyClarity = 0.97f * m_sKeyClarity + 0.03f * rawClarity;
 
         // ---- Harmonic Change (HCDF, Harte 2006) ----
