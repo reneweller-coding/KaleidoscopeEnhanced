@@ -727,6 +727,64 @@ slew-limited at the source.
 
 ---
 
+## Autocorrelation tempo (currently dead — measured, on purpose)
+
+`AudioAnalyzer` runs an onset-detection function through a 4 s envelope and
+autocorrelates it over the 70–180 BPM lag range, producing `m_acBPM` and a
+confidence `m_acConf`. **That confidence has been a constant 0.000 for a long
+time**, so everything downstream of it is inert:
+
+* `rhythm = max(kickRhythm, m_acConf)` reduces to `kickRhythm` alone
+* the BPM fusion is guarded by `m_acConf > 0.35f` and never fires
+
+The cause is a threshold that outlived its input. The gate reads
+
+```cpp
+if (envMean < 0.010f || envStd < 0.050f) { m_acConf *= 0.98f; }
+```
+
+and its own comment records where 0.050 came from: *"a kick envelope measures
+std ~0.14, drone ripple ~0.02"* — measured against the **band-RMS** onset
+function this block used to consume. The ODF was later replaced with an
+FFT-based one (to stop sustained bass from faking a tempo) and the threshold was
+never re-derived. On the new scale, real music measures:
+
+| track | `odfMean` | `odfStd` |
+|---|---|---|
+| P!nk — Get The Party Started | 0.0149 | 0.0378 |
+| The Prodigy — Smack My Bitch Up | 0.0137 | 0.0213 |
+| Kai Tracid — 4 Just 1 Day | 0.0140 | 0.0212 |
+| Rammstein — Ohne dich | 0.0138 | 0.0294 |
+| Eluvium — Indoor Swimming… | 0.0134 | 0.0226 |
+
+`odfMean` clears its threshold; `odfStd` never comes close to 0.050. The gate is
+closed permanently.
+
+**Lowering the threshold does not fix it.** With the gate forced open across
+beat-driven and beatless material, neither the autocorrelation peak nor its
+prominence separates the two:
+
+| track | `acPeak` | `acProm` |
+|---|---|---|
+| Kai Tracid (trance) | 0.609 | 0.962 |
+| Alcest (**ambient**) | 0.427 | 1.000 |
+| Apollo 440 (beat) | 0.332 | 0.978 |
+| The Prodigy (**beat**) | 0.167 | 1.012 |
+| Eluvium (ambient) | 0.131 | 1.049 |
+
+A heavy-beat track scores *below* an ambient one, and prominence is ~1.0 for
+everything. The onset envelope in its current form does not carry the
+beat-versus-drone distinction, so reviving this needs a different ODF — not a
+different constant.
+
+It is left in place rather than deleted because that is a design decision, not
+a bug fix: the block still costs its ~53 lags × ~370 products per block. If the
+tempo estimate is not wanted, deleting the block reclaims that; if it is,
+the work starts at the ODF. `KALEIDO_SPEECH_DEBUG=1` prints `odfMean` and
+`odfStd` so the state above stays checkable.
+
+---
+
 ## Recording: raw frames into ffmpeg
 
 A recording used to encode every frame **twice**. The CPU JPEG-compressed it,

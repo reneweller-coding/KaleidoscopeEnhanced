@@ -294,6 +294,8 @@ private:
     int   m_envFrameAcc = 0;           ///< Sample-frame accumulator that paces writes into #m_odfEnv to #kEnvRate.
     float m_acBPM       = 0.f;         ///< Autocorrelation tempo estimate, in BPM.
     float m_acConf      = 0.f;         ///< Confidence of #m_acBPM, 0..1.
+    float m_odfEnvMean  = 0.f;         ///< Last ODF-envelope mean (diagnostic for the tempo gate).
+    float m_odfEnvStd   = 0.f;         ///< Last ODF-envelope std-dev (diagnostic for the tempo gate).
 
     /**
      * @brief Smoothed chroma-hue VECTOR (cosine component).
