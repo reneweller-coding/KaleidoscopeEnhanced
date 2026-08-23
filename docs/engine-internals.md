@@ -47,6 +47,13 @@ Audio is captured via WASAPI loopback (`AudioAnalyzer`) and analysed in real tim
   (every second section also swaps the combine pass).  Rate-limited to one
   section per ~12 s; verified offline with a synthesized verse/chorus/verse
   WAV (triggers ~2–4 s after each boundary, zero phantom triggers).
+  A trigger (section, harmonic novelty, drop) that lands while a cross-fade
+  is already running does NOT queue a second change — the fade in flight
+  is the change; a drop instead snaps that fade to completion within
+  ~0.15 s so the cut still lands on the hit.  Trigger-driven changes also
+  respect a 2 s minimum solo (a manual 'n' keeps 0.6 s); otherwise a
+  trigger right after a fade cut the freshly arrived scene away again
+  after 0.6 s — visible as a scene "flashing in and being replaced".
 - **Song-structure MEMORY:** each section additionally gets a spectral
   fingerprint (a ~1 s shape average, cosine-matched against up to 8 stored
   prints).  A RETURNING section — chorus #2 — is recognised (`sectionId`)
@@ -55,6 +62,14 @@ Audio is captured via WASAPI loopback (`AudioAnalyzer`) and analysed in real tim
   visuals thereby follow the song's form: every chorus looks the same,
   every verse different.  (V-C-V-C test WAV: ids 0, 1, 0 — the returning
   chorus matched with similarity 0.995 vs 0.888 for a different section.)
+  Two guards keep this from degenerating over an evening: `sectionId` is
+  a RECYCLED 8-slot LRU index, so the scheduler only replays when the
+  analyzer's `sectionKnown` flag says the fingerprint actually matched
+  (a new section of a later song that merely inherits an old slot id
+  rolls fresh), and a stored look expires after ~24 sections (~5+ min,
+  i.e. within one song — never across the set).  Without both, every id
+  was "known" after the first ~8 sections of a session and the whole
+  night cycled through the same handful of scenes.
 - **Mood-matched shader selection:** config entries can carry
   `mood="dark|bright|calm|aggressive"` tags (comma list).  The next-shader
   choice biases toward tags agreeing with the live mood (valence → dark/

@@ -1242,6 +1242,7 @@ SceneScheduler::Tick RenderPipeline::buildSchedulerTick( const AudioFeatures &au
 	schedTick.musicPresence  = audio.musicPresence;
 	schedTick.sectionCount   = audio.sectionCount;
 	schedTick.sectionId      = audio.sectionId;
+	schedTick.sectionKnown   = audio.sectionKnown;
 	schedTick.dropCount      = audio.dropCount + m_audioConditioner.fakeDropCount();
 	schedTick.rhythmStrength = audio.rhythmStrength;
 	schedTick.estimatedBPM   = audio.estimatedBPM;

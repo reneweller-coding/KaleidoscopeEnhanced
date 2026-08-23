@@ -401,6 +401,7 @@ private:
     int   m_secPrintUse[kMaxSectionPrints] = {};   ///< Last-used stamp per stored fingerprint (LRU replacement policy).
     int   m_secPrintN   = 0;    ///< Number of stored fingerprints so far.
     int   m_secCurId    = -1;   ///< Current section's id (index into #m_secPrints); see AudioFeatures::sectionId.
+    bool  m_secKnown    = false; ///< Whether the current section matched a stored print (vs. was newly stored, possibly in a recycled slot); see AudioFeatures::sectionKnown.
 
     /**
      * @brief Instrument-separated onsets (see AudioFeatures::onsetKick/Snare/Hat): per-group positive flux (low/mid/high bands) with its own spike test.

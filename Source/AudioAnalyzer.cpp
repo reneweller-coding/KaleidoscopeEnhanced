@@ -1714,10 +1714,15 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
                     if (best >= 0 && bestSim > 0.988f) {
                         // Returning section: refresh its print (running blend).
                         m_secCurId = best;
+                        m_secKnown = true;
                         for (int b = 0; b < NB; ++b)
                             m_secPrints[best][b] += 0.3f * (m_secPrint[b] - m_secPrints[best][b]);
                     } else {
                         // New section: store (replace the least recently used).
+                        // The recycled slot's id is REUSED -- the host must
+                        // read sectionKnown (false here) to tell this apart
+                        // from a genuine return of whatever section used to
+                        // own that slot.
                         int slot = m_secPrintN;
                         if (m_secPrintN < kMaxSectionPrints) ++m_secPrintN;
                         else {
@@ -1727,6 +1732,7 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
                         }
                         std::memcpy(m_secPrints[slot], m_secPrint, sizeof(m_secPrint));
                         m_secCurId = slot;
+                        m_secKnown = false;
                     }
                     m_secPrintUse[m_secCurId] = m_sectionCount;   // LRU stamp
                     fprintf(stderr, "SECTION change #%d -> id %d (%s, sim %.3f, "
@@ -2424,6 +2430,7 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
     m_features.sectionCount     = m_sectionCount;
     m_features.sectionNovelty   = m_secNovelty;
     m_features.sectionId        = m_secCurId;
+    m_features.sectionKnown     = m_secKnown;
     m_features.onsetKick        = m_onsetEnvGrp[0];
     m_features.onsetSnare       = m_onsetEnvGrp[1];
     m_features.onsetHat         = m_onsetEnvGrp[2];

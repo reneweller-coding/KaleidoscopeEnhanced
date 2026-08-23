@@ -148,6 +148,7 @@ void SceneScheduler::forceScene( int idx )
 	else
 		m_forcedNextTexture = idx;
 	m_forceEffectChange = true;
+	m_forceIsManual     = true;
 }
 
 /**
@@ -259,12 +260,20 @@ void SceneScheduler::tick( const Tick &t )
 	// Musical novelty: a strong harmonic / section change (a drop, a key
 	// change) forces an early cross-fade - rate-limited, only while music
 	// actually plays.
+	// A trigger that lands WHILE a cross-fade is already running must not
+	// queue a SECOND change: the fade in flight already is the scene change
+	// the music asked for.  Forcing another one made the freshly faded-in
+	// scene get cut away again after the 0.6 s minimum solo -- the reported
+	// "scene flashes in for a fraction of a second and is replaced".
+	const bool midFade = ( m_texState != 0 );
+
 	m_noveltyCooldown -= t.dt;
 	if( !m_reviewMode && m_noveltyCooldown <= 0.f &&
 	    t.harmonicChange * t.musicPresence > 0.5f )
 	{
-		m_forceEffectChange = true;
-		m_noveltyCooldown   = 8.0f;   // at most one musical cut every ~8 s
+		if( !midFade )
+			m_forceEffectChange = true;
+		m_noveltyCooldown = 8.0f;   // at most one musical cut every ~8 s
 	}
 
 	// SECTION change (Strophe -> Refrain -> Bridge) + Song-Struktur-Gedächtnis:
@@ -275,8 +284,19 @@ void SceneScheduler::tick( const Tick &t )
 	{
 		int  id = t.sectionId;
 		auto it = m_sectionEffect.find( id );
-		bool known = (id >= 0) && it != m_sectionEffect.end()
-		             && it->second < tex.size();
+		// "Known" needs all three: the analyzer RECOGNISED the section by
+		// fingerprint (the id alone is a recycled LRU slot and says nothing),
+		// we have a look stored under that id, and that look is fresh (stored
+		// within this song, not inherited from a set played an hour ago).
+		auto st = m_sectionStamp.find( id );
+		bool fresh = st != m_sectionStamp.end()
+		             && ( t.sectionCount - st->second ) <= kSectionMemorySpan;
+		bool known = t.sectionKnown && (id >= 0) && it != m_sectionEffect.end()
+		             && it->second < tex.size() && fresh;
+		fprintf( stderr, "SCHED section id=%d %s%s -> %s\n", id,
+		         t.sectionKnown ? "recognised" : "new",
+		         ( t.sectionKnown && !known ) ? " (no fresh memory)" : "",
+		         known ? "replay" : "fresh roll" );
 		if( known && it->second == m_actTexture )
 		{
 			// Der richtige Shader ist bereits auf dem Schirm.  Frueher wurden
@@ -307,13 +327,16 @@ void SceneScheduler::tick( const Tick &t )
 				// slots sharing one m_texState guard, which incorrectly let a
 				// mid-fade COMBINE retarget through whenever the unrelated
 				// TEXTURE slot happened to be idle at that moment).
-				if( m_texState == 0 )
+				if( !midFade )
 				{
 					m_nextTexture           = it->second;   // replay that section's shader
 					m_pendingSectionRestore = id;           //   ... with its exact params
 				}
 				else
 				{
+					// Mid-fade: becomes the target of the NEXT change (applied at
+					// this fade's end), but does NOT force that change early --
+					// the scene now fading in gets its full solo first.
 					m_pendingSectionNext   = (int) it->second;
 					m_pendingSectionNextId = id;
 				}
@@ -335,10 +358,15 @@ void SceneScheduler::tick( const Tick &t )
 			else
 			{
 				m_pendingSectionStore = id;             // remember the new look
+				// A stale deferred replay (from a section that is over now)
+				// must not surface at the next fade-end.
+				m_pendingSectionNext   = -1;
+				m_pendingSectionNextId = -1;
 				if( (t.sectionCount & 1) == 0 )
 					m_forceFxChange = true;        // bigger scenery change
 			}
-			m_forceEffectChange = true;
+			if( !midFade )
+				m_forceEffectChange = true;
 		}
 		m_noveltyCooldown = 8.0f;     // hold off the harmonic hook right after
 	}
@@ -348,9 +376,21 @@ void SceneScheduler::tick( const Tick &t )
 	// but a drop IS a downbeat-scale accent).
 	if( !m_reviewMode && t.dropCount == m_lastDropCount + 1 )
 	{
-		m_forceEffectChange = true;
-		m_dropCutPending    = true;
-		m_noveltyCooldown   = 8.0f;
+		if( midFade )
+		{
+			// The change is already under way: land it ON the drop as a hard
+			// cut (finish the running fade within ~0.15 s) instead of queuing
+			// a second cut right behind it.
+			float ts = secsSince( m_clockEffectTexture );
+			if( m_texFadeDur > ts + 0.15f )
+				m_texFadeDur = ts + 0.15f;
+		}
+		else
+		{
+			m_forceEffectChange = true;
+			m_dropCutPending    = true;
+		}
+		m_noveltyCooldown = 8.0f;
 	}
 	m_lastDropCount = t.dropCount;
 
@@ -358,6 +398,7 @@ void SceneScheduler::tick( const Tick &t )
 	if( t.pinned )
 	{
 		m_forceEffectChange  = false;
+		m_forceIsManual      = false;
 		m_forceFxChange = false;
 		m_dropCutPending     = false;
 		// A pending section store/restore must not attach to some LATER,
@@ -380,12 +421,17 @@ void SceneScheduler::tick( const Tick &t )
 		if( m_reviewMode && m_texFadeDur > 8.f )
 			m_texFadeDur = 8.f;
 
-		// End the solo early on a manual ('n') or novelty-driven request, but
-		// only after a brief minimum so cuts never come back-to-back.
-		bool forced = m_forceEffectChange;
-		if( ts > m_texFadeDur || (forced && ts > 0.6f) )
+		// End the solo early on a manual ('n') or trigger-driven request, but
+		// only after a minimum so cuts never come back-to-back.  A human
+		// pressing 'n' gets 0.6 s; a musical trigger (section/novelty/drop)
+		// landing right after a fade completed must let the new scene stand
+		// for a real shot first -- 0.6 s read as "flashes in, gets replaced".
+		bool  forced  = m_forceEffectChange;
+		float minSolo = m_forceIsManual ? 0.6f : 2.0f;
+		if( ts > m_texFadeDur || (forced && ts > minSolo) )
 		{
 			m_forceEffectChange   = false;
+			m_forceIsManual       = false;
 			m_pendingEffectChange = true;
 			m_pendingEffectForced = m_pendingEffectForced || forced;
 		}
@@ -534,6 +580,7 @@ void SceneScheduler::tick( const Tick &t )
 					(m_fxState != 0) ? m_nextFx : m_actFx;
 				m_sectionParams[m_pendingSectionStore]  =
 					tex[m_actTexture]->snapshotParameters();
+				m_sectionStamp[m_pendingSectionStore]   = t.sectionCount;
 				m_pendingSectionStore = -1;
 			}
 

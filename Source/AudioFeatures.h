@@ -387,8 +387,21 @@ struct AudioFeatures
      * trigger. A RETURNING section (chorus #2) gets the SAME id as its first
      * occurrence, so the host can replay the exact same shader + parameters.
      * -1 until the first section trigger.
+     *
+     * IMPORTANT for consumers: the id is a SLOT INDEX into a small (8-entry)
+     * LRU fingerprint store, so a brand-new section of a later song is
+     * handed a RECYCLED id that an earlier, unrelated section once carried.
+     * The id alone therefore cannot tell "returning" from "new" -- use
+     * #sectionKnown for that.
      */
     int   sectionId      = -1;
+    /**
+     * @brief True if the current section was RECOGNISED (fingerprint
+     * matched a stored print), false if it was stored as a new section --
+     * including the case where it landed in a recycled #sectionId slot.
+     * Valid from the same trigger that bumps #sectionCount.
+     */
+    bool  sectionKnown   = false;
 
     /**
      * @brief Instrument-separated onsets: full-spectrum onset split into three band groups of the 32-band flux.

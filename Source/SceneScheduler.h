@@ -98,7 +98,7 @@ public:
 	 * @param alsoFx If true, also force the FX slot to change (not just the effect).
 	 */
 	void requestChange( bool alsoFx )
-	{ m_forceEffectChange = true; if( alsoFx ) m_forceFxChange = true; }
+	{ m_forceEffectChange = true; m_forceIsManual = true; if( alsoFx ) m_forceFxChange = true; }
 	/** @brief Jump directly to a given effect index, pre-empting the normal selection (remote scene browser).
 	 * @param idx Index into the attached texture/effect list to jump to.
 	 */
@@ -122,7 +122,8 @@ public:
 		float harmonicChange = 0.f;   ///< Harmonic/key-change novelty strength (combined with musicPresence to force a cut).
 		float musicPresence  = 0.f;   ///< Gates the novelty trigger; no forced cuts from silence.
 		int   sectionCount   = 0;     ///< Running count of detected song sections; a rising edge signals a section change.
-		int   sectionId      = -1;    ///< Identity of the current section (looked up in the song-structure memory).
+		int   sectionId      = -1;    ///< Identity of the current section (looked up in the song-structure memory). A recycled LRU slot index -- never treat "id seen before" as "section returning" without #sectionKnown.
+		bool  sectionKnown   = false; ///< True only if the analyzer RECOGNISED the section by fingerprint; false for a newly stored one (even when its id slot was recycled from an older section).
 		int   dropCount      = 0;     ///< Running count of detected EDM drops; a rising edge triggers a drop cut.
 		// Übergangs-Timing
 		float rhythmStrength = 0.f;   ///< Beat confidence 0..1; above 0.55 lets the 4-beat cross-fade duration kick in.
@@ -217,6 +218,12 @@ private:
 
 	// Erzwungene Wechsel + Beat-Quantisierung
 	bool  m_forceEffectChange   = false;   ///< Set by requestChange()/forceScene()/triggers; consumed at the next Solo-phase check.
+	// A MANUAL cut (key 'n', remote) may fire after a brief 0.6 s solo; a
+	// musical TRIGGER (section/novelty/drop) must respect a longer minimum
+	// solo, otherwise a trigger landing right after a fade completes cuts the
+	// freshly faded-in scene away again after 0.6 s -- the reported
+	// "a scene flashes in for a fraction of a second and is replaced".
+	bool  m_forceIsManual       = false;   ///< The pending m_forceEffectChange came from requestChange()/forceScene() (short min solo), not from a musical trigger.
 	bool  m_forceFxChange  = false;   ///< Set by requestChange(alsoFx)/triggers; consumed at the next FX Solo-phase check.
 	int   m_forcedNextTexture   = -1;      ///< Remote direct-jump target index (-1 = none); wins over review mode and random pick.
 	bool  m_pendingEffectChange = false;   ///< True while an effect change is due but waiting on beat quantisation.
@@ -235,10 +242,19 @@ private:
 	// Crossfades.
 	bool  m_dropCutPending   = false;   ///< A drop triggered the pending change: when it fires, use a hard cut or the shatter transition instead of a normal cross-fade.
 
-	// Song-Struktur-Gedächtnis
+	// Song-Struktur-Gedächtnis.  Keyed by the analyzer's section id, which
+	// is a RECYCLED 8-slot LRU index: a new section of a later song inherits
+	// an id some earlier, unrelated section once carried.  These maps are
+	// never cleared (there is no track-change signal), so a replay decision
+	// must ALSO require Tick::sectionKnown and a fresh m_sectionStamp --
+	// without both, after the first ~8 sections of a session every id was
+	// "known" and the scheduler replayed the same handful of scenes for the
+	// rest of the evening (the reported "always the same 10-20 scenes").
 	std::map<int, unsigned int>       m_sectionEffect;    ///< Section id -> effect/texture index last played during that section.
 	std::map<int, unsigned int>       m_sectionFx;   ///< Section id -> combine index last played during that section.
 	std::map<int, std::vector<float>> m_sectionParams;    ///< Section id -> snapshotted shader parameters to restore on replay.
+	std::map<int, int>                m_sectionStamp;     ///< Section id -> Tick::sectionCount at store time (staleness guard: no replay across songs).
+	static const int kSectionMemorySpan = 24;   ///< Max sectionCount distance for a replay (sections are >= ~12 s apart, so ~5+ min -- within one song, not across the set).
 	int   m_pendingSectionStore   = -1;   ///< Section id whose final look should be stored at the next fade-end (-1 = none pending).
 	int   m_pendingSectionRestore = -1;   ///< Section id whose stored look should be restored at the next fade-start (-1 = none pending).
 	// A recurring section's replay target arriving WHILE a fade is already in
