@@ -69,6 +69,7 @@ if ($Build) {
     Start-Sleep -Seconds 2
     $env:QTDIR = $QtDir
     $vcvars = "C:\Program Files\Microsoft Visual Studio\18\Community\VC\Auxiliary\Build\vcvars64.bat"
+    $env:Path += ";C:\Program Files (x86)\Microsoft Visual Studio\Installer"   # vcvars64.bat calls vswhere.exe bare; not on PATH by default
     cmd /c "`"$vcvars`" && msbuild Kaleidoscope.vcxproj /p:Configuration=Release /p:Platform=x64 /p:QTDIR=$QtDir /m /nologo /v:minimal"
     if ($LASTEXITCODE -ne 0) { throw "Build failed." }
     Info "Building PresetEditor Release|x64 ..."
