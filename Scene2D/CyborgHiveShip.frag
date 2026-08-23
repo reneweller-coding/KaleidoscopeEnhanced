@@ -193,7 +193,7 @@ void main()
         vec3 albedo = vec3(0.1, 0.12, 0.15); // dark metal
         if (m == 3.0) albedo = vec3(0.05); // darker pillars
 
-        col = albedo * (0.16 + dif * 1.2);
+        col = albedo * (0.34 + dif * 1.45);
 
         // Specular
         float spec = pow(max(dot(reflect(-normalize(ro - p), n), -rd), 0.0), 32.0);
@@ -213,8 +213,9 @@ void main()
         col *= clamp(1.0 - float(steps) * 0.015, 0.1, 1.0);
     }
 
-    // Atmospheric darkness
-    col = mix(col, vec3(0.01, 0.02, 0.01), exp(-d * 0.04));
+    // Atmospheric darkness -- weight grows with distance (exp(-d*k) alone
+    // is 1.0 at the camera and would darken the NEAREST geometry most).
+    col = mix(col, vec3(0.01, 0.02, 0.01), 1.0 - exp(-d * 0.04));
 
     if (hue > 0.001) col = hueRot(col, 0.2 * sin(hue));
 

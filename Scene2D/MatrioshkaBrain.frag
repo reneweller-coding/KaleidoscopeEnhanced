@@ -2,8 +2,8 @@
 out vec4 fragColor;
 /**
  * @file MatrioshkaBrain.frag
- * @brief MATRIOSHKA BRAIN: Flight through the endless, glowing computing layers 
- * of a megastructure that completely encases a star. Dense, geometric pathways 
+ * @brief MATRIOSHKA BRAIN: Flight through the endless, glowing computing layers
+ * of a megastructure that completely encases a star. Dense, geometric pathways
  * and data streams pulse violently to the music.
  *   audioAdvance -> flight speed through the computational layers
  *   audioKick    -> flashes from massive data processing nodes
@@ -71,16 +71,16 @@ float map(vec3 p, float tp) {
     float d = 1e10;
     float mat = 0.0;
     float glow = 0.0;
-    
+
     // Main structural shaft
     vec3 q = abs(p);
     float shaft = 2.0 - max(q.x, q.y); // hollow square tunnel
     if (shaft < d) { d = shaft; mat = 1.0; }
-    
+
     // Repetition for layers
     vec3 c = floor(p);
     vec3 lq = fract(p) - 0.5;
-    
+
     // Create intricate geometric layers using a folded space
     vec3 fp = p;
     float scale = 1.0;
@@ -92,22 +92,22 @@ float map(vec3 p, float tp) {
         fp *= 2.0;
         scale *= 2.0;
     }
-    
+
     // Small computational nodes
     float nodes = (length(fp) - 1.5) / scale;
     if (nodes > 0.0 && nodes < d && max(q.x, q.y) > 2.0) {
         d = min(shaft, max(shaft + 0.1, nodes)); // embed nodes in walls
         if (d == nodes) {
-            mat = 2.0; 
+            mat = 2.0;
             if (hash31(c) > 0.8) glow = 1.0; // some nodes are data cores
         }
     }
-    
+
     // Giant crossing data pipelines
     vec3 pipeQ = p;
     pipeQ.z = mod(pipeQ.z, 10.0) - 5.0;
     float pipeId = floor(p.z / 10.0);
-    
+
     if (hash11(pipeId) > 0.5) {
         float pipeX = length(vec2(pipeQ.y, pipeQ.z)) - 0.2;
         if (pipeX < d) { d = pipeX; mat = 3.0; glow = 2.0; } // Data stream
@@ -115,10 +115,10 @@ float map(vec3 p, float tp) {
         float pipeY = length(vec2(pipeQ.x, pipeQ.z)) - 0.2;
         if (pipeY < d) { d = pipeY; mat = 3.0; glow = 2.0; }
     }
-    
+
     hitMat = mat;
     hitGlow = glow;
-    
+
     return d;
 }
 
@@ -140,19 +140,19 @@ void main()
     vec2 uv = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
     float drift = time * 3.0 + audioAdvance * 10.0;
-    
+
     vec3 ro = vec3(0.0, 0.0, drift);
-    
+
     // Subtle shifting inside the tunnel
     ro.x += sin(time * 0.5) * 0.5;
     ro.y += cos(time * 0.4) * 0.5;
-    
+
     vec3 ta = ro + vec3(0.0, 0.0, 1.0);
-    
+
     vec3 ww = normalize(ta - ro);
     vec3 uu = normalize(cross(ww, vec3(0.0, 1.0, 0.0)));
     vec3 vv = cross(uu, ww);
-    
+
     float roll = time * 0.2 + audioPhase * 0.1; // slow continuous roll
     vec2 ruv = mat2(cos(roll), -sin(roll), sin(roll), cos(roll)) * uv;
     vec3 rd = normalize(ruv.x * uu + ruv.y * vv + 1.2 * ww);
@@ -162,7 +162,7 @@ void main()
     float m = 0.0;
     float g = 0.0;
     int steps = 0;
-    
+
     for (int i = 0; i < 90; ++i) {
         p = ro + rd * d;
         float ds = map(p, tp);
@@ -175,29 +175,29 @@ void main()
     }
 
     vec3 col = vec3(0.0);
-    
+
     vec3 dataColor = imgPalette(0.8 + audioKick * 0.2); // bright data streams
     vec3 structColor = imgPalette(0.3); // ambient interior glow
 
     if (m > 0.5) {
         vec3 n = calcNormal(p, tp);
-        
+
         // Spot light
         float dif = max(dot(n, normalize(vec3(0.0, 0.0, p.z + 5.0) - p)), 0.0);
-        vec3 albedo = vec3(0.1); // dark metallic
-        
-        col = albedo * (0.1 + dif * (0.5 + audioSwell * 0.5));
-        
+        vec3 albedo = vec3(0.26); // dark metallic, but readable unlit
+
+        col = albedo * (0.34 + dif * (0.7 + audioSwell * 0.5));
+
         // Reflections
         float spec = pow(max(dot(reflect(-normalize(ro - p), n), -rd), 0.0), 32.0);
         col += vec3(0.3) * spec;
-        
+
         if (m == 2.0 && g == 1.0) {
             // Processing nodes flash frantically
             float activity = hash31(floor(p * 5.0 + time * 10.0));
             float flash = step(0.9, activity);
             col += structColor * flash * (1.0 + audioKick * 3.0) * dp;
-        } 
+        }
         else if (m == 3.0 && g == 2.0) {
             // Data pipelines pulse along their length
             float axisP = (abs(n.x) > 0.5) ? p.y : p.x;
@@ -210,12 +210,16 @@ void main()
             float activeGrid = grid * step(0.9, hash21(floor(p.xy * 5.0) + floor(time * 2.0)));
             col += structColor * activeGrid * (0.5 + audioKick);
         }
-        
+
         col *= clamp(1.0 - float(steps) * 0.015, 0.1, 1.0);
     }
-    
+
     // Energy haze inside the Matrioshka brain
-    col = mix(col, structColor * (0.1 + audioSwell * 0.2), exp(-d * 0.05));
+    // NOTE: this haze is weighted by exp(-d*k), i.e. strongest AT the camera,
+    // which is backwards for distance fog -- but here it is what actually
+    // fills and lights the interior volume. Correcting the direction measured
+    // 0.009 mean luma (near-black), so it stays as an inward volume glow.
+    col = mix(col, structColor * (0.24 + audioSwell * 0.2), exp(-d * 0.05));
 
     if (hue > 0.001) col = hueRot(col, 0.2 * sin(hue));
 

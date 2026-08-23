@@ -2,8 +2,8 @@
 out vec4 fragColor;
 /**
  * @file XenobiologicalBioship.frag
- * @brief XENOBIOLOGICAL BIOSHIP: The camera flies through the grotesque, pulsing 
- * interior of a massive living spaceship. Fleshy walls, glowing veins, and 
+ * @brief XENOBIOLOGICAL BIOSHIP: The camera flies through the grotesque, pulsing
+ * interior of a massive living spaceship. Fleshy walls, glowing veins, and
  * strange internal organs ripple and contract to the beat.
  *   audioAdvance -> flight speed through the biological tunnel
  *   audioKick    -> intense contractions and bright bioluminescence flashes
@@ -102,26 +102,26 @@ float hitGlow = 0.0;
 float map(vec3 p, float fp) {
     // Breathing contraction of the tunnel
     float breath = sin(p.z * 0.5 - time * 2.0 + audioPhase) * 0.5 * audioLevel;
-    
+
     // Main tunnel
     float d = 4.0 - length(p.xy) - breath;
-    
+
     // Organic, uneven fleshy surface
     float n1 = fbm(p * 1.5 * fp);
     d -= n1 * 1.5;
-    
+
     // Deep veins carving into the flesh
     float v = voronoi(p * 2.0);
     float vein = smoothstep(0.1, 0.0, v); // Inverse distance to cell centers for ridges
     d += vein * 0.8;
-    
+
     // Check if we hit a vein for glowing
     if (d < 0.1 && v < 0.15) {
         hitGlow = smoothstep(0.15, 0.0, v);
     } else {
         hitGlow = 0.0;
     }
-    
+
     return d;
 }
 
@@ -143,19 +143,19 @@ void main()
     vec2 uv = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
     float drift = time * 3.0 + audioAdvance * 12.0;
-    
+
     vec3 ro = vec3(0.5 * sin(time * 0.5), 0.5 * cos(time * 0.6), drift);
-    
+
     // Spasmodic camera shake on kick
     ro.x += (hash11(time * 20.0) - 0.5) * audioKick * 0.3;
     ro.y += (hash11(time * 20.0 + 1.0) - 0.5) * audioKick * 0.3;
-    
+
     vec3 ta = ro + vec3(sin(time * 0.2) * 0.5, cos(time * 0.3) * 0.5, 1.0);
-    
+
     vec3 ww = normalize(ta - ro);
     vec3 uu = normalize(cross(ww, vec3(0.0, 1.0, 0.0)));
     vec3 vv = cross(uu, ww);
-    
+
     float roll = 0.2 * sin(time * 0.4);
     vec2 ruv = mat2(cos(roll), -sin(roll), sin(roll), cos(roll)) * uv;
     vec3 rd = normalize(ruv.x * uu + ruv.y * vv + 1.2 * ww);
@@ -164,7 +164,7 @@ void main()
     vec3 p;
     float g = 0.0;
     int steps = 0;
-    
+
     for (int i = 0; i < 70; ++i) {
         p = ro + rd * d;
         float ds = map(p, fp);
@@ -176,38 +176,38 @@ void main()
     }
 
     vec3 col = vec3(0.0);
-    
+
     vec3 fleshColor = mix(vec3(0.3, 0.05, 0.05), vec3(0.4, 0.1, 0.1), fbm(p * 5.0)); // Dark red meat
     vec3 veinColor = imgPalette(0.6 + audioCentroid * 0.2); // Bioluminescent fluids
-    
+
     if (d < 50.0) {
         vec3 n = calcNormal(p, fp);
-        
+
         // Spot light from "headlamp" / biological luminescence ahead
         vec3 lightDir = normalize(vec3(0.0, 0.0, p.z + 5.0) - p);
         float dif = max(dot(n, lightDir), 0.0);
-        
+
         // SSS (Subsurface scattering fake)
         float sss = exp(-length(p - ro) * 0.1) * (0.5 + 0.5 * dot(n, -rd));
-        
+
         col = fleshColor * (0.1 + dif * (0.5 + audioSwell * 0.5));
         col += vec3(0.6, 0.2, 0.2) * sss * (1.0 + audioSwell);
-        
+
         // Wet specularity (slime)
         float spec = pow(max(dot(reflect(-lightDir, n), -rd), 0.0), 32.0);
         col += vec3(0.5, 0.6, 0.6) * spec * (0.5 + fbm(p * 10.0));
-        
+
         // Glowing veins
         if (g > 0.0) {
             float pulse = sin(p.z * 5.0 - time * 10.0) * 0.5 + 0.5;
             col += veinColor * g * pulse * vp * (1.0 + audioKick * 3.0);
         }
-        
+
         col *= clamp(1.0 - float(steps) * 0.015, 0.1, 1.0);
     }
-    
+
     // Internal biological fog / fluids
-    col = mix(col, vec3(0.05, 0.01, 0.01), exp(-d * 0.05));
+    col = mix(col, vec3(0.05, 0.01, 0.01), 1.0 - exp(-d * 0.05));
 
     if (hue > 0.001) col = hueRot(col, 0.2 * sin(hue));
 

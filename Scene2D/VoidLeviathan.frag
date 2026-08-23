@@ -2,8 +2,8 @@
 out vec4 fragColor;
 /**
  * @file VoidLeviathan.frag
- * @brief VOID LEVIATHAN: Encounter with a colossal, space-dwelling entity in 
- * the deep abyss. The creature's leathery skin is covered in bioluminescent 
+ * @brief VOID LEVIATHAN: Encounter with a colossal, space-dwelling entity in
+ * the deep abyss. The creature's leathery skin is covered in bioluminescent
  * patterns that pulse to the beat, while massive tentacles drift past.
  *   audioAdvance -> flight speed alongside the leviathan
  *   audioKick    -> bright bioluminescent flashes on the creature's skin
@@ -78,25 +78,25 @@ float fbm(vec3 p) {
 // Map the leviathan's body and tentacles
 float map(vec3 p, float sp) {
     float d = 1e10;
-    
+
     // Main body (massive, slowly undulating surface)
     float body = p.x + 10.0 * sp;
     body -= fbm(p * 0.1 - vec3(time * 0.5, 0.0, 0.0)) * 3.0 * sp;
     body -= fbm(p * 0.5) * 0.5 * sp; // leathery skin texture
-    
+
     d = min(d, body);
-    
+
     // Huge tentacles drifting past
     vec3 q = p;
     q.y = mod(q.y, 20.0) - 10.0;
     q.z += sin(p.y * 0.1 + time) * 5.0; // undulating movement
     q.x += cos(p.y * 0.1 + time * 0.8) * 3.0;
-    
+
     float tentacle = length(q.xz) - 1.5 * sp;
     tentacle -= fbm(p * 1.0) * 0.3 * sp; // bumpy skin on tentacles
-    
+
     d = min(d, tentacle);
-    
+
     return d;
 }
 
@@ -118,15 +118,15 @@ void main()
     vec2 uv = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
     float drift = time * 2.0 + audioAdvance * 5.0;
-    
+
     // Camera is drifting alongside the massive creature
     vec3 ro = vec3(0.0, drift, time * 2.0);
     vec3 ta = ro + vec3(-0.2, 1.0, 0.2); // Looking slightly towards the body
-    
+
     vec3 ww = normalize(ta - ro);
     vec3 uu = normalize(cross(ww, vec3(0.0, 1.0, 0.0)));
     vec3 vv = cross(uu, ww);
-    
+
     float roll = 0.05 * sin(time * 0.2);
     vec2 ruv = mat2(cos(roll), -sin(roll), sin(roll), cos(roll)) * uv;
     vec3 rd = normalize(ruv.x * uu + ruv.y * vv + 1.2 * ww);
@@ -134,7 +134,7 @@ void main()
     float d = 0.0;
     vec3 p;
     int steps = 0;
-    
+
     for (int i = 0; i < 80; ++i) {
         p = ro + rd * d;
         float ds = map(p, sp);
@@ -145,39 +145,39 @@ void main()
     }
 
     vec3 col = vec3(0.0);
-    
+
     vec3 biolumColor = imgPalette(0.7 + audioCentroid * 0.2); // bioluminescent glow
-    vec3 skinColor = vec3(0.05, 0.08, 0.1); // dark, deep sea/void color
+    vec3 skinColor = vec3(0.17, 0.23, 0.28); // dark, deep sea/void color -- but a body that reads, not a silhouette
 
     if (d < 80.0) {
         vec3 n = calcNormal(p, sp);
-        
+
         // Ambient starlight / very faint distant sun
         vec3 lightDir = normalize(vec3(1.0, 0.5, 0.5));
         float dif = max(dot(n, lightDir), 0.0);
-        
-        col = skinColor * (0.16 + dif * (0.55 + audioSwell * 0.4));
-        
+
+        col = skinColor * (0.38 + dif * (0.8 + audioSwell * 0.4));
+
         // Bioluminescent patterns on the skin
         // Create intricate patterns using fbm and sine waves
         float pattern = fbm(p * 2.0 / sp);
         float stripe = sin(p.y * 2.0 + pattern * 10.0 - time * 5.0);
-        stripe = smoothstep(0.8, 1.0, stripe); // sharp stripes
-        
+        stripe = smoothstep(0.45, 0.9, stripe); // sharp stripes, but wide enough to actually appear
+
         // Reaction to kick
         float flash = step(0.9, hash11(floor(p.y * 0.5) + floor(time * 5.0)));
-        
-        col += biolumColor * stripe * gp * (1.0 + flash * audioKick * 5.0);
-        
+
+        col += biolumColor * stripe * gp * (1.35 + flash * audioKick * 5.0);
+
         // Specular reflection (wet/leathery)
         float spec = pow(max(dot(reflect(-lightDir, n), -rd), 0.0), 16.0);
         col += vec3(0.2) * spec * (0.1 + audioSwell * 0.2);
-        
+
         col *= clamp(1.0 - float(steps) * 0.01, 0.1, 1.0);
     } else {
         // Deep void background
         col = vec3(0.02, 0.03, 0.045) * (1.0 + audioSwell);
-        
+
         // Sparse stars
         for (int i = 0; i < 2; ++i) {
             float sc = 50.0 + 50.0 * float(i);
@@ -189,9 +189,14 @@ void main()
             }
         }
     }
-    
-    // Depth fog (the void is murky)
-    col = mix(col, vec3(0.0), exp(-d * 0.03));
+
+    // Depth fog (the void is murky). The weight has to GROW with distance:
+    // exp(-d*k) is 1.0 AT the camera, so mixing toward black by it erased
+    // everything NEAR the viewer -- the leviathan itself -- and kept only
+    // the far background. Applied to the hit only; the starfield branch
+    // sits at a fixed d=80 and would be fogged to black outright.
+    if (d < 80.0)
+        col = mix(col, vec3(0.0), 1.0 - exp(-d * 0.03));
 
     if (hue > 0.001) col = hueRot(col, 0.2 * sin(hue));
 

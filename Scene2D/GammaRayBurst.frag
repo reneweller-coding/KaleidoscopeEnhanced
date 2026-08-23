@@ -2,9 +2,9 @@
 out vec4 fragColor;
 /**
  * @file GammaRayBurst.frag
- * @brief GAMMA RAY BURST: The most powerful explosion in the universe. We are 
- * looking almost directly down the barrel of a massive dying star as it fires 
- * an ultra-relativistic jet of blinding gamma radiation. The beam violently 
+ * @brief GAMMA RAY BURST: The most powerful explosion in the universe. We are
+ * looking almost directly down the barrel of a massive dying star as it fires
+ * an ultra-relativistic jet of blinding gamma radiation. The beam violently
  * distorts space and pulses brutally to the audio.
  *   audioAdvance -> velocity of the relativistic particles
  *   audioKick    -> catastrophic spikes in beam intensity
@@ -82,46 +82,46 @@ void main()
     float hue = (hueP > 0.01 ? hueP : 0.0);
 
     vec2 uv = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
-    
+
     // We are looking directly at the center
     float dist = length(uv);
     float angle = atan(uv.y, uv.x);
-    
+
     vec3 col = vec3(0.0);
     vec3 beamColor = imgPalette(0.8 + audioCentroid * 0.1); // Blinding, hot energy
     vec3 shockColor = imgPalette(0.2); // Outer ejected material
-    
+
     // 1. The Central Beam (Gamma Ray Jet)
     // The jet is extremely focused, coming straight at the camera.
     // We create a perspective illusion of a tunnel of light.
-    
+
     // Wobbly, relativistic distortion of the beam
     float beamWobble = fbm(vec3(angle * 2.0, time * 2.0, 0.0)) * 0.05;
     float distDistort = dist + beamWobble;
-    
+
     // The core of the beam is infinitely bright and tiny
     float beamCoreRadius = 0.05 / bp;
     float core = exp(-distDistort * (50.0 * bp));
-    
+
     // Relativistic particles shooting outwards from the center (Z-axis illusion)
     // Map 2D to a 3D cylindrical tunnel
     float tunnelZ = 1.0 / max(distDistort, 0.001);
     float tunnelU = angle * 2.0; // wrap around
     float tunnelV = tunnelZ - (time * 10.0 + audioAdvance * 20.0); // rushing towards us
-    
+
     // High frequency noise for the chaotic plasma
     float plasma = fbm(vec3(tunnelU * 5.0, tunnelV * 2.0, time));
     float plasmaStrands = step(0.7, plasma);
-    
+
     // Combine core and plasma
     float beamIntensity = core + (plasmaStrands * exp(-distDistort * 10.0));
-    
+
     // Audio Kick triggers catastrophic spikes in the beam
     float kickSpike = step(0.9, hash11(floor(time * 8.0))) * audioKick * 10.0;   // was 15 Hz
     beamIntensity *= (1.0 + kickSpike);
-    
-    col += beamColor * beamIntensity * (1.0 + audioSwell * 2.0);
-    
+
+    col += beamColor * beamIntensity * (1.25 + audioSwell * 2.0);
+
     // 2. Surrounding Accretion Disk / Dying Star Remnant
     // The material being violently ripped apart and blown away laterally
     if (dist > 0.1) {
@@ -129,32 +129,32 @@ void main()
         float expandSpeed = time * 2.0 + audioAdvance * 3.0;
         float rings = sin(dist * 50.0 - expandSpeed);
         float ringMask = smoothstep(0.9, 1.0, rings);
-        
+
         // Break rings into turbulent debris
         float debris = fbm(vec3(angle * 10.0, dist * 5.0, time * 2.0));
         float ejecta = ringMask * debris * sp;
-        
+
         // Ejecta gets destroyed/fades as it gets pushed further out
         float ejectaFade = exp(-(dist - 0.1) * 5.0);
-        
+
         col += shockColor * ejecta * ejectaFade * (1.0 + audioKick * 3.0) * (0.5 + audioSwell);
-        
+
         // A massive lateral shockwave (equatorial plane of the star)
         // We approximate it by creating a bright horizontal line that is distorted
         float lateral = abs(uv.y + fbm(vec3(uv.x * 5.0, time, 0.0)) * 0.1);
         float lateralWave = exp(-lateral * 20.0) * exp(-abs(uv.x) * 2.0);
         col += beamColor * lateralWave * sp * (1.0 + audioKick * 5.0);
     }
-    
+
     // 3. Glare and Lens effects (the energy is overwhelming)
     // Massive radial glare rays
     float rays = fbm(vec3(angle * 20.0, time * 0.5, 0.0));
     float raysMask = smoothstep(0.6, 0.9, rays) * exp(-dist * 3.0);
     col += beamColor * raysMask * 0.5 * (1.0 + audioKick * 2.0);
-    
+
     // Overall blinding haze
-    float haze = exp(-dist * 2.0);
-    col += beamColor * haze * 0.3 * (1.0 + audioSwell);
+    float haze = exp(-dist * 1.35);
+    col += beamColor * haze * 0.85 * (1.0 + audioSwell);
 
     if (hue > 0.001) col = hueRot(col, 0.2 * sin(hue));
 

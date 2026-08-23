@@ -2,8 +2,8 @@
 out vec4 fragColor;
 /**
  * @file EndOfTheUniverse.frag
- * @brief END OF THE UNIVERSE: The heat death of the cosmos. A terrifyingly empty, 
- * black void where only the faintest embers of dying red and black dwarfs remain. 
+ * @brief END OF THE UNIVERSE: The heat death of the cosmos. A terrifyingly empty,
+ * black void where only the faintest embers of dying red and black dwarfs remain.
  * A very dark, melancholic scene that flares up slightly during audio swells.
  *   audioAdvance -> incredibly slow drift through the void
  *   audioKick    -> weak, dying flashes from the last stars
@@ -66,62 +66,62 @@ void main()
 
     // Extremely slow movement
     float drift = time * 0.2 + audioAdvance * 0.5;
-    
+
     vec3 ro = vec3(0.0, 0.0, drift);
-    
+
     // Very subtle camera rotation
     vec3 ta = ro + vec3(sin(time * 0.05) * 0.2, cos(time * 0.07) * 0.2, 1.0);
-    
+
     vec3 ww = normalize(ta - ro);
     vec3 uu = normalize(cross(ww, vec3(0.0, 1.0, 0.0)));
     vec3 vv = cross(uu, ww);
-    
+
     float roll = 0.02 * sin(time * 0.03);
     vec2 ruv = mat2(cos(roll), -sin(roll), sin(roll), cos(roll)) * uv;
     vec3 rd = normalize(ruv.x * uu + ruv.y * vv + 1.0 * ww);
 
     vec3 col = vec3(0.0);
-    
+
     // Dying star colors (deep reds, dark purples)
-    vec3 emberColor = imgPalette(0.1 + audioCentroid * 0.1); 
-    
+    vec3 emberColor = imgPalette(0.1 + audioCentroid * 0.1);
+
     // We only render a background starfield, but it's very sparse and volumetric-looking
     for (int i = 0; i < 5; ++i) {
         float sc = 20.0 + 20.0 * float(i);
         vec3 st = rd * sc + vec3(0.0, 0.0, drift * (1.0 + float(i) * 0.1));
         vec3 cell = floor(st);
         vec3 f = fract(st) - 0.5;
-        
+
         // Probability of a star existing is very low
         float h = hash11(dot(cell, vec3(12.3, 45.6, 78.9)));
         if (h > 1.0 - (0.05 * sp)) {
             float dist = length(f);
-            
+
             // Core of the dying star
-            float core = exp(-dist * 150.0);
-            
+            float core = exp(-dist * 25.0);
+
             // Faint, dissipating nebula/corona around it
-            float corona = exp(-dist * 10.0) * 0.1;
-            
+            float corona = exp(-dist * 3.0) * 0.8;
+
             // Dying pulse (very slow, weak reaction to kick)
             float pulse = sin(time * 2.0 + h * 10.0) * 0.5 + 0.5;
             float flash = step(0.95, hash11(floor(time * 2.0) + h * 100.0));
-            
+
             vec3 localCol = emberColor * (core + corona);
-            
+
             // Brighten slightly on swell
-            localCol *= (0.45 + audioSwell * 0.8 + flash * audioKick * 2.0) * gp;
-            
+            localCol *= (0.7 + audioSwell * 0.8 + flash * audioKick * 2.0) * gp;
+
             // Shift older stars to be even darker red/brown
             localCol = mix(vec3(0.1, 0.01, 0.01), localCol, h);
-            
+
             col += localCol;
         }
     }
-    
+
     // The vast emptiness
-    vec3 voidColor = mix(vec3(0.001, 0.0, 0.002), vec3(0.0), length(uv));
-    col = max(col, voidColor * (0.5 + audioSwell * 0.5));
+    vec3 voidColor = mix(vec3(0.055, 0.024, 0.075), vec3(0.013, 0.007, 0.022), length(uv));
+    col = max(col, voidColor * (1.0 + audioSwell * 0.5));   // no longer halved on quiet material: this preset's whole point is quiet material
 
     if (hue > 0.001) col = hueRot(col, 0.2 * sin(hue));
 

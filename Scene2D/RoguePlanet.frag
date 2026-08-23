@@ -3,7 +3,7 @@ out vec4 fragColor;
 /**
  * @file RoguePlanet.frag
  * @brief ROGUE PLANET: A dark, frozen world drifting without a star. The atmosphere
- * is thick with volcanic ash and bioluminescent fissures glow intensely across 
+ * is thick with volcanic ash and bioluminescent fissures glow intensely across
  * its frozen surface, pulsating to the beat.
  *   audioAdvance -> flight speed over the surface
  *   audioKick    -> flashes from volcanic vents
@@ -76,11 +76,11 @@ float fbm(vec3 p) {
 // Ridged noise for sharp fissures
 float ridged(vec3 p) {
     float f = 0.0, a = 0.5;
-    for(int i = 0; i < 5; i++) { 
+    for(int i = 0; i < 5; i++) {
         float n = abs(noise(p) * 2.0 - 1.0);
         n = 1.0 - n;
         f += a * n * n; // sharpen
-        p *= 2.0; a *= 0.5; 
+        p *= 2.0; a *= 0.5;
     }
     return f;
 }
@@ -92,22 +92,22 @@ float map(vec3 p, float rp)
 {
     float d = 1e10;
     float mat = 0.0;
-    
+
     // Base terrain
     float ground = p.y + 1.0;
-    
+
     // Add large rolling hills
     ground -= fbm(p * 0.2) * 2.0;
-    
+
     // Add sharp fissures
     float ridges = ridged(p * 0.5);
     ground += ridges * 1.5 * rp;
-    
+
     if (ground < d) { d = ground; mat = 1.0; }
-    
+
     // Record glow amount (inversely proportional to ridge height)
     fissureGlow = smoothstep(0.8, 1.0, 1.0 - ridges) * smoothstep(-1.0, 0.0, p.y);
-    
+
     hitMat = mat;
     return d;
 }
@@ -130,14 +130,14 @@ void main()
     vec2 uv = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
     float drift = time * 2.0 + audioAdvance * 5.0;
-    
+
     vec3 ro = vec3(0.0, 2.0 + 0.5 * sin(time * 0.3), drift);
     vec3 ta = ro + vec3(0.0, -0.2, 1.0);
-    
+
     vec3 ww = normalize(ta - ro);
     vec3 uu = normalize(cross(ww, vec3(0.0, 1.0, 0.0)));
     vec3 vv = cross(uu, ww);
-    
+
     float roll = 0.05 * sin(time * 0.2);
     vec2 ruv = mat2(cos(roll), -sin(roll), sin(roll), cos(roll)) * uv;
     vec3 rd = normalize(ruv.x * uu + ruv.y * vv + 1.2 * ww);
@@ -146,7 +146,7 @@ void main()
     vec3 p;
     float m = 0.0;
     int steps = 0;
-    
+
     for (int i = 0; i < 90; ++i) {
         p = ro + rd * d;
         float ds = map(p, rp);
@@ -159,45 +159,45 @@ void main()
 
     vec3 bgCol = vec3(0.002, 0.003, 0.005); // pitch black sky, no stars
     vec3 col = bgCol;
-    
+
     vec3 ventColor = imgPalette(0.8 + 0.1 * audioCentroid);
 
     if (m > 0.5) {
         vec3 n = calcNormal(p, rp);
-        
+
         // No sun, only ambient and self-illumination
-        vec3 albedo = vec3(0.05, 0.05, 0.06); // dark ice/rock
-        
-        col = albedo * 0.1; // very dark
-        
+        vec3 albedo = vec3(0.115, 0.115, 0.135); // dark ice/rock
+
+        col = albedo * (1.6 + 1.2 * max(dot(n, normalize(vec3(0.3, 0.8, -0.4))), 0.0));   // faint skyglow: dark, but a readable surface even in silence
+
         // Fissure glow
         // Re-evaluate glow at hit point
         float ridges = ridged(p * 0.5);
         float localGlow = smoothstep(0.7, 1.0, 1.0 - ridges);
-        
+
         // Pulsing magma/bioluminescence
         float pulse = sin(p.x * 2.0 + p.z * 1.5 - time * 3.0) * 0.5 + 0.5;
         pulse = mix(pulse, 1.0, audioKick * 0.8);
-        
-        col += ventColor * localGlow * pulse * (1.0 + audioSwell * 2.0) * gp * 2.0;
-        
+
+        col += ventColor * localGlow * pulse * (0.9 + audioSwell * 1.4) * gp * 2.0;
+
         // Rim lighting from the glow
         float rim = 1.0 - max(dot(n, normalize(-rd)), 0.0);
         col += ventColor * smoothstep(0.6, 1.0, rim) * localGlow * 0.5 * gp;
-        
+
         col *= clamp(1.0 - float(steps) * 0.01, 0.1, 1.0);
     }
-    
+
     // Thick volcanic ash / fog near ground
     float fogY = exp(-max(p.y + 1.0, 0.0) * 0.5);
     float fogZ = exp(-d * 0.03);
     float fogDens = clamp(fogY * (1.0 - fogZ) * 1.5, 0.0, 1.0);
-    
+
     // Fog is lit by the vents
-    vec3 fogCol = mix(bgCol, ventColor * 0.3 * (0.5 + audioSwell), 0.5);
-    
+    vec3 fogCol = mix(bgCol, ventColor * 0.3 * (1.0 + audioSwell), 0.5);
+
     col = mix(col, fogCol, fogDens);
-    
+
     // General distance fade
     col = mix(bgCol, col, exp(-d * 0.02));
 
