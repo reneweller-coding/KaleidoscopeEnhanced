@@ -158,33 +158,61 @@ function refresh(){ if(Date.now()<hold) return;
  });}
 setInterval(refresh,2000); refresh();
 setInterval(()=>{document.getElementById('prev').src='/api/snapshot?ts='+Date.now();},2000);
-let scenesOpen=false;
+// Scene browser: with 300+ scenes, the naive "fetch every thumbnail, every
+// 5s, forever" design (still in git history) fires that many no-keep-alive
+// TCP connections in a burst -- on the SAME thread as rendering -- every
+// time the panel is open, which is what made this feel like it hangs.
+// Instead: build the button/label grid once per open (cheap, no network
+// beyond one small /api/scenes JSON call), but only fetch a thumbnail image
+// once its <img> actually scrolls into view (IntersectionObserver), and only
+// re-poll the ones that failed (scene not visited yet this session) AND are
+// currently visible, on a slower cadence.
+let scenesOpen=false, sceneRetryTimer=null, sceneObserver=null;
 function toggleScenes(){
  scenesOpen=!scenesOpen;
  const d=document.getElementById('scenes');
- if(!scenesOpen){d.style.display='none';return;}
+ if(!scenesOpen){
+  d.style.display='none';
+  if(sceneRetryTimer){clearInterval(sceneRetryTimer);sceneRetryTimer=null;}
+  return;}
  d.style.display='grid';
- loadScenes();}
-function loadScenes(){
- if(!scenesOpen) return;
+ buildScenes();
+ if(!sceneRetryTimer) sceneRetryTimer=setInterval(retryFailedThumbs,4000);}
+function buildScenes(){
  fetch('/api/scenes').then(r=>r.json()).then(s=>{
   const d=document.getElementById('scenes');
   d.innerHTML='';
+  if(sceneObserver) sceneObserver.disconnect();
+  sceneObserver=new IntersectionObserver(entries=>{
+   entries.forEach(e=>{ if(e.isIntersecting) loadThumb(e.target); });
+  },{root:d,rootMargin:'200px'});
   s.scenes.forEach((n,i)=>{const b=document.createElement('button');
    b.style.cssText='margin:0;padding:0;display:flex;flex-direction:column;'+
                     'align-items:stretch;overflow:hidden';
    const im=document.createElement('img');
-   im.src='/api/thumb?i='+i+'&ts='+Date.now();
+   im.dataset.idx=i;
    im.style.cssText='width:100%;height:52px;object-fit:cover;background:#1a1a26';
-   im.onerror=()=>{im.style.display='none';};
+   im.onerror=()=>{im.style.display='none'; im.dataset.failed='1';};
    const lbl=document.createElement('div');
    lbl.textContent=n;
    lbl.style.cssText='padding:6px 4px;font-size:.78em';
    b.appendChild(im); b.appendChild(lbl);
    b.onclick=()=>{cmd('/api/force?i='+i);};
-   d.appendChild(b);});
+   d.appendChild(b);
+   sceneObserver.observe(im);});
  });}
-setInterval(loadScenes,5000);
+function loadThumb(im,retry){
+ sceneObserver.unobserve(im);
+ im.style.display='';
+ delete im.dataset.failed;
+ im.src='/api/thumb?i='+im.dataset.idx+(retry?('&ts='+Date.now()):'');}
+function retryFailedThumbs(){
+ if(!scenesOpen) return;
+ const cr=document.getElementById('scenes').getBoundingClientRect();
+ document.querySelectorAll('#scenes img[data-failed="1"]').forEach(im=>{
+  const r=im.getBoundingClientRect();
+  if(r.bottom<cr.top||r.top>cr.bottom) return;   // not currently visible -- wait
+  loadThumb(im,true);});}
 </script></body></html>)HTML";
 
 /**
@@ -332,6 +360,7 @@ void WebRemote::handleConnection()
 			// empty JSON object, rather than a 404 — the page's polling fetches never hit this.
 			QByteArray body = "{}";
 			QByteArray ctype = "application/json";
+			bool cacheable = false;   // only /api/thumb hits (a real JPEG) sets this
 
 			// GET-only dispatch: the request line's method/target, then one branch per route.
 			// Every branch either fills body/ctype for the response below, or (for the
@@ -398,6 +427,7 @@ void WebRemote::handleConnection()
 					body = m_widget->remoteThumb( q.queryItemValue( "i" ).toInt() );
 					ctype = "image/jpeg";
 					if( body.isEmpty() ) { body = "{}"; ctype = "application/json"; }
+					else cacheable = true;   // a real JPEG: safe for the browser to cache (see below)
 				}
 				else if( path == "/api/fav" )
 					m_widget->remoteFavorite();
@@ -441,8 +471,13 @@ void WebRemote::handleConnection()
 
 			// "Connection: close" on every response: the client (this page's fetch() calls)
 			// opens a fresh TCP connection per request, so there is no keep-alive to manage.
+			// A scene thumbnail is near-static (the active scene's is the only one that can
+			// ever change, and only once per session-visit) -- a short max-age lets the
+			// browser skip the round trip on a quick close/reopen of the scene browser
+			// instead of re-fetching all of them from scratch every time.
 			QByteArray resp = "HTTP/1.1 200 OK\r\nContent-Type: " + ctype +
 			                  "\r\nContent-Length: " + QByteArray::number( body.size() ) +
+			                  ( cacheable ? "\r\nCache-Control: max-age=30" : "" ) +
 			                  "\r\nConnection: close\r\n\r\n" + body;
 			sock->write( resp );
 			sock->disconnectFromHost();
