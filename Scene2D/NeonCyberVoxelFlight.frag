@@ -71,7 +71,7 @@ void main() {
     float t = audioAdvance * 0.42 * spd;
 
     // Flight camera weaving between city skyscrapers
-    vec3 ro = vec3(sin(t * 0.3) * 1.5, 1.8 + 0.3 * sin(audioSwell * 2.0), t * 3.5);
+    vec3 ro = vec3(sin(t * 0.3) * 1.5, 1.9 + 0.25 * sin(t * 0.4), t * 3.5);   // was y = 1.8 + 0.3*sin(audioSwell*2): the camera height jittered with the envelope
     vec3 rd = normalize(vec3(uv.x, uv.y - 0.1, 1.25));
 
     // Raymarching through voxel city
@@ -86,6 +86,14 @@ void main() {
         vec2 cellUV = fract(p.xz * (0.5 * cDens)) - 0.5;
 
         float h = buildingHeight(cellID, hMod);
+
+        // Open flight corridor: cap tower heights along the camera's sine
+        // path (x = 1.5*sin(z*0.3/3.5), the exact ro trajectory) so the
+        // flight lane stays a street canyon instead of ramming a facade
+        // every few seconds. Towers beyond the lane keep full height.
+        vec2 cellWorld = (cellID + 0.5) / (0.5 * cDens);
+        float lane = abs(cellWorld.x - 1.5 * sin(cellWorld.y * 0.0857143));
+        h = min(h, mix(0.55, 60.0, smoothstep(1.3, 3.6, lane)));
 
         // Distance to box tower: |x| < 0.35, |z| < 0.35, y < h
         vec2 dBox2D = abs(cellUV) - vec2(0.35);

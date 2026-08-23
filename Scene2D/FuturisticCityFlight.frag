@@ -68,32 +68,43 @@ float sdBox(vec3 p, vec3 b) {
 float hitMat = 0.0;
 vec3 hitCol = vec3(0.0);
 
+// Soft-max, used to carve a smooth clearance bubble around the camera out
+// of the distance field: the flight can never clip through geometry -- a
+// would-be collision becomes a soft bulge sliding past the lens.
+float smax(float a, float b, float k) {
+    float h = clamp(0.5 - 0.5 * (a - b) / k, 0.0, 1.0);
+    return mix(a, b, h) + k * h * (1.0 - h);
+}
+
 float map(vec3 p, float bp)
 {
     float d = 1e10;
     float mat = 0.0;
-    
+
     // City block repetition
     vec3 cp = p;
     vec2 id = floor(cp.xz / 4.0);
     cp.xz = mod(cp.xz, 4.0) - 2.0;
-    
+
     // Determine building height based on cell
     float h = hash21(id);
     if (h < 0.8 * bp) {
         float height = 2.0 + 8.0 * hash21(id + 1.0);
-        // Central gap for the flight path
-        if (abs(id.x) < 1.0) height = 1.0 + 2.0 * hash21(id + 2.0);
-        
+        // Central gap for the flight path. The camera flies at x = 0 --
+        // the BOUNDARY between cell columns -1 and 0 -- so both columns
+        // form the street, and its buildings stay low street furniture
+        // (the old gap towers reached y = 1.0, the camera's sine low).
+        if (id.x > -1.5 && id.x < 0.5) height = 0.45 + 0.30 * hash21(id + 2.0);
+
         float building = sdBox(cp - vec3(0.0, height - 5.0, 0.0), vec3(1.2, height, 1.2));
-        
+
         // Add some detail
         float detail = sdBox(cp - vec3(0.0, height * 2.0 - 5.0, 0.0), vec3(0.5, 0.5, 0.5));
         building = min(building, detail);
-        
+
         if (building < d) { d = building; mat = 1.0; }
     }
-    
+
     hitMat = mat;
     return d;
 }
@@ -117,15 +128,15 @@ void main()
     vec2 uv = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
     float t = time * 0.1 + audioAdvance * 0.4;
-    
+
     // Flight down the central corridor
-    vec3 ro = vec3(0.0, 2.0 + sin(t * 0.5), t * 15.0);
+    vec3 ro = vec3(0.0, 2.4 + 0.6 * sin(t * 0.5), t * 15.0);
     vec3 ta = ro + vec3(sin(t * 0.3), -0.2 + 0.5 * cos(t * 0.2), 1.0);
-    
+
     vec3 ww = normalize(ta - ro);
     vec3 uu = normalize(cross(ww, vec3(0.0, 1.0, 0.0)));
     vec3 vv = cross(uu, ww);
-    
+
     float roll = 0.08 * sin(t * 0.25);
     vec2 ruv = mat2(cos(roll), -sin(roll), sin(roll), cos(roll)) * uv;
     vec3 rd = normalize(ruv.x * uu + ruv.y * vv + 1.2 * ww);
@@ -134,10 +145,11 @@ void main()
     vec3 p;
     float m = 0.0;
     int steps = 0;
-    
+
     for (int i = 0; i < 100; ++i) {
         p = ro + rd * d;
         float ds = map(p, bp);
+        ds = smax(ds, 0.50 - length(p - ro), 0.20);   // camera clearance bubble
         m = hitMat;
         steps = i;
         if (ds < 0.005 * (1.0 + d * 0.05)) break;
@@ -152,32 +164,32 @@ void main()
 
     if (m > 0.5) {
         vec3 n = calcNormal(p, bp);
-        vec3 albedo = vec3(0.1, 0.12, 0.15);
-        
+        vec3 albedo = vec3(0.17, 0.20, 0.25);
+
         // Windows
         vec2 grid = floor(p.xz * 2.0 + p.y * 5.0);
         float wNoise = hash21(grid);
         float window = step(0.7, wNoise);
-        
+
         // Only windows on vertical walls
         float isWall = step(0.9, 1.0 - abs(n.y));
-        
+
         // Animated neon signs
         float neonActive = step(0.95, hash21(floor(p.xz * 0.5 + p.y * 0.2) + floor(t * 2.0)));
         vec3 neonColor = mix(neonBase1, neonBase2, hash21(floor(p.xz)));
-        
-        col = albedo * (0.2 + 0.8 * clamp(dot(n, vec3(0.0, 1.0, 0.0)), 0.0, 1.0));
-        
+
+        col = albedo * (0.55 + 0.45 * clamp(dot(n, vec3(0.0, 1.0, 0.0)), 0.0, 1.0));   // side walls got dot=0 -> near-black canyon
+
         // Add window lights
         col += vec3(0.8, 0.9, 1.0) * window * isWall * (0.3 + 0.7 * audioLevel) * glw * 0.5;
-        
+
         // Add neon signs
         col += neonColor * neonActive * isWall * (1.0 + 2.0 * audioKick) * glw;
-        
+
         // Ambient occlusion
         col *= clamp(1.0 - float(steps) * 0.01, 0.1, 1.0);
     }
-    
+
     // Add traffic streaks (flying cars)
     float trafficDist = 0.0;
     for(int i = 0; i < 4; i++) {

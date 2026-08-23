@@ -64,7 +64,9 @@ void main() {
     float t = audioAdvance * 0.35 * spd;
 
     float r = max(1e-5, length(uv));
-    float a = atan(uv.y, uv.x);
+    // Branch cut rotated to the BOTTOM half-axis (was centre-left); see
+    // InfinitePsychedelicDrosteVortex for why it cannot be removed outright.
+    float a = atan(-uv.x, uv.y);
 
     // Log-polar spiral coordinate: theta_spiral = a - ln(r)/b
     float thetaSpiral = a - (log(r) / sGrowth);

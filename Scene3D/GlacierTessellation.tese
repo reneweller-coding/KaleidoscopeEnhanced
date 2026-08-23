@@ -37,7 +37,7 @@ float glacierHeight(vec2 p, float t, out float crevasse) {
 
     // Mountainous ice cliffs & shelf
     float baseCliff = pow(abs(p.x) / 100.0, 1.8) * 45.0;
-    
+
     // Wave ripples across ice
     float wave1 = sin(p.y * 0.04 - t * 2.0 + p.x * 0.03) * 3.5;
     float wave2 = cos(p.y * 0.02 + t * 1.5 - p.x * 0.05) * 2.5;
@@ -82,8 +82,15 @@ void main() {
 
     // Camera space
     float camH = (camHP > 0.0) ? camHP : 9.0;
-    float swing = sin(time * 0.12) * 15.0;
-    vec3 vp = vec3(x - swing, h - camH, zRel);
+    float swing = sin(time * 0.12) * 5.0;   // was 15: the sweep carried the camera into the valley walls
+    // Ride a smoothed ice height at the camera's own position: a FIXED
+    // altitude sat below the wave crests, so ridges regularly swept through
+    // the lens. Only the audio-free base terms are sampled here -- a kick
+    // must never bump the camera.
+    float camBase = pow(abs(swing) / 100.0, 1.8) * 45.0
+                  + sin(camZ * 0.04 - t * 2.0 + swing * 0.03) * 3.5
+                  + cos(camZ * 0.02 + t * 1.5 - swing * 0.05) * 2.5;
+    vec3 vp = vec3(x - swing, h - (camBase + camH), zRel);
 
     vp.x -= eyeOff;
     gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);

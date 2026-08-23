@@ -53,6 +53,14 @@ vec3 imgPalette(float t) {
     return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
+// Soft-max, used to carve a smooth clearance bubble around the camera out
+// of the distance field: the flight can never clip through geometry -- a
+// would-be collision becomes a soft bulge sliding past the lens.
+float smax(float a, float b, float k) {
+    float h = clamp(0.5 - 0.5 * (a - b) / k, 0.0, 1.0);
+    return mix(a, b, h) + k * h * (1.0 - h);
+}
+
 // Apollonian 3D sphere packing distance estimator
 float mapApollonian(vec3 p, float sphR, out float trapLevel) {
     vec3 q = p;
@@ -144,6 +152,7 @@ void main() {
         vec3 p = ro + rd * totDist;
         float curTrap;
         float d = mapApollonian(p, sphR, curTrap);
+        d = smax(d, 0.40 - length(p - ro), 0.15);   // camera clearance bubble
 
         // minD drives the contact-ring glow, so it has to be a PER-PIXEL
         // signal. Sampling it at i == 0 samples the shared camera position,

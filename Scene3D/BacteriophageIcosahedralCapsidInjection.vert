@@ -180,7 +180,7 @@ void main()
 
         // Depth ladder + frustum placement.
         float rowF  = (ri + 0.5) / MS;
-        float dz    = 7.0 + 66.0 * pow(rowF, 1.6) + 4.0 * (h3 - 0.5);
+        float dz    = 12.0 + 61.0 * pow(rowF, 1.6) + 2.0 * (h3 - 0.5);   // was 7.0 +-2: the front row drifted right into the lens
         float halfH = dz * kTanY;
         float halfW = halfH * aspect;
 

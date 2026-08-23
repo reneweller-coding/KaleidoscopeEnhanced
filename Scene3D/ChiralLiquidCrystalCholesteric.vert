@@ -76,10 +76,10 @@ void main() {
     float yaw = 1.25 + time * 0.12 + audioAdvance * 0.06;
     float cy = cos(yaw), sy = sin(yaw);
     vp.xz = mat2(cy, -sy, sy, cy) * vp.xz;
-    float pit = -0.35 + 0.10 * sin(time * 0.17);
+    float pit = -1.05 + 0.08 * sin(time * 0.17);   // near-top-down: the helix field is a flat sheet, edge-on it was a row of circles
     float cp = cos(pit), sp = sin(pit);
     vp.yz = mat2(cp, -sp, sp, cp) * vp.yz;
-    vp.z += 7.0;
+    vp.z += 8.5;
     vp.x -= eyeOff;
     gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;

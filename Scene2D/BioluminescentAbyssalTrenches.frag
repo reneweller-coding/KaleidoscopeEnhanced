@@ -80,10 +80,16 @@ void main() {
     float luciferinPulse = sin(length(uv) * 12.0 - time * 6.0);
     float bioFlash = exp(-abs(luciferinPulse) * 6.0) * (audioKick * 2.5 + audioSubBass * 1.2);
 
-    // Marine snow particles drifting in the current
-    vec2 snowGrid = floor(uv * 35.0 + vec2(t * 0.5, t * 2.0));
+    // Marine snow as small round motes. The old step(0.96, hash) lit the
+    // ENTIRE grid cell (1/35th of the screen) flat white -- the reported
+    // "giant white pixels". Now each occupied cell holds one soft round
+    // particle at a hashed offset, dimmer and properly tiny.
+    vec2 snowCell = uv * 35.0 + vec2(t * 0.5, t * 2.0);
+    vec2 snowGrid = floor(snowCell);
     float snowHash = hash21(snowGrid);
-    float snowParticle = step(0.96, snowHash) * (0.5 + 1.0 * audioMid);
+    vec2 snowOff = (vec2(hash21(snowGrid + 11.7), hash21(snowGrid + 23.3)) - 0.5) * 0.6;
+    float snowD2 = dot(fract(snowCell) - 0.5 - snowOff, fract(snowCell) - 0.5 - snowOff);
+    float snowParticle = step(0.96, snowHash) * exp(-snowD2 * 110.0) * (0.35 + 0.55 * audioMid);
 
     // Deep-sea color palette: Abyssal Navy, Luciferin Cyan, Siphonophore Emerald, Mineral Vent Amber
     vec3 abyssalNavy = vec3(0.01, 0.03, 0.08);

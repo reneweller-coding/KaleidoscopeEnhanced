@@ -2,9 +2,9 @@
 out vec4 fragColor;
 /**
  * @file DysonSphereCollapse.frag
- * @brief DYSON SPHERE COLLAPSE: A massive metal shell completely encasing a star 
- * is suffering a catastrophic structural failure. The enraged star's plasma 
- * bursts violently through the shattering metal plates, tearing the megastructure 
+ * @brief DYSON SPHERE COLLAPSE: A massive metal shell completely encasing a star
+ * is suffering a catastrophic structural failure. The enraged star's plasma
+ * bursts violently through the shattering metal plates, tearing the megastructure
  * apart in sync with the audio.
  *   audioAdvance -> slow rotation/drift of the crumbling sphere
  *   audioKick    -> massive plasma eruptions blowing off armor plates
@@ -82,118 +82,122 @@ void main()
     float hue = (hueP > 0.01 ? hueP : 0.0);
 
     vec2 uv = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
-    
+
     vec3 col = vec3(0.0);
-    
-    vec3 metalCol = vec3(0.1, 0.12, 0.15); // Dark, heavily armored metal
+
+    vec3 metalCol = vec3(0.30, 0.33, 0.38); // armored metal -- bright enough to read as METAL next to the glowing breaches, not as black holes
     vec3 plasmaCol = imgPalette(0.8 + audioCentroid * 0.1); // Blinding hot star
-    
+    // The palette follows the photo -- on a dark photo the star inside the
+    // shell rendered BLACK, so every blown-off panel read as an ugly hole
+    // ("defekte Normalen"). A star has a floor temperature: keep it hot.
+    plasmaCol = max(plasmaCol, vec3(0.95, 0.52, 0.22) * 0.42);
+
     // We render the sphere filling most of the view
     vec2 sphereCenter = vec2(0.0);
     float sphereRad = 0.8;
     float dist = length(uv - sphereCenter);
-    
+
     // Slow rotation
     float rot = time * 0.1 + audioAdvance * 0.5;
     mat2 rotM = mat2(cos(rot), -sin(rot), sin(rot), cos(rot));
-    
+
     if (dist < sphereRad) {
         // Map 2D to 3D sphere
         float z = sqrt(max(0.0, sphereRad * sphereRad - dist * dist));
         vec3 p3 = vec3(uv.x, uv.y, z);
-        
+
         // Apply rotation
         p3.xz = rotM * p3.xz;
         p3.yz = mat2(cos(0.3), -sin(0.3), sin(0.3), cos(0.3)) * p3.yz;
-        
+
         // 1. The Metal Structure (Hexagonal or Grid-like panels)
         // We use a Voronoi-like cell pattern for the panels
         vec3 cellP = p3 * 8.0;
         vec3 iCell = floor(cellP);
         vec3 fCell = fract(cellP);
-        
+
         float cellHash = hash11(iCell.x * 12.3 + iCell.y * 45.6 + iCell.z * 78.9);
-        
+
         // Create panel edges
         float edges = step(0.9, max(fCell.x, max(fCell.y, fCell.z)));
         float panels = 1.0 - edges;
-        
+
         // Add structural ribbing (fbm)
         float ribbing = fbm(p3 * 20.0);
         vec3 surfaceCol = metalCol * (0.5 + ribbing * 0.5);
-        
+
         // Lighting on the metal from ambient space
-        float lightFront = 0.5 + 0.5 * z / sphereRad;
+        float lightFront = 0.62 + 0.38 * z / sphereRad;
         surfaceCol *= lightFront;
-        
+
         // 2. The Catastrophic Damage
         // Large chaotic fractures breaking the grid structure
         float fracture = fbm(p3 * 3.0 + time * 0.1);
-        
+
         // Probability of a panel being completely blown off
         float blownOff = step(0.7 - dp * 0.2, cellHash + fracture * 0.5);
-        
+
         // If a panel is missing or there's a deep fracture, the star shines through
         float holeMask = max(blownOff, smoothstep(0.8 - dp * 0.2, 0.9, fracture));
-        
+
         if (holeMask > 0.0) {
             // Looking at the star inside
             // Deep plasma noise
             float internalPlasma = fbm(vec3(p3 * 5.0 - vec3(0.0, time * 2.0, 0.0)));
-            
+
             // Brightness spikes with audio kicks
             float kickSpike = step(0.8, hash11(cellHash * 100.0 + floor(time * 8.0)));   // was 10 Hz
             float intensity = 1.0 + (kickSpike * audioKick * 10.0 * fp);
-            
+
             // Blinding heat
-            surfaceCol = mix(surfaceCol, plasmaCol * (1.0 + internalPlasma) * intensity * (1.0 + audioSwell * 2.0), holeMask);
-            
+            surfaceCol = mix(surfaceCol, plasmaCol * (1.0 + internalPlasma) * intensity * (0.7 + audioSwell * 1.1), holeMask);   // was 1.0+swell*2: with the hot plasma floor the sphere washed out to near-white
+
             // The metal edges of the hole are melting/glowing red hot
             float meltEdge = smoothstep(0.0, 0.1, holeMask);
             surfaceCol += plasmaCol * meltEdge * 0.5 * (1.0 + audioSwell);
         }
-        
+
         // Limb darkening for the sphere
         float limb = smoothstep(sphereRad, sphereRad * 0.7, dist);
         col += surfaceCol * limb;
-        
+
     } else {
         // Deep space outside the sphere
         float bg = hash11(dot(floor(uv * 100.0), vec2(12.3, 45.6)));
         if (bg > 0.99) col += vec3(1.0) * (0.1 + audioSwell * 0.1);
     }
-    
+
     // 3. Erupting Solar Flares escaping through the cracks
     // We project flares outwards from the center, masked by the holes in the sphere
     float angle = atan(uv.y, uv.x);
-    
+
     // Create a 3D coordinate on the edge of the sphere based on angle to check if there's a hole
     vec3 edgeP3 = vec3(cos(angle) * sphereRad, sin(angle) * sphereRad, 0.0);
     edgeP3.xz = rotM * edgeP3.xz;
     edgeP3.yz = mat2(cos(0.3), -sin(0.3), sin(0.3), cos(0.3)) * edgeP3.yz;
-    
+
     float edgeFracture = fbm(edgeP3 * 3.0 + time * 0.1);
     vec3 edgeICell = floor(edgeP3 * 8.0);
     float edgeCellHash = hash11(edgeICell.x * 12.3 + edgeICell.y * 45.6 + edgeICell.z * 78.9);
     float edgeBlownOff = step(0.7 - dp * 0.2, edgeCellHash + edgeFracture * 0.5);
     float edgeHoleMask = max(edgeBlownOff, smoothstep(0.8 - dp * 0.2, 0.9, edgeFracture));
-    
+
     if (dist > sphereRad - 0.05 && edgeHoleMask > 0.0) {
         // A massive plasma jet escaping this hole
         // Noise for the jet shape
         float flareNoise = fbm(vec3(angle * 5.0, dist * 5.0 - time * 5.0, 0.0));
-        
+
         // The flare gets weaker further out
         float flareFalloff = exp(-(dist - sphereRad) * (10.0 / fp));
-        
+
         // Flash on kick
         float jetSpike = step(0.95, hash11(floor(angle * 5.0) + floor(time * 5.0)));
         float jetIntensity = 1.0 + (jetSpike * audioKick * 10.0 * fp);
-        
+
         float flare = smoothstep(0.3, 0.8, flareNoise) * flareFalloff * edgeHoleMask;
         col += plasmaCol * flare * jetIntensity * (1.0 + audioSwell);
     }
-    
+
     // Overwhelming glare from the failing containment
     float totalGlare = exp(-dist * 1.5);
     col += plasmaCol * totalGlare * 0.2 * (1.0 + audioSwell * 0.5) * fp * dp;

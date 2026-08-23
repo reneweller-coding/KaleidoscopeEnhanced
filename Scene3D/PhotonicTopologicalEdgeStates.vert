@@ -106,13 +106,15 @@ void main()
 
     // Engine Camera Transformation (V3)
     vec3 vp = worldPos;
-    vp.z += 2.9;   // the lattice filled barely a third of the frame
-    vp.x -= eyeOff;
-
-    // Tilt slightly for isometric view
+    // Tilt FIRST, about the lattice's own centre: the old order tilted the
+    // already-dollied scene about the camera origin, which shifted the whole
+    // structure DOWN by dolly*sin(tilt) (~1 unit) -- the reported "black at
+    // the top" with the lattice cropped at the bottom edge.
     float tilt = 0.35;
     float c = cos(tilt), s = sin(tilt);
     vp = vec3(vp.x, vp.y * c - vp.z * s, vp.y * s + vp.z * c);
+    vp.z += 3.5;
+    vp.x -= eyeOff;
 
     gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;

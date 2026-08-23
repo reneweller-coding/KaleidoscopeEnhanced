@@ -63,7 +63,12 @@ void main() {
     float t = audioAdvance * 0.35 * spd;
 
     float r = max(1e-5, length(uv));
-    float a = atan(uv.y, uv.x);
+    // atan's branch cut = the visible Droste seam. atan(y,x) puts it on
+    // the LEFT half-axis (mid-screen); this argument order puts it at the
+    // BOTTOM, where the eye forgives it. (Fully removing it would need
+    // integer-quantised twist alpha -- the classic Escher condition --
+    // which would kill the continuous audio modulation of the spiral.)
+    float a = atan(-uv.x, uv.y);
 
     // Logarithmic conformal Droste mapping: w = ln(r) + i * theta
     float lnR = log(r);

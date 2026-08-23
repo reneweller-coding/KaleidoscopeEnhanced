@@ -112,7 +112,7 @@ void main() {
 
     // Raymarching setup
     vec3 ro = vec3(0.0, 0.0, -2.4);
-    vec3 rd = normalize(vec3(uv, 1.2 - 0.25 * audioKick));
+    vec3 rd = normalize(vec3(uv, 1.2));   // was 1.2 - 0.25*audioKick: the FOV lurched on every kick
 
     rd.yz = rot2D(sin(t * 0.4) * 0.3) * rd.yz;
     rd.xz = rot2D(t * 0.5) * rd.xz;
@@ -127,6 +127,9 @@ void main() {
 
         vec2 field = fieldAt(p);
         float dS = field.r;
+        // Camera clearance: the morphing set can swell right up to the
+        // (fixed) camera -- keep a free bubble instead of clipping into it.
+        dS = max(dS, 0.35 - length(p - ro));
         trapMin = min(trapMin, field.g);
 
         if (dS < 0.003) {

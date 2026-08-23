@@ -72,6 +72,14 @@ float hash3D(vec3 p) {
 }
 
 // Signed Distance Field for Crystal Lattice Box with Facet Beveling
+// Soft-max, used to carve a smooth clearance bubble around the camera out
+// of the distance field: the flight can never clip through geometry -- a
+// would-be collision becomes a soft bulge sliding past the lens.
+float smax(float a, float b, float k) {
+    float h = clamp(0.5 - 0.5 * (a - b) / k, 0.0, 1.0);
+    return mix(a, b, h) + k * h * (1.0 - h);
+}
+
 float mapLattice(vec3 p, float fDensity, float shatter) {
     vec3 gridPos = floor(p * fDensity);
     vec3 localPos = fract(p * fDensity) - 0.5;
@@ -87,7 +95,12 @@ float mapLattice(vec3 p, float fDensity, float shatter) {
 
     // Bevel cut
     float planeBevel = dot(localPos, normalize(vec3(1.0))) - (0.42 + 0.05 * audioBass);
-    return max(boxSDF, planeBevel) / fDensity;
+    float lat = max(boxSDF, planeBevel) / fDensity;
+    // The lattice fills ALL of space; the orbiting camera (r = 3) sat
+    // permanently inside a crystal, so every frame was one facet's flat
+    // interior. Carve a spherical chamber around the orbit: the camera
+    // now circles inside a crystal hall whose walls ARE the grid.
+    return smax(lat, 6.2 - length(p), 0.22);   // wall further out + sharper blend: the crystal FACETS survive instead of melting into one sheet
 }
 
 vec3 calcNormal(vec3 p, float fDensity, float shatter) {
@@ -112,7 +125,7 @@ void main() {
 
     // Dynamic rotation matrices driven by time and audio
     float rotX = time * 0.2 + audioAdvance * 0.15;
-    float rotY = time * 0.25 + audioMid * 0.5;
+    float rotY = time * 0.25 + audioAdvance * 0.12;   // was + audioMid*0.5: the camera angle jittered with the mid band
     mat2 rx = mat2(cos(rotX), sin(rotX), -sin(rotX), cos(rotX));
     mat2 ry = mat2(cos(rotY), sin(rotY), -sin(rotY), cos(rotY));
 

@@ -88,8 +88,8 @@ void main()
         vec2 grid = floor(uv * 2.0);
         albedo *= 0.8 + 0.2 * hash21(grid);
         
-        col = albedo * (0.2 + dif);
-        col += albedo * fill * 0.1;
+        col = albedo * (0.5 + dif * 1.3);   // lifted: first-ever calibrated exposure -- the scene never rendered before the wrap-sign fix
+        col += albedo * fill * 0.25;
         
         // Warning lights / windows
         float window = step(0.8, hash21(grid + vCol.xy));
@@ -106,8 +106,8 @@ void main()
         float rockNoise = fract(sin(dot(p, vec3(12.9898, 78.233, 45.164))) * 43758.5453);
         albedo *= 0.5 + 0.5 * rockNoise;
         
-        col = albedo * (0.1 + dif);
-        col += albedo * fill * 0.05;
+        col = albedo * (0.4 + dif * 1.2);
+        col += albedo * fill * 0.18;
         
         // Laser scorch marks or glowing ores
         float ore = step(0.95, rockNoise);

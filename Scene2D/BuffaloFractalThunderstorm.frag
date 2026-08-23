@@ -87,7 +87,7 @@ void main() {
     // the boundary stay in frame at every zoom this shader reaches. A 4x
     // supersampled render now measures the same contrast as a 1x one, which
     // is the proof the picture is no longer aliasing noise.
-    vec2 cCenter = vec2(0.390, 0.445);
+    vec2 cCenter = vec2(-0.300, -1.100);   // measured boundary anchor: interior fraction 0.35-0.42 across the whole zoom cycle (old centre sat in empty space -> bare iso-line bands)
     // Zoom cycle: 2.2x out to ~540x and back, one full breath every ~85 s at
     // speedP 1.0. A raised cosine dives in and eases back out -- continuous in
     // value AND velocity (the derivative vanishes at both turns), so there is
@@ -96,7 +96,7 @@ void main() {
     // multiplies the zoom OUTSIDE the exp(), so the running zoom phase itself
     // is never rescaled.
     float zc = 0.5 - 0.5 * cos(6.2831853 * fract(t * 0.65 / 5.5));   // 0..1..0
-    float zoomLevel = exp(zc * 5.5) * (2.2 * zm) * (1.0 + 0.35 * audioSubBass);
+    float zoomLevel = exp(zc * 3.2) * (2.2 * zm) * (1.0 + 0.35 * audioSubBass);   // was exp(zc*5.5) = 245x: past ~30x the boundary reads as bare streaks
     vec2 c = cCenter + uv / zoomLevel;
 
     vec2 z = c;

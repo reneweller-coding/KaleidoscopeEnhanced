@@ -40,30 +40,25 @@ void main()
     // the nearby slice close to the origin (see DysonSphereCore.vert /
     // TachyonCommRelay.vert).
     //
-    // RenderDoc frame capture found the actual bug: the ring radius here was
-    // 60-100. The draw call itself was fine (176400 vertices submitted,
-    // confirmed via capture) -- everything was just landing outside the
-    // camera's frustum at the depths this camZ-wrap/cull formula keeps in
-    // view, so nothing ever rasterized. Confirmed empirically (rebuild-free,
-    // since .vert/.frag are loaded at runtime): radius 0 renders fine,
-    // radius 15-50 was STILL invisible, radius 2-10 renders reliably --
-    // this camera's usable cone at the wrap's depth range is much tighter
-    // than TachyonCommRelay's own ring radius (30-75) would suggest (that
-    // scene reads as "working" mainly because of its always-visible on-axis
-    // spire, not because its rings are actually easy to see). Kept the ring
-    // shape but pulled it in to a radius this camera can actually see.
+    // HISTORY: a RenderDoc capture proved the draw call was fine while
+    // nothing rasterised; only radius 2-10 ever produced pixels. The REAL
+    // reason (found later via SpaceElevator) was the wrap-sign bug below --
+    // everything except a 2-unit-thin slice sat BEHIND the camera, and only
+    // near-axis instances ever crossed that slice inside the frustum. With
+    // the wrap fixed the visible depth is a real 1.5..170, so the tunnel
+    // can be an actual tunnel again.
     float theta = r1 * 6.2831853;
-    float r = 2.0 + r2 * 10.0;
+    float r = 16.0 + r2 * 18.0;
     float zPos = (r3 - 0.5) * 400.0;
 
     vec3 centre = vec3(r * cos(theta), r * sin(theta) * 0.4, zPos);
-    
+
     // Is this a base module or an asteroid?
     float isBase = step(0.85, r4);
-    
+
     vec3 scale;
     mat3 rotMat;
-    
+
     if (isBase > 0.5) {
         // Tech structures: sharp blocks, solar panels, hab modules
         float type = fract(r1 * 123.456);
@@ -74,7 +69,7 @@ void main()
         } else {
             scale = vec3(1.0, 8.0, 1.0) * (1.0 + r2); // spire
         }
-        
+
         // Face inward, toward the flight path down the tunnel's axis.
         vec3 outward = normalize(vec3(cos(theta), sin(theta) * 0.4, 0.0));
         vec3 forward = -outward;
@@ -85,14 +80,14 @@ void main()
         // Asteroids: irregular, tumbling
         scale = vec3(4.0, 4.0, 4.0) * (1.0 + r2 * 2.0);
         scale *= vec3(1.0, 0.6 + 0.8 * r1, 0.7 + 0.6 * r3);
-        
+
         float a1 = time * (0.1 + r1 * 0.2) + r2 * 6.28;
         float a2 = time * (0.05 + r2 * 0.2) + r3 * 6.28;
-        
+
         vec3 right = vec3(cos(a1), -sin(a1), 0.0);
         vec3 up = vec3(sin(a1), cos(a1), 0.0);
         vec3 forward = vec3(0.0, 0.0, 1.0);
-        
+
         // simple rotation
         rotMat = mat3(
             cos(a2), 0.0, sin(a2),
@@ -103,17 +98,18 @@ void main()
 
     vec3 localPos = attrA.xyz * scale;
     vec3 world = centre + rotMat * localPos;
-    
-    // Camera flies straight along Z; wrap the tunnel so the slice near the
-    // camera stays close to local origin -- the camZ/wrap/cull formula
-    // TachyonCommRelay.vert uses for the same ring-around-a-travel-axis
-    // shape. This part was always correct (verified byte-identical to
-    // Tachyon's working version via RenderDoc capture); the bug was the
-    // radius above.
-    float camZ = time * 8.0 + audioAdvance * 15.0;
-    world.z = mod(world.z - camZ + 100.0, 200.0) - 100.0;
 
-    if (world.z > 2.0 || world.z < -180.0)
+    // Camera flies straight along Z; wrap the tunnel so the slice near the
+    // camera stays close to local origin.
+    float camZ = time * 8.0 + audioAdvance * 15.0;
+    // WRAP-SIGN FIX (root cause of this scene's black frames, found via
+    // SpaceElevator): projM is handed `-vp.z`, so only world.z > 0 is in
+    // front of the camera -- the old [-180, 2] band kept everything except
+    // a 2-unit slice BEHIND the lens (a hardcoded-magenta fragment stayed
+    // black because nothing was ever rasterised). Wrap AHEAD instead.
+    world.z = mod(world.z - camZ, 200.0);
+
+    if (world.z < 1.5 || world.z > 170.0)
     {
         gl_Position = vec4(0.0, 0.0, -3.0, 1.0);
         vCol = vec4(0.0); vCorner = attrA.xyz;

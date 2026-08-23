@@ -35,19 +35,19 @@ void main()
 
     // Relay is formed by several massive rings and a central spire
     float isSpire = step(0.8, r4);
-    
+
     vec3 scale;
     vec3 centre;
     mat3 rotMat;
-    
+
     float spin = time * 0.2 + audioAdvance * 0.5;
-    
+
     if (isSpire > 0.5) {
         // Central spire, long along Z axis
         scale = vec3(2.0, 2.0, 10.0) * (1.0 + r1);
         float z = (r2 - 0.5) * 200.0;
         centre = vec3(0.0, 0.0, z);
-        
+
         rotMat = mat3(
             cos(spin), -sin(spin), 0.0,
             sin(spin), cos(spin), 0.0,
@@ -58,31 +58,36 @@ void main()
         float ringId = floor(r3 * 4.0); // 4 distinct rings
         float radius = 30.0 + ringId * 15.0;
         float z = (r3 - 0.5) * 80.0;
-        
+
         float theta = r1 * 6.2831853 + spin * (ringId * 0.5 + 1.0) * (mod(ringId, 2.0) > 0.5 ? 1.0 : -1.0);
-        
+
         centre = vec3(radius * cos(theta), radius * sin(theta), z);
         scale = vec3(4.0, 1.0, 4.0) * (1.0 + r2 * 2.0);
-        
+
         // Orient ring segments
         vec3 forward = vec3(0.0, 0.0, 1.0);
         vec3 up = normalize(vec3(-cos(theta), -sin(theta), 0.0)); // face center
         vec3 right = cross(up, forward);
-        
+
         rotMat = mat3(right, up, forward);
     }
 
     vec3 localPos = attrA.xyz * scale;
     vec3 world = centre + rotMat * localPos;
-    
+
     // Camera travels slowly along the Z axis inside the rings
     float camZ = time * 8.0 + audioAdvance * 15.0;
-    
+
     // Wrap around for infinite relay
-    world.z = mod(world.z - camZ + 100.0, 200.0) - 100.0;
-    
+    // WRAP-SIGN FIX (root cause of this scene's black frames, found via
+    // SpaceElevator): projM is handed `-vp.z`, so only world.z > 0 is in
+    // front of the camera -- the old [-180, 2] band kept everything except
+    // a 2-unit slice BEHIND the lens (a hardcoded-magenta fragment stayed
+    // black because nothing was ever rasterised). Wrap AHEAD instead.
+    world.z = mod(world.z - camZ, 200.0);
+
     // Cull things behind camera or too far
-    if (world.z > 2.0 || world.z < -180.0)
+    if (world.z < 1.5 || world.z > 170.0)
     {
         gl_Position = vec4(0.0, 0.0, -3.0, 1.0);
         vCol = vec4(0.0); vCorner = attrA.xyz;

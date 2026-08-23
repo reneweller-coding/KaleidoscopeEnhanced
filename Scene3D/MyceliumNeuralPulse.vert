@@ -62,10 +62,10 @@ void main() {
     float oyaw = time * 0.12 + audioAdvance * 0.07;
     float ocy = cos(oyaw), osy = sin(oyaw);
     vp.xz = mat2(ocy, -osy, osy, ocy) * vp.xz;
-    float opit = -0.25 + 0.10 * sin(time * 0.11);
+    float opit = -1.00 + 0.08 * sin(time * 0.11);   // look down onto the mycelium mat instead of into the tangle
     float opc = cos(opit), ops = sin(opit);
     vp.yz = mat2(opc, -ops, ops, opc) * vp.yz;
-    vp.z += 4.5;
+    vp.z += 6.5;
     vp.x -= eyeOff;
 
     gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);

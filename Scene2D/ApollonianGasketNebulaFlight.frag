@@ -140,6 +140,14 @@ vec3 calcNormal(vec3 p, float s) {
                           mapD(p + e.yyx, s) - mapD(p - e.yyx, s)));
 }
 
+// Soft-max, used to carve a smooth clearance bubble around the camera out
+// of the distance field: the flight can never clip through geometry -- a
+// would-be collision becomes a soft bulge sliding past the lens.
+float smax(float a, float b, float k) {
+    float h = clamp(0.5 - 0.5 * (a - b) / k, 0.0, 1.0);
+    return mix(a, b, h) + k * h * (1.0 - h);
+}
+
 float hash21(vec2 p) {
     p = fract(p * vec2(123.34, 456.21));
     p += dot(p, p + 45.32);
@@ -214,6 +222,9 @@ void main() {
         vec3 p = ro + rd * totDist;
         float curTrap;
         float d = mapApollonian(p, s, curTrap);
+        // Camera clearance bubble (see smax above): the diagonal course
+        // regularly punched straight through shells before this.
+        d = smax(d, 0.42 - length(p - ro), 0.15);
         float ad = abs(d);
         minD = min(minD, ad);
         marched = float(i);

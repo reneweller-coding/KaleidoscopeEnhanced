@@ -2,8 +2,8 @@
 out vec4 fragColor;
 /**
  * @file SolarFlareSurfing.frag
- * @brief SOLAR FLARE SURFING: Extreme close-up flight over the turbulent 
- * surface of a star. Massive solar flares and plasma prominences loop 
+ * @brief SOLAR FLARE SURFING: Extreme close-up flight over the turbulent
+ * surface of a star. Massive solar flares and plasma prominences loop
  * overhead, reacting violently to the beat.
  *   audioAdvance -> flight speed over the stellar surface
  *   audioKick    -> explosive solar flares erupting upwards
@@ -75,26 +75,37 @@ float fbm(vec3 p) {
 }
 
 // Map function for the stellar surface and flares
+// Soft-max, used to carve a smooth clearance bubble around the camera out
+// of the distance field: the flight can never clip through geometry -- a
+// would-be collision becomes a soft bulge sliding past the lens.
+float smax(float a, float b, float k) {
+    float h = clamp(0.5 - 0.5 * (a - b) / k, 0.0, 1.0);
+    return mix(a, b, h) + k * h * (1.0 - h);
+}
+
 float map(vec3 p, float wp, float fp) {
     // Base surface (turbulent plasma)
     float d = p.y + 2.0;
-    d -= fbm(p * 0.5 - vec3(0.0, 0.0, time * 2.0)) * 1.5 * wp * (1.0 + audioSwell);
-    
+    // was * 1.5 * wp * (1 + audioSwell): the product reached ~4.5 and the
+    // plasma sea swallowed the camera on every swell -- audio now ADDS a
+    // bounded term instead of multiplying the whole amplitude.
+    d -= fbm(p * 0.5 - vec3(0.0, 0.0, time * 2.0)) * (1.15 * wp + 0.8 * audioSwell);
+
     // Solar flares (arcing tubes of plasma)
     vec3 q = p;
     q.z = mod(q.z, 20.0) - 10.0;
     q.x = mod(q.x, 20.0) - 10.0;
-    
+
     // Arch shape
     float arch = length(vec2(length(q.xz) - 5.0, p.y - 2.0)) - 0.5;
     arch -= fbm(p * 2.0 + vec3(time * 5.0)) * 0.5; // noisy flare
-    
+
     // Only show arches based on hash and flareP
     float id = hash11(floor(p.z / 20.0) * 11.3 + floor(p.x / 20.0) * 17.7);
     if (id < 0.3 * fp) {
         d = min(d, arch);
     }
-    
+
     return d;
 }
 
@@ -116,14 +127,14 @@ void main()
     vec2 uv = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
     float drift = time * 8.0 + audioAdvance * 25.0;
-    
-    vec3 ro = vec3(0.0, 2.0 + sin(time * 0.5) * 0.5, drift);
+
+    vec3 ro = vec3(0.0, 2.6 + 0.4 * sin(time * 0.5), drift);
     vec3 ta = ro + vec3(0.0, -0.2, 1.0);
-    
+
     vec3 ww = normalize(ta - ro);
     vec3 uu = normalize(cross(ww, vec3(0.0, 1.0, 0.0)));
     vec3 vv = cross(uu, ww);
-    
+
     float roll = 0.1 * sin(time * 0.3);
     vec2 ruv = mat2(cos(roll), -sin(roll), sin(roll), cos(roll)) * uv;
     vec3 rd = normalize(ruv.x * uu + ruv.y * vv + 1.5 * ww);
@@ -131,11 +142,12 @@ void main()
     float d = 0.0;
     vec3 p;
     float m = 0.0;
-    
+
     // Primary raymarch for surface
     for (int i = 0; i < 70; ++i) {
         p = ro + rd * d;
         float ds = map(p, wp, fp);
+        ds = smax(ds, 0.55 - length(p - ro), 0.20);   // camera clearance bubble (arch fly-throughs become soft passes)
         if (ds < 0.01 * (1.0 + d * 0.05)) {
             m = 1.0;
             break;
@@ -143,29 +155,29 @@ void main()
         d += ds * 0.7;
         if (d > 100.0) break;
     }
-    
+
     vec3 colorBase = imgPalette(0.1 + audioCentroid * 0.2); // deep red/orange
     vec3 colorHot = imgPalette(0.8 + audioKick * 0.1);      // bright yellow/white
-    
+
     vec3 col = vec3(0.0);
-    
+
     if (m > 0.5) {
         vec3 n = calcNormal(p, wp, fp);
-        
+
         // Heat map based on height and normal
         float heat = smoothstep(-2.0, 3.0, p.y) + (1.0 - max(dot(n, vec3(0.0, 1.0, 0.0)), 0.0));
         heat += fbm(p * 1.0) * 0.5;
-        
+
         col = mix(colorBase, colorHot, clamp(heat, 0.0, 1.0));
-        
+
         // Brighten peaks and flares
         col *= 1.0 + max(p.y, 0.0) * 0.5;
-        
+
         // Audio kick explosion on the surface
         float flash = step(0.9, hash11(floor(p.x * 2.0) + floor(p.z * 2.0) + floor(time * 5.0)));
         col += colorHot * flash * audioKick * 3.0;
     }
-    
+
     // Volumetric corona (glow above surface)
     float corona = 0.0;
     vec3 cp = ro;
@@ -180,7 +192,7 @@ void main()
         cp += rd * stepSize;
     }
     col += mix(colorBase, colorHot, 0.5) * corona;
-    
+
     // Fade to dark space/deep corona far away
     col = mix(col, colorBase * 0.1, exp(-d * 0.02));
 

@@ -73,6 +73,14 @@ mat2 rot2D(float a) {
 }
 
 // 3D Apollonian sphere packing distance estimator
+// Soft-max, used to carve a smooth clearance bubble around the camera out
+// of the distance field: the flight can never clip through geometry -- a
+// would-be collision becomes a soft bulge sliding past the lens.
+float smax(float a, float b, float k) {
+    float h = clamp(0.5 - 0.5 * (a - b) / k, 0.0, 1.0);
+    return mix(a, b, h) + k * h * (1.0 - h);
+}
+
 float apollonianSDF(vec3 p, float gsk, float frc, out float trap) {
     float scale = 1.0;
     trap = 1e5;
@@ -110,18 +118,13 @@ void main() {
     // stay readable (the old path sat deep inside the fold, where every ray
     // hit within a step or two and the picture collapsed into noise).
     vec3 ro = vec3(0.25 * sin(t * 0.5), 0.62 + 0.10 * sin(t * 0.33), t * 0.55);
-    vec3 rd = normalize(vec3(uv, 1.35 - 0.20 * audioKick));
+    vec3 rd = normalize(vec3(uv, 1.35));   // was 1.35 - 0.20*audioKick: FOV jumped on every kick
     rd.yz = rot2D(0.22 * sin(t * 0.27)) * rd.yz;
     rd.xz = rot2D(t * 0.15) * rd.xz;
 
-    // If the corridor start sits inside foam for this gasketP, walk free.
-    {
-        float e0;
-        for (int e = 0; e < 8; ++e) {
-            if (apollonianSDF(ro * gsk, gsk, frc, e0) > 0.01) break;
-            ro.z += 0.30;
-        }
-    }
+    // (The old discrete "walk free" loop teleported the camera in 0.3-unit
+    // jumps whenever the corridor closed -- replaced by the smax clearance
+    // bubble in the march below, which is continuous by construction.)
     float dO = 0.0;
     float hitDist = -1.0;
     float trapMin = 1e5;
@@ -132,6 +135,7 @@ void main() {
         vec3 p = ro + rd * dO;
         float curTrap;
         float dS = apollonianSDF(p * gsk, gsk, frc, curTrap);
+        dS = smax(dS, 0.38 - length(p - ro), 0.12);   // camera clearance bubble
         trapMin = min(trapMin, curTrap);
         steps = i;
 

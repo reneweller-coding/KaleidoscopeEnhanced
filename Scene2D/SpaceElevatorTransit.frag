@@ -2,8 +2,8 @@
 out vec4 fragColor;
 /**
  * @file SpaceElevatorTransit.frag
- * @brief SPACE ELEVATOR TRANSIT: A high-speed ascent up a colossal space elevator 
- * tether. The camera looks out from a glass transit pod, watching the glowing 
+ * @brief SPACE ELEVATOR TRANSIT: A high-speed ascent up a colossal space elevator
+ * tether. The camera looks out from a glass transit pod, watching the glowing
  * planetary surface curve away below while massive orbital structures loom above.
  *   audioAdvance -> ascent speed of the elevator pod
  *   audioKick    -> flashes from passing structural rings and transit lights
@@ -81,111 +81,118 @@ void main()
     float hue = (hueP > 0.01 ? hueP : 0.0);
 
     vec2 uv = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
-    
+
     // We are looking downwards towards the planet surface while traveling UP the tether (Z axis)
     // Actually, looking slightly angled: Y is up/down the tether, X is side, Z is out window
-    
+
     vec3 col = vec3(0.0);
-    
+
     vec3 cityColor = imgPalette(0.8 + audioCentroid * 0.1); // Warm city lights
     vec3 structColor = imgPalette(0.2); // Cold metal of the elevator
     vec3 neonColor = imgPalette(0.5); // Elevator interior/exterior lights
-    
+
     float transitSpeed = time * 5.0 * sp + audioAdvance * 10.0 * sp;
-    
+
     // 1. The Planet Below
     // The planet is a massive sphere taking up the lower portion of the view
     // We approximate it with a large circle, but moving slightly away
     vec2 planetCenter = vec2(0.0, -1.5);
     float planetRadius = 1.4;
     float distToPlanet = length(uv - planetCenter);
-    
+
     if (distToPlanet < planetRadius) {
         // Surface
         vec2 pUv = (uv - planetCenter) * 2.0;
-        
+
         // City light grid
         // We project it onto a sphere-like surface
         float sphereZ = sqrt(max(0.0, 1.0 - dot(pUv, pUv)));
         vec3 sphereNorm = vec3(pUv, sphereZ);
-        
+
         // Parallax effect as we move up
         vec3 projP = sphereNorm * 5.0;
         projP.y -= time * 0.2; // Slow rotation of the planet
-        
+
         float cityDetail = fbm(projP * 10.0);
         float grid = step(0.8, sin(projP.x * 50.0)) * step(0.8, sin(projP.y * 50.0));
-        
+
         float lights = cityDetail * grid * cp;
-        
+
         // Atmospheric scattering (limb darkening/brightening)
         float atmos = smoothstep(0.8, 1.0, length(pUv));
-        
+
         vec3 surfaceCol = cityColor * lights * (0.2 + audioSwell * 0.8);
         surfaceCol = mix(surfaceCol, vec3(0.1, 0.2, 0.5) * (0.5 + audioSwell), atmos); // blueish atmosphere edge
-        
+
         col += surfaceCol;
     } else {
         // Atmospheric halo
         float halo = exp(-(distToPlanet - planetRadius) * 20.0);
         col += vec3(0.1, 0.2, 0.5) * halo * (0.5 + audioSwell);
-        
+
         // Deep space background
         float bg = hash11(dot(floor(uv * 100.0), vec2(12.3, 45.6)));
         if (bg > 0.98) {
             col += vec3(1.0) * (0.2 + audioSwell * 0.2);
         }
     }
-    
+
     // 2. The Elevator Tether and passing structures
     // The tether is a massive vertical pillar just outside the window (maybe off to the side)
-    float tetherX = -0.6;
-    float tetherWidth = 0.2;
+    float tetherX = -0.68;
+    float tetherWidth = 0.13;
     float distToTether = abs(uv.x - tetherX);
-    
+
     if (distToTether < tetherWidth) {
         // We are looking at the central pillar sliding down incredibly fast
-        float slideY = uv.y * 10.0 + transitSpeed;
-        
+        float slideY = uv.y * 4.0 + transitSpeed;   // was *10: structure blurred into a smear
+
         // Horizontal structural rings passing by
         float rings = step(0.9, fract(slideY * 0.5));
         float panels = fbm(vec3(uv.x * 50.0, slideY, 0.0));
         
-        vec3 localTether = mix(structColor * 0.5, structColor, panels);
+        vec3 localTether = mix(max(structColor, vec3(0.22)) * 0.5, max(structColor, vec3(0.22)), panels);
         
-        // Lighting
-        float cylinderShade = sin((uv.x - tetherX) / tetherWidth * 1.57);
-        localTether *= (0.5 + 0.5 * cylinderShade);
-        
+        // Cylindrical shading: cos() is symmetric about the tether axis --
+        // the old sin() went NEGATIVE on the left half and blacked it out.
+        float cylinderShade = cos((uv.x - tetherX) / tetherWidth * 1.57);
+        localTether *= (0.40 + 0.60 * max(cylinderShade, 0.0));
+        // Structural rings (computed before, never drawn).
+        localTether = mix(localTether, max(structColor, vec3(0.3)) * 1.5, rings * 0.6);
+        // A passing elevator car: a bright pod sliding along the tether.
+        float carPhase = fract(transitSpeed * 0.03);
+        float car = exp(-pow((uv.y - (carPhase * 2.4 - 1.2)) * 6.0, 2.0));
+        localTether += neonColor * car * (1.2 + audioKick * 1.5);
+
         // Neon tracking lights sliding past
         float trackLight = step(0.98, fract(slideY * 0.1)) * step(tetherWidth * 0.8, distToTether);
         localTether += neonColor * trackLight * (2.0 + audioKick * 5.0);
-        
+
         // Add passing support beams overlapping the tether
         float beam = step(0.95, fract(slideY * 0.05));
         localTether = mix(localTether, structColor * 0.2, beam);
-        
+
         col = localTether;
     }
-    
+
     // 3. Interior of our transit pod (framing the view)
     // Frame at the top and right
     float frameTop = smoothstep(0.45, 0.5, uv.y);
     float frameRight = smoothstep(0.7, 0.8, uv.x);
     float frameLeft = smoothstep(-0.8, -0.9, uv.x);
     float frame = max(frameTop, max(frameRight, frameLeft));
-    
+
     if (frame > 0.0) {
         vec3 frameCol = structColor * 0.1; // dark interior
-        
+
         // Reflection of neon lights on the glass
         float reflection = step(0.98, fract((uv.y * 10.0 + transitSpeed) * 0.1)) * (1.0 - frame);
         col += neonColor * reflection * 0.5 * (1.0 + audioKick);
-        
+
         // Mix frame
         col = mix(col, frameCol, frame);
     }
-    
+
     // Speed lines (optical illusion of high speed particles/dust outside the window)
     float speedDust = hash11(dot(floor(vec2(uv.x * 50.0, uv.y * 10.0 + transitSpeed * 2.0)), vec2(1.2, 3.4)));
     if (speedDust > 0.99 && frame == 0.0) {

@@ -75,15 +75,16 @@ void main()
     // S-curve that grows more pronounced toward the tip (organic, not a
     // straight spike).
     vec3 dir0 = normalize(vec3(h1 - 0.5, 0.35 + 0.55 * h2, h3 - 0.5));
-    float branchLen = 9.0 + 7.0 * h4;
+    float branchLen = 7.5 + 5.5 * h4;   // slightly shorter so full bloom stays in frame
     vec3 along = dir0 * s * branchLen;
     vec3 perp  = normalize(cross(dir0, vec3(0.0, 1.0, 0.0) + vec3(0.001)));
     vec3 up2   = cross(perp, dir0);
     float curve = sin(s * 3.0 + h1 * 6.28) * s * s * 1.6;
     vec3 world = along + perp * curve + up2 * curve * 0.5;
 
-    // Slow overall rotation of the whole cluster.
-    float ra = time * 0.05;
+    // Rotation of the whole cluster -- fast enough to actually READ as
+    // rotation (0.05 rad/s was ~3 deg/s, imperceptible), audio-advance on top.
+    float ra = time * 0.16 + audioAdvance * 0.10;
     world.xz = mat2(cos(ra), -sin(ra), sin(ra), cos(ra)) * world.xz;
 
     // Facet: thick hexagonal-ish prism at the root, tapering to a point,
@@ -94,8 +95,10 @@ void main()
                + dir0 * c.z * (branchLen / SEGS) * 0.65;
     world += facet;
 
-    // User feedback: the crystal sat tiny in the frame — dolly in.
-    vec3 vp = world + vec3(0.0, -1.0, 10.5);
+    // Origin in the LOWER third of the frame (the cluster grows upward, so
+    // the old centred origin left the bottom half of the screen black while
+    // the tips overshot the top), and dollied back so full bloom fits.
+    vec3 vp = world + vec3(0.0, -6.5, 15.5);
     vp.x -= eyeOff;
     gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
     gl_Position.x += eyeOff * 0.05 * gl_Position.w;

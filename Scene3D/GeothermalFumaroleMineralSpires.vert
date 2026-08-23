@@ -155,7 +155,7 @@ void main()
         // Depth ladder: the rows march away from the camera, so the field has
         // a real foreground / far distance instead of one flat wall.
         float rowF = (ri + 0.5) / MS;
-        float dz   = 8.5 + 74.0 * pow(rowF, 1.7) + 5.0 * (h3 - 0.5);
+        float dz   = 14.0 + 68.5 * pow(rowF, 1.7) + 3.0 * (h3 - 0.5);   // was 8.5 +-2.5: the front spires filled and clipped the frame
         float halfH = dz * kTanY;
         float halfW = halfH * aspect;
 

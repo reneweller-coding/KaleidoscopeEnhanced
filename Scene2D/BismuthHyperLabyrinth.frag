@@ -65,6 +65,14 @@ vec3 thinFilmColor(float thickness) {
 }
 
 // Bismuth hopper crystal distance function
+// Soft-max, used to carve a smooth clearance bubble around the camera out
+// of the distance field: the flight can never clip through geometry -- a
+// would-be collision becomes a soft bulge sliding past the lens.
+float smax(float a, float b, float k) {
+    float h = clamp(0.5 - 0.5 * (a - b) / k, 0.0, 1.0);
+    return mix(a, b, h) + k * h * (1.0 - h);
+}
+
 float mapBismuth(vec3 p, out vec3 outUVW, float stepScale) {
     vec3 z = p;
     float scale = 1.0;
@@ -127,15 +135,9 @@ void main() {
     vec3 vv = cross(uu, ww);
     vec3 rd = normalize(uv.x * uu + uv.y * vv + 1.2 * zm * ww);
 
-    // If a preset/extreme stepP still leaves the start point inside
-    // rock, walk the camera forward along its axis until it is free.
-    {
-        vec3 esc;
-        for (int e = 0; e < 8; ++e) {
-            if (mapBismuth(ro, esc, stp) > 0.05) break;
-            ro += vec3(0.0, 0.0, 0.35);
-        }
-    }
+    // (The old discrete "walk free" loop jumped the camera 0.35 units at a
+    // time whenever the terraces closed over it -- replaced by the smax
+    // clearance bubble in the march below, continuous by construction.)
     float totalDist = 0.0;
     float minDist = 1000.0;
     vec3 hitUVW = vec3(0.0);
@@ -150,6 +152,7 @@ void main() {
         vec3 p = ro + rd * totalDist;
         vec3 uvw;
         float d = mapBismuth(p, uvw, stepScale);
+        d = smax(d, 0.50 - length(p - ro), 0.18);   // camera clearance bubble
         minDist = min(minDist, d);
         if (d < 0.003 || totalDist > 20.0) {
             hitUVW = uvw;
