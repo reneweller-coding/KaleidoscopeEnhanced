@@ -58,6 +58,7 @@
 #include <QtGui/QIcon>
 #include <QtGui/QScreen>
 #include <QtGui/QSurfaceFormat>
+#include <QtNetwork/QNetworkProxy>
 #include "QMyWindow.h"
 
 #ifdef WIN32
@@ -385,6 +386,14 @@ int main(int argc, char *argv[])
 	// The normal windowed-app path: build the Qt application and its single top-level
 	// window, then either show it windowed or on the chosen fullscreen monitor.
 	QApplication app(argc, argv);
+	// Ohne dies fragt Qt bei der ALLERERSTEN Netzwerk-Anfrage (Lyrics-/
+	// Künstlerbild-Abruf in TrackMedia, ausgelöst synchron aus paintGL() bei
+	// jedem Trackwechsel) unter Windows per WinHttpGetProxyForUrl SYNCHRON
+	// auf dem aufrufenden Thread nach einem System-Proxy (WPAD-Autoerkennung)
+	// - das kann mehrere Sekunden blockieren und friert damit den GUI/Render-
+	// Thread ein (reproduziert als Hänger 4-9s nach Start, CPU-Zeit-Plateau,
+	// Fenster reagiert nicht mehr). Die App braucht keinen System-Proxy.
+	QNetworkProxy::setApplicationProxy( QNetworkProxy::NoProxy );
 	app.setOverrideCursor(Qt::BlankCursor);
 	// Stack statt new-ohne-delete: so läuft ~QMyWindow/~GLwidget (Recorder-
 	// Finalisierung, GL-Cleanup mit aktuellem Kontext) GARANTIERT VOR
