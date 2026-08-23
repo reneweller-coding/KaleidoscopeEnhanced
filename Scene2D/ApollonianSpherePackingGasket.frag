@@ -106,6 +106,15 @@ float apollonianSDF(vec3 p, float gsk, float frc, out float trap) {
 void main() {
     float gsk = (gasketP  > 0.0) ? gasketP  : 1.0;
     float frc = (fractalP > 0.0) ? fractalP : 1.0;
+    // The inversion radius is 1.2*frc (squared). The cell edges of the fold
+    // sit at r2 >= 2, so up to frc = 1.67 they are never inverted and stay
+    // open foam-free corridors -- which is where the camera flies (below).
+    // The preset's top of range (2.0) inverts the edges too and closes the
+    // last corridor; measured min clearance along the edge drops from 0.25
+    // (the estimator's ceiling) to 0.000. Remap the preset range 0.5..2.0
+    // onto 0.5..1.5 instead of clamping, so the full range still varies
+    // the density.
+    frc = 0.5 + (frc - 0.5) * (1.0 / 1.5);
     float spd = (speedP   > 0.0) ? speedP   : 1.0;
     float hue = (hueP     > 0.0) ? hueP     : 0.0;
 
@@ -114,10 +123,21 @@ void main() {
 
     float t = time * 0.22 * spd + audioAdvance * 0.12;
 
-    // Glide along a corridor of the foam, far enough out that whole spheres
-    // stay readable (the old path sat deep inside the fold, where every ray
-    // hit within a step or two and the picture collapsed into noise).
-    vec3 ro = vec3(0.25 * sin(t * 0.5), 0.62 + 0.10 * sin(t * 0.33), t * 0.55);
+    // Glide along a CELL EDGE of the fold (x = y = 1 in fold space, i.e.
+    // divided by gsk in world space, because the march evaluates the field
+    // at p*gsk). The previous "corridor" at y = 0.62 was anything but: that
+    // point lies inside the inversion sphere (r2 < 1.2*frc) for every
+    // preset value, i.e. in the densest part of the foam, and a NumPy port
+    // of apollonianSDF measured the camera within 0.05 of a surface 26-98 %
+    // of the time (fractalP 1.0..2.0) and inside the 0.38 clearance bubble
+    // 100 % of the time. The picture was the bubble's inner wall, not a
+    // corridor. The edge line has the estimator's maximum clearance (0.25,
+    // a real distance of ~1) for the whole remapped fractalP range; the
+    // weave is kept small because clearance falls linearly with the y
+    // excursion (the cut plane is y = 0 in fold space). Worst case along
+    // this course: 0.15 at the top of the range, never inside the bubble's
+    // reach of the foam.
+    vec3 ro = vec3(1.0 + 0.25 * sin(t * 0.5), 1.0 + 0.12 * sin(t * 0.33), t * 0.55 * gsk) / gsk;
     vec3 rd = normalize(vec3(uv, 1.35));   // was 1.35 - 0.20*audioKick: FOV jumped on every kick
     rd.yz = rot2D(0.22 * sin(t * 0.27)) * rd.yz;
     rd.xz = rot2D(t * 0.15) * rd.xz;

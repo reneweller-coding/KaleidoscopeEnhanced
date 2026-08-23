@@ -53,6 +53,19 @@ vec3 imgPalette(float t) {
     return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
+// Overall level of the photo on the texture units (fixed 5-tap grid, rides
+// the tex0/tex1 crossfade so it can never pop). The hit colour is half
+// photo, and since the edge-corridor course (see main) keeps a lit wall in
+// front of the lens the whole time, a bright photo pushed the frame to a
+// luma of 115-145 on a scene tagged "dark". One frame-wide gain rescales
+// the exposure without touching local contrast.
+float photoLevel() {
+    vec3 s = img(vec2(0.25, 0.25)) + img(vec2(0.75, 0.25))
+           + img(vec2(0.25, 0.75)) + img(vec2(0.75, 0.75))
+           + img(vec2(0.50, 0.50));
+    return dot(s * 0.2, vec3(0.299, 0.587, 0.114));
+}
+
 // Soft-max, used to carve a smooth clearance bubble around the camera out
 // of the distance field: the flight can never clip through geometry -- a
 // would-be collision becomes a soft bulge sliding past the lens.
@@ -138,8 +151,28 @@ void main() {
     float sphR = (1.15 + 0.15 * sc) * (1.0 + 0.06 * audioSubBass);
 
     float diveProg = t * 0.6;
-    vec3 ro = vec3(sin(diveProg * 0.3) * 0.4, cos(diveProg * 0.25) * 0.4, diveProg * 1.5);
+    // The dive runs along a CELL EDGE of the period-2 lattice, not through
+    // the cell interior. The old course, sin/cos weaving +-0.4 around the
+    // z axis, was measured (NumPy port of mapApollonian, 12k samples along
+    // the path) to sit INSIDE solid 18-20 % of the time and within 0.15 of a
+    // surface 40 % of the time -- so the clearance bubble was engaged almost
+    // permanently, and whenever the camera went fully solid the frame was
+    // nothing but the bubble's own inside (a flat disc of concentric rings
+    // for one frame, then the foam snapped back): a "camera jump" with a
+    // perfectly continuous `ro`. The distance field is open along the
+    // planes x = odd and y = odd -- a cross-shaped corridor whose spine, the
+    // edge line x = y = 1, has a clearance of 1.0 or more for every sphere
+    // radius the preset can produce. The weave stays in the x > 1, y > 1
+    // quadrant on purpose: the opposite quadrant is solid around z = 0.5
+    // mod 2, and a symmetric +-0.2 weave about the edge already dipped to
+    // -0.8. Worst case along this course is 0.58 (sphR 1.44, sub-bass
+    // fully up), comfortably outside the 0.40 bubble.
+    vec3 ro = vec3(1.25 + 0.25 * sin(diveProg * 0.3),
+                   1.15 + 0.15 * cos(diveProg * 0.25),
+                   diveProg * 1.5);
     vec3 rd = normalize(vec3(uv, 1.25 + 0.2 * sin(audioSwell * 2.0)));
+
+    float expGain = clamp(0.22 / max(0.05, photoLevel()), 0.3, 2.0);
 
     // Raymarching through Apollonian sphere packing
     float totDist = 0.0;
@@ -177,7 +210,7 @@ void main() {
             // wall (the totDist > 8 termination above) from reading as a solid
             // sheet of texture pasted across the frame.
             float fog = exp(-totDist * 0.28);
-            hitCol = mix(texCol, palCol, 0.5) * (0.25 + 0.85 * fog);
+            hitCol = mix(texCol, palCol, 0.5) * (0.25 + 0.85 * fog) * expGain;
             break;
         }
 
@@ -190,8 +223,11 @@ void main() {
     float contactGlow = hit ? 0.0 : exp(-minD * (26.0 + 12.0 * audioCentroid)) * glw;
     vec3 glowTint = vec3(1.3, 1.1, 1.8) * contactGlow * (1.0 + 2.5 * audioKick);
 
-    vec3 bgCol = imgPalette(length(uv) * 0.4 + 0.2) * (0.2 + 0.15 * audioLevel);
-    vec3 finalCol = mix(bgCol, hitCol, clamp(length(hitCol), 0.0, 1.0));
+    vec3 bgCol = imgPalette(length(uv) * 0.4 + 0.2) * (0.2 + 0.15 * audioLevel) * expGain;
+    // Composite on the hit flag, not on length(hitCol): with the exposure
+    // gain holding a bright photo down, a legitimately dark wall has a short
+    // colour vector and the old length() mask faded it into the background.
+    vec3 finalCol = mix(bgCol, hitCol, hit ? 1.0 : 0.0);
     finalCol += glowTint;
 
     finalCol = pow(finalCol, vec3(0.88));

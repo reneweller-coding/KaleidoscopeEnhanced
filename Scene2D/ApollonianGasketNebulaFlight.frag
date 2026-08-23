@@ -104,9 +104,23 @@ float foldScale(float scaleMod) {
 // same surface scaled by b, so the Lipschitz bound is preserved by
 // construction -- which is what the earlier breathing radius broke when it
 // scaled the fold from within and pushed the estimate off its bound.
-float mapApollonian(vec3 p, float s, out float orbitTrap) {
-    float breath = 1.0 + 0.22 * audioSubBass;
-    p /= breath;
+//
+// The scale is centred on the CAMERA (`c`), not on the world origin. The
+// flight runs away from the origin without bound (ro ~ t*0.55 on two axes,
+// |ro| is 16 after 20 s and 90 after two minutes), and a scale about the
+// origin moves everything near the camera by (b-1)*|ro| -- 3..20 units on a
+// lattice of period 2. Every kick therefore swapped the foam around the
+// lens for a different region of the fractal and slid it back as the
+// sub-bass released: measured as a full-frame change on each beat (frame
+// difference 43 against 8 on quiet material), i.e. a camera jump that is
+// not in `ro` at all. Scaling about the camera keeps the foam in front of
+// the lens where it is and breathes it radially -- continuous by
+// construction. The amplitude is halved as well; 22 % was sized for a
+// subtle origin-centred breath and reads as a hard zoom pump when it
+// actually happens around the viewer.
+float mapApollonian(vec3 p, vec3 c, float s, out float orbitTrap) {
+    float breath = 1.0 + 0.12 * audioSubBass;
+    p = c + (p - c) / breath;
 
     float scale = 1.0;
     orbitTrap = 1e5;
@@ -125,19 +139,19 @@ float mapApollonian(vec3 p, float s, out float orbitTrap) {
     return 0.25 * (length(p) - 1.0) / scale * breath;
 }
 
-float mapD(vec3 p, float s) {
+float mapD(vec3 p, vec3 c, float s) {
     float t;
-    return mapApollonian(p, s, t);
+    return mapApollonian(p, c, s, t);
 }
 
-vec3 calcNormal(vec3 p, float s) {
+vec3 calcNormal(vec3 p, vec3 c, float s) {
     // 1.8e-3 is a little under the hit epsilon: any smaller and the difference
     // drowns in the estimator's own noise, any larger and the shell edges of
     // the packing round off into mush.
     const vec2 e = vec2(1.8e-3, 0.0);
-    return normalize(vec3(mapD(p + e.xyy, s) - mapD(p - e.xyy, s),
-                          mapD(p + e.yxy, s) - mapD(p - e.yxy, s),
-                          mapD(p + e.yyx, s) - mapD(p - e.yyx, s)));
+    return normalize(vec3(mapD(p + e.xyy, c, s) - mapD(p - e.xyy, c, s),
+                          mapD(p + e.yxy, c, s) - mapD(p - e.yxy, c, s),
+                          mapD(p + e.yyx, c, s) - mapD(p - e.yyx, c, s)));
 }
 
 // Soft-max, used to carve a smooth clearance bubble around the camera out
@@ -221,7 +235,7 @@ void main() {
     for (int i = 0; i < 120; i++) {
         vec3 p = ro + rd * totDist;
         float curTrap;
-        float d = mapApollonian(p, s, curTrap);
+        float d = mapApollonian(p, ro, s, curTrap);
         // Camera clearance bubble (see smax above): the diagonal course
         // regularly punched straight through shells before this.
         d = smax(d, 0.42 - length(p - ro), 0.15);
@@ -264,7 +278,7 @@ void main() {
         // that filled the frame filled it with one colour. Everything below is
         // the missing shading.
         vec3 p = ro + rd * totDist;
-        vec3 nor = calcNormal(p, s);
+        vec3 nor = calcNormal(p, ro, s);
 
         // How long the ray had to grope before it landed stands in for ambient
         // occlusion: a shell reached in three steps is out in the open, one
