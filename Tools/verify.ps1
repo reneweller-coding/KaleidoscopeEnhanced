@@ -160,7 +160,13 @@ foreach ($s in $Scenes) {
         $body = '<TextureShader file="..\\' + $dir + '\\' + $s + '.frag" ' + $attrs + ' probability="1.0" complexity="1" minTimeSolo="100" maxTimeSolo="120" minTimeInterpolation="20" maxTimeInterpolation="30">' + "`n  </TextureShader>"
     }
 
-    $xml = '<configuration ImageDirectory="' + $ImageDir + '" ConfigurationName="verify">' + "`n" +
+    # -c matches the root element's ConfigurationName attribute, NOT the file
+    # name. With the old ConfigurationName="verify" the lookup for "-c _verify"
+    # failed every time and the app fell back to m_configurationList[0] --
+    # which happened to be this very file only because "_" sorts before every
+    # letter. Name the config exactly as it is requested so the probe no
+    # longer depends on that accident.
+    $xml = '<configuration ImageDirectory="' + $ImageDir + '" ConfigurationName="_verify">' + "`n" +
            $body + "`n" +
            '  <CombineShader file="..\\FX\\FxPlain.frag" type="normal" probability="1.0" complexity="1" minTimeSolo="100" maxTimeSolo="120" minTimeInterpolation="20" maxTimeInterpolation="30">' + "`n" +
            "  </CombineShader>`n</configuration>"

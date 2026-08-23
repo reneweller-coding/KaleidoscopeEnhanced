@@ -105,6 +105,8 @@ function Run-One([string]$args2, [int]$secs) {
     return $d
 }
 
+# (ConfigurationName is "_catalog" on purpose: -c matches that attribute,
+# not the file name -- see the note in verify.ps1.)
 # Build a synthetic single/double-scene _catalog.xml the same way verify.ps1
 # does for a single-scene probe: prefer the REAL registered <TextureShader>
 # node (custom params default to 0 otherwise, which can read as "broken").
@@ -144,7 +146,7 @@ foreach ($name in $Names) {
     $srcNode.SetAttribute("minTimeInterpolation", "20"); $srcNode.SetAttribute("maxTimeInterpolation", "30")
     $body = $srcNode.OuterXml
 
-    $xml = '<configuration ImageDirectory="' + $ImageDir + '" ConfigurationName="catalog">' + "`n" +
+    $xml = '<configuration ImageDirectory="' + $ImageDir + '" ConfigurationName="_catalog">' + "`n" +
            $body + "`n" +
            '  <CombineShader file="..\\FX\\FxPlain.frag" type="normal" probability="1.0" complexity="1" minTimeSolo="100" maxTimeSolo="120" minTimeInterpolation="20" maxTimeInterpolation="30">' + "`n" +
            "  </CombineShader>`n</configuration>"
@@ -183,7 +185,7 @@ foreach ($name in $Names) {
         $fxCopy.SetAttribute("probability", "1.0")
         $fxCopy.SetAttribute("minTimeSolo", "100"); $fxCopy.SetAttribute("maxTimeSolo", "120")
         $fxCopy.SetAttribute("minTimeInterpolation", "20"); $fxCopy.SetAttribute("maxTimeInterpolation", "30")
-        $xml = '<configuration ImageDirectory="' + $ImageDir + '" ConfigurationName="catalog">' + "`n" +
+        $xml = '<configuration ImageDirectory="' + $ImageDir + '" ConfigurationName="_catalog">' + "`n" +
                $refNode.OuterXml + "`n" + $fxCopy.OuterXml + "`n</configuration>"
         [IO.File]::WriteAllText($cfg, $xml)
         $env:KALEIDO_TRANS_STYLE = $null
@@ -204,7 +206,7 @@ foreach ($name in $Names) {
         $otherNode.SetAttribute("minTimeInterpolation", "10"); $otherNode.SetAttribute("maxTimeInterpolation", "12")
         $refNode.SetAttribute("minTimeSolo", "3"); $refNode.SetAttribute("maxTimeSolo", "4")
         $refNode.SetAttribute("minTimeInterpolation", "10"); $refNode.SetAttribute("maxTimeInterpolation", "12")
-        $xml = '<configuration ImageDirectory="' + $ImageDir + '" ConfigurationName="catalog">' + "`n" +
+        $xml = '<configuration ImageDirectory="' + $ImageDir + '" ConfigurationName="_catalog">' + "`n" +
                $otherNode.OuterXml + "`n" + $refNode.OuterXml + "`n" +
                '  <CombineShader file="..\\FX\\FxPlain.frag" type="normal" probability="1.0" complexity="1" minTimeSolo="100" maxTimeSolo="120" minTimeInterpolation="20" maxTimeInterpolation="30">' + "`n" +
                "  </CombineShader>`n</configuration>"
