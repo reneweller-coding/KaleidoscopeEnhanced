@@ -278,6 +278,10 @@ public:
 	static void  adjustStereoDepth( float d )
 	{ s_stereoDepth = clampParam(s_stereoDepth + d, 0.f, 2.f); }  ///< @brief Adjusts the stereo disparity strength by @p d (clamped to [0, 2]).
 	static float stereoDepth()    { return s_stereoDepth; }       ///< @brief Returns the current stereo disparity strength.
+	/// @brief Sets the stereo disparity strength to an absolute value (clamped to [0, 2]) -- the web remote's slider, next to the keyboard's relative 'c'/'m'.
+	static void  setStereoDepth( float v ) { s_stereoDepth = clampParam(v, 0.f, 2.f); }
+	/// @brief Selects a stereoscopic output mode directly (0 off, 1 SBS, 2 top-bottom, 3 anaglyph) -- the web remote picks one, the keyboard's 'z' cycles.
+	static void  setStereoMode( int m ) { s_stereoMode = (m < 0) ? 0 : (m & 3); }
 
 	// ---- VJ handbrakes ----
 	// Blackout (key 'b'): fade the OUTPUT to black (window, Spout, recording —

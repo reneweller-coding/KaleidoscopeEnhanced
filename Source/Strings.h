@@ -81,6 +81,19 @@ enum StrId
 	S_SETUP_SAVE, S_SETUP_CLOSE,
 	S_SETUP_NO_SETTINGS_YET, S_SETUP_SAVED_OK, S_SETUP_SAVE_FAILED,
 
+	// ---- WebRemote.cpp: tabbed page, second wave ----
+	// (appended at the END on purpose: both language tables in Strings.cpp are
+	// positional arrays, so inserting anywhere above would silently shift every
+	// later string onto the wrong id.)
+	S_WR_TAB_LIVE, S_WR_TAB_PRESETS, S_WR_TAB_CAPTURE, S_WR_TAB_DISPLAY,
+	S_WR_TAB_IMAGE, S_WR_TAB_INFO,
+	S_WR_FREEZE, S_WR_PIN, S_WR_TAPTEMPO,
+	S_WR_RECORD_START, S_WR_RECORD_STOP, S_WR_SCREENSHOT,
+	S_WR_SHADERNAMES, S_WR_FEATUREOVERLAY,
+	S_WR_STEREOMODE, S_WR_STEREODEPTH, S_WR_RENDERSCALE,
+	S_WR_SAVEDEFAULTS, S_WR_ACTIVE_PRESET, S_WR_NOTHING_PLAYING,
+	S_WR_FPS, S_WR_RECORDING_NOW,
+
 	S_COUNT
 };
 

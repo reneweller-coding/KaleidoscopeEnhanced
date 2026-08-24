@@ -159,6 +159,40 @@ int GLwidget::remoteActiveConfig() const
 	return -1;
 }
 
+// The active config can be one that ISN'T in m_configurationList at all --
+// a hidden preset picked with -c, most commonly "Komplett". remoteActiveConfig()
+// then returns -1 and the remote's preset row highlights nothing, which reads
+// as "the remote doesn't know what's playing". Reporting the NAME separately
+// lets the page label it even when there is no button to light up.
+QString GLwidget::remoteActiveConfigName() const
+{
+	return m_actConfiguration ? m_actConfiguration->getConfigurationName() : QString();
+}
+
+QString GLwidget::remoteScreenshot()
+{
+	QImage img = grabFramebuffer();
+	QString fn = QString( "kaleidoscope_%1.png" )
+	             .arg( QDateTime::currentDateTime().toString( "yyyyMMdd_hhmmss" ) );
+	if( !img.save( fn ) )
+		return QString();
+	fprintf( stderr, "Saved screenshot: %s\n", fn.toLocal8Bit().constData() );
+	return fn;
+}
+
+void GLwidget::remoteTapTempo()
+{
+	if( m_audioAnalyzer )
+		m_audioAnalyzer->tapTempo();
+}
+
+QString GLwidget::remoteShaderInfo() const
+{
+	if( m_actConfiguration && m_actConfiguration->m_renderPipeline )
+		return m_actConfiguration->m_renderPipeline->activeShaderInfo();
+	return QString();
+}
+
 void GLwidget::remoteSelectConfig( int idx )
 {
 	if( idx >= 0 && idx < (int)m_configurationList.size()

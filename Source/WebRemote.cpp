@@ -73,65 +73,164 @@ static const char *kPageTemplate = R"HTML(<!DOCTYPE html>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>@@TITLE@@</title>
 <style>
- body{background:#101018;color:#eee;font-family:sans-serif;margin:0;padding:12px}
- h1{font-size:1.1em;color:#8cf;margin:4px 0 12px}
+ body{background:#101018;color:#eee;font-family:sans-serif;margin:0;padding:12px;
+      -webkit-text-size-adjust:100%}
+ h1{font-size:1.1em;color:#8cf;margin:4px 0 8px}
  .row{margin:10px 0}
  button{background:#26263a;color:#eee;border:1px solid #446;border-radius:10px;
         padding:12px 16px;font-size:1em;margin:3px}
  button.active{background:#3a6ea5;border-color:#8cf}
  button.big{width:100%;padding:16px;font-size:1.15em}
+ button.rec{background:#7a2233;border-color:#c55}
+ button.rec.active{background:#c0392b;border-color:#f88}
  input[type=range]{width:100%}
  label{display:block;color:#9ab;font-size:.85em;margin-top:8px}
  .val{color:#8cf;float:right}
+ /* Status strip: what is playing right now, always visible above the tabs --
+    the preset row alone could not show a HIDDEN preset (e.g. -c Komplett),
+    which is why "which preset is active" used to be invisible. */
+ .status{display:flex;justify-content:space-between;align-items:center;gap:8px;
+         background:#181826;border:1px solid #303048;border-radius:10px;
+         padding:8px 10px;margin:8px 0;font-size:.85em}
+ .status b{color:#8cf;font-weight:600}
+ .dot{display:inline-block;width:9px;height:9px;border-radius:50%;
+      background:#c0392b;margin-right:5px;animation:blink 1.2s infinite}
+ @keyframes blink{50%{opacity:.25}}
+ /* Tab bar: horizontally scrollable so it never wraps on a narrow phone. */
+ .tabs{display:flex;overflow-x:auto;gap:4px;margin:10px 0 4px;
+       padding-bottom:4px;-webkit-overflow-scrolling:touch}
+ .tabs button{flex:0 0 auto;margin:0;padding:10px 14px;font-size:.95em;
+              border-radius:10px 10px 0 0}
+ .panel{display:none}
+ .panel.on{display:block}
+ .hint{color:#778;font-size:.78em;margin:6px 2px}
+ pre.info{background:#181826;border:1px solid #303048;border-radius:10px;
+          padding:10px;font-size:.8em;color:#adf;white-space:pre-wrap;
+          word-break:break-word;margin:6px 0}
 </style></head><body>
 <h1>@@H1@@</h1>
 <img id="prev" style="width:100%;border-radius:10px;background:#000;min-height:80px"
      src="/api/snapshot" alt="">
-<button class="big" onclick="cmd('/api/next')">&#9193; @@NEXT@@</button>
-<div class="row">
- <button id="blackout" onclick="cmd('/api/toggle?k=blackout')">&#9899; @@BLACKOUT@@</button>
- <button onclick="cmd('/api/fav')">&#11088; @@FAVORITE@@</button>
- <button onclick="cmd('/api/mark')">&#128204; @@MARK@@</button>
- <button onclick="cmd('/api/savemarked')">&#128193; @@SAVEMARKED@@</button>
- <button id="replayarm" onclick="cmd('/api/toggle?k=replayarm')">@@REPLAYBUF@@</button>
- <button onclick="cmd('/api/replay')">&#128190; @@REPLAYSAVE@@</button>
+<div class="status">
+ <span>@@ACTIVEPRESET@@: <b id="curcfg">–</b></span>
+ <span id="recind" style="display:none;color:#f88"><i class="dot"></i>@@RECORDINGNOW@@</span>
+ <span id="fpsind" style="color:#778"></span>
 </div>
-<div class="row" id="cfgs"></div>
-<label>@@REACTIVITY@@ <span class="val" id="vreactivity"></span></label>
-<input type="range" id="reactivity" min="0" max="3" step="0.05"
-       oninput="setv('reactivity',this.value)">
-<label>@@TRAILS@@ <span class="val" id="vtrails"></span></label>
-<input type="range" id="trails" min="0" max="0.95" step="0.05"
-       oninput="setv('trails',this.value)">
-<label>@@MOOD@@ <span class="val" id="vmood"></span></label>
-<input type="range" id="mood" min="0" max="2.5" step="0.05"
-       oninput="setv('mood',this.value)">
-<label>@@LATENCY@@ <span class="val" id="vlatency"></span></label>
-<input type="range" id="latency" min="0" max="250" step="5"
-       oninput="setv('latency',this.value/1000)">
-<div class="row">
- <button id="lightshow" onclick="cmd('/api/toggle?k=lightshow')">@@LIGHTSHOW@@</button>
- <button id="autoconfig" onclick="cmd('/api/toggle?k=autoconfig')">@@AUTOPRESET@@</button>
- <button id="autoscale" onclick="cmd('/api/toggle?k=autoscale')">@@AUTOSCALE@@</button>
+
+<div class="tabs">
+ <button id="tab-live"    onclick="showTab('live')">@@TABLIVE@@</button>
+ <button id="tab-presets" onclick="showTab('presets')">@@TABPRESETS@@</button>
+ <button id="tab-capture" onclick="showTab('capture')">@@TABCAPTURE@@</button>
+ <button id="tab-display" onclick="showTab('display')">@@TABDISPLAY@@</button>
+ <button id="tab-image"   onclick="showTab('image')">@@TABIMAGE@@</button>
+ <button id="tab-info"    onclick="showTab('info')">@@TABINFO@@</button>
 </div>
-<div class="row">
- <button id="nowplaying" onclick="cmd('/api/toggle?k=nowplaying')">@@TITLEREVEAL@@</button>
- <button id="lyrics" onclick="cmd('/api/toggle?k=lyrics')">@@LYRICSPREFIX@@?</button>
+
+<div class="panel on" id="p-live">
+ <button class="big" onclick="cmd('/api/next')">&#9193; @@NEXT@@</button>
+ <div class="row">
+  <button id="blackout" onclick="cmd('/api/toggle?k=blackout')">&#9899; @@BLACKOUT@@</button>
+  <button id="freeze" onclick="cmd('/api/toggle?k=freeze')">&#10052; @@FREEZE@@</button>
+  <button id="pin" onclick="cmd('/api/toggle?k=pin')">&#128204; @@PIN@@</button>
+ </div>
+ <div class="row">
+  <button onclick="cmd('/api/fav')">&#11088; @@FAVORITE@@</button>
+  <button onclick="cmd('/api/mark')">&#128278; @@MARK@@</button>
+  <button onclick="cmd('/api/tap')">&#128341; @@TAPTEMPO@@</button>
+ </div>
+ <label>@@REACTIVITY@@ <span class="val" id="vreactivity"></span></label>
+ <input type="range" id="reactivity" min="0" max="3" step="0.05"
+        oninput="setv('reactivity',this.value)">
+ <label>@@TRAILS@@ <span class="val" id="vtrails"></span></label>
+ <input type="range" id="trails" min="0" max="0.95" step="0.05"
+        oninput="setv('trails',this.value)">
+ <label>@@MOOD@@ <span class="val" id="vmood"></span></label>
+ <input type="range" id="mood" min="0" max="2.5" step="0.05"
+        oninput="setv('mood',this.value)">
+ <label>@@LATENCY@@ <span class="val" id="vlatency"></span></label>
+ <input type="range" id="latency" min="0" max="250" step="5"
+        oninput="setv('latency',this.value/1000)">
 </div>
-<div class="row">
- <button id="artistimages" onclick="cmd('/api/toggle?k=artistimages')">@@ARTISTIMAGES@@</button>
- <button id="video" onclick="cmd('/api/toggle?k=video')">@@VIDEO@@</button>
-</div>
-<div class="row">
+
+<div class="panel" id="p-presets">
+ <div class="row" id="cfgs"></div>
  <button class="big" id="scenetoggle" onclick="toggleScenes()">&#127916; @@SCENEBROWSER@@</button>
  <div id="scenes" style="display:none;max-height:45vh;overflow-y:auto;
-      display:none;grid-template-columns:1fr 1fr;gap:4px"></div>
+      grid-template-columns:1fr 1fr;gap:4px"></div>
+</div>
+
+<div class="panel" id="p-capture">
+ <button class="big rec" id="record" onclick="cmd('/api/toggle?k=record')">
+  &#9210; @@RECORDSTART@@</button>
+ <div class="row">
+  <button onclick="cmd('/api/screenshot')">&#128247; @@SCREENSHOT@@</button>
+ </div>
+ <div class="row">
+  <button id="replayarm" onclick="cmd('/api/toggle?k=replayarm')">@@REPLAYBUF@@</button>
+  <button onclick="cmd('/api/replay')">&#128190; @@REPLAYSAVE@@</button>
+ </div>
+ <div class="row">
+  <button onclick="cmd('/api/savemarked')">&#128193; @@SAVEMARKED@@</button>
+ </div>
+</div>
+
+<div class="panel" id="p-display">
+ <div class="row">
+  <button id="lightshow" onclick="cmd('/api/toggle?k=lightshow')">@@LIGHTSHOW@@</button>
+  <button id="nowplaying" onclick="cmd('/api/toggle?k=nowplaying')">@@TITLEREVEAL@@</button>
+ </div>
+ <div class="row">
+  <button id="lyrics" onclick="cmd('/api/toggle?k=lyrics')">@@LYRICSPREFIX@@?</button>
+ </div>
+ <div class="row">
+  <button id="artistimages" onclick="cmd('/api/toggle?k=artistimages')">@@ARTISTIMAGES@@</button>
+  <button id="video" onclick="cmd('/api/toggle?k=video')">@@VIDEO@@</button>
+ </div>
+ <div class="row">
+  <button id="shaderinfo" onclick="cmd('/api/toggle?k=shaderinfo')">@@SHADERNAMES@@</button>
+  <button id="features" onclick="cmd('/api/toggle?k=features')">@@FEATUREOVERLAY@@</button>
+ </div>
+</div>
+
+<div class="panel" id="p-image">
+ <label>@@STEREOMODE@@</label>
+ <div class="row" id="stereo"></div>
+ <label>@@STEREODEPTH@@ <span class="val" id="vstereodepth"></span></label>
+ <input type="range" id="stereodepth" min="0" max="2" step="0.1"
+        oninput="setv('stereodepth',this.value)">
+ <label>@@RENDERSCALE@@ <span class="val" id="vrenderscale"></span></label>
+ <input type="range" id="renderscale" min="0.4" max="1" step="0.05"
+        oninput="setv('renderscale',this.value)">
+ <div class="row">
+  <button id="autoscale" onclick="cmd('/api/toggle?k=autoscale')">@@AUTOSCALE@@</button>
+  <button id="autoconfig" onclick="cmd('/api/toggle?k=autoconfig')">@@AUTOPRESET@@</button>
+ </div>
+</div>
+
+<div class="panel" id="p-info">
+ <pre class="info" id="shaders">–</pre>
+ <div class="row">
+  <button onclick="cmd('/api/savedefaults')">&#128190; @@SAVEDEFAULTS@@</button>
+ </div>
 </div>
 <script>
 let hold=0;
 function cmd(u){hold=Date.now()+300;fetch(u).then(refresh);}
 function setv(k,v){hold=Date.now()+800;fetch('/api/set?k='+k+'&v='+v);
   document.getElementById('v'+k).textContent=(k=='latency')?Math.round(v*1000):(+v).toFixed(2);}
+let tab='live';
+function showTab(t){
+ tab=t;
+ document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+ document.getElementById('p-'+t).classList.add('on');
+ document.querySelectorAll('.tabs button').forEach(b=>b.className='');
+ document.getElementById('tab-'+t).className='active';
+ // The scene grid only makes sense (and only costs requests) while its own
+ // tab is on screen -- leaving it means its lazy loader should stop too.
+ if(t!='presets'&&scenesOpen) toggleScenes();
+ try{localStorage.setItem('krTab',t);}catch(e){}}
+const setCls=(id,on)=>{const e=document.getElementById(id);
+ if(e) e.className=(e.id=='record'?'big rec':'')+(on?(e.id=='record'?' active':'active'):'');};
 function refresh(){ if(Date.now()<hold) return;
  fetch('/api/state').then(r=>r.json()).then(s=>{
   for(const k of ['reactivity','trails','mood']){
@@ -139,22 +238,39 @@ function refresh(){ if(Date.now()<hold) return;
    document.getElementById('v'+k).textContent=(+s[k]).toFixed(2);}
   document.getElementById('latency').value=s.latency*1000;
   document.getElementById('vlatency').textContent=Math.round(s.latency*1000);
-  document.getElementById('lightshow').className=s.lightShow?'active':'';
-  document.getElementById('autoconfig').className=s.autoConfig?'active':'';
-  document.getElementById('blackout').className=s.blackout?'active':'';
-  document.getElementById('replayarm').className=s.replayArmed?'active':'';
-  document.getElementById('autoscale').className=s.autoScale?'active':'';
-  document.getElementById('nowplaying').className=s.nowPlaying?'active':'';
-  document.getElementById('artistimages').className=s.artistImages?'active':'';
-  document.getElementById('video').className=s.videoEnabled?'active':'';
+  document.getElementById('stereodepth').value=s.stereoDepth;
+  document.getElementById('vstereodepth').textContent=(+s.stereoDepth).toFixed(1);
+  document.getElementById('renderscale').value=s.renderScale;
+  document.getElementById('vrenderscale').textContent=(+s.renderScale).toFixed(2);
+  setCls('lightshow',s.lightShow); setCls('autoconfig',s.autoConfig);
+  setCls('blackout',s.blackout);   setCls('replayarm',s.replayArmed);
+  setCls('autoscale',s.autoScale); setCls('nowplaying',s.nowPlaying);
+  setCls('artistimages',s.artistImages); setCls('video',s.videoEnabled);
+  setCls('freeze',s.frozen);       setCls('pin',s.pinned);
+  setCls('shaderinfo',s.shaderInfo); setCls('features',s.featureOverlay);
+  setCls('record',s.recording);
+  document.getElementById('record').innerHTML=
+    (s.recording?'⏹ @@RECORDSTOP@@':'⏺ @@RECORDSTART@@');
+  document.getElementById('recind').style.display=s.recording?'':'none';
+  document.getElementById('fpsind').textContent='@@FPS@@ '+s.fps;
+  document.getElementById('curcfg').textContent=s.activeName||'@@NOTHINGPLAYING@@';
+  document.getElementById('shaders').textContent=s.shaders||'–';
   const lyricsNames=@@LYRICSARR@@;
   const lb=document.getElementById('lyrics');
   lb.textContent='@@LYRICSPREFIX@@'+lyricsNames[s.lyricsMode];
   lb.className=s.lyricsMode>0?'active':'';
+  // Preset row: highlight by NAME, not by index -- the active preset can be a
+  // hidden one that isn't in this list at all (started with -c), in which case
+  // no button lights up and the status strip above is what names it.
   const c=document.getElementById('cfgs'); c.innerHTML='';
   s.configs.forEach((n,i)=>{const b=document.createElement('button');
-   b.textContent=n; if(i==s.active)b.className='active';
+   b.textContent=n; if(n===s.activeName)b.className='active';
    b.onclick=()=>cmd('/api/config?i='+i); c.appendChild(b);});
+  const st=document.getElementById('stereo'); st.innerHTML='';
+  ['Aus','SBS','Top/Bottom','Anaglyph'].forEach((n,i)=>{
+   const b=document.createElement('button');
+   b.textContent=n; if(i==s.stereoMode)b.className='active';
+   b.onclick=()=>cmd('/api/set?k=stereomode&v='+i); st.appendChild(b);});
  });}
 setInterval(refresh,2000); refresh();
 setInterval(()=>{document.getElementById('prev').src='/api/snapshot?ts='+Date.now();},2000);
@@ -213,6 +329,11 @@ function retryFailedThumbs(){
   const r=im.getBoundingClientRect();
   if(r.bottom<cr.top||r.top>cr.bottom) return;   // not currently visible -- wait
   loadThumb(im,true);});}
+// Restore the last-used tab LAST: showTab() touches scenesOpen, and a `let`
+// is in its temporal dead zone until its declaration above has run -- calling
+// this any earlier throws a ReferenceError and leaves no tab selected at all.
+try{const t=localStorage.getItem('krTab');
+    showTab(t&&document.getElementById('p-'+t)?t:'live');}catch(e){showTab('live');}
 </script></body></html>)HTML";
 
 /**
@@ -247,6 +368,30 @@ static QByteArray buildPage()
 	sub( "@@ARTISTIMAGES@@", S_WR_ARTISTIMAGES );
 	sub( "@@VIDEO@@",        S_WR_VIDEO );
 	sub( "@@SCENEBROWSER@@", S_WR_SCENEBROWSER );
+	sub( "@@TABLIVE@@",      S_WR_TAB_LIVE );
+	sub( "@@TABPRESETS@@",   S_WR_TAB_PRESETS );
+	sub( "@@TABCAPTURE@@",   S_WR_TAB_CAPTURE );
+	sub( "@@TABDISPLAY@@",   S_WR_TAB_DISPLAY );
+	sub( "@@TABIMAGE@@",     S_WR_TAB_IMAGE );
+	sub( "@@TABINFO@@",      S_WR_TAB_INFO );
+	sub( "@@FREEZE@@",       S_WR_FREEZE );
+	sub( "@@PIN@@",          S_WR_PIN );
+	sub( "@@TAPTEMPO@@",     S_WR_TAPTEMPO );
+	// @@RECORDSTART@@ appears twice (initial button text + the JS that swaps
+	// the label live), same unlimited-replace reasoning as @@LYRICSPREFIX@@.
+	sub( "@@RECORDSTART@@",  S_WR_RECORD_START );
+	sub( "@@RECORDSTOP@@",   S_WR_RECORD_STOP );
+	sub( "@@SCREENSHOT@@",   S_WR_SCREENSHOT );
+	sub( "@@SHADERNAMES@@",  S_WR_SHADERNAMES );
+	sub( "@@FEATUREOVERLAY@@", S_WR_FEATUREOVERLAY );
+	sub( "@@STEREOMODE@@",   S_WR_STEREOMODE );
+	sub( "@@STEREODEPTH@@",  S_WR_STEREODEPTH );
+	sub( "@@RENDERSCALE@@",  S_WR_RENDERSCALE );
+	sub( "@@SAVEDEFAULTS@@", S_WR_SAVEDEFAULTS );
+	sub( "@@ACTIVEPRESET@@", S_WR_ACTIVE_PRESET );
+	sub( "@@NOTHINGPLAYING@@", S_WR_NOTHING_PLAYING );
+	sub( "@@FPS@@",          S_WR_FPS );
+	sub( "@@RECORDINGNOW@@", S_WR_RECORDING_NOW );
 	// @@LYRICSPREFIX@@ appears twice (the initial button text and the JS
 	// template literal) -- QString::replace() with no count limit handles
 	// both occurrences from one call, same as every sub() above.
@@ -382,28 +527,41 @@ void WebRemote::handleConnection()
 					QStringList cfgs;
 					for( const QString &n : m_widget->remoteConfigNames() )
 						cfgs << ("\"" + jsonEscape( n ) + "\"");
-					body = QString( "{\"reactivity\":%1,\"trails\":%2,\"mood\":%3,"
-					                "\"latency\":%4,\"lightShow\":%5,\"autoConfig\":%6,"
-					                "\"active\":%7,\"blackout\":%8,\"replayArmed\":%9,"
-					                "\"fps\":%10,\"renderScale\":%11,"
-					                "\"autoScale\":%12,\"nowPlaying\":%13,"
-					                "\"lyricsMode\":%14,\"artistImages\":%15,\"videoEnabled\":%16,"
-					                "\"configs\":[%17]}" )
-					       .arg( RenderPipeline::reactivity() ).arg( RenderPipeline::trails() )
-					       .arg( RenderPipeline::mood() ).arg( RenderPipeline::latency() )
-					       .arg( RenderPipeline::lightShow() ? 1 : 0 )
-					       .arg( m_widget->autoConfigEnabled() ? 1 : 0 )
-					       .arg( m_widget->remoteActiveConfig() )
-					       .arg( RenderPipeline::blackout() ? 1 : 0 )
-					       .arg( m_widget->remoteReplayArmed() ? 1 : 0 )
-					       .arg( m_widget->fpsValue() )
-					       .arg( RenderPipeline::renderScale() )
-					       .arg( m_widget->autoScaleEnabled() ? 1 : 0 )
-					       .arg( m_widget->nowPlayingEnabled() ? 1 : 0 )
-					       .arg( m_widget->lyricsModeValue() )
-					       .arg( m_widget->artistImagesEnabled() ? 1 : 0 )
-					       .arg( m_widget->videoPipEnabled() ? 1 : 0 )
-					       .arg( cfgs.join( "," ) ).toUtf8();
+					// QString::arg() only reaches %99, and more importantly
+					// re-scans the WHOLE string for the lowest-numbered marker
+					// on every call -- a %1 appearing inside an already-
+					// substituted value would be eaten by the next arg(). Built
+					// by concatenation instead now that the state carries this
+					// many fields.
+					auto num = []( double v ) { return QString::number( v ); };
+					auto flag = []( bool b )  { return QString( b ? "1" : "0" ); };
+					body = ( "{\"reactivity\":"   + num( RenderPipeline::reactivity() )
+					       + ",\"trails\":"       + num( RenderPipeline::trails() )
+					       + ",\"mood\":"         + num( RenderPipeline::mood() )
+					       + ",\"latency\":"      + num( RenderPipeline::latency() )
+					       + ",\"lightShow\":"    + flag( RenderPipeline::lightShow() )
+					       + ",\"autoConfig\":"   + flag( m_widget->autoConfigEnabled() )
+					       + ",\"active\":"       + QString::number( m_widget->remoteActiveConfig() )
+					       + ",\"activeName\":\"" + jsonEscape( m_widget->remoteActiveConfigName() ) + "\""
+					       + ",\"blackout\":"     + flag( RenderPipeline::blackout() )
+					       + ",\"replayArmed\":"  + flag( m_widget->remoteReplayArmed() )
+					       + ",\"fps\":"          + QString::number( m_widget->fpsValue() )
+					       + ",\"renderScale\":"  + num( RenderPipeline::renderScale() )
+					       + ",\"autoScale\":"    + flag( m_widget->autoScaleEnabled() )
+					       + ",\"nowPlaying\":"   + flag( m_widget->nowPlayingEnabled() )
+					       + ",\"lyricsMode\":"   + QString::number( m_widget->lyricsModeValue() )
+					       + ",\"artistImages\":" + flag( m_widget->artistImagesEnabled() )
+					       + ",\"videoEnabled\":" + flag( m_widget->videoPipEnabled() )
+					       // second wave: the remaining keyboard functions
+					       + ",\"recording\":"    + flag( m_widget->remoteRecording() )
+					       + ",\"frozen\":"       + flag( RenderPipeline::frozen() )
+					       + ",\"pinned\":"       + flag( RenderPipeline::pinned() )
+					       + ",\"shaderInfo\":"   + flag( m_widget->shaderInfoVisible() )
+					       + ",\"featureOverlay\":" + flag( m_widget->featureOverlayVisible() )
+					       + ",\"stereoMode\":"   + QString::number( RenderPipeline::stereoMode() )
+					       + ",\"stereoDepth\":"  + num( RenderPipeline::stereoDepth() )
+					       + ",\"shaders\":\""    + jsonEscape( m_widget->remoteShaderInfo() ) + "\""
+					       + ",\"configs\":["     + cfgs.join( "," ) + "]}" ).toUtf8();
 				}
 				else if( path == "/api/snapshot" )
 				{
@@ -447,13 +605,34 @@ void WebRemote::handleConnection()
 					else if ( k == "trails"     ) RenderPipeline::setTrails( v );
 					else if ( k == "mood"       ) RenderPipeline::setMood( v );
 					else if ( k == "latency"    ) RenderPipeline::setLatency( v );
+					else if ( k == "stereodepth") RenderPipeline::setStereoDepth( v );
+					else if ( k == "renderscale") RenderPipeline::setRenderScale( v );
+					else if ( k == "stereomode" ) RenderPipeline::setStereoMode( int(v) );
+					else if ( k == "lyricsmode" ) m_widget->setLyricsModeValue( int(v) );
 				}
+				else if( path == "/api/tap" )
+					m_widget->remoteTapTempo();
+				else if( path == "/api/screenshot" )
+				{
+					const QString fn = m_widget->remoteScreenshot();
+					body = ( "{\"file\":\"" + jsonEscape( fn ) + "\"}" ).toUtf8();
+				}
+				else if( path == "/api/savedefaults" )
+					m_widget->remoteSaveDefaults();
 				else if( path == "/api/toggle" )
 				{
 					const QString k = q.queryItemValue( "k" );
 					if      ( k == "lightshow"  ) RenderPipeline::toggleLightShow();
 					else if ( k == "blackout"   ) RenderPipeline::toggleBlackout();
 					else if ( k == "replayarm"  ) m_widget->remoteToggleReplayArm();
+					else if ( k == "record"     ) m_widget->remoteToggleRecord();
+					else if ( k == "freeze"     ) RenderPipeline::toggleFreeze();
+					else if ( k == "pin"        ) RenderPipeline::togglePin();
+					else if ( k == "stereo"     ) RenderPipeline::cycleStereo();
+					else if ( k == "shaderinfo" )
+						m_widget->setShaderInfoVisible( !m_widget->shaderInfoVisible() );
+					else if ( k == "features" )
+						m_widget->setFeatureOverlayVisible( !m_widget->featureOverlayVisible() );
 					else if ( k == "autoconfig" )
 						m_widget->setAutoConfigEnabled( !m_widget->autoConfigEnabled() );
 					else if ( k == "autoscale" )

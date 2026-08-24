@@ -172,6 +172,25 @@ public:
 	bool        remoteReplayArmed() const   { return m_recorder.replayArmed(); } ///< Whether the instant-replay ring buffer is currently armed.
 	void        remoteToggleReplayArm()     { m_recorder.toggleReplayArm(); }    ///< Arms/disarms the instant-replay ring buffer (same as key 'y').
 
+	// ---- Web-remote hooks, second wave: the remaining keyboard functions ----
+	// Everything here mirrors exactly one key handler in keyPressEvent(), so
+	// the phone and the keyboard stay two views of the same state rather than
+	// two code paths that can drift apart.
+	void        remoteToggleRecord()        { m_recorder.toggle(); }            ///< Starts/stops the mp4 video+music recording (same as key 'r').
+	bool        remoteRecording() const     { return m_recorder.recording(); }  ///< Whether an mp4 recording is currently running.
+	/** @brief Saves a PNG screenshot of the current frame (same as key 's'). @return The file name written, or an empty string on failure. */
+	QString     remoteScreenshot();
+	void        remoteTapTempo();                                               ///< Feeds one tap into the tap-tempo estimator (same as key 't').
+	/** @brief The active shader names/transition overlay text (same content as key 'v'). @return Multi-line text, or empty without an active pipeline. */
+	QString     remoteShaderInfo() const;
+	bool        shaderInfoVisible() const   { return m_showShaderInfo; }        ///< Whether the on-screen active-shader-names overlay (key 'v') is shown.
+	void        setShaderInfoVisible( bool on ) { m_showShaderInfo = on; }
+	bool        featureOverlayVisible() const { return m_showFeatureOverlay; }  ///< Whether the on-screen audio-feature/FPS overlay (key 'i') is shown.
+	void        setFeatureOverlayVisible( bool on ) { m_showFeatureOverlay = on; }
+	void        remoteSaveDefaults()        { saveAllSettings(); }              ///< Persists the current look + state as the startup default (same as key 'k').
+	/** @brief Name of the active configuration, even when it is hidden and therefore absent from remoteConfigNames(). */
+	QString     remoteActiveConfigName() const;
+
 public slots:
 	/**
 	 * @brief Stores the working directory for media lookups. Legacy hook, currently
