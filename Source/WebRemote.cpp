@@ -216,6 +216,13 @@ static const char *kPageTemplate = R"HTML(<!DOCTYPE html>
 
 <div class="panel" id="p-info">
  <pre class="info" id="shaders">–</pre>
+ <div class="status"><span>@@VERSION@@: <b id="appver">–</b></span>
+  <span id="updstatus" style="color:#778"></span></div>
+ <div class="row" id="updrow" style="display:none">
+  <button class="big" id="updbtn" onclick="cmd('/api/installupdate')">
+   &#11015; @@INSTALLUPDATE@@</button>
+  <div class="hint">@@UPDATEHINT@@</div>
+ </div>
  <div class="row">
   <button onclick="cmd('/api/savedefaults')">&#128190; @@SAVEDEFAULTS@@</button>
  </div>
@@ -262,6 +269,12 @@ function refresh(){ if(Date.now()<hold) return;
   document.getElementById('fpsind').textContent='@@FPS@@ '+s.fps;
   document.getElementById('curcfg').textContent=s.activeName||'@@NOTHINGPLAYING@@';
   document.getElementById('shaders').textContent=s.shaders||'–';
+  document.getElementById('appver').textContent=s.appVersion||'–';
+  document.getElementById('updstatus').textContent=s.updateStatus||'';
+  // The install button only exists once a newer release was actually found.
+  document.getElementById('updrow').style.display=s.updateAvail?'':'none';
+  if(s.updateAvail) document.getElementById('updbtn').innerHTML=
+    '⬇ @@INSTALLUPDATE@@ '+(s.updateVersion||'');
   const lyricsNames=@@LYRICSARR@@;
   const lb=document.getElementById('lyrics');
   lb.textContent='@@LYRICSPREFIX@@'+lyricsNames[s.lyricsMode];
@@ -399,6 +412,10 @@ static QByteArray buildPage()
 	sub( "@@NOTHINGPLAYING@@", S_WR_NOTHING_PLAYING );
 	sub( "@@FPS@@",          S_WR_FPS );
 	sub( "@@RECORDINGNOW@@", S_WR_RECORDING_NOW );
+	sub( "@@VERSION@@",      S_WR_VERSION );
+	// appears twice (initial button text + the JS that appends the version)
+	sub( "@@INSTALLUPDATE@@", S_WR_INSTALLUPDATE );
+	sub( "@@UPDATEHINT@@",   S_WR_UPDATEHINT );
 	// @@LYRICSPREFIX@@ appears twice (the initial button text and the JS
 	// template literal) -- QString::replace() with no count limit handles
 	// both occurrences from one call, same as every sub() above.
@@ -595,6 +612,11 @@ void WebRemote::handleConnection()
 					       + ",\"stereoMode\":"   + QString::number( RenderPipeline::stereoMode() )
 					       + ",\"stereoDepth\":"  + num( RenderPipeline::stereoDepth() )
 					       + ",\"shaders\":\""    + jsonEscape( m_widget->remoteShaderInfo() ) + "\""
+				       + ",\"appVersion\":\"" + jsonEscape( m_widget->appVersion() ) + "\""
+				       + ",\"updateCheck\":"  + flag( m_widget->updateCheckEnabled() )
+				       + ",\"updateAvail\":"  + flag( m_widget->updateAvailable() )
+				       + ",\"updateVersion\":\"" + jsonEscape( m_widget->updateVersion() ) + "\""
+				       + ",\"updateStatus\":\""  + jsonEscape( m_widget->updateStatus() ) + "\""
 					       + ",\"configs\":["     + cfgs.join( "," ) + "]}" ).toUtf8();
 				}
 				else if( path == "/api/snapshot" )
@@ -653,6 +675,9 @@ void WebRemote::handleConnection()
 				}
 				else if( path == "/api/savedefaults" )
 					m_widget->remoteSaveDefaults();
+				// Explicit user action only -- the check itself never downloads.
+				else if( path == "/api/installupdate" )
+					m_widget->remoteInstallUpdate();
 				else if( path == "/api/toggle" )
 				{
 					const QString k = q.queryItemValue( "k" );

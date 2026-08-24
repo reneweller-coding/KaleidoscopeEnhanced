@@ -192,6 +192,14 @@ void SetupWindow::buildContent()
 	videoHint->setWordWrap( true );
 	videoHint->setStyleSheet( "color: #888; font-size: 11px;" );
 	fOnline->addRow( QString(), videoHint );
+	// Update check: belongs with the other opt-in internet features rather
+	// than with the picture/sound tuning below.
+	m_updateCheck = new QCheckBox( S( S_SETUP_UPDATECHECK ) );
+	fOnline->addRow( QString(), m_updateCheck );
+	auto *updHint = new QLabel( S( S_SETUP_UPDATECHECK_HINT ) );
+	updHint->setWordWrap( true );
+	updHint->setStyleSheet( "color: #888; font-size: 11px;" );
+	fOnline->addRow( QString(), updHint );
 	root->addWidget( gOnline );
 
 	// ---- Verhalten ----
@@ -348,6 +356,7 @@ void SetupWindow::loadFromIni()
 		m_recFps->setCurrentIndex( s.value( "recordFps", 30 ).toInt() >= 45 ? 1 : 0 );
 		m_motionBlur->setChecked( s.value( "motionBlur", false ).toBool() );
 		m_showHidden->setChecked( s.value( "showHiddenPresets", false ).toBool() );
+		m_updateCheck->setChecked( s.value( "updateCheck", false ).toBool() );
 		m_oscPort->setValue( s.value( "oscPort", 0 ).toInt() );
 		m_oscHost->setText( s.value( "oscHost", "127.0.0.1" ).toString() );
 	}
@@ -399,6 +408,7 @@ void SetupWindow::saveToIni()
 	s.setValue( "recordFps",      m_recFps->currentData().toInt() );
 	s.setValue( "motionBlur",     m_motionBlur->isChecked() );
 	s.setValue( "showHiddenPresets", m_showHidden->isChecked() );
+	s.setValue( "updateCheck", m_updateCheck->isChecked() );
 	s.setValue( "oscPort", m_oscPort->value() );
 	s.setValue( "oscHost", m_oscHost->text().trimmed().isEmpty() ? "127.0.0.1" : m_oscHost->text().trimmed() );
 

@@ -28,6 +28,8 @@
 #include "OscSender.h"
 #include "TrackMedia.h"
 
+class UpdateCheck;
+
 /**
  * @brief Where one overlay menu drew its rows last frame, so a mouse click can
  *        be mapped back to a row without duplicating the layout arithmetic.
@@ -191,6 +193,14 @@ public:
 	/** @brief Name of the active configuration, even when it is hidden and therefore absent from remoteConfigNames(). */
 	QString     remoteActiveConfigName() const;
 
+	// ---- Optional update check (see UpdateCheck.h for the safety rules) ----
+	bool        updateCheckEnabled() const { return m_updateCheck; }   ///< Whether the optional GitHub release check is switched on ("updateCheck" setting).
+	QString     appVersion() const;                                    ///< @brief This build's version string (KALEIDOSCOPE_VERSION).
+	bool        updateAvailable() const;                               ///< @brief Whether a newer release was found by the last check.
+	QString     updateVersion() const;                                 ///< @brief Version of the newest release, empty if none/not checked.
+	QString     updateStatus() const;                                  ///< @brief Human-readable check/download status for the UI.
+	void        remoteInstallUpdate();                                 ///< @brief Downloads the newer release's installer and launches it (explicit user action only).
+
 public slots:
 	/**
 	 * @brief Stores the working directory for media lookups. Legacy hook, currently
@@ -329,6 +339,10 @@ protected:
 	// ("springt zuviel") standardmäßig AUS, per Umschalt+W zuschaltbar
 	// (persistiert wie die anderen Overlay-Einstellungen).
 	bool			m_lyricsKinetic  = false;   ///< Kinetic line-slam animation on karaoke line change, off by default (Shift+W).
+	// Optional, and off unless the user switches it on in the setup tool --
+	// it is the only thing here that contacts a server on its own.
+	bool			m_updateCheck    = false;   ///< Whether to ask GitHub for a newer release at startup ("updateCheck" setting).
+	UpdateCheck    *m_update         = nullptr; ///< Owned update checker; only constructed when m_updateCheck is on.
 	int				m_lyricsRevUploaded = -1;   ///< TrackMedia lyrics revision last uploaded as a texture; forces re-upload on preset switch.
 	int				m_artistRevSeen  = -1;      ///< TrackMedia images revision last observed, for change detection.
 	int				m_artistIdx      = -1;      ///< Unused index reservation (see m_artistIdxUploaded for the active one).

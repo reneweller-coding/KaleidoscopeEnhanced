@@ -77,6 +77,7 @@ private:
 	QDoubleSpinBox  *m_stereoDepth   = nullptr;
 	QComboBox      *m_videoCodec    = nullptr;
 	QCheckBox       *m_motionBlur   = nullptr;   ///< Motion blur for recordings (ini key motionBlur).
+	QCheckBox       *m_updateCheck  = nullptr;   ///< Optional startup check for a newer GitHub release (ini key updateCheck).
 	QCheckBox       *m_showHidden   = nullptr;   ///< Debug: unhide Komplett/Test* presets (ini key showHiddenPresets).
 	QSpinBox        *m_oscPort      = nullptr;   ///< OSC output port, 0 = off (ini key oscPort).
 	QLineEdit       *m_oscHost      = nullptr;   ///< OSC target host (ini key oscHost).

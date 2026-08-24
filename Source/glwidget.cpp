@@ -30,6 +30,8 @@
 #include "glcore.h"        // core-profile GL entry points (glcoreInit)
 #include "glwidget.h"
 #include "WebRemote.h"
+#include "UpdateCheck.h"
+#include "Version.h"
 #include "SpoutOut.h"    // global facades, released once in ~GLwidget
 #include "SpoutIn.h"
 #include "VideoIn.h"
@@ -193,6 +195,32 @@ QString GLwidget::remoteShaderInfo() const
 	return QString();
 }
 
+// ---- Optional update check ------------------------------------------------
+// m_update stays null unless the setting is on, so with the feature switched
+// off nothing here ever touches the network.
+QString GLwidget::appVersion() const { return QString::fromLatin1( KALEIDOSCOPE_VERSION ); }
+
+bool GLwidget::updateAvailable() const
+{
+	return m_update && m_update->updateAvailable();
+}
+
+QString GLwidget::updateVersion() const
+{
+	return m_update ? m_update->latestVersion() : QString();
+}
+
+QString GLwidget::updateStatus() const
+{
+	return m_update ? m_update->status() : QString();
+}
+
+void GLwidget::remoteInstallUpdate()
+{
+	if( m_update )
+		m_update->downloadAndInstall();
+}
+
 void GLwidget::remoteSelectConfig( int idx )
 {
 	if( idx >= 0 && idx < (int)m_configurationList.size()
@@ -337,6 +365,15 @@ GLwidget::GLwidget( QWidget *parent )
 	// controls as the keyboard.  Parented to this widget; main-thread events.
 	if( s_remotePort > 0 )
 		new WebRemote( this, s_remotePort );
+
+	// Optional update check -- OFF unless switched on in the setup tool, and
+	// even then it only ASKS GitHub and reports; downloading and running the
+	// installer needs a separate, explicit action (see UpdateCheck.h).
+	if( m_updateCheck )
+	{
+		m_update = new UpdateCheck( this );
+		m_update->start();
+	}
 
 	// Shader HOT-RELOAD (dev aid): watch every user shader; a saved file is
 	// recompiled live on the next frame.  Editors often save via replace, so
@@ -1078,6 +1115,7 @@ void GLwidget::loadUiSettings()
 	m_artistShow     = s.value( "artistImages", m_artistShow ).toBool();
 	m_videoEnabled   = s.value( "videoEnabled", m_videoEnabled ).toBool();
 	m_lyricsKinetic  = s.value( "lyricsKinetic", m_lyricsKinetic ).toBool();
+	m_updateCheck    = s.value( "updateCheck",  m_updateCheck ).toBool();
 	for( int i = 0; i < MIDI_TARGETS; ++i )
 		m_midiMap[i] = s.value( QString("midiMap%1").arg(i), m_midiMap[i] ).toInt();
 	RenderPipeline::setLightShow( s.value( "lightShow", RenderPipeline::lightShow() ).toBool() );
@@ -1106,6 +1144,7 @@ void GLwidget::saveUiSettings()
 	s.setValue( "artistImages", m_artistShow );
 	s.setValue( "videoEnabled", m_videoEnabled );
 	s.setValue( "lyricsKinetic", m_lyricsKinetic );
+	s.setValue( "updateCheck",   m_updateCheck );
 	for( int i = 0; i < MIDI_TARGETS; ++i )
 		s.setValue( QString("midiMap%1").arg(i), m_midiMap[i] );
 	s.setValue( "lightShow",  RenderPipeline::lightShow() );

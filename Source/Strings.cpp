@@ -166,6 +166,11 @@ const char *kDE[S_COUNT] = {
 	/* S_WR_NOTHING_PLAYING */    "(keins)",
 	/* S_WR_FPS */                "Bildrate",
 	/* S_WR_RECORDING_NOW */      "Aufnahme läuft",
+	/* S_WR_VERSION */            "Version",
+	/* S_WR_INSTALLUPDATE */      "Update installieren",
+	/* S_WR_UPDATEHINT */         "Lädt den Installer von GitHub und startet ihn; das Programm beendet sich dabei.",
+	/* S_SETUP_UPDATECHECK */     "Beim Start auf neue Version prüfen (GitHub)",
+	/* S_SETUP_UPDATECHECK_HINT */ "Fragt nur nach der neuesten Release-Nummer. Heruntergeladen und installiert wird nichts ohne ausdrückliche Bestätigung.",
 };
 
 const char *kEN[S_COUNT] = {
@@ -322,6 +327,11 @@ const char *kEN[S_COUNT] = {
 	/* S_WR_NOTHING_PLAYING */    "(none)",
 	/* S_WR_FPS */                "Frame rate",
 	/* S_WR_RECORDING_NOW */      "Recording",
+	/* S_WR_VERSION */            "Version",
+	/* S_WR_INSTALLUPDATE */      "Install update",
+	/* S_WR_UPDATEHINT */         "Downloads the installer from GitHub and starts it; the app exits while it runs.",
+	/* S_SETUP_UPDATECHECK */     "Check for a new version at startup (GitHub)",
+	/* S_SETUP_UPDATECHECK_HINT */ "Only asks for the latest release number. Nothing is downloaded or installed without an explicit confirmation.",
 };
 
 } // namespace
