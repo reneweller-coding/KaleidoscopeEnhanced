@@ -223,6 +223,14 @@ QImage prepareImage( const QImage &image )
 	QImage convertedImage = image.
 		convertToFormat( QImage::Format_ARGB32 ).
 		rgbSwapped().
+		// Flip vertically: QImage's row 0 is the TOP of the picture, but GL
+		// samples texture (s,t)=(0,0) at the BOTTOM-left texel. Without this
+		// every background photo went in upside down -- which is exactly what
+		// the app showed, while PresetEditor's own loader (PreviewWidget::
+		// makeTexture, which has always mirrored here) rendered them the right
+		// way up. That mismatch is why probe/catalogue renders looked correct
+		// and only the real app was wrong.
+		mirrored( false, true ).
 		scaled( maxSize, maxSize );
 	return convertedImage;
 }

@@ -2608,13 +2608,13 @@ void RenderPipeline::createTexture()
     if(m_imageListIterator == m_imageList.end() )
         m_imageListIterator = m_imageList.begin();
     setupTexture( m_actTex, prepareImage( loadImageOrFallback( *m_imageListIterator ) ) );
-    printf( "%s\n", qPrintable((*m_imageListIterator)) );
+    fprintf( stderr, "PHOTO %s\n", qPrintable((*m_imageListIterator)) );
 
 	m_imageListIterator++;
     if(m_imageListIterator == m_imageList.end() )
         m_imageListIterator = m_imageList.begin();
     setupTexture( m_nextTex, prepareImage( loadImageOrFallback( *m_imageListIterator ) ) );
-    printf( "%s\n", qPrintable((*m_imageListIterator)) );
+    fprintf( stderr, "PHOTO %s\n", qPrintable((*m_imageListIterator)) );
 
 	/*m_imageListIterator++;
     if(m_imageListIterator == m_imageList.end() )
@@ -2999,7 +2999,7 @@ void ImageLoader::run()
 			m_shader->m_imageListIterator = m_shader->m_imageList.begin() + bestIdx;
 
             m_shader->m_nextImage = prepareImage( loadImageOrFallback( *m_shader->m_imageListIterator ) );
-			printf("%s\n", qPrintable((*m_shader->m_imageListIterator)));
+			fprintf( stderr, "PHOTO %s\n", qPrintable((*m_shader->m_imageListIterator)) );
             m_shader->m_triggerImageload = false;
 
 			//float loadingtime = timer.elapsed();
