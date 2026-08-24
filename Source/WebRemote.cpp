@@ -14,6 +14,8 @@
 #include <QtNetwork/QHostAddress>
 #include <QtCore/QUrl>
 #include <QtCore/QUrlQuery>
+#include <QtCore/QTimer>
+#include <memory>
 #include <QtCore/QSysInfo>
 #include <QtCore/QCoreApplication>
 
@@ -23,6 +25,11 @@
 /// delivers a copy of every broadcast datagram to every bound socket).
 static const quint16 kDiscoveryPort  = 45677;
 static const char   *kDiscoveryMagic = "KALEIDO_DISCOVER_V1";
+
+/// How long a kept-alive connection may sit idle before the server drops it.
+/// Long enough to span the page's 2 s polling cadence many times over, short
+/// enough that a phone that walked out of the room doesn't hold a socket.
+static const int kKeepAliveIdleMs = 30000;
 
 /// Escapes a string for embedding inside a JSON double-quoted string literal
 /// (backslash, quote, and control characters). Every JSON string this file
@@ -492,13 +499,40 @@ void WebRemote::handleConnection()
 {
 	while( QTcpSocket *sock = m_server->nextPendingConnection() )
 	{
-		// Reads the entire request on the FIRST readyRead and processes it immediately — no
-		// buffering across multiple reads. Fine here because every client is this page's own
-		// fetch() calls issuing tiny GET requests that always arrive in a single TCP segment;
-		// a general-purpose HTTP server would need to handle a request split across reads.
-		QObject::connect( sock, &QTcpSocket::readyRead, sock, [this, sock]()
+		// HTTP/1.1 keep-alive: the page fires a burst of small GETs (state,
+		// snapshot, and one per visible scene thumbnail). Closing after each
+		// one forced a fresh TCP handshake per request -- barely noticeable on
+		// localhost, but a full extra round trip each time over the WiFi link
+		// a phone actually uses. The connection is now reused until the client
+		// drops it or it goes idle.
+		//
+		// That means a socket can carry SEVERAL requests, so the old
+		// "readAll() is exactly one request" assumption no longer holds:
+		// bytes are accumulated per connection and every COMPLETE request in
+		// the buffer is answered in turn. GET has no body, so end-of-headers
+		// (CRLFCRLF) is end-of-request.
+		auto buf = std::make_shared<QByteArray>();
+
+		// Without this an abandoned connection (phone locked, app swiped away)
+		// would sit in the server forever now that nothing closes it.
+		QTimer *idle = new QTimer( sock );
+		idle->setSingleShot( true );
+		idle->setInterval( kKeepAliveIdleMs );
+		QObject::connect( idle, &QTimer::timeout, sock, [sock]() { sock->disconnectFromHost(); } );
+		idle->start();
+
+		QObject::connect( sock, &QTcpSocket::readyRead, sock, [this, sock, buf, idle]()
 		{
-			const QByteArray req = sock->readAll();
+		  idle->start();                      // re-arm: this connection is alive
+		  buf->append( sock->readAll() );
+		  int hdrEnd;
+		  while( ( hdrEnd = buf->indexOf( "\r\n\r\n" ) ) >= 0 )
+		  {
+			const QByteArray req = buf->left( hdrEnd + 4 );
+			buf->remove( 0, hdrEnd + 4 );
+			// HTTP/1.1 keeps the connection open unless the client says otherwise.
+			const bool closeAfter = req.contains( "Connection: close" )
+			                     || req.contains( "connection: close" );
 			const int eol = req.indexOf( "\r\n" );
 			const QList<QByteArray> parts = req.left( eol < 0 ? req.size() : eol ).split( ' ' );
 			// Default response for an unmatched GET path (or a non-GET request): 200 OK with an
@@ -648,8 +682,6 @@ void WebRemote::handleConnection()
 				}
 			}
 
-			// "Connection: close" on every response: the client (this page's fetch() calls)
-			// opens a fresh TCP connection per request, so there is no keep-alive to manage.
 			// A scene thumbnail is near-static (the active scene's is the only one that can
 			// ever change, and only once per session-visit) -- a short max-age lets the
 			// browser skip the round trip on a quick close/reopen of the scene browser
@@ -657,9 +689,16 @@ void WebRemote::handleConnection()
 			QByteArray resp = "HTTP/1.1 200 OK\r\nContent-Type: " + ctype +
 			                  "\r\nContent-Length: " + QByteArray::number( body.size() ) +
 			                  ( cacheable ? "\r\nCache-Control: max-age=30" : "" ) +
-			                  "\r\nConnection: close\r\n\r\n" + body;
+			                  ( closeAfter ? "\r\nConnection: close"
+			                               : "\r\nConnection: keep-alive" ) +
+			                  "\r\n\r\n" + body;
 			sock->write( resp );
-			sock->disconnectFromHost();
+			if( closeAfter )
+			{
+				sock->disconnectFromHost();
+				return;
+			}
+		  }
 		} );
 		QObject::connect( sock, &QTcpSocket::disconnected, sock, &QObject::deleteLater );
 	}
