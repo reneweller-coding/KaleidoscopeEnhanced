@@ -74,3 +74,7 @@ Tools/scene_metrics.json
 
 # Written at runtime by SHIFT+SPACE / the web remote -- user data, not source.
 Configurations/Marked.xml
+
+# Visual Studio per-user solution options (binary, per-developer)
+*.suo
+*.opensdf
