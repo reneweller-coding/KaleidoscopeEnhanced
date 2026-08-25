@@ -21,6 +21,10 @@
 //   ribbon  20x300 quad strips    additive blending, no depth test
 //   grid    220x120 cell sheet    opaque, depth-tested (u/v in attrA.xy)
 //   quads    3000 unit quads      opaque, depth-tested (corner in attrA.xy)
+//   mesh    real .glb/.obj model  opaque, depth-tested (attrA.xyz=pos/.w=U,
+//                                 attrB.xyz=normal/.w=V -- see MeshImport.h);
+//                                 its material, if any, samples "texMeshMaterial"
+//                                 (sampler2DArray, unit kMeshMaterialTexUnit)
 //
 // The CURRENT IMAGE is available to every scene: the host binds it on unit 0
 // before the effect pass and setUniforms() points "tex0" at it — a fragment
@@ -55,7 +59,7 @@ public:
 	/**
 	 * @brief Constructs a 3D scene bound to one fragment shader and geometry kind, and rolls its first per-activation variation.
 	 * @param filenameFragmentShader Path to the scene's X.frag; sibling X.vert/.tesc/.tese/.geom/.comp filenames are derived from it by replacing the extension.
-	 * @param geom Geometry kind from the preset's geom= attribute ("points","cubes","ribbon","grid","quads","patches","scatter","indirect"); unrecognised values fall back to "points".
+	 * @param geom Geometry kind from the preset's geom= attribute ("points","cubes","ribbon","grid","quads","patches","scatter","indirect","mesh"); unrecognised values fall back to "points".
 	 * @param minTimeSolo Minimum time (ms) this effect stays solo before crossfading; forwarded to EffectShader.
 	 * @param maxTimeSolo Maximum time (ms) this effect stays solo; forwarded to EffectShader.
 	 * @param minTimeInterpolation Minimum crossfade duration (ms); forwarded to EffectShader.
@@ -92,6 +96,7 @@ public:
 	void  setStateBytes( int b ) { m_stateBytes = b; }   ///< @param b Size in bytes of the persistent SSBO a geom="indirect" generator keeps across frames (0 = none); allocated and zeroed once in setupIndirect().
 	void  setGenPassCount( int n ) { m_genPassCount = n; }   ///< @param n Number of compute passes (genPass = 0..n-1, barrier between each) runGenerator() dispatches this generator through per frame; 0 (default) keeps the original "1 pass, or 2 if stateful" behaviour. For pipelines needing more than "advance, then mesh" (e.g. a multi-stage grid-based fluid sim).
 	void  setShadowExtent( float e ) { m_shadowExtent = e; }   ///< @param e Half-width of the shadow-map light box for this scene (overrides EffectShader::kShadowExtent).
+	void  setModelPath( const std::string &path ) { m_modelPath = path; }   ///< @param path Filesystem path (config attribute model=) to the .glb/.gltf/.obj this geom="mesh" scene loads; ignored by every other geom kind.
 	float shadowExtent() const override { return m_shadowExtent; }   ///< @return This scene's shadow-map light box half-width.
 	/**
 	 * @brief Forwards to EffectShader::setUniforms(), first folding in this activation's time offset/speed factor.
@@ -126,6 +131,10 @@ private:
 	// GEOM_INDIRECT has NO host-built geometry at all: a compute shader writes
 	// the vertices and the draw call's own argument list into buffers, and the
 	// vertex count never travels back to the CPU.  See runGenerator().
+	// GEOM_MESH is the one kind whose geometry is NOT procedural: buildGeometry()
+	// loads a real .glb/.gltf/.obj file (see MeshImport.h) instead of generating
+	// a pattern, and its material (if the source had one) is bound as a
+	// sampler2DArray -- see m_meshMaterialTex.
 	/**
 	 * @brief Which procedural geometry buildGeometry() produces and how draw() renders it.
 	 *
@@ -134,7 +143,7 @@ private:
 	 */
 	enum GeomKind { GEOM_POINTS = 0, GEOM_CUBES = 1, GEOM_RIBBON = 2,
 	                GEOM_GRID = 3, GEOM_QUADS = 4, GEOM_PATCHES = 5,
-	                GEOM_SCATTER = 6, GEOM_INDIRECT = 7 };
+	                GEOM_SCATTER = 6, GEOM_INDIRECT = 7, GEOM_MESH = 8 };
 	/** @brief Builds and uploads this scene's static geometry into m_vbo according to m_geomKind (or, for GEOM_INDIRECT, allocates the empty capacity buffer a compute generator will fill every frame). */
 	void buildGeometry();
 
@@ -224,6 +233,18 @@ private:
 	GLuint m_vbo         = 0;   ///< Vertex buffer holding this scene's geometry (host-built for most kinds; GPU-filled every frame for GEOM_INDIRECT).
 	GLuint m_vao         = 0;   // core profile: attrib state container
 	int    m_vertexCount = 0;   ///< Vertex count in m_vbo to draw (meaningless for GEOM_INDIRECT, whose count instead lives in m_cmdBuf on the GPU).
+
+	// ---- GEOM_MESH: a real loaded model instead of procedural geometry ----
+	std::string m_modelPath;          ///< Config attribute model=; path to the .glb/.gltf/.obj this scene loads. Empty for every other geom kind.
+	GLuint m_meshMaterialTex   = 0;   ///< sampler2DArray built from the loaded mesh's material (0 = none loaded, or the mesh had no material) -- see MeshImport.h.
+	int    m_meshMaterialLayers = 0;  ///< Layers actually populated in m_meshMaterialTex (0, 1 or 2); also doubles as "material texture ready" for draw().
+	// Unit 2 is, per a dedicated audit of every texture unit this engine
+	// already reserves (photos, FX stages, ComputeFX sims, spectrogram, depth,
+	// shadow maps, bake/prevFrame/mandelbrot), the one unit nothing else
+	// claims -- see the texture-unit budget discussion that motivated this
+	// feature. Fixed rather than auto-assigned: every mesh scene needs the
+	// SAME unit reserved, the same way texSpectro is always unit 28.
+	static const int kMeshMaterialTexUnit = 2;
 	GLint  m_projUni     = -1;   ///< Location of the `projM` (projection * camera-rig) matrix uniform.
 	GLint  m_eyeUni      = -1;   ///< Location of the `eyeOff` stereo eye-offset uniform.
 	// CAMERA RIG (formula layer, no shader edits): <expr> entries named
@@ -239,6 +260,8 @@ private:
 	GLint  m_attrB       = -1;   ///< Location of the `attrB` vertex attribute (four random seeds in [0,1)).
 	GLint  m_seedUni     = -1;   ///< Location of the `sceneSeed` uniform.
 	GLint  m_budgetUni   = -1;   ///< Location of the `cubeBudget` uniform.
+	GLint  m_meshMaterialUni = -1;   ///< Location of the `texMeshMaterial` uniform (GEOM_MESH only; -1 if the fragment shader doesn't declare it).
+	GLint  m_meshMaterialLayersUni = -1;   ///< Location of the `texMeshMaterialLayers` uniform: how many of texMeshMaterial's layers are actually populated (1 or 2), so a shader doesn't sample a metallic-roughness layer that was never uploaded -- a 2D array's `texture()` call clamps an out-of-range layer index rather than failing, so without this a 1-layer mesh would silently reread its base color as bogus roughness/metallic.
 	float  m_eyeOffset   = 0.f;   ///< Current stereo eye offset in world units (0 = mono); set by setEyeOffset().
 
 	// Per-activation variation state (see resetParameters()).

@@ -6,6 +6,7 @@
 #include "glcore.h"          // MUST come before any gl.h include (Qt's qopengl.h)
 #include "shader_setup.h"
 #include "Scene3DShader.h"
+#include "MeshImport.h"
 
 #include <cstdlib>
 #include <cstring>
@@ -72,6 +73,7 @@ Scene3DShader::Scene3DShader( const std::string &filenameFragmentShader, const s
 	else if ( geom == "patches" ) m_geomKind = GEOM_PATCHES;
 	else if ( geom == "scatter" ) m_geomKind = GEOM_SCATTER;
 	else if ( geom == "indirect") m_geomKind = GEOM_INDIRECT;
+	else if ( geom == "mesh"    ) m_geomKind = GEOM_MESH;
 	else                          m_geomKind = GEOM_POINTS;
 
 	rollVariation();
@@ -111,6 +113,8 @@ Scene3DShader::~Scene3DShader()
 		glDeleteBuffers( 1, &m_stateBuf );
 	if( m_genProg )
 		glDeleteProgram( m_genProg );
+	if( m_meshMaterialTex )
+		glDeleteTextures( 1, &m_meshMaterialTex );
 }
 
 void Scene3DShader::resetParameters()
@@ -298,6 +302,38 @@ void Scene3DShader::buildGeometry()
 					v.push_back( hash01( cell * 4u + 3u ) );
 				}
 			}
+	}
+	else if( m_geomKind == GEOM_MESH )
+	{
+		// The only non-procedural kind: v comes from a real file instead of a
+		// generated pattern, but still lands in the same 8-floats-per-vertex
+		// layout (attrA.xyz=pos/.w=U, attrB.xyz=normal/.w=V) every other kind
+		// uses, so the upload code below needs no branch of its own.
+		MeshAsset asset;
+		if( loadMeshAsset( m_modelPath, asset ) )
+		{
+			v = std::move( asset.vertices );
+			if( asset.materialLayers > 0 )
+			{
+				if( m_meshMaterialTex == 0 )
+					glGenTextures( 1, &m_meshMaterialTex );
+				glBindTexture( GL_TEXTURE_2D_ARRAY, m_meshMaterialTex );
+				glTexImage3D( GL_TEXTURE_2D_ARRAY, 0, GL_RGBA8,
+				              asset.materialW, asset.materialH, asset.materialLayers,
+				              0, GL_RGBA, GL_UNSIGNED_BYTE, asset.materialRGBA.data() );
+				glTexParameteri( GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
+				glTexParameteri( GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+				glTexParameteri( GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_REPEAT );
+				glTexParameteri( GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_REPEAT );
+				glGenerateMipmap( GL_TEXTURE_2D_ARRAY );
+				glBindTexture( GL_TEXTURE_2D_ARRAY, 0 );
+				m_meshMaterialLayers = asset.materialLayers;
+			}
+		}
+		else
+		{
+			fprintf( stderr, "Scene3DShader: failed to load mesh '%s'\n", m_modelPath.c_str() );
+		}
 	}
 	else  // GEOM_RIBBON: 20 ribbons x 300 segments, two triangles per segment.
 	{
@@ -641,6 +677,8 @@ void Scene3DShader::initUniforms( int width, int height )
 	m_eyeUni    = glGetUniformLocation( m_sh_prog_id, "eyeOff" );
 	m_seedUni   = glGetUniformLocation( m_sh_prog_id, "sceneSeed" );
 	m_budgetUni = glGetUniformLocation( m_sh_prog_id, "cubeBudget" );
+	m_meshMaterialUni = glGetUniformLocation( m_sh_prog_id, "texMeshMaterial" );
+	m_meshMaterialLayersUni = glGetUniformLocation( m_sh_prog_id, "texMeshMaterialLayers" );
 	m_attrA   = glGetAttribLocation( m_sh_prog_id, "attrA" );
 	m_attrB   = glGetAttribLocation( m_sh_prog_id, "attrB" );
 
@@ -766,6 +804,15 @@ void Scene3DShader::draw()
 	if( m_seedUni   >= 0 ) glUniform1f( m_seedUni,   m_sceneSeed );
 	if( m_budgetUni >= 0 ) glUniform1f( m_budgetUni, s_cubeBudget );
 
+	if( m_meshMaterialLayers > 0 )
+	{
+		if( m_meshMaterialUni >= 0 ) glUniform1i( m_meshMaterialUni, kMeshMaterialTexUnit );
+		if( m_meshMaterialLayersUni >= 0 ) glUniform1i( m_meshMaterialLayersUni, m_meshMaterialLayers );
+		glActiveTexture( GL_TEXTURE0 + kMeshMaterialTexUnit );
+		glBindTexture( GL_TEXTURE_2D_ARRAY, m_meshMaterialTex );
+		glActiveTexture( GL_TEXTURE0 );
+	}
+
 	// During the OIT accumulation pass, the caller (RenderPipeline::renderOitPass
 	// / Scene3DPreview::renderOitPass) has ALREADY bound the two-target OIT
 	// FBO, cleared it to its own per-attachment values (0 for accumulation,
@@ -867,7 +914,7 @@ void Scene3DShader::draw()
 		if( !inOitPass ) glDisable( GL_DEPTH_TEST );
 	}
 	else if( m_geomKind == GEOM_CUBES || m_geomKind == GEOM_GRID
-	 || m_geomKind == GEOM_QUADS )
+	 || m_geomKind == GEOM_QUADS || m_geomKind == GEOM_MESH )
 	{
 		// Solid geometry: depth-tested, opaque -- EXCEPT during the OIT
 		// accumulation pass, whose caller has already set up the blend and

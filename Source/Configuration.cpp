@@ -311,6 +311,10 @@ void Configuration::readConfiguration( const QString &filename )
 			// then mesh" declare this.
 			if( el.hasAttribute("genPasses") )
 				shader->setGenPassCount( el.attribute("genPasses").toInt() );
+			// geom="mesh" only: path to the .glb/.gltf/.obj this scene loads
+			// instead of building procedural geometry.
+			if( el.hasAttribute("model") )
+				shader->setModelPath( el.attribute("model").toStdString() );
 
 			addUniforms( shader, el );
 			shader->setComplexity( complexity );

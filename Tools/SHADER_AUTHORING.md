@@ -76,6 +76,22 @@ Maßgeblich ist `Scene3DShader::buildGeometry()`:
 | `patches` | Ecken-UV [0,1] | 0 | Zell-Index | 4 Seeds |
 | `ribbon` | x = t [0,1], y = Seite (−1/+1) | 0 | **Ribbon-Index** | 4 Seeds |
 | `indirect` | frei — der Compute-Shader schreibt alles | | | |
+| `mesh` | Objekt-Position (xyz) | — | **U** | xyz = Normale, w = **V** |
+
+`mesh` ist der einzige nicht-prozedurale Kind: `buildGeometry()` lädt eine
+echte `.glb`/`.gltf`/`.obj`-Datei (config-Attribut `model="..."`, siehe
+`Source/MeshImport.h`) statt ein Muster zu erzeugen. `attrA`/`attrB` tragen
+deshalb keine 4 Hash-Seeds, sondern die tatsächliche Vertex-Normale — es gibt
+keinen Punkt-/Würfel-/Quad-Index zum Einfärben, weil es nur EIN Objekt ist.
+Ein vorhandenes Material steckt in `uniform sampler2DArray texMeshMaterial`
+(Layer 0 = Basisfarbe+Opacity RGBA, Layer 1 = Metallic-Roughness im
+glTF-Kanal-Layout: G=Roughness, B=Metallic — nur vorhanden, wenn die
+Quelldatei ein Material hatte, sonst bleibt `texMeshMaterial` ungebunden).
+`uniform int texMeshMaterialLayers` sagt, wie viele Layer wirklich befüllt
+sind (1 oder 2) — `texture()` auf einem `sampler2DArray` klemmt einen
+Layer-Index außerhalb des Bereichs, statt zu scheitern, d.h. ohne diese
+Prüfung würde ein Mesh ohne Metallic-Roughness-Map stillschweigend seine
+Basisfarbe nochmal als Rauheit/Metallgrad einlesen.
 
 Drei Fallen, die alle schon zugeschlagen haben:
 
@@ -669,9 +685,10 @@ interessant ab `|q-modal| > 1`, Kachel zählt ab 2 % ihrer Pixel). Folgen:
   platzieren (x,y mit der Tiefe skalieren) und Instanzgröße mit D mitskalieren.
 - Bei `geom="grid"` Blöcke über den **Zellindex** (`attrA.w`) trennen, nie über
   `attrA.xy` — sonst spannt ein Dreieck quer durchs Bild.
-- `indirect`/`grid`/`cubes`/`quads`/`patches`/`scatter` sind tiefengetestet und
-  **opak**: ein blasses breites Quad stanzt ein dunkles Rechteck in alles
-  dahinter. Nur `ribbon` und `points` sind additiv ohne Tiefentest.
+- `indirect`/`grid`/`cubes`/`quads`/`patches`/`scatter`/`mesh` sind
+  tiefengetestet und **opak**: ein blasses breites Quad stanzt ein dunkles
+  Rechteck in alles dahinter. Nur `ribbon` und `points` sind additiv ohne
+  Tiefentest.
 - Die Vertex-Anzahl muss zur gelieferten passen: eine Szene deklarierte 256
   Cubes, die Engine liefert 4900 — jeder Index darüber trieb `acos()` über −1
   in NaN, 95 % des Gitters wurde nie gezeichnet.
