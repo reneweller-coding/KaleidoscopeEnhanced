@@ -1,6 +1,6 @@
 # Kaleidoscope Enhanced — Szenen-Katalog
 
-_592 Szenen, 29 FX-Overlays, 83 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
+_606 Szenen, 29 FX-Overlays, 83 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
 
 
 ---
@@ -3240,6 +3240,15 @@ ASTEROID MINING BASE: A sprawling industrial complex built into tumbling asteroi
 ![AsteroidMiningBase ruhig (t=8)](img/AsteroidMiningBase_A.jpg) ![AsteroidMiningBase ruhig (t=16)](img/AsteroidMiningBase_B.jpg) ![AsteroidMiningBase audio-heiß (t=8)](img/AsteroidMiningBase_C.jpg)
 
 
+### AtmosphericEntry
+
+`Scene3D/AtmosphericEntry.frag` · type=scene3d · geom=mesh · mood=dark,aggressive,space · complexity=3
+
+GEOM="MESH" FAMILY: a ship commits to a descent and burns its way into a planet's atmosphere. Staged on `sceneProgress` (see the .vert): a beat of vacuum, then the planet swelling to fill the frame while the hull heats from the leading edges back and drags an ionised wake. The planet lives on the SKY SHELL, not as geometry. Its apparent size is driven by growing the angular radius the shell tests against, which is wh…
+
+![AtmosphericEntry ruhig (t=8)](img/AtmosphericEntry_A.jpg) ![AtmosphericEntry ruhig (t=16)](img/AtmosphericEntry_B.jpg) ![AtmosphericEntry audio-heiß (t=8)](img/AtmosphericEntry_C.jpg)
+
+
 ### AtmosphericGravityWaveUndularBore
 
 `Scene3D/AtmosphericGravityWaveUndularBore.frag` · type=scene3d · geom=grid · mood=calm,dreamy,bright · complexity=3
@@ -3588,6 +3597,15 @@ COSMIC WEB FILAMENT ANISOTROPY: 60,000-particle large-scale dark matter structur
 ![CosmicWebFilamentAnisotropy ruhig (t=8)](img/CosmicWebFilamentAnisotropy_A.jpg) ![CosmicWebFilamentAnisotropy ruhig (t=16)](img/CosmicWebFilamentAnisotropy_B.jpg) ![CosmicWebFilamentAnisotropy audio-heiß (t=8)](img/CosmicWebFilamentAnisotropy_C.jpg)
 
 
+### Creature
+
+`Scene3D/Creature.frag` · type=scene3d · geom=mesh · mood=calm,dreamy · complexity=3
+
+GEOM="MESH" FAMILY: a sea creature (jellyfish, manta, humpback, squid, seahorse, anglerfish) swimming in an open water column. The swimming itself is vertex-stage deformation -- see Creature.vert, which is where the four movement modes live. This stage lights it the way water does: a hard sunlit top, a dim blue-green bounce from below, caustic light webs crawling over the upward-facing surfaces, and enough translucen…
+
+![Creature ruhig (t=8)](img/Creature_A.jpg) ![Creature ruhig (t=16)](img/Creature_B.jpg) ![Creature audio-heiß (t=8)](img/Creature_C.jpg)
+
+
 ### CryogenicBrinicleStalactite
 
 `Scene3D/CryogenicBrinicleStalactite.frag` · type=scene3d · geom=indirect · mood=calm,dark,dreamy · complexity=4
@@ -3833,6 +3851,15 @@ ENNEPER MINIMAL SURFACE HYPERFOLD: 220x120 parametric grid of a higher-order sel
 ![EnneperMinimalSurfaceHyperfold ruhig (t=8)](img/EnneperMinimalSurfaceHyperfold_A.jpg) ![EnneperMinimalSurfaceHyperfold ruhig (t=16)](img/EnneperMinimalSurfaceHyperfold_B.jpg) ![EnneperMinimalSurfaceHyperfold audio-heiß (t=8)](img/EnneperMinimalSurfaceHyperfold_C.jpg)
 
 
+### ExoticStation
+
+`Scene3D/ExoticStation.frag` · type=scene3d · geom=mesh · mood=bright,calm,space · complexity=3
+
+GEOM="MESH" STATION FAMILY: the five one-off stations that don't fit the other families (agri-biosphere, neutral diplomatic seat, solar collector, luxury border post, smuggler hideout), each shown against its own backdrop painted onto the sky shell Scene3DShader::buildGeometry() appends after the loaded mesh (see ExoticStation.vert) -- vBg selects shell vs. hull. Unlike the other families, these five are meant to loo…
+
+![ExoticStation ruhig (t=8)](img/ExoticStation_A.jpg) ![ExoticStation ruhig (t=16)](img/ExoticStation_B.jpg) ![ExoticStation audio-heiß (t=8)](img/ExoticStation_C.jpg)
+
+
 ### FeatherStorm
 
 `Scene3D/FeatherStorm.frag` · type=scene3d · geom=indirect · mood=calm,dreamy · complexity=4
@@ -3876,6 +3903,15 @@ Fireworks.frag — glowing spark (additive blending).
 FlowRibbons.frag — thin, two-sided, iridescent. A ribbon has no inside, so both faces are lit; and because its normal swings through a full turn as it twists, the strongest cue in the whole image is the FLASH each ribbon gives when its face swings toward the eye. Everything here is built to make that flash count.
 
 ![FlowRibbons ruhig (t=8)](img/FlowRibbons_A.jpg) ![FlowRibbons ruhig (t=16)](img/FlowRibbons_B.jpg) ![FlowRibbons audio-heiß (t=8)](img/FlowRibbons_C.jpg)
+
+
+### FortressStation
+
+`Scene3D/FortressStation.frag` · type=scene3d · geom=mesh · mood=dark,aggressive,space · complexity=3
+
+GEOM="MESH" STATION FAMILY: armored/military hulls (bastions, citadels, border patrol posts, defense platforms, fortified outposts), shown against a moody dust nebula painted onto the sky shell Scene3DShader::buildGeometry() appends after the loaded mesh (see FortressStation.vert) -- vBg selects shell vs. hull. Harsh single-source key light (a searchlight/beacon, not a soft star) plus a pulsing red alarm-strobe accen…
+
+![FortressStation ruhig (t=8)](img/FortressStation_A.jpg) ![FortressStation ruhig (t=16)](img/FortressStation_B.jpg) ![FortressStation audio-heiß (t=8)](img/FortressStation_C.jpg)
 
 
 ### FullereneC60BuckyballCrystalLattice
@@ -4024,6 +4060,15 @@ HelixTower.frag — soft glowing point (additive blending).
 ![HelixTower ruhig (t=8)](img/HelixTower_A.jpg) ![HelixTower ruhig (t=16)](img/HelixTower_B.jpg) ![HelixTower audio-heiß (t=8)](img/HelixTower_C.jpg)
 
 
+### Hologram
+
+`Scene3D/Hologram.frag` · type=scene3d · geom=mesh · mood=dark,space · complexity=3
+
+GEOM="MESH" FAMILY: any loaded model re-read as a sci-fi holotable projection -- wireframe over a see-through fill, scanlines, edge glow and signal dropouts. This family deliberately ships NO assets of its own: it is pointed at the ships and stations already in Models/, so every existing mesh gets a second, completely different look for free (the model= config attribute picks which). TRANSPARENCY WITHOUT BLENDING. ge…
+
+![Hologram ruhig (t=8)](img/Hologram_A.jpg) ![Hologram ruhig (t=16)](img/Hologram_B.jpg) ![Hologram audio-heiß (t=8)](img/Hologram_C.jpg)
+
+
 ### HolographicLaserDiffractionGrid
 
 `Scene3D/HolographicLaserDiffractionGrid.frag` · type=scene3d · geom=quads · mood=bright · complexity=3
@@ -4060,6 +4105,15 @@ Shades one strand of a Hopf-torus / Clifford-torus tube lattice: blends its per-
 ![HopfTorusCliffordKlein ruhig (t=8)](img/HopfTorusCliffordKlein_A.jpg) ![HopfTorusCliffordKlein ruhig (t=16)](img/HopfTorusCliffordKlein_B.jpg) ![HopfTorusCliffordKlein audio-heiß (t=8)](img/HopfTorusCliffordKlein_C.jpg)
 
 
+### HubStation
+
+`Scene3D/HubStation.frag` · type=scene3d · geom=mesh · mood=bright,space · complexity=3
+
+GEOM="MESH" STATION FAMILY: civilian/trade hubs (cargo docks, merchanter outposts, shipyards, quarantine posts, trade promenades), shown against a busy starfield (with faint distant nebula wisps) painted onto the sky shell Scene3DShader::buildGeometry() appends after the loaded mesh (see HubStation.vert) -- vBg selects shell vs. hull. Warm, brighter key light plus busy amber docking-light speckle across the hull's da…
+
+![HubStation ruhig (t=8)](img/HubStation_A.jpg) ![HubStation ruhig (t=16)](img/HubStation_B.jpg) ![HubStation audio-heiß (t=8)](img/HubStation_C.jpg)
+
+
 ### HyperbolicHelicoidCatenaMinimalSheet
 
 `Scene3D/HyperbolicHelicoidCatenaMinimalSheet.frag` · type=scene3d · geom=grid · mood=calm,dreamy,bright · complexity=3
@@ -4085,6 +4139,15 @@ HYPERBOLIC PSEUDOSPHERE TRACTROID: a 5 x 4 LATTICE of pseudospheres of constant 
 HypercubeLatticePillars.frag
 
 ![HypercubeLatticePillars ruhig (t=8)](img/HypercubeLatticePillars_A.jpg) ![HypercubeLatticePillars ruhig (t=16)](img/HypercubeLatticePillars_B.jpg) ![HypercubeLatticePillars audio-heiß (t=8)](img/HypercubeLatticePillars_C.jpg)
+
+
+### IndustrialStation
+
+`Scene3D/IndustrialStation.frag` · type=scene3d · geom=mesh · mood=dark,space · complexity=3
+
+GEOM="MESH" STATION FAMILY: mining/refinery/salvage hulls (asteroid refineries, mining cores, fuel depots, ice processors, scrap yards), shown drifting through a real asteroid field painted onto the sky shell Scene3DShader::buildGeometry() appends after the loaded mesh (see IndustrialStation.vert) -- vBg selects shell vs. hull. Dim, grimy ambient light plus a warm furnace/vent glow that flickers with the beat, standi…
+
+![IndustrialStation ruhig (t=8)](img/IndustrialStation_A.jpg) ![IndustrialStation ruhig (t=16)](img/IndustrialStation_B.jpg) ![IndustrialStation audio-heiß (t=8)](img/IndustrialStation_C.jpg)
 
 
 ### InterstellarMHDShockFront
@@ -4824,6 +4887,15 @@ RibbonTunnel.frag — soft-edged glowing ribbon (additive blending).
 ![RibbonTunnel ruhig (t=8)](img/RibbonTunnel_A.jpg) ![RibbonTunnel ruhig (t=16)](img/RibbonTunnel_B.jpg) ![RibbonTunnel audio-heiß (t=8)](img/RibbonTunnel_C.jpg)
 
 
+### RingStation
+
+`Scene3D/RingStation.frag` · type=scene3d · geom=mesh · mood=bright,space · complexity=3
+
+GEOM="MESH" STATION FAMILY: wheel/ring/torus-shaped stations (spin- gravity habitats, research rings, jump-gate anchors, megastructure hubs), shown against a real backdrop instead of flat black: a fake planet with animated cloud cover plus a starfield, painted directly onto the sky shell Scene3DShader::buildGeometry() appends after the loaded mesh (see RingStation.vert) -- vBg selects which of the two this fragment b…
+
+![RingStation ruhig (t=8)](img/RingStation_A.jpg) ![RingStation ruhig (t=16)](img/RingStation_B.jpg) ![RingStation audio-heiß (t=8)](img/RingStation_C.jpg)
+
+
 ### RollerCoaster
 
 `Scene3D/RollerCoaster.frag` · type=scene3d · geom=ribbon · mood=aggressive,dark · complexity=1
@@ -4880,6 +4952,15 @@ SEIFERT SURFACE BRAID KNOT: 3D orientable minimal surface bounded by a complex (
 ![SeifertSurfaceBraidKnot ruhig (t=8)](img/SeifertSurfaceBraidKnot_A.jpg) ![SeifertSurfaceBraidKnot ruhig (t=16)](img/SeifertSurfaceBraidKnot_B.jpg) ![SeifertSurfaceBraidKnot audio-heiß (t=8)](img/SeifertSurfaceBraidKnot_C.jpg)
 
 
+### SensorStation
+
+`Scene3D/SensorStation.frag` · type=scene3d · geom=mesh · mood=calm,space · complexity=3
+
+GEOM="MESH" STATION FAMILY: science/sensor/comms hulls (relay stations, laboratories, terraforming observers, comms arrays, deep-space probes), watching over a colorful deep-space nebula painted onto the sky shell Scene3DShader::buildGeometry() appends after the loaded mesh (see SensorStation.vert) -- vBg selects shell vs. hull. Cool cyan tech light plus a slow scanning band that sweeps along the hull's own local axi…
+
+![SensorStation ruhig (t=8)](img/SensorStation_A.jpg) ![SensorStation ruhig (t=16)](img/SensorStation_B.jpg) ![SensorStation audio-heiß (t=8)](img/SensorStation_C.jpg)
+
+
 ### ShadowForest
 
 `Scene3D/ShadowForest.frag` · type=scene3d · geom=indirect · mood=calm,dark · complexity=4
@@ -4889,6 +4970,33 @@ _(Vorschau eingeschränkt: Sim-Textur/Mehrpass — Bilder unterschätzen die ech
 ShadowForest.frag — the ground is the canvas and the trunks are the brush. The ground gets a bright, warm direct term so every shadow crossing it reads hard; the trunks get almost none, so they stay as silhouettes and do not compete with the pattern they are casting.
 
 ![ShadowForest ruhig (t=8)](img/ShadowForest_A.jpg) ![ShadowForest ruhig (t=16)](img/ShadowForest_B.jpg) ![ShadowForest audio-heiß (t=8)](img/ShadowForest_C.jpg)
+
+
+### ShatterSculpture
+
+`Scene3D/ShatterSculpture.frag` · type=scene3d · geom=mesh · mood=dark,calm · complexity=3
+
+GEOM="MESH" FAMILY: a museum piece (marble bust, gargoyle, bronze dancer, terracotta warrior, stone lion) lit like a gallery at night, which bursts into its own triangles with the music and reassembles. The shatter itself is done in ShatterSculpture.geom -- see that file for why it needs the geometry stage. This stage shades the result and lights the fracture: vShard says how far a given shard has flown, and the furt…
+
+![ShatterSculpture ruhig (t=8)](img/ShatterSculpture_A.jpg) ![ShatterSculpture ruhig (t=16)](img/ShatterSculpture_B.jpg) ![ShatterSculpture audio-heiß (t=8)](img/ShatterSculpture_C.jpg)
+
+
+### ShipDocking
+
+`Scene3D/ShipDocking.frag` · type=scene3d · geom=mesh · mood=calm,space · complexity=3
+
+GEOM="MESH" FAMILY: a small ship flies an approach and comes alongside a far larger station. Two loaded meshes in one scene (model= is the station, model2= the ship) -- see ShipDocking.vert for the buffer layout and the eased approach path. The two hulls are shaded from SEPARATE material textures: texMeshMaterial is the station's, texMeshMaterial2 the ship's. Sampling one for both would stretch whichever atlas happen…
+
+![ShipDocking ruhig (t=8)](img/ShipDocking_A.jpg) ![ShipDocking ruhig (t=16)](img/ShipDocking_B.jpg) ![ShipDocking audio-heiß (t=8)](img/ShipDocking_C.jpg)
+
+
+### ShipFlyby
+
+`Scene3D/ShipFlyby.frag` · type=scene3d · geom=mesh · mood=dark,aggressive,space · complexity=3
+
+GEOM="MESH" FAMILY: a capital ship makes one slow, majestic pass across the frame -- entering off one side, coming close enough at mid-pass that a large one no longer fits on screen, and leaving off the other. The pass is staged on `sceneProgress`, so it always fills exactly the screen time the scheduler gave the scene; see ShipFlyby.vert for the path. bgTypeP picks what it passes IN FRONT OF, which changes the whole…
+
+![ShipFlyby ruhig (t=8)](img/ShipFlyby_A.jpg) ![ShipFlyby ruhig (t=16)](img/ShipFlyby_B.jpg) ![ShipFlyby audio-heiß (t=8)](img/ShipFlyby_C.jpg)
 
 
 ### SilkPhoto
@@ -4974,6 +5082,15 @@ SPACE ELEVATOR: A colossal tether extending into orbit. Glowing cars race up and
 ![SpaceElevator ruhig (t=8)](img/SpaceElevator_A.jpg) ![SpaceElevator ruhig (t=16)](img/SpaceElevator_B.jpg) ![SpaceElevator audio-heiß (t=8)](img/SpaceElevator_C.jpg)
 
 
+### Spaceship
+
+`Scene3D/Spaceship.frag` · type=scene3d · geom=mesh · mood=dark,space · complexity=3
+
+GEOM="MESH" SHOWCASE: a real loaded 3D model (config attribute model=, see Source/MeshImport.h) tumbling through a real backdrop -- a dust nebula + starfield painted onto the sky shell Scene3DShader:: buildGeometry() appends after the loaded mesh (see Spaceship.vert) -- vBg selects shell vs. hull. Lit from its own baked material plus a shield-flicker rim; no photo-tinting on the hull itself, the nebula carries the co…
+
+![Spaceship ruhig (t=8)](img/Spaceship_A.jpg) ![Spaceship ruhig (t=16)](img/Spaceship_B.jpg) ![Spaceship audio-heiß (t=8)](img/Spaceship_C.jpg)
+
+
 ### SpectralOrb
 
 `Scene3D/SpectralOrb.frag` · type=scene3d · geom=grid · mood=calm,dreamy,bright · complexity=2
@@ -4999,6 +5116,15 @@ SpectralTorus.frag — companion to SpectralTorus.vert. Same physical-body langu
 SpectroCanyon.frag — rock lit from a low sun, with the loud parts of the spectrum glowing from inside the stone. The emission is keyed to the SAME value that built the terrain, so a peak is both a peak and a light.
 
 ![SpectroCanyon ruhig (t=8)](img/SpectroCanyon_A.jpg) ![SpectroCanyon ruhig (t=16)](img/SpectroCanyon_B.jpg) ![SpectroCanyon audio-heiß (t=8)](img/SpectroCanyon_C.jpg)
+
+
+### SpectroDevice
+
+`Scene3D/SpectroDevice.frag` · type=scene3d · geom=mesh · mood=bright,aggressive · complexity=3
+
+GEOM="MESH" FAMILY: a real hi-fi prop (boombox, turntable, modular synth, jukebox, tube radio, tape deck) turning on a showroom turntable in front of a synthwave grid horizon -- and the device's own front panel is a LIVE display of the music, read straight out of the engine's spectrogram ring (texSpectro, unit 28; declaring the sampler is the whole opt-in, see EffectShader::usesSpectro()). The visualizer's own signal…
+
+![SpectroDevice ruhig (t=8)](img/SpectroDevice_A.jpg) ![SpectroDevice ruhig (t=16)](img/SpectroDevice_B.jpg) ![SpectroDevice audio-heiß (t=8)](img/SpectroDevice_C.jpg)
 
 
 ### SpectroWeave
