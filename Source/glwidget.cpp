@@ -743,6 +743,39 @@ void GLwidget::draw()
 	if( audio.trackChange && m_actConfiguration && m_actConfiguration->m_renderPipeline )
 		m_actConfiguration->m_renderPipeline->requestSceneChange();
 
+	// KALEIDO_SCENE_SWEEP=<seconds>: step through EVERY scene of the loaded
+	// config in catalogue order, holding each for that many seconds. The
+	// scheduler picks scenes at random by design, which is right for viewing
+	// and useless for reviewing: to see all of a 500-entry catalogue by chance
+	// you would have to render several times its length and would still miss
+	// entries. This walks it exactly once. The recorder captures on the same
+	// wall clock, so scene n sits at a known timestamp in the output file --
+	// which is what makes a contact sheet attributable. Names go to the log in
+	// the same order.
+	static const int sweepSecs = qEnvironmentVariableIntValue( "KALEIDO_SCENE_SWEEP" );
+	if( sweepSecs > 0 && m_actConfiguration && m_actConfiguration->m_renderPipeline )
+	{
+		const qint64 nowMs = m_fpsTimer.elapsed();
+		if( m_sweepNextMs < 0 || nowMs >= m_sweepNextMs )
+		{
+			const QStringList names = m_actConfiguration->m_renderPipeline->sceneNames();
+			if( m_sweepIdx < names.size() )
+			{
+				fprintf( stderr, "[sweep] %3d/%d  t=%.1fs  %s\n", m_sweepIdx,
+				         int( names.size() ), nowMs * 0.001,
+				         names[m_sweepIdx].toLocal8Bit().constData() );
+				m_actConfiguration->m_renderPipeline->forceScene( m_sweepIdx );
+				m_sweepIdx++;
+			}
+			else if( m_sweepIdx == names.size() )
+			{
+				fprintf( stderr, "[sweep] finished after %d scenes\n", m_sweepIdx );
+				m_sweepIdx++;                       // report once, then idle
+			}
+			m_sweepNextMs = nowMs + qint64( sweepSecs ) * 1000;
+		}
+	}
+
 	// Apply any queued MIDI control messages.
 	applyMidi();
 

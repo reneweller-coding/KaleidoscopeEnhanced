@@ -49,14 +49,14 @@ New-Item -ItemType Directory -Force -Path $OutDir | Out-Null
 # group by the shader family each model appears under.
 $cat = Get-Content (Join-Path $root "Configurations\Komplett.xml") -Raw
 $themeOf = @{}
-foreach ($m in [regex]::Matches($cat, '<TextureShader[^>]*?Scene3D\\(?<fam>\w+)\.frag[^>]*?>')) {
+foreach ($m in [regex]::Matches($cat, '<TextureShader[^>]*?Scene3D\\+(?<fam>\w+)\.frag[^>]*?>')) {
     $fam = $m.Groups['fam'].Value
     $theme = switch -Regex ($fam) {
         'Ship(Flyby|Docking)|AtmosphericEntry|Spaceship|Hologram' { 'ships' }
         'Station$'                                               { 'stations' }
         default                                                  { 'earthbound' }
     }
-    foreach ($mm in [regex]::Matches($m.Value, 'Models\\(?<n>[A-Za-z0-9]+)\.glb')) {
+    foreach ($mm in [regex]::Matches($m.Value, 'Models\\+(?<n>[A-Za-z0-9]+)\.glb')) {
         $n = $mm.Groups['n'].Value
         # A model used by several families lands in the first one that claims
         # it; stations pulled into docking scenes stay with the stations.

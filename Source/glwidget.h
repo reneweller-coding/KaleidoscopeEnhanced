@@ -529,6 +529,11 @@ protected:
 	qint64  m_fpsLastPeriod;  ///< m_fpsTimer.elapsed() at the last update (qint64: kiosk runs for weeks)
 	QElapsedTimer m_fpsTimer; ///< Free-running elapsed timer, started in initializeGL(); the app's master clock for timing/fades/overlays.
 
+	// KALEIDO_SCENE_SWEEP=<seconds>: walk EVERY scene of the loaded config in
+	// order, holding each for that many seconds (see draw()).
+	int     m_sweepIdx    = 0;   ///< Next scene index the sweep will jump to.
+	qint64  m_sweepNextMs = -1;  ///< m_fpsTimer deadline for the next jump; -1 = not started yet.
+
 	void resetRotation(); ///< Sets the rotation matrix to identity (currently a no-op stub; body is commented out).
 
 	RenderPipeline	*m_renderPipeline;   ///< Unused legacy member (the active pipeline is Configuration::m_renderPipeline instead).
