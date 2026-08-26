@@ -81,6 +81,12 @@ void main()
     vp.x -= eyeOff;
     gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
+    // The shell is a CUBE of half-side kSkyShellRadius, so its corners sit
+    // sqrt(3) times further out than its faces -- past kSceneFar, which
+    // clipped visible wedges out of the sky. Pinning shell depth just inside
+    // the far plane is the standard skybox fix: no far-plane clipping however
+    // big the shell is, and it can never occlude the object in front of it.
+    if (isBg) gl_Position.z = gl_Position.w * 0.999999;
 
     vNormal = n;
     vPos = world;

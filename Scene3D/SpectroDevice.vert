@@ -1,18 +1,16 @@
 #version 330 core
 /**
- * @file ExoticStation.vert
- * @brief Vertex stage companion to ExoticStation.frag -- see that file's
- * header. Shared by the five one-of-a-kind stations (biosphere, diplomatic
- * seat, solar collector, luxury border post, smuggler hideout): these are
- * kilometers-long megastructures, not debris -- they hold a FIXED
- * orientation (a one-time angle, chosen only so the hull isn't seen
- * flat-on) and float stably; they are distinguished by lighting/color and
- * backdrop in the fragment stage, not by how they move. The camera's own
- * sweep (this scene's rig* formulas in Configurations/Komplett.xml) supplies
- * the actual motion. gl_VertexID picks the vertex's own branch: below
- * meshVertexCount it is the loaded model, at or above it the enclosing sky
- * shell Scene3DShader::buildGeometry() appends -- ExoticStation.frag paints
- * one of several backdrops onto it, chosen per-instance via bgTypeP.
+ * @file SpectroDevice.vert
+ * @brief Vertex stage companion to SpectroDevice.frag -- see that file's
+ * header. A small prop on a showroom turntable, so unlike the station
+ * families a steady single-axis spin is exactly right here (this is a
+ * hi-fi unit on display, not a kilometers-long structure that would have
+ * too much inertia to move).
+ *
+ * gl_VertexID picks the vertex's own branch: below meshVertexCount it is
+ * the loaded model, at or above it the enclosing sky shell
+ * Scene3DShader::buildGeometry() appends -- SpectroDevice.frag paints a
+ * synthwave grid horizon onto that shell.
  */
 
 in vec4 attrA;   // mesh: xyz = object-space position, w = U.  shell: xyz = world-space position on the shell.
@@ -23,13 +21,17 @@ uniform float eyeOff;
 uniform float time;
 uniform int   meshVertexCount;
 
+uniform float audioAdvance;
 uniform float audioKick;
 
 uniform float sizeP;
+uniform float spinP;
 
-out vec2 vUV;
-out vec3 vNormal;
-out vec3 vPos;
+out vec2  vUV;
+out vec3  vNormal;
+out vec3  vPos;
+out vec3  vLocalPos;    // object space, pre-scale -- the spectrum bars live in THIS space so they stay painted on the device instead of sliding across it as it turns
+out vec3  vObjNormal;   // object space normal, for picking out the flat front panel
 out float vBg;
 
 void main()
@@ -39,28 +41,34 @@ void main()
     if( !isBg )
     {
         float sz = (sizeP > 0.01 ? sizeP : 1.0);
-        vec3 local = attrA.xyz * (32.0 * sz);
+        vec3 local = attrA.xyz * (30.0 * sz);
 
-        // A fixed viewing angle, not an animated tumble -- see this file's
-        // header note on why a real megastructure holds still.
-        const float rotY = 0.4, rotX = 0.16;
+        // Showroom turntable: one clean axis, constant rate. The music
+        // nudges the rate a little, but never enough to read as a jump.
+        float sp = (spinP > 0.01 ? spinP : 1.0);
+        float rotY = (time * 0.22 + audioAdvance * 0.10) * sp;
+        const float tiltX = 0.16;                 // a hair from above, so it isn't seen edge-on
         float cy = cos(rotY), sy = sin(rotY);
-        float cx = cos(rotX), sx = sin(rotX);
+        float cx = cos(tiltX), sx = sin(tiltX);
         mat3 rotYMat = mat3(cy, 0.0, -sy,   0.0, 1.0, 0.0,   sy, 0.0, cy);
         mat3 rotXMat = mat3(1.0, 0.0, 0.0,   0.0, cx, sx,   0.0, -sx, cx);
-        mat3 rotMat = rotYMat * rotXMat;
+        mat3 rotMat = rotXMat * rotYMat;
 
         world = rotMat * local;
-        world.z += 105.0;
-        world.y += 1.0 * audioKick;
+        world.z += 78.0;
+        world.y += 0.8 * audioKick;
         n = normalize(rotMat * attrB.xyz);
         vUV = vec2(attrA.w, attrB.w);
+        vLocalPos  = attrA.xyz;
+        vObjNormal = attrB.xyz;
     }
     else
     {
         world = attrA.xyz;
         n = attrB.xyz;
         vUV = vec2(0.0);
+        vLocalPos  = vec3(0.0);
+        vObjNormal = vec3(0.0);
     }
 
     vec3 vp = world;
