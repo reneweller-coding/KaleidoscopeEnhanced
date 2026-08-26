@@ -109,6 +109,12 @@ restart. **Nothing breaks without them**: every scene that needs a model it
 cannot find is skipped when the catalogue is read, and the startup log says
 how many. You simply get a smaller rotation.
 
+The scenes that use them are spread through the normal presets by mood, the
+way every other scene is. There is also a **`Modelle`** preset that is nothing
+but these scenes, back to back, for when you want the models themselves rather
+than a mixed rotation. It appears in the preset list once the pack is
+installed, and is left out of it entirely when it is not.
+
 Building the packs yourself, from a `Models` folder you have filled:
 
 ```powershell

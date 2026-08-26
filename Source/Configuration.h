@@ -66,6 +66,13 @@ public:
 	/// the smaller scene count is explained rather than mysterious.
 	int m_skippedMeshScenes = 0;
 
+	/// How many scenes this preset actually built. A preset made ENTIRELY of
+	/// geom="mesh" scenes (Modelle.xml) comes to nothing without the optional
+	/// model pack, and RenderPipeline would then quietly substitute a
+	/// pass-through -- a menu entry that shows the photos and nothing else.
+	/// glwidget hides such a preset instead; see the hidden-list pass.
+	int m_loadedScenes = 0;
+
 private:
 
 	/**

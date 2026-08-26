@@ -423,6 +423,25 @@ GLwidget::GLwidget( QWidget *parent )
 		QSettings s( "..\\kaleidoscope_settings.ini", QSettings::IniFormat );
 		showHidden = s.value( "showHiddenPresets", false ).toBool();
 	}
+	// A preset built entirely from geom="mesh" scenes (Modelle) has nothing
+	// left once the optional model pack is absent, and RenderPipeline would
+	// fall back to a plain pass-through -- an entry in the menu that shows
+	// the photos and nothing else. Take it out of the selection instead, so
+	// unpacking the models is what makes it appear.
+	for( size_t i = m_configurationList.size(); i-- > 0; )
+	{
+		Configuration *c = m_configurationList[i];
+		if( c->m_loadedScenes == 0 && c->m_skippedMeshScenes > 0 && !c->isHidden() )
+		{
+			fprintf( stderr, "Configuration '%s' needs the 3D model pack "
+			                 "(all %d of its scenes were skipped) - not offered.\n",
+			         c->getConfigurationName().toLocal8Bit().constData(),
+			         c->m_skippedMeshScenes );
+			m_hiddenConfigurations.push_back( c );
+			m_configurationList.erase( m_configurationList.begin() + i );
+		}
+	}
+
 	for( size_t i = showHidden ? 0 : m_configurationList.size(); i-- > 0; )
 		if( m_configurationList[i]->isHidden() )
 		{

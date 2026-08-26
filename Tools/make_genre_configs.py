@@ -16,6 +16,8 @@ Genres (scene AND FX entries are filtered by the same rule):
     Noir         dark
     Psychedelic  psychedelic
     Galerie      calm/bright/dreamy, never aggressive or psychedelic
+    Modelle      every scene that loads a real 3D model (geom="mesh");
+                 needs the separate model pack, and hides itself without it
     Allround     everything
     TestAlle     everything, hidden — the name starts with "Test", which
                  flips the engine into review mode (alphabetical order,
@@ -28,23 +30,28 @@ os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 SRC = "Configurations/Komplett.xml"
 IMAGE_DIR = "C:\\\\Users\\\\rene\\\\Desktop\\\\BilderPhotoechoes"
 
-def rule_ambient(m):     return ("calm" in m or "dreamy" in m) and "aggressive" not in m
-def rule_club(m):        return "aggressive" in m or ("bright" in m and "calm" not in m)
-def rule_noir(m):        return "dark" in m
-def rule_psychedelic(m): return "psychedelic" in m
-def rule_galerie(m):     return (("calm" in m or "bright" in m or "dreamy" in m)
-                                 and "aggressive" not in m and "psychedelic" not in m)
-def rule_all(m):         return True
+# Every rule takes (moods, head): the mood set, and the entry's opening tag.
+# Most only need the moods, but "loads a real 3D model" is a property of the
+# tag (geom="mesh") and no mood can stand in for it.
+def rule_ambient(m, h):     return ("calm" in m or "dreamy" in m) and "aggressive" not in m
+def rule_club(m, h):        return "aggressive" in m or ("bright" in m and "calm" not in m)
+def rule_noir(m, h):        return "dark" in m
+def rule_psychedelic(m, h): return "psychedelic" in m
+def rule_galerie(m, h):     return (("calm" in m or "bright" in m or "dreamy" in m)
+                                    and "aggressive" not in m and "psychedelic" not in m)
+def rule_all(m, h):         return True
+def rule_mesh(m, h):        return 'geom="mesh"' in h
 # Preset-only tag, curated by hand in Komplett.xml: cosmic subject AND a
 # slow character.  Deliberately NOT derived from calm/dreamy -- plenty of
 # calm scenes are not space, and a few space ones (a black hole) are not
 # calm but belong in the mood anyway.
-def rule_space(m):       return "space" in m
+def rule_space(m, h):       return "space" in m
 
 # Preset-wide timing overrides (seconds): solo min/max, crossfade min/max.
 # Absent = the engine's own 20..90 s scene / 15 s fade baseline.
 TIMING = {
     "SpaceAmbient": (55, 150, 22, 45),
+    "Modelle":      (30,  80, 10, 22),
 }
 
 # (name, scene rule, hidden [, FX/transition rule])
@@ -59,6 +66,14 @@ GENRES = [
     ("Psychedelic", rule_psychedelic, False),
     ("Galerie",     rule_galerie,     False),
     ("SpaceAmbient", rule_space,      False, rule_ambient),
+    # Every scene that puts a real imported 3D model on screen. Needs the
+    # separately downloaded model pack; without it the engine drops each of
+    # these scenes and hides the preset entirely, rather than leaving an
+    # entry in the menu that shows nothing. Overlays follow the ambient rule
+    # for the same reason SpaceAmbient does -- no FX or transition carries a
+    # geometry tag, so filtering them by the scene rule would leave the
+    # preset with FxPlain and Crossfade alone.
+    ("Modelle",     rule_mesh,        False, rule_ambient),
     ("Allround",    rule_all,         False),
     ("TestAlle",    rule_all,         True),
 ]
@@ -78,7 +93,7 @@ for m in BLOCK.finditer(src):
     moods = set(t.strip() for t in mm.group(1).split(",")) if mm else set()
     fm = re.search(r'file="[^"]*[\\/](\w+)\.(?:frag)"', head)
     name = fm.group(1) if fm else "?"
-    blocks.append((tag, name, moods, m.group(0)))
+    blocks.append((tag, name, moods, m.group(0), head))
 
 scenes = [b for b in blocks if b[0] == "TextureShader"]
 fx     = [b for b in blocks if b[0] == "CombineShader"]
@@ -94,9 +109,9 @@ ALWAYS = {"FxPlain", "Crossfade"}
 for entry in GENRES:
     name, rule, hidden = entry[0], entry[1], entry[2]
     fxRule = entry[3] if len(entry) > 3 else rule
-    sel_s = [b for b in scenes if rule(b[2])]
-    sel_f = [b for b in fx    if fxRule(b[2]) or b[1] in ALWAYS]
-    sel_t = [b for b in trans if fxRule(b[2]) or b[1] in ALWAYS]
+    sel_s = [b for b in scenes if rule(b[2], b[4])]
+    sel_f = [b for b in fx    if fxRule(b[2], b[4]) or b[1] in ALWAYS]
+    sel_t = [b for b in trans if fxRule(b[2], b[4]) or b[1] in ALWAYS]
     hid = ' hidden="true"' if hidden else ""
     tim = ""
     if name in TIMING:

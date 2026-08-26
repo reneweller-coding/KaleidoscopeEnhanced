@@ -295,6 +295,7 @@ void Configuration::readConfiguration( const QString &filename )
 			shader->setProbability( probability );
 			shader->setMoodFlags( moodFlags );
 			m_renderPipeline->addTextureShader( shader );
+			m_loadedScenes++;
 
 		}
 		else if( type == "KaleidoscopeBase" )
@@ -306,6 +307,7 @@ void Configuration::readConfiguration( const QString &filename )
 			shader->setProbability( probability );
 			shader->setMoodFlags( moodFlags );
 			m_renderPipeline->addTextureShader( shader );
+			m_loadedScenes++;
 		}
 		else if( type == "scene3d" )
 		{
@@ -345,6 +347,7 @@ void Configuration::readConfiguration( const QString &filename )
 			shader->setProbability( probability );
 			shader->setMoodFlags( moodFlags );
 			m_renderPipeline->addTextureShader( shader );
+			m_loadedScenes++;
 		}
      }
 

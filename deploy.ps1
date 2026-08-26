@@ -140,6 +140,10 @@ times the size of the program itself.
 Without them everything still works, you simply do not get the scenes that
 use 3D objects; the startup log says how many were skipped. The packs are
 split by theme, so taking just one of them is fine.
+
+Once they are installed you also get a "Modelle" preset, which is nothing but
+these scenes back to back. It is left out of the preset list while the models
+are missing, so it never appears as an entry that shows nothing.
 "@ | Set-Content -Path (Join-Path $modelsDir "LIESMICH-MODELLE.txt") -Encoding utf8
 Copy-Item (Join-Path $root "*.vert") $pkgDir
 Copy-Item (Join-Path $root "Configurations") $pkgDir -Recurse
