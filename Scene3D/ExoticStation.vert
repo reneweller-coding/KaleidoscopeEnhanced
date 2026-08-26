@@ -3,12 +3,13 @@
  * @file ExoticStation.vert
  * @brief Vertex stage companion to ExoticStation.frag -- see that file's
  * header. Shared by the five one-of-a-kind stations (biosphere, diplomatic
- * seat, solar collector, luxury border post, smuggler hideout): a slow,
- * elegant tumble -- these hulls are distinguished by lighting/color and
- * backdrop in the fragment stage, not by how they move -- on top of which
- * the camera ALSO does its own cinematic sweep (this scene's rig* formulas
- * in Configurations/Komplett.xml); the two are independent, not a
- * trade-off. gl_VertexID picks the vertex's own branch: below
+ * seat, solar collector, luxury border post, smuggler hideout): these are
+ * kilometers-long megastructures, not debris -- they hold a FIXED
+ * orientation (a one-time angle, chosen only so the hull isn't seen
+ * flat-on) and float stably; they are distinguished by lighting/color and
+ * backdrop in the fragment stage, not by how they move. The camera's own
+ * sweep (this scene's rig* formulas in Configurations/Komplett.xml) supplies
+ * the actual motion. gl_VertexID picks the vertex's own branch: below
  * meshVertexCount it is the loaded model, at or above it the enclosing sky
  * shell Scene3DShader::buildGeometry() appends -- ExoticStation.frag paints
  * one of several backdrops onto it, chosen per-instance via bgTypeP.
@@ -22,7 +23,6 @@ uniform float eyeOff;
 uniform float time;
 uniform int   meshVertexCount;
 
-uniform float audioAdvance;
 uniform float audioKick;
 
 uniform float sizeP;
@@ -41,8 +41,9 @@ void main()
         float sz = (sizeP > 0.01 ? sizeP : 1.0);
         vec3 local = attrA.xyz * (32.0 * sz);
 
-        float rotY = time * 0.09 + audioAdvance * 0.12;
-        float rotX = sin(time * 0.045) * 0.12;
+        // A fixed viewing angle, not an animated tumble -- see this file's
+        // header note on why a real megastructure holds still.
+        const float rotY = 0.4, rotX = 0.16;
         float cy = cos(rotY), sy = sin(rotY);
         float cx = cos(rotX), sx = sin(rotX);
         mat3 rotYMat = mat3(cy, 0.0, -sy,   0.0, 1.0, 0.0,   sy, 0.0, cy);

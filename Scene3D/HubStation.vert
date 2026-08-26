@@ -2,14 +2,16 @@
 /**
  * @file HubStation.vert
  * @brief Vertex stage companion to HubStation.frag -- see that file's
- * header. Shared by every civilian/trade/cargo station (geom="mesh"): a
- * gentle, unhurried tumble -- a busy but stable hub, not adrift or at war --
- * on top of which the camera ALSO does its own cinematic sweep (this
- * scene's rig* formulas in Configurations/Komplett.xml); the two are
- * independent, not a trade-off. gl_VertexID picks the vertex's own branch:
- * below meshVertexCount it is the loaded model, at or above it the
- * enclosing sky shell Scene3DShader::buildGeometry() appends --
- * HubStation.frag paints a starfield onto it.
+ * header. Shared by every civilian/trade/cargo station (geom="mesh"): these
+ * are kilometers-long megastructures, not debris -- they hold a FIXED
+ * orientation (a one-time angle, chosen only so the hull isn't seen
+ * flat-on) and float stably; the "busy hub" feel comes from the docking-
+ * light twinkle in the fragment stage, not from the whole structure
+ * bobbing or tumbling. The camera's own sweep (this scene's rig* formulas
+ * in Configurations/Komplett.xml) supplies the actual motion. gl_VertexID
+ * picks the vertex's own branch: below meshVertexCount it is the loaded
+ * model, at or above it the enclosing sky shell Scene3DShader::
+ * buildGeometry() appends -- HubStation.frag paints a starfield onto it.
  */
 
 in vec4 attrA;   // mesh: xyz = object-space position, w = U.  shell: xyz = world-space position on the shell.
@@ -20,7 +22,6 @@ uniform float eyeOff;
 uniform float time;
 uniform int   meshVertexCount;
 
-uniform float audioAdvance;
 uniform float audioKick;
 
 uniform float sizeP;
@@ -39,8 +40,9 @@ void main()
         float sz = (sizeP > 0.01 ? sizeP : 1.0);
         vec3 local = attrA.xyz * (32.0 * sz);
 
-        float rotY = time * 0.13 + audioAdvance * 0.2;
-        float rotX = sin(time * 0.06) * 0.15;
+        // A fixed viewing angle, not an animated tumble -- see this file's
+        // header note on why a real megastructure holds still.
+        const float rotY = 0.8, rotX = 0.1;
         float cy = cos(rotY), sy = sin(rotY);
         float cx = cos(rotX), sx = sin(rotX);
         mat3 rotYMat = mat3(cy, 0.0, -sy,   0.0, 1.0, 0.0,   sy, 0.0, cy);
@@ -49,7 +51,7 @@ void main()
 
         world = rotMat * local;
         world.z += 105.0;
-        world.y += 3.0 * sin(time * 0.18) + 1.5 * audioKick;
+        world.y += 1.5 * audioKick;
         n = normalize(rotMat * attrB.xyz);
         vUV = vec2(attrA.w, attrB.w);
     }

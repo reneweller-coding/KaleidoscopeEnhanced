@@ -3,10 +3,12 @@
  * @file IndustrialStation.vert
  * @brief Vertex stage companion to IndustrialStation.frag -- see that
  * file's header. Shared by every mining/refinery/salvage station
- * (geom="mesh"): an uneven, slightly juddering tumble -- machinery running
- * under load, not a smooth showroom turntable -- on top of which the camera
- * ALSO does its own cinematic sweep (this scene's rig* formulas in
- * Configurations/Komplett.xml); the two are independent, not a trade-off.
+ * (geom="mesh"): these are kilometers-long megastructures, not debris --
+ * they hold a FIXED orientation (a one-time angle, chosen only so the hull
+ * isn't seen flat-on) and float stably; the "machinery running" feel comes
+ * from the furnace/vent glow flicker in the fragment stage, not from the
+ * whole structure juddering. The camera's own sweep (this scene's rig*
+ * formulas in Configurations/Komplett.xml) supplies the actual motion.
  * gl_VertexID picks the vertex's own branch: below meshVertexCount it is
  * the loaded model, at or above it the enclosing sky shell Scene3DShader::
  * buildGeometry() appends -- IndustrialStation.frag paints an asteroid
@@ -21,7 +23,6 @@ uniform float eyeOff;
 uniform float time;
 uniform int   meshVertexCount;
 
-uniform float audioAdvance;
 uniform float audioKick;
 
 uniform float sizeP;
@@ -40,11 +41,9 @@ void main()
         float sz = (sizeP > 0.01 ? sizeP : 1.0);
         vec3 local = attrA.xyz * (32.0 * sz);
 
-        // A small high-frequency judder riding on top of the base tumble --
-        // reads as heavy machinery vibration rather than a clean spin.
-        float judder = sin(time * 9.0) * 0.02 + sin(time * 23.0) * 0.01;
-        float rotY = time * 0.09 + audioAdvance * 0.18 + judder;
-        float rotX = 0.12 + sin(time * 0.11) * 0.05;
+        // A fixed viewing angle, not an animated tumble -- see this file's
+        // header note on why a real megastructure holds still.
+        const float rotY = 0.35, rotX = 0.18;
         float cy = cos(rotY), sy = sin(rotY);
         float cx = cos(rotX), sx = sin(rotX);
         mat3 rotYMat = mat3(cy, 0.0, -sy,   0.0, 1.0, 0.0,   sy, 0.0, cy);
