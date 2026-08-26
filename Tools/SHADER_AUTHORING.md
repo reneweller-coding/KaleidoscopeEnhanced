@@ -93,6 +93,33 @@ Layer-Index außerhalb des Bereichs, statt zu scheitern, d.h. ohne diese
 Prüfung würde ein Mesh ohne Metallic-Roughness-Map stillschweigend seine
 Basisfarbe nochmal als Rauheit/Metallgrad einlesen.
 
+#### `mesh`: die angehängte Himmels-Schale
+
+Hinter den Vertices des Modells hängt `buildGeometry()` im **selben** VBO eine
+große umschließende Würfel-Schale an. Sie ist der Hintergrund der Szene
+(Nebel, Asteroidenfeld, Planet, Unterwasser-Säule, Synthwave-Horizont …) —
+ein Mesh-Shader muss beide Teile bedienen:
+
+```glsl
+uniform int meshVertexCount;          // erste Schalen-Vertex-ID
+bool isBg = gl_VertexID >= meshVertexCount;
+```
+
+Auf der Schale bedeutet `attrA.xyz` **Welt**position und `attrB.xyz` die
+Richtung nach außen (als „Himmelsrichtung" für prozedurales Rauschen). Der
+Fragment-Shader unterscheidet über ein `vBg`-Varying. Drei Punkte, die nicht
+optional sind:
+
+- **Schalentiefe an die Far-Plane klemmen.** Die Schale ist ein WÜRFEL, ihre
+  Ecken liegen also √3-mal weiter draußen als ihre Flächen — jenseits von
+  `kSceneFar`. Ohne `if (isBg) gl_Position.z = gl_Position.w * 0.999999;`
+  schneidet die Far-Plane sichtbare Keile aus dem Himmel.
+- **Bei einem Geometry-Shader die Schale unverändert durchreichen.** Wer den
+  Effekt der Szene (Shatter, Glitch …) auch auf die Schale anwendet, zerreißt
+  den Himmel.
+- Ein Tiefen-Nebel `mix(col, vec3(0.0), …)` auf dem Objekt ist jetzt **falsch**:
+  er blendet gegen Schwarz statt gegen den sichtbaren Hintergrund.
+
 Drei Fallen, die alle schon zugeschlagen haben:
 
 - **Der Index steht in `attrA.w`** — nicht in `attrB.x`. `attrB` enthält

@@ -784,6 +784,50 @@
     <expr name="hueP" formula="chromaHue + seed3*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
+  <TextureShader file="..\Scene3D\Hologram.frag" type="scene3d" geom="mesh" model="..\Models\FlagshipDreadnought.glb" mood="dark,space" probability="0.35" complexity="3">
+    <expr name="rigYaw" formula="0.30*sin(0.020*advance + seed1*6.28)"/>
+    <expr name="rigPitch" formula="0.10*sin(0.016*advance + seed2*6.28)"/>
+    <expr name="rigDolly" formula="0.35*swell"/>
+    <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
+    <float name="spinP" minValue="1.0" maxValue="1.0"></float>
+    <float name="tintP" minValue="3.10" maxValue="3.10"></float>
+    <float name="scanP" minValue="1.0" maxValue="1.0"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\Scene3D\Hologram.frag" type="scene3d" geom="mesh" model="..\Models\MegastructureCentralHub.glb" mood="dark,psychedelic,space" probability="0.35" complexity="3">
+    <expr name="rigYaw" formula="0.30*sin(0.020*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.10*sin(0.016*advance + seed2*6.28)"/>
+    <expr name="rigDolly" formula="0.35*swell"/>
+    <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
+    <float name="spinP" minValue="0.7" maxValue="0.7"></float>
+    <float name="tintP" minValue="0.85" maxValue="0.85"></float>
+    <float name="scanP" minValue="1.3" maxValue="1.3"></float>
+    <expr name="hueP" formula="chromaHue + seed2*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\Scene3D\Hologram.frag" type="scene3d" geom="mesh" model="..\Models\JumpGateAnchor.glb" mood="dark,calm,space" probability="0.35" complexity="3">
+    <expr name="rigYaw" formula="0.30*sin(0.020*advance + seed3*6.28)"/>
+    <expr name="rigPitch" formula="0.10*sin(0.016*advance + seed2*6.28)"/>
+    <expr name="rigDolly" formula="0.35*swell"/>
+    <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
+    <float name="spinP" minValue="0.9" maxValue="0.9"></float>
+    <float name="tintP" minValue="1.95" maxValue="1.95"></float>
+    <float name="scanP" minValue="1.1" maxValue="1.1"></float>
+    <expr name="hueP" formula="chromaHue + seed3*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\Scene3D\Hologram.frag" type="scene3d" geom="mesh" model="..\Models\CommsPhalanx.glb" mood="dark,psychedelic,space" probability="0.35" complexity="3">
+    <expr name="rigYaw" formula="0.30*sin(0.020*advance + seed1*6.28)"/>
+    <expr name="rigPitch" formula="0.10*sin(0.016*advance + seed2*6.28)"/>
+    <expr name="rigDolly" formula="0.35*swell"/>
+    <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
+    <float name="spinP" minValue="1.2" maxValue="1.2"></float>
+    <float name="tintP" minValue="5.20" maxValue="5.20"></float>
+    <float name="scanP" minValue="0.8" maxValue="0.8"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
   <TextureShader file="..\Scene2D\DerelictMothership.frag" type="normal" mood="dark,calm,space" probability="0.45" complexity="4">
     <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
     <expr name="rig2Zoom" formula="0.05*swell"/>
