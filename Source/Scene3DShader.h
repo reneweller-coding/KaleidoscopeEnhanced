@@ -238,13 +238,22 @@ private:
 	std::string m_modelPath;          ///< Config attribute model=; path to the .glb/.gltf/.obj this scene loads. Empty for every other geom kind.
 	GLuint m_meshMaterialTex   = 0;   ///< sampler2DArray built from the loaded mesh's material (0 = none loaded, or the mesh had no material) -- see MeshImport.h.
 	int    m_meshMaterialLayers = 0;  ///< Layers actually populated in m_meshMaterialTex (0, 1 or 2); also doubles as "material texture ready" for draw().
-	// Unit 2 is, per a dedicated audit of every texture unit this engine
-	// already reserves (photos, FX stages, ComputeFX sims, spectrogram, depth,
-	// shadow maps, bake/prevFrame/mandelbrot), the one unit nothing else
-	// claims -- see the texture-unit budget discussion that motivated this
-	// feature. Fixed rather than auto-assigned: every mesh scene needs the
-	// SAME unit reserved, the same way texSpectro is always unit 28.
-	static const int kMeshMaterialTexUnit = 2;
+	// An earlier audit of every texture unit this engine reserves claimed
+	// unit 2 was free; it was wrong -- GpuSims.cpp and PresentPass.cpp both
+	// bind there (found the hard way: a mesh scene's own material silently
+	// read whatever GpuSims/PresentPass had last bound to unit 2 instead of
+	// its own texture, since nothing here overwrites the *sampler uniform*
+	// on every unrelated program that might be current when some other
+	// class's own draw call runs). 36 sits safely past every other literal
+	// GL_TEXTUREn / GL_TEXTURE0+n this codebase uses (checked directly: 0-12,
+	// 28-30, 33-35) -- legal because what actually gates a unit NUMBER is
+	// GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS (192 here), not the much smaller
+	// GL_MAX_TEXTURE_IMAGE_UNITS (32) that only caps samplers per shader
+	// stage -- see RenderPipeline::initGLSL()'s own budget diagnostic, whose
+	// kHighestUnitUsed constant this bumped from 35 to 36. Fixed rather than
+	// auto-assigned: every mesh scene needs the SAME unit reserved, the same
+	// way texSpectro is always unit 28.
+	static const int kMeshMaterialTexUnit = 36;
 	GLint  m_projUni     = -1;   ///< Location of the `projM` (projection * camera-rig) matrix uniform.
 	GLint  m_eyeUni      = -1;   ///< Location of the `eyeOff` stereo eye-offset uniform.
 	// CAMERA RIG (formula layer, no shader edits): <expr> entries named

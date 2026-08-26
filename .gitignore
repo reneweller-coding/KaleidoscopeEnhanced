@@ -78,3 +78,8 @@ Configurations/Marked.xml
 # Visual Studio per-user solution options (binary, per-developer)
 *.suo
 *.opensdf
+
+# Raw 3D-Generator tool output (concept art, turntables, latents.npz, hi-res
+# render/ variants -- several GB) staged here ad hoc for copying into
+# Models/; only the game/model.glb files actually used belong in the repo.
+/3D-Objects/
