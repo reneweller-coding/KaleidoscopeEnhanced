@@ -11,6 +11,6 @@
 #define KALEIDOSCOPE_VERSION_H
 
 /// Semantic version of this build, "major.minor.patch" (no leading "v").
-#define KALEIDOSCOPE_VERSION "1.6.1"
+#define KALEIDOSCOPE_VERSION "1.7.0"
 
 #endif
