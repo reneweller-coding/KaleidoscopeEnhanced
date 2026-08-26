@@ -109,6 +109,14 @@ void EffectShader::resetParameters()
 	m_timeSolo = getInterpolatedTime( m_minTimeSolo, m_maxTimeSolo );
 	m_timeInterpolation = getInterpolatedTime( m_minTimeInterpolation, m_maxTimeInterpolation );
 
+	// Restart the sceneProgress ramp. The length is captured HERE because
+	// setUniforms() re-rolls m_timeSolo every frame; the activation time is
+	// left as a sentinel because this function has no time to work from, so
+	// the first setUniforms() after the reset fills it in.
+	m_soloAtReset    = (float) m_timeSolo;
+	m_activationTime = -1.0e9f;
+	m_sceneProgress  = 0.f;
+
 	// The "life" budget handed to each Uniform is solo + 2*interpolation: one
 	// interpolation span to fade IN, the solo span held at full value, and one
 	// interpolation span to fade back OUT — so a Uniform's own randomised
@@ -138,6 +146,23 @@ void EffectShader::setUniforms( float time, float interpolation, GLint texLoc1, 
 	glUniform2f( m_texSizeRcpUni, (float) m_width, (float) m_height );
 	glUniform1f( m_timeUni, time );
     glUniform1f( m_interpolationUni, interpolation );
+
+	// sceneProgress: 0 at activation, 1 at the end of the rolled solo span.
+	// The length is normally captured by resetParameters(), but the FIRST
+	// effect the scheduler shows is never reset -- it is simply already
+	// selected when the show starts -- so without this fallback that one
+	// scene would divide by zero and sit at progress 0 forever. Found by
+	// rendering a single-scene probe and watching sceneProgress never move.
+	if( m_soloAtReset <= 0.01f )
+		m_soloAtReset = (float) m_timeSolo;
+	if( m_activationTime < -0.9e9f )
+		m_activationTime = time;
+	m_sceneProgress = ( m_soloAtReset > 0.01f )
+	                ? ( time - m_activationTime ) / m_soloAtReset : 0.f;
+	m_sceneProgress = ( m_sceneProgress < 0.f ) ? 0.f
+	                : ( m_sceneProgress > 1.f ) ? 1.f : m_sceneProgress;
+	if( m_progressUni >= 0 )
+		glUniform1f( m_progressUni, m_sceneProgress );
 
 	
 	for( unsigned int i = 0; i < m_uniforms.size(); i++ )
@@ -210,6 +235,7 @@ void EffectShader::initUniforms(int width, int height)
 	m_texSizeRcpUni = glGetUniformLocation( m_sh_prog_id, "resolution" );
 	m_timeUni = glGetUniformLocation( m_sh_prog_id, "time" );
 	m_interpolationUni = glGetUniformLocation( m_sh_prog_id, "interpolation" );
+	m_progressUni      = glGetUniformLocation( m_sh_prog_id, "sceneProgress" );
 
 
 	

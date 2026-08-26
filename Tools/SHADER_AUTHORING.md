@@ -120,6 +120,48 @@ optional sind:
 - Ein Tiefen-Nebel `mix(col, vec3(0.0), …)` auf dem Objekt ist jetzt **falsch**:
   er blendet gegen Schwarz statt gegen den sichtbaren Hintergrund.
 
+#### `mesh`: zweites Modell und Szenen-Fortschritt
+
+Zwei Bausteine für **inszenierte** Szenen (ein Vorbeiflug, ein Anflug, ein
+Eintauchen) statt endloser Schleifen:
+
+```glsl
+uniform float sceneProgress;   // 0 bei Aktivierung -> 1 am Ende der Solo-Zeit
+uniform int   mesh2VertexCount; // erste Schalen-Vertex-ID, wenn model2 gesetzt ist
+```
+
+- **`sceneProgress`** ist der einzige Weg, einen Vorgang mit Anfang, Mitte und
+  Ende zu bauen: `time` ist absolut, alles andere periodisch. Die Szene füllt
+  damit automatisch genau die Zeit, die ihr der Scheduler gibt. Er steht
+  **jedem** Shader zur Verfügung, nicht nur `geom="mesh"`.
+- **`model2="..."`** lädt ein ZWEITES Mesh in denselben VBO. Der Puffer hat
+  dann drei Abschnitte, und `gl_VertexID` unterscheidet sie:
+
+  | Bereich | Inhalt |
+  |---|---|
+  | `< meshVertexCount` | Modell 1 (`model=`) |
+  | `< mesh2VertexCount` | Modell 2 (`model2=`) |
+  | sonst | Himmels-Schale |
+
+  Ohne `model2` ist der mittlere Abschnitt leer und `mesh2VertexCount ==
+  meshVertexCount` — bestehende Ein-Modell-Shader bleiben unverändert gültig.
+  Modell 2 hat sein **eigenes** Material in `texMeshMaterial2` /
+  `texMeshMaterialLayers2`; wer für beide Rümpfe dieselbe Textur sampelt,
+  zieht den Atlas des einen über den anderen.
+
+#### `mesh`: Belichtung nicht fest verdrahten
+
+Die Basisfarb-Helligkeit dieses Asset-Bestands reicht von **0,14** (dunkle
+Stationsrümpfe) bis **0,67** (ein fast weißes Culture-Schiff). Eine feste
+Beleuchtungsverstärkung kann beide nicht bedienen: auf die dunklen abgestimmt
+brennt sie die hellen zu einem konturlosen weißen Klumpen aus. Die gröbste
+Mipmap des Material-Arrays IST der Texturmittelwert und kostet einen Fetch:
+
+```glsl
+vec3 avg = textureLod(texMeshMaterial, vec3(0.5, 0.5, 0.0), 20.0).rgb;  // lod klemmt
+float expose = clamp(0.20 / max(dot(avg, vec3(0.299,0.587,0.114)), 0.02), 0.30, 2.0);
+```
+
 Drei Fallen, die alle schon zugeschlagen haben:
 
 - **Der Index steht in `attrA.w`** — nicht in `attrB.x`. `attrB` enthält

@@ -79,7 +79,16 @@ Configurations/Marked.xml
 *.suo
 *.opensdf
 
-# Raw 3D-Generator tool output (concept art, turntables, latents.npz, hi-res
-# render/ variants -- several GB) staged here ad hoc for copying into
-# Models/; only the game/model.glb files actually used belong in the repo.
+# Raw 3D-Generator tool output (concept art, turntables, latents.npz, the
+# full-resolution render/ meshes -- several GB) staged here ad hoc. The meshes
+# the engine uses are decimated out of render/ into Models/ instead.
 /3D-Objects/
+
+# 3D models are OPTIONAL EXTRA CONTENT, published as a GitHub release asset
+# rather than committed. Together they run to roughly a gigabyte -- an order
+# of magnitude more than the rest of the repository -- and git keeps blobs
+# forever, so committing them could never be undone. Configuration.cpp skips
+# any geom="mesh" scene whose model is absent, so a plain clone builds and
+# runs; it simply has fewer scenes until the pack is unpacked into Models/.
+# Tools/make_model_pack.ps1 builds the archive.
+/Models/

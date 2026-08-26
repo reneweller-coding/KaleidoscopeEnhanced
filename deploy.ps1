@@ -97,9 +97,50 @@ New-Item -ItemType Directory -Path $binDir -Force | Out-Null
 # Shaders live in subfolders since the 2026-07 reorg (Scene / Combine / Blend);
 # the exe references them as "..\Scene2D\...", so the folder structure must be
 # mirrored in the package.
-foreach ($d in @("Scene2D", "Scene3D", "FX", "Engine", "Transitions", "Models")) {
+foreach ($d in @("Scene2D", "Scene3D", "FX", "Engine", "Transitions")) {
     Copy-Item (Join-Path $root $d) $pkgDir -Recurse
 }
+# The 3D models are OPTIONAL EXTRA CONTENT and deliberately NOT bundled: they
+# run to about a gigabyte, which would dwarf the installer and the portable
+# zip for content most users may not want. They are published as separate
+# release assets (Tools\make_model_pack.ps1 builds them). Ship the empty
+# folder plus a note, so there is an obvious place to unpack them into --
+# Configuration.cpp skips any geom="mesh" scene whose model is missing, so
+# the program is fully functional without them, just with fewer scenes.
+$modelsDir = Join-Path $pkgDir "Models"
+New-Item -ItemType Directory -Force -Path $modelsDir | Out-Null
+@"
+3D-Modelle / 3D models
+======================
+
+Dieser Ordner ist absichtlich leer. Die 3D-Modelle sind optionaler
+Zusatzinhalt und werden getrennt heruntergeladen -- zusammen sind sie rund
+ein Gigabyte und damit ein Vielfaches des Programms selbst.
+
+  1. Modellpaket von der Releases-Seite laden:
+     https://github.com/reneweller-coding/KaleidoscopeEnhanced/releases
+  2. Den Inhalt (die .glb-Dateien) direkt in DIESEN Ordner entpacken.
+  3. Programm neu starten.
+
+Ohne die Modelle laeuft alles normal, nur die Szenen mit 3D-Objekten fehlen;
+beim Start steht dann im Log, wie viele uebersprungen wurden. Die Pakete sind
+nach Thema getrennt, man kann also auch nur einen Teil nehmen.
+
+--
+
+This folder is intentionally empty. The 3D models are optional extra content
+and are downloaded separately -- together they come to about a gigabyte, many
+times the size of the program itself.
+
+  1. Get the model pack from the releases page:
+     https://github.com/reneweller-coding/KaleidoscopeEnhanced/releases
+  2. Unpack the .glb files straight into THIS folder.
+  3. Restart the program.
+
+Without them everything still works, you simply do not get the scenes that
+use 3D objects; the startup log says how many were skipped. The packs are
+split by theme, so taking just one of them is fine.
+"@ | Set-Content -Path (Join-Path $modelsDir "LIESMICH-MODELLE.txt") -Encoding utf8
 Copy-Item (Join-Path $root "*.vert") $pkgDir
 Copy-Item (Join-Path $root "Configurations") $pkgDir -Recurse
 if (Test-Path (Join-Path $root "icon.png")) {

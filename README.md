@@ -51,6 +51,7 @@ arctic fjord under the northern lights.*
 
 - [Quick start](#quick-start)
 - [Controls](#controls)
+- [3D model pack](#3d-model-pack)
 - [Configurations and presets](#configurations-and-presets)
   - [Reviewing the shader library](#reviewing-the-shader-library)
 - [Recording](#recording)
@@ -80,6 +81,39 @@ photos (a `Setup-starten.bat` / Start-menu **Setup** shortcut also ships —
 see [Setup tool](#setup-tool)); a bundled fallback texture is used if it's
 missing, so first launch never fails. Press **`h`** any time for the full
 keyboard reference in-app.
+
+---
+
+## 3D model pack
+
+Some scenes place a **real 3D model** in the shot — a station turning against
+a nebula, a capital ship making a slow pass, a shuttle coming alongside a
+drydock, a jellyfish in a lit water column. Those models are **optional extra
+content** and are **not** part of the installer, the portable zip or the git
+repository: together they come to roughly a gigabyte, many times the size of
+the program itself, and most of that is of no use to someone who only wants
+the classic visualizer.
+
+They are published as separate downloads on the
+[releases page](https://github.com/reneweller-coding/KaleidoscopeEnhanced/releases),
+split by theme so you can take only what you want:
+
+| Pack | Contains |
+|---|---|
+| `KaleidoscopeModels-ships.zip` | capital ships, freighters, couriers — flybys, docking approaches, atmospheric entries, holograms |
+| `KaleidoscopeModels-stations.zip` | space stations — the six station families |
+| `KaleidoscopeModels-earthbound.zip` | the non-space props: hi-fi gear, museum sculptures, sea creatures |
+
+Unpack the `.glb` files straight into the program's `Models` folder and
+restart. **Nothing breaks without them**: every scene that needs a model it
+cannot find is skipped when the catalogue is read, and the startup log says
+how many. You simply get a smaller rotation.
+
+Building the packs yourself, from a `Models` folder you have filled:
+
+```powershell
+.\Tools\make_model_pack.ps1
+```
 
 ---
 

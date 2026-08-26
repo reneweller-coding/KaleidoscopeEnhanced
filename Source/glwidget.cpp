@@ -439,6 +439,20 @@ GLwidget::GLwidget( QWidget *parent )
 		m_configurationList.swap( m_hiddenConfigurations );
 	}
 
+	// The 3D models are an optional extra download, so a plain install has
+	// none of the geom="mesh" scenes. Say so once, with the count: otherwise
+	// the only symptom is "the catalogue is smaller than the docs claim",
+	// which looks like a bug rather than a missing (optional) component.
+	{
+		int skipped = 0;
+		for( Configuration *c : m_configurationList )       skipped += c->m_skippedMeshScenes;
+		for( Configuration *c : m_hiddenConfigurations )    skipped += c->m_skippedMeshScenes;
+		if( skipped > 0 )
+			fprintf( stderr,
+			         "3D model pack not installed: %d mesh scene(s) skipped. "
+			         "Unpack the models into the Models folder to enable them.\n", skipped );
+	}
+
 	// Default to the first configuration, or the one requested with -c <name>.
 	// -c searches the hidden list too: that is the dev/CI door into the
 	// Komplett master and the Test* benches.

@@ -21,14 +21,31 @@ uniform float eyeOff;
 uniform float time;
 uniform int   meshVertexCount;
 
+uniform float audioAdvance;
 uniform float audioKick;
 
 uniform float sizeP;
+uniform float spinP;
+uniform float spinAxisP;
 
 out vec2 vUV;
 out vec3 vNormal;
 out vec3 vPos;
 out float vBg;
+
+// Rotation about one of the model's own object-space axes.
+// spinAxisP: 0 = X, 1 = Y, 2 = Z -- set per instance to the axis the hull is
+// actually rotationally symmetric about (measured per model, not guessed).
+// A station only spins if it HAS such an axis: turning an irregular hull
+// reads as tumbling, which a structure this size would never do, whereas a
+// symmetric one that does NOT turn reads as broken spin gravity.
+mat3 axisSpin(float axis, float ang)
+{
+    float c = cos(ang), s = sin(ang);
+    if (axis < 0.5) return mat3(1.0, 0.0, 0.0,   0.0, c,   s,     0.0, -s,  c);
+    if (axis < 1.5) return mat3(c,   0.0, -s,    0.0, 1.0, 0.0,   s,   0.0, c);
+    return                 mat3(c,   s,   0.0,  -s,   c,   0.0,   0.0, 0.0, 1.0);
+}
 
 void main()
 {
@@ -39,17 +56,18 @@ void main()
         float sz = (sizeP > 0.01 ? sizeP : 1.0);
         vec3 local = attrA.xyz * (32.0 * sz);
 
-        // A fixed viewing angle, not an animated tumble -- a real
-        // kilometers-long fortress has far too much inertia to visibly
-        // rotate, and drifting/tumbling in place would read as debris, not
-        // a stationed defense platform. Kick adds a barely-there positional
-        // jolt only, as if a distant impact just rattled the hull.
+        // A fixed VIEWING angle (chosen once, so the hull never tumbles),
+        // composed with a spin about the model's own symmetry axis. Only
+        // hulls that HAVE such an axis get a non-zero spinP -- see
+        // axisSpin() above. Kick adds a barely-there positional jolt, as if
+        // a distant impact just rattled the structure.
         const float rotY = 0.5, rotX = 0.12;
         float cy = cos(rotY), sy = sin(rotY);
         float cx = cos(rotX), sx = sin(rotX);
         mat3 rotYMat = mat3(cy, 0.0, -sy,   0.0, 1.0, 0.0,   sy, 0.0, cy);
         mat3 rotXMat = mat3(1.0, 0.0, 0.0,   0.0, cx, sx,   0.0, -sx, cx);
-        mat3 rotMat = rotYMat * rotXMat;
+        mat3 rotMat = rotYMat * rotXMat * axisSpin(spinAxisP,
+                      (time * 0.045 + audioAdvance * 0.035) * max(spinP, 0.0));
 
         world = rotMat * local;
         world.z += 105.0;

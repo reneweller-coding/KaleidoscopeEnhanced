@@ -72,6 +72,21 @@ vec3 renderSky(vec3 dir)
     return cloud + vec3(1.0) * starsField(dir, 0.0018);
 }
 
+// AUTO-EXPOSURE against the material's own average brightness.
+// This asset set is not uniform: measured base-colour luma runs from 0.14
+// (dark station hulls) to 0.67 (a near-white Culture GSV) -- a factor of
+// more than four. A single fixed lighting gain therefore cannot serve both;
+// tuned for the dark hulls it blows the bright ones out to a featureless
+// white blob, which is exactly how they were rendering.
+// The COARSEST MIP of the material array is the texture's average, so one
+// extra fetch buys a per-model exposure with no CPU side and no new uniform.
+float materialExposure(sampler2DArray tex)
+{
+    vec3 avg = textureLod(tex, vec3(0.5, 0.5, 0.0), 20.0).rgb;   // lod clamps to the last level
+    float l = dot(avg, vec3(0.299, 0.587, 0.114));
+    return clamp(0.20 / max(l, 0.02), 0.30, 2.0);
+}
+
 void main()
 {
     if (vBg > 0.5)
@@ -115,7 +130,8 @@ void main()
     // decoded texture, its lit contribution alone stays under ~0.15 even at
     // full diffuse. A generous ambient/fill floor is what makes the shape
     // and panel-line detail actually read as a ship instead of a silhouette.
-    vec3 col = base.rgb * (0.55 + diff * (1.4 + 0.6 * audioSwell) + fill * 0.35);
+    float expose = materialExposure(texMeshMaterial);
+    vec3 col = base.rgb * expose * (0.55 + diff * (1.4 + 0.6 * audioSwell) + fill * 0.35);
     col += specColor * spec * (0.6 + 0.8 * (1.0 - roughness));
 
     // Rim glow + shield-flicker: a fixed cool tint, kept deliberately modest

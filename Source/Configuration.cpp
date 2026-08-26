@@ -254,6 +254,26 @@ void Configuration::readConfiguration( const QString &filename )
 
 		QString type = el.attribute("type");
 
+		// OPTIONAL MODEL PACK. geom="mesh" scenes need a .glb that does not
+		// ship with the program -- the models are a separate download, because
+		// together they outweigh everything else in the repository many times
+		// over. A scene whose model is absent is skipped ENTIRELY here rather
+		// than registered and left to fail later: Scene3DShader fails soft to
+		// empty geometry, which would put a scene in the rotation that renders
+		// nothing at all. Silently having fewer scenes is the correct
+		// behaviour; a black one every few minutes is not.
+		if( el.attribute("geom") == "mesh" )
+		{
+			const QString m1 = el.attribute("model");
+			const QString m2 = el.attribute("model2");
+			if( ( !m1.isEmpty() && !QFileInfo::exists( m1 ) ) ||
+			    ( !m2.isEmpty() && !QFileInfo::exists( m2 ) ) )
+			{
+				m_skippedMeshScenes++;
+				continue;
+			}
+		}
+
 		float probability = el.attribute("probability").toFloat();
 		unsigned int complexity = el.attribute("complexity").toFloat();
 
@@ -315,6 +335,10 @@ void Configuration::readConfiguration( const QString &filename )
 			// instead of building procedural geometry.
 			if( el.hasAttribute("model") )
 				shader->setModelPath( el.attribute("model").toStdString() );
+			// Optional SECOND mesh, for scenes staging two objects against
+			// each other (a ship coming alongside a station).
+			if( el.hasAttribute("model2") )
+				shader->setModelPath2( el.attribute("model2").toStdString() );
 
 			addUniforms( shader, el );
 			shader->setComplexity( complexity );

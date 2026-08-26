@@ -115,6 +115,8 @@ Scene3DShader::~Scene3DShader()
 		glDeleteProgram( m_genProg );
 	if( m_meshMaterialTex )
 		glDeleteTextures( 1, &m_meshMaterialTex );
+	if( m_meshMaterialTex2 )
+		glDeleteTextures( 1, &m_meshMaterialTex2 );
 }
 
 void Scene3DShader::resetParameters()
@@ -309,15 +311,28 @@ void Scene3DShader::buildGeometry()
 		// generated pattern, but still lands in the same 8-floats-per-vertex
 		// layout (attrA.xyz=pos/.w=U, attrB.xyz=normal/.w=V) every other kind
 		// uses, so the upload code below needs no branch of its own.
-		MeshAsset asset;
-		if( loadMeshAsset( m_modelPath, asset ) )
+		//
+		// The buffer ends up in three consecutive runs:
+		//   [0, m_meshOwnVertexCount)                 model 1 (model=)
+		//   [m_meshOwnVertexCount, m_mesh2VertexCount) model 2 (model2=, may be empty)
+		//   [m_mesh2VertexCount, end)                  the sky shell
+		// With no model2 the middle run is empty and m_mesh2VertexCount ==
+		// m_meshOwnVertexCount, so every existing single-model shader's
+		// "gl_VertexID >= meshVertexCount means shell" test still holds.
+		auto loadInto = [&]( const std::string &path, GLuint &tex, int &layers ) -> bool
 		{
-			v = std::move( asset.vertices );
+			MeshAsset asset;
+			if( !loadMeshAsset( path, asset ) )
+			{
+				fprintf( stderr, "Scene3DShader: failed to load mesh '%s'\n", path.c_str() );
+				return false;
+			}
+			v.insert( v.end(), asset.vertices.begin(), asset.vertices.end() );
 			if( asset.materialLayers > 0 )
 			{
-				if( m_meshMaterialTex == 0 )
-					glGenTextures( 1, &m_meshMaterialTex );
-				glBindTexture( GL_TEXTURE_2D_ARRAY, m_meshMaterialTex );
+				if( tex == 0 )
+					glGenTextures( 1, &tex );
+				glBindTexture( GL_TEXTURE_2D_ARRAY, tex );
 				glTexImage3D( GL_TEXTURE_2D_ARRAY, 0, GL_RGBA8,
 				              asset.materialW, asset.materialH, asset.materialLayers,
 				              0, GL_RGBA, GL_UNSIGNED_BYTE, asset.materialRGBA.data() );
@@ -327,13 +342,17 @@ void Scene3DShader::buildGeometry()
 				glTexParameteri( GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_REPEAT );
 				glGenerateMipmap( GL_TEXTURE_2D_ARRAY );
 				glBindTexture( GL_TEXTURE_2D_ARRAY, 0 );
-				m_meshMaterialLayers = asset.materialLayers;
+				layers = asset.materialLayers;
 			}
-		}
-		else
-		{
-			fprintf( stderr, "Scene3DShader: failed to load mesh '%s'\n", m_modelPath.c_str() );
-		}
+			return true;
+		};
+
+		loadInto( m_modelPath, m_meshMaterialTex, m_meshMaterialLayers );
+		m_meshOwnVertexCount = int( v.size() / 8 );
+
+		if( !m_modelPath2.empty() )
+			loadInto( m_modelPath2, m_meshMaterialTex2, m_meshMaterialLayers2 );
+		m_mesh2VertexCount = int( v.size() / 8 );
 
 		// Append a big enclosing "sky shell" after the loaded mesh's own
 		// vertices (same 36-corner unit-cube table GEOM_CUBES builds,
@@ -347,7 +366,6 @@ void Scene3DShader::buildGeometry()
 		// direction" for procedural nebula/asteroid-field/planet noise.
 		if( !v.empty() )
 		{
-			m_meshOwnVertexCount = int( v.size() / 8 );
 			static const float SC[36][3] = {
 				{-.5f,-.5f,-.5f},{ .5f,-.5f,-.5f},{ .5f, .5f,-.5f},
 				{-.5f,-.5f,-.5f},{ .5f, .5f,-.5f},{-.5f, .5f,-.5f},
@@ -707,6 +725,7 @@ void Scene3DShader::initUniforms( int width, int height )
 	m_texSizeRcpUni    = glGetUniformLocation( m_sh_prog_id, "resolution" );
 	m_timeUni          = glGetUniformLocation( m_sh_prog_id, "time" );
 	m_interpolationUni = glGetUniformLocation( m_sh_prog_id, "interpolation" );
+	m_progressUni      = glGetUniformLocation( m_sh_prog_id, "sceneProgress" );
 	for( unsigned int i = 0; i < m_uniforms.size(); i++ )
 		m_uniforms[i]->initUniform( m_sh_prog_id );
 
@@ -717,6 +736,9 @@ void Scene3DShader::initUniforms( int width, int height )
 	m_meshMaterialUni = glGetUniformLocation( m_sh_prog_id, "texMeshMaterial" );
 	m_meshMaterialLayersUni = glGetUniformLocation( m_sh_prog_id, "texMeshMaterialLayers" );
 	m_meshVertexCountUni = glGetUniformLocation( m_sh_prog_id, "meshVertexCount" );
+	m_mesh2VertexCountUni = glGetUniformLocation( m_sh_prog_id, "mesh2VertexCount" );
+	m_meshMaterial2Uni = glGetUniformLocation( m_sh_prog_id, "texMeshMaterial2" );
+	m_meshMaterial2LayersUni = glGetUniformLocation( m_sh_prog_id, "texMeshMaterialLayers2" );
 	m_attrA   = glGetAttribLocation( m_sh_prog_id, "attrA" );
 	m_attrB   = glGetAttribLocation( m_sh_prog_id, "attrB" );
 
@@ -852,6 +874,16 @@ void Scene3DShader::draw()
 	}
 	if( m_geomKind == GEOM_MESH && m_meshVertexCountUni >= 0 )
 		glUniform1i( m_meshVertexCountUni, m_meshOwnVertexCount );
+	if( m_geomKind == GEOM_MESH && m_mesh2VertexCountUni >= 0 )
+		glUniform1i( m_mesh2VertexCountUni, m_mesh2VertexCount );
+	if( m_meshMaterialLayers2 > 0 )
+	{
+		if( m_meshMaterial2Uni >= 0 ) glUniform1i( m_meshMaterial2Uni, kMeshMaterial2TexUnit );
+		if( m_meshMaterial2LayersUni >= 0 ) glUniform1i( m_meshMaterial2LayersUni, m_meshMaterialLayers2 );
+		glActiveTexture( GL_TEXTURE0 + kMeshMaterial2TexUnit );
+		glBindTexture( GL_TEXTURE_2D_ARRAY, m_meshMaterialTex2 );
+		glActiveTexture( GL_TEXTURE0 );
+	}
 
 	// During the OIT accumulation pass, the caller (RenderPipeline::renderOitPass
 	// / Scene3DPreview::renderOitPass) has ALREADY bound the two-target OIT

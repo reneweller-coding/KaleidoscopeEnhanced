@@ -562,6 +562,21 @@ protected:
 	float m_exprTime     = 0.f;      ///< Time as passed to setUniforms; current frame's time value, read by the formula layer.
 	float m_exprSeeds[3] = { 0.5f, 0.5f, 0.5f };   ///< Re-rolled per activation: random seeds exposed to formulas as seed1/seed2/seed3; re-rolled by resetParameters()/addExpression().
 
+	// ---- sceneProgress: 0 at activation, 1 at the end of the solo period ----
+	// For scenes that stage a ONE-SHOT event rather than a loop -- a ship
+	// passing the camera, an approach and dock, a descent into an atmosphere.
+	// Those need to know how far through their own screen time they are;
+	// everything else the engine offers is either absolute (`time`) or
+	// periodic, and neither can place a beginning, a middle and an end.
+	//
+	// Normalised against the solo length CAPTURED AT ACTIVATION, not the live
+	// m_timeSolo: setUniforms() re-rolls that every single frame, so dividing
+	// by it would make the progress jitter instead of advancing evenly.
+	GLint m_progressUni    = -1;        ///< Location of the `sceneProgress` uniform (-1 if the shader doesn't declare it).
+	float m_soloAtReset    = 0.f;       ///< m_timeSolo as it stood at the last resetParameters(), in seconds.
+	float m_activationTime = -1.0e9f;   ///< `time` at the first setUniforms() after activation; sentinel means "not yet seen".
+	float m_sceneProgress  = 0.f;       ///< Cached 0..1 progress, also readable by subclasses for CPU-side staging.
+
 	// 2D CAMERA RIG state (formulas rig2Roll/rig2Zoom/rig2X/rig2Y + the
 	// host-integrated rig2…V rates), evaluated in applyAudioFeatures and
 	// consumed by RenderPipeline's Engine/Rig2D.frag transform pass.

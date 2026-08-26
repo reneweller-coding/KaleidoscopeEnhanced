@@ -59,6 +59,13 @@ public:
 
 	RenderPipeline *m_renderPipeline; ///< The shader/scene pipeline built by readConfiguration(); owned (deleted in the destructor).
 
+	/// How many geom="mesh" scenes readConfiguration() skipped because their
+	/// model file was not installed. The 3D models are an OPTIONAL separate
+	/// download (they dwarf the rest of the program), so a plain install
+	/// legitimately has none of them -- this is reported once at startup so
+	/// the smaller scene count is explained rather than mysterious.
+	int m_skippedMeshScenes = 0;
+
 private:
 
 	/**

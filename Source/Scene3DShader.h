@@ -97,6 +97,7 @@ public:
 	void  setGenPassCount( int n ) { m_genPassCount = n; }   ///< @param n Number of compute passes (genPass = 0..n-1, barrier between each) runGenerator() dispatches this generator through per frame; 0 (default) keeps the original "1 pass, or 2 if stateful" behaviour. For pipelines needing more than "advance, then mesh" (e.g. a multi-stage grid-based fluid sim).
 	void  setShadowExtent( float e ) { m_shadowExtent = e; }   ///< @param e Half-width of the shadow-map light box for this scene (overrides EffectShader::kShadowExtent).
 	void  setModelPath( const std::string &path ) { m_modelPath = path; }   ///< @param path Filesystem path (config attribute model=) to the .glb/.gltf/.obj this geom="mesh" scene loads; ignored by every other geom kind.
+	void  setModelPath2( const std::string &path ) { m_modelPath2 = path; }   ///< @param path Optional SECOND mesh (config attribute model2=), loaded into the same VBO after the first; lets one scene stage two objects against each other (a ship alongside a station). Ignored by every other geom kind.
 	float shadowExtent() const override { return m_shadowExtent; }   ///< @return This scene's shadow-map light box half-width.
 	/**
 	 * @brief Forwards to EffectShader::setUniforms(), first folding in this activation's time offset/speed factor.
@@ -254,6 +255,22 @@ private:
 	// auto-assigned: every mesh scene needs the SAME unit reserved, the same
 	// way texSpectro is always unit 28.
 	static const int kMeshMaterialTexUnit = 36;
+
+	// ---- optional SECOND model (config attribute model2=) ----
+	// For scenes that stage two objects against each other -- a ship coming
+	// alongside a station is the motivating case, and it only works if the
+	// two are separate meshes that can be scaled and moved independently.
+	// Both land in the same VBO, one after the other; see buildGeometry()
+	// for the three-run layout and why it stays compatible with every
+	// existing single-model shader.
+	std::string m_modelPath2;            ///< Config attribute model2=; empty for a single-model scene.
+	int    m_mesh2VertexCount   = 0;     ///< First vertex of the sky shell; equals m_meshOwnVertexCount when there is no model2.
+	GLuint m_meshMaterialTex2   = 0;     ///< sampler2DArray for model 2's material (0 = none).
+	int    m_meshMaterialLayers2 = 0;    ///< Layers populated in m_meshMaterialTex2 (0, 1 or 2).
+	GLint  m_mesh2VertexCountUni = -1;   ///< Location of the `mesh2VertexCount` uniform.
+	GLint  m_meshMaterial2Uni    = -1;   ///< Location of the `texMeshMaterial2` uniform.
+	GLint  m_meshMaterial2LayersUni = -1;///< Location of the `texMeshMaterialLayers2` uniform.
+	static const int kMeshMaterial2TexUnit = 37;   ///< One past kMeshMaterialTexUnit; see that constant for why a high fixed unit is safe here.
 	// A GEOM_MESH scene's VBO holds the loaded model's own vertices FIRST,
 	// then a big enclosing "sky shell" (see buildGeometry()) so the object
 	// reads against a real procedural backdrop (nebula/asteroid field/
