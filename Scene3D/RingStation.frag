@@ -3,19 +3,21 @@ out vec4 fragColor;
 /**
  * @file RingStation.frag
  * @brief GEOM="MESH" STATION FAMILY: wheel/ring/torus-shaped stations (spin-
- * gravity habitats, research rings, jump-gate anchors, megastructure hubs).
- * A cool distant starlight key, plus a self-illumination trick standing in
- * for lit windows -- there is no separate emissive map, so bright patches of
- * the baked albedo (window strips, warning markings) are treated as if lit
- * from within, which is what those patches usually ARE in a baked texture.
+ * gravity habitats, research rings, jump-gate anchors, megastructure hubs),
+ * shown against a real backdrop instead of flat black: a fake planet with
+ * animated cloud cover plus a starfield, painted directly onto the sky
+ * shell Scene3DShader::buildGeometry() appends after the loaded mesh (see
+ * RingStation.vert) -- vBg selects which of the two this fragment belongs
+ * to. The station itself keeps a plain cool starlight + warm window-glow
+ * treatment (no photo-tinting): the "cool" part of this family now lives in
+ * the environment, not in recoloring the hull.
  *   audioAdvance -> spin speed (vertex stage)
  *   audioSwell   -> key-light strength, window-glow brightness
  *   audioKick    -> window-glow flicker
- *   audioChromaHue-> palette follows the musical key
  *
  * Per-instance (config attributes, all optional, sane defaults):
- *   sizeP  relative scale
- *   spinP  relative spin speed
+ *   sizeP   relative scale
+ *   spinP   relative spin speed
  *   windowP window-glow intensity
  * Per-activation variety:
  *   hueP float palette offset (0..6.28)
@@ -28,11 +30,6 @@ uniform float time;
 uniform float audioAdvance;
 uniform float audioKick;
 uniform float audioSwell;
-uniform float audioChromaHue;
-
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
 
 uniform float hueP;
 uniform float windowP;
@@ -40,17 +37,7 @@ uniform float windowP;
 in vec2 vUV;
 in vec3 vNormal;
 in vec3 vPos;
-
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
-}
-
-vec3 imgPalette(float t)
-{
-    float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    return img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-}
+in float vBg;
 
 vec3 hueRot(vec3 c, float a) {
     vec3 k = vec3(0.57735026919);
@@ -58,8 +45,72 @@ vec3 hueRot(vec3 c, float a) {
     return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
 }
 
+// ---- Sky shell: shared hash/noise/fbm + a fake lit planet -- see
+// Scene3DShader.cpp's buildGeometry() note on why the backdrop is real
+// geometry (a huge enclosing shell) rather than a 2D overlay. ----
+float hash13(vec3 p) {
+    p = fract(p * 0.3183099 + vec3(0.71, 0.113, 0.419));
+    p *= 17.0;
+    return fract(p.x * p.y * p.z * (p.x + p.y + p.z));
+}
+float noise3(vec3 x) {
+    vec3 i = floor(x), f = fract(x);
+    f = f * f * (3.0 - 2.0 * f);
+    float n000 = hash13(i + vec3(0.0,0.0,0.0)), n100 = hash13(i + vec3(1.0,0.0,0.0));
+    float n010 = hash13(i + vec3(0.0,1.0,0.0)), n110 = hash13(i + vec3(1.0,1.0,0.0));
+    float n001 = hash13(i + vec3(0.0,0.0,1.0)), n101 = hash13(i + vec3(1.0,0.0,1.0));
+    float n011 = hash13(i + vec3(0.0,1.0,1.0)), n111 = hash13(i + vec3(1.0,1.0,1.0));
+    return mix(mix(mix(n000,n100,f.x), mix(n010,n110,f.x), f.y),
+               mix(mix(n001,n101,f.x), mix(n011,n111,f.x), f.y), f.z);
+}
+float fbm(vec3 p) {
+    float v = 0.0, a = 0.5;
+    for (int i = 0; i < 5; i++) { v += a * noise3(p); p = p * 2.03 + 7.1; a *= 0.5; }
+    return v;
+}
+float starsField(vec3 dir, float density) {
+    float h = hash13(floor(dir * 500.0));
+    return smoothstep(1.0 - density, 1.0, h);
+}
+
+vec3 renderSky(vec3 dir)
+{
+    // A foreign world sits at a fixed point in this sky -- fixed, not
+    // orbiting itself, so it reads as a real distant body the CAMERA passes
+    // rather than something spinning in place.
+    vec3 planetDir = normalize(vec3(0.35, -0.12, 1.0));
+    float d = dot(dir, planetDir);
+    float disc = smoothstep(0.9935, 0.997, d);
+
+    vec3 col = vec3(0.01, 0.012, 0.02) + vec3(1.0) * starsField(dir, 0.0016);
+
+    if (disc > 0.0005)
+    {
+        vec3 up = (abs(planetDir.y) < 0.99) ? vec3(0.0,1.0,0.0) : vec3(1.0,0.0,0.0);
+        vec3 rightV = normalize(cross(up, planetDir));
+        vec3 upV = cross(planetDir, rightV);
+        vec2 uv = vec2(dot(dir, rightV), dot(dir, upV)) * 90.0;
+        float terrain = fbm(vec3(uv * 0.6, 1.3));
+        float clouds = fbm(vec3(uv * 0.9 + vec2(time * 0.02, 0.0), 5.1));
+        vec3 surface = mix(vec3(0.10, 0.22, 0.34), vec3(0.5, 0.42, 0.28), terrain);
+        surface = mix(surface, vec3(0.92, 0.94, 0.96), smoothstep(0.55, 0.72, clouds));
+        // dir doubles as the sphere's own outward normal here -- a cheap
+        // stand-in that only breaks down near the disc's own limb, where a
+        // decorative background planet does not need to be exact.
+        float ndotl = max(dot(dir, normalize(vec3(0.3, 0.5, -0.6))), 0.0);
+        col = mix(col, surface * (0.18 + 0.9 * ndotl), disc);
+    }
+    return col;
+}
+
 void main()
 {
+    if (vBg > 0.5)
+    {
+        fragColor = vec4(renderSky(normalize(vPos)), 1.0);
+        return;
+    }
+
     float hue = (hueP > 0.01 ? hueP : 0.0);
     float wp  = (windowP > 0.01 ? windowP : 1.0);
 
@@ -102,28 +153,18 @@ void main()
     // well-illuminated -- there is no separate emissive map to sample.
     // These hulls' baked albedo runs uniformly dark (measured directly on
     // this batch of station textures), so the highlight threshold sits well
-    // below what a normal-brightness texture would need -- otherwise
-    // "brightest patches" never fires at all and the window glow never
-    // shows (see IndustrialStation.frag's vent-mask note for the same
-    // measurement, the other direction: over- rather than under-firing).
+    // below what a normal-brightness texture would need.
     float luma = dot(base.rgb, vec3(0.299, 0.587, 0.114));
     float windowMask = smoothstep(0.25, 0.55, luma);
-    // Mostly the fixed warm window color -- a strongly-tinted background
-    // photo (e.g. a galaxy/nebula shot) can otherwise push imgPalette()'s
-    // contribution far enough to overrule the family's own signature color.
-    vec3 windowColor = mix(vec3(1.0, 0.85, 0.55), imgPalette(0.6), 0.15);
-    col += windowColor * windowMask * wp * (0.4 + 0.4 * audioSwell) * (0.85 + 0.3 * audioKick);
+    // A fixed warm color -- the environment carries the "cool" palette
+    // variety now (see renderSky() above), not a photo-tinted hull.
+    col += vec3(1.0, 0.85, 0.55) * windowMask * wp * (0.4 + 0.4 * audioSwell) * (0.85 + 0.3 * audioKick);
 
     // A soft cool starlight rim, kept modest -- an edge accent, not a wash.
     float fresnel = pow(1.0 - max(dot(n, viewDir), 0.0), 4.0);
-    col += mix(vec3(0.7, 0.85, 1.0), imgPalette(0.15), 0.2) * fresnel * (0.1 + 0.2 * audioSwell);
+    col += vec3(0.7, 0.85, 1.0) * fresnel * (0.1 + 0.2 * audioSwell);
 
     if (hue > 0.001) col = hueRot(col, 0.2 * sin(hue));
-
-    // Fade into the black of space with distance from the camera.
-    float dist = length(vPos);
-    float fogAmt = clamp((dist - 110.0) / 170.0, 0.0, 1.0);
-    col = mix(col, vec3(0.0), fogAmt);
 
     vec3 _catTone = max(col, 0.0);
     _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));

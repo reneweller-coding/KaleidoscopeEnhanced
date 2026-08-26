@@ -334,6 +334,43 @@ void Scene3DShader::buildGeometry()
 		{
 			fprintf( stderr, "Scene3DShader: failed to load mesh '%s'\n", m_modelPath.c_str() );
 		}
+
+		// Append a big enclosing "sky shell" after the loaded mesh's own
+		// vertices (same 36-corner unit-cube table GEOM_CUBES builds,
+		// scaled way up and centered on the origin, NOT on the mesh's own
+		// on-screen position) -- every geom="mesh" scene now renders
+		// against this procedural backdrop instead of flat black. Skipped
+		// if the mesh itself failed to load (v is empty; m_meshOwnVertexCount
+		// stays 0), matching this class's existing fail-soft convention.
+		// attrB carries the outward DIRECTION here (not a real lighting
+		// normal) -- each geom="mesh" fragment shader uses it as the "sky
+		// direction" for procedural nebula/asteroid-field/planet noise.
+		if( !v.empty() )
+		{
+			m_meshOwnVertexCount = int( v.size() / 8 );
+			static const float SC[36][3] = {
+				{-.5f,-.5f,-.5f},{ .5f,-.5f,-.5f},{ .5f, .5f,-.5f},
+				{-.5f,-.5f,-.5f},{ .5f, .5f,-.5f},{-.5f, .5f,-.5f},
+				{-.5f,-.5f, .5f},{ .5f, .5f, .5f},{ .5f,-.5f, .5f},
+				{-.5f,-.5f, .5f},{-.5f, .5f, .5f},{ .5f, .5f, .5f},
+				{-.5f,-.5f,-.5f},{-.5f, .5f,-.5f},{-.5f, .5f, .5f},
+				{-.5f,-.5f,-.5f},{-.5f, .5f, .5f},{-.5f,-.5f, .5f},
+				{ .5f,-.5f,-.5f},{ .5f, .5f, .5f},{ .5f, .5f,-.5f},
+				{ .5f,-.5f,-.5f},{ .5f,-.5f, .5f},{ .5f, .5f, .5f},
+				{-.5f, .5f,-.5f},{ .5f, .5f,-.5f},{ .5f, .5f, .5f},
+				{-.5f, .5f,-.5f},{ .5f, .5f, .5f},{-.5f, .5f, .5f},
+				{-.5f,-.5f,-.5f},{ .5f,-.5f, .5f},{ .5f,-.5f,-.5f},
+				{-.5f,-.5f,-.5f},{-.5f,-.5f, .5f},{ .5f,-.5f, .5f}
+			};
+			const float kSide = 2.f * float( kSkyShellRadius );   // corners are +-0.5 -> +-R
+			for( int k = 0; k < 36; ++k )
+			{
+				const float px = SC[k][0] * kSide, py = SC[k][1] * kSide, pz = SC[k][2] * kSide;
+				const float len = sqrtf( px * px + py * py + pz * pz );
+				v.push_back( px );          v.push_back( py );          v.push_back( pz );          v.push_back( 0.f );
+				v.push_back( px / len );    v.push_back( py / len );    v.push_back( pz / len );    v.push_back( 0.f );
+			}
+		}
 	}
 	else  // GEOM_RIBBON: 20 ribbons x 300 segments, two triangles per segment.
 	{
@@ -679,6 +716,7 @@ void Scene3DShader::initUniforms( int width, int height )
 	m_budgetUni = glGetUniformLocation( m_sh_prog_id, "cubeBudget" );
 	m_meshMaterialUni = glGetUniformLocation( m_sh_prog_id, "texMeshMaterial" );
 	m_meshMaterialLayersUni = glGetUniformLocation( m_sh_prog_id, "texMeshMaterialLayers" );
+	m_meshVertexCountUni = glGetUniformLocation( m_sh_prog_id, "meshVertexCount" );
 	m_attrA   = glGetAttribLocation( m_sh_prog_id, "attrA" );
 	m_attrB   = glGetAttribLocation( m_sh_prog_id, "attrB" );
 
@@ -812,6 +850,8 @@ void Scene3DShader::draw()
 		glBindTexture( GL_TEXTURE_2D_ARRAY, m_meshMaterialTex );
 		glActiveTexture( GL_TEXTURE0 );
 	}
+	if( m_geomKind == GEOM_MESH && m_meshVertexCountUni >= 0 )
+		glUniform1i( m_meshVertexCountUni, m_meshOwnVertexCount );
 
 	// During the OIT accumulation pass, the caller (RenderPipeline::renderOitPass
 	// / Scene3DPreview::renderOitPass) has ALREADY bound the two-target OIT

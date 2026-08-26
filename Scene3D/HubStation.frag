@@ -3,14 +3,16 @@ out vec4 fragColor;
 /**
  * @file HubStation.frag
  * @brief GEOM="MESH" STATION FAMILY: civilian/trade hubs (cargo docks,
- * merchanter outposts, shipyards, quarantine posts, trade promenades).
- * Warm, brighter key light plus busy amber docking-light speckle across the
+ * merchanter outposts, shipyards, quarantine posts, trade promenades),
+ * shown against a busy starfield (with faint distant nebula wisps) painted
+ * onto the sky shell Scene3DShader::buildGeometry() appends after the
+ * loaded mesh (see HubStation.vert) -- vBg selects shell vs. hull. Warm,
+ * brighter key light plus busy amber docking-light speckle across the
  * hull's darker baked patches -- a hub that's alive with traffic, not a
- * single glow but many small ones.
+ * single glow but many small ones; no photo-tinting on the hull itself.
  *   audioSwell   -> key-light strength, docking-light brightness
  *   audioKick    -> docking-light twinkle
  *   audioAdvance -> tumble speed (vertex stage)
- *   audioChromaHue-> palette follows the musical key
  *
  * Per-instance: sizeP (relative scale), busyP (docking-light density).
  * Per-activation variety: hueP float palette offset (0..6.28).
@@ -23,11 +25,6 @@ uniform float time;
 uniform float audioAdvance;
 uniform float audioKick;
 uniform float audioSwell;
-uniform float audioChromaHue;
-
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
 
 uniform float hueP;
 uniform float busyP;
@@ -35,17 +32,7 @@ uniform float busyP;
 in vec2 vUV;
 in vec3 vNormal;
 in vec3 vPos;
-
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
-}
-
-vec3 imgPalette(float t)
-{
-    float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    return img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-}
+in float vBg;
 
 vec3 hueRot(vec3 c, float a) {
     vec3 k = vec3(0.57735026919);
@@ -61,8 +48,48 @@ float hash21(vec2 p) {
     return fract(p.x * p.y);
 }
 
+// ---- Sky shell: shared hash/noise/fbm + a busy starfield ----
+float hash13(vec3 p) {
+    p = fract(p * 0.3183099 + vec3(0.71, 0.113, 0.419));
+    p *= 17.0;
+    return fract(p.x * p.y * p.z * (p.x + p.y + p.z));
+}
+float noise3(vec3 x) {
+    vec3 i = floor(x), f = fract(x);
+    f = f * f * (3.0 - 2.0 * f);
+    float n000 = hash13(i + vec3(0.0,0.0,0.0)), n100 = hash13(i + vec3(1.0,0.0,0.0));
+    float n010 = hash13(i + vec3(0.0,1.0,0.0)), n110 = hash13(i + vec3(1.0,1.0,0.0));
+    float n001 = hash13(i + vec3(0.0,0.0,1.0)), n101 = hash13(i + vec3(1.0,0.0,1.0));
+    float n011 = hash13(i + vec3(0.0,1.0,1.0)), n111 = hash13(i + vec3(1.0,1.0,1.0));
+    return mix(mix(mix(n000,n100,f.x), mix(n010,n110,f.x), f.y),
+               mix(mix(n001,n101,f.x), mix(n011,n111,f.x), f.y), f.z);
+}
+float fbm(vec3 p) {
+    float v = 0.0, a = 0.5;
+    for (int i = 0; i < 5; i++) { v += a * noise3(p); p = p * 2.03 + 7.1; a *= 0.5; }
+    return v;
+}
+float starsField(vec3 dir, float density) {
+    float h = hash13(floor(dir * 500.0));
+    return smoothstep(1.0 - density, 1.0, h);
+}
+vec3 renderSky(vec3 dir)
+{
+    // A busy starfield with faint warm nebula wisps -- open space near a
+    // populated hub, not deep uninhabited void.
+    float wisp = fbm(dir * 2.0 + vec3(time * 0.003, 0.0, 0.0));
+    vec3 col = vec3(0.10, 0.07, 0.04) * smoothstep(0.45, 0.75, wisp);
+    return col + vec3(1.0, 0.97, 0.9) * starsField(dir, 0.0022);
+}
+
 void main()
 {
+    if (vBg > 0.5)
+    {
+        fragColor = vec4(renderSky(normalize(vPos)), 1.0);
+        return;
+    }
+
     float hue = (hueP > 0.01 ? hueP : 0.0);
     float bp  = (busyP > 0.01 ? busyP : 1.0);
 
@@ -96,33 +123,25 @@ void main()
     // grid, gated to the hull's darker patches (structure/shadow, not the
     // bright hazard-marking patches RingStation's window-glow already
     // covers for that use). Each cell gets its own on/off + twinkle phase.
+    // step()'s threshold is 1-density, so at busyP=1.4 a naive 0.35 factor
+    // would light ~49% of all cells at once -- read as a uniform wash
+    // instead of scattered points (found by rendering). 0.12 keeps even the
+    // busiest instance under ~17%.
     float lumaCell = dot(base.rgb, vec3(0.299, 0.587, 0.114));
-    // step()'s threshold is 1-density, so at busyP=1.4 the ORIGINAL 0.35
-    // factor lit ~49% of all cells at once -- read as a uniform wash
-    // instead of scattered points (found by rendering: the whole hull
-    // read as one flat glowing color). 0.12 keeps even the busiest
-    // instance under ~17%.
     vec2 grid = vUV * 40.0;
     vec2 cell = floor(grid);
     float r = hash21(cell);
     float lit = step(1.0 - 0.12 * bp, r);
     float twinkle = 0.5 + 0.5 * sin(time * (2.0 + r * 6.0) + r * 30.0);
     float darkMask = 1.0 - smoothstep(0.15, 0.45, lumaCell);
-    // Mostly the fixed warm amber -- imgPalette() can otherwise overrule a
-    // family's whole signature color when the loaded photo has a strong
-    // cast of its own (a galaxy/nebula photo pushed an earlier version of
-    // this all the way to teal-green, drowning out "warm hub lights").
-    vec3 lightColor = mix(vec3(1.0, 0.75, 0.4), imgPalette(0.85), 0.15);
-    col += lightColor * lit * darkMask * twinkle * (0.5 + 0.4 * audioSwell + 0.4 * audioKick);
+    // Fixed warm amber -- the starfield outside now carries the color
+    // variety, not a photo-tinted hull.
+    col += vec3(1.0, 0.75, 0.4) * lit * darkMask * twinkle * (0.5 + 0.4 * audioSwell + 0.4 * audioKick);
 
     float fresnel = pow(1.0 - max(dot(n, viewDir), 0.0), 4.0);
-    col += mix(vec3(1.0, 0.8, 0.5), imgPalette(0.3), 0.2) * fresnel * (0.08 + 0.15 * audioSwell);
+    col += vec3(1.0, 0.8, 0.5) * fresnel * (0.08 + 0.15 * audioSwell);
 
     if (hue > 0.001) col = hueRot(col, 0.15 * sin(hue));
-
-    float dist = length(vPos);
-    float fogAmt = clamp((dist - 105.0) / 160.0, 0.0, 1.0);
-    col = mix(col, vec3(0.0), fogAmt);
 
     vec3 _catTone = max(col, 0.0);
     _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));

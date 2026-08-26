@@ -254,6 +254,16 @@ private:
 	// auto-assigned: every mesh scene needs the SAME unit reserved, the same
 	// way texSpectro is always unit 28.
 	static const int kMeshMaterialTexUnit = 36;
+	// A GEOM_MESH scene's VBO holds the loaded model's own vertices FIRST,
+	// then a big enclosing "sky shell" (see buildGeometry()) so the object
+	// reads against a real procedural backdrop (nebula/asteroid field/
+	// planet) instead of flat black -- one draw call, one VAO, ordinary
+	// depth testing puts the (much closer) object in front of the shell
+	// automatically. m_meshOwnVertexCount is where the split falls; the
+	// vertex shader reads it via gl_VertexID to pick which branch applies.
+	int    m_meshOwnVertexCount = 0;
+	GLint  m_meshVertexCountUni = -1;   ///< Location of the `meshVertexCount` uniform (GEOM_MESH only).
+	static const int kSkyShellRadius = 190;   ///< World-space radius of the sky shell; must clear the largest scaled-up mesh (see each geom="mesh" .vert's kModelScale) and stay under kSceneFar (220).
 	GLint  m_projUni     = -1;   ///< Location of the `projM` (projection * camera-rig) matrix uniform.
 	GLint  m_eyeUni      = -1;   ///< Location of the `eyeOff` stereo eye-offset uniform.
 	// CAMERA RIG (formula layer, no shader edits): <expr> entries named
