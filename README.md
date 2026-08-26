@@ -94,8 +94,7 @@ repository: together they come to roughly a gigabyte, many times the size of
 the program itself, and most of that is of no use to someone who only wants
 the classic visualizer.
 
-They are published as separate downloads on the
-[releases page](https://github.com/reneweller-coding/KaleidoscopeEnhanced/releases),
+They are published as their own release, [3D Model Pack v1](https://github.com/reneweller-coding/KaleidoscopeEnhanced/releases/tag/models-v1),
 split by theme so you can take only what you want:
 
 | Pack | Size | Contains |
