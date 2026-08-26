@@ -121,7 +121,11 @@ void main()
 
     // Silhouette glow: a projection is brightest where the surface turns
     // away, because that is where the most of it lies along the sight line.
-    float fresnel = pow(1.0 - max(dot(n, viewDir), 0.0), 2.2);
+    // Sharpened hard. At 2.2 this reads as a silhouette on a smooth hull and
+    // as a full-surface wash on a detailed one, because a finely modelled hull
+    // presents grazing micro-facets everywhere -- which is exactly how the
+    // projection filled in solid once the models gained detail.
+    float fresnel = pow(1.0 - max(dot(n, viewDir), 0.0), 4.5);
 
     // Wireframe: distance to the nearest triangle edge, in a width that
     // stays constant on screen thanks to the derivative.
@@ -137,6 +141,22 @@ void main()
     float d = min(min(vBary.x, vBary.y), vBary.z);
     float fw = fwidth(d);
     float wire = (1.0 - smoothstep(0.0, fw * 1.6, d)) * smoothstep(0.30, 0.09, fw);
+
+    // ...but on a DENSE mesh that gate is always shut, and then there is no
+    // structure at all. These models were 14k faces when the wire was written;
+    // rebuilding them at 150k left every triangle sub-pixel, the wire drew
+    // nothing, and the projection rendered as an opaque lump you could not
+    // identify. So the structure also comes from a lattice in OBJECT space,
+    // whose spacing is a property of the model's own coordinates and therefore
+    // says the same thing however finely the model happens to be tessellated.
+    vec3 lp   = vLocalPos * (13.0 * sc);
+    vec3 cell = abs(fract(lp) - 0.5);
+    vec3 lw   = fwidth(lp) * 1.2;
+    vec3 line = vec3(1.0) - smoothstep(vec3(0.0), lw, cell);
+    // Only where two of the three planes nearly meet, so it reads as a grid
+    // drawn ON the surface rather than as three overlapping stripe sets.
+    float lattice = clamp(max(max(line.x, line.y), line.z), 0.0, 1.0)
+                  * smoothstep(0.9, 0.4, max(max(lw.x, lw.y), lw.z));
 
     // Scanlines travelling up the object in OBJECT space, so they climb the
     // model itself rather than sliding across the screen.
@@ -154,11 +174,18 @@ void main()
     // that each look reasonable on their own pushed alpha over 1 across the
     // whole surface, nothing was discarded, and the hologram rendered as a
     // solid glowing lump.
-    float alpha = 0.05                       // faint body fill, so the volume reads
-                + wire * 0.85                // the structure itself, where triangles are big enough
-                + fresnel * 0.40             // silhouette
+    float alpha = 0.04                       // faint body fill, so the volume reads
+                + wire * 0.85                // triangle edges, on a mesh coarse enough to have them
+                + lattice * 0.70             // object-space grid: the structure on dense meshes
+                + fresnel * 0.30             // silhouette
                 + scan * 0.10                // scanline banding
                 + sweepBand * 0.60;          // refresh sweep
+    // Thin where the surface faces us square on. A projection has no
+    // substance of its own: what you see is how much of it lies along the
+    // sight line, so a face-on panel should be nearly absent and only the
+    // turning-away parts should hold. Without this the flat sides of a boxy
+    // hull fill in and the whole thing reads as a painted solid.
+    alpha *= mix(0.38, 1.0, sqrt(fresnel));
     alpha *= (0.70 + 0.30 * audioSwell + 0.40 * audioKick);
 
     // Interference: horizontal noise bands that thin the projection out.
@@ -170,7 +197,7 @@ void main()
     // Colour: the tint everywhere, pushed toward white at the brightest
     // features so the wire and sweep read as overdriven rather than just
     // more saturated.
-    float hot = clamp(wire * 0.8 + sweepBand * 0.9 + fresnel * 0.4, 0.0, 1.0);
+    float hot = clamp(wire * 0.8 + lattice * 0.7 + sweepBand * 0.9 + fresnel * 0.4, 0.0, 1.0);
     vec3 col = mix(tint, vec3(1.0), hot * 0.55);
     col *= 0.55 + 1.25 * clamp(alpha, 0.0, 1.4);
     col += tint * fresnel * (0.4 + 0.7 * audioSwell);

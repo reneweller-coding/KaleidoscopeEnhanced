@@ -96,8 +96,13 @@ void main()
     {
         vec3 p = gPos[i];
         p.x += slip;
-        vec3 w = rotMat * (p * (30.0 * sz));
-        w.z += 84.0;
+        // A holotable projection has to have PRESENCE. At 30 units and 84 out
+        // the object covered about a tenth of the frame -- a coloured smudge
+        // on a dark floor. Size also drives brightness here, because the wire
+        // is gated on how big a triangle lands on screen (see the .frag): a
+        // small projection is a dim one, so the two faults had one cause.
+        vec3 w = rotMat * (p * (48.0 * sz));
+        w.z += 76.0;
 
         vUV       = gUV[i];
         vNormal   = normalize(rotMat * gNormal[i]);

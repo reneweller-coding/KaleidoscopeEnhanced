@@ -740,7 +740,9 @@ void GLwidget::draw()
 		audio = m_audioAnalyzer->getFeatures();
 
 	// Track-change: a fresh track (after a silent gap) gets a clean transition.
-	if( audio.trackChange && m_actConfiguration && m_actConfiguration->m_renderPipeline )
+	// Suppressed under KALEIDO_SCENE_SWEEP, where the sweep decides what is on
+	// screen and a surprise cut would land in the middle of a scene under review.
+	if( audio.trackChange && !sweepActive() && m_actConfiguration && m_actConfiguration->m_renderPipeline )
 		m_actConfiguration->m_renderPipeline->requestSceneChange();
 
 	// KALEIDO_SCENE_SWEEP=<seconds>: step through EVERY scene of the loaded
@@ -750,21 +752,34 @@ void GLwidget::draw()
 	// you would have to render several times its length and would still miss
 	// entries. This walks it exactly once. The recorder captures on the same
 	// wall clock, so scene n sits at a known timestamp in the output file --
-	// which is what makes a contact sheet attributable. Names go to the log in
-	// the same order.
-	static const int sweepSecs = qEnvironmentVariableIntValue( "KALEIDO_SCENE_SWEEP" );
-	if( sweepSecs > 0 && m_actConfiguration && m_actConfiguration->m_renderPipeline )
+	// which is what makes a contact sheet attributable.
+	if( sweepActive() && m_actConfiguration && m_actConfiguration->m_renderPipeline )
 	{
-		const qint64 nowMs = m_fpsTimer.elapsed();
+		RenderPipeline  *rp    = m_actConfiguration->m_renderPipeline;
+		const QStringList names = rp->sceneNames();
+
+		// Review mode already exists for exactly this problem -- it stops the
+		// scheduler cutting on harmonic changes, section boundaries and drops
+		// -- but Configuration.cpp only turns it on for configs NAMED "Test*".
+		// A sweep must not depend on what its config happens to be called: a
+		// third of the windows in the first run were stolen mid-scene, which
+		// is invisible in the output unless you happen to know a station
+		// family has no synthwave grid.
+		if( !m_sweepReview ) { m_sweepReview = true; rp->setReviewMode( true ); }
+		const qint64      nowMs = m_fpsTimer.elapsed();
+		const int         secs  = sweepSeconds();
+
 		if( m_sweepNextMs < 0 || nowMs >= m_sweepNextMs )
 		{
-			const QStringList names = m_actConfiguration->m_renderPipeline->sceneNames();
 			if( m_sweepIdx < names.size() )
 			{
 				fprintf( stderr, "[sweep] %3d/%d  t=%.1fs  %s\n", m_sweepIdx,
 				         int( names.size() ), nowMs * 0.001,
 				         names[m_sweepIdx].toLocal8Bit().constData() );
-				m_actConfiguration->m_renderPipeline->forceScene( m_sweepIdx );
+				rp->forceScene( m_sweepIdx );
+				m_sweepWant    = m_sweepIdx;
+				m_sweepJumpMs  = nowMs;
+				m_sweepRetried = false;
 				m_sweepIdx++;
 			}
 			else if( m_sweepIdx == names.size() )
@@ -772,7 +787,33 @@ void GLwidget::draw()
 				fprintf( stderr, "[sweep] finished after %d scenes\n", m_sweepIdx );
 				m_sweepIdx++;                       // report once, then idle
 			}
-			m_sweepNextMs = nowMs + qint64( sweepSecs ) * 1000;
+			m_sweepNextMs = nowMs + qint64( secs ) * 1000;
+		}
+
+		// The scheduler keeps its own counsel -- a musical trigger can cut away
+		// mid-window. Reviewing the result then silently attributes frames to
+		// the wrong scene, which is worse than a gap: it looks like a scene has
+		// a backdrop it does not have. (That is exactly how this was found: a
+		// synthwave grid appeared behind three station families whose shaders
+		// contain no grid at all.) So log what is ACTUALLY on screen, and put
+		// the requested scene back if it was taken away.
+		const int act = rp->activeSceneIndex();
+		if( act != m_sweepShown )
+		{
+			m_sweepShown = act;
+			fprintf( stderr, "[shown] t=%.1fs  %3d  %s\n", nowMs * 0.001, act,
+			         ( act >= 0 && act < names.size() )
+			             ? names[act].toLocal8Bit().constData() : "?" );
+		}
+		// Only after the cross-fade has had time to land: during a fade
+		// actTexture() still reports the OUTGOING scene, so retrying earlier
+		// would cancel the fade it is waiting on and never converge.
+		if( !m_sweepRetried && m_sweepWant >= 0 && act != m_sweepWant
+		    && nowMs - m_sweepJumpMs > 3000 )
+		{
+			m_sweepRetried = true;
+			fprintf( stderr, "[sweep] retry %d (scheduler cut to %d)\n", m_sweepWant, act );
+			rp->forceScene( m_sweepWant );
 		}
 	}
 

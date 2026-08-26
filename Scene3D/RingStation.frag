@@ -80,16 +80,24 @@ vec3 renderSky(vec3 dir)
     // rather than something spinning in place.
     vec3 planetDir = normalize(vec3(0.35, -0.12, 1.0));
     float d = dot(dir, planetDir);
-    float disc = smoothstep(0.9935, 0.997, d);
+    // The disc used to span about 6 degrees -- a distant dot, when the brief
+    // was a station ORBITING a foreign world. At 0.80 it spans about 37 and
+    // reads as something you are actually in orbit around.
+    float disc = smoothstep(0.800, 0.815, d);
 
-    vec3 col = vec3(0.01, 0.012, 0.02) + vec3(1.0) * starsField(dir, 0.0016);
+    vec3 col = vec3(0.022, 0.026, 0.042) + vec3(1.0) * starsField(dir, 0.0016);
+    // Atmospheric limb: the glow a lit world throws past its own edge.
+    col += vec3(0.10, 0.16, 0.26) * pow(smoothstep(0.72, 0.815, d), 2.0) * 0.9;
 
     if (disc > 0.0005)
     {
         vec3 up = (abs(planetDir.y) < 0.99) ? vec3(0.0,1.0,0.0) : vec3(1.0,0.0,0.0);
         vec3 rightV = normalize(cross(up, planetDir));
         vec3 upV = cross(planetDir, rightV);
-        vec2 uv = vec2(dot(dir, rightV), dot(dir, upV)) * 90.0;
+        // Scaled WITH the disc. This was 90.0 when the planet spanned six
+        // degrees; at 37 the same figure puts six times as many features
+        // across it and the surface reads as static rather than terrain.
+        vec2 uv = vec2(dot(dir, rightV), dot(dir, upV)) * 15.0;
         float terrain = fbm(vec3(uv * 0.6, 1.3));
         float clouds = fbm(vec3(uv * 0.9 + vec2(time * 0.02, 0.0), 5.1));
         vec3 surface = mix(vec3(0.10, 0.22, 0.34), vec3(0.5, 0.42, 0.28), terrain);
@@ -97,8 +105,12 @@ vec3 renderSky(vec3 dir)
         // dir doubles as the sphere's own outward normal here -- a cheap
         // stand-in that only breaks down near the disc's own limb, where a
         // decorative background planet does not need to be exact.
-        float ndotl = max(dot(dir, normalize(vec3(0.3, 0.5, -0.6))), 0.0);
-        col = mix(col, surface * (0.18 + 0.9 * ndotl), disc);
+        // Aimed so the terminator crosses the VISIBLE disc. The old direction
+        // had a negative z against a planet sitting at +z, which put the whole
+        // face we can see on its night side -- invisible while the disc was
+        // six degrees across, an unlit grey wall once it filled the frame.
+        float ndotl = max(dot(dir, normalize(vec3(-0.55, 0.40, 0.60))), 0.0);
+        col = mix(col, surface * (0.30 + 1.05 * ndotl), disc);
     }
     return col;
 }

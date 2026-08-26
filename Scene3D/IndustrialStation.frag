@@ -72,10 +72,10 @@ vec3 renderSky(vec3 dir)
     // reads as chunky bodies rather than smooth cloud) drifting over a
     // faint dust haze, plus stars showing through the gaps.
     float haze = fbm(dir * 1.6);
-    vec3 col = vec3(0.05, 0.045, 0.04) * haze;
+    vec3 col = vec3(0.026, 0.024, 0.022) + vec3(0.13, 0.115, 0.10) * haze;
     float rockField = fbm(dir * 9.0);
     float rocks = smoothstep(0.56, 0.63, rockField);
-    col += vec3(0.16, 0.13, 0.11) * rocks * (0.6 + 0.4 * fbm(dir * 30.0));
+    col += vec3(0.34, 0.28, 0.23) * rocks * (0.6 + 0.4 * fbm(dir * 30.0));
     col += vec3(1.0) * starsField(dir, 0.0012) * (1.0 - rocks);
     return col;
 }

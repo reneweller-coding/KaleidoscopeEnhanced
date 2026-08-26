@@ -34,8 +34,11 @@ PresetEditor\build\Release\PresetEditor.exe --validate
 
 # 3b. Regression gegen die Grundlinie -- nur die BERÜHRTEN Szenen, nicht alle:
 .\Tools\scan_scenes.ps1 -Scenes Geaendert1,Geaendert2 -Out recheck
-python Tools\scene_metrics.py Releaseecheck --json Releaseecheck\_metrics.json
-python Tools\check_scene_regression.py Releaseecheck
+python Tools\scene_metrics.py Release
+echeck --json Release
+echeck\_metrics.json
+python Tools\check_scene_regression.py Release
+echeck
 #    Exit 1 = eine Metrik hat sich über das Messrauschen hinaus bewegt.
 #    War die Änderung gewollt: nochmal mit --update, das schreibt die
 #    Grundlinie für diese Szenen fort.
@@ -614,6 +617,33 @@ kühle Dämmerung) — eine korrekt umgestellte Szene zeigt damit kohärente
 Warm-/Kalttöne, eine kaputte weiterhin das volle Farbrad. Sonnenuntergang
 im A-Frame = imgPalette funktioniert; Regenbogen trotz `--images` = echter
 Shader-Fehler.
+
+## Den ganzen Katalog ansehen: `KALEIDO_SCENE_SWEEP`
+
+Zuschauen reicht zum Pruefen nicht. Der Scheduler waehlt Szenen absichtlich
+zufaellig -- richtig zum Ansehen, unbrauchbar zum Durchsehen: um N Szenen per
+Zufall alle einmal zu erwischen, braucht man ein Vielfaches der Katalog-Laenge
+und hat trotzdem Luecken (Sammelbilder-Problem, nicht Pech).
+
+```
+python Tools/make_sweep_config.py --match ShipFlyby --hold 8
+cd Release
+set KALEIDO_SCENE_SWEEP=8
+Kaleidoscope.exe -c MeshSweep -x <wav> -l -t 0
+```
+
+`KALEIDO_SCENE_SWEEP=<Sekunden>` schaltet per `forceScene()` der Reihe nach
+durch JEDE Szene der geladenen Config und schreibt Index, Name und Zeitstempel
+ins Log. Der Recorder nimmt an derselben Wanduhr auf, also liegt Szene n an
+einer bekannten Stelle der Datei -- erst das macht einen Kontaktbogen
+zuordenbar statt zu einem Haufen unbeschrifteter Bilder.
+
+`Tools/make_sweep_config.py` baut die passende Config AUS dem echten Katalog
+(kann also nicht davon abdriften) und pinnt zwei Dinge, die den Render sonst
+unbrauchbar machen: die Solo-Zeit auf das Sweep-Intervall, damit eine auf
+`sceneProgress` inszenierte Szene ihren ganzen Bogen im Fenster spielt, und
+die Ueberblendung auf 1 s -- der Katalog-Standard von 15-50 s wuerde fast nur
+Ueberblendungen zwischen Nachbarn zeigen.
 
 Fürs Qualitäts-Sweeping nach einer Welle: `Tools/catalog_check.py <scandir>`
 (flaggt WEISS >205 Luma, SCHWARZ-Triaden, REGENBOGEN ≥7 von 12 Hue-Bins)

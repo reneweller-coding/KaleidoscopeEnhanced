@@ -78,7 +78,11 @@ vec3 renderSky(vec3 dir)
     // A busy starfield with faint warm nebula wisps -- open space near a
     // populated hub, not deep uninhabited void.
     float wisp = fbm(dir * 2.0 + vec3(time * 0.003, 0.0, 0.0));
-    vec3 col = vec3(0.10, 0.07, 0.04) * smoothstep(0.45, 0.75, wisp);
+    // The wisps were gated so tightly that most of the sky stayed at zero.
+    // A populated hub should sit in visibly lit space, so there is now a
+    // floor under them rather than pure black between.
+    vec3 col = vec3(0.030, 0.026, 0.034)
+             + vec3(0.20, 0.14, 0.09) * smoothstep(0.28, 0.70, wisp);
     return col + vec3(1.0, 0.97, 0.9) * starsField(dir, 0.0022);
 }
 

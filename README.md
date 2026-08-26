@@ -98,11 +98,11 @@ They are published as separate downloads on the
 [releases page](https://github.com/reneweller-coding/KaleidoscopeEnhanced/releases),
 split by theme so you can take only what you want:
 
-| Pack | Contains |
-|---|---|
-| `KaleidoscopeModels-ships.zip` | capital ships, freighters, couriers — flybys, docking approaches, atmospheric entries, holograms |
-| `KaleidoscopeModels-stations.zip` | space stations — the six station families |
-| `KaleidoscopeModels-earthbound.zip` | the non-space props: hi-fi gear, museum sculptures, sea creatures |
+| Pack | Size | Contains |
+|---|---|---|
+| `KaleidoscopeModels-ships.zip` | 60 models, 416 MB | capital ships, freighters, couriers — flybys, docking approaches, atmospheric entries, holograms |
+| `KaleidoscopeModels-stations.zip` | 30 models, 215 MB | space stations — the six station families |
+| `KaleidoscopeModels-earthbound.zip` | 18 models, 110 MB | the non-space props: hi-fi gear, museum sculptures, sea creatures |
 
 Unpack the `.glb` files straight into the program's `Models` folder and
 restart. **Nothing breaks without them**: every scene that needs a model it

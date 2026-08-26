@@ -531,8 +531,17 @@ protected:
 
 	// KALEIDO_SCENE_SWEEP=<seconds>: walk EVERY scene of the loaded config in
 	// order, holding each for that many seconds (see draw()).
+	/** @return The sweep interval in seconds, 0 when KALEIDO_SCENE_SWEEP is unset. */
+	static int  sweepSeconds() { static const int s = qEnvironmentVariableIntValue( "KALEIDO_SCENE_SWEEP" ); return s; }
+	/** @return Whether a catalogue sweep is running (review mode, not normal playback). */
+	static bool sweepActive()  { return sweepSeconds() > 0; }
 	int     m_sweepIdx    = 0;   ///< Next scene index the sweep will jump to.
 	qint64  m_sweepNextMs = -1;  ///< m_fpsTimer deadline for the next jump; -1 = not started yet.
+	int     m_sweepWant   = -1;  ///< Scene the sweep last asked for; -1 = none yet.
+	int     m_sweepShown  = -1;  ///< Scene last seen ACTUALLY active, so drift gets logged rather than assumed away.
+	qint64  m_sweepJumpMs = 0;   ///< m_fpsTimer stamp of the last jump (the retry waits out the cross-fade).
+	bool    m_sweepReview  = false; ///< Review mode enabled once at sweep start (the scheduler must not cut mid-window).
+	bool    m_sweepRetried = false; ///< One retry per window: enough to undo a stolen cut, not enough to fight the scheduler.
 
 	void resetRotation(); ///< Sets the rotation matrix to identity (currently a no-op stub; body is commented out).
 
