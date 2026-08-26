@@ -98,6 +98,15 @@
          that drifts.  None of these include any Qt module. -->
     <ClCompile Include="..\Source\EffectShader.cpp" />
     <ClCompile Include="..\Source\Scene3DShader.cpp" />
+    <!-- Scene3DShader's geom="mesh" branch calls loadMeshAsset(), so the
+         editor has to compile the loader too. Leaving it out fails at LINK
+         time rather than compile time, which is how it stayed hidden: this
+         project is not part of Kaleidoscope.sln, so a local build of the
+         main app never touches it and only CI notices.
+         (Unlike its neighbours above, this one does use Qt, for QImage when
+         decoding the embedded textures. Harmless here: the editor is a Qt
+         app and links Qt anyway.) -->
+    <ClCompile Include="..\Source\MeshImport.cpp" />
     <ClCompile Include="..\Source\Uniform.cpp" />
     <ClCompile Include="..\Source\ExprEval.cpp" />
     <ClCompile Include="..\Source\shader_setup.cpp" />
@@ -121,6 +130,7 @@
     <ClInclude Include="Scene3DPreview.h" />
     <ClInclude Include="..\Source\EffectShader.h" />
     <ClInclude Include="..\Source\Scene3DShader.h" />
+    <ClInclude Include="..\Source\MeshImport.h" />
     <ClInclude Include="..\Source\Uniform.h" />
     <ClInclude Include="..\Source\ExprEval.h" />
     <ClInclude Include="..\Source\shader_setup.h" />
