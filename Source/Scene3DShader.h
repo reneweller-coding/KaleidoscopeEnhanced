@@ -278,6 +278,16 @@ private:
 	// depth testing puts the (much closer) object in front of the shell
 	// automatically. m_meshOwnVertexCount is where the split falls; the
 	// vertex shader reads it via gl_VertexID to pick which branch applies.
+	/// Half-extents and centre of model 1 in its OWN object space, measured at
+	/// load. Published as meshExtent/meshCenter so a mesh shader can size a
+	/// sweep, a formation or an emission volume to the model it actually got
+	/// rather than to a constant that only suits one asset. The generator
+	/// normalises each asset so its LONGEST axis is about 1.0, which says
+	/// nothing about the other two.
+	float  m_meshExtent[3] = { 0.5f, 0.5f, 0.5f };
+	float  m_meshCenter[3] = { 0.0f, 0.0f, 0.0f };
+	GLint  m_meshExtentUni = -1;
+	GLint  m_meshCenterUni = -1;
 	int    m_meshOwnVertexCount = 0;
 	GLint  m_meshVertexCountUni = -1;   ///< Location of the `meshVertexCount` uniform (GEOM_MESH only).
 	static const int kSkyShellRadius = 190;   ///< World-space radius of the sky shell; must clear the largest scaled-up mesh (see each geom="mesh" .vert's kModelScale) and stay under kSceneFar (220).

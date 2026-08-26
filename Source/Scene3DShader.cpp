@@ -350,6 +350,32 @@ void Scene3DShader::buildGeometry()
 		loadInto( m_modelPath, m_meshMaterialTex, m_meshMaterialLayers );
 		m_meshOwnVertexCount = int( v.size() / 8 );
 
+		// Measure the model's own bounding box, exposed as meshCenter/meshExtent.
+		// The generator normalises each asset so its LONGEST axis is about 1.0,
+		// which says nothing about the other two: a shader that sweeps a plane
+		// or spaces a formation over a hardcoded range is right for one model
+		// and wrong for the next. With the real half-extents in hand a shader
+		// can be written once and be correct for all 108.
+		if( m_meshOwnVertexCount > 0 )
+		{
+			float lo[3] = {  1e30f,  1e30f,  1e30f };
+			float hi[3] = { -1e30f, -1e30f, -1e30f };
+			for( int i = 0; i < m_meshOwnVertexCount; ++i )
+				for( int c = 0; c < 3; ++c )
+				{
+					const float x = v[ size_t(i) * 8 + c ];
+					if( x < lo[c] ) lo[c] = x;
+					if( x > hi[c] ) hi[c] = x;
+				}
+			for( int c = 0; c < 3; ++c )
+			{
+				m_meshCenter[c] = 0.5f * ( hi[c] + lo[c] );
+				// Never zero: a flat model would otherwise divide a shader by 0.
+				m_meshExtent[c] = ( hi[c] - lo[c] ) * 0.5f;
+				if( m_meshExtent[c] < 1e-4f ) m_meshExtent[c] = 1e-4f;
+			}
+		}
+
 		if( !m_modelPath2.empty() )
 			loadInto( m_modelPath2, m_meshMaterialTex2, m_meshMaterialLayers2 );
 		m_mesh2VertexCount = int( v.size() / 8 );
@@ -736,6 +762,8 @@ void Scene3DShader::initUniforms( int width, int height )
 	m_meshMaterialUni = glGetUniformLocation( m_sh_prog_id, "texMeshMaterial" );
 	m_meshMaterialLayersUni = glGetUniformLocation( m_sh_prog_id, "texMeshMaterialLayers" );
 	m_meshVertexCountUni = glGetUniformLocation( m_sh_prog_id, "meshVertexCount" );
+	m_meshExtentUni      = glGetUniformLocation( m_sh_prog_id, "meshExtent" );
+	m_meshCenterUni      = glGetUniformLocation( m_sh_prog_id, "meshCenter" );
 	m_mesh2VertexCountUni = glGetUniformLocation( m_sh_prog_id, "mesh2VertexCount" );
 	m_meshMaterial2Uni = glGetUniformLocation( m_sh_prog_id, "texMeshMaterial2" );
 	m_meshMaterial2LayersUni = glGetUniformLocation( m_sh_prog_id, "texMeshMaterialLayers2" );
@@ -874,6 +902,10 @@ void Scene3DShader::draw()
 	}
 	if( m_geomKind == GEOM_MESH && m_meshVertexCountUni >= 0 )
 		glUniform1i( m_meshVertexCountUni, m_meshOwnVertexCount );
+	if( m_geomKind == GEOM_MESH && m_meshExtentUni >= 0 )
+		glUniform3f( m_meshExtentUni, m_meshExtent[0], m_meshExtent[1], m_meshExtent[2] );
+	if( m_geomKind == GEOM_MESH && m_meshCenterUni >= 0 )
+		glUniform3f( m_meshCenterUni, m_meshCenter[0], m_meshCenter[1], m_meshCenter[2] );
 	if( m_geomKind == GEOM_MESH && m_mesh2VertexCountUni >= 0 )
 		glUniform1i( m_mesh2VertexCountUni, m_mesh2VertexCount );
 	if( m_meshMaterialLayers2 > 0 )
