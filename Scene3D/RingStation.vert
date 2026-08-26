@@ -45,13 +45,18 @@ void main()
         vec3 local = attrA.xyz * (32.0 * sz);
 
         // A ring reads as a RING only if its own spin is the dominant motion --
-        // a slight axis tilt keeps it from looking like a flat, static
+        // a fixed axis tilt keeps it from looking like a flat, static
         // painting face-on to the camera. This runs independently of the
         // camera's own sweep (rig* formulas) -- a spin-gravity wheel that
         // doesn't spin reads as broken, regardless of what the camera does.
+        // The tilt is a CONSTANT, not time-varying: a rotationally symmetric
+        // body (a wheel/ring/torus, exactly what this family is) only
+        // rotates about its own symmetry axis in reality -- animating the
+        // tilt as well would wobble that axis over time, which reads as the
+        // station physically tumbling rather than spinning in place.
         float sp = (spinP > 0.01 ? spinP : 1.0);
         float rotZ = (time * 0.10 + audioAdvance * 0.15) * sp;
-        float tiltX = 0.55 + 0.06 * sin(time * 0.05);
+        const float tiltX = 0.55;
 
         float cz = cos(rotZ), sz2 = sin(rotZ);
         mat3 spinMat = mat3(cz, sz2, 0.0,  -sz2, cz, 0.0,   0.0, 0.0, 1.0);
