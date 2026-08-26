@@ -135,7 +135,11 @@ void main()
     // across this generator's whole output), so shifting by 0.5 lands the
     // panel in [0,1] without needing per-model calibration.
     vec2 panel = vLocalPos.xy + vec2(0.5);
-    float front = smoothstep(0.45, 0.85, abs(normalize(vObjNormal + 1e-6).z));
+    // Which surfaces count as "the front panel". Kept fairly permissive:
+    // these meshes are photogrammetry-style output, so a panel that reads as
+    // flat to the eye still has normals wandering a fair way off +Z, and a
+    // tight mask left the display showing on almost nothing.
+    float front = smoothstep(0.35, 0.75, abs(normalize(vObjNormal + 1e-6).z));
     if (front > 0.001 && panel.x > 0.02 && panel.x < 0.98 && panel.y > 0.02 && panel.y < 0.98)
     {
         // Thin gaps between bars so it reads as a segmented display, not a
