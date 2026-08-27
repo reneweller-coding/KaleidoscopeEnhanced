@@ -763,6 +763,7 @@ void Scene3DShader::initUniforms( int width, int height )
 	m_meshMaterialLayersUni = glGetUniformLocation( m_sh_prog_id, "texMeshMaterialLayers" );
 	m_meshVertexCountUni = glGetUniformLocation( m_sh_prog_id, "meshVertexCount" );
 	m_meshExtentUni      = glGetUniformLocation( m_sh_prog_id, "meshExtent" );
+	m_meshInstancesUni   = glGetUniformLocation( m_sh_prog_id, "meshInstances" );
 	m_meshCenterUni      = glGetUniformLocation( m_sh_prog_id, "meshCenter" );
 	m_mesh2VertexCountUni = glGetUniformLocation( m_sh_prog_id, "mesh2VertexCount" );
 	m_meshMaterial2Uni = glGetUniformLocation( m_sh_prog_id, "texMeshMaterial2" );
@@ -902,6 +903,8 @@ void Scene3DShader::draw()
 	}
 	if( m_geomKind == GEOM_MESH && m_meshVertexCountUni >= 0 )
 		glUniform1i( m_meshVertexCountUni, m_meshOwnVertexCount );
+	if( m_geomKind == GEOM_MESH && m_meshInstancesUni >= 0 )
+		glUniform1i( m_meshInstancesUni, m_meshInstances );
 	if( m_geomKind == GEOM_MESH && m_meshExtentUni >= 0 )
 		glUniform3f( m_meshExtentUni, m_meshExtent[0], m_meshExtent[1], m_meshExtent[2] );
 	if( m_geomKind == GEOM_MESH && m_meshCenterUni >= 0 )
@@ -1029,7 +1032,15 @@ void Scene3DShader::draw()
 		// the first geom="cubes" scene to use OIT, was invisible-as-glass
 		// this way -- flat opaque shards instead of layered translucency).
 		if( !inOitPass ) { glEnable( GL_DEPTH_TEST ); glDisable( GL_BLEND ); }
-		glDrawArrays( GL_TRIANGLES, 0, m_vertexCount );
+		// instances="N" on a geom="mesh" scene draws the same buffer N times so a
+		// single loaded model can be a whole formation. Guarded on the entry
+		// point as well as the count: glDrawArraysInstanced is core since GL
+		// 3.1, but this codebase reaches everything through its own loader and
+		// a missing pointer would be a null call rather than a compile error.
+		if( m_geomKind == GEOM_MESH && m_meshInstances > 1 && glDrawArraysInstanced )
+			glDrawArraysInstanced( GL_TRIANGLES, 0, m_vertexCount, m_meshInstances );
+		else
+			glDrawArrays( GL_TRIANGLES, 0, m_vertexCount );
 		if( !inOitPass ) glDisable( GL_DEPTH_TEST );
 	}
 	else

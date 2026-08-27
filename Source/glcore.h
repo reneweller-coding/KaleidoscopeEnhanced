@@ -271,6 +271,9 @@ GLC_FN(void,   glMemoryBarrier, (GLbitfield))
 GLC_FN(void,   glBindBufferBase, (GLenum, GLuint, GLuint))
 GLC_FN(void,   glClearBufferData, (GLenum, GLenum, GLenum, GLenum, const void*))
 GLC_FN(void,   glDrawArraysIndirect, (GLenum, const void*))
+// Core since GL 3.1. Needed so one loaded mesh can be drawn as a whole
+// formation from a single buffer (Fleet), instead of uploading N copies.
+GLC_FN(void,   glDrawArraysInstanced, (GLenum, GLint, GLsizei, GLsizei))
 GLC_FN(void,   glPatchParameteri, (GLenum, GLint))
 // Order-independent transparency needs its two targets blended DIFFERENTLY in
 // the same draw — accumulation adds, revealage multiplies — which is exactly
@@ -358,6 +361,7 @@ GLC_FN(void,   glTexImage2DMultisample, (GLenum, GLsizei, GLenum, GLsizei, GLsiz
 #define glBindBufferBase           glcore_glBindBufferBase
 #define glClearBufferData          glcore_glClearBufferData
 #define glDrawArraysIndirect       glcore_glDrawArraysIndirect
+#define glDrawArraysInstanced      glcore_glDrawArraysInstanced
 #define glPatchParameteri          glcore_glPatchParameteri
 #define glBlendFunci               glcore_glBlendFunci
 #define glDrawBuffers              glcore_glDrawBuffers

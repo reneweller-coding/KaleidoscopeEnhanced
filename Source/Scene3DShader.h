@@ -98,6 +98,7 @@ public:
 	void  setShadowExtent( float e ) { m_shadowExtent = e; }   ///< @param e Half-width of the shadow-map light box for this scene (overrides EffectShader::kShadowExtent).
 	void  setModelPath( const std::string &path ) { m_modelPath = path; }   ///< @param path Filesystem path (config attribute model=) to the .glb/.gltf/.obj this geom="mesh" scene loads; ignored by every other geom kind.
 	void  setModelPath2( const std::string &path ) { m_modelPath2 = path; }   ///< @param path Optional SECOND mesh (config attribute model2=), loaded into the same VBO after the first; lets one scene stage two objects against each other (a ship alongside a station). Ignored by every other geom kind.
+	void  setMeshInstances( int n ) { m_meshInstances = ( n > 1 ) ? n : 1; }   ///< @param n Draw the loaded mesh this many times in one call (config attribute instances=); the shader places the copies from gl_InstanceID. Values below 2 mean the ordinary single draw.
 	float shadowExtent() const override { return m_shadowExtent; }   ///< @return This scene's shadow-map light box half-width.
 	/**
 	 * @brief Forwards to EffectShader::setUniforms(), first folding in this activation's time offset/speed factor.
@@ -288,6 +289,14 @@ private:
 	float  m_meshCenter[3] = { 0.0f, 0.0f, 0.0f };
 	GLint  m_meshExtentUni = -1;
 	GLint  m_meshCenterUni = -1;
+	/// How many copies of the loaded mesh to draw (instances="N" on the scene
+	/// entry; 1 = the ordinary single-object case). One upload, N draws, and
+	/// the shader places each copy from gl_InstanceID. The sky shell lives in
+	/// the SAME buffer, so a shader that asks for instances must skip the
+	/// shell on every instance but the first, or it draws N backdrops over
+	/// each other.
+	int    m_meshInstances = 1;
+	GLint  m_meshInstancesUni = -1;
 	int    m_meshOwnVertexCount = 0;
 	GLint  m_meshVertexCountUni = -1;   ///< Location of the `meshVertexCount` uniform (GEOM_MESH only).
 	static const int kSkyShellRadius = 190;   ///< World-space radius of the sky shell; must clear the largest scaled-up mesh (see each geom="mesh" .vert's kModelScale) and stay under kSceneFar (220).

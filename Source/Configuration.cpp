@@ -321,6 +321,10 @@ void Configuration::readConfiguration( const QString &filename )
 			// Only the scene knows its own scale, and the shadow map's
 			// resolution is spent across whatever this says — a 120-unit box
 			// gives a 3-unit object about 50 texels, which is unusable.
+			// instances="N": draw the loaded mesh N times in one call, so one
+			// model can be a formation. Only geom="mesh" reads it.
+			if( el.hasAttribute("instances") )
+				shader->setMeshInstances( el.attribute("instances").toInt() );
 			if( el.hasAttribute("shadowExtent") )
 				shader->setShadowExtent( el.attribute("shadowExtent").toFloat() );
 			// Persistent generator state, in bytes.  Only a scene that

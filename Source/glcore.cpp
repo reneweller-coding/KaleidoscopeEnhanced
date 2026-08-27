@@ -79,6 +79,7 @@ GLC_DEF(glMemoryBarrier)
 GLC_DEF(glBindBufferBase)
 GLC_DEF(glClearBufferData)
 GLC_DEF(glDrawArraysIndirect)
+GLC_DEF(glDrawArraysInstanced)
 GLC_DEF(glPatchParameteri)
 GLC_DEF(glBlendFunci)
 GLC_DEF(glDrawBuffers)
@@ -202,6 +203,10 @@ int glcoreInit(void)
     GLC_LOAD_OPT(glBindBufferBase)
     GLC_LOAD_OPT(glClearBufferData)
     GLC_LOAD_OPT(glDrawArraysIndirect)
+    // Optional, not mandatory: only geom="mesh" scenes that ask for
+    // instances="N" need it, and Scene3DShader falls back to a plain
+    // glDrawArrays when the pointer is null.
+    GLC_LOAD_OPT(glDrawArraysInstanced)
     GLC_LOAD_OPT(glPatchParameteri)
     GLC_LOAD_OPT(glBlendFunci)
     GLC_LOAD_OPT(glDrawBuffers)

@@ -196,10 +196,15 @@ def check(paths, reg):
                 warn(rel, "declares neither attrA nor uses gl_VertexID -- check where "
                           "its per-vertex data is meant to come from")
 
-            # --- R4 gl_InstanceID is always 0 (engine draws non-instanced) --
-            if "gl_InstanceID" in body:
-                err(rel, "uses gl_InstanceID, but the engine calls glDrawArrays "
-                         "(non-instanced) so it is always 0 -- the per-unit index "
+            # --- R4 gl_InstanceID is only meaningful under instances="N" ---
+            # Instanced drawing exists for geom="mesh" since Fleet: the scene
+            # entry carries instances="N", Scene3DShader switches to
+            # glDrawArraysInstanced, and the shader reads meshInstances. Any
+            # OTHER shader touching gl_InstanceID still gets a constant 0.
+            if "gl_InstanceID" in body and "meshInstances" not in body:
+                err(rel, "uses gl_InstanceID without declaring meshInstances -- "
+                         "outside an instances=\"N\" mesh scene the engine draws "
+                         "non-instanced and it is always 0; the per-unit index "
                          "is in attrA.w")
 
             # --- R5 per-unit index lives in attrA.w, not attrB -------------
