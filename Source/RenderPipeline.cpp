@@ -2644,7 +2644,11 @@ void RenderPipeline::traverse( const QString& dirname, QStringList& imageList )
     }
     else {
 		/*if( fi.QImageReader::canRead(  ) )*/
-		if( fi.suffix() == "png" || fi.suffix() == "jpg" )
+		// Case-INSENSITIVE, and .jpeg too. The comparison used to be exact,
+		// so a library holding IMG_0001.JPG or anything saved as .jpeg was
+		// silently half-empty with nothing to say why.
+		const QString ext = fi.suffix().toLower();
+		if( ext == "png" || ext == "jpg" || ext == "jpeg" )
 		{
 			 
 			//do something;

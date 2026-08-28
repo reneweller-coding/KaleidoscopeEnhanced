@@ -231,6 +231,14 @@ QImage prepareImage( const QImage &image )
 		// way up. That mismatch is why probe/catalogue renders looked correct
 		// and only the real app was wrong.
 		mirrored( false, true ).
-		scaled( maxSize, maxSize );
+		// IgnoreAspectRatio is deliberate and stays: scenes sample this with
+		// their own UVs, so the texture must be FILLED -- letterboxing would put
+		// black bars into every kaleidoscope fold. SmoothTransformation is the
+		// correction: Qt's default is FastTransformation, which on the 4:1
+		// downscale a 4096 photo needs throws away fifteen of every sixteen
+		// pixels. On a star field that does not just soften, it makes points
+		// appear and vanish as the sampling moves -- measured edge contrast is
+		// HIGHER with the fast filter, which is aliasing rather than sharpness.
+		scaled( maxSize, maxSize, Qt::IgnoreAspectRatio, Qt::SmoothTransformation );
 	return convertedImage;
 }
