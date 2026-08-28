@@ -126,7 +126,10 @@ void main()
     // A camera-facing quad. Building it in VIEW space keeps every splat square
     // on screen whatever direction it drifted, which a world-space quad cannot
     // do without a per-particle basis.
-    float r = (0.35 + 0.9 * hash11(id * 3.71)) * grain * (1.0 + 0.9 * open) * 0.9;
+    // See Condensation.geom for the arithmetic: one splat per triangle means
+    // ~100k of them, and a radius chosen by eye rather than by count turns
+    // the cloud into a mass of overlapping balls instead of dust.
+    float r = (0.11 + 0.20 * hash11(id * 3.71)) * grain * (1.0 + 0.8 * open);
     vec3 vp = vec3(world.x - eyeOff, world.y, world.z);
 
     vec2 corner[4] = vec2[4](vec2(-1.0, -1.0), vec2(1.0, -1.0), vec2(-1.0, 1.0), vec2(1.0, 1.0));

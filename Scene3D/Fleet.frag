@@ -147,7 +147,7 @@ void main()
         base = texture(texMeshMaterial, vec3(vUV, 0.0)).rgb * materialExposure(texMeshMaterial);
 
     float lam = max(dot(n, normalize(vec3(-0.42, 0.66, -0.62))), 0.0);
-    vec3 col = base * (0.24 + 1.30 * lam);
+    vec3 col = base * (0.40 + 1.85 * lam);
 
     // The running light: a bright band travelling down the formation. This is
     // the ONLY per-craft variation, and it is what turns N copies into a fleet

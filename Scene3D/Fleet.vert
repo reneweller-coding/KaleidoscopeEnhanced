@@ -154,7 +154,10 @@ void main()
 
     // The bank turns about Z, which after the alignment above IS the nose
     // axis, so it banks rather than yaws.
-    vec3 world = roll * (p * (13.0 * sz * fit)) + slot;
+    // 13 left the craft a few pixels across once the formation filled the
+    // frame, and a formation you cannot resolve into individual craft is
+    // just texture.
+    vec3 world = roll * (p * (19.0 * sz * fit)) + slot;
     world.z += 118.0;
     world.y += -6.0;
 

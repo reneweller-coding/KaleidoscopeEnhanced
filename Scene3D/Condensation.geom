@@ -90,11 +90,15 @@ void main()
     vec3 nrm = normalize(gNormal[0] + gNormal[1] + gNormal[2] + vec3(1e-6));
     float id = dot(floor(mid * 512.0), vec3(1.0, 37.0, 991.0));
 
-    // Each puff resolves on its own schedule, spread over most of the scene.
-    // Simultaneous arrival would snap the whole shape into being in one frame;
-    // staggering it lets the silhouette emerge feature by feature.
-    float t0 = hash11(id * 0.417) * 0.55;
-    float k = clamp((sceneProgress - t0) / 0.40, 0.0, 1.0);
+    // Each puff resolves on its own schedule, but the LAST one has to land well
+    // before the scene ends. Spreading starts over 0.55 and giving each 0.40 to
+    // travel meant the object was only complete at 95% of the solo span -- and
+    // a scene rarely gets its whole span, so in practice it never resolved at
+    // all. Measured: formed peaked at 0.11 and fell back. Complete by 0.65 now,
+    // which also leaves the last third to simply BE the object, which is the
+    // payoff the whole family builds toward.
+    float t0 = hash11(id * 0.417) * 0.28;
+    float k = clamp((sceneProgress - t0) / 0.26, 0.0, 1.0);
     float formed = k * k * (3.0 - 2.0 * k);        // smoothstep, no derivative jump
 
     // Where the puff waits: a large, slowly stirring volume, NOT a sphere. A
@@ -104,7 +108,10 @@ void main()
     vec3 drift = vec3(noise3(mid * 2.0 + vec3(time * 0.06, 0.0, 0.0)) - 0.5,
                       noise3(mid * 2.0 + vec3(0.0, time * 0.05, 11.0)) - 0.5,
                       noise3(mid * 2.0 + vec3(7.0, 0.0, time * 0.07)) - 0.5);
-    vec3 gasPos = mid + (wander * 0.9 + drift * 1.6) * cloud;
+    // The waiting volume, in MODEL units (the model spans about +-0.5), so
+    // 0.9 + 1.6 put the gas five times the object's own size away and it
+    // never read as belonging to anything.
+    vec3 gasPos = mid + (wander * 0.40 + drift * 0.70) * cloud;
 
     vec3 p = mix(gasPos, mid, formed);
 
@@ -115,10 +122,22 @@ void main()
     vec3 world = (p - meshCenter) * (88.0 * sz * fit);
     world.z += 84.0;
 
-    // Puffs shrink as they resolve: a gas cloud is made of large soft blobs, a
-    // surface of small tight ones. Keeping the size constant would leave the
-    // finished object looking furry.
-    float r = (0.9 + 1.5 * hash11(id * 2.13)) * puff * mix(2.6, 0.65, formed);
+    // Puffs shrink as they resolve: gas is made of larger, softer blobs and a
+    // surface of small tight ones, so a constant size would leave the finished
+    // object looking furry.
+    //
+    // Splat radius, in WORLD units. A mesh contributes one splat per
+    // triangle -- about 100k of them -- so the radius has to be set
+    // against that count, not by eye: for the cloud to read as a cloud
+    // its total splat area should be a small multiple of the object's
+    // own screen area, which for a ~44-unit object and 100k splats puts
+    // the radius near 0.15. The first version used 2..6 and the result
+    // was a wall of fog covering 100% of the frame with no object in it.
+    // Sized by MEASUREMENT, not by eye, in both directions: 2..6 covered 100% of
+    // the frame with a wall of fog, and the first correction to 0.3..0.9 left
+    // only 1..10% and no cloud to speak of. These give a gas dense enough to
+    // read as volume and a surface dense enough to read as solid.
+    float r = (0.13 + 0.26 * hash11(id * 2.13)) * puff * mix(5.0, 2.2, formed);
     vec3 vp = vec3(world.x - eyeOff, world.y, world.z);
 
     vec2 corner[4] = vec2[4](vec2(-1.0, -1.0), vec2(1.0, -1.0), vec2(-1.0, 1.0), vec2(1.0, 1.0));
