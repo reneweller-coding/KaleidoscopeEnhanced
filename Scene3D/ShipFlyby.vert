@@ -89,13 +89,20 @@ void main()
 
         // Bank into the pass and pitch a touch nose-up, so we get a three-
         // quarter view of the hull rather than a flat broadside.
-        float roll  = -c * 0.22 * bankP;
-        float pitch =  0.06;
-        float cr = cos(roll),  sr = sin(roll);
+        //
+        // The axes follow from the alignment above: the nose is on +X, so
+        // rolling is a rotation about X and pitching one about Z. These two
+        // were the other way round, which quietly turned the varying "bank"
+        // into a pitch -- the ship nosed up and down through the pass and held
+        // a fixed bank, instead of leaning into it. Both were object-space
+        // rotations either way, which is why it looked plausible and wrong.
+        float bank  = -c * 0.22 * bankP;      // about the nose axis, X
+        float pitch =  0.06;                  // about the beam axis, Z
+        float cb = cos(bank),  sb = sin(bank);
         float cp = cos(pitch), sp2 = sin(pitch);
-        mat3 rollM  = mat3(cr, sr, 0.0,  -sr, cr, 0.0,  0.0, 0.0, 1.0);
-        mat3 pitchM = mat3(1.0, 0.0, 0.0,  0.0, cp, sp2,  0.0, -sp2, cp);
-        mat3 rotM = pitchM * rollM;
+        mat3 bankM  = mat3(1.0, 0.0, 0.0,  0.0, cb, sb,   0.0, -sb, cb);
+        mat3 pitchM = mat3(cp, sp2, 0.0,  -sp2, cp, 0.0,  0.0, 0.0, 1.0);
+        mat3 rotM = pitchM * bankM;
 
         world = rotM * local;
         world.x += x;

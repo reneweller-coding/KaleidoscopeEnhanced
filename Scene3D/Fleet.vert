@@ -126,7 +126,25 @@ void main()
 
     // ---- the craft itself ------------------------------------------------
     vec3 p = attrA.xyz - meshCenter;
+    vec3 nrm0 = attrB.xyz;
     float fit = 0.5 / max(max(meshExtent.x, meshExtent.y), meshExtent.z);
+
+    // Point the craft's LONGEST axis along the formation's line of flight
+    // (-Z, toward the viewer). Without this the whole formation flies in
+    // whatever direction the asset happens to have been modelled in, and the
+    // bank below turns about an axis that is not the nose -- a craft rolling
+    // about its beam rather than its length. Rotations, not axis swaps.
+    vec3 e = meshExtent;
+    if( e.x >= e.y && e.x >= e.z )        // longest on X: rotate about Y
+    {
+        p    = vec3(-p.z,    p.y,    p.x);
+        nrm0 = vec3(-nrm0.z, nrm0.y, nrm0.x);
+    }
+    else if( e.y >= e.x && e.y >= e.z )   // longest on Y: rotate about X
+    {
+        p    = vec3(p.x,    -p.z,    p.y);
+        nrm0 = vec3(nrm0.x, -nrm0.z, nrm0.y);
+    }
 
     // Bank into the turn, and lead craft bank first -- the wave travelling back
     // through the formation is what makes it look flown rather than placed.
@@ -134,12 +152,14 @@ void main()
     float cb = cos(bank), sb = sin(bank);
     mat3 roll = mat3(cb, sb, 0.0,  -sb, cb, 0.0,  0.0, 0.0, 1.0);
 
+    // The bank turns about Z, which after the alignment above IS the nose
+    // axis, so it banks rather than yaws.
     vec3 world = roll * (p * (13.0 * sz * fit)) + slot;
     world.z += 118.0;
     world.y += -6.0;
 
     vUV = vec2(attrA.w, attrB.w);
-    vNormal = normalize(roll * attrB.xyz);
+    vNormal = normalize(roll * nrm0);
     vPos = world;
     vBg = 0.0;
     vRank = fi / max(fn - 1.0, 1.0);

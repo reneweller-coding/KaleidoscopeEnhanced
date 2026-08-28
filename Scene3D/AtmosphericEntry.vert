@@ -20,6 +20,7 @@ uniform mat4  projM;
 uniform float eyeOff;
 uniform float time;
 uniform int   meshVertexCount;
+uniform vec3  meshExtent;   // half-extents of the loaded model, object space
 uniform float sceneProgress;
 
 uniform float audioKick;
@@ -50,8 +51,30 @@ void main()
     if( !isBg )
     {
         float sz = (sizeP > 0.01 ? sizeP : 1.0);
-        // Nose (+Z) forward and DOWN into the descent.
+        // Put the hull's LONGEST axis on +Z, which is the nose direction the
+        // attitude matrices below are written for: with the nose on +Z, a
+        // rotation about X is pitch and a rotation about Z is roll. The
+        // comment here used to CLAIM the nose was +Z without doing anything
+        // to make it so -- true of the asset set it was written against, and
+        // false for the one that replaced it. On a hull that measures longest
+        // on X, "pitch" would have rotated the ship about its own length, i.e.
+        // rolled it, and the entry attitude would have been meaningless.
+        //
+        // Rotations, never axis swaps: a swap mirrors the hull and reverses
+        // its winding.
+        vec3 e = meshExtent;
         vec3 p = attrA.xyz, nrm = attrB.xyz;
+        if( e.x >= e.y && e.x >= e.z )        // longest on X: rotate about Y
+        {
+            p   = vec3(-p.z,   p.y,   p.x);
+            nrm = vec3(-nrm.z, nrm.y, nrm.x);
+        }
+        else if( e.y >= e.x && e.y >= e.z )   // longest on Y: rotate about X
+        {
+            p   = vec3(p.x,    -p.z,   p.y);
+            nrm = vec3(nrm.x,  -nrm.z, nrm.y);
+        }
+        // longest already on Z: already nose-forward.
 
         // Pitch nose-down as it commits to the descent, then flare slightly
         // at the end -- the classic entry attitude, belly to the airflow.
