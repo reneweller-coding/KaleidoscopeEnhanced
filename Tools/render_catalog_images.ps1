@@ -142,7 +142,19 @@ foreach ($name in $Names) {
     $srcNode = Get-SceneNode $komplett $dir $name
     if (-not $srcNode) { Write-Host "$name : NOT IN Komplett.xml, skip"; continue }
     $srcNode.SetAttribute("probability", "1.0")
-    $srcNode.SetAttribute("minTimeSolo", "100"); $srcNode.SetAttribute("maxTimeSolo", "120")
+    # A family staged on sceneProgress runs its whole arc across the SOLO span,
+    # so a 100 s solo leaves it at 8..21% of that arc at the three sampling
+    # marks -- which for Assembly and MeshTerrain meant three near-black frames
+    # of something that had not started yet. Give those a solo just longer than
+    # the recording, so t=8/16/21 land at roughly a third, two thirds and the
+    # end of the arc and the catalogue shows the family doing its one thing.
+    $staged = $false
+    foreach ($ext in @("frag", "vert", "geom")) {
+        $sp = Join-Path $root "$dir\$name.$ext"
+        if ((Test-Path $sp) -and (Select-String -Path $sp -Pattern "sceneProgress" -Quiet)) { $staged = $true }
+    }
+    if ($staged) { $srcNode.SetAttribute("minTimeSolo", "23"); $srcNode.SetAttribute("maxTimeSolo", "24") }
+    else         { $srcNode.SetAttribute("minTimeSolo", "100"); $srcNode.SetAttribute("maxTimeSolo", "120") }
     $srcNode.SetAttribute("minTimeInterpolation", "20"); $srcNode.SetAttribute("maxTimeInterpolation", "30")
     $body = $srcNode.OuterXml
 

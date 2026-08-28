@@ -1,6 +1,6 @@
 # Kaleidoscope Enhanced — Szenen-Katalog
 
-_606 Szenen, 29 FX-Overlays, 83 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
+_616 Szenen, 29 FX-Overlays, 83 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
 
 
 ---
@@ -3222,6 +3222,24 @@ Lit voxel cubes levitated in an acoustic standing-wave grid, each face a blend o
 ![AcousticLevitationMatrix ruhig (t=8)](img/AcousticLevitationMatrix_A.jpg) ![AcousticLevitationMatrix ruhig (t=16)](img/AcousticLevitationMatrix_B.jpg) ![AcousticLevitationMatrix audio-heiß (t=8)](img/AcousticLevitationMatrix_C.jpg)
 
 
+### Aperture
+
+`Scene3D/Aperture.frag` · type=scene3d · geom=mesh · mood=psychedelic,bright · complexity=3
+
+The model is used as a hole, not as an object. Its silhouette is a window: inside it a flat scene plays, outside there is almost nothing. The shape turns, so the window keeps changing form while what shows through it carries on undisturbed. This is the one mesh family that composes with the REST of the catalogue rather than adding to it -- what shows through is built from the same material every 2D scene uses, the cu…
+
+![Aperture ruhig (t=8)](img/Aperture_A.jpg) ![Aperture ruhig (t=16)](img/Aperture_B.jpg) ![Aperture audio-heiß (t=8)](img/Aperture_C.jpg)
+
+
+### Assembly
+
+`Scene3D/Assembly.frag` · type=scene3d · geom=mesh · mood=dark · complexity=4
+
+Pieces flying in from nowhere and settling into an object that was not there a moment ago (the flight itself is in the geometry stage). A piece still in the air is hot and half-transparent; a seated one is cold, solid and lit. The transition between those two states is what the eye follows. A shatter can be watched passively -- it is over in a second and the eye just catches the debris. An assembly has to be READ, be…
+
+![Assembly ruhig (t=8)](img/Assembly_A.jpg) ![Assembly ruhig (t=16)](img/Assembly_B.jpg) ![Assembly audio-heiß (t=8)](img/Assembly_C.jpg)
+
+
 ### AsteroidBelt
 
 `Scene3D/AsteroidBelt.frag` · type=scene3d · geom=cubes · mood=dark,dreamy,space · complexity=3
@@ -3496,6 +3514,15 @@ ChromeFlow.frag - LIQUID CHROME: a rolling sheet of molten metal that MIRRORS th
 ![ChromeFlow ruhig (t=8)](img/ChromeFlow_A.jpg) ![ChromeFlow ruhig (t=16)](img/ChromeFlow_B.jpg) ![ChromeFlow audio-heiß (t=8)](img/ChromeFlow_C.jpg)
 
 
+### ChromeForm
+
+`Scene3D/ChromeForm.frag` · type=scene3d · geom=mesh · mood=bright,dreamy · complexity=3
+
+The model as polished metal: it shows almost nothing of itself and almost everything of the room around it. The environment it reflects is the same one drawn on the sky shell, and the warm part of it is taken from the CURRENT PHOTOGRAPH -- so the object mirrors the picture the rest of the show is built on, and changes colour when the picture does. A mirror is defined by what it borrows, which makes this family unusua…
+
+![ChromeForm ruhig (t=8)](img/ChromeForm_A.jpg) ![ChromeForm ruhig (t=16)](img/ChromeForm_B.jpg) ![ChromeForm audio-heiß (t=8)](img/ChromeForm_C.jpg)
+
+
 ### CliffordTorusVillarceauLinks
 
 `Scene3D/CliffordTorusVillarceauLinks.frag` · type=scene3d · geom=cubes · mood=bright,psychedelic · complexity=3
@@ -3521,6 +3548,15 @@ CometRide.frag — soft glowing point (additive blending).
 ConcertCrowd.frag — soft glowing point (additive blending).
 
 ![ConcertCrowd ruhig (t=8)](img/ConcertCrowd_A.jpg) ![ConcertCrowd ruhig (t=16)](img/ConcertCrowd_B.jpg) ![ConcertCrowd audio-heiß (t=8)](img/ConcertCrowd_C.jpg)
+
+
+### Condensation
+
+`Scene3D/Condensation.frag` · type=scene3d · geom=mesh · mood=calm,dreamy,space · complexity=4
+
+Gas resolving into an object. For most of the scene there is only a slowly stirring volume; then a shape starts to be implied by where the fog is thicker, and by the end the thing is simply there. The migration itself is in the geometry stage. Density without blending: the mesh path draws opaque, so a real volume cannot be accumulated by alpha. Instead each puff DISCARDS most of its fragments on an ordered threshold,…
+
+![Condensation ruhig (t=8)](img/Condensation_A.jpg) ![Condensation ruhig (t=16)](img/Condensation_B.jpg) ![Condensation audio-heiß (t=8)](img/Condensation_C.jpg)
 
 
 ### CoralGrowth
@@ -3604,6 +3640,15 @@ COSMIC WEB FILAMENT ANISOTROPY: 60,000-particle large-scale dark matter structur
 GEOM="MESH" FAMILY: a sea creature (jellyfish, manta, humpback, squid, seahorse, anglerfish) swimming in an open water column. The swimming itself is vertex-stage deformation -- see Creature.vert, which is where the four movement modes live. This stage lights it the way water does: a hard sunlit top, a dim blue-green bounce from below, caustic light webs crawling over the upward-facing surfaces, and enough translucen…
 
 ![Creature ruhig (t=8)](img/Creature_A.jpg) ![Creature ruhig (t=16)](img/Creature_B.jpg) ![Creature audio-heiß (t=8)](img/Creature_C.jpg)
+
+
+### CrossSection
+
+`Scene3D/CrossSection.frag` · type=scene3d · geom=mesh · mood=dark,space · complexity=3
+
+A plane sweeps through a real 3D model and everything in front of it is cut away, leaving the object opened like a scan through a body. The cut face glows; a bright contour runs along the exact line where the surface meets the plane, so the shape of the section reads even where the interior is dark. These meshes are HOLLOW shells with no interior, so a real solid section is not available. What sells it instead is tha…
+
+![CrossSection ruhig (t=8)](img/CrossSection_A.jpg) ![CrossSection ruhig (t=16)](img/CrossSection_B.jpg) ![CrossSection audio-heiß (t=8)](img/CrossSection_C.jpg)
 
 
 ### CryogenicBrinicleStalactite
@@ -3779,6 +3824,15 @@ DIELECTRIC RESONATOR METAGRATING: 2D array of resonant high-refractive-index sil
 ![DielectricResonatorMetagrating ruhig (t=8)](img/DielectricResonatorMetagrating_A.jpg) ![DielectricResonatorMetagrating ruhig (t=16)](img/DielectricResonatorMetagrating_B.jpg) ![DielectricResonatorMetagrating audio-heiß (t=8)](img/DielectricResonatorMetagrating_C.jpg)
 
 
+### Dissolve
+
+`Scene3D/Dissolve.frag` · type=scene3d · geom=mesh · mood=dreamy,dark · complexity=4
+
+The object as a cloud of its own surface: every triangle is a splat (the placement is in the geometry stage), drifting out on a curl field and drawn back in. The silhouette survives as density, not as shape. Each splat keeps the colour its triangle had, so the cloud is not a uniform dust -- it carries the object's own markings, and a hull's panels or a statue's shadows stay faintly readable in the drift. That is what…
+
+![Dissolve ruhig (t=8)](img/Dissolve_A.jpg) ![Dissolve ruhig (t=16)](img/Dissolve_B.jpg) ![Dissolve audio-heiß (t=8)](img/Dissolve_C.jpg)
+
+
 ### DNAOrigamiNanotubeLattice
 
 `Scene3D/DNAOrigamiNanotubeLattice.frag` · type=scene3d · geom=ribbon · mood=bright,psychedelic · complexity=3
@@ -3894,6 +3948,15 @@ FireflyField.frag — soft glowing point (additive blending).
 Fireworks.frag — glowing spark (additive blending).
 
 ![Fireworks ruhig (t=8)](img/Fireworks_A.jpg) ![Fireworks ruhig (t=16)](img/Fireworks_B.jpg) ![Fireworks audio-heiß (t=8)](img/Fireworks_C.jpg)
+
+
+### Fleet
+
+`Scene3D/Fleet.frag` · type=scene3d · geom=mesh · mood=space,dark · complexity=4
+
+A formation of one craft drawn many times (the placement is in the vertex stage, via instances="N" and gl_InstanceID). The subject is the ORDER, not the ship: the formation tightens on the beat, breathes between, and a drop blows it apart. Shading is deliberately simple and mostly the same for every craft. Detail per ship would be wasted -- at formation scale each is a few dozen pixels -- and worse, it would compete …
+
+![Fleet ruhig (t=8)](img/Fleet_A.jpg) ![Fleet ruhig (t=16)](img/Fleet_B.jpg) ![Fleet audio-heiß (t=8)](img/Fleet_C.jpg)
 
 
 ### FlowRibbons
@@ -4377,6 +4440,15 @@ MelodyScript.frag — additive ribbon ink (colour fully baked in the vert).
 ![MelodyScript ruhig (t=8)](img/MelodyScript_A.jpg) ![MelodyScript ruhig (t=16)](img/MelodyScript_B.jpg) ![MelodyScript audio-heiß (t=8)](img/MelodyScript_C.jpg)
 
 
+### MeshTerrain
+
+`Scene3D/MeshTerrain.frag` · type=scene3d · geom=mesh · mood=calm,dark · complexity=3
+
+Flying low across a landscape that is really a 3D model blown up two orders of magnitude (the transform is in the vertex stage). Grazing light and distance haze do the rest: at that scale, folds become ridges and the eye stops asking what the object used to be. Two things make this read as terrain rather than as a big object: - The light is LOW. A raking sun turns every fold into a lit face and a dark one, which is h…
+
+![MeshTerrain ruhig (t=8)](img/MeshTerrain_A.jpg) ![MeshTerrain ruhig (t=16)](img/MeshTerrain_B.jpg) ![MeshTerrain audio-heiß (t=8)](img/MeshTerrain_C.jpg)
+
+
 ### MetamaterialNegativeRefraction
 
 `Scene3D/MetamaterialNegativeRefraction.frag` · type=scene3d · geom=grid · mood=bright,psychedelic · complexity=3
@@ -4422,6 +4494,15 @@ Lights each mirror shard from MirrorShardKaleidoscope.vert as a real reflective 
 Shades one triangular mirror shard from MirrorShatterExplosion.geom: a lit glinting facet (fixed-direction diffuse + tight specular) with a Fresnel rim so shards read as sharp glass/mirror fragments rather than flat matte confetti. All placement, colour and the beat- synced explosion are computed in the geometry stage and arrive pre-baked in gCol.
 
 ![MirrorShatterExplosion ruhig (t=8)](img/MirrorShatterExplosion_A.jpg) ![MirrorShatterExplosion ruhig (t=16)](img/MirrorShatterExplosion_B.jpg) ![MirrorShatterExplosion audio-heiß (t=8)](img/MirrorShatterExplosion_C.jpg)
+
+
+### ModalVibration
+
+`Scene3D/ModalVibration.frag` · type=scene3d · geom=mesh · mood=dark · complexity=3
+
+A real object rung by the music: four spectral bands drive four spatial standing waves across its surface (the displacement itself is in the vertex stage). This stage paints where the surface is moving -- crests hot, nodes dark -- so the vibration pattern is visible even when the displacement is too small to see as motion. The nodal lines are what carry it. On a struck plate the still lines between moving regions are…
+
+![ModalVibration ruhig (t=8)](img/ModalVibration_A.jpg) ![ModalVibration ruhig (t=16)](img/ModalVibration_B.jpg) ![ModalVibration audio-heiß (t=8)](img/ModalVibration_C.jpg)
 
 
 ### MoireHyperInterference
@@ -4970,6 +5051,15 @@ _(Vorschau eingeschränkt: Sim-Textur/Mehrpass — Bilder unterschätzen die ech
 ShadowForest.frag — the ground is the canvas and the trunks are the brush. The ground gets a bright, warm direct term so every shadow crossing it reads hard; the trunks get almost none, so they stay as silhouettes and do not compete with the pattern they are casting.
 
 ![ShadowForest ruhig (t=8)](img/ShadowForest_A.jpg) ![ShadowForest ruhig (t=16)](img/ShadowForest_B.jpg) ![ShadowForest audio-heiß (t=8)](img/ShadowForest_C.jpg)
+
+
+### ShadowTheatre
+
+`Scene3D/ShadowTheatre.frag` · type=scene3d · geom=mesh · mood=dark,calm · complexity=3
+
+A shadow play. A lamp behind a lit screen, a real 3D model turning in front of it, and the only thing the audience is given is the outline. The shape is unrecognisable and then suddenly obvious as it turns through a profile that reads, which is the whole pleasure of the form. The caster is near-black with a soft warm edge rather than a hard cut-out: a lamp has size, so every real shadow has a penumbra, and it is the …
+
+![ShadowTheatre ruhig (t=8)](img/ShadowTheatre_A.jpg) ![ShadowTheatre ruhig (t=16)](img/ShadowTheatre_B.jpg) ![ShadowTheatre audio-heiß (t=8)](img/ShadowTheatre_C.jpg)
 
 
 ### ShatterSculpture

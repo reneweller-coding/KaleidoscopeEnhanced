@@ -88,7 +88,7 @@ vec3 renderSky(vec3 dir, vec3 tint)
 {
     float n1 = fbm3(dir * 1.7 + vec3(time * 0.004, 0.0, 0.0));
     vec3 col = vec3(0.014, 0.016, 0.026);
-    col += tint * 0.30 * smoothstep(0.40, 0.85, n1) * (0.35 + 0.30 * audioSwell);
+    col += tint * 0.42 * smoothstep(0.35, 0.85, n1) * (0.45 + 0.30 * audioSwell);
     col += vec3(1.0) * starsField(dir, 0.0022);
     return col;
 }
@@ -147,7 +147,10 @@ void main()
         base = texture(texMeshMaterial, vec3(vUV, 0.0)).rgb * materialExposure(texMeshMaterial);
 
     float lam = max(dot(n, normalize(vec3(-0.42, 0.66, -0.62))), 0.0);
-    vec3 col = base * (0.40 + 1.85 * lam);
+    // The only family that reads dark in the catalogue's quiet passages, where
+    // the engine glow and the running light have nothing to fire on. The
+    // ambient term carries it there.
+    vec3 col = base * (0.62 + 1.85 * lam);
 
     // The running light: a bright band travelling down the formation. This is
     // the ONLY per-craft variation, and it is what turns N copies into a fleet

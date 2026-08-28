@@ -54,7 +54,10 @@ foreach ($m in [regex]::Matches($cat, '<TextureShader[^>]*?Scene3D\\+(?<fam>\w+)
     $theme = switch -Regex ($fam) {
         'Ship(Flyby|Docking)|AtmosphericEntry|Spaceship|Hologram' { 'ships' }
         'Station$'                                               { 'stations' }
-        default                                                  { 'earthbound' }
+        # Fleet flies space craft too, even though its scenes are formations
+        # rather than single hulls.
+        'Fleet'                                                  { 'ships' }
+        default                                                  { 'objects' }
     }
     foreach ($mm in [regex]::Matches($m.Value, 'Models\\+(?<n>[A-Za-z0-9]+)\.glb')) {
         $n = $mm.Groups['n'].Value
@@ -79,7 +82,7 @@ Write-Output ""
 if ($Single) {
     New-Pack "all" $all
 } else {
-    foreach ($t in @('ships', 'stations', 'earthbound')) {
+    foreach ($t in @('ships', 'stations', 'objects')) {
         New-Pack $t ($all | Where-Object { $themeOf[$_.BaseName] -eq $t })
     }
     $orphans = $all | Where-Object { -not $themeOf.ContainsKey($_.BaseName) }
