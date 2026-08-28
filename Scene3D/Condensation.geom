@@ -111,7 +111,12 @@ void main()
     // The waiting volume, in MODEL units (the model spans about +-0.5), so
     // 0.9 + 1.6 put the gas five times the object's own size away and it
     // never read as belonging to anything.
-    vec3 gasPos = mid + (wander * 0.40 + drift * 0.70) * cloud;
+    // Halved again. At 0.40 + 0.70 the cloud was over three times the object's
+    // own size, and the journey home was long enough that the shape only
+    // appeared at the very end -- proven by running the same scene with the
+    // spread set to nothing, which made the object render immediately and
+    // correctly. The target was never wrong; the distance was.
+    vec3 gasPos = mid + (wander * 0.20 + drift * 0.32) * cloud;
 
     vec3 p = mix(gasPos, mid, formed);
 

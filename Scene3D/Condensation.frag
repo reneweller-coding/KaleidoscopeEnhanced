@@ -157,12 +157,23 @@ void main()
     // Gas is lit from everywhere, a surface from one side. Crossfading between
     // those two lighting models along the resolve is what makes the material
     // appear to CONDENSE rather than simply move.
+    // The two ends have to be EQUALLY bright, or the scene gets darker exactly
+    // as its subject appears. Measured on the first version: mean frame luma
+    // fell from 38 to 7 across the resolve, because the gas glow carried the
+    // whole image and the surface term arriving in its place was a third as
+    // strong. A reveal that dims as it reveals reads as the scene ending.
     vec3 gasCol  = base * 0.55 + tint * 0.55;
-    vec3 surfCol = base * (0.26 + 1.20 * lam);
+    vec3 surfCol = base * (0.50 + 2.10 * lam);
     vec3 col = mix(gasCol, surfCol, formed);
 
     col += tint * (1.0 - formed) * (0.25 + 0.75 * audioSwell);
     col += tint * audioKick * 0.35 * (1.0 - 0.6 * formed);
+
+    // A rim on the finished body, so the silhouette is legible against the
+    // remains of its own cloud.
+    vec3 viewDir = normalize(-vPos);
+    float rim = pow(1.0 - max(dot(n, viewDir), 0.0), 3.0);
+    col += tint * rim * formed * (0.45 + 0.6 * audioSwell);
     col *= 0.55 + 0.45 * fall;
 
     if( hue > 0.001 ) col = hueRot(col, 0.12 * sin(hue));

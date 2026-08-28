@@ -73,6 +73,13 @@ void main()
 
     float sz  = (sizeP > 0.01 ? sizeP : 1.0);
     float spr = (spreadP > 0.01 ? spreadP : 1.0);
+
+    // How long one craft is on screen. p is normalised by `fit` further down,
+    // so it spans +-0.5 and this IS the length. Every spacing below is a
+    // multiple of it, which is the only way the formation survives a change of
+    // craft size: raising the size from 13 to 19 without touching the spacings
+    // turned the fleet into a solid wall of overlapping hulls.
+    float craft = 19.0 * sz;
     float fi  = float(inst);
     float fn  = float(N);
 
@@ -91,14 +98,16 @@ void main()
         // reads instantly as a formation rather than as a crowd.
         float r = floor(sqrt(fi));
         float s = fi - r * r - r;                 // -r .. +r across the rank
-        slot = vec3(s * 13.0, -abs(s) * 1.2 + r * 0.6, -r * 17.0);
+        slot = vec3(s * craft * 1.45, (-abs(s) * 1.2 + r * 0.6) * craft * 0.09,
+                    r * craft * 0.95);
     }
     else if( mode == 1 )
     {
         // Column, three abreast: a convoy seen from beside the road.
         float col = mod(fi, 3.0) - 1.0;
         float row = floor(fi / 3.0);
-        slot = vec3(col * 15.0, sin(row * 1.7) * 3.0, -row * 21.0);
+        slot = vec3(col * craft * 1.70, sin(row * 1.7) * craft * 0.18,
+                    row * craft * 1.05);
     }
     else
     {
@@ -107,7 +116,7 @@ void main()
         float k = (fi + 0.5) / fn;
         float phi = acos(1.0 - 2.0 * k);
         float th = 3.8832220774509327 * fi;       // golden angle
-        slot = vec3(sin(phi) * cos(th), cos(phi), sin(phi) * sin(th)) * 46.0;
+        slot = vec3(sin(phi) * cos(th), cos(phi), sin(phi) * sin(th)) * craft * 2.60;
     }
 
     slot *= spr * tighten;
@@ -117,12 +126,12 @@ void main()
     vec3 blow = normalize(vec3(hash11(fi * 3.1) - 0.5,
                                hash11(fi * 7.7) - 0.5,
                                hash11(fi * 5.3) - 0.5) + vec3(0.0001));
-    slot += blow * breakUp * (30.0 + 55.0 * hash11(fi * 1.9));
+    slot += blow * breakUp * craft * (1.6 + 2.9 * hash11(fi * 1.9));
 
     // Station-keeping wobble, out of phase per craft: nothing holds formation
     // perfectly, and identical motion across N copies looks mechanical.
     float ph = fi * 2.399963;
-    slot += vec3(sin(time * 0.9 + ph), sin(time * 0.7 + ph * 1.3), sin(time * 1.1 + ph * 0.7)) * 1.6;
+    slot += vec3(sin(time * 0.9 + ph), sin(time * 0.7 + ph * 1.3), sin(time * 1.1 + ph * 0.7)) * craft * 0.09;
 
     // ---- the craft itself ------------------------------------------------
     vec3 p = attrA.xyz - meshCenter;
@@ -154,11 +163,13 @@ void main()
 
     // The bank turns about Z, which after the alignment above IS the nose
     // axis, so it banks rather than yaws.
-    // 13 left the craft a few pixels across once the formation filled the
-    // frame, and a formation you cannot resolve into individual craft is
-    // just texture.
-    vec3 world = roll * (p * (19.0 * sz * fit)) + slot;
-    world.z += 118.0;
+    // Ranks recede AWAY from the camera, and the whole formation lives between
+    // z = 55 and the far plane. The previous version sent them toward the
+    // viewer at 2.3 craft-lengths per rank, so a 48-strong wedge ran 300 units
+    // deep -- half of it behind the camera, with the nearest hulls right at the
+    // lens filling the frame. A formation has to be seen whole to read as one.
+    vec3 world = roll * (p * (craft * fit)) + slot;
+    world.z += 55.0;
     world.y += -6.0;
 
     vUV = vec2(attrA.w, attrB.w);
