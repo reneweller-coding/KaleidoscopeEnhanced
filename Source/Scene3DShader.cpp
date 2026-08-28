@@ -380,6 +380,26 @@ void Scene3DShader::buildGeometry()
 			loadInto( m_modelPath2, m_meshMaterialTex2, m_meshMaterialLayers2 );
 		m_mesh2VertexCount = int( v.size() / 8 );
 
+		// model2's own box, measured over ITS vertex range only.
+		if( m_mesh2VertexCount > m_meshOwnVertexCount )
+		{
+			float lo[3] = {  1e30f,  1e30f,  1e30f };
+			float hi[3] = { -1e30f, -1e30f, -1e30f };
+			for( int i = m_meshOwnVertexCount; i < m_mesh2VertexCount; ++i )
+				for( int c = 0; c < 3; ++c )
+				{
+					const float x = v[ size_t(i) * 8 + c ];
+					if( x < lo[c] ) lo[c] = x;
+					if( x > hi[c] ) hi[c] = x;
+				}
+			for( int c = 0; c < 3; ++c )
+			{
+				m_meshCenter2[c] = 0.5f * ( hi[c] + lo[c] );
+				m_meshExtent2[c] = ( hi[c] - lo[c] ) * 0.5f;
+				if( m_meshExtent2[c] < 1e-4f ) m_meshExtent2[c] = 1e-4f;
+			}
+		}
+
 		// Append a big enclosing "sky shell" after the loaded mesh's own
 		// vertices (same 36-corner unit-cube table GEOM_CUBES builds,
 		// scaled way up and centered on the origin, NOT on the mesh's own
@@ -763,6 +783,8 @@ void Scene3DShader::initUniforms( int width, int height )
 	m_meshMaterialLayersUni = glGetUniformLocation( m_sh_prog_id, "texMeshMaterialLayers" );
 	m_meshVertexCountUni = glGetUniformLocation( m_sh_prog_id, "meshVertexCount" );
 	m_meshExtentUni      = glGetUniformLocation( m_sh_prog_id, "meshExtent" );
+	m_meshExtent2Uni     = glGetUniformLocation( m_sh_prog_id, "meshExtent2" );
+	m_meshCenter2Uni     = glGetUniformLocation( m_sh_prog_id, "meshCenter2" );
 	m_meshInstancesUni   = glGetUniformLocation( m_sh_prog_id, "meshInstances" );
 	m_meshCenterUni      = glGetUniformLocation( m_sh_prog_id, "meshCenter" );
 	m_mesh2VertexCountUni = glGetUniformLocation( m_sh_prog_id, "mesh2VertexCount" );
@@ -909,6 +931,10 @@ void Scene3DShader::draw()
 		glUniform3f( m_meshExtentUni, m_meshExtent[0], m_meshExtent[1], m_meshExtent[2] );
 	if( m_geomKind == GEOM_MESH && m_meshCenterUni >= 0 )
 		glUniform3f( m_meshCenterUni, m_meshCenter[0], m_meshCenter[1], m_meshCenter[2] );
+	if( m_geomKind == GEOM_MESH && m_meshExtent2Uni >= 0 )
+		glUniform3f( m_meshExtent2Uni, m_meshExtent2[0], m_meshExtent2[1], m_meshExtent2[2] );
+	if( m_geomKind == GEOM_MESH && m_meshCenter2Uni >= 0 )
+		glUniform3f( m_meshCenter2Uni, m_meshCenter2[0], m_meshCenter2[1], m_meshCenter2[2] );
 	if( m_geomKind == GEOM_MESH && m_mesh2VertexCountUni >= 0 )
 		glUniform1i( m_mesh2VertexCountUni, m_mesh2VertexCount );
 	if( m_meshMaterialLayers2 > 0 )

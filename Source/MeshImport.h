@@ -37,7 +37,7 @@
 struct MeshAsset
 {
 	std::vector<float> vertices;      ///< 8 floats/vertex (attrA.xyzw, attrB.xyzw), GL_TRIANGLES, non-indexed.
-	int  materialLayers = 0;          ///< 0 = no material texture at all, 1 = base color only, 2 = base color + metallic-roughness.
+	int  materialLayers = 0;          ///< 0 = none, 1 = base color, 2 = + metallic-roughness, 3 = + tangent-space normal (layer index is fixed, so a shader tests the count).
 	int  materialW = 0;                ///< Width, in texels, shared by every material layer.
 	int  materialH = 0;                ///< Height, in texels, shared by every material layer.
 	std::vector<unsigned char> materialRGBA;   ///< materialLayers * materialW * materialH * 4 bytes, layer 0 first.

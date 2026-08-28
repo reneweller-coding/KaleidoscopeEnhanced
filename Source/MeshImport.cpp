@@ -64,7 +64,7 @@ QImage decodeGltfImage( const cgltf_image *img, const std::string &gltfPath )
 }
 
 /**
- * @brief Packs a base-color(+opacity) image and an optional metallic-roughness image into MeshAsset's layered RGBA8 buffer.
+ * @brief Packs base-color(+opacity), optional metallic-roughness and optional tangent-space normal into MeshAsset's layered RGBA8 buffer.
  *
  * Both layers are flipped vertically before packing -- the same convention
  * Utils.cpp::prepareImage() uses for every other texture this app uploads
@@ -73,14 +73,20 @@ QImage decodeGltfImage( const cgltf_image *img, const std::string &gltfPath )
  * (`1 - v`) UNLESS their source format's V already runs bottom-up the way
  * OBJ's does -- see loadGlb()/loadObj()'s differing V handling for why.
  */
-void packMaterialLayers( QImage base, QImage mr, MeshAsset &out )
+void packMaterialLayers( QImage base, QImage mr, QImage nrm, MeshAsset &out )
 {
 	int w = 0, h = 0;
 	if( !base.isNull() ) { w = std::max( w, base.width() ); h = std::max( h, base.height() ); }
 	if( !mr.isNull() )   { w = std::max( w, mr.width() );   h = std::max( h, mr.height() );   }
+	if( !nrm.isNull() )  { w = std::max( w, nrm.width() );  h = std::max( h, nrm.height() );  }
 	if( w == 0 || h == 0 )
 		return;
-	const int maxSize = 2048;   // one size up from Utils.cpp's 1024 photo cap -- a hero mesh's own material earns a bit more detail
+	// The generator now writes 4096 maps and some assets carry a real normal
+	// map, which is exactly the layer that suffers most from being shrunk --
+	// a halved normal map loses the fine relief it exists to carry. Still
+	// capped, because three layers at 4096 would be 200 MB of texture per
+	// scene, but capped higher than before.
+	const int maxSize = ( nrm.isNull() ? 2048 : 3072 );
 	w = std::min( w, maxSize );
 	h = std::min( h, maxSize );
 
@@ -98,10 +104,14 @@ void packMaterialLayers( QImage base, QImage mr, MeshAsset &out )
 	const QImage baseImg = prep( base, QColor( 255, 255, 255, 255 ) );
 	out.materialW = w;
 	out.materialH = h;
-	out.materialLayers = mr.isNull() ? 1 : 2;
+	// Layer 0 base color, 1 metallic-roughness, 2 tangent-space normal. A
+	// normal map without a metallic-roughness map still occupies layer 2, so
+	// the layer INDEX is fixed and a shader can test the count instead of
+	// hunting for what is present.
+	out.materialLayers = nrm.isNull() ? ( mr.isNull() ? 1 : 2 ) : 3;
 	out.materialRGBA.resize( size_t( out.materialLayers ) * size_t( w ) * size_t( h ) * 4 );
 	memcpy( out.materialRGBA.data(), baseImg.constBits(), size_t( w ) * size_t( h ) * 4 );
-	if( out.materialLayers == 2 )
+	if( out.materialLayers >= 2 )
 	{
 		// R unused (no AO map from either source format), G = roughness,
 		// B = metallic -- the same channel order glTF's own
@@ -110,6 +120,20 @@ void packMaterialLayers( QImage base, QImage mr, MeshAsset &out )
 		const QImage mrImg = prep( mr, QColor( 255, 255, 0, 255 ) );
 		memcpy( out.materialRGBA.data() + size_t( w ) * size_t( h ) * 4,
 		        mrImg.constBits(), size_t( w ) * size_t( h ) * 4 );
+	}
+	if( out.materialLayers == 3 )
+	{
+		// Tangent-space normal, the usual RGB = XYZ mapped into 0..1. The
+		// FLIP matters: mirroring the image vertically also mirrors the
+		// direction its green channel encodes, so G has to be inverted to
+		// keep the map pointing the way it did before the flip. Getting this
+		// wrong lights every dent as a bump.
+		QImage nImg = prep( nrm, QColor( 128, 128, 255, 255 ) );
+		const size_t plane = size_t( w ) * size_t( h ) * 4;
+		unsigned char *dst = out.materialRGBA.data() + 2 * plane;
+		memcpy( dst, nImg.constBits(), plane );
+		for( size_t i = 1; i < plane; i += 4 )
+			dst[i] = (unsigned char)( 255 - dst[i] );
 	}
 }
 
@@ -156,7 +180,7 @@ bool loadGlb( const std::string &path, MeshAsset &out )
 		return false;
 	}
 
-	QImage baseColorImg, metalRoughImg;
+	QImage baseColorImg, metalRoughImg, normalImg;
 	bool haveMaterial = false;
 
 	for( cgltf_size mi = 0; mi < data->meshes_count; ++mi )
@@ -224,6 +248,14 @@ bool loadGlb( const std::string &path, MeshAsset &out )
 					const cgltf_texture *t = pbr.base_color_texture.texture;
 					baseColorImg = decodeGltfImage( t->has_webp ? t->webp_image : t->image, path );
 				}
+				// Only some assets ship one: the generator discards a normal map
+				// it judges unusable, and then the glb simply has no
+				// normalTexture. Absent is normal, not an error.
+				if( prim.material->normal_texture.texture )
+				{
+					const cgltf_texture *nt = prim.material->normal_texture.texture;
+					normalImg = decodeGltfImage( nt->has_webp ? nt->webp_image : nt->image, path );
+				}
 				if( pbr.metallic_roughness_texture.texture )
 				{
 					const cgltf_texture *t = pbr.metallic_roughness_texture.texture;
@@ -237,8 +269,8 @@ bool loadGlb( const std::string &path, MeshAsset &out )
 	cgltf_free( data );
 	if( out.vertices.empty() )
 		return false;
-	if( !baseColorImg.isNull() || !metalRoughImg.isNull() )
-		packMaterialLayers( baseColorImg, metalRoughImg, out );
+	if( !baseColorImg.isNull() || !metalRoughImg.isNull() || !normalImg.isNull() )
+		packMaterialLayers( baseColorImg, metalRoughImg, normalImg, out );
 
 	// KALEIDO_MESH_DUMP=1: dump the packed material layers to PNGs next to
 	// the exe, so a wrong-looking mesh material can be diagnosed by eye
@@ -325,7 +357,9 @@ bool loadObj( const std::string &path, MeshAsset &out )
 			QImage metal = loadTex( mat.metallic_texname );
 			if( base.isNull() && rough.isNull() && metal.isNull() )
 				continue;
-			packMaterialLayers( base, packObjRoughnessMetallic( rough, metal ), out );
+			// OBJ has no normal-map convention this loader commits to, so the
+			// third layer stays empty for that format.
+			packMaterialLayers( base, packObjRoughnessMetallic( rough, metal ), QImage(), out );
 			break;
 		}
 	}

@@ -73,7 +73,15 @@ void main()
         // symmetric about X (WheelStationPell), Y (jump gate, double ring,
         // megastructure hub) and Z (habitat ring) respectively, so the axis
         // comes in per instance from the measured geometry.
-        float sp = (spinP > 0.01 ? spinP : 1.0);
+        // spinP is taken LITERALLY: 0 means the hull does not turn. It used to
+        // fall back to 1.0 when unset, which made "no rotation" impossible to
+        // express here -- the other five station families already used
+        // max(spinP, 0.0), so this file was the odd one out. No scene had hit
+        // it yet, but the whole point of the parameter is to be able to hold a
+        // hull still, and an unset uniform reads 0: the safe default has to be
+        // STILL, because a megastructure that fails to spin looks fine and one
+        // that tumbles does not.
+        float sp = max(spinP, 0.0);
         const float tiltX = 0.55;
         mat3 spinMat = axisSpin(spinAxisP, (time * 0.10 + audioAdvance * 0.15) * sp);
         float ctx = cos(tiltX), stx = sin(tiltX);

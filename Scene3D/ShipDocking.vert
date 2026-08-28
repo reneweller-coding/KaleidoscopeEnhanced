@@ -27,6 +27,8 @@ uniform mat4  projM;
 uniform float eyeOff;
 uniform float time;
 uniform int   meshVertexCount;
+uniform vec3  meshExtent;    // half-extents of model 1 (the station)
+uniform vec3  meshExtent2;   // half-extents of model 2 (the ship)
 uniform int   mesh2VertexCount;
 uniform float sceneProgress;
 
@@ -91,11 +93,31 @@ void main()
     else if( isShip )
     {
         float shs = (shipScaleP > 0.001 ? shipScaleP : 0.26);
-        // Nose (+Z) onto the approach direction (+X), so it flies nose-first
-        // toward the station rather than drifting sideways.
+        // Put the hull's LONGEST axis along the direction of travel. This used
+        // to be hardcoded as "the nose is +Z", which was true of the asset set
+        // it was written against and false for the one that replaced it: three
+        // of the ships now measure longest on X and would have flown sideways.
+        // meshExtent is the model that ACTUALLY loaded, so the choice is made
+        // from the geometry rather than from an assumption about it.
+        //
+        // Both branches are rotations, not axis swaps: exchanging two axes
+        // mirrors the hull, which turns every asymmetric detail inside out and
+        // reverses the winding.
+        // model2's box: this branch orients the SHIP, and model1 here is the
+        // station it is approaching.
+        vec3 e = meshExtent2;
         vec3 p = attrA.xyz, nrm = attrB.xyz;
-        p   = vec3(p.z, p.y, -p.x);
-        nrm = vec3(nrm.z, nrm.y, -nrm.x);
+        if( e.z >= e.x && e.z >= e.y )        // nose on +Z: rotate about Y
+        {
+            p   = vec3(p.z,   p.y,   -p.x);
+            nrm = vec3(nrm.z, nrm.y, -nrm.x);
+        }
+        else if( e.y >= e.x && e.y >= e.z )   // nose on +Y: rotate about Z
+        {
+            p   = vec3(p.y,   -p.x,   p.z);
+            nrm = vec3(nrm.y, -nrm.x, nrm.z);
+        }
+        // longest already on X: already pointing along travel, leave it alone.
         vec3 local = p * (90.0 * sz * shs);
 
         // Approach path: in from the lower left and further out, curving up

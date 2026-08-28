@@ -78,6 +78,39 @@ vec3 renderSky(vec3 dir)
     return cloud * 0.9 + vec3(1.0) * starsField(dir, 0.002);
 }
 
+// ---- normal mapping ------------------------------------------------------
+// Layer 2 of the material array is a tangent-space normal map, present on the
+// assets whose generator run produced a usable one (about a fifth of them).
+//
+// There are no tangents in the vertex format -- it is a fixed 8 floats shared
+// by every geom kind -- so the frame is rebuilt per fragment from screen-space
+// derivatives of position and UV. That is the standard cotangent-frame trick,
+// and it costs nothing in the vertex stage and no change to the buffer layout.
+// A model WITHOUT a normal map has materialLayers < 3 and this returns the
+// interpolated normal untouched, so every scene works either way.
+mat3 cotangentFrame(vec3 N, vec3 p, vec2 uv)
+{
+    vec3 dp1 = dFdx(p),  dp2 = dFdy(p);
+    vec2 du1 = dFdx(uv), du2 = dFdy(uv);
+    vec3 dp2perp = cross(dp2, N);
+    vec3 dp1perp = cross(N, dp1);
+    vec3 T = dp2perp * du1.x + dp1perp * du2.x;
+    vec3 B = dp2perp * du1.y + dp1perp * du2.y;
+    float inv = inversesqrt(max(max(dot(T, T), dot(B, B)), 1e-12));
+    return mat3(T * inv, B * inv, N);
+}
+
+vec3 perturbNormal(sampler2DArray tex, int layers, vec2 uv, vec3 n, vec3 wpos, float strength)
+{
+    if (layers < 3) return n;
+    vec3 m = texture(tex, vec3(uv, 2.0)).rgb * 2.0 - 1.0;
+    // A degenerate tap (an all-black texel from a failed decode) would
+    // normalize to garbage and pit the whole surface.
+    if (dot(m, m) < 1e-4) return n;
+    m.xy *= strength;
+    return normalize(cotangentFrame(n, wpos, uv) * normalize(m));
+}
+
 void main()
 {
     if (vBg > 0.5)
@@ -100,6 +133,8 @@ void main()
     }
 
     vec3 n = normalize(vNormal);
+    // Relief from the material's normal map, where the asset has one.
+    n = perturbNormal(texMeshMaterial, texMeshMaterialLayers, vUV, n, vPos, 1.0);
     vec3 viewDir = normalize(-vPos);
 
     vec3 lightDir = normalize(vec3(0.2, 0.6, -0.5));

@@ -287,6 +287,14 @@ private:
 	/// nothing about the other two.
 	float  m_meshExtent[3] = { 0.5f, 0.5f, 0.5f };
 	float  m_meshCenter[3] = { 0.0f, 0.0f, 0.0f };
+	/// The same for model2 (meshExtent2/meshCenter2). A two-object scene
+	/// orients each from its OWN geometry: ShipDocking aligns the SHIP,
+	/// which is model2, and using model1's extents there would point the
+	/// ship along the station's longest axis.
+	float  m_meshExtent2[3] = { 0.5f, 0.5f, 0.5f };
+	float  m_meshCenter2[3] = { 0.0f, 0.0f, 0.0f };
+	GLint  m_meshExtent2Uni = -1;
+	GLint  m_meshCenter2Uni = -1;
 	GLint  m_meshExtentUni = -1;
 	GLint  m_meshCenterUni = -1;
 	/// How many copies of the loaded mesh to draw (instances="N" on the scene

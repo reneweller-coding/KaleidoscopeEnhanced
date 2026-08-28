@@ -186,9 +186,9 @@
     <expr name="rigRoll" formula="0.05*sin(0.03*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.4*swell"/>
     <float name="sizeP" minValue="1.4" maxValue="1.4"></float>
-    <float name="spinP" minValue="1.56" maxValue="1.56"></float>
+    <float name="spinP" minValue="0" maxValue="0"></float>
     <float name="windowP" minValue="1.0" maxValue="1.0"></float>
-    <float name="spinAxisP" minValue="1" maxValue="1"></float>
+    <float name="spinAxisP" minValue="0" maxValue="0"></float>
     <expr name="hueP" formula="chromaHue + seed2*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
@@ -213,8 +213,8 @@
     <float name="tintP" minValue="0.95" maxValue="0.95"></float>
     <float name="glowP" minValue="1.2" maxValue="1.2"></float>
     <float name="bgTypeP" minValue="0" maxValue="0"></float>
-    <float name="spinP" minValue="1.58" maxValue="1.58"></float>
-    <float name="spinAxisP" minValue="1" maxValue="1"></float>
+    <float name="spinP" minValue="0" maxValue="0"></float>
+    <float name="spinAxisP" minValue="0" maxValue="0"></float>
     <expr name="hueP" formula="chromaHue + seed2*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
