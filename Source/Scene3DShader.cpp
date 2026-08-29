@@ -989,6 +989,13 @@ void Scene3DShader::initUniforms( int width, int height )
 
 void Scene3DShader::bakeVao()
 {
+	// Deferred mesh build: no VBO yet. Baking now would call
+	// glVertexAttribPointer with buffer 0 bound, which the core profile
+	// answers with GL_INVALID_OPERATION -- 237 of them per cold run, one
+	// per worker-loaded scene, drowning the log. draw() re-bakes the VAO
+	// the moment the real buffer exists.
+	if( m_vbo == 0 )
+		return;
 	if( m_vao == 0 )
 		glGenVertexArrays( 1, &m_vao );
 	glBindVertexArray( m_vao );

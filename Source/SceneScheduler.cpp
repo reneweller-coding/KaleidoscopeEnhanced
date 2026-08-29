@@ -160,6 +160,35 @@ void SceneScheduler::forceScene( int idx )
  * @param basename File name without path, e.g. "Crossfade.frag".
  * @return Index into the transition list, or -1 if not registered.
  */
+// FX that are welcome over a loaded model. The first cut of this rule forced
+// FxPlain outright, which threw away every harmless overlay along with the
+// harmful ones; what actually matters is only whether the overlay DISPLACES
+// the scene image over time (zoom pulses, shakes, warps, wobbles -- a
+// full-frame displacement moves the model with it, which reads as the object
+// twitching). Colour grades, halftone/mosaic stylisations, depth fog, rim
+// light and godrays sample the scene at rest and may pulse their LIGHT as
+// much as they like -- that is the background carrying the beat, by design.
+// Classified by reading all 29 fragment sources; a new FX defaults to NOT
+// calm until someone reads it and adds it here -- the safe direction.
+// Deliberately absent: FxLens (displaces even if statically) and
+// FxOilPaintFlow (its brush field flows over time).
+static bool isMeshCalmFx( const char *fragPath )
+{
+	if( !fragPath ) return false;
+	const char *base = fragPath;
+	for( const char *q = fragPath; *q; ++q )
+		if( *q == '\\' || *q == '/' ) base = q + 1;
+	static const char *calm[] = {
+		"FxPlain.frag", "FxGrey.frag", "FxDarkRed.frag",
+		"FxAmbientOcclusion.frag", "FxDepthField.frag", "FxDepthFog.frag",
+		"FxEdgeInk.frag", "FxRimLight.frag", "FxSunShafts.frag",
+		"FxLichtenstein.frag", "FxOilPaint.frag", "FxHexagon.frag",
+	};
+	for( const char *c : calm )
+		if( strcmp( base, c ) == 0 ) return true;
+	return false;
+}
+
 int SceneScheduler::findTransition( const char *basename ) const
 {
 	if( !m_transitions || !basename )
@@ -756,6 +785,8 @@ void SceneScheduler::tickFx( const Tick &t, bool trueStereoHold )
 				m_pendingSectionNextFx = -1;
 			}
 			else
+			{   // braces added: the calm-FX filter declares a local, and the old
+			    // brace-less else made only its first statement the else branch
 			// Deliberately NOT excluding m_nextFx == m_actFx here (unlike the
 			// texture pick's equivalent loop): a preset FX pool is typically
 			// dominated by one near-probability=1.0 "carrier" (FxPlain here,
@@ -773,6 +804,13 @@ void SceneScheduler::tickFx( const Tick &t, bool trueStereoHold )
 			// no-op blend anyway -- it just re-rolls that FX's own <float>/
 			// <expr> parameters and resets its solo timer, exactly like
 			// letting it simply continue.
+			// Over a loaded model only CALM overlays are admissible (see
+			// isMeshCalmFx above) -- the rejection loop simply demands it, so the
+			// accent variety survives: a model can still get godrays, a halftone,
+			// a colour grade, just nothing that displaces the frame.
+			const bool meshCalmNeeded =
+			       tex[m_actTexture]->isMeshScene()
+			    || ( m_texState != 0 && tex[m_nextTexture]->isMeshScene() );
 			for( unsigned int i = 0; i < kMaxSearch; i++ )
 			{
 				m_nextFx = rand() % comb.size();
@@ -782,17 +820,14 @@ void SceneScheduler::tickFx( const Tick &t, bool trueStereoHold )
 					comb[m_nextFx]->getComplexity() ) < kComplexityBudget )
 					&& comb[m_nextFx]->useShader()
 					&& moodAccept( comb[m_nextFx] )
+					&& ( !meshCalmNeeded
+					     || isMeshCalmFx( comb[m_nextFx]->fragmentName() ) )
 					)
 					break;
 			}
-			// A loaded model on screen gets the NEUTRAL overlay, full stop.
-			// Most accent FX pulse, warp or shake the whole frame with the
-			// beat, and a full-frame pulse moves the model with it -- the
-			// same reported twitch the hull and camera fixes already removed.
-			// The beat belongs to the scene's own background now; the overlay
-			// slot carries it only on abstract material.
-			if( tex[m_actTexture]->isMeshScene()
-			    || ( m_texState != 0 && tex[m_nextTexture]->isMeshScene() ) )
+			// Unlucky rolls on a mesh scene fall back to the pass-through --
+			// never to a warping overlay.
+			if( meshCalmNeeded && !isMeshCalmFx( comb[m_nextFx]->fragmentName() ) )
 			{
 				for( unsigned int i = 0; i < comb.size(); i++ )
 				{
@@ -807,6 +842,7 @@ void SceneScheduler::tickFx( const Tick &t, bool trueStereoHold )
 						break;
 					}
 				}
+			}
 			}
 
 			m_fxInterp = 1.0;
