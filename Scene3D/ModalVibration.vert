@@ -93,7 +93,16 @@ void main()
         p += flex * disp * max(dot(abs(flex), meshExtent), 0.05) * 2.2;
         vAmp = amp;
 
-        float fit = 0.5 / max(max(meshExtent.x, meshExtent.y), meshExtent.z);
+        // Bounding-SPHERE framing, not longest-axis framing. Normalising the
+        // longest half-axis to 0.5 bounds nothing once the model turns: the
+        // diagonal reaches 0.5*sqrt(3), 1.7x the assumed size, which is why a
+        // torus or a bell was cropped mid-frame (reported). The extents'
+        // LENGTH is the bounding-sphere radius -- rotation-proof -- and the
+        // scene's 55-degree frustum shows a half-height of 0.52*z, so the
+        // scale below keeps the whole object inside with margin at any angle.
+        // (Slightly tighter margin here: the flex displacement can grow the
+        // radius by ~20%, which the 31-of-39.5 headroom absorbs.)
+        float fit = 31.0 / 84.0 / max(length(meshExtent), 1e-5);
         float rotY = time * 0.10 * spinP + audioAdvance * 0.04 * spinP;
         float cy = cos(rotY), sy = sin(rotY);
         mat3 spin = mat3(cy, 0.0, -sy,  0.0, 1.0, 0.0,  sy, 0.0, cy);

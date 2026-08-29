@@ -144,13 +144,16 @@ void main()
         col *= 0.8 + 0.8 * audioSwell;
     }
 
-    // The rim of the window. Grazing fragments are the outline, so a plain
-    // fresnel finds it without any edge detection -- and it is the ONE place
-    // the model's geometry is allowed to show.
+    // The rim of the window. Grazing fragments are the outline -- but a broad
+    // fresnel (pow 3) also catches every mid-angle facet of a FLAT model, so a
+    // blade or panel turning through the grazing range lit up in whole striped
+    // bands along its face (reported on the scythe's edge). The window is cut
+    // tighter now: only the last stretch before the silhouette counts as rim,
+    // and the kick brightens it less, so a passing band cannot flash the face.
     vec3 n = normalize(vNormal);
     vec3 viewDir = normalize(-vPos);
-    float rim = pow(1.0 - max(dot(n, viewDir), 0.0), 3.0);
-    col = mix(col, rimTint, clamp(rim * (0.55 + 0.9 * audioKick), 0.0, 1.0));
+    float rim = smoothstep(0.62, 0.92, 1.0 - abs(dot(n, viewDir)));
+    col = mix(col, rimTint, clamp(rim * (0.55 + 0.45 * audioKick), 0.0, 1.0));
 
     if( hue > 0.001 ) col = hueRot(col, 0.14 * sin(hue));
 

@@ -135,7 +135,10 @@ void main()
 
         world = rotMat * local;
         world.z += 85.0;
-        world.y += 3.0 * sin(time * 0.17) + 1.2 * audioKick;
+        // The slow swim-drift stays; the kick hop goes (reported pattern).
+        // The creature's musical life is its STROKE amplitude above, which
+        // already swells with the music -- organic, not spasmodic.
+        world.y += 3.0 * sin(time * 0.17);
 
         // Deforming the position leaves the normal stale. Rebuilding it
         // properly would need the deformation's Jacobian; for these smooth,

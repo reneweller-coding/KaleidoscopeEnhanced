@@ -1946,6 +1946,14 @@ void RenderPipeline::paint(const float *rotMatrix, float tx, float ty, float tz,
 	const FrameTiming ft = readFrameClock();
 	float       timeSinceLastFrameSec = ft.dt;
 	const float dtWall                = ft.dtWall;
+	// A frame far beyond any real frame rate is a STALL (first-activation
+	// shader compile + mesh load, a driver recompile, a suspend), not time the
+	// viewer spent watching. Subtract it from the scheduler's wall clocks, or
+	// the fade completes inside the frozen frame and the minimum solo is
+	// already used up when the picture returns. 0.16 s stays on the books --
+	// a legitimately slow frame's worth.
+	if( dtWall > 0.4f )
+		m_scheduler.absorbHitch( dtWall - 0.16f );
 	applyTransportModifiers( audio, timeSinceLastFrameSec, dtWall );
 	updateTitleReveal( audio, dtWall );
 

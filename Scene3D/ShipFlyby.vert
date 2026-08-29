@@ -107,7 +107,10 @@ void main()
         world = rotM * local;
         world.x += x;
         world.z += z;
-        world.y += -8.0 + 1.5 * audioKick;
+        // Height only. The old +1.5*audioKick bounced the whole hull on every
+        // beat -- a thousand-ton ship in vacuum does not hop (reported). The
+        // music stays on the ENGINES: the frag flares the drives on the kick.
+        world.y += -8.0;
         n = normalize(rotM * nrm);
         vUV = vec2(attrA.w, attrB.w);
         vLocalPos = p;

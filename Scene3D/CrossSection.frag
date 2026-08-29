@@ -166,7 +166,11 @@ void main()
     float halfLen = dot(abs(axis), meshExtent) * 1.04;   // 4% margin, so the
                                                          // sweep starts clear
                                                          // of the surface
-    float travel = audioAdvance * 0.035 + time * 0.02 + audioKick * 0.045;
+    // No kick term here. It shoved the plane a step deeper on every beat,
+    // which on screen was the whole cut face TWITCHING in time -- exactly the
+    // "solid objects jerking to the music" complaint. The advance term already
+    // carries the musical pacing, smoothly.
+    float travel = audioAdvance * 0.035 + time * 0.02;
     float ph = fract(travel);
 
     // Linger where the section is LARGEST, cross the ends quickly. A raised
@@ -196,7 +200,13 @@ void main()
     // so the opened volume reads as solid rather than as a hole.
     float inside = smoothstep(0.05, -0.25, ndv);
 
-    float lam = max(dot(n, normalize(vec3(-0.4, 0.75, -0.5))), 0.0);
+    // abs(), not max(,0): the cut exposes interior walls whose normals face
+    // away from the light, and one-sided lighting left them near-black. On a
+    // curved tube the transition zone (not inward enough to count as machined,
+    // not outward enough to catch light) swept dark BANDS across the surface
+    // -- the reported black streaks. Two-sided lighting closes that gap; the
+    // machined blend below still overrides where the fragment truly faces in.
+    float lam = abs(dot(n, normalize(vec3(-0.4, 0.75, -0.5))));
     vec3 col = base * (0.55 + 1.95 * lam);
 
     vec3 machined = mix(base * 0.7 + 0.60, tint * 1.35, 0.5);

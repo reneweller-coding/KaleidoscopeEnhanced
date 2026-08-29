@@ -3,6 +3,7 @@
  * @brief Implementation of Scene3DShader: per-geom-kind procedural mesh generation, the compute-generator ("indirect") pipeline, the CPU-side formula-driven camera rig, and the per-geom-kind draw state (blend/depth, shadow pass, OIT pass).
  */
 // Scene3DShader.cpp — see Scene3DShader.h.
+#include <chrono>
 #include "glcore.h"          // MUST come before any gl.h include (Qt's qopengl.h)
 #include "shader_setup.h"
 #include "Scene3DShader.h"
@@ -169,6 +170,12 @@ bool Scene3DShader::usesSpectro()
 // Interleaved layout: attrA.xyzw, attrB.xyzw = 8 floats per vertex.
 void Scene3DShader::buildGeometry()
 {
+	// Timed, permanently: for GEOM_MESH this runs synchronously on the render
+	// thread at the scene's FIRST activation, so its duration is exactly the
+	// stall the viewer feels (the early-minutes stutter). The scheduler
+	// subtracts the stall from its clocks (absorbHitch), but the per-model
+	// numbers logged below are what any future async-loading work starts from.
+	const auto _meshT0 = std::chrono::steady_clock::now();
 	std::vector<float> v;
 
 	if( m_geomKind == GEOM_INDIRECT )
@@ -488,6 +495,13 @@ void Scene3DShader::buildGeometry()
 	{
 		glBufferData( GL_ARRAY_BUFFER, GLsizeiptr(v.size() * sizeof(float)),
 		              v.data(), GL_STATIC_DRAW );
+	if( m_geomKind == GEOM_MESH )
+	{
+		const float ms = std::chrono::duration<float, std::milli>(
+			std::chrono::steady_clock::now() - _meshT0 ).count();
+		fprintf( stderr, "MESHLOAD %s %.0f ms (%zu verts)\n",
+		         m_modelPath.c_str(), ms, v.size() / 8 );
+	}
 	}
 	glBindBuffer( GL_ARRAY_BUFFER, 0 );
 }

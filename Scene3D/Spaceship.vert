@@ -56,7 +56,10 @@ void main()
 
         world = rotMat * local;
         world.z += 90.0;                                 // push out in front of the camera
-        world.y += 4.0 * sin(time * 0.2) + 2.0 * audioKick;
+        // The slow drift stays; the +2*audioKick hop does not. A hull jerking
+        // in time reads as a glitch, not as reactivity (reported) -- the beat
+        // belongs to the engine glow and the background, not the ship's mass.
+        world.y += 4.0 * sin(time * 0.2);
         n = normalize(rotMat * attrB.xyz);
         vUV = vec2(attrA.w, attrB.w);
     }

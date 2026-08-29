@@ -41,9 +41,23 @@ void main()
         float sz = (sizeP > 0.01 ? sizeP : 1.0);
         vec3 p = attrA.xyz - meshCenter;
 
-        // Fill the frame. A silhouette that does not dominate is just a small
-        // dark blob, and the whole point is that the shape IS the composition.
-        float fit = 0.5 / max(max(meshExtent.x, meshExtent.y), meshExtent.z);
+        // Two framings, picked by the model's own shape. A flat pierced panel
+        // (lattice, medallion) IS a window: fill the frame with it, its in-plane
+        // silhouette is the composition. A chunky model (bust, anvil, gargoyle)
+        // framed that way puts the camera essentially inside the shape -- the
+        // viewer sees a few enormous dark triangles and no object at all, which
+        // is exactly what the frame-fill constant did to every non-flat asset.
+        // Chunky models get bounding-SPHERE framing instead: normalise by the
+        // extents' length (the sphere radius, rotation-proof by construction),
+        // sized so the whole silhouette stays inside the 55-degree frustum at
+        // z=74 (half-height 38.5) with margin. The blend runs on flatness, so
+        // a model between the two archetypes gets something in between.
+        float fitBox    = 0.5 / max(max(meshExtent.x, meshExtent.y), meshExtent.z);
+        float fitSphere = 1.0 / max(length(meshExtent), 1e-5);
+        float flat_     = min(min(meshExtent.x, meshExtent.y), meshExtent.z)
+                        / max(max(meshExtent.x, meshExtent.y), meshExtent.z);
+        float chunky = smoothstep(0.16, 0.30, flat_);
+        float scale  = mix(96.0 * fitBox, 31.0 * fitSphere, chunky);
 
         float rotY = time * 0.11 * spinP + audioAdvance * 0.05 * spinP;
         float cy = cos(rotY), sy = sin(rotY);
@@ -53,7 +67,7 @@ void main()
         mat3 tilt = mat3(1.0, 0.0, 0.0,  0.0, cx, sx,  0.0, -sx, cx);
         mat3 rot = tilt * spin;
 
-        world = rot * (p * (96.0 * sz * fit * (1.0 + 0.03 * audioSwell)));
+        world = rot * (p * (scale * sz * (1.0 + 0.03 * audioSwell)));
         world.z += 74.0;
         n = normalize(rot * attrB.xyz);
         vLocalPos = p;

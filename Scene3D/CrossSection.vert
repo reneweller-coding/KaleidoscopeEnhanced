@@ -55,10 +55,14 @@ void main()
         mat3 tilt = mat3(1.0, 0.0, 0.0,  0.0, cx, sx,  0.0, -sx, cx);
         mat3 rot = tilt * spin;
 
-        // Fit to the frame using the model's OWN size rather than a constant:
-        // assets are normalised on their longest axis only, so a squat one and
-        // a long thin one would otherwise land at very different screen sizes.
-        float fit = 0.5 / max(max(meshExtent.x, meshExtent.y), meshExtent.z);
+        // Bounding-SPHERE framing, not longest-axis framing. Normalising the
+        // longest half-axis to 0.5 bounds nothing once the model turns: the
+        // diagonal reaches 0.5*sqrt(3), 1.7x the assumed size, which is why a
+        // torus or a bell was cropped mid-frame (reported). The extents'
+        // LENGTH is the bounding-sphere radius -- rotation-proof -- and the
+        // scene's 55-degree frustum shows a half-height of 0.52*z, so the
+        // scale below keeps the whole object inside with margin at any angle.
+        float fit = 32.0 / 78.0 / max(length(meshExtent), 1e-5);
         world = rot * ((p - meshCenter) * (78.0 * sz * fit));
         world.z += 74.0;
         n = normalize(rot * attrB.xyz);

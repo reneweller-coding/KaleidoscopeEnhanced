@@ -64,7 +64,10 @@ void main()
         // hand held near a candle has. nearP scales the caster and the fragment
         // stage widens the penumbra to match, so the two stay consistent.
         world = rot * (p * (58.0 * sz * fit * nr));
-        world.y += -6.0 + 2.5 * audioKick;
+        // Height only; the +2.5*audioKick hop made the puppet jump off its
+        // stand on every beat (reported pattern). The beat belongs to the
+        // LAMP -- the frag already pulses the backlight with the music.
+        world.y += -6.0;
         world.z += 96.0;
         n = normalize(rot * attrB.xyz);
         vBg = 0.0;

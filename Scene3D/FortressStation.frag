@@ -57,8 +57,16 @@ float noise3(vec3 x) {
                mix(mix(n001,n101,f.x), mix(n011,n111,f.x), f.y), f.z);
 }
 float fbm(vec3 p) {
+    // Rotate between octaves. Without it every octave's value-noise lattice
+    // shares the same axes, and at the sky's low base frequency (a cell spans
+    // ~30 degrees) the aligned cells add up into visibly SQUARE cloud edges --
+    // the reported blocky nebula. The rotation decorrelates the lattices, so
+    // the sum has no preferred axis to show.
+    const mat3 rot = mat3( 0.00,  0.80,  0.60,
+                          -0.80,  0.36, -0.48,
+                          -0.60, -0.48,  0.64);
     float v = 0.0, a = 0.5;
-    for (int i = 0; i < 5; i++) { v += a * noise3(p); p = p * 2.03 + 7.1; a *= 0.5; }
+    for (int i = 0; i < 5; i++) { v += a * noise3(p); p = rot * p * 2.03 + 7.1; a *= 0.5; }
     return v;
 }
 float starsField(vec3 dir, float density) {

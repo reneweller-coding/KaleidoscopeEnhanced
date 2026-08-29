@@ -83,11 +83,33 @@ void main()
     float fi  = float(inst);
     float fn  = float(N);
 
-    // ---- where this craft sits in the formation -------------------------
-    // Tight on the beat, loose between: the formation BREATHES, and that is
-    // the only motion in the scene the eye can read as musical, since a hundred
-    // identical craft moving individually would just be noise.
-    float tighten = 1.0 - 0.28 * audioKick - 0.10 * audioSwell;
+    // ---- the pass -------------------------------------------------------
+    // The formation FLIES PAST, it does not hover. The first version parked
+    // the wedge mid-frame and let every craft wobble on station -- which read
+    // as ships jiggling in vacuum (reported, fairly, as looking silly). Now
+    // the whole formation travels a straight line from deep ahead to past the
+    // camera's shoulder, at constant speed the way masses under way actually
+    // move. Two squadrons run the same path half a cycle apart on mirrored
+    // sides, so the sky is never empty; the wrap from near back to far happens
+    // outside the frustum (the end point is well off-screen), so it never pops.
+    float phase  = (time * 0.55 + audioAdvance * 0.10) / 26.0;
+    // Front half of the instance range = squadron 0, back half = squadron 1,
+    // and all slot maths below runs on the LOCAL index -- an alternating split
+    // would punch every second hole into each wedge.
+    float fnHalf = max(floor(fn * 0.5), 1.0);
+    float squad  = (fi < fnHalf) ? 0.0 : 1.0;
+    float fj     = fi - squad * fnHalf;
+    float fnSq   = (squad < 0.5) ? fnHalf : max(fn - fnHalf, 1.0);
+    float u      = fract(phase + 0.5 * squad);
+    float mirror = squad > 0.5 ? -1.0 : 1.0;
+    vec3 pStart  = vec3( 14.0 * mirror,  2.0, 205.0);
+    vec3 pEnd    = vec3(-46.0 * mirror, -9.0,  12.0);
+    vec3 centre  = mix(pStart, pEnd, u);
+    vec3 fwd     = normalize(pEnd - pStart);
+
+    // Tight on the beat, loose between -- kept, but damped: the breathing of
+    // the SPACING is the musical hook, the individual hulls stay rigid.
+    float tighten = 1.0 - 0.15 * audioKick - 0.06 * audioSwell;
     float breakUp = clamp(audioDrop, 0.0, 1.0);
 
     vec3 slot;
@@ -96,16 +118,16 @@ void main()
     {
         // Wedge: rank r, side s. The classic V, and the one arrangement that
         // reads instantly as a formation rather than as a crowd.
-        float r = floor(sqrt(fi));
-        float s = fi - r * r - r;                 // -r .. +r across the rank
+        float r = floor(sqrt(fj));
+        float s = fj - r * r - r;                 // -r .. +r across the rank
         slot = vec3(s * craft * 1.45, (-abs(s) * 1.2 + r * 0.6) * craft * 0.09,
                     r * craft * 0.95);
     }
     else if( mode == 1 )
     {
         // Column, three abreast: a convoy seen from beside the road.
-        float col = mod(fi, 3.0) - 1.0;
-        float row = floor(fi / 3.0);
+        float col = mod(fj, 3.0) - 1.0;
+        float row = floor(fj / 3.0);
         slot = vec3(col * craft * 1.70, sin(row * 1.7) * craft * 0.18,
                     row * craft * 1.05);
     }
@@ -113,9 +135,9 @@ void main()
     {
         // A shell: the craft englobe something. Fibonacci placement, so they
         // are evenly spread rather than bunched at the poles.
-        float k = (fi + 0.5) / fn;
+        float k = (fj + 0.5) / fnSq;
         float phi = acos(1.0 - 2.0 * k);
-        float th = 3.8832220774509327 * fi;       // golden angle
+        float th = 3.8832220774509327 * fj;       // golden angle
         slot = vec3(sin(phi) * cos(th), cos(phi), sin(phi) * sin(th)) * craft * 2.60;
     }
 
@@ -126,20 +148,23 @@ void main()
     vec3 blow = normalize(vec3(hash11(fi * 3.1) - 0.5,
                                hash11(fi * 7.7) - 0.5,
                                hash11(fi * 5.3) - 0.5) + vec3(0.0001));
-    slot += blow * breakUp * craft * (1.6 + 2.9 * hash11(fi * 1.9));
+    slot += blow * breakUp * craft * (1.0 + 1.6 * hash11(fi * 1.9));
 
-    // Station-keeping wobble, out of phase per craft: nothing holds formation
-    // perfectly, and identical motion across N copies looks mechanical.
+    // A TRACE of station-keeping. The old 0.09-craft wobble at ~1 Hz was the
+    // single most-criticised thing in the scene -- warships jiggling in vacuum.
+    // 0.015 craft-lengths at a third the rate is drift you feel, not motion
+    // you see.
     float ph = fi * 2.399963;
-    slot += vec3(sin(time * 0.9 + ph), sin(time * 0.7 + ph * 1.3), sin(time * 1.1 + ph * 0.7)) * craft * 0.09;
+    slot += vec3(sin(time * 0.31 + ph), sin(time * 0.24 + ph * 1.3), sin(time * 0.37 + ph * 0.7)) * craft * 0.015;
 
     // ---- the craft itself ------------------------------------------------
     vec3 p = attrA.xyz - meshCenter;
     vec3 nrm0 = attrB.xyz;
     float fit = 0.5 / max(max(meshExtent.x, meshExtent.y), meshExtent.z);
 
-    // Point the craft's LONGEST axis along the formation's line of flight
-    // (-Z, toward the viewer). Without this the whole formation flies in
+    // Put the craft's LONGEST axis on Z, nose toward -Z; the attitude matrix
+    // below then rotates that nose onto the squadron's actual path direction.
+    // Without this the whole formation flies in
     // whatever direction the asset happens to have been modelled in, and the
     // bank below turns about an axis that is not the nose -- a craft rolling
     // about its beam rather than its length. Rotations, not axis swaps.
@@ -155,22 +180,28 @@ void main()
         nrm0 = vec3(nrm0.x, -nrm0.z, nrm0.y);
     }
 
-    // Bank into the turn, and lead craft bank first -- the wave travelling back
-    // through the formation is what makes it look flown rather than placed.
-    float bank = 0.30 * sin(time * 0.35 + audioAdvance * 0.12 - fi * 0.06);
+    // Constant gentle bank -- ships hold attitude on a straight run; the old
+    // per-craft sine bank was part of the jiggle.
+    float bank = 0.10 * mirror;
     float cb = cos(bank), sb = sin(bank);
     mat3 roll = mat3(cb, sb, 0.0,  -sb, cb, 0.0,  0.0, 0.0, 1.0);
 
-    // The bank turns about Z, which after the alignment above IS the nose
-    // axis, so it banks rather than yaws.
-    // Ranks recede AWAY from the camera, and the whole formation lives between
-    // z = 55 and the far plane. The previous version sent them toward the
-    // viewer at 2.3 craft-lengths per rank, so a 48-strong wedge ran 300 units
-    // deep -- half of it behind the camera, with the nearest hulls right at the
-    // lens filling the frame. A formation has to be seen whole to read as one.
-    vec3 world = roll * (p * (craft * fit)) + slot;
-    world.z += 55.0;
-    world.y += -6.0;
+    // Point the nose along the PATH. After the axis alignment above the hull's
+    // length lies on Z with the nose toward -Z, so yaw/pitch rotate -Z onto
+    // the squadron's actual direction of travel -- craft that fly where they
+    // are going, not sideways along a rail.
+    float yaw = atan(fwd.x, -fwd.z);
+    float cyw = cos(yaw), syw = sin(yaw);
+    mat3 yawM = mat3(cyw, 0.0, -syw,  0.0, 1.0, 0.0,  syw, 0.0, cyw);
+    float pit = asin(clamp(fwd.y, -1.0, 1.0));
+    float cp = cos(pit), sp = sin(pit);
+    mat3 pitM = mat3(1.0, 0.0, 0.0,  0.0, cp, sp,  0.0, -sp, cp);
+    mat3 att = yawM * pitM * roll;
+
+    // Slots ride the moving formation centre; the same attitude turns the slot
+    // OFFSETS too, so the wedge stays a wedge seen from any bearing instead of
+    // shearing as the formation crosses the frame.
+    vec3 world = att * (p * (craft * fit) + slot) + centre;
 
     vUV = vec2(attrA.w, attrB.w);
     vNormal = normalize(roll * nrm0);

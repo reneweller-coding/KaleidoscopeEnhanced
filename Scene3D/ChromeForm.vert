@@ -40,7 +40,14 @@ void main()
     {
         float sz = (sizeP > 0.01 ? sizeP : 1.0);
         vec3 p = attrA.xyz - meshCenter;
-        float fit = 0.5 / max(max(meshExtent.x, meshExtent.y), meshExtent.z);
+        // Bounding-SPHERE framing, not longest-axis framing. Normalising the
+        // longest half-axis to 0.5 bounds nothing once the model turns: the
+        // diagonal reaches 0.5*sqrt(3), 1.7x the assumed size, which is why a
+        // torus or a bell was cropped mid-frame (reported). The extents'
+        // LENGTH is the bounding-sphere radius -- rotation-proof -- and the
+        // scene's 55-degree frustum shows a half-height of 0.52*z, so the
+        // scale below keeps the whole object inside with margin at any angle.
+        float fit = 32.0 / 80.0 / max(length(meshExtent), 1e-5);
 
         float rotY = time * 0.13 * spinP + audioAdvance * 0.05 * spinP;
         float rotX = 0.22 + 0.05 * sin(time * 0.07);

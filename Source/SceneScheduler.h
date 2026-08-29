@@ -109,6 +109,25 @@ public:
 	 *  gehaltenen Bild kein Wechsel "fällig" wird. */
 	/** @brief Re-arm both effect/combine clocks so no change is "due" the moment a freeze/pin lifts. */
 	void rearmEffectClocks() { restart( m_clockEffectTexture ); restart( m_clockEffectFx ); }
+	/** @brief Subtract a frame hitch from the running Solo/Fade clocks.
+	 *
+	 *  Both slots time themselves on wall clocks, which is right for music but
+	 *  wrong across a STALL: a mesh scene's first activation compiles its
+	 *  shader and loads its model synchronously, and a multi-second freeze
+	 *  then counts as elapsed show time. The fade "completes" inside the
+	 *  frozen frame (the scene pops instead of blending), the 2-second
+	 *  minimum solo is already spent when the picture unfreezes, and a queued
+	 *  trigger cuts away a scene the viewer saw for well under a second --
+	 *  both reported, both worst in the first minutes while the working set
+	 *  is cold. Shifting the reference points forward by the stall removes
+	 *  exactly that time from the books. */
+	void absorbHitch( float secs )
+	{
+		const auto d = std::chrono::duration_cast<Clock::duration>(
+			std::chrono::duration<float>( secs ) );
+		m_clockEffectTexture += d;
+		m_clockEffectFx      += d;
+	}
 
 	/** @brief Per-frame inputs consumed by tick()/tickFx(). */
 	struct Tick

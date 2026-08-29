@@ -71,7 +71,6 @@ void main()
 
         world = rotMat * local;
         world.z += 100.0;
-        world.y += 0.8 * audioKick;
         n = normalize(rotMat * attrB.xyz);
         vUV = vec2(attrA.w, attrB.w);
         vLocalPos = attrA.xyz;
