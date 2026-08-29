@@ -107,6 +107,12 @@ without preserving aspect ratio, so a picture with a subject in the middle and
 dead space around it loses the subject and folds the dead space. These have
 detail everywhere and no border to betray the seam.
 
+What makes a picture suit this program — format, tone, contrast, composition —
+is written down in **[docs/photo-set-spec.md](docs/photo-set-spec.md)**, with a
+checker that scores a folder against it (`Tools/check_image_set.py`). Useful
+for pointing the visualizer at your own library, and required reading before
+generating a new one.
+
 **Install:** the installer offers it as a ticked option and puts it in place
 for you; the same goes for the model packs. To do it by hand, unpack the
 `.jpg` files into the program's `Images` folder and restart — or use
