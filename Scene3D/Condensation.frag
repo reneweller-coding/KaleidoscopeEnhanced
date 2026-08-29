@@ -58,9 +58,20 @@ float hash11(float n) { return fract(sin(n * 12.9898) * 43758.5453); }
 
 float starsField(vec3 dir, float density)
 {
+    // Jittered point stars, NOT lattice cells. The old version lit the
+    // whole cube-lattice cell that hashed as a star, and a lattice
+    // projected onto the sky reads as ROWS of dots along its axes --
+    // plainly visible wherever the sky is mostly stars (reported on
+    // Fleet). Each star is now a small round point at a hashed offset
+    // inside its cell, so no two stars share an axis to line up on.
     vec3 g = floor(dir * 210.0);
+    vec3 f = fract(dir * 210.0);
     float h = hash11(dot(g, vec3(1.0, 57.0, 113.0)));
-    return step(1.0 - density, h) * (0.35 + 0.65 * hash11(h * 31.7));
+    if( h < 1.0 - density ) return 0.0;
+    vec3 jit = vec3(hash11(h * 91.7), hash11(h * 53.1), hash11(h * 27.9))
+             * 0.6 + 0.2;
+    float d = length(f - jit);
+    return smoothstep(0.30, 0.05, d) * (0.35 + 0.65 * hash11(h * 31.7));
 }
 
 float bayer4(vec2 p)

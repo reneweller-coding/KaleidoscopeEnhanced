@@ -67,7 +67,10 @@ void main()
         mat3 tilt = mat3(1.0, 0.0, 0.0,  0.0, cx, sx,  0.0, -sx, cx);
         mat3 rot = tilt * spin;
 
-        world = rot * (p * (scale * sz * (1.0 + 0.03 * audioSwell)));
+        // No swell pulse on the SIZE any more: together with the (now
+        // removed) camera dolly-on-swell it read as the object wobbling
+        // in time (reported twice). The beat lives in the rim flare.
+        world = rot * (p * (scale * sz));
         world.z += 74.0;
         n = normalize(rot * attrB.xyz);
         vLocalPos = p;

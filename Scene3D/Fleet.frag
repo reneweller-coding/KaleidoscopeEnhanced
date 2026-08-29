@@ -63,16 +63,34 @@ float noise3(vec3 p)
 
 float fbm3(vec3 p)
 {
+    // Rotated octaves, same reason as FortressStation: without the
+    // rotation every octave's value-noise lattice shares one set of
+    // axes, and at sky frequency the aligned cells sum into blocky,
+    // square-edged clouds.
+    const mat3 rot = mat3( 0.00,  0.80,  0.60,
+                          -0.80,  0.36, -0.48,
+                          -0.60, -0.48,  0.64);
     float v = 0.0, a = 0.5;
-    for( int i = 0; i < 4; ++i ) { v += a * noise3(p); p *= 2.02; a *= 0.5; }
+    for( int i = 0; i < 4; ++i ) { v += a * noise3(p); p = rot * p * 2.02 + 5.7; a *= 0.5; }
     return v;
 }
 
 float starsField(vec3 dir, float density)
 {
+    // Jittered point stars, NOT lattice cells. The old version lit the
+    // whole cube-lattice cell that hashed as a star, and a lattice
+    // projected onto the sky reads as ROWS of dots along its axes --
+    // plainly visible wherever the sky is mostly stars (reported on
+    // Fleet). Each star is now a small round point at a hashed offset
+    // inside its cell, so no two stars share an axis to line up on.
     vec3 g = floor(dir * 210.0);
+    vec3 f = fract(dir * 210.0);
     float h = hash11(dot(g, vec3(1.0, 57.0, 113.0)));
-    return step(1.0 - density, h) * (0.35 + 0.65 * hash11(h * 31.7));
+    if( h < 1.0 - density ) return 0.0;
+    vec3 jit = vec3(hash11(h * 91.7), hash11(h * 53.1), hash11(h * 27.9))
+             * 0.6 + 0.2;
+    float d = length(f - jit);
+    return smoothstep(0.30, 0.05, d) * (0.35 + 0.65 * hash11(h * 31.7));
 }
 
 float materialExposure(sampler2DArray tex)
@@ -86,9 +104,17 @@ float materialExposure(sampler2DArray tex)
 // a plain black field gives the eye nothing to measure the motion against.
 vec3 renderSky(vec3 dir, vec3 tint)
 {
+    // Two nebula layers at different scales and a faint complementary
+    // tone in the troughs: the single dim layer left the sky nearly
+    // black, so the (then lattice-aligned) stars were all there was to
+    // see. The music may breathe HERE -- the background is where the
+    // beat belongs in this family, not on the hulls.
     float n1 = fbm3(dir * 1.7 + vec3(time * 0.004, 0.0, 0.0));
-    vec3 col = vec3(0.014, 0.016, 0.026);
-    col += tint * 0.42 * smoothstep(0.35, 0.85, n1) * (0.45 + 0.30 * audioSwell);
+    float n2 = fbm3(dir * 4.1 - vec3(0.0, time * 0.003, 0.0));
+    vec3 col = vec3(0.016, 0.018, 0.030);
+    col += tint * 0.55 * smoothstep(0.30, 0.85, n1) * (0.55 + 0.35 * audioSwell);
+    col += hueRot(tint, 2.6) * 0.20 * smoothstep(0.45, 0.90, n2)
+         * (1.0 - 0.5 * smoothstep(0.30, 0.85, n1));
     col += vec3(1.0) * starsField(dir, 0.0022);
     return col;
 }

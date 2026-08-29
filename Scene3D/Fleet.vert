@@ -107,9 +107,11 @@ void main()
     vec3 centre  = mix(pStart, pEnd, u);
     vec3 fwd     = normalize(pEnd - pStart);
 
-    // Tight on the beat, loose between -- kept, but damped: the breathing of
-    // the SPACING is the musical hook, the individual hulls stay rigid.
-    float tighten = 1.0 - 0.15 * audioKick - 0.06 * audioSwell;
+    // The spacing no longer breathes with the BEAT -- even relative motion
+    // between hulls in time read as the ships twitching (reported). A slow
+    // autonomous swell keeps the formation alive; the music stays in the
+    // running light and the engine glow.
+    float tighten = 1.0 - 0.05 * sin(time * 0.22);
     float breakUp = clamp(audioDrop, 0.0, 1.0);
 
     vec3 slot;

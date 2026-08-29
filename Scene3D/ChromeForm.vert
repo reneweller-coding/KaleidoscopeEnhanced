@@ -57,7 +57,9 @@ void main()
         mat3 tilt = mat3(1.0, 0.0, 0.0,  0.0, cx, sx,  0.0, -sx, cx);
         mat3 rot = tilt * spin;
 
-        world = rot * (p * (80.0 * sz * fit * (1.0 + 0.025 * audioSwell)));
+        // No swell pulse on the SIZE any more (reported as wobble); the
+        // music shows in what the chrome REFLECTS, not in the shape.
+        world = rot * (p * (80.0 * sz * fit));
         world.z += 72.0;
         n = normalize(rot * attrB.xyz);
         vUV = vec2(attrA.w, attrB.w);
