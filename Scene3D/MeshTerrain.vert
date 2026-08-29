@@ -89,8 +89,10 @@ void main()
         // and the far edge never falls below 212. Solving both gives travel in
         // [-groundZ, groundZ-200], which needs groundZ > 100 to be a range at
         // all -- hence 300.
-        float travel = mix(-groundZ, groundZ - 200.0, clamp(sceneProgress, 0.0, 1.0))
-                     + audioAdvance * 1.2 * spd;
+        // sceneProgress alone. The advance top-up both jerked the ground on
+        // every kick AND could push travel past the bounded range that keeps
+        // the visible window covered -- sceneProgress is bounded by design.
+        float travel = mix(-groundZ, groundZ - 200.0, clamp(sceneProgress, 0.0, 1.0));
         q.z -= travel;
 
         // Low and close. At 26 units up the ridges collapsed into a band along
@@ -99,6 +101,24 @@ void main()
         q.y -= relief * 0.30 + 9.0;
         world = q;
         world.z += 12.0;                  // 12 .. 212, inside kSceneFar
+
+        // Camera clearance. Ridges reach relief*0.7 - 9 units ABOVE the
+        // camera line, and at the near edge (z=12, frustum half-height ~6)
+        // such a crest arrives as a wall in the lens (reported). Near
+        // vertices are eased down below the eye instead -- the ground DUCKS
+        // under the viewer, smoothly, while the distant ridgeline keeps its
+        // full drama. Continuous blend, so nothing tears.
+        // A UNIFORM sink, not a height cap. Two failed attempts are baked
+        // into this comment: a min()-cap pressed the crests down onto the
+        // clearance plane while the valleys stayed put, which FOLDED the
+        // relief through itself and littered the near field with black
+        // back-face shards -- first blamed on the blend zone's width, but a
+        // wider zone only made wider shards (proven by two A/B renders).
+        // Sinking every near vertex by the SAME amount keeps the relief's
+        // shape intact -- nothing can fold -- while the whole near field
+        // dips under the eye; the far ridgeline keeps its height.
+        float nearF = smoothstep(110.0, 20.0, world.z);
+        world.y -= nearF * (max(relief * 0.70 - 9.0, 0.0) + 4.0);
 
         // The non-uniform squash changes the normals too: a normal transforms
         // by the INVERSE TRANSPOSE, which for a pure scale means dividing by

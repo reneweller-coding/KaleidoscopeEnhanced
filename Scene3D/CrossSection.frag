@@ -97,7 +97,11 @@ vec3 renderSky(vec3 dir, vec3 tint)
     // to judge the plane's travel against.
     vec3 a = abs(fract(dir * 7.0) - 0.5);
     float g = 1.0 - smoothstep(0.0, 0.035, min(min(a.x, a.y), a.z));
-    col += tint * g * 0.16;
+    // The beat lives HERE now. The hulls hold still (their kick hops and
+    // the camera's swell-dolly are gone), so the backgrounds carry the
+    // music: a kick pulse on the dominant glow, sized to read clearly
+    // without breaking the temporal budget's full-frame brightness cap.
+    col += tint * g * 0.16 * (0.70 + 0.50 * audioKick + 0.30 * audioHigh);
     return col;
 }
 

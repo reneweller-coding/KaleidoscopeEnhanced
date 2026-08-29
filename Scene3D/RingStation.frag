@@ -87,7 +87,12 @@ vec3 renderSky(vec3 dir)
 
     vec3 col = vec3(0.022, 0.026, 0.042) + vec3(1.0) * starsField(dir, 0.0016);
     // Atmospheric limb: the glow a lit world throws past its own edge.
-    col += vec3(0.10, 0.16, 0.26) * pow(smoothstep(0.72, 0.815, d), 2.0) * 0.9;
+    // The beat lives HERE now. The hulls hold still (their kick hops and
+    // the camera's swell-dolly are gone), so the backgrounds carry the
+    // music: a kick pulse on the dominant glow, sized to read clearly
+    // without breaking the temporal budget's full-frame brightness cap.
+    col += vec3(0.10, 0.16, 0.26) * pow(smoothstep(0.72, 0.815, d), 2.0)
+         * (0.75 + 0.45 * audioKick);
 
     if (disc > 0.0005)
     {

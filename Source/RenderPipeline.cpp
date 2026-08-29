@@ -1183,6 +1183,7 @@ AudioFeatures RenderPipeline::conditionAudio( const AudioFeatures &audio, float 
     AudioConditioner::Context acCtx;
     acCtx.globalTime   = m_globaltime;
     acCtx.trailDepth3D = m_trailDepth3D;
+    acCtx.meshUp       = m_meshUp;
     acCtx.reactivity   = s_reactivity;
     acCtx.latencyLead  = s_latencyLead;
     acCtx.ssmHead      = m_sims.ssmHeadNorm();
@@ -1774,6 +1775,13 @@ GLuint RenderPipeline::renderTrailsPass( const AudioFeatures &audio, const Audio
 		int prev = 1 - m_trailIdx;
 		float decay = s_trailAmount * (0.90f + 0.08f * audio.ambientFactor)
 		            * audio.musicPresence;
+		// A loaded model gets almost no feedback trail. The trail layer's warp
+		// field deliberately rides the beat (ripple below), which on abstract
+		// material is the liquid MilkDrop look -- but on a solid object it
+		// drags beat-synced after-images across the hull, and that reads as
+		// the OBJECT twitching (reported three times before the cause was
+		// found). Slewed via m_meshUp, so cross-fades ease it in and out.
+		decay *= 1.f - 0.85f * m_meshUp;
 		// Build-up tension: trails tighten as the music climbs toward the drop
 		// (crisper, more nervous picture), then the drop's release lets them
 		// bloom back to full length.
@@ -1829,6 +1837,17 @@ GLuint RenderPipeline::renderTrailsPass( const AudioFeatures &audio, const Audio
 				           || ( m_scheduler.texState() != 0
 				                && m_effectTextures[m_scheduler.nextTexture()]->isMeshScene() );
 				m_meshUp = slewToward( m_meshUp, meshUp ? 1.f : 0.f, 2.5f, dtWall );
+				// Dev hook: KALEIDO_CALM=1 pins the damping to full on EVERY
+				// scene -- one switch that silences all beat-driven full-frame
+				// motion (camera punch/shake/sway, trail warp, time echo). Used
+				// for A/B-proving which channel a residual twitch comes from.
+				{
+					static int s_calm = -1;
+					if( s_calm < 0 )
+						s_calm = getenv( "KALEIDO_CALM" ) ? 1 : 0;
+					if( s_calm == 1 )
+						m_meshUp = 1.f;
+				}
 				if( m_trailDepthUni >= 0 )
 					glUniform1f( m_trailDepthUni, m_trailDepth3D );
 			}
@@ -1850,6 +1869,9 @@ GLuint RenderPipeline::renderTrailsPass( const AudioFeatures &audio, const Audio
 				// Scale with the trails knob (no trails -> no warp) and gate
 				// out of the packed true-stereo frames entirely.
 				float g = s_trailAmount * audio.musicPresence;
+				// Same damping as the trail decay above: no beat-warp field over
+				// a loaded model (see the m_meshUp comment there).
+				g *= 1.f - 0.85f * m_meshUp;
 				if( m_trueStereoPacked ) g = 0.f;
 				if( m_trailRipAmpUni  >= 0 ) glUniform1f( m_trailRipAmpUni,  rip * g );
 				if( m_trailRipPhUni   >= 0 ) glUniform1f( m_trailRipPhUni,   m_warpRipplePhase );

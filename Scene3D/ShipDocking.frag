@@ -81,7 +81,12 @@ vec3 renderSky(vec3 dir, vec3 tint)
 {
     float n1 = fbm(dir * 2.0 + vec3(time * 0.003, 0.0, 0.0));
     float n2 = fbm(dir * 5.0 - vec3(0.0, time * 0.002, 0.0));
-    vec3 cloud = mix(tint * 0.08, tint * 1.05, smoothstep(0.38, 0.80, n1)) * (0.5 + 0.5 * n2);
+    // The beat lives HERE now. The hulls hold still (their kick hops and
+    // the camera's swell-dolly are gone), so the backgrounds carry the
+    // music: a kick pulse on the dominant glow, sized to read clearly
+    // without breaking the temporal budget's full-frame brightness cap.
+    vec3 cloud = mix(tint * 0.08, tint * 1.05, smoothstep(0.38, 0.80, n1)) * (0.5 + 0.5 * n2)
+               * (0.82 + 0.30 * audioKick);
     return cloud + vec3(1.0) * starsField(dir, 0.002);
 }
 

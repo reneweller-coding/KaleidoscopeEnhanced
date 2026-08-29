@@ -49,6 +49,7 @@ public:
 	struct Context
 	{
 		float globalTime   = 0.f;   ///< Wall-clock seconds since start (day/night cycle, camera drift/gate-weave, KALEIDO_REGIE_TEST timing).
+		float meshUp = 0.f;   ///< Slewed "a loaded-model scene is up" (see RenderPipeline::m_meshUp): damps the beat-driven camera punch/shake/sway, whose full-frame pump reads as the MODEL twitching.
 		float trailDepth3D = 0.f;   ///< Previous frame's "a 3D scene is up" blend (RenderPipeline::m_trailDepth3D) -- widens the virtual camera's safety zoom.
 		float reactivity   = 1.f;   ///< Global audio-motion master gain (RenderPipeline::s_reactivity).
 		float latencyLead  = 0.f;   ///< Display-phase lead in seconds, for loopback/analysis/render latency compensation (RenderPipeline::s_latencyLead).

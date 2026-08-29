@@ -314,13 +314,21 @@ AudioFeatures AudioConditioner::update( const AudioFeatures &audio, float rawDt,
         if( m_downbeatTick )
             m_camPunch = std::max( m_camPunch, 0.13f + 0.16f * m_downbeatSmooth );
         m_camPunch *= expf( -dt / 0.35f );
-        float punch = m_camPunch + 1.1f * audioFx.dropPulse;
+        // The LAST beat-motion channel found in the hunt for "the models
+        // still twitch": this virtual camera punches ~1.6% zoom on every
+        // downbeat, plus kick shake and bar sway -- measured as a 3 px
+        // beat-periodic edge hop on a loaded model's silhouette after every
+        // in-scene coupling was gone. On abstract scenes the punch IS the
+        // look; on a solid object it pumps the object. Damped, not zeroed:
+        // drops still land.
+        const float meshCalm = 1.f - 0.85f * ctx.meshUp;
+        float punch = ( m_camPunch + 1.1f * audioFx.dropPulse ) * meshCalm;
         float zoom  = 1.f + 0.045f * audioFx.buildUp * audioFx.buildUp
                           + 0.055f * punch;
         float sway  = 0.010f * sinf( 6.2831853f * audioFx.barPhase )
-                    * audio.rhythmStrength * gate;
-        float shakeAmp = 0.0022f * m_kickSmooth * gate
-                       + 0.010f  * audioFx.dropPulse;
+                    * audio.rhythmStrength * gate * meshCalm;
+        float shakeAmp = ( 0.0022f * m_kickSmooth * gate
+                         + 0.010f  * audioFx.dropPulse ) * meshCalm;
         // Gate-Weave: das feine 24-fps-Zittern einer Filmkopie im
         // Projektor - diskrete, winzige Versaetze pro "Filmbild"
         // (kein Audio-Faktor auf absoluter Zeit, nur Wandzeit-Hash).

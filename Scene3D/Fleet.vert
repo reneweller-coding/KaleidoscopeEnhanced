@@ -92,7 +92,7 @@ void main()
     // move. Two squadrons run the same path half a cycle apart on mirrored
     // sides, so the sky is never empty; the wrap from near back to far happens
     // outside the frustum (the end point is well off-screen), so it never pops.
-    float phase  = (time * 0.55 + audioAdvance * 0.10) / 26.0;
+    float phase  = time * 0.65 / 26.0;   // time alone: advance jerks the whole squadron on kicks
     // Front half of the instance range = squadron 0, back half = squadron 1,
     // and all slot maths below runs on the LOCAL index -- an alternating split
     // would punch every second hole into each wedge.
@@ -203,7 +203,19 @@ void main()
     // Slots ride the moving formation centre; the same attitude turns the slot
     // OFFSETS too, so the wedge stays a wedge seen from any bearing instead of
     // shearing as the formation crosses the frame.
-    vec3 world = att * (p * (craft * fit) + slot) + centre;
+    //
+    // Camera clearance: a wide wedge crossing close by can run a hull
+    // straight through the lens (reported). Each craft's CENTRE is kept
+    // outside a safety bubble around the camera -- pushed radially onto its
+    // surface, so a near ship slides AROUND the viewer instead of clipping
+    // through. The whole hull moves as one (the push is per-craft, not
+    // per-vertex), so the mesh never deforms.
+    vec3 shipC = att * slot + centre;
+    float rSafe = craft * 1.25 + 5.0;
+    float dC = length(shipC);
+    if( dC < rSafe )
+        shipC *= rSafe / max(dC, 1e-3);
+    vec3 world = att * (p * (craft * fit)) + shipC;
 
     vUV = vec2(attrA.w, attrB.w);
     vNormal = normalize(roll * nrm0);

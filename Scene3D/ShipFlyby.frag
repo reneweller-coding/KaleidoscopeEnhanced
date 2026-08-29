@@ -82,7 +82,12 @@ vec3 renderSky(vec3 dir, vec3 tint)
     {
         float n1 = fbm(dir * 2.2 + vec3(time * 0.004, 0.0, 0.0));
         float n2 = fbm(dir * 5.4 - vec3(0.0, time * 0.003, 0.0));
-        vec3 cloud = mix(tint * 0.10, tint * 1.25, smoothstep(0.35, 0.78, n1)) * (0.5 + 0.6 * n2);
+        // The beat lives HERE now. The hulls hold still (their kick hops and
+    // the camera's swell-dolly are gone), so the backgrounds carry the
+    // music: a kick pulse on the dominant glow, sized to read clearly
+    // without breaking the temporal budget's full-frame brightness cap.
+    vec3 cloud = mix(tint * 0.10, tint * 1.25, smoothstep(0.35, 0.78, n1)) * (0.5 + 0.6 * n2)
+               * (0.82 + 0.30 * audioKick);
         return cloud + vec3(1.0) * starsField(dir, 0.0018);
     }
     // Backlit: a hard disc with a wide corona, bright enough that the hull
@@ -91,7 +96,7 @@ vec3 renderSky(vec3 dir, vec3 tint)
     float d = max(dot(dir, s), 0.0);
     vec3 col = vec3(0.012, 0.012, 0.02);
     col += tint * pow(d, 1400.0) * 14.0;                       // the disc
-    col += tint * pow(d, 22.0) * 0.85 * (0.7 + 0.5 * audioSwell); // corona
+    col += tint * pow(d, 22.0) * 0.85 * (0.6 + 0.5 * audioSwell + 0.35 * audioKick); // corona
     col += tint * pow(d, 3.0) * 0.12;                          // far bloom
     return col + vec3(1.0) * starsField(dir, 0.0012) * (1.0 - d);
 }

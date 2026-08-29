@@ -83,7 +83,7 @@ vec3 skyColour(vec3 dir, vec3 tint)
     vec3 col = mix(vec3(0.30, 0.22, 0.20) * 0.55, vec3(0.05, 0.07, 0.14), smoothstep(0.45, 0.95, h));
     vec3 s = normalize(kSunDir);
     float d = max(dot(dir, s), 0.0);
-    col += tint * pow(d, 22.0) * 0.40 * (0.6 + 0.6 * audioSwell);
+    col += tint * pow(d, 22.0) * 0.40 * (0.5 + 0.6 * audioSwell + 0.35 * audioKick);   // beat in the sky, not the ground
     col += vec3(1.0, 0.86, 0.68) * pow(d, 2200.0) * 5.0;
     // High cloud, moving with the flight so the sky is not a static backdrop.
     float cl = fbm2(dir.xz * 3.0 + vec2(time * 0.01 + audioAdvance * 0.006, 0.0));

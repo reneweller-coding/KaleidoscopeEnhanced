@@ -84,7 +84,10 @@ vec3 environment(vec3 dir, vec3 tint)
     vec3 ground = mix(vec3(0.05, 0.045, 0.05), vec3(0.010, 0.010, 0.014),
                       smoothstep(0.0, -0.7, h));
     vec3 col = (h > 0.0) ? sky : ground;
-    col += tint * 0.30 * exp(-abs(h) * 26.0);          // horizon glow
+    // The beat lives in the ENVIRONMENT: the chrome stays rigid, but what
+    // it reflects pulses -- so the music dances across the surface without
+    // the object itself moving a millimetre.
+    col += tint * 0.30 * (0.75 + 0.55 * audioKick) * exp(-abs(h) * 26.0);   // horizon glow
 
     // Slow horizontal banding: gives the reflection something to slide along,
     // which is how a curved mirror shows that it is turning.

@@ -23,6 +23,7 @@ uniform int texMeshMaterialLayers;
 
 uniform float time;
 uniform float audioAdvance;
+uniform float audioBass;
 uniform float audioKick;
 uniform float audioSwell;
 
@@ -80,7 +81,15 @@ vec3 renderSky(vec3 dir)
     float n1 = fbm(dir * 2.0 + vec3(time * 0.005, 0.0, 0.0));
     float n2 = fbm(dir * 5.5 - vec3(0.0, time * 0.003, 0.0));
     vec3 tint = vec3(0.55, 0.16, 0.10);
-    vec3 cloud = mix(tint * 0.15, tint * 1.3, smoothstep(0.35, 0.75, n1)) * (0.6 + 0.6 * n2);
+    // The beat lives HERE now. The hulls hold still (their kick hops and
+    // the camera's swell-dolly are gone), so the backgrounds carry the
+    // music: a kick pulse on the dominant glow, sized to read clearly
+    // without breaking the temporal budget's full-frame brightness cap.
+    vec3 cloud = mix(tint * 0.15, tint * 1.3, smoothstep(0.35, 0.75, n1)) * (0.6 + 0.6 * n2)
+               * (0.85 + 0.25 * audioKick + 0.12 * audioBass);
+    // Sheet lightning INSIDE the thick banks on the kick -- a warfront
+    // rumbling in time, which is what this backdrop always wanted to be.
+    cloud += tint * 0.55 * audioKick * pow(smoothstep(0.55, 0.85, n1), 2.0);
     return cloud + vec3(1.0) * starsField(dir, 0.0016);
 }
 

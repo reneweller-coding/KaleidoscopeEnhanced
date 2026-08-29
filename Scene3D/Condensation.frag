@@ -94,7 +94,8 @@ vec3 renderSky(vec3 dir, vec3 tint)
 {
     float h = clamp(dir.y * 0.5 + 0.5, 0.0, 1.0);
     vec3 col = mix(vec3(0.010, 0.012, 0.020), vec3(0.024, 0.022, 0.034), h);
-    col += tint * 0.06 * pow(max(dot(dir, normalize(vec3(0.35, 0.5, 0.79))), 0.0), 8.0);
+    col += tint * 0.06 * (1.0 + 0.7 * audioKick)   // beat in the sky, not the gas
+         * pow(max(dot(dir, normalize(vec3(0.35, 0.5, 0.79))), 0.0), 8.0);
     col += vec3(1.0) * starsField(dir, 0.0018);
     return col;
 }

@@ -785,6 +785,29 @@ void SceneScheduler::tickFx( const Tick &t, bool trueStereoHold )
 					)
 					break;
 			}
+			// A loaded model on screen gets the NEUTRAL overlay, full stop.
+			// Most accent FX pulse, warp or shake the whole frame with the
+			// beat, and a full-frame pulse moves the model with it -- the
+			// same reported twitch the hull and camera fixes already removed.
+			// The beat belongs to the scene's own background now; the overlay
+			// slot carries it only on abstract material.
+			if( tex[m_actTexture]->isMeshScene()
+			    || ( m_texState != 0 && tex[m_nextTexture]->isMeshScene() ) )
+			{
+				for( unsigned int i = 0; i < comb.size(); i++ )
+				{
+					const char *frag = comb[i]->fragmentName();
+					if( !frag ) continue;
+					const char *base = frag;
+					for( const char *q = frag; *q; ++q )
+						if( *q == '\\' || *q == '/' ) base = q + 1;
+					if( strcmp( base, "FxPlain.frag" ) == 0 )
+					{
+						m_nextFx = i;
+						break;
+					}
+				}
+			}
 
 			m_fxInterp = 1.0;
 

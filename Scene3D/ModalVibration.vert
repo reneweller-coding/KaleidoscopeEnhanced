@@ -103,7 +103,11 @@ void main()
         // (Slightly tighter margin here: the flex displacement can grow the
         // radius by ~20%, which the 31-of-39.5 headroom absorbs.)
         float fit = 31.0 / 84.0 / max(length(meshExtent), 1e-5);
-        float rotY = time * 0.10 * spinP + audioAdvance * 0.04 * spinP;
+        // Rotation on TIME alone. audioAdvance integrates a beat-driven rate,
+        // so anything it turns visibly speeds up on every kick -- measured as
+        // residual beat-periodic motion (autocorr 0.46 @ 1s) after every other
+        // coupling was removed. The summed coefficient keeps the average pace.
+        float rotY = time * 0.14 * spinP;
         float cy = cos(rotY), sy = sin(rotY);
         mat3 spin = mat3(cy, 0.0, -sy,  0.0, 1.0, 0.0,  sy, 0.0, cy);
         const float tiltX = 0.18;

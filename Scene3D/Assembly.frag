@@ -84,7 +84,11 @@ vec3 renderSky(vec3 dir, vec3 tint)
     float h = clamp(dir.y * 0.5 + 0.5, 0.0, 1.0);
     vec3 col = mix(vec3(0.014, 0.015, 0.022), vec3(0.030, 0.028, 0.040), h);
     float d = max(dot(dir, normalize(vec3(-0.4, 0.5, 0.76))), 0.0);
-    col += tint * pow(d, 40.0) * 0.55;
+    // The beat lives HERE now. The hulls hold still (their kick hops and
+    // the camera's swell-dolly are gone), so the backgrounds carry the
+    // music: a kick pulse on the dominant glow, sized to read clearly
+    // without breaking the temporal budget's full-frame brightness cap.
+    col += tint * pow(d, 40.0) * 0.55 * (0.70 + 0.60 * audioKick);   // the yard floodlight answers the beat
     col += vec3(1.0) * starsField(dir, 0.0016);
     return col;
 }

@@ -49,7 +49,11 @@ void main()
         // scale below keeps the whole object inside with margin at any angle.
         float fit = 32.0 / 80.0 / max(length(meshExtent), 1e-5);
 
-        float rotY = time * 0.13 * spinP + audioAdvance * 0.05 * spinP;
+        // Rotation on TIME alone. audioAdvance integrates a beat-driven rate,
+        // so anything it turns visibly speeds up on every kick -- measured as
+        // residual beat-periodic motion (autocorr 0.46 @ 1s) after every other
+        // coupling was removed. The summed coefficient keeps the average pace.
+        float rotY = time * 0.18 * spinP;
         float rotX = 0.22 + 0.05 * sin(time * 0.07);
         float cy = cos(rotY), sy = sin(rotY);
         float cx = cos(rotX), sx = sin(rotX);

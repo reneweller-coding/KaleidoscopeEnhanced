@@ -30,6 +30,7 @@ uniform int texMeshMaterialLayers;
 
 uniform float time;
 uniform float audioAdvance;
+uniform float audioBass;
 uniform float audioKick;
 uniform float audioSwell;
 
@@ -87,13 +88,18 @@ vec3 renderSky(vec3 dir, vec3 tint, float bgType)
     {
         float n1 = fbm(dir * 2.2 + vec3(time * 0.005, 0.0, 0.0));
         float n2 = fbm(dir * 5.0 - vec3(0.0, 0.0, time * 0.003));
-        vec3 cloud = mix(tint * 0.12, tint * 1.3, smoothstep(0.35, 0.75, n1)) * (0.5 + 0.6 * n2);
+        // The beat lives HERE now. The hulls hold still (their kick hops and
+    // the camera's swell-dolly are gone), so the backgrounds carry the
+    // music: a kick pulse on the dominant glow, sized to read clearly
+    // without breaking the temporal budget's full-frame brightness cap.
+    vec3 cloud = mix(tint * 0.12, tint * 1.3, smoothstep(0.35, 0.75, n1)) * (0.5 + 0.6 * n2)
+               * (0.82 + 0.30 * audioKick);
         return cloud + vec3(1.0) * starsField(dir, 0.0018);
     }
     else if (bgType < 1.5)   // asteroid field -- a hidden, covert backdrop
     {
         float haze = fbm(dir * 1.6);
-        vec3 col = tint * 0.05 * haze;
+        vec3 col = tint * 0.05 * haze * (0.80 + 0.30 * audioBass);
         float rocks = smoothstep(0.56, 0.63, fbm(dir * 9.0));
         col += tint * 0.3 * rocks;
         return col + vec3(1.0) * starsField(dir, 0.001) * (1.0 - rocks);

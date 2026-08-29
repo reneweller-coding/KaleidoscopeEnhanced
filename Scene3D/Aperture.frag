@@ -90,7 +90,10 @@ void main()
         // has a centre and the silhouette has something to sit against.
         float r = length(uv);
         vec3 col = mix(vec3(0.030, 0.032, 0.040), vec3(0.004), smoothstep(0.2, 1.1, r));
-        col += imgPalette(0.5) * 0.035 * (1.0 - smoothstep(0.0, 0.9, r));
+        // The surround answers the kick faintly -- the beat sits outside
+        // the window (the hull no longer pulses), so the frame breathes.
+        col += imgPalette(0.5) * 0.035 * (1.0 + 0.9 * audioKick)
+             * (1.0 - smoothstep(0.0, 0.9, r));
         fragColor = vec4(col, 1.0);
         return;
     }

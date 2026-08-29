@@ -67,7 +67,7 @@ void main()
         mat3 rotYMat = mat3(cy, 0.0, -sy,   0.0, 1.0, 0.0,   sy, 0.0, cy);
         mat3 rotXMat = mat3(1.0, 0.0, 0.0,   0.0, cx, sx,   0.0, -sx, cx);
         mat3 rotMat = rotYMat * rotXMat * axisSpin(spinAxisP,
-                      (time * 0.045 + audioAdvance * 0.035) * max(spinP, 0.0));
+                      time * 0.08 * max(spinP, 0.0));   // time alone: advance jerks on kicks
 
         world = rotMat * local;
         world.z += 105.0;

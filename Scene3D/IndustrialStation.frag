@@ -24,6 +24,7 @@ uniform int texMeshMaterialLayers;
 
 uniform float time;
 uniform float audioAdvance;
+uniform float audioBass;
 uniform float audioKick;
 uniform float audioSwell;
 
@@ -72,7 +73,12 @@ vec3 renderSky(vec3 dir)
     // reads as chunky bodies rather than smooth cloud) drifting over a
     // faint dust haze, plus stars showing through the gaps.
     float haze = fbm(dir * 1.6);
-    vec3 col = vec3(0.026, 0.024, 0.022) + vec3(0.13, 0.115, 0.10) * haze;
+    // The beat lives HERE now. The hulls hold still (their kick hops and
+    // the camera's swell-dolly are gone), so the backgrounds carry the
+    // music: a kick pulse on the dominant glow, sized to read clearly
+    // without breaking the temporal budget's full-frame brightness cap.
+    vec3 col = vec3(0.026, 0.024, 0.022)
+             + vec3(0.13, 0.115, 0.10) * haze * (0.80 + 0.25 * audioBass + 0.20 * audioKick);
     float rockField = fbm(dir * 9.0);
     float rocks = smoothstep(0.56, 0.63, rockField);
     col += vec3(0.34, 0.28, 0.23) * rocks * (0.6 + 0.4 * fbm(dir * 30.0));

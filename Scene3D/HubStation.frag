@@ -82,7 +82,8 @@ vec3 renderSky(vec3 dir)
     // A populated hub should sit in visibly lit space, so there is now a
     // floor under them rather than pure black between.
     vec3 col = vec3(0.030, 0.026, 0.034)
-             + vec3(0.20, 0.14, 0.09) * smoothstep(0.28, 0.70, wisp);
+             + vec3(0.20, 0.14, 0.09) * smoothstep(0.28, 0.70, wisp)
+      * (0.80 + 0.30 * audioKick + 0.15 * audioSwell);   // beat lives in the sky now
     return col + vec3(1.0, 0.97, 0.9) * starsField(dir, 0.0022);
 }
 

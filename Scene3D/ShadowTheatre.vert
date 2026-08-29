@@ -53,7 +53,11 @@ void main()
         vec3 p = attrA.xyz - meshCenter;
         float fit = 0.5 / max(max(meshExtent.x, meshExtent.y), meshExtent.z);
 
-        float ry = time * 0.19 * spinP + audioAdvance * 0.08 * spinP;
+        // Rotation on TIME alone. audioAdvance integrates a beat-driven rate,
+        // so anything it turns visibly speeds up on every kick -- measured as
+        // residual beat-periodic motion (autocorr 0.46 @ 1s) after every other
+        // coupling was removed. The summed coefficient keeps the average pace.
+        float ry = time * 0.27 * spinP;
         float rx = 0.46 * sin(time * 0.11 * spinP) + 0.20;
         float cy = cos(ry), sy = sin(ry), cx = cos(rx), sx = sin(rx);
         mat3 spin = mat3(cy, 0.0, -sy,  0.0, 1.0, 0.0,  sy, 0.0, cy);

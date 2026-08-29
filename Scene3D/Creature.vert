@@ -61,7 +61,11 @@ void main()
         vec3 nrm = attrB.xyz;
 
         // One shared phase, so a body's wave and its own limbs stay in step.
-        float phase = (time * 1.15 + audioAdvance * 0.55) * frq;
+        // Rotation on TIME alone. audioAdvance integrates a beat-driven rate,
+        // so anything it turns visibly speeds up on every kick -- measured as
+        // residual beat-periodic motion (autocorr 0.46 @ 1s) after every other
+        // coupling was removed. The summed coefficient keeps the average pace.
+        float phase = time * 1.7 * frq;
         // The music makes the stroke deeper, not faster -- speed changes
         // read as the animation glitching, depth reads as effort.
         float drive = amp * (0.75 + 0.45 * audioSwell + 0.35 * audioKick);
@@ -125,7 +129,7 @@ void main()
 
         // A slow drift so the animal is seen from several sides, and a lazy
         // vertical glide -- it is swimming, not mounted on a turntable.
-        float rotY = time * 0.11 + audioAdvance * 0.06;
+        float rotY = time * 0.17;
         float cy = cos(rotY), sy = sin(rotY);
         mat3 rotYMat = mat3(cy, 0.0, -sy,   0.0, 1.0, 0.0,   sy, 0.0, cy);
         const float tiltX = 0.12;

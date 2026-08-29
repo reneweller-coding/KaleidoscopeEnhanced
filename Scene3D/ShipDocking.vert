@@ -75,7 +75,11 @@ void main()
         // A station may rotate about its own axis (spin gravity) but never
         // tumbles -- see the station families for the reasoning.
         float sp = (spinP > 0.001 ? spinP : 0.0);
-        float rot = (time * 0.06 + audioAdvance * 0.05) * sp;
+        // Rotation on TIME alone. audioAdvance integrates a beat-driven rate,
+        // so anything it turns visibly speeds up on every kick -- measured as
+        // residual beat-periodic motion (autocorr 0.46 @ 1s) after every other
+        // coupling was removed. The summed coefficient keeps the average pace.
+        float rot = time * 0.11 * sp;
         float cr = cos(rot), sr = sin(rot);
         mat3 spinM = mat3(cr, sr, 0.0,  -sr, cr, 0.0,  0.0, 0.0, 1.0);
         const float tiltX = 0.35;

@@ -67,7 +67,8 @@ vec3 renderSky(vec3 dir, vec3 tint)
 {
     float h = clamp(dir.y * 0.5 + 0.5, 0.0, 1.0);
     vec3 col = mix(vec3(0.012, 0.014, 0.020), vec3(0.026, 0.024, 0.036), h);
-    col += tint * 0.05 * pow(max(dot(dir, normalize(vec3(-0.3, 0.6, 0.74))), 0.0), 6.0);
+    col += tint * 0.05 * (1.0 + 0.7 * audioKick)   // beat in the sky, not the body
+         * pow(max(dot(dir, normalize(vec3(-0.3, 0.6, 0.74))), 0.0), 6.0);
     col += vec3(1.0) * starsField(dir, 0.0014);
     return col;
 }

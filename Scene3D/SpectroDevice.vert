@@ -46,7 +46,11 @@ void main()
         // Showroom turntable: one clean axis, constant rate. The music
         // nudges the rate a little, but never enough to read as a jump.
         float sp = (spinP > 0.01 ? spinP : 1.0);
-        float rotY = (time * 0.22 + audioAdvance * 0.10) * sp;
+        // Rotation on TIME alone. audioAdvance integrates a beat-driven rate,
+        // so anything it turns visibly speeds up on every kick -- measured as
+        // residual beat-periodic motion (autocorr 0.46 @ 1s) after every other
+        // coupling was removed. The summed coefficient keeps the average pace.
+        float rotY = time * 0.32 * sp;
         const float tiltX = 0.16;                 // a hair from above, so it isn't seen edge-on
         float cy = cos(rotY), sy = sin(rotY);
         float cx = cos(tiltX), sx = sin(tiltX);

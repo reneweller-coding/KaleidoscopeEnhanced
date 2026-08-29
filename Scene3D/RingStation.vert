@@ -83,7 +83,11 @@ void main()
         // that tumbles does not.
         float sp = max(spinP, 0.0);
         const float tiltX = 0.55;
-        mat3 spinMat = axisSpin(spinAxisP, (time * 0.10 + audioAdvance * 0.15) * sp);
+        // Rotation on TIME alone. audioAdvance integrates a beat-driven rate,
+        // so anything it turns visibly speeds up on every kick -- measured as
+        // residual beat-periodic motion (autocorr 0.46 @ 1s) after every other
+        // coupling was removed. The summed coefficient keeps the average pace.
+        mat3 spinMat = axisSpin(spinAxisP, time * 0.25 * sp);
         float ctx = cos(tiltX), stx = sin(tiltX);
         mat3 tiltMat = mat3(1.0, 0.0, 0.0,   0.0, ctx, stx,   0.0, -stx, ctx);
         mat3 rotMat = tiltMat * spinMat;

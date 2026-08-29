@@ -59,7 +59,11 @@ void main()
         float chunky = smoothstep(0.16, 0.30, flat_);
         float scale  = mix(96.0 * fitBox, 31.0 * fitSphere, chunky);
 
-        float rotY = time * 0.11 * spinP + audioAdvance * 0.05 * spinP;
+        // Rotation on TIME alone. audioAdvance integrates a beat-driven rate,
+        // so anything it turns visibly speeds up on every kick -- measured as
+        // residual beat-periodic motion (autocorr 0.46 @ 1s) after every other
+        // coupling was removed. The summed coefficient keeps the average pace.
+        float rotY = time * 0.16 * spinP;
         float cy = cos(rotY), sy = sin(rotY);
         mat3 spin = mat3(cy, 0.0, -sy,  0.0, 1.0, 0.0,  sy, 0.0, cy);
         const float tiltX = 0.10;

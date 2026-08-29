@@ -46,7 +46,11 @@ void main()
         // object, not a crowd, so a big audio-synced jump would just look
         // like the model glitching rather than the scene reacting to the
         // music.
-        float rotY = time * 0.15 + audioAdvance * 0.3;
+        // Rotation on TIME alone. audioAdvance integrates a beat-driven rate,
+        // so anything it turns visibly speeds up on every kick -- measured as
+        // residual beat-periodic motion (autocorr 0.46 @ 1s) after every other
+        // coupling was removed. The summed coefficient keeps the average pace.
+        float rotY = time * 0.45;
         float rotX = sin(time * 0.07) * 0.2;
         float cy = cos(rotY), sy = sin(rotY);
         float cx = cos(rotX), sx = sin(rotX);
