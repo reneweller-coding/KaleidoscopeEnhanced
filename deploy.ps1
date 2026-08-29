@@ -491,16 +491,24 @@ if ($isccPath -and (Test-Path $iss)) {
     # attempt rather than being retried blindly.
     $ErrorActionPreference = "Continue"
     $isccExit = 0
-    for ($attempt = 1; $attempt -le 3; $attempt++) {
+    $isccOutFile = Join-Path $distRoot "$($pkgName)-Setup.exe"
+    $maxTries = 5
+    for ($attempt = 1; $attempt -le $maxTries; $attempt++) {
         $isccOut  = & $isccPath $iss 2>&1
         $isccExit = $LASTEXITCODE
         $isccOut | ForEach-Object { Write-Host $_ }
         if ($isccExit -eq 0) { break }
         $locked = $isccOut | Select-String -Pattern "EndUpdateResource failed" -Quiet
         if (-not $locked) { break }
-        if ($attempt -lt 3) {
-            Info "ISCC hit the antivirus file lock (error 110) - retrying in 5 s (attempt $attempt of 3) ..."
-            Start-Sleep -Seconds 5
+        if ($attempt -lt $maxTries) {
+            # Growing pause: three attempts five seconds apart was not always
+            # enough -- a full scan of a 21 MB executable can take longer than
+            # that. Also drop the half-written file, so the scanner has nothing
+            # left to hold and the next attempt starts from a fresh one.
+            $wait = 5 * $attempt
+            Remove-Item $isccOutFile -Force -ErrorAction SilentlyContinue
+            Info "ISCC hit the antivirus file lock (error 110) - retrying in $wait s (attempt $attempt of $maxTries) ..."
+            Start-Sleep -Seconds $wait
         }
     }
     $ErrorActionPreference = $prevEap

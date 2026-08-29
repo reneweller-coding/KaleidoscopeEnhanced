@@ -23,7 +23,7 @@
 #define MyAppName "Kaleidoscope Enhanced"
 #define MyAppExeName "Kaleidoscope.exe"
 #define MyAppPublisher "Rene Weller"
-#define MyAppVersion "1.8.0"
+#define MyAppVersion "1.9.0"
 ; Staged package produced by deploy.ps1:
 #define SrcDir "dist\KaleidoscopeVisualizer"
 
