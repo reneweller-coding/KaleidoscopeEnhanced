@@ -3,6 +3,11 @@
  * @brief Implementation of Scene3DShader: per-geom-kind procedural mesh generation, the compute-generator ("indirect") pipeline, the CPU-side formula-driven camera rig, and the per-geom-kind draw state (blend/depth, shadow pass, OIT pass).
  */
 // Scene3DShader.cpp — see Scene3DShader.h.
+#include <thread>
+#include <mutex>
+#include <condition_variable>
+#include <deque>
+#include <algorithm>
 #include <chrono>
 #include "glcore.h"          // MUST come before any gl.h include (Qt's qopengl.h)
 #include "shader_setup.h"
@@ -104,8 +109,137 @@ Scene3DShader::Scene3DShader( const std::string &filenameFragmentShader, const s
 	m_compFilename = sibling( filenameFragmentShader, ".comp" );
 }
 
+// ---------------------------------------------------------------------------
+// Asynchronous mesh warm-up: one worker thread, one FIFO of shaders.
+//
+// The queue object is deliberately LEAKED (never destroyed): the worker is a
+// detached daemon, and destroying the mutex/condvar under a parked thread at
+// process exit would be UB for nothing -- the process teardown reclaims it.
+// Shader lifetime is the real hazard and is handled in ~Scene3DShader(): it
+// removes itself from the queue and, if the worker is mid-load on THIS shader,
+// blocks until that load finished. The worker itself never touches GL.
+// ---------------------------------------------------------------------------
+namespace {
+struct MeshWarmupQueue
+{
+	std::mutex mtx;
+	std::condition_variable cv;
+	std::deque<Scene3DShader *> queue;
+	Scene3DShader *inFlight = nullptr;
+	bool threadStarted = false;
+};
+MeshWarmupQueue &warmQ()
+{
+	static MeshWarmupQueue *q = new MeshWarmupQueue;   // leaked on purpose, see above
+	return *q;
+}
+void warmupWorker()
+{
+	MeshWarmupQueue &q = warmQ();
+	for( ;; )
+	{
+		Scene3DShader *s = nullptr;
+		{
+			std::unique_lock<std::mutex> lk( q.mtx );
+			q.cv.wait( lk, [&]{ return !q.queue.empty(); } );
+			s = q.queue.front();
+			q.queue.pop_front();
+			q.inFlight = s;
+		}
+		s->warmupLoadNow();
+		{
+			std::lock_guard<std::mutex> lk( q.mtx );
+			q.inFlight = nullptr;
+		}
+		q.cv.notify_all();
+	}
+}
+} // namespace
+
+bool Scene3DShader::meshWarmupPending() const
+{
+	if( m_geomKind != GEOM_MESH || m_vbo != 0 || m_modelPath.empty() )
+		return false;
+	const int ws = m_warmState.load( std::memory_order_acquire );
+	return ws == WARM_NONE || ws == WARM_QUEUED || ws == WARM_LOADING;
+}
+
+void Scene3DShader::requestMeshWarmup()
+{
+	if( m_geomKind != GEOM_MESH || m_vbo != 0 || m_modelPath.empty() )
+		return;
+	int expect = WARM_NONE;
+	if( !m_warmState.compare_exchange_strong( expect, WARM_QUEUED ) )
+	{
+		// Already queued: a REPEATED request is the host saying "I need this
+		// one NOW" (the fade-hold path asks every frame) -- move it to the
+		// queue front so an active fade never waits behind the background
+		// crawl of the whole preset.
+		if( expect == WARM_QUEUED )
+		{
+			MeshWarmupQueue &q = warmQ();
+			std::lock_guard<std::mutex> lk( q.mtx );
+			auto it = std::find( q.queue.begin(), q.queue.end(), this );
+			if( it != q.queue.end() && it != q.queue.begin() )
+			{
+				q.queue.erase( it );
+				q.queue.push_front( this );
+			}
+		}
+		return;
+	}
+	MeshWarmupQueue &q = warmQ();
+	{
+		std::lock_guard<std::mutex> lk( q.mtx );
+		q.queue.push_back( this );
+		if( !q.threadStarted )
+		{
+			q.threadStarted = true;
+			std::thread( warmupWorker ).detach();
+		}
+	}
+	q.cv.notify_all();
+}
+
+void Scene3DShader::warmupLoadNow()
+{
+	m_warmState.store( WARM_LOADING, std::memory_order_relaxed );
+	const auto t0 = std::chrono::steady_clock::now();
+	m_warmOk = loadMeshAsset( m_modelPath, m_warmAsset );
+	if( !m_modelPath2.empty() )
+		m_warmOk2 = loadMeshAsset( m_modelPath2, m_warmAsset2 );
+	const float ms = std::chrono::duration<float, std::milli>(
+		std::chrono::steady_clock::now() - t0 ).count();
+	fprintf( stderr, "MESHWARM %s %.0f ms (worker)\n", m_modelPath.c_str(), ms );
+	// Release-publish: the render thread's acquire-load of WARM_READY makes the
+	// asset writes above visible to it.
+	m_warmState.store( WARM_READY, std::memory_order_release );
+}
+
+bool Scene3DShader::finishMeshWarmup()
+{
+	if( m_geomKind != GEOM_MESH || m_vbo != 0 || !isCompiled() )
+		return false;
+	if( m_warmState.load( std::memory_order_acquire ) != WARM_READY )
+		return false;
+	buildGeometry();
+	bakeVao();
+	return m_vbo != 0;
+}
+
 Scene3DShader::~Scene3DShader()
 {
+	// Async warm-up teardown BEFORE any member dies: drop a queued request,
+	// and if the worker is loading THIS shader right now, wait it out -- the
+	// worker writes into members the destructor is about to free.
+	{
+		MeshWarmupQueue &q = warmQ();
+		std::unique_lock<std::mutex> lk( q.mtx );
+		q.queue.erase( std::remove( q.queue.begin(), q.queue.end(), this ),
+		               q.queue.end() );
+		q.cv.wait( lk, [&]{ return q.inFlight != this; } );
+	}
+
 	if( m_vbo )
 		glDeleteBuffers( 1, &m_vbo );
 	if( m_cmdBuf )
@@ -314,6 +448,13 @@ void Scene3DShader::buildGeometry()
 	}
 	else if( m_geomKind == GEOM_MESH )
 	{
+		// Deferred while the warm-up worker is still on it: leave m_vbo at 0,
+		// draw() skips rendering and the host holds the fade, so nothing is
+		// ever shown half-loaded. draw() calls back in here the frame the
+		// worker publishes WARM_READY.
+		const int ws = m_warmState.load( std::memory_order_acquire );
+		if( ws == WARM_QUEUED || ws == WARM_LOADING )
+			return;
 		// The only non-procedural kind: v comes from a real file instead of a
 		// generated pattern, but still lands in the same 8-floats-per-vertex
 		// layout (attrA.xyz=pos/.w=U, attrB.xyz=normal/.w=V) every other kind
@@ -326,10 +467,21 @@ void Scene3DShader::buildGeometry()
 		// With no model2 the middle run is empty and m_mesh2VertexCount ==
 		// m_meshOwnVertexCount, so every existing single-model shader's
 		// "gl_VertexID >= meshVertexCount means shell" test still holds.
-		auto loadInto = [&]( const std::string &path, GLuint &tex, int &layers ) -> bool
+		auto loadInto = [&]( const std::string &path, MeshAsset *pre, GLuint &tex, int &layers ) -> bool
 		{
-			MeshAsset asset;
-			if( !loadMeshAsset( path, asset ) )
+			// A warmed asset skips the expensive part; the GL work below
+			// stays on this thread either way. The sync path remains for
+			// every caller that never went through the warm-up (startup
+			// scene, review sweep, a failed worker load).
+			MeshAsset local;
+			if( pre && !pre->vertices.empty() )
+				local.vertices.swap( pre->vertices ),
+				local.materialRGBA.swap( pre->materialRGBA ),
+				local.materialLayers = pre->materialLayers,
+				local.materialW = pre->materialW,
+				local.materialH = pre->materialH;
+			MeshAsset &asset = local;
+			if( asset.vertices.empty() && !loadMeshAsset( path, asset ) )
 			{
 				fprintf( stderr, "Scene3DShader: failed to load mesh '%s'\n", path.c_str() );
 				return false;
@@ -354,7 +506,9 @@ void Scene3DShader::buildGeometry()
 			return true;
 		};
 
-		loadInto( m_modelPath, m_meshMaterialTex, m_meshMaterialLayers );
+		const bool warmed = ( ws == WARM_READY );
+		loadInto( m_modelPath, ( warmed && m_warmOk ) ? &m_warmAsset : nullptr,
+		          m_meshMaterialTex, m_meshMaterialLayers );
 		m_meshOwnVertexCount = int( v.size() / 8 );
 
 		// Measure the model's own bounding box, exposed as meshCenter/meshExtent.
@@ -384,8 +538,17 @@ void Scene3DShader::buildGeometry()
 		}
 
 		if( !m_modelPath2.empty() )
-			loadInto( m_modelPath2, m_meshMaterialTex2, m_meshMaterialLayers2 );
+			loadInto( m_modelPath2, ( warmed && m_warmOk2 ) ? &m_warmAsset2 : nullptr,
+			          m_meshMaterialTex2, m_meshMaterialLayers2 );
 		m_mesh2VertexCount = int( v.size() / 8 );
+
+		// Consumed: release the prefetched CPU copies (tens of MB per model).
+		if( warmed )
+		{
+			m_warmAsset  = MeshAsset();
+			m_warmAsset2 = MeshAsset();
+			m_warmState.store( WARM_CONSUMED, std::memory_order_relaxed );
+		}
 
 		// model2's own box, measured over ITS vertex range only.
 		if( m_mesh2VertexCount > m_meshOwnVertexCount )
@@ -816,8 +979,16 @@ void Scene3DShader::initUniforms( int width, int height )
 	if( m_geomKind == GEOM_INDIRECT )
 		setupIndirect();
 
-	// Core profile: vertex attribs live in a VAO, baked once here (the
-	// attrib locations are program-specific, so the VAO is per-scene).
+	// Core profile: vertex attribs live in a VAO (the attrib locations are
+	// program-specific, so the VAO is per-scene). Split out because a
+	// deferred mesh build re-bakes it when the warm-up finishes.
+	bakeVao();
+
+	checkGLErrors( "Scene3DShader::initUniforms" );
+}
+
+void Scene3DShader::bakeVao()
+{
 	if( m_vao == 0 )
 		glGenVertexArrays( 1, &m_vao );
 	glBindVertexArray( m_vao );
@@ -836,12 +1007,25 @@ void Scene3DShader::initUniforms( int width, int height )
 	}
 	glBindVertexArray( 0 );
 	glBindBuffer( GL_ARRAY_BUFFER, 0 );
-
-	checkGLErrors( "Scene3DShader::initUniforms" );
 }
 
 void Scene3DShader::draw()
 {
+	// Deferred mesh build: while the warm-up worker still owns the model,
+	// draw NOTHING (the host is holding the fade at interp=1, so the
+	// outgoing scene covers the frame). The frame the worker publishes,
+	// the build runs here -- GL upload only, a few ms -- and the VAO is
+	// re-baked against the now-real VBO.
+	if( m_geomKind == GEOM_MESH && m_vbo == 0 )
+	{
+		const int ws = m_warmState.load( std::memory_order_acquire );
+		if( ws == WARM_QUEUED || ws == WARM_LOADING )
+			return;
+		buildGeometry();
+		if( m_vbo == 0 )
+			return;
+		bakeVao();
+	}
 	// Perspective projection (55° vertical FOV, near 0.5, far 220).  The
 	// aspect uses the FULL frame even for a half-viewport stereo eye — the
 	// display/HMD player unsqueezes the halves back to full width.

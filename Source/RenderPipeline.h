@@ -580,6 +580,7 @@ private:
 	GLint			m_trailDepthUni = -1;   ///< depth-aware trails (3D scenes) — uniform location of "depth3D" in m_trailProgId.
 	float			m_trailDepth3D  = 0.f;  ///< slewed 0..1 "a 3D scene is up" — drives depth-aware trails and camera zoom headroom.
 	float			m_meshUp        = 0.f;  ///< slewed 0..1 "a loaded-model scene is up" — damps the time echo, whose scaled ghost reads as a fault on a solid object.
+	float			m_meshHoldSecs  = 0.f;  ///< How long the current fade has been held waiting for an async mesh warm-up; releases at 5 s so a stuck load can never wedge the show.
 	// Spatial warp field (MilkDrop-style liquid feedback).
 	GLint			m_trailRipAmpUni  = -1, m_trailRipPhUni  = -1;   ///< Uniform locations of "rippleAmp"/"ripplePhase" (MilkDrop-style warp-field ripple) in m_trailProgId.
 	GLint			m_trailSwirlUni   = -1, m_trailFlowAmpUni = -1;  ///< Uniform locations of "swirlAmp"/"flowAmp" (warp-field swirl and flow amplitude) in m_trailProgId.

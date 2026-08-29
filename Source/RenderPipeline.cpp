@@ -1000,14 +1000,34 @@ void RenderPipeline::beginFrame( const AudioFeatures &audio )
 	m_moodArousal = audio.arousal;
 	m_moodAmbient = audio.ambientFactor;
 
-	// Lazy-compile warm-up: build ONE not-yet-compiled program per frame.
-	// Start-up is instant (prepare() records only the size) and every shader
-	// is ready long before random selection could pick it; the on-demand
-	// compile in enableShader() remains as the safety net.
+	// Lazy-compile warm-up: ONE step per frame. This used to be the hidden
+	// stutter engine: ensureCompiled() on a mesh scene ran buildGeometry(),
+	// which loaded the model SYNCHRONOUSLY -- 200-700 ms per model, one per
+	// frame, for as long as it took to walk all 238 mesh scenes. The
+	// comment used to promise "every shader is ready long before random
+	// selection could pick it", and that was true back when a step was a
+	// GLSL compile; the mesh loads arrived later and turned the warmer
+	// into a minutes-long hitch parade.
+	// Now the warmer only ever does cheap-ish GL work on this thread:
+	//   1. an unbuilt-but-READY mesh gets its GL upload (a few ms), or
+	//   2. an uncompiled shader gets its GLSL compile -- with its model
+	//      load handed to the worker FIRST, so buildGeometry() defers
+	//      instead of blocking.
+	// The worker crawls the models in the background; an active fade's
+	// scene jumps the queue (see requestMeshWarmup).
 	{
 		bool warmed = false;
 		for( EffectShader *s : m_effectTextures )
-			if( !s->isCompiled() ) { s->ensureCompiled(); warmed = true; break; }
+			if( s->finishMeshWarmup() ) { warmed = true; break; }
+		if( !warmed )
+			for( EffectShader *s : m_effectTextures )
+				if( !s->isCompiled() )
+				{
+					s->requestMeshWarmup();   // no-op for non-mesh scenes
+					s->ensureCompiled();      // GLSL only; mesh build defers
+					warmed = true;
+					break;
+				}
 		if( !warmed )
 			for( EffectShader *s : m_effectFx )
 				if( !s->isCompiled() ) { s->ensureCompiled(); break; }
@@ -1961,6 +1981,30 @@ void RenderPipeline::paint(const float *rotMatrix, float tx, float ty, float tz,
 	updateImageState( timeSinceLastFrameSec );
 
 	const SceneScheduler::Tick schedTick = buildSchedulerTick( audio, timeSinceLastFrameSec );
+
+	// Asynchronous mesh warm-up: while the fade's INCOMING scene is still
+	// waiting for its model (worker thread, see Scene3DShader), hold the
+	// scheduler clocks so the fade stays parked at its start -- the
+	// outgoing scene keeps playing, nothing freezes, and the fade then
+	// runs in full once the model is in. Past the timeout the fade is
+	// released regardless; draw() keeps skipping the unbuilt mesh, so at
+	// worst the object appears late, but the show never wedges on a
+	// stuck load.
+	if( m_scheduler.texState() != 0 )
+	{
+		EffectShader *nx = m_effectTextures[m_scheduler.nextTexture()];
+		if( nx->meshWarmupPending() )
+		{
+			nx->requestMeshWarmup();
+			m_meshHoldSecs += dtWall;
+			if( m_meshHoldSecs < 5.f )
+				m_scheduler.absorbHitch( dtWall );
+		}
+		else
+			m_meshHoldSecs = 0.f;
+	}
+	else
+		m_meshHoldSecs = 0.f;
 
 	// The one clock every shader reads. It advances AFTER the transport
 	// modifiers above, so a freeze ('e') or a DJ-stop really does stop it.

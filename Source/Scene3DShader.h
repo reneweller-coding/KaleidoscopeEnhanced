@@ -37,6 +37,8 @@
 // ---------------------------------------------------------------------------
 #pragma once
 
+#include <atomic>
+#include "MeshImport.h"   // MeshAsset: the warm-up worker's payload lives as members here
 #include "EffectShader.h"
 #include <string>
 
@@ -81,6 +83,15 @@ public:
 	void draw() override;
 	bool is3D() const override { return true; }   ///< @return true — this is a real 3D scene, so the host uses the true-stereo per-eye render path.
 	bool isMeshScene() const override { return m_geomKind == GEOM_MESH; }   ///< @return true for a loaded-model scene; the host damps the time echo on these (see EffectShader::isMeshScene).
+
+	// ---- asynchronous mesh warm-up (see EffectShader::meshWarmupPending) ----
+	bool meshWarmupPending() const override;
+	void requestMeshWarmup() override;
+	/** @brief Worker-thread entry: runs loadMeshAsset() for this scene's model
+	 *  path(s) into the m_warm* slots, then publishes WARM_READY. Called ONLY by
+	 *  the warm-up worker; everything GL stays out of it. */
+	void warmupLoadNow();
+	bool finishMeshWarmup() override;
 
 	// PER-ACTIVATION VARIETY: every time the scene is (re)activated it rolls
 	// a fresh epoch — a large time offset (different camera/burst phases), a
@@ -266,6 +277,23 @@ private:
 	// for the three-run layout and why it stays compatible with every
 	// existing single-model shader.
 	std::string m_modelPath2;            ///< Config attribute model2=; empty for a single-model scene.
+
+	// ---- asynchronous warm-up state ----
+	// The worker writes the assets while the state is WARM_LOADING and
+	// publishes with a release-store of WARM_READY; the render thread reads
+	// the state with acquire before touching the assets, so no further lock
+	// is needed on the payload itself.
+	enum { WARM_NONE = 0, WARM_QUEUED, WARM_LOADING, WARM_READY, WARM_CONSUMED };
+	std::atomic<int> m_warmState { WARM_NONE };   ///< Warm-up lifecycle (see enum above).
+	MeshAsset m_warmAsset;   ///< Prefetched model= payload; consumed (and freed) by buildGeometry().
+	MeshAsset m_warmAsset2;  ///< Prefetched model2= payload, when the scene has one.
+	bool m_warmOk  = false;  ///< loadMeshAsset() result for model=.
+	bool m_warmOk2 = false;  ///< loadMeshAsset() result for model2=.
+
+	/** @brief (Re)bakes the VAO against the current VBO. Split out of
+	 *  initUniforms() because a deferred mesh build creates the VBO later, on
+	 *  the frame the warm-up finishes -- the VAO bake has to be repeatable. */
+	void bakeVao();
 	int    m_mesh2VertexCount   = 0;     ///< First vertex of the sky shell; equals m_meshOwnVertexCount when there is no model2.
 	GLuint m_meshMaterialTex2   = 0;     ///< sampler2DArray for model 2's material (0 = none).
 	int    m_meshMaterialLayers2 = 0;    ///< Layers populated in m_meshMaterialTex2 (0, 1 or 2).

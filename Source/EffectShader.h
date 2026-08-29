@@ -346,6 +346,25 @@ public:
 	 *  @return false for everything except a GEOM_MESH Scene3DShader. */
 	virtual bool isMeshScene() const { return false; }
 
+	/** @name Asynchronous mesh warm-up
+	 *  A GEOM_MESH scene's first activation used to load its model
+	 *  synchronously on the render thread -- measured at 200-700 ms per model
+	 *  (see the MESHLOAD log line), felt as the early-minutes stutter. The
+	 *  host asks these two hooks instead: while the incoming scene of a fade
+	 *  reports meshWarmupPending(), the host requests the warm-up (a worker
+	 *  thread does the file/decode work) and holds the fade clock at its
+	 *  start, so the outgoing scene simply keeps playing until the model is
+	 *  ready and the fade then runs in full. Non-mesh shaders never pend.
+	 *  @{ */
+	virtual bool meshWarmupPending() const { return false; }
+	virtual void requestMeshWarmup() {}
+	/** @brief GL half of a finished warm-up: if the worker has published this
+	 *  scene's assets and the VBO is still unbuilt, upload now (a few ms).
+	 *  @return True if an upload happened -- the caller counts it as this
+	 *  frame's one warm-up step. */
+	virtual bool finishMeshWarmup() { return false; }
+	/** @} */
+
 	// The 3D projection's clip planes, shared so a depth-reading effect can
 	// linearise what it samples.  They live here rather than in Scene3DShader
 	// because the CONSUMER is the combine stage, which knows nothing about
