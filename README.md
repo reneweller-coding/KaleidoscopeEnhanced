@@ -95,6 +95,9 @@ pigment, soap film, sediment, aurora, craquelure, woven fibre — generated for
 this purpose, so there are no rights questions and no faces or subjects to be
 mangled by a mirror.
 
+They are published as their own release,
+[Photo Pack v1](https://github.com/reneweller-coding/KaleidoscopeEnhanced/releases/tag/images-v1):
+
 | | |
 |---|---|
 | `KaleidoscopeImages.zip` | 1000 images, 734 MB |
