@@ -29,6 +29,26 @@ S = 512                      # canonical measurement scale
 LUMA = np.array([0.299, 0.587, 0.114], np.float32)
 
 
+def box3(a):
+    """3x3 box blur, by slicing -- a convolution here would dominate the runtime."""
+    p = np.pad(a, 1, mode="edge")
+    out = np.zeros_like(a)
+    for dy in (0, 1, 2):
+        for dx in (0, 1, 2):
+            out += p[dy:dy + a.shape[0], dx:dx + a.shape[1]]
+    return out / 9.0
+
+
+def immerkaer(L):
+    """Immerkaer's noise estimate: one pass with a kernel that cancels smooth
+    content (including linear ramps) and responds to per-pixel noise."""
+    p = np.pad(L, 1, mode="edge")
+    r = (p[0:-2, 0:-2] - 2 * p[0:-2, 1:-1] + p[0:-2, 2:]
+         - 2 * p[1:-1, 0:-2] + 4 * p[1:-1, 1:-1] - 2 * p[1:-1, 2:]
+         + p[2:, 0:-2] - 2 * p[2:, 1:-1] + p[2:, 2:])
+    return float(np.abs(r).mean()) * (np.pi / 2.0) ** 0.5 / 6.0
+
+
 # --------------------------------------------------------------------------- #
 # per-image measurement
 # --------------------------------------------------------------------------- #
@@ -54,8 +74,39 @@ def measure(path):
     small = np.asarray(Image.fromarray((L * 255).astype(np.uint8)).resize(
         (S // 8, S // 8), Image.BILINEAR), np.float32) / 255.0
 
-    # A single dominant direction survives GL_MIRRORED_REPEAT as an obvious
-    # butterfly seam, so it is measured and capped rather than left to taste.
+    gy_a, gx_a = np.gradient(L)
+    grad = np.hypot(gx_a, gy_a)
+
+    # Directionality via the structure tensor, NOT |gx|-|gy|. The simple
+    # difference only sees axis-aligned direction: a strong 45-degree grain has
+    # gx == gy and scored as perfectly non-directional, which is how an earlier
+    # version of this check passed a set that measurably had directional
+    # material in it. The tensor's eigenvalue split catches any orientation.
+    Jxx, Jyy, Jxy = float((gx_a * gx_a).mean()), float((gy_a * gy_a).mean()), float((gx_a * gy_a).mean())
+    tr, det = Jxx + Jyy, Jxx * Jyy - Jxy * Jxy
+    disc = max(tr * tr / 4.0 - det, 0.0) ** 0.5
+    aniso = (2.0 * disc) / max(tr, 1e-9)
+
+    # Sharpness. Not the same thing as gradient energy: noise has plenty of
+    # gradient and no edges. This asks how much of the gradient a one-pixel
+    # blur destroys -- a crisp image loses a lot, a soft one barely notices.
+    Lb = box3(L)
+    gb = np.hypot(*np.gradient(Lb))
+    acutance = 1.0 - float(gb.mean()) / max(float(grad.mean()), 1e-6)
+
+    # Share of pixels sitting on a real step rather than a smooth gradient.
+    hard_edges = float((grad > 0.06).mean())
+
+    # Noise, by the standard Immerkaer estimator: one convolution with a
+    # Laplacian-like kernel that cancels smooth content and doubles on noise.
+    noise = immerkaer(L)
+
+    # Clipping. Matters more now than it used to: the tone requirements push
+    # for low-key and high-key material, which is exactly the situation where
+    # a generator starts crushing blacks and blowing highlights, and a clipped
+    # region folds into a flat white or black patch.
+    clipped = float((L < 0.02).mean() + (L > 0.98).mean())
+
     gx = float(np.abs(np.diff(L, axis=1)).mean())
     gy = float(np.abs(np.diff(L, axis=0)).mean())
 
@@ -67,9 +118,16 @@ def measure(path):
                            L[:, :16].ravel(), L[:, -16:].ravel()])
     border = float(ring.mean())
 
-    # Radial/spiral compositions: fine in small numbers, wrong as a habit.
+    # Self-symmetry. A picture that is ALREADY mirrored or already a mandala
+    # has nothing left to give a kaleidoscope: the fold's own symmetry lands on
+    # top of the picture's and the result is mechanical. Checking only the
+    # 90-degree rotation (as an earlier version did) misses this entirely --
+    # a left-right mirrored image scores near zero on rot90 and 0.8 on mirror.
     Ln = (L - L.mean()) / max(float(L.std()), 1e-6)
     radial = float((Ln * np.rot90(Ln)).mean())
+    mirror = max(float((Ln * Ln[:, ::-1]).mean()),      # left-right
+                 float((Ln * Ln[::-1, :]).mean()),      # top-bottom
+                 float((Ln * Ln[::-1, ::-1]).mean()))   # 180 degrees
 
     # 32x32 normalised luma signature, for the near-duplicate pass.
     sig = np.asarray(Image.fromarray((L * 255).astype(np.uint8)).resize(
@@ -85,10 +143,15 @@ def measure(path):
         "p1": p1, "p99": p99,
         "sat": float(sat.mean()),
         "detail": (gx + gy) / 2.0,
-        "direction": abs(gx - gy) / max(gx + gy, 1e-6),
+        "aniso": aniso,
+        "acutance": acutance,
+        "hard_edges": hard_edges,
+        "noise": noise,
+        "clipped": clipped,
         "retention": float(small.std()) / max(float(L.std()), 1e-6),
         "cmb": centre - border,
         "radial": radial,
+        "mirror": mirror,
         "_sig": sig,
         "_hue": hue_weights(a512, sat, mx),
     }
@@ -150,6 +213,18 @@ def check(rows, hue, dup_frac):
     hk_ok = frac(hk, lambda r: r["p1"] <= 0.25) if hk else 0.0
     add("Tone", "low-key with a real highlight (p99>=0.75)", ">= 70 %", "%.1f %%" % (100 * lk_ok), lk_ok >= 0.70)
     add("Tone", "high-key with a real shadow  (p1<=0.25)", ">= 70 %", "%.1f %%" % (100 * hk_ok), hk_ok >= 0.70)
+    # The three bands leave deliberate dead zones (0.30..0.35, 0.60..0.65) so
+    # that "low-key" means something. Their shares therefore need not sum to
+    # 100 -- but the dead zones must not swallow the set either, or all three
+    # band targets could be met while most of the library sits between them.
+    gap = 1.0 - low - mid - high
+    add("Tone", "between the bands (neither low, mid nor high)", "<= 15 %", "%.1f %%" % (100 * gap), gap <= 0.15)
+    # Pushing for low-key and high-key material is exactly what makes a
+    # generator crush blacks and blow highlights, and a clipped area folds into
+    # a flat white or black patch. Guarded here so the tone quota cannot be met
+    # by clipping its way there.
+    clip = frac(rows, lambda r: r["clipped"] > 0.02)
+    add("Tone", "images with > 2 % clipped pixels", "<= 2 %", "%.1f %%" % (100 * clip), clip <= 0.02)
 
     # --- contrast ---
     cm = median(rows, "contrast")
@@ -174,17 +249,36 @@ def check(rows, hue, dup_frac):
 
     # --- composition ---
     cen = frac(rows, lambda r: abs(r["cmb"]) <= 0.10)
-    dirn = frac(rows, lambda r: r["direction"] <= 0.25)
-    rad = frac(rows, lambda r: r["radial"] > 0.5)
     add("Composition", "no centre subject (|centre-border| <= 0.10)", ">= 90 %", "%.1f %%" % (100 * cen), cen >= 0.90)
-    add("Composition", "not directional (<= 0.25)", ">= 95 %", "%.1f %%" % (100 * dirn), dirn >= 0.95)
+    a45 = frac(rows, lambda r: r["aniso"] > 0.45)
+    a60 = frac(rows, lambda r: r["aniso"] > 0.60)
+    add("Composition", "directional (anisotropy > 0.45)", "<= 10 %", "%.1f %%" % (100 * a45), a45 <= 0.10)
+    add("Composition", "strongly directional (> 0.60)", "<= 3 %", "%.1f %%" % (100 * a60), a60 <= 0.03)
+    rad = frac(rows, lambda r: r["radial"] > 0.5)
     add("Composition", "radial/spiral compositions", "<= 8 %", "%.1f %%" % (100 * rad), rad <= 0.08)
 
-    # --- structure ---
+    # --- symmetry ---
+    m35 = frac(rows, lambda r: r["mirror"] > 0.35)
+    m65 = frac(rows, lambda r: r["mirror"] > 0.65)
+    add("Symmetry", "self-symmetric (mirror/180 > 0.35)", "<= 5 %", "%.1f %%" % (100 * m35), m35 <= 0.05)
+    add("Symmetry", "already a fold (mirror/180 > 0.65)", "0 %", "%.1f %%" % (100 * m65), m65 <= 0.001)
+
+    # --- structure and edges ---
     ret = median(rows, "retention")
     det = median(rows, "detail")
     add("Structure", "median contrast kept at 1/8 scale", ">= 0.55", "%.2f" % ret, ret >= 0.55)
     add("Structure", "median fine detail", ">= 0.020", "%.3f" % det, det >= 0.020)
+    soft = frac(rows, lambda r: r["acutance"] < 0.20)
+    add("Structure", "soft / out of focus (acutance < 0.20)", "<= 5 %", "%.1f %%" % (100 * soft), soft <= 0.05)
+    noedge = frac(rows, lambda r: r["hard_edges"] < 0.05)
+    crisp = frac(rows, lambda r: r["hard_edges"] >= 0.25)
+    add("Structure", "almost no crisp edges (< 5 % edge pixels)", "<= 5 %", "%.1f %%" % (100 * noedge), noedge <= 0.05)
+    add("Structure", "genuinely crisp (>= 25 % edge pixels)", ">= 40 %", "%.1f %%" % (100 * crisp), crisp >= 0.40)
+    # Deliberately loose. The estimator cannot tell generator noise from the
+    # legitimate grain of sand, pigment or paper, and grain is wanted -- so this
+    # catches only the degenerate tail (sigma 0.045 is about 11/255).
+    noisy = frac(rows, lambda r: r["noise"] > 0.045)
+    add("Structure", "noisy (sigma > 0.045)", "<= 3 %", "%.1f %%" % (100 * noisy), noisy <= 0.03)
 
     # --- diversity ---
     add("Diversity", "near-duplicate pairs (corr > 0.60)", "<= 1 %", "%.2f %%" % (100 * dup_frac), dup_frac <= 0.01)
@@ -261,7 +355,10 @@ def main():
         hard = [(r["name"], "not 1024x1024 (%dx%d)" % (r["w"], r["h"])) for r in rows
                 if r["w"] != 1024 or r["h"] != 1024]
         hard += [(r["name"], "flat (std %.3f)" % r["contrast"]) for r in rows if r["contrast"] < 0.10]
-        hard += [(r["name"], "directional (%.2f)" % r["direction"]) for r in rows if r["direction"] > 0.35]
+        hard += [(r["name"], "directional (aniso %.2f)" % r["aniso"]) for r in rows if r["aniso"] > 0.60]
+        hard += [(r["name"], "already a fold (mirror %.2f)" % r["mirror"]) for r in rows if r["mirror"] > 0.65]
+        hard += [(r["name"], "soft (acutance %.2f)" % r["acutance"]) for r in rows if r["acutance"] < 0.20]
+        hard += [(r["name"], "clipped (%.1f %%)" % (100 * r["clipped"])) for r in rows if r["clipped"] > 0.02]
         hard += [(r["name"], "centre subject (%.2f)" % r["cmb"]) for r in rows if abs(r["cmb"]) > 0.15]
         if hard:
             print("  individual rejects (%d):" % len(hard))

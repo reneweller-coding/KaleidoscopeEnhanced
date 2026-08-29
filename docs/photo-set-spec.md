@@ -14,10 +14,10 @@ flatter measured at 256 than at 1024 — so the scale is fixed and every
 threshold below refers to it.
 
 The shipped [Photo Pack v1](https://github.com/reneweller-coding/KaleidoscopeEnhanced/releases/tag/images-v1)
-meets 10 of the 22 criteria. It is right about everything that cannot be fixed
-afterwards (format, composition, structure, diversity) and wrong about tone,
-contrast and colour restraint. The numbers in the *Baseline* column below are
-that set, so the next batch has something to beat.
+meets 15 of the 31 criteria. It is right about format, framing, scale structure
+and diversity, and wrong about tone, contrast, colour restraint and a thin tail
+of self-symmetric and edgeless images. The numbers in the *Baseline* column
+below are that set, so the next batch has something concrete to beat.
 
 ---
 
@@ -48,6 +48,7 @@ into every kaleidoscope fold.
 - **No frame, border, vignette or margin.** The image must run to all four
   edges. A white margin becomes a bright cross through the middle of a fold.
 - **No single centred object.** See §5.
+- **No image that is already mirror-symmetric or already a mandala.** See §7.
 - Everything generated, so no rights questions and no attribution burden.
 
 ---
@@ -69,6 +70,20 @@ And a dark image is *not* the same thing as a low-key image:
 |---|---|---|
 | Low-key images carrying a real highlight | p99 luma ≥ 0.75 in **≥ 70 %** of them | 50.0 % |
 | High-key images carrying a real shadow | p1 luma ≤ 0.25 in **≥ 70 %** of them | 54.8 % |
+| Images between the bands (0.30–0.35, 0.60–0.65) | ≤ 15 % | 7.0 % ✓ |
+| Images with more than 2 % clipped pixels | ≤ 2 % | 1.0 % ✓ |
+
+The three bands leave deliberate gaps, so their shares do **not** sum to 100 %
+— that is what lets "low-key" keep a meaning instead of drifting up to meet
+the middle. The fourth row closes the hole that would otherwise open: without
+it, all three band targets could be met while most of the library sat in the
+transition zones.
+
+The clipping row is there because this section causes the risk it guards
+against. Asking for deep shadows and bright highlights is exactly what makes a
+generator crush blacks and blow highlights, and a clipped region does not fold
+into anything — it folds into a flat white or black patch. Tone must come from
+placement inside the range, not from running out of it.
 
 **Why it matters.** Three separate consequences, all measured:
 
@@ -108,11 +123,19 @@ looks right on its own, because the fold gives roughly half of it back.
 | Requirement | Target | Baseline |
 |---|---|---|
 | No centre subject: \|centre luma − border luma\| ≤ 0.10 | ≥ 90 % | 95.0 % ✓ |
-| Not strongly directional (≤ 0.25) | ≥ 95 % | 98.4 % ✓ |
+| Directional (structure-tensor anisotropy > 0.45) | ≤ 10 % | 7.9 % ✓ |
+| Strongly directional (> 0.60) | ≤ 3 % | 3.5 % |
 | Radial / spiral compositions | ≤ 8 % | 0.2 % ✓ |
 
-All three already pass — **keep doing whatever produced this.** The reasoning,
-so it does not get lost:
+> **Directionality is measured with the structure tensor, not with
+> `|gx| − |gy|`.** The simple difference only sees axis-aligned direction: a
+> strong 45° grain has `gx == gy` and scores as perfectly non-directional. An
+> earlier version of this spec used it and reported 98.4 % of the set as
+> non-directional; the tensor puts 7.9 % above 0.45 and 3.5 % above 0.60. The
+> old number was not a measurement of the set, it was a measurement of the
+> wrong thing.
+
+The reasoning, so it does not get lost:
 
 - A bright or dark blob in the middle competes with the kaleidoscope's own
   centre, and the picture ends up with two focal points fighting.
@@ -143,22 +166,70 @@ actually be seen.
 
 ---
 
-## 7. Structure across scales
+## 7. Symmetry — the picture must not already be a kaleidoscope
+
+| Requirement | Target | Baseline |
+|---|---|---|
+| Self-symmetric (mirror or 180°, correlation > 0.35) | ≤ 5 % | 8.2 % |
+| Already a fold (correlation > 0.65) | **0 %** | 1.7 % |
+
+A picture that carries its own mirror axis has nothing left to give a
+kaleidoscope: the fold's symmetry lands on top of the picture's, and the result
+is mechanical rather than found. Seventeen images in the current set are
+essentially pre-folded — the worst scores 0.94, and looking at them confirms
+the metric: vertical stripe patterns, and one that is literally already a
+mirrored mandala.
+
+Measured as the correlation of the image with its own left-right, top-bottom
+and 180° flips. **Checking only the 90° rotation misses this completely** — a
+left-right mirrored image scores near zero on `rot90` and 0.8 on the mirror
+test. Both are checked; they catch different things.
+
+Note the overlap with §5: a vertical stripe field is *both* highly symmetric
+and highly directional, and trips both criteria. That is intentional. The two
+tests describe different defects that happen to coincide in the worst cases.
+
+---
+
+## 8. Sharpness and edges
 
 | Requirement | Target | Baseline |
 |---|---|---|
 | Median contrast retained at 1/8 scale | ≥ 0.55 | 0.75 ✓ |
 | Median fine detail | ≥ 0.020 | 0.041 ✓ |
+| Soft / out of focus (acutance < 0.20) | ≤ 5 % | 4.9 % ✓ |
+| Almost no crisp edges (< 5 % edge pixels) | ≤ 5 % | 6.2 % |
+| Genuinely crisp (≥ 25 % edge pixels) | ≥ 40 % | 54.9 % ✓ |
+| Noisy (σ > 0.045) | ≤ 3 % | 1.8 % ✓ |
 
-Both pass. Several scenes magnify the photo heavily (`PhotoTunnel`,
-`InfinitePhotoZoomAbyss`, the deep-zoom kaleidoscopes), and a texture whose
-energy lives entirely in fine grain turns to mush the moment that happens. The
-set needs structure at *every* scale: something to see from across the room and
-something to find when a scene dives into it.
+**Hard edges are wanted.** They are what gives a fold crisp facets instead of a
+smear, and the engine treats them well in one direction and badly in the other:
+
+- **Minification is filtered.** Photo textures are uploaded with
+  `glGenerateMipmap` and `GL_LINEAR_MIPMAP_LINEAR`
+  ([RenderPipeline.cpp:2729](../Source/RenderPipeline.cpp#L2729),
+  [:2793](../Source/RenderPipeline.cpp#L2793)), so a hard edge shrunk into a
+  small tile does not alias or shimmer. Nothing to worry about here.
+- **Magnification is plain `GL_LINEAR`.** A hard edge magnified 8× becomes a
+  bilinear ramp eight pixels wide, and at deep-zoom magnifications the texel
+  grid itself shows. So an image whose crispness lives *only* at pixel scale
+  dissolves exactly when a scene looks closest at it.
+
+Which is why the first row of this table is not a separate concern from the
+rest: **the crispness has to exist at coarse scale too.** Big shapes with sharp
+boundaries survive magnification; sharp speckle does not. That is also the
+argument for keeping JPEG quality at 95 or above (§1) — ringing around a hard
+edge is magnified along with the edge.
+
+Acutance is measured as the share of gradient energy a one-pixel blur destroys.
+It is deliberately not raw gradient energy, because noise has plenty of that
+and no edges at all. The noise cap is loose on purpose: the estimator cannot
+tell generator noise from the legitimate grain of sand, pigment or paper, and
+grain is wanted, so it only catches the degenerate tail.
 
 ---
 
-## 8. Diversity
+## 9. Diversity
 
 | Requirement | Target | Baseline |
 |---|---|---|
@@ -173,7 +244,7 @@ files really are a thousand pictures.
 
 ---
 
-## 9. Writing the prompts
+## 10. Writing the prompts
 
 The current set reads as flat-lit material scans, which is exactly what asking
 for "textures" invites. **Ask for lighting, not just for a substance.**
@@ -191,13 +262,27 @@ Useful fragments, per tone band:
 For the quiet-colour third, add: *"near-monochrome, muted, a single hue,
 desaturated"*.
 
+For crisp material (§8), ask for it by name: *"sharp focus throughout, crisp
+edges between areas, no depth of field blur"*. Depth of field is the usual
+culprit behind a soft image — a generator will happily throw half the frame out
+of focus, and a blurred region is dead area in a fold.
+
 Always append the negatives: *"no border, no frame, no vignette, no margin, no
 text, no watermark, no face, no recognisable object, no single centred
-subject"*.
+subject, not symmetrical, no mirrored composition, no mandala, no kaleidoscope
+pattern, no parallel stripes"*.
+
+The symmetry and stripe negatives matter more than they look. The worst images
+in the current set are vertical stripe fields and one picture that is already a
+mirrored mandala — and "kaleidoscope" is a word a generator is very willing to
+act on if it appears anywhere near the prompt, which is exactly what must not
+happen: the fold is the engine's job, and a source that has done it already
+leaves nothing to fold.
 
 Avoid in prompts: *flat lay*, *scanned*, *evenly lit*, *studio softbox*,
 *product shot* — every one of them produces the tonal flatness this document
-exists to fix.
+exists to fix. And *seamless* or *tileable*: it buys nothing here (§1) and the
+generators that honour it tend to produce repetitive, symmetric layouts.
 
 **Batch size.** The prompt generator returns only about 10 usable prompts per
 request regardless of the count asked for (its million-token figure is the
@@ -207,7 +292,7 @@ than hoping a mixed run lands on the right proportions.
 
 ---
 
-## 10. Acceptance
+## 11. Acceptance
 
 ```bash
 python Tools/check_image_set.py <folder> --list-rejects
