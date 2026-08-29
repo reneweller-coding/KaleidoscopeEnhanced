@@ -51,19 +51,19 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 ; Release tags the extra content hangs off. A GitHub asset's download URL is
 ; deterministic (…/releases/download/<tag>/<file>), so no API call is needed --
 ; but it also means a pack re-published under a NEW tag has to be updated here.
-#define ImagesTag "images-v1"
+#define ImagesTag "images-v2"
 #define ModelsTag "models-v2"
 #define RelUrl "https://github.com/reneweller-coding/KaleidoscopeEnhanced/releases/download"
 
 [CustomMessages]
 german.PacksGroup=Zusatzinhalte (werden aus dem Internet geladen)
-german.PackImages=Bilder: 1000 lizenzfreie Texturen (734 MB)
+german.PackImages=Bilder: 977 lizenzfreie Texturen (593 MB)
 german.PackShips=3D-Modelle: Raumschiffe, 79 Stück (715 MB)
 german.PackStations=3D-Modelle: Stationen, 30 Stück (259 MB)
 german.PackObjects=3D-Modelle: Objekte, 48 Stück (384 MB)
 german.PackFailed=Der Download der Zusatzinhalte ist fehlgeschlagen:%n%n%1%n%nDie Installation wird ohne sie fortgesetzt. Sie lassen sich jederzeit im Kaleidoscope-Setup nachladen.
 english.PacksGroup=Extra content (downloaded from the internet)
-english.PackImages=Photos: 1000 licence-free textures (734 MB)
+english.PackImages=Photos: 977 licence-free textures (593 MB)
 english.PackShips=3D models: ships, 79 of them (715 MB)
 english.PackStations=3D models: stations, 30 of them (259 MB)
 english.PackObjects=3D models: objects, 48 of them (384 MB)

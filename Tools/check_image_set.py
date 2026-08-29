@@ -118,6 +118,27 @@ def measure(path):
                            L[:, :16].ravel(), L[:, -16:].ravel()])
     border = float(ring.mean())
 
+    # The two above compare BRIGHTNESS, which turned out to be a blind spot: a
+    # narrow rim as bright as the picture inside it, and a droplet as bright as
+    # the surface under it, both passed while plainly breaking the rules in §2.
+    # These two look at geometry instead.
+
+    # A frame is a rim that stands off from the interior on ALL FOUR sides in
+    # the same direction. One-sided gradients (a raking light) score zero.
+    b, inset = 14, 44
+    edges = [float(band.mean()) - float(inner.mean()) for band, inner in (
+        (L[:b], L[inset:inset + b]), (L[-b:], L[-inset - b:-inset]),
+        (L[:, :b], L[:, inset:inset + b]), (L[:, -b:], L[:, -inset - b:-inset]))]
+    framed = min(abs(e) for e in edges) if (
+        all(e > 0 for e in edges) or all(e < 0 for e in edges)) else 0.0
+
+    # A single object in the middle concentrates the picture's DETAIL there,
+    # whatever its brightness. Gradient density inside the central disc against
+    # the density out at the corners.
+    yy, xx = np.mgrid[0:S, 0:S]
+    rad = np.hypot(yy - S / 2.0, xx - S / 2.0) / (S / 2.0)
+    centre_conc = float(grad[rad < 0.42].mean()) / max(float(grad[rad > 0.72].mean()), 1e-6)
+
     # Self-symmetry. A picture that is ALREADY mirrored or already a mandala
     # has nothing left to give a kaleidoscope: the fold's own symmetry lands on
     # top of the picture's and the result is mechanical. Checking only the
@@ -150,6 +171,8 @@ def measure(path):
         "clipped": clipped,
         "retention": float(small.std()) / max(float(L.std()), 1e-6),
         "cmb": centre - border,
+        "framed": framed,
+        "centre_conc": centre_conc,
         "radial": radial,
         "mirror": mirror,
         "_sig": sig,
@@ -250,6 +273,10 @@ def check(rows, hue, dup_frac):
     # --- composition ---
     cen = frac(rows, lambda r: abs(r["cmb"]) <= 0.10)
     add("Composition", "no centre subject (|centre-border| <= 0.10)", ">= 90 %", "%.1f %%" % (100 * cen), cen >= 0.90)
+    fr = frac(rows, lambda r: r["framed"] > 0.05)
+    cc = frac(rows, lambda r: r["centre_conc"] > 2.5)
+    add("Composition", "framed / rimmed on all four sides", "<= 1 %", "%.1f %%" % (100 * fr), fr <= 0.01)
+    add("Composition", "detail concentrated in the middle", "<= 1 %", "%.1f %%" % (100 * cc), cc <= 0.01)
     a45 = frac(rows, lambda r: r["aniso"] > 0.45)
     a60 = frac(rows, lambda r: r["aniso"] > 0.60)
     add("Composition", "directional (anisotropy > 0.45)", "<= 10 %", "%.1f %%" % (100 * a45), a45 <= 0.10)
@@ -360,6 +387,8 @@ def main():
         hard += [(r["name"], "soft (acutance %.2f)" % r["acutance"]) for r in rows if r["acutance"] < 0.20]
         hard += [(r["name"], "clipped (%.1f %%)" % (100 * r["clipped"])) for r in rows if r["clipped"] > 0.02]
         hard += [(r["name"], "centre subject (%.2f)" % r["cmb"]) for r in rows if abs(r["cmb"]) > 0.15]
+        hard += [(r["name"], "framed (%.3f)" % r["framed"]) for r in rows if r["framed"] > 0.05]
+        hard += [(r["name"], "centred object (%.2f)" % r["centre_conc"]) for r in rows if r["centre_conc"] > 2.5]
         if hard:
             print("  individual rejects (%d):" % len(hard))
             for nm, why in hard[:60]:

@@ -89,18 +89,18 @@ Press **`h`** any time for the full keyboard reference in-app.
 
 ## Photo pack
 
-Kaleidoscopes need something to fold. A set of **1000 licence-free
+Kaleidoscopes need something to fold. A set of **977 licence-free
 1024×1024 textures** is published alongside the program — agate, rust,
 pigment, soap film, sediment, aurora, craquelure, woven fibre — generated for
 this purpose, so there are no rights questions and no faces or subjects to be
 mangled by a mirror.
 
 They are published as their own release,
-[Photo Pack v1](https://github.com/reneweller-coding/KaleidoscopeEnhanced/releases/tag/images-v1):
+[Photo Pack v2](https://github.com/reneweller-coding/KaleidoscopeEnhanced/releases/tag/images-v2):
 
 | | |
 |---|---|
-| `KaleidoscopeImages.zip` | 1000 images, 734 MB |
+| `KaleidoscopeImages.zip` | 977 images, 593 MB |
 
 Square and edge-to-edge is the point: the engine fills a 1024×1024 texture
 without preserving aspect ratio, so a picture with a subject in the middle and

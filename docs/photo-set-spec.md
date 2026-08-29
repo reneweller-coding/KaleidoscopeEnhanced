@@ -13,11 +13,22 @@ detail figures depend on the scale they are measured at — the same set looks
 flatter measured at 256 than at 1024 — so the scale is fixed and every
 threshold below refers to it.
 
-The shipped [Photo Pack v1](https://github.com/reneweller-coding/KaleidoscopeEnhanced/releases/tag/images-v1)
-meets 15 of the 31 criteria. It is right about format, framing, scale structure
-and diversity, and wrong about tone, contrast, colour restraint and a thin tail
-of self-symmetric and edgeless images. The numbers in the *Baseline* column
-below are that set, so the next batch has something concrete to beat.
+The shipped [Photo Pack v2](https://github.com/reneweller-coding/KaleidoscopeEnhanced/releases/tag/images-v2)
+meets **all 33** criteria. Its predecessor, [v1](https://github.com/reneweller-coding/KaleidoscopeEnhanced/releases/tag/images-v1),
+met 15 of them; the *v1* column below is kept because a requirement is easier to
+understand next to the thing it was written against.
+
+**The payoff, measured on the rendered output rather than on the source** --
+same scenes, same probe, same audio:
+
+| | v1 | v2 |
+|---|---|---|
+| Frame contrast (luma std) | 0.053 … 0.105 | **0.198 … 0.264** |
+| Frame brightness range | 0.275 … 0.384 | **0.309 … 0.590** |
+
+A factor of 2.6 in contrast. That is the number this whole document exists for:
+a source that sits at the mean renders as a flat wash, because folding and
+cross-blending average toward the mean.
 
 ---
 
@@ -53,25 +64,25 @@ into every kaleidoscope fold.
 
 ---
 
-## 3. Tone — the axis the current set gets wrong
+## 3. Tone — the axis that decides whether any of this works
 
-This is the whole reason for a second batch. Target proportions for a
-1000-image library:
+The axis v1 got wrong and v2 got right. Target proportions, as shares so
+that any batch size works (counts shown for a 1000-image library):
 
-| Band | Mean luma | Share | Count | Baseline |
-|---|---|---|---|---|
-| **Low-key** | 0.12 … 0.30 | 20–30 % | ~250 | **1.6 %** |
-| **Mid** | 0.35 … 0.60 | 45–55 % | ~500 | **87.2 %** |
-| **High-key** | 0.65 … 0.85 | 20–30 % | ~250 | **4.2 %** |
+| Band | Mean luma | Share | Count | v1 | v2 |
+|---|---|---|---|---|---|
+| **Low-key** | 0.12 … 0.30 | 20–30 % | ~250 | **1.6 %** | 20.3 % ✓ |
+| **Mid** | 0.35 … 0.60 | 45–55 % | ~500 | **87.2 %** | 55.6 % ✓ |
+| **High-key** | 0.65 … 0.85 | 20–30 % | ~250 | **4.2 %** | 24.2 % ✓ |
 
 And a dark image is *not* the same thing as a low-key image:
 
-| | Requirement | Baseline |
-|---|---|---|
-| Low-key images carrying a real highlight | p99 luma ≥ 0.75 in **≥ 70 %** of them | 50.0 % |
-| High-key images carrying a real shadow | p1 luma ≤ 0.25 in **≥ 70 %** of them | 54.8 % |
-| Images between the bands (0.30–0.35, 0.60–0.65) | ≤ 15 % | 7.0 % ✓ |
-| Images with more than 2 % clipped pixels | ≤ 2 % | 1.0 % ✓ |
+| | Requirement | v1 | v2 |
+|---|---|---|---|
+| Low-key images carrying a real highlight | p99 luma ≥ 0.75 in **≥ 70 %** of them | 50.0 % | 70.2 % ✓ |
+| High-key images carrying a real shadow | p1 luma ≤ 0.25 in **≥ 70 %** of them | 54.8 % | 88.1 % ✓ |
+| Images between the bands (0.30–0.35, 0.60–0.65) | ≤ 15 % | 7.0 % ✓ | 0.0 % ✓ |
+| Images with more than 2 % clipped pixels | ≤ 2 % | 1.0 % ✓ | 1.9 % ✓ |
 
 The three bands leave deliberate gaps, so their shares do **not** sum to 100 %
 — that is what lets "low-key" keep a meaning instead of drifting up to meet
@@ -103,12 +114,12 @@ placement inside the range, not from running out of it.
 
 ## 4. Contrast
 
-| Requirement | Target | Baseline |
-|---|---|---|
-| Median luma standard deviation | **≥ 0.22** | 0.161 |
-| Flat images (std < 0.12) | **≤ 10 %** | 19.6 % |
-| Images with punch (std ≥ 0.20) | **≥ 40 %** | 25.6 % |
-| Dynamic range p1…p99 ≥ 0.55 | ≥ 60 % | 79.9 % ✓ |
+| Requirement | Target | v1 | v2 |
+|---|---|---|---|
+| Median luma standard deviation | **≥ 0.22** | 0.161 | 0.222 ✓ |
+| Flat images (std < 0.12) | **≤ 10 %** | 19.6 % | 0.5 % ✓ |
+| Images with punch (std ≥ 0.20) | **≥ 40 %** | 25.6 % | 60.4 % ✓ |
+| Dynamic range p1…p99 ≥ 0.55 | ≥ 60 % | 79.9 % ✓ | 99.1 % ✓ |
 
 The last row already passes, and the contrast between it and the first three is
 the sharpest description of what is wrong: the individual images *do* span a
@@ -120,12 +131,14 @@ looks right on its own, because the fold gives roughly half of it back.
 
 ## 5. Composition
 
-| Requirement | Target | Baseline |
-|---|---|---|
-| No centre subject: \|centre luma − border luma\| ≤ 0.10 | ≥ 90 % | 95.0 % ✓ |
-| Directional (structure-tensor anisotropy > 0.45) | ≤ 10 % | 7.9 % ✓ |
-| Strongly directional (> 0.60) | ≤ 3 % | 3.5 % |
-| Radial / spiral compositions | ≤ 8 % | 0.2 % ✓ |
+| Requirement | Target | v1 | v2 |
+|---|---|---|---|
+| No centre subject: \|centre luma − border luma\| ≤ 0.10 | ≥ 90 % | 95.0 % ✓ | 90.8 % ✓ |
+| Framed / rimmed on all four sides | ≤ 1 % | 2.1 % | 0.0 % ✓ |
+| Detail concentrated in the middle | ≤ 1 % | 0.4 % ✓ | 0.0 % ✓ |
+| Directional (structure-tensor anisotropy > 0.45) | ≤ 10 % | 7.9 % ✓ | 2.1 % ✓ |
+| Strongly directional (> 0.60) | ≤ 3 % | 3.5 % | 0.0 % ✓ |
+| Radial / spiral compositions | ≤ 8 % | 0.2 % ✓ | 0.0 % ✓ |
 
 > **Directionality is measured with the structure tensor, not with
 > `|gx| − |gy|`.** The simple difference only sees axis-aligned direction: a
@@ -148,11 +161,11 @@ The reasoning, so it does not get lost:
 
 ## 6. Colour
 
-| Band | Mean saturation | Share | Baseline |
-|---|---|---|---|
-| **Quiet** | < 0.25 | 25–35 % | **12.6 %** |
-| **Medium** | 0.25 … 0.55 | 40–50 % | 55.9 % |
-| **Loud** | > 0.55 | 20–30 % | 31.5 % ✓ |
+| Band | Mean saturation | Share | v1 | v2 |
+|---|---|---|---|---|
+| **Quiet** | < 0.25 | 25–35 % | **12.6 %** | 29.7 % ✓ |
+| **Medium** | 0.25 … 0.55 | 40–50 % | 55.9 % | 45.5 % ✓ |
+| **Loud** | > 0.55 | 20–30 % | 31.5 % ✓ | 24.8 % ✓ |
 
 Plus: **every one of the 12 hue bins ≥ 3 %** of the set's colourfulness
 (baseline: green at 2.2 % — the only gap; the rest is evenly spread).
@@ -168,10 +181,10 @@ actually be seen.
 
 ## 7. Symmetry — the picture must not already be a kaleidoscope
 
-| Requirement | Target | Baseline |
-|---|---|---|
-| Self-symmetric (mirror or 180°, correlation > 0.35) | ≤ 5 % | 8.2 % |
-| Already a fold (correlation > 0.65) | **0 %** | 1.7 % |
+| Requirement | Target | v1 | v2 |
+|---|---|---|---|
+| Self-symmetric (mirror or 180°, correlation > 0.35) | ≤ 5 % | 8.2 % | 4.5 % ✓ |
+| Already a fold (correlation > 0.65) | **0 %** | 1.7 % | 0.0 % ✓ |
 
 A picture that carries its own mirror axis has nothing left to give a
 kaleidoscope: the fold's symmetry lands on top of the picture's, and the result
@@ -193,14 +206,14 @@ tests describe different defects that happen to coincide in the worst cases.
 
 ## 8. Sharpness and edges
 
-| Requirement | Target | Baseline |
-|---|---|---|
-| Median contrast retained at 1/8 scale | ≥ 0.55 | 0.75 ✓ |
-| Median fine detail | ≥ 0.020 | 0.041 ✓ |
-| Soft / out of focus (acutance < 0.20) | ≤ 5 % | 4.9 % ✓ |
-| Almost no crisp edges (< 5 % edge pixels) | ≤ 5 % | 6.2 % |
-| Genuinely crisp (≥ 25 % edge pixels) | ≥ 40 % | 54.9 % ✓ |
-| Noisy (σ > 0.045) | ≤ 3 % | 1.8 % ✓ |
+| Requirement | Target | v1 | v2 |
+|---|---|---|---|
+| Median contrast retained at 1/8 scale | ≥ 0.55 | 0.75 ✓ | 0.84 ✓ |
+| Median fine detail | ≥ 0.020 | 0.041 ✓ | 0.037 ✓ |
+| Soft / out of focus (acutance < 0.20) | ≤ 5 % | 4.9 % ✓ | 4.7 % ✓ |
+| Almost no crisp edges (< 5 % edge pixels) | ≤ 5 % | 6.2 % | 4.6 % ✓ |
+| Genuinely crisp (≥ 25 % edge pixels) | ≥ 40 % | 54.9 % ✓ | 50.2 % ✓ |
+| Noisy (σ > 0.045) | ≤ 3 % | 1.8 % ✓ | 0.0 % ✓ |
 
 **Hard edges are wanted.** They are what gives a fold crisp facets instead of a
 smear, and the engine treats them well in one direction and badly in the other:
@@ -231,11 +244,11 @@ grain is wanted, so it only catches the degenerate tail.
 
 ## 9. Diversity
 
-| Requirement | Target | Baseline |
-|---|---|---|
-| Near-duplicate pairs (32×32 luma correlation > 0.60) | ≤ 1 % | 0.41 % ✓ |
-| Distinct motifs | ≥ 400 (scales with batch size) | 422 ✓ |
-| Variants of any one motif | ≤ 4 | median 2, **max 6** |
+| Requirement | Target | v1 | v2 |
+|---|---|---|---|
+| Near-duplicate pairs (32×32 luma correlation > 0.60) | ≤ 1 % | 0.41 % ✓ | 0.90 % ✓ |
+| Distinct motifs | ≥ 400 (scales with batch size) | 422 ✓ | 879 ✓ |
+| Variants of any one motif | ≤ 4 | median 2, **max 6** | max 2 ✓ |
 
 Worth stating because it was checked and is *not* a problem: the colourway
 variants in the current set are structurally independent images, not recolours
@@ -246,8 +259,9 @@ files really are a thousand pictures.
 
 ## 10. Writing the prompts
 
-The current set reads as flat-lit material scans, which is exactly what asking
-for "textures" invites. **Ask for lighting, not just for a substance.**
+v1 read as flat-lit material scans, which is exactly what asking for "textures"
+invites, and the fragments below are what turned that around in v2.
+**Ask for lighting, not just for a substance.**
 
 Useful fragments, per tone band:
 

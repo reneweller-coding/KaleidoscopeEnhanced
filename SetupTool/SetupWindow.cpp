@@ -53,7 +53,7 @@ struct PackDef
 };
 
 const PackDef kPacks[4] = {
-	{ S_SETUP_PACK_IMAGES,   "images-v1", "KaleidoscopeImages.zip",         "Images", ".jpg", 734LL * 1024 * 1024 },
+	{ S_SETUP_PACK_IMAGES,   "images-v2", "KaleidoscopeImages.zip",         "Images", ".jpg", 593LL * 1024 * 1024 },
 	{ S_SETUP_PACK_SHIPS,    "models-v2", "KaleidoscopeModels-ships.zip",   "Models", ".glb", 715LL * 1024 * 1024 },
 	{ S_SETUP_PACK_STATIONS, "models-v2", "KaleidoscopeModels-stations.zip","Models", ".glb", 259LL * 1024 * 1024 },
 	{ S_SETUP_PACK_OBJECTS,  "models-v2", "KaleidoscopeModels-objects.zip", "Models", ".glb", 384LL * 1024 * 1024 },

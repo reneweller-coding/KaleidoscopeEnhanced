@@ -146,8 +146,8 @@ these scenes back to back. It is left out of the preset list while the models
 are missing, so it never appears as an entry that shows nothing.
 "@ | Set-Content -Path (Join-Path $modelsDir "LIESMICH-MODELLE.txt") -Encoding utf8
 
-# The photo library is the same story: 1000 licence-free 1024x1024 textures at
-# roughly 700 MB, thirty times the installer. Every preset's ImageDirectory
+# The photo library is the same story: 977 licence-free 1024x1024 textures at
+# roughly 600 MB, thirty times the installer. Every preset's ImageDirectory
 # attribute points at this folder ("..\Images"), so unpacking the pack here is
 # all it takes; RenderPipeline falls back to a procedural texture while it is
 # empty, and says so at startup. Tools\make_image_pack.ps1 builds the archive.
@@ -161,9 +161,9 @@ Dieser Ordner ist absichtlich leer. Er ist die eingestellte Bilderquelle des
 Programms -- die Szenen, die Fotos verarbeiten (Kaleidoskope, Spiegelungen,
 Galerie, Foto-Tunnel ...), holen ihr Material von hier.
 
-Mitgeliefert wird ein Satz von 1000 lizenzfreien, eigens erzeugten Texturen
+Mitgeliefert wird ein Satz von 977 lizenzfreien, eigens erzeugten Texturen
 (1024x1024, quadratisch, vollflaechig -- also ohne Motivrand, der beim
-Spiegeln stoert). Zusammen sind das rund 700 MB und damit ein Vielfaches des
+Spiegeln stoert). Zusammen sind das rund 600 MB und damit ein Vielfaches des
 Programms, deshalb liegen sie als eigener Download bei den Releases.
 
   1. Bilderpaket von der Releases-Seite laden:
@@ -187,9 +187,9 @@ This folder is intentionally empty. It is the program's configured photo
 source: every scene that works on photographs (kaleidoscopes, mirrors, the
 gallery, photo tunnels, ...) takes its material from here.
 
-A set of 1000 licence-free, purpose-generated textures is available for it
+A set of 977 licence-free, purpose-generated textures is available for it
 (1024x1024, square, edge-to-edge -- no subject border to break the mirroring).
-Together they come to roughly 700 MB, many times the size of the program, so
+Together they come to roughly 600 MB, many times the size of the program, so
 they are published as a separate download.
 
   1. Get the photo pack here:
