@@ -92,3 +92,12 @@ Configurations/Marked.xml
 # runs; it simply has fewer scenes until the pack is unpacked into Models/.
 # Tools/make_model_pack.ps1 builds the archive.
 /Models/
+
+# The bundled photo library is OPTIONAL EXTRA CONTENT, published as a GitHub
+# release asset rather than committed -- 1000 licence-free 1024x1024 textures,
+# roughly 700 MB, which is ten times the rest of the repository and would be in
+# git's history forever. RenderPipeline::traverse() falls back to a procedural
+# texture when the folder is empty, so a plain clone builds and runs; the photo
+# scenes simply have nothing of their own to show until the pack is unpacked
+# into Images/. Tools/make_image_pack.ps1 builds the archive.
+/Images/

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<configuration ImageDirectory="C:\\Users\\rene\\Desktop\\BilderPhotoechoes" ConfigurationName="TestFeedback" >
+<configuration ImageDirectory="..\\Images" ConfigurationName="TestFeedback" >
   <!-- Review preset for the 2026-08-23 user-feedback fixes: the "Test"
        name prefix runs these 26 scenes alphabetically, 8 s each. -->
   <TextureShader file="..\Scene2D\FuturisticCityFlight.frag" type="normal" mood="bright,aggressive,space" probability="0.45" complexity="4">

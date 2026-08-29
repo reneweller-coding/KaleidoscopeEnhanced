@@ -21,7 +21,7 @@ param(
     [int]      $Seconds = 16,
     # Where the background photos come from. Overridable so a quantitative
     # scan can pin ONE image and get comparable numbers between runs.
-    [string]   $ImageDir = "C:\Users\rene\Desktop\BilderPhotoechoes"
+    [string]   $ImageDir = "..\Images"
 )
 
 $root = Split-Path $PSScriptRoot -Parent

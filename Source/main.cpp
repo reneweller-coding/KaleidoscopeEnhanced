@@ -36,6 +36,8 @@
  *                    wins if both are given.
  *  - `-3 <mode>`     stereoscopic output mode: "sbs", "tb", or an "ana*" prefix for
  *                    anaglyph; anything else disables it.
+ *  - `-f <dir>`      photo-source folder for this run, outranking both the ini
+ *                    setting and the preset's ImageDirectory attribute.
  *  - `-h`            print the help/usage text and exit.
  *
  * There is only one runtime path after parsing: the normal windowed Qt application
@@ -61,16 +63,13 @@
 #include <QtNetwork/QNetworkProxy>
 #include "QMyWindow.h"
 
-#ifdef WIN32
-#include <shlobj.h>
-#endif
-
-// NOTE: keep this AFTER the Windows headers above.  With C++17 std::byte and a
+// NOTE: keep this AFTER any Windows headers.  With C++17 std::byte and a
 // `using namespace std;` active, the Windows SDK's unqualified `byte` in
-// objidl.h becomes ambiguous (C2872).  Importing std only here avoids that.
+// objidl.h becomes ambiguous (C2872) -- shlobj.h used to be included above for
+// the "My Pictures" lookup and made that a live hazard.  Importing std only
+// here keeps the guard in place for whatever arrives transitively.
 using namespace std;
 
-QString directory = "C:\\Users\\rene\\Pictures";	///< Default photo-source directory; overwritten with the user's Pictures folder on Windows startup.
 bool fullscreen = false;	///< Whether to start the window in fullscreen mode (`-b`, or implied by `-m`).
 int  monitorIndex = -1;   ///< `-m <n>`: target monitor for fullscreen (-1 = auto).
 bool logToFile = false;   ///< -l: redirect stderr to a rotating log file (kiosk).
@@ -117,6 +116,9 @@ void commandlineerror( char *cmd, char *parm )
 	"              system's own codecs; -i wins if both are given\n"
 	"-3 <mode>     stereoscopic output: sbs (side-by-side, 3D projectors and\n"
 	"              HMD video viewers), tb (top-bottom), ana (red-cyan glasses)\n"
+	"-f <dir>      photo folder for this run (searched recursively).  Normally\n"
+	"              the bundled Images folder; set 'imageDirectory' in\n"
+	"              kaleidoscope_settings.ini to change it permanently\n"
 	"-h            this help menu\n"
 	"Keys (while running):\n"
 	"0             toggle the configuration-select menu\n"
@@ -168,8 +170,8 @@ void parsecommandline( int argc, char *argv[] )
 	// A switch must be listed HERE as well as handled in the switch below —
 	// the table is what makes it valid at all, and a case with no entry here is
 	// rejected before it is ever reached.
-	char optionchar[] =   { 'h', 'b', 's', 'c', 'm', 'l', 'r', 'w', 'o', 't', 'x', 'i', '3', 'v', 0 };
-	int musthaveparam[] = {  0 ,  0,   1,   1,   1,   0,   0,   1,   0,   1,   1,   1,   1,   1,  0 };
+	char optionchar[] =   { 'h', 'b', 's', 'c', 'm', 'l', 'r', 'w', 'o', 't', 'x', 'i', '3', 'v', 'f', 0 };
+	int musthaveparam[] = {  0 ,  0,   1,   1,   1,   0,   0,   1,   0,   1,   1,   1,   1,   1,   1,  0 };
 
 	int nopts;
 	int mhp[256];
@@ -231,7 +233,10 @@ void parsecommandline( int argc, char *argv[] )
 			{
 				case 'h': commandlineerror( NULL, NULL);  break;
 				//case 'b': benchmark = true; break;
-				//case 'f': directory = argv[1]; break;
+				// Photo source for this run only; outranks both the ini
+				// setting and the preset's own ImageDirectory attribute.
+				case 'f': RenderPipeline::s_imageDirCli =
+				              QString::fromLocal8Bit( argv[1] ); break;
 				case 'b': fullscreen = !fullscreen; break;
 				case 's': RenderPipeline::setRenderScale( (float) atof( argv[1] ) );
 				          RenderPipeline::s_renderScaleFromCli = true; break;
@@ -312,7 +317,7 @@ void parsecommandline( int argc, char *argv[] )
 /**
  * @brief Application entry point.
  *
- * Sequence: resolve the platform default photo directory, load persisted look
+ * Sequence: load persisted look
  * settings, parse the command line (which may override those settings and/or exit
  * the process outright, e.g. for `-h` or a bad option), optionally redirect stderr
  * to a rotating log file for kiosk/unattended runs, configure the OpenGL 4.3 core
@@ -338,17 +343,16 @@ int main(int argc, char *argv[])
 	// AudioAnalyzer's capture thread seeds itself separately in ::run().
 	srand( (unsigned) std::chrono::high_resolution_clock::now().time_since_epoch().count() );
 
-	//Setting default image path for windows
-#ifdef WIN32
-	// The HRESULT used to be assigned and ignored. On failure SHGetFolderPath
-	// leaves the buffer untouched, so the old code handed an uninitialised
-	// 1 KB stack buffer to `directory` -- garbage at best, a crash at worst.
-	char imagePath[1024] = {};
-	if( SUCCEEDED( SHGetFolderPath( NULL, CSIDL_MYPICTURES, NULL,
-	                                SHGFP_TYPE_CURRENT, imagePath ) ) && imagePath[0] )
-		directory = imagePath;
-#endif
-
+	// The photo source used to be resolved here, from the Windows "My Pictures"
+	// folder into a global -- which NOTHING ever read: RenderPipeline takes its
+	// directory from the preset's ImageDirectory attribute, and the -f flag that
+	// would have overridden the global was commented out. So the lookup ran on
+	// every start and its result was discarded. The three real layers now live
+	// together in RenderPipeline::init() (CLI -f > ini > preset), with the
+	// preset default pointing at the bundled Images folder. Someone's Pictures
+	// folder is no longer a sensible guess for a visualizer's source material
+	// anyway -- it is full of holiday snaps and screenshots.
+	//
 	// Restore saved look settings first, so explicit command-line flags (e.g. -s)
 	// still take precedence over the persisted values.
 	RenderPipeline::loadSettings();

@@ -17,7 +17,7 @@ param(
     [Parameter(Mandatory=$true)][ValidateSet("scene","fx","trans")] [string] $Kind,
     [Parameter(Mandatory=$true)][string[]] $Names,
     [Parameter(Mandatory=$true)][string]   $OutDir,
-    [string] $ImageDir = "C:\Users\rene\Desktop\BilderPhotoechoes"
+    [string] $ImageDir = "..\Images"
 )
 
 $root  = Split-Path $PSScriptRoot -Parent

@@ -57,6 +57,7 @@ private:
 	QComboBox      *m_language      = nullptr;
 	QComboBox      *m_startConfig   = nullptr;
 	QSpinBox        *m_remotePort    = nullptr;
+	QLineEdit       *m_imageDir      = nullptr;   ///< Photo-source folder (ini key imageDirectory); empty = the bundled Images folder.
 
 	QComboBox      *m_lyricsMode    = nullptr;
 	QCheckBox       *m_lyricsKinetic = nullptr;

@@ -15,6 +15,7 @@
 #include <QtWidgets/QFormLayout>
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QHBoxLayout>
+#include <QtWidgets/QFileDialog>
 #include <QtWidgets/QScrollArea>
 #include <QtCore/QSettings>
 #include <QtCore/QDir>
@@ -172,6 +173,26 @@ void SetupWindow::buildContent()
 	m_remotePort->setRange( 0, 65535 );
 	m_remotePort->setSpecialValueText( S( S_SETUP_REMOTEPORT_OFF ) );
 	fStart->addRow( S( S_SETUP_REMOTEPORT ), m_remotePort );
+
+	// Photo source. Empty means "whatever the preset says", which is the
+	// bundled Images folder -- deliberately NOT a path written into the presets,
+	// because Tools/make_genre_configs.py regenerates those and would wipe it.
+	m_imageDir = new QLineEdit();
+	m_imageDir->setPlaceholderText( S( S_SETUP_IMAGEDIR_DEFAULT ) );
+	m_imageDir->setToolTip( S( S_SETUP_IMAGEDIR_HINT ) );
+	auto *imgRow = new QWidget();
+	auto *imgLay = new QHBoxLayout( imgRow );
+	imgLay->setContentsMargins( 0, 0, 0, 0 );
+	imgLay->addWidget( m_imageDir, 1 );
+	auto *imgPick = new QPushButton( S( S_SETUP_IMAGEDIR_PICK ) );
+	imgLay->addWidget( imgPick );
+	connect( imgPick, &QPushButton::clicked, this, [this]() {
+		const QString d = QFileDialog::getExistingDirectory(
+			this, S( S_SETUP_IMAGEDIR ), m_imageDir->text().trimmed() );
+		if( !d.isEmpty() )
+			m_imageDir->setText( QDir::toNativeSeparators( d ) );
+	} );
+	fStart->addRow( S( S_SETUP_IMAGEDIR ), imgRow );
 	root->addWidget( gStart );
 
 	// ---- Optionale Online-Extras ----
@@ -330,6 +351,7 @@ void SetupWindow::loadFromIni()
 	int idx = startCfg.isEmpty() ? 0 : m_startConfig->findData( startCfg );
 	m_startConfig->setCurrentIndex( idx >= 0 ? idx : 0 );
 	m_remotePort->setValue( s.value( "remotePort", 8080 ).toInt() );
+	m_imageDir->setText( s.value( "imageDirectory", QString() ).toString() );
 
 	m_lyricsMode->setCurrentIndex( qBound( 0, s.value( "lyricsMode", 2 ).toInt(), 2 ) );
 	m_lyricsKinetic->setChecked( s.value( "lyricsKinetic", false ).toBool() );
@@ -385,6 +407,7 @@ void SetupWindow::saveToIni()
 	else
 		s.remove( "activeConfig" );   // "(zuletzt verwendet)" - don't pin a specific one
 	s.setValue( "remotePort", m_remotePort->value() );
+	s.setValue( "imageDirectory", m_imageDir->text().trimmed() );
 
 	s.setValue( "lyricsMode",    m_lyricsMode->currentIndex() );
 	s.setValue( "lyricsKinetic", m_lyricsKinetic->isChecked() );

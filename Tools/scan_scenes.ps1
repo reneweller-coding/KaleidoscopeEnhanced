@@ -48,7 +48,7 @@ if (-not $ImageDir) {
     $ImageDir = Join-Path $env:TEMP "kaleido_scan_image"
     New-Item -ItemType Directory -Force $ImageDir | Out-Null
     if (-not (Get-ChildItem $ImageDir -File)) {
-        $srcPhotos = "C:\Users\rene\Desktop\BilderPhotoechoes"
+        $srcPhotos = Join-Path (Split-Path $PSScriptRoot -Parent) "Images"
         # The MEDIAN-brightness photo, not an arbitrary one: image-folding
         # scenes inherit the photo's brightness, so an unusually bright or dark
         # pick would make them read TOO_BRIGHT/TOO_DARK for a reason that has

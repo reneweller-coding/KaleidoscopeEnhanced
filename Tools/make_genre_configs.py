@@ -28,7 +28,12 @@ import re, os, sys
 os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 
 SRC = "Configurations/Komplett.xml"
-IMAGE_DIR = "C:\\\\Users\\\\rene\\\\Desktop\\\\BilderPhotoechoes"
+# Relative to the executable's working directory (bin/), exactly like the
+# shader paths ("..\\\\Scene2D\\\\X.frag").  The bundled photo library lives in
+# Images/ beside Configurations/; a user who wants their own pictures sets
+# imageDirectory in kaleidoscope_settings.ini instead of editing generated
+# files, which this script would overwrite on its next run.
+IMAGE_DIR = "..\\\\Images"
 
 # Every rule takes (moods, head): the mood set, and the entry's opening tag.
 # Most only need the moods, but "loads a real 3D model" is a property of the

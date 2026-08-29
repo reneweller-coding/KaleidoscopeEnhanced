@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<configuration ImageDirectory="C:\\Users\\rene\\Desktop\\BilderPhotoechoes" ConfigurationName="Neu" >
+<configuration ImageDirectory="..\\Images" ConfigurationName="Neu" >
 
   <!-- 101 curated scenes: 11 initial scenes plus 90 newly added dynamic,
        fullscreen psychedelic scenes (hyperbolic Poincaré, 4D polychorons, anamorphosis,

@@ -59,6 +59,8 @@ QHash<QString, float> RenderPipeline::s_taste;  // taste learning (skip/favourit
 bool    RenderPipeline::s_spoutInEnabled = false;  // Spout input (CLI -i)
 QString RenderPipeline::s_spoutInSender;
 QString RenderPipeline::s_videoPath;                // native video input (CLI -v)
+QString RenderPipeline::s_imageDirCli;              // photo source override (CLI -f)
+QString RenderPipeline::s_imageDirUser;             // photo source override (ini)
 
 // Settings file lives next to the Configurations folder (parent of Debug/Release),
 // matching how shaders and configs are loaded ("..\\...").
@@ -75,6 +77,9 @@ void RenderPipeline::loadSettings()
 	s_moodStrength = clampParam( s.value( "mood",        s_moodStrength).toFloat(), 0.f, 2.5f  );
 	s_latencyLead  = clampParam( s.value( "latencyLead", s_latencyLead ).toFloat(), 0.f, 0.25f );
 	s_stereoMode   = s.value( "stereoMode", s_stereoMode ).toInt() & 3;
+	// Photo source. Empty (the shipped default) means "whatever the preset
+	// says", which is the bundled Images/ folder -- see init().
+	s_imageDirUser = s.value( "imageDirectory", s_imageDirUser ).toString().trimmed();
 	s_stereoDepth  = clampParam( s.value( "stereoDepth", s_stereoDepth ).toFloat(), 0.f, 2.f );
 	setRenderScale( s.value( "renderScale", s_renderScale ).toFloat() );  // clamps internally
 	setRenderScaleMax( s.value( "renderScaleMax", s_renderScaleMax ).toFloat() );
@@ -138,6 +143,10 @@ void RenderPipeline::saveSettings()
 	s.setValue( "stereoDepth", s_stereoDepth  );
 	s.setValue( "renderScale", s_renderScale  );
 	s.setValue( "renderScaleMax", s_renderScaleMax );
+	// Written back even when empty, so the key is visible in the file for
+	// anyone who wants to point the visualizer at their own pictures without
+	// hunting through documentation for its name.
+	s.setValue( "imageDirectory", s_imageDirUser );
 	s.sync();
 	fprintf( stderr, "Saved settings: react=%.2f trails=%.2f mood=%.2f lead=%.0fms scale=%.2f\n",
 	         s_reactivity, s_trailAmount, s_moodStrength, s_latencyLead * 1000.f, s_renderScale );
@@ -215,7 +224,14 @@ RenderPipeline::RenderPipeline( )
 
 void RenderPipeline::init( const QString &directory, unsigned int timeTextureSoloMin, unsigned int timeTextureSoloMax, unsigned int timeTextureInterpolationMin, unsigned int timeTextureInterpolationMax )
 {
-	m_imageDirectory = directory;
+	// Photo source, most specific layer first: an explicit -f on the command
+	// line, then the user's persistent ini setting, then the preset's own
+	// ImageDirectory attribute -- which ships as "..\\Images", the folder the
+	// bundled photo library unpacks into, resolved against the executable's
+	// working directory exactly like the shader paths are.
+	m_imageDirectory = !s_imageDirCli.isEmpty()  ? s_imageDirCli
+	                 : !s_imageDirUser.isEmpty() ? s_imageDirUser
+	                                             : directory;
 
 	m_timeTextureSoloMin = timeTextureSoloMin;
 	m_timeTextureSoloMax = timeTextureSoloMax;
@@ -241,11 +257,21 @@ void RenderPipeline::start( int width, int height )
 	traverse( m_imageDirectory, m_imageList );
 	m_imageListIterator = m_imageList.begin();
 
+	// Name the LAYER the directory came from, not just the path: with three
+	// possible sources a bare path leaves the reader guessing which one won,
+	// and a typo in the ini looks exactly like a missing photo pack.
+	const char *src = !s_imageDirCli.isEmpty()  ? "command line -f"
+	                : !s_imageDirUser.isEmpty() ? "imageDirectory in kaleidoscope_settings.ini"
+	                                            : "preset default";
 	printf( "Nr of images: %d\n", (int) m_imageList.size() );
 	if( m_imageList.isEmpty() )
-		fprintf( stderr, "WARNING: image directory '%s' missing or empty - "
-		                 "using a procedural fallback texture.\n",
-		         m_imageDirectory.toLocal8Bit().constData() );
+		fprintf( stderr, "WARNING: image directory '%s' (%s) missing or empty - "
+		                 "using a procedural fallback texture. The photo pack is an "
+		                 "optional download; unpack it into the Images folder.\n",
+		         m_imageDirectory.toLocal8Bit().constData(), src );
+	else
+		fprintf( stderr, "Photo source: %s (%s)\n",
+		         m_imageDirectory.toLocal8Bit().constData(), src );
 
 	qsrand(0);  // no-op: QRandomGenerator is auto-seeded
     unsigned int start = qrand() % (m_imageList.size() + 1);
