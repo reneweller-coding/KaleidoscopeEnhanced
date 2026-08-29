@@ -20,38 +20,35 @@ build. See [Quick start](#quick-start).
 
 |  |  |
 |---|---|
-| ![Kaleidoscope](docs/screenshots/kaleidoscope.png) | ![PrismExplode](docs/screenshots/prismexplode.png) |
-| ![FeatherStorm](docs/screenshots/featherstorm.png) | ![AuroraBorealisOverFjord](docs/screenshots/aurora.png) |
+| ![HexKaleido](docs/screenshots/kaleidoscope.png) | ![ChromeForm](docs/screenshots/chromeform.png) |
+| ![ShadowTheatre](docs/screenshots/shadowtheatre.png) | ![AuroraBorealisOverFjord](docs/screenshots/aurora.png) |
 
-*Four of the 593 scenes in the [scene catalogue](docs/Catalog/Katalog.md) —
-a classic kaleidoscope fold, a compute-driven prism-shatter, a volumetric
-feather storm with real 3D geometry and shadows, and a hardware-tessellated
-arctic fjord under the northern lights.*
+*Four of the 616 scenes in the [scene catalogue](docs/Catalog/Katalog.md) — a
+photograph folded into a kaleidoscope, a loaded 3D model used as a mirror, one
+used as a shadow puppet, and a hardware-tessellated fjord under the northern
+lights.*
 
 **Highlights**
-- 593 scenes + 29 overlay effects + 83 scene transitions, all audio-reactive
+- 616 scenes + 29 overlay effects + 83 scene transitions, all audio-reactive
   and image-driven — see the [scene catalogue](docs/Catalog/Katalog.md).
 - Real signal analysis (beat/onset detection, key & mood, song-structure
   tracking) drives the visuals, not a generic FFT bar graph — see
   [how it listens to the music](docs/engine-internals.md).
-- Synced lyrics, artist photos, and the official music video (auto-fetched
-  from YouTube) can all play alongside the visuals — see
-  [Optional online features](#optional-online-features).
-- Control it from a phone: a built-in web remote with zero-config LAN
-  pairing, plus a dedicated Android app — see [Remote control](#remote-control).
-- A small Setup tool switches every optional extra on or off; the UI itself
-  speaks German or English — see [Setup tool](#setup-tool) and
-  [Language](#language).
-- Stereo-3D output, MIDI control, Spout output for OBS/VJ software, and an
-  unattended kiosk mode with a crash watchdog.
+- A photo library and 157 3D models it can fetch and install for you — see
+  [Extra content](#extra-content-photos-and-3d-models).
+- Synced lyrics, artist photos and the official music video can play alongside
+  the visuals — see [Optional online features](#optional-online-features).
+- Control it from a phone: a web remote with zero-config LAN pairing, plus an
+  Android app — see [Remote control](#remote-control).
+- Stereo-3D output, MIDI control, Spout output for OBS/VJ software, a German or
+  English UI, and an unattended kiosk mode with a crash watchdog.
 
 ---
 
 ## Contents
 
 - [Quick start](#quick-start)
-- [Photo pack](#photo-pack)
-- [3D model pack](#3d-model-pack)
+- [Extra content: photos and 3D models](#extra-content-photos-and-3d-models)
 - [Controls](#controls)
 - [Configurations and presets](#configurations-and-presets)
   - [Reviewing the shader library](#reviewing-the-shader-library)
@@ -77,99 +74,59 @@ arctic fjord under the northern lights.*
   `Kaleidoscope-starten.bat`. No installation, nothing written outside the
   folder.
 
-Either way, add pictures: the scenes that fold, mirror and fly through
-photographs read them from the program's `Images` folder. Drop the
-[photo pack](#photo-pack) in there, or point the visualizer at your own
-folder under **Photo folder** in the Setup tool (`Setup-starten.bat` /
-Start-menu **Setup** — see [Setup tool](#setup-tool)). With no pictures at
-all a procedural fallback texture stands in, so a first launch never fails.
-Press **`h`** any time for the full keyboard reference in-app.
+The installer offers the photo and model packs as ticked options and installs
+them for you; see [Extra content](#extra-content-photos-and-3d-models) for the
+portable build and for pointing it at your own pictures. It runs without them
+either way. Press **`h`** any time for the full keyboard reference in-app.
 
 ---
 
-## Photo pack
+## Extra content: photos and 3D models
 
-Kaleidoscopes need something to fold. A set of **977 licence-free
-1024×1024 textures** is published alongside the program — agate, rust,
-pigment, soap film, sediment, aurora, craquelure, woven fibre — generated for
-this purpose, so there are no rights questions and no faces or subjects to be
-mangled by a mirror.
+The scenes that fold photographs need photographs, and some scenes place a
+**real 3D model** in the shot — a station against a nebula, a capital ship
+making a slow pass, a chrome torus on a plinth. Both are **optional downloads**
+rather than part of the installer: together they run to about 2.5 GB, thirty
+times the program, and most of it is of no use to someone who only wants the
+classic visualizer.
 
-They are published as their own release,
-[Photo Pack v2](https://github.com/reneweller-coding/KaleidoscopeEnhanced/releases/tag/images-v2):
+**The installer offers all four packs as ticked options and puts them in place
+for you.** Afterwards — or for the portable build, which has no installer —
+*Download extra content* in the [Setup tool](#setup-tool) does the same. By
+hand: unpack into the program's `Images` and `Models` folders and restart.
 
-| | |
-|---|---|
-| `KaleidoscopeImages.zip` | 977 images, 593 MB |
-
-Square and edge-to-edge is the point: the engine fills a 1024×1024 texture
-without preserving aspect ratio, so a picture with a subject in the middle and
-dead space around it loses the subject and folds the dead space. These have
-detail everywhere and no border to betray the seam.
-
-What makes a picture suit this program — format, tone, contrast, composition —
-is written down in **[docs/photo-set-spec.md](docs/photo-set-spec.md)**, with a
-checker that scores a folder against it (`Tools/check_image_set.py`). Useful
-for pointing the visualizer at your own library, and required reading before
-generating a new one.
-
-**Install:** the installer offers it as a ticked option and puts it in place
-for you; the same goes for the model packs. To do it by hand, unpack the
-`.jpg` files into the program's `Images` folder and restart — or use
-**Download extra content** in the Setup tool, which is also how the portable
-build gets them. Nothing breaks without them: the photo scenes fall back to a
-procedurally generated texture, and the startup log says which folder it
-looked in.
-
-**Your own pictures instead:** open the Setup tool and set **Photo folder**.
-That writes `imageDirectory` into `kaleidoscope_settings.ini`, which outranks
-the presets — the right place for it, since `Configurations\*.xml` are
-regenerated by `Tools/make_genre_configs.py` and would lose the change.
-Subfolders are searched too, and `.jpg`, `.jpeg` and `.png` are recognised.
-For one run only, `Kaleidoscope.exe -f <folder>` beats both.
-
----
-
-## 3D model pack
-
-Some scenes place a **real 3D model** in the shot — a station turning against
-a nebula, a capital ship making a slow pass, a shuttle coming alongside a
-drydock, a jellyfish in a lit water column. Those models are **optional extra
-content** and are **not** part of the installer, the portable zip or the git
-repository: together they come to roughly two gigabytes, many times the size
-of the program itself, and most of that is of no use to someone who only wants
-the classic visualizer.
-
-They are published as their own release, [3D Model Pack v2](https://github.com/reneweller-coding/KaleidoscopeEnhanced/releases/tag/models-v2),
-split by theme so you can take only what you want:
-
-| Pack | Size | Contains |
+| Pack | | Contains |
 |---|---|---|
-| `KaleidoscopeModels-ships.zip` | 79 models, 715 MB | capital ships, freighters, couriers, drones — fly-bys, docking approaches, atmospheric entries, formations, holograms |
-| `KaleidoscopeModels-stations.zip` | 30 models, 259 MB | space stations — the six station families |
-| `KaleidoscopeModels-objects.zip` | 48 models, 384 MB | everything else: museum sculptures, hi-fi gear, sea creatures, eroded rock, gongs and bells, polished forms, pierced lattices |
+| [Photos](https://github.com/reneweller-coding/KaleidoscopeEnhanced/releases/tag/images-v2) | 977 images, 593 MB | agate, rust, pigment, soap film, sediment, aurora, craquelure, woven fibre |
+| [Models: ships](https://github.com/reneweller-coding/KaleidoscopeEnhanced/releases/tag/models-v2) | 79 models, 715 MB | capital ships, freighters, couriers, drones |
+| [Models: stations](https://github.com/reneweller-coding/KaleidoscopeEnhanced/releases/tag/models-v2) | 30 models, 259 MB | space stations — the six station families |
+| [Models: objects](https://github.com/reneweller-coding/KaleidoscopeEnhanced/releases/tag/models-v2) | 48 models, 384 MB | sculptures, hi-fi gear, sea creatures, eroded rock, gongs, pierced lattices |
 
-The installer offers the three packs as ticked options and unpacks them for
-you; **Download extra content** in the Setup tool does the same afterwards, or
-for the portable build. By hand, unpack the `.glb` files straight into the
-program's `Models` folder and restart. **Nothing breaks without them**: every scene that needs a model it
-cannot find is skipped when the catalogue is read, and the startup log says
-how many. You simply get a smaller rotation.
+**Nothing breaks without them.** A scene whose model is missing is skipped when
+the catalogue is read, the photo scenes fall back to a procedural texture, and
+the startup log says how many and which folder it looked in. The `Modelle`
+preset — nothing but model scenes, back to back — appears once the models do.
 
-The scenes that use them are spread through the normal presets by mood, the
-way every other scene is. There is also a **`Modelle`** preset that is nothing
-but these scenes, back to back, for when you want the models themselves rather
-than a mixed rotation. It appears in the preset list once the pack is
-installed, and is left out of it entirely when it is not.
+All of it is generated for this purpose, so there are no rights questions, no
+faces and no recognisable subjects to be mangled by a mirror. The models were
+mostly generated FOR the scene family that uses them, which is why the fit is
+close: the resonant bodies are thin-walled because `ModalVibration` displaces
+along a plate's thickness, and the pierced lattices exist because a shadow play
+wants a complicated shadow.
 
-Many of the models were generated FOR the scene family that uses them, which is
-why the fit is close: the resonant bodies are thin-walled because
-`ModalVibration` displaces along a plate's thickness, and the pierced lattices
-exist because a shadow play wants a complicated shadow.
+**Your own pictures instead:** set **Photo folder** in the Setup tool. That
+writes `imageDirectory` into `kaleidoscope_settings.ini`, which outranks the
+presets — the right place for it, since `Configurations\*.xml` are generated
+and would lose the change. Subfolders are searched; `.jpg`, `.jpeg` and `.png`
+are recognised. For one run only, `Kaleidoscope.exe -f <folder>` beats both.
+What actually suits this program — format, tone, contrast, composition — is
+written down in **[docs/photo-set-spec.md](docs/photo-set-spec.md)**, with a
+checker that scores any folder against it (`Tools/check_image_set.py`).
 
-Building the packs yourself, from a `Models` folder you have filled:
+Building the packs yourself, from folders you have filled:
 
 ```powershell
+.\Tools\make_image_pack.ps1
 .\Tools\make_model_pack.ps1
 ```
 
@@ -266,6 +223,48 @@ The full story, with the literature and the measurements, is in
 
 ## Configurations and presets
 
+`Configurations\*.xml` define which shaders are in rotation, their
+probabilities, mood tags, and the photo folder (`ImageDirectory`, shipping as
+`..\Images`) they draw on. These files are GENERATED, so change the folder in
+the Setup tool rather than in here — see
+[Extra content](#extra-content-photos-and-3d-models). Switch between them with
+the number keys. Included presets:
+
+- **Allround** — the full modern arsenal, balanced; a safe default
+- **Club** — aggressive & bright: tunnels, godrays, lattices, analyzers
+- **Ambient** — calm drift: fluid ink, lava, drones, liquid light shows
+- **SpaceAmbient** — sci-fi & deep space: starships, planets, space
+  stations, nebulae, black holes, alien worlds
+- **Galerie** — the *photos* star: kaleidoscopes, image tunnels, gentle folds
+- **Psychedelic** — breathing fractals, pills, chrome, plasma, mushrooms
+- **Noir** — dark, high-contrast: noir fractals, dark tunnels, deep drones
+- **Komplett** — every scene and overlay in one rotation, mainly used as the
+  master reference the other presets and the editor start from
+
+Every scene re-rolls its own parameters each time it's picked, so one
+shader yields many different looks over a session rather than repeating
+itself identically.
+
+**[Browse the full scene catalogue](docs/Catalog/Katalog.md)** — all 616
+scenes, 29 overlay effects and 83 transitions, each with a description and
+three example frames. A printable `Katalog.pdf` ships with every release.
+
+**Building your own presets:** `PresetEditor.exe` (its own small Qt app,
+bundled with every release) edits `Configurations\*.xml` with a live shader
+preview — browse every scene, add it to a preset with its timing/probability,
+tune per-parameter ranges against a real preview, and save. It also carries
+the project's self-tests (`--validate`, `--roundtrip`, `--transcheck`,
+`--render`) used to catch broken presets and transitions before they ship.
+Build it with `msbuild PresetEditor\PresetEditor.vcxproj /p:Configuration=Release /p:Platform=x64`.
+
+A handful of shaders (`ChromeDreams`, `DiscoGodrays`, `FlowingWires`,
+`FractalBloom`, `InsideSystem`, `NeonTubes`, `PsychedelicPills`, `SphereGrid`,
+`TheCore`, `Vortex`, `Voyager`) are adapted from community shaders by
+[kishimisu](https://www.shadertoy.com/user/kishimisu) on Shadertoy, CC
+BY-NC-SA 4.0 — see [Credits and license](#credits-and-license).
+
+---
+
 ### Reviewing the shader library
 
 Two pieces that work together when you want to look *at* the shaders rather
@@ -293,46 +292,6 @@ than enjoy them:
 
 So: run `TestPlain`, tap `Space` on anything that looks wrong, then
 `Shift+Space` and switch to `Marked` to work through the shortlist.
-
-`Configurations\*.xml` define which shaders are in rotation, their
-probabilities, mood tags, and the photo folder (`ImageDirectory`, shipping as
-`..\Images`) they draw on. These files are GENERATED, so change the folder in
-the Setup tool rather than in here — see [Photo pack](#photo-pack). Switch between them with the number keys. Included presets:
-
-- **Allround** — the full modern arsenal, balanced; a safe default
-- **Club** — aggressive & bright: tunnels, godrays, lattices, analyzers
-- **Ambient** — calm drift: fluid ink, lava, drones, liquid light shows
-- **SpaceAmbient** — sci-fi & deep space: starships, planets, space
-  stations, nebulae, black holes, alien worlds
-- **Galerie** — the *photos* star: kaleidoscopes, image tunnels, gentle folds
-- **Psychedelic** — breathing fractals, pills, chrome, plasma, mushrooms
-- **Noir** — dark, high-contrast: noir fractals, dark tunnels, deep drones
-- **Komplett** — every scene and overlay in one rotation, mainly used as the
-  master reference the other presets and the editor start from
-
-Every scene re-rolls its own parameters each time it's picked, so one
-shader yields many different looks over a session rather than repeating
-itself identically.
-
-**[Browse the full scene catalogue](docs/Catalog/Katalog.md)** — all 593
-scenes, 29 overlay effects and 83 transitions, each with a description and
-three example frames. A printable `Katalog.pdf` ships with every release.
-
-**Building your own presets:** `PresetEditor.exe` (its own small Qt app,
-bundled with every release) edits `Configurations\*.xml` with a live shader
-preview — browse every scene, add it to a preset with its timing/probability,
-tune per-parameter ranges against a real preview, and save. It also carries
-the project's self-tests (`--validate`, `--roundtrip`, `--transcheck`,
-`--render`) used to catch broken presets and transitions before they ship.
-Build it with `msbuild PresetEditor\PresetEditor.vcxproj /p:Configuration=Release /p:Platform=x64`.
-
-A handful of shaders (`ChromeDreams`, `DiscoGodrays`, `FlowingWires`,
-`FractalBloom`, `InsideSystem`, `NeonTubes`, `PsychedelicPills`, `SphereGrid`,
-`TheCore`, `Vortex`, `Voyager`) are adapted from community shaders by
-[kishimisu](https://www.shadertoy.com/user/kishimisu) on Shadertoy, CC
-BY-NC-SA 4.0 — see [Credits and license](#credits-and-license).
-
----
 
 ## Recording
 
