@@ -2386,6 +2386,7 @@
     <float name="bankP" minValue="1.0" maxValue="1.0"></float>
     <float name="bgTypeP" minValue="0" maxValue="0"></float>
     <float name="tintP" minValue="0.00" maxValue="0.00"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
     <expr name="rigYaw" formula="0.15*sin(0.016*advance + seed1*6.28)"/>
     <expr name="rigPitch" formula="0.06*sin(0.013*advance + seed2*6.28)"/>
@@ -2396,6 +2397,7 @@
     <float name="spinP" minValue="0.9" maxValue="0.9"></float>
     <float name="scanP" minValue="1.0" maxValue="1.0"></float>
     <float name="tintP" minValue="0.31" maxValue="0.31"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
     <expr name="rigYaw" formula="0.15*sin(0.016*advance + seed1*6.28)"/>
     <expr name="rigPitch" formula="0.06*sin(0.013*advance + seed2*6.28)"/>
@@ -2418,6 +2420,7 @@
     <float name="bankP" minValue="1.0" maxValue="1.0"></float>
     <float name="bgTypeP" minValue="1" maxValue="1"></float>
     <float name="tintP" minValue="0.93" maxValue="0.93"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
     <expr name="rigYaw" formula="0.15*sin(0.016*advance + seed1*6.28)"/>
     <expr name="rigPitch" formula="0.06*sin(0.013*advance + seed2*6.28)"/>
@@ -2428,6 +2431,7 @@
     <float name="spinP" minValue="1.0" maxValue="1.0"></float>
     <float name="scanP" minValue="1.1" maxValue="1.1"></float>
     <float name="tintP" minValue="1.24" maxValue="1.24"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
     <expr name="rigYaw" formula="0.15*sin(0.016*advance + seed1*6.28)"/>
     <expr name="rigPitch" formula="0.06*sin(0.013*advance + seed2*6.28)"/>
@@ -2450,6 +2454,7 @@
     <float name="bankP" minValue="1.0" maxValue="1.0"></float>
     <float name="bgTypeP" minValue="0" maxValue="0"></float>
     <float name="tintP" minValue="1.86" maxValue="1.86"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
     <expr name="rigYaw" formula="0.15*sin(0.016*advance + seed1*6.28)"/>
     <expr name="rigPitch" formula="0.06*sin(0.013*advance + seed2*6.28)"/>
@@ -2460,6 +2465,7 @@
     <float name="spinP" minValue="1.2" maxValue="1.2"></float>
     <float name="scanP" minValue="1.2" maxValue="1.2"></float>
     <float name="tintP" minValue="2.17" maxValue="2.17"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
     <expr name="rigYaw" formula="0.15*sin(0.016*advance + seed1*6.28)"/>
     <expr name="rigPitch" formula="0.06*sin(0.013*advance + seed2*6.28)"/>
@@ -2482,6 +2488,7 @@
     <float name="bankP" minValue="1.0" maxValue="1.0"></float>
     <float name="bgTypeP" minValue="1" maxValue="1"></float>
     <float name="tintP" minValue="2.79" maxValue="2.79"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
     <expr name="rigYaw" formula="0.15*sin(0.016*advance + seed1*6.28)"/>
     <expr name="rigPitch" formula="0.06*sin(0.013*advance + seed2*6.28)"/>
@@ -2492,6 +2499,7 @@
     <float name="spinP" minValue="1.3" maxValue="1.3"></float>
     <float name="scanP" minValue="1.4" maxValue="1.4"></float>
     <float name="tintP" minValue="3.10" maxValue="3.10"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
     <expr name="rigYaw" formula="0.15*sin(0.016*advance + seed1*6.28)"/>
     <expr name="rigPitch" formula="0.06*sin(0.013*advance + seed2*6.28)"/>
@@ -2514,6 +2522,7 @@
     <float name="bankP" minValue="1.0" maxValue="1.0"></float>
     <float name="bgTypeP" minValue="0" maxValue="0"></float>
     <float name="tintP" minValue="3.72" maxValue="3.72"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
     <expr name="rigYaw" formula="0.15*sin(0.016*advance + seed1*6.28)"/>
     <expr name="rigPitch" formula="0.06*sin(0.013*advance + seed2*6.28)"/>
@@ -2524,6 +2533,7 @@
     <float name="spinP" minValue="1.5" maxValue="1.5"></float>
     <float name="scanP" minValue="1.6" maxValue="1.6"></float>
     <float name="tintP" minValue="4.03" maxValue="4.03"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
     <expr name="rigYaw" formula="0.15*sin(0.016*advance + seed1*6.28)"/>
     <expr name="rigPitch" formula="0.06*sin(0.013*advance + seed2*6.28)"/>
@@ -2546,6 +2556,7 @@
     <float name="bankP" minValue="1.0" maxValue="1.0"></float>
     <float name="bgTypeP" minValue="1" maxValue="1"></float>
     <float name="tintP" minValue="4.65" maxValue="4.65"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
     <expr name="rigYaw" formula="0.15*sin(0.016*advance + seed1*6.28)"/>
     <expr name="rigPitch" formula="0.06*sin(0.013*advance + seed2*6.28)"/>
@@ -2556,6 +2567,7 @@
     <float name="spinP" minValue="1.6" maxValue="1.6"></float>
     <float name="scanP" minValue="1.7" maxValue="1.7"></float>
     <float name="tintP" minValue="4.96" maxValue="4.96"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
     <expr name="rigYaw" formula="0.15*sin(0.016*advance + seed1*6.28)"/>
     <expr name="rigPitch" formula="0.06*sin(0.013*advance + seed2*6.28)"/>
@@ -2578,6 +2590,7 @@
     <float name="bankP" minValue="1.0" maxValue="1.0"></float>
     <float name="bgTypeP" minValue="0" maxValue="0"></float>
     <float name="tintP" minValue="5.58" maxValue="5.58"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
     <expr name="rigYaw" formula="0.15*sin(0.016*advance + seed1*6.28)"/>
     <expr name="rigPitch" formula="0.06*sin(0.013*advance + seed2*6.28)"/>
@@ -2588,6 +2601,7 @@
     <float name="spinP" minValue="1.8" maxValue="1.8"></float>
     <float name="scanP" minValue="1.9" maxValue="1.9"></float>
     <float name="tintP" minValue="5.89" maxValue="5.89"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
     <expr name="rigYaw" formula="0.15*sin(0.016*advance + seed1*6.28)"/>
     <expr name="rigPitch" formula="0.06*sin(0.013*advance + seed2*6.28)"/>
