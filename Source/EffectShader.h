@@ -335,6 +335,16 @@ public:
 	// The host uses this for the true-stereo path (per-eye rendering).
 	/// @return False for this base class / all 2D effects; overridden to return true only by real 3D scenes (Scene3DShader) so the host can select the per-eye stereo render path.
 	virtual bool is3D() const { return false; }
+	/** @brief Whether this scene shows a loaded model -- a single recognisable
+	 *  solid object rather than an abstract field.
+	 *
+	 *  The host damps the time echo for these. That echo screen-blends the
+	 *  frame from ~1.4 s ago at 4.5 % larger scale, which on an abstract scene
+	 *  reads as a dreamy after-image and on a solid object reads as a
+	 *  rendering fault: a chrome torus does not have a bigger, half-transparent
+	 *  twin, so the eye files it as a defect rather than an effect.
+	 *  @return false for everything except a GEOM_MESH Scene3DShader. */
+	virtual bool isMeshScene() const { return false; }
 
 	// The 3D projection's clip planes, shared so a depth-reading effect can
 	// linearise what it samples.  They live here rather than in Scene3DShader

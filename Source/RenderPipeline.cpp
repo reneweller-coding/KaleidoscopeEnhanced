@@ -1801,6 +1801,14 @@ GLuint RenderPipeline::renderTrailsPass( const AudioFeatures &audio, const Audio
 				                 && m_effectTextures[m_scheduler.nextTexture()]->is3D() );
 				m_trailDepth3D = slewToward( m_trailDepth3D,
 				                             sceneUp ? 1.f : 0.f, 2.5f, dtWall );
+				// Same shape, but for loaded-model scenes only: drives the
+				// time-echo damping in the present pass (see EffectShader::
+				// isMeshScene). Slewed on the same ramp so a cross-fade eases
+				// it rather than switching it.
+				bool meshUp = m_effectTextures[m_scheduler.actTexture()]->isMeshScene()
+				           || ( m_scheduler.texState() != 0
+				                && m_effectTextures[m_scheduler.nextTexture()]->isMeshScene() );
+				m_meshUp = slewToward( m_meshUp, meshUp ? 1.f : 0.f, 2.5f, dtWall );
 				if( m_trailDepthUni >= 0 )
 					glUniform1f( m_trailDepthUni, m_trailDepth3D );
 			}
@@ -1894,6 +1902,14 @@ void RenderPipeline::runPresentPass( GLuint presentSource, const AudioFeatures &
 		pin.echoAmt    = std::max( 0.50f * audioFx.dropPulse,
 		                           0.20f * audio.ambientFactor * audio.musicPresence )
 		               * ( 1.f - m_audioConditioner.rewindMix() );
+		// ...but barely, while a loaded model is on screen. The echo blends the
+		// frame from 1.4 s ago at 4.5 % larger scale, which on an abstract
+		// scene is a dreamy after-image and on a solid object is a bigger,
+		// half-transparent twin -- a thing no physical object has, so it reads
+		// as a rendering fault rather than as an effect. Slewed on the same
+		// 2.5/s ramp as m_trailDepth3D so a cross-fade into or out of a mesh
+		// scene eases the damping in rather than switching it.
+		pin.echoAmt *= ( 1.f - 0.85f * m_meshUp );
 		if( m_audioConditioner.echoOverride() >= 0.f )
 			pin.echoAmt = m_audioConditioner.echoOverride();
 		pin.echoDelay  = 1.4f;

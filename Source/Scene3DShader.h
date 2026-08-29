@@ -80,6 +80,7 @@ public:
 	/** @brief Renders one frame: builds the projection/camera matrix (applying any rig* formulas), sets the depth/blend state appropriate to this scene's geometry kind, and issues its draw call(s). */
 	void draw() override;
 	bool is3D() const override { return true; }   ///< @return true — this is a real 3D scene, so the host uses the true-stereo per-eye render path.
+	bool isMeshScene() const override { return m_geomKind == GEOM_MESH; }   ///< @return true for a loaded-model scene; the host damps the time echo on these (see EffectShader::isMeshScene).
 
 	// PER-ACTIVATION VARIETY: every time the scene is (re)activated it rolls
 	// a fresh epoch — a large time offset (different camera/burst phases), a
