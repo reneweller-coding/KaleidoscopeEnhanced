@@ -90,18 +90,18 @@ Some scenes place a **real 3D model** in the shot — a station turning against
 a nebula, a capital ship making a slow pass, a shuttle coming alongside a
 drydock, a jellyfish in a lit water column. Those models are **optional extra
 content** and are **not** part of the installer, the portable zip or the git
-repository: together they come to roughly a gigabyte, many times the size of
-the program itself, and most of that is of no use to someone who only wants
+repository: together they come to roughly two gigabytes, many times the size
+of the program itself, and most of that is of no use to someone who only wants
 the classic visualizer.
 
-They are published as their own release, [3D Model Pack v1](https://github.com/reneweller-coding/KaleidoscopeEnhanced/releases/tag/models-v1),
+They are published as their own release, [3D Model Pack v2](https://github.com/reneweller-coding/KaleidoscopeEnhanced/releases/tag/models-v2),
 split by theme so you can take only what you want:
 
 | Pack | Size | Contains |
 |---|---|---|
-| `KaleidoscopeModels-ships.zip` | 74 models | capital ships, freighters, couriers, drones — fly-bys, docking approaches, atmospheric entries, formations, holograms |
-| `KaleidoscopeModels-stations.zip` | 30 models | space stations — the six station families |
-| `KaleidoscopeModels-objects.zip` | 53 models | everything else: museum sculptures, hi-fi gear, sea creatures, eroded rock, gongs and bells, polished forms, pierced lattices |
+| `KaleidoscopeModels-ships.zip` | 79 models, 715 MB | capital ships, freighters, couriers, drones — fly-bys, docking approaches, atmospheric entries, formations, holograms |
+| `KaleidoscopeModels-stations.zip` | 30 models, 259 MB | space stations — the six station families |
+| `KaleidoscopeModels-objects.zip` | 48 models, 384 MB | everything else: museum sculptures, hi-fi gear, sea creatures, eroded rock, gongs and bells, polished forms, pierced lattices |
 
 Unpack the `.glb` files straight into the program's `Models` folder and
 restart. **Nothing breaks without them**: every scene that needs a model it

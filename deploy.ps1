@@ -101,7 +101,7 @@ foreach ($d in @("Scene2D", "Scene3D", "FX", "Engine", "Transitions")) {
     Copy-Item (Join-Path $root $d) $pkgDir -Recurse
 }
 # The 3D models are OPTIONAL EXTRA CONTENT and deliberately NOT bundled: they
-# run to about a gigabyte, which would dwarf the installer and the portable
+# run to about two gigabytes, which would dwarf the installer and the portable
 # zip for content most users may not want. They are published as separate
 # release assets (Tools\make_model_pack.ps1 builds them). Ship the empty
 # folder plus a note, so there is an obvious place to unpack them into --
@@ -129,11 +129,11 @@ nach Thema getrennt, man kann also auch nur einen Teil nehmen.
 --
 
 This folder is intentionally empty. The 3D models are optional extra content
-and are downloaded separately -- together they come to about a gigabyte, many
-times the size of the program itself.
+and are downloaded separately -- together they come to about two gigabytes,
+many times the size of the program itself.
 
   1. Get the model pack here:
-     https://github.com/reneweller-coding/KaleidoscopeEnhanced/releases/tag/models-v1
+     https://github.com/reneweller-coding/KaleidoscopeEnhanced/releases/tag/models-v2
   2. Unpack the .glb files straight into THIS folder.
   3. Restart the program.
 
