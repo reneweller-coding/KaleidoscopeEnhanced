@@ -99,9 +99,9 @@ split by theme so you can take only what you want:
 
 | Pack | Size | Contains |
 |---|---|---|
-| `KaleidoscopeModels-ships.zip` | 60 models, 416 MB | capital ships, freighters, couriers — flybys, docking approaches, atmospheric entries, holograms |
-| `KaleidoscopeModels-stations.zip` | 30 models, 215 MB | space stations — the six station families |
-| `KaleidoscopeModels-earthbound.zip` | 18 models, 110 MB | the non-space props: hi-fi gear, museum sculptures, sea creatures |
+| `KaleidoscopeModels-ships.zip` | 74 models | capital ships, freighters, couriers, drones — fly-bys, docking approaches, atmospheric entries, formations, holograms |
+| `KaleidoscopeModels-stations.zip` | 30 models | space stations — the six station families |
+| `KaleidoscopeModels-objects.zip` | 53 models | everything else: museum sculptures, hi-fi gear, sea creatures, eroded rock, gongs and bells, polished forms, pierced lattices |
 
 Unpack the `.glb` files straight into the program's `Models` folder and
 restart. **Nothing breaks without them**: every scene that needs a model it
@@ -113,6 +113,11 @@ way every other scene is. There is also a **`Modelle`** preset that is nothing
 but these scenes, back to back, for when you want the models themselves rather
 than a mixed rotation. It appears in the preset list once the pack is
 installed, and is left out of it entirely when it is not.
+
+Many of the models were generated FOR the scene family that uses them, which is
+why the fit is close: the resonant bodies are thin-walled because
+`ModalVibration` displaces along a plate's thickness, and the pierced lattices
+exist because a shadow play wants a complicated shadow.
 
 Building the packs yourself, from a `Models` folder you have filled:
 
