@@ -13,6 +13,7 @@ class QDoubleSpinBox;
 class QSpinBox;
 class QLineEdit;
 class QLabel;
+class QProgressBar;
 class QPushButton;
 class QScrollArea;
 class QVBoxLayout;
@@ -58,6 +59,29 @@ private:
 	QComboBox      *m_startConfig   = nullptr;
 	QSpinBox        *m_remotePort    = nullptr;
 	QLineEdit       *m_imageDir      = nullptr;   ///< Photo-source folder (ini key imageDirectory); empty = the bundled Images folder.
+
+	/** @name Extra-content downloader
+	 *  The photo library and the 3D models are published as release assets
+	 *  rather than bundled (together about 2 GB against a 20 MB installer),
+	 *  which used to mean a manual hunt through GitHub and a hand-unzip into
+	 *  the correct folder.  These fetch them and unpack them in place.
+	 *
+	 *  Nothing here is persisted: the checkboxes describe an ACTION, not a
+	 *  setting, so they are not written to the ini and are re-derived from
+	 *  what is actually on disk every time the window opens.
+	 *  @{ */
+	QCheckBox       *m_packBox[4]    = { nullptr, nullptr, nullptr, nullptr };
+	QLabel          *m_packState[4]  = { nullptr, nullptr, nullptr, nullptr };
+	QPushButton     *m_packGet       = nullptr;
+	QProgressBar    *m_packProgress  = nullptr;
+	QLabel          *m_packStatus    = nullptr;
+	bool             m_packBusy      = false;   ///< A download is in flight; the button doubles as Cancel.
+	bool             m_packCancel    = false;   ///< Cancel requested; checked between packs and inside the reply loop.
+	/** @} */
+
+	void refreshPackStates();       ///< Re-derive "installed" from disk and re-tick the boxes accordingly.
+	void startPackDownloads();      ///< Fetch every ticked pack in turn, then unpack it.
+	void updatePackButton();        ///< Put the selected total onto the button label.
 
 	QComboBox      *m_lyricsMode    = nullptr;
 	QCheckBox       *m_lyricsKinetic = nullptr;

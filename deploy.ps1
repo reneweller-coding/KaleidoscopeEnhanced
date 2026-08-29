@@ -477,9 +477,32 @@ if ($isccPath -and (Test-Path $iss)) {
     Info "Inno Setup found ($isccPath) - building setup.exe ..."
     # Same stderr trap as windeployqt above: judge ISCC by its exit code, not
     # by whether it happened to print a warning line to stderr.
+    #
+    # Retried, and ONLY for this reason: ISCC writes the setup executable and
+    # then reopens it to stamp in icons and version info, and a real-time
+    # virus scanner examining the file it just saw appear holds it open long
+    # enough for EndUpdateResource to fail with Windows error 110. Inno Setup
+    # names the cause in its own message. It cost three failed release builds
+    # before the message was read rather than guessed at, because the compiler
+    # output was being truncated away by the caller.
+    #
+    # Bounded and specific: the write is idempotent, the pause is longer than
+    # a scan, and anything that is NOT this error still throws on the first
+    # attempt rather than being retried blindly.
     $ErrorActionPreference = "Continue"
-    & $isccPath $iss
-    $isccExit = $LASTEXITCODE
+    $isccExit = 0
+    for ($attempt = 1; $attempt -le 3; $attempt++) {
+        $isccOut  = & $isccPath $iss 2>&1
+        $isccExit = $LASTEXITCODE
+        $isccOut | ForEach-Object { Write-Host $_ }
+        if ($isccExit -eq 0) { break }
+        $locked = $isccOut | Select-String -Pattern "EndUpdateResource failed" -Quiet
+        if (-not $locked) { break }
+        if ($attempt -lt 3) {
+            Info "ISCC hit the antivirus file lock (error 110) - retrying in 5 s (attempt $attempt of 3) ..."
+            Start-Sleep -Seconds 5
+        }
+    }
     $ErrorActionPreference = $prevEap
     if ($isccExit -ne 0) { throw "ISCC failed with exit code $isccExit" }
     Info "Installer written to dist\ (see installer.iss OutputDir)."

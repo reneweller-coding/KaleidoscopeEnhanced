@@ -107,8 +107,11 @@ without preserving aspect ratio, so a picture with a subject in the middle and
 dead space around it loses the subject and folds the dead space. These have
 detail everywhere and no border to betray the seam.
 
-**Install:** unpack the `.jpg` files into the program's `Images` folder and
-restart. Nothing breaks without them — the photo scenes fall back to a
+**Install:** the installer offers it as a ticked option and puts it in place
+for you; the same goes for the model packs. To do it by hand, unpack the
+`.jpg` files into the program's `Images` folder and restart — or use
+**Download extra content** in the Setup tool, which is also how the portable
+build gets them. Nothing breaks without them: the photo scenes fall back to a
 procedurally generated texture, and the startup log says which folder it
 looked in.
 
@@ -140,8 +143,10 @@ split by theme so you can take only what you want:
 | `KaleidoscopeModels-stations.zip` | 30 models, 259 MB | space stations — the six station families |
 | `KaleidoscopeModels-objects.zip` | 48 models, 384 MB | everything else: museum sculptures, hi-fi gear, sea creatures, eroded rock, gongs and bells, polished forms, pierced lattices |
 
-Unpack the `.glb` files straight into the program's `Models` folder and
-restart. **Nothing breaks without them**: every scene that needs a model it
+The installer offers the three packs as ticked options and unpacks them for
+you; **Download extra content** in the Setup tool does the same afterwards, or
+for the portable build. By hand, unpack the `.glb` files straight into the
+program's `Models` folder and restart. **Nothing breaks without them**: every scene that needs a model it
 cannot find is skipped when the catalogue is read, and the startup log says
 how many. You simply get a smaller rotation.
 
@@ -361,6 +366,12 @@ keyboard shortcuts. Changes are saved to the same settings file the main app
 reads on startup and take effect the next time it launches, except the
 language dropdown, which retranslates the Setup tool's own form immediately
 so you can see the result before saving.
+
+**Download extra content** lives here: tick the photo pack and whichever model
+packs you want, and it fetches them from the release page and unpacks them
+into `Images\` and `Models\`. Packs already on disk show as installed and are
+unticked, so a second visit does not propose re-downloading two gigabytes.
+This is the portable build's route to them, since it has no installer.
 
 **Photo folder** lives here too, and this is the only sensible home for it:
 the presets carry a default (`..\Images`) but they are regenerated from the

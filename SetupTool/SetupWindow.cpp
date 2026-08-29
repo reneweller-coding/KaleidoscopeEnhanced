@@ -17,7 +17,16 @@
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QScrollArea>
+#include <QtWidgets/QProgressBar>
 #include <QtCore/QSettings>
+#include <QtCore/QEventLoop>
+#include <QtCore/QProcess>
+#include <QtCore/QStandardPaths>
+#include <QtCore/QStorageInfo>
+#include <QtNetwork/QNetworkAccessManager>
+#include <QtNetwork/QNetworkReply>
+#include <QtNetwork/QNetworkRequest>
+#include <QtNetwork/QNetworkProxy>
 #include <QtCore/QDir>
 #include <QtCore/QCoreApplication>
 #include <QtCore/QXmlStreamReader>
@@ -25,6 +34,86 @@
 #include <QtCore/QTimer>
 
 static QString S( StrId id ) { return QString::fromUtf8( Strings::T( id ) ); }
+
+// ---- extra-content packs ---------------------------------------------------
+// The download URL of a GitHub release asset is deterministic
+// (…/releases/download/<tag>/<file>), so this needs no API call, no JSON and no
+// rate limit -- just a tag and a filename kept in one place. When a pack is
+// re-published under a new tag, change it HERE and nowhere else.
+namespace {
+
+struct PackDef
+{
+	StrId       label;
+	const char *tag;         ///< release tag the asset hangs off
+	const char *file;        ///< asset filename
+	const char *dir;         ///< target folder, relative to the install root
+	const char *ext;         ///< what an installed pack leaves behind, for the "installed?" check
+	qint64      bytes;       ///< published size, for the up-front total and the space check
+};
+
+const PackDef kPacks[4] = {
+	{ S_SETUP_PACK_IMAGES,   "images-v1", "KaleidoscopeImages.zip",         "Images", ".jpg", 734LL * 1024 * 1024 },
+	{ S_SETUP_PACK_SHIPS,    "models-v2", "KaleidoscopeModels-ships.zip",   "Models", ".glb", 715LL * 1024 * 1024 },
+	{ S_SETUP_PACK_STATIONS, "models-v2", "KaleidoscopeModels-stations.zip","Models", ".glb", 259LL * 1024 * 1024 },
+	{ S_SETUP_PACK_OBJECTS,  "models-v2", "KaleidoscopeModels-objects.zip", "Models", ".glb", 384LL * 1024 * 1024 },
+};
+
+QString packUrl( const PackDef &p )
+{
+	return QString( "https://github.com/reneweller-coding/KaleidoscopeEnhanced"
+	                "/releases/download/%1/%2" ).arg( p.tag, p.file );
+}
+
+QString humanSize( qint64 b )
+{
+	if( b >= 1024LL * 1024 * 1024 )
+		return QString::number( b / (1024.0 * 1024 * 1024), 'f', 1 ) + " GB";
+	return QString::number( qint64( b / (1024 * 1024) ) ) + " MB";
+}
+
+// How many of the pack's files are already sitting in the target folder. The
+// packs share a folder (all three model packs land in Models\), so this cannot
+// distinguish WHICH pack is installed -- it answers "is there content of this
+// kind", which is what the checkbox default actually needs.
+int installedCount( const QString &root, const PackDef &p )
+{
+	QDir d( root + "/" + p.dir );
+	if( !d.exists() ) return 0;
+	return d.entryList( QStringList() << ( "*" + QString( p.ext ) ), QDir::Files ).size();
+}
+
+// Unpack with the bsdtar that has shipped in System32 since Windows 10 1803;
+// it reads zip and is a single fast process. PowerShell's Expand-Archive is
+// the fallback for an older machine -- correct but markedly slower, and it is
+// not worth making it the primary path for that.
+bool extractZip( const QString &zip, const QString &destDir, QString *err )
+{
+	QDir().mkpath( destDir );
+	const QString tar = QDir::rootPath() + "Windows/System32/tar.exe";
+	if( QFile::exists( tar ) )
+	{
+		QProcess proc;
+		proc.start( tar, QStringList() << "-xf" << QDir::toNativeSeparators( zip )
+		                               << "-C" << QDir::toNativeSeparators( destDir ) );
+		if( proc.waitForStarted( 10000 ) && proc.waitForFinished( -1 )
+		    && proc.exitStatus() == QProcess::NormalExit && proc.exitCode() == 0 )
+			return true;
+		if( err ) *err = QString::fromLocal8Bit( proc.readAllStandardError() ).trimmed();
+		if( err && err->isEmpty() ) *err = "tar exit " + QString::number( proc.exitCode() );
+		return false;
+	}
+	QProcess ps;
+	ps.start( "powershell", QStringList() << "-NoProfile" << "-NonInteractive" << "-Command"
+	          << QString( "Expand-Archive -LiteralPath '%1' -DestinationPath '%2' -Force" )
+	             .arg( QDir::toNativeSeparators( zip ), QDir::toNativeSeparators( destDir ) ) );
+	if( ps.waitForStarted( 10000 ) && ps.waitForFinished( -1 ) && ps.exitCode() == 0 )
+		return true;
+	if( err ) *err = QString::fromLocal8Bit( ps.readAllStandardError() ).trimmed();
+	return false;
+}
+
+} // namespace
 
 QString SetupWindow::findRootDir()
 {
@@ -84,7 +173,11 @@ SetupWindow::SetupWindow()
 		    s.value( "language", "de" ).toString().toLocal8Bit().constData() ) );
 	}
 
-	resize( 460, 640 );
+	// Wider than it used to be: the download panel's rows ("3D: Raumschiffe
+	// (79)  —  715 MB" plus its state label) set a minimum width the old 460
+	// could not meet, so the form was wider than its own viewport and the
+	// explanatory line was clipped rather than wrapped.
+	resize( 580, 700 );
 
 	m_outerLayout = new QVBoxLayout( this );
 
@@ -194,6 +287,51 @@ void SetupWindow::buildContent()
 	} );
 	fStart->addRow( S( S_SETUP_IMAGEDIR ), imgRow );
 	root->addWidget( gStart );
+
+	// ---- Zusatzinhalte / extra content ----
+	// Sits directly under the photo-folder row on purpose: the row above says
+	// WHERE the pictures come from, this one puts pictures there.
+	auto *gPacks = new QGroupBox( S( S_SETUP_GROUP_PACKS ) );
+	auto *vPacks = new QVBoxLayout( gPacks );
+	auto *packHint = new QLabel( S( S_SETUP_PACKS_HINT ) );
+	packHint->setWordWrap( true );
+	vPacks->addWidget( packHint );
+	for( int i = 0; i < 4; ++i )
+	{
+		auto *row = new QWidget();
+		auto *rl = new QHBoxLayout( row );
+		rl->setContentsMargins( 0, 0, 0, 0 );
+		m_packBox[i] = new QCheckBox( S( kPacks[i].label ) + "  —  "
+		                              + humanSize( kPacks[i].bytes ) );
+		m_packState[i] = new QLabel();
+		rl->addWidget( m_packBox[i] );
+		rl->addWidget( m_packState[i], 1 );
+		vPacks->addWidget( row );
+		QObject::connect( m_packBox[i], &QCheckBox::toggled, this,
+		                  [this]( bool ) { updatePackButton(); } );
+	}
+	auto *packBtnRow = new QWidget();
+	auto *pbl = new QHBoxLayout( packBtnRow );
+	pbl->setContentsMargins( 0, 0, 0, 0 );
+	m_packGet = new QPushButton( S( S_SETUP_PACK_GET ) );
+	pbl->addWidget( m_packGet );
+	pbl->addStretch( 1 );
+	vPacks->addWidget( packBtnRow );
+	m_packProgress = new QProgressBar();
+	m_packProgress->setRange( 0, 100 );
+	m_packProgress->setVisible( false );
+	vPacks->addWidget( m_packProgress );
+	m_packStatus = new QLabel();
+	m_packStatus->setWordWrap( true );
+	vPacks->addWidget( m_packStatus );
+	QObject::connect( m_packGet, &QPushButton::clicked, this, [this]() {
+		// One button, two jobs: while a download runs it is the only way out,
+		// and a separate always-disabled Cancel button beside it would be worse.
+		if( m_packBusy ) { m_packCancel = true; return; }
+		startPackDownloads();
+	} );
+	refreshPackStates();
+	root->addWidget( gPacks );
 
 	// ---- Optionale Online-Extras ----
 	auto *gOnline = new QGroupBox( S( S_SETUP_GROUP_ONLINE ) );
@@ -447,4 +585,183 @@ void SetupWindow::saveToIni()
 		m_status->setText( S( S_SETUP_SAVE_FAILED ) + settingsPath() );
 	}
 	QTimer::singleShot( 4000, this, [this]() { if( m_status ) m_status->setText( " " ); } );
+}
+
+
+// ---- extra-content downloader ----------------------------------------------
+
+void SetupWindow::refreshPackStates()
+{
+	const QString root = findRootDir();
+	for( int i = 0; i < 4; ++i )
+	{
+		if( !m_packBox[i] ) continue;
+		const int n = installedCount( root, kPacks[i] );
+		// Tick what is MISSING. Running the tool a second time should not
+		// propose re-downloading two gigabytes the machine already has, which
+		// is the whole reason the default is derived from disk rather than
+		// stored: a stored answer would go stale the moment someone deleted
+		// or unpacked a folder by hand.
+		m_packBox[i]->setChecked( n == 0 );
+		m_packState[i]->setText( n > 0
+			? QString( "(%1 %2, %3)" ).arg( n ).arg( QString( kPacks[i].ext ).mid( 1 ).toUpper(),
+			                                          S( S_SETUP_PACK_INSTALLED ) )
+			: QString() );
+		m_packState[i]->setStyleSheet( n > 0 ? "color: #4a4;" : QString() );
+	}
+	updatePackButton();
+}
+
+void SetupWindow::updatePackButton()
+{
+	if( !m_packGet || m_packBusy ) return;
+	qint64 total = 0;
+	for( int i = 0; i < 4; ++i )
+		if( m_packBox[i] && m_packBox[i]->isChecked() ) total += kPacks[i].bytes;
+	// The size belongs ON the button. Two gigabytes is a real commitment on a
+	// metered line, and a button that only says "Download and install" hides
+	// exactly the fact the user needs before pressing it.
+	m_packGet->setText( total > 0
+		? S( S_SETUP_PACK_GET ) + "  (" + humanSize( total ) + ")"
+		: S( S_SETUP_PACK_GET ) );
+	m_packGet->setEnabled( total > 0 );
+}
+
+void SetupWindow::startPackDownloads()
+{
+	const QString root = findRootDir();
+
+	QList<int> todo;
+	qint64 need = 0;
+	for( int i = 0; i < 4; ++i )
+		if( m_packBox[i] && m_packBox[i]->isChecked() ) { todo << i; need += kPacks[i].bytes; }
+	if( todo.isEmpty() ) return;
+
+	// Space for the archive AND what comes out of it: the zip is deleted only
+	// after its own extraction, so the peak is roughly twice one pack on top
+	// of everything already unpacked. Checked up front, because running out
+	// halfway through a 700 MB download wastes the whole download.
+	const QStorageInfo si( root );
+	if( si.isValid() && si.bytesAvailable() > 0
+	    && si.bytesAvailable() < need + kPacks[todo.first()].bytes )
+	{
+		m_packStatus->setStyleSheet( "color: #d55;" );
+		m_packStatus->setText( S( S_SETUP_PACK_NOSPACE ) );
+		return;
+	}
+
+	m_packBusy = true;
+	m_packCancel = false;
+	m_packGet->setText( S( S_SETUP_PACK_CANCEL ) );
+	m_packProgress->setVisible( true );
+	m_packProgress->setValue( 0 );
+	m_packStatus->setStyleSheet( QString() );
+	for( int i = 0; i < 4; ++i ) if( m_packBox[i] ) m_packBox[i]->setEnabled( false );
+
+	QNetworkAccessManager nam;
+	// Same trap the main app hit (see main.cpp): Qt's system proxy
+	// auto-detection can block for many seconds on WPAD before the first
+	// request even leaves. Nothing here needs a proxy.
+	nam.setProxy( QNetworkProxy( QNetworkProxy::NoProxy ) );
+
+	QString failure;
+	int done = 0;
+	for( int idx : todo )
+	{
+		if( m_packCancel ) break;
+		const PackDef &p = kPacks[idx];
+		const QString dest = root + "/" + p.dir;
+		const QString tmp  = QDir( QStandardPaths::writableLocation( QStandardPaths::TempLocation ) )
+		                     .filePath( QString( "kaleido_%1" ).arg( p.file ) );
+
+		QFile out( tmp );
+		if( !out.open( QIODevice::WriteOnly | QIODevice::Truncate ) )
+		{
+			failure = tmp;
+			break;
+		}
+
+		QNetworkRequest req{ QUrl( packUrl( p ) ) };
+		req.setAttribute( QNetworkRequest::RedirectPolicyAttribute,
+		                  QNetworkRequest::NoLessSafeRedirectPolicy );   // GitHub redirects to its CDN
+		req.setHeader( QNetworkRequest::UserAgentHeader, "KaleidoscopeSetup" );
+		QNetworkReply *reply = nam.get( req );
+
+		// Stream to disk instead of letting the reply buffer it: these are
+		// hundreds of megabytes and QNetworkReply would otherwise hold the
+		// whole asset in memory before anyone reads a byte of it.
+		QEventLoop loop;
+		QObject::connect( reply, &QNetworkReply::readyRead, &loop,
+		                  [&out, reply]() { out.write( reply->readAll() ); } );
+		QObject::connect( reply, &QNetworkReply::downloadProgress, &loop,
+		                  [this, &p, done, &todo]( qint64 got, qint64 total ) {
+			const int pct = total > 0 ? int( got * 100 / total ) : 0;
+			m_packProgress->setValue( pct );
+			m_packStatus->setText( QString( "%1 %2 (%3/%4) — %5 / %6" )
+				.arg( S( S_SETUP_PACK_DOWNLOADING ), S( p.label ) )
+				.arg( done + 1 ).arg( todo.size() )
+				.arg( humanSize( got ), humanSize( total > 0 ? total : p.bytes ) ) );
+			QCoreApplication::processEvents();
+		} );
+		QObject::connect( reply, &QNetworkReply::finished, &loop, &QEventLoop::quit );
+
+		// A cancel arrives through processEvents() above; poll it here so the
+		// abort happens on this stack rather than inside a signal handler.
+		QTimer poll;
+		QObject::connect( &poll, &QTimer::timeout, &loop, [this, reply]() {
+			if( m_packCancel && reply->isRunning() ) reply->abort();
+		} );
+		poll.start( 200 );
+
+		loop.exec();
+		poll.stop();
+		out.write( reply->readAll() );
+		out.close();
+
+		const bool netOk = ( reply->error() == QNetworkReply::NoError );
+		const QString netErr = reply->errorString();
+		reply->deleteLater();
+
+		if( m_packCancel ) { QFile::remove( tmp ); break; }
+		if( !netOk )
+		{
+			failure = netErr;
+			QFile::remove( tmp );
+			break;
+		}
+
+		m_packStatus->setText( S( S_SETUP_PACK_EXTRACTING ) + " " + S( p.label ) + " ..." );
+		m_packProgress->setRange( 0, 0 );          // busy: tar reports no progress
+		QCoreApplication::processEvents();
+
+		QString exErr;
+		const bool ok = extractZip( tmp, dest, &exErr );
+		QFile::remove( tmp );
+		m_packProgress->setRange( 0, 100 );
+		if( !ok ) { failure = exErr; break; }
+		++done;
+	}
+
+	m_packBusy = false;
+	m_packProgress->setVisible( false );
+	for( int i = 0; i < 4; ++i ) if( m_packBox[i] ) m_packBox[i]->setEnabled( true );
+
+	if( !failure.isEmpty() )
+	{
+		m_packStatus->setStyleSheet( "color: #d55;" );
+		m_packStatus->setText( S( S_SETUP_PACK_FAILED ) + " " + failure );
+	}
+	else if( m_packCancel )
+	{
+		m_packStatus->setStyleSheet( QString() );
+		m_packStatus->setText( S( S_SETUP_PACK_CANCELLED ) );
+	}
+	else
+	{
+		m_packStatus->setStyleSheet( "color: #4a4;" );
+		m_packStatus->setText( S( S_SETUP_PACK_DONE ) );
+	}
+	// Re-derive from disk rather than assuming: a partial run must show what
+	// actually landed, not what was asked for.
+	refreshPackStates();
 }
