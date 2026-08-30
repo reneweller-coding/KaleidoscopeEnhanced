@@ -52,6 +52,55 @@ GLuint setShadersVF( const char *vert_source, const char *frag_source );
 GLuint setShadersPipeline( const char *vert_source, const char *tesc_source,
                            const char *tese_source, const char *geom_source,
                            const char *frag_source );
+
+// ---------------------------------------------------------------------------
+// Program cache.
+//
+// A GL program is a pure function of the source files that go into it -- none
+// of the builders above injects anything per caller. So two catalogue entries
+// naming the same shader compile to the SAME program, and there is no reason
+// to build it twice. 212 of the catalogue's 831 scene entries are exactly
+// that: a second (or 29th) use of a shader another entry already compiled,
+// almost all of them the 3D-model families, where 24 shaders carry 238 scenes
+// that differ only in their model and parameters.
+//
+// The builders consult the cache themselves, so callers need no change. What
+// callers MUST do is release instead of calling glDeleteProgram directly: the
+// program they hold may still belong to somebody else.
+// ---------------------------------------------------------------------------
+
+/**
+ * @brief Releases one reference to a program; deletes it once nobody holds it.
+ *
+ * The correct counterpart to every setShaders*() call. A program that never
+ * came from the cache is deleted straight away, so this is safe to use
+ * unconditionally in place of glDeleteProgram().
+ * @param prog Program id, or 0 (ignored).
+ */
+void shaderProgramRelease( GLuint prog );
+
+/**
+ * @brief Development aid: forgets every cached program built from this file.
+ *
+ * Used by the shader hot-reload. The programs themselves stay alive until
+ * their current users release them -- the next compile simply builds a fresh
+ * one from the changed source rather than being handed the stale program.
+ * @param bareFileName File name without directories, e.g. "ShipFlyby.frag".
+ * @return How many cache entries were dropped.
+ */
+int shaderCacheDrop( const char *bareFileName );
+
+/**
+ * @brief Reports what the cache saved, for the startup log.
+ * @param programs Receives the number of distinct programs built (may be NULL).
+ * @param reuses Receives how many times a build was answered from the cache (may be NULL).
+ * @param buildMs Receives the wall-clock time spent actually compiling and
+ *        linking, in milliseconds (may be NULL). Measured around the GL calls
+ *        themselves -- NOT around ensureCompiled(), which for a 3D-model scene
+ *        also imports the .glb and would put a 200 ms mesh load on the shader's
+ *        bill.
+ */
+void shaderCacheStats( int *programs, int *reuses, double *buildMs );
 // GL 4.3 compute program.  Returns 0 (no exit) when compute entry points,
 // the file, or compile/link are missing — callers keep a fragment fallback.
 /**

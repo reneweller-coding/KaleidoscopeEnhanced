@@ -10,6 +10,10 @@
 #include "textfile.h"
 #include "shader_setup.h"
 
+#include <map>
+#include <string>
+#include <chrono>
+
 // Opengl feedback about shaders
 
 /**
@@ -147,8 +151,128 @@ static GLuint linkOrFail( GLuint prog )
 	return prog;
 }
 
+// ---------------------------------------------------------------------------
+// Program cache -- see the block comment in shader_setup.h for the why.
+//
+// Two maps: source-key -> program, and program -> reference count. The KEY map
+// is what a rebuild consults; the REFCOUNT is what keeps a program alive. They
+// are separate on purpose, and that is what makes hot-reload correct: dropping
+// a key makes the next compile build afresh, while the scenes still holding the
+// old program keep it until they let go.
+//
+// GL work is single-threaded here (the mesh warm-up worker loads geometry, not
+// shaders), so no locking.
+// ---------------------------------------------------------------------------
+static std::map<std::string, GLuint> s_progByKey;   ///< source files -> linked program.
+static std::map<GLuint, int>         s_progRefs;    ///< program -> how many callers hold it.
+static int                           s_progReuses = 0;  ///< How often a build was answered from the cache.
+static double                        s_progBuildMs = 0.0;  ///< Wall-clock ms spent in real compiles/links.
+
+/** @brief Monotonic milliseconds; only ever used as a difference. */
+static double nowMs()
+{
+	using namespace std::chrono;
+	return duration<double, std::milli>(
+	           steady_clock::now().time_since_epoch() ).count();
+}
+
+/** @brief Builds the cache key. The tag matters: setShaders() ignores its vert
+ *         argument and always uses the shared fullscreen vertex shader, so its
+ *         programs are NOT interchangeable with setShadersVF()'s. */
+static std::string progKey( const char *tag, const char *a, const char *b,
+                            const char *c, const char *d, const char *e )
+{
+	std::string k( tag );
+	const char *parts[5] = { a, b, c, d, e };
+	for( int i = 0; i < 5; ++i )
+	{
+		k += '|';
+		if( parts[i] ) k += parts[i];
+	}
+	return k;
+}
+
+/** @brief Cache lookup. Also re-binds, because the builders leave the program
+ *         bound (linkOrFail does) and a hit must be indistinguishable from a
+ *         build -- otherwise the GL state after the call depends on cache luck. */
+static GLuint progLookup( const std::string &key )
+{
+	std::map<std::string, GLuint>::iterator it = s_progByKey.find( key );
+	if( it == s_progByKey.end() )
+		return 0;
+	++s_progRefs[it->second];
+	++s_progReuses;
+	glUseProgram( it->second );
+	return it->second;
+}
+
+/** @brief Records a freshly built program. A failed build (0) is not cached --
+ *         a later attempt should get the chance to fail loudly again. */
+static GLuint progStore( const std::string &key, GLuint prog )
+{
+	if( prog )
+	{
+		s_progByKey[key] = prog;
+		s_progRefs[prog] = 1;
+	}
+	return prog;
+}
+
+void shaderProgramRelease( GLuint prog )
+{
+	if( !prog )
+		return;
+	std::map<GLuint, int>::iterator r = s_progRefs.find( prog );
+	if( r == s_progRefs.end() )
+	{
+		// Never came from the cache (or was already released): the caller owns it.
+		glDeleteProgram( prog );
+		return;
+	}
+	if( --r->second > 0 )
+		return;
+	for( std::map<std::string, GLuint>::iterator k = s_progByKey.begin();
+	     k != s_progByKey.end(); ++k )
+		if( k->second == prog ) { s_progByKey.erase( k ); break; }
+	s_progRefs.erase( r );
+	glDeleteProgram( prog );
+}
+
+int shaderCacheDrop( const char *bareFileName )
+{
+	if( !bareFileName || !*bareFileName )
+		return 0;
+	const std::string needle( bareFileName );
+	int n = 0;
+	std::map<std::string, GLuint>::iterator it = s_progByKey.begin();
+	while( it != s_progByKey.end() )
+	{
+		if( it->first.find( needle ) != std::string::npos )
+		{
+			// Only the KEY goes. The program stays until its holders release it,
+			// which is what lets several scenes reload one after another without
+			// the first one deleting the shader the others are still drawing with.
+			s_progByKey.erase( it++ );
+			++n;
+		}
+		else
+			++it;
+	}
+	return n;
+}
+
+void shaderCacheStats( int *programs, int *reuses, double *buildMs )
+{
+	if( programs ) *programs = (int) s_progByKey.size();
+	if( reuses )   *reuses   = s_progReuses;
+	if( buildMs )  *buildMs  = s_progBuildMs;
+}
 GLuint setShaders( const char *vert_source, const char * frag_source )
 {
+	// Keyed on the FRAGMENT alone: this builder ignores vert_source.
+	const std::string key = progKey( "FS", frag_source, 0, 0, 0, 0 );
+	if( GLuint hit = progLookup( key ) ) return hit;
+	const double t0 = nowMs();
 	GLuint s_id, sh_prog_id;
 	(void)vert_source;   // historical parameter; the shared fullscreen vert rules
 
@@ -159,13 +283,19 @@ GLuint setShaders( const char *vert_source, const char * frag_source )
 	s_id = glCreateShader( GL_FRAGMENT_SHADER );
 	loadAttachShader( sh_prog_id, s_id, frag_source );
 
-	return linkOrFail( sh_prog_id );
+	const GLuint built = linkOrFail( sh_prog_id );
+	s_progBuildMs += nowMs() - t0;
+	return progStore( key, built );
 }
 
 // Vertex + fragment pair (the REAL 3D scene effects): unlike setShaders()
 // above, this one actually attaches the vertex shader.
 GLuint setShadersVF( const char *vert_source, const char *frag_source )
 {
+	const std::string key = progKey( "VF", vert_source, frag_source, 0, 0, 0 );
+	if( GLuint hit = progLookup( key ) ) return hit;
+	const double t0 = nowMs();
+
 	GLuint sh_prog_id = glCreateProgram();
 
 	GLuint v_id = glCreateShader( GL_VERTEX_SHADER );
@@ -174,7 +304,9 @@ GLuint setShadersVF( const char *vert_source, const char *frag_source )
 	GLuint f_id = glCreateShader( GL_FRAGMENT_SHADER );
 	loadAttachShader( sh_prog_id, f_id, frag_source );
 
-	return linkOrFail( sh_prog_id );
+	const GLuint built = linkOrFail( sh_prog_id );
+	s_progBuildMs += nowMs() - t0;
+	return progStore( key, built );
 }
 
 
@@ -220,6 +352,11 @@ GLuint setShadersPipeline( const char *vert_source, const char *tesc_source,
                            const char *tese_source, const char *geom_source,
                            const char *frag_source )
 {
+	const std::string key = progKey( "PL", vert_source, tesc_source, tese_source,
+	                                 geom_source, frag_source );
+	if( GLuint hit = progLookup( key ) ) return hit;
+	const double t0 = nowMs();
+
 	GLuint prog = glCreateProgram();
 
 	GLuint v = glCreateShader( GL_VERTEX_SHADER );
@@ -239,7 +376,9 @@ GLuint setShadersPipeline( const char *vert_source, const char *tesc_source,
 	GLuint f = glCreateShader( GL_FRAGMENT_SHADER );
 	loadAttachShader( prog, f, frag_source );
 
-	return linkOrFail( prog );
+	const GLuint built = linkOrFail( prog );
+	s_progBuildMs += nowMs() - t0;
+	return progStore( key, built );
 }
 
 // GL 4.3 compute program.  Unlike the exit-on-error loaders above this one

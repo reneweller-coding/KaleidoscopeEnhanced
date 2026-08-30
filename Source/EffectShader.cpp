@@ -98,7 +98,11 @@ float EffectShader::s_lightM2[16] = { 1.f, 0.f, 0.f, 0.f,  0.f, 1.f, 0.f, 0.f,
 
 void EffectShader::cleanShaderPrograms()
 {
-	glDeleteProgram(m_sh_prog_id);
+	// NOT glDeleteProgram: this program may be shared. 212 of the 831 scene
+	// entries reuse a program another entry compiled -- almost all of them
+	// the 3D-model families, where 24 shaders carry 238 scenes. Deleting it
+	// here would pull the shader out from under the others.
+	shaderProgramRelease(m_sh_prog_id);
 	if( m_bakeProg ) glDeleteProgram( m_bakeProg );
 	if( m_bakeTex )  glDeleteTextures( 1, &m_bakeTex );
 }

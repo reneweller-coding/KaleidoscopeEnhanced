@@ -11,6 +11,8 @@
 #include <algorithm>
 
 #include "shader_setup.h"
+#include <set>
+#include <string>
 #include "RenderPipeline.h"
 #include "PlatformQt.h"
 #include "SpoutOut.h"
@@ -274,6 +276,25 @@ void RenderPipeline::start( int width, int height )
 		fprintf( stderr, "Photo source: %s (%s)\n",
 		         m_imageDirectory.toLocal8Bit().constData(), src );
 
+	// The honest catalogue size. An entry is a SCENE -- a model, a camera, a
+	// background, a set of parameters -- but several entries can be the same
+	// shader wearing different clothes. Reporting only the entry count inflates
+	// what the program is; reporting only the shader count undersells what it
+	// shows. Both, side by side.
+	{
+		std::set<std::string> distinct;
+		int entries = 0;
+		const std::vector<EffectShader *> *lists[3] =
+		    { &m_effectTextures, &m_effectFx, &m_effectTransitions };
+		for( int L = 0; L < 3; ++L )
+			for( EffectShader *e : *lists[L] )
+			{
+				++entries;
+				if( e->fragmentName() ) distinct.insert( e->fragmentName() );
+			}
+		fprintf( stderr, "Catalogue: %d scenes from %d shaders (%d entries reuse one)\n",
+		         entries, (int) distinct.size(), entries - (int) distinct.size() );
+	}
 	qsrand(0);  // no-op: QRandomGenerator is auto-seeded
     unsigned int start = qrand() % (m_imageList.size() + 1);
 	for( unsigned int i = 0; i < start; i++ )
@@ -426,7 +447,8 @@ void RenderPipeline::cleanTextures()
 
 void RenderPipeline::cleanShaderPrograms()
 {
-	glDeleteProgram(m_sh_prog_id_fx);
+	// Shared: every configuration builds the same OverlayBlend program.
+	shaderProgramRelease(m_sh_prog_id_fx);
 
 
 	for( unsigned int i = 0; i < m_effectTextures.size(); i++ )
@@ -785,6 +807,10 @@ void RenderPipeline::requestSceneChange()
 // only exercise shaders that actually come on screen).
 void RenderPipeline::compileAllShaders()
 {
+	// Timed separately from the rest of startup on purpose: the eager compile
+	// shares this run with 977 photo loads and 238 mesh imports, and the total
+	// says nothing about which of them costs what.
+	QElapsedTimer compileClock; compileClock.start();
 	for( EffectShader *s : m_effectTextures )
 	{
 		fprintf( stderr, "COMPILEALL %s\n", s->fragmentName() );
@@ -803,6 +829,20 @@ void RenderPipeline::compileAllShaders()
 	fprintf( stderr, "COMPILEALL done (%d textures, %d combines, %d transitions)\n",
 	         (int)m_effectTextures.size(), (int)m_effectFx.size(),
 	         (int)m_effectTransitions.size() );
+	// The honest count: how many DISTINCT shader programs the catalogue
+	// actually is, next to how many entries name one. The two differ by
+	// the 3D-model families, where one shader carries up to 29 scenes.
+	int progs = 0, reuses = 0; double buildMs = 0.0;
+	shaderCacheStats( &progs, &reuses, &buildMs );
+	const double avg = progs ? buildMs / progs : 0.0;
+	fprintf( stderr, "SHADERS: %d distinct programs, %d builds served from the cache\n",
+	         progs, reuses );
+	fprintf( stderr, "SHADERS: %.0f ms compiling+linking (%.0f ms each), so the cache saved about %.0f ms\n",
+	         buildMs, avg, avg * reuses );
+	// The eager-build total for contrast: for a 3D-model scene it also imports
+	// the .glb, which is the larger half. Naming it compile time would be wrong.
+	fprintf( stderr, "SHADERS: eager build incl. mesh import took %lld ms\n",
+	         (long long) compileClock.elapsed() );
 }
 
 // Remote scene browser: list the preset's texture shaders (file basenames).
@@ -3021,6 +3061,10 @@ void RenderPipeline::reloadFragment( const QString &bareName )
 		return ((i >= 0) ? f.mid( i + 1 ) : f)
 		       .compare( bareName, Qt::CaseInsensitive ) == 0;
 	};
+	// Forget the cached program FIRST, or every reloadShader() below would be
+	// handed back the very program it is trying to replace.
+	shaderCacheDrop( qPrintable( bareName ) );
+
 	int n = 0;
 	for( EffectShader *s : m_effectTextures )
 		if( matches( s ) ) { s->reloadShader(); ++n; }
