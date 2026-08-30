@@ -209,6 +209,10 @@ void Configuration::readConfiguration( const QString &filenameIn )
 	m_imageDirectory = docElem.attribute("ImageDirectory");
 	m_configurationName = docElem.attribute("ConfigurationName");
 	m_hidden = docElem.attribute("hidden").compare("true", Qt::CaseInsensitive) == 0;
+	// Only read here; GLwidget decides whether to use it, because the audio
+	// thread is a process-wide thing that starts once and every preset gets
+	// parsed at launch, active or not.
+	m_audioFile = docElem.attribute( "AudioFile" );
 
 	// REVIEW MODE for the Test* presets: scenes run ALPHABETICALLY, 8 s
 	// each, and 'n' steps to the next in order — a systematic viewing

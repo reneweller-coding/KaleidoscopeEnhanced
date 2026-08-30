@@ -105,8 +105,8 @@ hand: unpack into the program's `Images` and `Models` folders and restart.
 
 **Nothing breaks without them.** A scene whose model is missing is skipped when
 the catalogue is read, the photo scenes fall back to a procedural texture, and
-the startup log says how many and which folder it looked in. The `Modelle`
-preset — nothing but model scenes, back to back — appears once the models do.
+the startup log says how many and which folder it looked in. Once the models
+are there, every genre preset simply has more scenes to draw from.
 
 All of it is generated for this purpose, so there are no rights questions, no
 faces and no recognisable subjects to be mangled by a mirror. The models were
@@ -271,17 +271,22 @@ BY-NC-SA 4.0 — see [Credits and license](#credits-and-license).
 Two pieces that work together when you want to look *at* the shaders rather
 than enjoy them:
 
-* **`TestPlain`** — a generated preset containing every scene, 5 s each, in
-  **alphabetical order**, with `FxPlain` as the only overlay so nothing paints
-  over the picture. Regenerate it after adding shaders:
+* **`TestAlle`** — the review bench: every scene, **8 s each**, walked in a
+  fixed order (all 2D scenes alphabetically, then all 3D ones), with `FxPlain`
+  as the only overlay and `Crossfade` as the only transition, so nothing is
+  ever painted over the scene you are judging. It also brings its own silent
+  audio (`AudioFile=` in the preset), so the same shader looks the same on
+  every pass — live audio would make each run different, which is the one
+  thing a review must not do. Regenerate it after adding shaders:
 
   ```bash
-  python Tools/make_test_preset.py
+  python Tools/make_genre_configs.py
   ```
 
-  The alphabetical walk comes from the preset's `Test` name prefix, which
-  switches the engine into review mode — keep the prefix or it silently goes
-  back to random selection.
+  The ordered walk and the 8 s come from the preset's `Test` name prefix,
+  which switches the engine into review mode — keep the prefix or it silently
+  goes back to random selection. Start it with `-c TestAlle`; it is hidden
+  from the normal preset list on purpose.
 
 * **Marking** — press `Space` while a scene is up to shortlist it, and
   `Shift+Space` to write every marked scene to `Configurations\Marked.xml` as
@@ -291,7 +296,7 @@ than enjoy them:
   span several sessions. The `v` overlay shows whether the current scene is
   marked.
 
-So: run `TestPlain`, tap `Space` on anything that looks wrong, then
+So: run `TestAlle`, tap `Space` on anything that looks wrong, then
 `Shift+Space` and switch to `Marked` to work through the shortlist.
 
 ## Recording

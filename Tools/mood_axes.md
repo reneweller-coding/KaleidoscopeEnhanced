@@ -123,7 +123,7 @@ Mood knob and collapses to a no-op at knob 0 or in non-music mode (gated
 inputs sit at their neutral values).
 
 Verified with `KALEIDO_FORCE_MOOD="v,a"` (a dev hook that pins both axes):
-four 20 s renders of the same clip through TestPlain (alphabetical scene
+four 20 s renders of the same clip through the review preset (ordered scene
 order), measured over 40 frames each:
 
 * valence 0.95 vs 0.05: warmth (mean R−B) **+8.8 vs −16.1** — the canon

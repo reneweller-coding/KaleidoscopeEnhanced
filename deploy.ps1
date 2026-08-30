@@ -141,9 +141,7 @@ Without them everything still works, you simply do not get the scenes that
 use 3D objects; the startup log says how many were skipped. The packs are
 split by theme, so taking just one of them is fine.
 
-Once they are installed you also get a "Modelle" preset, which is nothing but
-these scenes back to back. It is left out of the preset list while the models
-are missing, so it never appears as an entry that shows nothing.
+Once they are installed, every preset simply has more scenes to draw from.
 "@ | Set-Content -Path (Join-Path $modelsDir "LIESMICH-MODELLE.txt") -Encoding utf8
 
 # The photo library is the same story: 977 licence-free 1024x1024 textures at

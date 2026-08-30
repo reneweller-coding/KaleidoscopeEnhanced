@@ -48,6 +48,16 @@ public:
 	/** @brief Whether this preset is hidden from user-facing selection (still loadable explicitly via `-c <name>`).
 	 * @return True if the root element had `hidden="true"`. */
 	bool isHidden() const { return m_hidden; }
+
+	/** @brief Audio file this preset wants analysed instead of the live input.
+	 *
+	 *  Empty for every normal preset -- the point of the program is to react to
+	 *  whatever is playing. A REVIEW preset is the exception: it has to show the
+	 *  same scene the same way twice, which live audio cannot do, so it names a
+	 *  fixed WAV and the engine analyses that silently instead of listening.
+	 *  A -w or -x on the command line outranks it.
+	 *  @return Path as written in the XML, or empty. */
+	QString audioFile() const { return m_audioFile; }
 	/**
 	 * @brief Starts the owned RenderPipeline's GL resources/scheduler for the given viewport size.
 	 * @param width Viewport width in pixels.
@@ -67,10 +77,11 @@ public:
 	int m_skippedMeshScenes = 0;
 
 	/// How many scenes this preset actually built. A preset made ENTIRELY of
-	/// geom="mesh" scenes (Modelle.xml) comes to nothing without the optional
-	/// model pack, and RenderPipeline would then quietly substitute a
-	/// pass-through -- a menu entry that shows the photos and nothing else.
-	/// glwidget hides such a preset instead; see the hidden-list pass.
+	/// geom="mesh" scenes comes to nothing without the optional model pack,
+	/// and RenderPipeline would then quietly substitute a pass-through -- a
+	/// menu entry that shows the photos and nothing else. glwidget hides such
+	/// a preset instead; see the hidden-list pass. No shipped preset is that
+	/// today, but the guard is what makes adding one safe.
 	int m_loadedScenes = 0;
 
 private:
@@ -90,6 +101,7 @@ private:
 	QString m_imageDirectory;      ///< Root image directory for this preset (root element's ImageDirectory attribute), passed to RenderPipeline::init().
 	QString m_configurationName;   ///< Preset display name (root element's ConfigurationName attribute); also used as the taste-learning namespace.
 	bool    m_hidden = false;      ///< True when the root element has hidden="true" (excluded from user-facing preset selection).
+	QString m_audioFile;           ///< Optional AudioFile="..." from the root element; see audioFile().
 
 	unsigned int		m_timeTextureInterpolationMin; ///< Preset-wide minimum image cross-fade duration (seconds); falls back to a baseline when absent/0 in the XML.
 	unsigned int		m_timeTextureInterpolationMax; ///< Preset-wide maximum image cross-fade duration (seconds); falls back to a baseline when absent/invalid in the XML.

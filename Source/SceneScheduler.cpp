@@ -28,6 +28,21 @@ static const char *fragBase( const char *p )
 	return b;
 }
 
+/** @brief Which review BLOCK a scene belongs to: the flat scenes first, the
+ *         3D ones after.
+ *
+ *  A review pass compares like with like. Walking one alphabetical list across
+ *  both folders interleaves a fullscreen fractal with a lit 3D model every
+ *  couple of scenes, and the eye spends its time re-adjusting instead of
+ *  judging. Two blocks, each alphabetical inside, keeps the comparison honest.
+ * @param p Fragment path.
+ * @return 0 for Scene2D (and anything else), 1 for Scene3D.
+ */
+static int reviewBlock( const char *p )
+{
+	return ( p && ( strstr( p, "Scene3D" ) || strstr( p, "scene3d" ) ) ) ? 1 : 0;
+}
+
 /** @brief Case-insensitive "basename of a < basename of b" comparator for the review-mode sort.
  * @param a First fragment path.
  * @param b Second fragment path.
@@ -35,6 +50,9 @@ static const char *fragBase( const char *p )
  */
 static bool baseLess( const char *a, const char *b )
 {
+	const int ba = reviewBlock( a ), bb = reviewBlock( b );
+	if( ba != bb )
+		return ba < bb;
 	const char *x = fragBase( a ), *y = fragBase( b );
 	while( *x && *y )
 	{

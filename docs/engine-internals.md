@@ -939,11 +939,25 @@ Saving copies each scene's **real** `<TextureShader>` node out of
 parameter and renders a working shader wrongly — the same failure mode that
 invalidated a whole measurement campaign (see below).
 
-The companion is `Tools/make_test_preset.py`, which generates `TestPlain.xml`:
-every scene, 5 s each, `FxPlain` only. It plays **alphabetically** — not
-configured in the file, but because `Configuration.cpp` switches the scheduler
-into review mode for any preset whose name starts with `Test`. The prefix is
-load-bearing.
+The companion is `TestAlle`, the review bench that
+`Tools/make_genre_configs.py` writes alongside the genre presets: every scene,
+8 s each, `FxPlain` as the only overlay and `Crossfade` as the only transition.
+
+Three of its properties are **not** in the file. `Configuration.cpp` switches
+the scheduler into review mode for any preset whose name starts with `Test`,
+and review mode is what supplies the fixed 8 s, the short cut, and the walk
+order — 2D scenes alphabetically, then 3D ones (`reviewBlock()` in
+`SceneScheduler.cpp`; one list across both folders interleaves a flat fractal
+with a lit model every couple of scenes and the eye spends its time
+re-adjusting instead of judging). The `Test` prefix is load-bearing: rename the
+preset and the walk silently goes back to random, which for an inspection pass
+means never knowing whether you have seen everything.
+
+What IS in the file is `AudioFile="..\Tools\broadband120.wav"`. A preset may
+name a WAV, and if the command line said nothing (`-w`/`-x` outrank it) the
+engine analyses that instead of listening — silently, nothing reaches the
+speakers. A review needs it: with live audio the same shader looks different on
+every pass, so two recordings of it cannot be compared.
 
 ---
 

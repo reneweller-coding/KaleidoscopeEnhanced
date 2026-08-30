@@ -626,11 +626,16 @@ Zufall alle einmal zu erwischen, braucht man ein Vielfaches der Katalog-Laenge
 und hat trotzdem Luecken (Sammelbilder-Problem, nicht Pech).
 
 ```
-python Tools/make_sweep_config.py --match ShipFlyby --hold 8
+python Tools/make_sweep_config.py --match ShipFlyby --hold 8   # schreibt MeshSweep.xml
 cd Release
 set KALEIDO_SCENE_SWEEP=8
 Kaleidoscope.exe -c MeshSweep -x <wav> -l -t 0
 ```
+
+Die Config wird hier ERZEUGT und ist absichtlich nicht eingecheckt: sie ist ein
+Wegwerf-Filter fuer genau eine Durchsicht. Wer den ganzen Katalog der Reihe nach
+sehen will, nimmt stattdessen das eingecheckte `TestAlle` -- 2D-Block, dann
+3D-Block, 8 s je Szene, ohne Overlay.
 
 `KALEIDO_SCENE_SWEEP=<Sekunden>` schaltet per `forceScene()` der Reihe nach
 durch JEDE Szene der geladenen Config und schreibt Index, Name und Zeitstempel

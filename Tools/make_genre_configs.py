@@ -16,12 +16,14 @@ Genres (scene AND FX entries are filtered by the same rule):
     Noir         dark
     Psychedelic  psychedelic
     Galerie      calm/bright/dreamy, never aggressive or psychedelic
-    Modelle      every scene that loads a real 3D model (geom="mesh");
-                 needs the separate model pack, and hides itself without it
     Allround     everything
-    TestAlle     everything, hidden — the name starts with "Test", which
-                 flips the engine into review mode (alphabetical order,
-                 fixed 8 s per scene, 'n' steps onward)
+    TestAlle     the review bench, hidden. Everything, but deliberately NOT a
+                 show: FxPlain as the only overlay and Crossfade as the only
+                 transition, so nothing is ever painted over the scene being
+                 judged, and its own silent audio file so two runs of the same
+                 shader look alike. The "Test" name prefix flips the engine
+                 into review mode: 2D block then 3D block, alphabetical inside
+                 each, a fixed 8 s per scene, 'n' steps onward.
 """
 import re, os, sys
 
@@ -45,7 +47,6 @@ def rule_psychedelic(m, h): return "psychedelic" in m
 def rule_galerie(m, h):     return (("calm" in m or "bright" in m or "dreamy" in m)
                                     and "aggressive" not in m and "psychedelic" not in m)
 def rule_all(m, h):         return True
-def rule_mesh(m, h):        return 'geom="mesh"' in h
 # Preset-only tag, curated by hand in Komplett.xml: cosmic subject AND a
 # slow character.  Deliberately NOT derived from calm/dreamy -- plenty of
 # calm scenes are not space, and a few space ones (a black hole) are not
@@ -56,8 +57,26 @@ def rule_space(m, h):       return "space" in m
 # Absent = the engine's own 20..90 s scene / 15 s fade baseline.
 TIMING = {
     "SpaceAmbient": (55, 150, 22, 45),
-    "Modelle":      (30,  80, 10, 22),
+    # The review bench states its 8 s in the file even though review mode caps
+    # a scene at 8 s anyway. Two reasons: the XML then says what it does
+    # instead of leaving the reader to find the clamp in SceneScheduler, and a
+    # copy of this preset renamed without the "Test" prefix -- which switches
+    # review mode OFF -- still runs 8 s instead of silently reverting to the
+    # 20..90 s show pacing. Max must exceed min (Configuration.cpp nudges an
+    # equal one up by 1), and the clamp lands both on 8.
+    "TestAlle":     (8, 9, 1, 2),
 }
+
+# The review preset analyses this instead of listening. Relative to the exe's
+# working directory, like every other path here. Live audio would make a scene
+# look different on every pass, which is the one thing a review must not do --
+# and offline analysis is silent, so nothing comes out of the speakers.
+REVIEW_AUDIO = "..%sTools%sbroadband120.wav" % ("\\\\", "\\\\")
+
+# A preset that exists to be LOOKED AT: no overlay may paint over the scene
+# under review, and no transition may dress up the cut.
+REVIEW_ONLY_FX = {"FxPlain"}
+REVIEW_ONLY_TRANS = {"Crossfade"}
 
 # (name, scene rule, hidden [, FX/transition rule])
 # SpaceAmbient selects its SCENES by the curated `space` tag, but no FX or
@@ -71,14 +90,6 @@ GENRES = [
     ("Psychedelic", rule_psychedelic, False),
     ("Galerie",     rule_galerie,     False),
     ("SpaceAmbient", rule_space,      False, rule_ambient),
-    # Every scene that puts a real imported 3D model on screen. Needs the
-    # separately downloaded model pack; without it the engine drops each of
-    # these scenes and hides the preset entirely, rather than leaving an
-    # entry in the menu that shows nothing. Overlays follow the ambient rule
-    # for the same reason SpaceAmbient does -- no FX or transition carries a
-    # geometry tag, so filtering them by the scene rule would leave the
-    # preset with FxPlain and Crossfade alone.
-    ("Modelle",     rule_mesh,        False, rule_ambient),
     ("Allround",    rule_all,         False),
     ("TestAlle",    rule_all,         True),
 ]
@@ -117,6 +128,15 @@ for entry in GENRES:
     sel_s = [b for b in scenes if rule(b[2], b[4])]
     sel_f = [b for b in fx    if fxRule(b[2], b[4]) or b[1] in ALWAYS]
     sel_t = [b for b in trans if fxRule(b[2], b[4]) or b[1] in ALWAYS]
+    review = name.startswith("Test")
+    if review:
+        # Strip the show back to nothing but the scene itself.
+        sel_f = [b for b in sel_f if b[1] in REVIEW_ONLY_FX]
+        sel_t = [b for b in sel_t if b[1] in REVIEW_ONLY_TRANS]
+        # 2D block, then 3D block, alphabetical inside each -- the same order
+        # the engine's review walk uses. The engine sorts for itself; this is
+        # so the FILE reads in the order the walk runs.
+        sel_s = sorted(sel_s, key=lambda b: ("Scene3D" in b[4], b[1].lower()))
     hid = ' hidden="true"' if hidden else ""
     tim = ""
     if name in TIMING:
@@ -124,13 +144,16 @@ for entry in GENRES:
         tim = (' timeTextureSoloMin="%d" timeTextureSoloMax="%d"'
                ' timeTextureInterpolationMin="%d" timeTextureInterpolationMax="%d"'
                % (a, bb, c, d))
+    aud = ' AudioFile="%s"' % REVIEW_AUDIO if review else ""
     out = ['<?xml version="1.0" encoding="utf-8" ?>',
-           '<configuration ImageDirectory="%s" ConfigurationName="%s"%s%s >'
-           % (IMAGE_DIR, name, hid, tim),
+           '<configuration ImageDirectory="%s" ConfigurationName="%s"%s%s%s >'
+           % (IMAGE_DIR, name, hid, tim, aud),
            "",
            "  <!-- GENERATED by Tools/make_genre_configs.py from Komplett.xml -->",
-           "  <!-- %d scenes + %d FX overlays + %d transitions, filtered by mood tags -->"
-           % (len(sel_s), len(sel_f), len(sel_t)),
+           ("  <!-- REVIEW BENCH: %d scenes (2D block, then 3D), FxPlain only, "
+            "Crossfade only, own silent audio -->" if review else
+            "  <!-- %d scenes + %d FX overlays + %d transitions, filtered by mood tags -->")
+           % ((len(sel_s),) if review else (len(sel_s), len(sel_f), len(sel_t))),
            ""]
     for b in sel_s + sel_f + sel_t:
         out.append(b[3].rstrip("\n"))

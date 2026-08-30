@@ -15,7 +15,7 @@ worked everywhere except in that one preset.
 Rules enforced:
   * every TextureShader/CombineShader entry carries a mood attribute
     (transitions: all but Crossfade, the deliberately neutral default;
-    TestPlain's pass-through FX entry is exempt for the same reason)
+    TestAlle's pass-through FX entry is exempt for the same reason)
   * the RUNTIME flags (dark/bright/calm/aggressive — the only ones the engine
     consumes; see EffectShader::moodFlags) of every entry match the entry for
     the same shader file in Komplett.xml, the reference catalogue

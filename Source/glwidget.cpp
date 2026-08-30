@@ -629,6 +629,23 @@ void GLwidget::initializeGL()
 		exit( 0 );
 	}
 
+	// A preset may bring its own audio (AudioFile="..."), which the review
+	// preset uses so a scene looks the same on every run -- live audio cannot
+	// give you that, and comparing two recordings of the same shader is the
+	// whole point of a review pass. Analysed silently, exactly like -w.
+	//
+	// Only the ACTIVE preset's, and only if the command line said nothing:
+	// -w/-x are the explicit instruction and outrank a file named in XML.
+	if( AudioAnalyzer::s_offlineWav.isEmpty()
+	 && m_actConfiguration && !m_actConfiguration->audioFile().isEmpty() )
+	{
+		AudioAnalyzer::s_offlineWav =
+			Platform::assetPath( m_actConfiguration->audioFile() );
+		fprintf( stderr, "AUDIO: preset '%s' supplies its own track: %s\n",
+		         m_actConfiguration->getConfigurationName().toLocal8Bit().constData(),
+		         AudioAnalyzer::s_offlineWav.toLocal8Bit().constData() );
+	}
+
 	// Start audio analyser (WASAPI loopback – captures any playing audio)
 	m_audioAnalyzer = new AudioAnalyzer(this);
 	m_audioAnalyzer->start();

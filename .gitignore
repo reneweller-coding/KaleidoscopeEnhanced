@@ -74,6 +74,9 @@ Tools/scene_metrics.json
 
 # Written at runtime by SHIFT+SPACE / the web remote -- user data, not source.
 Configurations/Marked.xml
+# Throwaway review filter written by Tools/make_sweep_config.py for a single
+# pass; the checked-in equivalent for the whole catalogue is TestAlle.
+Configurations/MeshSweep.xml
 
 # Visual Studio per-user solution options (binary, per-developer)
 *.suo
