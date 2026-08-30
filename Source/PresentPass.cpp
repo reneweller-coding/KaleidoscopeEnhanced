@@ -504,6 +504,7 @@ void PresentPass::run( const Inputs &in )
 			const float tau = in.sceneFadeStrict ? 0.12f : 1.75f;
 			float k = in.dtFrame / tau;
 			if( k > 1.f ) k = 1.f;
+			if( in.expoSnap ) k = 1.f;   // first standing frame: adopt the new scene's statistics outright
 			glUniform1f( glGetUniformLocation( m_autoExpProg, "smoothK" ), k );
 		}
 		glDispatchCompute( 1, 1, 1 );

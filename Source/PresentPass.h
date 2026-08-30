@@ -158,6 +158,17 @@ public:
 		 *  the tail yanks the exposure and reads as the scene abruptly dimming
 		 *  a moment after the change. */
 		bool   sceneFadeStrict = false;
+		/** @brief True for exactly ONE frame: the first after a scene fade ends.
+		 *
+		 *  The exposure's percentile EMAs snap to this frame's raw values. The
+		 *  fade-time fast smoothing can only ever track the MIX, and the mix
+		 *  reaches the new scene's statistics in its very last moment -- left
+		 *  to the slow standing tau, the measurement then crept toward the new
+		 *  scene for seconds, and the gain visibly dimmed the picture after the
+		 *  change (worst arriving from a near-black scene, where the gain sits
+		 *  pinned). This frame is 100%% the new scene, so its raw percentiles
+		 *  are the honest measurement. */
+		bool   expoSnap = false;
 		float  dtWall       = 0.f;   ///< Wall-clock frame delta time (drives blackout slew and history-ring cadence).
 		float  globalTime   = 0.f;   ///< Global shader time uniform.
 		float  chasePhase   = 0.f;   ///< Chase-light phase uniform.

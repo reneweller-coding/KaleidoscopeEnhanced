@@ -508,6 +508,7 @@ private:
 	// spawned a duplicate ImageLoader).
 	bool			m_started = false;   ///< True once start() has built the GL resources for this instance (see start()).
 	float			m_expoFadeTail = 0.f;   ///< Seconds left of the post-fade exposure grace window; see runPresentPass().
+	bool			m_expoWasFading = false;   ///< Previous frame's strict-fade state; the falling edge triggers the exposure's measurement snap.
 
 	// Manual / novelty-driven early scene change + its rate-limit cooldown.
 

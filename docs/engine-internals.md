@@ -2277,6 +2277,19 @@ INSIDE a scene about a second after a change:
   The post-fade grace tail keeps only the fast SLEW; the fast MEASUREMENT is
   gated on the strict fade flag (`sceneFadeStrict`), or a flash landing in the
   tail would still yank the gain.
+
+  The smoothing needed one companion: **the measurement snaps to the raw
+  percentiles on the first frame after a fade ends** (`expoSnap`). The
+  fade-time fast smoothing can only track the MIX, and the mix reaches the new
+  scene's statistics in its very last moment -- left to the slow standing tau,
+  the measurement then crept toward the new scene for seconds, and the gain
+  visibly dimmed the picture after the change (worst arriving from a near-black
+  scene, where the gain sits pinned at maxGain; reported as Aizawa dimming a
+  second after leaving the black-hole scene). That first standing frame is
+  100% the new scene, so its raw percentiles are the honest measurement.
+  Measured on a dark-to-bright probe: gain at fade end 1.48 then creeping to
+  1.28 over five standing seconds before; 1.01 at fade end and flat (residual
+  0.03) after.
 * **Fast attack, slow release** (`slewDown` 10/s fading, 2/s standing, against
   4.5/0.9 upward). When a bright scene fades in over a dark one the gain is
   still pinned high, and every frame it lags is a frame of the new scene

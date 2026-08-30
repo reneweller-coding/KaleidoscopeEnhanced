@@ -2024,6 +2024,8 @@ void RenderPipeline::runPresentPass( GLuint presentSource, const AudioFeatures &
 			m_expoFadeTail -= timeSinceLastFrameSec;
 		pin.sceneFade    = ( m_scheduler.texState() != 0 || m_expoFadeTail > 0.f );
 		pin.sceneFadeStrict = ( m_scheduler.texState() != 0 );
+		pin.expoSnap = ( m_expoWasFading && !pin.sceneFadeStrict );
+		m_expoWasFading = pin.sceneFadeStrict;
 		pin.dtWall       = dtWall;
 		pin.globalTime   = m_globaltime;
 		pin.chasePhase   = m_audioConditioner.chasePhase();
