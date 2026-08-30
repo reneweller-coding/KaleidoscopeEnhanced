@@ -425,11 +425,12 @@ GLwidget::GLwidget( QWidget *parent )
 		QSettings s( Platform::assetPath( "..\\kaleidoscope_settings.ini" ), QSettings::IniFormat );
 		showHidden = s.value( "showHiddenPresets", false ).toBool();
 	}
-	// A preset built entirely from geom="mesh" scenes (Modelle) has nothing
-	// left once the optional model pack is absent, and RenderPipeline would
-	// fall back to a plain pass-through -- an entry in the menu that shows
-	// the photos and nothing else. Take it out of the selection instead, so
-	// unpacking the models is what makes it appear.
+	// A preset built entirely from geom="mesh" scenes has nothing left once
+	// the optional model pack is absent, and RenderPipeline would fall back
+	// to a plain pass-through -- an entry in the menu that shows the photos
+	// and nothing else. Take it out of the selection instead, so unpacking
+	// the models is what makes it appear. No shipped preset is mesh-only
+	// today; the guard is what makes adding one safe.
 	for( size_t i = m_configurationList.size(); i-- > 0; )
 	{
 		Configuration *c = m_configurationList[i];

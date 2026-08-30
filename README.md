@@ -349,6 +349,18 @@ the presets carry a default (`..\Images`) but they are regenerated from the
 catalogue, so a path typed into them would not survive. Leave the field empty
 for the bundled images.
 
+**Debug: show hidden presets** puts `Komplett` and the `TestAlle` review bench
+back into the menu, onto the digit keys and into the remote, so you can reach
+them without a command line. They are out of the way by default because one is
+a reference catalogue and the other an inspection bench — neither is something
+to land on while enjoying the show. The same switch is one line in the ini if
+you would rather not open the tool:
+
+```ini
+[General]
+showHiddenPresets=true
+```
+
 Build it with `msbuild SetupTool\SetupTool.vcxproj /p:Configuration=Release /p:Platform=x64`
 (no GL/audio dependency — a plain Qt Widgets app).
 
