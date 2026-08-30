@@ -8,6 +8,7 @@
  *        GL 1.1 entry points wgl doesn't return).
  */
 #include "glcore.h"
+#include "Platform.h"
 #include <stdio.h>
 
 /**
@@ -107,6 +108,10 @@ int glcoreHasTess    = 0; ///< Definition of glcoreHasTess; set by glcoreInit() 
  */
 static void *glcGet(const char *name)
 {
+#ifndef _WIN32
+    // glX / dlsym; see Platform.cpp. The wgl path below is untouched.
+    return Platform::glProcAddress(name);
+#else
     void *p = (void *)wglGetProcAddress(name);
     // wgl returns small sentinel values for failure on some drivers.
     if (p == 0 || p == (void*)1 || p == (void*)2 || p == (void*)3 || p == (void*)-1)
@@ -116,6 +121,7 @@ static void *glcGet(const char *name)
         p = gl32 ? (void *)GetProcAddress(gl32, name) : 0;
     }
     return p;
+#endif
 }
 
 /**

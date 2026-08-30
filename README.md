@@ -406,6 +406,8 @@ phone's own system language, the standard Android behaviour.
 
 ## Build
 
+Windows is the reference build and the only one the releases are made from. Linux and macOS build from CMake; see below.
+
 **Requirements**
 - **Qt 6.11** (kit `msvc2022_64`), installed at `C:\Qt\6.11.1\msvc2022_64`
 - **Visual Studio 2026** (or 2022) — platform toolset **v145**, target **x64**
@@ -464,6 +466,43 @@ crashing.
 > Shaders and `Configurations\*.xml` load from the exe's parent folder, so
 > run it from `Debug\` / `Release\`.
 
+
+### Linux and macOS
+
+`Kaleidoscope.vcxproj` stays the Windows build; everywhere else there is a
+`CMakeLists.txt`, which refuses to configure on Windows so the two cannot
+drift apart.
+
+Debian/Ubuntu:
+
+```bash
+sudo apt install qt6-base-dev qt6-base-dev-tools qt6-multimedia-dev \
+                 libgl1-mesa-dev libglu1-mesa-dev libpulse-dev cmake
+```
+
+```bash
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build -j
+```
+
+The program looks for its assets one level above the working directory, the
+same convention the Windows package uses, so run it from a subfolder:
+`cd build && ./Kaleidoscope`.
+
+What differs from Windows:
+
+| | Linux | macOS |
+|---|---|---|
+| Audio capture | the default sink's PulseAudio monitor (PipeWire's pulse server serves it too) | needs a virtual loopback device (e.g. BlackHole) plus PulseAudio; without one, use `-w`/`-x` |
+| Compute-shader effects | yes (OpenGL 4.3) | no — macOS froze OpenGL at 4.1, so those effects take their fragment fallbacks |
+| Spout in/out (`-o`, `-i`) | no — Windows-only technology | no |
+| Track title / lyrics / artist images | no — these read the Windows now-playing service | no |
+| MIDI input | no | no |
+
+Everything else — the full scene catalogue, the 3D models, recording,
+the web remote, the OSC output — is the same.
+
+> macOS is untested: the code compiles for it and the platform branches are
+> written, but no one has run it on a Mac yet.
 ---
 
 ## Deployment

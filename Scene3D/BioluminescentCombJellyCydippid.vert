@@ -79,7 +79,11 @@ vec3 palTint(vec3 c, float t, float k)
 void jellyRig(float gi, float aspect, out vec3 ctr, out float bScale)
 {
     float jz   = 3.8 + fract(gi * 0.371 + 0.19) * 8.4;   // depth 3.8 .. 12.2
-    float half = jz * kTanY;                             // frustum half-height there
+    // NOT named `half`: that is a RESERVED word in the GLSL spec. NVIDIA's
+    // compiler accepts it as an identifier anyway, so this went unnoticed
+    // for as long as the catalogue only ever met that one driver; Mesa
+    // rejects it and the whole scene failed to compile.
+    float halfH = jz * kTanY;                            // frustum half-height there
 
     // Stratified across x, golden-ratio scattered up the y axis, so five
     // animals cannot clump into one corner.
@@ -91,8 +95,8 @@ void jellyRig(float gi, float aspect, out vec3 ctr, out float bScale)
     float ph = time * 0.11 + gi * 2.4;
     sxy += vec2(cos(ph), sin(ph * 0.83)) * 0.085;
 
-    ctr    = vec3(sxy.x * half * aspect, sxy.y * half, jz);
-    bScale = (0.30 + 0.17 * fract(gi * 0.727 + 0.55)) * half / 0.95;
+    ctr    = vec3(sxy.x * halfH * aspect, sxy.y * halfH, jz);
+    bScale = (0.30 + 0.17 * fract(gi * 0.727 + 0.55)) * halfH / 0.95;
 }
 
 void main()

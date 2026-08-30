@@ -381,6 +381,14 @@ int main(int argc, char *argv[])
 	// GPU simulations.
 	QSurfaceFormat fmt;
 	fmt.setVersion( 4, 3 );
+#ifdef __APPLE__
+	// macOS froze OpenGL at 4.1 core and deprecated it there. Asking for 4.3
+	// yields no context at all, so the program would not start; 4.1 does.
+	// The cost is the compute-shader effects -- glcore reports the missing
+	// entry points and the engine takes its documented fragment fallbacks,
+	// the same route as any GPU without compute. Everything else runs.
+	fmt.setVersion( 4, 1 );
+#endif
 	fmt.setProfile( QSurfaceFormat::CoreProfile );
 	fmt.setRenderableType( QSurfaceFormat::OpenGL );
 	fmt.setSwapBehavior( QSurfaceFormat::DoubleBuffer );

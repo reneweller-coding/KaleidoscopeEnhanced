@@ -2,13 +2,12 @@
  * @file shader_setup.h
  * @brief Low-level GLSL shader compile/link helpers shared across the engine: builds fragment-only, vertex+fragment, full-pipeline (with optional tessellation/geometry stages) and compute programs from source files.
  */
-#if defined(__linux__)
-#define GL_GLEXT_PROTOTYPES
-#include <gl.h>
-#include <glut.h>
-#elif defined(__APPLE__)
-#include <OpenGL/gl.h>
-#include <GLUT/glut.h>
+#if defined(__linux__) || defined(__APPLE__)
+// glcore.h already selects the platform's GL header and defines APIENTRY,
+// the same service it performs for the WIN32 arm below. What stood here was
+// <gl.h>/<glut.h> from the GLee-and-GLUT era, before glcore existed: paths
+// that resolve on no current system, in a branch that had never been built.
+#include "glcore.h"
 #elif defined(WIN32)
 #include "glcore.h"
 #include <GL/gl.h>

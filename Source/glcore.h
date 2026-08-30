@@ -41,6 +41,7 @@
 
 #pragma once
 
+#ifdef _WIN32
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
@@ -51,6 +52,24 @@
 #endif
 #include <windows.h>
 #include <GL/gl.h>
+#else
+// POSIX: no windows.h, and the GL 1.1 prototypes live elsewhere. APIENTRY is
+// the calling convention every GLC_FN below is declared with; on Windows it
+// comes from windef.h, on POSIX the ABI has only one convention, so it is
+// simply empty.
+#if defined(__APPLE__)
+#include <OpenGL/gl.h>
+#else
+#include <GL/gl.h>
+#endif
+#ifndef APIENTRY
+#define APIENTRY
+#endif
+// <windows.h> pulled in ptrdiff_t/size_t as a side effect; ask directly.
+#include <cstddef>
+using std::ptrdiff_t;
+using std::size_t;
+#endif // _WIN32
 
 // ---- Types missing from GL 1.1 headers ----
 /// @name Types missing from the GL 1.1 headers, needed by the shader/buffer API below.

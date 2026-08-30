@@ -20,6 +20,7 @@
 #include "glcore.h"        // Core-Profile-Einsprungpunkte (PBO-Funktionen)
 #include "shader_setup.h"  // setShaders() fuer den Akkumulations-Pass
 #include "Recorder.h"
+#include "PlatformQt.h"
 #include "AudioAnalyzer.h"
 
 // ---------------------------------------------------------------------------
@@ -128,7 +129,7 @@ static QString wantedCodecFamily()
         // Same file the rest of the app uses (see RenderPipeline::loadSettings
         // and the SetupTool), read directly so the Recorder stays free of
         // settings plumbing.
-        QSettings st( "..\\kaleidoscope_settings.ini", QSettings::IniFormat );
+        QSettings st( Platform::assetPath( "..\\kaleidoscope_settings.ini" ), QSettings::IniFormat );
         fam = st.value( "videoCodec", "h264" ).toString().trimmed().toLower();
     }
     if( fam == "h265" ) fam = "hevc";
@@ -354,7 +355,7 @@ void Recorder::toggle()
 		warmVideoEncoderProbe();   // Codec-Probe jetzt, nicht erst beim Stoppen
 
 		{
-			QSettings st( "..\\kaleidoscope_settings.ini", QSettings::IniFormat );
+			QSettings st( Platform::assetPath( "..\\kaleidoscope_settings.ini" ), QSettings::IniFormat );
 			m_mbWanted = st.value( "motionBlur", false ).toBool();
 		}
 		m_mbCount = 0;
@@ -642,7 +643,7 @@ static double recordFps()
     static double fps = 0.0;
     if( fps == 0.0 )
     {
-        QSettings st( "..\\kaleidoscope_settings.ini", QSettings::IniFormat );
+        QSettings st( Platform::assetPath( "..\\kaleidoscope_settings.ini" ), QSettings::IniFormat );
         const int v = st.value( "recordFps", 30 ).toInt();
         fps = ( v >= 45 ) ? 60.0 : 30.0;     // only these two are offered
     }

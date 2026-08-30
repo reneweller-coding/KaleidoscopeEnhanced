@@ -45,8 +45,10 @@ void main()
     float row     = floor(p.y / rowH);
     float rn      = hashT(vec2(row, glitchT));
 
-    float active = step(0.55, rn) * mid;
-    float shift  = (hashT(vec2(row, glitchT + 3.1)) - 0.5) * 0.12 * active;
+    // `active` is a RESERVED word in the GLSL spec, like `half` -- NVIDIA
+    // accepts it as an identifier, a conformant compiler need not.
+    float onRow  = step(0.55, rn) * mid;
+    float shift  = (hashT(vec2(row, glitchT + 3.1)) - 0.5) * 0.12 * onRow;
 
     vec2 pr = clamp(vec2(p.x + shift,        p.y), 0.0, 1.0);
     vec2 pg = clamp(vec2(p.x + shift * 0.4,  p.y), 0.0, 1.0);

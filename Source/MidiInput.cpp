@@ -4,6 +4,7 @@
  */
 #include "MidiInput.h"
 
+#ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #include <windows.h>
@@ -21,6 +22,7 @@ static void CALLBACK midiProc( HMIDIIN, UINT wMsg, DWORD_PTR dwInstance,
     if ( wMsg == MIM_DATA && dwInstance )
         reinterpret_cast<MidiInput*>(dwInstance)->handleMessage( (unsigned long)dwParam1 );
 }
+#endif // _WIN32
 
 MidiInput::MidiInput() {}
 
@@ -31,6 +33,15 @@ MidiInput::~MidiInput()
 
 bool MidiInput::start()
 {
+#ifndef _WIN32
+    // No winmm outside Windows. The natural Linux counterpart is ALSA raw
+    // MIDI (and CoreMIDI on macOS), but winmm hands us a CALLBACK while both
+    // of those need a polling thread of their own -- that is new behaviour,
+    // not a port, so it is left out rather than shipped unverified.
+    // Returning false is the same answer the caller gets from a Windows box
+    // with no controller attached, which it already handles.
+    return false;
+#else
     if ( midiInGetNumDevs() == 0 )
         return false;
 
@@ -48,10 +59,12 @@ bool MidiInput::start()
     m_handle = h;
     midiInStart( h );
     return true;
+#endif
 }
 
 void MidiInput::stop()
 {
+#ifdef _WIN32
     if ( m_handle )
     {
         HMIDIIN h = reinterpret_cast<HMIDIIN>(m_handle);
@@ -60,6 +73,7 @@ void MidiInput::stop()
         midiInClose( h );
         m_handle = nullptr;
     }
+#endif
 }
 
 void MidiInput::handleMessage( unsigned long dwParam1 )

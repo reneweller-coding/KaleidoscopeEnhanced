@@ -5,6 +5,7 @@
 #include "AudioAnalyzer.h"
 
 // Windows / WASAPI headers
+#ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #include <windows.h>
@@ -12,6 +13,12 @@
 #include <audioclient.h>
 #include <functiondiscoverykeys_devpkey.h>
 #include <combaseapi.h>
+#elif defined(KALEIDO_HAVE_PULSE)
+// Linux (and a macOS with PulseAudio installed): the loopback counterpart.
+// KALEIDO_HAVE_PULSE is set by the CMake build when libpulse-simple is found.
+#include <pulse/simple.h>
+#include <pulse/error.h>
+#endif
 
 #include <cmath>
 #include <algorithm>
@@ -145,6 +152,14 @@ AudioFeatures AudioAnalyzer::getFeatures() const
  */
 void AudioAnalyzer::enumerateDevices( IMMDeviceEnumerator *pEnum )
 {
+#ifndef _WIN32
+    // Endpoint enumeration is a WASAPI concept and this is only ever called
+    // from the WASAPI capture loop, which does not exist here. The device
+    // list stays empty, which is what the web remote's picker already shows
+    // when no endpoints are found.
+    (void) pEnum;
+    return;
+#else
     QList<AudioDevice> devs;
     auto addFlow = [&]( EDataFlow flow, bool isCap ) {
         IMMDeviceCollection *coll = nullptr;
@@ -176,6 +191,7 @@ void AudioAnalyzer::enumerateDevices( IMMDeviceEnumerator *pEnum )
 
     QMutexLocker lk(&m_mutex);
     m_devices = devs;
+#endif
 }
 
 /** @brief Returns a thread-safe copy of the current selectable-device list. */
@@ -541,6 +557,7 @@ void AudioAnalyzer::run()
     // every launch even after main()'s fix.
     srand( (unsigned) std::chrono::high_resolution_clock::now().time_since_epoch().count() );
 
+#ifdef _WIN32
     // --- COM init for this thread ---
     HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
     if (FAILED(hr)) { m_running = false; return; }
@@ -700,6 +717,75 @@ void AudioAnalyzer::run()
 
     if (pEnum) pEnum->Release();
     CoUninitialize();
+#elif defined(KALEIDO_HAVE_PULSE)
+    // --- PulseAudio monitor capture ---------------------------------------
+    // The counterpart to WASAPI loopback is recording the default sink's
+    // MONITOR source: what the speakers are playing, not what a microphone
+    // hears. PulseAudio resolves "@DEFAULT_MONITOR@" to it, and PipeWire's
+    // pulse server answers to the same name, so one path covers both.
+    //
+    // Block size is not free to choose: every smoothing constant downstream is
+    // tuned PER BLOCK, not per second (see processBlock), so 480 frames at
+    // 48 kHz reproduces the same ~10 ms cadence WASAPI delivers and the offline
+    // WAV path feeds. Getting this wrong would retune the whole analyser.
+    const int kRate = 48000, kCh = 2, kFrames = 480;
+    static float pulseBuf[kFrames * kCh];
+
+    pa_sample_spec ss;
+    ss.format   = PA_SAMPLE_FLOAT32NE;
+    ss.rate     = kRate;
+    ss.channels = kCh;
+
+    pa_buffer_attr attr;
+    memset( &attr, 0xFF, sizeof(attr) );      // 0xFF.. = -1 = server default
+    attr.fragsize  = kFrames * kCh * sizeof(float);
+    attr.maxlength = attr.fragsize * 4;
+
+    // Outer reconnect loop, with the same intent as the WASAPI one: a server
+    // restart or a change of default sink must not kill audio reactivity for
+    // the rest of the session.
+    while (m_running)
+    {
+        int err = 0;
+        pa_simple *rec = pa_simple_new( nullptr, "Kaleidoscope", PA_STREAM_RECORD,
+                                        "@DEFAULT_MONITOR@", "loopback",
+                                        &ss, nullptr, &attr, &err );
+        if (!rec)
+        {
+            fprintf( stderr, "AUDIO: no monitor source (%s); retrying\n", pa_strerror(err) );
+            msleep( 1000 );
+            continue;
+        }
+        fprintf( stderr, "AUDIO: capturing @DEFAULT_MONITOR@, %d Hz, %d ch\n", kRate, kCh );
+
+        while (m_running)
+        {
+            // Blocking read, but a monitor source always delivers -- silence is
+            // still samples -- so this returns about every 10 ms and stop()
+            // stays responsive without a poll.
+            if (pa_simple_read( rec, pulseBuf, sizeof(pulseBuf), &err ) < 0)
+            {
+                fprintf( stderr, "AUDIO: capture dropped (%s)\n", pa_strerror(err) );
+                break;                       // fall out and reopen
+            }
+            processBlock( pulseBuf, kFrames, kCh, kRate );
+
+            if (m_recReq && !m_wavFile) recOpen( kRate );
+            if (m_wavFile)              recWrite( pulseBuf, kFrames, kCh );
+        }
+
+        if (m_wavFile) recClose();
+        pa_simple_free( rec );
+        if (m_running) msleep( 300 );
+    }
+#else
+    // No loopback backend on this platform (macOS without PulseAudio: CoreAudio
+    // cannot tap system output at all without a virtual device such as
+    // BlackHole). Offline analysis (-w / -x) is unaffected and still exact.
+    fprintf( stderr, "AUDIO: no loopback capture backend on this platform;\n
+                     " the visuals run untriggered. Use -w <file.wav> for audio.\n" );
+    while (m_running) msleep( 200 );
+#endif
 }
 
 /**

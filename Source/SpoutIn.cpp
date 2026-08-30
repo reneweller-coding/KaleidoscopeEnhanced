@@ -5,6 +5,7 @@
 // SpoutIn.cpp — see SpoutIn.h.  Includes Spout headers (like SpoutOut.cpp,
 // never mixed with GLee translation units).
 #include "SpoutIn.h"
+#ifdef _WIN32
 #include "../ThirdParty/SpoutGL/Spout.h"
 
 #include <cstring>
@@ -84,3 +85,20 @@ void spoutInRelease()
 	}
 	s_w = s_h = 0;
 }
+#else
+// -------------------------------------------------------------------------
+// Spout is a Windows-only technology: it shares a D3D11 texture through a
+// DXGI handle, and neither the handle nor the shared-memory sender registry
+// exists elsewhere. Rather than pretend, the facade answers honestly -- the
+// callers already treat 'no sender' as normal, so -o/-i simply do nothing.
+// (The Linux equivalent would be Syphon-style DMA-BUF sharing; out of scope.)
+// -------------------------------------------------------------------------
+bool         spoutInInit( const char * )                           { return false; }
+unsigned int spoutInReceive( unsigned int *w, unsigned int *h )
+{
+	if( w ) *w = 0;
+	if( h ) *h = 0;
+	return 0;   // 0 = no live texture, so the photos stay the source
+}
+void         spoutInRelease()                                      {}
+#endif // _WIN32

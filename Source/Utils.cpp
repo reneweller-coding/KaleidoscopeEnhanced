@@ -7,7 +7,11 @@
 #include <stdlib.h>
 #include <time.h>
 #include <math.h>
+#ifdef _WIN32
 #include <windows.h>
+#else
+#include <chrono>
+#endif
 #include <stdio.h>
 
 #include "glcore.h"        // GL types / functions (GLint, glGetIntegerv, ...)
@@ -115,9 +119,19 @@ double NanoTimer::elapsed( void ) const
 
 long long unsigned int NanoTimer::getTimeStamp( void )
 {
+#ifdef _WIN32
 	LARGE_INTEGER stamp;
 	QueryPerformanceCounter( &stamp );
 	return stamp.QuadPart;
+#else
+	// steady_clock is the POSIX counterpart of QPC: monotonic and, on both
+	// Linux and macOS, nanosecond-resolution -- so checkFrequency() below
+	// reports exactly 1 GHz worth of ticks and the arithmetic elsewhere is
+	// unchanged.
+	return (long long unsigned int)
+		std::chrono::duration_cast<std::chrono::nanoseconds>(
+			std::chrono::steady_clock::now().time_since_epoch() ).count();
+#endif
 }
 
 
@@ -150,6 +164,7 @@ void NanoTimer::checkFrequency( void )
 	M_GHz = 0.001;
 	M_Use_High_Frequ = false;
 
+#ifdef _WIN32
 	LARGE_INTEGER hz;
 	bool use_high_frequ = QueryPerformanceFrequency( &hz );
 	if ( ! use_high_frequ )
@@ -159,6 +174,12 @@ void NanoTimer::checkFrequency( void )
 		M_GHz = hz.QuadPart / 1.0E9;
 		M_Use_High_Frequ = true;
 	}
+#else
+	// getTimeStamp() returns nanoseconds above, so the tick rate is exactly
+	// 1e9 Hz = 1 GHz. No probing needed and none possible to get wrong.
+	M_GHz = 1.0;
+	M_Use_High_Frequ = true;
+#endif
 
 	if ( M_Use_High_Frequ )
 		printf("col::NanoTimer: found %lf GHz\n", M_GHz );

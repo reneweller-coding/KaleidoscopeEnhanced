@@ -12,6 +12,7 @@
 
 #include <QtGui/QImage>
 #include <QtCore/QFileInfo>
+#include "Platform.h"
 #include <QtCore/QDir>
 #include <QtCore/QByteArray>
 
@@ -368,8 +369,12 @@ bool loadObj( const std::string &path, MeshAsset &out )
 
 } // namespace
 
-bool loadMeshAsset( const std::string &path, MeshAsset &out )
+bool loadMeshAsset( const std::string &pathIn, MeshAsset &out )
 {
+	// The catalogue writes model="..\\Models\\x.glb" -- a Windows path. It is shared
+	// between platforms, so the separators are normalised here rather than in
+	// 238 XML entries. On Windows this is the identity.
+	const std::string path = Platform::assetPath( pathIn );
 	out = MeshAsset();
 	if( endsWithNoCase( path, ".glb" ) || endsWithNoCase( path, ".gltf" ) )
 		return loadGlb( path, out );

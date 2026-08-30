@@ -4,6 +4,7 @@
  */
 // SpoutOut.cpp — see SpoutOut.h.  The ONLY file that includes Spout headers.
 #include "SpoutOut.h"
+#ifdef _WIN32
 #include "../ThirdParty/SpoutGL/Spout.h"
 
 static Spout *s_spout = nullptr;   ///< The Spout2 SDK sender object; nullptr until spoutOutInit() creates it.
@@ -35,3 +36,15 @@ void spoutOutRelease()
 		s_spout = nullptr;
 	}
 }
+#else
+// -------------------------------------------------------------------------
+// Spout is a Windows-only technology: it shares a D3D11 texture through a
+// DXGI handle, and neither the handle nor the shared-memory sender registry
+// exists elsewhere. Rather than pretend, the facade answers honestly -- the
+// callers already treat 'no sender' as normal, so -o/-i simply do nothing.
+// (The Linux equivalent would be Syphon-style DMA-BUF sharing; out of scope.)
+// -------------------------------------------------------------------------
+bool spoutOutInit( const char * )                                 { return false; }
+void spoutOutSend( unsigned int, unsigned int, unsigned int )      {}
+void spoutOutRelease()                                             {}
+#endif // _WIN32

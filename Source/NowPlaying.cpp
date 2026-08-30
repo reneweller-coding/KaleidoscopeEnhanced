@@ -14,6 +14,7 @@
 
 #include <cmath>
 
+#ifdef _WIN32
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Media.Control.h>
 
@@ -93,6 +94,7 @@ void parseVlcTitle(const std::wstring &raw, QString &title, QString &artist)
         title = w;
 }
 }
+#endif // _WIN32
 
 NowPlaying::NowPlaying() {}
 
@@ -146,6 +148,16 @@ double NowPlaying::positionNowSec() const
 // extrapolated Timeline (see the German inline comments for the detailed reasoning per branch).
 void NowPlaying::threadFunc()
 {
+#ifndef _WIN32
+    // There is no OS-wide "now playing" contract outside Windows: SMTC is a
+    // WinRT service, and neither Linux nor macOS has an equivalent every
+    // player speaks (MPRIS covers only some, and needs a D-Bus dependency).
+    // The consumers already cope with an empty title -- that is the normal
+    // state whenever nothing is playing -- so lyrics, artist images and the
+    // video PiP simply stay idle here instead of reporting wrong metadata.
+    m_running = false;
+    return;
+#else
     // WinRT must be initialised per-thread.  SMTC works in the multi-threaded
     // apartment, where blocking on the async results with .get() is allowed.
     bool inited = false;
@@ -319,4 +331,5 @@ void NowPlaying::threadFunc()
 
     if (inited)
         try { winrt::uninit_apartment(); } catch (...) {}
+#endif // _WIN32
 }

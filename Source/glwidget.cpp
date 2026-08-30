@@ -29,6 +29,7 @@
 
 #include "glcore.h"        // core-profile GL entry points (glcoreInit)
 #include "glwidget.h"
+#include "PlatformQt.h"
 #include "WebRemote.h"
 #include "UpdateCheck.h"
 #include "Version.h"
@@ -271,7 +272,7 @@ void GLwidget::remoteForceScene( int idx )
 // restarts (a config edit reorders/adds entries) but names are.
 static QString thumbCachePath( const QString &config, const QString &scene )
 {
-	return "..\\ThumbCache\\" + config + "\\" + scene + ".jpg";
+	return Platform::assetPath( "..\\ThumbCache\\" + config + "\\" + scene + ".jpg" );
 }
 
 QByteArray GLwidget::remoteThumb( int idx ) const
@@ -359,7 +360,8 @@ GLwidget::GLwidget( QWidget *parent )
 	loadUiSettings();
 
 	m_configurationList.clear();
-	traverseConfigurations( "..\\Configurations" /*directory*/, m_configurationList );
+	traverseConfigurations( Platform::assetPath( "..\\Configurations" ) /*directory*/,
+	                        m_configurationList );
 
 	// Embedded web remote (CLI -t <port>): phone page with the same harmless
 	// controls as the keyboard.  Parented to this widget; main-thread events.
@@ -382,7 +384,7 @@ GLwidget::GLwidget( QWidget *parent )
 		QStringList watch;
 		for( const QString &d : { QString("..\\Scene2D"), QString("..\\FX"),
 		                          QString("..\\Transitions") } )
-			for( const QFileInfo &fi : QDir(d).entryInfoList({"*.frag"}, QDir::Files) )
+			for( const QFileInfo &fi : QDir(Platform::assetPath(d)).entryInfoList({"*.frag"}, QDir::Files) )
 				watch << fi.absoluteFilePath();
 		if( !watch.isEmpty() )
 		{
@@ -420,7 +422,7 @@ GLwidget::GLwidget( QWidget *parent )
 	// bench, not something to land on while enjoying the show.
 	bool showHidden = false;
 	{
-		QSettings s( "..\\kaleidoscope_settings.ini", QSettings::IniFormat );
+		QSettings s( Platform::assetPath( "..\\kaleidoscope_settings.ini" ), QSettings::IniFormat );
 		showHidden = s.value( "showHiddenPresets", false ).toBool();
 	}
 	// A preset built entirely from geom="mesh" scenes (Modelle) has nothing
@@ -1214,7 +1216,7 @@ static const char *kUiSettingsPath = "..\\kaleidoscope_settings.ini";
 
 void GLwidget::loadUiSettings()
 {
-	QSettings s( kUiSettingsPath, QSettings::IniFormat );
+	QSettings s( Platform::assetPath( kUiSettingsPath ), QSettings::IniFormat );
 	m_autoConfig     = s.value( "autoConfig",  m_autoConfig ).toBool();
 	m_autoScale      = s.value( "autoScale",   m_autoScale  ).toBool();
 	m_showNowPlaying = s.value( "nowPlaying",  m_showNowPlaying ).toBool();
@@ -1241,7 +1243,7 @@ void GLwidget::loadUiSettings()
 
 void GLwidget::saveUiSettings()
 {
-	QSettings s( kUiSettingsPath, QSettings::IniFormat );
+	QSettings s( Platform::assetPath( kUiSettingsPath ), QSettings::IniFormat );
 	if( m_actConfiguration )
 		s.setValue( "activeConfig", m_actConfiguration->getConfigurationName() );
 	s.setValue( "autoConfig", m_autoConfig );

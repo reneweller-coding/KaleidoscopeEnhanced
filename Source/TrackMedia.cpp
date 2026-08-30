@@ -3,6 +3,7 @@
  * @brief Implementation of TrackMedia: the chained lyrics fetch/parse/render pipeline and the multi-source artist-image download pipeline described in TrackMedia.h.
  */
 #include "TrackMedia.h"
+#include "PlatformQt.h"
 
 #include <QtCore/QCryptographicHash>
 #include <QtCore/QDateTime>
@@ -49,9 +50,9 @@ static QString md5Hex( const QString &s )
 TrackMedia::TrackMedia()
 {
 	m_nam = new QNetworkAccessManager();
-	QDir().mkpath( "..\\cache\\lyrics" );
-	QDir().mkpath( "..\\cache\\artist" );
-	QDir().mkpath( "..\\cache\\video" );
+	QDir().mkpath( Platform::assetPath( "..\\cache\\lyrics" ) );
+	QDir().mkpath( Platform::assetPath( "..\\cache\\artist" ) );
+	QDir().mkpath( Platform::assetPath( "..\\cache\\video" ) );
 }
 
 /** @brief Destroys the owned network manager (any in-flight QNetworkReply objects are children of it and are cleaned up via deleteLater() in their own finished() handlers), and terminates any in-flight yt-dlp process. */
@@ -85,19 +86,19 @@ QNetworkReply *TrackMedia::get( const QString &url )
 /** @brief Path to this track's lyrics cache JSON, keyed by the MD5 of m_key. @return Cache file path under "..\\cache\\lyrics\\". */
 QString TrackMedia::lyricsCachePath() const
 {
-	return "..\\cache\\lyrics\\" + md5Hex( m_key ) + ".json";
+	return Platform::assetPath( "..\\cache\\lyrics\\" + md5Hex( m_key ) + ".json" );
 }
 
 /** @brief Path to this track's video cache directory, keyed by the MD5 of m_key. @return Cache directory path under "..\\cache\\video\\". */
 QString TrackMedia::videoCacheDir() const
 {
-	return "..\\cache\\video\\" + md5Hex( m_key );
+	return Platform::assetPath( "..\\cache\\video\\" + md5Hex( m_key ) );
 }
 
 /** @brief Path to this artist's image cache directory, keyed by the MD5 of the lower-cased artist name. @return Cache directory path under "..\\cache\\artist\\". */
 QString TrackMedia::artistCacheDir() const
 {
-	return "..\\cache\\artist\\" + md5Hex( m_artist.toLower() );
+	return Platform::assetPath( "..\\cache\\artist\\" + md5Hex( m_artist.toLower() ) );
 }
 
 /**

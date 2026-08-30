@@ -10,6 +10,8 @@
 #include "TextureEffectKaleidoscopeBase.h"
 #include "Scene3DShader.h"
 #include "Utils.h"
+#include "Platform.h"
+#include "PlatformQt.h"
 
 
 #include <QtGui/QImageReader>
@@ -177,8 +179,12 @@ static QString mapLegacyShaderPath( QString p )
  * recoverable failure path); on a document that fails to parse it returns
  * early, leaving the Configuration in a partially/un-initialised state.
  */
-void Configuration::readConfiguration( const QString &filename )
+void Configuration::readConfiguration( const QString &filenameIn )
 {
+	// Same reason as loadMeshAsset(): the paths are written Windows-style and
+	// shared. Identity under _WIN32.
+	const QString filename = QString::fromStdString(
+		Platform::assetPath( filenameIn.toStdString() ) );
 	QFile* file = new QFile( filename );
 	if (!file->open(QIODevice::ReadOnly | QIODevice::Text))
 	{
@@ -264,8 +270,12 @@ void Configuration::readConfiguration( const QString &filename )
 		// behaviour; a black one every few minutes is not.
 		if( el.attribute("geom") == "mesh" )
 		{
-			const QString m1 = el.attribute("model");
-			const QString m2 = el.attribute("model2");
+			// assetPath(), because this decides whether the scene EXISTS. The XML
+			// writes Windows separators; without normalising, every mesh scene
+			// looks absent off Windows and all 238 of them vanish -- with the
+			// perfectly plausible message that the model pack is not installed.
+			const QString m1 = Platform::assetPath( el.attribute("model") );
+			const QString m2 = Platform::assetPath( el.attribute("model2") );
 			if( ( !m1.isEmpty() && !QFileInfo::exists( m1 ) ) ||
 			    ( !m2.isEmpty() && !QFileInfo::exists( m2 ) ) )
 			{

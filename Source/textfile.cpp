@@ -18,6 +18,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "Platform.h"
 
 
 /**
@@ -39,7 +40,17 @@ char *textFileRead( const char *fn )
 
 	if ( fn != NULL )
 	{
+		// Every shader in the catalogue arrives here with Windows separators,
+		// from the C++ call sites ("..\\Engine\\CfxFlame.comp") and from the
+		// preset XML alike. assetPath() is a pass-through on Windows and
+		// rewrites the separators elsewhere -- one place, rather than
+		// rewriting 831 generated catalogue entries that both platforms share.
+#ifdef _WIN32
 		fp = fopen(fn,"rt");
+#else
+		const std::string fnHost = Platform::assetPath( fn );
+		fp = fopen(fnHost.c_str(),"rt");
+#endif
 
 		if (fp != NULL)
 		{

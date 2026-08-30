@@ -3,6 +3,7 @@
  * @brief Implementation of Strings: the DE/EN tables (see Strings.h for the design rationale).
  */
 #include "Strings.h"
+#include "Platform.h"
 #include <cstring>
 #include <cstdlib>
 

@@ -12,6 +12,7 @@
 
 #include "shader_setup.h"
 #include "RenderPipeline.h"
+#include "PlatformQt.h"
 #include "SpoutOut.h"
 #include "SpoutIn.h"
 #include "VideoIn.h"
@@ -66,7 +67,7 @@ QString RenderPipeline::s_imageDirUser;             // photo source override (in
 // matching how shaders and configs are loaded ("..\\...").
 static QString settingsFilePath()
 {
-	return QString( "..\\kaleidoscope_settings.ini" );
+	return Platform::assetPath( QString( "..\\kaleidoscope_settings.ini" ) );
 }
 
 void RenderPipeline::loadSettings()
@@ -2746,7 +2747,10 @@ void RenderPipeline::createTexture()
 
 void RenderPipeline::traverse( const QString& dirname, QStringList& imageList )
 {
-  QDir dir( dirname );
+  // Every photo folder reaches the walk here, including the preset's own
+  // "..\\Images". On POSIX a backslash is not a separator, so an unnormalised
+  // path silently walks an EMPTY directory rather than failing loudly.
+  QDir dir( Platform::assetPath( dirname ) );
   dir.setFilter( QDir::Dirs | QDir::Files | QDir::NoSymLinks );
 
   const QFileInfoList fileinfolist = dir.entryInfoList();
