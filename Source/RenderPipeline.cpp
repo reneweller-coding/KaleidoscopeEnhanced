@@ -1628,10 +1628,17 @@ void RenderPipeline::renderActiveScenePass( const AudioFeatures &audioFx )
 
 	// Transparent geometry goes in afterwards, over the opaque frame this scene
 	// just produced and against the depth it just wrote.
+	// (b45cdff schob die Debug-Marke unter ein KLAMMERLOSES if und machte
+	// renderOitPass damit unbedingt: der Resolve band oitAccum/oitReveal auf
+	// die Foto-Units 0/1, und jede EINBLENDENDE Szene sampelte die OIT-Puffer
+	// statt der Fotos -- der "Helligkeitsabfall + Textur-Wechsel" am Ende
+	// jeder Szenen-Blende. Klammern + Rebind im Resolve, siehe dort.)
 	if( !m_trueStereoPacked && m_effectTextures[m_scheduler.actTexture()]->usesOit() )
+	{
 		glcoreDebugMark( "oit" );
 		renderOitPass( m_effectTextures[m_scheduler.actTexture()],
 		               m_depthTexEffect1, m_fboEffectTexture1 );
+	}
 
 	checkGLErrors("createTextures() 1");
 
@@ -2629,6 +2636,16 @@ void RenderPipeline::renderOitPass(EffectShader *fx, GLuint depthTex, GLuint tar
 	glDrawArrays( GL_TRIANGLES, 0, 3 );
 	glBindVertexArray( 0 );
 	glDisable( GL_BLEND );
+
+	// The resolve borrowed the PHOTO units (0/1) for accum/reveal.  Put the
+	// photos back: the "next" scene pass runs after this and samples 0/1 as
+	// tex0/tex1 -- without the rebind an incoming scene cross-fades with the
+	// OIT buffers as its background and snaps to the real photos at fade end.
+	glActiveTexture( GL_TEXTURE0 );
+	glBindTexture( GL_TEXTURE_2D, m_liveTex ? m_liveTex : m_actTex );
+	glActiveTexture( GL_TEXTURE1 );
+	glBindTexture( GL_TEXTURE_2D, m_liveTex ? m_liveTex : m_nextTex );
+	glActiveTexture( GL_TEXTURE0 );
 }
 
 void RenderPipeline::initFBO(GLuint &fboEffect, GLuint &texIDEffectTexture, GLuint *depthRb)
