@@ -953,11 +953,22 @@ re-adjusting instead of judging). The `Test` prefix is load-bearing: rename the
 preset and the walk silently goes back to random, which for an inspection pass
 means never knowing whether you have seen everything.
 
-What IS in the file is `AudioFile="..\Tools\broadband120.wav"`. A preset may
+What IS in the file is `AudioFile="..\Tools\review128.wav"`. A preset may
 name a WAV, and if the command line said nothing (`-w`/`-x` outrank it) the
 engine analyses that instead of listening — silently, nothing reaches the
 speakers. A review needs it: with live audio the same shader looks different on
 every pass, so two recordings of it cannot be compared.
+
+Also in the file: the PHOTO pacing (`timeTextureSolo*` /
+`timeTextureInterpolation*` on the root element -- background-image times, not
+scene times, a distinction that has already claimed a victim). The bench holds
+each photograph for 45-60 s and dissolves over 15-25 s, so the picture under
+judgement does not change its palette mid-scene. An earlier revision set these
+to 8-9 s with a 1-2 s fade in the belief they stated the scene time; since
+photo and scene changes are both downbeat-quantised at nearly the same period,
+the photo swap drifted onto the seconds right after each scene change, and --
+the palette and the exposure both follow the photograph -- every fresh scene
+appeared to abruptly change brightness a moment after arriving.
 
 ---
 

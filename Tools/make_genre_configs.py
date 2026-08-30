@@ -55,16 +55,23 @@ def rule_space(m, h):       return "space" in m
 
 # Preset-wide timing overrides (seconds): solo min/max, crossfade min/max.
 # Absent = the engine's own 20..90 s scene / 15 s fade baseline.
+# These four numbers are the PHOTO pacing -- background-image solo min/max and
+# cross-fade min/max, in seconds. They are NOT the scene times: those live on
+# the individual entries (minTimeSolo/maxTimeSolo), and the review bench's 8 s
+# comes from review mode in the scheduler, full stop. An earlier revision set
+# TestAlle to (8, 9, 1, 2) here in the belief it was stating the scene time in
+# the file -- what it actually did was rotate the background photograph every
+# 8-9 s with a snappy 1-2 s fade, downbeat-quantised like the scene changes
+# and at nearly their period, so the photo swap drifted onto the seconds right
+# AFTER each scene change. The scene's palette and the exposure both follow
+# the photograph, so every such swap read as the fresh scene abruptly changing
+# brightness -- reported three times before the cause was this line.
 TIMING = {
     "SpaceAmbient": (55, 150, 22, 45),
-    # The review bench states its 8 s in the file even though review mode caps
-    # a scene at 8 s anyway. Two reasons: the XML then says what it does
-    # instead of leaving the reader to find the clamp in SceneScheduler, and a
-    # copy of this preset renamed without the "Test" prefix -- which switches
-    # review mode OFF -- still runs 8 s instead of silently reverting to the
-    # 20..90 s show pacing. Max must exceed min (Configuration.cpp nudges an
-    # equal one up by 1), and the clamp lands both on 8.
-    "TestAlle":     (8, 9, 1, 2),
+    # Review bench: the photograph must hold still while a scene is judged.
+    # 45-60 s solo = one photo lives ~6-7 scenes of the walk; a 15-25 s fade
+    # is below the threshold of notice while a scene is on trial.
+    "TestAlle":     (45, 60, 15, 25),
 }
 
 # The review preset analyses this instead of listening. Relative to the exe's
