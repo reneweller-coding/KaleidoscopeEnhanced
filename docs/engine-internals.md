@@ -2213,3 +2213,48 @@ pass renders **into** the depth map while the previous frame still has it bound
 for reading on the shadow unit. A texture that is simultaneously render target
 and sampler source is a feedback loop, undefined by the spec. The pass now
 binds the stand-in over it for the duration of its own draw.
+
+### Auto-exposure, and how it spent its life switched off
+
+`Engine/CfxHistogram.comp` builds a luminance histogram of the finished frame
+and derives a percentile exposure that `Present.frag` applies. It declared its
+result SSBO at `binding = 0` while the C++ side binds the buffer to 3 and
+`Present.frag` reads 3. So the compute pass wrote its exposure into whatever
+SSBO happened to be bound at slot 0 -- a ComputeFX canvas, or a Scene3D vertex
+buffer -- and `Present.frag` read the four values uploaded once at creation,
+forever. The startup line said `Auto-exposure: histogram (GPU)` the whole time.
+
+Two lessons, both cheap to act on:
+
+* **A feature that reports itself as available has not thereby been observed to
+  work.** The only symptom here was that the catalogue looked dark, which every
+  reader attributed to the shaders.
+* **Bindings are a contract between three files** -- the compute shader, the
+  consumer shader, and the C++ that binds. Nothing checks them, and a mismatch
+  is silent in both directions: the writer scribbles somewhere harmless-looking
+  and the reader sees stale data.
+
+Its two constants had therefore never been measured either. Over 7543 frames
+from a 99-scene sweep (p50/p98 come from the pre-present frame, so they do not
+depend on the exposure and the whole table is computable from one recording):
+
+| target / maxGain | mean | median | near-black |
+|---|---|---|---|
+| no exposure at all | 0.169 | 0.147 | 12% |
+| 0.26 / 1.35 (as written) | 0.184 | 0.194 | 10% |
+| **0.34 / 1.8 (now)** | **0.234** | **0.259** | **7%** |
+| 0.50 / 2.5 | 0.316 | 0.314 | 6% |
+
+The shader also **snaps rather than slews at a cut**. The slew exists so the
+exposure breathes with the music; between two different scenes there is nothing
+to breathe with, and carrying the previous scene's exposure across showed the
+new one at the wrong brightness for about a second before visibly settling. A
+cut is recognised without being told -- a whole frame's median luminance does
+not move by a quarter in 16 ms unless the picture was replaced. Measured over
+the same sweep: 98 snaps across 99 scenes, so exactly one per cut and none
+inside a scene, which is the check that matters (a beat flash must not make
+the exposure pump).
+
+`KALEIDO_EXPOSURE_DEBUG=1` logs the limiter's frame mean and the exposure
+gain/percentiles per sample. It is what turned "the catalogue is dark" into a
+binding number.

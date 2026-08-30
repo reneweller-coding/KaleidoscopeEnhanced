@@ -30,7 +30,14 @@
 // -----------------------------------------------------------------------
 layout(local_size_x = 16, local_size_y = 16) in;
 
-layout(std430, binding = 0) buffer Result { float exposureOut; float p50; float p98; float pad; };
+// Binding 3, matching what PresentPass binds and what Present.frag reads.
+// This said 0 for as long as the pass existed, so every frame's exposure went
+// to whatever SSBO happened to be bound at slot 0 -- a ComputeFX canvas or a
+// Scene3D vertex buffer -- while Present.frag kept reading the four initial
+// values the C++ side uploads once. The startup line said "Auto-exposure:
+// histogram (GPU)" throughout and the gain never left 1.0: the pass was a
+// no-op that also scribbled 16 bytes into a stranger's buffer every frame.
+layout(std430, binding = 3) buffer Result { float exposureOut; float p50; float p98; float pad; };
 uniform sampler2D texFrame;
 uniform ivec2 size;
 uniform float target;      // where the median should sit
@@ -84,7 +91,21 @@ void main()
     if (m98 * want > 1.0) want = min(want, 1.0 / max(m98, 1e-4));
 
     float prev = (exposureOut > 0.0) ? exposureOut : 1.0;
-    exposureOut = prev + clamp(want - prev, -slew, slew);
+
+    // A CUT is not something to adapt across. The slew exists so the
+    // exposure breathes with the music instead of flickering, but between two
+    // different scenes there is nothing to breathe with: carrying the previous
+    // scene's exposure into the next one shows it at the wrong brightness for
+    // about a second and then visibly settles -- which reads as the new scene
+    // starting bright and dropping, and is worst exactly where the catalogue
+    // is widest apart, a dark scene following a light one.
+    //
+    // A cut is recognisable without being told: the median luminance of a
+    // whole frame does not move by a quarter in 16 ms unless the picture was
+    // replaced. Below that, slew as before.
+    float prevP50 = (p50 > 0.0) ? p50 : m50;
+    bool  cut     = abs(m50 - prevP50) > 0.25 * max(prevP50, 0.02);
+    exposureOut = cut ? want : prev + clamp(want - prev, -slew, slew);
     p50 = m50;
     p98 = m98;
 }

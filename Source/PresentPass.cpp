@@ -5,6 +5,7 @@
  *        and the Present.frag draw call that ties it all together.
  */
 #include <cstdio>
+#include <cstdlib>
 #include <cmath>
 
 #include "PresentPass.h"
@@ -425,6 +426,9 @@ void PresentPass::run( const Inputs &in )
 		m_prevMeanLum = (mean < m_prevMeanLum) ? mean : clamped;
 		m_lastSafetyScale = scale;
 		m_safetyAccumDt = 0.f;
+		{ static const bool dbg = getenv( "KALEIDO_EXPOSURE_DEBUG" ) != 0;
+		  if( dbg ) fprintf( stderr, "EXPO mean=%.4f prev=%.4f scale=%.3f\n",
+		                     mean, m_prevMeanLum, scale ); }
 	}
 
 	// ---- GPU percentile auto-exposure (Engine/CfxHistogram.comp) ----
@@ -453,12 +457,50 @@ void PresentPass::run( const Inputs &in )
 		glBindTexture( GL_TEXTURE_2D, in.source );
 		glUniform1i( glGetUniformLocation( m_autoExpProg, "texFrame" ), 0 );
 		glUniform2i( glGetUniformLocation( m_autoExpProg, "size" ), in.renderW, in.renderH );
-		glUniform1f( glGetUniformLocation( m_autoExpProg, "target" ), 0.26f );
-		glUniform1f( glGetUniformLocation( m_autoExpProg, "maxGain" ), 1.35f );
+		// 0.26 and 1.35 were written for a pass that could not run: its SSBO
+		// binding did not match the one the C++ side binds, so Present.frag read
+		// the four initial values forever and the gain never left 1.0. Neither
+		// number had therefore ever been checked against a frame.
+		//
+		// Measured over 7543 frames from a 99-scene sweep -- p50/p98 are taken
+		// from the pre-present frame and so do not depend on the exposure, which
+		// makes the whole table computable from one recording:
+		//
+		//     no exposure          mean 0.169  median 0.147  12% near-black
+		//     0.26 / 1.35 (as written)  0.184         0.194  10%
+		//     0.34 / 1.8  (this)        0.234         0.259   7%
+		//     0.50 / 2.5                0.316         0.314   6%
+		//
+		// 0.34/1.8 is where the catalogue stops being dark without starting to
+		// look washed out, and the highlight guard in the shader (p98 wins over
+		// the median) is what keeps the brighter target from clipping.
+		glUniform1f( glGetUniformLocation( m_autoExpProg, "target" ), 0.34f );
+		// 1.35 was written when this pass could not run (its SSBO binding did not
+		// match, so the gain never left 1.0) and was therefore never measured
+		// against real content. Measured now, over a 99-scene sweep: the
+		// catalogue's median frame luminance is 0.147 against this pass's 0.26
+		// target, so it asks to BRIGHTEN most of the time -- and at 1.35 it sat
+		// pinned at the ceiling for 53% of frames, unable to reach the target it
+		// was given. 0.26/0.147 = 1.77, so 1.8 is what that target actually costs.
+		// Bright scenes are unaffected: the gain is percentile-based and drops
+		// below 1 for them, which is the point of an exposure rather than a
+		// brightness knob.
+		glUniform1f( glGetUniformLocation( m_autoExpProg, "maxGain" ), 1.8f );
 		glUniform1f( glGetUniformLocation( m_autoExpProg, "slew" ),
 		             0.9f * in.dtFrame );
 		glDispatchCompute( 1, 1, 1 );
 		glMemoryBarrier( GL_SHADER_STORAGE_BARRIER_BIT );
+		{ static const bool dbg = getenv( "KALEIDO_EXPOSURE_DEBUG" ) != 0;
+		  static int n = 0;
+		  if( dbg && ( ++n % 3 ) == 0 )
+		  {
+			glBindBuffer( GL_SHADER_STORAGE_BUFFER, m_autoExpBuf );
+			const float *r = (const float *) glMapBuffer( GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY );
+			float g0 = r ? r[0] : -1.f, g1 = r ? r[1] : -1.f, g2 = r ? r[2] : -1.f;
+			if( r ) glUnmapBuffer( GL_SHADER_STORAGE_BUFFER );
+			glBindBuffer( GL_SHADER_STORAGE_BUFFER, 0 );
+			fprintf( stderr, "EXPOGAIN gain=%.3f p50=%.3f p98=%.3f\n", r[0], r[1], r[2] );
+		  } }
 	}
 
 	// ---- Two-pass Gaussian bloom (quarter res) ----

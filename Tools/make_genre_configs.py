@@ -71,7 +71,15 @@ TIMING = {
 # working directory, like every other path here. Live audio would make a scene
 # look different on every pass, which is the one thing a review must not do --
 # and offline analysis is silent, so nothing comes out of the speakers.
-REVIEW_AUDIO = "..%sTools%sbroadband120.wav" % ("\\\\", "\\\\")
+#
+# Which file is not a detail. The first bench track (broadband120.wav, still
+# used by the UI smoke test) is a drone the engine reads as CALM -- arousal
+# 0.05, ambient up to 0.62 -- and the catalogue answers a calm track by dimming
+# itself. Measured over an identical 99-scene sweep, review128 is worth a
+# median frame luminance of 0.338 against 0.282, and 4% near-black frames
+# against 7%. Tools/make_test_song.py builds it and says why it sounds as it
+# does.
+REVIEW_AUDIO = "..%sTools%sreview128.wav" % ("\\\\", "\\\\")
 
 # A preset that exists to be LOOKED AT: no overlay may paint over the scene
 # under review, and no transition may dress up the cut.
