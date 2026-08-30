@@ -143,7 +143,7 @@ void main()
     float drift = time * 4.0 + audioAdvance * 15.0;
 
     // Camera rotating inside the shaft 90 degrees occasionally
-    float phase = floor(time * 0.2);
+    float phase = floor(time * 0.20);
     float camRoll = smoothstep(0.0, 1.0, fract(time * 0.2)) * 1.570796 + phase * 1.570796;
 
     vec3 ro = vec3(0.0, 0.0, drift);

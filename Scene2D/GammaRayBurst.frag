@@ -117,7 +117,7 @@ void main()
     float beamIntensity = core + (plasmaStrands * exp(-distDistort * 10.0));
 
     // Audio Kick triggers catastrophic spikes in the beam
-    float kickSpike = step(0.9, hash11(floor(time * 1.33))) * audioKick * 10.0;   // was 15 Hz
+    float kickSpike = step(0.9, hash11(floor(time * 4.00))) * audioKick * 10.0;   // was 15 Hz
     beamIntensity *= (1.0 + kickSpike);
 
     col += beamColor * beamIntensity * (1.25 + audioSwell * 2.0);

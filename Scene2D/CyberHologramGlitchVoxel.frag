@@ -61,7 +61,7 @@ void main() {
 
     // Digital glitch / data-mosh horizontal slice shift
     float sliceBlock = floor(gl_FragCoord.y / 16.0);
-    float sliceHash = hash21(vec2(sliceBlock, floor(time * 1.00)));
+    float sliceHash = hash21(vec2(sliceBlock, floor(time * 4.00)));
     float glitchShift = (sliceHash - 0.5) * 0.08 * step(0.82, sliceHash) * (1.0 + 3.0 * audioKick) * glt;
 
     vec2 scanUV = uv + vec2(glitchShift, 0.0);

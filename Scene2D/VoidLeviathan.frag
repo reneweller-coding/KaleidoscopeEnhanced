@@ -165,7 +165,7 @@ void main()
         stripe = smoothstep(0.45, 0.9, stripe); // sharp stripes, but wide enough to actually appear
 
         // Reaction to kick
-        float flash = step(0.9, hash11(floor(p.y * 0.5) + floor(time * 1.25)));
+        float flash = step(0.9, hash11(floor(p.y * 0.5) + floor(time * 4.00)));
 
         col += biolumColor * stripe * gp * (1.35 + flash * audioKick * 5.0);
 

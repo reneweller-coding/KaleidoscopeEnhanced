@@ -195,7 +195,7 @@ void main()
         if (m == 2.0 && g == 1.0) {
             // Processing nodes flash frantically
             // 10 Hz Reselektion + wandernde Zellen = hektisches Springen.
-            float activity = hash31(floor(p * 5.0) + floor(time * 1.5));
+            float activity = hash31(floor(p * 5.0) + floor(time * 2.00));
             float flash = smoothstep(0.85, 0.95, activity);
             col += structColor * flash * (1.0 + audioKick * 3.0) * dp;
         }

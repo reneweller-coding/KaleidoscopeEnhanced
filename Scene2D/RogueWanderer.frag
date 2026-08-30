@@ -155,7 +155,7 @@ void main()
         float magmaGlow = totalCracks * (0.2 + magmaFlow * 0.8) * mp;
         
         // Kicks cause eruptions/flashes in the magma
-        float eruption = step(0.9, hash11(floor(p3.x * 5.0) + floor(time * 1.25)));
+        float eruption = step(0.9, hash11(floor(p3.x * 5.0) + floor(time * 4.00)));
         magmaGlow *= (1.0 + eruption * audioKick * 5.0);
         
         // Subsurface scattering (ice glowing from the magma underneath)

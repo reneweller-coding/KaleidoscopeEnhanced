@@ -169,7 +169,7 @@ void main()
             vec3 localCol = mix(c1, c2, w2 / (w1 + w2));
             
             // Solar flares triggering on kick
-            float flare = step(0.9, hash11(floor(p.x * 5.0) + floor(time * 1.33)));   // was 10 Hz
+            float flare = step(0.9, hash11(floor(p.x * 5.0) + floor(time * 4.00)));   // was 10 Hz
             localCol *= 1.0 + flare * audioKick * 3.0 * fp;
             
             // Core brightness

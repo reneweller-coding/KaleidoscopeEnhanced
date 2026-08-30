@@ -151,7 +151,7 @@ void main()
             float core = exp(-distToStar * 50.0);
             
             // Flash on kick based on star's unique seed
-            float kickFlash = step(0.9, hash11(h * 100.0 + floor(time * 1.25)));
+            float kickFlash = step(0.9, hash11(h * 100.0 + floor(time * 4.00)));
             float intensity = (1.0 + kickFlash * audioKick * 5.0);
             
             col += starColor * core * intensity * (1.0 - densityAccum);

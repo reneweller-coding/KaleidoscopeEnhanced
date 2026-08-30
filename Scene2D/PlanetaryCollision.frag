@@ -145,7 +145,7 @@ void main()
         surfaceCol = mix(surfaceCol, magmaColor * (2.0 + impactNoise * 2.0) * (1.0 + audioSwell * 2.0) * hp, pureImpact);
         
         // Add violent flashes on kicks directly in the impact zone
-        float explosion = step(0.9, hash11(floor(time * 1.33)));   // was 10 Hz
+        float explosion = step(0.9, hash11(floor(time * 4.00)));   // was 10 Hz
         surfaceCol += magmaColor * explosion * audioKick * 10.0 * hp * pureImpact;
         
         col += surfaceCol * mass;

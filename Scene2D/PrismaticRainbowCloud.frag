@@ -176,7 +176,7 @@ void main() {
         vec2 kg = uv * 40.0;
         vec2 kid = floor(kg);
         vec2 kf = fract(kg) - 0.5;
-        float sparkle = hash21(kid + floor(time * 1.33));
+        float sparkle = hash21(kid + floor(time * 4.00));
         if (sparkle > 0.97 && cloudDensity > 0.3) {
             vec2 kp = (vec2(fract(sparkle * 7.3), fract(sparkle * 13.7)) - 0.5) * 0.7;
             float kd = dot(kf - kp, kf - kp);

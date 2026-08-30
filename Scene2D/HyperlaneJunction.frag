@@ -131,7 +131,7 @@ void main()
                 float pulse = step(0.95, fract(axisPos * 2.0 - time * speed * dir));
 
                 // Kick flashes at intersections
-                float intersection = step(0.9, hash31(id + floor(time * 1.25)));
+                float intersection = step(0.9, hash31(id + floor(time * 4.00)));
                 float flash = intersection * audioKick * 5.0;
 
                 vec3 localCol = laneColor * alpha * (0.75 + audioSwell * 0.5);

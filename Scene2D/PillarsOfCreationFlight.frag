@@ -138,7 +138,7 @@ void main()
             float starField = hash31(floor(p * 5.0));
             if (starField > 0.98) {
                 float pulse = sin(time * 5.0 + starField * 100.0) * 0.5 + 0.5;
-                float kickFlash = step(0.99, hash11(floor(p.z) + floor(time * 1.25)));
+                float kickFlash = step(0.99, hash11(floor(p.z) + floor(time * 4.00)));
                 localCol += starColor * (pulse + kickFlash * audioKick * 10.0) * sp * 5.0;
             }
             

@@ -144,7 +144,7 @@ void main()
         float tear = fbm(vec3(ringP * 3.0, time * 2.0 + audioAdvance * 5.0));
 
         // Intensity spikes on audioKick (violent unstable sparking)
-        float sparkTrigger = step(0.95, hash11(floor(time * 1.33) + floor(angle * 5.0)));   // was 10 Hz
+        float sparkTrigger = step(0.95, hash11(floor(time * 4.00) + floor(angle * 5.0)));   // was 10 Hz
         float sparkInt = sparkTrigger * audioKick * 10.0 * sp;
 
         // Energy arcs jumping across the inner radius
@@ -153,7 +153,7 @@ void main()
         col += energyCol * arc * (0.9 + sparkInt + audioSwell * 1.5);
 
         // Occasional violent flash filling the center (failed opening attempt)
-        float massiveFlash = step(0.98, hash11(floor(time * 2.0)));
+        float massiveFlash = step(0.98, hash11(floor(time * 2.00)));
         col += energyCol * massiveFlash * audioKick * 5.0 * sp * exp(-distToCenter * 5.0);
     }
 

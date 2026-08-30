@@ -109,7 +109,7 @@ void main()
 
             // Dying pulse (very slow, weak reaction to kick)
             float pulse = sin(time * 2.0 + h * 10.0) * 0.5 + 0.5;
-            float flash = step(0.95, hash11(floor(time * 2.0) + h * 100.0));
+            float flash = step(0.95, hash11(floor(time * 2.00) + h * 100.0));
 
             vec3 localCol = emberColor * (core + corona);
 

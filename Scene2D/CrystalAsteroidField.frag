@@ -185,7 +185,7 @@ void main()
         float spec = pow(max(dot(reflect(bgLightDir, n), -rd), 0.0), 32.0);
 
         // Flash logic based on time and the crystal's seed
-        float flash = step(0.75, hash11(g * 100.0 + floor(time * 1.5)));
+        float flash = step(0.75, hash11(g * 100.0 + floor(time * 1.50)));
         col += crysColor * spec * (1.0 + flash * audioKick * 10.0) * gp;
 
         // Distance fog

@@ -155,7 +155,7 @@ void main()
             float internalPlasma = fbm(vec3(p3 * 5.0 - vec3(0.0, time * 2.0, 0.0)));
 
             // Brightness spikes with audio kicks
-            float kickSpike = step(0.7, hash11(cellHash * 100.0 + floor(time * 1.5)));
+            float kickSpike = step(0.7, hash11(cellHash * 100.0 + floor(time * 1.50)));
             float intensity = 1.0 + (kickSpike * audioKick * 10.0 * fp);
 
             // Blinding heat
@@ -200,7 +200,7 @@ void main()
         float flareFalloff = exp(-(dist - sphereRad) * (10.0 / fp));
 
         // Flash on kick
-        float jetSpike = step(0.95, hash11(floor(angle * 5.0) + floor(time * 1.25)));
+        float jetSpike = step(0.95, hash11(floor(angle * 5.0) + floor(time * 4.00)));
         float jetIntensity = 1.0 + (jetSpike * audioKick * 10.0 * fp);
 
         float flare = smoothstep(0.3, 0.8, flareNoise) * flareFalloff * edgeHoleMask;

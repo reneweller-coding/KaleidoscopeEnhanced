@@ -103,7 +103,7 @@ void main()
         
         // Audio kick structural shift
         // Shift the geometry suddenly based on kicks
-        float shift = sin(floor(time * 1.25)) * audioKick * 0.5;
+        float shift = sin(floor(time * 4.00)) * audioKick * 0.5;
         
         // 4D Folding space
         vec3 pFold = p;

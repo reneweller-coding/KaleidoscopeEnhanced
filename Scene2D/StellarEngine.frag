@@ -122,7 +122,7 @@ void main()
         localCol += starCol * heat * (1.0 + audioSwell * 2.0);
         
         // Impact flares on the mirror surface
-        float impact = step(0.99, hash11(floor(polarStar.y * 20.0) + floor(time * 1.25)));
+        float impact = step(0.99, hash11(floor(polarStar.y * 20.0) + floor(time * 4.00)));
         localCol += starCol * impact * audioKick * 5.0 * fp;
         
         col = localCol;

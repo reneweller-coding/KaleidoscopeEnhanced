@@ -104,7 +104,7 @@ void main() {
     vec2 uv = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
     // Audio-reactive glitch slicing
-    float glitchTime = floor(time * 1.33);
+    float glitchTime = floor(time * 4.00);
     float sliceSeed = hash21(vec2(floor(st.y * 24.0), glitchTime));
     float sliceActive = step(0.85 - 0.25 * audioKick, sliceSeed) * glt;
     

@@ -117,7 +117,7 @@ void main()
         vec2 eCell = floor(planeUv * 4.0);
         vec2 eFrac = fract(planeUv * 4.0) - 0.5;
         float eh = fract(sin(dot(eCell, vec2(12.9898, 78.233))) * 43758.5453);
-        float eSel = step(0.8, fract(eh + floor(time * 0.6) * 0.31));
+        float eSel = step(0.8, fract(eh + floor(time * 4.00) * 0.31));
         float eShape = exp(-dot(eFrac, eFrac) * 9.0);
         float ePulse = 0.5 + 0.5 * sin(time * 2.5 + eh * 40.0);
         float eruptionFlash = eSel * eShape * ePulse * (0.6 + audioKick * 2.0) * lp;

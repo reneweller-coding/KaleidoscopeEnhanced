@@ -208,7 +208,7 @@ void main() {
     col += photo * (0.25 + 0.3 * audioLevel) * vec3(1.2, 0.9, 0.4);
 
     // Incandescent solar flares & sparks.
-    // The seed used to step at floor(time * 1.04) -- a completely new noise
+    // The seed used to step at floor(time * 4.00) -- a completely new noise
     // field 25 times a second, i.e. video static, well past the 8 Hz ceiling for
     // fine detail. 6 steps/second reads as sparks; the hard audioHigh > 0.4 gate
     // is now a smoothstep so the whole spark field cannot pop on and off.
@@ -218,7 +218,7 @@ void main() {
         vec2 kg = uv * 50.0;
         vec2 kid = floor(kg);
         vec2 kf = fract(kg) - 0.5;
-        float spark = hash21(kid + vec2(floor(time * 1.00), 3.0));
+        float spark = hash21(kid + vec2(floor(time * 4.00), 3.0));
         vec2 kp = (vec2(fract(spark * 7.3), fract(spark * 13.7)) - 0.5) * 0.7;
         float kd = dot(kf - kp, kf - kp);
         col += vec3(1.5, 1.2, 0.8) * smoothstep(0.965, 0.985, spark)

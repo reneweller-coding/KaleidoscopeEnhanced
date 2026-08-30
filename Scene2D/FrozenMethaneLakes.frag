@@ -161,7 +161,7 @@ void main()
             
             if (gaps > 0.0) {
                 // Flash on kick (meteor impacts in the rings)
-                float ringFlash = step(0.95, hash11(floor(ruv.x * 10.0) + floor(time * 1.25))) * audioKick * 3.0 * rp;
+                float ringFlash = step(0.95, hash11(floor(ruv.x * 10.0) + floor(time * 4.00))) * audioKick * 3.0 * rp;
                 
                 vec3 localRingCol = ringColor * (0.5 + ringTex * 0.5) * (1.0 + audioSwell) * gaps;
                 localRingCol += ringColor * ringFlash;

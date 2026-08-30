@@ -143,7 +143,7 @@ void main()
         float crack = smoothstep(0.6 - shatterZone * 0.4 * sp, 1.0, shatterNoise);
         
         // Violent kick explosions tearing chunks out of the star
-        float explosion = step(0.9, hash11(floor(p3.x * 5.0) + floor(time * 1.33))) * shatterZone;   // was 10 Hz
+        float explosion = step(0.9, hash11(floor(p3.x * 5.0) + floor(time * 4.00))) * shatterZone;   // was 10 Hz
         
         vec3 surfaceCol = mix(starColor * (0.5 + surface * 0.5), darkPlasma, crack * 0.8);
         surfaceCol += starColor * explosion * audioKick * 5.0 * sp;

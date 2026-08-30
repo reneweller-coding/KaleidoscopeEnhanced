@@ -161,7 +161,7 @@ void main()
     float blastMask = exp(-dImpact * 5.0);
     
     // Violent flashes on audio kicks
-    float explosion = step(0.8, hash11(floor(time * 1.33))) * audioKick * 10.0 * blast;   // was 15 Hz
+    float explosion = step(0.8, hash11(floor(time * 4.00))) * audioKick * 10.0 * blast;   // was 15 Hz
     
     // Core of the impact is completely blown out white
     float impactCore = exp(-dImpact * 20.0) * (2.0 + explosion);
