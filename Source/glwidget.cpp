@@ -651,11 +651,28 @@ void GLwidget::initializeGL()
 	if( AudioAnalyzer::s_offlineWav.isEmpty()
 	 && m_actConfiguration && !m_actConfiguration->audioFile().isEmpty() )
 	{
-		AudioAnalyzer::s_offlineWav =
+		const QString wav =
 			Platform::assetPath( m_actConfiguration->audioFile() );
+		// Only if the file is actually there. The analyser's offline branch
+		// RETURNS on a WAV it cannot open -- adopting a missing path would not
+		// merely lose the preset's track, it would end the session with no
+		// audio at all, live capture included. A package without the file
+		// (the WAV lives in Tools/, which older packages did not ship) must
+		// degrade to listening, and say why.
+		if( !QFileInfo::exists( wav ) )
+		{
+			fprintf( stderr, "AUDIO: preset '%s' names %s, which does not exist - "
+			                 "falling back to live capture.\n",
+			         m_actConfiguration->getConfigurationName().toLocal8Bit().constData(),
+			         wav.toLocal8Bit().constData() );
+		}
+		else
+		{
+		AudioAnalyzer::s_offlineWav = wav;
 		fprintf( stderr, "AUDIO: preset '%s' supplies its own track: %s\n",
 		         m_actConfiguration->getConfigurationName().toLocal8Bit().constData(),
 		         AudioAnalyzer::s_offlineWav.toLocal8Bit().constData() );
+		}
 	}
 
 	// Start audio analyser (WASAPI loopback – captures any playing audio)

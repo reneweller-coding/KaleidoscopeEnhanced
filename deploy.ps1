@@ -207,6 +207,13 @@ procedurally generated texture and the startup log says so.
 
 Copy-Item (Join-Path $root "*.vert") $pkgDir
 Copy-Item (Join-Path $root "Configurations") $pkgDir -Recurse
+# The review bench (TestAlle) analyses its own silent track instead of
+# listening; the preset names ..\Toolseview128.wav, so the package needs
+# exactly that file at exactly that spot. Without it the engine now falls
+# back to live capture with a warning -- but shipping 2.8 MB is better than
+# shipping a bench that behaves differently from the developer's.
+New-Item -ItemType Directory -Force (Join-Path $pkgDir "Tools") | Out-Null
+Copy-Item (Join-Path $root "Toolseview128.wav") (Join-Path $pkgDir "Tools")
 if (Test-Path (Join-Path $root "icon.png")) {
     Copy-Item (Join-Path $root "icon.png") $pkgDir
 }
