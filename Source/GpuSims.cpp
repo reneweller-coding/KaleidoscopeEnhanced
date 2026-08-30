@@ -98,6 +98,7 @@ void GpuSims::run( const AudioFeatures &audio, float dt, const Demand &need, con
 		stepPhysarum( audio, f );       // 2 sub-steps: the net develops faster
 		glActiveTexture( GL_TEXTURE11 );
 		glBindTexture( GL_TEXTURE_2D, m_texPhysTrail[1 - m_physTrailIdx] );
+		glActiveTexture( GL_TEXTURE0 );   // see stepFluid(): leave unit 0 selected
 	}
 
 	// Historien akkumulieren IMMER; Textur nur bei Bedarf anlegen/hochladen.
@@ -225,10 +226,13 @@ void GpuSims::stepFluid(const AudioFeatures &audio, const Frame &f)
 
 	glActiveTexture( GL_TEXTURE0 );
 	glBindTexture( GL_TEXTURE_2D, m_texFluid[prev] );
+	// The dye sources are the two cross-fading photographs, and the second one
+	// does not exist yet on the first frames (nor at all with a single image).
+	// Binding 0 there left the sampler incomplete for the whole draw.
 	glActiveTexture( GL_TEXTURE1 );
-	glBindTexture( GL_TEXTURE_2D, f.dyeTexA );
+	glBindTexture( GL_TEXTURE_2D, f.dyeTexA ? f.dyeTexA : glcoreDummyTex2D() );
 	glActiveTexture( GL_TEXTURE2 );
-	glBindTexture( GL_TEXTURE_2D, f.dyeTexB );
+	glBindTexture( GL_TEXTURE_2D, f.dyeTexB ? f.dyeTexB : glcoreDummyTex2D() );
 	glUniform1i( m_fluidPrevUni, 0 );
 	if( m_fluidTex0Uni   >= 0 ) glUniform1i( m_fluidTex0Uni, 1 );
 	if( m_fluidTex1Uni   >= 0 ) glUniform1i( m_fluidTex1Uni, 2 );
@@ -246,7 +250,14 @@ void GpuSims::stepFluid(const AudioFeatures &audio, const Frame &f)
 
 	drawFullscreen();
 
-	glBindTexture( GL_TEXTURE_2D, 0 );
+	// Unit 0, not a stray unbind. The old glBindTexture(0) here ran with
+	// unit 2 still selected and so left THAT unit empty while this program
+	// stayed bound with tex1 pointing at it -- an incomplete sampler for
+	// every following validation, which the driver reported by the hundred.
+	// glActiveTexture is global state; a function that moves it owes the
+	// next caller a reset, or that caller's unqualified glBindTexture lands
+	// on a unit it never asked for.
+	glActiveTexture( GL_TEXTURE0 );
 	m_fluidSeeded = true;
 	m_fluidIdx    = prev;   // newest state is now m_texFluid[1 - m_fluidIdx]
 }
@@ -755,6 +766,7 @@ void GpuSims::bindSSMTexture()
 		glPixelStorei( GL_UNPACK_ALIGNMENT, 4 );
 		m_ssmDirty = false;
 	}
+	glActiveTexture( GL_TEXTURE0 );   // see stepFluid()
 }
 
 // Spektrogramm-Textur (Unit 28): lazy anlegen, nur die seit dem letzten
@@ -812,4 +824,5 @@ void GpuSims::bindSpectroTexture()
 		glPixelStorei( GL_UNPACK_ALIGNMENT, 4 );
 		m_spectroPend = 0;
 	}
+	glActiveTexture( GL_TEXTURE0 );   // see stepFluid()
 }

@@ -10,6 +10,8 @@
 #include "glcore.h"
 #include "Platform.h"
 #include <stdio.h>
+#include <map>
+#include <string>
 
 /**
  * @brief Defines the storage (zero-initialized) for one loaded GL function pointer.
@@ -124,6 +126,86 @@ int glcoreHasDebug   = 0; ///< Definition of glcoreHasDebug; set by glcoreInit()
 // -- the callback fires inside the offending call, so a debugger break or a
 // stack walk lands on the culprit.
 // ---------------------------------------------------------------------------
+
+// ---- Stand-in textures, see glcore.h for the why -------------------------
+static GLuint s_dummy2D = 0, s_dummy2DArray = 0, s_dummyShadow = 0;
+
+GLuint glcoreDummyTex2D()
+{
+    if( s_dummy2D == 0 )
+    {
+        const unsigned char black[4] = { 0, 0, 0, 255 };
+        glGenTextures( 1, &s_dummy2D );
+        glBindTexture( GL_TEXTURE_2D, s_dummy2D );
+        glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA,
+                      GL_UNSIGNED_BYTE, black );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+        glBindTexture( GL_TEXTURE_2D, 0 );
+    }
+    return s_dummy2D;
+}
+
+GLuint glcoreDummyTex2DArray()
+{
+    if( s_dummy2DArray == 0 && glcore_glTexImage3D )
+    {
+        const unsigned char black[4] = { 0, 0, 0, 255 };
+        glGenTextures( 1, &s_dummy2DArray );
+        glBindTexture( GL_TEXTURE_2D_ARRAY, s_dummy2DArray );
+        glTexImage3D( GL_TEXTURE_2D_ARRAY, 0, GL_RGBA, 1, 1, 1, 0, GL_RGBA,
+                      GL_UNSIGNED_BYTE, black );
+        glTexParameteri( GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+        glTexParameteri( GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+        glTexParameteri( GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+        glTexParameteri( GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+        glBindTexture( GL_TEXTURE_2D_ARRAY, 0 );
+    }
+    return s_dummy2DArray;
+}
+
+GLuint glcoreDummyShadow()
+{
+    if( s_dummyShadow == 0 )
+    {
+        // 1.0 = the far plane, so every depth comparison passes and a lookup
+        // reads as 'nothing occludes'. A zeroed texture would do the opposite
+        // and black out whatever sampled it.
+        const unsigned int far1 = 0xFFFFFFFFu;
+        glGenTextures( 1, &s_dummyShadow );
+        glBindTexture( GL_TEXTURE_2D, s_dummyShadow );
+        glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, 1, 1, 0,
+                      GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, &far1 );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE,
+                         GL_COMPARE_REF_TO_TEXTURE );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL );
+        glBindTexture( GL_TEXTURE_2D, 0 );
+    }
+    return s_dummyShadow;
+}
+
+// Program id -> shader file, filled in by shader_setup as programs are built.
+// Only populated while KALEIDO_GL_DEBUG is on; a plain array keeps the
+// callback allocation-free, which matters because it runs inside the driver.
+static std::map<unsigned, std::string> s_progNames;
+
+void glcoreNameProgram( unsigned prog, const char *name )
+{
+    if( prog && name ) s_progNames[prog] = name;
+}
+
+const char *glcoreDebugProgramName( unsigned prog )
+{
+    std::map<unsigned, std::string>::const_iterator it = s_progNames.find( prog );
+    return ( it == s_progNames.end() ) ? "?" : it->second.c_str();
+}
+
 static void APIENTRY glcDebugCb( GLenum /*source*/, GLenum type, GLuint id,
                                  GLenum severity, GLsizei /*length*/,
                                  const GLchar *message, const void * /*user*/ )
@@ -132,9 +214,14 @@ static void APIENTRY glcDebugCb( GLenum /*source*/, GLenum type, GLuint id,
         return;
     const char *sev = ( severity == GL_DEBUG_SEVERITY_HIGH )   ? "high"
                     : ( severity == GL_DEBUG_SEVERITY_MEDIUM ) ? "medium" : "low";
-    fprintf( stderr, "GLDEBUG [%s%s] id=%u: %s\n",
+    // The bound program is what turns "some shader does X" into a file name:
+    // glcoreDebugProgramName() is filled in by the engine as it compiles.
+    GLint prog = 0;
+    glGetIntegerv( GL_CURRENT_PROGRAM, &prog );
+    fprintf( stderr, "GLDEBUG [%s%s] id=%u prog=%d(%s): %s\n",
              ( type == GL_DEBUG_TYPE_ERROR ) ? "ERROR/" : "", sev,
-             (unsigned) id, message ? message : "(no message)" );
+             (unsigned) id, (int) prog, glcoreDebugProgramName( (unsigned) prog ),
+             message ? message : "(no message)" );
 }
 
 void glcoreEnableDebugOutput()

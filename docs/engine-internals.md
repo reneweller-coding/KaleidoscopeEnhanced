@@ -2166,3 +2166,36 @@ regardless of draw order) — each billboard samples its own atlas cell and maps
 temperature/density through a black → red → orange → yellow → white-hot ramp,
 with a grey smoke haze wherever density outlives the heat.
 
+
+### Sampler completeness: what the "texture state usage" warnings mean
+
+A draw is validated against **every** sampler the bound program declares, not
+only the ones its branches actually reach. So a shader that declares an
+optional sampler -- a model's material layers, the frame-history ring, a
+shadow map -- makes the whole draw ill-formed whenever that unit is left
+empty, even though nothing samples it. The driver says
+`texture object (0) ... does not have a defined base level`.
+
+`glcoreDummyTex2D()` / `glcoreDummyTex2DArray()` / `glcoreDummyShadow()` exist
+for exactly this: a complete 1x1 texture of the right TYPE, bound where a real
+one is absent. The shadow stand-in reads 1.0 (the far plane), so a lookup
+against it comes back "nothing occludes" rather than black.
+
+Two rules follow, and breaking either produced hundreds of warnings per run:
+
+* **A declared sampler always gets a unit, and that unit always holds a
+  complete texture of the matching type.** Not "when the feature is active" --
+  the mesh material sampler was assigned only when a model actually had
+  material layers, which left a `sampler2DArray` pointing at unit 0, where a
+  plain 2D photograph sits.
+* **A function that moves `glActiveTexture` owes the next caller a reset to
+  unit 0.** It is global state. `stepFluid()` ended with a bare
+  `glBindTexture(..., 0)` while unit 2 was still selected, which emptied that
+  unit rather than unit 0 -- and left the fluid program bound with `tex1`
+  pointing at it.
+
+A related trap, and a real spec violation rather than a warning: the shadow
+pass renders **into** the depth map while the previous frame still has it bound
+for reading on the shadow unit. A texture that is simultaneously render target
+and sampler source is a feedback loop, undefined by the spec. The pass now
+binds the stand-in over it for the duration of its own draw.

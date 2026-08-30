@@ -225,6 +225,9 @@ static GLuint progLookup( const std::string &key )
  *         a later attempt should get the chance to fail loudly again. */
 static GLuint progStore( const std::string &key, GLuint prog )
 {
+	// Name it for the debug callback while we still know which files went in.
+	if( prog )
+		glcoreNameProgram( (unsigned) prog, key.c_str() );
 	if( prog && !cacheOff() )
 	{
 		s_progByKey[key] = prog;

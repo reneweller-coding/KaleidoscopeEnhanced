@@ -243,6 +243,7 @@ static void uploadRGBA( GLuint &tex, const void *rgba, int w, int h )
  * so the effective layer spacing stays close to 1/30 s regardless of the
  * actual render frame rate.
  */
+
 void PresentPass::captureHistory( GLuint sourceTex, int renderW, int renderH,
                                   float dtWall )
 {
@@ -580,10 +581,16 @@ void PresentPass::run( const Inputs &in )
 		if( m_presentHistTexUni >= 0 ) glUniform1i( m_presentHistTexUni, 5 );
 		float rew = ( m_histReady && m_histCount > 8 )  ? in.rewindMix : 0.f;
 		float ech = ( m_histReady && m_histCount > 45 ) ? in.echoAmt   : 0.f;
-		if( m_histReady && ( rew > 0.001f || ech > 0.001f ) )
+		// Bound ALWAYS, not just while rewind or echo is running. The shader
+		// only samples inside those branches, but the driver validates the
+		// draw against every sampler that is bound, so an empty unit 5 was
+		// reported on nearly every frame. Binding a texture that is never read
+		// costs nothing; the ring already exists by now, since captureHistory()
+		// runs at the top of this pass.
 		{
+			const GLuint unit5 = m_histTex ? m_histTex : glcoreDummyTex2DArray();
 			glActiveTexture( GL_TEXTURE5 );
-			glBindTexture( GL_TEXTURE_2D_ARRAY, m_histTex );
+			glBindTexture( GL_TEXTURE_2D_ARRAY, unit5 );
 			glActiveTexture( GL_TEXTURE0 );
 		}
 		if( m_presentRewindUni >= 0 )

@@ -1120,12 +1120,19 @@ void Scene3DShader::draw()
 	if( m_seedUni   >= 0 ) glUniform1f( m_seedUni,   m_sceneSeed );
 	if( m_budgetUni >= 0 ) glUniform1f( m_budgetUni, s_cubeBudget );
 
-	if( m_meshMaterialLayers > 0 )
+	// The sampler is declared unconditionally by every mesh shader, so it gets
+	// its unit unconditionally too. A model without material layers used to
+	// leave texMeshMaterial at its default of 0 -- pointing a sampler2DArray
+	// at unit 0, where a plain 2D photo sits. Wrong type AND, between photos,
+	// nothing at all. The layers count still says 0, so the shader does not
+	// sample it; this only makes the state the driver validates well-formed.
+	if( m_meshMaterialUni >= 0 ) glUniform1i( m_meshMaterialUni, kMeshMaterialTexUnit );
+	if( m_meshMaterialLayersUni >= 0 ) glUniform1i( m_meshMaterialLayersUni, m_meshMaterialLayers );
+	if( m_meshMaterialUni >= 0 )
 	{
-		if( m_meshMaterialUni >= 0 ) glUniform1i( m_meshMaterialUni, kMeshMaterialTexUnit );
-		if( m_meshMaterialLayersUni >= 0 ) glUniform1i( m_meshMaterialLayersUni, m_meshMaterialLayers );
 		glActiveTexture( GL_TEXTURE0 + kMeshMaterialTexUnit );
-		glBindTexture( GL_TEXTURE_2D_ARRAY, m_meshMaterialTex );
+		glBindTexture( GL_TEXTURE_2D_ARRAY, ( m_meshMaterialLayers > 0 )
+		               ? m_meshMaterialTex : glcoreDummyTex2DArray() );
 		glActiveTexture( GL_TEXTURE0 );
 	}
 	if( m_geomKind == GEOM_MESH && m_meshVertexCountUni >= 0 )
@@ -1142,12 +1149,14 @@ void Scene3DShader::draw()
 		glUniform3f( m_meshCenter2Uni, m_meshCenter2[0], m_meshCenter2[1], m_meshCenter2[2] );
 	if( m_geomKind == GEOM_MESH && m_mesh2VertexCountUni >= 0 )
 		glUniform1i( m_mesh2VertexCountUni, m_mesh2VertexCount );
-	if( m_meshMaterialLayers2 > 0 )
+	// Same for model2's layers; see above.
+	if( m_meshMaterial2Uni >= 0 ) glUniform1i( m_meshMaterial2Uni, kMeshMaterial2TexUnit );
+	if( m_meshMaterial2LayersUni >= 0 ) glUniform1i( m_meshMaterial2LayersUni, m_meshMaterialLayers2 );
+	if( m_meshMaterial2Uni >= 0 )
 	{
-		if( m_meshMaterial2Uni >= 0 ) glUniform1i( m_meshMaterial2Uni, kMeshMaterial2TexUnit );
-		if( m_meshMaterial2LayersUni >= 0 ) glUniform1i( m_meshMaterial2LayersUni, m_meshMaterialLayers2 );
 		glActiveTexture( GL_TEXTURE0 + kMeshMaterial2TexUnit );
-		glBindTexture( GL_TEXTURE_2D_ARRAY, m_meshMaterialTex2 );
+		glBindTexture( GL_TEXTURE_2D_ARRAY, ( m_meshMaterialLayers2 > 0 )
+		               ? m_meshMaterialTex2 : glcoreDummyTex2DArray() );
 		glActiveTexture( GL_TEXTURE0 );
 	}
 

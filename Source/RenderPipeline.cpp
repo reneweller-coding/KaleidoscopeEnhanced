@@ -2442,6 +2442,18 @@ void RenderPipeline::renderShadowPassGeneric( EffectShader *fx, GLuint &fbo, GLu
 	// normal instead, which needs no assumption about winding at all.
 	glDisable( GL_CULL_FACE );
 
+	// The map is the depth attachment of the framebuffer we just bound, and
+	// the PREVIOUS frame left it bound for reading on this very unit -- a
+	// texture that is both render target and sampler source at once is a
+	// feedback loop, undefined by the spec and reported as an incomplete
+	// sampler on every shadow-pass draw. The scene's texShadow uniform still
+	// points here (applyAudioFeatures sets it just below), so the unit needs
+	// something valid: a 1x1 depth texture at the far plane, which reads as
+	// fully lit -- the right answer for a pass that is only measuring depth.
+	glActiveTexture( GL_TEXTURE0 + texUnit );
+	glBindTexture( GL_TEXTURE_2D, glcoreDummyShadow() );
+	glActiveTexture( GL_TEXTURE0 );
+
 	passFlag = 1.f;
 	fx->enableShader();
 	fx->setUniforms( m_globaltime, m_interpolationTexture, 0, 1 );

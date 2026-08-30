@@ -87,6 +87,7 @@ typedef ptrdiff_t GLintptr;
 /// enums and status codes, texture internal/pixel formats, and memory-barrier bits).
 ///@{
 #define GL_CLAMP_TO_EDGE                  0x812F
+#define GL_TEXTURE_BINDING_2D             0x8069
 // Shadow-map sampling.  With COMPARE_REF_TO_TEXTURE the sampler returns the
 // RESULT of a depth comparison, so a LINEAR filter averages four booleans and
 // gives 2x2 percentage-closer filtering for free.
@@ -425,6 +426,36 @@ extern int glcoreHasDebug;
 /// @brief Installs a debug callback that logs GL errors with the API call that
 ///        raised them. Called by the engine only when KALEIDO_GL_DEBUG is set.
 void glcoreEnableDebugOutput();
+
+/// @brief Records which shader file a program was built from, so the debug
+///        callback can name it. No-op cost when debug output is off.
+void glcoreNameProgram( unsigned prog, const char *name );
+/// @brief Name recorded for @p prog, or "?" if none.
+const char *glcoreDebugProgramName( unsigned prog );
+
+// ---------------------------------------------------------------------------
+// Stand-in textures.
+//
+// A draw is validated against EVERY sampler the bound program declares, not
+// only the ones its branches actually reach. So a shader that declares an
+// optional sampler -- a model's material layers, a frame-history ring, a
+// shadow map -- makes the whole draw ill-formed whenever that unit is left
+// empty, even though nothing samples it. The driver calls this out as
+// 'texture object (0) ... does not have a defined base level'.
+//
+// Binding a complete 1x1 texture of the right TYPE costs nothing and makes
+// the state well-defined. One instance per type, created on first use and
+// owned by glcore for the life of the context.
+// ---------------------------------------------------------------------------
+
+/// @brief 1x1 opaque-black GL_TEXTURE_2D. @return Texture name.
+GLuint glcoreDummyTex2D();
+/// @brief 1x1x1 opaque-black GL_TEXTURE_2D_ARRAY. @return Texture name (0 if glTexImage3D is missing).
+GLuint glcoreDummyTex2DArray();
+/// @brief 1x1 depth texture, COMPARE_REF_TO_TEXTURE, depth 1.0 -- reads as
+///        'nothing occludes', so a shadow sampler bound to it renders fully lit.
+/// @return Texture name.
+GLuint glcoreDummyShadow();
 
 /**
  * @brief Resolves every GL function pointer declared above.
