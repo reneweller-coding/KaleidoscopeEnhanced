@@ -361,6 +361,13 @@ you would rather not open the tool:
 showHiddenPresets=true
 ```
 
+> The settings file is resolved **relative to the working directory**, one
+> level up from the exe: `Release\Kaleidoscope.exe` reads the copy in the
+> repository root, the packaged `bin\Kaleidoscope.exe` the one in the
+> package root. A copy sitting next to the exe is never read. The startup
+> log names the file it actually used (`Settings: <full path>`), so check
+> there first if an edit seems to have no effect.
+
 Build it with `msbuild SetupTool\SetupTool.vcxproj /p:Configuration=Release /p:Platform=x64`
 (no GL/audio dependency — a plain Qt Widgets app).
 

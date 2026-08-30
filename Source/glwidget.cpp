@@ -422,8 +422,19 @@ GLwidget::GLwidget( QWidget *parent )
 	// bench, not something to land on while enjoying the show.
 	bool showHidden = false;
 	{
-		QSettings s( Platform::assetPath( "..\\kaleidoscope_settings.ini" ), QSettings::IniFormat );
+		const QString iniPath =
+			Platform::assetPath( "..\\kaleidoscope_settings.ini" );
+		QSettings s( iniPath, QSettings::IniFormat );
 		showHidden = s.value( "showHiddenPresets", false ).toBool();
+		// Named ABSOLUTELY, and once. The path is relative to the WORKING
+		// DIRECTORY: run from Release/ that is the repository root, run from the
+		// packaged bin/ it is the package root. An older copy left beside the exe
+		// is therefore never read, and the only symptom is a setting that appears
+		// not to work. Same reasoning as the "Photo source: ..." line below --
+		// with more than one candidate, say which one won.
+		fprintf( stderr, "Settings: %s%s\n",
+		         QFileInfo( iniPath ).absoluteFilePath().toLocal8Bit().constData(),
+		         QFileInfo( iniPath ).exists() ? "" : " (missing - using defaults)" );
 	}
 	// A preset built entirely from geom="mesh" scenes has nothing left once
 	// the optional model pack is absent, and RenderPipeline would fall back
