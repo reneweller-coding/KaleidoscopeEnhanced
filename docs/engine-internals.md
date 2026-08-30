@@ -941,11 +941,14 @@ invalidated a whole measurement campaign (see below).
 
 The companion is `TestAlle`, the review bench that
 `Tools/make_genre_configs.py` writes alongside the genre presets: every scene,
-8 s each, `FxPlain` as the only overlay and `Crossfade` as the only transition.
+25 s each, `FxPlain` as the only overlay and `Crossfade` as the only transition.
 
 Three of its properties are **not** in the file. `Configuration.cpp` switches
 the scheduler into review mode for any preset whose name starts with `Test`,
-and review mode is what supplies the fixed 8 s, the short cut, and the walk
+and review mode is what supplies the fixed span (`kReviewSoloSecs`, 25 s --
+a full phrase at ~120 BPM, so a scene's slow arcs complete at least once;
+the original 8 s only ever showed a scene's opening moment), the short cut,
+and the walk
 order — 2D scenes alphabetically, then 3D ones (`reviewBlock()` in
 `SceneScheduler.cpp`; one list across both folders interleaves a flat fractal
 with a lit model every couple of scenes and the eye spends its time

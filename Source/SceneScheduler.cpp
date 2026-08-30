@@ -464,9 +464,11 @@ void SceneScheduler::tick( const Tick &t )
 
 		float ts = secsSince( m_clockEffectTexture );
 
-		// REVIEW MODE: fixed 8 s per scene, regardless of config/music pacing.
-		if( m_reviewMode && m_texFadeDur > 8.f )
-			m_texFadeDur = 8.f;
+		// REVIEW MODE: a fixed span per scene, regardless of config/music
+		// pacing -- long enough to actually judge a scene's motion, which is
+		// why it is a named constant rather than a number buried here.
+		if( m_reviewMode && m_texFadeDur > kReviewSoloSecs )
+			m_texFadeDur = kReviewSoloSecs;
 
 		// End the solo early on a manual ('n') or trigger-driven request, but
 		// only after a minimum so cuts never come back-to-back.  A human

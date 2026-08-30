@@ -23,7 +23,7 @@ Genres (scene AND FX entries are filtered by the same rule):
                  judged, and its own silent audio file so two runs of the same
                  shader look alike. The "Test" name prefix flips the engine
                  into review mode: 2D block then 3D block, alphabetical inside
-                 each, a fixed 8 s per scene, 'n' steps onward.
+                 each, a fixed 25 s per scene, 'n' steps onward.
 """
 import re, os, sys
 

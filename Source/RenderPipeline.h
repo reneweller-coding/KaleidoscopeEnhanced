@@ -196,7 +196,7 @@ public:
 	/** @brief Whether a scene cross-fade is currently in flight (mid-transition frames blend two scenes, so callers wanting a clean single-scene snapshot should skip them). */
 	bool sceneTransitioning() const { return m_scheduler.texState() != 0; }
 
-	/** Review mode (Test* presets): scenes run alphabetically, 8 s each,
+	/** Review mode (Test* presets): scenes run alphabetically, 25 s each,
 	 *  'n' steps to the next in order.  No mood/taste filtering, no beat
 	 *  quantisation — a systematic viewing bench. */
 	/** @brief Enables/disables review mode (alphabetical fixed-length walk through every scene, for systematic viewing). @param on true to enable review mode, false to return to normal mood/taste-driven selection. */

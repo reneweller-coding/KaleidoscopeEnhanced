@@ -50,7 +50,7 @@ class EffectShader;
  * musical triggers (harmonic novelty, section changes with a per-section
  * "song structure memory" so a repeated chorus replays its earlier look,
  * and EDM drops), a review mode that walks every scene alphabetically for a
- * fixed 8 s each, and a remote forceScene() jump that pre-empts everything
+ * fixed kReviewSoloSecs each, and a remote forceScene() jump that pre-empts everything
  * else. The render pipeline only ever reads the public accessors
  * (actTexture()/nextTexture()/texInterp()/...); it never touches the state
  * machine directly. The class is Qt-free (a RendererCore building block);
@@ -74,7 +74,14 @@ public:
 	void reset();
 
 	// ---- Konfiguration / Zustand von außen ----
-	/** @brief Enable/disable review mode (alphabetical walk, fixed 8 s per scene).
+	/** Review bench pacing: how long each scene holds in review mode
+	 * (Test* presets). 25 s is a full musical phrase at ~120 BPM, so a
+	 * scene's slow camera arcs and palette drifts complete at least once
+	 * before the walk moves on -- 8 s showed only the opening moment.
+	 */
+	static constexpr float kReviewSoloSecs = 25.f;
+
+	/** @brief Enable/disable review mode (alphabetical walk, fixed kReviewSoloSecs per scene).
 	 * @param on True to enter review mode, false to return to normal random selection.
 	 */
 	void setReviewMode( bool on )   { m_reviewMode = on; }

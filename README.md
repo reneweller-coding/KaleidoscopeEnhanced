@@ -271,7 +271,7 @@ BY-NC-SA 4.0 — see [Credits and license](#credits-and-license).
 Two pieces that work together when you want to look *at* the shaders rather
 than enjoy them:
 
-* **`TestAlle`** — the review bench: every scene, **8 s each**, walked in a
+* **`TestAlle`** — the review bench: every scene, **25 s each**, walked in a
   fixed order (all 2D scenes alphabetically, then all 3D ones), with `FxPlain`
   as the only overlay and `Crossfade` as the only transition, so nothing is
   ever painted over the scene you are judging. It also brings its own silent
