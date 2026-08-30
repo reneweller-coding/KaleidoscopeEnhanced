@@ -585,6 +585,13 @@ void GLwidget::initializeGL()
 	const char *version = (const char *)(glGetString(GL_VERSION));
 	fprintf(stderr,"VERSION %s (core profile)\n",version);
 
+	// Same gate as checkGLErrors(), and far more useful: the driver names the
+	// call that failed and usually why, where a glGetError() checkpoint can only
+	// report where the failure was NOTICED -- often several subsystems past the
+	// cause, which sends the reader to the wrong file.
+	if( qEnvironmentVariableIsSet( "KALEIDO_GL_DEBUG" ) )
+		glcoreEnableDebugOutput();
+
 	// Migration/validation aid: compile every shader of the active preset
 	// eagerly, then quit — the log holds one verdict per shader.
 	if( qEnvironmentVariableIsSet( "KALEIDO_COMPILE_ALL" ) )

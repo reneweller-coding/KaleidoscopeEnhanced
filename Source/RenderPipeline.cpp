@@ -244,11 +244,22 @@ void RenderPipeline::init( const QString &directory, unsigned int timeTextureSol
 
 void RenderPipeline::start( int width, int height )
 {
-	// Revisiting an already-built configuration: just resize, don't rebuild.
-	// (Rebuilding leaked GL programs/textures/FBOs and spawned a duplicate
-	//  ImageLoader thread every time you switched back to a configuration.)
+	// Revisiting an already-built configuration: keep the GL resources and just
+	// resize. Rebuilding here would leak them -- reinit() generates new names
+	// for the colour and depth attachments without freeing the old ones.
+	//
+	// The photo loader is the exception, and is the one thing that has to come
+	// back: stop() ends that thread, and this early return used to walk past
+	// the pointer to it, which stop() had deleted and left dangling. A revisited
+	// preset was then prefetching nothing -- and any use of that pointer was
+	// undefined, which is the more serious half.
 	if( m_started )
 	{
+		if( !m_imageLoader )
+		{
+			m_imageLoader = new ImageLoader( this );
+			m_imageLoader->start();
+		}
 		resize( width, height );
 		return;
 	}
@@ -406,10 +417,28 @@ void RenderPipeline::stop()
 	// right below anyway.
 	m_imageLoader->terminate();
 
-	cleanTextures();
-	cleanShaderPrograms();
-
 	delete m_imageLoader;
+	m_imageLoader = nullptr;   // start() checks this; a stale one was a dangling delete
+
+	// GL is deliberately NOT torn down here any more.
+	//
+	// It used to be, and start() then refused to rebuild it -- its early return
+	// on m_started was added to stop a rebuild from leaking. The two together
+	// meant that switching BACK to a preset resumed drawing with framebuffer,
+	// texture and program names that had been deleted. That is the whole of the
+	// GL error storm seen on rapid preset switching: bind a deleted FBO, sample
+	// a deleted texture, use a released program, then read uniform locations
+	// off it -- four distinct driver complaints, one cause.
+	//
+	// Freeing them here bought remarkably little: the two photo textures and
+	// five framebuffer objects, while the five colour attachments, the two
+	// depth textures and the safety pass -- everything that actually costs
+	// memory -- stayed allocated regardless, because cleanTextures() never
+	// covered them. Roughly 8 MB per preset, against a class of errors.
+	//
+	// The GL resources now live as long as the pipeline does and ~RenderPipeline
+	// is their single owner. Reclaiming them on a preset switch is a real
+	// feature, but it needs a complete release/rebuild pair, not half of one.
 }
 
 
@@ -428,6 +457,15 @@ void RenderPipeline::stop()
 // Destructor
 RenderPipeline::~RenderPipeline()
 {
+	// Sole owner of this pipeline's GL objects since stop() gave that up, and
+	// of the loader thread when the app exits without a stop() (the ACTIVE
+	// preset never gets one). Guarded, because stop() may already have run.
+	if( m_imageLoader )
+	{
+		m_imageLoader->terminate();
+		delete m_imageLoader;
+		m_imageLoader = nullptr;
+	}
 	cleanTextures();
 	cleanShaderPrograms();
 	delete m_mesh;
@@ -442,6 +480,12 @@ void RenderPipeline::cleanTextures()
 	glDeleteFramebuffers( 1, &m_fboTransition );		// clean up framebuffer object
 	glDeleteTextures( 1, &m_actTex );         // clean up textures
 	glDeleteTextures( 1, &m_nextTex );
+	// Zeroed so this is idempotent. A name that has been deleted can be
+	// REISSUED by the driver to the next glGen*, and deleting it a second
+	// time would then destroy a live object belonging to someone else.
+	m_fboEffectTexture1 = m_fboEffectTexture2 = 0;
+	m_fboEffectFx1 = m_fboEffectFx2 = m_fboTransition = 0;
+	m_actTex = m_nextTex = 0;
 	//glDeleteTextures( 1, &m_texID3 );
 }
 

@@ -13,6 +13,7 @@
 #include <map>
 #include <string>
 #include <chrono>
+#include <cstdlib>
 
 // Opengl feedback about shaders
 
@@ -192,11 +193,25 @@ static std::string progKey( const char *tag, const char *a, const char *b,
 	return k;
 }
 
+/** @brief KALEIDO_NO_SHADER_CACHE=1 turns the cache off without a rebuild.
+ *
+ *  Kept because the cache changes object LIFETIMES, and lifetime bugs are
+ *  exactly the kind that get blamed on whatever changed last. Being able to
+ *  A/B it inside one binary is the difference between attributing a fault
+ *  and guessing at it. */
+static bool cacheOff()
+{
+	static const bool off = ( getenv( "KALEIDO_NO_SHADER_CACHE" ) != 0 );
+	return off;
+}
+
 /** @brief Cache lookup. Also re-binds, because the builders leave the program
  *         bound (linkOrFail does) and a hit must be indistinguishable from a
  *         build -- otherwise the GL state after the call depends on cache luck. */
 static GLuint progLookup( const std::string &key )
 {
+	if( cacheOff() )
+		return 0;
 	std::map<std::string, GLuint>::iterator it = s_progByKey.find( key );
 	if( it == s_progByKey.end() )
 		return 0;
@@ -210,7 +225,7 @@ static GLuint progLookup( const std::string &key )
  *         a later attempt should get the chance to fail loudly again. */
 static GLuint progStore( const std::string &key, GLuint prog )
 {
-	if( prog )
+	if( prog && !cacheOff() )
 	{
 		s_progByKey[key] = prog;
 		s_progRefs[prog] = 1;

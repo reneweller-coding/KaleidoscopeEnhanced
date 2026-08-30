@@ -105,6 +105,18 @@ void EffectShader::cleanShaderPrograms()
 	shaderProgramRelease(m_sh_prog_id);
 	if( m_bakeProg ) glDeleteProgram( m_bakeProg );
 	if( m_bakeTex )  glDeleteTextures( 1, &m_bakeTex );
+
+	// Leave the object in the state it had before its first compile, so that
+	// calling this twice is harmless and a later ensureCompiled() actually
+	// rebuilds. Without this the ids survived their objects: the effect still
+	// reported itself compiled and went on drawing with a released program,
+	// which the driver answers with <program> has not been linked -- and, one
+	// release per call against a single acquire, the refcount underflowed and
+	// took a program still in use with it.
+	m_sh_prog_id = 0;
+	m_bakeProg   = 0;
+	m_bakeTex    = 0;
+	m_glReady    = false;
 }
 
 

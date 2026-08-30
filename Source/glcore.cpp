@@ -73,6 +73,8 @@ GLC_DEF(glRenderbufferStorage)
 GLC_DEF(glFramebufferRenderbuffer)
 GLC_DEF(glGenerateMipmap)
 GLC_DEF(glGetStringi)
+GLC_DEF(glDebugMessageCallback)
+GLC_DEF(glDebugMessageControl)
 GLC_DEF(glDispatchCompute)
 GLC_DEF(glDispatchComputeIndirect)
 GLC_DEF(glBindImageTexture)
@@ -94,7 +96,8 @@ GLC_DEF(glTexImage2DMultisample)
 #undef GLC_DEF
 
 int glcoreHasCompute = 0; ///< Definition of glcoreHasCompute; set by glcoreInit() once the compute pointers are resolved.
-int glcoreHasTess    = 0; ///< Definition of glcoreHasTess; set by glcoreInit() once glPatchParameteri is resolved.
+int glcoreHasTess    = 0;
+int glcoreHasDebug   = 0; ///< Definition of glcoreHasDebug; set by glcoreInit(). ///< Definition of glcoreHasTess; set by glcoreInit() once glPatchParameteri is resolved.
 
 /**
  * @brief Resolves a single GL entry point by name.
@@ -106,6 +109,48 @@ int glcoreHasTess    = 0; ///< Definition of glcoreHasTess; set by glcoreInit() 
  * @param name Name of the GL function to resolve.
  * @return The resolved function pointer, or NULL if it could not be found either way.
  */
+
+// ---------------------------------------------------------------------------
+// KHR_debug output.
+//
+// Worth having because the alternative is so much worse: glGetError() only
+// says THAT something failed, and the codebase's checkpoints report where it
+// was NOTICED -- typically several subsystems past the call that raised it, so
+// a label like "createTextures() 1" sends the reader to the wrong file. The
+// driver, asked directly, names the call and usually the reason.
+//
+// SYNCHRONOUS on purpose: it costs performance, which is why this is only ever
+// switched on by KALEIDO_GL_DEBUG, and buys the one thing that makes it useful
+// -- the callback fires inside the offending call, so a debugger break or a
+// stack walk lands on the culprit.
+// ---------------------------------------------------------------------------
+static void APIENTRY glcDebugCb( GLenum /*source*/, GLenum type, GLuint id,
+                                 GLenum severity, GLsizei /*length*/,
+                                 const GLchar *message, const void * /*user*/ )
+{
+    if( severity == GL_DEBUG_SEVERITY_NOTIFICATION )
+        return;
+    const char *sev = ( severity == GL_DEBUG_SEVERITY_HIGH )   ? "high"
+                    : ( severity == GL_DEBUG_SEVERITY_MEDIUM ) ? "medium" : "low";
+    fprintf( stderr, "GLDEBUG [%s%s] id=%u: %s\n",
+             ( type == GL_DEBUG_TYPE_ERROR ) ? "ERROR/" : "", sev,
+             (unsigned) id, message ? message : "(no message)" );
+}
+
+void glcoreEnableDebugOutput()
+{
+    if( !glcoreHasDebug )
+    {
+        fprintf( stderr, "GLDEBUG: KHR_debug not available on this driver\n" );
+        return;
+    }
+    glEnable( GL_DEBUG_OUTPUT );
+    glEnable( GL_DEBUG_OUTPUT_SYNCHRONOUS );
+    glDebugMessageCallback( glcDebugCb, 0 );
+    // Everything on, then silence the notification firehose in the callback.
+    glDebugMessageControl( GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE );
+    fprintf( stderr, "GLDEBUG: synchronous debug output enabled\n" );
+}
 static void *glcGet(const char *name)
 {
 #ifndef _WIN32
@@ -202,6 +247,8 @@ int glcoreInit(void)
     GLC_LOAD(glGetStringi)
     // Compute (GL 4.3): required for the compute-shader path, but the app
     // still RUNS without it (fragment ping-pong fallbacks stay in place).
+    GLC_LOAD_OPT(glDebugMessageCallback)
+    GLC_LOAD_OPT(glDebugMessageControl)
     GLC_LOAD_OPT(glDispatchCompute)
     GLC_LOAD_OPT(glDispatchComputeIndirect)
     GLC_LOAD_OPT(glBindImageTexture)
@@ -231,6 +278,8 @@ int glcoreInit(void)
     // Geometry shaders need no extra entry point (core since 3.2); only
     // tessellation adds one, so glPatchParameteri is the whole test.
     glcoreHasTess = ( glcore_glPatchParameteri != 0 ) ? 1 : 0;
+    glcoreHasDebug = ( glcore_glDebugMessageCallback
+                    && glcore_glDebugMessageControl ) ? 1 : 0;
 
     fprintf( stderr, "glcore: compute pipeline %s, tessellation %s\n",
              glcoreHasCompute ? "available" : "NOT available (fragment fallbacks)",

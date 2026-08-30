@@ -161,9 +161,9 @@ public:
 	{
 		if( !m_glReady )
 			return;
+		// cleanShaderPrograms() now resets the ids and m_glReady itself, which is
+		// what makes the following ensureCompiled() rebuild instead of returning.
 		cleanShaderPrograms();
-		m_sh_prog_id = 0;
-		m_glReady    = false;
 		ensureCompiled();
 	}
 

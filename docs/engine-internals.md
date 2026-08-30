@@ -986,6 +986,22 @@ run without that variable therefore covers much less than it sounds like. And
 because `glGetError` drains a *global* queue, a checkpoint's label names where
 the error was **noticed**, not where it was raised.
 
+That last point is why `KALEIDO_GL_DEBUG` now also installs a **KHR_debug**
+callback (GL 4.3, present on Mesa too). The driver names the failing call and
+usually the reason -- `Framebuffer name must be generated before being bound`,
+`<program> has not been linked` -- instead of leaving you at a checkpoint three
+subsystems downstream. It is synchronous, so it costs frames and also
+serialises GL: a race can stop reproducing while it is on, which is itself a
+useful signal.
+
+A second switch, `KALEIDO_NO_SHADER_CACHE=1`, turns off the shader-program cache
+(see `shader_setup.cpp`) without rebuilding. The cache changes object *lifetimes*,
+and lifetime bugs get blamed on whatever changed last; being able to A/B it
+inside one binary is the difference between attributing a fault and guessing.
+That switch is how the preset-switch error storm was cleared of suspicion --
+identical error families on both settings, only rarer with the cache, because
+a shared program is usually not the one being deleted.
+
 ---
 
 ## Temporal budget: how fast a scene may change

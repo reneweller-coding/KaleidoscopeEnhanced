@@ -897,7 +897,7 @@ private:
 
 	QString		m_imageDirectory;   ///< Root directory configured for the background-photo scan (see init(), traverse()).
 
-	ImageLoader	*m_imageLoader;   ///< Background thread that decodes/prepares the next photo off the render thread; see ImageLoader.
+	ImageLoader	*m_imageLoader = nullptr;   ///< Background thread that decodes/prepares the next photo off the render thread; see ImageLoader. Null while stopped -- start() recreates it, and it was previously left uninitialised AND dangling after stop().
 };
 
 

@@ -137,6 +137,16 @@ typedef ptrdiff_t GLintptr;
 #define GL_FRAGMENT_SHADER                0x8B30
 #define GL_VERTEX_SHADER                  0x8B31
 #define GL_COMPUTE_SHADER                 0x91B9
+// KHR_debug (core since 4.3). The driver names the offending call and often
+// the reason, which a glGetError() checkpoint cannot: the checkpoint only
+// reports where the error was NOTICED, several subsystems downstream.
+#define GL_DEBUG_OUTPUT                   0x92E0
+#define GL_DEBUG_OUTPUT_SYNCHRONOUS       0x8242
+#define GL_DEBUG_SEVERITY_HIGH            0x9146
+#define GL_DEBUG_SEVERITY_MEDIUM          0x9147
+#define GL_DEBUG_SEVERITY_LOW             0x9148
+#define GL_DEBUG_SEVERITY_NOTIFICATION    0x826B
+#define GL_DEBUG_TYPE_ERROR               0x824C
 #define GL_GEOMETRY_SHADER                0x8DD9
 #define GL_TESS_EVALUATION_SHADER         0x8E87
 #define GL_TESS_CONTROL_SHADER            0x8E88
@@ -283,6 +293,11 @@ GLC_FN(void,   glRenderbufferStorage, (GLenum, GLenum, GLsizei, GLsizei))
 GLC_FN(void,   glFramebufferRenderbuffer, (GLenum, GLenum, GLenum, GLuint))
 GLC_FN(void,   glGenerateMipmap, (GLenum))
 GLC_FN(const GLubyte*, glGetStringi, (GLenum, GLuint))
+typedef void (APIENTRY *GLDEBUGPROCKC)( GLenum source, GLenum type, GLuint id,
+                                        GLenum severity, GLsizei length,
+                                        const GLchar *message, const void *userParam );
+GLC_FN(void,   glDebugMessageCallback, (GLDEBUGPROCKC, const void *))
+GLC_FN(void,   glDebugMessageControl, (GLenum, GLenum, GLenum, GLsizei, const GLuint *, GLboolean))
 GLC_FN(void,   glDispatchCompute, (GLuint, GLuint, GLuint))
 GLC_FN(void,   glDispatchComputeIndirect, (GLintptr))
 GLC_FN(void,   glBindImageTexture, (GLuint, GLuint, GLint, GLboolean, GLint, GLenum, GLenum))
@@ -373,6 +388,8 @@ GLC_FN(void,   glTexImage2DMultisample, (GLenum, GLsizei, GLenum, GLsizei, GLsiz
 #define glFramebufferRenderbuffer  glcore_glFramebufferRenderbuffer
 #define glGenerateMipmap           glcore_glGenerateMipmap
 #define glGetStringi               glcore_glGetStringi
+#define glDebugMessageCallback     glcore_glDebugMessageCallback
+#define glDebugMessageControl      glcore_glDebugMessageControl
 #define glDispatchCompute          glcore_glDispatchCompute
 #define glDispatchComputeIndirect  glcore_glDispatchComputeIndirect
 #define glBindImageTexture         glcore_glBindImageTexture
@@ -401,6 +418,13 @@ extern int glcoreHasCompute;
  *        shaders need no extra entry point, so they ride on the core 3.2 context.
  */
 extern int glcoreHasTess;
+
+/// Non-zero once KHR_debug's entry points resolved (core since GL 4.3).
+extern int glcoreHasDebug;
+
+/// @brief Installs a debug callback that logs GL errors with the API call that
+///        raised them. Called by the engine only when KALEIDO_GL_DEBUG is set.
+void glcoreEnableDebugOutput();
 
 /**
  * @brief Resolves every GL function pointer declared above.
