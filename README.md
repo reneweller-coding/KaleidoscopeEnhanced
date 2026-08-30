@@ -3,11 +3,12 @@
 # Kaleidoscope Enhanced — Music Visualizer
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-![Platform](https://img.shields.io/badge/platform-Windows-0078D6)
+![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-0078D6)
 
 <br clear="left">
 
-A real-time, audio-reactive kaleidoscope / tunnel visualizer for Windows. It
+A real-time, audio-reactive kaleidoscope / tunnel visualizer for Windows and
+Linux. It
 listens to whatever is playing on the system (Spotify, browser, foobar2000,
 a live mic, …), analyses it in real time, and drives a huge library of GLSL
 shaders whose motion, colour and structure follow the music's rhythm, timbre
