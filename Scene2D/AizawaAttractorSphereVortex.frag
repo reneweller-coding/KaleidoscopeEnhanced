@@ -145,6 +145,27 @@ void main() {
     // a half-unit off the curve, so the "ribbons" were a broad soft haze with
     // no edge anywhere; a tighter exponent turns them back into lines.
     float lineGlow = exp(-minDist * (11.0 + 6.0 * audioCentroid)) * glw;
+    // Light RUNNING along the ribbon: a triple bright pulse chases the curve's
+    // angular phase, so the shell reads as circulating energy, not a still.
+    float runPhase = atan(pRot.y, pRot.x) * 3.0 - t * 2.4 - audioPhase * 0.6;
+    lineGlow *= 0.7 + 0.5 * pow(0.5 + 0.5 * sin(runPhase), 3.0);
+
+    // ORBITING BEACONS: five point lights on inclined elliptical orbits around
+    // the shell -- the "rotating lights". Each has its own angular speed, the
+    // pack follows the music (audioPhase), and a depth cue dims/blurs a light
+    // on the far side of its orbit so the circling reads as 3D.
+    vec3 beaconCol = vec3(0.0);
+    for (int j = 0; j < 5; j++) {
+        float fj  = float(j);
+        float ang = t * (1.1 + 0.23 * fj) + fj * 2.51 + audioPhase * 0.3;
+        float rad = 0.85 + 0.18 * sin(fj * 1.7 + t * 0.4);
+        vec2  lp  = vec2(cos(ang), sin(ang) * 0.42) * rad;
+        float depth = 0.55 + 0.45 * sin(ang + fj);
+        float d     = length(pRot - lp);
+        float spark = exp(-d * (26.0 - 10.0 * depth));
+        beaconCol += imgPalette(0.15 + 0.2 * fj) * spark * depth
+                   * (0.8 + 1.6 * audioLevel);
+    }
 
     // Palette mixing across Aizawa sphere
     float phase = atan(pRot.y, pRot.x) / 6.2831853 + length(pRot) * 0.15;
@@ -163,7 +184,7 @@ void main() {
     // capping the scalars alone still let the colour run past white.
     vec3 sphereTint = min(vec3(1.3, 1.1, 1.8) * lineGlow * (1.0 + 2.5 * audioKick), vec3(1.2));
     vec3 tornadoTint = min(vec3(1.7, 1.4, 0.5) * vortexEnergy * (1.0 + 3.0 * audioKick), vec3(1.4));
-    col += sphereTint + tornadoTint;
+    col += sphereTint + tornadoTint + min(beaconCol, vec3(1.2));
 
     col = pow(col, vec3(0.88));
     vec3 _catTone = clamp(col, 0.0, 1.0);

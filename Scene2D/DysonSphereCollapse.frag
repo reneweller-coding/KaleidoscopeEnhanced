@@ -94,7 +94,7 @@ void main()
 
     // We render the sphere filling most of the view
     vec2 sphereCenter = vec2(0.0);
-    float sphereRad = 0.8;
+    float sphereRad = 0.62;   // ganze Sphaere sichtbar, Korona hat Platz
     float dist = length(uv - sphereCenter);
 
     // Slow rotation
@@ -110,32 +110,41 @@ void main()
         p3.xz = rotM * p3.xz;
         p3.yz = mat2(cos(0.3), -sin(0.3), sin(0.3), cos(0.3)) * p3.yz;
 
-        // 1. The Metal Structure (Hexagonal or Grid-like panels)
-        // We use a Voronoi-like cell pattern for the panels
-        vec3 cellP = p3 * 8.0;
-        vec3 iCell = floor(cellP);
-        vec3 fCell = fract(cellP);
+        // 1. The Metal Structure: a LAT/LON panel lattice on the sphere
+        // surface. The old cubic floor(p3*8) grid cut the shell into the
+        // broken-looking random chips the user reported -- panels must
+        // follow the surface to read as a built megastructure.
+        vec3 p3n = p3 / sphereRad;
+        float lat = asin(clamp(p3n.y, -1.0, 1.0));
+        float lon = atan(p3n.z, p3n.x);
+        vec2 grid = vec2(lon * 3.0, lat * 3.0);   // ~19 x 9 panels
+        vec2 gId = floor(grid);
+        vec2 gF = fract(grid);
 
-        float cellHash = hash11(iCell.x * 12.3 + iCell.y * 45.6 + iCell.z * 78.9);
+        float cellHash = fract(sin(dot(gId, vec2(12.9898, 78.233))) * 43758.5453);
 
-        // Create panel edges
-        float edges = step(0.9, max(fCell.x, max(fCell.y, fCell.z)));
+        // Panel edges: dark seams between curved plates
+        float edges = 1.0 - (smoothstep(0.0, 0.06, gF.x) * smoothstep(1.0, 0.94, gF.x)
+                           * smoothstep(0.0, 0.06, gF.y) * smoothstep(1.0, 0.94, gF.y));
         float panels = 1.0 - edges;
 
-        // Add structural ribbing (fbm)
+        // Add structural ribbing (fbm) + per-panel tonal variation
         float ribbing = fbm(p3 * 20.0);
-        vec3 surfaceCol = metalCol * (0.5 + ribbing * 0.5);
+        vec3 surfaceCol = metalCol * (0.5 + ribbing * 0.35 + cellHash * 0.25);
+        surfaceCol *= 0.35 + 0.65 * panels;   // dark seams
 
         // Lighting on the metal from ambient space
         float lightFront = 0.62 + 0.38 * z / sphereRad;
         surfaceCol *= lightFront;
 
-        // 2. The Catastrophic Damage
-        // Large chaotic fractures breaking the grid structure
+        // 2. The Catastrophic Damage -- with an actual COLLAPSE ARC: a slow
+        // triangle wave sweeps the blow-off threshold, so the shell visibly
+        // loses more and more panels, then slowly reknits.
+        float collapse = abs(fract(time * 0.02 + audioAdvance * 0.01) * 2.0 - 1.0);
         float fracture = fbm(p3 * 3.0 + time * 0.1);
 
         // Probability of a panel being completely blown off
-        float blownOff = step(0.7 - dp * 0.2, cellHash + fracture * 0.5);
+        float blownOff = step(0.95 - collapse * 0.55 - dp * 0.15, cellHash + fracture * 0.35);
 
         // If a panel is missing or there's a deep fracture, the star shines through
         float holeMask = max(blownOff, smoothstep(0.8 - dp * 0.2, 0.9, fracture));
@@ -146,7 +155,7 @@ void main()
             float internalPlasma = fbm(vec3(p3 * 5.0 - vec3(0.0, time * 2.0, 0.0)));
 
             // Brightness spikes with audio kicks
-            float kickSpike = step(0.8, hash11(cellHash * 100.0 + floor(time * 8.0)));   // was 10 Hz
+            float kickSpike = step(0.7, hash11(cellHash * 100.0 + floor(time * 1.5)));
             float intensity = 1.0 + (kickSpike * audioKick * 10.0 * fp);
 
             // Blinding heat

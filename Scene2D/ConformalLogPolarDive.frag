@@ -71,7 +71,9 @@ void main() {
 
     float spd = (speedP > 0.01) ? speedP : 1.0;
     float sprl = (spiralP > 0.01) ? spiralP : 1.0;
-    float nArms = (armsP > 1.0) ? armsP : 2.0;
+    // Ganzzahlig gerundet: ein nicht-ganzzahliges nArms reisst die
+    // Winkel-Kachelung am Branch-Cut auf (zweite Quelle derselben Naht).
+    float nArms = floor(((armsP > 1.0) ? armsP : 2.0) + 0.5);
     float glw = (glowP > 0.01) ? glowP : 1.0;
 
     float t = audioAdvance * 0.35 * spd;
@@ -82,12 +84,16 @@ void main() {
     // Conformal log-polar transformation: w = ln(r) + i * theta
     float lnR = log(r);
 
-    // Dynamic spiral winding angle
-    float spiralAngle = (1.2 + 0.3 * sin(t * 0.3) + 0.2 * audioCentroid) * sprl;
+    // Spiral winding as an INTEGER per-activation constant. The old
+    // continuously-varying winding made the atan branch cut jump by a
+    // non-integer amount through the fract() below -- the user-reported
+    // discontinuous line down the left half of the frame. An integer number
+    // of wraps passes through fract() invisibly.
+    float wind = max(1.0, floor(1.2 * sprl + 0.5));
 
     // Log-polar coordinates with continuous forward translation along lnR and rotation along a
     vec2 logPolar = vec2(
-        lnR * 0.6 - t * 0.8 + (a * nArms) * spiralAngle * 0.159155,
+        lnR * 0.6 - t * 0.8 + a * wind * 0.159155,
         a / 6.2831853 + t * 0.1
     );
 
@@ -116,7 +122,7 @@ void main() {
     finalCol *= expGain;
 
     // Glowing logarithmic spiral arm filaments
-    float armDist = abs(sin(lnR * 4.0 - a * nArms * spiralAngle + t * 4.0));
+    float armDist = abs(sin(lnR * 4.0 - a * wind * nArms + t * 4.0));
     // Sub-bass drops the smoothstep edge, widening the band of armDist that
     // counts as "inside an arm" -- the arms breathe fatter. The divisor trades
     // peak intensity for that extra area so the widened arms don't clip.

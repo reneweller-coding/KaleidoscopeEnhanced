@@ -76,7 +76,9 @@ void main() {
     float gDens = (gridDensityP > 0.01) ? gridDensityP : 1.0;
     float glw = (glowP > 0.01) ? glowP : 1.0;
 
-    float t = audioAdvance * 0.45 * spd;
+    // Steady base rate + musical push. audioAdvance alone barely moves on
+    // quiet material -- the reported "the scene stands still, nobody flies".
+    float t = time * 0.40 * spd + audioAdvance * 0.35 * spd;
 
     // Camera setup: low hovering perspective above cyber highway
     vec3 ro = vec3(sin(t * 0.3) * 0.4, 0.8 + 0.2 * sin(audioSwell * 2.0), t * 4.0);

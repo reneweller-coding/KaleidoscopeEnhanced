@@ -104,13 +104,15 @@ void main() {
     vec2 st = gl_FragCoord.xy / resolution;
 
     float t = time * 0.3 * rot + audioAdvance * 0.15;
-    vec3 ro = vec3(sin(t) * 3.5, 1.5 * cos(t * 0.6), cos(t) * 3.5);
+    // Weiter draussen: die ganze Flasche passt ins Bild (Nutzerwunsch).
+    vec3 ro = vec3(sin(t) * 5.2, 2.2 * cos(t * 0.6), cos(t) * 5.2);
     vec3 ta = vec3(0.0, 0.0, 0.0);
 
     vec3 ww = normalize(ta - ro);
     vec3 uu = normalize(cross(ww, vec3(0.0, 1.0, 0.0)));
     vec3 vv = cross(uu, ww);
-    vec3 rd = normalize(uv.x * uu + uv.y * vv + (1.4 - 0.3 * audioKick) * ww);
+    // FOV konstant: der Kick-Zoom war ein Vollbild-Sprung pro Schlag.
+    vec3 rd = normalize(uv.x * uu + uv.y * vv + 1.35 * ww);
 
     float totalDist = 0.0;
     float uP = 0.0, vP = 0.0;
@@ -127,7 +129,7 @@ void main() {
             hit = true;
             break;
         }
-        if (totalDist > 8.0) break;
+        if (totalDist > 13.0) break;
         totalDist += max(d * 0.65, 0.006);
     }
 

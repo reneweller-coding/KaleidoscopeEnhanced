@@ -18,6 +18,7 @@ uniform int vigneting;
 uniform float audioAdvance;   // integrated travel: bubbles rise faster with the music (jump-free)
 uniform float audioKick;      // kick puff on the bubble radius
 uniform float audioLevel;     // louder music = more saturated bubbles
+uniform float audioSwell;     // slow envelope -> how many bubbles are alive
 uniform float audioFlux;      // musical complexity -> how many bubbles are alive
 uniform float audioBeat;      // beat adds a few extra bubbles
 uniform float audioChromaHue;
@@ -74,15 +75,15 @@ void main(void)
     // Dim photo backdrop - the bubbles are the bright thing.
     vec3 color = img(screenUV) * (0.42 + 0.12 * audioLevel);
 
-    // Musical complexity decides how many bubbles are alive right now.
-    float nAct = 8.0 + 24.0 * clamp(1.3 * audioFlux + 0.35 * audioLevel
-                                    + 0.25 * audioBeat, 0.0, 1.0);
+    // Musical activity level -- SLOW signals only. The old gate rode
+    // audioFlux/audioBeat, which jump per frame, and clamp(nAct - i) switched
+    // bubbles on/off MID-FLIGHT: the user-reported discontinuous appearing
+    // and vanishing. Activity is now rolled per bubble LIFE (constant during
+    // one rise, re-rolled at respawn when the bubble is invisibly small).
+    float act = clamp(0.40 + 0.45 * audioSwell + 0.25 * audioLevel, 0.0, 1.0);
 
     for (int i = 0; i < nrBubbles; i++)
     {
-        float gate = clamp(nAct - float(i), 0.0, 1.0);
-        if (gate <= 0.0) continue;
-
         // bubble seeds
         float pha = sin(float(i) * 546.13 + 1.0) * 0.5 + 0.5;
         float siz = pow(sin(float(i) * 651.74 + 5.0) * 0.5 + 0.5, 4.0);
@@ -90,8 +91,14 @@ void main(void)
 
         // Life phase 0..1 = the same wrap that carries the bubble bottom->top,
         // so every wrap IS a respawn: born at 0, pops just before 1.
-        float ly = mod(pha + 0.1 * (speed * time / 5.0 + 0.8 * audioAdvance)
-                                 * (0.2 + 0.8 * siz), 1.0);
+        float lifeArg = pha + 0.1 * (speed * time / 5.0 + 0.8 * audioAdvance)
+                                  * (0.2 + 0.8 * siz);
+        float ly = fract(lifeArg);
+        // Per-life random vs. the slow activity level; the soft window means
+        // a drifting act value fades a bubble over seconds, never pops it.
+        float h = fract(sin(float(i) * 91.17 + floor(lifeArg) * 57.3) * 43758.5453);
+        float gate = smoothstep(h - 0.10, h + 0.10, act);
+        if (gate <= 0.001) continue;
         float bornT = smoothstep(0.0, 0.07, ly);          // scale-in at birth
         float popT  = smoothstep(0.90, 0.985, ly);        // burst near the top
 

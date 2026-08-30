@@ -109,22 +109,31 @@ void main()
         
         // Distort space slightly for organic feel
         vec3 warp = vec3(fbm(p * 0.1), fbm(p * 0.1 + 10.0), fbm(p * 0.1 + 20.0));
-        vec3 np = p * 0.5 + warp * 2.0 * audioSwell;
+        // Warp must not hang off the audio level: on quiet material the
+        // clouds collapsed into structureless fog. Swell only breathes it.
+        vec3 np = p * 0.5 + (warp - 0.5) * (2.0 + 0.5 * audioSwell);
         
         float dens = fbm(np);
         
         // Carve out empty space
-        dens = smoothstep(0.3, 0.8, dens) * dp;
+        dens = smoothstep(0.45, 0.88, dens) * dp;
         
         if (dens > 0.01) {
-            // Pulse based on audio kick
-            float pulse = step(0.9, fract(dens * 10.0 - time * 2.0));
-            pulse *= audioKick * 2.0;
-            
-            // Color mapping based on density
+            // Smooth travelling pulse instead of the old hard step bands
+            float pulse = pow(0.5 + 0.5 * sin(dens * 12.0 - time * 3.0), 4.0)
+                        * audioKick * 1.5;
+
+            // Color mapping based on density. Brightness floor 0.45: the old
+            // 0.2 + swell*0.8 went black on every quiet passage -- the
+            // user-reported "the nebula is black".
             vec3 localCol = mix(colorBase1, colorBase2, dens);
-            localCol *= (0.2 + audioSwell * 0.8 + pulse) * gp;
-            
+            localCol *= (0.30 + 0.5 * audioSwell + pulse) * gp;
+
+            // BIOLUMINESCENT VEINS: ridged filaments glowing inside the gas.
+            float ridge = 1.0 - abs(2.0 * fbm(np * 2.3) - 1.0);
+            ridge = pow(ridge, 5.0);
+            localCol += mix(colorBase2, vec3(1.0), 0.3) * ridge * 0.9 * gp;
+
             // Fade by distance
             float alpha = dens * 0.1;
             col += localCol * alpha * exp(-d * 0.05);
@@ -141,8 +150,8 @@ void main()
         vec3 st = rd * sc + vec3(0.0, 0.0, drift * 0.1);
         vec3 cell = floor(st);
         vec3 f = fract(st) - 0.5;
-        if (hash11(dot(cell, vec3(12.3, 45.6, 78.9))) > 0.95) {
-            float b = exp(-length(f) * 200.0);
+        if (fract(sin(dot(cell, vec3(12.9898, 78.233, 37.719))) * 43758.5453) > 0.93) {
+            float b = exp(-length(f) * 120.0);
             sporeCol += mix(colorBase2, vec3(1.0), hash11(cell.x)) * b * (1.0 + audioKick * 3.0) * gp;
         }
     }

@@ -86,7 +86,7 @@ float map(vec3 p, float dp) {
     vec3 h = hash33(cell);
 
     // Determine if cell has a crystal (density control)
-    if (h.x > 0.6) {
+    if (h.x > 0.70) {
         return 1e10; // Empty cell
     }
 
@@ -146,6 +146,9 @@ void main()
     for (int i = 0; i < 60; ++i) {
         p = ro + rd * d;
         float ds = map(p, dp);
+        // Camera clearance bubble: the field is dense enough now that the
+        // flight regularly passed THROUGH a crystal -- one flat colour wall.
+        ds = max(ds, 2.2 - d);
         g = hitGlow;
         if (ds < 0.01) break;
         d += ds * 0.8;
@@ -156,7 +159,7 @@ void main()
 
     // Background light (a distant nebula or star illuminating the field)
     vec3 bgLightDir = normalize(vec3(0.5, 0.5, 1.0));
-    vec3 bgCol = imgPalette(0.2) * (0.1 + audioSwell * 0.2);
+    vec3 bgCol = imgPalette(0.2) * (0.18 + audioSwell * 0.25);
 
     if (d < 40.0) {
         vec3 n = calcNormal(p, dp);
@@ -172,14 +175,17 @@ void main()
         float fresnel = pow(1.0 - max(dot(n, -rd), 0.0), 3.0);
         float internalGlow = backLight * 0.5 + fresnel * 0.5;
 
-        col = crysColor * (0.10 + dif * 0.9);
+        col = crysColor * (0.22 + dif * 1.1);
+        // Rim light so a crystal facing away from the key light still has a
+        // silhouette instead of reading as a flat black quad.
+        col += crysColor * fresnel * 0.6;
         col += crysColor * internalGlow * 1.5 * gp * (1.0 + audioSwell);
 
         // Specular flashes matching audio kicks (facets catching light perfectly)
         float spec = pow(max(dot(reflect(bgLightDir, n), -rd), 0.0), 32.0);
 
         // Flash logic based on time and the crystal's seed
-        float flash = step(0.9, hash11(g * 100.0 + floor(time * 8.0)));   // was 10 Hz
+        float flash = step(0.75, hash11(g * 100.0 + floor(time * 1.5)));
         col += crysColor * spec * (1.0 + flash * audioKick * 10.0) * gp;
 
         // Distance fog
@@ -187,11 +193,17 @@ void main()
     } else {
         col = bgCol;
 
-        // Add some tiny background crystals
-        float bgStars = hash11(dot(floor(uv * 100.0), vec2(12.3, 45.6)));
-        if (bgStars > 0.95) {
-            float twinkle = 0.5 + 0.5 * sin(time * 10.0 + bgStars * 100.0);
-            col += imgPalette(bgStars) * twinkle * (0.5 + audioSwell);
+        // Round, jittered stars. The old code lit ENTIRE floor(uv*100)
+        // cells -- the user-reported huge square pixels.
+        vec2 sgrid = uv * 40.0;
+        vec2 sid = floor(sgrid);
+        vec2 sf = fract(sgrid) - 0.5;
+        float sh = hash11(dot(sid, vec2(12.3, 45.6)));
+        if (sh > 0.88) {
+            vec2 spos = (vec2(fract(sh * 7.31), fract(sh * 13.7)) - 0.5) * 0.8;
+            float sd = length(sf - spos);
+            float twinkle = 0.65 + 0.35 * sin(time * (1.0 + 2.0 * fract(sh * 29.0)) + sh * 40.0);
+            col += imgPalette(sh) * exp(-sd * sd * 220.0) * twinkle * (0.7 + audioSwell);
         }
     }
 

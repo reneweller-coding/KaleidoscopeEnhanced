@@ -57,7 +57,7 @@ void main()
                  - texture(texCaustics, uv - vec2(px.x * 3.0, 0.0)).rgb, vec3(0.33));
     float cy = dot(texture(texCaustics, uv + vec2(0.0, px.y * 3.0)).rgb
                  - texture(texCaustics, uv - vec2(0.0, px.y * 3.0)).rgb, vec3(0.33));
-    vec2 refr = vec2(cx, cy) * (0.010 + 0.030 * warpP) * (1.0 + 0.6 * audioSubBass);
+    vec2 refr = vec2(cx, cy) * (0.020 + 0.050 * warpP) * (1.0 + 0.6 * audioSubBass);
 
     vec3 floorCol = texture(tex0, uv + refr).rgb;
 
@@ -75,6 +75,28 @@ void main()
 
     vec3 light = caus + soft * 0.7;
 
+    // PROCEDURAL caustic net on top: the photon sim alone often reads as a
+    // flat wallpaper -- this guarantees visibly dancing water. (The classic
+    // iterated sine-warp caustic; time-driven, resolution-independent.)
+    {
+        vec2 p2 = mod(uv * vec2(resolution.x / resolution.y, 1.0) * 6.2831853,
+                      6.2831853) - 250.0;
+        vec2 ii = p2;
+        float c = 1.0;
+        const float inten = 0.005;
+        for (int n = 0; n < 4; n++) {
+            float tt = time * 0.4 * (1.0 - (3.5 / float(n + 1)));
+            ii = p2 + vec2(cos(tt - ii.x) + sin(tt + ii.y),
+                           sin(tt - ii.y) + cos(tt + ii.x));
+            c += 1.0 / length(vec2(p2.x / (sin(ii.x + tt) / inten),
+                                   p2.y / (cos(ii.y + tt) / inten)));
+        }
+        c /= 4.0;
+        c = 1.17 - pow(c, 1.4);
+        float proc = clamp(pow(abs(c), 8.0), 0.0, 1.4);
+        light += vec3(proc) * (0.55 + 0.35 * audioLevel);
+    }
+
     // Water tint deepens with distance from the light: the classic pool look.
     // Spectral rolloff sets the water's COLOUR TEMPERATURE -- a bass-bound mix
     // reads as a deep, cold blue basin, energy reaching into the highs as
@@ -84,6 +106,8 @@ void main()
                      clamp(audioRolloff, 0.0, 1.0));
     float depthT = 1.0 - clamp(dot(light, vec3(0.4)), 0.0, 1.0);
     float depthMix = (0.36 + 0.22 * clamp(audioLowMid, 0.0, 1.0)) * depthT;
+    // Vertical depth gradient: the far end of the pool lies deeper.
+    depthMix = clamp(depthMix + 0.18 * (1.0 - uv.y), 0.0, 0.9);
     vec3 col = floorCol * mix(vec3(1.0), water, depthMix);
 
     // Multiplicative caustics: light REVEALS the floor, it does not sit on it.

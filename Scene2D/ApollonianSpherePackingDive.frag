@@ -74,59 +74,24 @@ float smax(float a, float b, float k) {
     return mix(a, b, h) + k * h * (1.0 - h);
 }
 
-// Apollonian 3D sphere packing distance estimator
-float mapApollonian(vec3 p, float sphR, out float trapLevel) {
-    vec3 q = p;
+// Apollonian sphere-packing distance estimator (classic Knighty form).
+// The previous version clamped the inversion Mandelbox-style; the clamp is
+// exactly what shredded the foam into box-shaped chips ("eckig"). The true
+// packing needs the UNCONDITIONAL inversion k = K/r2 -- scale explosion is
+// tamed by dividing the estimate by the accumulated scale, and the r2 guard
+// keeps the fold finite at the fixed point.
+float mapApollonian(vec3 p, float K, out float trapLevel) {
     float scale = 1.0;
     trapLevel = 0.0;
-
-    for (int i = 0; i < 6; i++) {
-        // Periodic box wrapping
-        q = mod(q - 1.0, 2.0) - 1.0;
-
-        // Spherical inversion, Mandelbox-style piecewise clamp: only points
-        // that land INSIDE the fixed radius get inverted/scaled, capped by
-        // the min-radius ratio. The original unconditional k=1.25/max(0.2,r2)
-        // multiplied q on every iteration regardless of r2, so an unlucky run
-        // of small-r2 iterations could compound `scale` by up to 6.25^6 and
-        // crush the returned distance to a few millionths. The clamp bounds
-        // the per-iteration factor at 1/minR2, which keeps `scale` sane
-        // (median 1.0, p95 4.2 over sampled points).
-        float r2 = dot(q, q);
-        const float minR2 = 0.3, fixedR2 = 1.0;
-        if (r2 < minR2) {
-            float k = fixedR2 / minR2;
-            q *= k;
-            scale *= k;
-        } else if (r2 < fixedR2) {
-            float k = fixedR2 / r2;
-            q *= k;
-            scale *= k;
-        }
-
-        trapLevel += r2 * 0.15;
+    for (int i = 0; i < 7; i++) {
+        p = -1.0 + 2.0 * fract(0.5 * p + 0.5);
+        float r2 = max(dot(p, p), 1e-4);
+        float k = K / r2;
+        p *= k;
+        scale *= k;
+        trapLevel += r2 * 0.12;
     }
-
-    // Soddy sphere centred on the CELL CORNER, not on the origin.
-    //
-    // The origin is the fixed point of the inversion above, and the inversion
-    // is precisely what evacuates it: the r2 < fixedR2 branch maps |q| -> 1/|q|
-    // and the r2 < minR2 branch multiplies by 1/minR2, so BOTH branches push
-    // points out of the unit ball and the third branch is a no-op that only
-    // runs when |q| >= 1 already. Post-fold |q| therefore lands in [1.0, 1.72]
-    // and can never go below 1 -- measured over 20k sampled points, min |q| was
-    // 1.0000. The previous `length(q) - 0.75` asked for the distance to a
-    // sphere whose interior is empty by construction: the estimate stayed
-    // strictly positive everywhere, no ray could ever converge on a surface,
-    // and the frame collapsed to the background plus the glow term.
-    // Measuring from the corner (1,1,1) -- a tangency point of the packing,
-    // which the inversion group leaves populated -- puts the zero set back
-    // inside the reachable band.
-    //
-    // Sub-bass only ever GROWS the radius, so the estimate shrinks: it stays
-    // conservative and the march can never overshoot into a surface.
-    float dSphere = (length(q - vec3(1.0)) - sphR) / scale;
-    return dSphere * 0.7;
+    return 0.25 * abs(p.y) / scale;
 }
 
 void main() {
@@ -148,7 +113,9 @@ void main() {
     // scaling the position only slid the camera around inside the periodic
     // lattice, and at the top of the range it parked in a sparse cell where
     // barely a third of the frame found any structure.
-    float sphR = (1.15 + 0.15 * sc) * (1.0 + 0.06 * audioSubBass);
+    // K sets the packing character (1.05..1.30 is the pretty band); sub-bass
+    // breathes it very gently -- K shifts sphere sizes, not the camera.
+    float sphR = (1.08 + 0.10 * sc) * (1.0 + 0.02 * audioSubBass);
 
     float diveProg = t * 0.6;
     // The dive runs along a CELL EDGE of the period-2 lattice, not through
@@ -172,7 +139,7 @@ void main() {
                    diveProg * 1.5);
     vec3 rd = normalize(vec3(uv, 1.25 + 0.2 * sin(audioSwell * 2.0)));
 
-    float expGain = clamp(0.22 / max(0.05, photoLevel()), 0.3, 2.0);
+    float expGain = clamp(0.22 / max(0.05, photoLevel()), 0.3, 1.4);
 
     // Raymarching through Apollonian sphere packing
     float totDist = 0.0;
@@ -195,35 +162,62 @@ void main() {
         // camera sample. Hit pixels are excluded below for the same reason --
         // minD is ~0 by construction on any ray that converged, so it carries
         // no edge information there, only a white-out.
-        if (i > 0) minD = min(minD, abs(d));
+        // Track the halo distance only past the camera's own clearance
+        // bubble -- tracking it from step one painted a giant soft disc of
+        // bubble-glow over the middle of every frame.
+        if (totDist > 0.8) minD = min(minD, abs(d));
 
         // The old min step of 0.015 was five times the 0.003 hit threshold, so
         // a ray closing on a surface jumped clean over the convergence band.
-        if (abs(d) < 0.004 || totDist > 8.0) {
+        if (abs(d) < 0.004) {
             hit = true;
             hitTrap = curTrap;
-            vec2 sampleUV = fract(p.xy * 0.3 + p.z * 0.2 + 0.5);
-            vec3 texCol = img(sampleUV);
-            vec3 palCol = imgPalette(hitTrap * 0.25 + t * 0.05);
-
-            // Depth fog gives the dive its sense of travel and keeps the far
-            // wall (the totDist > 8 termination above) from reading as a solid
-            // sheet of texture pasted across the frame.
-            float fog = exp(-totDist * 0.28);
-            hitCol = mix(texCol, palCol, 0.5) * (0.25 + 0.85 * fog) * expGain;
             break;
         }
+        // Far termination is a MISS: painting it as a photo-textured hit was
+        // what filled the frame with hard rectangular chips (fract() seams on
+        // a flat far wall).
+        if (totDist > 8.0) break;
 
         totDist += max(0.002, d * 0.7);
     }
 
+    // Surface shading with a REAL normal: without one every facet was a flat
+    // unlit patch and nothing on screen read as a sphere.
+    vec3 hitCol2 = vec3(0.0);
+    if (hit) {
+        vec3 p = ro + rd * totDist;
+        float tl;
+        vec2 e = vec2(0.006, 0.0);
+        vec3 n = normalize(vec3(
+            mapApollonian(p + e.xyy, sphR, tl) - mapApollonian(p - e.xyy, sphR, tl),
+            mapApollonian(p + e.yxy, sphR, tl) - mapApollonian(p - e.yxy, sphR, tl),
+            mapApollonian(p + e.yyx, sphR, tl) - mapApollonian(p - e.yyx, sphR, tl)));
+        vec3 lightDir = normalize(vec3(0.5, 0.7, -0.4));
+        float dif  = max(dot(n, lightDir), 0.0);
+        vec3 hv    = normalize(lightDir - rd);
+        float spec = pow(max(dot(n, hv), 0.0), 24.0);
+        float fres = pow(1.0 - max(dot(n, -rd), 0.0), 3.0);
+        // Photo colour through the NORMAL (seam-free), palette from the trap.
+        vec3 base = mix(imgPalette(hitTrap * 0.25 + t * 0.05),
+                        img(n.xy * 0.25 + 0.5), 0.35);
+        float fog = exp(-totDist * 0.28);
+        hitCol2 = (base * (0.38 + 1.05 * dif)
+                 + vec3(1.0) * spec * 0.6
+                 + imgPalette(0.7) * fres * 0.45)
+                * (0.25 + 0.85 * fog) * expGain;
+    }
+    hitCol = hitCol2;
+
     // Glowing spherical tangency contact rings -- silhouette haloes on the
     // rays that MISSED, which is the only place a closest-approach distance
     // means anything.
-    float contactGlow = hit ? 0.0 : exp(-minD * (26.0 + 12.0 * audioCentroid)) * glw;
+    // Steep falloff: at 26 the halo was a frame-flooding white field; at ~110
+    // it is the thin bright tangency line the name promises.
+    float contactGlow = hit ? 0.0 : exp(-minD * (110.0 + 40.0 * audioCentroid)) * glw * 0.8;
     vec3 glowTint = vec3(1.3, 1.1, 1.8) * contactGlow * (1.0 + 2.5 * audioKick);
 
-    vec3 bgCol = imgPalette(length(uv) * 0.4 + 0.2) * (0.2 + 0.15 * audioLevel) * expGain;
+    vec3 bgCol = imgPalette(length(uv) * 0.4 + 0.2) * (0.10 + 0.08 * audioLevel) * expGain;
     // Composite on the hit flag, not on length(hitCol): with the exposure
     // gain holding a bright photo down, a legitimately dark wall has a short
     // colour vector and the old length() mask faded it into the background.

@@ -140,7 +140,7 @@ void main() {
     vec2 st = gl_FragCoord.xy / resolution;
 
     // Flight camera navigating through the hopper crystal labyrinth
-    float camZ = time * 0.8 + audioAdvance * 0.4;
+    float camZ = time * 0.5 + audioAdvance * 0.3;   // ruhigerer Vorschub
     float camX = sin(time * 0.15) * 1.2;
     float camY = cos(time * 0.12) * 1.2;
     vec3 ro = vec3(camX, camY, camZ);
@@ -173,7 +173,7 @@ void main() {
     // below ~1.0; above that the labyrinth walls retreat out of march range and the
     // frame renders as flat black. Clamp into the range that actually carries geometry
     // so the crystal fills the view for every preset / swell value.
-    float stpScale = clamp(stp * (1.0 + 0.15 * audioSwell), 0.50, 0.88);
+    float stpScale = clamp(stp * (1.0 + 0.10 * audioSwell), 0.60, 0.88);
     float boxScale = clamp(0.45 * iters, 0.40, 0.56);
     float volGlow = 0.0;
 
@@ -210,10 +210,13 @@ void main() {
 
         // Thin-film interference thickness based on surface angle, depth & position
         float dotNV = max(dot(n, view), 0.0);
-        float filmThickness = dotNV * 2.5 + hitLayer * 0.9 + p.z * 0.15 + audioCentroid * 0.5;
+        // audioAdvance statt audioCentroid: der Centroid zittert pro Frame und
+        // schob den kompletten Regenbogen ueber den Schirm -- das "Hektische".
+        float filmThickness = dotNV * 2.5 + hitLayer * 0.9 + p.z * 0.15 + audioAdvance * 0.06;
         // Capped: thinFilmColor peaks at 1.5 per channel, and with the terraces
         // now actually being hit that peak would land straight on the clip.
         vec3 rainbowOxide = min(thinFilmColor(filmThickness), vec3(1.05));
+        rainbowOxide = mix(vec3(dot(rainbowOxide, vec3(0.333))), rainbowOxide, 0.72);
 
         // Metallic Bismuth core lighting
         vec3 lightDir = normalize(vec3(0.5, 0.8, -0.6));

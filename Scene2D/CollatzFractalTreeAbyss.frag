@@ -108,7 +108,9 @@ void main() {
         trap = min(trap, abs(z.y) + abs(sin(z.x * 3.14159)));
 
         if (r2 > 64.0) {
-            iterCount = float(i);
+            // Smooth (fractional) escape count: the integer count painted a
+            // hard concentric stripe per iteration on every exterior shell.
+            iterCount = float(i) - log2(max(1.0, log2(r2) / 6.0));
             break;
         }
     }
@@ -139,9 +141,11 @@ void main() {
                                                       - t * 1.6 + audioPhase * 0.25), 2.0);
 
     // Palette mixing
-    vec3 palA = imgPalette(iterCount * 0.08 + trap * 0.2);
-    vec3 palB = imgPalette(iterCount * 0.08 + 0.5);
-    vec3 col = mix(palA, palB, 0.5 + 0.5 * sin(iterCount * 0.8 + t));
+    // Slow palette sweep, no per-iteration sin flip -- both were stripe
+    // factories on top of the integer count.
+    vec3 palA = imgPalette(iterCount * 0.03 + trap * 0.12);
+    vec3 palB = imgPalette(iterCount * 0.03 + 0.5);
+    vec3 col = mix(palA, palB, 0.5 + 0.5 * sin(iterCount * 0.25 + t));
 
     col = mix(col, texCol, 0.35 + 0.15 * audioValence);
     col *= abyssBand;

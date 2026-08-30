@@ -84,13 +84,17 @@ void main() {
     // so the arches stay in shot. The zoom cycle is bounded to ~7x for the
     // same reason: the old exp(mod(t, 5.5)) reached 244x on top of the base
     // scale, far narrower than the filigree it is supposed to fly through.
-    vec2 cCenter = vec2(-0.02, 0.34);
+    // Measured busy region (NumPy scan of the Celtic set: iteration-variance
+    // maximum with ~20% interior at window half-widths 0.15 AND 0.05) -- the
+    // old centre sat on a featureless smooth cusp and rendered as two-tone
+    // stripes at every zoom depth.
+    vec2 cCenter = vec2(-1.34, 0.23);
     // exp(mod(t * 0.65, 2.0)) snapped from e^2 (7x) back to e^0 every ~3.1 s
     // -- a hard cut. A raised cosine over the same period dives in and eases
     // back out instead: continuous in value AND velocity (the derivative
     // vanishes at both turns), so no seam anywhere.
     float zc = 0.5 - 0.5 * cos(6.2831853 * fract(t * 0.65 / 2.0));   // 0..1..0
-    float zoomLevel = exp(zc * 2.0) * (1.6 * zm);
+    float zoomLevel = exp(zc * 2.3) * (1.6 * zm);
     // Sub-bass narrows the sampled c-window across the nave axis only, so the
     // arches widen sideways instead of the whole vault simply zooming.
     vec2 c = cCenter + vec2(uv.x / (1.0 + 0.3 * audioSubBass), uv.y) / zoomLevel;
@@ -98,9 +102,11 @@ void main() {
     vec2 z = c;
     float iterCount = 0.0;
     float trap = 1e5;
+    float der = 1.0;   // |dz/dc| magnitude for distance estimation
 
     // Celtic Mandelbrot loop: z = |Re(z^2)| + i*Im(z^2) + c
     for (int i = 0; i < 48; i++) {
+        der = der * 2.0 * max(length(z), 1e-6) + 1.0;
         // z^2 = (x^2 - y^2) + 2ixy
         float realPart = abs(z.x * z.x - z.y * z.y);
         float imagPart = 2.0 * z.x * z.y;
@@ -117,6 +123,13 @@ void main() {
 
     if (iterCount == 0.0) iterCount = 48.0;
 
+    // Distance estimate -> crisp boundary filigree at every zoom depth. The
+    // bare iteration count only made smooth STRIPES; the vault's ribs are the
+    // set boundary itself.
+    float lz = max(length(z), 1.0001);
+    float de = lz * log(lz) / max(der, 1e-9);
+    float ribs = 1.0 / (1.0 + de * zoomLevel * 600.0);
+
     // Sample distorted background photo
     vec2 sampleUV = fract(z * 0.25 + 0.5);
     vec3 texCol = img(sampleUV);
@@ -128,12 +141,19 @@ void main() {
     // simply not being drawn. Match the falloff to the quantity's real range.
     float archGlow = exp(-trap * (4.5 + 2.5 * audioCentroid) * trc) * glw;
 
-    // Stained-glass window palette
-    vec3 palA = imgPalette(iterCount * 0.04 + trap * 0.2);
-    vec3 palB = imgPalette(iterCount * 0.04 + 0.5);
-    vec3 vaultCol = mix(palA, palB, 0.5 + 0.5 * sin(iterCount * 0.8 + t));
+    // Stained-glass PANES: one hashed palette tone per integer iteration
+    // band, so the exterior reads as discrete leaded-glass segments instead
+    // of a smooth striped gradient.
+    float band = floor(iterCount);
+    float paneHue = fract(band * 0.6180339887);
+    vec3 palA = imgPalette(paneHue * 0.8);
+    vec3 palB = imgPalette(paneHue * 0.8 + 0.45);
+    vec3 vaultCol = mix(palA, palB, 0.5 + 0.5 * sin(band * 1.7 + t * 0.5));
 
     vaultCol = mix(vaultCol, texCol, 0.35 + 0.15 * audioValence);
+    // Open exterior (low escape count) falls into shadow -- the vault's
+    // light lives at the tracery, not in the empty nave.
+    vaultCol *= 0.30 + 0.70 * smoothstep(0.0, 14.0, band);
 
     // Put the stained glass on a fixed exposure rather than inheriting
     // whatever photo is bound -- a dark image is what sank the whole nave.
@@ -145,6 +165,8 @@ void main() {
     // what gets capped.
     vec3 traceryTint = min(vec3(1.4, 1.2, 1.8) * archGlow * (1.0 + 2.5 * audioKick), vec3(1.2));
     vaultCol += traceryTint;
+    // The DE ribs: bright leading between the glass panes.
+    vaultCol += vec3(1.2, 1.1, 0.85) * ribs * (0.55 + 0.45 * audioLevel) * glw;
 
     // Rosette window central bloom, tightened so it stays a rosette rather
     // than a haze over the whole vault now that trap actually reads.

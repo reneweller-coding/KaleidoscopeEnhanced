@@ -133,15 +133,23 @@ void main() {
         float r = length(p);
         float a = atan(p.y, p.x);
 
-        // Sinusoidal wave ripple along tentacle
-        float wave = sin(r * 12.0 * tent - armPhase * 2.0 - audioBass * 4.0);
+        // Sinusoidal wave ripple along tentacle.  audioPhase (integrated) keeps
+        // the ripple musical without the per-frame shape jitter a raw level
+        // term produced -- the ribbons used to twitch with every bass frame.
+        float wave = sin(r * 12.0 * tent - armPhase * 1.2 - audioPhase * 0.7);
         float dAngle = mod(a - armAngle + 3.14159, 6.2831853) - 3.14159;
-        
+
         // Distance to curved tentacle ribbon
         float tentDist = abs(dAngle * r - wave * 0.04 * (1.0 + r * 1.5));
 
-        // Bioluminescent glowing filament
-        float glow = 0.003 / (tentDist * tentDist + 0.00015);
+        // Bioluminescent glowing filament.  Exponential profile: the old
+        // Lorentzian tails of eight arms summed to solid white BETWEEN the
+        // arms; exp() dies off before the neighbours meet.
+        float glow = 1.1 * exp(-tentDist * 70.0)
+                   + 0.0006 / (tentDist * tentDist + 0.0003);
+        // All eight arms converge at the bell centre; hollow the core out or
+        // their sum turns the middle of the frame into a solid white blob.
+        glow *= smoothstep(0.03, 0.18, r);
         
         // Color variation along tentacle length: cyan to magenta/electric blue
         vec3 armC = imgPalette((r * 6.0 + armPhase) * 0.159) * 1.4;
@@ -149,11 +157,14 @@ void main() {
 
         // Bell nodes & pulsating photophores along the filament
         float nodes = pow(sin(r * 24.0 - armPhase * 3.0) * 0.5 + 0.5, 8.0);
-        glow += nodes * (0.01 / (tentDist + 0.001)) * (1.0 + audioKick * 1.5);
+        glow += nodes * (0.005 / (tentDist + 0.0015))
+              * (1.0 + audioKick * 0.8) * smoothstep(0.03, 0.18, r);
 
         tentacleCol += armC * glow * exp(-r * (1.2 * dpth));
     }
 
+    // Soft-compress the summed arms: crossings stay luminous, never clipped.
+    tentacleCol = tentacleCol / (1.0 + 0.6 * tentacleCol);
     col += tentacleCol * glw * 0.8;
 
     // Organic photo integration: subtle undulating jellyfish bell overlay
@@ -161,7 +172,7 @@ void main() {
     if (bellR < 0.7) {
         vec2 distUV = st + vec2(sin(uv.y * 10.0 + t), cos(uv.x * 10.0 + t)) * 0.02 * (1.0 + audioBass);
         vec3 bellImg = img(clamp(distUV, 0.0, 1.0));
-        float bellMask = smoothstep(0.7, 0.2, bellR) * (0.3 + 0.4 * audioLevel);
+        float bellMask = smoothstep(0.7, 0.2, bellR) * (0.12 + 0.18 * audioLevel);
         col += bellImg * bellMask * vec3(0.4, 0.9, 1.0);
     }
 

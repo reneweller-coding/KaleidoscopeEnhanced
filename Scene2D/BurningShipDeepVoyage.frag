@@ -63,27 +63,27 @@ void main() {
 
     float t = audioAdvance * 0.25 * spd;
 
-    // Deep zoom target on a prominent Burning Ship mast cusp: c_center = (-0.45, -0.6)
-    vec2 cCenter = vec2(-0.45, -0.6);
-    // Zoom cycle. exp(mod(t * 0.7, 6.0)) snapped from e^6 (403x) back to e^0
-    // every ~8.6 s -- a hard cut. A raised cosine over the same period dives
-    // in and eases back out instead: continuous in value AND velocity (the
-    // derivative vanishes at both turns), so no seam anywhere.
-    // Sub-bass makes the hull swell by tightening the visible c-window. The
-    // factor sits OUTSIDE the exp(), so the running zoom phase is untouched.
+    // Voyage course: the dive now has a DESTINATION. At zoom-out the frame
+    // holds the whole burning ship hull; as the raised-cosine zoom deepens,
+    // the centre glides to the famous "armada" cusp where the little ship
+    // replicas line up -- so every cycle reads as travel toward something,
+    // not as marble mush (the old centre (-0.45,-0.6) landed in a featureless
+    // region and every pixel escaped within 2 iterations).
+    vec2 cOverview = vec2(-0.6, -0.55);
+    vec2 cArmada   = vec2(-1.7629, -0.0286);
     float zc = 0.5 - 0.5 * cos(6.2831853 * fract(t * 0.7 / 6.0));   // 0..1..0
-    float zoomLevel = exp(zc * 6.0) * (2.0 * zm) * (1.0 + 0.35 * audioSubBass);
-    vec2 c = cCenter + uv / zoomLevel;
-
-    // Invert Y to orient the "ship" right-side up
-    c.y = -c.y;
+    vec2 cCenter = mix(cOverview, cArmada, smoothstep(0.0, 0.35, zc));
+    float zoomLevel = exp(zc * 7.5) * (0.55 * zm) * (1.0 + 0.15 * audioSubBass);
+    // The ship renders upright with the y-window inverted (applied to the
+    // WINDOW, so the centre coordinates above are true fractal coordinates).
+    vec2 c = cCenter + vec2(uv.x, -uv.y) / zoomLevel;
 
     vec2 z = c;
-    float iterCount = 0.0;
+    float iterCount = -1.0;
     float trap = 1e5;
 
     // Burning ship iteration loop: z = (|x| + i|y|)^2 + c
-    for (int i = 0; i < 48; i++) {
+    for (int i = 0; i < 90; i++) {
         vec2 zAbs = abs(z);
         z = vec2(zAbs.x * zAbs.x - zAbs.y * zAbs.y, 2.0 * zAbs.x * zAbs.y) + c;
 
@@ -96,29 +96,27 @@ void main() {
         }
     }
 
-    if (iterCount == 0.0) iterCount = 48.0;
-
-    // Sample texture mapped across chaotic coordinate
-    vec2 sampleUV = fract(z * 0.2 + 0.5);
-    vec3 texCol = img(sampleUV);
-
-    // Glowing flame edge calculation
-    float flameGlow = exp(-abs(sin(iterCount * 0.4 + t)) * (15.0 - 5.0 * audioCentroid)) * glw;
-
-    // Fire palette: gold/crimson/violet
-    vec3 palA = imgPalette(iterCount * 0.04 + trap * 0.15);
-    vec3 palB = imgPalette(iterCount * 0.04 + 0.5);
-    vec3 fireCol = mix(palA, palB, 0.5 + 0.5 * sin(iterCount * 0.6 + t));
-
-    fireCol = mix(fireCol, texCol, 0.35 + 0.15 * audioValence);
-
-    // Add glowing fire mast highlights and kick flare
-    vec3 flameTint = vec3(1.6, 1.2, 0.6) * flameGlow * (1.0 + 2.5 * audioKick) * flm;
-    fireCol += flameTint;
-
-    // Core bloom
-    float coreBloom = exp(-trap * 4.0) * (0.8 + 1.5 * audioKick);
-    fireCol += imgPalette(0.8) * coreBloom;
+    vec3 fireCol;
+    if (iterCount < 0.0) {
+        // INTERIOR: the hull itself -- near-black iron with a faint ember
+        // texture, the iconic silhouette against the fire outside.
+        vec3 ember = img(fract(z * 0.15 + 0.5));
+        fireCol = vec3(0.02, 0.015, 0.02) + ember * 0.06;
+    } else {
+        // EXTERIOR: fire gradient hugging the boundary. High iteration
+        // counts (close to the set) burn bright, open water stays dark.
+        float g = pow(clamp(iterCount / 42.0, 0.0, 1.0), 1.1);
+        vec2 sampleUV = fract(z * 0.2 + 0.5);
+        vec3 texCol = img(sampleUV);
+        vec3 palA = imgPalette(g * 0.55 + trap * 0.10);
+        vec3 palB = imgPalette(g * 0.55 + 0.5);
+        fireCol = mix(palA, palB, 0.5 + 0.5 * sin(iterCount * 0.6 + t));
+        fireCol = mix(fireCol, texCol, 0.25);
+        fireCol *= 0.22 + 2.0 * g;
+        // Flame licks on the iteration bands + kick flare
+        float flameGlow = exp(-abs(sin(iterCount * 0.4 + t)) * (15.0 - 5.0 * audioCentroid)) * glw;
+        fireCol += vec3(1.6, 1.2, 0.6) * flameGlow * g * (0.5 + 1.5 * audioKick) * flm;
+    }
 
     fireCol = pow(fireCol, vec3(0.88));
     fragColor = vec4(clamp(fireCol, 0.0, 1.0), 1.0);

@@ -187,7 +187,14 @@ void main() {
         // Jewel colour from the ORBIT TRAP (constant per sphere, so each
         // sphere reads as one gem) -- no per-pixel photo hash, which is what
         // shredded the old picture into salt-and-pepper.
-        vec3 jewel = imgPalette(fract(trapMin * 3.1 + 0.13 * audioPhase * 0.159));
+        // QUANTISED trap: the raw trap value sweeps continuously across a
+        // large sphere, so feeding it to the palette painted hue STRIPES over
+        // every big sphere. floor() gives one gem tone per trap class -- flat
+        // colour per sphere, stripes gone; the tiny advance drift shifts all
+        // gems together, never spatially.
+        float gemClass = floor(trapMin * 5.0) * 0.2;
+        vec3 jewel = imgPalette(fract(gemClass * 0.83 + 0.02 * audioAdvance));
+        jewel = mix(jewel, img(n.xy * 0.25 + 0.5), 0.22);
 
         // Iteration-count occlusion: crevices between kissing spheres darken.
         float ao = clamp(1.0 - float(steps) * 0.011, 0.25, 1.0);

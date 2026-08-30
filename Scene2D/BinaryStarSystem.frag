@@ -79,6 +79,22 @@ mat2 rot(float a) {
     return mat2(c, -s, s, c);
 }
 
+// Cheap 3D value noise + fbm for the background nebula wash.
+float noise3(vec3 q) {
+    vec3 i = floor(q), f = fract(q);
+    f = f * f * (3.0 - 2.0 * f);
+    float n = dot(i, vec3(1.0, 57.0, 113.0));
+    return mix(mix(mix(hash11(n), hash11(n + 1.0), f.x),
+                   mix(hash11(n + 57.0), hash11(n + 58.0), f.x), f.y),
+               mix(mix(hash11(n + 113.0), hash11(n + 114.0), f.x),
+                   mix(hash11(n + 170.0), hash11(n + 171.0), f.x), f.y), f.z);
+}
+float fbm3(vec3 q) {
+    float v = 0.0, a2 = 0.5;
+    for (int i = 0; i < 3; i++) { v += a2 * noise3(q); q *= 2.1; a2 *= 0.5; }
+    return v;
+}
+
 // Function for a star surface (displaced sphere)
 float sdStar(vec3 p, float r, float t) {
     float d = length(p) - r;
@@ -172,18 +188,37 @@ void main()
         if(d > 10.0) break;
     }
     
-    // Background starfield
+    // Background: a soft palette nebula wash behind everything, then three
+    // parallax star layers with per-star twinkle and a few diffraction-cross
+    // sparklers -- the old two sparse dim layers read as empty black.
+    float nb = fbm3(rd * 2.0 + vec3(0.0, 0.0, time * 0.02));
+    col += imgPalette(0.35 + nb * 0.3) * nb * nb * 0.16 * (0.6 + 0.4 * audioSwell);
+
     vec3 bgCol = vec3(0.0);
-    for (int i = 0; i < 2; ++i) {
-        float sc = 50.0 + 50.0 * float(i);
+    for (int i = 0; i < 3; ++i) {
+        float sc = 40.0 + 45.0 * float(i);
         vec3 st = rd * sc;
         vec3 cell = floor(st);
         vec3 f = fract(st) - 0.5;
-        if (hash11(dot(cell, vec3(12.3, 45.6, 78.9))) > 0.98) {
-            bgCol += mix(c1, c2, hash11(cell.x)) * exp(-length(f) * length(f) * 400.0);
+        // hash11(dot(...)) squares the sin argument into the ~1e6 range where
+        // GPU sin() precision collapses and the 'random' field degenerates --
+        // the starfield vanished. The classic direct fract(sin(dot)) stays
+        // in a sane range.
+        float h = fract(sin(dot(cell, vec3(12.9898, 78.233, 37.719))) * 43758.5453);
+        if (h > 0.90) {
+            float tw = 0.65 + 0.35 * sin(time * (1.5 + 3.0 * fract(h * 7.0)) + h * 40.0);
+            float b2 = exp(-dot(f, f) * (150.0 + 130.0 * fract(h * 13.0)));
+            vec3 scol = mix(mix(c1, c2, fract(h * 5.0)), vec3(1.0), 0.45);
+            if (h > 0.985) {
+                // bright sparkler: diffraction cross
+                b2 += (exp(-(abs(f.x) + 8.0 * abs(f.y)) * 30.0)
+                     + exp(-(abs(f.y) + 8.0 * abs(f.x)) * 30.0)) * 0.4;
+                scol = mix(scol, vec3(1.0), 0.5);
+            }
+            bgCol += scol * b2 * tw;
         }
     }
-    col += bgCol * (0.2 + audioSwell * 0.3);
+    col += bgCol * (1.3 + audioSwell * 0.7);
 
     if (hue > 0.001) col = hueRot(col, 0.2 * sin(hue));
 

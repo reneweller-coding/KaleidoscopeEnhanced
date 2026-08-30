@@ -89,14 +89,14 @@ float map(vec3 p, float pr, float sd)
     // 2. Orbital Stations
     // Repeat space in a ring or just sparsely scattered
     vec3 sp = p;
-    sp.z = mod(sp.z + 15.0, 30.0) - 15.0; // Repeat along orbit
-    sp.x = mod(sp.x + 20.0, 40.0) - 20.0;
+    sp.z = mod(sp.z + 9.0, 18.0) - 9.0; // Repeat along orbit (denser grid)
+    sp.x = mod(sp.x + 12.0, 24.0) - 12.0;
 
     // Check if we are near a station slot
-    vec2 id = floor((p.xz + vec2(20.0, 15.0)) / vec2(40.0, 30.0));
+    vec2 id = floor((p.xz + vec2(12.0, 9.0)) / vec2(24.0, 18.0));
     float h = hash21(id);
 
-    if(h < sd * 0.3) {
+    if(h < sd * 0.45) {
         // Build a station
         sp.y += 2.0 - 4.0 * hash21(id + 1.0);
         sp.xz *= rot(audioAdvance * 0.1 + h * 6.28);
@@ -159,7 +159,7 @@ void main()
 
     vec2 uv = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
-    float t = time * 0.05 + audioAdvance * 0.1;
+    float t = time * 0.15 + audioAdvance * 0.35;   // 3x: Stationen ziehen sichtbar vorbei
     float drift = time * 5.0 + audioAdvance * 15.0;
 
     // Camera in orbit
@@ -207,14 +207,19 @@ void main()
         float fres = pow(1.0 - max(dot(n, -rd), 0.0), 5.0);
 
         if (m == 1.0) { // Planet
-            // Terrain noise
-            float terr = sin(p.x * 0.1) * cos(p.z * 0.1) + sin(p.x * 0.5 + p.z * 0.5) * 0.5
-                       + sin(p.x * 2.3 + p.z * 1.7) * 0.25;
-            vec3 albedo = mix(vec3(0.1, 0.15, 0.2), vec3(0.2, 0.25, 0.2), terr);
+            // Terrain noise, sampled in a frame that SPINS: the world turns
+            // under the camera, so the surface is never a still image.
+            vec2 tp = rot(time * 0.02 + audioAdvance * 0.05) * p.xz;
+            float terr = sin(tp.x * 0.1) * cos(tp.y * 0.1) + sin(tp.x * 0.5 + tp.y * 0.5) * 0.5
+                       + sin(tp.x * 2.3 + tp.y * 1.7) * 0.25;
+            // Alien land colours from the photo palette instead of flat grey.
+            vec3 albedo = mix(vec3(0.08, 0.12, 0.18),
+                              imgPalette(0.3 + 0.08 * terr) * 0.7,
+                              clamp(terr * 0.5 + 0.5, 0.0, 1.0));
 
             // Night side city lights
             float night = smoothstep(0.1, -0.2, dot(n, sunDir));
-            float cities = max(0.0, sin(p.x * 2.0) * cos(p.z * 2.0) * sin(p.x * 10.0 + p.z * 10.0));
+            float cities = max(0.0, sin(tp.x * 2.0) * cos(tp.y * 2.0) * sin(tp.x * 10.0 + tp.y * 10.0));
             cities = pow(cities, 4.0) * (0.8 + 0.4 * audioKick);
 
             col = albedo * dif * 2.0;
@@ -252,6 +257,18 @@ void main()
                 col += atmoCol * atmoGlow * glw * 0.4;
             }
         }
+    }
+
+    // FOREGROUND SATELLITES: three fast crossers with blinking nav lights --
+    // constant visible motion even between the big station encounters.
+    for (int i = 0; i < 3; i++) {
+        float fi = float(i);
+        float x = fract(t * (0.5 + 0.3 * fi) + fi * 0.37) * 2.6 - 1.3;
+        float y = -0.28 + 0.24 * fi + 0.05 * sin(t * 3.0 + fi * 5.0);
+        vec2 d2 = ruv - vec2(x, y);
+        float body = exp(-dot(d2, d2) * 9000.0);
+        float blink = pow(0.5 + 0.5 * sin(time * 6.0 + fi * 2.1), 6.0);
+        col += (vec3(0.8, 0.9, 1.0) * 0.8 + cityCol * blink * 2.0) * body * glw;
     }
 
     if (hue > 0.001) col = hueRot(col, 0.2 * sin(hue));

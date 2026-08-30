@@ -72,6 +72,7 @@ TIMING = {
     # 45-60 s solo = one photo lives ~6-7 scenes of the walk; a 15-25 s fade
     # is below the threshold of notice while a scene is on trial.
     "TestAlle":     (45, 60, 15, 25),
+    "TestModified": (45, 60, 15, 25),
 }
 
 # The review preset analyses this instead of listening. Relative to the exe's
@@ -93,6 +94,24 @@ REVIEW_AUDIO = "..%sTools%sreview128.wav" % ("\\\\", "\\\\")
 REVIEW_ONLY_FX = {"FxPlain"}
 REVIEW_ONLY_TRANS = {"Crossfade"}
 
+# The 2026-08-30 user-feedback rework batch: these scenes were visually
+# reworked (see the commit); TestModified collects exactly them as a hidden
+# review bench so the fixes can be judged in sequence. Selection is BY NAME,
+# not by mood -- the set is a historical fact, not a property of the scenes.
+MODIFIED_SCENES = {
+    "AbyssalLuminescence", "AizawaAttractorSphereVortex", "AlienPlanetOrbit",
+    "ApollonianSpherePackingDive", "ApollonianSpherePackingGasket",
+    "BeyondTheEdge", "BinaryStarSystem", "BioluminescentNebula",
+    "BismuthLabyrinth", "Bubble", "BurningShipDeepVoyage", "CausticPool",
+    "CelticMandelbrotGothicVault", "CliffordTorusKleinBottle",
+    "CollatzFractalTreeAbyss", "ConformalLogPolarDive", "CrystalAsteroidField",
+    "CyberpunkSynthGridHighwayFly", "CyberpunkWireframeTerrainFlyover",
+    "DysonSphereCollapse", "EventHorizon", "ExoplanetOcean",
+}
+def rule_modified(m, h):
+    fm = re.search(r'file="[^"]*[\\/](\w+)\.frag"', h)
+    return bool(fm) and fm.group(1) in MODIFIED_SCENES
+
 # (name, scene rule, hidden [, FX/transition rule])
 # SpaceAmbient selects its SCENES by the curated `space` tag, but no FX or
 # transition carries that tag -- filtering overlays by it would leave the
@@ -107,6 +126,7 @@ GENRES = [
     ("SpaceAmbient", rule_space,      False, rule_ambient),
     ("Allround",    rule_all,         False),
     ("TestAlle",    rule_all,         True),
+    ("TestModified", rule_modified,   True),
 ]
 
 src = open(SRC, encoding="utf-8").read()

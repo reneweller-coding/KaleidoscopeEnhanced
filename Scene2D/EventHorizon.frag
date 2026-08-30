@@ -91,7 +91,10 @@ void main()
     float du  = -dot(rd, e1) / dot(rd, e2) * u;
 
     float phi = 0.0;
-    const int STEPS = 160;
+    const int STEPS = 300;   // adaptive dphi: near-shadow rays need the extra budget
+    // Adaptive step: fine near the photon sphere (large u), coarse far out.
+    // The fixed 0.055 quantised the escape direction next to the shadow and
+    // broke the lensed sky into the coarse blocks the user reported.
     float dphi = 0.055;
 
     vec3  col = vec3(0.0);
@@ -104,6 +107,7 @@ void main()
     for (int i = 0; i < STEPS; ++i)
     {
         // Leapfrog on d2u/dphi2 = 3 M u^2 - u
+        dphi = 0.055 / (1.0 + 9.0 * M * u);
         float acc = 3.0 * M * u * u - u;
         du += acc * dphi;
         u  += du * dphi;

@@ -82,81 +82,75 @@ void main()
     float hue = (hueP > 0.01 ? hueP : 0.0);
 
     vec2 uv = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
-    
+
+    // Zoom OUT far enough that the edge of the observable universe actually
+    // fits on screen: before, the sphere overfilled the frame and the scene
+    // read as flat noise wallpaper with no edge anywhere.
+    uv *= 1.35;
+
     // Slow drift across the sky
     float drift = time * 0.05 + audioAdvance * 0.1;
-    
-    // Map UV to a spherical projection (Mollweide-like or just distorted)
-    // to give it that "all-sky map" feel.
+
     float dist = length(uv);
+    vec3 col;
+
     if (dist > 1.0) {
-        fragColor = vec4(0.0, 0.0, 0.0, 1.0);
-        return;
+        // THE VOID beyond the edge: near-black, with a faint breathing mist
+        // so "outside" reads as a place, not as dead letterbox.
+        float mist = fbm(vec3(uv * 2.0, drift * 0.6));
+        col = imgPalette(0.72) * mist * 0.10 * smoothstep(2.4, 1.02, dist);
+    } else {
+        // Spherical coordinates on the universe-sphere
+        float z = sqrt(1.0 - dist * dist);
+        vec3 p3 = vec3(uv.x, uv.y, z);
+
+        // Two-axis rotation so the poles travel too
+        float rot = drift;
+        mat2 rotM = mat2(cos(rot), -sin(rot), sin(rot), cos(rot));
+        p3.xz = rotM * p3.xz;
+        float rot2 = drift * 0.37;
+        p3.yz = mat2(cos(rot2), -sin(rot2), sin(rot2), cos(rot2)) * p3.yz;
+
+        // CMB with DOMAIN WARP: the flow-like curl patterns of the real map,
+        // instead of the flat contour mush of plain fbm.
+        vec3 warp = vec3(fbm(p3 * 2.0 + drift * 0.3),
+                         fbm(p3 * 2.0 + 4.7),
+                         fbm(p3 * 2.0 + 9.1));
+        float cmbBase = fbm(p3 * 3.0 + (warp - 0.5) * 1.8);
+        float cmbDetail = fbm(p3 * 15.0 + (warp - 0.5) * 2.5);
+        float cmb = mix(cmbBase, cmbDetail, 0.3) * cp;
+
+        vec3 cmbColor = imgPalette(cmb * 0.8 + 0.1);
+        col = cmbColor * (0.35 + audioSwell * 0.3);
+
+        // Hot filaments: the brightest temperature ridges glow.
+        float fil = smoothstep(0.52, 0.72, cmb);
+        col += imgPalette(0.9) * fil * (0.35 + 0.5 * audioLevel);
+
+        // Anomalies: persistent hotspot cells that IGNITE on kicks. The old
+        // trigger resampled at 5 Hz (floor(time*5)) and strobed; selection
+        // now drifts on the slow clock, the envelope is the kick itself.
+        vec3 cellP = p3 * 4.0;
+        vec3 iCell = floor(cellP);
+        float cellHash = hash11(iCell.x * 12.3 + iCell.y * 45.6 + iCell.z * 78.9);
+        if (cellHash > 0.6) {
+            vec3 center = iCell + vec3(0.5);
+            float dToCenter = length(cellP - center);
+            float trigger = step(0.5, hash11(cellHash * 10.0 + floor(drift * 2.0)));
+            float flash = trigger * audioKick * 3.5 * ap;
+            float fracture = fbm(p3 * 20.0 + drift * 3.0);
+            float mask = smoothstep(0.45, 0.0, dToCenter) * fracture;
+            vec3 anomalyCol = imgPalette(0.9 + audioCentroid * 0.1);
+            col += anomalyCol * mask * flash * (1.0 + audioSwell);
+            col += anomalyCol * exp(-dToCenter * 5.0) * flash * 0.4;
+        }
     }
-    
-    // Spherical coordinates
-    float z = sqrt(1.0 - dist * dist);
-    vec3 p3 = vec3(uv.x, uv.y, z);
-    
-    // Rotate sphere
-    float rot = drift;
-    mat2 rotM = mat2(cos(rot), -sin(rot), sin(rot), cos(rot));
-    p3.xz = rotM * p3.xz;
-    
-    // 1. The Cosmic Microwave Background
-    // It's a combination of low-frequency and high-frequency noise
-    
-    // Low frequency temperature fluctuations
-    float cmbBase = fbm(p3 * 3.0);
-    
-    // High frequency details
-    float cmbDetail = fbm(p3 * 15.0);
-    
-    // Combine
-    float cmb = mix(cmbBase, cmbDetail, 0.3) * cp;
-    
-    // Map the CMB value (0.0 to 1.0) to a false-color palette
-    // Traditionally CMB maps go from dark blue (cold) to bright red/yellow (hot)
-    // We use the imgPalette but sample it across the noise value
-    vec3 cmbColor = imgPalette(cmb * 0.8 + 0.1);
-    
-    vec3 col = cmbColor * (0.3 + audioSwell * 0.2);
-    
-    // 2. The Unknown Anomalies
-    // Massive, glowing tears in the fabric of the CMB, triggered by kicks
-    // These represent things outside our universe interacting with the boundary
-    
-    // Create random hotspots on the sphere
-    vec3 cellP = p3 * 4.0;
-    vec3 iCell = floor(cellP);
-    float cellHash = hash11(iCell.x * 12.3 + iCell.y * 45.6 + iCell.z * 78.9);
-    
-    if (cellHash > 0.7) {
-        // Center of the anomaly in this cell
-        vec3 center = iCell + vec3(0.5);
-        float dToCenter = length(cellP - center);
-        
-        // Flash based on kick
-        float trigger = step(0.95, hash11(cellHash * 10.0 + floor(time * 5.0)));
-        float flash = trigger * audioKick * 5.0 * ap;
-        
-        // Shape of the anomaly (like a glowing fracture)
-        float fracture = fbm(p3 * 20.0 + time);
-        float mask = smoothstep(0.4, 0.0, dToCenter) * fracture;
-        
-        // Pure white/intense energy piercing through
-        vec3 anomalyCol = imgPalette(0.9 + audioCentroid * 0.1);
-        
-        col += anomalyCol * mask * flash * (1.0 + audioSwell);
-        
-        // Glare spreading across the CMB
-        float glare = exp(-dToCenter * 5.0) * flash * 0.5;
-        col += anomalyCol * glare;
-    }
-    
-    // Edge darkening for the spherical map projection
-    float edge = smoothstep(1.0, 0.95, dist);
-    col *= edge;
+
+    // THE EDGE itself: a luminous horizon ring on both sides of dist = 1,
+    // breathing with the swell and flaring on kicks -- the scene's subject,
+    // finally visible.
+    float rim = exp(-abs(dist - 1.0) * (16.0 - 6.0 * audioSwell));
+    col += imgPalette(0.15) * rim * (0.4 + 0.5 * audioSwell + 0.6 * audioKick);
 
     if (hue > 0.001) col = hueRot(col, 0.2 * sin(hue));
 

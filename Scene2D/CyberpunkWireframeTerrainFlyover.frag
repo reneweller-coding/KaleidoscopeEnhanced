@@ -69,7 +69,9 @@ void main() {
     float gDens = (gridDensityP > 0.01) ? gridDensityP : 1.0;
     float glw = (glowP > 0.01) ? glowP : 1.0;
 
-    float t = audioAdvance * 0.45 * spd;
+    // Steady base rate + musical push. audioAdvance alone barely moves on
+    // quiet material -- the reported "the scene stands still, nobody flies".
+    float t = time * 0.40 * spd + audioAdvance * 0.35 * spd;
 
     // Horizon line at y = 0.05
     float horizon = 0.05;
