@@ -2049,7 +2049,13 @@ void RenderPipeline::runPresentPass( GLuint presentSource, const AudioFeatures &
 		pin.blackout     = s_blackout;
 		pin.breakSmooth  = m_breakSmooth;
 		pin.fadeOutEnv   = audioFx.fadeOut;
-		pin.moodStrength = s_moodStrength;
+		// REVIEW BENCH: neutral colour. The presets' key-following hue shift
+		// (Present.frag rotates the whole frame by audioChromaHue) painted the
+		// entire walk in ONE tint, because the bench song holds a single key
+		// for its whole loop -- the user-reported "everything stayed green".
+		// A scene's colours cannot be judged through a constant grade, so the
+		// review walk pins the mood grade to neutral.
+		pin.moodStrength = m_scheduler.reviewMode() ? 0.f : s_moodStrength;
 		pin.lightShow    = s_lightShow;
 		pin.renderScale  = s_renderScale;
 		pin.lyricsAlpha   = m_overlay.lyricsAlpha;
