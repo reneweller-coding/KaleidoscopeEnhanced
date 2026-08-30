@@ -43,6 +43,8 @@ uniform ivec2 size;
 uniform float target;      // where the median should sit
 uniform float maxGain;
 uniform float slew;        // how fast the exposure may move (per frame)
+uniform float smoothK;     // EMA weight for the percentiles this frame (dt/tau)
+uniform float slewDown;    // like slew, but for DARKENING -- may be faster
 
 shared uint hist[256];
 
@@ -85,24 +87,32 @@ void main()
         if (f >= 0.98) { m98 = v; break; }
     }
 
+    // The percentiles are SMOOTHED before anything is derived from them.
+    // Raw m50/m98 describe this FRAME: a beat flash or a specular glint moves
+    // m98 by half its range within two frames, and an exposure that follows
+    // raw percentiles follows the flash -- the whole picture pumps with the
+    // music, hardest in the first second of a scene while the slew is still
+    // fast for the scene change. The exposure's job is the SCENE's lighting;
+    // smoothing the measurement (about 1.75 s standing, near-instant during a
+    // scene fade, set by the host through smoothK) keeps flashes in the
+    // picture where they belong instead of in the exposure.
+    float s50 = (p50 > 0.0) ? mix(p50, m50, smoothK) : m50;
+    float s98 = (p98 > 0.0) ? mix(p98, m98, smoothK) : m98;
+
     // Aim the MEDIAN at the target, but never so hard that the 98th
     // percentile clips: highlights win the argument.
-    float want = (m50 > 1e-4) ? clamp(target / m50, 1.0 / maxGain, maxGain) : 1.0;
-    if (m98 * want > 1.0) want = min(want, 1.0 / max(m98, 1e-4));
+    float want = (s50 > 1e-4) ? clamp(target / s50, 1.0 / maxGain, maxGain) : 1.0;
+    if (s98 * want > 1.0) want = min(want, 1.0 / max(s98, 1e-4));
 
     float prev = (exposureOut > 0.0) ? exposureOut : 1.0;
-
-    // Plain slew, ALWAYS -- the host varies the rate instead (slow while a
-    // scene stands, fast while the scheduler cross-fades). An earlier version
-    // snapped when the median jumped >25% in one frame, reasoning that only a
-    // hard cut moves a whole frame's median that fast. Both halves of that
-    // were wrong: the engine's scene changes are CROSSFADES, whose median
-    // moves a few percent per frame and never trips the threshold, so the one
-    // case the snap was built for it could not see -- while a strobe scene
-    // trips it every flash and turns the exposure into a pump. The scheduler
-    // simply KNOWS when a fade runs; guessing it from luminance was the
-    // wrong tool.
-    exposureOut = prev + clamp(want - prev, -slew, slew);
-    p50 = m50;
-    p98 = m98;
+    // Fast attack, slow release -- the classic exposure asymmetry, and the
+    // direction matters here: when a BRIGHT scene fades in over a dark one,
+    // the gain is still pinned high from the dark scene and every frame it
+    // lags is a frame of the new scene OVERSHOT into glare, ended by a
+    // visible drop. Downward correction therefore moves faster than upward.
+    // It cannot pump: want is computed from the SMOOTHED percentiles above,
+    // so in a standing scene it barely moves in the first place.
+    exposureOut = prev + clamp(want - prev, -slewDown, slew);
+    p50 = s50;
+    p98 = s98;
 }

@@ -1619,6 +1619,7 @@ void RenderPipeline::renderActiveScenePass( const AudioFeatures &audioFx )
 	else
 		m_effectTextures[m_scheduler.actTexture()]->draw();
 
+
 	if( msaaTex1 )
 	{
 		resolveMsaa( m_fboEffectTexture1, m_width, m_height );
@@ -1671,6 +1672,7 @@ void RenderPipeline::renderNextScenePass( const AudioFeatures &audioFx )
 			renderSceneStereo( m_effectTextures[m_scheduler.nextTexture()] );  // eye-packed too
 		else
 			m_effectTextures[m_scheduler.nextTexture()]->draw();
+
 
 		if( msaaTex2 )
 		{
@@ -2021,6 +2023,7 @@ void RenderPipeline::runPresentPass( GLuint presentSource, const AudioFeatures &
 		else if( m_expoFadeTail > 0.f )
 			m_expoFadeTail -= timeSinceLastFrameSec;
 		pin.sceneFade    = ( m_scheduler.texState() != 0 || m_expoFadeTail > 0.f );
+		pin.sceneFadeStrict = ( m_scheduler.texState() != 0 );
 		pin.dtWall       = dtWall;
 		pin.globalTime   = m_globaltime;
 		pin.chasePhase   = m_audioConditioner.chasePhase();

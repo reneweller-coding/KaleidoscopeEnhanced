@@ -495,6 +495,17 @@ void PresentPass::run( const Inputs &in )
 		// change is invisible because everything is changing.
 		glUniform1f( glGetUniformLocation( m_autoExpProg, "slew" ),
 		             ( in.sceneFade ? 4.5f : 0.9f ) * in.dtFrame );
+		glUniform1f( glGetUniformLocation( m_autoExpProg, "slewDown" ),
+		             ( in.sceneFade ? 10.f : 2.f ) * in.dtFrame );
+		// EMA weight for the percentiles: ~1.75 s standing, near-instant while
+		// the scheduler cross-fades, so a scene change still lands inside the
+		// fade while a beat flash inside a scene barely moves the measurement.
+		{
+			const float tau = in.sceneFadeStrict ? 0.12f : 1.75f;
+			float k = in.dtFrame / tau;
+			if( k > 1.f ) k = 1.f;
+			glUniform1f( glGetUniformLocation( m_autoExpProg, "smoothK" ), k );
+		}
 		glDispatchCompute( 1, 1, 1 );
 		glMemoryBarrier( GL_SHADER_STORAGE_BARRIER_BIT );
 		{ static const bool dbg = getenv( "KALEIDO_EXPOSURE_DEBUG" ) != 0;

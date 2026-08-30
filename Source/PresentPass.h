@@ -151,6 +151,13 @@ public:
 		 *  is blind to a crossfade by construction (the median moves ~2% per
 		 *  frame) and would meanwhile misfire on strobes inside one scene. */
 		bool   sceneFade    = false;
+		/** @brief True only while the scheduler's cross-fade itself runs (no
+		 *  post-fade tail). Gates the exposure's fast MEASUREMENT: during the
+		 *  tail only the gain may still move fast to finish its walk -- the
+		 *  measurement must already be slow again, or a beat flash landing in
+		 *  the tail yanks the exposure and reads as the scene abruptly dimming
+		 *  a moment after the change. */
+		bool   sceneFadeStrict = false;
 		float  dtWall       = 0.f;   ///< Wall-clock frame delta time (drives blackout slew and history-ring cadence).
 		float  globalTime   = 0.f;   ///< Global shader time uniform.
 		float  chasePhase   = 0.f;   ///< Chase-light phase uniform.

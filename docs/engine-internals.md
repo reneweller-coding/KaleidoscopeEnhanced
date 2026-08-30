@@ -2264,6 +2264,28 @@ Verified over eight consecutive changes: five settle with literally zero gain
 movement in the 1.5 s after the change, worst residual 0.157 (content drift),
 where the slew-only version left up to 0.57 of visible post-fade adaptation.
 
+Two more pieces joined after a user report of the picture abruptly dimming
+INSIDE a scene about a second after a change:
+
+* **The percentiles are smoothed before anything is derived from them**
+  (EMA in the shader's SSBO, tau 1.75 s standing, near-instant during the
+  scheduler's fade -- `smoothK`). Raw p50/p98 describe one FRAME: a beat flash
+  moves p98 by half its range in two frames, and an exposure following raw
+  percentiles follows the flash -- worst during the post-fade window while the
+  slew is still fast. Measured on a spike-scene probe: in-scene gain movement
+  per second fell from median 0.061 / max 0.318 to median 0.013 / max 0.085.
+  The post-fade grace tail keeps only the fast SLEW; the fast MEASUREMENT is
+  gated on the strict fade flag (`sceneFadeStrict`), or a flash landing in the
+  tail would still yank the gain.
+* **Fast attack, slow release** (`slewDown` 10/s fading, 2/s standing, against
+  4.5/0.9 upward). When a bright scene fades in over a dark one the gain is
+  still pinned high, and every frame it lags is a frame of the new scene
+  overshot into glare, ended by a visible drop -- the reported "briefly bright,
+  then abruptly dark". Asymmetry cannot pump, because want is computed from the
+  smoothed percentiles. Measured: the worst single-frame luminance drop in the
+  probe recording fell from 0.284 to 0.065, below even the pre-exposure
+  baseline of 0.088.
+
 `KALEIDO_EXPOSURE_DEBUG=1` logs the limiter's frame mean and the exposure
 gain/percentiles per sample. It is what turned "the catalogue is dark" into a
 binding number.
