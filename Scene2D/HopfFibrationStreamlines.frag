@@ -82,7 +82,9 @@ void main() {
     float tR = (tubeRadiusP > 0.01) ? tubeRadiusP : 0.08;
     float glw = (glowP > 0.01) ? glowP : 1.0;
 
-    float t = audioAdvance * 0.28 * spd;
+    float t = time * 0.168 * spd + audioAdvance * 0.168 * spd;
+    // Zeit-Basis + Musik-Schub: audioAdvance ALLEIN steht bei ruhiger
+    // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
 
     // Orbital camera ray setup
     float camDist = 3.2 + 0.4 * sin(audioSwell * 2.0);

@@ -61,7 +61,9 @@ void main() {
     float flm = (flameP > 0.01) ? flameP : 1.0;
     float glw = (glowP > 0.01) ? glowP : 1.0;
 
-    float t = audioAdvance * 0.25 * spd;
+    float t = time * 0.150 * spd + audioAdvance * 0.150 * spd;
+    // Zeit-Basis + Musik-Schub: audioAdvance ALLEIN steht bei ruhiger
+    // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
 
     // Voyage course: the dive now has a DESTINATION. At zoom-out the frame
     // holds the whole burning ship hull; as the raised-cosine zoom deepens,

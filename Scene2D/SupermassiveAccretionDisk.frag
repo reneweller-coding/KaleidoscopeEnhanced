@@ -152,7 +152,7 @@ void main() {
 
     // High frequency synchrotron radiation sparks
     if (audioHigh > 0.4 && diskMask > 0.1) {
-        float spark = hash21(floor(diskCoord * 60.0) + vec2(floor(time * 8.0), 5.0));
+        float spark = hash21(floor(diskCoord * 60.0) + vec2(floor(time * 1.33), 5.0));
         if (spark > 0.96) {
             col += vec3(1.5, 1.2, 0.9) * audioHigh * 2.0;
         }

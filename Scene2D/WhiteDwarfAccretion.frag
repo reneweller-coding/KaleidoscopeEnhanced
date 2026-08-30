@@ -197,8 +197,18 @@ void main()
     col += wdColor * j2 * dp * (0.5 + jPulse * audioKick * 5.0);
 
     // --- 5. Background ---
-    float bg = hash11(dot(floor(uv * 100.0), vec2(12.3, 45.6)));
-    if (bg > 0.98) col += vec3(1.0) * (0.1 + audioSwell * 0.1);
+    // Runde, gejitterte Sterne: ganze floor()-Zellen aufzuhellen ergibt
+    // QUADRATE (der wiederholt gemeldete "Riesenpixel"-Fehler).
+    vec2 sgrid = uv * 55.0;
+    vec2 sid = floor(sgrid);
+    vec2 sfr = fract(sgrid) - 0.5;
+    float sh = fract(sin(dot(sid, vec2(12.9898, 78.233))) * 43758.5453);
+    if (sh > 0.90) {
+        vec2 spos = (vec2(fract(sh * 7.31), fract(sh * 13.7)) - 0.5) * 0.8;
+        float sd2 = dot(sfr - spos, sfr - spos);
+        float stw = 0.7 + 0.3 * sin(time * (1.0 + 2.0 * fract(sh * 29.0)) + sh * 40.0);
+        col += vec3(1.0) * exp(-sd2 * 250.0) * stw * (0.35 + audioSwell * 0.25);
+    }
 
     if (hue > 0.001) col = hueRot(col, 0.2 * sin(hue));
 

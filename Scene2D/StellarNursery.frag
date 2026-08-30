@@ -105,8 +105,8 @@ void main()
 
     vec3 col = vec3(0.0);
     
-    vec3 gasColor = imgPalette(0.3 + audioCentroid * 0.1); // Nebulous color
-    vec3 starColor = imgPalette(0.9); // Hot newly born stars
+    vec3 gasColor = max(imgPalette(0.3 + audioCentroid * 0.1), vec3(0.14, 0.10, 0.16)); // Nebulous color
+    vec3 starColor = max(imgPalette(0.9), vec3(0.70, 0.62, 0.48)); // Hot newly born stars
     
     // We render this similarly to a sparse voxel field or scattered points
     // Volumetric nebula background
@@ -151,7 +151,7 @@ void main()
             float core = exp(-distToStar * 50.0);
             
             // Flash on kick based on star's unique seed
-            float kickFlash = step(0.9, hash11(h * 100.0 + floor(time * 5.0)));
+            float kickFlash = step(0.9, hash11(h * 100.0 + floor(time * 1.25)));
             float intensity = (1.0 + kickFlash * audioKick * 5.0);
             
             col += starColor * core * intensity * (1.0 - densityAccum);

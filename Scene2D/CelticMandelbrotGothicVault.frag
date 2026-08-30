@@ -73,7 +73,9 @@ void main() {
     float trc = (traceryP > 0.01) ? traceryP : 1.0;
     float glw = (glowP > 0.01) ? glowP : 1.0;
 
-    float t = audioAdvance * 0.25 * spd;
+    float t = time * 0.150 * spd + audioAdvance * 0.150 * spd;
+    // Zeit-Basis + Musik-Schub: audioAdvance ALLEIN steht bei ruhiger
+    // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
 
     // Zoom target on a Gothic lancet arch cusp. The old centre (-0.1, 0.65)
     // sits well OUTSIDE this variation's set -- it escapes in six iterations

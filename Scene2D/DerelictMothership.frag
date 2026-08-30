@@ -192,7 +192,7 @@ void main()
     vec2 ruv = mat2(cos(roll), -sin(roll), sin(roll), cos(roll)) * uv;
     vec3 rd = normalize(ruv.x * uu + ruv.y * vv + 1.2 * ww);
 
-    vec3 tint = imgPalette(0.3 + 0.1 * audioCentroid);
+    vec3 tint = max(imgPalette(0.3 + 0.1 * audioCentroid), vec3(0.16, 0.18, 0.22));
 
     float d = 0.0;
     vec3 p;
@@ -239,7 +239,7 @@ void main()
         flicker *= (0.2 + 0.8 * audioKick);
         flicker *= step(0.7, hash21(grid + floor(t * 2.0))); // sometimes totally dead
         
-        vec3 lightCol = imgPalette(0.8);
+        vec3 lightCol = max(imgPalette(0.8), vec3(0.45, 0.36, 0.20));
         col += lightCol * lightSlot * isWall * flicker * 2.0 * glw;
         
         // AO

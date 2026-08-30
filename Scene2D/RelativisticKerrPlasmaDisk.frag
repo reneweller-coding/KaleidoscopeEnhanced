@@ -61,7 +61,9 @@ void main() {
     float dBeaming = (dopplerP > 0.01) ? dopplerP : 1.2;
     float glw = (glowP > 0.01) ? glowP : 1.0;
 
-    float t = audioAdvance * 0.4 * spd;
+    float t = time * 0.240 * spd + audioAdvance * 0.240 * spd;
+    // Zeit-Basis + Musik-Schub: audioAdvance ALLEIN steht bei ruhiger
+    // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
 
     // Tilted accretion disk coordinates: (x, y / cos(inclination))
     vec2 pDisk = uv * vec2(1.0, 2.2);

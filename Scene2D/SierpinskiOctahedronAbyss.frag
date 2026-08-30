@@ -82,7 +82,9 @@ void main() {
     float sc = (scaleP > 0.01) ? scaleP : 1.0;
     float glw = (glowP > 0.01) ? glowP : 1.0;
 
-    float t = audioAdvance * 0.28 * spd;
+    float t = time * 0.168 * spd + audioAdvance * 0.168 * spd;
+    // Zeit-Basis + Musik-Schub: audioAdvance ALLEIN steht bei ruhiger
+    // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
 
     // Continuous dive along diagonal axis towards origin
     float diveProg = mod(t * 0.6, 2.0);

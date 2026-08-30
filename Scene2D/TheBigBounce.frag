@@ -96,7 +96,7 @@ void main()
     float cycleTime = time * 2.0 * bp;
     // We want it to suddenly snap to 0 when there's a strong kick
     // Since we don't have state, we use hash of time to simulate kicks triggering it
-    float kickTrigger = step(0.9, hash11(floor(time * 5.0))) * audioKick;
+    float kickTrigger = step(0.9, hash11(floor(time * 1.25))) * audioKick;
     
     // Scale of the universe (expands over time, snaps back on trigger)
     float uScale = fract(cycleTime + audioAdvance) + (1.0 - kickTrigger);

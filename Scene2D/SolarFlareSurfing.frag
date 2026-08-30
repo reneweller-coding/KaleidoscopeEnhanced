@@ -174,7 +174,7 @@ void main()
         col *= 1.0 + max(p.y, 0.0) * 0.5;
 
         // Audio kick explosion on the surface
-        float flash = step(0.9, hash11(floor(p.x * 2.0) + floor(p.z * 2.0) + floor(time * 5.0)));
+        float flash = step(0.9, hash11(floor(p.x * 2.0) + floor(p.z * 2.0) + floor(time * 1.25)));
         col += colorHot * flash * audioKick * 3.0;
     }
 

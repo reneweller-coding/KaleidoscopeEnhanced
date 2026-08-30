@@ -91,7 +91,9 @@ void main() {
     float pMod = (powerP > 0.01) ? powerP : 1.0;
     float glw = (glowP > 0.01) ? glowP : 1.0;
 
-    float t = audioAdvance * 0.22 * spd;
+    float t = time * 0.132 * spd + audioAdvance * 0.132 * spd;
+    // Zeit-Basis + Musik-Schub: audioAdvance ALLEIN steht bei ruhiger
+    // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
 
     // Power N smoothly morphs between 6.0 and 9.0
     float power = (7.0 + 1.8 * sin(t * 0.3) + 1.0 * audioCentroid) * pMod;

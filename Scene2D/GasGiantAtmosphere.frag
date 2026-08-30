@@ -122,7 +122,7 @@ void main()
 
         if (dens > 0.01) {
             // Lightning storms inside the clouds
-            float stormNoise = hash11(floor(p.z * 0.1 + p.x * 0.1) + floor(time * 8.0));   // was 10 Hz
+            float stormNoise = hash11(floor(p.z * 0.1 + p.x * 0.1) + floor(time * 1.33));   // was 10 Hz
             float lightning = step(0.95, stormNoise) * audioKick * 5.0 * sp;
 
             // Sunlight scattering

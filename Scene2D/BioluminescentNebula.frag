@@ -100,8 +100,8 @@ void main()
     float d = 0.0;
     vec3 col = vec3(0.0);
     
-    vec3 colorBase1 = imgPalette(0.1 + audioCentroid * 0.2);
-    vec3 colorBase2 = imgPalette(0.8 + audioKick * 0.1);
+    vec3 colorBase1 = max(imgPalette(0.1 + audioCentroid * 0.2), vec3(0.10, 0.14, 0.18));
+    vec3 colorBase2 = max(imgPalette(0.8 + audioKick * 0.1), vec3(0.24, 0.34, 0.22));
     
     // Volumetric raymarching for the nebula
     for (int i = 0; i < 60; ++i) {

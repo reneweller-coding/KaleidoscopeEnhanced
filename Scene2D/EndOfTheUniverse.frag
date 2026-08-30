@@ -65,7 +65,7 @@ void main()
     vec2 uv = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
     // Extremely slow movement
-    float drift = time * 0.2 + audioAdvance * 0.5;
+    float drift = time * 0.6 + audioAdvance * 0.8;   // spuerbare Drift durch die Leere
 
     vec3 ro = vec3(0.0, 0.0, drift);
 
@@ -83,7 +83,7 @@ void main()
     vec3 col = vec3(0.0);
 
     // Dying star colors (deep reds, dark purples)
-    vec3 emberColor = imgPalette(0.1 + audioCentroid * 0.1);
+    vec3 emberColor = max(imgPalette(0.1 + audioCentroid * 0.1), vec3(0.42, 0.16, 0.10));
 
     // We only render a background starfield, but it's very sparse and volumetric-looking
     for (int i = 0; i < 5; ++i) {
@@ -93,8 +93,12 @@ void main()
         vec3 f = fract(st) - 0.5;
 
         // Probability of a star existing is very low
-        float h = hash11(dot(cell, vec3(12.3, 45.6, 78.9)));
-        if (h > 1.0 - (0.05 * sp)) {
+        // Direkter fract(sin(dot))-Hash: hash11 multipliziert intern nochmal
+        // mit 127.1, und mit Zellkoordinaten bis ~100 landet das Argument bei
+        // ~1e6, wo die GPU-sin-Praezision zusammenbricht -- die Sterne
+        // erschienen schlicht nicht, das Bild blieb leer.
+        float h = fract(sin(dot(cell, vec3(12.9898, 78.233, 37.719))) * 43758.5453);
+        if (h > 1.0 - (0.10 * sp)) {
             float dist = length(f);
 
             // Core of the dying star

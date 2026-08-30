@@ -171,7 +171,7 @@ void main()
         
         // Add the star nodes
         float node = smoothstep(0.1, 0.0, minDist);
-        float nodeFlash = step(0.98, hash11(closestHash * 10.0 + floor(time * 5.0)));
+        float nodeFlash = step(0.98, hash11(closestHash * 10.0 + floor(time * 1.25)));
         web += node * densityMask * (1.0 + nodeFlash * audioKick * 5.0);
     }
     

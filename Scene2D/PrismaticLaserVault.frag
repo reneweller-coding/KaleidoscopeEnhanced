@@ -142,7 +142,12 @@ void main() {
     col += photo * 0.25;
 
     // Atmospheric smoke volume scattering
-    float smoke = hash21(floor(uv * 120.0) + vec2(floor(time * 8.0), 0.0));
+    // Weicher Dunst statt harter uv-Zellen: floor(uv*120) leuchtete ganze
+    // ~16-px-Quadrate auf, sobald audioHigh anzog.
+    vec2 smg = uv * 120.0;
+    vec2 smf = fract(smg) - 0.5;
+    float smoke = hash21(floor(smg) + vec2(floor(time * 1.33), 0.0))
+                * exp(-dot(smf, smf) * 3.5);
     col += laserRGB * (1.0 + audioKick * 3.0) * (0.8 + 0.4 * audioSwell * smk);
 
     if (audioHigh > 0.4) {

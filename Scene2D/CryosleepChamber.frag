@@ -191,8 +191,8 @@ void main()
 
     vec3 col = vec3(0.0);
     
-    vec3 podColor = imgPalette(0.3);       // cool blue/cyan for cryo
-    vec3 alertColor = imgPalette(0.9);     // warm red/orange for alert
+    vec3 podColor = max(imgPalette(0.3), vec3(0.14, 0.26, 0.34));   // cool blue/cyan for cryo
+    vec3 alertColor = max(imgPalette(0.9), vec3(0.55, 0.20, 0.10)); // warm red/orange for alert
 
     if (m > 0.5) {
         vec3 n = calcNormal(p, pp);

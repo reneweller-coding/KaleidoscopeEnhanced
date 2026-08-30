@@ -75,7 +75,9 @@ void main() {
     float kR = (knotRadiusP > 0.01) ? knotRadiusP : 1.0;
     float glw = (glowP > 0.01) ? glowP : 1.0;
 
-    float t = audioAdvance * 0.4 * spd;
+    float t = time * 0.240 * spd + audioAdvance * 0.240 * spd;
+    // Zeit-Basis + Musik-Schub: audioAdvance ALLEIN steht bei ruhiger
+    // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
 
     // Sub-bass swells the knot's spatial envelope -- major and minor radius
     // together, so the track keeps its (3,7) shape and simply breathes outward.

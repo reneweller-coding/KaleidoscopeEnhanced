@@ -197,7 +197,7 @@ void main()
             // City lights
             float localGlow = cityGlow * cp;
             if (localGlow > 0.0) {
-                float pulse = step(0.5, hash21(floor(p.xz * 5.0) + floor(time * 5.0)));
+                float pulse = step(0.5, hash21(floor(p.xz * 5.0) + floor(time * 1.25)));
                 col += cityCol * localGlow * (0.5 + pulse * 1.5 * audioKick) * 2.0;
             }
         }

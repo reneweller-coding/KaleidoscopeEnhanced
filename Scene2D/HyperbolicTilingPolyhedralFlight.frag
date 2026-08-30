@@ -95,7 +95,9 @@ void main() {
     float strt = (strutP > 0.01) ? strutP : 1.0;
     float glw = (glowP > 0.01) ? glowP : 1.0;
 
-    float t = audioAdvance * 0.3 * spd;
+    float t = time * 0.180 * spd + audioAdvance * 0.180 * spd;
+    // Zeit-Basis + Musik-Schub: audioAdvance ALLEIN steht bei ruhiger
+    // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
 
     // Camera trajectory flying through hyperbolic vaults
     vec3 ro = vec3(
@@ -128,6 +130,7 @@ void main() {
     float minD = 1e4;
     float hitCell = 0.0;
     vec3 hitCol = vec3(0.0);
+    bool hit = false;
 
     for (int i = 0; i < 56; i++) {
         vec3 p = ro + rd * totDist;
@@ -154,7 +157,7 @@ void main() {
     // Background stained glass atmosphere
     vec3 bgCol = imgPalette(length(uv) * 0.3 + 0.4) * (0.2 + 0.15 * audioLevel);
 
-    vec3 finalCol = mix(bgCol, hitCol, clamp(length(hitCol), 0.0, 1.0));
+    vec3 finalCol = hit ? hitCol : bgCol;
     finalCol += glowTint;
 
     // Hyperbolic depth fog

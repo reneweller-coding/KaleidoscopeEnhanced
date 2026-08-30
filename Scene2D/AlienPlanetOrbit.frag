@@ -178,8 +178,8 @@ void main()
     vec2 ruv = mat2(cos(roll), -sin(roll), sin(roll), cos(roll)) * uv;
     vec3 rd = normalize(ruv.x * uu + ruv.y * vv + 1.2 * ww);
 
-    vec3 atmoCol = imgPalette(0.1 + 0.2 * audioCentroid);
-    vec3 cityCol = imgPalette(0.6 + 0.1 * audioKick);
+    vec3 atmoCol = max(imgPalette(0.1 + 0.2 * audioCentroid), vec3(0.14, 0.22, 0.34));
+    vec3 cityCol = max(imgPalette(0.6 + 0.1 * audioKick), vec3(0.55, 0.42, 0.20));
 
     float d = 0.0;
     vec3 p;
@@ -199,7 +199,10 @@ void main()
     vec3 col = background(rd, drift);
 
     // Sun direction
-    vec3 sunDir = normalize(vec3(0.8, 0.2, 0.5));
+    // Sonne hoeher gestellt: bei streifendem Licht stand die Normale des
+    // sichtbaren Planetenstuecks (fast senkrecht) bei dif~0.2, und mit einer
+    // dunklen Foto-Palette war der Planet komplett schwarz.
+    vec3 sunDir = normalize(vec3(0.55, 0.62, 0.55));
 
     if (m > 0.5) {
         vec3 n = calcNormal(p, pr, sd);
@@ -212,9 +215,12 @@ void main()
             vec2 tp = rot(time * 0.02 + audioAdvance * 0.05) * p.xz;
             float terr = sin(tp.x * 0.1) * cos(tp.y * 0.1) + sin(tp.x * 0.5 + tp.y * 0.5) * 0.5
                        + sin(tp.x * 2.3 + tp.y * 1.7) * 0.25;
-            // Alien land colours from the photo palette instead of flat grey.
-            vec3 albedo = mix(vec3(0.08, 0.12, 0.18),
-                              imgPalette(0.3 + 0.08 * terr) * 0.7,
+            // Alien land colours from the photo palette -- WITH a floor: a
+            // dark photo made the whole planet black, so the frame was
+            // nothing but a station corner on empty space (screening sweep).
+            vec3 landTone = max(imgPalette(0.3 + 0.08 * terr) * 0.7,
+                                vec3(0.16, 0.19, 0.14));
+            vec3 albedo = mix(vec3(0.10, 0.14, 0.20), landTone,
                               clamp(terr * 0.5 + 0.5, 0.0, 1.0));
 
             // Night side city lights
@@ -222,7 +228,9 @@ void main()
             float cities = max(0.0, sin(tp.x * 2.0) * cos(tp.y * 2.0) * sin(tp.x * 10.0 + tp.y * 10.0));
             cities = pow(cities, 4.0) * (0.8 + 0.4 * audioKick);
 
-            col = albedo * dif * 2.0;
+            // Terminator ambient: the night side keeps a trace of skylight
+            // instead of falling to pure black.
+            col = albedo * (0.30 + dif * 1.7);
             col += cityCol * cities * night * glw * 1.5;
 
             // Atmosphere rim

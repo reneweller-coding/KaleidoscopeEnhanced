@@ -61,7 +61,9 @@ void main() {
     float glw = (glowP > 0.01) ? glowP : 1.0;
     float symN = (symmetryP > 1.0) ? symmetryP : 5.0; // 5 or 7 or 10
 
-    float t = audioAdvance * 0.22 * spd;
+    float t = time * 0.132 * spd + audioAdvance * 0.132 * spd;
+    // Zeit-Basis + Musik-Schub: audioAdvance ALLEIN steht bei ruhiger
+    // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
 
     // Golden ratio scale factor
     float phi = 1.6180339887;

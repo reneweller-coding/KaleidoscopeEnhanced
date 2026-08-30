@@ -128,7 +128,7 @@ void main()
         col += imgPalette(0.9) * fil * (0.35 + 0.5 * audioLevel);
 
         // Anomalies: persistent hotspot cells that IGNITE on kicks. The old
-        // trigger resampled at 5 Hz (floor(time*5)) and strobed; selection
+        // trigger resampled at 5 Hz (floor(time * 1.25)) and strobed; selection
         // now drifts on the slow clock, the envelope is the kick itself.
         vec3 cellP = p3 * 4.0;
         vec3 iCell = floor(cellP);

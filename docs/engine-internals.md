@@ -2352,3 +2352,69 @@ cannot poison the incoming scene either). Verified: all fade ends continuous
 six-change live recording. Lesson: when a state machine's endpoints disagree,
 dump the *actual GL bindings* of both draws and diff them -- the culprit named
 itself in one run after days of plausible theories.
+
+
+## Screening the whole catalogue instead of watching it
+
+831 scenes cannot be reviewed by eye, and the user-reported faults kept
+falling into the same handful of families. So the catalogue is now screened
+two ways, and the second one doubles as the catalogue-image render.
+
+**Static audit** — grep for the fault signatures the feedback rounds
+established. The productive ones this round:
+
+* `float t = audioAdvance * k * spd;` with no `time` term. `audioAdvance`
+  integrates the music, so on a quiet passage it barely moves and the scene
+  stands still — the repeatedly reported "no dynamics, it just twitches to
+  the beat". 66 scenes carried it. The fix is a steady base plus a musical
+  push; the split matters, though: `time*k + advance*0.8k` runs 1.8x the
+  old speed during music, which is too fast for scenes that were already
+  right. `0.6k + 0.6k` keeps music-time close to the original and
+  guarantees motion in silence.
+* `floor(time * k)` with k >= 3 as a *reselection* clock — a 5-10 Hz
+  strobe on whatever it gates (30 scenes).
+* whole `floor(uv * N)` cells lit as stars or sparkles: those are SQUARES,
+  and at N = 40..50 they are 40-pixel squares (8 scenes).
+
+What the static pass CANNOT decide is the `hash11(x * big)` precision
+collapse: whether `sin()` degenerates depends on the coordinate magnitude
+at run time, not on the source text. A blanket edit there was wrong and was
+reverted — that class belongs to the empirical pass.
+
+**Empirical sweep** — `KALEIDO_SCENE_SWEEP=<secs>` walks the loaded config
+in catalogue order and logs `[sweep] i/N t=<secs>s <name>`, so every scene
+sits at a known timestamp. The catalogue is cut into ~110-scene configs,
+each run against a WAV that alternates loud and quiet, and each recording is
+decoded ONCE into numpy (`ffmpeg -f rawvideo`, 5 fps, 160x90) rather than
+into thousands of files. Per window: median luma, median frame-to-frame
+motion, a strobe ratio (max/median), spatial standard deviation, clipping.
+
+The thresholds took a correction to be useful. "Dark" alone flagged 79 of
+185 scenes and means nothing — a space scene is supposed to be dark. What
+actually indicates a fault is *nothing to see*: luma AND spatial variance
+both on the floor. With `LEER = luma < 0.030 and std < 0.038`,
+`STARR = motion < 0.0025`, `BLITZ = strobe > 12`, the same data flags 15.
+
+Two measurement traps, both of which produced confident nonsense first:
+
+* The screening WAV steps between loud and quiet. The step itself is a
+  frame difference, so every audio-reactive scene reported STROBE. Frames
+  around the audio edge have to be dropped from that statistic.
+* The recorder encodes the MP4 in a **separate ffmpeg process after the app
+  exits**. Waiting only for the app gives you a file that does not exist
+  yet, and the analysis then reports zero frames — silently, because an
+  empty result is not an error. Wait for the file to appear, then for its
+  size to stop changing, and refuse to delete a recording whose analysis
+  returned nothing.
+
+**Catalogue images from the same mechanism.** The per-scene harness
+(`Tools/render_catalog_images.ps1`) restarts the application once per scene;
+at roughly 40 s of start-up that is hours of pure loading for a couple of
+hundred scenes. A catalogue sweep holds each scene for 24 s against a WAV
+whose cycle is also 24 s (16 s quiet, 8 s loud), so the three catalogue
+marks keep their old meaning — two quiet, one loud — in a single run.
+The marks are chosen by the *actual* audio phase rather than a fixed offset,
+because the sweep clock drifts by one frame per scene and several seconds
+of accumulated drift would otherwise slide the "loud" frame into the quiet
+half. `Tools/make_catalog.py` is incremental, so a partial scan updates only
+the scenes it contains.

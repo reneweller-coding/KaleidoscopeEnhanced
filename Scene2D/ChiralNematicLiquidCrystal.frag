@@ -61,7 +61,9 @@ void main() {
     float dDens = (defectDensityP > 0.01) ? defectDensityP : 1.0;
     float glw = (glowP > 0.01) ? glowP : 1.0;
 
-    float t = audioAdvance * 0.32 * spd;
+    float t = time * 0.192 * spd + audioAdvance * 0.192 * spd;
+    // Zeit-Basis + Musik-Schub: audioAdvance ALLEIN steht bei ruhiger
+    // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
 
     // Helical director twisting phase field (fingerprint texture with disclinations)
     float basePitch = (12.0 + 8.0 * audioCentroid) * pFreq;

@@ -247,7 +247,7 @@ void main() {
     if (audioKick > 0.65) {
         // Full-frame flash: budget caps whole-frame brightness at 3 Hz.
         // A 20 Hz re-roll strobed for as long as the kick decayed.
-        float strike = pow(hash21(vec2(floor(time * 3.0), 12.0)), 12.0);
+        float strike = pow(hash21(vec2(floor(time * 0.75), 12.0)), 12.0);
         col += vec3(0.6, 0.8, 1.0) * strike * audioKick * 2.0;
     }
 

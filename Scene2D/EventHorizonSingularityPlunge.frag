@@ -61,7 +61,9 @@ void main() {
     float plsm = (plasmaP > 0.01) ? plasmaP : 1.0;
     float glw = (glowP > 0.01) ? glowP : 1.0;
 
-    float t = audioAdvance * 0.4 * spd;
+    float t = time * 0.240 * spd + audioAdvance * 0.240 * spd;
+    // Zeit-Basis + Musik-Schub: audioAdvance ALLEIN steht bei ruhiger
+    // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
 
     float r = length(uv);
     float a = atan(uv.y, uv.x);

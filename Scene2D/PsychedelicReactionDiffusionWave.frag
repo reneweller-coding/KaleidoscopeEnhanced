@@ -70,7 +70,9 @@ void main() {
     float wSpd = (waveSpeedP > 0.01) ? waveSpeedP : 1.0;
     float glw = (glowP > 0.01) ? glowP : 1.0;
 
-    float t = audioAdvance * 0.32 * spd;
+    float t = time * 0.192 * spd + audioAdvance * 0.192 * spd;
+    // Zeit-Basis + Musik-Schub: audioAdvance ALLEIN steht bei ruhiger
+    // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
 
     float kWave = (14.0 + 8.0 * audioCentroid) * wSpd;
 

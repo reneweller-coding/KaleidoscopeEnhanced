@@ -79,7 +79,9 @@ void main() {
     float strMod = (starsP > 0.01) ? starsP : 1.0;
     float glw = (glowP > 0.01) ? glowP : 1.0;
 
-    float t = audioAdvance * 0.32 * spd;
+    float t = time * 0.192 * spd + audioAdvance * 0.192 * spd;
+    // Zeit-Basis + Musik-Schub: audioAdvance ALLEIN steht bei ruhiger
+    // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
 
     // Camera cruise position through cosmic gas cloud
     vec3 ro = vec3(sin(t * 0.3) * 0.6, cos(t * 0.25) * 0.4, t * 2.0);

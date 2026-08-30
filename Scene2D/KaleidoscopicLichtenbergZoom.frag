@@ -73,7 +73,9 @@ void main() {
     float volt = (voltageP > 0.01) ? voltageP : 1.0;
     float glw = (glowP > 0.01) ? glowP : 1.0;
 
-    float t = audioAdvance * 0.35 * spd;
+    float t = time * 0.210 * spd + audioAdvance * 0.210 * spd;
+    // Zeit-Basis + Musik-Schub: audioAdvance ALLEIN steht bei ruhiger
+    // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
 
     // Logarithmic zoom into the discharge core, ping-ponged. The old
     // exp(mod(t * 0.7, 5.0)) snapped from e^5 (148x) back to e^0 every

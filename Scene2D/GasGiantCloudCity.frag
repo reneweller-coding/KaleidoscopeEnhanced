@@ -121,7 +121,7 @@ void main()
 
         // Lightning deep in the clouds
         // Triggers randomly but heavily influenced by audioKick
-        float flashTrigger = step(0.9, hash11(floor(p3.x * 2.0) + floor(p3.z * 0.5) + floor(time * 5.0)));
+        float flashTrigger = step(0.9, hash11(floor(p3.x * 2.0) + floor(p3.z * 0.5) + floor(time * 1.25)));
         float flash = flashTrigger * audioKick * 5.0 * density;
 
         // Add color

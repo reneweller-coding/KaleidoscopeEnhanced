@@ -60,7 +60,9 @@ void main() {
     float twst = (spiralTwistP > 0.01) ? spiralTwistP : 1.0;
     float glw = (glowP > 0.01) ? glowP : 1.0;
 
-    float t = audioAdvance * 0.35 * spd;
+    float t = time * 0.210 * spd + audioAdvance * 0.210 * spd;
+    // Zeit-Basis + Musik-Schub: audioAdvance ALLEIN steht bei ruhiger
+    // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
 
     float r = max(1e-5, length(uv));
     // atan's branch cut = the visible Droste seam. atan(y,x) puts it on

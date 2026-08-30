@@ -68,7 +68,9 @@ void main() {
     float hMod = (heightP > 0.01) ? heightP : 1.0;
     float glw = (glowP > 0.01) ? glowP : 1.0;
 
-    float t = audioAdvance * 0.42 * spd;
+    float t = time * 0.252 * spd + audioAdvance * 0.252 * spd;
+    // Zeit-Basis + Musik-Schub: audioAdvance ALLEIN steht bei ruhiger
+    // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
 
     // Flight camera weaving between city skyscrapers
     vec3 ro = vec3(sin(t * 0.3) * 1.5, 1.9 + 0.25 * sin(t * 0.4), t * 3.5);   // was y = 1.8 + 0.3*sin(audioSwell*2): the camera height jittered with the envelope

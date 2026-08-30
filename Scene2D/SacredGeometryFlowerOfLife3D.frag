@@ -108,7 +108,9 @@ void main() {
     float rBase = (radiusP > 0.01) ? radiusP : 0.85;
     float glw = (glowP > 0.01) ? glowP : 1.0;
 
-    float t = audioAdvance * 0.25 * spd;
+    float t = time * 0.150 * spd + audioAdvance * 0.150 * spd;
+    // Zeit-Basis + Musik-Schub: audioAdvance ALLEIN steht bei ruhiger
+    // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
 
     // Camera ray setup with dynamic orbital tilt
     float camDist = 2.9 + 0.35 * sin(audioSwell * 2.0);

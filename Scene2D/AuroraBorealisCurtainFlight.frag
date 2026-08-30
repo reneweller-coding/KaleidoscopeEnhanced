@@ -61,7 +61,9 @@ void main() {
     float wv = (waveP > 0.01) ? waveP : 1.0;
     float glw = (glowP > 0.01) ? glowP : 1.0;
 
-    float t = audioAdvance * 0.35 * spd;
+    float t = time * 0.210 * spd + audioAdvance * 0.210 * spd;
+    // Zeit-Basis + Musik-Schub: audioAdvance ALLEIN steht bei ruhiger
+    // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
 
     // Flight camera position floating among aurora curtains
     vec3 ro = vec3(sin(t * 0.3) * 0.5, 0.0, t * 2.0);

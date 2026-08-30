@@ -89,7 +89,9 @@ void main() {
     float bDens = (bioDensityP > 0.01) ? bioDensityP : 1.0;
     float glw = (glowP > 0.01) ? glowP : 1.0;
 
-    float t = audioAdvance * 0.38 * spd;
+    float t = time * 0.228 * spd + audioAdvance * 0.228 * spd;
+    // Zeit-Basis + Musik-Schub: audioAdvance ALLEIN steht bei ruhiger
+    // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
 
     // Fixed exposure for the photo-derived terms only (rock, abyss, fog). The
     // bioluminescence and the marine snow are their own light sources and are

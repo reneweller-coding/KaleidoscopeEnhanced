@@ -200,7 +200,7 @@ void main()
         float flareFalloff = exp(-(dist - sphereRad) * (10.0 / fp));
 
         // Flash on kick
-        float jetSpike = step(0.95, hash11(floor(angle * 5.0) + floor(time * 5.0)));
+        float jetSpike = step(0.95, hash11(floor(angle * 5.0) + floor(time * 1.25)));
         float jetIntensity = 1.0 + (jetSpike * audioKick * 10.0 * fp);
 
         float flare = smoothstep(0.3, 0.8, flareNoise) * flareFalloff * edgeHoleMask;

@@ -89,7 +89,9 @@ void main() {
     float disp = (dispersionP > 0.01) ? dispersionP : 1.0;
     float glw = (glowP > 0.01) ? glowP : 1.0;
 
-    float t = audioAdvance * 0.25 * spd;
+    float t = time * 0.150 * spd + audioAdvance * 0.150 * spd;
+    // Zeit-Basis + Musik-Schub: audioAdvance ALLEIN steht bei ruhiger
+    // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
     float rot1 = t * 0.4 + audioPhase * 0.15;
     float rot2 = t * 0.27 + audioSwell * 0.5;
 

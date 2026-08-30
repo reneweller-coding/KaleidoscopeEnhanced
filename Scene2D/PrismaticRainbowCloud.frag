@@ -171,9 +171,17 @@ void main() {
 
     // Lens sparkle on beats
     if (audioHigh > 0.4) {
-        float sparkle = hash21(floor(uv * 40.0) + floor(time * 8.0));
+        // Runde Funken statt aufgehellter uv-Zellen: floor(uv*40) leuchtet
+        // ein ganzes ~48-px-QUADRAT auf.
+        vec2 kg = uv * 40.0;
+        vec2 kid = floor(kg);
+        vec2 kf = fract(kg) - 0.5;
+        float sparkle = hash21(kid + floor(time * 1.33));
         if (sparkle > 0.97 && cloudDensity > 0.3) {
-            col += min(vec3(1.2, 1.1, 1.0) * audioHigh * 1.5, vec3(0.85));
+            vec2 kp = (vec2(fract(sparkle * 7.3), fract(sparkle * 13.7)) - 0.5) * 0.7;
+            float kd = dot(kf - kp, kf - kp);
+            col += min(vec3(1.2, 1.1, 1.0) * audioHigh * 1.5, vec3(0.85))
+                 * exp(-kd * 55.0);
         }
     }
 

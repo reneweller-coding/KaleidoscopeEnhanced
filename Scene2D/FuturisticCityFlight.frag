@@ -157,14 +157,17 @@ void main()
         if (d > 80.0) { m = 0.0; break; }
     }
 
-    vec3 col = vec3(0.02, 0.01, 0.03); // Deep fog background
+    vec3 neonBase1 = max(imgPalette(0.2), vec3(0.20, 0.16, 0.30));
+    vec3 neonBase2 = max(imgPalette(0.7), vec3(0.30, 0.18, 0.24));
 
-    vec3 neonBase1 = imgPalette(0.2);
-    vec3 neonBase2 = imgPalette(0.7);
+    // Nachthimmel-Dunst statt Fast-Schwarz: im Screening-Sweep waren 3 von 4
+    // Frames vollstaendig leer, weil zwischen den Haeusern nichts stand.
+    vec3 col = mix(vec3(0.05, 0.04, 0.09), neonBase1 * 0.22,
+                   clamp(0.55 - ruv.y, 0.0, 1.0));
 
     if (m > 0.5) {
         vec3 n = calcNormal(p, bp);
-        vec3 albedo = vec3(0.17, 0.20, 0.25);
+        vec3 albedo = vec3(0.22, 0.25, 0.31);
 
         // Windows, PRO FASSADE projiziert: das alte floor(p.xz*2 + p.y*5)
         // vermengte beide Wandrichtungen -- die Muster schwammen und

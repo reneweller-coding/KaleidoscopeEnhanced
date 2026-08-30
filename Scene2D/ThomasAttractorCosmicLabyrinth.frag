@@ -61,7 +61,9 @@ void main() {
     float trl = (trailP > 0.01) ? trailP : 1.0;
     float glw = (glowP > 0.01) ? glowP : 1.0;
 
-    float t = audioAdvance * 0.3 * spd;
+    float t = time * 0.180 * spd + audioAdvance * 0.180 * spd;
+    // Zeit-Basis + Musik-Schub: audioAdvance ALLEIN steht bei ruhiger
+    // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
 
     // Thomas attractor damping parameter b: chaotic regime around 0.18 - 0.208
     float b = (0.19 + 0.02 * sin(t * 0.4) + 0.015 * audioCentroid) * bMod;
