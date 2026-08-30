@@ -169,6 +169,18 @@ public:
 		 *  pinned). This frame is 100%% the new scene, so its raw percentiles
 		 *  are the honest measurement. */
 		bool   expoSnap = false;
+		/** @brief During a scene fade: the INCOMING scene's own composite.
+		 *
+		 *  The auto-exposure measures this instead of the presented mix while
+		 *  a fade runs. Measuring the mix cannot work by construction: its
+		 *  median is dominated by the outgoing scene until the fade's last
+		 *  moments, so for a bright scene arriving over a dark one the wanted
+		 *  gain stays pinned at maxGain almost to the end and the whole
+		 *  correction lands in the final tenth -- fast makes it a visible
+		 *  crash, slow makes it a visible crawl, and both were reported.
+		 *  Measuring the destination makes the gain glide across the whole
+		 *  fade. 0 outside fades (measure in.source as always). */
+		unsigned int fadeMeasureTex = 0;
 		float  dtWall       = 0.f;   ///< Wall-clock frame delta time (drives blackout slew and history-ring cadence).
 		float  globalTime   = 0.f;   ///< Global shader time uniform.
 		float  chasePhase   = 0.f;   ///< Chase-light phase uniform.

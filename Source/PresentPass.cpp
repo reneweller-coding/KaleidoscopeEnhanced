@@ -454,7 +454,11 @@ void PresentPass::run( const Inputs &in )
 		glUseProgram( m_autoExpProg );
 		glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 3, m_autoExpBuf );
 		glActiveTexture( GL_TEXTURE0 );
-		glBindTexture( GL_TEXTURE_2D, in.source );
+		// The DESTINATION during a fade, the presented frame otherwise -- see
+		// Inputs::fadeMeasureTex. This is what lets the gain glide across the
+		// whole fade instead of correcting everything in its last tenth.
+		glBindTexture( GL_TEXTURE_2D,
+		               in.fadeMeasureTex ? in.fadeMeasureTex : in.source );
 		glUniform1i( glGetUniformLocation( m_autoExpProg, "texFrame" ), 0 );
 		glUniform2i( glGetUniformLocation( m_autoExpProg, "size" ), in.renderW, in.renderH );
 		// 0.26 and 1.35 were written for a pass that could not run: its SSBO
@@ -493,15 +497,27 @@ void PresentPass::run( const Inputs &in )
 		// reads as the scene starting bright and then dimming. At 4.5/s the
 		// whole [0.55..1.8] range crosses inside even a short fade, where the
 		// change is invisible because everything is changing.
+		// Moderate during fades ON PURPOSE. Since the measurement now sees the
+		// destination from the fade's first frame, the gain has the whole fade
+		// to travel -- 2.5/s crosses the full [0.556..1.8] span inside 0.5 s.
+		// The old 4.5/10 rates existed to compensate for want arriving late,
+		// and with early knowledge they only made the correction a visible
+		// step of its own.
 		glUniform1f( glGetUniformLocation( m_autoExpProg, "slew" ),
-		             ( in.sceneFade ? 4.5f : 0.9f ) * in.dtFrame );
+		             ( in.sceneFade ? 2.0f : 0.9f ) * in.dtFrame );
 		glUniform1f( glGetUniformLocation( m_autoExpProg, "slewDown" ),
-		             ( in.sceneFade ? 10.f : 2.f ) * in.dtFrame );
+		             ( in.sceneFade ? 2.5f : 2.f ) * in.dtFrame );
 		// EMA weight for the percentiles: ~1.75 s standing, near-instant while
 		// the scheduler cross-fades, so a scene change still lands inside the
 		// fade while a beat flash inside a scene barely moves the measurement.
 		{
-			const float tau = in.sceneFadeStrict ? 0.12f : 1.75f;
+			// 0.3 in the fade, not faster: the destination is measured from the
+			// fade's first frame, so there is no catching-up to do -- and the
+			// arriving scene's own opening flash must not drag the exposure
+			// (measured: an Apollonian intro flash pulled the gain to 0.59 and
+			// back within one fade at tau 0.12). 0.8 s of fade is still 2.7 tau,
+			// and the end-of-fade snap covers the remainder.
+			const float tau = in.sceneFadeStrict ? 0.30f : 1.75f;
 			float k = in.dtFrame / tau;
 			if( k > 1.f ) k = 1.f;
 			if( in.expoSnap ) k = 1.f;   // first standing frame: adopt the new scene's statistics outright

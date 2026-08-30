@@ -2301,6 +2301,23 @@ INSIDE a scene about a second after a change:
   Measured on a dark-to-bright probe: gain at fade end 1.48 then creeping to
   1.28 over five standing seconds before; 1.01 at fade end and flat (residual
   0.03) after.
+
+* **During a fade, the exposure measures the INCOMING scene's own composite**
+  (`fadeMeasureTex` -- the texture feeding the transition's tex1 slot), not the
+  presented mix. Measuring the mix cannot work by construction: its median is
+  dominated by the outgoing scene until the fade's last moments, so for a
+  bright scene arriving over a dark one the wanted gain stays pinned at maxGain
+  almost to the end and the whole correction lands in the final tenth of the
+  fade -- fast slew renders that as a one-frame crash, slow slew as a
+  seconds-long crawl, and BOTH were reported (a user recording showed the
+  arriving scene ramping 0.06 to 0.25 and then dropping 0.14 in one frame).
+  With the destination measured from the fade's first frame, the gain glides
+  across the whole fade (rates were calmed to 2.0/2.5 per second accordingly;
+  the panic rates existed only to compensate for want arriving late). The
+  fade-time smoothing tau sits at 0.3 s -- fast enough to converge inside a
+  0.8 s fade, slow enough that the arriving scene's own opening flash does not
+  drag the exposure (at 0.12 s an Apollonian intro flash pulled the gain to
+  0.59 and back within one fade).
 * **Fast attack, slow release** (`slewDown` 10/s fading, 2/s standing, against
   4.5/0.9 upward). When a bright scene fades in over a dark one the gain is
   still pinned high, and every frame it lags is a frame of the new scene

@@ -1706,6 +1706,10 @@ GLuint RenderPipeline::prepareFxInputs()
 		glViewport( 0, 0, m_width, m_height );
 	}
 
+	// The exposure measures the INCOMING scene during fades (see
+	// PresentPass::Inputs::fadeMeasureTex for why the mix cannot work).
+	m_fadeInTex = ( m_scheduler.texState() != 0 ) ? fxTex2 : 0;
+
 	glActiveTexture(GL_TEXTURE3);
 	glBindTexture( GL_TEXTURE_2D, fxTex1 );
 
@@ -2025,6 +2029,7 @@ void RenderPipeline::runPresentPass( GLuint presentSource, const AudioFeatures &
 		pin.sceneFade    = ( m_scheduler.texState() != 0 || m_expoFadeTail > 0.f );
 		pin.sceneFadeStrict = ( m_scheduler.texState() != 0 );
 		pin.expoSnap = ( m_expoWasFading && !pin.sceneFadeStrict );
+		pin.fadeMeasureTex = m_fadeInTex;
 		m_expoWasFading = pin.sceneFadeStrict;
 		pin.dtWall       = dtWall;
 		pin.globalTime   = m_globaltime;

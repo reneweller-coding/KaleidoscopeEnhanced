@@ -509,6 +509,7 @@ private:
 	bool			m_started = false;   ///< True once start() has built the GL resources for this instance (see start()).
 	float			m_expoFadeTail = 0.f;   ///< Seconds left of the post-fade exposure grace window; see runPresentPass().
 	bool			m_expoWasFading = false;   ///< Previous frame's strict-fade state; the falling edge triggers the exposure's measurement snap.
+	GLuint			m_fadeInTex = 0;   ///< The incoming scene's composite while a fade runs (this frame), else 0; the exposure measures it instead of the mix.
 
 	// Manual / novelty-driven early scene change + its rate-limit cooldown.
 
