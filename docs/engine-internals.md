@@ -2330,3 +2330,22 @@ INSIDE a scene about a second after a change:
 `KALEIDO_EXPOSURE_DEBUG=1` logs the limiter's frame mean and the exposure
 gain/percentiles per sample. It is what turned "the catalogue is dark" into a
 binding number.
+
+**Postscript -- the ramp-and-cliff was never the exposure.** After all of the
+above, live recordings still showed a one-frame brightness crash (and a
+visible background-texture swap) at the end of every scene fade, while
+`EXPOGAIN` proved the gain gliding cleanly through the very same fades. Full-
+frame stage means (mipmap-top readback per pass) localised it: the transition
+mix was arithmetically perfect, but the INCOMING scene itself rendered onto a
+different background as "next" than it did one frame later as "act". Cause: a
+braceless `if` in `renderActiveScenePass` had swallowed a later-inserted
+`glcoreDebugMark("oit")` line, so `renderOitPass` ran for every scene -- and
+its resolve step binds `oitAccum`/`oitReveal` to the photo units 0/1 without
+restoring them. The next-scene pass that follows sampled the OIT buffers as
+its background photos; at fade end the real photos snapped in. Fix: braces,
+plus the OIT resolve now rebinds the photos itself (so a genuine OIT scene
+cannot poison the incoming scene either). Verified: all fade ends continuous
+(0.0-1.3% deviation; before 33-194%), zero ramp-and-cliff events in a
+six-change live recording. Lesson: when a state machine's endpoints disagree,
+dump the *actual GL bindings* of both draws and diff them -- the culprit named
+itself in one run after days of plausible theories.
