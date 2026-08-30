@@ -592,6 +592,33 @@ void GLwidget::initializeGL()
 	if( qEnvironmentVariableIsSet( "KALEIDO_GL_DEBUG" ) )
 		glcoreEnableDebugOutput();
 
+	// Complete every fixed sampler unit ONCE, before anything draws.
+	//
+	// The engine parcels its texture units out statically: photos on 0-2, the
+	// sims on 7-11, the compute effects on 12-27 (kCfxInfo), spectrum on 28,
+	// shadow maps on 31/32. Every shader's sampler uniforms point at those
+	// units from its first frame -- but the textures only appear once their
+	// producer has run, and a draw is validated against every declared sampler,
+	// reached or not. So each scene's very first frames validated against
+	// empty units, a few warnings per scene activation, hundreds per catalogue
+	// sweep. A complete 1x1 stand-in on each unit ends that; every real
+	// producer simply binds over it.
+	{
+		const GLuint d2 = glcoreDummyTex2D();
+		for( int u = 0; u <= 28; ++u )
+		{
+			glActiveTexture( GL_TEXTURE0 + u );
+			glBindTexture( GL_TEXTURE_2D, d2 );
+		}
+		// The shadow units carry a COMPARE-mode sampler; their stand-in reads
+		// depth 1.0 = nothing occludes, so an incoming shadow scene that fades
+		// in before any shadow pass ever ran renders fully lit, not undefined.
+		const GLuint ds = glcoreDummyShadow();
+		glActiveTexture( GL_TEXTURE0 + 31 ); glBindTexture( GL_TEXTURE_2D, ds );
+		glActiveTexture( GL_TEXTURE0 + 32 ); glBindTexture( GL_TEXTURE_2D, ds );
+		glActiveTexture( GL_TEXTURE0 );
+	}
+
 	// Migration/validation aid: compile every shader of the active preset
 	// eagerly, then quit — the log holds one verdict per shader.
 	if( qEnvironmentVariableIsSet( "KALEIDO_COMPILE_ALL" ) )

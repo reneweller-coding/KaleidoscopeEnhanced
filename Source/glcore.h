@@ -432,6 +432,11 @@ void glcoreEnableDebugOutput();
 void glcoreNameProgram( unsigned prog, const char *name );
 /// @brief Name recorded for @p prog, or "?" if none.
 const char *glcoreDebugProgramName( unsigned prog );
+/// @brief Names the pipeline STATION for the debug callback ("scene:act",
+///        "shadowPass1", ...). The program name says which shader; this says
+///        which of the several draws of that shader per frame. Pass a string
+///        literal -- only the pointer is stored.
+void glcoreDebugMark( const char *station );
 
 // ---------------------------------------------------------------------------
 // Stand-in textures.

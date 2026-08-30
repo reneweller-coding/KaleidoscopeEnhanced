@@ -1432,13 +1432,23 @@ void RenderPipeline::stepSimulations( const AudioFeatures &audio, float timeSinc
 			for( int k = 0; k < CFX_COUNT; ++k )
 			{
 				if( !( need & ( 1u << k ) ) ) continue;
+				// Unit 0 while the sim steps. A sim's alloc/seed frames make raw
+				// glBindTexture calls on whatever unit is ACTIVE -- and after the
+				// previous iteration that was the previous sim's publication unit,
+				// so a newly starting sim wiped an already-published texture off
+				// its unit for exactly its seed frames. On unit 0 the collateral
+				// lands on the photo binding, which setUniforms restores every
+				// frame anyway.
+				glActiveTexture( GL_TEXTURE0 );
 				GLuint tex = m_cfx.step( k, audio, timeSinceLastFrameSec,
 				                         m_globaltime, src, m_width, m_height );
-				if( tex )
-				{
-					glActiveTexture( GL_TEXTURE0 + kCfxInfo[k].unit );
-					glBindTexture( GL_TEXTURE_2D, tex );
-				}
+				// The stand-in when the sim has no output yet -- its first frames of
+				// seeding, or right after retireIdle() deleted the previous tenant's
+				// textures, which auto-unbinds them from the unit. The scene's
+				// sampler points here regardless, and a draw validates every
+				// declared sampler, so the unit must never be left empty.
+				glActiveTexture( GL_TEXTURE0 + kCfxInfo[k].unit );
+				glBindTexture( GL_TEXTURE_2D, tex ? tex : glcoreDummyTex2D() );
 			}
 			glActiveTexture( GL_TEXTURE0 );
 		}
@@ -1600,6 +1610,7 @@ void RenderPipeline::renderActiveScenePass( const AudioFeatures &audioFx )
 		glClear( GL_DEPTH_BUFFER_BIT );
 	}
 
+	glcoreDebugMark( "scene:act" );
 	m_effectTextures[m_scheduler.actTexture()]->enableShader();
 	m_effectTextures[m_scheduler.actTexture()]->setUniforms( m_globaltime, m_interpolationTexture, 0, 1 );
 	m_effectTextures[m_scheduler.actTexture()]->applyAudioFeatures( audioFx );
@@ -1617,6 +1628,7 @@ void RenderPipeline::renderActiveScenePass( const AudioFeatures &audioFx )
 	// Transparent geometry goes in afterwards, over the opaque frame this scene
 	// just produced and against the depth it just wrote.
 	if( !m_trueStereoPacked && m_effectTextures[m_scheduler.actTexture()]->usesOit() )
+		glcoreDebugMark( "oit" );
 		renderOitPass( m_effectTextures[m_scheduler.actTexture()],
 		               m_depthTexEffect1, m_fboEffectTexture1 );
 
@@ -1651,6 +1663,7 @@ void RenderPipeline::renderNextScenePass( const AudioFeatures &audioFx )
 			glClearDepth( 1.0 );
 			glClear( GL_DEPTH_BUFFER_BIT );
 		}
+		glcoreDebugMark( "scene:next" );
 		m_effectTextures[m_scheduler.nextTexture()]->enableShader();
 		m_effectTextures[m_scheduler.nextTexture()]->setUniforms( m_globaltime, m_interpolationTexture, 0, 1 );
 		m_effectTextures[m_scheduler.nextTexture()]->applyAudioFeatures( audioFx );
@@ -1799,6 +1812,7 @@ void RenderPipeline::renderFxStage( const AudioFeatures &audioFx )
 	{
 		// Order matters: the overlay reads the FINISHED scene, so the
 		// transition has to have produced it first.
+		glcoreDebugMark( "transition" );
 		const GLuint sceneTex = renderTransitionPass( audioFx, fxTex1 );
 		renderOverlayPass( audioFx, sceneTex );
 	}
@@ -2145,6 +2159,7 @@ void RenderPipeline::paint(const float *rotMatrix, float tx, float ty, float tz,
 		spoutOutSend( presentSource, m_width, m_height );
 	}
 
+	glcoreDebugMark( "present" );
 	runPresentPass( presentSource, audio, audioFx, timeSinceLastFrameSec, dtWall );
 	checkGLErrors("paint() 2");
 }
@@ -2423,7 +2438,7 @@ void RenderPipeline::updateLightMatrixGeneric( float t, float angleOffset, float
 // Draw one 3D scene into a shadow map, depth only. Shared by both lights --
 // see renderShadowPass()/renderShadowPass2() in the header for which FBO/
 // texture/unit/pass-flag each one binds.
-void RenderPipeline::renderShadowPassGeneric( EffectShader *fx, GLuint &fbo, GLuint tex, int texUnit, float &passFlag )
+void RenderPipeline::renderShadowPassGeneric( EffectShader *fx, GLuint &fbo, GLuint &tex, int texUnit, float &passFlag )
 {
 	if( !ensureShadowMapGeneric( fbo, tex ) )
 		return;
@@ -2454,6 +2469,7 @@ void RenderPipeline::renderShadowPassGeneric( EffectShader *fx, GLuint &fbo, GLu
 	glBindTexture( GL_TEXTURE_2D, glcoreDummyShadow() );
 	glActiveTexture( GL_TEXTURE0 );
 
+	glcoreDebugMark( ( texUnit == 31 ) ? "shadowPass1" : "shadowPass2" );
 	passFlag = 1.f;
 	fx->enableShader();
 	fx->setUniforms( m_globaltime, m_interpolationTexture, 0, 1 );

@@ -967,6 +967,26 @@ void Scene3DShader::initUniforms( int width, int height )
 	m_mesh2VertexCountUni = glGetUniformLocation( m_sh_prog_id, "mesh2VertexCount" );
 	m_meshMaterial2Uni = glGetUniformLocation( m_sh_prog_id, "texMeshMaterial2" );
 	m_meshMaterial2LayersUni = glGetUniformLocation( m_sh_prog_id, "texMeshMaterialLayers2" );
+
+	// The array samplers get their units NOW, while linkOrFail() still has the
+	// program bound -- not first in draw(). A sampler uniform defaults to 0,
+	// and a sampler2DArray aimed at unit 0 (where a plain 2D photo lives) is
+	// invalid state from the moment of linking: the compile warmer builds
+	// programs long before their first draw(), and the driver flagged exactly
+	// one such validation per model load. The units themselves get a complete
+	// stand-in immediately, so the state is well-formed even before the real
+	// material texture exists.
+	if( m_meshMaterialUni >= 0 || m_meshMaterial2Uni >= 0 )
+	{
+		if( m_meshMaterialUni  >= 0 ) glUniform1i( m_meshMaterialUni,  kMeshMaterialTexUnit );
+		if( m_meshMaterial2Uni >= 0 ) glUniform1i( m_meshMaterial2Uni, kMeshMaterial2TexUnit );
+		const GLuint dummy = glcoreDummyTex2DArray();
+		glActiveTexture( GL_TEXTURE0 + kMeshMaterialTexUnit );
+		glBindTexture( GL_TEXTURE_2D_ARRAY, dummy );
+		glActiveTexture( GL_TEXTURE0 + kMeshMaterial2TexUnit );
+		glBindTexture( GL_TEXTURE_2D_ARRAY, dummy );
+		glActiveTexture( GL_TEXTURE0 );
+	}
 	m_attrA   = glGetAttribLocation( m_sh_prog_id, "attrA" );
 	m_attrB   = glGetAttribLocation( m_sh_prog_id, "attrB" );
 

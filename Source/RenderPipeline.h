@@ -643,7 +643,14 @@ private:
 	 * @param texUnit Texture unit the shader-side sampler expects this light's map on (31 for light 1, 32 for light 2).
 	 * @param passFlag EffectShader::s_shadowPass or s_shadowPass2 -- set to 1 for the draw, restored to 0 after, so the scene's own shaders know which light's depth pass this is.
 	 */
-	void			renderShadowPassGeneric( EffectShader *fx, GLuint &fbo, GLuint tex, int texUnit, float &passFlag );
+	// tex MUST be a reference, like fbo above it. It was passed by value, and
+	// ensureShadowMapGeneric() then wrote the freshly created texture name into
+	// the CALL-SITE COPY: the member stayed 0 forever, ensure early-returned on
+	// the non-zero fbo every frame after the first, and the post-pass bind
+	// bound texture 0 -- EMPTYING the shadow unit each frame. The seven shadow
+	// scenes therefore sampled an unbound unit: thousands of driver warnings,
+	// and no working shadows at all past frame one.
+	void			renderShadowPassGeneric( EffectShader *fx, GLuint &fbo, GLuint &tex, int texUnit, float &passFlag );
 	/** @brief Light 1 (the "sun"): lazily creates its shadow map. @return See ensureShadowMapGeneric(). */
 	bool			ensureShadowMap() { return ensureShadowMapGeneric( m_shadowFbo, m_shadowTex ); }
 	/** @brief Light 1 (the "sun"): recomputes EffectShader::s_lightM/s_lightDir. @param t Current global time in seconds. */

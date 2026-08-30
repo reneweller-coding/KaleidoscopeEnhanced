@@ -206,6 +206,9 @@ const char *glcoreDebugProgramName( unsigned prog )
     return ( it == s_progNames.end() ) ? "?" : it->second.c_str();
 }
 
+static const char *s_debugMark = "?";
+void glcoreDebugMark( const char *station ) { s_debugMark = station ? station : "?"; }
+
 static void APIENTRY glcDebugCb( GLenum /*source*/, GLenum type, GLuint id,
                                  GLenum severity, GLsizei /*length*/,
                                  const GLchar *message, const void * /*user*/ )
@@ -218,8 +221,8 @@ static void APIENTRY glcDebugCb( GLenum /*source*/, GLenum type, GLuint id,
     // glcoreDebugProgramName() is filled in by the engine as it compiles.
     GLint prog = 0;
     glGetIntegerv( GL_CURRENT_PROGRAM, &prog );
-    fprintf( stderr, "GLDEBUG [%s%s] id=%u prog=%d(%s): %s\n",
-             ( type == GL_DEBUG_TYPE_ERROR ) ? "ERROR/" : "", sev,
+    fprintf( stderr, "GLDEBUG [%s%s] at=%s id=%u prog=%d(%s): %s\n",
+             ( type == GL_DEBUG_TYPE_ERROR ) ? "ERROR/" : "", sev, s_debugMark,
              (unsigned) id, (int) prog, glcoreDebugProgramName( (unsigned) prog ),
              message ? message : "(no message)" );
 }
