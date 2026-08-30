@@ -507,6 +507,7 @@ private:
 	// only resizes instead of rebuilding (which leaked programs/textures/FBOs and
 	// spawned a duplicate ImageLoader).
 	bool			m_started = false;   ///< True once start() has built the GL resources for this instance (see start()).
+	float			m_expoFadeTail = 0.f;   ///< Seconds left of the post-fade exposure grace window; see runPresentPass().
 
 	// Manual / novelty-driven early scene change + its rate-limit cooldown.
 

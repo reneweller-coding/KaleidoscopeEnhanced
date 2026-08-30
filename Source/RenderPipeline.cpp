@@ -2009,6 +2009,18 @@ void RenderPipeline::runPresentPass( GLuint presentSource, const AudioFeatures &
 		pin.displayW     = m_displayW; pin.displayH = m_displayH;
 		pin.fx           = &audioFx;
 		pin.dtFrame      = timeSinceLastFrameSec;
+		// Fast exposure during the fade AND for a short tail after it. The tail
+		// exists for a dark scene arriving over a bright one: the MIX stays
+		// bright until the old scene is nearly gone, so the correct exposure
+		// only becomes reachable in the fade's last moments -- measured, the
+		// gain was still 0.57 short at fade end and then crept at the slow rate
+		// for a visible second. Half a second of grace closes that at the fast
+		// rate while everything on screen is still settling from the change.
+		if( m_scheduler.texState() != 0 )
+			m_expoFadeTail = 0.5f;
+		else if( m_expoFadeTail > 0.f )
+			m_expoFadeTail -= timeSinceLastFrameSec;
+		pin.sceneFade    = ( m_scheduler.texState() != 0 || m_expoFadeTail > 0.f );
 		pin.dtWall       = dtWall;
 		pin.globalTime   = m_globaltime;
 		pin.chasePhase   = m_audioConditioner.chasePhase();

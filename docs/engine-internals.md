@@ -2245,15 +2245,24 @@ depend on the exposure and the whole table is computable from one recording):
 | **0.34 / 1.8 (now)** | **0.234** | **0.259** | **7%** |
 | 0.50 / 2.5 | 0.316 | 0.314 | 6% |
 
-The shader also **snaps rather than slews at a cut**. The slew exists so the
-exposure breathes with the music; between two different scenes there is nothing
-to breathe with, and carrying the previous scene's exposure across showed the
-new one at the wrong brightness for about a second before visibly settling. A
-cut is recognised without being told -- a whole frame's median luminance does
-not move by a quarter in 16 ms unless the picture was replaced. Measured over
-the same sweep: 98 snaps across 99 scenes, so exactly one per cut and none
-inside a scene, which is the check that matters (a beat flash must not make
-the exposure pump).
+The exposure also **adapts fast through a scene change and slowly otherwise**
+-- the scheduler tells it (`Inputs::sceneFade`, slew 4.5/s during a fade plus a
+0.5 s tail, 0.9/s while a scene stands). An earlier iteration instead had the
+shader snap whenever the median jumped >25% in one frame, reasoning that only a
+hard cut moves a whole frame's median that fast. Both halves of that were
+wrong, and measurement said so: the engine's scene changes are CROSSFADES,
+whose median moves a few percent per frame and never trips such a threshold --
+so the one case the snap was built for, it could not see (the gain walked
+1.62 to 0.79 across two visible seconds while the new scene stood) -- and a
+strobe scene would trip it on every flash and turn the exposure into a pump.
+The scheduler simply knows when a fade runs; inferring it from luminance was
+the wrong tool. The 0.5 s tail exists for a dark scene arriving over a bright
+one: the mix stays bright until the old scene is nearly gone, so the correct
+exposure only becomes reachable in the fade's last moments -- without the tail
+the gain was still 0.57 short at fade end and crept for a visible second.
+Verified over eight consecutive changes: five settle with literally zero gain
+movement in the 1.5 s after the change, worst residual 0.157 (content drift),
+where the slew-only version left up to 0.57 of visible post-fade adaptation.
 
 `KALEIDO_EXPOSURE_DEBUG=1` logs the limiter's frame mean and the exposure
 gain/percentiles per sample. It is what turned "the catalogue is dark" into a

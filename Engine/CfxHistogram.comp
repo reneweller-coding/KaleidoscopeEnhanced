@@ -92,20 +92,17 @@ void main()
 
     float prev = (exposureOut > 0.0) ? exposureOut : 1.0;
 
-    // A CUT is not something to adapt across. The slew exists so the
-    // exposure breathes with the music instead of flickering, but between two
-    // different scenes there is nothing to breathe with: carrying the previous
-    // scene's exposure into the next one shows it at the wrong brightness for
-    // about a second and then visibly settles -- which reads as the new scene
-    // starting bright and dropping, and is worst exactly where the catalogue
-    // is widest apart, a dark scene following a light one.
-    //
-    // A cut is recognisable without being told: the median luminance of a
-    // whole frame does not move by a quarter in 16 ms unless the picture was
-    // replaced. Below that, slew as before.
-    float prevP50 = (p50 > 0.0) ? p50 : m50;
-    bool  cut     = abs(m50 - prevP50) > 0.25 * max(prevP50, 0.02);
-    exposureOut = cut ? want : prev + clamp(want - prev, -slew, slew);
+    // Plain slew, ALWAYS -- the host varies the rate instead (slow while a
+    // scene stands, fast while the scheduler cross-fades). An earlier version
+    // snapped when the median jumped >25% in one frame, reasoning that only a
+    // hard cut moves a whole frame's median that fast. Both halves of that
+    // were wrong: the engine's scene changes are CROSSFADES, whose median
+    // moves a few percent per frame and never trips the threshold, so the one
+    // case the snap was built for it could not see -- while a strobe scene
+    // trips it every flash and turns the exposure into a pump. The scheduler
+    // simply KNOWS when a fade runs; guessing it from luminance was the
+    // wrong tool.
+    exposureOut = prev + clamp(want - prev, -slew, slew);
     p50 = m50;
     p98 = m98;
 }

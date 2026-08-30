@@ -486,8 +486,15 @@ void PresentPass::run( const Inputs &in )
 		// below 1 for them, which is the point of an exposure rather than a
 		// brightness knob.
 		glUniform1f( glGetUniformLocation( m_autoExpProg, "maxGain" ), 1.8f );
+		// 0.9/s while a scene stands; 4.5/s while the scheduler cross-fades.
+		// The exposure has to arrive WITH the fade, not after it: adapting at
+		// 0.9/s a pinned-dark gain of 1.8 takes over a second to reach a bright
+		// scene's ~0.8, all of it after the new scene fills the frame -- which
+		// reads as the scene starting bright and then dimming. At 4.5/s the
+		// whole [0.55..1.8] range crosses inside even a short fade, where the
+		// change is invisible because everything is changing.
 		glUniform1f( glGetUniformLocation( m_autoExpProg, "slew" ),
-		             0.9f * in.dtFrame );
+		             ( in.sceneFade ? 4.5f : 0.9f ) * in.dtFrame );
 		glDispatchCompute( 1, 1, 1 );
 		glMemoryBarrier( GL_SHADER_STORAGE_BARRIER_BIT );
 		{ static const bool dbg = getenv( "KALEIDO_EXPOSURE_DEBUG" ) != 0;
@@ -499,7 +506,8 @@ void PresentPass::run( const Inputs &in )
 			float g0 = r ? r[0] : -1.f, g1 = r ? r[1] : -1.f, g2 = r ? r[2] : -1.f;
 			if( r ) glUnmapBuffer( GL_SHADER_STORAGE_BUFFER );
 			glBindBuffer( GL_SHADER_STORAGE_BUFFER, 0 );
-			fprintf( stderr, "EXPOGAIN gain=%.3f p50=%.3f p98=%.3f\n", r[0], r[1], r[2] );
+			fprintf( stderr, "EXPOGAIN gain=%.3f p50=%.3f p98=%.3f fade=%d dt=%.4f\n",
+			         g0, g1, g2, in.sceneFade ? 1 : 0, in.dtFrame );
 		  } }
 	}
 

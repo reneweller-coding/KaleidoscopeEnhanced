@@ -144,6 +144,13 @@ public:
 		int    displayW = 0, displayH = 0;  ///< Display (destination) resolution.
 		const AudioFeatures *fx = nullptr;   // bereits gegatete audioFx   ///< Already-gated audio features driving the mood grade/beat visuals; run() is a no-op if null.
 		float  dtFrame      = 0.f;  // ggf. Break-skaliert (wie zuvor)   ///< Frame delta time, possibly break-scaled (as before); drives the limiter accumulation.
+		/** @brief True while the scheduler is cross-fading between scenes.
+		 *
+		 *  The auto-exposure adapts FAST during a fade and slowly otherwise.
+		 *  Only the scheduler can supply this: a luminance-based cut detector
+		 *  is blind to a crossfade by construction (the median moves ~2% per
+		 *  frame) and would meanwhile misfire on strobes inside one scene. */
+		bool   sceneFade    = false;
 		float  dtWall       = 0.f;   ///< Wall-clock frame delta time (drives blackout slew and history-ring cadence).
 		float  globalTime   = 0.f;   ///< Global shader time uniform.
 		float  chasePhase   = 0.f;   ///< Chase-light phase uniform.
