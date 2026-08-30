@@ -107,6 +107,28 @@ MODIFIED_SCENES = {
     "CollatzFractalTreeAbyss", "ConformalLogPolarDive", "CrystalAsteroidField",
     "CyberpunkSynthGridHighwayFly", "CyberpunkWireframeTerrainFlyover",
     "DysonSphereCollapse", "EventHorizon", "ExoplanetOcean",
+    # Zweite Feedback-Charge (30.08. abends):
+    "AuroraBorealisCurtainFlight", "BioNeuralDendriteZoom",
+    "CalabiYauManifoldKaleido", "ChiralNematicLiquidCrystal",
+    "CliffordAttractorSilkRibbons", "CrystalMirrorGrid",
+    "DichroicInfinityPrismVault", "EinsteinRingGravitationalLens",
+    "ExoplanetRings", "FerrohydrodynamicRosensweigSpikes", "FerroSpikes",
+    "FractalKIFS", "FuturisticCityFlight", "GalacticCoreBlackHole",
+    "GasGiantCloudCity", "GyroidTriplyPeriodicLabyrinth",
+    "HolographicDiffractionGratingMandala", "HyperbolicPenroseZoomAbyss",
+    "HyperDimensionalTesseractTunnel", "IceCrack", "KleinianLimitSetAbyss",
+    "KleinQuarticHyperbolicCurve", "LavaWorldTidalLock",
+    "LiesegangPrecipitationRingArray", "LiquidMetal", "LyapunovSpaceBioLoom",
+    "MandelboxHyperCubeMetamaterial", "MatrioshkaBrain", "MolecularCloudCore",
+    "MultiverseBubbles", "NebulaCliffs", "NebulaShipyard",
+    "NestedMandalaInfiniteDive", "NeutronStarCollision",
+    "NewtonBasinPsychedelicSea", "NonEuclideanOctahedralLabyrinth",
+    "NonlinearSchrodingerRogueWave", "OpticalDispersionCausticVault",
+    "PlanetaryRingRings", "PrismaticCrystalChamber",
+    "QuantumHallSkyrmionCrystal", "QuantumSlipstream",
+    "QuantumTachyonWarpTunnel", "QuantumWormholeFlythrough",
+    "QuasiPeriodicDanzerTiling", "QuaternionFractalHopfLoom",
+    "QuaternionicJulia4DFlight",
 }
 def rule_modified(m, h):
     fm = re.search(r'file="[^"]*[\\/](\w+)\.frag"', h)

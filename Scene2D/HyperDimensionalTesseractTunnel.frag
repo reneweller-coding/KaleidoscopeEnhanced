@@ -88,7 +88,11 @@ void main() {
     );
 
     // Multi-plane 4D rotations (continuous + kick hyper-flips)
-    float flip = floor(time * 0.5) * 1.5707963 + audioKick * 0.8;
+    // Weich eingeleitete Vierteldrehung statt floor()-Schnapp + Kick-Ruck --
+    // beides zusammen war die gemeldete Unstetigkeit.
+    float fb = time * 0.5;
+    float flip = (floor(fb) + smoothstep(0.7, 1.0, fract(fb))) * 1.5707963
+               + 0.15 * sin(audioPhase);
     float aXW = time * 0.3 * r4d + flip;
     float aYW = time * 0.4 * r4d + audioAdvance * 0.2;
     float aZW = time * 0.25 * r4d;

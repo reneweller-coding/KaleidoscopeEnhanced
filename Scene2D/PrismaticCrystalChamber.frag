@@ -118,7 +118,7 @@ void main() {
 
         // Sample photo with chromatic dispersion (RGB channel offset)
         vec2 sampleUV = facetUV * 0.25 + vec2(0.5) + vec2(float(bounce) * 0.1);
-        float dispAmt = 0.02 * disp * (1.0 + 1.5 * audioKick);
+        float dispAmt = 0.02 * disp * (1.0 + 0.5 * audioKick);
 
         vec3 photoR = img(fract(sampleUV + vec2(dispAmt, 0.0)));
         vec3 photoG = img(fract(sampleUV));
@@ -131,9 +131,17 @@ void main() {
         // Sparkling diamond glints on facet vertices
         float glintHash = hash21(facetCell + float(bounce) * 17.0);
         float glint = pow(max(dot(reflect(curDir, normal), normalize(vec3(0.5, 0.8, -0.6))), 0.0), 48.0);
-        glint *= (1.0 + 3.0 * audioHigh * step(0.7, glintHash));
+        glint *= (1.0 + 1.2 * audioHigh * glintHash);   // ohne Blink-Gate
 
-        col += (photoSample * dichroicCol * 1.4 + vec3(1.0) * glint * 2.5) * throughput;
+        // KANTEN-FADE: wenn ein Bounce von einer Wand zur Nachbarwand
+        // wechselt, springt sein Foto-Ausschnitt -- nahe der Kante wird der
+        // Beitrag deshalb ausgeblendet, aus dem harten Texturwechsel wird
+        // eine Ueberblendung.
+        vec3 an = abs(curP) / boxSize;
+        float second = max(min(an.x, an.y), min(max(an.x, an.y), an.z));
+        float edgeW = smoothstep(1.0, 0.86, second);
+        col += (photoSample * dichroicCol * 1.4 + vec3(1.0) * glint * 2.0)
+             * throughput * edgeW;
 
         // Next bounce reflection
         curDir = reflect(curDir, normal);

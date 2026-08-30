@@ -116,7 +116,9 @@ void main()
         vec3 iCell = floor(cellP);
         vec3 fCell = fract(cellP) - 0.5; // -0.5 to 0.5
         
-        float cellHash = hash11(iCell.x * 12.3 + iCell.y * 45.6 + iCell.z * 78.9);
+        // Direkter fract(sin(dot))-Hash: hash11 mit Riesenargument kollabiert
+        // auf der GPU (Praezision), das Blasenfeld war entartet.
+        float cellHash = fract(sin(dot(iCell, vec3(12.9898, 78.233, 37.719))) * 43758.5453);
         
         // Randomize bubble position within cell
         vec3 offset = vec3(
@@ -136,8 +138,8 @@ void main()
         // We only render the *surface* of the bubble (the membrane)
         float membrane = abs(distToSphere);
         
-        if (membrane < 0.05) {
-            float alpha = smoothstep(0.05, 0.0, membrane) * 0.3;
+        if (membrane < 0.09) {
+            float alpha = smoothstep(0.09, 0.0, membrane) * 0.28;
             
             // Inside the bubble is another universe (different fbm pattern)
             float inside = fbm(p * 5.0 + cellHash * 100.0);
@@ -147,8 +149,9 @@ void main()
             
             // Universes bumping into each other causing flashes
             // We use cellHash to trigger random flashes
-            float collision = step(0.95, hash11(cellHash * 10.0 + floor(time * 5.0)));
-            localCol += bubbleColor * collision * audioKick * 5.0 * bkp;
+            // Sanftes Aufglimmen statt 5-Hz-Strobo.
+            float collision = pow(0.5 + 0.5 * sin(time * (0.6 + cellHash * 1.5) + cellHash * 40.0), 8.0);
+            localCol += bubbleColor * collision * (0.5 + audioKick * 2.0) * bkp;
             
             // Fresnel effect for the bubble (brighter on edges)
             // We approximate normal based on localP

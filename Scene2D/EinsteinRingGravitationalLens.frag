@@ -119,9 +119,19 @@ void main() {
 
     // Reconstruct texture coordinate
     vec2 photoUV = (warpedRel * resolution.y + 0.5 * resolution) / resolution;
+    // Langsame Hintergrund-Drift: das gelinste Feld zieht vorbei.
+    photoUV += vec2(t * 0.03, t * 0.012);
     photoUV = fract(photoUV);
 
     vec3 photo = img(photoUV);
+
+    // WANDERNDER QUASAR hinter der Linse: er laeuft im Orbit und wird durch
+    // das GEWARPTE Feld gezeichnet -- die Linse zerlegt ihn in wandernde
+    // Bogen und Mehrfachbilder.
+    vec2 srcPos = vec2(sin(t * 0.23), cos(t * 0.31)) * 0.45;
+    float srcD = length(warpedRel - srcPos);
+    vec3 quasar = max(imgPalette(0.82), vec3(0.85, 0.75, 0.55))
+                * exp(-srcD * srcD * 700.0) * (1.8 + 1.2 * audioSwell);
 
     // Einstein ring luminous photon ring glow
     float ringDist = abs(r - rEinstein);
@@ -137,6 +147,7 @@ void main() {
 
     // Combine visualizer
     vec3 col = photo * (0.8 + 0.4 * audioLevel) * shadow;
+    col += quasar * shadow;
     col += ringGlow * dopplerColor * (0.9 + audioHigh * 1.2);
 
     // Accretion disk inner ring glints

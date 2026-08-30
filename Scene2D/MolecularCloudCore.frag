@@ -89,14 +89,15 @@ void main()
 
     vec2 uv = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
-    float drift = time * 0.1 + audioAdvance * 0.2; // very slow
+    float drift = time * 0.45 + audioAdvance * 0.4;   // spuerbare Fahrt durch den Staub
     
     vec3 ro = vec3(0.0, 0.0, drift);
     vec3 rd = normalize(vec3(uv, 1.0));
     
     vec3 col = vec3(0.0);
     
-    vec3 dustColor = imgPalette(0.1); // Extremely dark, barely visible
+    // Floor unter der Palette: dunkles Foto -> schwarze Szene ("bleibt schwarz").
+    vec3 dustColor = max(imgPalette(0.1), vec3(0.13, 0.11, 0.16));
     vec3 starColor = imgPalette(0.8 + audioCentroid * 0.1); // Sudden bright flashes
     
     float d = 0.0;
@@ -121,16 +122,17 @@ void main()
             // We simulate scattered light from distant hidden sources
             
             // Base ambient scattering
-            vec3 localCol = dustColor * (0.16 + audioSwell * 0.18);
+            vec3 localCol = dustColor * (0.55 + audioSwell * 0.3);
             
             // Random hidden star clusters flashing
             vec3 cell = floor(p * 0.5);
             float cellHash = hash11(cell.x * 12.3 + cell.y * 45.6 + cell.z * 78.9);
             
             if (cellHash > 0.55) {
-                // Flash based on time and audio kick
-                float flash = step(0.75, hash11(cellHash * 100.0 + floor(time * 5.0)));
-                float intensity = (0.3 + flash * audioKick * 10.0) * sp;
+                // Sanftes Glimmen statt 5-Hz-Strobo; Kicks verstaerken.
+                float flash = pow(0.5 + 0.5 * sin(time * (0.8 + cellHash * 2.0)
+                                                  + cellHash * 40.0), 6.0);
+                float intensity = flash * (0.9 + audioKick * 4.0) * sp;
                 
                 // Light scatters through the local density
                 float scatter = exp(-density * 2.0);
@@ -147,6 +149,12 @@ void main()
         d += 0.2; // small steps because it's dense
         if (d > 6.0) break; // short visibility
     }
+
+    // Der verborgene PROTOSTERN-KERN: ein warmes Glimmen hinter dem Staub
+    // gibt der Wolke ein Zentrum und der Szene ein Motiv.
+    vec3 coreGlow = max(imgPalette(0.85), vec3(0.8, 0.45, 0.2));
+    col += coreGlow * exp(-length(uv) * 1.9) * (0.55 + 0.4 * audioSwell)
+         * (1.0 - 0.6 * densityAccum);
     
     // If we look through a gap, pitch black space (no stars visible because we are in a dark cloud)
     if (densityAccum < 1.0) {

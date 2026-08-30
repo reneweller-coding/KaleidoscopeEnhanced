@@ -114,7 +114,7 @@ void main() {
     vec2 uv = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
     vec2 st = gl_FragCoord.xy / resolution;
 
-    float t = time * 0.3 * spd + audioAdvance * 0.15;
+    float t = time * 0.18 * spd + audioAdvance * 0.12;   // ruhigerer Orbit
 
     // Camera setup
     // USER-FEEDBACK: the old fly-through sat INSIDE the solid core (flat
@@ -123,7 +123,7 @@ void main() {
     vec3 ww = normalize(-ro);
     vec3 uu = normalize(cross(ww, vec3(0.0, 1.0, 0.0)));
     vec3 vv = cross(uu, ww);
-    vec3 rd = normalize(uv.x * uu + uv.y * vv + (1.25 - 0.08 * audioKick) * ww);
+    vec3 rd = normalize(uv.x * uu + uv.y * vv + 1.25 * ww);   // Kick-FOV-Pumpen raus
 
     float dO = 0.0;
     float hitDist = -1.0;

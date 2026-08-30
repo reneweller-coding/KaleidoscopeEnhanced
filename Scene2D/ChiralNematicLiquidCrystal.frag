@@ -70,7 +70,10 @@ void main() {
     float aDefect = atan(uv.y, uv.x);
     float rDefect = length(uv);
 
-    float helicalPhase = rDefect * basePitch + aDefect * 2.0 * dDens - t * 3.0;
+    // GANZZAHLIGE Windung: ein nicht-ganzzahliger atan-Koeffizient springt
+    // am Branch-Cut (die gemeldete unstetige Kante links der Mitte).
+    float wind = max(1.0, floor(2.0 * dDens + 0.5));
+    float helicalPhase = rDefect * basePitch + aDefect * wind - t * 3.0;
 
     // Second crossed helical director wave
     float crossPitch = sin(uv.x * basePitch * 0.8 + t * 2.0) * cos(uv.y * basePitch * 0.8 - t * 2.0);

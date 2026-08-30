@@ -109,7 +109,7 @@ void main()
                 float intensity = exp(-starDist * (50.0 + h * 50.0));
                 
                 // Twinkle
-                intensity *= 0.5 + 0.5 * sin(time * (10.0 + h * 20.0));
+                intensity *= 0.6 + 0.4 * sin(time * (2.0 + h * 4.0));
                 
                 bgStars += intensity * (1.0 + audioSwell * 0.5);
             }
@@ -123,12 +123,14 @@ void main()
         for (int j = 0; j < 15; ++j) {
             float seed = float(j);
             float orbitRadius = 0.2 + hash11(seed) * 1.5;
-            float speed = (2.0 + hash11(seed + 1.0) * 5.0) / orbitRadius; // Keplerian-like speed
+            // Stark verlangsamt: bis zu 35 rad/s liessen die Sterne als
+            // "sehr schnelle Kreise" um das Loch peitschen.
+            float speed = (0.5 + hash11(seed + 1.0) * 1.2) / orbitRadius;
             
             // Retrograde or prograde
             speed *= (hash11(seed + 2.0) > 0.5) ? 1.0 : -1.0;
             
-            float angle = polar.y + time * speed * sp + audioAdvance * speed * 2.0;
+            float angle = polar.y + time * speed * sp + audioAdvance * speed * 0.5;
             
             // Wrap angle
             float aDiff = mod(angle, 6.28318) - 3.14159;
@@ -140,7 +142,7 @@ void main()
             if (d2Star < 0.1) {
                 float sInt = 0.001 / max(d2Star * d2Star, 0.0001);
                 // Flares / tidal disruption near the black hole
-                if (orbitRadius < 0.4 && hash11(floor(time * 5.0 + seed)) > 0.8) {
+                if (orbitRadius < 0.4 && hash11(floor(time * 1.2) + seed) > 0.8) {
                     sInt *= 2.0 + audioKick * 5.0; // bright flash
                 }
                 

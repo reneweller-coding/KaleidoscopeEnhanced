@@ -58,7 +58,9 @@ void main() {
 
     float spd = (speedP > 0.01) ? speedP : 1.0;
     float gFreq = (gratingFreqP > 0.01) ? gratingFreqP : 1.0;
-    float rBow = (rainbowP > 0.01) ? rainbowP : 1.2;
+    // Ganzzahlig gerundet: rBow multipliziert unten den atan-Winkel; jeder
+    // nicht-ganzzahlige Faktor reisst am Branch-Cut eine Kante auf.
+    float rBow = max(1.0, floor(((rainbowP > 0.01) ? rainbowP : 1.2) + 0.5));
     float glw = (glowP > 0.01) ? glowP : 1.0;
 
     float t = audioAdvance * 0.32 * spd;

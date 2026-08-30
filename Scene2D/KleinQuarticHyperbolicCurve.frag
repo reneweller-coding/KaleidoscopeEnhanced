@@ -84,7 +84,9 @@ void main() {
     float t = time * 0.3 * spd + audioAdvance * 0.15;
 
     // Poincaré disk coordinate normalization
-    vec2 z = uv * (2.8 / gns) * (1.0 - 0.15 * audioKick);
+    // Kick-Zoom raus: 15% Vollbild-Pump pro Schlag war das "Hektische";
+    // der Swell atmet langsam statt zu springen.
+    vec2 z = uv * (2.8 / gns) * (1.0 - 0.06 * audioSwell);
     z = rot2D(t * 0.25) * z;
 
     float edgeDist = 1.0;
@@ -131,7 +133,7 @@ void main() {
     // Glowing automorphism reflection lines
     // Kick 3.0 + high 1.5 turned crescendos into one full-frame flash
     // (the largest single-frame luma jump in the whole catalogue's scan).
-    float lineGlow = exp(-edgeDist * 25.0) * (1.0 + min(audioKick * 1.1 + audioHigh * 0.5, 1.4));
+    float lineGlow = exp(-edgeDist * 25.0) * (1.0 + min(audioKick * 0.6 + audioHigh * 0.25, 0.8));
 
     // Combine visualizer
     vec3 col = mix(photo * 0.85, groupColor, 0.45 + 0.2 * audioSwell);

@@ -72,14 +72,20 @@ void main()
     float pitch = (spikePitchP > 0.01 ? spikePitchP : 4.2);
     vec2 p = uv * pitch;
     
-    vec2 r_hex = vec2(p.x * 1.7320508 + p.y, p.y * 2.0) / 3.0;
-    vec2 cell = floor(r_hex);
+    // ECHTE Inverse der cartPos-Formel unten (X = sqrt3*(cx+0.5*cy),
+    // Y = 1.5*cy) -- die alte Rueckrechnung gehoerte zu einem anderen
+    // Gitter und liess am unteren Rand abgeschnittene Spikes stehen.
+    vec2 cell = floor(vec2(p.x * 0.57735027 - p.y * 0.33333333,
+                           p.y * 0.66666667));
     
     float minDist = 1e5;
     vec2 closestOffset = vec2(0.0);
     
-    for (int y = -1; y <= 1; y++) {
-        for (int x = -1; x <= 1; x++) {
+    // +-2 statt +-1: die +-1-Suche im GESCHERTEN Zellraum verfehlte in der
+    // unteren Bildhaelfte den wahren naechsten Mittelpunkt, und die Kugeln
+    // wurden an der Zellgrenze halbiert ("Kugeln unten nur halb").
+    for (int y = -2; y <= 2; y++) {
+        for (int x = -2; x <= 2; x++) {
             vec2 neighbor = vec2(float(x), float(y));
             vec2 cartPos = vec2(sqrt(3.0) * (cell.x + neighbor.x + 0.5 * (cell.y + neighbor.y)), 1.5 * (cell.y + neighbor.y));
             vec2 diff = p - cartPos;

@@ -88,7 +88,8 @@ void main() {
     float wSc = (waveScaleP > 0.01) ? waveScaleP : 1.0;
     float glw = (glowP > 0.01) ? glowP : 1.0;
 
-    float t = audioAdvance * 0.35 * spd;
+    float t = time * 0.35 * spd + audioAdvance * 0.28 * spd;   // Zeit-Basis:
+    // audioAdvance allein steht bei ruhiger Musik still ("wirkt wie ein Bild").
 
     // Dispersive wavelength offsets for R, G, B channels
     float dLambda = (0.12 + 0.08 * audioFlux) * disp;

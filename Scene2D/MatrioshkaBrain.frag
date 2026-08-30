@@ -194,20 +194,23 @@ void main()
 
         if (m == 2.0 && g == 1.0) {
             // Processing nodes flash frantically
-            float activity = hash31(floor(p * 5.0 + time * 10.0));
-            float flash = step(0.9, activity);
+            // 10 Hz Reselektion + wandernde Zellen = hektisches Springen.
+            float activity = hash31(floor(p * 5.0) + floor(time * 1.5));
+            float flash = smoothstep(0.85, 0.95, activity);
             col += structColor * flash * (1.0 + audioKick * 3.0) * dp;
         }
         else if (m == 3.0 && g == 2.0) {
             // Data pipelines pulse along their length
             float axisP = (abs(n.x) > 0.5) ? p.y : p.x;
-            float flow = step(0.8, sin(axisP * 10.0 - time * 20.0));
+            float flow = smoothstep(0.6, 0.9, sin(axisP * 10.0 - time * 7.0));
             col += dataColor * flow * (1.0 + audioKick * 2.0) * dp * (1.0 + audioSwell);
         }
         else if (m == 1.0) {
             // Circuits on the walls
             float grid = step(0.95, fract(p.z * 5.0)) + step(0.95, fract(p.x * 5.0)) + step(0.95, fract(p.y * 5.0));
-            float activeGrid = grid * step(0.9, hash21(floor(p.xy * 5.0) + floor(time * 2.0)));
+            // Reselektion alle 2 s statt 2x pro Sekunde -- die "springenden
+            // Streifen aussen" waren dieser Takt.
+            float activeGrid = grid * step(0.9, hash21(floor(p.xy * 5.0) + floor(time * 0.5)));
             col += structColor * activeGrid * (0.5 + audioKick);
         }
 

@@ -86,7 +86,7 @@ float map(vec3 p, float dp) {
     vec3 h = hash33(cell);
 
     // Determine if cell has a crystal (density control)
-    if (h.x > 0.70) {
+    if (h.x > 0.74) {
         return 1e10; // Empty cell
     }
 
@@ -148,7 +148,7 @@ void main()
         float ds = map(p, dp);
         // Camera clearance bubble: the field is dense enough now that the
         // flight regularly passed THROUGH a crystal -- one flat colour wall.
-        ds = max(ds, 2.2 - d);
+        ds = max(ds, 0.7 - d);
         g = hitGlow;
         if (ds < 0.01) break;
         d += ds * 0.8;
@@ -190,6 +190,10 @@ void main()
 
         // Distance fog
         col = mix(col, bgCol, smoothstep(10.0, 40.0, d));
+        // Weiche MATERIALISIERUNG: die alte harte Blase (2.2) liess jeden
+        // Kristall beim Grenzuebertritt schlagartig als Riesenmenge
+        // aufploppen -- jetzt blendet Naehe sanft ein.
+        col = mix(bgCol, col, smoothstep(0.7, 3.2, d));
     } else {
         col = bgCol;
 

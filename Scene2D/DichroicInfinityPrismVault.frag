@@ -84,11 +84,12 @@ void main() {
     float t = time * 0.3 * spd + audioAdvance * 0.15;
 
     // Raymarching camera through infinite prism vault
-    vec3 ro = vec3(t * 1.5, sin(t * 0.5) * 0.4, cos(t * 0.4) * 0.4);
-    vec3 rd = normalize(vec3(uv, 1.2 - 0.25 * audioKick));
+    // Fluss halbiert (Nutzer: "zu schnell").
+    vec3 ro = vec3(t * 0.7, sin(t * 0.5) * 0.4, cos(t * 0.4) * 0.4);
+    vec3 rd = normalize(vec3(uv, 1.2));   // Kick-FOV-Pumpen entfernt
 
     rd.yz = rot2D(sin(t * 0.3) * 0.3) * rd.yz;
-    rd.xy = rot2D(t * 0.2) * rd.xy;
+    rd.xy = rot2D(t * 0.1) * rd.xy;
 
     vec3 p = ro;
     float edgeAccum = 0.0;
@@ -131,7 +132,8 @@ void main() {
     vec3 dichroic = imgPalette((bounceCount * 0.4 + audioPhase) * 0.159);
 
     // Diamond specular glints on kick
-    float glint = exp(-abs(uv.x * uv.y) * 120.0) * (audioKick * 4.0 + audioHigh * 2.0);
+    // Kompakter Zentrums-Glint statt des bildschirmbreiten weissen Kreuzes.
+    float glint = exp(-(abs(uv.x) + abs(uv.y)) * 6.0) * (audioKick * 1.5 + audioHigh * 0.6);
 
     // Combine visualizer
     vec3 col = mix(photo * 0.85, dichroic, 0.45 + 0.2 * audioSwell);

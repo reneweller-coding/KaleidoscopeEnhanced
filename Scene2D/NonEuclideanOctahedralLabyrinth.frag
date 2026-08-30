@@ -100,6 +100,10 @@ void main() {
     for (int i = 0; i < 64; ++i) {
         p = ro + rd * dO;
         float dS = chamber(p * scl, size) / scl;
+        // Kamera-Clearance-Blase: der Skriptpfad kreuzt Kammerwaende, und
+        // ohne Blase steckte das Auge zeitweise IN der Geometrie
+        // ("Eindringen in das Objekt / Kollision mit Kamera").
+        dS = max(dS, 0.5 - dO);
         if (dS < 0.004) { hitDist = dO; break; }
         if (dO > 14.0) break;
         dO += dS * 0.85;

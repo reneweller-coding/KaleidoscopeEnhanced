@@ -52,7 +52,7 @@ float dens(vec2 uv)
 {
     // Smooth the raw splat field: individual discs must merge into one body.
     float d = texture(texMetal, uv).a * 4.0;
-    vec2 px = 15.0 / resolution;   // wider smoothing round 3
+    vec2 px = 28.0 / resolution;   // noch breiter: das Splat-Feld las sich als HF-Rauschen
     d += texture(texMetal, uv + vec2( px.x, 0.0)).a * 2.0;
     d += texture(texMetal, uv + vec2(-px.x, 0.0)).a * 2.0;
     d += texture(texMetal, uv + vec2(0.0,  px.y)).a * 2.0;
@@ -71,7 +71,7 @@ void main()
     // Normal from the density gradient — the metal's shape.
     float dx = dens(uv + vec2(px.x * 8.0, 0.0)) - dens(uv - vec2(px.x * 8.0, 0.0));
     float dy = dens(uv + vec2(0.0, px.y * 8.0)) - dens(uv - vec2(0.0, px.y * 8.0));
-    vec3 n = normalize(vec3(-dx * 20.0, -dy * 20.0, 1.0));
+    vec3 n = normalize(vec3(-dx * 9.0, -dy * 9.0, 1.0));
 
     vec3 V = vec3(0.0, 0.0, 1.0);
     vec3 L = normalize(vec3(0.5 * sin(time * 0.13), 0.5 * cos(time * 0.10), 0.85));
@@ -85,7 +85,7 @@ void main()
     vec3 tint = imgPalette(0.0) * 1.35;
 
     vec3 metal = vec3(0.03) + refl * (0.35 + 0.85 * fres)
-               + tint * spec * (2.0 + 3.0 * audioKick + 1.5 * audioHigh);
+               + tint * spec * (1.4 + 1.4 * audioKick + 0.6 * audioHigh);
 
     // Background: the photo, dimmed, so the drops read as sitting in a room.
     vec3 bg = texture(tex0, uv).rgb;

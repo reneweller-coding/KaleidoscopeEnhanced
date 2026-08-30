@@ -164,6 +164,9 @@ void main()
     for (int i = 0; i < 80; ++i) {
         p = ro + rd * d;
         float ds = map(p, yp);
+        // Clearance-Blase: die Bahn schneidet Werft-Traeger; ohne sie flog
+        // die Kamera IN die Struktur und der Schirm wurde vollflaechig.
+        ds = max(ds, 4.0 - d);
         m = hitMat;
         steps = i;
         if (ds < 0.01 * (1.0 + d * 0.05)) break;
@@ -172,9 +175,11 @@ void main()
     }
 
     // Nebula background
-    vec3 nebTint = imgPalette(0.3 + 0.1 * audioCentroid);
+    // Nebel mit Floor und Grundhelligkeit -- vorher pow(n,2)*Palette auf
+    // dunklem Foto = schwarzer Hintergrund, nur Traeger im Nichts.
+    vec3 nebTint = max(imgPalette(0.3 + 0.1 * audioCentroid), vec3(0.14, 0.10, 0.18));
     float nebNoise = fbm(rd * 2.0 + vec3(0.0, 0.0, drift * 0.01));
-    vec3 col = nebTint * pow(nebNoise, 2.0) * np * (0.5 + audioSwell * 0.5);
+    vec3 col = nebTint * (0.22 + pow(nebNoise, 1.5) * np * (0.8 + audioSwell * 0.5));
 
     vec3 sunDir = normalize(vec3(0.5, 0.8, -0.2));
     
@@ -189,8 +194,10 @@ void main()
         if (m == 1.0) albedo = vec3(0.4, 0.42, 0.45); // ship hull
         else albedo = vec3(0.8, 0.6, 0.1); // yellow/orange scaffolding
         
-        col = albedo * (0.1 + dif);
-        col += nebTint * albedo * fill * 0.2;
+        col = albedo * (0.16 + dif);
+        col += nebTint * albedo * fill * 0.35;
+        // Rim-Licht: grosse Rumpfflaechen bekommen Kontur statt grauer Wand.
+        col += albedo * pow(1.0 - max(dot(n, -rd), 0.0), 3.0) * 0.5;
         
         // Add welding flares
         float weldDist = length(p - sparkPos);

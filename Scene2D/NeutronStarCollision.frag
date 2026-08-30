@@ -82,8 +82,13 @@ void main()
     vec2 uv = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
     
     // Orbital mechanics
-    float orbitSpeed = time * 3.0 + audioAdvance * 10.0;
-    float orbitRad = 0.3 * dp * (1.0 - 0.1 * sin(time * 0.1)); // Slowly decaying orbit
+    // DER DRITTE AKT: Inspiral -> Merger-Blitz -> Schockwelle, zyklisch.
+    // Vorher kreisten die Sterne nur ewig ("extrem langweilig").
+    float cyc = fract(time / 45.0);
+    float insp = smoothstep(0.0, 0.82, cyc);           // 0..1 bis zum Merger
+    float postM = smoothstep(0.82, 0.86, cyc);          // 1 nach dem Merger
+    float orbitSpeed = time * 2.0 + time * insp * insp * 5.0 + audioAdvance * 4.0;
+    float orbitRad = 0.42 * dp * (1.0 - 0.92 * insp);   // Spirale zieht sich zu
     
     vec2 p1 = vec2(cos(orbitSpeed), sin(orbitSpeed)) * orbitRad;
     vec2 p2 = vec2(cos(orbitSpeed + 3.14159), sin(orbitSpeed + 3.14159)) * orbitRad;
@@ -105,8 +110,21 @@ void main()
     vec3 jetCol = imgPalette(0.4);
     
     // Core of the stars (very small but infinitely bright)
-    col += starCol1 * 0.005 / max(d1 - 0.01, 0.001);
-    col += starCol2 * 0.005 / max(d2 - 0.01, 0.001);
+    float starVis = 1.0 - postM;                        // nach dem Merger verschmolzen
+    col += starCol1 * starVis * 0.005 / max(d1 - 0.01, 0.001);
+    col += starCol2 * starVis * 0.005 / max(d2 - 0.01, 0.001);
+
+    // MERGER: greller Blitz, dann expandierende Schockschale + Remnant.
+    float flash = exp(-abs(cyc - 0.82) * 60.0);
+    col += vec3(1.0, 0.97, 0.9) * flash * 5.0;
+    float ringT = clamp((cyc - 0.82) / 0.18, 0.0, 1.0);
+    if (ringT > 0.0) {
+        float shockR = ringT * 1.7;
+        col += mix(starCol1, starCol2, 0.5)
+             * exp(-abs(length(uv) - shockR) * 16.0) * (1.0 - ringT) * 2.5;
+        // Remnant-Magnetar im Zentrum
+        col += starCol2 * postM * (1.0 - ringT * 0.6) * 0.004 / max(length(uv) - 0.005, 0.001);
+    }
     
     // Plasma sharing/accretion between them
     float sharedD = length(uv - (p1 + p2) * 0.5) - orbitRad;

@@ -100,7 +100,10 @@ float mapLattice(vec3 p, float fDensity, float shatter) {
     // permanently inside a crystal, so every frame was one facet's flat
     // interior. Carve a spherical chamber around the orbit: the camera
     // now circles inside a crystal hall whose walls ARE the grid.
-    return smax(lat, 6.2 - length(p), 0.22);   // wall further out + sharper blend: the crystal FACETS survive instead of melting into one sheet
+    // FLOATING CLUSTER statt Kammer: die Kammerwand zeigte nur noch das
+    // gespiegelte Foto am Stueck ("wirkt wie einfach nur das Bild"). Ein
+    // aussen umkreister Spiegelblock fragmentiert es sichtbar.
+    return max(lat, length(p) - 2.2);
 }
 
 vec3 calcNormal(vec3 p, float fDensity, float shatter) {
@@ -151,6 +154,12 @@ void main() {
     if (hitDist > 0.0) {
         vec3 p = ro + rd * hitDist;
         vec3 N = calcNormal(p, 2.0 * fDens, shat);
+        // MOSAIK-Spiegel: jede Zelle kippt ihren Spiegel eigenwillig, sonst
+        // reflektiert die glatte Kammerwand einfach nur das Foto am Stueck
+        // ("wirkt wie einfach nur das Bild").
+        vec3 cellId = floor(p * 2.0 * fDens);
+        vec3 tiltH = vec3(hash3D(cellId), hash3D(cellId + 7.1), hash3D(cellId + 13.7));
+        N = normalize(N + (tiltH - 0.5) * 0.85);
         vec3 R = reflect(rd, N);
 
         // Map reflection ray to source image UV
@@ -181,7 +190,9 @@ void main() {
         finalCol += imgPalette(0.30 * audioCentroid) * 1.5 * pow(edge, 4.0) * audioHigh;
     } else {
         // Background fallback projection
-        finalCol = img(fract(uv * 0.5 + 0.5)) * 0.4;
+        // Dunkler Raum + Palettenhauch: der Cluster soll leuchten, nicht
+        // der Hintergrund.
+        finalCol = imgPalette(0.6) * 0.10 + img(fract(uv * 0.5 + 0.5)) * 0.06;
     }
 
     if (hueP > 0.0) {

@@ -55,19 +55,27 @@ void main()
     vec2 uv = gl_FragCoord.xy / resolution;
     vec2 px = 1.0 / resolution;
 
+    // Langsame Dreh-Drift des Lesefensters: das Sim-Feld selbst ist traege,
+    // so bekommt die Flaeche trotzdem eine stetige Eigenbewegung.
+    vec2 cen = vec2(0.5);
+    float ra = time * 0.045 + audioAdvance * 0.03;
+    uv = cen + mat2(cos(ra), -sin(ra), sin(ra), cos(ra)) * (uv - cen) * (0.96 + 0.03 * sin(time * 0.11));
+
     float h = hAt(uv);
 
     // Surface normal from the height gradient.
-    float hx = hAt(uv + vec2(px.x * 2.0, 0.0)) - hAt(uv - vec2(px.x * 2.0, 0.0));
-    float hy = hAt(uv + vec2(0.0, px.y * 2.0)) - hAt(uv - vec2(0.0, px.y * 2.0));
-    vec3 n = normalize(vec3(-hx * 7.0, -hy * 7.0, 1.0));
+    // Breitere Tastung: 2-px-Gradienten auf dem groben Sim-Feld machten
+    // Klotz-Normalen -> "extrem pixelig". 5 px glaettet, ohne zu verwaschen.
+    float hx = hAt(uv + vec2(px.x * 5.0, 0.0)) - hAt(uv - vec2(px.x * 5.0, 0.0));
+    float hy = hAt(uv + vec2(0.0, px.y * 5.0)) - hAt(uv - vec2(0.0, px.y * 5.0));
+    vec3 n = normalize(vec3(-hx * 5.0, -hy * 5.0, 1.0));
 
     vec3 V = vec3(0.0, 0.0, 1.0);
-    vec3 L = normalize(vec3(0.45 * sin(time * 0.09), 0.45 * cos(time * 0.07), 0.9));
+    vec3 L = normalize(vec3(0.45 * sin(time * 0.28), 0.45 * cos(time * 0.21), 0.9));
 
     float diff = max(dot(n, L), 0.0);
     vec3  Hv   = normalize(L + V);
-    float spec = pow(max(dot(n, Hv), 0.0), 60.0 + 90.0 * shineP);
+    float spec = pow(max(dot(n, Hv), 0.0), 28.0 + 45.0 * shineP);
     float fres = pow(1.0 - max(dot(n, V), 0.0), 3.0);
 
     // Reflection: the photo, sampled along the normal — the ferrofluid mirrors

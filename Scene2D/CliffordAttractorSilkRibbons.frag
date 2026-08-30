@@ -61,16 +61,19 @@ void main() {
     float slk = (silkP > 0.01) ? silkP : 1.0;
     float glw = (glowP > 0.01) ? glowP : 1.0;
 
-    float t = audioAdvance * 0.28 * spd;
+    float t = time * 0.28 * spd + audioAdvance * 0.22 * spd;   // Zeit-Basis:
+    // audioAdvance allein steht bei ruhiger Musik still ("wirkt wie ein Bild").
 
     // Clifford attractor parameters modulated smoothly across time
-    float a = -1.4 + 0.4 * sin(t * 0.3) + 0.2 * audioCentroid;
+    // audioPhase statt Centroid: der Centroid zittert pro Frame und liess die
+    // Attraktor-Form zucken statt fliessen.
+    float a = -1.4 + 0.4 * sin(t * 0.3) + 0.08 * sin(audioPhase * 0.5);
     float b = 1.6 + 0.3 * cos(t * 0.25);
     // c/d scale the cosine terms, i.e. how far each Clifford step folds the
     // sheet back on itself; sub-bass swells that fold depth. Bounded well
     // under the |x|,|y| <= 1+c limit so the attractor stays finite.
     float foldAmp = 1.0 + 0.35 * audioSubBass;
-    float c = (1.0 + 0.3 * sin(t * 0.4 + audioFlux)) * foldAmp;
+    float c = (1.0 + 0.3 * sin(t * 0.4 + audioPhase * 0.3)) * foldAmp;
     float d = (0.7 + 0.3 * cos(t * 0.35)) * foldAmp;
 
     // Screen coordinate frame with gentle rotation

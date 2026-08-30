@@ -74,7 +74,10 @@ void main()
     // which recorded as horizontal stripes.  Here the breather drives the
     // SURFACE ELEVATION of a sea seen from the side, so the focusing event
     // rises out of the carrier swell as an actual wall of water.
-    float X = uv.x * 3.5 * bScale;
+    // Die Monsterwelle WANDERT durchs Bild (Dreieckssweep, stetig) -- vorher
+    // stand der Breather-Peak fest in der Mitte und zuckte nur.
+    float xDrift = (abs(fract(t * 0.05) * 2.0 - 1.0) * 2.0 - 1.0) * 1.1;
+    float X = (uv.x - xDrift) * 3.5 * bScale;
     // The breather's focusing parameter T cycles slowly: the rogue wall
     // builds, towers and vanishes back into the swell (once per ~14 s).
     float Tb = sin(t * 0.45) * 2.2;

@@ -97,7 +97,12 @@ void main() {
     float zoomLevel = exp(zc * 2.3) * (1.6 * zm);
     // Sub-bass narrows the sampled c-window across the nave axis only, so the
     // arches widen sideways instead of the whole vault simply zooming.
-    vec2 c = cCenter + vec2(uv.x / (1.0 + 0.3 * audioSubBass), uv.y) / zoomLevel;
+    // Langsame Fensterrotation (Nutzerwunsch: "mindestens noch eine
+    // Rotation") -- das Fraktal selbst ist nicht rotationssymmetrisch,
+    // also dreht die KAMERA.
+    float vRot = time * 0.06 + audioAdvance * 0.05;
+    vec2 ruv = mat2(cos(vRot), -sin(vRot), sin(vRot), cos(vRot)) * uv;
+    vec2 c = cCenter + vec2(ruv.x / (1.0 + 0.3 * audioSubBass), ruv.y) / zoomLevel;
 
     vec2 z = c;
     float iterCount = 0.0;

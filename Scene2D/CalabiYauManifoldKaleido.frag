@@ -68,7 +68,8 @@ void main() {
     float nPetals = (petalsP > 1.0) ? petalsP : 5.0;
     float glw = (glowP > 0.01) ? glowP : 1.0;
 
-    float t = audioAdvance * 0.3 * spd;
+    float t = time * 0.30 * spd + audioAdvance * 0.24 * spd;   // Zeit-Basis:
+    // audioAdvance allein steht bei ruhiger Musik still ("wirkt wie ein Bild").
 
     // Moduli space deformation parameter psi
     float psi = (0.85 + 0.4 * sin(t * 0.35) + 0.2 * audioFlux) * psiMod;

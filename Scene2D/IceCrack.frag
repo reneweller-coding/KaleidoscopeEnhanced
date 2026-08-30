@@ -85,7 +85,10 @@ void main()
     vec2 p = vec2(uv.x * aspect, uv.y);
 
     float cells = mix(16.0, 5.0, clamp(shardP, 0.0, 1.0));
-    vec2 g = p * cells;
+    // The whole sheet DRIFTS slowly over the picture -- pack ice on a
+    // current. Steady time base; audioAdvance alone froze on quiet parts
+    // and the scene read as a still photo that twitched to the beat.
+    vec2 g = (p + vec2(time * 0.014 + audioAdvance * 0.02, time * 0.006)) * cells;
     vec2 gi = floor(g);
     vec2 gf = fract(g);
 
@@ -101,7 +104,7 @@ void main()
             // same twice.  audioAdvance, not time scaled by a level, or every
             // shard would jump whenever the music got louder.
             vec2 h = hash22(gi + o);
-            vec2 s = o + 0.5 + 0.42 * sin(audioAdvance * 0.15 + 6.2831853 * h);
+            vec2 s = o + 0.5 + 0.42 * sin(time * 0.10 + audioAdvance * 0.12 + 6.2831853 * h);
             float d = dot(s - gf, s - gf);
             if (d < bestD) { bestD = d; bestOff = o; bestSeed = s; }
         }
@@ -113,7 +116,7 @@ void main()
         {
             vec2 o = vec2(float(x), float(y));
             vec2 h = hash22(gi + o);
-            vec2 s = o + 0.5 + 0.42 * sin(audioAdvance * 0.15 + 6.2831853 * h);
+            vec2 s = o + 0.5 + 0.42 * sin(time * 0.10 + audioAdvance * 0.12 + 6.2831853 * h);
             vec2 diff = s - bestSeed;
             float len = length(diff);
             if (len < 1e-4)

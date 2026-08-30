@@ -82,7 +82,8 @@ void main() {
     float rel = (reliefP > 0.01) ? reliefP : 1.2;
     float glw = (glowP > 0.01) ? glowP : 1.0;
 
-    float t = audioAdvance * 0.25 * spd;
+    float t = time * 0.25 * spd + audioAdvance * 0.20 * spd;   // Zeit-Basis:
+    // audioAdvance allein steht bei ruhiger Musik still ("wirkt wie ein Bild").
 
     // Zoom into classic Lyapunov bio-space cusp around (3.8, 3.8)
     vec2 abCenter = vec2(3.6, 3.6);

@@ -87,7 +87,9 @@ void main()
     vec3 ro = vec3(drift, 0.0, -1.0);
     
     // Look slightly sideways at the cliff
-    vec3 ta = ro + vec3(1.0, 0.2, 0.5);
+    // Staerker zur Wand gedreht: mit Blick fast parallel zur Klippe war
+    // die Wolkenwand zeitweise ganz aus dem Bild (Schwarzframes).
+    vec3 ta = ro + vec3(0.55, 0.15, 1.0);
     
     vec3 ww = normalize(ta - ro);
     vec3 uu = normalize(cross(ww, vec3(0.0, 1.0, 0.0)));
@@ -99,7 +101,7 @@ void main()
 
     vec3 col = vec3(0.0);
     
-    vec3 gasColor = imgPalette(0.3); // Outer cool gas
+    vec3 gasColor = max(imgPalette(0.3), vec3(0.10, 0.09, 0.13)); // Outer cool gas
     vec3 coreColor = imgPalette(0.8 + audioCentroid * 0.1); // Hot inner gas
     
     // Volumetric raymarching for the nebula cliffs
@@ -130,9 +132,12 @@ void main()
             float rim = exp(-depthInside * 2.0);
             
             // Audio flashes deep inside
-            float internalFlash = step(0.9, hash11(floor(p.x * 2.0) + floor(time * 5.0))) * audioKick * 3.0 * gp;
+            // Sanftes Wetterleuchten statt 5-Hz-Plattenblitzen.
+            float fh = fract(sin(floor(p.x * 2.0) * 12.9898) * 43758.5453);
+            float internalFlash = pow(0.5 + 0.5 * sin(time * (0.7 + fh) + fh * 40.0), 8.0)
+                                * (0.4 + audioKick * 1.6) * gp;
             
-            vec3 localCol = mix(gasColor, coreColor, rim * (0.5 + audioSwell + internalFlash));
+            vec3 localCol = mix(gasColor, coreColor, clamp(rim * (0.8 + 0.6 * audioSwell + internalFlash), 0.0, 1.0));
             
             col += localCol * alpha * (1.0 - densityAccum);
             densityAccum += alpha;
@@ -146,9 +151,17 @@ void main()
     
     // Background space / stars
     if (densityAccum < 1.0) {
-        float bg = hash11(dot(floor(uv * 100.0), vec2(12.3, 45.6)));
-        if (bg > 0.99) {
-            col += vec3(1.0) * (0.2 + audioSwell * 0.2) * (1.0 - densityAccum);
+        // Runde, gejitterte Sterne -- ganze floor()-Zellen waren die
+        // haesslichen Riesenpixel im Himmel.
+        vec2 sgrid = uv * 50.0;
+        vec2 sid = floor(sgrid);
+        vec2 sf = fract(sgrid) - 0.5;
+        float sh = fract(sin(dot(sid, vec2(12.9898, 78.233))) * 43758.5453);
+        if (sh > 0.90) {
+            vec2 spos = (vec2(fract(sh * 7.31), fract(sh * 13.7)) - 0.5) * 0.8;
+            float sd2 = dot(sf - spos, sf - spos);
+            float tw = 0.7 + 0.3 * sin(time * (1.0 + 2.0 * fract(sh * 29.0)) + sh * 40.0);
+            col += vec3(1.0) * exp(-sd2 * 240.0) * tw * (0.5 + audioSwell * 0.4) * (1.0 - densityAccum);
         }
         
         // Very faint background nebulosity

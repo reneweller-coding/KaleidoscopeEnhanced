@@ -90,9 +90,11 @@ void main()
     // The clouds are organized in massive horizontal bands
 
     vec3 col = vec3(0.0);
-    vec3 cloudColor = imgPalette(0.3); // Base gas color (e.g., Jupiter/Saturn like)
-    vec3 lightningColor = imgPalette(0.8 + audioCentroid * 0.1); // Bright flashes
-    vec3 cityColor = imgPalette(0.5); // Neon lights of the floating structures
+    // Helligkeits-Floor: auf dunklen Fotos war die reine Palette schwarz
+    // und die ganze Szene blieb es mit ("bleibt schwarz").
+    vec3 cloudColor = max(imgPalette(0.3), vec3(0.14, 0.11, 0.08));
+    vec3 lightningColor = max(imgPalette(0.8 + audioCentroid * 0.1), vec3(0.65, 0.6, 0.5));
+    vec3 cityColor = max(imgPalette(0.5), vec3(0.30, 0.24, 0.14));
 
     // 1. Thick Volumetric Clouds
     // We use a simplified raymarch/layering for speed
@@ -124,7 +126,7 @@ void main()
 
         // Add color
         float alpha = density * 0.4;
-        vec3 layerCol = mix(cloudColor * (0.2 + audioSwell * 0.3), lightningColor, flash);
+        vec3 layerCol = mix(cloudColor * (0.4 + audioSwell * 0.35), lightningColor, flash);
 
         atmosCol += layerCol * alpha * (1.0 - totalDensity);
         totalDensity += alpha;

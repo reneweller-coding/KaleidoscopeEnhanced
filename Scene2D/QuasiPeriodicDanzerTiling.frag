@@ -74,7 +74,8 @@ void main() {
     float str = (starP > 0.01) ? starP : 1.0;
     float glw = (glowP > 0.01) ? glowP : 1.0;
 
-    float t = audioAdvance * 0.3 * spd;
+    float t = time * 0.30 * spd + audioAdvance * 0.24 * spd;   // Zeit-Basis:
+    // audioAdvance allein steht bei ruhiger Musik still ("wirkt wie ein Bild").
 
     // Golden ratio constant
     const float PHI = 1.6180339887;

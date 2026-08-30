@@ -74,7 +74,8 @@ void main() {
     float strk = (streaksP > 0.01) ? streaksP : 1.0;
     float glw = (glowP > 0.01) ? glowP : 1.0;
 
-    float t = audioAdvance * 0.45 * spd;
+    float t = time * 0.45 * spd + audioAdvance * 0.36 * spd;   // Zeit-Basis:
+    // audioAdvance allein steht bei ruhiger Musik still ("wirkt wie ein Bild").
 
     float r = max(0.01, length(uv));
     float a = atan(uv.y, uv.x);

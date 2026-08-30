@@ -61,7 +61,8 @@ void main() {
     float aSpin = (spinP > 0.01) ? spinP : 1.0;
     float glw = (glowP > 0.01) ? glowP : 1.0;
 
-    float t = audioAdvance * 0.35 * spd;
+    float t = time * 0.35 * spd + audioAdvance * 0.28 * spd;   // Zeit-Basis:
+    // audioAdvance allein steht bei ruhiger Musik still ("wirkt wie ein Bild").
 
     // Relativistic camera flight along wormhole Z-axis
     // zThroat goes continuously from -infinity to +infinity (repeating universe cycles)

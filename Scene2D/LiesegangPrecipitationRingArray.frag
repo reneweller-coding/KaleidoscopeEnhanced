@@ -71,21 +71,25 @@ void main()
     float rParam = (spacingRatioP > 0.01 ? spacingRatioP : 1.18);
     float logR = log(max(r * 3.0, 0.05)) / log(rParam);
 
-    float ringPhase = logR * (ringDensityP > 0.01 ? ringDensityP : 6.0) - t * 2.0;
+    // Dichte gedeckelt (Moire) und Drift halbiert.
+    float ringPhase = logR * min((ringDensityP > 0.01 ? ringDensityP : 6.0), 9.0) - t * 1.0;
 
     // Sharp precipitate band profile (supersaturation threshold nucleation)
     float localBand = fract(ringPhase) - 0.5;
-    float precipBand = exp(-localBand * localBand * 45.0);
+    float precipBand = exp(-localBand * localBand * 26.0);
 
     // Colloidal diffusion gradient between rings
     float dGrad = (diffusionP > 0.01 ? diffusionP : 1.2);
     float ionDiffusion = exp(-r * dGrad * 2.0);
 
     // Nucleation flash on kick
-    float nucFlash = precipBand * (1.0 + 3.5 * audioKick) * (colloidGlowP > 0.01 ? colloidGlowP : 1.3);
+    // Blitz nur an der wachsenden Front (Zentrum), nicht ueber alle Ringe.
+    float nucFlash = precipBand * exp(-r * 2.2) * (0.6 + 1.2 * audioKick) * (colloidGlowP > 0.01 ? colloidGlowP : 1.3);
 
     // Palette assignment
-    float palAngle = fract(logR * 0.15 + r * 0.2 + audioCentroid);
+    // audioAdvance statt Centroid: der Centroid liess ALLE Ringe pro Frame
+    // die Farbe wechseln ("blinkendes Moire").
+    float palAngle = fract(logR * 0.15 + r * 0.2 + audioAdvance * 0.05);
     vec3 colBand = imgPalette(palAngle);
     vec3 colGel  = imgPalette(fract(palAngle + 0.5)) * 0.6;
 

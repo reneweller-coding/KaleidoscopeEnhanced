@@ -118,7 +118,7 @@ void main() {
     float t = time * 0.3 * spd + audioAdvance * 0.15;
 
     // Dynamic wall thickness
-    float thickness = (0.15 + 0.05 * sin(t * 1.5) + 0.07 * audioBass) * wll;
+    float thickness = (0.15 + 0.05 * sin(t * 1.5) + 0.05 * audioSwell) * wll;
     float scale = 0.85 * scl;   // bigger cells = walkable corridors, not wall soup
 
     // Smooth winding camera path through the gyroid labyrinth
@@ -128,24 +128,9 @@ void main() {
         t * 2.5
     );
 
-    // KEEP THE FLIGHT IN A CORRIDOR.  The scripted path takes no notice of
-    // where the walls are, so for a good fraction of every cycle the eye sat
-    // INSIDE the slab: the very first march step then reported a hit and the
-    // whole frame came back as one flat wash of near-field wall.  Two Newton
-    // pushes up the gradient of |g| put the eye back in the middle of the
-    // nearest channel, and because the correction falls to zero as soon as
-    // there is clearance it never jumps.
-    for (int k = 0; k < 2; ++k) {
-        vec3  q  = ro * scale;
-        float gg = dot(sin(q), cos(q.zxy));
-        float want = thickness + 0.45;
-        float ag = abs(gg);
-        if (ag >= want) break;
-        vec3  gr  = gyroidGrad(q);
-        float gl2 = max(dot(gr, gr), 1e-3);
-        float sg  = (gg >= 0.0) ? 1.0 : -1.0;
-        ro += gr * (sg * (want - ag) / (gl2 * scale));
-    }
+    // (Der fruehere Newton-Push sprang beim Wanddurchgang auf die andere
+    // Slab-Seite -- der gemeldete Kamerasprung. Ersetzt durch die
+    // Clearance-Blase im March unten: stetig per Konstruktion.)
 
     vec3 lookTarget = ro + vec3(sin(t * 0.6) * 0.4, cos(t * 0.4) * 0.4, 1.0);
 
@@ -168,6 +153,7 @@ void main() {
     for (int i = 0; i < 90; ++i) {
         p = ro + rd * dO;
         float dS = gyroidSDF(p, scale, thickness);
+        dS = max(dS, 0.45 - dO);   // Kamera-Clearance-Blase
         if (dS < 0.003) {
             hitDist = dO;
             break;

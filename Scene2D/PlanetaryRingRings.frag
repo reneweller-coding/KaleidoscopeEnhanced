@@ -86,7 +86,7 @@ void main()
     // We are skimming just above the infinite plane of the rings.
     // Fake 3D perspective mapping for a plane
     vec3 col = vec3(0.0);
-    vec3 ringColor = imgPalette(0.3); // Icy blue/white by default
+    vec3 ringColor = max(imgPalette(0.3), vec3(0.34, 0.30, 0.24)); // Eis braucht Grundhelligkeit
     vec3 sparkColor = imgPalette(0.8 + audioCentroid * 0.1); // Bright sparks
     
     // Horizon is slightly below center to give downward angle
@@ -115,17 +115,23 @@ void main()
         // Clumps / ice chunks in the rings
         float chunks = fbm(vec3(planeUv * 10.0, time * 0.1));
         
-        vec3 localCol = ringColor * (0.5 + ringBands * 0.5) * (0.5 + chunks * 0.5);
+        vec3 localCol = ringColor * (0.30 + ringBands * 0.9) * (0.55 + chunks * 0.45);
         
         // Collisions (Sparks)
         // When chunks collide, they flash brightly on audio kicks
-        float sparkTrigger = step(0.98, hash21(floor(planeUv * 5.0) + floor(time * 5.0)));
-        float sparkInt = sparkTrigger * audioKick * 5.0 * sp;
+        // Runde Glitzerpunkte statt aufblitzender weisser Zellen-Quads.
+        vec2 kCell = floor(planeUv * 5.0);
+        vec2 kFrac = fract(planeUv * 5.0) - 0.5;
+        float kh = fract(sin(dot(kCell, vec2(12.9898, 78.233))) * 43758.5453);
+        vec2 kPos = (vec2(fract(kh * 7.3), fract(kh * 13.7)) - 0.5) * 0.7;
+        float kTw = pow(0.5 + 0.5 * sin(time * (1.5 + kh * 2.0) + kh * 40.0), 6.0);
+        float sparkInt = step(0.85, kh) * exp(-dot(kFrac - kPos, kFrac - kPos) * 60.0)
+                       * kTw * (0.5 + audioKick * 2.5) * sp;
         
         localCol += sparkColor * sparkInt;
         
         // Lighting and fade to horizon
-        float lighting = 0.2 + 0.8 * audioSwell;
+        float lighting = 0.55 + 0.45 * audioSwell;
         float fade = exp(-dPlane * 0.2); // fog/fade into distance
         
         col += localCol * lighting * fade;
@@ -138,12 +144,12 @@ void main()
         float planetRad = 0.4;
         
         if (dPlanet < planetRad) {
-            vec3 planetCol = imgPalette(0.1); // Deep gas giant color
+            vec3 planetCol = max(imgPalette(0.1), vec3(0.22, 0.16, 0.12));
             
             // Gas bands
             vec2 pUv = (uv - planetPos) / planetRad;
-            float bands = fbm(vec3(pUv.y * 5.0, pUv.x * 2.0 - time * 0.05, 0.0));
-            planetCol *= (0.5 + bands * 0.5);
+            float bands = fbm(vec3(pUv.y * 7.0, pUv.x * 2.5 - time * 0.12, 0.0));
+            planetCol *= (0.35 + bands * 0.95);
             
             // Shadow from the rings cast onto the planet
             float ringShadow = smoothstep(-0.1, 0.1, pUv.y + 0.2);

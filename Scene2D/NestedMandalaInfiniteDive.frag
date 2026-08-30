@@ -84,7 +84,8 @@ void main() {
     float spc = (gateSpacingP > 0.01) ? gateSpacingP : 1.0;
     float glw = (glowP > 0.01) ? glowP : 1.0;
 
-    float t = audioAdvance * 0.38 * spd;
+    float t = time * 0.38 * spd + audioAdvance * 0.30 * spd;   // Zeit-Basis:
+    // audioAdvance allein steht bei ruhiger Musik still ("wirkt wie ein Bild").
 
     // Plunge coordinate along depth Z
     float zDive = t * 1.5;

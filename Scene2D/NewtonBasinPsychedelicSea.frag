@@ -86,7 +86,8 @@ void main() {
     float rel = (reliefP > 0.01) ? reliefP : 1.2;
     float glw = (glowP > 0.01) ? glowP : 1.0;
 
-    float t = audioAdvance * 0.28 * spd;
+    float t = time * 0.28 * spd + audioAdvance * 0.22 * spd;   // Zeit-Basis:
+    // audioAdvance allein steht bei ruhiger Musik still ("wirkt wie ein Bild").
 
     // Polynomial power (3 to 6)
     int nPower = int(clamp(3.0 + floor(powerP * 2.0 + audioCentroid * 2.0), 3.0, 6.0));

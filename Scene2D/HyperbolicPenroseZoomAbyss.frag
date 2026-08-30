@@ -72,7 +72,8 @@ void main() {
     float eWidth = (edgeWidthP > 0.01) ? edgeWidthP : 1.0;
     float glw = (glowP > 0.01) ? glowP : 1.0;
 
-    float t = audioAdvance * 0.35 * spd;
+    float t = time * 0.35 * spd + audioAdvance * 0.28 * spd;   // Zeit-Basis:
+    // audioAdvance allein steht bei ruhiger Musik still ("wirkt wie ein Bild").
 
     // Golden ratio scaling for seamless deflation zoom
     const float PHI = 1.6180339887;

@@ -63,15 +63,17 @@ void main()
 {
     vec2 p = (gl_FragCoord.xy - 0.5 * resolution.xy) / resolution.y;
 
-    float zoom = 2.4 - 0.7 * audioPitch;
+    float zoom = (2.4 - 0.7 * audioPitch) * (1.0 + 0.22 * sin(time * 0.07));
     p *= zoom;
     // 0.25 rather than 0.4 on the rotation phase: at 0.4 the lace slid ~0.9 px
     // per frame, and a structure this fine turns that into visible boiling.
-    p  = rot(audioPhase * 0.25 + time * 0.03) * p;
+    p  = rot(audioPhase * 0.25 + time * 0.08) * p;
 
     // Per-mood fractal character: mode bends the c-vector, arousal tightens it.
-    vec2 c = vec2(0.84 + 0.22 * audioMode + 0.03 * sin(time * 0.11),
-                  0.60 + 0.14 * audioArousal);
+    // Kraeftigerer Eigen-Morph: mit 0.03 Amplitude stand die Form
+    // praktisch still ("wirkt wie ein Bild, das gedreht wird").
+    vec2 c = vec2(0.84 + 0.22 * audioMode + 0.10 * sin(time * 0.11),
+                  0.60 + 0.14 * audioArousal + 0.06 * cos(time * 0.09));
 
     // ---- WHY THIS LOOP WAS REWRITTEN ------------------------------------
     // The old version SUMMED exp(-5.0*|fp.y|) + 0.7*exp(-5.0*|fp.x|) over 11

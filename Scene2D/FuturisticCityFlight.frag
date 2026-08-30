@@ -166,8 +166,11 @@ void main()
         vec3 n = calcNormal(p, bp);
         vec3 albedo = vec3(0.17, 0.20, 0.25);
 
-        // Windows
-        vec2 grid = floor(p.xz * 2.0 + p.y * 5.0);
+        // Windows, PRO FASSADE projiziert: das alte floor(p.xz*2 + p.y*5)
+        // vermengte beide Wandrichtungen -- die Muster schwammen und
+        // wechselten staendig ("Fehler der Normalen?").
+        vec2 face = (abs(n.x) > abs(n.z)) ? p.zy : p.xy;
+        vec2 grid = floor(face * vec2(2.0, 5.0));
         float wNoise = hash21(grid);
         float window = step(0.7, wNoise);
 
@@ -175,7 +178,7 @@ void main()
         float isWall = step(0.9, 1.0 - abs(n.y));
 
         // Animated neon signs
-        float neonActive = step(0.95, hash21(floor(p.xz * 0.5 + p.y * 0.2) + floor(t * 2.0)));
+        float neonActive = step(0.93, hash21(floor(face * vec2(0.5, 0.2)) + floor(t * 0.5)));
         vec3 neonColor = mix(neonBase1, neonBase2, hash21(floor(p.xz)));
 
         col = albedo * (0.55 + 0.45 * clamp(dot(n, vec3(0.0, 1.0, 0.0)), 0.0, 1.0));   // side walls got dot=0 -> near-black canyon

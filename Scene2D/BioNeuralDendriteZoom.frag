@@ -142,7 +142,7 @@ void main() {
 
     // Flight camera position through neural network
     vec3 ro = vec3(sin(t * 0.3) * 0.3, cos(t * 0.25) * 0.3, t * 2.2);
-    vec3 rd = normalize(vec3(uv, 1.25 + 0.2 * sin(audioSwell * 2.0)));
+    vec3 rd = normalize(vec3(uv, 1.3));   // FOV-Wobble raus (unscharfer Eindruck)
 
     // Hold the neuropil back to a fixed dark base: a bioluminescent axon only
     // reads if the tissue around it is dark, and with a bright photo the
@@ -162,7 +162,7 @@ void main() {
     // the background.
     float hitMask = 0.0;
 
-    for (int i = 0; i < 48; i++) {
+    for (int i = 0; i < 80; i++) {
         vec3 p = ro + rd * totDist;
         float curSynapse;
         float d = mapNeural(p, t, br, curSynapse);
@@ -181,7 +181,9 @@ void main() {
             break;
         }
 
-        totDist += max(0.015, d * 0.7);
+        // Feiner Schritt: 0.015 min-step gegen 0.003-Schwelle uebersprang
+        // die Konvergenz und zackte jede Silhouette aus ("pixelig").
+        totDist += max(0.004, d * 0.8);
     }
 
     // ---- SURFACE SHADING -------------------------------------------------

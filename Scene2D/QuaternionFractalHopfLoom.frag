@@ -80,7 +80,9 @@ void main()
     float t = time * 0.3 + audioAdvance * 0.35;
     
     // Hopf fibration coordinates
-    float hopfWinding = (hopfP > 0.01 ? hopfP : 2.0);
+    // Ganzzahlige Hopf-Windung, sonst springt r*sin(theta) am atan-Cut
+    // (die gemeldete Kante links).
+    float hopfWinding = max(1.0, floor((hopfP > 0.01 ? hopfP : 2.0) + 0.5));
     float r = length(uv);
     float theta = atan(uv.y, uv.x) * hopfWinding + audioPhase;
     

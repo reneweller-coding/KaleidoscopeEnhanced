@@ -112,9 +112,15 @@ void main()
         // The exposed magma is incredibly bright
         float heat = smoothstep(0.6, 0.3, cells);
         
-        // Eruptions / splashes
-        float eruption = step(0.95, hash11(floor(planeUv.x * 2.0) + floor(planeUv.y * 2.0) + floor(time * 5.0)));
-        float eruptionFlash = eruption * audioKick * 5.0 * lp;
+        // Eruptionen: runde glimmende Herde statt der einfarbigen
+        // Riesenquadrate (ganze 0.5er-Zellen blinkten mit 5 Hz).
+        vec2 eCell = floor(planeUv * 4.0);
+        vec2 eFrac = fract(planeUv * 4.0) - 0.5;
+        float eh = fract(sin(dot(eCell, vec2(12.9898, 78.233))) * 43758.5453);
+        float eSel = step(0.8, fract(eh + floor(time * 0.6) * 0.31));
+        float eShape = exp(-dot(eFrac, eFrac) * 9.0);
+        float ePulse = 0.5 + 0.5 * sin(time * 2.5 + eh * 40.0);
+        float eruptionFlash = eSel * eShape * ePulse * (0.6 + audioKick * 2.0) * lp;
         
         vec3 surfaceCol = mix(magmaColor * (heat + eruptionFlash) * 2.0, crustColor, crustMask);
         

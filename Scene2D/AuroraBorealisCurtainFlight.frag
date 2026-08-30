@@ -112,7 +112,10 @@ void main() {
     }
 
     // Deep cosmic background starfield with texture sample
-    vec2 skyUV = fract(uv * 0.3 + vec2(t * 0.02, 0.0));
+    // SPIEGEL-Kachelung statt fract(): die harte Wrap-Naht des driftenden
+    // Fotos war die gemeldete sichtbare Kante im Hintergrund.
+    vec2 skyRaw = uv * 0.3 + vec2(t * 0.02, 0.0);
+    vec2 skyUV = abs(fract(skyRaw * 0.5) * 2.0 - 1.0);
     vec3 skyTex = img(skyUV);
     vec3 bgNight = mix(imgPalette(0.1) * 0.15, skyTex * 0.2, 0.5);
 

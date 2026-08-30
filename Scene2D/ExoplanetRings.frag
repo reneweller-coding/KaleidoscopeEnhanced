@@ -100,7 +100,7 @@ float map(vec3 p, float dp, float sp)
     float h = hash31(id);
     if (abs(id.y) < 1.0 && h > 0.4 / dp) {
         // Random tumble
-        float speed = (h - 0.5) * 5.0;
+        float speed = (h - 0.5) * 1.8;   // Brocken taumeln, statt zu schleudern
         q.xy = rot(time * speed) * q.xy;
         q.xz = rot(time * speed * 0.7) * q.xz;
         
@@ -140,7 +140,7 @@ void main()
 
     vec2 uv = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
-    float drift = time * 4.0 + audioAdvance * 15.0;
+    float drift = time * 2.2 + audioAdvance * 7.0;   // ruhigerer Vorbeiflug
     
     // Camera is skimming above the ring plane
     vec3 ro = vec3(0.0, 3.5 + sin(time * 0.5) * 1.5, drift);
@@ -162,6 +162,9 @@ void main()
     for (int i = 0; i < 90; ++i) {
         p = ro + rd * d;
         float ds = map(p, dp, sp);
+        // Clearance-Blase: die Bahn schneidet die Brockenebene -- ohne sie
+        // flog die Kamera IN die Eisbrocken hinein.
+        ds = max(ds, 1.3 - d);
         m = hitMat;
         steps = i;
         if (ds < 0.01 * (1.0 + d * 0.05)) break;
@@ -191,8 +194,9 @@ void main()
         // Micro-collisions flash
         float id = hash31(floor(p / 4.0));
         if (id > 0.9) {
-            float flash = step(0.95, fract(time * 5.0 + id * 10.0));
-            col += flashColor * flash * (2.0 + audioKick * 5.0);
+            // Nur auf Kicks, ohne 5-Hz-Dauerstrobo.
+            float flash = step(0.93, fract(time * 0.7 + id * 10.0));
+            col += flashColor * flash * audioKick * 2.5;
         }
         
         col *= clamp(1.0 - float(steps) * 0.01, 0.2, 1.0);
