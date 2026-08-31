@@ -104,3 +104,6 @@ Configurations/MeshSweep.xml
 # scenes simply have nothing of their own to show until the pack is unpacked
 # into Images/. Tools/make_image_pack.ps1 builds the archive.
 /Images/
+
+# Wegwerf-Konfigs der Sweep-/Katalog-Harness (Tools/... erzeugt sie neu)
+Configurations/ZZ*.xml
