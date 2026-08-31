@@ -86,7 +86,13 @@ Name: "packobjects";  Description: "{cm:PackObjects}";  GroupDescription: "{cm:P
 
 [Files]
 ; The entire staged standalone package (exe + Qt/MSVC runtime + shaders + configs).
-Source: "{#SrcDir}\*"; DestDir: "{app}"; Flags: recursesubdirs createallsubdirs ignoreversion
+; Excludes: running the packaged exe once out of dist\ -- which is exactly how
+; one smoke-tests a release -- makes it write its own settings file and fill
+; cache\ with downloaded artist images and lyrics from whatever was playing.
+; Those are the packager's data, not the product's, and "{#SrcDir}\*" would
+; ship them to every user.  deploy.ps1 wipes the staging folder before each
+; run, so this only matters when a test happens between staging and compiling.
+Source: "{#SrcDir}\*"; DestDir: "{app}"; Excludes: "cache\*,kaleidoscope_settings.ini,*.log"; Flags: recursesubdirs createallsubdirs ignoreversion
 ; The packs, fetched into {tmp} by the [Code] download page below and unpacked
 ; straight into the folders the program already looks in. "external" because
 ; they are not compiled into this installer; "extractarchive" does the unzip.
