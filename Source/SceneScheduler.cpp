@@ -13,6 +13,18 @@
 #include "SceneScheduler.h"
 #include "EffectShader.h"
 
+/** @brief Enable/disable review mode (alphabetical walk, fixed kReviewSoloSecs per scene).
+ * Also publishes the span to EffectShader so `sceneProgress` normalises over
+ * the time a scene is actually SHOWN here rather than over its rolled solo
+ * span -- otherwise a staged scene never finishes its arc on the bench.
+ * @param on True to enter review mode, false to return to random selection.
+ */
+void SceneScheduler::setReviewMode( bool on )
+{
+	m_reviewMode = on;
+	EffectShader::s_reviewSolo = on ? kReviewSoloSecs : 0.f;
+}
+
 // Basename eines Fragment-Pfads, case-insensitiver Vergleich (Review-Sortierung).
 /** @brief Return the basename (after the last slash/backslash) of a fragment path.
  * @param p Path string (may be null).

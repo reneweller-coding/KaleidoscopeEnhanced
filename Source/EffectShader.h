@@ -397,6 +397,12 @@ public:
 	static constexpr float kShadowExtent = 60.f; ///< Default half-width of the light's shadow box (a scene may override via shadowExtent()).
 	/// @return The half-width of the shadow light's box for this scene; default is kShadowExtent, overridden by scenes whose own scale differs.
 	virtual float shadowExtent() const { return kShadowExtent; }
+	/// Review span in seconds while a Test* preset is loaded, 0 outside it.
+	/// sceneProgress normalises over the ROLLED solo span, which review mode
+	/// then caps its display time below -- so a staged scene only ever showed
+	/// the first third of its arc on the very bench meant to judge it.
+	/// SceneScheduler::setReviewMode() owns this value.
+	static float s_reviewSolo;
 	static float s_shadowExtent;      // the ACTIVE scene's, for the receivers
 	static float s_shadowPass;        // 1 during the depth-only pass
 	static float s_lightM[16];        // light view-projection, column-major

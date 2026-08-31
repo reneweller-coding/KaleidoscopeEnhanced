@@ -82,8 +82,18 @@ float map(vec3 p, float pr, float sd)
     float d = 1e10;
     float mat = 0.0;
 
-    // 1. The Planet (massive sphere below)
-    float planet = sdSphere(p - vec3(0.0, -pr - 2.0, 0.0), pr);
+    // 1. The Planet (massive sphere below).
+    // Die Kamera steht bei y = 0, der Planet lag mit `-pr - 2.0` also nur ZWEI
+    // Einheiten unter ihr -- bei Radius 80 ist das kein Orbit, sondern
+    // Bodenhoehe: der Horizont sass bei sqrt(82^2 - 80^2) = 18 Einheiten, die
+    // Kugel war von einer Ebene nicht zu unterscheiden, streifend beleuchtet,
+    // und der ganze obere Bildteil war leerer Himmel.  Ein frueherer Anlauf
+    // hat nur die FARBE des Streifens angehoben, nicht seine Groesse.
+    // Auf 0.28 * pr Flughoehe: der Planet spannt jetzt rund 51 Grad, seine
+    // Kruemmung ist sichtbar, und der Horizont liegt bei 0.79 * pr -- weit
+    // innerhalb der Marschgrenze von 200.  Nebenbei steckt damit keine der
+    // Stationen mehr in der Oberflaeche (die sitzen bei y = -2 .. +2).
+    float planet = sdSphere(p - vec3(0.0, -pr * 1.28, 0.0), pr);
     if(planet < d) { d = planet; mat = 1.0; }
 
     // 2. Orbital Stations

@@ -87,6 +87,7 @@ EffectShader::~EffectShader()
 
 float EffectShader::s_depthValid[2] = { 0.f, 0.f };
 float EffectShader::s_shadowPass = 0.f;
+float EffectShader::s_reviewSolo  = 0.f;
 float EffectShader::s_shadowExtent = EffectShader::kShadowExtent;
 float EffectShader::s_lightDir[3] = { 0.45f, 0.80f, -0.40f };
 float EffectShader::s_lightM[16] = { 1.f, 0.f, 0.f, 0.f,  0.f, 1.f, 0.f, 0.f,
@@ -130,6 +131,12 @@ void EffectShader::resetParameters()
 	// left as a sentinel because this function has no time to work from, so
 	// the first setUniforms() after the reset fills it in.
 	m_soloAtReset    = (float) m_timeSolo;
+	// Auf dem Review-Prueftisch zeigt der Scheduler jede Szene nur
+	// kReviewSoloSecs lang, sceneProgress normierte aber weiter ueber die
+	// gewuerfelte Solo-Spanne -- eine inszenierte Szene lief damit genau
+	// dort nie zu Ende, wo man sie beurteilen will.
+	if( s_reviewSolo > 0.01f && m_soloAtReset > s_reviewSolo )
+		m_soloAtReset = s_reviewSolo;
 	m_activationTime = -1.0e9f;
 	m_sceneProgress  = 0.f;
 
@@ -170,7 +177,11 @@ void EffectShader::setUniforms( float time, float interpolation, GLint texLoc1, 
 	// scene would divide by zero and sit at progress 0 forever. Found by
 	// rendering a single-scene probe and watching sceneProgress never move.
 	if( m_soloAtReset <= 0.01f )
+	{
 		m_soloAtReset = (float) m_timeSolo;
+		if( s_reviewSolo > 0.01f && m_soloAtReset > s_reviewSolo )
+			m_soloAtReset = s_reviewSolo;   // same cap as resetParameters()
+	}
 	if( m_activationTime < -0.9e9f )
 		m_activationTime = time;
 	m_sceneProgress = ( m_soloAtReset > 0.01f )
