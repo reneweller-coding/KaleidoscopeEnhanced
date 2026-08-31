@@ -106,6 +106,11 @@ void main()
     vec3 col = vec3(0.0);
     
     vec3 gasColor = max(imgPalette(0.3 + audioCentroid * 0.1), vec3(0.26, 0.18, 0.28)); // Nebulous color
+    // Zweite Gaswolkenfarbe: gasColor allein war EINE Farbe fuers ganze Bild,
+    // also blieb von der Dichtestruktur nur ein Helligkeitsverlauf uebrig und
+    // die Szene mass spatial_std 0.009 (Katalog-Median 0.12).  Ausserhalb der
+    // Schleife geholt, damit die Variation nichts kostet.
+    vec3 gasColorB = max(imgPalette(0.44 + audioCentroid * 0.1), vec3(0.20, 0.24, 0.34));
     vec3 starColor = max(imgPalette(0.9), vec3(0.70, 0.62, 0.48)); // Hot newly born stars
     
     // We render this similarly to a sparse voxel field or scattered points
@@ -118,13 +123,24 @@ void main()
         p = ro + rd * d;
         // Engeres Dichtefenster + hoehere Frequenz: die weite Rampe ergab
         // einen strukturlosen Grauschleier ueber das ganze Bild.
+        //
+        // NICHT hoeher drehen: 2.6 probiert und wieder verworfen.  Der Marsch
+        // macht Schritte von 0.5 Einheiten; ab etwa Frequenz 2 liegt jeder
+        // Schritt mehr als eine Rauschzelle weiter, das Volumenintegral mittelt
+        // sich zur Konstanten und die Szene wurde MESSBAR flacher (0.0106 ->
+        // 0.0029 ueber fuenf Seeds).  Frequenz und Schrittweite gehoeren
+        // zusammen; eine allein anzuheben ist Unterabtastung.
         float gasDensity = smoothstep(0.30, 0.62, fbm(p * 0.8));
         
         if (gasDensity > 0.01) {
-            float alpha = gasDensity * 0.42;
+            // 0.42 sattigte densityAccum nach drei Schritten -- die Wolke war
+            // damit eine Flaeche, egal wie das Dichtefeld aussah.  0.16 laesst
+            // rund ein Dutzend Schritte beitragen, so dass sich die Struktur
+            // ueberhaupt aufintegrieren kann.
+            float alpha = gasDensity * 0.16;
             // Sichtbar auch OHNE Musik: der alte Faktor 0.5+swell liess die
             // Wolke in leisen Passagen fast verschwinden.
-            col += gasColor * alpha * (1.0 - densityAccum) * (0.95 + 0.6 * audioSwell);
+            col += mix(gasColor, gasColorB, gasDensity) * alpha * (1.0 - densityAccum) * (0.95 + 0.6 * audioSwell);
             densityAccum += alpha;
             if (densityAccum > 0.95) break;
         }

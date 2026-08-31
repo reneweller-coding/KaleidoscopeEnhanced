@@ -119,7 +119,12 @@ void main()
         
         // Add detailed volumetric noise to the edge
         float detail = fbm(p * 2.0 * dp);
-        float density = smoothstep(0.0, 1.0, shape + detail);
+        // `detail` lag in der SUMME, also wirkte es nur dort, wo shape+detail
+        // die Rampe [0,1] kreuzt -- eine duenne Randschale.  Dahinter sass die
+        // Dichte auf 1 und die Wolke war innen ein gleichmaessiger Schleier
+        // (spatial_std 0.009, Katalog-Median 0.12).  Als FAKTOR traegt das
+        // Rauschen die Struktur durch das ganze Volumen.
+        float density = smoothstep(0.0, 1.0, shape) * (0.25 + 0.95 * detail);
         
         if (density > 0.01) {
             float alpha = density * 0.15;
@@ -129,7 +134,10 @@ void main()
             float depthInside = p.z - (fbm(vec3(p.x * 0.5, p.y * 0.5, 0.0)) * 2.0);
             
             // Backscattering / Rim lighting effect
-            float rim = exp(-depthInside * 2.0);
+            // Rate 2.0 liess das Rueckstreulicht schon eine Einheit tief auf
+            // 0.14 fallen, also mischte praktisch das ganze Innere dieselbe
+            // gasColor.  0.6 haelt den Verlauf ueber die Wolkentiefe sichtbar.
+            float rim = exp(-depthInside * 0.6);
             
             // Audio flashes deep inside
             // Sanftes Wetterleuchten statt 5-Hz-Plattenblitzen.

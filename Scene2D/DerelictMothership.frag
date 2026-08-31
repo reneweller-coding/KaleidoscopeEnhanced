@@ -225,7 +225,7 @@ void main()
         float scorch = fbm3(p * 2.0);
         albedo *= mix(vec3(0.8, 0.5, 0.3), vec3(1.0), smoothstep(0.4, 0.7, scorch));
         
-        col = albedo * (0.16 + 1.1 * dif); // still dim, but now legible
+        col = albedo * (0.30 + 1.2 * dif); // still dim, but now legible
         col += tint * albedo * fill * 0.30;
         
         // Flickering emergency lights
@@ -243,7 +243,12 @@ void main()
         col += lightCol * lightSlot * isWall * flicker * 2.0 * glw;
         
         // AO
-        col *= clamp(1.0 - float(steps) * 0.015, 0.1, 1.0);
+        // Der Marsch hat ein Budget von 96 Schritten; mit 0.015 lag der Faktor
+        // ab 60 Schritten auf dem Boden 0.1, und weil ein Wrack fast ueberall
+        // viele Schritte braucht, wurde damit das GANZE Bild zehnfach
+        // abgedunkelt statt nur die Spalten -- gemessen spatial_std 0.015 bei
+        // einem Katalog-Median von 0.12.  Auf das Budget skaliert.
+        col *= clamp(1.0 - float(steps) * 0.006, 0.45, 1.0);
     }
     
     // Eerie fog near the ship
