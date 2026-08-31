@@ -138,7 +138,15 @@ void main() {
         float d = mapHyperbolic(p, crvB, strutWidth, curCell);
         minD = min(minD, abs(d));
 
-        if (abs(d) < 0.003 || totDist > 10.0) {
+        // Running out of corridor is a MISS: the ray met nothing, so it must
+        // fall through to the background.  Sharing this branch with the real
+        // surface test shaded empty space as if it were a wall, which is what
+        // painted the far distance in flat sheets.
+        if (totDist > 10.0)
+            break;
+
+        if (abs(d) < 0.003) {
+            hit     = true;
             hitCell = curCell;
             vec2 sampleUV = fract(p.xz * 0.3 + 0.5);
             vec3 texCol = img(sampleUV);

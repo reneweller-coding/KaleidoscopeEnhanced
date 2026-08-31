@@ -169,6 +169,23 @@ def check(paths, reg):
                           f"pixel. Verify the camera is actually offset off "
                           f"the curve (chase-cam pull-back/lateral shift)")
 
+        # --- R11 a hit flag that is read but never set --------------------
+        # `bool hit = false;` guarding `hit ? surface : background` is the
+        # standard ray-march ending.  Forget the one `hit = true` inside the
+        # loop and the branch is a constant: the surface is computed, then
+        # thrown away, and every pixel takes the background.  It compiles, it
+        # renders, and it looks like a scene that merely lost its geometry --
+        # which is exactly how it shipped once, as flat sheets of colour.
+        for m in re.finditer(r'\bbool\s+(\w+)\s*=\s*false\s*;', body):
+            var  = m.group(1)
+            rest = body[m.end():]
+            if not re.search(r'\b%s\b' % re.escape(var), rest):
+                continue                                   # unused: harmless
+            if not re.search(r'\b%s\s*=\s*(?!=)' % re.escape(var), rest):
+                err(rel, f"'bool {var}' is read but never assigned -- every branch on "
+                         f"it takes the false side, so whatever it was meant to select "
+                         f"can never appear")
+
         # --- rules below only apply to the scene3d vertex/compute stages ---
         if not in3d:
             continue
