@@ -107,3 +107,6 @@ Configurations/MeshSweep.xml
 
 # Wegwerf-Konfigs der Sweep-/Katalog-Harness (Tools/... erzeugt sie neu)
 Configurations/ZZ*.xml
+
+# Messbericht von Tools/catalog_check.py (wird bei jedem Lauf neu erzeugt)
+Tools/catalog_check.json
