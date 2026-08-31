@@ -116,7 +116,7 @@ void main()
         float dens = fbm(np);
         
         // Carve out empty space
-        dens = smoothstep(0.45, 0.88, dens) * dp;
+        dens = smoothstep(0.40, 0.80, dens) * dp;
         
         if (dens > 0.01) {
             // Smooth travelling pulse instead of the old hard step bands
@@ -127,7 +127,9 @@ void main()
             // 0.2 + swell*0.8 went black on every quiet passage -- the
             // user-reported "the nebula is black".
             vec3 localCol = mix(colorBase1, colorBase2, dens);
-            localCol *= (0.30 + 0.5 * audioSwell + pulse) * gp;
+            // Sichtbar ohne Musik: bei leisem Material blieb die Wolke sonst
+            // eine kaum erkennbare Andeutung (Katalog-Frame A/B).
+            localCol *= (0.85 + 0.5 * audioSwell + pulse) * gp;
 
             // BIOLUMINESCENT VEINS: ridged filaments glowing inside the gas.
             float ridge = 1.0 - abs(2.0 * fbm(np * 2.3) - 1.0);

@@ -105,7 +105,7 @@ void main()
 
     vec3 col = vec3(0.0);
     
-    vec3 gasColor = max(imgPalette(0.3 + audioCentroid * 0.1), vec3(0.14, 0.10, 0.16)); // Nebulous color
+    vec3 gasColor = max(imgPalette(0.3 + audioCentroid * 0.1), vec3(0.26, 0.18, 0.28)); // Nebulous color
     vec3 starColor = max(imgPalette(0.9), vec3(0.70, 0.62, 0.48)); // Hot newly born stars
     
     // We render this similarly to a sparse voxel field or scattered points
@@ -116,11 +116,15 @@ void main()
     
     for (int i = 0; i < 20; ++i) {
         p = ro + rd * d;
-        float gasDensity = smoothstep(0.25, 0.60, fbm(p * 0.5));
+        // Engeres Dichtefenster + hoehere Frequenz: die weite Rampe ergab
+        // einen strukturlosen Grauschleier ueber das ganze Bild.
+        float gasDensity = smoothstep(0.30, 0.62, fbm(p * 0.8));
         
         if (gasDensity > 0.01) {
-            float alpha = gasDensity * 0.32;
-            col += gasColor * alpha * (1.0 - densityAccum) * (0.5 + audioSwell);
+            float alpha = gasDensity * 0.42;
+            // Sichtbar auch OHNE Musik: der alte Faktor 0.5+swell liess die
+            // Wolke in leisen Passagen fast verschwinden.
+            col += gasColor * alpha * (1.0 - densityAccum) * (0.95 + 0.6 * audioSwell);
             densityAccum += alpha;
             if (densityAccum > 0.95) break;
         }
@@ -138,7 +142,7 @@ void main()
         // Probability of a protostar in this cell
         float h = hash31(cell);
         
-        if (h > 1.0 - (0.05 * sp)) {
+        if (h > 1.0 - (0.09 * sp)) {
             // Star position offset within cell
             vec3 offset = hash33(cell) - 0.5;
             vec3 starPos = f - offset;
