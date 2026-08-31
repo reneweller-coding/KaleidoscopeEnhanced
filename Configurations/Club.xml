@@ -215,8 +215,8 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\DysonSphereCore.frag" type="scene3d" geom="cubes" mood="bright,space" probability="0.45" complexity="4">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <float name="panelP" minValue="0.7" maxValue="1.5"></float>
     <float name="energyP" minValue="0.6" maxValue="1.8"></float>
@@ -224,9 +224,9 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene3D\RingStation.frag" type="scene3d" geom="mesh" model="..\Models\WheelStationPell.glb" mood="bright,space" probability="0.4" complexity="3">
-    <expr name="rigYaw" formula="0.32*sin(0.022*advance + seed1*6.28)"/>
-    <expr name="rigPitch" formula="0.14*sin(0.017*advance + seed2*6.28)"/>
-    <expr name="rigRoll" formula="0.05*sin(0.03*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.32*sin(0.550*advance + seed1*6.28)"/>
+    <expr name="rigPitch" formula="0.14*sin(0.425*advance + seed2*6.28)"/>
+    <expr name="rigRoll" formula="0.05*sin(0.750*advance + seed3*6.28)"/>
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
     <float name="spinP" minValue="0.96" maxValue="0.96"></float>
     <float name="windowP" minValue="1.0" maxValue="1.0"></float>
@@ -235,9 +235,9 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene3D\RingStation.frag" type="scene3d" geom="mesh" model="..\Models\HabitatRingStation.glb" mood="bright,space" probability="0.4" complexity="3">
-    <expr name="rigYaw" formula="0.32*sin(0.022*advance + seed1*6.28)"/>
-    <expr name="rigPitch" formula="0.14*sin(0.017*advance + seed2*6.28)"/>
-    <expr name="rigRoll" formula="0.05*sin(0.03*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.32*sin(0.550*advance + seed1*6.28)"/>
+    <expr name="rigPitch" formula="0.14*sin(0.425*advance + seed2*6.28)"/>
+    <expr name="rigRoll" formula="0.05*sin(0.750*advance + seed3*6.28)"/>
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
     <float name="spinP" minValue="1.57" maxValue="1.57"></float>
     <float name="windowP" minValue="1.2" maxValue="1.2"></float>
@@ -246,9 +246,9 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene3D\RingStation.frag" type="scene3d" geom="mesh" model="..\Models\MegastructureCentralHub.glb" mood="bright,psychedelic,space" probability="0.4" complexity="3">
-    <expr name="rigYaw" formula="0.32*sin(0.022*advance + seed1*6.28)"/>
-    <expr name="rigPitch" formula="0.14*sin(0.017*advance + seed2*6.28)"/>
-    <expr name="rigRoll" formula="0.05*sin(0.03*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.32*sin(0.550*advance + seed1*6.28)"/>
+    <expr name="rigPitch" formula="0.14*sin(0.425*advance + seed2*6.28)"/>
+    <expr name="rigRoll" formula="0.05*sin(0.750*advance + seed3*6.28)"/>
     <float name="sizeP" minValue="1.4" maxValue="1.4"></float>
     <float name="spinP" minValue="0" maxValue="0"></float>
     <float name="windowP" minValue="1.0" maxValue="1.0"></float>
@@ -257,9 +257,9 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene3D\FortressStation.frag" type="scene3d" geom="mesh" model="..\Models\MilitaryBastion.glb" mood="dark,aggressive,space" probability="0.4" complexity="3">
-    <expr name="rigYaw" formula="0.32*sin(0.022*advance + seed1*6.28)"/>
-    <expr name="rigPitch" formula="0.14*sin(0.017*advance + seed2*6.28)"/>
-    <expr name="rigRoll" formula="0.05*sin(0.03*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.32*sin(0.550*advance + seed1*6.28)"/>
+    <expr name="rigPitch" formula="0.14*sin(0.425*advance + seed2*6.28)"/>
+    <expr name="rigRoll" formula="0.05*sin(0.750*advance + seed3*6.28)"/>
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
     <float name="alarmP" minValue="1.0" maxValue="1.0"></float>
     <float name="spinP" minValue="0.85" maxValue="0.85"></float>
@@ -268,9 +268,9 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene3D\FortressStation.frag" type="scene3d" geom="mesh" model="..\Models\UnionCommandCitadel.glb" mood="dark,aggressive,space" probability="0.4" complexity="3">
-    <expr name="rigYaw" formula="0.32*sin(0.022*advance + seed1*6.28)"/>
-    <expr name="rigPitch" formula="0.14*sin(0.017*advance + seed2*6.28)"/>
-    <expr name="rigRoll" formula="0.05*sin(0.03*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.32*sin(0.550*advance + seed1*6.28)"/>
+    <expr name="rigPitch" formula="0.14*sin(0.425*advance + seed2*6.28)"/>
+    <expr name="rigRoll" formula="0.05*sin(0.750*advance + seed3*6.28)"/>
     <float name="sizeP" minValue="1.2" maxValue="1.2"></float>
     <float name="alarmP" minValue="0.7" maxValue="0.7"></float>
     <float name="spinP" minValue="0" maxValue="0"></float>
@@ -279,9 +279,9 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene3D\FortressStation.frag" type="scene3d" geom="mesh" model="..\Models\BorderPatrolOutpost.glb" mood="dark,aggressive,space" probability="0.4" complexity="3">
-    <expr name="rigYaw" formula="0.32*sin(0.022*advance + seed1*6.28)"/>
-    <expr name="rigPitch" formula="0.14*sin(0.017*advance + seed2*6.28)"/>
-    <expr name="rigRoll" formula="0.05*sin(0.03*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.32*sin(0.550*advance + seed1*6.28)"/>
+    <expr name="rigPitch" formula="0.14*sin(0.425*advance + seed2*6.28)"/>
+    <expr name="rigRoll" formula="0.05*sin(0.750*advance + seed3*6.28)"/>
     <float name="sizeP" minValue="0.8" maxValue="0.8"></float>
     <float name="alarmP" minValue="1.1" maxValue="1.1"></float>
     <float name="spinP" minValue="0" maxValue="0"></float>
@@ -290,9 +290,9 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene3D\FortressStation.frag" type="scene3d" geom="mesh" model="..\Models\DefensePlatformFortress.glb" mood="dark,aggressive,space" probability="0.4" complexity="3">
-    <expr name="rigYaw" formula="0.32*sin(0.022*advance + seed1*6.28)"/>
-    <expr name="rigPitch" formula="0.14*sin(0.017*advance + seed2*6.28)"/>
-    <expr name="rigRoll" formula="0.05*sin(0.03*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.32*sin(0.550*advance + seed1*6.28)"/>
+    <expr name="rigPitch" formula="0.14*sin(0.425*advance + seed2*6.28)"/>
+    <expr name="rigRoll" formula="0.05*sin(0.750*advance + seed3*6.28)"/>
     <float name="sizeP" minValue="1.1" maxValue="1.1"></float>
     <float name="alarmP" minValue="1.3" maxValue="1.3"></float>
     <float name="spinP" minValue="0" maxValue="0"></float>
@@ -301,9 +301,9 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene3D\FortressStation.frag" type="scene3d" geom="mesh" model="..\Models\FortifiedAsteroidOutpost.glb" mood="dark,aggressive,space" probability="0.4" complexity="3">
-    <expr name="rigYaw" formula="0.32*sin(0.022*advance + seed1*6.28)"/>
-    <expr name="rigPitch" formula="0.14*sin(0.017*advance + seed2*6.28)"/>
-    <expr name="rigRoll" formula="0.05*sin(0.03*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.32*sin(0.550*advance + seed1*6.28)"/>
+    <expr name="rigPitch" formula="0.14*sin(0.425*advance + seed2*6.28)"/>
+    <expr name="rigRoll" formula="0.05*sin(0.750*advance + seed3*6.28)"/>
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
     <float name="alarmP" minValue="0.9" maxValue="0.9"></float>
     <float name="spinP" minValue="0" maxValue="0"></float>
@@ -312,9 +312,9 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene3D\IndustrialStation.frag" type="scene3d" geom="mesh" model="..\Models\ScrapRecyclingStation.glb" mood="dark,aggressive,space" probability="0.4" complexity="3">
-    <expr name="rigYaw" formula="0.32*sin(0.022*advance + seed1*6.28)"/>
-    <expr name="rigPitch" formula="0.14*sin(0.017*advance + seed2*6.28)"/>
-    <expr name="rigRoll" formula="0.05*sin(0.03*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.32*sin(0.550*advance + seed1*6.28)"/>
+    <expr name="rigPitch" formula="0.14*sin(0.425*advance + seed2*6.28)"/>
+    <expr name="rigRoll" formula="0.05*sin(0.750*advance + seed3*6.28)"/>
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
     <float name="glowP" minValue="1.3" maxValue="1.3"></float>
     <float name="spinP" minValue="0" maxValue="0"></float>
@@ -323,9 +323,9 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene3D\HubStation.frag" type="scene3d" geom="mesh" model="..\Models\CargoLogisticsDock.glb" mood="bright,space" probability="0.4" complexity="3">
-    <expr name="rigYaw" formula="0.32*sin(0.022*advance + seed1*6.28)"/>
-    <expr name="rigPitch" formula="0.14*sin(0.017*advance + seed2*6.28)"/>
-    <expr name="rigRoll" formula="0.05*sin(0.03*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.32*sin(0.550*advance + seed1*6.28)"/>
+    <expr name="rigPitch" formula="0.14*sin(0.425*advance + seed2*6.28)"/>
+    <expr name="rigRoll" formula="0.05*sin(0.750*advance + seed3*6.28)"/>
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
     <float name="busyP" minValue="1.2" maxValue="1.2"></float>
     <float name="spinP" minValue="0" maxValue="0"></float>
@@ -334,9 +334,9 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene3D\HubStation.frag" type="scene3d" geom="mesh" model="..\Models\MerchanterOutpost.glb" mood="bright,space" probability="0.4" complexity="3">
-    <expr name="rigYaw" formula="0.32*sin(0.022*advance + seed1*6.28)"/>
-    <expr name="rigPitch" formula="0.14*sin(0.017*advance + seed2*6.28)"/>
-    <expr name="rigRoll" formula="0.05*sin(0.03*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.32*sin(0.550*advance + seed1*6.28)"/>
+    <expr name="rigPitch" formula="0.14*sin(0.425*advance + seed2*6.28)"/>
+    <expr name="rigRoll" formula="0.05*sin(0.750*advance + seed3*6.28)"/>
     <float name="sizeP" minValue="0.9" maxValue="0.9"></float>
     <float name="busyP" minValue="0.9" maxValue="0.9"></float>
     <float name="spinP" minValue="0" maxValue="0"></float>
@@ -345,9 +345,9 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene3D\HubStation.frag" type="scene3d" geom="mesh" model="..\Models\ShipyardGantryStation.glb" mood="bright,space" probability="0.4" complexity="3">
-    <expr name="rigYaw" formula="0.32*sin(0.022*advance + seed1*6.28)"/>
-    <expr name="rigPitch" formula="0.14*sin(0.017*advance + seed2*6.28)"/>
-    <expr name="rigRoll" formula="0.05*sin(0.03*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.32*sin(0.550*advance + seed1*6.28)"/>
+    <expr name="rigPitch" formula="0.14*sin(0.425*advance + seed2*6.28)"/>
+    <expr name="rigRoll" formula="0.05*sin(0.750*advance + seed3*6.28)"/>
     <float name="sizeP" minValue="1.2" maxValue="1.2"></float>
     <float name="busyP" minValue="1.1" maxValue="1.1"></float>
     <float name="spinP" minValue="0" maxValue="0"></float>
@@ -356,9 +356,9 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene3D\HubStation.frag" type="scene3d" geom="mesh" model="..\Models\TradePromenadeStation.glb" mood="bright,psychedelic,space" probability="0.4" complexity="3">
-    <expr name="rigYaw" formula="0.32*sin(0.022*advance + seed1*6.28)"/>
-    <expr name="rigPitch" formula="0.14*sin(0.017*advance + seed2*6.28)"/>
-    <expr name="rigRoll" formula="0.05*sin(0.03*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.32*sin(0.550*advance + seed1*6.28)"/>
+    <expr name="rigPitch" formula="0.14*sin(0.425*advance + seed2*6.28)"/>
+    <expr name="rigRoll" formula="0.05*sin(0.750*advance + seed3*6.28)"/>
     <float name="sizeP" minValue="1.1" maxValue="1.1"></float>
     <float name="busyP" minValue="1.4" maxValue="1.4"></float>
     <float name="spinP" minValue="1.57" maxValue="1.57"></float>
@@ -367,9 +367,9 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene3D\ExoticStation.frag" type="scene3d" geom="mesh" model="..\Models\SolarCollectorStation.glb" mood="bright,space" probability="0.4" complexity="3">
-    <expr name="rigYaw" formula="0.32*sin(0.022*advance + seed1*6.28)"/>
-    <expr name="rigPitch" formula="0.14*sin(0.017*advance + seed2*6.28)"/>
-    <expr name="rigRoll" formula="0.05*sin(0.03*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.32*sin(0.550*advance + seed1*6.28)"/>
+    <expr name="rigPitch" formula="0.14*sin(0.425*advance + seed2*6.28)"/>
+    <expr name="rigRoll" formula="0.05*sin(0.750*advance + seed3*6.28)"/>
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
     <float name="tintP" minValue="0.9" maxValue="0.9"></float>
     <float name="glowP" minValue="1.4" maxValue="1.4"></float>
@@ -380,9 +380,9 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene3D\ExoticStation.frag" type="scene3d" geom="mesh" model="..\Models\LuxuryBorderStation.glb" mood="bright,psychedelic,space" probability="0.4" complexity="3">
-    <expr name="rigYaw" formula="0.32*sin(0.022*advance + seed1*6.28)"/>
-    <expr name="rigPitch" formula="0.14*sin(0.017*advance + seed2*6.28)"/>
-    <expr name="rigRoll" formula="0.05*sin(0.03*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.32*sin(0.550*advance + seed1*6.28)"/>
+    <expr name="rigPitch" formula="0.14*sin(0.425*advance + seed2*6.28)"/>
+    <expr name="rigRoll" formula="0.05*sin(0.750*advance + seed3*6.28)"/>
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
     <float name="tintP" minValue="0.95" maxValue="0.95"></float>
     <float name="glowP" minValue="1.2" maxValue="1.2"></float>
@@ -393,8 +393,8 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene3D\SpectroDevice.frag" type="scene3d" geom="mesh" model="..\Models\Boombox.glb" mood="bright,aggressive" probability="0.4" complexity="3">
-    <expr name="rigYaw" formula="0.28*sin(0.021*advance + seed1*6.28)"/>
-    <expr name="rigPitch" formula="0.11*sin(0.017*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.28*sin(0.525*advance + seed1*6.28)"/>
+    <expr name="rigPitch" formula="0.11*sin(0.425*advance + seed2*6.28)"/>
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
     <float name="spinP" minValue="1.0" maxValue="1.0"></float>
     <float name="barP" minValue="1.2" maxValue="1.2"></float>
@@ -402,8 +402,8 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene3D\SpectroDevice.frag" type="scene3d" geom="mesh" model="..\Models\ModularSynth.glb" mood="bright,psychedelic" probability="0.4" complexity="3">
-    <expr name="rigYaw" formula="0.28*sin(0.021*advance + seed3*6.28)"/>
-    <expr name="rigPitch" formula="0.11*sin(0.017*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.28*sin(0.525*advance + seed3*6.28)"/>
+    <expr name="rigPitch" formula="0.11*sin(0.425*advance + seed2*6.28)"/>
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
     <float name="spinP" minValue="0.9" maxValue="0.9"></float>
     <float name="barP" minValue="1.4" maxValue="1.4"></float>
@@ -411,8 +411,8 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene3D\SpectroDevice.frag" type="scene3d" geom="mesh" model="..\Models\Jukebox.glb" mood="bright,psychedelic" probability="0.4" complexity="3">
-    <expr name="rigYaw" formula="0.28*sin(0.021*advance + seed1*6.28)"/>
-    <expr name="rigPitch" formula="0.11*sin(0.017*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.28*sin(0.525*advance + seed1*6.28)"/>
+    <expr name="rigPitch" formula="0.11*sin(0.425*advance + seed2*6.28)"/>
     <float name="sizeP" minValue="1.1" maxValue="1.1"></float>
     <float name="spinP" minValue="0.8" maxValue="0.8"></float>
     <float name="barP" minValue="1.2" maxValue="1.2"></float>
@@ -420,8 +420,8 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene3D\SpectroDevice.frag" type="scene3d" geom="mesh" model="..\Models\CassetteDeck.glb" mood="bright" probability="0.4" complexity="3">
-    <expr name="rigYaw" formula="0.28*sin(0.021*advance + seed3*6.28)"/>
-    <expr name="rigPitch" formula="0.11*sin(0.017*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.28*sin(0.525*advance + seed3*6.28)"/>
+    <expr name="rigPitch" formula="0.11*sin(0.425*advance + seed2*6.28)"/>
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
     <float name="spinP" minValue="1.1" maxValue="1.1"></float>
     <float name="barP" minValue="1.0" maxValue="1.0"></float>
@@ -429,8 +429,8 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene3D\ShatterSculpture.frag" type="scene3d" geom="mesh" model="..\Models\StoneGargoyle.glb" mood="dark,aggressive" probability="0.4" complexity="3">
-    <expr name="rigYaw" formula="0.28*sin(0.021*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.11*sin(0.017*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.28*sin(0.525*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.11*sin(0.425*advance + seed2*6.28)"/>
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
     <float name="burstP" minValue="1.2" maxValue="1.2"></float>
     <float name="spinP" minValue="1.3" maxValue="1.3"></float>
@@ -439,8 +439,8 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene3D\ShatterSculpture.frag" type="scene3d" geom="mesh" model="..\Models\TerracottaWarrior.glb" mood="dark,aggressive" probability="0.4" complexity="3">
-    <expr name="rigYaw" formula="0.28*sin(0.021*advance + seed1*6.28)"/>
-    <expr name="rigPitch" formula="0.11*sin(0.017*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.28*sin(0.525*advance + seed1*6.28)"/>
+    <expr name="rigPitch" formula="0.11*sin(0.425*advance + seed2*6.28)"/>
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
     <float name="burstP" minValue="1.1" maxValue="1.1"></float>
     <float name="spinP" minValue="1.1" maxValue="1.1"></float>
@@ -449,8 +449,8 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene3D\ShatterSculpture.frag" type="scene3d" geom="mesh" model="..\Models\LimestoneLion.glb" mood="dark,aggressive" probability="0.4" complexity="3">
-    <expr name="rigYaw" formula="0.28*sin(0.021*advance + seed3*6.28)"/>
-    <expr name="rigPitch" formula="0.11*sin(0.017*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.28*sin(0.525*advance + seed3*6.28)"/>
+    <expr name="rigPitch" formula="0.11*sin(0.425*advance + seed2*6.28)"/>
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
     <float name="burstP" minValue="1.0" maxValue="1.0"></float>
     <float name="spinP" minValue="0.8" maxValue="0.8"></float>
@@ -460,8 +460,8 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\AsteroidMiningBase.frag" type="scene3d" geom="cubes" mood="dark,aggressive,space" probability="0.45" complexity="4">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <float name="dustP" minValue="0.5" maxValue="1.5"></float>
     <float name="laserP" minValue="0.6" maxValue="1.8"></float>
@@ -479,8 +479,8 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\TachyonCommRelay.frag" type="scene3d" geom="cubes" mood="bright,psychedelic,space" probability="0.45" complexity="4">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <float name="ringP" minValue="0.5" maxValue="1.5"></float>
     <float name="glowP" minValue="0.6" maxValue="1.8"></float>
@@ -497,8 +497,8 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\SpaceElevator.frag" type="scene3d" geom="cubes" mood="bright,aggressive,space" probability="0.45" complexity="4">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <float name="tetherP" minValue="0.7" maxValue="1.5"></float>
     <float name="glowP" minValue="0.6" maxValue="1.8"></float>
@@ -691,194 +691,194 @@
   </TextureShader>
   <TextureShader file="..\\Scene3D\\CubeWave.frag" type="scene3d" geom="cubes" probability="0.45" mood="aggressive,dark" complexity="3">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\RibbonTunnel.frag" type="scene3d" geom="ribbon" probability="0.45" mood="bright" complexity="2">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\WarpStars.frag" type="scene3d" geom="points" probability="0.4" mood="aggressive,dark" complexity="1">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\SynthTerrain.frag" type="scene3d" geom="grid" probability="0.4" mood="aggressive,dark" complexity="2">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\PortalRush.frag" type="scene3d" geom="ribbon" probability="0.4" mood="aggressive,dark" complexity="2">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\Fireworks.frag" type="scene3d" geom="points" probability="0.4" mood="bright" complexity="2">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\PhotoTunnel.frag" type="scene3d" geom="grid" probability="0.35" mood="bright" complexity="2">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\KaleidoDome.frag" type="scene3d" geom="grid" mood="psychedelic,bright" probability="0.35" complexity="2">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\PhotoVortex.frag" type="scene3d" geom="grid" mood="psychedelic,bright" probability="0.3" complexity="2">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\PhotoShatter.frag" type="scene3d" geom="quads" probability="0.3" mood="aggressive,dark" complexity="1">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\BillboardCity.frag" type="scene3d" geom="quads" probability="0.3" mood="bright" complexity="1">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\MeteorStorm.frag" type="scene3d" geom="points" mood="aggressive,dark" probability="0.35" complexity="2">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\Tornado.frag" type="scene3d" geom="points" probability="0.3" mood="aggressive,dark" complexity="2">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\LaserArena.frag" type="scene3d" geom="ribbon" probability="0.35" mood="aggressive,dark" complexity="1">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\SpectrumArena.frag" type="scene3d" geom="cubes" mood="aggressive,dark" probability="0.35" complexity="3">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\OscilloRings.frag" type="scene3d" geom="ribbon" probability="0.3" mood="bright" complexity="1">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\TorusKnot.frag" type="scene3d" geom="points" probability="0.35" mood="bright" complexity="2">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\PlasmaSheet.frag" type="scene3d" geom="grid" mood="aggressive,psychedelic" probability="0.3" complexity="2">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\SineTunnel.frag" type="scene3d" geom="grid" probability="0.35" mood="bright" complexity="2">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\PolyDance.frag" type="scene3d" geom="cubes" mood="aggressive,dark" probability="0.3" complexity="3">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\RollerCoaster.frag" type="scene3d" geom="ribbon" probability="0.45" mood="aggressive,dark" complexity="1">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\DragonFlight.frag" type="scene3d" geom="points" mood="aggressive,dark" probability="0.45" complexity="2">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\OrbitalDrop.frag" type="scene3d" geom="points" mood="aggressive,dark" probability="0.4" complexity="2">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\TronCycles.frag" type="scene3d" geom="ribbon" probability="0.4" mood="aggressive,dark" complexity="1">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\VolcanoIsland.frag" type="scene3d" geom="points" probability="0.4" mood="aggressive,dark" complexity="2">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\GearWorks.frag" type="scene3d" geom="cubes" mood="aggressive,dark" probability="0.35" complexity="3">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\Wormhole.frag" type="scene3d" geom="grid" probability="0.3" mood="aggressive,dark" complexity="2">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\ConcertCrowd.frag" type="scene3d" geom="points" probability="0.3" mood="dark,aggressive" complexity="2">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\StainedGlassRosette.frag" type="scene3d" geom="grid" probability="0.3" mood="bright" complexity="2">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\SciFiHUD.frag" type="scene3d" geom="ribbon" probability="0.3" mood="aggressive,dark" complexity="1">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\VolumetricFire.frag" type="scene3d" geom="ribbon" mood="aggressive,dark,bright" probability="0.35" complexity="1">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\SpiralArray.frag" type="scene3d" geom="points" mood="dreamy,bright" probability="0.3" complexity="2">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
   </TextureShader>
   <TextureShader file="..\\Scene2D\\FractalFlame.frag" type="normal" mood="psychedelic,bright,aggressive" probability="0.5" complexity="2">
@@ -939,8 +939,8 @@
   </TextureShader>
   <TextureShader file="..\\Scene3D\\Detonation.frag" type="scene3d" geom="grid" probability="0.5" mood="aggressive,dark" complexity="4" shadowExtent="3.2">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <float name="blastP"   minValue="0.6"  maxValue="1.15"></float>
     <float name="camDistP" minValue="2.9"  maxValue="3.6"></float>
@@ -957,8 +957,8 @@
   </TextureShader>
   <TextureShader file="..\\Scene3D\\Skyburst.frag" type="scene3d" geom="indirect" probability="0.5" mood="aggressive,dark" complexity="4">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <float name="burstP" minValue="0.75" maxValue="1.35"></float>
     <float name="trailP" minValue="0.6"  maxValue="1.4"></float>
@@ -970,8 +970,8 @@
   </TextureShader>
   <TextureShader file="..\\Scene3D\\DrumSkin.frag" type="scene3d" geom="indirect" probability="0.42" mood="aggressive,dark" complexity="4">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <expr name="ampP" formula="clamp(1.1 + 0.2*(seed1*2.0-1.0) + 0.4*(max(bassRel-0.9,0.0)), 0.6, 1.6)"/>
     <float name="ampP"     minValue="0.60" maxValue="1.60"></float>
@@ -986,8 +986,8 @@
   </TextureShader>
   <TextureShader file="..\\Scene3D\\PrismExplode.frag" type="scene3d" geom="indirect" probability="0.45" mood="aggressive,dark" complexity="4">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <float name="burstP"   minValue="0.50" maxValue="2.00"></float>
     <float name="countP"   minValue="0.40" maxValue="1.00"></float>
@@ -1042,8 +1042,8 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\CosmicBoidsVortex.frag" type="scene3d" geom="points" probability="0.5" mood="dark,aggressive" complexity="3">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
   </TextureShader>
   <TextureShader file="..\Scene2D\CyberGridCity.frag" type="normal" probability="0.5" mood="aggressive,dark" complexity="3">
@@ -1134,8 +1134,8 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\SuperconductorLevitation.frag" type="scene3d" geom="cubes" probability="0.46" mood="bright" complexity="3">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <float name="levitateP" minValue="0.5" maxValue="2.0"></float>
     <float name="tiltP"     minValue="0.5" maxValue="1.8"></float>
@@ -1146,8 +1146,8 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\CyberRibbonHighway.frag" type="scene3d" geom="ribbon" probability="0.48" mood="aggressive,dark" complexity="2">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <float name="speedP" minValue="0.5" maxValue="1.8"></float>
     <expr name="twistP" formula="clamp(1.25 + 0.3*(seed3*2.0-1.0) + 0.525*(flux), 0.5, 2)"/>
@@ -1159,8 +1159,8 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\PlasmaVortexGrid.frag" type="scene3d" geom="grid" probability="0.48" mood="aggressive,bright,psychedelic" complexity="3">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <float name="depthP"  minValue="0.5" maxValue="2.0"></float>
     <float name="rippleP" minValue="0.5" maxValue="2.2"></float>
@@ -1171,8 +1171,8 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\LaserSpireArray.frag" type="scene3d" geom="scatter" probability="0.46" mood="aggressive,bright,psychedelic" complexity="4">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <expr name="heightP" formula="clamp(1.25 + 0.3*(seed2*2.0-1.0) + 0.6*(max(bassRel-0.9,0.0)), 0.5, 2)"/>
     <float name="heightP"  minValue="0.5" maxValue="2.0"></float>
@@ -1184,8 +1184,8 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\CrystalShatterBurst.frag" type="scene3d" geom="cubes" probability="0.46" mood="aggressive,dark" complexity="4">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <float name="burstP"   minValue="0.5" maxValue="2.2"></float>
     <float name="spinP"    minValue="0.5" maxValue="2.0"></float>
@@ -1195,8 +1195,8 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\QuantumVortexField.frag" type="scene3d" geom="indirect" probability="0.48" mood="aggressive,dark" complexity="4">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <float name="fluxP" minValue="0.5" maxValue="2.0"></float>
     <float name="spinP" minValue="0.5" maxValue="2.0"></float>
@@ -1254,8 +1254,8 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\TokamakFusionCore.frag" type="scene3d" geom="indirect" probability="0.5" mood="aggressive,dark" complexity="4">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <float name="heatP" minValue="0.5" maxValue="2.0"></float>
     <expr name="glowP" formula="clamp(1.35 + 0.34*(seed2*2.0-1.0) + 0.765*(0.6*kick+0.4*snare), 0.5, 2.2)"/>
@@ -1265,8 +1265,8 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\QuantumWavepacketCollapse.frag" type="scene3d" geom="points" probability="0.48" mood="bright,psychedelic" complexity="2">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <expr name="glowP" formula="clamp(1.25 + 0.3*(seed1*2.0-1.0) + 0.675*(0.6*kick+0.4*snare), 0.5, 2)"/>
     <float name="glowP"     minValue="0.5" maxValue="2.0"></float>
@@ -1276,8 +1276,8 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\CyberVoxelTerraform.frag" type="scene3d" geom="cubes" probability="0.5" mood="aggressive,dark" complexity="3">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <expr name="glowP" formula="clamp(1.25 + 0.3*(seed2*2.0-1.0) + 0.675*(0.6*kick+0.4*snare), 0.5, 2)"/>
     <float name="glowP" minValue="0.5" maxValue="2.0"></float>
@@ -1287,8 +1287,8 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\HopfFibrationToruses.frag" type="scene3d" geom="ribbon" probability="0.5" mood="bright,psychedelic" complexity="2">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <expr name="glowP" formula="clamp(1.25 + 0.3*(seed1*2.0-1.0) + 0.675*(0.6*kick+0.4*snare), 0.5, 2)"/>
     <float name="glowP"  minValue="0.5" maxValue="2.0"></float>
@@ -1357,8 +1357,8 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\LargeHadronCollision.frag" type="scene3d" geom="points" probability="0.5" mood="aggressive,dark" complexity="2">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <expr name="glowP" formula="clamp(1.25 + 0.3*(seed2*2.0-1.0) + 0.675*(0.6*kick+0.4*snare), 0.5, 2)"/>
     <float name="glowP"   minValue="0.5" maxValue="2.0"></float>
@@ -1368,8 +1368,8 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\SynchrotronRadiationRing.frag" type="scene3d" geom="ribbon" probability="0.48" mood="aggressive,dark" complexity="2">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <expr name="glowP" formula="clamp(1.25 + 0.3*(seed2*2.0-1.0) + 0.675*(0.6*kick+0.4*snare), 0.5, 2)"/>
     <float name="glowP" minValue="0.5" maxValue="2.0"></float>
@@ -1380,8 +1380,8 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\CyberspaceDNAHelix.frag" type="scene3d" geom="ribbon" probability="0.48" mood="bright,psychedelic" complexity="2">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <expr name="glowP" formula="clamp(1.25 + 0.3*(seed1*2.0-1.0) + 0.675*(0.6*kick+0.4*snare), 0.5, 2)"/>
     <float name="glowP"  minValue="0.5" maxValue="2.0"></float>
@@ -1391,8 +1391,8 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\DysonSwarmSolarHarvester.frag" type="scene3d" geom="quads" probability="0.48" mood="dark,aggressive" complexity="2">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <expr name="glowP" formula="clamp(1.25 + 0.3*(seed1*2.0-1.0) + 0.675*(0.6*kick+0.4*snare), 0.5, 2)"/>
     <float name="glowP"  minValue="0.5" maxValue="2.0"></float>
@@ -1402,8 +1402,8 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\SuperfluidHeliumVortexTurbulence.frag" type="scene3d" geom="indirect" probability="0.48" mood="aggressive,dark" complexity="4">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <expr name="glowP" formula="clamp(1.25 + 0.3*(seed3*2.0-1.0) + 0.675*(0.6*kick+0.4*snare), 0.5, 2)"/>
     <float name="glowP" minValue="0.5" maxValue="2.0"></float>
@@ -1450,8 +1450,8 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\QuantumQubitArray.frag" type="scene3d" geom="cubes" probability="0.5" mood="aggressive,dark" complexity="3">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <expr name="glowP" formula="clamp(1.25 + 0.3*(seed3*2.0-1.0) + 0.675*(0.6*kick+0.4*snare), 0.5, 2)"/>
     <float name="glowP" minValue="0.5" maxValue="2.0"></float>
@@ -1461,8 +1461,8 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\LorenzAttractorTurbulence.frag" type="scene3d" geom="ribbon" probability="0.5" mood="bright,psychedelic" complexity="2">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <expr name="glowP" formula="clamp(1.25 + 0.3*(seed2*2.0-1.0) + 0.675*(0.6*kick+0.4*snare), 0.5, 2)"/>
     <float name="glowP"  minValue="0.5" maxValue="2.0"></float>
@@ -1472,8 +1472,8 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\StellarNurseryCollapse.frag" type="scene3d" geom="points" probability="0.5" mood="bright,dreamy,space" complexity="2">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <expr name="glowP" formula="clamp(1.25 + 0.3*(seed1*2.0-1.0) + 0.675*(0.6*kick+0.4*snare), 0.5, 2)"/>
     <float name="glowP" minValue="0.5" maxValue="2.0"></float>
@@ -1483,8 +1483,8 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\TeslaLightningTree.frag" type="scene3d" geom="indirect" probability="0.5" mood="aggressive,dark" complexity="4">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <expr name="glowP" formula="clamp(1.25 + 0.3*(seed2*2.0-1.0) + 0.675*(0.6*kick+0.4*snare), 0.5, 2)"/>
     <float name="glowP" minValue="0.5" maxValue="2.0"></float>
@@ -1641,8 +1641,8 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\NeuralAxonSynapseCloud.frag" type="scene3d" geom="points" probability="0.5" mood="aggressive,dark" complexity="3">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <float name="neuralP" minValue="0.5" maxValue="2.0"></float>
     <expr name="pulseP" formula="clamp(1.35 + 0.34*(seed3*2.0-1.0) + 0.765*(0.6*kick+0.4*snare), 0.5, 2.2)"/>
@@ -1653,8 +1653,8 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\HypercubeLatticePillars.frag" type="scene3d" geom="cubes" probability="0.5" mood="bright" complexity="3">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <expr name="heightP" formula="clamp(1.25 + 0.3*(seed1*2.0-1.0) + 0.6*(max(bassRel-0.9,0.0)), 0.5, 2)"/>
     <float name="heightP" minValue="0.5" maxValue="2.0"></float>
@@ -1666,8 +1666,8 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\PlasmaFilamentTornado.frag" type="scene3d" geom="indirect" probability="0.5" mood="aggressive,dark" complexity="4">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <float name="vortexP" minValue="0.5" maxValue="2.2"></float>
     <float name="pinchP"  minValue="0.5" maxValue="2.0"></float>
@@ -1769,8 +1769,8 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\CosmicStringHyperspaceWeb.frag" type="scene3d" geom="ribbon" probability="0.5" mood="bright" complexity="3">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <float name="tensionP" minValue="0.5" maxValue="2.0"></float>
     <expr name="waveP" formula="clamp(1.25 + 0.3*(seed2*2.0-1.0) + 0.6*(max(bassRel-0.9,0.0)), 0.5, 2)"/>
@@ -1782,8 +1782,8 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\HopfTorusCliffordKlein.frag" type="scene3d" geom="ribbon" probability="0.5" mood="bright,psychedelic" complexity="3">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <float name="fiberP"  minValue="0.5" maxValue="2.0"></float>
     <expr name="radiusP" formula="clamp(1.25 + 0.375*(seed2*2.0-1.0) + 0.375*(swell), 0.5, 2)"/>
@@ -1795,8 +1795,8 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\CherenkovCascadeShower.frag" type="scene3d" geom="points" probability="0.5" mood="bright,aggressive,dark" complexity="3">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <float name="cascadeP" minValue="0.5" maxValue="2.0"></float>
     <float name="fieldP"   minValue="0.5" maxValue="2.0"></float>
@@ -1806,8 +1806,8 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\MoireHyperInterference.frag" type="scene3d" geom="grid" probability="0.5" mood="bright,psychedelic" complexity="3">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <float name="freqP"  minValue="0.5" maxValue="2.0"></float>
     <float name="depthP" minValue="0.5" maxValue="2.0"></float>
@@ -1817,8 +1817,8 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\HolographicLaserDiffractionGrid.frag" type="scene3d" geom="quads" probability="0.5" mood="bright" complexity="3">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <float name="gratingP" minValue="0.5" maxValue="2.0"></float>
     <float name="depthP"   minValue="0.5" maxValue="2.0"></float>
@@ -1928,8 +1928,8 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\AccretionDiskToroidVortex.frag" type="scene3d" geom="grid" probability="0.5" mood="bright,aggressive,dark" complexity="3">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <float name="toroidP" minValue="0.5" maxValue="2.0"></float>
     <float name="iscoP"   minValue="0.5" maxValue="2.0"></float>
@@ -1939,8 +1939,8 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\CliffordTorusVillarceauLinks.frag" type="scene3d" geom="cubes" probability="0.5" mood="bright,psychedelic" complexity="3">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <float name="torusP" minValue="0.5" maxValue="2.0"></float>
     <float name="linkP"  minValue="0.5" maxValue="2.0"></float>
@@ -1950,8 +1950,8 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\AbrikosovFluxLatticeVortices.frag" type="scene3d" geom="points" probability="0.5" mood="dark,aggressive" complexity="3">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <float name="fluxP"   minValue="0.5" maxValue="2.0"></float>
     <float name="kelvinP" minValue="0.5" maxValue="2.0"></float>
@@ -1961,8 +1961,8 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\BoseEinsteinVortexTangle.frag" type="scene3d" geom="indirect" probability="0.5" mood="bright,psychedelic" complexity="4">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <float name="becP"    minValue="0.5" maxValue="2.0"></float>
     <float name="vortexP" minValue="0.5" maxValue="2.0"></float>
@@ -1972,8 +1972,8 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\GeomagneticDynamoCore.frag" type="scene3d" geom="indirect" probability="0.5" mood="dark,aggressive" complexity="4">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <float name="dynamoP"   minValue="0.5" maxValue="2.0"></float>
     <float name="coriolisP" minValue="0.5" maxValue="2.0"></float>
@@ -1983,8 +1983,8 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\PhotonicCrystalFiberCore.frag" type="scene3d" geom="cubes" probability="0.5" mood="bright,psychedelic" complexity="3">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <float name="pcfP"   minValue="0.5" maxValue="2.0"></float>
     <expr name="coreP" formula="clamp(1.25 + 0.3*(seed3*2.0-1.0) + 0.675*(0.6*kick+0.4*snare), 0.5, 2)"/>
@@ -1995,8 +1995,8 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\MetamaterialNegativeRefraction.frag" type="scene3d" geom="grid" probability="0.5" mood="bright,psychedelic" complexity="3">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <float name="nP"     minValue="0.5" maxValue="2.0"></float>
     <float name="lensP"  minValue="0.5" maxValue="2.0"></float>
@@ -2006,8 +2006,8 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\DielectricMetasurfaceHologram.frag" type="scene3d" geom="quads" probability="0.5" mood="dark,aggressive" complexity="3">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <float name="metaP"  minValue="0.5" maxValue="2.0"></float>
     <float name="phaseP" minValue="0.5" maxValue="2.0"></float>
@@ -2105,8 +2105,8 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\PhotonicTopologicalEdgeStates.frag" type="scene3d" geom="ribbon" probability="0.45" mood="bright,psychedelic" complexity="3">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <float name="ribbonWidthP" minValue="0.02" maxValue="0.1"></float>
     <float name="edgeSpeedP" minValue="0.8" maxValue="3.0"></float>
@@ -2114,16 +2114,16 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\MagnetoRotationalHypernovaInstability.frag" type="scene3d" geom="indirect" probability="0.45" mood="aggressive,dark" complexity="5">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <float name="jetGlowP" minValue="0.8" maxValue="2.5"></float>
     <float name="reconnP" minValue="0.5" maxValue="2.2"></float>
   </TextureShader>
   <TextureShader file="..\Scene3D\SeifertSurfaceBraidKnot.frag" type="scene3d" geom="ribbon" probability="0.45" mood="bright,psychedelic" complexity="3">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <float name="knotP" minValue="0.6" maxValue="2.0"></float>
     <float name="ribbonWidthP" minValue="0.03" maxValue="0.12"></float>
@@ -2131,8 +2131,8 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\E8LieAlgebraRootLattice.frag" type="scene3d" geom="cubes" probability="0.45" mood="aggressive,bright,psychedelic" complexity="4">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <float name="rootScaleP" minValue="0.8" maxValue="2.2"></float>
     <float name="cubeSizeP" minValue="0.04" maxValue="0.16"></float>
@@ -2140,8 +2140,8 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\BismuthFerriteMultiferroicDomains.frag" type="scene3d" geom="quads" probability="0.45" mood="aggressive,dark" complexity="3">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <float name="domainScaleP" minValue="0.12" maxValue="0.35"></float>
     <float name="stepHeightP" minValue="0.04" maxValue="0.18"></float>
@@ -2150,16 +2150,16 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\MagnetotacticBacteriaChains.frag" type="scene3d" geom="cubes" probability="0.45" mood="bright,psychedelic" complexity="3">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <float name="magnetosomeSizeP" minValue="0.03" maxValue="0.12"></float>
     <float name="specularP" minValue="0.8" maxValue="2.5"></float>
   </TextureShader>
   <TextureShader file="..\Scene3D\SubglacialVolcanicPillowLava.frag" type="scene3d" geom="grid" probability="0.45" mood="dark,aggressive,calm" complexity="4">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <float name="pillowScaleP" minValue="2.5" maxValue="6.0"></float>
     <float name="crustHeightP" minValue="0.15" maxValue="0.6"></float>
@@ -2248,8 +2248,8 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\MajoranaNanowireBraiding.frag" type="scene3d" geom="ribbon" probability="0.45" mood="bright,psychedelic" complexity="3">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <float name="ribbonWidthP" minValue="0.02" maxValue="0.1"></float>
     <float name="braidSpeedP" minValue="0.6" maxValue="2.5"></float>
@@ -2257,16 +2257,16 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\CosmicRayCherenkovAirShowerCascade.frag" type="scene3d" geom="indirect" probability="0.45" mood="aggressive,dark" complexity="5">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <float name="cherenkovGlowP" minValue="0.8" maxValue="2.5"></float>
     <float name="fluorP" minValue="0.6" maxValue="2.2"></float>
   </TextureShader>
   <TextureShader file="..\Scene3D\DNAOrigamiNanotubeLattice.frag" type="scene3d" geom="ribbon" probability="0.45" mood="bright,psychedelic" complexity="3">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <float name="tubeRadiusP" minValue="0.4" maxValue="1.0"></float>
     <float name="helixTurnsP" minValue="4.0" maxValue="12.0"></float>
@@ -2275,8 +2275,8 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\RelativisticAccretionTorusMHD.frag" type="scene3d" geom="grid" probability="0.45" mood="aggressive,dark" complexity="4">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <float name="torusRadiusP" minValue="0.8" maxValue="2.0"></float>
     <float name="torusThickP" minValue="0.3" maxValue="0.9"></float>
@@ -2285,8 +2285,8 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\QuasicrystalPenroseRhomb3D.frag" type="scene3d" geom="cubes" probability="0.45" mood="bright,psychedelic" complexity="4">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <float name="quasiScaleP" minValue="1.0" maxValue="2.5"></float>
     <float name="cubeSizeP" minValue="0.03" maxValue="0.12"></float>
@@ -2294,8 +2294,8 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\DielectricResonatorMetagrating.frag" type="scene3d" geom="quads" probability="0.45" mood="dark,aggressive" complexity="3">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <float name="gratingPitchP" minValue="0.1" maxValue="0.3"></float>
     <float name="pillarHeightP" minValue="0.1" maxValue="0.4"></float>
@@ -2304,8 +2304,8 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\GeothermalFumaroleMineralSpires.frag" type="scene3d" geom="grid" probability="0.45" mood="dark,aggressive,calm" complexity="4">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <float name="spireScaleP" minValue="0.6" maxValue="1.8"></float>
     <float name="gasP" minValue="0.8" maxValue="2.5"></float>
@@ -2402,8 +2402,8 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\SuperconductingFluxoniumQubitCircuit.frag" type="scene3d" geom="ribbon" probability="0.45" mood="bright,psychedelic" complexity="3">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <float name="circuitRadiusP" minValue="0.8" maxValue="2.0"></float>
     <float name="ribbonWidthP" minValue="0.02" maxValue="0.1"></float>
@@ -2412,16 +2412,16 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\MagnetarCrustalQuakeAlfvenResonance.frag" type="scene3d" geom="indirect" probability="0.45" mood="aggressive,dark" complexity="5">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <float name="quakeGlowP" minValue="0.8" maxValue="2.5"></float>
     <float name="fireballP" minValue="0.6" maxValue="2.2"></float>
   </TextureShader>
   <TextureShader file="..\Scene3D\CalabiYauSixDimensionalManifoldCrossSection.frag" type="scene3d" geom="grid" probability="0.45" mood="bright,psychedelic" complexity="4">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <float name="calabiScaleP" minValue="0.8" maxValue="2.2"></float>
     <float name="foldDegreeP" minValue="3.0" maxValue="8.0"></float>
@@ -2429,8 +2429,8 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\TopologicalDiracSemimetalFermiArcs.frag" type="scene3d" geom="ribbon" probability="0.45" mood="bright,psychedelic" complexity="3">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <float name="nodeDistP" minValue="0.8" maxValue="2.2"></float>
     <float name="ribbonWidthP" minValue="0.02" maxValue="0.1"></float>
@@ -2439,8 +2439,8 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\NonlinearLaserPlasmaWakefieldAccelerator.frag" type="scene3d" geom="ribbon" probability="0.45" mood="aggressive,dark" complexity="4">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <float name="bubbleRadiusP" minValue="0.5" maxValue="1.5"></float>
     <float name="ribbonWidthP" minValue="0.02" maxValue="0.1"></float>
@@ -2449,16 +2449,16 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\CosmicStringCuspKinkGravitationalRadiation.frag" type="scene3d" geom="indirect" probability="0.45" mood="aggressive,dark" complexity="5">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <float name="cuspGlowP" minValue="0.8" maxValue="2.5"></float>
     <float name="lensingP" minValue="0.6" maxValue="2.2"></float>
   </TextureShader>
   <TextureShader file="..\Scene3D\PhotonicChiralMetamaterialGyroidHelix.frag" type="scene3d" geom="ribbon" probability="0.45" mood="bright,psychedelic" complexity="3">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <float name="helixRadiusP" minValue="0.4" maxValue="1.2"></float>
     <float name="ribbonWidthP" minValue="0.02" maxValue="0.1"></float>
@@ -2467,8 +2467,8 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\VolcanicBasaltColumnarJointingHexagon.frag" type="scene3d" geom="cubes" probability="0.45" mood="dark,aggressive,calm" complexity="3">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <float name="columnPitchP" minValue="0.1" maxValue="0.4"></float>
     <float name="columnHeightP" minValue="0.4" maxValue="1.8"></float>
@@ -2476,8 +2476,8 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\SolarProminenceHelicalMagneticRope.frag" type="scene3d" geom="ribbon" probability="0.45" mood="aggressive,dark" complexity="3">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <float name="archRadiusP" minValue="1.0" maxValue="2.5"></float>
     <float name="ribbonWidthP" minValue="0.02" maxValue="0.1"></float>
@@ -2486,8 +2486,8 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\DeepSeaHydrothermalChimneyPillar.frag" type="scene3d" geom="grid" probability="0.45" mood="dark,aggressive,calm" complexity="4">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <float name="pillarScaleP" minValue="0.8" maxValue="2.2"></float>
     <float name="ventGlowP" minValue="0.8" maxValue="2.5"></float>
@@ -2503,8 +2503,8 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\ParticleTunnelFlight.frag" type="scene3d" geom="points" probability="0.45" mood="psychedelic,bright,aggressive" complexity="3">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <int name="sidesP" minValue="4" maxValue="10"></int>
     <float name="speedP" minValue="0.6" maxValue="1.8"></float>
@@ -2514,8 +2514,8 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\MirrorShardKaleidoscope.frag" type="scene3d" geom="cubes" probability="0.42" mood="aggressive,dark,psychedelic" complexity="3">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <int name="sidesP" minValue="4" maxValue="9"></int>
     <float name="tiltP" minValue="0.6" maxValue="1.6"></float>
@@ -2525,8 +2525,8 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\NeonHighwayDrive.frag" type="scene3d" geom="grid" probability="0.42" mood="dark,aggressive" complexity="3">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <float name="speedP" minValue="0.6" maxValue="1.7"></float>
     <float name="pylonP" minValue="0.6" maxValue="1.6"></float>
@@ -2545,8 +2545,8 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\MirrorShatterExplosion.frag" type="scene3d" geom="scatter" probability="0.45" mood="aggressive,bright,psychedelic" complexity="4">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <int name="sidesP" minValue="4" maxValue="9"></int>
     <float name="explodeP" minValue="2.2" maxValue="4.5"></float>
@@ -2557,8 +2557,8 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\WormholeMirrorWeave.frag" type="scene3d" geom="ribbon" probability="0.45" mood="psychedelic,bright,aggressive" complexity="3">
     <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(0.13*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(0.11*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
     <expr name="rigDolly" formula="0.5*swell"/>
     <int name="sidesP" minValue="4" maxValue="8"></int>
     <float name="speedP" minValue="0.6" maxValue="1.7"></float>
@@ -3358,8 +3358,8 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene3D\ShipFlyby.frag" type="scene3d" geom="mesh" model="..\Models\AllianceDreadnought.glb" mood="dark,aggressive,space" probability="0.4" complexity="3">
-    <expr name="rigYaw" formula="0.18*sin(0.018*advance + seed1*6.28)"/>
-    <expr name="rigPitch" formula="0.08*sin(0.015*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.18*sin(0.450*advance + seed1*6.28)"/>
+    <expr name="rigPitch" formula="0.08*sin(0.375*advance + seed2*6.28)"/>
     <float name="sizeP" minValue="1.30" maxValue="1.30"></float>
     <float name="travelP" minValue="1.0" maxValue="1.0"></float>
     <float name="approachP" minValue="1.0" maxValue="1.0"></float>
@@ -3370,8 +3370,8 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene3D\ShipFlyby.frag" type="scene3d" geom="mesh" model="..\Models\UnionDestroyer.glb" mood="dark,aggressive,space" probability="0.4" complexity="3">
-    <expr name="rigYaw" formula="0.18*sin(0.018*advance + seed3*6.28)"/>
-    <expr name="rigPitch" formula="0.08*sin(0.015*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.18*sin(0.450*advance + seed3*6.28)"/>
+    <expr name="rigPitch" formula="0.08*sin(0.375*advance + seed2*6.28)"/>
     <float name="sizeP" minValue="1.15" maxValue="1.15"></float>
     <float name="travelP" minValue="1.0" maxValue="1.0"></float>
     <float name="approachP" minValue="1.0" maxValue="1.0"></float>
@@ -3382,8 +3382,8 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene3D\ShipDocking.frag" type="scene3d" geom="mesh" model="..\Models\ShipyardGantryStation.glb" model2="..\Models\MerchantersLuck.glb" mood="bright,space" probability="0.4" complexity="3">
-    <expr name="rigYaw" formula="0.18*sin(0.018*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.08*sin(0.015*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.18*sin(0.450*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.08*sin(0.375*advance + seed2*6.28)"/>
     <float name="sizeP" minValue="1.05" maxValue="1.05"></float>
     <float name="shipScaleP" minValue="0.30" maxValue="0.30"></float>
     <float name="spinP" minValue="0" maxValue="0"></float>
@@ -3392,8 +3392,8 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene3D\ShipDocking.frag" type="scene3d" geom="mesh" model="..\Models\TradePromenadeStation.glb" model2="..\Models\FastCourierVessel.glb" mood="bright,psychedelic,space" probability="0.4" complexity="3">
-    <expr name="rigYaw" formula="0.18*sin(0.018*advance + seed3*6.28)"/>
-    <expr name="rigPitch" formula="0.08*sin(0.015*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.18*sin(0.450*advance + seed3*6.28)"/>
+    <expr name="rigPitch" formula="0.08*sin(0.375*advance + seed2*6.28)"/>
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
     <float name="shipScaleP" minValue="0.22" maxValue="0.22"></float>
     <float name="spinP" minValue="1.1" maxValue="1.1"></float>
@@ -3402,8 +3402,8 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene3D\ShipDocking.frag" type="scene3d" geom="mesh" model="..\Models\MilitaryBastion.glb" model2="..\Models\PatrolFrigate.glb" mood="dark,aggressive,space" probability="0.4" complexity="3">
-    <expr name="rigYaw" formula="0.18*sin(0.018*advance + seed1*6.28)"/>
-    <expr name="rigPitch" formula="0.08*sin(0.015*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.18*sin(0.450*advance + seed1*6.28)"/>
+    <expr name="rigPitch" formula="0.08*sin(0.375*advance + seed2*6.28)"/>
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
     <float name="shipScaleP" minValue="0.28" maxValue="0.28"></float>
     <float name="spinP" minValue="0" maxValue="0"></float>
@@ -3412,8 +3412,8 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene3D\AtmosphericEntry.frag" type="scene3d" geom="mesh" model="..\Models\ArmoredAssaultLander.glb" mood="dark,aggressive,space" probability="0.4" complexity="3">
-    <expr name="rigYaw" formula="0.18*sin(0.018*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.08*sin(0.015*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.18*sin(0.450*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.08*sin(0.375*advance + seed2*6.28)"/>
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
     <float name="shakeP" minValue="1.2" maxValue="1.2"></float>
     <float name="tintP" minValue="2.40" maxValue="2.40"></float>
@@ -3422,8 +3422,8 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene3D\AtmosphericEntry.frag" type="scene3d" geom="mesh" model="..\Models\SystemShuttleCutter.glb" mood="bright,space" probability="0.4" complexity="3">
-    <expr name="rigYaw" formula="0.18*sin(0.018*advance + seed3*6.28)"/>
-    <expr name="rigPitch" formula="0.08*sin(0.015*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.18*sin(0.450*advance + seed3*6.28)"/>
+    <expr name="rigPitch" formula="0.08*sin(0.375*advance + seed2*6.28)"/>
     <float name="sizeP" minValue="0.9" maxValue="0.9"></float>
     <float name="shakeP" minValue="0.9" maxValue="0.9"></float>
     <float name="tintP" minValue="0.95" maxValue="0.95"></float>
@@ -3432,8 +3432,8 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene3D\ShipFlyby.frag" type="scene3d" geom="mesh" model="..\Models\GsvNoMoreMrNiceGuy.glb" mood="dark,aggressive,space" probability="0.35" complexity="3">
-    <expr name="rigYaw" formula="0.18*sin(0.018*advance + seed1*6.28)"/>
-    <expr name="rigPitch" formula="0.08*sin(0.015*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.18*sin(0.450*advance + seed1*6.28)"/>
+    <expr name="rigPitch" formula="0.08*sin(0.375*advance + seed2*6.28)"/>
     <float name="sizeP" minValue="1.50" maxValue="1.50"></float>
     <float name="travelP" minValue="1.0" maxValue="1.0"></float>
     <float name="approachP" minValue="1.0" maxValue="1.0"></float>
@@ -3444,8 +3444,8 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene3D\ShipFlyby.frag" type="scene3d" geom="mesh" model="..\Models\GsvYouthfulFolly.glb" mood="bright,psychedelic,space" probability="0.35" complexity="3">
-    <expr name="rigYaw" formula="0.18*sin(0.018*advance + seed3*6.28)"/>
-    <expr name="rigPitch" formula="0.08*sin(0.015*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.18*sin(0.450*advance + seed3*6.28)"/>
+    <expr name="rigPitch" formula="0.08*sin(0.375*advance + seed2*6.28)"/>
     <float name="sizeP" minValue="1.35" maxValue="1.35"></float>
     <float name="travelP" minValue="1.0" maxValue="1.0"></float>
     <float name="approachP" minValue="1.0" maxValue="1.0"></float>
@@ -3456,8 +3456,8 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene3D\ShipFlyby.frag" type="scene3d" geom="mesh" model="..\Models\RouKillingTime.glb" mood="dark,aggressive,space" probability="0.35" complexity="3">
-    <expr name="rigYaw" formula="0.18*sin(0.018*advance + seed1*6.28)"/>
-    <expr name="rigPitch" formula="0.08*sin(0.015*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.18*sin(0.450*advance + seed1*6.28)"/>
+    <expr name="rigPitch" formula="0.08*sin(0.375*advance + seed2*6.28)"/>
     <float name="sizeP" minValue="1.25" maxValue="1.25"></float>
     <float name="travelP" minValue="1.0" maxValue="1.0"></float>
     <float name="approachP" minValue="1.0" maxValue="1.0"></float>
@@ -3468,8 +3468,8 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene3D\ShipFlyby.frag" type="scene3d" geom="mesh" model="..\Models\LsvZealot.glb" mood="dark,aggressive,space" probability="0.35" complexity="3">
-    <expr name="rigYaw" formula="0.18*sin(0.018*advance + seed3*6.28)"/>
-    <expr name="rigPitch" formula="0.08*sin(0.015*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.18*sin(0.450*advance + seed3*6.28)"/>
+    <expr name="rigPitch" formula="0.08*sin(0.375*advance + seed2*6.28)"/>
     <float name="sizeP" minValue="1.30" maxValue="1.30"></float>
     <float name="travelP" minValue="1.0" maxValue="1.0"></float>
     <float name="approachP" minValue="1.0" maxValue="1.0"></float>
@@ -3480,8 +3480,8 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene3D\ShipFlyby.frag" type="scene3d" geom="mesh" model="..\Models\UnionCruiserNorway.glb" mood="dark,aggressive,space" probability="0.35" complexity="3">
-    <expr name="rigYaw" formula="0.18*sin(0.018*advance + seed1*6.28)"/>
-    <expr name="rigPitch" formula="0.08*sin(0.015*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.18*sin(0.450*advance + seed1*6.28)"/>
+    <expr name="rigPitch" formula="0.08*sin(0.375*advance + seed2*6.28)"/>
     <float name="sizeP" minValue="1.20" maxValue="1.20"></float>
     <float name="travelP" minValue="1.0" maxValue="1.0"></float>
     <float name="approachP" minValue="1.0" maxValue="1.0"></float>
@@ -3492,8 +3492,8 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene3D\ShipFlyby.frag" type="scene3d" geom="mesh" model="..\Models\ModularContainerShip.glb" mood="bright,space" probability="0.35" complexity="3">
-    <expr name="rigYaw" formula="0.18*sin(0.018*advance + seed3*6.28)"/>
-    <expr name="rigPitch" formula="0.08*sin(0.015*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.18*sin(0.450*advance + seed3*6.28)"/>
+    <expr name="rigPitch" formula="0.08*sin(0.375*advance + seed2*6.28)"/>
     <float name="sizeP" minValue="1.25" maxValue="1.25"></float>
     <float name="travelP" minValue="1.0" maxValue="1.0"></float>
     <float name="approachP" minValue="1.0" maxValue="1.0"></float>
@@ -3504,8 +3504,8 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene3D\AtmosphericEntry.frag" type="scene3d" geom="mesh" model="..\Models\SystemPatrolBoat.glb" mood="dark,aggressive,space" probability="0.35" complexity="3">
-    <expr name="rigYaw" formula="0.18*sin(0.018*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.08*sin(0.015*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.18*sin(0.450*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.08*sin(0.375*advance + seed2*6.28)"/>
     <float name="sizeP" minValue="0.90" maxValue="0.90"></float>
     <float name="shakeP" minValue="1.3" maxValue="1.3"></float>
     <float name="tintP" minValue="0.70" maxValue="0.70"></float>
@@ -3514,8 +3514,8 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene3D\AtmosphericEntry.frag" type="scene3d" geom="mesh" model="..\Models\VfpLightlyArmed.glb" mood="dark,aggressive,space" probability="0.35" complexity="3">
-    <expr name="rigYaw" formula="0.18*sin(0.018*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.08*sin(0.015*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.18*sin(0.450*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.08*sin(0.375*advance + seed2*6.28)"/>
     <float name="sizeP" minValue="0.90" maxValue="0.90"></float>
     <float name="shakeP" minValue="1.2" maxValue="1.2"></float>
     <float name="tintP" minValue="1.40" maxValue="1.40"></float>
@@ -3524,8 +3524,8 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene3D\AtmosphericEntry.frag" type="scene3d" geom="mesh" model="..\Models\VfpNervousEnergy.glb" mood="dark,aggressive,space" probability="0.35" complexity="3">
-    <expr name="rigYaw" formula="0.18*sin(0.018*advance + seed1*6.28)"/>
-    <expr name="rigPitch" formula="0.08*sin(0.015*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.18*sin(0.450*advance + seed1*6.28)"/>
+    <expr name="rigPitch" formula="0.08*sin(0.375*advance + seed2*6.28)"/>
     <float name="sizeP" minValue="0.95" maxValue="0.95"></float>
     <float name="shakeP" minValue="1.5" maxValue="1.5"></float>
     <float name="tintP" minValue="0.25" maxValue="0.25"></float>
@@ -3534,8 +3534,8 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene3D\AtmosphericEntry.frag" type="scene3d" geom="mesh" model="..\Models\RouTacticalRetreat.glb" mood="dark,aggressive,space" probability="0.35" complexity="3">
-    <expr name="rigYaw" formula="0.18*sin(0.018*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.08*sin(0.015*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.18*sin(0.450*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.08*sin(0.375*advance + seed2*6.28)"/>
     <float name="sizeP" minValue="1.00" maxValue="1.00"></float>
     <float name="shakeP" minValue="1.4" maxValue="1.4"></float>
     <float name="tintP" minValue="3.85" maxValue="3.85"></float>
@@ -3544,8 +3544,8 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene3D\AtmosphericEntry.frag" type="scene3d" geom="mesh" model="..\Models\LouCacophony.glb" mood="bright,psychedelic,space" probability="0.35" complexity="3">
-    <expr name="rigYaw" formula="0.18*sin(0.018*advance + seed3*6.28)"/>
-    <expr name="rigPitch" formula="0.08*sin(0.015*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.18*sin(0.450*advance + seed3*6.28)"/>
+    <expr name="rigPitch" formula="0.08*sin(0.375*advance + seed2*6.28)"/>
     <float name="sizeP" minValue="0.95" maxValue="0.95"></float>
     <float name="shakeP" minValue="1.2" maxValue="1.2"></float>
     <float name="tintP" minValue="2.15" maxValue="2.15"></float>
@@ -3554,8 +3554,8 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene3D\ShipDocking.frag" type="scene3d" geom="mesh" model="..\Models\ScrapRecyclingStation.glb" model2="..\Models\SalvageRepairRig.glb" mood="dark,aggressive,space" probability="0.35" complexity="3">
-    <expr name="rigYaw" formula="0.18*sin(0.018*advance + seed1*6.28)"/>
-    <expr name="rigPitch" formula="0.08*sin(0.015*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.18*sin(0.450*advance + seed1*6.28)"/>
+    <expr name="rigPitch" formula="0.08*sin(0.375*advance + seed2*6.28)"/>
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
     <float name="shipScaleP" minValue="0.28" maxValue="0.28"></float>
     <float name="spinP" minValue="0" maxValue="0"></float>
@@ -3564,8 +3564,8 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene3D\ShipDocking.frag" type="scene3d" geom="mesh" model="..\Models\MiningCentralStation.glb" model2="..\Models\HeavyAsteroidExcavator.glb" mood="dark,aggressive,space" probability="0.35" complexity="3">
-    <expr name="rigYaw" formula="0.18*sin(0.018*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.08*sin(0.015*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.18*sin(0.450*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.08*sin(0.375*advance + seed2*6.28)"/>
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
     <float name="shipScaleP" minValue="0.30" maxValue="0.30"></float>
     <float name="spinP" minValue="0" maxValue="0"></float>
@@ -3574,8 +3574,8 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene3D\Hologram.frag" type="scene3d" geom="mesh" model="..\Models\GcvSanctionedParts.glb" mood="dark,aggressive,space" probability="0.35" complexity="3">
-    <expr name="rigYaw" formula="0.18*sin(0.018*advance + seed1*6.28)"/>
-    <expr name="rigPitch" formula="0.08*sin(0.015*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.18*sin(0.450*advance + seed1*6.28)"/>
+    <expr name="rigPitch" formula="0.08*sin(0.375*advance + seed2*6.28)"/>
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
     <float name="spinP" minValue="1.2" maxValue="1.2"></float>
     <float name="tintP" minValue="5.55" maxValue="5.55"></float>
@@ -3584,8 +3584,8 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene3D\Hologram.frag" type="scene3d" geom="mesh" model="..\Models\MsvArbitrary.glb" mood="bright,psychedelic,space" probability="0.35" complexity="3">
-    <expr name="rigYaw" formula="0.18*sin(0.018*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.08*sin(0.015*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.18*sin(0.450*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.08*sin(0.375*advance + seed2*6.28)"/>
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
     <float name="spinP" minValue="0.7" maxValue="0.7"></float>
     <float name="tintP" minValue="0.35" maxValue="0.35"></float>
@@ -3594,8 +3594,8 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene3D\Hologram.frag" type="scene3d" geom="mesh" model="..\Models\RouFrankExchangeOfViews.glb" mood="dark,aggressive,space" probability="0.35" complexity="3">
-    <expr name="rigYaw" formula="0.18*sin(0.018*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.08*sin(0.015*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.18*sin(0.450*advance + seed2*6.28)"/>
+    <expr name="rigPitch" formula="0.08*sin(0.375*advance + seed2*6.28)"/>
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
     <float name="spinP" minValue="1.3" maxValue="1.3"></float>
     <float name="tintP" minValue="0.15" maxValue="0.15"></float>
@@ -3604,8 +3604,8 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene3D\Hologram.frag" type="scene3d" geom="mesh" model="..\Models\RouUnfortunateConflictOfEvidence.glb" mood="dark,aggressive,space" probability="0.35" complexity="3">
-    <expr name="rigYaw" formula="0.18*sin(0.018*advance + seed1*6.28)"/>
-    <expr name="rigPitch" formula="0.08*sin(0.015*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.18*sin(0.450*advance + seed1*6.28)"/>
+    <expr name="rigPitch" formula="0.08*sin(0.375*advance + seed2*6.28)"/>
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
     <float name="spinP" minValue="1.2" maxValue="1.2"></float>
     <float name="tintP" minValue="1.35" maxValue="1.35"></float>
@@ -3619,8 +3619,8 @@
     <float name="patternP" minValue="0" maxValue="0"></float>
     <float name="tintP" minValue="0.0" maxValue="0.0"></float>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-    <expr name="rigYaw" formula="0.16*sin(0.017*advance + seed1*6.28)"/>
-    <expr name="rigPitch" formula="0.07*sin(0.014*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.16*sin(0.425*advance + seed1*6.28)"/>
+    <expr name="rigPitch" formula="0.07*sin(0.350*advance + seed2*6.28)"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\Aperture.frag" type="scene3d" geom="mesh" model="..\\Models\\MantaRay.glb" mood="psychedelic,bright" probability="0.35" complexity="3">
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
@@ -3628,8 +3628,8 @@
     <float name="patternP" minValue="3" maxValue="3"></float>
     <float name="tintP" minValue="1.3" maxValue="1.3"></float>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-    <expr name="rigYaw" formula="0.16*sin(0.017*advance + seed1*6.28)"/>
-    <expr name="rigPitch" formula="0.07*sin(0.014*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.16*sin(0.425*advance + seed1*6.28)"/>
+    <expr name="rigPitch" formula="0.07*sin(0.350*advance + seed2*6.28)"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\Aperture.frag" type="scene3d" geom="mesh" model="..\\Models\\LimestoneLion.glb" mood="psychedelic,bright" probability="0.35" complexity="3">
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
@@ -3637,8 +3637,8 @@
     <float name="patternP" minValue="0" maxValue="0"></float>
     <float name="tintP" minValue="5.2" maxValue="5.2"></float>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-    <expr name="rigYaw" formula="0.16*sin(0.017*advance + seed1*6.28)"/>
-    <expr name="rigPitch" formula="0.07*sin(0.014*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.16*sin(0.425*advance + seed1*6.28)"/>
+    <expr name="rigPitch" formula="0.07*sin(0.350*advance + seed2*6.28)"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\Aperture.frag" type="scene3d" geom="mesh" model="..\\Models\\Squid.glb" mood="psychedelic,bright" probability="0.35" complexity="3">
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
@@ -3646,8 +3646,8 @@
     <float name="patternP" minValue="3" maxValue="3"></float>
     <float name="tintP" minValue="0.7" maxValue="0.7"></float>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-    <expr name="rigYaw" formula="0.16*sin(0.017*advance + seed1*6.28)"/>
-    <expr name="rigPitch" formula="0.07*sin(0.014*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.16*sin(0.425*advance + seed1*6.28)"/>
+    <expr name="rigPitch" formula="0.07*sin(0.350*advance + seed2*6.28)"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\ModalVibration.frag" type="scene3d" geom="mesh" model="..\\Models\\Jukebox.glb" mood="aggressive,dark" probability="0.35" complexity="3">
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
@@ -3655,8 +3655,8 @@
     <float name="gainP" minValue="1.4" maxValue="1.4"></float>
     <float name="tintP" minValue="4.0" maxValue="4.0"></float>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-    <expr name="rigYaw" formula="0.16*sin(0.017*advance + seed1*6.28)"/>
-    <expr name="rigPitch" formula="0.07*sin(0.014*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.16*sin(0.425*advance + seed1*6.28)"/>
+    <expr name="rigPitch" formula="0.07*sin(0.350*advance + seed2*6.28)"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\ModalVibration.frag" type="scene3d" geom="mesh" model="..\\Models\\Boombox.glb" mood="aggressive,dark" probability="0.35" complexity="3">
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
@@ -3664,8 +3664,8 @@
     <float name="gainP" minValue="1.5" maxValue="1.5"></float>
     <float name="tintP" minValue="1.1" maxValue="1.1"></float>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-    <expr name="rigYaw" formula="0.16*sin(0.017*advance + seed1*6.28)"/>
-    <expr name="rigPitch" formula="0.07*sin(0.014*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.16*sin(0.425*advance + seed1*6.28)"/>
+    <expr name="rigPitch" formula="0.07*sin(0.350*advance + seed2*6.28)"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\ChromeForm.frag" type="scene3d" geom="mesh" model="..\\Models\\AbstractSculpture.glb" mood="bright,dreamy" probability="0.35" complexity="3">
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
@@ -3673,8 +3673,8 @@
     <float name="brushP" minValue="0.0" maxValue="0.0"></float>
     <float name="tintP" minValue="0.0" maxValue="0.0"></float>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-    <expr name="rigYaw" formula="0.16*sin(0.017*advance + seed1*6.28)"/>
-    <expr name="rigPitch" formula="0.07*sin(0.014*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.16*sin(0.425*advance + seed1*6.28)"/>
+    <expr name="rigPitch" formula="0.07*sin(0.350*advance + seed2*6.28)"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\ChromeForm.frag" type="scene3d" geom="mesh" model="..\\Models\\Jellyfish.glb" mood="bright,dreamy" probability="0.35" complexity="3">
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
@@ -3682,8 +3682,8 @@
     <float name="brushP" minValue="0.8" maxValue="0.8"></float>
     <float name="tintP" minValue="2.0" maxValue="2.0"></float>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-    <expr name="rigYaw" formula="0.16*sin(0.017*advance + seed1*6.28)"/>
-    <expr name="rigPitch" formula="0.07*sin(0.014*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.16*sin(0.425*advance + seed1*6.28)"/>
+    <expr name="rigPitch" formula="0.07*sin(0.350*advance + seed2*6.28)"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\ChromeForm.frag" type="scene3d" geom="mesh" model="..\\Models\\MantaRay.glb" mood="bright,dreamy" probability="0.35" complexity="3">
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
@@ -3691,8 +3691,8 @@
     <float name="brushP" minValue="0.3" maxValue="0.3"></float>
     <float name="tintP" minValue="4.4" maxValue="4.4"></float>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-    <expr name="rigYaw" formula="0.16*sin(0.017*advance + seed1*6.28)"/>
-    <expr name="rigPitch" formula="0.07*sin(0.014*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.16*sin(0.425*advance + seed1*6.28)"/>
+    <expr name="rigPitch" formula="0.07*sin(0.350*advance + seed2*6.28)"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\ChromeForm.frag" type="scene3d" geom="mesh" model="..\\Models\\Seahorse.glb" mood="bright,dreamy" probability="0.35" complexity="3">
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
@@ -3700,8 +3700,8 @@
     <float name="brushP" minValue="0.0" maxValue="0.0"></float>
     <float name="tintP" minValue="1.5" maxValue="1.5"></float>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-    <expr name="rigYaw" formula="0.16*sin(0.017*advance + seed1*6.28)"/>
-    <expr name="rigPitch" formula="0.07*sin(0.014*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.16*sin(0.425*advance + seed1*6.28)"/>
+    <expr name="rigPitch" formula="0.07*sin(0.350*advance + seed2*6.28)"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\ChromeForm.frag" type="scene3d" geom="mesh" model="..\\Models\\BronzeDancer.glb" mood="bright,dreamy" probability="0.35" complexity="3">
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
@@ -3709,8 +3709,8 @@
     <float name="brushP" minValue="0.6" maxValue="0.6"></float>
     <float name="tintP" minValue="3.1" maxValue="3.1"></float>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-    <expr name="rigYaw" formula="0.16*sin(0.017*advance + seed1*6.28)"/>
-    <expr name="rigPitch" formula="0.07*sin(0.014*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.16*sin(0.425*advance + seed1*6.28)"/>
+    <expr name="rigPitch" formula="0.07*sin(0.350*advance + seed2*6.28)"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\ChromeForm.frag" type="scene3d" geom="mesh" model="..\\Models\\Squid.glb" mood="bright,dreamy" probability="0.35" complexity="3">
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
@@ -3718,8 +3718,8 @@
     <float name="brushP" minValue="0.2" maxValue="0.2"></float>
     <float name="tintP" minValue="5.4" maxValue="5.4"></float>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-    <expr name="rigYaw" formula="0.16*sin(0.017*advance + seed1*6.28)"/>
-    <expr name="rigPitch" formula="0.07*sin(0.014*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.16*sin(0.425*advance + seed1*6.28)"/>
+    <expr name="rigPitch" formula="0.07*sin(0.350*advance + seed2*6.28)"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\Assembly.frag" type="scene3d" geom="mesh" model="..\\Models\\AllianceDreadnought.glb" mood="dark,aggressive" probability="0.32" complexity="4">
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
@@ -3727,8 +3727,8 @@
     <float name="spreadP" minValue="1.3" maxValue="1.3"></float>
     <float name="tintP" minValue="3.2" maxValue="3.2"></float>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-    <expr name="rigYaw" formula="0.14*sin(0.016*advance + seed1*6.28)"/>
-    <expr name="rigPitch" formula="0.06*sin(0.013*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.14*sin(0.400*advance + seed1*6.28)"/>
+    <expr name="rigPitch" formula="0.06*sin(0.325*advance + seed2*6.28)"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\Assembly.frag" type="scene3d" geom="mesh" model="..\\Models\\WheelStationPell.glb" mood="dark,aggressive" probability="0.32" complexity="4">
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
@@ -3736,8 +3736,8 @@
     <float name="spreadP" minValue="1.2" maxValue="1.2"></float>
     <float name="tintP" minValue="4.4" maxValue="4.4"></float>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-    <expr name="rigYaw" formula="0.14*sin(0.016*advance + seed1*6.28)"/>
-    <expr name="rigPitch" formula="0.06*sin(0.013*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.14*sin(0.400*advance + seed1*6.28)"/>
+    <expr name="rigPitch" formula="0.06*sin(0.325*advance + seed2*6.28)"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\Fleet.frag" type="scene3d" geom="mesh" model="..\\Models\\PatrolFrigate.glb" instances="30" mood="space,aggressive" probability="0.32" complexity="4">
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
@@ -3745,8 +3745,8 @@
     <float name="spreadP" minValue="1.1" maxValue="1.1"></float>
     <float name="tintP" minValue="2.5" maxValue="2.5"></float>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-    <expr name="rigYaw" formula="0.14*sin(0.016*advance + seed1*6.28)"/>
-    <expr name="rigPitch" formula="0.06*sin(0.013*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.14*sin(0.400*advance + seed1*6.28)"/>
+    <expr name="rigPitch" formula="0.06*sin(0.325*advance + seed2*6.28)"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\Fleet.frag" type="scene3d" geom="mesh" model="..\\Models\\OrbitalTugboat.glb" instances="44" mood="space,aggressive" probability="0.32" complexity="4">
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
@@ -3754,8 +3754,8 @@
     <float name="spreadP" minValue="1.2" maxValue="1.2"></float>
     <float name="tintP" minValue="1.4" maxValue="1.4"></float>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-    <expr name="rigYaw" formula="0.14*sin(0.016*advance + seed1*6.28)"/>
-    <expr name="rigPitch" formula="0.06*sin(0.013*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.14*sin(0.400*advance + seed1*6.28)"/>
+    <expr name="rigPitch" formula="0.06*sin(0.325*advance + seed2*6.28)"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\Fleet.frag" type="scene3d" geom="mesh" model="..\\Models\\CommsRelayShip.glb" instances="60" mood="space,aggressive" probability="0.32" complexity="4">
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
@@ -3763,8 +3763,8 @@
     <float name="spreadP" minValue="1.1" maxValue="1.1"></float>
     <float name="tintP" minValue="5.2" maxValue="5.2"></float>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-    <expr name="rigYaw" formula="0.14*sin(0.016*advance + seed1*6.28)"/>
-    <expr name="rigPitch" formula="0.06*sin(0.013*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.14*sin(0.400*advance + seed1*6.28)"/>
+    <expr name="rigPitch" formula="0.06*sin(0.325*advance + seed2*6.28)"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\ModalVibration.frag" type="scene3d" geom="mesh" model="..\\Models\\OrchesterBecken.glb" mood="aggressive,dark" probability="0.3" complexity="3">
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
@@ -3772,8 +3772,8 @@
     <float name="gainP" minValue="1.4" maxValue="1.4"></float>
     <float name="tintP" minValue="1.25" maxValue="1.25"></float>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-    <expr name="rigYaw" formula="0.15*sin(0.016*advance + seed1*6.28)"/>
-    <expr name="rigPitch" formula="0.06*sin(0.013*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.15*sin(0.400*advance + seed1*6.28)"/>
+    <expr name="rigPitch" formula="0.06*sin(0.325*advance + seed2*6.28)"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\ModalVibration.frag" type="scene3d" geom="mesh" model="..\\Models\\TibetischeKlangschale.glb" mood="aggressive,dark" probability="0.3" complexity="3">
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
@@ -3781,8 +3781,8 @@
     <float name="gainP" minValue="1.2" maxValue="1.2"></float>
     <float name="tintP" minValue="3.75" maxValue="3.75"></float>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-    <expr name="rigYaw" formula="0.15*sin(0.016*advance + seed1*6.28)"/>
-    <expr name="rigPitch" formula="0.06*sin(0.013*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.15*sin(0.400*advance + seed1*6.28)"/>
+    <expr name="rigPitch" formula="0.06*sin(0.325*advance + seed2*6.28)"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\Fleet.frag" type="scene3d" geom="mesh" model="..\\Models\\FormationsAufklaerungsdrohne.glb" instances="48" mood="space,aggressive" probability="0.3" complexity="4">
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
@@ -3790,8 +3790,8 @@
     <float name="spreadP" minValue="1.0" maxValue="1.0"></float>
     <float name="tintP" minValue="1.25" maxValue="1.25"></float>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-    <expr name="rigYaw" formula="0.15*sin(0.016*advance + seed1*6.28)"/>
-    <expr name="rigPitch" formula="0.06*sin(0.013*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.15*sin(0.400*advance + seed1*6.28)"/>
+    <expr name="rigPitch" formula="0.06*sin(0.325*advance + seed2*6.28)"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\Fleet.frag" type="scene3d" geom="mesh" model="..\\Models\\KompakteVersorgungsdrohne.glb" instances="72" mood="space,aggressive" probability="0.3" complexity="4">
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
@@ -3799,8 +3799,8 @@
     <float name="spreadP" minValue="1.2" maxValue="1.2"></float>
     <float name="tintP" minValue="3.75" maxValue="3.75"></float>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-    <expr name="rigYaw" formula="0.15*sin(0.016*advance + seed1*6.28)"/>
-    <expr name="rigPitch" formula="0.06*sin(0.013*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.15*sin(0.400*advance + seed1*6.28)"/>
+    <expr name="rigPitch" formula="0.06*sin(0.325*advance + seed2*6.28)"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\ChromeForm.frag" type="scene3d" geom="mesh" model="..\\Models\\FluessigerTropfen.glb" mood="bright,dreamy" probability="0.3" complexity="3">
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
@@ -3808,8 +3808,8 @@
     <float name="brushP" minValue="0.6" maxValue="0.6"></float>
     <float name="tintP" minValue="0.00" maxValue="0.00"></float>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-    <expr name="rigYaw" formula="0.15*sin(0.016*advance + seed1*6.28)"/>
-    <expr name="rigPitch" formula="0.06*sin(0.013*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.15*sin(0.400*advance + seed1*6.28)"/>
+    <expr name="rigPitch" formula="0.06*sin(0.325*advance + seed2*6.28)"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\ChromeForm.frag" type="scene3d" geom="mesh" model="..\\Models\\UnendlicheSchleife.glb" mood="bright,dreamy" probability="0.3" complexity="3">
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
@@ -3817,8 +3817,8 @@
     <float name="brushP" minValue="0.0" maxValue="0.0"></float>
     <float name="tintP" minValue="1.25" maxValue="1.25"></float>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-    <expr name="rigYaw" formula="0.15*sin(0.016*advance + seed1*6.28)"/>
-    <expr name="rigPitch" formula="0.06*sin(0.013*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.15*sin(0.400*advance + seed1*6.28)"/>
+    <expr name="rigPitch" formula="0.06*sin(0.325*advance + seed2*6.28)"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\ChromeForm.frag" type="scene3d" geom="mesh" model="..\\Models\\VerschlungenerKnoten.glb" mood="bright,dreamy" probability="0.3" complexity="3">
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
@@ -3826,8 +3826,8 @@
     <float name="brushP" minValue="0.6" maxValue="0.6"></float>
     <float name="tintP" minValue="2.50" maxValue="2.50"></float>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-    <expr name="rigYaw" formula="0.15*sin(0.016*advance + seed1*6.28)"/>
-    <expr name="rigPitch" formula="0.06*sin(0.013*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.15*sin(0.400*advance + seed1*6.28)"/>
+    <expr name="rigPitch" formula="0.06*sin(0.325*advance + seed2*6.28)"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\ChromeForm.frag" type="scene3d" geom="mesh" model="..\\Models\\ErstarrteWelle.glb" mood="bright,dreamy" probability="0.3" complexity="3">
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
@@ -3835,8 +3835,8 @@
     <float name="brushP" minValue="0.0" maxValue="0.0"></float>
     <float name="tintP" minValue="3.75" maxValue="3.75"></float>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-    <expr name="rigYaw" formula="0.15*sin(0.016*advance + seed1*6.28)"/>
-    <expr name="rigPitch" formula="0.06*sin(0.013*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.15*sin(0.400*advance + seed1*6.28)"/>
+    <expr name="rigPitch" formula="0.06*sin(0.325*advance + seed2*6.28)"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\ChromeForm.frag" type="scene3d" geom="mesh" model="..\\Models\\BiomorpheZelle.glb" mood="bright,dreamy" probability="0.3" complexity="3">
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
@@ -3844,8 +3844,8 @@
     <float name="brushP" minValue="0.6" maxValue="0.6"></float>
     <float name="tintP" minValue="5.00" maxValue="5.00"></float>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-    <expr name="rigYaw" formula="0.15*sin(0.016*advance + seed1*6.28)"/>
-    <expr name="rigPitch" formula="0.06*sin(0.013*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.15*sin(0.400*advance + seed1*6.28)"/>
+    <expr name="rigPitch" formula="0.06*sin(0.325*advance + seed2*6.28)"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\Aperture.frag" type="scene3d" geom="mesh" model="..\\Models\\HornedAnvil.glb" mood="psychedelic,bright" probability="0.3" complexity="3">
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
@@ -3853,8 +3853,8 @@
     <float name="patternP" minValue="1" maxValue="1"></float>
     <float name="tintP" minValue="1.00" maxValue="1.00"></float>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-    <expr name="rigYaw" formula="0.15*sin(0.016*advance + seed1*6.28)"/>
-    <expr name="rigPitch" formula="0.06*sin(0.013*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.15*sin(0.400*advance + seed1*6.28)"/>
+    <expr name="rigPitch" formula="0.06*sin(0.325*advance + seed2*6.28)"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\Aperture.frag" type="scene3d" geom="mesh" model="..\\Models\\OversizedKey.glb" mood="psychedelic,bright" probability="0.3" complexity="3">
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
@@ -3862,8 +3862,8 @@
     <float name="patternP" minValue="3" maxValue="3"></float>
     <float name="tintP" minValue="3.00" maxValue="3.00"></float>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-    <expr name="rigYaw" formula="0.15*sin(0.016*advance + seed1*6.28)"/>
-    <expr name="rigPitch" formula="0.06*sin(0.013*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.15*sin(0.400*advance + seed1*6.28)"/>
+    <expr name="rigPitch" formula="0.06*sin(0.325*advance + seed2*6.28)"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\Aperture.frag" type="scene3d" geom="mesh" model="..\\Models\\SchmiedeeisernesZiergitter.glb" mood="psychedelic,bright" probability="0.3" complexity="3">
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
@@ -3871,8 +3871,8 @@
     <float name="patternP" minValue="1" maxValue="1"></float>
     <float name="tintP" minValue="5.00" maxValue="5.00"></float>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-    <expr name="rigYaw" formula="0.15*sin(0.016*advance + seed1*6.28)"/>
-    <expr name="rigPitch" formula="0.06*sin(0.013*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.15*sin(0.400*advance + seed1*6.28)"/>
+    <expr name="rigPitch" formula="0.06*sin(0.325*advance + seed2*6.28)"/>
   </TextureShader>
   <CombineShader file="..\\FX\\FxDarkRed.frag" type="normal" mood="dark,aggressive" probability="0.002" complexity="1">
     <bool name="red" probability="0.15"></bool>
