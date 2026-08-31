@@ -341,7 +341,18 @@ int main(int argc, char *argv[])
 	// NOTE: MSVC's rand()/srand() keep PER-THREAD state (verified
 	// empirically), so this does NOT seed rand() on other threads --
 	// AudioAnalyzer's capture thread seeds itself separately in ::run().
-	srand( (unsigned) std::chrono::high_resolution_clock::now().time_since_epoch().count() );
+	// KALEIDO_SEED pinnt den Zufall auf einen festen Wert.  Ohne das ist ein
+	// Vorher/Nachher-Vergleich zweier Laeufe wertlos: die Szenen wuerfeln ihre
+	// Parameter und Seeds pro Lauf neu, und unveraenderte Kontrollszenen
+	// schwankten in der Messung um den Faktor zwei -- mehr als die Wirkung,
+	// die belegt werden sollte.  Nur fuer Messlaeufe gedacht, im Betrieb nicht
+	// gesetzt und damit weiterhin uhrgeseedet.
+	{
+		const char *seedEnv = getenv( "KALEIDO_SEED" );
+		srand( seedEnv ? (unsigned) strtoul( seedEnv, nullptr, 10 )
+		               : (unsigned) std::chrono::high_resolution_clock::now()
+		                              .time_since_epoch().count() );
+	}
 
 	// The photo source used to be resolved here, from the Windows "My Pictures"
 	// folder into a global -- which NOTHING ever read: RenderPipeline takes its

@@ -555,7 +555,18 @@ void AudioAnalyzer::run()
     // and a drop-gate coin flip via rand() and runs entirely on THIS thread,
     // so without its own seed those two picks would replay identically on
     // every launch even after main()'s fix.
-    srand( (unsigned) std::chrono::high_resolution_clock::now().time_since_epoch().count() );
+    // KALEIDO_SEED pinnt den Zufall auf einen festen Wert.  Ohne das ist ein
+    // Vorher/Nachher-Vergleich zweier Laeufe wertlos: die Szenen wuerfeln ihre
+    // Parameter und Seeds pro Lauf neu, und unveraenderte Kontrollszenen
+    // schwankten in der Messung um den Faktor zwei -- mehr als die Wirkung,
+    // die belegt werden sollte.  Nur fuer Messlaeufe gedacht, im Betrieb nicht
+    // gesetzt und damit weiterhin uhrgeseedet.
+    {
+        const char *seedEnv = getenv( "KALEIDO_SEED" );
+        srand( seedEnv ? (unsigned) strtoul( seedEnv, nullptr, 10 )
+                       : (unsigned) std::chrono::high_resolution_clock::now()
+                                      .time_since_epoch().count() );
+    }
 
 #ifdef _WIN32
     // --- COM init for this thread ---
