@@ -1076,6 +1076,43 @@ to feel musical — `sin(audioBeatPhase * 6.2831853 * N)` gives exactly N cycles
 per beat, follows the tempo automatically, and is continuous across the wrap for
 integer N.
 
+### The budget has a ceiling but no floor
+
+Everything above bounds motion from *above*. For years nothing bounded it from
+below, and 987 camera-rig formulas quietly fell through that gap.
+
+Every mesh scene positions its camera with expressions of the shape
+
+```xml
+<expr name="rigYaw" formula="0.32*sin(0.030*advance + seed2*6.28)"/>
+```
+
+Read as a coefficient, `0.030` looks like nothing in particular. Multiply it out
+against the table above and it is a **full oscillation period of 58 minutes**:
+`audioAdvance` accumulates at roughly 0.03 /s under calm music (0.25 /s is the
+worst case at full energy, not the normal one), so the sine's argument moves
+0.0009 rad/s. Over a 40-second scene the camera therefore travels **0.8 degrees**.
+Across all 987 formulas the periods ran from half an hour to 4.8 hours.
+
+The scenes were not still — the models spin on `time` alone, deliberately, so a
+kick cannot jerk them. Only the camera was frozen, which is exactly the failure
+that hides best: something in frame is clearly moving, so "nothing is moving"
+never occurs to you, and the shot still feels dead because the *frame* is.
+
+The lesson is a habit, not a number: **a rate coefficient means nothing until it
+is multiplied by its driver's rate and the scene's lifetime.** A scene lives
+20–90 s, so any motion meant to read as motion needs a period in that range —
+`k · rate(D) · lifetime` should land somewhere near a radian. The ceilings above
+and this floor bound the same quantity from opposite sides, and only the ceiling
+had a tool (`Tools/temporal_budget.py`) watching it.
+
+Scaling every coefficient by a single constant (here ×25, median period 58 min →
+2.3 min) is the right shape of fix, because the amplitudes and the coefficients
+were already inversely related by hand: the wide 0.32 rad sweeps carry the small
+`k`, the fast ones carry 0.04 rad. A uniform factor preserves that relationship,
+and the fastest resulting term is a 2-degree wobble at a 19-second period —
+three orders of magnitude below the 4 Hz camera ceiling.
+
 ---
 
 ## GPU reaction-diffusion (live simulation effect)
