@@ -93,7 +93,11 @@ void main()
         // Airframe judder once the atmosphere bites: high frequency, small
         // amplitude, and gated on `entry` so the vacuum part stays glassy.
         float shake = (shakeP > 0.01 ? shakeP : 1.0) * entry;
-        vec3 jitter = vec3(sin(time * 47.0), sin(time * 53.0 + 1.7), sin(time * 41.0 + 3.1))
+        // Three mutually prime rates so the shake never settles into a buzz.
+        // They were 47/53/41, which put the fastest at 8.44 Hz -- past the hard
+        // 8 Hz ceiling, and this displaces the WHOLE airframe rather than a
+        // detail, so the 4 Hz geometry limit is the one it is really pushing.
+        vec3 jitter = vec3(sin(time * 37.0), sin(time * 43.0 + 1.7), sin(time * 31.0 + 3.1))
                     * 0.55 * shake * (0.6 + 0.8 * audioKick);
 
         world = local + jitter;
