@@ -116,15 +116,20 @@ void main()
     float corona = exp(-distToCenter * 0.02) * (1.0 + audioSwell * 0.5);
     col += imgPalette(0.5) * corona * 0.5;
 
-    // Fade into distance.  The ramp exists to hide the hard cull the vertex
-    // stage does at 140, so it belongs at that edge -- it used to start at 40
-    // and span the ENTIRE visible shell, which left only 4.6 % of the panels
-    // less than a tenth faded and a fifth of them more than nine tenths gone
-    // (mean fade 0.65).  A scene tagged `bright` was rendering mostly black.
-    // Starting at 90 puts a third of the panels in the clear and still fades
-    // the far wall out completely before it can pop.
+    // Fade into distance, matched to where the panels ACTUALLY are.
+    //
+    // Two wrong ranges before this one, both from wrong assumptions about the
+    // distribution.  40..140 spanned the whole visible shell (mean fade 0.65).
+    // 90..140 assumed the three mod() wraps scatter the panels uniformly
+    // through a 300-cube -- but world.x and world.y are already inside
+    // [-150,150] on the shell, so those two wraps do nothing: only z moves.
+    // The real distances are median 150, 10th percentile 98, 90th 188, max
+    // 212, and 90..140 left 68 % of them more than nine tenths faded.
+    //
+    // 150..270 puts two thirds of the panels in the clear, fades the far side
+    // of the shell for depth, and never erases anything outright.
     float dist = length(vPos);
-    float fog = clamp((dist - 90.0) / 50.0, 0.0, 1.0);
+    float fog = clamp((dist - 150.0) / 120.0, 0.0, 1.0);
     col = mix(col, vec3(0.0), fog);
 
     if (hue > 0.001) col = hueRot(col, 0.2 * sin(hue));

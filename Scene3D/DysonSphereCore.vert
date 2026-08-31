@@ -81,9 +81,18 @@ void main()
     world.x = mod(world.x + radius, radius * 2.0) - radius;
     world.y = mod(world.y + radius, radius * 2.0) - radius;
     
-    // Distance check for culling
+    // Distance check for culling.
+    //
+    // The far bound was 140 while the shell this scene is made of has radius
+    // 150 -- the cull was TIGHTER THAN THE STRUCTURE it exists to show.  Only
+    // z is actually displaced (world.x/y are already inside [-150,150], so
+    // their mod() is a no-op), so whenever camZ's wrap phase left the shell
+    // near its natural radius, EVERY panel failed the test and the frame went
+    // uniformly empty: measured 0.0 % survivors at phase 0, and 44 % of all
+    // rendered frames came back with zero spatial variance.
+    // 260 sits just past the largest distance the wrap can produce (212).
     float zDist = length(world);
-    if (zDist < 2.0 || zDist > 140.0)
+    if (zDist < 2.0 || zDist > 260.0)
     {
         gl_Position = vec4(0.0, 0.0, -3.0, 1.0);
         vCol = vec4(0.0); vCorner = attrA.xyz;

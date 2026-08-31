@@ -86,9 +86,16 @@ float map(vec3 p, float ap) {
     float pz = mod(p.z, 4.0) - 2.0;
     float zId = floor(p.z / 4.0);
 
-    // Circular ribs
-    float rib = length(p.xy) - (r - 0.2);
-    rib = max(rib, abs(pz) - 0.5);
+    // Circular ribs.  The whole map is an INTERIOR field -- `tube` above is
+    // `r - length(p.xy)`, the gap from a point inside the cylinder out to its
+    // wall.  This term was written the other way round (`length - (r-0.2)`),
+    // an EXTERIOR distance, so at the camera's radius of 2 it evaluated to
+    // -2.8: negative, i.e. "already inside a rib", everywhere the rib's own
+    // z-band applied.  The march then satisfied `ds < 0.01` at step 0 and
+    // shaded the entire frame with the dark rib albedo from the camera's own
+    // position -- a flat sheet instead of a corridor, for a quarter of every
+    // 4-unit z period.  Radial term flipped to match `tube`.
+    float rib = max((r - 0.2) - length(p.xy), abs(pz) - 0.5);
 
     if (rib < d) { d = rib; mat = 2.0; }
 

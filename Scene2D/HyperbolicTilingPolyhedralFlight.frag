@@ -168,8 +168,11 @@ void main() {
     vec3 finalCol = hit ? hitCol : bgCol;
     finalCol += glowTint;
 
-    // Hyperbolic depth fog
-    float fog = 1.0 - exp(-totDist * 0.2);
+    // Hyperbolic depth fog.  Rate 0.2 is a half-distance of 3.5 against a
+    // march that runs to 10, so nearly the whole corridor was mixed into the
+    // constant below and the frame measured a median spatial sd of 0.004.
+    // 0.08 puts the half-distance at 8.7, i.e. the depth actually marched.
+    float fog = 1.0 - exp(-totDist * 0.08);
     finalCol = mix(finalCol, imgPalette(0.8) * 0.35, fog);
 
     finalCol = pow(finalCol, vec3(0.88));
