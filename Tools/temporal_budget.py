@@ -119,6 +119,89 @@ def scan_file(path):
     return hits
 
 
+# --------------------------------------------------------------------------
+# The other end of the same budget: motion too SLOW to read as motion.
+#
+# The ceilings above stop a scene from strobing.  Nothing used to stop one from
+# standing still, and 987 camera-rig expressions in Komplett.xml sat three
+# orders of magnitude below the 4 Hz camera ceiling -- periods of half an hour
+# to nearly five, against scenes that live 20-90 s.  A coefficient tells you
+# nothing on its own; only k * rate(driver) * lifetime does.
+#
+# The quantity that decides whether a viewer sees movement is not the period
+# and not the amplitude but their product -- the ANGLE the camera actually
+# travels while the scene is on screen.  For `A*sin(k*D + p)` over a phase
+# span d = k*rate(D)*lifetime, the widest excursion is 2*A*sin(d/2) (clamped
+# at 2A once the term completes half a period).  A small, fast wobble and a
+# wide, slow sweep can both be fine; what is never fine is a wide sweep that
+# never gets anywhere, which is exactly what 987 expressions were doing.
+SCENE_SECS   = 45.0    # a typical solo span (minTimeSolo across the presets)
+FLOOR_DEG    = 2.0     # camera travel during SCENE_SECS, below = frozen
+CALM_ADVANCE = 0.03    # units/s under CALM music -- the case that matters here,
+                       # not the 0.25 worst case in RATE above
+
+EXPR = re.compile(r'<expr\s+name="(\w+)"\s+formula="([^"]*)"')
+# A * sin(k * driver + ...) -- amplitude and rate coefficient together
+OSC = re.compile(r'([0-9]*\.?[0-9]+)\s*\*\s*(?:sin|cos)\s*\(\s*'
+                 r'([0-9]*\.?[0-9]+)\s*\*\s*(advance|time|phase)\b')
+
+
+BLOCK = re.compile(r'<TextureShader\b[^>]*>.*?</TextureShader>', re.S)
+NAME  = re.compile(r'[\\/](\w+)\.frag')
+RATE_CALM = {"advance": CALM_ADVANCE, "time": 1.0, "phase": 1.2}
+
+
+def rig_travel(formula):
+    """Degrees each oscillating term of `formula` sweeps during one scene."""
+    out = []
+    for t in OSC.finditer(formula):
+        amp, k, drv = float(t.group(1)), float(t.group(2)), t.group(3)
+        span = k * RATE_CALM[drv] * SCENE_SECS                 # phase travelled
+        out.append((math.degrees(2.0 * amp * math.sin(min(span, math.pi) / 2.0)),
+                    amp, k, drv))
+    return out
+
+
+def scan_rigs(path):
+    """Scenes whose camera rig goes nowhere while the scene is on screen.
+
+    Judged per SCENE, not per term: a barely-moving secondary pitch next to a
+    yaw that sweeps properly is fine, and 124 such terms would otherwise drown
+    out the cases that matter.  A scene counts as frozen only when NO rig axis
+    reaches the floor.
+    """
+    src = open(path, encoding="utf-8", errors="replace").read()
+    frozen, terms, slow_terms = [], 0, 0
+    for b in BLOCK.finditer(src):
+        blk = b.group(0)
+        tv = [d for m in EXPR.finditer(blk) if m.group(1).startswith("rig")
+                for d in rig_travel(m.group(2))]
+        if not tv:
+            continue
+        terms += len(tv)
+        slow_terms += sum(1 for d in tv if d[0] < FLOOR_DEG)
+        best = max(tv)
+        if best[0] < FLOOR_DEG:
+            nm = NAME.search(blk)
+            frozen.append((nm.group(1) if nm else "?", best))
+    return frozen, terms, slow_terms
+
+
+def check_rig_floor():
+    cfg = os.path.join(ROOT, "Configurations", "Komplett.xml")
+    if not os.path.exists(cfg):
+        return 0
+    frozen, terms, slow_terms = scan_rigs(cfg)
+    print(f"\nrig floor: {terms} oscillating rig term(s), {slow_terms} below "
+          f"{FLOOR_DEG:g} deg per {SCENE_SECS:g} s scene "
+          f"-- {len(frozen)} scene(s) with no moving axis at all")
+    for name, (deg, amp, k, drv) in sorted(set(frozen))[:15]:
+        print(f"   {name:<34}best axis {deg:>6.2f} deg  (amp {amp:g}, {k:g}*{drv})")
+    if len(frozen) > 15:
+        print(f"   ... and {len(frozen) - 15} more")
+    return len(frozen)
+
+
 def main():
     rows, errors, warns = [], [], []
     for d in ("Scene2D", "Scene3D"):
@@ -174,7 +257,10 @@ def main():
                 fh.write(f"{name:<50}{hz:>8.2f}  {term}\n")
         print(f"\nwrote {out}")
 
-    print(f"\nsummary: {len(errors)} error(s), {len(warns)} warning(s)")
+    frozen = check_rig_floor()
+
+    print(f"\nsummary: {len(errors)} error(s), {len(warns)} warning(s), "
+          f"{frozen} frozen rig expression(s)")
     return 1 if errors else 0
 
 
