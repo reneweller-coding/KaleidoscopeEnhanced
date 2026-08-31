@@ -224,9 +224,16 @@ void main()
         col = bgCol * (0.8 + audioSwell * 0.6);
     }
 
-    // Atmospheric haze inside
+    // Atmospheric haze inside.  The corridor is marched out to d = 80, but the
+    // rate was 0.05 -- a half-distance of 14 units, so past d = 30 the picture
+    // was more than three quarters replaced by the constant below, and the
+    // whole promenade measured as a flat sheet (spatial sd 0.003).  It also
+    // made the scene read as a strobe: on an almost constant frame the median
+    // frame difference is near zero, so the sign flicker became a 45x outlier.
+    // 0.012 puts the half-distance at 58 units, i.e. the depth actually being
+    // marched, and keeps the far end hazy without erasing the near end.
     if (d < 80.0) {
-        col = mix(col, vec3(0.03, 0.04, 0.06), 1.0 - exp(-d * 0.05));
+        col = mix(col, vec3(0.03, 0.04, 0.06), 1.0 - exp(-d * 0.012));
     }
 
     if (hue > 0.001) col = hueRot(col, 0.2 * sin(hue));

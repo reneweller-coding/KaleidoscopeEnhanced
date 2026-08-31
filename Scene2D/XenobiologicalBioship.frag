@@ -206,8 +206,13 @@ void main()
         col *= clamp(1.0 - float(steps) * 0.015, 0.1, 1.0);
     }
 
-    // Internal biological fog / fluids
-    col = mix(col, vec3(0.05, 0.01, 0.01), 1.0 - exp(-d * 0.05));
+    // Internal biological fog / fluids.  The march runs to 50, but the rate
+    // was 0.05 -- a half-distance of 14, so the interior was 71 % replaced by
+    // the constant below at half depth and the frame measured sd 0.035, under
+    // the catalogue's 10th percentile (0.045; median 0.12).  0.028 puts the
+    // half-distance at half the marched depth, which is what "fluid-filled"
+    // should look like without dissolving the anatomy into a flat wash.
+    col = mix(col, vec3(0.05, 0.01, 0.01), 1.0 - exp(-d * 0.028));
 
     if (hue > 0.001) col = hueRot(col, 0.2 * sin(hue));
 
