@@ -73,6 +73,27 @@ jobs:
           python Tools\shadercheck.py
           if ($LASTEXITCODE -ne 0) { exit 1 }
 
+      # Both ends of the motion budget, and both are static.  The ceiling
+      # stops a scene strobing; the floor catches the opposite failure, which
+      # went unnoticed far longer: 987 camera-rig formulas sat three orders of
+      # magnitude BELOW the 4 Hz ceiling, giving oscillation periods of half an
+      # hour to five hours, so a 40-second scene panned by 0.8 degrees and 238
+      # scenes read as still images.  Nothing watched for that until this
+      # checker grew a lower bound.
+      - name: Self-test -- temporal budget (strobe ceiling AND motion floor, no GL)
+        shell: pwsh
+        run: |
+          python Tools\temporal_budget.py
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+
+      # A uniform declared float in GLSL but fed an int from the preset (or
+      # vice versa) does not fail to compile -- it silently reads garbage.
+      - name: Self-test -- uniform types (preset vs GLSL declaration, no GL)
+        shell: pwsh
+        run: |
+          python Tools\check_uniform_types.py
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+
       - name: Self-test -- roundtrip (load+save every preset, no GL)
         shell: pwsh
         run: |
