@@ -232,7 +232,12 @@ foreach ($name in $Names) {
       if (-not $d) { Write-Host "$name : NO RECORDING ($dimTag)"; continue }
       $mp4 = Join-Path $d.FullName "video.mp4"
       if (-not (Test-Path $mp4)) { Write-Host "$name : NO video.mp4 ($dimTag)"; continue }
-      & ffmpeg -y -ss $tCap -i $mp4 -vframes 1 -q:v 2 (Join-Path $out "${name}_$dimTag.png") 2>$null
+      # Bestes Bild im Fenster um $tCap statt exakt bei $tCap: ein fester
+      # Zeitpunkt trifft zwangslaeufig tote Momente -- FxShroom_2D kam so mit
+      # sd 0.1 zurueck, FxHexagon_2D mit sd 1.4, waehrend der Median aller
+      # FX-Bilder bei sd 28.8 liegt.
+      & python (Join-Path $PSScriptRoot "pick_best_frame.py") $mp4 $tCap `
+               (Join-Path $out "${name}_$dimTag.png") 4
       Remove-Item $d.FullName -Recurse -Force -ErrorAction SilentlyContinue
     }
     Write-Host "$name : rendered"
