@@ -73,6 +73,7 @@ TIMING = {
     # is below the threshold of notice while a scene is on trial.
     "TestAlle":     (45, 60, 15, 25),
     "TestModified": (45, 60, 15, 25),
+    "TestNeu": (45, 60, 15, 25),
 }
 
 # The review preset analyses this instead of listening. Relative to the exe's
@@ -120,7 +121,7 @@ MODIFIED_SCENES = {
     "CyberHologramGlitchVoxel", "CyberpunkSynthGridHighwayFly",
     "CyberpunkWireframeTerrainFlyover", "CyborgHiveShip",
     "DerelictMothership", "DichroicInfinityPrismVault",
-    "DichroicPrismLaserField", "DysonSphereCollapse",
+    "DichroicPrismLaserField", "DysonSphereCollapse", "DysonSphereCore",
     "EinsteinRingGravitationalLens", "EndOfTheUniverse", "EventHorizon",
     "EventHorizonSingularityPlunge", "ExoplanetOcean", "ExoplanetRings",
     "FerroSpikes", "FerrofluidMagneticSpikeSurge",
@@ -167,13 +168,31 @@ MODIFIED_SCENES = {
     "RingworldHabitat", "RogueWanderer", "RosslerAttractorHyperRibbon",
     "SacredGeometryFlowerOfLife3D", "SierpinskiOctahedronAbyss",
     "SolarFlareCorona", "SolarFlareSurfing", "SolarMagnetoPlasmaLoop",
-    "SpaceElevatorTransit", "StarShattering", "StarshipPlanetaryOrbit",
-    "StellarEngine", "StellarNursery", "SuperfluidQuantumTurbulence",
-    "SupermassiveAccretionDisk", "TheBigBounce",
-    "ThomasAttractorCosmicLabyrinth", "TricornFractalAntimatterSea",
-    "VillarceauCirclesHyperFlow", "VoidLeviathan", "VolcanicLightningPlume",
-    "VoronoiPrismShatterKaleido", "WhiteDwarfAccretion",
+    "SpaceElevatorTransit", "SpaceStationPromenade", "StarShattering",
+    "StarshipPlanetaryOrbit", "StellarEngine", "StellarNursery",
+    "SuperfluidQuantumTurbulence", "SupermassiveAccretionDisk",
+    "TheBigBounce", "ThomasAttractorCosmicLabyrinth",
+    "TricornFractalAntimatterSea", "VillarceauCirclesHyperFlow",
+    "VoidLeviathan", "VolcanicLightningPlume", "VoronoiPrismShatterKaleido",
+    "WhiteDwarfAccretion", "XenobiologicalBioship",
 }
+# Die Szenen, die in v1.11.0 und v1.11.1 repariert wurden -- eine kurze Runde
+# zum Gegenpruefen (neun Szenen statt der 164 in TestModified, also gut vier
+# Minuten statt siebzig).  Bewusst eine eigene Liste: welche Szenen zuletzt
+# dran waren, ist eine historische Tatsache und soll im Diff stehen.
+RECENT_SCENES = {
+    # AtmosphericEntry bewusst NICHT: dessen Aenderung war die Ruettel-
+    # Frequenz (8.44 -> 6.84 Hz), visuell nicht zu sehen -- und es steht mit
+    # ZWOELF Modellen im Katalog und wuerde die Runde dominieren.
+    "AlienPlanetOrbit", "DerelictMothership",
+    "DysonSphereCore", "HyperbolicTilingPolyhedralFlight", "NebulaCliffs",
+    "SpaceStationPromenade", "StellarNursery", "XenobiologicalBioship",
+}
+
+def rule_recent(m, h):
+    fm = re.search(r'file="[^"]*[\\/](\w+)\.frag"', h)
+    return bool(fm) and fm.group(1) in RECENT_SCENES
+
 def rule_modified(m, h):
     fm = re.search(r'file="[^"]*[\\/](\w+)\.frag"', h)
     return bool(fm) and fm.group(1) in MODIFIED_SCENES
@@ -193,6 +212,7 @@ GENRES = [
     ("Allround",    rule_all,         False),
     ("TestAlle",    rule_all,         True),
     ("TestModified", rule_modified,   True),
+    ("TestNeu",      rule_recent,     True),
 ]
 
 src = open(SRC, encoding="utf-8").read()
