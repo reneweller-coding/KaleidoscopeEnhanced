@@ -110,3 +110,6 @@ Configurations/ZZ*.xml
 
 # Messbericht von Tools/catalog_check.py (wird bei jedem Lauf neu erzeugt)
 Tools/catalog_check.json
+
+# Arbeitsverzeichnis von Tools/screen.py (Messwerte, Logs, WAV)
+.screen/
