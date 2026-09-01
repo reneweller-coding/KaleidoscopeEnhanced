@@ -2455,3 +2455,103 @@ because the sweep clock drifts by one frame per scene and several seconds
 of accumulated drift would otherwise slide the "loud" frame into the quiet
 half. `Tools/make_catalog.py` is incremental, so a partial scan updates only
 the scenes it contains.
+
+### One command, and a baseline to compare it against
+
+The chain above lived in half a dozen throwaway scripts that had to be
+reassembled from memory every time. It is now `Tools/screen.py`:
+
+```
+python Tools/screen.py                       # the whole catalogue
+python Tools/screen.py --preset SpaceAmbient # only that preset's scenes
+python Tools/screen.py --kind fx             # the overlays, over one fixed scene
+python Tools/screen.py --save-baseline       # freeze the result
+python Tools/screen.py --check               # compare against the frozen result
+```
+
+The baseline is the part that changes how the catalogue is maintained.
+`docs/scene-baseline.json` records what every scene measured when it was known
+good, and a later screening flags any scene whose structure or motion has
+collapsed. Two of the four real defects found in the 31 August round were
+earlier fixes that had treated a symptom and left the cause — the scene went
+on rendering, just emptier — and both would have surfaced here at the next
+screening instead of months later on a catalogue image.
+
+The threshold is a factor of two, and that number is measured rather than
+chosen. Run-to-run scatter with a pinned seed is about 2 % on calm scenes and
+20 % on busy ones; **without** a pinned seed the same shader swings by a
+factor of two, because each activation re-rolls the scene's parameters. Which
+is why `KALEIDO_SEED` exists at all: a screening that cannot be repeated
+cannot be compared, and a before/after where the unchanged control scenes move
+as much as the edited one proves nothing. Always read the controls first.
+
+Two more traps worth naming, both found by walking into them:
+
+* **The metric rewards noise, not form.** Densifying `EndOfTheUniverse`'s
+  starfield moved its structure score by 4.9× while turning a warm ember field
+  into grey static. The change was reverted. Conversely a sparse point field
+  measures low no matter how good it looks, because the analysis raster is
+  160×90 and averages the points away. The numbers rank candidates; the
+  picture decides.
+* **Frequency and step size belong together.** Raising a volumetric scene's
+  noise frequency to sharpen it made it measurably *flatter*: at a march step
+  of 0.5 units, a frequency above 2 moves more than one noise cell per step,
+  and the integral along the ray averages to a constant. Undersampling looks
+  exactly like smoothness.
+
+### Overlays are swept the same way
+
+`KALEIDO_FX_SWEEP=<seconds>` is the scene sweep's counterpart: it holds the
+scene still and steps through the overlays instead, so each one lands at a
+known timestamp over identical content. An overlay that does nothing is a real
+failure class — 43 silent FX and transitions were once found in a single pass
+— and the picker is random, so nothing guarantees a given overlay is on screen
+when you look. `RenderPipeline::forceFx()` deliberately bypasses the
+complexity budget, the mood filter and the mesh-calm rule: a sweep exists to
+see the one that was asked for, including the ones those filters would veto.
+
+## Camera rigs are named, not copied
+
+830 scenes carry a camera rig, and between them they use nineteen distinct
+formula sets — the commonest twelve cover 822 of them. Written out per scene
+that was 1333 lines of near-identical arithmetic:
+
+```xml
+<expr name="rigYaw"   formula="0.18*sin(0.450*advance + seed1*6.28)"/>
+<expr name="rigPitch" formula="0.08*sin(0.375*advance + seed2*6.28)"/>
+```
+
+replaced by
+
+```xml
+<rig preset="mesh-18"/>
+```
+
+resolved at load time from `Configurations/rigs.xml`.
+
+The point is not the disk space. Every rig coefficient in the catalogue was
+three orders of magnitude too small — oscillation periods of half an hour to
+five hours, so a 40-second scene panned by 0.8 degrees and 238 scenes read as
+still images — and that went unnoticed for months, because nobody reads 1300
+near-identical numbers. As a twelve-row table the same fact is one glance.
+
+The names describe the motion: `mesh-18` swings the yaw 0.18 rad, about ten
+degrees. Where two sets differ *only* in which seed drives the yaw, the name
+says so, because that is not a detail: pitch always runs on `seed2`, so a yaw
+on `seed2` oscillates in phase with it and the camera wobbles along a diagonal
+instead of tracing a compound path. Twenty-seven scenes do that. Left alone,
+but now visible.
+
+Eight scenes with one-off rigs keep their formulas. A rig used once is clearer
+written out than hidden behind a name invented for it.
+
+An unknown preset name is reported loudly rather than ignored: a silently
+dropped rig leaves the camera frozen, and a frozen camera looks like a design
+choice rather than a missing entry.
+
+**The migration was proved, not assumed.** The engine prints an `Expr OK` line
+for every expression it resolves; the set was 2307 lines before and 2307 after,
+with an empty diff. And a checker that reads only `Komplett.xml` goes blind the
+moment the formulas move — `Tools/temporal_budget.py` dropped from 1579 terms
+to twelve while still reporting "0 frozen", so it now resolves the table too,
+and treats a missing table as an error rather than a quiet pass.
