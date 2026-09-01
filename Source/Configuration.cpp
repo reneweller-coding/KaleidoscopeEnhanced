@@ -21,6 +21,8 @@
 #include <QtCore/QFile>
 #include <QtCore/QIODevice>
 #include <QtCore/QList>
+#include <QtCore/QMap>
+#include <QtCore/QPair>
 #include <QtCore/QString>
 #include <QtCore/QXmlStreamReader>
 
@@ -71,13 +73,57 @@ void Configuration::stop()
 }
 
 
+// ---- Named camera rigs (Configurations/rigs.xml) ---------------------------
+// 830 of the catalogue's scenes carry a rig, and between them they use only
+// nineteen distinct formula sets.  Written out per scene that is ~2500 lines
+// of near-identical arithmetic, and the cost of that is not disk space but
+// BLINDNESS: every rig coefficient in the catalogue was three orders of
+// magnitude too small -- oscillation periods of half an hour to five hours,
+// so a 40-second scene panned by 0.8 degrees -- and nobody saw it, because
+// nobody reads 2500 near-identical numbers.  As a twelve-entry table the same
+// fact is one glance.
+//
+// The table is loaded once from the same directory the presets come from, so
+// the packaged build finds it exactly like everything else.
+static QMap<QString, QList<QPair<QString, QString>>> s_rigTable;
+static bool s_rigLoaded = false;
+
+static void loadRigTable( const QString &cfgDir )
+{
+	if( s_rigLoaded ) return;
+	s_rigLoaded = true;
+	QFile f( cfgDir + "/rigs.xml" );
+	if( !f.open( QIODevice::ReadOnly ) )
+		return;                       // no table: <rig> entries then warn below
+	QDomDocument doc;
+	if( !doc.setContent( &f ) ) { f.close(); return; }
+	f.close();
+	QDomNodeList rigs = doc.documentElement().elementsByTagName( "rig" );
+	for( int i = 0; i < rigs.count(); ++i )
+	{
+		QDomElement r = rigs.at( i ).toElement();
+		QList<QPair<QString, QString>> exprs;
+		QDomNodeList es = r.elementsByTagName( "expr" );
+		for( int k = 0; k < es.count(); ++k )
+		{
+			QDomElement e = es.at( k ).toElement();
+			exprs.append( qMakePair( e.attribute( "name" ),
+			                         e.attribute( "formula" ) ) );
+		}
+		s_rigTable.insert( r.attribute( "name" ), exprs );
+	}
+	fprintf( stderr, "Rig-Vorlagen geladen: %d\n", int( s_rigTable.size() ) );
+}
+
 /**
  * @brief Walks the direct child elements of a TextureShader/CombineShader XML node and registers each declared uniform (or expression) on @p shader.
  *
  * Recognised child tags: `<interpolator>` (min/max-of-min/max ramping range,
  * see Uniform's BASE_TYPE_INTERPOLATOR_FLOAT), `<bool>` (probability of being
  * true), `<float>`/`<int>` (a randomised value range rolled per activation),
- * and `<expr>` (a per-frame formula-language expression — see ExprEval —
+ * `<rig>` (a named camera rig from Configurations/rigs.xml,
+ * expanded into the same expressions it replaces), and `<expr>`
+ * (a per-frame formula-language expression — see ExprEval —
  * that overrides a same-named `<float>` uniform with a live audio-reactive
  * value; see EffectShader::addExpression). Every tag shares a `name`
  * attribute identifying the target GLSL uniform.
@@ -125,6 +171,29 @@ void Configuration::addUniforms( EffectShader *shader, QDomElement &el )
 			// audio features, uploaded as the float uniform `name` (overrides
 			// a <float> of the same name — see EffectShader::addExpression).
 			shader->addExpression( name, peData.attribute("formula").toStdString() );
+		}
+		else if(tagNam == "rig")
+		{
+			// <rig preset="mesh-18"/> expands to the same addExpression calls
+			// the formulas would have made -- see loadRigTable above.
+			const QString preset = peData.attribute( "preset" );
+			auto it = s_rigTable.constFind( preset );
+			if( it == s_rigTable.constEnd() )
+			{
+				// LOUD on purpose. A silently ignored rig leaves the camera
+				// frozen, which is precisely the failure this table exists to
+				// make visible -- and a frozen camera looks like a design
+				// choice, not like a missing entry.
+				fprintf( stderr, "Rig-Vorlage '%s' nicht in rigs.xml - "
+				                 "die Kamera dieser Szene steht STILL.\n",
+				         preset.toLocal8Bit().constData() );
+			}
+			else
+			{
+				for( const auto &pr : *it )
+					shader->addExpression( pr.first.toStdString(),
+					                       pr.second.toStdString() );
+			}
 		}
 
 		pEntries = pEntries.nextSibling();
@@ -185,6 +254,10 @@ void Configuration::readConfiguration( const QString &filenameIn )
 	// shared. Identity under _WIN32.
 	const QString filename = QString::fromStdString(
 		Platform::assetPath( filenameIn.toStdString() ) );
+	// The rig table lives beside the presets; resolve it from the first preset
+	// we are handed rather than from a compiled-in path, so the packaged build
+	// finds it the same way it finds everything else.
+	loadRigTable( QFileInfo( filename ).absolutePath() );
 	QFile* file = new QFile( filename );
 	if (!file->open(QIODevice::ReadOnly | QIODevice::Text))
 	{

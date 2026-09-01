@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Benannte Kamera-Rigs.  Eine Szene zieht eine Vorlage mit
+     <rig preset="NAME"/> statt ihre Formeln auszuschreiben;
+     Configuration::addUniforms loest das beim Laden auf.
+
+     Erzeugt von Tools/migrate_rigs.py.  Wer hier einen
+     Koeffizienten aendert, aendert ihn fuer ALLE Szenen der
+     Vorlage.  Genau das ist der Punkt: als 830 Kopien war
+     nicht zu sehen, dass jede Schwingung eine halbe bis fuenf
+     Stunden dauerte. -->
+<rigs>
+  <!-- 348x  (2d:348) -->
+  <rig name="flat">
+    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
+    <expr name="rig2Zoom" formula="0.05*swell"/>
+  </rig>
+  <!-- 240x  (grid:52, points:46, indirect:44, ribbon:41) -->
+  <rig name="procedural">
+    <expr name="rigDolly" formula="0.5*swell"/>
+    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
+    <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
+    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
+  </rig>
+  <!-- 65x  (mesh:65) -->
+  <rig name="mesh-15">
+    <expr name="rigPitch" formula="0.06*sin(0.325*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.15*sin(0.400*advance + seed1*6.28)"/>
+  </rig>
+  <!-- 38x  (mesh:38) -->
+  <rig name="mesh-16">
+    <expr name="rigPitch" formula="0.07*sin(0.350*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.16*sin(0.425*advance + seed1*6.28)"/>
+  </rig>
+  <!-- 31x  (mesh:31) -->
+  <rig name="mesh-32-roll">
+    <expr name="rigPitch" formula="0.14*sin(0.425*advance + seed2*6.28)"/>
+    <expr name="rigRoll" formula="0.05*sin(0.750*advance + seed3*6.28)"/>
+    <expr name="rigYaw" formula="0.32*sin(0.550*advance + seed1*6.28)"/>
+  </rig>
+  <!-- 21x  (mesh:21) -->
+  <rig name="mesh-18">
+    <expr name="rigPitch" formula="0.08*sin(0.375*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.18*sin(0.450*advance + seed1*6.28)"/>
+  </rig>
+  <!-- 21x  (mesh:21) -->
+  <rig name="mesh-18-yaw2">
+    <expr name="rigPitch" formula="0.08*sin(0.375*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.18*sin(0.450*advance + seed2*6.28)"/>
+  </rig>
+  <!-- 21x  (mesh:21) -->
+  <rig name="mesh-14">
+    <expr name="rigPitch" formula="0.06*sin(0.325*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.14*sin(0.400*advance + seed1*6.28)"/>
+  </rig>
+  <!-- 19x  (mesh:19) -->
+  <rig name="mesh-18-yaw3">
+    <expr name="rigPitch" formula="0.08*sin(0.375*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.18*sin(0.450*advance + seed3*6.28)"/>
+  </rig>
+  <!-- 6x  (mesh:6) -->
+  <rig name="mesh-28">
+    <expr name="rigPitch" formula="0.11*sin(0.425*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.28*sin(0.525*advance + seed1*6.28)"/>
+  </rig>
+  <!-- 6x  (mesh:6) -->
+  <rig name="mesh-28-yaw2">
+    <expr name="rigPitch" formula="0.11*sin(0.425*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.28*sin(0.525*advance + seed2*6.28)"/>
+  </rig>
+  <!-- 6x  (mesh:6) -->
+  <rig name="mesh-28-yaw3">
+    <expr name="rigPitch" formula="0.11*sin(0.425*advance + seed2*6.28)"/>
+    <expr name="rigYaw" formula="0.28*sin(0.525*advance + seed3*6.28)"/>
+  </rig>
+</rigs>
