@@ -165,6 +165,10 @@ public:
 	/** @brief Stores this frame's lyrics/artist overlay state (read back by paint()/PresentPass). @param o Overlay state computed by the caller (GLwidget). */
 	void setOverlayFrame( const OverlayFrame &o ) { m_overlay = o; }
 	/** @brief Uploads the current lyrics-line texture to the present pass. @param rgba Packed RGBA8 pixel data. @param w Image width in pixels. @param h Image height in pixels. */
+	/** @return Spatial spread of the last measured frame -- 0 means a flat surface. */
+	float liveStructure() const { return m_present.liveStructure(); }
+	/** @return Mean absolute change against the previously measured frame. */
+	float liveMotion()    const { return m_present.liveMotion(); }
 	void setLyricsTexture( const void *rgba, int w, int h ) { m_present.setLyricsImage( rgba, w, h ); }
 	/** @brief Uploads the current artist-image texture to the present pass. @param rgba Packed RGBA8 pixel data. @param w Image width in pixels. @param h Image height in pixels. */
 	void setArtistTexture( const void *rgba, int w, int h ) { m_present.setArtistImage( rgba, w, h ); }
@@ -191,6 +195,10 @@ public:
 	QStringList sceneNames() const;
 	/** @brief Jumps directly to texture effect @p idx (instant, unquantised cut). Ignored while PIN or FREEZE is active, or if @p idx is out of range. @param idx Index into the texture-effect list, as returned by sceneNames(). */
 	void forceScene( int idx );
+	/** @brief Names of the configured combine-effect (overlay) shaders, in list order. @return One basename per FX, without the .frag suffix. */
+	QStringList fxNames() const;
+	/** @brief Force the next overlay to @p idx, bypassing budget/mood/mesh filters (FX sweep). @param idx Index into fxNames(). */
+	void forceFx( int idx );
 	/** @brief Index of the currently active texture effect, into the same list as sceneNames(). @return An index into sceneNames(), or -1 if none is active yet. */
 	int activeSceneIndex() const { return m_effectTextures.empty() ? -1 : int(m_scheduler.actTexture()); }
 	/** @brief Whether a scene cross-fade is currently in flight (mid-transition frames blend two scenes, so callers wanting a clean single-scene snapshot should skip them). */

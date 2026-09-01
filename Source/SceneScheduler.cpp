@@ -182,6 +182,22 @@ void SceneScheduler::forceScene( int idx )
 }
 
 /**
+ * @brief Force the next combine-effect (overlay) to @p idx.
+ * @param idx Index into the fx list; out-of-range is ignored.
+ *
+ * Bypasses the complexity budget, the mood filter and the mesh-calm rule:
+ * an FX sweep exists to SEE the one that was asked for, including the ones
+ * those filters would normally veto.
+ */
+void SceneScheduler::forceFx( int idx )
+{
+	if( !m_fxShaders || idx < 0 || idx >= (int)m_fxShaders->size() )
+		return;
+	m_forcedNextFx  = idx;
+	m_forceFxChange = true;
+}
+
+/**
  * @brief Find a registered transition shader by fragment basename.
  *
  * Compares only the basename (text after the last path separator) so the
@@ -843,6 +859,15 @@ void SceneScheduler::tickFx( const Tick &t, bool trueStereoHold )
 			const bool meshCalmNeeded =
 			       tex[m_actTexture]->isMeshScene()
 			    || ( m_texState != 0 && tex[m_nextTexture]->isMeshScene() );
+			// forceFx() bypasses every acceptance test below -- the whole point
+			// of an FX sweep is to see the one that was ASKED for, including
+			// the ones the budget or the mesh-calm rule would normally veto.
+			if( m_forcedNextFx >= 0 && m_forcedNextFx < (int)comb.size() )
+			{
+				m_nextFx       = (unsigned int) m_forcedNextFx;
+				m_forcedNextFx = -1;
+			}
+			else {
 			for( unsigned int i = 0; i < kMaxSearch; i++ )
 			{
 				m_nextFx = rand() % comb.size();
@@ -875,6 +900,7 @@ void SceneScheduler::tickFx( const Tick &t, bool trueStereoHold )
 					}
 				}
 			}
+			}   // Ende: keine erzwungene FX-Wahl
 			}
 
 			m_fxInterp = 1.0;

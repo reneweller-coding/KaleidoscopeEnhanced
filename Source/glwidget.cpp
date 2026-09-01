@@ -846,6 +846,37 @@ void GLwidget::draw()
 	if( audio.trackChange && !sweepActive() && m_actConfiguration && m_actConfiguration->m_renderPipeline )
 		m_actConfiguration->m_renderPipeline->requestSceneChange();
 
+	// KALEIDO_FX_SWEEP=<seconds>: the same walk, but over the OVERLAYS.
+	// The scene stays put (review mode holds it) and the combine shader steps
+	// on, so each overlay lands at a known timestamp over identical content --
+	// which is what makes "this FX does nothing" measurable instead of a
+	// suspicion.  Independent of the scene sweep; setting both walks scenes.
+	if( fxSweepSeconds() > 0 && !sweepActive()
+	    && m_actConfiguration && m_actConfiguration->m_renderPipeline )
+	{
+		RenderPipeline   *rp    = m_actConfiguration->m_renderPipeline;
+		const QStringList names = rp->fxNames();
+		if( !m_sweepReview ) { m_sweepReview = true; rp->setReviewMode( true ); }
+		const qint64 nowMs = m_fpsTimer.elapsed();
+		if( m_fxSweepNextMs < 0 || nowMs >= m_fxSweepNextMs )
+		{
+			if( m_fxSweepIdx < names.size() )
+			{
+				fprintf( stderr, "[fxsweep] %3d/%d  t=%.1fs  %s\n", m_fxSweepIdx,
+				         int( names.size() ), nowMs * 0.001,
+				         names[m_fxSweepIdx].toLocal8Bit().constData() );
+				rp->forceFx( m_fxSweepIdx );
+				m_fxSweepIdx++;
+			}
+			else if( m_fxSweepIdx == names.size() )
+			{
+				fprintf( stderr, "[fxsweep] finished after %d fx\n", m_fxSweepIdx );
+				m_fxSweepIdx++;
+			}
+			m_fxSweepNextMs = nowMs + qint64( fxSweepSeconds() ) * 1000;
+		}
+	}
+
 	// KALEIDO_SCENE_SWEEP=<seconds>: step through EVERY scene of the loaded
 	// config in catalogue order, holding each for that many seconds. The
 	// scheduler picks scenes at random by design, which is right for viewing
@@ -1653,10 +1684,26 @@ void GLwidget::drawFeatureOverlay( QPainter *painter, const AudioFeatures &f )
 		{ "stereoWidth",   f.stereoWidth },
 		{ "level",         f.overallLevel },
 	};
+
+	// Was das BILD tut, nicht was die Musik tut.  Dieselben zwei Zahlen,
+	// nach denen das Offline-Screening den ganzen Katalog sortiert -- hier
+	// live, damit man eine Shader-Aenderung ansieht statt sie zu rendern,
+	// zu extrahieren und dann anzusehen.
+	float picStd = 0.f, picMot = 0.f;
+	if( m_actConfiguration && m_actConfiguration->m_renderPipeline )
+	{
+		picStd = m_actConfiguration->m_renderPipeline->liveStructure();
+		picMot = m_actConfiguration->m_renderPipeline->liveMotion();
+	}
+	const Row picRows[] = {
+		{ "BILD Struktur", picStd },
+		{ "BILD Bewegung", picMot * 8.f },   // x8: sonst klebt der Balken am Rand
+	};
 	const int n  = int(sizeof(rows) / sizeof(rows[0]));
 	const int x  = 24, y0 = 66, lh = 22, bw = 130, bh = 12;
 
-	painter->fillRect( x - 14, 14, 360, n * lh + 68, QColor(0, 0, 0, 160) );
+	// +3 Zeilen: die Leerzeile und die zwei BILD-Werte darunter.
+	painter->fillRect( x - 14, 14, 360, (n + 3) * lh + 68, QColor(0, 0, 0, 160) );
 	painter->setFont( QFont("Consolas", 12, QFont::Bold) );
 	painter->setPen( QColor(120, 200, 255) );
 	painter->drawText( x, 34, QString::fromUtf8( Strings::T( S_FEATURE_TITLE_FMT ) ).arg(m_fpsValue) );
@@ -1689,6 +1736,26 @@ void GLwidget::drawFeatureOverlay( QPainter *painter, const AudioFeatures &f )
 		QString txt = (i == 3) ? QString::number(bpm, 'f', 0)
 		                       : QString::number(rows[i].val, 'f', 2);
 		painter->drawText( bx + bw + 8, ry, txt );
+	}
+
+	// Und darunter, abgesetzt: was das BILD tut.  Gruen, sobald die Szene
+	// ueber dem 10-%-Quantil des Katalogs liegt (0.045) -- rot darunter,
+	// weil das die Schwelle ist, ab der eine Szene im Screening auffaellt.
+	const int pn = int(sizeof(picRows) / sizeof(picRows[0]));
+	for( int i = 0; i < pn; ++i )
+	{
+		int ry = y0 + (n + 1 + i) * lh;
+		float v = picRows[i].val; if (v < 0.f) v = 0.f; if (v > 1.f) v = 1.f;
+		painter->setPen( QColor(205, 214, 230) );
+		painter->drawText( x, ry, QString(picRows[i].name) );
+		int bx = x + 150;
+		painter->fillRect( bx, ry - 11, bw, bh, QColor(40, 45, 60) );
+		const bool thin = (i == 0) ? (picStd < 0.045f) : (picMot < 0.0025f);
+		painter->fillRect( bx, ry - 11, int(bw * v), bh,
+		                   thin ? QColor(230, 90, 80) : QColor(110, 210, 130) );
+		painter->setPen( QColor(255, 255, 255) );
+		painter->drawText( bx + bw + 8, ry,
+		                   QString::number( i == 0 ? picStd : picMot, 'f', 4 ) );
 	}
 }
 

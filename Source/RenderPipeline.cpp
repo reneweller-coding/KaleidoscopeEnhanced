@@ -906,6 +906,29 @@ QStringList RenderPipeline::sceneNames() const
 
 // Remote scene browser: jump DIRECTLY to scene idx (same instant path as a
 // manual 'n' cut, but with a chosen target instead of a random roll).
+QStringList RenderPipeline::fxNames() const
+{
+	QStringList out;
+	for( EffectShader *s : m_effectFx )
+	{
+		QString n = QString::fromLocal8Bit( s->fragmentName() );
+		int cut = std::max( n.lastIndexOf( QChar('\\') ), n.lastIndexOf( QChar('/') ) );
+		n = n.mid( cut + 1 );
+		if( n.endsWith( ".frag" ) ) n.chop( 5 );
+		out << n;
+	}
+	return out;
+}
+
+void RenderPipeline::forceFx( int idx )
+{
+	if( idx < 0 || idx >= (int)m_effectFx.size() )
+		return;
+	if( s_pinned || s_freeze )
+		return;                       // same handbrakes as forceScene
+	m_scheduler.forceFx( idx );
+}
+
 void RenderPipeline::forceScene( int idx )
 {
 	if( idx < 0 || idx >= (int)m_effectTextures.size() )

@@ -50,6 +50,15 @@
 class PresentPass
 {
 public:
+	/** @return Spatial spread of the last measured frame (0 = flat surface).
+	 *
+	 * Falls out of the exposure's existing 64-pixel readback, so it costs
+	 * nothing.  A live number for the one question a rendered scan takes
+	 * four minutes to answer: is this scene showing anything at all? */
+	float	liveStructure() const { return m_liveStd; }
+	/** @return Mean absolute change against the previous measured frame. */
+	float	liveMotion()    const { return m_liveMotion; }
+
 	/** Alles anlegen (GL-Kontext aktuell); idempotent. Formate = die der
 	 *  übrigen Offscreen-Texturen der Pipeline. */
 	/**
@@ -300,6 +309,10 @@ private:
 
 	// ---- Limiter-/Belichtungs-Zustand ----
 	float	m_prevMeanLum     = -1.f;   // <0 = uninitialisiert   ///< Previous sampled mean luminance (< 0 = not yet initialised).
+	float	m_liveStd    = 0.f;   ///< Spatial spread of the same 64-pixel sample: 'is there anything to see'.
+	float	m_liveMotion = 0.f;   ///< Mean |delta| against the previous sample: 'is anything moving'.
+	float	m_prevSample[64] = {};  ///< Previous frame's luma sample, for m_liveMotion.
+	bool	m_havePrevSample = false;
 	bool	m_safetyReady     = false;   ///< True once setup() succeeded (gates run() and ready()).
 	int		m_safetyFrame     = 0;   ///< Frame counter used to sample the mean-luminance readback every 3rd frame.
 	float	m_lastSafetyScale = 1.f;   ///< Brightness scale from the last luminance sample, reused on skipped frames.

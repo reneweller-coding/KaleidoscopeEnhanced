@@ -535,6 +535,15 @@ protected:
 	static int  sweepSeconds() { static const int s = qEnvironmentVariableIntValue( "KALEIDO_SCENE_SWEEP" ); return s; }
 	/** @return Whether a catalogue sweep is running (review mode, not normal playback). */
 	static bool sweepActive()  { return sweepSeconds() > 0; }
+	/** @return FX sweep interval in seconds, 0 when KALEIDO_FX_SWEEP is unset.
+	 *
+	 * The scene sweep's counterpart for overlays.  An FX that does nothing is
+	 * a real failure class -- 43 silent FX and transitions were once found at
+	 * one go -- and the picker is random, so no overlay is reliably on screen
+	 * at a known moment.  Holds the scene still and walks the FX instead. */
+	static int  fxSweepSeconds() { static const int s = qEnvironmentVariableIntValue( "KALEIDO_FX_SWEEP" ); return s; }
+	int     m_fxSweepIdx    = 0;   ///< Next FX index the sweep will jump to.
+	qint64  m_fxSweepNextMs = -1;  ///< Deadline for the next FX jump; -1 = not started.
 	int     m_sweepIdx    = 0;   ///< Next scene index the sweep will jump to.
 	qint64  m_sweepNextMs = -1;  ///< m_fpsTimer deadline for the next jump; -1 = not started yet.
 	int     m_sweepWant   = -1;  ///< Scene the sweep last asked for; -1 = none yet.

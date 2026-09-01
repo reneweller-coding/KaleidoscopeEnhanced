@@ -90,6 +90,38 @@ def preset_names(preset):
     return {m.group(1) for m in NAME.finditer(src)}
 
 
+FX_REF = "TunnelPlain"          # the catalogue's 2D reference scene
+
+
+def write_fx_config(scenes, cross):
+    """One config: a single fixed scene, every overlay, walked by KALEIDO_FX_SWEEP.
+
+    Measuring an overlay needs the CONTENT underneath held still, otherwise a
+    scene cut is indistinguishable from the overlay doing something.  Hence one
+    reference scene for all of them -- the same one the catalogue images use, so
+    the numbers and the pictures talk about the same thing.
+    """
+    src = io.open(KOMPLETT, encoding="utf-8").read()
+    ref, fx = None, []
+    for m in BLOCK.finditer(src):
+        tag, blk = m.group(1), m.group(0)
+        nm = NAME.search(blk.split(">", 1)[0])
+        nm = nm.group(1) if nm else "?"
+        if tag == "TextureShader" and nm == FX_REF and ref is None:
+            ref = blk
+        elif tag == "CombineShader":
+            fx.append(blk)
+    if ref is None:
+        sys.exit("Referenzszene %s nicht in Komplett.xml" % FX_REF)
+    xml = ('<?xml version="1.0" encoding="utf-8" ?>\n'
+           '<configuration ImageDirectory="..\\\\Images" '
+           'ConfigurationName="TestZZScreenFx" hidden="true" >\n\n'
+           + ref + "\n" + "".join(fx) + cross + "</configuration>\n")
+    io.open(os.path.join(ROOT, "Configurations", "ZZScreenFx.xml"), "w",
+            encoding="utf-8").write(xml)
+    return [("ZZScreenFx", len(fx))]
+
+
 def write_chunks(scenes, plain, cross, per_chunk):
     """One review config per chunk.  The "Test" name prefix is what flips the
     engine into review mode, so the prefix is not cosmetic."""
@@ -174,12 +206,13 @@ def wait_for_video(folder, timeout=1500):
     return None
 
 
-def render(cfg, wav, log_path, hold, seed):
+def render(cfg, wav, log_path, hold, seed, kind="scene"):
     # Die Engine liest KALEIDO_SCENE_SWEEP mit qEnvironmentVariableIntValue:
     # "12.0" ergibt dort 0 und der Sweep laeuft schlicht nicht an -- die
     # Aufnahme sieht dann wie ein normaler Lauf aus und liefert null Fenster.
-    env = dict(os.environ, KALEIDO_SCENE_SWEEP=str(int(round(hold))),
-               KALEIDO_SEED=str(seed))
+    var = "KALEIDO_FX_SWEEP" if kind == "fx" else "KALEIDO_SCENE_SWEEP"
+    env = dict(os.environ, KALEIDO_SEED=str(seed))
+    env[var] = str(int(round(hold)))
     with io.open(log_path, "w", encoding="utf-8", errors="replace") as fh:
         subprocess.run([os.path.join(RELEASE, "Kaleidoscope.exe"),
                         "-c", "Test" + cfg, "-x", wav],
@@ -187,7 +220,7 @@ def render(cfg, wav, log_path, hold, seed):
 
 
 # --------------------------------------------------------------- measure ----
-SWEEP = re.compile(r"^\[sweep\]\s+\d+/\d+\s+t=([\d.]+)s\s+(\S+)", re.M)
+SWEEP = re.compile(r"^\[(?:sweep|fxsweep)\]\s+\d+/\d+\s+t=([\d.]+)s\s+(\S+)", re.M)
 
 
 def windows_from_log(log_path):
@@ -305,9 +338,130 @@ def report(rows):
     return marked
 
 
+# -------------------------------------------------------------- baseline ----
+# A versioned snapshot of what every scene measured when it was known good, so
+# a shader edit that quietly guts a scene is caught at the next screening
+# instead of months later on a catalogue image.  Two of the four real defects
+# in the 31.08. round were earlier fixes of mine that had treated a symptom and
+# left the cause; both would have shown up here as a collapse in structure.
+BASELINE = os.path.join(ROOT, "docs", "scene-baseline.json")
+
+# What counts as a regression.  Measured run-to-run noise with a pinned seed is
+# ~2 % for calm scenes and ~20 % for busy ones, and WITHOUT a pinned seed the
+# same shader swings by a factor of two.  A factor of two is therefore the
+# honest floor: below it the tool would report noise as a finding.
+REGRESS_FACTOR = 2.0
+
+
+def aggregate(rows):
+    """One row per scene: the worst case over its windows, which is what a
+    reviewer cares about ("does this scene EVER show something?")."""
+    per = {}
+    for r in rows:
+        per.setdefault(r["name"], []).append(r)
+    out = {}
+    for n, v in per.items():
+        out[n] = dict(
+            std=round(max(x["spatial_std"] for x in v), 5),
+            motion=round(max(x["motion_med"] for x in v), 5),
+            strobe=round(max(x["strobe"] for x in v), 2),
+            luma=round(max(x["luma_max"] for x in v), 4),
+            n=len(v))
+    return out
+
+
+def save_baseline(rows):
+    agg = aggregate(rows)
+    os.makedirs(os.path.dirname(BASELINE), exist_ok=True)
+    json.dump(dict(scenes=agg, note=(
+        "Bestwert je Szene ueber ihre Fenster, aus Tools/screen.py. "
+        "Aktualisieren mit: python Tools/screen.py --save-baseline"),
+    ), io.open(BASELINE, "w", encoding="utf-8"), indent=1, sort_keys=True)
+    print("Basislinie: %d Szenen -> %s" % (len(agg), BASELINE))
+
+
+def check_baseline(rows):
+    if not os.path.exists(BASELINE):
+        print("Keine Basislinie -- erst  python Tools/screen.py --save-baseline")
+        return 0
+    base = json.load(io.open(BASELINE, encoding="utf-8"))["scenes"]
+    now = aggregate(rows)
+    worse, neu, gone = [], [], []
+    for n, cur in sorted(now.items()):
+        if n not in base:
+            neu.append(n)
+            continue
+        b = base[n]
+        for key, label in (("std", "Struktur"), ("motion", "Bewegung")):
+            if b[key] > 1e-5 and cur[key] * REGRESS_FACTOR < b[key]:
+                worse.append((n, label, b[key], cur[key]))
+    gone = sorted(set(base) - set(now))
+    print("\nGegen die Basislinie: %d Szenen geprueft" % len(now))
+    if worse:
+        print("  EINGEBROCHEN (Faktor > %.0f):" % REGRESS_FACTOR)
+        for n, label, a, b_ in worse:
+            print("    %-38s %-9s %.5f -> %.5f" % (n, label, a, b_))
+    if neu:
+        print("  neu, noch nicht in der Basislinie: %s" % ", ".join(neu[:8])
+              + (" ..." if len(neu) > 8 else ""))
+    if gone:
+        print("  diesmal nicht gemessen: %d Szenen" % len(gone))
+    if not worse:
+        print("  keine Einbrueche.")
+    return 1 if worse else 0
+
+
+def report_fx(rows):
+    """An overlay is judged against the pass-through, not against a threshold.
+
+    Two questions, and neither is answered by the scene report: does this FX
+    CHANGE anything (a silent overlay measures like FxPlain -- 43 silent FX and
+    transitions were once found in one pass), and does it leave anything TO
+    see (an FX that flattens the frame is as bad as one that does nothing).
+    """
+    per = {r["name"]: r for r in rows}
+    base = per.get("FxPlain")
+    if base is None:
+        print("\nFxPlain fehlt in der Messung -- ohne Referenz kein FX-Urteil.")
+        return []
+    sds = sorted(r["spatial_std"] for r in rows)
+    med = sds[len(sds)//2]
+    quiet, flat = [], []
+    for n, r in sorted(per.items()):
+        if n == "FxPlain":
+            continue
+        d = (abs(r["luma_med"] - base["luma_med"]) / max(base["luma_med"], 1e-4)
+             + abs(r["spatial_std"] - base["spatial_std"]) / max(base["spatial_std"], 1e-4))
+        if d < 0.06:
+            quiet.append((n, d))
+        if r["spatial_std"] < 0.25 * med:
+            # CAVEAT: the analysis raster is 160x90.  An overlay that tiles the
+            # frame into many small copies (FxSphere at nrCopies=8) averages
+            # away at that size and measures flat while looking fine at full
+            # resolution -- its catalogue image scores sd 41.  Treat this as a
+            # candidate to LOOK at, never as a verdict.
+            flat.append((n, r["spatial_std"]))
+    print("\n%d Overlays gegen FxPlain (luma %.3f, sd %.4f), Median sd %.4f"
+          % (len(per) - 1, base["luma_med"], base["spatial_std"], med))
+    if quiet:
+        print("  STUMM (kaum vom Durchreicher zu unterscheiden):")
+        for n, d in quiet:
+            print("    %-28s Abstand %.3f" % (n, d))
+    else:
+        print("  keine stummen Overlays.")
+    if flat:
+        print("  PLATT (unter einem Viertel des Medians) -- ANSEHEN, kein Urteil:")
+        print("    (hochfrequente Kachel-Overlays mitteln sich im 160x90-Raster weg)")
+        for n, v in flat:
+            print("    %-28s sd %.4f" % (n, v))
+    return quiet + flat
+
+
 # ------------------------------------------------------------------ main ----
 def main():
     ap = argparse.ArgumentParser()
+    ap.add_argument("--kind", choices=("scene", "fx"), default="scene",
+                    help="Szenen messen oder die Overlays ueber einer festen Szene")
     ap.add_argument("--preset", help="nur die Szenen dieses Presets")
     ap.add_argument("--scenes", help="Komma-Liste von Szenennamen")
     ap.add_argument("--chunk", type=int, default=110, help="Szenen je Aufnahme")
@@ -315,15 +469,22 @@ def main():
     ap.add_argument("--seed", type=int, default=1, help="KALEIDO_SEED")
     ap.add_argument("--report", action="store_true", help="nur neu auswerten")
     ap.add_argument("--resume", action="store_true", help="fertige Chunks ueberspringen")
+    ap.add_argument("--save-baseline", action="store_true",
+                    help="die letzte Messung als docs/scene-baseline.json festschreiben")
+    ap.add_argument("--check", action="store_true",
+                    help="letzte Messung gegen die Basislinie pruefen (Exit 1 bei Einbruch)")
     a = ap.parse_args()
 
     os.makedirs(WORK, exist_ok=True)
     merged = os.path.join(WORK, "metrics.json")
 
-    if a.report:
+    if a.report or a.save_baseline or a.check:
         if not os.path.exists(merged):
-            sys.exit("Noch nichts gemessen -- erst ohne --report laufen lassen.")
-        report(json.load(io.open(merged, encoding="utf-8")))
+            sys.exit("Noch nichts gemessen -- erst ohne diese Flags laufen lassen.")
+        rows = json.load(io.open(merged, encoding="utf-8"))
+        if a.report:        (report_fx if a.kind == "fx" else report)(rows)
+        if a.save_baseline: save_baseline(rows)
+        if a.check:         return check_baseline(rows)
         return 0
 
     scenes, plain, cross = read_master()
@@ -339,8 +500,12 @@ def main():
     if not scenes:
         sys.exit("Keine Szenen ausgewaehlt.")
 
-    per = len(scenes) if a.scenes else a.chunk
-    chunks = write_chunks(scenes, plain, cross, per)
+    if a.kind == "fx":
+        chunks = write_fx_config(scenes, cross)
+        per = chunks[0][1]
+    else:
+        per = len(scenes) if a.scenes else a.chunk
+        chunks = write_chunks(scenes, plain, cross, per)
     print("%d Szenen -> %d Aufnahme(n) a %d, %.0f s Haltezeit, Seed %d"
           % (len(scenes), len(chunks), per, a.hold, a.seed))
 
@@ -360,7 +525,7 @@ def main():
         log = os.path.join(WORK, "%s.log" % cfg)
         print("  %s: rendern (%d Szenen, ~%.0f min) ..."
               % (cfg, count, (count * a.hold + 40) / 60.0))
-        render(cfg, wav, log, a.hold, a.seed)
+        render(cfg, wav, log, a.hold, a.seed, a.kind)
         folder = newest_recording()
         vid = wait_for_video(folder) if folder else None
         if not vid:
@@ -382,9 +547,12 @@ def main():
             os.remove(p)
 
     json.dump(allrows, io.open(merged, "w", encoding="utf-8"), indent=1)
-    report(allrows)
+    (report_fx if a.kind == "fx" else report)(allrows)
     print("\nMesswerte: %s" % merged)
-    return 0
+    # A full run is exactly when a regression would show, so check by default.
+    # A partial run (--scenes/--preset) only compares what it measured.
+    rc = check_baseline(allrows) if os.path.exists(BASELINE) else 0
+    return rc
 
 
 if __name__ == "__main__":

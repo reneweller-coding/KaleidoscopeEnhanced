@@ -413,9 +413,32 @@ void PresentPass::run( const Inputs &in )
 		float buf[ 4 * 64 ];
 		glGetTexImage( GL_TEXTURE_2D, lvl, GL_RGBA, GL_FLOAT, buf );
 		float mean = 0.f;
+		float lum[64];
 		for( int i = 0; i < npx; i++ )
-			mean += 0.299f*buf[i*4+0] + 0.587f*buf[i*4+1] + 0.114f*buf[i*4+2];
+		{
+			lum[i] = 0.299f*buf[i*4+0] + 0.587f*buf[i*4+1] + 0.114f*buf[i*4+2];
+			mean += lum[i];
+		}
 		mean /= float(npx);
+
+		// The same 64 samples answer two more questions for free: is there
+		// any STRUCTURE (spread), and is anything MOVING (change against the
+		// previous sample).  Those are exactly the two numbers the offline
+		// screening spends four minutes per batch computing, and having them
+		// live turns 'edit, render, extract, look' into 'edit, look'.
+		{
+			float var = 0.f, mot = 0.f;
+			for( int i = 0; i < npx; i++ )
+			{
+				const float d = lum[i] - mean;
+				var += d * d;
+				if( m_havePrevSample ) mot += fabsf( lum[i] - m_prevSample[i] );
+			}
+			m_liveStd    = sqrtf( var / float(npx) );
+			m_liveMotion = m_havePrevSample ? (mot / float(npx)) : 0.f;
+			for( int i = 0; i < npx; i++ ) m_prevSample[i] = lum[i];
+			m_havePrevSample = true;
+		}
 
 		if( m_prevMeanLum < 0.f ) m_prevMeanLum = mean;
 		float maxStep = 2.0f * m_safetyAccumDt;          // <= 2.0 luma / second

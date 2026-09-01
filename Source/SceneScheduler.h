@@ -110,6 +110,15 @@ public:
 	 * @param idx Index into the attached texture/effect list to jump to.
 	 */
 	void forceScene( int idx );
+	/** @brief Force the next combine-effect (overlay) to @p idx, bypassing the
+	 *         complexity budget, mood and mesh-calm filters.
+	 * @param idx Index into fxNames(); ignored if out of range.
+	 *
+	 * For measuring FX the way KALEIDO_SCENE_SWEEP measures scenes: an
+	 * overlay that does nothing is a real failure class (43 silent FX and
+	 * transitions were once found at one go), and the random picker cannot
+	 * be relied on to show a given one at a known moment. */
+	void forceFx( int idx );
 	/** Solo-Alter des aktuellen Effekts (Skip-Malus-Fenster, !status etc.). */
 	float actElapsedSec() const { return secsSince( m_clockEffectTexture ); }   ///< Seconds since the current effect went solo (used for the skip-malus window, !status, etc.).
 	/** Freeze/Pin: Effekt-/Combine-Uhren re-armen, damit hinter dem
@@ -214,6 +223,7 @@ private:
 	unsigned int m_nextTexture = 0;   ///< Effect/texture shader index being faded to.
 	unsigned int m_actFx  = 0;   ///< Currently active combine shader index.
 	unsigned int m_nextFx = 0;   ///< Combine shader index being faded to.
+	int m_forcedNextFx = -1;     ///< FX index forced by forceFx(); -1 = free choice. Consumed once.
 	int   m_texState   = 0;    ///< Effect state machine phase: 0 = Solo, 1 = Fade.
 	int   m_fxState  = 0;    ///< Combine state machine phase: 0 = Solo, 1 = Fade.
 	float m_texInterp  = 1.f;  ///< Effect cross-fade blend factor.
