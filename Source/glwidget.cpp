@@ -7,6 +7,7 @@
 #include <math.h>
 
 #include <QtCore/QFile>
+#include <QtCore/QTextStream>
 #include <QtCore/QFileInfo>
 #include <QtCore/QBuffer>
 #include <QtCore/QDateTime>
@@ -515,6 +516,9 @@ GLwidget::GLwidget( QWidget *parent )
 
 GLwidget::~GLwidget()
 {
+	// Messung mitnehmen, bevor alles abgebaut wird (No-op ohne
+	// KALEIDO_COST_LOG).
+	dumpSceneCost();
 	// Zuletzt gewählten Zustand sichern - deckt den GRACEFUL Quit-Pfad ab
 	// (Fenster-X, Menü "Exit": app.quit() -> app.exec() kehrt zurück ->
 	// dieser Destruktor läuft). Die harten exit(0)-Stellen (Escape/Q/
@@ -790,9 +794,65 @@ void GLwidget::initializeGL()
 	setAutoFillBackground(false); //rwrwforeground
 }
 
+/**
+ * @brief Write the measured per-scene render cost to scene-cost.json.
+ *
+ * The scheduler's selection budget runs on a hand-set `complexity`
+ * attribute -- an estimate nobody ever checked against a clock.  This
+ * writes what the frames actually cost, so the estimate can be replaced by
+ * a measurement.  Milliseconds per frame, averaged over the frames the
+ * scene was on screen; scenes seen for under 30 frames are left out
+ * because a handful of frames is dominated by shader compilation.
+ */
+void GLwidget::dumpSceneCost()
+{
+	if( m_sceneCost.isEmpty() )
+		return;
+	QFile f( "scene-cost.json" );
+	if( !f.open( QIODevice::WriteOnly | QIODevice::Text ) )
+		return;
+	QTextStream o( &f );
+	o << "{\n";
+	bool first = true;
+	for( auto it = m_sceneCost.constBegin(); it != m_sceneCost.constEnd(); ++it )
+	{
+		if( it.value().frames < 30 ) continue;
+		if( !first ) o << ",\n";
+		first = false;
+		o << "  \"" << it.key() << "\": "
+		  << QString::number( it.value().ms / it.value().frames, 'f', 3 );
+	}
+	o << "\n}\n";
+	f.close();
+	fprintf( stderr, "Szenenkosten: %d Szenen -> scene-cost.json\n",
+	         int( m_sceneCost.size() ) );
+	m_sceneCost.clear();
+}
+
 void GLwidget::paintGL()
  {
+	// KALEIDO_COST_LOG=1: wie teuer ist jede Szene WIRKLICH.  Das
+	// complexity-Attribut, an dem das Auswahlbudget des Schedulers haengt,
+	// ist bis heute Handarbeit -- eine Schaetzung, die nie jemand
+	// nachgemessen hat.  Hier faellt die Wahrheit nebenbei ab: Frame-Zeit,
+	// der gerade aktiven Szene zugeschlagen, am Ende als JSON ausgegeben.
+	static const bool costLog = qEnvironmentVariableIsSet( "KALEIDO_COST_LOG" );
+	const qint64 costT0 = costLog ? m_fpsTimer.nsecsElapsed() : 0;
+
 	 draw();
+
+	if( costLog && m_actConfiguration && m_actConfiguration->m_renderPipeline )
+	{
+		RenderPipeline *rp = m_actConfiguration->m_renderPipeline;
+		const QStringList nm = rp->sceneNames();
+		const int idx = rp->activeSceneIndex();
+		if( idx >= 0 && idx < nm.size() )
+		{
+			SceneCost &c = m_sceneCost[ nm[idx] ];
+			c.ms += ( m_fpsTimer.nsecsElapsed() - costT0 ) * 1e-6;
+			c.frames++;
+		}
+	}
 
 	//qglColor(Qt::white);
     //renderText(100, 100, "txt", QFont("Arial", 32, QFont::Bold, false) );

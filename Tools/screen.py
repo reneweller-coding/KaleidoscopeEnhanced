@@ -211,7 +211,7 @@ def render(cfg, wav, log_path, hold, seed, kind="scene"):
     # "12.0" ergibt dort 0 und der Sweep laeuft schlicht nicht an -- die
     # Aufnahme sieht dann wie ein normaler Lauf aus und liefert null Fenster.
     var = "KALEIDO_FX_SWEEP" if kind == "fx" else "KALEIDO_SCENE_SWEEP"
-    env = dict(os.environ, KALEIDO_SEED=str(seed))
+    env = dict(os.environ, KALEIDO_SEED=str(seed), KALEIDO_COST_LOG="1")
     env[var] = str(int(round(hold)))
     with io.open(log_path, "w", encoding="utf-8", errors="replace") as fh:
         subprocess.run([os.path.join(RELEASE, "Kaleidoscope.exe"),
@@ -515,7 +515,7 @@ def main():
         print("Screening-WAV bauen (%.0f s) ..." % need)
         write_wav(wav, need)
 
-    allrows = []
+    allrows, costs = [], {}
     for cfg, count in chunks:
         mpath = os.path.join(WORK, "metrics_%s.json" % cfg[-2:])
         if a.resume and os.path.exists(mpath):
@@ -531,6 +531,18 @@ def main():
         if not vid:
             print("  %s: KEIN Video -- uebersprungen" % cfg)
             continue
+        # The app writes scene-cost.json into its working directory and
+        # overwrites it per chunk, so fold it into a running total before the
+        # next render clobbers it.  Measured cost is the honest replacement for
+        # the hand-set `complexity` the scheduler budgets with.
+        cp = os.path.join(RELEASE, "scene-cost.json")
+        if os.path.exists(cp):
+            try:
+                part = json.load(io.open(cp, encoding="utf-8"))
+                costs.update(part)
+            except ValueError:
+                pass
+            os.remove(cp)
         rows = measure(vid, log, a.hold)
         if rows:
             json.dump(rows, io.open(mpath, "w", encoding="utf-8"), indent=1)
@@ -546,6 +558,10 @@ def main():
         if os.path.exists(p):
             os.remove(p)
 
+    if costs:
+        cf = os.path.join(WORK, "scene-cost.json")
+        json.dump(costs, io.open(cf, "w", encoding="utf-8"), indent=1, sort_keys=True)
+        print("Kosten: %d Szenen -> %s" % (len(costs), cf))
     json.dump(allrows, io.open(merged, "w", encoding="utf-8"), indent=1)
     (report_fx if a.kind == "fx" else report)(allrows)
     print("\nMesswerte: %s" % merged)

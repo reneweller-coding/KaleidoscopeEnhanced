@@ -16,6 +16,7 @@
 #include <QtOpenGLWidgets/QOpenGLWidget>
 #include <QtGui/QImage>
 #include <QtGui/QPixmap>
+#include <QtCore/QHash>
 #include <QtCore/QSet>
 #include <QtCore/QVector>
 
@@ -541,6 +542,11 @@ protected:
 	 * a real failure class -- 43 silent FX and transitions were once found at
 	 * one go -- and the picker is random, so no overlay is reliably on screen
 	 * at a known moment.  Holds the scene still and walks the FX instead. */
+	/** @brief Accumulated render time of one scene (KALEIDO_COST_LOG). */
+	struct SceneCost { double ms = 0.0; int frames = 0; };
+	QHash<QString, SceneCost> m_sceneCost;   ///< Per-scene render cost; empty unless KALEIDO_COST_LOG is set.
+	/** @brief Write the measured per-scene cost to scene-cost.json and clear it. */
+	void dumpSceneCost();
 	static int  fxSweepSeconds() { static const int s = qEnvironmentVariableIntValue( "KALEIDO_FX_SWEEP" ); return s; }
 	int     m_fxSweepIdx    = 0;   ///< Next FX index the sweep will jump to.
 	qint64  m_fxSweepNextMs = -1;  ///< Deadline for the next FX jump; -1 = not started.
