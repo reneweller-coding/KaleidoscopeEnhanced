@@ -171,11 +171,35 @@ def scan_rigs(path):
     reaches the floor.
     """
     src = open(path, encoding="utf-8", errors="replace").read()
+
+    # Most scenes name a rig preset instead of writing its formulas out, so a
+    # checker that only reads Komplett.xml sees almost nothing.  Measured when
+    # the presets landed: 1579 oscillating terms became 12 -- the floor check
+    # had gone quiet without failing, which is the worst way for a check to
+    # break.  Resolve the table.
+    rigs = {}
+    uses_presets = "<rig preset=" in src
+    rp = os.path.join(os.path.dirname(path), "rigs.xml")
+    if uses_presets and not os.path.exists(rp):
+        # Without the table this check still reports "0 frozen" -- it would PASS
+        # while seeing almost nothing, which is worse than failing.
+        print("FEHLER: Komplett.xml nennt Rig-Vorlagen, aber %s fehlt --"
+              " die Untergrenze kann nichts pruefen." % rp)
+        return [("<rigs.xml fehlt>", (0.0, 0.0, 0.0, "-"))], 0, 0
+    if os.path.exists(rp):
+        rsrc = open(rp, encoding="utf-8", errors="replace").read()
+        for rm in re.finditer(r'<rig\s+name="(\w[\w-]*)"\s*>(.*?)</rig>', rsrc, re.S):
+            rigs[rm.group(1)] = [m.group(2) for m in EXPR.finditer(rm.group(2))
+                                 if m.group(1).startswith("rig")]
+
     frozen, terms, slow_terms = [], 0, 0
     for b in BLOCK.finditer(src):
         blk = b.group(0)
-        tv = [d for m in EXPR.finditer(blk) if m.group(1).startswith("rig")
-                for d in rig_travel(m.group(2))]
+        formulas = [m.group(2) for m in EXPR.finditer(blk)
+                    if m.group(1).startswith("rig")]
+        for pm in re.finditer(r'<rig\s+preset="([\w-]+)"\s*/>', blk):
+            formulas += rigs.get(pm.group(1), [])
+        tv = [d for f in formulas for d in rig_travel(f)]
         if not tv:
             continue
         terms += len(tv)
