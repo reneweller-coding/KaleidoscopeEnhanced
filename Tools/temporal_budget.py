@@ -40,7 +40,14 @@ driver D advances per second:
                                integrates 0.06*motion + 1.20*rotEnergy +
                                0.10*motion*beatBreath, so ~1.2 at full energy
   audioAdvance  ~0.25  units/s  0.015 + 0.08*flux + 0.02*motion +
-                               0.10*harmChange + 0.03*swell, at its maximum
+                               0.10*harmChange + 0.03*swell.  MEASURED
+                               2026-09-02 over three tracks: 0.012 .. 0.153,
+                               typical 0.027 on calm ambient and 0.110 on a
+                               steady 128 BPM track.  The 0.25 kept here is
+                               deliberately above the measured peak -- a
+                               CEILING wants headroom.  The floor check below
+                               uses the measured calm value instead, because a
+                               FLOOR wants the normal case.
   audioBarPhase 1/(4 beats)     one bar; musical by construction
   audioBeatPhase 1 per beat     ~2 Hz at 120 BPM; musical by construction
 
