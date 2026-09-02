@@ -122,22 +122,49 @@ def write_fx_config(scenes, cross):
     return [("ZZScreenFx", len(fx))]
 
 
+def review_order(part):
+    """The order the ENGINE will walk these in (review mode).
+
+    Not the config order: SceneScheduler sorts the flat scenes first and the
+    3D ones after, alphabetically inside each block, so a reviewer compares
+    like with like.  Knowing the order is what lets the sacrificial entries
+    below land where they are needed.
+    """
+    def key(item):
+        name, blk = item
+        head = blk.split(">", 1)[0]
+        block = 1 if "Scene3D" in head or "scene3d" in head else 0
+        return (block, name.lower())
+    return sorted(part, key=key)
+
+
 def write_chunks(scenes, plain, cross, per_chunk):
     """One review config per chunk.  The "Test" name prefix is what flips the
-    engine into review mode, so the prefix is not cosmetic."""
+    engine into review mode, so the prefix is not cosmetic.
+
+    Each chunk gets its first and last scene entered TWICE.  measure() drops
+    the first and last window of every recording -- the first catches the app
+    still coming up, the last runs past the end of the sweep where the
+    scheduler takes back over -- and without the duplicates that would silently
+    cost two real scenes per chunk.  With them, the sacrificial windows are
+    copies and every scene still gets measured.
+    """
     names = []
     for i in range(0, len(scenes), per_chunk):
         part = scenes[i:i + per_chunk]
+        order = review_order(part)
+        entries = [order[0][1]] + [b for _, b in part] + [order[-1][1]] \
+                  if len(order) >= 2 else [b for _, b in part]
         n = i // per_chunk + 1
         cfg = "ZZScreen%02d" % n
         xml = ('<?xml version="1.0" encoding="utf-8" ?>\n'
                '<configuration ImageDirectory="..\\\\Images" '
                'ConfigurationName="Test%s" hidden="true" >\n\n' % cfg
-               + "".join(b for _, b in part) + "\n" + plain + cross
+               + "".join(entries) + "\n" + plain + cross
                + "</configuration>\n")
         io.open(os.path.join(ROOT, "Configurations", cfg + ".xml"), "w",
                 encoding="utf-8").write(xml)
-        names.append((cfg, len(part)))
+        names.append((cfg, len(entries)))
     return names
 
 
@@ -197,13 +224,25 @@ def wait_for_video(folder, timeout=1500):
             n = os.path.getsize(vid)
             if n > 1_000_000 and n == last:
                 stable += 1
-                if stable >= 2:
+                # A stable size is NOT enough.  `video.mp4` is the raw
+                # intermediate the app writes while it runs; if the run was
+                # interrupted it never gets its moov atom and ffmpeg cannot
+                # read a single frame -- which then looks like "0 windows",
+                # i.e. like a scene fault instead of a truncated file.
+                if stable >= 2 and decodable(vid):
                     return vid
             else:
                 stable = 0
             last = n
         time.sleep(5)
     return None
+
+
+def decodable(vid):
+    """True if ffmpeg can read at least one frame out of `vid`."""
+    p = subprocess.run(["ffmpeg", "-v", "error", "-i", vid, "-frames:v", "1",
+                        "-f", "rawvideo", "-"], capture_output=True)
+    return len(p.stdout) > 0
 
 
 def render(cfg, wav, log_path, hold, seed, kind="scene"):
@@ -272,7 +311,16 @@ def measure(vid, log_path, hold, cycle=8.0):
     off = time_offset(luma, ev, nfr)
     rows = []
     for k, (t0, name) in enumerate(ev):
-        t1 = ev[k+1][0] if k+1 < len(ev) else t0 + hold
+        # The FIRST window catches the app still coming up (the fade in from
+        # black, the first shader compiles), and the LAST one runs past the end
+        # of the sweep -- after the last forced scene the scheduler takes over
+        # again and shows whatever it likes.  Both measure something other than
+        # the scene they are labelled with.  With 110 scenes per chunk that is
+        # 2 % of the windows; with four it was half of them, which is how the
+        # effect was found.
+        if k == 0 or k == len(ev) - 1:
+            continue
+        t1 = ev[k+1][0]
         a = max(0, int(round((t0 + off + GUARD_IN) * FPS)))
         b = min(nfr, int(round((t1 + off - GUARD_OUT) * FPS)))
         if b - a < 4:
@@ -346,11 +394,17 @@ def report(rows):
 # left the cause; both would have shown up here as a collapse in structure.
 BASELINE = os.path.join(ROOT, "docs", "scene-baseline.json")
 
-# What counts as a regression.  Measured run-to-run noise with a pinned seed is
-# ~2 % for calm scenes and ~20 % for busy ones, and WITHOUT a pinned seed the
-# same shader swings by a factor of two.  A factor of two is therefore the
-# honest floor: below it the tool would report noise as a finding.
-REGRESS_FACTOR = 2.0
+# What counts as a regression.  This number was wrong once already, and the
+# correction is worth keeping: the first estimate (2.0) came from comparing two
+# short runs of a handful of scenes.  Re-measured properly -- a full 110-scene
+# chunk re-rendered with the same seed and compared against the baseline it had
+# produced -- 97 of 108 scenes landed within a factor of two, ELEVEN did not,
+# and the worst was 5.4x.  A threshold of 2.0 would therefore have reported
+# about a tenth of the catalogue as "collapsed" on every clean run.
+#
+# 3.0 keeps the false alarms rare while still catching what matters: the real
+# defects this tool was built for were 20x to 70x, not 2x.
+REGRESS_FACTOR = 3.0
 
 
 def aggregate(rows):
