@@ -41,6 +41,7 @@ in vec3  vNormal;
 in vec3  vPos;
 in float vBg;
 in float vSeat;
+in float vLand;
 
 vec3 hueRot(vec3 c, float a)
 {
@@ -82,7 +83,11 @@ float materialExposure(sampler2DArray tex)
 vec3 renderSky(vec3 dir, vec3 tint)
 {
     float h = clamp(dir.y * 0.5 + 0.5, 0.0, 1.0);
-    vec3 col = mix(vec3(0.014, 0.015, 0.022), vec3(0.030, 0.028, 0.040), h);
+    // Same floor as the sibling Dissolve: for the first third of the scene
+    // the pieces are still far out and the sky IS the picture, and at
+    // 0.014..0.030 that picture measured luma 0.004 and was flagged empty
+    // in every screening window.  Dark is the intent; invisible is not.
+    vec3 col = mix(vec3(0.030, 0.034, 0.048), vec3(0.062, 0.058, 0.086), h);
     float d = max(dot(dir, normalize(vec3(-0.4, 0.5, 0.76))), 0.0);
     // The beat lives HERE now. The hulls hold still (their kick hops and
     // the camera's swell-dolly are gone), so the backgrounds carry the
@@ -161,8 +166,12 @@ void main()
     float heat = (1.0 - seat) * (0.55 + 0.9 * audioSwell);
     col += tint * heat * (0.8 + 1.4 * pow(seat, 2.0));
 
-    // The flare AT the moment of seating -- a narrow window around seat = 1.
-    float landing = smoothstep(0.82, 1.0, seat) * (1.0 - smoothstep(1.0, 1.02, seat));
+    // The flare AT the moment of seating.  Computed in the geometry stage on
+    // the flight's own clock, where it can actually END: the old form here,
+    // a window in `seat` closing at 1.02, never closed because seat is
+    // clamped to 1 -- so the flash stayed on and painted every finished
+    // object a flat orange with no shading.
+    float landing = clamp(vLand, 0.0, 1.0);
     col += tint * landing * (1.2 + 2.2 * audioKick);
 
     float rim = pow(1.0 - max(dot(n, viewDir), 0.0), 3.0);

@@ -149,7 +149,14 @@ void main()
     // The dither is not needed here -- the splats already overlap and the round
     // falloff does the blending -- but the EDGES have to fade or the cloud gets
     // a visible grid of quad boundaries where splats meet.
-    col *= fall;
+    //
+    // The falloff (1 - r^2)^2 averages to ONE THIRD over the disc, and at this
+    // grain the splats barely overlap, so a third of the material's brightness
+    // is what reached the frame: the body measured luma 0.04..0.08 against a
+    // sky of 0.03 -- a contrast of 1.4..2.6x, a silhouette you had to know was
+    // there.  The 2.4 puts the lost two thirds back without touching the
+    // falloff's shape, which is what keeps the cloud reading as dust.
+    col *= fall * 2.4;
 
     if( hue > 0.001 ) col = hueRot(col, 0.12 * sin(hue));
 

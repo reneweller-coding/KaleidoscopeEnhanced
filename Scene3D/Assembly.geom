@@ -36,6 +36,7 @@ out vec3  vNormal;
 out vec3  vPos;
 out float vBg;
 out float vSeat;     // 0 = still flying, 1 = seated; the frag stage glows the arrival
+out float vLand;     // the landing flash: a short window BEFORE the seat, 0 once seated
 
 uniform mat4  projM;
 uniform float eyeOff;
@@ -65,7 +66,7 @@ void main()
     {
         for( int i = 0; i < 3; ++i )
         {
-            vUV = gUV[i]; vNormal = gNormal[i]; vPos = gPos[i]; vBg = 1.0; vSeat = 1.0;
+            vUV = gUV[i]; vNormal = gNormal[i]; vPos = gPos[i]; vBg = 1.0; vSeat = 1.0; vLand = 0.0;
             vec3 vp = vec3(gPos[i].x - eyeOff, gPos[i].y, gPos[i].z);
             gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
             gl_Position.z = gl_Position.w * 0.999999;   // pin the shell inside the far plane
@@ -101,6 +102,14 @@ void main()
     // full speed, which is what makes it look placed instead of thrown.
     float seat = 1.0 - pow(1.0 - k, 3.0);
 
+    // The landing flash is defined on k, the flight's own clock, and it is
+    // ZERO at k = 1 and stays zero.  The frag stage used to derive it from
+    // seat as a "narrow window around seat = 1" whose closing edge lay at
+    // 1.02 -- a value the clamped seat never reaches -- so the flash never
+    // ended and every finished object stood as a flat orange silhouette
+    // (measured RGB 0.67 / 0.36 / 0.17, no shading at all).
+    float land = smoothstep(0.85, 0.97, k) * (1.0 - smoothstep(0.97, 1.0, k));
+
     vec3 dir = normalize(hash31(id) * 2.0 - 1.0 + vec3(0.0, 0.0001, 0.0));
     float dist = (18.0 + 46.0 * hash11(id * 2.17)) * spread;
     vec3 offset = dir * dist * (1.0 - seat);
@@ -131,6 +140,7 @@ void main()
         vPos = world;
         vBg = 0.0;
         vSeat = seat;
+        vLand = land;
 
         vec3 vp = vec3(world.x - eyeOff, world.y, world.z);
         gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);

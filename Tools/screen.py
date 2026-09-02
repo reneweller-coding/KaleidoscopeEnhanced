@@ -179,6 +179,14 @@ def write_wav(path, secs, cycle=8.0):
 
     The edges are raised cosines: a hard switch is itself a frame difference
     and made every audio-reactive scene look like a strobe.
+
+    KNOWN BLIND SPOT: the drone sits at 55 / 82.5 Hz, and the engine maps
+    dominant pitch over 60..1200 Hz -- so this WAV has NO usable pitch, and a
+    pitch-driven scene draws its pen at the bottom edge or lifts it.
+    MelodyScript measured "empty" (luma 0.000, std 0.033) in every screening
+    for that reason alone; with Tools/review128.wav it writes a full glowing
+    line mid-stave (std 0.078).  Confirm a pitch scene with real music before
+    touching it.
     """
     sr = 44100
     w = wave.open(path, "wb")

@@ -2760,3 +2760,50 @@ What survives confirmation is a short list of genuinely sparse scenes —
 0.040 — all of which measure the same at both clocks. That is a composition
 question, not a defect, and it is the one thing this pass deliberately leaves
 open.
+
+### The four sparse scenes, looked at properly
+
+The four scenes that measured flat at both clocks were rendered with a 30 s
+hold — long enough for a staged scene to play out — and again with real music
+(`Tools/review128.wav`, looped to 150 s because the engine exits with the WAV
+in offline mode and the original is 30 s). One of the four was a bug, one was
+under-exposed, two were the probe.
+
+**Assembly** (mesh family, 8 models) — a bug. The arc works: pieces fly in,
+the bust is half-assembled at 14 s, complete at 20 s. But the finished object
+stood as a flat, saturated orange silhouette with no shading at all — measured
+RGB 0.67 / 0.36 / 0.17. The landing flare was written as "a narrow window
+around seat = 1":
+
+    landing = smoothstep(0.82, 1.0, seat) * (1.0 - smoothstep(1.0, 1.02, seat));
+
+`seat` is clamped to [0, 1] and never reaches 1.02, so the closing edge of the
+window lies **outside the value's range**: the flash switched on and never
+switched off. The flash now lives in the geometry stage on the flight's own
+clock `k`, as `smoothstep(0.85, 0.97, k) * (1 - smoothstep(0.97, 1.0, k))` —
+zero at k = 1 and beyond. The finished bust is now cold, lit marble
+(RGB 0.09 / 0.08 / 0.06). Its sky was also raised to the level its sibling
+Dissolve already had, and for the same reason: for the first third of the
+scene the sky *is* the picture. A catalogue grep for the same shape
+(`1.0 - smoothstep(a, b, x)` with b beyond the range of x) found no second
+instance.
+
+**Dissolve** (mesh family, 8 models) — exposure. The silhouette read, but the
+body measured luma 0.04–0.08 against a sky of 0.03: a contrast of 1.4–2.6×.
+The splat falloff `(1 − r²)²` averages to one third over the disc, and at
+this grain the splats barely overlap, so a third of the material's brightness
+is what reached the frame. A factor of 2.4 on the splat colour puts the lost
+two thirds back without changing the falloff's shape; the body now sits at
+0.10–0.14, contrast 3.9–5.1×, and still reads as dust.
+
+**MelodyScript** — the probe. The screening WAV's drone is at 55 / 82.5 Hz;
+the engine maps dominant pitch over 60–1200 Hz, so the probe has no usable
+pitch and the pen sits at the bottom edge or lifts. With real music the scene
+draws a glowing handwriting line mid-stave with its octave doublings, playhead
+and accent strokes — structure 0.078 against 0.033 on the drone. Nothing to
+fix in the shader; the blind spot is now documented in `write_wav()`.
+
+**EndOfTheUniverse** — intent. "A terrifyingly empty, black void where only
+the faintest embers remain", and that is what it draws, with the drone and
+with music. It is tagged dark/calm and is only chosen for quiet passages.
+Left alone.
