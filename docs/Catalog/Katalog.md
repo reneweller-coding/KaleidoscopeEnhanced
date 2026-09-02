@@ -190,7 +190,7 @@ BAUHAUS GEOMETRY: a rotating composition of flat geometric primitives (discs, qu
 
 ### BeatLattice
 
-`Scene2D/BeatLattice.frag` · type=normal · mood=aggressive,dark · complexity=1
+`Scene2D/BeatLattice.frag` · type=normal · mood=aggressive,dark · complexity=8
 
 A BEAT-FIRST primary effect, built for rhythmic music. Research-informed: onsets/beats -> impulsive pulsation (envelope-followed pops — fast attack, organic release, exactly the "pip-and-pop" kinetic); percussive material -> ANGULAR geometry (crisp folded shards); beatPhase (continuous) -> an expanding ring wave that rides the tempo grid; barPhase -> a slow per-bar rotation of the highlight; downbeat -> a brighter, w…
 
@@ -262,7 +262,7 @@ BIOLUMINESCENT DEEP SEA TRENCH DIVE: Vertical 3D Raymarching dive into an abyss 
 
 ### BioluminescentNebula
 
-`Scene2D/BioluminescentNebula.frag` · type=normal · mood=dark,psychedelic,space · complexity=4
+`Scene2D/BioluminescentNebula.frag` · type=normal · mood=dark,psychedelic,space · complexity=10
 
 BIOLUMINESCENT NEBULA: Massive, fluid-like clouds of interstellar gas that glow with organic, bioluminescent colors. The nebula ripples and pulses like a living organism in response to the audio. audioAdvance -> drift speed through the nebula audioKick -> flashes of bright light through the gas clouds audioSwell -> overall glow intensity and color shifting audioPhase -> rotation of the viewing angle audioChromaHue-> …
 
@@ -1076,7 +1076,7 @@ GAMMA RAY BURST: The most powerful explosion in the universe. We are looking alm
 
 ### GasGiantAtmosphere
 
-`Scene2D/GasGiantAtmosphere.frag` · type=normal · mood=dark,calm,space · complexity=4
+`Scene2D/GasGiantAtmosphere.frag` · type=normal · mood=dark,calm,space · complexity=10
 
 GAS GIANT ATMOSPHERE: A breathtaking flight through the thick, swirling cloud bands of a massive gas giant. Immense lightning storms illuminate the clouds from within during intense musical beats. audioAdvance -> camera flight speed through the clouds audioKick -> massive lightning flashes within the storms audioSwell -> ambient cloud illumination and density audioChromaHue-> palette offset for the gas giant's colors…
 
@@ -2695,7 +2695,7 @@ SOLAR FLARE CORONA: Extreme close-up of a turbulent stellar photosphere, incande
 
 ### SolarFlareSurfing
 
-`Scene2D/SolarFlareSurfing.frag` · type=normal · mood=bright,aggressive,space · complexity=4
+`Scene2D/SolarFlareSurfing.frag` · type=normal · mood=bright,aggressive,space · complexity=8
 
 SOLAR FLARE SURFING: Extreme close-up flight over the turbulent surface of a star. Massive solar flares and plasma prominences loop overhead, reacting violently to the beat. audioAdvance -> flight speed over the stellar surface audioKick -> explosive solar flares erupting upwards audioSwell -> brightness and height of the plasma waves audioChromaHue-> palette offset for the star's color Per-activation variety: waveP …
 
