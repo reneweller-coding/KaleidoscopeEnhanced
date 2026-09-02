@@ -336,6 +336,44 @@ float t = time * 0.4 + audioAdvance * 0.2; // richtig - Rate ist einintegriert
 schwankenden Faktor zu skalieren lässt die Phase bei jeder Pegeländerung
 springen.
 
+### V7b — `time` ist UNBEGRENZT: nie linear in eine Position
+
+```glsl
+vec3 ro = vec3(sin(t*0.4)*0.9, t*1.1, cos(t*0.35)*0.9);  // FALSCH - fliegt davon
+```
+
+`time` zaehlt Sekunden seit dem **Programmstart** und wird nie
+zurueckgesetzt (`m_globaltime += dt`). `audioAdvance` und `audioPhase` sind
+genauso Integratoren. Eine **Phase** darf beliebig wachsen -- `sin`, `cos`,
+`mod`, `fract` holen sie zurueck. Eine **Position** darf es nicht: die Kamera
+schiebt sich sonst aus einer Geometrie, die nur nahe dem Ursprung existiert,
+und irgendwann trifft kein Strahl mehr etwas. Gemessen an
+`HyperbolicTilingPolyhedralFlight`: Struktur 0.19 bei Uhr 0, **0.0005 bei Uhr
+3600** -- nach zwei Minuten Laufzeit tot. Im Screening faellt das nicht auf,
+weil dort jede Szene in den ersten Minuten einer Aufnahme gemessen wird.
+
+Zwei richtige Loesungen:
+
+```glsl
+uniform float sceneTime;             // Sekunden seit DIESER Aktivierung
+vec3 ro = vec3(..., sceneTime * 1.1, ...);          // Flug faengt neu an
+
+float period = 4.0 * crv;                            // oder: Domaene wickeln
+q.y = mod(q.y + 0.5*period, period) - 0.5*period;    //   im map()
+vec3 ro = vec3(..., mod(t * 1.1, period), ...);      //   und die Kamera mit
+```
+
+`sceneTime` passt, wenn eine Solo-Spanne (~45 s) Flug die Geometrie nicht
+verlaesst. Ist der Flug wirklich endlos gemeint, muss die Domaene periodisch
+werden -- das haelt nebenbei die Koordinaten klein genug fuer `float`.
+
+Pruefen:
+
+```
+python Tools/clock_runaway.py                       # Verdachtsliste
+python Tools/screen.py --scenes <Name> --time-start 3600   # Befund
+```
+
 ### V8 — Registrierung
 
 Jeder Shader braucht einen Eintrag in `Configurations/Komplett.xml` (die

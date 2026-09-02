@@ -138,6 +138,7 @@ void EffectShader::resetParameters()
 	if( s_reviewSolo > 0.01f && m_soloAtReset > s_reviewSolo )
 		m_soloAtReset = s_reviewSolo;
 	m_activationTime = -1.0e9f;
+	m_advanceAtReset = -1.0e9f;   // sceneAdvance faengt neu bei 0 an
 	m_sceneProgress  = 0.f;
 
 	// The "life" budget handed to each Uniform is solo + 2*interpolation: one
@@ -190,6 +191,16 @@ void EffectShader::setUniforms( float time, float interpolation, GLint texLoc1, 
 	                : ( m_sceneProgress > 1.f ) ? 1.f : m_sceneProgress;
 	if( m_progressUni >= 0 )
 		glUniform1f( m_progressUni, m_sceneProgress );
+
+	// sceneTime: Sekunden SEIT DIESER Aktivierung, im Gegensatz zu `time`,
+	// das seit dem Programmstart laeuft und nie zurueckgesetzt wird.  Wer
+	// eine Kamera mit `time` vorwaerts schiebt, deren Welt aber nur nahe dem
+	// Ursprung existiert, fliegt nach Minuten aus ihr heraus und zeigt nur
+	// noch Hintergrund -- gemessen an einer Szene, die bei Uhr 0 eine
+	// Struktur von 0.19 hat und bei Uhr 3600 noch 0.0005.  Gegen sceneTime
+	// geschrieben faengt so ein Flug bei jeder Aktivierung neu an.
+	if( m_sceneTimeUni >= 0 )
+		glUniform1f( m_sceneTimeUni, time - m_activationTime );
 
 	
 	for( unsigned int i = 0; i < m_uniforms.size(); i++ )
@@ -263,6 +274,7 @@ void EffectShader::initUniforms(int width, int height)
 	m_timeUni = glGetUniformLocation( m_sh_prog_id, "time" );
 	m_interpolationUni = glGetUniformLocation( m_sh_prog_id, "interpolation" );
 	m_progressUni      = glGetUniformLocation( m_sh_prog_id, "sceneProgress" );
+	m_sceneTimeUni     = glGetUniformLocation( m_sh_prog_id, "sceneTime" );
 
 
 	
@@ -410,7 +422,13 @@ enum AudioLoc {
     AL_TEXDEPTH0, AL_TEXDEPTH1, AL_DEPTHVALID, AL_NEARFAR, AL_TANHALFFOV,
     AL_TEXSHADOW, AL_LIGHTM, AL_SHADOWPASS, AL_LIGHTDIR, AL_SHADOWTEXEL,
     AL_OITPASS, AL_SHADOWEXTENT,
-    AL_TEXSHADOW2, AL_LIGHTM2, AL_SHADOWPASS2, AL_LIGHTDIR2, AL_TEXPREVFRAME, AL_COUNT
+    AL_TEXSHADOW2, AL_LIGHTM2, AL_SHADOWPASS2, AL_LIGHTDIR2, AL_TEXPREVFRAME,
+    // audioAdvance seit DIESER Aktivierung.  `audioAdvance` selbst ist ein
+    // Integrator ohne Obergrenze (m_audioAdvance += dt * advRate) und taugt
+    // damit -- wie `time` -- nur als Phase, nicht als Position.  Das
+    // Gegenstueck zu `sceneTime`, damit eine Szene ihren Flug musikgetrieben
+    // halten kann, ohne ihm davonzufliegen.
+    AL_SCENEADVANCE, AL_COUNT
 };
 const char *kAudioLocNames[AL_COUNT] = {
     "audioPhase", "audioAdvance", "audioBeat", "audioLevel", "sides",
@@ -430,7 +448,8 @@ const char *kAudioLocNames[AL_COUNT] = {
     "texDepth0", "texDepth1", "depthValid", "nearFar", "tanHalfFov",
     "texShadow", "lightM", "shadowPass", "lightDir", "shadowTexel",
     "oitPass", "shadowExtent",
-    "texShadow2", "lightM2", "shadowPass2", "lightDir2", "texPrevFrame"
+    "texShadow2", "lightM2", "shadowPass2", "lightDir2", "texPrevFrame",
+    "sceneAdvance"   // Reihenfolge MUSS zum AL_-Enum passen
 };
 }
 
@@ -596,6 +615,11 @@ void EffectShader::applyAudioFeatures(const AudioFeatures &f)
     if (L[AL_DROP]     >= 0) glUniform1f(L[AL_DROP],     f.dropPulse);
     if (L[AL_PHASE]    >= 0) glUniform1f(L[AL_PHASE],    f.audioRotPhase);
     if (L[AL_ADVANCE]  >= 0) glUniform1f(L[AL_ADVANCE],  f.audioAdvance);
+    // Nullpunkt beim ersten Frame nach der Aktivierung merken, damit
+    // sceneAdvance bei 0 anfaengt. resetParameters() setzt die Marke zurueck.
+    if (m_advanceAtReset < -0.9e9f) m_advanceAtReset = f.audioAdvance;
+    if (L[AL_SCENEADVANCE] >= 0)
+        glUniform1f(L[AL_SCENEADVANCE], f.audioAdvance - m_advanceAtReset);
     if (L[AL_BEAT]     >= 0) glUniform1f(L[AL_BEAT],     f.beatDecay);
     if (L[AL_LEVEL]    >= 0) glUniform1f(L[AL_LEVEL],    f.overallLevel);
     if (L[AL_SIDES]    >= 0) glUniform1i(L[AL_SIDES],    int(f.smoothedSides + 0.5f));

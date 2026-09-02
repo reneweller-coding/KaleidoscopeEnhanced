@@ -950,6 +950,7 @@ void Scene3DShader::initUniforms( int width, int height )
 	m_timeUni          = glGetUniformLocation( m_sh_prog_id, "time" );
 	m_interpolationUni = glGetUniformLocation( m_sh_prog_id, "interpolation" );
 	m_progressUni      = glGetUniformLocation( m_sh_prog_id, "sceneProgress" );
+	m_sceneTimeUni     = glGetUniformLocation( m_sh_prog_id, "sceneTime" );
 	for( unsigned int i = 0; i < m_uniforms.size(); i++ )
 		m_uniforms[i]->initUniform( m_sh_prog_id );
 

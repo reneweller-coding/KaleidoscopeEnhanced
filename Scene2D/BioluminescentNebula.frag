@@ -25,6 +25,10 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
+// Beide zaehlen ab DIESER Aktivierung, nicht ab Programmstart -- siehe unten
+// bei `drift`, warum das hier ueber Bild oder kein Bild entscheidet.
+uniform float sceneTime;
+uniform float sceneAdvance;
 uniform float audioSwell;
 uniform float audioLevel;
 uniform float audioKick;
@@ -84,7 +88,15 @@ void main()
     vec2 uv = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
     float t = time * 0.1 + audioAdvance * 0.2;
-    float drift = time * 2.0 + audioAdvance * 5.0;
+    // Die Flugstrecke MUSS pro Aktivierung bei 0 anfangen.  Sie ist die
+    // z-Koordinate, mit der das Rauschfeld abgetastet wird; mit `time` stand
+    // hier nach einer Stunde 7200, und `sin(n * 12.9898)` hat bei solchen
+    // Argumenten keine Aufloesung mehr fuer benachbarte Zellen -- die Wolke
+    // wird konstant, smoothstep(0.40, 0.80, ...) schneidet sie ganz weg und
+    // das Bild ist SCHWARZ (gemessen: Struktur 0.0534 bei Uhr 0, exakt
+    // 0.0000 bei Uhr 3600).  Der Musikschub bleibt erhalten, er zaehlt nur
+    // ebenfalls ab dem Auftritt.
+    float drift = sceneTime * 2.0 + sceneAdvance * 5.0;
     
     vec3 ro = vec3(3.0 * sin(t), 3.0 * cos(t * 0.8), drift);
     vec3 ta = ro + vec3(sin(t * 0.5), cos(t * 0.3), 1.0);

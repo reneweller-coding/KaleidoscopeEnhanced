@@ -25,6 +25,9 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
+// Beide zaehlen ab DIESER Aktivierung statt ab Programmstart.
+uniform float sceneTime;
+uniform float sceneAdvance;
 uniform float audioSwell;
 uniform float audioLevel;
 uniform float audioKick;
@@ -173,7 +176,13 @@ void main()
     vec2 uv = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
     float t = time * 0.03 + audioAdvance * 0.05;
-    float drift = time * 2.0 + audioAdvance * 5.0;
+    // Die Flugstrecke ist die Koordinate, mit der das Rauschfeld
+    // abgetastet wird -- sie MUSS pro Auftritt bei 0 anfangen.  Mit
+    // `time` stand hier nach einer Stunde 7200, und `sin(n * 12.9898)`
+    // hat bei solchen Argumenten keine Aufloesung mehr fuer benachbarte
+    // Zellen: das Rauschen wird konstant und das Bild flach bis schwarz.
+    // Der Musikschub bleibt, er zaehlt nur ebenfalls ab dem Auftritt.
+    float drift = sceneTime * 2.0 + sceneAdvance * 5.0;
 
     // Camera moves slowly around the derelict
     float orb = t * 0.4;

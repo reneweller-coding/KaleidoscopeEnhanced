@@ -153,8 +153,14 @@ def write_chunks(scenes, plain, cross, per_chunk):
     for i in range(0, len(scenes), per_chunk):
         part = scenes[i:i + per_chunk]
         order = review_order(part)
-        entries = [order[0][1]] + [b for _, b in part] + [order[-1][1]] \
-                  if len(order) >= 2 else [b for _, b in part]
+        # Bei EINER Szene gibt es keine zwei verschiedenen Nachbarn -- dann
+        # muss sie selbst beide Opferfenster stellen, sonst bleibt nach dem
+        # Verwerfen der Raender gar nichts uebrig.  Genau dieser Fall ist die
+        # Einzelpruefung, also der haeufigste Folgeschritt ueberhaupt, und er
+        # hat stillschweigend 0 Fenster geliefert.
+        first = order[0][1] if len(order) >= 2 else part[0][1]
+        last = order[-1][1] if len(order) >= 2 else part[0][1]
+        entries = [first] + [b for _, b in part] + [last]
         n = i // per_chunk + 1
         cfg = "ZZScreen%02d" % n
         xml = ('<?xml version="1.0" encoding="utf-8" ?>\n'
@@ -245,12 +251,13 @@ def decodable(vid):
     return len(p.stdout) > 0
 
 
-def render(cfg, wav, log_path, hold, seed, kind="scene"):
+def render(cfg, wav, log_path, hold, seed, kind="scene", time_start=0):
     # Die Engine liest KALEIDO_SCENE_SWEEP mit qEnvironmentVariableIntValue:
     # "12.0" ergibt dort 0 und der Sweep laeuft schlicht nicht an -- die
     # Aufnahme sieht dann wie ein normaler Lauf aus und liefert null Fenster.
     var = "KALEIDO_FX_SWEEP" if kind == "fx" else "KALEIDO_SCENE_SWEEP"
-    env = dict(os.environ, KALEIDO_SEED=str(seed), KALEIDO_COST_LOG="1")
+    env = dict(os.environ, KALEIDO_SEED=str(seed), KALEIDO_COST_LOG="1",
+               KALEIDO_TIME_START=str(int(time_start)))
     env[var] = str(int(round(hold)))
     with io.open(log_path, "w", encoding="utf-8", errors="replace") as fh:
         subprocess.run([os.path.join(RELEASE, "Kaleidoscope.exe"),
@@ -391,7 +398,57 @@ def report(rows):
           " Recht 0, deshalb zaehlt Struktur, nicht Dunkelheit)\n")
     for n, f in marked:
         print("  %-38s %s" % (n, " | ".join(f)))
+    if marked:
+        print("\n  Das sind VERDACHTSFAELLE, keine Befunde.  Jede Szene wuerfelt")
+        print("  ihre Parameter pro Auftritt neu, und die Spanne ist gross:")
+        print("  FuturisticCityFlight misst bei gleicher Uhr und gleicher")
+        print("  Konfiguration je nach Seed 0.0062 bis 0.0837 -- Faktor 13.")
+        print("  Ein einzelner Messwert ist damit kein Urteil.  Nachpruefen:")
+        print("      python Tools/screen.py --confirm")
     return marked
+
+
+def confirm(names, hold, seeds=(1, 2, 3), time_start=0):
+    """Misst die genannten Szenen mehrfach und gibt den Median zurueck.
+
+    Der eine Messwert aus einem Katalogdurchlauf ist eine STICHPROBE aus der
+    Parameterverteilung der Szene, nicht ihr Wert.  Gemessen an
+    FuturisticCityFlight: gleiche Uhr, gleiche Nachbarn, nur ein anderer Seed
+    -- 0.0062, 0.0292, 0.0694, 0.0837.  Wer auf einen einzelnen Wert hin einen
+    Shader anfasst, repariert womoeglich eine Ziehung statt eines Fehlers.
+    """
+    scenes, plain, cross = read_master()
+    keep = set(names)
+    scenes = [s for s in scenes if s[0] in keep]
+    if not scenes:
+        return {}
+    wav = None
+    per = {}
+    for seed in seeds:
+        cfg, count = write_chunks(scenes, plain, cross, len(scenes))[0]
+        need = int(count * hold + 30)
+        wav = os.path.join(WORK, "screen_%d.wav" % need)
+        if not os.path.exists(wav):
+            write_wav(wav, need)
+        log = os.path.join(WORK, "%s.log" % cfg)
+        render(cfg, wav, log, hold, seed, "scene", time_start)
+        folder = newest_recording()
+        vid = wait_for_video(folder) if folder else None
+        if not vid:
+            continue
+        for r in measure(vid, log, hold):
+            per.setdefault(r["name"], []).append(r["spatial_std"])
+        subprocess.run(["cmd", "/c", "rmdir", "/s", "/q", folder], check=False)
+        p = os.path.join(ROOT, "Configurations", cfg + ".xml")
+        if os.path.exists(p):
+            os.remove(p)
+    print("\n%-38s %8s %8s %8s" % ("Szene", "min", "Median", "max"))
+    for n in sorted(per):
+        v = sorted(per[n])
+        med = v[len(v) // 2]
+        mark = "  <-- wirklich leer" if med < LEER_STD else ""
+        print("%-38s %8.4f %8.4f %8.4f%s" % (n, v[0], med, v[-1], mark))
+    return per
 
 
 # -------------------------------------------------------------- baseline ----
@@ -542,7 +599,15 @@ def main():
     ap.add_argument("--chunk", type=int, default=110, help="Szenen je Aufnahme")
     ap.add_argument("--hold", type=int, default=8, help="Sekunden je Szene (ganzzahlig)")
     ap.add_argument("--seed", type=int, default=1, help="KALEIDO_SEED")
+    ap.add_argument("--time-start", type=int, default=0, dest="time_start",
+                    help="die Uhr der Shader vorstellen (Sekunden) -- prueft, "
+                         "ob eine Szene nach langer Laufzeit noch etwas zeigt"),
     ap.add_argument("--report", action="store_true", help="nur neu auswerten")
+    ap.add_argument("--confirm", action="store_true",
+                    help="die auffaelligen Szenen der letzten Messung mit drei "
+                         "Seeds nachmessen und den Median zeigen -- ein "
+                         "einzelner Wert ist wegen der gewuerfelten Parameter "
+                         "kein Urteil")
     ap.add_argument("--resume", action="store_true", help="fertige Chunks ueberspringen")
     ap.add_argument("--save-baseline", action="store_true",
                     help="die letzte Messung als docs/scene-baseline.json festschreiben")
@@ -553,13 +618,25 @@ def main():
     os.makedirs(WORK, exist_ok=True)
     merged = os.path.join(WORK, "metrics.json")
 
-    if a.report or a.save_baseline or a.check:
+    if a.report or a.save_baseline or a.check or a.confirm:
         if not os.path.exists(merged):
             sys.exit("Noch nichts gemessen -- erst ohne diese Flags laufen lassen.")
         rows = json.load(io.open(merged, encoding="utf-8"))
         if a.report:        (report_fx if a.kind == "fx" else report)(rows)
         if a.save_baseline: save_baseline(rows)
         if a.check:         return check_baseline(rows)
+        if a.confirm:
+            per = {}
+            for r in rows:
+                per.setdefault(r["name"], []).append(r)
+            names = [n for n, v in per.items() if flags(v)]
+            if a.scenes:
+                names = [x.strip() for x in a.scenes.split(",") if x.strip()]
+            if not names:
+                print("Nichts nachzupruefen.")
+                return 0
+            print("%d Szene(n) mit drei Seeds nachmessen ..." % len(names))
+            confirm(names, a.hold, time_start=a.time_start)
         return 0
 
     scenes, plain, cross = read_master()
@@ -584,10 +661,15 @@ def main():
     print("%d Szenen -> %d Aufnahme(n) a %d, %.0f s Haltezeit, Seed %d"
           % (len(scenes), len(chunks), per, a.hold, a.seed))
 
-    wav = os.path.join(WORK, "screen.wav")
-    need = max(c[1] for c in chunks) * a.hold + 30
+    # Offline (-x) laeuft die Engine, bis die WAV zu Ende ist -- NICHT, bis der
+    # Sweep fertig ist.  Eine einzelne Szene gegen die 15-Minuten-WAV des
+    # Katalog-Laufs zu pruefen kostete deshalb 15 Minuten fuer 24 Sekunden
+    # Material.  Ein File je Laenge macht die Einzelpruefung, also den
+    # dokumentierten Folgeschritt zu jeder Auffaelligkeit, wieder billig.
+    need = int(max(c[1] for c in chunks) * a.hold + 30)
+    wav = os.path.join(WORK, "screen_%d.wav" % need)
     if not os.path.exists(wav) or os.path.getsize(wav) < need * 44100 * 2 * 0.9:
-        print("Screening-WAV bauen (%.0f s) ..." % need)
+        print("Screening-WAV bauen (%d s) ..." % need)
         write_wav(wav, need)
 
     allrows, costs = [], {}
@@ -600,7 +682,7 @@ def main():
         log = os.path.join(WORK, "%s.log" % cfg)
         print("  %s: rendern (%d Szenen, ~%.0f min) ..."
               % (cfg, count, (count * a.hold + 40) / 60.0))
-        render(cfg, wav, log, a.hold, a.seed, a.kind)
+        render(cfg, wav, log, a.hold, a.seed, a.kind, a.time_start)
         folder = newest_recording()
         vid = wait_for_video(folder) if folder else None
         if not vid:

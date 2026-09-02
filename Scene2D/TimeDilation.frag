@@ -25,6 +25,12 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
+// Beide zaehlen ab DIESER Aktivierung statt ab Programmstart:
+// `time` und `audioAdvance` wachsen unbegrenzt und taugen daher nur
+// als Phase, nicht als Position oder Rauschkoordinate.
+uniform float sceneTime;
+uniform float sceneAdvance;
+
 uniform float audioSwell;
 uniform float audioLevel;
 uniform float audioKick;
@@ -98,7 +104,7 @@ void main()
     // Violent radial tearing
     float tear = 0.0;
     if (audioKick > 0.1) {
-        float tearNoise = fbm(vec3(angle * 10.0, time * 20.0, 0.0));
+        float tearNoise = fbm(vec3(angle * 10.0, sceneTime * 20.0, 0.0));
         if (tearNoise > 0.7) {
             // Offset UV radially
             uv *= 1.0 + audioKick * 0.2 * wp;
@@ -144,7 +150,7 @@ void main()
         float photonSphere = exp(-dOut * 10.0 * wp);
         vec3 diskColor = imgPalette(0.2); // Redshifted
         
-        float diskNoise = fbm(vec3(angle * 10.0, dOut * 50.0 - time * 5.0, time));
+        float diskNoise = fbm(vec3(angle * 10.0, dOut * 50.0 - sceneTime * 5.0, sceneTime));
         
         streakCol = mix(streakCol, diskColor * diskNoise * 5.0 * (1.0 + audioSwell), photonSphere);
         
@@ -158,7 +164,7 @@ void main()
         float insideD = dist / horizonRad;
         
         // Deep quantum noise
-        float quantum = fbm(vec3(uv * 50.0, time * 2.0));
+        float quantum = fbm(vec3(uv * 50.0, sceneTime * 2.0));
         float qMask = smoothstep(0.9, 1.0, quantum) * exp(-insideD * 5.0);
         
         col = universeColor * qMask * audioKick * wp;

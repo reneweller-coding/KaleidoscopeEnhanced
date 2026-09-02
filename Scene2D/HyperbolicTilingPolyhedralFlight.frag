@@ -54,9 +54,19 @@ vec3 imgPalette(float t) {
 }
 
 // Distance estimator for hyperbolic dodecahedral honeycomb cell
-float mapHyperbolic(vec3 p, float crv, float strutWidth, out float cellID) {
+float mapHyperbolic(vec3 p, float crv, float strutWidth, float period,
+                    out float cellID) {
     // Hyperbolic space repetition via reflection planes
     vec3 q = p;
+
+    // Die Zelle entlang der Flugachse wiederholen.  Die Faltung unten
+    // ist KEINE Modulo-Arithmetik: fuenf Spiegelebenen holen einen
+    // Punkt bei y = 80 nicht mehr in die Zelle zurueck.  Ohne diese
+    // Zeile existiert die Wabe nur nahe dem Ursprung, die Kamera
+    // fliegt mit time*k aus ihr heraus, und nach zwei Minuten
+    // Laufzeit trifft kein Strahl mehr etwas: gemessen sd 0.19 bei
+    // Uhr 0 gegen 0.0005 bei Uhr 3600.
+    q.y = mod(q.y + 0.5 * period, period) - 0.5 * period;
     cellID = 0.0;
 
     // Repeated polyhedral mirror foldings ({5,3,4} dodecahedral honeycomb generators)
@@ -99,10 +109,17 @@ void main() {
     // Zeit-Basis + Musik-Schub: audioAdvance ALLEIN steht bei ruhiger
     // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
 
-    // Camera trajectory flying through hyperbolic vaults
+    // Camera trajectory flying through hyperbolic vaults.  Die Flughoehe
+    // wird auf dieselbe Periode gewickelt wie die Domaene: das Bild bleibt
+    // stetig, und die Koordinate bleibt klein.  Bei y = 700 (eine Stunde
+    // Laufzeit) loest float noch 6e-5 auf -- eine Strebe ist 0.04 breit, das
+    // ginge gerade so; bei y = 20000 nicht mehr.
+    // Die Periode haengt an crv, NICHT an crvB: sonst verschoebe der Subbass
+    // den Wickelpunkt und das Bild spraenge im Takt der Musik.
+    float period = 4.0 * crv;
     vec3 ro = vec3(
         sin(t * 0.4) * 0.9,
-        t * 1.1,
+        mod(t * 1.1, period),
         cos(t * 0.35) * 0.9
     );
 
@@ -135,7 +152,7 @@ void main() {
     for (int i = 0; i < 56; i++) {
         vec3 p = ro + rd * totDist;
         float curCell;
-        float d = mapHyperbolic(p, crvB, strutWidth, curCell);
+        float d = mapHyperbolic(p, crvB, strutWidth, period, curCell);
         minD = min(minD, abs(d));
 
         // Running out of corridor is a MISS: the ray met nothing, so it must

@@ -2611,3 +2611,98 @@ instead of through its own source. What that experiment also showed, though, is
 that an arc and the framing are the same problem: with the model on 4 % of the
 frame, no camera move can produce much net change, because the remaining 96 %
 is a sky that does not respond to translation.
+
+### The clock nobody bounded
+
+Three scenes measured a spatial structure of 0.0006–0.0022 in the full
+screening run and 0.22 when re-rendered on their own — a factor of 400. The
+first suspicion was the measurement: a wrong window, a drifted timestamp, the
+wrong neighbour. Extracting the frames settled that. The alignment was exact
+(offset −0.2 s), and the frame really was a flat green field with faint
+concentric rings — which is precisely what
+`HyperbolicTilingPolyhedralFlight.frag` draws when **no ray hits anything**:
+`bgCol = imgPalette(length(uv) * 0.3 + 0.4)` depends only on the radius.
+
+The cause is one line of engine, one line of shader:
+
+    RenderPipeline.cpp   m_globaltime += timeSinceLastFrameSec;   // never reset
+    the shader           ro = vec3(sin(t*0.4)*0.9, t*1.1, cos(t*0.35)*0.9);
+
+`time` counts seconds since the program started. The camera flies along +y at
+a fixed rate, but the honeycomb is a fold fractal that only exists near the
+origin — five reflection planes cannot bring a point at y = 80 back into the
+cell. So the camera leaves its own world and keeps going.
+
+`KALEIDO_TIME_START` presets the clock, which turns "does this scene survive an
+hour?" from a question that costs an hour into one that costs a minute:
+
+| clock at start | spatial std | luma |
+|---|---|---|
+| 0 s | **0.1939** | 0.419 |
+| 120 s | 0.0075 | 0.197 |
+| 900 s | 0.0014 | 0.053 |
+| 3600 s | **0.0005** | 0.058 |
+
+The scene is dead after two minutes. In normal use the program runs for hours;
+the screening measured every scene within the first few minutes of a
+recording, which is exactly why the whole class stayed invisible. It also
+explains the shape of the original anomaly: the scenes that measured near zero
+sat *late* in a 15-minute chunk, and the nine-scene reproduction failed
+because there the same scene ran at t = 30 s.
+
+`audioAdvance` and `audioRotPhase` are accumulators too
+(`m_audioAdvance += dt * advRate`), so the class is not limited to `time`.
+
+Two fixes are correct, and which one applies depends on what the scene claims
+to be:
+
+* **`sceneTime`** — a new uniform: seconds since *this* activation, so a flight
+  restarts on every appearance. Enough when one solo span of travel stays
+  inside the geometry.
+* **A periodic domain** — `mod` on the flight axis, with the camera origin
+  wrapped to the same period. Then the flight really is endless, and the
+  coordinates stay small enough for `float` to resolve a strut.
+
+`Tools/clock_runaway.py` finds the candidates statically: it follows `time`,
+`audioAdvance` and `audioPhase` through the assignments of a shader and reports
+where one of them reaches a *position* without a bounding function around it.
+Two decisions keep the list readable — a value that has already gone unbounded
+is reported once, at the assignment where it entered a position rather than at
+every consequence downstream; and a call to a function defined in the same file
+counts as a boundary, because a distance estimator returns a distance, not a
+position. The output is a suspicion list, not a verdict: a domain that wraps
+itself with `mod` makes the identical expression completely correct. What
+settles it is the measurement.
+
+### One measurement is a sample, not a verdict
+
+Chasing an apparent regression turned up a second, more uncomfortable finding.
+`FuturisticCityFlight`, measured in the same configuration, at the same clock,
+with the same neighbours — only the seed differing:
+
+| seed | spatial std |
+|---|---|
+| 1 | 0.0694 |
+| 2 | 0.0837 |
+| 3 | **0.0062** |
+| 4 | 0.0292 |
+
+A factor of thirteen, from nothing but the per-activation parameter roll
+(`glowP` 0.6–1.8 scales the window lights and neon, which are the only bright
+things in a night city; `fogP` 0.5–1.5 takes them away again). Seed 3 is not a
+broken scene — it is one legitimate draw at the dark end of the ranges.
+
+This bounds every conclusion drawn from a single screening value. A scene
+flagged once is a suspicion; the catalogue-wide list of nineteen "collapses"
+against the baseline shrank to twelve real ones as soon as each was measured
+directly at two clocks with the same seed. It also explains the original
+factor-400 anomaly more completely than the clock bug alone did: that scene
+was genuinely dying with the clock, *and* its measured value swung with the
+draw.
+
+`screen.py --confirm` is the arbiter: it re-measures the flagged scenes with
+three seeds and reports min/median/max. `FuturisticCityFlight` comes back at a
+median of 0.0478 — comfortably alive. The rule that follows is worth stating
+plainly: **never edit a shader on the strength of one measurement.** The two
+cheap confirmations are a second seed and a second clock, and they cost about
+two minutes each.

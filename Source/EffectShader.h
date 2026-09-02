@@ -608,6 +608,8 @@ protected:
 	// m_timeSolo: setUniforms() re-rolls that every single frame, so dividing
 	// by it would make the progress jitter instead of advancing evenly.
 	GLint m_progressUni    = -1;        ///< Location of the `sceneProgress` uniform (-1 if the shader doesn't declare it).
+	GLint m_sceneTimeUni   = -1;        ///< Location of the `sceneTime` uniform: seconds since THIS activation. `time` runs since program start and grows without bound.
+	float m_advanceAtReset = -1.0e9f;   ///< audioAdvance beim ersten Frame nach der Aktivierung; `sceneAdvance` ist die Differenz dazu.
 	float m_soloAtReset    = 0.f;       ///< m_timeSolo as it stood at the last resetParameters(), in seconds.
 	float m_activationTime = -1.0e9f;   ///< `time` at the first setUniforms() after activation; sentinel means "not yet seen".
 	float m_sceneProgress  = 0.f;       ///< Cached 0..1 progress, also readable by subclasses for CPU-side staging.

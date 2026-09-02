@@ -24,6 +24,12 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
+// Beide zaehlen ab DIESER Aktivierung statt ab Programmstart:
+// `time` und `audioAdvance` wachsen unbegrenzt und taugen daher nur
+// als Phase, nicht als Position oder Rauschkoordinate.
+uniform float sceneTime;
+uniform float sceneAdvance;
+
 uniform float audioSwell;
 uniform float audioLevel;
 uniform float audioKick;
@@ -96,7 +102,7 @@ void main()
     float cycleTime = time * 2.0 * bp;
     // We want it to suddenly snap to 0 when there's a strong kick
     // Since we don't have state, we use hash of time to simulate kicks triggering it
-    float kickTrigger = step(0.9, hash11(floor(time * 4.00))) * audioKick;
+    float kickTrigger = step(0.9, hash11(floor(sceneTime * 4.00))) * audioKick;
     
     // Scale of the universe (expands over time, snaps back on trigger)
     float uScale = fract(cycleTime + audioAdvance) + (1.0 - kickTrigger);
@@ -126,7 +132,7 @@ void main()
         // Zoom out as it expands
         float zoom = 1.0 / max(expansion, 0.1);
         
-        vec3 p3 = vec3(uv * 10.0 * zoom, time + audioAdvance * 5.0);
+        vec3 p3 = vec3(uv * 10.0 * zoom, sceneTime + sceneAdvance * 5.0);
         float plasma = fbm(p3 * pp);
         
         // Core is intensely hot, edges cool down

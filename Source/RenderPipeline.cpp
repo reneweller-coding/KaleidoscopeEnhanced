@@ -213,7 +213,13 @@ RenderPipeline::RenderPipeline( )
 , m_stateTexture(1) //State == 1 => Solo
 , m_triggerImageload(false)
 , m_waitForImageToLoad(false)
-, m_globaltime(0.0)
+// KALEIDO_TIME_START setzt die Uhr vor, mit der jeder Shader rechnet.
+// Ohne das laesst sich "haelt die Szene nach einer Stunde noch?" nur
+// pruefen, indem man eine Stunde wartet -- und genau diese Frage hat
+// eine ganze Klasse leerer Szenen versteckt: wer die Kamera mit
+// time*k vorwaerts schiebt, ohne dass die Geometrie das mitmacht,
+// fliegt irgendwann aus seiner eigenen Welt heraus.
+, m_globaltime( (double) qEnvironmentVariableIntValue( "KALEIDO_TIME_START" ) )
 , m_nanotimer()
 , m_nrTextureUploads(0)
 {

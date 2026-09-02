@@ -24,6 +24,12 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
+// Beide zaehlen ab DIESER Aktivierung statt ab Programmstart:
+// `time` und `audioAdvance` wachsen unbegrenzt und taugen daher nur
+// als Phase, nicht als Position oder Rauschkoordinate.
+uniform float sceneTime;
+uniform float sceneAdvance;
+
 uniform float audioSwell;
 uniform float audioLevel;
 uniform float audioKick;
@@ -179,7 +185,7 @@ void main()
     
     // 3. Galactic Core (Type III civilization central processing unit)
     float coreDist = exp(-dist * 10.0);
-    float corePulse = fbm(vec3(p * 20.0, time * 2.0)) * coreDist;
+    float corePulse = fbm(vec3(p * 20.0, sceneTime * 2.0)) * coreDist;
     col += coreCol * corePulse * 5.0 * gp * (1.0 + audioKick);
     
     // Overall ambient glow of the galaxy

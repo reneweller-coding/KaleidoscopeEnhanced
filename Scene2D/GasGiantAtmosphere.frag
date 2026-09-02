@@ -24,6 +24,12 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
+// Beide zaehlen ab DIESER Aktivierung statt ab Programmstart:
+// `time` und `audioAdvance` wachsen unbegrenzt und taugen daher nur
+// als Phase, nicht als Position oder Rauschkoordinate.
+uniform float sceneTime;
+uniform float sceneAdvance;
+
 uniform float audioSwell;
 uniform float audioLevel;
 uniform float audioKick;
@@ -82,7 +88,7 @@ void main()
 
     vec2 uv = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
-    float drift = time * 3.0 + audioAdvance * 10.0;
+    float drift = sceneTime * 3.0 + sceneAdvance * 10.0;
 
     vec3 ro = vec3(0.0, 5.0 * sin(time * 0.1), drift);
     vec3 ta = ro + vec3(0.0, 0.0, 1.0);
@@ -110,7 +116,7 @@ void main()
         vec3 p = ro + rd * d;
 
         // Fluid-like domain warping for bands
-        float warpX = fbm(vec3(p.z * 0.02, p.y * 0.05, time * 0.1)) * 10.0;
+        float warpX = fbm(vec3(p.z * 0.02, p.y * 0.05, sceneTime * 0.1)) * 10.0;
         vec3 np = vec3(p.x + warpX, p.y, p.z);
 
         // Horizontal cloud bands typical of gas giants

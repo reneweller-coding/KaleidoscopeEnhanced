@@ -24,6 +24,9 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
+// Beide zaehlen ab DIESER Aktivierung statt ab Programmstart.
+uniform float sceneTime;
+uniform float sceneAdvance;
 uniform float audioSwell;
 uniform float audioLevel;
 uniform float audioKick;
@@ -84,7 +87,13 @@ void main()
 
     // We are flying through a thick atmosphere (no stars, just clouds)
     // Map uv to a perspective view facing forwards
-    float drift = time * 2.0 + audioAdvance * 5.0;
+    // Die Flugstrecke ist die Koordinate, mit der das Rauschfeld
+    // abgetastet wird -- sie MUSS pro Auftritt bei 0 anfangen.  Mit
+    // `time` stand hier nach einer Stunde 7200, und `sin(n * 12.9898)`
+    // hat bei solchen Argumenten keine Aufloesung mehr fuer benachbarte
+    // Zellen: das Rauschen wird konstant und das Bild flach bis schwarz.
+    // Der Musikschub bleibt, er zaehlt nur ebenfalls ab dem Auftritt.
+    float drift = sceneTime * 2.0 + sceneAdvance * 5.0;
 
     // Y is up/down in the atmosphere, X is sideways, Z is forwards
     // The clouds are organized in massive horizontal bands

@@ -26,6 +26,12 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
+// Beide zaehlen ab DIESER Aktivierung statt ab Programmstart:
+// `time` und `audioAdvance` wachsen unbegrenzt und taugen daher nur
+// als Phase, nicht als Position oder Rauschkoordinate.
+uniform float sceneTime;
+uniform float sceneAdvance;
+
 uniform float audioSwell;
 uniform float audioLevel;
 uniform float audioKick;
@@ -169,8 +175,8 @@ void main()
 
     vec2 uv = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
-    float t = time * 0.15 + audioAdvance * 0.35;   // 3x: Stationen ziehen sichtbar vorbei
-    float drift = time * 5.0 + audioAdvance * 15.0;
+    float t = sceneTime * 0.15 + sceneAdvance * 0.35;   // 3x: Stationen ziehen sichtbar vorbei
+    float drift = sceneTime * 5.0 + sceneAdvance * 15.0;
 
     // Camera in orbit
     vec3 ro = vec3(0.0, 0.0, t * 5.0);
