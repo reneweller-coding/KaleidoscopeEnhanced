@@ -136,7 +136,22 @@ public:
 	// drawn vertex count to maxVertices*budget (see runGenerator()).
 	static float s_cubeBudget;   ///< Global FPS-driven detail budget (1.0 = draw everything, 0.5 = every 2nd/half, ...); GEOM_CUBES reads it as the `cubeBudget` uniform, geom="indirect" scenes get it via IndirectClamp.comp's `budget` uniform instead.
 
+	/** @return Mean fraction of the frame the loaded model covered, or -1 if
+	 *          nothing was measured (KALEIDO_COVER_LOG unset, or not a mesh).
+	 *
+	 * An occlusion query counts the fragments the mesh draw actually wrote.
+	 * The framing is built in each scene's own .vert (camera distance, scale),
+	 * so it cannot be derived from meshExtent -- but it can be COUNTED.  This
+	 * answers what the contact sheets raised: the stations fill about a tenth
+	 * of the frame, which is why even a correct camera move measures as almost
+	 * no motion. */
+	float coverage() const { return m_coverN ? float(m_coverSum / m_coverN) : -1.f; }
+
 private:
+	GLuint m_coverQuery = 0;      ///< GL_SAMPLES_PASSED query object; 0 = not created.
+	bool   m_coverBusy  = false;  ///< A query is in flight and must be read before reuse.
+	double m_coverSum   = 0.0;    ///< Sum of per-frame covered-fragment fractions.
+	int    m_coverN     = 0;      ///< Frames that contributed to m_coverSum.
 	// GEOM_PATCHES feeds GL_PATCHES (4 control points per quad) instead of
 	// triangles, which is the only geometry a tessellation stage can consume.
 	// GEOM_SCATTER is the same point cloud as GEOM_POINTS but drawn opaque and

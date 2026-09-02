@@ -906,6 +906,15 @@ QStringList RenderPipeline::sceneNames() const
 
 // Remote scene browser: jump DIRECTLY to scene idx (same instant path as a
 // manual 'n' cut, but with a chosen target instead of a random roll).
+float RenderPipeline::activeCoverage() const
+{
+	if( m_effectTextures.empty() ) return -1.f;
+	const unsigned int i = m_scheduler.actTexture();
+	if( i >= m_effectTextures.size() ) return -1.f;
+	Scene3DShader *s3 = dynamic_cast<Scene3DShader *>( m_effectTextures[i] );
+	return s3 ? s3->coverage() : -1.f;
+}
+
 QStringList RenderPipeline::fxNames() const
 {
 	QStringList out;

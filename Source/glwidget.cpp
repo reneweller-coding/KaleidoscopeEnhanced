@@ -819,8 +819,12 @@ void GLwidget::dumpSceneCost()
 		if( it.value().frames < 30 ) continue;
 		if( !first ) o << ",\n";
 		first = false;
-		o << "  \"" << it.key() << "\": "
+		o << "  \"" << it.key() << "\": { \"ms\": "
 		  << QString::number( it.value().ms / it.value().frames, 'f', 3 );
+		if( it.value().coverN )
+			o << ", \"cover\": "
+			  << QString::number( it.value().cover / it.value().coverN, 'f', 4 );
+		o << " }";
 	}
 	o << "\n}\n";
 	f.close();
@@ -849,6 +853,8 @@ void GLwidget::paintGL()
 		if( idx >= 0 && idx < nm.size() )
 		{
 			SceneCost &c = m_sceneCost[ nm[idx] ];
+			const float cov = rp->activeCoverage();
+			if( cov >= 0.f ) { c.cover += cov; c.coverN++; }
 			c.ms += ( m_fpsTimer.nsecsElapsed() - costT0 ) * 1e-6;
 			c.frames++;
 		}

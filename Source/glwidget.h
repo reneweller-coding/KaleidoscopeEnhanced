@@ -543,7 +543,7 @@ protected:
 	 * one go -- and the picker is random, so no overlay is reliably on screen
 	 * at a known moment.  Holds the scene still and walks the FX instead. */
 	/** @brief Accumulated render time of one scene (KALEIDO_COST_LOG). */
-	struct SceneCost { double ms = 0.0; int frames = 0; };
+	struct SceneCost { double ms = 0.0; int frames = 0; double cover = 0.0; int coverN = 0; };
 	QHash<QString, SceneCost> m_sceneCost;   ///< Per-scene render cost; empty unless KALEIDO_COST_LOG is set.
 	/** @brief Write the measured per-scene cost to scene-cost.json and clear it. */
 	void dumpSceneCost();

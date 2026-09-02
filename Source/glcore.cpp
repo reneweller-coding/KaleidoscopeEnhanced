@@ -86,6 +86,11 @@ GLC_DEF(glClearBufferData)
 GLC_DEF(glDrawArraysIndirect)
 GLC_DEF(glDrawArraysInstanced)
 GLC_DEF(glPatchParameteri)
+GLC_DEF(glGenQueries)
+GLC_DEF(glDeleteQueries)
+GLC_DEF(glBeginQuery)
+GLC_DEF(glEndQuery)
+GLC_DEF(glGetQueryObjectuiv)
 GLC_DEF(glBlendFunci)
 GLC_DEF(glDrawBuffers)
 GLC_DEF(glClearBufferfv)
@@ -350,6 +355,14 @@ int glcoreInit(void)
     // instances="N" need it, and Scene3DShader falls back to a plain
     // glDrawArrays when the pointer is null.
     GLC_LOAD_OPT(glDrawArraysInstanced)
+    // Occlusion queries -- nur fuer die Abdeckungsmessung
+    // (KALEIDO_COVER_LOG).  Optional: ohne sie laeuft alles weiter,
+    // nur die Messung entfaellt.
+    GLC_LOAD_OPT(glGenQueries)
+    GLC_LOAD_OPT(glDeleteQueries)
+    GLC_LOAD_OPT(glBeginQuery)
+    GLC_LOAD_OPT(glEndQuery)
+    GLC_LOAD_OPT(glGetQueryObjectuiv)
     GLC_LOAD_OPT(glPatchParameteri)
     GLC_LOAD_OPT(glBlendFunci)
     GLC_LOAD_OPT(glDrawBuffers)

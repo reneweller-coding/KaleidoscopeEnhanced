@@ -1297,10 +1297,59 @@ void Scene3DShader::draw()
 		// point as well as the count: glDrawArraysInstanced is core since GL
 		// 3.1, but this codebase reaches everything through its own loader and
 		// a missing pointer would be a null call rather than a compile error.
+		// KALEIDO_COVER_LOG: zaehlt die Fragmente, die dieser Draw schreibt.
+		// Nur im Haupt-Pass -- Schatten- und OIT-Pass wuerden dieselben Pixel
+		// ein zweites Mal zaehlen und die Abdeckung ueber 100 % treiben.
+		static const bool coverLog = getenv( "KALEIDO_COVER_LOG" ) != 0;
+		const bool doCover = coverLog && m_geomKind == GEOM_MESH
+		                     && !inOitPass && s_shadowPass < 0.5f;
+		if( doCover && !m_coverQuery ) glGenQueries( 1, &m_coverQuery );
 		if( m_geomKind == GEOM_MESH && m_meshInstances > 1 && glDrawArraysInstanced )
 			glDrawArraysInstanced( GL_TRIANGLES, 0, m_vertexCount, m_meshInstances );
 		else
 			glDrawArrays( GL_TRIANGLES, 0, m_vertexCount );
+		if( doCover && m_coverQuery )
+		{
+			// Der Draw oben hat den Tiefenpuffer mit der SICHTBAREN Oberflaeche
+			// gefuellt.  Ein Wiederholungs-Draw mit GL_EQUAL besteht genau dort
+			// -- einmal je bedecktem Pixel, ohne Overdraw.  Farb- und
+			// Tiefenschreiben bleiben aus, das Bild aendert sich nicht.
+			glColorMask( GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE );
+			glDepthMask( GL_FALSE );
+			glDepthFunc( GL_EQUAL );
+			glBeginQuery( GL_SAMPLES_PASSED, m_coverQuery );
+			// NUR die Modell-Vertices: der Puffer enthaelt dahinter noch die
+			// Hintergrundkuppel, und die bedeckt das ganze Bild.
+			const GLsizei own = ( m_meshOwnVertexCount > 0 )
+			                    ? (GLsizei) m_meshOwnVertexCount : m_vertexCount;
+			if( m_meshInstances > 1 && glDrawArraysInstanced )
+				glDrawArraysInstanced( GL_TRIANGLES, 0, own, m_meshInstances );
+			else
+				glDrawArrays( GL_TRIANGLES, 0, own );
+			glEndQuery( GL_SAMPLES_PASSED );
+			glDepthFunc( GL_LESS );
+			glDepthMask( GL_TRUE );
+			glColorMask( GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE );
+			// Synchron auslesen: das kostet einen Stall, aber dieser Pfad laeuft
+			// nur im Messlauf, und ein asynchrones Ergebnis muesste ueber Frames
+			// hinweg wieder der richtigen Szene zugeordnet werden.
+			GLuint samples = 0;
+			glGetQueryObjectuiv( m_coverQuery, GL_QUERY_RESULT, &samples );
+			GLint vp[4] = { 0, 0, 1, 1 };
+			glGetIntegerv( GL_VIEWPORT, vp );
+			// GL_SAMPLES_PASSED zaehlt SAMPLES, nicht Pixel: bei 4x MSAA gibt ein
+			// voll bedecktes Bild 4 je Pixel.  Ohne diese Division mass jede
+			// Szene exakt 4.0000, was den Fehler erst verraten hat.
+			GLint msaa = 1;
+			glGetIntegerv( GL_SAMPLES, &msaa );
+			if( msaa < 1 ) msaa = 1;
+			const double px = double(vp[2]) * double(vp[3]) * double(msaa);
+			if( px > 0.0 )
+			{
+				m_coverSum += double(samples) / px;
+				m_coverN++;
+			}
+		}
 		if( !inOitPass ) glDisable( GL_DEPTH_TEST );
 	}
 	else

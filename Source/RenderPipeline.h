@@ -196,6 +196,13 @@ public:
 	/** @brief Jumps directly to texture effect @p idx (instant, unquantised cut). Ignored while PIN or FREEZE is active, or if @p idx is out of range. @param idx Index into the texture-effect list, as returned by sceneNames(). */
 	void forceScene( int idx );
 	/** @brief Names of the configured combine-effect (overlay) shaders, in list order. @return One basename per FX, without the .frag suffix. */
+	/** @return Fraction of the frame the active scene's model covered, or -1
+	 *          when it is not a mesh scene or nothing was measured.
+	 *
+	 * Counted with an occlusion query around the mesh draw (KALEIDO_COVER_LOG).
+	 * The contact sheets suggested the stations fill about a tenth of the
+	 * frame; this replaces the impression with a number. */
+	float activeCoverage() const;
 	QStringList fxNames() const;
 	/** @brief Force the next overlay to @p idx, bypassing budget/mood/mesh filters (FX sweep). @param idx Index into fxNames(). */
 	void forceFx( int idx );

@@ -310,6 +310,22 @@ GLC_FN(void,   glDrawArraysIndirect, (GLenum, const void*))
 // formation from a single buffer (Fleet), instead of uploading N copies.
 GLC_FN(void,   glDrawArraysInstanced, (GLenum, GLint, GLsizei, GLsizei))
 GLC_FN(void,   glPatchParameteri, (GLenum, GLint))
+// Occlusion queries: KALEIDO_COVER_LOG zaehlt damit die Fragmente, die ein
+// Mesh-Draw schreibt.  Kernbestandteil seit GL 1.5, aber dieser Loader holt
+// jeden Einstiegspunkt selbst, also muessen auch alte Funktionen hier stehen.
+GLC_FN(void,   glGenQueries, (GLsizei, GLuint *))
+GLC_FN(void,   glDeleteQueries, (GLsizei, const GLuint *))
+GLC_FN(void,   glBeginQuery, (GLenum, GLuint))
+GLC_FN(void,   glEndQuery, (GLenum))
+GLC_FN(void,   glGetQueryObjectuiv, (GLuint, GLenum, GLuint *))
+
+#ifndef GL_SAMPLES_PASSED
+#define GL_SAMPLES_PASSED 0x8914
+#endif
+#ifndef GL_QUERY_RESULT
+#define GL_QUERY_RESULT   0x8866
+#endif
+
 // Order-independent transparency needs its two targets blended DIFFERENTLY in
 // the same draw — accumulation adds, revealage multiplies — which is exactly
 // what the indexed blend entry points are for.
@@ -399,6 +415,11 @@ GLC_FN(void,   glTexImage2DMultisample, (GLenum, GLsizei, GLenum, GLsizei, GLsiz
 #define glClearBufferData          glcore_glClearBufferData
 #define glDrawArraysIndirect       glcore_glDrawArraysIndirect
 #define glDrawArraysInstanced      glcore_glDrawArraysInstanced
+#define glGenQueries               glcore_glGenQueries
+#define glDeleteQueries            glcore_glDeleteQueries
+#define glBeginQuery               glcore_glBeginQuery
+#define glEndQuery                 glcore_glEndQuery
+#define glGetQueryObjectuiv        glcore_glGetQueryObjectuiv
 #define glPatchParameteri          glcore_glPatchParameteri
 #define glBlendFunci               glcore_glBlendFunci
 #define glDrawBuffers              glcore_glDrawBuffers
