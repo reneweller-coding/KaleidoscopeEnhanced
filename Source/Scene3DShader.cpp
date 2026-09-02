@@ -821,6 +821,7 @@ void Scene3DShader::runGenerator( float time )
 	{
 		float ev[ExprVars::V_COUNT];
 		fillExprVars( a, m_exprTime, m_exprSeeds, ev );
+		ev[ExprVars::V_PROGRESS] = m_sceneProgress;
 		for( size_t i = 0; i < m_exprs.size(); ++i )
 		{
 			if( !m_exprs[i].prog.valid() || m_genExprLocs[i] < 0 )
@@ -1083,6 +1084,7 @@ void Scene3DShader::draw()
 		{
 			float ev[ExprVars::V_COUNT];
 			fillExprVars( m_lastAudio, m_exprTime, m_exprSeeds, ev );
+			ev[ExprVars::V_PROGRESS] = m_sceneProgress;
 			float absv[4] = { 0, 0, 0, 0 };            // pitch yaw roll dolly
 			float vel[4]  = { 0, 0, 0, 0 };
 			static const char *kAbs[4] = { "rigPitch",  "rigYaw",  "rigRoll",  "rigDolly"  };

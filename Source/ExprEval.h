@@ -31,6 +31,10 @@ enum Index {
     V_BEATPH, V_BARPH, V_DOWNBEAT, V_SWELL, V_BUILDUP, V_DROP, V_CHROMA,
     V_CENTROID, V_FLUX, V_AROUSAL, V_VALENCE, V_AMBIENT, V_RHYTHM, V_MUSIC,
     V_ADVANCE, V_PHASE, V_DAYPHASE, V_FLATNESS, V_ZCR, V_FADEOUT,
+    // 0 bei Szenenbeginn, 1 am Ende der Solo-Spanne -- derselbe Wert, den
+    // ein Shader als `sceneProgress` sieht.  Erlaubt einer Szene einen
+    // Bogen ueber ihr Rig statt nur ueber ihren eigenen Quelltext.
+    V_PROGRESS,
     V_SEED1, V_SEED2, V_SEED3, V_COUNT
 };
 // Names in Index order (size V_COUNT) -- for building an editor menu /

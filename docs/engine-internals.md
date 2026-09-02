@@ -2555,3 +2555,59 @@ with an empty diff. And a checker that reads only `Komplett.xml` goes blind the
 moment the formulas move — `Tools/temporal_budget.py` dropped from 1579 terms
 to twelve while still reporting "0 frozen", so it now resolves the table too,
 and treats a missing table as an error rather than a quiet pass.
+
+### The framing question, answered with a number
+
+The contact sheets suggested the mesh scenes' models sit small in the frame.
+`KALEIDO_COVER_LOG` replaces that impression with a measurement — an occlusion
+query around the mesh draw, counting the fragments it writes. Across all 24
+mesh shaders:
+
+| | frame area |
+|---|---|
+| MeshTerrain | 51.6 % |
+| Dissolve | 36.9 % |
+| Condensation | 19.6 % |
+| ShipDocking | 12.6 % |
+| ShipFlyby | 8.2 % |
+| **catalogue median** | **5.3 %** |
+| IndustrialStation | 3.6 % |
+| SensorStation / ExoticStation | 2.8 % |
+| FortressStation / Creature | 2.4 % |
+
+The station families are the smallest and the tightest cluster: 2.4 to 3.6 per
+cent. With 96 % of the frame being sky, a correct camera move measures as
+almost no motion — which is the whole explanation for their STARR flags, and
+nothing is wrong with their rigs.
+
+Two failed measurements on the way there, both given away by their own results.
+A query around the ordinary draw counts **overdraw**, not silhouette (4.0 to
+7.0 where 1.0 is the maximum); the draw has already left the visible surface in
+the depth buffer, so a repeat draw under `GL_EQUAL` passes exactly once per
+covered pixel. After that every scene measured exactly 4.0000, and that
+exactness gave away two more things at once: the vertex buffer carries the
+background dome behind the model (so the draw covers the whole frame), and
+`GL_SAMPLES_PASSED` counts *samples* — four per pixel under 4× MSAA.
+
+**The framing cannot be changed through the rig.** Tested rather than assumed:
+pushing `rigDolly` through 0.55, 1.5 and 3.0 over a scene's lifetime moved
+SensorStation's coverage from 3.9 % to 4.2 % to 4.3 %. The framing is built
+into each scene's own `.vert` (`world.z += 105` and similar), against which a
+translation of a few units is nothing. Changing it means editing the camera
+distance in 24 mesh shaders, which is an aesthetic decision, not a repair.
+
+### Arcs: a scene that moves is not a scene that goes somewhere
+
+`arc` = net change across the window ÷ path length. A scene that rotates and
+arrives where it started scores low however much it moves; one that goes
+somewhere scores high. Measured over the mesh shaders, `AtmosphericEntry` —
+the only one with a staged dramaturgy — scores **0.64**, while the station
+families sit at **0.10**. The metric separates the two cleanly, which is what
+makes "this scene needs an arc" a finding rather than an opinion.
+
+`progress` is now a variable of the formula language (0 at scene start, 1 at
+the end of its solo span), so a scene can be given an arc through its rig
+instead of through its own source. What that experiment also showed, though, is
+that an arc and the framing are the same problem: with the model on 4 % of the
+frame, no camera move can produce much net change, because the remaining 96 %
+is a sky that does not respond to translation.

@@ -336,8 +336,16 @@ def measure(vid, log_path, hold, cycle=8.0):
         hot = np.mod(tt, cycle) < (cycle / 2.0)
         hq = (float(L[hot].mean()) / max(float(L[~hot].mean()), 1e-4)) \
              if hot.any() and (~hot).any() else 1.0
+        # ARC: Netto-Veraenderung ueber das Fenster geteilt durch den
+        # zurueckgelegten Weg.  Eine Szene, die sich dreht und wieder ankommt,
+        # wo sie war, hat viel Bewegung und wenig Bogen; eine, die irgendwo
+        # HINgeht, hat beides.  Das ist die Kennzahl fuer "braucht diese Szene
+        # eine Dramaturgie" -- ohne sie waere das Gestaltung nach Gefuehl.
+        path = float(np.abs(np.diff(L, axis=0)).mean()) * max(1, len(L) - 1)
+        net  = float(np.abs(L[-1] - L[0]).mean())
+        arc  = net / path if path > 1e-6 else 0.0
         rows.append(dict(
-            name=name, t0=float(t0),
+            name=name, t0=float(t0), arc=round(arc, 4),
             luma_med=float(np.median(L)),
             luma_min=float(L.mean(axis=(1, 2)).min()),
             luma_max=float(L.mean(axis=(1, 2)).max()),

@@ -503,6 +503,7 @@ void EffectShader::applyAudioFeatures(const AudioFeatures &f)
     {
         float v[ExprVars::V_COUNT];
         fillExprVars(f, m_exprTime, m_exprSeeds, v);
+        v[ExprVars::V_PROGRESS] = m_sceneProgress;
 
         for (ExprEntry &e : m_exprs)
         {
@@ -652,6 +653,10 @@ void EffectShader::fillExprVars( const AudioFeatures &f, float timeVal,
     v[ExprVars::V_FLATNESS] = f.spectralFlatness;
     v[ExprVars::V_ZCR]      = f.zeroCrossingRate;
     v[ExprVars::V_FADEOUT]  = f.fadeOut;
+    // `progress` ist KEIN Audio-Merkmal, sondern der Stand der Szene selbst.
+    // fillExprVars ist static (die Seeds kommen als Parameter), deshalb wird
+    // er vom Aufrufer nachgetragen -- hier steht nur der sichere Vorgabewert.
+    v[ExprVars::V_PROGRESS] = 0.f;
     v[ExprVars::V_SEED1]    = seeds[0];
     v[ExprVars::V_SEED2]    = seeds[1];
     v[ExprVars::V_SEED3]    = seeds[2];

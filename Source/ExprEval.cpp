@@ -18,7 +18,7 @@ const char *kVarNames[ExprVars::V_COUNT] = {
     "beatPhase", "barPhase", "downbeat", "swell", "buildUp", "drop",
     "chromaHue", "centroid", "flux", "arousal", "valence", "ambient",
     "rhythm", "music", "advance", "phase", "dayPhase", "flatness", "zcr",
-    "fadeOut", "seed1", "seed2", "seed3"
+    "fadeOut", "progress", "seed1", "seed2", "seed3"
 };
 
 } // namespace (closed early so ExprVars::names() below can sit in its own
