@@ -174,8 +174,18 @@ def write_chunks(scenes, plain, cross, per_chunk):
     return names
 
 
+WAV_VERSION = 2   # 1 = Drone (keine Tonhoehe), 2 = Akkordbett + Lead + Bass + Drums
+
+
 def write_wav(path, secs, cycle=8.0):
     """Loud/quiet cycle so every scene is seen in BOTH conditions.
+
+    VERSION 2 IST MUSIK: ein C-Dur-Akkordbett (I-V-vi-IV), eine Lead-Melodie
+    eine Oktave darueber, eine Basslinie und Drums bei 128 BPM -- gebaut aus
+    Tools/make_structure_wav.py.  Die laute Haelfte hat alles, die leise nur
+    Bett und Lead bei -12 dB, so dass eine TONHOEHE in beiden Haelften da ist.
+    Version 1 war eine 55/82,5-Hz-Drone, die unter dem Tonhoehenbereich der
+    Engine (60..1200 Hz) lag: MelodyScript mass damit "leer".
 
     The edges are raised cosines: a hard switch is itself a frame difference
     and made every audio-reactive scene look like a strobe.
@@ -188,26 +198,37 @@ def write_wav(path, secs, cycle=8.0):
     line mid-stave (std 0.078).  Confirm a pitch scene with real music before
     touching it.
     """
-    sr = 44100
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import make_structure_wav as M
+    sr = M.SR
+    n = int(sr * secs)
+    full = np.zeros(n + int(sr * M.BAR) + 1)
+    soft = np.zeros_like(full)
+    bars = int(secs / M.BAR) + 1
+    for b in range(bars):
+        bt = b * M.BAR
+        M.add(soft, M.chord_bed(b, M.BAR, 0.16), bt)
+        M.add(soft, M.lead(b, M.BAR, 0.20), bt)
+        M.add(full, M.bass_line(b, M.BAR, 1.0), bt)
+        for q in range(4):
+            M.add(full, M.kick(), bt + q * M.SPB, 0.9)
+            if q in (1, 3):
+                M.add(full, M.snare(), bt + q * M.SPB, 0.55)
+        for h in range(8):
+            M.add(full, M.hat(), bt + h * M.SPB / 2, 0.18)
+    t = np.arange(n) / sr
+    ph = np.mod(t, cycle)
+    half, ramp = cycle / 2.0, 0.35
+    loud = np.where(ph < half, 1.0, 0.0)
+    rise = ph < ramp
+    loud[rise] = 0.5 * (1 - np.cos(np.pi * ph[rise] / ramp))
+    fall = (ph > half - ramp) & (ph < half)
+    loud[fall] = 0.5 * (1 + np.cos(np.pi * (ph[fall] - half + ramp) / ramp))
+    sig = soft[:n] * (0.25 + 0.75 * loud) + full[:n] * loud
+    sig = sig / (np.max(np.abs(sig)) + 1e-9) * 0.85
     w = wave.open(path, "wb")
     w.setnchannels(1); w.setsampwidth(2); w.setframerate(sr)
-    buf = bytearray()
-    half, ramp = cycle / 2.0, 0.35
-    for i in range(int(sr * secs)):
-        t = i / sr
-        ph = t % cycle
-        if ph < half:
-            loud = 1.0
-            if ph < ramp:        loud = 0.5 * (1 - math.cos(math.pi * ph / ramp))
-            elif ph > half-ramp: loud = 0.5 * (1 + math.cos(math.pi * (ph-half+ramp) / ramp))
-        else:
-            loud = 0.0
-        drone = 0.18*math.sin(2*math.pi*55*t) + 0.10*math.sin(2*math.pi*82.5*t)
-        beat  = math.exp(-((t % 0.5) * 14.0)) * math.sin(2*math.pi*60*t) * 0.55
-        hat   = math.exp(-((t % 0.25) * 90.0)) * math.sin(2*math.pi*7000*t) * 0.12
-        s = drone * (0.35 + 0.65*loud) + (beat + hat) * loud
-        buf += struct.pack("<h", max(-32767, min(32767, int(s * 22000))))
-    w.writeframes(bytes(buf)); w.close()
+    w.writeframes((sig * 32767).astype("<i2").tobytes()); w.close()
 
 
 # ---------------------------------------------------------------- render ----
@@ -259,13 +280,19 @@ def decodable(vid):
     return len(p.stdout) > 0
 
 
-def render(cfg, wav, log_path, hold, seed, kind="scene", time_start=0):
+def render(cfg, wav, log_path, hold, seed, kind="scene", time_start=0, extra_env=None):
     # Die Engine liest KALEIDO_SCENE_SWEEP mit qEnvironmentVariableIntValue:
     # "12.0" ergibt dort 0 und der Sweep laeuft schlicht nicht an -- die
     # Aufnahme sieht dann wie ein normaler Lauf aus und liefert null Fenster.
     var = "KALEIDO_FX_SWEEP" if kind == "fx" else "KALEIDO_SCENE_SWEEP"
+    # KALEIDO_SOLO_SECS = Haltezeit: sceneProgress laeuft dann ueber das
+    # Fenster, nicht ueber die Review-Spanne von 25 s -- sonst sieht das
+    # Screening von einer inszenierten Szene (Assembly) nie das Ende.
     env = dict(os.environ, KALEIDO_SEED=str(seed), KALEIDO_COST_LOG="1",
-               KALEIDO_TIME_START=str(int(time_start)))
+               KALEIDO_TIME_START=str(int(time_start)),
+               KALEIDO_SOLO_SECS=str(int(round(hold))))
+    if extra_env:
+        env.update(extra_env)
     env[var] = str(int(round(hold)))
     with io.open(log_path, "w", encoding="utf-8", errors="replace") as fh:
         subprocess.run([os.path.join(RELEASE, "Kaleidoscope.exe"),
@@ -404,8 +431,15 @@ def report(rows):
           % (sds[len(sds)//2], q10))
     print("  (luma_med ist der Median ueber die PIXEL -- bei Sternenfeldern zu"
           " Recht 0, deshalb zaehlt Struktur, nicht Dunkelheit)\n")
+    try:
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        from scene_traits import traits
+    except Exception:
+        traits = lambda n: {}
     for n, f in marked:
-        print("  %-38s %s" % (n, " | ".join(f)))
+        t = traits(n)
+        tag = "".join("  [%s]" % k for k in ("staged", "pitch") if t.get(k))
+        print("  %-38s %s%s" % (n, " | ".join(f), tag))
     if marked:
         print("\n  Das sind VERDACHTSFAELLE, keine Befunde.  Jede Szene wuerfelt")
         print("  ihre Parameter pro Auftritt neu, und die Spanne ist gross:")
@@ -414,6 +448,33 @@ def report(rows):
         print("  Ein einzelner Messwert ist damit kein Urteil.  Nachpruefen:")
         print("      python Tools/screen.py --confirm")
     return marked
+
+
+def measure_scenes(names, hold, seed=1, time_start=0, extra_env=None):
+    """Die genannten Szenen einmal rendern und messen; Zeilen wie measure()."""
+    scenes, plain, cross = read_master()
+    keep = set(names)
+    scenes = [s for s in scenes if s[0] in keep]
+    if not scenes:
+        return []
+    cfg, count = write_chunks(scenes, plain, cross, len(scenes))[0]
+    need = int(count * hold + 30)
+    wav = os.path.join(WORK, "screen%d_%d.wav" % (WAV_VERSION, need))
+    if not os.path.exists(wav):
+        write_wav(wav, need)
+    log = os.path.join(WORK, "%s.log" % cfg)
+    render(cfg, wav, log, hold, seed, "scene", time_start, extra_env)
+    folder = newest_recording()
+    vid = wait_for_video(folder) if folder else None
+    rows = measure(vid, log, hold) if vid else []
+    if folder and rows:
+        subprocess.run(["cmd", "/c", "rmdir", "/s", "/q", folder], check=False)
+    p = os.path.join(ROOT, "Configurations", cfg + ".xml")
+    if os.path.exists(p):
+        os.remove(p)
+    for r in rows:
+        r["seed"] = seed
+    return rows
 
 
 def confirm(names, hold, seeds=(1, 2, 3), time_start=0):
@@ -425,31 +486,10 @@ def confirm(names, hold, seeds=(1, 2, 3), time_start=0):
     -- 0.0062, 0.0292, 0.0694, 0.0837.  Wer auf einen einzelnen Wert hin einen
     Shader anfasst, repariert womoeglich eine Ziehung statt eines Fehlers.
     """
-    scenes, plain, cross = read_master()
-    keep = set(names)
-    scenes = [s for s in scenes if s[0] in keep]
-    if not scenes:
-        return {}
-    wav = None
     per = {}
     for seed in seeds:
-        cfg, count = write_chunks(scenes, plain, cross, len(scenes))[0]
-        need = int(count * hold + 30)
-        wav = os.path.join(WORK, "screen_%d.wav" % need)
-        if not os.path.exists(wav):
-            write_wav(wav, need)
-        log = os.path.join(WORK, "%s.log" % cfg)
-        render(cfg, wav, log, hold, seed, "scene", time_start)
-        folder = newest_recording()
-        vid = wait_for_video(folder) if folder else None
-        if not vid:
-            continue
-        for r in measure(vid, log, hold):
+        for r in measure_scenes(names, hold, seed, time_start):
             per.setdefault(r["name"], []).append(r["spatial_std"])
-        subprocess.run(["cmd", "/c", "rmdir", "/s", "/q", folder], check=False)
-        p = os.path.join(ROOT, "Configurations", cfg + ".xml")
-        if os.path.exists(p):
-            os.remove(p)
     print("\n%-38s %8s %8s %8s" % ("Szene", "min", "Median", "max"))
     for n in sorted(per):
         v = sorted(per[n])
@@ -499,21 +539,35 @@ def aggregate(rows):
         per.setdefault(r["name"], []).append(r)
     out = {}
     for n, v in per.items():
+        # Je Seed der Bestwert ueber die Fenster; ueber die Seeds dann
+        # min/Median/max.  Der eine Wert eines Katalogdurchlaufs ist eine
+        # STICHPROBE aus der Parameterverteilung der Szene (Faktor 13 bei
+        # FuturisticCityFlight), keine Eigenschaft -- erst die Verteilung
+        # sagt, wo ein Rueckgang anfaengt.
+        by_seed = {}
+        for x in v:
+            by_seed.setdefault(x.get("seed", 1), []).append(x)
+        stds = sorted(max(x["spatial_std"] for x in w) for w in by_seed.values())
+        mots = sorted(max(x["motion_med"] for x in w) for w in by_seed.values())
         out[n] = dict(
-            std=round(max(x["spatial_std"] for x in v), 5),
-            motion=round(max(x["motion_med"] for x in v), 5),
+            std=round(stds[len(stds) // 2], 5),
+            std_min=round(stds[0], 5), std_max=round(stds[-1], 5),
+            motion=round(mots[len(mots) // 2], 5),
+            motion_min=round(mots[0], 5),
             strobe=round(max(x["strobe"] for x in v), 2),
             luma=round(max(x["luma_max"] for x in v), 4),
-            n=len(v))
+            seeds=len(by_seed), n=len(v))
     return out
 
 
 def save_baseline(rows):
     agg = aggregate(rows)
     os.makedirs(os.path.dirname(BASELINE), exist_ok=True)
-    json.dump(dict(scenes=agg, note=(
-        "Bestwert je Szene ueber ihre Fenster, aus Tools/screen.py. "
-        "Aktualisieren mit: python Tools/screen.py --save-baseline"),
+    json.dump(dict(scenes=agg, wav_version=WAV_VERSION, note=(
+        "Je Szene Median/min/max ueber die Seeds (Bestwert ueber die Fenster je "
+        "Seed), aus Tools/screen.py --seeds N. Ein Rueckgang zaehlt erst unter "
+        "dem aufgezeichneten Minimum. Aktualisieren in ZWEI Schritten: "
+        "python Tools/screen.py --seeds 3   und dann   python Tools/screen.py --save-baseline"),
     ), io.open(BASELINE, "w", encoding="utf-8"), indent=1, sort_keys=True)
     print("Basislinie: %d Szenen -> %s" % (len(agg), BASELINE))
 
@@ -522,7 +576,13 @@ def check_baseline(rows):
     if not os.path.exists(BASELINE):
         print("Keine Basislinie -- erst  python Tools/screen.py --save-baseline")
         return 0
-    base = json.load(io.open(BASELINE, encoding="utf-8"))["scenes"]
+    bj = json.load(io.open(BASELINE, encoding="utf-8"))
+    base = bj["scenes"]
+    if bj.get("wav_version", 1) != WAV_VERSION:
+        print("\nBasislinie stammt von WAV-Version %d, gemessen wurde mit %d -- "
+              "nicht vergleichbar. Neu aufnehmen: python Tools/screen.py --seeds 3, "
+              "danach python Tools/screen.py --save-baseline" % (bj.get("wav_version", 1), WAV_VERSION))
+        return 0
     now = aggregate(rows)
     worse, neu, gone = [], [], []
     for n, cur in sorted(now.items()):
@@ -532,8 +592,11 @@ def check_baseline(rows):
         b = base[n]
         for key, label, fac in (("std", "Struktur", REGRESS_STD),
                                 ("motion", "Bewegung", REGRESS_MOTION)):
-            if b[key] > 1e-5 and cur[key] * fac < b[key]:
-                worse.append((n, label, b[key], cur[key]))
+            # Gegen das MINIMUM der Verteilung, wo es eines gibt: was in der
+            # Basislinie selbst schon einmal so tief lag, ist kein Einbruch.
+            ref = b.get(key + "_min", b[key])
+            if ref > 1e-5 and cur[key] * fac < ref:
+                worse.append((n, label, ref, cur[key]))
     gone = sorted(set(base) - set(now))
     print("\nGegen die Basislinie: %d Szenen geprueft" % len(now))
     if worse:
@@ -607,6 +670,10 @@ def main():
     ap.add_argument("--chunk", type=int, default=110, help="Szenen je Aufnahme")
     ap.add_argument("--hold", type=int, default=8, help="Sekunden je Szene (ganzzahlig)")
     ap.add_argument("--seed", type=int, default=1, help="KALEIDO_SEED")
+    ap.add_argument("--seeds", type=int, default=1,
+                    help="jeden Chunk mit N Seeds (seed..seed+N-1) rendern und "
+                         "die Verteilung je Szene festhalten -- die Basis fuer "
+                         "eine Basislinie, die Streuung von Einbruch trennt")
     ap.add_argument("--time-start", type=int, default=0, dest="time_start",
                     help="die Uhr der Shader vorstellen (Sekunden) -- prueft, "
                          "ob eine Szene nach langer Laufzeit noch etwas zeigt"),
@@ -675,7 +742,7 @@ def main():
     # Material.  Ein File je Laenge macht die Einzelpruefung, also den
     # dokumentierten Folgeschritt zu jeder Auffaelligkeit, wieder billig.
     need = int(max(c[1] for c in chunks) * a.hold + 30)
-    wav = os.path.join(WORK, "screen_%d.wav" % need)
+    wav = os.path.join(WORK, "screen%d_%d.wav" % (WAV_VERSION, need))
     if not os.path.exists(wav) or os.path.getsize(wav) < need * 44100 * 2 * 0.9:
         print("Screening-WAV bauen (%d s) ..." % need)
         write_wav(wav, need)
@@ -687,15 +754,26 @@ def main():
             allrows += json.load(io.open(mpath, encoding="utf-8"))
             print("  %s: uebersprungen (schon gemessen)" % cfg)
             continue
-        log = os.path.join(WORK, "%s.log" % cfg)
-        print("  %s: rendern (%d Szenen, ~%.0f min) ..."
-              % (cfg, count, (count * a.hold + 40) / 60.0))
-        render(cfg, wav, log, a.hold, a.seed, a.kind, a.time_start)
-        folder = newest_recording()
-        vid = wait_for_video(folder) if folder else None
-        if not vid:
-            print("  %s: KEIN Video -- uebersprungen" % cfg)
-            continue
+        rows = []
+        for si in range(max(1, a.seeds)):
+            seed = a.seed + si
+            log = os.path.join(WORK, "%s.log" % cfg)
+            print("  %s: rendern (%d Szenen, Seed %d, ~%.0f min) ..."
+                  % (cfg, count, seed, (count * a.hold + 40) / 60.0))
+            render(cfg, wav, log, a.hold, seed, a.kind, a.time_start)
+            folder = newest_recording()
+            vid = wait_for_video(folder) if folder else None
+            if not vid:
+                print("  %s: KEIN Video -- uebersprungen" % cfg)
+                continue
+            part = measure(vid, log, a.hold)
+            for r in part:
+                r["seed"] = seed
+            if part:
+                subprocess.run(["cmd", "/c", "rmdir", "/s", "/q", folder], check=False)
+            else:
+                print("  %s: 0 Fenster -- Aufnahme BLEIBT unter %s" % (cfg, folder))
+            rows += part
         # The app writes scene-cost.json into its working directory and
         # overwrites it per chunk, so fold it into a running total before the
         # next render clobbers it.  Measured cost is the honest replacement for
@@ -708,14 +786,9 @@ def main():
             except ValueError:
                 pass
             os.remove(cp)
-        rows = measure(vid, log, a.hold)
         if rows:
             json.dump(rows, io.open(mpath, "w", encoding="utf-8"), indent=1)
-            # Only now is the recording expendable.
-            subprocess.run(["cmd", "/c", "rmdir", "/s", "/q", folder], check=False)
             print("  %s: %d Fenster" % (cfg, len(rows)))
-        else:
-            print("  %s: 0 Fenster -- Aufnahme BLEIBT unter %s" % (cfg, folder))
         allrows += rows
 
     for cfg, _ in chunks:

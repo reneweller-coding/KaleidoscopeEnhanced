@@ -94,6 +94,12 @@ jobs:
           python Tools\check_uniform_types.py
           if ($LASTEXITCODE -ne 0) { exit 1 }
 
+      - name: Self-test -- enum/name tables stay in step (AudioLoc, ExprVars; no GL)
+        shell: pwsh
+        run: |
+          python Tools\check_enum_tables.py
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+
       - name: Self-test -- roundtrip (load+save every preset, no GL)
         shell: pwsh
         run: |

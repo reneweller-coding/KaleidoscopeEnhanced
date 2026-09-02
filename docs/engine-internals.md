@@ -2807,3 +2807,149 @@ fix in the shader; the blind spot is now documented in `write_wav()`.
 the faintest embers remain", and that is what it draws, with the drone and
 with music. It is tagged dark/calm and is only chosen for quiet passages.
 Left alone.
+
+## Foundations, second round
+
+Nine proposals were built in one evening; each is behind an environment
+variable or a new tool, so the running show is unchanged. What was proven,
+and how:
+
+### Randomness per scene
+
+`KALEIDO_SEED` used to seed one global `rand()`; which parameters a scene
+drew depended on who ran *before* it, which is why a nine-scene reproduction
+of a 112-scene chunk measured 0.22 against 0.0006 for the same shader.
+`EffectShader::resetParameters()` now reseeds from (seed, shader path,
+activation count) — FNV-1a — when the seed is pinned, and does nothing
+otherwise. The proof is not a picture (the cross-fade from a different
+neighbour contaminates the window) but a log line: with `KALEIDO_SEED` set,
+each activation prints `SEEDED <shader> act=N seeds=… solo=…`, and the line
+for `FuturisticCityFlight` reads `seeds=0.8874 0.3799 0.5453 solo=89` alone
+and with four neighbours alike.
+
+### The solo span the screening never saw
+
+`sceneProgress` normalised over the review span of 25 s while the screening
+held each scene for 8 s, so a staged scene was measured in its first third:
+`Assembly` stood in every window as a cloud, luma 0.0039.
+`KALEIDO_SOLO_SECS` caps that span (`soloCap()` in EffectShader), `screen.py`
+sets it to the hold time, and the same window now measures luma 0.0166 and
+structure 0.042 with the bust assembled.
+
+### Parameter corners
+
+`KALEIDO_PARAM_CORNER=min|max|alt` makes `Uniform::roll01()` return the end of
+every range instead of a draw. `Tools/param_corners.py` renders the three
+corners plus a three-seed median and reports a corner that is empty while the
+median is healthy — a range that is too wide, not a shader that is broken.
+This is what the seed-3 draw of `FuturisticCityFlight` (0.0062) was.
+
+### The recorder was already fast
+
+It has had an async PBO readback and NVENC for a while; only its cap was 30.
+`KALEIDO_RECORD_FPS=60` lifts it without touching the user's ini, and the
+pipeline sustains it: 3233 frames in 53.9 s, exactly 60.0, against 1614 at
+30. The screening still samples at 5 fps, so its strobe measure does not
+benefit until that raster changes too.
+
+### The melody is not the root
+
+The dominant pitch is a harmonic product spectrum over 60–1200 Hz, and on a
+full mix the strongest harmonic series is the bass line. Measured on a
+synthetic track with a loud saw bass and a lead an octave above the chords:
+38 % of frames under 0.15 (bass), 1 % in the lead's range. `melodyPitch` runs
+the same product spectrum from 150 Hz up — 10 % and 73 % — and now feeds the
+melody ring, so `MelodyScript` writes the tune. Shaders get it as
+`audioMelodyPitch`; `audioPitch` stays the root.
+
+### A feature log, finally
+
+`KALEIDO_FEATURE_LOG=<csv>` writes one line per frame: pitch, melody,
+buildUp, dropPulse/Count, bar and beat phase, BPM, section, presence, level,
+swell, flux, harmonic change, phrase position and seconds to the next phrase
+boundary. Every number above came out of it. Two traps it exposed at once:
+`estimatedBPM` is *normalised* — (BPM − 40) / 160, so 0.6 is 136 BPM and not
+"no tempo" — and the analyzer reads the first ~20 s of anything as a build-up
+while its 10-second baselines are still climbing (0.67 in an intro groove,
+0.43 in the actual build-up that followed).
+
+### Tools that read the scene instead of guessing
+
+`Tools/scene_traits.py` derives `staged` (reads `sceneProgress`, or a rig
+formula uses `progress`) and `pitch` (`audioPitch`/`audioMelody`/
+`audioDeltaPitch`) from the source — six staged scenes, seven pitch-driven —
+and the screening report tags flagged scenes with them.
+`Tools/check_enum_tables.py` (CI) keeps `AudioLoc`/`kAudioLocNames` and
+`ExprVars`/`kVarNames` the same length; both were extended by hand twice today,
+and a mismatch there is silent.
+
+### The baseline as a distribution
+
+`screen.py --seeds N` renders every chunk N times and records
+median/min/max per scene; `--check` compares against the recorded *minimum*,
+so a value the baseline itself once produced is no longer a regression. The
+screening WAV is version 2 — a chord bed, a lead, a bass line and drums at
+128 BPM under the same loud/quiet cycle — because version 1's drone had no
+pitch at all. The baseline carries the WAV version and refuses a comparison
+across versions.
+
+### Cue memory: a favourite that remembers where it was pressed
+
+The taste system already had favourites (`F`, `/api/fav`) and marks. A
+favourite pressed while a track is identified now also stores *where*:
+`[cues] <track>/<second> = <scene>` in the settings ini, with the track key
+derived from the OS media session's `artist|title` reduced to `[a-z0-9_]`.
+`RenderPipeline::tickCues()` runs once per frame; when the same track is
+playing and reaches a remembered second (±2.5 s), it forces that scene once
+per playback through the same path the remote's scene browser uses. The
+visualiser learns one favourite picture per song per press.
+
+Offline it is testable through `KALEIDO_FAKE_TRACK=artist|title`, which
+supplies a fixed key and the run clock as the position. Two cues written into
+the ini fired at 18 s and 34 s, each followed by the activation of its scene —
+the second one even had its arc re-timed by the regie below.
+
+One finding on the way: the engine reads `..\kaleidoscope_settings.ini`
+*relative to the executable*, which in the development tree is the file in the
+repository root, not the one next to `Release\Kaleidoscope.exe`. The first
+test edited the wrong file and fired nothing.
+
+### Arcs on the drop
+
+Dance music puts its drops on 8-bar boundaries. The conditioner now counts
+bars into a phrase (`phrasePos`, and `phraseSecsLeft` at the current tempo),
+resetting only on a detected drop — section changes looked like the natural
+anchor too, but they land mid-phrase as often as not (measured at 16.6, 34.3,
+47.1 and 91.0 s on a track whose phrases sit at 15, 30, 45 …).
+
+When `buildUp` rises past 0.45 (after a 20-second warm-up, because the
+analyzer reads any opening groove as a build-up while its baselines settle),
+`SceneScheduler` takes the active scene, and if it is staged, calls
+`EffectShader::setClimaxIn(phraseSecsLeft)`: the progress ramp is bent so that
+0.95 lands on the predicted boundary, continuously — the current progress is
+kept and only the slope changes, so no piece flies out again. The ramp has its
+own origin (`m_progressT0`) precisely so that `sceneTime`, which the 19
+clock-fixed scenes fly on, does not jump. While the tension rises, the next
+pick also prefers staged scenes.
+
+Two engine details this surfaced: `estimatedBPM` is normalised, (BPM − 40) /
+160, and the bar counter must count every arrival at beat one — a downbeat
+resync from beat two skips the 3 → 0 wrap and silently loses a bar.
+
+**Measured**, on a synthetic 128 BPM track with three build-up → vacuum →
+drop rounds at 45, 90 and 135 s (`Tools/make_structure_wav.py`, which writes
+the truth next to the WAV): the drops are detected 0.3–1.0 s ahead of the
+slam (44.73, 89.34, 133.95); the build-ups cross 0.45 at 41.9, 87.0 and
+131.8 s; and once the first drop has anchored the phrase clock, the predicted
+drop lands at 89.9 and 134.4 s — errors of **−0.1 s and −0.6 s**. The first
+drop of a track has no anchor and came out +2.0 s late. The phrase clock got
+there in two steps: counting bars from the host's bar bookkeeping lost one in
+four (16 counted against 23 real in 44 s) whenever a downbeat resync and a PLL
+wrap disagreed; integrating beats from the tempo since the last drop cannot
+lose a bar, and drifts only with the tempo error. The drop detector's arming
+threshold also had to come down from 0.60 to 0.45: even a deliberately strong
+synthetic build-up peaks at 0.50–0.53 on that feature, so nothing ever armed.
+The vacuum and bass-slam tests behind the arming are what keep a false drop
+rare. The two false build-up rises in the first 25 s of the track (the
+analyzer's baselines settling) bend an arc once for nothing; the scene simply
+finishes early.

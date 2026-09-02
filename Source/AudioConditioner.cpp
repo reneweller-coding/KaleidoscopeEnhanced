@@ -105,6 +105,31 @@ AudioFeatures AudioConditioner::update( const AudioFeatures &audio, float rawDt,
         m_barBeatHost = 0;
     m_prevRawDownbeat = audio.downbeat;
 
+    // ---- 8-bar PHRASE: where the next drop can land ----
+    // Beats are INTEGRATED from the tempo since the last drop, not counted
+    // from the host's bar bookkeeping.  Counting arrivals at beat one lost
+    // about one bar in four (16 counted against 23 real in 44 s) whenever a
+    // downbeat resync and a PLL wrap disagreed; integration cannot lose a
+    // bar, it only drifts with the tempo error (0.5 % at 128 BPM is 0.16
+    // beats per phrase), and every detected drop re-anchors it -- drops in
+    // dance music land ON phrase boundaries, and the detector fires 0.3-1 s
+    // ahead of the slam.  Section changes are NOT anchors: measured mid-phrase
+    // as often as not (16.6, 34.3, 47.1, 91.0 s on phrases at 15, 30, 45).
+    {
+        const float bpm = 40.f + 160.f * audio.estimatedBPM;
+        const bool tempoKnown = audio.estimatedBPM > 0.004f;
+        if( audio.dropCount != m_phraseDrop )
+        {
+            m_phraseBeats = 0.f;
+            m_phraseDrop  = audio.dropCount;
+        }
+        else if( tempoKnown )
+            m_phraseBeats += dt * bpm / 60.f * gate;
+        const float beatsIn   = fmodf( m_phraseBeats, 32.f );
+        m_phrasePos      = beatsIn / 32.f;
+        m_phraseSecsLeft = tempoKnown ? ( 32.f - beatsIn ) * 60.f / bpm : 0.f;
+    }
+
     // Swell: a slow loudness-build envelope (fast average minus slow average)
     // — rises while the music builds, falls in fade-outs.  THE ambient-motion
     // signal: level is too fast and arousal too sluggish to show a drone
@@ -141,7 +166,8 @@ AudioFeatures AudioConditioner::update( const AudioFeatures &audio, float rawDt,
     if( m_melodyAccum >= 0.08f )
     {
         m_melodyAccum = fmodf( m_melodyAccum, 0.08f );
-        m_melody[m_melodyHead] = audio.dominantPitch;
+        // The TUNE, not the root: melodyPitch searches above the bass line.
+        m_melody[m_melodyHead] = audio.melodyPitch;
         m_melodyHead = ( m_melodyHead + 1 ) % 96;
     }
     for( int i = 0; i < 96; ++i ) audioFx.melody[i] = m_melody[i];
@@ -261,6 +287,8 @@ AudioFeatures AudioConditioner::update( const AudioFeatures &audio, float rawDt,
     {
         float barPos = float(m_barBeatHost) + m_beatPhasePLL + ctx.latencyLead * rateLead;
         audioFx.barPhase = (barPos - floorf(barPos * 0.25f) * 4.f) * 0.25f;
+        audioFx.phrasePos      = m_phrasePos;
+        audioFx.phraseSecsLeft = m_phraseSecsLeft;
     }
     audioFx.overallLevel  = m_audioLevelSmooth    * gate;
     audioFx.spectralFlux  = m_audioFluxSmooth     * gate;

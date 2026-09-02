@@ -164,6 +164,9 @@ public:
 		float rhythmStrength = 0.f;   ///< Beat confidence 0..1; above 0.55 lets the 4-beat cross-fade duration kick in.
 		float estimatedBPM   = 0.f;   ///< Estimated tempo, used to compute the 4-beat cross-fade duration.
 		float logAttackTime  = 0.f;   ///< Articulation (staccato vs. legato); shortens the cross-fade for staccato material.
+		// Regie: Bogen auf den Drop
+		float buildUp        = 0.f;   ///< Build-up tension 0..1 (analyzer); a rising edge past 0.45 arms the drop-synchronous arc.
+		float phraseSecsLeft = 0.f;   ///< Seconds to the next 8-bar boundary = the predicted drop; 0 when the tempo is unknown.
 	};
 
 	/** @brief Evaluate musical triggers and advance the effect (texture) Solo/Fade state machine. Runs before the effect passes.
@@ -251,6 +254,11 @@ private:
 	// (non-minimal) combo, while an all-four-maxed-out combo is still capped.
 	static const unsigned int kComplexityBudget        = 28;   ///< Ceiling for the 4-term (act+next texture, act+next combine) sum used by tick()/tickFx()'s normal picks and reset()'s second (combine-inclusive) pick.
 	static const unsigned int kComplexityBudgetInitial  = 17;  ///< Ceiling for reset()'s first, texture-only (2-term) pick, before the combine pair exists yet -- kept at the same ratio to kComplexityBudget as the original 12:20.
+
+	// Regie: Bogen auf den Drop
+	float m_buildUpPrev  = 0.f;    ///< Last frame's buildUp, for the rising edge past 0.45.
+	float m_arcCooldown  = 0.f;    ///< Seconds until the next arc re-timing is allowed (20 s).
+	float m_regieWarm    = 0.f;    ///< Seconds since start; the arc regie ignores build-ups in the first 20 s (analyzer baselines still settling).
 
 	// Erzwungene Wechsel + Beat-Quantisierung
 	bool  m_forceEffectChange   = false;   ///< Set by requestChange()/forceScene()/triggers; consumed at the next Solo-phase check.

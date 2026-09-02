@@ -153,7 +153,11 @@ def make_imgs(stem):
             outs.append(f"img/{stem}_{v}.jpg")
     return outs
 
-CAPTIONS = ["ruhig (t=8)", "ruhig (t=16)", "audio-heiß (t=8)"]
+# Die dritte Marke liegt bei t=21 (render_catalog_images.ps1 zieht -ss 21):
+# die WAV ist ab 17 s audio-heiss, und eine inszenierte Szene (Solo dort auf
+# 23-24 s gesetzt) steht bei 21 s kurz vor dem Ende ihres Bogens.  Die
+# Beschriftung sagte "t=8" -- das war die alte Marke.
+CAPTIONS = ["ruhig (t=8)", "ruhig (t=16)", "audio-heiß (t=21)"]
 
 # FX overlays and transitions don't have their own picture — they're shown
 # applied over two fixed reference scenes so the effect itself, not the

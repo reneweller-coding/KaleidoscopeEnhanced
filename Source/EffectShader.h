@@ -305,6 +305,11 @@ public:
 	// the GPU simulation only while an effect that displays it is on screen.
 	/// @return True if this effect's compiled fragment shader declares the "texSim" (reaction-diffusion) sampler. Cached after first query; false if not yet compiled.
 	bool usesSim();
+	/** @brief True if this scene is STAGED: it reads `sceneProgress` or its rig formulas use `progress`. Cached after the first compile. */
+	bool usesProgress();
+	/** @brief Re-time the progress ramp so progress reaches 0.95 in @p secs from now, continuously (no jump in the current value).
+	 *  The origin used is #m_progressT0, NOT #m_activationTime, so `sceneTime` is untouched -- the 19 scenes that fly on it would cut otherwise. */
+	void setClimaxIn( float secs );
 
 	// Same for the fluid simulation ("texFluid" uniform, unit 8).
 	/// @return True if this effect's compiled fragment shader declares the "texFluid" sampler (fluid simulation, unit 8). Cached after first query.
@@ -549,6 +554,8 @@ protected:
 	float	m_probability; ///< Threshold used by useShader() to decide whether this effect activates.
 
 	int		m_usesSim = -1;      // -1 = not yet queried, 0/1 = cached result
+	int		m_usesProgress = -1; // -1 = not yet queried; 1 = reads sceneProgress or a rig formula uses `progress`
+	bool	m_exprUsesProgress = false;   // set while the rig formulas are parsed
 	int		m_usesFluid = -1;    // same caching for the fluid field
 	int		m_usesSmoke3D = -1;  // same caching for the volumetric smoke/fire field
 	int		m_usesSSM = -1;      // same caching for the self-similarity matrix
@@ -610,8 +617,10 @@ protected:
 	GLint m_progressUni    = -1;        ///< Location of the `sceneProgress` uniform (-1 if the shader doesn't declare it).
 	GLint m_sceneTimeUni   = -1;        ///< Location of the `sceneTime` uniform: seconds since THIS activation. `time` runs since program start and grows without bound.
 	float m_advanceAtReset = -1.0e9f;   ///< audioAdvance beim ersten Frame nach der Aktivierung; `sceneAdvance` ist die Differenz dazu.
+	unsigned m_activations = 0;         ///< Auftritte dieser Szene seit Programmstart; Teil des Szenen-Seeds unter KALEIDO_SEED.
 	float m_soloAtReset    = 0.f;       ///< m_timeSolo as it stood at the last resetParameters(), in seconds.
 	float m_activationTime = -1.0e9f;   ///< `time` at the first setUniforms() after activation; sentinel means "not yet seen".
+	float m_progressT0     = -1.0e9f;   ///< Origin of the sceneProgress ramp; equals m_activationTime unless setClimaxIn() re-timed the arc.
 	float m_sceneProgress  = 0.f;       ///< Cached 0..1 progress, also readable by subclasses for CPU-side staging.
 
 	// 2D CAMERA RIG state (formulas rig2Roll/rig2Zoom/rig2X/rig2Y + the

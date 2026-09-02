@@ -167,6 +167,10 @@ public:
 	QByteArray  remoteSnapshot();
 	/// Favorites the currently active effect (same as key 'f').
 	void        remoteFavorite();
+	/** @brief Cue memory: the identified track as "artist|title" (or KALEIDO_FAKE_TRACK for offline tests); empty when nothing is identified. */
+	QString     cueTrackKey() const;
+	/** @brief Cue memory: playback position in seconds (extrapolated), or the run clock under KALEIDO_FAKE_TRACK; <0 when unknown. */
+	double      cuePosSec() const;
 	/** @brief Web remote: mark or unmark the scene on screen (same as SPACE). */
 	void        remoteToggleMark();
 	/** @brief Web remote: write every marked scene to Configurations/Marked.xml (same as SHIFT+SPACE). */

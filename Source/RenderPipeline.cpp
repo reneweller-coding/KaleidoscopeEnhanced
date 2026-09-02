@@ -30,6 +30,7 @@
 #include <QtCore/qdir.h>
 #include <QtCore/qfileinfo.h>
 #include <QtCore/QSettings>
+#include <cmath>
 #include <GL/GLU.h>
 
 
@@ -95,6 +96,20 @@ void RenderPipeline::loadSettings()
 	for( const QString &k : s.allKeys() )
 		if( s.value( k, false ).toBool() )
 			s_marked.insert( k );
+	s.endGroup();
+
+	// Cue memory: [cues] <track>/<sekunde> = <Szene>.  A favourite pressed while
+	// a track is identified remembers WHERE it was pressed; the next time the
+	// same track reaches that point, that scene comes back.  The visualiser
+	// learns a favourite picture per song, one press at a time.
+	s_cues.clear();
+	s.beginGroup( "cues" );
+	for( const QString &k : s.allKeys() )
+	{
+		const int slash = k.lastIndexOf( QChar( '/' ) );
+		if( slash <= 0 ) continue;
+		s_cues[k.left( slash )].append( qMakePair( k.mid( slash + 1 ).toDouble(), s.value( k ).toString() ) );
+	}
 	s.endGroup();
 
 	s.beginGroup( "taste" );
@@ -955,6 +970,7 @@ void RenderPipeline::forceScene( int idx )
 
 // Key 'f': the user LIKES what is on screen — persistent selection bonus.
 QSet<QString> RenderPipeline::s_marked;
+QHash<QString, QList<QPair<double, QString>>> RenderPipeline::s_cues;
 
 /**
  * @brief The settings-ini key for one marked scene.
@@ -1095,6 +1111,65 @@ void RenderPipeline::favoriteCurrentEffect()
 {
 	if( m_scheduler.actTexture() < m_effectTextures.size() )
 		bumpTaste( m_effectTextures[m_scheduler.actTexture()]->fragmentName(), 1.25f );
+}
+
+// Settings-Schluessel duerfen keine beliebigen Zeichen tragen: "artist|title"
+// wird auf [a-z0-9_] reduziert.  Kollisionen zweier Titel sind damit denkbar,
+// aber ein Cue am falschen Song ist ein falsches Bild, kein Absturz.
+static QString cueKey( const QString &trackKey )
+{
+	QString k = trackKey.toLower();
+	for( QChar &ch : k )
+		if( !ch.isLetterOrNumber() ) ch = QChar( '_' );
+	return k.left( 96 );
+}
+
+int RenderPipeline::sceneIndexByBase( const QString &base ) const
+{
+	for( size_t i = 0; i < m_effectTextures.size(); ++i )
+		if( tasteBase( m_effectTextures[i]->fragmentName() ) == base )
+			return (int) i;
+	return -1;
+}
+
+void RenderPipeline::rememberCue( const QString &trackKey, double posSec )
+{
+	if( trackKey.isEmpty() || posSec < 0.0 || m_scheduler.actTexture() >= m_effectTextures.size() )
+		return;
+	const QString key  = cueKey( trackKey );
+	const QString base = tasteBase( m_effectTextures[m_scheduler.actTexture()]->fragmentName() );
+	s_cues[key].append( qMakePair( posSec, base ) );
+	QSettings s( Platform::assetPath( "..\\kaleidoscope_settings.ini" ), QSettings::IniFormat );
+	s.setValue( QString( "cues/%1/%2" ).arg( key ).arg( (int) posSec ), base );
+	fprintf( stderr, "CUE gemerkt: %s @ %.0f s -> %s\n", key.toUtf8().constData(), posSec, base.toUtf8().constData() );
+}
+
+void RenderPipeline::tickCues( const QString &trackKey, double posSec )
+{
+	if( trackKey.isEmpty() || posSec < 0.0 )
+		return;
+	const QString key = cueKey( trackKey );
+	if( key != m_cueTrack )
+	{
+		m_cueTrack = key;
+		m_cuesFired.clear();
+	}
+	auto it = s_cues.constFind( key );
+	if( it == s_cues.constEnd() )
+		return;
+	for( int k = 0; k < it->size(); ++k )
+	{
+		if( m_cuesFired.contains( k ) || std::fabs( it->at( k ).first - posSec ) > 2.5 )
+			continue;
+		m_cuesFired.insert( k );
+		const int idx = sceneIndexByBase( it->at( k ).second );
+		if( idx >= 0 )
+		{
+			forceScene( idx );
+			fprintf( stderr, "CUE: %s @ %.0f s -> %s\n", key.toUtf8().constData(),
+			         it->at( k ).first, it->at( k ).second.toUtf8().constData() );
+		}
+	}
 }
 
 
@@ -1417,6 +1492,8 @@ SceneScheduler::Tick RenderPipeline::buildSchedulerTick( const AudioFeatures &au
 	schedTick.rhythmStrength = audio.rhythmStrength;
 	schedTick.estimatedBPM   = audio.estimatedBPM;
 	schedTick.logAttackTime  = audio.logAttackTime;
+	schedTick.buildUp        = audio.buildUp;
+	schedTick.phraseSecsLeft = m_audioConditioner.phraseSecsLeft();
 	m_scheduler.tick( schedTick );
     
 
@@ -2172,6 +2249,31 @@ void RenderPipeline::paint(const float *rotMatrix, float tx, float ty, float tz,
 	updateTitleReveal( audio, dtWall );
 
 	const AudioFeatures audioFx = conditionAudio( audio, timeSinceLastFrameSec );
+
+	// KALEIDO_FEATURE_LOG=<datei>: eine CSV-Zeile je Frame mit den Groessen,
+	// an denen Regie-Entscheidungen haengen.  Ohne das liess sich "trifft die
+	// Drop-Vorhersage?" oder "folgt die Tonhoehe dem Bass?" nur aus dem Bild
+	// raten -- und das Bild ist die Wirkung, nicht die Ursache.
+	{
+		static FILE *flog = [] {
+			const char *e = getenv( "KALEIDO_FEATURE_LOG" );
+			FILE *f = e ? fopen( e, "w" ) : nullptr;
+			if( f ) fputs( "t,pitch,dpitch,buildUp,dropPulse,dropCount,barPhase,beatPhase,bpm,"
+			               "sectionCount,sectionId,presence,level,swell,flux,hcdf,phrasePos,phraseLeft,melody\n", f );
+			return f;
+		}();
+		if( flog )
+		{
+			static unsigned n = 0;
+			fprintf( flog, "%.3f,%.4f,%.4f,%.3f,%.3f,%d,%.3f,%.3f,%.1f,%d,%d,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.2f,%.4f\n",
+			         m_globaltime, audio.dominantPitch, audio.deltaPitch, audio.buildUp,
+			         audio.dropPulse, audio.dropCount, audioFx.barPhase, audioFx.beatPhase,
+			         40.f + 160.f * audio.estimatedBPM, audio.sectionCount, audio.sectionId, audio.musicPresence,
+			         audio.overallLevel, audioFx.swell, audio.spectralFlux, audio.harmonicChange,
+			         audioFx.phrasePos, audioFx.phraseSecsLeft, audio.melodyPitch );
+			if( ( ++n & 63u ) == 0 ) fflush( flog );
+		}
+	}
 	updateImageState( timeSinceLastFrameSec );
 
 	const SceneScheduler::Tick schedTick = buildSchedulerTick( audio, timeSinceLastFrameSec );

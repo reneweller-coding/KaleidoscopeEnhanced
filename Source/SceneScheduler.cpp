@@ -350,6 +350,28 @@ void SceneScheduler::tick( const Tick &t )
 			m_forceEffectChange = true;
 		m_noveltyCooldown = 8.0f;   // at most one musical cut every ~8 s
 	}
+	// REGIE: den Bogen auf den Drop legen.  Steigt die Spannung (buildUp
+	// ueber 0.45, steigende Flanke) und laeuft gerade eine INSZENIERTE Szene
+	// (sceneProgress / rig-progress), wird ihr Fortschritt so gebogen, dass
+	// der Hoehepunkt auf der naechsten 8-Takt-Grenze landet -- dort faellt
+	// in Tanzmusik der Drop.  Assemblys letztes Stueck setzt sich dann auf
+	// dem Schlag, statt irgendwann.  Stetig (kein Ruecksprung), nur wenn die
+	// Vorhersage in 4..45 s liegt, hoechstens alle 20 s.
+	m_arcCooldown -= t.dt;
+	m_regieWarm   += t.dt;
+	// Die ersten 20 s liest der Analyzer JEDEN Groove als Aufbau (seine
+	// 10-s-Baselines klettern noch: buildUp 0,67 im Intro, 0,43 im echten
+	// Aufbau).  Der Analyzer selbst schont sein Drop-Arming genauso.
+	if( !m_reviewMode && m_regieWarm > 20.f && t.buildUp > 0.45f && m_buildUpPrev <= 0.45f
+	    && m_arcCooldown <= 0.f && t.phraseSecsLeft >= 4.f && t.phraseSecsLeft <= 45.f
+	    && m_actTexture < tex.size() && tex[m_actTexture]->usesProgress() )
+	{
+		tex[m_actTexture]->setClimaxIn( t.phraseSecsLeft );
+		m_arcCooldown = 20.f;
+		fprintf( stderr, "REGIE: Bogen auf den Drop in %.1f s (%s)\n",
+		         t.phraseSecsLeft, tex[m_actTexture]->fragmentName() );
+	}
+	m_buildUpPrev = t.buildUp;
 
 	// SECTION change (Strophe -> Refrain -> Bridge) + Song-Struktur-Gedächtnis:
 	// eine WIEDERKEHRENDE Section (Refrain #2 = Refrain #1) spielt Shader,
@@ -710,6 +732,13 @@ void SceneScheduler::tick( const Tick &t )
 			for( unsigned int i = 0; i < kMaxSearch; i++ )
 			{
 				m_nextTexture = rand() % tex.size();
+				// REGIE: waehrend die Spannung steigt, lieber eine INSZENIERTE
+				// Szene -- die kann ihren Hoehepunkt auf den Drop legen (siehe
+				// setClimaxIn oben).  Nur in der ersten Haelfte der Suche, damit
+				// ein Katalog ohne passende Szene nicht leer ausgeht.
+				if( t.buildUp > 0.25f && i < kMaxSearch / 2
+				    && !tex[m_nextTexture]->usesProgress() )
+					continue;
 				if( m_nextTexture != m_actTexture &&
 					(( tex[m_actTexture]->getComplexity() +
 					tex[m_nextTexture]->getComplexity() +

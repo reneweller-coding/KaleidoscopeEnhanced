@@ -239,7 +239,34 @@ void GLwidget::remoteNextEffect()
 void GLwidget::remoteFavorite()
 {
 	if( m_actConfiguration && m_actConfiguration->m_renderPipeline )
+	{
 		m_actConfiguration->m_renderPipeline->favoriteCurrentEffect();
+		m_actConfiguration->m_renderPipeline->rememberCue( cueTrackKey(), cuePosSec() );
+	}
+}
+
+QString GLwidget::cueTrackKey() const
+{
+	// KALEIDO_FAKE_TRACK=artist|title macht das Cue-Gedaechtnis offline
+	// pruefbar: es gibt dann keinen SMTC-Titel, aber einen festen Schluessel
+	// und die Laufzeit als Position.
+	static const QString fake = qEnvironmentVariable( "KALEIDO_FAKE_TRACK" );
+	if( !fake.isEmpty() )
+		return fake;
+	if( !m_nowPlaying )
+		return QString();
+	const QString title = m_nowPlaying->title().trimmed();
+	if( title.isEmpty() )
+		return QString();
+	return ( m_nowPlaying->artist().trimmed() + "|" + title ).toLower();
+}
+
+double GLwidget::cuePosSec() const
+{
+	static const bool fake = !qEnvironmentVariable( "KALEIDO_FAKE_TRACK" ).isEmpty();
+	if( fake )
+		return m_fpsTimer.elapsed() / 1000.0;
+	return m_nowPlaying ? m_nowPlaying->positionNowSec() : -1.0;
 }
 
 void GLwidget::remoteToggleMark()
@@ -1063,6 +1090,7 @@ void GLwidget::draw()
 	// pipeline where the final image must land, otherwise it draws off-screen.
 	m_actConfiguration->m_renderPipeline->setDefaultFBO( defaultFramebufferObject() );
 
+	m_actConfiguration->m_renderPipeline->tickCues( cueTrackKey(), cuePosSec() );
 	m_actConfiguration->m_renderPipeline->paint(m_RotationMatrix, m_xTrans, m_yTrans, m_zTrans, audio);
 
 	// Capture the clean frame (before any overlay is drawn) while recording
@@ -2940,7 +2968,10 @@ void GLwidget::keyPressEvent(QKeyEvent* event)
 		// ---- Taste learning: favourite the current effect ----
 		case Qt::Key_F:
 			if( m_actConfiguration && m_actConfiguration->m_renderPipeline )
+			{
 				m_actConfiguration->m_renderPipeline->favoriteCurrentEffect();
+				m_actConfiguration->m_renderPipeline->rememberCue( cueTrackKey(), cuePosSec() );
+			}
 			break;
 
 		// ---- Scene marking (build a shortlist while watching) ----

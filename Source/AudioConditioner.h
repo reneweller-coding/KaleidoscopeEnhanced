@@ -86,6 +86,7 @@ public:
 	float letterbox()    const { return m_letterSm; }      ///< @return Slewed letterbox-bar amount (0..1).
 	float shockR()       const { return m_shockR; }        ///< @return Current radius of the expanding bass-shockwave distortion ring.
 	float shockAmp()     const { return m_shockAmp; }      ///< @return Current amplitude of the bass-shockwave distortion ring.
+	float phraseSecsLeft() const { return m_phraseSecsLeft; }   ///< @return Seconds until the next 8-bar boundary; 0 when the tempo is unknown.
 
 private:
 	// ---- envelopes / slews on the raw signal set ----
@@ -98,6 +99,11 @@ private:
 	int   m_barBeatHost     = 0;     ///< Current beat-within-bar count (0..3), advanced on each m_beatPhasePLL wrap and re-synced on a downbeat tick.
 	float m_prevRawDownbeat = 0.f;   ///< Previous frame's raw audio.downbeat, for downbeat rising-edge detection.
 	bool  m_downbeatTick    = false;   ///< True for THIS frame when a downbeat lands.
+	// ---- 8-bar phrase (where the next drop can land) ----
+	float m_phraseBeats     = 0.f;   ///< Beats integrated from the tempo since the last drop (the phrase anchor).
+	int   m_phraseDrop      = 0;     ///< audio.dropCount at the last phrase reset.
+	float m_phrasePos       = 0.f;   ///< 0..1 inside the current 8-bar phrase.
+	float m_phraseSecsLeft  = 0.f;   ///< Seconds to the next 8-bar boundary (0 = tempo unknown).
 
 	// ---- swell / fade-out envelopes ----
 	float m_swellFast   = 0.f;   ///< Fast (~1.5 s) exponential average of overallLevel, for the swell envelope.

@@ -456,6 +456,7 @@ private:
     float m_sSpread  = 0.f;   ///< Smoothed spectral spread, normalised by 5 kHz; see AudioFeatures::spectralSpread.
     float m_sMode    = 0.5f;  ///< Smoothed musical mode, 0 = minor/dark .. 1 = major/bright; see AudioFeatures::musicalMode.
     float m_sPitch   = 0.f;   ///< Smoothed dominant pitch, log-normalised 60..1200 Hz → 0..1; see AudioFeatures::dominantPitch.
+    float m_sMelody  = 0.f;   ///< Smoothed MELODY pitch: the same HPS restricted to >= 150 Hz, so a loud bass line cannot claim it; see AudioFeatures::melodyPitch.
 
     /**
      * @brief In-place Radix-2 DIT complex FFT.

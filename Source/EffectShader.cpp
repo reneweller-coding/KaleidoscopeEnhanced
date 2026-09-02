@@ -121,8 +121,36 @@ void EffectShader::cleanShaderPrograms()
 }
 
 
+// Die Solo-Spanne, ueber die sceneProgress normiert wird.  KALEIDO_SOLO_SECS
+// pinnt sie fuer Messlaeufe, deren Fenster kuerzer ist als die Review-Spanne
+// von 25 s: mit 8 s Haltezeit sah das Screening von einer inszenierten Szene
+// nie das Ende ihres Bogens -- Assembly stand in jedem Fenster als Wolke.
+static float soloCap()
+{
+	static const int env = [] { const char *e = getenv( "KALEIDO_SOLO_SECS" ); return e ? atoi( e ) : 0; }();
+	return ( env > 0 ) ? float( env ) : EffectShader::s_reviewSolo;
+}
+
+
 void EffectShader::resetParameters()
 {
+	// Zufall PRO SZENE statt global.  Mit KALEIDO_SEED bekommt jede
+	// Aktivierung ihren eigenen Strom aus (Seed, Shadername, Auftrittszaehler).
+	// Vorher hing jede Ziehung davon ab, wer VOR dieser Szene dran war: derselbe
+	// Shader mass in einer Neun-Szenen-Probe 0,22 und im 112er-Chunk 0,0006,
+	// und der Nachbau scheiterte, weil die Nachbarn andere waren.  Ohne
+	// KALEIDO_SEED wird NICHT neu geseedet -- die Show bleibt uhrgeseedet.
+	static const char *pinEnv = getenv( "KALEIDO_SEED" );
+	++m_activations;
+	if( pinEnv )
+	{
+		unsigned h = (unsigned) strtoul( pinEnv, nullptr, 10 ) ^ 2166136261u;
+		for( const char *c = m_fragmentShaderFilename; c && *c; ++c )
+			h = ( h ^ (unsigned)(unsigned char) *c ) * 16777619u;      // FNV-1a
+		h = ( h ^ m_activations ) * 16777619u;
+		srand( h ^ ( h >> 15 ) );
+	}
+
 	m_timeSolo = getInterpolatedTime( m_minTimeSolo, m_maxTimeSolo );
 	m_timeInterpolation = getInterpolatedTime( m_minTimeInterpolation, m_maxTimeInterpolation );
 
@@ -135,9 +163,10 @@ void EffectShader::resetParameters()
 	// kReviewSoloSecs lang, sceneProgress normierte aber weiter ueber die
 	// gewuerfelte Solo-Spanne -- eine inszenierte Szene lief damit genau
 	// dort nie zu Ende, wo man sie beurteilen will.
-	if( s_reviewSolo > 0.01f && m_soloAtReset > s_reviewSolo )
-		m_soloAtReset = s_reviewSolo;
+	if( soloCap() > 0.01f && m_soloAtReset > soloCap() )
+		m_soloAtReset = soloCap();
 	m_activationTime = -1.0e9f;
+	m_progressT0     = -1.0e9f;
 	m_advanceAtReset = -1.0e9f;   // sceneAdvance faengt neu bei 0 an
 	m_sceneProgress  = 0.f;
 
@@ -152,6 +181,14 @@ void EffectShader::resetParameters()
 	// Fresh per-activation seeds for the formula layer (seed1..seed3).
 	for( int i = 0; i < 3; i++ )
 		m_exprSeeds[i] = (float) rand() / (float) RAND_MAX;
+
+	// Unter KALEIDO_SEED protokollieren, was gezogen wurde: der Beweis, dass
+	// dieselbe Szene in jeder Konfiguration dieselben Zahlen bekommt, ist
+	// ein Diff dieser Zeilen -- nicht ein Bildvergleich, den die Ueberblendung
+	// vom Nachbarn verfaelscht.
+	if( pinEnv )
+		fprintf( stderr, "SEEDED %s act=%u seeds=%.4f %.4f %.4f solo=%u" "\n",
+		         m_fragmentShaderFilename, m_activations, m_exprSeeds[0], m_exprSeeds[1], m_exprSeeds[2], m_timeSolo );
 }
 
 
@@ -180,13 +217,15 @@ void EffectShader::setUniforms( float time, float interpolation, GLint texLoc1, 
 	if( m_soloAtReset <= 0.01f )
 	{
 		m_soloAtReset = (float) m_timeSolo;
-		if( s_reviewSolo > 0.01f && m_soloAtReset > s_reviewSolo )
-			m_soloAtReset = s_reviewSolo;   // same cap as resetParameters()
+		if( soloCap() > 0.01f && m_soloAtReset > soloCap() )
+			m_soloAtReset = soloCap();   // same cap as resetParameters()
 	}
 	if( m_activationTime < -0.9e9f )
 		m_activationTime = time;
+	if( m_progressT0 < -0.9e9f )
+		m_progressT0 = time;
 	m_sceneProgress = ( m_soloAtReset > 0.01f )
-	                ? ( time - m_activationTime ) / m_soloAtReset : 0.f;
+	                ? ( time - m_progressT0 ) / m_soloAtReset : 0.f;
 	m_sceneProgress = ( m_sceneProgress < 0.f ) ? 0.f
 	                : ( m_sceneProgress > 1.f ) ? 1.f : m_sceneProgress;
 	if( m_progressUni >= 0 )
@@ -428,7 +467,10 @@ enum AudioLoc {
     // damit -- wie `time` -- nur als Phase, nicht als Position.  Das
     // Gegenstueck zu `sceneTime`, damit eine Szene ihren Flug musikgetrieben
     // halten kann, ohne ihm davonzufliegen.
-    AL_SCENEADVANCE, AL_COUNT
+    AL_SCENEADVANCE,
+    // Die MELODIE-Tonhoehe (HPS ab 150 Hz), damit eine Szene die Melodie
+    // statt des Grundtons bekommt; audioPitch bleibt der dominante Ton.
+    AL_MELODYPITCH, AL_COUNT
 };
 const char *kAudioLocNames[AL_COUNT] = {
     "audioPhase", "audioAdvance", "audioBeat", "audioLevel", "sides",
@@ -449,7 +491,8 @@ const char *kAudioLocNames[AL_COUNT] = {
     "texShadow", "lightM", "shadowPass", "lightDir", "shadowTexel",
     "oitPass", "shadowExtent",
     "texShadow2", "lightM2", "shadowPass2", "lightDir2", "texPrevFrame",
-    "sceneAdvance"   // Reihenfolge MUSS zum AL_-Enum passen
+    "sceneAdvance",   // Reihenfolge MUSS zum AL_-Enum passen (Tools/check_enum_tables.py)
+    "audioMelodyPitch"
 };
 }
 
@@ -618,6 +661,7 @@ void EffectShader::applyAudioFeatures(const AudioFeatures &f)
     // Nullpunkt beim ersten Frame nach der Aktivierung merken, damit
     // sceneAdvance bei 0 anfaengt. resetParameters() setzt die Marke zurueck.
     if (m_advanceAtReset < -0.9e9f) m_advanceAtReset = f.audioAdvance;
+    if (L[AL_MELODYPITCH] >= 0) glUniform1f(L[AL_MELODYPITCH], f.melodyPitch);
     if (L[AL_SCENEADVANCE] >= 0)
         glUniform1f(L[AL_SCENEADVANCE], f.audioAdvance - m_advanceAtReset);
     if (L[AL_BEAT]     >= 0) glUniform1f(L[AL_BEAT],     f.beatDecay);
@@ -696,6 +740,8 @@ void EffectShader::addExpression( const std::string &name, const std::string &fo
 	if (e.prog.compile(formula, ctx))
 	{
 		m_exprs.push_back(e);
+		if( formula.find( "progress" ) != std::string::npos )
+			m_exprUsesProgress = true;
 		fprintf(stderr, "Expr OK: %s = %s\n", ctx.c_str(),
 		        formula.c_str());
 	}
@@ -723,6 +769,32 @@ bool EffectShader::usesSim()
 		m_usesSim = ( m_sh_prog_id != 0 &&
 		              glGetUniformLocation( m_sh_prog_id, "texSim" ) >= 0 ) ? 1 : 0;
 	return m_usesSim == 1;
+}
+
+bool EffectShader::usesProgress()
+{
+	if( !m_glReady )
+		return false;
+	if( m_usesProgress < 0 )
+		m_usesProgress = ( m_exprUsesProgress || ( m_sh_prog_id != 0 &&
+		                   glGetUniformLocation( m_sh_prog_id, "sceneProgress" ) >= 0 ) ) ? 1 : 0;
+	return m_usesProgress == 1;
+}
+
+void EffectShader::setClimaxIn( float secs )
+{
+	// Keep the CURRENT progress and bend the ramp so 0.95 lands in `secs`:
+	// p(now) = p0, p(now + secs) = 0.95  =>  span = secs / (0.95 - p0),
+	// origin = now - p0 * span.  A plain rescale would have thrown the arc
+	// backwards (pieces flying OUT again) the moment the prediction came in.
+	if( m_progressT0 < -0.9e9f || m_soloAtReset <= 0.01f || secs < 1.f )
+		return;
+	const float p0 = m_sceneProgress;
+	if( p0 >= 0.93f )
+		return;                              // already there; nothing to bend
+	const float span = secs / ( 0.95f - p0 );
+	m_progressT0  = m_exprTime - p0 * span;
+	m_soloAtReset = span;
 }
 
 bool EffectShader::usesFluid()

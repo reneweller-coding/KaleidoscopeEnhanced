@@ -355,6 +355,15 @@ struct AudioFeatures
      * 0 when no clear pitch is detected (noise, silence).
      */
     float dominantPitch = 0.f;
+    /**
+     * @brief MELODY pitch: the HPS search restricted to 150..1200 Hz, same 0..1 scale as #dominantPitch.
+     *
+     * On a full mix the strongest harmonic series is usually the bass line, and
+     * #dominantPitch follows it (measured on a synthetic track with bass + lead:
+     * 34 % of frames under 0.15, 1 % in the lead's range). The melody ring and
+     * every scene that wants the TUNE rather than the root read this one.
+     */
+    float melodyPitch = 0.f;
 
     /**
      * @brief Scalar passed to RenderPipeline for adaptive shader-switch / cross-fade timing.
@@ -478,6 +487,19 @@ struct AudioFeatures
      * pulse and minute-scale drift. Uploaded as `audioBarPhase`.
      */
     float barPhase = 0.f;
+
+    /**
+     * @brief Position inside the current 8-bar PHRASE, 0..1 (host-filled).
+     *
+     * Bars are counted from the last section change or drop, both of which
+     * sit on phrase boundaries in practice. Drops in dance music land on the
+     * next 8-bar boundary, so a build-up that starts inside a phrase has a
+     * predictable end: #phraseSecsLeft. That is what lets a staged scene time
+     * its climax to the drop instead of to its own clock.
+     */
+    float phrasePos = 0.f;
+    /** @brief Seconds until the next 8-bar boundary at the current tempo (host-filled); 0 when the tempo is unknown. */
+    float phraseSecsLeft = 0.f;
 
     /**
      * @brief 0..1 envelope that rises while the track is FADING OUT (host-filled, song-end dramaturgy).

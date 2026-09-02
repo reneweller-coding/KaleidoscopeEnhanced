@@ -250,6 +250,12 @@ public:
 
 	/** @brief Boosts the currently active texture effect's persistent taste weight ("favourite", key 'f'). */
 	void favoriteCurrentEffect();
+	/** @brief Cue memory: remember "THIS scene, at THIS point of THIS track" (favourite while a track is identified). Persisted under [cues] in the settings ini. */
+	void rememberCue( const QString &trackKey, double posSec );
+	/** @brief Cue memory: per frame -- when the identified track reaches a remembered point (within 2.5 s), force that scene once per playback. */
+	void tickCues( const QString &trackKey, double posSec );
+	/** @brief Index in m_effectTextures of the scene whose base filename is @p base, or -1. */
+	int  sceneIndexByBase( const QString &base ) const;
 
 	/** Hot-reload (dev aid): recompile every effect/combine whose fragment file
 	 *  matches the given bare name.  GL context must be current. */
@@ -817,6 +823,9 @@ private:
 	// instances; the keys carry the preset namespace.
 	static QSet<QString> s_marked;   ///< Base filenames ("Ocean.frag") of scenes marked for review; persisted under [marked] in the settings ini.
 	static QHash<QString, float> s_taste;   ///< Persistent per-"<Preset>/<file>" selection-weight factors, in [0.3, 2.5], default 1.0; shared (static) across all instances, loaded/saved via loadSettings()/bumpTaste().
+	static QHash<QString, QList<QPair<double, QString>>> s_cues;   ///< Cue memory: track key -> (position in s, scene base file). Loaded from [cues] in the ini.
+	QString   m_cueTrack;    ///< Track key the fired-set below belongs to; a new track resets it.
+	QSet<int> m_cuesFired;   ///< Cues (indices into s_cues[m_cueTrack]) already fired during this playback.
 	QString			m_presetName;              ///< set by Configuration after load — this instance's preset name, namespacing its taste-learning keys; see setPresetName().
 	/** @brief Looks up the persistent taste weight for a fragment file, namespaced by m_presetName. @param fragPath Fragment shader path (only the basename is used as the key). @return The learned weight (default 1.0 if never adjusted). */
 	float			tasteFor( const char *fragPath ) const;

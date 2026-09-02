@@ -644,7 +644,11 @@ static double recordFps()
     if( fps == 0.0 )
     {
         QSettings st( Platform::assetPath( "..\\kaleidoscope_settings.ini" ), QSettings::IniFormat );
-        const int v = st.value( "recordFps", 30 ).toInt();
+        // KALEIDO_RECORD_FPS schlaegt die ini -- fuer Messlaeufe, die 60 fps
+        // brauchen (das Strobe-Mass aliast bei 30), ohne die Einstellung
+        // des Nutzers anzufassen.
+        const int envFps = qEnvironmentVariableIntValue( "KALEIDO_RECORD_FPS" );
+        const int v = ( envFps > 0 ) ? envFps : st.value( "recordFps", 30 ).toInt();
         fps = ( v >= 45 ) ? 60.0 : 30.0;     // only these two are offered
     }
     return fps;

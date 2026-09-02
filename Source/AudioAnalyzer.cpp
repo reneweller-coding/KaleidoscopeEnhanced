@@ -2087,6 +2087,28 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
         // Slow smoothing — HPS can octave-jump frame to frame, and several shaders
         // use the pitch for hue/scale; this keeps those colour/size changes gradual.
         m_sPitch = 0.97f * m_sPitch + 0.03f * pitchNorm * confidence;
+
+        // MELODY: the same product spectrum, searched only from 150 Hz up.
+        // Below that the bass line owns the strongest harmonic series and
+        // the dominant pitch above follows it -- measured: with a loud bass
+        // 34 % of frames sat under 0.15 and 1 % in the lead's range, so the
+        // melody ring drew the root, not the tune.  Its own smoothed value,
+        // same 0..1 scale, so a scene can pick either.
+        {
+            const int binLo2 = std::max(binLo, int(150.f * float(kFFTSize) / float(sampleRate)));
+            float bestM = -1.f;
+            int   binM  = binLo2;
+            for (int k = binLo2; k < binHi; ++k) {
+                if (k*4 >= kFFTHalf) break;
+                float hps = mags[k] * mags[k*2] * mags[k*3] * mags[k*4];
+                if (hps > bestM) { bestM = hps; binM = k; }
+            }
+            float hzM   = float(binM) * float(sampleRate) / float(kFFTSize);
+            float normM = (std::log2(hzM + 1.f) - std::log2(61.f))
+                        / (std::log2(1201.f) - std::log2(61.f));
+            normM = std::max(0.f, std::min(normM, 1.f));
+            m_sMelody = 0.97f * m_sMelody + 0.03f * normM * confidence;
+        }
     }
 
     // ---- Delta-pitch: melodic activity (rate of dominant-pitch change) ----
@@ -2328,7 +2350,13 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
         // Arming needs the slow EMAs settled (>= ~12 s after start): a fresh
         // energetic track otherwise reads as a "build-up" while the 10 s
         // averages are still climbing toward its steady state.
-        if (m_sBuildUp > 0.60f && m_bldWarm > 1200)
+        // Arming at 0.45 instead of 0.60: a deliberately strong synthetic
+        // build-up (level +60 %, hats to 32nds, riser, kick doubling, snare
+        // roll) peaks at 0.50-0.53 on this feature, so 0.60 armed nothing and
+        // no drop was ever detected.  The vacuum + bass-slam tests behind the
+        // arming are what keep a false drop rare; the arming only opens the
+        // window.
+        if (m_sBuildUp > 0.45f && m_bldWarm > 1200)
             m_dropArmed = 800.f;                              // ~8 s arming
         if (m_dropArmed > 0.f)  m_dropArmed -= 1.f;
         if (vacuum) {
@@ -2541,6 +2569,7 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
     m_features.spectralSpread   = m_sSpread;
     m_features.musicalMode      = m_sMode;
     m_features.dominantPitch    = m_sPitch;
+    m_features.melodyPitch      = m_sMelody;
     m_features.chromaHue        = chromaHue;
     // Full 12-bin chroma vector (smoothed, L1-normalised) — for scenes that
     // display the harmony structurally (Planet4D pitch-class hypersphere).
