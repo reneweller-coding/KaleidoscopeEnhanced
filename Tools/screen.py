@@ -394,17 +394,28 @@ def report(rows):
 # left the cause; both would have shown up here as a collapse in structure.
 BASELINE = os.path.join(ROOT, "docs", "scene-baseline.json")
 
-# What counts as a regression.  This number was wrong once already, and the
-# correction is worth keeping: the first estimate (2.0) came from comparing two
-# short runs of a handful of scenes.  Re-measured properly -- a full 110-scene
-# chunk re-rendered with the same seed and compared against the baseline it had
-# produced -- 97 of 108 scenes landed within a factor of two, ELEVEN did not,
-# and the worst was 5.4x.  A threshold of 2.0 would therefore have reported
-# about a tenth of the catalogue as "collapsed" on every clean run.
+# What counts as a regression.  This number was wrong twice, and both
+# corrections are worth keeping.
 #
-# 3.0 keeps the false alarms rare while still catching what matters: the real
-# defects this tool was built for were 20x to 70x, not 2x.
-REGRESS_FACTOR = 3.0
+# The first estimate (2.0) came from comparing two short runs of a handful of
+# scenes.  Re-measured against a full catalogue re-run with the same seed, the
+# ratio between two clean runs is centred on 1 (median 0.98 for structure, 0.95
+# for motion -- so the method is unbiased) but its TAIL is wide, and the tail is
+# what a threshold sees.  Measured false-alarm rates over 615 scenes:
+#
+#     structure   2x -> 4.1 %    3x -> 1.1 %    4x -> 0.8 %
+#     motion      2x -> 8.8 %    3x -> 3.7 %    5x -> 1.1 %
+#
+# So the two need DIFFERENT thresholds.  Motion is intrinsically noisier: it
+# depends on where in the loud/quiet audio cycle the window happens to land and
+# on the scene's own phase at that moment, while structure is a property of the
+# frame.  One shared number would either drown the report in motion noise or go
+# blind to structure collapses.
+#
+# The real defects this tool exists for were factor 20 to 70, so both thresholds
+# have ample room above the noise.
+REGRESS_STD    = 3.0
+REGRESS_MOTION = 5.0
 
 
 def aggregate(rows):
@@ -446,13 +457,15 @@ def check_baseline(rows):
             neu.append(n)
             continue
         b = base[n]
-        for key, label in (("std", "Struktur"), ("motion", "Bewegung")):
-            if b[key] > 1e-5 and cur[key] * REGRESS_FACTOR < b[key]:
+        for key, label, fac in (("std", "Struktur", REGRESS_STD),
+                                ("motion", "Bewegung", REGRESS_MOTION)):
+            if b[key] > 1e-5 and cur[key] * fac < b[key]:
                 worse.append((n, label, b[key], cur[key]))
     gone = sorted(set(base) - set(now))
     print("\nGegen die Basislinie: %d Szenen geprueft" % len(now))
     if worse:
-        print("  EINGEBROCHEN (Faktor > %.0f):" % REGRESS_FACTOR)
+        print("  EINGEBROCHEN (Struktur > %.0fx, Bewegung > %.0fx):"
+              % (REGRESS_STD, REGRESS_MOTION))
         for n, label, a, b_ in worse:
             print("    %-38s %-9s %.5f -> %.5f" % (n, label, a, b_))
     if neu:
