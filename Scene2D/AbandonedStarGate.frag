@@ -24,6 +24,12 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
+// Beide zaehlen ab DIESER Aktivierung statt ab Programmstart:
+// `time` und `audioAdvance` wachsen unbegrenzt und taugen daher nur
+// als Phase, nicht als Position oder Rauschkoordinate.
+uniform float sceneTime;
+uniform float sceneAdvance;
+
 uniform float audioSwell;
 uniform float audioLevel;
 uniform float audioKick;
@@ -141,10 +147,10 @@ void main()
     // Unstable Wormhole Energy sparking in the center and along the inner edge
     if (distToCenter < ringRadius + 0.02) {
         // Event horizon / tear in spacetime
-        float tear = fbm(vec3(ringP * 3.0, time * 2.0 + audioAdvance * 5.0));
+        float tear = fbm(vec3(ringP * 3.0, sceneTime * 2.0 + sceneAdvance * 5.0));
 
         // Intensity spikes on audioKick (violent unstable sparking)
-        float sparkTrigger = step(0.95, hash11(floor(time * 4.00) + floor(angle * 5.0)));   // was 10 Hz
+        float sparkTrigger = step(0.95, hash11(floor(sceneTime * 4.00) + floor(angle * 5.0)));   // was 10 Hz
         float sparkInt = sparkTrigger * audioKick * 10.0 * sp;
 
         // Energy arcs jumping across the inner radius

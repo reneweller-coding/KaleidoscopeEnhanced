@@ -2706,3 +2706,31 @@ median of 0.0478 — comfortably alive. The rule that follows is worth stating
 plainly: **never edit a shader on the strength of one measurement.** The two
 cheap confirmations are a second seed and a second clock, and they cost about
 two minutes each.
+
+### What the baseline comparison cannot see
+
+Comparing a late-clock run against the baseline only finds scenes that
+**drop**. A scene that already sat late in its chunk when the baseline was
+recorded was already dying there, so it shows no drop at all — it can only be
+found by its *absolute* value. Three more clock victims came out that way:
+
+| scene | clock 0 | clock 3600 | after |
+|---|---|---|---|
+| NeutronStarCollision | 0.1073 | 0.0237 | 0.1442 → 0.1122 |
+| SupermassiveBlackHoleOrbit | 0.1036 | 0.0291 | 0.1073 → 0.1250 |
+| AbandonedStarGate | 0.0526 | 0.0360 | 0.0457 → 0.0435 |
+
+(medians of three seeds, before and after)
+
+Equally worth recording is what was **not** touched. `Assembly`, `Dissolve`,
+`EndOfTheUniverse` and `MelodyScript` measure just as flat at clock 0 as at
+clock 3600 — they are not victims of the clock, they are empty scenes, which
+is a different problem and belongs on a different list.
+`EndOfTheUniverse` even carries the suspicious `drift = time * 0.6 + ...`
+line, but it demonstrably does not degrade; the rule exists to prevent a
+defect, not to justify rewriting code the measurement clears.
+`CarbonNanotubeChiralityArmchairZigzag`, flagged at exactly 3.02× against the
+baseline, comes back at a median of 0.1354 — the flag was parameter scatter,
+nothing more.
+
+Twenty shaders were corrected in this class in total.

@@ -24,6 +24,12 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
+// Beide zaehlen ab DIESER Aktivierung statt ab Programmstart:
+// `time` und `audioAdvance` wachsen unbegrenzt und taugen daher nur
+// als Phase, nicht als Position oder Rauschkoordinate.
+uniform float sceneTime;
+uniform float sceneAdvance;
+
 uniform float audioSwell;
 uniform float audioLevel;
 uniform float audioKick;
@@ -162,8 +168,11 @@ void main()
         if (dr > rs * 1.5 && dr < rs * 5.0 && dy < 0.2 * dr) {
             // Flow around the black hole
             float angle = atan(dp3.z, dp3.x);
-            float flowSpeed = time * 5.0 * (rs / dr) + audioPhase * 2.0;
-            float diskDens = fbm(vec3(dr * 2.0, angle * 5.0 - flowSpeed, time));
+            // time*5*(rs/dr) waechst unbegrenzt UND geht als
+            // Rauschkoordinate weiter -- bei Uhr 3600 loest fbm dort
+            // nichts mehr auf und die Scheibe wird strukturlos.
+            float flowSpeed = sceneTime * 5.0 * (rs / dr) + audioPhase * 2.0;
+            float diskDens = fbm(vec3(dr * 2.0, angle * 5.0 - flowSpeed, sceneTime));
             
             // Doppler shift (fake) based on velocity relative to camera
             vec3 vel = normalize(vec3(-dp3.z, 0.0, dp3.x));

@@ -24,6 +24,12 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
+// Beide zaehlen ab DIESER Aktivierung statt ab Programmstart:
+// `time` und `audioAdvance` wachsen unbegrenzt und taugen daher nur
+// als Phase, nicht als Position oder Rauschkoordinate.
+uniform float sceneTime;
+uniform float sceneAdvance;
+
 uniform float audioSwell;
 uniform float audioLevel;
 uniform float audioKick;
@@ -87,7 +93,8 @@ void main()
     float cyc = fract(time / 45.0);
     float insp = smoothstep(0.0, 0.82, cyc);           // 0..1 bis zum Merger
     float postM = smoothstep(0.82, 0.86, cyc);          // 1 nach dem Merger
-    float orbitSpeed = time * 2.0 + time * insp * insp * 5.0 + audioAdvance * 4.0;
+    float orbitSpeed = sceneTime * 2.0 + sceneTime * insp * insp * 5.0
+                     + sceneAdvance * 4.0;
     float orbitRad = 0.42 * dp * (1.0 - 0.92 * insp);   // Spirale zieht sich zu
     
     vec2 p1 = vec2(cos(orbitSpeed), sin(orbitSpeed)) * orbitRad;
@@ -128,7 +135,7 @@ void main()
     
     // Plasma sharing/accretion between them
     float sharedD = length(uv - (p1 + p2) * 0.5) - orbitRad;
-    float plasmaBridge = fbm(vec3(uv * 10.0, time * 5.0)) * 0.05 / max(abs(sharedD), 0.01);
+    float plasmaBridge = fbm(vec3(uv * 10.0, sceneTime * 5.0)) * 0.05 / max(abs(sharedD), 0.01);
     col += mix(starCol1, starCol2, 0.5) * plasmaBridge * (1.0 + audioSwell);
 
     // Jets emitting from poles (we approximate poles facing outward/inward)
@@ -154,7 +161,7 @@ void main()
     
     // Magnetic field lines (fbm noise stretched along rotation)
     vec2 polar = vec2(length(uv), atan(uv.y, uv.x));
-    float magField = fbm(vec3(polar.x * 2.0, polar.y * 10.0 - orbitSpeed, time));
+    float magField = fbm(vec3(polar.x * 2.0, polar.y * 10.0 - orbitSpeed, sceneTime));
     col += jetCol * magField * 0.1 * (1.0 + audioSwell) / (polar.x + 0.1);
 
     // Deep space background (distorted)
