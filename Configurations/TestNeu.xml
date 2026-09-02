@@ -5,8 +5,7 @@
   <!-- REVIEW BENCH: 8 scenes (2D block, then 3D), FxPlain only, Crossfade only, own silent audio -->
 
   <TextureShader file="..\Scene2D\AlienPlanetOrbit.frag" type="normal" mood="calm,dreamy,dark,space" probability="0.45" complexity="4">
-    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
-    <expr name="rig2Zoom" formula="0.05*swell"/>
+    <rig preset="flat"/>
     <float name="planetP" minValue="0.7" maxValue="1.5"></float>
     <float name="stationP" minValue="0.5" maxValue="1.8"></float>
     <float name="glowP" minValue="0.6" maxValue="1.8"></float>
@@ -14,8 +13,7 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene2D\DerelictMothership.frag" type="normal" mood="dark,calm,space" probability="0.45" complexity="4">
-    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
-    <expr name="rig2Zoom" formula="0.05*swell"/>
+    <rig preset="flat"/>
     <float name="hullP" minValue="0.7" maxValue="1.5"></float>
     <float name="glowP" minValue="0.6" maxValue="1.8"></float>
     <float name="debrisP" minValue="0.5" maxValue="1.5"></float>
@@ -23,8 +21,7 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene2D\HyperbolicTilingPolyhedralFlight.frag" type="normal" mood="psychedelic,aggressive,dark" probability="0.4" complexity="2">
-    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
-    <expr name="rig2Zoom" formula="0.05*swell"/>
+    <rig preset="flat"/>
     <float name="speedP" minValue="0.6" maxValue="1.6"></float>
     <float name="curveP" minValue="0.8" maxValue="1.4"></float>
     <float name="strutP" minValue="0.7" maxValue="1.5"></float>
@@ -33,42 +30,35 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene2D\NebulaCliffs.frag" type="normal" mood="calm,dreamy,space" probability="0.45" complexity="3">
-    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
-    <expr name="rig2Zoom" formula="0.05*swell"/>
+    <rig preset="flat"/>
     <float name="dustP" minValue="0.5" maxValue="1.5"></float>
     <float name="glowP" minValue="0.5" maxValue="2.0"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene2D\SpaceStationPromenade.frag" type="normal" mood="bright,calm,space" probability="0.45" complexity="4">
-    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
-    <expr name="rig2Zoom" formula="0.05*swell"/>
+    <rig preset="flat"/>
     <float name="archP" minValue="0.5" maxValue="1.5"></float>
     <float name="glowP" minValue="0.5" maxValue="2.0"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene2D\StellarNursery.frag" type="normal" mood="dark,psychedelic,space" probability="0.45" complexity="5">
-    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
-    <expr name="rig2Zoom" formula="0.05*swell"/>
+    <rig preset="flat"/>
     <float name="starP" minValue="0.5" maxValue="1.5"></float>
     <float name="jetP" minValue="0.5" maxValue="2.0"></float>
     <expr name="hueP" formula="chromaHue + seed3*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene2D\XenobiologicalBioship.frag" type="normal" mood="dark,psychedelic,space" probability="0.45" complexity="4">
-    <expr name="rig2Roll" formula="0.035*sin(0.17*phase + seed1*6.28)"/>
-    <expr name="rig2Zoom" formula="0.05*swell"/>
+    <rig preset="flat"/>
     <float name="fleshP" minValue="0.5" maxValue="1.5"></float>
     <float name="veinP" minValue="0.5" maxValue="2.0"></float>
     <expr name="hueP" formula="chromaHue + seed3*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene3D\DysonSphereCore.frag" type="scene3d" geom="cubes" mood="bright,space" probability="0.45" complexity="4">
-    <expr name="rigRoll" formula="0.05*sin(0.20*phase + seed1*6.28)"/>
-    <expr name="rigYaw" formula="0.04*sin(3.250*advance + seed2*6.28)"/>
-    <expr name="rigPitch" formula="0.025*sin(2.750*advance + seed3*6.28)"/>
-    <expr name="rigDolly" formula="0.5*swell"/>
+    <rig preset="procedural"/>
     <float name="panelP" minValue="0.7" maxValue="1.5"></float>
     <float name="energyP" minValue="0.6" maxValue="1.8"></float>
     <expr name="hueP" formula="chromaHue + seed2*6.28"/>

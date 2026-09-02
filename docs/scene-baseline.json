@@ -1,0 +1,4310 @@
+{
+ "note": "Bestwert je Szene ueber ihre Fenster, aus Tools/screen.py. Aktualisieren mit: python Tools/screen.py --save-baseline",
+ "scenes": {
+  "AbandonedStarGate": {
+   "luma": 0.0321,
+   "motion": 0.00534,
+   "n": 1,
+   "std": 0.0457,
+   "strobe": 2.38
+  },
+  "AbrikosovFluxLatticeVortices": {
+   "luma": 0.1328,
+   "motion": 0.01243,
+   "n": 1,
+   "std": 0.06117,
+   "strobe": 6.4
+  },
+  "AbyssalLuminescence": {
+   "luma": 0.1786,
+   "motion": 0.01791,
+   "n": 1,
+   "std": 0.16631,
+   "strobe": 3.51
+  },
+  "AccretionDiskToroidVortex": {
+   "luma": 0.0662,
+   "motion": 0.00353,
+   "n": 1,
+   "std": 0.09852,
+   "strobe": 2.71
+  },
+  "AcousticBlackHoleEventHorizon": {
+   "luma": 0.3118,
+   "motion": 0.00815,
+   "n": 1,
+   "std": 0.13545,
+   "strobe": 7.66
+  },
+  "AcousticLevitationMatrix": {
+   "luma": 0.2577,
+   "motion": 0.09723,
+   "n": 1,
+   "std": 0.14931,
+   "strobe": 1.23
+  },
+  "AizawaAttractorSphereVortex": {
+   "luma": 0.3186,
+   "motion": 0.01093,
+   "n": 1,
+   "std": 0.15061,
+   "strobe": 5.31
+  },
+  "AlcubierreWarpDriveHighway": {
+   "luma": 0.3679,
+   "motion": 0.04946,
+   "n": 1,
+   "std": 0.13049,
+   "strobe": 2.25
+  },
+  "AlfvenWavePlasmaFilamentation": {
+   "luma": 0.3967,
+   "motion": 0.1893,
+   "n": 1,
+   "std": 0.1463,
+   "strobe": 1.07
+  },
+  "AlienPlanetOrbit": {
+   "luma": 0.0036,
+   "motion": 0.00158,
+   "n": 1,
+   "std": 0.02055,
+   "strobe": 1.18
+  },
+  "AlienWorldSurface": {
+   "luma": 0.23,
+   "motion": 0.00482,
+   "n": 1,
+   "std": 0.05634,
+   "strobe": 1.68
+  },
+  "AnamorphicMirrorLabyrinth": {
+   "luma": 0.295,
+   "motion": 0.00934,
+   "n": 1,
+   "std": 0.10748,
+   "strobe": 2.47
+  },
+  "AnomalousFloquetTopologicalInsulator": {
+   "luma": 0.3007,
+   "motion": 0.00556,
+   "n": 1,
+   "std": 0.16854,
+   "strobe": 12.04
+  },
+  "AntimatterWeapon": {
+   "luma": 0.1563,
+   "motion": 0.0131,
+   "n": 1,
+   "std": 0.14855,
+   "strobe": 2.32
+  },
+  "Aperture": {
+   "luma": 0.1158,
+   "motion": 0.01226,
+   "n": 14,
+   "std": 0.13768,
+   "strobe": 5.51
+  },
+  "ApollonianGasketNebulaFlight": {
+   "luma": 0.2307,
+   "motion": 0.06901,
+   "n": 1,
+   "std": 0.14605,
+   "strobe": 1.29
+  },
+  "ApollonianSpherePackingDive": {
+   "luma": 0.2164,
+   "motion": 0.0641,
+   "n": 1,
+   "std": 0.13385,
+   "strobe": 1.85
+  },
+  "ApollonianSpherePackingGasket": {
+   "luma": 0.0596,
+   "motion": 0.02026,
+   "n": 1,
+   "std": 0.05446,
+   "strobe": 1.24
+  },
+  "Assembly": {
+   "luma": 0.1584,
+   "motion": 0.06452,
+   "n": 8,
+   "std": 0.04547,
+   "strobe": 47.88
+  },
+  "AsteroidBelt": {
+   "luma": 0.0828,
+   "motion": 0.02852,
+   "n": 1,
+   "std": 0.08085,
+   "strobe": 2.0
+  },
+  "AsteroidMiningBase": {
+   "luma": 0.0979,
+   "motion": 0.01331,
+   "n": 1,
+   "std": 0.0173,
+   "strobe": 1.48
+  },
+  "AtmosphericEntry": {
+   "luma": 0.177,
+   "motion": 0.02118,
+   "n": 12,
+   "std": 0.21209,
+   "strobe": 1.67
+  },
+  "AtmosphericGravityWaveUndularBore": {
+   "luma": 0.2621,
+   "motion": 0.01777,
+   "n": 1,
+   "std": 0.26848,
+   "strobe": 1.74
+  },
+  "Aurora": {
+   "luma": 0.217,
+   "motion": 0.00514,
+   "n": 1,
+   "std": 0.11447,
+   "strobe": 9.32
+  },
+  "AuroraAustralisCurtainSwell": {
+   "luma": 0.2423,
+   "motion": 0.01202,
+   "n": 1,
+   "std": 0.07972,
+   "strobe": 6.49
+  },
+  "AuroraBorealisCurtainFlight": {
+   "luma": 0.1513,
+   "motion": 0.01019,
+   "n": 1,
+   "std": 0.03346,
+   "strobe": 2.37
+  },
+  "AuroraBorealisOverFjord": {
+   "luma": 0.3016,
+   "motion": 0.017,
+   "n": 1,
+   "std": 0.15707,
+   "strobe": 5.85
+  },
+  "AuroraVeil": {
+   "luma": 0.1772,
+   "motion": 0.00874,
+   "n": 1,
+   "std": 0.20326,
+   "strobe": 1.63
+  },
+  "BacteriophageIcosahedralCapsidInjection": {
+   "luma": 0.3128,
+   "motion": 0.0091,
+   "n": 1,
+   "std": 0.1985,
+   "strobe": 5.0
+  },
+  "BallLightningPlasmoid": {
+   "luma": 0.2905,
+   "motion": 0.01582,
+   "n": 1,
+   "std": 0.16039,
+   "strobe": 3.66
+  },
+  "BallisticGrapheneElectronFocussing": {
+   "luma": 0.2876,
+   "motion": 0.03301,
+   "n": 1,
+   "std": 0.1744,
+   "strobe": 1.67
+  },
+  "BauhausGeo": {
+   "luma": 0.2123,
+   "motion": 0.00421,
+   "n": 1,
+   "std": 0.06286,
+   "strobe": 4.53
+  },
+  "BeatLattice": {
+   "luma": 0.3741,
+   "motion": 0.06782,
+   "n": 1,
+   "std": 0.11321,
+   "strobe": 2.34
+  },
+  "BelousovZhabotinskyChemicalWave": {
+   "luma": 0.4842,
+   "motion": 0.10368,
+   "n": 1,
+   "std": 0.11535,
+   "strobe": 1.2
+  },
+  "BeyondTheEdge": {
+   "luma": 0.2375,
+   "motion": 0.01143,
+   "n": 1,
+   "std": 0.08306,
+   "strobe": 3.8
+  },
+  "BillboardCity": {
+   "luma": 0.2661,
+   "motion": 0.09943,
+   "n": 1,
+   "std": 0.18361,
+   "strobe": 1.2
+  },
+  "BinaryStarSystem": {
+   "luma": 0.1043,
+   "motion": 0.01091,
+   "n": 1,
+   "std": 0.23091,
+   "strobe": 1.24
+  },
+  "BioCell": {
+   "luma": 0.2062,
+   "motion": 0.05483,
+   "n": 1,
+   "std": 0.24715,
+   "strobe": 1.81
+  },
+  "BioCellularInfiniteZoom": {
+   "luma": 0.2789,
+   "motion": 0.03158,
+   "n": 1,
+   "std": 0.04361,
+   "strobe": 1.86
+  },
+  "BioLuminescentTendrilTunnel": {
+   "luma": 0.4648,
+   "motion": 0.05789,
+   "n": 1,
+   "std": 0.132,
+   "strobe": 1.32
+  },
+  "BioNeuralDendriteZoom": {
+   "luma": 0.2274,
+   "motion": 0.05706,
+   "n": 1,
+   "std": 0.13382,
+   "strobe": 1.89
+  },
+  "BioluminescentAbyssalTrenches": {
+   "luma": 0.2331,
+   "motion": 0.10839,
+   "n": 1,
+   "std": 0.19333,
+   "strobe": 1.35
+  },
+  "BioluminescentBreakingWave": {
+   "luma": 0.073,
+   "motion": 0.01082,
+   "n": 1,
+   "std": 0.09117,
+   "strobe": 1.86
+  },
+  "BioluminescentCombJellyCydippid": {
+   "luma": 0.2269,
+   "motion": 0.02522,
+   "n": 1,
+   "std": 0.16178,
+   "strobe": 3.31
+  },
+  "BioluminescentDeepSeaCombJelly": {
+   "luma": 0.3011,
+   "motion": 0.00415,
+   "n": 1,
+   "std": 0.20208,
+   "strobe": 3.77
+  },
+  "BioluminescentDeepSeaTrenchDive": {
+   "luma": 0.2249,
+   "motion": 0.01395,
+   "n": 1,
+   "std": 0.05517,
+   "strobe": 1.48
+  },
+  "BioluminescentForestCanopy": {
+   "luma": 0.3057,
+   "motion": 0.06644,
+   "n": 1,
+   "std": 0.2133,
+   "strobe": 1.29
+  },
+  "BioluminescentMyceliumCave": {
+   "luma": 0.1223,
+   "motion": 0.0514,
+   "n": 1,
+   "std": 0.10572,
+   "strobe": 2.25
+  },
+  "BioluminescentNebula": {
+   "luma": 0.3009,
+   "motion": 0.02609,
+   "n": 1,
+   "std": 0.05175,
+   "strobe": 1.68
+  },
+  "BioluminescentOceanSwell": {
+   "luma": 0.0845,
+   "motion": 0.03405,
+   "n": 1,
+   "std": 0.13289,
+   "strobe": 1.52
+  },
+  "BioluminescentSiphonophoreChain": {
+   "luma": 0.1681,
+   "motion": 0.06557,
+   "n": 1,
+   "std": 0.09854,
+   "strobe": 2.0
+  },
+  "BioluminescentSwarm": {
+   "luma": 0.1895,
+   "motion": 0.09689,
+   "n": 1,
+   "std": 0.14185,
+   "strobe": 1.73
+  },
+  "BismuthFerriteMultiferroicDomains": {
+   "luma": 0.2477,
+   "motion": 0.02869,
+   "n": 1,
+   "std": 0.28786,
+   "strobe": 5.16
+  },
+  "BismuthHyperLabyrinth": {
+   "luma": 0.4433,
+   "motion": 0.08848,
+   "n": 1,
+   "std": 0.14684,
+   "strobe": 1.17
+  },
+  "BismuthLabyrinth": {
+   "luma": 0.3576,
+   "motion": 0.03394,
+   "n": 1,
+   "std": 0.06712,
+   "strobe": 4.08
+  },
+  "BlackHole": {
+   "luma": 0.026,
+   "motion": 0.0073,
+   "n": 1,
+   "std": 0.06045,
+   "strobe": 1.38
+  },
+  "BloomSculpt": {
+   "luma": 0.108,
+   "motion": 0.00511,
+   "n": 1,
+   "std": 0.1936,
+   "strobe": 4.01
+  },
+  "Blueprint": {
+   "luma": 0.1105,
+   "motion": 0.00287,
+   "n": 1,
+   "std": 0.07817,
+   "strobe": 4.59
+  },
+  "BoseEinsteinGiantVortexTurbulence": {
+   "luma": 0.34,
+   "motion": 0.02747,
+   "n": 1,
+   "std": 0.15174,
+   "strobe": 1.86
+  },
+  "BoseEinsteinVortexTangle": {
+   "luma": 0.1253,
+   "motion": 0.09225,
+   "n": 1,
+   "std": 0.09495,
+   "strobe": 1.21
+  },
+  "BoySurfaceCrossCapImmersion": {
+   "luma": 0.1727,
+   "motion": 0.01353,
+   "n": 1,
+   "std": 0.2238,
+   "strobe": 3.43
+  },
+  "BreathingFractal": {
+   "luma": 0.3585,
+   "motion": 0.02397,
+   "n": 1,
+   "std": 0.06133,
+   "strobe": 1.97
+  },
+  "BreathingFractalNoir": {
+   "luma": 0.3479,
+   "motion": 0.02089,
+   "n": 1,
+   "std": 0.06892,
+   "strobe": 3.7
+  },
+  "BreathingFractalZoom": {
+   "luma": 0.2513,
+   "motion": 0.01841,
+   "n": 1,
+   "std": 0.01909,
+   "strobe": 1.38
+  },
+  "Bubble": {
+   "luma": 0.2464,
+   "motion": 0.01512,
+   "n": 1,
+   "std": 0.1158,
+   "strobe": 1.49
+  },
+  "BuddhabrotCosmicGhost": {
+   "luma": 0.2424,
+   "motion": 0.00518,
+   "n": 1,
+   "std": 0.08134,
+   "strobe": 2.14
+  },
+  "BuffaloFractalThunderstorm": {
+   "luma": 0.2304,
+   "motion": 0.01657,
+   "n": 1,
+   "std": 0.05254,
+   "strobe": 1.82
+  },
+  "BurningShipDeepVoyage": {
+   "luma": 0.3403,
+   "motion": 0.04579,
+   "n": 1,
+   "std": 0.13277,
+   "strobe": 1.74
+  },
+  "CalabiYauManifold": {
+   "luma": 0.444,
+   "motion": 0.10587,
+   "n": 1,
+   "std": 0.11436,
+   "strobe": 1.61
+  },
+  "CalabiYauManifoldKaleido": {
+   "luma": 0.4209,
+   "motion": 0.02242,
+   "n": 1,
+   "std": 0.08251,
+   "strobe": 2.18
+  },
+  "CalabiYauSixDimensionalManifoldCrossSection": {
+   "luma": 0.1203,
+   "motion": 0.0133,
+   "n": 1,
+   "std": 0.1318,
+   "strobe": 3.15
+  },
+  "CapitalShipCruise": {
+   "luma": 0.2698,
+   "motion": 0.01662,
+   "n": 1,
+   "std": 0.11297,
+   "strobe": 3.53
+  },
+  "CarbonNanotubeChiralityArmchairZigzag": {
+   "luma": 0.1502,
+   "motion": 0.08116,
+   "n": 1,
+   "std": 0.15634,
+   "strobe": 1.53
+  },
+  "CasimirCavityVacuumFluctuations": {
+   "luma": 0.2695,
+   "motion": 0.01835,
+   "n": 1,
+   "std": 0.04917,
+   "strobe": 4.44
+  },
+  "CatatumboRelightningTower": {
+   "luma": 0.3178,
+   "motion": 0.014,
+   "n": 1,
+   "std": 0.19489,
+   "strobe": 3.58
+  },
+  "CathedralGlass": {
+   "luma": 0.3341,
+   "motion": 0.01682,
+   "n": 1,
+   "std": 0.18531,
+   "strobe": 4.71
+  },
+  "CausticPool": {
+   "luma": 0.2554,
+   "motion": 0.08441,
+   "n": 1,
+   "std": 0.11338,
+   "strobe": 1.27
+  },
+  "CavityOptomechanicsPhononLasing": {
+   "luma": 0.2736,
+   "motion": 0.03136,
+   "n": 1,
+   "std": 0.11917,
+   "strobe": 1.97
+  },
+  "CelticMandelbrotGothicVault": {
+   "luma": 0.4385,
+   "motion": 0.05961,
+   "n": 1,
+   "std": 0.2336,
+   "strobe": 1.35
+  },
+  "CherenkovCascadeShower": {
+   "luma": 0.0324,
+   "motion": 0.00542,
+   "n": 1,
+   "std": 0.11852,
+   "strobe": 1.69
+  },
+  "CherenkovRadiationWakefield": {
+   "luma": 0.2903,
+   "motion": 0.01878,
+   "n": 1,
+   "std": 0.11942,
+   "strobe": 2.16
+  },
+  "ChiralLiquidCrystalCholesteric": {
+   "luma": 0.1402,
+   "motion": 0.02997,
+   "n": 1,
+   "std": 0.12861,
+   "strobe": 1.98
+  },
+  "ChiralNematicBeetleCuticle": {
+   "luma": 0.4534,
+   "motion": 0.01068,
+   "n": 1,
+   "std": 0.11782,
+   "strobe": 2.95
+  },
+  "ChiralNematicLiquidCrystal": {
+   "luma": 0.3749,
+   "motion": 0.01637,
+   "n": 1,
+   "std": 0.06186,
+   "strobe": 3.74
+  },
+  "Chladni3DAcousticLevitation": {
+   "luma": 0.0402,
+   "motion": 0.01331,
+   "n": 1,
+   "std": 0.04693,
+   "strobe": 2.67
+  },
+  "ChladniAcousticPlate": {
+   "luma": 0.3278,
+   "motion": 0.05487,
+   "n": 1,
+   "std": 0.26118,
+   "strobe": 3.62
+  },
+  "ChromaAcidTrip": {
+   "luma": 0.3629,
+   "motion": 0.05534,
+   "n": 1,
+   "std": 0.12523,
+   "strobe": 3.33
+  },
+  "ChromeDreams": {
+   "luma": 0.4321,
+   "motion": 0.1601,
+   "n": 1,
+   "std": 0.25046,
+   "strobe": 1.22
+  },
+  "ChromeFlow": {
+   "luma": 0.2326,
+   "motion": 0.02672,
+   "n": 1,
+   "std": 0.23304,
+   "strobe": 1.26
+  },
+  "ChromeForm": {
+   "luma": 0.2219,
+   "motion": 0.00529,
+   "n": 11,
+   "std": 0.17464,
+   "strobe": 6.44
+  },
+  "ChronoSynapticMandala": {
+   "luma": 0.3583,
+   "motion": 0.02435,
+   "n": 1,
+   "std": 0.08431,
+   "strobe": 2.87
+  },
+  "CityBokeh": {
+   "luma": 0.208,
+   "motion": 0.00505,
+   "n": 1,
+   "std": 0.08547,
+   "strobe": 13.6
+  },
+  "CliffordAttractorSilkRibbons": {
+   "luma": 0.3286,
+   "motion": 0.01927,
+   "n": 1,
+   "std": 0.05869,
+   "strobe": 1.67
+  },
+  "CliffordTorusKleinBottle": {
+   "luma": 0.3194,
+   "motion": 0.07199,
+   "n": 1,
+   "std": 0.20816,
+   "strobe": 1.68
+  },
+  "CliffordTorusStereographicKaleido": {
+   "luma": 0.2261,
+   "motion": 0.02251,
+   "n": 1,
+   "std": 0.04565,
+   "strobe": 1.33
+  },
+  "CliffordTorusVillarceauLinks": {
+   "luma": 0.1801,
+   "motion": 0.06551,
+   "n": 1,
+   "std": 0.17868,
+   "strobe": 1.62
+  },
+  "ClothDrape": {
+   "luma": 0.2723,
+   "motion": 0.02933,
+   "n": 1,
+   "std": 0.10954,
+   "strobe": 3.88
+  },
+  "CollatzFractalTreeAbyss": {
+   "luma": 0.2203,
+   "motion": 0.01207,
+   "n": 1,
+   "std": 0.02296,
+   "strobe": 1.8
+  },
+  "CometRide": {
+   "luma": 0.0801,
+   "motion": 0.01073,
+   "n": 1,
+   "std": 0.17422,
+   "strobe": 1.64
+  },
+  "ConcertCrowd": {
+   "luma": 0.0528,
+   "motion": 0.01776,
+   "n": 1,
+   "std": 0.08936,
+   "strobe": 2.31
+  },
+  "Condensation": {
+   "luma": 0.1903,
+   "motion": 0.02833,
+   "n": 13,
+   "std": 0.1047,
+   "strobe": 1.96
+  },
+  "ConformalLogPolarDive": {
+   "luma": 0.3267,
+   "motion": 0.05018,
+   "n": 1,
+   "std": 0.10898,
+   "strobe": 1.18
+  },
+  "CoralGrowth": {
+   "luma": 0.1095,
+   "motion": 0.01081,
+   "n": 1,
+   "std": 0.15569,
+   "strobe": 3.11
+  },
+  "CoralReefFluorescence": {
+   "luma": 0.3112,
+   "motion": 0.0224,
+   "n": 1,
+   "std": 0.16662,
+   "strobe": 4.76
+  },
+  "CosmicBoidsVortex": {
+   "luma": 0.4102,
+   "motion": 0.14939,
+   "n": 1,
+   "std": 0.20668,
+   "strobe": 1.5
+  },
+  "CosmicInflationaryTensorModes": {
+   "luma": 0.2028,
+   "motion": 0.02201,
+   "n": 1,
+   "std": 0.18627,
+   "strobe": 1.83
+  },
+  "CosmicRayAirShowerCherenkov": {
+   "luma": 0.2229,
+   "motion": 0.04367,
+   "n": 1,
+   "std": 0.13362,
+   "strobe": 2.29
+  },
+  "CosmicRayCherenkovAirShowerCascade": {
+   "luma": 0.1089,
+   "motion": 0.01238,
+   "n": 1,
+   "std": 0.0494,
+   "strobe": 5.37
+  },
+  "CosmicRayTransitionRadiation": {
+   "luma": 0.2719,
+   "motion": 0.11377,
+   "n": 1,
+   "std": 0.15717,
+   "strobe": 1.38
+  },
+  "CosmicStringCuspKinkGravitationalRadiation": {
+   "luma": 0.203,
+   "motion": 0.08223,
+   "n": 1,
+   "std": 0.21178,
+   "strobe": 1.6
+  },
+  "CosmicStringHyperspaceWeb": {
+   "luma": 0.3135,
+   "motion": 0.22738,
+   "n": 1,
+   "std": 0.30194,
+   "strobe": 1.46
+  },
+  "CosmicWebFilamentAnisotropy": {
+   "luma": 0.32,
+   "motion": 0.14412,
+   "n": 1,
+   "std": 0.30847,
+   "strobe": 1.09
+  },
+  "Creature": {
+   "luma": 0.0958,
+   "motion": 0.00988,
+   "n": 6,
+   "std": 0.07583,
+   "strobe": 2.79
+  },
+  "CrossSection": {
+   "luma": 0.0481,
+   "motion": 0.00789,
+   "n": 9,
+   "std": 0.07536,
+   "strobe": 4.03
+  },
+  "CryogenicBrinicleStalactite": {
+   "luma": 0.157,
+   "motion": 0.02036,
+   "n": 1,
+   "std": 0.05259,
+   "strobe": 4.5
+  },
+  "CryosleepChamber": {
+   "luma": 0.1376,
+   "motion": 0.07263,
+   "n": 1,
+   "std": 0.08461,
+   "strobe": 1.53
+  },
+  "CryovolcanicIceGeysers": {
+   "luma": 0.1476,
+   "motion": 0.13378,
+   "n": 1,
+   "std": 0.19935,
+   "strobe": 1.19
+  },
+  "CrystalAsteroidField": {
+   "luma": 0.1881,
+   "motion": 0.05442,
+   "n": 1,
+   "std": 0.11346,
+   "strobe": 1.97
+  },
+  "CrystalCave": {
+   "luma": 0.1577,
+   "motion": 0.06332,
+   "n": 1,
+   "std": 0.10116,
+   "strobe": 1.89
+  },
+  "CrystalGeodeCavernFlight": {
+   "luma": 0.4131,
+   "motion": 0.01301,
+   "n": 1,
+   "std": 0.02098,
+   "strobe": 1.2
+  },
+  "CrystalGrowth": {
+   "luma": 0.1276,
+   "motion": 0.00682,
+   "n": 2,
+   "std": 0.09356,
+   "strobe": 6.63
+  },
+  "CrystalMirrorGrid": {
+   "luma": 0.2822,
+   "motion": 0.07857,
+   "n": 1,
+   "std": 0.10816,
+   "strobe": 1.18
+  },
+  "CrystalMonoliths": {
+   "luma": 0.2584,
+   "motion": 0.05723,
+   "n": 1,
+   "std": 0.2087,
+   "strobe": 1.34
+  },
+  "CrystalShatterBurst": {
+   "luma": 0.3569,
+   "motion": 0.1604,
+   "n": 1,
+   "std": 0.18041,
+   "strobe": 1.31
+  },
+  "CrystallineCavernTessellation": {
+   "luma": 0.3646,
+   "motion": 0.05272,
+   "n": 1,
+   "std": 0.14805,
+   "strobe": 2.13
+  },
+  "CubeWave": {
+   "luma": 0.1498,
+   "motion": 0.12399,
+   "n": 1,
+   "std": 0.17411,
+   "strobe": 1.19
+  },
+  "CurlAurora": {
+   "luma": 0.3705,
+   "motion": 0.01656,
+   "n": 1,
+   "std": 0.1984,
+   "strobe": 4.98
+  },
+  "CyberGridCity": {
+   "luma": 0.2527,
+   "motion": 0.1266,
+   "n": 1,
+   "std": 0.18138,
+   "strobe": 1.23
+  },
+  "CyberHologramGlitchVoxel": {
+   "luma": 0.3164,
+   "motion": 0.13843,
+   "n": 1,
+   "std": 0.19624,
+   "strobe": 1.23
+  },
+  "CyberRibbonHighway": {
+   "luma": 0.2489,
+   "motion": 0.17108,
+   "n": 1,
+   "std": 0.21431,
+   "strobe": 1.5
+  },
+  "CyberVoxelTerraform": {
+   "luma": 0.242,
+   "motion": 0.10165,
+   "n": 1,
+   "std": 0.22013,
+   "strobe": 1.54
+  },
+  "CyberpunkSynthGridHighwayFly": {
+   "luma": 0.3151,
+   "motion": 0.08873,
+   "n": 1,
+   "std": 0.18622,
+   "strobe": 1.34
+  },
+  "CyberpunkWireframeTerrainFlyover": {
+   "luma": 0.2467,
+   "motion": 0.03678,
+   "n": 1,
+   "std": 0.1832,
+   "strobe": 2.1
+  },
+  "CyberspaceDNAHelix": {
+   "luma": 0.0417,
+   "motion": 0.01812,
+   "n": 1,
+   "std": 0.10931,
+   "strobe": 1.47
+  },
+  "CyborgHiveShip": {
+   "luma": 0.0903,
+   "motion": 0.0315,
+   "n": 1,
+   "std": 0.05438,
+   "strobe": 1.81
+  },
+  "CymaticsPlate": {
+   "luma": 0.075,
+   "motion": 0.02371,
+   "n": 1,
+   "std": 0.15043,
+   "strobe": 1.89
+  },
+  "DNAOrigamiNanotubeLattice": {
+   "luma": 0.0592,
+   "motion": 0.0196,
+   "n": 1,
+   "std": 0.09368,
+   "strobe": 2.15
+  },
+  "DarkAmbientTunnel": {
+   "luma": 0.364,
+   "motion": 0.0268,
+   "n": 1,
+   "std": 0.11004,
+   "strobe": 3.15
+  },
+  "DarkMatterWeb": {
+   "luma": 0.2752,
+   "motion": 0.02945,
+   "n": 1,
+   "std": 0.03418,
+   "strobe": 3.36
+  },
+  "DeepSeaHydrothermalChimneyPillar": {
+   "luma": 0.279,
+   "motion": 0.01512,
+   "n": 1,
+   "std": 0.23111,
+   "strobe": 3.46
+  },
+  "DeepSeaVentsEcosystem": {
+   "luma": 0.2584,
+   "motion": 0.07715,
+   "n": 1,
+   "std": 0.26701,
+   "strobe": 1.23
+  },
+  "DeepSpaceArmada": {
+   "luma": 0.1624,
+   "motion": 0.02966,
+   "n": 1,
+   "std": 0.08113,
+   "strobe": 1.83
+  },
+  "DendriticSnowCrystal": {
+   "luma": 0.1545,
+   "motion": 0.01765,
+   "n": 1,
+   "std": 0.18703,
+   "strobe": 2.97
+  },
+  "DendriticSnowflakeIceCrystalHabit": {
+   "luma": 0.1199,
+   "motion": 0.01307,
+   "n": 1,
+   "std": 0.17336,
+   "strobe": 2.06
+  },
+  "DerelictMothership": {
+   "luma": 0.0525,
+   "motion": 0.00188,
+   "n": 1,
+   "std": 0.02504,
+   "strobe": 1.9
+  },
+  "Detonation": {
+   "luma": 0.0636,
+   "motion": 0.00292,
+   "n": 1,
+   "std": 0.09711,
+   "strobe": 9.29
+  },
+  "DiatomSilicaMicrofrustule": {
+   "luma": 0.2795,
+   "motion": 0.04656,
+   "n": 1,
+   "std": 0.12116,
+   "strobe": 3.41
+  },
+  "DichroicInfinityPrismVault": {
+   "luma": 0.2254,
+   "motion": 0.03999,
+   "n": 1,
+   "std": 0.08425,
+   "strobe": 1.71
+  },
+  "DichroicPrismLaserField": {
+   "luma": 0.168,
+   "motion": 0.01158,
+   "n": 1,
+   "std": 0.03914,
+   "strobe": 1.65
+  },
+  "DielectricMetasurfaceHologram": {
+   "luma": 0.0938,
+   "motion": 0.01939,
+   "n": 1,
+   "std": 0.10619,
+   "strobe": 2.17
+  },
+  "DielectricResonatorMetagrating": {
+   "luma": 0.3759,
+   "motion": 0.05312,
+   "n": 1,
+   "std": 0.31169,
+   "strobe": 1.89
+  },
+  "DiracConeGrapheneValleytronics": {
+   "luma": 0.2522,
+   "motion": 0.0464,
+   "n": 1,
+   "std": 0.12814,
+   "strobe": 1.86
+  },
+  "DiscoGodrays": {
+   "luma": 0.3531,
+   "motion": 0.13376,
+   "n": 1,
+   "std": 0.21771,
+   "strobe": 1.27
+  },
+  "Dissolve": {
+   "luma": 0.1026,
+   "motion": 0.00763,
+   "n": 7,
+   "std": 0.0294,
+   "strobe": 20.15
+  },
+  "DragonFlight": {
+   "luma": 0.0568,
+   "motion": 0.03088,
+   "n": 1,
+   "std": 0.1435,
+   "strobe": 1.27
+  },
+  "DroneDepths": {
+   "luma": 0.2317,
+   "motion": 0.00852,
+   "n": 1,
+   "std": 0.05736,
+   "strobe": 2.96
+  },
+  "DrumSkin": {
+   "luma": 0.0664,
+   "motion": 0.00639,
+   "n": 1,
+   "std": 0.10934,
+   "strobe": 3.49
+  },
+  "DysonSphereCollapse": {
+   "luma": 0.2747,
+   "motion": 0.02503,
+   "n": 1,
+   "std": 0.27273,
+   "strobe": 2.25
+  },
+  "DysonSphereCore": {
+   "luma": 0.1452,
+   "motion": 0.02771,
+   "n": 1,
+   "std": 0.04589,
+   "strobe": 2.31
+  },
+  "DysonSwarmSolarHarvester": {
+   "luma": 0.078,
+   "motion": 0.04246,
+   "n": 1,
+   "std": 0.12799,
+   "strobe": 1.3
+  },
+  "E8LieAlgebraRootLattice": {
+   "luma": 0.1498,
+   "motion": 0.0119,
+   "n": 1,
+   "std": 0.26675,
+   "strobe": 2.1
+  },
+  "EchoSpiral": {
+   "luma": 0.0899,
+   "motion": 0.02409,
+   "n": 1,
+   "std": 0.16161,
+   "strobe": 1.85
+  },
+  "EinsteinRingGravitationalLens": {
+   "luma": 0.312,
+   "motion": 0.01828,
+   "n": 1,
+   "std": 0.18587,
+   "strobe": 1.29
+  },
+  "EndOfTheUniverse": {
+   "luma": 0.0278,
+   "motion": 0.00695,
+   "n": 1,
+   "std": 0.03157,
+   "strobe": 2.35
+  },
+  "EnneperMinimalSurfaceHyperfold": {
+   "luma": 0.2567,
+   "motion": 0.00821,
+   "n": 1,
+   "std": 0.04871,
+   "strobe": 4.52
+  },
+  "ErodedLand": {
+   "luma": 0.265,
+   "motion": 0.01921,
+   "n": 1,
+   "std": 0.08485,
+   "strobe": 3.05
+  },
+  "EscherRelativityMatrix": {
+   "luma": 0.2416,
+   "motion": 0.00237,
+   "n": 1,
+   "std": 0.05666,
+   "strobe": 3.21
+  },
+  "EventHorizon": {
+   "luma": 0.2875,
+   "motion": 0.00884,
+   "n": 1,
+   "std": 0.25944,
+   "strobe": 6.87
+  },
+  "EventHorizonSingularityPlunge": {
+   "luma": 0.2865,
+   "motion": 0.02128,
+   "n": 1,
+   "std": 0.18455,
+   "strobe": 1.6
+  },
+  "ExoplanetOcean": {
+   "luma": 0.2583,
+   "motion": 0.00316,
+   "n": 1,
+   "std": 0.12598,
+   "strobe": 5.37
+  },
+  "ExoplanetRings": {
+   "luma": 0.2388,
+   "motion": 0.01854,
+   "n": 1,
+   "std": 0.06979,
+   "strobe": 10.14
+  },
+  "ExoticStation": {
+   "luma": 0.163,
+   "motion": 0.00359,
+   "n": 5,
+   "std": 0.16383,
+   "strobe": 8.26
+  },
+  "FeatherStorm": {
+   "luma": 0.2553,
+   "motion": 0.08334,
+   "n": 1,
+   "std": 0.19015,
+   "strobe": 2.28
+  },
+  "FeedbackKaleidoscope": {
+   "luma": 0.1898,
+   "motion": 0.00813,
+   "n": 1,
+   "std": 0.07226,
+   "strobe": 5.29
+  },
+  "FerroSpikes": {
+   "luma": 0.2491,
+   "motion": 0.02908,
+   "n": 1,
+   "std": 0.067,
+   "strobe": 1.74
+  },
+  "FerroelectricDomainVortexArray": {
+   "luma": 0.5262,
+   "motion": 0.02487,
+   "n": 1,
+   "std": 0.11202,
+   "strobe": 1.14
+  },
+  "FerrofluidHexMatrix": {
+   "luma": 0.1506,
+   "motion": 0.01549,
+   "n": 1,
+   "std": 0.03392,
+   "strobe": 1.66
+  },
+  "FerrofluidMagneticSpikeSurge": {
+   "luma": 0.308,
+   "motion": 0.01106,
+   "n": 1,
+   "std": 0.07701,
+   "strobe": 12.17
+  },
+  "FerrofluidSpikeForest": {
+   "luma": 0.1745,
+   "motion": 0.0276,
+   "n": 1,
+   "std": 0.13097,
+   "strobe": 2.55
+  },
+  "FerrohydrodynamicRosensweigSpikes": {
+   "luma": 0.1834,
+   "motion": 0.00451,
+   "n": 1,
+   "std": 0.11814,
+   "strobe": 3.26
+  },
+  "FiberopticLightLoom": {
+   "luma": 0.2717,
+   "motion": 0.09228,
+   "n": 1,
+   "std": 0.24686,
+   "strobe": 1.86
+  },
+  "FireWhirlTornado": {
+   "luma": 0.2961,
+   "motion": 0.03021,
+   "n": 1,
+   "std": 0.11028,
+   "strobe": 3.44
+  },
+  "FireflyField": {
+   "luma": 0.3899,
+   "motion": 0.1859,
+   "n": 1,
+   "std": 0.20568,
+   "strobe": 1.61
+  },
+  "Fireworks": {
+   "luma": 0.1501,
+   "motion": 0.06831,
+   "n": 1,
+   "std": 0.12569,
+   "strobe": 1.74
+  },
+  "Fleet": {
+   "luma": 0.1937,
+   "motion": 0.0386,
+   "n": 11,
+   "std": 0.1695,
+   "strobe": 7.34
+  },
+  "FlowRibbons": {
+   "luma": 0.1569,
+   "motion": 0.02231,
+   "n": 1,
+   "std": 0.13293,
+   "strobe": 3.47
+  },
+  "FlowingWires": {
+   "luma": 0.2793,
+   "motion": 0.04093,
+   "n": 1,
+   "std": 0.06134,
+   "strobe": 3.19
+  },
+  "Fluid": {
+   "luma": 0.3582,
+   "motion": 0.00743,
+   "n": 1,
+   "std": 0.04672,
+   "strobe": 8.77
+  },
+  "FluidChladniKaleidoResonance": {
+   "luma": 0.3253,
+   "motion": 0.0188,
+   "n": 1,
+   "std": 0.09376,
+   "strobe": 1.75
+  },
+  "FluidChromaMarangoniConvection": {
+   "luma": 0.3133,
+   "motion": 0.02232,
+   "n": 1,
+   "std": 0.12169,
+   "strobe": 2.28
+  },
+  "FluidInkMarble": {
+   "luma": 0.2876,
+   "motion": 0.02549,
+   "n": 1,
+   "std": 0.10034,
+   "strobe": 1.79
+  },
+  "FluidPhotoMarblingEbru": {
+   "luma": 0.272,
+   "motion": 0.03513,
+   "n": 1,
+   "std": 0.05434,
+   "strobe": 1.31
+  },
+  "FortressStation": {
+   "luma": 0.0898,
+   "motion": 0.0021,
+   "n": 5,
+   "std": 0.06068,
+   "strobe": 8.54
+  },
+  "FractalBloom": {
+   "luma": 0.5241,
+   "motion": 0.1428,
+   "n": 1,
+   "std": 0.16861,
+   "strobe": 2.36
+  },
+  "FractalFlame": {
+   "luma": 0.3176,
+   "motion": 0.01569,
+   "n": 1,
+   "std": 0.17364,
+   "strobe": 5.36
+  },
+  "FractalKIFS": {
+   "luma": 0.1684,
+   "motion": 0.04893,
+   "n": 1,
+   "std": 0.12181,
+   "strobe": 1.69
+  },
+  "FractalMorphoDendrite": {
+   "luma": 0.3317,
+   "motion": 0.00543,
+   "n": 1,
+   "std": 0.03667,
+   "strobe": 8.33
+  },
+  "FractalPortalRecursionHall": {
+   "luma": 0.2691,
+   "motion": 0.01739,
+   "n": 1,
+   "std": 0.06947,
+   "strobe": 7.88
+  },
+  "FrozenMethaneLakes": {
+   "luma": 0.1713,
+   "motion": 0.00418,
+   "n": 1,
+   "std": 0.09007,
+   "strobe": 3.35
+  },
+  "FullereneC60BuckyballCrystalLattice": {
+   "luma": 0.1137,
+   "motion": 0.02798,
+   "n": 1,
+   "std": 0.06757,
+   "strobe": 3.4
+  },
+  "FuturisticCityFlight": {
+   "luma": 0.0387,
+   "motion": 0.00326,
+   "n": 1,
+   "std": 0.00235,
+   "strobe": 9.37
+  },
+  "GalacticAccretionStreamFlight": {
+   "luma": 0.2857,
+   "motion": 0.00967,
+   "n": 1,
+   "std": 0.17126,
+   "strobe": 4.62
+  },
+  "GalacticCoreBlackHole": {
+   "luma": 0.084,
+   "motion": 0.05631,
+   "n": 1,
+   "std": 0.13518,
+   "strobe": 1.35
+  },
+  "GalaxyCollision": {
+   "luma": 0.0783,
+   "motion": 0.01445,
+   "n": 1,
+   "std": 0.14265,
+   "strobe": 1.96
+  },
+  "GalleryHall": {
+   "luma": 0.1234,
+   "motion": 0.02613,
+   "n": 1,
+   "std": 0.21069,
+   "strobe": 1.63
+  },
+  "GammaRayBurst": {
+   "luma": 0.2925,
+   "motion": 0.00421,
+   "n": 1,
+   "std": 0.08186,
+   "strobe": 7.2
+  },
+  "GasGiantAtmosphere": {
+   "luma": 0.2228,
+   "motion": 0.00185,
+   "n": 1,
+   "std": 0.05019,
+   "strobe": 8.03
+  },
+  "GasGiantCloudCity": {
+   "luma": 0.0579,
+   "motion": 0.01073,
+   "n": 1,
+   "std": 0.01938,
+   "strobe": 2.8
+  },
+  "GearWorks": {
+   "luma": 0.1278,
+   "motion": 0.05064,
+   "n": 1,
+   "std": 0.12557,
+   "strobe": 1.37
+  },
+  "GeomagneticDynamoCore": {
+   "luma": 0.2252,
+   "motion": 0.07055,
+   "n": 1,
+   "std": 0.09101,
+   "strobe": 1.78
+  },
+  "GeothermalFumaroleMineralSpires": {
+   "luma": 0.2991,
+   "motion": 0.00801,
+   "n": 1,
+   "std": 0.15318,
+   "strobe": 4.3
+  },
+  "GlacierTessellation": {
+   "luma": 0.1588,
+   "motion": 0.00773,
+   "n": 1,
+   "std": 0.10807,
+   "strobe": 2.42
+  },
+  "GlassStack": {
+   "luma": 0.1617,
+   "motion": 0.00256,
+   "n": 1,
+   "std": 0.22481,
+   "strobe": 10.36
+  },
+  "GlitchMatrixHypercube": {
+   "luma": 0.3237,
+   "motion": 0.03805,
+   "n": 1,
+   "std": 0.26864,
+   "strobe": 1.39
+  },
+  "GrapheneDiracPlasmonics": {
+   "luma": 0.4134,
+   "motion": 0.17573,
+   "n": 1,
+   "std": 0.18597,
+   "strobe": 1.07
+  },
+  "GrapheneGyroidTriplyPeriodicMinimalSurface": {
+   "luma": 0.1485,
+   "motion": 0.02213,
+   "n": 1,
+   "std": 0.16417,
+   "strobe": 1.67
+  },
+  "GrassField": {
+   "luma": 0.2137,
+   "motion": 0.01431,
+   "n": 1,
+   "std": 0.08438,
+   "strobe": 1.32
+  },
+  "GravitationalWaveInterferometer": {
+   "luma": 0.3354,
+   "motion": 0.06808,
+   "n": 1,
+   "std": 0.09771,
+   "strobe": 1.84
+  },
+  "GrowthTree": {
+   "luma": 0.225,
+   "motion": 0.01716,
+   "n": 1,
+   "std": 0.1607,
+   "strobe": 3.85
+  },
+  "GyroRings": {
+   "luma": 0.038,
+   "motion": 0.01018,
+   "n": 1,
+   "std": 0.06112,
+   "strobe": 2.51
+  },
+  "GyroidTriplyPeriodicLabyrinth": {
+   "luma": 0.2231,
+   "motion": 0.0355,
+   "n": 1,
+   "std": 0.03856,
+   "strobe": 2.5
+  },
+  "GyroidalInterferenceKaleido": {
+   "luma": 0.4616,
+   "motion": 0.03748,
+   "n": 1,
+   "std": 0.13977,
+   "strobe": 1.13
+  },
+  "HairCurtain": {
+   "luma": 0.3322,
+   "motion": 0.02891,
+   "n": 1,
+   "std": 0.08148,
+   "strobe": 4.54
+  },
+  "Halftone": {
+   "luma": 0.2408,
+   "motion": 0.00666,
+   "n": 1,
+   "std": 0.07605,
+   "strobe": 3.53
+  },
+  "HarmonicRings": {
+   "luma": 0.0438,
+   "motion": 0.00193,
+   "n": 1,
+   "std": 0.04351,
+   "strobe": 18.37
+  },
+  "HarmonicStrings": {
+   "luma": 0.0618,
+   "motion": 0.03754,
+   "n": 1,
+   "std": 0.11847,
+   "strobe": 1.4
+  },
+  "Harmonograph": {
+   "luma": 0.0916,
+   "motion": 0.02511,
+   "n": 1,
+   "std": 0.15833,
+   "strobe": 2.17
+  },
+  "HawkingRadiationEvaporation": {
+   "luma": 0.2756,
+   "motion": 0.0883,
+   "n": 1,
+   "std": 0.1561,
+   "strobe": 1.58
+  },
+  "HelicoidMinimalSurfaceTunnel": {
+   "luma": 0.4841,
+   "motion": 0.08119,
+   "n": 1,
+   "std": 0.15178,
+   "strobe": 1.34
+  },
+  "HeliosphericCurrentSheet": {
+   "luma": 0.2885,
+   "motion": 0.12316,
+   "n": 1,
+   "std": 0.18571,
+   "strobe": 1.26
+  },
+  "HelixTower": {
+   "luma": 0.1368,
+   "motion": 0.01468,
+   "n": 1,
+   "std": 0.1817,
+   "strobe": 4.45
+  },
+  "HexKaleido": {
+   "luma": 0.3624,
+   "motion": 0.12117,
+   "n": 1,
+   "std": 0.17857,
+   "strobe": 1.26
+  },
+  "HexagonalLaserMatrixTunnel": {
+   "luma": 0.2624,
+   "motion": 0.05741,
+   "n": 1,
+   "std": 0.07093,
+   "strobe": 1.47
+  },
+  "HigherDimensionAscension": {
+   "luma": 0.4059,
+   "motion": 0.0445,
+   "n": 1,
+   "std": 0.06762,
+   "strobe": 2.14
+  },
+  "HilbertSpaceFillingCurveZoom": {
+   "luma": 0.2438,
+   "motion": 0.02146,
+   "n": 1,
+   "std": 0.03768,
+   "strobe": 1.72
+  },
+  "Hologram": {
+   "luma": 0.0938,
+   "motion": 0.01012,
+   "n": 26,
+   "std": 0.13681,
+   "strobe": 2.7
+  },
+  "HolographicDiffractionGratingMandala": {
+   "luma": 0.361,
+   "motion": 0.04001,
+   "n": 1,
+   "std": 0.14814,
+   "strobe": 2.32
+  },
+  "HolographicLaserDiffractionGrid": {
+   "luma": 0.0807,
+   "motion": 0.0144,
+   "n": 1,
+   "std": 0.16118,
+   "strobe": 2.69
+  },
+  "HolographicMemoryCore": {
+   "luma": 0.2037,
+   "motion": 0.05097,
+   "n": 1,
+   "std": 0.19355,
+   "strobe": 2.1
+  },
+  "HopfFibrationStreamlines": {
+   "luma": 0.2325,
+   "motion": 0.03113,
+   "n": 1,
+   "std": 0.08815,
+   "strobe": 1.24
+  },
+  "HopfFibrationToruses": {
+   "luma": 0.1822,
+   "motion": 0.11496,
+   "n": 1,
+   "std": 0.17326,
+   "strobe": 1.48
+  },
+  "HopfTorusCliffordKlein": {
+   "luma": 0.3229,
+   "motion": 0.2608,
+   "n": 1,
+   "std": 0.27683,
+   "strobe": 1.02
+  },
+  "HubStation": {
+   "luma": 0.0839,
+   "motion": 0.00274,
+   "n": 5,
+   "std": 0.06201,
+   "strobe": 8.15
+  },
+  "HyperCube": {
+   "luma": 0.3267,
+   "motion": 0.04968,
+   "n": 1,
+   "std": 0.15389,
+   "strobe": 1.89
+  },
+  "HyperDimensionalTesseractTunnel": {
+   "luma": 0.2484,
+   "motion": 0.04055,
+   "n": 1,
+   "std": 0.05057,
+   "strobe": 1.17
+  },
+  "HyperToroidalRollerCoaster": {
+   "luma": 0.3472,
+   "motion": 0.07889,
+   "n": 1,
+   "std": 0.18352,
+   "strobe": 2.71
+  },
+  "HyperWarpTunnel": {
+   "luma": 0.2953,
+   "motion": 0.09617,
+   "n": 1,
+   "std": 0.10352,
+   "strobe": 1.65
+  },
+  "HyperbolicEscherCircleLimit": {
+   "luma": 0.4099,
+   "motion": 0.04954,
+   "n": 1,
+   "std": 0.07406,
+   "strobe": 1.29
+  },
+  "HyperbolicHelicoidCatenaMinimalSheet": {
+   "luma": 0.0771,
+   "motion": 0.02002,
+   "n": 1,
+   "std": 0.09173,
+   "strobe": 2.07
+  },
+  "HyperbolicHoneycombTessellation": {
+   "luma": 0.3371,
+   "motion": 0.01285,
+   "n": 1,
+   "std": 0.11484,
+   "strobe": 2.85
+  },
+  "HyperbolicKnotFlight": {
+   "luma": 0.2421,
+   "motion": 0.03839,
+   "n": 1,
+   "std": 0.03692,
+   "strobe": 1.64
+  },
+  "HyperbolicMetamaterialSpacetime": {
+   "luma": 0.2864,
+   "motion": 0.01969,
+   "n": 1,
+   "std": 0.08541,
+   "strobe": 1.89
+  },
+  "HyperbolicPenroseZoomAbyss": {
+   "luma": 0.5702,
+   "motion": 0.06598,
+   "n": 1,
+   "std": 0.08628,
+   "strobe": 1.48
+  },
+  "HyperbolicPoincareTunnel": {
+   "luma": 0.2729,
+   "motion": 0.02899,
+   "n": 1,
+   "std": 0.08546,
+   "strobe": 2.01
+  },
+  "HyperbolicPseudosphereTractroid": {
+   "luma": 0.2237,
+   "motion": 0.01822,
+   "n": 1,
+   "std": 0.12933,
+   "strobe": 2.81
+  },
+  "HyperbolicTilingPolyhedralFlight": {
+   "luma": 0.215,
+   "motion": 0.00047,
+   "n": 1,
+   "std": 0.00487,
+   "strobe": 31.46
+  },
+  "HypercubeLatticePillars": {
+   "luma": 0.319,
+   "motion": 0.07594,
+   "n": 1,
+   "std": 0.14307,
+   "strobe": 1.26
+  },
+  "HyperlaneJunction": {
+   "luma": 0.069,
+   "motion": 0.018,
+   "n": 1,
+   "std": 0.02248,
+   "strobe": 2.02
+  },
+  "HyperspaceGridToroidTube": {
+   "luma": 0.3208,
+   "motion": 0.06504,
+   "n": 1,
+   "std": 0.1196,
+   "strobe": 2.23
+  },
+  "HyperspaceKaleidoscopicMatrix": {
+   "luma": 0.2509,
+   "motion": 0.08572,
+   "n": 1,
+   "std": 0.13531,
+   "strobe": 1.81
+  },
+  "IceCrack": {
+   "luma": 0.2905,
+   "motion": 0.01805,
+   "n": 1,
+   "std": 0.09498,
+   "strobe": 2.52
+  },
+  "IndustrialStation": {
+   "luma": 0.0796,
+   "motion": 0.00488,
+   "n": 5,
+   "std": 0.07059,
+   "strobe": 3.81
+  },
+  "InfinitePhotoZoomAbyss": {
+   "luma": 0.252,
+   "motion": 0.0344,
+   "n": 1,
+   "std": 0.05931,
+   "strobe": 1.85
+  },
+  "InfinitePsychedelicDrosteVortex": {
+   "luma": 0.4657,
+   "motion": 0.03938,
+   "n": 1,
+   "std": 0.09984,
+   "strobe": 1.27
+  },
+  "InkTank": {
+   "luma": 0.1553,
+   "motion": 0.01827,
+   "n": 1,
+   "std": 0.07331,
+   "strobe": 1.94
+  },
+  "InkWater": {
+   "luma": 0.1546,
+   "motion": 0.01642,
+   "n": 1,
+   "std": 0.18329,
+   "strobe": 3.42
+  },
+  "InsideSystem": {
+   "luma": 0.2665,
+   "motion": 0.05762,
+   "n": 1,
+   "std": 0.12331,
+   "strobe": 1.64
+  },
+  "InterstellarGenerationShip": {
+   "luma": 0.1744,
+   "motion": 0.08722,
+   "n": 1,
+   "std": 0.23781,
+   "strobe": 1.46
+  },
+  "InterstellarMHDShockFront": {
+   "luma": 0.2432,
+   "motion": 0.00493,
+   "n": 1,
+   "std": 0.12312,
+   "strobe": 7.57
+  },
+  "InterstellarNebulaWarpCruise": {
+   "luma": 0.3298,
+   "motion": 0.00841,
+   "n": 1,
+   "std": 0.07239,
+   "strobe": 15.24
+  },
+  "IridescentChitinMorpho": {
+   "luma": 0.3767,
+   "motion": 0.02095,
+   "n": 1,
+   "std": 0.05618,
+   "strobe": 2.13
+  },
+  "JellyBody": {
+   "luma": 0.1137,
+   "motion": 0.01331,
+   "n": 1,
+   "std": 0.13313,
+   "strobe": 4.74
+  },
+  "Jellyfish": {
+   "luma": 0.0803,
+   "motion": 0.03983,
+   "n": 1,
+   "std": 0.10919,
+   "strobe": 1.25
+  },
+  "JellyfishBioluminescenceAbyss": {
+   "luma": 0.3576,
+   "motion": 0.08273,
+   "n": 1,
+   "std": 0.22575,
+   "strobe": 2.02
+  },
+  "JosephsonVortexFluxonLattice": {
+   "luma": 0.4833,
+   "motion": 0.15323,
+   "n": 1,
+   "std": 0.16373,
+   "strobe": 1.04
+  },
+  "JosephsonVortexLattice": {
+   "luma": 0.2665,
+   "motion": 0.04118,
+   "n": 1,
+   "std": 0.08948,
+   "strobe": 1.53
+  },
+  "JuliaAudioMorph": {
+   "luma": 0.2472,
+   "motion": 0.01274,
+   "n": 1,
+   "std": 0.10822,
+   "strobe": 4.87
+  },
+  "KaleidoDome": {
+   "luma": 0.2324,
+   "motion": 0.03896,
+   "n": 1,
+   "std": 0.04331,
+   "strobe": 1.2
+  },
+  "Kaleidoscope": {
+   "luma": 0.2736,
+   "motion": 0.05884,
+   "n": 1,
+   "std": 0.06502,
+   "strobe": 1.31
+  },
+  "KaleidoscopeOrganism": {
+   "luma": 0.1457,
+   "motion": 0.00654,
+   "n": 1,
+   "std": 0.24479,
+   "strobe": 2.47
+  },
+  "KaleidoscopicBismuthLattice": {
+   "luma": 0.2696,
+   "motion": 0.07211,
+   "n": 1,
+   "std": 0.13625,
+   "strobe": 1.46
+  },
+  "KaleidoscopicLichtenbergZoom": {
+   "luma": 0.3756,
+   "motion": 0.07604,
+   "n": 1,
+   "std": 0.0748,
+   "strobe": 3.27
+  },
+  "KardashevTypeIIICity": {
+   "luma": 0.115,
+   "motion": 0.01456,
+   "n": 1,
+   "std": 0.10404,
+   "strobe": 2.29
+  },
+  "KelpForest": {
+   "luma": 0.0701,
+   "motion": 0.03878,
+   "n": 1,
+   "std": 0.12103,
+   "strobe": 1.92
+  },
+  "KelvinHelmholtzCloudWaves": {
+   "luma": 0.1387,
+   "motion": 0.00858,
+   "n": 1,
+   "std": 0.19298,
+   "strobe": 3.25
+  },
+  "KelvinWakeShipWavePattern": {
+   "luma": 0.1934,
+   "motion": 0.00864,
+   "n": 1,
+   "std": 0.10868,
+   "strobe": 5.87
+  },
+  "KerrNewmanSingularity": {
+   "luma": 0.2089,
+   "motion": 0.02889,
+   "n": 1,
+   "std": 0.1099,
+   "strobe": 1.44
+  },
+  "KilonovaRadioactiveAfterglow": {
+   "luma": 0.2454,
+   "motion": 0.00518,
+   "n": 1,
+   "std": 0.07281,
+   "strobe": 7.6
+  },
+  "KineticMirrorHexagonArray": {
+   "luma": 0.062,
+   "motion": 0.05848,
+   "n": 1,
+   "std": 0.09156,
+   "strobe": 1.24
+  },
+  "KineticTesseractOrigami": {
+   "luma": 0.312,
+   "motion": 0.02974,
+   "n": 1,
+   "std": 0.16236,
+   "strobe": 5.32
+  },
+  "KineticTileMosaicMatrix": {
+   "luma": 0.2687,
+   "motion": 0.02259,
+   "n": 1,
+   "std": 0.09671,
+   "strobe": 2.32
+  },
+  "KleinBottleHyperLoopDive": {
+   "luma": 0.2703,
+   "motion": 0.01678,
+   "n": 1,
+   "std": 0.08438,
+   "strobe": 3.13
+  },
+  "KleinQuarticHyperbolicCurve": {
+   "luma": 0.2998,
+   "motion": 0.03618,
+   "n": 1,
+   "std": 0.07986,
+   "strobe": 2.51
+  },
+  "KleinianLimitSetAbyss": {
+   "luma": 0.5006,
+   "motion": 0.01613,
+   "n": 1,
+   "std": 0.06337,
+   "strobe": 1.45
+  },
+  "LanternRise": {
+   "luma": 0.0375,
+   "motion": 0.01866,
+   "n": 1,
+   "std": 0.05321,
+   "strobe": 1.48
+  },
+  "LargeHadronCollision": {
+   "luma": 0.1537,
+   "motion": 0.02926,
+   "n": 1,
+   "std": 0.12068,
+   "strobe": 2.58
+  },
+  "LaserArena": {
+   "luma": 0.3572,
+   "motion": 0.2257,
+   "n": 1,
+   "std": 0.23347,
+   "strobe": 1.21
+  },
+  "LaserCavityTransverseModes": {
+   "luma": 0.3223,
+   "motion": 0.01216,
+   "n": 1,
+   "std": 0.05835,
+   "strobe": 3.38
+  },
+  "LaserSpireArray": {
+   "luma": 0.3801,
+   "motion": 0.12814,
+   "n": 1,
+   "std": 0.16407,
+   "strobe": 1.24
+  },
+  "LavaLamp": {
+   "luma": 0.3139,
+   "motion": 0.01594,
+   "n": 1,
+   "std": 0.24231,
+   "strobe": 2.28
+  },
+  "LavaWorldTidalLock": {
+   "luma": 0.302,
+   "motion": 0.02033,
+   "n": 1,
+   "std": 0.14658,
+   "strobe": 2.35
+  },
+  "LiebLatticeFlatBandLocalization": {
+   "luma": 0.3805,
+   "motion": 0.03785,
+   "n": 1,
+   "std": 0.17186,
+   "strobe": 1.69
+  },
+  "LiesegangPrecipitationRingArray": {
+   "luma": 0.3827,
+   "motion": 0.00519,
+   "n": 1,
+   "std": 0.03284,
+   "strobe": 7.06
+  },
+  "LightningStorm": {
+   "luma": 0.3206,
+   "motion": 0.06294,
+   "n": 1,
+   "std": 0.0658,
+   "strobe": 3.77
+  },
+  "LiquidChromeHyperSwirl": {
+   "luma": 0.318,
+   "motion": 0.02115,
+   "n": 1,
+   "std": 0.06176,
+   "strobe": 1.65
+  },
+  "LiquidCrystalBluePhaseLattice": {
+   "luma": 0.3476,
+   "motion": 0.01234,
+   "n": 1,
+   "std": 0.16792,
+   "strobe": 4.34
+  },
+  "LiquidCrystalOptics": {
+   "luma": 0.2475,
+   "motion": 0.02858,
+   "n": 1,
+   "std": 0.17695,
+   "strobe": 2.29
+  },
+  "LiquidMarbleEbruAcidWash": {
+   "luma": 0.3168,
+   "motion": 0.05139,
+   "n": 1,
+   "std": 0.0989,
+   "strobe": 1.25
+  },
+  "LiquidMercuryFerrofluidChamber": {
+   "luma": 0.2365,
+   "motion": 0.05293,
+   "n": 1,
+   "std": 0.07854,
+   "strobe": 1.24
+  },
+  "LiquidMetal": {
+   "luma": 0.2503,
+   "motion": 0.03347,
+   "n": 1,
+   "std": 0.0359,
+   "strobe": 1.16
+  },
+  "LissajousOrbits": {
+   "luma": 0.0975,
+   "motion": 0.03596,
+   "n": 1,
+   "std": 0.08468,
+   "strobe": 1.54
+  },
+  "LogarithmicSpiralChamberZoom": {
+   "luma": 0.5093,
+   "motion": 0.04193,
+   "n": 1,
+   "std": 0.06579,
+   "strobe": 1.2
+  },
+  "LorenzAttractorHyperLoom": {
+   "luma": 0.3473,
+   "motion": 0.01342,
+   "n": 1,
+   "std": 0.06205,
+   "strobe": 1.67
+  },
+  "LorenzAttractorTurbulence": {
+   "luma": 0.2078,
+   "motion": 0.07835,
+   "n": 1,
+   "std": 0.19474,
+   "strobe": 1.52
+  },
+  "LuciferinBioluminescentWavefront": {
+   "luma": 0.3558,
+   "motion": 0.04637,
+   "n": 1,
+   "std": 0.27525,
+   "strobe": 1.39
+  },
+  "LuttingerLiquidSpinChargeSeparation": {
+   "luma": 0.3975,
+   "motion": 0.08067,
+   "n": 1,
+   "std": 0.32369,
+   "strobe": 1.19
+  },
+  "LyapunovSpaceBioLoom": {
+   "luma": 0.2982,
+   "motion": 0.0078,
+   "n": 1,
+   "std": 0.09698,
+   "strobe": 4.91
+  },
+  "MagnetarCrustalQuakeAlfvenResonance": {
+   "luma": 0.3127,
+   "motion": 0.04819,
+   "n": 1,
+   "std": 0.11911,
+   "strobe": 2.53
+  },
+  "MagnetarCrustquakeSGR": {
+   "luma": 0.2373,
+   "motion": 0.04289,
+   "n": 1,
+   "std": 0.1333,
+   "strobe": 1.17
+  },
+  "MagnetoRotationalHypernovaInstability": {
+   "luma": 0.3394,
+   "motion": 0.05744,
+   "n": 1,
+   "std": 0.10843,
+   "strobe": 2.49
+  },
+  "MagnetohydrodynamicSolarGranulation": {
+   "luma": 0.2948,
+   "motion": 0.02679,
+   "n": 1,
+   "std": 0.12918,
+   "strobe": 1.61
+  },
+  "Magnetosphere": {
+   "luma": 0.0587,
+   "motion": 0.00582,
+   "n": 1,
+   "std": 0.12152,
+   "strobe": 4.08
+  },
+  "MagnetosphericBowShockTurbulence": {
+   "luma": 0.2816,
+   "motion": 0.03812,
+   "n": 1,
+   "std": 0.13775,
+   "strobe": 1.42
+  },
+  "MagnetotacticBacteriaChains": {
+   "luma": 0.1618,
+   "motion": 0.04243,
+   "n": 1,
+   "std": 0.15462,
+   "strobe": 2.4
+  },
+  "MajoranaNanowireBraiding": {
+   "luma": 0.2329,
+   "motion": 0.06554,
+   "n": 1,
+   "std": 0.16729,
+   "strobe": 1.61
+  },
+  "MajoranaZeroModeBraid": {
+   "luma": 0.2595,
+   "motion": 0.0253,
+   "n": 1,
+   "std": 0.11646,
+   "strobe": 1.7
+  },
+  "MandalaGrid": {
+   "luma": 0.2601,
+   "motion": 0.04285,
+   "n": 1,
+   "std": 0.20752,
+   "strobe": 1.59
+  },
+  "MandelboxHyperCubeMetamaterial": {
+   "luma": 0.3435,
+   "motion": 0.06557,
+   "n": 1,
+   "std": 0.06607,
+   "strobe": 1.64
+  },
+  "MandelbrotDeepZoom": {
+   "luma": 0.29,
+   "motion": 0.01614,
+   "n": 1,
+   "std": 0.03826,
+   "strobe": 1.26
+  },
+  "MandelbulbHyperRealm": {
+   "luma": 0.3601,
+   "motion": 0.05504,
+   "n": 1,
+   "std": 0.07265,
+   "strobe": 3.72
+  },
+  "MandelbulbInfiniteDive": {
+   "luma": 0.3019,
+   "motion": 0.01781,
+   "n": 1,
+   "std": 0.08963,
+   "strobe": 1.96
+  },
+  "MantleConvectionPlume": {
+   "luma": 0.1413,
+   "motion": 0.02144,
+   "n": 1,
+   "std": 0.09909,
+   "strobe": 1.85
+  },
+  "MarangoniConvectionTearsOfWine": {
+   "luma": 0.3068,
+   "motion": 0.028,
+   "n": 1,
+   "std": 0.17082,
+   "strobe": 1.94
+  },
+  "MatrioshkaBrain": {
+   "luma": 0.1337,
+   "motion": 0.01009,
+   "n": 1,
+   "std": 0.02946,
+   "strobe": 2.06
+  },
+  "MelodyScript": {
+   "luma": 0.0225,
+   "motion": 0.00522,
+   "n": 1,
+   "std": 0.04158,
+   "strobe": 3.32
+  },
+  "MeshTerrain": {
+   "luma": 0.3003,
+   "motion": 0.01231,
+   "n": 10,
+   "std": 0.08527,
+   "strobe": 24.47
+  },
+  "MetaSculpt": {
+   "luma": 0.2372,
+   "motion": 0.02145,
+   "n": 1,
+   "std": 0.14054,
+   "strobe": 2.98
+  },
+  "MetamaterialCloakingHorizon": {
+   "luma": 0.3117,
+   "motion": 0.02981,
+   "n": 1,
+   "std": 0.11229,
+   "strobe": 1.36
+  },
+  "MetamaterialNegativeRefraction": {
+   "luma": 0.1755,
+   "motion": 0.00831,
+   "n": 1,
+   "std": 0.23277,
+   "strobe": 1.51
+  },
+  "Metamorph": {
+   "luma": 0.338,
+   "motion": 0.02554,
+   "n": 1,
+   "std": 0.09377,
+   "strobe": 3.25
+  },
+  "MetamorphicLavaVortex": {
+   "luma": 0.173,
+   "motion": 0.01181,
+   "n": 1,
+   "std": 0.10493,
+   "strobe": 1.24
+  },
+  "MeteorStorm": {
+   "luma": 0.1642,
+   "motion": 0.03126,
+   "n": 1,
+   "std": 0.20843,
+   "strobe": 2.96
+  },
+  "MirrorShardKaleidoscope": {
+   "luma": 0.105,
+   "motion": 0.02051,
+   "n": 1,
+   "std": 0.17445,
+   "strobe": 2.09
+  },
+  "MirrorShatterExplosion": {
+   "luma": 0.2885,
+   "motion": 0.16845,
+   "n": 1,
+   "std": 0.2491,
+   "strobe": 1.51
+  },
+  "MobiusInversionKaleidoscope": {
+   "luma": 0.2181,
+   "motion": 0.0107,
+   "n": 1,
+   "std": 0.04064,
+   "strobe": 1.98
+  },
+  "MobiusOrbs": {
+   "luma": 0.3334,
+   "motion": 0.05184,
+   "n": 1,
+   "std": 0.16832,
+   "strobe": 1.59
+  },
+  "MobiusStripRollerDrive": {
+   "luma": 0.1613,
+   "motion": 0.00385,
+   "n": 1,
+   "std": 0.09701,
+   "strobe": 6.08
+  },
+  "ModalVibration": {
+   "luma": 0.0988,
+   "motion": 0.02074,
+   "n": 10,
+   "std": 0.14583,
+   "strobe": 5.94
+  },
+  "MoireHyperInterference": {
+   "luma": 0.2089,
+   "motion": 0.03814,
+   "n": 1,
+   "std": 0.30956,
+   "strobe": 2.01
+  },
+  "MoireTwistedBilayerGraphene": {
+   "luma": 0.3958,
+   "motion": 0.01019,
+   "n": 1,
+   "std": 0.08011,
+   "strobe": 7.04
+  },
+  "MolecularCloudCore": {
+   "luma": 0.2586,
+   "motion": 0.00814,
+   "n": 1,
+   "std": 0.02517,
+   "strobe": 7.09
+  },
+  "MonolithField": {
+   "luma": 0.222,
+   "motion": 0.0624,
+   "n": 1,
+   "std": 0.1366,
+   "strobe": 1.58
+  },
+  "MosaicWave": {
+   "luma": 0.3349,
+   "motion": 0.08296,
+   "n": 1,
+   "std": 0.1468,
+   "strobe": 1.23
+  },
+  "MultiverseBubbles": {
+   "luma": 0.4512,
+   "motion": 0.02051,
+   "n": 1,
+   "std": 0.09723,
+   "strobe": 1.66
+  },
+  "Murmuration": {
+   "luma": 0.1688,
+   "motion": 0.0168,
+   "n": 1,
+   "std": 0.09001,
+   "strobe": 1.72
+  },
+  "MyceliumNeuralPulse": {
+   "luma": 0.1444,
+   "motion": 0.04576,
+   "n": 1,
+   "std": 0.0918,
+   "strobe": 2.63
+  },
+  "NebulaCliffs": {
+   "luma": 0.2032,
+   "motion": 0.00272,
+   "n": 1,
+   "std": 0.03359,
+   "strobe": 1.74
+  },
+  "NebulaCloud": {
+   "luma": 0.0484,
+   "motion": 0.00498,
+   "n": 1,
+   "std": 0.0552,
+   "strobe": 3.52
+  },
+  "NebulaShipyard": {
+   "luma": 0.2098,
+   "motion": 0.0527,
+   "n": 1,
+   "std": 0.14762,
+   "strobe": 2.51
+  },
+  "NeonCyberVoxelFlight": {
+   "luma": 0.2996,
+   "motion": 0.10931,
+   "n": 1,
+   "std": 0.24777,
+   "strobe": 1.34
+  },
+  "NeonFluidDynamics": {
+   "luma": 0.2476,
+   "motion": 0.00687,
+   "n": 1,
+   "std": 0.04375,
+   "strobe": 5.12
+  },
+  "NeonHighwayDrive": {
+   "luma": 0.2163,
+   "motion": 0.03632,
+   "n": 1,
+   "std": 0.16,
+   "strobe": 1.56
+  },
+  "NeonTubes": {
+   "luma": 0.3361,
+   "motion": 0.14121,
+   "n": 1,
+   "std": 0.19022,
+   "strobe": 1.51
+  },
+  "NestedMandalaInfiniteDive": {
+   "luma": 0.3387,
+   "motion": 0.032,
+   "n": 1,
+   "std": 0.03705,
+   "strobe": 2.63
+  },
+  "NeuralAxonSynapseCloud": {
+   "luma": 0.1243,
+   "motion": 0.06077,
+   "n": 1,
+   "std": 0.07582,
+   "strobe": 1.43
+  },
+  "NeuroSynapseNetwork": {
+   "luma": 0.1834,
+   "motion": 0.08915,
+   "n": 1,
+   "std": 0.16803,
+   "strobe": 1.58
+  },
+  "NeutronStarCollision": {
+   "luma": 0.0932,
+   "motion": 0.01881,
+   "n": 1,
+   "std": 0.07916,
+   "strobe": 1.91
+  },
+  "NeutronStarMagnetarBurst": {
+   "luma": 0.414,
+   "motion": 0.05342,
+   "n": 1,
+   "std": 0.16672,
+   "strobe": 1.77
+  },
+  "NeutronStarMagneticFunnelPlunge": {
+   "luma": 0.2229,
+   "motion": 0.03594,
+   "n": 1,
+   "std": 0.06607,
+   "strobe": 1.12
+  },
+  "NewtonBasinPsychedelicSea": {
+   "luma": 0.2973,
+   "motion": 0.02212,
+   "n": 1,
+   "std": 0.17066,
+   "strobe": 1.93
+  },
+  "NoiseSpiral": {
+   "luma": 0.368,
+   "motion": 0.10892,
+   "n": 1,
+   "std": 0.10546,
+   "strobe": 1.39
+  },
+  "NonEuclideanDodecahedronLoom": {
+   "luma": 0.4366,
+   "motion": 0.03142,
+   "n": 1,
+   "std": 0.22977,
+   "strobe": 1.38
+  },
+  "NonEuclideanHyperbolicMandala": {
+   "luma": 0.2238,
+   "motion": 0.08127,
+   "n": 1,
+   "std": 0.13066,
+   "strobe": 1.19
+  },
+  "NonEuclideanKleinQuarticTile": {
+   "luma": 0.102,
+   "motion": 0.01236,
+   "n": 1,
+   "std": 0.08562,
+   "strobe": 2.62
+  },
+  "NonEuclideanOctahedralLabyrinth": {
+   "luma": 0.3793,
+   "motion": 0.09777,
+   "n": 1,
+   "std": 0.13604,
+   "strobe": 1.78
+  },
+  "NonlinearKerrOpticalSolitonCollision": {
+   "luma": 0.2917,
+   "motion": 0.03998,
+   "n": 1,
+   "std": 0.12289,
+   "strobe": 1.66
+  },
+  "NonlinearLaserPlasmaWakefieldAccelerator": {
+   "luma": 0.1042,
+   "motion": 0.01873,
+   "n": 1,
+   "std": 0.18644,
+   "strobe": 1.88
+  },
+  "NonlinearSchrodingerRogueWave": {
+   "luma": 0.2866,
+   "motion": 0.05653,
+   "n": 1,
+   "std": 0.14059,
+   "strobe": 1.72
+  },
+  "Ocean": {
+   "luma": 0.1906,
+   "motion": 0.00674,
+   "n": 1,
+   "std": 0.19957,
+   "strobe": 4.27
+  },
+  "OceanAbyssalBrinePool": {
+   "luma": 0.1271,
+   "motion": 0.05722,
+   "n": 1,
+   "std": 0.19303,
+   "strobe": 1.38
+  },
+  "OceanNight": {
+   "luma": 0.1657,
+   "motion": 0.02732,
+   "n": 1,
+   "std": 0.19024,
+   "strobe": 1.38
+  },
+  "OctagrammicMirrorVault": {
+   "luma": 0.3619,
+   "motion": 0.01514,
+   "n": 1,
+   "std": 0.08163,
+   "strobe": 2.56
+  },
+  "OilProjector": {
+   "luma": 0.2911,
+   "motion": 0.12283,
+   "n": 1,
+   "std": 0.1642,
+   "strobe": 1.12
+  },
+  "OpticalDispersionCausticVault": {
+   "luma": 0.1892,
+   "motion": 0.019,
+   "n": 1,
+   "std": 0.06408,
+   "strobe": 1.6
+  },
+  "OrbitalDrop": {
+   "luma": 0.0724,
+   "motion": 0.03885,
+   "n": 1,
+   "std": 0.0774,
+   "strobe": 1.74
+  },
+  "OrbitalRingStation": {
+   "luma": 0.2168,
+   "motion": 0.00973,
+   "n": 1,
+   "std": 0.25028,
+   "strobe": 2.55
+  },
+  "OrbitalShells": {
+   "luma": 0.1181,
+   "motion": 0.00579,
+   "n": 1,
+   "std": 0.06421,
+   "strobe": 2.14
+  },
+  "OrganicFlow": {
+   "luma": 0.2377,
+   "motion": 0.04274,
+   "n": 1,
+   "std": 0.07845,
+   "strobe": 1.94
+  },
+  "Origami": {
+   "luma": 0.0713,
+   "motion": 0.01146,
+   "n": 1,
+   "std": 0.06551,
+   "strobe": 3.52
+  },
+  "OrigamiMirrorKaleidoscope": {
+   "luma": 0.2711,
+   "motion": 0.03065,
+   "n": 1,
+   "std": 0.09021,
+   "strobe": 1.74
+  },
+  "OscilloRings": {
+   "luma": 0.0594,
+   "motion": 0.01811,
+   "n": 1,
+   "std": 0.09634,
+   "strobe": 2.71
+  },
+  "ParticleFlow": {
+   "luma": 0.2408,
+   "motion": 0.02068,
+   "n": 1,
+   "std": 0.14814,
+   "strobe": 5.09
+  },
+  "ParticleGalaxy": {
+   "luma": 0.0564,
+   "motion": 0.00473,
+   "n": 1,
+   "std": 0.06622,
+   "strobe": 6.18
+  },
+  "ParticleTunnelFlight": {
+   "luma": 0.117,
+   "motion": 0.09247,
+   "n": 1,
+   "std": 0.15285,
+   "strobe": 1.38
+  },
+  "PenroseAperiodicTessellation": {
+   "luma": 0.3417,
+   "motion": 0.05672,
+   "n": 1,
+   "std": 0.14145,
+   "strobe": 2.14
+  },
+  "PenroseProcessErgosphereExtraction": {
+   "luma": 0.279,
+   "motion": 0.01234,
+   "n": 1,
+   "std": 0.26092,
+   "strobe": 2.72
+  },
+  "PhotoCarousel": {
+   "luma": 0.2865,
+   "motion": 0.11836,
+   "n": 1,
+   "std": 0.16394,
+   "strobe": 1.1
+  },
+  "PhotoShatter": {
+   "luma": 0.1524,
+   "motion": 0.05416,
+   "n": 1,
+   "std": 0.14808,
+   "strobe": 2.31
+  },
+  "PhotoSphere": {
+   "luma": 0.1608,
+   "motion": 0.02082,
+   "n": 1,
+   "std": 0.20481,
+   "strobe": 1.72
+  },
+  "PhotoTunnel": {
+   "luma": 0.3223,
+   "motion": 0.09194,
+   "n": 1,
+   "std": 0.10731,
+   "strobe": 1.31
+  },
+  "PhotoVortex": {
+   "luma": 0.318,
+   "motion": 0.09093,
+   "n": 1,
+   "std": 0.18243,
+   "strobe": 1.5
+  },
+  "PhotonicChiralMetamaterialGyroidHelix": {
+   "luma": 0.1606,
+   "motion": 0.0687,
+   "n": 1,
+   "std": 0.15321,
+   "strobe": 1.8
+  },
+  "PhotonicCrystalDiracConeDispersion": {
+   "luma": 0.5251,
+   "motion": 0.04031,
+   "n": 1,
+   "std": 0.15602,
+   "strobe": 2.03
+  },
+  "PhotonicCrystalFiberCore": {
+   "luma": 0.3242,
+   "motion": 0.13142,
+   "n": 1,
+   "std": 0.14631,
+   "strobe": 1.35
+  },
+  "PhotonicMetasurfacePhaseGradient": {
+   "luma": 0.3204,
+   "motion": 0.05018,
+   "n": 1,
+   "std": 0.1617,
+   "strobe": 1.54
+  },
+  "PhotonicTopologicalEdgeStates": {
+   "luma": 0.0825,
+   "motion": 0.00816,
+   "n": 1,
+   "std": 0.19853,
+   "strobe": 4.66
+  },
+  "Phyllotaxis": {
+   "luma": 0.0879,
+   "motion": 0.02119,
+   "n": 1,
+   "std": 0.07674,
+   "strobe": 1.76
+  },
+  "Physarum": {
+   "luma": 0.189,
+   "motion": 0.05171,
+   "n": 1,
+   "std": 0.24015,
+   "strobe": 2.49
+  },
+  "PillarHall": {
+   "luma": 0.2279,
+   "motion": 0.02566,
+   "n": 1,
+   "std": 0.12622,
+   "strobe": 6.07
+  },
+  "PillarsOfCreationFlight": {
+   "luma": 0.2593,
+   "motion": 0.01477,
+   "n": 1,
+   "std": 0.02402,
+   "strobe": 4.62
+  },
+  "PixelMelt": {
+   "luma": 0.2573,
+   "motion": 0.08684,
+   "n": 1,
+   "std": 0.11683,
+   "strobe": 1.53
+  },
+  "Planet4D": {
+   "luma": 0.0626,
+   "motion": 0.01585,
+   "n": 1,
+   "std": 0.13752,
+   "strobe": 1.79
+  },
+  "PlanetRings": {
+   "luma": 0.0396,
+   "motion": 0.00657,
+   "n": 1,
+   "std": 0.05984,
+   "strobe": 2.09
+  },
+  "PlanetaryCollision": {
+   "luma": 0.1176,
+   "motion": 0.00523,
+   "n": 1,
+   "std": 0.11674,
+   "strobe": 2.21
+  },
+  "PlanetaryRingRings": {
+   "luma": 0.0591,
+   "motion": 0.00128,
+   "n": 1,
+   "std": 0.02479,
+   "strobe": 7.99
+  },
+  "PlasmaFilamentTornado": {
+   "luma": 0.0982,
+   "motion": 0.01813,
+   "n": 1,
+   "std": 0.08147,
+   "strobe": 2.66
+  },
+  "PlasmaFlow": {
+   "luma": 0.383,
+   "motion": 0.11451,
+   "n": 1,
+   "std": 0.14437,
+   "strobe": 1.21
+  },
+  "PlasmaLightningGlobe": {
+   "luma": 0.2509,
+   "motion": 0.03531,
+   "n": 1,
+   "std": 0.24702,
+   "strobe": 1.53
+  },
+  "PlasmaSheet": {
+   "luma": 0.2629,
+   "motion": 0.06241,
+   "n": 1,
+   "std": 0.17119,
+   "strobe": 1.41
+  },
+  "PlasmaVortexGrid": {
+   "luma": 0.2762,
+   "motion": 0.03139,
+   "n": 1,
+   "std": 0.12625,
+   "strobe": 1.32
+  },
+  "PlasmonicMetamaterialBlackHole": {
+   "luma": 0.2975,
+   "motion": 0.05112,
+   "n": 1,
+   "std": 0.15482,
+   "strobe": 1.81
+  },
+  "PolaritonCondensateVortexLattice": {
+   "luma": 0.169,
+   "motion": 0.00904,
+   "n": 1,
+   "std": 0.16822,
+   "strobe": 2.45
+  },
+  "PolyDance": {
+   "luma": 0.0436,
+   "motion": 0.01069,
+   "n": 1,
+   "std": 0.05831,
+   "strobe": 2.96
+  },
+  "PortalRush": {
+   "luma": 0.1285,
+   "motion": 0.09927,
+   "n": 1,
+   "std": 0.1932,
+   "strobe": 1.74
+  },
+  "PrismExplode": {
+   "luma": 0.219,
+   "motion": 0.01371,
+   "n": 1,
+   "std": 0.21435,
+   "strobe": 9.14
+  },
+  "PrismaticCrystalChamber": {
+   "luma": 0.3689,
+   "motion": 0.05557,
+   "n": 1,
+   "std": 0.07661,
+   "strobe": 2.99
+  },
+  "PrismaticCrystalChamber4D": {
+   "luma": 0.321,
+   "motion": 0.02102,
+   "n": 1,
+   "std": 0.08009,
+   "strobe": 4.67
+  },
+  "PrismaticKaleidoMandala": {
+   "luma": 0.3231,
+   "motion": 0.03527,
+   "n": 1,
+   "std": 0.13457,
+   "strobe": 1.59
+  },
+  "PrismaticLaserVault": {
+   "luma": 0.5153,
+   "motion": 0.0591,
+   "n": 1,
+   "std": 0.13255,
+   "strobe": 6.85
+  },
+  "PrismaticMirrorHexTunnel": {
+   "luma": 0.2623,
+   "motion": 0.036,
+   "n": 1,
+   "std": 0.09914,
+   "strobe": 1.81
+  },
+  "PrismaticRainbowCloud": {
+   "luma": 0.2649,
+   "motion": 0.01153,
+   "n": 1,
+   "std": 0.06823,
+   "strobe": 2.61
+  },
+  "PrismaticSuperradiance": {
+   "luma": 0.1528,
+   "motion": 0.02764,
+   "n": 1,
+   "std": 0.07387,
+   "strobe": 2.02
+  },
+  "PsychedelicPills": {
+   "luma": 0.3706,
+   "motion": 0.08542,
+   "n": 1,
+   "std": 0.15373,
+   "strobe": 1.4
+  },
+  "PsychedelicReactionDiffusionWave": {
+   "luma": 0.2583,
+   "motion": 0.02593,
+   "n": 1,
+   "std": 0.05923,
+   "strobe": 1.54
+  },
+  "PsychedelicReactionMelt": {
+   "luma": 0.2522,
+   "motion": 0.05365,
+   "n": 1,
+   "std": 0.09759,
+   "strobe": 1.23
+  },
+  "PulsarJet": {
+   "luma": 0.0309,
+   "motion": 0.00399,
+   "n": 1,
+   "std": 0.07765,
+   "strobe": 2.23
+  },
+  "PulsarMagnetosphereJets": {
+   "luma": 0.3895,
+   "motion": 0.19745,
+   "n": 1,
+   "std": 0.29051,
+   "strobe": 1.37
+  },
+  "PyroclasticDensityCurrentSurge": {
+   "luma": 0.3541,
+   "motion": 0.15723,
+   "n": 1,
+   "std": 0.2211,
+   "strobe": 1.07
+  },
+  "QuantumChromaField": {
+   "luma": 0.2621,
+   "motion": 0.01634,
+   "n": 1,
+   "std": 0.06262,
+   "strobe": 2.42
+  },
+  "QuantumChromodynamicFluxTube": {
+   "luma": 0.281,
+   "motion": 0.02857,
+   "n": 1,
+   "std": 0.19184,
+   "strobe": 1.89
+  },
+  "QuantumChromodynamicsGluonPlasma": {
+   "luma": 0.3295,
+   "motion": 0.02059,
+   "n": 1,
+   "std": 0.13196,
+   "strobe": 3.89
+  },
+  "QuantumHallEdgeChiralRibbon": {
+   "luma": 0.0706,
+   "motion": 0.02991,
+   "n": 1,
+   "std": 0.12094,
+   "strobe": 1.45
+  },
+  "QuantumHallEdgeCurrents": {
+   "luma": 0.3703,
+   "motion": 0.20986,
+   "n": 1,
+   "std": 0.30947,
+   "strobe": 1.31
+  },
+  "QuantumHallFractionalAnyonBraiding": {
+   "luma": 0.3828,
+   "motion": 0.05677,
+   "n": 1,
+   "std": 0.19662,
+   "strobe": 2.48
+  },
+  "QuantumHallSkyrmionCrystal": {
+   "luma": 0.3401,
+   "motion": 0.01052,
+   "n": 1,
+   "std": 0.06929,
+   "strobe": 3.65
+  },
+  "QuantumQubitArray": {
+   "luma": 0.1137,
+   "motion": 0.01438,
+   "n": 1,
+   "std": 0.14175,
+   "strobe": 2.09
+  },
+  "QuantumSlipstream": {
+   "luma": 0.1644,
+   "motion": 0.06108,
+   "n": 1,
+   "std": 0.13741,
+   "strobe": 1.67
+  },
+  "QuantumSpinLiquidKagomeSpinonLattice": {
+   "luma": 0.2687,
+   "motion": 0.07301,
+   "n": 1,
+   "std": 0.26944,
+   "strobe": 1.83
+  },
+  "QuantumTachyonWarpTunnel": {
+   "luma": 0.3453,
+   "motion": 0.08583,
+   "n": 1,
+   "std": 0.15621,
+   "strobe": 1.3
+  },
+  "QuantumVortexField": {
+   "luma": 0.3382,
+   "motion": 0.03968,
+   "n": 1,
+   "std": 0.23132,
+   "strobe": 3.35
+  },
+  "QuantumWavepacketCollapse": {
+   "luma": 0.1964,
+   "motion": 0.08179,
+   "n": 1,
+   "std": 0.15257,
+   "strobe": 2.0
+  },
+  "QuantumWavepacketSuperposition": {
+   "luma": 0.3898,
+   "motion": 0.02735,
+   "n": 1,
+   "std": 0.15026,
+   "strobe": 2.73
+  },
+  "QuantumWormholeFlythrough": {
+   "luma": 0.3339,
+   "motion": 0.06439,
+   "n": 1,
+   "std": 0.0775,
+   "strobe": 1.45
+  },
+  "QuasarRelativisticJet": {
+   "luma": 0.1779,
+   "motion": 0.01533,
+   "n": 1,
+   "std": 0.07215,
+   "strobe": 2.97
+  },
+  "QuasiPeriodicDanzerTiling": {
+   "luma": 0.3383,
+   "motion": 0.06102,
+   "n": 1,
+   "std": 0.18173,
+   "strobe": 2.18
+  },
+  "QuasicrystalPenroseKaleido": {
+   "luma": 0.3314,
+   "motion": 0.01984,
+   "n": 1,
+   "std": 0.09261,
+   "strobe": 2.37
+  },
+  "QuasicrystalPenroseRhomb3D": {
+   "luma": 0.2363,
+   "motion": 0.03469,
+   "n": 1,
+   "std": 0.22772,
+   "strobe": 2.41
+  },
+  "QuaternionFractalHopfLoom": {
+   "luma": 0.4369,
+   "motion": 0.02481,
+   "n": 1,
+   "std": 0.2007,
+   "strobe": 1.9
+  },
+  "QuaternionicJulia4DFlight": {
+   "luma": 0.2087,
+   "motion": 0.05342,
+   "n": 1,
+   "std": 0.05975,
+   "strobe": 1.61
+  },
+  "RadiolarianMicrotubuleExoskeleton": {
+   "luma": 0.1548,
+   "motion": 0.00763,
+   "n": 1,
+   "std": 0.0893,
+   "strobe": 8.23
+  },
+  "RadiolarianSilicaLattice": {
+   "luma": 0.3452,
+   "motion": 0.20711,
+   "n": 1,
+   "std": 0.28336,
+   "strobe": 1.19
+  },
+  "RainOnWater": {
+   "luma": 0.2202,
+   "motion": 0.05734,
+   "n": 1,
+   "std": 0.16456,
+   "strobe": 1.34
+  },
+  "RaymarchTunnel": {
+   "luma": 0.2651,
+   "motion": 0.05848,
+   "n": 1,
+   "std": 0.05025,
+   "strobe": 1.5
+  },
+  "ReactionDiffusion": {
+   "luma": 0.3873,
+   "motion": 0.02829,
+   "n": 1,
+   "std": 0.19636,
+   "strobe": 5.52
+  },
+  "ReactionDiffusionMandala": {
+   "luma": 0.219,
+   "motion": 0.00386,
+   "n": 1,
+   "std": 0.00668,
+   "strobe": 1.78
+  },
+  "RecursiveHexagonHoneycombZoom": {
+   "luma": 0.3291,
+   "motion": 0.00101,
+   "n": 1,
+   "std": 0.00273,
+   "strobe": 4.42
+  },
+  "RecursiveTesseractWireframeZoom": {
+   "luma": 0.2541,
+   "motion": 0.02136,
+   "n": 1,
+   "std": 0.13382,
+   "strobe": 2.53
+  },
+  "RecursiveTesseractZoomAbyss": {
+   "luma": 0.3389,
+   "motion": 0.0463,
+   "n": 1,
+   "std": 0.1289,
+   "strobe": 3.08
+  },
+  "RelativisticAccretionTorusMHD": {
+   "luma": 0.301,
+   "motion": 0.00452,
+   "n": 1,
+   "std": 0.1643,
+   "strobe": 17.21
+  },
+  "RelativisticKelvinHelmholtzShear": {
+   "luma": 0.3517,
+   "motion": 0.12055,
+   "n": 1,
+   "std": 0.15742,
+   "strobe": 1.07
+  },
+  "RelativisticKerrPlasmaDisk": {
+   "luma": 0.309,
+   "motion": 0.02774,
+   "n": 1,
+   "std": 0.27808,
+   "strobe": 1.11
+  },
+  "RelativisticPlasmaZpinchInstability": {
+   "luma": 0.2725,
+   "motion": 0.02508,
+   "n": 1,
+   "std": 0.18049,
+   "strobe": 1.82
+  },
+  "RelativisticSynchrotronPulsarWind": {
+   "luma": 0.31,
+   "motion": 0.05985,
+   "n": 1,
+   "std": 0.11179,
+   "strobe": 1.83
+  },
+  "RibbonTunnel": {
+   "luma": 0.1394,
+   "motion": 0.16744,
+   "n": 1,
+   "std": 0.16881,
+   "strobe": 1.27
+  },
+  "RiemannSphereInfinityFlight": {
+   "luma": 0.2791,
+   "motion": 0.03252,
+   "n": 1,
+   "std": 0.09535,
+   "strobe": 1.38
+  },
+  "RingStation": {
+   "luma": 0.1614,
+   "motion": 0.00598,
+   "n": 5,
+   "std": 0.16473,
+   "strobe": 3.66
+  },
+  "RingworldHabitat": {
+   "luma": 0.2949,
+   "motion": 0.05747,
+   "n": 1,
+   "std": 0.08855,
+   "strobe": 1.49
+  },
+  "RoguePlanet": {
+   "luma": 0.2962,
+   "motion": 0.03089,
+   "n": 1,
+   "std": 0.17379,
+   "strobe": 3.53
+  },
+  "RogueWanderer": {
+   "luma": 0.0468,
+   "motion": 0.00569,
+   "n": 1,
+   "std": 0.04609,
+   "strobe": 2.43
+  },
+  "RollerCoaster": {
+   "luma": 0.0929,
+   "motion": 0.05762,
+   "n": 1,
+   "std": 0.16742,
+   "strobe": 1.59
+  },
+  "Rorschach": {
+   "luma": 0.3166,
+   "motion": 0.01136,
+   "n": 1,
+   "std": 0.2806,
+   "strobe": 3.24
+  },
+  "RoseOrbit": {
+   "luma": 0.071,
+   "motion": 0.04579,
+   "n": 1,
+   "std": 0.12494,
+   "strobe": 1.44
+  },
+  "RosslerAttractorHyperRibbon": {
+   "luma": 0.2509,
+   "motion": 0.0104,
+   "n": 1,
+   "std": 0.05505,
+   "strobe": 2.15
+  },
+  "RydbergAtomQuantumSimulatorArray": {
+   "luma": 0.1508,
+   "motion": 0.06763,
+   "n": 1,
+   "std": 0.12897,
+   "strobe": 1.61
+  },
+  "SPHFluidSplash": {
+   "luma": 0.059,
+   "motion": 0.01455,
+   "n": 1,
+   "std": 0.11078,
+   "strobe": 1.71
+  },
+  "SacredGeometryFlowerOfLife3D": {
+   "luma": 0.2278,
+   "motion": 0.02464,
+   "n": 1,
+   "std": 0.26253,
+   "strobe": 2.25
+  },
+  "SandDuneBarchanMigration": {
+   "luma": 0.2235,
+   "motion": 0.023,
+   "n": 1,
+   "std": 0.1031,
+   "strobe": 1.61
+  },
+  "ScherkMinimalSurfaceTower": {
+   "luma": 0.2365,
+   "motion": 0.01457,
+   "n": 1,
+   "std": 0.07821,
+   "strobe": 3.19
+  },
+  "Schlieren": {
+   "luma": 0.2421,
+   "motion": 0.01153,
+   "n": 1,
+   "std": 0.0439,
+   "strobe": 2.77
+  },
+  "SchwarzschildWormholeTunnel": {
+   "luma": 0.2738,
+   "motion": 0.08005,
+   "n": 1,
+   "std": 0.15197,
+   "strobe": 1.22
+  },
+  "SciFiHUD": {
+   "luma": 0.0565,
+   "motion": 0.01582,
+   "n": 1,
+   "std": 0.06828,
+   "strobe": 3.38
+  },
+  "SeifertSurfaceBraidKnot": {
+   "luma": 0.1927,
+   "motion": 0.00633,
+   "n": 1,
+   "std": 0.30389,
+   "strobe": 2.26
+  },
+  "SelfSimilarity": {
+   "luma": 0.5807,
+   "motion": 0.00076,
+   "n": 1,
+   "std": 0.00228,
+   "strobe": 3.44
+  },
+  "SensorStation": {
+   "luma": 0.0701,
+   "motion": 0.00231,
+   "n": 5,
+   "std": 0.05749,
+   "strobe": 7.18
+  },
+  "ShadowForest": {
+   "luma": 0.1852,
+   "motion": 0.0143,
+   "n": 1,
+   "std": 0.23191,
+   "strobe": 2.31
+  },
+  "ShadowTheatre": {
+   "luma": 0.3299,
+   "motion": 0.01467,
+   "n": 17,
+   "std": 0.13147,
+   "strobe": 33.68
+  },
+  "ShatterField": {
+   "luma": 0.351,
+   "motion": 0.08727,
+   "n": 1,
+   "std": 0.09146,
+   "strobe": 2.15
+  },
+  "ShatterSculpture": {
+   "luma": 0.0632,
+   "motion": 0.00387,
+   "n": 6,
+   "std": 0.11366,
+   "strobe": 7.0
+  },
+  "ShipDocking": {
+   "luma": 0.2293,
+   "motion": 0.00775,
+   "n": 12,
+   "std": 0.15251,
+   "strobe": 8.18
+  },
+  "ShipFlyby": {
+   "luma": 0.2583,
+   "motion": 0.03151,
+   "n": 29,
+   "std": 0.20819,
+   "strobe": 9.19
+  },
+  "SierpinskiOctahedronAbyss": {
+   "luma": 0.2578,
+   "motion": 0.01155,
+   "n": 1,
+   "std": 0.21582,
+   "strobe": 7.84
+  },
+  "SilkPhoto": {
+   "luma": 0.1963,
+   "motion": 0.02449,
+   "n": 1,
+   "std": 0.22317,
+   "strobe": 1.61
+  },
+  "SineTunnel": {
+   "luma": 0.2958,
+   "motion": 0.00933,
+   "n": 1,
+   "std": 0.06678,
+   "strobe": 3.93
+  },
+  "SiphonophoreBioluminescentCurtain": {
+   "luma": 0.3849,
+   "motion": 0.07869,
+   "n": 1,
+   "std": 0.25646,
+   "strobe": 2.21
+  },
+  "Skyburst": {
+   "luma": 0.1236,
+   "motion": 0.01425,
+   "n": 1,
+   "std": 0.10464,
+   "strobe": 2.72
+  },
+  "SkyrmionChiralSpinLattice": {
+   "luma": 0.3228,
+   "motion": 0.02936,
+   "n": 1,
+   "std": 0.06259,
+   "strobe": 2.28
+  },
+  "SmokeHall": {
+   "luma": 0.2151,
+   "motion": 0.00666,
+   "n": 1,
+   "std": 0.06897,
+   "strobe": 3.41
+  },
+  "SnowDrift": {
+   "luma": 0.1018,
+   "motion": 0.11852,
+   "n": 1,
+   "std": 0.14958,
+   "strobe": 1.02
+  },
+  "Snowfall": {
+   "luma": 0.2379,
+   "motion": 0.01282,
+   "n": 1,
+   "std": 0.11263,
+   "strobe": 5.06
+  },
+  "SolarCoronaProminence": {
+   "luma": 0.2844,
+   "motion": 0.01001,
+   "n": 1,
+   "std": 0.11004,
+   "strobe": 2.45
+  },
+  "SolarFlareCorona": {
+   "luma": 0.204,
+   "motion": 0.0042,
+   "n": 1,
+   "std": 0.06075,
+   "strobe": 8.39
+  },
+  "SolarFlareSurfing": {
+   "luma": 0.2517,
+   "motion": 0.01168,
+   "n": 1,
+   "std": 0.09404,
+   "strobe": 5.25
+  },
+  "SolarMagnetoPlasmaLoop": {
+   "luma": 0.3529,
+   "motion": 0.00573,
+   "n": 1,
+   "std": 0.13241,
+   "strobe": 7.71
+  },
+  "SolarProminenceHelicalMagneticRope": {
+   "luma": 0.1203,
+   "motion": 0.08018,
+   "n": 1,
+   "std": 0.14139,
+   "strobe": 1.57
+  },
+  "SolarSailArmada": {
+   "luma": 0.1834,
+   "motion": 0.08565,
+   "n": 1,
+   "std": 0.16151,
+   "strobe": 1.52
+  },
+  "SolarWindMagnetosphere": {
+   "luma": 0.2512,
+   "motion": 0.03334,
+   "n": 1,
+   "std": 0.2564,
+   "strobe": 1.78
+  },
+  "SolitonInternalWaveAndamanSea": {
+   "luma": 0.2141,
+   "motion": 0.00348,
+   "n": 1,
+   "std": 0.03131,
+   "strobe": 5.1
+  },
+  "SonoluminescenceBubble": {
+   "luma": 0.3359,
+   "motion": 0.04649,
+   "n": 1,
+   "std": 0.14911,
+   "strobe": 1.87
+  },
+  "SpaceElevator": {
+   "luma": 0.2716,
+   "motion": 0.07133,
+   "n": 1,
+   "std": 0.16039,
+   "strobe": 1.38
+  },
+  "SpaceElevatorTransit": {
+   "luma": 0.0698,
+   "motion": 0.01033,
+   "n": 1,
+   "std": 0.09058,
+   "strobe": 1.93
+  },
+  "SpaceStationPromenade": {
+   "luma": 0.3118,
+   "motion": 0.07393,
+   "n": 1,
+   "std": 0.12393,
+   "strobe": 1.6
+  },
+  "Spaceship": {
+   "luma": 0.0868,
+   "motion": 0.00463,
+   "n": 1,
+   "std": 0.03705,
+   "strobe": 3.13
+  },
+  "SpectralOrb": {
+   "luma": 0.1705,
+   "motion": 0.00772,
+   "n": 1,
+   "std": 0.27798,
+   "strobe": 3.91
+  },
+  "SpectralTorus": {
+   "luma": 0.0887,
+   "motion": 0.01263,
+   "n": 1,
+   "std": 0.13649,
+   "strobe": 1.64
+  },
+  "SpectroCanyon": {
+   "luma": 0.1696,
+   "motion": 0.00923,
+   "n": 1,
+   "std": 0.11236,
+   "strobe": 4.23
+  },
+  "SpectroDevice": {
+   "luma": 0.0974,
+   "motion": 0.0155,
+   "n": 6,
+   "std": 0.13865,
+   "strobe": 2.34
+  },
+  "SpectroWeave": {
+   "luma": 0.104,
+   "motion": 0.0227,
+   "n": 1,
+   "std": 0.17208,
+   "strobe": 4.66
+  },
+  "SpectrumArena": {
+   "luma": 0.1271,
+   "motion": 0.03299,
+   "n": 1,
+   "std": 0.16245,
+   "strobe": 3.01
+  },
+  "SpectrumCity": {
+   "luma": 0.0765,
+   "motion": 0.01975,
+   "n": 1,
+   "std": 0.09453,
+   "strobe": 1.97
+  },
+  "SpectrumFilter": {
+   "luma": 0.4814,
+   "motion": 0.01969,
+   "n": 1,
+   "std": 0.14332,
+   "strobe": 4.36
+  },
+  "SpectrumRadial": {
+   "luma": 0.1401,
+   "motion": 0.01874,
+   "n": 1,
+   "std": 0.21229,
+   "strobe": 1.8
+  },
+  "SphereGrid": {
+   "luma": 0.2439,
+   "motion": 0.04726,
+   "n": 1,
+   "std": 0.07521,
+   "strobe": 1.32
+  },
+  "SpinGlassFrustrationLattice": {
+   "luma": 0.1319,
+   "motion": 0.03053,
+   "n": 1,
+   "std": 0.07788,
+   "strobe": 2.59
+  },
+  "SpintronicDomainWallRacetrack": {
+   "luma": 0.4626,
+   "motion": 0.02573,
+   "n": 1,
+   "std": 0.12026,
+   "strobe": 2.62
+  },
+  "SpiralArray": {
+   "luma": 0.0673,
+   "motion": 0.02258,
+   "n": 1,
+   "std": 0.15908,
+   "strobe": 2.14
+  },
+  "StainedGlassCathedralCaustics": {
+   "luma": 0.3146,
+   "motion": 0.04517,
+   "n": 1,
+   "std": 0.10333,
+   "strobe": 1.64
+  },
+  "StainedGlassRosette": {
+   "luma": 0.2142,
+   "motion": 0.02095,
+   "n": 1,
+   "std": 0.21912,
+   "strobe": 2.62
+  },
+  "StarShattering": {
+   "luma": 0.2034,
+   "motion": 0.00789,
+   "n": 1,
+   "std": 0.14976,
+   "strobe": 2.29
+  },
+  "Starfield": {
+   "luma": 0.2511,
+   "motion": 0.02109,
+   "n": 1,
+   "std": 0.03526,
+   "strobe": 1.79
+  },
+  "StargateWormhole": {
+   "luma": 0.3394,
+   "motion": 0.0339,
+   "n": 1,
+   "std": 0.246,
+   "strobe": 4.36
+  },
+  "StarshipPlanetaryOrbit": {
+   "luma": 0.1202,
+   "motion": 0.00388,
+   "n": 1,
+   "std": 0.18874,
+   "strobe": 2.32
+  },
+  "StellarEngine": {
+   "luma": 0.2039,
+   "motion": 0.01183,
+   "n": 1,
+   "std": 0.23334,
+   "strobe": 1.45
+  },
+  "StellarNursery": {
+   "luma": 0.1296,
+   "motion": 0.00504,
+   "n": 1,
+   "std": 0.01308,
+   "strobe": 4.97
+  },
+  "StellarNurseryCollapse": {
+   "luma": 0.0686,
+   "motion": 0.00844,
+   "n": 1,
+   "std": 0.10519,
+   "strobe": 3.14
+  },
+  "StereoSpectrum": {
+   "luma": 0.1227,
+   "motion": 0.00834,
+   "n": 1,
+   "std": 0.16726,
+   "strobe": 3.93
+  },
+  "StrangeAttractor": {
+   "luma": 0.0724,
+   "motion": 0.0321,
+   "n": 1,
+   "std": 0.11591,
+   "strobe": 1.51
+  },
+  "SubglacialVolcanicPillowLava": {
+   "luma": 0.335,
+   "motion": 0.01791,
+   "n": 1,
+   "std": 0.27046,
+   "strobe": 3.12
+  },
+  "SupercellMesocyclone": {
+   "luma": 0.1744,
+   "motion": 0.01186,
+   "n": 1,
+   "std": 0.02152,
+   "strobe": 8.02
+  },
+  "SuperconductingFluxVortex": {
+   "luma": 0.1618,
+   "motion": 0.09957,
+   "n": 1,
+   "std": 0.13606,
+   "strobe": 1.2
+  },
+  "SuperconductingFluxoniumQubitCircuit": {
+   "luma": 0.1616,
+   "motion": 0.02701,
+   "n": 1,
+   "std": 0.20786,
+   "strobe": 2.44
+  },
+  "SuperconductingLevitationMeissnerPinch": {
+   "luma": 0.3025,
+   "motion": 0.01691,
+   "n": 1,
+   "std": 0.15364,
+   "strobe": 4.27
+  },
+  "SuperconductingQubitResonator": {
+   "luma": 0.0571,
+   "motion": 0.0347,
+   "n": 1,
+   "std": 0.10931,
+   "strobe": 1.64
+  },
+  "SuperconductingVortexLatticeMelting": {
+   "luma": 0.0952,
+   "motion": 0.0259,
+   "n": 1,
+   "std": 0.07923,
+   "strobe": 2.4
+  },
+  "SuperconductorLevitation": {
+   "luma": 0.3881,
+   "motion": 0.16508,
+   "n": 1,
+   "std": 0.32912,
+   "strobe": 1.24
+  },
+  "SupercriticalFluidOpalescence": {
+   "luma": 0.2636,
+   "motion": 0.01503,
+   "n": 1,
+   "std": 0.08402,
+   "strobe": 2.48
+  },
+  "SuperfluidHeliumVortexReconnection": {
+   "luma": 0.1032,
+   "motion": 0.01235,
+   "n": 1,
+   "std": 0.19162,
+   "strobe": 1.38
+  },
+  "SuperfluidHeliumVortexTurbulence": {
+   "luma": 0.3032,
+   "motion": 0.18903,
+   "n": 1,
+   "std": 0.20313,
+   "strobe": 1.07
+  },
+  "SuperfluidQuantumTurbulence": {
+   "luma": 0.2708,
+   "motion": 0.01913,
+   "n": 1,
+   "std": 0.07051,
+   "strobe": 1.84
+  },
+  "SuperfluidVortexRingPinchOff": {
+   "luma": 0.1063,
+   "motion": 0.06237,
+   "n": 1,
+   "std": 0.11599,
+   "strobe": 1.44
+  },
+  "SuperfluidVortexTangle": {
+   "luma": 0.4645,
+   "motion": 0.15282,
+   "n": 1,
+   "std": 0.16927,
+   "strobe": 2.37
+  },
+  "SuperheatedCoronalLoop": {
+   "luma": 0.2999,
+   "motion": 0.05778,
+   "n": 1,
+   "std": 0.18907,
+   "strobe": 1.11
+  },
+  "SupermassiveAccretionDisk": {
+   "luma": 0.4211,
+   "motion": 0.00686,
+   "n": 1,
+   "std": 0.18656,
+   "strobe": 3.04
+  },
+  "SupermassiveBlackHoleOrbit": {
+   "luma": 0.0845,
+   "motion": 0.00604,
+   "n": 1,
+   "std": 0.1151,
+   "strobe": 2.55
+  },
+  "SupernovaRemnant": {
+   "luma": 0.1184,
+   "motion": 0.00109,
+   "n": 1,
+   "std": 0.04361,
+   "strobe": 9.69
+  },
+  "SupernovaRemnantNebula": {
+   "luma": 0.0713,
+   "motion": 0.01115,
+   "n": 1,
+   "std": 0.12186,
+   "strobe": 3.22
+  },
+  "SuperradiantBlackHoleBomb": {
+   "luma": 0.4681,
+   "motion": 0.02449,
+   "n": 1,
+   "std": 0.17423,
+   "strobe": 3.37
+  },
+  "SuperradiantTokamakIgnition": {
+   "luma": 0.3038,
+   "motion": 0.0752,
+   "n": 1,
+   "std": 0.07633,
+   "strobe": 1.13
+  },
+  "Swarm": {
+   "luma": 0.0697,
+   "motion": 0.01059,
+   "n": 1,
+   "std": 0.10926,
+   "strobe": 4.03
+  },
+  "SynchrotronRadiationRing": {
+   "luma": 0.0391,
+   "motion": 0.02072,
+   "n": 1,
+   "std": 0.08596,
+   "strobe": 1.41
+  },
+  "SynthTerrain": {
+   "luma": 0.2241,
+   "motion": 0.08238,
+   "n": 1,
+   "std": 0.17077,
+   "strobe": 1.4
+  },
+  "TachyonCommRelay": {
+   "luma": 0.3823,
+   "motion": 0.10832,
+   "n": 1,
+   "std": 0.13613,
+   "strobe": 1.42
+  },
+  "TerraformingColony": {
+   "luma": 0.0525,
+   "motion": 0.01427,
+   "n": 1,
+   "std": 0.03217,
+   "strobe": 1.58
+  },
+  "TeslaLightningTree": {
+   "luma": 0.3846,
+   "motion": 0.09877,
+   "n": 1,
+   "std": 0.17571,
+   "strobe": 1.77
+  },
+  "TextureEffectParallaxKaleidoscope": {
+   "luma": 0.2434,
+   "motion": 0.00839,
+   "n": 1,
+   "std": 0.01974,
+   "strobe": 1.21
+  },
+  "TextureEffectParallaxKaleidoscopeTunnel": {
+   "luma": 0.3224,
+   "motion": 0.02881,
+   "n": 1,
+   "std": 0.03807,
+   "strobe": 2.2
+  },
+  "TheBigBounce": {
+   "luma": 0.1054,
+   "motion": 0.04604,
+   "n": 1,
+   "std": 0.02653,
+   "strobe": 2.03
+  },
+  "TheCore": {
+   "luma": 0.3128,
+   "motion": 0.04156,
+   "n": 1,
+   "std": 0.11546,
+   "strobe": 1.81
+  },
+  "ThomasAttractorCosmicLabyrinth": {
+   "luma": 0.2661,
+   "motion": 0.01099,
+   "n": 1,
+   "std": 0.08403,
+   "strobe": 2.44
+  },
+  "ThunderCloud": {
+   "luma": 0.0748,
+   "motion": 0.01794,
+   "n": 1,
+   "std": 0.09295,
+   "strobe": 2.2
+  },
+  "TimeDilation": {
+   "luma": 0.1081,
+   "motion": 0.02452,
+   "n": 1,
+   "std": 0.16169,
+   "strobe": 1.72
+  },
+  "TokamakFusionCore": {
+   "luma": 0.3372,
+   "motion": 0.14134,
+   "n": 1,
+   "std": 0.14816,
+   "strobe": 1.88
+  },
+  "Tonnetz": {
+   "luma": 0.1286,
+   "motion": 0.00585,
+   "n": 1,
+   "std": 0.11065,
+   "strobe": 4.74
+  },
+  "TopologicalDiracSemimetalFermiArcs": {
+   "luma": 0.2371,
+   "motion": 0.12676,
+   "n": 1,
+   "std": 0.22378,
+   "strobe": 1.35
+  },
+  "TopologicalInsulatorDiracSurface": {
+   "luma": 0.2803,
+   "motion": 0.09597,
+   "n": 1,
+   "std": 0.12636,
+   "strobe": 1.38
+  },
+  "Tornado": {
+   "luma": 0.0755,
+   "motion": 0.01266,
+   "n": 1,
+   "std": 0.08814,
+   "strobe": 1.82
+  },
+  "TorusKnot": {
+   "luma": 0.0897,
+   "motion": 0.03274,
+   "n": 1,
+   "std": 0.12852,
+   "strobe": 1.53
+  },
+  "TricornFractalAntimatterSea": {
+   "luma": 0.4629,
+   "motion": 0.01039,
+   "n": 1,
+   "std": 0.05295,
+   "strobe": 6.77
+  },
+  "TronCycles": {
+   "luma": 0.0467,
+   "motion": 0.01114,
+   "n": 1,
+   "std": 0.13511,
+   "strobe": 2.59
+  },
+  "Tunnel": {
+   "luma": 0.2832,
+   "motion": 0.06035,
+   "n": 1,
+   "std": 0.04858,
+   "strobe": 1.46
+  },
+  "TunnelAcceleration": {
+   "luma": 0.3955,
+   "motion": 0.08325,
+   "n": 1,
+   "std": 0.08555,
+   "strobe": 1.58
+  },
+  "TunnelReverse": {
+   "luma": 0.3099,
+   "motion": 0.09176,
+   "n": 1,
+   "std": 0.07319,
+   "strobe": 1.23
+  },
+  "VideoRelief": {
+   "luma": 0.2744,
+   "motion": 0.02932,
+   "n": 1,
+   "std": 0.15029,
+   "strobe": 2.2
+  },
+  "VillarceauCirclesHyperFlow": {
+   "luma": 0.3501,
+   "motion": 0.01862,
+   "n": 1,
+   "std": 0.1664,
+   "strobe": 4.54
+  },
+  "VoidLeviathan": {
+   "luma": 0.1635,
+   "motion": 0.06125,
+   "n": 1,
+   "std": 0.16318,
+   "strobe": 1.68
+  },
+  "VolcanicBasaltColumnarJointingHexagon": {
+   "luma": 0.2809,
+   "motion": 0.09135,
+   "n": 1,
+   "std": 0.12626,
+   "strobe": 1.68
+  },
+  "VolcanicLightningAshColumn": {
+   "luma": 0.2454,
+   "motion": 0.07915,
+   "n": 1,
+   "std": 0.17924,
+   "strobe": 1.41
+  },
+  "VolcanicLightningPlume": {
+   "luma": 0.1718,
+   "motion": 0.00243,
+   "n": 1,
+   "std": 0.09853,
+   "strobe": 37.81
+  },
+  "VolcanoIsland": {
+   "luma": 0.0645,
+   "motion": 0.01434,
+   "n": 1,
+   "std": 0.13064,
+   "strobe": 1.9
+  },
+  "VolumetricFire": {
+   "luma": 0.4393,
+   "motion": 0.01646,
+   "n": 1,
+   "std": 0.15989,
+   "strobe": 11.96
+  },
+  "VolumetricSupernova": {
+   "luma": 0.3865,
+   "motion": 0.0306,
+   "n": 1,
+   "std": 0.16568,
+   "strobe": 1.84
+  },
+  "VoronoiPrismShatterKaleido": {
+   "luma": 0.3677,
+   "motion": 0.01067,
+   "n": 1,
+   "std": 0.11472,
+   "strobe": 9.53
+  },
+  "VoronoiPulse": {
+   "luma": 0.2557,
+   "motion": 0.03699,
+   "n": 1,
+   "std": 0.09588,
+   "strobe": 2.33
+  },
+  "VoronoiShatter": {
+   "luma": 0.2855,
+   "motion": 0.05256,
+   "n": 1,
+   "std": 0.14558,
+   "strobe": 2.46
+  },
+  "Vortex": {
+   "luma": 0.4451,
+   "motion": 0.09723,
+   "n": 1,
+   "std": 0.12758,
+   "strobe": 1.84
+  },
+  "Voyager": {
+   "luma": 0.2568,
+   "motion": 0.09712,
+   "n": 1,
+   "std": 0.1746,
+   "strobe": 1.05
+  },
+  "WarpStars": {
+   "luma": 0.0862,
+   "motion": 0.06973,
+   "n": 1,
+   "std": 0.09455,
+   "strobe": 1.41
+  },
+  "WaveRibbon": {
+   "luma": 0.0792,
+   "motion": 0.05865,
+   "n": 1,
+   "std": 0.1491,
+   "strobe": 1.18
+  },
+  "WhisperingGalleryMicrocavity": {
+   "luma": 0.3281,
+   "motion": 0.01785,
+   "n": 1,
+   "std": 0.19504,
+   "strobe": 2.67
+  },
+  "WhiteDwarfAccretion": {
+   "luma": 0.074,
+   "motion": 0.00265,
+   "n": 1,
+   "std": 0.04755,
+   "strobe": 10.04
+  },
+  "WignerCrystalElectronLattice": {
+   "luma": 0.2297,
+   "motion": 0.03031,
+   "n": 1,
+   "std": 0.13436,
+   "strobe": 2.43
+  },
+  "Wormhole": {
+   "luma": 0.6411,
+   "motion": 0.09343,
+   "n": 1,
+   "std": 0.21355,
+   "strobe": 3.74
+  },
+  "WormholeMirrorWeave": {
+   "luma": 0.1417,
+   "motion": 0.02576,
+   "n": 1,
+   "std": 0.18049,
+   "strobe": 1.82
+  },
+  "WormholeTransit": {
+   "luma": 0.0813,
+   "motion": 0.00804,
+   "n": 1,
+   "std": 0.03764,
+   "strobe": 5.52
+  },
+  "XenobiologicalBioship": {
+   "luma": 0.0963,
+   "motion": 0.02101,
+   "n": 1,
+   "std": 0.03944,
+   "strobe": 1.12
+  },
+  "XenophyophoreGiantProtistSarcodina": {
+   "luma": 0.2252,
+   "motion": 0.0527,
+   "n": 1,
+   "std": 0.21189,
+   "strobe": 2.22
+  }
+ }
+}
