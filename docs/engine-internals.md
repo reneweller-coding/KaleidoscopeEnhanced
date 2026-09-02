@@ -2953,3 +2953,59 @@ The vacuum and bass-slam tests behind the arming are what keep a false drop
 rare. The two false build-up rises in the first 25 s of the track (the
 analyzer's baselines settling) bend an arc once for nothing; the scene simply
 finishes early.
+
+### Real music, at last
+
+Seven tracks from the user's library — psytrance (1200 Micrograms, Astrix,
+Infected Mushroom), big-beat (Prodigy), house (Daft Punk), rock (AC/DC) and
+pop (Alanis Morissette) — converted to mono WAV and run offline with the
+feature log. Two things came out unambiguously.
+
+**The dominant pitch is the bass.** On a real mix the strongest harmonic
+series is the bass line in 32–91 % of frames; the melody search from 150 Hz
+up moves that to 0–2 % and puts 71–97 % of frames in the melodic range:
+
+| track | dominantPitch under 0.15 | melodyPitch in 0.3–0.7 |
+|---|---|---|
+| 1200 Micrograms — DMT | 91 % | 71 % |
+| The Prodigy — Breathe | 90 % | 93 % |
+| AC/DC — Thunderstruck | 71 % | 79 % |
+| Astrix — High On Mel | 53 % | 81 % |
+| Infected Mushroom — Dancing With Kadafi | 38 % | 94 % |
+| Alanis Morissette — Ironic | 37 % | 78 % |
+| Daft Punk — Around the World | 32 % | 97 % |
+
+**The vacuum drop detector almost never applies.** It wants the bass gone for
+250 ms and back at 1.45× its average — a synthetic drop. Real breakdowns last
+6–30 s, the bass often keeps running, and the slow bass average adapts inside
+the gap. Across the seven tracks it fired twice (both on Infected Mushroom,
+both within 1.4 s of the envelope reference — precise, just rarely
+responsible). A plain envelope-jump reference computed on the WAV itself
+(RMS in 250 ms hops, a step of ≥ 6 dB after a quieter stretch) finds the
+returns the ear hears: 222, 289, 302 s on DMT, 36, 162, 289 s on
+Thunderstruck. The build-up flanks the analyzer reported sat *after* those
+returns as often as before them — the groove coming back reads as a build-up
+too — so the arc regie was bending arcs for drops that had already happened.
+
+Hence a second drop path in the analyzer, which is that reference in engine
+form: the level mix sits ≥ 0.10 under its 8-second mean for ≥ 6 s, then comes
+back to within 0.05 of where it was; that return counts as a drop, anchors
+the phrase clock, and silences the build-up flank for 15 s.
+
+**Measured, before and after**, on the same seven tracks against the envelope
+reference (a hit is a detection within 3 s of a reference jump):
+
+| | detected | hits | false alarms |
+|---|---|---|---|
+| vacuum path only | 2 | 2 | 0 |
+| plus the return path | **9** | **8** | 1 |
+
+Prodigy — Breathe: both returns (109 s, 270 s), and the second one landed at
+phrase position 0.95 on a grid anchored by the first — the prediction was
+within two beats on a real track. Infected Mushroom: three of three detected.
+Daft Punk and DMT: one each. The misses are honest: AC/DC and Alanis
+Morissette have transitions shorter than six seconds or flatter than 0.10,
+and five of DMT's six reference jumps are the *entries* of a track that
+builds in layers rather than breaking down. The reference itself is generous;
+the detector is deliberately not. What the arc regie needs is not every
+section change but a drop it can trust — and eight of nine is that.

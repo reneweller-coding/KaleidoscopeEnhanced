@@ -429,6 +429,13 @@ private:
     float m_lowGapBlocks = 0.f;     ///< Consecutive blocks of bass vacuum (the breakdown gap).
     float m_dropPulse    = 0.f;     ///< Decaying drop output (1.0 at the hit); see AudioFeatures::dropPulse.
     int   m_dropCooldown = 0;       ///< Blocks until the next drop may fire.
+    // ---- return after a breakdown (the drop most real tracks actually have) ----
+    float m_brkFast   = 0.f;   ///< ~1 s EMA of the level mix (0..1 scale).
+    float m_brkSlow   = 0.f;   ///< ~8 s EMA of the level mix.
+    bool  m_inBreak   = false; ///< Currently inside a breakdown (fast level well under the slow one).
+    int   m_brkBlocks = 0;     ///< Blocks spent in the current breakdown.
+    float m_brkPre    = 0.f;   ///< Slow level when the breakdown began (what 'back' means).
+    float m_brkMin    = 1.f;   ///< Lowest fast level inside the breakdown.
     int   m_dropCount    = 0;       ///< Cumulative drops (host-poll counter); see AudioFeatures::dropCount.
 
     // ---- DJ-STOP detection (see AudioFeatures::breakHold/breakSlam) ----

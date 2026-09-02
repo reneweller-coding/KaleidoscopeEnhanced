@@ -2383,6 +2383,52 @@ void AudioAnalyzer::processBlock(const float *data, int numFrames,
                     m_bldWarm * 0.01f);
         }
         m_dropPulse *= 0.985f;                                 // ~1.5 s tail
+
+        // ---- Second path: RETURN after a breakdown ----
+        // The vacuum test above wants the bass gone for >= 250 ms and back
+        // at 1.45x its average -- a synthetic drop.  Real tracks (psytrance,
+        // rock, pop alike) break down for 6-30 s with the bass often still
+        // running, and the slow bass average adapts inside the gap, so the
+        // slam never reads as 1.45x.  On three real tracks the vacuum path
+        // fired ZERO times while a plain envelope-jump reference found the
+        // returns at 222/289/302 s (DMT), 36/162/289 s (Thunderstruck).
+        // This path is that reference: the level mix sits >= 0.10 under its
+        // 8-s mean for >= 6 s, then comes back to within 0.05 of where it
+        // was before -- that return IS the drop, and it anchors the phrase.
+        // Differences, not ratios: `level` is the dB-normalised 0..1 mix.
+        {
+            m_brkFast += 0.01f    * (level - m_brkFast);      // tau ~1 s
+            m_brkSlow += 0.00125f * (level - m_brkSlow);      // tau ~8 s
+            if (!m_inBreak && m_bldWarm > 1200 && m_brkFast < m_brkSlow - 0.10f)
+            {
+                m_inBreak   = true;
+                m_brkBlocks = 0;
+                m_brkPre    = m_brkSlow;
+                m_brkMin    = m_brkFast;
+            }
+            else if (m_inBreak)
+            {
+                ++m_brkBlocks;
+                m_brkMin = std::min(m_brkMin, m_brkFast);
+                const bool back = m_brkFast > m_brkMin + 0.12f && m_brkFast > m_brkPre - 0.05f;
+                if (back && m_brkBlocks >= 600)                       // >= 6 s of breakdown
+                {
+                    if (m_dropCooldown == 0)
+                    {
+                        m_dropPulse    = 1.f;
+                        ++m_dropCount;
+                        m_dropCooldown = 800;
+                        fprintf(stderr, "DROP #%d (return after %.1f s breakdown, level %.2f -> %.2f, t=%.1fs)" "\n",
+                                m_dropCount, m_brkBlocks * 0.01f, m_brkMin, m_brkFast, m_bldWarm * 0.01f);
+                    }
+                    m_inBreak = false;
+                }
+                else if (back)                                        // too short: a fill, not a breakdown
+                    m_inBreak = false;
+                else if (m_brkBlocks > 6000)                          // 60 s: that is a new section, not a break
+                    m_inBreak = false;
+            }
+        }
     }
 
     // ========================================================================

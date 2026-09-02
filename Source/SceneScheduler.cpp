@@ -359,6 +359,12 @@ void SceneScheduler::tick( const Tick &t )
 	// Vorhersage in 4..45 s liegt, hoechstens alle 20 s.
 	m_arcCooldown -= t.dt;
 	m_regieWarm   += t.dt;
+	// Nach einem Drop kommt der Groove zurueck, und der Analyzer liest genau
+	// diese Rueckkehr als Aufbau (Flanken 238/243 s hinter einem Sprung bei
+	// 222 s auf DMT).  Ein Bogen fuer einen Drop, der schon vorbei ist, ist
+	// keiner: 15 s Ruhe nach jedem Drop.
+	if( t.dropCount != m_lastDropCount )
+		m_arcCooldown = ( m_arcCooldown > 15.f ) ? m_arcCooldown : 15.f;
 	// Die ersten 20 s liest der Analyzer JEDEN Groove als Aufbau (seine
 	// 10-s-Baselines klettern noch: buildUp 0,67 im Intro, 0,43 im echten
 	// Aufbau).  Der Analyzer selbst schont sein Drop-Arming genauso.
