@@ -2734,3 +2734,29 @@ baseline, comes back at a median of 0.1354 — the flag was parameter scatter,
 nothing more.
 
 Twenty shaders were corrected in this class in total.
+
+### The old flag list, closed
+
+The forty scenes flagged by the earlier clock-0 screening were re-measured
+with three seeds each. Every one of the strongest-looking candidates came back
+healthy:
+
+| scene | single measurement | median of three |
+|---|---|---|
+| SuperconductingVortexLatticeMelting | 0.0055 | **0.0683** |
+| NonEuclideanKleinQuarticTile | — | 0.1261 |
+| Hologram | — | 0.1015 |
+| HarmonicRings | — | 0.0816 |
+| ModalVibration | — | 0.0600 |
+| DielectricMetasurfaceHologram | — | 0.0521 |
+| Aperture | 0.028 (3 of 14 windows) | 0.0648 |
+
+`SuperconductingVortexLatticeMelting` had looked like the single most
+convincing finding on that list — luma 0.0000, structure 0.0055, one window.
+It is fine. Its median is twelve times its flagged value.
+
+What survives confirmation is a short list of genuinely sparse scenes —
+`Assembly` 0.025, `EndOfTheUniverse` 0.023, `Dissolve` 0.018, `MelodyScript`
+0.040 — all of which measure the same at both clocks. That is a composition
+question, not a defect, and it is the one thing this pass deliberately leaves
+open.
