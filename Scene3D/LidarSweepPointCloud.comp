@@ -1,0 +1,107 @@
+#version 430 core
+/**
+ * @file LidarSweepPointCloud.comp
+ * @brief LIDAR SWEEP POINT CLOUD: a scanning laser rangefinder turning
+ * in a room whose walls, floor and a few objects are the photo -- and
+ * what we see is only the point cloud: points appear where the sweep has
+ * just passed and fade as the beam turns away.  The sweep turns on the
+ * scene clock; the points are fixed in space (the room is fixed); their
+ * age since the sweep is a function of the angle, so it is continuous.
+ * No state.  The camera never moves.
+ *
+ * Per-instance: densP (points fraction), fadeP, hueP.
+ */
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+layout(std430, binding = 0) buffer Verts { float verts[]; };
+layout(std430, binding = 1) buffer Cmd   { uint cmd[];   };
+
+uniform uint  maxVertices;
+uniform float time;
+uniform float sceneAdvance;
+uniform float sceneTime;
+
+uniform float densP;
+uniform float fadeP;
+uniform float hueP;
+
+float hash11(float p) { p = fract(p * 0.1031); p *= p + 33.33; p *= p + p; return fract(p); }
+vec3  hash31(float n) { return vec3(hash11(n), hash11(n + 17.3), hash11(n + 41.7)); }
+
+void emitQuad(vec3 c, vec3 ax, vec3 ay, float id, float lit, float kind, vec2 uv0, vec2 uv1)
+{
+    uint base = atomicAdd(cmd[4], 6u);
+    if (base + 6u > maxVertices) return;
+    vec3 p0 = c - ax - ay, p1 = c + ax - ay, p2 = c + ax + ay, p3 = c - ax + ay;
+    vec3 pList[6]  = vec3[6](p0, p1, p2, p0, p2, p3);
+    vec2 uvList[6] = vec2[6](vec2(uv0.x, uv0.y), vec2(uv1.x, uv0.y), vec2(uv1.x, uv1.y), vec2(uv0.x, uv0.y), vec2(uv1.x, uv1.y), vec2(uv0.x, uv1.y));
+    for (uint i = 0u; i < 6u; ++i)
+    {
+        uint off = (base + i) * 8u;
+        verts[off + 0u] = pList[i].x; verts[off + 1u] = pList[i].y; verts[off + 2u] = pList[i].z;
+        verts[off + 3u] = id; verts[off + 4u] = lit; verts[off + 5u] = kind;
+        verts[off + 6u] = uvList[i].x; verts[off + 7u] = uvList[i].y;
+    }
+}
+
+// Room surfaces: a point i is placed on one of: floor, back wall, left
+// wall, right wall, ceiling, or one of three boxes.  Returns position and
+// a uv for the photo.
+vec3 roomPoint(float fid, out vec2 uv)
+{
+    vec3 h = hash31(fid);
+    vec3 h2 = hash31(fid * 7.7 + 3.0);
+    float which = h.x * 8.0;
+    if (which < 2.0) { uv = h2.xy; return vec3((h2.x - 0.5) * 16.0, -3.0, 4.0 + h2.y * 14.0); }          // floor
+    if (which < 4.0) { uv = h2.xy; return vec3((h2.x - 0.5) * 16.0, -3.0 + h2.y * 7.0, 18.0); }          // back wall
+    if (which < 5.0) { uv = h2.xy; return vec3(-8.0, -3.0 + h2.y * 7.0, 4.0 + h2.x * 14.0); }           // left wall
+    if (which < 6.0) { uv = h2.xy; return vec3(8.0, -3.0 + h2.y * 7.0, 4.0 + h2.x * 14.0); }            // right wall
+    if (which < 6.5) { uv = h2.xy; return vec3((h2.x - 0.5) * 16.0, 4.0, 4.0 + h2.y * 14.0); }           // ceiling
+    // Boxes: three blocks on the floor.
+    float b = floor((which - 6.5) / 0.5);
+    vec3 bc = vec3(-4.0 + b * 4.0, -3.0, 9.0 + b * 2.0);
+    vec3 bs = vec3(1.2, 1.5 + b * 0.6, 1.2);
+    // A point on the box surface: pick a face.
+    float face = h.y * 6.0;
+    vec3 q = (vec3(h2.x, h2.y, h.z) - 0.5) * 2.0;
+    if (face < 1.0) q.x = 1.0; else if (face < 2.0) q.x = -1.0; else if (face < 3.0) q.z = -1.0; else if (face < 4.0) q.z = 1.0; else if (face < 5.0) q.y = 1.0; else q.y = -1.0;
+    uv = h2.xy;
+    return bc + vec3(q.x * bs.x, (q.y + 1.0) * bs.y, q.z * bs.z);
+}
+
+void main()
+{
+    uvec3 g = gl_GlobalInvocationID;
+    uint id = g.x + 64u * (g.y + 64u * g.z);
+    const uint kPoints = 60000u;
+    float clock = sceneAdvance * 0.6 + sceneTime * 0.12;
+    float sweep = clock * 1.2;                                   // sweep angle (radians, unbounded)
+
+    if (id == 0u)
+    {
+        // The scanner: a small billboard at the room centre (kind 2), and
+        // the beam: a thin quad from the scanner along the sweep (kind 3).
+        vec3 sc = vec3(0.0, -1.0, 11.0);
+        emitQuad(sc, vec3(0.25, 0.0, 0.0), vec3(0.0, 0.25, 0.0), 0.0, 0.0, 2.0, vec2(0.0), vec2(1.0));
+        vec3 dir = vec3(cos(sweep), 0.0, sin(sweep));
+        vec3 end = sc + dir * 9.0;
+        vec3 mid = (sc + end) * 0.5, half_ = (end - sc) * 0.5;
+        emitQuad(mid, half_, vec3(0.0, 0.02, 0.0), 0.0, 0.0, 3.0, vec2(0.0), vec2(1.0));
+        emitQuad(mid, half_, normalize(cross(half_, vec3(0.0, 1.0, 0.0))) * 0.02, 0.0, 0.0, 3.0, vec2(0.0), vec2(1.0));
+        return;
+    }
+    float frac = (densP > 0.01) ? densP : 1.0;
+    if (id > uint(float(kPoints) * clamp(frac, 0.3, 1.0))) return;
+    float fid = float(id);
+    vec2 uv;
+    vec3 pos = roomPoint(fid, uv);
+    // Age since the sweep passed this point: the angle from the scanner.
+    vec3 sc = vec3(0.0, -1.0, 11.0);
+    vec3 d = pos - sc;
+    float ang = atan(d.z, d.x);
+    float ago = mod(sweep - ang, 6.2831853);                     // 0 = just swept
+    float fade = 3.0 + 3.0 * clamp(fadeP, 0.0, 1.0);
+    float lit = exp(-ago / fade * 3.0);
+    if (lit < 0.03) return;
+    float sz = 0.05 + 0.04 * lit;
+    emitQuad(pos, vec3(sz, 0.0, 0.0), vec3(0.0, sz, 0.0), fid, lit, 0.0, uv, uv + vec2(0.01));
+}

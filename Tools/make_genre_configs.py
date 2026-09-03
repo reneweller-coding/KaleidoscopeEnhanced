@@ -181,18 +181,18 @@ MODIFIED_SCENES = {
 # Minuten statt siebzig).  Bewusst eine eigene Liste: welche Szenen zuletzt
 # dran waren, ist eine historische Tatsache und soll im Diff stehen.
 RECENT_SCENES = {
-    # 03.09.: dritte Fuenfzig, Block C (Leben): Proteinfaltung, Konnektom, Chromatophoren,
-    # Schwaenzeltanz, Ribosom, Planktonwirbel, Blattadern, Sonar, Foraminiferen, Radnetz.
-    "ProteinFoldingChain",
-    "NeuralConnectomeGlow",
-    "CephalopodChromatophores",
-    "BeeWaggleDance",
-    "RibosomeAssemblyLine",
-    "PhytoplanktonEddies",
-    "LeafVenationGrowth",
-    "SonarPingReveal",
-    "ForaminiferaSpiralShells",
-    "SpiderOrbWebDew",
+    # 03.09.: dritte Fuenfzig, Block D (Mathematik, Rechnen, KI): Hut-Kachel, Diffusion,
+    # Attention, Punktierung, LIDAR, Myonen, Borromaeisch, Ulam, Homologie, Epizykel.
+    "EinsteinHatTiling",
+    "DiffusionDenoiseReveal",
+    "AttentionHeadRibbons",
+    "StippleVoronoiRelax",
+    "LidarSweepPointCloud",
+    "MuonTomographyPyramid",
+    "BorromeanRingsOrbit",
+    "UlamPrimeSpiral",
+    "PersistentHomologyBubbles",
+    "FourierEpicycleDraw",
 }
 
 def rule_recent(m, h):

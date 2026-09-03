@@ -3505,3 +3505,26 @@ drew a flat gradient -- the mod-based pointy-top trick (two offset
 lattices, take the nearer) is the one that works; chromatophores driven
 straight by their band strobed (9.2) until the band share of the expansion
 was cut to a quarter and the slow cloud wave carried the motion.
+
+## The third fifty, block D: mathematics, computation, AI
+
+| Scene | Pipeline | Note |
+|---|---|---|
+| EinsteinHatTiling | 2D | the kite lattice ([3.4.6.4] Laves) drawn exactly; kites grouped into hats by a golden-ratio hash (aperiodic-looking, not the true substitution) |
+| DiffusionDenoiseReveal | 2D | variance-preserving blend sqrt(1-s^2) image + s noise; s falls with the phrase, ramps back over the last 10 percent, the drop zeroes it; noise seed crossfaded between integer steps |
+| AttentionHeadRibbons | 2D | arches between tokens weighted by chroma products; one arch height per head |
+| StippleVoronoiRelax | 2D | three jittered layers; a dot exists where local darkness exceeds the layer threshold; small orbits on the clock stand in for Lloyd relaxation |
+| LidarSweepPointCloud | `indirect` | 60000 points on room surfaces; age = angle from the sweep, so freshness is continuous; points below 3 percent light are not emitted |
+| MuonTomographyPyramid | 2D | tracks from the sky on phases; inside the pyramid a track survives at 35 percent except through the chamber; the chamber photo resolves with the arc |
+| BorromeanRingsOrbit | `indirect` + OIT | three golden-rectangle ellipses in perpendicular planes (the Borromean arrangement); normals packed xy + z sign |
+| UlamPrimeSpiral | 2D | square-spiral index in closed form; trial division to 320 (numbers stay below 1e5); primes coloured by n mod 12 |
+| PersistentHomologyBubbles | 2D | 26 points; edges appear by smoothstep as balls meet, triangles when three pairs touch (Vietoris-Rips) |
+| FourierEpicycleDraw | 2D | chain of circles with radii from a geometric fall-off breathed by bands; the trace is 90 segments of the last cycle |
+
+Preview lessons: StippleVoronoiRelax strobed (21.9) because every dark
+dot recoloured on the kick -- a quarter of that is enough; the noise seed
+of DiffusionDenoiseReveal crossfaded six times a second and read as
+flicker at two it does not; PersistentHomologyBubbles flickered where
+point orbits carried pairs across the touch threshold, so the orbits are
+a third of their first amplitude; the scanner flags a variable named
+jitter as a shake, so it is called jit.

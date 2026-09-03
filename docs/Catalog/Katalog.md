@@ -1,6 +1,6 @@
 # Kaleidoscope Enhanced — Szenen-Katalog
 
-_746 Szenen, 29 FX-Overlays, 83 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
+_756 Szenen, 29 FX-Overlays, 83 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
 
 
 ---
@@ -141,6 +141,15 @@ APOLLONIAN SPHERE PACKING DIVE: 3D Raymarching continuous dive into the voids of
 APOLLONIAN SPHERE PACKING GASKET: Raymarched infinite 3D Apollonian sphere packing gasket formed by recursive sphere inversions. Mutually tangent "kissing" spheres create an infinite fractal foam with jewel refractions, specular mirror reflections, and audio-reactive metric scaling. audioAdvance -> navigates camera through the Apollonian sphere foam audioKick -> flashes sphere facet contact points and jewel glints au…
 
 ![ApollonianSpherePackingGasket ruhig (t=8)](img/ApollonianSpherePackingGasket_A.jpg) ![ApollonianSpherePackingGasket ruhig (t=16)](img/ApollonianSpherePackingGasket_B.jpg) ![ApollonianSpherePackingGasket audio-heiß (t=21)](img/ApollonianSpherePackingGasket_C.jpg)
+
+
+### AttentionHeadRibbons
+
+`Scene2D/AttentionHeadRibbons.frag` · type=normal · mood=dark,calm,psychedelic · complexity=3
+
+ATTENTION HEAD RIBBONS: a transformer attention map, drawn. A row of tokens -- tiles of the photo -- along the bottom, and above them the attention: ribbons arching from each query token to the keys it attends to, one colour per head. The weights are the products of the chroma classes of query and key (so chords draw the strongest arcs and the pattern changes with the harmony, smoothly); the ribbons pulse with light …
+
+![AttentionHeadRibbons ruhig (t=8)](img/AttentionHeadRibbons_A.jpg) ![AttentionHeadRibbons ruhig (t=16)](img/AttentionHeadRibbons_B.jpg) ![AttentionHeadRibbons audio-heiß (t=21)](img/AttentionHeadRibbons_C.jpg)
 
 
 ### Aurora
@@ -874,6 +883,15 @@ DICHROIC PRISM LASER FIELD: Multi-angle floating dichroic glass prism plates wit
 ![DichroicPrismLaserField ruhig (t=8)](img/DichroicPrismLaserField_A.jpg) ![DichroicPrismLaserField ruhig (t=16)](img/DichroicPrismLaserField_B.jpg) ![DichroicPrismLaserField audio-heiß (t=21)](img/DichroicPrismLaserField_C.jpg)
 
 
+### DiffusionDenoiseReveal
+
+`Scene2D/DiffusionDenoiseReveal.frag` · type=normal · mood=psychedelic,dreamy,calm · complexity=2
+
+DIFFUSION DENOISE REVEAL: a diffusion model sampling, as a picture. Each phrase begins as pure Gaussian noise and, step by step, the photo emerges from it (the noise level falls with the phrase position; the blend is smooth), the way a generated image resolves; at the phrase end the image is re-noised with a soft crossfade and the next phrase resolves it again. The drop finishes the reveal at once. A faint grid of th…
+
+![DiffusionDenoiseReveal ruhig (t=8)](img/DiffusionDenoiseReveal_A.jpg) ![DiffusionDenoiseReveal ruhig (t=16)](img/DiffusionDenoiseReveal_B.jpg) ![DiffusionDenoiseReveal audio-heiß (t=21)](img/DiffusionDenoiseReveal_C.jpg)
+
+
 ### DiracConeGrapheneValleytronics
 
 `Scene2D/DiracConeGrapheneValleytronics.frag` · type=normal · mood=bright,psychedelic · complexity=3
@@ -926,6 +944,15 @@ DROP COUNTDOWN VORTEX: a vortex that counts down to the drop. The host predicts 
 DYSON SPHERE COLLAPSE: A massive metal shell completely encasing a star is suffering a catastrophic structural failure. The enraged star's plasma bursts violently through the shattering metal plates, tearing the megastructure apart in sync with the audio. audioAdvance -> slow rotation/drift of the crumbling sphere audioKick -> massive plasma eruptions blowing off armor plates audioSwell -> blinding internal brightnes…
 
 ![DysonSphereCollapse ruhig (t=8)](img/DysonSphereCollapse_A.jpg) ![DysonSphereCollapse ruhig (t=16)](img/DysonSphereCollapse_B.jpg) ![DysonSphereCollapse audio-heiß (t=21)](img/DysonSphereCollapse_C.jpg)
+
+
+### EinsteinHatTiling
+
+`Scene2D/EinsteinHatTiling.frag` · type=normal · mood=psychedelic,bright,calm · complexity=2
+
+EINSTEIN HAT TILING: the aperiodic monotile of 2023 -- one shape that tiles the plane but never repeats. The hat is a polykite: eight kites of the [3.4.6.4] kite lattice; here the lattice of kites is drawn exactly and grouped into hats by a deterministic aperiodic rule of the kite index (a substitution-flavoured hash), so the picture reads as the hat tiling: every hat a piece of the photo, the reflected hats lit by c…
+
+![EinsteinHatTiling ruhig (t=8)](img/EinsteinHatTiling_A.jpg) ![EinsteinHatTiling ruhig (t=16)](img/EinsteinHatTiling_B.jpg) ![EinsteinHatTiling audio-heiß (t=21)](img/EinsteinHatTiling_C.jpg)
 
 
 ### EinsteinRingGravitationalLens
@@ -1153,6 +1180,15 @@ FLUID PHOTO MARBLING EBRU: 100% viewport-filling traditional Turkish Ebru paper-
 FORAMINIFERA SPIRAL SHELLS: the chambered shells of forams -- single cells that build a spiral of ever larger chambers. Several shells fill the frame; each grows chamber by chamber over the scene arc (a new chamber inflates smoothly at the aperture), the chambers carry the photo as their calcite wall and are tinted by the chroma class of their index, the pores glint with the treble, and the whole field drifts very sl…
 
 ![ForaminiferaSpiralShells ruhig (t=8)](img/ForaminiferaSpiralShells_A.jpg) ![ForaminiferaSpiralShells ruhig (t=16)](img/ForaminiferaSpiralShells_B.jpg) ![ForaminiferaSpiralShells audio-heiß (t=21)](img/ForaminiferaSpiralShells_C.jpg)
+
+
+### FourierEpicycleDraw
+
+`Scene2D/FourierEpicycleDraw.frag` · type=normal · mood=calm,dreamy,psychedelic · complexity=3
+
+FOURIER EPICYCLE DRAW: a chain of rotating circles -- each turning at its own harmonic, its radius the energy of a spectrum band -- whose last point draws a closed curve, the way a Fourier series traces a shape. The pen runs on the scene clock; the trace it leaves is the curve of the last cycle, fading; the circles' radii are the bands (smoothed by the drawing itself), the kick lights the pen, the treble sparkles the…
+
+![FourierEpicycleDraw ruhig (t=8)](img/FourierEpicycleDraw_A.jpg) ![FourierEpicycleDraw ruhig (t=16)](img/FourierEpicycleDraw_B.jpg) ![FourierEpicycleDraw audio-heiß (t=21)](img/FourierEpicycleDraw_C.jpg)
 
 
 ### FractalBloom
@@ -2273,6 +2309,15 @@ MULTIVERSE BUBBLES: Floating in the higher-dimensional 'bulk', we see countless 
 ![MultiverseBubbles ruhig (t=8)](img/MultiverseBubbles_A.jpg) ![MultiverseBubbles ruhig (t=16)](img/MultiverseBubbles_B.jpg) ![MultiverseBubbles audio-heiß (t=21)](img/MultiverseBubbles_C.jpg)
 
 
+### MuonTomographyPyramid
+
+`Scene2D/MuonTomographyPyramid.frag` · type=normal · mood=dark,calm,dreamy · complexity=2
+
+MUON TOMOGRAPHY PYRAMID: seeing through a pyramid with cosmic rays. Muons rain from the sky in straight tracks (light events on the scene clock); where a track crosses less stone it survives, so over the arc the hidden chamber -- the photo -- resolves inside the silhouette as the region of excess flux. The kick is a bright track, the bass the detector glow beneath, the treble the scintillator sparkle. Camera still. A…
+
+![MuonTomographyPyramid ruhig (t=8)](img/MuonTomographyPyramid_A.jpg) ![MuonTomographyPyramid ruhig (t=16)](img/MuonTomographyPyramid_B.jpg) ![MuonTomographyPyramid audio-heiß (t=21)](img/MuonTomographyPyramid_C.jpg)
+
+
 ### Murmuration
 
 `Scene2D/Murmuration.frag` · type=normal · mood=calm,dreamy · complexity=2
@@ -2559,6 +2604,15 @@ PENROSE PROCESS ERGOSPHERE EXTRACTION: Relativistic rotational energy extraction
 PERSISTENCE-OF-VISION FAN: a picture that exists only in the afterimage. A few spokes turn about the centre; each frame they paint the photo's colour along their length, and the previous frame (texPrevFrame) is kept with a decay -- so the photo appears as the sum of many sweeps, like the LED fans that draw pictures in the air, and fades where the spokes have not passed for a while. The spokes turn on the music's pace…
 
 ![PersistenceOfVisionFan ruhig (t=8)](img/PersistenceOfVisionFan_A.jpg) ![PersistenceOfVisionFan ruhig (t=16)](img/PersistenceOfVisionFan_B.jpg) ![PersistenceOfVisionFan audio-heiß (t=21)](img/PersistenceOfVisionFan_C.jpg)
+
+
+### PersistentHomologyBubbles
+
+`Scene2D/PersistentHomologyBubbles.frag` · type=normal · mood=dark,calm,dreamy · complexity=3
+
+PERSISTENT HOMOLOGY BUBBLES: topological data analysis made visible. A point cloud sampled from the photo (points where it is bright); around every point a ball grows with the swell (the filtration radius); where two balls touch an edge lights, where three close a triangle fills -- the Vietoris-Rips complex -- and the holes that survive a long range of radii (persistent features) glow. The kick lights the newest edge…
+
+![PersistentHomologyBubbles ruhig (t=8)](img/PersistentHomologyBubbles_A.jpg) ![PersistentHomologyBubbles ruhig (t=16)](img/PersistentHomologyBubbles_B.jpg) ![PersistentHomologyBubbles audio-heiß (t=21)](img/PersistentHomologyBubbles_C.jpg)
 
 
 ### PhotonicCrystalDiracConeDispersion
@@ -3593,6 +3647,15 @@ Stereo spectrum analyzer with 32 frequency bands per side. Bass sits at the cent
 ![StereoSpectrum ruhig (t=8)](img/StereoSpectrum_A.jpg) ![StereoSpectrum ruhig (t=16)](img/StereoSpectrum_B.jpg) ![StereoSpectrum audio-heiß (t=21)](img/StereoSpectrum_C.jpg)
 
 
+### StippleVoronoiRelax
+
+`Scene2D/StippleVoronoiRelax.frag` · type=normal · mood=bright,calm,dreamy · complexity=2
+
+STIPPLE VORONOI RELAX: weighted Voronoi stippling of the photo -- the dots are denser and larger where the picture is dark, as in a pen-and-ink stipple, and they relax on the scene clock (each dot drifts on a small smooth orbit as if Lloyd's iteration were still settling). The swell tightens the pattern (finer dots), the kick lights the dots on the darkest tones, the treble the lightest. Camera still. Audio Reactivit…
+
+![StippleVoronoiRelax ruhig (t=8)](img/StippleVoronoiRelax_A.jpg) ![StippleVoronoiRelax ruhig (t=16)](img/StippleVoronoiRelax_B.jpg) ![StippleVoronoiRelax audio-heiß (t=21)](img/StippleVoronoiRelax_C.jpg)
+
+
 ### StringArtChords
 
 `Scene2D/StringArtChords.frag` · type=normal · mood=calm,dreamy,dark · complexity=2
@@ -3899,6 +3962,15 @@ A stripped-down mirrored-segment kaleidoscope tunnel: no base rotation/tilt, jus
 Two mirrored-segment kaleidoscope tunnels blended 50/50: a forward layer (same construction as Tunnel.frag) and a second layer whose rotation and radial mapping run in the opposite sense, so the two tunnels shear against each other rather than simply co-scrolling. Audio Reactivity: - audioPhase -> adds to the wedge rotation of BOTH layers (integrated, jump-free) - audioAdvance -> adds to the forward layer's scroll bu…
 
 ![TunnelReverse ruhig (t=8)](img/TunnelReverse_A.jpg) ![TunnelReverse ruhig (t=16)](img/TunnelReverse_B.jpg) ![TunnelReverse audio-heiß (t=21)](img/TunnelReverse_C.jpg)
+
+
+### UlamPrimeSpiral
+
+`Scene2D/UlamPrimeSpiral.frag` · type=normal · mood=dark,psychedelic,calm · complexity=3
+
+ULAM PRIME SPIRAL: the integers wound into a square spiral, the primes lit -- and the diagonals they mysteriously favour. The spiral zooms out steadily on the scene clock (log-periodic, so it never wraps), the primes are round dots coloured by their residue class mod 12 (a chroma class each), the diagonals glow with the bass, the kick lights the newest ring, the photo is the paper. Camera still. Audio Reactivity: sce…
+
+![UlamPrimeSpiral ruhig (t=8)](img/UlamPrimeSpiral_A.jpg) ![UlamPrimeSpiral ruhig (t=16)](img/UlamPrimeSpiral_B.jpg) ![UlamPrimeSpiral audio-heiß (t=21)](img/UlamPrimeSpiral_C.jpg)
 
 
 ### VacuumDecayBubble
@@ -4347,6 +4419,15 @@ BloomSculpt.frag — a polished shell, lit so the silhouette reads. The whole po
 Blueprint.frag — the body as a drafting drawing rather than a lit object. Almost nothing here is shading: the surface is a dark wash and everything legible is line work, which is what makes the look read as a print.
 
 ![Blueprint ruhig (t=8)](img/Blueprint_A.jpg) ![Blueprint ruhig (t=16)](img/Blueprint_B.jpg) ![Blueprint audio-heiß (t=21)](img/Blueprint_C.jpg)
+
+
+### BorromeanRingsOrbit
+
+`Scene3D/BorromeanRingsOrbit.frag` · type=scene3d · geom=indirect · mood=calm,bright,dreamy · complexity=4
+
+BORROMEAN RINGS ORBIT: two-pass shader. Opaque pass: the wall behind, the photo dim. OIT pass: three glass rings, each tinted and lit by a band group (low, mid, high), the photo refracted through the glass, a Fresnel rim, a highlight; a pulse of light runs around each ring on the scene clock; the kick sparks the highlights. Weighted-blended OIT as in CathedralGlass (tone-map before accumulating). Audio Reactivity: au…
+
+![BorromeanRingsOrbit ruhig (t=8)](img/BorromeanRingsOrbit_A.jpg) ![BorromeanRingsOrbit ruhig (t=16)](img/BorromeanRingsOrbit_B.jpg) ![BorromeanRingsOrbit audio-heiß (t=21)](img/BorromeanRingsOrbit_C.jpg)
 
 
 ### BoseEinsteinVortexTangle
@@ -5372,6 +5453,15 @@ LaserArena.frag — razor core inside a wide fog halo across the beam.
 Shades the crystalline laser-spire array extruded by LaserSpireArray.geom: lit hexagonal pillar facets, or (where gBeam marks a beam quad) a pure emissive skyward laser column. All colour, including the audioSpectrum-driven per-spire height/hue and the audioKick pulse baked into gCol by the geometry stage, arrives pre-computed; this fragment stage only adds a fixed-direction diffuse and specular term to the pillar fa…
 
 ![LaserSpireArray ruhig (t=8)](img/LaserSpireArray_A.jpg) ![LaserSpireArray ruhig (t=16)](img/LaserSpireArray_B.jpg) ![LaserSpireArray audio-heiß (t=21)](img/LaserSpireArray_C.jpg)
+
+
+### LidarSweepPointCloud
+
+`Scene3D/LidarSweepPointCloud.frag` · type=scene3d · geom=indirect · mood=dark,calm,psychedelic · complexity=4
+
+Fragment stage for LidarSweepPointCloud: black (no room is drawn, only what the beam has seen), the points as round dots coloured by the photo at their uv and by height (the classic range colouring), fading with their age; the scanner as a small glowing box, the beam as a line; the bass is the scanner glow, the kick a flash along the beam, the treble sparkles the freshest points. Audio Reactivity: audioBass -> scanne…
+
+![LidarSweepPointCloud ruhig (t=8)](img/LidarSweepPointCloud_A.jpg) ![LidarSweepPointCloud ruhig (t=16)](img/LidarSweepPointCloud_B.jpg) ![LidarSweepPointCloud audio-heiß (t=21)](img/LidarSweepPointCloud_C.jpg)
 
 
 ### LissajousOrbits
