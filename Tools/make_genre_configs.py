@@ -181,18 +181,18 @@ MODIFIED_SCENES = {
 # Minuten statt siebzig).  Bewusst eine eigene Liste: welche Szenen zuletzt
 # dran waren, ist eine historische Tatsache und soll im Diff stehen.
 RECENT_SCENES = {
-    # 03.09.: vierte Fuenfzig, Block A (Erde und Wetter): Haboob, Permafrost, Salzsee,
-    # Kalbungsfront, Eisberg, Nachtwolken, Hurrikanauge, Halo, Fata Morgana, Seismograph.
-    "HaboobDustWall",
-    "PermafrostPolygons",
-    "SalarMirrorFlats",
-    "GlacierCalvingFront",
-    "IcebergWaterline",
-    "NoctilucentClouds",
-    "HurricaneEyeWall",
-    "SundogHaloSky",
-    "FataMorganaMirage",
-    "SeismographDrum",
+    # 03.09.: vierte Fuenfzig, Block B (Handwerk und Maschinen): Giesserei, Glasblaeser,
+    # Kristallglasur, Planetarium, Schmiede, Kerzen, Riesenrad, Ballons, Regatta, Kugelbahn.
+    "FoundryPour",
+    "GlassblowerGather",
+    "KilnGlazeCrystals",
+    "OrreryBrass",
+    "BlacksmithSparks",
+    "CandleForestBreath",
+    "FerrisWheelNight",
+    "HotAirBalloonDawn",
+    "RegattaSpinnakers",
+    "MarbleRunTrack",
 }
 
 def rule_recent(m, h):

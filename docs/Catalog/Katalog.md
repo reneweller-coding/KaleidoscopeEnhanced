@@ -1,6 +1,6 @@
 # Kaleidoscope Enhanced — Szenen-Katalog
 
-_776 Szenen, 29 FX-Overlays, 83 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
+_786 Szenen, 29 FX-Overlays, 83 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
 
 
 ---
@@ -350,6 +350,15 @@ BISMUTH LABYRINTH: Raymarched infinite 3D hopper crystal labyrinth of metallic e
 ![BismuthLabyrinth ruhig (t=8)](img/BismuthLabyrinth_A.jpg) ![BismuthLabyrinth ruhig (t=16)](img/BismuthLabyrinth_B.jpg) ![BismuthLabyrinth audio-heiß (t=21)](img/BismuthLabyrinth_C.jpg)
 
 
+### BlacksmithSparks
+
+`Scene2D/BlacksmithSparks.frag` · type=normal · mood=dark,aggressive,bright · complexity=2
+
+BLACKSMITH SPARKS: a glowing bar on the anvil under the hammer. The bar's heat is the swell (it is drawn from the fire and cools), the kick is the hammer blow -- a flash on the bar and a burst of round sparks (light only: the sparks fly on the scene clock, the blow brightens them), the bass is the forge fire behind, the treble the scale flaking off as glints; the photo is the smithy wall and the bar's surface. Camera…
+
+![BlacksmithSparks ruhig (t=8)](img/BlacksmithSparks_A.jpg) ![BlacksmithSparks ruhig (t=16)](img/BlacksmithSparks_B.jpg) ![BlacksmithSparks audio-heiß (t=21)](img/BlacksmithSparks_C.jpg)
+
+
 ### BookPagesTunnel
 
 `Scene2D/BookPagesTunnel.frag` · type=normal · mood=dreamy,calm,bright · complexity=3
@@ -483,6 +492,15 @@ CALABI-YAU MANIFOLD: 3D raymarched projection of a 6-dimensional Calabi-Yau Käh
 CALABI-YAU MANIFOLD KALEIDO: 2D cross-section through a 6D Calabi-Yau compactification (Quintic Threefold in CP4) from superstring theory. Organic multi-curved complex polynomial manifolds folding like a transcendent cosmic lotus with moduli-space morphing. Audio Reactivity: audioAdvance -> drives continuous navigation through Calabi-Yau moduli space psi audioKick -> flashes manifold singularity nodes & triggers dime…
 
 ![CalabiYauManifoldKaleido ruhig (t=8)](img/CalabiYauManifoldKaleido_A.jpg) ![CalabiYauManifoldKaleido ruhig (t=16)](img/CalabiYauManifoldKaleido_B.jpg) ![CalabiYauManifoldKaleido audio-heiß (t=21)](img/CalabiYauManifoldKaleido_C.jpg)
+
+
+### CandleForestBreath
+
+`Scene2D/CandleForestBreath.frag` · type=normal · mood=dark,calm,dreamy · complexity=3
+
+CANDLE FOREST BREATH: hundreds of candles in a dark chapel, each a round-topped flame on a wax column of the photo. A draught runs through the room as a slow wave on the scene clock, and every flame leans with it; each flame's brightness is its spectrum band (a candle per band, in rows), the kick makes them gutter (a dip and flare of light), the swell is the warmth of the whole room. Camera fixed among the candles. A…
+
+![CandleForestBreath ruhig (t=8)](img/CandleForestBreath_A.jpg) ![CandleForestBreath ruhig (t=16)](img/CandleForestBreath_B.jpg) ![CandleForestBreath audio-heiß (t=21)](img/CandleForestBreath_C.jpg)
 
 
 ### CapillaryFlight
@@ -1209,6 +1227,15 @@ FORAMINIFERA SPIRAL SHELLS: the chambered shells of forams -- single cells that 
 ![ForaminiferaSpiralShells ruhig (t=8)](img/ForaminiferaSpiralShells_A.jpg) ![ForaminiferaSpiralShells ruhig (t=16)](img/ForaminiferaSpiralShells_B.jpg) ![ForaminiferaSpiralShells audio-heiß (t=21)](img/ForaminiferaSpiralShells_C.jpg)
 
 
+### FoundryPour
+
+`Scene2D/FoundryPour.frag` · type=normal · mood=dark,aggressive,bright · complexity=2
+
+FOUNDRY POUR: molten metal poured from a ladle into a sand mould. The ladle tips steadily on the scene clock and the stream falls white-orange into the mould, where the melt spreads and cools from the edges (colour by temperature); sparks (round) fly from the impact on the clock and flare on the kick; the glow lights the whole shop -- the photo is the foundry floor and the mould pattern. The bass is the furnace roar …
+
+![FoundryPour ruhig (t=8)](img/FoundryPour_A.jpg) ![FoundryPour ruhig (t=16)](img/FoundryPour_B.jpg) ![FoundryPour audio-heiß (t=21)](img/FoundryPour_C.jpg)
+
+
 ### FourierEpicycleDraw
 
 `Scene2D/FourierEpicycleDraw.frag` · type=normal · mood=calm,dreamy,psychedelic · complexity=3
@@ -1342,6 +1369,15 @@ GAS GIANT CLOUD CITY: Floating, sleek megastructures drifting deep within the in
 GLACIER CREVASSE DESCENT: a steady descent into a blue crevasse. The walls are old ice -- layered, veined, lit from the sky far above so they glow deep blue near the top and fall into indigo dark below; ice crystals in the walls glint with the treble; the sub-bass is the glacier's groan, felt as light welling from the depth; drips of meltwater fall as round drops on the scene clock. The crevasse narrows and widens al…
 
 ![GlacierCrevasseDescent ruhig (t=8)](img/GlacierCrevasseDescent_A.jpg) ![GlacierCrevasseDescent ruhig (t=16)](img/GlacierCrevasseDescent_B.jpg) ![GlacierCrevasseDescent audio-heiß (t=21)](img/GlacierCrevasseDescent_C.jpg)
+
+
+### GlassblowerGather
+
+`Scene2D/GlassblowerGather.frag` · type=normal · mood=dark,calm,dreamy · complexity=2
+
+GLASSBLOWER GATHER: a gather of molten glass on the end of the blowpipe, turning steadily on the scene clock, inflating with the swell (the breath), and cooling from white-orange toward the colour it will keep -- the photo, which shows through the glass as its pattern once the glow has gone. The kick is the reheat in the glory hole (a flash of orange), the treble the glints on the glass, the bass the furnace mouth gl…
+
+![GlassblowerGather ruhig (t=8)](img/GlassblowerGather_A.jpg) ![GlassblowerGather ruhig (t=16)](img/GlassblowerGather_B.jpg) ![GlassblowerGather audio-heiß (t=21)](img/GlassblowerGather_C.jpg)
 
 
 ### GlitchMatrixHypercube
@@ -1886,6 +1922,15 @@ KEY CHANGE SEASONS: a forest whose season is the key of the music. The chroma hu
 ![KeyChangeSeasons ruhig (t=8)](img/KeyChangeSeasons_A.jpg) ![KeyChangeSeasons ruhig (t=16)](img/KeyChangeSeasons_B.jpg) ![KeyChangeSeasons audio-heiß (t=21)](img/KeyChangeSeasons_C.jpg)
 
 
+### KilnGlazeCrystals
+
+`Scene2D/KilnGlazeCrystals.frag` · type=normal · mood=calm,bright,dreamy · complexity=3
+
+KILN GLAZE CRYSTALS: a crystalline glaze -- zinc-silicate flowers that grow in the glaze while the kiln holds its temperature. A bowl fills the frame; over the scene arc the crystals nucleate and grow as radiating fans (each a fixed seed, its radius on the arc), each lit by a chroma class; the glaze body is the photo, glossy; the kiln glow is the bass, the kick a spark of the pyrometer, the treble the gloss. Camera f…
+
+![KilnGlazeCrystals ruhig (t=8)](img/KilnGlazeCrystals_A.jpg) ![KilnGlazeCrystals ruhig (t=16)](img/KilnGlazeCrystals_B.jpg) ![KilnGlazeCrystals audio-heiß (t=21)](img/KilnGlazeCrystals_C.jpg)
+
+
 ### KilonovaRadioactiveAfterglow
 
 `Scene2D/KilonovaRadioactiveAfterglow.frag` · type=normal · mood=aggressive,bright,dreamy,psychedelic · complexity=4
@@ -2226,6 +2271,15 @@ MANTLE CONVECTION PLUME: Deep Earth core-mantle boundary (D'' layer) thermal plu
 MARANGONI CONVECTION TEARS OF WINE: Solutal Marangoni effect on glass surfaces. Alcohol evaporation gradients create surface tension differentials, driving climbing thin liquid films, capillary rim instability beads, and cascading droplet rivulets (tears of wine). audioAdvance -> drives upward climbing film velocity & droplet rivulet cascade flow audioKick -> flashes capillary bead pinch-off & falling droplet impacts…
 
 ![MarangoniConvectionTearsOfWine ruhig (t=8)](img/MarangoniConvectionTearsOfWine_A.jpg) ![MarangoniConvectionTearsOfWine ruhig (t=16)](img/MarangoniConvectionTearsOfWine_B.jpg) ![MarangoniConvectionTearsOfWine audio-heiß (t=21)](img/MarangoniConvectionTearsOfWine_C.jpg)
+
+
+### MarbleRunTrack
+
+`Scene2D/MarbleRunTrack.frag` · type=normal · mood=calm,bright,dreamy · complexity=3
+
+MARBLE RUN TRACK: a looping wooden track, and marbles (round, glass, each a chroma class) rolling it on the scene clock -- down the ramps, round the loops, through the funnel, back up the lift. The rail a marble rides lights in its class colour with that class's energy; the kick is the bell at the bottom of the run; the photo is the wall behind and the marbles' glass. Camera fixed on the run. Audio Reactivity: sceneA…
+
+![MarbleRunTrack ruhig (t=8)](img/MarbleRunTrack_A.jpg) ![MarbleRunTrack ruhig (t=16)](img/MarbleRunTrack_B.jpg) ![MarbleRunTrack audio-heiß (t=21)](img/MarbleRunTrack_C.jpg)
 
 
 ### MatrioshkaBrain
@@ -5138,6 +5192,15 @@ FeatherStorm.frag — cut a feather out of a quad. The silhouette is the whole i
 ![FeatherStorm ruhig (t=8)](img/FeatherStorm_A.jpg) ![FeatherStorm ruhig (t=16)](img/FeatherStorm_B.jpg) ![FeatherStorm audio-heiß (t=21)](img/FeatherStorm_C.jpg)
 
 
+### FerrisWheelNight
+
+`Scene3D/FerrisWheelNight.frag` · type=scene3d · geom=indirect · mood=dark,bright,dreamy · complexity=4
+
+Fragment stage for FerrisWheelNight: a night sky with round stars, the fairground below as the photo lit by stalls (the swell), the wheel's spokes and rim strung with round lamps whose patterns run with the spectrum bands (spoke i = band i, lamps along the spoke light up to the band's level; the rim lamps chase on the clock), the cabins as photo boxes with lit windows, the kick a flash of the hub star. Audio Reactivi…
+
+![FerrisWheelNight ruhig (t=8)](img/FerrisWheelNight_A.jpg) ![FerrisWheelNight ruhig (t=16)](img/FerrisWheelNight_B.jpg) ![FerrisWheelNight audio-heiß (t=21)](img/FerrisWheelNight_C.jpg)
+
+
 ### FiberopticLightLoom
 
 `Scene3D/FiberopticLightLoom.frag` · type=scene3d · geom=ribbon · mood=bright,calm · complexity=3
@@ -5426,6 +5489,15 @@ Shades one fiber of a Hopf-fibration torus arrangement (Villarceau circles) as a
 Shades one strand of a Hopf-torus / Clifford-torus tube lattice: blends its per-vertex color (vCol) with a slideshow photo that scrolls along the strand's length (vLength, animated by time), with a bright rim along the strand's cross-section edge (vSide). This fragment shader declares no audio uniforms directly; any audio reactivity arrives already baked into the per-vertex vCol supplied by the companion vertex shade…
 
 ![HopfTorusCliffordKlein ruhig (t=8)](img/HopfTorusCliffordKlein_A.jpg) ![HopfTorusCliffordKlein ruhig (t=16)](img/HopfTorusCliffordKlein_B.jpg) ![HopfTorusCliffordKlein audio-heiß (t=21)](img/HopfTorusCliffordKlein_C.jpg)
+
+
+### HotAirBalloonDawn
+
+`Scene3D/HotAirBalloonDawn.frag` · type=scene3d · geom=indirect · mood=calm,bright,dreamy · complexity=4
+
+Fragment stage for HotAirBalloonDawn: a dawn sky (orange to blue) with the sun on the horizon and the swell as its strength, the misty field below as the photo, the envelopes in gores of the photo tinted per balloon and lit from the east, the baskets in wicker, the burners flaring on the kick and glowing into the envelope from below. Audio Reactivity: audioKick -> burner flare; audioSwell -> sunrise; audioBass -> bur…
+
+![HotAirBalloonDawn ruhig (t=8)](img/HotAirBalloonDawn_A.jpg) ![HotAirBalloonDawn ruhig (t=16)](img/HotAirBalloonDawn_B.jpg) ![HotAirBalloonDawn audio-heiß (t=21)](img/HotAirBalloonDawn_C.jpg)
 
 
 ### HubStation
@@ -5983,6 +6055,15 @@ Origami.frag — metallic foil paper. Flat panels with a hard crease between the
 ![Origami ruhig (t=8)](img/Origami_A.jpg) ![Origami ruhig (t=16)](img/Origami_B.jpg) ![Origami audio-heiß (t=21)](img/Origami_C.jpg)
 
 
+### OrreryBrass
+
+`Scene3D/OrreryBrass.frag` · type=scene3d · geom=indirect · mood=calm,dark,dreamy · complexity=3
+
+Fragment stage for OrreryBrass: a dark study (the photo as the bookshelves), the brass base engraved with rings, the arms and column in warm brass, the sun lamp glowing with the bass, the planets as photo spheres lit from the sun side (the orbit angle gives the terminator), moons as small ivory beads; the kick glints the brass, the treble the engraving. Audio Reactivity: audioBass -> sun lamp; audioKick -> brass glin…
+
+![OrreryBrass ruhig (t=8)](img/OrreryBrass_A.jpg) ![OrreryBrass ruhig (t=16)](img/OrreryBrass_B.jpg) ![OrreryBrass audio-heiß (t=21)](img/OrreryBrass_C.jpg)
+
+
 ### OscilloRings
 
 `Scene3D/OscilloRings.frag` · type=scene3d · geom=ribbon · mood=bright · complexity=1
@@ -6289,6 +6370,15 @@ RADIOLARIAN SILICA LATTICE: concentric glass micro-skeleton shells rotating agai
 RainOnWater.frag — ink-dark water under a low moon, ripple rings catching its long trembling reflection, drizzle falling through the night sky behind.
 
 ![RainOnWater ruhig (t=8)](img/RainOnWater_A.jpg) ![RainOnWater ruhig (t=16)](img/RainOnWater_B.jpg) ![RainOnWater audio-heiß (t=21)](img/RainOnWater_C.jpg)
+
+
+### RegattaSpinnakers
+
+`Scene3D/RegattaSpinnakers.frag` · type=scene3d · geom=indirect · mood=bright,calm,aggressive · complexity=4
+
+Fragment stage for RegattaSpinnakers: a bright sea sky, the sea as the photo in blue-green with whitecaps on the bass, the spinnakers as photo panels tinted per boat and lit by the sun (brighter on the belly), dark hulls, masts, white wakes; the kick a gust flash on the sails, the treble the spray sparkle. Audio Reactivity: audioBass -> whitecaps; audioKick -> gust flash; audioHigh -> spray sparkle; audioSwell -> win…
+
+![RegattaSpinnakers ruhig (t=8)](img/RegattaSpinnakers_A.jpg) ![RegattaSpinnakers ruhig (t=16)](img/RegattaSpinnakers_B.jpg) ![RegattaSpinnakers audio-heiß (t=21)](img/RegattaSpinnakers_C.jpg)
 
 
 ### RelativisticAccretionTorusMHD

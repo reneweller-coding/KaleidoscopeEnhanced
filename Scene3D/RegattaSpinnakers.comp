@@ -1,0 +1,124 @@
+#version 430 core
+/**
+ * @file RegattaSpinnakers.comp
+ * @brief REGATTA SPINNAKERS: a fleet of yachts running downwind under
+ * spinnakers of the photo.  Each boat sails steadily on the scene clock
+ * (its own speed, a gentle course), heels with the wind (the swell, slow)
+ * and rides the sea's heave (a slow bob on the clock); the spinnaker is a
+ * bellied quad-mesh, the hull a dark wedge.  No state.  Camera fixed on
+ * the committee boat.
+ *
+ * Per-instance: fleetP, windP, hueP.
+ */
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+layout(std430, binding = 0) buffer Verts { float verts[]; };
+layout(std430, binding = 1) buffer Cmd   { uint cmd[];   };
+
+uniform uint  maxVertices;
+uniform float time;
+uniform float sceneAdvance;
+uniform float sceneTime;
+uniform float audioSwell;
+
+uniform float fleetP;
+uniform float windP;
+uniform float hueP;
+
+float hash11(float p) { p = fract(p * 0.1031); p *= p + 33.33; p *= p + p; return fract(p); }
+vec3  hash31(float n) { return vec3(hash11(n), hash11(n + 17.3), hash11(n + 41.7)); }
+
+void emitQuad4(vec3 p0, vec3 p1, vec3 p2, vec3 p3, float id, float lit, float kind, vec2 uv0, vec2 uv1)
+{
+    uint base = atomicAdd(cmd[4], 6u);
+    if (base + 6u > maxVertices) return;
+    vec3 pList[6]  = vec3[6](p0, p1, p2, p0, p2, p3);
+    vec2 uvList[6] = vec2[6](vec2(uv0.x, uv0.y), vec2(uv1.x, uv0.y), vec2(uv1.x, uv1.y), vec2(uv0.x, uv0.y), vec2(uv1.x, uv1.y), vec2(uv0.x, uv1.y));
+    for (uint i = 0u; i < 6u; ++i)
+    {
+        uint off = (base + i) * 8u;
+        verts[off + 0u] = pList[i].x; verts[off + 1u] = pList[i].y; verts[off + 2u] = pList[i].z;
+        verts[off + 3u] = id; verts[off + 4u] = lit; verts[off + 5u] = kind;
+        verts[off + 6u] = uvList[i].x; verts[off + 7u] = uvList[i].y;
+    }
+}
+void emitQuad(vec3 c, vec3 ax, vec3 ay, float id, float lit, float kind, vec2 uv0, vec2 uv1)
+{
+    emitQuad4(c - ax - ay, c + ax - ay, c + ax + ay, c - ax + ay, id, lit, kind, uv0, uv1);
+}
+
+void main()
+{
+    uvec3 g = gl_GlobalInvocationID;
+    uint id = g.x + 64u * (g.y + 64u * g.z);
+    uint nBoats = 6u + uint(clamp(fleetP, 0.0, 1.0) * 8.0);
+    const uint kSailQuads = 6u * 6u;
+    float wind = (0.4 + 0.6 * clamp(windP, 0.0, 1.0)) * (0.6 + 0.6 * clamp(audioSwell, 0.0, 1.0));
+    float clock = sceneAdvance * 0.3 + sceneTime * 0.06;
+    const float SEA_Y = -1.6;
+
+    if (id == 0u)
+    {
+        emitQuad(vec3(0.0, 8.0, 70.0), vec3(100.0, 0.0, 0.0), vec3(0.0, 40.0, 0.0), 0.0, 0.0, -1.0, vec2(0.0), vec2(1.0));
+        emitQuad(vec3(0.0, SEA_Y, 35.0), vec3(100.0, 0.0, 0.0), vec3(0.0, 0.0, 35.0), 0.0, 0.0, -2.0, vec2(0.0), vec2(1.0));
+        return;
+    }
+    uint q = id - 1u;
+    uint b = q / (kSailQuads + 3u);
+    uint part = q % (kSailQuads + 3u);
+    if (b >= nBoats) return;
+    float fb = float(b);
+    vec3 h = hash31(fb * 3.7 + 1.0);
+    // The boat's track: it runs across the view from right to left on the
+    // clock, at its own depth and speed, with a gentle course wobble.
+    float speed = 0.6 + 0.5 * h.z;
+    float x = 30.0 - fract(clock * speed * 0.08 + h.x) * 60.0;
+    float z = 10.0 + h.y * 30.0;
+    float bob = 0.25 * sin(clock * 1.3 + fb) ;
+    float heel = 0.12 + 0.28 * wind;
+    vec3 c = vec3(x, SEA_Y + bob, z);
+    float scale = 1.0 + 0.3 * hash11(fb * 5.5);
+    // Hull frame: heel about the fore-aft axis (x): y and z mix.
+    float ch = cos(heel), sh = sin(heel);
+    vec3 up = vec3(0.0, ch, -sh);
+    vec3 side = vec3(0.0, sh, ch);
+    vec3 fwd = vec3(-1.0, 0.0, 0.0);
+    if (part < kSailQuads)
+    {
+        // Spinnaker: a 6x6 bellied sheet from the masthead down to the
+        // clews, bulging to leeward (toward +side), photo-textured.
+        uint i = part % 6u, j = part / 6u;
+        float u0 = float(i) / 6.0, u1 = float(i + 1u) / 6.0;
+        float v0 = float(j) / 6.0, v1 = float(j + 1u) / 6.0;
+        vec3 head = c + up * 3.2 * scale + fwd * 0.6 * scale;
+        vec3 P[4];
+        float uu[4] = float[4](u0, u1, u1, u0);
+        float vv[4] = float[4](v0, v0, v1, v1);
+        for (int k = 0; k < 4; ++k)
+        {
+            float w = (1.0 - vv[k]) * 1.0 + 0.2;                          // width grows toward the foot
+            float belly = sin(uu[k] * 3.14159) * sin(vv[k] * 3.14159) * (0.5 + 0.5 * wind) * 1.2;
+            vec3 pt = head - up * vv[k] * 3.0 * scale + fwd * (uu[k] - 0.5) * 2.6 * w * scale + side * belly * scale;
+            P[k] = pt;
+        }
+        emitQuad4(P[0], P[1], P[2], P[3], fb, wind, 0.0, vec2(u0, v0), vec2(u1, v1));
+        return;
+    }
+    if (part == kSailQuads)
+    {
+        // The hull: a dark wedge (kind 1) along fwd, heeled.
+        vec3 mid = c + fwd * 0.0;
+        emitQuad(mid, fwd * 2.2 * scale, up * 0.35 * scale, fb, 0.0, 1.0, vec2(0.0), vec2(1.0));
+        return;
+    }
+    if (part == kSailQuads + 1u)
+    {
+        // The mast (kind 2).
+        vec3 base = c + up * 0.3 * scale, top = c + up * 3.3 * scale;
+        vec3 mid = (base + top) * 0.5, half_ = (top - base) * 0.5;
+        emitQuad(mid, half_, vec3(0.03, 0.0, 0.0), fb, 0.0, 2.0, vec2(0.0), vec2(1.0));
+        return;
+    }
+    // The wake (kind 3): a flat white streak behind the hull.
+    vec3 wc = c - fwd * 3.5 * scale + vec3(0.0, -bob + 0.01, 0.0);
+    emitQuad(wc, -fwd * 2.5 * scale, vec3(0.0, 0.0, 0.5 * scale), fb, 0.0, 3.0, vec2(0.0), vec2(1.0));
+}

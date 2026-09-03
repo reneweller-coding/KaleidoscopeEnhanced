@@ -3573,3 +3573,20 @@ Preview lessons: HurricaneEyeWall lit the whole eyewall with every kick
 and strobed (19.8); lightning must be localised (a sector window) and
 scaled down; the calving cliff used a cell hash for crevasses and read as
 blocks -- a sine fissure field replaced it.
+
+## The fourth fifty, block B: craft and machines
+
+| Scene | Pipeline | Note |
+|---|---|---|
+| FoundryPour | 2D | a blackbody-ish heat ramp; the melt temperature falls with distance from the impact; sparks on phases, the kick only brightens them |
+| GlassblowerGather | 2D | the gather is a shaded ellipsoid; its temperature cycles slowly on the clock and the kick adds a reheat term |
+| KilnGlazeCrystals | 2D | radiating needle fans from fixed seeds, each nucleating at its own point in the arc |
+| OrreryBrass | `indirect` | table space tilted to world by one rotation; planets on Kepler periods; one invocation draws each orbit ring as 24 quads |
+| BlacksmithSparks | 2D | the hammer swings on the clock; the kick is light on the bar and the sparks, never the blow itself |
+| CandleForestBreath | 2D | rows in depth; flames sheared by a draught wave on the clock; candle i has band (i + 7 row) mod 32 |
+| FerrisWheelNight | `indirect` | cabins hang level under the rim points; spoke i is band i, its lamps light up to the band level |
+| HotAirBalloonDawn | `indirect` | envelopes as 16x8 lat-long quads on a teardrop profile; each balloon on a continuous rise-and-relaunch phase |
+| RegattaSpinnakers | `indirect` | a 6x6 bellied sheet in the heeled boat frame; boats cross the view on the clock |
+| MarbleRunTrack | 2D | the track is a closed parametric curve sampled 120 times; marbles are phases along it and light the rail nearest them |
+
+Lessons from the block: an indirect table scene must put the camera on the normal side of the table plane -- OrreryBrass had the tilt sign wrong, so every planet, arm and moon lay behind the base disc and the depth test hid them while the engraved rings on the base looked plausible (check the sign of dot(normal, cameraFromCentre) before blaming the emitter); craft scenes on a dark shop floor need a floor of 0.4 to 0.5 of the photo plus a constant or they read as black at sheet size; a spark burst on the kick with a weight above 1 strobes (13 on the metric) -- 0.5 is enough.

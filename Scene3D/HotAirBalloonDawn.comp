@@ -1,0 +1,107 @@
+#version 430 core
+/**
+ * @file HotAirBalloonDawn.comp
+ * @brief HOT AIR BALLOON DAWN: a fleet of balloons lifting off at sunrise
+ * -- each envelope a photo-patterned globe (built from lat-long quads),
+ * each rising on its own continuous phase, drifting with the dawn wind,
+ * its burner flaring on the kick (fragment).  No state.  The camera
+ * stands in the launch field.
+ *
+ * Per-instance: fleetP, windP, hueP.
+ */
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+layout(std430, binding = 0) buffer Verts { float verts[]; };
+layout(std430, binding = 1) buffer Cmd   { uint cmd[];   };
+
+uniform uint  maxVertices;
+uniform float time;
+uniform float sceneAdvance;
+uniform float sceneTime;
+
+uniform float fleetP;
+uniform float windP;
+uniform float hueP;
+
+float hash11(float p) { p = fract(p * 0.1031); p *= p + 33.33; p *= p + p; return fract(p); }
+vec3  hash31(float n) { return vec3(hash11(n), hash11(n + 17.3), hash11(n + 41.7)); }
+
+void emitQuad4(vec3 p0, vec3 p1, vec3 p2, vec3 p3, float id, float lit, float kind, vec2 uv0, vec2 uv1)
+{
+    uint base = atomicAdd(cmd[4], 6u);
+    if (base + 6u > maxVertices) return;
+    vec3 pList[6]  = vec3[6](p0, p1, p2, p0, p2, p3);
+    vec2 uvList[6] = vec2[6](vec2(uv0.x, uv0.y), vec2(uv1.x, uv0.y), vec2(uv1.x, uv1.y), vec2(uv0.x, uv0.y), vec2(uv1.x, uv1.y), vec2(uv0.x, uv1.y));
+    for (uint i = 0u; i < 6u; ++i)
+    {
+        uint off = (base + i) * 8u;
+        verts[off + 0u] = pList[i].x; verts[off + 1u] = pList[i].y; verts[off + 2u] = pList[i].z;
+        verts[off + 3u] = id; verts[off + 4u] = lit; verts[off + 5u] = kind;
+        verts[off + 6u] = uvList[i].x; verts[off + 7u] = uvList[i].y;
+    }
+}
+
+void emitQuad(vec3 c, vec3 ax, vec3 ay, float id, float lit, float kind, vec2 uv0, vec2 uv1)
+{
+    emitQuad4(c - ax - ay, c + ax - ay, c + ax + ay, c - ax + ay, id, lit, kind, uv0, uv1);
+}
+
+void main()
+{
+    uvec3 g = gl_GlobalInvocationID;
+    uint id = g.x + 64u * (g.y + 64u * g.z);
+    uint nBalloons = 8u + uint(clamp(fleetP, 0.0, 1.0) * 10.0);
+    const uint kSeg = 16u, kRows = 8u;
+    const uint quadsPer = kSeg * kRows;
+    float wind = 0.3 + 0.7 * clamp(windP, 0.0, 1.0);
+    float clock = sceneAdvance * 0.25 + sceneTime * 0.05;
+
+    if (id == 0u)
+    {
+        emitQuad(vec3(0.0, 6.0, 60.0), vec3(90.0, 0.0, 0.0), vec3(0.0, 50.0, 0.0), 0.0, 0.0, -1.0, vec2(0.0), vec2(1.0));
+        emitQuad(vec3(0.0, -2.5, 30.0), vec3(90.0, 0.0, 0.0), vec3(0.0, 0.0, 30.0), 0.0, 0.0, -2.0, vec2(0.0), vec2(1.0));
+        return;
+    }
+    uint q = id - 1u;
+    uint b = q / (quadsPer + 2u);
+    uint part = q % (quadsPer + 2u);
+    if (b >= nBalloons) return;
+    float fb = float(b);
+    vec3 h = hash31(fb * 3.7 + 1.0);
+    // Life: rising on a continuous phase; the balloon drifts downwind as
+    // it climbs and fades out far and high, then the same seed launches again.
+    float period = 1.0;
+    float life = fract(clock * (0.12 + 0.08 * h.z) + h.y);
+    float height = -1.5 + 14.0 * pow(life, 0.8);
+    float drift = life * 22.0 * wind;
+    vec3 c = vec3((h.x - 0.5) * 40.0 + drift, height, 14.0 + h.y * 22.0);
+    float R = 1.6 + 0.6 * hash11(fb * 5.5);
+    float shrink = 1.0 - smoothstep(0.85, 1.0, life);
+    R *= shrink;
+    if (part < quadsPer)
+    {
+        // Envelope: lat-long quad (si, ri); a teardrop profile (wider on top).
+        uint si = part % kSeg, ri = part / kSeg;
+        float a0 = float(si) / float(kSeg) * 6.2831853, a1 = float(si + 1u) / float(kSeg) * 6.2831853;
+        float t0 = float(ri) / float(kRows), t1 = float(ri + 1u) / float(kRows);
+        // Profile: radius by height fraction t (0 bottom .. 1 top).
+        float r0 = R * sin(t0 * 3.14159) * (0.4 + 0.6 * t0) * (t0 < 0.15 ? 0.5 + 3.0 * t0 : 1.0);
+        float r1 = R * sin(t1 * 3.14159) * (0.4 + 0.6 * t1) * (t1 < 0.15 ? 0.5 + 3.0 * t1 : 1.0);
+        float y0 = (t0 - 0.35) * R * 2.2, y1 = (t1 - 0.35) * R * 2.2;
+        vec3 p0 = c + vec3(cos(a0) * r0, y0, sin(a0) * r0), p1 = c + vec3(cos(a1) * r0, y0, sin(a1) * r0);
+        vec3 p2 = c + vec3(cos(a1) * r1, y1, sin(a1) * r1), p3 = c + vec3(cos(a0) * r1, y1, sin(a0) * r1);
+        // Store the segment/row for gores in the uv, the light term in lit.
+        float lit = 0.5 + 0.5 * cos(a0 + 0.8);                            // dawn light from the east side
+        emitQuad4(p0, p1, p2, p3, fb, lit, 0.0, vec2(float(si) / float(kSeg), t0), vec2(float(si + 1u) / float(kSeg), t1));
+        return;
+    }
+    if (part == quadsPer)
+    {
+        // The basket (kind 1) below the envelope.
+        vec3 bc = c + vec3(0.0, -R * 1.1, 0.0);
+        emitQuad(bc, vec3(0.28, 0.0, 0.0), vec3(0.0, 0.2, 0.0), fb, life, 1.0, vec2(0.0), vec2(1.0));
+        return;
+    }
+    // The burner flame (kind 2): a small quad just under the envelope mouth.
+    vec3 fc = c + vec3(0.0, -R * 0.75, 0.0);
+    emitQuad(fc, vec3(0.16, 0.0, 0.0), vec3(0.0, 0.22, 0.0), fb, life, 2.0, vec2(0.0), vec2(1.0));
+}
