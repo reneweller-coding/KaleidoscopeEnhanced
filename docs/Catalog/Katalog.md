@@ -1,6 +1,6 @@
 # Kaleidoscope Enhanced — Szenen-Katalog
 
-_666 Szenen, 29 FX-Overlays, 83 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
+_676 Szenen, 29 FX-Overlays, 83 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
 
 
 ---
@@ -602,6 +602,15 @@ CONFORMAL LOG POLAR DIVE: Complex exponential mapping w = exp(z) transforming th
 ![ConformalLogPolarDive ruhig (t=8)](img/ConformalLogPolarDive_A.jpg) ![ConformalLogPolarDive ruhig (t=16)](img/ConformalLogPolarDive_B.jpg) ![ConformalLogPolarDive audio-heiß (t=21)](img/ConformalLogPolarDive_C.jpg)
 
 
+### CosmicMicrowaveBackgroundSky
+
+`Scene2D/CosmicMicrowaveBackgroundSky.frag` · type=normal · mood=space,psychedelic,calm · complexity=2
+
+COSMIC MICROWAVE BACKGROUND SKY: the oldest light, as a sky. The anisotropy map is built from noise at eight angular scales, and the amplitude of each scale is a spectrum band -- the acoustic peaks of the early universe were literally sound waves in the plasma, so here the music's spectrum IS the power spectrum: bass paints the large blobs, treble the fine grain. We look out from inside the sphere; the view turns slo…
+
+![CosmicMicrowaveBackgroundSky ruhig (t=8)](img/CosmicMicrowaveBackgroundSky_A.jpg) ![CosmicMicrowaveBackgroundSky ruhig (t=16)](img/CosmicMicrowaveBackgroundSky_B.jpg) ![CosmicMicrowaveBackgroundSky audio-heiß (t=21)](img/CosmicMicrowaveBackgroundSky_C.jpg)
+
+
 ### CosmicRayAirShowerCherenkov
 
 `Scene2D/CosmicRayAirShowerCherenkov.frag` · type=normal · mood=bright,aggressive,dark · complexity=3
@@ -737,6 +746,15 @@ Atmospheric void tunnel designed for dark ambient and drone music. (Christoph He
 DARK MATTER WEB: A visual representation of the cosmic web that binds the universe. Glowing filaments of dark matter connect massive galactic nodes, pulsing with dark, eerie energy to the beat. audioAdvance -> camera flight through the web audioKick -> bright pulses travelling along the filaments audioSwell -> brightness of the galactic nodes audioChromaHue-> palette offset for the dark matter Per-activation variety:…
 
 ![DarkMatterWeb ruhig (t=8)](img/DarkMatterWeb_A.jpg) ![DarkMatterWeb ruhig (t=16)](img/DarkMatterWeb_B.jpg) ![DarkMatterWeb audio-heiß (t=21)](img/DarkMatterWeb_C.jpg)
+
+
+### DarkNebulaBokGlobules
+
+`Scene2D/DarkNebulaBokGlobules.frag` · type=normal · mood=space,dark,calm · complexity=3
+
+DARK NEBULA / BOK GLOBULES: cocoons of dust in silhouette before a glowing emission nebula -- the photo IS the nebula. The globules are a ray-marched density field (fbm blobs, domain-warped on the scene clock), and the nebula and the stars behind them dim by the integrated column, so the cocoons have a front, a back and soft edges where the dust thins. The swell thickens the dust (slow); onsets ignite protostars deep…
+
+![DarkNebulaBokGlobules ruhig (t=8)](img/DarkNebulaBokGlobules_A.jpg) ![DarkNebulaBokGlobules ruhig (t=16)](img/DarkNebulaBokGlobules_B.jpg) ![DarkNebulaBokGlobules audio-heiß (t=21)](img/DarkNebulaBokGlobules_C.jpg)
 
 
 ### DeepSpaceArmada
@@ -1544,6 +1562,15 @@ INTERSTELLAR NEBULA WARP CRUISE: Volumetric 3D FBM raymarching flight through de
 ![InterstellarNebulaWarpCruise ruhig (t=8)](img/InterstellarNebulaWarpCruise_A.jpg) ![InterstellarNebulaWarpCruise ruhig (t=16)](img/InterstellarNebulaWarpCruise_B.jpg) ![InterstellarNebulaWarpCruise audio-heiß (t=21)](img/InterstellarNebulaWarpCruise_C.jpg)
 
 
+### IoVolcanicPlumes
+
+`Scene2D/IoVolcanicPlumes.frag` · type=normal · mood=space,dark,aggressive · complexity=2
+
+IO VOLCANIC PLUMES: Jupiter fills the sky, banded and turning on the scene clock; below, Io's sulphur plains (the photo as the surface) with volcanic vents. Each vent runs a continuous umbrella plume -- material rises on a travelling phase and falls back in an arc, as Io's plumes do in vacuum -- and an onset brightens the plume from the vent up (light), so the eruptions pulse with the music without a single geometric…
+
+![IoVolcanicPlumes ruhig (t=8)](img/IoVolcanicPlumes_A.jpg) ![IoVolcanicPlumes ruhig (t=16)](img/IoVolcanicPlumes_B.jpg)
+
+
 ### IridescentChitinMorpho
 
 `Scene2D/IridescentChitinMorpho.frag` · type=normal · mood=calm,bright,dreamy · complexity=3
@@ -1967,6 +1994,15 @@ METAMORPHIC LAVA VORTEX: 100% viewport-filling viscous basalt magma ocean. Solid
 ![MetamorphicLavaVortex ruhig (t=8)](img/MetamorphicLavaVortex_A.jpg) ![MetamorphicLavaVortex ruhig (t=16)](img/MetamorphicLavaVortex_B.jpg) ![MetamorphicLavaVortex audio-heiß (t=21)](img/MetamorphicLavaVortex_C.jpg)
 
 
+### MicrolensingCausticSweep
+
+`Scene2D/MicrolensingCausticSweep.frag` · type=normal · mood=space,dark,psychedelic · complexity=2
+
+MICROLENSING CAUSTIC SWEEP: a pair of point-mass lenses drifts across a star field, and where their caustics -- the folds of the lens map -- pass over a star, it flares: that is a microlensing event, and here it happens all over the sky. The star field is sampled through the lens map (each pixel asks which source it sees), and the magnification is the inverse Jacobian of that map, so the caustic curves appear as line…
+
+![MicrolensingCausticSweep ruhig (t=8)](img/MicrolensingCausticSweep_A.jpg) ![MicrolensingCausticSweep ruhig (t=16)](img/MicrolensingCausticSweep_B.jpg) ![MicrolensingCausticSweep audio-heiß (t=21)](img/MicrolensingCausticSweep_C.jpg)
+
+
 ### MobiusInversionKaleidoscope
 
 `Scene2D/MobiusInversionKaleidoscope.frag` · type=normal · mood=psychedelic,dark · complexity=2
@@ -2228,6 +2264,15 @@ ORBITAL RING STATION: a rotating habitat ring turning slowly above a gas-giant-s
 ![OrbitalRingStation ruhig (t=8)](img/OrbitalRingStation_A.jpg) ![OrbitalRingStation ruhig (t=16)](img/OrbitalRingStation_B.jpg) ![OrbitalRingStation audio-heiß (t=21)](img/OrbitalRingStation_C.jpg)
 
 
+### OrbitalSunrise
+
+`Scene2D/OrbitalSunrise.frag` · type=normal · mood=space,calm,dreamy · complexity=2
+
+ORBITAL SUNRISE: the view from low orbit as the sun comes over the limb. The planet's curve fills the lower frame; its atmosphere is a stack of Rayleigh layers that go from deep blue through gold as the sun climbs; city lights on the night side (round, jittered) fade out with the dawn; clouds from the photo; stars above. The sun's elevation is the sine of the host's day clock -- it rises AND sets continuously, no wra…
+
+![OrbitalSunrise ruhig (t=8)](img/OrbitalSunrise_A.jpg) ![OrbitalSunrise ruhig (t=16)](img/OrbitalSunrise_B.jpg) ![OrbitalSunrise audio-heiß (t=21)](img/OrbitalSunrise_C.jpg)
+
+
 ### OrganicFlow
 
 `Scene2D/OrganicFlow.frag` · type=normal · mood=calm · complexity=1
@@ -2363,6 +2408,15 @@ The photo dissolving into pixel-sorted streaks that sweep through the frame in r
 PLANETARY COLLISION: The apocalyptic moment two massive planets collide. Crusts shatter, oceans boil into space, and glowing magma is exposed in the catastrophic impact zone. Huge shockwaves of debris violently explode outward with every audio kick. audioAdvance -> intense chaotic movement of the colliding crusts audioKick -> massive explosive shockwaves and magma bursts audioSwell -> blinding heat and brightness of …
 
 ![PlanetaryCollision ruhig (t=8)](img/PlanetaryCollision_A.jpg) ![PlanetaryCollision ruhig (t=16)](img/PlanetaryCollision_B.jpg) ![PlanetaryCollision audio-heiß (t=21)](img/PlanetaryCollision_C.jpg)
+
+
+### PlanetaryNebulaShells
+
+`Scene2D/PlanetaryNebulaShells.frag` · type=normal · mood=space,dreamy,bright · complexity=3
+
+PLANETARY NEBULA SHELLS: a dying star has thrown off shell after shell of gas, and we fly inward through them. The shells sit at radii doubling outward, each one a thin sphere of fbm-mottled gas that glows with its own spectrum band -- the innermost the bass, the outermost the treble -- lit by the white dwarf at the centre. Because the shell radii double, the configuration is self-similar under "one shell inward", so…
+
+![PlanetaryNebulaShells ruhig (t=8)](img/PlanetaryNebulaShells_A.jpg) ![PlanetaryNebulaShells ruhig (t=16)](img/PlanetaryNebulaShells_B.jpg) ![PlanetaryNebulaShells audio-heiß (t=21)](img/PlanetaryNebulaShells_C.jpg)
 
 
 ### PlanetaryRingRings
@@ -2954,6 +3008,15 @@ SOLAR CORONA PROMINENCE: Volumetric solar magnetic coronal loops arching over a 
 ![SolarCoronaProminence ruhig (t=8)](img/SolarCoronaProminence_A.jpg) ![SolarCoronaProminence ruhig (t=16)](img/SolarCoronaProminence_B.jpg) ![SolarCoronaProminence audio-heiß (t=21)](img/SolarCoronaProminence_C.jpg)
 
 
+### SolarEclipseTotality
+
+`Scene2D/SolarEclipseTotality.frag` · type=normal · mood=space,dark,calm · complexity=2
+
+SOLAR ECLIPSE TOTALITY: the moon's disc over the sun, and the corona that only totality shows -- thirty-two streamers whose lengths are the thirty-two spectrum bands, so the corona breathes with the music band by band; red prominences on the limb; the chromosphere's thin pink ring; the diamond ring where a sliver of photosphere shows. The host's day clock moves the moon across the sun (a slow sin, never a wrap), so t…
+
+![SolarEclipseTotality ruhig (t=8)](img/SolarEclipseTotality_A.jpg) ![SolarEclipseTotality ruhig (t=16)](img/SolarEclipseTotality_B.jpg) ![SolarEclipseTotality audio-heiß (t=21)](img/SolarEclipseTotality_C.jpg)
+
+
 ### SolarFlareCorona
 
 `Scene2D/SolarFlareCorona.frag` · type=normal · mood=aggressive,bright,psychedelic · complexity=4
@@ -3386,6 +3449,15 @@ A stripped-down mirrored-segment kaleidoscope tunnel: no base rotation/tilt, jus
 Two mirrored-segment kaleidoscope tunnels blended 50/50: a forward layer (same construction as Tunnel.frag) and a second layer whose rotation and radial mapping run in the opposite sense, so the two tunnels shear against each other rather than simply co-scrolling. Audio Reactivity: - audioPhase -> adds to the wedge rotation of BOTH layers (integrated, jump-free) - audioAdvance -> adds to the forward layer's scroll bu…
 
 ![TunnelReverse ruhig (t=8)](img/TunnelReverse_A.jpg) ![TunnelReverse ruhig (t=16)](img/TunnelReverse_B.jpg) ![TunnelReverse audio-heiß (t=21)](img/TunnelReverse_C.jpg)
+
+
+### VacuumDecayBubble
+
+`Scene2D/VacuumDecayBubble.frag` · type=normal · mood=space,psychedelic,dark · complexity=2
+
+VACUUM DECAY BUBBLE: a bubble of true vacuum drifts through space and rewrites the physics inside it. Outside, a starfield and the photo as a nebula; inside the wall the same sky with the constants changed -- colours inverted toward the palette, space refracted, stars split into spectra, the nebula's structure at another scale. The wall itself is a thin refracting shell with chromatic dispersion. The bubble's radius …
+
+![VacuumDecayBubble ruhig (t=8)](img/VacuumDecayBubble_A.jpg) ![VacuumDecayBubble ruhig (t=16)](img/VacuumDecayBubble_B.jpg) ![VacuumDecayBubble audio-heiß (t=21)](img/VacuumDecayBubble_C.jpg)
 
 
 ### VillarceauCirclesHyperFlow
@@ -5912,6 +5984,15 @@ ThunderCloud.frag — extra-soft point for the cloud/flash look.
 ![ThunderCloud ruhig (t=8)](img/ThunderCloud_A.jpg) ![ThunderCloud ruhig (t=16)](img/ThunderCloud_B.jpg) ![ThunderCloud audio-heiß (t=21)](img/ThunderCloud_C.jpg)
 
 
+### TidalDisruptionEvent
+
+`Scene3D/TidalDisruptionEvent.frag` · type=scene3d · geom=indirect · mood=space,dark,aggressive · complexity=4
+
+Fragment stage for TidalDisruptionEvent: soft star particles, the black hole as a shadow disc with a photon ring that glows with the bass, and a deep-space sky with round stars. Audio Reactivity: audioKick flashes the particles; audioBass glows the photon ring; audioDrop floods the ring (the tearing).
+
+![TidalDisruptionEvent ruhig (t=8)](img/TidalDisruptionEvent_A.jpg) ![TidalDisruptionEvent ruhig (t=16)](img/TidalDisruptionEvent_B.jpg) ![TidalDisruptionEvent audio-heiß (t=21)](img/TidalDisruptionEvent_C.jpg)
+
+
 ### TokamakFusionCore
 
 `Scene3D/TokamakFusionCore.frag` · type=scene3d · geom=indirect · mood=aggressive,dark · complexity=4
@@ -6011,6 +6092,15 @@ WarpStars.frag — soft star sprite (additive blending).
 WaveRibbon.frag — glowing line: bright core, soft halo.
 
 ![WaveRibbon ruhig (t=8)](img/WaveRibbon_A.jpg) ![WaveRibbon ruhig (t=16)](img/WaveRibbon_B.jpg) ![WaveRibbon audio-heiß (t=21)](img/WaveRibbon_C.jpg)
+
+
+### WhiteHoleFountain
+
+`Scene3D/WhiteHoleFountain.frag` · type=scene3d · geom=indirect · mood=space,bright,dreamy · complexity=4
+
+Fragment stage for WhiteHoleFountain: photo tiles that are bright and white-hot at birth and cool to the photo's own colours as they climb, fading out near the end of their life; the horizon is a blinding disc that flashes on the kick; the sky is deep space with round stars. Audio Reactivity: audioKick flashes the horizon and the newborn tiles; audioLevel is the tile brightness.
+
+![WhiteHoleFountain ruhig (t=8)](img/WhiteHoleFountain_A.jpg) ![WhiteHoleFountain ruhig (t=16)](img/WhiteHoleFountain_B.jpg) ![WhiteHoleFountain audio-heiß (t=21)](img/WhiteHoleFountain_C.jpg)
 
 
 ### WignerCrystalElectronLattice

@@ -1,0 +1,164 @@
+#version 430 core
+/**
+ * @file TidalDisruptionEvent.comp
+ * @brief TIDAL DISRUPTION EVENT: a star falls past a black hole and is torn
+ * into a stream.  24,576 particles make the star; each feels the hole's
+ * gravity (softened point mass) and a self-gravity spring toward the star's
+ * own centre, which rides an analytic fly-by orbit driven by the scene's
+ * arc.  Far out the spring wins and the star holds; near pericentre the
+ * tides win, the spring is released along the arc and the star draws out
+ * into the classic two-armed stream that wraps the hole.  The drop regie
+ * can bend the arc so pericentre lands on the drop -- and the tearing is
+ * geometry that was always going to happen, not a jump: the release is a
+ * smoothstep over a fifth of the arc.  The camera never moves.
+ *
+ * State (binding 2): magic, clocks, then 8 floats per particle.  Init is
+ * SELF-HEALING PER PARTICLE: a zero slot, a bad magic, a NaN or a particle
+ * swallowed by the hole is reborn as star material at the star's current
+ * place -- so the order of the two passes cannot matter, and nothing can
+ * sit forever in the hole's softened well (which is what a zero state did).
+ *
+ * Audio Reactivity (generator stage):
+ *   sceneProgress -> the fly-by and the release (staged, continuous)
+ *   sceneAdvance  -> integration pace (music-paced)
+ *   audioLevel    -> pace as well
+ *   audioKick     -> particle flash (fragment stage)
+ *   audioBass     -> the hole's glow (fragment stage)
+ *
+ * Per-instance: massP (hole mass), spinP (star spin), hueP.
+ */
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+layout(std430, binding = 0) buffer Verts { float verts[]; };
+layout(std430, binding = 1) buffer Cmd   { uint cmd[];   };
+layout(std430, binding = 2) buffer State
+{
+    uint  magic;
+    uint  pad0;
+    float lastT;
+    float lastAdv;
+    float pad1, pad2, pad3, pad4;
+    float st[];
+};
+
+uniform uint  maxVertices;
+uniform uint  frameIndex;
+uniform float genPass;
+uniform float time;
+uniform float sceneSeed;
+uniform float sceneAdvance;
+uniform float sceneTime;
+uniform float sceneProgress;
+uniform float audioLevel;
+
+uniform float massP;
+uniform float spinP;
+uniform float hueP;
+
+const uint  kParts = 24576u;
+const float EPS = 0.18;
+
+float hash11(float p) { p = fract(p * 0.1031); p *= p + 33.33; p *= p + p; return fract(p); }
+vec3  hash31(float n) { return vec3(hash11(n), hash11(n + 17.3), hash11(n + 41.7)); }
+uint expectedMagic() { return 0xBEEF0100u ^ uint(fract(sceneSeed * 0.617) * 65535.0); }
+
+// The star's centre on a parabola-like fly-by, parameterised by the arc.
+// Pericentre at u = 0.6 of the arc, closest approach 1.1 units.
+vec3 starPath(float u)
+{
+    float s = (u - 0.6) * 9.0;                              // -5.4 .. 3.6
+    return vec3(s * 0.75, 0.05 * s, 0.55 + 0.09 * s * s);
+}
+
+void emitQuad(vec3 c, float s, float id, float a, float kind)
+{
+    uint base = atomicAdd(cmd[4], 6u);
+    if (base + 6u > maxVertices) return;
+    vec3 p0 = c + vec3(-s, -s, 0.0), p1 = c + vec3(s, -s, 0.0), p2 = c + vec3(s, s, 0.0), p3 = c + vec3(-s, s, 0.0);
+    vec3 pList[6]  = vec3[6](p0, p1, p2, p0, p2, p3);
+    vec2 uvList[6] = vec2[6](vec2(0.0, 0.0), vec2(1.0, 0.0), vec2(1.0, 1.0), vec2(0.0, 0.0), vec2(1.0, 1.0), vec2(0.0, 1.0));
+    for (uint i = 0u; i < 6u; ++i)
+    {
+        uint off = (base + i) * 8u;
+        verts[off + 0u] = pList[i].x; verts[off + 1u] = pList[i].y; verts[off + 2u] = pList[i].z;
+        verts[off + 3u] = id; verts[off + 4u] = a; verts[off + 5u] = kind;
+        verts[off + 6u] = uvList[i].x; verts[off + 7u] = uvList[i].y;
+    }
+}
+
+void main()
+{
+    uvec3 g = gl_GlobalInvocationID;
+    uint id = g.x + 64u * (g.y + 64u * g.z);
+    // Re-seed on a bad magic AND in the first frames of every activation:
+    // GPU memory is recycled between runs, so a stale buffer can carry the
+    // right magic and the wrong star (seen: the star missing until swallowed
+    // particles were reborn at the right place).
+    bool needInit = (magic != expectedMagic()) || (sceneTime < 0.06);
+
+    if (genPass > 0.5)
+    {
+        if (id == 0u)
+        {
+            // The magic is only stamped once pass 0 has actually seeded the
+            // particles (pad0 = 1), so the order of the two passes within a
+            // frame cannot leave garbage state validated.
+            if (needInit && pad0 == 1u) { magic = expectedMagic(); pad0 = 0u; }
+            lastT = time; lastAdv = sceneAdvance;
+        }
+        return;
+    }
+
+    float prog = clamp(sceneProgress, 0.0, 1.0);
+    vec3 centre = starPath(prog);
+    if (id == 0u)
+    {
+        emitQuad(vec3(0.0, 0.0, 9.0), 16.0, 0.0, 0.0, -1.0);       // sky
+        emitQuad(vec3(0.0, 0.0, 0.0), 0.9, 0.0, 0.0, 2.0);         // the hole: shadow + photon ring
+    }
+    if (id >= kParts) return;
+
+    uint o = id * 8u;
+    float fid = float(id);
+    float M = 3.2 * ((massP > 0.05) ? massP : 1.0);
+
+    vec3 p = vec3(st[o + 0u], st[o + 1u], st[o + 2u]);
+    vec3 v = vec3(st[o + 3u], st[o + 4u], st[o + 5u]);
+    bool reborn = needInit || dot(p, p) < 1e-6 || length(p) < 0.3 || any(isnan(p));
+    if (reborn)
+    {
+        vec3 h = hash31(fid * 1.37 + sceneSeed * 19.0);
+        vec3 d = normalize(h * 2.0 - 1.0 + vec3(1e-4)) * pow(hash11(fid * 2.9), 0.5) * 0.42;
+        float w = 0.6 * (spinP > 0.05 ? spinP : 1.0);
+        v = vec3(-d.y, d.x, 0.0) * w;
+        p = centre + d;
+        st[o + 6u] = pow(hash11(fid * 2.9), 0.5); st[o + 7u] = 0.0;
+        if (needInit && id == 0u) pad0 = 1u;              // seeded: pass 1 may now stamp the magic
+    }
+    else
+    {
+        float dtWall = clamp(time - lastT, 0.0, 0.05);
+        float dtAdv  = clamp(sceneAdvance - lastAdv, 0.0, 0.1);
+        float dt = dtWall * (0.6 + 1.0 * clamp(audioLevel, 0.0, 1.0)) + dtAdv * 0.8;
+
+        // Self-gravity as a spring to the star's centre; released over a
+        // fifth of the arc around pericentre.
+        float hold = 1.0 - smoothstep(0.42, 0.62, prog);
+        vec3 toC = centre - p;
+        vec3 acc = toC * 9.0 * hold;
+        vec3 cNext = starPath(min(prog + 0.002, 1.0));
+        vec3 vC = (cNext - centre) / 0.002 * 0.02;
+        acc += (vC - v) * 4.0 * hold;
+        // The hole.
+        vec3 d0 = p;
+        acc += -M * d0 / pow(dot(d0, d0) + EPS * EPS, 1.5);
+        v += acc * dt;
+        p += v * dt;
+        if (length(p) > 9.0) v -= p * 0.05 * dt;
+    }
+    st[o + 0u] = p.x; st[o + 1u] = p.y; st[o + 2u] = p.z;
+    st[o + 3u] = v.x; st[o + 4u] = v.y; st[o + 5u] = v.z;
+
+    float speed = length(v);
+    float s = 0.065 + 0.03 * clamp(speed * 0.4, 0.0, 1.0);
+    emitQuad(p, s, fid, speed, st[o + 6u]);
+}

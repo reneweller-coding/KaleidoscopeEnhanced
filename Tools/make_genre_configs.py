@@ -181,19 +181,19 @@ MODIFIED_SCENES = {
 # Minuten statt siebzig).  Bewusst eine eigene Liste: welche Szenen zuletzt
 # dran waren, ist eine historische Tatsache und soll im Diff stehen.
 RECENT_SCENES = {
-    # 03.09.: Block 5 der neuen Szenen (Spiegelkabinett, Voronoi-Scherben, SSM-
-    # Mandala, Melodie-Kaleidoskop, interstellarer Staub, Rauch-Sigillen, Flotten-
-    # sprung, Schattenspiel, Tessellations-Ozean, Glas-Kirchenschiff).
-    "InfinityMirrorRoom",
-    "VoronoiMirrorShatter",
-    "SelfSimilarityMandala",
-    "MelodyKaleidoscope",
-    "InterstellarMediumDust",
-    "SmokeSigils",
-    "FleetJump",
-    "ShipShadowPlay",
-    "TessellatedOcean",
-    "GlassNaveFlight",
+    # 03.09.: zweite Fuenfzig, Block A (Weltraum): Bok-Globulen, Vakuumblase,
+    # Nebelschalen, Sonnenfinsternis, Io, Mikrolinsen, CMB, Weisses Loch,
+    # Gezeitenzerriss, Orbit-Sonnenaufgang.
+    "DarkNebulaBokGlobules",
+    "VacuumDecayBubble",
+    "PlanetaryNebulaShells",
+    "SolarEclipseTotality",
+    "IoVolcanicPlumes",
+    "MicrolensingCausticSweep",
+    "CosmicMicrowaveBackgroundSky",
+    "OrbitalSunrise",
+    "TidalDisruptionEvent",
+    "WhiteHoleFountain",
 }
 
 def rule_recent(m, h):

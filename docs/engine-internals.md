@@ -3297,3 +3297,30 @@ The scanner is now the pre-commit check for V7d and V8e; its false
 positives are the price of catching the true ones, and it prints the line
 so the reading is quick.
 
+## The second fifty, block A: space
+
+A second list of fifty (`docs/proposals-2026-09-03-second-fifty.md`), proposed
+against the full 666-scene catalogue and under the standing rules. Block A:
+
+| Scene | Building block | What it does |
+|---|---|---|
+| DarkNebulaBokGlobules | -- | dust cocoons ray-marched before the photo as an emission nebula; stars dim by column density; onsets ignite protostars inside (light) |
+| VacuumDecayBubble | `audioBuildUp` | a bubble of true vacuum rewrites the sky inside it (inverted, refracted, dispersed); radius on the build-up, the wall flashes on the drop |
+| PlanetaryNebulaShells | `audioSpectrum[32]` | shells at radii doubling outward, each a band; the inward flight is log-periodic in ln 2, so it never wraps visibly |
+| SolarEclipseTotality | `audioSpectrum[32]`, `dayPhase` | 32 corona streamers = 32 bands; the moon drifts a tenth of a radius on sin(dayPhase), so totality is the rule |
+| IoVolcanicPlumes | `audioOnset` | Jupiter's bands turn on the scene clock; umbrella plumes flow on a phase, onsets are their brightness |
+| MicrolensingCausticSweep | `audioSwell` | a two-mass lens map with magnification 1/det J; caustic folds sweep a star field |
+| CosmicMicrowaveBackgroundSky | `audioSpectrum[32]` | eight angular noise scales weighted by band groups: the music's spectrum as the CMB power spectrum |
+| OrbitalSunrise | `dayPhase`, `audioValence` | sunrise from orbit on the sine of the day clock (rises and sets, never wraps); round city lights fade with dawn |
+| TidalDisruptionEvent | `indirect`, `stateBytes`, `sceneProgress` | a star on a fly-by, self-gravity as a spring released along the arc, the hole's tides do the rest |
+| WhiteHoleFountain | `indirect` | photo tiles born at a horizon fly outward on continuous life phases |
+
+**Stale state buffers.** GPU memory is recycled between runs and activations,
+so a fresh state buffer can already carry the right magic word and a stale
+(or garbage) star: TidalDisruptionEvent showed no star until particles that
+fell into the hole were reborn in the right place. Three guards now, also
+in GalaxyMergerNBody: re-seed in the first frames of every activation
+(`sceneTime < 0.06`); pass 1 stamps the magic only after pass 0 has seeded
+(a flag in the header), so pass order cannot validate garbage; and every
+particle is reborn on a zero slot, a NaN, or when swallowed.
+

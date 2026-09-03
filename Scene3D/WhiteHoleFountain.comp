@@ -1,0 +1,98 @@
+#version 430 core
+/**
+ * @file WhiteHoleFountain.comp
+ * @brief WHITE HOLE FOUNTAIN: the time-reverse of a black hole -- nothing
+ * can enter, everything pours out.  Thirty thousand photo tiles well up out
+ * of a blinding horizon at the centre and fly outward on radial paths,
+ * decelerating as they climb the gravity well the wrong way, fading as they
+ * go.  No state: each tile lives on a continuous phase of the scene clock
+ * (its "birth" repeats every cycle at the same seed), so the fountain runs
+ * forever without a jump.  The swell is the fountain's speed (slow); the
+ * kick flashes the horizon (fragment).  The camera never moves.
+ *
+ * Audio Reactivity (generator stage):
+ *   sceneAdvance -> the flow (continuous)
+ *   audioSwell   -> speed of the flow (slow)
+ *   audioKick    -> horizon flash (fragment stage)
+ *
+ * Per-instance: densP (fraction of tiles), spreadP (cone width), hueP.
+ */
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+layout(std430, binding = 0) buffer Verts { float verts[]; };
+layout(std430, binding = 1) buffer Cmd   { uint cmd[];   };
+
+uniform uint  maxVertices;
+uniform float time;
+uniform float sceneAdvance;
+uniform float sceneTime;
+uniform float audioSwell;
+
+uniform float densP;
+uniform float spreadP;
+uniform float hueP;
+
+float hash11(float p) { p = fract(p * 0.1031); p *= p + 33.33; p *= p + p; return fract(p); }
+vec3  hash31(float n) { return vec3(hash11(n), hash11(n + 17.3), hash11(n + 41.7)); }
+
+void emitQuad(vec3 c, vec3 ax, vec3 ay, float id, float life, float kind, vec2 uv0, vec2 uv1)
+{
+    uint base = atomicAdd(cmd[4], 6u);
+    if (base + 6u > maxVertices) return;
+    vec3 p0 = c - ax - ay, p1 = c + ax - ay, p2 = c + ax + ay, p3 = c - ax + ay;
+    vec3 pList[6]  = vec3[6](p0, p1, p2, p0, p2, p3);
+    vec2 uvList[6] = vec2[6](vec2(uv0.x, uv0.y), vec2(uv1.x, uv0.y), vec2(uv1.x, uv1.y), vec2(uv0.x, uv0.y), vec2(uv1.x, uv1.y), vec2(uv0.x, uv1.y));
+    for (uint i = 0u; i < 6u; ++i)
+    {
+        uint off = (base + i) * 8u;
+        verts[off + 0u] = pList[i].x; verts[off + 1u] = pList[i].y; verts[off + 2u] = pList[i].z;
+        verts[off + 3u] = id; verts[off + 4u] = life; verts[off + 5u] = kind;
+        verts[off + 6u] = uvList[i].x; verts[off + 7u] = uvList[i].y;
+    }
+}
+
+void main()
+{
+    uvec3 g = gl_GlobalInvocationID;
+    uint id = g.x + 64u * (g.y + 64u * g.z);
+    const uint kTiles = 30000u;
+
+    if (id == 0u)
+    {
+        emitQuad(vec3(0.0, 0.0, 9.0), vec3(16.0, 0.0, 0.0), vec3(0.0, 9.0, 0.0), 0.0, 0.0, -1.0, vec2(0.0), vec2(1.0));
+        // The horizon: a bright disc quad at the origin (kind 2).
+        emitQuad(vec3(0.0, 0.0, 0.0), vec3(0.7, 0.0, 0.0), vec3(0.0, 0.7, 0.0), 0.0, 0.0, 2.0, vec2(0.0), vec2(1.0));
+        return;
+    }
+    float frac = (densP > 0.01) ? densP : 1.0;
+    if (id >= uint(float(kTiles) * clamp(frac, 0.05, 1.0))) return;
+
+    float fid = float(id);
+    vec3 h = hash31(fid);
+    vec3 h2 = hash31(fid * 7.7 + 3.0);
+    float spread = 0.5 + 0.7 * clamp(spreadP, 0.0, 1.0);
+
+    // Direction: a cone toward the camera, widened by spreadP; some tiles
+    // go sideways so the whole frame fills.
+    float th = h.x * 6.2831853;
+    float ph = 0.14 + acos(1.0 - 2.0 * h.y) * spread * 0.4;   // a clear axis: the horizon stays visible         // polar angle from the -z axis (toward camera)
+    vec3 dir = vec3(sin(ph) * cos(th), sin(ph) * sin(th), -cos(ph));
+
+    // Life: a continuous phase; the tile is born at phase 0 at the horizon
+    // and fades out near phase 1, then is reborn with the same seed.
+    float speed = (0.6 + 0.8 * h.z) * (0.7 + 0.5 * clamp(audioSwell, 0.0, 1.0));
+    float cycle = 0.12 + 0.1 * h2.x;
+    float life = fract((sceneAdvance * 0.35 + sceneTime * 0.06) * cycle * speed * 2.0 + h2.y);
+    // Radial distance: decelerating climb (sqrt of life), from the horizon.
+    float rad = 0.35 + 4.8 * sqrt(life);
+    vec3 pos = dir * rad;
+    // Tile size grows as it nears the camera; it faces the camera and turns
+    // slowly about its own axis.
+    float sz = 0.03 + 0.045 * life;
+    float spin = life * 3.0 * (h2.z - 0.5) + h.x * 6.28;
+    vec3 ax = vec3(cos(spin), sin(spin), 0.0) * sz;
+    vec3 ay = vec3(-sin(spin), cos(spin), 0.0) * sz * 0.65;
+    // Photo patch for this tile: a small window of the picture.
+    vec2 uv0 = vec2(h2.x * 0.85, h2.y * 0.85);
+    vec2 uv1 = uv0 + vec2(0.15);
+    emitQuad(pos, ax, ay, fid, life, 0.0, uv0, uv1);
+}

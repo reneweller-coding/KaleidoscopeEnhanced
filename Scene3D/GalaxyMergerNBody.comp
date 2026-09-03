@@ -105,7 +105,9 @@ void main()
 {
     uvec3 g = gl_GlobalInvocationID;
     uint id = g.x + 64u * (g.y + 64u * g.z);
-    bool needInit = (magic != expectedMagic());
+    // Re-seed on a bad magic AND in the first frames of every activation:
+    // recycled GPU memory can carry the right magic and a stale state.
+    bool needInit = (magic != expectedMagic()) || (sceneTime < 0.06);
 
     // ---------------- pass 1: the clocks (one thread) ----------------
     if (genPass > 0.5)

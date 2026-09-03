@@ -267,6 +267,17 @@ maxVertices, frameIndex, genPass sowie alle XML-Parameter und Exprs.
 `usesProgress()` (Drop-Regie) prueft nur das Vertex/Fragment-Programm: eine
 gestufte Indirect-Szene deklariert `sceneProgress` deshalb AUCH im .vert.
 
+### V5d — Zustandspuffer (stateBytes): nie dem Magic-Wort allein trauen
+
+GPU-Speicher wird recycelt: ein neuer Puffer kann den RICHTIGEN Magic-Wert
+und einen alten oder zufaelligen Zustand tragen (TidalDisruptionEvent: Stern
+unsichtbar, bis verschluckte Teilchen am richtigen Ort wiedergeboren wurden).
+Drei Sicherungen, alle drei: (1) Reseed in den ersten Frames jeder
+Aktivierung (`sceneTime < 0.06`), (2) den Magic-Wert erst im Folge-Pass
+stempeln, nachdem der Seed-Pass ein Flag gesetzt hat (Pass-Reihenfolge ist
+nicht garantiert), (3) Wiedergeburt pro Teilchen bei Null, NaN oder
+"verschluckt". Vorlage: Scene3D/TidalDisruptionEvent.comp.
+
 ### V5b — Nie ein lokales `fragColor` deklarieren
 
 ```glsl
