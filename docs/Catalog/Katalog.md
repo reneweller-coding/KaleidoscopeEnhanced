@@ -1,6 +1,6 @@
 # Kaleidoscope Enhanced — Szenen-Katalog
 
-_716 Szenen, 29 FX-Overlays, 83 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
+_726 Szenen, 29 FX-Overlays, 83 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
 
 
 ---
@@ -186,6 +186,15 @@ BALLISTIC GRAPHENE ELECTRON FOCUSSING: Veselago electron-optic lens in monolayer
 BALL LIGHTNING PLASMOID: Volumetric autonomous ball lightning plasmoid with magnetically self-confined toroidal plasma core. Helical discharge filaments, atmospheric dielectric air breakdown arcs, high-frequency ionization glow, and audio-reactive electrical detonation bursts. audioAdvance -> rotates toroidal plasma core vortex currents audioKick -> fires explosive high-voltage electrical discharge arcs audioBass -> …
 
 ![BallLightningPlasmoid ruhig (t=8)](img/BallLightningPlasmoid_A.jpg) ![BallLightningPlasmoid ruhig (t=16)](img/BallLightningPlasmoid_B.jpg) ![BallLightningPlasmoid audio-heiß (t=21)](img/BallLightningPlasmoid_C.jpg)
+
+
+### BaryonAcousticRipples
+
+`Scene2D/BaryonAcousticRipples.frag` · type=normal · mood=space,calm,dreamy · complexity=2
+
+BARYON ACOUSTIC RIPPLES: the sound waves of the early universe, frozen into the galaxy distribution as faint rings of one fixed scale around every overdensity. Galaxies are round dots of the photo, denser on the shells; the whole pattern expands steadily over the scene arc (the universe growing), the shells light with their spectrum band, and the bass breathes the cosmic web between them. Literally acoustic: the ring…
+
+![BaryonAcousticRipples ruhig (t=8)](img/BaryonAcousticRipples_A.jpg) ![BaryonAcousticRipples ruhig (t=16)](img/BaryonAcousticRipples_B.jpg) ![BaryonAcousticRipples audio-heiß (t=21)](img/BaryonAcousticRipples_C.jpg)
 
 
 ### BauhausGeo
@@ -647,6 +656,15 @@ CONFORMAL LOG POLAR DIVE: Complex exponential mapping w = exp(z) transforming th
 ![ConformalLogPolarDive ruhig (t=8)](img/ConformalLogPolarDive_A.jpg) ![ConformalLogPolarDive ruhig (t=16)](img/ConformalLogPolarDive_B.jpg) ![ConformalLogPolarDive audio-heiß (t=21)](img/ConformalLogPolarDive_C.jpg)
 
 
+### CoronagraphSpeckleField
+
+`Scene2D/CoronagraphSpeckleField.frag` · type=normal · mood=space,dark,psychedelic · complexity=2
+
+CORONAGRAPH SPECKLE FIELD: direct imaging of exoplanets. A coronagraph mask blocks the star; what remains is the speckle halo -- a field of diffraction speckles whose brightness is the spectrum (band by radius) -- rotating slowly with the sky (angular differential imaging: the speckles turn with the telescope, the planets do not), so the few steady round dots that stay put are the planets. The photo is the residual h…
+
+![CoronagraphSpeckleField ruhig (t=8)](img/CoronagraphSpeckleField_A.jpg) ![CoronagraphSpeckleField ruhig (t=16)](img/CoronagraphSpeckleField_B.jpg) ![CoronagraphSpeckleField audio-heiß (t=21)](img/CoronagraphSpeckleField_C.jpg)
+
+
 ### CosmicMicrowaveBackgroundSky
 
 `Scene2D/CosmicMicrowaveBackgroundSky.frag` · type=normal · mood=space,psychedelic,calm · complexity=2
@@ -962,6 +980,15 @@ EXOPLANET OCEAN: A vast, undulating alien ocean under a dark sky dominated by a 
 EXOPLANET RINGS: The camera skims closely over the immense, icy ring system of an exoplanet. Massive chunks of ice and rock tumble past, catching the light of a distant star. audioAdvance -> flight speed over the rings audioKick -> flashes from micro-collisions in the rings audioSwell -> ambient brightness of the star and ring dust audioChromaHue-> palette offset for the ice and rock colors Per-activation variety: de…
 
 ![ExoplanetRings ruhig (t=8)](img/ExoplanetRings_A.jpg) ![ExoplanetRings ruhig (t=16)](img/ExoplanetRings_B.jpg) ![ExoplanetRings audio-heiß (t=21)](img/ExoplanetRings_C.jpg)
+
+
+### FastRadioBurstDispersion
+
+`Scene2D/FastRadioBurstDispersion.frag` · type=normal · mood=space,dark,psychedelic · complexity=2
+
+FAST RADIO BURST DISPERSION: a radio telescope under a sky that is the dynamic spectrum -- frequency up the sky, time across it, the live spectrogram scrolling steadily. Fast radio bursts arrive as dispersed chirps: a burst that left its galaxy at one instant reaches us high frequencies first, low last, so it draws a sweeping curve (delay ~ DM / f^2) across the sky. Bursts are launched on the scene clock (each with i…
+
+![FastRadioBurstDispersion ruhig (t=8)](img/FastRadioBurstDispersion_A.jpg) ![FastRadioBurstDispersion ruhig (t=16)](img/FastRadioBurstDispersion_B.jpg) ![FastRadioBurstDispersion audio-heiß (t=21)](img/FastRadioBurstDispersion_C.jpg)
 
 
 ### FeedbackKaleidoscope
@@ -3004,6 +3031,15 @@ RIEMANN SPHERE INFINITY FLIGHT: Stereographic conformal flight on the Riemann nu
 ![RiemannSphereInfinityFlight ruhig (t=8)](img/RiemannSphereInfinityFlight_A.jpg) ![RiemannSphereInfinityFlight ruhig (t=16)](img/RiemannSphereInfinityFlight_B.jpg) ![RiemannSphereInfinityFlight audio-heiß (t=21)](img/RiemannSphereInfinityFlight_C.jpg)
 
 
+### RingSpokesAndWakes
+
+`Scene2D/RingSpokesAndWakes.frag` · type=normal · mood=space,calm,bright · complexity=2
+
+RING SPOKES AND WAKES: the rings of Saturn seen from above the plane, the planet's limb at one edge. Thirty-two ringlets whose density is the spectrum (bass innermost); tiny moons on their orbits raise wakes -- wavy edges that trail behind them -- and the dark radial spokes rotate with the ring, lit by the kick. The whole ring turns steadily on the scene clock (differentially: inner faster). The photo tints the ring …
+
+![RingSpokesAndWakes ruhig (t=8)](img/RingSpokesAndWakes_A.jpg) ![RingSpokesAndWakes ruhig (t=16)](img/RingSpokesAndWakes_B.jpg) ![RingSpokesAndWakes audio-heiß (t=21)](img/RingSpokesAndWakes_C.jpg)
+
+
 ### RingworldHabitat
 
 `Scene2D/RingworldHabitat.frag` · type=normal · mood=bright,calm,space · complexity=5
@@ -3359,6 +3395,15 @@ SPIRAL STAIRWELL DESCENT: looking straight down an endless spiral staircase. The
 ![SpiralStairwellDescent ruhig (t=8)](img/SpiralStairwellDescent_A.jpg) ![SpiralStairwellDescent ruhig (t=16)](img/SpiralStairwellDescent_B.jpg) ![SpiralStairwellDescent audio-heiß (t=21)](img/SpiralStairwellDescent_C.jpg)
 
 
+### SpriteElvesUpperLightning
+
+`Scene2D/SpriteElvesUpperLightning.frag` · type=normal · mood=dark,aggressive,space · complexity=2
+
+SPRITES AND ELVES: the lightning above the storm. A thundercloud on the horizon glows from within with the bass; above it, red sprites -- columns of tendrils reaching up to the ionosphere -- flare on the kick (light: their shapes are fixed per column, only their brightness comes and goes), and elves -- expanding rings of light at the base of the ionosphere -- are launched on the scene clock and spread outward. The ph…
+
+![SpriteElvesUpperLightning ruhig (t=8)](img/SpriteElvesUpperLightning_A.jpg) ![SpriteElvesUpperLightning ruhig (t=16)](img/SpriteElvesUpperLightning_B.jpg) ![SpriteElvesUpperLightning audio-heiß (t=21)](img/SpriteElvesUpperLightning_C.jpg)
+
+
 ### StainedGlassCathedralCaustics
 
 `Scene2D/StainedGlassCathedralCaustics.frag` · type=normal · mood=calm,bright,dreamy · complexity=3
@@ -3620,6 +3665,15 @@ THOMAS ATTRACTOR COSMIC LABYRINTH: Cyclically symmetric chaotic Thomas attractor
 ![ThomasAttractorCosmicLabyrinth ruhig (t=8)](img/ThomasAttractorCosmicLabyrinth_A.jpg) ![ThomasAttractorCosmicLabyrinth ruhig (t=16)](img/ThomasAttractorCosmicLabyrinth_B.jpg) ![ThomasAttractorCosmicLabyrinth audio-heiß (t=21)](img/ThomasAttractorCosmicLabyrinth_C.jpg)
 
 
+### ThreeBodyFigureEight
+
+`Scene2D/ThreeBodyFigureEight.frag` · type=normal · mood=space,dreamy,bright · complexity=2
+
+THREE BODY FIGURE EIGHT: the figure-eight choreography of the three-body problem -- three equal suns chasing one another around one lemniscate, one third of a period apart. The suns carry the photo, leave fading trails along the curve, and glow with the bass; the one passing through the centre crossing lights on the kick. The orbit runs on the scene clock; the camera never moves. Audio Reactivity: sceneAdvance -> the…
+
+![ThreeBodyFigureEight ruhig (t=8)](img/ThreeBodyFigureEight_A.jpg) ![ThreeBodyFigureEight ruhig (t=16)](img/ThreeBodyFigureEight_B.jpg) ![ThreeBodyFigureEight audio-heiß (t=21)](img/ThreeBodyFigureEight_C.jpg)
+
+
 ### TidalLockTerminator
 
 `Scene2D/TidalLockTerminator.frag` · type=normal · mood=space,calm,dreamy · complexity=3
@@ -3647,6 +3701,15 @@ TIME DILATION: Falling into a supermassive black hole, experiencing extreme time
 ![TimeDilation ruhig (t=8)](img/TimeDilation_A.jpg) ![TimeDilation ruhig (t=16)](img/TimeDilation_B.jpg) ![TimeDilation audio-heiß (t=21)](img/TimeDilation_C.jpg)
 
 
+### TitanMethaneRain
+
+`Scene2D/TitanMethaneRain.frag` · type=normal · mood=space,calm,dreamy · complexity=2
+
+TITAN METHANE RAIN: the shore of a hydrocarbon lake on Titan under the orange haze. Methane rain -- round drops falling slowly in the low gravity -- pocks the black lake with rings; Saturn hangs pale and huge behind the haze; the dunes of the far shore are the photo. The rain strength follows the swell, the haze glows with distant lightning in the bass, the drops catch the light on the treble. Camera fixed on the sho…
+
+![TitanMethaneRain ruhig (t=8)](img/TitanMethaneRain_A.jpg) ![TitanMethaneRain ruhig (t=16)](img/TitanMethaneRain_B.jpg) ![TitanMethaneRain audio-heiß (t=21)](img/TitanMethaneRain_C.jpg)
+
+
 ### Tonnetz
 
 `Scene2D/Tonnetz.frag` · type=normal · mood=dreamy · complexity=2
@@ -3665,6 +3728,15 @@ The music-theory Tonnetz: a triangular lattice of pitch classes (perfect-fifth a
 TOPOLOGICAL INSULATOR DIRAC SURFACE: 3D topological insulator crystal with insulating bulk and protected conducting 2D Dirac surface states. Spin-momentum locking (k x sigma), suppressed backscattering, helical current loops, and continuous photo texture reflections. audioAdvance -> rotates spin-momentum locked Dirac surface currents audioKick -> flashes protected topological edge state transitions audioBass -> pulse…
 
 ![TopologicalInsulatorDiracSurface ruhig (t=8)](img/TopologicalInsulatorDiracSurface_A.jpg) ![TopologicalInsulatorDiracSurface ruhig (t=16)](img/TopologicalInsulatorDiracSurface_B.jpg) ![TopologicalInsulatorDiracSurface audio-heiß (t=21)](img/TopologicalInsulatorDiracSurface_C.jpg)
+
+
+### TransitLightCurveStars
+
+`Scene2D/TransitLightCurveStars.frag` · type=normal · mood=space,calm,dark · complexity=2
+
+TRANSIT LIGHT CURVE STARS: the exoplanet transit method as a sky. A field of stars; each hosts a planet on its own period, and when the planet crosses the star the star dims by the transit depth (a light event: nothing moves but brightness). Below the sky, three light curves scroll steadily -- the brightness histories of three host stars picked by the tonal centre -- showing the characteristic flat-bottomed dips. The…
+
+![TransitLightCurveStars ruhig (t=8)](img/TransitLightCurveStars_A.jpg) ![TransitLightCurveStars ruhig (t=16)](img/TransitLightCurveStars_B.jpg) ![TransitLightCurveStars audio-heiß (t=21)](img/TransitLightCurveStars_C.jpg)
 
 
 ### TricornFractalAntimatterSea
@@ -3958,6 +4030,15 @@ AsteroidBelt.frag — matte rock faces; a faint cool rim keeps silhouettes reada
 ASTEROID MINING BASE: A sprawling industrial complex built into tumbling asteroids. Spotlights cut through the dust, and massive laser drills flash in time with the music. audioAdvance -> flight speed through the asteroid field audioKick -> flashes from mining lasers and warning lights audioSwell -> dust density and ambient industrial glow audioChromaHue-> laser and light color palette Per-activation variety: dustP f…
 
 ![AsteroidMiningBase ruhig (t=8)](img/AsteroidMiningBase_A.jpg) ![AsteroidMiningBase ruhig (t=16)](img/AsteroidMiningBase_B.jpg) ![AsteroidMiningBase audio-heiß (t=21)](img/AsteroidMiningBase_C.jpg)
+
+
+### AsteroidRubblePileTumble
+
+`Scene3D/AsteroidRubblePileTumble.frag` · type=scene3d · geom=indirect · mood=space,dark,calm · complexity=4
+
+Fragment stage for AsteroidRubblePileTumble: boulders of the photo, grey-brown regolith with the sunward term from the generator (hard shadow on the night side, a little earthshine from the palette), the probe as a bright box, the touchdown dust as soft round puffs that the kick lights, the Sun and round stars behind. Audio Reactivity: audioKick -> dust puff light; audioSwell -> sunlight; audioHigh -> regolith glints…
+
+![AsteroidRubblePileTumble ruhig (t=8)](img/AsteroidRubblePileTumble_A.jpg) ![AsteroidRubblePileTumble ruhig (t=16)](img/AsteroidRubblePileTumble_B.jpg) ![AsteroidRubblePileTumble audio-heiß (t=21)](img/AsteroidRubblePileTumble_C.jpg)
 
 
 ### AtmosphericEntry
@@ -4632,6 +4713,15 @@ EchoSpiral.frag — wide soft band with a luminous centre line.
 ENNEPER MINIMAL SURFACE HYPERFOLD: 220x120 parametric grid of a higher-order self-intersecting Enneper minimal surface. Gaussian curvature shading, double-sided specular glints, and photo texturing mapped along isothermal coordinate patches. audioAdvance -> rotates isometric parameter domain through 3D space audioKick -> flashes Gaussian curvature focal point highlights audioSwell -> widens self-intersecting hyperfol…
 
 ![EnneperMinimalSurfaceHyperfold ruhig (t=8)](img/EnneperMinimalSurfaceHyperfold_A.jpg) ![EnneperMinimalSurfaceHyperfold ruhig (t=16)](img/EnneperMinimalSurfaceHyperfold_B.jpg) ![EnneperMinimalSurfaceHyperfold audio-heiß (t=21)](img/EnneperMinimalSurfaceHyperfold_C.jpg)
+
+
+### EuropaChaosTerrain
+
+`Scene3D/EuropaChaosTerrain.frag` · type=scene3d · geom=patches · mood=space,calm,dark · complexity=4
+
+EUROPA CHAOS TERRAIN: blue-white ice rafts in a matrix of rubble ice, the rust-red lineae along the raft edges, and -- the reason to be here -- the ocean beneath, whose light wells up through the seams with the sub-bass. Low sunlight (the swell) rakes across the rafts; the kick sparks frost on the ridges; the photo is the ice texture. Camera height fixed. Audio Reactivity: audioSubBass -> ocean light through the seam…
+
+![EuropaChaosTerrain ruhig (t=8)](img/EuropaChaosTerrain_A.jpg) ![EuropaChaosTerrain ruhig (t=16)](img/EuropaChaosTerrain_B.jpg) ![EuropaChaosTerrain audio-heiß (t=21)](img/EuropaChaosTerrain_C.jpg)
 
 
 ### ExoticStation

@@ -181,19 +181,19 @@ MODIFIED_SCENES = {
 # Minuten statt siebzig).  Bewusst eine eigene Liste: welche Szenen zuletzt
 # dran waren, ist eine historische Tatsache und soll im Diff stehen.
 RECENT_SCENES = {
-    # 03.09.: zweite Fuenfzig, Block E (Modelle, Indirect, OIT, Tessellation):
-    # Glasgefaesse, Seifenhaut, Drachenfest, Fischschwarm, Pusteblume, Explosions-
-    # zeichnung, Voxelmodell, Rauchringe, Sandskulptur, Lavasee.
-    "GlassVesselsOIT",
-    "SoapFilmMembrane",
-    "KiteFestival",
-    "BaitBallVortex",
-    "DandelionClock",
-    "ExplodedViewDiagram",
-    "VoxelizedModel",
-    "SmokeRingChorus",
-    "MeshSandSculpture",
-    "TessellatedLavaLake",
+    # 03.09.: dritte Fuenfzig, Block A (Weltraum, Forschung): FRB-Dispersion, Transit-
+    # Lichtkurven, BAO-Ringe, Dreikoerper-Acht, Europa-Chaos, Titan-Regen, Ringspeichen,
+    # Sprites/Elves, Schutthaufen-Asteroid, Koronograph.
+    "FastRadioBurstDispersion",
+    "TransitLightCurveStars",
+    "BaryonAcousticRipples",
+    "ThreeBodyFigureEight",
+    "EuropaChaosTerrain",
+    "TitanMethaneRain",
+    "RingSpokesAndWakes",
+    "SpriteElvesUpperLightning",
+    "AsteroidRubblePileTumble",
+    "CoronagraphSpeckleField",
 }
 
 def rule_recent(m, h):

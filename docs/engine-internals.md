@@ -3439,3 +3439,27 @@ everything but the bristles now); a lathe placed too close fills the frame
 patches surface has no sky, so TessellatedLavaLake raises the far end into
 a crater wall; MeshSandSculpture uses wrap lighting, which is robust
 against the model's normal orientation.
+
+## The third fifty, block A: space, from current research
+
+Ten scenes (03.09.2026), chosen against the 827 already in the catalogue.
+
+| Scene | Pipeline | Note |
+|---|---|---|
+| FastRadioBurstDispersion | 2D, `texSpectro` | the sky is the dynamic spectrum (frequency up, time across); bursts are curves x(band) = now - (age + DM/f^2) launched on the clock |
+| TransitLightCurveStars | 2D | transits are brightness events only; three light curves scroll for hosts picked by the tonal centre |
+| BaryonAcousticRipples | 2D | galaxies as round dots whose presence follows web + shells; the pattern expands with `sceneProgress` |
+| ThreeBodyFigureEight | 2D | lemniscate of Gerono as the choreography; trails by marching back along the curve |
+| EuropaChaosTerrain | `patches` | Voronoi rafts as tilted plateaus (tilt fixed per raft); the far end rises into ridged plains; ocean light through the seams on the sub-bass |
+| TitanMethaneRain | 2D | orange haze, Saturn behind it, rain rings on the lake from hashed spots on the clock |
+| RingSpokesAndWakes | 2D | 32 ringlets from the spectrum; Kepler differential rotation; moon wakes as trailing sinusoids; spokes corotate and flash on the kick |
+| SpriteElvesUpperLightning | 2D | sprite columns are fixed fbm shapes whose brightness is the kick times a per-column response; elves are rings expanding on the clock |
+| AsteroidRubblePileTumble | `indirect` | 9000 boulder tiles on a spinning-top body; the sunward term is computed in the generator and stored in the lit slot; touchdown dust on continuous phases, lit by the kick |
+| CoronagraphSpeckleField | 2D | speckles live in a rotating frame, planets in the fixed one (angular differential imaging) |
+
+Preview lessons: three dark-space scenes needed their light doubled
+(BaryonAcousticRipples, RingSpokesAndWakes, CoronagraphSpeckleField) --
+a sparse field of dots on black reads as nothing at contact-sheet size;
+EuropaChaosTerrain drove both the seam width and the seam light from the
+sub-bass and strobed (12.9) until the width was fixed and the light given
+a floor; the regolith glints were whole grid cells and are round now.
