@@ -1,6 +1,6 @@
 # Kaleidoscope Enhanced — Szenen-Katalog
 
-_736 Szenen, 29 FX-Overlays, 83 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
+_746 Szenen, 29 FX-Overlays, 83 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
 
 
 ---
@@ -528,6 +528,15 @@ CAVITY OPTOMECHANICS PHONON LASING: Optomechanical optical microcavity with mova
 CELTIC MANDELBROT GOTHIC VAULT: Celtic Mandelbrot variation z -> |Re(z^2)| + i*Im(z^2) + c. Gothic cathedral tracery arches, lancet church window filigree, stained-glass luminescence, and continuous deep plunge through endless vaulted fractal naves. Audio Reactivity: audioAdvance -> drives continuous deep plunge through Gothic cathedral arches audioKick -> flashes stained-glass rosette window cores & cathedral flares…
 
 ![CelticMandelbrotGothicVault ruhig (t=8)](img/CelticMandelbrotGothicVault_A.jpg) ![CelticMandelbrotGothicVault ruhig (t=16)](img/CelticMandelbrotGothicVault_B.jpg) ![CelticMandelbrotGothicVault audio-heiß (t=21)](img/CelticMandelbrotGothicVault_C.jpg)
+
+
+### CephalopodChromatophores
+
+`Scene2D/CephalopodChromatophores.frag` · type=normal · mood=psychedelic,bright,aggressive · complexity=2
+
+CEPHALOPOD CHROMATOPHORES: octopus skin, close. Thousands of chromatophores -- round pigment sacs that muscles pull open -- expand with the band their patch of skin listens to, iridophores beneath them shimmer with the treble, and the "passing cloud" display -- dark waves travelling across the skin -- runs on the scene clock. The photo is the skin's ground colour. Nothing moves but the cells and the light; camera fix…
+
+![CephalopodChromatophores ruhig (t=8)](img/CephalopodChromatophores_A.jpg) ![CephalopodChromatophores ruhig (t=16)](img/CephalopodChromatophores_B.jpg) ![CephalopodChromatophores audio-heiß (t=21)](img/CephalopodChromatophores_C.jpg)
 
 
 ### CherenkovRadiationWakefield
@@ -1135,6 +1144,15 @@ FLUID INK MARBLE: 100% Full-screen liquid hydrodynamics & reaction-diffusion sur
 FLUID PHOTO MARBLING EBRU: 100% viewport-filling traditional Turkish Ebru paper-marbling simulation. The loaded photo floats as viscous liquid oil pigments on a water bath, combed and raked into elegant peacock plumes, curling swirls, and non-Euclidean fluid streamlines.
 
 ![FluidPhotoMarblingEbru ruhig (t=8)](img/FluidPhotoMarblingEbru_A.jpg) ![FluidPhotoMarblingEbru ruhig (t=16)](img/FluidPhotoMarblingEbru_B.jpg) ![FluidPhotoMarblingEbru audio-heiß (t=21)](img/FluidPhotoMarblingEbru_C.jpg)
+
+
+### ForaminiferaSpiralShells
+
+`Scene2D/ForaminiferaSpiralShells.frag` · type=normal · mood=calm,dreamy,bright · complexity=3
+
+FORAMINIFERA SPIRAL SHELLS: the chambered shells of forams -- single cells that build a spiral of ever larger chambers. Several shells fill the frame; each grows chamber by chamber over the scene arc (a new chamber inflates smoothly at the aperture), the chambers carry the photo as their calcite wall and are tinted by the chroma class of their index, the pores glint with the treble, and the whole field drifts very sl…
+
+![ForaminiferaSpiralShells ruhig (t=8)](img/ForaminiferaSpiralShells_A.jpg) ![ForaminiferaSpiralShells ruhig (t=16)](img/ForaminiferaSpiralShells_B.jpg) ![ForaminiferaSpiralShells audio-heiß (t=21)](img/ForaminiferaSpiralShells_C.jpg)
 
 
 ### FractalBloom
@@ -1868,6 +1886,15 @@ LAVA WORLD TIDAL LOCK: The day-side of a tidally locked planet. The surface is a
 ![LavaWorldTidalLock ruhig (t=8)](img/LavaWorldTidalLock_A.jpg) ![LavaWorldTidalLock ruhig (t=16)](img/LavaWorldTidalLock_B.jpg) ![LavaWorldTidalLock audio-heiß (t=21)](img/LavaWorldTidalLock_C.jpg)
 
 
+### LeafVenationGrowth
+
+`Scene2D/LeafVenationGrowth.frag` · type=normal · mood=calm,bright,dreamy · complexity=3
+
+LEAF VENATION GROWTH: a leaf lit through, and the growth of its veins -- the midrib first, then the secondaries branching off, then the finer orders, each order switching on later in the scene arc and extending smoothly from its parent. The photo is the leaf tissue seen against the light; sap light pulses along the veins with the bass; the treble sparkles the tissue; the swell is the sun behind the leaf. Camera still…
+
+![LeafVenationGrowth ruhig (t=8)](img/LeafVenationGrowth_A.jpg) ![LeafVenationGrowth ruhig (t=16)](img/LeafVenationGrowth_B.jpg) ![LeafVenationGrowth audio-heiß (t=21)](img/LeafVenationGrowth_C.jpg)
+
+
 ### LeidenfrostDroplets
 
 `Scene2D/LeidenfrostDroplets.frag` · type=normal · mood=bright,calm,dreamy · complexity=2
@@ -2599,6 +2626,15 @@ PHYSARUM GALAXY: the slime-mould simulation's trail map, wrapped onto a slowly t
 ![PhysarumGalaxy ruhig (t=8)](img/PhysarumGalaxy_A.jpg) ![PhysarumGalaxy ruhig (t=16)](img/PhysarumGalaxy_B.jpg) ![PhysarumGalaxy audio-heiß (t=21)](img/PhysarumGalaxy_C.jpg)
 
 
+### PhytoplanktonEddies
+
+`Scene2D/PhytoplanktonEddies.frag` · type=normal · mood=calm,bright,dreamy · complexity=2
+
+PHYTOPLANKTON EDDIES: the ocean from orbit -- a spring bloom of plankton drawn out into the swirls of mesoscale eddies. The photo is the ocean colour; the bloom is advected by a field of slowly turning vortices on the scene clock (Lamb-Oseen cores, incompressible), so the green filaments wind ever finer; the bloom strength is the swell, the treble is sun glitter on the sea, the bass deepens the blue. Camera fixed hig…
+
+![PhytoplanktonEddies ruhig (t=8)](img/PhytoplanktonEddies_A.jpg) ![PhytoplanktonEddies ruhig (t=16)](img/PhytoplanktonEddies_B.jpg) ![PhytoplanktonEddies audio-heiß (t=21)](img/PhytoplanktonEddies_C.jpg)
+
+
 ### PillarsOfCreationFlight
 
 `Scene2D/PillarsOfCreationFlight.frag` · type=normal · mood=dark,calm,space · complexity=4
@@ -3049,6 +3085,15 @@ RELATIVISTIC SYNCHROTRON PULSAR WIND: Pulsar wind nebula (Crab Nebula PWN). Magn
 ![RelativisticSynchrotronPulsarWind ruhig (t=8)](img/RelativisticSynchrotronPulsarWind_A.jpg) ![RelativisticSynchrotronPulsarWind ruhig (t=16)](img/RelativisticSynchrotronPulsarWind_B.jpg) ![RelativisticSynchrotronPulsarWind audio-heiß (t=21)](img/RelativisticSynchrotronPulsarWind_C.jpg)
 
 
+### RibosomeAssemblyLine
+
+`Scene2D/RibosomeAssemblyLine.frag` · type=normal · mood=calm,dreamy,bright · complexity=2
+
+RIBOSOME ASSEMBLY LINE: translation, seen as the factory it is. An mRNA tape runs steadily through the ribosome (two subunits, centre frame); at each codon the ribosome adds an amino acid -- a round bead coloured by the pitch class that is loudest at that moment -- to the growing chain, which curls away and begins to fold. The tape carries the photo as its codon pattern; the tRNAs arrive on the clock; the kick lights…
+
+![RibosomeAssemblyLine ruhig (t=8)](img/RibosomeAssemblyLine_A.jpg) ![RibosomeAssemblyLine ruhig (t=16)](img/RibosomeAssemblyLine_B.jpg) ![RibosomeAssemblyLine audio-heiß (t=21)](img/RibosomeAssemblyLine_C.jpg)
+
+
 ### RiemannSphereInfinityFlight
 
 `Scene2D/RiemannSphereInfinityFlight.frag` · type=normal · mood=psychedelic,aggressive,dark · complexity=2
@@ -3332,6 +3377,15 @@ SOLITON INTERNAL WAVE ANDAMAN SEA: Giant oceanic internal gravity wave soliton p
 ![SolitonInternalWaveAndamanSea ruhig (t=8)](img/SolitonInternalWaveAndamanSea_A.jpg) ![SolitonInternalWaveAndamanSea ruhig (t=16)](img/SolitonInternalWaveAndamanSea_B.jpg) ![SolitonInternalWaveAndamanSea audio-heiß (t=21)](img/SolitonInternalWaveAndamanSea_C.jpg)
 
 
+### SonarPingReveal
+
+`Scene2D/SonarPingReveal.frag` · type=normal · mood=dark,calm,psychedelic · complexity=2
+
+SONAR PING REVEAL: a bat's cave, or a submarine's sea -- the scene (the photo) exists only where an echo has returned. Pings leave the centre on the scene clock as expanding rings; where a ring passes, the photo lights up along the ring and fades behind it, so the world is painted in sweeps of returning sound. The kick fires a bright extra ping, the treble is the echo detail, the bass the hum of the emitter. Camera s…
+
+![SonarPingReveal ruhig (t=8)](img/SonarPingReveal_A.jpg) ![SonarPingReveal ruhig (t=16)](img/SonarPingReveal_B.jpg) ![SonarPingReveal audio-heiß (t=21)](img/SonarPingReveal_C.jpg)
+
+
 ### SonoluminescenceBubble
 
 `Scene2D/SonoluminescenceBubble.frag` · type=normal · mood=bright,calm · complexity=3
@@ -3411,6 +3465,15 @@ SPECTRUM STALACTITE CAVE: a limestone cave whose stalactites hang one per spectr
 Adapted from an untitled \@kishimisu raymarch (CC BY-NC-SA 4.0): a fly-through of an infinite lattice of spheres down a bright corridor. Adapted to our engine, and COLOURED BY THE IMAGE: instead of a fixed cosine palette, each depth takes its colour from a slowly-drifting crop of the source picture (imgPal), so the palette is the image itself and keeps changing (like the kaleidoscope folding different crops). Audio-r…
 
 ![SphereGrid ruhig (t=8)](img/SphereGrid_A.jpg) ![SphereGrid ruhig (t=16)](img/SphereGrid_B.jpg) ![SphereGrid audio-heiß (t=21)](img/SphereGrid_C.jpg)
+
+
+### SpiderOrbWebDew
+
+`Scene2D/SpiderOrbWebDew.frag` · type=normal · mood=calm,dreamy,bright · complexity=2
+
+SPIDER ORB WEB WITH DEW: an orb web at dawn, strung with dew. The web is built over the scene arc the way a spider builds it -- radii first, then the spiral from the hub outward; each radius belongs to a spectrum band and glows with it; the dew drops (round, on the spiral) sparkle with the treble; the sun rises behind on the swell; the photo is the garden out of focus. Camera still. Audio Reactivity: sceneProgress ->…
+
+![SpiderOrbWebDew ruhig (t=8)](img/SpiderOrbWebDew_A.jpg) ![SpiderOrbWebDew ruhig (t=16)](img/SpiderOrbWebDew_B.jpg) ![SpiderOrbWebDew audio-heiß (t=21)](img/SpiderOrbWebDew_C.jpg)
 
 
 ### SpintronicDomainWallRacetrack
@@ -4156,6 +4219,15 @@ BACTERIOPHAGE ICOSAHEDRAL CAPSID INJECTION: T4 Bacteriophage viral injection nan
 Fragment stage for BaitBallVortex: open water lit from above -- blue-green with caustic light from the photo and god rays -- the fish silver-sided with the photo's tint, flashing as they turn (a per-fish phase) and all at once on an onset (the fright flash is light, not motion), the predator a dark shape with a pale belly. Audio Reactivity: audioOnset -> silver flash; audioKick -> caustics brighten; audioSwell -> sun…
 
 ![BaitBallVortex ruhig (t=8)](img/BaitBallVortex_A.jpg) ![BaitBallVortex ruhig (t=16)](img/BaitBallVortex_B.jpg) ![BaitBallVortex audio-heiß (t=21)](img/BaitBallVortex_C.jpg)
+
+
+### BeeWaggleDance
+
+`Scene3D/BeeWaggleDance.frag` · type=scene3d · geom=indirect · mood=bright,calm,dreamy · complexity=3
+
+Fragment stage for BeeWaggleDance: the comb as a hexagonal grid of photo cells (some capped with wax, some open with honey glowing with the bass), the bees as striped ovals with wings, the dancer glowing on her waggle run, the followers dimmer; the stereo balance sweeps a warm light across the comb (the sun through the hive), the treble sparkles the honey, the kick flashes the dancers. Audio Reactivity: audioStereo -…
+
+![BeeWaggleDance ruhig (t=8)](img/BeeWaggleDance_A.jpg) ![BeeWaggleDance ruhig (t=16)](img/BeeWaggleDance_B.jpg) ![BeeWaggleDance audio-heiß (t=21)](img/BeeWaggleDance_C.jpg)
 
 
 ### BillboardCity
@@ -5540,6 +5612,15 @@ NeuralAxonSynapseCloud.frag
 ![NeuralAxonSynapseCloud ruhig (t=8)](img/NeuralAxonSynapseCloud_A.jpg) ![NeuralAxonSynapseCloud ruhig (t=16)](img/NeuralAxonSynapseCloud_B.jpg) ![NeuralAxonSynapseCloud audio-heiß (t=21)](img/NeuralAxonSynapseCloud_C.jpg)
 
 
+### NeuralConnectomeGlow
+
+`Scene3D/NeuralConnectomeGlow.frag` · type=scene3d · geom=indirect · mood=dark,calm,psychedelic · complexity=4
+
+Fragment stage for NeuralConnectomeGlow: deep tissue dark with the photo faint, somas as round glowing cells, dendrites as faint fibres, axons carrying spikes -- bright pulses that travel along the fibre on a continuous phase of the scene clock at a rate set by the axon's band energy... no: the rate is fixed, the band energy is the pulse brightness (continuity rule); the kick lights every soma, the swell the tissue. …
+
+![NeuralConnectomeGlow ruhig (t=8)](img/NeuralConnectomeGlow_A.jpg) ![NeuralConnectomeGlow ruhig (t=16)](img/NeuralConnectomeGlow_B.jpg) ![NeuralConnectomeGlow audio-heiß (t=21)](img/NeuralConnectomeGlow_C.jpg)
+
+
 ### NeuroSynapseNetwork
 
 `Scene3D/NeuroSynapseNetwork.frag` · type=scene3d · geom=points · mood=calm,bright · complexity=2
@@ -5848,6 +5929,15 @@ PortalRush.frag — soft-edged glowing gate band (additive blending).
 PrismExplode.frag — real dispersion, from Cauchy's equation. A prism makes a spectrum because glass has a different refractive index for every wavelength. Cauchy's equation is the usual one-line model of that: n(lambda) = A + B / lambda^2 (lambda in micrometres) For a common crown glass A is about 1.52 and B about 0.0045, which puts n at 1.532 for blue at 0.45 um and 1.527 for red at 0.65 um. That difference looks ti…
 
 ![PrismExplode ruhig (t=8)](img/PrismExplode_A.jpg) ![PrismExplode ruhig (t=16)](img/PrismExplode_B.jpg) ![PrismExplode audio-heiß (t=21)](img/PrismExplode_C.jpg)
+
+
+### ProteinFoldingChain
+
+`Scene3D/ProteinFoldingChain.frag` · type=scene3d · geom=indirect · mood=calm,dreamy,bright · complexity=4
+
+Fragment stage for ProteinFoldingChain: the cytoplasm behind (the photo soft and warm), residues as round shaded beads -- side chains coloured by chroma class (index mod 12), the hydrophobic ones glowing from within with the bass as the core forms -- bonds as pale tubes, the kick a flash on the newest contacts, the treble a sparkle of water. Audio Reactivity: audioChroma[12] -> bead colour by class; audioBass -> hydr…
+
+![ProteinFoldingChain ruhig (t=8)](img/ProteinFoldingChain_A.jpg) ![ProteinFoldingChain ruhig (t=16)](img/ProteinFoldingChain_B.jpg) ![ProteinFoldingChain audio-heiß (t=21)](img/ProteinFoldingChain_C.jpg)
 
 
 ### QuantumHallEdgeChiralRibbon

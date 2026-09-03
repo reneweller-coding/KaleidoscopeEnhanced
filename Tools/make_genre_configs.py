@@ -181,19 +181,18 @@ MODIFIED_SCENES = {
 # Minuten statt siebzig).  Bewusst eine eigene Liste: welche Szenen zuletzt
 # dran waren, ist eine historische Tatsache und soll im Diff stehen.
 RECENT_SCENES = {
-    # 03.09.: dritte Fuenfzig, Block B (Physik): Doppelspalt, Opal, Zeitkristall,
-    # Kavitation, Saffman-Taylor, Zeitreflexion, reflexionsarmer Raum, Leidenfrost,
-    # optisches Gitter, Tensegrity.
-    "DoubleSlitElectronBuildup",
-    "OpalStructuralColour",
-    "TimeCrystalLattice",
-    "CavitationCloudPropeller",
-    "SaffmanTaylorFingers",
-    "TimeReflectionPond",
-    "AnechoicChamberWedges",
-    "LeidenfrostDroplets",
-    "OpticalLatticeAtoms",
-    "TensegrityFloat",
+    # 03.09.: dritte Fuenfzig, Block C (Leben): Proteinfaltung, Konnektom, Chromatophoren,
+    # Schwaenzeltanz, Ribosom, Planktonwirbel, Blattadern, Sonar, Foraminiferen, Radnetz.
+    "ProteinFoldingChain",
+    "NeuralConnectomeGlow",
+    "CephalopodChromatophores",
+    "BeeWaggleDance",
+    "RibosomeAssemblyLine",
+    "PhytoplanktonEddies",
+    "LeafVenationGrowth",
+    "SonarPingReveal",
+    "ForaminiferaSpiralShells",
+    "SpiderOrbWebDew",
 }
 
 def rule_recent(m, h):

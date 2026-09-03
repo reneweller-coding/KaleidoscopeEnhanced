@@ -1,0 +1,100 @@
+#version 430 core
+/**
+ * @file NeuralConnectomeGlow.comp
+ * @brief NEURAL CONNECTOME GLOW: a forest of neurons in a volume -- somas
+ * with branching dendrites, and long axons running between them -- and
+ * the spikes: pulses of light travelling along the axons on continuous
+ * phases (the fragment draws the pulse at the phase's position along each
+ * fibre).  Each axon belongs to a spectrum band; the band's energy is the
+ * firing rate seen as brightness.  The geometry is fixed per activation;
+ * the volume turns very slowly.  No state.  Camera still.
+ *
+ * Per-instance: neuronsP, branchP, hueP.
+ */
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+layout(std430, binding = 0) buffer Verts { float verts[]; };
+layout(std430, binding = 1) buffer Cmd   { uint cmd[];   };
+
+uniform uint  maxVertices;
+uniform float time;
+uniform float sceneAdvance;
+uniform float sceneTime;
+
+uniform float neuronsP;
+uniform float branchP;
+uniform float hueP;
+
+float hash11(float p) { p = fract(p * 0.1031); p *= p + 33.33; p *= p + p; return fract(p); }
+vec3  hash31(float n) { return vec3(hash11(n), hash11(n + 17.3), hash11(n + 41.7)); }
+
+void emitQuad(vec3 c, vec3 ax, vec3 ay, float id, float lit, float kind, vec2 uv0, vec2 uv1)
+{
+    uint base = atomicAdd(cmd[4], 6u);
+    if (base + 6u > maxVertices) return;
+    vec3 p0 = c - ax - ay, p1 = c + ax - ay, p2 = c + ax + ay, p3 = c - ax + ay;
+    vec3 pList[6]  = vec3[6](p0, p1, p2, p0, p2, p3);
+    vec2 uvList[6] = vec2[6](vec2(uv0.x, uv0.y), vec2(uv1.x, uv0.y), vec2(uv1.x, uv1.y), vec2(uv0.x, uv0.y), vec2(uv1.x, uv1.y), vec2(uv0.x, uv1.y));
+    for (uint i = 0u; i < 6u; ++i)
+    {
+        uint off = (base + i) * 8u;
+        verts[off + 0u] = pList[i].x; verts[off + 1u] = pList[i].y; verts[off + 2u] = pList[i].z;
+        verts[off + 3u] = id; verts[off + 4u] = lit; verts[off + 5u] = kind;
+        verts[off + 6u] = uvList[i].x; verts[off + 7u] = uvList[i].y;
+    }
+}
+
+vec3 somaPos(float n, mat3 R)
+{
+    vec3 h = hash31(n * 3.7 + 5.0);
+    return R * vec3((h.x - 0.5) * 12.0, (h.y - 0.5) * 7.0, (h.z - 0.5) * 6.0) + vec3(0.0, 0.0, 10.0);
+}
+
+void emitFibre(vec3 a, vec3 b, float width, float id, float band, float kind)
+{
+    // A fibre as 6 segments along a gently curved path (a sine bulge).
+    vec3 prev = a;
+    vec3 d = b - a;
+    vec3 side0 = normalize(cross(d, vec3(0.3, 1.0, 0.2))) * length(d) * 0.12;
+    for (int s = 1; s <= 6; ++s)
+    {
+        float t = float(s) / 6.0;
+        vec3 q = a + d * t + side0 * sin(t * 3.14159) * hash11(id * 7.1);
+        vec3 mid = (prev + q) * 0.5, half_ = (q - prev) * 0.5;
+        vec3 sd = normalize(cross(half_, normalize(-mid))) * width;
+        emitQuad(mid, half_, sd, id, band, kind, vec2(float(s - 1) / 6.0, 0.0), vec2(t, 1.0));
+        prev = q;
+    }
+}
+
+void main()
+{
+    uvec3 g = gl_GlobalInvocationID;
+    uint id = g.x + 64u * (g.y + 64u * g.z);
+    uint nNeurons = 40u + uint(clamp(neuronsP, 0.0, 1.0) * 40.0);
+    uint nBranch = 5u + uint(clamp(branchP, 0.0, 1.0) * 5.0);
+    float clock = sceneAdvance * 0.06 + sceneTime * 0.012;
+    mat3 R = mat3(cos(clock), 0.0, -sin(clock), 0.0, 1.0, 0.0, sin(clock), 0.0, cos(clock));
+
+    if (id == 0u)
+    {
+        emitQuad(vec3(0.0, 0.0, 30.0), vec3(50.0, 0.0, 0.0), vec3(0.0, 28.0, 0.0), 0.0, 0.0, -1.0, vec2(0.0), vec2(1.0));
+        return;
+    }
+    uint n = id - 1u;
+    if (n >= nNeurons) return;
+    float fn = float(n);
+    vec3 soma = somaPos(fn, R);
+    // Soma: a round billboard (kind 0).
+    emitQuad(soma, vec3(0.22, 0.0, 0.0), vec3(0.0, 0.22, 0.0), fn, mod(fn * 3.0, 32.0), 0.0, vec2(0.0), vec2(1.0));
+    // Dendrites: short branches out of the soma (kind 1).
+    for (uint b = 0u; b < nBranch; ++b)
+    {
+        vec3 h = hash31(fn * 11.0 + float(b) * 3.3 + 20.0) - 0.5;
+        vec3 tip = soma + normalize(h) * (0.6 + 0.8 * hash11(fn + float(b) * 5.5));
+        emitFibre(soma, tip, 0.02, fn * 16.0 + float(b), mod(fn * 3.0, 32.0), 1.0);
+    }
+    // Axon: to another neuron (kind 2), long, carrying the spikes; band by neuron.
+    float target = mod(fn * 7.0 + 3.0, float(nNeurons));
+    vec3 tgt = somaPos(target, R);
+    emitFibre(soma, tgt, 0.035, fn, mod(fn * 3.0, 32.0), 2.0);
+}

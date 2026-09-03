@@ -1,0 +1,118 @@
+#version 430 core
+/**
+ * @file BeeWaggleDance.comp
+ * @brief BEE WAGGLE DANCE: the comb face, and the dancers.  Honeycomb
+ * cells (hexagons of the photo) fill the frame; on them, forager bees run
+ * the figure-eight of the waggle dance -- a straight waggle run, a loop
+ * back, the run again -- each on a continuous phase of the scene clock;
+ * the run's angle (the direction to the flowers) follows the stereo
+ * balance, slowly, and the followers crowd behind each dancer.  The
+ * generator only gets the swell, so the dance angle sweeps on the clock
+ * and the fragment adds the balance as light... no: the angle stays a
+ * slow function of the clock here; the balance steers the light in the
+ * fragment.  No state.  Camera still, looking at the comb.
+ *
+ * Per-instance: dancersP, cellP, hueP.
+ */
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+layout(std430, binding = 0) buffer Verts { float verts[]; };
+layout(std430, binding = 1) buffer Cmd   { uint cmd[];   };
+
+uniform uint  maxVertices;
+uniform float time;
+uniform float sceneAdvance;
+uniform float sceneTime;
+uniform float audioSwell;
+
+uniform float dancersP;
+uniform float cellP;
+uniform float hueP;
+
+float hash11(float p) { p = fract(p * 0.1031); p *= p + 33.33; p *= p + p; return fract(p); }
+vec3  hash31(float n) { return vec3(hash11(n), hash11(n + 17.3), hash11(n + 41.7)); }
+
+void emitQuad(vec3 c, vec3 ax, vec3 ay, float id, float lit, float kind, vec2 uv0, vec2 uv1)
+{
+    uint base = atomicAdd(cmd[4], 6u);
+    if (base + 6u > maxVertices) return;
+    vec3 p0 = c - ax - ay, p1 = c + ax - ay, p2 = c + ax + ay, p3 = c - ax + ay;
+    vec3 pList[6]  = vec3[6](p0, p1, p2, p0, p2, p3);
+    vec2 uvList[6] = vec2[6](vec2(uv0.x, uv0.y), vec2(uv1.x, uv0.y), vec2(uv1.x, uv1.y), vec2(uv0.x, uv0.y), vec2(uv1.x, uv1.y), vec2(uv0.x, uv1.y));
+    for (uint i = 0u; i < 6u; ++i)
+    {
+        uint off = (base + i) * 8u;
+        verts[off + 0u] = pList[i].x; verts[off + 1u] = pList[i].y; verts[off + 2u] = pList[i].z;
+        verts[off + 3u] = id; verts[off + 4u] = lit; verts[off + 5u] = kind;
+        verts[off + 6u] = uvList[i].x; verts[off + 7u] = uvList[i].y;
+    }
+}
+
+// Figure-eight dance path: phase 0..1 -> position (units of run length).
+vec2 dancePath(float ph, float ang)
+{
+    // 0..0.3 waggle run (straight, with a sideways waggle), 0.3..0.65 loop
+    // right, 0.65..0.95 run again, 0.95..1 loop left closing.  Built as a
+    // smooth lemniscate-like curve so it is continuous everywhere.
+    float t = ph * 6.2831853;
+    vec2 q = vec2(sin(t) * 0.5, sin(2.0 * t) * 0.9);        // a figure eight along y
+    float run = smoothstep(0.35, 0.0, abs(sin(t)));           // near the crossing = the run
+    q.x += 0.06 * sin(ph * 6.2831853 * 14.0) * run;           // the waggle
+    float c = cos(ang), s = sin(ang);
+    return vec2(q.x * c - q.y * s, q.x * s + q.y * c);
+}
+
+void main()
+{
+    uvec3 g = gl_GlobalInvocationID;
+    uint id = g.x + 64u * (g.y + 64u * g.z);
+    uint nDancers = 5u + uint(clamp(dancersP, 0.0, 1.0) * 6.0);
+    const uint kFollowers = 9u;
+    float clock = sceneAdvance * 0.5 + sceneTime * 0.1;
+    float cellSize = 0.28 + 0.12 * clamp(cellP, 0.0, 1.0);
+    const float Z = 7.0;
+
+    if (id == 0u)
+    {
+        // The comb: a field of hexagon cells (kind -1, as one quad with the
+        // hex pattern drawn in the fragment), plus the dark hive around.
+        emitQuad(vec3(0.0, 0.0, Z + 0.3), vec3(9.0, 0.0, 0.0), vec3(0.0, 5.2, 0.0), cellSize, 0.0, -1.0, vec2(0.0), vec2(1.0));
+        return;
+    }
+    uint d = id - 1u;
+    if (d >= nDancers * (1u + kFollowers)) return;
+    uint dancer = d / (1u + kFollowers);
+    uint role = d % (1u + kFollowers);
+    float fd = float(dancer);
+    vec3 h = hash31(fd * 3.7 + 1.0);
+    vec2 centre = vec2((h.x - 0.5) * 14.0, (h.y - 0.5) * 8.0);
+    float ang = 0.4 * sin(clock * 0.15 + h.z * 6.28) + h.z * 3.0;      // the run direction, slow
+    float ph = fract(clock * (0.25 + 0.1 * h.z) + h.x);
+    float scale = 0.9 + 0.3 * h.y;
+    vec2 pos; float heading; float kind;
+    if (role == 0u)
+    {
+        pos = centre + dancePath(ph, ang) * scale;
+        vec2 ahead = centre + dancePath(ph + 0.01, ang) * scale;
+        heading = atan(ahead.y - pos.y, ahead.x - pos.x);
+        kind = 0.0;
+    }
+    else
+    {
+        // Followers: trail the dancer at lags, crowding around the run.
+        float fr = float(role);
+        float lag = 0.03 * fr;
+        vec2 base = centre + dancePath(ph - lag, ang) * scale;
+        vec3 hh = hash31(fd * 17.0 + fr * 5.5);
+        pos = base + (vec2(hh.x, hh.y) - 0.5) * 0.7;
+        vec2 ahead = centre + dancePath(ph - lag + 0.01, ang) * scale;
+        heading = atan(ahead.y - pos.y, ahead.x - pos.x);
+        kind = 1.0;
+    }
+    // A bee: an oriented quad (body along the heading), the run intensity
+    // (for the waggle glow) in lit.
+    vec3 c = vec3(pos, Z);
+    vec3 ax = vec3(cos(heading), sin(heading), 0.0) * 0.28;
+    vec3 ay = vec3(-sin(heading), cos(heading), 0.0) * 0.16;
+    float run = smoothstep(0.35, 0.0, abs(sin(ph * 6.2831853)));
+    emitQuad(c, ax, ay, fd, (role == 0u) ? run : 0.0, kind, vec2(0.0), vec2(1.0));
+}

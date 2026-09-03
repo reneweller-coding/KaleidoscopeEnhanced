@@ -3484,3 +3484,24 @@ across and read as black -- particles need at least four pixels at 1080p;
 TimeCrystalLattice strobed (17.3) with a 1 Hz drive flash on every disc
 until the clock was halved, the flash quartered and the phase gradient
 tripled so the flips travel as a wave instead of blinking together.
+
+## The third fifty, block C: life sciences
+
+| Scene | Pipeline | Note |
+|---|---|---|
+| ProteinFoldingChain | `indirect` | every residue is a blend by the arc of three closed-form conformations (coil, four helices, packed bundle), so the fold is continuous; hydrophobic flag fixed per residue |
+| NeuralConnectomeGlow | `indirect` | somas, dendrites and axons as fibre quads; spikes are drawn in the fragment at a phase along the fibre (uv.x); band energy is their brightness, never their rate |
+| CephalopodChromatophores | 2D | round pigment sacs on two jittered grids expand with their patch band plus a travelling passing-cloud wave |
+| BeeWaggleDance | `indirect` | a smooth lemniscate with a high-frequency sideways waggle on the run; followers trail by phase lag |
+| RibosomeAssemblyLine | 2D | beads placed by age (codons since added) along a curling path; the tape scrolls with the same clock so bead and codon stay in step |
+| PhytoplanktonEddies | 2D | twelve backward advection steps through a Lamb-Oseen eddy field; the bloom lives in the source frame |
+| LeafVenationGrowth | 2D | midrib, secondaries and tertiaries as segments whose lengths grow with the arc, each order later than the last |
+| SonarPingReveal | 2D | rings on phases; the photo is lit by a wake behind each ring front (exp decay) |
+| ForaminiferaSpiralShells | 2D | chambers on a log spiral; the newest inflates with the fractional growth |
+| SpiderOrbWebDew | 2D | radii first (arc 0..0.35), then the capture spiral from the hub outward; dew as round drops on the spiral threads |
+
+Preview lessons: the first hex-grid helper in BeeWaggleDance was wrong and
+drew a flat gradient -- the mod-based pointy-top trick (two offset
+lattices, take the nearer) is the one that works; chromatophores driven
+straight by their band strobed (9.2) until the band share of the expansion
+was cut to a quarter and the slow cloud wave carried the motion.
