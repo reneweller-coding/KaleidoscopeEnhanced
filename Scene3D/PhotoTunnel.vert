@@ -37,7 +37,7 @@ void main()
     // Kick pressure wave runs away from the camera; bass breathes the tube.
     float pulse = exp(-abs(z - (3.0 + 40.0 * fract(time * 0.4))) * 0.10)
                 * audioKick;
-    float r = 10.0 * (1.0 + 0.06 * audioBass + 0.10 * audioSwell)
+    float r = 10.0 * (1.0 + 0.10 * audioSwell)
             * (1.0 - 0.10 * pulse);
 
     // The tunnel itself weaves — that is the "steering".

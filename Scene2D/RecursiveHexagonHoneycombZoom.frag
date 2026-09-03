@@ -111,7 +111,7 @@ void main() {
         // Centroid enters as a static phase OFFSET, never as a factor on the
         // t-driven term -- scaling the rate would remap the whole accumulated
         // spin in one frame and strobe.
-        float rotA = t * 0.15 * (k % 2 == 0 ? 1.0 : -1.0) + kf * 0.5 + 0.5 * audioCentroid;
+        float rotA = t * 0.15 * (k % 2 == 0 ? 1.0 : -1.0) + kf * 0.5 + 0.5 * audioSwell;
         float cs = cos(rotA), sn = sin(rotA);
         vec2 pHex = mat2(cs, -sn, sn, cs) * uv * layerScale;
 

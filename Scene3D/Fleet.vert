@@ -150,7 +150,7 @@ void main()
     vec3 blow = normalize(vec3(hash11(fi * 3.1) - 0.5,
                                hash11(fi * 7.7) - 0.5,
                                hash11(fi * 5.3) - 0.5) + vec3(0.0001));
-    slot += blow * breakUp * craft * (1.0 + 1.6 * hash11(fi * 1.9));
+    // (the drop no longer blows the formation apart, V7d)
 
     // A TRACE of station-keeping. The old 0.09-craft wobble at ~1 Hz was the
     // single most-criticised thing in the scene -- warships jiggling in vacuum.

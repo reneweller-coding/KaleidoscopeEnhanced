@@ -86,7 +86,7 @@ void main() {
     vec3 centerPos = vec3(cos(angle) * radius, y, sin(angle) * radius);
 
     // Kick laser burst expansion
-    centerPos += normalize(centerPos) * audioKick * 1.8;
+    centerPos += normalize(centerPos) * audioSwell * 0.9;
 
     // Card orientation: tangent to ring
     float yaw = angle + 1.5708;

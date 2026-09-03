@@ -35,6 +35,7 @@ uniform float power;
 uniform int rotate;
 // Audio reactivity
 uniform float audioBeat;      // beat pulse decay 0..1
+uniform float audioSwell;   // slow envelope, the calm replacement for the fast one (V7d)
 uniform float audioLevel;     // smoothed loudness 0..1
 uniform float audioFlip;      // rotation direction: +1 or -1
 uniform float audioCentroid;  // tonal brightness 0=dark drone, 1=bright shimmer
@@ -112,7 +113,7 @@ void main() {
     // every chord/key move rides the same gentle zoom breath, so the pattern
     // answers the HARMONY as well as the rhythm.
     float hcdf   = clamp(audioHarmChange, 0.0, 1.0);
-    float zoomK  = 1.0 + audioBeat * 0.06 + hcdf * 0.09;
+    float zoomK  = 1.0 + audioSwell * 0.04;
     vec2 pZoomed = p / zoomK;
     vec4 colZoomed = interpolation * texture(tex0, pZoomed+0.5) + (1.0-interpolation)*texture(tex1, pZoomed+0.5);
     col = mix(col, colZoomed, min(audioBeat * 0.18 + hcdf * 0.30, 0.45));

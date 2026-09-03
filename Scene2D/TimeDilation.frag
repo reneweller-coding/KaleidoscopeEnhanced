@@ -107,7 +107,7 @@ void main()
         float tearNoise = fbm(vec3(angle * 10.0, sceneTime * 20.0, 0.0));
         if (tearNoise > 0.7) {
             // Offset UV radially
-            uv *= 1.0 + audioKick * 0.2 * wp;
+            uv *= 1.0 + audioSwell * 0.08 * wp;
             dist = length(uv);
             tear = 1.0;
         }

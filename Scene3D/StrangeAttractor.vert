@@ -94,7 +94,7 @@ vec3 field(vec3 p, float sys)
     }
     else                    // Halvorsen (looping bands)
     {
-        float a = 1.4 + 0.25 * audioCentroid;
+        float a = 1.4 + 0.25 * audioSwell;
         return vec3(-a * p.x - 4.0 * p.y - 4.0 * p.z - p.y * p.y,
                     -a * p.y - 4.0 * p.z - 4.0 * p.x - p.z * p.z,
                     -a * p.z - 4.0 * p.x - 4.0 * p.y - p.x * p.x) * 0.9;

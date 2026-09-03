@@ -89,7 +89,7 @@ void main() {
     vec2 abCenter = vec2(3.6, 3.6);
     // Sub-bass magnifies the (A,B) window, so each cellular stability basin
     // swells across more screen area -- the basins breathe, the light doesn't.
-    float zoomLevel = (1.5 + 0.3 * sin(audioSwell * 2.0)) * zm * (1.0 + 0.3 * audioSubBass);
+    float zoomLevel = (1.5 + 0.3 * sin(audioSwell * 2.0)) * zm * (1.0 + 0.12 * audioSwell);
     vec2 ab = abCenter + uv / zoomLevel;
 
     // Calculate Lyapunov exponent

@@ -43,7 +43,7 @@ void main() {
     r += spiral * isDisk;
 
     // Gravitational collapse compression on bass
-    r *= (1.0 - 0.25 * audioBass);
+    r *= (1.0 - 0.15 * audioSwell);
 
     vec3 pos = vec3(0.0);
 

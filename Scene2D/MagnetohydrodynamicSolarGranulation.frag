@@ -104,7 +104,7 @@ void main()
     
     // Photospheric acoustic p-mode waves
     float pmode = sin(p.x * 6.0 + p.y * 5.0 - t * 3.0) * (pmodeP > 0.01 ? pmodeP : 0.8) * 0.15;
-    p += pmode * (0.5 + 0.5 * audioMid);
+    p += pmode * (0.5 + 0.5 * audioSwell);
     
     // Multi-scale Voronoi granulation
     vec3 v1 = voronoi(p, t);

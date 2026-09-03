@@ -40,6 +40,7 @@ uniform float power;
 uniform int rotate;
 // Audio reactivity: 0=silence, 1=loud beat.  Decays between beats.
 uniform float audioBeat;       // beat pulse decay 0..1
+uniform float audioSwell;   // slow envelope, the calm replacement for the fast one (V7d)
 uniform float audioLevel;      // smoothed loudness 0..1
 uniform float audioFlip;       // rotation direction: +1 or -1
 uniform float audioCentroid;   // tonal brightness 0..1  (0=dark drone, 1=bright shimmer)
@@ -113,7 +114,7 @@ void main() {
     // --- Beat: a VERY subtle radial breath only ---
     // The strong beat zoom/brightness flash was tiring on the eyes; the rhythmic
     // accent now lives in the gentle corner spotlights of the final present pass.
-    float zoom    = 1.0 + audioBeat * 0.06;
+    float zoom    = 1.0 + audioSwell * 0.04;
     vec2 uvZoomed = (uv - 0.5) / zoom + 0.5;
     vec4 colZoomed = interpolation * texture(tex0,uvZoomed) + (1.0-interpolation)*texture(tex1,uvZoomed);
     col = mix(col, colZoomed, audioBeat * 0.18);

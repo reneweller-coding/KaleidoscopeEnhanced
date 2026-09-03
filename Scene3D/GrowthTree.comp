@@ -50,6 +50,7 @@ uniform uint  maxVertices;
 uniform float time;
 uniform float sceneSeed;
 uniform float audioAdvance;
+uniform float audioSwell;   // slow envelope, the calm replacement for the fast one (V7d)
 uniform float audioLevel;
 uniform float audioKick;
 uniform float audioSubBass;
@@ -167,7 +168,7 @@ void main()
     float len = 1.15 * tscl;
     float rad = 0.115 * tscl;
 
-    float angle = branchP * 0.52 * (1.0 + 0.25 * audioLevel);
+    float angle = branchP * 0.52 * (1.0 + 0.25 * audioSwell);
     float ratio = lengthP;
 
     for (int d = 0; d < depth; ++d)

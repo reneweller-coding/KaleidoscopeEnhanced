@@ -96,7 +96,7 @@ void main() {
     // multiplies the zoom OUTSIDE the exp(), so the running zoom phase itself
     // is never rescaled.
     float zc = 0.5 - 0.5 * cos(6.2831853 * fract(t * 0.65 / 5.5));   // 0..1..0
-    float zoomLevel = exp(zc * 3.2) * (2.2 * zm) * (1.0 + 0.35 * audioSubBass);   // was exp(zc*5.5) = 245x: past ~30x the boundary reads as bare streaks
+    float zoomLevel = exp(zc * 3.2) * (2.2 * zm) * (1.0 + 0.12 * audioSwell);   // was exp(zc*5.5) = 245x: past ~30x the boundary reads as bare streaks
     vec2 c = cCenter + uv / zoomLevel;
 
     vec2 z = c;

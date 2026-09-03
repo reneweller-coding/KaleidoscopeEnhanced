@@ -56,7 +56,7 @@ void main()
         lensAmt = max(lensAmt, exp(-dz * dz * 0.010) * fade);
     }
 
-    float r = (9.0 + 1.5 * audioBass) * (1.0 - 0.86 * lensAmt)
+    float r = (9.0 + 1.0 * audioSwell) * (1.0 - 0.86 * lensAmt)
             * (1.0 + 0.05 * audioSwell);
     r = max(r, 0.35);                                // never fully collapses
 

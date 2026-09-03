@@ -74,7 +74,7 @@ void main()
     // fades). The framing is the scene's optimum; the flag is accepted
     // as the character of a thin-filament fractal.
     float zoom = (1.6 + 0.35 * sin(time * 0.05 + audioSwell * 0.6)) * zoomV;
-    zoom *= 1.0 - 0.08 * audioKick;
+    zoom *= 1.0 - 0.04 * audioSwell;
     vec2 z = uv * zoom;
 
     // The audio-driven angle around the "interesting Julia" circle --

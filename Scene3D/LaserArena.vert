@@ -76,8 +76,8 @@ void main()
     float fan   = (k - 0.5) * 1.9;
     float sweep = sin(6.2831853 * audioBarPhase + h1 * 6.2831853) * 0.85;
     float yaw   = fan * (0.55 + 0.25 * sweep) - twSgn * 0.42;
-    float pitch = -0.30 + 0.55 * sweep * (1.0 - audioDrop)
-                + 1.25 * audioDrop + (h2 - 0.5) * 0.45;
+    float pitch = -0.30 + 0.55 * sweep
+                + (h2 - 0.5) * 0.45;   // (drop camera pitch removed, V7d)
 
     // Beams point away from the crowd, deeper into the fog (never crossing
     // the camera plane — no clipping slivers).

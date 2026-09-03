@@ -100,7 +100,7 @@ void main() {
     // camera's own z would bring ribbons close enough to the lens to smear
     // additively across the whole peripheral field of view (a blown-out
     // white wash framing the tunnel instead of a clean throat silhouette).
-    float rad = 2.4 * max(throat, 0.34) + audioKick * exp(-z * 0.4) * 0.5;
+    float rad = 2.4 * max(throat, 0.34);
 
     vec2 c2 = vec2(cos(ang), sin(ang)) * rad;
     vec2 tangent = vec2(-sin(ang), cos(ang));

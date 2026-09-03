@@ -86,7 +86,7 @@ void main() {
     // Camera trajectory moving forward along z through the wormhole
     float camZ = mod(t * 3.0, 20.0) - 10.0; // from -10 to +10
     vec3 ro = vec3(sin(t * 0.5) * 0.2, cos(t * 0.4) * 0.2, camZ);
-    vec3 rd = normalize(vec3(uv, 1.2 - 0.3 * audioKick));
+    vec3 rd = normalize(vec3(uv, 1.2));
 
     // Throat radius profile: r(l) = sqrt(r0^2 + l^2)
     float r0 = (0.7 + 0.25 * audioSubBass) * thrt;

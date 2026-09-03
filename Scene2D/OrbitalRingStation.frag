@@ -369,7 +369,7 @@ void main()
                 float ang = atan(hp.z, hp.x);
                 float band = smoothstep(0.20, 0.05, abs(hp.y));
                 float wf = fract(ang * 22.0 / 6.2831853 * 6.0);
-                float lit = step(0.35, hash11(floor(ang * 21.0)));
+                float lit = step(0.35, hash11(floor(ang * 21.0))) * smoothstep(0.5, 0.2, abs(fract(ang * 21.0) - 0.5));   // windows, not cells (V8e)
                 float win = band * lit * smoothstep(0.15, 0.35, wf) * smoothstep(0.85, 0.65, wf);
                 scol += vec3(1.0, 0.90, 0.68) * win
                       * (0.75 + 0.45 * audioSwell) * glw;

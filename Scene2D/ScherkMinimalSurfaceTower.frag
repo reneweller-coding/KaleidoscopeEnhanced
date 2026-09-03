@@ -111,7 +111,7 @@ void main() {
     vec3 uu = normalize(cross(ww, vec3(0.0, 1.0, 0.0)));
     vec3 vv = cross(uu, ww);
 
-    vec3 rd = normalize(uv.x * uu + uv.y * vv + (1.25 - 0.08 * audioKick) * ww);
+    vec3 rd = normalize(uv.x * uu + uv.y * vv + 1.25 * ww);
 
     float scale = 1.7 * twr;
     float thickness = (0.13 + 0.04 * sin(t) + 0.05 * audioBass) * sdl;

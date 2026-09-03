@@ -80,7 +80,7 @@ void main()
 
     // Whole mosaic rotates slowly (jump-free) and gives a tiny beat "breath".
     p = rot(audioPhase * 0.18 + time * 0.015) * p;
-    p *= 1.0 - 0.025 * audioBeat;
+    p *= 1.0 - 0.02 * audioSwell;
 
     // Kaleidoscopic symmetry: fixed per activation (never audio-stepped).
     vec2  fp = kaleido(p, float((sidesP >= 2) ? sidesP : 4));

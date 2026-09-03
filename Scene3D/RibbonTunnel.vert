@@ -72,8 +72,8 @@ void main()
     float rmul = 0.42 + 1.35 * fract(ri * 0.6180339);
 
     // Radius: swell breathes it, the kick bulges the tunnel just ahead.
-    float rad = 6.0 * rmul * (1.0 + 0.10 * audioSwell + 0.06 * audioBass)
-              + 1.6 * audioKick * rmul * exp(-abs(z - 14.0) * 0.10);
+    float rad = 6.0 * rmul * (1.0 + 0.10 * audioSwell)
+              + 0.0;
 
     vec2 c2 = cw + vec2(cos(ang), sin(ang)) * rad;
     vec2 tangent = vec2(-sin(ang), cos(ang));

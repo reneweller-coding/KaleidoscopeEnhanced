@@ -99,7 +99,7 @@ void main() {
     vec3 centerPos = rotY * (sphereDir * shellRadius);
 
     // Dynamic kick burst
-    centerPos += normalize(centerPos) * audioKick * 1.8;
+    centerPos += normalize(centerPos) * audioSwell * 0.9;
 
     // Card orientation: facing outwards + tumbling
     vec3 normal = rotY * sphereDir;

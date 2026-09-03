@@ -94,7 +94,7 @@ void main() {
 
     // Monolith orientation: tall vertical slabs facing slightly inward & tumbling
     float yaw = orbitAngle + 1.5708 + seeds.z * 0.8;
-    float pitch = sin(time * 2.0 + seeds.x * 6.28) * 0.3 * (1.0 + audioKick);
+    float pitch = sin(time * 2.0 + seeds.x * 6.28) * 0.3 * (1.0 + 0.5 * audioSwell);
     float roll = cos(time * 1.5 + seeds.y * 6.28) * 0.2;
 
     mat3 rotY = mat3(cos(yaw), 0.0, sin(yaw), 0.0, 1.0, 0.0, -sin(yaw), 0.0, cos(yaw));

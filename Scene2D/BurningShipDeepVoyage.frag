@@ -75,7 +75,7 @@ void main() {
     vec2 cArmada   = vec2(-1.7629, -0.0286);
     float zc = 0.5 - 0.5 * cos(6.2831853 * fract(t * 0.7 / 6.0));   // 0..1..0
     vec2 cCenter = mix(cOverview, cArmada, smoothstep(0.0, 0.35, zc));
-    float zoomLevel = exp(zc * 7.5) * (0.55 * zm) * (1.0 + 0.15 * audioSubBass);
+    float zoomLevel = exp(zc * 7.5) * (0.55 * zm) * (1.0 + 0.08 * audioSwell);
     // The ship renders upright with the y-window inverted (applied to the
     // WINDOW, so the centre coordinates above are true fractal coordinates).
     vec2 c = cCenter + vec2(uv.x, -uv.y) / zoomLevel;

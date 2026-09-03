@@ -85,7 +85,7 @@ void main()
 
     // The glass wheel rotates slowly; an in-tempo zoom pulse breathes the cells.
     p = rot(time * 0.05 + audioPhase * 0.18) * p;
-    p *= 1.0 - 0.06 * audioBeat - 0.03 * sin(audioBeatPhase * 6.2831);
+    p *= 1.0 - 0.04 * audioSwell;
 
     // Fold count is FIXED per activation (a floor(audio) fold used to snap the
     // whole frame whenever the valence crossed a step -> abrupt changes).

@@ -81,7 +81,7 @@ void main() {
     vec2 z = uv * (1.6 / zm) * (1.0 - 0.2 * audioBass);
 
     // Hyperbolic isometry translation vector
-    vec2 a = vec2(sin(t * 0.6), cos(t * 0.4)) * 0.45 * (1.0 + 0.3 * audioKick);
+    vec2 a = vec2(sin(t * 0.6), cos(t * 0.4)) * 0.45 * (1.0 + 0.15 * audioSwell);
     z = mobius(z, a);
 
     // Poincare disk inversion folding (Coxeter group circle inversions)

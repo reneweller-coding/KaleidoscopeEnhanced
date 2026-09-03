@@ -114,8 +114,8 @@ void main() {
         // top as a bounded extra offset, so a rising centroid still swings the
         // hyper-plane forward -- i.e. it adds to the rotation RATE for as long
         // as the timbre keeps brightening, then relaxes.
-        float rotXY = t * 0.2 + kf * 0.4 + 1.6 * audioCentroid;
-        float rotZW = t * 0.15 + audioPhase * 0.1 + 1.2 * audioCentroid;
+        float rotXY = t * 0.2 + kf * 0.4 + 0.8 * audioSwell;
+        float rotZW = t * 0.15 + audioPhase * 0.1 + 0.6 * audioSwell;
 
         // Project 2D screen into 4D tesseract coordinates
         vec4 p4 = vec4(pLayer, sin(kf * 1.2 + t * 0.4), cos(kf * 1.2 + t * 0.4));

@@ -259,7 +259,7 @@ void main()
             col += vec3(0.5, 0.7, 1.0) * fres * 0.5;
 
             // Station lights
-            float lts = step(0.9, hash21(floor(p.xy * 4.0)));
+            float lts = step(0.9, hash21(floor(p.xy * 4.0))) * smoothstep(0.32, 0.12, length(fract(p.xy * 4.0) - 0.5));   // round lights, not cells (V8e)
             col += cityCol * lts * (0.5 + 0.5 * audioLevel) * glw;
 
             // AO

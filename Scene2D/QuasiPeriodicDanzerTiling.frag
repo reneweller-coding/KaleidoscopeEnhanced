@@ -84,7 +84,7 @@ void main() {
     // Sub-bass breathes the lattice: dividing the projection scale enlarges
     // every quasicrystal cell on screen (the cut-plane drift, which lives in
     // `offset`, is left alone so the aperiodic pattern keeps flowing evenly).
-    vec2 p = uv * (8.0 * sc) / (1.0 + 0.35 * audioSubBass);
+    vec2 p = uv * (8.0 * sc) / (1.0 + 0.15 * audioSwell);
 
     float fieldSum = 0.0;
     float minDist = 1e4;

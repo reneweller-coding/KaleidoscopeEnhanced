@@ -97,7 +97,7 @@ void main()
     vec3 vv = cross(uu, ww);
     
     // Extreme camera shake on kicks
-    float shake = audioKick * 0.05;
+    float shake = 0.0;   // kick camera jitter removed (V7d)
     vec2 shakeUv = uv + vec2(hash11(time * 100.0), hash11(time * 100.0 + 1.0)) * shake - (shake * 0.5);
     
     vec3 rd = normalize(shakeUv.x * uu + shakeUv.y * vv + 1.5 * ww);

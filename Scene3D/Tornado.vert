@@ -17,6 +17,7 @@ uniform float time;
 uniform vec2  resolution;
 
 uniform float audioAdvance;
+uniform float audioSwell;   // slow envelope, the calm replacement for the fast one (V7d)
 uniform float audioLevel;
 uniform float audioKick;
 uniform float audioSnare;
@@ -75,7 +76,7 @@ void main()
     // wide open for a beat.  Staerkeres Breitenwachstum (war 1.8/0.28) fuer
     // einen insgesamt groesseren, bildfuellenderen Trichter.
     float rBase = (2.2 + (y + 18.0) * 0.36) * (0.55 + 0.9 * r2);
-    float r = rBase * (1.0 - 0.22 * audioKick) * (1.0 + 0.8 * audioDrop);
+    float r = rBase * (1.0 + 0.15 * audioSwell);
 
     // FLUNG DEBRIS: ~6 % of the particles get hurled out of the funnel on
     // hard kicks — they arc outward and sink back as the envelope decays.

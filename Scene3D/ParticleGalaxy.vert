@@ -83,7 +83,7 @@ void main()
                 + (r3 - 0.5) * (0.35 + rad * 0.012);
 
     // The bass breathes the core (slew-limited -> smooth).
-    rad *= 1.0 - 0.18 * audioBass * bulge;
+    rad *= 1.0 - 0.10 * audioSwell * bulge;
     float y = (r2 - 0.5) * (0.8 + 9.0 * bulge)
             + sin(ang * 3.0 + r4 * 6.2831) * 0.3;
 

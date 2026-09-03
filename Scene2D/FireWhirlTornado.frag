@@ -120,7 +120,7 @@ void main() {
 
     // Raymarching camera
     vec3 ro = vec3(0.0, -0.2, -2.5);
-    vec3 rd = normalize(vec3(uv, 1.2 - 0.25 * audioKick));
+    vec3 rd = normalize(vec3(uv, 1.2));
 
     // Volumetric flame raymarch
     vec3 p = ro;

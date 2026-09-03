@@ -3268,3 +3268,32 @@ Note for staged mesh scenes: a preview of 10 s reaches `sceneProgress`
 0.7 at best (activation and cross-fade eat the start), so a cue at 0.72
 never shows in a probe -- FleetJump's jump starts at 0.5.
 
+## The catalogue pass, done statically
+
+The question was whether the old catalogue could be checked for the same
+jolts without another overnight render. It could: the offending shapes are
+in the source. `Tools/shake_scan.py` reads every shader and the rig
+formulas and reports five patterns -- a frame coordinate (p, uv, camera,
+zoom, radius, angle) written with a fast envelope, an explicit
+shake/jitter/punch term, a vertex-stage hull position on kick/beat/bass,
+`floor`/`step` on audio, and a whole lit grid cell (`step(k, hash(floor(p)))`).
+Over 1014 files it flagged 133; reading them left 58 real ones (the rest
+were light terms, point sizes and static lattice jitter that happen to use
+the same words). Seconds of scan, an hour of reading and editing, ten
+minutes of targeted renders.
+
+What changed, by kind: eight FOV punches on the kick (a constant focal
+length now); a dozen whole-frame zooms on beat, kick or sub-bass (on the
+swell now, at a third of the amplitude); camera distance, roll, pitch and
+sway that rode level, flux, drop and sub-bass; three explicit shakes
+(PulsarJet's random kick jitter, AtmosphericEntry's 31-43 Hz judder,
+FortressStation's 37 Hz hull tremor); tunnel radii and object lattices that
+pumped or leapt outward on every kick; rotation angles and an attractor
+parameter on the spectral centroid (per-frame noise); Fleet's formation
+blowing apart on the drop; and two grid-cell light fields turned into round
+lights. A rescan of the 58 files reports nothing; all of them still render.
+
+The scanner is now the pre-commit check for V7d and V8e; its false
+positives are the price of catching the true ones, and it prints the line
+so the reading is quick.
+

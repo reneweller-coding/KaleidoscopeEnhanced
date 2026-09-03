@@ -91,7 +91,7 @@ void main() {
 
     // Camera ray setup in laser chamber
     vec3 ro = vec3(0.0, 0.0, -3.5);
-    vec3 rd = normalize(vec3(uv, 1.2 - 0.3 * audioKick));
+    vec3 rd = normalize(vec3(uv, 1.2));
     rd.yz = rot2D(sin(t * 0.3) * 0.3) * rd.yz;
     rd.xz = rot2D(t * 0.4) * rd.xz;
 

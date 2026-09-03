@@ -47,8 +47,8 @@ void main()
     // KICK PUNCH: a sharp constriction ring races away from the camera on
     // every kick; a DROP blows the whole tube wide for a beat.
     float punchZ = fract(z * 0.02 - audioAdvance * 0.15);
-    r -= 2.8 * audioKick * exp(-punchZ * 10.0);
-    r *= 1.0 + 0.35 * audioDrop;
+    // (kick punch wave removed, V7d)
+    r *= 1.0 + 0.10 * audioSwell;
 
     // SERPENTINE FLIGHT: the tube winds through ABSOLUTE space and the
     // camera flies its centreline — sweeping banked curves keep revealing

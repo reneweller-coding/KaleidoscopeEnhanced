@@ -136,8 +136,8 @@ void main()
     // ever-smaller (and increasingly arbitrary, possibly dark) source
     // region within a couple of seconds, starving the loop of brightness
     // no matter how strong the fresh-photo injection below is.
-    float zoom = 1.004 + 0.02 * audioKick;
-    float rotHere = 0.045 * (audioBeat > 0.5 ? 1.0 : -1.0) * (0.5 + 0.5 * audioBeat);
+    float zoom = 1.006 + 0.004 * audioSwell;
+    float rotHere = 0.02;   // steady turn: a beat-flipped direction was a jerk (V7d)
     float cs = cos(rotHere), sn = sin(rotHere);
     folded = mat2(cs, -sn, sn, cs) * folded / max(zoom, 1e-3);
 

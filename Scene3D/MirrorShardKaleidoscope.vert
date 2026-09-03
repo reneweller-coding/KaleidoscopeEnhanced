@@ -108,7 +108,7 @@ void main() {
     // Per-shard tilt: phase-offset by the shard's own seed so the disc
     // shimmers rather than tilting in unison; kick briefly widens the swing
     // and adds a metallic flash.
-    float tiltPhase = audioBeatPhase * 6.2831853 + seeds.x * 6.2831853 + time * 0.4;
+    float tiltPhase = seeds.x * 6.2831853 + time * 0.4;   // no beat-locked wobble (V7d)
     float kickBoost = 1.0 + audioKick * 0.8;
     float tiltAmtX = sin(tiltPhase) * (0.30 + 0.20 * seeds.y) * tiltV * kickBoost;
     float tiltAmtY = cos(tiltPhase * 1.31 + seeds.z * 6.2831853) * (0.30 + 0.20 * seeds.w) * tiltV * kickBoost;

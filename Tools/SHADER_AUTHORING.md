@@ -459,6 +459,8 @@ seit 03.09. schaltet der Settings-Schluessel `calmMotion` (Default an) all das
 ab. Wer eine Szene auf Erschuetterungen prueft, prueft mit calmMotion=true --
 sonst sieht man die Kamera des Hosts, nicht die Szene.
 
+Pruefwerkzeug fuer V7c/V7d/V8e: `python Tools/shake_scan.py` (ganzer Katalog) oder `--files a.frag b.vert` (vor dem Commit). Kategorien FRAME/SHAKE/HULL/STEP/PIXEL; jeden Treffer lesen.
+
 ### V8 — Registrierung
 
 Jeder Shader braucht einen Eintrag in `Configurations/Komplett.xml` (die

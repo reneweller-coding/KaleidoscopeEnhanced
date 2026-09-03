@@ -87,7 +87,7 @@ void main() {
     vec3 centerPos = (q.xyz / denom) * (3.5 * rad + audioSwell * 1.5);
 
     // Dynamic kick burst
-    centerPos += normalize(centerPos) * audioKick * 1.5;
+    centerPos += normalize(centerPos) * audioSwell * 0.8;
 
     // Ribbon normal and tangent vectors
     float thetaNext = theta + 0.05;

@@ -71,7 +71,7 @@ void main()
 
         world = rotMat * local;
         world.z += 105.0;
-        world.x += 0.6 * audioKick * sin(time * 37.0);   // rattle, not a bob
+        // (kick hull shake removed, V7d)   // rattle, not a bob
         n = normalize(rotMat * attrB.xyz);
         vUV = vec2(attrA.w, attrB.w);
     }

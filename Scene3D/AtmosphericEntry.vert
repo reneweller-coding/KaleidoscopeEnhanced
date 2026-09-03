@@ -92,7 +92,7 @@ void main()
 
         // Airframe judder once the atmosphere bites: high frequency, small
         // amplitude, and gated on `entry` so the vacuum part stays glassy.
-        float shake = (shakeP > 0.01 ? shakeP : 1.0) * entry;
+        float shake = 0.0;   // airframe judder removed (V7d): the buffeting is light and heat now
         // Three mutually prime rates so the shake never settles into a buzz.
         // They were 47/53/41, which put the fastest at 8.44 Hz -- past the hard
         // 8 Hz ceiling, and this displaces the WHOLE airframe rather than a

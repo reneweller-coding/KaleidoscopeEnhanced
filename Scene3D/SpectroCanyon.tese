@@ -31,6 +31,7 @@ out float vDist;
 uniform mat4  projM;
 uniform float eyeOff;
 uniform float audioAdvance;
+uniform float audioSwell;   // slow envelope, the calm replacement for the fast one (V7d)
 uniform float audioSubBass;
 uniform float audioLevel;
 
@@ -119,7 +120,7 @@ void main()
     vDist   = p.z;
 
     // A gentle sway, so the flight is not a rail.
-    float sway = 5.0 * sin(audioAdvance * 0.08) * (0.6 + 0.4 * audioLevel);
+    float sway = 5.0 * sin(audioAdvance * 0.08) * (0.6 + 0.4 * audioSwell);
     vec3 vp = vec3(p.x - sway - eyeOff,
                    p.y - camHP - 2.0 * audioSubBass,
                    p.z);

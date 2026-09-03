@@ -140,7 +140,7 @@ void main() {
 
     // Wider cone: at the old 1.2 focal length the corridor mouth occupied a
     // small disc in the middle of the picture with dark nothing around it.
-    vec3 rd = normalize(uv.x * uu + uv.y * vv + (0.85 - 0.18 * audioKick) * ww);
+    vec3 rd = normalize(uv.x * uu + uv.y * vv + 0.85 * ww);
 
     // Raymarching.  The step factor matches the corrected distance bound
     // above; a proximity glow is integrated ALONG the ray as it goes, so the

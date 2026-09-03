@@ -92,7 +92,7 @@ void main() {
     );
 
     // Kick phase jump
-    centerPos += vec3(cos(boundaryAngle), sin(boundaryAngle), 0.0) * audioKick * 1.5;
+    centerPos += vec3(cos(boundaryAngle), sin(boundaryAngle), 0.0) * audioSwell * 0.8;
 
     vec3 tangentDir = vec3(-sin(skipAngle), cos(skipAngle), 0.0);
     float ribbonWidth = (0.32 * wid) * (1.0 + 0.3 * audioKick);

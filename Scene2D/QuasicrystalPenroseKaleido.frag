@@ -67,7 +67,7 @@ void main() {
 
     // Golden ratio scale factor
     float phi = 1.6180339887;
-    float scale = (14.0 * phiSc) * (1.0 + 0.15 * sin(audioSwell * 2.0) + 0.1 * audioSubBass);
+    float scale = (14.0 * phiSc) * (1.0 + 0.15 * sin(audioSwell * 2.0));
     vec2 p = uv * scale;
 
     // De-Bruijn 5D wave sum method for aperiodic quasicrystal
@@ -84,7 +84,7 @@ void main() {
         vec2 dir = vec2(cos(ang), sin(ang));
 
         // 5D hyper-plane shift parameterized by audio and time
-        float shift = sin(t * 0.5 + float(i) * 1.2566) * (1.2 + 0.5 * audioFlux);
+        float shift = sin(t * 0.5 + float(i) * 1.2566) * (1.2 + 0.3 * audioSwell);
         float phase = dot(p, dir) + shift;
 
         float wave = cos(phase);

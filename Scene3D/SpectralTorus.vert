@@ -78,7 +78,7 @@ vec3 torusPoint(float u, float v)
     float ph = v * TU;                     // minor angle
 
     float R = 10.0;
-    float r = 4.0 * (1.0 + 0.03 * audioKick);
+    float r = 4.0;
 
     vec3 ring   = vec3(cos(Th), 0.0, sin(Th));
     vec3 nrm    = ring * cos(ph) + vec3(0.0, 1.0, 0.0) * sin(ph);  // tube normal

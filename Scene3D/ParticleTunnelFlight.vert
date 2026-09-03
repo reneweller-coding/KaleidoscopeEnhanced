@@ -114,7 +114,7 @@ void main() {
 
     // Camera sways gently side to side (integrated), so the flight feels
     // alive instead of a dead-straight rail.
-    vec2 sway = vec2(sin(audioAdvance * 0.35), cos(audioAdvance * 0.27)) * (0.4 + 0.5 * audioSubBass);
+    vec2 sway = vec2(sin(audioAdvance * 0.35), cos(audioAdvance * 0.27)) * (0.4 + 0.3 * audioSwell);
 
     // Camera stays at view-space origin looking down +Z; relZ (already in
     // [0, TUNNEL_LEN)) is the point's distance ahead of the camera. A base

@@ -67,7 +67,7 @@ void main()
     vec2 drift = vec2(cos(t * driftVel * 0.5), sin(t * driftVel * 0.5 + 0.8)) * 0.15;
     
     // Hexagonal lattice geometry
-    float scale = (latticeP > 0.01 ? latticeP : 3.5) * (1.0 + 0.2 * audioKick);
+    float scale = (latticeP > 0.01 ? latticeP : 3.5) * (1.0 + 0.1 * audioSwell);
     vec2 p = (uv + drift) * scale;
     
     // Triangular 2D grid coordinates

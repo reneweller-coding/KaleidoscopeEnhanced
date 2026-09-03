@@ -104,7 +104,7 @@ void main() {
     vec3 B = cross(N, T);
 
     // Roll banking in turns
-    float rollAngle = sin(sCam * qParam) * 0.4 + 0.2 * audioFlux;
+    float rollAngle = sin(sCam * qParam) * 0.4 + 0.1 * audioSwell;
     float csR = cos(rollAngle), snR = sin(rollAngle);
     vec3 right = N * csR - B * snR;
     vec3 up = N * snR + B * csR;

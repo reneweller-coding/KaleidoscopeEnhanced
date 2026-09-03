@@ -87,7 +87,7 @@ void main() {
     float t = time * 0.25 * spd + audioAdvance * 0.15;
 
     // 5-fold polar symmetry folding
-    vec2 p = uv * (3.5 / tl) * (1.0 - 0.15 * audioKick);
+    vec2 p = uv * (3.5 / tl) * (1.0 - 0.08 * audioSwell);
     p = rot2D(t * 0.3) * p;
 
     float edgeDist = 1.0;

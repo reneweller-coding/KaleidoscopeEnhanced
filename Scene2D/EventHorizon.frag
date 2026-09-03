@@ -28,6 +28,7 @@ uniform float time;
 uniform float interpolation;
 
 uniform float audioLevel;
+uniform float audioSwell;   // slow envelope, the calm replacement for the fast one (V7d)
 uniform float audioBeat;
 uniform float audioKick;
 uniform float audioSubBass;
@@ -66,7 +67,7 @@ void main()
     float tilt  = 0.34 + 0.42 * tiltP + 0.06 * sin(audioAdvance * 0.05);
     // Well OUTSIDE the disk's outer radius — a camera inside it sees nothing
     // but a wall of disk.
-    float camR  = 15.0 - 1.5 * audioLevel;
+    float camR  = 15.0 - 1.0 * audioSwell;
 
     // Proper spherical placement, so |ro| really is camR.
     vec3 ro = camR * vec3(cos(tilt) * sin(orbit), sin(tilt), cos(tilt) * cos(orbit));

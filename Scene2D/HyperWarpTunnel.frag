@@ -140,7 +140,7 @@ void main() {
     vec2 uv = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
     // Camera FOV breathing on kicks
-    uv *= 1.0 - 0.18 * audioKick - 0.08 * audioSwell;
+    uv *= 1.0 - 0.08 * audioSwell;
 
     // Convert to Polar Coordinates (r = radius, a = angle)
     float r = length(uv) + 1e-5;

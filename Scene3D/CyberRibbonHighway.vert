@@ -89,7 +89,7 @@ void main() {
     
     // Ribbon radius from highway center
     float radius = 5.5 + 1.5 * sin(ri * 1.3 + zAbs * 0.02) + audioSwell * 2.0;
-    radius += audioKick * 1.2 * exp(-mod(zRel, 30.0) * 0.2);
+    // (kick radius pulse removed, V7d)
 
     vec3 centerPos = vec3(centerWeave.x, centerWeave.y, zRel);
     vec3 radialDir = vec3(cos(laneAngle), sin(laneAngle), 0.0);

@@ -85,7 +85,7 @@ void main() {
 
     // Raymarching camera down the relativistic jet axis
     vec3 ro = vec3(0.0, 0.0, -3.0);
-    vec3 rd = normalize(vec3(uv, 1.2 - 0.3 * audioKick));
+    vec3 rd = normalize(vec3(uv, 1.2));
 
     // Slight camera bank/swirl
     rd.xy = rot2D(sin(t * 0.3) * 0.3 + audioPhase * 0.5) * rd.xy;

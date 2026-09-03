@@ -110,7 +110,7 @@ void main() {
     vec3 ww = normalize(ta - ro);
     vec3 uu = normalize(cross(ww, vec3(0.0, 1.0, 0.0)));
     vec3 vv = cross(uu, ww);
-    vec3 rd = normalize(uv.x * uu + uv.y * vv + (1.4 - 0.3 * audioKick) * ww);
+    vec3 rd = normalize(uv.x * uu + uv.y * vv + 1.4 * ww);
 
     float totalDist = 0.0;
     float gField = 0.0;
