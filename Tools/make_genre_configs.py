@@ -181,19 +181,19 @@ MODIFIED_SCENES = {
 # Minuten statt siebzig).  Bewusst eine eigene Liste: welche Szenen zuletzt
 # dran waren, ist eine historische Tatsache und soll im Diff stehen.
 RECENT_SCENES = {
-    # 03.09.: zweite Fuenfzig, Block A (Weltraum): Bok-Globulen, Vakuumblase,
-    # Nebelschalen, Sonnenfinsternis, Io, Mikrolinsen, CMB, Weisses Loch,
-    # Gezeitenzerriss, Orbit-Sonnenaufgang.
-    "DarkNebulaBokGlobules",
-    "VacuumDecayBubble",
-    "PlanetaryNebulaShells",
-    "SolarEclipseTotality",
-    "IoVolcanicPlumes",
-    "MicrolensingCausticSweep",
-    "CosmicMicrowaveBackgroundSky",
-    "OrbitalSunrise",
-    "TidalDisruptionEvent",
-    "WhiteHoleFountain",
+    # 03.09.: zweite Fuenfzig, Block B (Zooms und Tunnel): Matrjoschka, Buchseiten,
+    # Treppenhaus, Kapillare, SSM-Zeitzoom, Zehnerpotenzen, Karman, Scherenschnitt,
+    # Fresnel-Linse, Gletscherspalte.
+    "MatryoshkaPhotoDoll",
+    "BookPagesTunnel",
+    "SpiralStairwellDescent",
+    "CapillaryFlight",
+    "TemporalZoomSSM",
+    "PowersOfTenZoom",
+    "KarmanVortexStreet",
+    "PapercutShadowBox",
+    "LighthouseFresnelLens",
+    "GlacierCrevasseDescent",
 }
 
 def rule_recent(m, h):

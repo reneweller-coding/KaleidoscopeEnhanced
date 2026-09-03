@@ -1,6 +1,6 @@
 # Kaleidoscope Enhanced — Szenen-Katalog
 
-_676 Szenen, 29 FX-Overlays, 83 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
+_686 Szenen, 29 FX-Overlays, 83 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
 
 
 ---
@@ -323,6 +323,15 @@ BISMUTH LABYRINTH: Raymarched infinite 3D hopper crystal labyrinth of metallic e
 ![BismuthLabyrinth ruhig (t=8)](img/BismuthLabyrinth_A.jpg) ![BismuthLabyrinth ruhig (t=16)](img/BismuthLabyrinth_B.jpg) ![BismuthLabyrinth audio-heiß (t=21)](img/BismuthLabyrinth_C.jpg)
 
 
+### BookPagesTunnel
+
+`Scene2D/BookPagesTunnel.frag` · type=normal · mood=dreamy,calm,bright · complexity=3
+
+BOOK PAGES TUNNEL: a tunnel whose walls are the pages of a book, turning as we pass. Each page is a leaf hinged on the tunnel's spine that turns steadily on the scene clock (which runs with the music's energy, never with a beat tracker, so a resync can never jolt the leaves), carrying the photo on one side and its palette negative on the other. The flight down the spine is steady; the kick lights the edges. Audio Rea…
+
+![BookPagesTunnel ruhig (t=8)](img/BookPagesTunnel_A.jpg) ![BookPagesTunnel ruhig (t=16)](img/BookPagesTunnel_B.jpg) ![BookPagesTunnel audio-heiß (t=21)](img/BookPagesTunnel_C.jpg)
+
+
 ### BoseEinsteinGiantVortexTurbulence
 
 `Scene2D/BoseEinsteinGiantVortexTurbulence.frag` · type=normal · mood=calm,psychedelic · complexity=3
@@ -420,6 +429,15 @@ CALABI-YAU MANIFOLD: 3D raymarched projection of a 6-dimensional Calabi-Yau Käh
 CALABI-YAU MANIFOLD KALEIDO: 2D cross-section through a 6D Calabi-Yau compactification (Quintic Threefold in CP4) from superstring theory. Organic multi-curved complex polynomial manifolds folding like a transcendent cosmic lotus with moduli-space morphing. Audio Reactivity: audioAdvance -> drives continuous navigation through Calabi-Yau moduli space psi audioKick -> flashes manifold singularity nodes & triggers dime…
 
 ![CalabiYauManifoldKaleido ruhig (t=8)](img/CalabiYauManifoldKaleido_A.jpg) ![CalabiYauManifoldKaleido ruhig (t=16)](img/CalabiYauManifoldKaleido_B.jpg) ![CalabiYauManifoldKaleido audio-heiß (t=21)](img/CalabiYauManifoldKaleido_C.jpg)
+
+
+### CapillaryFlight
+
+`Scene2D/CapillaryFlight.frag` · type=normal · mood=dark,aggressive,psychedelic · complexity=2
+
+CAPILLARY FLIGHT: a flight through a blood capillary. The vessel wall is a soft, translucent tube lit from within; red cells stream past on the scene clock as objects (discs that tumble); the pulse is LIGHT -- the wall flushes with the sub-bass, never moves. Branching side vessels pass as dark mouths in the wall. The camera flies steadily. Audio Reactivity: sceneAdvance -> flight and cell flow (continuous) audioSubBa…
+
+![CapillaryFlight ruhig (t=8)](img/CapillaryFlight_A.jpg) ![CapillaryFlight ruhig (t=16)](img/CapillaryFlight_B.jpg) ![CapillaryFlight audio-heiß (t=21)](img/CapillaryFlight_C.jpg)
 
 
 ### CapitalShipCruise
@@ -1173,6 +1191,15 @@ GAS GIANT CLOUD CITY: Floating, sleek megastructures drifting deep within the in
 ![GasGiantCloudCity ruhig (t=8)](img/GasGiantCloudCity_A.jpg) ![GasGiantCloudCity ruhig (t=16)](img/GasGiantCloudCity_B.jpg) ![GasGiantCloudCity audio-heiß (t=21)](img/GasGiantCloudCity_C.jpg)
 
 
+### GlacierCrevasseDescent
+
+`Scene2D/GlacierCrevasseDescent.frag` · type=normal · mood=calm,dark,dreamy · complexity=2
+
+GLACIER CREVASSE DESCENT: a steady descent into a blue crevasse. The walls are old ice -- layered, veined, lit from the sky far above so they glow deep blue near the top and fall into indigo dark below; ice crystals in the walls glint with the treble; the sub-bass is the glacier's groan, felt as light welling from the depth; drips of meltwater fall as round drops on the scene clock. The crevasse narrows and widens al…
+
+![GlacierCrevasseDescent ruhig (t=8)](img/GlacierCrevasseDescent_A.jpg) ![GlacierCrevasseDescent ruhig (t=16)](img/GlacierCrevasseDescent_B.jpg) ![GlacierCrevasseDescent audio-heiß (t=21)](img/GlacierCrevasseDescent_C.jpg)
+
+
 ### GlitchMatrixHypercube
 
 `Scene2D/GlitchMatrixHypercube.frag` · type=normal · mood=aggressive,bright,psychedelic · complexity=3
@@ -1643,6 +1670,15 @@ KARDASHEV TYPE III CITY: View of an entire galaxy whose stars have been intercon
 ![KardashevTypeIIICity ruhig (t=8)](img/KardashevTypeIIICity_A.jpg) ![KardashevTypeIIICity ruhig (t=16)](img/KardashevTypeIIICity_B.jpg) ![KardashevTypeIIICity audio-heiß (t=21)](img/KardashevTypeIIICity_C.jpg)
 
 
+### KarmanVortexStreet
+
+`Scene2D/KarmanVortexStreet.frag` · type=normal · mood=psychedelic,aggressive,bright · complexity=2
+
+KARMAN VORTEX STREET: a flight down the wake behind a cylinder in a stream -- the alternating vortices of a von Karman street, seen as a tunnel of swirling dye. The vortices are objects on the scene clock: they shed in turn, drift downstream, grow and fade; an onset brightens the one shedding now (light). The dye is the photo advected by the vortex field (a sum of Lamb-Oseen vortices), so the picture swirls without a…
+
+![KarmanVortexStreet ruhig (t=8)](img/KarmanVortexStreet_A.jpg) ![KarmanVortexStreet ruhig (t=16)](img/KarmanVortexStreet_B.jpg) ![KarmanVortexStreet audio-heiß (t=21)](img/KarmanVortexStreet_C.jpg)
+
+
 ### KerrNewmanSingularity
 
 `Scene2D/KerrNewmanSingularity.frag` · type=normal · mood=dark,aggressive · complexity=4
@@ -1749,6 +1785,15 @@ LIEB LATTICE FLAT BAND LOCALIZATION: 2D line-centered square Lieb lattice with a
 LIESEGANG PRECIPITATION RING ARRAY: Self-organized periodic mineral precipitation rings in porous gel media. Non-linear reaction-diffusion supersaturation nucleation creates geometric ring bands obeying the Jablczynski spacing law with colloidal turbidity and photo texturing. audioAdvance -> drives chemical precursor ion diffusion front velocity audioKick -> flashes supersaturation nucleation threshold precipitate bu…
 
 ![LiesegangPrecipitationRingArray ruhig (t=8)](img/LiesegangPrecipitationRingArray_A.jpg) ![LiesegangPrecipitationRingArray ruhig (t=16)](img/LiesegangPrecipitationRingArray_B.jpg) ![LiesegangPrecipitationRingArray audio-heiß (t=21)](img/LiesegangPrecipitationRingArray_C.jpg)
+
+
+### LighthouseFresnelLens
+
+`Scene2D/LighthouseFresnelLens.frag` · type=normal · mood=psychedelic,bright,dreamy · complexity=2
+
+LIGHTHOUSE FRESNEL LENS: inside the lantern room, looking out through the great Fresnel lens. Concentric prism rings -- each a stepped refracting band -- bend the world outside (the photo as the night sea and sky) into a fan of stretched, dispersed images; the lens assembly turns steadily on the scene clock as a lighthouse lens does, and where the bull's-eye passes the lamp the beam floods the frame. Dispersion split…
+
+![LighthouseFresnelLens ruhig (t=8)](img/LighthouseFresnelLens_A.jpg) ![LighthouseFresnelLens ruhig (t=16)](img/LighthouseFresnelLens_B.jpg) ![LighthouseFresnelLens audio-heiß (t=21)](img/LighthouseFresnelLens_C.jpg)
 
 
 ### LightningStorm
@@ -1947,6 +1992,15 @@ MARANGONI CONVECTION TEARS OF WINE: Solutal Marangoni effect on glass surfaces. 
 MATRIOSHKA BRAIN: Flight through the endless, glowing computing layers of a megastructure that completely encases a star. Dense, geometric pathways and data streams pulse violently to the music. audioAdvance -> flight speed through the computational layers audioKick -> flashes from massive data processing nodes audioSwell -> ambient brightness of the energy pathways audioChromaHue-> palette offset for the data stream…
 
 ![MatrioshkaBrain ruhig (t=8)](img/MatrioshkaBrain_A.jpg) ![MatrioshkaBrain ruhig (t=16)](img/MatrioshkaBrain_B.jpg) ![MatrioshkaBrain audio-heiß (t=21)](img/MatrioshkaBrain_C.jpg)
+
+
+### MatryoshkaPhotoDoll
+
+`Scene2D/MatryoshkaPhotoDoll.frag` · type=normal · mood=psychedelic,dreamy,bright · complexity=2
+
+MATRYOSHKA PHOTO DOLL: a Droste zoom whose recursion point comes from the photo itself. The brightest region of the picture (found by comparing a coarse grid of mip samples) becomes the doll inside the doll: a smaller copy of the whole photo is placed there, and a smaller one inside that, so every photo gets its own zoom path instead of a fixed centre. The zoom is log-periodic in the copy ratio -- when one level has …
+
+![MatryoshkaPhotoDoll ruhig (t=8)](img/MatryoshkaPhotoDoll_A.jpg) ![MatryoshkaPhotoDoll ruhig (t=16)](img/MatryoshkaPhotoDoll_B.jpg) ![MatryoshkaPhotoDoll audio-heiß (t=21)](img/MatryoshkaPhotoDoll_C.jpg)
 
 
 ### MelodyConstellation
@@ -2291,6 +2345,15 @@ ORIGAMI MIRROR KALEIDOSCOPE: 100% viewport-filling 3D kinetic Miura-ori origami 
 ![OrigamiMirrorKaleidoscope ruhig (t=8)](img/OrigamiMirrorKaleidoscope_A.jpg) ![OrigamiMirrorKaleidoscope ruhig (t=16)](img/OrigamiMirrorKaleidoscope_B.jpg) ![OrigamiMirrorKaleidoscope audio-heiß (t=21)](img/OrigamiMirrorKaleidoscope_C.jpg)
 
 
+### PapercutShadowBox
+
+`Scene2D/PapercutShadowBox.frag` · type=normal · mood=calm,dreamy,dark · complexity=2
+
+PAPERCUT SHADOW BOX: layered paper cut-outs in a lit box. Six sheets stand one behind the other, each cut into a silhouette (hills, trees, waves -- from noise), each a little further from the light and therefore darker; the light behind is the photo, seen through the cut-outs, in the palette's colour. The sheets slide past one another with parallax on the scene clock (a steady drift, never a jolt); the chroma tints t…
+
+![PapercutShadowBox ruhig (t=8)](img/PapercutShadowBox_A.jpg) ![PapercutShadowBox ruhig (t=16)](img/PapercutShadowBox_B.jpg) ![PapercutShadowBox audio-heiß (t=21)](img/PapercutShadowBox_C.jpg)
+
+
 ### ParticleFlow
 
 `Scene2D/ParticleFlow.frag` · type=normal · mood=calm,dreamy · complexity=2
@@ -2453,6 +2516,15 @@ PLASMA LIGHTNING GLOBE: Dielectric breakdown plasma globe with dozens of snaking
 PLASMONIC METAMATERIAL BLACK HOLE: Omnidirectional optical absorber in graded-index metamaterials. Continuous radial variation of dielectric permittivity and magnetic permeability curves light rays into logarithmic spiral orbits toward a central plasmonic absorbing core. audioAdvance -> rotates spiral Poynting vector energy trajectories towards core audioKick -> flashes central plasmonic core resistive dissipation ho…
 
 ![PlasmonicMetamaterialBlackHole ruhig (t=8)](img/PlasmonicMetamaterialBlackHole_A.jpg) ![PlasmonicMetamaterialBlackHole ruhig (t=16)](img/PlasmonicMetamaterialBlackHole_B.jpg) ![PlasmonicMetamaterialBlackHole audio-heiß (t=21)](img/PlasmonicMetamaterialBlackHole_C.jpg)
+
+
+### PowersOfTenZoom
+
+`Scene2D/PowersOfTenZoom.frag` · type=normal · mood=space,dreamy,calm · complexity=3
+
+POWERS OF TEN ZOOM: the scale ladder as one endless zoom. A moon circles a planet, the planet circles a star, the star sits in a cluster, the cluster in a galaxy, the galaxy in a group -- every level is a ring of bodies around a centre, and the levels are self-similar in log-scale, so the zoom out (or in) is periodic and never wraps visibly. Each level turns at its own rate on the scene clock; the bodies glow with th…
+
+![PowersOfTenZoom ruhig (t=8)](img/PowersOfTenZoom_A.jpg) ![PowersOfTenZoom ruhig (t=16)](img/PowersOfTenZoom_B.jpg) ![PowersOfTenZoom audio-heiß (t=21)](img/PowersOfTenZoom_C.jpg)
 
 
 ### PrismaticCrystalChamber
@@ -3143,6 +3215,15 @@ SPINTRONIC DOMAIN WALL RACETRACK: Nanowire racetrack memory array. Topologically
 ![SpintronicDomainWallRacetrack ruhig (t=8)](img/SpintronicDomainWallRacetrack_A.jpg) ![SpintronicDomainWallRacetrack ruhig (t=16)](img/SpintronicDomainWallRacetrack_B.jpg) ![SpintronicDomainWallRacetrack audio-heiß (t=21)](img/SpintronicDomainWallRacetrack_C.jpg)
 
 
+### SpiralStairwellDescent
+
+`Scene2D/SpiralStairwellDescent.frag` · type=normal · mood=dark,dreamy,calm · complexity=3
+
+SPIRAL STAIRWELL DESCENT: looking straight down an endless spiral staircase. The steps wind around a central well; the camera descends steadily on the scene clock, so the steps rise toward us and pass, and the well below stays a dark eye. The steps carry the photo as inlaid treads; lamps on every turn glow with the bands; the kick lights the banister. The descent is periodic in one step, so it is seamless; the camera…
+
+![SpiralStairwellDescent ruhig (t=8)](img/SpiralStairwellDescent_A.jpg) ![SpiralStairwellDescent ruhig (t=16)](img/SpiralStairwellDescent_B.jpg) ![SpiralStairwellDescent audio-heiß (t=21)](img/SpiralStairwellDescent_C.jpg)
+
+
 ### StainedGlassCathedralCaustics
 
 `Scene2D/StainedGlassCathedralCaustics.frag` · type=normal · mood=calm,bright,dreamy · complexity=3
@@ -3312,6 +3393,15 @@ SUPERRADIANT TOKAMAK IGNITION: 100% viewport-filling volumetric view from inside
 TEMPO GEARWORK: a train of gears driven by the bar clock. The big wheel makes one turn per bar, the next two turns, the next four -- the bar phase is the angle, so the whole train is locked to the music without an integrator and without a jump (a whole number of turns per bar wraps exactly). Meshing gears counter-rotate; teeth catch the light as they pass; the kick throws sparks at the meshing points. When the tempo …
 
 ![TempoGearwork ruhig (t=8)](img/TempoGearwork_A.jpg) ![TempoGearwork ruhig (t=16)](img/TempoGearwork_B.jpg) ![TempoGearwork audio-heiß (t=21)](img/TempoGearwork_C.jpg)
+
+
+### TemporalZoomSSM
+
+`Scene2D/TemporalZoomSSM.frag` · type=normal · mood=psychedelic,calm,dark · complexity=2
+
+TEMPORAL ZOOM: the song zooms into itself. The self-similarity matrix (texSSM) is drawn as a square field, and the picture is a nest of that field at time scales that shrink by four -- the whole ring, a quarter of it, a sixteenth -- so the block structure of sections, the lattice of phrases and the fine grid of beats are all the same picture at different depths. The zoom runs through those scales on the scene clock; …
+
+![TemporalZoomSSM ruhig (t=8)](img/TemporalZoomSSM_A.jpg) ![TemporalZoomSSM ruhig (t=16)](img/TemporalZoomSSM_B.jpg) ![TemporalZoomSSM audio-heiß (t=21)](img/TemporalZoomSSM_C.jpg)
 
 
 ### TerraformingColony

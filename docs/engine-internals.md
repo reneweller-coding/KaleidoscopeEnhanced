@@ -3324,3 +3324,27 @@ in GalaxyMergerNBody: re-seed in the first frames of every activation
 (a flag in the header), so pass order cannot validate garbage; and every
 particle is reborn on a zero slot, a NaN, or when swallowed.
 
+## The second fifty, block B: endless zooms and tunnels
+
+Ten 2D scenes (03.09.2026), all `type="normal"` with `<rig preset="flat"/>`,
+no new host features.  Every one is a steady flight or zoom on the scene
+clock; the fast envelopes touch only light and colour.
+
+| Scene | Idea | Note |
+|---|---|---|
+| MatryoshkaPhotoDoll | the photo nested in itself at the brightest spot | `brightSpot()` is a soft-argmax over a 4x4 mip grid, so the nesting point drifts, never jumps; the zoom is log-periodic in `L = -log(ratio)` |
+| BookPagesTunnel | the tunnel walls are a book's leaves hinged on the spine | two hits per ray (nearest, and nearest still >= 0.7 ahead): a leaf that has come close fades over the one behind, so no dim close-up and no pop; rotation on `sceneAdvance`, not `audioBarPhase` (a tracker resync would jolt every leaf) |
+| SpiralStairwellDescent | a stairwell seen from above, steps carrying photo tiles | descent on the scene clock, the well breathes on `audioSwell` |
+| CapillaryFlight | a flight through a branching vessel with blood cells | cells are round discs (V8e), never grid cells |
+| TemporalZoomSSM | the self-similarity matrix nested in itself, scale /4 | `L = ln 4`; each level samples `texSSM` at its own age window |
+| PowersOfTenZoom | ring-of-bodies inside ring-of-bodies, scale x10 | `L = ln 10`; bodies sized to their level so every level reads (first draft was too small and dark) |
+| KarmanVortexStreet | the photo advected through a vortex street | Lamb-Oseen vortices, advection integrated along `sceneAdvance` |
+| PapercutShadowBox | layered paper cut-outs lit from behind | layers move at parallax rates on the scene clock |
+| LighthouseFresnelLens | the world outside seen through a turning Fresnel lens | dispersion capped (0.008..0.026); above that the treble turned the frame into RGB noise |
+| GlacierCrevasseDescent | descent between blue ice walls | glints are round (V8e); the sub-bass is light welling from the depth |
+
+Two lessons from the previews: a scene whose camera looks along a corridor
+must handle the moment when the nearest object fills the frame (BookPages
+fades it), and a self-similar zoom needs its smallest level to be visibly
+large -- the Powers-of-Ten draft rendered a system of dots too small to
+read at 1080p.
