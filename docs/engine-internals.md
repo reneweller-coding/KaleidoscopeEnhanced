@@ -3221,3 +3221,27 @@ only above 1. And a scale-invariant lens chain needs small masses: with an
 Einstein radius comparable to the lens spacing the whole picture collapses
 into one deflection and reads as flat grey.
 
+## Block four: the Sun, a terminator, a crust, and two models
+
+| Scene | Building block | What it does |
+|---|---|---|
+| SolarProminenceLoops | -- | magnetic loops arch over a boiling photosphere; plasma streams along them on the scene clock, the swell raises them, the drop lights the main loop end to end |
+| TidalLockTerminator | `dayPhase`, `audioValence` | a flight along the day/night line of a locked planet; the world turns under a still camera, the host day clock drifts the line, valence is the day-side weather, auroras on the night side breathe with the swell |
+| NeutronStarSurfaceSprint | `audioSharpness` | a Voronoi crust of iron plates split by glowing cracks; a starquake is a flash through the crack network, the ground never heaves |
+| HarmonicChangeLightning | `audioHarmChange`, `audioChroma[12]` | a still night; a harmony change strikes a bolt whose twelve limbs have the lengths of the twelve pitch classes |
+| BuildUpPressureChamber | `audioBuildUp`, `audioDrop` | a corridor whose walls close in with the build-up (seconds-slow) and whose far end floods with light on the drop |
+| TempoGearwork | `audioBarPhase` | a gear train at one, two and four turns per bar: the bar phase is the angle, a whole number of turns wraps exactly; idles on the scene clock while the tempo is unknown |
+| ZCRNoiseStorm | `audioZCR`, `audioFlatness` | a sandstorm tunnel whose grain density and contrast are the noisiness of the sound |
+| MeshKaleidoscope | `geom="mesh"`, `instances="12"` | a loaded model drawn twelve times about the view axis, every second copy mirrored: the image set of a two-mirror kaleidoscope, as a wreath |
+| AnglerfishAbyss | `geom="mesh"` | the Anglerfish model in black water, lit by its lure alone; the lamp tints with the melody and flares on the drop -- no camera jerk |
+| FadeOutDissolution | `indirect`, `audioFadeOut` | the photo as a curtain of 48k particles that lets go as the track fades out; a slow dissolve wave keeps a corner alive between fade-outs |
+
+Forty of the fifty proposals are built. The remaining ten need building
+blocks the host does not have yet (a 3D smoke field, scene depth for a
+mirror room, tessellation patches, OIT glass) or were dropped by the rules
+(the strobe-shutter zoom freezes the frame; moire fringes flicker).
+
+One more reserved word: `flat`, like `half`, cannot name a variable; the
+fragment stage at least says so (`C7537`), a compute generator dies
+silently. Rule V6d lists the reserved words with a grep.
+

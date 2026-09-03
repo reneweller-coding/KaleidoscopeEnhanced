@@ -348,6 +348,23 @@ in sechs Shadern erledigt.
 > decken sich alle sechs mit dem Stand davor. **Vor jeder A/B-Aussage einen
 > Kontrolllauf desselben Standes machen.**
 
+### V6d — Reservierte GLSL-Woerter als Variablennamen: `half`, `flat`, `centroid`, ...
+
+```glsl
+vec3  half = ...;    // FALSCH - der Generator kompiliert still nicht (Szene schwarz)
+float flat = ...;    // FALSCH - C7537 "does not allow 'flat' after a type specifier"
+```
+
+GLSL reserviert u. a. `half`, `flat`, `smooth`, `centroid`, `sample`, `patch`,
+`input`, `output`, `filter`, `fixed`, `double`, `sizeof`, `union`, `enum`,
+`class`, `template`, `this`, `goto`, `inline`, `noinline`, `volatile`,
+`public`, `static`, `extern`, `external`, `interface`, `long`, `short`,
+`unsigned`, `superp`, `namespace`, `using`, `cast`, `asm`, `typedef`,
+`switch`-Familie, `common`, `partition`, `active`, `resource`. Ein
+Fragment-Shader meldet den Fehler wenigstens (Compilation: FAILED), ein
+COMPUTE-Generator faellt stumm aus. Vor dem Commit:
+`grep -n "^\s*\(float\|vec[234]\|int\)\s\+\(half\|flat\|centroid\|sample\|patch\|filter\|fixed\)\b" Scene2D/*.frag Scene3D/*.{comp,vert,frag}`.
+
 ### V7 — Anti-Flimmer: `time` nie mit einem Audiowert multiplizieren
 
 ```glsl
@@ -513,6 +530,21 @@ Szenen färben per imgPalette (VOLL) oder palTint (Identitätsfarbe bleibt);
 das volle Farbrad gibt es nur, wenn das Phänomen selbst eines ist
 (ChromaAcidTrip, PrismExplode, LaserArena, NeonTubes, OscilloRings,
 RibbonTunnel, QuantumChromaField — dokumentierte Ausnahmen).
+
+### V8e — Partikel sind RUND und gejittert, nie leuchtende Gitterzellen
+
+```glsl
+float snow = step(0.98, hash(floor(p)));                 // FALSCH - ganze Zelle leuchtet = Riesenpixel
+vec3 c = floor(p); vec3 f = fract(p) - 0.5 - jitter(c);  // richtig - runder Punkt in der Zelle
+float snow = smoothstep(sz, sz*0.3, length(f)) * step(0.98, hash(c));
+```
+
+Rene (03.09.): "solche Riesenpixel finde ich extrem haesslich." Sterne,
+Meeresschnee, Staub, Funken, Koernung: immer ein Abstand zum (gejitterten)
+Zellzentrum mit weicher Kante, Groesse pro Zelle variiert; die Zellgroesse
+darf nie sichtbar werden. Vor dem Commit:
+`grep -n "step([0-9.]*, *hash[0-9]*(floor" Scene2D/*.frag Scene3D/*.frag`
+und jeden Treffer lesen.
 
 ### V10 — Belichtungsbudget: gegen REALISTISCHE Hot-Werte designen
 

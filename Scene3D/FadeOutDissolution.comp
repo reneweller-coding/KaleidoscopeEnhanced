@@ -1,0 +1,108 @@
+#version 430 core
+/**
+ * @file FadeOutDissolution.comp
+ * @brief FADE-OUT DISSOLUTION: the photo as a curtain of 48,000 particles,
+ * and as the song fades out the curtain lets go -- particle by particle the
+ * picture lifts off, drifts, and thins into the dark, so the END of a track
+ * is staged for the first time.  Between fade-outs the curtain still lives:
+ * a slow dissolve wave rolls through it on the scene clock so a corner is
+ * always coming apart and re-forming.  No particle state: every particle
+ * is a function of its grid cell and the clocks, so nothing drifts away for
+ * good.  The camera never moves.
+ *
+ * Audio Reactivity (generator stage):
+ *   audioFadeOut  -> the dissolution (slow envelope, the whole point)
+ *   sceneAdvance  -> the rolling dissolve wave (continuous)
+ *   audioSwell    -> particles breathe apart a little (slow)
+ *   audioKick     -> particle sparkle (fragment stage, light)
+ *
+ * Per-instance: gridP (grid density), driftP (how far a freed particle
+ *               drifts), hueP.
+ */
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+layout(std430, binding = 0) buffer Verts { float verts[]; };
+layout(std430, binding = 1) buffer Cmd   { uint cmd[];   };
+
+uniform uint  maxVertices;
+uniform float time;
+uniform float sceneAdvance;
+uniform float sceneTime;
+uniform float audioFadeOut;
+uniform float audioSwell;
+uniform float audioLevel;
+
+uniform float gridP;
+uniform float driftP;
+uniform float hueP;
+
+float hash11(float p) { p = fract(p * 0.1031); p *= p + 33.33; p *= p + p; return fract(p); }
+vec3  hash31(float n) { return vec3(hash11(n), hash11(n + 17.3), hash11(n + 41.7)); }
+
+void emitQuad(vec3 c, vec3 ax, vec3 ay, float id, float lit, float kind, vec2 uv0, vec2 uv1)
+{
+    uint base = atomicAdd(cmd[4], 6u);
+    if (base + 6u > maxVertices) return;
+    vec3 p0 = c - ax - ay, p1 = c + ax - ay, p2 = c + ax + ay, p3 = c - ax + ay;
+    vec3 pList[6]  = vec3[6](p0, p1, p2, p0, p2, p3);
+    vec2 uvList[6] = vec2[6](vec2(uv0.x, uv0.y), vec2(uv1.x, uv0.y), vec2(uv1.x, uv1.y), vec2(uv0.x, uv0.y), vec2(uv1.x, uv1.y), vec2(uv0.x, uv1.y));
+    for (uint i = 0u; i < 6u; ++i)
+    {
+        uint off = (base + i) * 8u;
+        verts[off + 0u] = pList[i].x; verts[off + 1u] = pList[i].y; verts[off + 2u] = pList[i].z;
+        verts[off + 3u] = id;  verts[off + 4u] = lit;  verts[off + 5u] = kind;
+        verts[off + 6u] = uvList[i].x; verts[off + 7u] = uvList[i].y;
+    }
+}
+
+void main()
+{
+    uvec3 g = gl_GlobalInvocationID;
+    uint id = g.x + 64u * (g.y + 64u * g.z);
+
+    // Grid: W x H cells over the picture plane (16:9).
+    float dens = (gridP > 0.05) ? gridP : 1.0;
+    uint W = uint(240.0 * dens), H = uint(135.0 * dens);
+    if (id == 0u)
+    {
+        // Dark backdrop (kind -1) behind the curtain.
+        emitQuad(vec3(0.0, 0.0, 9.0), vec3(16.0, 0.0, 0.0), vec3(0.0, 9.0, 0.0), 0.0, 0.0, -1.0, vec2(0.0), vec2(1.0));
+    }
+    if (id >= W * H) return;
+
+    uint ix = id % W, iy = id / W;
+    vec2 uv0 = vec2(float(ix) / float(W), float(iy) / float(H));
+    vec2 uv1 = vec2(float(ix + 1u) / float(W), float(iy + 1u) / float(H));
+    vec2 uvc = 0.5 * (uv0 + uv1);
+    float fid = float(id);
+    vec3 h = hash31(fid * 1.7);
+
+    // The curtain: 7.1 x 4.0 units at z = 4.5, filling the view.
+    const float PW = 7.1, PH = 4.0;
+    vec3 home = vec3((uvc.x - 0.5) * PW, (uvc.y - 0.5) * PH, 4.5);
+    vec3 ax = vec3(0.5 * PW / float(W), 0.0, 0.0);
+    vec3 ay = vec3(0.0, 0.5 * PH / float(H), 0.0);
+
+    // How free this particle is: the fade-out frees everything (staggered
+    // by hash so the curtain thins rather than jumps), and a slow wave on
+    // the scene clock frees a travelling band even without a fade-out.
+    float fade = clamp(audioFadeOut, 0.0, 1.0);
+    float staggered = smoothstep(h.x * 0.6, h.x * 0.6 + 0.4, fade);
+    float wave = 0.5 + 0.5 * sin(uvc.x * 4.0 + uvc.y * 2.5 - sceneAdvance * 0.35 - sceneTime * 0.08 + h.y * 0.8);
+    wave = smoothstep(0.75, 1.0, wave) * 0.85;
+    float free = max(staggered, wave);
+
+    // Drift: a freed particle rises and wanders on its own slow path, the
+    // amount scaled by how free it is (continuous in `free`).
+    float drift = (driftP > 0.05 ? driftP : 1.0);
+    float t = sceneTime * 0.3 + sceneAdvance * 0.2;
+    vec3 wander = vec3(sin(t * 0.7 + h.x * 6.28), 0.6 + 0.4 * sin(t * 0.5 + h.y * 6.28), -0.5 * sin(t * 0.6 + h.z * 6.28));
+    vec3 pos = home + wander * free * free * 1.6 * drift;
+    // The swell breathes the curtain apart a little (slow).
+    pos.xy *= 1.0 + 0.03 * clamp(audioSwell, 0.0, 1.0);
+    // A freed particle turns as it drifts (its own axis, not the camera).
+    float spin = free * (t * 2.0 + h.z * 6.28);
+    vec3 axr = ax * cos(spin) + vec3(0.0, 0.0, 1.0) * ax.x * sin(spin);
+    float shrink = 1.0 - 0.6 * free;
+
+    emitQuad(pos, axr * shrink, ay * shrink, fid, free, 0.0, uv0, uv1);
+}

@@ -1,6 +1,6 @@
 # Kaleidoscope Enhanced — Szenen-Katalog
 
-_646 Szenen, 29 FX-Overlays, 83 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
+_656 Szenen, 29 FX-Overlays, 83 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
 
 
 ---
@@ -384,6 +384,15 @@ BUDDHABROT COSMIC GHOST: Inverse orbit-density projection of escaping Mandelbrot
 BUFFALO FRACTAL THUNDERSTORM: Deep plunge into the non-holomorphic Buffalo fractal z -> (|Re(z)| + i|Im(z)|)^2 - |Re(z)| + c with pointed horn cusps, high-voltage lightning discharges running along boundary ridges, and thunderous flares. Audio Reactivity: audioAdvance -> surges the deep zoom into the Buffalo horn boundary audioKick -> flashes lightning discharge arcs & explodes thunder core audioCentroid-> sharpens s…
 
 ![BuffaloFractalThunderstorm ruhig (t=8)](img/BuffaloFractalThunderstorm_A.jpg) ![BuffaloFractalThunderstorm ruhig (t=16)](img/BuffaloFractalThunderstorm_B.jpg) ![BuffaloFractalThunderstorm audio-heiß (t=21)](img/BuffaloFractalThunderstorm_C.jpg)
+
+
+### BuildUpPressureChamber
+
+`Scene2D/BuildUpPressureChamber.frag` · type=normal · mood=dark,aggressive · complexity=2
+
+BUILD-UP PRESSURE CHAMBER: a corridor whose walls close in as the music builds. The camera flies down it on the music's pace; the build-up envelope (seconds-slow) narrows the walls and ceiling and reddens the light, so the space itself tightens toward the drop -- and on the drop the far end floods with light and the walls glow, then release. The walls never jump: build-up and release are slew-limited envelopes, and t…
+
+![BuildUpPressureChamber ruhig (t=8)](img/BuildUpPressureChamber_A.jpg) ![BuildUpPressureChamber ruhig (t=16)](img/BuildUpPressureChamber_B.jpg) ![BuildUpPressureChamber audio-heiß (t=21)](img/BuildUpPressureChamber_C.jpg)
 
 
 ### BurningShipDeepVoyage
@@ -1207,6 +1216,15 @@ GYROID TRIPLY PERIODIC LABYRINTH: Raymarched infinite non-Euclidean minimal surf
 Renders the photograph as a genuine four-colour halftone print: separate CMYK screens, each rotated to its own classic press angle (15, 75, 0 and 45 degrees) so the dot grids never form a moire. The image is converted to CMYK with under-colour removal, then each channel is screened independently before being recombined subtractively onto a warm paper tint. audioKick coarsens the screen frequency and widens a colour-p…
 
 ![Halftone ruhig (t=8)](img/Halftone_A.jpg) ![Halftone ruhig (t=16)](img/Halftone_B.jpg) ![Halftone audio-heiß (t=21)](img/Halftone_C.jpg)
+
+
+### HarmonicChangeLightning
+
+`Scene2D/HarmonicChangeLightning.frag` · type=normal · mood=dark,calm,dreamy · complexity=2
+
+HARMONIC CHANGE LIGHTNING: a still night over a dark sea. Nothing moves but the clouds' slow drift -- until the harmony changes: then a bolt strikes, and its branching is the chroma vector, twelve limbs whose lengths are the twelve pitch classes, so every chord change draws a different tree of light. The bolt lights the clouds from within and mirrors in the water. All light, no motion; the camera never moves. Audio R…
+
+![HarmonicChangeLightning ruhig (t=8)](img/HarmonicChangeLightning_A.jpg) ![HarmonicChangeLightning ruhig (t=16)](img/HarmonicChangeLightning_B.jpg) ![HarmonicChangeLightning audio-heiß (t=21)](img/HarmonicChangeLightning_C.jpg)
 
 
 ### HarmonicRings
@@ -2075,6 +2093,15 @@ NEUTRON STAR MAGNETIC FUNNEL PLUNGE: Relativistic plunge along magnetic dipole f
 ![NeutronStarMagneticFunnelPlunge ruhig (t=8)](img/NeutronStarMagneticFunnelPlunge_A.jpg) ![NeutronStarMagneticFunnelPlunge ruhig (t=16)](img/NeutronStarMagneticFunnelPlunge_B.jpg) ![NeutronStarMagneticFunnelPlunge audio-heiß (t=21)](img/NeutronStarMagneticFunnelPlunge_C.jpg)
 
 
+### NeutronStarSurfaceSprint
+
+`Scene2D/NeutronStarSurfaceSprint.frag` · type=normal · mood=space,dark,aggressive · complexity=3
+
+NEUTRON STAR SURFACE SPRINT: a racing flight over the crust of a neutron star. The ground is a height field of cooled iron plates split by glowing cracks; the camera skims it at a fixed height on the music's pace, so the crust streams under us and the horizon stays put. The sharpness of the sound is the heat in the cracks; a starquake is a kick, and it is LIGHT: a flash runs through the crack network, the ground neve…
+
+![NeutronStarSurfaceSprint ruhig (t=8)](img/NeutronStarSurfaceSprint_A.jpg) ![NeutronStarSurfaceSprint ruhig (t=16)](img/NeutronStarSurfaceSprint_B.jpg) ![NeutronStarSurfaceSprint audio-heiß (t=21)](img/NeutronStarSurfaceSprint_C.jpg)
+
+
 ### NewtonBasinPsychedelicSea
 
 `Scene2D/NewtonBasinPsychedelicSea.frag` · type=normal · mood=psychedelic,bright,dark · complexity=2
@@ -2909,6 +2936,15 @@ SOLAR MAGNETO PLASMA LOOP: Twisted magnetic helical coronal loops emerging from 
 ![SolarMagnetoPlasmaLoop ruhig (t=8)](img/SolarMagnetoPlasmaLoop_A.jpg) ![SolarMagnetoPlasmaLoop ruhig (t=16)](img/SolarMagnetoPlasmaLoop_B.jpg) ![SolarMagnetoPlasmaLoop audio-heiß (t=21)](img/SolarMagnetoPlasmaLoop_C.jpg)
 
 
+### SolarProminenceLoops
+
+`Scene2D/SolarProminenceLoops.frag` · type=normal · mood=space,bright,aggressive · complexity=3
+
+SOLAR PROMINENCE LOOPS: the camera stands on the Sun. Below, the granulated photosphere boils; above, magnetic loops arch from footpoint to footpoint, each a glowing tube of plasma streaming along the field on the music's pace. Builds raise the loops (slowly, on the swell); the bass is the plasma's brightness; a drop lights the biggest loop end to end as if it had just reconnected -- light, never a jolt. The camera n…
+
+![SolarProminenceLoops ruhig (t=8)](img/SolarProminenceLoops_A.jpg) ![SolarProminenceLoops ruhig (t=16)](img/SolarProminenceLoops_B.jpg) ![SolarProminenceLoops audio-heiß (t=21)](img/SolarProminenceLoops_C.jpg)
+
+
 ### SolitonInternalWaveAndamanSea
 
 `Scene2D/SolitonInternalWaveAndamanSea.frag` · type=normal · mood=calm,dreamy,bright · complexity=3
@@ -3161,6 +3197,15 @@ SUPERRADIANT TOKAMAK IGNITION: 100% viewport-filling volumetric view from inside
 ![SuperradiantTokamakIgnition ruhig (t=8)](img/SuperradiantTokamakIgnition_A.jpg) ![SuperradiantTokamakIgnition ruhig (t=16)](img/SuperradiantTokamakIgnition_B.jpg) ![SuperradiantTokamakIgnition audio-heiß (t=21)](img/SuperradiantTokamakIgnition_C.jpg)
 
 
+### TempoGearwork
+
+`Scene2D/TempoGearwork.frag` · type=normal · mood=psychedelic,bright · complexity=2
+
+TEMPO GEARWORK: a train of gears driven by the bar clock. The big wheel makes one turn per bar, the next two turns, the next four -- the bar phase is the angle, so the whole train is locked to the music without an integrator and without a jump (a whole number of turns per bar wraps exactly). Meshing gears counter-rotate; teeth catch the light as they pass; the kick throws sparks at the meshing points. When the tempo …
+
+![TempoGearwork ruhig (t=8)](img/TempoGearwork_A.jpg) ![TempoGearwork ruhig (t=16)](img/TempoGearwork_B.jpg) ![TempoGearwork audio-heiß (t=21)](img/TempoGearwork_C.jpg)
+
+
 ### TerraformingColony
 
 `Scene2D/TerraformingColony.frag` · type=normal · mood=dark,aggressive,space · complexity=4
@@ -3213,6 +3258,15 @@ Adapted from "The Core" by \@kishimisu (2023) — https://www.shadertoy.com/view
 THOMAS ATTRACTOR COSMIC LABYRINTH: Cyclically symmetric chaotic Thomas attractor dx/dt = sin(y) - bx, dy/dt = sin(z) - by, dz/dt = sin(x) - bz. Hypnotic smooth 3D space curve labyrinth with 3-fold cyclic symmetry, glowing energy packets, and orbital flow. Audio Reactivity: audioAdvance -> drives continuous integration along Thomas attractor curve audioKick -> flashes attractor loop nodes & shoots energy pulses audioC…
 
 ![ThomasAttractorCosmicLabyrinth ruhig (t=8)](img/ThomasAttractorCosmicLabyrinth_A.jpg) ![ThomasAttractorCosmicLabyrinth ruhig (t=16)](img/ThomasAttractorCosmicLabyrinth_B.jpg) ![ThomasAttractorCosmicLabyrinth audio-heiß (t=21)](img/ThomasAttractorCosmicLabyrinth_C.jpg)
+
+
+### TidalLockTerminator
+
+`Scene2D/TidalLockTerminator.frag` · type=normal · mood=space,calm,dreamy · complexity=3
+
+TIDAL LOCK TERMINATOR: a flight along the day/night line of a tidally locked planet. The world turns under the camera on the music's pace, so the terminator -- a band of long shadows, glowing cloud tops and the first lights of the eternal night -- streams past forever. The host's day clock (dayPhase) shifts where the line falls; the valence of the music is the weather on the day side (bright cumulus or a brooding ove…
+
+![TidalLockTerminator ruhig (t=8)](img/TidalLockTerminator_A.jpg) ![TidalLockTerminator ruhig (t=16)](img/TidalLockTerminator_B.jpg) ![TidalLockTerminator audio-heiß (t=21)](img/TidalLockTerminator_C.jpg)
 
 
 ### TimeDilation
@@ -3424,6 +3478,15 @@ XENOBIOLOGICAL BIOSHIP: The camera flies through the grotesque, pulsing interior
 ![XenobiologicalBioship ruhig (t=8)](img/XenobiologicalBioship_A.jpg) ![XenobiologicalBioship ruhig (t=16)](img/XenobiologicalBioship_B.jpg) ![XenobiologicalBioship audio-heiß (t=21)](img/XenobiologicalBioship_C.jpg)
 
 
+### ZCRNoiseStorm
+
+`Scene2D/ZCRNoiseStorm.frag` · type=normal · mood=dark,aggressive · complexity=2
+
+ZCR NOISE STORM: a sandstorm tunnel whose grain IS the noise in the music. The zero-crossing rate and the spectral flatness -- how much of the sound is hiss, breath, cymbal wash -- set the density and contrast of the sand streaming past, so a clean tone flies through clear air and a noisy passage through a wall of grit. Streaks run down the tunnel on the music's pace; a light burns ahead. The camera never moves. Audi…
+
+![ZCRNoiseStorm ruhig (t=8)](img/ZCRNoiseStorm_A.jpg) ![ZCRNoiseStorm ruhig (t=16)](img/ZCRNoiseStorm_B.jpg) ![ZCRNoiseStorm audio-heiß (t=21)](img/ZCRNoiseStorm_C.jpg)
+
+
 ---
 
 ## 3D-Szenen (Scene3D/)
@@ -3454,6 +3517,15 @@ ACCRETION DISK TOROID VORTEX: a glowing accretion torus seen from ABOVE, the cam
 Lit voxel cubes levitated in an acoustic standing-wave grid, each face a blend of a per-vertex colour and the current slideshow photo with a fixed-direction diffuse/specular highlight. This fragment shader carries no audio uniforms of its own -- reactivity (how the cubes jump, cluster and resonate with the beat) lives entirely in the companion vertex shader; here only the incoming vCol (already audio-modulated per ve…
 
 ![AcousticLevitationMatrix ruhig (t=8)](img/AcousticLevitationMatrix_A.jpg) ![AcousticLevitationMatrix ruhig (t=16)](img/AcousticLevitationMatrix_B.jpg) ![AcousticLevitationMatrix audio-heiß (t=21)](img/AcousticLevitationMatrix_C.jpg)
+
+
+### AnglerfishAbyss
+
+`Scene3D/AnglerfishAbyss.frag` · type=scene3d · geom=mesh · mood=dark,calm,dreamy · complexity=3
+
+ANGLERFISH ABYSS: black water, and the only light is the fish's own lure -- a small lamp that hangs in front of it and tints with the melody. The body is lit by that lamp alone (plus a faint blue from far above), marine snow drifts through the beam, and a drop makes the lamp flare and the bioluminescent flanks pulse. Dark, but staged: the whole scene is one pool of light in the dark. No camera motion of any kind. Aud…
+
+![AnglerfishAbyss ruhig (t=8)](img/AnglerfishAbyss_A.jpg) ![AnglerfishAbyss ruhig (t=16)](img/AnglerfishAbyss_B.jpg) ![AnglerfishAbyss audio-heiß (t=21)](img/AnglerfishAbyss_C.jpg)
 
 
 ### Aperture
@@ -4157,6 +4229,15 @@ GEOM="MESH" STATION FAMILY: the five one-off stations that don't fit the other f
 ![ExoticStation ruhig (t=8)](img/ExoticStation_A.jpg) ![ExoticStation ruhig (t=16)](img/ExoticStation_B.jpg) ![ExoticStation audio-heiß (t=21)](img/ExoticStation_C.jpg)
 
 
+### FadeOutDissolution
+
+`Scene3D/FadeOutDissolution.frag` · type=scene3d · geom=indirect · mood=calm,dreamy,bright · complexity=4
+
+Fragment stage for FadeOutDissolution: each particle shows its patch of the photo; as it frees it fades toward the palette and sparkles on the kick; the backdrop (kind -1) is near-black with a faint palette glow so the dissolving picture has dark to thin into. Audio Reactivity: audioKick sparkles the freed particles; audioLevel is the curtain brightness; audioFadeOut dims the backdrop.
+
+![FadeOutDissolution ruhig (t=8)](img/FadeOutDissolution_A.jpg) ![FadeOutDissolution ruhig (t=16)](img/FadeOutDissolution_B.jpg) ![FadeOutDissolution audio-heiß (t=21)](img/FadeOutDissolution_C.jpg)
+
+
 ### FeatherStorm
 
 `Scene3D/FeatherStorm.frag` · type=scene3d · geom=indirect · mood=calm,dreamy · complexity=4
@@ -4690,6 +4771,15 @@ _(Vorschau eingeschränkt: Sim-Textur/Mehrpass — Bilder unterschätzen die ech
 MelodyScript.frag — additive ribbon ink (colour fully baked in the vert).
 
 ![MelodyScript ruhig (t=8)](img/MelodyScript_A.jpg) ![MelodyScript ruhig (t=16)](img/MelodyScript_B.jpg) ![MelodyScript audio-heiß (t=21)](img/MelodyScript_C.jpg)
+
+
+### MeshKaleidoscope
+
+`Scene3D/MeshKaleidoscope.frag` · type=scene3d · geom=mesh · mood=psychedelic,dark,dreamy · complexity=4
+
+Fragment stage for MeshKaleidoscope: the twelve copies of the model lit by one key light plus a rim that is the palette's colour, alternating copies tinted warm/cool so the mirror symmetry reads; the sky shell is a dark velvet with the photo as a soft glow behind the wreath. Audio Reactivity: audioKick flashes the rim; audioSwell brightens the key; audioChromaHue drives the tint via the palette.
+
+![MeshKaleidoscope ruhig (t=8)](img/MeshKaleidoscope_A.jpg) ![MeshKaleidoscope ruhig (t=16)](img/MeshKaleidoscope_B.jpg) ![MeshKaleidoscope audio-heiß (t=21)](img/MeshKaleidoscope_C.jpg)
 
 
 ### MeshTerrain
