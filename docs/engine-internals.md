@@ -3348,3 +3348,30 @@ must handle the moment when the nearest object fills the frame (BookPages
 fades it), and a self-similar zoom needs its smallest level to be visibly
 large -- the Powers-of-Ten draft rendered a system of dots too small to
 read at 1080p.
+
+## The second fifty, block C: kaleidoscopes and psychedelia
+
+Ten 2D scenes (03.09.2026), all `type="normal"`, `<rig preset="flat"/>`,
+camera still in every one; the music shapes light, colour and the slow
+parameters, never the frame.
+
+| Scene | Idea | Note |
+|---|---|---|
+| ZoetropeDrum | a zoetrope seen from outside: motion only through the slits | the drum turns on the scene clock; the frame phase seen through each slit advances with the turn |
+| RotoreliefIllusion | Duchamp's eccentric discs, one per chroma class | ring membership by distance to a per-ring centre that rotates -> the bulge illusion; the sounding class lights its disc |
+| TieDyeFold | the photo pleated radially, dye soaking in | diffusion width on `audioSwell`, front brightness on the kick |
+| KirlianAura | corona discharge along the photo's Sobel edges | filaments march back along the gradient; reach and brightness on `audioHigh`, flicker on a continuous noise clock |
+| LenticularFlip | tex0/tex1 interlaced under lenticules | the viewing angle sweeps on the swell and drifts on the clock, with a wave across the sheet; rainbow fringe at the flip |
+| GuillocheEngraving | the banknote rosette drawn by the chroma vector | r(theta) = sum of cosines with chroma amplitudes; the chroma is smooth, so the shape is |
+| KluverFormConstants | tunnel / spiral / lattice / cobweb morphing | log-polar phase fields; `audioArousal` picks the family through positive, normalised weights |
+| BubbleChamberTracks | spiralling tracks of round bubbles | tracks are born on a continuous clock (onsets only brighten); curvature fixed per instance at birth |
+| Teleidoscope | the three-mirror tube: p3m1 folding of the photo | mirror spacing on the swell (slow), object cell turns on the clock, barrel lens |
+| StringArtChords | twelve pins in fifths, strings between sounding classes | string presence = product of the two chroma values (continuous fade) |
+
+Three lessons from the previews: a scene that takes its colours only from
+the photo palette goes grey on a grey photo (TieDyeFold now mixes a hue
+wheel into the dye); a scene whose base brightness is the photo needs a
+floor so a dark photo does not give a black frame (Teleidoscope,
+StringArtChords, RotoreliefIllusion); and a corona driven by the raw treble
+strobes -- KirlianAura keeps most of its brightness constant and lets the
+treble add only a part.

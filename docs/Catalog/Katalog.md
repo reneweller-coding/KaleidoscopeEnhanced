@@ -1,6 +1,6 @@
 # Kaleidoscope Enhanced — Szenen-Katalog
 
-_686 Szenen, 29 FX-Overlays, 83 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
+_696 Szenen, 29 FX-Overlays, 83 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
 
 
 ---
@@ -375,6 +375,15 @@ Forked from https://www.shadertoy.com/view/DsscWn (the same fold/rotate fractal 
 Soap bubbles rise and pop over a dimmed backdrop of the current photo, each one refracting the picture like a tiny lens with an iridescent rim. audioAdvance integrates travel so the bubbles climb faster with the music without ever jump-cutting; audioFlux (plus audioLevel and audioBeat) sets how many of the 32 bubble slots are alive at once, audioKick puffs each bubble's radius and slams the pop-ring flash, and audioL…
 
 ![Bubble ruhig (t=8)](img/Bubble_A.jpg) ![Bubble ruhig (t=16)](img/Bubble_B.jpg) ![Bubble audio-heiß (t=21)](img/Bubble_C.jpg)
+
+
+### BubbleChamberTracks
+
+`Scene2D/BubbleChamberTracks.frag` · type=normal · mood=dark,calm,space · complexity=3
+
+BUBBLE CHAMBER TRACKS: the physicist's photograph -- charged particles spiralling in a magnetic field, their tracks as strings of round bubbles. Tracks are born on a continuous clock at a vertex, grow along their spiral over their life, and fade; the onsets do not spawn anything (that would be a cut) but light the tracks brighter as they happen. Curvature per track = charge and momentum, once at birth. The photo is t…
+
+![BubbleChamberTracks ruhig (t=8)](img/BubbleChamberTracks_A.jpg) ![BubbleChamberTracks ruhig (t=16)](img/BubbleChamberTracks_B.jpg) ![BubbleChamberTracks audio-heiß (t=21)](img/BubbleChamberTracks_C.jpg)
 
 
 ### BuddhabrotCosmicGhost
@@ -1236,6 +1245,15 @@ GRAVITY LENSING ZOOM: an endless zoom into the photo through a chain of gravitat
 ![GravityLensingZoom ruhig (t=8)](img/GravityLensingZoom_A.jpg) ![GravityLensingZoom ruhig (t=16)](img/GravityLensingZoom_B.jpg) ![GravityLensingZoom audio-heiß (t=21)](img/GravityLensingZoom_C.jpg)
 
 
+### GuillocheEngraving
+
+`Scene2D/GuillocheEngraving.frag` · type=normal · mood=calm,bright,dreamy · complexity=2
+
+GUILLOCHE ENGRAVING: the banknote rosette. Nested guilloche curves -- r(theta) = sum of cosines whose amplitudes come from the twelve chroma classes -- engraved as fine ink lines over the photo, so the harmony of the moment literally draws the rosette. The rosette turns steadily on the scene clock; the chroma shapes it (smoothly, as the chroma itself is smooth); the kick brightens the ink; the treble adds the micro-h…
+
+![GuillocheEngraving ruhig (t=8)](img/GuillocheEngraving_A.jpg) ![GuillocheEngraving ruhig (t=16)](img/GuillocheEngraving_B.jpg) ![GuillocheEngraving audio-heiß (t=21)](img/GuillocheEngraving_C.jpg)
+
+
 ### GyroidalInterferenceKaleido
 
 `Scene2D/GyroidalInterferenceKaleido.frag` · type=normal · mood=psychedelic,bright,dark · complexity=2
@@ -1706,6 +1724,15 @@ KINETIC TILE MOSAIC MATRIX: 100% viewport-filling architectural facade of thousa
 ![KineticTileMosaicMatrix ruhig (t=8)](img/KineticTileMosaicMatrix_A.jpg) ![KineticTileMosaicMatrix ruhig (t=16)](img/KineticTileMosaicMatrix_B.jpg) ![KineticTileMosaicMatrix audio-heiß (t=21)](img/KineticTileMosaicMatrix_C.jpg)
 
 
+### KirlianAura
+
+`Scene2D/KirlianAura.frag` · type=normal · mood=dark,psychedelic,aggressive · complexity=3
+
+KIRLIAN AURA: the photo as a Kirlian print -- its edges crowned with corona discharge, violet-blue filaments streaming outward from every contour. The treble drives the discharge (a light effect: brightness and reach of the filaments), the filaments flicker on a continuous noise clock, the bass warms the glow. Camera still; the print itself never moves. Audio Reactivity: audioHigh -> corona brightness and reach (ligh…
+
+![KirlianAura ruhig (t=8)](img/KirlianAura_A.jpg) ![KirlianAura ruhig (t=16)](img/KirlianAura_B.jpg) ![KirlianAura audio-heiß (t=21)](img/KirlianAura_C.jpg)
+
+
 ### KleinBottleFlythrough
 
 `Scene2D/KleinBottleFlythrough.frag` · type=normal · mood=psychedelic,dreamy,dark · complexity=3
@@ -1742,6 +1769,15 @@ KLEIN QUARTIC HYPERBOLIC CURVE: Riemann surface of genus 3 with maximal symmetry
 ![KleinQuarticHyperbolicCurve ruhig (t=8)](img/KleinQuarticHyperbolicCurve_A.jpg) ![KleinQuarticHyperbolicCurve ruhig (t=16)](img/KleinQuarticHyperbolicCurve_B.jpg) ![KleinQuarticHyperbolicCurve audio-heiß (t=21)](img/KleinQuarticHyperbolicCurve_C.jpg)
 
 
+### KluverFormConstants
+
+`Scene2D/KluverFormConstants.frag` · type=normal · mood=psychedelic,aggressive,dark · complexity=2
+
+KLUVER FORM CONSTANTS: the four geometric hallucination forms -- tunnel, spiral, lattice, cobweb -- as one continuously morphing field. Each form is a phase function over the retinal (log-polar) plane; the blend between them is picked by the arousal axis and drifts on the scene clock, always by smooth weights, never by a switch. The photo is the colour source: the forms are stripes of it. The whole field flows steadi…
+
+![KluverFormConstants ruhig (t=8)](img/KluverFormConstants_A.jpg) ![KluverFormConstants ruhig (t=16)](img/KluverFormConstants_B.jpg) ![KluverFormConstants audio-heiß (t=21)](img/KluverFormConstants_C.jpg)
+
+
 ### LaserCavityTransverseModes
 
 `Scene2D/LaserCavityTransverseModes.frag` · type=normal · mood=psychedelic,bright,dark · complexity=2
@@ -1767,6 +1803,15 @@ A REAL lava lamp this time: glowing wax blobs rise and sink inside a tapered gla
 LAVA WORLD TIDAL LOCK: The day-side of a tidally locked planet. The surface is a continuous, roiling ocean of glowing magma constantly baked by a massive, close star. Eruptions and waves pulse to the beat. audioAdvance -> slow pan across the magma ocean audioKick -> explosive magma bursts and solar flares audioSwell -> brightness of the star and magma heat audioChromaHue-> palette offset for the magma Per-activation …
 
 ![LavaWorldTidalLock ruhig (t=8)](img/LavaWorldTidalLock_A.jpg) ![LavaWorldTidalLock ruhig (t=16)](img/LavaWorldTidalLock_B.jpg) ![LavaWorldTidalLock audio-heiß (t=21)](img/LavaWorldTidalLock_C.jpg)
+
+
+### LenticularFlip
+
+`Scene2D/LenticularFlip.frag` · type=normal · mood=calm,dreamy,bright · complexity=1
+
+LENTICULAR FLIP: a lenticular print of the two photos. Under the ribbed lens sheet the two images are interlaced in strips; the viewing angle -- which decides which strip each lenticule shows -- sweeps slowly on the swell and drifts on the scene clock, so the print flips from one photo to the other in a wave that runs across the sheet, with the refracted smear and rainbow fringe of a real lenticular between the two. …
+
+![LenticularFlip ruhig (t=8)](img/LenticularFlip_A.jpg) ![LenticularFlip ruhig (t=16)](img/LenticularFlip_B.jpg) ![LenticularFlip audio-heiß (t=21)](img/LenticularFlip_C.jpg)
 
 
 ### LiebLatticeFlatBandLocalization
@@ -2941,6 +2986,15 @@ ROSSLER ATTRACTOR HYPER RIBBON: Chaotic Rössler attractor system dx/dt = -y - z
 ![RosslerAttractorHyperRibbon ruhig (t=8)](img/RosslerAttractorHyperRibbon_A.jpg) ![RosslerAttractorHyperRibbon ruhig (t=16)](img/RosslerAttractorHyperRibbon_B.jpg) ![RosslerAttractorHyperRibbon audio-heiß (t=21)](img/RosslerAttractorHyperRibbon_C.jpg)
 
 
+### RotoreliefIllusion
+
+`Scene2D/RotoreliefIllusion.frag` · type=normal · mood=psychedelic,bright,dreamy · complexity=2
+
+ROTORELIEF ILLUSION: the rotating discs of Duchamp -- eccentric circles and spirals that, turning, seem to bulge and sink. A field of discs, one per chroma class, each turning steadily on the scene clock at its own rate; the class that sounds lights its disc. The eccentric rings carry the photo in bands; the illusion of depth comes from the turn, not from the camera, which never moves. Audio Reactivity: sceneAdvance …
+
+![RotoreliefIllusion ruhig (t=8)](img/RotoreliefIllusion_A.jpg) ![RotoreliefIllusion ruhig (t=16)](img/RotoreliefIllusion_B.jpg) ![RotoreliefIllusion audio-heiß (t=21)](img/RotoreliefIllusion_C.jpg)
+
+
 ### SacredGeometryFlowerOfLife3D
 
 `Scene2D/SacredGeometryFlowerOfLife3D.frag` · type=normal · mood=psychedelic,dreamy,dark · complexity=2
@@ -3305,6 +3359,15 @@ Stereo spectrum analyzer with 32 frequency bands per side. Bass sits at the cent
 ![StereoSpectrum ruhig (t=8)](img/StereoSpectrum_A.jpg) ![StereoSpectrum ruhig (t=16)](img/StereoSpectrum_B.jpg) ![StereoSpectrum audio-heiß (t=21)](img/StereoSpectrum_C.jpg)
 
 
+### StringArtChords
+
+`Scene2D/StringArtChords.frag` · type=normal · mood=calm,dreamy,dark · complexity=2
+
+STRING ART CHORDS: twelve pins on a circle, one per pitch class; strings run between the classes that sound together -- a chord is literally a chord across the circle. Each string fades in and out with the product of its two pins' chroma (continuous), the wheel turns steadily on the scene clock, the pins glow with their class, and the strings shimmer with the treble. Behind the wheel, the photo as the board. Camera s…
+
+![StringArtChords ruhig (t=8)](img/StringArtChords_A.jpg) ![StringArtChords ruhig (t=16)](img/StringArtChords_B.jpg) ![StringArtChords audio-heiß (t=21)](img/StringArtChords_C.jpg)
+
+
 ### SupercellMesocyclone
 
 `Scene2D/SupercellMesocyclone.frag` · type=normal · mood=dark,aggressive,calm · complexity=3
@@ -3386,6 +3449,15 @@ SUPERRADIANT TOKAMAK IGNITION: 100% viewport-filling volumetric view from inside
 ![SuperradiantTokamakIgnition ruhig (t=8)](img/SuperradiantTokamakIgnition_A.jpg) ![SuperradiantTokamakIgnition ruhig (t=16)](img/SuperradiantTokamakIgnition_B.jpg) ![SuperradiantTokamakIgnition audio-heiß (t=21)](img/SuperradiantTokamakIgnition_C.jpg)
 
 
+### Teleidoscope
+
+`Scene2D/Teleidoscope.frag` · type=normal · mood=psychedelic,bright,dreamy · complexity=2
+
+TELEIDOSCOPE: the three-mirror kaleidoscope with a lens at the end -- the world (the photo) reflected in an equilateral-triangle mirror tube, so the plane tiles with mirrored triangles. The mirrors slide on the swell (the triangle grows and shrinks, slowly), the object cell turns steadily on the scene clock, and the lens ball at the end bulges the image. The kick lights the mirror seams. Camera still. Audio Reactivit…
+
+![Teleidoscope ruhig (t=8)](img/Teleidoscope_A.jpg) ![Teleidoscope ruhig (t=16)](img/Teleidoscope_B.jpg) ![Teleidoscope audio-heiß (t=21)](img/Teleidoscope_C.jpg)
+
+
 ### TempoGearwork
 
 `Scene2D/TempoGearwork.frag` · type=normal · mood=psychedelic,bright · complexity=2
@@ -3465,6 +3537,15 @@ THOMAS ATTRACTOR COSMIC LABYRINTH: Cyclically symmetric chaotic Thomas attractor
 TIDAL LOCK TERMINATOR: a flight along the day/night line of a tidally locked planet. The world turns under the camera on the music's pace, so the terminator -- a band of long shadows, glowing cloud tops and the first lights of the eternal night -- streams past forever. The host's day clock (dayPhase) shifts where the line falls; the valence of the music is the weather on the day side (bright cumulus or a brooding ove…
 
 ![TidalLockTerminator ruhig (t=8)](img/TidalLockTerminator_A.jpg) ![TidalLockTerminator ruhig (t=16)](img/TidalLockTerminator_B.jpg) ![TidalLockTerminator audio-heiß (t=21)](img/TidalLockTerminator_C.jpg)
+
+
+### TieDyeFold
+
+`Scene2D/TieDyeFold.frag` · type=normal · mood=psychedelic,bright,calm · complexity=2
+
+TIE-DYE FOLD: the photo folded radially like a shirt tied for dyeing -- the plane folded into wedges, the dye soaking in along the folds in rings and spirals. The dye diffuses on the swell (the wet-in-wet bleeding grows as the music swells and stays), the fold turns steadily on the scene clock, and the kick brightens the dye fronts. Camera still. Audio Reactivity: sceneAdvance -> fold rotation and dye spiral (continu…
+
+![TieDyeFold ruhig (t=8)](img/TieDyeFold_A.jpg) ![TieDyeFold ruhig (t=16)](img/TieDyeFold_B.jpg) ![TieDyeFold audio-heiß (t=21)](img/TieDyeFold_C.jpg)
 
 
 ### TimeDilation
@@ -3701,6 +3782,15 @@ XENOBIOLOGICAL BIOSHIP: The camera flies through the grotesque, pulsing interior
 ZCR NOISE STORM: a sandstorm tunnel whose grain IS the noise in the music. The zero-crossing rate and the spectral flatness -- how much of the sound is hiss, breath, cymbal wash -- set the density and contrast of the sand streaming past, so a clean tone flies through clear air and a noisy passage through a wall of grit. Streaks run down the tunnel on the music's pace; a light burns ahead. The camera never moves. Audi…
 
 ![ZCRNoiseStorm ruhig (t=8)](img/ZCRNoiseStorm_A.jpg) ![ZCRNoiseStorm ruhig (t=16)](img/ZCRNoiseStorm_B.jpg) ![ZCRNoiseStorm audio-heiß (t=21)](img/ZCRNoiseStorm_C.jpg)
+
+
+### ZoetropeDrum
+
+`Scene2D/ZoetropeDrum.frag` · type=normal · mood=dreamy,calm,dark · complexity=2
+
+ZOETROPE DRUM: a real zoetrope seen from outside. The drum is a dark cylinder with vertical slits; inside, a strip of frames -- the photo in successive phases of a wave -- runs round the wall. Motion is seen only through the slits: as the drum turns steadily on the scene clock the frames glimpsed through each slit advance, and the strip appears to move. The drum wall between the slits is lit by the lamp inside (the s…
+
+![ZoetropeDrum ruhig (t=8)](img/ZoetropeDrum_A.jpg) ![ZoetropeDrum ruhig (t=16)](img/ZoetropeDrum_B.jpg) ![ZoetropeDrum audio-heiß (t=21)](img/ZoetropeDrum_C.jpg)
 
 
 ---
