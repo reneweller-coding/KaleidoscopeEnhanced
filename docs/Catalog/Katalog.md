@@ -1,6 +1,6 @@
 # Kaleidoscope Enhanced — Szenen-Katalog
 
-_696 Szenen, 29 FX-Overlays, 83 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
+_706 Szenen, 29 FX-Overlays, 83 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
 
 
 ---
@@ -206,6 +206,15 @@ A BEAT-FIRST primary effect, built for rhythmic music. Research-informed: onsets
 ![BeatLattice ruhig (t=8)](img/BeatLattice_A.jpg) ![BeatLattice ruhig (t=16)](img/BeatLattice_B.jpg) ![BeatLattice audio-heiß (t=21)](img/BeatLattice_C.jpg)
 
 
+### BellTowerDownbeat
+
+`Scene2D/BellTowerDownbeat.frag` · type=normal · mood=calm,dark,dreamy · complexity=2
+
+BELL TOWER DOWNBEAT: a belfry of the photo -- a row of bells of different sizes swinging in their frames. The bells swing on the scene clock (continuous, each at the period its size gives it), never on a beat tracker; the downbeat is the strike: the bell that is nearest its turning point flashes bronze and rings a light-wave down the tower. The kick is the clapper spark, the swell the light through the louvres. Camer…
+
+![BellTowerDownbeat ruhig (t=8)](img/BellTowerDownbeat_A.jpg) ![BellTowerDownbeat ruhig (t=16)](img/BellTowerDownbeat_B.jpg) ![BellTowerDownbeat audio-heiß (t=21)](img/BellTowerDownbeat_C.jpg)
+
+
 ### BelousovZhabotinskyChemicalWave
 
 `Scene2D/BelousovZhabotinskyChemicalWave.frag` · type=normal · mood=psychedelic,bright · complexity=3
@@ -402,6 +411,15 @@ BUDDHABROT COSMIC GHOST: Inverse orbit-density projection of escaping Mandelbrot
 BUFFALO FRACTAL THUNDERSTORM: Deep plunge into the non-holomorphic Buffalo fractal z -> (|Re(z)| + i|Im(z)|)^2 - |Re(z)| + c with pointed horn cusps, high-voltage lightning discharges running along boundary ridges, and thunderous flares. Audio Reactivity: audioAdvance -> surges the deep zoom into the Buffalo horn boundary audioKick -> flashes lightning discharge arcs & explodes thunder core audioCentroid-> sharpens s…
 
 ![BuffaloFractalThunderstorm ruhig (t=8)](img/BuffaloFractalThunderstorm_A.jpg) ![BuffaloFractalThunderstorm ruhig (t=16)](img/BuffaloFractalThunderstorm_B.jpg) ![BuffaloFractalThunderstorm audio-heiß (t=21)](img/BuffaloFractalThunderstorm_C.jpg)
+
+
+### BuildUpAvalanche
+
+`Scene2D/BuildUpAvalanche.frag` · type=normal · mood=aggressive,bright,dark · complexity=2
+
+BUILD-UP AVALANCHE: a mountain face of the photo under snow. As the music builds, the snow gathers on the slope -- the cornice grows and the load creeps down (slow, on the build-up envelope); at the drop the slab releases and the avalanche runs down the face as a wall of round snow grains and powder cloud. The drop is the one allowed cut, and it moves objects, not the camera, which is fixed on the mountain. After the…
+
+![BuildUpAvalanche ruhig (t=8)](img/BuildUpAvalanche_A.jpg) ![BuildUpAvalanche ruhig (t=16)](img/BuildUpAvalanche_B.jpg) ![BuildUpAvalanche audio-heiß (t=21)](img/BuildUpAvalanche_C.jpg)
 
 
 ### BuildUpPressureChamber
@@ -1706,6 +1724,15 @@ KERR-NEWMAN SINGULARITY: Relativistic raymarching of a rotating charged black ho
 ![KerrNewmanSingularity ruhig (t=8)](img/KerrNewmanSingularity_A.jpg) ![KerrNewmanSingularity ruhig (t=16)](img/KerrNewmanSingularity_B.jpg) ![KerrNewmanSingularity audio-heiß (t=21)](img/KerrNewmanSingularity_C.jpg)
 
 
+### KeyChangeSeasons
+
+`Scene2D/KeyChangeSeasons.frag` · type=normal · mood=calm,dreamy,bright · complexity=2
+
+KEY CHANGE SEASONS: a forest whose season is the key of the music. The chroma hue (the tonal centre) is the time of year: the foliage colour, the light, the ground (snow, leaf litter, grass) all follow it, and because the hue is a slow, smoothed value the seasons turn as seasons do, over a modulation, never with a beat. Major/minor (audioMode) is fair or overcast weather. Round particles -- pollen, falling leaves, sn…
+
+![KeyChangeSeasons ruhig (t=8)](img/KeyChangeSeasons_A.jpg) ![KeyChangeSeasons ruhig (t=16)](img/KeyChangeSeasons_B.jpg) ![KeyChangeSeasons audio-heiß (t=21)](img/KeyChangeSeasons_C.jpg)
+
+
 ### KilonovaRadioactiveAfterglow
 
 `Scene2D/KilonovaRadioactiveAfterglow.frag` · type=normal · mood=aggressive,bright,dreamy,psychedelic · complexity=4
@@ -2156,6 +2183,15 @@ MOLECULAR CLOUD CORE: Deep inside the dense, freezing heart of a dark molecular 
 ![MolecularCloudCore ruhig (t=8)](img/MolecularCloudCore_A.jpg) ![MolecularCloudCore ruhig (t=16)](img/MolecularCloudCore_B.jpg) ![MolecularCloudCore audio-heiß (t=21)](img/MolecularCloudCore_C.jpg)
 
 
+### MoodWeatherValley
+
+`Scene2D/MoodWeatherValley.frag` · type=normal · mood=calm,dreamy,bright · complexity=2
+
+MOOD WEATHER VALLEY: a valley of the photo under weather that is the mood of the music. Arousal is the wind -- the grass and the cloud drift faster, the trees lean (slowly, as a real gust builds); valence is the sun or the rain -- high valence clears the sky and warms the light, low valence brings cloud, rain as round falling drops and a cold cast. Both axes are slow, so the weather changes as weather does. The kick …
+
+![MoodWeatherValley ruhig (t=8)](img/MoodWeatherValley_A.jpg) ![MoodWeatherValley ruhig (t=16)](img/MoodWeatherValley_B.jpg) ![MoodWeatherValley audio-heiß (t=21)](img/MoodWeatherValley_C.jpg)
+
+
 ### MultiverseBubbles
 
 `Scene2D/MultiverseBubbles.frag` · type=normal · mood=calm,dreamy,space · complexity=3
@@ -2408,6 +2444,15 @@ Two million curl-noise-advected particles (simulated upstream into texParticles)
 ![ParticleFlow ruhig (t=8)](img/ParticleFlow_A.jpg) ![ParticleFlow ruhig (t=16)](img/ParticleFlow_B.jpg) ![ParticleFlow audio-heiß (t=21)](img/ParticleFlow_C.jpg)
 
 
+### PendulumWaveTempo
+
+`Scene2D/PendulumWaveTempo.frag` · type=normal · mood=calm,dreamy,dark · complexity=2
+
+PENDULUM WAVE TEMPO: the pendulum-wave demonstration -- a row of pendulums whose periods are tempo divisions (the n-th pendulum makes n/8 more swings than the first in one cycle), so the row drifts from a line into a travelling wave, into two counter-waves, into chaos and back into a line. The swings run on the scene clock (continuous, never on a beat tracker, so no resync can jolt them); the bobs are round photo dis…
+
+![PendulumWaveTempo ruhig (t=8)](img/PendulumWaveTempo_A.jpg) ![PendulumWaveTempo ruhig (t=16)](img/PendulumWaveTempo_B.jpg) ![PendulumWaveTempo audio-heiß (t=21)](img/PendulumWaveTempo_C.jpg)
+
+
 ### PenroseAperiodicTessellation
 
 `Scene2D/PenroseAperiodicTessellation.frag` · type=normal · mood=bright,calm,dreamy · complexity=3
@@ -2462,6 +2507,15 @@ PHRASE CLOCK ROSETTE: a 32-beat rosette that shows WHERE in the 8-bar phrase the
 ![PhraseClockRosette ruhig (t=8)](img/PhraseClockRosette_A.jpg) ![PhraseClockRosette ruhig (t=16)](img/PhraseClockRosette_B.jpg) ![PhraseClockRosette audio-heiß (t=21)](img/PhraseClockRosette_C.jpg)
 
 
+### PhraseTideBeach
+
+`Scene2D/PhraseTideBeach.frag` · type=normal · mood=calm,bright,dreamy · complexity=2
+
+PHRASE TIDE BEACH: a beach where the tide is the phrase clock -- the water line climbs the sand through each phrase and falls back as the next begins (a sine of the phrase position, continuous through the wrap) -- and the drop is the breaking wave: at the drop a wall of foam rolls up the beach as round spray, then draws back. The photo is the sand and the sky; wet sand mirrors it. Camera fixed on the shore. Audio Rea…
+
+![PhraseTideBeach ruhig (t=8)](img/PhraseTideBeach_A.jpg) ![PhraseTideBeach ruhig (t=16)](img/PhraseTideBeach_B.jpg) ![PhraseTideBeach audio-heiß (t=21)](img/PhraseTideBeach_C.jpg)
+
+
 ### PhyllotaxisZoom
 
 `Scene2D/PhyllotaxisZoom.frag` · type=normal · mood=psychedelic,calm,bright · complexity=2
@@ -2498,6 +2552,15 @@ PHYSARUM GALAXY: the slime-mould simulation's trail map, wrapped onto a slowly t
 PILLARS OF CREATION FLIGHT: A majestic, slow flight through colossal columns of interstellar dust and gas. Newborn stars within the pillars illuminate the dense clouds and react to the beat. audioAdvance -> flight speed through the nebula audioKick -> flashes from newly ignited protostars audioSwell -> ambient brightness of the dust clouds audioChromaHue-> palette offset for the nebula gas Per-activation variety: dus…
 
 ![PillarsOfCreationFlight ruhig (t=8)](img/PillarsOfCreationFlight_A.jpg) ![PillarsOfCreationFlight ruhig (t=16)](img/PillarsOfCreationFlight_B.jpg) ![PillarsOfCreationFlight audio-heiß (t=21)](img/PillarsOfCreationFlight_C.jpg)
+
+
+### PipeOrganChroma
+
+`Scene2D/PipeOrganChroma.frag` · type=normal · mood=calm,bright,dreamy · complexity=2
+
+PIPE ORGAN CHROMA: the organ front -- ranks of pipes, one pipe per pitch class and octave, their heights following the harmonic series (the lowest class the tallest pipe), arranged in the classic mitre. A pipe that sounds glows at its mouth and its speaking length shimmers; the whole front is lit by the swell (the organ swell box, literally), the kick brings the pedal pipes up in light. The photo is the case behind a…
+
+![PipeOrganChroma ruhig (t=8)](img/PipeOrganChroma_A.jpg) ![PipeOrganChroma ruhig (t=16)](img/PipeOrganChroma_B.jpg) ![PipeOrganChroma audio-heiß (t=21)](img/PipeOrganChroma_C.jpg)
 
 
 ### PixelMelt
@@ -2995,6 +3058,15 @@ ROTORELIEF ILLUSION: the rotating discs of Duchamp -- eccentric circles and spir
 ![RotoreliefIllusion ruhig (t=8)](img/RotoreliefIllusion_A.jpg) ![RotoreliefIllusion ruhig (t=16)](img/RotoreliefIllusion_B.jpg) ![RotoreliefIllusion audio-heiß (t=21)](img/RotoreliefIllusion_C.jpg)
 
 
+### RustBloomRoughness
+
+`Scene2D/RustBloomRoughness.frag` · type=normal · mood=dark,aggressive,calm · complexity=2
+
+RUST BLOOM ROUGHNESS: a chrome plate of the photo that rusts with the roughness of the sound -- the psychoacoustic roughness (beating partials, distortion) is the corrosion: as it rises, rust blooms across the chrome from seeds, pitting the mirror; a harmony change is the polish -- a wave of restored chrome sweeps the plate, and the rust begins again. Roughness is slow, so the bloom grows as a bloom does; the polish …
+
+![RustBloomRoughness ruhig (t=8)](img/RustBloomRoughness_A.jpg) ![RustBloomRoughness ruhig (t=16)](img/RustBloomRoughness_B.jpg) ![RustBloomRoughness audio-heiß (t=21)](img/RustBloomRoughness_C.jpg)
+
+
 ### SacredGeometryFlowerOfLife3D
 
 `Scene2D/SacredGeometryFlowerOfLife3D.frag` · type=normal · mood=psychedelic,dreamy,dark · complexity=2
@@ -3251,6 +3323,15 @@ Radial spectrum analyzer with 32 frequency bands (mirrored into 64 wedges) radia
 ![SpectrumRadial ruhig (t=8)](img/SpectrumRadial_A.jpg) ![SpectrumRadial ruhig (t=16)](img/SpectrumRadial_B.jpg) ![SpectrumRadial audio-heiß (t=21)](img/SpectrumRadial_C.jpg)
 
 
+### SpectrumStalactiteCave
+
+`Scene2D/SpectrumStalactiteCave.frag` · type=normal · mood=dark,calm,psychedelic · complexity=3
+
+SPECTRUM STALACTITE CAVE: a limestone cave whose stalactites hang one per spectral band across the ceiling, the bass bands the thickest and longest. Each band's energy lights its stalactite from within (calcite glow) and lets it drip: drops form at the tip and fall as round beads on a continuous clock, brighter on onsets. Below, a still pool mirrors it all in the photo's colours. The camera never moves. Audio Reactiv…
+
+![SpectrumStalactiteCave ruhig (t=8)](img/SpectrumStalactiteCave_A.jpg) ![SpectrumStalactiteCave ruhig (t=16)](img/SpectrumStalactiteCave_B.jpg) ![SpectrumStalactiteCave audio-heiß (t=21)](img/SpectrumStalactiteCave_C.jpg)
+
+
 ### SphereGrid
 
 `Scene2D/SphereGrid.frag` · type=normal · mood=calm,bright · complexity=2
@@ -3348,6 +3429,15 @@ STELLAR NURSERY: A dark, dense nebula where countless protostars are igniting. T
 STEREO KALEIDOSCOPE: the first kaleidoscope that hears in stereo. The left half of the picture is folded from the left channel's energy, the right half from the right's -- fold count, rotation and zoom differ per side by exactly the stereo difference of the mix. A mono track gives one symmetric ornament; a wide mix pulls the two halves apart and they meet in a seam down the middle that shimmers with the stereo width.…
 
 ![StereoKaleidoscope ruhig (t=8)](img/StereoKaleidoscope_A.jpg) ![StereoKaleidoscope ruhig (t=16)](img/StereoKaleidoscope_B.jpg) ![StereoKaleidoscope audio-heiß (t=21)](img/StereoKaleidoscope_C.jpg)
+
+
+### StereoSearchlights
+
+`Scene2D/StereoSearchlights.frag` · type=normal · mood=dark,calm,dreamy · complexity=2
+
+STEREO SEARCHLIGHTS: a night city skyline of the photo, with searchlights sweeping the sky. The beams point where the sound is: the stereo balance steers them (smoothly -- the balance is filtered and the beam follows it with a slow lag built from the scene clock), the left and right channel levels set the two banks' brightness, and the swell lights the low cloud they play on. Camera fixed on the skyline. Audio Reacti…
+
+![StereoSearchlights ruhig (t=8)](img/StereoSearchlights_A.jpg) ![StereoSearchlights ruhig (t=16)](img/StereoSearchlights_B.jpg) ![StereoSearchlights audio-heiß (t=21)](img/StereoSearchlights_C.jpg)
 
 
 ### StereoSpectrum

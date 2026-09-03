@@ -3375,3 +3375,31 @@ floor so a dark photo does not give a black frame (Teleidoscope,
 StringArtChords, RotoreliefIllusion); and a corona driven by the raw treble
 strobes -- KirlianAura keeps most of its brightness constant and lets the
 treble add only a part.
+
+## The second fifty, block D: music data as geometry
+
+Ten 2D scenes (03.09.2026), `type="normal"`, `<rig preset="flat"/>`.  Each
+takes one analysis feature and makes it the subject of a picture.  Every
+beat- or bar-phase idea in the proposal list was replaced by the steady
+scene clock (rule V7d: a tracker resync would jolt the whole frame); the
+tracker events stay as light.
+
+| Scene | Feature | Note |
+|---|---|---|
+| PipeOrganChroma | `audioChroma[12]`, `audioSpectrum[32]` | pipes per class and octave, heights from the harmonic series; nothing moves but light |
+| PendulumWaveTempo | scene clock | pendulum periods as divisions (8+i swings per cycle); `audioBeat` only lights the bob at centre |
+| BuildUpAvalanche | `audioBuildUp`, `audioDrop` | snow load grows with the build-up; the drop (the one allowed cut) releases the slab -- objects move, the camera does not |
+| MoodWeatherValley | `audioArousal`, `audioValence` | wind and lean from arousal, sun vs rain from valence; both slow; lightning on the kick is diffuse |
+| RustBloomRoughness | `audioRoughness`, `audioHarmChange` | rust blooms from seeds with the roughness; a harmony change is a polish sweep running on the clock |
+| BellTowerDownbeat | `audioDownbeat` | bells swing on the clock at size-given periods; the downbeat is the strike (flash + ring wave down the tower) |
+| KeyChangeSeasons | `audioChromaHue`, `audioMode` | the tonal centre is the season (four blends), major/minor the weather; seasonal round particles |
+| StereoSearchlights | `audioStereo`, `audioStereoL/R` | balance biases a slow sweep (never steers directly), channel levels light the two banks |
+| SpectrumStalactiteCave | `audioSpectrum[32]`, `audioOnset` | one stalactite per band; drips fall on the clock, band energy and onsets are their light |
+| PhraseTideBeach | `audioPhrasePos`, `audioDrop` | tide = sin of the phrase position (continuous at the wrap); the drop is the breaking wave |
+
+The shake scanner flags the city windows in StereoSearchlights as PIXEL:
+they are rectangular windows in towers, not particles, and stay.
+
+Preview lesson: StereoSearchlights drew bright windows and invisible
+beams -- the beams needed three times the width, a slower falloff and the
+windows halved before the searchlights read as the subject.

@@ -181,19 +181,19 @@ MODIFIED_SCENES = {
 # Minuten statt siebzig).  Bewusst eine eigene Liste: welche Szenen zuletzt
 # dran waren, ist eine historische Tatsache und soll im Diff stehen.
 RECENT_SCENES = {
-    # 03.09.: zweite Fuenfzig, Block C (Kaleidoskope und Psychedelik): Zoetrop,
-    # Rotorelief, Batik, Kirlian, Lentikular, Guilloche, Kluver, Blasenkammer,
-    # Teleidoskop, Fadenkunst.
-    "ZoetropeDrum",
-    "RotoreliefIllusion",
-    "TieDyeFold",
-    "KirlianAura",
-    "LenticularFlip",
-    "GuillocheEngraving",
-    "KluverFormConstants",
-    "BubbleChamberTracks",
-    "Teleidoscope",
-    "StringArtChords",
+    # 03.09.: zweite Fuenfzig, Block D (Musikdaten als Geometrie): Orgel, Pendel,
+    # Lawine, Wettertal, Rost, Glockenturm, Jahreszeiten, Suchscheinwerfer,
+    # Tropfsteinhoehle, Gezeitenstrand.
+    "PipeOrganChroma",
+    "PendulumWaveTempo",
+    "BuildUpAvalanche",
+    "MoodWeatherValley",
+    "RustBloomRoughness",
+    "BellTowerDownbeat",
+    "KeyChangeSeasons",
+    "StereoSearchlights",
+    "SpectrumStalactiteCave",
+    "PhraseTideBeach",
 }
 
 def rule_recent(m, h):
