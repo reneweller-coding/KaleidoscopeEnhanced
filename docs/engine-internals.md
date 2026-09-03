@@ -3009,3 +3009,27 @@ and five of DMT's six reference jumps are the *entries* of a track that
 builds in layers rather than breaking down. The reference itself is generous;
 the detector is deliberately not. What the arc regie needs is not every
 section change but a drop it can trust — and eight of nine is that.
+
+**Recorded** overnight (8 chunks × 3 seeds, 2383 windows, 616 scenes): the
+catalogue's median structure is 0.123 on the musical WAV; the per-scene
+spread max/min has a median of 1.28 and a 90 % quantile of 2.36, exceeds 3×
+for 30 scenes and 10× for 8. A first reading blamed the new WAV's quiet half
+for the low minima of several space scenes; the window data refuted it — the
+loud/quiet luma ratio sits at a median of 1.2, and what varies is *whole
+windows* by seed (`GasGiantCloudCity` luma_max 0.168 / 0.074 / 0.033 across
+its three draws). That is parameter spread, which is what the distribution is
+for, and what `Tools/param_corners.py` is for.
+
+### Corners: where a range is too wide
+
+`Tools/param_corners.py --from-baseline --worst 30` took the thirty scenes with
+the widest recorded spread and rendered each at the three corners of its
+parameter space — every float at its minimum, every one at its maximum,
+alternating — against a three-seed median. **Thirteen** have a corner under
+the empty threshold while the median is healthy: the shader is fine, one end
+of a range is not. The lower corner is the usual culprit (`glowP` 0.5, `fogP`
+1.5 and the like), and `GasGiantAtmosphere` reaches exactly 0.0000 at its
+upper one. A corner says *that* a range is too wide, not *which* parameter;
+`KALEIDO_PARAM_CORNER=min:glowP` therefore takes a name list — the named
+uniforms go to the corner, every other one to the middle of its range — and
+`--per-param` runs one lower and one upper test per parameter name.

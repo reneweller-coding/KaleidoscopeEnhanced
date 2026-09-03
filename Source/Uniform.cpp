@@ -15,6 +15,7 @@
 =============================================================================*/
 
 #include <cstring>
+#include <string>
 #include <cstdlib>
 #include "uniform.h"
 #include "shader_setup.h"
@@ -43,37 +44,50 @@ Uniform::~Uniform(  )
  * used to crash with an integer division by zero in `rand() % range`; it now
  * just pins the value to the min instead.
  */
-// KALEIDO_PARAM_CORNER=min|max|alt zieht statt zu wuerfeln die ECKE des
-// Bereichs.  Eine Szene, die im Mittel gut misst, kann an einem Rand ihrer
-// Bereiche trotzdem leer sein -- FuturisticCityFlight lag je nach Ziehung
+// KALEIDO_PARAM_CORNER=min|max|alt|mid[:name1,name2] zieht statt zu wuerfeln die
+// ECKE des Bereichs.  Eine Szene, die im Mittel gut misst, kann an einem Rand
+// ihrer Bereiche trotzdem leer sein -- FuturisticCityFlight lag je nach Ziehung
 // zwischen 0,0062 und 0,0837, und die 0,0062 war eine legitime Ziehung am
-// dunklen Ende von glowP/fogP.  Nur fuer Messlaeufe; ohne die Variable
-// wird gewuerfelt wie immer.
-static float roll01()
+// dunklen Ende von glowP/fogP.  Mit Namensliste nehmen NUR diese Uniforms die
+// Ecke und alle anderen die Mitte, damit ein Parameter allein verantwortlich
+// gemacht werden kann (13 von 30 breit streuenden Szenen hatten eine leere
+// Ecke -- die Ecke sagt nicht, WELCHER Parameter es ist).  Nur fuer
+// Messlaeufe; ohne die Variable wird gewuerfelt wie immer.
+static float roll01( const std::string &name )
 {
-	static int mode = -1;
+	static int mode = -1;                  // 0 wuerfeln, 1 min, 2 max, 3 alt, 4 mid
+	static std::string names;              // ",a,b," oder leer = alle
 	if( mode < 0 )
 	{
 		const char *e = getenv( "KALEIDO_PARAM_CORNER" );
-		mode = !e ? 0 : !strcmp( e, "min" ) ? 1 : !strcmp( e, "max" ) ? 2
-		               : !strcmp( e, "alt" ) ? 3 : 0;
+		std::string m = e ? e : "";
+		const size_t colon = m.find( ':' );
+		if( colon != std::string::npos )
+		{
+			names = "," + m.substr( colon + 1 ) + ",";
+			m = m.substr( 0, colon );
+		}
+		mode = ( m == "min" ) ? 1 : ( m == "max" ) ? 2 : ( m == "alt" ) ? 3 : ( m == "mid" ) ? 4 : 0;
 	}
+	if( mode == 0 )
+		return (float) rand() / (float) RAND_MAX;
+	if( !names.empty() && names.find( "," + name + "," ) == std::string::npos )
+		return 0.5f;                       // nicht ausgewaehlt: Mitte
 	static unsigned k = 0;
 	switch( mode )
 	{
 		case 1:  return 0.f;
 		case 2:  return 1.f;
 		case 3:  return ( ( k++ & 1u ) ? 1.f : 0.f );   // abwechselnd je Parameter
-		default: return (float) rand() / (float) RAND_MAX;
+		default: return 0.5f;
 	}
 }
-
 
 void Uniform::resetParameters()
 {
 	if( m_type == BASE_TYPE_FLOAT )
 	{
-		m_data.vf = (float) (m_dataMin.vf + roll01() * (m_dataMax.vf - m_dataMin.vf));
+		m_data.vf = (float) (m_dataMin.vf + roll01( m_name ) * (m_dataMax.vf - m_dataMin.vf));
 	}
 	else if( m_type == BASE_TYPE_BOOL )
 	{
@@ -89,13 +103,13 @@ void Uniform::resetParameters()
 		// Guard: an <int> with minValue == maxValue used to crash with an
 		// integer division by zero (rand() % 0).
 		int range = m_dataMax.vi - m_dataMin.vi;
-		m_data.vi = (range > 0) ? m_dataMin.vi + (int)( roll01() * 0.999f * range ) : m_dataMin.vi;
+		m_data.vi = (range > 0) ? m_dataMin.vi + (int)( roll01( m_name ) * 0.999f * range ) : m_dataMin.vi;
 	}
 	else if( m_type == BASE_TYPE_INTERPOLATOR_FLOAT )
 	{
 		//Warning double use of m_dataMax/Min.vf
-		m_dataMin.vf = (float) (m_dataMinMin.vf + roll01() * (m_dataMinMax.vf - m_dataMinMin.vf));
-		m_dataMax.vf = (float) (m_dataMaxMin.vf + roll01() * (m_dataMaxMax.vf - m_dataMaxMin.vf));
+		m_dataMin.vf = (float) (m_dataMinMin.vf + roll01( m_name ) * (m_dataMinMax.vf - m_dataMinMin.vf));
+		m_dataMax.vf = (float) (m_dataMaxMin.vf + roll01( m_name ) * (m_dataMaxMax.vf - m_dataMaxMin.vf));
 
 		m_delta.vf = (m_dataMax.vf - m_dataMin.vf) / m_totalTime.vf * 0.001f; //time in sec delta in msec
 		
@@ -120,7 +134,7 @@ void Uniform::resetParameters( float time )
 {
 	if( m_type == BASE_TYPE_FLOAT )
 	{
-		m_data.vf = (float) (m_dataMin.vf + roll01() * (m_dataMax.vf - m_dataMin.vf));
+		m_data.vf = (float) (m_dataMin.vf + roll01( m_name ) * (m_dataMax.vf - m_dataMin.vf));
 	}
 	else if( m_type == BASE_TYPE_BOOL )
 	{
@@ -136,13 +150,13 @@ void Uniform::resetParameters( float time )
 		// Guard: an <int> with minValue == maxValue used to crash with an
 		// integer division by zero (rand() % 0).
 		int range = m_dataMax.vi - m_dataMin.vi;
-		m_data.vi = (range > 0) ? m_dataMin.vi + (int)( roll01() * 0.999f * range ) : m_dataMin.vi;
+		m_data.vi = (range > 0) ? m_dataMin.vi + (int)( roll01( m_name ) * 0.999f * range ) : m_dataMin.vi;
 	}
 	else if( m_type == BASE_TYPE_INTERPOLATOR_FLOAT )
 	{
 		//Warning double use of m_dataMax/Min.vf
-		m_dataMin.vf = (float) (m_dataMinMin.vf + roll01() * (m_dataMinMax.vf - m_dataMinMin.vf));
-		m_dataMax.vf = (float) (m_dataMaxMin.vf + roll01() * (m_dataMaxMax.vf - m_dataMaxMin.vf));
+		m_dataMin.vf = (float) (m_dataMinMin.vf + roll01( m_name ) * (m_dataMinMax.vf - m_dataMinMin.vf));
+		m_dataMax.vf = (float) (m_dataMaxMin.vf + roll01( m_name ) * (m_dataMaxMax.vf - m_dataMaxMin.vf));
 
 		m_totalTime.vf = time;
 
