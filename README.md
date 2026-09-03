@@ -203,6 +203,12 @@ Press **`k`** to persist the tuning keys (plus render scale) to
 overlay shows the current FPS — handy for tuning render scale on a target
 machine.
 
+One key in that file has no hotkey: `calmMotion` (default `true`) keeps the
+host's virtual camera completely still — no downbeat punch-in, no kick shake,
+no bar sway, no drop rewind, no bass shockwave, no beat-pumped trail warp.
+It is on by default because whole-frame jolts make some viewers ill; set
+`calmMotion=false` for the older, livelier camera.
+
 ---
 
 ## Mood detection, and OSC output for VJ tools

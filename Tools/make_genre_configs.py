@@ -181,19 +181,19 @@ MODIFIED_SCENES = {
 # Minuten statt siebzig).  Bewusst eine eigene Liste: welche Szenen zuletzt
 # dran waren, ist eine historische Tatsache und soll im Diff stehen.
 RECENT_SCENES = {
-    # 03.09.: Block 2 der neuen Szenen (Moebius, Phyllotaxis, hyperbolische und
-    # Chroma-Faltung, Stereo-Tunnel, Fluid-Mandala, Section-Hallen, Wellen-Fluss,
-    # Dyson-Schwarm, Galaxien-Verschmelzung).
-    "MoebiusTunnel",
-    "PhyllotaxisZoom",
-    "HyperbolicKaleidoscope",
-    "ChromaKaleidoscope",
-    "BinauralTunnel",
-    "FluidInkMandala",
-    "SectionMemoryHalls",
-    "WaveformRiver",
-    "DysonSwarmConstruction",
-    "GalaxyMergerNBody",
+    # 03.09.: Block 3 der neuen Szenen (Akkretionsscheibe, Pulsar-Leuchtturm,
+    # Oort-Wolke, protoplanetare Scheibe, Kleinsche Flasche, Gravitationslinsen,
+    # Spektrogramm-Kaleidoskop, Escher-Fische, POV-Ventilator, Truemmerguertel).
+    "AccretionDiskRelativistic",
+    "PulsarLighthouse",
+    "OortCloudDrift",
+    "ProtoplanetaryDiscRings",
+    "KleinBottleFlythrough",
+    "GravityLensingZoom",
+    "SpectrogramKaleidoscope",
+    "HyperbolicEscherFish",
+    "PersistenceOfVisionFan",
+    "OrbitalDebrisField",
 }
 
 def rule_recent(m, h):

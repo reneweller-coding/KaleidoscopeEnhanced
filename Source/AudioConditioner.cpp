@@ -349,9 +349,13 @@ AudioFeatures AudioConditioner::update( const AudioFeatures &audio, float rawDt,
         // in-scene coupling was gone. On abstract scenes the punch IS the
         // look; on a solid object it pumps the object. Damped, not zeroed:
         // drops still land.
-        const float meshCalm = 1.f - 0.85f * ctx.meshUp;
+        // calmMotion (settings, default on): the virtual camera does not move
+        // at all -- no punch, no shake, no sway, no drift, no gate-weave.  A
+        // whole-frame motion that is not the scene's own travel makes Rene
+        // physically ill (gaming sickness); rule V7d applies to the host too.
+        const float meshCalm = ctx.calm ? 0.f : 1.f - 0.85f * ctx.meshUp;
         float punch = ( m_camPunch + 1.1f * audioFx.dropPulse ) * meshCalm;
-        float zoom  = 1.f + 0.045f * audioFx.buildUp * audioFx.buildUp
+        float zoom  = 1.f + ( ctx.calm ? 0.f : 0.045f * audioFx.buildUp * audioFx.buildUp )
                           + 0.055f * punch;
         float sway  = 0.010f * sinf( 6.2831853f * audioFx.barPhase )
                     * audio.rhythmStrength * gate * meshCalm;
@@ -369,6 +373,7 @@ AudioFeatures AudioConditioner::update( const AudioFeatures &audio, float rawDt,
                  + shakeAmp * sinf( ctx.globalTime * 39.7f );
         float oy = 0.0030f * cosf( ctx.globalTime * 0.17f ) + wvy
                  + shakeAmp * cosf( ctx.globalTime * 31.3f );
+        if( ctx.calm ) { ox = 0.f; oy = 0.f; }
         // The zoom must always pay for the offset + rotation so no edge
         // ever samples outside the frame.  Die 2.5D-Parallaxe verschiebt
         // nahe Strukturen bis 1.8x staerker als den Frame selbst - der
@@ -391,7 +396,8 @@ AudioFeatures AudioConditioner::update( const AudioFeatures &audio, float rawDt,
         if( dropCountNow > m_lastDropSeen )
         {
             m_lastDropSeen = dropCountNow;
-            if( gate > 0.5f && ( rand() % 100 ) < 40 )
+            // calmMotion: the rewind race is a cut back in time -- off.
+            if( !ctx.calm && gate > 0.5f && ( rand() % 100 ) < 40 )
             {
                 m_rewindBack = 1.6f;
                 m_rewindRace = true;
@@ -400,7 +406,7 @@ AudioFeatures AudioConditioner::update( const AudioFeatures &audio, float rawDt,
         // DJ-Stop: solange die Musik den Atem anhaelt, scrubbt das Bild
         // rueckwaerts (max ~2.8 s Ring-Tiefe); der Slam-back schnappt es
         // mit hoher Rate zurueck auf live.
-        if( audio.breakHold > 0.5f && !m_rewindRace )
+        if( !ctx.calm && audio.breakHold > 0.5f && !m_rewindRace )
             m_rewindBack = std::min( m_rewindBack + 1.5f * dt, 2.8f );
         else if( m_rewindBack > 0.f )
         {
@@ -423,7 +429,8 @@ AudioFeatures AudioConditioner::update( const AudioFeatures &audio, float rawDt,
         // (0.8/s - man merkt erst spaet, dass das Bild enger wird) und
         // reissen auf den Drop schlagartig auf (12/s).
         {
-            float lbRate = ( audioFx.dropPulse > 0.4f ) ? 12.f
+            // calmMotion: the bars never snap, they only creep (2/s).
+            float lbRate = ( audioFx.dropPulse > 0.4f && !ctx.calm ) ? 12.f
                          : ( bTarget > m_letterSm ? 0.8f : 2.0f );
             m_letterSm = slewToward( m_letterSm, bTarget, lbRate, dt );
         }
@@ -436,7 +443,10 @@ AudioFeatures AudioConditioner::update( const AudioFeatures &audio, float rawDt,
             bool dropEdge = ( audioFx.dropPulse > 0.85f && m_prevShockDrop <= 0.85f );
             m_prevShockKick = m_kickSmooth;
             m_prevShockDrop = audioFx.dropPulse;
-            if( dropEdge )
+            // calmMotion: no displacement wave through the picture, on any hit.
+            if( ctx.calm )
+                { /* shockAmp decays to nothing below */ }
+            else if( dropEdge )
                 { m_shockR = 0.f; m_shockAmp = 0.030f; }
             else if( kickEdge && gate > 0.5f )
                 { m_shockR = 0.f; m_shockAmp = std::max( m_shockAmp, 0.011f ); }

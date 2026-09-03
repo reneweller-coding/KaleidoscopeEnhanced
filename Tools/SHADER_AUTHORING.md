@@ -436,6 +436,12 @@ audioBarPhase, audioBeatPhase. Die schnellen Signale treiben LICHT und FARBE
 ein Panel), nie den Blickpunkt. Kein Kamera-Schwanken, auch kein kleines.
 Pruefen: `grep -n "p -= \|p += \|zoom.*audio\|radius.*audio\|vp\.z.*audio" Scene2D/*.frag Scene3D/*.vert`.
 
+Der Host selbst hatte eine virtuelle Kamera (Downbeat-Punch, Kick-Shake,
+Bar-Schwanken, Gate-Weave, Drop-Rewind, Bass-Schockwelle, Trail-Beat-Warp);
+seit 03.09. schaltet der Settings-Schluessel `calmMotion` (Default an) all das
+ab. Wer eine Szene auf Erschuetterungen prueft, prueft mit calmMotion=true --
+sonst sieht man die Kamera des Hosts, nicht die Szene.
+
 ### V8 — Registrierung
 
 Jeder Shader braucht einen Eintrag in `Configurations/Komplett.xml` (die

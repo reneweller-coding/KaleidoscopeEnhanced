@@ -805,6 +805,7 @@ private:
 	// Live-tunable look parameters (static → one shared setting across all configs).
 	static float	s_reactivity;    ///< audio-motion master gain (default 1.0) — shared across all loaded configurations.
 	static float	s_trailAmount;   ///< feedback trail length 0..0.95 (default 0.6).
+	static bool 	s_calmMotion;    ///< settings key calmMotion (default true): no beat-driven whole-frame motion anywhere in the host (virtual camera, rewind, shockwave, trail beat-warp). Rule V7d; Rene has gaming sickness.
 	static float	s_moodStrength;  ///< global mood-grade strength (default 1.0).
 	static float	s_lightShow;     ///< 0 = corner lamps/light-show off (default), 1 = on.
 	static float	s_latencyLead;   ///< display-phase lead in seconds (default 0.05).

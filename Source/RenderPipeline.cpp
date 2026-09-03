@@ -47,6 +47,7 @@ static unsigned int maxSides = 14;
 // Live-tunable look parameters (shared across all configs, set by hotkeys).
 float RenderPipeline::s_reactivity  = 1.0f;
 float RenderPipeline::s_trailAmount = 0.6f;
+bool  RenderPipeline::s_calmMotion  = true;
 float RenderPipeline::s_moodStrength = 1.0f;
 float RenderPipeline::s_renderScale = 1.0f;
 float RenderPipeline::s_renderScaleMax = 1.0f;   // no supersampling unless asked for
@@ -78,6 +79,11 @@ void RenderPipeline::loadSettings()
 	QSettings s( settingsFilePath(), QSettings::IniFormat );
 	s_reactivity   = clampParam( s.value( "reactivity",  s_reactivity  ).toFloat(), 0.f, 3.0f  );
 	s_trailAmount  = clampParam( s.value( "trails",      s_trailAmount ).toFloat(), 0.f, 0.95f );
+	// calmMotion (default ON): no beat-driven motion of the whole frame in
+	// the host -- the virtual camera (punch/shake/sway/gate-weave/drift), the
+	// drop rewind and break scrub, the bass shockwave and the trail layer's
+	// beat warp are all off.  Set calmMotion=false in the ini for the old look.
+	s_calmMotion   = s.value( "calmMotion", s_calmMotion ).toBool();
 	s_moodStrength = clampParam( s.value( "mood",        s_moodStrength).toFloat(), 0.f, 2.5f  );
 	s_latencyLead  = clampParam( s.value( "latencyLead", s_latencyLead ).toFloat(), 0.f, 0.25f );
 	s_stereoMode   = s.value( "stereoMode", s_stereoMode ).toInt() & 3;
@@ -155,6 +161,7 @@ void RenderPipeline::saveSettings()
 	QSettings s( settingsFilePath(), QSettings::IniFormat );
 	s.setValue( "reactivity",  s_reactivity   );
 	s.setValue( "trails",      s_trailAmount  );
+	s.setValue( "calmMotion",  s_calmMotion   );
 	s.setValue( "mood",        s_moodStrength );
 	s.setValue( "latencyLead", s_latencyLead  );
 	s.setValue( "stereoMode",  s_stereoMode   );
@@ -1382,6 +1389,7 @@ AudioFeatures RenderPipeline::conditionAudio( const AudioFeatures &audio, float 
     acCtx.globalTime   = m_globaltime;
     acCtx.trailDepth3D = m_trailDepth3D;
     acCtx.meshUp       = m_meshUp;
+    acCtx.calm         = s_calmMotion;
     acCtx.reactivity   = s_reactivity;
     acCtx.latencyLead  = s_latencyLead;
     acCtx.ssmHead      = m_sims.ssmHeadNorm();
@@ -2038,7 +2046,8 @@ GLuint RenderPipeline::renderTrailsPass( const AudioFeatures &audio, const Audio
 		// and echoes drift gently in hue.  All rates scaled by frame time.
 		{
 			float dtf  = timeSinceLastFrameSec;
-			float zoom = 1.0f + (0.05f + 0.22f * m_audioConditioner.beatSmooth()
+			// calmMotion: the echo zoom keeps its steady drift but no beat pump.
+			float zoom = 1.0f + (0.05f + ( s_calmMotion ? 0.f : 0.22f * m_audioConditioner.beatSmooth() )
 			                     + 0.08f * audio.ambientFactor) * dtf;
 			float rotA = 0.15f * sinf( m_globaltime * 0.02f ) * dtf;
 			float hueD = 0.10f * dtf;
@@ -2087,7 +2096,7 @@ GLuint RenderPipeline::renderTrailsPass( const AudioFeatures &audio, const Audio
 				m_warpFlowPhase   += dtf * 0.55f;
 				// Displacement VELOCITIES (uv/s resp. rad/s), applied per
 				// frame; they accumulate through the feedback loop.
-				float rip  = ( 0.05f * m_audioConditioner.beatSmooth()
+				float rip  = s_calmMotion ? 0.f : ( 0.05f * m_audioConditioner.beatSmooth()
 				             + 0.10f * audioFx.dropPulse ) * dtf;
 				float swl  = 0.25f * sinf( m_globaltime * 0.013f )
 				           * ( 0.4f + 0.6f * audio.ambientFactor ) * dtf;

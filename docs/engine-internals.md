@@ -3176,3 +3176,48 @@ reactivity moved into light. The grep in V7d runs before every scene commit.
 Measured with the screening tool (10 s, structure WAV): sd 0.04-0.17, motion
 0.01-0.11, no strobe above 5; all ten compile on GL 4.6.
 
+## The host was shaking too: calmMotion
+
+While auditing the new scenes for jolts, the engine turned out to have a
+*virtual camera* of its own, applied to every scene in the present pass
+(`AudioConditioner`, "Regie layer"): a ~1.6 % punch-in zoom on every
+downbeat, a kick shake (two sinusoids at 40 and 31 Hz scaled by the kick
+envelope), a per-bar roll, a 24-fps "gate-weave" micro-jitter, a slow
+drift, a build-up tightening; on drops a rewind race (the picture jumps
+1.6 s back and catches up with a hard cut), a DJ-stop scrub, and a bass
+shockwave that pushes a displacement ring through the picture on every
+strong kick. The trail layer pumped its echo zoom on the beat and rippled
+with it. For a viewer with gaming sickness that is the whole problem,
+whatever the scenes do.
+
+`calmMotion` (settings key, **default true**) switches all of it off: the
+virtual camera stands still (zoom 1, no offset, no roll), no rewind, no
+scrub, no shockwave, letterbox bars only creep, the echo zoom keeps its
+steady drift without the beat term and without ripple. `calmMotion=false`
+in the ini restores the old look. The dev hook `KALEIDO_CALM` is
+unchanged. Rule V7d in the authoring guide now covers the host too.
+
+## Block three: space, zooms and a fan
+
+| Scene | Building block | What it does |
+|---|---|---|
+| AccretionDiskRelativistic | -- | rays marched with a 1/r^2 pull: the disc bends over and under the shadow; Doppler beaming brightens the approaching side; Keplerian rotation on the scene clock |
+| PulsarLighthouse | `audioBeatPhase`, `audioKick/Snare/Hat` | three beam cones rotate with the beat phase (angle = 2 pi phase, continuous) and sweep a plain; each cone only as bright as its instrument |
+| OortCloudDrift | -- | endless fall to the Sun: bodies in log-polar cells, periodic in log-radius, so the wrap is a symmetry; onsets ignite comet tails (light) |
+| ProtoplanetaryDiscRings | `audioSpectrum[32]` | 32 rings = 32 bands, bass inside, treble at the rim; planets carve gaps and orbit on the scene clock |
+| KleinBottleFlythrough | -- | ray-marched bottle (a torus body and a torus neck in smooth union); the camera loop runs down the neck through the wall into the belly: inside and outside trade places without a cut |
+| GravityLensingZoom | -- | photo on a tunnel (angle, log radius) with the log-radius period equal to the zoom period; point-mass lenses per period bend it into Einstein rings |
+| SpectrogramKaleidoscope | `texSpectro` | the mirrored motif is the last twenty seconds of the music: centre now, rim 20 s ago |
+| HyperbolicEscherFish | -- | Circle Limit with swimming fish: the same seamless hyperbolic translation as the kaleidoscope, fish drawn from fundamental-domain coordinates, tails wag on the scene clock |
+| PersistenceOfVisionFan | `texPrevFrame` | spokes paint the photo into the afterimage; the picture exists only in the persistence |
+| OrbitalDebrisField | `indirect` | 20k plates on orbits around a station, camera parked in the stream; collisions are onset flashes |
+
+Three things only the render showed. A generator variable named `half`
+killed the whole compute stage silently (`half` is reserved in GLSL). A
+persistence loop must not multiply the previous frame by anything but its
+decay: a global brightness factor and a tone map inside the loop cut the
+afterimage to a few frames -- the fan now keeps `prev` linear and tone-maps
+only above 1. And a scale-invariant lens chain needs small masses: with an
+Einstein radius comparable to the lens spacing the whole picture collapses
+into one deflection and reads as flat grey.
+

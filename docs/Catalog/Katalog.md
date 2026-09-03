@@ -1,6 +1,6 @@
 # Kaleidoscope Enhanced — Szenen-Katalog
 
-_636 Szenen, 29 FX-Overlays, 83 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
+_646 Szenen, 29 FX-Overlays, 83 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
 
 
 ---
@@ -24,6 +24,15 @@ ABANDONED STAR GATE: A massive, ancient and corroded ring structure drifting in 
 ABYSSAL LUMINESCENCE: Deep ocean bioluminescent ecosystem with undulating siphonophores, translucent glowing tentacles, underwater volumetric caustic sunbeams, deep thermal marine snow, and organic fluid currents. audioBass -> pulses organism bell contraction & tentacle wave velocity audioHigh -> sparks bioluminescent marine snow & plankton flashes audioSwell -> thickens volumetric oceanic mist & caustic ray depth au…
 
 ![AbyssalLuminescence ruhig (t=8)](img/AbyssalLuminescence_A.jpg) ![AbyssalLuminescence ruhig (t=16)](img/AbyssalLuminescence_B.jpg) ![AbyssalLuminescence audio-heiß (t=21)](img/AbyssalLuminescence_C.jpg)
+
+
+### AccretionDiskRelativistic
+
+`Scene2D/AccretionDiskRelativistic.frag` · type=normal · mood=space,dark,dreamy · complexity=3
+
+RELATIVISTIC ACCRETION DISK: a black hole seen almost edge-on, its disc bent over the top and under the bottom by the hole's gravity (rays are marched with a 1/r^2 pull toward the centre, so the far side of the disc appears above and below the shadow), and Doppler-beamed: the side of the disc coming toward us burns brighter and bluer, the receding side dims and reddens. The disc turns on the music's pace, inner rings…
+
+![AccretionDiskRelativistic ruhig (t=8)](img/AccretionDiskRelativistic_A.jpg) ![AccretionDiskRelativistic ruhig (t=16)](img/AccretionDiskRelativistic_B.jpg) ![AccretionDiskRelativistic audio-heiß (t=21)](img/AccretionDiskRelativistic_C.jpg)
 
 
 ### AcousticBlackHoleEventHorizon
@@ -1164,6 +1173,15 @@ GRAVITATIONAL WAVE INTERFEROMETER: Laser interferometer optical cavity (LIGO/Vir
 ![GravitationalWaveInterferometer ruhig (t=8)](img/GravitationalWaveInterferometer_A.jpg) ![GravitationalWaveInterferometer ruhig (t=16)](img/GravitationalWaveInterferometer_B.jpg) ![GravitationalWaveInterferometer audio-heiß (t=21)](img/GravitationalWaveInterferometer_C.jpg)
 
 
+### GravityLensingZoom
+
+`Scene2D/GravityLensingZoom.frag` · type=normal · mood=space,psychedelic,bright · complexity=2
+
+GRAVITY LENSING ZOOM: an endless zoom into the photo through a chain of gravitational lenses. The picture lives in log-polar space and repeats every zoom period, so the fall never ends and never wraps visibly; along the way point-mass lenses sit at fixed places in that space, each bending the picture into an Einstein ring and a pair of arcs. The lens masses swell slowly with the music; the bass lights the rings, noth…
+
+![GravityLensingZoom ruhig (t=8)](img/GravityLensingZoom_A.jpg) ![GravityLensingZoom ruhig (t=16)](img/GravityLensingZoom_B.jpg) ![GravityLensingZoom audio-heiß (t=21)](img/GravityLensingZoom_C.jpg)
+
+
 ### GyroidalInterferenceKaleido
 
 `Scene2D/GyroidalInterferenceKaleido.frag` · type=normal · mood=psychedelic,bright,dark · complexity=2
@@ -1279,6 +1297,15 @@ HOPF FIBRATION STREAMLINES: 4D-to-3D Hopf Fibration (S3 -> S2) raymarching. Lumi
 HYPERBOLIC ESCHER CIRCLE LIMIT: Conformal Poincaré disk tessellation with infinite tile density toward the boundary and dynamic Möbius inversions. Fills the screen with breathing non-Euclidean hyperbolic symmetries. Audio Reactivity: audioAdvance -> continuous rotation & hyperbolic space translation audioKick -> inward/outward inversion shockwave audioSubBass -> pulses the hyperbolic curvature & boundary breathing au…
 
 ![HyperbolicEscherCircleLimit ruhig (t=8)](img/HyperbolicEscherCircleLimit_A.jpg) ![HyperbolicEscherCircleLimit ruhig (t=16)](img/HyperbolicEscherCircleLimit_B.jpg) ![HyperbolicEscherCircleLimit audio-heiß (t=21)](img/HyperbolicEscherCircleLimit_C.jpg)
+
+
+### HyperbolicEscherFish
+
+`Scene2D/HyperbolicEscherFish.frag` · type=normal · mood=psychedelic,calm,bright · complexity=3
+
+HYPERBOLIC ESCHER FISH: Escher's Circle Limit with the fish actually swimming. The Poincare disc is tiled by a {p,q} polygon; in every chamber a fish (body, tail, eye) is drawn from the same fundamental-domain coordinates, alternating light and dark by chamber parity. The shoal swims toward the rim: a hyperbolic translation by one polygon step is a symmetry of the tiling, so the swim is periodic and its wrap invisibl…
+
+![HyperbolicEscherFish ruhig (t=8)](img/HyperbolicEscherFish_A.jpg) ![HyperbolicEscherFish ruhig (t=16)](img/HyperbolicEscherFish_B.jpg) ![HyperbolicEscherFish audio-heiß (t=21)](img/HyperbolicEscherFish_C.jpg)
 
 
 ### HyperbolicHoneycombTessellation
@@ -1578,6 +1605,15 @@ KILONOVA RADIOACTIVE AFTERGLOW: Binary neutron star merger fireball. Expanding r
 KINETIC TILE MOSAIC MATRIX: 100% viewport-filling architectural facade of thousands of mechanical kinetic tiles that elevate, flip, and rotate in 3D relief, physically reconstructing the loaded photo with specular bevel highlights, cast ambient shadows, and audio-reactive wave cascades.
 
 ![KineticTileMosaicMatrix ruhig (t=8)](img/KineticTileMosaicMatrix_A.jpg) ![KineticTileMosaicMatrix ruhig (t=16)](img/KineticTileMosaicMatrix_B.jpg) ![KineticTileMosaicMatrix audio-heiß (t=21)](img/KineticTileMosaicMatrix_C.jpg)
+
+
+### KleinBottleFlythrough
+
+`Scene2D/KleinBottleFlythrough.frag` · type=normal · mood=psychedelic,dreamy,dark · complexity=3
+
+KLEIN BOTTLE FLYTHROUGH: a ray-marched flight through a bottle whose neck bends over and re-enters its own body. The camera rides a closed loop that runs down the neck, through the wall into the belly and out again, so "inside" and "outside" trade places every lap without a cut: the wall you fly along is the same wall you just flew through. The surface is glass-lit from within; the photo is laid over it as a triplana…
+
+![KleinBottleFlythrough ruhig (t=8)](img/KleinBottleFlythrough_A.jpg) ![KleinBottleFlythrough ruhig (t=16)](img/KleinBottleFlythrough_B.jpg) ![KleinBottleFlythrough audio-heiß (t=21)](img/KleinBottleFlythrough_C.jpg)
 
 
 ### KleinBottleHyperLoopDive
@@ -2111,6 +2147,15 @@ OCTAGRAMMIC MIRROR VAULT: 8-pointed star ({8/3}-octagram) kinetic origami mirror
 ![OilProjector ruhig (t=8)](img/OilProjector_A.jpg) ![OilProjector ruhig (t=16)](img/OilProjector_B.jpg) ![OilProjector audio-heiß (t=21)](img/OilProjector_C.jpg)
 
 
+### OortCloudDrift
+
+`Scene2D/OortCloudDrift.frag` · type=normal · mood=space,dark,calm · complexity=3
+
+OORT CLOUD DRIFT: the million-year fall from the Oort cloud to the Sun as one endless zoom. Icy bodies hang in shells at every scale; in log-polar space the shells repeat with a fixed period, so the zoom is periodic and its wrap invisible, and the Sun waits at the centre as a glow that never arrives. Onsets ignite comets: a body near the onset grows a tail pointing away from the Sun, its brightness the onset envelope…
+
+![OortCloudDrift ruhig (t=8)](img/OortCloudDrift_A.jpg) ![OortCloudDrift ruhig (t=16)](img/OortCloudDrift_B.jpg) ![OortCloudDrift audio-heiß (t=21)](img/OortCloudDrift_C.jpg)
+
+
 ### OpticalDispersionCausticVault
 
 `Scene2D/OpticalDispersionCausticVault.frag` · type=normal · mood=psychedelic,bright,dark · complexity=2
@@ -2172,6 +2217,15 @@ PENROSE APERIODIC TESSELLATION: Infinite 5-fold aperiodic Penrose tiling (kites 
 PENROSE PROCESS ERGOSPHERE EXTRACTION: Relativistic rotational energy extraction from a spinning Kerr black hole inside its oblate ergosphere. Decaying infalling geodesics, negative-energy orbits, extreme Doppler blueshifted escaping photon fans, and photo lensing. audioAdvance -> accelerates black hole spin & frame-dragging swirl audioKick -> injects high-energy matter chunks triggering Penrose bursts audioCentroid-…
 
 ![PenroseProcessErgosphereExtraction ruhig (t=8)](img/PenroseProcessErgosphereExtraction_A.jpg) ![PenroseProcessErgosphereExtraction ruhig (t=16)](img/PenroseProcessErgosphereExtraction_B.jpg) ![PenroseProcessErgosphereExtraction audio-heiß (t=21)](img/PenroseProcessErgosphereExtraction_C.jpg)
+
+
+### PersistenceOfVisionFan
+
+`Scene2D/PersistenceOfVisionFan.frag` · type=normal · mood=psychedelic,dark,dreamy · complexity=2
+
+PERSISTENCE-OF-VISION FAN: a picture that exists only in the afterimage. A few spokes turn about the centre; each frame they paint the photo's colour along their length, and the previous frame (texPrevFrame) is kept with a decay -- so the photo appears as the sum of many sweeps, like the LED fans that draw pictures in the air, and fades where the spokes have not passed for a while. The spokes turn on the music's pace…
+
+![PersistenceOfVisionFan ruhig (t=8)](img/PersistenceOfVisionFan_A.jpg) ![PersistenceOfVisionFan ruhig (t=16)](img/PersistenceOfVisionFan_B.jpg) ![PersistenceOfVisionFan audio-heiß (t=21)](img/PersistenceOfVisionFan_C.jpg)
 
 
 ### PhotonicCrystalDiracConeDispersion
@@ -2356,6 +2410,15 @@ PRISMATIC SUPERRADIANCE: Volumetric quantum laser resonance chamber with multi-f
 ![PrismaticSuperradiance ruhig (t=8)](img/PrismaticSuperradiance_A.jpg) ![PrismaticSuperradiance ruhig (t=16)](img/PrismaticSuperradiance_B.jpg) ![PrismaticSuperradiance audio-heiß (t=21)](img/PrismaticSuperradiance_C.jpg)
 
 
+### ProtoplanetaryDiscRings
+
+`Scene2D/ProtoplanetaryDiscRings.frag` · type=normal · mood=space,dark,dreamy · complexity=2
+
+PROTOPLANETARY DISC: a young star's dust disc seen from above at an angle, divided into 32 rings -- the 32 bands of the spectrum analyser. Each ring glows with its own band, bass inside, treble at the rim, so a chord is a set of bright rings and a cymbal a flash at the edge. Three planets plough their gaps and carry the disc's rotation (Keplerian, on the music's pace). The spectrum analyser as a solar system; the cam…
+
+![ProtoplanetaryDiscRings ruhig (t=8)](img/ProtoplanetaryDiscRings_A.jpg) ![ProtoplanetaryDiscRings ruhig (t=16)](img/ProtoplanetaryDiscRings_B.jpg) ![ProtoplanetaryDiscRings audio-heiß (t=21)](img/ProtoplanetaryDiscRings_C.jpg)
+
+
 ### PsychedelicPills
 
 `Scene2D/PsychedelicPills.frag` · type=normal · mood=bright · complexity=2
@@ -2390,6 +2453,15 @@ PSYCHEDELIC REACTION MELT: Turing / Gray-Scott procedural reaction-diffusion mor
 PULSAR JET: A highly energetic, rapidly spinning neutron star emitting blinding relativistic jets. The accretion disk and jets pulsate violently to the music's beat, while the camera orbits the system. audioAdvance -> camera orbit speed around the pulsar audioKick -> intense energy pulses traveling along the jet audioSwell -> brightness of the accretion disk and surrounding gas audioChromaHue-> base palette offset fo…
 
 ![PulsarJet ruhig (t=8)](img/PulsarJet_A.jpg) ![PulsarJet ruhig (t=16)](img/PulsarJet_B.jpg) ![PulsarJet audio-heiß (t=21)](img/PulsarJet_C.jpg)
+
+
+### PulsarLighthouse
+
+`Scene2D/PulsarLighthouse.frag` · type=normal · mood=space,dark,aggressive · complexity=3
+
+PULSAR LIGHTHOUSE: we stand on a dark plain under a pulsar. Its beam cone sweeps around once per beat -- the beat phase IS the rotation angle, so the sweep is locked to the music without a single jump -- and every time the cone crosses the camera the whole landscape is lit for an instant: the plain, the nebula, the dust in the air. Three cones turn together: a kick cone, a snare cone and a hat cone, each in its own c…
+
+![PulsarLighthouse ruhig (t=8)](img/PulsarLighthouse_A.jpg) ![PulsarLighthouse ruhig (t=16)](img/PulsarLighthouse_B.jpg) ![PulsarLighthouse audio-heiß (t=21)](img/PulsarLighthouse_C.jpg)
 
 
 ### PulsarMagnetosphereJets
@@ -2871,6 +2943,15 @@ SPACE ELEVATOR TRANSIT: A high-speed ascent up a colossal space elevator tether.
 SPACE STATION PROMENADE: The camera wanders through the grand, high-tech promenade of a massive rotating space station. Huge windows offer glimpses of the starfield outside. Neon lights and holograms pulse to the beat. audioAdvance -> walking/flight speed along the promenade audioKick -> flashes from advertising holograms and accent lights audioSwell -> ambient daylight/interior lighting audioChromaHue-> palette offs…
 
 ![SpaceStationPromenade ruhig (t=8)](img/SpaceStationPromenade_A.jpg) ![SpaceStationPromenade ruhig (t=16)](img/SpaceStationPromenade_B.jpg) ![SpaceStationPromenade audio-heiß (t=21)](img/SpaceStationPromenade_C.jpg)
+
+
+### SpectrogramKaleidoscope
+
+`Scene2D/SpectrogramKaleidoscope.frag` · type=normal · mood=psychedelic,bright,aggressive · complexity=2
+
+SPECTROGRAM KALEIDOSCOPE: the mirrored motif is not a photo but the last twenty seconds of the music itself (texSpectro: 32 bands by a 20-second history ring). The centre is now, the rim is twenty seconds ago; bands run around the wedge, so every note becomes an ornament that drifts outward through the fold as it ages. The fold count is fixed per activation, the mirror turns on the music's pace, and the only thing th…
+
+![SpectrogramKaleidoscope ruhig (t=8)](img/SpectrogramKaleidoscope_A.jpg) ![SpectrogramKaleidoscope ruhig (t=16)](img/SpectrogramKaleidoscope_B.jpg) ![SpectrogramKaleidoscope audio-heiß (t=21)](img/SpectrogramKaleidoscope_C.jpg)
 
 
 ### SpectrogramTunnel
@@ -4800,6 +4881,15 @@ OCEAN ABYSSAL BRINE POOL: a deep-sea brine basin seen from above, the camera slo
 OceanNight.frag — deep blue water, a moon-glitter lane running to the horizon, foam sparkle on the crests.
 
 ![OceanNight ruhig (t=8)](img/OceanNight_A.jpg) ![OceanNight ruhig (t=16)](img/OceanNight_B.jpg) ![OceanNight audio-heiß (t=21)](img/OceanNight_C.jpg)
+
+
+### OrbitalDebrisField
+
+`Scene3D/OrbitalDebrisField.frag` · type=scene3d · geom=indirect · mood=space,dark,calm · complexity=4
+
+Fragment stage for OrbitalDebrisField: metal plates with a glint, the station hull with running lights, a planet limb with an atmosphere gradient (kind 3) and a hashed star sky (kind -1). Audio Reactivity: audioRoughness sharpens the glint; audioKick flashes the station lights; audioSwell warms the atmosphere.
+
+![OrbitalDebrisField ruhig (t=8)](img/OrbitalDebrisField_A.jpg) ![OrbitalDebrisField ruhig (t=16)](img/OrbitalDebrisField_B.jpg) ![OrbitalDebrisField audio-heiß (t=21)](img/OrbitalDebrisField_C.jpg)
 
 
 ### OrbitalDrop
