@@ -1,0 +1,121 @@
+#version 430 core
+/**
+ * @file MonarchRoostTree.comp
+ * @brief MONARCH ROOST TREE: an overwintering fir hung with thousands of
+ * monarch butterflies.  Each butterfly is two wing quads hinged at the
+ * body; the wings open with the sun (the swell, slow) and close in the
+ * shade; a few take flight on continuous phases and circle the tree; the
+ * photo is the wing pattern (fragment).  No state.  Camera fixed under
+ * the tree.
+ *
+ * Per-instance: countP, flightP, hueP.
+ */
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+layout(std430, binding = 0) buffer Verts { float verts[]; };
+layout(std430, binding = 1) buffer Cmd   { uint cmd[];   };
+
+uniform uint  maxVertices;
+uniform float time;
+uniform float sceneAdvance;
+uniform float sceneTime;
+uniform float audioSwell;
+
+uniform float countP;
+uniform float flightP;
+uniform float hueP;
+
+float hash11(float p) { p = fract(p * 0.1031); p *= p + 33.33; p *= p + p; return fract(p); }
+vec3  hash31(float n) { return vec3(hash11(n), hash11(n + 17.3), hash11(n + 41.7)); }
+
+void emitQuad4(vec3 p0, vec3 p1, vec3 p2, vec3 p3, float id, float lit, float kind, vec2 uv0, vec2 uv1)
+{
+    uint base = atomicAdd(cmd[4], 6u);
+    if (base + 6u > maxVertices) return;
+    vec3 pList[6]  = vec3[6](p0, p1, p2, p0, p2, p3);
+    vec2 uvList[6] = vec2[6](vec2(uv0.x, uv0.y), vec2(uv1.x, uv0.y), vec2(uv1.x, uv1.y), vec2(uv0.x, uv0.y), vec2(uv1.x, uv1.y), vec2(uv0.x, uv1.y));
+    for (uint i = 0u; i < 6u; ++i)
+    {
+        uint off = (base + i) * 8u;
+        verts[off + 0u] = pList[i].x; verts[off + 1u] = pList[i].y; verts[off + 2u] = pList[i].z;
+        verts[off + 3u] = id; verts[off + 4u] = lit; verts[off + 5u] = kind;
+        verts[off + 6u] = uvList[i].x; verts[off + 7u] = uvList[i].y;
+    }
+}
+void emitQuad(vec3 c, vec3 ax, vec3 ay, float id, float lit, float kind, vec2 uv0, vec2 uv1)
+{
+    emitQuad4(c - ax - ay, c + ax - ay, c + ax + ay, c - ax + ay, id, lit, kind, uv0, uv1);
+}
+
+void main()
+{
+    uvec3 g = gl_GlobalInvocationID;
+    uint id = g.x + 64u * (g.y + 64u * g.z);
+    uint nBf = 2500u + uint(clamp(countP, 0.0, 1.0) * 2500.0);
+    float flightFrac = 0.04 + 0.08 * clamp(flightP, 0.0, 1.0);
+    float sun = clamp(audioSwell, 0.0, 1.0);
+    float clock = sceneAdvance * 0.5 + sceneTime * 0.1;
+    const vec3 treeC = vec3(0.0, 0.5, 9.0);
+
+    if (id == 0u)
+    {
+        emitQuad(vec3(0.0, 4.0, 40.0), vec3(60.0, 0.0, 0.0), vec3(0.0, 34.0, 0.0), 0.0, 0.0, -1.0, vec2(0.0), vec2(1.0));
+        // The trunk and boughs (kind 2): a trunk quad and six bough bars.
+        emitQuad(treeC + vec3(0.0, -2.0, 0.6), vec3(0.35, 0.0, 0.0), vec3(0.0, 5.0, 0.0), 0.0, 0.0, 2.0, vec2(0.0), vec2(1.0));
+        for (int b = 0; b < 8; ++b)
+        {
+            float fb = float(b);
+            float ang = fb * 0.8 + 0.3;
+            float y = -1.5 + fb * 0.55;
+            vec3 a0 = treeC + vec3(0.0, y, 0.5);
+            vec3 a1 = a0 + vec3(cos(ang) * (3.0 - fb * 0.2), -0.4, sin(ang) * (2.0 - fb * 0.1) + 0.0);
+            vec3 mid = (a0 + a1) * 0.5, half_ = (a1 - a0) * 0.5;
+            emitQuad(mid, half_, vec3(0.0, 0.1, 0.0), fb, 0.0, 2.0, vec2(0.0), vec2(1.0));
+        }
+        return;
+    }
+    uint b = id - 1u;
+    if (b >= nBf) return;
+    float fb = float(b);
+    vec3 h = hash31(fb * 3.7 + 1.0);
+    vec3 h2 = hash31(fb * 7.7 + 3.0);
+    // Roosting position: on a bough surface (a cone of the tree), hanging.
+    float ang = h.x * 6.2831853;
+    float y = -1.6 + h.y * 4.2;
+    float rad = (2.9 - (y + 1.6) * 0.5) * (0.75 + 0.25 * h.z);
+    vec3 pos = treeC + vec3(cos(ang) * rad, y, sin(ang) * rad * 0.7 + 0.3);
+    bool flying = h2.x < flightFrac;
+    float flap;
+    vec3 fwd, side;
+    if (flying)
+    {
+        // Circling the tree on a continuous phase, rising and falling.
+        float ph = fract(clock * (0.08 + 0.05 * h2.y) + h2.z);
+        float fa = ph * 6.2831853 * 2.0 + h.x * 6.28;
+        float fr = 3.5 + 1.5 * sin(ph * 12.0 + fb);
+        pos = treeC + vec3(cos(fa) * fr, -1.0 + 4.0 * (0.5 + 0.5 * sin(ph * 6.2831853 + fb)), sin(fa) * fr * 0.7 - 1.5);
+        flap = 0.5 + 0.5 * sin(clock * 14.0 + fb);
+        fwd = normalize(vec3(-sin(fa), 0.1, cos(fa) * 0.7));
+    }
+    else
+    {
+        // Roosting: wings mostly closed, opening with the sun (slow), a
+        // small random spread so the cluster looks alive.
+        flap = 1.0 - sun * (0.6 + 0.4 * hash11(fb * 5.5));
+        fwd = vec3(0.0, -1.0, 0.0);
+    }
+    side = normalize(cross(fwd, vec3(0.0, 0.0, -1.0) + vec3(0.01, 0.0, 0.0)));
+    vec3 up = cross(side, fwd);
+    float s = 0.16;
+    // Two wings hinged along fwd at the body: each a quad rotated about fwd by the flap angle.
+    float wa = flap * 1.4;                                          // 0 open (flat) .. 1.4 closed (up)
+    for (int w = -1; w <= 1; w += 2)
+    {
+        float fw = float(w);
+        vec3 tip = side * fw * cos(wa) + up * sin(wa);
+        vec3 p0 = pos + fwd * s * 0.5;
+        vec3 p1 = pos + fwd * s * 0.5 + tip * s * 1.2;
+        vec3 p2 = pos - fwd * s * 0.6 + tip * s * 1.0;
+        vec3 p3 = pos - fwd * s * 0.6;
+        emitQuad4(p0, p1, p2, p3, fb, flying ? 1.0 : 0.0, 0.0, vec2(0.0, 0.0), vec2(1.0, 1.0));
+    }
+}

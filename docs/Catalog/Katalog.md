@@ -1,6 +1,6 @@
 # Kaleidoscope Enhanced — Szenen-Katalog
 
-_786 Szenen, 29 FX-Overlays, 83 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
+_796 Szenen, 29 FX-Overlays, 83 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
 
 
 ---
@@ -195,6 +195,15 @@ BALLISTIC GRAPHENE ELECTRON FOCUSSING: Veselago electron-optic lens in monolayer
 BALL LIGHTNING PLASMOID: Volumetric autonomous ball lightning plasmoid with magnetically self-confined toroidal plasma core. Helical discharge filaments, atmospheric dielectric air breakdown arcs, high-frequency ionization glow, and audio-reactive electrical detonation bursts. audioAdvance -> rotates toroidal plasma core vortex currents audioKick -> fires explosive high-voltage electrical discharge arcs audioBass -> …
 
 ![BallLightningPlasmoid ruhig (t=8)](img/BallLightningPlasmoid_A.jpg) ![BallLightningPlasmoid ruhig (t=16)](img/BallLightningPlasmoid_B.jpg) ![BallLightningPlasmoid audio-heiß (t=21)](img/BallLightningPlasmoid_C.jpg)
+
+
+### BambooGroveWind
+
+`Scene2D/BambooGroveWind.frag` · type=normal · mood=calm,bright,dreamy · complexity=3
+
+BAMBOO GROVE WIND: inside a grove of tall culms, looking up the green columns into the light. A slow wave of wind on the scene clock runs through the grove and every culm sways with it (bending more toward the top), the leaves at the top hiss with the treble as glints, the light beyond the culms (the photo) is the swell, the bass is the creak as a low warm glow at the base. Camera fixed on the path. Audio Reactivity:…
+
+![BambooGroveWind ruhig (t=8)](img/BambooGroveWind_A.jpg) ![BambooGroveWind ruhig (t=16)](img/BambooGroveWind_B.jpg) ![BambooGroveWind audio-heiß (t=21)](img/BambooGroveWind_C.jpg)
 
 
 ### BaryonAcousticRipples
@@ -591,6 +600,15 @@ CEPHALOPOD CHROMATOPHORES: octopus skin, close. Thousands of chromatophores -- r
 CHERENKOV RADIATION WAKEFIELD: Relativistic charged particle wakefield traversing a dense dielectric medium. Emits superluminal Cherenkov shockwave cones, plasma bubble cavitation cavities, travelling optical Mach fringes, and photo-driven dielectric polarization glow. audioAdvance -> drives relativistic particle beam & shockwave propagation audioKick -> triggers high-gradient plasma cavitation detonations audioCentr…
 
 ![CherenkovRadiationWakefield ruhig (t=8)](img/CherenkovRadiationWakefield_A.jpg) ![CherenkovRadiationWakefield ruhig (t=16)](img/CherenkovRadiationWakefield_B.jpg) ![CherenkovRadiationWakefield audio-heiß (t=21)](img/CherenkovRadiationWakefield_C.jpg)
+
+
+### CherryBlossomFront
+
+`Scene2D/CherryBlossomFront.frag` · type=normal · mood=bright,calm,dreamy · complexity=2
+
+CHERRY BLOSSOM FRONT: the sakura front sweeping up a country -- a map-like landscape of hills (the photo) seen from above at an angle, over which the blossom front advances during the scene arc, turning the trees from bare to pink to green behind it; petals (round) drift on the scene clock; the swell is the spring light, the treble the petal glitter, the kick a gust that brightens the falling petals. Camera fixed hig…
+
+![CherryBlossomFront ruhig (t=8)](img/CherryBlossomFront_A.jpg) ![CherryBlossomFront ruhig (t=16)](img/CherryBlossomFront_B.jpg) ![CherryBlossomFront audio-heiß (t=21)](img/CherryBlossomFront_C.jpg)
 
 
 ### ChiralNematicBeetleCuticle
@@ -1387,6 +1405,15 @@ GLASSBLOWER GATHER: a gather of molten glass on the end of the blowpipe, turning
 GLITCH MATRIX HYPERCUBE: 4D Tesseract projection intersecting 3D/2D space, combined with cybernetic data moshing, digital glitch slices, ASCII/Matrix data streams, chromatic aberration, and multi-planar photo texture projection. audioAdvance -> drives 4D hyper-rotations across XY/XW/YW planes audioKick -> triggers temporal buffer slice glitches & matrix flash audioSpectrum-> modulates 4D hyper-facet tessellation dept…
 
 ![GlitchMatrixHypercube ruhig (t=8)](img/GlitchMatrixHypercube_A.jpg) ![GlitchMatrixHypercube ruhig (t=16)](img/GlitchMatrixHypercube_B.jpg) ![GlitchMatrixHypercube audio-heiß (t=21)](img/GlitchMatrixHypercube_C.jpg)
+
+
+### GlowwormCaveThreads
+
+`Scene2D/GlowwormCaveThreads.frag` · type=normal · mood=dark,calm,dreamy · complexity=3
+
+GLOWWORM CAVE THREADS: the ceiling of a glow-worm cave -- a galaxy of blue-green lights, each a larva at the top of a hanging silk thread strung with sticky beads (round), the still water below mirroring it all. The lights glow with their spectrum band (each worm a band), the beads catch the treble, a drip from the ceiling on the kick sends a ring across the water; the photo is the wet rock. Camera fixed in the boat.…
+
+![GlowwormCaveThreads ruhig (t=8)](img/GlowwormCaveThreads_A.jpg) ![GlowwormCaveThreads ruhig (t=16)](img/GlowwormCaveThreads_B.jpg) ![GlowwormCaveThreads audio-heiß (t=21)](img/GlowwormCaveThreads_C.jpg)
 
 
 ### GrapheneDiracPlasmonics
@@ -2705,6 +2732,15 @@ Two million curl-noise-advected particles (simulated upstream into texParticles)
 ![ParticleFlow ruhig (t=8)](img/ParticleFlow_A.jpg) ![ParticleFlow ruhig (t=16)](img/ParticleFlow_B.jpg) ![ParticleFlow audio-heiß (t=21)](img/ParticleFlow_C.jpg)
 
 
+### PeacockTrainFan
+
+`Scene2D/PeacockTrainFan.frag` · type=normal · mood=bright,psychedelic,dreamy · complexity=2
+
+PEACOCK TRAIN FAN: the train fanning open. A fan of feathers spreads with the swell (the fan angle is a slow envelope), each feather a barbed shaft ending in an eyespot of the photo ringed in iridescent blue-green; the eyespots shimmer with the treble (structural colour shifts with angle), the shafts glint on the kick, the bass warms the body of the bird at the base. Camera fixed in front of the display. Audio Reacti…
+
+![PeacockTrainFan ruhig (t=8)](img/PeacockTrainFan_A.jpg) ![PeacockTrainFan ruhig (t=16)](img/PeacockTrainFan_B.jpg) ![PeacockTrainFan audio-heiß (t=21)](img/PeacockTrainFan_C.jpg)
+
+
 ### PendulumWaveTempo
 
 `Scene2D/PendulumWaveTempo.frag` · type=normal · mood=calm,dreamy,dark · complexity=2
@@ -3737,6 +3773,15 @@ SPIRAL STAIRWELL DESCENT: looking straight down an endless spiral staircase. The
 ![SpiralStairwellDescent ruhig (t=8)](img/SpiralStairwellDescent_A.jpg) ![SpiralStairwellDescent ruhig (t=16)](img/SpiralStairwellDescent_B.jpg) ![SpiralStairwellDescent audio-heiß (t=21)](img/SpiralStairwellDescent_C.jpg)
 
 
+### SporeReleaseGills
+
+`Scene2D/SporeReleaseGills.frag` · type=normal · mood=dark,calm,dreamy · complexity=2
+
+SPORE RELEASE GILLS: a mushroom cap from below, filling the frame -- the gills radiating from the stem, and the spores (round) drifting down out of them on the scene clock in slow curtains, lit from the side by the treble. The cap is the photo; the gills glow faintly with their spectrum band (a gill per band around the circle); the bass is the damp warmth of the forest floor light from below; the kick a puff releases…
+
+![SporeReleaseGills ruhig (t=8)](img/SporeReleaseGills_A.jpg) ![SporeReleaseGills ruhig (t=16)](img/SporeReleaseGills_B.jpg) ![SporeReleaseGills audio-heiß (t=21)](img/SporeReleaseGills_C.jpg)
+
+
 ### SpriteElvesUpperLightning
 
 `Scene2D/SpriteElvesUpperLightning.frag` · type=normal · mood=dark,aggressive,space · complexity=2
@@ -3872,6 +3917,15 @@ SUNDOG HALO SKY: a low winter sun in a sky full of ice crystals, and the optics 
 ![SundogHaloSky ruhig (t=8)](img/SundogHaloSky_A.jpg) ![SundogHaloSky ruhig (t=16)](img/SundogHaloSky_B.jpg) ![SundogHaloSky audio-heiß (t=21)](img/SundogHaloSky_C.jpg)
 
 
+### SuperbloomOpening
+
+`Scene2D/SuperbloomOpening.frag` · type=normal · mood=bright,calm,psychedelic · complexity=3
+
+SUPERBLOOM OPENING: a desert valley carpeted in wildflowers that open with the light. Each flower is a ring of round petals about a centre of the photo; the petals unfold smoothly with the swell (the sun), colours from the chroma classes (a class per patch of ground), bees (round) visit on the scene clock, the kick is a gust that ripples the carpet as light, the treble the pollen glitter. Camera fixed low over the fi…
+
+![SuperbloomOpening ruhig (t=8)](img/SuperbloomOpening_A.jpg) ![SuperbloomOpening ruhig (t=16)](img/SuperbloomOpening_B.jpg) ![SuperbloomOpening audio-heiß (t=21)](img/SuperbloomOpening_C.jpg)
+
+
 ### SupercellMesocyclone
 
 `Scene2D/SupercellMesocyclone.frag` · type=normal · mood=dark,aggressive,calm · complexity=3
@@ -3978,6 +4032,15 @@ TEMPO GEARWORK: a train of gears driven by the bar clock. The big wheel makes on
 TEMPORAL ZOOM: the song zooms into itself. The self-similarity matrix (texSSM) is drawn as a square field, and the picture is a nest of that field at time scales that shrink by four -- the whole ring, a quarter of it, a sixteenth -- so the block structure of sections, the lattice of phrases and the fine grid of beats are all the same picture at different depths. The zoom runs through those scales on the scene clock; …
 
 ![TemporalZoomSSM ruhig (t=8)](img/TemporalZoomSSM_A.jpg) ![TemporalZoomSSM ruhig (t=16)](img/TemporalZoomSSM_B.jpg) ![TemporalZoomSSM audio-heiß (t=21)](img/TemporalZoomSSM_C.jpg)
+
+
+### TermiteMoundPlumes
+
+`Scene2D/TermiteMoundPlumes.frag` · type=normal · mood=calm,dreamy,dark · complexity=2
+
+TERMITE MOUND PLUMES: a cathedral mound on the savanna at dusk, and the heat it breathes out -- plumes of warm air rising from its chimneys that refract the scene behind (the photo, as the dusk sky and the grassland), shimmering. The plumes rise on the scene clock; the mound's warmth (the bass) is their strength; the treble is the fine shimmer; the swell is the dusk light. Camera fixed on the savanna. Audio Reactivit…
+
+![TermiteMoundPlumes ruhig (t=8)](img/TermiteMoundPlumes_A.jpg) ![TermiteMoundPlumes ruhig (t=16)](img/TermiteMoundPlumes_B.jpg) ![TermiteMoundPlumes audio-heiß (t=21)](img/TermiteMoundPlumes_C.jpg)
 
 
 ### TerraformingColony
@@ -5882,6 +5945,15 @@ Shades the 220x120 heightfield of optical Moire superlattice fringes built in Mo
 ![MoireHyperInterference ruhig (t=8)](img/MoireHyperInterference_A.jpg) ![MoireHyperInterference ruhig (t=16)](img/MoireHyperInterference_B.jpg) ![MoireHyperInterference audio-heiß (t=21)](img/MoireHyperInterference_C.jpg)
 
 
+### MonarchRoostTree
+
+`Scene3D/MonarchRoostTree.frag` · type=scene3d · geom=indirect · mood=calm,bright,dreamy · complexity=4
+
+Fragment stage for MonarchRoostTree: a misty forest of the photo behind, the fir in dark green-brown, the wings orange with black veins and white-dotted margins, the photo showing through as the orange field (a wing-shaped cut of it), flying ones brighter in the sun; the kick a flash of sun through the boughs, the treble a shimmer on the wings. Audio Reactivity: audioSwell -> sun (and wing opening in the generator); …
+
+![MonarchRoostTree ruhig (t=8)](img/MonarchRoostTree_A.jpg) ![MonarchRoostTree ruhig (t=16)](img/MonarchRoostTree_B.jpg) ![MonarchRoostTree audio-heiß (t=21)](img/MonarchRoostTree_C.jpg)
+
+
 ### MonolithField
 
 `Scene3D/MonolithField.frag` · type=scene3d · geom=cubes · mood=dark,dreamy · complexity=3
@@ -6089,6 +6161,15 @@ ParticleGalaxy.frag — soft round point sprite (additive blending).
 Renders one particle of the mirror-kaleidoscope tunnel-flight point cloud as a tight- cored glow sprite. Reads no audio uniforms directly: position, kaleidoscope fold, kick shockwave flash and colour are all computed in the paired ParticleTunnelFlight.vert and arrive here as vCol and vLife (0..~1.5, brightens the glow on a kick shockwave). A soft-knee tone-map compresses hot additive overlap instead of clipping the w…
 
 ![ParticleTunnelFlight ruhig (t=8)](img/ParticleTunnelFlight_A.jpg) ![ParticleTunnelFlight ruhig (t=16)](img/ParticleTunnelFlight_B.jpg) ![ParticleTunnelFlight audio-heiß (t=21)](img/ParticleTunnelFlight_C.jpg)
+
+
+### PenguinHuddleRotation
+
+`Scene3D/PenguinHuddleRotation.frag` · type=scene3d · geom=indirect · mood=bright,calm,dreamy · complexity=4
+
+Fragment stage for PenguinHuddleRotation: a white-out sky and ice (the photo as the drifted snow texture), blowing snow as round flakes streaming across on the clock (the storm is the swell), the birds as black-backed, white-fronted ovals with the golden neck patch, snow-crusted on the windward edge, the huddle's warmth as a faint glow at its heart with the bass; the kick a gust that whitens everything for a moment. …
+
+![PenguinHuddleRotation ruhig (t=8)](img/PenguinHuddleRotation_A.jpg) ![PenguinHuddleRotation ruhig (t=16)](img/PenguinHuddleRotation_B.jpg) ![PenguinHuddleRotation audio-heiß (t=21)](img/PenguinHuddleRotation_C.jpg)
 
 
 ### PermafrostPolygons
@@ -7017,6 +7098,15 @@ TorusKnot.frag — soft glowing point (additive blending).
 Frag-side music pulse (added by the deaf-scene pass: reactivity measured ~0 -- the vert-side coupling barely moved any pixels).
 
 ![TronCycles ruhig (t=8)](img/TronCycles_A.jpg) ![TronCycles ruhig (t=16)](img/TronCycles_B.jpg) ![TronCycles audio-heiß (t=21)](img/TronCycles_C.jpg)
+
+
+### TurtleHatchlingsMoon
+
+`Scene3D/TurtleHatchlingsMoon.frag` · type=scene3d · geom=indirect · mood=dark,calm,dreamy · complexity=4
+
+Fragment stage for TurtleHatchlingsMoon: a night sky with a moon (the swell) and round stars, the sea as the photo in silver-blue with a moon path and waves sliding up on the clock (the bass), the beach as pale sand (the photo), the hatchlings as dark round shells with a moonlit sheen, their tracks; the kick a wave breaking brighter, the treble the wet-sand sparkle. Audio Reactivity: audioSwell -> moon; audioBass -> …
+
+![TurtleHatchlingsMoon ruhig (t=8)](img/TurtleHatchlingsMoon_A.jpg) ![TurtleHatchlingsMoon ruhig (t=16)](img/TurtleHatchlingsMoon_B.jpg) ![TurtleHatchlingsMoon audio-heiß (t=21)](img/TurtleHatchlingsMoon_C.jpg)
 
 
 ### VideoRelief

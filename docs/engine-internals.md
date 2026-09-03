@@ -3590,3 +3590,20 @@ blocks -- a sine fissure field replaced it.
 | MarbleRunTrack | 2D | the track is a closed parametric curve sampled 120 times; marbles are phases along it and light the rail nearest them |
 
 Lessons from the block: an indirect table scene must put the camera on the normal side of the table plane -- OrreryBrass had the tilt sign wrong, so every planet, arm and moon lay behind the base disc and the depth test hid them while the engraved rings on the base looked plausible (check the sign of dot(normal, cameraFromCentre) before blaming the emitter); craft scenes on a dark shop floor need a floor of 0.4 to 0.5 of the photo plus a constant or they read as black at sheet size; a spark burst on the kick with a weight above 1 strobes (13 on the metric) -- 0.5 is enough.
+
+## The fourth fifty, block C: nature and animals
+
+| Scene | Pipeline | Note |
+|---|---|---|
+| PeacockTrainFan | 2D | feather index from the angle within a fan whose half-angle is the swell; eyespots at the tips |
+| TermiteMoundPlumes | 2D | a refractive fbm field above the spires displaces the scene lookup; strength from the bass |
+| MonarchRoostTree | `indirect` | two wing quads per butterfly hinged along the body; roosting wings open with the swell, flyers circle on phases |
+| GlowwormCaveThreads | 2D | ceiling cells checked up to three cells above so threads hang into lower cells; the water half mirrors |
+| TurtleHatchlingsMoon | `indirect` | each hatchling a phase from nest to sea with a wandering course; shell, two paddling flippers, a track |
+| PenguinHuddleRotation | `indirect` | a sunflower (golden-angle) spiral rotating on the clock, the outer ring faster (the shuffle) |
+| CherryBlossomFront | 2D | a wavy front line advancing with the arc; trees pink at the front, greening behind |
+| BambooGroveWind | 2D | culms bend as bendAmp sin(clock - 1.5 x) times height squared: a wave running across the grove |
+| SuperbloomOpening | 2D | flowers on a perspective grid; six round petals whose spread is the swell |
+| SporeReleaseGills | 2D | gills as angular ridges from a centre above the frame; three spore layers falling at different rates |
+
+Lessons from the block: a refraction amplitude must never follow a fast envelope -- TermiteMoundPlumes scaled its heat shimmer by the treble and the whole background jittered at frame rate (strobe 14); the swell drives the amplitude now and the treble only lights the shimmer highlights. Crowd scenes in indirect geometry need their distance tuned by eye: the penguin huddle at z 14 was a line of dots, at z 8 a wall of slabs, at z 12 a huddle. A flat billboard for a mound reads as a slab -- discard outside an ellipse. Sparse glow fields need about 1.6 times the light they seem to need on the sheet. A flower field whose blossoms close when the music is quiet reads as an empty field: keep the open state at 0.6 or more.
