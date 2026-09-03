@@ -48,7 +48,7 @@ void main()
     // Camera: the flock hangs in front of us, slightly below eye level.
     vec3 vp = pos;
     vp.y -= 0.2;
-    vp.z += (density < 0.0) ? 4.2 : 4.2 - 0.4 * audioSwell;   // builds bring the flock closer; the sky stays
+    vp.z += (density < 0.0) ? 4.2 : 4.2 - 0.2 * audioSwell;   // builds bring the flock closer; the sky stays
     vDepth = vp.z;
     vKind = (density < 0.0) ? 1.0 : 0.0;
     vp.x -= eyeOff;

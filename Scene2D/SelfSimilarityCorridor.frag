@@ -79,7 +79,7 @@ void main()
     // A corridor of half-width 1 and half-height H, camera at the origin
     // looking down +z.  Each pixel's ray hits floor, ceiling or a wall.
     float H = 0.75 + 0.45 * audioSwell;
-    vec2 sway = vec2(0.06 * sin(audioBarPhase * 6.2831853), 0.03 * cos(audioBarPhase * 12.566));
+    vec2 sway = vec2(0.0);                            // no camera sway (V7d)
     vec3 rd = normalize(vec3(p.x + sway.x, p.y + sway.y, 1.35));
     float tF = (rd.y < 0.0) ? -H / rd.y : 1e9;   // floor
     float tC = (rd.y > 0.0) ?  H / rd.y : 1e9;   // ceiling

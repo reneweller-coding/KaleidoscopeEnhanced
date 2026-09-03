@@ -762,6 +762,9 @@ void Scene3DShader::runGenerator( float time )
 		m_genLocs.audioSpectrum = glGetUniformLocation( p, "audioSpectrum" );
 		m_genLocs.audioPhase    = glGetUniformLocation( p, "audioPhase" );
 		m_genLocs.audioSwell    = glGetUniformLocation( p, "audioSwell" );
+		m_genLocs.sceneAdvance  = glGetUniformLocation( p, "sceneAdvance" );
+		m_genLocs.sceneTime     = glGetUniformLocation( p, "sceneTime" );
+		m_genLocs.sceneProgress = glGetUniformLocation( p, "sceneProgress" );
 		m_genLocs.texSpectro    = glGetUniformLocation( p, "texSpectro" );
 		m_genLocs.spectroHead   = glGetUniformLocation( p, "spectroHead" );
 		m_genLocs.spectroFill   = glGetUniformLocation( p, "spectroFill" );
@@ -794,6 +797,11 @@ void Scene3DShader::runGenerator( float time )
 	setF( m_genLocs.audioMid,     a.midLevel );
 	setF( m_genLocs.audioPhase,   a.audioRotPhase );
 	setF( m_genLocs.audioSwell,   a.swell );
+	// Scene clocks, same definitions as the fragment stage: advance and time
+	// since this activation, and the staged progress the regie may bend.
+	setF( m_genLocs.sceneAdvance, ( m_advanceAtReset > -1.0e8f ) ? a.audioAdvance - m_advanceAtReset : 0.f );
+	setF( m_genLocs.sceneTime,    ( m_activationTime > -1.0e8f ) ? time - m_activationTime : 0.f );
+	setF( m_genLocs.sceneProgress, m_sceneProgress );
 	if( m_genLocs.audioChroma >= 0 )
 		glUniform1fv( m_genLocs.audioChroma, 12, a.chroma );
 	if( m_genLocs.audioSpectrum >= 0 )

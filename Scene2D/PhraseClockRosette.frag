@@ -84,9 +84,9 @@ void main()
 
     // Petal shape in polar space: a lobe per beat.
     float lobe = 0.5 + 0.5 * cos(fract(beatIdx) * 6.2831853);
-    float inner = 0.16 * (1.0 + 0.6 * bloom);
+    float inner = 0.16;                                  // the drop is light, not scale (V7d)
     float outerBase = (0.42 + 0.22 * lobe) * pet;
-    float outer = mix(outerBase, outerBase * 0.55, tension) * (1.0 + 0.9 * bloom);
+    float outer = mix(outerBase, outerBase * 0.55, tension);
     float inPetal = smoothstep(inner - 0.01, inner + 0.01, r) * (1.0 - smoothstep(outer - 0.01, outer + 0.01, r));
     float edge = exp(-abs(r - outer) * 90.0) + exp(-abs(r - inner) * 90.0);
 

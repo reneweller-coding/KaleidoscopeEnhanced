@@ -3112,3 +3112,67 @@ The Physarum globe shows large blobs in the first ten seconds of a scene:
 the trail map is created when a scene first samples it and the agents need a
 solo span to grow their networks. That is the simulation's nature, not a
 defect, and it was left alone.
+## Ten more, and two host defects they exposed
+
+The second block of the fifty (03.09.). The rule of the day was continuity
+(V7c): no fold count, ring phase or direction may change as a step. Every
+scene below moves on `sceneAdvance` or `sceneTime`, uses envelopes only as
+rates and amplitudes, and rolls its discrete numbers once per activation.
+
+| Scene | Building block | What it does |
+|---|---|---|
+| MoebiusTunnel | -- | ribbons with an odd number of half-twists per loop; front face photo, back face its palette-negative, the twist swaps them |
+| PhyllotaxisZoom | `audioChroma[12]`, `audioMelodyPitch` | a log-spiral phyllotaxis: self-similar under "one seed inward", so the zoom is periodic and seamless in both directions; seeds glow by pitch class |
+| HyperbolicKaleidoscope | -- | reflections across a {p,q} polygon in the Poincare disc; a translation by one polygon step is a tiling symmetry, so the endless drive to the rim wraps invisibly (p in {4,6,8}, where the perpendicular spoke is a mirror) |
+| ChromaKaleidoscope | `audioChroma[12]` | twelve wedges = twelve pitch classes, brightness normalised by the loudest; fifths order optional |
+| BinauralTunnel | `audioStereoL/R`, `audioStereo` | the cross-section is the stereo image: each wall pushed by its channel, width stretches the vault |
+| FluidInkMandala | `texFluid` | the Navier-Stokes dye in counter-rotating mirrored rings; onsets as ripples on a travelling phase |
+| SectionMemoryHalls | `audioSectionId/Prev/Age/Known` (new) | a hall per section, returning sections return to their hall; the change is a door 14 units ahead reached after ~8 s, never a cut |
+| WaveformRiver | `audioWave[64]`, `audioMelodyPitch` | height-field river valley; the waveform is the water's light (three samples averaged: strobe 15 -> 5), the melody widens the river, the bass floods |
+| DysonSwarmConstruction | `indirect`, `sceneProgress` | 24k panels fly from a shipyard cloud to a Fibonacci sphere along the arc; the drop regie can time the closing |
+| GalaxyMergerNBody | `indirect`, `stateBytes`, `genPasses=2` | 32k stars integrated live (restricted three-body: two softened cores on an analytic in-spiral); tidal bridges and tails grow by themselves |
+
+**Section uniforms.** The analyser's section memory was never reachable from
+a shader. `applyAudioFeatures` now uploads `audioSectionId`, `audioSectionPrev`,
+`audioSectionAge` (seconds since the change, from a steady clock), `audioSectionKnown`
+and `audioSectionCount`. The first sight after an activation starts with a
+large age, so no door opens on scene start; the age is what lets a scene
+*approach* a change instead of cutting on it.
+
+**The generator's own uniform list.** Compute generators get their uniforms
+from `Scene3DShader::runGenerator()`'s `GenLocCache`, not from
+`applyAudioFeatures`. `sceneAdvance`, `sceneTime` and `sceneProgress` were
+not in that list: a `.comp` declaring them compiled fine and read 0 forever.
+StarlingMurmuration (block 1) never moved its flow field, and the Dyson swarm
+never left its shipyard until the three were added. Rule V5c in the
+authoring guide; `usesProgress()` looks at the vertex/fragment program only,
+so a staged indirect scene declares `sceneProgress` in its `.vert` as well.
+
+**Stateful generator, the safe way.** GalaxyMergerNBody keeps 1 MB of star
+state. Init is self-healing on a magic word derived from `sceneSeed`; pass 0
+seeds or integrates and emits, pass 1 (one thread) stamps the magic and the
+clocks -- so every thread of a frame agrees on whether it was an init frame,
+which a single-pass "thread 0 writes the magic" cannot promise. The step is
+`dt = wall * (0.5 + 1.3 level) + d(sceneAdvance) * 0.9`, clamped, so the merge
+runs on the music and cannot explode on a hitch.
+
+**No shaking, ever.** Rene has gaming sickness: any movement of the whole
+frame that is not the scene's own steady travel -- a kick that pushes the
+picture, a beat that pumps the zoom, a bar-phase camera sway, a wall radius
+riding a per-frame energy -- makes him ill within minutes. Rule V7d: the
+frame (camera, global zoom, global rotation, tunnel radius, horizon, water
+level, fold centre) moves only on `sceneAdvance`, `sceneTime`, `sceneProgress`
+or seconds-scale envelopes (`audioSwell`, `audioBuildUp`); `audioKick`,
+`audioBeat`, `audioOnset`, `audioBass`, `audioLevel`, `audioStereo*`,
+`audioDrop`, `audioMelodyPitch`, `audioBarPhase`, `audioBeatPhase` are light
+and colour only, or move single objects inside the scene. The audit of the
+twenty new scenes found six bar-phase sways, five beat/bass/kick zoom pumps,
+a wall radius on stereo energy, a water level on bass, a portal wandering on
+the bar and tilting with the melody, a rosette scaling on the drop, a flock
+bobbing on the centroid -- and one outright jump: MelodyConstellation turned
+by `audioBarPhase * 0.4` and snapped back at every bar wrap. All removed; the
+reactivity moved into light. The grep in V7d runs before every scene commit.
+
+Measured with the screening tool (10 s, structure WAV): sd 0.04-0.17, motion
+0.01-0.11, no strobe above 5; all ten compile on GL 4.6.
+

@@ -620,6 +620,9 @@ protected:
 	unsigned m_activations = 0;         ///< Auftritte dieser Szene seit Programmstart; Teil des Szenen-Seeds unter KALEIDO_SEED.
 	float m_soloAtReset    = 0.f;       ///< m_timeSolo as it stood at the last resetParameters(), in seconds.
 	float m_activationTime = -1.0e9f;   ///< `time` at the first setUniforms() after activation; sentinel means "not yet seen".
+	int    m_secCur = -1, m_secPrev = -1, m_secCount = -1;   ///< Section memory for the shader (audioSectionId/Prev/Count); -1 = nothing seen since activation.
+	float  m_secKnown = 0.f;                                ///< 1 if the current section was recognised as returning.
+	double m_secT0 = 0.0;                                   ///< steady_clock seconds of the last section change (audioSectionAge).
 	float m_progressT0     = -1.0e9f;   ///< Origin of the sceneProgress ramp; equals m_activationTime unless setClimaxIn() re-timed the arc.
 	float m_sceneProgress  = 0.f;       ///< Cached 0..1 progress, also readable by subclasses for CPU-side staging.
 

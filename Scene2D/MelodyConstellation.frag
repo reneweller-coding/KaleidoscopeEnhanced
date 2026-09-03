@@ -69,7 +69,7 @@ float melodyAgo(int k)
 vec2 starPos(int k, float m, float spread)
 {
     float age = float(k) / 96.0;                       // 0 newest .. 1 oldest
-    float ang = -age * 9.5 + sceneAdvance * 0.15 + audioBarPhase * 0.4;
+    float ang = -age * 9.5 + sceneAdvance * 0.15;   // (a bar-phase term here JUMPED at every bar wrap)
     float rad = (0.12 + 0.62 * m + 0.25 * age) * spread;
     return rad * vec2(cos(ang), sin(ang));
 }

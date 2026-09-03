@@ -83,10 +83,10 @@ void main()
     float hue = (hueP > 0.001) ? hueP : 0.0;
 
     // Gentle roll of the whole tube with the bar; the kick breathes it.
-    float roll = 0.35 * sin(audioBarPhase * 6.2831853);
+    float roll = sceneAdvance * 0.08;              // a slow steady roll, no bar sway (V7d)
     float ca = cos(roll), sa = sin(roll);
     p = vec2(ca * p.x - sa * p.y, sa * p.x + ca * p.y);
-    float r = length(p) * (1.0 - 0.08 * audioKick);
+    float r = length(p);
     float theta = atan(p.y, p.x);                    // -pi..pi
 
     // Classic tube: depth is 1/r.  The near end (large r) is "now".

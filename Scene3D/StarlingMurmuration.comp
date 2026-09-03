@@ -133,7 +133,9 @@ void main()
     heading = (sp > 1e-5) ? heading / sp : vec3(1.0, 0.0, 0.0);
 
     // Flight height with the centroid; kick pulses the whole body.
-    p0.y += 0.6 * (audioCentroid - 0.5) + 0.05 * audioKick * sin(fid);
+    // Flight height on the slow swell only: a per-frame centroid bobbed the
+    // whole flock (V7d).
+    p0.y += 0.25 * clamp(audioSwell, 0.0, 1.0) - 0.1 + 0.05 * audioKick * sin(fid);
 
     // A bird is a thin quad along its heading: 6 vertices, two triangles.
     // Wing axis is perpendicular to the heading in the horizontal plane.

@@ -76,7 +76,8 @@ void main()
 
     // Tube depth: 1/r.  The throat narrows with the tension and blows open
     // on the drop.
-    float throat = 0.10 * thr * mix(1.0, 0.45, tension) * (1.0 + 2.5 * drop);
+    // The drop is LIGHT (the throat floods), not a geometry blow-out (V7d).
+    float throat = 0.10 * thr * mix(1.0, 0.55, tension);
     float depth = throat / max(r, 0.01);
 
     // Rings one beat apart along the depth.  Their phase is the countdown:

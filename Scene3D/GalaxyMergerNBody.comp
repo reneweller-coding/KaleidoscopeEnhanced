@@ -1,0 +1,193 @@
+#version 430 core
+/**
+ * @file GalaxyMergerNBody.comp
+ * @brief GALAXY MERGER: two spiral discs on a decaying orbit, 32,768 stars
+ * integrated live in a persistent state buffer.  Every star feels the two
+ * galactic cores (softened point masses moving on an analytic in-spiral) --
+ * the restricted three-body scheme of Toomre & Toomre, which is exactly what
+ * throws the tidal bridges and tails real mergers show.  The discs are
+ * seeded on cold circular orbits, so the first pass is calm and the tails
+ * grow as the cores close; after the merge the stars keep swinging through
+ * the combined well.  The simulation pace follows the music.
+ *
+ * State (binding 2): magic, then four clocks (simT, theta, lastT, lastAdv),
+ * then 8 floats per star: pos xyz, vel xyz, galaxy, pad.  Self-healing init:
+ * a wrong magic re-seeds every star from its id; pass 1 stamps the magic and
+ * the clocks, so the whole frame agrees on whether it was an init frame.
+ *
+ * Audio Reactivity (generator stage):
+ *   sceneAdvance -> simulation pace (music-paced, continuous)
+ *   audioLevel   -> pace as well (loud = faster)
+ *   audioKick    -> star flash (fragment stage)
+ *   audioBass    -> core glow
+ *
+ * Per-instance: massP (core mass), spinP (disc tilt), hueP.
+ */
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+layout(std430, binding = 0) buffer Verts { float verts[]; };
+layout(std430, binding = 1) buffer Cmd   { uint cmd[];   };
+layout(std430, binding = 2) buffer State
+{
+    uint  magic;
+    uint  pad0;
+    float simT;      // simulation seconds
+    float theta;     // orbit angle of the core pair
+    float lastT;     // wall clock at the last step
+    float lastAdv;   // sceneAdvance at the last step
+    float pad1, pad2;
+    float st[];
+};
+
+uniform uint  maxVertices;
+uniform uint  frameIndex;
+uniform float genPass;
+uniform float time;
+uniform float sceneSeed;
+uniform float sceneAdvance;
+uniform float sceneTime;
+uniform float audioLevel;
+uniform float audioBass;
+uniform float audioKick;
+
+uniform float massP;
+uniform float spinP;
+uniform float hueP;
+
+const uint  kStars = 32768u;
+const float D0     = 4.6;     // initial core separation
+const float EPS    = 0.28;    // softening
+const float TMERGE = 75.0;    // simulation seconds until the cores meet
+
+float hash11(float p) { p = fract(p * 0.1031); p *= p + 33.33; p *= p + p; return fract(p); }
+vec3  hash31(float n) { return vec3(hash11(n), hash11(n + 17.3), hash11(n + 41.7)); }
+
+mat3 rotX(float a) { float c = cos(a), s = sin(a); return mat3(1.0, 0.0, 0.0, 0.0, c, -s, 0.0, s, c); }
+mat3 rotZ(float a) { float c = cos(a), s = sin(a); return mat3(c, -s, 0.0, s, c, 0.0, 0.0, 0.0, 1.0); }
+
+uint expectedMagic() { return 0xC0FFEE00u ^ uint(fract(sceneSeed * 0.731) * 65535.0); }
+
+// Core positions on the in-spiral: separation shrinks over TMERGE, the pair
+// turns faster as it closes.  Galaxy 0 at +c, galaxy 1 at -c.
+vec3 corePos(float tau, float th)
+{
+    float sep = D0 * (1.0 - 0.92 * smoothstep(0.0, 1.0, tau));
+    return 0.5 * sep * vec3(cos(th), 0.12 * sin(th * 1.3), sin(th));
+}
+float omega(float tau)
+{
+    float sep = D0 * (1.0 - 0.92 * smoothstep(0.0, 1.0, tau));
+    return 0.55 / (pow(sep, 1.5) + 0.3);
+}
+
+mat3 discFrame(float galaxy)
+{
+    float tilt = (galaxy < 0.5) ? 0.35 + 0.4 * spinP : -0.55 - 0.3 * spinP;
+    return rotZ(galaxy * 1.1) * rotX(tilt);
+}
+
+void emitQuad(vec3 c, float s, float id, float a, float kind, vec2 uvScale)
+{
+    uint base = atomicAdd(cmd[4], 6u);
+    if (base + 6u > maxVertices) return;
+    vec3 p0 = c + vec3(-s, -s, 0.0), p1 = c + vec3(s, -s, 0.0), p2 = c + vec3(s, s, 0.0), p3 = c + vec3(-s, s, 0.0);
+    vec3 pList[6]  = vec3[6](p0, p1, p2, p0, p2, p3);
+    vec2 uvList[6] = vec2[6](vec2(0.0, 0.0), vec2(1.0, 0.0), vec2(1.0, 1.0), vec2(0.0, 0.0), vec2(1.0, 1.0), vec2(0.0, 1.0));
+    for (uint i = 0u; i < 6u; ++i)
+    {
+        uint off = (base + i) * 8u;
+        verts[off + 0u] = pList[i].x; verts[off + 1u] = pList[i].y; verts[off + 2u] = pList[i].z;
+        verts[off + 3u] = id; verts[off + 4u] = a; verts[off + 5u] = kind;
+        verts[off + 6u] = uvList[i].x * uvScale.x; verts[off + 7u] = uvList[i].y * uvScale.y;
+    }
+}
+
+void main()
+{
+    uvec3 g = gl_GlobalInvocationID;
+    uint id = g.x + 64u * (g.y + 64u * g.z);
+    bool needInit = (magic != expectedMagic());
+
+    // ---------------- pass 1: the clocks (one thread) ----------------
+    if (genPass > 0.5)
+    {
+        if (id == 0u)
+        {
+            if (needInit) { magic = expectedMagic(); simT = 0.15 * TMERGE; theta = 0.0; }   // start already closing
+            else
+            {
+                float dtWall = clamp(time - lastT, 0.0, 0.05);
+                float dtAdv  = clamp(sceneAdvance - lastAdv, 0.0, 0.1);
+                float dt = dtWall * (0.5 + 1.3 * clamp(audioLevel, 0.0, 1.0)) + dtAdv * 0.9;
+                simT  += dt;
+                theta += dt * omega(simT / TMERGE);
+            }
+            lastT = time; lastAdv = sceneAdvance;
+        }
+        return;
+    }
+
+    // ---------------- pass 0: seed or integrate, then emit ----------------
+    float tau = simT / TMERGE;
+    vec3 c0 = corePos(tau, theta), c1 = -c0;
+
+    if (id == 0u)
+    {
+        // Sky quad (kind -1); the two core glows (kind 2).
+        emitQuad(vec3(0.0, 0.0, 9.0), 16.0, 0.0, 0.0, -1.0, vec2(1.0));
+        emitQuad(c0, 0.55, 0.0, 0.0, 2.0, vec2(1.0));
+        emitQuad(c1, 0.55, 1.0, 0.0, 2.0, vec2(1.0));
+    }
+    if (id >= kStars) return;
+
+    uint o = id * 8u;
+    float fid = float(id);
+    float galaxy = (id < kStars / 2u) ? 0.0 : 1.0;
+    float M = 1.0 * ((massP > 0.05) ? massP : 1.0);
+
+    if (needInit)
+    {
+        // Cold disc: exponential-ish radius, thin, on a circular orbit around
+        // its own core, plus the core's own velocity along the in-spiral.
+        vec3 h = hash31(fid * 1.37 + sceneSeed * 19.0);
+        float r  = 0.12 + 1.35 * sqrt(h.x);
+        // Two-armed spiral: compress the angle along a log spiral.
+        float ph0 = h.y * 6.2831853;
+        float ph = ph0 + 0.45 * sin(2.0 * ph0 - 2.6 * r);
+        float zz = 0.05 * (h.z - 0.5) * (1.0 - r * 0.4);
+        float vc = sqrt(M * r * r / pow(r * r + EPS * EPS, 1.5));
+        mat3 F = discFrame(galaxy);
+        vec3 core = (galaxy < 0.5) ? c0 : c1;
+        // Core velocity by finite difference of the analytic path.
+        float dth = 0.01 * omega(tau);
+        vec3 coreNext = corePos(tau + 0.01 / TMERGE, theta + dth);
+        vec3 vCore = ((galaxy < 0.5) ? (coreNext - c0) : (-coreNext - c1)) / 0.01;
+        vec3 p = core + F * vec3(r * cos(ph), r * sin(ph), zz);
+        vec3 v = vCore + F * vec3(-vc * sin(ph), vc * cos(ph), 0.0);
+        st[o + 0u] = p.x; st[o + 1u] = p.y; st[o + 2u] = p.z;
+        st[o + 3u] = v.x; st[o + 4u] = v.y; st[o + 5u] = v.z;
+        st[o + 6u] = galaxy; st[o + 7u] = 0.0;
+        return;
+    }
+
+    vec3 p = vec3(st[o + 0u], st[o + 1u], st[o + 2u]);
+    vec3 v = vec3(st[o + 3u], st[o + 4u], st[o + 5u]);
+
+    // One step of the restricted problem: gravity of both cores, softened.
+    float dtWall = clamp(time - lastT, 0.0, 0.05);
+    float dtAdv  = clamp(sceneAdvance - lastAdv, 0.0, 0.1);
+    float dt = dtWall * (0.5 + 1.3 * clamp(audioLevel, 0.0, 1.0)) + dtAdv * 0.9;
+    vec3 d0 = p - c0, d1 = p - c1;
+    vec3 acc = -M * d0 / pow(dot(d0, d0) + EPS * EPS, 1.5) - M * d1 / pow(dot(d1, d1) + EPS * EPS, 1.5);
+    v += acc * dt;
+    // Keep the far tails from leaving the picture for good.
+    float far = length(p);
+    if (far > 7.0) v -= p * 0.02 * dt;
+    p += v * dt;
+    st[o + 0u] = p.x; st[o + 1u] = p.y; st[o + 2u] = p.z;
+    st[o + 3u] = v.x; st[o + 4u] = v.y; st[o + 5u] = v.z;
+
+    // Emit: a soft dot, bigger and brighter when fast (the tidal streams).
+    float speed = length(v);
+    float s = 0.03 + 0.02 * clamp(speed * 0.8, 0.0, 1.0);
+    emitQuad(p, s, fid, speed, galaxy, vec2(1.0));
+}

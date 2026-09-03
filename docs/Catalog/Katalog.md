@@ -1,6 +1,6 @@
 # Kaleidoscope Enhanced — Szenen-Katalog
 
-_626 Szenen, 29 FX-Overlays, 83 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
+_636 Szenen, 29 FX-Overlays, 83 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
 
 
 ---
@@ -222,6 +222,15 @@ BEYOND THE EDGE: Looking past the absolute edge of the observable universe into 
 BINARY STAR SYSTEM: Two massive stars orbit each other in a close binary system, tearing stellar material from one another. Solar flares and the shared plasma stream react violently to the beat. audioAdvance -> camera orbit speed audioKick -> intense solar flares and plasma bursts audioSwell -> brightness of the stellar coronas audioChromaHue-> palette offset for the star types Per-activation variety: distP float dis…
 
 ![BinaryStarSystem ruhig (t=8)](img/BinaryStarSystem_A.jpg) ![BinaryStarSystem ruhig (t=16)](img/BinaryStarSystem_B.jpg) ![BinaryStarSystem audio-heiß (t=21)](img/BinaryStarSystem_C.jpg)
+
+
+### BinauralTunnel
+
+`Scene2D/BinauralTunnel.frag` · type=normal · mood=dark,aggressive · complexity=2
+
+BINAURAL TUNNEL: a tunnel whose cross-section is the stereo image. The left wall is pushed out by the left channel's energy, the right wall by the right's, and the stereo width stretches the tube vertically: a mono track is a round pipe, a wide mix a cathedral nave, a hard-panned part bulges one wall. Ribs stream past on the music's pace; each wall is lit by its own channel, so the tube leans visibly toward whichever…
+
+![BinauralTunnel ruhig (t=8)](img/BinauralTunnel_A.jpg) ![BinauralTunnel ruhig (t=16)](img/BinauralTunnel_B.jpg) ![BinauralTunnel audio-heiß (t=21)](img/BinauralTunnel_C.jpg)
 
 
 ### BioCellularInfiniteZoom
@@ -483,6 +492,15 @@ CHIRAL NEMATIC LIQUID CRYSTAL: Cholesteric liquid crystal texture with helical m
 CHROMA ACID TRIP: Hypnotic psychedelic feedback vortex with melting contour lines, reaction-diffusion spirals, liquid rainbow gradients, optical warp displacement, and high-energy audio-driven color state transformations. audioLevel -> drives feedback displacement velocity & melt intensity audioKick -> triggers chromatic inversion flash & color ripple shockwaves audioChromaHue-> rotates liquid psychedelic color spect…
 
 ![ChromaAcidTrip ruhig (t=8)](img/ChromaAcidTrip_A.jpg) ![ChromaAcidTrip ruhig (t=16)](img/ChromaAcidTrip_B.jpg) ![ChromaAcidTrip audio-heiß (t=21)](img/ChromaAcidTrip_C.jpg)
+
+
+### ChromaKaleidoscope
+
+`Scene2D/ChromaKaleidoscope.frag` · type=normal · mood=psychedelic,bright,aggressive · complexity=2
+
+CHROMA KALEIDOSCOPE: twelve mirror segments, one per pitch class. The chroma vector decides how brightly each segment burns, so a chord is a pattern of lit wedges and a key change rotates that pattern around the ring; the melody note breathes a soft halo over its own wedge. In fifths mode the wedges are ordered by the circle of fifths, so harmonic neighbours sit side by side and a diatonic chord lights a contiguous a…
+
+![ChromaKaleidoscope ruhig (t=8)](img/ChromaKaleidoscope_A.jpg) ![ChromaKaleidoscope ruhig (t=16)](img/ChromaKaleidoscope_B.jpg) ![ChromaKaleidoscope audio-heiß (t=21)](img/ChromaKaleidoscope_C.jpg)
 
 
 ### ChromeDreams
@@ -975,6 +993,15 @@ FLUID CHROMA MARANGONI CONVECTION: Bénard-Marangoni thermal convection cells (h
 ![FluidChromaMarangoniConvection ruhig (t=8)](img/FluidChromaMarangoniConvection_A.jpg) ![FluidChromaMarangoniConvection ruhig (t=16)](img/FluidChromaMarangoniConvection_B.jpg) ![FluidChromaMarangoniConvection audio-heiß (t=21)](img/FluidChromaMarangoniConvection_C.jpg)
 
 
+### FluidInkMandala
+
+`Scene2D/FluidInkMandala.frag` · type=normal · mood=psychedelic,dreamy,calm · complexity=3
+
+FLUID INK MANDALA: the Navier-Stokes dye field (texFluid) laid into concentric rings, each ring an n-fold mirror of a wedge of the ink and each ring turning against its neighbours. The ink is real fluid -- it curls, tears and mixes on its own -- and the mandala only orders it, so the ornament is never the same twice. Onsets send ripples out from the centre through every ring; the stereo balance decides which side of …
+
+![FluidInkMandala ruhig (t=8)](img/FluidInkMandala_A.jpg) ![FluidInkMandala ruhig (t=16)](img/FluidInkMandala_B.jpg) ![FluidInkMandala audio-heiß (t=21)](img/FluidInkMandala_C.jpg)
+
+
 ### FluidInkMarble
 
 `Scene2D/FluidInkMarble.frag` · type=normal · mood=dreamy,bright · complexity=3
@@ -1261,6 +1288,15 @@ HYPERBOLIC ESCHER CIRCLE LIMIT: Conformal Poincaré disk tessellation with infin
 HYPERBOLIC HONEYCOMB TESSELLATION: Poincaré disk model of a 7-fold {7,3} hyperbolic honeycomb tiling. Non-Euclidean SL(2, R) Möbius translations, exponential boundary tile packing, and glowing hyperbolic circular arcs. Audio Reactivity: audioAdvance -> drives continuous non-Euclidean hyperbolic geodesic translation audioKick -> flashes hyperbolic vertex nodes & boundary shockwaves audioCentroid-> modulates 7-fold sym…
 
 ![HyperbolicHoneycombTessellation ruhig (t=8)](img/HyperbolicHoneycombTessellation_A.jpg) ![HyperbolicHoneycombTessellation ruhig (t=16)](img/HyperbolicHoneycombTessellation_B.jpg) ![HyperbolicHoneycombTessellation audio-heiß (t=21)](img/HyperbolicHoneycombTessellation_C.jpg)
+
+
+### HyperbolicKaleidoscope
+
+`Scene2D/HyperbolicKaleidoscope.frag` · type=normal · mood=psychedelic,bright · complexity=3
+
+HYPERBOLIC KALEIDOSCOPE: a kaleidoscope folded in the Poincare disc. A flat kaleidoscope has p mirrors meeting at one point; this one reflects across the edges of a regular {p,q} polygon of the hyperbolic plane, so infinitely many chambers crowd toward the rim, each a smaller copy of the last. The camera drives toward the rim forever: a hyperbolic translation by exactly one polygon step is a symmetry of the tiling, s…
+
+![HyperbolicKaleidoscope ruhig (t=8)](img/HyperbolicKaleidoscope_A.jpg) ![HyperbolicKaleidoscope ruhig (t=16)](img/HyperbolicKaleidoscope_B.jpg) ![HyperbolicKaleidoscope audio-heiß (t=21)](img/HyperbolicKaleidoscope_C.jpg)
 
 
 ### HyperbolicKnotFlight
@@ -1877,6 +1913,15 @@ MOBIUS STRIP ROLLER DRIVE: High-velocity 3D roller coaster ride along a twisted 
 ![MobiusStripRollerDrive ruhig (t=8)](img/MobiusStripRollerDrive_A.jpg) ![MobiusStripRollerDrive ruhig (t=16)](img/MobiusStripRollerDrive_B.jpg) ![MobiusStripRollerDrive audio-heiß (t=21)](img/MobiusStripRollerDrive_C.jpg)
 
 
+### MoebiusTunnel
+
+`Scene2D/MoebiusTunnel.frag` · type=normal · mood=psychedelic,dark · complexity=2
+
+MOEBIUS TUNNEL: a tunnel whose wall is a one-sided surface. The wall is built from a few ribbons that make an odd number of half-twists per loop, so a ribbon that starts on the inside of the tube arrives on the outside one loop later and comes back around: the stripes spiral past the camera and never repeat the way a plain tunnel does. Photo on the front face, its palette-negative on the back face -- the twist is wha…
+
+![MoebiusTunnel ruhig (t=8)](img/MoebiusTunnel_A.jpg) ![MoebiusTunnel ruhig (t=16)](img/MoebiusTunnel_B.jpg) ![MoebiusTunnel audio-heiß (t=21)](img/MoebiusTunnel_C.jpg)
+
+
 ### MoireTwistedBilayerGraphene
 
 `Scene2D/MoireTwistedBilayerGraphene.frag` · type=normal · mood=psychedelic,bright · complexity=3
@@ -2154,6 +2199,15 @@ PHOTONIC METASURFACE PHASE GRADIENT: Dielectric subwavelength gradient metasurfa
 PHRASE CLOCK ROSETTE: a 32-beat rosette that shows WHERE in the 8-bar phrase the music is. The host integrates beats from the tempo since the last drop (audioPhrasePos, 0..1 over 32 beats): a hand sweeps the rosette, the 32 petals fill behind it, and the build-up tightens the whole flower toward its centre -- until the phrase boundary, where dance music puts its drops, when it blooms open. For the first time a scene …
 
 ![PhraseClockRosette ruhig (t=8)](img/PhraseClockRosette_A.jpg) ![PhraseClockRosette ruhig (t=16)](img/PhraseClockRosette_B.jpg) ![PhraseClockRosette audio-heiß (t=21)](img/PhraseClockRosette_C.jpg)
+
+
+### PhyllotaxisZoom
+
+`Scene2D/PhyllotaxisZoom.frag` · type=normal · mood=psychedelic,calm,bright · complexity=2
+
+PHYLLOTAXIS ZOOM: a sunflower spiral that never ends in either direction. Seed n sits at log-radius b*n and angle n*golden angle, so the pattern maps onto itself under "one seed inward" (shrink by e^b, turn by the golden angle): the zoom is periodic in that step and seamless, the seeds grow with their radius as in the real flower, and the centre is not a centre but another infinity. Each seed carries a pitch class: t…
+
+![PhyllotaxisZoom ruhig (t=8)](img/PhyllotaxisZoom_A.jpg) ![PhyllotaxisZoom ruhig (t=16)](img/PhyllotaxisZoom_B.jpg) ![PhyllotaxisZoom audio-heiß (t=21)](img/PhyllotaxisZoom_C.jpg)
 
 
 ### Physarum
@@ -2671,6 +2725,15 @@ KNIFE-EDGE SCHLIEREN OPTICS over the live GPU fluid: the classic wind-tunnel pho
 SCHWARZSCHILD WORMHOLE TUNNEL: Raymarched flight through a traversable Morris-Thorne wormhole connecting two distinct universes (tex0 and tex1). Relativistic spacetime throat curvature, gravitational lensing arcs, chromatic dispersion, and seamless topological universe transitions. audioAdvance -> navigates camera through the wormhole throat audioKick -> pulses gravitational metric contraction shockwaves audioSubBass…
 
 ![SchwarzschildWormholeTunnel ruhig (t=8)](img/SchwarzschildWormholeTunnel_A.jpg) ![SchwarzschildWormholeTunnel ruhig (t=16)](img/SchwarzschildWormholeTunnel_B.jpg) ![SchwarzschildWormholeTunnel audio-heiß (t=21)](img/SchwarzschildWormholeTunnel_C.jpg)
+
+
+### SectionMemoryHalls
+
+`Scene2D/SectionMemoryHalls.frag` · type=normal · mood=calm,dreamy,dark · complexity=2
+
+SECTION MEMORY HALLS: the song's structure as a suite of rooms. Every section the analyser recognises gets its own hall -- its own colour, pillar spacing, ceiling ornament and lamp tone -- and a RETURNING section (the second chorus) leads back into the SAME hall, lit warm as a place already visited; a new section opens a cool, unfamiliar one. The change never cuts: when a section boundary arrives, a lit doorway appea…
+
+![SectionMemoryHalls ruhig (t=8)](img/SectionMemoryHalls_A.jpg) ![SectionMemoryHalls ruhig (t=16)](img/SectionMemoryHalls_B.jpg) ![SectionMemoryHalls audio-heiß (t=21)](img/SectionMemoryHalls_C.jpg)
 
 
 ### SelfSimilarity
@@ -3233,6 +3296,15 @@ Adapted from "Vortex" by \@kishimisu (2024) — https://www.shadertoy.com/view/M
 Adapted from "Voyager" by \@kishimisu (2024) — https://www.shadertoy.com/view/M33XDH Original licensed CC BY-NC-SA 4.0 (attribution kept per the licence). A volumetric fly-through of glowing, endlessly-repeating cells — like a deep- space probe drifting through a field of light. Adapted to our engine: * Shadertoy conventions -> ours (gl_FragCoord/resolution/time/tex0, texture2D). * IMAGE-FORWARD: the source image is …
 
 ![Voyager ruhig (t=8)](img/Voyager_A.jpg) ![Voyager ruhig (t=16)](img/Voyager_B.jpg) ![Voyager audio-heiß (t=21)](img/Voyager_C.jpg)
+
+
+### WaveformRiver
+
+`Scene2D/WaveformRiver.frag` · type=normal · mood=calm,dark,dreamy · complexity=3
+
+WAVEFORM RIVER: the oscilloscope as geography. A river winds through a night landscape; the camera flies down it on the music's pace. The water surface IS the waveform -- audioWave[64] laid along the river as ripples of light, so the wave you hear is the water you fly over -- and the melody sets the river's width and the colour it glows: a rising line widens the river and warms it, a bass-heavy passage floods the ban…
+
+![WaveformRiver ruhig (t=8)](img/WaveformRiver_A.jpg) ![WaveformRiver ruhig (t=16)](img/WaveformRiver_B.jpg) ![WaveformRiver audio-heiß (t=21)](img/WaveformRiver_C.jpg)
 
 
 ### WhisperingGalleryMicrocavity
@@ -3950,6 +4022,15 @@ DYSON SPHERE CORE: Huge panels and spires of a megastructure surrounding a centr
 ![DysonSphereCore ruhig (t=8)](img/DysonSphereCore_A.jpg) ![DysonSphereCore ruhig (t=16)](img/DysonSphereCore_B.jpg) ![DysonSphereCore audio-heiß (t=21)](img/DysonSphereCore_C.jpg)
 
 
+### DysonSwarmConstruction
+
+`Scene3D/DysonSwarmConstruction.frag` · type=scene3d · geom=indirect · mood=space,dark,calm · complexity=4
+
+Fragment stage for DysonSwarmConstruction: the star, the sky and the panels. The star is a soft disc (kind 2) that discards outside its glow; the sky (kind -1) is deep space with the photo's grain as a star field; panels get a thin frame and, on the kick, a flare on their back. Audio Reactivity: audioKick flares the panel backs; audioBass swells the star; audioSwell warms the sky.
+
+![DysonSwarmConstruction ruhig (t=8)](img/DysonSwarmConstruction_A.jpg) ![DysonSwarmConstruction ruhig (t=16)](img/DysonSwarmConstruction_B.jpg) ![DysonSwarmConstruction audio-heiß (t=21)](img/DysonSwarmConstruction_C.jpg)
+
+
 ### DysonSwarmSolarHarvester
 
 `Scene3D/DysonSwarmSolarHarvester.frag` · type=scene3d · geom=quads · mood=dark,aggressive · complexity=2
@@ -4065,6 +4146,15 @@ GEOM="MESH" STATION FAMILY: armored/military hulls (bastions, citadels, border p
 FULLERENE C60 BUCKYBALL CRYSTAL LATTICE: Buckminsterfullerene C60 crystal lattice (fullerite). Truncated icosahedral carbon cages arranged in a 3D FCC crystal structure. Pentagonal/hexagonal ring vibrations, metallic carbon luster, and fullerene photo texturing. audioAdvance -> rotates fullerite crystal orientation & intramolecular cage tumbling audioKick -> flashes C60 intramolecular vibrational mode resonance burst…
 
 ![FullereneC60BuckyballCrystalLattice ruhig (t=8)](img/FullereneC60BuckyballCrystalLattice_A.jpg) ![FullereneC60BuckyballCrystalLattice ruhig (t=16)](img/FullereneC60BuckyballCrystalLattice_B.jpg) ![FullereneC60BuckyballCrystalLattice audio-heiß (t=21)](img/FullereneC60BuckyballCrystalLattice_C.jpg)
+
+
+### GalaxyMergerNBody
+
+`Scene3D/GalaxyMergerNBody.frag` · type=scene3d · geom=indirect · mood=space,dark,dreamy · complexity=4
+
+Fragment stage for GalaxyMergerNBody: soft star dots, two glowing cores and a deep-space sky. A star is a quad that discards outside its radial falloff, so the discs read as dust rather than confetti; the cores (kind 2) are wide soft glows swelling with the bass; the sky (kind -1) is near-black with the photo's grain as a distant star field. Audio Reactivity: audioKick flashes the stars; audioBass swells the cores.
+
+![GalaxyMergerNBody ruhig (t=8)](img/GalaxyMergerNBody_A.jpg) ![GalaxyMergerNBody ruhig (t=16)](img/GalaxyMergerNBody_B.jpg) ![GalaxyMergerNBody audio-heiß (t=21)](img/GalaxyMergerNBody_C.jpg)
 
 
 ### GalleryHall

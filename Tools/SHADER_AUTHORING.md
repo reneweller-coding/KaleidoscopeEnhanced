@@ -250,6 +250,23 @@ uvec3 g = gl_GlobalInvocationID;
 uint idx = g.x + 64u * (g.y + 64u * g.z);
 ```
 
+### V5c — Der Generator (.comp) hat seine EIGENE Uniform-Liste im Host
+
+Die Compute-Stufe bekommt ihre Uniforms nicht aus `applyAudioFeatures()`,
+sondern aus `Scene3DShader::runGenerator()` (`GenLocCache`). Eine Uniform,
+die dort nicht aufgezaehlt ist, kompiliert anstandslos und liest fuer immer 0
+-- ohne Warnung. So stand `sceneAdvance`/`sceneTime`/`sceneProgress` in den
+Generatoren bis 03.09. still, und der Staren-Schwarm bewegte sein
+Stroemungsfeld nie. Vor dem Gebrauch einer Host-Uniform in einer `.comp`:
+`grep -n "m_genLocs\." Source/Scene3DShader.cpp` -- und fehlt sie, dort
+nachtragen (Location holen UND setzen), nicht im Shader improvisieren.
+Aktuell vorhanden: time, sceneSeed, sceneAdvance, sceneTime, sceneProgress,
+audioAdvance/Level/Beat/Kick/SubBass/High/Bass/Mid/Phase/Swell,
+audioChroma[12], audioSpectrum[], texSpectro/spectroHead/spectroFill,
+maxVertices, frameIndex, genPass sowie alle XML-Parameter und Exprs.
+`usesProgress()` (Drop-Regie) prueft nur das Vertex/Fragment-Programm: eine
+gestufte Indirect-Szene deklariert `sceneProgress` deshalb AUCH im .vert.
+
 ### V5b — Nie ein lokales `fragColor` deklarieren
 
 ```glsl
@@ -273,6 +290,12 @@ erwischt (`audioChromaHue`) und danach nochmal sechs Shader (`time`,
 `audioPhase`, `audioLevel`, `audioChromaHue`).
 
 Die Liste der Host-Uniforms steht in `Source/EffectShader.cpp` (`kAudioLocs`).
+
+Seit 03.09. gibt es fuer die Songstruktur `audioSectionId`, `audioSectionPrev`,
+`audioSectionAge` (Sekunden seit dem Wechsel), `audioSectionKnown` (1 =
+wiedererkannte Section) und `audioSectionCount`. Die Id ist ein SLOT (8er-LRU),
+wiederkehrende Sections bekommen dieselbe; Wechsel per `audioSectionAge`
+weich inszenieren (Tuer voraus, Regel V7c), nie den Zustand hart umschalten.
 
 ### V6b — Der Uniform-TYP muss zwischen XML und GLSL zusammenpassen
 
@@ -391,6 +414,27 @@ Bildzustands ist nur dort erlaubt, wo die Musik selbst schneidet (der Drop),
 und dann vom Drop-Puls maskiert. Auch ein Zustandswechsel wie "Tempo bekannt /
 unbekannt" ist als `smoothstep` zu ueberblenden, nicht als `step`.
 Pruefen: `grep -n "floor(audio\|step([0-9.]*, *audio" Scene2D/*.frag`.
+
+### V7d — KEINE Erschuetterungen: der Bildrahmen bewegt sich nur auf langsamen Signalen
+
+```glsl
+p -= 0.05 * vec2(sin(audioBarPhase * 6.28), 0.0);   // FALSCH - Kamera schwankt im Takt
+float r = length(p) * (1.0 - 0.1 * audioBass);      // FALSCH - Tunnel pumpt mit dem Bass
+zoom *= 1.0 - 0.06 * audioBeat;                       // FALSCH - Bild zoomt auf jedem Schlag
+float radius = 1.0 + 0.45 * audioStereoL;             // FALSCH - Wand zittert mit der Energie
+col *= 1.0 + 0.4 * audioKick * exp(-r * 4.0);         // richtig - der Kick ist LICHT
+```
+
+Rene leidet unter Gaming-Sickness: jede Bewegung des ganzen Bildes, die nicht
+die eigene stetige Fahrt der Szene ist, macht ihn krank. Kameraposition,
+Gesamtzoom, Gesamtdrehwinkel, Tunnelradius, Horizont, Wasserstand, Faltzentrum
+bewegen sich NUR auf sceneAdvance, sceneTime, sceneProgress oder auf
+Sekunden-Huellkurven (audioSwell, audioBuildUp) -- nie auf audioKick, audioBeat,
+audioOnset, audioBass, audioLevel, audioStereo/L/R, audioDrop, audioMelodyPitch,
+audioBarPhase, audioBeatPhase. Die schnellen Signale treiben LICHT und FARBE
+(Helligkeit, Glow, Nahtblitz, Palette) oder einzelne Objekte IM Bild (ein Vogel,
+ein Panel), nie den Blickpunkt. Kein Kamera-Schwanken, auch kein kleines.
+Pruefen: `grep -n "p -= \|p += \|zoom.*audio\|radius.*audio\|vp\.z.*audio" Scene2D/*.frag Scene3D/*.vert`.
 
 ### V8 — Registrierung
 

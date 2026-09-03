@@ -84,18 +84,14 @@ void main()
     float dec = (decayP > 0.5) ? decayP : 0.93;
     float hue = (hueP > 0.001) ? hueP : 0.0;
 
-    // The portal wanders on a slow ellipse driven by the bar, and its aspect
-    // follows the melody: a high note stands the portal up, a low note lays
-    // it down.  Both are continuous, so the recursion breathes instead of
-    // snapping.
-    float bar  = audioBarPhase * 6.2831853;
-    vec2  cen  = vec2(0.10 * cos(bar), 0.06 * sin(bar * 0.5));
-    float asp  = mix(1.35, 0.72, clamp(audioMelodyPitch, 0.0, 1.0));
+    // The portal wanders on a slow ellipse on the scene clock (a bar-driven
+    // wander swayed the whole recursion, V7d), and its aspect follows the
+    // slow swell: builds stand the portal up.
+    vec2  cen  = vec2(0.10 * cos(sceneAdvance * 0.2), 0.06 * sin(sceneAdvance * 0.13));
+    float asp  = mix(1.2, 0.85, clamp(audioSwell, 0.0, 1.0));
     vec2  half = por * vec2(asp, 1.0 / asp) * 0.5;
 
-    // Kick: a one-frame radial push on the outer picture (it then sinks in).
     vec2 q = p - cen;
-    q *= 1.0 - 0.04 * audioKick * smoothstep(0.0, 0.6, length(q));
 
     float d = sdRoundBox(q, half, 0.18 * por);
     float inside = 1.0 - smoothstep(-0.004, 0.004, d);
@@ -110,7 +106,7 @@ void main()
     vec2  pr = vec2(ca * q.x - sa * q.y, sa * q.x + ca * q.y) / scale;
     // Drift: sample slightly further out than the pure Droste mapping, so
     // each frame the content appears to come toward the viewer.
-    pr *= 1.0 + 0.035 + 0.025 * audioLevel;
+    pr *= 1.0 + 0.045 + 0.015 * audioSwell;      // steady recursion rate (a per-frame level here jittered the zoom)
     vec2  puv = pr / vec2(aspect, 1.0) + 0.5;
     vec3  prev = texture(texPrevFrame, clamp(puv, 0.0, 1.0)).rgb;
     // Each level shifts hue a little: depth reads as a spectral gradient.

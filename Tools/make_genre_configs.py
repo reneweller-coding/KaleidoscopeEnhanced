@@ -181,13 +181,19 @@ MODIFIED_SCENES = {
 # Minuten statt siebzig).  Bewusst eine eigene Liste: welche Szenen zuletzt
 # dran waren, ist eine historische Tatsache und soll im Diff stehen.
 RECENT_SCENES = {
-    # 03.09.: die zehn neuen Szenen des ersten Blocks (Bausteine, die vorher
-    # brachlagen: texPrevFrame, texSpectro, texSSM, texPhysarum, texSim, der
-    # Melodie-Ring, Stereo L/R, die Phrasen-Uhr, ein Indirect-Schwarm).
-    "DepthPortalRecursion", "SpectrogramTunnel", "SelfSimilarityCorridor",
-    "StereoKaleidoscope", "MelodyConstellation", "PhraseClockRosette",
-    "PhysarumGalaxy", "ReactionDiffusionKaleidoscope", "DropCountdownVortex",
-    "StarlingMurmuration",
+    # 03.09.: Block 2 der neuen Szenen (Moebius, Phyllotaxis, hyperbolische und
+    # Chroma-Faltung, Stereo-Tunnel, Fluid-Mandala, Section-Hallen, Wellen-Fluss,
+    # Dyson-Schwarm, Galaxien-Verschmelzung).
+    "MoebiusTunnel",
+    "PhyllotaxisZoom",
+    "HyperbolicKaleidoscope",
+    "ChromaKaleidoscope",
+    "BinauralTunnel",
+    "FluidInkMandala",
+    "SectionMemoryHalls",
+    "WaveformRiver",
+    "DysonSwarmConstruction",
+    "GalaxyMergerNBody",
 }
 
 def rule_recent(m, h):

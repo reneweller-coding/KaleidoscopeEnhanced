@@ -13,7 +13,7 @@ out vec4 fragColor;
  * Audio Reactivity:
  *   audioStereoL / R -> per-side fold rotation and zoom (the whole point)
  *   audioStereo      -> width of the seam and how far the halves diverge
- *   audioBeat        -> a decaying push on both halves' rotation (continuous)
+ *   audioSwell       -> the halves drift apart on builds
  *   sceneAdvance     -> slow continuous turn (no jumps, no run-away)
  *
  * Per-activation variety: sidesP (base fold count 5..9), zoomP, hueP.
@@ -68,11 +68,13 @@ vec3 side(vec2 p, float energy, float sign)
 {
     // Fold count is fixed per activation: changing it live would be a jump.
     float n    = floor((sidesP > 1.5 ? sidesP : 7.0) + 0.5);
-    float zoom = (zoomP > 0.05 ? zoomP : 1.0) * (1.0 + 0.35 * energy);
+    // Geometry never rides the per-frame energy (V7d): fixed zoom, the
+    // energy is light.
+    float zoom = (zoomP > 0.05 ? zoomP : 1.0);
     // Each side turns with its own channel; the beat adds a DECAYING push
     // (audioBeat is an envelope), never a step -- a fold that snaps on the
     // beat is a cut, not motion.
-    float rot  = sign * (sceneAdvance * 0.25 + energy * 1.2) + audioBeat * 0.35;
+    float rot  = sign * sceneAdvance * 0.3;
     vec2 q = fold(p, n, rot) * zoom;
     // Sample the photo in a radial-log space so the fold zooms endlessly
     // without ever leaving the picture.
@@ -96,7 +98,7 @@ void main()
 
     // The two halves diverge with the stereo width: the fold centres move
     // apart, so a wide mix literally opens the picture.
-    float sep = 0.12 + 0.35 * width;
+    float sep = 0.22 + 0.15 * audioSwell;     // opens on builds (seconds), not on the frame's width
     vec3 left  = side(p + vec2(sep, 0.0), eL, -1.0);
     vec3 right = side(p - vec2(sep, 0.0), eR,  1.0);
 

@@ -11,6 +11,7 @@
 #include "ComputeFX.h"
 
 #include <cstdlib>
+#include <chrono>
 #include <QtCore/qdir.h>
 #include <QtCore/qfileinfo.h>
 
@@ -134,6 +135,7 @@ static float soloCap()
 
 void EffectShader::resetParameters()
 {
+	m_secCount = -1;                // section memory restarts: the first sight is no door
 	// Zufall PRO SZENE statt global.  Mit KALEIDO_SEED bekommt jede
 	// Aktivierung ihren eigenen Strom aus (Seed, Shadername, Auftrittszaehler).
 	// Vorher hing jede Ziehung davon ab, wer VOR dieser Szene dran war: derselbe
@@ -473,7 +475,8 @@ enum AudioLoc {
     AL_MELODYPITCH,
     // Die 8-Takt-Phrase: Position 0..1 und Sekunden bis zur naechsten Grenze
     // (= der vorhergesagte Drop).  Fuer Szenen, die auf den Drop hin zaehlen.
-    AL_PHRASEPOS, AL_PHRASELEFT, AL_COUNT
+    AL_PHRASEPOS, AL_PHRASELEFT,
+    AL_SECTIONID, AL_SECTIONPREV, AL_SECTIONAGE, AL_SECTIONKNOWN, AL_SECTIONCOUNT, AL_COUNT
 };
 const char *kAudioLocNames[AL_COUNT] = {
     "audioPhase", "audioAdvance", "audioBeat", "audioLevel", "sides",
@@ -496,7 +499,8 @@ const char *kAudioLocNames[AL_COUNT] = {
     "texShadow2", "lightM2", "shadowPass2", "lightDir2", "texPrevFrame",
     "sceneAdvance",   // Reihenfolge MUSS zum AL_-Enum passen (Tools/check_enum_tables.py)
     "audioMelodyPitch",
-    "audioPhrasePos", "audioPhraseLeft"
+    "audioPhrasePos", "audioPhraseLeft",
+    "audioSectionId", "audioSectionPrev", "audioSectionAge", "audioSectionKnown", "audioSectionCount"
 };
 }
 
@@ -668,6 +672,29 @@ void EffectShader::applyAudioFeatures(const AudioFeatures &f)
     if (L[AL_MELODYPITCH] >= 0) glUniform1f(L[AL_MELODYPITCH], f.melodyPitch);
     if (L[AL_PHRASEPOS]   >= 0) glUniform1f(L[AL_PHRASEPOS],   f.phrasePos);
     if (L[AL_PHRASELEFT]  >= 0) glUniform1f(L[AL_PHRASELEFT],  f.phraseSecsLeft);
+    // Song-structure memory for the shader: the current section's slot id, the
+    // one before it, how long ago the change was, and whether the section was
+    // RECOGNISED (a returning chorus) or stored as new.  The age lets a scene
+    // fly through a door instead of cutting: the section only ever changes
+    // ahead of the camera.  The first sight after an activation is not a
+    // change (age starts large), so no door opens on scene start.
+    {
+        const double now = std::chrono::duration<double>( std::chrono::steady_clock::now().time_since_epoch() ).count();
+        if( f.sectionCount != m_secCount )
+        {
+            const bool first = ( m_secCount < 0 );
+            m_secPrev  = first ? f.sectionId : m_secCur;
+            m_secCur   = f.sectionId;
+            m_secCount = f.sectionCount;
+            m_secKnown = f.sectionKnown ? 1.f : 0.f;
+            m_secT0    = first ? now - 1000.0 : now;
+        }
+        if (L[AL_SECTIONID]    >= 0) glUniform1f(L[AL_SECTIONID],    (float) m_secCur);
+        if (L[AL_SECTIONPREV]  >= 0) glUniform1f(L[AL_SECTIONPREV],  (float) m_secPrev);
+        if (L[AL_SECTIONAGE]   >= 0) glUniform1f(L[AL_SECTIONAGE],   (float) ( now - m_secT0 ));
+        if (L[AL_SECTIONKNOWN] >= 0) glUniform1f(L[AL_SECTIONKNOWN], m_secKnown);
+        if (L[AL_SECTIONCOUNT] >= 0) glUniform1f(L[AL_SECTIONCOUNT], (float) m_secCount);
+    }
     if (L[AL_SCENEADVANCE] >= 0)
         glUniform1f(L[AL_SCENEADVANCE], f.audioAdvance - m_advanceAtReset);
     if (L[AL_BEAT]     >= 0) glUniform1f(L[AL_BEAT],     f.beatDecay);

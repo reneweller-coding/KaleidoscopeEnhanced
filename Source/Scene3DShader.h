@@ -226,6 +226,10 @@ private:
 		// never called for them, so they silently stayed 0 for the generator's
 		// whole lifetime and that reactivity simply never happened.
 		GLint  audioPhase   = -1, audioSwell   = -1;
+		// The scene clocks were missing too: a generator declaring sceneAdvance /
+		// sceneTime / sceneProgress read 0 forever (StarlingMurmuration's flow
+		// field never moved, DysonSwarmConstruction never assembled).
+		GLint  sceneAdvance = -1, sceneTime    = -1, sceneProgress = -1;
 	};
 	GenLocCache m_genLocs;
 	std::vector<GLint> m_genUniformLocs; ///< Parallel to m_uniforms, resolved for m_genProg (refreshed alongside m_genLocs).
