@@ -374,6 +374,24 @@ python Tools/clock_runaway.py                       # Verdachtsliste
 python Tools/screen.py --scenes <Name> --time-start 3600   # Befund
 ```
 
+### V7c — Stetigkeit: Audio nie als STUFE in Bewegung oder Geometrie
+
+```glsl
+rot += floor(audioBeat * 3.0) * sector;   // FALSCH - schnappt auf dem Beat
+n    = sidesP + floor(audioBeat * 1.9);   // FALSCH - Faltungszahl springt live
+rot += audioBeat * 0.35;                  // richtig - Huellkurve, klingt ab
+```
+
+Jede Bewegung im Bild muss stetig sein. `audioBeat`, `audioKick`, `audioOnset`,
+`audioSwell`, `audioBuildUp` sind Huellkurven: als *Rate* oder *Amplitude*
+sind sie sprungfrei, durch `floor`/`step`/`round` werden sie zu Schnitten.
+Diskrete Groessen (Faltungszahl, Segmentzahl, Kachelanzahl) werden EINMAL pro
+Aktivierung gewuerfelt und dann nicht mehr angefasst. Ein Umschalten des
+Bildzustands ist nur dort erlaubt, wo die Musik selbst schneidet (der Drop),
+und dann vom Drop-Puls maskiert. Auch ein Zustandswechsel wie "Tempo bekannt /
+unbekannt" ist als `smoothstep` zu ueberblenden, nicht als `step`.
+Pruefen: `grep -n "floor(audio\|step([0-9.]*, *audio" Scene2D/*.frag`.
+
 ### V8 — Registrierung
 
 Jeder Shader braucht einen Eintrag in `Configurations/Komplett.xml` (die

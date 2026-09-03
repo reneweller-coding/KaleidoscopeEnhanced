@@ -181,12 +181,13 @@ MODIFIED_SCENES = {
 # Minuten statt siebzig).  Bewusst eine eigene Liste: welche Szenen zuletzt
 # dran waren, ist eine historische Tatsache und soll im Diff stehen.
 RECENT_SCENES = {
-    # AtmosphericEntry bewusst NICHT: dessen Aenderung war die Ruettel-
-    # Frequenz (8.44 -> 6.84 Hz), visuell nicht zu sehen -- und es steht mit
-    # ZWOELF Modellen im Katalog und wuerde die Runde dominieren.
-    "AlienPlanetOrbit", "DerelictMothership",
-    "DysonSphereCore", "HyperbolicTilingPolyhedralFlight", "NebulaCliffs",
-    "SpaceStationPromenade", "StellarNursery", "XenobiologicalBioship",
+    # 03.09.: die zehn neuen Szenen des ersten Blocks (Bausteine, die vorher
+    # brachlagen: texPrevFrame, texSpectro, texSSM, texPhysarum, texSim, der
+    # Melodie-Ring, Stereo L/R, die Phrasen-Uhr, ein Indirect-Schwarm).
+    "DepthPortalRecursion", "SpectrogramTunnel", "SelfSimilarityCorridor",
+    "StereoKaleidoscope", "MelodyConstellation", "PhraseClockRosette",
+    "PhysarumGalaxy", "ReactionDiffusionKaleidoscope", "DropCountdownVortex",
+    "StarlingMurmuration",
 }
 
 def rule_recent(m, h):

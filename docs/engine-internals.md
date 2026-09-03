@@ -3069,3 +3069,46 @@ GasGiantAtmosphere's *lower* corner then read 0.0306 on parameters that had
 not changed and had measured 0.0551 the run before — the same draw, twice,
 1.8× apart. That is the measurement's own noise floor on a dim scene, not a
 range, and it was left alone.
+
+## Ten new scenes, built on the parts that lay idle
+
+The catalogue's building blocks were used unevenly: the melody ring by two
+scenes, the previous-frame feedback by one, the self-similarity matrix by
+one, the spectrogram ring by one, the Physarum trail map by none. The first
+block of new scenes takes each of those as its subject, so that every scene
+also tests whether the block holds in real use.
+
+| scene | block | what it shows |
+|---|---|---|
+| DepthPortalRecursion | `texPrevFrame` | a Droste portal: the last frame inside the portal, which contains the portal … — a real recursion, one frame per level, so a beat flash sinks inward level by level |
+| SpectrogramTunnel | `texSpectro` | the tunnel is the spectrogram: bands around the wall, history down the tube; you fly through the last eight seconds |
+| SelfSimilarityCorridor | `texSSM` | a corridor tiled with the song's self-similarity; a returning chorus lays bands across the floor |
+| StereoKaleidoscope | `audioStereoL/R` | left and right halves folded from their own channel; the seam widens with the stereo width |
+| MelodyConstellation | `audioMelody[96]` | the last ~8 s of melody as stars on a spiral, joined into a constellation |
+| PhraseClockRosette | `audioPhrasePos/Left` | a 32-petal rosette that fills with the phrase and blooms on the drop |
+| PhysarumGalaxy | `texPhysarum` | the slime mould's trails on a turning globe, lit as star streams |
+| ReactionDiffusionKaleidoscope | `texSim` | the Gray-Scott field through an n-way mirror |
+| DropCountdownVortex | `audioPhraseLeft` | a vortex whose rings slide to the throat as the drop nears |
+| StarlingMurmuration | `geom="indirect"` | 12–24k birds as one body, folded by a curl field; frightened by onsets |
+
+Three conventions had to be learned by rendering, and are worth writing down:
+
+- **The SSM ring runs backwards in texture space.** `h = 0` is the oldest
+  stored moment, `h = 1` is now, and a sample is `texture(texSSM, h +
+  ssmHead)`. An *age* `a` therefore lands at `ssmHead − a`; adding the age
+  samples rows not written yet and the corridor came out empty. Its floor was
+  black for another reason: the diagonal of the matrix — a moment compared
+  with itself — is not a bright line here, so the floor now shows the matrix
+  a fixed lag off the diagonal, where the section bands live.
+- **An indirect scene has no background.** Mesh scenes carry a sky shell;
+  an `indirect` generator draws only what it emits, over the clear colour.
+  StarlingMurmuration's first thread emits one huge quad behind the flock, marked by
+  a negative density, and the fragment stage paints the dusk on it.
+- **Feedback must converge.** The portal decays the previous frame and
+  soft-knees its luminance before re-injecting it; without that the rim glow
+  piles up level after level into white.
+
+The Physarum globe shows large blobs in the first ten seconds of a scene:
+the trail map is created when a scene first samples it and the agents need a
+solo span to grow their networks. That is the simulation's nature, not a
+defect, and it was left alone.

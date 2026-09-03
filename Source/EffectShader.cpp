@@ -470,7 +470,10 @@ enum AudioLoc {
     AL_SCENEADVANCE,
     // Die MELODIE-Tonhoehe (HPS ab 150 Hz), damit eine Szene die Melodie
     // statt des Grundtons bekommt; audioPitch bleibt der dominante Ton.
-    AL_MELODYPITCH, AL_COUNT
+    AL_MELODYPITCH,
+    // Die 8-Takt-Phrase: Position 0..1 und Sekunden bis zur naechsten Grenze
+    // (= der vorhergesagte Drop).  Fuer Szenen, die auf den Drop hin zaehlen.
+    AL_PHRASEPOS, AL_PHRASELEFT, AL_COUNT
 };
 const char *kAudioLocNames[AL_COUNT] = {
     "audioPhase", "audioAdvance", "audioBeat", "audioLevel", "sides",
@@ -492,7 +495,8 @@ const char *kAudioLocNames[AL_COUNT] = {
     "oitPass", "shadowExtent",
     "texShadow2", "lightM2", "shadowPass2", "lightDir2", "texPrevFrame",
     "sceneAdvance",   // Reihenfolge MUSS zum AL_-Enum passen (Tools/check_enum_tables.py)
-    "audioMelodyPitch"
+    "audioMelodyPitch",
+    "audioPhrasePos", "audioPhraseLeft"
 };
 }
 
@@ -662,6 +666,8 @@ void EffectShader::applyAudioFeatures(const AudioFeatures &f)
     // sceneAdvance bei 0 anfaengt. resetParameters() setzt die Marke zurueck.
     if (m_advanceAtReset < -0.9e9f) m_advanceAtReset = f.audioAdvance;
     if (L[AL_MELODYPITCH] >= 0) glUniform1f(L[AL_MELODYPITCH], f.melodyPitch);
+    if (L[AL_PHRASEPOS]   >= 0) glUniform1f(L[AL_PHRASEPOS],   f.phrasePos);
+    if (L[AL_PHRASELEFT]  >= 0) glUniform1f(L[AL_PHRASELEFT],  f.phraseSecsLeft);
     if (L[AL_SCENEADVANCE] >= 0)
         glUniform1f(L[AL_SCENEADVANCE], f.audioAdvance - m_advanceAtReset);
     if (L[AL_BEAT]     >= 0) glUniform1f(L[AL_BEAT],     f.beatDecay);
