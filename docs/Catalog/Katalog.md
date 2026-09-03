@@ -1,6 +1,6 @@
 # Kaleidoscope Enhanced — Szenen-Katalog
 
-_766 Szenen, 29 FX-Overlays, 83 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
+_776 Szenen, 29 FX-Overlays, 83 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
 
 
 ---
@@ -1054,6 +1054,15 @@ FAST RADIO BURST DISPERSION: a radio telescope under a sky that is the dynamic s
 ![FastRadioBurstDispersion ruhig (t=8)](img/FastRadioBurstDispersion_A.jpg) ![FastRadioBurstDispersion ruhig (t=16)](img/FastRadioBurstDispersion_B.jpg) ![FastRadioBurstDispersion audio-heiß (t=21)](img/FastRadioBurstDispersion_C.jpg)
 
 
+### FataMorganaMirage
+
+`Scene2D/FataMorganaMirage.frag` · type=normal · mood=calm,dreamy,bright · complexity=2
+
+FATA MORGANA MIRAGE: a ship on the horizon seen through layered air -- the mirage stretches it, inverts it, stacks it into towers that shift as the air layers breathe. The photo is the scene beyond the horizon: it is drawn in horizontal slices, each slice mapped by a refraction profile that wobbles slowly on the scene clock; the heat is the swell (stronger stretching), the shimmer is the treble, the bass is the warm …
+
+![FataMorganaMirage ruhig (t=8)](img/FataMorganaMirage_A.jpg) ![FataMorganaMirage ruhig (t=16)](img/FataMorganaMirage_B.jpg) ![FataMorganaMirage audio-heiß (t=21)](img/FataMorganaMirage_C.jpg)
+
+
 ### FeedbackKaleidoscope
 
 `Scene2D/FeedbackKaleidoscope.frag` · type=normal · mood=psychedelic,dark · complexity=2
@@ -1398,6 +1407,15 @@ GYROID TRIPLY PERIODIC LABYRINTH: Raymarched infinite non-Euclidean minimal surf
 ![GyroidTriplyPeriodicLabyrinth ruhig (t=8)](img/GyroidTriplyPeriodicLabyrinth_A.jpg) ![GyroidTriplyPeriodicLabyrinth ruhig (t=16)](img/GyroidTriplyPeriodicLabyrinth_B.jpg) ![GyroidTriplyPeriodicLabyrinth audio-heiß (t=21)](img/GyroidTriplyPeriodicLabyrinth_C.jpg)
 
 
+### HaboobDustWall
+
+`Scene2D/HaboobDustWall.frag` · type=normal · mood=dark,aggressive,dreamy · complexity=2
+
+HABOOB DUST WALL: a wall of dust a kilometre high rolling over a desert town. The wall advances steadily on the scene clock (it never quite arrives: the front breathes forward and back over a long period), its height follows the swell, its face boils with round-lobed billows, lightning flickers inside it on the kick, and the town -- the photo -- is swallowed from the far edge in. The camera stands in the street. Audi…
+
+![HaboobDustWall ruhig (t=8)](img/HaboobDustWall_A.jpg) ![HaboobDustWall ruhig (t=16)](img/HaboobDustWall_B.jpg) ![HaboobDustWall audio-heiß (t=21)](img/HaboobDustWall_C.jpg)
+
+
 ### Halftone
 
 `Scene2D/Halftone.frag` · type=normal · mood=calm · complexity=2
@@ -1504,6 +1522,15 @@ HOLOGRAPHIC DIFFRACTION GRATING MANDALA: Triple crossed laser interference grati
 HOPF FIBRATION STREAMLINES: 4D-to-3D Hopf Fibration (S3 -> S2) raymarching. Luminous interlocking linked fiber tori, relativistic circular streamlines, and high-velocity electric pulse cascades. Audio Reactivity: audioAdvance -> drives continuous circular stream flow along fiber links audioKick -> flashes fiber linkage nodes & expands fiber tube radius audioCentroid-> modulates fiber density & fine stream resolution …
 
 ![HopfFibrationStreamlines ruhig (t=8)](img/HopfFibrationStreamlines_A.jpg) ![HopfFibrationStreamlines ruhig (t=16)](img/HopfFibrationStreamlines_B.jpg) ![HopfFibrationStreamlines audio-heiß (t=21)](img/HopfFibrationStreamlines_C.jpg)
+
+
+### HurricaneEyeWall
+
+`Scene2D/HurricaneEyeWall.frag` · type=normal · mood=aggressive,dark,dreamy · complexity=3
+
+HURRICANE EYE WALL: standing in the eye. All around, the stadium of the eyewall rises -- a tilted amphitheatre of cloud turning steadily on the scene clock -- and above, the calm blue sky. The wall's height is the swell, lightning flickers in it on the kick, the sea below heaves with the bass, and the photo is the cloud texture of the wall. Camera fixed, looking across the eye. Audio Reactivity: sceneAdvance -> the w…
+
+![HurricaneEyeWall ruhig (t=8)](img/HurricaneEyeWall_A.jpg) ![HurricaneEyeWall ruhig (t=16)](img/HurricaneEyeWall_B.jpg) ![HurricaneEyeWall audio-heiß (t=21)](img/HurricaneEyeWall_C.jpg)
 
 
 ### HyperbolicEscherCircleLimit
@@ -1648,6 +1675,15 @@ HYPER TOROIDAL ROLLER COASTER: Extreme 3D Frenet-Serret camera tracking ride alo
 HYPER WARP TUNNEL: Full-screen infinite warp tunnel with dynamic polar coordinates, multi-frequency FBM domain warping, and high-velocity flight. The wall is a photo sample DIVIDED BY THE PHOTO'S OWN MEAN (imgDC), so the picture supplies texture and colour while the tunnel supplies its own light: a dark nebula and a bright portrait now light the same tunnel. audioAdvance -> continuous high-speed forward progression (…
 
 ![HyperWarpTunnel ruhig (t=8)](img/HyperWarpTunnel_A.jpg) ![HyperWarpTunnel ruhig (t=16)](img/HyperWarpTunnel_B.jpg) ![HyperWarpTunnel audio-heiß (t=21)](img/HyperWarpTunnel_C.jpg)
+
+
+### IcebergWaterline
+
+`Scene2D/IcebergWaterline.frag` · type=normal · mood=calm,dreamy,bright · complexity=2
+
+ICEBERG WATERLINE: the split view -- the iceberg white above the surface, and below it the nine tenths, vast and blue, the photo refracted through the ice. Light rays fall through the water on the swell, bubbles (round) rise on the scene clock, small fish pass as round-bodied shadows, and the kick is a crack of light in the ice. Camera fixed at the waterline. Audio Reactivity: audioSwell -> sunlight and rays (slow) s…
+
+![IcebergWaterline ruhig (t=8)](img/IcebergWaterline_A.jpg) ![IcebergWaterline ruhig (t=16)](img/IcebergWaterline_B.jpg) ![IcebergWaterline audio-heiß (t=21)](img/IcebergWaterline_C.jpg)
 
 
 ### IceCrack
@@ -2460,6 +2496,15 @@ NEUTRON STAR SURFACE SPRINT: a racing flight over the crust of a neutron star. T
 NEWTON BASIN PSYCHEDELIC SEA: Higher-order complex Newton-Raphson root attraction basins with 3D embossed normal relief, fluid relaxation currents, specular wave glints, and dynamic polynomial coefficient rotation. Audio Reactivity: audioAdvance -> rotates complex polynomial roots & drives wave relaxation audioKick -> flashes root convergence singularities & shockwave pulse audioCentroid-> selects polynomial degree p…
 
 ![NewtonBasinPsychedelicSea ruhig (t=8)](img/NewtonBasinPsychedelicSea_A.jpg) ![NewtonBasinPsychedelicSea ruhig (t=16)](img/NewtonBasinPsychedelicSea_B.jpg) ![NewtonBasinPsychedelicSea audio-heiß (t=21)](img/NewtonBasinPsychedelicSea_C.jpg)
+
+
+### NoctilucentClouds
+
+`Scene2D/NoctilucentClouds.frag` · type=normal · mood=calm,dark,dreamy · complexity=2
+
+NOCTILUCENT CLOUDS: the highest clouds there are, lit by a sun already far below the horizon -- electric blue-white sheets rippled by gravity waves, drifting slowly over a landscape in full night. The ripples run on the scene clock, their fine structure is the treble, the twilight glow at the horizon is the swell, the bass is the deep afterglow; the photo is the dark land and the far water. Camera fixed. Audio Reacti…
+
+![NoctilucentClouds ruhig (t=8)](img/NoctilucentClouds_A.jpg) ![NoctilucentClouds ruhig (t=16)](img/NoctilucentClouds_B.jpg) ![NoctilucentClouds audio-heiß (t=21)](img/NoctilucentClouds_C.jpg)
 
 
 ### NoiseSpiral
@@ -3301,6 +3346,15 @@ SAFFMAN-TAYLOR FINGERS: viscous fingering in a Hele-Shaw cell. A less viscous fl
 ![SaffmanTaylorFingers ruhig (t=8)](img/SaffmanTaylorFingers_A.jpg) ![SaffmanTaylorFingers ruhig (t=16)](img/SaffmanTaylorFingers_B.jpg) ![SaffmanTaylorFingers audio-heiß (t=21)](img/SaffmanTaylorFingers_C.jpg)
 
 
+### SalarMirrorFlats
+
+`Scene2D/SalarMirrorFlats.frag` · type=normal · mood=calm,bright,dreamy · complexity=2
+
+SALAR MIRROR FLATS: the salt flat after rain -- a few centimetres of water over the crust make the largest mirror on Earth. The sky is the photo; the flat mirrors it exactly, so the horizon vanishes; under the water the hexagonal salt crust shows through; walkers stand as round-headed silhouettes on the clock, mirrored too. The cloud light is the swell, the treble is the glitter of ripples, the kick a far flash. Came…
+
+![SalarMirrorFlats ruhig (t=8)](img/SalarMirrorFlats_A.jpg) ![SalarMirrorFlats ruhig (t=16)](img/SalarMirrorFlats_B.jpg) ![SalarMirrorFlats audio-heiß (t=21)](img/SalarMirrorFlats_C.jpg)
+
+
 ### ScherkMinimalSurfaceTower
 
 `Scene2D/ScherkMinimalSurfaceTower.frag` · type=normal · mood=bright,psychedelic · complexity=4
@@ -3346,6 +3400,15 @@ SECTION MEMORY HALLS: the song's structure as a suite of rooms. Every section th
 SECTION STRATA CANYON: the song as geology. A canyon wall fills the frame; every section of the song that has played is a rock layer, in that section's colour (a palette hue keyed to the section id), the oldest at the bottom; the current section is the layer being laid down on top, growing with its age. The wall passes steadily on the scene clock (a slow lateral drift of the erosion pattern, not of the camera); the p…
 
 ![SectionStrataCanyon ruhig (t=8)](img/SectionStrataCanyon_A.jpg) ![SectionStrataCanyon ruhig (t=16)](img/SectionStrataCanyon_B.jpg) ![SectionStrataCanyon audio-heiß (t=21)](img/SectionStrataCanyon_C.jpg)
+
+
+### SeismographDrum
+
+`Scene2D/SeismographDrum.frag` · type=normal · mood=calm,dark,aggressive · complexity=2
+
+SEISMOGRAPH DRUM: the classic recorder -- a paper drum turning steadily on the scene clock while the pen writes. The trace is the recent loudness (audioWave for the fine wiggle, the level for the envelope), a quake on the kick is an ink spike and a flash of the pen lamp, the bass is the low rumble in the trace. The drum turns, the pen arm rests, the frame never shakes: only the ink moves. The photo is the observatory…
+
+![SeismographDrum ruhig (t=8)](img/SeismographDrum_A.jpg) ![SeismographDrum ruhig (t=16)](img/SeismographDrum_B.jpg) ![SeismographDrum audio-heiß (t=21)](img/SeismographDrum_C.jpg)
 
 
 ### SelfSimilarity
@@ -3744,6 +3807,15 @@ STIPPLE VORONOI RELAX: weighted Voronoi stippling of the photo -- the dots are d
 STRING ART CHORDS: twelve pins on a circle, one per pitch class; strings run between the classes that sound together -- a chord is literally a chord across the circle. Each string fades in and out with the product of its two pins' chroma (continuous), the wheel turns steadily on the scene clock, the pins glow with their class, and the strings shimmer with the treble. Behind the wheel, the photo as the board. Camera s…
 
 ![StringArtChords ruhig (t=8)](img/StringArtChords_A.jpg) ![StringArtChords ruhig (t=16)](img/StringArtChords_B.jpg) ![StringArtChords audio-heiß (t=21)](img/StringArtChords_C.jpg)
+
+
+### SundogHaloSky
+
+`Scene2D/SundogHaloSky.frag` · type=normal · mood=calm,bright,dreamy · complexity=2
+
+SUNDOG HALO SKY: a low winter sun in a sky full of ice crystals, and the optics they draw -- the 22 degree halo, the two sun dogs on the parhelic circle, the upper tangent arc, a sun pillar. The crystal load (the treble) is the halo brightness, the sun itself is the swell, the bass warms the low light; the photo is the snowy landscape below and the thin cloud the crystals float in. Camera fixed. Audio Reactivity: aud…
+
+![SundogHaloSky ruhig (t=8)](img/SundogHaloSky_A.jpg) ![SundogHaloSky ruhig (t=16)](img/SundogHaloSky_B.jpg) ![SundogHaloSky audio-heiß (t=21)](img/SundogHaloSky_C.jpg)
 
 
 ### SupercellMesocyclone
@@ -5183,6 +5255,15 @@ GEOTHERMAL FUMAROLE MINERAL SPIRES: Deep-sea hydrothermal vent chimneys and volc
 ![GeothermalFumaroleMineralSpires ruhig (t=8)](img/GeothermalFumaroleMineralSpires_A.jpg) ![GeothermalFumaroleMineralSpires ruhig (t=16)](img/GeothermalFumaroleMineralSpires_B.jpg) ![GeothermalFumaroleMineralSpires audio-heiß (t=21)](img/GeothermalFumaroleMineralSpires_C.jpg)
 
 
+### GlacierCalvingFront
+
+`Scene3D/GlacierCalvingFront.frag` · type=scene3d · geom=indirect · mood=calm,bright,aggressive · complexity=4
+
+Fragment stage for GlacierCalvingFront: a grey polar sky, the cliff face of blue-white ice carrying the photo as its crevasse pattern and lit from within by the bass, the sea dark with the cliff reflected, slabs as photo ice, spray as round white drops, the kick a flash along the fresh calving scar. Audio Reactivity: audioBass -> ice glow; audioKick -> scar flash; audioSwell -> daylight; audioHigh -> spray sparkle; a…
+
+![GlacierCalvingFront ruhig (t=8)](img/GlacierCalvingFront_A.jpg) ![GlacierCalvingFront ruhig (t=16)](img/GlacierCalvingFront_B.jpg) ![GlacierCalvingFront audio-heiß (t=21)](img/GlacierCalvingFront_C.jpg)
+
+
 ### GlacierTessellation
 
 `Scene3D/GlacierTessellation.frag` · type=scene3d · geom=patches · mood=calm,bright · complexity=4
@@ -5927,6 +6008,15 @@ ParticleGalaxy.frag — soft round point sprite (additive blending).
 Renders one particle of the mirror-kaleidoscope tunnel-flight point cloud as a tight- cored glow sprite. Reads no audio uniforms directly: position, kaleidoscope fold, kick shockwave flash and colour are all computed in the paired ParticleTunnelFlight.vert and arrive here as vCol and vLife (0..~1.5, brightens the glow on a kick shockwave). A soft-knee tone-map compresses hot additive overlap instead of clipping the w…
 
 ![ParticleTunnelFlight ruhig (t=8)](img/ParticleTunnelFlight_A.jpg) ![ParticleTunnelFlight ruhig (t=16)](img/ParticleTunnelFlight_B.jpg) ![ParticleTunnelFlight audio-heiß (t=21)](img/ParticleTunnelFlight_C.jpg)
+
+
+### PermafrostPolygons
+
+`Scene3D/PermafrostPolygons.frag` · type=scene3d · geom=patches · mood=calm,bright,dreamy · complexity=4
+
+PERMAFROST POLYGONS: the tundra from a low flight -- ice-wedge polygons rimmed with ridges of moss and cotton grass, the troughs between them flooded, every pond a mirror of the sky (the photo). The ponds brighten with the bass (the sky light in them), frost glints on the ridges with the treble, the low arctic sun is the swell, the kick a bird lifting as a flash of white. Camera height fixed. Audio Reactivity: audioB…
+
+![PermafrostPolygons ruhig (t=8)](img/PermafrostPolygons_A.jpg) ![PermafrostPolygons ruhig (t=16)](img/PermafrostPolygons_B.jpg) ![PermafrostPolygons audio-heiß (t=21)](img/PermafrostPolygons_C.jpg)
 
 
 ### PhotoCarousel

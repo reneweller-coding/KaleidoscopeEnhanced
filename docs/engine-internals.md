@@ -3551,3 +3551,25 @@ drop) and toggled frame by frame on envelope noise (strobe 40.7) -- any
 gate on an audio envelope must be a smoothstep with a band; MelodyRidgeline
 was flat on a track without a followed melody and now falls back to a
 rolling profile on the clock when the melody value is near zero.
+
+## The fourth fifty, block A: earth and weather
+
+Ten scenes (03.09.2026), chosen against the 877 already in the catalogue.
+
+| Scene | Pipeline | Note |
+|---|---|---|
+| HaboobDustWall | 2D | the front breathes forward and back on a long period instead of passing through; the wall face is fbm lobes, lightning a diffuse fbm flash on the kick |
+| PermafrostPolygons | `patches` | Voronoi cells with a rim ridge (Gaussian in the seam distance) and a low centre; troughs flooded; the pond mirrors the photo top |
+| SalarMirrorFlats | 2D | the sky photo mirrored below the horizon; a pointy-top hex crust in ground perspective; walkers as round-headed silhouettes with mirrors |
+| GlacierCalvingFront | `indirect` | slabs on continuous phases: lean, fall, splash (40 round spray drops each), float away, shrink out; the calving rate is the swell |
+| IcebergWaterline | 2D | above/below split at the waterline; the underwater mass is the photo refracted by fbm; bubbles and fish on the clock |
+| NoctilucentClouds | 2D | sheets in perspective with gravity-wave bands; lit from below by the sunk sun (brightest low) |
+| HurricaneEyeWall | 2D | a ray per pixel against a leaning cone (the eyewall) and the sea plane; the wall texture turns on the clock |
+| SundogHaloSky | 2D | 22 degree halo, sun dogs, parhelic circle, upper tangent arc and pillar; the crystal load is the treble |
+| FataMorganaMirage | 2D | a triangle-wave fold of the source row above the horizon, blended in by the heat (swell) |
+| SeismographDrum | 2D | the drum turns, the trace samples audioWave by the angle since the pen; the frame never moves |
+
+Preview lessons: HurricaneEyeWall lit the whole eyewall with every kick
+and strobed (19.8); lightning must be localised (a sector window) and
+scaled down; the calving cliff used a cell hash for crevasses and read as
+blocks -- a sine fissure field replaced it.

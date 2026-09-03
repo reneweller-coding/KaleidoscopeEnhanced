@@ -181,19 +181,18 @@ MODIFIED_SCENES = {
 # Minuten statt siebzig).  Bewusst eine eigene Liste: welche Szenen zuletzt
 # dran waren, ist eine historische Tatsache und soll im Diff stehen.
 RECENT_SCENES = {
-    # 03.09.: dritte Fuenfzig, Block E (Musikgeometrie): Shepard-Helix, SSM-Gelaende,
-    # Webstuhl, Schwerpunkt-Sonne, Melodiekamm, Phrasenturm, Abschnittsschichten,
-    # Stereo-Canyon, Obertonsaiten, Aufbau-Rakete.
-    "ShepardPitchHelix",
-    "SelfSimilarityTerrain",
-    "RhythmLoomWeave",
-    "CentroidSunArc",
-    "MelodyRidgeline",
-    "PhraseSkyscraper",
-    "SectionStrataCanyon",
-    "StereoWidthCanyon",
-    "HarmonicSeriesStrings",
-    "BuildUpRocketLaunch",
+    # 03.09.: vierte Fuenfzig, Block A (Erde und Wetter): Haboob, Permafrost, Salzsee,
+    # Kalbungsfront, Eisberg, Nachtwolken, Hurrikanauge, Halo, Fata Morgana, Seismograph.
+    "HaboobDustWall",
+    "PermafrostPolygons",
+    "SalarMirrorFlats",
+    "GlacierCalvingFront",
+    "IcebergWaterline",
+    "NoctilucentClouds",
+    "HurricaneEyeWall",
+    "SundogHaloSky",
+    "FataMorganaMirage",
+    "SeismographDrum",
 }
 
 def rule_recent(m, h):
