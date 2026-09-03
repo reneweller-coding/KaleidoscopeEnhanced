@@ -3528,3 +3528,26 @@ flicker at two it does not; PersistentHomologyBubbles flickered where
 point orbits carried pairs across the touch threshold, so the orbits are
 a third of their first amplitude; the scanner flags a variable named
 jitter as a shake, so it is called jit.
+
+## The third fifty, block E: music and sound geometry
+
+| Scene | Pipeline | Note |
+|---|---|---|
+| ShepardPitchHelix | 2D, `audioMelody` | helix sampled 160 times for the rail; the melody history as beads at helixPoint(pitch); a simple perspective by z |
+| SelfSimilarityTerrain | `patches`, `texSSM` | height = similarity squared; both axes read backward from ssmHead; the far end rises to fill the horizon |
+| RhythmLoomWeave | 2D | warp threads by band; the cloth scrolls with the same clock the shuttle uses, so rows and passes stay in step |
+| CentroidSunArc | 2D, `audioCentroid` | the sun on an arc from the centroid; slopes lit by the sign of the ridge derivative against the sun side |
+| MelodyRidgeline | 2D, `audioMelody` | the history interpolated at fractional age; each ridge reads it at an extra delay |
+| PhraseSkyscraper | 2D, `audioPhrasePos` | the current tower rises with the phrase; `audioSectionCount` towers stand behind |
+| SectionStrataCanyon | 2D, `audioSectionId` | one layer per counted section, the current one growing with `audioSectionAge` over 40 s |
+| StereoWidthCanyon | 2D, `audioStereo` | width from the swell (the slow envelope), the balance only leans the slot; channel levels light their wall |
+| HarmonicSeriesStrings | 2D | the standing-wave envelope |sin(n pi u)| is drawn, never the vibration |
+| BuildUpRocketLaunch | 2D, `audioBuildUp` / `audioDrop` | climb = (1 - drop) while the drop envelope is alive, so the rocket rises smoothly from liftoff |
+
+With this block the third fifty is complete: 150 new scenes since 02.09.2026.
+
+Preview lessons: BuildUpRocketLaunch gated its engines with step(0.02,
+drop) and toggled frame by frame on envelope noise (strobe 40.7) -- any
+gate on an audio envelope must be a smoothstep with a band; MelodyRidgeline
+was flat on a track without a followed melody and now falls back to a
+rolling profile on the clock when the melody value is near zero.

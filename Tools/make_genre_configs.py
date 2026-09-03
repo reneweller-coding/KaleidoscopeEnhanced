@@ -181,18 +181,19 @@ MODIFIED_SCENES = {
 # Minuten statt siebzig).  Bewusst eine eigene Liste: welche Szenen zuletzt
 # dran waren, ist eine historische Tatsache und soll im Diff stehen.
 RECENT_SCENES = {
-    # 03.09.: dritte Fuenfzig, Block D (Mathematik, Rechnen, KI): Hut-Kachel, Diffusion,
-    # Attention, Punktierung, LIDAR, Myonen, Borromaeisch, Ulam, Homologie, Epizykel.
-    "EinsteinHatTiling",
-    "DiffusionDenoiseReveal",
-    "AttentionHeadRibbons",
-    "StippleVoronoiRelax",
-    "LidarSweepPointCloud",
-    "MuonTomographyPyramid",
-    "BorromeanRingsOrbit",
-    "UlamPrimeSpiral",
-    "PersistentHomologyBubbles",
-    "FourierEpicycleDraw",
+    # 03.09.: dritte Fuenfzig, Block E (Musikgeometrie): Shepard-Helix, SSM-Gelaende,
+    # Webstuhl, Schwerpunkt-Sonne, Melodiekamm, Phrasenturm, Abschnittsschichten,
+    # Stereo-Canyon, Obertonsaiten, Aufbau-Rakete.
+    "ShepardPitchHelix",
+    "SelfSimilarityTerrain",
+    "RhythmLoomWeave",
+    "CentroidSunArc",
+    "MelodyRidgeline",
+    "PhraseSkyscraper",
+    "SectionStrataCanyon",
+    "StereoWidthCanyon",
+    "HarmonicSeriesStrings",
+    "BuildUpRocketLaunch",
 }
 
 def rule_recent(m, h):

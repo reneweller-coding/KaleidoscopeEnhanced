@@ -1,6 +1,6 @@
 # Kaleidoscope Enhanced — Szenen-Katalog
 
-_756 Szenen, 29 FX-Overlays, 83 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
+_766 Szenen, 29 FX-Overlays, 83 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
 
 
 ---
@@ -449,6 +449,15 @@ BUILD-UP PRESSURE CHAMBER: a corridor whose walls close in as the music builds. 
 ![BuildUpPressureChamber ruhig (t=8)](img/BuildUpPressureChamber_A.jpg) ![BuildUpPressureChamber ruhig (t=16)](img/BuildUpPressureChamber_B.jpg) ![BuildUpPressureChamber audio-heiß (t=21)](img/BuildUpPressureChamber_C.jpg)
 
 
+### BuildUpRocketLaunch
+
+`Scene2D/BuildUpRocketLaunch.frag` · type=normal · mood=dark,aggressive,bright · complexity=3
+
+BUILD-UP ROCKET LAUNCH: a rocket on the pad at night. As the music builds, the pad comes alive -- venting vapour thickens, the floodlights come up, the countdown lamps light one by one (all smooth functions of the build-up envelope) -- and the drop is liftoff: the engines light, the rocket climbs on the scene clock from the drop instant, the exhaust cloud rolls out. Objects move; the camera on the causeway does not. …
+
+![BuildUpRocketLaunch ruhig (t=8)](img/BuildUpRocketLaunch_A.jpg) ![BuildUpRocketLaunch ruhig (t=16)](img/BuildUpRocketLaunch_B.jpg) ![BuildUpRocketLaunch audio-heiß (t=21)](img/BuildUpRocketLaunch_C.jpg)
+
+
 ### BurningShipDeepVoyage
 
 `Scene2D/BurningShipDeepVoyage.frag` · type=normal · mood=psychedelic,dark,aggressive · complexity=2
@@ -537,6 +546,15 @@ CAVITY OPTOMECHANICS PHONON LASING: Optomechanical optical microcavity with mova
 CELTIC MANDELBROT GOTHIC VAULT: Celtic Mandelbrot variation z -> |Re(z^2)| + i*Im(z^2) + c. Gothic cathedral tracery arches, lancet church window filigree, stained-glass luminescence, and continuous deep plunge through endless vaulted fractal naves. Audio Reactivity: audioAdvance -> drives continuous deep plunge through Gothic cathedral arches audioKick -> flashes stained-glass rosette window cores & cathedral flares…
 
 ![CelticMandelbrotGothicVault ruhig (t=8)](img/CelticMandelbrotGothicVault_A.jpg) ![CelticMandelbrotGothicVault ruhig (t=16)](img/CelticMandelbrotGothicVault_B.jpg) ![CelticMandelbrotGothicVault audio-heiß (t=21)](img/CelticMandelbrotGothicVault_C.jpg)
+
+
+### CentroidSunArc
+
+`Scene2D/CentroidSunArc.frag` · type=normal · mood=calm,bright,dreamy · complexity=2
+
+CENTROID SUN ARC: the timbre as the time of day. The spectral centroid -- how bright the sound is -- is the height of the sun over a landscape of the photo: dark, bassy passages are dusk with long shadows and a red sun on the horizon, bright passages are noon; spectral flatness is the haze (noisy sound = hazy air); the centroid is slow enough on its own to move the sun smoothly. Round birds cross on the scene clock; …
+
+![CentroidSunArc ruhig (t=8)](img/CentroidSunArc_A.jpg) ![CentroidSunArc ruhig (t=16)](img/CentroidSunArc_B.jpg) ![CentroidSunArc audio-heiß (t=21)](img/CentroidSunArc_C.jpg)
 
 
 ### CephalopodChromatophores
@@ -1407,6 +1425,15 @@ HARMONIC CHANGE LIGHTNING: a still night over a dark sea. Nothing moves but the 
 ![HarmonicRings ruhig (t=8)](img/HarmonicRings_A.jpg) ![HarmonicRings ruhig (t=16)](img/HarmonicRings_B.jpg) ![HarmonicRings audio-heiß (t=21)](img/HarmonicRings_C.jpg)
 
 
+### HarmonicSeriesStrings
+
+`Scene2D/HarmonicSeriesStrings.frag` · type=normal · mood=calm,dreamy,bright · complexity=2
+
+HARMONIC SERIES STRINGS: a monochord and its overtones. Eight strings span the frame, the n-th sounding the n-th harmonic; each shows its standing wave as a lit envelope (n antinodes) -- never the fast vibration itself, only the envelope, so nothing flickers -- and the envelope's brightness is the energy of the band that harmonic falls in. The nodes are round beads of light; the bridge glows with the bass; the kick p…
+
+![HarmonicSeriesStrings ruhig (t=8)](img/HarmonicSeriesStrings_A.jpg) ![HarmonicSeriesStrings ruhig (t=16)](img/HarmonicSeriesStrings_B.jpg) ![HarmonicSeriesStrings audio-heiß (t=21)](img/HarmonicSeriesStrings_C.jpg)
+
+
 ### HawkingRadiationEvaporation
 
 `Scene2D/HawkingRadiationEvaporation.frag` · type=normal · mood=bright,dark,psychedelic · complexity=3
@@ -2201,6 +2228,15 @@ MELODY KALEIDOSCOPE: the mirrored motif is the melody itself. The last eight sec
 ![MelodyKaleidoscope ruhig (t=8)](img/MelodyKaleidoscope_A.jpg) ![MelodyKaleidoscope ruhig (t=16)](img/MelodyKaleidoscope_B.jpg) ![MelodyKaleidoscope audio-heiß (t=21)](img/MelodyKaleidoscope_C.jpg)
 
 
+### MelodyRidgeline
+
+`Scene2D/MelodyRidgeline.frag` · type=normal · mood=calm,bright,dreamy · complexity=2
+
+MELODY RIDGELINE: the melody as mountains. The 96-sample melody history is the profile of the nearest ridge (newest at the right), scrolling steadily leftward with the sample clock; behind it, older ridges -- the same history at larger delays, hazed by distance -- so the tune stands as a range of hills under a sky of the photo. The swell is the daylight, the kick a flash on the nearest summit, the treble the snow gli…
+
+![MelodyRidgeline ruhig (t=8)](img/MelodyRidgeline_A.jpg) ![MelodyRidgeline ruhig (t=16)](img/MelodyRidgeline_B.jpg) ![MelodyRidgeline audio-heiß (t=21)](img/MelodyRidgeline_C.jpg)
+
+
 ### MetamaterialCloakingHorizon
 
 `Scene2D/MetamaterialCloakingHorizon.frag` · type=normal · mood=psychedelic,calm · complexity=3
@@ -2640,6 +2676,15 @@ PHOTONIC METASURFACE PHASE GRADIENT: Dielectric subwavelength gradient metasurfa
 PHRASE CLOCK ROSETTE: a 32-beat rosette that shows WHERE in the 8-bar phrase the music is. The host integrates beats from the tempo since the last drop (audioPhrasePos, 0..1 over 32 beats): a hand sweeps the rosette, the 32 petals fill behind it, and the build-up tightens the whole flower toward its centre -- until the phrase boundary, where dance music puts its drops, when it blooms open. For the first time a scene …
 
 ![PhraseClockRosette ruhig (t=8)](img/PhraseClockRosette_A.jpg) ![PhraseClockRosette ruhig (t=16)](img/PhraseClockRosette_B.jpg) ![PhraseClockRosette audio-heiß (t=21)](img/PhraseClockRosette_C.jpg)
+
+
+### PhraseSkyscraper
+
+`Scene2D/PhraseSkyscraper.frag` · type=normal · mood=dark,calm,bright · complexity=2
+
+PHRASE SKYSCRAPER: the music builds a city. The current phrase is a tower going up floor by floor with the phrase position -- the floors are the photo, lit windows are the spectrum bands -- and the phrases already finished stand as a skyline behind it (one tower per finished phrase, counted from the section count), so a song ends as a city. The drop lights every window at once; the kick flashes the crane beacon; nigh…
+
+![PhraseSkyscraper ruhig (t=8)](img/PhraseSkyscraper_A.jpg) ![PhraseSkyscraper ruhig (t=16)](img/PhraseSkyscraper_B.jpg) ![PhraseSkyscraper audio-heiß (t=21)](img/PhraseSkyscraper_C.jpg)
 
 
 ### PhraseTideBeach
@@ -3139,6 +3184,15 @@ RELATIVISTIC SYNCHROTRON PULSAR WIND: Pulsar wind nebula (Crab Nebula PWN). Magn
 ![RelativisticSynchrotronPulsarWind ruhig (t=8)](img/RelativisticSynchrotronPulsarWind_A.jpg) ![RelativisticSynchrotronPulsarWind ruhig (t=16)](img/RelativisticSynchrotronPulsarWind_B.jpg) ![RelativisticSynchrotronPulsarWind audio-heiß (t=21)](img/RelativisticSynchrotronPulsarWind_C.jpg)
 
 
+### RhythmLoomWeave
+
+`Scene2D/RhythmLoomWeave.frag` · type=normal · mood=calm,bright,dreamy · complexity=2
+
+RHYTHM LOOM WEAVE: a loom weaving the music into cloth. Thirty- two warp threads run top to bottom, one per spectrum band, lit by their band; the weft shuttle crosses on the scene clock, laying a new row each pass, and the cloth already woven scrolls slowly down carrying the photo in its weave (the photo is the pattern card). The kick is the beater striking the row home (a flash along the fell line), the treble glint…
+
+![RhythmLoomWeave ruhig (t=8)](img/RhythmLoomWeave_A.jpg) ![RhythmLoomWeave ruhig (t=16)](img/RhythmLoomWeave_B.jpg) ![RhythmLoomWeave audio-heiß (t=21)](img/RhythmLoomWeave_C.jpg)
+
+
 ### RibosomeAssemblyLine
 
 `Scene2D/RibosomeAssemblyLine.frag` · type=normal · mood=calm,dreamy,bright · complexity=2
@@ -3285,6 +3339,15 @@ SECTION MEMORY HALLS: the song's structure as a suite of rooms. Every section th
 ![SectionMemoryHalls ruhig (t=8)](img/SectionMemoryHalls_A.jpg) ![SectionMemoryHalls ruhig (t=16)](img/SectionMemoryHalls_B.jpg) ![SectionMemoryHalls audio-heiß (t=21)](img/SectionMemoryHalls_C.jpg)
 
 
+### SectionStrataCanyon
+
+`Scene2D/SectionStrataCanyon.frag` · type=normal · mood=calm,bright,dreamy · complexity=2
+
+SECTION STRATA CANYON: the song as geology. A canyon wall fills the frame; every section of the song that has played is a rock layer, in that section's colour (a palette hue keyed to the section id), the oldest at the bottom; the current section is the layer being laid down on top, growing with its age. The wall passes steadily on the scene clock (a slow lateral drift of the erosion pattern, not of the camera); the p…
+
+![SectionStrataCanyon ruhig (t=8)](img/SectionStrataCanyon_A.jpg) ![SectionStrataCanyon ruhig (t=16)](img/SectionStrataCanyon_B.jpg) ![SectionStrataCanyon audio-heiß (t=21)](img/SectionStrataCanyon_C.jpg)
+
+
 ### SelfSimilarity
 
 `Scene2D/SelfSimilarity.frag` · type=normal · mood=calm,dark · complexity=1
@@ -3321,6 +3384,15 @@ SELF-SIMILARITY MANDALA: the song's memory of itself as a mandala. The self-simi
 The photo blown apart into 1300 rigid shards (posed upstream in texShards) that spring back together, with the gaps between them falling away to near-black. This pass only grades the shard sim's output and lights the cracks: it reads the coverage mask's gradient to find every break line and adds a rim-light glow there, tinted by imgPalette (a rotating sample arc over the live photo, itself driven by audioChromaHue/au…
 
 ![ShatterField ruhig (t=8)](img/ShatterField_A.jpg) ![ShatterField ruhig (t=16)](img/ShatterField_B.jpg) ![ShatterField audio-heiß (t=21)](img/ShatterField_C.jpg)
+
+
+### ShepardPitchHelix
+
+`Scene2D/ShepardPitchHelix.frag` · type=normal · mood=dark,calm,dreamy · complexity=3
+
+SHEPARD PITCH HELIX: pitch as a helix -- one turn per octave, the twelve chroma classes around it, octaves stacked as floors -- seen side-on, turning slowly on the scene clock. The melody history (96 samples) winds up the helix as a glowing thread of round beads, the newest at the head; each class's post on the helix lights with its chroma energy; the kick lights the current note; the photo is the hall behind. Camera…
+
+![ShepardPitchHelix ruhig (t=8)](img/ShepardPitchHelix_A.jpg) ![ShepardPitchHelix ruhig (t=16)](img/ShepardPitchHelix_B.jpg) ![ShepardPitchHelix audio-heiß (t=21)](img/ShepardPitchHelix_C.jpg)
 
 
 ### SierpinskiOctahedronAbyss
@@ -3645,6 +3717,15 @@ STEREO SEARCHLIGHTS: a night city skyline of the photo, with searchlights sweepi
 Stereo spectrum analyzer with 32 frequency bands per side. Bass sits at the centre and treble runs out to the edges; the LEFT half's bar heights are scaled by the LEFT channel's energy and the RIGHT half by the RIGHT channel, so a wide stereo mix makes the two sides visibly differ. The bars are filled with the (mirror-folded) source image and tinted across the rainbow; the central seam glows with the overall stereo w…
 
 ![StereoSpectrum ruhig (t=8)](img/StereoSpectrum_A.jpg) ![StereoSpectrum ruhig (t=16)](img/StereoSpectrum_B.jpg) ![StereoSpectrum audio-heiß (t=21)](img/StereoSpectrum_C.jpg)
+
+
+### StereoWidthCanyon
+
+`Scene2D/StereoWidthCanyon.frag` · type=normal · mood=calm,bright,dreamy · complexity=2
+
+STEREO WIDTH CANYON: a slot canyon whose width is the stereo width of the mix -- a mono passage closes the walls to a crack of sky, a wide mix opens them. The width is slow (the balance is filtered), the walls carry the photo as sandstone, sunlight falls from the slot above and the left and right channel levels light their own wall. Nothing moves but the walls, slowly, and the light; the camera is fixed on the canyon…
+
+![StereoWidthCanyon ruhig (t=8)](img/StereoWidthCanyon_A.jpg) ![StereoWidthCanyon ruhig (t=16)](img/StereoWidthCanyon_B.jpg) ![StereoWidthCanyon audio-heiß (t=21)](img/StereoWidthCanyon_C.jpg)
 
 
 ### StippleVoronoiRelax
@@ -6201,6 +6282,15 @@ Frag-side music pulse (added by the deaf-scene pass: reactivity measured ~0 -- t
 SEIFERT SURFACE BRAID KNOT: 3D orientable minimal surface bounded by a complex (3,5) torus braid knot. Interlocking mathematical ribbons, normal sheen, edge glints, and photo texturing flowing along topological geodesics. audioAdvance -> navigates ribbon trajectory through torus knot loops audioKick -> flashes ribbon edge specular reflection glints audioSwell -> widens Seifert ribbon width & subsurface translucency a…
 
 ![SeifertSurfaceBraidKnot ruhig (t=8)](img/SeifertSurfaceBraidKnot_A.jpg) ![SeifertSurfaceBraidKnot ruhig (t=16)](img/SeifertSurfaceBraidKnot_B.jpg) ![SeifertSurfaceBraidKnot audio-heiß (t=21)](img/SeifertSurfaceBraidKnot_C.jpg)
+
+
+### SelfSimilarityTerrain
+
+`Scene3D/SelfSimilarityTerrain.frag` · type=scene3d · geom=patches · mood=calm,bright,dreamy · complexity=4
+
+SELF SIMILARITY TERRAIN: the self-similarity matrix flown over as a landscape -- ridges where the music repeats itself, the diagonal as the main range, valleys where it is new. The photo is the rock; the summits (high similarity) carry snow; a warm light rakes from the side with the swell; the kick flashes the nearest ridge, the bass warms the valleys, the treble glints the snow. Camera height fixed. Audio Reactivity…
+
+![SelfSimilarityTerrain ruhig (t=8)](img/SelfSimilarityTerrain_A.jpg) ![SelfSimilarityTerrain ruhig (t=16)](img/SelfSimilarityTerrain_B.jpg) ![SelfSimilarityTerrain audio-heiß (t=21)](img/SelfSimilarityTerrain_C.jpg)
 
 
 ### SensorStation
