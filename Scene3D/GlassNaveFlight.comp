@@ -1,0 +1,99 @@
+#version 430 core
+/**
+ * @file GlassNaveFlight.comp
+ * @brief GLASS NAVE FLIGHT: a flight down the nave of a cathedral built of
+ * glass.  The pillars and the floor are stone (opaque pass); between the
+ * pillars stand tall glass panes and over the aisles a clerestory of tilted
+ * panes (transparent pass, weighted-blended OIT), every pane tuned to a
+ * spectrum band and backlit by a sun whose height is the host's day clock.
+ * The nave is emitted RELATIVE to the camera with the bay pattern phased on
+ * the flight distance, so the bays stream past forever without a pop.
+ * The camera flies at constant pace on the scene clock; the music is light.
+ *
+ * Vertex layout (8 floats): pos xyz, band (which spectrum band this pane
+ * shows), face code (0 +x, 1 -x, 2 floor, 3 ceiling, 4 sky), kind (0 stone,
+ * 1 glass, 2 sky), uv.
+ *
+ * Audio Reactivity: audioSpectrum[32] -> pane glow (fragment); dayPhase ->
+ *   sun height and colour; audioKick -> stone rim; sceneAdvance -> flight.
+ *
+ * Per-instance: bayP (bay spacing), heightP (nave height), hueP.
+ */
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+layout(std430, binding = 0) buffer Verts { float verts[]; };
+layout(std430, binding = 1) buffer Cmd   { uint cmd[];   };
+
+uniform uint  maxVertices;
+uniform float time;
+uniform float sceneAdvance;
+uniform float sceneTime;
+
+uniform float bayP;
+uniform float heightP;
+uniform float hueP;
+
+void emitQuad(vec3 a, vec3 b, vec3 c, vec3 d, float band, float face, float kind)
+{
+    uint base = atomicAdd(cmd[4], 6u);
+    if (base + 6u > maxVertices) return;
+    vec3 pList[6]  = vec3[6](a, b, c, a, c, d);
+    vec2 uvList[6] = vec2[6](vec2(0.0, 0.0), vec2(1.0, 0.0), vec2(1.0, 1.0), vec2(0.0, 0.0), vec2(1.0, 1.0), vec2(0.0, 1.0));
+    for (uint i = 0u; i < 6u; ++i)
+    {
+        uint off = (base + i) * 8u;
+        verts[off + 0u] = pList[i].x; verts[off + 1u] = pList[i].y; verts[off + 2u] = pList[i].z;
+        verts[off + 3u] = band; verts[off + 4u] = face; verts[off + 5u] = kind;
+        verts[off + 6u] = uvList[i].x; verts[off + 7u] = uvList[i].y;
+    }
+}
+
+void emitBox(vec3 c, vec3 h, float band, float kind)
+{
+    vec3 x = vec3(h.x, 0.0, 0.0), y = vec3(0.0, h.y, 0.0), z = vec3(0.0, 0.0, h.z);
+    emitQuad(c + x - y - z, c + x - y + z, c + x + y + z, c + x + y - z, band, 0.0, kind);   // +x face
+    emitQuad(c - x - y + z, c - x - y - z, c - x + y - z, c - x + y + z, band, 1.0, kind);   // -x face
+    emitQuad(c - x - y - z, c + x - y - z, c + x + y - z, c - x + y - z, band, 4.0, kind);   // -z face (toward camera)
+    emitQuad(c - x + y - z, c + x + y - z, c + x + y + z, c - x + y + z, band, 2.0, kind);   // top
+}
+
+void main()
+{
+    uvec3 g = gl_GlobalInvocationID;
+    uint id = g.x + 64u * (g.y + 64u * g.z);
+
+    float bay = 6.0 * (bayP > 0.05 ? bayP : 1.0);
+    float H = 9.0 * (heightP > 0.05 ? heightP : 1.0);
+    const float W = 5.0;                                  // half width of the nave
+    const int BAYS = 16;                                  // bays ahead of the camera
+    float travel = sceneAdvance * 2.0 + sceneTime * 0.5;
+    // Phase of the bay pattern relative to the camera: bays slide toward us.
+    float phase = mod(travel, bay);
+
+    if (id == 0u)
+    {
+        // Sky (kind 2) far ahead, and the floor (stone) as one long quad.
+        float zFar = float(BAYS) * bay;
+        emitQuad(vec3(-40.0, -30.0, zFar), vec3(40.0, -30.0, zFar), vec3(40.0, 40.0, zFar), vec3(-40.0, 40.0, zFar), 0.0, 4.0, 2.0);
+        emitQuad(vec3(-W, -3.0, -bay), vec3(W, -3.0, -bay), vec3(W, -3.0, zFar), vec3(-W, -3.0, zFar), 0.0, 2.0, 0.0);
+        return;
+    }
+    // One thread per bay and side: id 1..2*BAYS.
+    if (id > uint(2 * BAYS)) return;
+    int k = int(id - 1u);
+    int b = k / 2;
+    float side = (k % 2 == 0) ? 1.0 : -1.0;
+    float z = float(b) * bay - phase;                     // bay position streaming toward the camera
+    float bandF = mod(float(b) * 3.0 + (side > 0.0 ? 0.0 : 16.0), 32.0);
+
+    // Pillar: a stone box at the bay's front edge.
+    emitBox(vec3(side * W, -3.0 + H * 0.5, z), vec3(0.35, H * 0.5, 0.35), bandF, 0.0);
+    // Glass pane: between this pillar and the next, on the wall line.
+    vec3 p0 = vec3(side * W, -3.0, z + 0.4), p1 = vec3(side * W, -3.0, z + bay - 0.4);
+    vec3 p2 = vec3(side * W, -3.0 + H, z + bay - 0.4), p3 = vec3(side * W, -3.0 + H, z + 0.4);
+    if (side > 0.0) emitQuad(p0, p3, p2, p1, bandF, 1.0, 1.0);        // faces inward (-x)
+    else            emitQuad(p0, p1, p2, p3, bandF, 0.0, 1.0);        // faces inward (+x)
+    // Clerestory: a tilted pane over the aisle, leaning in.
+    vec3 c0 = vec3(side * W, -3.0 + H, z + 0.4), c1 = vec3(side * W, -3.0 + H, z + bay - 0.4);
+    vec3 c2 = vec3(side * W * 0.45, -3.0 + H * 1.35, z + bay - 0.4), c3 = vec3(side * W * 0.45, -3.0 + H * 1.35, z + 0.4);
+    emitQuad(c0, c1, c2, c3, mod(bandF + 8.0, 32.0), 3.0, 1.0);
+}

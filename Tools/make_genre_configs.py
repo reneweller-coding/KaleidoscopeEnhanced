@@ -181,19 +181,19 @@ MODIFIED_SCENES = {
 # Minuten statt siebzig).  Bewusst eine eigene Liste: welche Szenen zuletzt
 # dran waren, ist eine historische Tatsache und soll im Diff stehen.
 RECENT_SCENES = {
-    # 03.09.: Block 4 der neuen Szenen (Protuberanzen, Terminator, Neutronenstern-
-    # Kruste, Harmonie-Blitze, Druckkammer, Tempo-Getriebe, Sandsturm, Mesh-
-    # Kaleidoskop, Anglerfisch, Fade-out-Aufloesung).
-    "SolarProminenceLoops",
-    "TidalLockTerminator",
-    "NeutronStarSurfaceSprint",
-    "HarmonicChangeLightning",
-    "BuildUpPressureChamber",
-    "TempoGearwork",
-    "ZCRNoiseStorm",
-    "MeshKaleidoscope",
-    "AnglerfishAbyss",
-    "FadeOutDissolution",
+    # 03.09.: Block 5 der neuen Szenen (Spiegelkabinett, Voronoi-Scherben, SSM-
+    # Mandala, Melodie-Kaleidoskop, interstellarer Staub, Rauch-Sigillen, Flotten-
+    # sprung, Schattenspiel, Tessellations-Ozean, Glas-Kirchenschiff).
+    "InfinityMirrorRoom",
+    "VoronoiMirrorShatter",
+    "SelfSimilarityMandala",
+    "MelodyKaleidoscope",
+    "InterstellarMediumDust",
+    "SmokeSigils",
+    "FleetJump",
+    "ShipShadowPlay",
+    "TessellatedOcean",
+    "GlassNaveFlight",
 }
 
 def rule_recent(m, h):

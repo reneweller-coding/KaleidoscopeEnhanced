@@ -89,11 +89,11 @@ void main()
     // slow swell: builds stand the portal up.
     vec2  cen  = vec2(0.10 * cos(sceneAdvance * 0.2), 0.06 * sin(sceneAdvance * 0.13));
     float asp  = mix(1.2, 0.85, clamp(audioSwell, 0.0, 1.0));
-    vec2  half = por * vec2(asp, 1.0 / asp) * 0.5;
+    vec2  hsz = por * vec2(asp, 1.0 / asp) * 0.5;
 
     vec2 q = p - cen;
 
-    float d = sdRoundBox(q, half, 0.18 * por);
+    float d = sdRoundBox(q, hsz, 0.18 * por);
     float inside = 1.0 - smoothstep(-0.004, 0.004, d);
 
     // Inside the portal: the previous frame, shrunk by the portal size and

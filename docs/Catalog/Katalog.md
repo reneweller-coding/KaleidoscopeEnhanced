@@ -1,6 +1,6 @@
 # Kaleidoscope Enhanced — Szenen-Katalog
 
-_656 Szenen, 29 FX-Overlays, 83 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
+_666 Szenen, 29 FX-Overlays, 83 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
 
 
 ---
@@ -1479,6 +1479,15 @@ INFINITE PSYCHEDELIC DROSTE VORTEX: Dual counter-rotating logarithmic Droste spi
 ![InfinitePsychedelicDrosteVortex ruhig (t=8)](img/InfinitePsychedelicDrosteVortex_A.jpg) ![InfinitePsychedelicDrosteVortex ruhig (t=16)](img/InfinitePsychedelicDrosteVortex_B.jpg) ![InfinitePsychedelicDrosteVortex audio-heiß (t=21)](img/InfinitePsychedelicDrosteVortex_C.jpg)
 
 
+### InfinityMirrorRoom
+
+`Scene2D/InfinityMirrorRoom.frag` · type=normal · mood=dark,dreamy,calm · complexity=3
+
+INFINITY MIRROR ROOM: a mirrored box with real depth. Instead of a depth buffer the regress is built the way mirrors build it: space is folded (mod + mirror), so a ray that leaves the room through a wall re-enters a reflected copy, and every copy carries the same lamps and the same photo panel. The copies recede to infinity with a fog that thickens on the sub-bass, so the room breathes deeper and shallower with the l…
+
+![InfinityMirrorRoom ruhig (t=8)](img/InfinityMirrorRoom_A.jpg) ![InfinityMirrorRoom ruhig (t=16)](img/InfinityMirrorRoom_B.jpg) ![InfinityMirrorRoom audio-heiß (t=21)](img/InfinityMirrorRoom_C.jpg)
+
+
 ### InkTank
 
 `Scene2D/InkTank.frag` · type=normal · mood=dark,dreamy · complexity=2
@@ -1515,6 +1524,15 @@ Adapted from "Inside the System" by \@kishimisu (2022) — https://www.shadertoy
 INTERSTELLAR GENERATION SHIP: A colossal rotating cylinder traveling through interstellar space. The camera glides along its miles-long hull, revealing lit habitation domes, solar arrays, and a glowing propulsion drive. audioAdvance -> flight speed of the ship and camera progression audioKick -> flashes from external comms and engine pulses audioSwell -> ambient illumination and starfield brightness audioPhase -> rot…
 
 ![InterstellarGenerationShip ruhig (t=8)](img/InterstellarGenerationShip_A.jpg) ![InterstellarGenerationShip ruhig (t=16)](img/InterstellarGenerationShip_B.jpg) ![InterstellarGenerationShip audio-heiß (t=21)](img/InterstellarGenerationShip_C.jpg)
+
+
+### InterstellarMediumDust
+
+`Scene2D/InterstellarMediumDust.frag` · type=normal · mood=space,dark,calm · complexity=3
+
+INTERSTELLAR MEDIUM DUST: a volumetric dust cloud between the stars, ray-marched as real density -- stars behind it dim by the integrated column they shine through, not by a painted glow, so the cloud has a front and a back. The density field is fbm advected by a curl-noise flow (domain warping on the scene clock: the cloud folds and drifts without a simulation and without a jump). The bass thickens the cloud (slow, …
+
+![InterstellarMediumDust ruhig (t=8)](img/InterstellarMediumDust_A.jpg) ![InterstellarMediumDust ruhig (t=16)](img/InterstellarMediumDust_B.jpg) ![InterstellarMediumDust audio-heiß (t=21)](img/InterstellarMediumDust_C.jpg)
 
 
 ### InterstellarNebulaWarpCruise
@@ -1911,6 +1929,15 @@ MATRIOSHKA BRAIN: Flight through the endless, glowing computing layers of a mega
 MELODY CONSTELLATION: the last ~8 seconds of melody drawn as stars on a night sky and joined into a constellation that writes itself as the song goes. The host keeps 96 samples of the melody pitch (audioMelody, a ring with audioMelodyHead, one sample per 80 ms); each becomes a star -- position from time (a slow spiral, so the constellation curls instead of scrolling) and pitch (radius), brightness from how recently i…
 
 ![MelodyConstellation ruhig (t=8)](img/MelodyConstellation_A.jpg) ![MelodyConstellation ruhig (t=16)](img/MelodyConstellation_B.jpg) ![MelodyConstellation audio-heiß (t=21)](img/MelodyConstellation_C.jpg)
+
+
+### MelodyKaleidoscope
+
+`Scene2D/MelodyKaleidoscope.frag` · type=normal · mood=psychedelic,bright,dreamy · complexity=2
+
+MELODY KALEIDOSCOPE: the mirrored motif is the melody itself. The last eight seconds of pitch (audioMelody, 96 samples at 80 ms) are drawn as a glowing contour -- age along the wedge, pitch across it -- and folded n-way, so every phrase becomes an ornament that ages outward through the mirror. The contour is thick where the melody was loud and thin where it was quiet, and the photo shows through it as the light behin…
+
+![MelodyKaleidoscope ruhig (t=8)](img/MelodyKaleidoscope_A.jpg) ![MelodyKaleidoscope ruhig (t=16)](img/MelodyKaleidoscope_B.jpg) ![MelodyKaleidoscope audio-heiß (t=21)](img/MelodyKaleidoscope_C.jpg)
 
 
 ### MetamaterialCloakingHorizon
@@ -2855,6 +2882,15 @@ SELF-SIMILARITY CORRIDOR: an endless corridor whose floor, ceiling and walls are
 ![SelfSimilarityCorridor ruhig (t=8)](img/SelfSimilarityCorridor_A.jpg) ![SelfSimilarityCorridor ruhig (t=16)](img/SelfSimilarityCorridor_B.jpg) ![SelfSimilarityCorridor audio-heiß (t=21)](img/SelfSimilarityCorridor_C.jpg)
 
 
+### SelfSimilarityMandala
+
+`Scene2D/SelfSimilarityMandala.frag` · type=normal · mood=psychedelic,calm,dreamy · complexity=2
+
+SELF-SIMILARITY MANDALA: the song's memory of itself as a mandala. The self-similarity matrix (texSSM) holds how much every moment of the last stretch resembles every other. Here the row "now against the past" is wrapped into rings -- the centre is now, each ring further out a moment further back -- and folded n-way into a mandala, so a returning chorus lights whole rings at once and a new section darkens them. A sec…
+
+![SelfSimilarityMandala ruhig (t=8)](img/SelfSimilarityMandala_A.jpg) ![SelfSimilarityMandala ruhig (t=16)](img/SelfSimilarityMandala_B.jpg) ![SelfSimilarityMandala audio-heiß (t=21)](img/SelfSimilarityMandala_C.jpg)
+
+
 ### ShatterField
 
 `Scene2D/ShatterField.frag` · type=normal · mood=aggressive,dark · complexity=2
@@ -2889,6 +2925,15 @@ SIPHONOPHORE BIOLUMINESCENT CURTAIN: Massive colonial siphonophore (Praya dubia 
 SKYRMION CHIRAL SPIN LATTICE: Dense 2D triangular lattice of topological magnetic skyrmion vortices governed by chiral Dzyaloshinskii-Moriya exchange interactions. Displays swirling out-of-plane magnetization cores, gyrotropic Skyrmion Hall drift, and holographic magneto-optical Faraday rotation patterns. audioAdvance -> drives gyrotropic Skyrmion Hall angle drift & spin precession audioKick -> compresses lattice spa…
 
 ![SkyrmionChiralSpinLattice ruhig (t=8)](img/SkyrmionChiralSpinLattice_A.jpg) ![SkyrmionChiralSpinLattice ruhig (t=16)](img/SkyrmionChiralSpinLattice_B.jpg) ![SkyrmionChiralSpinLattice audio-heiß (t=21)](img/SkyrmionChiralSpinLattice_C.jpg)
+
+
+### SmokeSigils
+
+`Scene2D/SmokeSigils.frag` · type=normal · mood=dark,dreamy,calm · complexity=3
+
+SMOKE SIGILS: smoke blown through a lattice of glyphs. A slab of volumetric smoke (fbm, warped and driven on the scene clock) streams upward; in its middle plane stands a grid of sigils -- procedural glyphs cut from a cell hash -- and the smoke only shows where a glyph lets it through, so the signs appear as shapes of moving smoke and vanish where the smoke thins. The melody lifts single glyphs into light (the class …
+
+![SmokeSigils ruhig (t=8)](img/SmokeSigils_A.jpg) ![SmokeSigils ruhig (t=16)](img/SmokeSigils_B.jpg) ![SmokeSigils audio-heiß (t=21)](img/SmokeSigils_C.jpg)
 
 
 ### Snowfall
@@ -3386,6 +3431,15 @@ VOLCANIC LIGHTNING PLUME: Volumetric explosive volcanic ash column rising into t
 VOLUMETRIC SUPERNOVA: Full-screen raymarched volumetric plasma field & shockwave explosion. 100% viewport coverage with 3D Curl Noise, light absorption, and audio-driven corona flares. audioSubBass -> expands radial explosion shockwave outwards to screen corners audioKick -> ignites core luminosity and chromatic flare burst audioHigh -> sparks high-frequency plasma filaments audioSwell -> thickens volumetric fog dens…
 
 ![VolumetricSupernova ruhig (t=8)](img/VolumetricSupernova_A.jpg) ![VolumetricSupernova ruhig (t=16)](img/VolumetricSupernova_B.jpg) ![VolumetricSupernova audio-heiß (t=21)](img/VolumetricSupernova_C.jpg)
+
+
+### VoronoiMirrorShatter
+
+`Scene2D/VoronoiMirrorShatter.frag` · type=normal · mood=psychedelic,aggressive,bright · complexity=2
+
+VORONOI MIRROR SHATTER: a mirror that breaks and mends over the scene's arc. The picture is cut into Voronoi shards; each shard is a small kaleidoscope of the photo. Along the arc (sceneProgress, which the drop regie can bend onto the drop) the shards drift apart, tilt and let the dark through, then close again -- a slow breakage, never a cut, so the drop lands on the moment the mirror is most open. Shard edges catch…
+
+![VoronoiMirrorShatter ruhig (t=8)](img/VoronoiMirrorShatter_A.jpg) ![VoronoiMirrorShatter ruhig (t=16)](img/VoronoiMirrorShatter_B.jpg) ![VoronoiMirrorShatter audio-heiß (t=21)](img/VoronoiMirrorShatter_C.jpg)
 
 
 ### VoronoiPrismShatterKaleido
@@ -4283,6 +4337,15 @@ A formation of one craft drawn many times (the placement is in the vertex stage,
 ![Fleet ruhig (t=8)](img/Fleet_A.jpg) ![Fleet ruhig (t=16)](img/Fleet_B.jpg) ![Fleet audio-heiß (t=21)](img/Fleet_C.jpg)
 
 
+### FleetJump
+
+`Scene3D/FleetJump.frag` · type=scene3d · geom=mesh · mood=space,dark,aggressive · complexity=4
+
+Fragment stage for FleetJump: hulls from their own material, drives spooling up along the arc (light), a hyperspace streak tint as a craft jumps; the sky shell is a starfield with a faint nebula the drives light on the kick. Audio Reactivity: audioKick pulses the drive glow; audioSwell brightens the key light; sceneProgress spools the drives.
+
+![FleetJump ruhig (t=8)](img/FleetJump_A.jpg) ![FleetJump ruhig (t=16)](img/FleetJump_B.jpg) ![FleetJump audio-heiß (t=21)](img/FleetJump_C.jpg)
+
+
 ### FlowRibbons
 
 `Scene3D/FlowRibbons.frag` · type=scene3d · geom=indirect · mood=dreamy · complexity=4
@@ -4362,6 +4425,15 @@ GEOTHERMAL FUMAROLE MINERAL SPIRES: Deep-sea hydrothermal vent chimneys and volc
 GLACIER TESSELLATION: low flight over tessellated glacier ice - white/blue subsurface-scattering ice with crevasse light from INSIDE, tinted by the photo palette; the terrain streams beneath the camera. audioAdvance -> flight speed audioKick -> crevasse flash audioBass -> ice-wave heave
 
 ![GlacierTessellation ruhig (t=8)](img/GlacierTessellation_A.jpg) ![GlacierTessellation ruhig (t=16)](img/GlacierTessellation_B.jpg) ![GlacierTessellation audio-heiß (t=21)](img/GlacierTessellation_C.jpg)
+
+
+### GlassNaveFlight
+
+`Scene3D/GlassNaveFlight.frag` · type=scene3d · geom=indirect · mood=bright,dreamy,calm · complexity=4
+
+Fragment stage for GlassNaveFlight: stone (pillars, floor) and sky in the opaque pass, backlit glass panes in the weighted-blended OIT pass. Each pane's glow is its spectrum band; the sun's height and colour come from the host day clock; the floor takes the coloured light of the panes as a soft wash. Declares oitPass, so the host runs the transparent pass. Audio Reactivity: audioSpectrum[32] -> pane glow (light); aud…
+
+![GlassNaveFlight ruhig (t=8)](img/GlassNaveFlight_A.jpg) ![GlassNaveFlight ruhig (t=16)](img/GlassNaveFlight_B.jpg) ![GlassNaveFlight audio-heiß (t=21)](img/GlassNaveFlight_C.jpg)
 
 
 ### GlassStack
@@ -5440,6 +5512,15 @@ GEOM="MESH" FAMILY: a capital ship makes one slow, majestic pass across the fram
 ![ShipFlyby ruhig (t=8)](img/ShipFlyby_A.jpg) ![ShipFlyby ruhig (t=16)](img/ShipFlyby_B.jpg) ![ShipFlyby audio-heiß (t=21)](img/ShipFlyby_C.jpg)
 
 
+### ShipShadowPlay
+
+`Scene3D/ShipShadowPlay.frag` · type=scene3d · geom=mesh · mood=dark,calm,dreamy · complexity=3
+
+Fragment stage for ShipShadowPlay: the wall (sky shell's back face) is lit by the two coloured lamps; the ship itself is a dim silhouette; the two projected copies are flat shadows in the complementary colour of the lamp that casts them (where a red lamp's shadow falls, only the blue lamp lights the wall), overlapping to dark. Audio Reactivity: audioKick brightens lamp A, audioSnare lamp B (light); audioSwell warms b…
+
+![ShipShadowPlay ruhig (t=8)](img/ShipShadowPlay_A.jpg) ![ShipShadowPlay ruhig (t=16)](img/ShipShadowPlay_B.jpg) ![ShipShadowPlay audio-heiß (t=21)](img/ShipShadowPlay_C.jpg)
+
+
 ### SilkPhoto
 
 `Scene3D/SilkPhoto.frag` · type=scene3d · geom=grid · mood=calm · complexity=2
@@ -5811,6 +5892,15 @@ TACHYON COMM RELAY: A gigantic communication relay with massive rotating rings a
 TESLA LIGHTNING TREE: a branching discharge tree grown fresh every frame, camera ORBITING the trunk; plasma tinted by a bounded hue wobble (never a full rainbow spin), photo colours in the corona. Three families come out of the generator, told apart by their per-segment gain (attrB.x): the main bolts striking a wide ground disc, the Lichtenberg SURFACE CREEP running outward from each strike, and a sparse CORONA of io…
 
 ![TeslaLightningTree ruhig (t=8)](img/TeslaLightningTree_A.jpg) ![TeslaLightningTree ruhig (t=16)](img/TeslaLightningTree_B.jpg) ![TeslaLightningTree audio-heiß (t=21)](img/TeslaLightningTree_C.jpg)
+
+
+### TessellatedOcean
+
+`Scene3D/TessellatedOcean.frag` · type=scene3d · geom=patches · mood=calm,dark,dreamy · complexity=4
+
+TESSELLATED OCEAN: a night sea whose fineness is the treble. The tessellation control stage splits the water finer when the mix is bright (continuous, fractional spacing) -- a loud passage ripples the whole sea, a dull one leaves it glassy -- and the fragment stage lights it as a night ocean: a Fresnel mirror of the photo as the sky, and phosphorescence on the breaking crests that flares on the kick. Camera height fi…
+
+![TessellatedOcean ruhig (t=8)](img/TessellatedOcean_A.jpg) ![TessellatedOcean ruhig (t=16)](img/TessellatedOcean_B.jpg) ![TessellatedOcean audio-heiß (t=21)](img/TessellatedOcean_C.jpg)
 
 
 ### ThunderCloud

@@ -3245,3 +3245,26 @@ One more reserved word: `flat`, like `half`, cannot name a variable; the
 fragment stage at least says so (`C7537`), a compute generator dies
 silently. Rule V6d lists the reserved words with a grep.
 
+## Block five: the last ten, without new host features
+
+The proposals that seemed to need a building block the host lacks turned
+out to need a different construction instead.
+
+| Scene | Instead of | What it does |
+|---|---|---|
+| InfinityMirrorRoom | a depth buffer | space folded by `mod` + mirror: a ray leaving the room re-enters a reflected copy, so the regress has real depth; lamps and a framed picture repeat to infinity; fog on the sub-bass |
+| VoronoiMirrorShatter | a geometry-shader shatter on the drop | shards drift apart and mend over the arc (`sceneProgress`, bent onto the drop by the regie) -- a slow breakage, never a cut |
+| SelfSimilarityMandala | (replaces the strobe-shutter zoom) | `texSSM`: the row "now against the past" as rings, the matrix's bands as petals; a returning section warms the mandala |
+| MelodyKaleidoscope | (replaces the moire) | the melody ring as a mirrored contour, age outward, pitch across the wedge |
+| InterstellarMediumDust | a 3D smoke simulation | ray-marched fbm density with a curl-like domain warp on the scene clock; stars behind dim by the integrated column |
+| SmokeSigils | the same | a smoke slab masked by a lattice of procedural glyphs on its middle plane; the melody lifts a column (smooth kernel) |
+| FleetJump | -- | `instances="24"` of one GSV; the wedge holds, the drives spool along the arc, then rank by rank each hull stretches and streaks away on a continuous ramp |
+| ShipShadowPlay | a shadow map | `instances="3"`: the ship and two PLANAR PROJECTIONS of the same mesh onto the wall, one per lamp -- two coloured shadows that overlap to dark; the lamps glide on the scene clock |
+| TessellatedOcean | -- | `geom="patches"` after Ocean's contract; fineness from a quarter treble and three quarters swell with fractional spacing, so the mesh never pops; a night sea with phosphorescent crests |
+| GlassNaveFlight | -- | indirect + weighted-blended OIT after CathedralGlass/GlassStack: stone pillars in the opaque pass, glass panes and a clerestory in the transparent pass, each pane a spectrum band, the sun on `dayPhase`; bays emitted relative to the camera with the pattern phased on the flight distance |
+
+The fifty proposed scenes are all built (48 as proposed, two replacements).
+Note for staged mesh scenes: a preview of 10 s reaches `sceneProgress`
+0.7 at best (activation and cross-fade eat the start), so a cue at 0.72
+never shows in a probe -- FleetJump's jump starts at 0.5.
+
