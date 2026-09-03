@@ -14,8 +14,8 @@
   </TextureShader>
   <TextureShader file="..\Scene2D\DerelictMothership.frag" type="normal" mood="dark,calm,space" probability="0.45" complexity="4">
     <rig preset="flat"/>
-    <float name="hullP" minValue="0.7" maxValue="1.5"></float>
-    <float name="glowP" minValue="0.6" maxValue="1.8"></float>
+    <float name="hullP" minValue="0.98" maxValue="1.5"></float>
+    <float name="glowP" minValue="0.6" maxValue="1.38"></float>
     <float name="debrisP" minValue="0.5" maxValue="1.5"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>

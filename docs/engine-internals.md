@@ -3033,3 +3033,39 @@ upper one. A corner says *that* a range is too wide, not *which* parameter;
 `KALEIDO_PARAM_CORNER=min:glowP` therefore takes a name list — the named
 uniforms go to the corner, every other one to the middle of its range — and
 `--per-param` runs one lower and one upper test per parameter name.
+
+**Per parameter**, on those thirteen scenes (51 runs: one with every
+parameter mid-range, then one lower and one upper run per parameter name,
+`hueP` skipped because a hue angle empties nothing): fourteen (scene,
+parameter, end) pairs fall under the empty threshold while the mid run is
+healthy. Density-type parameters at their lower end dominate —
+`CliffordAttractorSilkRibbons/densityP`, `CrystalAsteroidField/densityP`,
+`DarkMatterWeb/webP`, `KardashevTypeIIICity/techP`,
+`PrismaticRainbowCloud/densityP` (0.0087 against a mid of 0.113),
+`FuturisticCityFlight/buildP` and `glowP` — plus a few upper ends:
+`FuturisticCityFlight/fogP`, `DerelictMothership/glowP`,
+`SpinGlassFrustrationLattice/kagomePitchP`. `GasGiantAtmosphere` is the one
+case no single parameter explains: its empty corner is the *combination* of
+`cloudP` and `stormP` at their maxima, and it was left alone.
+
+The fix is arithmetic, not taste: the empty end moves a third of the range
+inward (the middle was healthy, the end was not, so the tipping point lies
+between — a third removes the corner without halving the variety). Fourteen
+ranges in `Komplett.xml`, the presets regenerated from it. Every range lives
+in the master file and nowhere else, which is what made this a one-line
+change per finding.
+
+**Verified** with the plain corner test on the ten scenes touched: eight have
+no empty corner left (FuturisticCityFlight's lower corner 0.0029 → 0.0432,
+PrismaticRainbowCloud's 0.0117 → 0.1099, DarkMatterWeb's 0.0097 → 0.1117).
+Two needed a second, smaller step because their empty corner was a
+*combination*: `SpinGlassFrustrationLattice` (pointSizeP and pointGainP low
+together, 0.0075 → 0.0223 after the first step) and `GasGiantAtmosphere`
+(cloudP and stormP high together, 0.0000 → 0.0303). `DerelictMothership`
+stays on the sparse list — its middle is 0.028, so no corner can be blamed.
+After the second step both are out of the corner list on the axes that were
+adjusted (SpinGlass lower corner 0.0648, GasGiantAtmosphere upper 0.0687);
+GasGiantAtmosphere's *lower* corner then read 0.0306 on parameters that had
+not changed and had measured 0.0551 the run before — the same draw, twice,
+1.8× apart. That is the measurement's own noise floor on a dim scene, not a
+range, and it was left alone.

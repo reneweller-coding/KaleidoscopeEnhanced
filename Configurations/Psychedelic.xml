@@ -257,7 +257,7 @@
   </TextureShader>
   <TextureShader file="..\Scene2D\DarkMatterWeb.frag" type="normal" mood="dark,psychedelic,space" probability="0.45" complexity="4">
     <rig preset="flat"/>
-    <float name="webP" minValue="0.5" maxValue="1.5"></float>
+    <float name="webP" minValue="0.85" maxValue="1.5"></float>
     <float name="glowP" minValue="0.5" maxValue="2.0"></float>
     <expr name="hueP" formula="chromaHue + seed3*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
@@ -278,7 +278,7 @@
   </TextureShader>
   <TextureShader file="..\Scene2D\KardashevTypeIIICity.frag" type="normal" mood="bright,psychedelic,space" probability="0.45" complexity="5">
     <rig preset="flat"/>
-    <float name="techP" minValue="0.5" maxValue="1.5"></float>
+    <float name="techP" minValue="0.85" maxValue="1.5"></float>
     <float name="glowP" minValue="0.5" maxValue="2.0"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
@@ -1014,9 +1014,9 @@
   </TextureShader>
   <TextureShader file="..\Scene3D\SpinGlassFrustrationLattice.frag" type="scene3d" geom="points" probability="0.45" mood="calm,psychedelic" complexity="3">
     <rig preset="procedural"/>
-    <float name="kagomePitchP" minValue="0.015" maxValue="0.04"></float>
-    <float name="pointSizeP" minValue="8.0" maxValue="16.0"></float>
-    <float name="pointGainP" minValue="0.5" maxValue="1.8"></float>
+    <float name="kagomePitchP" minValue="0.015" maxValue="0.031"></float>
+    <float name="pointSizeP" minValue="12" maxValue="16"></float>
+    <float name="pointGainP" minValue="0.8" maxValue="1.8"></float>
     <float name="haloP" minValue="0.6" maxValue="2.2"></float>
   </TextureShader>
   <TextureShader file="..\Scene2D\AnomalousFloquetTopologicalInsulator.frag" type="normal" probability="0.4" mood="bright,psychedelic" complexity="3">
@@ -1365,9 +1365,9 @@
   <TextureShader file="..\Scene2D\CliffordAttractorSilkRibbons.frag" type="normal" mood="psychedelic,dark,dreamy" probability="0.4" complexity="2">
     <rig preset="flat"/>
     <float name="speedP" minValue="0.6" maxValue="1.6"></float>
-    <float name="densityP" minValue="0.7" maxValue="1.5"></float>
+    <float name="densityP" minValue="0.98" maxValue="1.5"></float>
     <float name="silkP" minValue="0.7" maxValue="1.4"></float>
-    <float name="glowP" minValue="0.7" maxValue="1.4"></float>
+    <float name="glowP" minValue="0.945" maxValue="1.4"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
