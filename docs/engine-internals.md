@@ -3624,3 +3624,22 @@ Lessons from the block: a refraction amplitude must never follow a fast envelope
 | TangramShuffle | 2D | seven pieces as signed-distance shapes; poses from a 5x7 table blended with shortest-way rotation |
 
 Lessons from the block: on a white page a brightness swing with the level (0.75 + 0.5 x level) is a whole-frame strobe (SpirographGearDraw 10.9) -- bright scenes get 0.9 + 0.2 x level; a camera flash on the kick over the whole wall strobes too (FrescoRestorationReveal 10.6), so the flash lives near the worked patch; dominoes drawn as full-cell columns read as stripes -- a gap between the stones and a dark top edge make them stones; a seal carved from a cell hash is a pixel grid (V8e), a sine-product carving is not.
+
+## The fourth fifty, block E: music and sound
+
+With this block the fourth fifty is complete: 200 new scenes since 02.09.2026.
+
+| Scene | Pipeline | Note |
+|---|---|---|
+| PianoRollWaterfall | 2D | screen rows above the keys map to the age of a melody sample; the bar x is the pitch on the keyboard; keys light by chroma |
+| VinylGrooveMicroscope | 2D | the groove walls carved by audioWave sampled by position (fixed in the vinyl, scrolling past); round dust motes; stylus at the centre |
+| TapeReelEcho | 2D | tape path as three segments; reels turn at v / r; the spectrum printed at the record head repeats dimmer at the playback heads |
+| ModularSynthPatchbay | 2D | module kind by cell hash (knobs, scope, spectrum, LEDs); cables as sampled parabolas with a pulse on the clock |
+| TuningForkChoir | 2D | forks as SDF boxes, halos as concentric rings from the tine tips; the mallet glides on the chroma-weighted centre |
+| FormantVowelSpace | 2D | centroid and spread from 16 bands of the spectrogram history, averaged over rows; the trail from older rows (about 200 fetches per pixel) |
+| GranularCloudSynth | 2D | three layers of jittered round photo grains over the waterfall; existence = smoothstep of the cell hash against the swell |
+| SidechainLungBreath | 2D | lobes as unions of ellipses scaled about the hilum on the swell; the kick only dips the light and drives the GR meter |
+| ChordRailwaySwitches | 2D | routes as a random walk over five tracks with S-curve blends; twelve crossovers, one per chroma class; trains spaced so the wrap is seamless |
+| SilenceSnowfallHush | 2D | cover = 1 - swell; snow settles on bright (upward) photo parts plus an fbm pattern; flake presence by a smoothstep of the cell hash |
+
+Lessons from the block: a continuous melody history drawn one sample per screen row is a wavy line, not a piano roll -- quantise each sample to its key before placing the bar, then the bars stand still while they fall; a curve sampled at points and tested with a point distance is a dotted line -- test against the segments between the samples; a sound-shape marker (centroid, spread) read straight from the live spectrum jumps, so FormantVowelSpace reads it from the spectrogram history averaged over a few rows (about 200 fetches per pixel, cheap enough at 2D); the 90 percent snapshot of preview.py at hold 12 already showed the next scene for this block (the probe scene ended early), hold 10 is safe. Also in this commit: the PeacockTrainFan body (block C) got a slender neck, a head with a beak and a crest -- the old silhouette read as something else entirely on the catalogue page.

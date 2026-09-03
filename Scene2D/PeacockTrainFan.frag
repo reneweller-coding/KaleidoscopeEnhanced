@@ -109,9 +109,22 @@ void main()
         col = mix(col, feather, clamp(mask, 0.0, 1.0));
     }
     // The bird: a blue body and head at the base, warmed by the bass.
-    float body = smoothstep(0.16, 0.15, length((p - base - vec2(0.0, 0.1)) * vec2(1.4, 1.0)));
-    float neck = smoothstep(0.05, 0.045, abs(p.x)) * step(base.y + 0.2, p.y) * step(p.y, base.y + 0.5);
-    float head = smoothstep(0.06, 0.055, length(p - base - vec2(0.0, 0.52)));
+    float body = smoothstep(0.16, 0.15, length((p - base - vec2(0.0, 0.08)) * vec2(1.05, 1.0)));
+    // A slender S-curved neck, a small head with a beak to the left and a crest of three stalks.
+    float neck = smoothstep(0.024, 0.02, abs(p.x - 0.012 * sin((p.y - base.y) * 9.0))) * step(base.y + 0.18, p.y) * step(p.y, base.y + 0.5);
+    vec2 hq = p - base - vec2(0.0, 0.52);
+    float head = smoothstep(0.04, 0.035, length(hq * vec2(1.0, 1.15)));
+    float beakX = -(hq.x + 0.035);
+    float beak = step(0.0, beakX) * step(beakX, 0.055) * step(abs(hq.y + 0.005), 0.011 * (1.0 - beakX / 0.055));
+    float crest = 0.0;
+    for (int c = -1; c <= 1; ++c)
+    {
+        vec2 tip = vec2(float(c) * 0.035, 0.1 - 0.012 * abs(float(c)));
+        crest = max(crest, smoothstep(0.012, 0.009, length(hq - tip)));
+        vec2 e = tip - vec2(0.0, 0.03); float tt = clamp(dot(hq - vec2(0.0, 0.03), e) / dot(e, e), 0.0, 1.0);
+        crest = max(crest, smoothstep(0.004, 0.002, length(hq - vec2(0.0, 0.03) - e * tt)));
+    }
+    head = max(head, max(beak, crest));
     vec3 blue = mix(vec3(0.1, 0.25, 0.8), imgPalette(hue * 0.159 + 0.65), 0.3) * (0.7 + 0.6 * clamp(audioBass, 0.0, 1.0));
     col = mix(col, blue * (0.7 + 0.3 * (p.y - base.y)), max(body, max(neck, head)));
     col *= 0.75 + 0.5 * audioLevel;

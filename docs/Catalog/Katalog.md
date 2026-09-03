@@ -1,6 +1,6 @@
 # Kaleidoscope Enhanced — Szenen-Katalog
 
-_806 Szenen, 29 FX-Overlays, 83 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
+_816 Szenen, 29 FX-Overlays, 83 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
 
 
 ---
@@ -638,6 +638,15 @@ CHIRAL NEMATIC LIQUID CRYSTAL: Cholesteric liquid crystal texture with helical m
 ![ChiralNematicLiquidCrystal ruhig (t=8)](img/ChiralNematicLiquidCrystal_A.jpg) ![ChiralNematicLiquidCrystal ruhig (t=16)](img/ChiralNematicLiquidCrystal_B.jpg) ![ChiralNematicLiquidCrystal audio-heiß (t=21)](img/ChiralNematicLiquidCrystal_C.jpg)
 
 
+### ChordRailwaySwitches
+
+`Scene2D/ChordRailwaySwitches.frag` · type=normal · mood=bright,calm,dreamy · complexity=3
+
+CHORD RAILWAY SWITCHES: a marshalling yard from above -- five parallel tracks crossing the field diagonally, twelve crossovers along them, one per chroma class: each crossover has a signal lit by its class and a switch blade that leans over smoothly as the class sounds. Trains of photo wagons run the yard on the scene clock, each on a route fixed for the activation, sliding across the crossovers on smooth S-curves; t…
+
+![ChordRailwaySwitches ruhig (t=8)](img/ChordRailwaySwitches_A.jpg) ![ChordRailwaySwitches ruhig (t=16)](img/ChordRailwaySwitches_B.jpg) ![ChordRailwaySwitches audio-heiß (t=21)](img/ChordRailwaySwitches_C.jpg)
+
+
 ### ChromaAcidTrip
 
 `Scene2D/ChromaAcidTrip.frag` · type=normal · mood=psychedelic,bright · complexity=3
@@ -1263,6 +1272,15 @@ FORAMINIFERA SPIRAL SHELLS: the chambered shells of forams -- single cells that 
 ![ForaminiferaSpiralShells ruhig (t=8)](img/ForaminiferaSpiralShells_A.jpg) ![ForaminiferaSpiralShells ruhig (t=16)](img/ForaminiferaSpiralShells_B.jpg) ![ForaminiferaSpiralShells audio-heiß (t=21)](img/ForaminiferaSpiralShells_C.jpg)
 
 
+### FormantVowelSpace
+
+`Scene2D/FormantVowelSpace.frag` · type=normal · mood=calm,bright,dreamy · complexity=3
+
+FORMANT VOWEL SPACE: the vowel chart of phonetics -- the second formant across (high F2 on the left, as the chart is drawn), the first formant down -- with the cardinal vowels as photo blobs at their places. A marker glides to where the spectral shape points (a smoothed centroid and spread read from the spectrogram history, so it never jumps), trailing the recent seconds as a fading path of dots; the blob nearest the…
+
+![FormantVowelSpace ruhig (t=8)](img/FormantVowelSpace_A.jpg) ![FormantVowelSpace ruhig (t=16)](img/FormantVowelSpace_B.jpg) ![FormantVowelSpace audio-heiß (t=21)](img/FormantVowelSpace_C.jpg)
+
+
 ### FoundryPour
 
 `Scene2D/FoundryPour.frag` · type=normal · mood=dark,aggressive,bright · complexity=2
@@ -1441,6 +1459,15 @@ GLITCH MATRIX HYPERCUBE: 4D Tesseract projection intersecting 3D/2D space, combi
 GLOWWORM CAVE THREADS: the ceiling of a glow-worm cave -- a galaxy of blue-green lights, each a larva at the top of a hanging silk thread strung with sticky beads (round), the still water below mirroring it all. The lights glow with their spectrum band (each worm a band), the beads catch the treble, a drip from the ceiling on the kick sends a ring across the water; the photo is the wet rock. Camera fixed in the boat.…
 
 ![GlowwormCaveThreads ruhig (t=8)](img/GlowwormCaveThreads_A.jpg) ![GlowwormCaveThreads ruhig (t=16)](img/GlowwormCaveThreads_B.jpg) ![GlowwormCaveThreads audio-heiß (t=21)](img/GlowwormCaveThreads_C.jpg)
+
+
+### GranularCloudSynth
+
+`Scene2D/GranularCloudSynth.frag` · type=normal · mood=dark,psychedelic,dreamy · complexity=3
+
+GRANULAR CLOUD SYNTH: a cloud of grains scattered over the scrolling spectrogram -- each grain a round snippet of the photo at its pitch height (the band on the y axis), drifting left with the history on the scene clock, its brightness the energy of its band; the density of the cloud rises with the swell (grains fade in by a smooth threshold), the treble is the grain sparkle, the kick a pulse of the grain rims. Camer…
+
+![GranularCloudSynth ruhig (t=8)](img/GranularCloudSynth_A.jpg) ![GranularCloudSynth ruhig (t=16)](img/GranularCloudSynth_B.jpg) ![GranularCloudSynth audio-heiß (t=21)](img/GranularCloudSynth_C.jpg)
 
 
 ### GrapheneDiracPlasmonics
@@ -2453,6 +2480,15 @@ MOBIUS STRIP ROLLER DRIVE: High-velocity 3D roller coaster ride along a twisted 
 ![MobiusStripRollerDrive ruhig (t=8)](img/MobiusStripRollerDrive_A.jpg) ![MobiusStripRollerDrive ruhig (t=16)](img/MobiusStripRollerDrive_B.jpg) ![MobiusStripRollerDrive audio-heiß (t=21)](img/MobiusStripRollerDrive_C.jpg)
 
 
+### ModularSynthPatchbay
+
+`Scene2D/ModularSynthPatchbay.frag` · type=normal · mood=dark,psychedelic,aggressive · complexity=3
+
+MODULAR SYNTH PATCHBAY: a wall of Eurorack modules -- panels carrying the photo as their graphics, knobs turning slowly on the scene clock, LEDs lit by the chroma classes, an oscilloscope module drawing the waveform (audioWave), a spectrum module with the 32 bands, and patch cables hanging in catenaries between jacks, each cable lit by the band it carries. The kick is the trigger LED, the swell the rack light. Camera…
+
+![ModularSynthPatchbay ruhig (t=8)](img/ModularSynthPatchbay_A.jpg) ![ModularSynthPatchbay ruhig (t=16)](img/ModularSynthPatchbay_B.jpg) ![ModularSynthPatchbay audio-heiß (t=21)](img/ModularSynthPatchbay_C.jpg)
+
+
 ### MoebiusTunnel
 
 `Scene2D/MoebiusTunnel.frag` · type=normal · mood=psychedelic,dark · complexity=2
@@ -2903,6 +2939,15 @@ PHYSARUM GALAXY: the slime-mould simulation's trail map, wrapped onto a slowly t
 PHYTOPLANKTON EDDIES: the ocean from orbit -- a spring bloom of plankton drawn out into the swirls of mesoscale eddies. The photo is the ocean colour; the bloom is advected by a field of slowly turning vortices on the scene clock (Lamb-Oseen cores, incompressible), so the green filaments wind ever finer; the bloom strength is the swell, the treble is sun glitter on the sea, the bass deepens the blue. Camera fixed hig…
 
 ![PhytoplanktonEddies ruhig (t=8)](img/PhytoplanktonEddies_A.jpg) ![PhytoplanktonEddies ruhig (t=16)](img/PhytoplanktonEddies_B.jpg) ![PhytoplanktonEddies audio-heiß (t=21)](img/PhytoplanktonEddies_C.jpg)
+
+
+### PianoRollWaterfall
+
+`Scene2D/PianoRollWaterfall.frag` · type=normal · mood=bright,calm,dreamy · complexity=2
+
+PIANO ROLL WATERFALL: the melody falling onto a keyboard. The 96-sample melody history is drawn as note bars descending toward a keyboard along the bottom -- the newest sample just above the keys, the oldest at the top -- scrolling steadily with the sample clock; the key of each sounding pitch class lights (chroma), the hammer flashes on the kick, the photo is the piano's lid mirror and the bars' colour. Camera fixed…
+
+![PianoRollWaterfall ruhig (t=8)](img/PianoRollWaterfall_A.jpg) ![PianoRollWaterfall ruhig (t=16)](img/PianoRollWaterfall_B.jpg) ![PianoRollWaterfall audio-heiß (t=21)](img/PianoRollWaterfall_C.jpg)
 
 
 ### PillarsOfCreationFlight
@@ -3593,6 +3638,15 @@ SHEPARD PITCH HELIX: pitch as a helix -- one turn per octave, the twelve chroma 
 ![ShepardPitchHelix ruhig (t=8)](img/ShepardPitchHelix_A.jpg) ![ShepardPitchHelix ruhig (t=16)](img/ShepardPitchHelix_B.jpg) ![ShepardPitchHelix audio-heiß (t=21)](img/ShepardPitchHelix_C.jpg)
 
 
+### SidechainLungBreath
+
+`Scene2D/SidechainLungBreath.frag` · type=normal · mood=dark,aggressive,dreamy · complexity=2
+
+SIDECHAIN LUNG BREATH: a pair of lungs on a dark ground, the bronchial tree branching into them; the lobes inflate with the swell (a slow, smooth breath -- the scene clock adds a resting rhythm), the alveoli are round cells carrying the photo, lit by the bands from the bottom (bass) to the top (treble); the kick is the sidechain pump: a dip of the light (never of the shape), read off on a gain-reduction meter beside …
+
+![SidechainLungBreath ruhig (t=8)](img/SidechainLungBreath_A.jpg) ![SidechainLungBreath ruhig (t=16)](img/SidechainLungBreath_B.jpg) ![SidechainLungBreath audio-heiß (t=21)](img/SidechainLungBreath_C.jpg)
+
+
 ### SierpinskiOctahedronAbyss
 
 `Scene2D/SierpinskiOctahedronAbyss.frag` · type=normal · mood=psychedelic,dark,aggressive · complexity=2
@@ -3600,6 +3654,15 @@ SHEPARD PITCH HELIX: pitch as a helix -- one turn per octave, the twelve chroma 
 SIERPINSKI OCTAHEDRON ABYSS: 3D Raymarching continuous dive into the heart of a Sierpinski Octahedron (IFS) fractal. Endless nested pyramid canyons, sharp triangular facet reflections, and high-voltage glowing vertex sparks. Audio Reactivity: audioAdvance -> drives continuous forward plunge into recursive pyramid voids audioKick -> flashes octahedron vertex nodes & triggers lattice expansion burst audioCentroid-> sha…
 
 ![SierpinskiOctahedronAbyss ruhig (t=8)](img/SierpinskiOctahedronAbyss_A.jpg) ![SierpinskiOctahedronAbyss ruhig (t=16)](img/SierpinskiOctahedronAbyss_B.jpg) ![SierpinskiOctahedronAbyss audio-heiß (t=21)](img/SierpinskiOctahedronAbyss_C.jpg)
+
+
+### SilenceSnowfallHush
+
+`Scene2D/SilenceSnowfallHush.frag` · type=normal · mood=calm,dark,dreamy · complexity=2
+
+SILENCE SNOWFALL HUSH: a quiet street at night (the photo), snow falling as round flakes on the scene clock. When the music is quiet the snow settles: the cover grows, the picture whitens and cools, the street lamps get their halos; loud passages melt it again -- all of it on the swell, slow, never on a beat. The kick is only a faint flicker of the lamps. Camera fixed on the street. Audio Reactivity: audioSwell -> sn…
+
+![SilenceSnowfallHush ruhig (t=8)](img/SilenceSnowfallHush_A.jpg) ![SilenceSnowfallHush ruhig (t=16)](img/SilenceSnowfallHush_B.jpg) ![SilenceSnowfallHush audio-heiß (t=21)](img/SilenceSnowfallHush_C.jpg)
 
 
 ### SiphonophoreBioluminescentCurtain
@@ -4070,6 +4133,15 @@ TANGRAM SHUFFLE: the seven pieces -- two large triangles, one medium, two small,
 ![TangramShuffle ruhig (t=8)](img/TangramShuffle_A.jpg) ![TangramShuffle ruhig (t=16)](img/TangramShuffle_B.jpg) ![TangramShuffle audio-heiß (t=21)](img/TangramShuffle_C.jpg)
 
 
+### TapeReelEcho
+
+`Scene2D/TapeReelEcho.frag` · type=normal · mood=dark,calm,dreamy · complexity=3
+
+TAPE REEL ECHO: a reel-to-reel machine, the tape running from the supply reel over the heads to the take-up reel on the scene clock (the reels turn at the speeds their radii give them), the tape carrying the photo as its oxide; along the tape path the spectrum is printed as a bar graph at the record head and repeats, dimmer, at each playback head -- the echo. The VU needles follow the level (slow-damped as a needle w…
+
+![TapeReelEcho ruhig (t=8)](img/TapeReelEcho_A.jpg) ![TapeReelEcho ruhig (t=16)](img/TapeReelEcho_B.jpg) ![TapeReelEcho audio-heiß (t=21)](img/TapeReelEcho_C.jpg)
+
+
 ### Teleidoscope
 
 `Scene2D/Teleidoscope.frag` · type=normal · mood=psychedelic,bright,dreamy · complexity=2
@@ -4261,6 +4333,15 @@ TRICORN FRACTAL ANTIMATTER SEA: Anti-holomorphic Tricorn (Mandelbar) fractal z -
 ![TricornFractalAntimatterSea ruhig (t=8)](img/TricornFractalAntimatterSea_A.jpg) ![TricornFractalAntimatterSea ruhig (t=16)](img/TricornFractalAntimatterSea_B.jpg) ![TricornFractalAntimatterSea audio-heiß (t=21)](img/TricornFractalAntimatterSea_C.jpg)
 
 
+### TuningForkChoir
+
+`Scene2D/TuningForkChoir.frag` · type=normal · mood=calm,dark,dreamy · complexity=2
+
+TUNING FORK CHOIR: twelve forks in a row on a sounding board, one per chroma class, each ringing as a standing glow envelope at the energy of its class -- the ring drawn as concentric sound halos (no vibration of the fork itself, which would be a jolt); the kick is the mallet striking the loudest fork (a flash on that fork); the photo is the resonance box front and the halo colour. Camera fixed in front. Audio Reacti…
+
+![TuningForkChoir ruhig (t=8)](img/TuningForkChoir_A.jpg) ![TuningForkChoir ruhig (t=16)](img/TuningForkChoir_B.jpg) ![TuningForkChoir audio-heiß (t=21)](img/TuningForkChoir_C.jpg)
+
+
 ### Tunnel
 
 `Scene2D/Tunnel.frag` · type=KaleidoscopeBase · mood=psychedelic,bright · complexity=1
@@ -4331,6 +4412,15 @@ VACUUM DECAY BUBBLE: a bubble of true vacuum drifts through space and rewrites t
 VILLARCEAU CIRCLES HYPER FLOW: Bitangential oblique planar slices of a torus producing pairs of perfectly circular Villarceau circles. Intertwined counter-swirling luminous rings, high-contrast chromatic trails, and phase-locked geometric flow. Audio Reactivity: audioAdvance -> drives continuous counter-rotation of Villarceau circle pairs audioKick -> flashes circle intersection nodes & radial shockwaves audioCentroi…
 
 ![VillarceauCirclesHyperFlow ruhig (t=8)](img/VillarceauCirclesHyperFlow_A.jpg) ![VillarceauCirclesHyperFlow ruhig (t=16)](img/VillarceauCirclesHyperFlow_B.jpg) ![VillarceauCirclesHyperFlow audio-heiß (t=21)](img/VillarceauCirclesHyperFlow_C.jpg)
+
+
+### VinylGrooveMicroscope
+
+`Scene2D/VinylGrooveMicroscope.frag` · type=normal · mood=dark,calm,dreamy · complexity=2
+
+VINYL GROOVE MICROSCOPE: the record under a microscope -- the groove walls carved by the waveform (audioWave shapes the wall), the stylus riding in the groove, the groove scrolling past on the scene clock, dust as round motes, the vinyl's black sheen carrying the photo as a rainbow of diffraction. The kick is a crackle flash, the treble the wall glints, the bass widens the modulation (slow). Camera fixed over the sty…
+
+![VinylGrooveMicroscope ruhig (t=8)](img/VinylGrooveMicroscope_A.jpg) ![VinylGrooveMicroscope ruhig (t=16)](img/VinylGrooveMicroscope_B.jpg) ![VinylGrooveMicroscope audio-heiß (t=21)](img/VinylGrooveMicroscope_C.jpg)
 
 
 ### VoidLeviathan

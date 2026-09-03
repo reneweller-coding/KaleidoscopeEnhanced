@@ -181,18 +181,18 @@ MODIFIED_SCENES = {
 # Minuten statt siebzig).  Bewusst eine eigene Liste: welche Szenen zuletzt
 # dran waren, ist eine historische Tatsache und soll im Diff stehen.
 RECENT_SCENES = {
-    # 03.09.: vierte Fuenfzig, Block D (Kultur und Spiel): Ukiyo-e, Handschrift, Zellij,
-    # Rangoli, Kalligraphie, Fresko, Domino, Spirograph, Kaleidozyklus, Tangram.
-    "UkiyoeWaveWoodblock",
-    "IlluminatedManuscript",
-    "ZellijTilework",
-    "RangoliPowderMandala",
-    "CalligraphyBrushStrokes",
-    "FrescoRestorationReveal",
-    "DominoCascadeWave",
-    "SpirographGearDraw",
-    "KaleidocycleFold",
-    "TangramShuffle",
+    # 04.09.: vierte Fuenfzig, Block E (Musik und Klang): Piano-Roll, Rille, Tonband,
+    # Modular-Synth, Stimmgabeln, Vokalraum, Granular, Sidechain-Lunge, Rangierbahnhof, Stille.
+    "PianoRollWaterfall",
+    "VinylGrooveMicroscope",
+    "TapeReelEcho",
+    "ModularSynthPatchbay",
+    "TuningForkChoir",
+    "FormantVowelSpace",
+    "GranularCloudSynth",
+    "SidechainLungBreath",
+    "ChordRailwaySwitches",
+    "SilenceSnowfallHush",
 }
 
 def rule_recent(m, h):

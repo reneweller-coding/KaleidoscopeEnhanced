@@ -2817,6 +2817,86 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
 
+  <TextureShader file="..\Scene2D\PianoRollWaterfall.frag" type="normal" mood="bright,calm,dreamy" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="octavesP" minValue="0" maxValue="1"></float>
+    <float name="widthP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene2D\VinylGrooveMicroscope.frag" type="normal" mood="dark,calm,dreamy" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="pitchP" minValue="0" maxValue="1"></float>
+    <float name="dustP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene2D\TapeReelEcho.frag" type="normal" mood="dark,calm,dreamy" probability="0.45" complexity="3">
+    <rig preset="flat"/>
+    <float name="speedP" minValue="0" maxValue="1"></float>
+    <float name="echoP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene2D\ModularSynthPatchbay.frag" type="normal" mood="dark,psychedelic,aggressive" probability="0.45" complexity="3">
+    <rig preset="flat"/>
+    <float name="cablesP" minValue="0" maxValue="1"></float>
+    <float name="colsP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene2D\TuningForkChoir.frag" type="normal" mood="calm,dark,dreamy" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="sizeP" minValue="0" maxValue="1"></float>
+    <float name="haloP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene2D\FormantVowelSpace.frag" type="normal" mood="calm,bright,dreamy" probability="0.45" complexity="3">
+    <rig preset="flat"/>
+    <float name="blobP" minValue="0" maxValue="1"></float>
+    <float name="trailP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene2D\GranularCloudSynth.frag" type="normal" mood="dark,psychedelic,dreamy" probability="0.45" complexity="3">
+    <rig preset="flat"/>
+    <float name="grainP" minValue="0" maxValue="1"></float>
+    <float name="spreadP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene2D\SidechainLungBreath.frag" type="normal" mood="dark,aggressive,dreamy" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="depthP" minValue="0" maxValue="1"></float>
+    <float name="cellP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene2D\ChordRailwaySwitches.frag" type="normal" mood="bright,calm,dreamy" probability="0.45" complexity="3">
+    <rig preset="flat"/>
+    <float name="trainsP" minValue="0" maxValue="1"></float>
+    <float name="routeP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\Scene2D\SilenceSnowfallHush.frag" type="normal" mood="calm,dark,dreamy" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="flakeP" minValue="0" maxValue="1"></float>
+    <float name="lampsP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
   <CombineShader file="..\\FX\\FxDarkRed.frag" type="normal" mood="dark,aggressive" probability="0.002" complexity="1">
     <bool name="red" probability="0.15"></bool>
     <bool name="blue" probability="0.15"></bool>
