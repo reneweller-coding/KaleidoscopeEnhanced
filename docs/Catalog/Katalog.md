@@ -1,6 +1,6 @@
 # Kaleidoscope Enhanced — Szenen-Katalog
 
-_796 Szenen, 29 FX-Overlays, 83 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
+_806 Szenen, 29 FX-Overlays, 83 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
 
 
 ---
@@ -503,6 +503,15 @@ CALABI-YAU MANIFOLD KALEIDO: 2D cross-section through a 6D Calabi-Yau compactifi
 ![CalabiYauManifoldKaleido ruhig (t=8)](img/CalabiYauManifoldKaleido_A.jpg) ![CalabiYauManifoldKaleido ruhig (t=16)](img/CalabiYauManifoldKaleido_B.jpg) ![CalabiYauManifoldKaleido audio-heiß (t=21)](img/CalabiYauManifoldKaleido_C.jpg)
 
 
+### CalligraphyBrushStrokes
+
+`Scene2D/CalligraphyBrushStrokes.frag` · type=normal · mood=calm,bright,dreamy · complexity=3
+
+CALLIGRAPHY BRUSH STROKES: a brush writing on paper. Strokes are laid down on the scene clock -- each a curve drawn from its start with a pressure profile that swells and thins -- and the ink bleeds into the paper on the swell (the strokes soften and spread), the bass sets the pressure (stroke width, slow), the kick is a dab of the brush (a splash of ink as round drops), the treble the dry-brush fibre. The photo is t…
+
+![CalligraphyBrushStrokes ruhig (t=8)](img/CalligraphyBrushStrokes_A.jpg) ![CalligraphyBrushStrokes ruhig (t=16)](img/CalligraphyBrushStrokes_B.jpg) ![CalligraphyBrushStrokes audio-heiß (t=21)](img/CalligraphyBrushStrokes_C.jpg)
+
+
 ### CandleForestBreath
 
 `Scene2D/CandleForestBreath.frag` · type=normal · mood=dark,calm,dreamy · complexity=3
@@ -964,6 +973,15 @@ Adapted from "Disco Godrays" by \@kishimisu (2023) — https://www.shadertoy.com
 ![DiscoGodrays ruhig (t=8)](img/DiscoGodrays_A.jpg) ![DiscoGodrays ruhig (t=16)](img/DiscoGodrays_B.jpg) ![DiscoGodrays audio-heiß (t=21)](img/DiscoGodrays_C.jpg)
 
 
+### DominoCascadeWave
+
+`Scene2D/DominoCascadeWave.frag` · type=normal · mood=calm,dark,dreamy · complexity=2
+
+DOMINO CASCADE WAVE: a field of dominoes seen from a low angle, and the wave of toppling running across it on the scene clock -- each tile a smooth rotation from standing to fallen as the front passes (never a snap), the tiles' faces the photo, the front lit by the kick, the fallen tiles' pips glowing with their spectrum band, the standing ones catching the swell's light. The wave loops: far behind the front the tile…
+
+![DominoCascadeWave ruhig (t=8)](img/DominoCascadeWave_A.jpg) ![DominoCascadeWave ruhig (t=16)](img/DominoCascadeWave_B.jpg) ![DominoCascadeWave audio-heiß (t=21)](img/DominoCascadeWave_C.jpg)
+
+
 ### DoubleSlitElectronBuildup
 
 `Scene2D/DoubleSlitElectronBuildup.frag` · type=normal · mood=dark,calm,psychedelic · complexity=2
@@ -1306,6 +1324,15 @@ FRACTAL MORPHO DENDRITE: A whole COLONY of growing bio-luminescent coral & elect
 FRACTAL PORTAL RECURSION HALL: Infinite recursive corridor of nested affine portal gates. Each portal frame rotates and scales into the next transfinite portal chamber with glowing elliptical laser rings and chromatic feedback echoes. Audio Reactivity: audioAdvance -> drives continuous forward plunge through the recursive portals audioKick -> flashes portal event horizons & triggers dimensional zoom leaps audioCentro…
 
 ![FractalPortalRecursionHall ruhig (t=8)](img/FractalPortalRecursionHall_A.jpg) ![FractalPortalRecursionHall ruhig (t=16)](img/FractalPortalRecursionHall_B.jpg) ![FractalPortalRecursionHall audio-heiß (t=21)](img/FractalPortalRecursionHall_C.jpg)
+
+
+### FrescoRestorationReveal
+
+`Scene2D/FrescoRestorationReveal.frag` · type=normal · mood=dark,calm,dreamy · complexity=2
+
+FRESCO RESTORATION REVEAL: a fresco black with centuries of soot, and the restorer at work -- patch by patch the cleaning reveals the painting (the photo) beneath, over the scene arc; the cleaned squares appear in the order a conservator works (rows across), each patch fading from soot to colour smoothly. The lamp is the swell, the kick a flash of the camera documenting the work, the treble the gold-leaf halos glinti…
+
+![FrescoRestorationReveal ruhig (t=8)](img/FrescoRestorationReveal_A.jpg) ![FrescoRestorationReveal ruhig (t=16)](img/FrescoRestorationReveal_B.jpg) ![FrescoRestorationReveal audio-heiß (t=21)](img/FrescoRestorationReveal_C.jpg)
 
 
 ### FrozenMethaneLakes
@@ -1756,6 +1783,15 @@ ICEBERG WATERLINE: the split view -- the iceberg white above the surface, and be
 The photograph seen through a sheet of ice that keeps shattering into Voronoi shards, each shard refracting the picture like a separate slab of glass. The crack lines use a two-pass Voronoi, a true bisector distance rather than the naive F2-F1 gap, so every crack keeps an even width even where three shards meet. audioKick and audioSubBass drive a shatter impulse that widens the cracks and pushes each shard outward fr…
 
 ![IceCrack ruhig (t=8)](img/IceCrack_A.jpg) ![IceCrack ruhig (t=16)](img/IceCrack_B.jpg) ![IceCrack audio-heiß (t=21)](img/IceCrack_C.jpg)
+
+
+### IlluminatedManuscript
+
+`Scene2D/IlluminatedManuscript.frag` · type=normal · mood=calm,bright,dreamy · complexity=3
+
+ILLUMINATED MANUSCRIPT: a vellum page with a gilded initial and a border of vines. The vines grow along the margins over the scene arc (each tendril extends smoothly, its leaves opening as it passes), the gold leaf catches the light as it turns on the swell (a slow sweep of a highlight across the gilding), the miniature in the initial is the photo, the text lines are ruled script; the kick is the flash of the gold, t…
+
+![IlluminatedManuscript ruhig (t=8)](img/IlluminatedManuscript_A.jpg) ![IlluminatedManuscript ruhig (t=16)](img/IlluminatedManuscript_B.jpg) ![IlluminatedManuscript audio-heiß (t=21)](img/IlluminatedManuscript_C.jpg)
 
 
 ### InfinitePhotoZoomAbyss
@@ -3220,6 +3256,15 @@ QUATERNIONIC JULIA 4D FLIGHT: Raymarched flight through a true 4D Quaternion Jul
 ![QuaternionicJulia4DFlight ruhig (t=8)](img/QuaternionicJulia4DFlight_A.jpg) ![QuaternionicJulia4DFlight ruhig (t=16)](img/QuaternionicJulia4DFlight_B.jpg) ![QuaternionicJulia4DFlight audio-heiß (t=21)](img/QuaternionicJulia4DFlight_C.jpg)
 
 
+### RangoliPowderMandala
+
+`Scene2D/RangoliPowderMandala.frag` · type=normal · mood=bright,calm,psychedelic · complexity=3
+
+RANGOLI POWDER MANDALA: coloured powder laid on a threshold in a radial design. The design is laid down ring by ring over the scene arc (each ring fills from its start angle around, as a hand would), the grains are round specks of colour, the colours come from the chroma classes (a class per ring), the kick sprinkles an extra pinch of powder (light), the treble the mica sparkle, the swell the doorway lamp. Camera fix…
+
+![RangoliPowderMandala ruhig (t=8)](img/RangoliPowderMandala_A.jpg) ![RangoliPowderMandala ruhig (t=16)](img/RangoliPowderMandala_B.jpg) ![RangoliPowderMandala audio-heiß (t=21)](img/RangoliPowderMandala_C.jpg)
+
+
 ### RaymarchTunnel
 
 `Scene2D/RaymarchTunnel.frag` · type=normal · mood=dark,aggressive · complexity=2
@@ -3773,6 +3818,15 @@ SPIRAL STAIRWELL DESCENT: looking straight down an endless spiral staircase. The
 ![SpiralStairwellDescent ruhig (t=8)](img/SpiralStairwellDescent_A.jpg) ![SpiralStairwellDescent ruhig (t=16)](img/SpiralStairwellDescent_B.jpg) ![SpiralStairwellDescent audio-heiß (t=21)](img/SpiralStairwellDescent_C.jpg)
 
 
+### SpirographGearDraw
+
+`Scene2D/SpirographGearDraw.frag` · type=normal · mood=calm,bright,psychedelic · complexity=3
+
+SPIROGRAPH GEAR DRAW: the toy -- a small gear rolling inside a ring, the pen in one of its holes drawing a hypotrochoid. The gear rolls on the scene clock, the pen leaves a trace that persists for the last turns (fading), the radii come from the chroma classes once per activation (the ratio picks the number of lobes), the trace colour from the class that sounds; the kick lights the pen, the treble the gear teeth glin…
+
+![SpirographGearDraw ruhig (t=8)](img/SpirographGearDraw_A.jpg) ![SpirographGearDraw ruhig (t=16)](img/SpirographGearDraw_B.jpg) ![SpirographGearDraw audio-heiß (t=21)](img/SpirographGearDraw_C.jpg)
+
+
 ### SporeReleaseGills
 
 `Scene2D/SporeReleaseGills.frag` · type=normal · mood=dark,calm,dreamy · complexity=2
@@ -4007,6 +4061,15 @@ SUPERRADIANT TOKAMAK IGNITION: 100% viewport-filling volumetric view from inside
 ![SuperradiantTokamakIgnition ruhig (t=8)](img/SuperradiantTokamakIgnition_A.jpg) ![SuperradiantTokamakIgnition ruhig (t=16)](img/SuperradiantTokamakIgnition_B.jpg) ![SuperradiantTokamakIgnition audio-heiß (t=21)](img/SuperradiantTokamakIgnition_C.jpg)
 
 
+### TangramShuffle
+
+`Scene2D/TangramShuffle.frag` · type=normal · mood=calm,bright,dreamy · complexity=3
+
+TANGRAM SHUFFLE: the seven pieces -- two large triangles, one medium, two small, a square and a parallelogram -- each carrying its part of the photo, gliding between figures over the scene arc: the square, a cat, a bird, a boat, a runner. Every piece moves and turns by a smooth blend between its poses (no snaps); the piece that has just settled lights on the kick, the swell is the lamp on the table, the treble the la…
+
+![TangramShuffle ruhig (t=8)](img/TangramShuffle_A.jpg) ![TangramShuffle ruhig (t=16)](img/TangramShuffle_B.jpg) ![TangramShuffle audio-heiß (t=21)](img/TangramShuffle_C.jpg)
+
+
 ### Teleidoscope
 
 `Scene2D/Teleidoscope.frag` · type=normal · mood=psychedelic,bright,dreamy · complexity=2
@@ -4234,6 +4297,15 @@ Two mirrored-segment kaleidoscope tunnels blended 50/50: a forward layer (same c
 ![TunnelReverse ruhig (t=8)](img/TunnelReverse_A.jpg) ![TunnelReverse ruhig (t=16)](img/TunnelReverse_B.jpg) ![TunnelReverse audio-heiß (t=21)](img/TunnelReverse_C.jpg)
 
 
+### UkiyoeWaveWoodblock
+
+`Scene2D/UkiyoeWaveWoodblock.frag` · type=normal · mood=calm,bright,dreamy · complexity=2
+
+UKIYO-E WAVE WOODBLOCK: a great wave in the manner of the woodblock print -- flat colour fields in Prussian blue and cream, the black key line, the foam claws as rows of round dots, the paper grain. The wave rises and curls over the scene arc (its crest reaching further with the swell, slowly), the far mountain sits under it; the photo is the print paper and the sky's colour field. The kick brightens the claws, the t…
+
+![UkiyoeWaveWoodblock ruhig (t=8)](img/UkiyoeWaveWoodblock_A.jpg) ![UkiyoeWaveWoodblock ruhig (t=16)](img/UkiyoeWaveWoodblock_B.jpg) ![UkiyoeWaveWoodblock audio-heiß (t=21)](img/UkiyoeWaveWoodblock_C.jpg)
+
+
 ### UlamPrimeSpiral
 
 `Scene2D/UlamPrimeSpiral.frag` · type=normal · mood=dark,psychedelic,calm · complexity=3
@@ -4403,6 +4475,15 @@ XENOBIOLOGICAL BIOSHIP: The camera flies through the grotesque, pulsing interior
 ZCR NOISE STORM: a sandstorm tunnel whose grain IS the noise in the music. The zero-crossing rate and the spectral flatness -- how much of the sound is hiss, breath, cymbal wash -- set the density and contrast of the sand streaming past, so a clean tone flies through clear air and a noisy passage through a wall of grit. Streaks run down the tunnel on the music's pace; a light burns ahead. The camera never moves. Audi…
 
 ![ZCRNoiseStorm ruhig (t=8)](img/ZCRNoiseStorm_A.jpg) ![ZCRNoiseStorm ruhig (t=16)](img/ZCRNoiseStorm_B.jpg) ![ZCRNoiseStorm audio-heiß (t=21)](img/ZCRNoiseStorm_C.jpg)
+
+
+### ZellijTilework
+
+`Scene2D/ZellijTilework.frag` · type=normal · mood=bright,calm,psychedelic · complexity=2
+
+ZELLIJ TILEWORK: a wall of Moroccan zellij -- an eight-fold star pattern of cut tiles, every tile a piece of the photo in its own glaze colour. The pattern is built from the {8/3} star lattice: stars, their surrounding kites and the small squares between; the whole field rotates very slowly on the scene clock and drifts, the tiles light by chroma class (each colour a class), the grout darkens on the bass, the kick gl…
+
+![ZellijTilework ruhig (t=8)](img/ZellijTilework_A.jpg) ![ZellijTilework ruhig (t=16)](img/ZellijTilework_B.jpg) ![ZellijTilework audio-heiß (t=21)](img/ZellijTilework_C.jpg)
 
 
 ### ZoetropeDrum
@@ -5642,6 +5723,15 @@ Jellyfish.frag — soft glowing point (additive blending).
 Shades the abyssal medusae bells and tentacle curtains generated by JellyfishBioluminescenceAbyss.comp: translucent cyan-to-violet bell material blended toward a warm pulse colour wherever bioluminescence fires along a tentacle. Per-vertex vTentacle (0..1 across a strand) and vBioGlow (pulse strength), both baked by the compute generator, mix the bell and pulse colours and scale overall brightness. Colour is tinted t…
 
 ![JellyfishBioluminescenceAbyss ruhig (t=8)](img/JellyfishBioluminescenceAbyss_A.jpg) ![JellyfishBioluminescenceAbyss ruhig (t=16)](img/JellyfishBioluminescenceAbyss_B.jpg) ![JellyfishBioluminescenceAbyss audio-heiß (t=21)](img/JellyfishBioluminescenceAbyss_C.jpg)
+
+
+### KaleidocycleFold
+
+`Scene3D/KaleidocycleFold.frag` · type=scene3d · geom=indirect · mood=bright,calm,psychedelic · complexity=3
+
+Fragment stage for KaleidocycleFold: a paper-craft desk (the photo as the cutting mat), the ring's faces as photo triangles -- each tetrahedron its own tint, each face lit by a spectrum band (24 faces, bands cycling) -- with paper-fold creases at the edges and a shading from a screen-space normal; the kick a flash on the topmost faces, the treble the paper sheen. Audio Reactivity: audioSpectrum[32] -> face light; aud…
+
+![KaleidocycleFold ruhig (t=8)](img/KaleidocycleFold_A.jpg) ![KaleidocycleFold ruhig (t=16)](img/KaleidocycleFold_B.jpg) ![KaleidocycleFold audio-heiß (t=21)](img/KaleidocycleFold_C.jpg)
 
 
 ### KaleidoDome

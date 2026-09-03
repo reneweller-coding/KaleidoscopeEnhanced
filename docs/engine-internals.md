@@ -3607,3 +3607,20 @@ Lessons from the block: an indirect table scene must put the camera on the norma
 | SporeReleaseGills | 2D | gills as angular ridges from a centre above the frame; three spore layers falling at different rates |
 
 Lessons from the block: a refraction amplitude must never follow a fast envelope -- TermiteMoundPlumes scaled its heat shimmer by the treble and the whole background jittered at frame rate (strobe 14); the swell drives the amplitude now and the treble only lights the shimmer highlights. Crowd scenes in indirect geometry need their distance tuned by eye: the penguin huddle at z 14 was a line of dots, at z 8 a wall of slabs, at z 12 a huddle. A flat billboard for a mound reads as a slab -- discard outside an ellipse. Sparse glow fields need about 1.6 times the light they seem to need on the sheet. A flower field whose blossoms close when the music is quiet reads as an empty field: keep the open state at 0.6 or more.
+
+## The fourth fifty, block D: culture and play
+
+| Scene | Pipeline | Note |
+|---|---|---|
+| UkiyoeWaveWoodblock | 2D | a wave profile plus a circular curl lobe; foam claws as round dots along both; flat woodblock colours |
+| IlluminatedManuscript | 2D | vines as polylines with leaves every fifth segment opening as the growth passes; a gold highlight sweeps on the swell |
+| ZellijTilework | 2D | eight-pointed stars as the union of two rotated squares per cell; corner squares and kites by angle |
+| RangoliPowderMandala | 2D | rings laid in order over the arc, each filling around from a start angle; grains as dense round specks |
+| CalligraphyBrushStrokes | 2D | strokes drawn in windows of a cycle; the page washes out over the last 8 percent (a crossfade) and begins again |
+| FrescoRestorationReveal | 2D | patches cleaned in row-major order; each a smoothstep over its slice with a ragged fbm edge |
+| DominoCascadeWave | 2D | topple = smoothstep of (front - row); tiles stand again far behind the front, out of view |
+| SpirographGearDraw | 2D | hypotrochoid with a rational ratio fixed per activation; 220 trace segments over three turns |
+| KaleidocycleFold | `indirect` | six tetrahedra spanning alternating hinges; the fold phase is unbounded and continuous, so the ring turns forever |
+| TangramShuffle | 2D | seven pieces as signed-distance shapes; poses from a 5x7 table blended with shortest-way rotation |
+
+Lessons from the block: on a white page a brightness swing with the level (0.75 + 0.5 x level) is a whole-frame strobe (SpirographGearDraw 10.9) -- bright scenes get 0.9 + 0.2 x level; a camera flash on the kick over the whole wall strobes too (FrescoRestorationReveal 10.6), so the flash lives near the worked patch; dominoes drawn as full-cell columns read as stripes -- a gap between the stones and a dark top edge make them stones; a seal carved from a cell hash is a pixel grid (V8e), a sine-product carving is not.
