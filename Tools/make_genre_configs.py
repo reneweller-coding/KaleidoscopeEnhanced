@@ -181,19 +181,19 @@ MODIFIED_SCENES = {
 # Minuten statt siebzig).  Bewusst eine eigene Liste: welche Szenen zuletzt
 # dran waren, ist eine historische Tatsache und soll im Diff stehen.
 RECENT_SCENES = {
-    # 03.09.: dritte Fuenfzig, Block A (Weltraum, Forschung): FRB-Dispersion, Transit-
-    # Lichtkurven, BAO-Ringe, Dreikoerper-Acht, Europa-Chaos, Titan-Regen, Ringspeichen,
-    # Sprites/Elves, Schutthaufen-Asteroid, Koronograph.
-    "FastRadioBurstDispersion",
-    "TransitLightCurveStars",
-    "BaryonAcousticRipples",
-    "ThreeBodyFigureEight",
-    "EuropaChaosTerrain",
-    "TitanMethaneRain",
-    "RingSpokesAndWakes",
-    "SpriteElvesUpperLightning",
-    "AsteroidRubblePileTumble",
-    "CoronagraphSpeckleField",
+    # 03.09.: dritte Fuenfzig, Block B (Physik): Doppelspalt, Opal, Zeitkristall,
+    # Kavitation, Saffman-Taylor, Zeitreflexion, reflexionsarmer Raum, Leidenfrost,
+    # optisches Gitter, Tensegrity.
+    "DoubleSlitElectronBuildup",
+    "OpalStructuralColour",
+    "TimeCrystalLattice",
+    "CavitationCloudPropeller",
+    "SaffmanTaylorFingers",
+    "TimeReflectionPond",
+    "AnechoicChamberWedges",
+    "LeidenfrostDroplets",
+    "OpticalLatticeAtoms",
+    "TensegrityFloat",
 }
 
 def rule_recent(m, h):

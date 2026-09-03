@@ -1,6 +1,6 @@
 # Kaleidoscope Enhanced — Szenen-Katalog
 
-_726 Szenen, 29 FX-Overlays, 83 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
+_736 Szenen, 29 FX-Overlays, 83 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
 
 
 ---
@@ -881,6 +881,15 @@ DIRAC CONE GRAPHENE VALLEYTRONICS: 2D honeycomb carbon lattice displaying linear
 Adapted from "Disco Godrays" by \@kishimisu (2023) — https://www.shadertoy.com/view/Dt33RS Original licensed CC BY-NC-SA 4.0 (attribution kept per the licence). Kaleidoscopic volumetric "godrays": a densely-sampled raymarch through a mirror-ball fold of a tube + sphere, giving fans of coloured light. Adapted to our engine: * Shadertoy -> ours (gl_FragCoord/resolution/time, GLSL 1.20; round() -> floor(x+.5); the blue-…
 
 ![DiscoGodrays ruhig (t=8)](img/DiscoGodrays_A.jpg) ![DiscoGodrays ruhig (t=16)](img/DiscoGodrays_B.jpg) ![DiscoGodrays audio-heiß (t=21)](img/DiscoGodrays_C.jpg)
+
+
+### DoubleSlitElectronBuildup
+
+`Scene2D/DoubleSlitElectronBuildup.frag` · type=normal · mood=dark,calm,psychedelic · complexity=2
+
+DOUBLE SLIT ELECTRON BUILD-UP: the experiment that shows one particle at a time still interferes. A phosphor screen fills the frame; single electrons arrive as round dots, each at a place drawn from the interference probability, and over the scene arc the dots accumulate into the fringe pattern. The fringe spacing follows the tonal centre (slowly), a fresh arrival flashes on an onset, the electron gun at the bottom h…
+
+![DoubleSlitElectronBuildup ruhig (t=8)](img/DoubleSlitElectronBuildup_A.jpg) ![DoubleSlitElectronBuildup ruhig (t=16)](img/DoubleSlitElectronBuildup_B.jpg) ![DoubleSlitElectronBuildup audio-heiß (t=21)](img/DoubleSlitElectronBuildup_C.jpg)
 
 
 ### DroneDepths
@@ -1859,6 +1868,15 @@ LAVA WORLD TIDAL LOCK: The day-side of a tidally locked planet. The surface is a
 ![LavaWorldTidalLock ruhig (t=8)](img/LavaWorldTidalLock_A.jpg) ![LavaWorldTidalLock ruhig (t=16)](img/LavaWorldTidalLock_B.jpg) ![LavaWorldTidalLock audio-heiß (t=21)](img/LavaWorldTidalLock_C.jpg)
 
 
+### LeidenfrostDroplets
+
+`Scene2D/LeidenfrostDroplets.frag` · type=normal · mood=bright,calm,dreamy · complexity=2
+
+LEIDENFROST DROPLETS: water on a plate far above its boiling point -- the drops ride their own vapour and skitter about, frictionless, for a long time. Round droplets glide on smooth paths (sums of sines on the scene clock), each shrinking over its life and reborn; a vapour halo glows beneath each with the swell; the plate is the photo, red-hot with the bass; the treble glints on the drops. Camera fixed over the plat…
+
+![LeidenfrostDroplets ruhig (t=8)](img/LeidenfrostDroplets_A.jpg) ![LeidenfrostDroplets ruhig (t=16)](img/LeidenfrostDroplets_B.jpg) ![LeidenfrostDroplets audio-heiß (t=21)](img/LeidenfrostDroplets_C.jpg)
+
+
 ### LenticularFlip
 
 `Scene2D/LenticularFlip.frag` · type=normal · mood=calm,dreamy,bright · complexity=1
@@ -2406,6 +2424,15 @@ OCTAGRAMMIC MIRROR VAULT: 8-pointed star ({8/3}-octagram) kinetic origami mirror
 OORT CLOUD DRIFT: the million-year fall from the Oort cloud to the Sun as one endless zoom. Icy bodies hang in shells at every scale; in log-polar space the shells repeat with a fixed period, so the zoom is periodic and its wrap invisible, and the Sun waits at the centre as a glow that never arrives. Onsets ignite comets: a body near the onset grows a tail pointing away from the Sun, its brightness the onset envelope…
 
 ![OortCloudDrift ruhig (t=8)](img/OortCloudDrift_A.jpg) ![OortCloudDrift ruhig (t=16)](img/OortCloudDrift_B.jpg) ![OortCloudDrift audio-heiß (t=21)](img/OortCloudDrift_C.jpg)
+
+
+### OpalStructuralColour
+
+`Scene2D/OpalStructuralColour.frag` · type=normal · mood=bright,calm,dreamy · complexity=2
+
+OPAL STRUCTURAL COLOUR: the play of colour of a precious opal. The stone is a lattice of silica spheres in domains; each domain reflects the Bragg wavelength for its orientation and the viewing angle, so as the viewing angle sweeps slowly the domains flash through the spectrum. The photo is the milky body of the stone; band energy lights the domains whose colour matches; the treble sparkles the sphere lattice. Camera…
+
+![OpalStructuralColour ruhig (t=8)](img/OpalStructuralColour_A.jpg) ![OpalStructuralColour ruhig (t=16)](img/OpalStructuralColour_B.jpg) ![OpalStructuralColour audio-heiß (t=21)](img/OpalStructuralColour_C.jpg)
 
 
 ### OpticalDispersionCausticVault
@@ -3112,6 +3139,15 @@ SACRED GEOMETRY FLOWER OF LIFE 3D: Volumetric raymarching of extruded Flower of 
 ![SacredGeometryFlowerOfLife3D ruhig (t=8)](img/SacredGeometryFlowerOfLife3D_A.jpg) ![SacredGeometryFlowerOfLife3D ruhig (t=16)](img/SacredGeometryFlowerOfLife3D_B.jpg) ![SacredGeometryFlowerOfLife3D audio-heiß (t=21)](img/SacredGeometryFlowerOfLife3D_C.jpg)
 
 
+### SaffmanTaylorFingers
+
+`Scene2D/SaffmanTaylorFingers.frag` · type=normal · mood=psychedelic,calm,dreamy · complexity=2
+
+SAFFMAN-TAYLOR FINGERS: viscous fingering in a Hele-Shaw cell. A less viscous fluid (the photo) is pushed into a more viscous one (the palette) between two plates; the interface is unstable and grows fingers that split at their tips. The pattern grows over the scene arc -- the radius expands and higher modes (the tip splits) come in later, all continuous; the swell is the injection pressure (a slow modulation of the …
+
+![SaffmanTaylorFingers ruhig (t=8)](img/SaffmanTaylorFingers_A.jpg) ![SaffmanTaylorFingers ruhig (t=16)](img/SaffmanTaylorFingers_B.jpg) ![SaffmanTaylorFingers audio-heiß (t=21)](img/SaffmanTaylorFingers_C.jpg)
+
+
 ### ScherkMinimalSurfaceTower
 
 `Scene2D/ScherkMinimalSurfaceTower.frag` · type=normal · mood=bright,psychedelic · complexity=4
@@ -3692,6 +3728,15 @@ TIE-DYE FOLD: the photo folded radially like a shirt tied for dyeing -- the plan
 ![TieDyeFold ruhig (t=8)](img/TieDyeFold_A.jpg) ![TieDyeFold ruhig (t=16)](img/TieDyeFold_B.jpg) ![TieDyeFold audio-heiß (t=21)](img/TieDyeFold_C.jpg)
 
 
+### TimeCrystalLattice
+
+`Scene2D/TimeCrystalLattice.frag` · type=normal · mood=psychedelic,aggressive,bright · complexity=2
+
+TIME CRYSTAL LATTICE: a discrete time crystal -- a lattice of spins driven by a periodic kick that responds at half the drive frequency, the hallmark of the phase. The spins are round discs of the photo; a phase gradient across the lattice makes the flips travel as a wave; the flips themselves are light (colour A to colour B, crossfaded, never a hard switch), the drive pulses are a flash on the kick, and the swell is…
+
+![TimeCrystalLattice ruhig (t=8)](img/TimeCrystalLattice_A.jpg) ![TimeCrystalLattice ruhig (t=16)](img/TimeCrystalLattice_B.jpg) ![TimeCrystalLattice audio-heiß (t=21)](img/TimeCrystalLattice_C.jpg)
+
+
 ### TimeDilation
 
 `Scene2D/TimeDilation.frag` · type=normal · mood=bright,aggressive,space · complexity=4
@@ -3699,6 +3744,15 @@ TIE-DYE FOLD: the photo folded radially like a shirt tied for dyeing -- the plan
 TIME DILATION: Falling into a supermassive black hole, experiencing extreme time dilation. The universe outside speeds up to infinity, turning into blurred streaks of light, while the event horizon below stretches forever. Audio kicks violently distort the space-time fabric. audioAdvance -> descent speed into the gravity well audioKick -> violent space-time tearing/glitches audioSwell -> blinding brightness of the in…
 
 ![TimeDilation ruhig (t=8)](img/TimeDilation_A.jpg) ![TimeDilation ruhig (t=16)](img/TimeDilation_B.jpg) ![TimeDilation audio-heiß (t=21)](img/TimeDilation_C.jpg)
+
+
+### TimeReflectionPond
+
+`Scene2D/TimeReflectionPond.frag` · type=normal · mood=calm,dreamy,bright · complexity=2
+
+TIME REFLECTION POND: ripples on a pond, seen from above through the water to the photo on the pond floor -- and a time reflection: when the medium changes abruptly in time (the drop), every wave reverses, its outgoing rings running back to their sources. The reversal is a smooth change of the phase velocity sign over the drop envelope (the waves slow, stop, run back), so it is continuous; the drop is the one cut the…
+
+![TimeReflectionPond ruhig (t=8)](img/TimeReflectionPond_A.jpg) ![TimeReflectionPond ruhig (t=16)](img/TimeReflectionPond_B.jpg) ![TimeReflectionPond audio-heiß (t=21)](img/TimeReflectionPond_C.jpg)
 
 
 ### TitanMethaneRain
@@ -3987,6 +4041,15 @@ Lit voxel cubes levitated in an acoustic standing-wave grid, each face a blend o
 ![AcousticLevitationMatrix ruhig (t=8)](img/AcousticLevitationMatrix_A.jpg) ![AcousticLevitationMatrix ruhig (t=16)](img/AcousticLevitationMatrix_B.jpg) ![AcousticLevitationMatrix audio-heiß (t=21)](img/AcousticLevitationMatrix_C.jpg)
 
 
+### AnechoicChamberWedges
+
+`Scene3D/AnechoicChamberWedges.frag` · type=scene3d · geom=patches · mood=dark,calm,psychedelic · complexity=3
+
+ANECHOIC CHAMBER WEDGES: the quietest room, seen wall-on. Grey foam wedges absorb everything; here they give the music back as light: each wedge belongs to a spectrum band by its column, its tip glows with that band, the base stays dark; the room light (the swell) rakes across the pyramids from one side so their ridges read; the kick pulses the whole wall's tips; the photo is the foam's faint mottle. Nothing moves bu…
+
+![AnechoicChamberWedges ruhig (t=8)](img/AnechoicChamberWedges_A.jpg) ![AnechoicChamberWedges ruhig (t=16)](img/AnechoicChamberWedges_B.jpg) ![AnechoicChamberWedges audio-heiß (t=21)](img/AnechoicChamberWedges_C.jpg)
+
+
 ### AnglerfishAbyss
 
 `Scene3D/AnglerfishAbyss.frag` · type=scene3d · geom=mesh · mood=dark,calm,dreamy · complexity=3
@@ -4259,6 +4322,15 @@ _(Vorschau eingeschränkt: Sim-Textur/Mehrpass — Bilder unterschätzen die ech
 CathedralGlass.frag — stone in the opaque pass, glass in the transparent one. Stained glass is not lit, it is BACKlit: the pane's colour is what survives the light passing through it, not what bounces off it. So the glass here has almost no diffuse term and a large emissive one, scaled by the band that pane stands for. Getting this the usual way round — key light, specular, a bit of ambient — produces coloured plasti…
 
 ![CathedralGlass ruhig (t=8)](img/CathedralGlass_A.jpg) ![CathedralGlass ruhig (t=16)](img/CathedralGlass_B.jpg) ![CathedralGlass audio-heiß (t=21)](img/CathedralGlass_C.jpg)
+
+
+### CavitationCloudPropeller
+
+`Scene3D/CavitationCloudPropeller.frag` · type=scene3d · geom=indirect · mood=dark,calm,aggressive · complexity=4
+
+Fragment stage for CavitationCloudPropeller: green-blue water with light shafts from above, the propeller in dark bronze, the bubbles as round lenses with a bright rim that flash white as they collapse (the kick lights the collapse), the treble a sparkle on the cloud. Audio Reactivity: audioKick -> collapse flash; audioHigh -> sparkle; audioBass -> shaft glow; audioLevel -> brightness.
+
+![CavitationCloudPropeller ruhig (t=8)](img/CavitationCloudPropeller_A.jpg) ![CavitationCloudPropeller ruhig (t=16)](img/CavitationCloudPropeller_B.jpg) ![CavitationCloudPropeller audio-heiß (t=21)](img/CavitationCloudPropeller_C.jpg)
 
 
 ### CherenkovCascadeShower
@@ -5531,6 +5603,15 @@ OceanNight.frag — deep blue water, a moon-glitter lane running to the horizon,
 ![OceanNight ruhig (t=8)](img/OceanNight_A.jpg) ![OceanNight ruhig (t=16)](img/OceanNight_B.jpg) ![OceanNight audio-heiß (t=21)](img/OceanNight_C.jpg)
 
 
+### OpticalLatticeAtoms
+
+`Scene3D/OpticalLatticeAtoms.frag` · type=scene3d · geom=indirect · mood=dark,calm,dreamy · complexity=4
+
+Fragment stage for OpticalLatticeAtoms: the vacuum chamber dark with the photo faint on its far window, the lattice beams as faint red lines, the atoms as round glowing discs whose colour is their chroma class and whose brightness is that class's energy (the fluorescence imaging), the magneto-optical-trap glow with the level, the treble a sparkle on the beam crossings. Audio Reactivity: audioChroma[12] -> atom bright…
+
+![OpticalLatticeAtoms ruhig (t=8)](img/OpticalLatticeAtoms_A.jpg) ![OpticalLatticeAtoms ruhig (t=16)](img/OpticalLatticeAtoms_B.jpg) ![OpticalLatticeAtoms audio-heiß (t=21)](img/OpticalLatticeAtoms_C.jpg)
+
+
 ### OrbitalDebrisField
 
 `Scene3D/OrbitalDebrisField.frag` · type=scene3d · geom=indirect · mood=space,dark,calm · complexity=4
@@ -6387,6 +6468,15 @@ SynthTerrain.frag — dark ground, glowing synthwave grid lines.
 TACHYON COMM RELAY: A gigantic communication relay with massive rotating rings and a central data spire. Energy pulses shoot along its length, synchronized with the bass drops. audioAdvance -> camera travel speed through the rings audioKick -> data pulse flashes along the spire and rings audioSwell -> ambient illumination of the energy field audioChromaHue-> energy color palette Per-activation variety: ringP float th…
 
 ![TachyonCommRelay ruhig (t=8)](img/TachyonCommRelay_A.jpg) ![TachyonCommRelay ruhig (t=16)](img/TachyonCommRelay_B.jpg) ![TachyonCommRelay audio-heiß (t=21)](img/TachyonCommRelay_C.jpg)
+
+
+### TensegrityFloat
+
+`Scene3D/TensegrityFloat.frag` · type=scene3d · geom=indirect · mood=calm,bright,dreamy · complexity=3
+
+Fragment stage for TensegrityFloat: a soft studio of the photo behind, the struts as photo-wrapped bars with a per-face shade, the cables as thin lines that light with their pitch class, the kick a glint along every cable, the swell the studio light. Audio Reactivity: audioChroma[12] -> cable light; audioKick -> cable glint; audioSwell -> studio light; audioLevel.
+
+![TensegrityFloat ruhig (t=8)](img/TensegrityFloat_A.jpg) ![TensegrityFloat ruhig (t=16)](img/TensegrityFloat_B.jpg) ![TensegrityFloat audio-heiß (t=21)](img/TensegrityFloat_C.jpg)
 
 
 ### TeslaLightningTree

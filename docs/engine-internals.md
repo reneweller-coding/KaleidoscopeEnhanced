@@ -3463,3 +3463,24 @@ a sparse field of dots on black reads as nothing at contact-sheet size;
 EuropaChaosTerrain drove both the seam width and the seam light from the
 sub-bass and strobed (12.9) until the width was fixed and the light given
 a floor; the regolith glints were whole grid cells and are round now.
+
+## The third fifty, block B: physics and matter
+
+| Scene | Pipeline | Note |
+|---|---|---|
+| DoubleSlitElectronBuildup | 2D | each hashed cell has an arrival threshold; a dot is present once probability x arc exceeds it (smoothstep, so arrivals fade in); fringe spacing from the slewed tonal centre |
+| OpalStructuralColour | 2D | Voronoi domains; Bragg parameter from domain orientation + a slow viewing-angle sweep; the band matching the colour lights the domain |
+| TimeCrystalLattice | 2D | drive at w, response at w/2 as a smooth square wave with a phase gradient across the lattice |
+| CavitationCloudPropeller | `indirect` | bubbles born at blade tips on continuous phases, carried along a helical wake, grow then collapse (collapse = kick light) |
+| SaffmanTaylorFingers | 2D | interface radius as a Fourier series in angle; higher modes switch on later in the arc (tip splitting) |
+| TimeReflectionPond | 2D | effective wave time = clock - 2.2 sin(pi drop): the waves slow, run back and resume, continuous |
+| AnechoicChamberWedges | `patches` | pyramids from min(tri(u), tri(v)); normals from the face gradient; tips lit by the column's band |
+| LeidenfrostDroplets | 2D | drops on sums of incommensurate sines, shrinking over a life phase, drawn as lenses over the plate |
+| OpticalLatticeAtoms | `indirect` | one atom per filled site oscillating toward a neighbour as 0.5(1 - cos), amplitude shrinking with the swell (lattice depth) |
+| TensegrityFloat | `indirect` | expanded-octahedron strut ends; each end tied to its four nearest foreign ends by rank selection in the generator |
+
+Preview lessons: the electron dots were one to two pixels at 60-120 cells
+across and read as black -- particles need at least four pixels at 1080p;
+TimeCrystalLattice strobed (17.3) with a 1 Hz drive flash on every disc
+until the clock was halved, the flash quartered and the phase gradient
+tripled so the flips travel as a wave instead of blinking together.
