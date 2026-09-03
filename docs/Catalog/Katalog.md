@@ -1,6 +1,6 @@
 # Kaleidoscope Enhanced — Szenen-Katalog
 
-_706 Szenen, 29 FX-Overlays, 83 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
+_716 Szenen, 29 FX-Overlays, 83 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
 
 
 ---
@@ -4005,6 +4005,15 @@ BACTERIOPHAGE ICOSAHEDRAL CAPSID INJECTION: T4 Bacteriophage viral injection nan
 ![BacteriophageIcosahedralCapsidInjection ruhig (t=8)](img/BacteriophageIcosahedralCapsidInjection_A.jpg) ![BacteriophageIcosahedralCapsidInjection ruhig (t=16)](img/BacteriophageIcosahedralCapsidInjection_B.jpg) ![BacteriophageIcosahedralCapsidInjection audio-heiß (t=21)](img/BacteriophageIcosahedralCapsidInjection_C.jpg)
 
 
+### BaitBallVortex
+
+`Scene3D/BaitBallVortex.frag` · type=scene3d · geom=indirect · mood=calm,dark,dreamy · complexity=4
+
+Fragment stage for BaitBallVortex: open water lit from above -- blue-green with caustic light from the photo and god rays -- the fish silver-sided with the photo's tint, flashing as they turn (a per-fish phase) and all at once on an onset (the fright flash is light, not motion), the predator a dark shape with a pale belly. Audio Reactivity: audioOnset -> silver flash; audioKick -> caustics brighten; audioSwell -> sun…
+
+![BaitBallVortex ruhig (t=8)](img/BaitBallVortex_A.jpg) ![BaitBallVortex ruhig (t=16)](img/BaitBallVortex_B.jpg) ![BaitBallVortex audio-heiß (t=21)](img/BaitBallVortex_C.jpg)
+
+
 ### BillboardCity
 
 `Scene3D/BillboardCity.frag` · type=scene3d · geom=quads · mood=bright · complexity=1
@@ -4452,6 +4461,15 @@ Frag-side music pulse (added by the deaf-scene pass: reactivity measured ~0 -- t
 ![CymaticsPlate ruhig (t=8)](img/CymaticsPlate_A.jpg) ![CymaticsPlate ruhig (t=16)](img/CymaticsPlate_B.jpg) ![CymaticsPlate audio-heiß (t=21)](img/CymaticsPlate_C.jpg)
 
 
+### DandelionClock
+
+`Scene3D/DandelionClock.frag` · type=scene3d · geom=indirect · mood=calm,bright,dreamy · complexity=4
+
+Fragment stage for DandelionClock: a summer meadow behind (the photo as soft bokeh with round highlights), the seed head backlit by a low sun -- the pappus bristles as fine radial lines in a soft white disc, the seeds as tiny brown grains, the stalks as hairlines; the treble sparkles the bristles, the kick warms the backlight. Audio Reactivity: audioHigh -> bristle sparkle; audioKick -> backlight; audioSwell -> relea…
+
+![DandelionClock ruhig (t=8)](img/DandelionClock_A.jpg) ![DandelionClock ruhig (t=16)](img/DandelionClock_B.jpg) ![DandelionClock audio-heiß (t=21)](img/DandelionClock_C.jpg)
+
+
 ### DeepSeaHydrothermalChimneyPillar
 
 `Scene3D/DeepSeaHydrothermalChimneyPillar.frag` · type=scene3d · geom=grid · mood=dark,aggressive,calm · complexity=4
@@ -4625,6 +4643,15 @@ GEOM="MESH" STATION FAMILY: the five one-off stations that don't fit the other f
 ![ExoticStation ruhig (t=8)](img/ExoticStation_A.jpg) ![ExoticStation ruhig (t=16)](img/ExoticStation_B.jpg) ![ExoticStation audio-heiß (t=21)](img/ExoticStation_C.jpg)
 
 
+### ExplodedViewDiagram
+
+`Scene3D/ExplodedViewDiagram.frag` · type=scene3d · geom=mesh · mood=calm,bright,dark · complexity=3
+
+EXPLODED VIEW DIAGRAM: drawn as a technical illustration -- a blueprint. The paper is the photo, bleached and gridded; the model's surfaces are shaded in the drawing's flat washes with ink edges where the surface turns away from the eye; the parts that have flown apart carry leader lines of light back toward the centre (the explosion's own measure). The bass warms the wash, the kick brightens the ink, the treble adds…
+
+![ExplodedViewDiagram ruhig (t=8)](img/ExplodedViewDiagram_A.jpg) ![ExplodedViewDiagram ruhig (t=16)](img/ExplodedViewDiagram_B.jpg) ![ExplodedViewDiagram audio-heiß (t=21)](img/ExplodedViewDiagram_C.jpg)
+
+
 ### FadeOutDissolution
 
 `Scene3D/FadeOutDissolution.frag` · type=scene3d · geom=indirect · mood=calm,dreamy,bright · complexity=4
@@ -4787,6 +4814,15 @@ _(Vorschau eingeschränkt: Sim-Textur/Mehrpass — Bilder unterschätzen die ech
 GlassStack.frag — one shader, two very different jobs. In the opaque pass it writes an ordinary colour. In the transparent pass it writes into the two OIT accumulation targets instead, and what it writes is not a colour but a CONTRIBUTION: premultiplied colour times a weight, and the alpha that eats into the revealage. The weight is the whole technique. It has to fall off with depth so that nearer layers dominate — t…
 
 ![GlassStack ruhig (t=8)](img/GlassStack_A.jpg) ![GlassStack ruhig (t=16)](img/GlassStack_B.jpg) ![GlassStack audio-heiß (t=21)](img/GlassStack_C.jpg)
+
+
+### GlassVesselsOIT
+
+`Scene3D/GlassVesselsOIT.frag` · type=scene3d · geom=indirect · mood=calm,bright,dreamy · complexity=4
+
+GLASS VESSELS: two-pass shader. Opaque pass: the back wall (the photo as a lit studio wall) and the shelf. OIT pass: the glass -- each vessel tinted by its pitch class, the photo refracted through it (the wall image sampled along the refracted ray), a Fresnel reflection, a specular highlight; the class that sounds fills its vessel with light (the chroma as the liquid level glow), the kick sparks the highlights, the t…
+
+![GlassVesselsOIT ruhig (t=8)](img/GlassVesselsOIT_A.jpg) ![GlassVesselsOIT ruhig (t=16)](img/GlassVesselsOIT_B.jpg) ![GlassVesselsOIT audio-heiß (t=21)](img/GlassVesselsOIT_C.jpg)
 
 
 ### GrapheneGyroidTriplyPeriodicMinimalSurface
@@ -5059,6 +5095,15 @@ Shades one facet of the Miura-ori origami sheet folded by KineticTesseractOrigam
 ![KineticTesseractOrigami ruhig (t=8)](img/KineticTesseractOrigami_A.jpg) ![KineticTesseractOrigami ruhig (t=16)](img/KineticTesseractOrigami_B.jpg) ![KineticTesseractOrigami audio-heiß (t=21)](img/KineticTesseractOrigami_C.jpg)
 
 
+### KiteFestival
+
+`Scene3D/KiteFestival.frag` · type=scene3d · geom=indirect · mood=bright,calm,dreamy · complexity=4
+
+Fragment stage for KiteFestival: a bright windy sky with cloud streaks, a green hillside carrying the photo as its patchwork of fields, kites as photo diamonds with bright spars, tails in palette colours that sparkle with the treble, and the kick lighting the kite edges. Audio Reactivity: audioHigh -> tail sparkle; audioKick -> kite edges; audioSwell -> sunlight; audioLevel -> brightness.
+
+![KiteFestival ruhig (t=8)](img/KiteFestival_A.jpg) ![KiteFestival ruhig (t=16)](img/KiteFestival_B.jpg) ![KiteFestival audio-heiß (t=21)](img/KiteFestival_C.jpg)
+
+
 ### LanternRise
 
 `Scene3D/LanternRise.frag` · type=scene3d · geom=points · mood=calm · complexity=2
@@ -5194,6 +5239,15 @@ MelodyScript.frag — additive ribbon ink (colour fully baked in the vert).
 Fragment stage for MeshKaleidoscope: the twelve copies of the model lit by one key light plus a rim that is the palette's colour, alternating copies tinted warm/cool so the mirror symmetry reads; the sky shell is a dark velvet with the photo as a soft glow behind the wreath. Audio Reactivity: audioKick flashes the rim; audioSwell brightens the key; audioChromaHue drives the tint via the palette.
 
 ![MeshKaleidoscope ruhig (t=8)](img/MeshKaleidoscope_A.jpg) ![MeshKaleidoscope ruhig (t=16)](img/MeshKaleidoscope_B.jpg) ![MeshKaleidoscope audio-heiß (t=21)](img/MeshKaleidoscope_C.jpg)
+
+
+### MeshSandSculpture
+
+`Scene3D/MeshSandSculpture.frag` · type=scene3d · geom=mesh · mood=calm,bright,dreamy · complexity=3
+
+MESH SAND SCULPTURE: wet sand -- warm, grainy, with round glints of shell and quartz -- under a beach sky that is the photo. Where the wind has eroded the surface (vErode) the sand is drier and paler; the treble makes the grains glint, the swell is the sun, the kick a gust of blown sand as round grains streaming off the sculpture (light). Audio Reactivity: audioRoughness -> erosion (vertex stage, slow) audioHigh -> g…
+
+![MeshSandSculpture ruhig (t=8)](img/MeshSandSculpture_A.jpg) ![MeshSandSculpture ruhig (t=16)](img/MeshSandSculpture_B.jpg) ![MeshSandSculpture audio-heiß (t=21)](img/MeshSandSculpture_C.jpg)
 
 
 ### MeshTerrain
@@ -5901,6 +5955,15 @@ SmokeHall.frag — stone in the opaque pass, participating medium in the transpa
 ![SmokeHall ruhig (t=8)](img/SmokeHall_A.jpg) ![SmokeHall ruhig (t=16)](img/SmokeHall_B.jpg) ![SmokeHall audio-heiß (t=21)](img/SmokeHall_C.jpg)
 
 
+### SmokeRingChorus
+
+`Scene3D/SmokeRingChorus.frag` · type=scene3d · geom=indirect · mood=dark,calm,dreamy · complexity=4
+
+SMOKE RING CHORUS: two-pass shader. Opaque pass: the dark room behind, the photo as a faint far wall lit by the mouths' glow. OIT pass: the rings as translucent smoke -- soft-edged (alpha falls toward the tube's silhouette), thinning as they expand and age, tinted by the palette, lit from the front; the onsets brighten every ring in flight, the kick warms them, the treble adds a curl of light on the rims. Weighted-bl…
+
+![SmokeRingChorus ruhig (t=8)](img/SmokeRingChorus_A.jpg) ![SmokeRingChorus ruhig (t=16)](img/SmokeRingChorus_B.jpg) ![SmokeRingChorus audio-heiß (t=21)](img/SmokeRingChorus_C.jpg)
+
+
 ### SnowDrift
 
 `Scene3D/SnowDrift.frag` · type=scene3d · geom=points · mood=calm · complexity=2
@@ -5908,6 +5971,15 @@ SmokeHall.frag — stone in the opaque pass, participating medium in the transpa
 SnowDrift.frag — soft glowing point (additive blending).
 
 ![SnowDrift ruhig (t=8)](img/SnowDrift_A.jpg) ![SnowDrift ruhig (t=16)](img/SnowDrift_B.jpg) ![SnowDrift audio-heiß (t=21)](img/SnowDrift_C.jpg)
+
+
+### SoapFilmMembrane
+
+`Scene3D/SoapFilmMembrane.frag` · type=scene3d · geom=patches · mood=psychedelic,bright,calm · complexity=4
+
+SOAP FILM MEMBRANE: a soap film in a frame, filling the view. Its colour is thin-film interference from the thickness the evaluation stage computed: the film drains over the scene arc, so the bands of colour creep downward as they do on a real bubble, the black film appearing at the top near the end. The photo is reflected in the film (it is a mirror) and seen through it, dimmer; the treble is the shimmer of the thin…
+
+![SoapFilmMembrane ruhig (t=8)](img/SoapFilmMembrane_A.jpg) ![SoapFilmMembrane ruhig (t=16)](img/SoapFilmMembrane_B.jpg) ![SoapFilmMembrane audio-heiß (t=21)](img/SoapFilmMembrane_C.jpg)
 
 
 ### SolarProminenceHelicalMagneticRope
@@ -6236,6 +6308,15 @@ TESLA LIGHTNING TREE: a branching discharge tree grown fresh every frame, camera
 ![TeslaLightningTree ruhig (t=8)](img/TeslaLightningTree_A.jpg) ![TeslaLightningTree ruhig (t=16)](img/TeslaLightningTree_B.jpg) ![TeslaLightningTree audio-heiß (t=21)](img/TeslaLightningTree_C.jpg)
 
 
+### TessellatedLavaLake
+
+`Scene3D/TessellatedLavaLake.frag` · type=scene3d · geom=patches · mood=dark,aggressive,psychedelic · complexity=4
+
+TESSELLATED LAVA LAKE: dark crust plates drifting on a lake of melt; between the plates the lava glows, and the glow is the music -- the bass pushes the orange-white up through the seams, the kick flares them, the swell heaves the whole surface (evaluation stage). The crust carries the photo as its scorched texture; the sky above is night with the lake's own glow on the smoke. Camera height fixed on the shore. Audio …
+
+![TessellatedLavaLake ruhig (t=8)](img/TessellatedLavaLake_A.jpg) ![TessellatedLavaLake ruhig (t=16)](img/TessellatedLavaLake_B.jpg) ![TessellatedLavaLake audio-heiß (t=21)](img/TessellatedLavaLake_C.jpg)
+
+
 ### TessellatedOcean
 
 `Scene3D/TessellatedOcean.frag` · type=scene3d · geom=patches · mood=calm,dark,dreamy · complexity=4
@@ -6344,6 +6425,15 @@ _(Vorschau eingeschränkt: Sim-Textur/Mehrpass — Bilder unterschätzen die ech
 VolumetricFire.frag — companion to VolumetricFire.vert. Samples the live GPU fire/smoke simulation (Blend/Smoke3DSim.frag, R=temperature, G=density) at this depth-slice billboard's atlas cell and maps it through a classic black -> red -> orange -> yellow -> white-hot ramp, with a grey smoke haze wherever density outlives the heat (the rising column above the flame tip). Additive blending (see Scene3DShader::draw) mak…
 
 ![VolumetricFire ruhig (t=8)](img/VolumetricFire_A.jpg) ![VolumetricFire ruhig (t=16)](img/VolumetricFire_B.jpg) ![VolumetricFire audio-heiß (t=21)](img/VolumetricFire_C.jpg)
+
+
+### VoxelizedModel
+
+`Scene3D/VoxelizedModel.frag` · type=scene3d · geom=mesh · mood=psychedelic,bright,calm · complexity=3
+
+VOXELIZED MODEL: the model as a voxel sculpture of the photo. The surface is coloured per voxel cell -- one photo sample per cell, flat -- and lit per cell with the normal snapped to the nearest axis, with a thin dark seam at the cell boundaries, so the smooth mesh reads as stacked cubes. The cell size breathes on the swell (slowly: fewer, bigger voxels in the quiet, a fine sculpture at the peak), the cells glow with…
+
+![VoxelizedModel ruhig (t=8)](img/VoxelizedModel_A.jpg) ![VoxelizedModel ruhig (t=16)](img/VoxelizedModel_B.jpg) ![VoxelizedModel audio-heiß (t=21)](img/VoxelizedModel_C.jpg)
 
 
 ### WarpStars

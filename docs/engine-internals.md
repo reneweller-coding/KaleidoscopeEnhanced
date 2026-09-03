@@ -3403,3 +3403,39 @@ they are rectangular windows in towers, not particles, and stay.
 Preview lesson: StereoSearchlights drew bright windows and invisible
 beams -- the beams needed three times the width, a slower falloff and the
 windows halved before the searchlights read as the subject.
+
+## The second fifty, block E: models, indirect, OIT, tessellation
+
+Ten 3D scenes (03.09.2026) on the existing pipelines; no host changes.
+
+| Scene | Pipeline | Note |
+|---|---|---|
+| GlassVesselsOIT | `indirect` + OIT | twelve lathe surfaces (profile turned about y), one per chroma class; glass in the OIT pass refracts the wall photo along the refracted ray |
+| SoapFilmMembrane | `patches` | standing modes of a rectangle; thickness drains over the arc; thin-film reflectance per channel from the optical path difference |
+| KiteFestival | `indirect` | 700 kites: string, diamond (two triangles), five ribbon segments; wind strength = swell, gusts = sines on the clock |
+| BaitBallVortex | `indirect` | 5000 fish on ring orbits; the predator on a figure-of-eight; avoidance is a smooth push by distance (no fright jumps; onsets flash silver in the fragment) |
+| DandelionClock | `indirect` | 800 seeds; each lets go when the swell crosses its threshold, crossfaded over a band of swell so nothing pops; flight on a continuous phase |
+| ExplodedViewDiagram | `mesh` | explosion along a low-frequency noise field of position (neighbouring vertices move together, no tearing) on `sceneProgress`; blueprint shading |
+| VoxelizedModel | `mesh` | the voxel look lives in colour and lighting only (cell colour, axis-snapped normal, seams); positions never quantised |
+| SmokeRingChorus | `indirect` + OIT | tori of quads born on continuous phases per mouth; alpha from the tube silhouette, thinning with life |
+| MeshSandSculpture | `mesh` | erosion along the normal = roughness x arc allowance x windward noise; rebuilt as the allowance closes |
+| TessellatedLavaLake | `patches` | Voronoi plates with drifting centres ride a plateau over the melt; seam distance drives the glow in the fragment |
+
+Conventions used here that are worth keeping: a compute generator sees only
+the GenLocCache uniforms (time, sceneSeed, audioAdvance/Level/Beat/Kick/
+SubBass/High/Bass/Mid/Chroma/Spectrum/Phase/Swell, the three scene clocks,
+maxVertices, frameIndex, genPass) -- anything else stays 0, so arousal,
+onset, roughness and the like belong in the fragment stage; a generator
+that needs per-vertex normals packs normal.xy into the uv slots and the z
+sign into `kind` (SmokeRingChorus, GlassVesselsOIT rebuild it in the
+vertex stage); OIT scenes collapse the half that does not belong to the
+current pass behind the near plane in the vertex stage (CathedralGlass
+pattern).
+
+Preview lessons: an opaque pass that draws dim pixels over a bright
+background reads as dark blobs (DandelionClock's pappus discards
+everything but the bristles now); a lathe placed too close fills the frame
+(GlassVesselsOIT sits at z 8.5..10.5 at a third of its first size); a
+patches surface has no sky, so TessellatedLavaLake raises the far end into
+a crater wall; MeshSandSculpture uses wrap lighting, which is robust
+against the model's normal orientation.

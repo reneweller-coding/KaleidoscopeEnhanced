@@ -1,0 +1,114 @@
+#version 430 core
+/**
+ * @file KiteFestival.comp
+ * @brief KITE FESTIVAL: hundreds of kites on a windy hillside, each a
+ * diamond of the photo with a ribbon tail, flying on its string in a wind
+ * field.  The wind strength is the swell (slow): more wind, the kites fly
+ * higher and lean further; the gusts are sines on the scene clock, so the
+ * whole sky sways continuously and never jolts.  No state; every kite is a
+ * function of its seed and the clock.  The camera never moves.
+ *
+ * Audio Reactivity (generator stage):
+ *   audioSwell   -> wind strength (slow)
+ *   sceneAdvance -> gusts and tail ripple (continuous)
+ *
+ * Per-instance: countP (fraction of kites), windP, hueP.
+ */
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+layout(std430, binding = 0) buffer Verts { float verts[]; };
+layout(std430, binding = 1) buffer Cmd   { uint cmd[];   };
+
+uniform uint  maxVertices;
+uniform float time;
+uniform float sceneAdvance;
+uniform float sceneTime;
+uniform float audioSwell;
+
+uniform float countP;
+uniform float windP;
+uniform float hueP;
+
+float hash11(float p) { p = fract(p * 0.1031); p *= p + 33.33; p *= p + p; return fract(p); }
+vec3  hash31(float n) { return vec3(hash11(n), hash11(n + 17.3), hash11(n + 41.7)); }
+
+void emitTri(vec3 a, vec3 b, vec3 c, float id, float lit, float kind, vec2 ua, vec2 ub, vec2 uc)
+{
+    uint base = atomicAdd(cmd[4], 3u);
+    if (base + 3u > maxVertices) return;
+    vec3 pl[3] = vec3[3](a, b, c);
+    vec2 ul[3] = vec2[3](ua, ub, uc);
+    for (uint i = 0u; i < 3u; ++i)
+    {
+        uint off = (base + i) * 8u;
+        verts[off + 0u] = pl[i].x; verts[off + 1u] = pl[i].y; verts[off + 2u] = pl[i].z;
+        verts[off + 3u] = id; verts[off + 4u] = lit; verts[off + 5u] = kind;
+        verts[off + 6u] = ul[i].x; verts[off + 7u] = ul[i].y;
+    }
+}
+
+void emitQuad(vec3 c, vec3 ax, vec3 ay, float id, float lit, float kind, vec2 uv0, vec2 uv1)
+{
+    vec3 p0 = c - ax - ay, p1 = c + ax - ay, p2 = c + ax + ay, p3 = c - ax + ay;
+    emitTri(p0, p1, p2, id, lit, kind, vec2(uv0.x, uv0.y), vec2(uv1.x, uv0.y), vec2(uv1.x, uv1.y));
+    emitTri(p0, p2, p3, id, lit, kind, vec2(uv0.x, uv0.y), vec2(uv1.x, uv1.y), vec2(uv0.x, uv1.y));
+}
+
+void main()
+{
+    uvec3 g = gl_GlobalInvocationID;
+    uint id = g.x + 64u * (g.y + 64u * g.z);
+    const uint kKites = 700u;
+
+    if (id == 0u)
+    {
+        // Sky (kind -1) far behind, and the hillside (kind -2) below.
+        emitQuad(vec3(0.0, 2.0, 40.0), vec3(60.0, 0.0, 0.0), vec3(0.0, 30.0, 0.0), 0.0, 0.0, -1.0, vec2(0.0), vec2(1.0));
+        emitQuad(vec3(0.0, -2.2, 20.0), vec3(60.0, 0.0, 0.0), vec3(0.0, 0.0, 22.0), 0.0, 0.0, -2.0, vec2(0.0), vec2(1.0));
+        return;
+    }
+    float frac = (countP > 0.01) ? countP : 1.0;
+    if (id >= uint(float(kKites) * clamp(frac, 0.2, 1.0))) return;
+
+    float fid = float(id);
+    vec3 h = hash31(fid);
+    vec3 h2 = hash31(fid * 7.7 + 3.0);
+    float clock = sceneAdvance * 0.8 + sceneTime * 0.2;
+    float wind = (0.35 + 0.65 * clamp(audioSwell, 0.0, 1.0)) * (0.7 + 0.6 * clamp(windP, 0.0, 1.0));
+
+    // Anchor on the hillside; string length; the kite flies downwind (+x)
+    // and up, leaning more in more wind, swaying on the clock.
+    vec3 anchor = vec3((h.x - 0.5) * 36.0, -2.2 + 0.4 * h.y, 6.0 + 26.0 * h.y);
+    float L = 3.0 + 5.0 * h.z;
+    float lean = 0.25 + 0.55 * wind;                       // angle from vertical
+    float sway = 0.12 * sin(clock * (0.6 + 0.4 * h2.x) + h2.y * 6.28) + 0.06 * sin(clock * 1.7 + h2.z * 6.28);
+    float yaw = 0.15 * sin(clock * 0.5 + h.x * 6.28);
+    vec3 dir = normalize(vec3(sin(lean + sway) * cos(yaw), cos(lean + sway), sin(lean + sway) * sin(yaw)));
+    vec3 pos = anchor + dir * L;
+    float sz = 0.35 + 0.35 * h2.z;
+    // The kite plane faces the wind (tilted like the string): diamond
+    // spanned by an "up" along the string and a "side" across.
+    vec3 up = dir;
+    vec3 side = normalize(cross(vec3(0.0, 0.0, 1.0), up));
+    vec3 ay = up * sz * 1.3, ax = side * sz;
+    // Diamond: two triangles.
+    vec2 uv0 = vec2(h2.x * 0.7, h2.y * 0.7);
+    emitTri(pos + ay, pos - ax, pos + ax, fid, h.x, 0.0, uv0 + vec2(0.15, 0.3), uv0, uv0 + vec2(0.3, 0.0));
+    emitTri(pos - ay, pos + ax, pos - ax, fid, h.x, 0.0, uv0 + vec2(0.15, 0.0), uv0 + vec2(0.3, 0.0), uv0);
+    // Tail: ribbon segments hanging below the kite, rippling on the clock.
+    vec3 tp = pos - ay;
+    for (int k = 0; k < 5; ++k)
+    {
+        float fk = float(k);
+        float ripple = 0.25 * sin(clock * 3.0 + fk * 1.2 + h.y * 6.28);
+        vec3 np = tp + vec3(-0.45 * wind + ripple * 0.3, -0.5, ripple * 0.2) * sz * 1.2;
+        vec3 seg = np - tp;
+        vec3 sax = normalize(cross(seg, vec3(0.0, 0.0, 1.0))) * sz * 0.08;
+        emitQuad((tp + np) * 0.5, seg * 0.5, sax, fid, fk / 5.0, 1.0, vec2(0.0), vec2(1.0));
+        tp = np;
+    }
+    // The string: a thin quad from the anchor to the kite.
+    vec3 sMid = (anchor + pos) * 0.5;
+    vec3 sHalf = (pos - anchor) * 0.5;
+    vec3 sAx = normalize(cross(sHalf, vec3(0.0, 0.0, 1.0))) * 0.012;
+    emitQuad(sMid, sHalf, sAx, fid, 0.0, 3.0, vec2(0.0), vec2(1.0));
+}

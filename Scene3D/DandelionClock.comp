@@ -1,0 +1,113 @@
+#version 430 core
+/**
+ * @file DandelionClock.comp
+ * @brief DANDELION CLOCK: a seed head close in front of the camera, a
+ * sphere of eight hundred seeds on their stalks, each with its parachute
+ * of bristles.  The seeds let go on the swell: as the swell rises past a
+ * seed's own threshold it lifts off (smoothly -- a released fraction
+ * crossfades its flight in over a small band of swell, so nothing pops)
+ * and drifts away on the wind on a continuous phase of the scene clock,
+ * tumbling; when the swell falls the head fills again the same way.  No
+ * state.  The camera never moves.
+ *
+ * Audio Reactivity (generator stage):
+ *   audioSwell   -> released fraction (slow, smooth per seed)
+ *   sceneAdvance -> the drift (continuous)
+ *
+ * Per-instance: fluffP (bristle length), windP, hueP.
+ */
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+layout(std430, binding = 0) buffer Verts { float verts[]; };
+layout(std430, binding = 1) buffer Cmd   { uint cmd[];   };
+
+uniform uint  maxVertices;
+uniform float time;
+uniform float sceneAdvance;
+uniform float sceneTime;
+uniform float audioSwell;
+
+uniform float fluffP;
+uniform float windP;
+uniform float hueP;
+
+float hash11(float p) { p = fract(p * 0.1031); p *= p + 33.33; p *= p + p; return fract(p); }
+vec3  hash31(float n) { return vec3(hash11(n), hash11(n + 17.3), hash11(n + 41.7)); }
+
+void emitQuad(vec3 c, vec3 ax, vec3 ay, float id, float lit, float kind, vec2 uv0, vec2 uv1)
+{
+    uint base = atomicAdd(cmd[4], 6u);
+    if (base + 6u > maxVertices) return;
+    vec3 p0 = c - ax - ay, p1 = c + ax - ay, p2 = c + ax + ay, p3 = c - ax + ay;
+    vec3 pList[6]  = vec3[6](p0, p1, p2, p0, p2, p3);
+    vec2 uvList[6] = vec2[6](vec2(uv0.x, uv0.y), vec2(uv1.x, uv0.y), vec2(uv1.x, uv1.y), vec2(uv0.x, uv0.y), vec2(uv1.x, uv1.y), vec2(uv0.x, uv1.y));
+    for (uint i = 0u; i < 6u; ++i)
+    {
+        uint off = (base + i) * 8u;
+        verts[off + 0u] = pList[i].x; verts[off + 1u] = pList[i].y; verts[off + 2u] = pList[i].z;
+        verts[off + 3u] = id; verts[off + 4u] = lit; verts[off + 5u] = kind;
+        verts[off + 6u] = uvList[i].x; verts[off + 7u] = uvList[i].y;
+    }
+}
+
+void main()
+{
+    uvec3 g = gl_GlobalInvocationID;
+    uint id = g.x + 64u * (g.y + 64u * g.z);
+    const uint kSeeds = 800u;
+    const vec3 head = vec3(0.0, -0.6, 7.0);
+
+    if (id == 0u)
+    {
+        emitQuad(vec3(0.0, 0.0, 30.0), vec3(50.0, 0.0, 0.0), vec3(0.0, 28.0, 0.0), 0.0, 0.0, -1.0, vec2(0.0), vec2(1.0));
+        // The receptacle: a small sphere billboard (kind 2) and the stem (kind 3).
+        emitQuad(head, vec3(0.32, 0.0, 0.0), vec3(0.0, 0.32, 0.0), 0.0, 0.0, 2.0, vec2(0.0), vec2(1.0));
+        emitQuad(head + vec3(0.0, -4.0, 0.0), vec3(0.05, 0.0, 0.0), vec3(0.0, 4.0, 0.0), 0.0, 0.0, 3.0, vec2(0.0), vec2(1.0));
+        return;
+    }
+    if (id > kSeeds) return;
+
+    float fid = float(id);
+    vec3 h = hash31(fid);
+    vec3 h2 = hash31(fid * 7.7 + 3.0);
+    vec3 h3 = hash31(fid * 3.3 + 11.0);
+    float clock = sceneAdvance * 0.5 + sceneTime * 0.12;
+    float wind = 0.5 + 1.0 * clamp(windP, 0.0, 1.0);
+    float fluff = 0.18 + 0.14 * clamp(fluffP, 0.0, 1.0);
+
+    // Attachment direction: uniform on the sphere.
+    float th = h.x * 6.2831853;
+    float cz = 1.0 - 2.0 * h.y;
+    float sz = sqrt(max(1.0 - cz * cz, 0.0));
+    vec3 d = vec3(sz * cos(th), cz, sz * sin(th));
+    float stalk = 0.9 + 0.2 * h.z;
+
+    // Release: this seed lets go when the swell exceeds its threshold;
+    // the transition is a smoothstep over a band of swell (no pop).
+    float swell = clamp(audioSwell, 0.0, 1.0);
+    float threshold = 0.15 + 0.8 * h2.x;
+    float rel = smoothstep(threshold - 0.06, threshold + 0.06, swell);
+    // Flight: a continuous phase; the seed drifts downwind, rising and
+    // tumbling, and its flight distance scales with rel (so a seed that is
+    // halfway released sits just off the head).
+    float ph = fract(clock * (0.15 + 0.1 * h2.y) + h2.z);
+    vec3 drift = vec3(wind * 7.0 * ph, 1.5 * ph + 0.5 * sin(ph * 12.0 + h3.x * 6.28), 0.6 * sin(ph * 7.0 + h3.y * 6.28));
+    vec3 seedPos = head + d * stalk + drift * rel;
+    // Tumble: the parachute tilts with its drift.
+    float tilt = rel * (0.6 * sin(clock * 1.5 + h3.z * 6.28) + 0.4 * ph);
+    vec3 up = normalize(mix(d, vec3(sin(tilt), cos(tilt), 0.3 * sin(tilt * 0.7)), rel));
+    vec3 side = normalize(cross(up, vec3(0.0, 0.0, 1.0)));
+    vec3 side2 = cross(up, side);
+    // Fade a seed near the end of its flight and back in at the head.
+    float lit = rel * (1.0 - smoothstep(0.75, 1.0, ph));
+    // The pappus: two crossed quads (kind 0) above the seed, the seed itself
+    // a small quad (kind 1); the stalk on the head (kind 4) stays.
+    vec3 pap = seedPos + up * fluff * 0.5;
+    emitQuad(pap, side * fluff, up * fluff * 0.6, fid, lit, 0.0, vec2(0.0), vec2(1.0));
+    emitQuad(pap, side2 * fluff, up * fluff * 0.6, fid, lit, 0.0, vec2(0.0), vec2(1.0));
+    emitQuad(seedPos - up * 0.03, side * 0.02, up * 0.05, fid, lit, 1.0, vec2(0.0), vec2(1.0));
+    // The stalk on the head: from the receptacle to the seat, kind 4.
+    vec3 seat = head + d * stalk;
+    vec3 sMid = mix(head + d * 0.3, seat, 0.5);
+    vec3 sHalf = (seat - head - d * 0.3) * 0.5;
+    emitQuad(sMid, sHalf, normalize(cross(sHalf, vec3(0.0, 0.0, 1.0))) * 0.006, fid, 1.0 - rel, 4.0, vec2(0.0), vec2(1.0));
+}

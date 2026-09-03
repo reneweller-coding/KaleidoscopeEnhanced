@@ -1,0 +1,110 @@
+#version 430 core
+/**
+ * @file GlassVesselsOIT.comp
+ * @brief GLASS VESSELS: twelve glass vessels on a shelf, one per pitch
+ * class -- flasks, bottles, beakers of different profiles -- with the photo
+ * refracted inside them.  The vessels are lathe surfaces (a profile turned
+ * about the vertical), built here as quads with normals; the shelf and the
+ * back wall are opaque.  A vessel that sounds glows (fragment stage).  The
+ * shelf turns very slowly on the scene clock so the vessels pass in front
+ * of one another and the refraction plays.  No state.  Camera still.
+ *
+ * Per-instance: shapeP (profile family), sizeP, hueP.
+ */
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+layout(std430, binding = 0) buffer Verts { float verts[]; };
+layout(std430, binding = 1) buffer Cmd   { uint cmd[];   };
+
+uniform uint  maxVertices;
+uniform float time;
+uniform float sceneAdvance;
+uniform float sceneTime;
+
+uniform float shapeP;
+uniform float sizeP;
+uniform float hueP;
+
+float hash11(float p) { p = fract(p * 0.1031); p *= p + 33.33; p *= p + p; return fract(p); }
+
+void emitQuadN(vec3 p0, vec3 p1, vec3 p2, vec3 p3, vec3 n0, vec3 n1, vec3 n2, vec3 n3, float id, float aux, float kind)
+{
+    uint base = atomicAdd(cmd[4], 6u);
+    if (base + 6u > maxVertices) return;
+    vec3 pList[6]  = vec3[6](p0, p1, p2, p0, p2, p3);
+    vec3 nList[6]  = vec3[6](n0, n1, n2, n0, n2, n3);
+    for (uint i = 0u; i < 6u; ++i)
+    {
+        uint off = (base + i) * 8u;
+        verts[off + 0u] = pList[i].x; verts[off + 1u] = pList[i].y; verts[off + 2u] = pList[i].z;
+        verts[off + 3u] = id; verts[off + 4u] = aux; verts[off + 5u] = kind;
+        verts[off + 6u] = nList[i].x; verts[off + 7u] = nList[i].y;
+    }
+}
+
+void emitFlat(vec3 c, vec3 ax, vec3 ay, float kind)
+{
+    uint base = atomicAdd(cmd[4], 6u);
+    if (base + 6u > maxVertices) return;
+    vec3 p0 = c - ax - ay, p1 = c + ax - ay, p2 = c + ax + ay, p3 = c - ax + ay;
+    vec3 pList[6]  = vec3[6](p0, p1, p2, p0, p2, p3);
+    vec2 uvList[6] = vec2[6](vec2(0.0, 0.0), vec2(1.0, 0.0), vec2(1.0, 1.0), vec2(0.0, 0.0), vec2(1.0, 1.0), vec2(0.0, 1.0));
+    for (uint i = 0u; i < 6u; ++i)
+    {
+        uint off = (base + i) * 8u;
+        verts[off + 0u] = pList[i].x; verts[off + 1u] = pList[i].y; verts[off + 2u] = pList[i].z;
+        verts[off + 3u] = 0.0; verts[off + 4u] = 0.0; verts[off + 5u] = kind;
+        verts[off + 6u] = uvList[i].x; verts[off + 7u] = uvList[i].y;
+    }
+}
+
+// Radius of vessel k at height t (0 foot .. 1 lip).
+float profile(float t, float k, float fam)
+{
+    float kind = mod(k + floor(fam * 3.0), 4.0);
+    if (kind < 0.5) return 0.35 * (1.0 - 0.75 * smoothstep(0.55, 0.85, t)) + 0.05 * step(0.85, t);        // flask: bulb and neck
+    if (kind < 1.5) return 0.28 + 0.06 * sin(t * 6.28) * (1.0 - t);                                          // bottle: gentle waist
+    if (kind < 2.5) return 0.22 + 0.16 * t;                                                                  // beaker: flared
+    return 0.3 * sqrt(1.0 - pow(2.0 * t - 1.0, 2.0)) + 0.06;                                                 // round flask
+}
+
+void main()
+{
+    uvec3 g = gl_GlobalInvocationID;
+    uint id = g.x + 64u * (g.y + 64u * g.z);
+    const uint kSeg = 36u, kRows = 20u;
+    const uint quadsPer = kSeg * kRows;
+
+    if (id == 0u)
+    {
+        emitFlat(vec3(0.0, 0.0, 30.0), vec3(50.0, 0.0, 0.0), vec3(0.0, 28.0, 0.0), -1.0);          // back wall
+        emitFlat(vec3(0.0, -1.9, 9.5), vec3(9.0, 0.0, 0.0), vec3(0.0, 0.0, 3.5), -2.0);            // shelf
+        return;
+    }
+    uint q = id - 1u;
+    if (q >= 12u * quadsPer) return;
+    uint v = q / quadsPer;
+    uint qi = q - v * quadsPer;
+    uint row = qi / kSeg;
+    uint seg = qi - row * kSeg;
+    float fv = float(v);
+    float rot = sceneAdvance * 0.05 + sceneTime * 0.01;
+    // Vessel placement: a shallow arc on the shelf, turning slowly.
+    float ang = (fv - 5.5) / 12.0 * 3.0 + rot;
+    vec3 base = vec3(sin(ang) * 7.5, -1.9, 8.5 - cos(ang) * 2.0 + 2.0);
+    float size = (1.25 + 0.55 * hash11(fv * 3.1)) * (sizeP > 0.05 ? sizeP : 1.0);
+    float t0 = float(row) / float(kRows), t1 = float(row + 1u) / float(kRows);
+    float a0 = float(seg) / float(kSeg) * 6.2831853, a1 = float(seg + 1u) / float(kSeg) * 6.2831853;
+    float r0 = profile(t0, fv, shapeP) * size, r1 = profile(t1, fv, shapeP) * size;
+    float dr = (r1 - r0) / max((t1 - t0) * size * 1.6, 1e-3);
+    vec3 P[4]; vec3 N[4];
+    float aa[4] = float[4](a0, a1, a1, a0);
+    float tt[4] = float[4](t0, t0, t1, t1);
+    float rr[4] = float[4](r0, r0, r1, r1);
+    for (int k = 0; k < 4; ++k)
+    {
+        vec3 radial = vec3(cos(aa[k]), 0.0, sin(aa[k]));
+        P[k] = base + radial * rr[k] + vec3(0.0, tt[k] * size * 1.6, 0.0);
+        N[k] = normalize(radial - vec3(0.0, dr, 0.0));
+    }
+    emitQuadN(P[0], P[1], P[2], P[3], N[0], N[1], N[2], N[3], fv, t0, (N[0].z >= 0.0) ? 0.0 : 1.0);
+}

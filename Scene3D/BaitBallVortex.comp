@@ -1,0 +1,110 @@
+#version 430 core
+/**
+ * @file BaitBallVortex.comp
+ * @brief BAIT BALL VORTEX: five thousand fish in a spinning ball, and a
+ * predator circling and cutting through.  Each fish rides an orbit of the
+ * ball (its own ring radius, height and speed) on the scene clock; the
+ * predator moves on a slow figure-of-eight, and the fish give way to it by
+ * a smooth radial push that depends only on distance (continuous, no
+ * fright jumps).  The ball tightens with the bass (slow, via the swell) and
+ * breathes on the clock.  No state.  The camera never moves.
+ *
+ * Audio Reactivity (generator stage):
+ *   sceneAdvance -> the spin, the predator's path (continuous)
+ *   audioSwell   -> ball tightness (slow)
+ *
+ * Per-instance: densP (fish fraction), spinP, hueP.
+ */
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+layout(std430, binding = 0) buffer Verts { float verts[]; };
+layout(std430, binding = 1) buffer Cmd   { uint cmd[];   };
+
+uniform uint  maxVertices;
+uniform float time;
+uniform float sceneAdvance;
+uniform float sceneTime;
+uniform float audioSwell;
+
+uniform float densP;
+uniform float spinP;
+uniform float hueP;
+
+float hash11(float p) { p = fract(p * 0.1031); p *= p + 33.33; p *= p + p; return fract(p); }
+vec3  hash31(float n) { return vec3(hash11(n), hash11(n + 17.3), hash11(n + 41.7)); }
+
+void emitQuad(vec3 c, vec3 ax, vec3 ay, float id, float lit, float kind, vec2 uv0, vec2 uv1)
+{
+    uint base = atomicAdd(cmd[4], 6u);
+    if (base + 6u > maxVertices) return;
+    vec3 p0 = c - ax - ay, p1 = c + ax - ay, p2 = c + ax + ay, p3 = c - ax + ay;
+    vec3 pList[6]  = vec3[6](p0, p1, p2, p0, p2, p3);
+    vec2 uvList[6] = vec2[6](vec2(uv0.x, uv0.y), vec2(uv1.x, uv0.y), vec2(uv1.x, uv1.y), vec2(uv0.x, uv0.y), vec2(uv1.x, uv1.y), vec2(uv0.x, uv1.y));
+    for (uint i = 0u; i < 6u; ++i)
+    {
+        uint off = (base + i) * 8u;
+        verts[off + 0u] = pList[i].x; verts[off + 1u] = pList[i].y; verts[off + 2u] = pList[i].z;
+        verts[off + 3u] = id; verts[off + 4u] = lit; verts[off + 5u] = kind;
+        verts[off + 6u] = uvList[i].x; verts[off + 7u] = uvList[i].y;
+    }
+}
+
+vec3 predatorPos(float clock)
+{
+    float t = clock * 0.35;
+    return vec3(3.2 * sin(t), 0.8 * sin(t * 2.0), 8.0 + 1.6 * sin(t * 2.0 + 1.0));
+}
+
+void main()
+{
+    uvec3 g = gl_GlobalInvocationID;
+    uint id = g.x + 64u * (g.y + 64u * g.z);
+    const uint kFish = 5000u;
+    const vec3 centre = vec3(0.0, 0.0, 8.0);
+    float clock = sceneAdvance * 0.7 + sceneTime * 0.15;
+
+    if (id == 0u)
+    {
+        emitQuad(vec3(0.0, 0.0, 30.0), vec3(50.0, 0.0, 0.0), vec3(0.0, 28.0, 0.0), 0.0, 0.0, -1.0, vec2(0.0), vec2(1.0));
+        // The predator: an elongated body of three billboard quads (kind 2).
+        vec3 pp = predatorPos(clock);
+        vec3 pd = normalize(predatorPos(clock + 0.05) - predatorPos(clock - 0.05));
+        vec3 side = normalize(cross(pd, vec3(0.0, 1.0, 0.0)));
+        for (int k = -1; k <= 1; ++k)
+        {
+            vec3 c = pp + pd * float(k) * 0.55;
+            float w = (k == 0) ? 0.42 : 0.3;
+            emitQuad(c, pd * 0.45, vec3(0.0, 1.0, 0.0) * w, 0.0, float(k + 1) / 2.0, 2.0, vec2(0.0), vec2(1.0));
+        }
+        return;
+    }
+    float frac = (densP > 0.01) ? densP : 1.0;
+    if (id >= uint(float(kFish) * clamp(frac, 0.2, 1.0))) return;
+
+    float fid = float(id);
+    vec3 h = hash31(fid);
+    vec3 h2 = hash31(fid * 7.7 + 3.0);
+    float spin = (0.6 + 0.8 * clamp(spinP, 0.0, 1.0));
+    float tight = 1.0 - 0.3 * clamp(audioSwell, 0.0, 1.0);
+
+    // Orbit: a ring of radius R at height y, tilted a little, turning at a
+    // speed that falls with the radius (the inner fish turn faster).
+    float R = (0.6 + 2.2 * pow(h.x, 0.7)) * tight * (1.0 + 0.08 * sin(clock * 0.9 + h2.x * 6.28));
+    float y = (h.y - 0.5) * 3.6 * tight * (1.0 - 0.3 * R / 2.8);
+    float speed = spin * (1.4 / (0.5 + R));
+    float a = clock * speed + h.z * 6.2831853;
+    float tiltA = 0.45 + 0.25 * sin(clock * 0.2);
+    vec3 ring = vec3(cos(a) * R, y, sin(a) * R);
+    vec3 pos = centre + vec3(ring.x, ring.y * cos(tiltA) - ring.z * sin(tiltA) * 0.3, ring.z);
+    vec3 vel = vec3(-sin(a) * R * speed, 0.0, cos(a) * R * speed);
+    // Give way to the predator: a smooth radial push by distance.
+    vec3 pp = predatorPos(clock);
+    vec3 away = pos - pp;
+    float dist = length(away);
+    float push = smoothstep(2.2, 0.4, dist) * 1.6;
+    pos += normalize(away + vec3(0.0, 0.001, 0.0)) * push;
+    // The fish: an elongated quad along its velocity.
+    vec3 fwd = normalize(vel + vec3(0.0, 0.0, 1e-3));
+    vec3 side = normalize(cross(fwd, vec3(0.0, 1.0, 0.0)));
+    float len = 0.09 + 0.05 * h2.y;
+    emitQuad(pos, fwd * len, side * len * 0.35, fid, h2.z, 0.0, vec2(0.0), vec2(1.0));
+}
