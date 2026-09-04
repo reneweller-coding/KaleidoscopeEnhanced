@@ -868,9 +868,30 @@ void GLwidget::paintGL()
 	// nachgemessen hat.  Hier faellt die Wahrheit nebenbei ab: Frame-Zeit,
 	// der gerade aktiven Szene zugeschlagen, am Ende als JSON ausgegeben.
 	static const bool costLog = qEnvironmentVariableIsSet( "KALEIDO_COST_LOG" );
-	const qint64 costT0 = costLog ? m_fpsTimer.nsecsElapsed() : 0;
+	// KALEIDO_FRAME_LOG=<ms>: report every frame that took longer than <ms>
+	// (default 25).  A stutter is ONE long frame; the per-second fps average
+	// hides it (a single 200 ms frame among 100 still reads as ~95 fps), so
+	// this logs the outliers with their wall-clock offset from the start and
+	// what the lazy warm-up did in that same frame -- which is what turns
+	// "it stutters after start" into a named cause.
+	static const bool  frameLog   = qEnvironmentVariableIsSet( "KALEIDO_FRAME_LOG" );
+	static const double frameLimit = frameLog
+	                               ? std::max( 1.0, qEnvironmentVariable( "KALEIDO_FRAME_LOG" ).toDouble() )
+	                               : 0.0;
+	const qint64 frameT0 = ( costLog || frameLog ) ? m_fpsTimer.nsecsElapsed() : 0;
+	const qint64 costT0 = frameT0;
 
 	 draw();
+
+	if( frameLog )
+	{
+		const double ms = ( m_fpsTimer.nsecsElapsed() - frameT0 ) * 1e-6;
+		if( ms > frameLimit )
+			fprintf( stderr, "[frame] t=%7.2fs  %8.1f ms  warm=%s\n",
+			         m_fpsTimer.elapsed() / 1000.0, ms,
+			         RenderPipeline::lastWarmLabel().isEmpty()
+			           ? "-" : RenderPipeline::lastWarmLabel().toLocal8Bit().constData() );
+	}
 
 	if( costLog && m_actConfiguration && m_actConfiguration->m_renderPipeline )
 	{

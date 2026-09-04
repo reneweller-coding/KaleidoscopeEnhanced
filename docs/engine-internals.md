@@ -3643,3 +3643,48 @@ With this block the fourth fifty is complete: 200 new scenes since 02.09.2026.
 | SilenceSnowfallHush | 2D | cover = 1 - swell; snow settles on bright (upward) photo parts plus an fbm pattern; flake presence by a smoothstep of the cell hash |
 
 Lessons from the block: a continuous melody history drawn one sample per screen row is a wavy line, not a piano roll -- quantise each sample to its key before placing the bar, then the bars stand still while they fall; a curve sampled at points and tested with a point distance is a dotted line -- test against the segments between the samples; a sound-shape marker (centroid, spread) read straight from the live spectrum jumps, so FormantVowelSpace reads it from the spectrogram history averaged over a few rows (about 200 fetches per pixel, cheap enough at 2D); the 90 percent snapshot of preview.py at hold 12 already showed the next scene for this block (the probe scene ended early), hold 10 is safe. Also in this commit: the PeacockTrainFan body (block C) got a slender neck, a head with a beak and a crest -- the old silhouette read as something else entirely on the catalogue page.
+
+## The startup stutter: 245 mesh uploads, 21 GB of vertex buffers
+
+Reported as "the frame rate stalls shortly after the start". The per-second
+fps average said everything was fine (82 fps in the first second, ~100 after)
+because a stutter is ONE long frame and a single 200 ms frame among a hundred
+still reads as 95 fps. `KALEIDO_FRAME_LOG=<ms>` (new) logs every frame over
+that many milliseconds with its wall-clock offset and what the lazy warm-up
+did in the same frame, which named the cause immediately:
+
+| | before | after |
+|---|---|---|
+| Frames over 25 ms in the first 80 s | 245 | 0 |
+| Longest frame | 235 ms | under 25 ms |
+| Stall total | 11.6 s | none |
+| GPU memory after a minute | 26 GB | 5.7 GB |
+
+Every one of those spikes was a mesh scene's GL upload: 8-12 ms to copy the
+vertex array and upload the material texture array, 2 ms for the bounding box
+on the render thread, and 14-24 ms for `glBufferData` of about 27 MB. The
+warm-up walked all 245 mesh scenes of the full preset, one per frame, for the
+first 51 seconds -- and left every one of them resident, which is where the
+21 GB came from (each scene owns its buffer; 171 distinct models, 245 scenes).
+
+Two changes:
+
+- **A model is loaded when it is about to be seen, not because it exists.**
+  The per-frame warmer now only compiles GLSL and finishes uploads that were
+  actually asked for. The machinery for arriving late already existed and is
+  now the only path: the fade's incoming scene requests its model, the
+  scheduler parks the fade while the worker loads it (up to 5 s), and
+  `draw()` builds the frame the worker publishes. `buildGeometry()` no longer
+  loads a mesh synchronously at all -- that was the earlier generation of the
+  same bug, a 200-700 ms load on the render thread.
+- **A residency budget** (`RenderPipeline::trimMeshResidency`, default 16
+  scenes, `KALEIDO_MESH_BUDGET` to override). The active and incoming scenes
+  are stamped every frame; anything beyond the budget gives its vertex buffer
+  and material textures back to the driver (`Scene3DShader::releaseMesh`) and
+  reloads through the same asynchronous path when it is next due.
+
+What remains is one upload per mesh scene that is actually shown, about 35 ms,
+and it lands while the fade is still parked -- so it falls on the outgoing
+scene at full opacity rather than in the middle of a cross-fade. Verified over
+a 210 s sweep at 2 s per scene: 53 mesh scenes shown, 53 uploads, GPU memory
+flat between 5.3 and 6.8 GB, and the mesh scenes render exactly as before.

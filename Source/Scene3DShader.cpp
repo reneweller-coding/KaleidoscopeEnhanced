@@ -227,6 +227,36 @@ bool Scene3DShader::finishMeshWarmup()
 	return m_vbo != 0;
 }
 
+// ---------------------------------------------------------------------------
+// Residency budget: give a model's GL memory back.
+//
+// Every mesh scene holds its own vertex buffer -- about 27 MB for a typical
+// 850k-vertex model -- plus its material texture array. With 245 mesh scenes
+// in the full preset that is over 20 GB if they all stay resident, which is
+// exactly what the old eager warm-up produced (measured: 5 GB at start, 26 GB
+// a minute later). The host keeps a handful and calls this for the rest; the
+// scene reloads through the normal asynchronous path when it is next due.
+//
+// Only ever called for a scene that is neither on screen nor fading in.
+// ---------------------------------------------------------------------------
+void Scene3DShader::releaseMesh()
+{
+	if( m_geomKind != GEOM_MESH || m_vbo == 0 )
+		return;
+	glDeleteBuffers( 1, &m_vbo );
+	m_vbo = 0;
+	if( m_vao ) { glDeleteVertexArrays( 1, &m_vao ); m_vao = 0; }
+	if( m_meshMaterialTex  ) { glDeleteTextures( 1, &m_meshMaterialTex  ); m_meshMaterialTex  = 0; }
+	if( m_meshMaterialTex2 ) { glDeleteTextures( 1, &m_meshMaterialTex2 ); m_meshMaterialTex2 = 0; }
+	m_meshMaterialLayers = 0;
+	m_meshMaterialLayers2 = 0;
+	m_meshOwnVertexCount = 0;
+	m_mesh2VertexCount = 0;
+	m_vertexCount = 0;
+	// Back to square one, so a later requestMeshWarmup() is accepted again.
+	m_warmState.store( WARM_NONE, std::memory_order_release );
+}
+
 Scene3DShader::~Scene3DShader()
 {
 	// Async warm-up teardown BEFORE any member dies: drop a queued request,
@@ -451,9 +481,11 @@ void Scene3DShader::buildGeometry()
 		// Deferred while the warm-up worker is still on it: leave m_vbo at 0,
 		// draw() skips rendering and the host holds the fade, so nothing is
 		// ever shown half-loaded. draw() calls back in here the frame the
-		// worker publishes WARM_READY.
+		// worker publishes WARM_READY.  A mesh is NEVER loaded on this
+		// thread: a load is 200-700 ms and this is the render thread, so
+		// without a finished warm-up there is simply nothing to build.
 		const int ws = m_warmState.load( std::memory_order_acquire );
-		if( ws == WARM_QUEUED || ws == WARM_LOADING )
+		if( ws != WARM_READY )
 			return;
 		// The only non-procedural kind: v comes from a real file instead of a
 		// generated pattern, but still lands in the same 8-floats-per-vertex
@@ -1055,8 +1087,16 @@ void Scene3DShader::draw()
 	// re-baked against the now-real VBO.
 	if( m_geomKind == GEOM_MESH && m_vbo == 0 )
 	{
-		const int ws = m_warmState.load( std::memory_order_acquire );
-		if( ws == WARM_QUEUED || ws == WARM_LOADING )
+		int ws = m_warmState.load( std::memory_order_acquire );
+		// Not requested yet -- a forced scene, the review sweep, the very
+		// first scene, or one whose model the residency budget evicted:
+		// ask now and draw nothing until it lands.
+		if( ws == WARM_NONE || ws == WARM_CONSUMED )
+		{
+			requestMeshWarmup();
+			ws = m_warmState.load( std::memory_order_acquire );
+		}
+		if( ws != WARM_READY )
 			return;
 		buildGeometry();
 		if( m_vbo == 0 )

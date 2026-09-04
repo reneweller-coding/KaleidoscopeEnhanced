@@ -368,6 +368,19 @@ public:
 	 *  @return True if an upload happened -- the caller counts it as this
 	 *  frame's one warm-up step. */
 	virtual bool finishMeshWarmup() { return false; }
+
+	/**
+	 * @brief Does this effect currently hold an uploaded mesh (vertex buffer plus material textures)?
+	 * @return True only for a mesh scene whose GL residency can be given back; false for every other kind.
+	 */
+	virtual bool meshResident() const { return false; }
+	/**
+	 * @brief Frees this effect's uploaded mesh so the memory goes back to the driver.
+	 *
+	 * The scene reloads asynchronously the next time it is drawn. The caller must
+	 * make sure the scene is neither on screen nor fading in.
+	 */
+	virtual void releaseMesh() {}
 	/** @} */
 
 	// The 3D projection's clip planes, shared so a depth-reading effect can

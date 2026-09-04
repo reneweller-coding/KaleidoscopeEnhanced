@@ -92,6 +92,10 @@ public:
 	 *  the warm-up worker; everything GL stays out of it. */
 	void warmupLoadNow();
 	bool finishMeshWarmup() override;
+	/// @return True while this mesh scene holds its uploaded vertex buffer (and material textures).
+	bool meshResident() const override { return m_geomKind == GEOM_MESH && m_vbo != 0; }
+	/// @brief Frees the uploaded mesh (VBO, VAO, material textures) and rearms the warm-up; see the definition for why.
+	void releaseMesh() override;
 
 	// PER-ACTIVATION VARIETY: every time the scene is (re)activated it rolls
 	// a fresh epoch — a large time offset (different camera/burst phases), a

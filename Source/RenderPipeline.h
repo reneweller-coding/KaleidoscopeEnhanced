@@ -333,6 +333,21 @@ public:
 	// Spout wins if both are given: it is the live feed, the file is not.
 	static QString	s_videoPath;        ///< Path to a video file used as a live image source (CLI -v); ignored if Spout input is also enabled.
 
+	static QString	s_warmLabel;        ///< What the per-frame lazy warm-up did last frame; diagnostics only (KALEIDO_FRAME_LOG).
+
+	/**
+	 * @brief Keeps only a small working set of mesh scenes resident in GL memory.
+	 *
+	 * Called once per frame from beginFrame(). Stamps the active and incoming
+	 * scenes as used and gives back the vertex buffers of the least recently
+	 * seen mesh scenes beyond the budget (KALEIDO_MESH_BUDGET, default 16).
+	 */
+	void trimMeshResidency();
+	QHash<EffectShader *, qint64> m_meshLastUse;   ///< Last frame stamp at which a mesh scene was active or fading in.
+	qint64 m_meshUseClock = 0;                     ///< Monotonic frame counter behind m_meshLastUse.
+	/// @return Label of the last warm-up step ("glsl <file>", "mesh <file>", "fx <file>" or empty). Diagnostics only.
+	static const QString &lastWarmLabel() { return s_warmLabel; }
+
 	/** @name Photo-source directory
 	 *  Where the background photos come from, resolved in init().  Three
 	 *  layers, most specific first: the CLI `-f <dir>`, then `imageDirectory`

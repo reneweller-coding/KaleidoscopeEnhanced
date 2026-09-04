@@ -9,6 +9,7 @@
 #include <float.h>
 #include <math.h>
 #include <algorithm>
+#include <limits>
 
 #include "shader_setup.h"
 #include <set>
@@ -64,6 +65,7 @@ QHash<QString, float> RenderPipeline::s_taste;  // taste learning (skip/favourit
 bool    RenderPipeline::s_spoutInEnabled = false;  // Spout input (CLI -i)
 QString RenderPipeline::s_spoutInSender;
 QString RenderPipeline::s_videoPath;                // native video input (CLI -v)
+QString RenderPipeline::s_warmLabel;                // what the lazy warm-up did this frame (KALEIDO_FRAME_LOG)
 QString RenderPipeline::s_imageDirCli;              // photo source override (CLI -f)
 QString RenderPipeline::s_imageDirUser;             // photo source override (ini)
 
@@ -1205,39 +1207,102 @@ void RenderPipeline::beginFrame( const AudioFeatures &audio )
 	m_moodArousal = audio.arousal;
 	m_moodAmbient = audio.ambientFactor;
 
-	// Lazy-compile warm-up: ONE step per frame. This used to be the hidden
-	// stutter engine: ensureCompiled() on a mesh scene ran buildGeometry(),
-	// which loaded the model SYNCHRONOUSLY -- 200-700 ms per model, one per
-	// frame, for as long as it took to walk all 238 mesh scenes. The
-	// comment used to promise "every shader is ready long before random
-	// selection could pick it", and that was true back when a step was a
-	// GLSL compile; the mesh loads arrived later and turned the warmer
-	// into a minutes-long hitch parade.
-	// Now the warmer only ever does cheap-ish GL work on this thread:
-	//   1. an unbuilt-but-READY mesh gets its GL upload (a few ms), or
-	//   2. an uncompiled shader gets its GLSL compile -- with its model
-	//      load handed to the worker FIRST, so buildGeometry() defers
-	//      instead of blocking.
-	// The worker crawls the models in the background; an active fade's
-	// scene jumps the queue (see requestMeshWarmup).
+	// Lazy-compile warm-up: ONE step per frame, and only ever cheap work.
+	//
+	// Two generations of this warmer were the app's own stutter engine. The
+	// first ran ensureCompiled() on a mesh scene, which loaded the model
+	// SYNCHRONOUSLY (200-700 ms) on this thread. The second handed the load
+	// to a worker but still marched through EVERY mesh scene of the preset,
+	// uploading each one as it arrived: measured on the full preset, 245
+	// uploads of 35-55 ms each in the first 51 seconds -- 245 visible hitches
+	// -- and 21 GB of vertex buffers, because each mesh scene keeps its own.
+	//
+	// So the warmer no longer touches models at all. It compiles GLSL (a few
+	// ms, and the one thing that genuinely pays off up front) and finishes
+	// uploads that were ASKED for: the fade's incoming scene requests its
+	// model (see the meshWarmupPending() block in beginFrame's caller) and
+	// the host holds the fade until the worker publishes it. A model is
+	// loaded when it is about to be seen, not because it exists.
 	{
 		bool warmed = false;
+		s_warmLabel.clear();
 		for( EffectShader *s : m_effectTextures )
-			if( s->finishMeshWarmup() ) { warmed = true; break; }
+			if( s->finishMeshWarmup() )
+			{
+				s_warmLabel = QStringLiteral( "mesh " ) + QString::fromLocal8Bit( s->fragmentName() );
+				warmed = true; break;
+			}
 		if( !warmed )
 			for( EffectShader *s : m_effectTextures )
 				if( !s->isCompiled() )
 				{
-					s->requestMeshWarmup();   // no-op for non-mesh scenes
-					s->ensureCompiled();      // GLSL only; mesh build defers
+					s->ensureCompiled();      // GLSL only; a mesh build defers itself
+					s_warmLabel = QStringLiteral( "glsl " ) + QString::fromLocal8Bit( s->fragmentName() );
 					warmed = true;
 					break;
 				}
 		if( !warmed )
 			for( EffectShader *s : m_effectFx )
-				if( !s->isCompiled() ) { s->ensureCompiled(); break; }
+				if( !s->isCompiled() )
+				{
+					s->ensureCompiled();
+					s_warmLabel = QStringLiteral( "fx " ) + QString::fromLocal8Bit( s->fragmentName() );
+					break;
+				}
 	}
 
+	trimMeshResidency();
+}
+
+// ---------------------------------------------------------------------------
+// Mesh residency budget.
+//
+// A mesh scene's vertex buffer is around 27 MB and every scene has its own, so
+// a long session that eventually visits all 245 mesh scenes of the full preset
+// would hold over 20 GB. Keep a small working set instead: the scene on
+// screen, the one fading in, and the most recently seen few. Everything beyond
+// the budget is handed back to the driver and reloads asynchronously when it
+// is next due -- which costs one worker load the host already knows how to
+// wait out, and nothing at all on the render thread.
+//
+// KALEIDO_MESH_BUDGET overrides the count (minimum 4: active, incoming and a
+// little slack so a quick A-B-A does not reload every time).
+// ---------------------------------------------------------------------------
+void RenderPipeline::trimMeshResidency()
+{
+	static const int budget = []{
+		const int v = qEnvironmentVariableIntValue( "KALEIDO_MESH_BUDGET" );
+		return v > 0 ? std::max( 4, v ) : 16;
+	}();
+
+	++m_meshUseClock;
+	const unsigned act = m_scheduler.actTexture();
+	const unsigned nxt = m_scheduler.nextTexture();
+	if( size_t(act) < m_effectTextures.size() ) m_meshLastUse[ m_effectTextures[act] ] = m_meshUseClock;
+	if( size_t(nxt) < m_effectTextures.size() ) m_meshLastUse[ m_effectTextures[nxt] ] = m_meshUseClock;
+
+	// Cheap common case: nothing to do until the working set is actually full.
+	int resident = 0;
+	for( EffectShader *s : m_effectTextures )
+		if( s->meshResident() ) ++resident;
+	while( resident > budget )
+	{
+		EffectShader *victim = nullptr;
+		qint64 oldest = std::numeric_limits<qint64>::max();
+		for( size_t i = 0; i < m_effectTextures.size(); ++i )
+		{
+			EffectShader *s = m_effectTextures[i];
+			if( !s->meshResident() || i == size_t(act) || i == size_t(nxt) )
+				continue;
+			const qint64 used = m_meshLastUse.value( s, 0 );
+			if( used < oldest ) { oldest = used; victim = s; }
+		}
+		if( !victim )
+			break;                       // only active/incoming left: nothing to give back
+		victim->releaseMesh();
+		m_meshLastUse.remove( victim );
+		--resident;
+	}
 }
 
 void RenderPipeline::updateLiveInput()
