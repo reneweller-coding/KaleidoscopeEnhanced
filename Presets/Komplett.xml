@@ -9856,4 +9856,133 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
 
+  <TextureShader file="..\\Scene3D\\MeshAqueduct.frag" type="scene3d" geom="mesh" model="..\\Models\\RomanAqueduct.glb" instances="7" mood="bright,calm,dreamy" probability="0.45" complexity="3">
+    <rig preset="mesh-15"/>
+    <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
+    <float name="yawP" minValue="0.0" maxValue="0.0"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\MeshTermiteMound.frag" type="scene3d" geom="mesh" model="..\\Models\\TermiteMound.glb" mood="calm,dreamy,dark" probability="0.45" complexity="3">
+    <rig preset="mesh-15"/>
+    <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
+    <float name="yawP" minValue="0.0" maxValue="0.0"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\MeshCoolingTowers.frag" type="scene3d" geom="mesh" model="..\\Models\\CoolingTower.glb" instances="3" mood="dark,dreamy,calm" probability="0.45" complexity="3">
+    <rig preset="mesh-15"/>
+    <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\MeshHeliostatField.frag" type="scene3d" geom="mesh" model="..\\Models\\SolarReceiverTower_lod.glb" model2="..\\Models\\HeliostatMirror_lod.glb" instances="160" mood="bright,calm" probability="0.45" complexity="3">
+    <rig preset="mesh-15"/>
+    <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
+    <float name="mirrorP" minValue="1.0" maxValue="1.0"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\MeshTuningForks.frag" type="scene3d" geom="mesh" model="..\\Models\\TuningFork_lod.glb" instances="12" mood="calm,dark,dreamy" probability="0.45" complexity="3">
+    <rig preset="mesh-15"/>
+    <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\MeshWindChime.frag" type="scene3d" geom="mesh" model="..\\Models\\WindChime.glb" mood="bright,calm,dreamy" probability="0.45" complexity="3">
+    <rig preset="mesh-15"/>
+    <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
+    <float name="swayP" minValue="1.0" maxValue="1.0"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\MeshGearTrain.frag" type="scene3d" geom="mesh" model="..\\Models\\BrassGear_lod.glb" instances="7" mood="dark,aggressive,psychedelic" probability="0.45" complexity="3">
+    <rig preset="mesh-15"/>
+    <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
+    <float name="rateP" minValue="1.0" maxValue="1.0"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\MeshPendulumWave.frag" type="scene3d" geom="mesh" model="..\\Models\\Pendulum_lod.glb" instances="12" mood="calm,dark,dreamy" probability="0.45" complexity="3">
+    <rig preset="mesh-15"/>
+    <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
+    <float name="cycleP" minValue="40" maxValue="40"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\MeshBellTower.frag" type="scene3d" geom="mesh" model="..\\Models\\ChurchBell_lod.glb" instances="4" mood="dark,calm,dreamy" probability="0.45" complexity="3">
+    <rig preset="mesh-15"/>
+    <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\MeshCandleChapel.frag" type="scene3d" geom="mesh" model="..\\Models\\PillarCandle_lod.glb" instances="300" mood="calm,dark,dreamy" probability="0.45" complexity="3">
+    <rig preset="mesh-15"/>
+    <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\MeshServerAisle.frag" type="scene3d" geom="mesh" model="..\\Models\\ServerRack_lod.glb" instances="16" mood="dark,aggressive" probability="0.45" complexity="3">
+    <rig preset="mesh-15"/>
+    <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\MeshDominoWave.frag" type="scene3d" geom="mesh" model="..\\Models\\DominoTile_lod.glb" instances="220" mood="bright,calm" probability="0.45" complexity="3" minTimeSolo="40" maxTimeSolo="60">
+    <rig preset="mesh-15"/>
+    <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\MeshZoetrope.frag" type="scene3d" geom="mesh" model="..\\Models\\Zoetrope.glb" mood="dark,dreamy,psychedelic" probability="0.45" complexity="3">
+    <rig preset="mesh-15"/>
+    <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
+    <float name="rateP" minValue="1.0" maxValue="1.0"></float>
+    <float name="splitP" minValue="-0.35" maxValue="-0.35"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\MeshMetronomes.frag" type="scene3d" geom="mesh" model="..\\Models\\Metronome_lod.glb" model2="..\\Models\\Pendulum_lod.glb" instances="12" mood="calm,bright" probability="0.45" complexity="3">
+    <rig preset="mesh-15"/>
+    <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
+    <float name="armP" minValue="0.75" maxValue="0.75"></float>
+    <float name="pivotP" minValue="0.22" maxValue="0.22"></float>
+    <float name="frontP" minValue="1.2" maxValue="1.2"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\MeshSeismograph.frag" type="scene3d" geom="mesh" model="..\\Models\\SeismographBase.glb" model2="..\\Models\\SeismographDrum.glb" mood="calm,dark" probability="0.45" complexity="3">
+    <rig preset="mesh-15"/>
+    <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
+    <float name="drumP" minValue="0.45" maxValue="0.45"></float>
+    <float name="drumXP" minValue="0.35" maxValue="0.35"></float>
+    <float name="drumYP" minValue="0.45" maxValue="0.45"></float>
+    <float name="drumZP" minValue="0.0" maxValue="0.0"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\MeshFoundryPour.frag" type="scene3d" geom="mesh" model="..\\Models\\SandMould.glb" model2="..\\Models\\FoundryLadle.glb" mood="dark,aggressive,dreamy" probability="0.45" complexity="3" minTimeSolo="40" maxTimeSolo="60">
+    <rig preset="mesh-15"/>
+    <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
+    <float name="ladleP" minValue="0.8" maxValue="0.8"></float>
+    <float name="lipP" minValue="0.0" maxValue="0.0"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
 </configuration>

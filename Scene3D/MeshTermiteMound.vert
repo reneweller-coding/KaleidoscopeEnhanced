@@ -1,0 +1,66 @@
+#version 330 core
+/**
+ * @file MeshTermiteMound.vert
+ * @brief Vertex stage companion to MeshTermiteMound.frag -- see that file's
+ * header. gl_VertexID picks the loaded mound (below meshVertexCount) or the
+ * enclosing sky shell. The mound stands on the savanna and does not move;
+ * a half turn brings the generator's front (+Z, away from our camera) round.
+ */
+
+in vec4 attrA;
+in vec4 attrB;
+
+uniform mat4  projM;
+uniform float eyeOff;
+uniform int   meshVertexCount;
+uniform vec3  meshExtent;
+uniform vec3  meshCenter;
+
+uniform float sizeP;
+uniform float yawP;
+
+out vec2  vUV;
+out vec3  vNormal;
+out vec3  vPos;
+out vec3  vLocal;
+out float vBg;
+
+const float kDist   = 62.0;
+const float kGround = -22.0;
+
+void main()
+{
+    bool isBg = gl_VertexID >= meshVertexCount;
+    vec3 world, n;
+    if (!isBg)
+    {
+        float sz = 20.0 * (sizeP > 0.01 ? sizeP : 1.0);
+        vec3 c  = attrA.xyz - meshCenter;
+        float mx = max(meshExtent.x, max(meshExtent.y, meshExtent.z));
+        vec3 local = c / mx * sz;
+        float yaw = 3.14159265 + yawP;
+        float cy = cos(yaw), sy = sin(yaw);
+        mat3 yawM = mat3(cy, 0.0, -sy,   0.0, 1.0, 0.0,   sy, 0.0, cy);
+        world = yawM * local + vec3(0.0, kGround + meshExtent.y / mx * sz, kDist);
+        n = normalize(yawM * attrB.xyz);
+        vUV = vec2(attrA.w, attrB.w);
+        vLocal = c / meshExtent;
+    }
+    else
+    {
+        world = attrA.xyz;
+        n = attrB.xyz;
+        vUV = vec2(0.0);
+        vLocal = vec3(0.0);
+    }
+
+    vec3 vp = world;
+    vp.x -= eyeOff;
+    gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
+    gl_Position.x += eyeOff * 0.045 * gl_Position.w;
+    if (isBg) gl_Position.z = gl_Position.w * 0.999999;
+
+    vNormal = n;
+    vPos = world;
+    vBg = isBg ? 1.0 : 0.0;
+}
