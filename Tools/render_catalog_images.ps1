@@ -238,9 +238,16 @@ foreach ($name in $Names) {
         $otherNode.SetAttribute("minTimeSolo", "3"); $otherNode.SetAttribute("maxTimeSolo", "4")
         $otherNode.SetAttribute("minTimeInterpolation", "10"); $otherNode.SetAttribute("maxTimeInterpolation", "12")
         $refNode.SetAttribute("minTimeSolo", "3"); $refNode.SetAttribute("maxTimeSolo", "4")
+        # The transition MUST be registered in this configuration:
+        # KALEIDO_TRANS_STYLE picks from the configuration's own list, and a
+        # configuration without a single <TransitionShader> falls back to the
+        # built-in Crossfade -- which is what every transition image in the
+        # catalogue showed before 04.09.2026.
+        $trCopy = $tgtNode.CloneNode($true)
+        $trCopy.SetAttribute("probability", "1.0")
         $refNode.SetAttribute("minTimeInterpolation", "10"); $refNode.SetAttribute("maxTimeInterpolation", "12")
         $xml = '<configuration ImageDirectory="' + $ImageDir + '" ConfigurationName="_catalog">' + "`n" +
-               $otherNode.OuterXml + "`n" + $refNode.OuterXml + "`n" +
+               $otherNode.OuterXml + "`n" + $refNode.OuterXml + "`n" + $trCopy.OuterXml + "`n" +
                '  <CombineShader file="..\\FX\\FxPlain.frag" type="normal" probability="1.0" complexity="1" minTimeSolo="100" maxTimeSolo="120" minTimeInterpolation="20" maxTimeInterpolation="30">' + "`n" +
                "  </CombineShader>`n</configuration>"
         [IO.File]::WriteAllText($cfg, $xml)

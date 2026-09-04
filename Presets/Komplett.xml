@@ -4603,6 +4603,42 @@
     <float name="hueP"     minValue="0.0" maxValue="6.28"></float>
   </TransitionShader>
 
+  <TransitionShader file="..\Transitions\PageTurnFolio.frag" type="normal" mood="calm,bright,dreamy" probability="0.07" complexity="2">
+    <float name="tiltP" minValue="0.0" maxValue="1.0"></float>
+    <float name="stiffP" minValue="0.60" maxValue="1.60"></float>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TransitionShader>
+
+  <TransitionShader file="..\Transitions\RisographDrumOffset.frag" type="normal" mood="bright,psychedelic" probability="0.07" complexity="2">
+    <float name="inkP" minValue="0.0" maxValue="1.0"></float>
+    <float name="misregP" minValue="0.50" maxValue="1.80"></float>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TransitionShader>
+
+  <TransitionShader file="..\Transitions\CyanotypeSunPrint.frag" type="normal" mood="calm,dreamy,dark" probability="0.07" complexity="2">
+    <float name="contrastP" minValue="0.60" maxValue="1.80"></float>
+    <float name="washP" minValue="0.70" maxValue="1.50"></float>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TransitionShader>
+
+  <TransitionShader file="..\Transitions\PolaroidDevelopSquare.frag" type="normal" mood="calm,bright,dreamy" probability="0.07" complexity="2">
+    <float name="clearP" minValue="0.70" maxValue="1.40"></float>
+    <float name="dyeP" minValue="0.80" maxValue="1.30"></float>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TransitionShader>
+
+  <TransitionShader file="..\Transitions\LetterpressImpression.frag" type="normal" mood="dark,calm" probability="0.07" complexity="2">
+    <float name="biteP" minValue="0.60" maxValue="1.50"></float>
+    <float name="reliefP" minValue="0.60" maxValue="1.60"></float>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TransitionShader>
+
+  <TransitionShader file="..\Transitions\ScratchboardReveal.frag" type="normal" mood="dark,aggressive" probability="0.07" complexity="3">
+    <float name="hatchP" minValue="0.70" maxValue="1.50"></float>
+    <float name="angleP" minValue="0.0" maxValue="1.0"></float>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TransitionShader>
+
 
 
   <TextureShader file="..\\Scene2D\\IceCrack.frag" type="normal" probability="0.42" mood="calm,bright" complexity="3">

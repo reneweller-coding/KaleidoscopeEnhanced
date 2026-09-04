@@ -87,6 +87,14 @@ void RenderPipeline::loadSettings()
 	// beat warp are all off.  Set calmMotion=false in the ini for the old look.
 	s_calmMotion   = s.value( "calmMotion", s_calmMotion ).toBool();
 	s_moodStrength = clampParam( s.value( "mood",        s_moodStrength).toFloat(), 0.f, 2.5f  );
+	// Probing hook: the mood grade rotates the WHOLE frame by the key the
+	// music is in, so a probe of one scene or one transition is judged
+	// through a constant tint -- a blueprint came back wine-red.  The
+	// review walk already pins this to neutral for the same reason;
+	// KALEIDO_MOOD does it for a scripted probe, WITHOUT touching the
+	// user's ini.  Unset, nothing changes.
+	if( qEnvironmentVariableIsSet( "KALEIDO_MOOD" ) )
+		s_moodStrength = clampParam( qEnvironmentVariable( "KALEIDO_MOOD" ).toFloat(), 0.f, 2.5f );
 	s_latencyLead  = clampParam( s.value( "latencyLead", s_latencyLead ).toFloat(), 0.f, 0.25f );
 	s_stereoMode   = s.value( "stereoMode", s_stereoMode ).toInt() & 3;
 	// Photo source. Empty (the shipped default) means "whatever the preset
