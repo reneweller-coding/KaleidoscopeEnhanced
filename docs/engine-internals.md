@@ -3688,3 +3688,20 @@ and it lands while the fade is still parked -- so it falls on the outgoing
 scene at full opacity rather than in the middle of a cross-fade. Verified over
 a 210 s sweep at 2 s per scene: 53 mesh scenes shown, 53 uploads, GPU memory
 flat between 5.3 and 6.8 GB, and the mesh scenes render exactly as before.
+
+## The fifth fifty, block A: light and optics
+
+| Scene | Pipeline | Note |
+|---|---|---|
+| CameraObscuraRoom | 2D | the photo turned through 180 degrees and blurred by a disc of taps whose radius is the aperture; brightness and blur move together, as an aperture does |
+| WeldingArcSeam | 2D | the bead is a function of how far behind the torch a pixel is; cooling is one exponential, temper colours a second, wider one |
+| StageRigMovingHeads | 2D | each head is a cone test (along, across) with a photo gobo; the pool on the deck is the ray-plane hit, not a second drawing |
+| XrayLuggageBelt | 2D | dual-energy palette from the photo's own luminance; the density comes from the band at the pixel's height inside the bag |
+| ThermalIronbowStreet | 2D | the street is drawn (facades, windows, road) and only then read as temperature, so the ironbow never depends on what the photo happens to be |
+| PhotoelasticStressFringes | 2D | fringe order = summed load field, coloured by a Michel-Levy walk; isoclinic brushes are a separate cosine the treble sharpens |
+| EclipseLeafCrescents | 2D | every canopy gap is a pinhole: a sun disc minus a moon disc whose offset is the eclipse fraction, drawn over a 3x3 cell neighbourhood so crescents may overlap |
+| LightPaintingTrails | 2D | the trail is 56 segments walked BACKWARDS in time along the wand path; segment distance, not point distance, or the ribbon reads as dots |
+| LaserHarpBeams | 2D | a beam is cut by a smooth window on the hand's distance, so it never switches between frames; the bloom sits at the contact point |
+| CrepuscularRaysForest | 2D | ray index comes from the angle around the sun, one spectrum band each; the fan swings because the sun sinks over the arc |
+
+Lessons from the block: a pinhole projection blurred with a disc of taps needs a radius around 0.006 in uv, not 0.02 -- at 0.02 the image is a smear and the scene reads as fog; a dark workshop or shop floor needs the photo at about 1.1 with a constant added, since 0.55 of a dark photo is black at sheet size; a scene whose subject is a false-colour reading of the world (thermal, X-ray) must DRAW its subject -- facades, windows, road, bags -- and only then map it to the palette, otherwise the palette paints whatever the photo happens to be and the scene has no identity.

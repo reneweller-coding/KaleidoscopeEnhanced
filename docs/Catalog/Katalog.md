@@ -1,6 +1,6 @@
 # Kaleidoscope Enhanced — Szenen-Katalog
 
-_816 Szenen, 29 FX-Overlays, 83 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
+_826 Szenen, 29 FX-Overlays, 83 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
 
 
 ---
@@ -512,6 +512,15 @@ CALLIGRAPHY BRUSH STROKES: a brush writing on paper. Strokes are laid down on th
 ![CalligraphyBrushStrokes ruhig (t=8)](img/CalligraphyBrushStrokes_A.jpg) ![CalligraphyBrushStrokes ruhig (t=16)](img/CalligraphyBrushStrokes_B.jpg) ![CalligraphyBrushStrokes audio-heiß (t=21)](img/CalligraphyBrushStrokes_C.jpg)
 
 
+### CameraObscuraRoom
+
+`Scene2D/CameraObscuraRoom.frag` · type=normal · mood=calm,dark,dreamy · complexity=2
+
+CAMERA OBSCURA ROOM: a darkened room with a pinhole in one wall. The world outside (the photo) stands upside-down and left-right reversed on the far wall, soft at the edges as a pinhole image is. The aperture breathes with the swell -- wide open means bright and soft, stopped down means dim and sharp -- dust motes drift through the light cone on the scene clock, and the kick is a flicker of the daylight outside (a cl…
+
+![CameraObscuraRoom ruhig (t=8)](img/CameraObscuraRoom_A.jpg) ![CameraObscuraRoom ruhig (t=16)](img/CameraObscuraRoom_B.jpg) ![CameraObscuraRoom audio-heiß (t=21)](img/CameraObscuraRoom_C.jpg)
+
+
 ### CandleForestBreath
 
 `Scene2D/CandleForestBreath.frag` · type=normal · mood=dark,calm,dreamy · complexity=3
@@ -782,6 +791,15 @@ COSMIC RAY TRANSITION RADIATION: Ultra-relativistic charged particles traversing
 ![CosmicRayTransitionRadiation ruhig (t=8)](img/CosmicRayTransitionRadiation_A.jpg) ![CosmicRayTransitionRadiation ruhig (t=16)](img/CosmicRayTransitionRadiation_B.jpg) ![CosmicRayTransitionRadiation audio-heiß (t=21)](img/CosmicRayTransitionRadiation_C.jpg)
 
 
+### CrepuscularRaysForest
+
+`Scene2D/CrepuscularRaysForest.frag` · type=normal · mood=calm,bright,dreamy · complexity=3
+
+CREPUSCULAR RAYS FOREST: sun shafts through mist between tall trunks. The rays fan from a sun low behind the wood; each ray carries one spectrum band, so the fan reads the music across its width. The mist drifts on the scene clock and the sun sinks over the scene arc, swinging the fan and warming its colour. Pollen floats as round motes where the light is. The photo is the wood. Camera fixed on the path. Audio Reacti…
+
+![CrepuscularRaysForest ruhig (t=8)](img/CrepuscularRaysForest_A.jpg) ![CrepuscularRaysForest ruhig (t=16)](img/CrepuscularRaysForest_B.jpg) ![CrepuscularRaysForest audio-heiß (t=21)](img/CrepuscularRaysForest_C.jpg)
+
+
 ### CryosleepChamber
 
 `Scene2D/CryosleepChamber.frag` · type=normal · mood=dark,calm,space · complexity=4
@@ -1025,6 +1043,15 @@ DROP COUNTDOWN VORTEX: a vortex that counts down to the drop. The host predicts 
 DYSON SPHERE COLLAPSE: A massive metal shell completely encasing a star is suffering a catastrophic structural failure. The enraged star's plasma bursts violently through the shattering metal plates, tearing the megastructure apart in sync with the audio. audioAdvance -> slow rotation/drift of the crumbling sphere audioKick -> massive plasma eruptions blowing off armor plates audioSwell -> blinding internal brightnes…
 
 ![DysonSphereCollapse ruhig (t=8)](img/DysonSphereCollapse_A.jpg) ![DysonSphereCollapse ruhig (t=16)](img/DysonSphereCollapse_B.jpg) ![DysonSphereCollapse audio-heiß (t=21)](img/DysonSphereCollapse_C.jpg)
+
+
+### EclipseLeafCrescents
+
+`Scene2D/EclipseLeafCrescents.frag` · type=normal · mood=calm,dark,dreamy · complexity=2
+
+ECLIPSE LEAF CRESCENTS: the ground under a canopy during a partial eclipse. Every gap between the leaves is a pinhole, so the dapples on the ground stop being round and become crescents, all pointing the same way, thinning as the eclipse deepens over the scene arc and filling again. The canopy sways gently on the clock, which moves the dapples; the swell is the daylight, the treble the sparkle on their rims. The phot…
+
+![EclipseLeafCrescents ruhig (t=8)](img/EclipseLeafCrescents_A.jpg) ![EclipseLeafCrescents ruhig (t=16)](img/EclipseLeafCrescents_B.jpg) ![EclipseLeafCrescents audio-heiß (t=21)](img/EclipseLeafCrescents_C.jpg)
 
 
 ### EinsteinHatTiling
@@ -2102,6 +2129,15 @@ LASER CAVITY TRANSVERSE MODES: Higher-order Hermite-Gaussian (TEM_mn) and Laguer
 ![LaserCavityTransverseModes ruhig (t=8)](img/LaserCavityTransverseModes_A.jpg) ![LaserCavityTransverseModes ruhig (t=16)](img/LaserCavityTransverseModes_B.jpg) ![LaserCavityTransverseModes audio-heiß (t=21)](img/LaserCavityTransverseModes_C.jpg)
 
 
+### LaserHarpBeams
+
+`Scene2D/LaserHarpBeams.frag` · type=normal · mood=dark,aggressive,psychedelic · complexity=3
+
+LASER HARP BEAMS: twelve vertical laser beams standing in haze, one per chroma class. A beam brightens when its class sounds; a hand crosses the row on the scene clock and every beam it interrupts blooms at the point of contact and throws a splash of scattered light. The frame is the emitter bar below and the mirror strip above. The photo is the hall behind the haze. Camera fixed in front of the harp. Audio Reactivit…
+
+![LaserHarpBeams ruhig (t=8)](img/LaserHarpBeams_A.jpg) ![LaserHarpBeams ruhig (t=16)](img/LaserHarpBeams_B.jpg) ![LaserHarpBeams audio-heiß (t=21)](img/LaserHarpBeams_C.jpg)
+
+
 ### LavaLamp
 
 `Scene2D/LavaLamp.frag` · type=normal · mood=calm · complexity=1
@@ -2181,6 +2217,15 @@ LIGHTHOUSE FRESNEL LENS: inside the lantern room, looking out through the great 
 Displays the branching electrical discharge simulated in Engine/CfxLightningStep, built around the fact that a real bolt reads mostly as afterglow rather than as the thin flash itself. The simulation grows exactly ONE tree of leaders per strike, from one point on the top edge, so on its own it hangs in a single narrow column of the picture. This pass re-projects that tree through three different UV frames — the origi…
 
 ![LightningStorm ruhig (t=8)](img/LightningStorm_A.jpg) ![LightningStorm ruhig (t=16)](img/LightningStorm_B.jpg) ![LightningStorm audio-heiß (t=21)](img/LightningStorm_C.jpg)
+
+
+### LightPaintingTrails
+
+`Scene2D/LightPaintingTrails.frag` · type=normal · mood=dark,psychedelic,dreamy · complexity=3
+
+LIGHT PAINTING TRAILS: a long exposure in a dark room. A dancer swings light wands and the shutter keeps everything: the trails hang in the air as continuous ribbons, brightest where the wand is now and fading along their age. Each wand owns a chroma class and brightens with it; the trail geometry runs on the scene clock, so nothing jumps. The kick is the flash that freezes a silhouette of the dancer for an instant. …
+
+![LightPaintingTrails ruhig (t=8)](img/LightPaintingTrails_A.jpg) ![LightPaintingTrails ruhig (t=16)](img/LightPaintingTrails_B.jpg) ![LightPaintingTrails audio-heiß (t=21)](img/LightPaintingTrails_C.jpg)
 
 
 ### LiquidChromeHyperSwirl
@@ -2856,6 +2901,15 @@ PERSISTENCE-OF-VISION FAN: a picture that exists only in the afterimage. A few s
 PERSISTENT HOMOLOGY BUBBLES: topological data analysis made visible. A point cloud sampled from the photo (points where it is bright); around every point a ball grows with the swell (the filtration radius); where two balls touch an edge lights, where three close a triangle fills -- the Vietoris-Rips complex -- and the holes that survive a long range of radii (persistent features) glow. The kick lights the newest edge…
 
 ![PersistentHomologyBubbles ruhig (t=8)](img/PersistentHomologyBubbles_A.jpg) ![PersistentHomologyBubbles ruhig (t=16)](img/PersistentHomologyBubbles_B.jpg) ![PersistentHomologyBubbles audio-heiß (t=21)](img/PersistentHomologyBubbles_C.jpg)
+
+
+### PhotoelasticStressFringes
+
+`Scene2D/PhotoelasticStressFringes.frag` · type=normal · mood=dark,psychedelic,calm · complexity=3
+
+PHOTOELASTIC STRESS FRINGES: a transparent part between crossed polarisers. Where the material is stressed it turns the light, and the difference of the principal stresses paints closed rainbow contours -- one full colour cycle per fringe order. Two loads press on the part and are driven by the swell (slow), so the fringe pattern breathes and grows; the bass raises the fringe order (more rings), the treble is the iso…
+
+![PhotoelasticStressFringes ruhig (t=8)](img/PhotoelasticStressFringes_A.jpg) ![PhotoelasticStressFringes ruhig (t=16)](img/PhotoelasticStressFringes_B.jpg) ![PhotoelasticStressFringes audio-heiß (t=21)](img/PhotoelasticStressFringes_C.jpg)
 
 
 ### PhotonicCrystalDiracConeDispersion
@@ -3908,6 +3962,15 @@ SPRITES AND ELVES: the lightning above the storm. A thundercloud on the horizon 
 ![SpriteElvesUpperLightning ruhig (t=8)](img/SpriteElvesUpperLightning_A.jpg) ![SpriteElvesUpperLightning ruhig (t=16)](img/SpriteElvesUpperLightning_B.jpg) ![SpriteElvesUpperLightning audio-heiß (t=21)](img/SpriteElvesUpperLightning_C.jpg)
 
 
+### StageRigMovingHeads
+
+`Scene2D/StageRigMovingHeads.frag` · type=normal · mood=dark,aggressive,psychedelic · complexity=3
+
+STAGE RIG MOVING HEADS: a truss of moving-head lamps over a hazy stage. Each lamp owns a chroma class and sweeps its beam on the scene clock -- steadily, never on a beat -- and brightens when its class sounds. The beams are volumetric wedges in the haze with a gobo pattern from the photo; where they land they paint a pool on the deck. The kick lights the backline strip, not the whole frame. Camera fixed in the audien…
+
+![StageRigMovingHeads ruhig (t=8)](img/StageRigMovingHeads_A.jpg) ![StageRigMovingHeads ruhig (t=16)](img/StageRigMovingHeads_B.jpg) ![StageRigMovingHeads audio-heiß (t=21)](img/StageRigMovingHeads_C.jpg)
+
+
 ### StainedGlassCathedralCaustics
 
 `Scene2D/StainedGlassCathedralCaustics.frag` · type=normal · mood=calm,bright,dreamy · complexity=3
@@ -4223,6 +4286,15 @@ Adapted from "The Core" by \@kishimisu (2023) — https://www.shadertoy.com/view
 ![TheCore ruhig (t=8)](img/TheCore_A.jpg) ![TheCore ruhig (t=16)](img/TheCore_B.jpg) ![TheCore audio-heiß (t=21)](img/TheCore_C.jpg)
 
 
+### ThermalIronbowStreet
+
+`Scene2D/ThermalIronbowStreet.frag` · type=normal · mood=dark,psychedelic,dreamy · complexity=3
+
+THERMAL IRONBOW STREET: a street seen through a thermal camera. The photo becomes a temperature field in the ironbow palette -- black through purple and orange to white -- warm bodies walk across it on the scene clock as soft blobs with a bright core, exhaust breath drifts, and the ambient heat rises with the swell. The kick is a hot doorway opening (a local flare, not a frame flash). The camera's own furniture (spot…
+
+![ThermalIronbowStreet ruhig (t=8)](img/ThermalIronbowStreet_A.jpg) ![ThermalIronbowStreet ruhig (t=16)](img/ThermalIronbowStreet_B.jpg) ![ThermalIronbowStreet audio-heiß (t=21)](img/ThermalIronbowStreet_C.jpg)
+
+
 ### ThomasAttractorCosmicLabyrinth
 
 `Scene2D/ThomasAttractorCosmicLabyrinth.frag` · type=normal · mood=psychedelic,dark,bright,space · complexity=2
@@ -4522,6 +4594,15 @@ WAVEFORM RIVER: the oscilloscope as geography. A river winds through a night lan
 ![WaveformRiver ruhig (t=8)](img/WaveformRiver_A.jpg) ![WaveformRiver ruhig (t=16)](img/WaveformRiver_B.jpg) ![WaveformRiver audio-heiß (t=21)](img/WaveformRiver_C.jpg)
 
 
+### WeldingArcSeam
+
+`Scene2D/WeldingArcSeam.frag` · type=normal · mood=dark,aggressive,bright · complexity=3
+
+WELDING ARC SEAM: a torch running a seam across a steel plate on the scene clock. Ahead of it the bare plate (the photo as mill scale), behind it the finished bead -- ripples of solidified metal cooling from white through orange to blue temper colours. The arc is a small violent core with a wide glow; round sparks fly off it; the visor tint darkens as the level rises, which is what a self-darkening helmet does. Camer…
+
+![WeldingArcSeam ruhig (t=8)](img/WeldingArcSeam_A.jpg) ![WeldingArcSeam ruhig (t=16)](img/WeldingArcSeam_B.jpg) ![WeldingArcSeam audio-heiß (t=21)](img/WeldingArcSeam_C.jpg)
+
+
 ### WhisperingGalleryMicrocavity
 
 `Scene2D/WhisperingGalleryMicrocavity.frag` · type=normal · mood=bright,psychedelic · complexity=3
@@ -4556,6 +4637,15 @@ WORMHOLE TRANSIT: High-speed passage through a spacetime conduit. The walls of t
 XENOBIOLOGICAL BIOSHIP: The camera flies through the grotesque, pulsing interior of a massive living spaceship. Fleshy walls, glowing veins, and strange internal organs ripple and contract to the beat. audioAdvance -> flight speed through the biological tunnel audioKick -> intense contractions and bright bioluminescence flashes audioSwell -> ambient brightness of the organic tissue audioChromaHue-> palette offset for…
 
 ![XenobiologicalBioship ruhig (t=8)](img/XenobiologicalBioship_A.jpg) ![XenobiologicalBioship ruhig (t=16)](img/XenobiologicalBioship_B.jpg) ![XenobiologicalBioship audio-heiß (t=21)](img/XenobiologicalBioship_C.jpg)
+
+
+### XrayLuggageBelt
+
+`Scene2D/XrayLuggageBelt.frag` · type=normal · mood=bright,calm,psychedelic · complexity=3
+
+XRAY LUGGAGE BELT: the operator's screen at a security scanner. Bags glide right to left on the scene clock, drawn in the false-colour palette of dual-energy X-ray -- orange for organic, green for mixed, blue for metal -- with the photo showing through as their contents. The spectrum bands set how dense each bag reads, the kick raises a threat box around the densest object (light), and the screen furniture (scan line…
+
+![XrayLuggageBelt ruhig (t=8)](img/XrayLuggageBelt_A.jpg) ![XrayLuggageBelt ruhig (t=16)](img/XrayLuggageBelt_B.jpg) ![XrayLuggageBelt audio-heiß (t=21)](img/XrayLuggageBelt_C.jpg)
 
 
 ### ZCRNoiseStorm

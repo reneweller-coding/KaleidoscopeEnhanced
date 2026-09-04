@@ -181,18 +181,19 @@ MODIFIED_SCENES = {
 # Minuten statt siebzig).  Bewusst eine eigene Liste: welche Szenen zuletzt
 # dran waren, ist eine historische Tatsache und soll im Diff stehen.
 RECENT_SCENES = {
-    # 04.09.: vierte Fuenfzig, Block E (Musik und Klang): Piano-Roll, Rille, Tonband,
-    # Modular-Synth, Stimmgabeln, Vokalraum, Granular, Sidechain-Lunge, Rangierbahnhof, Stille.
-    "PianoRollWaterfall",
-    "VinylGrooveMicroscope",
-    "TapeReelEcho",
-    "ModularSynthPatchbay",
-    "TuningForkChoir",
-    "FormantVowelSpace",
-    "GranularCloudSynth",
-    "SidechainLungBreath",
-    "ChordRailwaySwitches",
-    "SilenceSnowfallHush",
+    # 04.09.: fuenfte Fuenfzig, Block A (Licht und Optik): Camera obscura, Schweissbogen,
+    # Buehnenrig, Roentgenband, Waermebild, Spannungsstreifen, Finsternis-Sicheln,
+    # Lichtmalerei, Laserharfe, Gottesstrahlen.
+    "CameraObscuraRoom",
+    "WeldingArcSeam",
+    "StageRigMovingHeads",
+    "XrayLuggageBelt",
+    "ThermalIronbowStreet",
+    "PhotoelasticStressFringes",
+    "EclipseLeafCrescents",
+    "LightPaintingTrails",
+    "LaserHarpBeams",
+    "CrepuscularRaysForest",
 }
 
 def rule_recent(m, h):
