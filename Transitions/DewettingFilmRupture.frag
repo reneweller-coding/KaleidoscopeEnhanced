@@ -96,6 +96,7 @@ void main()
 
     // The film survives outside every hole.
     float film = smoothstep(-0.004, 0.006, best);
+    film = mix(1.0, film, smoothstep(0.0, 0.04, d));       // unbroken at the start
     film = mix(film, 0.0, smoothstep(0.88, 1.0, d));          // nothing left at the end
 
     // The rim: material swept up at the hole's edge, thicker as the hole grows.
@@ -105,7 +106,7 @@ void main()
 
     vec3 sub = texture(tex1, uv).rgb;
     // The film is thin: it carries its own picture and a little of the substrate.
-    vec3 flm = mix(texture(tex0, uv).rgb, sub, 0.12);
+    vec3 flm = mix(texture(tex0, uv).rgb, sub, 0.12 * arc);
     // Where the rim has piled up, the film is thicker, so less shows through.
     flm = mix(flm, texture(tex0, uv).rgb, rim);
 

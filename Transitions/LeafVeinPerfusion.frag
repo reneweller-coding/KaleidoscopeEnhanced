@@ -149,7 +149,7 @@ void main()
     vec3 sheen = mix(vec3(0.75, 0.95, 0.80), vec3(0.95, 0.85, 0.70), fract(hue * 0.159));
     // A dye-filled vein is DARKER than the blade, and that contrast is what
     // draws the network.
-    col *= 1.0 - vein * filled * 0.62 * (1.0 - 0.35 * order);
+    col *= 1.0 - vein * filled * 0.62 * arc * (1.0 - 0.35 * order);
     // An empty vein is visible too, just faintly: the leaf has its skeleton
     // before the dye arrives.
     col *= 1.0 - vein * (1.0 - filled) * 0.20 * arc;

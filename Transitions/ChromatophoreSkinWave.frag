@@ -94,7 +94,14 @@ void main()
         float open = smoothstep(when, when + 0.42, d)
                    * (0.75 + 0.35 * clamp(audioSwell, 0.0, 1.0));
         // A relaxed sac is a small dark point; a pulled-open one is wide.
-        float r = cell * (0.10 + 0.78 * clamp(open, 0.0, 1.0));
+        // Closed means closed: a relaxed sac has no radius at all at the
+        // start of the turn, or the first frame is already a mosaic.
+        float r = cell * (0.10 + 0.78 * clamp(open, 0.0, 1.0))
+                * smoothstep(0.0, 0.05, d);
+        // A radius of exactly zero would make the smoothstep below a
+        // smoothstep(0, 0, x) -- a division by zero, and the sac swallows the
+        // whole frame instead of vanishing.  A closed sac is simply skipped.
+        if (r <= 1e-5) continue;
         float dist = length(p - c);
         // Round and soft-edged, always.
         float ins = smoothstep(r, r * 0.72, dist);

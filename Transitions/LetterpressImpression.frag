@@ -112,8 +112,9 @@ void main()
     // The ink itself, a touch warmer or cooler with the midrange.
     // hueP picks the ink's own cast, audioMid warms or cools it from there.
     vec3 inkCast = mix(vec3(0.98, 0.97, 1.00), vec3(1.00, 0.96, 0.90), fract(hue * 0.159));
-    vec3 inked = src1 * mix(inkCast, inkCast * vec3(1.04, 1.00, 0.94),
-                            clamp(audioMid * 2.0, 0.0, 1.0));
+    vec3 inked = src1 * mix(vec3(1.0),
+                            mix(inkCast, inkCast * vec3(1.04, 1.00, 0.94),
+                                clamp(audioMid * 2.0, 0.0, 1.0)), arc);
 
     vec3 col = mix(sheet, inked, ink);
 

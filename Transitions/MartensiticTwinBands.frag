@@ -109,6 +109,10 @@ void main()
     // By the end the bands have consumed the parent phase completely.
     cover = mix(cover, 1.0, smoothstep(0.82, 1.0, d));
 
+    // The transformation strain is accommodated once the twins have taken the
+    // whole frame -- and it has to be, or the last frame is the incoming scene
+    // shifted sideways instead of the incoming scene.
+    shiftSum *= 1.0 - smoothstep(0.78, 1.0, d);
     vec2 sheared = clamp(uv + shiftSum / vec2(aspect, 1.0), 0.0, 1.0);
     vec3 parent = texture(tex0, uv).rgb;
     vec3 twin   = texture(tex1, sheared).rgb;
@@ -118,7 +122,7 @@ void main()
                       clamp(audioMid * 2.0, 0.0, 1.0));
     temper = mix(temper, temper.gbr, fract(hue * 0.159) * 0.5);
 
-    vec3 col = mix(parent, twin * temper, cover);
+    vec3 col = mix(parent, twin * mix(vec3(1.0), temper, arc), cover);
     // The twin boundaries glint.
     col += vec3(0.90, 0.92, 1.0) * edge * arc
          * (0.06 + 0.20 * clamp(audioHigh * 2.0, 0.0, 1.0));

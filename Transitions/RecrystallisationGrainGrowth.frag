@@ -112,19 +112,19 @@ void main()
     vec3 parent = (texture(tex0, clamp(uv + slip, 0.0, 1.0)).rgb
                  + texture(tex0, clamp(uv - slip, 0.0, 1.0)).rgb
                  + texture(tex0, uv).rgb) / 3.0;
-    parent *= 0.92;
+    parent *= mix(1.0, 0.92, arc);
 
     // A grain's orientation shows as a small, steady tint.
     float orient = hash21(bestId + 41.7);
     vec3 fresh = texture(tex1, uv).rgb;
     fresh = hueRot(fresh, (orient - 0.5) * 0.34 * arc + hue * 0.05 * arc);
-    fresh *= 0.94 + 0.14 * orient;
+    fresh *= mix(1.0, 0.94 + 0.14 * orient, arc);
 
     vec3 col = mix(parent, fresh, grain);
 
     // The boundary between two grains: where the two nearest agree.
     float bnd = exp(-pow((w2 - w1) / (cell * 0.13), 2.0)) * grain;
-    col *= 1.0 - bnd * 0.62;
+    col *= 1.0 - bnd * 0.62 * arc;
     col += vec3(0.88, 0.92, 1.0) * bnd * arc
          * (0.05 + 0.20 * clamp(audioHigh * 2.0, 0.0, 1.0) + 0.14 * clamp(audioKick, 0.0, 1.0));
     // The moving front itself carries a little light.

@@ -122,9 +122,9 @@ void main()
 
     // The hinge across the middle of every cell, and the gap between cells.
     float hinge = smoothstep(0.030, 0.0, abs(gf.y - 0.5));
-    col *= 1.0 - hinge * 0.55;
+    col *= 1.0 - hinge * 0.55 * arc;
     float gap = smoothstep(0.045, 0.0, min(min(gf.x, 1.0 - gf.x), min(gf.y, 1.0 - gf.y)));
-    col *= 1.0 - gap * 0.45;
+    col *= 1.0 - gap * 0.45 * arc;
 
     // The board's own lamps.
     vec3 lamp = mix(vec3(1.0, 0.94, 0.80), vec3(0.86, 0.92, 1.0), fract(hue * 0.159));

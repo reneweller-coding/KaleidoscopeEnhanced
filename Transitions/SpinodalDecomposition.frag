@@ -8,10 +8,16 @@ out vec4 fragColor;
  *
  * Spinodal decomposition has no nucleation step: the mixture is unstable
  * everywhere at once, so it separates by AMPLIFYING one wavelength of its own
- * fluctuation across the whole volume simultaneously.  That is why the pattern
- * is a connected labyrinth of two phases with no droplets and no seeds -- and
- * why it is built here as a band-limited field thresholded against a level,
- * rather than as growing blobs.
+ * fluctuation across the whole volume simultaneously.  That is why it is built
+ * here as a band-limited field thresholded against a level, rather than as
+ * blobs grown from seeds -- every domain appears where the fluctuation already
+ * was, not where a seed was placed.
+ *
+ * The level sweeping across that field is the COMPOSITION sweeping across the
+ * gap.  Near the ends the mixture is off-critical and the minority phase comes
+ * out as separate domains; in the middle it is critical and the two phases are
+ * bicontinuous -- the connected labyrinth this is named for.  Both stages are
+ * real, and the sweep is what walks between them.
  *
  * The second law of the process is coarsening: the characteristic length grows
  * as the cube root of time, because the driving force is the interface energy.
@@ -96,7 +102,13 @@ void main()
     // The level sweeps from above every value to below every one, so one phase
     // owns the frame at each end and the two ends are the untouched scenes.
     float w = 0.10 + 0.16 * clamp(audioSwell, 0.0, 1.0);
-    float lvl = mix(1.35, -1.35, smoothstep(0.0, 1.0, d));
+    // The level has to sweep from BELOW the field's minimum to ABOVE its
+    // maximum, in that order: below means "no pixel has flipped yet", above
+    // means "every pixel has".  The band pass reaches about +-1.65, so +-2.0
+    // clears it with the widest edge.  Running this the other way round leaves
+    // the OLD scene standing at d=1, which is invisible in a labyrinth of two
+    // pictures and is exactly what the endpoint check caught.
+    float lvl = mix(-2.0, 2.0, smoothstep(0.0, 1.0, d));
     // Which phase wins is nudged by the mood, not decided by it.
     lvl += (clamp(audioValence, 0.0, 1.0) - 0.5) * 0.25 * arc;
     float phase = smoothstep(lvl + w, lvl - w, fld);

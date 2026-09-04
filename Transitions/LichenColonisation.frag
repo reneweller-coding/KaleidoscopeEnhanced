@@ -132,10 +132,14 @@ void main()
 
     // Where two colonies met, neither goes further.
     float line = exp(-pow((e2 - e1) / (cell * 0.06), 2.0)) * on;
-    col *= 1.0 - line * 0.45;
+    col *= 1.0 - line * 0.45 * arc;
     // The growing margin is paler than the crust behind it.
     float margin = exp(-pow(e1 / (cell * 0.055), 2.0)) * (1.0 - smoothstep(0.86, 1.0, d));
     col += sp * margin * arc * (0.10 + 0.26 * clamp(audioHigh * 2.0, 0.0, 1.0));
+    // The crust is a tint on the picture beneath, and the tint has to go with
+    // the turn: without this the last frame is the incoming scene in lichen
+    // colours rather than the incoming scene.
+    col = mix(col, under, smoothstep(0.88, 1.0, d));
 
     fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }

@@ -121,6 +121,12 @@ void main()
         bend += ((dist > 1e-5) ? q / dist : vec2(0.0)) * halo * 0.018 * cushion;
     }
 
+    // Nothing of the drops exists at either end of the turn: at the start the
+    // film is unbroken, at the end the plate is dry.
+    float begun = smoothstep(0.0, 0.08, d) * (1.0 - smoothstep(0.86, 1.0, d));
+    bend *= begun;
+    dropUv = mix(uv, dropUv, begun);
+
     // The plate, seen through the vapour.
     vec3 plate = textureLod(tex1, clamp(uv + bend * sc, 0.0, 1.0), 0.0).rgb;
     plate *= 1.0 + cushD * 0.20 * arc * (0.3 + 0.9 * clamp(audioKick, 0.0, 1.0));
@@ -130,12 +136,12 @@ void main()
     // to its coarsest mip level -- blurred rectangular blocks.
     vec3 drop = textureLod(tex0, dropUv, 0.0).rgb;
     // A drop is water, not a marble: the plate shows through it, refracted.
-    drop = mix(drop, plate * 0.85, 0.30);
+    drop = mix(drop, plate * 0.85, 0.30 * begun);
     // Denser than air: it darkens at the rim and carries a highlight.
-    drop *= 1.0 - rimD * 0.42;
+    drop *= 1.0 - rimD * 0.42 * begun;
     // A small, tight highlight: brightening the whole drop turned a field of
     // droplets into a field of lamps.
-    drop += vec3(1.0, 0.97, 0.92) * spec * inDrop
+    drop += vec3(1.0, 0.97, 0.92) * spec * inDrop * begun
           * (0.16 + 0.30 * clamp(audioHigh * 2.0, 0.0, 1.0));
 
     // At the start the film is unbroken; at the end the plate is dry.
