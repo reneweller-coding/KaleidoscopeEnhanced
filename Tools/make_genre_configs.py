@@ -181,19 +181,19 @@ MODIFIED_SCENES = {
 # Minuten statt siebzig).  Bewusst eine eigene Liste: welche Szenen zuletzt
 # dran waren, ist eine historische Tatsache und soll im Diff stehen.
 RECENT_SCENES = {
-    # 04.09.: fuenfte Fuenfzig, Block D (Textil und Material): Stricken, Quilt,
-    # Kloeppelspitze, Batik, Kintsugi, Stickrahmen, Kumiko, Kettenhemd, Cloisonne,
-    # Damaszener Stahl.
-    "KnittingRowsGrow",
-    "QuiltBlockPatchwork",
-    "BobbinLacePillow",
-    "BatikWaxCracks",
-    "KintsugiGoldSeams",
-    "EmbroideryHoopStitches",
-    "KumikoLatticeShoji",
-    "ChainmailRingRipple",
-    "CloisonneEnamelCells",
-    "DamascusSteelEtch",
+    # 04.09.: fuenfte Fuenfzig, Block E (Rhythmusmaschinen): Metronome, Sanduhr,
+    # Sonnenuhr, Spielautomat, Galtonbrett, Spieluhr, Windspiel, Step-Sequencer,
+    # Abakus, Jukebox.
+    "MetronomeForest",
+    "HourglassSandFall",
+    "SundialShadowSweep",
+    "SlotMachineReels",
+    "GaltonBoardBeads",
+    "MusicBoxCylinder",
+    "WindChimeTubes",
+    "StepSequencerGrid",
+    "AbacusBeadCount",
+    "JukeboxBubbleTubes",
 }
 
 def rule_recent(m, h):

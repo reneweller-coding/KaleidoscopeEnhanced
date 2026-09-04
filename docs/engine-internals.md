@@ -3756,3 +3756,22 @@ Lessons from the block: a tessellation (patches) scene has NO sky quad, so whate
 | DamascusSteelEtch | 2D | the layer coordinate is sheared by position along the blade, which is exactly what twisting the billet does to its layers |
 
 Lessons from the block: interlocking geometry has to actually interlock -- the chainmail rings first sat at a radius of a third of the pitch and read as a field of separate donuts; at nearly half the pitch, in two passes, the sheet becomes mail. A structure lit from behind reads as silhouette, not as lit material: the kumiko bars had to drop to about a third of their first brightness before the lattice was legible against the paper. And a seam that carries the whole subject of a scene needs real width -- the kintsugi gold at 0.012 of the frame was invisible at sheet size and works at 0.024.
+
+## The fifth fifty, block E: rhythm machines and toys
+
+With this block the fifth fifty is complete: 250 new scenes since 02.09.2026.
+
+| Scene | Pipeline | Note |
+|---|---|---|
+| MetronomeForest | 2D | every pendulum keeps its OWN fixed rate; the music only lights the ones whose phase happens to agree with the beat phase, so the rank drifts in and out of agreement without a single jolt |
+| HourglassSandFall | 2D | upper funnel, falling column and lower mound are one function of the arc, so the glass runs through without a cut |
+| SundialShadowSweep | 2D | the shadow's angle AND length come from the same day parameter; the penumbra widens with distance from the gnomon |
+| SlotMachineReels | 2D | reels never snap to a stop -- they keep their steady rates; the drum coordinate must show about three symbols, not forty |
+| GaltonBoardBeads | 2D | each bead's path is a running sum of left/right steps, interpolated between rows, so the bounce is smooth and the bins build the bell curve over the arc |
+| MusicBoxCylinder | 2D | the pin field is indexed by (position along, angle around), so the score rolls under the comb as the cylinder turns |
+| WindChimeTubes | 2D | a ringing tube does not move: it brightens and throws concentric halos, which is how a struck tube reads without shaking the frame |
+| StepSequencerGrid | 2D | the playhead is a soft gaussian in step space, so it sweeps rather than jumping cell to cell |
+| AbacusBeadCount | 2D | each bead's travel is a smoothstep of the band against its own index, so beads glide to the bar and never teleport |
+| JukeboxBubbleTubes | 2D | the tube path is a straight run unioned with an arch over the dome, one distance field, so bubbles rise round the corner |
+
+Lessons from the block: a machine whose whole subject is repetition must NOT be locked to the beat -- the metronomes and the slot reels keep their own fixed rates and the music only lights them, which is what lets a rank of them drift in and out of agreement with the track instead of snapping to it. A drum or reel coordinate has to be scaled to show about three cells in its window: the first cut put forty symbol cells behind the glass and every one of them was too small to read. And a counter (abacus, Galton bins) reads as counting only if each piece glides: the travel is a smoothstep of the value against the piece's own index, so a bead is always somewhere between its two rest positions and never teleports.

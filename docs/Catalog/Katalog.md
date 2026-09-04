@@ -1,11 +1,20 @@
 # Kaleidoscope Enhanced — Szenen-Katalog
 
-_856 Szenen, 29 FX-Overlays, 83 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
+_866 Szenen, 29 FX-Overlays, 83 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
 
 
 ---
 
 ## 2D-Szenen (Scene2D/)
+
+
+### AbacusBeadCount
+
+`Scene2D/AbacusBeadCount.frag` · type=normal · mood=calm,bright,dreamy · complexity=3
+
+ABACUS BEAD COUNT: a soroban counting the music. One rod per spectrum band; on each rod the beads slide toward the reckoning bar to the value of that band, so the whole frame reads as a bar chart made of wooden beads. The beads glide -- their position is a smoothed function of the band, never a jump -- and a rod's beads brighten as they reach the bar. The photo is the frame's wood and the felt behind. Camera fixed on…
+
+![AbacusBeadCount ruhig (t=8)](img/AbacusBeadCount_A.jpg) ![AbacusBeadCount ruhig (t=16)](img/AbacusBeadCount_B.jpg) ![AbacusBeadCount audio-heiß (t=21)](img/AbacusBeadCount_C.jpg)
 
 
 ### AbandonedStarGate
@@ -1506,6 +1515,15 @@ Displays the compute N-body simulation of two colliding galaxies (32k gravitatin
 ![GalaxyCollision ruhig (t=8)](img/GalaxyCollision_A.jpg) ![GalaxyCollision ruhig (t=16)](img/GalaxyCollision_B.jpg) ![GalaxyCollision audio-heiß (t=21)](img/GalaxyCollision_C.jpg)
 
 
+### GaltonBoardBeads
+
+`Scene2D/GaltonBoardBeads.frag` · type=normal · mood=dark,calm,psychedelic · complexity=3
+
+GALTON BOARD BEADS: the bean machine. Round beads drop through a triangular lattice of pegs, bouncing left or right at each row, and pile up in the bins below; over the scene arc the heap in the bins grows into the bell curve, which is the whole point of the machine. Every bead falls on its own continuous phase, so beads are always in flight and none ever appears from nothing. The bins take their colour from the spec…
+
+![GaltonBoardBeads ruhig (t=8)](img/GaltonBoardBeads_A.jpg) ![GaltonBoardBeads ruhig (t=16)](img/GaltonBoardBeads_B.jpg) ![GaltonBoardBeads audio-heiß (t=21)](img/GaltonBoardBeads_C.jpg)
+
+
 ### GammaRayBurst
 
 `Scene2D/GammaRayBurst.frag` · type=normal · mood=bright,aggressive,space · complexity=4
@@ -1765,6 +1783,15 @@ HOLOGRAPHIC DIFFRACTION GRATING MANDALA: Triple crossed laser interference grati
 HOPF FIBRATION STREAMLINES: 4D-to-3D Hopf Fibration (S3 -> S2) raymarching. Luminous interlocking linked fiber tori, relativistic circular streamlines, and high-velocity electric pulse cascades. Audio Reactivity: audioAdvance -> drives continuous circular stream flow along fiber links audioKick -> flashes fiber linkage nodes & expands fiber tube radius audioCentroid-> modulates fiber density & fine stream resolution …
 
 ![HopfFibrationStreamlines ruhig (t=8)](img/HopfFibrationStreamlines_A.jpg) ![HopfFibrationStreamlines ruhig (t=16)](img/HopfFibrationStreamlines_B.jpg) ![HopfFibrationStreamlines audio-heiß (t=21)](img/HopfFibrationStreamlines_C.jpg)
+
+
+### HourglassSandFall
+
+`Scene2D/HourglassSandFall.frag` · type=normal · mood=calm,dark,dreamy · complexity=3
+
+HOURGLASS SAND FALL: a glass running through over the scene arc. The upper bulb empties as a cone whose surface sinks, the stream falls through the waist as a thin column of round grains, and the lower heap grows into a mound with a crater where the stream lands. All three are one function of the arc, so the glass fills and empties without a cut. The lamp behind it rides the swell, the treble is the grains catching t…
+
+![HourglassSandFall ruhig (t=8)](img/HourglassSandFall_A.jpg) ![HourglassSandFall ruhig (t=16)](img/HourglassSandFall_B.jpg) ![HourglassSandFall audio-heiß (t=21)](img/HourglassSandFall_C.jpg)
 
 
 ### HurricaneEyeWall
@@ -2064,6 +2091,15 @@ JOSEPHSON VORTEX FLUXON LATTICE: Layered high-Tc superconductor stacked Josephso
 JOSEPHSON VORTEX LATTICE: High-temperature layered superconductor Josephson junction array simulating quantized fluxon vortex lattices. Cooper-pair phase isobars, vortex liquid melting transitions, soliton wave packets, and quantum phase photo mapping. audioAdvance -> drives fluxon motion across superconductor layers audioKick -> triggers vortex lattice melting into turbulent fluid audioBass -> pulses Josephson plasm…
 
 ![JosephsonVortexLattice ruhig (t=8)](img/JosephsonVortexLattice_A.jpg) ![JosephsonVortexLattice ruhig (t=16)](img/JosephsonVortexLattice_B.jpg) ![JosephsonVortexLattice audio-heiß (t=21)](img/JosephsonVortexLattice_C.jpg)
+
+
+### JukeboxBubbleTubes
+
+`Scene2D/JukeboxBubbleTubes.frag` · type=normal · mood=dark,bright,psychedelic · complexity=3
+
+JUKEBOX BUBBLE TUBES: the front of a period jukebox. Bubble tubes arch over the case, each a glass column of coloured liquid with round bubbles rising through it on the scene clock; behind them the record carousel turns steadily, the selection board carries the photo as its title strips, and the neon trim glows. The chroma classes drive the tube colours, the swell the neon, the kick a flicker in one tube. Camera fixe…
+
+![JukeboxBubbleTubes ruhig (t=8)](img/JukeboxBubbleTubes_A.jpg) ![JukeboxBubbleTubes ruhig (t=16)](img/JukeboxBubbleTubes_B.jpg) ![JukeboxBubbleTubes audio-heiß (t=21)](img/JukeboxBubbleTubes_C.jpg)
 
 
 ### JuliaAudioMorph
@@ -2615,6 +2651,15 @@ METAMORPHIC LAVA VORTEX: 100% viewport-filling viscous basalt magma ocean. Solid
 ![MetamorphicLavaVortex ruhig (t=8)](img/MetamorphicLavaVortex_A.jpg) ![MetamorphicLavaVortex ruhig (t=16)](img/MetamorphicLavaVortex_B.jpg) ![MetamorphicLavaVortex audio-heiß (t=21)](img/MetamorphicLavaVortex_C.jpg)
 
 
+### MetronomeForest
+
+`Scene2D/MetronomeForest.frag` · type=normal · mood=calm,dark,dreamy · complexity=3
+
+METRONOME FOREST: rows of wind-up metronomes on a bench, each set to its own tempo. Every pendulum swings on the scene clock at its own fixed rate -- deliberately NOT beat-synced, because a whole rank of arms snapping to a kick is the jolt this catalogue does not do. What the music controls is light: a metronome brightens when its own swing happens to line up with the beat phase, so the rank slowly finds and loses ag…
+
+![MetronomeForest ruhig (t=8)](img/MetronomeForest_A.jpg) ![MetronomeForest ruhig (t=16)](img/MetronomeForest_B.jpg) ![MetronomeForest audio-heiß (t=21)](img/MetronomeForest_C.jpg)
+
+
 ### MicrolensingCausticSweep
 
 `Scene2D/MicrolensingCausticSweep.frag` · type=normal · mood=space,dark,psychedelic · complexity=2
@@ -2721,6 +2766,15 @@ MUON TOMOGRAPHY PYRAMID: seeing through a pyramid with cosmic rays. Muons rain f
 A starling flock of 131k boids, composited as dark silhouette density over an evening sky built from two colour samples of the photo. The flock (rendered upstream into texBoids) is read back here purely as a density field: a tight 8-tap blur feeds a contrast curve so dense regions go dark/solid and thin regions glow. audioAmbient brightens/dims the whole sky and its low sun glow; audioLevel and audioBeat add to the s…
 
 ![Murmuration ruhig (t=8)](img/Murmuration_A.jpg) ![Murmuration ruhig (t=16)](img/Murmuration_B.jpg) ![Murmuration audio-heiß (t=21)](img/Murmuration_C.jpg)
+
+
+### MusicBoxCylinder
+
+`Scene2D/MusicBoxCylinder.frag` · type=normal · mood=calm,bright,dreamy · complexity=3
+
+MUSIC BOX CYLINDER: the works of a cylinder music box, lid open. The pinned brass cylinder turns steadily on the scene clock; the steel comb lies alongside it with one tooth per chroma class, and a tooth lights when its class sounds -- as if the pin passing under it had just plucked it. The pins are laid out as the score, so the cylinder reads as a rolled piece of music. The photo is the lid's inlay and the mirror in…
+
+![MusicBoxCylinder ruhig (t=8)](img/MusicBoxCylinder_A.jpg) ![MusicBoxCylinder ruhig (t=16)](img/MusicBoxCylinder_B.jpg) ![MusicBoxCylinder audio-heiß (t=21)](img/MusicBoxCylinder_C.jpg)
 
 
 ### NebulaCliffs
@@ -3899,6 +3953,15 @@ SKYRMION CHIRAL SPIN LATTICE: Dense 2D triangular lattice of topological magneti
 ![SkyrmionChiralSpinLattice ruhig (t=8)](img/SkyrmionChiralSpinLattice_A.jpg) ![SkyrmionChiralSpinLattice ruhig (t=16)](img/SkyrmionChiralSpinLattice_B.jpg) ![SkyrmionChiralSpinLattice audio-heiß (t=21)](img/SkyrmionChiralSpinLattice_C.jpg)
 
 
+### SlotMachineReels
+
+`Scene2D/SlotMachineReels.frag` · type=normal · mood=bright,aggressive,psychedelic · complexity=3
+
+SLOT MACHINE REELS: three reels behind the glass of a fruit machine. Each turns at its own steady rate for the whole activation -- they never snap to a stop, because a reel jerking to a halt on a beat is exactly the jolt this catalogue avoids. The symbols are cut from the photo and wrap on drums with a curved face, so they compress toward the top and bottom of the window. The pay line brightens with the swell and the…
+
+![SlotMachineReels ruhig (t=8)](img/SlotMachineReels_A.jpg) ![SlotMachineReels ruhig (t=16)](img/SlotMachineReels_B.jpg) ![SlotMachineReels audio-heiß (t=21)](img/SlotMachineReels_C.jpg)
+
+
 ### SmokeSigils
 
 `Scene2D/SmokeSigils.frag` · type=normal · mood=dark,dreamy,calm · complexity=3
@@ -4214,6 +4277,15 @@ STELLAR NURSERY: A dark, dense nebula where countless protostars are igniting. T
 ![StellarNursery ruhig (t=8)](img/StellarNursery_A.jpg) ![StellarNursery ruhig (t=16)](img/StellarNursery_B.jpg) ![StellarNursery audio-heiß (t=21)](img/StellarNursery_C.jpg)
 
 
+### StepSequencerGrid
+
+`Scene2D/StepSequencerGrid.frag` · type=normal · mood=dark,aggressive,psychedelic · complexity=3
+
+STEP SEQUENCER GRID: the front panel of a step sequencer. Rows are voices, columns are steps, and every cell is a lit pad with the photo showing through its window. The playhead sweeps the grid on the scene clock -- steadily, so it never snaps -- and a pad brightens when the playhead is over it and its own voice is sounding. The chroma classes give each row its colour, the spectrum bands the pad glow, and the kick li…
+
+![StepSequencerGrid ruhig (t=8)](img/StepSequencerGrid_A.jpg) ![StepSequencerGrid ruhig (t=16)](img/StepSequencerGrid_B.jpg) ![StepSequencerGrid audio-heiß (t=21)](img/StepSequencerGrid_C.jpg)
+
+
 ### StereoKaleidoscope
 
 `Scene2D/StereoKaleidoscope.frag` · type=normal · mood=psychedelic,bright,aggressive · complexity=2
@@ -4275,6 +4347,15 @@ STRING ART CHORDS: twelve pins on a circle, one per pitch class; strings run bet
 SUBWAY MAP PULSE: a transit diagram in the style of a network map -- straight runs, forty-five degree bends, interchange circles. Twelve lines, one per chroma class; a train runs each line as a pulse of light on the scene clock, and a station lights as its line sounds. The photo is the printed paper the map sits on. Camera fixed on the map. Audio Reactivity: audioChroma[12] -> line brightness and its stations (light)…
 
 ![SubwayMapPulse ruhig (t=8)](img/SubwayMapPulse_A.jpg) ![SubwayMapPulse ruhig (t=16)](img/SubwayMapPulse_B.jpg) ![SubwayMapPulse audio-heiß (t=21)](img/SubwayMapPulse_C.jpg)
+
+
+### SundialShadowSweep
+
+`Scene2D/SundialShadowSweep.frag` · type=normal · mood=bright,calm,dreamy · complexity=3
+
+SUNDIAL SHADOW SWEEP: a garden sundial from above. The gnomon throws its shadow across the dial and the shadow sweeps the hour lines over the scene arc; as it goes the light warms from morning through noon to evening and the shadow lengthens again. Each hour numeral lights as the shadow passes it, taking the colour of a chroma class. The photo is the weathered bronze of the plate. Camera fixed above. Audio Reactivity…
+
+![SundialShadowSweep ruhig (t=8)](img/SundialShadowSweep_A.jpg) ![SundialShadowSweep ruhig (t=16)](img/SundialShadowSweep_B.jpg) ![SundialShadowSweep audio-heiß (t=21)](img/SundialShadowSweep_C.jpg)
 
 
 ### SundogHaloSky
@@ -4826,6 +4907,15 @@ WHISPERING GALLERY MICROCAVITY: Deformed optical microcavity resonator exhibitin
 WHITE DWARF ACCRETION: An extremely dense, hot white dwarf siphoning glowing plasma from a bloated red giant companion. A swirling accretion disk forms and violently pulses to the beat. audioAdvance -> rotation speed of the binary system and accretion disk audioKick -> flares and matter striking the white dwarf audioSwell -> brightness of the accretion disk and the red giant audioChromaHue-> palette offset for the pl…
 
 ![WhiteDwarfAccretion ruhig (t=8)](img/WhiteDwarfAccretion_A.jpg) ![WhiteDwarfAccretion ruhig (t=16)](img/WhiteDwarfAccretion_B.jpg) ![WhiteDwarfAccretion audio-heiß (t=21)](img/WhiteDwarfAccretion_C.jpg)
+
+
+### WindChimeTubes
+
+`Scene2D/WindChimeTubes.frag` · type=normal · mood=calm,bright,dreamy · complexity=3
+
+WIND CHIME TUBES: a chime hanging on a porch. Twelve tubes, one per chroma class, hang from a disc and sway gently on the scene clock; the clapper drifts among them. A tube does not move when its note sounds -- it RINGS: it brightens and throws a halo of rings, which is how a struck tube reads and keeps the whole frame free of jolts. The photo is the garden beyond the porch. Camera fixed on the chime. Audio Reactivit…
+
+![WindChimeTubes ruhig (t=8)](img/WindChimeTubes_A.jpg) ![WindChimeTubes ruhig (t=16)](img/WindChimeTubes_B.jpg) ![WindChimeTubes audio-heiß (t=21)](img/WindChimeTubes_C.jpg)
 
 
 ### WormholeTransit
