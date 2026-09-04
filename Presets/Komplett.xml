@@ -4663,6 +4663,42 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TransitionShader>
 
+  <TransitionShader file="..\Transitions\SpinodalDecomposition.frag" type="normal" mood="psychedelic,dark,dreamy" probability="0.07" complexity="3">
+    <float name="scaleP" minValue="0.60" maxValue="1.60"></float>
+    <float name="coarseP" minValue="0.60" maxValue="1.60"></float>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TransitionShader>
+
+  <TransitionShader file="..\Transitions\MartensiticTwinBands.frag" type="normal" mood="dark,aggressive" probability="0.07" complexity="3">
+    <float name="bandsP" minValue="0.0" maxValue="1.0"></float>
+    <float name="shearP" minValue="0.60" maxValue="1.60"></float>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TransitionShader>
+
+  <TransitionShader file="..\Transitions\DewettingFilmRupture.frag" type="normal" mood="dark,psychedelic" probability="0.07" complexity="3">
+    <float name="sitesP" minValue="0.0" maxValue="1.0"></float>
+    <float name="rimP" minValue="0.60" maxValue="1.60"></float>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TransitionShader>
+
+  <TransitionShader file="..\Transitions\LeidenfrostSkitter.frag" type="normal" mood="bright,psychedelic,dreamy" probability="0.07" complexity="3">
+    <float name="dropsP" minValue="0.0" maxValue="1.0"></float>
+    <float name="driftP" minValue="0.60" maxValue="1.60"></float>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TransitionShader>
+
+  <TransitionShader file="..\Transitions\RecrystallisationGrainGrowth.frag" type="normal" mood="dark,calm,psychedelic" probability="0.07" complexity="3">
+    <float name="nucleiP" minValue="0.0" maxValue="1.0"></float>
+    <float name="rateP" minValue="0.70" maxValue="1.50"></float>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TransitionShader>
+
+  <TransitionShader file="..\Transitions\CavitationBubbleCollapse.frag" type="normal" mood="dark,aggressive,psychedelic" probability="0.07" complexity="3">
+    <float name="sitesP" minValue="0.0" maxValue="1.0"></float>
+    <float name="sizeP" minValue="0.70" maxValue="1.50"></float>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TransitionShader>
+
 
 
   <TextureShader file="..\\Scene2D\\IceCrack.frag" type="normal" probability="0.42" mood="calm,bright" complexity="3">

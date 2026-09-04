@@ -96,7 +96,11 @@ $stamps = @(2.5, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.5, 13.5)
 $i = 0
 foreach ($t in $stamps) {
     $f = Join-Path $out ("{0}_{1:d2}.png" -f $Name, $i)
-    & ffmpeg -y -threads 4 -ss $t -i $mp4 -vframes 1 -q:v 2 $f 2>$null
+    # -ss AFTER -i: seeking before the input is a fast seek that can land
+    # between key frames and hand back a half-decoded picture -- whole
+    # rectangles of an older frame, which read as a shader bug and are not
+    # one.  Decoding up to the mark costs a second and is exact.
+    & ffmpeg -y -threads 4 -i $mp4 -ss $t -vframes 1 -q:v 2 $f 2>$null
     $i++
 }
 Write-Host "$Name : $i Frames in $out"
