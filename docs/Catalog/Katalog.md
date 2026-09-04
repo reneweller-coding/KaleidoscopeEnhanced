@@ -1,6 +1,6 @@
 # Kaleidoscope Enhanced — Szenen-Katalog
 
-_836 Szenen, 29 FX-Overlays, 83 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
+_846 Szenen, 29 FX-Overlays, 83 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
 
 
 ---
@@ -600,6 +600,15 @@ CAVITY OPTOMECHANICS PHONON LASING: Optomechanical optical microcavity with mova
 CELTIC MANDELBROT GOTHIC VAULT: Celtic Mandelbrot variation z -> |Re(z^2)| + i*Im(z^2) + c. Gothic cathedral tracery arches, lancet church window filigree, stained-glass luminescence, and continuous deep plunge through endless vaulted fractal naves. Audio Reactivity: audioAdvance -> drives continuous deep plunge through Gothic cathedral arches audioKick -> flashes stained-glass rosette window cores & cathedral flares…
 
 ![CelticMandelbrotGothicVault ruhig (t=8)](img/CelticMandelbrotGothicVault_A.jpg) ![CelticMandelbrotGothicVault ruhig (t=16)](img/CelticMandelbrotGothicVault_B.jpg) ![CelticMandelbrotGothicVault audio-heiß (t=21)](img/CelticMandelbrotGothicVault_C.jpg)
+
+
+### CenoteLightShaft
+
+`Scene2D/CenoteLightShaft.frag` · type=normal · mood=dark,calm,dreamy · complexity=3
+
+CENOTE LIGHT SHAFT: below the surface of a flooded sinkhole, looking up at the opening. One shaft of sunlight comes through the hole and stands in the water as a solid cone, thick with drifting round motes; tree roots hang down through it, the cavern wall is the photo, and the halocline lies across the middle as a shimmering layer. The sun crosses the opening over the scene arc, so the shaft sweeps. Camera fixed, loo…
+
+![CenoteLightShaft ruhig (t=8)](img/CenoteLightShaft_A.jpg) ![CenoteLightShaft ruhig (t=16)](img/CenoteLightShaft_B.jpg) ![CenoteLightShaft audio-heiß (t=21)](img/CenoteLightShaft_C.jpg)
 
 
 ### CentroidSunArc
@@ -3058,6 +3067,15 @@ PIPE ORGAN CHROMA: the organ front -- ranks of pipes, one pipe per pitch class a
 ![PipeOrganChroma ruhig (t=8)](img/PipeOrganChroma_A.jpg) ![PipeOrganChroma ruhig (t=16)](img/PipeOrganChroma_B.jpg) ![PipeOrganChroma audio-heiß (t=21)](img/PipeOrganChroma_C.jpg)
 
 
+### PivotIrrigationCircles
+
+`Scene2D/PivotIrrigationCircles.frag` · type=normal · mood=bright,calm,psychedelic · complexity=3
+
+PIVOT IRRIGATION CIRCLES: centre-pivot fields seen from above, as a satellite sees them -- a grid of green discs on dry ground, each with its irrigation arm sweeping round on the scene clock and leaving a darker, wetter wedge behind it that dries out again over the turn. Each field takes a chroma class for its crop colour; the kick raises a dust plume behind a tractor on one of the section roads. The photo is the soi…
+
+![PivotIrrigationCircles ruhig (t=8)](img/PivotIrrigationCircles_A.jpg) ![PivotIrrigationCircles ruhig (t=16)](img/PivotIrrigationCircles_B.jpg) ![PivotIrrigationCircles audio-heiß (t=21)](img/PivotIrrigationCircles_C.jpg)
+
+
 ### PixelMelt
 
 `Scene2D/PixelMelt.frag` · type=normal · mood=psychedelic,aggressive · complexity=2
@@ -3227,6 +3245,15 @@ PSYCHEDELIC REACTION DIFFUSION WAVE: Non-linear excitable medium chemical spiral
 PSYCHEDELIC REACTION MELT: Turing / Gray-Scott procedural reaction-diffusion morphogenetic labyrinth with melting liquid wax feedback, chromatic phase inversions, and high-energy chemical spot/stripe division waves. Audio Reactivity: audioAdvance -> surges the chemical diffusion advection & melting on top of a constant base drift rate (so the reaction never freezes) audioKick -> triggers full chromatic phase inversio…
 
 ![PsychedelicReactionMelt ruhig (t=8)](img/PsychedelicReactionMelt_A.jpg) ![PsychedelicReactionMelt ruhig (t=16)](img/PsychedelicReactionMelt_B.jpg) ![PsychedelicReactionMelt audio-heiß (t=21)](img/PsychedelicReactionMelt_C.jpg)
+
+
+### PuddleNeonReflections
+
+`Scene2D/PuddleNeonReflections.frag` · type=normal · mood=dark,psychedelic,dreamy · complexity=3
+
+PUDDLE NEON REFLECTIONS: a wet street at night, seen low. The upper half is the shopfront signs (the photo, in chroma-class colours); the lower half is their reflection in the puddles, broken by rings from falling drops and by the wind ruffling the surface. Rings expand on continuous phases, so no ring ever pops into being; the kick is a heavier drop with a wider ring. The swell is how hard it rains. Camera fixed at …
+
+![PuddleNeonReflections ruhig (t=8)](img/PuddleNeonReflections_A.jpg) ![PuddleNeonReflections ruhig (t=16)](img/PuddleNeonReflections_B.jpg) ![PuddleNeonReflections audio-heiß (t=21)](img/PuddleNeonReflections_C.jpg)
 
 
 ### PulsarJet
@@ -3962,6 +3989,15 @@ SPIDER ORB WEB WITH DEW: an orb web at dawn, strung with dew. The web is built o
 ![SpiderOrbWebDew ruhig (t=8)](img/SpiderOrbWebDew_A.jpg) ![SpiderOrbWebDew ruhig (t=16)](img/SpiderOrbWebDew_B.jpg) ![SpiderOrbWebDew audio-heiß (t=21)](img/SpiderOrbWebDew_C.jpg)
 
 
+### SpillwayGateRelease
+
+`Scene2D/SpillwayGateRelease.frag` · type=normal · mood=bright,aggressive,calm · complexity=3
+
+SPILLWAY GATE RELEASE: the face of a dam with radial gates. As the swell rises the gates lift and the water goes over the crest in smooth glassy sheets that break into white further down; spray hangs in front of the face as round droplets and a rainbow stands in it. Each gate takes one chroma class for the light on its pier. The kick is a surge in the plunge pool, felt as light on the foam, not as a jolt. Camera fixe…
+
+![SpillwayGateRelease ruhig (t=8)](img/SpillwayGateRelease_A.jpg) ![SpillwayGateRelease ruhig (t=16)](img/SpillwayGateRelease_B.jpg) ![SpillwayGateRelease audio-heiß (t=21)](img/SpillwayGateRelease_C.jpg)
+
+
 ### SpintronicDomainWallRacetrack
 
 `Scene2D/SpintronicDomainWallRacetrack.frag` · type=normal · mood=bright · complexity=3
@@ -4385,6 +4421,15 @@ TIDAL LOCK TERMINATOR: a flight along the day/night line of a tidally locked pla
 ![TidalLockTerminator ruhig (t=8)](img/TidalLockTerminator_A.jpg) ![TidalLockTerminator ruhig (t=16)](img/TidalLockTerminator_B.jpg) ![TidalLockTerminator audio-heiß (t=21)](img/TidalLockTerminator_C.jpg)
 
 
+### TidePoolRefraction
+
+`Scene2D/TidePoolRefraction.frag` · type=normal · mood=bright,calm,dreamy · complexity=3
+
+TIDE POOL REFRACTION: a rock pool from directly above. The floor of the pool -- anemones, urchins, weed, the photo as its rock -- is seen through a rippling surface that refracts it, so everything below sways while the rim stays still. The tide breathes with the swell (the water level rises and the pool widens), sun caustics move across the floor on the scene clock, and the treble is the glitter on the surface. Camer…
+
+![TidePoolRefraction ruhig (t=8)](img/TidePoolRefraction_A.jpg) ![TidePoolRefraction ruhig (t=16)](img/TidePoolRefraction_B.jpg) ![TidePoolRefraction audio-heiß (t=21)](img/TidePoolRefraction_C.jpg)
+
+
 ### TieDyeFold
 
 `Scene2D/TieDyeFold.frag` · type=normal · mood=psychedelic,bright,calm · complexity=2
@@ -4646,6 +4691,15 @@ Adapted from "Vortex" by \@kishimisu (2024) — https://www.shadertoy.com/view/M
 Adapted from "Voyager" by \@kishimisu (2024) — https://www.shadertoy.com/view/M33XDH Original licensed CC BY-NC-SA 4.0 (attribution kept per the licence). A volumetric fly-through of glowing, endlessly-repeating cells — like a deep- space probe drifting through a field of light. Adapted to our engine: * Shadertoy conventions -> ours (gl_FragCoord/resolution/time/tex0, texture2D). * IMAGE-FORWARD: the source image is …
 
 ![Voyager ruhig (t=8)](img/Voyager_A.jpg) ![Voyager ruhig (t=16)](img/Voyager_B.jpg) ![Voyager audio-heiß (t=21)](img/Voyager_C.jpg)
+
+
+### WaterStriderDimples
+
+`Scene2D/WaterStriderDimples.frag` · type=normal · mood=calm,bright,dreamy · complexity=3
+
+WATER STRIDER DIMPLES: a pond surface from just above. The striders themselves are thin dark lines, but what you actually see are their six leg dimples: each foot presses the surface into a little lens that gathers the light into a bright ring with a dark centre on the bed below (the photo). They glide on the scene clock and push out rings on continuous phases. The bass is the pond's own colour, the treble the surfac…
+
+![WaterStriderDimples ruhig (t=8)](img/WaterStriderDimples_A.jpg) ![WaterStriderDimples ruhig (t=16)](img/WaterStriderDimples_B.jpg) ![WaterStriderDimples audio-heiß (t=21)](img/WaterStriderDimples_C.jpg)
 
 
 ### WaveformRiver
@@ -6184,6 +6238,15 @@ MandalaGrid.frag — an 8-fold colour rosette flowing softly inward; the bar pha
 ![MandalaGrid ruhig (t=8)](img/MandalaGrid_A.jpg) ![MandalaGrid ruhig (t=16)](img/MandalaGrid_B.jpg) ![MandalaGrid audio-heiß (t=21)](img/MandalaGrid_C.jpg)
 
 
+### MangroveRootsTide
+
+`Scene3D/MangroveRootsTide.frag` · type=scene3d · geom=indirect · mood=dark,calm,dreamy · complexity=4
+
+MANGROVE ROOTS TIDE (fragment): standing in the shallows among prop roots. Light comes down through the surface as a moving net of caustics that lands on the bed and on every root; the water is green and thickens with distance; fish flicker silver as they turn. The tide level rides the swell, the bass is the depth colour, the treble the caustic sparkle, the kick a fish flashing its flank. Audio Reactivity: audioSwell…
+
+![MangroveRootsTide ruhig (t=8)](img/MangroveRootsTide_A.jpg) ![MangroveRootsTide ruhig (t=16)](img/MangroveRootsTide_B.jpg) ![MangroveRootsTide audio-heiß (t=21)](img/MangroveRootsTide_C.jpg)
+
+
 ### MelodyScript
 
 `Scene3D/MelodyScript.frag` · type=scene3d · geom=ribbon · mood=calm,bright · complexity=1
@@ -6822,6 +6885,15 @@ RibbonTunnel.frag — soft-edged glowing ribbon (additive blending).
 ![RibbonTunnel ruhig (t=8)](img/RibbonTunnel_A.jpg) ![RibbonTunnel ruhig (t=16)](img/RibbonTunnel_B.jpg) ![RibbonTunnel audio-heiß (t=21)](img/RibbonTunnel_C.jpg)
 
 
+### RiceTerracesDawn
+
+`Scene3D/RiceTerracesDawn.frag` · type=scene3d · geom=patches · mood=bright,calm,dreamy · complexity=4
+
+RICE TERRACES DAWN: a hillside of flooded paddies at sunrise. Every paddy floor is a mirror lying flat on the hill, so the sky (the photo) is repeated across the slope in a hundred separate panes, each offset by its own height; the bunds between them are dark earth with a line of grass. The sun rises over the scene arc, so the mirrors turn from grey through pink to gold; the bass is the water's sheen, the treble the …
+
+![RiceTerracesDawn ruhig (t=8)](img/RiceTerracesDawn_A.jpg) ![RiceTerracesDawn ruhig (t=16)](img/RiceTerracesDawn_B.jpg) ![RiceTerracesDawn audio-heiß (t=21)](img/RiceTerracesDawn_C.jpg)
+
+
 ### RingStation
 
 `Scene3D/RingStation.frag` · type=scene3d · geom=mesh · mood=bright,space · complexity=3
@@ -6856,6 +6928,15 @@ RoseOrbit.frag — soft glowing point (additive blending).
 RYDBERG ATOM QUANTUM SIMULATOR ARRAY: 59,319 neutral alkali atoms trapped in a 3D optical tweezer array -- a WIDE SLAB of tweezer planes that overflows both frame edges. Laser driving to high principal quantum number Rydberg states (n ~ 70) creates strong Van der Waals Rydberg blockade interactions, crystalline quantum states, and photo texturing. audioAdvance -> navigates Rabi frequency detuning & quantum simulator …
 
 ![RydbergAtomQuantumSimulatorArray ruhig (t=8)](img/RydbergAtomQuantumSimulatorArray_A.jpg) ![RydbergAtomQuantumSimulatorArray ruhig (t=16)](img/RydbergAtomQuantumSimulatorArray_B.jpg) ![RydbergAtomQuantumSimulatorArray audio-heiß (t=21)](img/RydbergAtomQuantumSimulatorArray_C.jpg)
+
+
+### SalmonRunFalls
+
+`Scene3D/SalmonRunFalls.frag` · type=scene3d · geom=indirect · mood=bright,aggressive,calm · complexity=4
+
+SALMON RUN FALLS (fragment): the step in the river where the fish jump. The chutes are white water with streaks running down them, the pool below churns, spray hangs in the light, and the salmon are silver with a red flank that catches the sun at the top of the arc. The swell is how much water comes over, the treble the spray sparkle, the kick lights the foam at the foot -- as light, never as motion. Audio Reactivity…
+
+![SalmonRunFalls ruhig (t=8)](img/SalmonRunFalls_A.jpg) ![SalmonRunFalls ruhig (t=16)](img/SalmonRunFalls_B.jpg) ![SalmonRunFalls audio-heiß (t=21)](img/SalmonRunFalls_C.jpg)
 
 
 ### SandDuneBarchanMigration
@@ -7440,6 +7521,15 @@ Tornado.frag — soft glowing point (additive blending).
 TorusKnot.frag — soft glowing point (additive blending).
 
 ![TorusKnot ruhig (t=8)](img/TorusKnot_A.jpg) ![TorusKnot ruhig (t=16)](img/TorusKnot_B.jpg) ![TorusKnot audio-heiß (t=21)](img/TorusKnot_C.jpg)
+
+
+### TravertineTerracePools
+
+`Scene3D/TravertineTerracePools.frag` · type=scene3d · geom=patches · mood=bright,calm,dreamy · complexity=4
+
+TRAVERTINE TERRACE POOLS: a white limestone hillside of stacked pools. The crust is blinding white, the water in each pool is a shallow turquoise mirror of the sky (the photo), and the rims are wet and glassy where the water pours over them. The sky light in the pools rides the bass, the wet rims glint with the treble, the sun is the swell, and the kick is a wader lifting off as a flash of white. Camera height fixed.…
+
+![TravertineTerracePools ruhig (t=8)](img/TravertineTerracePools_A.jpg) ![TravertineTerracePools ruhig (t=16)](img/TravertineTerracePools_B.jpg) ![TravertineTerracePools audio-heiß (t=21)](img/TravertineTerracePools_C.jpg)
 
 
 ### TronCycles

@@ -1,0 +1,158 @@
+#version 430 core
+/**
+ * @file MangroveRootsTide.comp
+ * @brief MANGROVE ROOTS TIDE: standing in the shallows among mangrove
+ * prop roots.  Each tree drops a fan of arching roots into the water;
+ * fish weave between them on the scene clock, and leaves drift on the
+ * surface overhead.  Roots are emitted as short camera-facing segments
+ * along their arch, so a root reads as one continuous curve.
+ *
+ * Kinds: -1 canopy/sky above the water, -2 seabed, 0 root segment,
+ *        1 fish body, 2 fish tail, 3 floating leaf, 4 surface pane.
+ *
+ * Per-instance: treesP, fishP, hueP.
+ */
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+layout(std430, binding = 0) buffer Verts { float verts[]; };
+layout(std430, binding = 1) buffer Cmd   { uint cmd[];   };
+
+uniform uint  maxVertices;
+uniform float time;
+uniform float sceneAdvance;
+uniform float sceneTime;
+uniform float audioSwell;
+
+uniform float treesP;
+uniform float fishP;
+uniform float hueP;
+
+float hash11(float p) { p = fract(p * 0.1031); p *= p + 33.33; p *= p + p; return fract(p); }
+vec3  hash31(float n) { return vec3(hash11(n), hash11(n + 17.3), hash11(n + 41.7)); }
+
+void emitQuad(vec3 c, vec3 ax, vec3 ay, float id, float lit, float kind, vec2 uv0, vec2 uv1)
+{
+    uint base = atomicAdd(cmd[4], 6u);
+    if (base + 6u > maxVertices) return;
+    vec3 p0 = c - ax - ay, p1 = c + ax - ay, p2 = c + ax + ay, p3 = c - ax + ay;
+    vec3 pList[6]  = vec3[6](p0, p1, p2, p0, p2, p3);
+    vec2 uvList[6] = vec2[6](vec2(uv0.x, uv0.y), vec2(uv1.x, uv0.y), vec2(uv1.x, uv1.y), vec2(uv0.x, uv0.y), vec2(uv1.x, uv1.y), vec2(uv0.x, uv1.y));
+    for (uint i = 0u; i < 6u; ++i)
+    {
+        uint off = (base + i) * 8u;
+        verts[off + 0u] = pList[i].x; verts[off + 1u] = pList[i].y; verts[off + 2u] = pList[i].z;
+        verts[off + 3u] = id; verts[off + 4u] = lit; verts[off + 5u] = kind;
+        verts[off + 6u] = uvList[i].x; verts[off + 7u] = uvList[i].y;
+    }
+}
+
+// A segment as a camera-facing ribbon.  The guard has to come BEFORE the
+// normalise: a segment pointing along the view has a vanishing cross
+// product, and normalising that gives a NaN quad the rasteriser drops.
+void emitSeg(vec3 a, vec3 b, float w, float id, float lit, float kind)
+{
+    vec3 mid = 0.5 * (a + b);
+    vec3 half_ = 0.5 * (b - a);
+    vec3 view = normalize(mid);
+    vec3 raw = cross(half_, view);
+    if (dot(raw, raw) < 1e-8) raw = cross(half_, vec3(0.0, 1.0, 0.0));
+    if (dot(raw, raw) < 1e-8) raw = vec3(1.0, 0.0, 0.0);
+    emitQuad(mid, half_, normalize(raw) * w, id, lit, kind, vec2(0.0), vec2(1.0));
+}
+
+const float BED_Y = -1.6;
+const uint  ROOTS_PER_TREE = 9u;
+const uint  SEGS_PER_ROOT  = 7u;
+
+void main()
+{
+    uvec3 g = gl_GlobalInvocationID;
+    uint id = g.x + 64u * (g.y + 64u * g.z);
+    uint trees = 4u + uint(clamp(treesP, 0.0, 1.0) * 4.0);
+    float clock = sceneAdvance * 0.4 + sceneTime * 0.08;
+    // The tide: the surface rises and falls slowly with the swell.
+    float surfaceY = 0.15 + 0.5 * clamp(audioSwell, 0.0, 1.0);
+
+    if (id == 0u)
+    {
+        // The canopy above the water, and the seabed below.
+        emitQuad(vec3(0.0, 5.0, 34.0), vec3(60.0, 0.0, 0.0), vec3(0.0, 26.0, 0.0), 0.0, 0.0, -1.0, vec2(0.0), vec2(1.0));
+        emitQuad(vec3(0.0, BED_Y, 20.0), vec3(60.0, 0.0, 0.0), vec3(0.0, 0.0, 22.0), 0.0, 0.0, -2.0, vec2(0.0), vec2(1.0));
+        // The surface itself, seen from just below: a pane with caustics.
+        emitQuad(vec3(0.0, surfaceY, 20.0), vec3(60.0, 0.0, 0.0), vec3(0.0, 0.0, 22.0), 0.0, 0.0, 4.0, vec2(0.0), vec2(1.0));
+        return;
+    }
+    uint t = id - 1u;
+    uint perTree = ROOTS_PER_TREE * SEGS_PER_ROOT;
+    uint rootWork = trees * perTree;
+
+    if (t < rootWork)
+    {
+        uint tree = t / perTree;
+        uint rest = t % perTree;
+        uint root = rest / SEGS_PER_ROOT;
+        uint seg  = rest % SEGS_PER_ROOT;
+        vec3 h = hash31(float(tree) * 3.7 + 1.0);
+        // Trees stand in a loose row receding into the water.
+        vec3 trunk = vec3((h.x - 0.5) * 9.0, surfaceY + 1.6, 2.6 + float(tree) * 2.6 + h.y * 1.4);
+        float fr = float(root);
+        float a = fr / float(ROOTS_PER_TREE) * 6.2831853 + hash11(float(tree) * 5.3) * 6.28;
+        float reach = 2.2 + 1.6 * hash11(float(tree) * 7.7 + fr);
+        vec2 dir = vec2(cos(a), sin(a));
+        // The arch: from the trunk out and down to the bed.
+        float u0 = float(seg) / float(SEGS_PER_ROOT);
+        float u1 = float(seg + 1u) / float(SEGS_PER_ROOT);
+        vec3 pA = trunk + vec3(dir.x * reach * u0, 0.0, dir.y * reach * u0);
+        pA.y = trunk.y - (trunk.y - BED_Y) * u0 * u0;
+        vec3 pB = trunk + vec3(dir.x * reach * u1, 0.0, dir.y * reach * u1);
+        pB.y = trunk.y - (trunk.y - BED_Y) * u1 * u1;
+        // A little sway, the same for both ends so the curve stays smooth.
+        float sway = 0.03 * sin(clock * 0.5 + fr + float(tree));
+        pA.x += sway * u0; pB.x += sway * u1;
+        float w = mix(0.16, 0.055, u0);
+        emitSeg(pA, pB, w, float(tree) * 16.0 + fr, u0, 0.0);
+        return;
+    }
+    t -= rootWork;
+    // Fish: a body quad and a tail quad each, weaving between the roots.
+    uint fishN = 6u + uint(clamp(fishP, 0.0, 1.0) * 10.0);
+    if (t < fishN * 2u)
+    {
+        uint fi = t / 2u;
+        uint part = t % 2u;
+        float ff = float(fi);
+        vec3 h = hash31(ff * 9.1 + 2.0);
+        float sp = 0.25 + 0.3 * h.x;
+        float ph = clock * sp + h.y * 6.28;
+        // A smooth weave: a lissajous through the root field.
+        vec3 pos = vec3(sin(ph) * (1.6 + 1.8 * h.z), BED_Y + 0.35 + 0.5 * h.y + 0.2 * sin(ph * 1.7),
+                        3.2 + 5.0 * h.z + 1.8 * cos(ph * 0.8));
+        vec3 fwd = normalize(vec3(cos(ph) * (1.6 + 1.8 * h.z), 0.1 * cos(ph * 1.7), -1.4 * sin(ph * 0.8)));
+        vec3 view = normalize(pos);
+        vec3 side = normalize(cross(fwd, view));
+        float len = 0.3 + 0.18 * h.x;
+        if (part == 0u)
+            emitQuad(pos, fwd * len, side * (len * 0.34), ff, 0.0, 1.0, vec2(0.0), vec2(1.0));
+        else
+        {
+            // The tail beats on its own phase -- smooth, never on a beat.
+            float beat = 0.35 * sin(clock * 9.0 + ff * 2.0);
+            emitQuad(pos - fwd * len * 1.25, fwd * (len * 0.4), side * (len * 0.5) + fwd * beat * len * 0.3,
+                     ff, 1.0, 2.0, vec2(0.0), vec2(1.0));
+        }
+        return;
+    }
+    t -= fishN * 2u;
+    // Leaves floating on the surface, drifting with the tide.
+    if (t < 26u)
+    {
+        float fl = float(t);
+        vec3 h = hash31(fl * 4.3 + 3.0);
+        float drift = clock * 0.12 * (0.6 + 0.5 * h.x);
+        vec3 pos = vec3(mod(h.x * 30.0 + drift, 30.0) - 15.0, surfaceY + 0.01, 4.0 + h.y * 22.0);
+        float a = h.z * 6.28 + clock * 0.1;
+        vec3 ax = vec3(cos(a), 0.0, sin(a)) * (0.14 + 0.08 * h.x);
+        vec3 ay = vec3(-sin(a), 0.0, cos(a)) * (0.05 + 0.03 * h.y);
+        emitQuad(pos, ax, ay, fl, 0.0, 3.0, vec2(0.0), vec2(1.0));
+        return;
+    }
+}

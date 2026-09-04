@@ -3722,3 +3722,20 @@ Lessons from the block: a pinhole projection blurred with a disc of taps needs a
 | CoolingTowerPlumes | 2D | the plume widens with height and leans by the wind; its colour comes from the band at that height, so it is a slow vertical spectrogram |
 
 Lessons from the block: in an indirect scene, geometry placed exactly on the silhouette of a larger piece is invisible -- the bridge cables sat at the deck width and the deck hid every one of them from underneath; move such parts clear of the occluder rather than tuning their colour. A ribbon built from cross(segment, viewDirection) needs its guard BEFORE the normalise: a segment running nearly along the view has a vanishing cross product, and normalising that yields a NaN quad the rasteriser drops without a word. And a corridor projection has the wall's screen HEIGHT growing with its screen x; subtracting a constant from the depth (a plausible-looking near-plane offset) squeezed the whole rack row into the middle sixth of the frame.
+
+## The fifth fifty, block C: water
+
+| Scene | Pipeline | Note |
+|---|---|---|
+| TidePoolRefraction | 2D | the ripple field displaces the floor sample by the local DEPTH, so the middle of the pool sways and the rim stays put |
+| SpillwayGateRelease | 2D | the sheet is a function of how far below the crest a pixel is: glassy near the lip, white further down, temper-free |
+| TravertineTerracePools | `patches` | terrace staircase with a smoothstep riser; the rim bulge is a gaussian just behind each lip, and the water level breathes without the dam moving |
+| MangroveRootsTide | `indirect` | roots are sampled arches emitted as camera-facing segments; one caustic field sampled by world xz lies consistently on bed, roots and fish |
+| PuddleNeonReflections | 2D | one function draws the street; the reflection calls it again with a mirrored, ruffled, ring-displaced coordinate |
+| WaterStriderDimples | 2D | the subject is not the insect but its six leg dimples: a bright caustic ring with a dark rim, drawn as a lens over the bed |
+| SalmonRunFalls | `indirect` | each fish rides a real parabola with its heading taken from the arc's own tangent, so it points up on the way out and down on the way in |
+| CenoteLightShaft | 2D | the shaft is a cone from the sun with a band texture; motes are round and only bright INSIDE the cone, which is what makes the cone read as solid |
+| RiceTerracesDawn | `patches` | terrace index comes from the hill height, so the bunds follow the contours; the hill is ramped to zero at the camera or the scene renders from inside the ground |
+| PivotIrrigationCircles | 2D | the wetted wedge is an exponential of the angle behind the arm, so a field dries out smoothly over a whole turn |
+
+Lessons from the block: a tessellation (patches) scene has NO sky quad, so whatever lies above its far ground is black -- the far rise has to climb to about a hundred units to reach the top of a 55 degree frame, and EXTENT.x has to be wide enough that the upper corners are still ground; both scenes here first rendered as a lit mesa in a black box. EXTENT must be identical in the control and evaluation stages or the patches tear at their seams. A displaced terrain must also be ramped to zero AT the camera: the rice hill stood where the camera was and the scene rendered from inside the ground, which reads as a black frame with a swirl of contours in it. And an envelope must never scale a radius that is already in flight -- two scenes here had the kick multiply an expanding ring, which makes the ring jump outward on every beat; the radius stays continuous and the kick lights it instead.

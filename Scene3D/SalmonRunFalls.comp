@@ -1,0 +1,142 @@
+#version 430 core
+/**
+ * @file SalmonRunFalls.comp
+ * @brief SALMON RUN FALLS: a step in a river where the fish jump.  White
+ * water pours over a rock ledge in several chutes; salmon launch out of
+ * the plunge pool on continuous phases, arc through the air and land
+ * above, and spray hangs in front of it all.  Each fish is a body quad
+ * and a tail quad on a ballistic arc -- a real parabola, so the motion is
+ * smooth from launch to landing and nothing ever teleports.
+ *
+ * Kinds: -1 sky/forest, -2 pool surface, 0 fish body, 1 fish tail,
+ *        2 chute sheet, 3 spray droplet, 4 ledge rock.
+ *
+ * Per-instance: fishP, chuteP, hueP.
+ */
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+layout(std430, binding = 0) buffer Verts { float verts[]; };
+layout(std430, binding = 1) buffer Cmd   { uint cmd[];   };
+
+uniform uint  maxVertices;
+uniform float time;
+uniform float sceneAdvance;
+uniform float sceneTime;
+uniform float audioSwell;
+
+uniform float fishP;
+uniform float chuteP;
+uniform float hueP;
+
+float hash11(float p) { p = fract(p * 0.1031); p *= p + 33.33; p *= p + p; return fract(p); }
+vec3  hash31(float n) { return vec3(hash11(n), hash11(n + 17.3), hash11(n + 41.7)); }
+
+void emitQuad(vec3 c, vec3 ax, vec3 ay, float id, float lit, float kind, vec2 uv0, vec2 uv1)
+{
+    uint base = atomicAdd(cmd[4], 6u);
+    if (base + 6u > maxVertices) return;
+    vec3 p0 = c - ax - ay, p1 = c + ax - ay, p2 = c + ax + ay, p3 = c - ax + ay;
+    vec3 pList[6]  = vec3[6](p0, p1, p2, p0, p2, p3);
+    vec2 uvList[6] = vec2[6](vec2(uv0.x, uv0.y), vec2(uv1.x, uv0.y), vec2(uv1.x, uv1.y), vec2(uv0.x, uv0.y), vec2(uv1.x, uv1.y), vec2(uv0.x, uv1.y));
+    for (uint i = 0u; i < 6u; ++i)
+    {
+        uint off = (base + i) * 8u;
+        verts[off + 0u] = pList[i].x; verts[off + 1u] = pList[i].y; verts[off + 2u] = pList[i].z;
+        verts[off + 3u] = id; verts[off + 4u] = lit; verts[off + 5u] = kind;
+        verts[off + 6u] = uvList[i].x; verts[off + 7u] = uvList[i].y;
+    }
+}
+
+const float POOL_Y  = -1.0;     // the plunge pool surface
+const float LEDGE_Y =  1.5;     // the lip the fish must clear
+const float LEDGE_Z =  8.5;     // how far ahead the ledge stands
+
+void main()
+{
+    uvec3 g = gl_GlobalInvocationID;
+    uint id = g.x + 64u * (g.y + 64u * g.z);
+    uint chutes = 3u + uint(clamp(chuteP, 0.0, 1.0) * 3.0);
+    uint fishN  = 5u + uint(clamp(fishP, 0.0, 1.0) * 9.0);
+    float clock = sceneAdvance * 0.6 + sceneTime * 0.12;
+
+    if (id == 0u)
+    {
+        // Forest and sky beyond the falls, and the pool surface below.
+        emitQuad(vec3(0.0, 6.0, 30.0), vec3(50.0, 0.0, 0.0), vec3(0.0, 24.0, 0.0), 0.0, 0.0, -1.0, vec2(0.0), vec2(1.0));
+        emitQuad(vec3(0.0, POOL_Y, 8.0), vec3(50.0, 0.0, 0.0), vec3(0.0, 0.0, 14.0), 0.0, 0.0, -2.0, vec2(0.0), vec2(1.0));
+        // The ledge itself: a rock wall standing across the river.
+        emitQuad(vec3(0.0, (POOL_Y + LEDGE_Y) * 0.5, LEDGE_Z),
+                 vec3(11.0, 0.0, 0.0), vec3(0.0, (LEDGE_Y - POOL_Y) * 0.5, 0.0), 0.0, 0.0, 4.0, vec2(0.0), vec2(1.0));
+        return;
+    }
+    uint t = id - 1u;
+
+    // The chutes: sheets of white water pouring over the lip.
+    if (t < chutes)
+    {
+        float fc = float(t);
+        vec3 h = hash31(fc * 3.7 + 1.0);
+        float cx = ((fc + 0.5) / float(chutes) - 0.5) * 8.5 + (h.x - 0.5) * 0.8;
+        float w = 0.75 + 0.55 * h.y;
+        emitQuad(vec3(cx, (POOL_Y + LEDGE_Y) * 0.5 + 0.1, LEDGE_Z - 0.35),
+                 vec3(w, 0.0, 0.0), vec3(0.0, (LEDGE_Y - POOL_Y) * 0.5 + 0.25, 0.0),
+                 fc, 0.0, 2.0, vec2(0.0), vec2(1.0));
+        return;
+    }
+    t -= chutes;
+
+    // The salmon.  Each is on its own launch cycle: a phase from 0 (in the
+    // pool) through the leap to 1 (landed above), then it starts again.
+    if (t < fishN * 2u)
+    {
+        uint fi = t / 2u;
+        uint part = t % 2u;
+        float ff = float(fi);
+        vec3 h = hash31(ff * 5.9 + 2.0);
+        float cycle = 2.2 + 1.6 * h.x;
+        float ph = fract(clock / cycle + h.y);
+        // Only the middle of the cycle is the leap; before and after the
+        // fish waits in the pool (below the water line, out of sight).
+        float lp = clamp((ph - 0.15) / 0.5, 0.0, 1.0);
+        if (ph < 0.15 || ph > 0.65) return;
+        float x0 = (h.z - 0.5) * 6.5;
+        float z0 = LEDGE_Z - 3.2 - 1.6 * h.x;
+        // The arc: a parabola that clears the lip and lands above it.
+        float rise = (LEDGE_Y - POOL_Y) + 1.4 + 0.6 * h.y;
+        float y = POOL_Y + 4.0 * rise * lp * (1.0 - lp) + (LEDGE_Y - POOL_Y) * lp * 0.35;
+        float z = mix(z0, LEDGE_Z + 1.2, lp);
+        float x = x0 + (h.y - 0.5) * 1.4 * lp;
+        vec3 pos = vec3(x, y, z);
+        // The heading follows the arc's own tangent, so the fish points
+        // where it is going -- up on the way out, down on the way in.
+        float dy = 4.0 * rise * (1.0 - 2.0 * lp) / max(1.0, 1.0) + (LEDGE_Y - POOL_Y) * 0.35;
+        vec3 fwd = normalize(vec3((h.y - 0.5) * 1.4, dy, (LEDGE_Z + 1.2 - z0)));
+        vec3 view = normalize(pos);
+        vec3 side = normalize(cross(fwd, view));
+        float len = 0.62 + 0.22 * h.x;
+        if (part == 0u)
+            emitQuad(pos, fwd * len, side * (len * 0.3), ff, lp, 0.0, vec2(0.0), vec2(1.0));
+        else
+        {
+            float beat = 0.4 * sin(clock * 11.0 + ff * 2.0);
+            emitQuad(pos - fwd * len * 1.3, fwd * (len * 0.35), side * (len * 0.45) + fwd * beat * len * 0.25,
+                     ff, lp, 1.0, vec2(0.0), vec2(1.0));
+        }
+        return;
+    }
+    t -= fishN * 2u;
+
+    // Spray: round droplets in front of the falls, densest at the foot.
+    if (t < 90u)
+    {
+        float fs = float(t);
+        vec3 h = hash31(fs * 7.1 + 3.0);
+        float ph = fract(clock * (0.5 + 0.4 * h.x) + h.y);
+        float x = (h.z - 0.5) * 9.0;
+        // A droplet is thrown up from the foot of the falls and falls back.
+        float y = POOL_Y + 3.2 * ph * (1.0 - ph) * (1.0 + h.x);
+        float z = LEDGE_Z - 1.0 - 2.5 * ph - 1.5 * h.y;
+        float sz = 0.05 + 0.05 * h.x;
+        emitQuad(vec3(x, y, z), vec3(sz, 0.0, 0.0), vec3(0.0, sz, 0.0), fs, ph, 3.0, vec2(0.0), vec2(1.0));
+        return;
+    }
+}
