@@ -61,6 +61,7 @@
 #include <QtGui/QScreen>
 #include <QtGui/QSurfaceFormat>
 #include <QtNetwork/QNetworkProxy>
+#include <QtCore/QTimer>
 #include "QMyWindow.h"
 
 // NOTE: keep this AFTER any Windows headers.  With C++17 std::byte and a
@@ -417,6 +418,24 @@ int main(int argc, char *argv[])
 	// Thread ein (reproduziert als Hänger 4-9s nach Start, CPU-Zeit-Plateau,
 	// Fenster reagiert nicht mehr). Die App braucht keinen System-Proxy.
 	QNetworkProxy::setApplicationProxy( QNetworkProxy::NoProxy );
+
+	// A dead man's switch for batch runs.  A catalogue render or a screening
+	// pass is started by a script that is supposed to stop it again -- but if
+	// that script is killed (a tool run hitting its time limit, a cancelled
+	// job, a crash), the window it started keeps rendering FOR EVER: it holds
+	// a GPU at full tilt and gigabytes of video memory on a machine somebody
+	// else is trying to work on, and nothing is left that knows to stop it.
+	// KALEIDO_MAX_RUNTIME_SECS makes the process responsible for its own end.
+	// Set it comfortably above the intended run length: it should only ever
+	// fire when whoever started this run is already gone.
+	{
+		const int maxSecs = qEnvironmentVariableIntValue( "KALEIDO_MAX_RUNTIME_SECS" );
+		if( maxSecs > 0 )
+		{
+			fprintf( stderr, "[watchdog] this run ends itself after %d s\n", maxSecs );
+			QTimer::singleShot( maxSecs * 1000, &app, &QCoreApplication::quit );
+		}
+	}
 	app.setOverrideCursor(Qt::BlankCursor);
 	// Stack statt new-ohne-delete: so läuft ~QMyWindow/~GLwidget (Recorder-
 	// Finalisierung, GL-Cleanup mit aktuellem Kontext) GARANTIERT VOR
@@ -429,7 +448,21 @@ int main(int argc, char *argv[])
 	if (!fullscreen)
 	{
 		window.resize(1920, 1080);
-		window.show();
+		// A batch run must not steal the machine from the person using it.
+		// KALEIDO_NO_ACTIVATE shows the window without taking the keyboard
+		// focus and puts it at the BOTTOM of the window stack, so a catalogue
+		// pass no longer pops a 1920x1080 window over somebody's work once per
+		// scene.  It still renders and still records: the frames come from the
+		// framebuffer, not from what is on screen.
+		if( qEnvironmentVariableIsSet( "KALEIDO_NO_ACTIVATE" ) )
+		{
+			window.setAttribute( Qt::WA_ShowWithoutActivating );
+			window.setWindowFlag( Qt::WindowDoesNotAcceptFocus, true );
+			window.show();
+			window.lower();
+		}
+		else
+			window.show();
 	}
 	else
 	{

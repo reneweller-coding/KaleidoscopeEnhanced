@@ -275,7 +275,7 @@ def wait_for_video(folder, timeout=1500):
 
 def decodable(vid):
     """True if ffmpeg can read at least one frame out of `vid`."""
-    p = subprocess.run(["ffmpeg", "-v", "error", "-i", vid, "-frames:v", "1",
+    p = subprocess.run(["ffmpeg", "-v", "error", "-threads", "4", "-i", vid, "-frames:v", "1",
                         "-f", "rawvideo", "-"], capture_output=True)
     return len(p.stdout) > 0
 
@@ -295,9 +295,17 @@ def render(cfg, wav, log_path, hold, seed, kind="scene", time_start=0, extra_env
         env.update(extra_env)
     env[var] = str(int(round(hold)))
     with io.open(log_path, "w", encoding="utf-8", errors="replace") as fh:
+        # BELOW_NORMAL_PRIORITY_CLASS (0x4000): a screening run is a batch job
+        # on a machine someone is using, so it yields to the foreground.
+        # The dead man's switch: even if THIS script is killed, the window
+        # it starts ends itself instead of rendering for ever.
+        env["KALEIDO_MAX_RUNTIME_SECS"] = "240"
+        env["KALEIDO_NO_ACTIVATE"] = "1"
+        below = 0x00004000 if os.name == "nt" else 0
         subprocess.run([os.path.join(RELEASE, "Kaleidoscope.exe"),
                         "-c", "Test" + cfg, "-x", wav],
-                       cwd=RELEASE, env=env, stdout=fh, stderr=subprocess.STDOUT)
+                       cwd=RELEASE, env=env, stdout=fh, stderr=subprocess.STDOUT,
+                       creationflags=below)
 
 
 # --------------------------------------------------------------- measure ----
@@ -318,7 +326,7 @@ def windows_from_log(log_path):
 
 
 def decode(vid):
-    p = subprocess.run(["ffmpeg", "-v", "error", "-i", vid, "-vf",
+    p = subprocess.run(["ffmpeg", "-v", "error", "-threads", "4", "-i", vid, "-vf",
                         "fps=%g,scale=%d:%d" % (FPS, W, H), "-pix_fmt", "rgb24",
                         "-f", "rawvideo", "-"], capture_output=True)
     b = np.frombuffer(p.stdout, np.uint8)

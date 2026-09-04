@@ -32,6 +32,10 @@ if (-not (Test-Path (Join-Path $rel "Kaleidoscope.exe"))) {
     Write-Host "Release\Kaleidoscope.exe fehlt - erst bauen."; exit 1
 }
 
+# Anything a previous, killed pass left running would compete with this one for
+# the GPU -- and with whoever is using this machine.
+& (Join-Path $PSScriptRoot "kill_orphans.ps1") | Out-Null
+
 # ---- quiet(0-17s) + hot(17-26s) synthetic WAV, generated once ----
 function Make-CatalogWav {
     if (Test-Path $wav) { return }
@@ -95,8 +99,17 @@ Make-CatalogWav
 function Run-One([string]$args2, [int]$secs) {
     Remove-Item (Join-Path $rel "kaleidoscope.log") -Force -ErrorAction SilentlyContinue
     $before = @(Get-ChildItem (Join-Path $rel "recordings") -Directory -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Name)
+    # The dead man's switch: if THIS script is killed before it can stop the
+    # window it is about to start, the window still ends itself.
+    $env:KALEIDO_MAX_RUNTIME_SECS = $secs + 45
+    $env:KALEIDO_NO_ACTIVATE = 1        # nicht in den Vordergrund draengen
     $p = Start-Process -FilePath (Join-Path $rel "Kaleidoscope.exe") `
          -ArgumentList $args2.Split(' ') -WorkingDirectory $rel -PassThru
+    # A catalogue run is a batch job on someone's working machine: it must never
+    # out-prioritise what that someone is doing in the foreground.  BelowNormal
+    # costs the render almost nothing (it is GPU-bound) and keeps the desktop
+    # responsive.
+    try { $p.PriorityClass = 'BelowNormal' } catch { }
     Start-Sleep -Seconds $secs
     if (-not $p.HasExited) { Stop-Process -Id $p.Id -Force }
     Start-Sleep -Milliseconds 800
@@ -168,13 +181,15 @@ foreach ($name in $Names) {
     if (-not $d) { Write-Host "$name : NO RECORDING"; continue }
     $mp4 = Join-Path $d.FullName "video.mp4"
     if (-not (Test-Path $mp4)) { Write-Host "$name : NO video.mp4"; continue }
-    & ffmpeg -y -ss 8  -i $mp4 -vframes 1 -q:v 2 (Join-Path $out "${name}_A.png") 2>$null
-    & ffmpeg -y -ss 16 -i $mp4 -vframes 1 -q:v 2 (Join-Path $out "${name}_B.png") 2>$null
-    & ffmpeg -y -ss 21 -i $mp4 -vframes 1 -q:v 2 (Join-Path $out "${name}_C.png") 2>$null
+    # -threads 4: extracting three stills does not need all 24 cores, and
+    # ffmpeg takes every one it is given.
+    & ffmpeg -y -threads 4 -ss 8  -i $mp4 -vframes 1 -q:v 2 (Join-Path $out "${name}_A.png") 2>$null
+    & ffmpeg -y -threads 4 -ss 16 -i $mp4 -vframes 1 -q:v 2 (Join-Path $out "${name}_B.png") 2>$null
+    & ffmpeg -y -threads 4 -ss 21 -i $mp4 -vframes 1 -q:v 2 (Join-Path $out "${name}_C.png") 2>$null
     # A heavy scene records below real time and its video ends before t=21:
     # take the last frame instead of leaving the third image missing.
     if (-not (Test-Path (Join-Path $out "${name}_C.png"))) {
-        & ffmpeg -y -sseof -1 -i $mp4 -vframes 1 -q:v 2 (Join-Path $out "${name}_C.png") 2>$null
+        & ffmpeg -y -threads 4 -sseof -1 -i $mp4 -vframes 1 -q:v 2 (Join-Path $out "${name}_C.png") 2>$null
         Write-Host "$name : C from the end of a short recording"
     }
     Write-Host "$name : rendered"

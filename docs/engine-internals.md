@@ -3775,3 +3775,45 @@ With this block the fifth fifty is complete: 250 new scenes since 02.09.2026.
 | JukeboxBubbleTubes | 2D | the tube path is a straight run unioned with an arch over the dome, one distance field, so bubbles rise round the corner |
 
 Lessons from the block: a machine whose whole subject is repetition must NOT be locked to the beat -- the metronomes and the slot reels keep their own fixed rates and the music only lights them, which is what lets a rank of them drift in and out of agreement with the track instead of snapping to it. A drum or reel coordinate has to be scaled to show about three cells in its window: the first cut put forty symbol cells behind the glass and every one of them was too small to read. And a counter (abacus, Galton bins) reads as counting only if each piece glides: the travel is a smoothstep of the value against the piece's own index, so a bead is always somewhere between its two rest positions and never teleports.
+
+## Batch runs must not take the machine hostage
+
+A catalogue render or a screening pass runs on a machine somebody is using at
+the same time.  Three separate things made those passes feel like the computer
+had died -- typing lagging by seconds, switching windows taking seconds:
+
+**1. Orphaned windows.**  Every tool starts the app with `Start-Process` and
+stops it again afterwards.  When the STARTING script dies first -- a tool run
+hitting its time limit, a cancelled job, a crash -- the window it started keeps
+rendering for ever.  Measured: one such orphan costs ~17 % of an RTX 5090 and
+1-2 GB of video memory, and four of them together take the GPU to 52 %.  They
+never stop, so they accumulate across a working day.  Verified directly: kill
+the parent script, and the child is still rendering afterwards.
+
+The fix is that the process is now responsible for its own end.
+`KALEIDO_MAX_RUNTIME_SECS=<n>` arms a dead man's switch in `main.cpp`: after n
+seconds the app quits itself, whatever happened to whoever started it.  Both
+tools set it to comfortably above the intended run length, so it only ever
+fires when something already went wrong.  `Tools/kill_orphans.ps1` sweeps up
+what older runs left behind and runs at the start of every catalogue pass.
+
+**2. The window stole the keyboard.**  `window.show()` activates: a 1920x1080
+window jumped in front of the user's work and took the focus once per scene.
+`KALEIDO_NO_ACTIVATE=1` shows it with `WA_ShowWithoutActivating` and lowers it
+to the bottom of the stack.  Verified: with the flag, the foreground window
+never changes during a render, and the catalogue PNGs are identical.
+
+**3. Everything ran at full priority.**  Renders now run at `BelowNormal`, and
+ffmpeg gets `-threads 4` instead of all 24 cores.  Builds are started at
+`BelowNormal` too.  A GPU-bound render loses nothing measurable by it.
+
+The related root cause, fixed the same day, was the mesh residency bug: the
+lazy warm-up loaded every mesh scene's model and never released one, so the app
+sat on up to 26 GB of a 32 GB card.  Video memory that far overcommitted makes
+the whole desktop page over PCIe, which is what "extremely slow" really was.
+
+| Measurement | One render | Four orphans |
+|---|---|---|
+| GPU | 17 % | 52 % |
+| Video memory | +0.9 GB | +3.4 GB |
+| Scheduler wake delay, median | 0.3 ms | 0.5 ms |
