@@ -1,6 +1,6 @@
 # Kaleidoscope Enhanced — Szenen-Katalog
 
-_866 Szenen, 29 FX-Overlays, 110 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
+_869 Szenen, 29 FX-Overlays, 110 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
 
 
 ---
@@ -6445,6 +6445,33 @@ MelodyScript.frag — additive ribbon ink (colour fully baked in the vert).
 Fragment stage for MeshKaleidoscope: the twelve copies of the model lit by one key light plus a rim that is the palette's colour, alternating copies tinted warm/cool so the mirror symmetry reads; the sky shell is a dark velvet with the photo as a soft glow behind the wreath. Audio Reactivity: audioKick flashes the rim; audioSwell brightens the key; audioChromaHue drives the tint via the palette.
 
 ![MeshKaleidoscope ruhig (t=8)](img/MeshKaleidoscope_A.jpg) ![MeshKaleidoscope ruhig (t=16)](img/MeshKaleidoscope_B.jpg) ![MeshKaleidoscope audio-heiß (t=21)](img/MeshKaleidoscope_C.jpg)
+
+
+### MeshPeacockDisplay
+
+`Scene3D/MeshPeacockDisplay.frag` · type=scene3d · geom=mesh · mood=bright,dreamy,calm · complexity=3
+
+MESH PEACOCK DISPLAY: a real peacock (model=) in full display on a lawn at dusk, turning slowly to present the train. The structural colour of the feathers is done as it works in life: the hue of the green-and-blue texels shifts with the viewing angle, and the treble adds a shimmer to that shift; the eyespots glow with the treble; the shafts glint on the kick; the bass warms the body from below. Around it, a dusk sky…
+
+![MeshPeacockDisplay ruhig (t=8)](img/MeshPeacockDisplay_A.jpg) ![MeshPeacockDisplay ruhig (t=16)](img/MeshPeacockDisplay_B.jpg) ![MeshPeacockDisplay audio-heiß (t=21)](img/MeshPeacockDisplay_C.jpg)
+
+
+### MeshPipeOrgan
+
+`Scene3D/MeshPipeOrgan.frag` · type=scene3d · geom=mesh · mood=dark,calm,dreamy · complexity=3
+
+MESH PIPE ORGAN: a real baroque organ case (model=) in a dark church, lit by candlelight from below, and the music is in its pipes: the silver pipe metal is picked out of the material (metallic, unsaturated), each pipe's place across the front gives it a pitch class, and the pipe SPEAKS -- glows, with a shimmer running up its speaking length -- when that class sounds (audioChroma). The kick brings the tallest pipes u…
+
+![MeshPipeOrgan ruhig (t=8)](img/MeshPipeOrgan_A.jpg) ![MeshPipeOrgan ruhig (t=16)](img/MeshPipeOrgan_B.jpg) ![MeshPipeOrgan audio-heiß (t=21)](img/MeshPipeOrgan_C.jpg)
+
+
+### MeshRocketLaunch
+
+`Scene3D/MeshRocketLaunch.frag` · type=scene3d · geom=mesh · mood=dark,aggressive,bright · complexity=3
+
+MESH ROCKET LAUNCH: a real launch pad (model=) and a real rocket (model2=) at night, seen from the causeway. The floodlights come up with the build-up; the engines light just before the liftoff mark and the rocket climbs out of the frame on the scene's own clock, its flame lighting the pad, the exhaust cloud rolling out across the ground behind it, the sky glowing round the plume. The counterpart of the procedural Bu…
+
+![MeshRocketLaunch ruhig (t=8)](img/MeshRocketLaunch_A.jpg) ![MeshRocketLaunch ruhig (t=16)](img/MeshRocketLaunch_B.jpg) ![MeshRocketLaunch audio-heiß (t=21)](img/MeshRocketLaunch_C.jpg)
 
 
 ### MeshSandSculpture

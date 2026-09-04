@@ -75,9 +75,9 @@
   <TextureShader file="..\Scene3D\RingStation.frag" type="scene3d" geom="mesh" model="..\Models\DoubleRingResearchStation.glb" mood="calm,space" probability="0.4" complexity="3">
     <rig preset="mesh-32-roll"/>
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
-    <float name="spinP" minValue="0" maxValue="0"></float>
+    <float name="spinP" minValue="0.8" maxValue="0.8"></float>
     <float name="windowP" minValue="0.8" maxValue="0.8"></float>
-    <float name="spinAxisP" minValue="0" maxValue="0"></float>
+    <float name="spinAxisP" minValue="1" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed2*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
@@ -102,9 +102,9 @@
   <TextureShader file="..\Scene3D\RingStation.frag" type="scene3d" geom="mesh" model="..\Models\MegastructureCentralHub.glb" mood="bright,psychedelic,space" probability="0.4" complexity="3">
     <rig preset="mesh-32-roll"/>
     <float name="sizeP" minValue="1.4" maxValue="1.4"></float>
-    <float name="spinP" minValue="0" maxValue="0"></float>
+    <float name="spinP" minValue="0.8" maxValue="0.8"></float>
     <float name="windowP" minValue="1.0" maxValue="1.0"></float>
-    <float name="spinAxisP" minValue="0" maxValue="0"></float>
+    <float name="spinAxisP" minValue="1" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed2*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>

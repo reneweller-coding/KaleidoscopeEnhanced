@@ -3955,3 +3955,58 @@ carries 171 models -- but the pack is spacecraft and stations; a rocket, a
 bird, a ship's hull would have to be generated first.  Recommendation: keep
 procedural for phenomena (waves, plasma, fields), go to meshes for anything
 with a canonical silhouette.
+
+## Mesh trial 04.09.2026: generated models instead of stylised 2D objects
+
+The user's question after the feedback round was whether the "realistic"
+scenes that draw a real object in a fragment shader (a rocket, a peacock)
+would not be better served by generated 3D models. Answer by experiment:
+three scenes built the same evening, each the mesh counterpart of a
+procedural one -- `MeshRocketLaunch` (BuildUpRocketLaunch), `MeshPeacockDisplay`
+(PeacockTrainFan), `MeshPipeOrgan` (PipeOrganChroma). Four assets came out of
+the user's own 3D-Generator (`cli.bat --prompt ... --count 4 --name X --profile
+model --specs-only`, the specs checked by hand, then `--resume`), about six
+minutes each end to end, and one of them re-rolled. The models are
+`OrbitalLaunchRocket`, `RocketLaunchPad`, `DisplayingPeacock`,
+`BaroqueChurchOrgan` (not in the repository, like every model; 57 MB
+together, for the next model pack).
+
+The verdict on screen: yes. A rocket that IS a rocket, a peacock with a real
+fan of eyespots, an organ whose silver pipes are pipes -- none of it reads
+as a children's drawing, which was the complaint about the procedural ones.
+The environment stays procedural (a night sky and floodlit ground, a dusk
+garden with fireflies, a candlelit church with a rose window), and the music
+goes where it always goes in a mesh scene: into the LIGHT, not the object.
+
+What went wrong before it went right, in order:
+
+- **The generator's models face +Z, and +Z points AWAY from our camera.**
+  The first render showed the back of the fan and the organ's back panel.
+  Every ground-based mesh scene needs a half turn about Y; the turntable
+  families never noticed because they spin anyway.
+- **The sun in the sky was behind the bird.** The camera looks toward +Z;
+  a sun disc painted at +Z lights nothing the camera sees, so the peacock
+  was a silhouette. The key light has to come from BEHIND the camera; the
+  visible sun can only be the rim light.
+- **`materialExposure` with its 0.20 target halves a mid-toned object.**
+  It was tuned for near-black hulls (luma 0.14). A peacock measures 0.37,
+  a white rocket 0.44: exposure 0.53 and 0.46, i.e. darker than the texture.
+  These scenes use a 0.28 target clamped to 0.6..1.8.
+- **"Brightest texels as lamps" is a hull trick, not a concrete trick.** On
+  the pad it lit the concrete's own highlights red -- lava cracks all over
+  the base. Removed.
+- **The staged liftoff and the catalogue probe.** The launch runs on
+  `sceneProgress`; the probe's section cut re-armed the scene around 18 s,
+  and the C frame showed the rocket back on the pad. Liftoff now falls at
+  34..46 % of the span so a scene cut short still launches. The C frame of a
+  staged scene is not evidence of a bug (see the sweep notes above).
+- **A pad prompt has to describe the COMPOSITION, not the parts.** "Launch
+  gantry, concrete pedestal, flame deflector, hold-down arms" produced a
+  hopper on a plinth. "A wide flat platform with an open flame-trench
+  opening in the centre, a tower at ONE edge, the centre empty" produced a
+  pad the rocket can stand on. Objects that have to FIT together need their
+  relationship in the prompt.
+- Two-model placement (`model=` pad, `model2=` rocket) is done in real
+  proportions from `meshExtent`/`meshExtent2` -- both arrive as unit boxes --
+  with the platform height, the offset across and into the pad as
+  per-instance floats, tuned once against the actual model.

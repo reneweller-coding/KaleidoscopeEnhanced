@@ -9829,4 +9829,31 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
 
+  <TextureShader file="..\\Scene3D\\MeshRocketLaunch.frag" type="scene3d" geom="mesh" model="..\\Models\\RocketLaunchPad.glb" model2="..\\Models\\OrbitalLaunchRocket.glb" mood="dark,aggressive,bright" probability="0.45" complexity="3" minTimeSolo="45" maxTimeSolo="70">
+    <rig preset="mesh-15"/>
+    <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
+    <float name="platP" minValue="0.44" maxValue="0.44"></float>
+    <float name="offP" minValue="0.0" maxValue="0.0"></float>
+    <float name="depthP" minValue="0.0" maxValue="0.0"></float>
+    <float name="liftP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\MeshPeacockDisplay.frag" type="scene3d" geom="mesh" model="..\\Models\\DisplayingPeacock.glb" mood="bright,dreamy,calm" probability="0.45" complexity="3">
+    <rig preset="mesh-15"/>
+    <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
+    <float name="yawP" minValue="0.0" maxValue="0.0"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene3D\\MeshPipeOrgan.frag" type="scene3d" geom="mesh" model="..\\Models\\BaroqueChurchOrgan.glb" mood="dark,calm,dreamy" probability="0.45" complexity="3">
+    <rig preset="mesh-15"/>
+    <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
+    <float name="yawP" minValue="0.0" maxValue="0.0"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
 </configuration>
