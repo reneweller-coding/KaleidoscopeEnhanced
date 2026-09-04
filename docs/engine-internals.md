@@ -4010,3 +4010,92 @@ What went wrong before it went right, in order:
   proportions from `meshExtent`/`meshExtent2` -- both arrive as unit boxes --
   with the platform height, the offset across and into the pad as
   per-instance floats, tuned once against the actual model.
+
+## 05.09.2026: the mesh rebuild -- nineteen object scenes replaced by generated models
+
+After the trial above the user asked for the rest: every 2D scene whose
+subject is a real object with a canonical silhouette, rebuilt on a
+generated mesh. Sixteen more scenes in one night (three waves of models
+from the 3D-Generator, 21 assets, 4 of them re-rolled), the nineteen
+procedural originals retired: `AqueductArchesValley`, `TermiteMoundPlumes`,
+`CoolingTowerPlumes`, `HeliostatSolarTower`, `TuningForkChoir`, `WindChimeTubes`,
+`TempoGearwork`, `PendulumWaveTempo`, `BellTowerDownbeat`, `CandleForestBreath`,
+`ServerRoomAisle`, `DominoCascadeWave`, `ZoetropeDrum`, `MetronomeForest`,
+`SeismographDrum`, `FoundryPour`, and the three from the trial. Their mesh
+counterparts carry the `Mesh` prefix. Git history keeps the old files.
+
+Phenomena stayed procedural on purpose (waves, plasma, fields, fluids); a
+fan of feathers or a row of bells is an object, a plume of steam is not --
+so `MeshCoolingTowers` has real towers and painted steam, `MeshTermiteMound`
+a real mound and painted heat.
+
+### Instancing carries most of it
+
+`instances="N"` turns one model into a row, a field or a crowd: twelve
+tuning forks and twelve pendulums (each with its own period), seven gears,
+four bells, sixteen server racks, 160 heliostats round one tower, 224
+dominoes in serpentine lanes, 300 candles. Two rules learned the hard way:
+
+- **A collapsed instance still costs its vertices.** `MeshHeliostatField`
+  draws the tower only on instance 0 and collapses it on the other 159 --
+  but the vertex stage still runs 290k vertices 159 times for nothing. The
+  recording ran below real time until the tower got a 30k LOD. Anything in
+  an instanced buffer, even the part only one instance shows, must be light.
+- **Instanced models need a LOD.** `Tools/blender_lod.py` (Blender 5.2,
+  collapse decimation, keeps UVs and the material, halves the textures)
+  makes them: 4k faces for a heliostat, 2k for a candle, 500 for a domino.
+  The engine draws one buffer N times, so faces times N is the budget.
+
+### A long thing is a short thing instanced
+
+"A complete aqueduct from end to end" came back from the generator as a
+square arcade box -- a courtyard of arches. "One short segment, seen from
+the side, cut off cleanly at both ends" came back right, and seven of them
+end to end are the bridge (`MeshAqueduct`, `instances="7"`, scaled by
+HEIGHT so the segment's own proportions set its length).
+
+### What the generator's quality gate rejects, and how to get past it
+
+- *Too small in the image* (under 10 % coverage): thin hanging things --
+  the wind chime and the pendulum, three attempts each. Asking for "filling
+  the frame" then produced *touches the border*. What passed: "occupying
+  about two thirds of the frame height with clear empty margin on every
+  side", and for the pendulum a heavier sphere on a shorter rod.
+- *Base colour nearly black*: the server rack, because it was asked to be
+  black. Ask for light grey aluminium; the scene lights it dark anyway.
+
+### Orientation is a question of geometry, not of texture
+
+The heliostat panels stayed dark blue through two attempts at picking the
+glass out of the material (metallic map, then the object-space +Z face).
+What works is the aiming normal itself: the panel is the face whose world
+normal points where the mirror aims, `dot(n, vAim) > 0.55`. Then a real
+reflection -- the sky shell sampled along the mirrored view -- lights the
+whole field.
+
+### The seismograph's trace is real
+
+`MeshSeismograph` turns the paper drum on time and, for every point on the
+paper, computes when it passed under the pen; the bass energy at that
+moment comes from the spectrogram ring (`texSpectro`, `spectroHead - age`),
+so the last revolution of the drum is the last eighteen seconds of the
+song, drawn in ink. The drum's axle stays along X: laid along Z it is a
+disc seen end-on and the paper is hidden.
+
+### Two-model scenes and where the second model sits
+
+`MeshMetronomes` uses the lab pendulum, upside down, as every metronome's
+rod (a thin rod on its own would never pass the generator's coverage
+gate). `MeshFoundryPour` paints the molten stream on the SHELL between the
+ladle's lip and the mould's cup -- both positions come from the vertex
+stage as varyings -- because everything the stream crosses on screen is
+background. `MeshSeismograph` and `MeshMetronomes` place the second model
+by fractions of the first's extents (`drumXP/YP`, `pivotP`, `frontP`), read
+off the generator's preview images once.
+
+### Housekeeping
+
+The 21 new models are NOT in the repository (like every model): they need
+a `models-v3` pack. Until it is published, a release build skips these 19
+scenes on machines without the models. `Tools/make_model_pack.ps1` puts
+them in the `objects` archive by its default rule.

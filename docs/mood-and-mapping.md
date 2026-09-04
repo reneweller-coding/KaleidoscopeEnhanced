@@ -34,7 +34,7 @@ Herremans 2024]. Genau so arbeitet dieser Visualizer:
 | Q3 Melancholie | tief | tief | langsam, Moll, wenig Flux, matt | `dark` |
 | Q4 Ruhe | hoch | tief | ruhig, konsonant, legato | `calm` |
 
-Alle 869 Szenen, 29 FX und 109 von 110 Transitions sind getaggt (ungetaggt ist
+Alle 866 Szenen, 29 FX und 109 von 110 Transitions sind getaggt (ungetaggt ist
 nur Crossfade, die neutrale Blende). Die Tags stehen **pro Preset-Eintrag**,
 gelesen wird aus dem aktiven Preset — deshalb prüft
 `Tools/check_mood_tags.py` Abdeckung und Konsistenz gegen den Referenzkatalog

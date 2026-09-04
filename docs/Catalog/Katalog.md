@@ -1,6 +1,6 @@
 # Kaleidoscope Enhanced — Szenen-Katalog
 
-_869 Szenen, 29 FX-Overlays, 110 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
+_866 Szenen, 29 FX-Overlays, 110 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
 
 
 ---
@@ -152,15 +152,6 @@ APOLLONIAN SPHERE PACKING GASKET: Raymarched infinite 3D Apollonian sphere packi
 ![ApollonianSpherePackingGasket ruhig (t=8)](img/ApollonianSpherePackingGasket_A.jpg) ![ApollonianSpherePackingGasket ruhig (t=16)](img/ApollonianSpherePackingGasket_B.jpg) ![ApollonianSpherePackingGasket audio-heiß (t=21)](img/ApollonianSpherePackingGasket_C.jpg)
 
 
-### AqueductArchesValley
-
-`Scene2D/AqueductArchesValley.frag` · type=normal · mood=bright,calm,dreamy · complexity=3
-
-AQUEDUCT ARCHES VALLEY: a Roman aqueduct striding across a valley in two tiers of arches. Water runs in the channel along the top on the scene clock, each arch is lit by one chroma class from beneath, and swifts cross the openings as round silhouettes. The photo is the valley behind and the stone of the piers. Camera fixed on the far slope. Audio Reactivity: audioChroma[12] -> the light under each arch (light) sceneA…
-
-![AqueductArchesValley ruhig (t=8)](img/AqueductArchesValley_A.jpg) ![AqueductArchesValley ruhig (t=16)](img/AqueductArchesValley_B.jpg) ![AqueductArchesValley audio-heiß (t=21)](img/AqueductArchesValley_C.jpg)
-
-
 ### AttentionHeadRibbons
 
 `Scene2D/AttentionHeadRibbons.frag` · type=normal · mood=dark,calm,psychedelic · complexity=3
@@ -258,15 +249,6 @@ BAUHAUS GEOMETRY: a rotating composition of flat geometric primitives (discs, qu
 A BEAT-FIRST primary effect, built for rhythmic music. Research-informed: onsets/beats -> impulsive pulsation (envelope-followed pops — fast attack, organic release, exactly the "pip-and-pop" kinetic); percussive material -> ANGULAR geometry (crisp folded shards); beatPhase (continuous) -> an expanding ring wave that rides the tempo grid; barPhase -> a slow per-bar rotation of the highlight; downbeat -> a brighter, w…
 
 ![BeatLattice ruhig (t=8)](img/BeatLattice_A.jpg) ![BeatLattice ruhig (t=16)](img/BeatLattice_B.jpg) ![BeatLattice audio-heiß (t=21)](img/BeatLattice_C.jpg)
-
-
-### BellTowerDownbeat
-
-`Scene2D/BellTowerDownbeat.frag` · type=normal · mood=calm,dark,dreamy · complexity=2
-
-BELL TOWER DOWNBEAT: a belfry of the photo -- a row of bells of different sizes swinging in their frames. The bells swing on the scene clock (continuous, each at the period its size gives it), never on a beat tracker; the downbeat is the strike: the bell that is nearest its turning point flashes bronze and rings a light-wave down the tower. The kick is the clapper spark, the swell the light through the louvres. Camer…
-
-![BellTowerDownbeat ruhig (t=8)](img/BellTowerDownbeat_A.jpg) ![BellTowerDownbeat ruhig (t=16)](img/BellTowerDownbeat_B.jpg) ![BellTowerDownbeat audio-heiß (t=21)](img/BellTowerDownbeat_C.jpg)
 
 
 ### BelousovZhabotinskyChemicalWave
@@ -503,15 +485,6 @@ BUILD-UP PRESSURE CHAMBER: a corridor whose walls close in as the music builds. 
 ![BuildUpPressureChamber ruhig (t=8)](img/BuildUpPressureChamber_A.jpg) ![BuildUpPressureChamber ruhig (t=16)](img/BuildUpPressureChamber_B.jpg) ![BuildUpPressureChamber audio-heiß (t=21)](img/BuildUpPressureChamber_C.jpg)
 
 
-### BuildUpRocketLaunch
-
-`Scene2D/BuildUpRocketLaunch.frag` · type=normal · mood=dark,aggressive,bright · complexity=3
-
-BUILD-UP ROCKET LAUNCH: a rocket on the pad at night. As the music builds, the pad comes alive -- venting vapour thickens, the floodlights come up, the countdown lamps light one by one (all smooth functions of the build-up envelope) -- and the drop is liftoff: the engines light, the rocket climbs on the scene clock from the drop instant, the exhaust cloud rolls out. Objects move; the camera on the causeway does not. …
-
-![BuildUpRocketLaunch ruhig (t=8)](img/BuildUpRocketLaunch_A.jpg) ![BuildUpRocketLaunch ruhig (t=16)](img/BuildUpRocketLaunch_B.jpg) ![BuildUpRocketLaunch audio-heiß (t=21)](img/BuildUpRocketLaunch_C.jpg)
-
-
 ### BurningShipDeepVoyage
 
 `Scene2D/BurningShipDeepVoyage.frag` · type=normal · mood=psychedelic,dark,aggressive · complexity=2
@@ -555,15 +528,6 @@ CALLIGRAPHY BRUSH STROKES: a brush writing on paper. Strokes are laid down on th
 CAMERA OBSCURA ROOM: a darkened room with a pinhole in one wall. The world outside (the photo) stands upside-down and left-right reversed on the far wall, soft at the edges as a pinhole image is. The aperture breathes with the swell -- wide open means bright and soft, stopped down means dim and sharp -- dust motes drift through the light cone on the scene clock, and the kick is a flicker of the daylight outside (a cl…
 
 ![CameraObscuraRoom ruhig (t=8)](img/CameraObscuraRoom_A.jpg) ![CameraObscuraRoom ruhig (t=16)](img/CameraObscuraRoom_B.jpg) ![CameraObscuraRoom audio-heiß (t=21)](img/CameraObscuraRoom_C.jpg)
-
-
-### CandleForestBreath
-
-`Scene2D/CandleForestBreath.frag` · type=normal · mood=dark,calm,dreamy · complexity=3
-
-CANDLE FOREST BREATH: hundreds of candles in a dark chapel, each a round-topped flame on a wax column of the photo. A draught runs through the room as a slow wave on the scene clock, and every flame leans with it; each flame's brightness is its spectrum band (a candle per band, in rows), the kick makes them gutter (a dip and flare of light), the swell is the warmth of the whole room. Camera fixed among the candles. A…
-
-![CandleForestBreath ruhig (t=8)](img/CandleForestBreath_A.jpg) ![CandleForestBreath ruhig (t=16)](img/CandleForestBreath_B.jpg) ![CandleForestBreath audio-heiß (t=21)](img/CandleForestBreath_C.jpg)
 
 
 ### CapillaryFlight
@@ -818,15 +782,6 @@ CONFORMAL LOG POLAR DIVE: Complex exponential mapping w = exp(z) transforming th
 ![ConformalLogPolarDive ruhig (t=8)](img/ConformalLogPolarDive_A.jpg) ![ConformalLogPolarDive ruhig (t=16)](img/ConformalLogPolarDive_B.jpg) ![ConformalLogPolarDive audio-heiß (t=21)](img/ConformalLogPolarDive_C.jpg)
 
 
-### CoolingTowerPlumes
-
-`Scene2D/CoolingTowerPlumes.frag` · type=normal · mood=dark,calm,dreamy · complexity=3
-
-COOLING TOWER PLUMES: three hyperboloid towers against an evening sky, each breathing a steam plume that rises and leans away on the scene clock. The plumes are lit from below by the plant floodlights and from the side by the last sun, and each carries the colour of a spectrum band, so the sky reads the music. The swell is how much steam there is, the kick a floodlight sweeping the shell. The photo is the sky and the…
-
-![CoolingTowerPlumes ruhig (t=8)](img/CoolingTowerPlumes_A.jpg) ![CoolingTowerPlumes ruhig (t=16)](img/CoolingTowerPlumes_B.jpg) ![CoolingTowerPlumes audio-heiß (t=21)](img/CoolingTowerPlumes_C.jpg)
-
-
 ### CoronagraphSpeckleField
 
 `Scene2D/CoronagraphSpeckleField.frag` · type=normal · mood=space,dark,psychedelic · complexity=2
@@ -1079,15 +1034,6 @@ DIRAC CONE GRAPHENE VALLEYTRONICS: 2D honeycomb carbon lattice displaying linear
 Adapted from "Disco Godrays" by \@kishimisu (2023) — https://www.shadertoy.com/view/Dt33RS Original licensed CC BY-NC-SA 4.0 (attribution kept per the licence). Kaleidoscopic volumetric "godrays": a densely-sampled raymarch through a mirror-ball fold of a tube + sphere, giving fans of coloured light. Adapted to our engine: * Shadertoy -> ours (gl_FragCoord/resolution/time, GLSL 1.20; round() -> floor(x+.5); the blue-…
 
 ![DiscoGodrays ruhig (t=8)](img/DiscoGodrays_A.jpg) ![DiscoGodrays ruhig (t=16)](img/DiscoGodrays_B.jpg) ![DiscoGodrays audio-heiß (t=21)](img/DiscoGodrays_C.jpg)
-
-
-### DominoCascadeWave
-
-`Scene2D/DominoCascadeWave.frag` · type=normal · mood=calm,dark,dreamy · complexity=2
-
-DOMINO CASCADE WAVE: a field of dominoes seen from a low angle, and the wave of toppling running across it on the scene clock -- each tile a smooth rotation from standing to fallen as the front passes (never a snap), the tiles' faces the photo, the front lit by the kick, the fallen tiles' pips glowing with their spectrum band, the standing ones catching the swell's light. The wave loops: far behind the front the tile…
-
-![DominoCascadeWave ruhig (t=8)](img/DominoCascadeWave_A.jpg) ![DominoCascadeWave ruhig (t=16)](img/DominoCascadeWave_B.jpg) ![DominoCascadeWave audio-heiß (t=21)](img/DominoCascadeWave_C.jpg)
 
 
 ### DoubleSlitElectronBuildup
@@ -1396,15 +1342,6 @@ FORAMINIFERA SPIRAL SHELLS: the chambered shells of forams -- single cells that 
 FORMANT VOWEL SPACE: the vowel chart of phonetics -- the second formant across (high F2 on the left, as the chart is drawn), the first formant down -- with the cardinal vowels as photo blobs at their places. A marker glides to where the spectral shape points (a smoothed centroid and spread read from the spectrogram history, so it never jumps), trailing the recent seconds as a fading path of dots; the blob nearest the…
 
 ![FormantVowelSpace ruhig (t=8)](img/FormantVowelSpace_A.jpg) ![FormantVowelSpace ruhig (t=16)](img/FormantVowelSpace_B.jpg) ![FormantVowelSpace audio-heiß (t=21)](img/FormantVowelSpace_C.jpg)
-
-
-### FoundryPour
-
-`Scene2D/FoundryPour.frag` · type=normal · mood=dark,aggressive,bright · complexity=2
-
-FOUNDRY POUR: molten metal poured from a ladle into a sand mould. The ladle tips steadily on the scene clock and the stream falls white-orange into the mould, where the melt spreads and cools from the edges (colour by temperature); sparks (round) fly from the impact on the clock and flare on the kick; the glow lights the whole shop -- the photo is the foundry floor and the mould pattern. The bass is the furnace roar …
-
-![FoundryPour ruhig (t=8)](img/FoundryPour_A.jpg) ![FoundryPour ruhig (t=16)](img/FoundryPour_B.jpg) ![FoundryPour audio-heiß (t=21)](img/FoundryPour_C.jpg)
 
 
 ### FourierEpicycleDraw
@@ -1720,15 +1657,6 @@ HAWKING RADIATION EVAPORATION: Micro-black hole event horizon displaying quantum
 HELIOSPHERIC CURRENT SHEET: Rotating Parker spiral "ballerina skirt" current sheet separating opposite magnetic polarities throughout the solar system. Wavy sector boundary crossings, solar wind stream turbulence, and undulating plasma membrane photo reflections. audioAdvance -> rotates Parker spiral sector boundaries & solar wind audioKick -> flashes interplanetary magnetic reconnection sheets audioBass -> undulates…
 
 ![HeliosphericCurrentSheet ruhig (t=8)](img/HeliosphericCurrentSheet_A.jpg) ![HeliosphericCurrentSheet ruhig (t=16)](img/HeliosphericCurrentSheet_B.jpg) ![HeliosphericCurrentSheet audio-heiß (t=21)](img/HeliosphericCurrentSheet_C.jpg)
-
-
-### HeliostatSolarTower
-
-`Scene2D/HeliostatSolarTower.frag` · type=normal · mood=bright,calm,dreamy · complexity=3
-
-HELIOSTAT SOLAR TOWER: a field of mirrors around a central receiver tower. Every heliostat holds the sun on the receiver, so the field is a ring pattern of tilted panels, each reflecting a piece of the sky (the photo). The panels track slowly on the scene clock, the receiver glows with the bass, and the treble is the glint that runs across the field as a panel edge catches the light. Camera fixed on the field, the to…
-
-![HeliostatSolarTower ruhig (t=8)](img/HeliostatSolarTower_A.jpg) ![HeliostatSolarTower ruhig (t=16)](img/HeliostatSolarTower_B.jpg) ![HeliostatSolarTower audio-heiß (t=21)](img/HeliostatSolarTower_C.jpg)
 
 
 ### HexagonalLaserMatrixTunnel
@@ -2651,15 +2579,6 @@ METAMORPHIC LAVA VORTEX: 100% viewport-filling viscous basalt magma ocean. Solid
 ![MetamorphicLavaVortex ruhig (t=8)](img/MetamorphicLavaVortex_A.jpg) ![MetamorphicLavaVortex ruhig (t=16)](img/MetamorphicLavaVortex_B.jpg) ![MetamorphicLavaVortex audio-heiß (t=21)](img/MetamorphicLavaVortex_C.jpg)
 
 
-### MetronomeForest
-
-`Scene2D/MetronomeForest.frag` · type=normal · mood=calm,dark,dreamy · complexity=3
-
-METRONOME FOREST: rows of wind-up metronomes on a bench, each set to its own tempo. Every pendulum swings on the scene clock at its own fixed rate -- deliberately NOT beat-synced, because a whole rank of arms snapping to a kick is the jolt this catalogue does not do. What the music controls is light: a metronome brightens when its own swing happens to line up with the beat phase, so the rank slowly finds and loses ag…
-
-![MetronomeForest ruhig (t=8)](img/MetronomeForest_A.jpg) ![MetronomeForest ruhig (t=16)](img/MetronomeForest_B.jpg) ![MetronomeForest audio-heiß (t=21)](img/MetronomeForest_C.jpg)
-
-
 ### MicrolensingCausticSweep
 
 `Scene2D/MicrolensingCausticSweep.frag` · type=normal · mood=space,dark,psychedelic · complexity=2
@@ -3029,24 +2948,6 @@ Two million curl-noise-advected particles (simulated upstream into texParticles)
 ![ParticleFlow ruhig (t=8)](img/ParticleFlow_A.jpg) ![ParticleFlow ruhig (t=16)](img/ParticleFlow_B.jpg) ![ParticleFlow audio-heiß (t=21)](img/ParticleFlow_C.jpg)
 
 
-### PeacockTrainFan
-
-`Scene2D/PeacockTrainFan.frag` · type=normal · mood=bright,psychedelic,dreamy · complexity=2
-
-PEACOCK TRAIN FAN: the train fanning open. A fan of feathers spreads with the swell (the fan angle is a slow envelope), each feather a barbed shaft ending in an eyespot of the photo ringed in iridescent blue-green; the eyespots shimmer with the treble (structural colour shifts with angle), the shafts glint on the kick, the bass warms the body of the bird at the base. Camera fixed in front of the display. Audio Reacti…
-
-![PeacockTrainFan ruhig (t=8)](img/PeacockTrainFan_A.jpg) ![PeacockTrainFan ruhig (t=16)](img/PeacockTrainFan_B.jpg) ![PeacockTrainFan audio-heiß (t=21)](img/PeacockTrainFan_C.jpg)
-
-
-### PendulumWaveTempo
-
-`Scene2D/PendulumWaveTempo.frag` · type=normal · mood=calm,dreamy,dark · complexity=2
-
-PENDULUM WAVE TEMPO: the pendulum-wave demonstration -- a row of pendulums whose periods are tempo divisions (the n-th pendulum makes n/8 more swings than the first in one cycle), so the row drifts from a line into a travelling wave, into two counter-waves, into chaos and back into a line. The swings run on the scene clock (continuous, never on a beat tracker, so no resync can jolt them); the bobs are round photo dis…
-
-![PendulumWaveTempo ruhig (t=8)](img/PendulumWaveTempo_A.jpg) ![PendulumWaveTempo ruhig (t=16)](img/PendulumWaveTempo_B.jpg) ![PendulumWaveTempo audio-heiß (t=21)](img/PendulumWaveTempo_C.jpg)
-
-
 ### PenroseAperiodicTessellation
 
 `Scene2D/PenroseAperiodicTessellation.frag` · type=normal · mood=bright,calm,dreamy · complexity=3
@@ -3191,15 +3092,6 @@ PIANO ROLL WATERFALL: the melody falling onto a keyboard. The 96-sample melody h
 PILLARS OF CREATION FLIGHT: A majestic, slow flight through colossal columns of interstellar dust and gas. Newborn stars within the pillars illuminate the dense clouds and react to the beat. audioAdvance -> flight speed through the nebula audioKick -> flashes from newly ignited protostars audioSwell -> ambient brightness of the dust clouds audioChromaHue-> palette offset for the nebula gas Per-activation variety: dus…
 
 ![PillarsOfCreationFlight ruhig (t=8)](img/PillarsOfCreationFlight_A.jpg) ![PillarsOfCreationFlight ruhig (t=16)](img/PillarsOfCreationFlight_B.jpg) ![PillarsOfCreationFlight audio-heiß (t=21)](img/PillarsOfCreationFlight_C.jpg)
-
-
-### PipeOrganChroma
-
-`Scene2D/PipeOrganChroma.frag` · type=normal · mood=calm,bright,dreamy · complexity=2
-
-PIPE ORGAN CHROMA: the organ front -- ranks of pipes, one pipe per pitch class and octave, their heights following the harmonic series (the lowest class the tallest pipe), arranged in the classic mitre. A pipe that sounds glows at its mouth and its speaking length shimmers; the whole front is lit by the swell (the organ swell box, literally), the kick brings the pedal pipes up in light. The photo is the case behind a…
-
-![PipeOrganChroma ruhig (t=8)](img/PipeOrganChroma_A.jpg) ![PipeOrganChroma ruhig (t=16)](img/PipeOrganChroma_B.jpg) ![PipeOrganChroma audio-heiß (t=21)](img/PipeOrganChroma_C.jpg)
 
 
 ### PivotIrrigationCircles
@@ -3843,15 +3735,6 @@ SECTION STRATA CANYON: the song as geology. A canyon wall fills the frame; every
 ![SectionStrataCanyon ruhig (t=8)](img/SectionStrataCanyon_A.jpg) ![SectionStrataCanyon ruhig (t=16)](img/SectionStrataCanyon_B.jpg) ![SectionStrataCanyon audio-heiß (t=21)](img/SectionStrataCanyon_C.jpg)
 
 
-### SeismographDrum
-
-`Scene2D/SeismographDrum.frag` · type=normal · mood=calm,dark,aggressive · complexity=2
-
-SEISMOGRAPH DRUM: the classic recorder -- a paper drum turning steadily on the scene clock while the pen writes. The trace is the recent loudness (audioWave for the fine wiggle, the level for the envelope), a quake on the kick is an ink spike and a flash of the pen lamp, the bass is the low rumble in the trace. The drum turns, the pen arm rests, the frame never shakes: only the ink moves. The photo is the observatory…
-
-![SeismographDrum ruhig (t=8)](img/SeismographDrum_A.jpg) ![SeismographDrum ruhig (t=16)](img/SeismographDrum_B.jpg) ![SeismographDrum audio-heiß (t=21)](img/SeismographDrum_C.jpg)
-
-
 ### SelfSimilarity
 
 `Scene2D/SelfSimilarity.frag` · type=normal · mood=calm,dark · complexity=1
@@ -3879,15 +3762,6 @@ SELF-SIMILARITY CORRIDOR: an endless corridor whose floor, ceiling and walls are
 SELF-SIMILARITY MANDALA: the song's memory of itself as a mandala. The self-similarity matrix (texSSM) holds how much every moment of the last stretch resembles every other. Here the row "now against the past" is wrapped into rings -- the centre is now, each ring further out a moment further back -- and folded n-way into a mandala, so a returning chorus lights whole rings at once and a new section darkens them. A sec…
 
 ![SelfSimilarityMandala ruhig (t=8)](img/SelfSimilarityMandala_A.jpg) ![SelfSimilarityMandala ruhig (t=16)](img/SelfSimilarityMandala_B.jpg) ![SelfSimilarityMandala audio-heiß (t=21)](img/SelfSimilarityMandala_C.jpg)
-
-
-### ServerRoomAisle
-
-`Scene2D/ServerRoomAisle.frag` · type=normal · mood=dark,aggressive,psychedelic · complexity=3
-
-SERVER ROOM AISLE: a cold aisle between two rack rows, in perspective toward a vanishing point. Every rack unit carries a column of status LEDs driven by the spectrum bands, the cable trays run overhead, and the floor tiles carry the reflection. A slow walk down the aisle on the scene clock; the swell is the cold fog rolling out of the perforated tiles, the kick a fault LED going amber somewhere in the row. The photo…
-
-![ServerRoomAisle ruhig (t=8)](img/ServerRoomAisle_A.jpg) ![ServerRoomAisle ruhig (t=16)](img/ServerRoomAisle_B.jpg) ![ServerRoomAisle audio-heiß (t=21)](img/ServerRoomAisle_C.jpg)
 
 
 ### ShatterField
@@ -4484,15 +4358,6 @@ TELEIDOSCOPE: the three-mirror kaleidoscope with a lens at the end -- the world 
 ![Teleidoscope ruhig (t=8)](img/Teleidoscope_A.jpg) ![Teleidoscope ruhig (t=16)](img/Teleidoscope_B.jpg) ![Teleidoscope audio-heiß (t=21)](img/Teleidoscope_C.jpg)
 
 
-### TempoGearwork
-
-`Scene2D/TempoGearwork.frag` · type=normal · mood=psychedelic,bright · complexity=2
-
-TEMPO GEARWORK: a train of gears driven by the bar clock. The big wheel makes one turn per bar, the next two turns, the next four -- the bar phase is the angle, so the whole train is locked to the music without an integrator and without a jump (a whole number of turns per bar wraps exactly). Meshing gears counter-rotate; teeth catch the light as they pass; the kick throws sparks at the meshing points. When the tempo …
-
-![TempoGearwork ruhig (t=8)](img/TempoGearwork_A.jpg) ![TempoGearwork ruhig (t=16)](img/TempoGearwork_B.jpg) ![TempoGearwork audio-heiß (t=21)](img/TempoGearwork_C.jpg)
-
-
 ### TemporalZoomSSM
 
 `Scene2D/TemporalZoomSSM.frag` · type=normal · mood=psychedelic,calm,dark · complexity=2
@@ -4500,15 +4365,6 @@ TEMPO GEARWORK: a train of gears driven by the bar clock. The big wheel makes on
 TEMPORAL ZOOM: the song zooms into itself. The self-similarity matrix (texSSM) is drawn as a square field, and the picture is a nest of that field at time scales that shrink by four -- the whole ring, a quarter of it, a sixteenth -- so the block structure of sections, the lattice of phrases and the fine grid of beats are all the same picture at different depths. The zoom runs through those scales on the scene clock; …
 
 ![TemporalZoomSSM ruhig (t=8)](img/TemporalZoomSSM_A.jpg) ![TemporalZoomSSM ruhig (t=16)](img/TemporalZoomSSM_B.jpg) ![TemporalZoomSSM audio-heiß (t=21)](img/TemporalZoomSSM_C.jpg)
-
-
-### TermiteMoundPlumes
-
-`Scene2D/TermiteMoundPlumes.frag` · type=normal · mood=calm,dreamy,dark · complexity=2
-
-TERMITE MOUND PLUMES: a cathedral mound on the savanna at dusk, and the heat it breathes out -- plumes of warm air rising from its chimneys that refract the scene behind (the photo, as the dusk sky and the grassland), shimmering. The plumes rise on the scene clock; the mound's warmth (the bass) is their strength; the treble is the fine shimmer; the swell is the dusk light. Camera fixed on the savanna. Audio Reactivit…
-
-![TermiteMoundPlumes ruhig (t=8)](img/TermiteMoundPlumes_A.jpg) ![TermiteMoundPlumes ruhig (t=16)](img/TermiteMoundPlumes_B.jpg) ![TermiteMoundPlumes audio-heiß (t=21)](img/TermiteMoundPlumes_C.jpg)
 
 
 ### TerraformingColony
@@ -4682,15 +4538,6 @@ TRANSIT LIGHT CURVE STARS: the exoplanet transit method as a sky. A field of sta
 TRICORN FRACTAL ANTIMATTER SEA: Anti-holomorphic Tricorn (Mandelbar) fractal z -> conj(z)^2 + c. Three-cornered fractal dragon scales, metallic antimatter fins, and high-frequency glowing crest ripples over an infinite complex sea. Audio Reactivity: audioAdvance -> drives continuous deep plunge into Tricorn dragon fin cusps audioKick -> flashes antimatter core singularities & triggers crest bursts audioCentroid-> sha…
 
 ![TricornFractalAntimatterSea ruhig (t=8)](img/TricornFractalAntimatterSea_A.jpg) ![TricornFractalAntimatterSea ruhig (t=16)](img/TricornFractalAntimatterSea_B.jpg) ![TricornFractalAntimatterSea audio-heiß (t=21)](img/TricornFractalAntimatterSea_C.jpg)
-
-
-### TuningForkChoir
-
-`Scene2D/TuningForkChoir.frag` · type=normal · mood=calm,dark,dreamy · complexity=2
-
-TUNING FORK CHOIR: twelve forks in a row on a sounding board, one per chroma class, each ringing as a standing glow envelope at the energy of its class -- the ring drawn as concentric sound halos (no vibration of the fork itself, which would be a jolt); the kick is the mallet striking the loudest fork (a flash on that fork); the photo is the resonance box front and the halo colour. Camera fixed in front. Audio Reacti…
-
-![TuningForkChoir ruhig (t=8)](img/TuningForkChoir_A.jpg) ![TuningForkChoir ruhig (t=16)](img/TuningForkChoir_B.jpg) ![TuningForkChoir audio-heiß (t=21)](img/TuningForkChoir_C.jpg)
 
 
 ### Tunnel
@@ -4909,15 +4756,6 @@ WHITE DWARF ACCRETION: An extremely dense, hot white dwarf siphoning glowing pla
 ![WhiteDwarfAccretion ruhig (t=8)](img/WhiteDwarfAccretion_A.jpg) ![WhiteDwarfAccretion ruhig (t=16)](img/WhiteDwarfAccretion_B.jpg) ![WhiteDwarfAccretion audio-heiß (t=21)](img/WhiteDwarfAccretion_C.jpg)
 
 
-### WindChimeTubes
-
-`Scene2D/WindChimeTubes.frag` · type=normal · mood=calm,bright,dreamy · complexity=3
-
-WIND CHIME TUBES: a chime hanging on a porch. Twelve tubes, one per chroma class, hang from a disc and sway gently on the scene clock; the clapper drifts among them. A tube does not move when its note sounds -- it RINGS: it brightens and throws a halo of rings, which is how a struck tube reads and keeps the whole frame free of jolts. The photo is the garden beyond the porch. Camera fixed on the chime. Audio Reactivit…
-
-![WindChimeTubes ruhig (t=8)](img/WindChimeTubes_A.jpg) ![WindChimeTubes ruhig (t=16)](img/WindChimeTubes_B.jpg) ![WindChimeTubes audio-heiß (t=21)](img/WindChimeTubes_C.jpg)
-
-
 ### WormholeTransit
 
 `Scene2D/WormholeTransit.frag` · type=normal · mood=psychedelic,bright,space · complexity=3
@@ -4961,15 +4799,6 @@ ZCR NOISE STORM: a sandstorm tunnel whose grain IS the noise in the music. The z
 ZELLIJ TILEWORK: a wall of Moroccan zellij -- an eight-fold star pattern of cut tiles, every tile a piece of the photo in its own glaze colour. The pattern is built from the {8/3} star lattice: stars, their surrounding kites and the small squares between; the whole field rotates very slowly on the scene clock and drifts, the tiles light by chroma class (each colour a class), the grout darkens on the bass, the kick gl…
 
 ![ZellijTilework ruhig (t=8)](img/ZellijTilework_A.jpg) ![ZellijTilework ruhig (t=16)](img/ZellijTilework_B.jpg) ![ZellijTilework audio-heiß (t=21)](img/ZellijTilework_C.jpg)
-
-
-### ZoetropeDrum
-
-`Scene2D/ZoetropeDrum.frag` · type=normal · mood=dreamy,calm,dark · complexity=2
-
-ZOETROPE DRUM: a real zoetrope seen from outside. The drum is a dark cylinder with vertical slits; inside, a strip of frames -- the photo in successive phases of a wave -- runs round the wall. Motion is seen only through the slits: as the drum turns steadily on the scene clock the frames glimpsed through each slit advance, and the strip appears to move. The drum wall between the slits is lit by the lamp inside (the s…
-
-![ZoetropeDrum ruhig (t=8)](img/ZoetropeDrum_A.jpg) ![ZoetropeDrum ruhig (t=16)](img/ZoetropeDrum_B.jpg) ![ZoetropeDrum audio-heiß (t=21)](img/ZoetropeDrum_C.jpg)
 
 
 ---
@@ -6438,6 +6267,78 @@ MelodyScript.frag — additive ribbon ink (colour fully baked in the vert).
 ![MelodyScript ruhig (t=8)](img/MelodyScript_A.jpg) ![MelodyScript ruhig (t=16)](img/MelodyScript_B.jpg) ![MelodyScript audio-heiß (t=21)](img/MelodyScript_C.jpg)
 
 
+### MeshAqueduct
+
+`Scene3D/MeshAqueduct.frag` · type=scene3d · geom=mesh · mood=bright,calm,dreamy · complexity=3
+
+MESH AQUEDUCT: a real Roman aqueduct (model=) striding across a valley in the late afternoon. Each arch is lit from beneath by one chroma class, water glitters in the channel along the top, swifts cross the openings as round silhouettes, the daylight follows the swell. The mesh counterpart of the procedural AqueductArchesValley. Audio Reactivity: audioChroma[12] -> the light under each arch (light) audioHigh -> water…
+
+![MeshAqueduct ruhig (t=8)](img/MeshAqueduct_A.jpg) ![MeshAqueduct ruhig (t=16)](img/MeshAqueduct_B.jpg) ![MeshAqueduct audio-heiß (t=21)](img/MeshAqueduct_C.jpg)
+
+
+### MeshBellTower
+
+`Scene3D/MeshBellTower.frag` · type=scene3d · geom=mesh · mood=dark,calm,dreamy · complexity=3
+
+MESH BELL TOWER: four real bronze bells (one model, instances="4") of falling size swinging in a belfry, the dusk sky through the arcade behind them. Each bell answers a band -- the big one the bass, then the low mids, the mids, the treble -- glowing warm in the bronze; the kick is the clapper's strike, a flash on the bell and on the stone; the swell is the lamp and the swing. The mesh counterpart of BellTowerDownbea…
+
+![MeshBellTower ruhig (t=8)](img/MeshBellTower_A.jpg) ![MeshBellTower ruhig (t=16)](img/MeshBellTower_B.jpg) ![MeshBellTower audio-heiß (t=21)](img/MeshBellTower_C.jpg)
+
+
+### MeshCandleChapel
+
+`Scene3D/MeshCandleChapel.frag` · type=scene3d · geom=mesh · mood=calm,dark,dreamy · complexity=3
+
+MESH CANDLE CHAPEL: three hundred real candles (one model, instances="300") on a tiered stand in a dark chapel. Every flame flickers on its own, and all of them breathe together with the swell -- the chapel brightens and dims as the music does; the kick makes a few flames flare; high on the wall a window whose twelve panes are the twelve pitch classes. The mesh counterpart of CandleForestBreath. Audio Reactivity: aud…
+
+![MeshCandleChapel ruhig (t=8)](img/MeshCandleChapel_A.jpg) ![MeshCandleChapel ruhig (t=16)](img/MeshCandleChapel_B.jpg) ![MeshCandleChapel audio-heiß (t=21)](img/MeshCandleChapel_C.jpg)
+
+
+### MeshCoolingTowers
+
+`Scene3D/MeshCoolingTowers.frag` · type=scene3d · geom=mesh · mood=dark,dreamy,calm · complexity=3
+
+MESH COOLING TOWERS: three real hyperboloid towers (one model, instances="3") against an evening sky, each breathing a plume of steam that rises and leans away on the scene clock. The plumes are painted on the sky shell above each tower, lit from below by the plant floodlights and from the side by the last sun, and each carries the colour of a spectrum band by height, so the sky reads the music. The swell is how much…
+
+![MeshCoolingTowers ruhig (t=8)](img/MeshCoolingTowers_A.jpg) ![MeshCoolingTowers ruhig (t=16)](img/MeshCoolingTowers_B.jpg) ![MeshCoolingTowers audio-heiß (t=21)](img/MeshCoolingTowers_C.jpg)
+
+
+### MeshDominoWave
+
+`Scene3D/MeshDominoWave.frag` · type=scene3d · geom=mesh · mood=bright,calm · complexity=3
+
+MESH DOMINO WAVE: 224 real dominoes (one model, instances="224") standing in serpentine lanes on a table, seen low, and the wave of toppling running along them on the scene clock. A spotlight follows the front; the tiles' faces catch the lamp as they turn; the kick is a glint on the standing tiles, the swell the room light. The mesh counterpart of the procedural DominoCascadeWave. Audio Reactivity: sceneProgress -> t…
+
+![MeshDominoWave ruhig (t=8)](img/MeshDominoWave_A.jpg) ![MeshDominoWave ruhig (t=16)](img/MeshDominoWave_B.jpg) ![MeshDominoWave audio-heiß (t=21)](img/MeshDominoWave_C.jpg)
+
+
+### MeshFoundryPour
+
+`Scene3D/MeshFoundryPour.frag` · type=scene3d · geom=mesh · mood=dark,aggressive,dreamy · complexity=3
+
+MESH FOUNDRY POUR: a real sand mould (model=) on the foundry floor and a real ladle (model2=) tipping molten metal into it on the scene clock. The stream is painted on the shell along the line from the lip to the pouring cup (there is no geometry for it, and everything the stream crosses on screen is background); the melt spreads in the mould and cools from white through orange to dull red; sparks fly from the cup; t…
+
+![MeshFoundryPour ruhig (t=8)](img/MeshFoundryPour_A.jpg) ![MeshFoundryPour ruhig (t=16)](img/MeshFoundryPour_B.jpg) ![MeshFoundryPour audio-heiß (t=21)](img/MeshFoundryPour_C.jpg)
+
+
+### MeshGearTrain
+
+`Scene3D/MeshGearTrain.frag` · type=scene3d · geom=mesh · mood=dark,aggressive,psychedelic · complexity=3
+
+MESH GEAR TRAIN: seven real brass gears (one model, instances="7") meshing across the frame inside a dark clockwork, turning steadily, neighbours counter-rotating. Teeth catch the lamp as they pass; the kick throws sparks at the meshing points; the swell warms the brass. The mesh counterpart of the procedural TempoGearwork (which locked its angles to the bar clock; here the rate is steady, so nothing can jolt). Audio…
+
+![MeshGearTrain ruhig (t=8)](img/MeshGearTrain_A.jpg) ![MeshGearTrain ruhig (t=16)](img/MeshGearTrain_B.jpg) ![MeshGearTrain audio-heiß (t=21)](img/MeshGearTrain_C.jpg)
+
+
+### MeshHeliostatField
+
+`Scene3D/MeshHeliostatField.frag` · type=scene3d · geom=mesh · mood=bright,calm · complexity=3
+
+MESH HELIOSTAT FIELD: a real receiver tower (model=) in a field of real heliostats (model2=, instanced), each aimed so the sun lands on the receiver. The panels reflect the sky -- a true reflection, the sky shell sampled along the mirrored view direction -- and track the sun as it creeps on time. The receiver glows white-hot with the bass, the treble runs glints across the field where a panel catches the sun, the swe…
+
+![MeshHeliostatField ruhig (t=8)](img/MeshHeliostatField_A.jpg) ![MeshHeliostatField ruhig (t=16)](img/MeshHeliostatField_B.jpg) ![MeshHeliostatField audio-heiß (t=21)](img/MeshHeliostatField_C.jpg)
+
+
 ### MeshKaleidoscope
 
 `Scene3D/MeshKaleidoscope.frag` · type=scene3d · geom=mesh · mood=psychedelic,dark,dreamy · complexity=4
@@ -6447,6 +6348,15 @@ Fragment stage for MeshKaleidoscope: the twelve copies of the model lit by one k
 ![MeshKaleidoscope ruhig (t=8)](img/MeshKaleidoscope_A.jpg) ![MeshKaleidoscope ruhig (t=16)](img/MeshKaleidoscope_B.jpg) ![MeshKaleidoscope audio-heiß (t=21)](img/MeshKaleidoscope_C.jpg)
 
 
+### MeshMetronomes
+
+`Scene3D/MeshMetronomes.frag` · type=scene3d · geom=mesh · mood=calm,bright · complexity=3
+
+MESH METRONOMES: twelve real metronomes (body model= and a rod from model2=, instances="12") on a bench in two rows, each ticking at its own tempo, their rods swinging on time. Each body answers a spectrum band, glowing on its scale plate; the brass weights glint on the kick and flash at the ends of their swings (the tick); the swell is the lamp. The mesh counterpart of the procedural MetronomeForest. Audio Reactivit…
+
+![MeshMetronomes ruhig (t=8)](img/MeshMetronomes_A.jpg) ![MeshMetronomes ruhig (t=16)](img/MeshMetronomes_B.jpg) ![MeshMetronomes audio-heiß (t=21)](img/MeshMetronomes_C.jpg)
+
+
 ### MeshPeacockDisplay
 
 `Scene3D/MeshPeacockDisplay.frag` · type=scene3d · geom=mesh · mood=bright,dreamy,calm · complexity=3
@@ -6454,6 +6364,15 @@ Fragment stage for MeshKaleidoscope: the twelve copies of the model lit by one k
 MESH PEACOCK DISPLAY: a real peacock (model=) in full display on a lawn at dusk, turning slowly to present the train. The structural colour of the feathers is done as it works in life: the hue of the green-and-blue texels shifts with the viewing angle, and the treble adds a shimmer to that shift; the eyespots glow with the treble; the shafts glint on the kick; the bass warms the body from below. Around it, a dusk sky…
 
 ![MeshPeacockDisplay ruhig (t=8)](img/MeshPeacockDisplay_A.jpg) ![MeshPeacockDisplay ruhig (t=16)](img/MeshPeacockDisplay_B.jpg) ![MeshPeacockDisplay audio-heiß (t=21)](img/MeshPeacockDisplay_C.jpg)
+
+
+### MeshPendulumWave
+
+`Scene3D/MeshPendulumWave.frag` · type=scene3d · geom=mesh · mood=calm,dark,dreamy · complexity=3
+
+MESH PENDULUM WAVE: twelve real pendulums (one model, instances="12") hanging from a rail in a dark lab, swinging the pendulum-wave pattern on time. The bob glows with the bass; the bob passing through centre lights on the beat; the swell is the lamp. The mesh counterpart of the procedural PendulumWaveTempo. Audio Reactivity: audioBeat -> highlight on the bob passing centre (light) audioBass -> bob glow (light) audio…
+
+![MeshPendulumWave ruhig (t=8)](img/MeshPendulumWave_A.jpg) ![MeshPendulumWave ruhig (t=16)](img/MeshPendulumWave_B.jpg) ![MeshPendulumWave audio-heiß (t=21)](img/MeshPendulumWave_C.jpg)
 
 
 ### MeshPipeOrgan
@@ -6483,6 +6402,33 @@ MESH SAND SCULPTURE: wet sand -- warm, grainy, with round glints of shell and qu
 ![MeshSandSculpture ruhig (t=8)](img/MeshSandSculpture_A.jpg) ![MeshSandSculpture ruhig (t=16)](img/MeshSandSculpture_B.jpg) ![MeshSandSculpture audio-heiß (t=21)](img/MeshSandSculpture_C.jpg)
 
 
+### MeshSeismograph
+
+`Scene3D/MeshSeismograph.frag` · type=scene3d · geom=mesh · mood=calm,dark · complexity=3
+
+MESH SEISMOGRAPH: a real drum seismograph -- the cast-iron base with its pen arm (model=) and the paper drum (model2=) turning under the pen on time. The trace on the paper is REAL: the last revolution of the drum carries the bass energy of the last eighteen seconds, read from the engine's spectrogram ring (texSpectro) at the age each point on the paper passed under the pen, drawn as a wandering ink line; older revol…
+
+![MeshSeismograph ruhig (t=8)](img/MeshSeismograph_A.jpg) ![MeshSeismograph ruhig (t=16)](img/MeshSeismograph_B.jpg) ![MeshSeismograph audio-heiß (t=21)](img/MeshSeismograph_C.jpg)
+
+
+### MeshServerAisle
+
+`Scene3D/MeshServerAisle.frag` · type=scene3d · geom=mesh · mood=dark,aggressive · complexity=3
+
+MESH SERVER AISLE: sixteen real server racks (one model, instances="16") in two rows down a cold aisle, in perspective toward a vanishing point under strip lights. The racks' LEDs are the music: each rack answers a spectrum band, its rows of lights blinking with the band's energy; the kick lights every rack a little; the swell is the aisle light. The mesh counterpart of the procedural ServerRoomAisle. Audio Reactivit…
+
+![MeshServerAisle ruhig (t=8)](img/MeshServerAisle_A.jpg) ![MeshServerAisle ruhig (t=16)](img/MeshServerAisle_B.jpg) ![MeshServerAisle audio-heiß (t=21)](img/MeshServerAisle_C.jpg)
+
+
+### MeshTermiteMound
+
+`Scene3D/MeshTermiteMound.frag` · type=scene3d · geom=mesh · mood=calm,dreamy,dark · complexity=3
+
+MESH TERMITE MOUND: a real cathedral mound (model=) on the savanna at dusk, and the heat it breathes out -- columns of warm haze rising from its chimneys into the evening sky on the scene clock, their strength the bass (the mound's warmth), their fine flicker the treble, the dusk light the swell. Acacias on the horizon, the first stars. The mesh counterpart of the procedural TermiteMoundPlumes (whose refracting plume…
+
+![MeshTermiteMound ruhig (t=8)](img/MeshTermiteMound_A.jpg) ![MeshTermiteMound ruhig (t=16)](img/MeshTermiteMound_B.jpg) ![MeshTermiteMound audio-heiß (t=21)](img/MeshTermiteMound_C.jpg)
+
+
 ### MeshTerrain
 
 `Scene3D/MeshTerrain.frag` · type=scene3d · geom=mesh · mood=calm,dark · complexity=3
@@ -6490,6 +6436,33 @@ MESH SAND SCULPTURE: wet sand -- warm, grainy, with round glints of shell and qu
 Flying low across a landscape that is really a 3D model blown up two orders of magnitude (the transform is in the vertex stage). Grazing light and distance haze do the rest: at that scale, folds become ridges and the eye stops asking what the object used to be. Two things make this read as terrain rather than as a big object: - The light is LOW. A raking sun turns every fold into a lit face and a dark one, which is h…
 
 ![MeshTerrain ruhig (t=8)](img/MeshTerrain_A.jpg) ![MeshTerrain ruhig (t=16)](img/MeshTerrain_B.jpg) ![MeshTerrain audio-heiß (t=21)](img/MeshTerrain_C.jpg)
+
+
+### MeshTuningForks
+
+`Scene3D/MeshTuningForks.frag` · type=scene3d · geom=mesh · mood=calm,dark,dreamy · complexity=3
+
+MESH TUNING FORKS: twelve real tuning forks (one model, instances="12") in a row on a sounding board in a dark room, one per pitch class. A fork RINGS when its class sounds: it glows in its class colour and throws halos -- concentric rings travelling outward across the wall behind it on the scene clock. The kick is the mallet striking the loudest fork (a flash on that fork), the swell the room light. The mesh counter…
+
+![MeshTuningForks ruhig (t=8)](img/MeshTuningForks_A.jpg) ![MeshTuningForks ruhig (t=16)](img/MeshTuningForks_B.jpg) ![MeshTuningForks audio-heiß (t=21)](img/MeshTuningForks_C.jpg)
+
+
+### MeshWindChime
+
+`Scene3D/MeshWindChime.frag` · type=scene3d · geom=mesh · mood=bright,calm,dreamy · complexity=3
+
+MESH WIND CHIME: a real wind chime (model=) hanging under a porch roof, the afternoon garden beyond. It sways in the breeze on time; a tube does not move when its note sounds, it RINGS: it brightens in its class colour and throws a halo of rings across the garden behind it. Which tube is which class comes from its place round the disc. The kick is the clapper's glint, the treble the sheen on the metal, the swell the …
+
+![MeshWindChime ruhig (t=8)](img/MeshWindChime_A.jpg) ![MeshWindChime ruhig (t=16)](img/MeshWindChime_B.jpg) ![MeshWindChime audio-heiß (t=21)](img/MeshWindChime_C.jpg)
+
+
+### MeshZoetrope
+
+`Scene3D/MeshZoetrope.frag` · type=scene3d · geom=mesh · mood=dark,dreamy,psychedelic · complexity=3
+
+MESH ZOETROPE: a real Victorian zoetrope (model=) on a parlour table, its drum turning on its spindle while the base stands still. An oil lamp lights the room with the swell; the strip of figures inside glows through the slits; the kick is a flare of the lamp; the treble a sheen on the japanned tin. The mesh counterpart of ZoetropeDrum. Audio Reactivity: audioSwell -> lamp light, the glow of the strip (slow) audioKic…
+
+![MeshZoetrope ruhig (t=8)](img/MeshZoetrope_A.jpg) ![MeshZoetrope ruhig (t=16)](img/MeshZoetrope_B.jpg) ![MeshZoetrope audio-heiß (t=21)](img/MeshZoetrope_C.jpg)
 
 
 ### MetamaterialNegativeRefraction

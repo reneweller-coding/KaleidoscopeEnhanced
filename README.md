@@ -24,13 +24,13 @@ build. See [Quick start](#quick-start).
 | ![HexKaleido](docs/screenshots/kaleidoscope.png) | ![ChromeForm](docs/screenshots/chromeform.png) |
 | ![ShadowTheatre](docs/screenshots/shadowtheatre.png) | ![AuroraBorealisOverFjord](docs/screenshots/aurora.png) |
 
-*Four of the 869 scenes in the [scene catalogue](docs/Catalog/Katalog.md) — a
+*Four of the 866 scenes in the [scene catalogue](docs/Catalog/Katalog.md) — a
 photograph folded into a kaleidoscope, a loaded 3D model used as a mirror, one
 used as a shadow puppet, and a hardware-tessellated fjord under the northern
 lights.*
 
 **Highlights**
-- 869 scenes + 29 overlay effects + 110 scene transitions, all audio-reactive
+- 866 scenes + 29 overlay effects + 110 scene transitions, all audio-reactive
   and image-driven — see the [scene catalogue](docs/Catalog/Katalog.md).
 - Real signal analysis (beat/onset detection, key & mood, song-structure
   tracking) drives the visuals, not a generic FFT bar graph — see
@@ -252,7 +252,7 @@ Every scene re-rolls its own parameters each time it's picked, so one
 shader yields many different looks over a session rather than repeating
 itself identically.
 
-**[Browse the full scene catalogue](docs/Catalog/Katalog.md)** — all 869
+**[Browse the full scene catalogue](docs/Catalog/Katalog.md)** — all 866
 scenes, 29 overlay effects and 110 transitions, each with a description and
 three example frames. A printable `Katalog.pdf` ships with every release.
 

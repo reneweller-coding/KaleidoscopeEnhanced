@@ -48,7 +48,7 @@ void main()
     vec3 world, n;
     vLadle = isLadle ? 1.0 : 0.0;
 
-    float sz = 14.0 * (sizeP > 0.01 ? sizeP : 1.0);
+    float sz = 11.0 * (sizeP > 0.01 ? sizeP : 1.0);
     float mxM = max(meshExtent.x, max(meshExtent.y, meshExtent.z));
     vec3 mouldHalf = meshExtent / mxM * sz;
     vec3 mouldPos = vec3(4.0, kGround + mouldHalf.y, kDist);
@@ -60,7 +60,7 @@ void main()
     float szL = sz * (ladleP > 0.01 ? ladleP : 0.8);
     float mxL = max(meshExtent2.x, max(meshExtent2.y, meshExtent2.z));
     vec3 ladleHalf = meshExtent2 / mxL * szL;
-    vec3 ladlePos = vec3(-16.0, kGround + 2.0 * mouldHalf.y + ladleHalf.y + 6.0, kDist - 2.0);
+    vec3 ladlePos = vec3(-13.0, kGround + 2.0 * mouldHalf.y + ladleHalf.y * 0.6 + 3.0, kDist - 2.0);
     float tilt = 1.05 * pour;
     float ct = cos(tilt), st = sin(tilt);
     mat3 tiltM = mat3(ct, st, 0.0,  -st, ct, 0.0,  0.0, 0.0, 1.0);     // tips toward +x, toward the mould

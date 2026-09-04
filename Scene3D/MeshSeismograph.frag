@@ -48,7 +48,7 @@ in float vTurn;
 const float kDist   = 46.0;
 const float kGround = -16.0;
 const float kRate   = 0.35;
-const float kPenAngle = 1.2;   // where the pen touches the drum, in the drum's frame at turn 0
+const float kPenAngle = 1.5708;   // the pen touches the top of the drum (+Y in the drum's frame at turn 0)
 
 vec3 hueRot(vec3 c, float a) {
     vec3 k = vec3(0.57735026919);
@@ -90,9 +90,6 @@ vec3 renderSky(vec3 dir)
         float h = clamp(dir.y, 0.0, 1.0);
         float az = atan(dir.x, dir.z);
         col = vec3(0.18, 0.19, 0.17) * (0.6 + 0.5 * noise2(vec2(az * 6.0, dir.y * 8.0))) * exp(-h * 3.0) * lamp;
-        // A shelf of instruments behind: dark shapes.
-        float shelf = step(0.10, dir.y) * step(dir.y, 0.13) * step(abs(az), 0.8);
-        col += vec3(0.3, 0.25, 0.18) * shelf * lamp * 0.4;
         col += vec3(1.0, 0.85, 0.6) * exp(-distance(dir, normalize(vec3(0.35, 0.65, 1.0))) * 4.0) * 0.18 * lamp;
     }
     return col;

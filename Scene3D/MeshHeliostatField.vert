@@ -40,7 +40,7 @@ out vec3  vPos;
 out vec3  vLocal;
 out float vBg;
 out float vMirror;
-out vec3  vObjN;     // object-space normal: the mirror's glass is its +Z face
+out vec3  vAim;      // the heliostat's aiming normal (world): its glass is the face that points this way
 
 const float kGround = -6.0;
 const vec3  kTowerFoot = vec3(0.0, kGround, 170.0);
@@ -64,7 +64,7 @@ void main()
     float sz = (sizeP > 0.01 ? sizeP : 1.0);
     vec3 world, n;
     vMirror = isMirror ? 1.0 : 0.0;
-    vObjN = attrB.xyz;
+    vAim = vec3(0.0, 1.0, 0.0);
 
     if ((isTower || isBg) && inst > 0)
     {
@@ -95,7 +95,7 @@ void main()
         float r = 26.0 + 118.0 * sqrt(fract(k * 0.7548777 + 0.31));
         vec3 pos = kTowerFoot + vec3(r * sin(a), 0.0, -r * cos(a));
 
-        float szM = 1.7 * sz * (mirrorP > 0.01 ? mirrorP : 1.0);
+        float szM = 2.2 * sz * (mirrorP > 0.01 ? mirrorP : 1.0);
         vec3 c  = attrA.xyz - meshCenter2;
         float mx = max(meshExtent2.x, max(meshExtent2.y, meshExtent2.z));
         vec3 local = c / mx * szM;
@@ -103,6 +103,7 @@ void main()
         vec3 recv = kTowerFoot + vec3(0.0, kTowerH * 0.82, 0.0);
         vec3 toRecv = normalize(recv - pos);
         vec3 nrm = normalize(toRecv + sunDir());
+        vAim = nrm;
         vec3 right = normalize(cross(vec3(0.0, 1.0, 0.0), nrm));
         vec3 up2 = cross(nrm, right);
         mat3 aimM = mat3(right, up2, nrm);

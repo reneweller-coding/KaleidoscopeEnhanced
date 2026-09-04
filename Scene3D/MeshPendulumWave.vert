@@ -36,8 +36,8 @@ out float vInst;
 out float vSwing;    // -1..1: where in its swing this pendulum is
 
 const float kDist   = 70.0;
-const float kPivotY = 26.0;
-const float kSpacing = 8.8;
+const float kPivotY = 22.0;
+const float kSpacing = 10.5;
 
 void main()
 {
@@ -48,7 +48,7 @@ void main()
     vSwing = 0.0;
     if (!isBg)
     {
-        float sz = 15.0 * (sizeP > 0.01 ? sizeP : 1.0);
+        float sz = 11.0 * (sizeP > 0.01 ? sizeP : 1.0);
         vec3 c  = attrA.xyz - meshCenter;
         float mx = max(meshExtent.x, max(meshExtent.y, meshExtent.z));
         vec3 local = c / mx * sz;

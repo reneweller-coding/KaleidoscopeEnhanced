@@ -68,13 +68,18 @@ void main()
         vec3 c = attrA.xyz - meshCenter2;
         float mx = max(meshExtent2.x, max(meshExtent2.y, meshExtent2.z));
         vec3 local = c / mx * szD;
-        // Turn about the axle (the model's longest axis, x).
+        // Turn about the axle (the model's longest axis, x), then lay the
+        // axle along world Z so it runs under the pen arm, which the base
+        // model carries along X.
         float ang = vTurn;
         float ca = cos(ang), sa = sin(ang);
         mat3 rotX = mat3(1.0, 0.0, 0.0,   0.0, ca, sa,   0.0, -sa, ca);
+        // The axle stays along X: seen end-on (axle along Z) the drum is a
+        // disc and the paper is hidden. The pen tip sits on the drum's top.
+        mat3 M = rotX;
         vec3 centre = vec3(drumXP * baseHalf.x, kGround + drumYP * 2.0 * baseHalf.y, kDist - drumZP * baseHalf.z);
-        world = rotX * local + centre;
-        n = normalize(rotX * attrB.xyz);
+        world = M * local + centre;
+        n = normalize(M * attrB.xyz);
         vUV = vec2(attrA.w, attrB.w);
         vLocal = c / meshExtent2;
     }

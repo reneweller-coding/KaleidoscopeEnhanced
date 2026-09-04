@@ -127,7 +127,9 @@ void main()
 
     // The flame: the bright warm texels at the top of the candle.
     float luma = dot(base.rgb, vec3(0.299, 0.587, 0.114));
-    float flame = smoothstep(0.55, 0.8, luma) * smoothstep(0.05, 0.25, base.r - base.b) * smoothstep(0.55, 0.85, vLocal.y);
+    // The flame is the very top of the model, whatever the texture says
+    // there: at 1024 px on a 2k-face LOD the flame texels are gone.
+    float flame = smoothstep(0.78, 0.92, vLocal.y);
     float flick = 0.78 + 0.22 * sin(time * 7.3 + vHash * 40.0) * sin(time * 11.1 + vHash * 13.0);
     float flare = (vHash < 0.12) ? kick : 0.0;
     col += vec3(1.0, 0.85, 0.5) * flame * (1.4 + 2.2 * breath + 2.0 * flare) * flick;

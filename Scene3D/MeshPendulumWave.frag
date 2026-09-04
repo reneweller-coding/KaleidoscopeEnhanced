@@ -36,7 +36,7 @@ in float vInst;
 in float vSwing;
 
 const float kDist   = 70.0;
-const float kPivotY = 26.0;
+const float kPivotY = 22.0;
 const float kGround = -20.0;
 
 vec3 hueRot(vec3 c, float a) {

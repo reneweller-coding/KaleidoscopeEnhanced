@@ -161,9 +161,9 @@ void main()
     vec3 alb = base.rgb * materialExposure(texMeshMaterial);
 
     vec3 lampDir = normalize(vec3(-0.3, 0.8, -0.5));
-    vec3 col = alb * vec3(1.0, 0.88, 0.7) * max(dot(n, lampDir), 0.0) * (0.8 + 0.7 * swell);
+    vec3 col = alb * vec3(1.0, 0.88, 0.7) * max(dot(n, lampDir), 0.0) * (1.1 + 0.8 * swell);
     col += alb * vec3(0.20, 0.20, 0.28) * (0.55 + 0.45 * n.y) * 0.6;
-    col += alb * 0.06;
+    col += alb * 0.10;
 
     vec3 halfV = normalize(lampDir + viewDir);
     float spec = pow(max(dot(n, halfV), 0.0), mix(80.0, 8.0, roughness));

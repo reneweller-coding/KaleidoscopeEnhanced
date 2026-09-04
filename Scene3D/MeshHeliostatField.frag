@@ -38,7 +38,7 @@ in vec3  vPos;
 in vec3  vLocal;
 in float vBg;
 in float vMirror;
-in vec3  vObjN;
+in vec3  vAim;
 
 const float kGround = -6.0;
 const vec3  kTowerFoot = vec3(0.0, kGround, 170.0);
@@ -198,14 +198,15 @@ void main()
     if (mirror)
     {
         // The glass: a real reflection of the sky along the mirrored view.
-        // The panel is the model's +Z face (the generator's camera side), so
-        // the mask is the object-space normal, not the material -- the
-        // baked metallic map of a photographed panel says nothing reliable.
-        float glass = smoothstep(0.6, 0.9, vObjN.z);
+        // Which texels are the glass is a question of ORIENTATION, not of
+        // the material (the baked metallic map of a photographed panel says
+        // nothing reliable, and the object-space front axis was a guess that
+        // failed): the panel is the face that points along the aiming normal.
+        float glass = smoothstep(0.55, 0.85, dot(normalize(vNormal), vAim));
         vec3 r = reflect(-viewDir, n);
-        vec3 refl = renderSky(r);
+        vec3 refl = renderSky(r) * 1.3;
         float glint = pow(max(dot(r, sd), 0.0), 60.0);
-        col = mix(col, refl * 0.9, glass * 0.85);
+        col = mix(col, refl, glass * 0.9);
         col += vec3(1.0, 0.98, 0.9) * glint * glass * (0.8 + 3.0 * high);
     }
     else

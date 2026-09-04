@@ -2,7 +2,7 @@
 out vec4 fragColor;
 /**
  * @file MeshDominoWave.frag
- * @brief MESH DOMINO WAVE: 220 real dominoes (one model, instances="220")
+ * @brief MESH DOMINO WAVE: 224 real dominoes (one model, instances="224")
  * standing in serpentine lanes on a table, seen low, and the wave of
  * toppling running along them on the scene clock. A spotlight follows the
  * front; the tiles' faces catch the lamp as they turn; the kick is a

@@ -2,7 +2,7 @@
 /**
  * @file MeshDominoWave.vert
  * @brief Vertex stage companion to MeshDominoWave.frag -- see that file's
- * header. ONE domino drawn 220 times (instances="220") in five serpentine
+ * header. ONE domino drawn 224 times (instances="224") in eight serpentine
  * lanes on a table, seen from a low angle, and the wave of toppling runs
  * along the serpentine on sceneProgress: each tile rotates about its
  * bottom edge in its lane's direction, on its own smooth curve, as the
@@ -32,16 +32,16 @@ out float vFall;
 out vec3  vFront;   // world position of the wave front, for the spotlight that follows it
 
 const float kGround  = -8.0;
-const int   kPerLane = 44;
-const float kPitch   = 1.8;
+const int   kPerLane = 28;
+const float kPitch   = 2.4;
 
 vec3 tilePos(int k)
 {
     int lane = k / kPerLane;
     int j = k - lane * kPerLane;
     float dirSign = (lane - (lane / 2) * 2 == 0) ? 1.0 : -1.0;
-    float x = (float(j) - 21.5) * kPitch * dirSign;
-    float z = 36.0 + float(lane) * 13.0;
+    float x = (float(j) - 13.5) * kPitch * dirSign;
+    float z = 30.0 + float(lane) * 7.0;
     return vec3(x, kGround, z);
 }
 
@@ -62,7 +62,7 @@ void main()
     {
         int lane = inst / kPerLane;
         float dirSign = (lane - (lane / 2) * 2 == 0) ? 1.0 : -1.0;
-        float sz = 1.5 * (sizeP > 0.01 ? sizeP : 1.0);
+        float sz = 2.2 * (sizeP > 0.01 ? sizeP : 1.0);
         vec3 c  = attrA.xyz - meshCenter;
         float mx = max(meshExtent.x, max(meshExtent.y, meshExtent.z));
         vec3 local = c / mx * sz;

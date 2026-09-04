@@ -79,7 +79,7 @@ vec3 perturbNormal(sampler2DArray tex, int layers, vec2 uv, vec3 n, vec3 wpos, f
 vec3 renderSky(vec3 dir)
 {
     float swell = clamp(audioSwell, 0.0, 1.0);
-    float light = 0.5 + 0.6 * swell;
+    float light = 0.8 + 0.7 * swell;
     vec3 col;
     if (dir.y < -0.004)
     {
@@ -123,7 +123,7 @@ void main()
     float hue   = (hueP > 0.01 ? hueP : 0.0);
     float swell = clamp(audioSwell, 0.0, 1.0);
     float kick  = clamp(audioKick, 0.0, 1.0);
-    float light = 0.5 + 0.6 * swell;
+    float light = 0.8 + 0.7 * swell;
     int   i     = int(vInst + 0.5);
     float band  = clamp(audioSpectrum[(i * 2) % 32] * 1.5, 0.0, 1.0);
 
@@ -158,7 +158,7 @@ void main()
     float led = smoothstep(0.45, 0.75, sat) * smoothstep(0.15, 0.4, max(base.g, base.b) - base.r) * smoothstep(0.25, 0.5, mx);
     float row = floor(vLocal.y * 30.0);
     float blink = step(0.35, fract(time * (1.5 + 2.0 * hash21(vec2(row, vInst))) + hash21(vec2(vInst, row))));
-    col += base.rgb / max(mx, 1e-3) * led * (0.3 + 1.6 * band * blink + 0.5 * kick);
+    col += base.rgb / max(mx, 1e-3) * led * (0.8 + 2.4 * band * blink + 0.8 * kick);
 
     float fres = pow(1.0 - max(dot(n, viewDir), 0.0), 4.0);
     col += vec3(0.6, 0.8, 1.0) * fres * 0.12 * light;

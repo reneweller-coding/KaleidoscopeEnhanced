@@ -1571,13 +1571,6 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
 
-  <TextureShader file="..\Scene2D\TempoGearwork.frag" type="normal" mood="psychedelic,bright" probability="0.45" complexity="2">
-    <rig preset="flat"/>
-    <float name="teethP" minValue="18" maxValue="30"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
-
   <TextureShader file="..\Scene2D\ZCRNoiseStorm.frag" type="normal" mood="dark,aggressive" probability="0.45" complexity="2">
     <rig preset="flat"/>
     <float name="grainP" minValue="0" maxValue="1"></float>
@@ -1851,14 +1844,6 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
 
-  <TextureShader file="..\Scene2D\ZoetropeDrum.frag" type="normal" mood="dreamy,calm,dark" probability="0.45" complexity="2">
-    <rig preset="flat"/>
-    <float name="slitsP" minValue="0" maxValue="1"></float>
-    <float name="waveP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
-
   <TextureShader file="..\Scene2D\RotoreliefIllusion.frag" type="normal" mood="psychedelic,bright,dreamy" probability="0.45" complexity="2">
     <rig preset="flat"/>
     <float name="eccP" minValue="0" maxValue="1"></float>
@@ -1931,22 +1916,6 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
 
-  <TextureShader file="..\Scene2D\PipeOrganChroma.frag" type="normal" mood="calm,bright,dreamy" probability="0.45" complexity="2">
-    <rig preset="flat"/>
-    <float name="ranksP" minValue="0" maxValue="1"></float>
-    <float name="metalP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
-
-  <TextureShader file="..\Scene2D\PendulumWaveTempo.frag" type="normal" mood="calm,dreamy,dark" probability="0.45" complexity="2">
-    <rig preset="flat"/>
-    <float name="countP" minValue="0" maxValue="1"></float>
-    <float name="ampP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
-
   <TextureShader file="..\Scene2D\BuildUpAvalanche.frag" type="normal" mood="aggressive,bright,dark" probability="0.45" complexity="2">
     <rig preset="flat"/>
     <float name="slopeP" minValue="0" maxValue="1"></float>
@@ -1967,14 +1936,6 @@
     <rig preset="flat"/>
     <float name="seedsP" minValue="0" maxValue="1"></float>
     <float name="pitP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
-
-  <TextureShader file="..\Scene2D\BellTowerDownbeat.frag" type="normal" mood="calm,dark,dreamy" probability="0.45" complexity="2">
-    <rig preset="flat"/>
-    <float name="bellsP" minValue="0" maxValue="1"></float>
-    <float name="swingP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
@@ -2488,14 +2449,6 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
 
-  <TextureShader file="..\Scene2D\BuildUpRocketLaunch.frag" type="normal" mood="dark,aggressive,bright" probability="0.45" complexity="3">
-    <rig preset="flat"/>
-    <float name="sizeP" minValue="0" maxValue="1"></float>
-    <float name="padP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
-
   <TextureShader file="..\Scene2D\HaboobDustWall.frag" type="normal" mood="dark,aggressive,dreamy" probability="0.45" complexity="2">
     <rig preset="flat"/>
     <float name="heightP" minValue="0" maxValue="1"></float>
@@ -2569,22 +2522,6 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
 
-  <TextureShader file="..\Scene2D\SeismographDrum.frag" type="normal" mood="calm,dark,aggressive" probability="0.45" complexity="2">
-    <rig preset="flat"/>
-    <float name="speedP" minValue="0" maxValue="1"></float>
-    <float name="gainP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
-
-  <TextureShader file="..\Scene2D\FoundryPour.frag" type="normal" mood="dark,aggressive,bright" probability="0.45" complexity="2">
-    <rig preset="flat"/>
-    <float name="mouldP" minValue="0" maxValue="1"></float>
-    <float name="sparkP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
-
   <TextureShader file="..\Scene2D\GlassblowerGather.frag" type="normal" mood="dark,calm,dreamy" probability="0.45" complexity="2">
     <rig preset="flat"/>
     <float name="sizeP" minValue="0" maxValue="1"></float>
@@ -2617,14 +2554,6 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
 
-  <TextureShader file="..\Scene2D\CandleForestBreath.frag" type="normal" mood="dark,calm,dreamy" probability="0.45" complexity="3">
-    <rig preset="flat"/>
-    <float name="rowsP" minValue="0" maxValue="1"></float>
-    <float name="draughtP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
-
   <TextureShader file="..\Scene3D\FerrisWheelNight.frag" type="scene3d" geom="indirect" mood="dark,bright,dreamy" probability="0.45" complexity="4">
     <rig preset="procedural"/>
     <float name="cabinsP" minValue="0" maxValue="1"></float>
@@ -2653,22 +2582,6 @@
     <rig preset="flat"/>
     <float name="marblesP" minValue="0" maxValue="1"></float>
     <float name="loopP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
-
-  <TextureShader file="..\Scene2D\PeacockTrainFan.frag" type="normal" mood="bright,psychedelic,dreamy" probability="0.45" complexity="2">
-    <rig preset="flat"/>
-    <float name="feathersP" minValue="0" maxValue="1"></float>
-    <float name="eyeP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
-
-  <TextureShader file="..\Scene2D\TermiteMoundPlumes.frag" type="normal" mood="calm,dreamy,dark" probability="0.45" complexity="2">
-    <rig preset="flat"/>
-    <float name="moundP" minValue="0" maxValue="1"></float>
-    <float name="plumeP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
@@ -2785,14 +2698,6 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
 
-  <TextureShader file="..\Scene2D\DominoCascadeWave.frag" type="normal" mood="calm,dark,dreamy" probability="0.45" complexity="2">
-    <rig preset="flat"/>
-    <float name="densP" minValue="0" maxValue="1"></float>
-    <float name="curveP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
-
   <TextureShader file="..\Scene2D\SpirographGearDraw.frag" type="normal" mood="calm,bright,psychedelic" probability="0.45" complexity="3">
     <rig preset="flat"/>
     <float name="ratioP" minValue="0" maxValue="1"></float>
@@ -2845,14 +2750,6 @@
     <rig preset="flat"/>
     <float name="cablesP" minValue="0" maxValue="1"></float>
     <float name="colsP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
-
-  <TextureShader file="..\Scene2D\TuningForkChoir.frag" type="normal" mood="calm,dark,dreamy" probability="0.45" complexity="2">
-    <rig preset="flat"/>
-    <float name="sizeP" minValue="0" maxValue="1"></float>
-    <float name="haloP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
@@ -3017,42 +2914,10 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
 
-  <TextureShader file="..\Scene2D\ServerRoomAisle.frag" type="normal" mood="dark,aggressive,psychedelic" probability="0.45" complexity="3">
-    <rig preset="flat"/>
-    <float name="racksP" minValue="0" maxValue="1"></float>
-    <float name="fogP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
-
   <TextureShader file="..\Scene3D\WindTurbineFieldDusk.frag" type="scene3d" geom="indirect" mood="calm,dark,dreamy" probability="0.45" complexity="3">
     <rig preset="procedural"/>
     <float name="rowsP" minValue="0" maxValue="1"></float>
     <float name="speedP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
-
-  <TextureShader file="..\Scene2D\HeliostatSolarTower.frag" type="normal" mood="bright,calm,dreamy" probability="0.45" complexity="3">
-    <rig preset="flat"/>
-    <float name="ringsP" minValue="0" maxValue="1"></float>
-    <float name="tiltP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
-
-  <TextureShader file="..\Scene2D\AqueductArchesValley.frag" type="normal" mood="bright,calm,dreamy" probability="0.45" complexity="3">
-    <rig preset="flat"/>
-    <float name="archesP" minValue="0" maxValue="1"></float>
-    <float name="tiersP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
-
-  <TextureShader file="..\Scene2D\CoolingTowerPlumes.frag" type="normal" mood="dark,calm,dreamy" probability="0.45" complexity="3">
-    <rig preset="flat"/>
-    <float name="towersP" minValue="0" maxValue="1"></float>
-    <float name="windP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
@@ -3219,14 +3084,6 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
 
-  <TextureShader file="..\Scene2D\MetronomeForest.frag" type="normal" mood="calm,dark,dreamy" probability="0.45" complexity="3">
-    <rig preset="flat"/>
-    <float name="ranksP" minValue="0" maxValue="1"></float>
-    <float name="spreadP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
-
   <TextureShader file="..\Scene2D\HourglassSandFall.frag" type="normal" mood="calm,dark,dreamy" probability="0.45" complexity="3">
     <rig preset="flat"/>
     <float name="waistP" minValue="0" maxValue="1"></float>
@@ -3263,14 +3120,6 @@
     <rig preset="flat"/>
     <float name="pinsP" minValue="0" maxValue="1"></float>
     <float name="combP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
-
-  <TextureShader file="..\Scene2D\WindChimeTubes.frag" type="normal" mood="calm,bright,dreamy" probability="0.45" complexity="3">
-    <rig preset="flat"/>
-    <float name="lengthP" minValue="0" maxValue="1"></float>
-    <float name="swayP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
@@ -9856,7 +9705,7 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
 
-  <TextureShader file="..\\Scene3D\\MeshAqueduct.frag" type="scene3d" geom="mesh" model="..\\Models\\RomanAqueduct.glb" instances="7" mood="bright,calm,dreamy" probability="0.45" complexity="3">
+  <TextureShader file="..\\Scene3D\\MeshAqueduct.frag" type="scene3d" geom="mesh" model="..\\Models\\RomanAqueduct_lod.glb" instances="7" mood="bright,calm,dreamy" probability="0.45" complexity="3">
     <rig preset="mesh-15"/>
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
     <float name="yawP" minValue="0.0" maxValue="0.0"></float>
@@ -9939,7 +9788,7 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
 
-  <TextureShader file="..\\Scene3D\\MeshDominoWave.frag" type="scene3d" geom="mesh" model="..\\Models\\DominoTile_lod.glb" instances="220" mood="bright,calm" probability="0.45" complexity="3" minTimeSolo="40" maxTimeSolo="60">
+  <TextureShader file="..\\Scene3D\\MeshDominoWave.frag" type="scene3d" geom="mesh" model="..\\Models\\DominoTile_lod.glb" instances="224" mood="bright,calm" probability="0.45" complexity="3" minTimeSolo="40" maxTimeSolo="60">
     <rig preset="mesh-15"/>
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
@@ -9959,8 +9808,8 @@
     <rig preset="mesh-15"/>
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
     <float name="armP" minValue="0.75" maxValue="0.75"></float>
-    <float name="pivotP" minValue="0.22" maxValue="0.22"></float>
-    <float name="frontP" minValue="1.2" maxValue="1.2"></float>
+    <float name="pivotP" minValue="0.30" maxValue="0.30"></float>
+    <float name="frontP" minValue="1.05" maxValue="1.05"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
@@ -9968,9 +9817,9 @@
   <TextureShader file="..\\Scene3D\\MeshSeismograph.frag" type="scene3d" geom="mesh" model="..\\Models\\SeismographBase.glb" model2="..\\Models\\SeismographDrum.glb" mood="calm,dark" probability="0.45" complexity="3">
     <rig preset="mesh-15"/>
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
-    <float name="drumP" minValue="0.45" maxValue="0.45"></float>
-    <float name="drumXP" minValue="0.35" maxValue="0.35"></float>
-    <float name="drumYP" minValue="0.45" maxValue="0.45"></float>
+    <float name="drumP" minValue="0.6" maxValue="0.6"></float>
+    <float name="drumXP" minValue="1.0" maxValue="1.0"></float>
+    <float name="drumYP" minValue="0.67" maxValue="0.67"></float>
     <float name="drumZP" minValue="0.0" maxValue="0.0"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
