@@ -1,6 +1,6 @@
 # Kaleidoscope Enhanced — Szenen-Katalog
 
-_866 Szenen, 29 FX-Overlays, 83 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
+_866 Szenen, 29 FX-Overlays, 110 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
 
 
 ---
@@ -8214,6 +8214,15 @@ TRANSITION CAUSTIC LIQUID WARP: Underwater optical caustic refraction transition
 ![CausticLiquidWarp über TunnelPlain (2D)](img/CausticLiquidWarp_2D.jpg) ![CausticLiquidWarp über AuroraBorealisOverFjord (3D)](img/CausticLiquidWarp_3D.jpg)
 
 
+### CavitationBubbleCollapse
+
+`Transitions/CavitationBubbleCollapse.frag` · mood=dark,aggressive,psychedelic · probability=0.07
+
+TRANSITION CAVITATION BUBBLE COLLAPSE: bubbles grow in the outgoing scene and collapse. Each collapse leaves the incoming scene where the bubble stood and sends a shock ring out through the liquid. A cavitation bubble is not a bubble that pops. It grows while the pressure is low and then collapses violently -- the collapse is far faster than the growth, and it is the collapse, not the growth, that does the work. So t…
+
+![CavitationBubbleCollapse über TunnelPlain (2D)](img/CavitationBubbleCollapse_2D.jpg) ![CavitationBubbleCollapse über AuroraBorealisOverFjord (3D)](img/CavitationBubbleCollapse_3D.jpg)
+
+
 ### CellularMitosis
 
 `Transitions/CellularMitosis.frag` · mood=calm,dreamy · probability=0.05
@@ -8239,6 +8248,15 @@ Chromatic dissolve: red, green and blue cross over to the new scene at slightly 
 TRANSITION CHROMATOGRAPHY SEPARATION: Paper chromatography capillary transition. A liquid solvent front climbs capillary paper fibers, separating the scene's pigments into distinct chromatic bands based on chemical retention factors (Rf), resolving into the incoming scene. interpolation -> drives solvent front capillary migration across the frame audioKick -> flashes sharp chromatographic pigment separation bands aud…
 
 ![ChromatographySeparation über TunnelPlain (2D)](img/ChromatographySeparation_2D.jpg) ![ChromatographySeparation über AuroraBorealisOverFjord (3D)](img/ChromatographySeparation_3D.jpg)
+
+
+### ChromatophoreSkinWave
+
+`Transitions/ChromatophoreSkinWave.frag` · mood=psychedelic,bright,dreamy · probability=0.07
+
+TRANSITION CHROMATOPHORE SKIN WAVE: the picture changes the way squid skin does -- thousands of pigment sacs open, each one a round dot that takes its colour from the incoming scene, with waves of muscle running across the field. A chromatophore is not a pixel that fades. It is a pigment sac pulled open by radial muscles, so it OPENS: a small dot becomes a large one, and the colour it shows is the pigment it already …
+
+![ChromatophoreSkinWave über TunnelPlain (2D)](img/ChromatophoreSkinWave_2D.jpg) ![ChromatophoreSkinWave über AuroraBorealisOverFjord (3D)](img/ChromatophoreSkinWave_3D.jpg)
 
 
 ### ClockSweep
@@ -8268,6 +8286,15 @@ The classic linear cross-fade between outgoing (tex0) and incoming (tex1) scene.
 ![Crossfade über TunnelPlain (2D)](img/Crossfade_2D.jpg) ![Crossfade über AuroraBorealisOverFjord (3D)](img/Crossfade_3D.jpg)
 
 
+### CyanotypeSunPrint
+
+`Transitions/CyanotypeSunPrint.frag` · mood=calm,dreamy,dark · probability=0.07
+
+TRANSITION CYANOTYPE SUN PRINT: the incoming scene exposes itself onto the outgoing one as a blueprint, then a water front rinses the sheet and the true colours come back. A cyanotype exposes in order of how much light each part receives, so the shader gives every pixel a threshold taken from the incoming scene's own luminance and lets one rising exposure value cross those thresholds. The picture therefore builds sha…
+
+![CyanotypeSunPrint über TunnelPlain (2D)](img/CyanotypeSunPrint_2D.jpg) ![CyanotypeSunPrint über AuroraBorealisOverFjord (3D)](img/CyanotypeSunPrint_3D.jpg)
+
+
 ### Datamosh
 
 `Transitions/Datamosh.frag` · mood=aggressive · probability=0.06
@@ -8275,6 +8302,15 @@ The classic linear cross-fade between outgoing (tex0) and incoming (tex1) scene.
 Datamosh glitch: RGB-split, stuttering block-shifted 'corrupted P-frame' look, most intense mid-fade. Scene TRANSITION shader (Transitions/): blends the outgoing scene (tex0) into the incoming one (tex1) over one cross-fade. interpolation: 1 = old scene fully visible .. 0 = new scene. Extracted from the former FxPlain.frag 28-style library.
 
 ![Datamosh über TunnelPlain (2D)](img/Datamosh_2D.jpg) ![Datamosh über AuroraBorealisOverFjord (3D)](img/Datamosh_3D.jpg)
+
+
+### DewettingFilmRupture
+
+`Transitions/DewettingFilmRupture.frag` · mood=dark,psychedelic · probability=0.07
+
+TRANSITION DEWETTING FILM RUPTURE: the outgoing scene is a thin film that ruptures. Holes nucleate, their rims thicken as they sweep material up, the ligaments between them thin out and break, and the incoming scene is the substrate underneath. The rim is the whole point. A dewetting film does not simply vanish where a hole opens: the material has to go somewhere, and it collects in a raised ring around the hole that…
+
+![DewettingFilmRupture über TunnelPlain (2D)](img/DewettingFilmRupture_2D.jpg) ![DewettingFilmRupture über AuroraBorealisOverFjord (3D)](img/DewettingFilmRupture_3D.jpg)
 
 
 ### DiagonalWipe
@@ -8466,6 +8502,15 @@ TRANSITION HELICOID MINIMAL SURFACE: Ruled helicoid minimal surface screw transi
 ![HelicoidMinimalSurface über TunnelPlain (2D)](img/HelicoidMinimalSurface_2D.jpg) ![HelicoidMinimalSurface über AuroraBorealisOverFjord (3D)](img/HelicoidMinimalSurface_3D.jpg)
 
 
+### HilbertCurveSweep
+
+`Transitions/HilbertCurveSweep.frag` · mood=bright,psychedelic · probability=0.07
+
+TRANSITION HILBERT CURVE SWEEP: a space-filling curve walks the frame and drags the boundary between the two scenes along with it, so the wipe edge is fractal instead of a line. The Hilbert index is computed, not approximated: for every cell the shader walks down the orders, reads the quadrant bit by bit and rotates the frame the way the construction does, which is what gives the curve its one useful property -- cell…
+
+![HilbertCurveSweep über TunnelPlain (2D)](img/HilbertCurveSweep_2D.jpg) ![HilbertCurveSweep über AuroraBorealisOverFjord (3D)](img/HilbertCurveSweep_3D.jpg)
+
+
 ### HologramScanInterference
 
 `Transitions/HologramScanInterference.frag` · mood=psychedelic · probability=0.06
@@ -8529,6 +8574,69 @@ TRANSITION KERR SCHILD WARP SHEET: Exact Kerr-Schild spacetime metric transition
 ![KerrSchildWarpSheet über TunnelPlain (2D)](img/KerrSchildWarpSheet_2D.jpg) ![KerrSchildWarpSheet über AuroraBorealisOverFjord (3D)](img/KerrSchildWarpSheet_3D.jpg)
 
 
+### LaserSpeckleDecorrelation
+
+`Transitions/LaserSpeckleDecorrelation.frag` · mood=dark,aggressive,psychedelic · probability=0.07
+
+TRANSITION LASER SPECKLE DECORRELATION: a coherent speckle field lies over the outgoing scene, decorrelates until the picture is buried in grain, and correlates again onto the incoming scene. Speckle is not noise sprinkled on an image. It is the intensity of a sum of randomly phased waves, so it is built here the way it forms: eight plane waves with random directions and phases, summed as a complex amplitude, and the…
+
+![LaserSpeckleDecorrelation über TunnelPlain (2D)](img/LaserSpeckleDecorrelation_2D.jpg) ![LaserSpeckleDecorrelation über AuroraBorealisOverFjord (3D)](img/LaserSpeckleDecorrelation_3D.jpg)
+
+
+### LatentDenoiseArrival
+
+`Transitions/LatentDenoiseArrival.frag` · mood=dark,psychedelic,dreamy · probability=0.07
+
+TRANSITION LATENT DENOISE ARRIVAL: the incoming scene comes out of noise the way a diffusion model samples it -- the noise level falls, coarse structure settles first, detail last, and on the way there are shapes that look right and are not. The order is what makes this recognisable. A denoiser cannot recover fine detail while the noise still swamps it, so what survives early is only the low frequencies: big blocks o…
+
+![LatentDenoiseArrival über TunnelPlain (2D)](img/LatentDenoiseArrival_2D.jpg) ![LatentDenoiseArrival über AuroraBorealisOverFjord (3D)](img/LatentDenoiseArrival_3D.jpg)
+
+
+### LeafVeinPerfusion
+
+`Transitions/LeafVeinPerfusion.frag` · mood=calm,dreamy,bright · probability=0.07
+
+TRANSITION LEAF VEIN PERFUSION: dye enters at the petiole and runs through a leaf's venation. The incoming scene appears only where the network has already carried it. The order is the point. Dye does not arrive by distance from the stalk, it arrives by distance ALONG THE VEINS -- so a spot at the leaf's tip fills before a spot the same distance away that has to be reached the long way round a secondary. Every pixel …
+
+![LeafVeinPerfusion über TunnelPlain (2D)](img/LeafVeinPerfusion_2D.jpg) ![LeafVeinPerfusion über AuroraBorealisOverFjord (3D)](img/LeafVeinPerfusion_3D.jpg)
+
+
+### LeidenfrostSkitter
+
+`Transitions/LeidenfrostSkitter.frag` · mood=bright,psychedelic,dreamy · probability=0.07
+
+TRANSITION LEIDENFROST SKITTER: the outgoing scene breaks into droplets that ride on their own vapour and skitter away, uncovering the incoming scene on the hot plate beneath. Above the Leidenfrost point a drop does not wet the surface: it floats on a cushion of its own vapour, and with almost nothing to hold it, it slides on the smallest slope and hardly slows down. So each droplet here keeps its own direction and i…
+
+![LeidenfrostSkitter über TunnelPlain (2D)](img/LeidenfrostSkitter_2D.jpg) ![LeidenfrostSkitter über AuroraBorealisOverFjord (3D)](img/LeidenfrostSkitter_3D.jpg)
+
+
+### LenticularTilt
+
+`Transitions/LenticularTilt.frag` · mood=bright,psychedelic · probability=0.07
+
+TRANSITION LENTICULAR TILT: two interlaced pictures under a lens array. The viewing angle swings, and the pictures trade places -- with the banding ghost across the changeover that gives every lenticular print away. Nothing moves. A lenticular sheet holds both pictures side by side under each lenticule, and which one reaches the eye depends only on the ANGLE the sheet is seen from: the lens maps that angle onto a pos…
+
+![LenticularTilt über TunnelPlain (2D)](img/LenticularTilt_2D.jpg) ![LenticularTilt über AuroraBorealisOverFjord (3D)](img/LenticularTilt_3D.jpg)
+
+
+### LetterpressImpression
+
+`Transitions/LetterpressImpression.frag` · mood=dark,calm · probability=0.07
+
+TRANSITION LETTERPRESS IMPRESSION: the incoming scene is a relief plate pressed into the sheet the outgoing scene is printed on. The plate's height field is the incoming scene's own luminance, so the emboss is derived from the picture rather than drawn on top of it: the lighting comes from the gradient of that field, which puts the bright edge on the side facing the light and the shadow opposite, and turns the relief…
+
+![LetterpressImpression über TunnelPlain (2D)](img/LetterpressImpression_2D.jpg) ![LetterpressImpression über AuroraBorealisOverFjord (3D)](img/LetterpressImpression_3D.jpg)
+
+
+### LichenColonisation
+
+`Transitions/LichenColonisation.frag` · mood=calm,dark,dreamy · probability=0.07
+
+TRANSITION LICHEN COLONISATION: crustose lichen spreads out from spores across the outgoing scene until the incoming one has taken the rock. A crustose thallus grows only at its margin, so what it leaves behind is a record: concentric zones of older and newer growth, and a margin that is lobed rather than round because the growth rate varies around the rim. Both come free here from one radius that carries an angular …
+
+![LichenColonisation über TunnelPlain (2D)](img/LichenColonisation_2D.jpg) ![LichenColonisation über AuroraBorealisOverFjord (3D)](img/LichenColonisation_3D.jpg)
+
+
 ### LichtenbergLightningWipe
 
 `Transitions/LichtenbergLightningWipe.frag` · mood=aggressive,bright · probability=0.05
@@ -8574,6 +8682,15 @@ TRANSITION MAGMA CRUST FRACTURE: Tectonic basalt magma crust transition. The out
 ![MagmaCrustFracture über TunnelPlain (2D)](img/MagmaCrustFracture_2D.jpg) ![MagmaCrustFracture über AuroraBorealisOverFjord (3D)](img/MagmaCrustFracture_3D.jpg)
 
 
+### MartensiticTwinBands
+
+`Transitions/MartensiticTwinBands.frag` · mood=dark,aggressive · probability=0.07
+
+TRANSITION MARTENSITIC TWIN BANDS: a shear transformation runs through the frame. Lens-shaped twin bands nucleate on two habit planes, widen, and each one carries the incoming scene sheared by the transformation strain. A martensitic transformation is diffusionless: the lattice SHEARS into its new shape rather than rearranging atom by atom. Two things follow, and both are what make this read as metal rather than as a…
+
+![MartensiticTwinBands über TunnelPlain (2D)](img/MartensiticTwinBands_2D.jpg) ![MartensiticTwinBands über AuroraBorealisOverFjord (3D)](img/MartensiticTwinBands_3D.jpg)
+
+
 ### Melt
 
 `Transitions/Melt.frag` · mood=psychedelic,dark · probability=0.08
@@ -8599,6 +8716,15 @@ TRANSITION MOIRE INTERFERENCE: Optical Moiré superlattice interference fringes 
 Mosaic dissolve: the frame flips to the new scene cell by cell in random order. Scene TRANSITION shader (Transitions/): blends the outgoing scene (tex0) into the incoming one (tex1) over one cross-fade. interpolation: 1 = old scene fully visible .. 0 = new scene. Extracted from the former FxPlain.frag 28-style library.
 
 ![MosaicDissolve über TunnelPlain (2D)](img/MosaicDissolve_2D.jpg) ![MosaicDissolve über AuroraBorealisOverFjord (3D)](img/MosaicDissolve_3D.jpg)
+
+
+### MurmurationHandoff
+
+`Transitions/MurmurationHandoff.frag` · mood=dark,calm,dreamy · probability=0.07
+
+TRANSITION MURMURATION HANDOFF: a starling flock lifts off the outgoing scene and settles as the incoming one. The picture is carried by the flock's DENSITY, not by any bird's position. A bird is a bird -- a small round speck with a soft edge -- and it exists at all only where the target picture is dark enough to want one. That is what lets a murmuration hold a shape while every individual keeps moving: nothing has t…
+
+![MurmurationHandoff über TunnelPlain (2D)](img/MurmurationHandoff_2D.jpg) ![MurmurationHandoff über AuroraBorealisOverFjord (3D)](img/MurmurationHandoff_3D.jpg)
 
 
 ### MyceliumNetworkSprout
@@ -8637,6 +8763,15 @@ TRANSITION OCEAN BREAKER WAVE: Ocean breaker wave rolling & foam wash transition
 ![OceanBreakerWave über TunnelPlain (2D)](img/OceanBreakerWave_2D.jpg) ![OceanBreakerWave über AuroraBorealisOverFjord (3D)](img/OceanBreakerWave_3D.jpg)
 
 
+### PageTurnFolio
+
+`Transitions/PageTurnFolio.frag` · mood=calm,bright,dreamy · probability=0.07
+
+TRANSITION PAGE TURN FOLIO: the outgoing scene is a sheet of paper that lifts along a slanted line and curls onto a cylinder, uncovering the incoming scene where the sheet used to lie. The curl is solved, not painted. For every pixel inside the roll band the shader asks which point of the sheet, wrapped around a cylinder of radius R, projects there: the horizontal offset from the axis IS the sine of the wrap angle, s…
+
+![PageTurnFolio über TunnelPlain (2D)](img/PageTurnFolio_2D.jpg) ![PageTurnFolio über AuroraBorealisOverFjord (3D)](img/PageTurnFolio_3D.jpg)
+
+
 ### PenroseMorph
 
 `Transitions/PenroseMorph.frag` · mood=psychedelic,calm · probability=0.07
@@ -8671,6 +8806,15 @@ TRANSITION PLASMA FILAMENT PINCH: Magnetohydrodynamic Z-pinch plasma transition.
 TRANSITION POINCARE SPIN: Conformal hyperbolic Poincaré disk inversion and continuous Möbius transformation. The outgoing scene turns inside out through hyperbolic circle inversions while the incoming scene expands smoothly from the non-Euclidean horizon. interpolation -> sweeps hyperbolic Möbius translation from 0 to 1 audioKick -> flashes hyperbolic geodesic boundaries audioBass -> pulses Poincaré metric radius Per…
 
 ![PoincareSpin über TunnelPlain (2D)](img/PoincareSpin_2D.jpg) ![PoincareSpin über AuroraBorealisOverFjord (3D)](img/PoincareSpin_3D.jpg)
+
+
+### PolaroidDevelopSquare
+
+`Transitions/PolaroidDevelopSquare.frag` · mood=calm,bright,dreamy · probability=0.07
+
+TRANSITION POLAROID DEVELOP SQUARE: the incoming scene arrives as an integral print that clears from its edges inward and takes its dyes on in the order the chemistry actually releases them. Two details carry the whole thing. First the clearing runs from the border inward, because the opacifier thins first where the sheet is thinnest -- a uniform fade would look like an ordinary dissolve. Second the dyes arrive yello…
+
+![PolaroidDevelopSquare über TunnelPlain (2D)](img/PolaroidDevelopSquare_2D.jpg) ![PolaroidDevelopSquare über AuroraBorealisOverFjord (3D)](img/PolaroidDevelopSquare_3D.jpg)
 
 
 ### Portal
@@ -8736,6 +8880,24 @@ TRANSITION REACTION DIFFUSION TURING: Morphogenetic Turing pattern transition. C
 ![ReactionDiffusionTuring über TunnelPlain (2D)](img/ReactionDiffusionTuring_2D.jpg) ![ReactionDiffusionTuring über AuroraBorealisOverFjord (3D)](img/ReactionDiffusionTuring_3D.jpg)
 
 
+### RecrystallisationGrainGrowth
+
+`Transitions/RecrystallisationGrainGrowth.frag` · mood=dark,calm,psychedelic · probability=0.07
+
+TRANSITION RECRYSTALLISATION GRAIN GROWTH: strain-free grains of the incoming scene nucleate in the deformed outgoing one and eat it, until the frame is a fresh grain structure. The tessellation is the physics. Grains nucleate at different MOMENTS and then grow at their own steady rates, so what owns a pixel is whichever grain reaches it first: distance minus rate times the time since that grain was born. That is a J…
+
+![RecrystallisationGrainGrowth über TunnelPlain (2D)](img/RecrystallisationGrainGrowth_2D.jpg) ![RecrystallisationGrainGrowth über AuroraBorealisOverFjord (3D)](img/RecrystallisationGrainGrowth_3D.jpg)
+
+
+### RisographDrumOffset
+
+`Transitions/RisographDrumOffset.frag` · mood=bright,psychedelic · probability=0.07
+
+TRANSITION RISOGRAPH DRUM OFFSET: the scene is printed as a two-colour risograph, and the two drums are out of register. A riso does not mix colours, it lays one spot ink on top of another, so the separation is a real one: each ink's density is its absorption in the complementary channel, and the sheet is built multiplicatively -- paper times ink times ink. That is why the midtones go muddy-warm the way a real riso d…
+
+![RisographDrumOffset über TunnelPlain (2D)](img/RisographDrumOffset_2D.jpg) ![RisographDrumOffset über AuroraBorealisOverFjord (3D)](img/RisographDrumOffset_3D.jpg)
+
+
 ### SandRippleAeolian
 
 `Transitions/SandRippleAeolian.frag` · mood=calm,dreamy · probability=0.06
@@ -8743,6 +8905,33 @@ TRANSITION REACTION DIFFUSION TURING: Morphogenetic Turing pattern transition. C
 TRANSITION SAND RIPPLE AEOLIAN: Desert sand ripple saltation & wind shear transition. Aeolian wind gusts blow golden sand ripples across the desert dunes, carrying fine grain saltation waves that wipe between the scenes. interpolation -> sweeps sandstorm wind front across the frame audioKick -> flashes golden mineral glints in the blowing sand audioBass -> undulates sand dune ripple frequency & wave height Per-activa…
 
 ![SandRippleAeolian über TunnelPlain (2D)](img/SandRippleAeolian_2D.jpg) ![SandRippleAeolian über AuroraBorealisOverFjord (3D)](img/SandRippleAeolian_3D.jpg)
+
+
+### SchlierenKnifeEdge
+
+`Transitions/SchlierenKnifeEdge.frag` · mood=dark,calm · probability=0.07
+
+TRANSITION SCHLIEREN KNIFE EDGE: a knife edge travels across the frame and, in the band around it, the difference between the two scenes shows up the way a schlieren system shows air: as brightness on one side of every gradient and darkness on the other. A schlieren system does not image density, it images the DERIVATIVE of density along the knife: light bent toward the knife is blocked and goes dark, light bent away…
+
+![SchlierenKnifeEdge über TunnelPlain (2D)](img/SchlierenKnifeEdge_2D.jpg) ![SchlierenKnifeEdge über AuroraBorealisOverFjord (3D)](img/SchlierenKnifeEdge_3D.jpg)
+
+
+### ScratchboardReveal
+
+`Transitions/ScratchboardReveal.frag` · mood=dark,aggressive · probability=0.07
+
+TRANSITION SCRATCHBOARD REVEAL: the outgoing scene goes to a black ground, and the incoming one is scraped out of it in hatched strokes. Three hatch sets at fixed angles open one after another, and a stroke only opens where the incoming picture is bright enough to deserve it -- so the first set carves the highlights, the second the midtones, the third fills in. That is how a scratchboard is actually worked, and it is…
+
+![ScratchboardReveal über TunnelPlain (2D)](img/ScratchboardReveal_2D.jpg) ![ScratchboardReveal über AuroraBorealisOverFjord (3D)](img/ScratchboardReveal_3D.jpg)
+
+
+### SeamCarvingRetarget
+
+`Transitions/SeamCarvingRetarget.frag` · mood=dark,psychedelic · probability=0.07
+
+TRANSITION SEAM CARVING RETARGET: seams of lowest energy are taken out of the outgoing scene and seams of the incoming one are pushed in, so the frame is squeezed together unevenly -- quiet areas vanish first and edges hold their ground. The point of seam carving is that it is CONTENT AWARE: it does not scale, it removes the paths a picture can least afford to lose. So the compression here is driven by an energy prof…
+
+![SeamCarvingRetarget über TunnelPlain (2D)](img/SeamCarvingRetarget_2D.jpg) ![SeamCarvingRetarget über AuroraBorealisOverFjord (3D)](img/SeamCarvingRetarget_3D.jpg)
 
 
 ### Shatter
@@ -8790,6 +8979,15 @@ TRANSITION SPECTRAL PRISM SPLIT: Optical prism dispersion transition. The image 
 ![SpectralPrismSplit über TunnelPlain (2D)](img/SpectralPrismSplit_2D.jpg) ![SpectralPrismSplit über AuroraBorealisOverFjord (3D)](img/SpectralPrismSplit_3D.jpg)
 
 
+### SpinodalDecomposition
+
+`Transitions/SpinodalDecomposition.frag` · mood=psychedelic,dark,dreamy · probability=0.07
+
+TRANSITION SPINODAL DECOMPOSITION: the two scenes demix like an alloy quenched below its miscibility gap -- an interpenetrating labyrinth with one scene in each phase, coarsening until one phase has taken the frame. Spinodal decomposition has no nucleation step: the mixture is unstable everywhere at once, so it separates by AMPLIFYING one wavelength of its own fluctuation across the whole volume simultaneously. That …
+
+![SpinodalDecomposition über TunnelPlain (2D)](img/SpinodalDecomposition_2D.jpg) ![SpinodalDecomposition über AuroraBorealisOverFjord (3D)](img/SpinodalDecomposition_3D.jpg)
+
+
 ### SpinZoom
 
 `Transitions/SpinZoom.frag` · mood=aggressive,psychedelic · probability=0.1
@@ -8797,6 +8995,15 @@ TRANSITION SPECTRAL PRISM SPLIT: Optical prism dispersion transition. The image 
 Spin-zoom cross-fade: the old scene twists away while the new one untwists in. Scene TRANSITION shader (Transitions/): blends the outgoing scene (tex0) into the incoming one (tex1) over one cross-fade. interpolation: 1 = old scene fully visible .. 0 = new scene. Extracted from the former FxPlain.frag 28-style library.
 
 ![SpinZoom über TunnelPlain (2D)](img/SpinZoom_2D.jpg) ![SpinZoom über AuroraBorealisOverFjord (3D)](img/SpinZoom_3D.jpg)
+
+
+### SplitFlapDeparture
+
+`Transitions/SplitFlapDeparture.frag` · mood=bright,aggressive,psychedelic · probability=0.07
+
+TRANSITION SPLIT FLAP DEPARTURE: a departure board flips through to the incoming scene, one cell at a time, in rows that run at their own rates. A split-flap does not cut between two states. A leaf hinged across the middle falls, and while it falls the top half of the cell shows the leaf's back edge-on -- so the cell is briefly a squashed version of what it is leaving, then a squashed version of what it is arriving a…
+
+![SplitFlapDeparture über TunnelPlain (2D)](img/SplitFlapDeparture_2D.jpg) ![SplitFlapDeparture über AuroraBorealisOverFjord (3D)](img/SplitFlapDeparture_3D.jpg)
 
 
 ### SuperfluidHe4Fountain
@@ -8826,6 +9033,24 @@ Whirlpool swirl: the frame twists around the centre mid-transition while the sce
 ![Swirl über TunnelPlain (2D)](img/Swirl_2D.jpg) ![Swirl über AuroraBorealisOverFjord (3D)](img/Swirl_3D.jpg)
 
 
+### TalbotCarpetRevival
+
+`Transitions/TalbotCarpetRevival.frag` · mood=psychedelic,bright,dreamy · probability=0.07
+
+TRANSITION TALBOT CARPET REVIVAL: a grating's near field scrambles the outgoing scene into an interference carpet, and the incoming scene comes back out of it at the revival distance. The carpet is the real thing, not a stripe pattern. A periodic field propagating a distance z picks up a phase -pi * (z/zT) * n^2 on its n-th diffraction order, and the intensity is what those orders add up to. Summing five orders with …
+
+![TalbotCarpetRevival über TunnelPlain (2D)](img/TalbotCarpetRevival_2D.jpg) ![TalbotCarpetRevival über AuroraBorealisOverFjord (3D)](img/TalbotCarpetRevival_3D.jpg)
+
+
+### TapeHeadCrossfade
+
+`Transitions/TapeHeadCrossfade.frag` · mood=calm,dark,dreamy · probability=0.07
+
+TRANSITION TAPE HEAD CROSSFADE: a splice runs across the playback head. The cut is diagonal, the transport wows, and the join gives a bump as it passes. A tape splice is cut at an angle on purpose: a square cut would put the whole width across the head in one instant and click, while a diagonal one crosses it progressively and the join is inaudible. So the boundary here is a diagonal, and it travels at a steady rate …
+
+![TapeHeadCrossfade über TunnelPlain (2D)](img/TapeHeadCrossfade_2D.jpg) ![TapeHeadCrossfade über AuroraBorealisOverFjord (3D)](img/TapeHeadCrossfade_3D.jpg)
+
+
 ### Tesseract4DRotation
 
 `Transitions/Tesseract4DRotation.frag` · mood=psychedelic,dark · probability=0.05
@@ -8853,6 +9078,15 @@ Water ripple: concentric waves radiate from the centre and carry the new scene i
 ![WaterRipple über TunnelPlain (2D)](img/WaterRipple_2D.jpg) ![WaterRipple über AuroraBorealisOverFjord (3D)](img/WaterRipple_3D.jpg)
 
 
+### WaveFunctionCollapseTiles
+
+`Transitions/WaveFunctionCollapseTiles.frag` · mood=psychedelic,bright,dreamy · probability=0.07
+
+TRANSITION WAVE FUNCTION COLLAPSE TILES: the frame is a grid of tiles held in superposition -- every candidate at once, which reads as a blur -- and the certainty spreads outward from a few seeds until every tile has settled on the incoming scene. Two things make this the algorithm rather than a checkerboard fade. First, a tile in superposition is the AVERAGE of its candidates, not a faded version of the answer: it l…
+
+![WaveFunctionCollapseTiles über TunnelPlain (2D)](img/WaveFunctionCollapseTiles_2D.jpg) ![WaveFunctionCollapseTiles über AuroraBorealisOverFjord (3D)](img/WaveFunctionCollapseTiles_3D.jpg)
+
+
 ### WormholeSpaceFold
 
 `Transitions/WormholeSpaceFold.frag` · mood=dark,psychedelic · probability=0.02
@@ -8860,6 +9094,15 @@ Water ripple: concentric waves radiate from the centre and carry the new scene i
 TRANSITION WORMHOLE SPACE FOLD: Traversable Morris-Thorne wormhole transition. The camera plunges through a traversable Lorentzian wormhole throat that smoothly folds the geometry of Universe 1 (tex1) into Universe 2 (tex0). interpolation -> navigates camera through the wormhole throat tunnel audioKick -> flashes exotic matter throat stabilization rings audioBass -> undulates wormhole throat diameter & metric curvatu…
 
 ![WormholeSpaceFold über TunnelPlain (2D)](img/WormholeSpaceFold_2D.jpg) ![WormholeSpaceFold über AuroraBorealisOverFjord (3D)](img/WormholeSpaceFold_3D.jpg)
+
+
+### ZonePlateFocusPull
+
+`Transitions/ZonePlateFocusPull.frag` · mood=psychedelic,bright · probability=0.07
+
+TRANSITION ZONE PLATE FOCUS PULL: a Fresnel zone plate takes the outgoing scene apart into its rings and pulls the incoming one into focus through the same rings. A zone plate's rings sit at radii proportional to the square root of their index, which means the pattern is a CHIRP in radius squared -- widely spaced at the centre, crowding toward the rim. Evenly spaced rings would be a target, not a lens, and would not …
+
+![ZonePlateFocusPull über TunnelPlain (2D)](img/ZonePlateFocusPull_2D.jpg) ![ZonePlateFocusPull über AuroraBorealisOverFjord (3D)](img/ZonePlateFocusPull_3D.jpg)
 
 
 ### ZoomThrough
