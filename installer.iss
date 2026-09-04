@@ -23,7 +23,7 @@
 #define MyAppName "Kaleidoscope Enhanced"
 #define MyAppExeName "Kaleidoscope.exe"
 #define MyAppPublisher "Rene Weller"
-#define MyAppVersion "1.14.0"
+#define MyAppVersion "1.15.0"
 ; Staged package produced by deploy.ps1:
 #define SrcDir "dist\KaleidoscopeVisualizer"
 
@@ -52,7 +52,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 ; deterministic (…/releases/download/<tag>/<file>), so no API call is needed --
 ; but it also means a pack re-published under a NEW tag has to be updated here.
 #define ImagesTag "images-v2"
-#define ModelsTag "models-v2"
+#define ModelsTag "models-v3"
 #define RelUrl "https://github.com/reneweller-coding/KaleidoscopeEnhanced/releases/download"
 
 [CustomMessages]

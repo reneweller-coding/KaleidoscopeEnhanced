@@ -133,7 +133,7 @@ and are downloaded separately -- together they come to about two gigabytes,
 many times the size of the program itself.
 
   1. Get the model pack here:
-     https://github.com/reneweller-coding/KaleidoscopeEnhanced/releases/tag/models-v2
+     https://github.com/reneweller-coding/KaleidoscopeEnhanced/releases/tag/models-v3
   2. Unpack the .glb files straight into THIS folder.
   3. Restart the program.
 

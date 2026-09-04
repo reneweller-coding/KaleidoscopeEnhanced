@@ -99,9 +99,9 @@ hand: unpack into the program's `Images` and `Models` folders and restart.
 | Pack | | Contains |
 |---|---|---|
 | [Photos](https://github.com/reneweller-coding/KaleidoscopeEnhanced/releases/tag/images-v2) | 977 images, 593 MB | agate, rust, pigment, soap film, sediment, aurora, craquelure, woven fibre |
-| [Models: ships](https://github.com/reneweller-coding/KaleidoscopeEnhanced/releases/tag/models-v2) | 79 models, 715 MB | capital ships, freighters, couriers, drones |
-| [Models: stations](https://github.com/reneweller-coding/KaleidoscopeEnhanced/releases/tag/models-v2) | 30 models, 259 MB | space stations — the six station families |
-| [Models: objects](https://github.com/reneweller-coding/KaleidoscopeEnhanced/releases/tag/models-v2) | 48 models, 384 MB | sculptures, hi-fi gear, sea creatures, eroded rock, gongs, pierced lattices |
+| [Models: ships](https://github.com/reneweller-coding/KaleidoscopeEnhanced/releases/tag/models-v3) | 77 models, 699 MB | capital ships, freighters, couriers, drones |
+| [Models: stations](https://github.com/reneweller-coding/KaleidoscopeEnhanced/releases/tag/models-v3) | 30 models, 259 MB | space stations — the six station families |
+| [Models: objects](https://github.com/reneweller-coding/KaleidoscopeEnhanced/releases/tag/models-v3) | 62 models, 517 MB | sculptures, hi-fi gear, sea creatures, eroded rock, gongs, pierced lattices, and the real-object scenes: rocket and pad, peacock, organ, aqueduct, bells, candles, gears, pendulums, metronomes, seismograph, foundry |
 
 **Nothing breaks without them.** A scene whose model is missing is skipped when
 the catalogue is read, the photo scenes fall back to a procedural texture, and
