@@ -171,6 +171,12 @@ foreach ($name in $Names) {
     & ffmpeg -y -ss 8  -i $mp4 -vframes 1 -q:v 2 (Join-Path $out "${name}_A.png") 2>$null
     & ffmpeg -y -ss 16 -i $mp4 -vframes 1 -q:v 2 (Join-Path $out "${name}_B.png") 2>$null
     & ffmpeg -y -ss 21 -i $mp4 -vframes 1 -q:v 2 (Join-Path $out "${name}_C.png") 2>$null
+    # A heavy scene records below real time and its video ends before t=21:
+    # take the last frame instead of leaving the third image missing.
+    if (-not (Test-Path (Join-Path $out "${name}_C.png"))) {
+        & ffmpeg -y -sseof -1 -i $mp4 -vframes 1 -q:v 2 (Join-Path $out "${name}_C.png") 2>$null
+        Write-Host "$name : C from the end of a short recording"
+    }
     Write-Host "$name : rendered"
     Remove-Item $d.FullName -Recurse -Force -ErrorAction SilentlyContinue
   }
