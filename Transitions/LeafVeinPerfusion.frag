@@ -19,7 +19,7 @@ out vec4 fragColor;
  * width is what makes a drawn network look like a drawn network.
  *
  * Audio Reactivity:
- *   audioBass    -> the pressure at the petiole: how fast the front runs (slow)
+ *   audioSwell   -> the pressure at the petiole: how far the front has run (slow)
  *   audioHigh    -> the sheen on a filled vein (light)
  *   audioSwell   -> how far the dye bleeds into the blade (slow)
  *   audioKick    -> the light in the filled network (light)
@@ -124,14 +124,19 @@ void main()
         }
     }
 
-    // One front crossing the PATH LENGTHS, not the distances.
-    float speed = 0.85 + 0.5 * clamp(audioBass, 0.0, 1.0);
+    // One front crossing the PATH LENGTHS, not the distances.  Only a SLOW
+    // envelope may touch where the front is: a fast one scales a position, and
+    // a scaled position runs backwards the moment the envelope drops.
+    float speed = 0.90 + 0.30 * clamp(audioSwell, 0.0, 1.0);
     float front = d * (1.25 * speed) - 0.06;
     float filled = smoothstep(front + 0.10, front - 0.10, path);
 
     // The vein itself, and the dye bleeding out of it into the blade.
     float vein = smoothstep(1.30, 0.70, best);
     float spread = (1.6 + 2.6 * clamp(audioSwell, 0.0, 1.0)) * bleed * d * d;
+    // The bass is audible in the light the filled network gives off, not in
+    // where that network has got to.
+    float pressure = 0.75 + 0.5 * clamp(audioBass, 0.0, 1.0);
     float lamina = smoothstep(1.0 + spread * 9.0, 0.9, best);
 
     float wet = clamp(max(vein, lamina * 0.92) * filled, 0.0, 1.0);
@@ -148,7 +153,7 @@ void main()
     // An empty vein is visible too, just faintly: the leaf has its skeleton
     // before the dye arrives.
     col *= 1.0 - vein * (1.0 - filled) * 0.20 * arc;
-    col += sheen * vein * filled * arc
+    col += sheen * vein * filled * arc * pressure
          * (0.06 + 0.22 * clamp(audioHigh * 2.0, 0.0, 1.0) + 0.10 * clamp(audioKick, 0.0, 1.0));
     // The advancing front is a little brighter than what it leaves behind.
     float edge = exp(-pow((path - front) / 0.06, 2.0)) * vein;

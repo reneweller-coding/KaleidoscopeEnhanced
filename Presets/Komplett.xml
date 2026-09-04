@@ -4723,6 +4723,48 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TransitionShader>
 
+  <TransitionShader file="..\Transitions\SplitFlapDeparture.frag" type="normal" mood="bright,aggressive,psychedelic" probability="0.07" complexity="3">
+    <float name="colsP" minValue="0.0" maxValue="1.0"></float>
+    <float name="flapsP" minValue="0.0" maxValue="1.0"></float>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TransitionShader>
+
+  <TransitionShader file="..\Transitions\TapeHeadCrossfade.frag" type="normal" mood="calm,dark,dreamy" probability="0.07" complexity="2">
+    <float name="angleP" minValue="0.0" maxValue="1.0"></float>
+    <float name="wowP" minValue="0.60" maxValue="1.60"></float>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TransitionShader>
+
+  <TransitionShader file="..\Transitions\LenticularTilt.frag" type="normal" mood="bright,psychedelic" probability="0.07" complexity="2">
+    <float name="pitchP" minValue="0.0" maxValue="1.0"></float>
+    <float name="spreadP" minValue="0.60" maxValue="1.50"></float>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TransitionShader>
+
+  <TransitionShader file="..\Transitions\LatentDenoiseArrival.frag" type="normal" mood="dark,psychedelic,dreamy" probability="0.07" complexity="3">
+    <float name="stepsP" minValue="0.70" maxValue="1.40"></float>
+    <float name="warpP" minValue="0.60" maxValue="1.50"></float>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TransitionShader>
+
+  <TransitionShader file="..\Transitions\HilbertCurveSweep.frag" type="normal" mood="bright,psychedelic" probability="0.07" complexity="2">
+    <float name="orderP" minValue="0.0" maxValue="1.0"></float>
+    <float name="edgeP" minValue="0.60" maxValue="1.60"></float>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TransitionShader>
+
+  <TransitionShader file="..\Transitions\WaveFunctionCollapseTiles.frag" type="normal" mood="psychedelic,bright,dreamy" probability="0.07" complexity="3">
+    <float name="tilesP" minValue="0.0" maxValue="1.0"></float>
+    <float name="seedsP" minValue="0.0" maxValue="1.0"></float>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TransitionShader>
+
+  <TransitionShader file="..\Transitions\SeamCarvingRetarget.frag" type="normal" mood="dark,psychedelic" probability="0.07" complexity="3">
+    <float name="energyP" minValue="0.0" maxValue="1.0"></float>
+    <float name="amountP" minValue="0.60" maxValue="1.40"></float>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TransitionShader>
+
 
 
   <TextureShader file="..\\Scene2D\\IceCrack.frag" type="normal" probability="0.42" mood="calm,bright" complexity="3">

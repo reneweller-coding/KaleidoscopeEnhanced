@@ -3817,3 +3817,64 @@ the whole desktop page over PCIe, which is what "extremely slow" really was.
 | GPU | 17 % | 52 % |
 | Video memory | +0.9 GB | +3.4 GB |
 | Scheduler wake delay, median | 0.3 ms | 0.5 ms |
+
+## 27 new transitions, and three traps that come with them
+
+83 transitions became 110.  The six families are print and paper, optics,
+matter and phase changes, living things, mechanism, and algorithms; the list
+with each one's mechanism is in `docs/proposals-2026-09-04-transitions-27.md`.
+
+A transition has one structural advantage over a scene: its progress is
+monotonic, so continuity is free as long as no audio envelope scales something
+already in flight.  It also has one structural constraint a scene does not
+have.  **Both ends must be exactly the untouched scenes.**  Everything a
+transition adds is therefore gated on `arc = sin(PI * d)`, which is zero at
+both ends by construction, or on a coverage term that is provably 0 at d=0 and
+1 at d=1.  A shadow left at 30 % on the last frame is a visible seam at every
+scene change.
+
+### The tooling was lying about every transition image
+
+`render_catalog_images.ps1 -Kind trans` built its probe configuration with the
+two reference scenes and no `<TransitionShader>` at all.  `KALEIDO_TRANS_STYLE`
+selects from the transitions REGISTERED in the configuration, and a
+configuration with none falls back to the built-in Crossfade -- so every
+transition image in the catalogue showed a plain cross-fade rather than the
+transition it was labelled with.  Fixed; the existing 83 images predate the fix
+and are still wrong until they are re-rendered.
+
+`Tools/trans_strip.ps1` is the new instrument: it records one forced cross-fade
+and pulls a row of frames out of it.  One frame cannot show whether an arc
+starts clean, does its one thing and lands clean.  It uses the QUIET wav on
+purpose -- with a confident beat the scheduler clamps a cross-fade to four
+beats, two seconds at 120 BPM, and two seconds cannot be sampled.  It also sets
+`KALEIDO_MOOD=0`, because the mood grade rotates the whole frame onto the key
+the music is in: a Prussian-blue cyanotype came back wine red.
+
+### Trap 1: a feature may not outgrow its neighbourhood search
+
+A cell-based effect looks at a fixed ring of neighbouring cells.  If a bubble's
+shock ring, a grain's growth or a droplet's travel reaches further than that
+ring, the boundary between "this pixel sees the feature" and "this pixel does
+not" IS the cell boundary -- and the result is axis-aligned rectangles in the
+middle of the picture, which read as data corruption.
+
+Growth and reach can be decoupled: grow fast, cap the reach.  Once neighbours
+have met, the frame is completely tiled, so any reach beyond that is invisible
+anyway (`RecrystallisationGrainGrowth`).
+
+### Trap 2: a branch-selected sample offset destroys the mip level
+
+When the lens offset for a texture fetch is chosen per pixel by a branch --
+"whichever bubble covers me" -- the offset jumps at every feature boundary, the
+implicit derivative of the texture coordinate explodes, and the sampler drops
+to its coarsest mip.  The result is blurred rectangular blocks.  `textureLod`
+with an explicit level takes the choice away from it.
+
+### Trap 3: paper is the white point
+
+Three of the print transitions came back as a white wash.  A print cannot be
+brighter than its stock, so lifting the sheet with a gain blows every highlight
+in the picture to pure white, and highlights are what the eye reads first.  The
+same restraint keeps these out of strobe territory: a near-white full-frame
+sheet is a flash, whatever it is a picture of.
