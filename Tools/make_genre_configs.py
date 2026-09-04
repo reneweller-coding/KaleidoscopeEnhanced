@@ -29,10 +29,10 @@ import re, os, sys
 
 os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 
-SRC = "Configurations/Komplett.xml"
+SRC = "Presets/Komplett.xml"
 # Relative to the executable's working directory (bin/), exactly like the
 # shader paths ("..\\\\Scene2D\\\\X.frag").  The bundled photo library lives in
-# Images/ beside Configurations/; a user who wants their own pictures sets
+# Images/ beside Presets/; a user who wants their own pictures sets
 # imageDirectory in kaleidoscope_settings.ini instead of editing generated
 # files, which this script would overwrite on its next run.
 IMAGE_DIR = "..\\\\Images"
@@ -288,7 +288,7 @@ for entry in GENRES:
     out.append("")
     out.append("</configuration>")
     out.append("")
-    path = "Configurations/%s.xml" % name
+    path = "Presets/%s.xml" % name
     open(path, "w", encoding="utf-8", newline="\n").write("\n".join(out))
     print("%-12s %3d scenes  %2d fx  %2d trans -> %s"
           % (name, len(sel_s), len(sel_f), len(sel_t), path))

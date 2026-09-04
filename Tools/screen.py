@@ -39,7 +39,7 @@ import numpy as np
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WORK = os.path.join(ROOT, ".screen")
 RELEASE = os.path.join(ROOT, "Release")
-KOMPLETT = os.path.join(ROOT, "Configurations", "Komplett.xml")
+KOMPLETT = os.path.join(ROOT, "Presets", "Komplett.xml")
 
 # Analysis raster.  160x90 is small on purpose: it is a structure measure, not
 # a screenshot, and one ffmpeg decode per chunk beats thousands of PNG files.
@@ -83,7 +83,7 @@ def read_master():
 
 def preset_names(preset):
     """Scene stems a generated preset contains (so --preset mirrors the show)."""
-    p = os.path.join(ROOT, "Configurations", preset + ".xml")
+    p = os.path.join(ROOT, "Presets", preset + ".xml")
     if not os.path.exists(p):
         sys.exit("Preset nicht gefunden: " + p)
     src = io.open(p, encoding="utf-8", errors="replace").read()
@@ -117,7 +117,7 @@ def write_fx_config(scenes, cross):
            '<configuration ImageDirectory="..\\\\Images" '
            'ConfigurationName="TestZZScreenFx" hidden="true" >\n\n'
            + ref + "\n" + "".join(fx) + cross + "</configuration>\n")
-    io.open(os.path.join(ROOT, "Configurations", "ZZScreenFx.xml"), "w",
+    io.open(os.path.join(ROOT, "Presets", "ZZScreenFx.xml"), "w",
             encoding="utf-8").write(xml)
     return [("ZZScreenFx", len(fx))]
 
@@ -168,7 +168,7 @@ def write_chunks(scenes, plain, cross, per_chunk):
                'ConfigurationName="Test%s" hidden="true" >\n\n' % cfg
                + "".join(entries) + "\n" + plain + cross
                + "</configuration>\n")
-        io.open(os.path.join(ROOT, "Configurations", cfg + ".xml"), "w",
+        io.open(os.path.join(ROOT, "Presets", cfg + ".xml"), "w",
                 encoding="utf-8").write(xml)
         names.append((cfg, len(entries)))
     return names
@@ -477,7 +477,7 @@ def measure_scenes(names, hold, seed=1, time_start=0, extra_env=None):
     rows = measure(vid, log, hold) if vid else []
     if folder and rows:
         subprocess.run(["cmd", "/c", "rmdir", "/s", "/q", folder], check=False)
-    p = os.path.join(ROOT, "Configurations", cfg + ".xml")
+    p = os.path.join(ROOT, "Presets", cfg + ".xml")
     if os.path.exists(p):
         os.remove(p)
     for r in rows:
@@ -800,7 +800,7 @@ def main():
         allrows += rows
 
     for cfg, _ in chunks:
-        p = os.path.join(ROOT, "Configurations", cfg + ".xml")
+        p = os.path.join(ROOT, "Presets", cfg + ".xml")
         if os.path.exists(p):
             os.remove(p)
 

@@ -16,7 +16,7 @@ table.
 Only signatures used at least MIN_USES times become presets.  A rig that
 appears once is clearer written out than hidden behind a name invented for it.
 
-The engine resolves `<rig preset="X"/>` from Configurations/rigs.xml in
+The engine resolves `<rig preset="X"/>` from Presets/rigs.xml in
 Configuration::addUniforms, so this is a pure re-expression: the resulting
 expression list per scene is identical, which `--verify` checks by comparing
 the engine's own "Expr OK" log lines from before and after.
@@ -24,8 +24,8 @@ the engine's own "Expr OK" log lines from before and after.
 import argparse, collections, io, os, re, sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-KOMPLETT = os.path.join(ROOT, "Configurations", "Komplett.xml")
-RIGS = os.path.join(ROOT, "Configurations", "rigs.xml")
+KOMPLETT = os.path.join(ROOT, "Presets", "Komplett.xml")
+RIGS = os.path.join(ROOT, "Presets", "rigs.xml")
 
 MIN_USES = 5
 

@@ -219,7 +219,7 @@ def scan_rigs(path):
 
 
 def check_rig_floor():
-    cfg = os.path.join(ROOT, "Configurations", "Komplett.xml")
+    cfg = os.path.join(ROOT, "Presets", "Komplett.xml")
     if not os.path.exists(cfg):
         return 0
     frozen, terms, slow_terms = scan_rigs(cfg)

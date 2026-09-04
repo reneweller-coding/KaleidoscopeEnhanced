@@ -22,7 +22,7 @@ param(
 
 $root  = Split-Path $PSScriptRoot -Parent
 $rel   = Join-Path $root "Release"
-$cfgD  = Join-Path $root "Configurations"
+$cfgD  = Join-Path $root "Presets"
 $wav   = Join-Path $PSScriptRoot "catalog_scan.wav"
 $hotWav = Join-Path $PSScriptRoot "broadband120.wav"   ; # FX/transitions only need ONE audio-hot frame -- reuse the always-energetic tone instead of waiting for catalog_scan.wav's t=17 hot section
 $out   = Join-Path $root "Docs\Catalog\rendered\$OutDir"

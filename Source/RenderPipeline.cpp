@@ -69,7 +69,7 @@ QString RenderPipeline::s_warmLabel;                // what the lazy warm-up did
 QString RenderPipeline::s_imageDirCli;              // photo source override (CLI -f)
 QString RenderPipeline::s_imageDirUser;             // photo source override (ini)
 
-// Settings file lives next to the Configurations folder (parent of Debug/Release),
+// Settings file lives next to the Presets folder (parent of Debug/Release),
 // matching how shaders and configs are loaded ("..\\...").
 static QString settingsFilePath()
 {
@@ -1039,7 +1039,7 @@ bool RenderPipeline::saveMarkedPreset( QString *outPath )
 	// Take the scenes' real nodes from the master catalogue. Synthesising tags
 	// here would drop geom and every preset parameter -- the exact failure that
 	// made a whole measurement campaign's probes meaningless earlier.
-	const QString cfgDir = QFileInfo( settingsFilePath() ).absolutePath() + "/Configurations";
+	const QString cfgDir = Platform::presetsDir( QFileInfo( settingsFilePath() ).absolutePath() );
 	QDomDocument master;
 	QFile mf( cfgDir + "/Komplett.xml" );
 	QString parseErr; int errLine = 0;

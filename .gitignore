@@ -58,8 +58,8 @@ indirect_diag.log
 Tools/catalog_scan.wav
 Tools/catalog_batch.log
 Docs/Catalog/rendered/
-Configurations/_catalog.xml
-Configurations/_verify.xml
+Presets/_catalog.xml
+Presets/_verify.xml
 
 # Szenen-Katalog: PDF ist generiert (Katalog.md + img/ sind die Quelle)
 Docs/Catalog/Katalog.pdf
@@ -73,10 +73,10 @@ __pycache__/
 Tools/scene_metrics.json
 
 # Written at runtime by SHIFT+SPACE / the web remote -- user data, not source.
-Configurations/Marked.xml
+Presets/Marked.xml
 # Throwaway review filter written by Tools/make_sweep_config.py for a single
 # pass; the checked-in equivalent for the whole catalogue is TestAlle.
-Configurations/MeshSweep.xml
+Presets/MeshSweep.xml
 
 # Visual Studio per-user solution options (binary, per-developer)
 *.suo
@@ -106,7 +106,7 @@ Configurations/MeshSweep.xml
 /Images/
 
 # Wegwerf-Konfigs der Sweep-/Katalog-Harness (Tools/... erzeugt sie neu)
-Configurations/ZZ*.xml
+Presets/ZZ*.xml
 
 # Messbericht von Tools/catalog_check.py (wird bei jedem Lauf neu erzeugt)
 Tools/catalog_check.json

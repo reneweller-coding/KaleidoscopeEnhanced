@@ -5,6 +5,7 @@
  *        rig, and the combined 2D/scene3d two-pass render in paintGL().
  */
 #include "PreviewWidget.h"
+#include "Preset.h"        // presetsDir()
 
 #include <QtOpenGL/QOpenGLShaderProgram>
 #include <QtOpenGL/QOpenGLFramebufferObject>
@@ -46,14 +47,14 @@ struct KomplettRange { QString kind, name; float minV, maxV; };
  * directly so a scene3d shader gets a real per-activation roll instead of
  * GLSL's zero default, in BOTH the GUI and the headless --render/self-test
  * paths that never touch EditorWindow at all.
- * @param root Project root Configurations/Komplett.xml is resolved against.
+ * @param root Project root Presets/Komplett.xml is resolved against.
  * @param frag Bare shader filename to look up (matched against the file="..\\...\\<frag>" attribute).
  * @return The `<int>`/`<float>` ranges declared for @p frag's `<TextureShader>`/`<CombineShader>` entry, or empty if none were found.
  */
 static QVector<KomplettRange> komplettRangesFor(const QString &root, const QString &frag)
 {
     QVector<KomplettRange> out;
-    QFile f(root + "/Configurations/Komplett.xml");
+    QFile f(presetsDir(root) + "/Komplett.xml");
     if (!f.open(QIODevice::ReadOnly)) return out;
     const QString xml = QString::fromUtf8(f.readAll());
     QRegularExpression entryRe(

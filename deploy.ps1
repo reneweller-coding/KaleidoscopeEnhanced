@@ -8,7 +8,7 @@
 
         KaleidoscopeVisualizer\
             *.frag, *.vert            <- shaders          (the exe loads these from "..\")
-            Configurations\*.xml      <- presets
+            Presets\*.xml      <- presets
             Kaleidoscope-starten.bat  <- double-click launcher (windowed)
             Kaleidoscope-Vollbild.bat <- fullscreen / kiosk launcher (-b)
             LIESMICH.txt              <- short end-user readme
@@ -206,7 +206,7 @@ procedurally generated texture and the startup log says so.
 "@ | Set-Content -Path (Join-Path $imagesDir "LIESMICH-BILDER.txt") -Encoding utf8
 
 Copy-Item (Join-Path $root "*.vert") $pkgDir
-Copy-Item (Join-Path $root "Configurations") $pkgDir -Recurse
+Copy-Item (Join-Path $root "Presets") $pkgDir -Recurse
 # The review bench (TestAlle) analyses its own silent track instead of
 # listening; the preset names ..\Tools\review128.wav, so the package needs
 # exactly that file at exactly that spot. Without it the engine now falls
@@ -272,7 +272,7 @@ aus auf den Paket-Stammordner zeigen. Bitte nicht loeschen.
 
 # --- 3c. bundle the SetupTool (offline kaleidoscope_settings.ini editor) -----
 # Needs no CWD anchor (unlike PresetEditor): SetupWindow::findRootDir() walks
-# UP from its own exe directory looking for a "Configurations" landmark, and
+# UP from its own exe directory looking for a "Presets" landmark, and
 # bin\'s parent (the package root) already has one.
 $setupSrc = Join-Path $root "SetupTool\build\Release\KaleidoscopeSetup.exe"
 if (Test-Path $setupSrc) {
@@ -393,7 +393,7 @@ if (Test-Path (Join-Path $binDir "PresetEditor.exe")) {
     # formula logs ("Expr OK: ..."), which is useful in an authoring tool.
     $batEd = @'
 @echo off
-rem Startet den Preset-Editor: Configurations\*.xml bearbeiten mit
+rem Startet den Preset-Editor: Presets\*.xml bearbeiten mit
 rem Live-Shader-Vorschau, Parameter-Bereichen und Formel-/Audio-Mappings.
 rem Das Konsolenfenster zeigt Shader-Compile- und Formel-Logs.
 start "" /D "%~dp0bin" "%~dp0bin\PresetEditor.exe" %*
@@ -433,12 +433,12 @@ Keys while running:  Esc/Q quit, 0 menu, 1-9 configs, i overlay (+FPS),
   k save look as default, s screenshot.
 
 Pictures: the kaleidoscope textures come from the folder named in
-  Configurations\*.xml  (the "ImageDirectory" attribute). Point it at your
+  Presets\*.xml  (the "ImageDirectory" attribute). Point it at your
   own photos. If it is missing, a built-in procedural texture is used instead
   (the program still runs - it never crashes on missing images).
 
 Preset editor:
-  - Double-click  PresetEditor-starten.bat  to edit Configurations\*.xml with
+  - Double-click  PresetEditor-starten.bat  to edit Presets\*.xml with
     a live shader preview: per-preset parameter ranges, and formula/audio
     mappings (which music signal drives which shader parameter). The console
     window it opens shows shader-compile and formula logs.

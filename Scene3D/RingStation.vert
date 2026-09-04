@@ -5,7 +5,7 @@
  * Shared by every wheel/ring/torus-shaped station (geom="mesh"): a slow
  * spin around the station's own hub axis, spin-gravity style, while the
  * camera does the big cinematic move (see this scene's rig* formulas in
- * Configurations/Komplett.xml). gl_VertexID picks the vertex's own branch:
+ * Presets/Komplett.xml). gl_VertexID picks the vertex's own branch:
  * below meshVertexCount it is the loaded model, at or above it it is the
  * enclosing sky shell Scene3DShader::buildGeometry() appends (see that
  * function's own comment) -- RingStation.frag renders a planet + starfield

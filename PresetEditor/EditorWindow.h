@@ -41,7 +41,7 @@ class EditorWindow : public QMainWindow
 public:
     /**
      * @brief Construct the editor window and build its entire UI.
-     * @param projectRoot Root folder of the visualizer project (holds standard.vert, Configurations/, Scene2D/, Scene3D/, Combine/); resolved by main.cpp's findRoot().
+     * @param projectRoot Root folder of the visualizer project (holds standard.vert, Presets/, Scene2D/, Scene3D/, Combine/); resolved by main.cpp's findRoot().
      * @param parent Optional Qt parent widget.
      */
     explicit EditorWindow(const QString &projectRoot, QWidget *parent = nullptr);
@@ -82,9 +82,9 @@ private slots:
     void onTableSelectionChanged();
     /// @brief Replaces #m_preset with a blank Preset (keeping the current ImageDirectory) and refreshes the UI.
     void newPreset();
-    /// @brief Prompts for a preset XML file under Configurations/, loads it via Preset::load(), and refreshes the UI on success (shows a warning dialog on failure).
+    /// @brief Prompts for a preset XML file under Presets/, loads it via Preset::load(), and refreshes the UI on success (shows a warning dialog on failure).
     void openPreset();
-    /// @brief Writes #m_preset to Configurations/&lt;name&gt;.xml, confirming before overwrite and reporting errors via a dialog.
+    /// @brief Writes #m_preset to Presets/&lt;name&gt;.xml, confirming before overwrite and reporting errors via a dialog.
     void savePreset();
     /// @brief Prompts for a directory and applies it as both the ImageDirectory field and the preview's image source.
     void browseImageDir();
@@ -190,9 +190,9 @@ private:
     /// @brief Re-evaluates every currently-valid expr row's compiled program against the animated audio state and updates its value label.
     void tickExprValues();
 
-    QString m_root;   ///< Project root directory (holds standard.vert, Configurations/, Scene2D/, Scene3D/, Combine/).
+    QString m_root;   ///< Project root directory (holds standard.vert, Presets/, Scene2D/, Scene3D/, Combine/).
     Preset  m_preset; ///< The preset currently being authored/edited.
-    Preset  m_komplett;   ///< loaded once from Configurations/Komplett.xml; the reference range set
+    Preset  m_komplett;   ///< loaded once from Presets/Komplett.xml; the reference range set
 
     PreviewWidget *m_preview = nullptr;   ///< Embedded live GL preview widget.
     QComboBox *m_texCombo  = nullptr;   ///< Texture-shader selection combo (drives the preview and "add texture" panel).

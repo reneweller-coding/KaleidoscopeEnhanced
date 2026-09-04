@@ -51,7 +51,7 @@ lights.*
 - [Quick start](#quick-start)
 - [Extra content: photos and 3D models](#extra-content-photos-and-3d-models)
 - [Controls](#controls)
-- [Configurations and presets](#configurations-and-presets)
+- [Presets](#presets)
   - [Reviewing the shader library](#reviewing-the-shader-library)
 - [Recording](#recording)
 - [Setup tool](#setup-tool)
@@ -117,7 +117,7 @@ wants a complicated shadow.
 
 **Your own pictures instead:** set **Photo folder** in the Setup tool. That
 writes `imageDirectory` into `kaleidoscope_settings.ini`, which outranks the
-presets — the right place for it, since `Configurations\*.xml` are generated
+presets — the right place for it, since `Presets\*.xml` are generated
 and would lose the change. Subfolders are searched; `.jpg`, `.jpeg` and `.png`
 are recognised. For one run only, `Kaleidoscope.exe -f <folder>` beats both.
 What actually suits this program — format, tone, contrast, composition — is
@@ -228,9 +228,9 @@ more — to TouchDesigner, Resolume, Max/MSP or anything else that speaks OSC.
 The full story, with the literature and the measurements, is in
 [docs/mood-and-mapping.md](docs/mood-and-mapping.md).
 
-## Configurations and presets
+## Presets
 
-`Configurations\*.xml` define which shaders are in rotation, their
+`Presets\*.xml` define which shaders are in rotation, their
 probabilities, mood tags, and the photo folder (`ImageDirectory`, shipping as
 `..\Images`) they draw on. These files are GENERATED, so change the folder in
 the Setup tool rather than in here — see
@@ -257,7 +257,7 @@ scenes, 29 overlay effects and 83 transitions, each with a description and
 three example frames. A printable `Katalog.pdf` ships with every release.
 
 **Building your own presets:** `PresetEditor.exe` (its own small Qt app,
-bundled with every release) edits `Configurations\*.xml` with a live shader
+bundled with every release) edits `Presets\*.xml` with a live shader
 preview — browse every scene, add it to a preset with its timing/probability,
 tune per-parameter ranges against a real preview, and save. It also carries
 the project's self-tests (`--validate`, `--roundtrip`, `--transcheck`,
@@ -295,7 +295,7 @@ than enjoy them:
   from the normal preset list on purpose.
 
 * **Marking** — press `Space` while a scene is up to shortlist it, and
-  `Shift+Space` to write every marked scene to `Configurations\Marked.xml` as
+  `Shift+Space` to write every marked scene to `Presets\Marked.xml` as
   a playable preset. Both are on the [remote](#remote-control) too, so you can
   mark from a phone while the show runs on a TV. Marks live in
   `kaleidoscope_settings.ini` and survive restarts, so an inspection pass can
@@ -490,11 +490,11 @@ app suppresses the screensaver/standby while it runs, and the packaged
 fullscreen launcher restarts it automatically after a crash (5 s delay, gives
 up after 5 rapid crashes in a row). If the default output device changes
 (headphones unplugged, outputs switched), audio capture reconnects on its
-own — no manual restart needed. A missing image folder or `Configurations`
+own — no manual restart needed. A missing image folder or `Presets`
 folder degrades gracefully (fallback texture / clear error) instead of
 crashing.
 
-> Shaders and `Configurations\*.xml` load from the exe's parent folder, so
+> Shaders and `Presets\*.xml` load from the exe's parent folder, so
 > run it from `Debug\` / `Release\`.
 
 
@@ -572,9 +572,9 @@ Top-level folders:
 - **`Engine\`** — internal pipeline passes (mood grade, feedback trails,
   bloom, the GPU fluid/reaction-diffusion/smoke simulations, compute kernels).
 - **`PresetEditor\`** and **`SetupTool\`** — the two standalone companion
-  tools (see [above](#configurations-and-presets), [above](#setup-tool)).
+  tools (see [above](#presets), [above](#setup-tool)).
 - **`AndroidRemote\`** — the Android remote app (no Gradle; plain SDK tools).
-- **`Configurations\*.xml`** — presets; **`ThirdParty\SpoutGL\`** — vendored
+- **`Presets\*.xml`** — presets; **`ThirdParty\SpoutGL\`** — vendored
   Spout2 SDK; **`docs\`** — this repo's documentation and the scene catalogue;
   **`Tools\`** — `verify.ps1` (smoke/roundtrip/transition self-tests) and the
   catalogue/icon generators.
@@ -587,7 +587,7 @@ indirect draw, tessellation, …): [docs/engine-internals.md](docs/engine-intern
 ## Credits and license
 
 [MIT](LICENSE), with one exception: the eleven adapted Shadertoy shaders
-named in [Configurations and presets](#configurations-and-presets) remain
+named in [Presets](#presets) remain
 under kishimisu's original CC BY-NC-SA 4.0 (non-commercial, share-alike);
 see `LICENSE` and each file's own header.
 

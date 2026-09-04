@@ -8,7 +8,7 @@ os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 names_file, out_file, cfg_name = sys.argv[1], sys.argv[2], sys.argv[3]
 names = [n.strip() for n in io.open(names_file, encoding="utf-8").read().split() if n.strip()]
 
-src = io.open("Configurations/Komplett.xml", encoding="utf-8").read()
+src = io.open("Presets/Komplett.xml", encoding="utf-8").read()
 BLOCK = re.compile(r"[ \t]*<(TextureShader|CombineShader|TransitionShader)\b[^>]*>.*?</\1>[ \t]*\n", re.S)
 by, plain, cross = {}, None, None
 for m in BLOCK.finditer(src):

@@ -96,7 +96,7 @@ def header_comment(path):
     return txt[:420] + ("…" if len(txt) > 420 else "")
 
 # ---- collect scenes from Komplett.xml (the exhaustive reference) ----
-xml = open(os.path.join(root, "Configurations", "Komplett.xml"), encoding="utf-8").read()
+xml = open(os.path.join(root, "Presets", "Komplett.xml"), encoding="utf-8").read()
 scenes, seen = [], set()
 for m in re.finditer(r'<TextureShader\b([^>]*)>', xml):
     attrs = dict(re.findall(r'(\w+)="([^"]*)"', m.group(1)))

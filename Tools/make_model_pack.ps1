@@ -47,7 +47,7 @@ New-Item -ItemType Directory -Force -Path $OutDir | Out-Null
 # Which theme a model belongs to is decided by the scenes that USE it, so the
 # split cannot drift out of step with the catalogue: parse Komplett.xml and
 # group by the shader family each model appears under.
-$cat = Get-Content (Join-Path $root "Configurations\Komplett.xml") -Raw
+$cat = Get-Content (Join-Path $root "Presets\Komplett.xml") -Raw
 $themeOf = @{}
 foreach ($m in [regex]::Matches($cat, '<TextureShader[^>]*?Scene3D\\+(?<fam>\w+)\.frag[^>]*?>')) {
     $fam = $m.Groups['fam'].Value

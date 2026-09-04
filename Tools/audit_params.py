@@ -19,7 +19,7 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-KOMPLETT = ROOT / "Configurations" / "Komplett.xml"
+KOMPLETT = ROOT / "Presets" / "Komplett.xml"
 
 UNIFORM_RE = re.compile(r'^\s*uniform\s+(float|int)\s+([A-Za-z0-9_]+)\s*;', re.MULTILINE)
 

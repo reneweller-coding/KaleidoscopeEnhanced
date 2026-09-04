@@ -8,7 +8,7 @@
  * orientation (a one-time angle, chosen only so the hull isn't seen
  * flat-on) and float stably; they are distinguished by lighting/color and
  * backdrop in the fragment stage, not by how they move. The camera's own
- * sweep (this scene's rig* formulas in Configurations/Komplett.xml) supplies
+ * sweep (this scene's rig* formulas in Presets/Komplett.xml) supplies
  * the actual motion. gl_VertexID picks the vertex's own branch: below
  * meshVertexCount it is the loaded model, at or above it the enclosing sky
  * shell Scene3DShader::buildGeometry() appends -- ExoticStation.frag paints

@@ -24,7 +24,7 @@ ein Render-Durchlauf eine Stunde braucht.
 python Tools/shadercheck.py --new HEAD~1
 
 # 1b. Uniform-Typen XML gegen GLSL (V6b) -- MUSS Exit-Code 0 liefern
-python Tools/check_uniform_types.py Configurations/*.xml
+python Tools/check_uniform_types.py Presets/*.xml
 
 # 2. Preset-Selbsttests (Registrierung + Parameter-Vollständigkeit)
 PresetEditor\build\Release\PresetEditor.exe --validate
@@ -329,7 +329,7 @@ warfen dabei **einen GL-Fehler pro Frame** (236 bzw. 245 in fünf Sekunden).
 Prüfung über den ganzen Katalog, Exit-Code 1 bei Fehlpaarung:
 
 ```bash
-python Tools/check_uniform_types.py Configurations/*.xml
+python Tools/check_uniform_types.py Presets/*.xml
 ```
 
 **Beim Bearbeiten von Konfigurations-XML per Skript:** öffnendes UND
@@ -474,7 +474,7 @@ Pruefwerkzeug fuer V7c/V7d/V8e: `python Tools/shake_scan.py` (ganzer Katalog) od
 
 ### V8 — Registrierung
 
-Jeder Shader braucht einen Eintrag in `Configurations/Komplett.xml` (die
+Jeder Shader braucht einen Eintrag in `Presets/Komplett.xml` (die
 vollständige Referenzdatei) — sonst kann er nie ausgewählt werden. Jede
 `Scene3D/X.frag` braucht zwingend eine `Scene3D/X.vert`. `--validate` prüft,
 dass alle Stimmungs-Presets die deklarierten Parameter vollständig haben.

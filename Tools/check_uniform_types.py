@@ -50,7 +50,7 @@ def frag_path(raw):
 
 
 def main():
-    cfgs = sys.argv[1:] or [os.path.join(ROOT, "Configurations", "Komplett.xml")]
+    cfgs = sys.argv[1:] or [os.path.join(ROOT, "Presets", "Komplett.xml")]
     seen, bad, missing = {}, [], []
 
     for cfg in cfgs:

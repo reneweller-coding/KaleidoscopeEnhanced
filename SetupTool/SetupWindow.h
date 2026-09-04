@@ -35,11 +35,11 @@ public:
 	SetupWindow();
 
 private:
-	/** @brief Locates kaleidoscope_settings.ini and Configurations\ by walking up from the exe's own directory until a folder containing "Configurations" is found (robust regardless of exact build/deploy nesting). @return Absolute path to the repo/install root, or the exe's own directory if no landmark was found. */
+	/** @brief Locates kaleidoscope_settings.ini and Presets\ by walking up from the exe's own directory until a folder containing "Presets" (or the pre-04.09.2026 "Configurations") is found (robust regardless of exact build/deploy nesting). @return Absolute path to the repo/install root, or the exe's own directory if no landmark was found. */
 	static QString findRootDir();
 	/** @brief Full path to kaleidoscope_settings.ini under findRootDir(). */
 	static QString settingsPath();
-	/** @brief Scans findRootDir()/Configurations/*.xml for ConfigurationName values, skipping hidden="true" presets (dev/review builds), for the start-configuration dropdown. */
+	/** @brief Scans findRootDir()/Presets/*.xml for ConfigurationName values, skipping hidden="true" presets (dev/review builds), for the start-configuration dropdown. */
 	static QStringList discoverConfigNames();
 
 	/** @brief (Re)builds the scrollable form (every group except the fixed Save/Close row) in the CURRENT language, preserving whichever field values are already set. Called once from the constructor and again whenever the language dropdown changes. */

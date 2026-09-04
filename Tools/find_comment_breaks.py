@@ -7,7 +7,7 @@ comment, wherever it is. Doc-comment prose that happens to contain a literal
 truncates the block, and everything after it becomes real (broken) code.
 This is a proper comment-aware lexer (tracks //, /* */ and string-literal-
 adjacent state correctly), not a blind substring search, so it doesn't flag
-safe patterns like "Configurations/*.xml" (a lone /* inside an already-open
+safe patterns like "Presets/*.xml" (a lone /* inside an already-open
 comment is harmless; only a */ closing one prematurely is a real bug). It
 also flags an unclosed /* left open through EOF.
 

@@ -120,11 +120,11 @@ QString SetupWindow::findRootDir()
 	QDir dir( QCoreApplication::applicationDirPath() );
 	// Walk up at most a handful of levels (dev build: SetupTool\build\Release\
 	// -> repo root is 3 up; a deployed layout might nest differently) looking
-	// for the "Configurations" folder every layout is guaranteed to have
+	// for the presets folder every layout is guaranteed to have
 	// alongside kaleidoscope_settings.ini.
 	for( int i = 0; i < 6; ++i )
 	{
-		if( dir.exists( "Configurations" ) )
+		if( dir.exists( "Presets" ) || dir.exists( "Configurations" ) )
 			return dir.absolutePath();
 		if( !dir.cdUp() )
 			break;
@@ -140,7 +140,9 @@ QString SetupWindow::settingsPath()
 QStringList SetupWindow::discoverConfigNames()
 {
 	QStringList names;
-	QDir cfgDir( findRootDir() + "/Configurations" );
+	const QString root = findRootDir();
+	QDir cfgDir( QDir( root + "/Presets" ).exists() ? root + "/Presets"
+	                                                : root + "/Configurations" );
 	for( const QString &fn : cfgDir.entryList( QStringList() << "*.xml", QDir::Files, QDir::Name ) )
 	{
 		QFile f( cfgDir.absoluteFilePath( fn ) );

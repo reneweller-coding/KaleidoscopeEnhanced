@@ -26,7 +26,7 @@ param(
 
 $root = Split-Path $PSScriptRoot -Parent
 $rel  = Join-Path $root "Release"
-$cfgD = Join-Path $root "Configurations"
+$cfgD = Join-Path $root "Presets"
 $wav  = Join-Path $PSScriptRoot "broadband120.wav"
 $presets = @('Allround','Ambient','Club','Galerie','Komplett','Noir','Psychedelic')
 

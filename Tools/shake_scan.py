@@ -61,7 +61,7 @@ def scan_shader(path):
 
 def scan_rigs():
     """Rig formulas in Komplett.xml with fast signals (slow ones: swell, advance, phase, seed)."""
-    p = os.path.join(ROOT, "Configurations", "Komplett.xml")
+    p = os.path.join(ROOT, "Presets", "Komplett.xml")
     out = []
     try:
         s = io.open(p, encoding="utf-8", errors="replace").read()
@@ -76,7 +76,7 @@ def scan_rigs():
         if m and re.search(r"\b(kick|beat|onset|drop|bass|subbass|level|snare|hat|high|flux)\b", m.group(2), re.I):
             out.append((cur, m.group(1), m.group(2)))
     # rigs.xml presets
-    p2 = os.path.join(ROOT, "Configurations", "rigs.xml")
+    p2 = os.path.join(ROOT, "Presets", "rigs.xml")
     try:
         s2 = io.open(p2, encoding="utf-8", errors="replace").read()
         for m in re.finditer(r'<rig name="([^"]+)">(.*?)</rig>', s2, re.S):

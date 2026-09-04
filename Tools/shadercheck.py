@@ -16,7 +16,7 @@ Exit code 0 = clean, 1 = at least one ERROR.
 import argparse, os, re, subprocess, sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-KOMPLETT = os.path.join(ROOT, "Configurations", "Komplett.xml")
+KOMPLETT = os.path.join(ROOT, "Presets", "Komplett.xml")
 
 # Host-provided uniforms.  Kept in sync with the kAudioLocs table in
 # Source/EffectShader.cpp -- anything a shader uses that is NOT declared and

@@ -1196,13 +1196,13 @@ if errorlevel 1 exit /b 1
     <None Include="Scene3D\SuperconductingFluxVortex.vert" />
     <None Include="Scene3D\SuperconductingFluxVortex.frag" />
     <None Include="standard.vert" />
-    <None Include="Configurations\Allround.xml" />
-    <None Include="Configurations\Ambient.xml" />
-    <None Include="Configurations\Club.xml" />
-    <None Include="Configurations\Galerie.xml" />
-    <None Include="Configurations\Komplett.xml" />
-    <None Include="Configurations\Noir.xml" />
-    <None Include="Configurations\Psychedelic.xml" />
+    <None Include="Presets\Allround.xml" />
+    <None Include="Presets\Ambient.xml" />
+    <None Include="Presets\Club.xml" />
+    <None Include="Presets\Galerie.xml" />
+    <None Include="Presets\Komplett.xml" />
+    <None Include="Presets\Noir.xml" />
+    <None Include="Presets\Psychedelic.xml" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ItemGroup>

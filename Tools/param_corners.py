@@ -40,7 +40,7 @@ CORNERS = ("min", "max", "alt")
 
 import re
 
-KOMPLETT = os.path.join(screen.ROOT, "Configurations", "Komplett.xml")
+KOMPLETT = os.path.join(screen.ROOT, "Presets", "Komplett.xml")
 
 
 def float_params(names):

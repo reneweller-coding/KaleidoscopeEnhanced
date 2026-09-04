@@ -6,7 +6,7 @@
  * kilometers-long megastructures, not debris -- they hold a FIXED
  * orientation (a one-time angle, chosen only so the hull isn't seen flat-on)
  * and float stably; all the camera-facing motion comes from the camera's
- * own sweep (this scene's rig* formulas in Configurations/Komplett.xml) plus
+ * own sweep (this scene's rig* formulas in Presets/Komplett.xml) plus
  * a small audio-reactive rattle, not from the hull tumbling in place.
  * gl_VertexID picks the vertex's own branch: below meshVertexCount it is the
  * loaded model, at or above it the enclosing sky shell Scene3DShader::

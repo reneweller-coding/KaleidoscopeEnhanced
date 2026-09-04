@@ -17,8 +17,8 @@ Then, from Release\:
 import argparse, io, os, re, sys
 
 ap = argparse.ArgumentParser()
-ap.add_argument("--source", default="Configurations/Komplett.xml")
-ap.add_argument("--out",    default="Configurations/MeshSweep.xml")
+ap.add_argument("--source", default="Presets/Komplett.xml")
+ap.add_argument("--out",    default="Presets/MeshSweep.xml")
 ap.add_argument("--name",   default="MeshSweep")
 ap.add_argument("--filter", default='geom="mesh"',
                 help='substring the opening tag must contain')

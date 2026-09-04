@@ -5,7 +5,7 @@
     python Tools/check_mood_tags.py            # check
     python Tools/check_mood_tags.py --sync     # repair drift from the master
 
-The mood tags live on every shader entry in every Configurations/*.xml, and
+The mood tags live on every shader entry in every Presets/*.xml, and
 SceneScheduler::moodAccept reads them from whichever preset is ACTIVE. That
 design has a failure mode: edit a tag in one preset and every other preset
 keeps the old value. It happened — the measured tag-audit campaign corrected
@@ -34,7 +34,7 @@ import re
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-CFG = os.path.join(ROOT, "Configurations")
+CFG = os.path.join(ROOT, "Presets")
 MASTER = "Komplett.xml"
 RUNTIME = ("dark", "bright", "calm", "aggressive")   # engine order is irrelevant; ours is stable
 

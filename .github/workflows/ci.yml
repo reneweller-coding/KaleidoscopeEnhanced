@@ -107,7 +107,7 @@ jobs:
           $tmp = Join-Path $env:RUNNER_TEMP "roundtrip"
           New-Item -ItemType Directory -Force -Path $tmp | Out-Null
           $failed = $false
-          Get-ChildItem "Configurations\*.xml" | ForEach-Object {
+          Get-ChildItem "Presets\*.xml" | ForEach-Object {
             $out = Join-Path $tmp $_.Name
             & $exe --roundtrip $_.FullName $out
             if ($LASTEXITCODE -ne 0) {
@@ -190,7 +190,7 @@ jobs:
           }
           Copy-Item mesa\x64\opengl32.dll,mesa\x64\libgallium_wgl.dll -Destination "Release\"
           python -c "import wave,struct,math; w=wave.open('smoke.wav','wb'); w.setnchannels(2); w.setsampwidth(2); w.setframerate(44100); f=[struct.pack('<hh', *([int(12000*math.exp(-(t%11025)/1500.0)*math.sin(2*math.pi*55*t/44100)+6000*math.sin(2*math.pi*220*t/44100)*0.4)]*2)) for t in range(44100*2)]; w.writeframes(b''.join(f)); w.close()"
-          # CWD must be Release\: the app resolves ..\Configurations etc.
+          # CWD must be Release\: the app resolves ..\Presets etc.
           # relative to its working directory (same layout as the dist zip).
           $wav = Join-Path (Get-Location) "smoke.wav"
           $p = Start-Process -FilePath "Release\Kaleidoscope.exe" -ArgumentList "-x","`"$wav`"","-l" -PassThru -WorkingDirectory "Release"

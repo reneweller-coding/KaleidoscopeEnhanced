@@ -73,7 +73,7 @@ public:
 
     /**
      * @brief Constructs the widget: restores persisted UI settings, loads every
-     *        Configuration (*.xml) under ../Configurations, sets up shader
+     *        Configuration (*.xml) under ../Presets, sets up shader
      *        hot-reload watching and (if requested) the web remote, and picks
      *        the initial active configuration (default, -c name, or persisted).
      * @param parent Parent widget, forwarded to QOpenGLWidget.
@@ -173,7 +173,7 @@ public:
 	double      cuePosSec() const;
 	/** @brief Web remote: mark or unmark the scene on screen (same as SPACE). */
 	void        remoteToggleMark();
-	/** @brief Web remote: write every marked scene to Configurations/Marked.xml (same as SHIFT+SPACE). */
+	/** @brief Web remote: write every marked scene to Presets/Marked.xml (same as SHIFT+SPACE). */
 	void        remoteSaveMarked();
 	void        remoteSaveReplay()          { m_recorder.saveReplay(); }         ///< Saves the instant-replay ring buffer to disk (same as key 'x').
 	bool        remoteReplayArmed() const   { return m_recorder.replayArmed(); } ///< Whether the instant-replay ring buffer is currently armed.

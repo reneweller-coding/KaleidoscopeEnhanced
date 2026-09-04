@@ -1,6 +1,6 @@
 /**
  * @file Configuration.cpp
- * @brief Implements Configuration: XML parsing of Configurations/ *.xml presets into RenderPipeline/EffectShader objects, uniform-range/formula registration, and the legacy shader-path remap.
+ * @brief Implements Configuration: XML parsing of Presets/ *.xml presets into RenderPipeline/EffectShader objects, uniform-range/formula registration, and the legacy shader-path remap.
  */
 #include <float.h>
 
@@ -73,7 +73,7 @@ void Configuration::stop()
 }
 
 
-// ---- Named camera rigs (Configurations/rigs.xml) ---------------------------
+// ---- Named camera rigs (Presets/rigs.xml) ---------------------------
 // 830 of the catalogue's scenes carry a rig, and between them they use only
 // nineteen distinct formula sets.  Written out per scene that is ~2500 lines
 // of near-identical arithmetic, and the cost of that is not disk space but
@@ -121,7 +121,7 @@ static void loadRigTable( const QString &cfgDir )
  * Recognised child tags: `<interpolator>` (min/max-of-min/max ramping range,
  * see Uniform's BASE_TYPE_INTERPOLATOR_FLOAT), `<bool>` (probability of being
  * true), `<float>`/`<int>` (a randomised value range rolled per activation),
- * `<rig>` (a named camera rig from Configurations/rigs.xml,
+ * `<rig>` (a named camera rig from Presets/rigs.xml,
  * expanded into the same expressions it replaces), and `<expr>`
  * (a per-frame formula-language expression — see ExprEval —
  * that overrides a same-named `<float>` uniform with a live audio-reactive
@@ -230,7 +230,7 @@ static QString mapLegacyShaderPath( QString p )
 
 /**
  * @brief Parses the preset XML file into m_renderPipeline: root-level metadata/timing, then every TextureShader and CombineShader entry.
- * @param filename Path to the Configurations/ *.xml preset file to parse.
+ * @param filename Path to the Presets/ *.xml preset file to parse.
  *
  * Loads @p filename into a QDomDocument and reads the root element's
  * attributes (ImageDirectory, ConfigurationName, hidden, and the preset-wide

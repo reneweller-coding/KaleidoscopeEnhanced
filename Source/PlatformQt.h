@@ -8,9 +8,9 @@
  * where paths travel as QString into QFile, QDir and QSettings.
  *
  * Why it is needed at all: the asset paths in this program are written the
- * Windows way, "..\\Configurations", "..\\cache\\lyrics". Qt on Windows accepts
+ * Windows way, "..\\Presets", "..\\cache\\lyrics". Qt on Windows accepts
  * that. Qt on Linux and macOS does not translate it -- there a backslash is an
- * ordinary character in a filename, so "..\\Configurations" names one file with
+ * ordinary character in a filename, so "..\\Presets" names one file with
  * a backslash in it, in the current directory, which does not exist. The
  * failure is quiet and confusing: the program reports an empty folder rather
  * than a bad path.
@@ -22,6 +22,7 @@
 #define KALEIDOSCOPE_PLATFORM_QT_H
 
 #include <QtCore/QString>
+#include <QtCore/QDir>
 
 namespace Platform {
 
@@ -39,6 +40,26 @@ inline QString assetPath( const QString &p )
 	s.replace( QLatin1Char( '\\' ), QLatin1Char( '/' ) );
 	return s;
 #endif
+}
+
+/**
+ * @brief The folder holding the preset *.xml files, relative to @p root.
+ *
+ * The folder was called "Configurations" until 04.09.2026 and is called
+ * "Presets" now -- the name the rest of the program, the editor and the
+ * documentation already used for the same thing.  An installation that still
+ * carries the old folder keeps working: a half-updated copy must not fail to
+ * start over a rename.
+ * @param root Directory the folder sits in (the project/install root).
+ * @return Path to the presets folder, separators normalised for the host.
+ */
+inline QString presetsDir( const QString &root )
+{
+	const QString cur = assetPath( root + "/Presets" );
+	if( QDir( cur ).exists() )
+		return cur;
+	const QString old = assetPath( root + "/Configurations" );
+	return QDir( old ).exists() ? old : cur;
 }
 
 } // namespace Platform

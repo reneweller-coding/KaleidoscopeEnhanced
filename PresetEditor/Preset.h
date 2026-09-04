@@ -24,6 +24,25 @@
 
 #include <QtCore/QString>
 #include <QtCore/QVector>
+#include <QtCore/QDir>
+
+/**
+ * @brief The folder holding the preset *.xml files, under @p root.
+ *
+ * Called "Configurations" until 04.09.2026, "Presets" since.  A tree that
+ * still carries the old folder keeps working, so the editor does not lose its
+ * presets over a rename.
+ * @param root Project root (the folder holding standard.vert).
+ * @return Path to the presets folder.
+ */
+inline QString presetsDir( const QString &root )
+{
+    const QString cur = root + "/Presets";
+    if (QDir(cur).exists())
+        return cur;
+    const QString old = root + "/Configurations";
+    return QDir(old).exists() ? old : cur;
+}
 
 /**
  * @brief One `<bool>`/`<int>`/`<float>`/`<interpolator>`/`<expr>` child element of a shader entry.
@@ -91,7 +110,7 @@ struct PresetEntry
  * texture-solo/interpolation timing defaults, and an ordered list of
  * PresetEntry (texture entries then combine entries). load()/save() are the
  * only way an instance talks to disk; the editor mutates one in place
- * (via EditorWindow) and calls save() to write it back into Configurations/.
+ * (via EditorWindow) and calls save() to write it back into Presets/.
  */
 struct Preset
 {

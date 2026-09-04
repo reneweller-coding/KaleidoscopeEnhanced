@@ -27,7 +27,7 @@ make a frame late.
 import argparse, io, json, os, re, statistics, sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-KOMPLETT = os.path.join(ROOT, "Configurations", "Komplett.xml")
+KOMPLETT = os.path.join(ROOT, "Presets", "Komplett.xml")
 COSTS = os.path.join(ROOT, ".screen", "scene-cost.json")
 
 # Below this multiple of the median the number is measurement floor, not scene.

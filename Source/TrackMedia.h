@@ -26,7 +26,7 @@
 //  zur echten Song-Position ab). Fehlt yt-dlp, degradiert das Feature still
 //  (kein Absturz, einfach keine Videos) - siehe m_ytdlpProc/errorOccurred.
 //
-//  CACHE - alles landet neben den Configurations unter ..\cache\:
+//  CACHE - alles landet neben den Presets unter ..\cache\:
 //    cache\lyrics\<md5>.json      (auch "nicht gefunden", TTL 7 Tage)
 //    cache\artist\<md5>\NN.jpg    (Bilder; lazy von Platte dekodiert)
 //    cache\video\<md5>\video.mp4  (oder negative.json, TTL 14 Tage)

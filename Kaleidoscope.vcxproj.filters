@@ -37,7 +37,7 @@
     <Filter Include="Shaders\Blend">
       <UniqueIdentifier>{2cbfe523-84e8-4dee-a547-b19fa868ab46}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Configurations">
+    <Filter Include="Presets">
       <UniqueIdentifier>{9d68de70-045d-4d3e-8d11-f104ed92f882}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -2619,26 +2619,26 @@
     <None Include="Scene3D\SuperconductingFluxVortex.frag">
       <Filter>Shaders\Scene3D</Filter>
     </None>
-    <None Include="Configurations\Allround.xml">
-      <Filter>Configurations</Filter>
+    <None Include="Presets\Allround.xml">
+      <Filter>Presets</Filter>
     </None>
-    <None Include="Configurations\Ambient.xml">
-      <Filter>Configurations</Filter>
+    <None Include="Presets\Ambient.xml">
+      <Filter>Presets</Filter>
     </None>
-    <None Include="Configurations\Club.xml">
-      <Filter>Configurations</Filter>
+    <None Include="Presets\Club.xml">
+      <Filter>Presets</Filter>
     </None>
-    <None Include="Configurations\Galerie.xml">
-      <Filter>Configurations</Filter>
+    <None Include="Presets\Galerie.xml">
+      <Filter>Presets</Filter>
     </None>
-    <None Include="Configurations\Komplett.xml">
-      <Filter>Configurations</Filter>
+    <None Include="Presets\Komplett.xml">
+      <Filter>Presets</Filter>
     </None>
-    <None Include="Configurations\Noir.xml">
-      <Filter>Configurations</Filter>
+    <None Include="Presets\Noir.xml">
+      <Filter>Presets</Filter>
     </None>
-    <None Include="Configurations\Psychedelic.xml">
-      <Filter>Configurations</Filter>
+    <None Include="Presets\Psychedelic.xml">
+      <Filter>Presets</Filter>
     </None>
   </ItemGroup>
 </Project>

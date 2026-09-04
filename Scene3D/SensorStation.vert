@@ -9,7 +9,7 @@
  * scanning band in the fragment stage (it travels in OBJECT space, so it
  * needs no rotation to read as active), not from the whole structure
  * tumbling. The camera's own sweep (this scene's rig* formulas in
- * Configurations/Komplett.xml) supplies the actual motion. gl_VertexID
+ * Presets/Komplett.xml) supplies the actual motion. gl_VertexID
  * picks the vertex's own branch: below meshVertexCount it is the loaded
  * model, at or above it the enclosing sky shell Scene3DShader::
  * buildGeometry() appends -- SensorStation.frag paints a nebula onto it.

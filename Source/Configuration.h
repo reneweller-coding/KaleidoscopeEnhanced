@@ -1,6 +1,6 @@
 /**
  * @file Configuration.h
- * @brief Loader for a single preset/config XML file (Configurations/ *.xml) into the runtime shader/uniform object graph.
+ * @brief Loader for a single preset/config XML file (Presets/ *.xml) into the runtime shader/uniform object graph.
  */
 #ifndef CONFIGURATION_H
 #define CONFIGURATION_H
@@ -20,7 +20,7 @@
 /**
  * @brief Parses one preset XML file and builds the RenderPipeline/EffectShader object graph it describes.
  *
- * A Configuration corresponds 1:1 to a Configurations/ *.xml preset file: its
+ * A Configuration corresponds 1:1 to a Presets/ *.xml preset file: its
  * constructor parses the document (readConfiguration()) into a freshly
  * allocated RenderPipeline, wiring up every TextureShader / CombineShader entry
  * (including their per-uniform ranges and `<expr>` formulas) and the preset's
@@ -35,7 +35,7 @@ class Configuration
 public:
 	/**
 	 * @brief Loads and parses a preset XML file, building the full shader/uniform graph.
-	 * @param configurationFile Path to the Configurations/ *.xml preset file to load.
+	 * @param configurationFile Path to the Presets/ *.xml preset file to load.
 	 */
 	Configuration( const QString &configurationFile );
 	/** @brief Destroys the owned RenderPipeline (and, transitively, everything it built). */
@@ -88,7 +88,7 @@ private:
 
 	/**
 	 * @brief Parses the preset XML document and populates m_renderPipeline with its TextureShader/CombineShader entries.
-	 * @param filename Path to the Configurations/ *.xml preset file.
+	 * @param filename Path to the Presets/ *.xml preset file.
 	 */
 	void readConfiguration( const QString &filename );
 	/**

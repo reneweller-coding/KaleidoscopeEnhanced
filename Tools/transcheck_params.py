@@ -31,7 +31,7 @@ from PIL import Image
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 EXE = os.path.join(ROOT, "PresetEditor", "build", "Release", "PresetEditor.exe")
-XML = os.path.join(ROOT, "Configurations", "Komplett.xml")
+XML = os.path.join(ROOT, "Presets", "Komplett.xml")
 SCENE = "Scene2D/Tunnel.frag"          # any stable scene works as the A/B pair
 W, H = 640, 360
 TOL = 1.5                              # same units/threshold as --transcheck

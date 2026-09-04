@@ -238,7 +238,7 @@ public:
 	/** @brief How many scenes are marked in total. */
 	int				markedCount() const { return s_marked.size(); }
 	/**
-	 * @brief Writes every marked scene to Configurations/Marked.xml as a playable preset.
+	 * @brief Writes every marked scene to Presets/Marked.xml as a playable preset.
 	 *
 	 * Copies each scene's REAL <TextureShader> node out of Komplett.xml rather
 	 * than synthesising a tag, so geom kind and preset parameters survive --

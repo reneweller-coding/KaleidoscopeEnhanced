@@ -15,7 +15,7 @@
  *   PresetEditor.exe --validate [preset.xml]      headless completeness check: every
  *                                            preset entry must carry every param its
  *                                            shader declares in Komplett.xml (checks
- *                                            all Configurations/ *.xml if no file given)
+ *                                            all Presets/ *.xml if no file given)
  *   PresetEditor.exe --render tex.frag comb.frag out.png [W H]   grab one preview
  *                                            frame to a PNG (optional --geom/
  *                                            --stateBytes/--shadowExtent for scene3d,
@@ -53,9 +53,9 @@
 
 /**
  * @brief Locate the visualizer project root directory.
- * @return Absolute path of the first ancestor of the exe dir or the current dir that contains both standard.vert and a Configurations folder; falls back to the current working directory if none is found.
+ * @return Absolute path of the first ancestor of the exe dir or the current dir that contains both standard.vert and a presets folder; falls back to the current working directory if none is found.
  *
- * Find the project root (the folder holding standard.vert + Configurations) by
+ * Find the project root (the folder holding standard.vert + Presets) by
  * searching up from the exe dir and the current dir.  Keeps the editor working
  * whether it's run from its own out-dir, the project root, or Release\.
  */
@@ -68,7 +68,7 @@ static QString findRoot()
     for (int i = 0; i < 6; ++i) { cands << c.absolutePath(); if (!c.cdUp()) break; }
     for (const QString &p : cands)
         if (QFileInfo::exists(p + "/standard.vert") &&
-            QFileInfo::exists(p + "/Configurations"))
+            (QFileInfo::exists(p + "/Presets") || QFileInfo::exists(p + "/Configurations")))
             return p;
     return QDir::currentPath();
 }
@@ -111,13 +111,13 @@ int main(int argc, char *argv[])
     // already: TestShatter.xml's LavaLamp.frag entry was missing sizeP and
     // both <expr> lines every other preset has). This checks presence, never
     // equality, so deliberately different tuning across presets is not flagged.
-    //   --validate                 checks every Configurations/ *.xml (except
+    //   --validate                 checks every Presets/ *.xml (except
     //                               Komplett.xml itself)
     //   --validate <preset.xml>    checks just that one file
     if (args.value(0) == "--validate")
     {
         QCoreApplication app(argc, argv);
-        const QString cfgDir = findRoot() + "/Configurations";
+        const QString cfgDir = presetsDir(findRoot());
         Preset komplett; QString err;
         if (!Preset::load(cfgDir + "/Komplett.xml", komplett, &err))
         {

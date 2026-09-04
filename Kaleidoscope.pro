@@ -4,7 +4,7 @@
 # NOTE: the Visual Studio project (Kaleidoscope.vcxproj) is the PRIMARY build;
 # this .pro mirrors it so the code can also be browsed and built from
 # Qt Creator.  Runtime assets (Scene2D\ / FX\ / Engine\ shaders,
-# Configurations\ presets, standard.vert) are loaded from "..\" relative to
+# Presets\ presets, standard.vert) are loaded from "..\" relative to
 # the working directory — run the exe from a subdirectory of the repo root
 # (e.g. Release\), exactly like the VS build does.
 # ---------------------------------------------------------------------------
@@ -101,4 +101,4 @@ DISTFILES += \
     $$files(Engine/*.frag) \
     $$files(Engine/*.vert) \
     $$files(Engine/*.comp) \
-    $$files(Configurations/*.xml)
+    $$files(Presets/*.xml)

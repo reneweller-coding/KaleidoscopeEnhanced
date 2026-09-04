@@ -925,7 +925,7 @@ is itself a behaviour change against today's binary.
 ## Marking scenes for review
 
 `Space` marks or unmarks the scene on screen, `Shift+Space` writes every marked
-scene to `Configurations/Marked.xml`; both are also on the web remote
+scene to `Presets/Marked.xml`; both are also on the web remote
 (`/api/mark`, `/api/savemarked`).
 
 Marks are deliberately **not** taste. Taste biases the scheduler by degrees and
@@ -2527,7 +2527,7 @@ replaced by
 <rig preset="mesh-18"/>
 ```
 
-resolved at load time from `Configurations/rigs.xml`.
+resolved at load time from `Presets/rigs.xml`.
 
 The point is not the disk space. Every rig coefficient in the catalogue was
 three orders of magnitude too small — oscillation periods of half an hour to

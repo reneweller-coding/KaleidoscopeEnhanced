@@ -124,7 +124,7 @@ try {
     # the first match (any filter change does), so a fixed number of steps
     # would be counting from a different place than a human would.
     #
-    # With showHiddenPresets on, the menu IS the alphabetical Configurations
+    # With showHiddenPresets on, the menu IS the alphabetical Presets
     # listing, so both expectations below are positions in that listing:
     # Allround, Ambient, Club, Galerie, Komplett, Noir, Psychedelic,
     # SpaceAmbient, TestAlle. They no longer depend on whether the optional

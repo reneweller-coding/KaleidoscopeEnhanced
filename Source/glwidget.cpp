@@ -295,7 +295,7 @@ void GLwidget::remoteForceScene( int idx )
 }
 
 // On-disk thumbnail cache path for one (config, scene) pair. Sibling of
-// Configurations\/kaleidoscope_settings.ini (relative to the Release/Debug
+// Presets\/kaleidoscope_settings.ini (relative to the Release/Debug
 // CWD), keyed by NAME rather than index since indices aren't stable across
 // restarts (a config edit reorders/adds entries) but names are.
 static QString thumbCachePath( const QString &config, const QString &scene )
@@ -388,7 +388,7 @@ GLwidget::GLwidget( QWidget *parent )
 	loadUiSettings();
 
 	m_configurationList.clear();
-	traverseConfigurations( Platform::assetPath( "..\\Configurations" ) /*directory*/,
+	traverseConfigurations( Platform::presetsDir( ".." ) /*directory*/,
 	                        m_configurationList );
 
 	// Embedded web remote (CLI -t <port>): phone page with the same harmless
@@ -430,12 +430,12 @@ GLwidget::GLwidget( QWidget *parent )
 		}
 	}
 
-	// Robustness: a missing/empty Configurations directory used to crash here with
+	// Robustness: a missing/empty presets directory used to crash here with
 	// an out-of-range vector access.  Fail with a clear message instead.
 	if( m_configurationList.empty() )
 	{
-		fprintf( stderr, "FATAL: no configuration *.xml files found in "
-		                 "..\\Configurations - cannot start.\n" );
+		fprintf( stderr, "FATAL: no preset *.xml files found in "
+		                 "..\\Presets - cannot start.\n" );
 		exit( 1 );
 	}
 
@@ -1437,7 +1437,7 @@ void GLwidget::showSelectConfigurationsMenu( QPainter *painter )
 	                   boxY + boxH - padY - hfm.descent(), hint );
 }
 
-/// Settings file shared with RenderPipeline (next to the Configurations folder).
+/// Settings file shared with RenderPipeline (next to the Presets folder).
 static const char *kUiSettingsPath = "..\\kaleidoscope_settings.ini";
 
 void GLwidget::loadUiSettings()
@@ -2997,7 +2997,7 @@ void GLwidget::keyPressEvent(QKeyEvent* event)
 
 		// ---- Scene marking (build a shortlist while watching) ----
 		// Space alone toggles the mark on whatever is on screen; Shift+Space
-		// writes the shortlist out as Configurations/Marked.xml. Deliberately
+		// writes the shortlist out as Presets/Marked.xml. Deliberately
 		// two gestures on one key: marking happens constantly during an
 		// inspection pass, saving once at the end.
 		case Qt::Key_Space:

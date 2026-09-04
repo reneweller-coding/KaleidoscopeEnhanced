@@ -88,7 +88,7 @@ EditorWindow::EditorWindow(const QString &projectRoot, QWidget *parent)
     // once (not per lookup, unlike the regex-based komplettParamsFor() the
     // preview sliders use) because Preset::load() parses real XML via
     // QDomDocument and is comparatively expensive to re-run per keystroke.
-    Preset::load(m_root + "/Configurations/Komplett.xml", m_komplett);
+    Preset::load(presetsDir(m_root) + "/Komplett.xml", m_komplett);
 
     m_preview = new PreviewWidget(m_root);
     connect(m_preview, &PreviewWidget::statusChanged,
@@ -381,7 +381,7 @@ struct KomplettParam {
 };
 /**
  * @brief Parse a shader's per-activation parameter ranges out of Komplett.xml.
- * @param root Project root directory (Komplett.xml is under root/Configurations/).
+ * @param root Project root directory (Komplett.xml is under root/Presets/).
  * @param frag Bare shader filename to look up (matched against Komplett.xml's file= attribute, folder-agnostic).
  * @return Every `<int>`/`<float>` param's (kind, name, min, max) found in that shader's entry; empty if the shader isn't registered or the file can't be read.
  *
@@ -391,7 +391,7 @@ struct KomplettParam {
 static QVector<KomplettParam> komplettParamsFor(const QString &root, const QString &frag)
 {
     QVector<KomplettParam> out;
-    QFile f(root + "/Configurations/Komplett.xml");
+    QFile f(presetsDir(root) + "/Komplett.xml");
     if (!f.open(QIODevice::ReadOnly)) return out;
     const QString xml = QString::fromUtf8(f.readAll());
     QRegularExpression entryRe(
@@ -1177,7 +1177,7 @@ void EditorWindow::newPreset()
 
 void EditorWindow::openPreset()
 {
-    const QString dir = m_root + "/Configurations";
+    const QString dir = presetsDir(m_root);
     QString path = QFileDialog::getOpenFileName(this, "Open preset", dir, "Presets (*.xml)");
     if (path.isEmpty()) return;
     Preset p; QString err;
@@ -1199,7 +1199,7 @@ void EditorWindow::savePreset()
         QMessageBox::warning(this, "Save", "Please enter a preset name.");
         return;
     }
-    const QString dir = m_root + "/Configurations";
+    const QString dir = presetsDir(m_root);
     QDir().mkpath(dir);
     const QString path = dir + "/" + m_preset.name + ".xml";
     if (QFileInfo::exists(path) &&
