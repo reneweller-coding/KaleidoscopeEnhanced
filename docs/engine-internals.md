@@ -3739,3 +3739,20 @@ Lessons from the block: in an indirect scene, geometry placed exactly on the sil
 | PivotIrrigationCircles | 2D | the wetted wedge is an exponential of the angle behind the arm, so a field dries out smoothly over a whole turn |
 
 Lessons from the block: a tessellation (patches) scene has NO sky quad, so whatever lies above its far ground is black -- the far rise has to climb to about a hundred units to reach the top of a 55 degree frame, and EXTENT.x has to be wide enough that the upper corners are still ground; both scenes here first rendered as a lit mesa in a black box. EXTENT must be identical in the control and evaluation stages or the patches tear at their seams. A displaced terrain must also be ramped to zero AT the camera: the rice hill stood where the camera was and the scene rendered from inside the ground, which reads as a black frame with a swirl of contours in it. And an envelope must never scale a radius that is already in flight -- two scenes here had the kick multiply an expanding ring, which makes the ring jump outward on every beat; the radius stays continuous and the kick lights it instead.
+
+## The fifth fifty, block D: textiles and materials
+
+| Scene | Pipeline | Note |
+|---|---|---|
+| KnittingRowsGrow | 2D | a stitch is two bowed legs meeting at the bottom; the bow is what makes it read as a knitted V instead of a chevron |
+| QuiltBlockPatchwork | 2D | four traditional piecing patterns chosen per block by hash; blocks arrive row-major, each over its own slice of the arc |
+| BobbinLacePillow | 2D | the two moves of bobbin lace (cross and twist) drawn as segments between pin positions; the bobbins hang below the working line |
+| BatikWaxCracks | 2D | the crazing is a Voronoi seam whose front spreads from three origins; the dye bleeds sideways out of the crack |
+| KintsugiGoldSeams | 2D | one continuous sweep: whole, then broken (the break front), then mended (the gold front just behind it) |
+| EmbroideryHoopStitches | 2D | satin stitch is parallel bands across the petal's short axis with a sheen that peaks at its centre line |
+| KumikoLatticeShoji | 2D | the hemp-leaf figure is six slats through the cell centre plus chords between them; the wood reads as silhouette against the lit paper |
+| ChainmailRingRipple | 2D | rings must OVERLAP (radius near half the pitch) or the sheet reads as separate donuts; two passes give the interlock |
+| CloisonneEnamelCells | 2D | the cells are a Voronoi over a swirled coordinate, so they curl with the design; each fires from matt powder to a glassy dome |
+| DamascusSteelEtch | 2D | the layer coordinate is sheared by position along the blade, which is exactly what twisting the billet does to its layers |
+
+Lessons from the block: interlocking geometry has to actually interlock -- the chainmail rings first sat at a radius of a third of the pitch and read as a field of separate donuts; at nearly half the pitch, in two passes, the sheet becomes mail. A structure lit from behind reads as silhouette, not as lit material: the kumiko bars had to drop to about a third of their first brightness before the lattice was legible against the paper. And a seam that carries the whole subject of a scene needs real width -- the kintsugi gold at 0.012 of the frame was invisible at sheet size and works at 0.024.

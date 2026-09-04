@@ -1,6 +1,6 @@
 # Kaleidoscope Enhanced — Szenen-Katalog
 
-_846 Szenen, 29 FX-Overlays, 83 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
+_856 Szenen, 29 FX-Overlays, 83 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
 
 
 ---
@@ -224,6 +224,15 @@ BARYON ACOUSTIC RIPPLES: the sound waves of the early universe, frozen into the 
 ![BaryonAcousticRipples ruhig (t=8)](img/BaryonAcousticRipples_A.jpg) ![BaryonAcousticRipples ruhig (t=16)](img/BaryonAcousticRipples_B.jpg) ![BaryonAcousticRipples audio-heiß (t=21)](img/BaryonAcousticRipples_C.jpg)
 
 
+### BatikWaxCracks
+
+`Scene2D/BatikWaxCracks.frag` · type=normal · mood=bright,psychedelic,calm · complexity=3
+
+BATIK WAX CRACKS: cloth under wax, dyed. A drawn motif of dots and vines is reserved in wax; the wax then crazes into a network of fine cracks, and the dye seeps into every crack, so the cloth ends up with the pattern plus a web of thin dark veins. Over the scene arc the crack net grows and the dye deepens; the bass is how far the dye spreads, the chroma classes pick the dye bath. Camera fixed on the cloth. Audio Rea…
+
+![BatikWaxCracks ruhig (t=8)](img/BatikWaxCracks_A.jpg) ![BatikWaxCracks ruhig (t=16)](img/BatikWaxCracks_B.jpg) ![BatikWaxCracks audio-heiß (t=21)](img/BatikWaxCracks_C.jpg)
+
+
 ### BauhausGeo
 
 `Scene2D/BauhausGeo.frag` · type=normal · mood=bright · complexity=3
@@ -375,6 +384,15 @@ BISMUTH LABYRINTH: Raymarched infinite 3D hopper crystal labyrinth of metallic e
 BLACKSMITH SPARKS: a glowing bar on the anvil under the hammer. The bar's heat is the swell (it is drawn from the fire and cools), the kick is the hammer blow -- a flash on the bar and a burst of round sparks (light only: the sparks fly on the scene clock, the blow brightens them), the bass is the forge fire behind, the treble the scale flaking off as glints; the photo is the smithy wall and the bar's surface. Camera…
 
 ![BlacksmithSparks ruhig (t=8)](img/BlacksmithSparks_A.jpg) ![BlacksmithSparks ruhig (t=16)](img/BlacksmithSparks_B.jpg) ![BlacksmithSparks audio-heiß (t=21)](img/BlacksmithSparks_C.jpg)
+
+
+### BobbinLacePillow
+
+`Scene2D/BobbinLacePillow.frag` · type=normal · mood=dark,calm,dreamy · complexity=3
+
+BOBBIN LACE PILLOW: the lace maker's pillow seen from above. Pins with round heads hold the pattern, and pairs of threads cross and twist between them on the scene clock -- the two moves that make all bobbin lace. The finished lace grows down the pillow over the scene arc; below the working line the bobbins hang in a fan, each a small turned shape on its own thread. The photo is the pricking card under the work. Came…
+
+![BobbinLacePillow ruhig (t=8)](img/BobbinLacePillow_A.jpg) ![BobbinLacePillow ruhig (t=16)](img/BobbinLacePillow_B.jpg) ![BobbinLacePillow audio-heiß (t=21)](img/BobbinLacePillow_C.jpg)
 
 
 ### BookPagesTunnel
@@ -629,6 +647,15 @@ CEPHALOPOD CHROMATOPHORES: octopus skin, close. Thousands of chromatophores -- r
 ![CephalopodChromatophores ruhig (t=8)](img/CephalopodChromatophores_A.jpg) ![CephalopodChromatophores ruhig (t=16)](img/CephalopodChromatophores_B.jpg) ![CephalopodChromatophores audio-heiß (t=21)](img/CephalopodChromatophores_C.jpg)
 
 
+### ChainmailRingRipple
+
+`Scene2D/ChainmailRingRipple.frag` · type=normal · mood=dark,aggressive,psychedelic · complexity=4
+
+CHAINMAIL RING RIPPLE: a sheet of European 4-in-1 mail filling the frame. Every ring is a torus seen at an angle, threaded through four of its neighbours, so the sheet reads as interlocking metal rather than a pattern of circles. A ripple travels across it on the scene clock, tilting the rings it passes and running a band of highlight with it; each ring's polish takes the colour of one spectrum band, and the kick sen…
+
+![ChainmailRingRipple ruhig (t=8)](img/ChainmailRingRipple_A.jpg) ![ChainmailRingRipple ruhig (t=16)](img/ChainmailRingRipple_B.jpg) ![ChainmailRingRipple audio-heiß (t=21)](img/ChainmailRingRipple_C.jpg)
+
+
 ### CherenkovRadiationWakefield
 
 `Scene2D/CherenkovRadiationWakefield.frag` · type=normal · mood=bright,aggressive,psychedelic · complexity=4
@@ -744,6 +771,15 @@ CLIFFORD TORUS KLEIN BOTTLE: 4D non-orientable Klein bottle and flat Clifford to
 CLIFFORD TORUS STEREOGRAPHIC KALEIDO: 4D Clifford Torus (S1 x S1 in S3) stereographically projected into 3D space. Nested Villarceau circles, continuous isoclinic SO(4) rotations, and dynamic conformal interference rings. Audio Reactivity: audioAdvance -> drives continuous 4D Villarceau circle rotation & flight audioKick -> flashes Villarceau ring intersection nodes & radial shockwave audioCentroid-> modulates ring f…
 
 ![CliffordTorusStereographicKaleido ruhig (t=8)](img/CliffordTorusStereographicKaleido_A.jpg) ![CliffordTorusStereographicKaleido ruhig (t=16)](img/CliffordTorusStereographicKaleido_B.jpg) ![CliffordTorusStereographicKaleido audio-heiß (t=21)](img/CliffordTorusStereographicKaleido_C.jpg)
+
+
+### CloisonneEnamelCells
+
+`Scene2D/CloisonneEnamelCells.frag` · type=normal · mood=bright,psychedelic,calm · complexity=3
+
+CLOISONNE ENAMEL CELLS: a copper plate with gold wires bent into a scrolling pattern, the compartments between them filled with coloured enamel. Over the scene arc the cells are filled one after another and then fired: the enamel sinks, wets out and comes up glassy, so each cell goes from powder to a domed pane of colour. The chroma classes pick the enamels, the treble is the gold wire catching the light, and the swe…
+
+![CloisonneEnamelCells ruhig (t=8)](img/CloisonneEnamelCells_A.jpg) ![CloisonneEnamelCells ruhig (t=16)](img/CloisonneEnamelCells_B.jpg) ![CloisonneEnamelCells audio-heiß (t=21)](img/CloisonneEnamelCells_C.jpg)
 
 
 ### ClothDrape
@@ -928,6 +964,15 @@ CYBORG HIVE SHIP: A terrifying, claustrophobic flight through the interior of a 
 ![CyborgHiveShip ruhig (t=8)](img/CyborgHiveShip_A.jpg) ![CyborgHiveShip ruhig (t=16)](img/CyborgHiveShip_B.jpg) ![CyborgHiveShip audio-heiß (t=21)](img/CyborgHiveShip_C.jpg)
 
 
+### DamascusSteelEtch
+
+`Scene2D/DamascusSteelEtch.frag` · type=normal · mood=dark,aggressive,psychedelic · complexity=3
+
+DAMASCUS STEEL ETCH: a pattern-welded blade in the acid. The billet was folded and twisted, so its layers surface as a ladder of flowing bands; over the scene arc the acid bites and the pattern comes up out of a blank grey blade, dark layers first, then the bright ones. An oil sheen sweeps along the blade on the scene clock, the forge glow behind it rides the bass, and the treble is the edge catching the light. Camer…
+
+![DamascusSteelEtch ruhig (t=8)](img/DamascusSteelEtch_A.jpg) ![DamascusSteelEtch ruhig (t=16)](img/DamascusSteelEtch_B.jpg) ![DamascusSteelEtch audio-heiß (t=21)](img/DamascusSteelEtch_C.jpg)
+
+
 ### DarkAmbientTunnel
 
 `Scene2D/DarkAmbientTunnel.frag` · type=KaleidoscopeBase · mood=dark,calm · complexity=1
@@ -1097,6 +1142,15 @@ EINSTEIN HAT TILING: the aperiodic monotile of 2023 -- one shape that tiles the 
 EINSTEIN RING GRAVITATIONAL LENS: Relativistic gravitational lensing around a massive rotating dark-matter singularity. Background photo textures are warped into Einstein rings, arc mirages, and multiple relativistic images with Doppler frequency shifts and gravitational wave metric ripples. audioAdvance -> rotates relativistic accretion and frame dragging audioKick -> fires gravitational metric compression shockwave…
 
 ![EinsteinRingGravitationalLens ruhig (t=8)](img/EinsteinRingGravitationalLens_A.jpg) ![EinsteinRingGravitationalLens ruhig (t=16)](img/EinsteinRingGravitationalLens_B.jpg) ![EinsteinRingGravitationalLens audio-heiß (t=21)](img/EinsteinRingGravitationalLens_C.jpg)
+
+
+### EmbroideryHoopStitches
+
+`Scene2D/EmbroideryHoopStitches.frag` · type=normal · mood=bright,calm,dreamy · complexity=3
+
+EMBROIDERY HOOP STITCHES: a hoop of linen with a design worked in it. Satin stitch fills the petals in bands of parallel floss, stem stitch draws the lines, and French knots sit as round beads in the centres. The design is worked over the scene arc, stitch after stitch, and the needle with its trailing thread sits at the working point. The chroma classes pick the flosses; the treble is the silk sheen, which is what m…
+
+![EmbroideryHoopStitches ruhig (t=8)](img/EmbroideryHoopStitches_A.jpg) ![EmbroideryHoopStitches ruhig (t=16)](img/EmbroideryHoopStitches_B.jpg) ![EmbroideryHoopStitches audio-heiß (t=21)](img/EmbroideryHoopStitches_C.jpg)
 
 
 ### EndOfTheUniverse
@@ -2111,6 +2165,15 @@ KINETIC TILE MOSAIC MATRIX: 100% viewport-filling architectural facade of thousa
 ![KineticTileMosaicMatrix ruhig (t=8)](img/KineticTileMosaicMatrix_A.jpg) ![KineticTileMosaicMatrix ruhig (t=16)](img/KineticTileMosaicMatrix_B.jpg) ![KineticTileMosaicMatrix audio-heiß (t=21)](img/KineticTileMosaicMatrix_C.jpg)
 
 
+### KintsugiGoldSeams
+
+`Scene2D/KintsugiGoldSeams.frag` · type=normal · mood=dark,calm,dreamy · complexity=3
+
+KINTSUGI GOLD SEAMS: a bowl that was broken and mended with gold. The crack network is a Voronoi seam field over the bowl; over the scene arc the breaks spread outward from the first fracture and the gold flows into them behind the spreading front, so the piece is whole, then broken, then mended -- one continuous sweep with no cut. The glaze is the photo; the treble is the gold catching the light, the kick a glint ru…
+
+![KintsugiGoldSeams ruhig (t=8)](img/KintsugiGoldSeams_A.jpg) ![KintsugiGoldSeams ruhig (t=16)](img/KintsugiGoldSeams_B.jpg) ![KintsugiGoldSeams audio-heiß (t=21)](img/KintsugiGoldSeams_C.jpg)
+
+
 ### KirlianAura
 
 `Scene2D/KirlianAura.frag` · type=normal · mood=dark,psychedelic,aggressive · complexity=3
@@ -2163,6 +2226,24 @@ KLEIN QUARTIC HYPERBOLIC CURVE: Riemann surface of genus 3 with maximal symmetry
 KLUVER FORM CONSTANTS: the four geometric hallucination forms -- tunnel, spiral, lattice, cobweb -- as one continuously morphing field. Each form is a phase function over the retinal (log-polar) plane; the blend between them is picked by the arousal axis and drifts on the scene clock, always by smooth weights, never by a switch. The photo is the colour source: the forms are stripes of it. The whole field flows steadi…
 
 ![KluverFormConstants ruhig (t=8)](img/KluverFormConstants_A.jpg) ![KluverFormConstants ruhig (t=16)](img/KluverFormConstants_B.jpg) ![KluverFormConstants audio-heiß (t=21)](img/KluverFormConstants_C.jpg)
+
+
+### KnittingRowsGrow
+
+`Scene2D/KnittingRowsGrow.frag` · type=normal · mood=calm,bright,dreamy · complexity=3
+
+KNITTING ROWS GROW: stocking stitch growing row by row over the scene arc. Each stitch is a V of yarn sitting in the row below, and the fabric is built as a lattice of those Vs; colourwork bands take their yarn from the chroma classes, the photo is the yarn's own dyed shade. The live row sits on the needle at the top of the growing fabric and is a little looser than the rest. Camera fixed on the work. Audio Reactivit…
+
+![KnittingRowsGrow ruhig (t=8)](img/KnittingRowsGrow_A.jpg) ![KnittingRowsGrow ruhig (t=16)](img/KnittingRowsGrow_B.jpg) ![KnittingRowsGrow audio-heiß (t=21)](img/KnittingRowsGrow_C.jpg)
+
+
+### KumikoLatticeShoji
+
+`Scene2D/KumikoLatticeShoji.frag` · type=normal · mood=bright,calm,dreamy · complexity=3
+
+KUMIKO LATTICE SHOJI: a shoji screen with a kumiko lattice, lit from behind. The frame is a grid of mortised bars; inside each opening a hemp-leaf pattern is assembled from six thin slats meeting at the centre. The pieces are fitted one after another over the scene arc, so the pattern builds; the paper behind carries the photo as the garden outside, and its light moves with the swell. The treble is the sheen along a …
+
+![KumikoLatticeShoji ruhig (t=8)](img/KumikoLatticeShoji_A.jpg) ![KumikoLatticeShoji ruhig (t=16)](img/KumikoLatticeShoji_B.jpg) ![KumikoLatticeShoji audio-heiß (t=21)](img/KumikoLatticeShoji_C.jpg)
 
 
 ### LaserCavityTransverseModes
@@ -3416,6 +3497,15 @@ QUATERNION FRACTAL HOPF LOOM: 4D hypercomplex quaternion Julia fractal sliced dy
 QUATERNIONIC JULIA 4D FLIGHT: Raymarched flight through a true 4D Quaternion Julia fractal (q_{n+1} = q_n^2 + C). Projected into 3D via 4D hyper-rotations with metallic specular highlights, audio-reactive constant morphing, and continuous photo texture refraction. audioAdvance -> rotates 4D hyper-plane slicing angles (xw, yw, zw) audioKick -> morphs quaternion constant C & triggers metallic flashes audioBass -> pulse…
 
 ![QuaternionicJulia4DFlight ruhig (t=8)](img/QuaternionicJulia4DFlight_A.jpg) ![QuaternionicJulia4DFlight ruhig (t=16)](img/QuaternionicJulia4DFlight_B.jpg) ![QuaternionicJulia4DFlight audio-heiß (t=21)](img/QuaternionicJulia4DFlight_C.jpg)
+
+
+### QuiltBlockPatchwork
+
+`Scene2D/QuiltBlockPatchwork.frag` · type=normal · mood=bright,calm,psychedelic · complexity=3
+
+QUILT BLOCK PATCHWORK: a quilt assembling itself block by block over the scene arc. Each block is a traditional pieced pattern -- half square triangles, a nine patch, a flying goose -- cut from the photo, and the blocks arrive in row-major order, each fading in over its own slice of the arc. Running stitch lines cross every seam, the chroma classes pick the fabrics, and the kick lights the block that has just been se…
+
+![QuiltBlockPatchwork ruhig (t=8)](img/QuiltBlockPatchwork_A.jpg) ![QuiltBlockPatchwork ruhig (t=16)](img/QuiltBlockPatchwork_B.jpg) ![QuiltBlockPatchwork audio-heiß (t=21)](img/QuiltBlockPatchwork_C.jpg)
 
 
 ### RangoliPowderMandala

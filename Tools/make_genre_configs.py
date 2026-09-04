@@ -181,19 +181,19 @@ MODIFIED_SCENES = {
 # Minuten statt siebzig).  Bewusst eine eigene Liste: welche Szenen zuletzt
 # dran waren, ist eine historische Tatsache und soll im Diff stehen.
 RECENT_SCENES = {
-    # 04.09.: fuenfte Fuenfzig, Block C (Wasser): Gezeitentuempel, Damm-Ueberlauf,
-    # Sinterterrassen, Mangroven, Pfuetzen, Wasserlaeufer, Lachssprung, Cenote,
-    # Reisterrassen, Kreisberegnung.
-    "TidePoolRefraction",
-    "SpillwayGateRelease",
-    "TravertineTerracePools",
-    "MangroveRootsTide",
-    "PuddleNeonReflections",
-    "WaterStriderDimples",
-    "SalmonRunFalls",
-    "CenoteLightShaft",
-    "RiceTerracesDawn",
-    "PivotIrrigationCircles",
+    # 04.09.: fuenfte Fuenfzig, Block D (Textil und Material): Stricken, Quilt,
+    # Kloeppelspitze, Batik, Kintsugi, Stickrahmen, Kumiko, Kettenhemd, Cloisonne,
+    # Damaszener Stahl.
+    "KnittingRowsGrow",
+    "QuiltBlockPatchwork",
+    "BobbinLacePillow",
+    "BatikWaxCracks",
+    "KintsugiGoldSeams",
+    "EmbroideryHoopStitches",
+    "KumikoLatticeShoji",
+    "ChainmailRingRipple",
+    "CloisonneEnamelCells",
+    "DamascusSteelEtch",
 }
 
 def rule_recent(m, h):
