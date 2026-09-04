@@ -62,7 +62,7 @@ void main() {
     // Scale cube into rectangular monolith
     localP *= vec3(0.055, 0.06 + height * 0.18, 0.055);
 
-    vec3 cubeCenter = vec3(gridUV.x * 4.4, height * 0.5 - 1.0, gridUV.y * 4.4);
+    vec3 cubeCenter = vec3(gridUV.x * 5.6, height * 0.5 - 1.0, gridUV.y * 5.6);
     vec3 pos = cubeCenter + localP;
 
     vPos = pos;
@@ -72,13 +72,14 @@ void main() {
     vEnergy = bandVal + gateFlip;
 
     // Stereoscopic 3D camera projection
+    // Closer than before: at 9.5 units the array filled half the frame (reported).
     vec3 vp = pos;
-    vp.y -= 1.5;
-    float tiltAngle = -0.62;
+    vp.y -= 1.1;
+    float tiltAngle = -0.78;
     float cosT = cos(tiltAngle), sinT = sin(tiltAngle);
     vec3 rotatedVP = vec3(vp.x, vp.y * cosT - vp.z * sinT, vp.y * sinT + vp.z * cosT);
 
-    rotatedVP.z += 9.5;
+    rotatedVP.z += 4.4;
     rotatedVP.x -= eyeOff;
 
     gl_Position = projM * vec4(rotatedVP.x, rotatedVP.y, -rotatedVP.z, 1.0);

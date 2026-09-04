@@ -58,7 +58,11 @@ void main() {
     float angle = atan(uv.y, uv.x);
 
     // Toroidal and poloidal angles
-    float q_safety = 3.2 * hel; // Safety factor q
+    // The safety factor is an INTEGER: every use of phi below is periodic in
+    // 2*pi only if its coefficient is a whole number, and 3.2*hel was not --
+    // the filaments tore along the atan cut on the left (reported as a visible
+    // edge).  Rational q is also where the islands of a real tokamak sit.
+    float q_safety = 2.0 + floor(clamp(hel, 0.0, 1.0) * 2.99); // Safety factor q, integer
     float phi = angle + t * 0.5; // Toroidal coordinate
     float theta = (1.0 / (r + 0.1)) * (1.2 + 0.4 * audioBass) + phi * q_safety;
 
@@ -72,7 +76,10 @@ void main() {
     float turbulence = exp(-abs(alfvenWave) * 8.0) * (0.6 + 0.8 * audioHigh);
 
     // Photo texture advected by helical plasma vorticity
-    vec2 plasmaUV = vec2(phi / 6.28318 + 0.5, fract(theta * 0.15));
+    // The V coordinate must wrap with phi too: theta carries q*phi, so it is
+    // split into the radial part and a q*phi/(2pi) term that fract() closes.
+    float thetaR = (1.0 / (r + 0.1)) * (1.2 + 0.4 * audioBass);
+    vec2 plasmaUV = vec2(phi / 6.28318 + 0.5, fract(thetaR * 0.15 + q_safety * phi / 6.28318));
     plasmaUV += vec2(filament1, filament2) * 0.04 * (1.0 + 1.5 * audioKick);
     vec3 photoPlasma = img(fract(plasmaUV));
 

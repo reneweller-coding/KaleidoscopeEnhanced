@@ -114,12 +114,14 @@ void main()
 
     // Thin at face-on, dense at grazing angles — that is what glass does, and
     // it is what makes a stack of panes read as volume rather than as decals.
-    float alpha = clamp((0.10 + 0.42 * fres) * (0.5 + 1.3 * glassP), 0.0, 0.92);
+    // Thinner glass: several panes at this alpha summed to an opaque white
+    // slab and the core behind them was gone (reported).
+    float alpha = clamp((0.05 + 0.30 * fres) * (0.5 + 1.0 * glassP), 0.0, 0.55);
 
-    vec3 col = tint * (0.55 + 0.9 * max(dot(n, L), 0.0));
+    vec3 col = tint * (0.30 + 0.55 * max(dot(n, L), 0.0));
     vec3 H = normalize(L + V);
-    col += vec3(1.0) * pow(max(dot(n, H), 0.0), 90.0) * (0.6 + 2.2 * audioHigh);
-    col += tint * fres * (0.5 + 1.1 * glowP) * (0.4 + 1.2 * audioKick);
+    col += vec3(1.0) * pow(max(dot(n, H), 0.0), 90.0) * (0.3 + 1.0 * audioHigh);
+    col += tint * fres * (0.3 + 0.6 * glowP) * (0.3 + 0.7 * audioKick);
     col += tint * 0.25 * audioAmbient;
     col *= 1.0 + 0.20 * audioBeat + 0.15 * audioSubBass;
 

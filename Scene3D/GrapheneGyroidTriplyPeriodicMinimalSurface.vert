@@ -50,38 +50,41 @@ void main()
     // Remap grid UV [0,1] to centered [-1,1] domain
     vec2 uv = attrA.xy * 2.0 - 1.0;
     vUV = attrA.xy;
-    
+
     float t = time * 0.35 + audioAdvance * 0.3;
-    
+
     // Triply Periodic Minimal Surface (TPMS) Gyroid nodal approximation:
     // f(x,y,z) = sin(x)*cos(y) + sin(y)*cos(z) + sin(z)*cos(x) = 0
     float kPitch = (gyroidPitchP > 0.01 ? gyroidPitchP : 3.5);
     vec2 p = uv * 3.14159265 * kPitch;
-    
+
     float zG = sin(p.x) * cos(p.y + t) + cos(p.x - t) * sin(p.y);
     float gAmp = (gyroidAmpP > 0.01 ? gyroidAmpP : 0.6) * (0.85 + 0.35 * audioSwell);
-    
+
     vGyroidAngle = zG;
-    
+
     vec3 worldPos = vec3(uv.x * 2.5, uv.y * 2.5, zG * gAmp);
-    
+
     // Gradient normal of gyroid
     float dZdx = cos(p.x) * cos(p.y + t) - sin(p.x - t) * sin(p.y);
     float dZdy = -sin(p.x) * sin(p.y + t) + cos(p.x - t) * cos(p.y);
     vNormal = normalize(vec3(-dZdx * gAmp, -dZdy * gAmp, 1.0));
-    
+
     vCol = imgPalette(fract(zG * 0.3 + length(uv) * 0.2 + audioCentroid));
-    
+
     // Camera Transform (V3)
+    // Tilt FIRST, then push away.  The old order rotated the already-pushed
+    // plate about the CAMERA, which dropped the plate's centre by D*sin(tilt)
+    // and left it sitting in the lower half of the frame with black above.
+    // Tilting about the plate's own centre keeps it on the view axis, and at
+    // this distance it then fills the frame (reported: "bildschirmfuellender").
     vec3 vp = worldPos;
-    vp.z += 4.5;
-    vp.x -= eyeOff;
-    
-    // 3D rotation
     float tilt = 0.55;
     float c = cos(tilt), s = sin(tilt);
     vp = vec3(vp.x, vp.y * c - vp.z * s, vp.y * s + vp.z * c);
-    
+    vp.z += 4.0;
+    vp.x -= eyeOff;
+
     gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 }

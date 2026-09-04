@@ -959,7 +959,7 @@ CYBERPUNK SYNTH GRID HIGHWAY FLY: High-velocity 3D flight across an endless neon
 
 `Scene2D/CyberpunkWireframeTerrainFlyover.frag` · type=normal · mood=psychedelic,bright,aggressive · complexity=2
 
-CYBERPUNK WIREFRAME TERRAIN FLYOVER: Mach 3 flight over an infinite 80s synthwave neon wireframe mountain landscape with reflective chrome water valleys, segmented vector laser sun on the horizon, and audio-reactive mountain equalizer peaks. Audio Reactivity: audioAdvance -> drives continuous high-velocity forward flight across terrain audioKick -> flashes laser sun segments & sends ground grid shockwaves audioBass -…
+CYBERPUNK WIREFRAME TERRAIN FLYOVER: fast flight over an infinite 80s synthwave neon wireframe plain toward a segmented vector laser sun, stars above. (A mountain height function used to be computed here and never drawn -- the plane is projected, not marched -- so the header no longer promises mountains it cannot show.) Audio Reactivity: audioAdvance -> drives continuous high-velocity forward flight across terrain au…
 
 ![CyberpunkWireframeTerrainFlyover ruhig (t=8)](img/CyberpunkWireframeTerrainFlyover_A.jpg) ![CyberpunkWireframeTerrainFlyover ruhig (t=16)](img/CyberpunkWireframeTerrainFlyover_B.jpg) ![CyberpunkWireframeTerrainFlyover audio-heiß (t=21)](img/CyberpunkWireframeTerrainFlyover_C.jpg)
 
@@ -1483,7 +1483,7 @@ FROZEN METHANE LAKES: The surface of an icy moon (like Titan). Still, alien lake
 
 `Scene2D/FuturisticCityFlight.frag` · type=normal · mood=bright,aggressive,space · complexity=4
 
-FUTURISTIC CITY FLIGHT: High-speed flight through a dense cyberpunk-style metropolis. Buildings rise from the fog, with glowing windows and neon signs that react to the music. Flying cars dart through the canyons. audioAdvance -> forward flight speed and traffic movement audioKick -> flashes from neon signs and headlights audioSwell -> fog density and overall glow audioChromaHue-> neon color palette follows the music…
+FUTURISTIC CITY FLIGHT: a low, steady flight down one street of a night city. Towers line both sides of the canyon, their windows lit in a pattern that holds still, neon signs on the street walls, traffic lights streaming through the canyon above the car, fog closing the far end. REBUILT. The previous versions raymarched a city-block lattice with a corridor cut through it, and three things about that never worked (re…
 
 ![FuturisticCityFlight ruhig (t=8)](img/FuturisticCityFlight_A.jpg) ![FuturisticCityFlight ruhig (t=16)](img/FuturisticCityFlight_B.jpg) ![FuturisticCityFlight audio-heiß (t=21)](img/FuturisticCityFlight_C.jpg)
 
@@ -2160,7 +2160,7 @@ KARMAN VORTEX STREET: a flight down the wake behind a cylinder in a stream -- th
 
 `Scene2D/KerrNewmanSingularity.frag` · type=normal · mood=dark,aggressive · complexity=4
 
-KERR-NEWMAN SINGULARITY: Relativistic raymarching of a rotating charged black hole with Kerr-Schild spacetime metric, ergosphere frame dragging, gravitational light bending around the photon sphere, Doppler beaming, polar synchrotron plasma jets, and double-warped photo disk projections.
+KERR-NEWMAN SINGULARITY: a spinning black hole seen from a slow orbit -- the black shadow in the middle, a thin bright accretion disk bent up and over it by the lensing, the Doppler-brightened approaching side, the Einstein ring where light from behind wraps round, and twin jets on the spin axis. REBUILT compositing. The geodesics were right and what they showed was wrong (reported: "a giant sphere"): the background …
 
 ![KerrNewmanSingularity ruhig (t=8)](img/KerrNewmanSingularity_A.jpg) ![KerrNewmanSingularity ruhig (t=16)](img/KerrNewmanSingularity_B.jpg) ![KerrNewmanSingularity audio-heiß (t=21)](img/KerrNewmanSingularity_C.jpg)
 

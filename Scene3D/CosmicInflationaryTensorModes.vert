@@ -50,41 +50,44 @@ void main()
     // Remap grid UV [0,1] to centered [-1,1] domain
     vec2 uv = attrA.xy * 2.0 - 1.0;
     vUV = attrA.xy;
-    
+
     float t = time * 0.35 + audioAdvance * 0.3;
-    
+
     // Primordial tensor metric perturbations: h_+ and h_x polarizations
     float kGW = (gwFreqP > 0.01 ? gwFreqP : 8.0);
     float wavePhase = (uv.x + uv.y) * kGW - t * 3.0;
     vGravWavePhase = wavePhase;
-    
+
     // + polarization (stretching x while compressing y) & x polarization (45-degree shear)
     float hPlus  = cos(wavePhase) * (uv.x * uv.x - uv.y * uv.y) * 0.15;
     float hCross = sin(wavePhase + audioPhase * 0.5) * (2.0 * uv.x * uv.y) * 0.15;
-    
+
     float tScale = (tensorScaleP > 0.01 ? tensorScaleP : 1.2) * (0.85 + 0.35 * audioSwell);
     float zWarp = (hPlus + hCross) * tScale;
-    
+
     // Space metric expansion background
     vec3 worldPos = vec3(uv.x * 3.0, uv.y * 3.0, zWarp);
-    
+
     // Metric curvature normal
     float dHdx = cos(wavePhase) * uv.x * 0.4;
     float dHdy = sin(wavePhase) * uv.y * 0.4;
     vNormal = normalize(vec3(-dHdx, -dHdy, 1.0));
-    
+
     vCol = imgPalette(fract(wavePhase * 0.159 + length(uv) * 0.25 + audioCentroid));
-    
+
     // Camera Transform (V3)
+    // Tilt FIRST, then push away.  The old order rotated the already-pushed
+    // plate about the CAMERA, which dropped the plate's centre by D*sin(tilt)
+    // and left it sitting in the lower half of the frame with black above.
+    // Tilting about the plate's own centre keeps it on the view axis, and at
+    // this distance it then fills the frame (reported: "bildschirmfuellender").
     vec3 vp = worldPos;
-    vp.z += 4.5;
-    vp.x -= eyeOff;
-    
-    // 3D perspective tilt
     float tilt = 0.55;
     float c = cos(tilt), s = sin(tilt);
     vp = vec3(vp.x, vp.y * c - vp.z * s, vp.y * s + vp.z * c);
-    
+    vp.z += 4.0;
+    vp.x -= eyeOff;
+
     gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 }

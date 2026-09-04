@@ -48,9 +48,12 @@ void main() {
     float spd = (speedP      > 0.0) ? speedP      : 1.0;
     float hue = (hueP        > 0.0) ? hueP        : 0.0;
 
-    // Grid world range: X in [-12, 12], Z in [0, 24]
-    float x0 = (gridUV.x - 0.5) * 24.0;
-    float z0 = gridUV.y * 24.0;
+    // Grid world range: X in [-44, 44], Z in [0, 48].  Wide enough that the
+    // far edge still covers the frustum at the top of a frame the camera below
+    // now looks DOWN into -- a plate seen in perspective is a trapezoid, and a
+    // frame is a rectangle.
+    float x0 = (gridUV.x - 0.5) * 96.0;
+    float z0 = gridUV.y * 60.0;
 
     float t = time * 0.45 * spd + audioAdvance * 0.2;
 
@@ -87,9 +90,16 @@ void main() {
     // Kick breaker explosion
     worldP.y += audioKick * 0.8 * crestProfile;
 
-    // Camera space
-    vec3 camPos = vec3(0.0, 6.5, -9.0);
+    // Camera: low over the near edge and pitched DOWN onto the water.  The
+    // old camera sat at 6.5 looking dead level, so the sea was a strip along
+    // the bottom under a black sky (reported).
+    vec3 camPos = vec3(0.0, 5.4, -3.0);
     vec3 relP = worldP - camPos;
+    // Steep enough to fill the frame, shallow enough that the crests still
+    // read in profile: at 0.62 the sea was a flat green field from above.
+    const float pitch = 0.44;
+    float pc = cos(pitch), ps = sin(pitch);
+    relP = vec3(relP.x, relP.y * pc + relP.z * ps, -relP.y * ps + relP.z * pc);
     relP.x -= eyeOff;
 
     gl_Position = projM * vec4(relP.x, relP.y, -relP.z, 1.0);
@@ -104,7 +114,9 @@ void main() {
     // Ocean deep navy / bioluminescent cyan palette
     vec3 deepOcean = vec3(0.02, 0.05, 0.12);
     vec3 bioCyan   = vec3(0.0, 0.95, 1.0);
-    vec3 col = mix(deepOcean, bioCyan, clamp(pow(vBioGlow, 1.7) * 0.7, 0.0, 1.0));
+    // Brighter crests: seen from above at this distance the old glow read as
+    // a dim teal wash with the bioluminescence lost in it.
+    vec3 col = mix(deepOcean * 1.4, bioCyan, clamp(pow(vBioGlow, 1.1) * 1.5, 0.0, 1.0));
 
     if (hue > 0.001) col = hueRot(col, hue);
 

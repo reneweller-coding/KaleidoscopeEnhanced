@@ -2,14 +2,15 @@
 out vec4 fragColor;
 /**
  * @file CyberpunkWireframeTerrainFlyover.frag
- * @brief CYBERPUNK WIREFRAME TERRAIN FLYOVER: Mach 3 flight over an infinite 80s synthwave
- * neon wireframe mountain landscape with reflective chrome water valleys, segmented
- * vector laser sun on the horizon, and audio-reactive mountain equalizer peaks.
+ * @brief CYBERPUNK WIREFRAME TERRAIN FLYOVER: fast flight over an infinite 80s
+ * synthwave neon wireframe plain toward a segmented vector laser sun, stars
+ * above.  (A mountain height function used to be computed here and never
+ * drawn -- the plane is projected, not marched -- so the header no longer
+ * promises mountains it cannot show.)
  *
  * Audio Reactivity:
  *   audioAdvance -> drives continuous high-velocity forward flight across terrain
  *   audioKick    -> flashes laser sun segments & sends ground grid shockwaves
- *   audioBass    -> elevates mountain wireframe terrain height peaks
  *   audioCentroid-> sharpens wireframe anti-aliasing & starfield sparkles
  *   audioChromaHue-> rotates the synthwave neon magenta/cyan/orange palette
  */
@@ -53,19 +54,10 @@ vec3 imgPalette(float t) {
     return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
-// Procedural mountain terrain height function
-float terrainH(vec2 p, float hMod) {
-    float n = sin(p.x * 0.5) * cos(p.y * 0.4) + sin(p.x * 1.2 + p.y * 0.8) * 0.5;
-    // Central canyon for smooth road
-    float canyon = smoothstep(0.5, 2.0, abs(p.x));
-    return max(0.0, n * 1.6 * canyon) * (1.0 + 1.2 * audioBass) * hMod;
-}
-
 void main() {
     vec2 uv = (gl_FragCoord.xy - 0.5 * resolution.xy) / min(resolution.x, resolution.y);
 
     float spd = (speedP > 0.01) ? speedP : 1.0;
-    float tH = (terrainHeightP > 0.01) ? terrainHeightP : 1.0;
     float gDens = (gridDensityP > 0.01) ? gridDensityP : 1.0;
     float glw = (glowP > 0.01) ? glowP : 1.0;
 
@@ -82,9 +74,9 @@ void main() {
         // Ground / Mountain terrain ray projection
         float dY = horizon - uv.y;
         float depth = 1.2 / max(0.02, dY);
-        vec2 groundPos = vec2(uv.x * depth * 0.8, depth + t * 4.0);
-
-        float h = terrainH(groundPos, tH);
+        // Nearly three times the old ground speed: at t*4 the tiles crawled
+        // (reported).  The sun and the stars keep their own slower rates.
+        vec2 groundPos = vec2(uv.x * depth * 0.8, depth + t * 11.0);
 
         // Neon wireframe grid calculation
         vec2 grid = fract(groundPos * (0.8 * gDens)) - 0.5;
@@ -104,9 +96,11 @@ void main() {
         vec3 gridTint = vec3(1.6, 0.3, 1.2) * gridLine * (1.0 + 2.5 * audioKick) * glw;
         vec3 groundCol = baseGround + gridTint;
 
-        // Depth fog towards horizon
+        // Depth fog towards the horizon, into the SKY colour at the line: a
+        // palette grey there stood as a flat band under the sun.
         float fog = smoothstep(0.0, 0.35, dY);
-        finalCol = mix(imgPalette(0.8) * 0.4, groundCol, fog);
+        vec3 horizonCol = mix(vec3(0.15, 0.05, 0.25), imgPalette(0.8) * 0.4, 0.35);
+        finalCol = mix(horizonCol, groundCol, fog);
     } else {
         // Sky with segmented synthwave laser sun
         vec2 sunUV = uv - vec2(0.0, horizon + 0.25);

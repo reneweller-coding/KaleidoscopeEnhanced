@@ -49,7 +49,7 @@ void main()
 {
     float idx = attrA.w;
     int n = int(shellsP * float(SHELLS) + 0.5);
-    n = clamp(n, 3, SHELLS);
+    n = clamp(n, 3, 7);
 
     bool isCore = (idx < 0.5);
     // Only as many cubes as there are shells, plus the core.  The rest collapse.
@@ -78,9 +78,12 @@ void main()
     // Each shell is a box, scaled and tumbled on its own axis so the stack
     // interpenetrates instead of nesting neatly.  Neat nesting would be
     // sortable, and would prove nothing.
+    // Fewer, clearly separated shells: at 2.3 spread over fourteen shells the
+    // stack was a solid block of overlapping panes that summed to white and
+    // hid the core (reported: is that really what the header describes?).
     float size = isCore ? 1.05
-                        : (0.85 + spreadP * 2.3 * shell)
-                          * (1.0 + 0.14 * audioChroma[int(shell * 11.0)] * 4.0);
+                        : (1.35 + spreadP * 1.6 * shell)
+                          * (1.0 + 0.10 * audioChroma[int(shell * 11.0)] * 4.0);
 
     vec3 p = c * size;
     if (!isCore)
@@ -107,7 +110,9 @@ void main()
         nrm = rotAxis(nrm, axis, a);
     }
 
-    float dist = camDistP * (1.0 - 0.05 * audioLevel) * (1.0 - 0.03 * audioKick);
+    // Camera distance on the level and the kick was a zoom on fast envelopes
+    // (rule V7d).  The distance is a constant now.
+    float dist = camDistP;
     vec3 vp = vec3(pw.x - eyeOff, pw.y, pw.z + dist);
 
     vObj    = p;

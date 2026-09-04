@@ -86,8 +86,25 @@ void main() {
 
     vec3 col = vec3(0.0);
 
-    // Horizon sun and sky rendering (if looking up)
-    if (rd.y > 0.0) {
+    // March the terrain for EVERY ray.  Splitting sky and ground at rd.y == 0
+    // cut every mountain off flat at the horizon line (reported): a ridge that
+    // rises above eye level is seen along an UPWARD ray, and those rays were
+    // never asked about the terrain at all.  Now the sky is drawn only where
+    // the march misses, so the ridges stand in front of the sun.
+    float tGround = 0.0;
+    vec3 pGround = ro;
+    bool hitGround = false;
+    for (int i = 0; i < 72; i++) {
+        pGround = ro + rd * tGround;
+        float h = terrainHeight(pGround.xz, t, hM);
+        float d = pGround.y - h;
+        if (d < 0.01 * (1.0 + tGround * 0.1)) { hitGround = true; break; }
+        if (tGround > 40.0) break;
+        tGround += max(0.04, d * 0.55);
+    }
+
+    // Horizon sun and sky rendering, only where no ridge is in the way
+    if (!hitGround) {
         // Giant synth sun on horizon
         vec2 sunUV = uv - vec2(0.0, 0.05);
         float dSun = length(sunUV);
@@ -110,20 +127,8 @@ void main() {
         col += mix(imgPalette(0.3) * 0.2, imgPalette(0.75) * 0.6, clamp(rd.y * 2.0, 0.0, 1.0));
     }
 
-    // Terrain ground plane raymarching (if looking down)
-    if (rd.y < 0.0) {
-        float tGround = 0.0;
-        vec3 pGround = ro;
-
-        for (int i = 0; i < 48; i++) {
-            pGround = ro + rd * tGround;
-            float h = terrainHeight(pGround.xz, t, hM);
-            float d = pGround.y - h;
-
-            if (d < 0.01 || tGround > 30.0) break;
-            tGround += max(0.04, d * 0.6);
-        }
-
+    // The terrain, wherever the march reached it
+    if (hitGround) {
         // Compute neon wireframe grid lines on terrain
         vec2 gridCoord = pGround.xz * (2.0 * gDens);
         vec2 gridFract = abs(fract(gridCoord - 0.5) - 0.5);

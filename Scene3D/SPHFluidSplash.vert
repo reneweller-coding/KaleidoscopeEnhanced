@@ -24,8 +24,10 @@ void main()
     // Orbiting camera looking at the container's centre -- same shape as
     // BioluminescentSwarm's, scaled down to this scene's ~3.2-unit box.
     float camAngle = time * 0.10 + audioAdvance * 0.05;
-    float camDist  = 10.0 - audioSwell * 1.5;
-    vec3 camPos = vec3(sin(camAngle) * camDist, 3.0 + 1.2 * sin(time * 0.13), cos(camAngle) * camDist);
+    // Closer: at 10 units the 3.2-unit box was a stamp in the middle of a
+    // black frame (reported).
+    float camDist  = 3.9 - audioSwell * 0.4;
+    vec3 camPos = vec3(sin(camAngle) * camDist, 1.7 + 0.5 * sin(time * 0.13), cos(camAngle) * camDist);
     vec3 lookTarget = vec3(0.0, -0.6, 0.0);
 
     vec3 ww = normalize(lookTarget - camPos);

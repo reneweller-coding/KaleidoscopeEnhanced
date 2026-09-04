@@ -2,19 +2,37 @@
 out vec4 fragColor;
 /**
  * @file FuturisticCityFlight.frag
- * @brief FUTURISTIC CITY FLIGHT: High-speed flight through a dense cyberpunk-style
- * metropolis. Buildings rise from the fog, with glowing windows and neon signs
- * that react to the music. Flying cars dart through the canyons.
- *   audioAdvance -> forward flight speed and traffic movement
- *   audioKick    -> flashes from neon signs and headlights
- *   audioSwell   -> fog density and overall glow
- *   audioChromaHue-> neon color palette follows the musical key
+ * @brief FUTURISTIC CITY FLIGHT: a low, steady flight down one street of a
+ * night city.  Towers line both sides of the canyon, their windows lit in a
+ * pattern that holds still, neon signs on the street walls, traffic lights
+ * streaming through the canyon above the car, fog closing the far end.
  *
- * Per-activation variety:
- *   buildP float building density (0.7..1.5)
- *   glowP float neon light intensity (0.6..1.8)
- *   fogP float fog density (0.5..1.5)
- *   hueP float palette offset (0..6.28)
+ * REBUILT.  The previous versions raymarched a city-block lattice with a
+ * corridor cut through it, and three things about that never worked
+ * (reported three times as "pure chaos"): the corridor's floor sat five units
+ * below the camera, so there was no street to fly along; the buildings were
+ * boxes on a 4-unit lattice with a detail cube on top, so the canyon had no
+ * walls, only a field of stumps; and the window pattern was computed from a
+ * finite-difference normal that flipped between wall directions at every
+ * lattice seam, so the windows rewrote themselves every frame.
+ *
+ * Now the city is one street: a flat road at y = 0, and on each side a row
+ * of buildings, one per block along z, each with its own width, height and
+ * setback from the kerb.  The distance field is six boxes (the block the
+ * point is in and its two neighbours, on both sides) plus the road, so it
+ * costs almost nothing and has no seams.  The normal is ANALYTIC -- read off
+ * whichever face of the nearest box is closest -- so a wall is a wall, and
+ * its windows are indexed in that wall's own coordinates.  Nothing about a
+ * building depends on where the camera is.
+ *
+ * Audio Reactivity:
+ *   sceneAdvance    -> the flight (continuous, camera on the scene clock only)
+ *   audioKick       -> the neon signs and the headlights flare (light)
+ *   audioLevel      -> how many windows are lit (light, slow ramp)
+ *   audioSwell      -> the fog and the sky glow (slow)
+ *   audioChromaHue  -> the neon palette follows the key (colour)
+ *
+ * Per-activation variety: buildP (tower height), glowP, fogP, hueP.
  */
 
 uniform vec2  resolution;
@@ -25,9 +43,6 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-// Beide zaehlen ab DIESER Aktivierung statt ab Programmstart:
-// `time` und `audioAdvance` wachsen unbegrenzt und taugen daher nur
-// als Phase, nicht als Position oder Rauschkoordinate.
 uniform float sceneTime;
 uniform float sceneAdvance;
 
@@ -37,6 +52,7 @@ uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
 uniform float audioChromaHue;
+uniform float audioHigh;
 
 uniform float buildP;
 uniform float glowP;
@@ -64,166 +80,199 @@ vec3 hueRot(vec3 c, float a) {
 
 float hash11(float n) { return fract(sin(n * 127.1) * 43758.5453); }
 float hash21(vec2 p)  { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
-float hash31(vec3 p)  { return fract(sin(dot(p, vec3(127.1, 311.7, 74.7))) * 43758.5453); }
 
-float sdBox(vec3 p, vec3 b) {
-    vec3 q = abs(p) - b;
+// ---- the street ------------------------------------------------------------
+const float STREET_HALF = 4.6;     // kerb to kerb, the camera weaves well inside
+const float BLOCK       = 9.0;     // one building per block along z
+
+// A building's footprint and height from its block index and side.
+void building(float k, float side, float bp,
+              out vec3 centre, out vec3 half_)
+{
+    float h1 = hash11(k * 3.7 + side * 17.1);
+    float h2 = hash11(k * 5.3 + side * 29.3);
+    float h3 = hash11(k * 7.9 + side * 41.7);
+    float height  = (6.0 + 18.0 * h1 * h1) * bp;          // a few tall, most mid
+    float halfW   = 2.2 + 3.0 * h2;                          // across the street
+    float setback = 0.4 + 2.2 * h3;                          // from the kerb
+    float halfD   = BLOCK * (0.34 + 0.10 * hash11(k * 2.1 + side * 3.3));  // along z
+    centre = vec3(side * (STREET_HALF + setback + halfW), height * 0.5,
+                  (k + 0.5) * BLOCK);
+    half_  = vec3(halfW, height * 0.5, halfD);
+}
+
+float sdBox(vec3 p, vec3 c, vec3 h)
+{
+    vec3 q = abs(p - c) - h;
     return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0);
 }
 
-float hitMat = 0.0;
-vec3 hitCol = vec3(0.0);
-
-// Soft-max, used to carve a smooth clearance bubble around the camera out
-// of the distance field: the flight can never clip through geometry -- a
-// would-be collision becomes a soft bulge sliding past the lens.
-float smax(float a, float b, float k) {
-    float h = clamp(0.5 - 0.5 * (a - b) / k, 0.0, 1.0);
-    return mix(a, b, h) + k * h * (1.0 - h);
-}
-
-float map(vec3 p, float bp)
+// Distance to the city, and which box was nearest (for the analytic normal).
+vec3  gC, gH;          // the nearest box, handed back to the shader
+float gSide, gBlock;
+float mapCity(vec3 p, float bp)
 {
-    float d = 1e10;
-    float mat = 0.0;
-
-    // City block repetition
-    vec3 cp = p;
-    vec2 id = floor(cp.xz / 4.0);
-    cp.xz = mod(cp.xz, 4.0) - 2.0;
-
-    // Determine building height based on cell
-    float h = hash21(id);
-    if (h < 0.8 * bp) {
-        float height = 2.0 + 8.0 * hash21(id + 1.0);
-        // Central gap for the flight path. The camera flies at x = 0 --
-        // the BOUNDARY between cell columns -1 and 0 -- so both columns
-        // form the street, and its buildings stay low street furniture
-        // (the old gap towers reached y = 1.0, the camera's sine low).
-        if (id.x > -1.5 && id.x < 0.5) height = 0.45 + 0.30 * hash21(id + 2.0);
-
-        float building = sdBox(cp - vec3(0.0, height - 5.0, 0.0), vec3(1.2, height, 1.2));
-
-        // Add some detail
-        float detail = sdBox(cp - vec3(0.0, height * 2.0 - 5.0, 0.0), vec3(0.5, 0.5, 0.5));
-        building = min(building, detail);
-
-        if (building < d) { d = building; mat = 1.0; }
+    float d = p.y;                          // the road
+    gSide = 0.0; gBlock = 0.0;
+    float k0 = floor(p.z / BLOCK);
+    for (int s = 0; s < 2; ++s)
+    {
+        float side = (s == 0) ? -1.0 : 1.0;
+        for (int j = -1; j <= 1; ++j)
+        {
+            float k = k0 + float(j);
+            vec3 c, h;
+            building(k, side, bp, c, h);
+            float db = sdBox(p, c, h);
+            if (db < d) { d = db; gC = c; gH = h; gSide = side; gBlock = k; }
+        }
     }
-
-    hitMat = mat;
     return d;
 }
 
-vec3 calcNormal(vec3 p, float bp)
+// The normal of the nearest surface, read off the nearest box face -- no
+// finite differences, so nothing flips at a seam.
+vec3 normalCity(vec3 p)
 {
-    vec2 e = vec2(0.01, 0.0);
-    return normalize(vec3(
-        map(p + e.xyy, bp) - map(p - e.xyy, bp),
-        map(p + e.yxy, bp) - map(p - e.yxy, bp),
-        map(p + e.yyx, bp) - map(p - e.yyx, bp)));
+    if (gSide == 0.0) return vec3(0.0, 1.0, 0.0);     // the road
+    vec3 q = (p - gC) / gH;
+    vec3 a = abs(q);
+    if (a.x > a.y && a.x > a.z) return vec3(sign(q.x), 0.0, 0.0);
+    if (a.y > a.z)              return vec3(0.0, sign(q.y), 0.0);
+    return vec3(0.0, 0.0, sign(q.z));
 }
 
 void main()
 {
-    float bp = (buildP > 0.01 ? buildP : 1.0);
-    float glw = (glowP > 0.01 ? glowP : 1.0);
-    float fgP = (fogP > 0.01 ? fogP : 1.0);
-    float hue = (hueP > 0.01 ? hueP : 0.0);
+    float bp  = (buildP > 0.01) ? buildP : 1.0;
+    float glw = (glowP  > 0.01) ? glowP  : 1.0;
+    float fgP = (fogP   > 0.01) ? fogP   : 1.0;
+    float hue = (hueP   > 0.01) ? hueP   : 0.0;
 
     vec2 uv = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
-    float t = sceneTime * 0.1 + sceneAdvance * 0.4;
+    // The flight: a steady speed on the scene clock, a slow lane weave, no
+    // roll, a whisper of pitch.  Nothing here follows a fast envelope.
+    float T = sceneTime * 4.0 + sceneAdvance * 6.0;
+    vec3 ro = vec3(0.9 * sin(sceneTime * 0.11 + sceneAdvance * 0.05), 1.7, T);
+    vec3 rd = normalize(vec3(uv.x, uv.y + 0.02, 1.15));
 
-    // Flight down the central corridor
-    vec3 ro = vec3(0.0, 2.4 + 0.6 * sin(t * 0.5), t * 15.0);
-    vec3 ta = ro + vec3(sin(t * 0.3), -0.2 + 0.5 * cos(t * 0.2), 1.0);
-
-    vec3 ww = normalize(ta - ro);
-    vec3 uu = normalize(cross(ww, vec3(0.0, 1.0, 0.0)));
-    vec3 vv = cross(uu, ww);
-
-    float roll = 0.08 * sin(t * 0.25);
-    vec2 ruv = mat2(cos(roll), -sin(roll), sin(roll), cos(roll)) * uv;
-    vec3 rd = normalize(ruv.x * uu + ruv.y * vv + 1.2 * ww);
-
+    // ---- march ----
     float d = 0.0;
-    vec3 p;
-    float m = 0.0;
-    int steps = 0;
-
-    for (int i = 0; i < 100; ++i) {
+    vec3  p = ro;
+    bool  hit = false;
+    for (int i = 0; i < 110; ++i)
+    {
         p = ro + rd * d;
-        float ds = map(p, bp);
-        ds = smax(ds, 0.50 - length(p - ro), 0.20);   // camera clearance bubble
-        m = hitMat;
-        steps = i;
-        if (ds < 0.005 * (1.0 + d * 0.05)) break;
-        d += ds * 0.8;
-        if (d > 80.0) { m = 0.0; break; }
+        float ds = mapCity(p, bp);
+        if (ds < 0.004 * (1.0 + d * 0.06)) { hit = true; break; }
+        d += ds * 0.9;
+        if (d > 140.0) break;
     }
 
-    vec3 neonBase1 = max(imgPalette(0.2), vec3(0.20, 0.16, 0.30));
-    vec3 neonBase2 = max(imgPalette(0.7), vec3(0.30, 0.18, 0.24));
+    vec3 neonA = max(imgPalette(0.15), vec3(0.20, 0.16, 0.34));
+    vec3 neonB = max(imgPalette(0.62), vec3(0.34, 0.14, 0.26));
 
-    // Nachthimmel-Dunst statt Fast-Schwarz: im Screening-Sweep waren 3 von 4
-    // Frames vollstaendig leer, weil zwischen den Haeusern nichts stand.
-    vec3 col = mix(vec3(0.05, 0.04, 0.09), neonBase1 * 0.22,
-                   clamp(0.55 - ruv.y, 0.0, 1.0));
+    // The sky at the end of the canyon: a night haze that carries the neon.
+    float up  = clamp(rd.y * 2.2 + 0.25, 0.0, 1.0);
+    vec3  sky = mix(neonA * 0.55, vec3(0.03, 0.02, 0.07), up)
+              * (0.45 + 0.45 * clamp(audioSwell, 0.0, 1.0));
+    vec3  col = sky;
 
-    if (m > 0.5) {
-        vec3 n = calcNormal(p, bp);
-        vec3 albedo = vec3(0.22, 0.25, 0.31);
+    if (hit)
+    {
+        mapCity(p, bp);                      // refresh the nearest-box record
+        vec3 n = normalCity(p);
 
-        // Windows, PRO FASSADE projiziert: das alte floor(p.xz*2 + p.y*5)
-        // vermengte beide Wandrichtungen -- die Muster schwammen und
-        // wechselten staendig ("Fehler der Normalen?").
-        vec2 face = (abs(n.x) > abs(n.z)) ? p.zy : p.xy;
-        vec2 grid = floor(face * vec2(2.0, 5.0));
-        float wNoise = hash21(grid);
-        float window = step(0.7, wNoise);
+        if (gSide == 0.0)
+        {
+            // ---- the road ----
+            vec3 asphalt = vec3(0.045, 0.045, 0.055);
+            // Lane markings: a dashed centre line and solid kerb lines.
+            float dash = step(0.55, fract(p.z * 0.20)) * smoothstep(0.10, 0.04, abs(p.x));
+            float kerb = smoothstep(0.14, 0.06, abs(abs(p.x) - STREET_HALF + 0.35));
+            col = asphalt + vec3(0.55, 0.50, 0.30) * (dash * 0.55 + kerb * 0.35);
+            // Wet asphalt: the neon of the walls mirrors faintly in it.
+            float wet = pow(1.0 - clamp(-rd.y, 0.0, 1.0), 3.0);
+            col += mix(neonA, neonB, 0.5 + 0.5 * sin(p.z * 0.05)) * wet * 0.25 * glw;
+        }
+        else
+        {
+            // ---- a building ----
+            vec3 base = vec3(0.10, 0.11, 0.15);
+            float wall = 1.0 - abs(n.y);
+            float bid  = gBlock * 2.0 + gSide;                 // one id per building
 
-        // Only windows on vertical walls
-        float isWall = step(0.9, 1.0 - abs(n.y));
+            // Windows in the WALL'S OWN coordinates: the street wall counts
+            // along z, an end wall along x, both count up y.  A fixed lattice
+            // per building, so the pattern never rewrites itself.
+            vec2 face = (abs(n.x) > 0.5) ? vec2(p.z, p.y) : vec2(p.x, p.y);
+            vec2 cell = floor(face / vec2(1.25, 0.95));
+            vec2 cf   = fract(face / vec2(1.25, 0.95));
+            float pane = smoothstep(0.14, 0.22, cf.x) * smoothstep(0.86, 0.78, cf.x)
+                       * smoothstep(0.16, 0.26, cf.y) * smoothstep(0.84, 0.74, cf.y);
+            float seed = hash21(cell + bid * 0.37);
+            // Which windows are lit is fixed; how MANY is a slow ramp on the
+            // level; a lit one glows gently on a continuous, personal phase.
+            float litAt = 0.42 + 0.30 * clamp(audioLevel, 0.0, 1.0);
+            float lit   = smoothstep(litAt + 0.04, litAt - 0.04, seed);
+            float breathe = 0.75 + 0.25 * sin(sceneTime * 0.6 + seed * 40.0);
+            // Under the roofline the top row is dark plant floor.
+            lit *= step(p.y, gC.y + gH.y - 1.4);
+            vec3 warm = mix(vec3(1.0, 0.86, 0.62), vec3(0.72, 0.86, 1.0), hash21(cell * 1.7 + bid));
 
-        // Animated neon signs
-        float neonActive = step(0.93, hash21(floor(face * vec2(0.5, 0.2)) + floor(t * 0.5)));
-        vec3 neonColor = mix(neonBase1, neonBase2, hash21(floor(p.xz)));
+            col = base * (0.35 + 0.65 * clamp(0.5 + 0.5 * n.y, 0.0, 1.0));
+            col += warm * pane * lit * breathe * wall * 0.85 * glw;
 
-        col = albedo * (0.55 + 0.45 * clamp(dot(n, vec3(0.0, 1.0, 0.0)), 0.0, 1.0));   // side walls got dot=0 -> near-black canyon
-
-        // Add window lights
-        col += vec3(0.8, 0.9, 1.0) * window * isWall * (0.3 + 0.7 * audioLevel) * glw * 0.5;
-
-        // Add neon signs
-        col += neonColor * neonActive * isWall * (1.0 + 2.0 * audioKick) * glw;
-
-        // Ambient occlusion
-        col *= clamp(1.0 - float(steps) * 0.01, 0.1, 1.0);
-    }
-
-    // Add traffic streaks (flying cars)
-    float trafficDist = 0.0;
-    for(int i = 0; i < 4; i++) {
-        vec3 tp = ro + rd * (10.0 + float(i) * 15.0);
-        tp.z -= t * 30.0 * (float(i) * 0.2 + 0.8);
-        vec2 tCell = floor(tp.xy * 0.5);
-        if(hash21(tCell) > 0.8) {
-            float streak = exp(-abs(fract(tp.z * 0.1) - 0.5) * 20.0);
-            streak *= exp(-abs(fract(tp.x * 0.5) - 0.5) * 20.0);
-            vec3 carCol = mix(vec3(1.0, 0.1, 0.1), vec3(0.8, 0.9, 1.0), step(0.5, hash21(tCell+1.0)));
-            col += carCol * streak * glw * 2.0 * (1.0 + audioKick);
+            // A neon sign on the street wall: one strip per building, low on
+            // the facade, its colour from the palette, its light on the kick.
+            if (abs(n.x) > 0.5)
+            {
+                float sx = hash11(bid * 1.9);
+                float signZ = gC.z + (sx - 0.5) * gH.z * 1.2;
+                float signY0 = 2.5 + 3.0 * hash11(bid * 3.1);
+                float sign = smoothstep(0.35, 0.10, abs(p.z - signZ))
+                           * smoothstep(0.0, 0.3, p.y - signY0) * smoothstep(signY0 + 3.2, signY0 + 2.9, p.y);
+                vec3 signCol = mix(neonA, neonB, hash11(bid * 5.7)) * 2.2;
+                col += signCol * sign * (0.6 + 1.1 * clamp(audioKick, 0.0, 1.0)) * glw;
+            }
+            // The roofline catches the sky.
+            col += sky * 0.5 * clamp(n.y, 0.0, 1.0);
         }
     }
 
-    // Fog
-    float fog = exp(-d * 0.03 * fgP);
-    vec3 fogColor = mix(neonBase1, vec3(0.02, 0.01, 0.03), 0.5) * (0.2 + 0.5 * audioSwell);
-    col = mix(fogColor * glw, col, fog);
+    // ---- traffic: lights streaming through the canyon ----
+    // Four lanes at two heights.  Each vehicle is a point moving along z at
+    // its own steady speed; what is drawn is the glow of its light where the
+    // ray passes closest to it.  Nothing pops: they wrap far behind the fog.
+    for (int i = 0; i < 6; ++i)
+    {
+        float fi = float(i);
+        float laneX = (mod(fi, 2.0) < 0.5 ? -1.0 : 1.0) * (1.4 + 1.2 * hash11(fi * 2.3));
+        float laneY = 3.2 + 3.4 * hash11(fi * 4.1);
+        // Speed as a multiple of the camera's own: above one pulls ahead,
+        // below one drops back, negative is oncoming.
+        float speed = (mod(fi, 2.0) < 0.5) ? (1.3 + 0.7 * hash11(fi * 6.7))
+                                           : -(1.0 + 0.8 * hash11(fi * 6.7));
+        float span  = 160.0;
+        float zc    = ro.z + mod(hash11(fi * 8.9) * span + (speed - 1.0) * T, span) - 40.0;
+        vec3  car   = vec3(laneX, laneY, zc);
+        // Closest approach of the ray to the car.
+        float along = clamp(dot(car - ro, rd), 0.0, d);
+        float miss  = length(ro + rd * along - car);
+        vec3  lamp  = (speed > 0.0) ? vec3(1.0, 0.25, 0.15) : vec3(0.85, 0.92, 1.0);
+        float glow  = exp(-miss * miss * 6.0) * (1.0 + 0.8 * clamp(audioKick, 0.0, 1.0));
+        col += lamp * glow * glw * 0.9 * (1.0 - smoothstep(60.0, 120.0, along));
+    }
+
+    // ---- fog closes the far end ----
+    float fog = exp(-d * 0.020 * fgP);
+    vec3  fogCol = mix(neonA, vec3(0.02, 0.015, 0.05), 0.55) * (0.3 + 0.6 * clamp(audioSwell, 0.0, 1.0));
+    // A miss is the sky as set above; a hit fades into the fog with distance.
+    if (hit) col = mix(fogCol * glw, col, fog);
 
     if (hue > 0.001) col = hueRot(col, 0.2 * sin(hue));
 
-    // Soft-knee exposure
     vec3 _catTone = max(col, 0.0);
     _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
     fragColor = vec4(clamp(_catTone, 0.0, 1.0), 1.0);

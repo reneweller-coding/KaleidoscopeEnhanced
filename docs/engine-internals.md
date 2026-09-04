@@ -3878,3 +3878,80 @@ brighter than its stock, so lifting the sheet with a gain blows every highlight
 in the picture to pure white, and highlights are what the eye reads first.  The
 same restraint keeps these out of strobe territory: a near-white full-frame
 sheet is a flash, whatever it is a picture of.
+
+## Feedback round 04.09.2026: eighteen scenes, and why each one was wrong
+
+A user pass over the catalogue with the release running.  Every item was a
+real defect; the interesting part is that most of them share a cause.
+
+### Nine plates that filled half the frame
+
+`geom="grid"` scenes draw a plate and nothing else -- the black above it is
+the clear colour.  Six of them built their camera as *push away, then tilt*:
+
+    vp = worldPos; vp.z += D; vp = tilt(vp);
+
+which rotates the already-pushed plate about the CAMERA, not about the plate
+-- dropping the plate's centre by `D*sin(tilt)` and parking it in the lower
+half of the frame.  *Tilt first, then push* keeps the plate on the view axis,
+and at the same distance it fills the frame.  The other three (plates lying in
+XZ with a pitched camera) were simply too far away; and the ocean needed the
+camera lowered and pitched down, with the plate widened, because a plate seen
+in perspective is a trapezoid and a frame is a rectangle: the far edge has to
+be wider than the frustum at that depth or the top corners stay black.
+
+The vertical field of view is 55 degrees (`kSceneTanHalfFovY` = 0.52), which
+is what these distances were computed against.
+
+### Two horizons
+
+`CyberpunkSynthGridHighwayFly` split sky and ground at `rd.y == 0`: rays
+pointing up never asked the terrain, so every ridge that rose above eye level
+was cut off flat at the horizon line.  March the terrain for EVERY ray; draw
+the sky only where the march misses.  The ridges then stand in front of the
+sun, which is the whole picture.
+
+`SuperradiantTokamakIgnition` tore along the atan cut on the left.  Every use
+of the angle is periodic in 2*pi only if its coefficient is a whole number;
+the safety factor `3.2 * hel` was not.  An integer q closes every term -- and
+rational q is where a real tokamak's islands sit anyway.
+
+### FuturisticCityFlight, rebuilt
+
+Reported three times as pure chaos, patched three times.  The corridor's floor
+sat five units below the camera (no street), the buildings were lattice boxes
+with a detail cube on top (no walls), and the windows were indexed through a
+finite-difference normal that flipped between wall directions at every
+lattice seam (rewriting themselves every frame).  Now: one road at y = 0, a
+row of buildings per side with per-block width, height and setback, a
+six-box distance field with an ANALYTIC normal, windows in the wall's own
+coordinates.  A wall is a wall.
+
+### KerrNewmanSingularity: right geodesics, wrong compositing
+
+The background was added to every ray, including the ones that had fallen
+through the horizon, so the shadow was never black -- and at 0.35 of a
+full-frame photo it buried the disk under an orange wash ("a giant sphere").
+A captured ray is black, full stop; the background is a starfield with the
+photo faint behind it; the Einstein ring sits at the ray's CLOSEST approach,
+not its end point.  The horizon no longer pumps with the bass.
+
+### Formations
+
+`Fleet` moved as one rigid block: every craft now runs the path at its own
+speed and phase, and every slot is pushed off its lattice point.  `FleetJump`
+is a wedge seen from behind, which folds into a horizontal row; breaking that
+needs scatter in y and z, not just x, and a per-craft size.  `RingStation`
+took `spinP` literally, so the two instances the preset left at 0 stood still
+-- they turn about their up axis now.  `GlassStack` summed fourteen bright
+panes to a white slab that hid its core; fewer, thinner, darker panes, and no
+more camera zoom on the level and the kick.
+
+### On stylised "realistic" objects
+
+`BuildUpRocketLaunch`, `PeacockTrainFan` and their kind draw a real object in
+a 2D fragment shader, and it shows.  The mesh path (`geom="mesh"`) exists and
+carries 171 models -- but the pack is spacecraft and stations; a rocket, a
+bird, a ship's hull would have to be generated first.  Recommendation: keep
+procedural for phenomena (waves, plasma, fields), go to meshes for anything
+with a canonical silhouette.

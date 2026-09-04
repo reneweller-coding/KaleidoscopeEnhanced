@@ -67,7 +67,9 @@ void main()
     if (e.x >= e.y && e.x >= e.z)      { p = vec3(-p.z, p.y, p.x); n = vec3(-n.z, n.y, n.x); }
     else if (e.y >= e.x && e.y >= e.z) { p = vec3(p.x, -p.z, p.y); n = vec3(n.x, -n.z, n.y); }
     float rad = max(length(e), 1e-4);
-    float craft = 12.0 * (sizeP > 0.05 ? sizeP : 1.0);
+    // Every craft its own size within the class: a squadron of identical
+    // silhouettes at identical size is what reads as a lattice.
+    float craft = 12.0 * (sizeP > 0.05 ? sizeP : 1.0) * (0.80 + 0.40 * hash11(float(gl_InstanceID) * 3.77));
     p *= craft / rad;
     vAlong = clamp(p.z / (craft * 0.6) * 0.5 + 0.5, 0.0, 1.0);   // 0 tail .. 1 nose
 
@@ -77,6 +79,13 @@ void main()
     float s = fi - r * r - r;
     float spr = (spreadP > 0.05 ? spreadP : 1.0);
     vec3 slot = vec3(s * craft * 1.6, (-abs(s) * 0.8 + r * 0.5) * craft * 0.12, r * craft * 1.3) * spr;
+    // Off the lattice: a fixed random offset per craft, so the wedge is a
+    // formation of ships and not a chart of them (reported).
+    slot += (vec3(hash11(fi * 4.31), hash11(fi * 6.17), hash11(fi * 8.29)) - 0.5)
+          * craft * vec3(1.30, 1.10, 2.20);
+    // And every craft creeps ahead at its own rate over the arc, continuously,
+    // so no two hold exactly the same speed before the jump.
+    slot.z -= (0.2 + 0.8 * hash11(fi * 2.93)) * craft * 0.9 * clamp(sceneProgress, 0.0, 1.0);
     // A trace of station-keeping on time (feel, not motion).
     float ph = fi * 2.399963;
     slot += vec3(sin(time * 0.31 + ph), sin(time * 0.24 + ph * 1.3), sin(time * 0.37 + ph * 0.7)) * craft * 0.012;
@@ -87,7 +96,7 @@ void main()
     // The jump starts past the middle of the arc and takes a quarter of it,
     // rank by rank; the drop regie bends the arc so the last rank leaves on
     // the drop.
-    float cue = 0.5 + 0.06 * r;
+    float cue = 0.5 + 0.06 * r + 0.05 * hash11(fi * 5.51);   // a little ragged
     float jump = smoothstep(cue, cue + 0.25, prog);
     vJump = jump;
     float stretch = 1.0 + 9.0 * jump * jump;

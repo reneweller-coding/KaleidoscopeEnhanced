@@ -100,7 +100,13 @@ void main()
     float squad  = (fi < fnHalf) ? 0.0 : 1.0;
     float fj     = fi - squad * fnHalf;
     float fnSq   = (squad < 0.5) ? fnHalf : max(fn - fnHalf, 1.0);
-    float u      = fract(phase + 0.5 * squad);
+    // Every craft runs the path at its OWN steady speed and phase, so ranks
+    // slide past one another instead of moving as one rigid block (reported:
+    // not all the same speed, not lined up on a grid).  Fifteen percent of
+    // spread is a convoy that is loosening, not a crowd.
+    float ownSpeed = 0.85 + 0.30 * hash11(fi * 1.71 + 0.3);
+    float ownPhase = 0.35 * hash11(fi * 9.13 + 0.7);
+    float u      = fract(phase * ownSpeed + ownPhase + 0.5 * squad);
     float mirror = squad > 0.5 ? -1.0 : 1.0;
     vec3 pStart  = vec3( 14.0 * mirror,  2.0, 205.0);
     vec3 pEnd    = vec3(-46.0 * mirror, -9.0,  12.0);
@@ -144,6 +150,10 @@ void main()
     }
 
     slot *= spr * tighten;
+    // And no grid: each slot is pushed off its lattice point by a fixed
+    // random offset, so the formation reads as a loose flight, not a chart.
+    slot += (vec3(hash11(fi * 4.31), hash11(fi * 6.17), hash11(fi * 8.29)) - 0.5)
+          * craft * vec3(0.55, 0.35, 0.60);
 
     // The drop scatters them: each craft gets a fixed random direction, so the
     // formation blows apart coherently and reassembles the same way.

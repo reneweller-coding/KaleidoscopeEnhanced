@@ -55,7 +55,7 @@ void main() {
     float internalWave = sin(gridUV.x * 12.0 * hlc + t * 2.0) * cos(gridUV.y * 10.0 - t * 1.5) * 0.08 * (1.0 + audioBass * 0.6);
 
     float height = basinDepth + internalWave;
-    vec3 pos = vec3(gridUV.x * 3.5, height, gridUV.y * 3.5);
+    vec3 pos = vec3(gridUV.x * 4.6, height, gridUV.y * 4.6);
     vWorldPos = pos;
 
     vNormal = normalize(vec3(-gridUV.x * 0.4, 1.0, -gridUV.y * 0.4));
@@ -68,11 +68,12 @@ void main() {
     float yaw = time * 0.12 * spd + audioAdvance * 0.06;
     float cy = cos(yaw), sy = sin(yaw);
     vp.xz = mat2(cy, -sy, sy, cy) * vp.xz;
-    vp.y -= 1.4;
-    float camTilt = -0.5;
+    // Closer and steeper: at 7 units the basin filled half the frame (reported).
+    vp.y -= 1.1;
+    float camTilt = -0.80;
     float cosT = cos(camTilt), sinT = sin(camTilt);
     vp = vec3(vp.x, vp.y * cosT - vp.z * sinT, vp.y * sinT + vp.z * cosT);
-    vp.z += 7.0;
+    vp.z += 3.9;
     vp.x -= eyeOff;
     gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;

@@ -93,14 +93,17 @@ void main()
     vCol = palTint(oceanBlue, attrA.y * 0.3 + audioCentroid, 0.25);
 
     // Camera Transform (V3)
+    // Tilt FIRST, then push away.  The old order rotated the already-pushed
+    // plate about the CAMERA, which dropped the plate's centre by D*sin(tilt)
+    // and left it sitting in the lower half of the frame with black above.
+    // Tilting about the plate's own centre keeps it on the view axis, and at
+    // this distance it then fills the frame (reported: "bildschirmfuellender").
     vec3 vp = worldPos;
-    vp.z += 3.3;   // fill: the wake plate left 60% of the frame empty
-    vp.x -= eyeOff;
-
-    // Isometric camera tilt looking across ship wake
     float tilt = 0.65;
     float c = cos(tilt), s = sin(tilt);
     vp = vec3(vp.x, vp.y * c - vp.z * s, vp.y * s + vp.z * c);
+    vp.z += 3.0;
+    vp.x -= eyeOff;
 
     gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;

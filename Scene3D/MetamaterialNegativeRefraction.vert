@@ -61,7 +61,7 @@ void main() {
     float superlensFocus = exp(-length(vec2(gridUV.x * 2.0, gridUV.y + 0.5)) * 6.0);
 
     float height = sin(wavePhase) * 0.35 * (1.0 + 0.3 * audioBass) + superlensFocus * (0.6 + audioKick * 0.8);
-    vec3 pos = vec3(gridUV.x * 3.5, height, gridUV.y * 3.5);
+    vec3 pos = vec3(gridUV.x * 4.6, height, gridUV.y * 4.6);
     vWorldPos = pos;
 
     vNormal = normalize(vec3(-cos(wavePhase) * 0.4, 1.0, -isNegative * sin(wavePhase) * 0.4));
@@ -69,12 +69,14 @@ void main() {
     // Camera transform: this surface lies in the XZ plane, so pitch it down
     // first (otherwise it is seen edge-on), then push away along +z and negate
     // -- projM expects NEGATIVE view-space z (clip-w = -z_view).
+    // Closer and steeper than before: at 7 units and -0.45 the plate covered
+    // about half the frame with black above (reported).
     vec3 vp = pos;
-    vp.y -= 1.3;
-    float camTilt = -0.45;
+    vp.y -= 1.0;
+    float camTilt = -0.80;
     float cosT = cos(camTilt), sinT = sin(camTilt);
     vp = vec3(vp.x, vp.y * cosT - vp.z * sinT, vp.y * sinT + vp.z * cosT);
-    vp.z += 7.0;
+    vp.z += 4.0;
     vp.x -= eyeOff;
     gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
