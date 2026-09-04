@@ -4699,6 +4699,30 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TransitionShader>
 
+  <TransitionShader file="..\Transitions\ChromatophoreSkinWave.frag" type="normal" mood="psychedelic,bright,dreamy" probability="0.07" complexity="3">
+    <float name="densityP" minValue="0.0" maxValue="1.0"></float>
+    <float name="waveP" minValue="0.70" maxValue="1.50"></float>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TransitionShader>
+
+  <TransitionShader file="..\Transitions\LeafVeinPerfusion.frag" type="normal" mood="calm,dreamy,bright" probability="0.07" complexity="3">
+    <float name="veinsP" minValue="0.0" maxValue="1.0"></float>
+    <float name="bleedP" minValue="0.70" maxValue="1.40"></float>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TransitionShader>
+
+  <TransitionShader file="..\Transitions\MurmurationHandoff.frag" type="normal" mood="dark,calm,dreamy" probability="0.07" complexity="3">
+    <float name="birdsP" minValue="0.0" maxValue="1.0"></float>
+    <float name="flowP" minValue="0.70" maxValue="1.40"></float>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TransitionShader>
+
+  <TransitionShader file="..\Transitions\LichenColonisation.frag" type="normal" mood="calm,dark,dreamy" probability="0.07" complexity="3">
+    <float name="sporesP" minValue="0.0" maxValue="1.0"></float>
+    <float name="lobeP" minValue="0.60" maxValue="1.50"></float>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TransitionShader>
+
 
 
   <TextureShader file="..\\Scene2D\\IceCrack.frag" type="normal" probability="0.42" mood="calm,bright" complexity="3">
