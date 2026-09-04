@@ -3705,3 +3705,20 @@ flat between 5.3 and 6.8 GB, and the mesh scenes render exactly as before.
 | CrepuscularRaysForest | 2D | ray index comes from the angle around the sun, one spectrum band each; the fan swings because the sun sinks over the arc |
 
 Lessons from the block: a pinhole projection blurred with a disc of taps needs a radius around 0.006 in uv, not 0.02 -- at 0.02 the image is a smear and the scene reads as fog; a dark workshop or shop floor needs the photo at about 1.1 with a constant added, since 0.55 of a dark photo is black at sheet size; a scene whose subject is a false-colour reading of the world (thermal, X-ray) must DRAW its subject -- facades, windows, road, bags -- and only then map it to the palette, otherwise the palette paints whatever the photo happens to be and the scene has no identity.
+
+## The fifth fifty, block B: built spaces
+
+| Scene | Pipeline | Note |
+|---|---|---|
+| SplitFlapDepartureBoard | 2D | the top half of the falling flap is the NEXT character compressed vertically by the fold; the bottom half is already the current one |
+| EscalatorHallCrossing | `indirect` | two flights crossing in an X; steps march along the flight direction, riders ride the same parameter, rails are three long segments |
+| SubwayMapPulse | 2D | node positions come from a fixed random walk over three step directions, so every line reads as a diagram and stays put |
+| SuspensionBridgeCables | `indirect` | the cables hang OUTSIDE the deck width -- at the deck edge the slab hides them completely from underneath |
+| GlasshouseIronRibs | 2D | one perspective mapping (u along the vault, v across) carries ribs, purlins, panes and the sun patch |
+| ServerRoomAisle | 2D | corridor projection: the wall's screen height grows with its screen x; subtracting one from the depth squeezes the racks into the middle sixth |
+| WindTurbineFieldDusk | `indirect` | blades are bounding-box quads with the taper discarded in the fragment; each turbine has its own steady rate |
+| HeliostatSolarTower | 2D | ring and slot indices from the ground-plane polar coordinates; the glint is a narrow power of the tracking angle |
+| AqueductArchesValley | 2D | the arch is a rectangle unioned with a semicircular head, cut out of a tier slab; two tiers stack |
+| CoolingTowerPlumes | 2D | the plume widens with height and leans by the wind; its colour comes from the band at that height, so it is a slow vertical spectrogram |
+
+Lessons from the block: in an indirect scene, geometry placed exactly on the silhouette of a larger piece is invisible -- the bridge cables sat at the deck width and the deck hid every one of them from underneath; move such parts clear of the occluder rather than tuning their colour. A ribbon built from cross(segment, viewDirection) needs its guard BEFORE the normalise: a segment running nearly along the view has a vanishing cross product, and normalising that yields a NaN quad the rasteriser drops without a word. And a corridor projection has the wall's screen HEIGHT growing with its screen x; subtracting a constant from the depth (a plausible-looking near-plane offset) squeezed the whole rack row into the middle sixth of the frame.

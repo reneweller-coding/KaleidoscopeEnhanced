@@ -1,0 +1,143 @@
+#version 430 core
+/**
+ * @file EscalatorHallCrossing.comp
+ * @brief ESCALATOR HALL CROSSING: a station hall with escalators crossing
+ * each other in an X, one pair running up and one down.  Each escalator
+ * is a run of step quads travelling along its own line on the scene clock
+ * (steady -- a whole flight snapping to a beat would be the jolt this
+ * catalogue avoids), with a balustrade band beside it, a handrail loop,
+ * and riders standing on the steps as capsule quads.
+ *
+ * Kinds: -1 sky/hall wall, -2 floor, 0 step, 1 balustrade, 2 handrail,
+ *        3 rider body, 4 rider head, 5 advertising panel.
+ *
+ * Per-instance: flightsP, ridersP, hueP.
+ */
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+layout(std430, binding = 0) buffer Verts { float verts[]; };
+layout(std430, binding = 1) buffer Cmd   { uint cmd[];   };
+
+uniform uint  maxVertices;
+uniform float time;
+uniform float sceneAdvance;
+uniform float sceneTime;
+uniform float audioSwell;
+
+uniform float flightsP;
+uniform float ridersP;
+uniform float hueP;
+
+float hash11(float p) { p = fract(p * 0.1031); p *= p + 33.33; p *= p + p; return fract(p); }
+
+void emitQuad(vec3 c, vec3 ax, vec3 ay, float id, float lit, float kind, vec2 uv0, vec2 uv1)
+{
+    uint base = atomicAdd(cmd[4], 6u);
+    if (base + 6u > maxVertices) return;
+    vec3 p0 = c - ax - ay, p1 = c + ax - ay, p2 = c + ax + ay, p3 = c - ax + ay;
+    vec3 pList[6]  = vec3[6](p0, p1, p2, p0, p2, p3);
+    vec2 uvList[6] = vec2[6](vec2(uv0.x, uv0.y), vec2(uv1.x, uv0.y), vec2(uv1.x, uv1.y), vec2(uv0.x, uv0.y), vec2(uv1.x, uv1.y), vec2(uv0.x, uv1.y));
+    for (uint i = 0u; i < 6u; ++i)
+    {
+        uint off = (base + i) * 8u;
+        verts[off + 0u] = pList[i].x; verts[off + 1u] = pList[i].y; verts[off + 2u] = pList[i].z;
+        verts[off + 3u] = id; verts[off + 4u] = lit; verts[off + 5u] = kind;
+        verts[off + 6u] = uvList[i].x; verts[off + 7u] = uvList[i].y;
+    }
+}
+
+const float FLOOR_Y = -3.2;
+const uint  STEPS   = 34u;
+
+// Flight f: its lower end, its direction and its side offset.  Two flights
+// cross in the middle of the hall; more flights sit behind them.
+void flightGeom(uint f, out vec3 lowEnd, out vec3 dir, out float len, out float sideS)
+{
+    float ff = float(f);
+    float bank = floor(ff * 0.5);                       // pairs stack in depth
+    float which = mod(ff, 2.0);                         // 0 = up-right, 1 = up-left
+    sideS = (which < 0.5) ? 1.0 : -1.0;
+    float z0 = 11.0 + bank * 9.0;
+    lowEnd = vec3(-sideS * (3.4 + bank * 0.6), FLOOR_Y, z0);
+    // Rising at about 30 degrees toward the far side.
+    dir = normalize(vec3(sideS * 0.86, 0.5, 0.12));
+    len = 9.5 + bank * 1.2;
+}
+
+void main()
+{
+    uvec3 g = gl_GlobalInvocationID;
+    uint id = g.x + 64u * (g.y + 64u * g.z);
+    uint flights = 2u + 2u * uint(clamp(flightsP, 0.0, 1.0) * 1.6);   // 2 or 4
+    float clock = sceneAdvance * 0.4 + sceneTime * 0.08;
+
+    if (id == 0u)
+    {
+        // Hall wall behind, and the floor.
+        emitQuad(vec3(0.0, 3.0, 42.0), vec3(40.0, 0.0, 0.0), vec3(0.0, 22.0, 0.0), 0.0, 0.0, -1.0, vec2(0.0), vec2(1.0));
+        emitQuad(vec3(0.0, FLOOR_Y, 24.0), vec3(40.0, 0.0, 0.0), vec3(0.0, 0.0, 26.0), 0.0, 0.0, -2.0, vec2(0.0), vec2(1.0));
+        // Advertising panels on the back wall.
+        for (int k = -2; k <= 2; ++k)
+            emitQuad(vec3(float(k) * 6.2, 2.2, 41.0), vec3(2.3, 0.0, 0.0), vec3(0.0, 1.5, 0.0),
+                     float(k + 2), 0.0, 5.0, vec2(0.0), vec2(1.0));
+        return;
+    }
+    uint t = id - 1u;
+    uint perFlight = STEPS * 3u + 6u;                   // steps + riders + rails
+    uint f = t / perFlight;
+    if (f >= flights) return;
+    uint k = t % perFlight;
+
+    vec3 lowEnd, dir; float len, sideS;
+    flightGeom(f, lowEnd, dir, len, sideS);
+    vec3 across = normalize(cross(dir, vec3(0.0, 1.0, 0.0))) * 1.15;   // half the tread width
+    // The travel direction alternates: even flights go up, odd go down.
+    float up = (mod(float(f), 2.0) < 0.5) ? 1.0 : -1.0;
+
+    if (k < STEPS)
+    {
+        // A step: a tread quad lying flat, marching along the flight.
+        float u = fract((float(k) / float(STEPS)) + up * clock * 0.09);
+        vec3 c = lowEnd + dir * (u * len);
+        vec3 tread = normalize(vec3(dir.x, 0.0, dir.z)) * (len / float(STEPS) * 0.55);
+        emitQuad(c, tread, across, float(f), u, 0.0, vec2(0.0), vec2(1.0));
+        return;
+    }
+    k -= STEPS;
+    if (k < STEPS)
+    {
+        // Riders: only some steps carry one; the choice is fixed per flight.
+        float u = fract((float(k) / float(STEPS)) + up * clock * 0.09);
+        float h = hash11(float(f) * 7.3 + float(k) * 1.7);
+        if (h > 0.28 + 0.5 * clamp(ridersP, 0.0, 1.0)) return;
+        vec3 c = lowEnd + dir * (u * len);
+        vec3 side = across * (0.35 * (hash11(h * 13.0) - 0.5) * 2.0);
+        vec3 base = c + side + vec3(0.0, 0.55, 0.0);
+        emitQuad(base, across * 0.22, vec3(0.0, 0.55, 0.0), float(f) * 64.0 + float(k), u, 3.0, vec2(0.0), vec2(1.0));
+        emitQuad(base + vec3(0.0, 0.72, 0.0), across * 0.13, vec3(0.0, 0.15, 0.0), float(f) * 64.0 + float(k), u, 4.0, vec2(0.0), vec2(1.0));
+        return;
+    }
+    k -= STEPS;
+    if (k < STEPS)
+    {
+        // Balustrade: a glass panel band beside the run, in segments so it
+        // follows the flight exactly.
+        float u = (float(k) + 0.5) / float(STEPS);
+        vec3 c = lowEnd + dir * (u * len) + across * 1.05 + vec3(0.0, 0.62, 0.0);
+        vec3 along = dir * (len / float(STEPS) * 0.55);
+        emitQuad(c, along, vec3(0.0, 0.62, 0.0), float(f), u, 1.0, vec2(0.0), vec2(1.0));
+        return;
+    }
+    k -= STEPS;
+    // Handrail: a dark band on top of the balustrade, on both sides.
+    if (k < 6u)
+    {
+        float sideSel = (k % 2u == 0u) ? 1.0 : -1.0;
+        uint seg = k / 2u;
+        float u0 = float(seg) / 3.0, u1 = float(seg + 1u) / 3.0;
+        vec3 a = lowEnd + dir * (u0 * len) + across * (1.05 * sideSel) + vec3(0.0, 1.3, 0.0);
+        vec3 b = lowEnd + dir * (u1 * len) + across * (1.05 * sideSel) + vec3(0.0, 1.3, 0.0);
+        vec3 mid = 0.5 * (a + b);
+        emitQuad(mid, 0.5 * (b - a), vec3(0.0, 0.07, 0.0), float(f), u0, 2.0, vec2(0.0), vec2(1.0));
+        return;
+    }
+}

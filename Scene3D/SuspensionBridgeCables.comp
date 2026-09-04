@@ -1,0 +1,160 @@
+#version 430 core
+/**
+ * @file SuspensionBridgeCables.comp
+ * @brief SUSPENSION BRIDGE CABLES: flying under the deck of a suspension
+ * bridge.  Two towers stand ahead, the main cables sweep down from them
+ * in their catenary, and the vertical hangers drop from the cables to the
+ * deck girder overhead.  Everything is emitted as camera-facing quads:
+ * the cable and hanger runs as short segments, the towers as boxes, the
+ * deck as a long slab, plus lamp beads along the cable.  The flight down
+ * the bridge runs on the scene clock alone -- steady, never on a beat.
+ *
+ * Kinds: -1 sky, -2 water, 0 main cable, 1 hanger, 2 tower, 3 deck, 4 lamp.
+ *
+ * Per-instance: spanP, lampP, hueP.
+ */
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+layout(std430, binding = 0) buffer Verts { float verts[]; };
+layout(std430, binding = 1) buffer Cmd   { uint cmd[];   };
+
+uniform uint  maxVertices;
+uniform float time;
+uniform float sceneAdvance;
+uniform float sceneTime;
+uniform float audioSpectrum[32];
+uniform float audioSwell;
+
+uniform float spanP;
+uniform float lampP;
+uniform float hueP;
+
+float hash11(float p) { p = fract(p * 0.1031); p *= p + 33.33; p *= p + p; return fract(p); }
+
+void emitQuad(vec3 c, vec3 ax, vec3 ay, float id, float lit, float kind, vec2 uv0, vec2 uv1)
+{
+    uint base = atomicAdd(cmd[4], 6u);
+    if (base + 6u > maxVertices) return;
+    vec3 p0 = c - ax - ay, p1 = c + ax - ay, p2 = c + ax + ay, p3 = c - ax + ay;
+    vec3 pList[6]  = vec3[6](p0, p1, p2, p0, p2, p3);
+    vec2 uvList[6] = vec2[6](vec2(uv0.x, uv0.y), vec2(uv1.x, uv0.y), vec2(uv1.x, uv1.y), vec2(uv0.x, uv0.y), vec2(uv1.x, uv1.y), vec2(uv0.x, uv1.y));
+    for (uint i = 0u; i < 6u; ++i)
+    {
+        uint off = (base + i) * 8u;
+        verts[off + 0u] = pList[i].x; verts[off + 1u] = pList[i].y; verts[off + 2u] = pList[i].z;
+        verts[off + 3u] = id; verts[off + 4u] = lit; verts[off + 5u] = kind;
+        verts[off + 6u] = uvList[i].x; verts[off + 7u] = uvList[i].y;
+    }
+}
+
+// A segment as a camera-facing ribbon of the given half-width.
+void emitSeg(vec3 a, vec3 b, float w, float id, float lit, float kind)
+{
+    vec3 mid = 0.5 * (a + b);
+    vec3 half_ = 0.5 * (b - a);
+    // Face the camera (at the origin, looking down +z): the ribbon's width
+    // axis is perpendicular to the segment and to the view direction.
+    vec3 view = normalize(mid);
+    vec3 raw = cross(half_, view);
+    // Guard BEFORE normalising: a segment running almost along the view has a
+    // vanishing cross product, and normalising that gives a NaN ribbon that
+    // the rasteriser silently drops.
+    if (dot(raw, raw) < 1e-8) raw = cross(half_, vec3(0.0, 1.0, 0.0));
+    if (dot(raw, raw) < 1e-8) raw = vec3(1.0, 0.0, 0.0);
+    vec3 side = normalize(raw);
+    emitQuad(mid, half_, side * w, id, lit, kind, vec2(0.0), vec2(1.0));
+}
+
+const float DECK_Y = 2.4;          // the deck girder overhead
+const float TOWER_TOP = 9.5;
+const float ROAD_HALF = 4.2;       // half the deck width
+// The cables hang OUTSIDE the deck edge.  At the deck width they sit exactly
+// behind the slab, which -- looking up from under the bridge -- hides them
+// completely; the first cut of this scene showed a bare deck and two towers.
+const float CABLE_X  = 6.6;
+
+// The main cable's height at distance z from the near tower, for a span S.
+float cableY(float z, float S)
+{
+    float u = clamp(z / S, 0.0, 1.0);
+    float sag = 4.0 * u * (1.0 - u);                       // 0 at the towers, 1 at mid-span
+    return mix(TOWER_TOP, DECK_Y + 0.6, sag);
+}
+
+void main()
+{
+    uvec3 g = gl_GlobalInvocationID;
+    uint id = g.x + 64u * (g.y + 64u * g.z);
+    float span = 44.0 + 22.0 * clamp(spanP, 0.0, 1.0);
+    float clock = sceneAdvance * 0.5 + sceneTime * 0.1;
+    float fly = clock * 3.2;                                // the flight, steady
+
+    if (id == 0u)
+    {
+        // Sky and water.  +z is forward, so both sit well ahead.
+        emitQuad(vec3(0.0, 6.0, 70.0), vec3(120.0, 0.0, 0.0), vec3(0.0, 46.0, 0.0), 0.0, 0.0, -1.0, vec2(0.0), vec2(1.0));
+        emitQuad(vec3(0.0, -6.0, 55.0), vec3(120.0, 0.0, 0.0), vec3(0.0, 0.0, 60.0), 0.0, 0.0, -2.0, vec2(0.0), vec2(1.0));
+        return;
+    }
+    // The deck girder overhead: a long slab down the whole visible run,
+    // scrolling with the flight so its ribs move past.
+    if (id == 1u)
+    {
+        emitQuad(vec3(0.0, DECK_Y, 34.0), vec3(ROAD_HALF, 0.0, 0.0), vec3(0.0, 0.0, 34.0), 0.0, 0.0, 3.0, vec2(0.0), vec2(1.0));
+        return;
+    }
+    uint k = id - 2u;
+
+    // Towers: two per span, at z = tower spacing, on both sides.
+    if (k < 8u)
+    {
+        uint ti = k / 2u;                                   // which tower along the run
+        float sideS = (k % 2u == 0u) ? -1.0 : 1.0;
+        float zt = mod(float(ti) * span - fly, span * 4.0) - span * 0.5;
+        if (zt < 1.0 || zt > 120.0) return;
+        vec3 c = vec3(sideS * CABLE_X, (TOWER_TOP - 4.0) * 0.5, zt);
+        emitQuad(c, vec3(0.55, 0.0, 0.0), vec3(0.0, (TOWER_TOP + 4.0) * 0.5, 0.0), float(ti), 0.0, 2.0, vec2(0.0), vec2(1.0));
+        // The cross beam near the top.
+        if (k % 2u == 0u)
+            emitQuad(vec3(0.0, TOWER_TOP - 1.2, zt), vec3(CABLE_X, 0.0, 0.0), vec3(0.0, 0.4, 0.0), float(ti), 0.0, 2.0, vec2(0.0), vec2(1.0));
+        return;
+    }
+    k -= 8u;
+    // Main cables: sampled catenary segments, both sides, over four spans.
+    if (k < 320u)
+    {
+        uint segI = k % 40u;
+        uint rest = k / 40u;
+        float sideS = (rest % 2u == 0u) ? -1.0 : 1.0;
+        uint spanI = rest / 2u;                             // 0..3
+        float z0 = float(spanI) * span - mod(fly, span);
+        float u0 = float(segI) / 40.0, u1 = float(segI + 1u) / 40.0;
+        vec3 a = vec3(sideS * CABLE_X, cableY(u0 * span, span), z0 + u0 * span);
+        vec3 b = vec3(sideS * CABLE_X, cableY(u1 * span, span), z0 + u1 * span);
+        if (a.z < 0.8 || a.z > 120.0) return;
+        emitSeg(a, b, 0.26, float(segI), u0, 0.0);
+        // A lamp bead every fifth segment, its brightness from a band.
+        if (segI % 5u == 0u && hash11(float(spanI) * 3.1 + float(segI)) < 0.6 + 0.4 * clamp(lampP, 0.0, 1.0))
+            emitQuad(a + vec3(0.0, -0.4, 0.0), vec3(0.3, 0.0, 0.0), vec3(0.0, 0.3, 0.0),
+                     float(segI), u0, 4.0, vec2(0.0), vec2(1.0));
+        return;
+    }
+    k -= 320u;
+    // Hangers: verticals from the cable down to the deck.
+    if (k < 160u)
+    {
+        uint hi = k % 20u;
+        uint rest = k / 20u;
+        float sideS = (rest % 2u == 0u) ? -1.0 : 1.0;
+        uint spanI = rest / 2u;                             // 0..3
+        float z0 = float(spanI) * span - mod(fly, span);
+        float u = (float(hi) + 0.5) / 20.0;
+        float z = z0 + u * span;
+        if (z < 0.8 || z > 120.0) return;
+        float top = cableY(u * span, span);
+        vec3 a = vec3(sideS * CABLE_X, top, z);
+        vec3 b = vec3(sideS * CABLE_X, DECK_Y - 0.2, z);
+        if (top <= DECK_Y + 0.15) return;
+        emitSeg(a, b, 0.075, float(hi), u, 1.0);
+        return;
+    }
+}

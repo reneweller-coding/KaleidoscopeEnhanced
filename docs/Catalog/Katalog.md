@@ -1,6 +1,6 @@
 # Kaleidoscope Enhanced — Szenen-Katalog
 
-_826 Szenen, 29 FX-Overlays, 83 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
+_836 Szenen, 29 FX-Overlays, 83 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
 
 
 ---
@@ -141,6 +141,15 @@ APOLLONIAN SPHERE PACKING DIVE: 3D Raymarching continuous dive into the voids of
 APOLLONIAN SPHERE PACKING GASKET: Raymarched infinite 3D Apollonian sphere packing gasket formed by recursive sphere inversions. Mutually tangent "kissing" spheres create an infinite fractal foam with jewel refractions, specular mirror reflections, and audio-reactive metric scaling. audioAdvance -> navigates camera through the Apollonian sphere foam audioKick -> flashes sphere facet contact points and jewel glints au…
 
 ![ApollonianSpherePackingGasket ruhig (t=8)](img/ApollonianSpherePackingGasket_A.jpg) ![ApollonianSpherePackingGasket ruhig (t=16)](img/ApollonianSpherePackingGasket_B.jpg) ![ApollonianSpherePackingGasket audio-heiß (t=21)](img/ApollonianSpherePackingGasket_C.jpg)
+
+
+### AqueductArchesValley
+
+`Scene2D/AqueductArchesValley.frag` · type=normal · mood=bright,calm,dreamy · complexity=3
+
+AQUEDUCT ARCHES VALLEY: a Roman aqueduct striding across a valley in two tiers of arches. Water runs in the channel along the top on the scene clock, each arch is lit by one chroma class from beneath, and swifts cross the openings as round silhouettes. The photo is the valley behind and the stone of the piers. Camera fixed on the far slope. Audio Reactivity: audioChroma[12] -> the light under each arch (light) sceneA…
+
+![AqueductArchesValley ruhig (t=8)](img/AqueductArchesValley_A.jpg) ![AqueductArchesValley ruhig (t=16)](img/AqueductArchesValley_B.jpg) ![AqueductArchesValley audio-heiß (t=21)](img/AqueductArchesValley_C.jpg)
 
 
 ### AttentionHeadRibbons
@@ -753,6 +762,15 @@ COLLATZ FRACTAL TREE ABYSS: Analytic complex continuation of the Collatz (3n+1) 
 CONFORMAL LOG POLAR DIVE: Complex exponential mapping w = exp(z) transforming the Cartesian image plane into infinite swirling twin galactic spiral arms with seamless multi-octave zoom blending and high-energy chromatic distortion. Audio Reactivity: audioAdvance -> drives continuous exponential spiral plunge trajectory audioKick -> flashes spiral galaxy core & shoots centrifugal ripple waves audioCentroid-> modulates…
 
 ![ConformalLogPolarDive ruhig (t=8)](img/ConformalLogPolarDive_A.jpg) ![ConformalLogPolarDive ruhig (t=16)](img/ConformalLogPolarDive_B.jpg) ![ConformalLogPolarDive audio-heiß (t=21)](img/ConformalLogPolarDive_C.jpg)
+
+
+### CoolingTowerPlumes
+
+`Scene2D/CoolingTowerPlumes.frag` · type=normal · mood=dark,calm,dreamy · complexity=3
+
+COOLING TOWER PLUMES: three hyperboloid towers against an evening sky, each breathing a steam plume that rises and leans away on the scene clock. The plumes are lit from below by the plant floodlights and from the side by the last sun, and each carries the colour of a spectrum band, so the sky reads the music. The swell is how much steam there is, the kick a floodlight sweeping the shell. The photo is the sky and the…
+
+![CoolingTowerPlumes ruhig (t=8)](img/CoolingTowerPlumes_A.jpg) ![CoolingTowerPlumes ruhig (t=16)](img/CoolingTowerPlumes_B.jpg) ![CoolingTowerPlumes audio-heiß (t=21)](img/CoolingTowerPlumes_C.jpg)
 
 
 ### CoronagraphSpeckleField
@@ -1470,6 +1488,15 @@ GLASSBLOWER GATHER: a gather of molten glass on the end of the blowpipe, turning
 ![GlassblowerGather ruhig (t=8)](img/GlassblowerGather_A.jpg) ![GlassblowerGather ruhig (t=16)](img/GlassblowerGather_B.jpg) ![GlassblowerGather audio-heiß (t=21)](img/GlassblowerGather_C.jpg)
 
 
+### GlasshouseIronRibs
+
+`Scene2D/GlasshouseIronRibs.frag` · type=normal · mood=bright,calm,dreamy · complexity=3
+
+GLASSHOUSE IRON RIBS: inside a Victorian palm house, looking up along the barrel vault. Iron ribs and glazing bars converge toward the ridge, the panes carry the sky and the garden beyond (the photo), condensation drops slide down the glass on the scene clock, and the sun crosses the vault over the scene arc so the whole cast pattern travels. The bass is the warm haze under the roof. Camera fixed, looking up. Audio R…
+
+![GlasshouseIronRibs ruhig (t=8)](img/GlasshouseIronRibs_A.jpg) ![GlasshouseIronRibs ruhig (t=16)](img/GlasshouseIronRibs_B.jpg) ![GlasshouseIronRibs audio-heiß (t=21)](img/GlasshouseIronRibs_C.jpg)
+
+
 ### GlitchMatrixHypercube
 
 `Scene2D/GlitchMatrixHypercube.frag` · type=normal · mood=aggressive,bright,psychedelic · complexity=3
@@ -1612,6 +1639,15 @@ HAWKING RADIATION EVAPORATION: Micro-black hole event horizon displaying quantum
 HELIOSPHERIC CURRENT SHEET: Rotating Parker spiral "ballerina skirt" current sheet separating opposite magnetic polarities throughout the solar system. Wavy sector boundary crossings, solar wind stream turbulence, and undulating plasma membrane photo reflections. audioAdvance -> rotates Parker spiral sector boundaries & solar wind audioKick -> flashes interplanetary magnetic reconnection sheets audioBass -> undulates…
 
 ![HeliosphericCurrentSheet ruhig (t=8)](img/HeliosphericCurrentSheet_A.jpg) ![HeliosphericCurrentSheet ruhig (t=16)](img/HeliosphericCurrentSheet_B.jpg) ![HeliosphericCurrentSheet audio-heiß (t=21)](img/HeliosphericCurrentSheet_C.jpg)
+
+
+### HeliostatSolarTower
+
+`Scene2D/HeliostatSolarTower.frag` · type=normal · mood=bright,calm,dreamy · complexity=3
+
+HELIOSTAT SOLAR TOWER: a field of mirrors around a central receiver tower. Every heliostat holds the sun on the receiver, so the field is a ring pattern of tilted panels, each reflecting a piece of the sky (the photo). The panels track slowly on the scene clock, the receiver glows with the bass, and the treble is the glint that runs across the field as a panel edge catches the light. Camera fixed on the field, the to…
+
+![HeliostatSolarTower ruhig (t=8)](img/HeliostatSolarTower_A.jpg) ![HeliostatSolarTower ruhig (t=16)](img/HeliostatSolarTower_B.jpg) ![HeliostatSolarTower audio-heiß (t=21)](img/HeliostatSolarTower_C.jpg)
 
 
 ### HexagonalLaserMatrixTunnel
@@ -3674,6 +3710,15 @@ SELF-SIMILARITY MANDALA: the song's memory of itself as a mandala. The self-simi
 ![SelfSimilarityMandala ruhig (t=8)](img/SelfSimilarityMandala_A.jpg) ![SelfSimilarityMandala ruhig (t=16)](img/SelfSimilarityMandala_B.jpg) ![SelfSimilarityMandala audio-heiß (t=21)](img/SelfSimilarityMandala_C.jpg)
 
 
+### ServerRoomAisle
+
+`Scene2D/ServerRoomAisle.frag` · type=normal · mood=dark,aggressive,psychedelic · complexity=3
+
+SERVER ROOM AISLE: a cold aisle between two rack rows, in perspective toward a vanishing point. Every rack unit carries a column of status LEDs driven by the spectrum bands, the cable trays run overhead, and the floor tiles carry the reflection. A slow walk down the aisle on the scene clock; the swell is the cold fog rolling out of the perforated tiles, the kick a fault LED going amber somewhere in the row. The photo…
+
+![ServerRoomAisle ruhig (t=8)](img/ServerRoomAisle_A.jpg) ![ServerRoomAisle ruhig (t=16)](img/ServerRoomAisle_B.jpg) ![ServerRoomAisle audio-heiß (t=21)](img/ServerRoomAisle_C.jpg)
+
+
 ### ShatterField
 
 `Scene2D/ShatterField.frag` · type=normal · mood=aggressive,dark · complexity=2
@@ -3944,6 +3989,15 @@ SPIROGRAPH GEAR DRAW: the toy -- a small gear rolling inside a ring, the pen in 
 ![SpirographGearDraw ruhig (t=8)](img/SpirographGearDraw_A.jpg) ![SpirographGearDraw ruhig (t=16)](img/SpirographGearDraw_B.jpg) ![SpirographGearDraw audio-heiß (t=21)](img/SpirographGearDraw_C.jpg)
 
 
+### SplitFlapDepartureBoard
+
+`Scene2D/SplitFlapDepartureBoard.frag` · type=normal · mood=dark,calm,dreamy · complexity=3
+
+SPLIT FLAP DEPARTURE BOARD: the old mechanical board of an airport hall. Each character is a stack of hinged flaps; when a cell changes it riffles through the alphabet, the top half falling over the bottom in a smooth rotation, then settles. Rows change one after another on the scene clock, and a whole column riffles on the kick. The photo shows through the glass as the hall behind. Camera fixed. Audio Reactivity: sc…
+
+![SplitFlapDepartureBoard ruhig (t=8)](img/SplitFlapDepartureBoard_A.jpg) ![SplitFlapDepartureBoard ruhig (t=16)](img/SplitFlapDepartureBoard_B.jpg) ![SplitFlapDepartureBoard audio-heiß (t=21)](img/SplitFlapDepartureBoard_C.jpg)
+
+
 ### SporeReleaseGills
 
 `Scene2D/SporeReleaseGills.frag` · type=normal · mood=dark,calm,dreamy · complexity=2
@@ -4086,6 +4140,15 @@ STIPPLE VORONOI RELAX: weighted Voronoi stippling of the photo -- the dots are d
 STRING ART CHORDS: twelve pins on a circle, one per pitch class; strings run between the classes that sound together -- a chord is literally a chord across the circle. Each string fades in and out with the product of its two pins' chroma (continuous), the wheel turns steadily on the scene clock, the pins glow with their class, and the strings shimmer with the treble. Behind the wheel, the photo as the board. Camera s…
 
 ![StringArtChords ruhig (t=8)](img/StringArtChords_A.jpg) ![StringArtChords ruhig (t=16)](img/StringArtChords_B.jpg) ![StringArtChords audio-heiß (t=21)](img/StringArtChords_C.jpg)
+
+
+### SubwayMapPulse
+
+`Scene2D/SubwayMapPulse.frag` · type=normal · mood=bright,calm,psychedelic · complexity=3
+
+SUBWAY MAP PULSE: a transit diagram in the style of a network map -- straight runs, forty-five degree bends, interchange circles. Twelve lines, one per chroma class; a train runs each line as a pulse of light on the scene clock, and a station lights as its line sounds. The photo is the printed paper the map sits on. Camera fixed on the map. Audio Reactivity: audioChroma[12] -> line brightness and its stations (light)…
+
+![SubwayMapPulse ruhig (t=8)](img/SubwayMapPulse_A.jpg) ![SubwayMapPulse ruhig (t=16)](img/SubwayMapPulse_B.jpg) ![SubwayMapPulse audio-heiß (t=21)](img/SubwayMapPulse_C.jpg)
 
 
 ### SundogHaloSky
@@ -5469,6 +5532,15 @@ EchoSpiral.frag — wide soft band with a luminous centre line.
 ENNEPER MINIMAL SURFACE HYPERFOLD: 220x120 parametric grid of a higher-order self-intersecting Enneper minimal surface. Gaussian curvature shading, double-sided specular glints, and photo texturing mapped along isothermal coordinate patches. audioAdvance -> rotates isometric parameter domain through 3D space audioKick -> flashes Gaussian curvature focal point highlights audioSwell -> widens self-intersecting hyperfol…
 
 ![EnneperMinimalSurfaceHyperfold ruhig (t=8)](img/EnneperMinimalSurfaceHyperfold_A.jpg) ![EnneperMinimalSurfaceHyperfold ruhig (t=16)](img/EnneperMinimalSurfaceHyperfold_B.jpg) ![EnneperMinimalSurfaceHyperfold audio-heiß (t=21)](img/EnneperMinimalSurfaceHyperfold_C.jpg)
+
+
+### EscalatorHallCrossing
+
+`Scene3D/EscalatorHallCrossing.frag` · type=scene3d · geom=indirect · mood=dark,calm,dreamy · complexity=4
+
+ESCALATOR HALL CROSSING (fragment): a station hall with crossing escalators. Steps are ribbed metal treads catching the hall light, the balustrades are glass with the photo behind them, riders are dark silhouettes with a rim, and the advertising panels on the far wall carry the photo lit by chroma classes. The swell is the hall light, the spectrum runs along the step edges as a comb of colour, the kick lifts the pane…
+
+![EscalatorHallCrossing ruhig (t=8)](img/EscalatorHallCrossing_A.jpg) ![EscalatorHallCrossing ruhig (t=16)](img/EscalatorHallCrossing_B.jpg) ![EscalatorHallCrossing audio-heiß (t=21)](img/EscalatorHallCrossing_C.jpg)
 
 
 ### EuropaChaosTerrain
@@ -7235,6 +7307,15 @@ Shades the supernova-remnant filament strands built in SupernovaRemnantNebula.ve
 ![SupernovaRemnantNebula ruhig (t=8)](img/SupernovaRemnantNebula_A.jpg) ![SupernovaRemnantNebula ruhig (t=16)](img/SupernovaRemnantNebula_B.jpg) ![SupernovaRemnantNebula audio-heiß (t=21)](img/SupernovaRemnantNebula_C.jpg)
 
 
+### SuspensionBridgeCables
+
+`Scene3D/SuspensionBridgeCables.frag` · type=scene3d · geom=indirect · mood=dark,calm,dreamy · complexity=4
+
+SUSPENSION BRIDGE CABLES (fragment): under the deck of a suspension bridge, flying along it on the scene clock. The main cables sweep in their catenary with lamp beads along them, the hangers drop to the girder overhead, the towers pass, and the water below carries the lights. Each lamp takes a spectrum band; the swell is the fog that softens the far end; the kick lifts the aircraft warning lights on the tower tops (…
+
+![SuspensionBridgeCables ruhig (t=8)](img/SuspensionBridgeCables_A.jpg) ![SuspensionBridgeCables ruhig (t=16)](img/SuspensionBridgeCables_B.jpg) ![SuspensionBridgeCables audio-heiß (t=21)](img/SuspensionBridgeCables_C.jpg)
+
+
 ### Swarm
 
 `Scene3D/Swarm.frag` · type=scene3d · geom=points · mood=calm · complexity=2
@@ -7460,6 +7541,15 @@ Fragment stage for WhiteHoleFountain: photo tiles that are bright and white-hot 
 WIGNER CRYSTAL ELECTRON LATTICE: Triangular 2D/3D quantum electron crystal formed by pure Coulomb repulsion at ultralow temperatures. Zero-point quantum fluctuations, propagating acoustic phonon waves, and photo-palette dispersion halos. audioAdvance -> propagates phonon acoustic wave modes across the crystal audioKick -> excites quantum melting fluctuation bursts audioSwell -> widens electron wavepacket cloud halo a…
 
 ![WignerCrystalElectronLattice ruhig (t=8)](img/WignerCrystalElectronLattice_A.jpg) ![WignerCrystalElectronLattice ruhig (t=16)](img/WignerCrystalElectronLattice_B.jpg) ![WignerCrystalElectronLattice audio-heiß (t=21)](img/WignerCrystalElectronLattice_C.jpg)
+
+
+### WindTurbineFieldDusk
+
+`Scene3D/WindTurbineFieldDusk.frag` · type=scene3d · geom=indirect · mood=calm,dark,dreamy · complexity=3
+
+WIND TURBINE FIELD DUSK (fragment): a field of turbines at dusk. The blades are pale against a photo sky, each turbine turning at its own steady rate; the nav lights breathe with the kick (light only, never motion); the swell is the last daylight; the spectrum tints the sky band by band along the horizon. Distance haze stacks the rows. Audio Reactivity: audioSwell -> daylight and haze (slow) audioKick -> nav lights (…
+
+![WindTurbineFieldDusk ruhig (t=8)](img/WindTurbineFieldDusk_A.jpg) ![WindTurbineFieldDusk ruhig (t=16)](img/WindTurbineFieldDusk_B.jpg) ![WindTurbineFieldDusk audio-heiß (t=21)](img/WindTurbineFieldDusk_C.jpg)
 
 
 ### Wormhole

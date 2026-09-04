@@ -1,0 +1,113 @@
+#version 430 core
+/**
+ * @file WindTurbineFieldDusk.comp
+ * @brief WIND TURBINE FIELD DUSK: a field of turbines standing in rows
+ * across a plain at dusk.  Each has a tower, a nacelle and three blades
+ * turning at its own steady rate on the scene clock -- never on a beat,
+ * because a whole field snapping to a kick is exactly the jolt this
+ * catalogue does not do.  Blades are emitted as tapered quads swept from
+ * the hub; the nav light on each nacelle is its own small quad.
+ *
+ * Kinds: -1 sky, -2 ground, 0 blade, 1 tower, 2 nacelle, 3 nav light.
+ *
+ * Per-instance: rowsP, speedP, hueP.
+ */
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+layout(std430, binding = 0) buffer Verts { float verts[]; };
+layout(std430, binding = 1) buffer Cmd   { uint cmd[];   };
+
+uniform uint  maxVertices;
+uniform float time;
+uniform float sceneAdvance;
+uniform float sceneTime;
+uniform float audioSwell;
+
+uniform float rowsP;
+uniform float speedP;
+uniform float hueP;
+
+float hash11(float p) { p = fract(p * 0.1031); p *= p + 33.33; p *= p + p; return fract(p); }
+
+void emitQuad(vec3 c, vec3 ax, vec3 ay, float id, float lit, float kind, vec2 uv0, vec2 uv1)
+{
+    uint base = atomicAdd(cmd[4], 6u);
+    if (base + 6u > maxVertices) return;
+    vec3 p0 = c - ax - ay, p1 = c + ax - ay, p2 = c + ax + ay, p3 = c - ax + ay;
+    vec3 pList[6]  = vec3[6](p0, p1, p2, p0, p2, p3);
+    vec2 uvList[6] = vec2[6](vec2(uv0.x, uv0.y), vec2(uv1.x, uv0.y), vec2(uv1.x, uv1.y), vec2(uv0.x, uv0.y), vec2(uv1.x, uv1.y), vec2(uv0.x, uv1.y));
+    for (uint i = 0u; i < 6u; ++i)
+    {
+        uint off = (base + i) * 8u;
+        verts[off + 0u] = pList[i].x; verts[off + 1u] = pList[i].y; verts[off + 2u] = pList[i].z;
+        verts[off + 3u] = id; verts[off + 4u] = lit; verts[off + 5u] = kind;
+        verts[off + 6u] = uvList[i].x; verts[off + 7u] = uvList[i].y;
+    }
+}
+
+const float GROUND_Y = -2.2;
+
+void main()
+{
+    uvec3 g = gl_GlobalInvocationID;
+    uint id = g.x + 64u * (g.y + 64u * g.z);
+    uint rows = 2u + uint(clamp(rowsP, 0.0, 1.0) * 2.0);
+    uint perRow = 6u;
+    float speed = 0.5 + 0.8 * clamp(speedP, 0.0, 1.0);
+    float clock = sceneAdvance * 0.4 + sceneTime * 0.08;
+
+    if (id == 0u)
+    {
+        emitQuad(vec3(0.0, 8.0, 90.0), vec3(150.0, 0.0, 0.0), vec3(0.0, 60.0, 0.0), 0.0, 0.0, -1.0, vec2(0.0), vec2(1.0));
+        emitQuad(vec3(0.0, GROUND_Y, 55.0), vec3(150.0, 0.0, 0.0), vec3(0.0, 0.0, 60.0), 0.0, 0.0, -2.0, vec2(0.0), vec2(1.0));
+        return;
+    }
+    uint t = id - 1u;
+    uint nT = rows * perRow;
+    uint turbine = t % nT;
+    uint part = t / nT;
+    if (part > 5u) return;
+
+    uint row = turbine / perRow;
+    uint col = turbine % perRow;
+    float fr = float(row), fc = float(col);
+    // Rows recede; each row is offset so the field reads as depth, not a wall.
+    float z = 16.0 + fr * 15.0;
+    float x = (fc - float(perRow - 1u) * 0.5) * (7.5 + fr * 3.0) + (hash11(fr * 3.1 + fc) - 0.5) * 3.0;
+    float scale = 1.0 + 0.25 * hash11(fr * 5.7 + fc * 1.3);
+    float hubY = GROUND_Y + 5.2 * scale;
+    vec3 hub = vec3(x, hubY, z);
+    float R = 3.4 * scale;                                   // blade length
+
+    if (part == 0u)
+    {
+        // The tower: a tapered column.
+        vec3 c = vec3(x, (GROUND_Y + hubY) * 0.5, z);
+        emitQuad(c, vec3(0.16 * scale, 0.0, 0.0), vec3(0.0, (hubY - GROUND_Y) * 0.5, 0.0),
+                 float(turbine), 0.0, 1.0, vec2(0.0), vec2(1.0));
+        return;
+    }
+    if (part == 1u)
+    {
+        // The nacelle: a small box at the hub.
+        emitQuad(hub, vec3(0.42 * scale, 0.0, 0.0), vec3(0.0, 0.22 * scale, 0.0),
+                 float(turbine), 0.0, 2.0, vec2(0.0), vec2(1.0));
+        return;
+    }
+    if (part == 2u)
+    {
+        // Nav light on top of the nacelle.
+        emitQuad(hub + vec3(0.0, 0.32 * scale, 0.0), vec3(0.1, 0.0, 0.0), vec3(0.0, 0.1, 0.0),
+                 float(turbine), 0.0, 3.0, vec2(0.0), vec2(1.0));
+        return;
+    }
+    // Three blades, 120 degrees apart, turning at this turbine's own rate.
+    uint b = part - 3u;
+    float rate = (0.35 + 0.3 * hash11(fr * 7.3 + fc * 2.9)) * speed;
+    float ang = clock * rate + float(b) * 2.0944 + hash11(float(turbine)) * 6.2831853;
+    vec2 dir = vec2(cos(ang), sin(ang));
+    // The blade as a quad from the hub outward: its long axis is the blade,
+    // its short axis the chord, which tapers by drawing it narrow.
+    vec3 along = vec3(dir.x, dir.y, 0.0) * (R * 0.5);
+    vec3 chord = vec3(-dir.y, dir.x, 0.0) * (0.22 * scale);
+    emitQuad(hub + along, along, chord, float(turbine), float(b), 0.0, vec2(0.0), vec2(1.0));
+}
