@@ -7,7 +7,7 @@ out vec4 fragColor;
  * of luminous circular aperture discs and resolves into the incoming scene.
  *   interpolation -> sweeps camera focus distance & circle-of-confusion blur
  *   audioKick     -> flashes luminous bokeh highlight discs
- *   audioSwell    -> broadens dreamy lens bloom radius
+ *   audioSwell   -> broadens dreamy lens bloom radius
  *
  * Per-activation variety:
  *   bokehP float circle-of-confusion blur radius (0.5..2.2)
@@ -24,8 +24,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -55,12 +54,12 @@ void main() {
 
     vec2 uv = gl_FragCoord.xy / resolution.xy;
 
-    float t = time * 0.4 * spd + audioAdvance * 0.2;
+    float t = time * 0.4 * spd;   // clock only: audioAdvance integrates transients and sped the motion up on every surge
     float tProg = clamp(interpolation, 0.0, 1.0);
     float midTransition = sin(tProg * 3.14159265);
 
     // Multi-tap bokeh disc sampling
-    float blurRadius = midTransition * 0.025 * bkh * (1.0 + audioBass * 0.5);
+    float blurRadius = midTransition * 0.025 * bkh * (1.0 + audioSwell * 0.5);
 
     vec3 c1Acc = vec3(0.0);
     vec3 c0Acc = vec3(0.0);

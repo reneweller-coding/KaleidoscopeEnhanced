@@ -7,7 +7,7 @@ out vec4 fragColor;
  * concentric chromatic interference rings that expand radially to reveal the incoming scene.
  *   interpolation -> sweeps air gap thickness & expanding interference fringe radius
  *   audioKick     -> flashes constructive interference rainbow rings
- *   audioBass     -> undulates lens curvature & ring spacing
+ *   audioSwell    -> undulates lens curvature & ring spacing
  *
  * Per-activation variety:
  *   ringP  float Newton ring radial frequency (0.5..2.2)
@@ -24,8 +24,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -56,7 +55,7 @@ void main() {
     vec2 uv = gl_FragCoord.xy / resolution.xy;
     vec2 p = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
-    float t = time * 0.4 * spd + audioAdvance * 0.2;
+    float t = time * 0.4 * spd;   // clock only: audioAdvance integrates transients and sped the motion up on every surge
     float tProg = clamp(interpolation, 0.0, 1.0);
     float midTransition = sin(tProg * 3.14159265);
 
@@ -69,7 +68,7 @@ void main() {
     float fringeMask = smoothstep(-0.3, 0.3, fringe);
 
     // Lens air-gap refraction warp
-    vec2 refr = normalize(p + 1e-4) * fringe * 0.025 * midTransition * (1.0 + audioBass * 0.7);
+    vec2 refr = normalize(p + 1e-4) * fringe * 0.025 * midTransition * (1.0 + audioSwell * 0.7);
 
     vec4 c1 = texture(tex1, fract(uv + refr));
     vec4 c0 = texture(tex0, fract(uv - refr));
@@ -80,7 +79,7 @@ void main() {
     // Spectral rainbow thin-film colors
     vec3 rainbow = 0.5 + 0.5 * cos(vec3(0.0, 2.0, 4.0) + delta * 2.0 + audioPhase);
     float ringGlow = pow(max(0.0, fringe), 4.0) * midTransition;
-    col.rgb += ringGlow * rainbow * (1.4 + audioKick * 3.0);
+    col.rgb += ringGlow * rainbow * (1.4 + audioKick * 1.0);
 
     if (audioChromaHue != 0.0) col.rgb = hueRot(col.rgb, audioChromaHue * midTransition);
     if (hue > 0.001) col.rgb = hueRot(col.rgb, hue * midTransition);

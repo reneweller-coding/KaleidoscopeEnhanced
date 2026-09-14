@@ -7,7 +7,6 @@ out vec4 fragColor;
  * resolve with cybernetic neon boundary grids to reveal the incoming scene.
  *   interpolation -> drives recursive quadtree depth & tile flip progress
  *   audioKick     -> flashes quadtree partition grid lines
- *   audioBass     -> undulates subdivision threshold
  *
  * Per-activation variety:
  *   depthP float maximum quadtree recursion depth (0.5..2.2)
@@ -24,8 +23,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -61,7 +59,7 @@ void main() {
 
     vec2 uv = gl_FragCoord.xy / resolution.xy;
 
-    float t = time * 0.4 * spd + audioAdvance * 0.2;
+    float t = time * 0.4 * spd;   // clock only: audioAdvance integrates transients and sped the motion up on every surge
     float tProg = clamp(interpolation, 0.0, 1.0);
     float midTransition = sin(tProg * 3.14159265);
 
@@ -90,7 +88,7 @@ void main() {
     // form is written so the divisor tracks the threshold: it still self-clamps
     // to exactly 0 at tProg = 0 and exactly 1 at tProg = 1 for any s < 1, and
     // midTransition additionally returns s to its base 0.35 at both endpoints.
-    float subdivThreshold = 0.35 * (1.0 + audioBass * 0.5 * midTransition);
+    float subdivThreshold = 0.35;   // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
     float tileDelay = fract(tileSeed * 3.1415);
     float tileProg = clamp((tProg - tileDelay * subdivThreshold) / (1.0 - subdivThreshold), 0.0, 1.0);
     tileProg = smoothstep(0.0, 1.0, tileProg);

@@ -216,6 +216,7 @@ public:
 	 *  quantisation — a systematic viewing bench. */
 	/** @brief Enables/disables review mode (alphabetical fixed-length walk through every scene, for systematic viewing). @param on true to enable review mode, false to return to normal mood/taste-driven selection. */
 	void setReviewMode( bool on ) { m_scheduler.setReviewMode( on ); }
+	void setSceneFadeMin( float secs ) { m_scheduler.setSceneFadeMin( secs ); }   ///< Preset-wide floor on scene fades (seconds); see SceneScheduler::setSceneFadeMin().
 
 	/** Validation aid (KALEIDO_COMPILE_ALL=1): eagerly compile every effect
 	 *  and combine shader of this configuration — the log then holds one

@@ -7,7 +7,7 @@ out vec4 fragColor;
  * outgoing scene into crystalline frost and melting away into the incoming scene.
  *   interpolation -> sweeps freezing crystallization to melting thaw
  *   audioKick     -> flashes sharp dendritic ice needle growth
- *   audioHigh     -> sharpens crystalline frostwork facet lines
+ *   audioSwell    -> sharpens the frost facets (slow)
  *
  * Per-activation variety:
  *   frostP  float frost crystal density & scale  (0.5..2.2)
@@ -24,8 +24,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -61,7 +60,7 @@ void main() {
     vec2 uv = gl_FragCoord.xy / resolution.xy;
     vec2 p = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
-    float t = time * 0.4 * spd + audioAdvance * 0.2;
+    float t = time * 0.4 * spd;   // clock only: audioAdvance integrates transients and sped the motion up on every surge
     float tProg = clamp(interpolation, 0.0, 1.0);
     float midTransition = sin(tProg * 3.14159265);
 
@@ -77,7 +76,7 @@ void main() {
     // only the edge crispness.  midTransition is zero at both fade endpoints,
     // so the pattern there is exactly the un-driven one — and frostPattern is
     // only ever consumed through midTransition-gated terms anyway.
-    float facetSharp = 1.0 + audioHigh * 0.8 * midTransition;
+    float facetSharp = 1.0 + audioSwell * 0.8 * midTransition;
     float mainSpine = abs(hexCoord.y);
     float sideBranches = abs(sin(hexCoord.x * 2.0 * brn - hexCoord.y * 3.0));
     float frostPattern = exp(-mainSpine * 8.0 * facetSharp) + exp(-sideBranches * 6.0 * facetSharp) * 0.6;
@@ -92,7 +91,7 @@ void main() {
 
     // Crystalline frost white/cyan glow
     vec3 frostWhite = vec3(0.85, 0.95, 1.0);
-    col.rgb += frostPattern * frostWhite * midTransition * 0.7 * (1.0 + audioKick * 2.5);
+    col.rgb += frostPattern * frostWhite * midTransition * 0.7 * (1.0 + audioKick * 0.83);
 
     if (audioChromaHue != 0.0) col.rgb = hueRot(col.rgb, audioChromaHue * midTransition);
     if (hue > 0.001) col.rgb = hueRot(col.rgb, hue * midTransition);

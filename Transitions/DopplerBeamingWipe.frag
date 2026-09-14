@@ -7,7 +7,7 @@ out vec4 fragColor;
  * beaming brightness amplification while receding elements red-shift away.
  *   interpolation -> sweeps relativistic velocity beta = v/c across screen
  *   audioKick     -> flashes relativistic Lorentz headlamp focus
- *   audioBass     -> widens Doppler spectral frequency shift
+ *   audioSwell    -> widens Doppler spectral frequency shift
  *
  * Per-activation variety:
  *   dopplerP float Doppler spectral shift magnitude (0.5..2.2)
@@ -24,8 +24,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -61,7 +60,7 @@ void main() {
     vec2 uv = gl_FragCoord.xy / resolution.xy;
     vec2 p = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
-    float t = time * 0.4 * spd + audioAdvance * 0.2;
+    float t = time * 0.4 * spd;   // clock only: audioAdvance integrates transients and sped the motion up on every surge
     float tProg = clamp(interpolation, 0.0, 1.0);
     float midTransition = sin(tProg * 3.14159265);
 
@@ -85,7 +84,7 @@ void main() {
     // amount to exactly 0 at both fade endpoints, where the tint is vec3(1.0)
     // and the frame is untinted; the clamp keeps mix() from extrapolating past
     // the tint colour.
-    float shiftAmount = clamp(abs(beta) * midTransition * (1.0 + audioBass * 0.7), 0.0, 1.0);
+    float shiftAmount = clamp(abs(beta) * midTransition * (1.0 + audioSwell * 0.7), 0.0, 1.0);
     vec3 blueTint = vec3(0.3, 0.85, 1.2);
     vec3 redTint  = vec3(1.2, 0.4, 0.2);
     vec3 dopplerTint = (beta > 0.0) ? mix(vec3(1.0), blueTint, shiftAmount)
@@ -96,7 +95,7 @@ void main() {
 
     // Relativistic beaming headlamp beam
     float headlamp = exp(-abs(proj) * 15.0) * midTransition;
-    col.rgb += headlamp * vec3(1.0, 0.95, 0.85) * (1.0 + audioKick * 3.0);
+    col.rgb += headlamp * vec3(1.0, 0.95, 0.85) * (1.0 + audioKick * 1.0);
 
     if (audioChromaHue != 0.0) col.rgb = hueRot(col.rgb, audioChromaHue * midTransition);
     if (hue > 0.001) col.rgb = hueRot(col.rgb, hue * midTransition);

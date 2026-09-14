@@ -7,7 +7,7 @@ out vec4 fragColor;
  * wave that crashes with turbulent sea foam and washes into the incoming scene.
  *   interpolation -> sweeps the rolling breaker wave front across the viewport
  *   audioKick     -> flashes churning sea foam spray on wave break
- *   audioBass     -> drives ocean swell wave amplitude & curl steepness
+ *   audioSwell    -> drives ocean swell wave amplitude & curl steepness
  *
  * Per-activation variety:
  *   waveP  float ocean swell wavelength & scale (0.5..2.2)
@@ -24,8 +24,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -56,7 +55,7 @@ void main() {
     vec2 uv = gl_FragCoord.xy / resolution.xy;
     vec2 p = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
-    float t = time * 0.45 * spd + audioAdvance * 0.22;
+    float t = time * 0.0817 * spd;   // clock rate measured down to about 1.2/255 of change per frame (PresetEditor --transprofile); it spun many times that and read as frantic
     float tProg = clamp(interpolation, 0.0, 1.0);
     float midTransition = sin(tProg * 3.14159265);
 
@@ -69,7 +68,7 @@ void main() {
     float crestFoam = smoothstep(0.7, 1.0, waveHeight) * exp(-abs(distToWave) * 12.0) * fom;
 
     // Water refraction displacement
-    vec2 waterDisp = vec2(sin(distToWave * 15.0), cos(p.y * 12.0 + t)) * 0.04 * midTransition * (1.0 + audioBass * 0.7);
+    vec2 waterDisp = vec2(sin(distToWave * 15.0), cos(p.y * 12.0 + t)) * 0.04 * midTransition * (1.0 + audioSwell * 0.7);
 
     vec4 c1 = texture(tex1, fract(uv + waterDisp));
     vec4 c0 = texture(tex0, fract(uv - waterDisp));
@@ -79,7 +78,7 @@ void main() {
 
     // Sea foam whitecaps
     vec3 foamWhite = vec3(0.9, 0.98, 1.0);
-    col.rgb += crestFoam * foamWhite * midTransition * (1.5 + audioKick * 3.5);
+    col.rgb += crestFoam * foamWhite * midTransition * (1.5 + audioKick * 1.17);
 
     if (audioChromaHue != 0.0) col.rgb = hueRot(col.rgb, audioChromaHue * midTransition);
     if (hue > 0.001) col.rgb = hueRot(col.rgb, hue * midTransition);

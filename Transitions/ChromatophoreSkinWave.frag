@@ -19,8 +19,7 @@ out vec4 fragColor;
  * a band sweeps and the pattern arrives behind it.
  *
  * Audio Reactivity:
- *   audioMid     -> the wavelength of the muscle wave (slow)
- *   audioSwell   -> how far the sacs open (slow)
+ *   audioSwell  -> how far the sacs open (slow)
  *   audioAdvance -> the wave travels, continuously
  *   audioHigh    -> the iridophores under the sacs (light)
  *
@@ -35,8 +34,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -69,7 +67,7 @@ void main()
     float arc = sin(d * PI);
 
     // The travelling band of activation.
-    float k = (2.6 + 3.0 * clamp(audioMid * 2.0, 0.0, 1.0)) / wav;
+    float k = 4.1 / wav;   // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
     vec2  wdir = normalize(vec2(0.82, 0.34));
     float act = 0.5 + 0.5 * sin(dot(p, wdir) * k - audioAdvance * 0.09);
 

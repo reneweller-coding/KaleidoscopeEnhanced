@@ -7,7 +7,7 @@ out vec4 fragColor;
  * the frame, wiping the outgoing scene and leaving the incoming scene behind.
  *   interpolation -> drives the horizontal anamorphic flare position across screen
  *   audioKick     -> flashes intense laser core emission and horizontal streaks
- *   audioHigh     -> sharpens anamorphic lens flare lines
+ *   audioSwell    -> sharpens the flare lines (slow)
  *
  * Per-activation variety:
  *   flareP float flare beam width & intensity     (0.5..2.2)
@@ -24,8 +24,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -56,7 +55,7 @@ void main() {
     vec2 uv = gl_FragCoord.xy / resolution.xy;
     vec2 p = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
-    float t = time * 0.4 * spd + audioAdvance * 0.2;
+    float t = time * 0.4 * spd;   // clock only: audioAdvance integrates transients and sped the motion up on every surge
     float tProg = clamp(interpolation, 0.0, 1.0);
     float midT = sin(tProg * 3.14159265);
 
@@ -69,7 +68,7 @@ void main() {
     // change, no position moves.  midT is zero at both fade endpoints, so the
     // profile there is exactly the un-driven one (and both terms are only ever
     // added through midTransition anyway).
-    float lineSharp = 1.0 + audioHigh * 0.8 * midT;
+    float lineSharp = 1.0 + audioSwell * 0.8 * midT;
     float horizStreak = exp(-abs(p.y) * 20.0 * lineSharp) * exp(-abs(distToFlare) * 8.0 * lineSharp);
     float verticalBar  = exp(-abs(distToFlare) * 25.0 * lineSharp / flr);
 
@@ -90,8 +89,8 @@ void main() {
     vec3 flareCore = vec3(1.0, 0.98, 0.9);
 
     float midTransition = sin(tProg * 3.14159265);
-    col.rgb += verticalBar * flareBlue * (1.5 + audioKick * 3.0) * midTransition;
-    col.rgb += horizStreak * flareCore * (2.0 + audioKick * 4.0) * midTransition;
+    col.rgb += verticalBar * flareBlue * (1.5 + audioKick * 1.0) * midTransition;
+    col.rgb += horizStreak * flareCore * (2.0 + audioKick * 1.33) * midTransition;
 
     if (audioChromaHue != 0.0) col.rgb = hueRot(col.rgb, audioChromaHue * midTransition);
     if (hue > 0.001) col.rgb = hueRot(col.rgb, hue * midTransition);

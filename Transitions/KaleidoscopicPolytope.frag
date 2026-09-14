@@ -7,7 +7,6 @@ out vec4 fragColor;
  * Coxeter symmetry facets, tessellating and transitioning between scenes.
  *   interpolation -> sweeps kaleidoscopic fold angle & facet recursion
  *   audioKick     -> flashes mirror facet intersection reflection planes
- *   audioBass     -> undulates Coxeter polytope breathing radius
  *
  * Per-activation variety:
  *   mirrorP float reflection symmetry folding order   (0.5..2.2)
@@ -24,8 +23,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -61,7 +59,7 @@ void main() {
     vec2 uv = gl_FragCoord.xy / resolution.xy;
     vec2 p = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
-    float t = time * 0.4 * spd + audioAdvance * 0.2;
+    float t = time * 0.0295 * spd;   // clock rate measured down to about 1.2/255 of change per frame (PresetEditor --transprofile); it spun many times that and read as frantic
     float tProg = clamp(interpolation, 0.0, 1.0);
     float midTransition = sin(tProg * 3.14159265);
 
@@ -71,10 +69,11 @@ void main() {
 
     float foldAngle = (tProg * 1.5707963 + t * 0.2) * mir;
 
-    // audioBass undulates the Coxeter breathing radius (the fold offset).  The
+    // The Coxeter breathing radius (the fold offset) follows the progress only:
+    // folded four times, any envelope on it re-laid the whole mirror.  The
     // offset already carries midTransition, so it collapses to exactly 0 at
     // both fade endpoints, where warpUV is blended out by midTransition too.
-    float breathe = 0.25 * fld * midTransition * (1.0 + audioBass * 0.7);
+    float breathe = 0.25 * fld * midTransition * 1.35;   // constant: this amplitude is wrapped by fract(), so any envelope reshuffled the frame (speed pass 14.09.2026)
 
     for (int i = 0; i < 4; ++i) {
         q = abs(q) - breathe;
@@ -92,7 +91,7 @@ void main() {
     // Glowing mirror intersection lines
     float lineGlow = exp(-mirrorDist * 40.0) * midTransition;
     vec3 mirrorColor = 0.5 + 0.5 * cos(vec3(0.0, 2.0, 4.0) + length(q) * 15.0 + audioPhase);
-    col.rgb += lineGlow * mirrorColor * (1.3 + audioKick * 3.0);
+    col.rgb += lineGlow * mirrorColor * (1.3 + audioKick * 1.0);
 
     if (audioChromaHue != 0.0) col.rgb = hueRot(col.rgb, audioChromaHue * midTransition);
     if (hue > 0.001) col.rgb = hueRot(col.rgb, hue * midTransition);

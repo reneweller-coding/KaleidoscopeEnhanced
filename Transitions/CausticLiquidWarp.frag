@@ -7,7 +7,7 @@ out vec4 fragColor;
  * refraction warps that dissolve the outgoing scene into the incoming one.
  *   interpolation -> controls water surface submergence & clearing progress
  *   audioKick     -> flashes sharp caustic refraction focus lines
- *   audioBass     -> undulates water wave height & refraction amplitude
+ *   audioSwell    -> undulates water wave height & refraction amplitude
  *
  * Per-activation variety:
  *   causticP float caustic sharpness & intensity (0.5..2.2)
@@ -24,8 +24,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -56,7 +55,7 @@ void main() {
     vec2 uv = gl_FragCoord.xy / resolution.xy;
     vec2 p = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
-    float t = time * 0.45 * spd + audioAdvance * 0.22;
+    float t = time * 0.0492 * spd;   // clock rate measured down to about 1.2/255 of change per frame (PresetEditor --transprofile); it spun many times that and read as frantic
     float tProg = clamp(interpolation, 0.0, 1.0);
     float midTransition = sin(tProg * 3.14159265);
 
@@ -73,7 +72,7 @@ void main() {
     float caustics = pow(max(0.0, 1.0 - abs(causticField)), 8.0) * cst;
 
     // Refraction offset vector
-    vec2 refr = vec2(w1 - w2, w2 - w3) * 0.03 * midTransition * (1.0 + audioBass * 0.7);
+    vec2 refr = vec2(w1 - w2, w2 - w3) * 0.03 * midTransition * (1.0 + audioSwell * 0.7);
 
     vec4 c1 = texture(tex1, fract(uv + refr));
     vec4 c0 = texture(tex0, fract(uv - refr));
@@ -82,7 +81,7 @@ void main() {
 
     // Shimmering aquatic caustic highlights
     vec3 causticCyan = vec3(0.2, 0.9, 1.0);
-    col.rgb += caustics * causticCyan * midTransition * (1.2 + audioKick * 3.0);
+    col.rgb += caustics * causticCyan * midTransition * (1.2 + audioKick * 1.0);
 
     if (audioChromaHue != 0.0) col.rgb = hueRot(col.rgb, audioChromaHue * midTransition);
     if (hue > 0.001) col.rgb = hueRot(col.rgb, hue * midTransition);

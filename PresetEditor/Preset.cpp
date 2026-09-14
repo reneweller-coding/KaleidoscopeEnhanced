@@ -9,6 +9,9 @@
 #include <QtCore/QXmlStreamWriter>
 #include <QtXml/QDomDocument>
 #include <QtXml/QDomElement>
+#include <QtXml/QDomNamedNodeMap>
+#include <QtXml/QDomAttr>
+#include <QtCore/QStringList>
 
 /**
  * @brief Strip a leading "..\" or "../" (and any deeper path) from a file= attribute.
@@ -97,6 +100,16 @@ bool Preset::load(const QString &path, Preset &out, QString *err)
     out.timeTextureSoloMax = root.attribute("timeTextureSoloMax").toInt();
     out.timeTextureInterpolationMin = root.attribute("timeTextureInterpolationMin").toInt();
     out.timeTextureInterpolationMax = root.attribute("timeTextureInterpolationMax").toInt();
+    {
+        static const QStringList known = { "ImageDirectory", "ConfigurationName", "hidden",
+            "timeTextureSoloMin", "timeTextureSoloMax",
+            "timeTextureInterpolationMin", "timeTextureInterpolationMax" };
+        const QDomNamedNodeMap attrs = root.attributes();
+        for (int a = 0; a < attrs.count(); ++a) {
+            const QDomAttr at = attrs.item(a).toAttr();
+            if (!known.contains(at.name())) out.extraAttrs.push_back({ at.name(), at.value() });
+        }
+    }
 
     // Local lambda: read every `<TextureShader>`, `<CombineShader>` or
     // `<TransitionShader>` element into a PresetEntry and append it, tagging
@@ -124,6 +137,16 @@ bool Preset::load(const QString &path, Preset &out, QString *err)
             e.geom = el.attribute("geom");           // scene3d geometry kind
             e.stateBytes = el.attribute("stateBytes").toInt();
             e.shadowExtent = el.attribute("shadowExtent").toDouble();
+            {
+                static const QStringList known = { "file", "type", "minTimeSolo", "maxTimeSolo",
+                    "minTimeInterpolation", "maxTimeInterpolation", "probability", "complexity",
+                    "mood", "geom", "stateBytes", "shadowExtent" };
+                const QDomNamedNodeMap attrs = el.attributes();
+                for (int a = 0; a < attrs.count(); ++a) {
+                    const QDomAttr at = attrs.item(a).toAttr();
+                    if (!known.contains(at.name())) e.extraAttrs.push_back({ at.name(), at.value() });
+                }
+            }
             readParams(el, e);
             out.entries.push_back(e);
         }
@@ -155,6 +178,7 @@ bool Preset::save(const QString &path, QString *err) const
     w.writeAttribute("timeTextureSoloMax", QString::number(timeTextureSoloMax));
     w.writeAttribute("timeTextureInterpolationMin", QString::number(timeTextureInterpolationMin));
     w.writeAttribute("timeTextureInterpolationMax", QString::number(timeTextureInterpolationMax));
+    for (const auto &kv : extraAttrs) w.writeAttribute(kv.first, kv.second);
 
     // Local lambda: write one `<TextureShader>`/`<CombineShader>` element and its
     // param children; shared by both passes below so texture and combine
@@ -187,6 +211,7 @@ bool Preset::save(const QString &path, QString *err) const
         if (!e.mood.isEmpty())
             w.writeAttribute("mood", e.mood);
         w.writeAttribute("complexity", QString::number(e.complexity));
+        for (const auto &kv : e.extraAttrs) w.writeAttribute(kv.first, kv.second);
         for (const ShaderParam &p : e.params)
         {
             w.writeStartElement(p.kind);

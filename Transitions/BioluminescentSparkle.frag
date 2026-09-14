@@ -24,8 +24,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -62,7 +61,7 @@ void main() {
     vec2 uv = gl_FragCoord.xy / resolution.xy;
     vec2 p = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
-    float t = time * 0.45 * spd + audioAdvance * 0.22;
+    float t = time * 0.0573 * spd;   // clock rate measured down to about 1.2/255 of change per frame (PresetEditor --transprofile); it spun many times that and read as frantic
     float tProg = clamp(interpolation, 0.0, 1.0);
     float midTransition = sin(tProg * 3.14159265);
 
@@ -86,7 +85,7 @@ void main() {
 
     // Bioluminescent cyan-emerald glow
     vec3 bioCyan = vec3(0.1, 0.95, 0.9);
-    col.rgb += sparkleFlash * bioCyan * (1.5 + audioKick * 3.5 + audioHigh * 1.5);
+    col.rgb += sparkleFlash * bioCyan * (1.5 + audioKick * 1.17 + audioHigh * 1.5);
 
     if (audioChromaHue != 0.0) col.rgb = hueRot(col.rgb, audioChromaHue * midTransition);
     if (hue > 0.001) col.rgb = hueRot(col.rgb, hue * midTransition);

@@ -7,7 +7,7 @@ out vec4 fragColor;
  * radially outward with glowing shock compression and revealing the new scene.
  *   interpolation -> sweeps the spherical shockwave radius across the viewport
  *   audioKick     -> detonates primary supernova core explosion flash
- *   audioBass     -> drives shockwave displacement amplitude
+ *   audioSwell    -> drives shockwave displacement amplitude
  *
  * Per-activation variety:
  *   blastP float shockwave expansion velocity multiplier (0.5..2.2)
@@ -24,8 +24,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -56,7 +55,7 @@ void main() {
     vec2 uv = gl_FragCoord.xy / resolution.xy;
     vec2 p = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
-    float t = time * 0.45 * spd + audioAdvance * 0.22;
+    float t = time * 0.45 * spd;   // clock only: audioAdvance integrates transients and sped the motion up on every surge
     float tProg = clamp(interpolation, 0.0, 1.0);
     // Single fade envelope: 0 at BOTH endpoints, 1 mid-fade. Every decorative
     // term below is multiplied by it, which is what keeps d=0 exactly scene A
@@ -91,7 +90,7 @@ void main() {
     // on sin(tProg*pi) -- zero at both ends, one in the middle -- is the same
     // idiom the other transitions use for their decorations.
     float compression = exp(-abs(distToShock) * 20.0 / shk) * sign(distToShock) * 0.05
-                      * (1.0 + audioBass * 0.7) * midT;
+                      * (1.0 + audioSwell * 0.7) * midT;
     vec2 shockDisp = normalize(p + 1e-4) * compression;
 
     vec4 c1 = texture(tex1, fract(uv + shockDisp));
@@ -107,12 +106,12 @@ void main() {
     // where the falloff is widest (measured 2.5/255 across the middle third).
     float shockRing = exp(-abs(distToShock) * 35.0 / shk) * midT;
     vec3 shockColor = mix(vec3(0.1, 0.9, 1.0), vec3(1.0, 0.9, 0.3), exp(-r * 3.0));
-    col.rgb += shockRing * shockColor * (1.5 + audioKick * 3.5);
+    col.rgb += shockRing * shockColor * (1.5 + audioKick * 1.17);
 
     // Central supernova core flash — windowed by the transition envelope:
     // the old (1.0 - tProg) factor left the flash at FULL brightness at the
     // fade's end (tProg=0), a bright dot popping off when the pass stops.
-    float coreFlash = exp(-r * 15.0) * midT * (2.0 + audioKick * 4.0);
+    float coreFlash = exp(-r * 15.0) * midT * (2.0 + audioKick * 1.33);
     col.rgb += coreFlash * vec3(1.0, 0.98, 0.92);
 
     if (audioChromaHue != 0.0) col.rgb = hueRot(col.rgb, audioChromaHue * midT);

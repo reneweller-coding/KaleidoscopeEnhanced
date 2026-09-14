@@ -7,7 +7,6 @@ out vec4 fragColor;
  * sinusoidal diffraction fringes governed by Cornu spirals that bridge the transition.
  *   interpolation -> sweeps knife-edge shadow boundary across the screen
  *   audioKick     -> flashes principal diffraction fringe maxima
- *   audioBass     -> undulates Fresnel diffraction zone distance
  *
  * Per-activation variety:
  *   edgeP   float Fresnel zone parameter v scale      (0.5..2.2)
@@ -24,8 +23,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -56,7 +54,7 @@ void main() {
     vec2 uv = gl_FragCoord.xy / resolution.xy;
     vec2 p = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
-    float t = time * 0.4 * spd + audioAdvance * 0.2;
+    float t = time * 0.4 * spd;   // clock only: audioAdvance integrates transients and sped the motion up on every surge
     float tProg = clamp(interpolation, 0.0, 1.0);
     float midTransition = sin(tProg * 3.14159265);
 
@@ -70,7 +68,7 @@ void main() {
     // midTransition returns it to exactly 1.0 at both fade endpoints, and
     // fresnelIntensity only reaches the frame through the midTransition-gated
     // diffDisp below.
-    float zoneDist = 1.0 + audioBass * 0.6 * midTransition;
+    float zoneDist = 1.0;   // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
 
     // Analytical approximation of straight-edge Fresnel diffraction intensity
     float fresnelIntensity;
@@ -94,7 +92,7 @@ void main() {
 
     // Glowing primary fringe maximum
     float primaryPeak = exp(-abs(v - 1.22) * 10.0) * midTransition;
-    col.rgb += primaryPeak * vec3(0.2, 0.9, 1.0) * (1.5 + audioKick * 3.0);
+    col.rgb += primaryPeak * vec3(0.2, 0.9, 1.0) * (1.5 + audioKick * 1.0);
 
     if (audioChromaHue != 0.0) col.rgb = hueRot(col.rgb, audioChromaHue * midTransition);
     if (hue > 0.001) col.rgb = hueRot(col.rgb, hue * midTransition);

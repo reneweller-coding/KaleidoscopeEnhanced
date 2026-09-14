@@ -8,7 +8,7 @@ out vec4 fragColor;
  * resolving into the incoming scene.
  *   interpolation -> drives solvent front capillary migration across the frame
  *   audioKick     -> flashes sharp chromatographic pigment separation bands
- *   audioBass     -> undulates capillary paper fiber texture
+ *   audioSwell    -> undulates capillary paper fiber texture
  *
  * Per-activation variety:
  *   solventP float solvent front migration velocity (0.5..2.2)
@@ -25,8 +25,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -57,7 +56,7 @@ void main() {
     vec2 uv = gl_FragCoord.xy / resolution.xy;
     vec2 p = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
-    float t = time * 0.4 * spd + audioAdvance * 0.2;
+    float t = time * 0.4 * spd;   // clock only: audioAdvance integrates transients and sped the motion up on every surge
     float tProg = clamp(interpolation, 0.0, 1.0);
     float midTransition = sin(tProg * 3.14159265);
 
@@ -76,7 +75,7 @@ void main() {
     // exactly zero at both fade endpoints and cannot shift the solvent front,
     // the wipe mask, or the sampled UVs there.
     float fibre = sin(p.x * 85.0 + sin(p.y * 5.0 + t * 0.7) * 1.6);
-    float fibreDisp = fibre * 0.006 * (1.0 + audioBass * 0.8) * midTransition;
+    float fibreDisp = fibre * 0.006 * (1.0 + audioSwell * 0.8) * midTransition;
 
     float rDisp = max(0.0, solventFront * rf_R - p.y) * 0.04 * midTransition + fibreDisp;
     float gDisp = max(0.0, solventFront * rf_G - p.y) * 0.04 * midTransition + fibreDisp;
@@ -97,7 +96,7 @@ void main() {
 
     // Solvent meniscus line glow
     float meniscus = exp(-abs(distToSolvent) * 25.0) * midTransition;
-    col += meniscus * vec3(0.3, 0.85, 1.0) * (1.3 + audioKick * 3.0);
+    col += meniscus * vec3(0.3, 0.85, 1.0) * (1.3 + audioKick * 1.0);
 
     if (audioChromaHue != 0.0) col = hueRot(col, audioChromaHue * midTransition);
     if (hue > 0.001) col = hueRot(col, hue * midTransition);

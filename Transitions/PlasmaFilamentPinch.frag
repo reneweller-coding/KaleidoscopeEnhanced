@@ -8,7 +8,7 @@ out vec4 fragColor;
  * before bursting into the incoming scene.
  *   interpolation -> sweeps magnetic Bennett pinch compression & burst
  *   audioKick     -> triggers full-pinch thermonuclear radiation flash
- *   audioBass     -> drives radial Lorentz force compression amplitude
+ *   audioSwell    -> drives radial Lorentz force compression amplitude
  *
  * Per-activation variety:
  *   pinchP float Z-pinch compression ratio & filament thickness (0.5..2.2)
@@ -25,8 +25,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -57,7 +56,7 @@ void main() {
     vec2 uv = gl_FragCoord.xy / resolution.xy;
     vec2 p = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
-    float t = time * 0.5 * spd + audioAdvance * 0.25;
+    float t = time * 0.5 * spd;   // clock only: audioAdvance integrates transients and sped the motion up on every surge
     float tProg = clamp(interpolation, 0.0, 1.0);
     float midTransition = sin(tProg * 3.14159265);
 
@@ -70,7 +69,7 @@ void main() {
     float pinchCore = exp(-distToFilament * distToFilament / (pinchRadius * pinchRadius));
 
     // Lorentz force radial pull displacement
-    float pinchDispX = -sign(p.x - filamentX) * pinchCore * 0.05 * midTransition * (1.0 + audioBass * 0.8);
+    float pinchDispX = -sign(p.x - filamentX) * pinchCore * 0.05 * midTransition * (1.0 + audioSwell * 0.8);
     vec2 warpUV = uv + vec2(pinchDispX, 0.0);
 
     vec4 c1 = texture(tex1, fract(warpUV));
@@ -80,7 +79,7 @@ void main() {
 
     // Glowing high-temperature plasma core
     vec3 plasmaColor = mix(vec3(0.95, 0.3, 0.1), vec3(0.3, 0.85, 1.0), pinchCore);
-    col.rgb += pinchCore * plasmaColor * midTransition * (1.6 + audioKick * 3.5);
+    col.rgb += pinchCore * plasmaColor * midTransition * (1.6 + audioKick * 1.17);
 
     if (audioChromaHue != 0.0) col.rgb = hueRot(col.rgb, audioChromaHue * midTransition);
     if (hue > 0.001) col.rgb = hueRot(col.rgb, hue * midTransition);

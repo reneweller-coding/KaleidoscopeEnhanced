@@ -20,7 +20,6 @@ out vec4 fragColor;
  *
  * Audio Reactivity:
  *   audioFlux -> the carving rate: how many seams go per moment (slow)
- *   audioMid  -> what counts as energy, edges against colour (colour)
  *   audioHigh -> the light along a seam as it closes (light)
  *   audioSwell -> how far the frame is retargeted (slow)
  *
@@ -35,8 +34,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -83,7 +81,7 @@ void main()
     float arc = sin(d * PI);
 
     // What counts as energy: pure luminance edges, or colour changes too.
-    float colourWeight = ew * (0.4 + 1.2 * clamp(audioMid * 2.0, 0.0, 1.0));
+    float colourWeight = ew;   // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
 
     // Walk from the left edge to this pixel, accumulating how much of what we
     // passed was cheap enough to carve away.

@@ -7,7 +7,7 @@ out vec4 fragColor;
  * scanlines reconstruct the incoming scene with chromatic hologram diffraction.
  *   interpolation -> sweeps holographic phase modulation & reconstruction
  *   audioKick     -> flashes laser interference fringe lines
- *   audioHigh     -> sharpens holographic scanline resolution
+ *   audioSwell    -> sharpens the scanline edge (slow)
  *
  * Per-activation variety:
  *   scanP  float scanline density & line frequency (0.5..2.2)
@@ -24,8 +24,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -56,7 +55,7 @@ void main() {
     vec2 uv = gl_FragCoord.xy / resolution.xy;
     vec2 p = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
-    float t = time * 0.45 * spd + audioAdvance * 0.22;
+    float t = time * 0.0523 * spd;   // clock rate measured down to about 1.2/255 of change per frame (PresetEditor --transprofile); it spun many times that and read as frantic
     float tProg = clamp(interpolation, 0.0, 1.0);
     float midTransition = sin(tProg * 3.14159265);
 
@@ -67,7 +66,7 @@ void main() {
     // both fade endpoints, where scanIntense is added through midTransition
     // anyway.
     float scanline = sin(uv.y * 240.0 * scn - t * 12.0);
-    float scanEdge = 0.8 / (1.0 + audioHigh * 0.9 * midTransition);
+    float scanEdge = 0.8 / (1.0 + audioSwell * 0.9 * midTransition);
     float scanIntense = smoothstep(0.0, scanEdge, scanline);
 
     // Laser phase shift displacement
@@ -93,7 +92,7 @@ void main() {
     // Hologram laser glow (electric cyan / neon violet)
     vec3 holoColor = mix(vec3(0.1, 0.9, 1.0), vec3(0.8, 0.2, 1.0), sin(uv.y * 10.0 + t) * 0.5 + 0.5);
     col += scanIntense * holoColor * 0.3 * midTransition;
-    col += phaseShift * vec3(1.0, 0.98, 0.9) * (2.0 + audioKick * 3.0);
+    col += phaseShift * vec3(1.0, 0.98, 0.9) * (2.0 + audioKick * 1.0);
 
     if (audioChromaHue != 0.0) col = hueRot(col, audioChromaHue * midTransition);
     if (hue > 0.001) col = hueRot(col, hue * midTransition);

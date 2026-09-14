@@ -16,7 +16,6 @@ out vec4 fragColor;
  * needs the two nearest colonies, not just the nearest.
  *
  * Audio Reactivity:
- *   audioSwell   -> the growth rate (slow)
  *   audioValence -> the species colour, grey-green to sulphur (colour)
  *   audioHigh    -> the light on the growing margin (light)
  *   audioMid     -> the texture of the older zones (colour)
@@ -32,8 +31,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -71,7 +69,7 @@ void main()
     float d   = clamp(1.0 - interpolation, 0.0, 1.0);
     float arc = sin(d * PI);
 
-    float growth = 0.85 + 0.55 * clamp(audioSwell, 0.0, 1.0);
+    float growth = 1.1;   // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
 
     float cell = 0.68 / spores;
     vec2  gi = floor(p / cell);

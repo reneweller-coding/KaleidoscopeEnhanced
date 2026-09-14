@@ -7,7 +7,6 @@ out vec4 fragColor;
  * produce dynamic macroscopic interference waves that carry the cross-fade.
  *   interpolation -> controls grating rotation angle & interference phase
  *   audioKick     -> flashes Moiré constructive interference maxima
- *   audioBass     -> undulates grating spatial frequency
  *
  * Per-activation variety:
  *   freqP  float grating spatial frequency (0.5..2.2)
@@ -24,8 +23,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -61,7 +59,7 @@ void main() {
     vec2 uv = gl_FragCoord.xy / resolution.xy;
     vec2 p = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
-    float t = time * 0.4 * spd + audioAdvance * 0.2;
+    float t = time * 0.0755 * spd;   // clock rate measured down to about 1.2/255 of change per frame (PresetEditor --transprofile); it spun many times that and read as frantic
     float tProg = clamp(interpolation, 0.0, 1.0);
     float midTransition = sin(tProg * 3.14159265);
 
@@ -77,7 +75,7 @@ void main() {
     // drift rate stays audio-independent.  midTransition restores the base
     // frequency at both fade endpoints, where `blend` self-clamps to 0/1 and
     // both the displacement and the fringe glow are multiplied out.
-    float gratingFreq = 60.0 * frq * (1.0 + audioBass * 0.35 * midTransition);
+    float gratingFreq = 60.0 * frq;   // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
     float g1 = sin(p1.x * gratingFreq + t * 2.0);
     float g2 = sin(p2.x * gratingFreq - t * 2.0);
 
@@ -97,7 +95,7 @@ void main() {
 
     // Glowing interference fringe highlights
     float fringeGlow = pow(max(0.0, moireWave), 4.0) * midTransition;
-    col.rgb += fringeGlow * vec3(0.2, 0.9, 1.0) * (1.2 + audioKick * 3.0);
+    col.rgb += fringeGlow * vec3(0.2, 0.9, 1.0) * (1.2 + audioKick * 1.0);
 
     if (audioChromaHue != 0.0) col.rgb = hueRot(col.rgb, audioChromaHue * midTransition);
     if (hue > 0.001) col.rgb = hueRot(col.rgb, hue * midTransition);

@@ -7,7 +7,7 @@ out vec4 fragColor;
  * (phi = 1.618), sweeping the old scene away and breathing in the new one.
  *   interpolation -> sweeps the golden spiral chamber wipe across the screen
  *   audioKick     -> flashes golden spiral septum chamber walls
- *   audioBass     -> pulses chamber expansion rate
+ *   audioSwell    -> deepens the spiral warp (slow)
  *
  * Per-activation variety:
  *   phiP   float golden ratio curvature scale (0.5..2.2)
@@ -24,8 +24,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -61,7 +60,7 @@ void main() {
     vec2 uv = gl_FragCoord.xy / resolution.xy;
     vec2 p = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
-    float t = time * 0.4 * spd + audioAdvance * 0.2;
+    float t = time * 0.4 * spd;   // clock only: audioAdvance integrates transients and sped the motion up on every surge
     float tProg = clamp(interpolation, 0.0, 1.0);
     float midTransition = sin(tProg * 3.14159265);
 
@@ -77,7 +76,7 @@ void main() {
     // which sets spiralTheta and with it the sweep front.  midTransition gates
     // it back to the plain 2*pi period at both fade endpoints, where the septa
     // glow is zero anyway.
-    float chamberRate = 6.2831853 / (1.0 + audioBass * 0.45 * midTransition);
+    float chamberRate = 6.2831853;   // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
     float chamber = fract(spiralTheta / chamberRate);
     float wallDist = min(chamber, 1.0 - chamber);
 
@@ -102,7 +101,7 @@ void main() {
     float sweepMask = smoothstep(sweepFront - 0.5, sweepFront + 0.5, spiralTheta);
 
     // Subtle coordinate warp
-    vec2 warpUV = uv + vec2(sin(spiralTheta), cos(spiralTheta)) * 0.02 * midTransition * (1.0 + audioBass * 0.6);
+    vec2 warpUV = uv + vec2(sin(spiralTheta), cos(spiralTheta)) * 0.02 * midTransition * (1.0 + audioSwell * 0.6);
 
     vec4 c1 = texture(tex1, fract(warpUV));
     vec4 c0 = texture(tex0, fract(warpUV));
@@ -111,7 +110,7 @@ void main() {
 
     // Glowing chamber septum walls
     float wallGlow = exp(-wallDist * 30.0) * midTransition;
-    col.rgb += wallGlow * vec3(1.0, 0.9, 0.4) * (1.2 + audioKick * 3.0);
+    col.rgb += wallGlow * vec3(1.0, 0.9, 0.4) * (1.2 + audioKick * 1.0);
 
     if (audioChromaHue != 0.0) col.rgb = hueRot(col.rgb, audioChromaHue * midTransition);
     if (hue > 0.001) col.rgb = hueRot(col.rgb, hue * midTransition);

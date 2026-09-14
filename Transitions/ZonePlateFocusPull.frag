@@ -19,9 +19,8 @@ out vec4 fragColor;
  * the rings decide which of the two is being let through at each radius.
  *
  * Audio Reactivity:
- *   audioSubBass -> the focal length, i.e. how fast the rings breathe (slow)
  *   audioHigh    -> the rings' contrast (light)
- *   audioSwell   -> how far out of focus the far image goes (slow)
+ *   audioSwell  -> how far out of focus the far image goes (slow)
  *   audioKick    -> the light on the ring crests (light)
  *
  * Per-activation variety: zonesP, blurP, hueP.
@@ -35,8 +34,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -92,7 +90,7 @@ void main()
     // The chirp: ring index goes with r^2, so the rings crowd toward the rim.
     // The focal term sweeps across the turn, which makes the whole pattern
     // breathe through itself instead of sliding.
-    float focal = mix(9.0, 34.0, d) * zn * (0.85 + 0.35 * clamp(audioSubBass, 0.0, 1.0));
+    float focal = mix(9.0, 34.0, d) * zn * 1.025;   // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
     float phase = focal * r2 * 6.2831853;
     float zone  = 0.5 + 0.5 * cos(phase);
     // Real zone plates are hard-edged; softening only at the crowded rim keeps

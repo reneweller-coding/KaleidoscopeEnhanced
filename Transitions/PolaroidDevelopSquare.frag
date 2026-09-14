@@ -18,7 +18,7 @@ out vec4 fragColor;
  * the last frame is the incoming scene full bleed with nothing left over.
  *
  * Audio Reactivity:
- *   audioSwell   -> how soft the clearing front is (slow)
+ *   audioSwell  -> how soft the clearing front is (slow)
  *   audioValence -> how strong the early warm cast reads (colour)
  *   audioHigh    -> the gloss across the print's surface (light)
  *   audioKick    -> the light on the card (light)
@@ -34,8 +34,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;

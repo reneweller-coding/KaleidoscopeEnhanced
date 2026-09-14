@@ -85,6 +85,12 @@ public:
 	 * @param on True to enter review mode, false to return to normal random selection.
 	 */
 	void setReviewMode( bool on );
+	/** @brief Preset-wide floor on every natural scene fade (seconds, 0 = none).
+	 * A preset that sets it (Ambient, SpaceAmbient) also never hard-cuts on a
+	 * detected drop: the whole point of such a preset is that nothing snaps.
+	 * @param secs Floor in seconds; values <= 0 disable it.
+	 */
+	void setSceneFadeMin( float secs ) { m_sceneFadeMin = secs > 0.f ? secs : 0.f; }
 	bool reviewMode() const         { return m_reviewMode; }   ///< True while stepping the alphabetical Test*-preset review order.
 	/** @brief Snapshot the current mood values used by moodAccept()'s busyness/tag bias.
 	 * @param arousal Arousal 0..1 (drives the target shader-complexity/busyness).
@@ -314,6 +320,7 @@ private:
 
 	// Review-Modus
 	bool  m_reviewMode = false;             ///< True while walking scenes alphabetically instead of picking randomly.
+	float m_sceneFadeMin = 0.f;             ///< Preset-wide floor on natural scene fades (seconds); 0 = none. See setSceneFadeMin().
 	std::vector<int> m_reviewOrder;         ///< Texture indices sorted alphabetically by fragment basename (built lazily).
 	int   m_reviewPos  = 0;                 ///< Current position within m_reviewOrder.
 

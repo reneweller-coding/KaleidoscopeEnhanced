@@ -7,7 +7,6 @@ out vec4 fragColor;
  * spiral vortex around a rotating event horizon, drawing the new scene out.
  *   interpolation -> controls frame-dragging angular momentum & horizon size
  *   audioKick     -> flashes ergosphere frame-dragging boundary
- *   audioBass     -> undulates Kerr black hole spin parameter (a/M)
  *
  * Per-activation variety:
  *   spinP  float Kerr black hole spin parameter    (0.5..2.2)
@@ -24,8 +23,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -61,17 +59,18 @@ void main() {
     vec2 uv = gl_FragCoord.xy / resolution.xy;
     vec2 p = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
-    float t = time * 0.4 * spd + audioAdvance * 0.2;
+    float t = time * 0.0278 * spd;   // clock rate measured down to about 1.2/255 of change per frame (PresetEditor --transprofile); it spun many times that and read as frantic
     float tProg = clamp(interpolation, 0.0, 1.0);
     float midTransition = sin(tProg * 3.14159265);
 
     float r = length(p);
 
     // Frame-dragging swirl angle: omega_drag ~ a / (r^3 + a^2 * r + 2M*a^2).
-    // audioBass undulates the Kerr spin parameter a/M.  The whole angle is
+    // The spin parameter a/M is constant: the drag angle grows like r^-1.5
+    // toward the centre, so an envelope on it spun the core.  The whole angle is
     // already multiplied by midTransition, so it is exactly zero at both fade
     // endpoints — and warpUV is additionally blended in by midTransition there.
-    float spinAM = spn * drg * (1.0 + audioBass * 0.7);
+    float spinAM = spn * drg * 1.35;   // constant: this amplitude is wrapped by fract(), so any envelope reshuffled the frame (speed pass 14.09.2026)
     float dragAngle = (0.35 / max(pow(r, 1.5), 0.04)) * midTransition * spinAM * 3.14159265;
     vec2 pSwirled = rot2D(dragAngle + t * 0.5) * p;
 
@@ -85,7 +84,7 @@ void main() {
     // Ergosphere boundary glow
     float rErgo = 0.35 * midTransition;
     float ergoGlow = exp(-abs(r - rErgo) * 25.0) * midTransition;
-    col.rgb += ergoGlow * vec3(1.0, 0.6, 0.1) * (1.5 + audioKick * 3.0);
+    col.rgb += ergoGlow * vec3(1.0, 0.6, 0.1) * (1.5 + audioKick * 1.0);
 
     // Center horizon shadow
     float shadow = smoothstep(rErgo * 0.4, rErgo * 0.9, r);

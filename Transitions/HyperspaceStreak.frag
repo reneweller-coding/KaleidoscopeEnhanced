@@ -7,7 +7,7 @@ out vec4 fragColor;
  * streaks with intense Lorentz contraction, arriving cleanly into the incoming scene.
  *   interpolation -> sweeps sub-light to warp factor 9.9 and decelerates
  *   audioKick     -> flashes warp drive entry/exit relativistic burst
- *   audioHigh     -> sharpens hyperspace star streak lines
+ *   audioSwell    -> sharpens the streak lines (slow)
  *
  * Per-activation variety:
  *   warpP   float warp speed stretch magnitude   (0.5..2.2)
@@ -24,8 +24,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -56,7 +55,7 @@ void main() {
     vec2 uv = gl_FragCoord.xy / resolution.xy;
     vec2 p = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
-    float t = time * 0.45 * spd + audioAdvance * 0.22;
+    float t = time * 0.3869 * spd;   // clock rate measured down to about 1.2/255 of change per frame (PresetEditor --transprofile); it spun many times that and read as frantic
     float tProg = clamp(interpolation, 0.0, 1.0);
     float midTransition = sin(tProg * 3.14159265);
 
@@ -64,7 +63,7 @@ void main() {
     float angle = atan(p.y, p.x);
 
     // Multi-tap radial warp stretch
-    float stretchFactor = midTransition * 0.35 * wrp * (1.0 + audioBass * 0.7);
+    float stretchFactor = midTransition * 0.35 * wrp * (1.0 + audioSwell * 0.7);
 
     vec3 c1Acc = vec3(0.0);
     vec3 c0Acc = vec3(0.0);
@@ -91,7 +90,7 @@ void main() {
     // profile change (thinner, crisper rays), never a brightness boost, and the
     // t phase inside the sine is left alone.  midTransition returns the
     // exponent to exactly 12.0 at both fade endpoints.
-    float streakSharp = 12.0 * (1.0 + audioHigh * 0.9 * midTransition);
+    float streakSharp = 12.0 * (1.0 + audioSwell * 0.9 * midTransition);
     float rayStreak = pow(max(0.0, sin(angle * 40.0 * str + t * 4.0)), streakSharp) * midTransition;
     vec3 streakCyan = vec3(0.3, 0.9, 1.0);
     float sceneLum = dot(col, vec3(0.333));

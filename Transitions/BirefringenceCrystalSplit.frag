@@ -8,7 +8,7 @@ out vec4 fragColor;
  * color fringes, and recombine seamlessly into the incoming scene.
  *   interpolation -> sweeps optical crystal thickness & o/e ray displacement
  *   audioKick     -> flashes polarized isochromatic interference fringes
- *   audioBass     -> widens ordinary/extraordinary ray birefringence separation
+ *   audioSwell    -> widens ordinary/extraordinary ray birefringence separation
  *
  * Per-activation variety:
  *   birefP float birefringence Delta-n separation scale (0.5..2.2)
@@ -25,8 +25,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -57,7 +56,7 @@ void main() {
     vec2 uv = gl_FragCoord.xy / resolution.xy;
     vec2 p = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
-    float t = time * 0.4 * spd + audioAdvance * 0.2;
+    float t = time * 0.1771 * spd;   // clock rate measured down to about 1.2/255 of change per frame (PresetEditor --transprofile); it spun many times that and read as frantic
     float tProg = clamp(interpolation, 0.0, 1.0);
     float midTransition = sin(tProg * 3.14159265);
 
@@ -66,7 +65,7 @@ void main() {
     vec2 opticAxis = vec2(cos(theta), sin(theta));
 
     // Ordinary ray (undeviated) vs Extraordinary ray (walk-off angle)
-    float walkOff = midTransition * 0.06 * brf * (1.0 + audioBass * 0.8);
+    float walkOff = midTransition * 0.06 * brf * (1.0 + audioSwell * 0.8);
     vec2 uv_o = uv;
     vec2 uv_e = uv + opticAxis * walkOff;
 

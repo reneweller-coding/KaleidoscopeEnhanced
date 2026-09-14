@@ -19,9 +19,7 @@ out vec4 fragColor;
  * width is what makes a drawn network look like a drawn network.
  *
  * Audio Reactivity:
- *   audioSwell   -> the pressure at the petiole: how far the front has run (slow)
  *   audioHigh    -> the sheen on a filled vein (light)
- *   audioSwell   -> how far the dye bleeds into the blade (slow)
  *   audioKick    -> the light in the filled network (light)
  *
  * Per-activation variety: veinsP, bleedP, hueP.
@@ -35,8 +33,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -127,13 +124,13 @@ void main()
     // One front crossing the PATH LENGTHS, not the distances.  Only a SLOW
     // envelope may touch where the front is: a fast one scales a position, and
     // a scaled position runs backwards the moment the envelope drops.
-    float speed = 0.90 + 0.30 * clamp(audioSwell, 0.0, 1.0);
+    float speed = 1.05;   // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
     float front = d * (1.25 * speed) - 0.06;
     float filled = smoothstep(front + 0.10, front - 0.10, path);
 
     // The vein itself, and the dye bleeding out of it into the blade.
     float vein = smoothstep(1.30, 0.70, best);
-    float spread = (1.6 + 2.6 * clamp(audioSwell, 0.0, 1.0)) * bleed * d * d;
+    float spread = 2.9 * bleed * d * d;   // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
     // The bass is audible in the light the filled network gives off, not in
     // where that network has got to.
     float pressure = 0.75 + 0.5 * clamp(audioBass, 0.0, 1.0);

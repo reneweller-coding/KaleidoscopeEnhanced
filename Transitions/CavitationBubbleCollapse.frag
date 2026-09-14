@@ -19,7 +19,7 @@ out vec4 fragColor;
  *
  * Audio Reactivity:
  *   audioKick  -> the light of a collapse (light, local)
- *   audioBass  -> how fast bubbles grow (slow)
+ *   audioSwell -> how fast bubbles grow (slow)
  *   audioHigh  -> the shock ring's edge (light)
  *   audioSwell -> the bubble size (slow)
  *
@@ -34,8 +34,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -68,7 +67,7 @@ void main()
     float d   = clamp(1.0 - interpolation, 0.0, 1.0);
     float arc = sin(d * PI);
 
-    float grow = 0.8 + 0.5 * clamp(audioBass, 0.0, 1.0);
+    float grow = 1.05;   // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
 
     float cell = 0.62 / sites;
     vec2  gi = floor(p / cell);

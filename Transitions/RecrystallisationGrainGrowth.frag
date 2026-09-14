@@ -19,8 +19,6 @@ out vec4 fragColor;
  * is what recrystallisation actually buys.
  *
  * Audio Reactivity:
- *   audioSwell   -> the temperature: how fast the boundaries move (slow)
- *   audioChroma  -> the grain's orientation seen as a tint (colour)
  *   audioHigh    -> the light along a moving boundary (light)
  *   audioKick    -> the flash of a grain meeting another (light)
  *
@@ -35,8 +33,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -73,7 +70,7 @@ void main()
     float d   = clamp(1.0 - interpolation, 0.0, 1.0);
     float arc = sin(d * PI);
 
-    float temp = rate * (0.75 + 0.55 * clamp(audioSwell, 0.0, 1.0));
+    float temp = rate * 1.0;   // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
 
     float cell = 0.70 / nuclei;
     vec2  gi = floor(p / cell);

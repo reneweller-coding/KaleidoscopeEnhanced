@@ -25,7 +25,7 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\Scene2D\JukeboxBubbleTubes.frag" type="normal" mood="dark,bright,psychedelic" probability="0.45" complexity="3">
+  <TextureShader file="..\Scene2D\JukeboxBubbleTubes.frag" type="normal" mood="dark,psychedelic" probability="0.45" complexity="3">
     <rig preset="flat"/>
     <float name="tubesP" minValue="0" maxValue="1"></float>
     <float name="bubbleP" minValue="0" maxValue="1"></float>

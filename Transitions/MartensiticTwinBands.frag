@@ -19,7 +19,6 @@ out vec4 fragColor;
  *
  * Audio Reactivity:
  *   audioKick    -> the light on a band that has just nucleated (light)
- *   audioSwell   -> the widening rate (slow)
  *   audioHigh    -> the glint along a twin boundary (light)
  *   audioMid     -> the metal's temper colour (colour)
  *
@@ -34,8 +33,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -69,7 +67,7 @@ void main()
     float arc = sin(d * PI);
 
     // Two habit planes, crossing the way real twins do.
-    float grow = 0.7 + 0.6 * clamp(audioSwell, 0.0, 1.0);
+    float grow = 1.0;   // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
     float cover = 0.0;       // how much of this pixel has transformed
     float edge  = 0.0;       // how close it is to a twin boundary
     float fresh = 0.0;       // how newly this band nucleated

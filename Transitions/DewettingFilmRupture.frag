@@ -19,7 +19,6 @@ out vec4 fragColor;
  * rupture -- fixed for the activation, never re-rolled.
  *
  * Audio Reactivity:
- *   audioFlux  -> how quickly new holes open (slow-ish, rate only)
  *   audioHigh  -> the light on the rims (light)
  *   audioSwell -> the rim's thickness (slow)
  *   audioKick  -> the flash of a ligament snapping (light)
@@ -35,8 +34,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -69,7 +67,7 @@ void main()
     float arc = sin(d * PI);
 
     // Rupture rate: the flux hurries the holes along but never reverses them.
-    float rate = 0.75 + 0.5 * clamp(audioFlux * 2.0, 0.0, 1.0);
+    float rate = 1.0;   // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
 
     // The nucleation field: a jittered grid, which is what sites look like once
     // they have repelled each other into place.

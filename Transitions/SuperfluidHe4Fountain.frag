@@ -8,7 +8,7 @@ out vec4 fragColor;
  * quantum creep films and transitioning cleanly between scenes.
  *   interpolation -> sweeps thermomechanical fountain geyser pressure & height
  *   audioKick     -> flashes cryogenic quantum vortex cavitation bubbles
- *   audioBass     -> drives fountain geyser upward surge velocity
+ *   audioSwell    -> drives fountain geyser upward surge velocity
  *
  * Per-activation variety:
  *   fountP float fountain geyser jet width & force    (0.5..2.2)
@@ -25,8 +25,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -57,7 +56,7 @@ void main() {
     vec2 uv = gl_FragCoord.xy / resolution.xy;
     vec2 p = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
-    float t = time * 0.45 * spd + audioAdvance * 0.22;
+    float t = time * 0.048 * spd;   // clock rate measured down to about 1.2/255 of change per frame (PresetEditor --transprofile); it spun many times that and read as frantic
     float tProg = clamp(interpolation, 0.0, 1.0);
     float midTransition = sin(tProg * 3.14159265);
 
@@ -72,7 +71,7 @@ void main() {
     float filmWaves = sin(p.y * 25.0 - t * 8.0) * exp(-abs(p.x) * 4.0) * crp;
 
     // Fluid fountain displacement
-    vec2 fountDisp = vec2(sin(p.y * 15.0), cos(p.x * 15.0 - t * 4.0)) * 0.035 * midTransition * (1.0 + audioBass * 0.7);
+    vec2 fountDisp = vec2(sin(p.y * 15.0), cos(p.x * 15.0 - t * 4.0)) * 0.035 * midTransition * (1.0 + audioSwell * 0.7);
 
     vec4 c1 = texture(tex1, fract(uv + fountDisp));
     vec4 c0 = texture(tex0, fract(uv - fountDisp));
@@ -86,7 +85,7 @@ void main() {
     // very end (a bright blue pillar popping off with the pass).
     float dropletGlow = pow(max(0.0, filmWaves), 4.0) * midTransition;
     vec3 cryoBlue = vec3(0.3, 0.85, 1.0);
-    col.rgb += (dropletGlow + fountainFlow * 0.6 * midTransition) * cryoBlue * (1.4 + audioKick * 3.0);
+    col.rgb += (dropletGlow + fountainFlow * 0.6 * midTransition) * cryoBlue * (1.4 + audioKick * 1.0);
 
     if (audioChromaHue != 0.0) col.rgb = hueRot(col.rgb, audioChromaHue * midTransition);
     if (hue > 0.001) col.rgb = hueRot(col.rgb, hue * midTransition);

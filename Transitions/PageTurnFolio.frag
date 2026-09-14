@@ -20,7 +20,6 @@ out vec4 fragColor;
  * further wraps on a smaller radius.
  *
  * Audio Reactivity:
- *   audioSwell -> the paper's stiffness, i.e. the radius of the roll (slow)
  *   audioHigh  -> the sheen along the free edge (light)
  *   audioKick  -> the light on the roll's crest (light)
  *   audioMid   -> the warmth of the paper stock (colour)
@@ -36,8 +35,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -83,9 +81,9 @@ void main()
     float halfW = 0.5 * (aspect * abs(cos(tilt)) + abs(sin(tilt))) + 0.03;
 
     // Radius: stiff paper wraps wide, and the roll tightens as more sheet is
-    // taken up.  audioSwell is the only audio allowed near geometry here, and
-    // it is slow, so the roll breathes instead of stuttering.
-    float radius = mix(0.46, 0.13, d) * stiff * (0.85 + 0.30 * clamp(audioSwell, 0.0, 1.0));
+    // taken up.  No audio at all on the radius: even the slow swell made the
+    // roll breathe in and out while the page was turning.
+    float radius = mix(0.46, 0.13, d) * stiff;   // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
     // The fold sweeps far enough past both edges that the roll is off-screen at
     // both ends of the transition -- that is what makes the endpoints exact.
     float cx = mix(halfW + 0.05, -halfW - 2.0 * 0.46 * stiff - 0.20, d);

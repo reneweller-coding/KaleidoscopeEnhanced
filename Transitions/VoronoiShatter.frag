@@ -7,7 +7,7 @@ out vec4 fragColor;
  * and cross-fades with glowing cell boundaries that pulse to the audio.
  *   interpolation -> controls continuous cross-fade & cell lift progress
  *   audioKick     -> flashes cell boundary edges
- *   audioBass     -> undulates cell rotation amplitude
+ *   audioSwell    -> undulates cell rotation amplitude
  *
  * Per-activation variety:
  *   cellP  float Voronoi cell grid density (0.5..2.2)
@@ -24,8 +24,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -90,7 +89,7 @@ void main() {
     vec2 uv = gl_FragCoord.xy / resolution.xy;
     vec2 p = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
-    float t = time * 0.4 * spd + audioAdvance * 0.2;
+    float t = time * 0.4 * spd;   // clock only: audioAdvance integrates transients and sped the motion up on every surge
 
     // Transition progress: tProg in [0, 1]
     float tProg = clamp(interpolation, 0.0, 1.0);
@@ -109,7 +108,7 @@ void main() {
 
     // Dynamic rotation & displacement during mid-transition
     float midTransition = sin(cellProg * 3.14159265);
-    float cellAngle = (cellSeed - 0.5) * 1.5 * midTransition * lft * (1.0 + 0.5 * audioBass);
+    float cellAngle = (cellSeed - 0.5) * 1.5 * midTransition * lft * (1.0 + 0.5 * audioSwell);
     vec2 dispUV = (rot2D(cellAngle) * (uv - 0.5)) + 0.5;
 
     // Sample incoming and outgoing textures
@@ -121,7 +120,7 @@ void main() {
 
     // Glowing cell borders
     float border = exp(-cellDist * 20.0) * midTransition;
-    vec3 borderGlow = vec3(0.3, 0.85, 1.0) * border * (1.5 + audioKick * 3.0);
+    vec3 borderGlow = vec3(0.3, 0.85, 1.0) * border * (1.5 + audioKick * 1.0);
     col.rgb += borderGlow;
 
     if (audioChromaHue != 0.0) col.rgb = hueRot(col.rgb, audioChromaHue * midTransition);

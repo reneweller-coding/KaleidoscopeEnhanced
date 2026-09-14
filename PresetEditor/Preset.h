@@ -24,6 +24,7 @@
 
 #include <QtCore/QString>
 #include <QtCore/QVector>
+#include <QtCore/QPair>
 #include <QtCore/QDir>
 
 /**
@@ -101,6 +102,11 @@ struct PresetEntry
     int      complexity = 1;      ///< Author-assigned complexity rating.
     QString  mood;                ///< Optional mood tags ("dark,calm", ...) — passed through, not interpreted here.
     QVector<ShaderParam> params;  ///< Per-activation parameter rows (bool/int/float/interpolator/expr) for this entry's shader.
+    /// Attributes this editor does not model (model=, model2=, instances=,
+    /// minFade=, genPasses=, ...), written back verbatim on save. Before this
+    /// existed, saving Komplett.xml from the editor stripped model= from every
+    /// mesh scene and the engine then skipped all of them.
+    QVector<QPair<QString, QString>> extraAttrs;
 };
 
 /**
@@ -127,6 +133,7 @@ struct Preset
     int     timeTextureSoloMin = 10,  timeTextureSoloMax = 40;              ///< Global min/max solo duration (root attributes).
     int     timeTextureInterpolationMin = 20, timeTextureInterpolationMax = 80;  ///< Global min/max interpolation duration (root attributes).
     QVector<PresetEntry> entries;   ///< texture + combine, in insertion order
+    QVector<QPair<QString, QString>> extraAttrs;   ///< Root attributes not modelled above (AudioFile=, timeSceneFadeMin=, ...), written back verbatim.
 
     /**
      * @brief Load a preset from an XML file.

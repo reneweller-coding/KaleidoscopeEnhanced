@@ -27,10 +27,9 @@ out vec4 fragColor;
  * The interfaces themselves carry energy, which is why they light up.
  *
  * Audio Reactivity:
- *   audioBass    -> the coarsening rate (slow)
  *   audioValence -> which phase is winning, and how fast (colour)
  *   audioHigh    -> the light on the interfaces (light)
- *   audioSwell   -> the interface width (slow)
+ *   audioSwell  -> the interface width (slow)
  *
  * Per-activation variety: scaleP, coarseP, hueP.
  */
@@ -43,8 +42,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -94,7 +92,7 @@ void main()
     float arc = sin(d * PI);
 
     // Coarsening: the characteristic length grows as the cube root of time.
-    float age = 0.05 + d * 1.6 * crs * (0.7 + 0.6 * clamp(audioBass, 0.0, 1.0));
+    float age = 0.05 + d * 1.6 * crs;   // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
     float k = (13.0 * sc) / pow(age, 0.3333);
 
     float fld = banded(p, k);

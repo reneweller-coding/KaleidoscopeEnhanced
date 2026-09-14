@@ -20,7 +20,7 @@ out vec4 fragColor;
  *
  * Audio Reactivity:
  *   audioCentroid -> the grating period (slow, colour of the structure)
- *   audioSwell    -> how far the carpet displaces the picture (slow)
+ *   audioSwell   -> how far the carpet displaces the picture (slow)
  *   audioHigh     -> the fringes' brightness (light)
  *   audioKick     -> the light on the brightest fringes (light)
  *
@@ -35,8 +35,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;

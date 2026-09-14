@@ -21,8 +21,7 @@ out vec4 fragColor;
  * grain instead of being covered by it.
  *
  * Audio Reactivity:
- *   audioHigh    -> the grain size (light, structure)
- *   audioSwell   -> how deep the grain bites (slow)
+ *   audioSwell  -> how deep the grain bites (slow)
  *   audioAdvance -> the field boils slowly and continuously
  *   audioKick    -> the brightest grains flare (light)
  *
@@ -37,8 +36,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -71,7 +69,7 @@ void main()
     float arc = sin(d * PI);
 
     // Grain size: a bigger aperture makes finer speckle.
-    float k0 = (90.0 + 130.0 * clamp(audioHigh * 2.0, 0.0, 1.0)) / max(grain, 0.2);
+    float k0 = 155.0 / max(grain, 0.2);   // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
 
     // Eight plane waves, their phases travelling from one random set to
     // another across the turn.  That travel IS the decorrelation.

@@ -8,7 +8,7 @@ out vec4 fragColor;
  * fusing smoothly into the incoming scene.
  *   interpolation -> sweeps cosmic string position across the cosmological horizon
  *   audioKick     -> flashes relativistic cosmic string core mass-energy density
- *   audioBass     -> widens conical spacetime deficit angle
+ *   audioSwell    -> widens conical spacetime deficit angle
  *
  * Per-activation variety:
  *   tensionP float cosmic string tension G*mu scale     (0.5..2.2)
@@ -25,8 +25,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -57,7 +56,7 @@ void main() {
     vec2 uv = gl_FragCoord.xy / resolution.xy;
     vec2 p = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
-    float t = time * 0.45 * spd + audioAdvance * 0.22;
+    float t = time * 0.45 * spd;   // clock only: audioAdvance integrates transients and sped the motion up on every surge
     float tProg = clamp(interpolation, 0.0, 1.0);
     float midTransition = sin(tProg * 3.14159265);
 
@@ -66,7 +65,7 @@ void main() {
     float distToString = p.x - stringX;
 
     // Conical metric deficit angle jump: Delta_theta = 8 pi G mu
-    float deficitAngle = 0.05 * tns * dfc * midTransition * (1.0 + audioBass * 0.7);
+    float deficitAngle = 0.05 * tns * dfc * midTransition * (1.0 + audioSwell * 0.7);
     float wedgeOffset = sign(distToString) * deficitAngle;
 
     vec2 warpUV = uv + vec2(wedgeOffset, 0.0);
@@ -80,7 +79,7 @@ void main() {
     // Glowing 1D cosmic string core line
     float stringCore = exp(-abs(distToString) * 35.0) * midTransition;
     vec3 coreColor = mix(vec3(0.2, 0.9, 1.0), vec3(1.0, 0.98, 0.9), stringCore);
-    col.rgb += stringCore * coreColor * (1.6 + audioKick * 3.5);
+    col.rgb += stringCore * coreColor * (1.6 + audioKick * 1.17);
 
     if (audioChromaHue != 0.0) col.rgb = hueRot(col.rgb, audioChromaHue * midTransition);
     if (hue > 0.001) col.rgb = hueRot(col.rgb, hue * midTransition);

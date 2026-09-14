@@ -292,6 +292,11 @@ void Configuration::readConfiguration( const QString &filenameIn )
 	// bench, not a show.  Only presets whose name starts with "Test".
 	m_renderPipeline->setReviewMode( m_configurationName.startsWith( "Test" ) );
 
+	// Optional floor on every natural scene fade (seconds). Set by the calm
+	// presets (Ambient, SpaceAmbient): with a beat in the music the scheduler
+	// otherwise clamps fades to four beats, which is not what a calm preset is for.
+	m_renderPipeline->setSceneFadeMin( docElem.attribute( "timeSceneFadeMin" ).toFloat() );
+
 	// Image-cycling times: optional (music steering paces the show anyway);
 	// absent/0 falls back to the long-standing baseline.
 	// The two-step fallback below distinguishes "attribute wasn't given at
@@ -532,6 +537,9 @@ void Configuration::readConfiguration( const QString &filenameIn )
 			shader->setComplexity( complexity );
 			shader->setProbability( probability );
 			shader->setMoodFlags( moodFlags );
+			// Measured floor on the fade this transition runs in; see
+			// EffectShader::setMinFade().
+			shader->setMinFade( el.attribute( "minFade" ).toFloat() );
 			m_renderPipeline->addTransitionShader( shader );
 		}
      }

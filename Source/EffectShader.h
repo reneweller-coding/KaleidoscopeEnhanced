@@ -500,6 +500,19 @@ public:
 	};
 	void setMoodFlags(unsigned int f) { m_moodFlags = f; } ///< Sets the MoodFlags bitmask parsed from this effect's config.
 	unsigned int moodFlags() const    { return m_moodFlags; } ///< @return The MoodFlags bitmask parsed from this effect's config (0 = untagged/neutral).
+	/**
+	 * @brief Transitions only: the shortest scene fade this transition may run in (seconds, 0 = no floor).
+	 *
+	 * With a confident rhythm the scheduler clamps every fade to four beats
+	 * (2 s at 120 BPM). A cross-fade is fine at that; a transition that
+	 * sweeps rings, spirals and caustics across the frame changes the picture
+	 * up to thirty times as much over the same progress, and at two seconds
+	 * that reads as frantic. The floor is measured per transition
+	 * (PresetEditor --transprofile, total variation) and written into the
+	 * catalogue as minFade="...".
+	 */
+	void  setMinFade( float s ) { m_minFade = s > 0.f ? s : 0.f; }
+	float minFade() const       { return m_minFade; }   ///< @return The fade floor in seconds (0 = none).
 
 protected:
 	/**
@@ -662,6 +675,7 @@ public:
 protected:
 
 	unsigned int m_moodFlags = 0;   // MoodFlags bitmask (0 = untagged/neutral)
+	float m_minFade = 0.f;          ///< Transitions: shortest fade this transition may run in (seconds); see setMinFade().
 
 	std::vector< Uniform *> m_uniforms; ///< All randomised parameters registered via addUniform()/addUniformInterpolator(), owned for the lifetime of this effect (never explicitly deleted).
 

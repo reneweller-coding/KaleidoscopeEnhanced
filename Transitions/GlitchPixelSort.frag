@@ -6,8 +6,7 @@ out vec4 fragColor;
  * Pixels stretch and sort into horizontal crystalline streaks based on
  * luminance thresholds, glitching and resolving seamlessly into the incoming scene.
  *   interpolation -> sweeps pixel-sort threshold & glitch severity
- *   audioKick     -> triggers sharp horizontal glitch slice displacements
- *   audioHigh     -> intensifies high-frequency glitch noise
+ *   audioSwell    -> intensifies the glitch slices (slow)
  *
  * Per-activation variety:
  *   glitchP float glitch slice frequency & chaos (0.5..2.2)
@@ -24,8 +23,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -61,32 +59,32 @@ void main() {
 
     vec2 uv = gl_FragCoord.xy / resolution.xy;
 
-    float t = time * 0.5 * spd + audioAdvance * 0.25;
+    float t = time * 0.04 * spd;   // clock rate measured down to about 1.2/255 of change per frame (PresetEditor --transprofile); it spun many times that and read as frantic
     float tProg = clamp(interpolation, 0.0, 1.0);
     float midTransition = sin(tProg * 3.14159265);
 
     // Horizontal glitch block slices
     float sliceY = floor(uv.y * 25.0 * glt);
     float sliceNoise = hash21(vec2(sliceY, floor(t * 8.0)));
-    // audioHigh intensifies the glitch noise: more slices trip the threshold
+    // The slow swell intensifies the glitch: more slices trip the threshold
     // and the ones that do displace harder.  Both are gated by midTransition,
     // which is zero at the fade endpoints — there the threshold is exactly 0.65
     // again and every consumer of isGlitchSlice is itself multiplied by
     // midTransition, so the frame is untouched.
-    float isGlitchSlice = step(0.65 - audioHigh * 0.18 * midTransition, sliceNoise);
+    float isGlitchSlice = step(0.65 - audioSwell * 0.18 * midTransition, sliceNoise);
 
     // Pixel sorting streak displacement based on luminance
     vec4 baseSample = mix(texture(tex1, uv), texture(tex0, uv), tProg);
     float lum = dot(baseSample.rgb, vec3(0.299, 0.587, 0.114));
 
-    float streakOffset = (lum - 0.5) * 0.15 * str * midTransition * (1.0 + audioKick * 1.5);
-    streakOffset += isGlitchSlice * (sliceNoise - 0.5) * 0.08 * midTransition * (1.0 + audioHigh * 0.9);
+    float streakOffset = (lum - 0.5) * 0.15 * str * midTransition;   // no kick: the sort offset is geometry
+    streakOffset += isGlitchSlice * (sliceNoise - 0.5) * 0.08 * midTransition * (1.0 + audioSwell * 0.9);
 
     vec2 warpUV = uv + vec2(streakOffset, 0.0);
 
-    // Chromatic aberration on glitch edges -- widened by audioHigh, still
+    // Chromatic aberration on glitch edges -- widened by the swell, still
     // riding on midTransition so the split closes to zero at both endpoints.
-    float aberr = 0.015 * midTransition * (1.0 + audioHigh * 0.6);
+    float aberr = 0.015 * midTransition * (1.0 + audioSwell * 0.6);
     vec2 rUV = warpUV - vec2(aberr, 0.0);
     vec2 bUV = warpUV + vec2(aberr, 0.0);
 
@@ -103,7 +101,7 @@ void main() {
     vec3 col = mix(c1, c0, tProg);
 
     // Glitch highlight sparks
-    float spark = isGlitchSlice * pow(hash21(gl_FragCoord.xy + t), 8.0) * midTransition;
+    float spark = isGlitchSlice * pow(hash21(gl_FragCoord.xy + floor(t * 8.0)), 8.0) * midTransition;   // held with the slice set: hashing the continuous clock was white noise every frame
     col += spark * vec3(0.2, 0.9, 1.0) * 2.0;
 
     if (audioChromaHue != 0.0) col = hueRot(col, audioChromaHue * midTransition);

@@ -485,7 +485,7 @@ void SceneScheduler::tick( const Tick &t )
 			// cut (finish the running fade within ~0.15 s) instead of queuing
 			// a second cut right behind it.
 			float ts = secsSince( m_clockEffectTexture );
-			if( m_texFadeDur > ts + 0.15f )
+			if( m_sceneFadeMin <= 0.f && m_texFadeDur > ts + 0.15f )
 				m_texFadeDur = ts + 0.15f;
 		}
 		else
@@ -614,12 +614,40 @@ void SceneScheduler::tick( const Tick &t )
 					// legato keeps the full dissolve.
 					cfgT *= 1.f - 0.35f * t.logAttackTime;
 					m_texFadeDur = (forcedGo || m_reviewMode) ? 0.8f : cfgT;
+
+					// FLOORS (never for a manual cut or the review bench).
+					// The four-beat clamp suits a cross-fade; a transition that
+					// sweeps rings and spirals across the frame changes the
+					// picture many times as much over the same progress and read
+					// as "very, very fast" at two seconds (user, 14.09.2026).
+					// Each transition carries its own measured floor (minFade);
+					// a calm preset adds one for every fade (timeSceneFadeMin).
+					float floorT = 0.f;
+					if( !forcedGo && !m_reviewMode )
+					{
+						floorT = m_sceneFadeMin;
+						if( m_transitions && m_actTransition < m_transitions->size() )
+							floorT = fmaxf( floorT, (*m_transitions)[m_actTransition]->minFade() );
+						m_texFadeDur = fmaxf( m_texFadeDur, floorT );
+					}
+					// KALEIDO_FADE_LOG: one line per scene fade -- which transition,
+					// how long, and what the floor was -- to verify the floors in a
+					// real run instead of trusting the arithmetic.
+					static const bool fadeLog = getenv( "KALEIDO_FADE_LOG" ) != nullptr;
+					if( fadeLog )
+						fprintf( stderr, "FADE %s via %s: %.2f s (beat/config %.2f, floor %.2f)\n",
+						         tex[m_nextTexture]->fragmentName(),
+						         ( m_transitions && m_actTransition < m_transitions->size() )
+						             ? (*m_transitions)[m_actTransition]->fragmentName() : "-",
+						         m_texFadeDur, cfgT, floorT );
 				}
 
 				// Drop-Dramaturgie: der Wechsel kam von einem erkannten DROP.
 				// Musikvideo-Schnitt statt Dissolve - haelfte hart (2-3 Frames),
 				// haelfte als Shatter (die alte Szene zerbirst auf den Hit).
 				// NACH der Dauer-Berechnung, damit nichts sie ueberschreibt.
+				if( m_dropCutPending && !m_reviewMode && m_sceneFadeMin > 0.f )
+					m_dropCutPending = false;   // a calm preset never snaps on a drop
 				if( m_dropCutPending && !m_reviewMode )
 				{
 					m_dropCutPending = false;

@@ -7,7 +7,6 @@ out vec4 fragColor;
  * (g_ab = eta_ab + 2 H k_a k_b), stretching and shearing light rays to bridge the scenes.
  *   interpolation -> sweeps Kerr-Schild gravitational profile scalar H(r)
  *   audioKick     -> flashes null geodesic caustic focus lines
- *   audioBass     -> drives Kerr-Schild metric distortion amplitude
  *
  * Per-activation variety:
  *   warpP  float Kerr-Schild metric scalar scale  (0.5..2.2)
@@ -24,8 +23,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -61,7 +59,7 @@ void main() {
     vec2 uv = gl_FragCoord.xy / resolution.xy;
     vec2 p = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
-    float t = time * 0.4 * spd + audioAdvance * 0.2;
+    float t = time * 0.0091 * spd;   // clock rate measured down to about 1.2/255 of change per frame (PresetEditor --transprofile); it spun many times that and read as frantic
     float tProg = clamp(interpolation, 0.0, 1.0);
     float midTransition = sin(tProg * 3.14159265);
 
@@ -76,7 +74,7 @@ void main() {
     vec2 kVec = vec2(cos(kAngle), sin(kAngle));
 
     // Kerr-Schild coordinate geodesic displacement
-    vec2 metricDisp = 2.0 * H * dot(p, kVec) * kVec * (1.0 + audioBass * 0.7);
+    vec2 metricDisp = 2.0 * H * dot(p, kVec) * kVec * 1.35;   // constant: this amplitude is wrapped by fract(), so any envelope reshuffled the frame (speed pass 14.09.2026)
 
     vec4 c1 = texture(tex1, fract(uv + metricDisp));
     vec4 c0 = texture(tex0, fract(uv - metricDisp));
@@ -85,7 +83,7 @@ void main() {
 
     // Spacetime null geodesic caustic lines
     float caustic = exp(-abs(sin(kAngle * 6.0 - r * 15.0)) * 12.0) * midTransition;
-    col.rgb += caustic * vec3(0.3, 0.85, 1.0) * (1.4 + audioKick * 3.0);
+    col.rgb += caustic * vec3(0.3, 0.85, 1.0) * (1.4 + audioKick * 1.0);
 
     if (audioChromaHue != 0.0) col.rgb = hueRot(col.rgb, audioChromaHue * midTransition);
     if (hue > 0.001) col.rgb = hueRot(col.rgb, hue * midTransition);

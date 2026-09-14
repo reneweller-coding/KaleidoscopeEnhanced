@@ -18,8 +18,8 @@ out vec4 fragColor;
  * frame.
  *
  * Audio Reactivity:
- *   audioSubBass -> the plate's temperature: the cushion's thickness (slow)
- *   audioMid     -> the drift direction the drops all lean into (slow)
+ *   audioSwell -> the plate's temperature: the cushion's thickness (slow)
+ *   audioSwell   -> the drift direction the drops all lean into (slow)
  *   audioHigh    -> the specular point on each drop (light)
  *   audioKick    -> the light off the plate (light)
  *
@@ -34,8 +34,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -69,9 +68,9 @@ void main()
     float arc = sin(d * PI);
 
     // The plate's temperature sets how thick the cushion is.
-    float cushion = 0.55 + 0.75 * clamp(audioSubBass, 0.0, 1.0);
+    float cushion = 0.55 + 0.75 * clamp(audioSwell, 0.0, 1.0);
     // The whole plate leans one way; the drops all take that slope.
-    float lean = (clamp(audioMid * 2.0, 0.0, 1.0) - 0.5) * 1.6;
+    float lean = (clamp(audioSwell, 0.0, 1.0) - 0.5) * 1.6;
 
     float cell = 0.66 / drops;
     vec2  g = p / cell;

@@ -17,9 +17,9 @@ out vec4 fragColor;
  *
  * Audio Reactivity:
  *   audioAdvance -> a slow drift of the stroke phase (continuous)
- *   audioSwell   -> the stroke width (slow)
+ *   audioSwell  -> the stroke width (slow)
  *   audioHigh    -> the chalky glow along a fresh stroke (light)
- *   audioBass    -> the ground's depth (colour)
+ *   audioSwell   -> the ground's depth (colour)
  *
  * Per-activation variety: hatchP, angleP, hueP.
  */
@@ -32,8 +32,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;

@@ -8,7 +8,7 @@ out vec4 fragColor;
  * smoothly into the incoming scene.
  *   interpolation -> sweeps dispersion angle & channel separation
  *   audioKick     -> flashes spectral rainbow flare streaks
- *   audioBass     -> widens chromatic channel separation distance
+ *   audioSwell    -> widens chromatic channel separation distance
  *
  * Per-activation variety:
  *   prismP float dispersion intensity & separation width (0.5..2.2)
@@ -25,8 +25,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -62,13 +61,13 @@ void main() {
     vec2 uv = gl_FragCoord.xy / resolution.xy;
     vec2 p = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
-    float t = time * 0.4 * spd + audioAdvance * 0.2;
+    float t = time * 0.0462 * spd;   // clock rate measured down to about 1.2/255 of change per frame (PresetEditor --transprofile); it spun many times that and read as frantic
     float tProg = clamp(interpolation, 0.0, 1.0);
     float midTransition = sin(tProg * 3.14159265);
 
     // Dispersion vector
     vec2 dispDir = vec2(cos(t * 0.5 * spl), sin(t * 0.5 * spl));
-    float dispMag = midTransition * 0.06 * prs * (1.0 + audioBass * 0.8 + audioKick * 0.5);
+    float dispMag = midTransition * 0.06 * prs * (1.0 + audioSwell * 0.8);
 
     vec2 uvR = uv - dispDir * dispMag;
     vec2 uvG = uv;
@@ -90,7 +89,7 @@ void main() {
     // Spectral rainbow flare lines
     float spectralStreak = pow(max(0.0, sin(dot(p, dispDir) * 40.0 - t * 4.0)), 6.0) * midTransition;
     vec3 rainbow = 0.5 + 0.5 * cos(vec3(0.0, 2.0, 4.0) + dot(p, dispDir) * 10.0 + audioPhase);
-    col += spectralStreak * rainbow * (1.5 + audioKick * 3.0);
+    col += spectralStreak * rainbow * (1.5 + audioKick * 1.0);
 
     if (audioChromaHue != 0.0) col = hueRot(col, audioChromaHue * midTransition);
     if (hue > 0.001) col = hueRot(col, hue * midTransition);

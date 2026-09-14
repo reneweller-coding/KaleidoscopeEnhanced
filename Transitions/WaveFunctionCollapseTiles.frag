@@ -20,8 +20,6 @@ out vec4 fragColor;
  * that has not decided yet.
  *
  * Audio Reactivity:
- *   audioFlux  -> the collapse rate: how fast certainty spreads (slow)
- *   audioBass  -> the tile size (slow)
  *   audioHigh  -> the light on a tile as it settles (light)
  *   audioKick  -> the light across the uncertain field (light)
  *
@@ -36,8 +34,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -74,7 +71,7 @@ void main()
     float d   = clamp(1.0 - interpolation, 0.0, 1.0);
     float arc = sin(d * PI);
 
-    float nx = tiles * (0.9 + 0.25 * clamp(audioBass, 0.0, 1.0));
+    float nx = tiles;   // constant: ny below is floored, so any envelope here stepped the grid
     float ny = max(3.0, floor(nx / aspect));
     vec2  grid = vec2(floor(nx), ny);
     vec2  g = uv * grid;
@@ -92,7 +89,7 @@ void main()
         vec2 sd = vec2(hash21(vec2(fi, 1.7)), hash21(vec2(fi, 9.3)));
         near = min(near, length((tileUv - sd) * vec2(aspect, 1.0)));
     }
-    float rate = 0.85 + 0.55 * clamp(audioFlux * 2.0, 0.0, 1.0);
+    float rate = 1.1;   // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
     // Each tile also has its own small hesitation, so the front is ragged.
     float when = near / (1.35 * rate) + hash21(gi + 21.1) * 0.10;
     float settled = smoothstep(when, when + 0.16, d);

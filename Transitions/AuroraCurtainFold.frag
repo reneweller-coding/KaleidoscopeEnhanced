@@ -7,7 +7,7 @@ out vec4 fragColor;
  * geomagnetic field lines, folding and weaving the dual scenes together.
  *   interpolation -> sweeps auroral curtain wave front across the sky
  *   audioKick     -> flashes intense substorm auroral rays
- *   audioBass     -> undulates geomagnetic curtain folding frequency
+ *   audioSwell    -> undulates geomagnetic curtain folding frequency
  *
  * Per-activation variety:
  *   curtainP float auroral curtain fold depth & width (0.5..2.2)
@@ -24,8 +24,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -56,7 +55,7 @@ void main() {
     vec2 uv = gl_FragCoord.xy / resolution.xy;
     vec2 p = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
-    float t = time * 0.45 * spd + audioAdvance * 0.22;
+    float t = time * 0.1248 * spd;   // clock rate measured down to about 1.2/255 of change per frame (PresetEditor --transprofile); it spun many times that and read as frantic
     float tProg = clamp(interpolation, 0.0, 1.0);
     float midTransition = sin(tProg * 3.14159265);
 
@@ -72,7 +71,7 @@ void main() {
     float distToFront = p.x - sweepFront;
 
     // Atmospheric refraction displacement
-    vec2 auroraDisp = vec2(curtainFold, rays) * 0.03 * midTransition * (1.0 + audioBass * 0.6);
+    vec2 auroraDisp = vec2(curtainFold, rays) * 0.03 * midTransition * (1.0 + audioSwell * 0.6);
 
     vec4 c1 = texture(tex1, fract(uv + auroraDisp));
     vec4 c0 = texture(tex0, fract(uv - auroraDisp));
@@ -86,7 +85,7 @@ void main() {
     vec3 auroraCol = mix(emerald, violet, clamp(curtainY * 2.0 + 0.5, 0.0, 1.0));
 
     float auroraGlow = exp(-abs(distToFront) * 12.0) * (0.6 + 0.4 * rays) * midTransition;
-    col.rgb += auroraGlow * auroraCol * (1.5 + audioKick * 3.0);
+    col.rgb += auroraGlow * auroraCol * (1.5 + audioKick * 1.0);
 
     if (audioChromaHue != 0.0) col.rgb = hueRot(col.rgb, audioChromaHue * midTransition);
     if (hue > 0.001) col.rgb = hueRot(col.rgb, hue * midTransition);

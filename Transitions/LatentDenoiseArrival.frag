@@ -19,7 +19,6 @@ out vec4 fragColor;
  * the level is high, and settles into place as the level falls.
  *
  * Audio Reactivity:
- *   audioSwell -> how fast the noise level falls (slow)
  *   audioHigh  -> the residual noise (light)
  *   audioMid   -> the colour of the noise (colour)
  *   audioKick  -> the light in the noise (light)
@@ -35,8 +34,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -92,7 +90,7 @@ void main()
     float arc = sin(d * PI);
 
     // The noise level falls across the turn.
-    float pace = steps * (0.85 + 0.4 * clamp(audioSwell, 0.0, 1.0));
+    float pace = steps * 1.05;   // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
     float sigma = clamp(1.0 - d * 1.55 * pace, 0.0, 1.0);
 
     // Early on the estimate is confidently wrong: the coarse picture is pushed

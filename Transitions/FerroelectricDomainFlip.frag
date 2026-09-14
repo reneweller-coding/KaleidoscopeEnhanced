@@ -7,7 +7,7 @@ out vec4 fragColor;
  * nucleate and propagate across crystal grains, flipping polarization and scenes.
  *   interpolation -> sweeps coercive electric field & polarization reversal
  *   audioKick     -> flashes domain wall Barkhausen jump pulses
- *   audioBass     -> undulates piezoelectric crystal lattice strain
+ *   audioSwell    -> undulates piezoelectric crystal lattice strain
  *
  * Per-activation variety:
  *   domainP float ferroelectric domain grain density  (0.5..2.2)
@@ -24,8 +24,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -56,7 +55,7 @@ void main() {
     vec2 uv = gl_FragCoord.xy / resolution.xy;
     vec2 p = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
-    float t = time * 0.45 * spd + audioAdvance * 0.22;
+    float t = time * 0.45 * spd;   // clock only: audioAdvance integrates transients and sped the motion up on every surge
     float tProg = clamp(interpolation, 0.0, 1.0);
     float midTransition = sin(tProg * 3.14159265);
 
@@ -70,7 +69,7 @@ void main() {
 
     // Piezoelectric shear strain displacement
     float signP = sign(polarization);
-    vec2 piezDisp = vec2(signP * 0.02, -signP * 0.02) * midTransition * (1.0 + audioBass * 0.7);
+    vec2 piezDisp = vec2(signP * 0.02, -signP * 0.02) * midTransition * (1.0 + audioSwell * 0.7);
 
     vec4 c1 = texture(tex1, fract(uv + piezDisp));
     vec4 c0 = texture(tex0, fract(uv - piezDisp));
@@ -80,7 +79,7 @@ void main() {
 
     // Glowing ferroelectric domain walls (bound charge accumulation)
     float wallGlow = exp(-abs(polarization) * 20.0 * wal) * midTransition;
-    col.rgb += wallGlow * vec3(1.0, 0.4, 0.85) * (1.4 + audioKick * 3.0);
+    col.rgb += wallGlow * vec3(1.0, 0.4, 0.85) * (1.4 + audioKick * 1.0);
 
     if (audioChromaHue != 0.0) col.rgb = hueRot(col.rgb, audioChromaHue * midTransition);
     if (hue > 0.001) col.rgb = hueRot(col.rgb, hue * midTransition);

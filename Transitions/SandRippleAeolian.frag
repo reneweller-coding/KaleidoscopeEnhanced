@@ -7,7 +7,7 @@ out vec4 fragColor;
  * carrying fine grain saltation waves that wipe between the scenes.
  *   interpolation -> sweeps sandstorm wind front across the frame
  *   audioKick     -> flashes golden mineral glints in the blowing sand
- *   audioBass     -> undulates sand dune ripple frequency & wave height
+ *   audioSwell    -> undulates sand dune ripple frequency & wave height
  *
  * Per-activation variety:
  *   rippleP float sand ripple spatial frequency (0.5..2.2)
@@ -24,8 +24,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -56,7 +55,7 @@ void main() {
     vec2 uv = gl_FragCoord.xy / resolution.xy;
     vec2 p = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
-    float t = time * 0.4 * spd + audioAdvance * 0.2;
+    float t = time * 0.0339 * spd;   // clock rate measured down to about 1.2/255 of change per frame (PresetEditor --transprofile); it spun many times that and read as frantic
     float tProg = clamp(interpolation, 0.0, 1.0);
     float midTransition = sin(tProg * 3.14159265);
 
@@ -73,7 +72,7 @@ void main() {
     float distToFront = windCoord - sweepFront;
 
     // Sand grain displacement
-    vec2 sandDisp = windDir * ripple * 0.03 * midTransition * (1.0 + audioBass * 0.6);
+    vec2 sandDisp = windDir * ripple * 0.03 * midTransition * (1.0 + audioSwell * 0.6);
 
     vec4 c1 = texture(tex1, fract(uv + sandDisp));
     vec4 c0 = texture(tex0, fract(uv - sandDisp));
@@ -83,7 +82,7 @@ void main() {
 
     // Golden sand mineral glints
     float glint = exp(-abs(distToFront) * 15.0) * rippleShape * midTransition;
-    col.rgb += glint * vec3(1.0, 0.85, 0.4) * (1.5 + audioKick * 3.0);
+    col.rgb += glint * vec3(1.0, 0.85, 0.4) * (1.5 + audioKick * 1.0);
 
     if (audioChromaHue != 0.0) col.rgb = hueRot(col.rgb, audioChromaHue * midTransition);
     if (hue > 0.001) col.rgb = hueRot(col.rgb, hue * midTransition);

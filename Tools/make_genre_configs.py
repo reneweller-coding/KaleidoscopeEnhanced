@@ -50,8 +50,11 @@ def rule_all(m, h):         return True
 # Preset-only tag, curated by hand in Komplett.xml: cosmic subject AND a
 # slow character.  Deliberately NOT derived from calm/dreamy -- plenty of
 # calm scenes are not space, and a few space ones (a black hole) are not
-# calm but belong in the mood anyway.
-def rule_space(m, h):       return "space" in m
+# calm but belong in the mood anyway -- as long as they are not aggressive.
+# Not aggressive (14.09.2026): 59 of 257 space entries were -- a gamma-ray
+# burst, a planetary collision, a racing flight -- and a calm space preset
+# is exactly where they do not fit.
+def rule_space(m, h):       return "space" in m and "aggressive" not in m
 
 # Preset-wide timing overrides (seconds): solo min/max, crossfade min/max.
 # Absent = the engine's own 20..90 s scene / 15 s fade baseline.
@@ -74,6 +77,16 @@ TIMING = {
     "TestAlle":     (45, 60, 15, 25),
     "TestModified": (45, 60, 15, 25),
     "TestNeu": (45, 60, 15, 25),
+}
+
+# Floor on every natural scene fade (seconds), written as timeSceneFadeMin.
+# With a beat in the music the scheduler clamps fades to four beats (2 s at
+# 120 BPM), which is right for a club preset and wrong for a calm one: the
+# user found transitions "very, very fast" in Ambient and SpaceAmbient
+# (14.09.2026). A preset with a floor also never hard-cuts on a drop.
+SCENE_FADE_MIN = {
+    "Ambient": 5,
+    "SpaceAmbient": 6,
 }
 
 # The review preset analyses this instead of listening. Relative to the exe's
@@ -272,6 +285,8 @@ for entry in GENRES:
         tim = (' timeTextureSoloMin="%d" timeTextureSoloMax="%d"'
                ' timeTextureInterpolationMin="%d" timeTextureInterpolationMax="%d"'
                % (a, bb, c, d))
+    if name in SCENE_FADE_MIN:
+        tim += ' timeSceneFadeMin="%d"' % SCENE_FADE_MIN[name]
     aud = ' AudioFile="%s"' % REVIEW_AUDIO if review else ""
     out = ['<?xml version="1.0" encoding="utf-8" ?>',
            '<configuration ImageDirectory="%s" ConfigurationName="%s"%s%s%s >'

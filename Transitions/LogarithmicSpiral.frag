@@ -7,7 +7,6 @@ out vec4 fragColor;
  * streamlines while the incoming scene unwinds outwards from the center.
  *   interpolation -> controls spiral vortex winding angle & depth
  *   audioKick     -> flashes spiral arm streamline highlights
- *   audioBass     -> undulates spiral pitch & radial breathing
  *
  * Per-activation variety:
  *   spiralP float spiral winding tightness (0.5..2.2)
@@ -24,8 +23,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -61,7 +59,7 @@ void main() {
     vec2 uv = gl_FragCoord.xy / resolution.xy;
     vec2 p = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
-    float t = time * 0.4 * spd + audioAdvance * 0.2;
+    float t = time * 0.1455 * spd;   // clock rate measured down to about 1.2/255 of change per frame (PresetEditor --transprofile); it spun many times that and read as frantic
     float tProg = clamp(interpolation, 0.0, 1.0);
     float midTransition = sin(tProg * 3.14159265);
 
@@ -73,12 +71,12 @@ void main() {
     // rotation rate stays audio-independent — and, below, the radial breathing
     // radius.  Both ride on midTransition and are therefore the un-driven
     // values at tProg 0 and 1, where `blend` self-clamps to 0/1 anyway.
-    float pitchMod = 1.0 + audioBass * 0.5 * midTransition;
+    float pitchMod = 1.0;   // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
     float logR = log(max(r, 0.001));
     float spiralAngle = angle * arm * 2.0 - logR * 3.0 * spr * pitchMod + tProg * 6.2831853;
 
     // Spiral swirl displacement
-    float breatheR = 0.8 * (1.0 + audioBass * 0.4 * midTransition);
+    float breatheR = 0.8;   // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
     float swirl = (1.0 - smoothstep(0.0, breatheR, r)) * midTransition * 3.14159265;
     vec2 pWarped = rot2D(swirl) * p;
     vec2 uvWarped = (pWarped * resolution.y + 0.5 * resolution) / resolution;
@@ -96,7 +94,7 @@ void main() {
 
     // Glowing spiral arm highlights
     float armGlow = exp(-abs(spiralWave) * 12.0) * midTransition;
-    col.rgb += armGlow * vec3(1.0, 0.85, 0.3) * (1.2 + audioKick * 3.0);
+    col.rgb += armGlow * vec3(1.0, 0.85, 0.3) * (1.2 + audioKick * 1.0);
 
     if (audioChromaHue != 0.0) col.rgb = hueRot(col.rgb, audioChromaHue * midTransition);
     if (hue > 0.001) col.rgb = hueRot(col.rgb, hue * midTransition);

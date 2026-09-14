@@ -24,8 +24,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -62,7 +61,7 @@ void main() {
     vec2 uv = gl_FragCoord.xy / resolution.xy;
     vec2 p = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
-    float t = time * 0.5 * spd + audioAdvance * 0.25;
+    float t = time * 0.0483 * spd;   // clock rate measured down to about 1.2/255 of change per frame (PresetEditor --transprofile); it spun many times that and read as frantic
     float tProg = clamp(interpolation, 0.0, 1.0);
     float midTransition = sin(tProg * 3.14159265);
 
@@ -84,7 +83,7 @@ void main() {
     float distToSweep = p.x - sweepFront;
 
     // Ionization plasma displacement
-    vec2 plasmaDisp = vec2(arcPattern, sin(p.y * 20.0 + t * 5.0)) * 0.03 * midTransition * (1.0 + audioBass * 0.6);
+    vec2 plasmaDisp = vec2(arcPattern, sin(p.y * 20.0 + t * 5.0)) * 0.03 * midTransition * (1.0 + audioSwell * 0.6);
 
     vec4 c1 = texture(tex1, fract(uv + plasmaDisp));
     vec4 c0 = texture(tex0, fract(uv - plasmaDisp));
@@ -95,7 +94,7 @@ void main() {
     // High-voltage ozone blue-violet ionization arc
     vec3 arcColor = mix(vec3(0.2, 0.8, 1.0), vec3(0.8, 0.3, 1.0), sin(p.y * 10.0) * 0.5 + 0.5);
     float dischargeGlow = (arcPattern + exp(-abs(distToSweep) * 20.0)) * midTransition * vlt;
-    col.rgb += dischargeGlow * arcColor * (1.6 + audioKick * 3.5 + audioHigh * 1.5);
+    col.rgb += dischargeGlow * arcColor * (1.6 + audioKick * 1.17 + audioHigh * 1.5);
 
     if (audioChromaHue != 0.0) col.rgb = hueRot(col.rgb, audioChromaHue * midTransition);
     if (hue > 0.001) col.rgb = hueRot(col.rgb, hue * midTransition);

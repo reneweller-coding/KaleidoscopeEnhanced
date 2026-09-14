@@ -7,7 +7,7 @@ out vec4 fragColor;
  * scattering and dissolving the outgoing scene into the incoming one.
  *   interpolation -> drives smoke density buildup & atmospheric dissipation
  *   audioKick     -> flashes forward light scattering through the smoke
- *   audioBass     -> drives turbulent smoke eddy swirl radius
+ *   audioSwell    -> drives turbulent smoke eddy swirl radius
  *
  * Per-activation variety:
  *   smokeP float smoke density & curl turbulence scale (0.5..2.2)
@@ -24,8 +24,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -84,7 +83,7 @@ void main() {
     vec2 uv = gl_FragCoord.xy / resolution.xy;
     vec2 p = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
-    float t = time * 0.35 * spd + audioAdvance * 0.18;
+    float t = time * 0.102 * spd;   // clock rate measured down to about 1.2/255 of change per frame (PresetEditor --transprofile); it spun many times that and read as frantic
     float tProg = clamp(interpolation, 0.0, 1.0);
     float midTransition = sin(tProg * 3.14159265);
 
@@ -95,7 +94,7 @@ void main() {
     float smokeDensity = smoke2 * midTransition;
 
     // Fluid smoke displacement
-    vec2 smokeDisp = vec2(smoke1 - 0.5, smoke2 - 0.5) * 0.05 * midTransition * (1.0 + audioBass * 0.6);
+    vec2 smokeDisp = vec2(smoke1 - 0.5, smoke2 - 0.5) * 0.05 * midTransition * (1.0 + audioSwell * 0.6);
 
     vec4 c1 = texture(tex1, fract(uv + smokeDisp));
     vec4 c0 = texture(tex0, fract(uv - smokeDisp));

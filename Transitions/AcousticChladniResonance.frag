@@ -7,7 +7,7 @@ out vec4 fragColor;
  * grains along nodal zero-vibration lines that morph and cross-fade between scenes.
  *   interpolation -> sweeps acoustic resonance frequency & Chladni mode transitions
  *   audioKick     -> flashes acoustic antinodal acceleration peaks
- *   audioBass     -> drives vibrating plate amplitude & mode numbers (n, m)
+ *   audioSwell    -> drives vibrating plate amplitude & mode numbers (n, m)
  *
  * Per-activation variety:
  *   modeP  float Chladni eigenmode harmonic multiplier (0.5..2.2)
@@ -24,8 +24,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -56,7 +55,7 @@ void main() {
     vec2 uv = gl_FragCoord.xy / resolution.xy;
     vec2 p = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
-    float t = time * 0.4 * spd + audioAdvance * 0.2;
+    float t = time * 0.0552 * spd;   // clock rate measured down to about 1.2/255 of change per frame (PresetEditor --transprofile); it spun many times that and read as frantic
     float tProg = clamp(interpolation, 0.0, 1.0);
     float midTransition = sin(tProg * 3.14159265);
 
@@ -75,7 +74,7 @@ void main() {
     float nodalLine = exp(-distToNode * 15.0 * ndl);
 
     // Plate vibration displacement
-    vec2 vibDisp = vec2(sin(chladni * 5.0), cos(chladni * 5.0)) * 0.025 * midTransition * (1.0 + audioBass * 0.7);
+    vec2 vibDisp = vec2(sin(chladni * 5.0), cos(chladni * 5.0)) * 0.025 * midTransition * (1.0 + audioSwell * 0.7);
 
     vec4 c1 = texture(tex1, fract(uv + vibDisp));
     vec4 c0 = texture(tex0, fract(uv - vibDisp));
@@ -84,7 +83,7 @@ void main() {
     vec4 col = mix(c1, c0, blend);
 
     // Glowing resonant nodal lines
-    col.rgb += nodalLine * vec3(1.0, 0.85, 0.35) * midTransition * (1.3 + audioKick * 3.0);
+    col.rgb += nodalLine * vec3(1.0, 0.85, 0.35) * midTransition * (1.3 + audioKick * 1.0);
 
     if (audioChromaHue != 0.0) col.rgb = hueRot(col.rgb, audioChromaHue * midTransition);
     if (hue > 0.001) col.rgb = hueRot(col.rgb, hue * midTransition);

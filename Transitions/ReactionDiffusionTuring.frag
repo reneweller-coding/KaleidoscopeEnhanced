@@ -7,7 +7,6 @@ out vec4 fragColor;
  * spontaneously organize across the frame, carrying the cross-fade between scenes.
  *   interpolation -> sweeps chemical reaction equilibrium & pattern growth
  *   audioKick     -> flashes Turing chemical reaction boundary fronts
- *   audioBass     -> undulates morphogenesis spot/stripe scale
  *
  * Per-activation variety:
  *   turingP float reaction-diffusion pattern complexity (0.5..2.2)
@@ -24,8 +23,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -56,7 +54,7 @@ void main() {
     vec2 uv = gl_FragCoord.xy / resolution.xy;
     vec2 p = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
-    float t = time * 0.4 * spd + audioAdvance * 0.2;
+    float t = time * 0.1755 * spd;   // clock rate measured down to about 1.2/255 of change per frame (PresetEditor --transprofile); it spun many times that and read as frantic
     float tProg = clamp(interpolation, 0.0, 1.0);
     float midTransition = sin(tProg * 3.14159265);
 
@@ -65,7 +63,7 @@ void main() {
     // spatial factor on q -- the t terms inside the sines are untouched, so the
     // pattern's drift rate stays audio-independent -- and midTransition
     // restores the base scale exactly at both fade endpoints.
-    vec2 q = p * 15.0 * scl * (1.0 + audioBass * 0.35 * midTransition);
+    vec2 q = p * 15.0 * scl;   // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
     float f1 = sin(q.x + sin(q.y * 1.5 + t));
     float f2 = sin(q.y + sin(q.x * 1.5 - t));
     float f3 = sin((q.x + q.y) * 0.707 * trn + t * 1.5);
@@ -90,7 +88,7 @@ void main() {
     // Glowing reaction boundary lines
     float boundary = exp(-abs(turingPattern) * 15.0) * midTransition;
     vec3 chemColor = 0.5 + 0.5 * cos(vec3(0.0, 2.0, 4.0) + turingPattern * 5.0 + audioPhase);
-    col.rgb += boundary * chemColor * (1.2 + audioKick * 3.0);
+    col.rgb += boundary * chemColor * (1.2 + audioKick * 1.0);
 
     if (audioChromaHue != 0.0) col.rgb = hueRot(col.rgb, audioChromaHue * midTransition);
     if (hue > 0.001) col.rgb = hueRot(col.rgb, hue * midTransition);

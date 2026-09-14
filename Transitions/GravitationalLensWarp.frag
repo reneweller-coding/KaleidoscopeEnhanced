@@ -7,7 +7,7 @@ out vec4 fragColor;
  * forming Einstein rings, swallowing the outgoing scene and expanding the new one.
  *   interpolation -> sweeps Schwarzschild radius from 0 to maximum and back
  *   audioKick     -> flashes bright photon sphere ring emission
- *   audioBass     -> drives gravitational deflection depth
+ *   audioSwell    -> drives gravitational deflection depth
  *
  * Per-activation variety:
  *   lensP  float gravitational lensing strength (0.5..2.2)
@@ -24,8 +24,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -61,7 +60,7 @@ void main() {
     vec2 uv = gl_FragCoord.xy / resolution.xy;
     vec2 p = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
-    float t = time * 0.4 * spd + audioAdvance * 0.2;
+    float t = time * 0.061 * spd;   // clock rate measured down to about 1.2/255 of change per frame (PresetEditor --transprofile); it spun many times that and read as frantic
     float tProg = clamp(interpolation, 0.0, 1.0);
     float midTransition = sin(tProg * 3.14159265);
 
@@ -73,7 +72,7 @@ void main() {
     // audioBass drives the deflection depth.  r_s is itself scaled by
     // midTransition, so the deflection is exactly zero at both fade endpoints —
     // and warpUV is blended in by midTransition there on top of that.
-    float deflection = (rSchwarzschild * rSchwarzschild) / max(r * r, 0.001) * lns * (1.0 + audioBass * 0.7);
+    float deflection = (rSchwarzschild * rSchwarzschild) / max(r * r, 0.001) * lns * (1.0 + audioSwell * 0.7);
     vec2 pLensed = p * (1.0 - deflection * 0.7);
     pLensed = rot2D(deflection * 1.2 + t * 0.3) * pLensed;
 
@@ -86,7 +85,7 @@ void main() {
 
     // Glowing Einstein photon ring
     float photonRing = exp(-abs(r - rPhotonRing) * 35.0) * midTransition;
-    col.rgb += photonRing * vec3(0.2, 0.9, 1.0) * (1.5 + audioKick * 3.0);
+    col.rgb += photonRing * vec3(0.2, 0.9, 1.0) * (1.5 + audioKick * 1.0);
 
     // Central event horizon shadow
     float shadow = smoothstep(rSchwarzschild * 0.7, rSchwarzschild * 1.1, r);

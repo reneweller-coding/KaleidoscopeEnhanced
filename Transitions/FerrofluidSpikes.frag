@@ -7,7 +7,7 @@ out vec4 fragColor;
  * reflecting metallic gloss and dissolving into the incoming scene as spikes relax.
  *   interpolation -> sweeps magnetic field strength & spike eruption/relaxation
  *   audioKick     -> flashes sharp metallic spike apex specular highlights
- *   audioBass     -> drives magnetic spike height & Rosensweig cone sharpness
+ *   audioSwell    -> drives magnetic spike height & Rosensweig cone sharpness
  *
  * Per-activation variety:
  *   spikeP float Rosensweig spike hexagonal density (0.5..2.2)
@@ -24,8 +24,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -56,7 +55,7 @@ void main() {
     vec2 uv = gl_FragCoord.xy / resolution.xy;
     vec2 p = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
-    float t = time * 0.45 * spd + audioAdvance * 0.22;
+    float t = time * 0.45 * spd;   // clock only: audioAdvance integrates transients and sped the motion up on every surge
     float tProg = clamp(interpolation, 0.0, 1.0);
     float midTransition = sin(tProg * 3.14159265);
 
@@ -69,7 +68,7 @@ void main() {
     float cones = pow(spikeField / 3.0, 3.0);
 
     // Conical radial pull displacement
-    vec2 coneDisp = normalize(p + 1e-4) * cones * 0.06 * midTransition * mag * (1.0 + audioBass * 0.8);
+    vec2 coneDisp = normalize(p + 1e-4) * cones * 0.06 * midTransition * mag * (1.0 + audioSwell * 0.8);
 
     vec4 c1 = texture(tex1, fract(uv + coneDisp));
     vec4 c0 = texture(tex0, fract(uv - coneDisp));
@@ -78,7 +77,7 @@ void main() {
 
     // Specular highlight on spike tips
     float spikeTip = pow(cones, 2.0) * midTransition;
-    col.rgb += spikeTip * vec3(0.3, 0.9, 1.0) * (1.2 + audioKick * 3.0);
+    col.rgb += spikeTip * vec3(0.3, 0.9, 1.0) * (1.2 + audioKick * 1.0);
 
     if (audioChromaHue != 0.0) col.rgb = hueRot(col.rgb, audioChromaHue * midTransition);
     if (hue > 0.001) col.rgb = hueRot(col.rgb, hue * midTransition);

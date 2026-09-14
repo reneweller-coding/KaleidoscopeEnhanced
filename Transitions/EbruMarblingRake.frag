@@ -7,7 +7,7 @@ out vec4 fragColor;
  * drawing elegant capillary plumes and chevron folds that reveal the next scene.
  *   interpolation -> drives rake comb sweep across the liquid surface
  *   audioKick     -> flashes sharp pigment boundary swirls
- *   audioBass     -> undulates comb teeth displacement depth
+ *   audioSwell    -> undulates comb teeth displacement depth
  *
  * Per-activation variety:
  *   rakeP  float comb teeth frequency & density (0.5..2.2)
@@ -24,8 +24,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -56,14 +55,14 @@ void main() {
     vec2 uv = gl_FragCoord.xy / resolution.xy;
     vec2 p = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
-    float t = time * 0.4 * spd + audioAdvance * 0.2;
+    float t = time * 0.1221 * spd;   // clock rate measured down to about 1.2/255 of change per frame (PresetEditor --transprofile); it spun many times that and read as frantic
     float tProg = clamp(interpolation, 0.0, 1.0);
     float midTransition = sin(tProg * 3.14159265);
 
     // Comb teeth rake displacement along X axis: y-displacement alternating sign per tooth
     float toothPhase = p.x * 20.0 * rak;
     float toothSign = sin(toothPhase);
-    float rakeDisp = toothSign * 0.08 * midTransition * swr * (1.0 + audioBass * 0.6);
+    float rakeDisp = toothSign * 0.08 * midTransition * swr * (1.0 + audioSwell * 0.6);
 
     // Capillary swirl curls
     float curl = sin(p.y * 15.0 + t * 3.0) * cos(p.x * 15.0 - t * 2.0) * 0.03 * midTransition;
@@ -77,7 +76,7 @@ void main() {
 
     // Pigment gold vein lines
     float vein = exp(-abs(toothSign) * 15.0) * midTransition;
-    col.rgb += vein * vec3(1.0, 0.85, 0.4) * (1.0 + audioKick * 2.5);
+    col.rgb += vein * vec3(1.0, 0.85, 0.4) * (1.0 + audioKick * 0.83);
 
     if (audioChromaHue != 0.0) col.rgb = hueRot(col.rgb, audioChromaHue * midTransition);
     if (hue > 0.001) col.rgb = hueRot(col.rgb, hue * midTransition);

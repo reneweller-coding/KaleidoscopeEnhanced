@@ -4099,3 +4099,91 @@ The 21 new models are NOT in the repository (like every model): they need
 a `models-v3` pack. Until it is published, a release build skips these 19
 scenes on machines without the models. `Tools/make_model_pack.ps1` puts
 them in the `objects` archive by its default rule.
+
+## 14.09.2026: transitions that were "very, very fast", and a preset audit
+
+### What "fast" turned out to be
+
+`PresetEditor --transprofile` (new) sweeps every registered transition over
+d = 0..1 with a pinned clock and reports how its change is distributed.
+Three different kinds of fast, each with its own cause:
+
+| kind | measured as | before | after |
+|---|---|---|---|
+| clock-driven motion | change per frame from the clock alone, scene A a still photo (`--scene Blit.frag`, drone profile) | sum 304, 35 transitions over 2/255 | sum 53, none over 1.5 |
+| beat jolts | the same, sampled ON the preview's kick minus between beats | sum 649, 55 over 2 | 0 |
+| sheer amount of change | total variation over the sweep (a cross-fade is 57) | up to 1650, at a four-beat 2 s fade | unchanged, but floored by minFade |
+
+Causes, in the order they were found:
+
+- 27 classic styles pushed their progress forward on every beat
+  (`d + 0.05*sin(PI*d)*audioBeat`) and deepened the distortion with the
+  level: a push, spin or zoom that jumps in time. Removed; `mid` follows the
+  progress only.
+- The 55-file physics series ran its clock at `time*0.4 + audioAdvance*0.2`
+  and put `audioBass` on displacements, radii, spatial frequencies and
+  angles. audioAdvance integrates flux, so every transient surge sped the
+  motion up; bass on a frequency re-lays the whole pattern each kick.
+- Even the slow swell broke things wherever it scaled a SCALE (a grating of
+  frequency 60, a spiral pitch, a growth rate, a tile count) or an amplitude
+  that grows like 1/r and is wrapped with fract(). Those are constants now.
+- The clock rates themselves were scaled per file to a measured target
+  (patch in two iterations: change per frame is linear in the rate only while
+  it is small).
+- GlitchPixelSort hashed the CONTINUOUS clock for its sparks: white noise
+  every frame, at any rate.
+
+### Fade floors
+
+With a confident rhythm the scheduler clamps every scene fade to four beats
+(2 s at 120 BPM). New:
+
+- `minFade="..."` on a `<TransitionShader>`: the shortest fade this
+  transition runs in, from the profile: max(tv / 120, steepest step * steps /
+  320), capped at 10 s, written only from 2.5 s up. 52 of 110 carry one
+  (NewtonRings 10 s, KaleidoSpin 6.5 s, SpinZoom 4 s, Polaroid 2.5 s).
+- `timeSceneFadeMin="..."` on a preset: a floor for every natural fade.
+  Ambient 5 s, SpaceAmbient 6 s (generator: `SCENE_FADE_MIN`). A preset with
+  a floor also never hard-cuts on a detected drop.
+- `KALEIDO_FADE_LOG=1` prints one line per fade (transition, duration,
+  beat/config time, floor). Verified in the app with two probe presets and
+  the 120-BPM test file: 1.89 s from the beat clamp, 5.00 s in the calm
+  probe, the per-transition floors in both.
+
+Seven transitions that stay visually wild after all of this (big brightness
+flashes or a lot of turmoil) lost `calm`/`dreamy`, which takes them out of
+Ambient, SpaceAmbient and Galerie: LogarithmicSpiral, HelicoidMinimalSurface,
+AcousticChladniResonance, CosmicStringLensing, SuperfluidHe4Fountain,
+ChromatographySeparation, GyroidMembraneMelt. Ambient now registers 43
+transitions (was 50).
+
+### The editor dropped every attribute it did not model
+
+`PresetEditor`'s `Preset::save` wrote a fixed attribute list. `model=`,
+`model2=`, `instances=`, `genPasses=`, `AudioFile=` were lost on every save
+-- saving Komplett.xml from the editor would have stripped the model from all
+264 mesh entries, and the engine then skips them. Proven with the released
+v1.15.0 editor's `--roundtrip` (264 -> 0). `extraAttrs` now carries unknown
+root and entry attributes through verbatim.
+
+### Preset audit
+
+Every one of the 1081 catalogue entries reaches at least one genre preset
+(1056 reach two or more). Tags against measurement (catalogue frames) and
+content:
+
+- `bright` on a clearly dark picture (luma < 0.12) -> `dark` (81 entries,
+  mostly space scenes and mesh families on black backdrops).
+- `dark` and `bright` together -> the measurement decides at luma 0.28 (65).
+- 12 `calm`+`aggressive` contradictions and 8 dark-tagged scenes that render
+  bright, judged one by one on a contact sheet.
+- `space` removed from a city flight and a bubble-chamber photograph, added
+  to PhotoSphere.
+- SpaceAmbient no longer takes `aggressive` scenes: 59 of its 257 were
+  gamma-ray bursts, planetary collisions and racing flights. 198 remain.
+- Single-genre mesh families that only carried `dark` got an honest
+  runtime-neutral second tag (dreamy/psychedelic).
+
+Deliberately NOT changed by rule: `psychedelic` and `dreamy` against colour
+saturation (a monochrome fractal zoom is psychedelic), and the text search
+for "rough" words in calm scenes (it matched warped, toward, hyperbolic).

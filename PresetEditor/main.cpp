@@ -27,6 +27,11 @@
  *   PresetEditor.exe --transcheck            verify every shader in Transitions/:
  *                                            exact A at d=0 / exact B at d=1 and
  *                                            no temporal jumps across the sweep
+ *   PresetEditor.exe --transprofile          measure how each registered transition
+ *                                            distributes its change over the fade
+ *                                            (core80, clock flicker, flash; optional
+ *                                            --images dir, --steps N, --out file.tsv,
+ *                                            --scene Blit.frag for a still A, drone)
  *   PresetEditor.exe --cfxcheck              verify the GL 4.3 compute-FX
  *                                            2D shaders don't render solid
  *                                            black (regression guard)
@@ -39,6 +44,8 @@
 #include <QtCore/QDir>
 #include <QtCore/QFileInfo>
 #include <QtCore/QTimer>
+#include <QtCore/QFile>
+#include <QtCore/QRegularExpression>
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
@@ -449,6 +456,179 @@ int main(int argc, char *argv[])
             if (fails) fprintf(stderr, "TRANSCHECK: %d transition(s) FAILED\n", fails);
             else       fprintf(stderr, "TRANSCHECK: all %d transitions OK\n", (int) transFiles.size());
             qApp->exit(fails ? 1 : 0);
+        });
+        return app.exec();
+    }
+
+    // Transition SPEED profile -- a measurement, not a pass/fail check.
+    // "Some transitions are very, very fast" (user, 14.09.2026) is not a
+    // property of the fade length alone: with a confident rhythm the
+    // scheduler clamps every fade to four beats (2 s at 120 BPM), and a
+    // transition that does all of its visible work in a tenth of its
+    // progress is then over in 0.2 s while a linear cross-fade takes the
+    // whole two.  This sweeps every <TransitionShader> registered in
+    // Komplett.xml over d = 0..1 with a pinned clock and the entry's float
+    // params at mid-range, and reports how the change is DISTRIBUTED:
+    //   tv      total variation: sum of mean |frame step| (0..255 units)
+    //   core80  shortest fraction of the fade carrying 80 % of tv; a linear
+    //           cross-fade reads 0.80, "everything in a tenth" reads 0.10
+    //   peak    largest single step as a share of tv
+    //   flick   change from the CLOCK alone over one frame (1/30 s), worst
+    //           of d = 0.25/0.5/0.75, minus Crossfade's at the same d (the
+    //           scene's own motion) -- internal animation a longer fade
+    //           cannot slow down
+    //   flash   brightest mean luma of the sweep minus the brighter end
+    //   steps   the per-step changes, for building a progress warp
+    // Optional: --images <dir>, --steps N (default 40), --out <tsv>.
+    if (args.value(0) == "--transprofile")
+    {
+        auto flag = [&](const QString &f) -> QString {
+            int i = args.indexOf(f);
+            return (i >= 0 && i + 1 < args.size()) ? args[i + 1] : QString();
+        };
+        PreviewWidget *w = new PreviewWidget(root);
+        if (!flag("--images").isEmpty()) w->setImageDirectory(flag("--images"));
+        // "drone": the synthetic profile without transients, so what remains
+        // of flick is the transition's own clock-driven motion.
+        if (args.contains("drone")) w->setMusicMode(PreviewWidget::Drone);
+        // --scene Blit.frag: a STILL photo as scene A, so flick is the
+        // transition's motion alone and not the scene's own movement
+        // leaking through wherever a wipe shows more of it than a mix does.
+        w->setTextureShader(flag("--scene").isEmpty() ? QString("Kaleidoscope.frag") : flag("--scene"));
+        w->setCombineShader("Transitions/Crossfade.frag");
+        w->setFixedTime(8.f);
+        w->resize(480, 270);
+        w->show();
+
+        struct Entry { QString file; QVector<PreviewWidget::ParamOverride> ov; };
+        auto entries = std::make_shared<std::vector<Entry>>();
+        {
+            QFile xf(presetsDir(root) + "/Komplett.xml");
+            if (xf.open(QIODevice::ReadOnly)) {
+                const QString src = QString::fromUtf8(xf.readAll());
+                const QRegularExpression reEntry("<TransitionShader\\b([^>]*)>(.*?)</TransitionShader>",
+                                                 QRegularExpression::DotMatchesEverythingOption);
+                const QRegularExpression reFile("file=\"([^\"]+)\"");
+                const QRegularExpression reFloat("<float\\s+name=\"([^\"]+)\"\\s+minValue=\"([^\"]+)\"\\s+maxValue=\"([^\"]+)\"");
+                auto it = reEntry.globalMatch(src);
+                while (it.hasNext()) {
+                    const auto m = it.next();
+                    const auto fm = reFile.match(m.captured(1));
+                    if (!fm.hasMatch()) continue;
+                    QString f = fm.captured(1);
+                    f.replace('\\', '/');
+                    Entry e;
+                    e.file = f.section('/', -1, -1, QString::SectionSkipEmpty);
+                    auto pit = reFloat.globalMatch(m.captured(2));
+                    while (pit.hasNext()) {
+                        const auto pm = pit.next();
+                        const float lo = pm.captured(2).toFloat(), hi = pm.captured(3).toFloat();
+                        e.ov.push_back({ pm.captured(1), 0.5f * (lo + hi), false });
+                    }
+                    entries->push_back(e);
+                }
+            }
+        }
+        const int steps = std::max(8, flag("--steps").isEmpty() ? 40 : flag("--steps").toInt());
+        const QString outPath = flag("--out");
+        // --flicktime 8.0 samples ON the preview's kick (envelope peak), which
+        // is how a kick-coupled transition shows itself; default is between beats.
+        const float flickT = flag("--flicktime").isEmpty() ? 8.25f : flag("--flicktime").toFloat();
+
+        QTimer::singleShot(800, [w, entries, steps, outPath, flickT]() {
+            auto meanDiff = [](const QImage &ia, const QImage &ib) -> double {
+                QImage x = ia.convertToFormat(QImage::Format_RGB888);
+                QImage y = ib.convertToFormat(QImage::Format_RGB888);
+                double s = 0.0;
+                const int bytes = x.width() * 3;
+                for (int r = 0; r < x.height(); ++r) {
+                    const uchar *pa = x.constScanLine(r);
+                    const uchar *pb = y.constScanLine(r);
+                    for (int c = 0; c < bytes; ++c)
+                        s += std::abs(int(pa[c]) - int(pb[c]));
+                }
+                return s / (double(x.height()) * bytes);
+            };
+            auto meanLuma = [](const QImage &ia) -> double {
+                QImage x = ia.convertToFormat(QImage::Format_RGB888);
+                double s = 0.0; long n = 0;
+                for (int r = 0; r < x.height(); r += 3) {
+                    const uchar *p = x.constScanLine(r);
+                    for (int c = 0; c < x.width(); c += 3, ++n)
+                        s += 0.299 * p[c * 3] + 0.587 * p[c * 3 + 1] + 0.114 * p[c * 3 + 2];
+                }
+                return n ? s / n : 0.0;
+            };
+            const float ds[3] = { 0.25f, 0.5f, 0.75f };
+            auto clockFlicker = [&](double out3[3]) {
+                for (int k = 0; k < 3; ++k) {
+                    w->setTransTest(0, ds[k]);
+                    // Between two beats of the preview's synthetic 120-BPM
+                    // profile (beat phase 0.5): at t = 8.0 exactly the kick
+                    // envelope is at its peak and falls by a third in one
+                    // frame, which reads as "flicker" in every kick-coupled
+                    // transition and says nothing about its speed.
+                    w->setFixedTime(flickT);              QImage a = w->grabFramebuffer();
+                    w->setFixedTime(flickT + 1.f / 30.f); QImage b = w->grabFramebuffer();
+                    out3[k] = meanDiff(a, b);
+                }
+                w->setFixedTime(8.f);
+            };
+
+            FILE *out = outPath.isEmpty() ? stdout : std::fopen(qPrintable(outPath), "w");
+            if (!out) out = stdout;
+            std::fprintf(out, "name\ttv\tcore80\tpeak\tflick\tflash\tsteps\n");
+
+            // Baseline: the scene's own motion as seen through a plain cross-fade.
+            double base[3] = { 0.0, 0.0, 0.0 };
+            w->setParamOverrides({});
+            w->setCombineShader("Transitions/Crossfade.frag");
+            clockFlicker(base);
+
+            for (const Entry &e : *entries) {
+                w->setParamOverrides(e.ov);
+                w->setCombineShader("Transitions/" + e.file);
+                w->setFixedTime(8.f);
+                std::vector<double> st;
+                QImage prev;
+                double lumaA = 0.0, lumaB = 0.0, lumaMax = 0.0;
+                for (int i = 0; i <= steps; ++i) {
+                    w->setTransTest(0, float(i) / steps);
+                    QImage f = w->grabFramebuffer();
+                    const double l = meanLuma(f);
+                    if (i == 0) lumaA = l;
+                    if (i == steps) lumaB = l;
+                    lumaMax = std::max(lumaMax, l);
+                    if (i > 0) st.push_back(meanDiff(f, prev));
+                    prev = f;
+                }
+                double tv = 0.0, mx = 0.0;
+                for (double v : st) { tv += v; mx = std::max(mx, v); }
+                // Shortest contiguous window carrying 80 % of the total.
+                int best = steps;
+                for (int a = 0; a < steps; ++a) {
+                    double s = 0.0;
+                    for (int b = a; b < steps; ++b) {
+                        s += st[b];
+                        if (s >= 0.8 * tv) { best = std::min(best, b - a + 1); break; }
+                    }
+                }
+                double fl[3];
+                clockFlicker(fl);
+                double flick = 0.0;
+                for (int k = 0; k < 3; ++k) flick = std::max(flick, fl[k] - base[k]);
+                QString list;
+                for (size_t i = 0; i < st.size(); ++i)
+                    list += (i ? "," : "") + QString::number(st[i], 'f', 3);
+                std::fprintf(out, "%s\t%.2f\t%.3f\t%.3f\t%.2f\t%.1f\t%s\n",
+                             qPrintable(e.file), tv, tv > 0.05 ? double(best) / steps : 1.0,
+                             tv > 0.05 ? mx / tv : 0.0, flick,
+                             lumaMax - std::max(lumaA, lumaB), qPrintable(list));
+                std::fflush(out);
+            }
+            if (out != stdout) std::fclose(out);
+            std::fprintf(stderr, "TRANSPROFILE: %d transition(s)\n", int(entries->size()));
+            qApp->exit(0);
         });
         return app.exec();
     }

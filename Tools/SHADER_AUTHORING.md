@@ -749,6 +749,36 @@ wählen (0.25–0.3); und ein Dim-Faktor gehört auf `fragColor.rgb`, NIE
 auf das ganze vec4 (Alpha trägt bei 3D-Szenen die Tiefe, und ein
 skaliertes Alpha macht das Katalog-PNG milchig statt dunkel).
 
+### V13 — Übergänge: Tempo ist Pflicht, nicht Geschmack (14.09.2026)
+
+„Einige Transitionen sind sehr, sehr schnell“ — gemessen, nicht geschätzt
+(`PresetEditor --transprofile --scene Blit.frag --images <abs> drone`,
+Uhr-Änderung pro Bild bei stehender Szene A). Drei Ursachen, jede mit ihrer
+Regel:
+
+1. **Keine schnelle Hüllkurve auf Geometrie.** Kein `audioBeat`-Vorschub des
+   Fortschritts, kein `audioBass`/`audioKick`/`audioHigh`/`audioMid`/`audioFlux`
+   in Verschiebung, Radius, Winkel oder Rate. Licht darf auf dem Kick
+   reagieren, aber nur mäßig (`+ audioKick * 1.0`, nicht `* 3.0`).
+2. **Keine Hüllkurve auf einer SKALA** — Raumfrequenz, Radius, Steigung,
+   Wachstumsrate, Kachelzahl —, auch nicht `audioSwell`. Eine Frequenz 60, um
+   wenige Prozent skaliert, schiebt jede Linie über das Bild; eine
+   Wachstumsrate, die fällt, lässt das Muster zurückwachsen. Swell nur auf
+   Amplituden. Und wo eine Amplitude wie 1/r wächst und mit `fract()`
+   umgebrochen wird (Kerr, Ereignishorizont), auch dort keine Hüllkurve.
+3. **Die Uhr misst man.** `float t = time * K * spd;` ohne `audioAdvance`
+   (integriert Transienten). K so wählen, dass die Uhr allein höchstens
+   ~1.2/255 pro Bild ändert. Der Hash eines KONTINUIERLICHEN Takts
+   (`hash21(fragCoord + t)`) ist weißes Rauschen bei jeder Rate — mit
+   `floor()` halten.
+
+Und die Dauer: Mit Beat klemmt der Scheduler jede Überblendung auf vier
+Schläge (2 s bei 120 BPM). Viel Änderung in zwei Sekunden bleibt hektisch,
+auch wenn nichts mehr ruckt. Deshalb trägt jede `<TransitionShader>` mit
+großer Gesamtänderung ein gemessenes `minFade="…"` (Sekunden); ruhige Presets
+setzen zusätzlich `timeSceneFadeMin` (Generator: `SCENE_FADE_MIN`). Nach jeder
+Transition-Änderung: `--transprofile` neu messen, Untergrenze nachziehen.
+
 ---
 
 ## Probe-Renders: IMMER mit echten Bildern (`--images`)

@@ -8,7 +8,6 @@ out vec4 fragColor;
  * project Universe 2 onto the 3D screen.
  *   interpolation -> sweeps 4D hyper-rotation angle from 0 to pi/2
  *   audioKick     -> flashes 4D tesseract edge boundary vertices
- *   audioBass     -> undulates 4D hyper-volume projection perspective
  *
  * Per-activation variety:
  *   rot4DP float 4D rotation angle velocity ratio (0.5..2.2)
@@ -25,8 +24,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -57,7 +55,7 @@ void main() {
     vec2 uv = gl_FragCoord.xy / resolution.xy;
     vec2 p = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
-    float t = time * 0.4 * spd + audioAdvance * 0.2;
+    float t = time * 0.0691 * spd;   // clock rate measured down to about 1.2/255 of change per frame (PresetEditor --transprofile); it spun many times that and read as frantic
     float tProg = clamp(interpolation, 0.0, 1.0);
     float midTransition = sin(tProg * 3.14159265);
 
@@ -78,7 +76,7 @@ void main() {
     // the 4th coordinate w foreshortens.  midTransition gates it back to the
     // base 0.5 at both fade endpoints, and warpUV is blended in by
     // midTransition there as well, so the frame is exactly tex0 / tex1.
-    float perspW = 0.5 * (1.0 + audioBass * 0.75 * midTransition);
+    float perspW = 0.5;   // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
     float d4D = max(1.8 - wNew * perspW, 0.4);
     vec2 pProj = vec2(xNew, yNew) / d4D;
 

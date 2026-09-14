@@ -9,7 +9,7 @@ out vec4 fragColor;
  * seamlessly transitioning into the incoming scene.
  *   interpolation -> sweeps director field alignment & defect annihilation
  *   audioKick     -> flashes topological disclination core singularities
- *   audioBass     -> drives director field Frank elastic distortion
+ *   audioSwell    -> drives director field Frank elastic distortion
  *
  * Per-activation variety:
  *   defectP float topological defect density & core scale (0.5..2.2)
@@ -26,8 +26,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -63,7 +62,7 @@ void main() {
     vec2 uv = gl_FragCoord.xy / resolution.xy;
     vec2 p = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
-    float t = time * 0.45 * spd + audioAdvance * 0.22;
+    float t = time * 0.45 * spd;   // clock only: audioAdvance integrates transients and sped the motion up on every surge
     float tProg = clamp(interpolation, 0.0, 1.0);
     float midTransition = sin(tProg * 3.14159265);
 
@@ -85,7 +84,7 @@ void main() {
     float schlierenBrush = pow(s2phi * s2phi, brs);
 
     // Director field coordinate distortion
-    vec2 directorDisp = vec2(cos(directorAngle), sin(directorAngle)) * 0.03 * midTransition * (1.0 + audioBass * 0.7);
+    vec2 directorDisp = vec2(cos(directorAngle), sin(directorAngle)) * 0.03 * midTransition * (1.0 + audioSwell * 0.7);
 
     vec4 c1 = texture(tex1, fract(uv + directorDisp));
     vec4 c0 = texture(tex0, fract(uv - directorDisp));

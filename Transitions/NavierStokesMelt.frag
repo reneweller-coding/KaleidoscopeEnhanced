@@ -7,7 +7,7 @@ out vec4 fragColor;
  * melting and swirling seamlessly to reveal the incoming scene underneath.
  *   interpolation -> drives fluid viscosity reduction & melting progress
  *   audioKick     -> injects turbulent fluid velocity impulses
- *   audioBass     -> undulates large-scale convective vortex rolls
+ *   audioSwell    -> undulates large-scale convective vortex rolls
  *
  * Per-activation variety:
  *   viscP   float fluid viscosity & curl noise scale (0.5..2.2)
@@ -24,8 +24,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -83,14 +82,14 @@ void main() {
     vec2 uv = gl_FragCoord.xy / resolution.xy;
     vec2 p = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
-    float t = time * 0.4 * spd + audioAdvance * 0.2;
+    float t = time * 0.1075 * spd;   // clock rate measured down to about 1.2/255 of change per frame (PresetEditor --transprofile); it spun many times that and read as frantic
     float tProg = clamp(interpolation, 0.0, 1.0);
     float midTransition = sin(tProg * 3.14159265);
 
     // Multi-octave curl noise advection
     vec2 curl = curlNoise(p * 5.0 * vsc + vec2(t * 0.5, -t * 0.3)) * 0.04;
     curl += curlNoise(p * 12.0 * vsc - vec2(t * 0.8, t * 0.6)) * 0.02;
-    curl *= midTransition * vrt * (1.0 + audioBass * 0.8 + audioKick * 0.5);
+    curl *= midTransition * vrt * (1.0 + audioSwell * 0.8);
 
     vec4 c1 = texture(tex1, fract(uv + curl));
     vec4 c0 = texture(tex0, fract(uv - curl));

@@ -7,7 +7,7 @@ out vec4 fragColor;
  * mushrooming Rayleigh-Taylor instability fingers and curling vortex plumes.
  *   interpolation -> drives finger penetration depth & vortex roll-up growth
  *   audioKick     -> flashes turbulent finger tip vortex swirls
- *   audioBass     -> widens Rayleigh-Taylor finger spacing & buoyancy acceleration
+ *   audioSwell    -> widens Rayleigh-Taylor finger spacing & buoyancy acceleration
  *
  * Per-activation variety:
  *   fingerP float instability wavenumber & finger density (0.5..2.2)
@@ -24,8 +24,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -56,7 +55,7 @@ void main() {
     vec2 uv = gl_FragCoord.xy / resolution.xy;
     vec2 p = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
-    float t = time * 0.45 * spd + audioAdvance * 0.22;
+    float t = time * 0.45 * spd;   // clock only: audioAdvance integrates transients and sped the motion up on every surge
     float tProg = clamp(interpolation, 0.0, 1.0);
     float midTransition = sin(tProg * 3.14159265);
 
@@ -65,7 +64,7 @@ void main() {
     float wave = cos(p.x * k);
     float mushroom = sin(p.x * k * 2.0) * sin(p.y * 10.0 + t * 2.0) * 0.2 * grw;
 
-    float interfaceY = mix(-0.8, 0.8, tProg) + (wave + mushroom) * 0.15 * midTransition * (1.0 + audioBass * 0.7);
+    float interfaceY = mix(-0.8, 0.8, tProg) + (wave + mushroom) * 0.15 * midTransition * (1.0 + audioSwell * 0.7);
     float distToInterface = p.y - interfaceY;
 
     // Vortex roll-up displacement
@@ -79,7 +78,7 @@ void main() {
 
     // Glowing fluid interface boundary
     float interfaceGlow = exp(-abs(distToInterface) * 20.0) * midTransition;
-    col.rgb += interfaceGlow * vec3(0.2, 0.9, 0.6) * (1.4 + audioKick * 3.0);
+    col.rgb += interfaceGlow * vec3(0.2, 0.9, 0.6) * (1.4 + audioKick * 1.0);
 
     if (audioChromaHue != 0.0) col.rgb = hueRot(col.rgb, audioChromaHue * midTransition);
     if (hue > 0.001) col.rgb = hueRot(col.rgb, hue * midTransition);

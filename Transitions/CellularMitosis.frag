@@ -7,7 +7,7 @@ out vec4 fragColor;
  * divides into daughter cells that separate and morph into the incoming scene.
  *   interpolation -> controls cell elongation, cleavage furrow & cytokinesis
  *   audioKick     -> flashes mitotic spindle fiber glowing microtubules
- *   audioBass     -> undulates cell membrane elasticity & expansion
+ *   audioSwell    -> undulates cell membrane elasticity & expansion
  *
  * Per-activation variety:
  *   mitosisP float cell membrane curvature & size     (0.5..2.2)
@@ -24,8 +24,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -56,7 +55,7 @@ void main() {
     vec2 uv = gl_FragCoord.xy / resolution.xy;
     vec2 p = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
-    float t = time * 0.4 * spd + audioAdvance * 0.2;
+    float t = time * 0.4 * spd;   // clock only: audioAdvance integrates transients and sped the motion up on every surge
     float tProg = clamp(interpolation, 0.0, 1.0);
     float midTransition = sin(tProg * 3.14159265);
 
@@ -64,7 +63,7 @@ void main() {
     // folded in through midTransition, so at tProg 0 and 1 they collapse to the
     // un-driven values; the daughter-cell geometry only ever reaches the frame
     // through pinchDisp and the membrane glow, which are midTransition-gated.
-    float bassPulse = audioBass * midTransition;
+    float bassPulse = audioSwell * midTransition;
 
     // Cleavage furrow: distance to dual daughter cell centers
     float sep = mix(0.0, 0.5, tProg) * mts * (1.0 + bassPulse * 0.35);
@@ -89,7 +88,7 @@ void main() {
 
     // Glowing lipid bilayer cell membrane
     float membrane = exp(-abs(meta - 1.0) * 8.0) * midTransition;
-    col.rgb += membrane * vec3(0.2, 0.9, 0.6) * (1.5 + audioKick * 3.0);
+    col.rgb += membrane * vec3(0.2, 0.9, 0.6) * (1.5 + audioKick * 1.0);
 
     if (audioChromaHue != 0.0) col.rgb = hueRot(col.rgb, audioChromaHue * midTransition);
     if (hue > 0.001) col.rgb = hueRot(col.rgb, hue * midTransition);

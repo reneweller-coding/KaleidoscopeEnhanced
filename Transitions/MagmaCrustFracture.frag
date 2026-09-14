@@ -7,7 +7,7 @@ out vec4 fragColor;
  * apart, revealing glowing 1500°C molten magma rivers that solidify into the new scene.
  *   interpolation -> controls crust fracture opening & magma cooling progress
  *   audioKick     -> flashes incandescent magma crack eruptions
- *   audioBass     -> widens tectonic fault lines
+ *   audioSwell    -> widens tectonic fault lines
  *
  * Per-activation variety:
  *   crustP float crust tectonic plate density    (0.5..2.2)
@@ -24,8 +24,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -77,7 +76,7 @@ void main() {
     vec2 uv = gl_FragCoord.xy / resolution.xy;
     vec2 p = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
-    float t = time * 0.4 * spd + audioAdvance * 0.2;
+    float t = time * 0.2098 * spd;   // clock rate measured down to about 1.2/255 of change per frame (PresetEditor --transprofile); it spun many times that and read as frantic
     float tProg = clamp(interpolation, 0.0, 1.0);
     float midTransition = sin(tProg * 3.14159265);
 
@@ -88,7 +87,7 @@ void main() {
     // exactly the base width at both fade endpoints (where the magma glow is
     // multiplied out by midTransition anyway).
     float v = voronoiDist(p * 8.0 * crs);
-    float faultWidth = 1.0 + audioBass * 0.6 * midTransition;
+    float faultWidth = 1.0 + audioSwell * 0.6 * midTransition;
     float cracks = exp(-v * 15.0 / faultWidth);
 
     // Plate shift displacement
@@ -105,7 +104,7 @@ void main() {
 
     // Glowing magma rivers along fault lines
     vec3 magmaCol = mix(vec3(0.95, 0.2, 0.05), vec3(1.0, 0.85, 0.3), cracks);
-    col.rgb += cracks * magmaCol * midTransition * het * (1.5 + audioKick * 3.5);
+    col.rgb += cracks * magmaCol * midTransition * het * (1.5 + audioKick * 1.17);
 
     if (audioChromaHue != 0.0) col.rgb = hueRot(col.rgb, audioChromaHue * midTransition);
     if (hue > 0.001) col.rgb = hueRot(col.rgb, hue * midTransition);

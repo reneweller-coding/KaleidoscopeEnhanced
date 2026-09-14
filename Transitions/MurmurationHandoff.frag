@@ -17,7 +17,7 @@ out vec4 fragColor;
  * with nothing jumping at any point in the turn.
  *
  * Audio Reactivity:
- *   audioSwell   -> the flock's cohesion: how tightly it holds the shape (slow)
+ *   audioSwell  -> the flock's cohesion: how tightly it holds the shape (slow)
  *   audioHigh    -> the flash of wings turning over (light)
  *   audioAdvance -> the flow field turns, continuously
  *   audioMid     -> the sky's own light (colour)
@@ -33,8 +33,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;

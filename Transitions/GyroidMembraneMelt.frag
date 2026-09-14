@@ -7,7 +7,7 @@ out vec4 fragColor;
  * interlocking fluid channels, shifting its isovalue to smoothly transfer scenes.
  *   interpolation -> sweeps gyroid isovalue threshold from -1.4 to +1.4
  *   audioKick     -> flashes gyroid minimal surface nodal line boundaries
- *   audioBass     -> undulates gyroid spatial labyrinth frequency
+ *   audioSwell    -> undulates gyroid spatial labyrinth frequency
  *
  * Per-activation variety:
  *   gyroidP float gyroid spatial frequency & density (0.5..2.2)
@@ -24,8 +24,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -61,7 +60,7 @@ void main() {
     vec2 uv = gl_FragCoord.xy / resolution.xy;
     vec2 p = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
-    float t = time * 0.4 * spd + audioAdvance * 0.2;
+    float t = time * 0.0884 * spd;   // clock rate measured down to about 1.2/255 of change per frame (PresetEditor --transprofile); it spun many times that and read as frantic
     float tProg = clamp(interpolation, 0.0, 1.0);
     float midTransition = sin(tProg * 3.14159265);
 
@@ -82,7 +81,7 @@ void main() {
     // Membrane normal displacement
     vec2 grad = vec2(cos(q.x) * cos(q.y) - sin(q.z) * sin(q.x),
                      -sin(q.x) * sin(q.y) + cos(q.y) * cos(q.z));
-    vec2 disp = grad * 0.02 * midTransition * (1.0 + audioBass * 0.6);
+    vec2 disp = grad * 0.02 * midTransition * (1.0 + audioSwell * 0.6);
 
     vec4 c1 = texture(tex1, fract(uv + disp));
     vec4 c0 = texture(tex0, fract(uv - disp));
@@ -93,7 +92,7 @@ void main() {
     // Glowing minimal surface boundary
     float surfaceGlow = exp(-abs(distToSurface) * 12.0 / iso) * midTransition;
     vec3 glowColor = mix(vec3(0.2, 0.9, 1.0), vec3(1.0, 0.4, 0.8), sin(q.z) * 0.5 + 0.5);
-    col.rgb += surfaceGlow * glowColor * (1.4 + audioKick * 3.0);
+    col.rgb += surfaceGlow * glowColor * (1.4 + audioKick * 1.0);
 
     if (audioChromaHue != 0.0) col.rgb = hueRot(col.rgb, audioChromaHue * midTransition);
     if (hue > 0.001) col.rgb = hueRot(col.rgb, hue * midTransition);

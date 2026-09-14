@@ -7,7 +7,6 @@ out vec4 fragColor;
  * tiles subdivide smoothly, with glowing aperiodic grid lines guiding the cross-fade.
  *   interpolation -> drives recursive deflation hierarchy & scene swap
  *   audioKick     -> flashes 5-fold golden ratio reflection lines
- *   audioBass     -> undulates pentagonal tiling inflation scale
  *
  * Per-activation variety:
  *   tileP  float Penrose tiling grid density     (0.5..2.2)
@@ -24,8 +23,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -61,7 +59,7 @@ void main() {
     vec2 uv = gl_FragCoord.xy / resolution.xy;
     vec2 p = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y * (3.0 * til);
 
-    float t = time * 0.4 * spd + audioAdvance * 0.2;
+    float t = time * 0.1338 * spd;   // clock rate measured down to about 1.2/255 of change per frame (PresetEditor --transprofile); it spun many times that and read as frantic
     float tProg = clamp(interpolation, 0.0, 1.0);
     float midTransition = sin(tProg * 3.14159265);
 
@@ -76,7 +74,7 @@ void main() {
     // spatial projection only (the rotation's t term is untouched), and
     // midTransition gates it, so at tProg 0 and 1 the pentagrid -- and with it
     // the staggered tileProg and the grid glow -- is exactly the un-driven one.
-    float inflate = fld * (1.0 + audioBass * 0.3 * midTransition);
+    float inflate = fld;   // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
 
     for (int i = 0; i < 5; ++i) {
         float theta = float(i) * angle5;

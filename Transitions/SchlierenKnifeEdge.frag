@@ -20,9 +20,7 @@ out vec4 fragColor;
  * the turn are the untouched scenes.
  *
  * Audio Reactivity:
- *   audioFlux  -> the gradient gain, i.e. how violent the flow reads (light)
- *   audioMid   -> the knife's angle (slow)
- *   audioHigh  -> the beam's sparkle in the band (light)
+ *   audioSwell -> the gradient gain, i.e. how violent the flow reads (slow)
  *   audioSwell -> the width of the band (slow)
  *
  * Per-activation variety: gainP, bandP, hueP.
@@ -36,8 +34,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -95,10 +92,10 @@ void main()
               - lum(texture(tex0, clamp(uv - vec2(0.0, px.y), 0.0, 1.0)).rgb));
 
     // The knife's own direction decides which component is cut off.
-    float knife = 1.05 + 0.9 * (clamp(audioMid * 2.0, 0.0, 1.0) - 0.5);
+    float knife = 1.05;   // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
     vec2  kdir = vec2(cos(knife), sin(knife));
     float deflect = dot(vec2(fx, fy), kdir) * 15.0 * gain
-                  * (0.7 + 0.9 * clamp(audioFlux * 2.0, 0.0, 1.0));
+                  * (0.7 + 0.9 * clamp(audioSwell, 0.0, 1.0));
 
     // An undisturbed beam is mid-grey; the deflection takes it up or down.
     vec3 beam = vec3(0.44, 0.45, 0.49) * (1.0 + clamp(deflect, -0.90, 1.10));

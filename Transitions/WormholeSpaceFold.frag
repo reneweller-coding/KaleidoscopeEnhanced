@@ -7,7 +7,6 @@ out vec4 fragColor;
  * smoothly folds the geometry of Universe 1 (tex1) into Universe 2 (tex0).
  *   interpolation -> navigates camera through the wormhole throat tunnel
  *   audioKick     -> flashes exotic matter throat stabilization rings
- *   audioBass     -> undulates wormhole throat diameter & metric curvature
  *
  * Per-activation variety:
  *   throatP float wormhole throat radius scale   (0.5..2.2)
@@ -24,8 +23,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -61,7 +59,7 @@ void main() {
     vec2 uv = gl_FragCoord.xy / resolution.xy;
     vec2 p = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
-    float t = time * 0.4 * spd + audioAdvance * 0.2;
+    float t = time * 0.0209 * spd;   // clock rate measured down to about 1.2/255 of change per frame (PresetEditor --transprofile); it spun many times that and read as frantic
     float tProg = clamp(interpolation, 0.0, 1.0);
     float midTransition = sin(tProg * 3.14159265);
 
@@ -70,7 +68,7 @@ void main() {
 
     // Morris-Thorne throat coordinate: l = -infty (Universe 1) to +infty (Universe 2)
     float l = mix(-2.5, 2.5, tProg);
-    float throatRadius = (0.28 + 0.1 * audioBass) * thr;
+    float throatRadius = 0.33 * thr;   // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
 
     // Radius function: r(l) = sqrt(r_0^2 + l^2)
     float metricR = sqrt(throatRadius * throatRadius + l * l);
@@ -91,7 +89,7 @@ void main() {
 
     // Exotic matter throat glowing ring
     float throatGlow = exp(-abs(r - throatRadius) * 20.0) * midTransition;
-    col.rgb += throatGlow * vec3(0.4, 0.95, 1.0) * (1.5 + audioKick * 3.0);
+    col.rgb += throatGlow * vec3(0.4, 0.95, 1.0) * (1.5 + audioKick * 1.0);
 
     if (audioChromaHue != 0.0) col.rgb = hueRot(col.rgb, audioChromaHue * midTransition);
     if (hue > 0.001) col.rgb = hueRot(col.rgb, hue * midTransition);

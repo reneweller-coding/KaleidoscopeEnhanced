@@ -18,7 +18,6 @@ out vec4 fragColor;
  * to be smoothed away.
  *
  * Audio Reactivity:
- *   audioMid   -> the swing rate (slow)
  *   audioHigh  -> the gloss along each lenticule (light)
  *   audioSwell -> the lens's focal spread: how wide the ghost band is (slow)
  *   audioKick  -> the light across the sheet (light)
@@ -34,8 +33,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -70,7 +68,7 @@ void main()
     // The viewing angle swings across the whole turn.  The lens maps the angle
     // onto a position in the strip, so the boundary between the two interlaced
     // pictures travels across each lenticule.
-    float swing = d * (1.0 + 0.18 * (clamp(audioMid * 2.0, 0.0, 1.0) - 0.5));
+    float swing = d;   // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
     float cut = clamp(swing * 1.30 - 0.15, -0.2, 1.2);
 
     // A real lens is not perfect: for a range of angles both strips reach the

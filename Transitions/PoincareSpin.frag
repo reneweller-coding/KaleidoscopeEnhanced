@@ -8,7 +8,6 @@ out vec4 fragColor;
  * smoothly from the non-Euclidean horizon.
  *   interpolation -> sweeps hyperbolic Möbius translation from 0 to 1
  *   audioKick     -> flashes hyperbolic geodesic boundaries
- *   audioBass     -> pulses Poincaré metric radius
  *
  * Per-activation variety:
  *   diskP  float Poincaré disk metric curvature (0.5..2.2)
@@ -25,8 +24,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -61,7 +59,7 @@ void main() {
 
     vec2 uv = gl_FragCoord.xy / resolution.xy;
 
-    float t = time * 0.4 * spd + audioAdvance * 0.2;
+    float t = time * 0.0231 * spd;   // clock rate measured down to about 1.2/255 of change per frame (PresetEditor --transprofile); it spun many times that and read as frantic
     float tProg = clamp(interpolation, 0.0, 1.0);
     float midTransition = sin(tProg * 3.14159265);
 
@@ -69,7 +67,7 @@ void main() {
     // midTransition, so at both fade endpoints the disk is the un-driven one --
     // and uvWarped is blended in by midTransition there anyway, collapsing to
     // plain uv.
-    float diskRadius = 1.8 * dsk * (1.0 + audioBass * 0.4 * midTransition);
+    float diskRadius = 1.8 * dsk;   // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
     vec2 z = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y * diskRadius;
 
     // Hyperbolic rotation & translation: z' = (z - a) / (1 - conj(a)*z)
@@ -96,7 +94,7 @@ void main() {
     // Glowing geodesic circle rim
     float r = length(zPrime);
     float rim = exp(-abs(r - 1.0) * 15.0) * midTransition;
-    col.rgb += rim * vec3(0.1, 0.9, 1.0) * (1.5 + audioKick * 3.0);
+    col.rgb += rim * vec3(0.1, 0.9, 1.0) * (1.5 + audioKick * 1.0);
 
     if (audioChromaHue != 0.0) col.rgb = hueRot(col.rgb, audioChromaHue * midTransition);
     if (hue > 0.001) col.rgb = hueRot(col.rgb, hue * midTransition);

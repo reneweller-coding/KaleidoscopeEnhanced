@@ -7,7 +7,7 @@ out vec4 fragColor;
  * (Faraday crispatio), whose undulating nodal grids cross-fade and morph between scenes.
  *   interpolation -> sweeps Faraday standing wave amplitude & lattice modes
  *   audioKick     -> flashes parametric resonance wave crest peaks
- *   audioBass     -> drives vertical fluid acceleration & wave height
+ *   audioSwell    -> drives vertical fluid acceleration & wave height
  *
  * Per-activation variety:
  *   faradayP float Faraday wave frequency & wavenumber (0.5..2.2)
@@ -24,8 +24,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -56,7 +55,7 @@ void main() {
     vec2 uv = gl_FragCoord.xy / resolution.xy;
     vec2 p = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
-    float t = time * 0.5 * spd + audioAdvance * 0.25;
+    float t = time * 0.1587 * spd;   // clock rate measured down to about 1.2/255 of change per frame (PresetEditor --transprofile); it spun many times that and read as frantic
     float tProg = clamp(interpolation, 0.0, 1.0);
     float midTransition = sin(tProg * 3.14159265);
 
@@ -69,7 +68,7 @@ void main() {
 
     // Fluid heightfield normal vector
     vec2 normalGrad = vec2(-sin(q.x) * cos(q.y), -cos(q.x) * sin(q.y)) * faradayWave;
-    vec2 disp = normalGrad * 0.03 * midTransition * (1.0 + audioBass * 0.8);
+    vec2 disp = normalGrad * 0.03 * midTransition * (1.0 + audioSwell * 0.8);
 
     vec4 c1 = texture(tex1, fract(uv + disp));
     vec4 c0 = texture(tex0, fract(uv - disp));
@@ -79,7 +78,7 @@ void main() {
 
     // Standing wave crest specular glints
     float crestGlint = pow(max(0.0, faradayWave), 4.0) * midTransition;
-    col.rgb += crestGlint * vec3(0.25, 0.9, 1.0) * (1.3 + audioKick * 3.0);
+    col.rgb += crestGlint * vec3(0.25, 0.9, 1.0) * (1.3 + audioKick * 1.0);
 
     if (audioChromaHue != 0.0) col.rgb = hueRot(col.rgb, audioChromaHue * midTransition);
     if (hue > 0.001) col.rgb = hueRot(col.rgb, hue * midTransition);

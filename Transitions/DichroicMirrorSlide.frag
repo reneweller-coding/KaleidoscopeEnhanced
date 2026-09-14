@@ -7,7 +7,6 @@ out vec4 fragColor;
  * complementary wavelengths and reflecting the outgoing scene into the incoming one.
  *   interpolation -> slides dichroic mirror boundary across the diagonal
  *   audioKick     -> flashes dichroic spectral transmission spikes
- *   audioBass     -> undulates optical thin-film interference thickness
  *
  * Per-activation variety:
  *   dichroP float dichroic spectral split intensity (0.5..2.2)
@@ -24,8 +23,7 @@ uniform float interpolation;
 
 uniform float audioPhase;
 uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
@@ -61,7 +59,7 @@ void main() {
     vec2 uv = gl_FragCoord.xy / resolution.xy;
     vec2 p = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
 
-    float t = time * 0.4 * spd + audioAdvance * 0.2;
+    float t = time * 0.4 * spd;   // clock only: audioAdvance integrates transients and sped the motion up on every surge
     float tProg = clamp(interpolation, 0.0, 1.0);
     float midTransition = sin(tProg * 3.14159265);
 
@@ -77,7 +75,7 @@ void main() {
     // midTransition gates it, so at both fade endpoints the thickness is the
     // un-driven one — and dichroicReflect only reaches the frame through the
     // midTransition-gated glassEdge term anyway.
-    float filmThickness = 15.0 * dch * (1.0 + audioBass * 0.7 * midTransition);
+    float filmThickness = 15.0 * dch;   // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
     vec3 dichroicReflect = 0.5 + 0.5 * cos(vec3(0.0, 2.0, 4.0) + distToMirror * filmThickness + audioPhase);
 
     // Glass refraction displacement
@@ -92,7 +90,7 @@ void main() {
 
     // Glass edge flare
     float glassEdge = exp(-abs(distToMirror) * 20.0) * midTransition;
-    col.rgb += glassEdge * dichroicReflect * (1.5 + audioKick * 3.0);
+    col.rgb += glassEdge * dichroicReflect * (1.5 + audioKick * 1.0);
 
     if (audioChromaHue != 0.0) col.rgb = hueRot(col.rgb, audioChromaHue * midTransition);
     if (hue > 0.001) col.rgb = hueRot(col.rgb, hue * midTransition);
