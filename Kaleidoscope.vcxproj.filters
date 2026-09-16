@@ -171,12 +171,21 @@
     <ClCompile Include="Source\WebRemote.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\CueReceiver.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\CueSelfTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Configuration.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\AudioFeatures.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\CueReceiver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\EffectShader.h">

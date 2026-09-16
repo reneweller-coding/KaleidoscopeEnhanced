@@ -51,6 +51,8 @@ lights.*
 - [Quick start](#quick-start)
 - [Extra content: photos and 3D models](#extra-content-photos-and-3d-models)
 - [Controls](#controls)
+- [Mood detection, and OSC output for VJ tools](#mood-detection-and-osc-output-for-vj-tools)
+  - [Score cues: letting a generator say where the bars are](#score-cues-letting-a-generator-say-where-the-bars-are)
 - [Presets](#presets)
   - [Reviewing the shader library](#reviewing-the-shader-library)
 - [Recording](#recording)
@@ -227,6 +229,46 @@ more — to TouchDesigner, Resolume, Max/MSP or anything else that speaks OSC.
 
 The full story, with the literature and the measurements, is in
 [docs/mood-and-mapping.md](docs/mood-and-mapping.md).
+
+### Score cues: letting a generator say where the bars are
+
+Everything above is an *estimate* of music the visualizer only ever hears. A
+software generator playing its own composition does not have to be guessed at:
+it knows the bar line exactly and it knows a drop is coming before it lands. If
+one is driving the sound, it can say so over OSC/UDP, and the scheduler stops
+guessing:
+
+```ini
+[General]
+cuePort=9000
+cueBind=0.0.0.0
+```
+
+`cuePort=0` (the default) means the feature is off and nothing listens.
+`cueBind` is the interface — `127.0.0.1` for a generator on the same machine,
+`0.0.0.0` to let one on the LAN (a headset, say) reach it.
+
+Five messages are understood, and nothing else on that port is acted on:
+
+| message             | effect                                                   |
+|---------------------|----------------------------------------------------------|
+| `/phos/bar i`       | the bar line a due scene change is quantized to           |
+| `/phos/beat i`      | traffic only; a beat never causes a cut                   |
+| `/phos/section s f` | a section starts (type and energy 0..1) → a scene change  |
+| `/phos/drop`        | a drop lands on this instant → a hard cut                 |
+| `/phos/key s`       | the key from here, e.g. `F# Phrygian`                     |
+
+The cues feed the same two rising-edge triggers the audio analysis has always
+fed, so everything that guards them still guards them: a cue that lands during
+a cross-fade cannot retarget it, a cut still has its minimum solo, and camera,
+zoom and rotation remain untouched by anything the music does. If the sender
+stops — or was never there — the audio analysis takes over again after two
+seconds and the program behaves exactly as it did before. `Kaleidoscope.exe -q`
+checks all of that and exits 0 or 1, without opening a window.
+
+The sender this was built for is the Phosphene psytrance generator (its
+`docs/PLAN.md`, section 8.3); the wire format is plain OSC 1.0, so anything
+that can send those five messages works.
 
 ## Presets
 

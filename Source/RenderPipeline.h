@@ -29,6 +29,7 @@
 #include "GpuSims.h"
 #include "PresentPass.h"
 #include "SceneScheduler.h"
+#include "CueReceiver.h"
 
 class ImageLoader;   ///< Forward declaration; background image-loading thread, defined at the bottom of this file.
 
@@ -814,6 +815,7 @@ private:
 	GpuSims			m_sims;   ///< Older GPU/host simulations (reaction-diffusion, fluid, smoke3D, Physarum, self-similarity matrix, spectrogram): fully encapsulated in GpuSims; paint() only reports demand.
 	// Szenen-/Combine-Wahl, Trigger, Review, Song-Struktur: SceneScheduler.
 	SceneScheduler	m_scheduler;   ///< Scene/combine selection, triggers (novelty/section/drop), review mode and song-structure memory: fully encapsulated in SceneScheduler.
+	ScoreCueBridge	m_cueBridge;   ///< Carries the section/drop counters across the switch between the score cues and the audio analysis (CueReceiver.h); one per pipeline, beside the scheduler it feeds.
 	// Audio-Konditionierung (Envelopes, Slews, integrierte Phasen, Beat-PLL,
 	// virtuelle Kamera, Zeit-Regie): komplett in AudioConditioner gekapselt.
 	AudioConditioner m_audioConditioner;   ///< Turns each frame's raw AudioFeatures into the anti-flicker copy + camera/Zeit-Regie signals paint() reads back; fully encapsulated in AudioConditioner.

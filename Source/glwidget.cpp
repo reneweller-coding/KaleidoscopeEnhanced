@@ -32,6 +32,7 @@
 #include "glwidget.h"
 #include "PlatformQt.h"
 #include "WebRemote.h"
+#include "CueReceiver.h"
 #include "UpdateCheck.h"
 #include "Version.h"
 #include "SpoutOut.h"    // global facades, released once in ~GLwidget
@@ -395,6 +396,12 @@ GLwidget::GLwidget( QWidget *parent )
 	// controls as the keyboard.  Parented to this widget; main-thread events.
 	if( s_remotePort > 0 )
 		new WebRemote( this, s_remotePort );
+
+	// Score cues from a generator (CueReceiver.h): OFF unless cuePort says otherwise.  Same
+	// arrangement as the web remote -- a child QObject with a socket on the main thread, so a
+	// datagram becomes state that the very next frame reads without any synchronisation.
+	if( m_cuePort > 0 )
+		new CueReceiver( this, m_cueBind, m_cuePort );
 
 	// Optional update check -- OFF unless switched on in the setup tool, and
 	// even then it only ASKS GitHub and reports; downloading and running the
@@ -1463,6 +1470,10 @@ void GLwidget::loadUiSettings()
 	// OSC analysis output (TouchDesigner/Resolume/...): off unless configured.
 	m_osc.configure( s.value( "oscHost", "127.0.0.1" ).toString(),
 	                 s.value( "oscPort", 0 ).toInt() );
+	// Score cues IN, from a generator that wrote the music (CueReceiver.h).  Off by default: a
+	// program that opens a listening port because it was installed is a surprise nobody asked for.
+	m_cuePort = s.value( "cuePort", 0 ).toInt();
+	m_cueBind = s.value( "cueBind", m_cueBind ).toString();
 	Strings::setLanguage( Strings::fromCode(
 	    s.value( "language", Strings::toCode( Strings::language() ) ).toString().toLocal8Bit().constData() ) );
 }
@@ -1484,6 +1495,8 @@ void GLwidget::saveUiSettings()
 		s.setValue( QString("midiMap%1").arg(i), m_midiMap[i] );
 	s.setValue( "lightShow",  RenderPipeline::lightShow() );
 	s.setValue( "remotePort", s_remotePort );
+	s.setValue( "cuePort", m_cuePort );
+	s.setValue( "cueBind", m_cueBind );
 	s.setValue( "language",  Strings::toCode( Strings::language() ) );
 	s.sync();
 }

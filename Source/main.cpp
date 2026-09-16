@@ -38,6 +38,8 @@
  *                    anaglyph; anything else disables it.
  *  - `-f <dir>`      photo-source folder for this run, outranking both the ini
  *                    setting and the preset's ImageDirectory attribute.
+ *  - `-q`            score-cue self test (CueReceiver.h): decode, accumulate and receive on a real
+ *                    socket, print the result and exit with 0 or 1. No window, no audio device.
  *  - `-h`            print the help/usage text and exit.
  *
  * There is only one runtime path after parsing: the normal windowed Qt application
@@ -55,6 +57,7 @@
 
 #include "RenderPipeline.h"
 #include "glwidget.h"
+#include "CueReceiver.h"
 
 #include <QtWidgets/QApplication>
 #include <QtGui/QIcon>
@@ -74,6 +77,7 @@ using namespace std;
 bool fullscreen = false;	///< Whether to start the window in fullscreen mode (`-b`, or implied by `-m`).
 int  monitorIndex = -1;   ///< `-m <n>`: target monitor for fullscreen (-1 = auto).
 bool logToFile = false;   ///< -l: redirect stderr to a rotating log file (kiosk).
+bool cueSelfTest = false; ///< -q: run the score-cue self test and exit instead of opening a window.
 
 
 
@@ -171,8 +175,8 @@ void parsecommandline( int argc, char *argv[] )
 	// A switch must be listed HERE as well as handled in the switch below —
 	// the table is what makes it valid at all, and a case with no entry here is
 	// rejected before it is ever reached.
-	char optionchar[] =   { 'h', 'b', 's', 'c', 'm', 'l', 'r', 'w', 'o', 't', 'x', 'i', '3', 'v', 'f', 0 };
-	int musthaveparam[] = {  0 ,  0,   1,   1,   1,   0,   0,   1,   0,   1,   1,   1,   1,   1,   1,  0 };
+	char optionchar[] =   { 'h', 'b', 's', 'c', 'm', 'l', 'r', 'w', 'o', 't', 'x', 'i', '3', 'v', 'f', 'q', 0 };
+	int musthaveparam[] = {  0 ,  0,   1,   1,   1,   0,   0,   1,   0,   1,   1,   1,   1,   1,   1,   0,  0 };
 
 	int nopts;
 	int mhp[256];
@@ -244,6 +248,8 @@ void parsecommandline( int argc, char *argv[] )
 				case 'c': GLwidget::s_startConfig = QString::fromLocal8Bit( argv[1] ); break;
 				case 'm': monitorIndex = atoi( argv[1] ); fullscreen = true; break;
 				case 'l': logToFile = true; break;
+				// Score-cue self test: no window, no audio, an exit code (CueReceiver.h).
+				case 'q': cueSelfTest = true; break;
 				case 'r': GLwidget::s_autoRecord = true; break;
 				// Offline analysis: feed this WAV through the analyzer instead of
 				// capturing live audio (deterministic classifier testing).
@@ -418,6 +424,13 @@ int main(int argc, char *argv[])
 	// Thread ein (reproduziert als Hänger 4-9s nach Start, CPU-Zeit-Plateau,
 	// Fenster reagiert nicht mehr). Die App braucht keinen System-Proxy.
 	QNetworkProxy::setApplicationProxy( QNetworkProxy::NoProxy );
+
+	// -q: the score-cue self test.  It needs the Qt event loop (it binds a real socket and feeds it
+	// real datagrams) but nothing else -- no window, no GL context, no audio device -- so it runs
+	// here, after QApplication exists and before anything is shown, and ends the process with its
+	// own exit code.  That is what makes it usable from CI beside the other static checks.
+	if( cueSelfTest )
+		return runCueSelfTest();
 
 	// A dead man's switch for batch runs.  A catalogue render or a screening
 	// pass is started by a script that is supposed to stop it again -- but if

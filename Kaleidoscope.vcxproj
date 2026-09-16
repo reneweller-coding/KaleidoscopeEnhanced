@@ -291,6 +291,8 @@ if errorlevel 1 exit /b 1
     <ClCompile Include="Source\Utils.cpp" />
     <ClCompile Include="Source\Vector3D.cpp" />
     <ClCompile Include="Source\WebRemote.cpp" />
+    <ClCompile Include="Source\CueReceiver.cpp" />
+    <ClCompile Include="Source\CueSelfTest.cpp" />
     <ClCompile Include="Source\UpdateCheck.cpp" />
     <ClCompile Include="Source\MeshImport.cpp" />
   </ItemGroup>
@@ -298,6 +300,7 @@ if errorlevel 1 exit /b 1
     <ClInclude Include="Source\Configuration.h" />
     <ClInclude Include="Source\Recorder.h" />
     <ClInclude Include="Source\OscSender.h" />
+    <ClInclude Include="Source\CueReceiver.h" />
     <ClInclude Include="Source\AudioConditioner.h" />
     <ClInclude Include="Source\GpuSims.h" />
     <ClInclude Include="Source\PresentPass.h" />

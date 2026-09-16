@@ -1,4 +1,4 @@
-# ---------------------------------------------------------------------------
+﻿# ---------------------------------------------------------------------------
 # CMakeLists.txt -- the Linux/macOS build.
 #
 # The WINDOWS build is Kaleidoscope.vcxproj and stays that way. That project is
@@ -77,6 +77,8 @@ set(KALEIDO_SOURCES
 	Source/VideoIn.cpp
 	Source/VideoPiP.cpp
 	Source/WebRemote.cpp
+	Source/CueReceiver.cpp
+	Source/CueSelfTest.cpp
 	Source/glcore.cpp
 	Source/glwidget.cpp
 	Source/main.cpp

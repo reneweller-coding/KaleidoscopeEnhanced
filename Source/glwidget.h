@@ -413,6 +413,10 @@ protected:
 	MidiInput      *m_midi          = nullptr;   ///< Optional MIDI controller input; opened in initializeGL() if a device is present.
 	OscSender       m_osc;                       ///< OSC/UDP output of the analysis (mood, beats, bands); off unless oscPort is set.
 	QElapsedTimer   m_oscClock;                  ///< Wall clock for OscSender's rate limiting.
+	/// Score cues IN (CueReceiver.h): a generator that wrote the music says where the bars,
+	/// sections and drops are.  Off unless cuePort is set in the ini; nothing else changes then.
+	int             m_cuePort = 0;               ///< UDP port for the score cues; 0 = the feature is off.
+	QString         m_cueBind = "0.0.0.0";       ///< Interface to listen on ("127.0.0.1" = this machine only).
 	/// MIDI-learn targets, cycled with key 'j': controller knobs (CC-mapped) first,
 	/// then note-mapped pads.
 	enum { MIDI_REACT = 0, MIDI_TRAILS, MIDI_MOOD, MIDI_LATENCY, MIDI_NEXT,

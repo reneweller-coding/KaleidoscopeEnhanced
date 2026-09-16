@@ -201,6 +201,44 @@ OSC-Input aktivieren und die Adressen auf Parameter mappen; in Python reicht
 `python-osc` oder ein 30-Zeilen-Parser (ein spezifikationsstrenges Beispiel
 liegt der Testinfrastruktur bei).
 
+### 6.1 Partitur-Cues HINEIN (`Source/CueReceiver.h`)
+
+Alles oben ist eine **Schätzung** über Musik, die das Programm nur hört. Ein
+Generator, der seine Musik selbst geschrieben hat, muss nicht geschätzt werden:
+er kennt die Taktlinie exakt und weiß vor dem Einschlag, dass ein Drop kommt.
+Treibt einer den Ton, darf er es sagen — dieselbe Leitung, andere Richtung.
+
+Eingeschaltet wird das in der ini: `cuePort=9000` (0 = aus, der Vorgabewert),
+`cueBind=0.0.0.0` (oder `127.0.0.1`, wenn der Generator auf derselben Maschine
+läuft). Fünf Nachrichten, OSC 1.0 wie oben:
+
+| Adresse | Typ | Wirkung |
+|---|---|---|
+| `/phos/bar` | i | Taktnummer; die Linie, auf die ein fälliger Wechsel quantisiert wird |
+| `/phos/beat` | i | Beat-Nummer; nur Verkehr, ein Beat löst nie einen Schnitt aus |
+| `/phos/section` | s f | Sektionsbeginn (Typ, Energie 0..1) → Szenenwechsel |
+| `/phos/drop` | — | Drop auf diesem Augenblick → harter Schnitt |
+| `/phos/key` | s | Tonart ab hier, z. B. `F# Phrygian` |
+
+Die Cues füttern **genau die zwei steigenden Flanken**, die die Audioanalyse
+seit jeher füttert (`Tick::sectionCount`, `Tick::dropCount`) plus die
+Downbeat-Flagge. Damit gelten alle Sicherungen des Schedulers unverändert: ein
+Cue mitten in einer Überblendung kann sie nicht umlenken (der `midFade`-Test in
+`SceneScheduler::tick`), ein Schnitt behält sein Mindest-Solo, und Kamera, Zoom
+und Rotation bleiben von allem Musikalischen unberührt.
+
+Eine Ausnahme ist eingebaut und nötig: `sectionKnown` wird bei Cue-Betrieb
+**hart auf false** gezogen. Das Song-Struktur-Gedächtnis hängt an der recycelten
+Acht-Slot-LRU-Id des Analyzers; ein Cue hat keine, und stattdessen den
+Sektions*typ* einzusetzen hieße, jeder Drop eines ganzen Sets teilte sich einen
+Speicherplatz — genau das „immer dieselben Szenen", das dieser Index schon
+einmal erzeugt hat. Eine Cue-Sektion würfelt also immer frisch.
+
+Schweigt der Sender zwei Sekunden lang, übernimmt die Audioanalyse wieder.
+`Kaleidoscope.exe -q` prüft Decoder, Akkumulator, Socket und vor allem die
+Eigenschaft, auf der alles ruht: ohne Cues kommt ein Scheduler-Tick byteweise
+so aus `applyScoreCues()` heraus, wie er hineinging.
+
 ## 7. Diagnose- und Test-Haken
 
 | Haken | Wirkung |
@@ -209,6 +247,7 @@ liegt der Testinfrastruktur bei).
 | `KALEIDO_FORCE_MOOD="v,a"` | pinnt beide Achsen — für A/B-Aufnahmen des Farbgrades |
 | `KALEIDO_SPEECH_DEBUG=1` | dasselbe für den Sprach-/Musik-Gate |
 | `KALEIDO_OFFLINE_FAST=1` | Offline-Analyse (-w) ohne Echtzeit-Taktung, Ende = Programmende |
+| `KALEIDO_CUE_DECODE=<datei>` | `-q` dekodiert nur diese Datagramm-Aufzeichnung und druckt je Nachricht eine Zeile — so laufen die Bytes, die der Generator wirklich gesendet hat, durch DIESEN Decoder |
 
 Regel aus drei Reparaturen dieser Kette: **Zutaten loggen, nicht Urteile.**
 Ein zusammengesetzter Score kann plausibel aussehen, während die Hälfte seiner

@@ -1575,6 +1575,11 @@ SceneScheduler::Tick RenderPipeline::buildSchedulerTick( const AudioFeatures &au
 	schedTick.logAttackTime  = audio.logAttackTime;
 	schedTick.buildUp        = audio.buildUp;
 	schedTick.phraseSecsLeft = m_audioConditioner.phraseSecsLeft();
+	// Score cues (CueReceiver.h): when a generator is telling us where the bars, the sections and
+	// the drops ARE, the scheduler stops guessing them from the loudspeaker output. With no sender
+	// -- the normal case -- this call leaves schedTick byte for byte as it is above; the four fields
+	// it touches when cues are live, and why it touches exactly those four, are in the header.
+	applyScoreCues( ScoreCues::instance().drain( timeSinceLastFrameSec ), m_cueBridge, schedTick );
 	m_scheduler.tick( schedTick );
     
 
