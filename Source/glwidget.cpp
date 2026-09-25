@@ -42,7 +42,7 @@
 #include "Strings.h"
 
  #ifndef GL_MULTISAMPLE
- #define GL_MULTISAMPLE  0x809D
+ #define GL_MULTISAMPLE  0x809D   ///< Core GL enable token for multisampling, provided here in case the GL header set lacks it.
  #endif
 
 // Start configuration requested on the command line (-c <name>); empty = default.
@@ -295,10 +295,16 @@ void GLwidget::remoteForceScene( int idx )
 		m_actConfiguration->m_renderPipeline->forceScene( idx );
 }
 
-// On-disk thumbnail cache path for one (config, scene) pair. Sibling of
-// Presets\/kaleidoscope_settings.ini (relative to the Release/Debug
-// CWD), keyed by NAME rather than index since indices aren't stable across
-// restarts (a config edit reorders/adds entries) but names are.
+/**
+ * @brief On-disk thumbnail cache path for one (config, scene) pair.
+ *
+ * Sibling of Presets\/kaleidoscope_settings.ini (relative to the Release/Debug
+ * CWD), keyed by NAME rather than index since indices aren't stable across
+ * restarts (a config edit reorders/adds entries) but names are.
+ * @param config Configuration (preset) name, used as the sub-folder.
+ * @param scene Scene name, used as the file stem.
+ * @return Absolute path of the form ..\\ThumbCache\\CONFIG\\SCENE.jpg (the file need not exist).
+ */
 static QString thumbCachePath( const QString &config, const QString &scene )
 {
 	return Platform::assetPath( "..\\ThumbCache\\" + config + "\\" + scene + ".jpg" );
@@ -1691,6 +1697,7 @@ void GLwidget::resetRotation()
  *
  * The row geometry comes from MenuHit, filled while drawing, so this never has
  * to reproduce the layout arithmetic -- and cannot drift out of step with it.
+ * The event's position is tested against the open menu's rows.
  */
 void GLwidget::mousePressEvent( QMouseEvent * e )
 {

@@ -147,12 +147,14 @@ public:
 	 */
 	struct Inputs
 	{
-		GLuint source       = 0;    // fertiges Frame (Trail-Ausgang), render-res   ///< Finished frame to present (trail-pass output), at render resolution.
-		GLuint targetFbo    = 0;    // QOpenGLWidget-Default-FBO   ///< Destination FBO for the final upscaled draw (usually the widget's default FBO).
-		int    renderW = 0, renderH = 0;    ///< Render (source) resolution.
-		int    displayW = 0, displayH = 0;  ///< Display (destination) resolution.
-		const AudioFeatures *fx = nullptr;   // bereits gegatete audioFx   ///< Already-gated audio features driving the mood grade/beat visuals; run() is a no-op if null.
-		float  dtFrame      = 0.f;  // ggf. Break-skaliert (wie zuvor)   ///< Frame delta time, possibly break-scaled (as before); drives the limiter accumulation.
+		GLuint source       = 0;    ///< Finished frame to present (trail-pass output), at render resolution; also what the history ring captures and the limiter measures.
+		GLuint targetFbo    = 0;    ///< Destination FBO for the final upscaled draw (usually the QOpenGLWidget default FBO).
+		/** @brief Render (source) width in pixels. */
+		int    renderW = 0, renderH = 0;    ///< Render (source) height in pixels.
+		/** @brief Display (destination) width in pixels. */
+		int    displayW = 0, displayH = 0;  ///< Display (destination) height in pixels.
+		const AudioFeatures *fx = nullptr;   ///< Already-gated audio features (bereits gegatete audioFx) driving the mood grade/beat visuals; run() is a no-op if null.
+		float  dtFrame      = 0.f;  ///< Frame delta time in seconds, possibly break-scaled (as before); drives the limiter's per-second rise budget.
 		/** @brief True while the scheduler is cross-fading between scenes.
 		 *
 		 *  The auto-exposure adapts FAST during a fade and slowly otherwise.
@@ -194,7 +196,7 @@ public:
 		float  globalTime   = 0.f;   ///< Global shader time uniform.
 		float  chasePhase   = 0.f;   ///< Chase-light phase uniform.
 		// Virtuelle Kamera (Regie-Layer, berechnet der Aufrufer)
-		float  camZoom = 1.f, camRot = 0.f, camOffX = 0.f, camOffY = 0.f;   ///< Virtual-camera zoom/rotation/offset (computed by the caller's director layer).
+		float  camZoom = 1.f, /**< Virtual-camera zoom factor (1 = none), computed by the caller's director layer. */ camRot = 0.f, /**< Virtual-camera roll in radians (small). */ camOffX = 0.f, /**< Virtual-camera horizontal drift/shake offset in uv units. */ camOffY = 0.f;   ///< Virtual-camera vertical drift/shake offset in uv units.
 		bool   stereoPacked = false;   ///< True if the source frame already holds a packed stereo pair.
 		int    stereoMode   = 0;       ///< Stereo output mode (e.g. off/SBS/TB/anaglyph) forwarded to Present.frag.
 		float  stereoDepth  = 1.f;     ///< Stereo depth/separation strength.
@@ -244,7 +246,8 @@ public:
 		// 2.5D-Parallaxe: Tiefentextur der aktiven Szene + Stärke (geslewt).
 		GLuint sceneDepthTex = 0;   ///< Active scene's depth texture for 2.5D parallax (0 = none).
 		float  depthPar      = 0.f;   ///< Parallax strength (slewed by the caller).
-		float  nearZ = 0.5f, farZ = 220.f;   ///< Near/far plane distances used to interpret sceneDepthTex.
+		/** @brief Near-plane distance (world units) of the scene camera, used to linearise sceneDepthTex. */
+		float  nearZ = 0.5f, farZ = 220.f;   ///< Far-plane distance (world units) of the scene camera, used to linearise sceneDepthTex.
 	};
 
 	/** Den kompletten Present ausführen (Limiter, AutoExposure, Bloom,
@@ -308,17 +311,17 @@ private:
 	GLint	m_presentStereoSrcUni   = -1;   ///< Uniform location: source-already-packed-stereo flag ("stereoSource").
 
 	// ---- Limiter-/Belichtungs-Zustand ----
-	float	m_prevMeanLum     = -1.f;   // <0 = uninitialisiert   ///< Previous sampled mean luminance (< 0 = not yet initialised).
+	float	m_prevMeanLum     = -1.f;   ///< Mean luminance of the previous limiter sample, the reference the rise limit is measured against (< 0 = not yet initialised).
 	float	m_liveStd    = 0.f;   ///< Spatial spread of the same 64-pixel sample: 'is there anything to see'.
 	float	m_liveMotion = 0.f;   ///< Mean |delta| against the previous sample: 'is anything moving'.
 	float	m_prevSample[64] = {};  ///< Previous frame's luma sample, for m_liveMotion.
-	bool	m_havePrevSample = false;
+	bool	m_havePrevSample = false;   ///< True once m_prevSample holds a real sample; until then m_liveMotion reports 0 instead of a bogus delta against zeros.
 	bool	m_safetyReady     = false;   ///< True once setup() succeeded (gates run() and ready()).
 	int		m_safetyFrame     = 0;   ///< Frame counter used to sample the mean-luminance readback every 3rd frame.
 	float	m_lastSafetyScale = 1.f;   ///< Brightness scale from the last luminance sample, reused on skipped frames.
 	float	m_safetyAccumDt   = 0.f;   ///< Accumulated dtFrame since the last luminance sample (keeps the per-second rise limit correct).
-	float	m_blackSmooth     = 0.f;    // geslewter Blackout-Pegel 0..1   ///< Slewed blackout level 0..1.
-	GLuint	m_autoExpBuf   = 0;         // 4 floats: exposure, p50, p98, pad   ///< SSBO holding { exposure, p50, p98, pad } written by CfxHistogram.comp.
+	float	m_blackSmooth     = 0.f;    ///< Slewed blackout level 0..1 (geslewter Blackout-Pegel): follows Inputs::blackout at a wall-clock rate and multiplies the brightness scale by (1 - level).
+	GLuint	m_autoExpBuf   = 0;         ///< SSBO (bind point 3) of 4 floats { exposure, p50, p98, pad } written by CfxHistogram.comp and read directly by Present.frag.
 	GLuint	m_autoExpProg  = 0;   ///< CfxHistogram.comp compute program (0 if unavailable).
 	bool	m_autoExpTried = false;   ///< True once auto-exposure program creation has been attempted (tried only once).
 
@@ -331,7 +334,8 @@ private:
 	GLint	m_bloomDirUni    = -1;   ///< Uniform location: blur direction ("dir").
 	GLint	m_bloomThreshUni = -1;   ///< Uniform location: bright-pass threshold ("threshold").
 	bool	m_bloomReady   = false;   ///< True once the bloom FBOs/program were created successfully.
-	int		m_bloomW = 0, m_bloomH = 0;   ///< Bloom texture resolution (render resolution / 4, floor 8).
+	/** @brief Bloom texture width (render width / 4, floor 8). */
+	int		m_bloomW = 0, m_bloomH = 0;   ///< Bloom texture height (render height / 4, floor 8).
 
 	// ---- Titel-Reveal ----
 	GLuint	m_titleTex    = 0;   ///< Uploaded title image texture.
@@ -365,28 +369,29 @@ private:
 	 * @return Layer index into the history-ring array texture.
 	 */
 	float	historyLayerBack( float secs ) const;   // Sek. zurück -> Layer-Index
-	static const int kHistLayers = 96;              // ~3.2 s bei 30 Hz   ///< Number of ring layers (~3.2 s of history at 30 Hz).
+	static const int kHistLayers = 96;              ///< Number of ring layers: ~3.2 s of history at the fixed 30 Hz capture cadence.
 	GLuint	m_histTex    = 0;   ///< GL_TEXTURE_2D_ARRAY holding the ring's frames.
-	GLuint	m_histFboDst = 0;      // Ziel: jeweiliger Ring-Layer   ///< FBO used as blit destination (bound to the current ring layer).
-	GLuint	m_histFboSrc = 0;      // Quelle: das frische Frame   ///< FBO used as blit source (bound to the fresh frame texture).
-	int		m_histW = 0, m_histH = 0;   ///< Ring texture resolution (render resolution / 3, floor 32).
-	int		m_histHead   = 0;      // nächster Schreib-Slot   ///< Next write slot (ring head).
-	int		m_histCount  = 0;      // gefüllte Slots (<= kHistLayers)   ///< Number of filled slots so far (<= kHistLayers).
-	float	m_histAccum  = 0.f;    // Wandzeit seit letzter Aufnahme   ///< Wall-clock seconds accumulated since the last capture.
+	GLuint	m_histFboDst = 0;      ///< Blit destination FBO, re-attached to the current ring layer of m_histTex before each capture.
+	GLuint	m_histFboSrc = 0;      ///< Blit source FBO, attached to the fresh frame texture being captured.
+	/** @brief Ring texture width (render width / 3, floor 32); a change reallocates the array texture. */
+	int		m_histW = 0, m_histH = 0;   ///< Ring texture height (render height / 3, floor 32).
+	int		m_histHead   = 0;      ///< Next write slot (ring head), 0..kHistLayers-1.
+	int		m_histCount  = 0;      ///< Number of filled slots so far (<= kHistLayers); bounds how far back historyLayerBack() may reach.
+	float	m_histAccum  = 0.f;    ///< Wall-clock seconds accumulated since the last capture; a capture happens once it reaches 1/30 s.
 	bool	m_histReady  = false;   ///< True once the required GL entry points were confirmed present.
 	bool	m_histTried  = false;   ///< True once availability has been checked (checked only once).
 	GLint	m_presentHistTexUni  = -1;   ///< Uniform location: history-ring array sampler ("histTex", always bound to unit 5).
-	GLint	m_presentRewindUni   = -1;   // vec2( mix, layer )   ///< Uniform location: rewind (mix, layer) ("rewind").
-	GLint	m_presentEchoUni     = -1;   // vec2( amt, layer )   ///< Uniform location: time-echo (amount, layer) ("echo").
+	GLint	m_presentRewindUni   = -1;   ///< Uniform location: rewind as vec2( mix, layer ) ("rewind").
+	GLint	m_presentEchoUni     = -1;   ///< Uniform location: time-echo as vec2( amount, layer ) ("echo").
 	GLint	m_presentBreathUni   = -1;   ///< Uniform location: "held breath" amount ("breath").
 	GLint	m_presentDropUni     = -1;   ///< Uniform location: drop pulse ("audioDrop").
 	GLint	m_presentLetterUni   = -1;   ///< Uniform location: letterbox amount ("letterbox").
-	GLint	m_presentShockUni    = -1;   // vec2( radius, amp )   ///< Uniform location: bass shockwave (radius, amplitude) ("shock").
+	GLint	m_presentShockUni    = -1;   ///< Uniform location: bass shockwave as vec2( radius, amplitude ) ("shock").
 	GLint	m_presentLineAgeUni  = -1;   ///< Uniform location: karaoke line age ("lyricsLineAge").
 	GLint	m_presentPalAUni     = -1;   ///< Uniform location: cover palette color A ("paletteA").
 	GLint	m_presentPalBUni     = -1;   ///< Uniform location: cover palette color B ("paletteB").
 	GLint	m_presentPalAmtUni   = -1;   ///< Uniform location: cover palette strength ("paletteAmt").
-	GLint	m_presentSceneDepthUni = -1; // Unit 6   ///< Uniform location: scene depth sampler ("sceneDepth", always bound to unit 6).
+	GLint	m_presentSceneDepthUni = -1; ///< Uniform location: scene depth sampler ("sceneDepth", always bound to unit 6).
 	GLint	m_presentDepthParUni = -1;   ///< Uniform location: parallax strength ("depthPar").
 	GLint	m_presentNearFar2Uni = -1;   ///< Uniform location: near/far plane distances ("nearFar2").
 

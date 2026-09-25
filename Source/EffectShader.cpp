@@ -122,10 +122,15 @@ void EffectShader::cleanShaderPrograms()
 }
 
 
-// Die Solo-Spanne, ueber die sceneProgress normiert wird.  KALEIDO_SOLO_SECS
-// pinnt sie fuer Messlaeufe, deren Fenster kuerzer ist als die Review-Spanne
-// von 25 s: mit 8 s Haltezeit sah das Screening von einer inszenierten Szene
-// nie das Ende ihres Bogens -- Assembly stand in jedem Fenster als Wolke.
+/**
+ * @brief The solo span (seconds) that sceneProgress is normalised over in review/measurement runs.
+ *
+ * Die Solo-Spanne, ueber die sceneProgress normiert wird.  KALEIDO_SOLO_SECS
+ * pinnt sie fuer Messlaeufe, deren Fenster kuerzer ist als die Review-Spanne
+ * von 25 s: mit 8 s Haltezeit sah das Screening von einer inszenierten Szene
+ * nie das Ende ihres Bogens -- Assembly stand in jedem Fenster als Wolke.
+ * @return KALEIDO_SOLO_SECS if set to a positive value (read once), else EffectShader::s_reviewSolo (0 outside review mode = no cap).
+ */
 static float soloCap()
 {
 	static const int env = [] { const char *e = getenv( "KALEIDO_SOLO_SECS" ); return e ? atoi( e ) : 0; }();
@@ -327,11 +332,10 @@ void EffectShader::initUniforms(int width, int height)
 
 
 /**
- * @brief Checks for OpenGL errors.
- *
  * Extremely useful debugging function: when developing,
- * make sure to call this after almost every GL call.
- * @param label Short tag identifying the call site, included in the printed message.
+ * make sure to call this after almost every GL call. The label (see the
+ * declaration in EffectShader.h for the parameter list) is a short tag for the
+ * checkpoint, printed with the error message.
  */
 void EffectShader::checkGLErrors( const char *label )
 {

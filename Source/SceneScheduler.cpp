@@ -14,10 +14,12 @@
 #include "EffectShader.h"
 
 /** @brief Enable/disable review mode (alphabetical walk, fixed kReviewSoloSecs per scene).
- * Also publishes the span to EffectShader so `sceneProgress` normalises over
- * the time a scene is actually SHOWN here rather than over its rolled solo
- * span -- otherwise a staged scene never finishes its arc on the bench.
- * @param on True to enter review mode, false to return to random selection.
+ *
+ * The parameter is documented in SceneScheduler.h. Besides flipping the
+ * mode, this publishes the span to EffectShader (kReviewSoloSecs while on,
+ * 0 when off) so `sceneProgress` normalises over the time a scene is
+ * actually SHOWN here rather than over its rolled solo span -- otherwise a
+ * staged scene never finishes its arc on the bench.
  */
 void SceneScheduler::setReviewMode( bool on )
 {
@@ -162,9 +164,9 @@ void SceneScheduler::reset()
  * to @p idx. Mid-fade, the current fade is already committed to its
  * outgoing/incoming pair (retargeting it would jump the interpolation), so
  * @p idx is instead queued in m_forcedNextTexture and only applied once
- * that fade finishes, exactly as before.
- * @param idx Index into the attached texture list; out-of-range or missing
- *            attach() is silently ignored.
+ * that fade finishes, exactly as before. The parameter is documented in
+ * SceneScheduler.h (an out-of-range @p idx or a missing attach() is
+ * silently ignored).
  */
 void SceneScheduler::forceScene( int idx )
 {
@@ -183,8 +185,9 @@ void SceneScheduler::forceScene( int idx )
 
 /**
  * @brief Force the next combine-effect (overlay) to @p idx.
- * @param idx Index into the fx list; out-of-range is ignored.
  *
+ * The parameter is documented in SceneScheduler.h (an out-of-range @p idx
+ * or a missing attach() is ignored).
  * Bypasses the complexity budget, the mood filter and the mesh-calm rule:
  * an FX sweep exists to SEE the one that was asked for, including the ones
  * those filters would normally veto.
@@ -198,26 +201,23 @@ void SceneScheduler::forceFx( int idx )
 }
 
 /**
- * @brief Find a registered transition shader by fragment basename.
+ * @brief Tells whether a combine/FX shader is "calm" enough to run over a loaded mesh model.
  *
- * Compares only the basename (text after the last path separator) so the
- * dramaturgy hooks ("Shatter.frag" on a drop, the Portal depth gate) stay
- * independent of how the preset spelled the path.
- * @param basename File name without path, e.g. "Crossfade.frag".
- * @return Index into the transition list, or -1 if not registered.
+ * FX that are welcome over a loaded model. The first cut of this rule forced
+ * FxPlain outright, which threw away every harmless overlay along with the
+ * harmful ones; what actually matters is only whether the overlay DISPLACES
+ * the scene image over time (zoom pulses, shakes, warps, wobbles -- a
+ * full-frame displacement moves the model with it, which reads as the object
+ * twitching). Colour grades, halftone/mosaic stylisations, depth fog, rim
+ * light and godrays sample the scene at rest and may pulse their LIGHT as
+ * much as they like -- that is the background carrying the beat, by design.
+ * Classified by reading all 29 fragment sources; a new FX defaults to NOT
+ * calm until someone reads it and adds it here -- the safe direction.
+ * Deliberately absent: FxLens (displaces even if statically) and
+ * FxOilPaintFlow (its brush field flows over time).
+ * @param fragPath Fragment-shader path of the FX candidate (EffectShader::fragmentName(); any directory prefix, either separator) -- only its basename is compared. nullptr yields false.
+ * @return True if the basename is on the calm allow-list, false for every other or unknown FX.
  */
-// FX that are welcome over a loaded model. The first cut of this rule forced
-// FxPlain outright, which threw away every harmless overlay along with the
-// harmful ones; what actually matters is only whether the overlay DISPLACES
-// the scene image over time (zoom pulses, shakes, warps, wobbles -- a
-// full-frame displacement moves the model with it, which reads as the object
-// twitching). Colour grades, halftone/mosaic stylisations, depth fog, rim
-// light and godrays sample the scene at rest and may pulse their LIGHT as
-// much as they like -- that is the background carrying the beat, by design.
-// Classified by reading all 29 fragment sources; a new FX defaults to NOT
-// calm until someone reads it and adds it here -- the safe direction.
-// Deliberately absent: FxLens (displaces even if statically) and
-// FxOilPaintFlow (its brush field flows over time).
 static bool isMeshCalmFx( const char *fragPath )
 {
 	if( !fragPath ) return false;
@@ -235,6 +235,15 @@ static bool isMeshCalmFx( const char *fragPath )
 	return false;
 }
 
+/**
+ * @brief Find a registered transition shader by fragment basename.
+ *
+ * Parameter and return value are documented in SceneScheduler.h (e.g.
+ * "Crossfade.frag"; -1 if not registered). Compares only the basename
+ * (text after the last path separator, either '\\' or '/') so the
+ * dramaturgy hooks ("Shatter.frag" on a drop, the Portal depth gate) stay
+ * independent of how the preset spelled the path.
+ */
 int SceneScheduler::findTransition( const char *basename ) const
 {
 	if( !m_transitions || !basename )
@@ -267,8 +276,9 @@ int SceneScheduler::findTransition( const char *basename ) const
  * bright/dark/aggressive/calm tags weighted by valence/arousal/ambient.
  * A floor (0.05..0.15, scaled down further for disliked shaders) keeps
  * every shader reachable — this is a bias, never a hard exclusion.
- * @param s Candidate effect or combine shader.
- * @return True if the random draw falls below the computed acceptance probability.
+ * Parameter and return value are documented in SceneScheduler.h: @p s is
+ * the candidate effect or combine shader, and the result is true when the
+ * uniform random draw falls below the computed acceptance probability.
  */
 bool SceneScheduler::moodAccept( EffectShader *s ) const
 {
@@ -811,8 +821,8 @@ void SceneScheduler::tick( const Tick &t )
  * resumes accruing once the hold lifts. Unlike the effect side, the combine
  * machine has no review-mode fast path and no song-structure memory of its
  * own (its "which combine replays with a section" wiring lives in tick()).
- * @param t Frame inputs (timing, triggers, gate).
- * @param trueStereoHold True while an eye-packed true-stereo frame must not enter a combine cross-fade.
+ * Both parameters (@p t, the per-frame inputs; @p trueStereoHold, the
+ * stereo freeze) are documented in SceneScheduler.h.
  */
 void SceneScheduler::tickFx( const Tick &t, bool trueStereoHold )
 {

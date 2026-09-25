@@ -88,9 +88,13 @@ bool rightAssoc( int opChar ) { return opChar == '^' || opChar == 'n'; }
 
 /**
  * @brief Compiles @p formula into m_prog via tokenising then shunting-yard, with a final stack-depth sanity pass.
- * @param formula The expression source text.
- * @param context Label used only in stderr diagnostics to identify which formula failed.
- * @return True on success (m_ok is also set true); false on any lexical or structural error, leaving m_ok false so eval() safely returns 0.
+ *
+ * Returns true on success (m_ok is also set true); false on any lexical or
+ * structural error, leaving m_ok false so eval() safely returns 0. The
+ * context label is used only in stderr diagnostics to identify which formula
+ * failed, and outError (when given) receives the same message without that
+ * prefix. Parameters and return value are documented on the declaration in
+ * ExprEval.h.
  *
  * Three passes over the token stream:
  *  1. Tokenise: scans @p formula into NUM/VAR/FUNC/OP/LPAREN/RPAREN/COMMA
@@ -283,8 +287,12 @@ bool ExprProgram::compile( const std::string &formula, const std::string &contex
 
 /**
  * @brief Runs the compiled RPN program (m_prog) against @p vars on a small fixed-size stack.
- * @param vars Array of ExprVars::V_COUNT floats indexed by ExprVars::Index; supplies the live audio/time feature values.
- * @return The single value left on the stack after executing every instruction, or 0 if compile() had failed or the program didn't reduce to exactly one value.
+ *
+ * @p vars is the ExprVars::V_COUNT-element array indexed by ExprVars::Index
+ * that supplies the live audio/time feature values; the result is the single
+ * value left on the stack after every instruction, or 0 if compile() had
+ * failed or the program didn't reduce to exactly one value (parameter and
+ * return value are documented on the declaration in ExprEval.h).
  *
  * The stack is a fixed `float st[32]` with no bounds-checked growth — pushes
  * beyond depth 32 are silently dropped (`if (sp < 32)`); this is safe only

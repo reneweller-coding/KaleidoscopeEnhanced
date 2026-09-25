@@ -33,6 +33,11 @@
 #include <QtCore/QFile>
 #include <QtCore/QTimer>
 
+/**
+ * @brief Translated UI string for the current language (Strings::language()) as a QString.
+ * @param id String table entry to look up.
+ * @return The UTF-8 text of @p id in the current language.
+ */
 static QString S( StrId id ) { return QString::fromUtf8( Strings::T( id ) ); }
 
 // ---- extra-content packs ---------------------------------------------------
@@ -42,9 +47,15 @@ static QString S( StrId id ) { return QString::fromUtf8( Strings::T( id ) ); }
 // re-published under a new tag, change it HERE and nowhere else.
 namespace {
 
+/**
+ * @brief One downloadable extra-content pack: where it lives on GitHub (release tag + asset file), where it unpacks to, and how to tell it is installed.
+ *
+ * Instances live only in the kPacks table; see the note above it on why a
+ * tag and filename are all that is needed.
+ */
 struct PackDef
 {
-	StrId       label;
+	StrId       label;       ///< user-facing name of the pack (checkbox text and progress messages)
 	const char *tag;         ///< release tag the asset hangs off
 	const char *file;        ///< asset filename
 	const char *dir;         ///< target folder, relative to the install root
@@ -52,6 +63,7 @@ struct PackDef
 	qint64      bytes;       ///< published size, for the up-front total and the space check
 };
 
+/// The four packs offered by the "extra content" group, in the order of SetupWindow::m_packBox: the photo library, then the three 3D-model packs (ships, stations, objects), which all unpack into the Models folder.
 const PackDef kPacks[4] = {
 	{ S_SETUP_PACK_IMAGES,   "images-v2", "KaleidoscopeImages.zip",         "Images", ".jpg", 593LL * 1024 * 1024 },
 	{ S_SETUP_PACK_SHIPS,    "models-v2", "KaleidoscopeModels-ships.zip",   "Models", ".glb", 715LL * 1024 * 1024 },
@@ -59,12 +71,22 @@ const PackDef kPacks[4] = {
 	{ S_SETUP_PACK_OBJECTS,  "models-v2", "KaleidoscopeModels-objects.zip", "Models", ".glb", 384LL * 1024 * 1024 },
 };
 
+/**
+ * @brief Release-asset download URL of a pack.
+ * @param p Pack whose tag and file name make up the URL.
+ * @return The asset's URL, https://github.com/.../releases/download/TAG/FILE.
+ */
 QString packUrl( const PackDef &p )
 {
 	return QString( "https://github.com/reneweller-coding/KaleidoscopeEnhanced"
 	                "/releases/download/%1/%2" ).arg( p.tag, p.file );
 }
 
+/**
+ * @brief Byte count as a short label for buttons and progress text.
+ * @param b Size in bytes.
+ * @return "x.y GB" from 1 GiB upwards, otherwise a whole number of "MB".
+ */
 QString humanSize( qint64 b )
 {
 	if( b >= 1024LL * 1024 * 1024 )
@@ -72,10 +94,16 @@ QString humanSize( qint64 b )
 	return QString::number( qint64( b / (1024 * 1024) ) ) + " MB";
 }
 
-// How many of the pack's files are already sitting in the target folder. The
-// packs share a folder (all three model packs land in Models\), so this cannot
-// distinguish WHICH pack is installed -- it answers "is there content of this
-// kind", which is what the checkbox default actually needs.
+/**
+ * @brief How many of the pack's files are already sitting in the target folder.
+ *
+ * The packs share a folder (all three model packs land in the Models folder),
+ * so this cannot distinguish WHICH pack is installed -- it answers "is there content
+ * of this kind", which is what the checkbox default actually needs.
+ * @param root Install/repo root (findRootDir()).
+ * @param p Pack whose target folder and file extension are checked.
+ * @return Number of files with the pack's extension in its target folder; 0 if the folder does not exist.
+ */
 int installedCount( const QString &root, const PackDef &p )
 {
 	QDir d( root + "/" + p.dir );
@@ -83,10 +111,19 @@ int installedCount( const QString &root, const PackDef &p )
 	return d.entryList( QStringList() << ( "*" + QString( p.ext ) ), QDir::Files ).size();
 }
 
-// Unpack with the bsdtar that has shipped in System32 since Windows 10 1803;
-// it reads zip and is a single fast process. PowerShell's Expand-Archive is
-// the fallback for an older machine -- correct but markedly slower, and it is
-// not worth making it the primary path for that.
+/**
+ * @brief Unpack a downloaded zip archive into a folder, creating the folder if needed.
+ *
+ * Uses the bsdtar that has shipped in System32 since Windows 10 1803; it
+ * reads zip and is a single fast process. PowerShell's Expand-Archive is the
+ * fallback for an older machine -- correct but markedly slower, and it is not
+ * worth making it the primary path for that. Blocks until the extraction
+ * process has finished.
+ * @param zip Path of the archive to extract.
+ * @param destDir Target folder (created with mkpath); existing files are overwritten.
+ * @param err Optional; receives the extractor's stderr (or its exit code) on failure.
+ * @return True if the extractor exited normally with code 0.
+ */
 bool extractZip( const QString &zip, const QString &destDir, QString *err )
 {
 	QDir().mkpath( destDir );

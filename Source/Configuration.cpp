@@ -85,9 +85,18 @@ void Configuration::stop()
 //
 // The table is loaded once from the same directory the presets come from, so
 // the packaged build finds it exactly like everything else.
-static QMap<QString, QList<QPair<QString, QString>>> s_rigTable;
-static bool s_rigLoaded = false;
+static QMap<QString, QList<QPair<QString, QString>>> s_rigTable;   ///< Rig name -> its (uniform name, formula) expression pairs, exactly as `<expr name= formula=>` lists them in rigs.xml; process-wide, filled once by loadRigTable().
+static bool s_rigLoaded = false;   ///< Guards loadRigTable() so the table is read at most once per process (also set when rigs.xml is missing, so a missing table is reported once, not per scene).
 
+/**
+ * @brief Loads Presets/rigs.xml into #s_rigTable on the first call; every later call is a no-op.
+ *
+ * Parses each `<rig name="...">` element and its `<expr name="..." formula="..."/>`
+ * children. A missing or unparsable file leaves the table empty, so a
+ * `<rig>` reference in a scene then warns in addUniforms() instead of
+ * failing here.
+ * @param cfgDir Directory that holds the preset XML files (and rigs.xml beside them).
+ */
 static void loadRigTable( const QString &cfgDir )
 {
 	if( s_rigLoaded ) return;
@@ -230,9 +239,9 @@ static QString mapLegacyShaderPath( QString p )
 
 /**
  * @brief Parses the preset XML file into m_renderPipeline: root-level metadata/timing, then every TextureShader and CombineShader entry.
- * @param filename Path to the Presets/ *.xml preset file to parse.
+ * @param filenameIn Path to the Presets/ *.xml preset file to parse, as written in Windows style; mapped through Platform::assetPath() (identity on Windows) before opening.
  *
- * Loads @p filename into a QDomDocument and reads the root element's
+ * Loads @p filenameIn into a QDomDocument and reads the root element's
  * attributes (ImageDirectory, ConfigurationName, hidden, and the preset-wide
  * solo/interpolation timing pair, each with a fallback baseline when
  * absent or zero — see the inline comments below), then iterates all

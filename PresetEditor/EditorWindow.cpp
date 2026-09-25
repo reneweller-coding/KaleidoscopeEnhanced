@@ -376,8 +376,10 @@ void EditorWindow::onCombineChanged()
 
 /// @brief One `<int>`/`<float>` parameter's range as declared for a shader in Komplett.xml.
 struct KomplettParam {
-    QString kind, name;   ///< "int" or "float"; parameter name.
-    float minV, maxV;     ///< Declared minValue/maxValue.
+    /// "int" or "float" (the element's tag), deciding whether the slider rounds to whole numbers.
+    QString kind, name;   ///< Parameter/uniform name (the element's name= attribute).
+    /// Declared minValue: the slider's lower end.
+    float minV, maxV;     ///< Declared maxValue: the slider's upper end.
 };
 /**
  * @brief Parse a shader's per-activation parameter ranges out of Komplett.xml.

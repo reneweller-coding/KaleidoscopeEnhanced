@@ -15,6 +15,7 @@
 extern GLuint fullscreenVAO();   ///< Shared gl_VertexID-based fullscreen-triangle VAO, defined in RenderPipeline.cpp and reused by every sim pass via drawFullscreen().
 
 #ifndef GL_VERTEX_PROGRAM_POINT_SIZE
+/** @brief Fallback definition of the GL enable token (0x8642) for GL headers that omit it; the Physarum deposit pass enables it so its vertex shader's gl_PointSize takes effect. */
 #define GL_VERTEX_PROGRAM_POINT_SIZE 0x8642
 #endif
 
@@ -59,10 +60,14 @@ void GpuSims::setupAll()
 
 /**
  * @brief Advances one frame: always updates the host histories, steps only the demanded GPU sims, and (re)binds their newest textures to the fixed global sampler units.
- * @param audio Current audio-reactive feature snapshot driving every sim's parameters.
- * @param dt Frame delta time in seconds; paces the host histories (SSM/spectrogram).
- * @param need Which simulations this frame actually requires.
- * @param f Per-frame pipeline context (integrated phases, dye source images).
+ *
+ * Parameters are documented in GpuSims.h. Order, sub-step counts and unit
+ * bindings follow the old inline block in RenderPipeline::paint() exactly:
+ * reaction-diffusion runs 6 PDE sub-steps (unit 7), fluid one (unit 8),
+ * smoke one horizontal+vertical pair (unit 9), Physarum two full sub-steps
+ * (unit 11); each is skipped unless both demanded (`need`) and ready. The
+ * SSM and spectrogram histories accumulate from `audio`/`dt` every frame
+ * regardless, and only their texture upload waits for demand.
  */
 void GpuSims::run( const AudioFeatures &audio, float dt, const Demand &need, const Frame &f )
 {
@@ -207,10 +212,10 @@ void GpuSims::setupFluid()
 
 /**
  * @brief Advances the curl-noise dye advection by one step into the next ping-pong buffer.
- * @param audio Current audio features; drives the swirl impulse and dye-injection amount.
- * @param f Per-frame context supplying the integrated flow phase and the two dye source textures.
  *
- * Advance the dye advection by one step into the next ping-pong buffer.
+ * Parameters are documented in GpuSims.h: `audio` drives the swirl impulse
+ * and the dye-injection amount, `f` supplies the integrated flow phase and
+ * the two dye source textures (blended by Frame::dyeInterp).
  */
 void GpuSims::stepFluid(const AudioFeatures &audio, const Frame &f)
 {
@@ -311,13 +316,14 @@ void GpuSims::setupSmoke3D()
 
 /**
  * @brief Runs one sub-step of the smoke/fire PDE (horizontal or vertical half) into the next ping-pong buffer.
- * @param audio Current audio features; drives per-cell turbulence and base-cell fuel injection.
- * @param f Per-frame context (time, integrated emitter-wander phase).
- * @param subStep Which half of the PDE this pass computes (0 = horizontal, 1 = vertical); forwarded to the shader as-is.
  *
- * One sub-step (horizontal turbulence+injection, or vertical buoyancy) into the
- * next ping-pong buffer.  Calling this twice per frame (see stepSmoke3D) with
- * the two different subStep values advances both halves of the PDE.
+ * Parameters are documented in GpuSims.h: `audio` drives per-cell turbulence
+ * (treble/onset) and base-cell fuel injection (bass/kick/drop), `f` supplies
+ * the time and the integrated emitter-wander phase, and `subStep` selects
+ * the half (0 = horizontal turbulence+injection+decay, 1 = vertical
+ * buoyancy), forwarded to the shader as-is. Calling this twice per frame
+ * (see stepSmoke3D) with the two different subStep values advances both
+ * halves of the PDE.
  */
 void GpuSims::stepSmoke3DPass(const AudioFeatures &audio, const Frame &f, float subStep)
 {
@@ -356,12 +362,10 @@ void GpuSims::stepSmoke3DPass(const AudioFeatures &audio, const Frame &f, float 
 
 /**
  * @brief Advances the smoke/fire volume by one full frame: a horizontal pass followed by a vertical pass, each its own ping-pong swap.
- * @param audio Current audio features, forwarded unchanged to both sub-step passes.
- * @param f Per-frame context, forwarded unchanged to both sub-step passes.
  *
- * Advance the fire/smoke volume by one full frame: a horizontal pass followed
- * by a vertical pass, each its own ping-pong swap (mirrors the RD sim's
- * multi-substep-per-frame pattern so structure develops quickly).
+ * Parameters are documented in GpuSims.h; both `audio` and `f` are forwarded
+ * unchanged to the two stepSmoke3DPass() calls. The two-pass split mirrors
+ * the RD sim's multi-substep-per-frame pattern so structure develops quickly.
  */
 void GpuSims::stepSmoke3D(const AudioFeatures &audio, const Frame &f)
 {
@@ -502,11 +506,12 @@ void GpuSims::setupPhysarum()
 
 /**
  * @brief Advances the Physarum slime-mould sim by one frame: agent update, pheromone deposit, then trail diffuse+evaporate.
- * @param audio Current audio features; drives agent speed/sensor angle/turn rate/scatter and deposit amount.
- * @param f Per-frame context; supplies time to the agent-update shader.
  *
- * One full Physarum frame: agents sense/turn/move (ping-pong), deposit their
- * pheromone points, then the trail map diffuses + evaporates (ping-pong).
+ * Parameters are documented in GpuSims.h: `audio` drives agent speed, sensor
+ * angle, turn rate, scatter and the deposit amount; `f` supplies the time to
+ * the agent-update shader. One full frame means: agents sense/turn/move
+ * (ping-pong), deposit their pheromone points, then the trail map diffuses
+ * and evaporates (ping-pong; compute path when available, else fragment).
  */
 void GpuSims::stepPhysarum(const AudioFeatures &audio, const Frame &f)
 {
@@ -602,9 +607,9 @@ void GpuSims::stepPhysarum(const AudioFeatures &audio, const Frame &f)
 
 /**
  * @brief Accumulates one row/column of the self-similarity matrix roughly every kSSMStride seconds.
- * @param a Current audio features (chroma bins and spectrum) that source the feature vector.
- * @param dt Frame delta time in seconds; paces the accumulation.
  *
+ * Parameters are documented in GpuSims.h (`a` sources the chroma/spectrum
+ * feature vector, `dt` paces the accumulation).
  * Accumulate the self-similarity matrix: every kSSMStride seconds push one
  * feature vector (12 chroma bins + 8 coarse spectral-shape dims, unit-
  * normalised) into the ring and fill its row+column with sharpened cosine
@@ -658,9 +663,9 @@ void GpuSims::stepSSM(const AudioFeatures &a, float dt)
 
 /**
  * @brief Pushes newly-due rows of the scrolling spectrogram history from the current spectrum.
- * @param a Current audio features (normalized spectrum bands) that source each new row.
- * @param dt Frame delta time in seconds; paces row emission.
  *
+ * Parameters are documented in GpuSims.h (`a` supplies the normalized
+ * spectrum bands for each new row, `dt` paces row emission).
  * Push one row of the spectrogram history.  Several rows can fall due in a
  * single frame after a hitch, hence the while loop — dropping them instead
  * would make the scroll speed depend on the frame rate.
@@ -694,9 +699,9 @@ void GpuSims::stepSpectro(const AudioFeatures &a, float dt)
 
 /**
  * @brief Advances the Gray-Scott reaction-diffusion sim by one step into the next ping-pong buffer.
- * @param audio Current audio features; drives the feed/kill parameter wander and the reagent-injection trigger.
  *
- * Advance the Gray-Scott simulation by one step into the next ping-pong buffer.
+ * The parameter is documented in GpuSims.h: `audio` drives the feed/kill
+ * parameter wander and the reagent-injection trigger.
  */
 void GpuSims::stepReactionDiffusion(const AudioFeatures &audio)
 {

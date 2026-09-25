@@ -142,7 +142,8 @@ private:
      */
     struct SliderInfo {
         QString name;       ///< Parameter/uniform name.
-        float minV, maxV;   ///< Range the slider's [0,1000] position is linearly mapped into.
+        /// Lower end of the range the slider's [0,1000] position is linearly mapped into (position 0).
+        float minV, maxV;   ///< Upper end of the range the slider's [0,1000] position is linearly mapped into (position 1000).
         bool isInt;         ///< True if the underlying param is declared int (affects rounding/formatting).
         bool fromCombine;   ///< True if this slider belongs to the combine shader rather than the texture shader.
         class QSlider *slider;   ///< The actual slider widget.
@@ -199,8 +200,10 @@ private:
     QComboBox *m_combCombo = nullptr;   ///< Combine-shader selection combo (drives the preview and "add combine" panel).
     QComboBox *m_musicCombo = nullptr;   ///< Synthetic preview music profile selector (Beat / Drone).
     QComboBox *m_typeCombo = nullptr;   ///< "Add to preset" panel: texture entry type (normal / KaleidoscopeBase / scene3d).
-    QSpinBox  *m_minSolo = nullptr, *m_maxSolo = nullptr;   ///< "Add to preset" panel: minTimeSolo/maxTimeSolo for the next entry.
-    QSpinBox  *m_minInterp = nullptr, *m_maxInterp = nullptr;   ///< "Add to preset" panel: minTimeInterpolation/maxTimeInterpolation for the next entry.
+    /// "Add to preset" panel: minTimeSolo (seconds) for the next entry; also mirrors the table-selected entry's value.
+    QSpinBox  *m_minSolo = nullptr, *m_maxSolo = nullptr;   ///< "Add to preset" panel: maxTimeSolo (seconds) for the next entry; also mirrors the table-selected entry's value.
+    /// "Add to preset" panel: minTimeInterpolation (seconds) for the next entry; also mirrors the table-selected entry's value.
+    QSpinBox  *m_minInterp = nullptr, *m_maxInterp = nullptr;   ///< "Add to preset" panel: maxTimeInterpolation (seconds) for the next entry; also mirrors the table-selected entry's value.
     QDoubleSpinBox *m_prob = nullptr;   ///< "Add to preset" panel: probability for the next entry.
     QSpinBox  *m_complex = nullptr;   ///< "Add to preset" panel: complexity for the next entry.
 
@@ -215,8 +218,10 @@ private:
     QLineEdit *m_nameEdit = nullptr;   ///< Preset name field (ConfigurationName / on-disk filename stem).
     QCheckBox *m_hiddenCheck = nullptr;   ///< hidden="true" root attribute
     QLineEdit *m_imgDirEdit = nullptr;   ///< ImageDirectory field.
-    QSpinBox  *m_gSoloMin = nullptr, *m_gSoloMax = nullptr;   ///< Preset-level (root attribute) timeTextureSoloMin/Max fields.
-    QSpinBox  *m_gInterpMin = nullptr, *m_gInterpMax = nullptr;   ///< Preset-level (root attribute) timeTextureInterpolationMin/Max fields.
+    /// Preset-level (root attribute) timeTextureSoloMin field, in seconds; synced with #m_preset by metaToUi()/uiToMeta().
+    QSpinBox  *m_gSoloMin = nullptr, *m_gSoloMax = nullptr;   ///< Preset-level (root attribute) timeTextureSoloMax field, in seconds.
+    /// Preset-level (root attribute) timeTextureInterpolationMin field, in seconds; synced with #m_preset by metaToUi()/uiToMeta().
+    QSpinBox  *m_gInterpMin = nullptr, *m_gInterpMax = nullptr;   ///< Preset-level (root attribute) timeTextureInterpolationMax field, in seconds.
 
     QLabel *m_status = nullptr;   ///< Status-bar label; most actions update it to report their outcome.
 

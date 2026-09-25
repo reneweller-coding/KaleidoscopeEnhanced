@@ -225,8 +225,7 @@ private:
 
 
 	std::string	m_name;      ///< GLSL uniform variable name.
-	int			m_type; // GL_xxx type identifier
-	                         ///< Actually a baseType_e value (declared as plain int); selects which branch of every method's type switch runs.
+	int			m_type;      ///< A baseType_e value (declared as plain int, historically "GL_xxx type identifier"); selects which branch of every method's type switch runs.
 	int			m_location;  ///< Cached GL uniform location from initUniform(); -1 (or uninitialised) means "not yet resolved / not found".
 	dataUnit_t	m_data;      ///< The current, uploadable value: the rolled bool/int/float, or the live-ramping float for BASE_TYPE_INTERPOLATOR_FLOAT.
 	dataUnit_t	m_dataMin;   ///< Lower bound of the randomisation range (bool: reused as the "true" probability threshold); for BASE_TYPE_INTERPOLATOR_FLOAT, the currently-rolled ramp start value.

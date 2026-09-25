@@ -35,14 +35,14 @@
 #include <GL/GLU.h>
 
 
-static float minSides = 2.0;
-static unsigned int maxSides = 14;
+static float minSides = 2.0;         ///< Legacy lower bound of the kaleidoscope mirror-segment count; unused here (the effects keep their own m_minSides).
+static unsigned int maxSides = 14;   ///< Legacy range width of the kaleidoscope mirror-segment count; unused here (the effects keep their own m_maxSides).
 
 // Half-float colour format for the reaction-diffusion state buffers (Gray-Scott
 // needs more precision than 8-bit or the pattern decays).  GLee may not define
 // the core token, so provide it if missing.
 #ifndef GL_RGBA16F
-#define GL_RGBA16F 0x881A
+#define GL_RGBA16F 0x881A   ///< Half-float RGBA internal format token (see above), provided in case the GL header set lacks it.
 #endif
 
 // Live-tunable look parameters (shared across all configs, set by hotkeys).
@@ -69,8 +69,13 @@ QString RenderPipeline::s_warmLabel;                // what the lazy warm-up did
 QString RenderPipeline::s_imageDirCli;              // photo source override (CLI -f)
 QString RenderPipeline::s_imageDirUser;             // photo source override (ini)
 
-// Settings file lives next to the Presets folder (parent of Debug/Release),
-// matching how shaders and configs are loaded ("..\\...").
+/**
+ * @brief Path of the shared settings INI (kaleidoscope_settings.ini).
+ *
+ * Settings file lives next to the Presets folder (parent of Debug/Release),
+ * matching how shaders and configs are loaded ("..\\...").
+ * @return Absolute path resolved through Platform::assetPath(); the file need not exist yet.
+ */
 static QString settingsFilePath()
 {
 	return Platform::assetPath( QString( "..\\kaleidoscope_settings.ini" ) );
@@ -139,7 +144,11 @@ void RenderPipeline::loadSettings()
 	s.endGroup();
 }
 
-// Basename of a fragment path ("..\\Scene2D\\Voyager.frag" -> "Voyager.frag").
+/**
+ * @brief Basename of a fragment path ("..\\Scene2D\\Voyager.frag" -> "Voyager.frag"), the per-scene part of a taste/cue key.
+ * @param fragPath Fragment shader path with either slash kind; nullptr yields "?".
+ * @return Everything after the last path separator (the whole string if there is none).
+ */
 static QString tasteBase( const char *fragPath )
 {
 	QString f = QString::fromLocal8Bit( fragPath ? fragPath : "?" );
@@ -188,6 +197,11 @@ void RenderPipeline::saveSettings()
 }
 
 
+/**
+ * @brief Rounds to the nearest integer, halves up (used for the power-of-two texture-size check in resize()).
+ * @param f Value to round.
+ * @return floor(f) if the fractional part is below 0.5, else ceil(f).
+ */
 float ROUND(float f)
 {
 	if(f-floor(f) < 0.5)
@@ -197,8 +211,16 @@ float ROUND(float f)
 }
 
 
-// Move 'cur' toward 'target' by at most rate*dt this frame (slew-rate limiter).
-// Used to keep audio-driven brightness from changing fast enough to strobe.
+/**
+ * @brief Slew-rate limiter: moves @p cur toward @p target by at most rate*dt this frame.
+ *
+ * Used to keep audio-driven brightness from changing fast enough to strobe.
+ * @param cur Current value.
+ * @param target Value being approached.
+ * @param rate Maximum change per second (units of the value per second).
+ * @param dt Frame time in seconds.
+ * @return The new value: @p target if it is within reach, else @p cur stepped by rate*dt toward it.
+ */
 static float slewToward(float cur, float target, float rate, float dt)
 {
 	float maxStep = rate * dt;
@@ -1130,9 +1152,15 @@ void RenderPipeline::favoriteCurrentEffect()
 		bumpTaste( m_effectTextures[m_scheduler.actTexture()]->fragmentName(), 1.25f );
 }
 
-// Settings-Schluessel duerfen keine beliebigen Zeichen tragen: "artist|title"
-// wird auf [a-z0-9_] reduziert.  Kollisionen zweier Titel sind damit denkbar,
-// aber ein Cue am falschen Song ist ein falsches Bild, kein Absturz.
+/**
+ * @brief Reduces a track key ("artist|title") to a QSettings-safe key for the [cues] group.
+ *
+ * Settings-Schluessel duerfen keine beliebigen Zeichen tragen: "artist|title"
+ * wird auf [a-z0-9_] reduziert.  Kollisionen zweier Titel sind damit denkbar,
+ * aber ein Cue am falschen Song ist ein falsches Bild, kein Absturz.
+ * @param trackKey The identified track as "artist|title" (see GLwidget::cueTrackKey()).
+ * @return Lower-cased key with every non-alphanumeric character replaced by '_', truncated to 96 characters.
+ */
 static QString cueKey( const QString &trackKey )
 {
 	QString k = trackKey.toLower();
@@ -2449,9 +2477,13 @@ void RenderPipeline::drawScene(const float *rotMatrix, float tx, float ty, float
 	}
 }
 
-// Shared empty VAO for every fullscreen-triangle draw (core profile needs a
-// VAO bound even without vertex attributes; the shared Fullscreen.vert
-// generates the triangle from gl_VertexID).
+/**
+ * @brief Shared empty VAO for every fullscreen-triangle draw.
+ *
+ * Core profile needs a VAO bound even without vertex attributes; the shared
+ * Fullscreen.vert generates the triangle from gl_VertexID.
+ * @return The VAO name, generated on first call (a GL context must be current); never deleted.
+ */
 GLuint fullscreenVAO()
 {
 	static GLuint vao = 0;
@@ -3066,15 +3098,21 @@ QImage RenderPipeline::fallbackImage()
 	return img;
 }
 
-// Robustness: a corrupt/unreadable photo (bad JPEG, a file caught mid-copy,
-// a dropped network share) makes QImage's load fail and return a null 0x0
-// image. prepareImage() would then hand back a null image too (scaled() on
-// null stays null), and setupTexture() relies on ALWAYS getting a real
-// 1024x1024 image on the first two uploads to size the GL texture storage
-// correctly for every later glTexSubImage2D reuse -- a null image there
-// permanently breaks the photo texture (0x0 storage, GL_INVALID_VALUE from
-// then on). Load through here instead of a bare QImage(path) wherever the
-// result feeds setupTexture()/prepareImage().
+/**
+ * @brief Loads a photo, substituting the procedural fallback image when the file is unreadable.
+ *
+ * Robustness: a corrupt/unreadable photo (bad JPEG, a file caught mid-copy,
+ * a dropped network share) makes QImage's load fail and return a null 0x0
+ * image. prepareImage() would then hand back a null image too (scaled() on
+ * null stays null), and setupTexture() relies on ALWAYS getting a real
+ * 1024x1024 image on the first two uploads to size the GL texture storage
+ * correctly for every later glTexSubImage2D reuse -- a null image there
+ * permanently breaks the photo texture (0x0 storage, GL_INVALID_VALUE from
+ * then on). Load through here instead of a bare QImage(path) wherever the
+ * result feeds setupTexture()/prepareImage().
+ * @param path Image file to load.
+ * @return The loaded image, or RenderPipeline::fallbackImage() (with a stderr warning) if it is null.
+ */
 static QImage loadImageOrFallback( const QString &path )
 {
 	QImage img( path );
@@ -3227,7 +3265,7 @@ void RenderPipeline::setupTexture( const GLuint texID, const QImage &image )
 		for( w = 1 ; w < image.width()  ; w *= 2 ) ;
 		for( h = 1 ; h < image.height() ; h *= 2 ) ;
 	}
-	/*else
+	else
 	{
 		w = image.width();
 		h = image.height();

@@ -271,7 +271,12 @@ struct AudioFeatures
      * mirrors L=R.)
      */
     float stereoLowL  = 0.f, stereoMidL = 0.f, stereoHighL = 0.f;   ///< Left-channel  low/mid/high band energies.
+    /** @brief Right-channel low band energy (AGC-normalised 0..1); the counterpart of stereoLowL. */
     float stereoLowR  = 0.f, stereoMidR = 0.f, stereoHighR = 0.f;   ///< Right-channel low/mid/high band energies.
+    /** @var AudioFeatures::stereoMidL
+     *  @brief Left-channel mid band energy (AGC-normalised 0..1); the counterpart of stereoMidR. */
+    /** @var AudioFeatures::stereoMidR
+     *  @brief Right-channel mid band energy (AGC-normalised 0..1); the counterpart of stereoMidL. */
 
     /**
      * @brief Rate of change of the dominant pitch (melodic activity).

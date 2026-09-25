@@ -29,9 +29,9 @@ class Mesh {
 		/** @brief Copies three vertex/texcoord/normal index triples into this triangle. @param vi Pointer to 3 vertex indices. @param ti Pointer to 3 texture-coordinate indices. @param ni Pointer to 3 normal indices. */
 		Triangle( int *vi, int *ti, int *ni) 
 		  { memcpy(v,vi,3*sizeof(int)); memcpy(t,ti,3*sizeof(int)); memcpy(n,ni,3*sizeof(int)); }
-		int v[3];	// indices of the vertices
-		int t[3];	// indices of the texture coordinates
-		int n[3];	// indices of the normals
+		int v[3];	///< Indices of the three corner vertices into Mesh::vertices (0-based; the .obj's 1-based "f" indices are already converted).
+		int t[3];	///< Indices of the three texture coordinates into Mesh::textcoords (0-based).
+		int n[3];	///< Indices of the three normals into Mesh::normals (0-based; unused when the file had no normals).
 	};
 
 	/** @brief Phong-style material parsed from a .mtl file (ambient/diffuse/specular colors, shininess, alpha) plus an optional diffuse-texture reference. */
@@ -51,7 +51,7 @@ class Mesh {
 		float diffuse[3];   ///< Diffuse RGB reflectance ("Kd").
 		float specular[3];   ///< Specular RGB reflectance ("Ks").
 		float alpha;   ///< Opacity, from "Tr"/"d" in the .mtl file (1 = opaque).
-		int textureIndex; // i-th TextureNode
+		int textureIndex; ///< Index of this material's diffuse texture ("map_Kd") in Mesh::textures, or -1 if the material is untextured.
 	};
 
 	/** @brief One loaded (or pending-load) diffuse texture image and its GL texture object. */
@@ -73,7 +73,8 @@ class Mesh {
 		MeshPartInfo() { fromFace = toFace = materialIndex = -1; }
 		/** @brief Constructs a part covering [from,to) with no material assigned yet. @param from Index of the first face in this part. @param to Index one past the last face in this part. */
 		MeshPartInfo(int from, int to) : fromFace(from), toFace(to), materialIndex(-1) { }
-		int fromFace, toFace;   ///< Half-open [fromFace, toFace) range into the mesh's triangle array covered by this part.
+		/** @brief Index of the first triangle of this part in Mesh::triangles (start of the half-open range [fromFace, toFace)). */
+		int fromFace, toFace;   ///< One past the last triangle of this part in Mesh::triangles (end of the half-open range [fromFace, toFace)).
 		int materialIndex;   ///< Index into materialList, or -1 if no material is assigned.
 	};
 
@@ -99,7 +100,8 @@ public:
 	int numV() { return static_cast<int>(vertices.size()); }   ///< @return Number of vertices in the mesh.
 	int numT() { return static_cast<int>(triangles.size()); }   ///< @return Number of triangular faces in the mesh.
 
-	Vector3D bmin, bmax;  ///< Axis-aligned bounding box (min/max corners) computed by computeBoundingBox(), in the mesh's own object space.
+	/** @brief Minimum corner of the axis-aligned bounding box computed by computeBoundingBox(), in the mesh's own object space. */
+	Vector3D bmin, bmax;  ///< Maximum corner of the axis-aligned bounding box computed by computeBoundingBox(), in the mesh's own object space.
 
 private:
 

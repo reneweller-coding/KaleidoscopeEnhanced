@@ -41,7 +41,9 @@ public:
 	/** @brief Destroys the owned RenderPipeline (and, transitively, everything it built). */
 	~Configuration( );
 
-	QString getConfigurationName() { return m_configurationName; }; ///< @return The preset's display name (root element's ConfigurationName attribute).
+	/** @brief The preset's display name, as shown in the menu / matched by `-c <name>`.
+	 * @return The root element's ConfigurationName attribute (empty if the preset had none). */
+	QString getConfigurationName() { return m_configurationName; };
 	// hidden="true" on the root element: a master/reference or test-bench
 	// preset that must not appear in the user-facing selection (menu, digit
 	// keys, web remote, auto-config).  Still loadable via -c <name>.
@@ -88,7 +90,9 @@ private:
 
 	/**
 	 * @brief Parses the preset XML document and populates m_renderPipeline with its TextureShader/CombineShader entries.
-	 * @param filename Path to the Presets/ *.xml preset file.
+	 *
+	 * Takes the path of the Presets/ *.xml preset file; the parameter is
+	 * documented on the definition in Configuration.cpp.
 	 */
 	void readConfiguration( const QString &filename );
 	/**

@@ -81,7 +81,8 @@ public:
     bool valid() const { return m_ok; } ///< @return True if the last compile() call succeeded.
 
 private:
-    struct Op { int code; float value; };   ///< One RPN instruction: code<0 means push const (OP_CONST, value=the constant) or push var (OP_VAR, value=the ExprVars index as a float); code>=0 is an operator/function opcode consuming its operands off the stack.
+    /// One RPN instruction: code<0 means push const (OP_CONST, value=the constant) or push var (OP_VAR, value=the ExprVars index as a float); code>=0 is an operator/function opcode consuming its operands off the stack.
+    struct Op { int code; /**< OP_CONST, OP_VAR, or an operator/function opcode. */ float value; /**< The constant, or the ExprVars index for OP_VAR; unused for operators. */ };
     std::vector<Op> m_prog; ///< The compiled program, in RPN (postfix) order, as produced by compile()'s shunting-yard pass.
     bool m_ok = false;      ///< Whether m_prog is a valid, safely-evaluable program (set by compile()).
 };

@@ -152,14 +152,17 @@ public:
 	// (Web-Remote /api/toggle + /api/set; the keyboard shortcuts 'w'/'o'/'g'/
 	// 'p' set the same members directly, these just add a remote-safe API.)
 	bool        autoScaleEnabled() const    { return m_autoScale; }   ///< Whether adaptive render-scale (key 'g') is currently on.
-	void        setAutoScaleEnabled( bool on ) { m_autoScale = on; }
+	void        setAutoScaleEnabled( bool on ) { m_autoScale = on; }   ///< Switches adaptive render-scale on/off (same state as key 'g'); the current scale is left where it is until updateAdaptiveScale() moves it. @param on New state.
 	bool        nowPlayingEnabled() const   { return m_showNowPlaying; }   ///< Whether the now-playing title reveal (key 'p') is currently on.
-	void        setNowPlayingEnabled( bool on ) { m_showNowPlaying = on; }
+	void        setNowPlayingEnabled( bool on ) { m_showNowPlaying = on; }   ///< Switches the now-playing title reveal on/off (same state as key 'p'). @param on New state.
 	bool        artistImagesEnabled() const { return m_artistShow; }   ///< Whether the artist-image corner (key 'o') is currently on.
+	/** @brief Switches the artist-image corner on/off (same state as key 'o'); switching on immediately requests media for the current track. @param on New state. */
 	void        setArtistImagesEnabled( bool on );
 	bool        videoPipEnabled() const     { return m_videoEnabled; }   ///< Whether the music-video search/download (independent of, but gated by, artistImagesEnabled()) is currently on.
+	/** @brief Switches the music-video PiP search/download on/off; switching on immediately requests media for the current track. @param on New state. */
 	void        setVideoPipEnabled( bool on );
 	int         lyricsModeValue() const     { return m_lyricsMode; }   ///< 0 = off, 1 = scroll, 2 = karaoke (key 'w' cycles).
+	/** @brief Sets the lyrics mode directly (remote/setup tool; key 'w' cycles the same value); any non-zero mode immediately requests media for the current track. @param mode 0 = off, 1 = scroll, 2 = karaoke; clamped to that range. */
 	void        setLyricsModeValue( int mode );
 	/// Live preview: returns the cached small JPEG of the output and keeps the
 	/// ~1 Hz refresh in paintGL alive for the next few seconds.  All on the
@@ -191,9 +194,9 @@ public:
 	/** @brief The active shader names/transition overlay text (same content as key 'v'). @return Multi-line text, or empty without an active pipeline. */
 	QString     remoteShaderInfo() const;
 	bool        shaderInfoVisible() const   { return m_showShaderInfo; }        ///< Whether the on-screen active-shader-names overlay (key 'v') is shown.
-	void        setShaderInfoVisible( bool on ) { m_showShaderInfo = on; }
+	void        setShaderInfoVisible( bool on ) { m_showShaderInfo = on; }   ///< Shows/hides the active-shader-names overlay (same state as key 'v'). @param on New state.
 	bool        featureOverlayVisible() const { return m_showFeatureOverlay; }  ///< Whether the on-screen audio-feature/FPS overlay (key 'i') is shown.
-	void        setFeatureOverlayVisible( bool on ) { m_showFeatureOverlay = on; }
+	void        setFeatureOverlayVisible( bool on ) { m_showFeatureOverlay = on; }   ///< Shows/hides the audio-feature/FPS overlay (same state as key 'i'). @param on New state.
 	void        remoteSaveDefaults()        { saveAllSettings(); }              ///< Persists the current look + state as the startup default (same as key 'k').
 	/** @brief Name of the active configuration, even when it is hidden and therefore absent from remoteConfigNames(). */
 	QString     remoteActiveConfigName() const;
@@ -231,8 +234,8 @@ protected:
 	 */
 	virtual void resizeGL ( int width, int height );
 	/**
-	 * @brief Mouse-press handler (currently a no-op stub; trackball code is commented out).
-	 * @param event The mouse press event.
+	 * @brief Mouse-press handler: a click inside an open overlay menu picks a row, a click outside closes it (see the definition for details).
+	 * @param e The mouse press event (named `e` in the definition).
 	 */
 	virtual void mousePressEvent( QMouseEvent *event );
 	virtual void wheelEvent( QWheelEvent *event );   ///< Scrolls whichever overlay menu is open; inert otherwise.
@@ -515,10 +518,12 @@ protected:
 	/// Writes the current UI state to the shared settings INI (key 'k' and every
 	/// quit path).
 	void    saveUiSettings();
-	// Bündelt saveUiSettings() + RenderPipeline::saveSettings() - ruft die
-	// Taste 'k' auf UND jeder Quit-Pfad (auch die harten exit(0)-Stellen,
-	// die keine C++-Destruktoren mehr durchlaufen), damit der zuletzt
-	// gewählte Zustand wirklich immer übersteht.
+	/// @brief Persists everything: RenderPipeline::saveSettings() (look knobs) plus saveUiSettings() (UI state).
+	///
+	/// Bündelt saveUiSettings() + RenderPipeline::saveSettings() - ruft die
+	/// Taste 'k' auf UND jeder Quit-Pfad (auch die harten exit(0)-Stellen,
+	/// die keine C++-Destruktoren mehr durchlaufen), damit der zuletzt
+	/// gewählte Zustand wirklich immer übersteht.
 	void    saveAllSettings();
 
 	// Adaptive render scale: nudge RenderPipeline's internal render scale to keep
@@ -544,17 +549,17 @@ protected:
 	static int  sweepSeconds() { static const int s = qEnvironmentVariableIntValue( "KALEIDO_SCENE_SWEEP" ); return s; }
 	/** @return Whether a catalogue sweep is running (review mode, not normal playback). */
 	static bool sweepActive()  { return sweepSeconds() > 0; }
+	/** @brief Accumulated render time of one scene (KALEIDO_COST_LOG). */
+	struct SceneCost { double ms = 0.0; /**< Summed wall-clock render time of the scene's frames, in milliseconds (divided by frames for the report). */ int frames = 0; /**< Number of frames the scene was measured over. */ double cover = 0.0; /**< Summed RenderPipeline::activeCoverage() readings (fraction of the frame the model covered, mesh scenes only). */ int coverN = 0; /**< Number of frames that contributed to cover; 0 = no coverage measured (not a mesh scene). */ };
+	QHash<QString, SceneCost> m_sceneCost;   ///< Per-scene render cost; empty unless KALEIDO_COST_LOG is set.
+	/** @brief Write the measured per-scene cost to scene-cost.json and clear it. */
+	void dumpSceneCost();
 	/** @return FX sweep interval in seconds, 0 when KALEIDO_FX_SWEEP is unset.
 	 *
 	 * The scene sweep's counterpart for overlays.  An FX that does nothing is
 	 * a real failure class -- 43 silent FX and transitions were once found at
 	 * one go -- and the picker is random, so no overlay is reliably on screen
 	 * at a known moment.  Holds the scene still and walks the FX instead. */
-	/** @brief Accumulated render time of one scene (KALEIDO_COST_LOG). */
-	struct SceneCost { double ms = 0.0; int frames = 0; double cover = 0.0; int coverN = 0; };
-	QHash<QString, SceneCost> m_sceneCost;   ///< Per-scene render cost; empty unless KALEIDO_COST_LOG is set.
-	/** @brief Write the measured per-scene cost to scene-cost.json and clear it. */
-	void dumpSceneCost();
 	static int  fxSweepSeconds() { static const int s = qEnvironmentVariableIntValue( "KALEIDO_FX_SWEEP" ); return s; }
 	int     m_fxSweepIdx    = 0;   ///< Next FX index the sweep will jump to.
 	qint64  m_fxSweepNextMs = -1;  ///< Deadline for the next FX jump; -1 = not started.
@@ -576,7 +581,7 @@ protected:
 
 	// some variables for trackball
 	float			m_RotationMatrix[16];						//!< global rotation Matrix
-	float			m_xTrans, m_yTrans, m_zTrans;				//!< global translation
+	float			m_xTrans, /**< Global X translation handed to RenderPipeline::paint() for the legacy mesh preview path (0; the trackball code that moved it is commented out). */ m_yTrans, /**< Global Y translation for the legacy mesh preview path (0; trackball code commented out). */ m_zTrans;				//!< global translation (Z, initialised to -2; trackball code commented out)
 	QPoint			m_lastPos;   ///< Last mouse position (trackball input; currently unused, handlers are stubs).
 
 	QString			m_directory;   ///< Working directory set via slotSetDirectory(); currently only stored, not consumed.

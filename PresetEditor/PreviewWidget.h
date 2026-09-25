@@ -115,6 +115,12 @@ public:
 
     /// Live per-activation parameter override (editor slider): uniform #name pinned to #value (uploaded as an int when #isInt).
     struct ParamOverride { QString name; float value; bool isInt; };
+    /** @var QString PreviewWidget::ParamOverride::name
+     *  Uniform name the override pins (as declared in the shader and in Komplett.xml). */
+    /** @var float PreviewWidget::ParamOverride::value
+     *  Value to upload each frame; already mapped from the slider position into the parameter's [minV,maxV] range by EditorWindow::pushParamOverrides(). */
+    /** @var bool PreviewWidget::ParamOverride::isInt
+     *  True if the parameter is declared `<int>`: #value is rounded and uploaded via setUniformValue(int) instead of as a float. */
     /**
      * @brief Install live per-activation parameter overrides (editor sliders).
      *
@@ -237,6 +243,15 @@ private:
      * @param p Bound program whose uniforms are assumed already set (unused otherwise — the quad's VAO carries its own attribs).
      */
     void   drawFullscreenQuad(QOpenGLShaderProgram *p);
+    /**
+     * @brief (Re)create the tex0/tex1 sample textures #m_img0/#m_img1 from #m_imageDir.
+     *
+     * Deletes any previous textures, then takes the first two image files
+     * (\*.jpg, \*.jpeg, \*.png, \*.bmp; sorted by name) of the directory; a single
+     * file is used for both, an empty directory (or none) yields the
+     * procedural gradient of makeTexture(). Must run with the GL context
+     * current (called from paintGL() while #m_imagesDirty); clears the flag.
+     */
     void   loadImages();                     // (re)create m_img0/m_img1 (GL thread)
     /**
      * @brief Load an image file into a GL texture, or synthesize a colourful gradient if it can't be loaded.
@@ -268,7 +283,8 @@ private:
 
     QString m_texFile = "Kaleidoscope.frag";   ///< Selected texture (pass-1) shader filename.
     QString m_combFile = "FxPlain.frag";       ///< Selected combine (pass-2) shader filename.
-    bool    m_texDirty = true, m_combDirty = true;   ///< Set by setTextureShader()/setCombineShader(); consumed (and cleared) by paintGL()'s lazy recompile.
+    /// Texture (pass-1) shader needs a (re)compile: set by setTextureShader() and setSceneExprs(); consumed (and cleared) by paintGL()'s lazy recompile.
+    bool    m_texDirty = true, m_combDirty = true;   ///< Combine (pass-2) shader needs a (re)compile: set by setCombineShader(); consumed (and cleared) by paintGL()'s lazy recompile.
 
     // scene3d texture-shader path.
     QString m_texType = "normal";      ///< "normal" (2D texture-shader path) or "scene3d".
@@ -294,17 +310,25 @@ private:
     unsigned int m_cfxMask = 0;        ///< Bitmask of CfxKind values (1u << k) that m_texProg declares samplers for.
     float     m_cfxPrevTime = -1.f;    ///< Last real wall-clock time (seconds) compute-FX sims were stepped at; < 0 means "not yet stepped".
     QOpenGLFramebufferObject *m_fbo  = nullptr;   ///< Pass-1 (texture-shader) render target, resized to match the widget each frame.
-    GLuint  m_img0 = 0, m_img1 = 0;   ///< tex0/tex1 sample image textures.
+    /// tex0 sample image texture (GL object name, owned; 0 until loadImages() ran); bound on units 0 and 7 and passed to the compute-FX and scene3d paths.
+    GLuint  m_img0 = 0, m_img1 = 0;   ///< tex1 sample image texture (GL object name, owned); the same image as #m_img0 when the directory holds only one file.
     GLuint  m_vbo  = 0;               ///< Fullscreen-quad vertex buffer (NDC positions).
-    QOpenGLVertexArrayObject *m_quadVAO = nullptr;   // core profile: baked quad attribs
+    QOpenGLVertexArrayObject *m_quadVAO = nullptr;   ///< Vertex array object with the quad's aPos attribute baked in (a core-profile context needs a bound VAO to draw); owned, created in initializeGL(), bound by drawFullscreenQuad().
 
     QElapsedTimer m_clock;   ///< Wall clock driving m_time whenever the preview time is not pinned via setFixedTime().
     float   m_time = 0.f;    ///< Current preview time in seconds (live wall-clock value, or the pinned m_fixedTime).
-    int     m_fbW = 0, m_fbH = 0;   ///< Current render framebuffer size in device pixels.
+    /// Width #m_fbo was last allocated at, in device pixels; paintGL() reallocates the FBO when the widget size differs, and it feeds the "resolution" uniform.
+    int     m_fbW = 0, m_fbH = 0;   ///< Height #m_fbo was last allocated at, in device pixels (see #m_fbW).
 
-    QVector<ParamOverride> m_overrides;   // editor slider values
+    QVector<ParamOverride> m_overrides;   ///< Editor slider values installed by setParamOverrides(); uploaded by applyParamOverrides() after the built-in defaults every frame.
     struct SceneExpr { QString name; QString formula; std::shared_ptr<ExprProgram> prog; };   ///< One formula-layer entry: uniform name, source text, and its compiled program (null if the formula failed to compile).
-    QVector<SceneExpr> m_sceneExprs;      // formula layer of the selected entry
+    /** @var QString PreviewWidget::SceneExpr::name
+     *  Uniform (or audio-mapping such as "audioKick") the formula drives. */
+    /** @var QString PreviewWidget::SceneExpr::formula
+     *  Formula source text as it appears in the preset's `<expr>` element; compared by setSceneExprs() to skip a no-op reinstall. */
+    /** @var std::shared_ptr<ExprProgram> PreviewWidget::SceneExpr::prog
+     *  Compiled program for #formula, shared with nothing else; null when the formula failed to compile, in which case the entry is skipped rather than breaking the preview. */
+    QVector<SceneExpr> m_sceneExprs;      ///< Formula layer of the selected preset entry (see setSceneExprs()); applied by applySceneExprs() on the 2D path, forwarded to Scene3DPreview::addExpr() on the scene3d path.
 
     // 2D CAMERA RIG preview parity: mirrors RenderPipeline::rig2Transform for
     // the 2D path -- rig2* formulas rotate/zoom/pan the pass-1 frame before
@@ -338,12 +362,19 @@ private:
     float   m_tlPrevT   = 0.f;   ///< for dt
     float   m_tlPhase   = 0.f;   ///< host-style integrated rotation phase
     float   m_tlAdvance = 0.f;   ///< host-style integrated travel
-    float   m_tlBeatEnv = 0.f, m_tlBeat = 0.f;      ///< peak-hold + slew
-    float   m_tlOnsetEnv = 0.f, m_tlOnset = 0.f;    ///< peak-hold + slew, onset strength
-    float   m_tlDownEnv = 0.f, m_tlDown = 0.f;      ///< peak-hold + slew, downbeat accent
-    float   m_tlKickEnv = 0.f, m_tlKick = 0.f;      ///< peak-hold + slew, kick onset
-    float   m_tlSnareEnv = 0.f, m_tlSnare = 0.f;    ///< peak-hold + slew, snare onset
-    float   m_tlHatEnv = 0.f, m_tlHat = 0.f;        ///< peak-hold + slew, hat onset
-    float   m_tlLvlFast = 0.f, m_tlLvlSlow = 0.f;   ///< swell
+    /// Peak-hold envelope of the timeline's beatDecay (exponential decay, 0.30 s time constant); [0,1].
+    float   m_tlBeatEnv = 0.f, m_tlBeat = 0.f;      ///< Slew-limited (6/s) follower of #m_tlBeatEnv; uploaded as the audioBeat uniform / beatDecay field.
+    /// Peak-hold envelope of onsetStrength (0.22 s time constant); [0,1].
+    float   m_tlOnsetEnv = 0.f, m_tlOnset = 0.f;    ///< Slew-limited (7/s) follower of #m_tlOnsetEnv; uploaded as audioOnset / onsetStrength.
+    /// Peak-hold envelope of the downbeat accent (0.45 s time constant); [0,1].
+    float   m_tlDownEnv = 0.f, m_tlDown = 0.f;      ///< Slew-limited (5/s) follower of #m_tlDownEnv; uploaded as the downbeat field.
+    /// Peak-hold envelope of the kick onset (0.24 s time constant); [0,1].
+    float   m_tlKickEnv = 0.f, m_tlKick = 0.f;      ///< Slew-limited (7/s) follower of #m_tlKickEnv; uploaded as the onsetKick field.
+    /// Peak-hold envelope of the snare onset (0.20 s time constant); [0,1].
+    float   m_tlSnareEnv = 0.f, m_tlSnare = 0.f;    ///< Slew-limited (7/s) follower of #m_tlSnareEnv; uploaded as the onsetSnare field.
+    /// Peak-hold envelope of the hat onset (0.14 s time constant); [0,1].
+    float   m_tlHatEnv = 0.f, m_tlHat = 0.f;        ///< Slew-limited (8/s) follower of #m_tlHatEnv; uploaded as the onsetHat field.
+    /// overallLevel smoothed with a 1.5 s time constant; the swell is (fast - slow) * 4, clamped to [0,1].
+    float   m_tlLvlFast = 0.f, m_tlLvlSlow = 0.f;   ///< overallLevel smoothed with an 8 s time constant (the swell's reference level, see #m_tlLvlFast).
     float   m_tlBeatPhase = 0.f;   ///< integrated beat phase (0..1, wraps once per beat)
 };

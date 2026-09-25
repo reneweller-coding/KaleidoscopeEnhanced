@@ -41,7 +41,9 @@ TABLE = re.compile(r"^const char \*k([A-Z]+)\[S_COUNT\] = \{")
 
 def enum_order():
     text = io.open(HDR, encoding="utf-8").read()
-    body = text[text.index("enum StrId"):text.index("S_COUNT")]
+    # S_COUNT is searched from the enum on: a comment above the enum may name it too
+    start = text.index("enum StrId")
+    body = text[start:text.index("S_COUNT", start)]
     out = []
     for m in re.finditer(r"\bS_[A-Z0-9_]+\b", body):
         if m.group(0) not in out:

@@ -38,6 +38,14 @@ static const char *kVert =
 
 /// One `<int>`/`<float>` range entry parsed out of Komplett.xml for a single shader file; see komplettRangesFor().
 struct KomplettRange { QString kind, name; float minV, maxV; };
+/** @var QString KomplettRange::kind
+ *  "int" or "float": selects Scene3DPreview::addIntRange() vs addFloatRange() when the range is registered. */
+/** @var QString KomplettRange::name
+ *  Uniform/parameter name as declared in the shader (the element's name= attribute). */
+/** @var float KomplettRange::minV
+ *  Declared minValue: lower bound of the per-activation roll. */
+/** @var float KomplettRange::maxV
+ *  Declared maxValue: upper bound of the per-activation roll. */
 /**
  * @brief Look up the `<int>`/`<float>` ranges Komplett.xml registers for one fragment file.
  *

@@ -199,14 +199,26 @@ private:
     Scene3DShader *m_scene = nullptr;   ///< Currently loaded scene, owned; null until the first successful setShader().
     bool m_glReady = false;             ///< Whether ensureGL() has successfully loaded the glcore function pointers.
 
-    unsigned m_fbo = 0, m_colorTex = 0, m_depthTex = 0;   ///< Main render target: FBO plus its colour and depth texture attachments.
-    int m_fboW = 0, m_fboH = 0;   ///< Size m_fbo/m_colorTex/m_depthTex were last allocated at.
+    /// Main render target's framebuffer object (GL name, owned; 0 until ensureFbo() first ran); the scene's colour and depth are drawn into it.
+    unsigned m_fbo = 0, m_colorTex = 0, m_depthTex = 0;   ///< Depth texture attachment of #m_fbo (GL name, owned); handed out as render()'s outDepthTex.
+    /** @var unsigned Scene3DPreview::m_colorTex
+     *  Colour texture attachment of #m_fbo (GL name, owned); handed out as render()'s outColorTex and the target of the OIT resolve. */
+    /// Width #m_fbo/#m_colorTex/#m_depthTex were last allocated at, in pixels; ensureFbo() reallocates when it differs.
+    int m_fboW = 0, m_fboH = 0;   ///< Height #m_fbo/#m_colorTex/#m_depthTex were last allocated at, in pixels (see #m_fboW).
 
     static const int kShadowSize = 2048;   ///< Shadow-map texture width/height in texels.
-    unsigned m_shadowFbo = 0, m_shadowTex = 0;   ///< Depth-only FBO and its depth texture, sampled with hardware PCF comparison.
+    /// Depth-only framebuffer object for the shadow pass (GL name, owned; 0 until ensureShadowMap() ran), kShadowSize x kShadowSize.
+    unsigned m_shadowFbo = 0, m_shadowTex = 0;   ///< Depth texture attachment of #m_shadowFbo (GL name, owned), sampled with hardware PCF comparison by the main draw.
 
-    unsigned m_oitFbo = 0, m_oitAccum = 0, m_oitReveal = 0, m_oitResolveProg = 0;   ///< Order-independent-transparency targets (accumulation, revealage) and the resolve shader program that composites them.
-    int m_oitW = 0, m_oitH = 0;   ///< Size m_oitFbo/m_oitAccum/m_oitReveal were last allocated at.
+    /// Order-independent-transparency framebuffer object (GL name, owned; 0 until ensureOitTargets() ran) with #m_oitAccum and #m_oitReveal attached.
+    unsigned m_oitFbo = 0, m_oitAccum = 0, m_oitReveal = 0, m_oitResolveProg = 0;   ///< Program (GL name, owned) built from Engine/OitResolve.frag that composites accumulation and revealage back onto #m_fbo; 0 until first needed.
+    /** @var unsigned Scene3DPreview::m_oitAccum
+     *  Weighted-colour accumulation texture (GL name, owned) the OIT pass blends into; bound as texAccum by the resolve. */
+    /** @var unsigned Scene3DPreview::m_oitReveal
+     *  Revealage (transmittance) texture (GL name, owned) the OIT pass multiplies into; bound as texReveal by the resolve. */
+    /// Width the OIT targets were last allocated at, in pixels; ensureOitTargets() reallocates when it differs.
+    int m_oitW = 0, m_oitH = 0;   ///< Height the OIT targets were last allocated at, in pixels (see #m_oitW).
 
-    unsigned m_quadVao = 0, m_quadVbo = 0;   // local fullscreen quad (OIT resolve)
+    /// Vertex array object of this class's own fullscreen quad (GL name, owned; lazily created), used only by the OIT resolve so PreviewWidget's Qt-side quad is never touched from here.
+    unsigned m_quadVao = 0, m_quadVbo = 0;   ///< Vertex buffer (NDC positions) backing #m_quadVao (GL name, owned).
 };

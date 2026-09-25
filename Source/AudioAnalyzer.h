@@ -142,7 +142,7 @@ public:
      * presets can be tuned against real music with the real analyzer, not the
      * synthetic profile.
      * @param path Path to a 16-bit PCM WAV file.
-     * @return One AudioFeatures snapshot per 10 ms block of audio.
+     * @return One AudioFeatures snapshot per 10 ms block of audio (empty if the file could not be read).
      */
     static std::vector<AudioFeatures> analyzeWavToTimeline( const QString &path );
 
@@ -419,12 +419,15 @@ private:
      * back.
      */
     float m_bldFastOnset = 0.f, m_bldSlowOnset = 0.f;   ///< Fast (~1.5 s) / slow (~10 s) EMAs of onset rate.
-    float m_bldFastCent  = 0.f, m_bldSlowCent  = 0.f;   ///< Fast / slow EMAs of spectral centroid.
-    float m_bldFastLvl   = 0.f, m_bldSlowLvl   = 0.f;   ///< Fast / slow EMAs of overall level.
+    /** @brief Fast (~1.5 s) EMA of the smoothed spectral centroid (0..1); its rise over #m_bldSlowCent is the "filter sweep" build-up evidence. */
+    float m_bldFastCent  = 0.f, m_bldSlowCent  = 0.f;   ///< Slow (~10 s) EMA of spectral centroid, the baseline the fast one is compared against.
+    /** @brief Fast (~1.5 s) EMA of the overall level (0..1); its ratio to #m_bldSlowLvl is the "swelling level" build-up evidence. */
+    float m_bldFastLvl   = 0.f, m_bldSlowLvl   = 0.f;   ///< Slow (~10 s) EMA of overall level, the baseline the fast one is compared against.
     float m_bldSnareRoll = 0.f;     ///< Smoothed snare-onset envelope mean (snare-roll density).
     int   m_bldWarm      = 0;       ///< Bias-correction counter (EMA warm-up), also used as a block-count clock for build-up/drop logging.
     float m_sBuildUp     = 0.f;     ///< Smoothed 0..1 build-up output; see AudioFeatures::buildUp.
-    float m_bassFast     = 0.f, m_bassSlow = 0.f;  ///< Bass-energy EMAs (~0.5 s / ~5 s) for the drop vacuum/slam test.
+    /** @brief Fast (~0.15 s) EMA of the LINEAR sub-bass + bass RMS (not the dB-normalised 0..1 bands); a value under 0.35 x #m_bassSlow while armed is the drop "vacuum". */
+    float m_bassFast     = 0.f, m_bassSlow = 0.f;  ///< Slow (~5 s) EMA of the same linear bass energy, FROZEN while a vacuum is open so the gap cannot drag the average down.
     float m_dropArmed    = 0.f;     ///< Blocks of arming left (recent build-up qualifies a drop).
     float m_lowGapBlocks = 0.f;     ///< Consecutive blocks of bass vacuum (the breakdown gap).
     float m_dropPulse    = 0.f;     ///< Decaying drop output (1.0 at the hit); see AudioFeatures::dropPulse.
@@ -467,9 +470,9 @@ private:
 
     /**
      * @brief In-place Radix-2 DIT complex FFT.
-     * @param re Real-part array, length N: input windowed samples, output real spectrum coefficients.
-     * @param im Imaginary-part array, length N: input all-zero, output imaginary spectrum coefficients.
-     * @param N Transform size; must be a power of two.
+     * @param re Real-part array, length N: input windowed samples, output real part of the DFT coefficients X[0..N-1].
+     * @param im Imaginary-part array, length N: input all-zero for real-valued audio, output imaginary part of X[0..N-1].
+     * @param N Transform size; MUST be a power of two (e.g. 2048).
      */
     static void radix2fft(float *re, float *im, int N);
 
@@ -499,9 +502,9 @@ private:
     void recOpen( int sampleRate );
     /**
      * @brief Appends captured samples to the open recording, converting to 16-bit stereo.
-     * @param src Interleaved float samples.
+     * @param src Interleaved float samples, range roughly [-1, 1] (clipped to 16-bit on conversion).
      * @param numFrames Number of frames in `src`.
-     * @param numChannels Number of interleaved channels in `src` (mono is duplicated to stereo).
+     * @param numChannels Number of interleaved channels in `src` (channel 2+ is ignored; mono is duplicated to stereo).
      */
     void recWrite( const float *src, int numFrames, int numChannels );
     /** @brief Finalises the WAV header (chunk sizes) and closes #m_wavFile. */
@@ -527,7 +530,7 @@ private:
      * @brief Core per-block DSP pipeline: 6-band IIR analysis, beat detection, ambient classification, FFT features, publishes AudioFeatures.
      * @param data Interleaved float PCM samples for this block.
      * @param numFrames Number of frames in `data`.
-     * @param numChannels Number of interleaved channels in `data`.
+     * @param numChannels Number of interleaved channels in `data` (1 or 2).
      * @param sampleRate Sample rate of `data`, in Hz.
      */
     void processBlock(const float *data, int numFrames, int numChannels,

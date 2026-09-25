@@ -36,10 +36,17 @@
 // h264_nvenc while the driver or GPU refuses it at runtime. So this actually
 // ENCODES a tiny throwaway clip once and keeps the result. Probed lazily on
 // first use, never on the render thread's critical path.
-// Does this encoder actually work HERE? Encodes a throwaway clip and checks the
-// exit code. 256x256 on purpose: NVENC, AMF and QSV all impose minimum
-// dimensions and alignment, and a 64x64 probe can be rejected by a perfectly
-// working encoder -- which would silently demote the machine to software.
+/**
+ * @brief Does this encoder actually work HERE? Encodes a throwaway clip and checks the exit code.
+ *
+ * 256x256 on purpose: NVENC, AMF and QSV all impose minimum dimensions and
+ * alignment, and a 64x64 probe can be rejected by a perfectly working encoder
+ * -- which would silently demote the machine to software. A probe that has
+ * not finished after 15 s is killed and counted as unavailable.
+ * @param enc Encoder name, used only for the "unavailable" log line.
+ * @param encArgs The candidate's ffmpeg arguments ("-c:v" ... plus rate-control flags) to test.
+ * @return true if ffmpeg exited normally with code 0.
+ */
 static bool probeEncoder( const QString &enc, const QStringList &encArgs )
 {
     QProcess p;
@@ -60,18 +67,25 @@ static bool probeEncoder( const QString &enc, const QStringList &encArgs )
     return ok;
 }
 
-struct Candidate { const char *name; QStringList args; };
+/** @brief One ffmpeg encoder to try: its name (as listed by `ffmpeg -encoders`) and the complete video-codec argument list that selects it. */
+struct Candidate { const char *name; /**< ffmpeg encoder name, e.g. "h264_nvenc"; also matched against KALEIDO_VIDEO_ENCODER. */ QStringList args; /**< "-c:v" plus the vendor-specific preset and rate-control flags for this encoder. */ };
 
-// One family per output codec. Within a family: discrete-GPU encoder first
-// (on a machine that has one it is also the card doing the rendering, so its
-// encode block is the silicon sitting idle next to the work), then Intel's
-// integrated Quick Sync, then software.
-//
-// The rate-control flags are per-vendor and NOT interchangeable: NVENC wants
-// -cq, AMF wants -rc cqp with explicit qp values, QSV wants -global_quality,
-// x264/x265 want -crf. Passing the wrong one is ignored without a warning and
-// you get whatever default bitrate the encoder felt like. SVT-AV1's -crf is a
-// different scale again -- 30 there is roughly x264's 20, not a quality drop.
+/**
+ * @brief The ordered list of encoder candidates for one output codec family.
+ *
+ * One family per output codec. Within a family: discrete-GPU encoder first
+ * (on a machine that has one it is also the card doing the rendering, so its
+ * encode block is the silicon sitting idle next to the work), then Intel's
+ * integrated Quick Sync, then software.
+ *
+ * The rate-control flags are per-vendor and NOT interchangeable: NVENC wants
+ * -cq, AMF wants -rc cqp with explicit qp values, QSV wants -global_quality,
+ * x264/x265 want -crf. Passing the wrong one is ignored without a warning and
+ * you get whatever default bitrate the encoder felt like. SVT-AV1's -crf is a
+ * different scale again -- 30 there is roughly x264's 20, not a quality drop.
+ * @param fam Codec family: "hevc", "av1", or anything else for h264.
+ * @return Candidates in probe order (hardware first, software last).
+ */
 static QList<Candidate> codecFamily( const QString &fam )
 {
     if( fam == "hevc" )
@@ -116,11 +130,16 @@ static QList<Candidate> codecFamily( const QString &fam )
     };
 }
 
-// Which output codec to aim for. h264 stays the DEFAULT because it is the one
-// every player, editor and phone opens without thinking. hevc roughly halves
-// the file at the same quality, which matters now that recordings run at the
-// full render resolution rather than 720p; av1 is smaller still but slower to
-// encode and younger in playback support.
+/**
+ * @brief Which output codec family to aim for: KALEIDO_VIDEO_CODEC, else the ini key videoCodec, else h264.
+ *
+ * h264 stays the DEFAULT because it is the one every player, editor and phone
+ * opens without thinking. hevc roughly halves the file at the same quality,
+ * which matters now that recordings run at the full render resolution rather
+ * than 720p; av1 is smaller still but slower to encode and younger in
+ * playback support.
+ * @return "h264", "hevc" or "av1" (normalised: "h265" becomes "hevc", unknown values become "h264").
+ */
 static QString wantedCodecFamily()
 {
     QString fam = qEnvironmentVariable( "KALEIDO_VIDEO_CODEC" ).trimmed().toLower();
@@ -137,6 +156,16 @@ static QString wantedCodecFamily()
     return fam;
 }
 
+/**
+ * @brief Find the first working encoder for the wanted codec family by probing the candidates in order.
+ *
+ * Honours the KALEIDO_VIDEO_ENCODER escape hatch first, then walks the family
+ * from codecFamily(); libx264 is assumed present rather than probed. If the
+ * wanted family has no usable encoder at all, it falls back to the h264 family
+ * so a recording still happens. Spawns up to three short ffmpeg processes, so
+ * it is only ever called through videoCodecArgs()'s once-per-process cache.
+ * @return The complete "-c:v ... -pix_fmt yuv420p" argument list to splice into a mux or pipe command.
+ */
 static QStringList computeVideoCodecArgs()
 {
     QStringList cached;
@@ -221,37 +250,58 @@ static QStringList computeVideoCodecArgs()
 // blocking behaviour we want if a recording is somehow stopped before the warm
 // probe finished -- the GL thread waits for the running probe instead of
 // starting a second one.
-static std::once_flag g_codecOnce;
-static QStringList    g_codecArgs;
+static std::once_flag g_codecOnce;   ///< Guards the one-time encoder probe behind videoCodecArgs() (see the comment above for why call_once and not a plain "is it cached" check).
+static QStringList    g_codecArgs;   ///< Process-wide cached result of computeVideoCodecArgs(); valid once g_codecOnce has fired.
 
-// NOT a bare static std::thread: ~thread() calls std::terminate() if the thread
-// is still joinable, so arming the replay ring and then closing the window
-// before anything was ever muxed would abort the process on the way out. The
-// holder joins instead. The explicit joinVideoEncoderProbe() calls below mean
-// this destructor is a backstop that normally has nothing left to do.
+/**
+ * @brief Owner of the warm encoder-probe thread that joins it on destruction.
+ *
+ * NOT a bare static std::thread: ~thread() calls std::terminate() if the thread
+ * is still joinable, so arming the replay ring and then closing the window
+ * before anything was ever muxed would abort the process on the way out. The
+ * holder joins instead. The explicit joinVideoEncoderProbe() calls below mean
+ * this destructor is a backstop that normally has nothing left to do.
+ */
 struct ProbeThread
 {
-    std::thread t;
+    std::thread t;   ///< The probe thread started by warmVideoEncoderProbe(); not joinable while no probe has been started.
     ~ProbeThread() { if( t.joinable() ) t.join(); }
 };
-static ProbeThread g_codecProbe;
+static ProbeThread g_codecProbe;   ///< The single process-wide warm probe thread (see ProbeThread).
 
+/**
+ * @brief The video-codec arguments for this process, probing on first call and cached thereafter.
+ *
+ * Blocks while a probe started by warmVideoEncoderProbe() is still running on
+ * another thread, rather than starting a second one.
+ * @return The cached result of computeVideoCodecArgs().
+ */
 static QStringList videoCodecArgs()
 {
     std::call_once( g_codecOnce, []{ g_codecArgs = computeVideoCodecArgs(); } );
     return g_codecArgs;
 }
 
+/**
+ * @brief Start the encoder probe on a throwaway thread now, so its answer is ready long before the mux needs it.
+ *
+ * Called when a recording starts or the replay ring is armed; a no-op if a
+ * probe thread is already running.
+ */
 static void warmVideoEncoderProbe()
 {
     if( g_codecProbe.t.joinable() ) return;       // already warming
     g_codecProbe.t = std::thread( []{ videoCodecArgs(); } );
 }
 
-// Must run before the process can exit: a detached probe still inside QProcess
-// while QCoreApplication tears down is a crash at shutdown. By the time this is
-// called videoCodecArgs() has already returned, so call_once is satisfied and
-// the join only waits for the thread to unwind.
+/**
+ * @brief Join the warm probe thread, if one was started.
+ *
+ * Must run before the process can exit: a detached probe still inside QProcess
+ * while QCoreApplication tears down is a crash at shutdown. By the time this is
+ * called videoCodecArgs() has already returned, so call_once is satisfied and
+ * the join only waits for the thread to unwind.
+ */
 static void joinVideoEncoderProbe()
 {
     if( g_codecProbe.t.joinable() ) g_codecProbe.t.join();
@@ -259,10 +309,10 @@ static void joinVideoEncoderProbe()
 
 
 #ifndef GL_PIXEL_PACK_BUFFER
-#define GL_PIXEL_PACK_BUFFER 0x88EB
+#define GL_PIXEL_PACK_BUFFER 0x88EB   ///< Buffer target for glReadPixels-into-a-buffer (PBO readback), for GL headers that predate it.
 #endif
 #ifndef GL_STREAM_READ
-#define GL_STREAM_READ 0x88E1
+#define GL_STREAM_READ 0x88E1   ///< Usage hint for the readback PBOs: written once by the GPU, read once by the CPU.
 #endif
 
 Recorder::Recorder()
@@ -628,16 +678,22 @@ void Recorder::worker()
 	}
 }
 
-// Nominal output frame rate of the raw pipe. It matches the capture deadline
-// in captureFrame(); the writer converts each frame's MEASURED duration into a
-// whole number of output frames at this rate, so the file stays constant-rate
-// (which every player and editor prefers) while still lasting exactly as long
-// as the capture did.
-// Read once per process from the settings file. 30 is the default because it
-// halves the file for material that is mostly slow evolution; 60 is there for
-// fast scenes, where 30 visibly steps. Not a per-recording knob on purpose --
-// changing it mid-recording would break the constant-rate contract the pipe
-// writer relies on.
+/**
+ * @brief Nominal output frame rate of the raw pipe (30 or 60), read once per process.
+ *
+ * It matches the capture deadline in captureFrame(); the writer converts each
+ * frame's MEASURED duration into a whole number of output frames at this rate,
+ * so the file stays constant-rate (which every player and editor prefers)
+ * while still lasting exactly as long as the capture did.
+ *
+ * Read once per process from the settings file (ini key recordFps), or from
+ * KALEIDO_RECORD_FPS when set. 30 is the default because it halves the file
+ * for material that is mostly slow evolution; 60 is there for fast scenes,
+ * where 30 visibly steps. Not a per-recording knob on purpose -- changing it
+ * mid-recording would break the constant-rate contract the pipe writer relies
+ * on.
+ * @return 60.0 if the configured value is 45 or more, otherwise 30.0.
+ */
 static double recordFps()
 {
     static double fps = 0.0;
@@ -868,10 +924,12 @@ void Recorder::captureReplayFrame( int w, int h )
  * video's total duration still matches wall-clock time despite the drop.
  * Successfully queued recording frames also grow the ffmpeg concat-list
  * string (m_recConcat) with their filename and duration right here.
- * @param dur Output duration in seconds this frame should occupy in the timeline.
- * @param toReplay True to route the frame into the replay ring; false to write it as a numbered recording frame.
- * @param w Framebuffer width in pixels (readback size).
- * @param h Framebuffer height in pixels (readback size).
+ *
+ * The parameters are documented on the declaration in Recorder.h: @p dur is
+ * the output duration in seconds this frame occupies in the timeline, @p
+ * toReplay routes the frame into the replay ring instead of the recording
+ * pipe, and @p w / @p h give the readback size in pixels (frames smaller than
+ * 2x2 are ignored).
  */
 void Recorder::asyncCapture( float dur, bool toReplay, int w, int h )
 {

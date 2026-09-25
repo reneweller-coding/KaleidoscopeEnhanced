@@ -113,7 +113,7 @@ public:
 	void requestChange( bool alsoFx )
 	{ m_forceEffectChange = true; m_forceIsManual = true; if( alsoFx ) m_forceFxChange = true; }
 	/** @brief Jump directly to a given effect index, pre-empting the normal selection (remote scene browser).
-	 * @param idx Index into the attached texture/effect list to jump to.
+	 * @param idx Index into the attached texture/effect list to jump to; out-of-range or a missing attach() is silently ignored.
 	 */
 	void forceScene( int idx );
 	/** @brief Force the next combine-effect (overlay) to @p idx, bypassing the
@@ -190,14 +190,14 @@ public:
 	unsigned int nextTexture() const { return m_nextTexture; }   ///< Index of the effect/texture shader being faded to (or picked for next).
 	unsigned int actFx()  const { return m_actFx; }    ///< Index of the currently active combine shader.
 	unsigned int nextFx() const { return m_nextFx; }   ///< Index of the combine shader being faded to (or picked for next).
-	int   texState()   const { return m_texState; }    // 0 = Solo, 1 = Fade   ///< Effect state machine phase: 0 = Solo, 1 = Fade.
+	int   texState()   const { return m_texState; }    ///< Effect state machine phase: 0 = Solo (one scene on screen), 1 = Fade (cross-fading actTexture() -> nextTexture()).
 	int   fxState()  const { return m_fxState; }   ///< Combine state machine phase: 0 = Solo, 1 = Fade.
-	float texInterp()  const { return m_texInterp; }   // 1 -> 0 während des Fades   ///< Effect cross-fade blend factor, 1 -> 0 over the fade.
+	float texInterp()  const { return m_texInterp; }   ///< Effect cross-fade blend factor: 1 while solo, then runs 1 -> 0 over the fade (weight of the outgoing actTexture()); the transition shaders receive it as their progress uniform.
 	float fxInterp() const { return m_fxInterp; }  ///< Combine cross-fade blend factor, 1 -> 0 over the fade.
 	unsigned int actTransition() const { return m_actTransition; }   ///< Index of the transition shader rolled for the current/last scene fade.
 
 private:
-	using Clock = std::chrono::steady_clock;
+	using Clock = std::chrono::steady_clock;   ///< Monotonic wall clock behind every Solo/Fade timer -- the same semantics as the QElapsedTimer this class replaced (never affected by system-time changes).
 	static void  restart( Clock::time_point &tp ) { tp = Clock::now(); }   ///< Reset a clock's reference point to now.
 	/** @brief Elapsed wall time since a clock's reference point.
 	 * @param tp Reference time point captured by restart().
@@ -237,7 +237,7 @@ private:
 	int   m_fxState  = 0;    ///< Combine state machine phase: 0 = Solo, 1 = Fade.
 	float m_texInterp  = 1.f;  ///< Effect cross-fade blend factor.
 	float m_fxInterp = 1.f;  ///< Combine cross-fade blend factor.
-	float m_texFadeDur  = 10.f;   // aktuelle Solo- BZW. Fade-Dauer (wie zuvor doppelt genutzt)   ///< Current Solo *or* Fade duration for the effect slot (dual-purpose, as before).
+	float m_texFadeDur  = 10.f;   ///< Duration in seconds of the effect slot's CURRENT phase: the solo span while m_texState == 0, the fade span while m_texState == 1 (one dual-purpose field, as in the old inline code).
 	float m_fxFadeDur = 10.f;   ///< Current Solo *or* Fade duration for the combine slot.
 	Clock::time_point m_clockEffectTexture = Clock::now();   ///< Reference clock for the effect slot's Solo/Fade timing.
 	Clock::time_point m_clockEffectFx = Clock::now();   ///< Reference clock for the combine slot's Solo/Fade timing.

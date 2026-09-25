@@ -21,10 +21,10 @@
 #include <vector>
 
 #ifndef GL_POINT_SPRITE
-#define GL_POINT_SPRITE 0x8861
+#define GL_POINT_SPRITE 0x8861   ///< Legacy enable for textured point sprites (gl_PointCoord), for GL headers that lack it; a no-op in the core profile.
 #endif
 #ifndef GL_VERTEX_PROGRAM_POINT_SIZE
-#define GL_VERTEX_PROGRAM_POINT_SIZE 0x8642
+#define GL_VERTEX_PROGRAM_POINT_SIZE 0x8642   ///< Enable letting the vertex shader set gl_PointSize (GEOM_POINTS / GEOM_SCATTER), for GL headers that lack it.
 #endif
 
 /**

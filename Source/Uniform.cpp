@@ -122,7 +122,10 @@ void Uniform::resetParameters()
 
 /**
  * @brief Like resetParameters(), but for BASE_TYPE_INTERPOLATOR_FLOAT also overrides the ramp duration with @p time before rolling new min/max bounds.
- * @param time New ramp duration in seconds (BASE_TYPE_INTERPOLATOR_FLOAT only; ignored for the other types, which behave exactly like resetParameters()).
+ *
+ * @p time is the new ramp duration in seconds; the other types ignore it and
+ * behave exactly like resetParameters() (the parameter is documented on the
+ * declaration in Uniform.h).
  *
  * Note this overload does NOT recompute m_delta/m_data here (those two
  * lines are commented out below) — it only rolls fresh m_dataMin/m_dataMax
@@ -255,7 +258,10 @@ void Uniform::setUniform()
 // ---------------------------------------------------------------------------
 /**
  * @brief Re-uploads m_data.vf * @p scale to the GL location, without altering the stored value — a non-destructive way to layer audio reactivity on top of the rolled/ramped base value.
- * @param scale Multiplier applied to the current float value for this upload only.
+ *
+ * The multiplier applies to this upload only; float and interpolator-float
+ * uniforms are affected, int/bool uniforms are left alone (the parameter is
+ * documented on the declaration in Uniform.h).
  */
 void Uniform::setGLValueScaled(float scale)
 {

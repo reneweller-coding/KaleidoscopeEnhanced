@@ -26,8 +26,16 @@
 // own reading/writing that key and call setLanguage() with the result --
 // this header only owns the enum, the tables, and the current selection.
 
+/** @brief A supported UI language; the value doubles as the index of that language's string table. German is the default/fallback. */
 enum class Lang { DE = 0, EN = 1 };
 
+/**
+ * @brief Identifier of one user-visible string; the same id indexes every language's parallel table.
+ *
+ * Grouped by the file that draws the string. Entries ending in `_FMT` are
+ * QString::arg() format strings (the comment beside each shows the
+ * placeholders). The last enumerator is the table length, not a string.
+ */
 enum StrId
 {
 	// ---- glwidget.cpp: help overlay ('h') ----

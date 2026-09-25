@@ -103,8 +103,8 @@ GLC_DEF(glTexImage2DMultisample)
 #undef GLC_DEF
 
 int glcoreHasCompute = 0; ///< Definition of glcoreHasCompute; set by glcoreInit() once the compute pointers are resolved.
-int glcoreHasTess    = 0;
-int glcoreHasDebug   = 0; ///< Definition of glcoreHasDebug; set by glcoreInit(). ///< Definition of glcoreHasTess; set by glcoreInit() once glPatchParameteri is resolved.
+int glcoreHasTess    = 0; ///< Definition of glcoreHasTess; set by glcoreInit() once glPatchParameteri is resolved.
+int glcoreHasDebug   = 0; ///< Definition of glcoreHasDebug; set by glcoreInit().
 
 /**
  * @brief Resolves a single GL entry point by name.
@@ -133,7 +133,10 @@ int glcoreHasDebug   = 0; ///< Definition of glcoreHasDebug; set by glcoreInit()
 // ---------------------------------------------------------------------------
 
 // ---- Stand-in textures, see glcore.h for the why -------------------------
-static GLuint s_dummy2D = 0, s_dummy2DArray = 0, s_dummyShadow = 0;
+/** @brief Lazily created 1x1 black GL_TEXTURE_2D bound to sampler2D units a scene left unassigned; 0 until glcoreDummyTex2D() first runs. Lives for the process (never deleted). */
+static GLuint s_dummy2D = 0, s_dummy2DArray = 0, s_dummyShadow = 0;   ///< Lazily created 1x1 GL_DEPTH_COMPONENT24 texture filled with 1.0 (far plane) in compare mode, so an unassigned sampler2DShadow reads "nothing occludes"; 0 until glcoreDummyShadow() first runs.
+/** @var s_dummy2DArray
+ *  @brief Lazily created 1x1x1 black GL_TEXTURE_2D_ARRAY for unassigned sampler2DArray units; stays 0 when glTexImage3D is unavailable or until glcoreDummyTex2DArray() first runs. */
 
 GLuint glcoreDummyTex2D()
 {
@@ -195,9 +198,12 @@ GLuint glcoreDummyShadow()
     return s_dummyShadow;
 }
 
-// Program id -> shader file, filled in by shader_setup as programs are built.
-// Only populated while KALEIDO_GL_DEBUG is on; a plain array keeps the
-// callback allocation-free, which matters because it runs inside the driver.
+/**
+ * @brief Program id -> shader file, filled in by shader_setup (via glcoreNameProgram()) as programs are built.
+ *
+ * Only populated while KALEIDO_GL_DEBUG is on; a plain array keeps the
+ * callback allocation-free, which matters because it runs inside the driver.
+ */
 static std::map<unsigned, std::string> s_progNames;
 
 void glcoreNameProgram( unsigned prog, const char *name )
@@ -211,9 +217,20 @@ const char *glcoreDebugProgramName( unsigned prog )
     return ( it == s_progNames.end() ) ? "?" : it->second.c_str();
 }
 
-static const char *s_debugMark = "?";
+static const char *s_debugMark = "?";   ///< Label of the render station last announced via glcoreDebugMark(), printed as `at=` by glcDebugCb(); points at a string literal the caller keeps alive, "?" when none was set.
 void glcoreDebugMark( const char *station ) { s_debugMark = station ? station : "?"; }
 
+/**
+ * @brief KHR_debug callback: prints every non-notification driver message to stderr with severity, station, message id and the bound program's shader file.
+ *
+ * Runs synchronously inside the offending GL call (GL_DEBUG_OUTPUT_SYNCHRONOUS),
+ * so a breakpoint here lands on the culprit. Notifications are dropped; the
+ * source, length and user-pointer arguments are unused.
+ * @param type Message type; GL_DEBUG_TYPE_ERROR is prefixed "ERROR/".
+ * @param id Driver-assigned message id.
+ * @param severity GL_DEBUG_SEVERITY_HIGH/MEDIUM/LOW/NOTIFICATION (the last is ignored).
+ * @param message Driver-supplied text (may be null).
+ */
 static void APIENTRY glcDebugCb( GLenum /*source*/, GLenum type, GLuint id,
                                  GLenum severity, GLsizei /*length*/,
                                  const GLchar *message, const void * /*user*/ )
@@ -246,6 +263,16 @@ void glcoreEnableDebugOutput()
     glDebugMessageControl( GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE );
     fprintf( stderr, "GLDEBUG: synchronous debug output enabled\n" );
 }
+/**
+ * @brief Resolves one GL entry point by name with the context current.
+ *
+ * On Windows tries wglGetProcAddress first and falls back to opengl32.dll's
+ * exports for the GL 1.1 functions wgl does not hand out (treating wgl's
+ * small sentinel return values as failure); elsewhere defers to
+ * Platform::glProcAddress().
+ * @param name Exact GL function name, e.g. "glGenBuffers".
+ * @return The function pointer, or null if the driver does not provide it.
+ */
 static void *glcGet(const char *name)
 {
 #ifndef _WIN32
@@ -264,6 +291,14 @@ static void *glcGet(const char *name)
 #endif
 }
 
+/**
+ * @def GLC_LOAD(name)
+ * @brief Local to glcoreInit(): resolves the REQUIRED entry point @p name into its `glcore_<name>` pointer; a miss logs "MISSING" and clears the function's `ok` flag.
+ */
+/**
+ * @def GLC_LOAD_OPT(name)
+ * @brief Local to glcoreInit(): resolves the OPTIONAL entry point @p name (compute, tessellation, OIT blending, history ring); a miss only logs "not available" and leaves the pointer null for the feature flags to test.
+ */
 /**
  * @brief Resolves every declared GL function pointer, with the GL context current.
  *

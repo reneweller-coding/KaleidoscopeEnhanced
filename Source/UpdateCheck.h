@@ -61,13 +61,14 @@ public:
 	bool    busy()            const { return m_busy; }        ///< @brief Whether a check or download is currently running.
 
 private:
-	QNetworkAccessManager *m_nam = nullptr;
+	QNetworkAccessManager *m_nam = nullptr;   ///< Shared by the check and the download; created in the constructor with this object as parent (Qt owns it).
 	bool    m_available = false;   ///< A newer release than this build exists.
 	bool    m_busy      = false;   ///< A request is in flight.
 	QString m_latest;              ///< Version of the newest release.
 	QString m_assetUrl;            ///< Validated GitHub download URL of its installer.
 	QString m_status;              ///< Progress/error text for the UI.
 
+	/** @brief Replaces the status text the UI polls via status(). @param s New progress/error text (German, user-facing); empty clears it. */
 	void setStatus( const QString &s );
 };
 

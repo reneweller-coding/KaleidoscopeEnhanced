@@ -25,11 +25,11 @@
  * @brief Reads an entire text file into a newly malloc'd, NUL-terminated buffer.
  *
  * Opens @p fn in text mode ("rt"), seeks to the end to determine its size, rewinds,
- * reads the whole file in one fread(), and NUL-terminates the result.
- * @param fn Path of the file to read.
- * @return Pointer to a malloc'd buffer with the file's contents (caller must free()
- *         it), or NULL if @p fn is NULL, the file could not be opened, or its size
- *         was 0.
+ * reads the whole file in one fread(), and NUL-terminates the result. Returns
+ * NULL if @p fn is NULL, the file could not be opened, or its size was 0; the
+ * caller must free() the buffer. On non-Windows hosts @p fn is first mapped
+ * through Platform::assetPath() (see the comment in the body). Parameter and
+ * return value are documented on the declaration in textfile.h.
  */
 char *textFileRead( const char *fn )
 {
@@ -75,11 +75,9 @@ char *textFileRead( const char *fn )
  * @brief Writes a NUL-terminated string out to a text file, overwriting it.
  *
  * Opens @p fn in write mode ("w"), writes @p s with a single fwrite(), and reports
- * success only if the full string (by strlen()) was written.
- * @param fn Path of the file to write.
- * @param s String to write.
- * @return 1 on success, 0 on failure (including a NULL @p fn or a file that could
- *         not be opened).
+ * success only if the full string (by strlen()) was written: 1 on success,
+ * 0 on failure (including a NULL @p fn or a file that could not be opened).
+ * Parameters and return value are documented on the declaration in textfile.h.
  */
 int textFileWrite( const char *fn, const char *s )
 {

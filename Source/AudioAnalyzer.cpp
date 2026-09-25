@@ -50,9 +50,10 @@ float AudioAnalyzer::coeff(float cutoffHz, int sampleRate)
  * For real-valued input the spectrum is conjugate-symmetric:
  *   X[N-k] = conj(X[k]),  so only bins 0..N/2 carry unique information.
  *
- * @param re Real part array, length N. Input: windowed audio samples. Output: real part of DFT coefficients X[0..N-1].
- * @param im Imaginary part array, length N. Input: all zeros for real-valued audio. Output: imaginary part of X[0..N-1].
- * @param N Transform size, MUST be a power of two (e.g. 2048).
+ * Both arrays are overwritten in place: `re` enters as the windowed audio
+ * samples and leaves as the real part of X, `im` enters all-zero (for
+ * real-valued audio) and leaves as the imaginary part. The parameters are
+ * documented on the declaration in AudioAnalyzer.h.
  */
 /*static*/ void AudioAnalyzer::radix2fft(float *re, float *im, int N)
 {
@@ -219,7 +220,10 @@ static void wr16(FILE *f, unsigned short v) { fwrite(&v, 2, 1, f); }
 
 /**
  * @brief Opens m_wavFile at the requested path and writes a placeholder 44-byte PCM16 stereo WAV header.
- * @param sampleRate Sample rate to record at (written into the header; chunk sizes are fixed up on close by recClose()).
+ *
+ * The sample rate goes into the header as given; the RIFF/data chunk sizes
+ * are written as 0 here and fixed up on close by recClose(). Parameters are
+ * documented on the declaration in AudioAnalyzer.h.
  */
 void AudioAnalyzer::recOpen( int sampleRate )
 {
@@ -236,9 +240,11 @@ void AudioAnalyzer::recOpen( int sampleRate )
 
 /**
  * @brief Converts and appends captured samples to the currently open recording as interleaved 16-bit stereo PCM.
- * @param src Interleaved float samples, range roughly [-1, 1].
- * @param numFrames Number of frames in `src`.
- * @param numChannels Number of interleaved channels in `src` (channel 2+ ignored; mono is mirrored to both output channels).
+ *
+ * Takes the first two interleaved channels of `src` (channel 2+ ignored,
+ * mono mirrored to both outputs), scales by 32767 with clipping and writes
+ * them as little-endian shorts. Parameters are documented on the declaration
+ * in AudioAnalyzer.h.
  */
 void AudioAnalyzer::recWrite( const float *src, int numFrames, int numChannels )
 {
@@ -267,7 +273,10 @@ void AudioAnalyzer::recClose()
 
 /**
  * @brief Requests that the capture thread start recording to a WAV file (opened lazily on the next captured block).
- * @param wavPath Destination path for the 16-bit stereo WAV.
+ *
+ * Stores the destination path under m_mutex and raises m_recReq; the
+ * capture loop opens the 16-bit stereo WAV itself. Parameters are documented
+ * on the declaration in AudioAnalyzer.h.
  */
 void AudioAnalyzer::startRecording( const QString &wavPath )
 {
@@ -286,8 +295,11 @@ void AudioAnalyzer::stopRecording()
 
 /**
  * @brief Requests that the capture loop switch to a different audio source.
- * @param id Endpoint id to capture; empty reverts to the default loopback device.
- * @param isCapture true if `id` names an input (capture) endpoint, false for an output (loopback) endpoint.
+ *
+ * An empty id reverts to the default loopback device; otherwise the endpoint
+ * id and its input/output kind are stored under m_mutex and
+ * m_deviceChangeReq asks the capture loop to re-initialise. Parameters are
+ * documented on the declaration in AudioAnalyzer.h.
  */
 void AudioAnalyzer::requestDevice( const QString &id, bool isCapture )
 {
@@ -340,8 +352,9 @@ QString AudioAnalyzer::s_offlineWav;
  *
  * Block-for-block identical to live capture (all smoothing constants are
  * per-block), but deterministic and immune to whatever the system happens to
- * be playing.  Used to test/calibrate the classifiers.
- * @param path Path to a 16-bit PCM WAV file.
+ * be playing.  Used to test/calibrate the classifiers. Takes the path of a
+ * 16-bit PCM WAV file (parameter documented on the declaration in
+ * AudioAnalyzer.h).
  */
 void AudioAnalyzer::analyzeWavOffline( const QString &path )
 {
@@ -462,9 +475,9 @@ bool AudioAnalyzer::dumpReplayWav( const QString &path, float seconds )
  * @brief Offline (Preset-Editor) analysis: runs the full pipeline at full speed, returning one AudioFeatures snapshot per 10 ms block.
  *
  * A local, never-started AudioAnalyzer instance (`az`) keeps this completely
- * independent of any live capture.
- * @param path Path to a 16-bit PCM WAV file.
- * @return One AudioFeatures snapshot per 10 ms block of audio (empty if the file could not be read).
+ * independent of any live capture. Takes the path of a 16-bit PCM WAV file
+ * and returns an empty timeline if it cannot be read (parameters and return
+ * value documented on the declaration in AudioAnalyzer.h).
  */
 std::vector<AudioFeatures> AudioAnalyzer::analyzeWavToTimeline( const QString &path )
 {
@@ -793,7 +806,7 @@ void AudioAnalyzer::run()
     // No loopback backend on this platform (macOS without PulseAudio: CoreAudio
     // cannot tap system output at all without a virtual device such as
     // BlackHole). Offline analysis (-w / -x) is unaffected and still exact.
-    fprintf( stderr, "AUDIO: no loopback capture backend on this platform;\n
+    fprintf( stderr, "AUDIO: no loopback capture backend on this platform;\n"
                      " the visuals run untriggered. Use -w <file.wav> for audio.\n" );
     while (m_running) msleep( 200 );
 #endif
@@ -828,10 +841,9 @@ void AudioAnalyzer::run()
  * hold; analyzeWavOffline()/analyzeWavToTimeline() preserve this by feeding
  * fixed 480-sample chunks.
  *
- * @param data Interleaved float PCM samples for this block.
- * @param numFrames Number of frames in `data`.
- * @param numChannels Number of interleaved channels in `data` (1 or 2).
- * @param sampleRate Sample rate of `data`, in Hz.
+ * The parameters are documented on the declaration in AudioAnalyzer.h: `data`
+ * is interleaved float PCM of `numFrames` frames and `numChannels` (1 or 2)
+ * channels at `sampleRate` Hz.
  */
 void AudioAnalyzer::processBlock(const float *data, int numFrames,
                                  int numChannels, int sampleRate)

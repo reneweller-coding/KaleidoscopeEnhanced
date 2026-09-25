@@ -375,7 +375,9 @@ void PresentPass::setTitleImage( const void *rgba, int w, int h )
  * binding two DIFFERENT sampler types (2D vs 2D array) to the same unit
  * invalidates the whole draw call on some drivers even if the sampler in
  * question is never actually sampled by the shader that frame.
- * @param in Frame inputs; the call is a no-op unless ready() and in.fx is non-null.
+ *
+ * @p in is documented on the declaration in PresentPass.h; the call is a
+ * no-op unless ready() and in.fx is non-null.
  */
 void PresentPass::run( const Inputs &in )
 {

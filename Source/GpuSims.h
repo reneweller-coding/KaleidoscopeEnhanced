@@ -78,8 +78,8 @@ public:
 	{
 		float  globalTime   = 0.f;   ///< Integrated wall-clock phase (see phase convention note above).
 		float  audioAdvance = 0.f;   ///< Integrated audio-reactive advance phase (bass/onset driven); used for jump-free wandering flow fields / emitter motion.
-		GLuint dyeTexA      = 0;   // aktuelles Bild (oder Live-Textur)   ///< Current source image (or live texture) sampled as fluid-sim dye.
-		GLuint dyeTexB      = 0;   // eingeblendetes nächstes Bild        ///< Next/incoming source image cross-faded in as dye.
+		GLuint dyeTexA      = 0;   ///< Current source image (or live texture) sampled as fluid-sim dye (bound as tex0). Not owned; 0 if none.
+		GLuint dyeTexB      = 0;   ///< Next/incoming source image being cross-faded in as dye (bound as tex1). Not owned; 0 if none.
 		float  dyeInterp    = 1.f;   ///< Cross-fade factor between dyeTexA and dyeTexB (0 = pure A, 1 = pure B).
 	};
 
@@ -246,8 +246,8 @@ private:
 	static const int kSmoke3DTile = 64;   ///< Side length in texels of one 2D "slice" tile of the pseudo-3D atlas.
 	static const int kSmoke3DCols = 5;    ///< Number of tile columns in the atlas grid.
 	static const int kSmoke3DRows = 4;    ///< Number of tile rows in the atlas grid.
-	static const int kSmoke3DW = kSmoke3DTile * kSmoke3DCols;   // 320   ///< Full atlas texture width in texels.
-	static const int kSmoke3DH = kSmoke3DTile * kSmoke3DRows;   // 256   ///< Full atlas texture height in texels.
+	static const int kSmoke3DW = kSmoke3DTile * kSmoke3DCols;   ///< Full atlas texture width in texels (5 tiles x 64 = 320).
+	static const int kSmoke3DH = kSmoke3DTile * kSmoke3DRows;   ///< Full atlas texture height in texels (4 tiles x 64 = 256).
 	GLuint	m_fboSmoke3D[2]        = { 0, 0 };   ///< Ping-pong framebuffers wrapping m_texSmoke3D[0]/[1].
 	GLuint	m_texSmoke3D[2]        = { 0, 0 };   ///< Ping-pong RGBA16F state textures; the newest one is bound as texSmoke3D (unit 9) when ready.
 	int		m_smoke3DIdx           = 0;   ///< Index of the buffer written by the NEXT pass; the newest finished state is m_texSmoke3D[1 - m_smoke3DIdx].
@@ -264,7 +264,7 @@ private:
 	bool	m_smoke3DSeeded        = false;   ///< False until the first step has written the seed pattern.
 
 	// ---- Physarum (Agenten + Trail-Map) ----
-	static const int kPhysAgentsSide = 1024;  // 1 048 576 Agenten   ///< Side length of the square agent-state texture; one texel = one agent.
+	static const int kPhysAgentsSide = 1024;  ///< Side length in texels of the square agent-state texture; one texel = one agent, so 1024 x 1024 = 1 048 576 agents.
 	static const int kPhysTrailSize  = 1024;   ///< Side length in texels of the pheromone trail map.
 	GLuint	m_texPhysAgents[2] = { 0, 0 };   ///< Ping-pong RGBA16F agent-state textures (position/heading encoded per texel).
 	GLuint	m_fboPhysAgents[2] = { 0, 0 };   ///< Ping-pong framebuffers wrapping m_texPhysAgents[0]/[1].
@@ -276,8 +276,8 @@ private:
 	GLuint	m_physDepositProgId = 0;   ///< Point-sprite pheromone-deposit shader program (real vertex shader, one GL_POINT per agent).
 	GLuint	m_physDiffuseProgId = 0;   ///< Trail diffuse+evaporate fragment shader program (fallback path when the compute shader is unavailable).
 	GLuint	m_physVBO = 0;   ///< Static vertex buffer of per-agent texel coordinates, one point per agent, used by the deposit pass.
-	GLuint	m_physDepVAO = 0;   // Core-Profile: Attrib-State der Deposit-Points   ///< VAO holding the deposit pass's vertex attribute state (required by the core profile).
-	GLuint	m_physDiffuseCompId = 0;   // Compute-Diffuse (0 = Fragment-Fallback)   ///< GL4.3 compute-shader program for the trail diffuse step; 0 means the fragment-shader fallback is used instead.
+	GLuint	m_physDepVAO = 0;   ///< VAO holding the deposit pass's vertex-attribute state for the per-agent points (the core profile requires a VAO for any draw); owned, 0 until setupPhysarum() succeeds.
+	GLuint	m_physDiffuseCompId = 0;   ///< GL4.3 compute-shader program for the trail diffuse+evaporate step; 0 means the fragment-shader fallback (m_physDiffuseProgId) is used instead.
 	GLint	m_physDifCTrailUni = -1;   ///< Compute path uniform location: previous trail-map sampler.
 	GLint	m_physDifCResUni   = -1;   ///< Compute path uniform location: trail-map resolution.
 	GLint	m_physDifCDecayUni = -1;   ///< Compute path uniform location: per-frame trail decay/evaporation factor.
@@ -313,8 +313,8 @@ private:
 	bool			m_ssmDirty  = false;   ///< True when m_ssmData has changed since the last upload to m_texSSM.
 
 	// ---- Spektrogramm-Ring (host-gefüllt) ----
-	static const int kSpectroW = AudioFeatures::kSpectrumBands;   // 32   ///< Spectrogram texture width: one column per spectrum band.
-	static const int kSpectroH = 256;                             // ~20 s   ///< Spectrogram ring depth (rows of history).
+	static const int kSpectroW = AudioFeatures::kSpectrumBands;   ///< Spectrogram texture width in texels: one column per spectrum band (32).
+	static const int kSpectroH = 256;                             ///< Spectrogram ring depth in rows of history; at kSpectroStride per row that is ~20 s.
 	static constexpr float kSpectroStride = 0.08f;   ///< Seconds between successive spectrogram rows pushed into the ring.
 	unsigned char	m_spectroData[kSpectroH * kSpectroW] = {};   ///< Byte spectrogram ring buffer (row-major, one row per time slice). Uploaded (in part) to m_texSpectro.
 	int				m_spectroHead  = 0;   ///< Next ring row to be written.

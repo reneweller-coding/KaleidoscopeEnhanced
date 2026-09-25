@@ -77,8 +77,8 @@ public:
 
 	float camZoom()  const { return m_camZoom; }   ///< @return Current virtual-camera zoom factor, for PresentPass.
 	float camRot()   const { return m_camRot; }    ///< @return Current virtual-camera roll (per-bar sway), for PresentPass.
-	float camOffX()  const { return m_camOffX; }   ///< @return Current virtual-camera horizontal pixel offset (drift + shake + gate-weave), for PresentPass.
-	float camOffY()  const { return m_camOffY; }   ///< @return Current virtual-camera vertical pixel offset (drift + shake + gate-weave), for PresentPass.
+	float camOffX()  const { return m_camOffX; }   ///< @return Current virtual-camera horizontal offset in UV units, i.e. a fraction of the frame (drift + shake + gate-weave), for PresentPass's `camOff` uniform.
+	float camOffY()  const { return m_camOffY; }   ///< @return Current virtual-camera vertical offset in UV units, i.e. a fraction of the frame (drift + shake + gate-weave), for PresentPass's `camOff` uniform.
 
 	float rewindBack()   const { return m_rewindBack; }    ///< @return Seconds behind live the display should read from the PresentPass history ring (0 = live).
 	float rewindMix()    const { return m_rewindMixSm; }   ///< @return Slewed visibility (0..1) of the rewind effect.
@@ -126,14 +126,25 @@ private:
 	float m_audioAdvance   = 0.f;   ///< Accumulated tunnel forward offset, integrated from a rate each frame.
 
 	// ---- peak-hold + release envelopes / their slewed display values ----
-	float m_beatEnv          = 0.f, m_audioBeatSmooth  = 0.f;
-	float m_onsetEnv         = 0.f, m_onsetSmooth      = 0.f;
-	float m_downbeatEnv      = 0.f, m_downbeatSmooth   = 0.f;
-	float m_kickEnv          = 0.f, m_kickSmooth       = 0.f;
-	float m_snareEnv         = 0.f, m_snareSmooth      = 0.f;
-	float m_hatEnv           = 0.f, m_hatSmooth        = 0.f;
-	float m_audioLevelSmooth = 0.f;
-	float m_audioFluxSmooth  = 0.f;
+	// The analyzer's raw pulses decay at audio-block rate (gone in ~60 ms),
+	// too fast for a rise-limited slew to ever reach the peak; each *Env holds
+	// the peak and releases exponentially so the slew has a stable target, and
+	// each *Smooth is the slew-limited value (rise to full >= ~150 ms, never a
+	// single frame -- photosensitivity safety) that actually reaches the show.
+	/** @brief Peak-hold envelope of audio.beatDecay (0..1, exponential release, tau 0.30 s). */
+	float m_beatEnv          = 0.f, m_audioBeatSmooth  = 0.f;   ///< Slew-limited (6/s) beat strength BEFORE the music gate; target is max(m_beatEnv, tempo-locked PLL phase pulse). Published as beatDecay * gate, read ungated via beatSmooth().
+	/** @brief Peak-hold envelope of audio.onsetStrength (0..1, exponential release, tau 0.22 s). */
+	float m_onsetEnv         = 0.f, m_onsetSmooth      = 0.f;   ///< Slew-limited (7/s) onset strength; published as onsetStrength * gate.
+	/** @brief Peak-hold envelope of audio.downbeat (0..1, exponential release, tau 0.45 s). */
+	float m_downbeatEnv      = 0.f, m_downbeatSmooth   = 0.f;   ///< Slew-limited (5/s) downbeat pulse; published as downbeat * gate and scales the virtual-camera punch-in.
+	/** @brief Peak-hold envelope of audio.onsetKick (0..1, exponential release, tau 0.24 s -- kicks boom). */
+	float m_kickEnv          = 0.f, m_kickSmooth       = 0.f;   ///< Slew-limited (7/s) kick onset; published as onsetKick * gate, drives camera shake and the bass-shockwave kick edge.
+	/** @brief Peak-hold envelope of audio.onsetSnare (0..1, exponential release, tau 0.20 s). */
+	float m_snareEnv         = 0.f, m_snareSmooth      = 0.f;   ///< Slew-limited (7/s) snare onset; published as onsetSnare * gate.
+	/** @brief Peak-hold envelope of audio.onsetHat (0..1, exponential release, tau 0.14 s -- hats snap). */
+	float m_hatEnv           = 0.f, m_hatSmooth        = 0.f;   ///< Slew-limited (8/s) hat onset; published as onsetHat * gate.
+	float m_audioLevelSmooth = 0.f;   ///< Slew-limited (3/s) copy of audio.overallLevel (0..1); published as overallLevel * gate.
+	float m_audioFluxSmooth  = 0.f;   ///< Slew-limited (3/s) copy of audio.spectralFlux (0..1); published as spectralFlux * gate.
 
 	// ---- colour-chase ----
 	float m_chasePhase     = 0.f;   ///< 0..1, advances 1/4 each onset -> corner-cone colour chase.
@@ -146,7 +157,8 @@ private:
 	float m_camPunch = 0.f;   ///< Decaying punch-in envelope (downbeat/drop "punch-in") for the virtual camera.
 	float m_camZoom  = 1.f;   ///< Current virtual-camera zoom factor.
 	float m_camRot   = 0.f;   ///< Current virtual-camera roll (per-bar sway).
-	float m_camOffX  = 0.f, m_camOffY = 0.f;   ///< Current virtual-camera pixel offset (drift + shake + film gate-weave).
+	/** @brief Current virtual-camera horizontal offset as a fraction of the frame (slow drift + kick/drop shake + film gate-weave; forced to 0 under calmMotion), for PresentPass. */
+	float m_camOffX  = 0.f, m_camOffY = 0.f;   ///< Current virtual-camera vertical offset, same composition and units as m_camOffX.
 
 	// ---- Zeit-Regie: drop-rewind, break-scrub, echo, letterbox, shockwave ----
 	float m_rewindBack    = 0.f;      ///< Seconds behind live (0 = live).

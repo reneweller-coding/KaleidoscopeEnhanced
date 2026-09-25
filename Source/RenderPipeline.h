@@ -66,12 +66,6 @@ public:
 	 * @return true on success; false (with a stderr message) if the mesh failed to load.
 	 */
 	bool loadObj(const char *filename);
-	/** Draw one frame.
-	 *  @param audio  Optional audio analysis result.  Pass a default-constructed
-	 *                AudioFeatures{} (all zero) to disable audio reactivity.
-	 *                Audio-driven motion is integrated into continuous phase
-	 *                offsets here (see m_audioRotPhase / m_audioAdvance) so that
-	 *                changing the audio never jumps the visual.                 */
 	/**
 	 * @brief Renders and presents exactly one frame of the visualizer.
 	 *
@@ -165,11 +159,11 @@ public:
 	};
 	/** @brief Stores this frame's lyrics/artist overlay state (read back by paint()/PresentPass). @param o Overlay state computed by the caller (GLwidget). */
 	void setOverlayFrame( const OverlayFrame &o ) { m_overlay = o; }
-	/** @brief Uploads the current lyrics-line texture to the present pass. @param rgba Packed RGBA8 pixel data. @param w Image width in pixels. @param h Image height in pixels. */
 	/** @return Spatial spread of the last measured frame -- 0 means a flat surface. */
 	float liveStructure() const { return m_present.liveStructure(); }
 	/** @return Mean absolute change against the previously measured frame. */
 	float liveMotion()    const { return m_present.liveMotion(); }
+	/** @brief Uploads the current lyrics-line texture to the present pass. @param rgba Packed RGBA8 pixel data. @param w Image width in pixels. @param h Image height in pixels. */
 	void setLyricsTexture( const void *rgba, int w, int h ) { m_present.setLyricsImage( rgba, w, h ); }
 	/** @brief Uploads the current artist-image texture to the present pass. @param rgba Packed RGBA8 pixel data. @param w Image width in pixels. @param h Image height in pixels. */
 	void setArtistTexture( const void *rgba, int w, int h ) { m_present.setArtistImage( rgba, w, h ); }
@@ -196,7 +190,6 @@ public:
 	QStringList sceneNames() const;
 	/** @brief Jumps directly to texture effect @p idx (instant, unquantised cut). Ignored while PIN or FREEZE is active, or if @p idx is out of range. @param idx Index into the texture-effect list, as returned by sceneNames(). */
 	void forceScene( int idx );
-	/** @brief Names of the configured combine-effect (overlay) shaders, in list order. @return One basename per FX, without the .frag suffix. */
 	/** @return Fraction of the frame the active scene's model covered, or -1
 	 *          when it is not a mesh scene or nothing was measured.
 	 *
@@ -204,6 +197,7 @@ public:
 	 * The contact sheets suggested the stations fill about a tenth of the
 	 * frame; this replaces the impression with a number. */
 	float activeCoverage() const;
+	/** @brief Names of the configured combine-effect (overlay) shaders, in list order. @return One basename per FX, without the .frag suffix. */
 	QStringList fxNames() const;
 	/** @brief Force the next overlay to @p idx, bypassing budget/mood/mesh filters (FX sweep). @param idx Index into fxNames(). */
 	void forceFx( int idx );
@@ -242,7 +236,7 @@ public:
 	/**
 	 * @brief Writes every marked scene to Presets/Marked.xml as a playable preset.
 	 *
-	 * Copies each scene's REAL <TextureShader> node out of Komplett.xml rather
+	 * Copies each scene's REAL `<TextureShader>` node out of Komplett.xml rather
 	 * than synthesising a tag, so geom kind and preset parameters survive --
 	 * a synthesised tag silently drops both and renders the scene wrongly.
 	 * @param outPath Receives the written path (may be null).
@@ -596,7 +590,7 @@ private:
 	// bind instead; src unchanged otherwise.
 	GLuint			m_rig2Fbo[2]    = { 0, 0 };   ///< Per-slot scratch FBOs for the 2D camera rig transform (rig2Transform()).
 	GLuint			m_rig2Tex[2]    = { 0, 0 };   ///< Per-slot scratch colour textures backing m_rig2Fbo.
-	unsigned int	m_rig2W = 0, m_rig2H = 0;     ///< Size the m_rig2Fbo/m_rig2Tex scratch targets were last (re)allocated at; re-checked on every rig2Transform() call.
+	unsigned int	m_rig2W = 0, /**< Width (pixels) the m_rig2Fbo/m_rig2Tex scratch targets were last (re)allocated at; 0 = not yet created. */ m_rig2H = 0;     ///< Size the m_rig2Fbo/m_rig2Tex scratch targets were last (re)allocated at; re-checked on every rig2Transform() call.
 	/**
 	 * @brief Applies a scene's 2D camera-rig transform (roll/zoom/pan) to a finished effect frame, if it declares one.
 	 *
@@ -623,10 +617,10 @@ private:
 	float			m_meshUp        = 0.f;  ///< slewed 0..1 "a loaded-model scene is up" — damps the time echo, whose scaled ghost reads as a fault on a solid object.
 	float			m_meshHoldSecs  = 0.f;  ///< How long the current fade has been held waiting for an async mesh warm-up; releases at 5 s so a stuck load can never wedge the show.
 	// Spatial warp field (MilkDrop-style liquid feedback).
-	GLint			m_trailRipAmpUni  = -1, m_trailRipPhUni  = -1;   ///< Uniform locations of "rippleAmp"/"ripplePhase" (MilkDrop-style warp-field ripple) in m_trailProgId.
-	GLint			m_trailSwirlUni   = -1, m_trailFlowAmpUni = -1;  ///< Uniform locations of "swirlAmp"/"flowAmp" (warp-field swirl and flow amplitude) in m_trailProgId.
+	GLint			m_trailRipAmpUni  = -1, /**< Uniform location of "rippleAmp" (warp-field ripple amplitude, uv units) in m_trailProgId; -1 = absent. */ m_trailRipPhUni  = -1;   ///< Uniform locations of "rippleAmp"/"ripplePhase" (MilkDrop-style warp-field ripple) in m_trailProgId.
+	GLint			m_trailSwirlUni   = -1, /**< Uniform location of "swirlAmp" (warp-field swirl, rad/s) in m_trailProgId; -1 = absent. */ m_trailFlowAmpUni = -1;  ///< Uniform locations of "swirlAmp"/"flowAmp" (warp-field swirl and flow amplitude) in m_trailProgId.
 	GLint			m_trailFlowPhUni  = -1;                          ///< Uniform location of "flowPhase" (warp-field flow phase) in m_trailProgId.
-	float			m_warpRipplePhase = 0.f, m_warpFlowPhase = 0.f;  ///< Accumulated phases (radians-equivalent) driving the ripple and flow components of the warp field; integrated per frame to avoid flicker.
+	float			m_warpRipplePhase = 0.f, /**< Accumulated ripple phase (radians), advanced per frame at 2..7 rad/s depending on the smoothed beat; uploaded as "ripplePhase". */ m_warpFlowPhase = 0.f;  ///< Accumulated phases (radians-equivalent) driving the ripple and flow components of the warp field; integrated per frame to avoid flicker.
 	bool			m_feedbackReady = false;   ///< True once the feedback/trail pipeline (PresentPass + trail FBOs + shader) is fully set up; gates the trails pass in paint().
 	bool			m_spoutStarted  = false;   ///< True once the Spout output sender has been successfully initialised.
 	GLuint			m_liveTex       = 0;   ///< Spout-in texture (0 = photos) — live input texture (Spout receive or video-in frame) that replaces the photo source this frame.
@@ -635,14 +629,14 @@ private:
 	// Depth attachments of the two texture-effect FBOs.  Textures, not
 	// renderbuffers, so the combine stage can READ what the 3D scene wrote
 	// ("texDepth0"/"texDepth1", units 29/30).
-	GLuint			m_depthTexEffect1 = 0, m_depthTexEffect2 = 0;   ///< Depth textures attached to m_fboEffectTexture1/2 (readable by the combine stage as texDepth0/texDepth1, units 29/30).
+	GLuint			m_depthTexEffect1 = 0, /**< Depth texture attached to m_fboEffectTexture1 (readable by the combine stage as texDepth0, unit 29); 0 = not created. */ m_depthTexEffect2 = 0;   ///< Depth textures attached to m_fboEffectTexture1/2 (readable by the combine stage as texDepth0/texDepth1, units 29/30).
 
 	// ---- MSAA scratch target for 3D scene draws (see ensureMsaaTargets()) ----
 	static const int kMsaaSamples = 4;   ///< Fixed sample count for the 3D-scene anti-aliasing pass; clamped down to GL_MAX_SAMPLES if the driver reports fewer.
 	GLuint			m_msaaFbo      = 0;   ///< Shared multisample FBO, reused by whichever 3D scene (texture1's pass, then texture2's) is currently drawing.
 	GLuint			m_msaaColorTex = 0;   ///< GL_TEXTURE_2D_MULTISAMPLE colour attachment (GL_RGBA8, matching m_texInternalFormat).
 	GLuint			m_msaaDepthTex = 0;   ///< GL_TEXTURE_2D_MULTISAMPLE depth attachment.
-	int				m_msaaW = 0, m_msaaH = 0;   ///< Current size of the MSAA scratch target; ensureMsaaTargets() reallocates on mismatch.
+	int				m_msaaW = 0, /**< Current width (pixels) of the MSAA scratch target; 0 = not yet created. */ m_msaaH = 0;   ///< Current size of the MSAA scratch target; ensureMsaaTargets() reallocates on mismatch.
 	int				m_msaaActualSamples = 0;   ///< Sample count actually used (<= kMsaaSamples, clamped to GL_MAX_SAMPLES); 0 = not yet created.
 	bool			m_msaaTried = false;   ///< True once creation has been attempted (attempted only once; glTexImage2DMultisample missing is a permanent soft-fail, not retried every frame).
 	bool			m_msaaReady = false;   ///< True once the MSAA scratch FBO exists and is complete; every 3D draw call site checks this and falls back to the regular (unaliased) FBO when false.

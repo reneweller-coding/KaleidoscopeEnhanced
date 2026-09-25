@@ -59,8 +59,14 @@ struct ShaderParam
     QString kind;     ///< "bool" | "int" | "float" | "interpolator" | "expr"
     QString name;     ///< Uniform/parameter name as declared in the shader.
     QString probability;                 ///< bool: probability [0,1] the flag rolls true.
-    QString minValue, maxValue;          ///< int / float: inclusive range the value is randomly rolled from.
-    QString minMin, maxMin, minMax, maxMax;  ///< interpolator: roll ranges for the interpolated min and max endpoints.
+    /// int / float: lower bound of the range the value is randomly rolled from (attribute text, kept verbatim).
+    QString minValue, maxValue;          ///< int / float: upper bound of the range the value is randomly rolled from (attribute text, kept verbatim).
+    /// interpolator: lower bound for the rolled ramp-START value (attribute text; the engine rolls the start in [minMin,minMax]).
+    QString minMin, maxMin, minMax, maxMax;  ///< interpolator: upper bound for the rolled ramp-END value (attribute text; the engine rolls the end in [maxMin,maxMax]).
+    /** @var QString ShaderParam::maxMin
+     *  interpolator: lower bound for the rolled ramp-END value (attribute text). */
+    /** @var QString ShaderParam::minMax
+     *  interpolator: upper bound for the rolled ramp-START value (attribute text). */
     QString formula;                     ///< expr (formula layer): ExprEval source text; empty = engine/random default.
 };
 
@@ -96,8 +102,10 @@ struct PresetEntry
     // scene3d only, both optional (0 = attribute omitted, matching Configuration.cpp):
     int      stateBytes   = 0;    ///< scene3d only: persistent generator state buffer size; 0 = attribute omitted.
     double   shadowExtent = 0.0;  ///< scene3d only: shadow-box half-width; 0 = engine default.
-    int      minTimeSolo = 20, maxTimeSolo = 80;   ///< Random range this entry solos alone before interpolating to the next.
-    int      minTimeInterpolation = 15, maxTimeInterpolation = 50;   ///< Random range for the crossfade/interpolation duration into the next entry.
+    /// Lower bound, in seconds, of the random solo duration this entry runs alone before interpolating to the next (0 is treated as the engine default 20).
+    int      minTimeSolo = 20, maxTimeSolo = 80;   ///< Upper bound, in seconds, of the random solo duration (the engine bumps it above minTimeSolo if not greater).
+    /// Lower bound, in seconds, of the random crossfade/interpolation duration into the next entry (0 is treated as the engine default 15).
+    int      minTimeInterpolation = 15, maxTimeInterpolation = 50;   ///< Upper bound, in seconds, of the random crossfade/interpolation duration (the engine bumps it above minTimeInterpolation if not greater).
     double   probability = 0.5;   ///< Relative selection weight/probability when the engine picks this entry.
     int      complexity = 1;      ///< Author-assigned complexity rating.
     QString  mood;                ///< Optional mood tags ("dark,calm", ...) — passed through, not interpreted here.
@@ -130,8 +138,10 @@ struct Preset
      * Used for master/reference presets (Komplett) and Test* benches.
      */
     bool    hidden = false;
-    int     timeTextureSoloMin = 10,  timeTextureSoloMax = 40;              ///< Global min/max solo duration (root attributes).
-    int     timeTextureInterpolationMin = 20, timeTextureInterpolationMax = 80;  ///< Global min/max interpolation duration (root attributes).
+    /// Preset-wide lower bound of the texture solo duration in seconds (root attribute timeTextureSoloMin; 0 is treated as 10 by the engine).
+    int     timeTextureSoloMin = 10,  timeTextureSoloMax = 40;              ///< Preset-wide upper bound of the texture solo duration in seconds (root attribute timeTextureSoloMax).
+    /// Preset-wide lower bound of the interpolation duration in seconds (root attribute timeTextureInterpolationMin).
+    int     timeTextureInterpolationMin = 20, timeTextureInterpolationMax = 80;  ///< Preset-wide upper bound of the interpolation duration in seconds (root attribute timeTextureInterpolationMax).
     QVector<PresetEntry> entries;   ///< texture + combine, in insertion order
     QVector<QPair<QString, QString>> extraAttrs;   ///< Root attributes not modelled above (AudioFile=, timeSceneFadeMin=, ...), written back verbatim.
 

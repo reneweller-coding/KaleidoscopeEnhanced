@@ -24,6 +24,7 @@
 /// the SAME PC can all listen here and each answer for itself (Windows
 /// delivers a copy of every broadcast datagram to every bound socket).
 static const quint16 kDiscoveryPort  = 45677;
+/// The request payload the app broadcasts; anything else on the port is ignored.
 static const char   *kDiscoveryMagic = "KALEIDO_DISCOVER_V1";
 
 /// How long a kept-alive connection may sit idle before the server drops it.

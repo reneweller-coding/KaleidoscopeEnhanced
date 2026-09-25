@@ -63,11 +63,12 @@ private:
     /** @brief Pad a blob to the next 4-byte boundary with zeros (OSC alignment rule). */
     static void pad4( QByteArray &b );
 
+    /** @brief Fire-and-forget: writes one already-framed message or bundle as a single UDP datagram to m_addr:m_port. */
     void send( const QByteArray &datagram );
 
-    QUdpSocket   m_socket;
-    QHostAddress m_addr;
-    int          m_port      = 0;
+    QUdpSocket   m_socket;            ///< Unbound UDP socket every datagram goes out of; never receives.
+    QHostAddress m_addr;              ///< Destination resolved once by configure() (127.0.0.1 if the host was not an IP literal).
+    int          m_port      = 0;     ///< Destination UDP port; 0 = sending disabled (tick() returns early).
     float        m_fastAcc   = 0.f;   ///< Time since the last ~30 Hz /audio bundle.
     float        m_moodAcc   = 999.f; ///< Time since the last ~5 Hz /mood bundle (999 = fire immediately).
     float        m_prevDownbeat = 0.f;///< Previous downbeat pulse, for edge detection.

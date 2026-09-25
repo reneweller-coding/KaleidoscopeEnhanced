@@ -63,7 +63,7 @@
 #include <GL/gl.h>
 #endif
 #ifndef APIENTRY
-#define APIENTRY
+#define APIENTRY   ///< Calling convention of every GL entry point; empty on POSIX (one ABI), from windef.h on Windows.
 #endif
 // <windows.h> pulled in ptrdiff_t/size_t as a side effect; ask directly.
 #include <cstddef>
@@ -74,9 +74,9 @@ using std::size_t;
 // ---- Types missing from GL 1.1 headers ----
 /// @name Types missing from the GL 1.1 headers, needed by the shader/buffer API below.
 ///@{
-typedef char      GLchar;
-typedef ptrdiff_t GLsizeiptr;
-typedef ptrdiff_t GLintptr;
+typedef char      GLchar;       ///< Character type of shader sources and info logs.
+typedef ptrdiff_t GLsizeiptr;   ///< Size in bytes of a buffer-object data store.
+typedef ptrdiff_t GLintptr;     ///< Byte offset into a buffer-object data store.
 ///@}
 
 // ---- Tokens beyond GL 1.1 (only what the codebase touches) ----
@@ -86,6 +86,7 @@ typedef ptrdiff_t GLintptr;
 /// texture units, buffer targets/usage hints, shader stages, framebuffer/renderbuffer
 /// enums and status codes, texture internal/pixel formats, and memory-barrier bits).
 ///@{
+/// @cond GLCORE_TOKENS
 #define GL_CLAMP_TO_EDGE                  0x812F
 #define GL_TEXTURE_BINDING_2D             0x8069
 // Shadow-map sampling.  With COMPARE_REF_TO_TEXTURE the sampler returns the
@@ -206,6 +207,7 @@ typedef ptrdiff_t GLintptr;
 #define GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT 0x00000001
 #define GL_COMMAND_BARRIER_BIT             0x00000040
 #define GL_ALL_BARRIER_BITS                0xFFFFFFFF
+/// @endcond
 ///@}
 
 // ---- Function pointers (loaded in glcoreInit) ----
@@ -294,6 +296,8 @@ GLC_FN(void,   glRenderbufferStorage, (GLenum, GLenum, GLsizei, GLsizei))
 GLC_FN(void,   glFramebufferRenderbuffer, (GLenum, GLenum, GLenum, GLuint))
 GLC_FN(void,   glGenerateMipmap, (GLenum))
 GLC_FN(const GLubyte*, glGetStringi, (GLenum, GLuint))
+/// Callback signature of KHR_debug: glDebugMessageCallback hands every driver message
+/// (source, type, id, severity, text) to this, with the userParam registered alongside.
 typedef void (APIENTRY *GLDEBUGPROCKC)( GLenum source, GLenum type, GLuint id,
                                         GLenum severity, GLsizei length,
                                         const GLchar *message, const void *userParam );
@@ -320,10 +324,10 @@ GLC_FN(void,   glEndQuery, (GLenum))
 GLC_FN(void,   glGetQueryObjectuiv, (GLuint, GLenum, GLuint *))
 
 #ifndef GL_SAMPLES_PASSED
-#define GL_SAMPLES_PASSED 0x8914
+#define GL_SAMPLES_PASSED 0x8914   ///< Occlusion-query target: samples that passed the depth test.
 #endif
 #ifndef GL_QUERY_RESULT
-#define GL_QUERY_RESULT   0x8866
+#define GL_QUERY_RESULT   0x8866   ///< glGetQueryObjectuiv: fetch the finished query's count.
 #endif
 
 // Order-independent transparency needs its two targets blended DIFFERENTLY in
@@ -351,6 +355,7 @@ GLC_FN(void,   glTexImage2DMultisample, (GLenum, GLsizei, GLenum, GLsizei, GLsiz
 /// (`glcore_<name>`), so the rest of the codebase can keep calling e.g.
 /// `glActiveTexture(...)` unmodified instead of `glcore_glActiveTexture(...)`.
 ///@{
+/// @cond GLCORE_REMAPS
 #define glActiveTexture            glcore_glActiveTexture
 #define glGenBuffers               glcore_glGenBuffers
 #define glBindBuffer               glcore_glBindBuffer
@@ -428,6 +433,7 @@ GLC_FN(void,   glTexImage2DMultisample, (GLenum, GLsizei, GLenum, GLsizei, GLsiz
 #define glFramebufferTextureLayer  glcore_glFramebufferTextureLayer
 #define glBlitFramebuffer          glcore_glBlitFramebuffer
 #define glTexImage2DMultisample    glcore_glTexImage2DMultisample
+/// @endcond
 ///@}
 
 /**

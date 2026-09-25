@@ -145,7 +145,8 @@ private:
 	{
 		GLuint ssbo = 0;      ///< w*h*4 uints: R,G,B,hits accumulator, atomically scattered into
 		GLuint tex  = 0;      ///< RGBA16F result texture published to effect shaders
-		int    w = 0, h = 0;  ///< canvas dimensions in texels
+		/** @brief Canvas width in texels (0 until ensureCanvas() allocates it; a size change reallocates). */
+		int    w = 0, h = 0;  ///< canvas height in texels (0 until allocated)
 		float  lastUse = 0.f; ///< last step() time this canvas was touched; drives retireIdle()
 		bool   seeded = false; ///< whether this canvas's sim state has been initialised at least once
 	};
@@ -202,10 +203,13 @@ private:
 	struct Field
 	{
 		GLuint tex[2] = { 0, 0 };  ///< the two ping-pong textures
-		int    w = 0, h = 0, idx = 0; ///< dimensions in texels, and which of tex[] is "current"
+		/** @brief Field width in texels (0 until ensureField() allocates it; a size change reallocates both textures). */
+		int    w = 0, h = 0, idx = 0; ///< which of tex[] is "current" (read side), 0 or 1; flipped after each ping-pong step
 		float  lastUse = 0.f;     ///< last step() time this field was touched; drives retireIdle()
 		bool   seeded = false;    ///< whether this field's sim state has been initialised at least once
 	};
+	/** @var ComputeFX::Field::h
+	 *  @brief Field height in texels (0 until allocated). */
 	/**
 	 * @brief Lazily (re)allocates both ping-pong textures of a Field for the given size/format.
 	 *

@@ -103,9 +103,13 @@ QString TrackMedia::artistCacheDir() const
 
 /**
  * @brief Requests lyrics + artist images (+ an optional music video) for a (possibly new) track; call on every track change.
- * @param artist Artist name (trimmed/lower-cased internally for de-duplication and cache keys).
- * @param title Track title; an empty (trimmed) title is ignored outright.
- * @param durationSec The track's known duration in seconds, or <=0 if not (yet) known; gates the video search (see TrackMedia.h).
+ *
+ * Parameters are documented in TrackMedia.h. The identity key is the
+ * lower-cased, trimmed "artist|title"; a repeat of the active key (or an
+ * empty title) returns early, anything else resets every per-track member,
+ * bumps the three revision counters, and restarts the chains -- the
+ * artist-image chain only if the artist is non-empty, the video chain only
+ * if `durationSec` is known and within kVideoMaxDurationSec.
  */
 void TrackMedia::requestTrack( const QString &artist, const QString &title, double durationSec )
 {
@@ -388,7 +392,13 @@ void TrackMedia::tryLyricsOvh()
 // LRC: "[mm:ss.xx]text" - mehrere Zeitstempel pro Zeile sind erlaubt.
 /**
  * @brief Parses LRC-format synced lyrics ("[mm:ss.xx]text", possibly multiple timestamps per line) into time-sorted LyricLine entries.
- * @param lrc Raw LRC lyric text (one entry per '\n'-separated line).
+ *
+ * The parameter is documented in TrackMedia.h (`lrc` is the raw LRC text,
+ * one entry per newline-separated line). Timestamps count only at the very
+ * start of a line (a "[..]" later in the text is lyrics, not a time); a line
+ * with several leading timestamps is emitted once per timestamp. After
+ * sorting, each entry's t1 becomes the next entry's t0 (the last one gets
+ * t0 + 6 s).
  */
 void TrackMedia::parseSynced( const QString &lrc )
 {
@@ -609,8 +619,11 @@ void TrackMedia::renderLyricsImage()
 
 /**
  * @brief Returns one artist image, decoding it from disk on demand.
- * @param i Index into the available images, [0, imageCount()).
- * @return The decoded, size-capped (max width 640) RGBA8888 image, or a null QImage if i is out of range or the file failed to decode/load.
+ *
+ * Parameter and return value are documented in TrackMedia.h. A hit on the
+ * one-slot cache (m_decodedIdx == `i`) is returned without touching the
+ * disk; otherwise the file is loaded, scaled down to at most 640 px wide
+ * (smooth), converted to RGBA8888 and stored as the new cached slot.
  */
 QImage TrackMedia::imageAt( int i ) const
 {

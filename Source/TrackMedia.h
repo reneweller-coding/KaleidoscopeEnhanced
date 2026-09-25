@@ -80,24 +80,19 @@ public:
 	 *  Wiederholungen werden ignoriert; ein neuer Track verwirft die
 	 *  alten Ergebnisse. */
 	/**
-	 * @brief Requests lyrics + artist images for a (possibly new) track; call on every track change.
+	 * @brief Requests lyrics + artist images (+ an optional music video) for a (possibly new) track; call on every track change.
 	 * @param artist Artist name (trimmed/lower-cased internally for de-duplication and cache keys).
 	 * @param title Track title; an empty (trimmed) title is ignored outright.
-	 *
-	 * A call whose artist+title matches the currently active request is a
-	 * no-op. Otherwise all pending/partial results from the previous
-	 * request are discarded (their revision counters bump so consumers
-	 * reload) and both the lyrics and artist-image fetch chains restart
-	 * from cache.
-	 */
-	/**
-	 * @brief Requests lyrics + artist images (+ an optional music video) for a (possibly new) track; call on every track change.
-	 * @param artist Artist name.
-	 * @param title Track title.
 	 * @param durationSec The track's known duration in seconds, or <=0 if not (yet) known. Gates the
 	 *        music-video search: only attempted for tracks under kVideoMaxDurationSec, and skipped
 	 *        entirely (not just deferred) when the duration is unknown at call time, since guessing
 	 *        wrong here means silently downloading something the user didn't ask for.
+	 *
+	 * A call whose artist+title matches the currently active request is a
+	 * no-op. Otherwise all pending/partial results from the previous
+	 * request are discarded (their revision counters bump so consumers
+	 * reload) and the lyrics, artist-image and (when eligible) music-video
+	 * fetch chains restart from cache.
 	 */
 	void requestTrack( const QString &artist, const QString &title, double durationSec = -1.0 );
 
@@ -107,9 +102,11 @@ public:
 	 */
 	struct LyricLine
 	{
-		double  t0 = -1.0, t1 = -1.0;   // Sekunden; <0 = unsynchronisiert   ///< Start/end time in seconds for synced lyrics; t0 < 0 means unsynchronised (plain-text mode). An empty-text entry with only t0 set is a GAP MARKER for an instrumental break (see parseSynced()).
+		/** @brief Start time of this line in song seconds for synced lyrics; < 0 means unsynchronised (plain-text mode, both times stay -1). An empty-text entry with only t0 meaningful is a GAP MARKER for an instrumental break (see parseSynced()). */
+		double  t0 = -1.0, t1 = -1.0;   ///< End time in song seconds: the following line's t0 after time-sorting, or t0 + 6 s for the last line; -1 for unsynchronised lyrics. A gap marker's t1 is likewise the next sung line's t0, which is exactly what keeps mid-song silences measurable.
 		QString text;                    ///< Line text; empty for a gap marker (instrumental break), never empty otherwise.
-		float   v0 = 0.f, v1 = 0.f;     // Zeilenband in Textur-V (0..1)   ///< This line's vertical [0,1] band within lyricsImage(), for sampling/highlighting; a gap marker reuses the previous sung line's band.
+		/** @brief Top edge of this line's vertical band within lyricsImage(), in texture-V units [0,1] (0 = image top); a gap marker reuses the previous sung line's band. */
+		float   v0 = 0.f, v1 = 0.f;     ///< Bottom edge of the same band in texture-V units [0,1] (v0 + one line height / image height); consumers sample/highlight the strip v0..v1.
 		float   overflowU = 0.f;        ///< How far (in lyricsImage()-wide texture-U units) this line's full, un-elided text extends past the normally-visible window; 0 if it fits. Drives the host-side horizontal marquee scroll for the currently focused line (see glwidget.cpp).
 	};
 	/** @brief The nominal (normally-visible, pre-marquee) width of lyricsImage() in pixels -- the actual image can be wider to hold overflowing lines' full text; callers use this fixed value (not img.width()) to keep the on-screen text SIZE stable regardless of how wide any one line's overflow makes the texture. */
@@ -222,8 +219,16 @@ private:
 	 * @param durationSec The requesting call's known track duration, already gated (>0 and <= kVideoMaxDurationSec) by the caller.
 	 */
 	void    videoFromCacheOrNet( double durationSec );
-	/** @brief One candidate returned by the yt-dlp search step, before scoring. */
+	/** @brief One candidate returned by the yt-dlp search step, before scoring (parsed from one "id|||title|||channel|||duration" --print line). */
 	struct VideoCandidate { QString id, title, channel; double duration = 0.0; };
+	/** @var TrackMedia::VideoCandidate::id
+	 *  @brief YouTube video id as printed by yt-dlp (%(id)s); the winner's id is what startVideoDownload() fetches. */
+	/** @var TrackMedia::VideoCandidate::title
+	 *  @brief Video title (%(title)s); scanned case-insensitively for "official (music) video" and for wrong-kind signals such as lyric/live/remix. */
+	/** @var TrackMedia::VideoCandidate::channel
+	 *  @brief Uploading channel name (%(channel)s); a match with the artist name or "vevo" raises the score. */
+	/** @var TrackMedia::VideoCandidate::duration
+	 *  @brief Video length in seconds (%(duration)s); 0 if yt-dlp gave none. Must lie within max(20 s, 15 %) of the track's real duration or the candidate is rejected outright. */
 	/** @brief Shells out to `yt-dlp ytsearchN:...` (no download, just metadata) for up to kVideoSearchCount candidates; parses its stdout on completion and picks a candidate via scoreCandidate(), then either starts the download or gives up (writing a negative cache entry). */
 	void    startVideoSearch();
 	/** @brief Scores one search candidate against the target duration and "does this look like the OFFICIAL music video" text signals in its title/channel. @return A score where higher is better; callers reject anything <= 0. */
@@ -241,7 +246,10 @@ private:
 	void    writeLyricsCache( const QString &synced, const QString &plain, bool found );
 
 	QNetworkAccessManager *m_nam = nullptr;   ///< Shared network manager for every request this object issues; owned, created in the ctor.
-	QString m_artist, m_title, m_key;   ///< Current track's trimmed artist/title, and m_key = lower-cased "artist|title" identity used to detect duplicate requests and to invalidate stale async callbacks.
+	/** @brief Current track's artist name, whitespace-trimmed (case preserved for display/queries; lower-cased only for cache keys). Empty skips the artist-image chain. */
+	QString m_artist, m_title, m_key;   ///< Lower-cased "artist|title" identity of the active request; used to detect duplicate requestTrack() calls and to invalidate stale async callbacks (each callback captures it and bails if it no longer matches).
+	/** @var TrackMedia::m_title
+	 *  @brief Current track's title, whitespace-trimmed; used verbatim in every lyrics/video query. */
 
 	bool    m_lyricsPending = false;   ///< True while the lyrics chain (cache or any network attempt) for the current track is still unresolved.
 	std::vector<LyricLine> m_lines;   ///< Parsed lyric lines (including gap markers) for the current track, time-sorted when synced.
@@ -253,11 +261,11 @@ private:
 	static const int kParallelDownloads  = 4;    ///< Maximum number of artist-image downloads in flight at once.
 	QStringList m_imagePaths;   ///< Disk paths (cache dir) of every artist image available so far, in the order discovered/downloaded.
 	int         m_imagesRevision = 0;   ///< Bumped whenever an image is added to m_imagePaths (from cache load or a finished download).
-	QStringList m_downloadQueue;          // noch zu ladende Bild-URLs   ///< URLs queued but not yet downloading.
-	QStringList m_seenUrls;               // Dedupe über alle Quellen   ///< Every URL enqueued so far (across all three sources), used to prevent duplicate downloads.
+	QStringList m_downloadQueue;          ///< Image URLs accepted by enqueueImageUrl() but not yet started; startNextDownloads() pops from the front. Counts toward kMaxImages together with m_imagePaths.
+	QStringList m_seenUrls;               ///< Every URL enqueued so far for this track (across all three sources), used to drop duplicates that Deezer/TheAudioDB/iTunes return in common.
 	int         m_activeDownloads = 0;   ///< Number of artist-image downloads currently in flight (<= kParallelDownloads).
-	int         m_nextImageNr     = 0;    // Dateinummer im Cache-Ordner   ///< Next zero-padded filename number to use when writing a downloaded image into the artist cache dir.
-	mutable int    m_decodedIdx = -1;     // Mini-LRU für imageAt()   ///< Index currently held in the one-slot decode cache (-1 = empty); mutable because imageAt() is const.
+	int         m_nextImageNr     = 0;    ///< Next file number (zero-padded to 3 digits, "NNN.jpg") to use when writing a downloaded image into the artist cache dir; starts after the images already found on disk.
+	mutable int    m_decodedIdx = -1;     ///< Index into m_imagePaths currently held in the one-slot decode cache used by imageAt() (-1 = empty); mutable because imageAt() is const.
 	mutable QImage m_decoded;   ///< The single decoded QImage cached by imageAt() for m_decodedIdx; mutable for the same reason.
 
 	// Musikvideo: at most ONE yt-dlp process (search or download) in flight

@@ -17,6 +17,14 @@
 // (both file-scope `static` there too) -- duplicated rather than shared so
 // this class stays fully decoupled from RenderPipeline/Qt, matching the same
 // call this codebase already made for GpuSims/PresentPass/SceneScheduler.
+/**
+ * @brief Rate-limited step of @p cur toward @p target: moves by at most @p rate * @p dt per call and lands exactly on the target when within reach.
+ * @param cur Current value.
+ * @param target Value to approach.
+ * @param rate Maximum change per second (units of the value per second).
+ * @param dt Elapsed time in seconds.
+ * @return The new value, never overshooting @p target.
+ */
 static float slewToward( float cur, float target, float rate, float dt )
 {
 	float maxStep = rate * dt;
@@ -25,6 +33,13 @@ static float slewToward( float cur, float target, float rate, float dt )
 	else
 		return ( cur - target < maxStep ) ? target : cur - maxStep;
 }
+/**
+ * @brief Clamps @p v into [@p lo, @p hi].
+ * @param v Value to clamp.
+ * @param lo Lower bound (inclusive).
+ * @param hi Upper bound (inclusive).
+ * @return @p v limited to the range.
+ */
 static float clampParam( float v, float lo, float hi )
 {
 	return v < lo ? lo : ( v > hi ? hi : v );

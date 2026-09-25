@@ -47,9 +47,9 @@ Vector3D::~Vector3D()
  * Standard mirror-reflection formula `2*(this . n)*n - this`. The CG_EXERCISE_10_3
  * branch is a teaching-exercise stub left over from the code's origin (a computer
  * graphics course assignment) where the method body was intentionally disabled for
- * students to fill in; it is not defined in this codebase's builds.
- * @param n Reflection normal (assumed normalized).
- * @return The reflected vector.
+ * students to fill in; it is not defined in this codebase's builds. The
+ * normal is assumed normalized; the calling vector is left unmodified (the
+ * parameter and return value are documented on the declaration in Vector3D.h).
  */
 Vector3D Vector3D::reflected(const Vector3D& n) const
 {
@@ -67,11 +67,9 @@ Vector3D Vector3D::reflected(const Vector3D& n) const
  * @p eta; if the term under the square root goes negative the interface exhibits total
  * internal reflection, in which case @p totalInternalReflection is set and the
  * original (unrefracted) vector is returned. See the CG_EXERCISE_10_3 note on
- * reflected() above.
- * @param n Interface normal (assumed normalized).
- * @param eta Ratio of indices of refraction (incident / transmitted medium).
- * @param totalInternalReflection Output flag set to true on total internal reflection.
- * @return The refracted vector, or the original vector on total internal reflection.
+ * reflected() above. The normal is assumed normalized and @p eta is the ratio
+ * of indices of refraction (incident / transmitted medium); the parameters and
+ * return value are documented on the declaration in Vector3D.h.
  */
 Vector3D Vector3D::refracted(const Vector3D& n, float eta, bool& totalInternalReflection) const
 {

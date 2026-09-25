@@ -233,8 +233,10 @@ bool	NanoTimer::M_FrequencyChecked	= false;	///< Definition of NanoTimer::M_Freq
 
 /**
  * @brief Prepare an image to use as an OpenGL texture.
- * @param image Source image to convert.
- * @return Converted QImage (ARGB32, byte-swapped, scaled to at most 1024x1024).
+ *
+ * Returns a converted copy (ARGB32, byte-swapped, scaled to at most
+ * 1024x1024); the source image is not modified. Parameter and return value
+ * are documented on the declaration in Utils.h.
  */
 QImage prepareImage( const QImage &image )
 {

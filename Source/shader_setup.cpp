@@ -126,17 +126,23 @@ static GLuint fullscreenVertShader()
 	return vs;
 }
 
-// A program that fails to LINK (as opposed to a missing FILE, which
-// loadAttachShader() already treats as fatal) used to be returned anyway:
-// initUniforms() would resolve every uniform to -1 on it, and the first
-// glUseProgram() on that non-zero-but-unlinked id is invalid per the GL
-// spec, so the driver silently leaves whatever program was PREVIOUSLY bound
-// active — the broken scene ends up rendering the last-good scene's shader
-// under its own (wrong) audio-reactive parameters, with no diagnostic
-// beyond the easily-missed "Linking: FAILED!" log line. Returning 0 instead
-// (mirroring setShadersPipeline()'s existing convention below) turns that
-// into a clean glUseProgram(0) at draw time -- the broken scene just draws
-// nothing, which is what Scene3DShader's pipeline path already does today.
+/**
+ * @brief Links a program with its shaders attached; on link failure deletes it and returns 0.
+ *
+ * A program that fails to LINK (as opposed to a missing FILE, which
+ * loadAttachShader() already treats as fatal) used to be returned anyway:
+ * initUniforms() would resolve every uniform to -1 on it, and the first
+ * glUseProgram() on that non-zero-but-unlinked id is invalid per the GL
+ * spec, so the driver silently leaves whatever program was PREVIOUSLY bound
+ * active — the broken scene ends up rendering the last-good scene's shader
+ * under its own (wrong) audio-reactive parameters, with no diagnostic
+ * beyond the easily-missed "Linking: FAILED!" log line. Returning 0 instead
+ * (mirroring setShadersPipeline()'s existing convention below) turns that
+ * into a clean glUseProgram(0) at draw time -- the broken scene just draws
+ * nothing, which is what Scene3DShader's pipeline path already does today.
+ * @param prog Program object with all stages attached, not yet linked.
+ * @return @p prog (now linked and bound via glUseProgram) on success; 0 after deleting it on failure (the info log is printed either way).
+ */
 static GLuint linkOrFail( GLuint prog )
 {
 	glLinkProgram( prog );

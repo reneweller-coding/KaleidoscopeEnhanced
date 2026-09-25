@@ -85,12 +85,22 @@ public:
 	bool isMeshScene() const override { return m_geomKind == GEOM_MESH; }   ///< @return true for a loaded-model scene; the host damps the time echo on these (see EffectShader::isMeshScene).
 
 	// ---- asynchronous mesh warm-up (see EffectShader::meshWarmupPending) ----
+	/** @brief Whether this scene still needs its model loaded before it can be shown.
+	 *  @return true only for a GEOM_MESH scene with a model= path whose VBO is not built yet and whose
+	 *          warm-up has not reached WARM_READY (i.e. nothing started, queued, or the worker is still loading). */
 	bool meshWarmupPending() const override;
+	/** @brief Queue this scene on the shared warm-up worker thread (starting the thread on first use).
+	 *
+	 *  A no-op unless meshWarmupPending() conditions hold. A REPEATED request while still queued moves the
+	 *  scene to the queue front: the fade-hold path asks every frame, and an active fade must not wait
+	 *  behind the background crawl through the whole preset. */
 	void requestMeshWarmup() override;
 	/** @brief Worker-thread entry: runs loadMeshAsset() for this scene's model
 	 *  path(s) into the m_warm* slots, then publishes WARM_READY. Called ONLY by
 	 *  the warm-up worker; everything GL stays out of it. */
 	void warmupLoadNow();
+	/** @brief GL half of the warm-up: once the worker has published WARM_READY, builds the VBO from the prefetched assets and bakes the VAO.
+	 *  @return true if the upload happened this call (the host counts it as the frame's one warm-up step); false if nothing was ready or the VBO already exists. */
 	bool finishMeshWarmup() override;
 	/// @return True while this mesh scene holds its uploaded vertex buffer (and material textures).
 	bool meshResident() const override { return m_geomKind == GEOM_MESH && m_vbo != 0; }
@@ -184,10 +194,10 @@ private:
 	// The generator is the scene's own "X.comp", opted into the same way as the
 	// tessellation and geometry stages: by the file being there.
 	char   *m_compFilename = 0;   ///< Path to this scene's optional X.comp generator shader (sibling of the fragment file); the file need not exist.
-	GLuint  m_genProg      = 0;   // generator compute program (0 = none/failed)
-	GLuint  m_cmdBuf       = 0;   // DrawArraysIndirectCommand, written on the GPU
+	GLuint  m_genProg      = 0;   ///< The scene's generator compute program built from m_compFilename (0 = none / compile failed); dispatched by runGenerator().
+	GLuint  m_cmdBuf       = 0;   ///< GL_DRAW_INDIRECT_BUFFER holding one DrawArraysIndirectCommand; its vertex count is written on the GPU by the generator and clamped by s_clampProg, and never read back by the CPU.
 	bool    m_genTried     = false;   ///< True once setupIndirect() has run; compilation is attempted exactly once and the outcome cached in m_genProg.
-	int     m_meshCapacity = 0;   // vertices the VBO can hold
+	int     m_meshCapacity = 0;   ///< Vertices the GEOM_INDIRECT VBO can hold (600000, 8 floats each); uploaded to the generator and the clamp pass as `maxVertices`.
 	/**
 	 * @brief Compiles this scene's compute generator (and the process-shared clamp pass), and allocates the indirect command buffer plus, if requested, the persistent-state SSBO.
 	 *
@@ -202,7 +212,7 @@ private:
 	 * @param time Raw host time in seconds; the activation's time offset and speed factor are applied internally before upload.
 	 */
 	void    runGenerator( float time );
-	int     m_genSpectro   = -1;  // cached: does the generator read texSpectro?
+	int     m_genSpectro   = -1;  ///< Cached answer to "does the generator declare `texSpectro`?": -1 = not yet checked, 0 = no, 1 = yes (see usesSpectro()).
 
 	/**
 	 * @brief Cached uniform locations for m_genProg, so runGenerator() doesn't repeat ~18
@@ -219,23 +229,23 @@ private:
 	 */
 	struct GenLocCache
 	{
-		GLuint progId       = 0;
-		GLint  time         = -1, sceneSeed    = -1, audioAdvance = -1, audioLevel   = -1;
-		GLint  audioBeat    = -1, audioKick    = -1, audioSubBass = -1, audioHigh    = -1;
-		GLint  audioBass    = -1, audioMid     = -1, audioChroma  = -1, audioSpectrum= -1;
-		GLint  texSpectro   = -1, spectroHead  = -1, spectroFill  = -1, maxVertices  = -1;
-		GLint  frameIndex   = -1, genPass      = -1;
+		GLuint progId       = 0;   ///< Program the cached locations belong to; a mismatch with m_genProg triggers a re-resolve.
+		GLint  time         = -1, /**< `time`: scene time in seconds (activation offset and speed factor already applied). */ sceneSeed    = -1, /**< `sceneSeed`: per-activation seed (m_sceneSeed). */ audioAdvance = -1, /**< `audioAdvance`: accumulated audio-driven forward offset (uv units, AudioFeatures::audioAdvance). */ audioLevel   = -1;   ///< `audioLevel`: overall loudness 0..1.
+		GLint  audioBeat    = -1, /**< `audioBeat`: beat decay envelope. */ audioKick    = -1, /**< `audioKick`: kick-drum envelope. */ audioSubBass = -1, /**< `audioSubBass`: sub-bass band level. */ audioHigh    = -1;   ///< `audioHigh`: high band level.
+		GLint  audioBass    = -1, /**< `audioBass`: bass band level. */ audioMid     = -1, /**< `audioMid`: mid band level. */ audioChroma  = -1, /**< `audioChroma`: float[12] pitch-class energies. */ audioSpectrum= -1;   ///< `audioSpectrum`: float[AudioFeatures::kSpectrumBands] band spectrum.
+		GLint  texSpectro   = -1, /**< `texSpectro`: spectrogram history sampler (always unit 28). */ spectroHead  = -1, /**< `spectroHead`: the ring's write head as a 0..1 texture coordinate (newest row just below it). */ spectroFill  = -1, /**< `spectroFill`: how much of the spectrogram window is populated, 0..1. */ maxVertices  = -1;   ///< `maxVertices` (uint): m_meshCapacity, the vertex budget the generator must not exceed.
+		GLint  frameIndex   = -1, /**< `frameIndex` (uint): m_frameIndex, running count of generator runs. */ genPass      = -1;   ///< `genPass` (uint): index of the current compute pass; its presence enables multi-pass dispatch.
 		// audioPhase/audioSwell were missing from this list while 10 compute
 		// generators already declared and used them -- glGetUniformLocation was
 		// never called for them, so they silently stayed 0 for the generator's
 		// whole lifetime and that reactivity simply never happened.
-		GLint  audioPhase   = -1, audioSwell   = -1;
+		GLint  audioPhase   = -1, /**< `audioPhase`: accumulated audio rotation angle in radians (AudioFeatures::audioRotPhase, hue-offset applied). */ audioSwell   = -1;   ///< `audioSwell`: slow swell envelope.
 		// The scene clocks were missing too: a generator declaring sceneAdvance /
 		// sceneTime / sceneProgress read 0 forever (StarlingMurmuration's flow
 		// field never moved, DysonSwarmConstruction never assembled).
-		GLint  sceneAdvance = -1, sceneTime    = -1, sceneProgress = -1;
+		GLint  sceneAdvance = -1, /**< `sceneAdvance`: audioAdvance accumulated since this activation started. */ sceneTime    = -1, /**< `sceneTime`: seconds since this activation started. */ sceneProgress = -1;   ///< `sceneProgress`: 0..1 progress through the scene's scheduled slot.
 	};
-	GenLocCache m_genLocs;
+	GenLocCache m_genLocs;   ///< Uniform locations of m_genProg, resolved once per program (re-resolved when progId no longer matches).
 	std::vector<GLint> m_genUniformLocs; ///< Parallel to m_uniforms, resolved for m_genProg (refreshed alongside m_genLocs).
 	std::vector<GLint> m_genExprLocs;    ///< Parallel to m_exprs, resolved for m_genProg (refreshed alongside m_genLocs).
 
@@ -268,7 +278,7 @@ private:
 
 	int    m_geomKind    = GEOM_POINTS;   ///< This instance's GeomKind, fixed at construction from the preset's geom= attribute.
 	GLuint m_vbo         = 0;   ///< Vertex buffer holding this scene's geometry (host-built for most kinds; GPU-filled every frame for GEOM_INDIRECT).
-	GLuint m_vao         = 0;   // core profile: attrib state container
+	GLuint m_vao         = 0;   ///< Vertex array object binding attrA/attrB to m_vbo (the core profile requires one); baked by bakeVao(), freed with the mesh in releaseMesh().
 	int    m_vertexCount = 0;   ///< Vertex count in m_vbo to draw (meaningless for GEOM_INDIRECT, whose count instead lives in m_cmdBuf on the GPU).
 
 	// ---- GEOM_MESH: a real loaded model instead of procedural geometry ----
@@ -290,7 +300,7 @@ private:
 	// kHighestUnitUsed constant this bumped from 35 to 36. Fixed rather than
 	// auto-assigned: every mesh scene needs the SAME unit reserved, the same
 	// way texSpectro is always unit 28.
-	static const int kMeshMaterialTexUnit = 36;
+	static const int kMeshMaterialTexUnit = 36;   ///< Fixed texture unit for `texMeshMaterial` (model 1's material array); see the comment above for why it is fixed and this high.
 
 	// ---- optional SECOND model (config attribute model2=) ----
 	// For scenes that stage two objects against each other -- a ship coming
@@ -338,17 +348,17 @@ private:
 	/// normalises each asset so its LONGEST axis is about 1.0, which says
 	/// nothing about the other two.
 	float  m_meshExtent[3] = { 0.5f, 0.5f, 0.5f };
-	float  m_meshCenter[3] = { 0.0f, 0.0f, 0.0f };
+	float  m_meshCenter[3] = { 0.0f, 0.0f, 0.0f };   ///< Bounding-box centre of model 1 in its own object space, measured at load; uploaded as `meshCenter` (see m_meshExtent).
 	/// The same for model2 (meshExtent2/meshCenter2). A two-object scene
 	/// orients each from its OWN geometry: ShipDocking aligns the SHIP,
 	/// which is model2, and using model1's extents there would point the
 	/// ship along the station's longest axis.
 	float  m_meshExtent2[3] = { 0.5f, 0.5f, 0.5f };
-	float  m_meshCenter2[3] = { 0.0f, 0.0f, 0.0f };
-	GLint  m_meshExtent2Uni = -1;
-	GLint  m_meshCenter2Uni = -1;
-	GLint  m_meshExtentUni = -1;
-	GLint  m_meshCenterUni = -1;
+	float  m_meshCenter2[3] = { 0.0f, 0.0f, 0.0f };   ///< Bounding-box centre of model 2 in its own object space; uploaded as `meshCenter2` (see m_meshExtent2).
+	GLint  m_meshExtent2Uni = -1;   ///< Location of the `meshExtent2` (vec3) uniform; -1 if the shader doesn't declare it.
+	GLint  m_meshCenter2Uni = -1;   ///< Location of the `meshCenter2` (vec3) uniform; -1 if the shader doesn't declare it.
+	GLint  m_meshExtentUni = -1;    ///< Location of the `meshExtent` (vec3) uniform; -1 if the shader doesn't declare it.
+	GLint  m_meshCenterUni = -1;    ///< Location of the `meshCenter` (vec3) uniform; -1 if the shader doesn't declare it.
 	/// How many copies of the loaded mesh to draw (instances="N" on the scene
 	/// entry; 1 = the ordinary single-object case). One upload, N draws, and
 	/// the shader places each copy from gl_InstanceID. The sky shell lives in
@@ -356,8 +366,8 @@ private:
 	/// shell on every instance but the first, or it draws N backdrops over
 	/// each other.
 	int    m_meshInstances = 1;
-	GLint  m_meshInstancesUni = -1;
-	int    m_meshOwnVertexCount = 0;
+	GLint  m_meshInstancesUni = -1;   ///< Location of the `meshInstances` uniform (the instance count, so the shader can lay the copies out); -1 if not declared.
+	int    m_meshOwnVertexCount = 0;   ///< Number of vertices at the START of the VBO that belong to model 1; the sky shell (and model 2, if any) follow from this index on. Uploaded as `meshVertexCount`; 0 while no mesh is resident.
 	GLint  m_meshVertexCountUni = -1;   ///< Location of the `meshVertexCount` uniform (GEOM_MESH only).
 	static const int kSkyShellRadius = 190;   ///< World-space radius of the sky shell; must clear the largest scaled-up mesh (see each geom="mesh" .vert's kModelScale) and stay under kSceneFar (220).
 	GLint  m_projUni     = -1;   ///< Location of the `projM` (projection * camera-rig) matrix uniform.

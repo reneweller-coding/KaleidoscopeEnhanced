@@ -294,6 +294,7 @@ public:
 	/// @return The currently rolled interpolation (cross-fade) duration (seconds) for this effect.
 	unsigned int getTimeInterpolation();
 
+	/** @brief Sets the visual-complexity weight used by preset selection. @param complexity Unitless weight (parsed from the config's complexity attribute). */
 	void setComplexity( unsigned int complexity ) {m_complexity = complexity;}; ///< Sets the visual-complexity weight used by preset selection.
 	unsigned int getComplexity() {return m_complexity;}; ///< Returns the visual-complexity weight used by preset selection.
 	void setProbability( float probability ){ m_probability = probability; }; ///< Sets the probability threshold used by useShader().
@@ -361,7 +362,10 @@ public:
 	 *  start, so the outgoing scene simply keeps playing until the model is
 	 *  ready and the fade then runs in full. Non-mesh shaders never pend.
 	 *  @{ */
+	/** @brief Whether this scene still needs its model loaded before it can be faded in.
+	 *  @return Always false here; a GEOM_MESH Scene3DShader returns true until the worker has published its assets. */
 	virtual bool meshWarmupPending() const { return false; }
+	/** @brief Kicks off the asynchronous model load (file read/decode on a worker thread). No-op here; idempotent for mesh scenes, so the host may call it every frame while meshWarmupPending() holds. */
 	virtual void requestMeshWarmup() {}
 	/** @brief GL half of a finished warm-up: if the worker has published this
 	 *  scene's assets and the VBO is still unbuilt, upload now (a few ms).
@@ -421,10 +425,10 @@ public:
 	/// the first third of its arc on the very bench meant to judge it.
 	/// SceneScheduler::setReviewMode() owns this value.
 	static float s_reviewSolo;
-	static float s_shadowExtent;      // the ACTIVE scene's, for the receivers
-	static float s_shadowPass;        // 1 during the depth-only pass
-	static float s_lightM[16];        // light view-projection, column-major
-	static float s_lightDir[3];
+	static float s_shadowExtent;      ///< The ACTIVE scene's shadowExtent() (world units, half-width of the light box), published by RenderPipeline so the shadow receivers and the light matrix use the same box.
+	static float s_shadowPass;        ///< 1 during light 1's depth-only pass, 0 otherwise; uploaded as the `shadowPass` uniform.
+	static float s_lightM[16];        ///< Light 1's view-projection matrix, column-major; uploaded as `lightM`, recomputed per frame by RenderPipeline::updateLightMatrix().
+	static float s_lightDir[3];       ///< Light 1's direction (unit vector towards the light); uploaded as `lightDir`.
 	/// @return True if this effect's compiled fragment shader declares the "texShadow" sampler (shadow map). Cached after first query.
 	bool usesShadow();
 
@@ -579,23 +583,23 @@ protected:
 
 	float	m_probability; ///< Threshold used by useShader() to decide whether this effect activates.
 
-	int		m_usesSim = -1;      // -1 = not yet queried, 0/1 = cached result
-	int		m_usesProgress = -1; // -1 = not yet queried; 1 = reads sceneProgress or a rig formula uses `progress`
-	bool	m_exprUsesProgress = false;   // set while the rig formulas are parsed
-	int		m_usesFluid = -1;    // same caching for the fluid field
-	int		m_usesSmoke3D = -1;  // same caching for the volumetric smoke/fire field
-	int		m_usesSSM = -1;      // same caching for the self-similarity matrix
-	int		m_usesSpectro = -1;  // ... and for the scrolling spectrogram history
-	int		m_usesShadow = -1;   // ... and for the shadow map
-	int		m_usesShadow2 = -1;   // ... and for the second, independent shadow map
-	int		m_usesOit = -1;      // ... and for order-independent transparency
-	int		m_usesBake = -1;     // ... and for the per-scene baked-field texture
-	int		m_usesMandelbrot = -1;   // ... and for the deep-zoom Mandelbrot field texture
-	int		m_usesPhysarum = -1; // same caching for the Physarum trail map
+	int		m_usesSim = -1;      ///< Cached usesSim() result: -1 = not yet queried, 0/1 = the compiled program does (not) declare `texSim`.
+	int		m_usesProgress = -1; ///< Cached usesProgress() result: -1 = not yet queried; 1 = reads `sceneProgress` or a rig formula uses `progress`.
+	bool	m_exprUsesProgress = false;   ///< Set by addExpression() while the rig formulas are parsed when one references `progress`; feeds usesProgress().
+	int		m_usesFluid = -1;    ///< Cached usesFluid() result (-1 = not yet queried), same scheme as m_usesSim: the fluid field, `texFluid`.
+	int		m_usesSmoke3D = -1;  ///< Cached usesSmoke3D() result (-1 = not yet queried): the volumetric smoke/fire field, `texSmoke3D`.
+	int		m_usesSSM = -1;      ///< Cached usesSSM() result (-1 = not yet queried): the self-similarity matrix, `texSSM`.
+	int		m_usesSpectro = -1;  ///< Cached usesSpectro() result (-1 = not yet queried): the scrolling spectrogram history, `texSpectro`.
+	int		m_usesShadow = -1;   ///< Cached usesShadow() result (-1 = not yet queried): the shadow map, `texShadow`.
+	int		m_usesShadow2 = -1;   ///< Cached usesShadow2() result (-1 = not yet queried): the second, independent shadow map, `texShadow2`.
+	int		m_usesOit = -1;      ///< Cached usesOit() result (-1 = not yet queried): order-independent transparency, `oitPass`.
+	int		m_usesBake = -1;     ///< Cached usesBake() result (-1 = not yet queried): the per-scene baked-field texture, `texBake`.
+	int		m_usesMandelbrot = -1;   ///< Cached usesMandelbrot() result (-1 = not yet queried): the deep-zoom Mandelbrot field texture, `texMandelbrot`.
+	int		m_usesPhysarum = -1; ///< Cached usesPhysarum() result (-1 = not yet queried): the Physarum trail map, `texPhysarum`.
 	unsigned int	m_cfxMask = 0;   ///< Compute-FX sampler bits (see cfxMask()); cached result, resolved once per compiled program (see m_cfxProg).
 	GLuint		m_cfxProg = 0;   ///< Program the mask was resolved for: id m_cfxMask was last computed for; mismatch triggers re-resolution in cfxMask().
 
-	bool	m_glReady = false;      // lazy compile: program built yet?
+	bool	m_glReady = false;      ///< Lazy compile: true once initUniforms() has built the GL program; every uses*() query answers false (without caching) while this is unset, and cleanShaderPrograms() clears it.
 
 	// Cached audio-uniform locations: applyAudioFeatures used to do ~45
 	// glGetUniformLocation string lookups per shader per FRAME.  Cached per
@@ -603,7 +607,7 @@ protected:
 	// Sized with headroom over AL_COUNT — the array is indexed by the enum, so
 	// it has to stay ahead of it as uniforms are added.
 	/// Per-program cache of all audio-uniform locations, avoiding ~45 glGetUniformLocation string lookups per shader per frame.
-	struct AudioLocCache { GLuint progId = 0; GLint L[96]; };
+	struct AudioLocCache { GLuint progId = 0; /**< Program id the locations were resolved for; 0 = never resolved. */ GLint L[96]; /**< Uniform location per AudioLoc enum value (index AL_*), -1 where the program lacks that uniform; only the first AL_COUNT entries are filled. */ };
 	AudioLocCache m_audioLocs; ///< applyAudioFeatures()'s location cache; auto-refreshes when m_sh_prog_id changes (recompile/hot reload).
 
 	/// A scene's own "power" uniform (superellipse/distortion exponent, e.g.
@@ -612,7 +616,7 @@ protected:
 	/// speedTunnel (see applyAudioFeatures()'s big comment on why those are
 	/// NOT touched here) -- it is safe to modulate live: re-scaled by
 	/// AudioFeatures::powerScale every frame via Uniform::setGLValueScaled(),
-	/// on top of whatever value that scene's own <float name="power"> range
+	/// on top of whatever value that scene's own `<float name="power">` range
 	/// rolled for this activation. Resolved by name alongside the AL_* cache
 	/// above (nullptr if this program has no "power" uniform).
 	Uniform *m_powerUniform = nullptr;
@@ -646,7 +650,7 @@ protected:
 	unsigned m_activations = 0;         ///< Auftritte dieser Szene seit Programmstart; Teil des Szenen-Seeds unter KALEIDO_SEED.
 	float m_soloAtReset    = 0.f;       ///< m_timeSolo as it stood at the last resetParameters(), in seconds.
 	float m_activationTime = -1.0e9f;   ///< `time` at the first setUniforms() after activation; sentinel means "not yet seen".
-	int    m_secCur = -1, m_secPrev = -1, m_secCount = -1;   ///< Section memory for the shader (audioSectionId/Prev/Count); -1 = nothing seen since activation.
+	int    m_secCur = -1, /**< Slot id of the current song section, uploaded as `audioSectionId`; -1 = nothing seen since activation. */ m_secPrev = -1, /**< Slot id of the section before the current one, uploaded as `audioSectionPrev`; equals m_secCur on the first sight after activation. */ m_secCount = -1;   ///< Section memory for the shader (audioSectionId/Prev/Count); -1 = nothing seen since activation.
 	float  m_secKnown = 0.f;                                ///< 1 if the current section was recognised as returning.
 	double m_secT0 = 0.0;                                   ///< steady_clock seconds of the last section change (audioSectionAge).
 	float m_progressT0     = -1.0e9f;   ///< Origin of the sceneProgress ramp; equals m_activationTime unless setClimaxIn() re-timed the arc.
@@ -674,7 +678,7 @@ public:
 	}
 protected:
 
-	unsigned int m_moodFlags = 0;   // MoodFlags bitmask (0 = untagged/neutral)
+	unsigned int m_moodFlags = 0;   ///< MoodFlags bitmask parsed from the config's mood="..." attribute (0 = untagged/neutral); the scheduler matches it against the live mood.
 	float m_minFade = 0.f;          ///< Transitions: shortest fade this transition may run in (seconds); see setMinFade().
 
 	std::vector< Uniform *> m_uniforms; ///< All randomised parameters registered via addUniform()/addUniformInterpolator(), owned for the lifetime of this effect (never explicitly deleted).

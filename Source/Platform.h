@@ -95,6 +95,7 @@ void *glProcAddress( const char *name );
 } // namespace Platform
 
 #ifndef _WIN32
+/// POSIX has no _stricmp; the call sites keep the MSVC name and get Platform::iCaseCmp.
 #define _stricmp ::Platform::iCaseCmp
 #endif
 
