@@ -10,7 +10,7 @@ AcousticLevitationMatrix	3	3	5	4	5	2	5
 AizawaAttractorSphereVortex	5	6	5	5	6	5	6
 AlcubierreWarpDriveHighway	3	4	8	3	8	3	7
 AlfvenWavePlasmaFilamentation	2	1	7	1	7	3	5
-AlienPlanetOrbit	4	6	1	5	0	2	2
+AlienPlanetOrbit	5	7	1	4	1	3	5
 AlienWorldSurface	7	8	2	5	2	6	6
 AnamorphicMirrorLabyrinth	5	4	5	3	8	5	6
 AnechoicChamberWedges	4	2	5	5	3	4	5
@@ -27,7 +27,7 @@ AsteroidMiningBase	1	4	2	5	0	1	1
 AsteroidRubblePileTumble	5	8	2	6	1	4	5
 AtmosphericEntry	5	9	5	5	1	5	8
 AtmosphericGravityWaveUndularBore	6	5	3	3	3	5	4
-AttentionHeadRibbons	2	0	1	3	0	2	1
+AttentionHeadRibbons	4	2	4	4	5	4	7
 Aurora	7	7	4	6	3	5	6
 AuroraAustralisCurtainSwell	8	7	3	5	3	6	6
 AuroraBorealisCurtainFlight	5	6	3	5	4	4	4
@@ -210,9 +210,9 @@ EclipseLeafCrescents	6	3	2	5	2	6	5
 EinsteinHatTiling	4	1	2	3	4	5	4
 EinsteinRingGravitationalLens	4	6	6	4	7	4	7
 EmbroideryHoopStitches	3	0	1	2	1	4	3
-EndOfTheUniverse	5	7	0	7	0	1	1
+EndOfTheUniverse	6	9	1	7	2	4	8
 EnneperMinimalSurfaceHyperfold	6	5	3	4	4	7	6
-ErodedLand	3	1	1	3	2	2	1
+ErodedLand	7	2	1	3	1	6	8
 EscalatorHallCrossing	4	0	3	5	2	4	3
 EscherRelativityMatrix	5	0	1	2	3	8	6
 EuropaChaosTerrain	5	6	2	5	2	4	5
@@ -268,7 +268,7 @@ GalaxyMergerNBody	5	7	1	5	1	3	3
 GalleryHall	4	2	2	7	1	7	5
 GaltonBoardBeads	3	1	2	4	1	3	3
 GammaRayBurst	2	6	6	5	2	2	4
-GasGiantAtmosphere	4	5	1	3	1	2	1
+GasGiantAtmosphere	7	8	1	3	1	5	8
 GasGiantCloudCity	5	6	1	4	1	3	3
 GearWorks	3	1	6	5	3	4	5
 GeomagneticDynamoCore	3	4	6	4	5	3	5
@@ -309,7 +309,7 @@ HelixTower	5	6	5	4	4	4	6
 HexagonalLaserMatrixTunnel	4	3	5	3	6	4	4
 HexKaleido	4	2	8	3	9	5	8
 HigherDimensionAscension	4	3	3	2	5	4	3
-HilbertSpaceFillingCurveZoom	2	1	2	3	2	2	1
+HilbertSpaceFillingCurveZoom	3	1	6	3	6	5	7
 HoliColourCloud	5	1	6	1	8	6	6
 Hologram	4	6	4	6	2	4	4
 HolographicDiffractionGratingMandala	3	1	8	1	9	4	7
@@ -348,7 +348,7 @@ IndustrialStation	3	7	2	6	1	3	3
 InfinitePhotoZoomAbyss	5	3	6	3	8	5	7
 InfinitePsychedelicDrosteVortex	4	3	7	3	9	4	7
 InfinityMirrorRoom	6	3	3	4	5	6	5
-InkTank	4	2	1	5	1	3	1
+InkTank	7	1	1	3	3	7	7
 InkWater	8	3	2	5	3	7	6
 InsideSystem	3	4	9	3	9	3	9
 InterstellarGenerationShip	4	7	3	6	1	3	4
@@ -489,7 +489,7 @@ ModularSynthPatchbay	3	1	5	5	3	4	5
 MoebiusTunnel	5	5	4	5	6	5	5
 MoireHyperInterference	3	2	7	3	6	3	6
 MoireTwistedBilayerGraphene	5	1	5	1	6	5	5
-MolecularCloudCore	4	6	1	6	0	2	1
+MolecularCloudCore	7	9	1	5	3	6	8
 MonarchRoostTree	5	0	1	3	2	5	4
 MonolithField	4	5	6	7	3	4	6
 MoodWeatherValley	6	1	1	5	1	5	4
@@ -660,7 +660,7 @@ RiceTerracesDawn	4	0	1	3	1	4	2
 RiemannSphereInfinityFlight	4	4	7	3	8	5	7
 RingSpokesAndWakes	6	8	2	5	2	5	6
 RingStation	6	9	2	5	1	5	7
-RingworldHabitat	3	5	1	4	0	2	1
+RingworldHabitat	6	8	1	3	1	5	8
 RoguePlanet	5	7	1	6	1	3	3
 RogueWanderer	5	7	2	6	2	4	5
 RollerCoaster	2	4	9	5	6	2	7
@@ -720,7 +720,7 @@ SolarProminenceLoops	5	7	4	6	3	4	5
 SolarSailArmada	4	6	6	5	3	4	5
 SolarWindMagnetosphere	3	4	8	2	8	4	7
 SolidLightCones	7	5	4	8	4	8	8
-SolitonInternalWaveAndamanSea	4	1	0	3	1	3	1
+SolitonInternalWaveAndamanSea	7	3	0	2	1	7	7
 SonarPingReveal	5	3	3	5	4	4	4
 SonoluminescenceBubble	4	3	7	3	7	4	6
 SpaceElevator	3	5	6	4	4	3	5
@@ -793,7 +793,7 @@ SuperfluidVortexTangle	4	3	7	3	7	3	7
 SuperheatedCoronalLoop	3	5	8	1	7	3	7
 SupermassiveAccretionDisk	4	8	6	4	5	4	7
 SupermassiveBlackHoleOrbit	5	9	4	6	4	5	7
-SupernovaRemnant	4	5	1	4	1	2	1
+SupernovaRemnant	5	7	1	4	2	3	4
 SupernovaRemnantNebula	4	7	6	5	4	3	5
 SuperradiantBlackHoleBomb	2	3	8	2	7	3	6
 SuperradiantTokamakIgnition	3	3	7	3	8	4	6
@@ -808,7 +808,7 @@ Teleidoscope	5	2	3	3	7	6	5
 TempleLanternHall	8	3	4	5	4	9	9
 TemporalZoomSSM	3	1	2	3	3	2	2
 TensegrityFloat	4	1	2	4	2	4	4
-TerraformingColony	2	4	1	5	0	1	1
+TerraformingColony	3	5	1	4	0	2	4
 TeslaLightningTree	2	2	7	5	5	2	6
 TessellatedLavaLake	4	3	5	5	3	4	5
 TessellatedOcean	6	4	1	7	1	4	3
@@ -837,7 +837,7 @@ Tornado	3	2	6	6	2	3	5
 TorusKnot	6	6	4	5	4	5	6
 TransitLightCurveStars	6	7	2	5	2	5	5
 TravertineTerracePools	5	1	1	3	1	5	3
-TricornFractalAntimatterSea	3	2	1	2	2	2	1
+TricornFractalAntimatterSea	4	2	2	2	5	4	6
 TronCycles	2	2	8	5	4	2	6
 Tunnel	5	3	5	4	8	5	6
 TunnelAcceleration	4	2	6	2	8	4	6

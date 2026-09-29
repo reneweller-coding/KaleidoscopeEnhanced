@@ -103,8 +103,10 @@ void main()
     vec3 coreColor = imgPalette(0.9 + audioCentroid * 0.1);
     
     // Outer expanding gas shells
-    vec3 gasColor1 = imgPalette(0.2); // Outer cool gas
-    vec3 gasColor2 = imgPalette(0.6); // Inner hot gas
+    // Emission-line identity (H-alpha red outside, O-III teal inside),
+    // leaned toward the photo: grey photos made the remnant a grey disc.
+    vec3 gasColor1 = mix(vec3(1.0, 0.25, 0.2), imgPalette(0.2), 0.25);  // outer cool gas
+    vec3 gasColor2 = mix(vec3(0.2, 0.85, 0.8), imgPalette(0.6), 0.25);  // inner hot gas
     
     float d = 0.0;
     float densityAccum = 0.0;
@@ -124,8 +126,11 @@ void main()
         
         if (shell > 0.01) {
             // Chaotic filaments inside the shell
-            float detail = fbm(p * 0.5 * gp - vec3(time * 0.2));
-            float filament = smoothstep(0.2, 0.6, detail);
+            // Filaments are thin ridges of the turbulence, not a fill: a
+            // ridged transform turns the smooth fbm into lace.
+            float detail = fbm(p * 0.5 * gp - vec3(time * 0.05));
+            float ridge = 1.0 - abs(detail * 2.0 - 1.0);
+            float filament = pow(smoothstep(0.55, 1.0, ridge), 2.0);
             
             float density = shell * filament * gp;
             
@@ -145,7 +150,10 @@ void main()
                 float lum = (1.0 / (distToCenter * 0.2 + 1.0)) * (1.0 + audioSwell * 2.0);
                 localCol *= lum;
                 
-                float alpha = density * 0.40;
+                // Glowing gas is emission, not a curtain: low alpha, so the
+                // shell has depth and the far side shows through.
+                localCol *= 2.2;
+                float alpha = density * 0.18;
                 col += localCol * alpha * (1.0 - densityAccum);
                 densityAccum += alpha;
                 

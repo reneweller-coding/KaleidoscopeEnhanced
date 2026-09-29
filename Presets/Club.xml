@@ -739,6 +739,12 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
+  <TextureShader file="..\Scene2D\AttentionHeadRibbons.frag" type="normal" mood="dark,calm,psychedelic" probability="0.45" complexity="3">
+    <rig preset="flat"/>
+    <float name="headsP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
   <TextureShader file="..\Scene2D\ModularSynthPatchbay.frag" type="normal" mood="dark,psychedelic,aggressive" probability="0.45" complexity="3">
     <rig preset="flat"/>
     <float name="cablesP" minValue="0" maxValue="1"></float>
@@ -915,12 +921,6 @@
     <rig preset="procedural"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\SpectralOrb.frag" type="scene3d" geom="grid" mood="calm,dreamy,bright" probability="0.35" complexity="2">
-    <rig preset="procedural"/>
-  </TextureShader>
-  <TextureShader file="..\\Scene3D\\SpectralTorus.frag" type="scene3d" geom="grid" mood="calm,dreamy,bright" probability="0.35" complexity="2">
-    <rig preset="procedural"/>
-  </TextureShader>
-  <TextureShader file="..\\Scene3D\\Planet4D.frag" type="scene3d" geom="points" mood="dreamy,psychedelic,space" probability="0.3" complexity="2">
     <rig preset="procedural"/>
   </TextureShader>
   <TextureShader file="..\Scene2D\Physarum.frag" type="normal" mood="psychedelic,bright" probability="0.4" complexity="2">
@@ -2627,6 +2627,15 @@
     <float name="tunnelRadiusP" minValue="0.8" maxValue="1.5"></float>
     <float name="glowP" minValue="0.7" maxValue="1.4"></float>
     <expr name="hueP" formula="chromaHue + seed2*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\Scene2D\HilbertSpaceFillingCurveZoom.frag" type="normal" mood="psychedelic,dark" probability="0.4" complexity="2">
+    <rig preset="flat"/>
+    <float name="speedP" minValue="0.6" maxValue="1.6"></float>
+    <float name="scaleP" minValue="0.7" maxValue="1.5"></float>
+    <float name="lineThicknessP" minValue="0.7" maxValue="1.4"></float>
+    <float name="glowP" minValue="0.7" maxValue="1.4"></float>
+    <expr name="hueP" formula="chromaHue + seed3*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene2D\HolographicDiffractionGratingMandala.frag" type="normal" mood="psychedelic,bright" probability="0.4" complexity="2">

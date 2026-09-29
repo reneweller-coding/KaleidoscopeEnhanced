@@ -2,46 +2,50 @@
 out vec4 fragColor;
 /**
  * @file InkTank.frag
- * @brief Dye billowing in a real 2D Navier-Stokes fluid, pressure-solved so it can shed vortices and push back off walls, unlike a divergence-free curl-noise flow.
+ * @brief INK TANK: drops of ink falling through a backlit tank of water, the
+ * way the macro photographs show it -- each drop sinks as a vortex ring, its
+ * head curling into a mushroom of fine filaments, a thinning stem trailing
+ * behind, and the inks (deep blue, magenta, amber, tinted by the photo)
+ * absorbing the white back-light where they overlap, so crossings go dark
+ * and rich.  New drops enter at the top while old plumes spread and fade.
  *
- * texNSFluid (RGB = dye colour, A = speed, written by the compute Navier-Stokes solver) is shaded with a Schlieren-style edge from its own density gradient so the dye filaments read as sharp sheets rather than a soft cloud. audioLevel brightens a highlight glow that rides the solver's own speed output, landing exactly on the shear layers where vortices are born, audioHigh strengthens the schlieren edge glow, audioKick brightens the soft halo bloom, and audioAmbient lifts both the lit back wall of the tank and the deep water behind it, which show through wherever the ink is thin. audioAdvance drifts the caustic pattern rippling across that wall (pre-integrated, never a factor on absolute time).
+ * The scene used to shade the compute Navier-Stokes solver; in the real app
+ * that showed a grey photo wall with barely any ink (catalogue review
+ * 29.09.2026).  This version is analytic and needs no compute pass.
+ *
+ * Audio Reactivity:
+ *   audioSwell   -> the back-light brightens (slow)
+ *   audioKick    -> the filament edges catch a glint (light only)
+ *   audioLevel   -> overall light
+ *   audioChromaHue-> photo tint of the inks
+ *   sceneTime / sceneAdvance -> the drops sinking and curling (continuous)
+ *
+ * Per-activation variety: glowP (edge glint), inkP (ink strength).
  */
-// InkTank.frag — dye in a REAL fluid.  Unlike the older curl-noise Fluid
-// (divergence-free by construction, so it can only ever swirl), the solver
-// behind texNSFluid advects, then solves the pressure Poisson equation and
-// subtracts its gradient — which is what lets it shed vortices off the jet
-// and push back against the walls.
-//
-// texNSFluid: RGB = dye, A = speed.
 
 uniform sampler2D tex0;
-uniform sampler2D texNSFluid;    // <- requests the Navier-Stokes sim
+uniform sampler2D tex1;
 uniform vec2  resolution;
 uniform float time;
 uniform float interpolation;
 
+uniform float sceneTime;
+uniform float sceneAdvance;
 uniform float audioLevel;
 uniform float audioBeat;
 uniform float audioKick;
-uniform float audioHigh;
+uniform float audioSwell;
 uniform float audioChromaHue;
-uniform float audioAmbient;
+uniform float audioAdvance;
+uniform float audioValence;
 
 uniform float glowP;
 uniform float inkP;
-uniform sampler2D tex1;
-uniform float audioAdvance;
-uniform float audioValence;
 
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
-
-// IMG-PALETTE (house standard): colours come from a rotating arc in the
-// CURRENT slideshow image, so every activation inherits a fresh palette from
-// the photos; the arc follows the musical key (audioChromaHue is circular-
-// slewed = jump-free) with a slow advance drift, valence shapes saturation.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -51,86 +55,115 @@ vec3 imgPalette(float t)
     return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
+float hash11(float n) { return fract(sin(n * 127.1) * 43758.5453); }
+float hash21(vec2 p)
+{
+    vec3 p3 = fract(vec3(p.xyx) * 0.1031);
+    p3 += dot(p3, p3.yzx + 33.33);
+    return fract((p3.x + p3.y) * p3.z);
+}
+float noise2(vec2 p)
+{
+    vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
+    return mix(mix(hash21(i), hash21(i + vec2(1.0, 0.0)), f.x),
+               mix(hash21(i + vec2(0.0, 1.0)), hash21(i + vec2(1.0, 1.0)), f.x), f.y);
+}
+float fbm(vec2 p)
+{
+    float v = 0.0, a = 0.5;
+    for (int i = 0; i < 4; ++i) { v += a * noise2(p); p = mat2(1.6, 1.2, -1.2, 1.6) * p + 3.1; a *= 0.5; }
+    return v;
+}
+// Fibres: ridged noise, thin bright lines where the ink is drawn out.
+float fibres(vec2 p)
+{
+    float v = 0.0, a = 0.5;
+    for (int i = 0; i < 3; ++i) { float n = 1.0 - abs(2.0 * noise2(p) - 1.0); v += a * n * n * n; p = mat2(1.6, 1.2, -1.2, 1.6) * p + 5.3; a *= 0.5; }
+    return v;
+}
+
+// One sinking drop: vortex-ring head + trailing stem, at age a (0..1).
+float plume(vec2 p, float k, float a, float T, float aspect)
+{
+    float x0 = 0.5 + (hash11(k * 3.7) - 0.5) * aspect * 0.85;
+    float headY = 1.12 - a * 1.35 + 0.05 * sin(k * 5.0);
+    vec2 d = p - vec2(x0 + 0.05 * sin(a * 3.0 + k), headY);
+    float R = 0.04 + 0.12 * a;                                  // ring radius grows
+    // Curl the space around both lobes of the ring: filaments wind in.
+    float tilt = 0.35 * (hash11(k * 9.1) - 0.5);
+    d = mat2(cos(tilt), -sin(tilt), sin(tilt), cos(tilt)) * d;
+    // The two lobes of the ring, each curling the other way; summed (not
+    // mirrored with abs) so there is no seam down the middle.
+    float lobe = 0.0;
+    for (int sgn = 0; sgn < 2; ++sgn) {
+        float sd = (sgn == 0) ? -1.0 : 1.0;
+        float side = 1.0 + sd * 0.35 * (hash11(k * 4.3) - 0.5);
+        vec2 lp = d - vec2(sd * R * side, 0.0);
+        float lr = length(lp);
+        float ang = sd * 2.2 / (lr * 18.0 + 0.6) * (0.6 + a);
+        float cs = cos(ang), sn = sin(ang);
+        vec2 sw = mat2(cs, -sn, sn, cs) * lp;
+        float fib = fibres(sw * vec2(9.0, 22.0) + k * 7.0 + sd * 11.0 + T * 0.02);
+        lobe += exp(-lr * lr / (0.0016 + 0.012 * a)) * (0.45 + 1.1 * fib);
+    }
+    // The cap over the ring (the mushroom top).
+    float cap = exp(-pow(d.y - 0.015 - 0.4 * R, 2.0) / 0.0012) * exp(-d.x * d.x / (R * R * 1.8 + 0.001)) * 0.6;
+    // Stem: from the ring up to the top, widening and thinning as it ages.
+    float above = d.y;
+    float w = 0.008 + 0.05 * clamp(above, 0.0, 1.0) * (0.4 + a);
+    float stemFib = fibres(vec2(d.x * 30.0, d.y * 6.0) + k * 3.0);
+    float stem = exp(-d.x * d.x / (w * w)) * smoothstep(0.0, 0.06, above) * (0.35 + 0.8 * stemFib) * (1.0 - 0.6 * a);
+    float fade = smoothstep(0.0, 0.08, a) * (1.0 - smoothstep(0.7, 1.0, a));
+    return (lobe + cap + stem) * fade;
+}
+
 void main()
 {
+    float aspect = resolution.x / resolution.y;
     vec2 uv = gl_FragCoord.xy / resolution;
-    vec2 px = 1.0 / resolution;
+    vec2 p = vec2((uv.x - 0.5) * aspect + 0.5, uv.y);
+    float T = sceneTime + sceneAdvance * 0.6;
+    float swell = clamp(audioSwell, 0.0, 1.0);
+    float ink = (inkP > 0.01) ? inkP : 0.65;
+    float gl = (glowP > 0.01) ? glowP : 0.55;
 
-    vec4 f = texture(texNSFluid, uv);
-    vec3 dye = f.rgb;
-    float speed = f.a;
+    // Water moves the ink: a slow warp of the whole tank.
+    vec2 wq = p * 3.0 + vec2(0.0, T * 0.02);
+    vec2 warp = vec2(fbm(wq), fbm(wq + 7.3)) - 0.5;
+    vec2 pw = p + warp * 0.08 + (vec2(fbm(wq * 3.0 + 1.3), fbm(wq * 3.0 + 4.1)) - 0.5) * 0.025;
 
-    // The solver injects its dye in fully-saturated primaries, and the
-    // per-channel knee at the bottom of this shader is a divide, so it
-    // compresses each filament's bright channel harder than its dark ones and
-    // the ink comes out MORE saturated than it went in. The whole-frame pull
-    // further down cannot reach that: it acts on a sum the dye dominates
-    // wherever there IS ink, which is exactly where the scan found the frame
-    // garish. Desaturating at the source keeps the sim's hues and its sheet
-    // structure and only takes the scream out of the pigment.
-    dye = mix(vec3(dot(dye, vec3(0.299, 0.587, 0.114))), dye, 0.70);
-
-    // Schlieren-style edge: the gradient of the dye density makes the
-    // filaments read as sharp sheets rather than a soft cloud.
-    float gx = dot(texture(texNSFluid, uv + vec2(px.x * 2.0, 0.0)).rgb
-                 - texture(texNSFluid, uv - vec2(px.x * 2.0, 0.0)).rgb, vec3(0.33));
-    float gy = dot(texture(texNSFluid, uv + vec2(0.0, px.y * 2.0)).rgb
-                 - texture(texNSFluid, uv - vec2(0.0, px.y * 2.0)).rgb, vec3(0.33));
-    float edge = length(vec2(gx, gy)) * 9.0;
-
-    // ---- THE TANK ITSELF -------------------------------------------------
-    // The scan found the frame near-black wherever the jet has not reached yet
-    // (the dye covered under half the picture) and, on top of that, garish:
-    // with only saturated dye above pure black, almost every lit pixel read as
-    // fully saturated.  The lit back wall of the tank fixes both — a soft
-    // top-lit gradient off the photo that carries every tile of the frame,
-    // partly desaturated so it reads as glass and water rather than as more
-    // ink.  Slightly inset uv so the wall is a wall, not a second copy of the
-    // slideshow image.
-    vec3 wall  = img(uv * 0.92 + 0.04);
-    float wg   = dot(wall, vec3(0.299, 0.587, 0.114));
-    wall       = mix(vec3(wg), wall, 0.5);
-    // Light hangs over the tank: bright at the surface, falling into the deep.
-    // The gradient is deep on purpose — together with the photo's own
-    // structure it is what answers the FLAT reading, not just the empty one.
-    float lamp = 0.24 + 0.82 * pow(clamp(uv.y, 0.0, 1.0), 1.3);
-    // Slow water caustics on the wall — more of the contrast the flat scan saw.
-    float caus = 0.5 + 0.5 * sin(uv.x * 11.0 + sin(uv.y * 7.0 + audioAdvance * 0.05)
-                                 + audioAdvance * 0.07);
-    wall *= lamp * (0.28 + 0.13 * caus + 0.10 * audioAmbient);
-
-    vec3 col = dye * (1.6 + 1.1 * inkP)
-             + wall;            // lit tank wall — the frame is never empty
-
-    // Fast fluid glows: speed is the solver's own output, so the highlights
-    // sit exactly on the shear layers where the vortices are being born.
-    vec3 hot = imgPalette(0.15) * 1.35;
-    col += hot * clamp(speed, 0.0, 2.0) * (0.10 + 0.22 * glowP)
-           * (0.6 + 0.8 * audioLevel);
-
-    col += vec3(edge) * (0.18 + 0.30 * glowP) * (0.5 + audioHigh);
-
-    // Halo
-    vec3 soft = vec3(0.0);
-    float r = 0.005 + 0.010 * glowP;
-    for (int i = 0; i < 6; ++i)
-    {
-        float a = float(i) * 1.0472;
-        soft += texture(texNSFluid, uv + vec2(cos(a), sin(a)) * r).rgb;
+    // Three inks, each with its own drops.
+    vec3 inkC[3];
+    inkC[0] = mix(vec3(0.05, 0.2, 0.75), imgPalette(0.6), 0.3);   // blue
+    inkC[1] = mix(vec3(0.8, 0.08, 0.45), imgPalette(0.9), 0.3);   // magenta
+    inkC[2] = mix(vec3(0.95, 0.55, 0.05), imgPalette(0.2), 0.3);  // amber
+    vec3 absorb = vec3(0.0);
+    float dens = 0.0;
+    const float P = 30.0;                                           // life of a drop (s)
+    for (int k = 0; k < 8; ++k) {
+        float fk = float(k);
+        float age = fract((T + fk * P / 8.0) / P);
+        float cyc = floor((T + fk * P / 8.0) / P);
+        float dn = plume(pw, fk * 13.0 + cyc * 3.1, age, T, aspect);
+        vec3 c = inkC[k % 3];
+        absorb += (vec3(1.0) - c) * dn;                             // what the ink takes out of white
+        dens += dn;
     }
-    col += soft / 6.0 * 0.30 * (1.0 + audioKick);
 
-    // Deep water behind the wall: the photo squared, so only its bright parts
-    // survive, and only where the ink is thin.
-    vec3 photo = texture(tex0, uv).rgb;
-    float cover = clamp(dot(col, vec3(0.4)), 0.0, 1.0);
-    col += photo * photo * (0.06 + 0.10 * audioAmbient) * (1.0 - cover);
+    // Back-light: a soft white panel, brighter at the top, with the faint
+    // structure of the photo far behind the glass.
+    vec3 back = mix(vec3(0.82, 0.86, 0.9), vec3(1.0, 0.99, 0.97), uv.y);
+    back *= 0.85 + 0.25 * swell;
+    back = mix(back, back * (0.75 + 0.5 * img(uv * 0.9 + 0.05)), 0.12);
+    back *= 1.0 - 0.25 * length(uv - 0.5);                          // vignette of the tank
 
-    // Water is not a pigment: pull the whole frame a little off full
-    // saturation (the scan flagged half the pixels as over-saturated).
-    float lum = dot(col, vec3(0.299, 0.587, 0.114));
-    col = mix(vec3(lum), col, 0.85);
+    vec3 col = back * exp(-absorb * 2.8 * (0.6 + 0.8 * ink));
+    // Filament edges glint in the back-light.
+    float edge = clamp(dens * (1.0 - dens * 0.8), 0.0, 1.0);
+    col += vec3(1.0) * edge * 0.08 * gl * (0.6 + 1.2 * clamp(audioKick, 0.0, 1.0));
 
-    col = col / (1.0 + col * 0.32);
-    fragColor = vec4(col, interpolation);
+    col *= 0.92 + 0.16 * audioLevel;
+    col = col / (1.0 + col * 0.2);
+    col *= 1.15;
+    fragColor = vec4(clamp(col, 0.0, 1.0), interpolation);
 }

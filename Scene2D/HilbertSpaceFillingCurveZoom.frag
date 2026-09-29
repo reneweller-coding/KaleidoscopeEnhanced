@@ -2,16 +2,25 @@
 out vec4 fragColor;
 /**
  * @file HilbertSpaceFillingCurveZoom.frag
- * @brief HILBERT SPACE FILLING CURVE ZOOM: Infinite recursive scale zoom into a 3D Hilbert
- * space-filling curve. A single non-self-intersecting continuous fractal path folding
- * through cubic space with glowing electric neon pulses, multi-octave zoom, and corner sparks.
+ * @brief HILBERT SPACE FILLING CURVE: a true Hilbert curve (order 7, one
+ * unbroken path through 16,384 cells) drawn as a neon tube on a dark
+ * ground, its colour running through the spectrum along the path, so the
+ * curve's nested U-shapes read as nested colour regions.  Bright comets
+ * travel along the path, each trailing a fading tail, and show how the one
+ * line winds through every cell.  The view drifts slowly over the curve.
+ *
+ * The earlier version was not a Hilbert curve at all but a tiled U-motif
+ * with a sawtooth zoom that snapped back each cycle.
  *
  * Audio Reactivity:
- *   audioAdvance -> drives continuous forward plunge along the Hilbert curve path
- *   audioKick    -> flashes Hilbert corner vertices & triggers recursive folding burst
- *   audioCentroid-> modulates Hilbert filament line thickness & edge sharpness
- *   audioSubBass -> expands cubic cell dimension breathing
- *   audioChromaHue-> rotates the glowing Hilbert path spectrum
+ *   audioKick     -> the comets flare (light only)
+ *   audioSwell    -> the tube glows brighter (slow)
+ *   audioCentroid -> tube core sharpness
+ *   audioChromaHue-> photo tint of the spectrum
+ *   sceneTime / sceneAdvance -> comets travelling, the slow drift (continuous)
+ *
+ * Per-activation variety: speedP (comet speed), scaleP (cells on screen),
+ * lineThicknessP, glowP, hueP.
  */
 
 uniform vec2  resolution;
@@ -20,21 +29,16 @@ uniform sampler2D tex0;
 uniform sampler2D tex1;
 uniform float interpolation;
 
-uniform float audioPhase;
+uniform float sceneTime;
+uniform float sceneAdvance;
 uniform float audioAdvance;
 uniform float audioSwell;
 uniform float audioLevel;
 uniform float audioKick;
 uniform float audioCentroid;
 uniform float audioValence;
-uniform float audioSubBass;
-uniform float audioBass;
-uniform float audioMid;
-uniform float audioHigh;
-uniform float audioFlux;
 uniform float audioChromaHue;
 
-// Per-activation variety
 uniform float speedP;
 uniform float scaleP;
 uniform float lineThicknessP;
@@ -46,117 +50,132 @@ vec3 img(vec2 uv) {
 }
 
 vec3 imgPalette(float t) {
-    float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853 + hueP;
+    float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
     float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
     vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
     float pg  = dot(pc, vec3(0.333));
     return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
-// Distance from point p to 2D line segment (a, b)
-float sdSegment(vec2 p, vec2 a, vec2 b) {
-    vec2 pa = p - a, ba = b - a;
-    float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
-    return length(pa - ba * h);
+vec3 spectral(float x)
+{
+    return clamp(abs(fract(x + vec3(0.0, 2.0 / 3.0, 1.0 / 3.0)) * 6.0 - 3.0) - 1.0, 0.0, 1.0);
 }
 
-// 2D Hilbert curve generator segment evaluation (U-shaped basic unit)
-float hilbert2D(vec2 p, float t, out float curvePhase) {
-    vec2 q = p;
-    float d = 1e4;
-    curvePhase = 0.0;
+const int N = 128;                  // order 7
 
-    // A true space-filling curve gets arbitrarily close to every point as
-    // subdivision depth grows, so unconditionally min()-ing 4 octaves of this
-    // motif together (each only 2x finer than the last) makes SOME octave's
-    // segment sit within line-thickness of virtually every pixel -- the
-    // "curve" floods the whole frame instead of tracing a sparse path. 2
-    // octaves keeps the self-similar zoom feel without over-densifying it.
-    for (int i = 0; i < 2; i++) {
-        vec2 cell = floor(q);
-        vec2 f = fract(q) - 0.5;
-
-        // U-Curve line segments
-        vec2 p0 = vec2(-0.25, -0.25);
-        vec2 p1 = vec2(-0.25,  0.25);
-        vec2 p2 = vec2( 0.25,  0.25);
-        vec2 p3 = vec2( 0.25, -0.25);
-
-        float d0 = sdSegment(f, p0, p1);
-        float d1 = sdSegment(f, p1, p2);
-        float d2 = sdSegment(f, p2, p3);
-
-        d = min(d, min(min(d0, d1), d2) / pow(2.0, float(i)));
-        curvePhase += dot(cell, vec2(1.0, 2.0));
-
-        q = q * 2.0;
+// Hilbert index of cell p (the classic xy2d).
+int xy2d(ivec2 p)
+{
+    int d = 0;
+    for (int s = N / 2; s > 0; s /= 2) {
+        int rx = ((p.x & s) > 0) ? 1 : 0;
+        int ry = ((p.y & s) > 0) ? 1 : 0;
+        d += s * s * ((3 * rx) ^ ry);
+        if (ry == 0) {
+            if (rx == 1) p = ivec2(N - 1) - p;
+            p = p.yx;
+        }
     }
-
     return d;
 }
 
-void main() {
-    vec2 uv = (gl_FragCoord.xy - 0.5 * resolution.xy) / min(resolution.x, resolution.y);
+// Cell of Hilbert index d (the classic d2xy).
+ivec2 d2xy(int d)
+{
+    ivec2 p = ivec2(0);
+    int t = d;
+    for (int s = 1; s < N; s *= 2) {
+        int rx = 1 & (t / 2);
+        int ry = 1 & (t ^ rx);
+        if (ry == 0) {
+            if (rx == 1) p = ivec2(s - 1) - p;
+            p = p.yx;
+        }
+        p += s * ivec2(rx, ry);
+        t /= 4;
+    }
+    return p;
+}
 
+float sdSeg(vec2 p, vec2 a, vec2 b, out float h)
+{
+    vec2 pa = p - a, ba = b - a;
+    h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
+    return length(pa - ba * h);
+}
+
+void main()
+{
     float spd = (speedP > 0.01) ? speedP : 1.0;
-    float sc = (scaleP > 0.01) ? scaleP : 1.0;
+    float sc  = clamp((scaleP > 0.01) ? scaleP : 1.0, 0.7, 1.5);
     float lThk = (lineThicknessP > 0.01) ? lineThicknessP : 1.0;
     float glw = (glowP > 0.01) ? glowP : 1.0;
+    float hue = (hueP > 0.001) ? hueP : 0.0;
+    float swell = clamp(audioSwell, 0.0, 1.0);
+    float T = sceneTime + sceneAdvance * 0.5;
 
-    float t = time * 0.192 * spd + audioAdvance * 0.192 * spd;
-    // Zeit-Basis + Musik-Schub: audioAdvance ALLEIN steht bei ruhiger
-    // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
+    vec2 uv = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
+    // Cells across the screen height, and a slow drift over the curve that
+    // stays inside the 128 x 128 domain (continuous, no wrap).
+    float cellsH = 24.0 / sc;
+    float aspect = resolution.x / resolution.y;
+    vec2 room = max(vec2(64.0) - 0.5 * cellsH * vec2(aspect, 1.0) - 1.0, vec2(0.0));
+    vec2 centre = vec2(64.0) + room * vec2(sin(T * 0.004 + 1.0), sin(T * 0.0053));
+    vec2 g = uv * cellsH + centre;                 // grid coordinates
+    ivec2 gc = ivec2(floor(g));
 
-    // Logarithmic scale dive for infinite zoom
-    float zoomProg = mod(t * 0.7, 1.0);
-    float zoomScale = exp(zoomProg * log(2.0)) * (2.5 * sc);
+    const float TOTAL = float(N * N);
+    float halfW = 0.1 * lThk;
+    float best = 1e9, bestAlong = 0.0;
+    // The curve near this pixel: the path through each of the 3x3 cells,
+    // centre to the midpoints towards its predecessor and successor.
+    for (int j = -1; j <= 1; ++j)
+    for (int i = -1; i <= 1; ++i) {
+        ivec2 c = gc + ivec2(i, j);
+        if (any(lessThan(c, ivec2(0))) || any(greaterThanEqual(c, ivec2(N)))) continue;
+        int d = xy2d(c);
+        vec2 cc = vec2(c) + 0.5;
+        float h;
+        if (d > 0) {
+            vec2 pc = vec2(d2xy(d - 1)) + 0.5;
+            float ds = sdSeg(g, cc, 0.5 * (cc + pc), h);
+            if (ds < best) { best = ds; bestAlong = float(d) - 0.5 * h; }
+        }
+        if (d < N * N - 1) {
+            vec2 nc = vec2(d2xy(d + 1)) + 0.5;
+            float ds = sdSeg(g, cc, 0.5 * (cc + nc), h);
+            if (ds < best) { best = ds; bestAlong = float(d) + 0.5 * h; }
+        }
+    }
 
-    vec2 pZoom = uv * zoomScale;
+    // Dark ground with faint cell dots.
+    vec2 cf = fract(g) - 0.5;
+    vec3 col = vec3(0.012, 0.014, 0.03) + vec3(0.03, 0.035, 0.06) * smoothstep(0.06, 0.0, length(cf));
 
-    float curvePhase;
+    // Spectrum along the path: nested sub-curves share a colour band.
+    float s = bestAlong / TOTAL;
+    vec3 tubeC = spectral(s * 6.0 + hue * 0.159 + T * 0.004);
+    tubeC = mix(tubeC, imgPalette(s * 3.0) * 1.2, 0.22);
 
-    // Sub-bass dilates the cubic cell lattice the curve folds through. The
-    // divisor is applied to the zoom coordinate BEFORE the t drift is added --
-    // scaling the already-translated coordinate would multiply the drift phase
-    // by audio and teleport the whole path sideways every frame.
-    vec2 pCell = pZoom / (1.0 + 0.3 * audioSubBass);
-    float dLine = hilbert2D(pCell + vec2(t * 0.2, 0.0), t, curvePhase) - 0.02 * lThk;
+    // Comets travelling along the path, each with a fading tail.
+    float comet = 0.0;
+    for (int k = 0; k < 10; ++k) {
+        float head = mod(T * 14.0 * spd + float(k) * TOTAL / 10.0, TOTAL);
+        float behind = head - bestAlong;
+        comet += (behind >= 0.0) ? exp(-behind / (110.0 * spd)) : 0.0;
+    }
+    comet = min(comet, 1.5);
 
-    // Glowing Hilbert path line
-    float lineGlow = exp(-abs(dLine) * (26.0 + 12.0 * audioCentroid)) * glw;
+    float sharp = 1.0 + 0.6 * clamp(audioCentroid, 0.0, 1.0);
+    float core = smoothstep(halfW, halfW * 0.4 / sharp, best);
+    float glow = exp(-best * 5.0) * 0.45 * glw * (0.8 + 0.5 * swell);
+    float lit = 0.9 + 0.3 * swell + comet * (1.6 + 1.2 * clamp(audioKick, 0.0, 1.0));
+    col += tubeC * (glow * lit + core * lit);
+    col += vec3(1.0) * core * comet * 0.5;           // the white-hot head
 
-    // Electric pulse traveling along curve. curvePhase is CONSTANT across an
-    // entire grid cell (it only changes at cell boundaries via floor()), so
-    // pulseGlow is really a per-CELL flag rather than a per-pixel highlight
-    // -- this was the uncaught separate additive term: whenever a cell's
-    // phase crossed the 0.85 threshold the WHOLE cell lit up uniformly, and
-    // with up to 3.5x kick and a 2.0-peak tint channel that flooded roughly
-    // half the visible tiles to solid white while only the (distance-based,
-    // genuinely thin) line glow survived at the borders. See the cap below.
-    float pulse = abs(sin(curvePhase * 4.0 - t * 6.0));
-    float pulseGlow = smoothstep(0.85, 1.0, pulse) * (1.0 + 2.5 * audioKick);
-
-    // Sample distorted background photo
-    vec2 sampleUV = fract(pZoom * 0.2 + 0.5);
-    vec3 texCol = img(sampleUV);
-
-    // Hilbert palette
-    vec3 palA = imgPalette(curvePhase * 0.1 + t * 0.05);
-    vec3 palB = imgPalette(curvePhase * 0.1 + 0.5);
-    vec3 col = mix(palA, palB, 0.5 + 0.5 * sin(curvePhase * 0.5));
-
-    col = mix(col, texCol, 0.35 + 0.15 * audioValence);
-
-    // Add glowing Hilbert lines and pulse sparks -- cap each FINAL tinted
-    // term (not just the underlying glow scalar), since the tint constants
-    // themselves already exceed 1.0 per channel.
-    vec3 lineTint = vec3(1.3, 1.1, 1.8) * min(lineGlow * (1.0 + 2.0 * audioKick), 0.75);
-    vec3 sparkTint = vec3(1.6, 1.5, 2.0) * min(pulseGlow, 0.35);
-
-    col += lineTint + sparkTint;
-
-    col = pow(col, vec3(0.88));
-    vec3 _catTone = clamp(col, 0.0, 1.0);
-    _catTone /= 1.0 + 0.85 * max(_catTone.r, max(_catTone.g, _catTone.b));
-    fragColor = vec4(_catTone, 1.0);
+    col *= 0.9 + 0.2 * audioLevel;
+    vec3 _catTone = max(col, 0.0);
+    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
+    fragColor = vec4(clamp(_catTone, 0.0, 1.0), 1.0);
 }

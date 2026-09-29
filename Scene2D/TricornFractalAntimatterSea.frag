@@ -65,8 +65,12 @@ void main() {
     // Zeit-Basis + Musik-Schub: audioAdvance ALLEIN steht bei ruhiger
     // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
 
-    // Center on prominent Tricorn dragon fin: c = (-1.25, 0.0)
-    vec2 cCenter = vec2(-1.25, 0.0);
+    // Zoom target ON the boundary.  The old centre c = (-1.25, 0.0) lies
+    // inside the set: every pixel ran all 48 iterations and the dive showed
+    // one flat grey plane (catalogue review 29.09.2026).  (-1.1436, 0.0876)
+    // was picked by measuring: at 10x and 100x about 30-45 % of the view is
+    // interior and the escape counts spread widely -- detail all the way in.
+    vec2 cCenter = vec2(-1.1436, 0.0876);
     // Zoom cycle. exp(mod(t * 0.65, 5.5)) snapped from e^5.5 (245x) back to
     // e^0 every ~8.5 s -- a hard cut. A raised cosine over the same period
     // dives in and eases back out instead: continuous in value AND velocity
@@ -109,7 +113,14 @@ void main() {
     vec3 palB = imgPalette(iterCount * 0.04 + 0.5);
     vec3 tricornCol = mix(palA, palB, 0.5 + 0.5 * sin(iterCount * 0.8 + t));
 
-    tricornCol = mix(tricornCol, texCol, 0.35 + 0.15 * audioValence);
+    // The interior is not a flat fill: its orbit trap draws scales.
+    float inside = step(47.5, iterCount);
+    vec3 innerCol = imgPalette(0.55 + trap * 0.6) * (0.25 + 0.9 * exp(-trap * 3.0));
+    tricornCol = mix(tricornCol, innerCol, inside);
+    // Photo only as a light texture: grey photos made the whole sea grey.
+    float tg = dot(tricornCol, vec3(0.333));
+    tricornCol = mix(vec3(tg), tricornCol, 1.6);                  // richer colour
+    tricornCol = mix(tricornCol, texCol * tricornCol * 2.0, 0.2 + 0.1 * audioValence);
 
     // Add glowing fin serration highlights and kick flash
     vec3 finTint = vec3(1.1, 1.4, 1.9) * finGlow * (1.0 + 2.5 * audioKick);

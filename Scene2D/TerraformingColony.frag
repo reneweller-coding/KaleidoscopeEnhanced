@@ -181,10 +181,13 @@ void main()
         if (d > 120.0) { m = 0.0; break; }
     }
 
-    vec3 col = vec3(0.1, 0.1, 0.12); // polluted, dark sky
-    
-    vec3 sunDir = normalize(vec3(-0.5, 0.3, 0.8));
-    vec3 sunCol = vec3(0.8, 0.5, 0.3); // muted sun
+    // A low alien sun in a thick orange-green haze: the whole colony stood
+    // in near-black before (catalogue review 29.09.2026).
+    vec3 sunDir = normalize(vec3(-0.5, 0.22, 0.8));
+    vec3 sunCol = vec3(1.6, 1.0, 0.55);
+    float sunUp = max(dot(rd, sunDir), 0.0);
+    vec3 col = mix(vec3(0.35, 0.28, 0.2), vec3(0.12, 0.16, 0.2), clamp(rd.y * 2.5, 0.0, 1.0));
+    col += sunCol * (pow(sunUp, 8.0) * 0.5 + pow(sunUp, 200.0) * 2.0);
     
     vec3 domeColor = imgPalette(0.4);
     vec3 ventColor = imgPalette(0.8 + 0.1 * audioKick);
@@ -204,13 +207,19 @@ void main()
             albedo = vec3(0.2); // tech metal
         }
         
-        col = albedo * (0.05 + dif * sunCol);
-        col += albedo * fill * 0.1;
+        col = albedo * (0.12 + dif * sunCol);
+        col += albedo * fill * 0.25;
         
         if (m == 2.0 && g > 0.5) {
             // Biodome glass glow
-            float hex = step(0.8, hash21(floor(p.xz * 2.0)));
-            col += domeColor * (0.5 + audioSwell * 0.5) * hex * 2.0;
+            // Round, jittered lit windows in the glass -- the square cell
+            // panels read as a checkerboard on every dome (V8e).
+            vec2 wq = p.xz * 3.0 + p.y * 1.7;
+            vec2 wi = floor(wq), wf = fract(wq);
+            vec2 wc = 0.3 + 0.4 * vec2(hash21(wi + 3.1), hash21(wi + 7.7));
+            float win = step(0.5, hash21(wi)) * smoothstep(0.26, 0.12, length(wf - wc));
+            col += domeColor * (0.25 + 0.35 * audioSwell);
+            col += domeColor * (0.6 + audioSwell * 0.6) * win * 2.2;
             
             // Specular on glass
             float spec = pow(max(dot(reflect(-sunDir, n), -rd), 0.0), 32.0);
@@ -235,7 +244,8 @@ void main()
     float distFog = exp(-d * 0.02);
     
     col = mix(gasCol * (0.5 + audioSwell), col, 1.0 - gasDens * (1.0 - distFog));
-    col = mix(vec3(0.05, 0.05, 0.06), col, distFog);
+    vec3 hazeC = vec3(0.35, 0.28, 0.2) + sunCol * pow(sunUp, 4.0) * 0.3;
+    col = mix(hazeC, col, distFog);
 
     if (hue > 0.001) col = hueRot(col, 0.2 * sin(hue));
 

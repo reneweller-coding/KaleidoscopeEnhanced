@@ -80,6 +80,7 @@ TIMING = {
     "TestAlle":     (45, 60, 15, 25),
     "TestModified": (45, 60, 15, 25),
     "TestNeu": (45, 60, 15, 25),
+    "TestAufgemoebelt": (45, 60, 15, 25),
 }
 
 # Floor on every natural scene fade (seconds), written as timeSceneFadeMin.
@@ -211,6 +212,21 @@ def rule_recent(m, h):
     fm = re.search(r'file="[^"]*[\\/](\w+)\.frag"', h)
     return bool(fm) and fm.group(1) in RECENT_SCENES
 
+# The dull scenes reworked from 29.09.2026 on ("aufmoebeln"), round by round:
+# a hidden bench to judge them before and after, in one sitting.
+IMPROVED_SCENES = {
+    # Runde 1: die Szenen mit Schauwert 1 (TestNiedrigerSchauwert).
+    "AlienPlanetOrbit", "TricornFractalAntimatterSea", "SupernovaRemnant",
+    "RingworldHabitat", "GasGiantAtmosphere", "SolitonInternalWaveAndamanSea",
+    "MolecularCloudCore", "TerraformingColony", "EndOfTheUniverse",
+    "ErodedLand", "HilbertSpaceFillingCurveZoom", "InkTank",
+    "AttentionHeadRibbons",
+}
+
+def rule_improved(m, h):
+    fm = re.search(r'file="[^"]*[\\/](\w+)\.frag"', h)
+    return bool(fm) and fm.group(1) in IMPROVED_SCENES
+
 # The scenes no genre preset took (29.09.2026): with the fit-based choice they
 # are, almost to a scene, the ones rated dull -- near-black frames and slow
 # staged objects. They stay in Allround; this hidden bench collects them so
@@ -242,6 +258,7 @@ GENRES = [
     ("TestAlle",    rule_all,         True),
     ("TestModified", rule_modified,   True),
     ("TestNeu",      rule_recent,     True),
+    ("TestAufgemoebelt", rule_improved, True),
     ("TestNiedrigerSchauwert", rule_low_interest, True),
 ]
 

@@ -81,6 +81,7 @@ float sdBox(vec3 p, vec3 b) {
 
 // Global variables for shading
 float hitMat = 0.0;
+float g_camZ = 0.0;     // the planet travels with the camera (see map)
 
 // Scene SDF
 float map(vec3 p, float pr, float sd)
@@ -99,7 +100,9 @@ float map(vec3 p, float pr, float sd)
     // Kruemmung ist sichtbar, und der Horizont liegt bei 0.79 * pr -- weit
     // innerhalb der Marschgrenze von 200.  Nebenbei steckt damit keine der
     // Stationen mehr in der Oberflaeche (die sitzen bei y = -2 .. +2).
-    float planet = sdSphere(p - vec3(0.0, -pr * 1.28, 0.0), pr);
+    // Centred under the CAMERA: with a fixed centre the camera flew off the
+    // planet along z and after ~20 s the frame was empty space (V7b).
+    float planet = sdSphere(p - vec3(0.0, -pr * 1.28, g_camZ), pr);
     if(planet < d) { d = planet; mat = 1.0; }
 
     // 2. Orbital Stations
@@ -180,7 +183,12 @@ void main()
 
     // Camera in orbit
     vec3 ro = vec3(0.0, 0.0, t * 5.0);
-    vec3 ta = ro + vec3(0.0, -0.55, 1.0);
+    g_camZ = ro.z;
+    // Look down onto the planet: from 0.28 * pr the horizon dips 38.6 deg,
+    // and a camera pitched only 29 deg down left the planet as a sliver at
+    // the bottom edge under a black sky (catalogue review 29.09.2026).  At
+    // 43 deg the limb runs through the upper third of the frame.
+    vec3 ta = ro + vec3(0.0, -0.93, 1.0);
 
     // Slow camera sway
     ro.x += sin(t * 0.4) * 2.0;
@@ -228,7 +236,7 @@ void main()
         if (m == 1.0) { // Planet
             // Terrain noise, sampled in a frame that SPINS: the world turns
             // under the camera, so the surface is never a still image.
-            vec2 tp = rot(time * 0.02 + audioAdvance * 0.05) * p.xz;
+            vec2 tp = rot(time * 0.02 + audioAdvance * 0.05) * vec2(p.x, p.z * 0.35);
             float terr = sin(tp.x * 0.1) * cos(tp.y * 0.1) + sin(tp.x * 0.5 + tp.y * 0.5) * 0.5
                        + sin(tp.x * 2.3 + tp.y * 1.7) * 0.25;
             // Alien land colours from the photo palette -- WITH a floor: a
@@ -270,9 +278,9 @@ void main()
     // Add atmospheric scatter behind everything
     if (m == 0.0 || m == 2.0) {
         // Ray intersect with atmosphere sphere (radius slightly larger than planet)
-        vec3 oc = ro - vec3(0.0, -pr - 2.0, 0.0);
+        vec3 oc = ro - vec3(0.0, -pr * 1.28, g_camZ);
         float b = dot(oc, rd);
-        float c = dot(oc, oc) - (pr + 4.0) * (pr + 4.0);
+        float c = dot(oc, oc) - (pr * 1.04) * (pr * 1.04);
         float h = b * b - c;
         if(h > 0.0) {
             float atmoHit = -b - sqrt(h);

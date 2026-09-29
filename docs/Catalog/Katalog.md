@@ -156,7 +156,7 @@ APOLLONIAN SPHERE PACKING GASKET: Raymarched infinite 3D Apollonian sphere packi
 
 `Scene2D/AttentionHeadRibbons.frag` · type=normal · mood=dark,calm,psychedelic · complexity=3
 
-ATTENTION HEAD RIBBONS: a transformer attention map, drawn. A row of tokens -- tiles of the photo -- along the bottom, and above them the attention: ribbons arching from each query token to the keys it attends to, one colour per head. The weights are the products of the chroma classes of query and key (so chords draw the strongest arcs and the pattern changes with the harmony, smoothly); the ribbons pulse with light …
+ATTENTION HEAD RIBBONS: the harmony as an attention map, drawn as a chord diagram. The twelve pitch classes sit round a ring in circle-of- fifths order, each an arc of the photo lit by its energy; glowing ribbons curve through the middle between every pair that sounds together, one colour per attention head -- fifths cyan, thirds magenta, steps gold, tritones violet -- so a major chord draws a magenta triangle with a…
 
 ![AttentionHeadRibbons ruhig (t=8)](img/AttentionHeadRibbons_A.jpg) ![AttentionHeadRibbons ruhig (t=16)](img/AttentionHeadRibbons_B.jpg) ![AttentionHeadRibbons audio-heiß (t=21)](img/AttentionHeadRibbons_C.jpg)
 
@@ -1139,7 +1139,7 @@ EMBROIDERY HOOP STITCHES: a hoop of linen with a design worked in it. Satin stit
 
 `Scene2D/EndOfTheUniverse.frag` · type=normal · mood=dark,calm,space · complexity=2
 
-END OF THE UNIVERSE: The heat death of the cosmos. A terrifyingly empty, black void where only the faintest embers of dying red and black dwarfs remain. A very dark, melancholic scene that flares up slightly during audio swells. audioAdvance -> incredibly slow drift through the void audioKick -> weak, dying flashes from the last stars audioSwell -> ambient brightness of the dying embers audioChromaHue-> palette offse…
+END OF THE UNIVERSE: the heat death of the cosmos, and the last thing left in it -- a black hole with a dim, ember-red accretion disk seen nearly edge-on. Its gravity bends the few remaining red dwarfs around it; the far side of the disk is lensed into a loop over and under the shadow, the photon ring a thin thread of light. The disk turns slowly, the dying stars drift past; the music is how brightly the embers glow.…
 
 ![EndOfTheUniverse ruhig (t=8)](img/EndOfTheUniverse_A.jpg) ![EndOfTheUniverse ruhig (t=16)](img/EndOfTheUniverse_B.jpg) ![EndOfTheUniverse audio-heiß (t=21)](img/EndOfTheUniverse_C.jpg)
 
@@ -1148,7 +1148,7 @@ END OF THE UNIVERSE: The heat death of the cosmos. A terrifyingly empty, black v
 
 `Scene2D/ErodedLand.frag` · type=normal · mood=calm,dark · complexity=2
 
-A relief-shaded landscape being carved by simulated water erosion, viewed from a slowly drifting aerial camera. texErosion (written by the CfxErosion compute pass, R = height, G = water) is lit with a travelling sun and shaded from its own height gradient; water is found geometrically as concave dips in the terrain rather than stored separately. Altitude bands (valley floor, rock, snow) are recoloured with a sample f…
+ERODED LAND: a slow glide over a worn mountain range -- long smooth valleys and sharp crests (fractal terrain whose octaves are damped where the slope is already steep, the classic erosion look), grass on the valley floors, bare rock on the flanks, snow on the ridges, lakes in the hollows, the far ranges fading into blue haze. The sun wheels slowly overhead, so the relief keeps turning in the light. This scene used t…
 
 ![ErodedLand ruhig (t=8)](img/ErodedLand_A.jpg) ![ErodedLand ruhig (t=16)](img/ErodedLand_B.jpg) ![ErodedLand audio-heiß (t=21)](img/ErodedLand_C.jpg)
 
@@ -1501,7 +1501,7 @@ GAMMA RAY BURST: The most powerful explosion in the universe. We are looking alm
 
 `Scene2D/GasGiantAtmosphere.frag` · type=normal · mood=dark,calm,space · complexity=10
 
-GAS GIANT ATMOSPHERE: A breathtaking flight through the thick, swirling cloud bands of a massive gas giant. Immense lightning storms illuminate the clouds from within during intense musical beats. audioAdvance -> camera flight speed through the clouds audioKick -> massive lightning flashes within the storms audioSwell -> ambient cloud illumination and density audioChromaHue-> palette offset for the gas giant's colors…
+GAS GIANT ATMOSPHERE: cruising low over the cloud deck of a gas giant. Billowing tops in the planet's own zone-and-belt colours (cream, ochre, rust) run to a warm hazy horizon; convective towers rise here and there, lit by a low sun with long shadows. Above, the planet's rings arch across a blue-violet sky beside a crescent moon. Storm cells deep in the deck light up from inside with the kick. sceneTime/sceneAdvance …
 
 ![GasGiantAtmosphere ruhig (t=8)](img/GasGiantAtmosphere_A.jpg) ![GasGiantAtmosphere ruhig (t=16)](img/GasGiantAtmosphere_B.jpg) ![GasGiantAtmosphere audio-heiß (t=21)](img/GasGiantAtmosphere_C.jpg)
 
@@ -1717,7 +1717,7 @@ HIGHER DIMENSION ASCENSION: Breaking through the veil of 3D space into a mind-be
 
 `Scene2D/HilbertSpaceFillingCurveZoom.frag` · type=normal · mood=psychedelic,dark · complexity=2
 
-HILBERT SPACE FILLING CURVE ZOOM: Infinite recursive scale zoom into a 3D Hilbert space-filling curve. A single non-self-intersecting continuous fractal path folding through cubic space with glowing electric neon pulses, multi-octave zoom, and corner sparks. Audio Reactivity: audioAdvance -> drives continuous forward plunge along the Hilbert curve path audioKick -> flashes Hilbert corner vertices & triggers recursive…
+HILBERT SPACE FILLING CURVE: a true Hilbert curve (order 7, one unbroken path through 16,384 cells) drawn as a neon tube on a dark ground, its colour running through the spectrum along the path, so the curve's nested U-shapes read as nested colour regions. Bright comets travel along the path, each trailing a fading tail, and show how the one line winds through every cell. The view drifts slowly over the curve. The ea…
 
 ![HilbertSpaceFillingCurveZoom ruhig (t=8)](img/HilbertSpaceFillingCurveZoom_A.jpg) ![HilbertSpaceFillingCurveZoom ruhig (t=16)](img/HilbertSpaceFillingCurveZoom_B.jpg) ![HilbertSpaceFillingCurveZoom audio-heiß (t=21)](img/HilbertSpaceFillingCurveZoom_C.jpg)
 
@@ -1971,7 +1971,7 @@ INFINITY MIRROR ROOM: a mirrored box with real depth. Instead of a depth buffer 
 
 _(Vorschau eingeschränkt: Sim-Textur/Mehrpass — Bilder unterschätzen die echte App)_
 
-Dye billowing in a real 2D Navier-Stokes fluid, pressure-solved so it can shed vortices and push back off walls, unlike a divergence-free curl-noise flow. texNSFluid (RGB = dye colour, A = speed, written by the compute Navier-Stokes solver) is shaded with a Schlieren-style edge from its own density gradient so the dye filaments read as sharp sheets rather than a soft cloud. audioLevel brightens a highlight glow that …
+INK TANK: drops of ink falling through a backlit tank of water, the way the macro photographs show it -- each drop sinks as a vortex ring, its head curling into a mushroom of fine filaments, a thinning stem trailing behind, and the inks (deep blue, magenta, amber, tinted by the photo) absorbing the white back-light where they overlap, so crossings go dark and rich. New drops enter at the top while old plumes spread a…
 
 ![InkTank ruhig (t=8)](img/InkTank_A.jpg) ![InkTank ruhig (t=16)](img/InkTank_B.jpg) ![InkTank audio-heiß (t=21)](img/InkTank_C.jpg)
 
@@ -2718,7 +2718,7 @@ MOIRE TWISTED BILAYER GRAPHENE: Magic-angle (~1.1 deg) twisted bilayer graphene.
 
 `Scene2D/MolecularCloudCore.frag` · type=normal · mood=dark,space · complexity=3
 
-MOLECULAR CLOUD CORE: Deep inside the dense, freezing heart of a dark molecular cloud. The eerie, slow-moving gas is pitch black, illuminated only briefly by rare hidden stars that flash violently to the audio kicks. audioAdvance -> extremely slow drift through the dense gas audioKick -> flashes from hidden stars deep in the dust audioSwell -> ambient, ghostly glow of the scattered light audioChromaHue-> palette offs…
+MOLECULAR CLOUD CORE: a protostar deep in a dark molecular cloud, as the infrared telescopes show it -- an hourglass of two cavities carved by its outflow, their wispy walls lit gold above and cold blue below, pinched at the neck by the dark lane of its edge-on disk. Thin jets leave both ways, Herbig-Haro knots travelling out along them. Around it the dust hides and reddens the background stars. Everything moves at i…
 
 ![MolecularCloudCore ruhig (t=8)](img/MolecularCloudCore_A.jpg) ![MolecularCloudCore ruhig (t=16)](img/MolecularCloudCore_B.jpg) ![MolecularCloudCore audio-heiß (t=21)](img/MolecularCloudCore_C.jpg)
 
@@ -3710,7 +3710,7 @@ RING SPOKES AND WAKES: the rings of Saturn seen from above the plane, the planet
 
 `Scene2D/RingworldHabitat.frag` · type=normal · mood=bright,calm,space · complexity=5
 
-RINGWORLD HABITAT: The camera flies high above the inner surface of a colossal, ring-shaped megastructure. The terrain curves dramatically upward into the sky, revealing oceans, continents, and sprawling city lights that react to the beat. audioAdvance -> flight speed over the landscape audioKick -> flashes from the city clusters audioSwell -> ambient daylight and cloud brightness audioChromaHue-> palette offset for …
+RINGWORLD HABITAT: the camera glides low over the inner surface of a colossal ring around its sun. Ahead the land -- oceans, fields, shore cities -- rises and rises until it arches overhead as a narrowing band against black space, walled at both edges by the rim walls. Shadow squares orbiting the sun throw night bands across the arch; the cities in them glitter. The glide is steady; the music is the light. sceneTime/…
 
 ![RingworldHabitat ruhig (t=8)](img/RingworldHabitat_A.jpg) ![RingworldHabitat ruhig (t=16)](img/RingworldHabitat_B.jpg) ![RingworldHabitat audio-heiß (t=21)](img/RingworldHabitat_C.jpg)
 
@@ -4029,7 +4029,7 @@ SOLID LIGHT CONES: a dark hall filled with haze, and projectors at its far end w
 
 `Scene2D/SolitonInternalWaveAndamanSea.frag` · type=normal · mood=calm,dreamy,bright · complexity=3
 
-SOLITON INTERNAL WAVE ANDAMAN SEA: Giant oceanic internal gravity wave soliton packets generated by tidal flow over submarine sills. Massive subsurface pycnocline depressions create distinctive surface wave roughness strips, refractive sun glitter bands, and ocean photo texturing. audioAdvance -> propels internal wave packet propagation across Andaman pycnocline audioKick -> flashes surface wave breaking foam & turbu…
+SOLITON INTERNAL WAVE ANDAMAN SEA: the Andaman Sea seen from orbit, in the sun glint -- the view the famous astronaut photographs show. The sea is a sheet of silver-bronze light fading to deep navy; across it run trains of internal solitons, curved arcs of rough and smooth water that spread from a submarine sill far off to one side, a new packet every tide. Islands with coral shallows and white surf lie in the glint;…
 
 ![SolitonInternalWaveAndamanSea ruhig (t=8)](img/SolitonInternalWaveAndamanSea_A.jpg) ![SolitonInternalWaveAndamanSea ruhig (t=16)](img/SolitonInternalWaveAndamanSea_B.jpg) ![SolitonInternalWaveAndamanSea audio-heiß (t=21)](img/SolitonInternalWaveAndamanSea_C.jpg)
 

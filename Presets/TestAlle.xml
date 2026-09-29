@@ -135,7 +135,6 @@
   <TextureShader file="..\Scene2D\AttentionHeadRibbons.frag" type="normal" mood="dark,calm,psychedelic" probability="0.45" complexity="3">
     <rig preset="flat"/>
     <float name="headsP" minValue="0" maxValue="1"></float>
-    <float name="tokensP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
