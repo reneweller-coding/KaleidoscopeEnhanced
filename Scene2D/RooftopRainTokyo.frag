@@ -115,7 +115,12 @@ vec3 skyline(vec2 p, float row, out float cov)
         float b = gBand[int(mod(bi + row * 3.0, 8.0))];
         // Glyph-like blocks inside the sign.
         vec2 gq = vec2((bf - sx) / sw, (p.y - sy0) / (sy1 - sy0) * 8.0);
-        float glyph = step(0.5, hash21(floor(gq * vec2(2.0, 1.0) + bi))) * step(0.15, fract(gq.y)) * step(fract(gq.y), 0.85);
+        // Glyph strokes: rounded bars inside the sign's character cells.
+        vec2 gc = gq * vec2(2.0, 1.0);
+        vec2 gcell = floor(gc), gl = fract(gc) - 0.5;
+        float on = hash21(gcell + bi);
+        vec2 bd = abs(gl) - vec2(0.3, 0.28);
+        float glyph = smoothstep(0.06, 0.0, length(max(bd, 0.0)) + min(max(bd.x, bd.y), 0.0) - 0.08) * smoothstep(0.35, 0.65, on);
         c = mix(c, nc * (0.5 + 1.4 * b) * (0.5 + 0.5 * glyph), inSign);
         // Its glow on the wet facade around it.
         c += nc * exp(-abs(bf - sx) * 8.0) * smoothstep(sy0 - 0.04, sy0, p.y) * smoothstep(sy1 + 0.04, sy1, p.y) * 0.12 * (0.5 + b);
