@@ -944,3 +944,6 @@ FogBridgeTowers	8	1	1	3	1	8	8
 RooftopRainTokyo	5	1	6	9	4	6	8
 StadiumFloodlights	3	1	7	5	2	5	7
 UVMineralsGlow	4	2	5	3	7	7	7
+GemInclusionFlight	7	2	2	3	5	7	7
+MarbleVeinsFlight	7	1	2	6	2	8	6
+SmokeColourCollide	5	2	4	4	8	7	7
