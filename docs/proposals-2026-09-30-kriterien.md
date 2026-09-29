@@ -1,4 +1,4 @@
-# 300 Szenen nach den Ursprungs-Kriterien (30.09.2026)
+# 325 Szenen nach den Ursprungs-Kriterien (30.09.2026)
 
 Ersetzt als Arbeitsliste die beiden Listen vom selben Tag
 (`proposals-2026-09-30-abstrakt.md`, `proposals-2026-09-30-texturen.md`):
@@ -34,22 +34,31 @@ TunnelPlain, TunnelReverse** (Schauwert jetzt 9). Was sie auszeichnet:
    über langsame oder integrierte Signale, schnelle Hüllkurven nur in Licht,
    Farbe und Dingen innerhalb des Bildes.
 
+**Die Kriterien sind eine Leitlinie, kein Filter.** Sie werden unscharf
+angewendet: Eine Szene darf eines verfehlen, wenn sie es anders aufwiegt, und
+Ausnahmen bestätigen die Regel, wo sie Sinn ergeben. Das gilt besonders für
+Punkt 4 — nicht jede Szene braucht jede Kopplung, sondern genug, dass die
+Musik im Bild sichtbar arbeitet. Und Schwerkraft ist kein Ausschluss: Wachs,
+Honig, Tropfen, Lavalampe und Ölprojektor gehören zu den faszinierendsten
+Effekten überhaupt; sie müssen nur an die echten Vorbilder heranreichen
+(Familie 13).
+
 **Schauwert:** 0–10, die Originale = 9. Die Klammern sind Schätzungen vor dem
 Bau; 10 vergebe ich keiner Idee im Voraus.
 
 ## Was das für das Bisherige heißt
 
-- **Die 53 konkreten Szenen seit v1.17.0** erfüllen Kriterium 1 und 2 fast
-  alle nicht: Horizont, Boden, gerahmte Architektur, ein Objekt in der Mitte.
-  In Kachel-Übergängen werden sie zu Postkartenrastern, gespiegelt steht der
-  Himmel unten. Dazu reagieren sie fast nur im Licht. Ich würde sie nach dem
-  App-Check neu bewerten (eher 5–7) und die restlichen 43 konkreten Vorschläge
-  vom 29.09. nicht mehr bauen.
-- **Gestrichen** aus den beiden Listen vom 30.09.: Landschaften mit Horizont
-  (Canyon-, Dünen-, Schelfeisflug, schwebende Inseln), gerahmte Innenräume
-  (Säulenhalle, Galerie, Atrium, Pavillon), Einzelobjekte vor Grund (Monolith,
-  Brillant, Mobile, Kissen), Op-Art-Täuschungen, Fotoprozesse, Datenkarten mit
-  Globus, Szenen mit Schwerkraftrichtung (Tropfen, Honig, Wachs, Sandbild).
+- **Die 53 konkreten Szenen seit v1.17.0** erfüllen Kriterium 1 und 2 meist
+  nicht (Horizont, Boden, gerahmtes Motiv) und reagieren fast nur im Licht.
+  Sie bleiben im Katalog, werden aber **dezent eingesetzt** (geringere
+  Häufigkeit, Neubewertung nach dem App-Check). Die restlichen 43 konkreten
+  Vorschläge vom 29.09. werden nicht mehr gebaut.
+- **Zurückgestellt** aus den beiden Listen vom 30.09.: Landschaften mit
+  Horizont (Canyon-, Dünen-, Schelfeisflug, schwebende Inseln), gerahmte
+  Innenräume (Säulenhalle, Galerie, Atrium, Pavillon), Einzelobjekte vor
+  Grund (Monolith, Brillant, Mobile, Kissen), Op-Art-Täuschungen,
+  Fotoprozesse, Datenkarten mit Globus. Nicht verboten — nur nicht vorn in
+  der Reihe. Schwerkraft-Effekte sind zurück, in Familie 13.
 - **Umgebaut:** Material-Makros sind keine nachgebauten Steine mehr, sondern
   optische Effekte **über** der Textur (Schiller über jedem Foto statt eines
   nachgebauten Labradorits); Landschaften werden zu Aufsichten; Räume werden
@@ -65,7 +74,8 @@ Superellipse wie in den Originalen, Spiegel-Falz für Endlosigkeit.
 WallpaperGroupCycle, TextureMirrorSeamsWander, TextureFlowParticles,
 TextureSequinField, TextureNeonTrace, TextureLavaCracks, TextureAuroraField,
 TextureNebulaVolume, TextureCloudInterior, RichterSqueegee,
-SchillerOverTexture, ActiveNematicDefects, DewdropLensArray.
+SchillerOverTexture, ActiveNematicDefects, DewdropLensArray, OilProjector
+(Neubau), LavaLamp (Neubau), RheoscopicSwirl.
 
 ---
 
@@ -471,4 +481,48 @@ Struktur:* Spektralbreite → Relief, Rauheit → Wellen, Tonart → Tageslicht,
 
 ---
 
-**Summe:** 12 Familien × 25 = 300; geschätzt 40 × 9, 231 × 8, 29 × 7.
+## 13. Flüssiges Licht und zähe Stoffe (25)
+
+Die vorhandenen **LavaLamp** und **OilProjector** reichen nicht an die
+Originale heran: die LavaLamp ist ein Gefäß in der Bildmitte mit
+Metaballs, der OilProjector ein verzerrter Strömungswirbel statt echter
+Zweiphasen-Öle. Was die Originale ausmacht und hier nachgebaut werden soll:
+**scharfe Grenzflächen nicht mischbarer Phasen**, Blasen und Einschlüsse,
+**Auftrieb und Wärme** als Motor (langsam, zäh, nie ruckartig),
+**Durchleuchtung** (Subsurface-Glühen im Wachs, kräftige Farbstoffe im
+Gegenlicht), bei Projektionen die **Optik** (Vergrößerung, Unschärfe an den
+Blasenrändern, Farbsäume der Linse, überlappende Projektorkreise).
+*Knöpfe:* Viskosität, Wärme, Phasenzahl, Blasenmenge, Tempo. *Musik:* Swell
+→ Wärme (langsam), Spektralbreite → Viskosität, Tonart → Farbstoff,
+schnelle Hüllkurven nur ins Licht. Farbstoffe aus der Textur, wo es passt.
+
+1. **OilProjector** (9) [Neubau] -- ein Mathmos-Ölrad nah am Original: zwei nicht mischbare Farböle und Wasser zwischen Glas, das Rad dreht langsam, Blasen wandern, projiziert mit Vergrößerung, Randunschärfe und Farbsäumen; mehrere Projektorkreise überlappen zu einer endlosen Fläche.
+2. **LavaLamp** (9) [Neubau] -- das Innere einer Lavalampe, bildfüllend: Wachs steigt über der Wärme auf, schnürt sich zu Hälsen ab, verschmilzt und sinkt, glüht von innen.
+3. **LiquidLightShow** (9) [T: Farbstoff] -- die 60er-Lichtshow vom Overheadprojektor: Uhrgläser mit Farbe, Öl und Wasser werden gedrückt und geschwenkt, die Farben quellen ineinander.
+4. **RheoscopicSwirl** (9) [T: Tönung] -- eine rheoskopische Flüssigkeit, deren Perlglanz jede Strömung sichtbar macht, langsame Wirbel und Scherbänder.
+5. **WaxDripCascade** (8) [T: Wachsfarbe] -- Kerzenwachs läuft in Farbschichten übereinander und erstarrt.
+6. **HoneyFold** (8) [T: Gegenlicht] -- ein Honigfaden faltet sich zu Spulen, das Licht bricht golden hindurch.
+7. **SyrupCurtain** (8) [T: dahinter] -- ein zäher Vorhang läuft über Glas, die Textur dahinter gebrochen.
+8. **DropCoalescence** (8) [T: in den Tropfen] -- Tropfen auf Glas verschmelzen in Kaskaden, jeder bricht die Textur.
+9. **MilkCrownSplash** (8) [T: Farbe] -- ein Kronenspritzer in Zeitlupe, endlos.
+10. **InkDropsFalling** (8) [T: Farbe] -- Tintentropfen fallen in Wasser und bilden Wirbelringe.
+11. **BubbleOilLamp** (8) [T: Öl] -- Luftblasen steigen durch gefärbtes Öl und brechen das Licht.
+12. **HotWaxBlobsTop** (8) [T: Farbe] -- Wachs auf einer warmen Platte, von oben, Blobs fließen zusammen.
+13. **CaramelBubbling** (8) [T: Farbe] -- kochender Zucker, Blasen steigen, die Farbe dunkelt.
+14. **EpoxyWaves** (8) [T: Farbe] -- Harzkunst als Brandung von oben, mit Zellen und weißem Spitzensaum.
+15. **BubbleRaftDrift** (8) [T: Grund] -- Blasenflöße mit Interferenzfarben treiben auf Wasser.
+16. **ThermochromicSheet** (8) [T: Wärmebild] -- eine Thermofarbfolie, auf der Wärmespuren in Farben aufblühen.
+17. **DyedIceMelt** (8) [T: Farbe] -- gefärbtes Eis schmilzt, die Farbe läuft in Rinnsalen.
+18. **HeatHazeOverFlames** (8) [T: dahinter] -- Hitzeflimmern über Flammen verzerrt die Textur.
+19. **InkInOilDroplets** (8) [T: Farbe] -- Tinte in schwebenden Öltropfen gefangen.
+20. **DichroicOilWheel** (8) [T: Farbe] -- ein Ölrad mit dichroitischem Glas, die Farben kippen mit dem Winkel.
+21. **OilWheelMacro** (8) [T: Farbe] -- das Makro der Ölschicht im Rad, Grenzflächen und Einschlüsse.
+22. **MeltingCrayonRainbow** (7) [T: Farbe] -- Wachsmalstifte schmelzen, die Farben laufen.
+23. **WalkingDroplets** (8) [T: Grund] -- Tropfen hüpfen auf einem vibrierenden Ölbad und ziehen Wellenmuster hinter sich her.
+24. **LiquidMarbleSpheres** (7) [T: Pulver] -- mit Pulver ummantelte Tropfen rollen und verschmelzen.
+25. **TextureMeltingGlaze** (8) [T: Glasur] -- die Textur schmilzt als Glasur, Tropfen laufen.
+
+---
+
+**Summe:** 13 Familien, 325 Ideen (Familie 13 mit den Neubauten von
+LavaLamp und OilProjector).
