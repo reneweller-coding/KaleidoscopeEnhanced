@@ -197,19 +197,10 @@ MODIFIED_SCENES = {
 # Minuten statt siebzig).  Bewusst eine eigene Liste: welche Szenen zuletzt
 # dran waren, ist eine historische Tatsache und soll im Diff stehen.
 RECENT_SCENES = {
-    # 04.09.: fuenfte Fuenfzig, Block E (Rhythmusmaschinen): Metronome, Sanduhr,
-    # Sonnenuhr, Spielautomat, Galtonbrett, Spieluhr, Windspiel, Step-Sequencer,
-    # Abakus, Jukebox.
-    "MetronomeForest",
-    "HourglassSandFall",
-    "SundialShadowSweep",
-    "SlotMachineReels",
-    "GaltonBoardBeads",
-    "MusicBoxCylinder",
-    "WindChimeTubes",
-    "StepSequencerGrid",
-    "AbacusBeadCount",
-    "JukeboxBubbleTubes",
+    # 29.09.: erster Block der Schauwert-Szenen (docs/proposals-2026-09-29-schauwert.md).
+    "NeonSignAlley", "SolidLightCones", "MuqarnasDome", "CloudSeaSummit",
+    "WaterfallCurtainRainbow", "ThunderstormFromOrbit", "StormLighthouse",
+    "RainOnWindowCity", "StarryNightFlow", "KlimtGoldMosaic",
 }
 
 def rule_recent(m, h):

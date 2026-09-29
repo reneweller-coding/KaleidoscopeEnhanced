@@ -1,6 +1,6 @@
 # Kaleidoscope Enhanced — Szenen-Katalog
 
-_865 Szenen, 29 FX-Overlays, 110 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
+_875 Szenen, 29 FX-Overlays, 110 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
 
 
 ---
@@ -762,6 +762,15 @@ CLOISONNE ENAMEL CELLS: a copper plate with gold wires bent into a scrolling pat
 A silk curtain whose folds are a real Verlet mass-spring simulation, printed with the current photo. texCloth (from the CfxCloth compute pass) supplies a displacement field: its RGB warps the tex0 lookup so the printed photo rides with the fabric, and its gradient gives the surface normal used for diffuse, specular and rim-sheen lighting. audioKick punches up the specular highlight, audioBeat swells the silk sheen, a…
 
 ![ClothDrape ruhig (t=8)](img/ClothDrape_A.jpg) ![ClothDrape ruhig (t=16)](img/ClothDrape_B.jpg) ![ClothDrape audio-heiß (t=21)](img/ClothDrape_C.jpg)
+
+
+### CloudSeaSummit
+
+`Scene2D/CloudSeaSummit.frag` · type=normal · mood=bright,calm,dreamy · complexity=4
+
+CLOUD SEA SUMMIT: above a sea of cloud at sunrise. The cloud tops roll slowly through the valleys below, billowed and lit gold on the sun side, blue in their troughs; ridges and summits stand out of the sea in layers that fade into the haze, and the sun sits on the horizon with its light running across the cloud tops. The music is in the light: the swell raises the sun's glow, the bands brighten the ridge rims, the t…
+
+![CloudSeaSummit ruhig (t=8)](img/CloudSeaSummit_A.jpg) ![CloudSeaSummit ruhig (t=16)](img/CloudSeaSummit_B.jpg) ![CloudSeaSummit audio-heiß (t=21)](img/CloudSeaSummit_C.jpg)
 
 
 ### CollatzFractalTreeAbyss
@@ -2174,6 +2183,15 @@ KLEIN QUARTIC HYPERBOLIC CURVE: Riemann surface of genus 3 with maximal symmetry
 ![KleinQuarticHyperbolicCurve ruhig (t=8)](img/KleinQuarticHyperbolicCurve_A.jpg) ![KleinQuarticHyperbolicCurve ruhig (t=16)](img/KleinQuarticHyperbolicCurve_B.jpg) ![KleinQuarticHyperbolicCurve audio-heiß (t=21)](img/KleinQuarticHyperbolicCurve_C.jpg)
 
 
+### KlimtGoldMosaic
+
+`Scene2D/KlimtGoldMosaic.frag` · type=normal · mood=bright,calm · complexity=3
+
+KLIMT GOLD MOSAIC: a golden-period panel. A field of beaten gold leaf carries tendrils that coil into spirals, scattered eyes of concentric rings and little black-and-white squares; down the middle a gown of glass tesserae is set from the photo, sprinkled with ornamental discs. A slow light moves across the panel and the gold answers it -- the leaf flares where the light passes, each spiral glows with its own band, a…
+
+![KlimtGoldMosaic ruhig (t=8)](img/KlimtGoldMosaic_A.jpg) ![KlimtGoldMosaic ruhig (t=16)](img/KlimtGoldMosaic_B.jpg) ![KlimtGoldMosaic audio-heiß (t=21)](img/KlimtGoldMosaic_C.jpg)
+
+
 ### KluverFormConstants
 
 `Scene2D/KluverFormConstants.frag` · type=normal · mood=psychedelic,aggressive,dark · complexity=2
@@ -2669,6 +2687,15 @@ MUON TOMOGRAPHY PYRAMID: seeing through a pyramid with cosmic rays. Muons rain f
 ![MuonTomographyPyramid ruhig (t=8)](img/MuonTomographyPyramid_A.jpg) ![MuonTomographyPyramid ruhig (t=16)](img/MuonTomographyPyramid_B.jpg) ![MuonTomographyPyramid audio-heiß (t=21)](img/MuonTomographyPyramid_C.jpg)
 
 
+### MuqarnasDome
+
+`Scene2D/MuqarnasDome.frag` · type=normal · mood=bright,calm,psychedelic · complexity=3
+
+MUQARNAS DOME: looking straight up into a honeycomb vault of stalactite niches, tier upon tier of pointed cells stepping inward to a star-shaped oculus full of daylight. Every cell is a small concave niche lit from the centre, its rim gilded, its hollow tiled in the colours of the photo; alternate tiers are offset by half a cell so the rows interlock. The vault turns very slowly; the gold of each tier glows with its …
+
+![MuqarnasDome ruhig (t=8)](img/MuqarnasDome_A.jpg) ![MuqarnasDome ruhig (t=16)](img/MuqarnasDome_B.jpg) ![MuqarnasDome audio-heiß (t=21)](img/MuqarnasDome_C.jpg)
+
+
 ### Murmuration
 
 `Scene2D/Murmuration.frag` · type=normal · mood=calm,dreamy · complexity=2
@@ -2721,6 +2748,15 @@ NEON CYBER VOXEL FLIGHT: High-speed 3D low-altitude flight through an endless cy
 NEON FLUID DYNAMICS: Multi-scale Navier-Stokes curl-noise vorticity fluid advection. High-luminance neon ink plumes, collision shockwaves, turbulent viscous marbling, and audio-driven dye injection pulses over photos. audioKick -> injects explosive new expanding neon dye vortex rings audioBass -> swirls macroscopic fluid bodies and advection currents audioHigh -> creates fine turbulent viscous tendrils and sparkling …
 
 ![NeonFluidDynamics ruhig (t=8)](img/NeonFluidDynamics_A.jpg) ![NeonFluidDynamics ruhig (t=16)](img/NeonFluidDynamics_B.jpg) ![NeonFluidDynamics audio-heiß (t=21)](img/NeonFluidDynamics_C.jpg)
+
+
+### NeonSignAlley
+
+`Scene2D/NeonSignAlley.frag` · type=normal · mood=dark,aggressive,psychedelic · complexity=4
+
+NEON SIGN ALLEY: a narrow back street at night, hundreds of neon blade signs hanging off both walls into the depth, rain falling through their light and the wet asphalt mirroring all of it. The camera glides down the alley at a steady walking pace; each sign belongs to a spectrum band and burns with it, so the whole street plays the music as light. Audio Reactivity: audioSpectrum[32] -> brightness of each sign (its b…
+
+![NeonSignAlley ruhig (t=8)](img/NeonSignAlley_A.jpg) ![NeonSignAlley ruhig (t=16)](img/NeonSignAlley_B.jpg) ![NeonSignAlley audio-heiß (t=21)](img/NeonSignAlley_C.jpg)
 
 
 ### NeonTubes
@@ -3445,6 +3481,15 @@ QUILT BLOCK PATCHWORK: a quilt assembling itself block by block over the scene a
 ![QuiltBlockPatchwork ruhig (t=8)](img/QuiltBlockPatchwork_A.jpg) ![QuiltBlockPatchwork ruhig (t=16)](img/QuiltBlockPatchwork_B.jpg) ![QuiltBlockPatchwork audio-heiß (t=21)](img/QuiltBlockPatchwork_C.jpg)
 
 
+### RainOnWindowCity
+
+`Scene2D/RainOnWindowCity.frag` · type=normal · mood=dark,calm,dreamy · complexity=3
+
+RAIN ON WINDOW CITY: a night city seen through a rain-covered window. Out of focus behind the glass the city is soft colour and bokeh discs; on the glass every raindrop is a small lens that shows the city sharp and upside down, and now and then a drop grows heavy and runs down, leaving a clear trail and a string of tiny beads. The city lights are the music: each bokeh disc belongs to a band and swells with it. Audio …
+
+![RainOnWindowCity ruhig (t=8)](img/RainOnWindowCity_A.jpg) ![RainOnWindowCity ruhig (t=16)](img/RainOnWindowCity_B.jpg) ![RainOnWindowCity audio-heiß (t=21)](img/RainOnWindowCity_C.jpg)
+
+
 ### RangoliPowderMandala
 
 `Scene2D/RangoliPowderMandala.frag` · type=normal · mood=bright,calm,psychedelic · complexity=3
@@ -3899,6 +3944,15 @@ SOLAR PROMINENCE LOOPS: the camera stands on the Sun. Below, the granulated phot
 ![SolarProminenceLoops ruhig (t=8)](img/SolarProminenceLoops_A.jpg) ![SolarProminenceLoops ruhig (t=16)](img/SolarProminenceLoops_B.jpg) ![SolarProminenceLoops audio-heiß (t=21)](img/SolarProminenceLoops_C.jpg)
 
 
+### SolidLightCones
+
+`Scene2D/SolidLightCones.frag` · type=normal · mood=dark,calm,dreamy · complexity=3
+
+SOLID LIGHT CONES: a dark hall filled with haze, and projectors at its far end whose beams become surfaces -- each projects a slowly changing line drawing onto the wall behind the viewer, and in the haze that line becomes a luminous sheet stretching from the lens to us (after Anthony McCall's solid-light works). We stand inside the cones. Each drawing belongs to a band group and brightens with it; the haze drifts and…
+
+![SolidLightCones ruhig (t=8)](img/SolidLightCones_A.jpg) ![SolidLightCones ruhig (t=16)](img/SolidLightCones_B.jpg) ![SolidLightCones audio-heiß (t=21)](img/SolidLightCones_C.jpg)
+
+
 ### SolitonInternalWaveAndamanSea
 
 `Scene2D/SolitonInternalWaveAndamanSea.frag` · type=normal · mood=calm,dreamy,bright · complexity=3
@@ -4106,6 +4160,15 @@ STARGATE WORMHOLE: Relativistic Einstein-Rosen bridge hyperspace tunnel. Gravita
 ![StargateWormhole ruhig (t=8)](img/StargateWormhole_A.jpg) ![StargateWormhole ruhig (t=16)](img/StargateWormhole_B.jpg) ![StargateWormhole audio-heiß (t=21)](img/StargateWormhole_C.jpg)
 
 
+### StarryNightFlow
+
+`Scene2D/StarryNightFlow.frag` · type=normal · mood=bright,psychedelic,dreamy · complexity=4
+
+STARRY NIGHT FLOW: the photo repainted in thick, flowing brush strokes, the way Van Gogh painted a night sky. A few great vortices turn in the picture and everything else streams around them; every stroke follows the flow, the paint is laid on in ridges, and the brightest places of the photo become stars wrapped in rings of strokes. The strokes creep along the flow on the music's pace; each vortex's halo glows with i…
+
+![StarryNightFlow ruhig (t=8)](img/StarryNightFlow_A.jpg) ![StarryNightFlow ruhig (t=16)](img/StarryNightFlow_B.jpg) ![StarryNightFlow audio-heiß (t=21)](img/StarryNightFlow_C.jpg)
+
+
 ### StarShattering
 
 `Scene2D/StarShattering.frag` · type=normal · mood=bright,aggressive,space · complexity=4
@@ -4194,6 +4257,15 @@ STEREO WIDTH CANYON: a slot canyon whose width is the stereo width of the mix --
 STIPPLE VORONOI RELAX: weighted Voronoi stippling of the photo -- the dots are denser and larger where the picture is dark, as in a pen-and-ink stipple, and they relax on the scene clock (each dot drifts on a small smooth orbit as if Lloyd's iteration were still settling). The swell tightens the pattern (finer dots), the kick lights the dots on the darkest tones, the treble the lightest. Camera still. Audio Reactivit…
 
 ![StippleVoronoiRelax ruhig (t=8)](img/StippleVoronoiRelax_A.jpg) ![StippleVoronoiRelax ruhig (t=16)](img/StippleVoronoiRelax_B.jpg) ![StippleVoronoiRelax audio-heiß (t=21)](img/StippleVoronoiRelax_C.jpg)
+
+
+### StormLighthouse
+
+`Scene2D/StormLighthouse.frag` · type=normal · mood=dark,dreamy · complexity=3
+
+STORM LIGHTHOUSE: a lighthouse on a rock in a gale at night. Its lamp turns steadily and the beam sweeps as a solid shaft of light through rain and spray; when it swings toward us the lantern flares. Heavy swell rolls in under a torn sky with the moon behind the clouds, and the sea breaks white over the rock. The music is the storm's light: the lamp burns with the bass, the spray over the rock catches the kick, the r…
+
+![StormLighthouse ruhig (t=8)](img/StormLighthouse_A.jpg) ![StormLighthouse ruhig (t=16)](img/StormLighthouse_B.jpg) ![StormLighthouse audio-heiß (t=21)](img/StormLighthouse_C.jpg)
 
 
 ### StringArtChords
@@ -4428,6 +4500,15 @@ THOMAS ATTRACTOR COSMIC LABYRINTH: Cyclically symmetric chaotic Thomas attractor
 THREE BODY FIGURE EIGHT: the figure-eight choreography of the three-body problem -- three equal suns chasing one another around one lemniscate, one third of a period apart. The suns carry the photo, leave fading trails along the curve, and glow with the bass; the one passing through the centre crossing lights on the kick. The orbit runs on the scene clock; the camera never moves. Audio Reactivity: sceneAdvance -> the…
 
 ![ThreeBodyFigureEight ruhig (t=8)](img/ThreeBodyFigureEight_A.jpg) ![ThreeBodyFigureEight ruhig (t=16)](img/ThreeBodyFigureEight_B.jpg) ![ThreeBodyFigureEight audio-heiß (t=21)](img/ThreeBodyFigureEight_C.jpg)
+
+
+### ThunderstormFromOrbit
+
+`Scene2D/ThunderstormFromOrbit.frag` · type=normal · mood=dark,dreamy,space · complexity=3
+
+THUNDERSTORM FROM ORBIT: the night side of the Earth seen from low orbit, a line of thunderstorms below. Their towering tops are lit only by the moon and by the lightning inside them -- whole cloud cells glow from within, blue-white, and fade -- while between the storms the city lights of the ground show through as a golden net of streets. The limb curves across the top with its thin green airglow and the stars above…
+
+![ThunderstormFromOrbit ruhig (t=8)](img/ThunderstormFromOrbit_A.jpg) ![ThunderstormFromOrbit ruhig (t=16)](img/ThunderstormFromOrbit_B.jpg) ![ThunderstormFromOrbit audio-heiß (t=21)](img/ThunderstormFromOrbit_C.jpg)
 
 
 ### TidalLockTerminator
@@ -4700,6 +4781,15 @@ Adapted from "Vortex" by \@kishimisu (2024) — https://www.shadertoy.com/view/M
 Adapted from "Voyager" by \@kishimisu (2024) — https://www.shadertoy.com/view/M33XDH Original licensed CC BY-NC-SA 4.0 (attribution kept per the licence). A volumetric fly-through of glowing, endlessly-repeating cells — like a deep- space probe drifting through a field of light. Adapted to our engine: * Shadertoy conventions -> ours (gl_FragCoord/resolution/time/tex0, texture2D). * IMAGE-FORWARD: the source image is …
 
 ![Voyager ruhig (t=8)](img/Voyager_A.jpg) ![Voyager ruhig (t=16)](img/Voyager_B.jpg) ![Voyager audio-heiß (t=21)](img/Voyager_C.jpg)
+
+
+### WaterfallCurtainRainbow
+
+`Scene2D/WaterfallCurtainRainbow.frag` · type=normal · mood=bright,calm,dreamy · complexity=3
+
+WATERFALL CURTAIN RAINBOW: a wide curtain of falling water filling the frame between mossy cliffs, the sun behind the viewer, and in the spray that boils up from the plunge pool a standing rainbow. The water streams down in countless threads, bright where it catches the light; each stretch of the curtain carries a spectrum band, so the music runs across it as light. Spray and rainbow grow with the swell. Camera fixed…
+
+![WaterfallCurtainRainbow ruhig (t=8)](img/WaterfallCurtainRainbow_A.jpg) ![WaterfallCurtainRainbow ruhig (t=16)](img/WaterfallCurtainRainbow_B.jpg) ![WaterfallCurtainRainbow audio-heiß (t=21)](img/WaterfallCurtainRainbow_C.jpg)
 
 
 ### WaterStriderDimples

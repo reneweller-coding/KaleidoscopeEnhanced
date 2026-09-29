@@ -810,6 +810,20 @@ Warm-/Kalttöne, eine kaputte weiterhin das volle Farbrad. Sonnenuntergang
 im A-Frame = imgPalette funktioniert; Regenbogen trotz `--images` = echter
 Shader-Fehler.
 
+**`--time` stellt nur die globale Uhr.** `sceneTime` und `sceneAdvance` bleiben
+im Proberender auf 0 -- eine Szene, die auf ihnen läuft (fast jede neue), zeigt
+zu jedem `--time` dasselbe Bild. Die Szenenuhr per Formel mitgeben:
+`--time 9 --expr sceneTime=9 --expr sceneAdvance=4`. Die synthetische
+Vorschau-Musik hat ihren Kick bei t=8: Licht auf dem Kick dort prüfen.
+
+**Dünne Lichtflächen im Dunst nicht durchschreiten, sondern schneiden.** Eine
+Lichtfläche, die dünner ist als die Schrittweite eines Volumen-Marschs, fällt
+zwischen die Schritte und bleibt unsichtbar (SolidLightCones, 29.09.2026: 72
+Schritte, nichts zu sehen). Ein Lichtkegel über einer Ellipse ist eine Quadrik,
+eine Linie ergibt eine Ebene -- beides analytisch mit dem Sehstrahl schneiden,
+die Helligkeit mit `1/|dot(rd, n)|` (streifender Blick = hellere Kante) und dem
+Dunst am Schnittpunkt gewichten.
+
 ## Den ganzen Katalog ansehen: `KALEIDO_SCENE_SWEEP`
 
 Zuschauen reicht zum Pruefen nicht. Der Scheduler waehlt Szenen absichtlich

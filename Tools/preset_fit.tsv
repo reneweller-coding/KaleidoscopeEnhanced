@@ -127,6 +127,7 @@ CliffordTorusStereographicKaleido	6	3	3	4	7	6	5
 CliffordTorusVillarceauLinks	3	5	7	5	7	3	6
 CloisonneEnamelCells	4	1	2	3	3	5	4
 ClothDrape	6	0	3	2	3	6	5
+CloudSeaSummit	9	4	1	3	2	8	7
 CollatzFractalTreeAbyss	5	3	4	4	6	5	5
 CometRide	6	9	3	5	2	5	6
 ConcertCrowd	2	1	7	6	2	2	5
@@ -384,6 +385,7 @@ KleinBottleFlythrough	5	3	3	4	4	4	4
 KleinBottleHyperLoopDive	4	3	5	4	6	4	5
 KleinianLimitSetAbyss	5	3	3	3	6	5	4
 KleinQuarticHyperbolicCurve	5	3	6	3	8	6	7
+KlimtGoldMosaic	5	0	3	2	5	9	8
 KluverFormConstants	4	2	5	4	8	4	6
 KnittingRowsGrow	3	0	1	2	1	3	3
 KumikoLatticeShoji	5	0	1	3	1	5	3
@@ -487,6 +489,7 @@ MoodWeatherValley	6	1	1	5	1	5	4
 MosaicWave	4	1	7	2	5	4	6
 MultiverseBubbles	6	6	2	4	3	5	5
 MuonTomographyPyramid	4	4	2	7	2	4	4
+MuqarnasDome	6	2	5	3	8	9	8
 Murmuration	5	1	1	3	1	4	3
 MusicBoxCylinder	4	0	2	3	1	4	3
 MyceliumNeuralPulse	5	5	2	6	3	3	3
@@ -496,6 +499,7 @@ NebulaShipyard	3	7	5	4	2	3	5
 NeonCyberVoxelFlight	1	2	9	3	6	1	7
 NeonFluidDynamics	4	1	7	1	8	5	6
 NeonHighwayDrive	2	3	7	5	4	2	5
+NeonSignAlley	3	2	9	8	6	4	9
 NeonTubes	3	2	9	3	10	3	9
 NestedMandalaInfiniteDive	5	4	5	4	8	4	6
 NeuralAxonSynapseCloud	4	4	3	5	2	3	3
@@ -626,6 +630,7 @@ QuiltBlockPatchwork	3	0	1	2	2	4	3
 RadiolarianMicrotubuleExoskeleton	6	6	2	6	3	5	6
 RadiolarianSilicaLattice	5	5	4	5	4	4	5
 RainOnWater	8	2	1	7	1	7	6
+RainOnWindowCity	7	1	3	8	2	7	7
 RangoliPowderMandala	4	1	2	3	4	5	4
 RaymarchTunnel	4	3	6	5	6	4	5
 ReactionDiffusion	5	1	6	2	6	6	7
@@ -706,6 +711,7 @@ SolarProminenceHelicalMagneticRope	4	5	6	6	5	4	6
 SolarProminenceLoops	5	7	4	6	3	4	5
 SolarSailArmada	4	6	6	5	3	4	5
 SolarWindMagnetosphere	3	4	8	2	8	4	7
+SolidLightCones	7	5	4	8	4	8	8
 SolitonInternalWaveAndamanSea	4	1	0	3	1	3	1
 SonarPingReveal	5	3	3	5	4	4	4
 SonoluminescenceBubble	4	3	7	3	7	4	6
@@ -743,6 +749,7 @@ StainedGlassRosette	5	1	5	1	8	8	8
 Starfield	6	7	5	3	4	5	6
 StargateWormhole	3	6	9	4	7	3	8
 StarlingMurmuration	7	1	2	4	2	7	6
+StarryNightFlow	5	3	5	3	8	8	7
 StarShattering	3	6	4	5	2	3	4
 StarshipPlanetaryOrbit	6	10	2	4	1	6	8
 StellarEngine	4	7	5	4	3	3	5
@@ -754,6 +761,7 @@ StereoSearchlights	4	3	5	7	2	3	4
 StereoSpectrum	2	1	9	4	5	2	7
 StereoWidthCanyon	5	1	2	5	2	5	4
 StippleVoronoiRelax	5	1	1	3	2	6	3
+StormLighthouse	6	2	2	8	1	6	7
 StrangeAttractor	6	6	4	6	5	5	6
 StringArtChords	5	3	3	5	4	4	4
 SubglacialVolcanicPillowLava	5	4	4	5	5	4	5
@@ -803,6 +811,7 @@ ThermalIronbowStreet	3	1	4	5	6	4	4
 ThomasAttractorCosmicLabyrinth	5	5	4	3	6	5	5
 ThreeBodyFigureEight	7	8	3	5	4	6	7
 ThunderCloud	4	3	3	6	2	3	3
+ThunderstormFromOrbit	6	8	3	6	2	5	6
 TidalDisruptionEvent	5	8	2	7	2	3	4
 TidalLockTerminator	7	9	2	5	1	6	7
 TidePoolRefraction	5	1	2	4	3	5	4
@@ -847,6 +856,7 @@ Vortex	2	3	9	3	9	3	9
 VoxelizedModel	4	1	4	4	4	5	5
 Voyager	4	6	9	2	9	4	9
 WarpStars	4	8	6	5	3	3	6
+WaterfallCurtainRainbow	8	1	2	2	3	8	7
 WaterStriderDimples	6	2	1	6	1	5	4
 WaveformRiver	7	3	2	6	2	5	5
 WaveRibbon	7	5	5	5	5	6	6
