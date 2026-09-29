@@ -140,8 +140,10 @@ void main()
         vec3 lightC = mix(dusk * 0.8, glowC * (0.8 + 0.9 * swell), lit);
         col = rock * lightC * face;
         col = mix(col, vec3(0.95, 0.92, 1.0) * mix(dusk, glowC * (0.9 + 0.6 * swell), lit) * 1.1, ledge * 0.5);
-        // Scree slopes at the foot, blending into the forest.
-        col = mix(col, vec3(0.25, 0.25, 0.3) * dusk * 1.5, smoothstep(base + 0.05, base - 0.02, p.y));
+        // Scree at the foot, then dark forested slopes down into the valley.
+        col = mix(col, vec3(0.5, 0.5, 0.55) * dusk, smoothstep(base + 0.05, base + 0.01, p.y));
+        float canopy = 0.6 + 0.5 * noise2(p * vec2(160.0, 90.0)) * noise2(p * vec2(40.0, 25.0) + 3.0);
+        col = mix(col, vec3(0.07, 0.11, 0.12) * canopy, smoothstep(base + 0.015, base - 0.01, p.y + 0.02 * noise2(vec2(p.x * 12.0, 5.0))));
     }
 
     // The meadow ridge in the foreground with larches and a hut.
