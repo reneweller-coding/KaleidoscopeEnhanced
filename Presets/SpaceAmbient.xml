@@ -101,6 +101,29 @@
     <int name="kSides" minValue="0" maxValue="9"></int>
     <float name="rosetteP" minValue="0.15" maxValue="0.35"></float>
   </TextureShader>
+  <TextureShader file="..\\Scene2D\\Tunnel.frag" type="KaleidoscopeBase" mood="psychedelic,bright" probability="0.5" complexity="1">
+    <rig preset="flat"/>
+    <bool name="rotate" probability="0.5"></bool>
+    <float name="speedTunnel" minValue="0.005" maxValue="0.07"></float>
+    <int name="sides" minValue="2" maxValue="14"></int>
+    <float name="speed" minValue="0.01" maxValue="0.09"></float>
+    <float name="power" minValue="1.0" maxValue="4.0"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TunnelPlain.frag" type="normal" mood="calm,bright" probability="0.15" complexity="10">
+    <rig preset="flat"/>
+    <int name="sides" minValue="2" maxValue="14"></int>
+    <float name="speed" minValue="0.01" maxValue="0.05"></float>
+    <float name="power" minValue="1.0" maxValue="4.0"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TunnelReverse.frag" type="KaleidoscopeBase" mood="psychedelic,bright" probability="0.15" complexity="1">
+    <rig preset="flat"/>
+    <bool name="rotate" probability="0.15"></bool>
+    <float name="speedTunnel" minValue="0.001" maxValue="0.03"></float>
+    <float name="speedTunnelReverse" minValue="0.0001" maxValue="0.01"></float>
+    <int name="sides" minValue="2" maxValue="14"></int>
+    <float name="speed" minValue="0.02" maxValue="0.09"></float>
+    <float name="power" minValue="1.0" maxValue="4.0"></float>
+  </TextureShader>
   <TextureShader file="..\\Scene2D\\Voyager.frag" type="normal" probability="0.5" mood="bright,space" complexity="2">
     <rig preset="flat"/>
     <int name="kSides" minValue="0" maxValue="9"></int>
@@ -1048,13 +1071,6 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\Scene2D\HarmonicChangeLightning.frag" type="normal" mood="dark,calm,dreamy" probability="0.45" complexity="2">
-    <rig preset="flat"/>
-    <float name="heightP" minValue="0" maxValue="1"></float>
-    <float name="seaP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader file="..\Scene2D\ZCRNoiseStorm.frag" type="normal" mood="dark,aggressive" probability="0.45" complexity="2">
     <rig preset="flat"/>
     <float name="grainP" minValue="0" maxValue="1"></float>
@@ -1201,13 +1217,6 @@
     <rig preset="flat"/>
     <float name="curlP" minValue="0" maxValue="1"></float>
     <float name="tracksP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
-  <TextureShader file="..\Scene3D\SmokeRingChorus.frag" type="scene3d" geom="indirect" mood="dark,calm,dreamy" probability="0.45" complexity="4">
-    <rig preset="procedural"/>
-    <float name="mouthsP" minValue="0" maxValue="1"></float>
-    <float name="thickP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
@@ -3472,12 +3481,6 @@
   <TextureShader file="..\\Scene2D\\ThunderstormFromOrbit.frag" type="normal" mood="dark,dreamy,space" probability="0.45" complexity="3">
     <rig preset="flat"/>
     <float name="stormP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
-  <TextureShader file="..\\Scene2D\\StarryNightFlow.frag" type="normal" mood="bright,psychedelic,dreamy" probability="0.45" complexity="4">
-    <rig preset="flat"/>
-    <float name="swirlP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
