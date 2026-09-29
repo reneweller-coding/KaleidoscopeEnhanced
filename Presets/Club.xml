@@ -532,13 +532,6 @@
     <expr name="hueP" formula="chromaHue + seed2*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\Scene2D\CrystalAsteroidField.frag" type="normal" mood="bright,calm,space" probability="0.45" complexity="4">
-    <rig preset="flat"/>
-    <float name="densityP" minValue="0.85" maxValue="1.5"></float>
-    <float name="glowP" minValue="0.5" maxValue="2.0"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader file="..\Scene2D\GammaRayBurst.frag" type="normal" mood="bright,aggressive,space" probability="0.45" complexity="4">
     <rig preset="flat"/>
     <float name="beamP" minValue="0.5" maxValue="1.5"></float>
@@ -608,13 +601,6 @@
     <rig preset="flat"/>
     <float name="twistP" minValue="0.6" maxValue="1.6"></float>
     <float name="throatP" minValue="0.8" maxValue="1.3"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
-  <TextureShader file="..\Scene2D\PhyllotaxisZoom.frag" type="normal" mood="dark,psychedelic,calm" probability="0.45" complexity="2">
-    <rig preset="flat"/>
-    <float name="zoomP" minValue="0.7" maxValue="1.4"></float>
-    <float name="tiltP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
@@ -3226,6 +3212,18 @@
   <TextureShader file="..\\Scene2D\\DiamondFireMacro.frag" type="normal" mood="bright,psychedelic" probability="0.45" complexity="3">
     <rig preset="flat"/>
     <float name="cutP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\PaintPourCells.frag" type="normal" mood="bright,psychedelic,dreamy" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="cellsP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\NeonPoolNight.frag" type="normal" mood="dark,dreamy" probability="0.45" complexity="3">
+    <rig preset="flat"/>
+    <float name="lampsP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>

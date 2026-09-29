@@ -209,6 +209,7 @@ RECENT_SCENES = {
     # Block 3 (29.09. abends).
     "KarstPeaksMist", "SeaStacksFlight", "IceCaveBlueArch", "DesertMilkyWayArch",
     "LightPillarsCity",
+    "BlueHourSkylineMirror", "PaintPourCells", "MonetLilyPond", "NeonPoolNight", "CometOverLake",
 }
 
 def rule_recent(m, h):

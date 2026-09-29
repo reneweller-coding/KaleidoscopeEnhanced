@@ -85,10 +85,6 @@
     <float name="stretchP" minValue="0.3" maxValue="2.5"></float>
     <float name="shapeP" minValue="0.2" maxValue="1.5"></float>
   </TextureShader>
-  <TextureShader file="..\\Scene2D\\SphereGrid.frag" type="normal" mood="calm,bright" probability="0.4" complexity="2">
-    <rig preset="flat"/>
-    <float name="spacingP" minValue="3.0" maxValue="6.0"></float>
-  </TextureShader>
   <TextureShader file="..\\Scene2D\\Starfield.frag" type="normal" mood="calm,dark,dreamy,space" probability="0.45" complexity="1">
     <rig preset="flat"/>
     <float name="densP" minValue="0.88" maxValue="0.95"></float>
@@ -3565,6 +3561,12 @@
   <TextureShader file="..\\Scene2D\\LightPillarsCity.frag" type="normal" mood="dark,calm,dreamy" probability="0.45" complexity="3">
     <rig preset="flat"/>
     <float name="pillarsP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\CometOverLake.frag" type="normal" mood="calm,dark,dreamy,space" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="tailP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
