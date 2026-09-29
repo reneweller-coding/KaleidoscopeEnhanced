@@ -2,13 +2,14 @@
 out vec4 fragColor;
 /**
  * @file BobbinLacePillow.frag
- * @brief BOBBIN LACE PILLOW: the lace maker's pillow seen from above.
- * Pins with round heads hold the pattern, and pairs of threads cross and
- * twist between them on the scene clock -- the two moves that make all
- * bobbin lace.  The finished lace grows down the pillow over the scene
- * arc; below the working line the bobbins hang in a fan, each a small
- * turned shape on its own thread.  The photo is the pricking card under
- * the work.  Camera fixed over the pillow.
+ * @brief BOBBIN LACE PILLOW: the lace maker's pillow under a warm lamp.
+ * On a dome of blue-green cotton lies the buff pricking card; above the
+ * working line the finished lace -- a torchon ground of twisted pairs with
+ * round spiders and scalloped fans down both edges -- and below it the
+ * pricking holes still waiting, brass pins in the last worked rows.  From
+ * the line the threads run down to a fan of turned wooden bobbins, each
+ * with its ring of coloured spangle beads, swaying gently.  The lace grows
+ * down the card over the scene arc.  Camera fixed over the pillow.
  *
  * Audio Reactivity:
  *   sceneProgress -> the lace grows (the arc)
@@ -55,7 +56,7 @@ vec3 imgPalette(float t)
 }
 
 float hash11(float n) { return fract(sin(n * 127.1) * 43758.5453); }
-float hash21(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+float hash21(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
 float noise2(vec2 p)
 {
     vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
@@ -73,124 +74,103 @@ float segD(vec2 p, vec2 a, vec2 b)
 void main()
 {
     float aspect = resolution.x / resolution.y;
-    vec2 uv = gl_FragCoord.xy / resolution;
-    vec2 p = (uv - 0.5) * vec2(aspect, 1.0);
-
+    vec2 p = (gl_FragCoord.xy / resolution - 0.5) * vec2(aspect, 1.0);
     float hue = (hueP > 0.001) ? hueP : 0.0;
-    float pairs = 5.0 + floor(clamp(pairsP, 0.0, 1.0) * 5.0);           // once per activation
-    float pinRows = 5.0 + floor(clamp(pinsP, 0.0, 1.0) * 4.0);
-    float lamp = 0.7 + 0.5 * clamp(audioSwell, 0.0, 1.0);
-    float hi = clamp(audioHigh * 2.0, 0.0, 1.0);
     float prog = clamp(sceneProgress, 0.0, 1.0);
-    float clock = sceneAdvance * 0.5 + sceneTime * 0.1;
+    float T = sceneTime + sceneAdvance * 0.5;
+    float lampS = 0.8 + 0.4 * clamp(audioSwell, 0.0, 1.0);
+    float hi = clamp(audioHigh * 2.0, 0.0, 1.0);
+    int nB = 10 + int(clamp(pairsP, 0.0, 1.0) * 8.0);        // bobbins
+    float mesh = 16.0 + 8.0 * clamp(pinsP, 0.0, 1.0);         // ground cells per unit
 
-    // The pillow: dark blue linen, and the pricking card with the photo on it.
-    vec3 pillow = mix(vec3(0.1, 0.12, 0.2), imgPalette(hue * 0.159 + 0.6) * 0.2, 0.4);
-    pillow *= 0.8 + 0.3 * noise2(p * 90.0);
-    vec3 card = img(clamp(p * 0.9 + 0.5, 0.0, 1.0)) * vec3(0.75, 0.7, 0.6);
-    card *= 0.7 + 0.4 * noise2(p * 40.0);
-    float onCard = smoothstep(0.44, 0.42, max(abs(p.x) / aspect * 2.0, abs(p.y) * 2.2));
-    vec3 col = mix(pillow, card * 0.55, onCard * 0.7) * lamp;
+    // The pillow: a dome of deep blue-green cotton with a fine weave.
+    float r = length(p * vec2(0.8, 1.0));
+    vec3 cloth = vec3(0.07, 0.2, 0.22) * (1.15 - 0.6 * r * r);
+    cloth *= 0.9 + 0.1 * sin(p.x * 900.0) * sin(p.y * 900.0);
+    vec3 col = cloth;
 
-    // The working line: the lace is finished above it and grows downward.
-    float workY = 0.42 - prog * 0.8;
-    // Pins: a lattice of round-headed pins holding the pattern.
-    float pitchX = aspect * 0.7 / pairs;
-    float pitchY = 0.75 / pinRows;
-    vec2 pg = vec2((p.x + aspect * 0.35) / pitchX, (0.42 - p.y) / pitchY);
-    vec2 pi = floor(pg);
-    vec2 pf = fract(pg) - 0.5;
-    // Half-drop rows, which is how a lace pricking is set out.
-    float drop = mod(pi.y, 2.0) * 0.5;
-    pf.x = fract(pg.x + drop) - 0.5;
-    float pinD = length(pf * vec2(pitchX, pitchY));
-    float pinSet = smoothstep(workY - 0.02, workY + 0.06, p.y);          // pins exist above the line
+    // The pricking card down the middle: buff parchment.
+    float cardW = 0.36;
+    float onCard = step(abs(p.x), cardW);
+    vec3 card = vec3(0.86, 0.76, 0.58) * (0.9 + 0.1 * noise2(p * 40.0));
+    col = mix(col, card * (1.1 - 0.4 * r), onCard);
 
-    // The threads.  Every pair crosses and twists between pins; the whole
-    // net is drawn as segments between neighbouring pin positions.
+    // The working line moves down the card over the arc; above it the lace.
+    float lineY = 0.46 - prog * 0.72;
+    vec2 m = vec2(p.x + p.y, p.x - p.y) * mesh * 0.7071;       // diagonal lattice
+    vec2 mf = fract(m) - 0.5;
     float lace = 0.0;
-    float laceCol = 0.0;
-    for (int i = 0; i < 10; ++i)
-    {
-        float fi = float(i);
-        if (fi >= pairs) break;
-        // The pair's own zig-zag down the pillow.
-        float phase = fi * 1.7;
-        float x0 = (fi + 0.5) * pitchX - aspect * 0.35;
-        for (int k = 0; k < 8; ++k)
-        {
-            float fk = float(k);
-            if (fk >= pinRows) break;
-            float y0 = 0.42 - fk * pitchY;
-            float y1 = y0 - pitchY;
-            if (y1 < workY - 0.02) break;
-            // A cross: the two threads of the pair swap sides.
-            float swing = 0.5 * pitchX * sin(clock * 0.8 + phase + fk);
-            vec2 a = vec2(x0 - swing, y0);
-            vec2 b = vec2(x0 + swing, y1);
-            vec2 c = vec2(x0 + swing, y0);
-            vec2 d2 = vec2(x0 - swing, y1);
-            float w = 0.0035;
-            lace = max(lace, smoothstep(w * 1.8, w * 0.6, segD(p, a, b)));
-            lace = max(lace, smoothstep(w * 1.8, w * 0.6, segD(p, c, d2)));
-            // A twist: the pair runs straight down, wound around itself.
-            float twist = smoothstep(w * 1.6, w * 0.5,
-                abs(p.x - x0 - 0.35 * pitchX * sin((0.42 - p.y) * 90.0 + phase)))
-                * step(y1, p.y) * step(p.y, y0);
-            lace = max(lace, twist);
-            if (lace > 0.5) laceCol = fi;
-        }
+    if (p.y > lineY && onCard > 0.0) {
+        // Torchon ground: threads along both diagonals, twisted pairs.
+        float d1 = abs(mf.x), d2 = abs(mf.y);
+        float thr = smoothstep(0.09, 0.04, min(d1, d2)) * step(0.12, length(mf));
+        // Spiders every few cells: round with radiating legs.
+        vec2 sc = floor(m / 4.0);
+        vec2 sq = (m - sc * 4.0 - 2.0);
+        float sr = length(sq);
+        float spider = smoothstep(0.75, 0.6, sr) * (0.6 + 0.4 * step(0.5, fract(atan(sq.y, sq.x) * 1.27)))
+                     + smoothstep(0.12, 0.0, abs(sr - 1.1)) * 0.8;
+        float isSpider = step(0.5, hash21(sc));
+        lace = clamp(mix(thr, max(thr * step(1.4, sr), spider), isSpider), 0.0, 1.0);
+        // Scalloped fan edges down both sides.
+        float ex = cardW - abs(p.x);
+        float fan = smoothstep(0.015, 0.0, abs(ex - 0.05 - 0.03 * abs(sin(p.y * mesh * 0.6)))) ;
+        lace = max(lace, fan);
+        vec3 thread = vec3(0.98, 0.97, 0.93) * (0.9 + 0.2 * hi * noise2(p * 300.0));
+        col = mix(col, thread, lace);
+        col *= 1.0 - 0.25 * smoothstep(0.3, 0.0, lace) * 0.5;        // tiny shadow of the thread
     }
-    // Only the part above the working line is finished lace.
-    float finished = smoothstep(workY - 0.01, workY + 0.03, p.y);
-    int cls = int(mod(laceCol * 3.0 + 1.0, 12.0));
-    float e = clamp(audioChroma[cls] * 1.6, 0.0, 1.0);
-    vec3 thread = mix(vec3(0.95, 0.93, 0.86), imgPalette(hue * 0.159 + float(cls) / 12.0) * 1.3, 0.3 + 0.35 * e);
-    col = mix(col, thread * lamp * (0.8 + 0.4 * e), lace * finished * 0.95);
-    col += thread * lace * finished * hi * 0.25;
-    // The pins: round heads with a bright highlight, and their shadows.
-    float pinHead = smoothstep(0.011, 0.006, pinD) * pinSet;
-    float pinShadow = smoothstep(0.02, 0.008, length((pf * vec2(pitchX, pitchY)) - vec2(0.006, -0.006))) * pinSet;
-    col *= 1.0 - 0.35 * pinShadow * (1.0 - pinHead);
-    vec3 brass = mix(vec3(0.85, 0.78, 0.5), imgPalette(hue * 0.159 + 0.12), 0.25);
-    col = mix(col, brass * lamp, pinHead);
-    col += vec3(1.0) * smoothstep(0.005, 0.001, length(pf * vec2(pitchX, pitchY) - vec2(-0.003, 0.003))) * pinSet * (0.3 + 0.7 * hi);
+    // Pricking holes waiting below the line, pins in the last worked rows.
+    {
+        vec2 node = m - floor(m + 0.5);
+        float hole = smoothstep(0.08, 0.04, length(node));
+        float below = step(p.y, lineY) * onCard;
+        col = mix(col, vec3(0.3, 0.24, 0.18), hole * below * 0.8);
+        float pinZone = smoothstep(lineY + 0.12, lineY + 0.01, p.y) * step(lineY, p.y) * onCard;
+        float head = smoothstep(0.3, 0.18, length(node));
+        vec3 brass = vec3(0.95, 0.75, 0.35) * (0.7 + 0.5 * smoothstep(0.1, -0.1, node.x + node.y));
+        col = mix(col, brass, head * pinZone * step(0.35, hash21(floor(m + 0.5))));
+    }
 
-    // Below the working line: the bobbins hang in a fan on their threads.
-    if (p.y < workY)
-    {
-        for (int i = 0; i < 10; ++i)
-        {
-            float fi = float(i);
-            if (fi >= pairs * 2.0) break;
-            float x0 = (floor(fi * 0.5) + 0.5) * pitchX - aspect * 0.35 + (mod(fi, 2.0) - 0.5) * pitchX * 0.35;
-            // The bobbin hangs and sways gently on the clock.
-            float sway = 0.02 * sin(clock * 0.7 + fi * 1.3);
-            float len = 0.16 + 0.06 * hash11(fi * 3.3);
-            vec2 top = vec2(x0, workY);
-            vec2 bot = vec2(x0 + sway * 2.0, workY - len);
-            // The thread.
-            col = mix(col, vec3(0.9, 0.88, 0.82) * lamp, smoothstep(0.003, 0.001, segD(p, top, bot)) * 0.9);
-            // The bobbin: a turned shank with a bulb and a bead ring.
-            vec2 bq = p - bot;
-            float shank = smoothstep(0.012, 0.008, abs(bq.x)) * step(-0.075, bq.y) * step(bq.y, 0.0);
-            float bulb = smoothstep(0.019, 0.015, length((bq - vec2(0.0, -0.055)) * vec2(1.0, 0.75)));
-            vec3 wood = mix(vec3(0.55, 0.38, 0.22), imgPalette(hue * 0.159 + 0.1), 0.25);
-            wood *= 0.6 + 0.5 * smoothstep(-0.012, 0.012, bq.x);
-            col = mix(col, wood * lamp, max(shank, bulb));
-            // The spangle: a ring of small round beads at the bottom.
-            for (int k = 0; k < 6; ++k)
-            {
-                float a2 = float(k) * 1.0472 + fi;
-                vec2 bead = bot + vec2(0.0, -0.085) + vec2(cos(a2), sin(a2) * 0.6) * 0.016;
-                float bd = length(p - bead);
-                vec3 bc = imgPalette(hue * 0.159 + float(k) / 6.0) * 1.4 + 0.2;
-                col = mix(col, bc * lamp, smoothstep(0.005, 0.003, bd));
-                col += bc * smoothstep(0.003, 0.0, bd) * hi * 0.4;
-            }
+    // Threads from the working line down to the bobbins, and the bobbins.
+    float fanY = -0.3;
+    for (int i = 0; i < 18; ++i) {
+        if (i >= nB) break;
+        float fi = float(i);
+        float u = (fi + 0.5) / float(nB) - 0.5;
+        vec2 a = vec2(u * cardW * 1.6, lineY);
+        vec2 b = vec2(u * aspect * 0.85 + 0.012 * sin(T * 0.6 + fi * 1.3), fanY);
+        // Thread.
+        vec2 pa = p - a, ba = b - a;
+        float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
+        float td = length(pa - ba * h);
+        float e = clamp(audioChroma[int(mod(fi * 5.0, 12.0))] * 1.5, 0.0, 1.0);
+        vec3 tc = mix(vec3(0.95, 0.94, 0.9), imgPalette(fi / 18.0 + hue * 0.159) * 1.3, 0.25 + 0.4 * e);
+        col = mix(col, tc, smoothstep(0.0025, 0.0008, td));
+        // Bobbin: a turned wooden spindle hanging from the thread.
+        vec2 bq = p - b;
+        vec2 bd = normalize(b - a);
+        vec2 bs = vec2(-bd.y, bd.x);
+        float along = dot(bq, bd), across = abs(dot(bq, bs));
+        float prof = 0.009 + 0.006 * sin(clamp(along / 0.13, 0.0, 1.0) * 3.14159) - 0.004 * smoothstep(0.02, 0.0, abs(along - 0.02));
+        float bob = step(0.0, along) * step(along, 0.13) * smoothstep(prof, prof - 0.002, across);
+        vec3 wood = mix(vec3(0.45, 0.25, 0.12), vec3(0.75, 0.5, 0.28), smoothstep(prof, 0.0, across)) * (0.8 + 0.3 * hash11(fi));
+        col = mix(col, wood, bob);
+        // The spangle: a ring of round beads at the tail.
+        vec2 tail = b + bd * 0.14;
+        for (int k = 0; k < 5; ++k) {
+            float ang = float(k) / 5.0 * 6.2831853;
+            vec2 bc = tail + bd * 0.012 + (bd * sin(ang) * 0.6 + bs * cos(ang)) * 0.012;
+            float bead = smoothstep(0.0055, 0.004, length(p - bc));
+            vec3 beadC = 0.5 + 0.5 * cos(6.2831853 * (hash11(fi * 3.0 + float(k)) + vec3(0.0, 0.33, 0.67)));
+            col = mix(col, beadC * (0.8 + 0.4 * e), bead);
         }
     }
-    col *= 0.9 + 0.2 * audioLevel;
+
+    // Lamp light: warm, from above.
+    col *= lampS * (1.1 - 0.35 * length(p - vec2(0.0, 0.2)));
+    col *= mix(vec3(1.0), vec3(1.05, 0.98, 0.9), 0.6);
+    col *= 0.85 + 0.3 * audioLevel;
 
     vec3 _catTone = max(col, 0.0);
     _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));

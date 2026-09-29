@@ -40,7 +40,7 @@ except ImportError:
 # (sim textures not stepped / shadow-OIT multi-pass limitation / state
 # warm-up) — flagged in the catalogue instead of looking "broken".
 PREVIEW_LIMITED = {
-    "VolumetricFire", "Fluid", "Physarum", "SpectroWeave", "InkTank",
+    "VolumetricFire", "Fluid", "Physarum", "SpectroWeave",
     "PillarHall", "ShadowForest", "CathedralGlass", "SmokeHall",
     "Detonation", "MetaSculpt", "Origami", "BloomSculpt", "CoralGrowth",
     "MelodyScript", "Schlieren", "SelfSimilarity",

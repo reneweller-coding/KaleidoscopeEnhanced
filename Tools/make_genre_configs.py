@@ -228,6 +228,11 @@ IMPROVED_SCENES = {
     "RecursiveHexagonHoneycombZoom", "SlotMachineReels", "SpirographGearDraw",
     "LenticularFlip", "BuildUpAvalanche", "TemporalZoomSSM",
     "SupercellMesocyclone",
+    # Runde 3: restliche Schauwert-2-Szenen; die sechs 3D-Szenen sind jetzt 2D.
+    "BobbinLacePillow", "CherryBlossomFront", "DoubleSlitElectronBuildup",
+    "FrescoRestorationReveal", "DielectricMetasurfaceHologram", "MelodyScript",
+    "PenguinHuddleRotation", "RiceTerracesDawn", "SeifertSurfaceBraidKnot",
+    "SelfSimilarityTerrain",
 }
 
 def rule_improved(m, h):

@@ -399,7 +399,7 @@ BLACKSMITH SPARKS: a glowing bar on the anvil under the hammer. The bar's heat i
 
 `Scene2D/BobbinLacePillow.frag` · type=normal · mood=dark,calm,dreamy · complexity=3
 
-BOBBIN LACE PILLOW: the lace maker's pillow seen from above. Pins with round heads hold the pattern, and pairs of threads cross and twist between them on the scene clock -- the two moves that make all bobbin lace. The finished lace grows down the pillow over the scene arc; below the working line the bobbins hang in a fan, each a small turned shape on its own thread. The photo is the pricking card under the work. Came…
+BOBBIN LACE PILLOW: the lace maker's pillow under a warm lamp. On a dome of blue-green cotton lies the buff pricking card; above the working line the finished lace -- a torchon ground of twisted pairs with round spiders and scalloped fans down both edges -- and below it the pricking holes still waiting, brass pins in the last worked rows. From the line the threads run down to a fan of turned wooden bobbins, each with…
 
 ![BobbinLacePillow ruhig (t=8)](img/BobbinLacePillow_A.jpg) ![BobbinLacePillow ruhig (t=16)](img/BobbinLacePillow_B.jpg) ![BobbinLacePillow audio-heiß (t=21)](img/BobbinLacePillow_C.jpg)
 
@@ -660,7 +660,7 @@ CHERENKOV RADIATION WAKEFIELD: Relativistic charged particle wakefield traversin
 
 `Scene2D/CherryBlossomFront.frag` · type=normal · mood=bright,calm,dreamy · complexity=2
 
-CHERRY BLOSSOM FRONT: the sakura front sweeping up a country -- a map-like landscape of hills (the photo) seen from above at an angle, over which the blossom front advances during the scene arc, turning the trees from bare to pink to green behind it; petals (round) drift on the scene clock; the swell is the spring light, the treble the petal glitter, the kick a gust that brightens the falling petals. Camera fixed hig…
+CHERRY BLOSSOM FRONT: looking down a narrow canal lined with cherry trees whose canopies arch over the water -- stone banks, a path with lanterns, the sky pale with spring. During the scene arc the blossom front travels toward the camera: far trees burst into pink first, then nearer and nearer ones, until the whole avenue is in flower and the petals come down and gather on the water as drifting pink rafts. Petals (ro…
 
 ![CherryBlossomFront ruhig (t=8)](img/CherryBlossomFront_A.jpg) ![CherryBlossomFront ruhig (t=16)](img/CherryBlossomFront_B.jpg) ![CherryBlossomFront audio-heiß (t=21)](img/CherryBlossomFront_C.jpg)
 
@@ -1036,6 +1036,15 @@ DICHROIC PRISM LASER FIELD: Multi-angle floating dichroic glass prism plates wit
 ![DichroicPrismLaserField ruhig (t=8)](img/DichroicPrismLaserField_A.jpg) ![DichroicPrismLaserField ruhig (t=16)](img/DichroicPrismLaserField_B.jpg) ![DichroicPrismLaserField audio-heiß (t=21)](img/DichroicPrismLaserField_C.jpg)
 
 
+### DielectricMetasurfaceHologram
+
+`Scene2D/DielectricMetasurfaceHologram.frag` · type=normal · mood=dark,psychedelic,calm · complexity=3
+
+DIELECTRIC METASURFACE HOLOGRAM: a laser lights a metasurface -- a chip covered in nanopillars whose diameters follow a Fresnel-zone pattern, so the surface shimmers in concentric rainbow rings like a CD seen close -- and the chip throws a hologram into the air above it: the photo, rendered in laser light as a floating field of glowing points with the grain of speckle, inside a faint cone of light. The hologram hangs…
+
+![DielectricMetasurfaceHologram ruhig (t=8)](img/DielectricMetasurfaceHologram_A.jpg) ![DielectricMetasurfaceHologram ruhig (t=16)](img/DielectricMetasurfaceHologram_B.jpg) ![DielectricMetasurfaceHologram audio-heiß (t=21)](img/DielectricMetasurfaceHologram_C.jpg)
+
+
 ### DiffusionDenoiseReveal
 
 `Scene2D/DiffusionDenoiseReveal.frag` · type=normal · mood=psychedelic,dreamy,calm · complexity=2
@@ -1076,7 +1085,7 @@ Adapted from "Disco Godrays" by \@kishimisu (2023) — https://www.shadertoy.com
 
 `Scene2D/DoubleSlitElectronBuildup.frag` · type=normal · mood=dark,calm,psychedelic · complexity=2
 
-DOUBLE SLIT ELECTRON BUILD-UP: the experiment that shows one particle at a time still interferes. A phosphor screen fills the frame; single electrons arrive as round dots, each at a place drawn from the interference probability, and over the scene arc the dots accumulate into the fringe pattern. The fringe spacing follows the tonal centre (slowly), a fresh arrival flashes on an onset, the electron gun at the bottom h…
+DOUBLE SLIT ELECTRON BUILD-UP: the experiment that shows one particle at a time still interferes, in two panels. On the left, seen from above: the gun, the barrier with its two slits, and the waves -- plane waves before the barrier, two circular waves after it, crossing into bright and dark rays. On the right, the phosphor screen face on: single electrons arrive as round green dots, each at a place drawn from the int…
 
 ![DoubleSlitElectronBuildup ruhig (t=8)](img/DoubleSlitElectronBuildup_A.jpg) ![DoubleSlitElectronBuildup ruhig (t=16)](img/DoubleSlitElectronBuildup_B.jpg) ![DoubleSlitElectronBuildup audio-heiß (t=21)](img/DoubleSlitElectronBuildup_C.jpg)
 
@@ -1438,7 +1447,7 @@ FRACTAL PORTAL RECURSION HALL: Infinite recursive corridor of nested affine port
 
 `Scene2D/FrescoRestorationReveal.frag` · type=normal · mood=dark,calm,dreamy · complexity=2
 
-FRESCO RESTORATION REVEAL: a fresco black with centuries of soot, and the restorer at work -- patch by patch the cleaning reveals the painting (the photo) beneath, over the scene arc; the cleaned squares appear in the order a conservator works (rows across), each patch fading from soot to colour smoothly. The lamp is the swell, the kick a flash of the camera documenting the work, the treble the gold-leaf halos glinti…
+FRESCO RESTORATION REVEAL: a chapel fresco black with centuries of soot, and the restorer at work. Beneath the grime: a lapis-blue vault strewn with gold stars and two painted panels in red-and-cream Cosmati frames, the photo rendered in them as soft tempera, with plaster cracks and a few losses. Over the scene arc the sponge works along the wall in a serpentine, row after row -- its path is continuous, and the colou…
 
 ![FrescoRestorationReveal ruhig (t=8)](img/FrescoRestorationReveal_A.jpg) ![FrescoRestorationReveal ruhig (t=16)](img/FrescoRestorationReveal_B.jpg) ![FrescoRestorationReveal audio-heiß (t=21)](img/FrescoRestorationReveal_C.jpg)
 
@@ -1977,8 +1986,6 @@ INFINITY MIRROR ROOM: a mirrored box with real depth. Instead of a depth buffer 
 ### InkTank
 
 `Scene2D/InkTank.frag` · type=normal · mood=calm,bright,dreamy · complexity=2
-
-_(Vorschau eingeschränkt: Sim-Textur/Mehrpass — Bilder unterschätzen die echte App)_
 
 INK TANK: drops of ink falling through a backlit tank of water, the way the macro photographs show it -- each drop sinks as a vortex ring, its head curling into a mushroom of fine filaments, a thinning stem trailing behind, and the inks (deep blue, magenta, amber, tinted by the photo) absorbing the white back-light where they overlap, so crossings go dark and rich. New drops enter at the top while old plumes spread a…
 
@@ -2624,6 +2631,17 @@ MELODY RIDGELINE: the melody as mountains. The 96-sample melody history is the p
 ![MelodyRidgeline ruhig (t=8)](img/MelodyRidgeline_A.jpg) ![MelodyRidgeline ruhig (t=16)](img/MelodyRidgeline_B.jpg) ![MelodyRidgeline audio-heiß (t=21)](img/MelodyRidgeline_C.jpg)
 
 
+### MelodyScript
+
+`Scene2D/MelodyScript.frag` · type=normal · mood=bright,calm,dreamy · complexity=2
+
+_(Vorschau eingeschränkt: Sim-Textur/Mehrpass — Bilder unterschätzen die echte App)_
+
+MELODY SCRIPT: the tune written as ink calligraphy on rice paper. The last eight seconds of melody run across the sheet as one brush stroke -- pitch is height, the newest note at the right -- swelling where the line lingers, thinning where it leaps, lifting off the paper where the melody rests. Fresh ink is black and wet; toward the left it dries, lightens and breaks into dry-brush streaks. A faint wash of stave line…
+
+![MelodyScript ruhig (t=8)](img/MelodyScript_A.jpg) ![MelodyScript ruhig (t=16)](img/MelodyScript_B.jpg) ![MelodyScript audio-heiß (t=21)](img/MelodyScript_C.jpg)
+
+
 ### MetamaterialCloakingHorizon
 
 `Scene2D/MetamaterialCloakingHorizon.frag` · type=normal · mood=psychedelic,calm · complexity=3
@@ -3054,6 +3072,15 @@ PAPERCUT SHADOW BOX: layered paper cut-outs in a lit box. Six sheets stand one b
 Two million curl-noise-advected particles (simulated upstream into texParticles), rendered here as a silky, glowing flow of the photo. This pass adds a directional smear along a slowly rotating axis (its angle driven by audioAdvance) so the particle field reads as motion blur without per-particle history, plus an 8-tap halo whose radius grows with audioBeat and whose strength is boosted by audioKick. audioLevel widen…
 
 ![ParticleFlow ruhig (t=8)](img/ParticleFlow_A.jpg) ![ParticleFlow ruhig (t=16)](img/ParticleFlow_B.jpg) ![ParticleFlow audio-heiß (t=21)](img/ParticleFlow_C.jpg)
+
+
+### PenguinHuddleRotation
+
+`Scene2D/PenguinHuddleRotation.frag` · type=normal · mood=bright,calm,dreamy · complexity=4
+
+PENGUIN HUDDLE ROTATION: emperor penguins huddled on the sea ice in the polar twilight. The huddle is a slowly turning mound of birds -- black heads, white fronts, the golden ear patches -- the ones at the front drifting one way, the ones behind the other, so over minutes every bird takes its turn at the cold edge. The sky glows rose and violet above a sun that never quite rises; blowing snow streams across in round …
+
+![PenguinHuddleRotation ruhig (t=8)](img/PenguinHuddleRotation_A.jpg) ![PenguinHuddleRotation ruhig (t=16)](img/PenguinHuddleRotation_B.jpg) ![PenguinHuddleRotation audio-heiß (t=21)](img/PenguinHuddleRotation_C.jpg)
 
 
 ### PenroseAperiodicTessellation
@@ -3697,6 +3724,15 @@ RIBOSOME ASSEMBLY LINE: translation, seen as the factory it is. An mRNA tape run
 ![RibosomeAssemblyLine ruhig (t=8)](img/RibosomeAssemblyLine_A.jpg) ![RibosomeAssemblyLine ruhig (t=16)](img/RibosomeAssemblyLine_B.jpg) ![RibosomeAssemblyLine audio-heiß (t=21)](img/RibosomeAssemblyLine_C.jpg)
 
 
+### RiceTerracesDawn
+
+`Scene2D/RiceTerracesDawn.frag` · type=normal · mood=bright,calm,dreamy · complexity=4
+
+RICE TERRACES DAWN: a hillside of flooded paddies at sunrise, the way the Yuanyang photographs show it. Curving terraces step down the slope in hundreds of thin panes, each a mirror of the sky, separated by dark earthen bunds with a line of grass; mist lies in the valley below and blue ridges fade behind. Over the scene arc the sun rises: the sky and every pane with it turn from blue-grey through rose to gold, and a …
+
+![RiceTerracesDawn ruhig (t=8)](img/RiceTerracesDawn_A.jpg) ![RiceTerracesDawn ruhig (t=16)](img/RiceTerracesDawn_B.jpg) ![RiceTerracesDawn audio-heiß (t=21)](img/RiceTerracesDawn_C.jpg)
+
+
 ### RiemannSphereInfinityFlight
 
 `Scene2D/RiemannSphereInfinityFlight.frag` · type=normal · mood=psychedelic,aggressive,dark · complexity=2
@@ -3852,6 +3888,15 @@ SECTION STRATA CANYON: the song as geology, in a canyon at golden hour. Across t
 ![SectionStrataCanyon ruhig (t=8)](img/SectionStrataCanyon_A.jpg) ![SectionStrataCanyon ruhig (t=16)](img/SectionStrataCanyon_B.jpg) ![SectionStrataCanyon audio-heiß (t=21)](img/SectionStrataCanyon_C.jpg)
 
 
+### SeifertSurfaceBraidKnot
+
+`Scene2D/SeifertSurfaceBraidKnot.frag` · type=normal · mood=calm,bright,dreamy,psychedelic · complexity=3
+
+SEIFERT SURFACE BRAID KNOT: a torus knot as a studio sculpture -- a thick tube of polished, thin-film-iridescent glaze winding three times through the hole of a torus while circling it five times, turning slowly on a dark stage under a softbox; inside its loops the Seifert surface is suggested by a soap film spanning the knot, shimmering in interference colours. A soft reflection lies on the glossy floor. The rotatio…
+
+![SeifertSurfaceBraidKnot ruhig (t=8)](img/SeifertSurfaceBraidKnot_A.jpg) ![SeifertSurfaceBraidKnot ruhig (t=16)](img/SeifertSurfaceBraidKnot_B.jpg) ![SeifertSurfaceBraidKnot audio-heiß (t=21)](img/SeifertSurfaceBraidKnot_C.jpg)
+
+
 ### SelfSimilarity
 
 `Scene2D/SelfSimilarity.frag` · type=normal · mood=calm,dark · complexity=1
@@ -3879,6 +3924,15 @@ SELF-SIMILARITY CORRIDOR: an endless corridor whose floor, ceiling and walls are
 SELF-SIMILARITY MANDALA: the song's memory of itself as a mandala. The self-similarity matrix (texSSM) holds how much every moment of the last stretch resembles every other. Here the row "now against the past" is wrapped into rings -- the centre is now, each ring further out a moment further back -- and folded n-way into a mandala, so a returning chorus lights whole rings at once and a new section darkens them. A sec…
 
 ![SelfSimilarityMandala ruhig (t=8)](img/SelfSimilarityMandala_A.jpg) ![SelfSimilarityMandala ruhig (t=16)](img/SelfSimilarityMandala_B.jpg) ![SelfSimilarityMandala audio-heiß (t=21)](img/SelfSimilarityMandala_C.jpg)
+
+
+### SelfSimilarityTerrain
+
+`Scene2D/SelfSimilarityTerrain.frag` · type=normal · mood=dark,calm,dreamy · complexity=4
+
+SELF SIMILARITY TERRAIN: the song's self-similarity matrix as a moonlit mountain range. Where the music repeats itself the land rises into snowy ridges -- the diagonal, "now against now", is the main range running away from the camera -- and where it is new the land falls into valleys with a still lake in them that mirrors the moon. Under a starry sky and a large moon the snow glows blue-white, mist lies in the low g…
+
+![SelfSimilarityTerrain ruhig (t=8)](img/SelfSimilarityTerrain_A.jpg) ![SelfSimilarityTerrain ruhig (t=16)](img/SelfSimilarityTerrain_B.jpg) ![SelfSimilarityTerrain audio-heiß (t=21)](img/SelfSimilarityTerrain_C.jpg)
 
 
 ### ShatterField
@@ -5660,15 +5714,6 @@ Lighting for a diatom's circular silica shell (valve): discards outside the disc
 ![DiatomSilicaMicrofrustule ruhig (t=8)](img/DiatomSilicaMicrofrustule_A.jpg) ![DiatomSilicaMicrofrustule ruhig (t=16)](img/DiatomSilicaMicrofrustule_B.jpg) ![DiatomSilicaMicrofrustule audio-heiß (t=21)](img/DiatomSilicaMicrofrustule_C.jpg)
 
 
-### DielectricMetasurfaceHologram
-
-`Scene3D/DielectricMetasurfaceHologram.frag` · type=scene3d · geom=quads · mood=dark,aggressive · complexity=3
-
-Lighting for a metasurface hologram made of nanopillar meta-atoms: discards outside each pillar's circular aperture, mixes a slideshow photo with a cyan/violet laser-diffraction colour that oscillates per meta-atom (vMetaPhase), and glows brightest at each pillar's centre, fading into distance fog. audioPhase drives the per-meta-atom colour oscillation, audioKick brightens the pillar glow, and audioChromaHue plus hue…
-
-![DielectricMetasurfaceHologram ruhig (t=8)](img/DielectricMetasurfaceHologram_A.jpg) ![DielectricMetasurfaceHologram ruhig (t=16)](img/DielectricMetasurfaceHologram_B.jpg) ![DielectricMetasurfaceHologram audio-heiß (t=21)](img/DielectricMetasurfaceHologram_C.jpg)
-
-
 ### DielectricResonatorMetagrating
 
 `Scene3D/DielectricResonatorMetagrating.frag` · type=scene3d · geom=quads · mood=dark,aggressive · complexity=3
@@ -6427,17 +6472,6 @@ MANGROVE ROOTS TIDE (fragment): standing in the shallows among prop roots. Light
 ![MangroveRootsTide ruhig (t=8)](img/MangroveRootsTide_A.jpg) ![MangroveRootsTide ruhig (t=16)](img/MangroveRootsTide_B.jpg) ![MangroveRootsTide audio-heiß (t=21)](img/MangroveRootsTide_C.jpg)
 
 
-### MelodyScript
-
-`Scene3D/MelodyScript.frag` · type=scene3d · geom=ribbon · mood=dark,calm · complexity=1
-
-_(Vorschau eingeschränkt: Sim-Textur/Mehrpass — Bilder unterschätzen die echte App)_
-
-MelodyScript.frag — additive ribbon ink (colour fully baked in the vert).
-
-![MelodyScript ruhig (t=8)](img/MelodyScript_A.jpg) ![MelodyScript ruhig (t=16)](img/MelodyScript_B.jpg) ![MelodyScript audio-heiß (t=21)](img/MelodyScript_C.jpg)
-
-
 ### MeshAqueduct
 
 `Scene3D/MeshAqueduct.frag` · type=scene3d · geom=mesh · mood=bright,calm,dreamy · complexity=3
@@ -6919,15 +6953,6 @@ Renders one particle of the mirror-kaleidoscope tunnel-flight point cloud as a t
 ![ParticleTunnelFlight ruhig (t=8)](img/ParticleTunnelFlight_A.jpg) ![ParticleTunnelFlight ruhig (t=16)](img/ParticleTunnelFlight_B.jpg) ![ParticleTunnelFlight audio-heiß (t=21)](img/ParticleTunnelFlight_C.jpg)
 
 
-### PenguinHuddleRotation
-
-`Scene3D/PenguinHuddleRotation.frag` · type=scene3d · geom=indirect · mood=bright,calm,dreamy · complexity=4
-
-Fragment stage for PenguinHuddleRotation: a white-out sky and ice (the photo as the drifted snow texture), blowing snow as round flakes streaming across on the clock (the storm is the swell), the birds as black-backed, white-fronted ovals with the golden neck patch, snow-crusted on the windward edge, the huddle's warmth as a faint glow at its heart with the bass; the kick a gust that whitens everything for a moment. …
-
-![PenguinHuddleRotation ruhig (t=8)](img/PenguinHuddleRotation_A.jpg) ![PenguinHuddleRotation ruhig (t=16)](img/PenguinHuddleRotation_B.jpg) ![PenguinHuddleRotation audio-heiß (t=21)](img/PenguinHuddleRotation_C.jpg)
-
-
 ### PermafrostPolygons
 
 `Scene3D/PermafrostPolygons.frag` · type=scene3d · geom=patches · mood=calm,bright,dreamy · complexity=4
@@ -7236,15 +7261,6 @@ RibbonTunnel.frag — soft-edged glowing ribbon (additive blending).
 ![RibbonTunnel ruhig (t=8)](img/RibbonTunnel_A.jpg) ![RibbonTunnel ruhig (t=16)](img/RibbonTunnel_B.jpg) ![RibbonTunnel audio-heiß (t=21)](img/RibbonTunnel_C.jpg)
 
 
-### RiceTerracesDawn
-
-`Scene3D/RiceTerracesDawn.frag` · type=scene3d · geom=patches · mood=bright,calm,dreamy · complexity=4
-
-RICE TERRACES DAWN: a hillside of flooded paddies at sunrise. Every paddy floor is a mirror lying flat on the hill, so the sky (the photo) is repeated across the slope in a hundred separate panes, each offset by its own height; the bunds between them are dark earth with a line of grass. The sun rises over the scene arc, so the mirrors turn from grey through pink to gold; the bass is the water's sheen, the treble the …
-
-![RiceTerracesDawn ruhig (t=8)](img/RiceTerracesDawn_A.jpg) ![RiceTerracesDawn ruhig (t=16)](img/RiceTerracesDawn_B.jpg) ![RiceTerracesDawn audio-heiß (t=21)](img/RiceTerracesDawn_C.jpg)
-
-
 ### RingStation
 
 `Scene3D/RingStation.frag` · type=scene3d · geom=mesh · mood=bright,space · complexity=3
@@ -7308,24 +7324,6 @@ _(Vorschau eingeschränkt: Sim-Textur/Mehrpass — Bilder unterschätzen die ech
 Frag-side music pulse (added by the deaf-scene pass: reactivity measured ~0 -- the vert-side coupling barely moved any pixels).
 
 ![SciFiHUD ruhig (t=8)](img/SciFiHUD_A.jpg) ![SciFiHUD ruhig (t=16)](img/SciFiHUD_B.jpg) ![SciFiHUD audio-heiß (t=21)](img/SciFiHUD_C.jpg)
-
-
-### SeifertSurfaceBraidKnot
-
-`Scene3D/SeifertSurfaceBraidKnot.frag` · type=scene3d · geom=ribbon · mood=bright,psychedelic · complexity=3
-
-SEIFERT SURFACE BRAID KNOT: 3D orientable minimal surface bounded by a complex (3,5) torus braid knot. Interlocking mathematical ribbons, normal sheen, edge glints, and photo texturing flowing along topological geodesics. audioAdvance -> navigates ribbon trajectory through torus knot loops audioKick -> flashes ribbon edge specular reflection glints audioSwell -> widens Seifert ribbon width & subsurface translucency a…
-
-![SeifertSurfaceBraidKnot ruhig (t=8)](img/SeifertSurfaceBraidKnot_A.jpg) ![SeifertSurfaceBraidKnot ruhig (t=16)](img/SeifertSurfaceBraidKnot_B.jpg) ![SeifertSurfaceBraidKnot audio-heiß (t=21)](img/SeifertSurfaceBraidKnot_C.jpg)
-
-
-### SelfSimilarityTerrain
-
-`Scene3D/SelfSimilarityTerrain.frag` · type=scene3d · geom=patches · mood=dark,calm,dreamy · complexity=4
-
-SELF SIMILARITY TERRAIN: the self-similarity matrix flown over as a landscape -- ridges where the music repeats itself, the diagonal as the main range, valleys where it is new. The photo is the rock; the summits (high similarity) carry snow; a warm light rakes from the side with the swell; the kick flashes the nearest ridge, the bass warms the valleys, the treble glints the snow. Camera height fixed. Audio Reactivity…
-
-![SelfSimilarityTerrain ruhig (t=8)](img/SelfSimilarityTerrain_A.jpg) ![SelfSimilarityTerrain ruhig (t=16)](img/SelfSimilarityTerrain_B.jpg) ![SelfSimilarityTerrain audio-heiß (t=21)](img/SelfSimilarityTerrain_C.jpg)
 
 
 ### SensorStation

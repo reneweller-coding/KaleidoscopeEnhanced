@@ -482,7 +482,8 @@ enum AudioLoc {
     // Die 8-Takt-Phrase: Position 0..1 und Sekunden bis zur naechsten Grenze
     // (= der vorhergesagte Drop).  Fuer Szenen, die auf den Drop hin zaehlen.
     AL_PHRASEPOS, AL_PHRASELEFT,
-    AL_SECTIONID, AL_SECTIONPREV, AL_SECTIONAGE, AL_SECTIONKNOWN, AL_SECTIONCOUNT, AL_COUNT
+    AL_SECTIONID, AL_SECTIONPREV, AL_SECTIONAGE, AL_SECTIONKNOWN, AL_SECTIONCOUNT,
+    AL_MELODYPHASE, AL_COUNT
 };
 const char *kAudioLocNames[AL_COUNT] = {
     "audioPhase", "audioAdvance", "audioBeat", "audioLevel", "sides",
@@ -506,7 +507,8 @@ const char *kAudioLocNames[AL_COUNT] = {
     "sceneAdvance",   // Reihenfolge MUSS zum AL_-Enum passen (Tools/check_enum_tables.py)
     "audioMelodyPitch",
     "audioPhrasePos", "audioPhraseLeft",
-    "audioSectionId", "audioSectionPrev", "audioSectionAge", "audioSectionKnown", "audioSectionCount"
+    "audioSectionId", "audioSectionPrev", "audioSectionAge", "audioSectionKnown", "audioSectionCount",
+    "audioMelodyPhase"
 };
 }
 
@@ -569,6 +571,7 @@ void EffectShader::applyAudioFeatures(const AudioFeatures &f)
     if (L[AL_FADEOUT]  >= 0) glUniform1f(L[AL_FADEOUT],  f.fadeOut);
     if (L[AL_MELODY]   >= 0) glUniform1fv(L[AL_MELODY], AudioFeatures::kMelodyLen, f.melody);
     if (L[AL_MELODYHEAD] >= 0) glUniform1f(L[AL_MELODYHEAD], f.melodyHead);
+    if (L[AL_MELODYPHASE] >= 0) glUniform1f(L[AL_MELODYPHASE], f.melodyPhase);
     if (L[AL_FLATNESS] >= 0) glUniform1f(L[AL_FLATNESS], f.spectralFlatness);
     if (L[AL_ZCR]      >= 0) glUniform1f(L[AL_ZCR],      f.zeroCrossingRate);
 

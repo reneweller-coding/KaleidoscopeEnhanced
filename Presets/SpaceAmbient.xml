@@ -119,15 +119,6 @@
     <float name="speed" minValue="0.01" maxValue="0.05"></float>
     <float name="power" minValue="1.0" maxValue="4.0"></float>
   </TextureShader>
-  <TextureShader file="..\\Scene2D\\TunnelReverse.frag" type="KaleidoscopeBase" mood="psychedelic,bright" probability="0.15" complexity="1">
-    <rig preset="flat"/>
-    <bool name="rotate" probability="0.15"></bool>
-    <float name="speedTunnel" minValue="0.001" maxValue="0.03"></float>
-    <float name="speedTunnelReverse" minValue="0.0001" maxValue="0.01"></float>
-    <int name="sides" minValue="2" maxValue="14"></int>
-    <float name="speed" minValue="0.02" maxValue="0.09"></float>
-    <float name="power" minValue="1.0" maxValue="4.0"></float>
-  </TextureShader>
   <TextureShader file="..\\Scene2D\\Voyager.frag" type="normal" probability="0.5" mood="bright,space" complexity="2">
     <rig preset="flat"/>
     <int name="kSides" minValue="0" maxValue="9"></int>
@@ -1355,6 +1346,14 @@
     <rig preset="flat"/>
     <float name="turnsP" minValue="0" maxValue="1"></float>
     <float name="radiusP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\Scene2D\SelfSimilarityTerrain.frag" type="normal" mood="dark,calm,dreamy" probability="0.45" complexity="4">
+    <rig preset="flat"/>
+    <float name="camHP" minValue="5.0" maxValue="9.0"></float>
+    <float name="detailP" minValue="0.8" maxValue="1.2"></float>
+    <float name="heightP" minValue="0.8" maxValue="1.3"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>

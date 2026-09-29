@@ -613,6 +613,13 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
+  <TextureShader file="..\Scene2D\DoubleSlitElectronBuildup.frag" type="normal" mood="dark,calm,psychedelic" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="slitP" minValue="0" maxValue="1"></float>
+    <float name="grainP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
   <TextureShader file="..\Scene2D\CephalopodChromatophores.frag" type="normal" mood="psychedelic,bright,aggressive" probability="0.45" complexity="2">
     <rig preset="flat"/>
     <float name="densP" minValue="0" maxValue="1"></float>
@@ -715,9 +722,6 @@
   <TextureShader file="..\\Scene3D\\OscilloRings.frag" type="scene3d" geom="ribbon" probability="0.3" mood="bright" complexity="1">
     <rig preset="procedural"/>
   </TextureShader>
-  <TextureShader file="..\\Scene3D\\TorusKnot.frag" type="scene3d" geom="points" probability="0.35" mood="dark,dreamy" complexity="2">
-    <rig preset="procedural"/>
-  </TextureShader>
   <TextureShader file="..\\Scene3D\\RoseOrbit.frag" type="scene3d" geom="points" probability="0.3" mood="calm,space" complexity="2">
     <rig preset="procedural"/>
   </TextureShader>
@@ -734,9 +738,6 @@
     <rig preset="procedural"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\RollerCoaster.frag" type="scene3d" geom="ribbon" probability="0.45" mood="aggressive,dark" complexity="1">
-    <rig preset="procedural"/>
-  </TextureShader>
-  <TextureShader file="..\\Scene3D\\TronCycles.frag" type="scene3d" geom="ribbon" probability="0.4" mood="aggressive,dark" complexity="1">
     <rig preset="procedural"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\Wormhole.frag" type="scene3d" geom="grid" probability="0.3" mood="aggressive,dark" complexity="2">
@@ -780,12 +781,6 @@
     <float name="smearP" minValue="0.25" maxValue="0.9"></float>
     <expr name="glowP" formula="clamp(0.55 + 0.1*(seed1*2.0-1.0) + 0.225*(0.6*kick+0.4*snare), 0.3, 0.8)"/>
     <float name="glowP" minValue="0.3" maxValue="0.8"></float>
-  </TextureShader>
-  <TextureShader file="..\\Scene2D\\LightningStorm.frag" type="normal" mood="aggressive,dark" probability="0.45" complexity="2">
-    <rig preset="flat"/>
-    <expr name="glowP" formula="clamp(0.65 + 0.1*(seed1*2.0-1.0) + 0.225*(0.6*kick+0.4*snare), 0.4, 0.9)"/>
-    <float name="glowP" minValue="0.4" maxValue="0.9"></float>
-    <float name="skyP" minValue="0.3" maxValue="0.8"></float>
   </TextureShader>
   <TextureShader file="..\\Scene2D\\PixelMelt.frag" type="normal" mood="psychedelic,aggressive" probability="0.45" complexity="2">
     <rig preset="flat"/>
@@ -1728,6 +1723,14 @@
     <expr name="hueP" formula="chromaHue + seed2*6.28"/>
     <float name="hueP"    minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
+  <TextureShader file="..\Scene2D\DielectricMetasurfaceHologram.frag" type="normal" probability="0.5" mood="dark,psychedelic,calm" complexity="3">
+    <rig preset="flat"/>
+    <float name="metaP"  minValue="0.5" maxValue="2.0"></float>
+    <float name="phaseP" minValue="0.5" maxValue="2.0"></float>
+    <float name="speedP" minValue="0.5" maxValue="2.0"></float>
+    <expr name="hueP" formula="chromaHue + seed2*6.28"/>
+    <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
   <TextureShader file="..\Scene2D\CherenkovRadiationWakefield.frag" type="normal" probability="0.4" mood="bright,aggressive,psychedelic" complexity="4">
     <rig preset="flat"/>
     <float name="machP" minValue="0.6" maxValue="1.8"></float>
@@ -1824,6 +1827,12 @@
     <float name="vortexDensityP" minValue="1.0" maxValue="4.0"></float>
     <float name="waveHeightP" minValue="0.2" maxValue="0.8"></float>
     <float name="glowP" minValue="0.8" maxValue="2.5"></float>
+  </TextureShader>
+  <TextureShader file="..\Scene2D\SeifertSurfaceBraidKnot.frag" type="normal" probability="0.45" mood="calm,bright,dreamy,psychedelic" complexity="3">
+    <rig preset="flat"/>
+    <float name="knotP" minValue="0.6" maxValue="2.0"></float>
+    <float name="ribbonWidthP" minValue="0.03" maxValue="0.12"></float>
+    <float name="sheenP" minValue="0.8" maxValue="2.5"></float>
   </TextureShader>
   <TextureShader file="..\Scene3D\LuttingerLiquidSpinChargeSeparation.frag" type="scene3d" geom="ribbon" probability="0.45" mood="calm,psychedelic" complexity="3">
     <rig preset="procedural"/>

@@ -3,12 +3,15 @@ out vec4 fragColor;
 /**
  * @file DoubleSlitElectronBuildup.frag
  * @brief DOUBLE SLIT ELECTRON BUILD-UP: the experiment that shows one
- * particle at a time still interferes.  A phosphor screen fills the frame;
- * single electrons arrive as round dots, each at a place drawn from the
- * interference probability, and over the scene arc the dots accumulate
- * into the fringe pattern.  The fringe spacing follows the tonal centre
- * (slowly), a fresh arrival flashes on an onset, the electron gun at the
- * bottom hums with the bass.  Nothing moves but light; camera still.
+ * particle at a time still interferes, in two panels.  On the left, seen
+ * from above: the gun, the barrier with its two slits, and the waves --
+ * plane waves before the barrier, two circular waves after it, crossing
+ * into bright and dark rays.  On the right, the phosphor screen face on:
+ * single electrons arrive as round green dots, each at a place drawn from
+ * the interference probability, and over the scene arc the dots pile up
+ * into the fringes the waves predicted.  The fringe spacing follows the
+ * tonal centre (slowly), fresh arrivals flash on an onset, the gun glows
+ * with the bass.  Camera still.
  *
  * Audio Reactivity:
  *   sceneProgress  -> accumulation (the arc)
@@ -52,61 +55,107 @@ vec3 imgPalette(float t)
     return mix(vec3(g), col, 0.55 + 0.45 * audioValence);
 }
 
-float hash21(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+float hash21(vec2 p)
+{
+    vec3 p3 = fract(vec3(p.xyx) * 0.1031);
+    p3 += dot(p3, p3.yzx + 33.33);
+    return fract((p3.x + p3.y) * p3.z);
+}
+
+// Far-field two-slit intensity at transverse position y on a screen at
+// distance L: cos^2 fringes under a single-slit sinc^2 envelope.
+float fringe(float y, float d, float k, float L)
+{
+    float s = y / sqrt(y * y + L * L);
+    float a = 0.5 * k * d * s;
+    float b = 0.5 * k * 0.03 * s;
+    float env = (abs(b) < 1e-3) ? 1.0 : pow(sin(b) / b, 2.0);
+    return cos(a) * cos(a) * env;
+}
 
 void main()
 {
     float aspect = resolution.x / resolution.y;
     vec2 p = (gl_FragCoord.xy / resolution - 0.5) * vec2(aspect, 1.0);
-
     float hue = (hueP > 0.001) ? hueP : 0.0;
-    float sep = 0.6 + 0.6 * clamp(slitP, 0.0, 1.0);
-    float grain = 26.0 + 22.0 * clamp(grainP, 0.0, 1.0);
     float prog = clamp(sceneProgress, 0.0, 1.0);
-    // Fringe spacing from the tonal centre (circular-slewed, so slow).
-    float k = 18.0 + 10.0 * (0.5 + 0.5 * sin(audioChromaHue));
-    float onset = clamp(audioOnset, 0.0, 1.0);
+    float T = sceneTime + sceneAdvance * 0.5;
+    float d = 0.1 + 0.08 * clamp(slitP, 0.0, 1.0);          // slit separation
+    // Wavelength follows the tonal centre, slowly (audioChromaHue is
+    // continuous; only its sine is used).
+    float k = 110.0 * (1.0 + 0.12 * sin(audioChromaHue));
+    vec3 waveC = mix(vec3(0.3, 0.8, 1.0), imgPalette(0.55 + hue * 0.159), 0.2);
+    vec3 phos = mix(vec3(0.45, 1.0, 0.6), imgPalette(0.35 + hue * 0.159), 0.15);
 
-    // The probability on the screen: two-slit interference under the
-    // single-slit envelope, along x; slightly curved fringes for realism.
-    float x = p.x + 0.02 * p.y * p.y;
-    float fringe = pow(cos(x * k * sep), 2.0);
-    float env = pow(max(sin(x * 6.0 + 1e-3) / (x * 6.0 + 1e-3), 0.0), 2.0);
-    env = mix(env, 1.0, 0.25);
-    float prob = fringe * env * smoothstep(0.5, 0.35, abs(p.y));
+    vec3 col = vec3(0.01, 0.012, 0.02);
 
-    // The screen: dark phosphor with the photo faint (the apparatus behind).
-    vec3 col = img(gl_FragCoord.xy / resolution) * imgPalette(hue * 0.159 + 0.6) * 0.06;
-    col += vec3(0.04, 0.05, 0.045);
-    // Electrons: hashed round dots; each cell has its own arrival time in
-    // the arc, drawn so that dense fringes fill first.
-    vec3 phosphor = mix(vec3(0.4, 1.0, 0.6), imgPalette(hue * 0.159 + 0.35), 0.35);
-    for (int layer = 0; layer < 2; ++layer)
-    {
-        vec2 gu = p * grain * (1.0 + 0.37 * float(layer)) + float(layer) * 11.0;
-        vec2 cell = floor(gu); vec2 f = fract(gu) - 0.5;
-        vec2 off = vec2(hash21(cell + 3.1), hash21(cell + 7.7)) - 0.5;
-        vec2 cp = (cell + 0.5 + off * 0.6) / (grain * (1.0 + 0.37 * float(layer)));
-        float px = cp.x + 0.02 * cp.y * cp.y;
-        float pr = pow(cos(px * k * sep), 2.0) * mix(pow(max(sin(px * 6.0 + 1e-3) / (px * 6.0 + 1e-3), 0.0), 2.0), 1.0, 0.25) * smoothstep(0.5, 0.35, abs(cp.y));
-        // Arrival: the cell's threshold vs. the probability times the arc.
-        float h = hash21(cell + 1.9);
-        float arrival = pr * (0.15 + prog * 1.6);
-        float present = smoothstep(h - 0.03, h + 0.03, arrival);
-        float fresh = 1.0 - smoothstep(0.0, 0.08, arrival - h);      // just arrived
-        float d = length(f - off * 0.6);
-        float dot_ = smoothstep(0.34, 0.14, d);
-        col += phosphor * dot_ * present * (1.2 + 0.8 * fresh * onset + 0.5 * fresh);
+    // --- Left: the experiment from above -------------------------------
+    // Source at the left, barrier with two slits, waves spreading to the
+    // screen line on the right of this panel.
+    float xs = -0.8, xb = -0.35, xr = 0.12;
+    if (p.x < xr) {
+        vec2 q = p;
+        if (q.x < xb) {
+            // Plane-ish waves from the gun.
+            float r = length(q - vec2(xs, 0.0));
+            float w = cos(k * r - T * 6.0);
+            col += waveC * (0.5 + 0.5 * w) * exp(-abs(q.y) * 3.0) * 0.35 * smoothstep(0.0, 0.05, r);
+        } else {
+            // Two circular waves from the slits, interfering.
+            float r1 = length(q - vec2(xb, d * 0.5)), r2 = length(q - vec2(xb, -d * 0.5));
+            float w = (cos(k * r1 - T * 6.0) / sqrt(r1 + 0.02) + cos(k * r2 - T * 6.0) / sqrt(r2 + 0.02));
+            float I = w * w * 0.12;
+            col += waveC * I * 0.6;
+            // The fringe rays: time-averaged intensity, faint.
+            float avg = (1.0 / (r1 + 0.02) + 1.0 / (r2 + 0.02) + 2.0 * cos(k * (r1 - r2)) / sqrt((r1 + 0.02) * (r2 + 0.02))) * 0.04;
+            col += waveC * avg * 0.35;
+        }
+        // The barrier with its two slits.
+        float bar = smoothstep(0.006, 0.003, abs(p.x - xb)) * step(0.012, min(abs(p.y - d * 0.5), abs(p.y + d * 0.5)));
+        col = mix(col, vec3(0.5, 0.52, 0.58), bar);
+        // The gun.
+        float gun = length((p - vec2(xs - 0.02, 0.0)) * vec2(1.0, 2.5));
+        col += vec3(1.0, 0.6, 0.3) * exp(-gun * 30.0) * (0.6 + 1.2 * clamp(audioBass, 0.0, 1.0));
+        col = mix(col, vec3(0.2, 0.2, 0.24), smoothstep(0.045, 0.04, gun) * step(p.x, xs - 0.02));
+        // The screen line, glowing where hits land.
+        float sl = smoothstep(0.004, 0.0, abs(p.x - (xr - 0.01)));
+        col += phos * sl * (0.2 + 0.8 * fringe(p.y, d, k, xr - xb) * prog);
     }
-    // The faint expected pattern glows underneath as the arc completes.
-    col += phosphor * prob * 0.25 * (0.3 + prog);
-    // The electron gun and the slits, as a diagram at the bottom.
-    float gun = exp(-length(p - vec2(0.0, -0.47)) * 14.0);
-    col += imgPalette(hue * 0.159 + 0.1) * gun * (0.4 + 1.0 * clamp(audioBass, 0.0, 1.0));
-    float slitPlate = smoothstep(0.004, 0.0, abs(p.y + 0.4)) * (1.0 - smoothstep(0.008, 0.012, abs(abs(p.x) - 0.03 * sep)));
-    col += vec3(0.5) * slitPlate;
-    col *= 0.75 + 0.5 * audioLevel;
 
+    // --- Right: the phosphor screen, face on ---------------------------
+    if (p.x > xr + 0.03) {
+        vec2 s = vec2(p.x - (xr + 0.03 + 0.37), p.y);          // screen centre
+        vec2 half_ = vec2(0.34, 0.44);
+        float inside = step(abs(s.x), half_.x) * step(abs(s.y), half_.y);
+        // Frame.
+        float frame = smoothstep(0.006, 0.0, abs(max(abs(s.x) - half_.x, abs(s.y) - half_.y)));
+        col += vec3(0.3, 0.32, 0.38) * frame;
+        if (inside > 0.0) {
+            // The screen's horizontal axis is the transverse position y of
+            // the left panel (scaled to fit).
+            float yScr = s.x / half_.x * 0.45;
+            float I = fringe(yScr, d, k, xr - xb);
+            col = vec3(0.012, 0.018, 0.02) + phos * 0.015;
+            // Electrons: round dots, each arriving at its own moment; the
+            // chance of a dot anywhere is the interference intensity, so the
+            // fringes emerge only as the dots pile up.
+            float gs = 60.0 + 70.0 * clamp(grainP, 0.0, 1.0);
+            vec2 g = s * gs;
+            vec2 gi = floor(g), gf = fract(g);
+            float h = hash21(gi);
+            float arrive = hash21(gi + 7.3) / max(I, 0.02);      // lower = earlier, likelier where bright
+            float shown = step(arrive, prog * 1.6);
+            vec2 c = 0.25 + 0.5 * vec2(hash21(gi + 1.1), hash21(gi + 2.2));
+            float dot_ = smoothstep(0.28, 0.1, length(gf - c)) * shown * step(0.25, h);
+            float fresh = exp(-(prog * 1.6 - arrive) * 25.0) * shown;
+            col += phos * dot_ * (0.6 + 1.6 * fresh * (0.5 + clamp(audioOnset, 0.0, 1.0)));
+            col += phos * dot_ * 0.0;
+            // The glow of the accumulated pattern.
+            col += phos * I * prog * 0.12;
+        }
+    }
+
+    col *= 0.85 + 0.3 * audioLevel;
     vec3 _catTone = max(col, 0.0);
     _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
     fragColor = vec4(clamp(_catTone, 0.0, 1.0), 1.0);

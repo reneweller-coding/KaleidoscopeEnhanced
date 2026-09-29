@@ -30,7 +30,7 @@ DIRS = ("Scene2D", "Scene3D")
 EXTS = (".frag", ".vert", ".geom", ".tesc", ".tese", ".comp")
 KOMPLETT = os.path.join(ROOT, "Presets", "Komplett.xml")
 
-PITCH = re.compile(r"\b(audioPitch|audioMelody|audioMelodyHead|audioDeltaPitch)\b|@pitch\b")
+PITCH = re.compile(r"\b(audioPitch|audioMelody|audioMelodyHead|audioMelodyPhase|audioDeltaPitch)\b|@pitch\b")
 STAGED = re.compile(r"\bsceneProgress\b|@staged\b")
 
 _cache = {}

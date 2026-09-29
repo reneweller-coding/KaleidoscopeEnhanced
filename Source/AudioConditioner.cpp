@@ -187,6 +187,7 @@ AudioFeatures AudioConditioner::update( const AudioFeatures &audio, float rawDt,
     }
     for( int i = 0; i < 96; ++i ) audioFx.melody[i] = m_melody[i];
     audioFx.melodyHead = float(m_melodyHead) / 96.f;
+    audioFx.melodyPhase = clampParam( m_melodyAccum / 0.08f, 0.f, 1.f );
 
     // Ease rotation direction between +1/-1 so reversals never snap.  Even
     // an instant flip would now only change the *rate*, not the phase, but

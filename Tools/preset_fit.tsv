@@ -71,7 +71,7 @@ BlackHole	6	8	2	6	2	4	5
 BlacksmithSparks	3	1	4	5	2	3	4
 BloomSculpt	6	2	2	3	2	7	5
 Blueprint	5	3	2	5	2	5	4
-BobbinLacePillow	3	0	1	3	1	3	2
+BobbinLacePillow	6	0	0	3	2	7	6
 BookPagesTunnel	4	1	3	4	3	4	3
 BorromeanRingsOrbit	6	3	2	4	3	6	5
 BoseEinsteinGiantVortexTurbulence	5	2	6	1	6	5	6
@@ -108,7 +108,7 @@ CephalopodChromatophores	4	1	3	3	5	4	4
 ChainmailRingRipple	3	1	5	5	4	4	5
 CherenkovCascadeShower	4	5	5	5	4	3	5
 CherenkovRadiationWakefield	3	4	7	3	6	3	6
-CherryBlossomFront	3	0	1	3	1	4	2
+CherryBlossomFront	8	0	0	1	2	7	6
 ChiralLiquidCrystalCholesteric	5	4	2	5	3	4	3
 ChiralNematicBeetleCuticle	3	1	6	1	6	5	6
 ChiralNematicLiquidCrystal	5	1	6	1	8	5	7
@@ -187,7 +187,7 @@ DiamondFireMacro	4	2	6	4	7	6	6
 DiatomSilicaMicrofrustule	5	3	5	3	5	5	6
 DichroicInfinityPrismVault	4	4	5	5	7	4	5
 DichroicPrismLaserField	6	3	3	4	5	5	4
-DielectricMetasurfaceHologram	3	4	3	5	2	2	2
+DielectricMetasurfaceHologram	3	2	5	4	6	5	7
 DielectricResonatorMetagrating	3	2	5	4	3	3	4
 DiffusionDenoiseReveal	4	1	2	3	3	4	3
 DiracConeGrapheneValleytronics	4	2	6	2	6	4	6
@@ -195,7 +195,7 @@ DiscoFloorTiles	2	1	9	3	6	2	7
 DiscoGodrays	2	2	10	3	8	2	9
 Dissolve	5	4	3	6	3	4	4
 DNAOrigamiNanotubeLattice	4	4	5	5	4	4	5
-DoubleSlitElectronBuildup	4	5	1	5	2	3	2
+DoubleSlitElectronBuildup	4	2	3	5	5	6	7
 DragonFlight	4	2	6	7	3	4	6
 DroneDepths	7	3	3	4	4	5	5
 DropCountdownVortex	3	3	6	4	5	3	4
@@ -257,7 +257,7 @@ FractalFlame	6	5	5	5	7	6	7
 FractalKIFS	5	4	6	5	8	6	7
 FractalMorphoDendrite	4	2	4	3	5	5	4
 FractalPortalRecursionHall	3	3	8	4	8	3	7
-FrescoRestorationReveal	3	0	1	3	1	4	2
+FrescoRestorationReveal	5	0	0	3	1	8	6
 FrozenMethaneLakes	6	8	3	5	4	5	6
 FullereneC60BuckyballCrystalLattice	4	4	3	5	2	3	3
 FuturisticCityFlight	2	1	7	7	2	3	6
@@ -448,7 +448,7 @@ MatryoshkaPhotoDoll	4	2	3	4	4	4	3
 MelodyConstellation	6	6	2	6	2	4	5
 MelodyKaleidoscope	5	4	4	6	5	4	4
 MelodyRidgeline	5	1	1	5	1	4	3
-MelodyScript	3	1	2	4	1	2	2
+MelodyScript	7	0	0	4	2	7	5
 MeshAqueduct	6	0	1	3	1	7	6
 MeshBellTower	6	1	2	7	1	6	6
 MeshCandleChapel	6	1	1	7	1	6	5
@@ -550,7 +550,7 @@ PapercutShadowBox	6	1	1	5	2	6	5
 ParticleFlow	6	3	4	4	6	6	6
 ParticleGalaxy	7	9	3	5	3	6	7
 ParticleTunnelFlight	3	6	8	5	6	3	7
-PenguinHuddleRotation	3	0	1	1	1	3	2
+PenguinHuddleRotation	7	1	0	2	1	7	7
 PenroseAperiodicTessellation	5	1	3	3	5	6	5
 PenroseProcessErgosphereExtraction	6	8	4	5	4	5	7
 PermafrostPolygons	5	3	1	4	1	4	3
@@ -656,7 +656,7 @@ RelativisticSynchrotronPulsarWind	5	6	5	4	5	4	6
 RhythmLoomWeave	3	0	3	4	2	3	3
 RibbonTunnel	3	4	8	4	7	3	7
 RibosomeAssemblyLine	3	1	2	4	2	3	3
-RiceTerracesDawn	4	0	1	3	1	4	2
+RiceTerracesDawn	8	1	0	2	2	7	7
 RiemannSphereInfinityFlight	4	4	7	3	8	5	7
 RingSpokesAndWakes	6	8	2	5	2	5	6
 RingStation	6	9	2	5	1	5	7
@@ -681,11 +681,11 @@ SchwarzschildWormholeTunnel	4	6	6	5	6	4	6
 SciFiHUD	2	4	7	6	3	2	5
 SectionMemoryHalls	4	1	4	4	4	4	4
 SectionStrataCanyon	6	1	0	3	1	6	5
-SeifertSurfaceBraidKnot	3	3	2	4	2	3	2
+SeifertSurfaceBraidKnot	5	2	4	4	6	7	7
 SelfSimilarity	6	7	1	5	2	4	4
 SelfSimilarityCorridor	4	3	4	6	4	4	4
 SelfSimilarityMandala	5	3	3	4	5	5	4
-SelfSimilarityTerrain	3	2	2	4	1	3	2
+SelfSimilarityTerrain	6	3	1	6	2	5	6
 SensorStation	4	8	2	6	1	4	4
 ShadowForest	6	1	2	7	1	6	5
 ShadowTheatre	6	2	2	9	1	7	7

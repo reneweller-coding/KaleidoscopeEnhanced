@@ -687,7 +687,7 @@ static QStringList dormantFloatUniforms(const QString &root, const PresetEntry &
         "audioBuildUp","audioDrop","audioWave","audioBassRel","audioMidRel",
         "audioTrebRel","dayPhase","texSmoke3D","audioChroma","audioFlatness",
         "audioZCR","texSSM","ssmHead","ssmFill","texPhysarum",
-        "audioFadeOut","audioMelody","audioMelodyHead",
+        "audioFadeOut","audioMelody","audioMelodyHead","audioMelodyPhase",
         "texSpectro","spectroHead","spectroFill",
         "texDepth0","texDepth1","depthValid","nearFar","tanHalfFov",
         "texShadow","lightM","shadowPass","lightDir","shadowTexel",

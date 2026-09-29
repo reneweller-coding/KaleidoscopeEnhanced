@@ -529,6 +529,7 @@ struct AudioFeatures
      */
     float melody[kMelodyLen] = {};
     float melodyHead = 0.f;   ///< #melody ring head as a 0..1 position (newest just behind it); uploaded as audioMelodyHead.
+    float melodyPhase = 0.f;  ///< 0..1 progress toward the next #melody sample (80 ms), so a scrolling trace can move smoothly between samples; uploaded as audioMelodyPhase.
 
     /**
      * @brief Self-similarity matrix bookkeeping (host-filled).
