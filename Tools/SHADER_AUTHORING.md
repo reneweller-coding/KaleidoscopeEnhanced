@@ -493,6 +493,17 @@ eine frische Palette aus den Fotos, der Bogen folgt der Tonart
 alter Skalar-Phasenanteil × 0.159 (= /2π) als `t`. Benötigt `img()` +
 `audioChromaHue`/`audioAdvance`/`audioValence`-Deklarationen.
 
+**`audioChromaHue` ist seit 29.09.2026 NICHT mehr auf 0..1 begrenzt.** Der
+Wert ist die geslewte Tonart-Farbe in Umdrehungen, aber ungewickelt: stetig,
+ohne Rücksprung. Vorher sprang er an der C-Grenze von 0,999 auf 0 -- und weil
+rund 800 Shader ihn als Winkel im Bogenmaß benutzen (`ang = audioChromaHue + ...`,
+`hueRot(c, audioChromaHue)`, `sin(audioChromaHue)`), drehte sich ihre Palette
+dabei um einen ganzen Radiant (57°) in einem Bild (gemeldet an
+QuiltBlockPatchwork: "ändert unvermittelt und unstetig die Farben"). Regel:
+`audioChromaHue` nur periodisch verwenden -- als Winkel, in `sin`/`cos`, in
+`fract()` --, nie als 0..1-Pegel in `mix()`, `step()`, `clamp()` oder als
+Index. Er fällt in Stille auch nicht mehr auf 0 zurück.
+
 Seit der Palette-Kampagne (2026-08, Docs/palette_plan.md) ist das
 flächendeckend umgesetzt; dabei etablierte Konventionen:
 

@@ -1,6 +1,6 @@
 # Kaleidoscope Enhanced — Szenen-Katalog
 
-_866 Szenen, 29 FX-Overlays, 110 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
+_865 Szenen, 29 FX-Overlays, 110 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
 
 
 ---
@@ -926,15 +926,6 @@ CYBERPUNK WIREFRAME TERRAIN FLYOVER: fast flight over an infinite 80s synthwave 
 CYBORG HIVE SHIP: A terrifying, claustrophobic flight through the interior of a massive, geometrically perfect cyborg hive ship. Cold steel, dense greebles, and scanning lasers that react to the beat. audioAdvance -> camera flight speed through the hive audioKick -> flashes from machinery and lasers audioSwell -> ambient interior glow and active nodes audioChromaHue-> palette offset for the hive's energy Per-activati…
 
 ![CyborgHiveShip ruhig (t=8)](img/CyborgHiveShip_A.jpg) ![CyborgHiveShip ruhig (t=16)](img/CyborgHiveShip_B.jpg) ![CyborgHiveShip audio-heiß (t=21)](img/CyborgHiveShip_C.jpg)
-
-
-### DamascusSteelEtch
-
-`Scene2D/DamascusSteelEtch.frag` · type=normal · mood=dark,aggressive,psychedelic · complexity=3
-
-DAMASCUS STEEL ETCH: a pattern-welded blade in the acid. The billet was folded and twisted, so its layers surface as a ladder of flowing bands; over the scene arc the acid bites and the pattern comes up out of a blank grey blade, dark layers first, then the bright ones. An oil sheen sweeps along the blade on the scene clock, the forge glow behind it rides the bass, and the treble is the edge catching the light. Camer…
-
-![DamascusSteelEtch ruhig (t=8)](img/DamascusSteelEtch_A.jpg) ![DamascusSteelEtch ruhig (t=16)](img/DamascusSteelEtch_B.jpg) ![DamascusSteelEtch audio-heiß (t=21)](img/DamascusSteelEtch_C.jpg)
 
 
 ### DarkAmbientTunnel

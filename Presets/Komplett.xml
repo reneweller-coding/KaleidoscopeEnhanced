@@ -3076,13 +3076,6 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
 
-  <TextureShader file="..\Scene2D\DamascusSteelEtch.frag" type="normal" mood="dark,aggressive,psychedelic" probability="0.45" complexity="3">
-    <rig preset="flat"/>
-    <float name="layersP" minValue="0" maxValue="1"></float>
-    <float name="twistP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
 
   <TextureShader file="..\Scene2D\HourglassSandFall.frag" type="normal" mood="calm,dark,dreamy" probability="0.45" complexity="3">
     <rig preset="flat"/>

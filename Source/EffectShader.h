@@ -306,8 +306,9 @@ public:
 	// the GPU simulation only while an effect that displays it is on screen.
 	/// @return True if this effect's compiled fragment shader declares the "texSim" (reaction-diffusion) sampler. Cached after first query; false if not yet compiled.
 	bool usesSim();
-	/** @brief True if this scene is STAGED: it reads `sceneProgress` or its rig formulas use `progress`. Cached after the first compile. */
+	/** @brief True if this scene is STAGED: it reads `sceneProgress` or its rig formulas use `progress`. Before the first compile the answer comes from the source text (sourceUsesProgress()), after it from the program; both are cached. */
 	bool usesProgress();
+	bool sourceUsesProgress() const;
 	/** @brief Re-time the progress ramp so progress reaches 0.95 in @p secs from now, continuously (no jump in the current value).
 	 *  The origin used is #m_progressT0, NOT #m_activationTime, so `sceneTime` is untouched -- the 19 scenes that fly on it would cut otherwise. */
 	void setClimaxIn( float secs );
@@ -586,6 +587,7 @@ protected:
 	int		m_usesSim = -1;      ///< Cached usesSim() result: -1 = not yet queried, 0/1 = the compiled program does (not) declare `texSim`.
 	int		m_usesProgress = -1; ///< Cached usesProgress() result: -1 = not yet queried; 1 = reads `sceneProgress` or a rig formula uses `progress`.
 	bool	m_exprUsesProgress = false;   ///< Set by addExpression() while the rig formulas are parsed when one references `progress`; feeds usesProgress().
+	int		m_srcUsesProgress = -1;   ///< Cached sourceUsesProgress() result for the not-yet-compiled case: -1 = not yet read, 0/1 = the source does (not) use `sceneProgress`.
 	int		m_usesFluid = -1;    ///< Cached usesFluid() result (-1 = not yet queried), same scheme as m_usesSim: the fluid field, `texFluid`.
 	int		m_usesSmoke3D = -1;  ///< Cached usesSmoke3D() result (-1 = not yet queried): the volumetric smoke/fire field, `texSmoke3D`.
 	int		m_usesSSM = -1;      ///< Cached usesSSM() result (-1 = not yet queried): the self-similarity matrix, `texSSM`.

@@ -4187,3 +4187,73 @@ content:
 Deliberately NOT changed by rule: `psychedelic` and `dreamy` against colour
 saturation (a monochrome fractal zoom is psychedelic), and the text search
 for "rough" words in calm scenes (it matched warped, toward, hyperbolic).
+
+## 29.09.2026: the same scenes three times in twelve minutes, and quilt colours that flip
+
+Reported after a session: DamascusSteelEtch, SundialShadowSweep and
+KilnGlazeCrystals each came more than three times within twelve minutes;
+QuiltBlockPatchwork changed its colours abruptly; DamascusSteelEtch did not
+visibly react at all.
+
+### Repeats: a filter that only saw what had already played
+
+All three are STAGED scenes (they read `sceneProgress`, an arc over the solo).
+While the build-up rises the scheduler prefers staged scenes in the first half
+of its search, so their climax can be bent onto the drop (`setClimaxIn`). But
+`EffectShader::usesProgress()` answered "no" for every shader that was not yet
+compiled -- and scenes compile lazily. The preferred pool was therefore the
+handful of staged scenes that had ALREADY been on screen.
+
+Second cause, found by measuring: the rule fired at `buildUp > 0.25`, which on
+dance music is 77 % of all frames. With the compile bug fixed, 12 % of the
+catalogue (126 staged entries in Allround) took 83 % of all changes.
+
+Third: mesh families register one entry per model (ShipFlyby 29, Hologram 26,
+Aperture 14 ...), Allround's 1080 entries are 865 shaders. "ShipFlyby with
+another ship" is still ShipFlyby again.
+
+Fixes:
+- `usesProgress()` reads the source (fragment + Scene3D siblings, comments
+  stripped, `uniform` line ignored) while the program is not compiled.
+- The preference now uses the arc's own condition: `buildUp > 0.45` and a
+  predicted phrase end 4..45 s away -- only then can a staged scene actually
+  land its climax.
+- A no-repeat window: the last min(40, entries/3) scenes, compared by SHADER
+  basename, are refused in the first two thirds of the search. Section
+  replays and manual picks bypass it.
+
+Probe (Allround, solos pinned to 8-10 s so twelve minutes hold ~58 changes,
+same looped music, old dist build vs new):
+
+| | old | new |
+|---|---|---|
+| distinct scenes | 44 of 57 | 56 of 58 |
+| repeats | 13 (one scene 4x) | 2 (43 and 53 changes apart) |
+| staged share | 51 % | 14 % |
+
+### Colour flips: a hue that wrapped, read as radians
+
+The conditioner slewed the key hue around the circle but then wrapped it back
+into [0, 1) and multiplied it by the presence gate. About 800 shaders use
+`audioChromaHue` as an angle in RADIANS (`imgPalette`'s `ang = audioChromaHue
++ ...`, `hueRot(c, audioChromaHue)`, `sin(audioChromaHue)`), so every time the
+key hue crossed C the palette turned by one radian (57 deg) in a single frame
+-- and a key centred near C crosses back and forth. The uniform is now the
+UNWRAPPED slewed value (continuous, no gate): radian users see a smooth angle,
+turn users (`fract`, `cos(2*pi*h)`) the same colour as before. A census of all
+944 files that read it found no linear use (no mix/step/clamp/index on it).
+
+Proof: a synthetic pad alternating between a B and a C# centre every 6 s
+(hue glides across 0), QuiltBlockPatchwork alone. The new build logged 11
+crossings (feature log column `hue`, new); the old build's recording shows the
+whole quilt switching palette between two frames at each of them (e.g. t=7.7 s:
+yellow/violet -> red/cyan); 75 isolated frame-difference spikes old, 23 new --
+the rest are the 120-BPM kick light and the probe's own artefact (a one-scene
+preset re-activates itself on a section change, so its arc restarts).
+
+### DamascusSteelEtch retired
+
+A stylised 2D object (a blade drawn across a black frame) whose reactions
+were a forge glow at the bottom edge, a hairline highlight and dust -- the
+class the mesh rebuild of 05.09. retired. Removed from Komplett.xml and the
+generated presets; the git history keeps the shader.

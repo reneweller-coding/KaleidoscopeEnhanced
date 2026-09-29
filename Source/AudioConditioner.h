@@ -151,7 +151,7 @@ private:
 	float m_prevChaseOnset = 0.f;   ///< Previous onset value (rising-edge detect for the chase).
 
 	// ---- chroma-hue slew ----
-	float m_chromaHueSlew = 0.f;   ///< Slewed chroma hue (0..1, wraps), eased toward audio.chromaHue at up to ~20 deg/s so key changes glide.
+	float m_chromaHueSlew = 0.f;   ///< Slewed chroma hue in turns, UNWRAPPED (continuous, not kept in 0..1), eased toward audio.chromaHue the shortest way round at up to ~20 deg/s so key changes glide.
 
 	// ---- virtual camera ----
 	float m_camPunch = 0.f;   ///< Decaying punch-in envelope (downbeat/drop "punch-in") for the virtual camera.

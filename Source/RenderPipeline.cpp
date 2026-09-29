@@ -2374,18 +2374,19 @@ void RenderPipeline::paint(const float *rotMatrix, float tx, float ty, float tz,
 			const char *e = getenv( "KALEIDO_FEATURE_LOG" );
 			FILE *f = e ? fopen( e, "w" ) : nullptr;
 			if( f ) fputs( "t,pitch,dpitch,buildUp,dropPulse,dropCount,barPhase,beatPhase,bpm,"
-			               "sectionCount,sectionId,presence,level,swell,flux,hcdf,phrasePos,phraseLeft,melody\n", f );
+			               "sectionCount,sectionId,presence,level,swell,flux,hcdf,phrasePos,phraseLeft,melody,hue\n", f );
 			return f;
 		}();
 		if( flog )
 		{
 			static unsigned n = 0;
-			fprintf( flog, "%.3f,%.4f,%.4f,%.3f,%.3f,%d,%.3f,%.3f,%.1f,%d,%d,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.2f,%.4f\n",
+			fprintf( flog, "%.3f,%.4f,%.4f,%.3f,%.3f,%d,%.3f,%.3f,%.1f,%d,%d,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.2f,%.4f,%.4f\n",
 			         m_globaltime, audio.dominantPitch, audio.deltaPitch, audio.buildUp,
 			         audio.dropPulse, audio.dropCount, audioFx.barPhase, audioFx.beatPhase,
 			         40.f + 160.f * audio.estimatedBPM, audio.sectionCount, audio.sectionId, audio.musicPresence,
 			         audio.overallLevel, audioFx.swell, audio.spectralFlux, audio.harmonicChange,
-			         audioFx.phrasePos, audioFx.phraseSecsLeft, audio.melodyPitch );
+			         audioFx.phrasePos, audioFx.phraseSecsLeft, audio.melodyPitch,
+			         audioFx.chromaHue );
 			if( ( ++n & 63u ) == 0 ) fflush( flog );
 		}
 	}

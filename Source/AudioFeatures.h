@@ -341,7 +341,10 @@ struct AudioFeatures
      * @brief Harmonic "colour" of the music — the circular mean of the 12-bin chroma vector mapped onto the colour wheel (0..1).
      *
      * A song's key/harmony therefore drives a consistent global hue shift →
-     * "see the harmony as colour".
+     * "see the harmony as colour".  The analyzer's raw value is 0..1; the
+     * conditioned value the shaders get (uniform audioChromaHue) is slewed
+     * and UNWRAPPED -- continuous, not bounded to 0..1 -- so consumers must
+     * treat it as periodic (angle, fract(), sin/cos), never as a 0..1 level.
      */
     float chromaHue = 0.f;
 

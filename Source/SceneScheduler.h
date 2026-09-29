@@ -304,6 +304,19 @@ private:
 	std::map<int, unsigned int>       m_sectionFx;   ///< Section id -> combine index last played during that section.
 	std::map<int, std::vector<float>> m_sectionParams;    ///< Section id -> snapshotted shader parameters to restore on replay.
 	std::map<int, int>                m_sectionStamp;     ///< Section id -> Tick::sectionCount at store time (staleness guard: no replay across songs).
+
+	// Recently shown scenes.  The random roll only ever excluded the scene
+	// on screen, so any filter that narrowed the pool (the build-up rule
+	// preferring staged scenes, the mood test) could bring one scene back
+	// every few minutes.  The last kRecentMax scenes (at most a third of the
+	// preset) are refused during the first two thirds of the search; a
+	// section replay and a manual pick bypass it -- those repeat on purpose.
+	static const unsigned int kRecentMax = 40;   ///< Upper bound of the no-repeat window, in scenes (~15-40 min at the usual solo times).
+	std::vector<unsigned int>         m_recentTex;        ///< Texture indices shown most recently, oldest first (see kRecentMax).
+	/** @brief True if texture @p idx is inside the current no-repeat window. */
+	bool isRecentTexture( unsigned int idx ) const;
+	/** @brief Append texture @p idx to the no-repeat window and trim it to its size. */
+	void noteTextureShown( unsigned int idx );
 	static const int kSectionMemorySpan = 24;   ///< Max sectionCount distance for a replay (sections are >= ~12 s apart, so ~5+ min -- within one song, not across the set).
 	int   m_pendingSectionStore   = -1;   ///< Section id whose final look should be stored at the next fade-end (-1 = none pending).
 	int   m_pendingSectionRestore = -1;   ///< Section id whose stored look should be restored at the next fade-start (-1 = none pending).

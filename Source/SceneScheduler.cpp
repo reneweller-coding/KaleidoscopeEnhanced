@@ -98,6 +98,9 @@ void SceneScheduler::reset()
 		if( (*m_textures)[m_actTexture]->useShader() )
 			break;
 	}
+	// A new preset has new indices: the old window means nothing here.
+	m_recentTex.clear();
+	noteTextureShown( m_actTexture );
 
 	for( unsigned int i = 0; i < kMaxSearch; i++ )
 	{
@@ -259,6 +262,42 @@ int SceneScheduler::findTransition( const char *basename ) const
 			return (int) i;
 	}
 	return -1;
+}
+
+/**
+ * @brief Tells whether texture @p idx was shown within the no-repeat window.
+ *
+ * The window holds the last min(kRecentMax, a third of the preset) scenes, so
+ * a small preset still has two thirds of its scenes to choose from.
+ * @param idx Texture index into the attached texture list.
+ * @return True if @p idx is in the window.
+ */
+bool SceneScheduler::isRecentTexture( unsigned int idx ) const
+{
+	// By SHADER, not by entry: a mesh family registers one entry per model
+	// (ShipFlyby 29, Hologram 26, ...), and "ShipFlyby again, other ship"
+	// is still ShipFlyby again -- the probe run showed it nine times in
+	// twelve minutes while every single entry was inside the window.
+	const std::vector<EffectShader *> &tex = *m_textures;
+	if( idx >= tex.size() ) return false;
+	const char *name = fragBase( tex[idx]->fragmentName() );
+	for( unsigned int r : m_recentTex )
+		if( r < tex.size() && ( r == idx || strcmp( fragBase( tex[r]->fragmentName() ), name ) == 0 ) )
+			return true;
+	return false;
+}
+
+/**
+ * @brief Records that texture @p idx is on screen and trims the no-repeat window.
+ * @param idx Texture index that has just become the active scene.
+ */
+void SceneScheduler::noteTextureShown( unsigned int idx )
+{
+	m_recentTex.push_back( idx );
+	size_t cap = m_textures ? m_textures->size() / 3 : 0;
+	if( cap > kRecentMax ) cap = kRecentMax;
+	while( m_recentTex.size() > cap )
+		m_recentTex.erase( m_recentTex.begin() );
 }
 
 // Mood-basierter Auswahl-Bias - zwei Komponenten:
@@ -710,6 +749,7 @@ void SceneScheduler::tick( const Tick &t )
 
 			tex[m_actTexture]->resetParameters();
 			m_actTexture = m_nextTexture;
+			noteTextureShown( m_actTexture );
 
 			// Song-Struktur-Gedaechtnis: das RESTORE passiert inzwischen am
 			// FADE-START (s.o., der Effekt blendet mit dem gespeicherten Look
@@ -776,11 +816,21 @@ void SceneScheduler::tick( const Tick &t )
 			for( unsigned int i = 0; i < kMaxSearch; i++ )
 			{
 				m_nextTexture = rand() % tex.size();
+				// Nothing shown in the last kRecentMax scenes, unless the
+				// search is running dry (a small preset, a narrow filter).
+				if( i < kMaxSearch * 2 / 3 && isRecentTexture( m_nextTexture ) )
+					continue;
 				// REGIE: waehrend die Spannung steigt, lieber eine INSZENIERTE
 				// Szene -- die kann ihren Hoehepunkt auf den Drop legen (siehe
 				// setClimaxIn oben).  Nur in der ersten Haelfte der Suche, damit
 				// ein Katalog ohne passende Szene nicht leer ausgeht.
-				if( t.buildUp > 0.25f && i < kMaxSearch / 2
+				// Schwelle und Phrasenfenster wie beim Bogen selbst (0.45,
+				// 4..45 s): nur dann kann eine inszenierte Szene ihren
+				// Hoehepunkt wirklich legen.  Mit 0.25 griff die Regel auf
+				// Tanzmusik in 77 % der Zeit, und 12 % des Katalogs bekamen
+				// 83 % der Wechsel (Messlauf 29.09.2026, Allround).
+				if( t.buildUp > 0.45f && t.phraseSecsLeft >= 4.f && t.phraseSecsLeft <= 45.f
+				    && i < kMaxSearch / 2
 				    && !tex[m_nextTexture]->usesProgress() )
 					continue;
 				if( m_nextTexture != m_actTexture &&

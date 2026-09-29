@@ -9,6 +9,8 @@
 #include "shader_setup.h"
 #include "EffectShader.h"
 #include "ComputeFX.h"
+#include "textfile.h"
+#include <string>
 
 #include <cstdlib>
 #include <chrono>
@@ -810,12 +812,81 @@ bool EffectShader::usesSim()
 
 bool EffectShader::usesProgress()
 {
+	// Asked BEFORE the first compile too: the scheduler's build-up rule
+	// ("while the tension rises, prefer a staged scene") filters candidates
+	// that have mostly never been on screen.  Answering "no" for every
+	// uncompiled shader narrowed that pool to the staged scenes that had
+	// already played -- so the same handful (DamascusSteelEtch,
+	// SundialShadowSweep, KilnGlazeCrystals, ...) came back three and four
+	// times in twelve minutes.  The source text says it without GL.
 	if( !m_glReady )
-		return false;
+	{
+		if( m_srcUsesProgress < 0 )
+			m_srcUsesProgress = ( m_exprUsesProgress || sourceUsesProgress() ) ? 1 : 0;
+		return m_srcUsesProgress == 1;
+	}
 	if( m_usesProgress < 0 )
 		m_usesProgress = ( m_exprUsesProgress || ( m_sh_prog_id != 0 &&
 		                   glGetUniformLocation( m_sh_prog_id, "sceneProgress" ) >= 0 ) ) ? 1 : 0;
 	return m_usesProgress == 1;
+}
+
+/**
+ * @brief Tells from the shader SOURCE (no GL) whether this scene reads `sceneProgress`.
+ *
+ * Reads the fragment file and its Scene3D siblings (.vert/.geom/.tesc/.tese,
+ * same stem; missing files are skipped), strips comments, and looks for the
+ * name outside its `uniform` declaration -- the text-side twin of the
+ * active-uniform test usesProgress() makes once the program is compiled.
+ * @return True if any stage uses `sceneProgress` in code.
+ */
+bool EffectShader::sourceUsesProgress() const
+{
+	if( !m_fragmentShaderFilename )
+		return false;
+	std::string stem = m_fragmentShaderFilename;
+	size_t dot = stem.rfind( ".frag" );
+	if( dot == std::string::npos )
+		return false;
+	stem.erase( dot );
+	static const char *exts[] = { ".frag", ".vert", ".geom", ".tesc", ".tese" };
+	for( const char *ext : exts )
+	{
+		char *raw = textFileRead( ( stem + ext ).c_str() );
+		if( !raw )
+			continue;
+		std::string src( raw );
+		free( raw );
+		// Strip /* */ and // comments: the headers name every uniform they
+		// read, which would make every documented scene look staged.
+		std::string code;
+		code.reserve( src.size() );
+		for( size_t i = 0; i < src.size(); )
+		{
+			if( src.compare( i, 2, "/*" ) == 0 )
+			{
+				size_t e = src.find( "*/", i + 2 );
+				i = ( e == std::string::npos ) ? src.size() : e + 2;
+			}
+			else if( src.compare( i, 2, "//" ) == 0 )
+			{
+				size_t e = src.find( '\n', i );
+				i = ( e == std::string::npos ) ? src.size() : e;
+			}
+			else
+				code += src[i++];
+		}
+		for( size_t p = code.find( "sceneProgress" ); p != std::string::npos;
+		     p = code.find( "sceneProgress", p + 1 ) )
+		{
+			size_t ls = code.rfind( '\n', p );
+			ls = ( ls == std::string::npos ) ? 0 : ls + 1;
+			if( code.compare( ls, 7, "uniform" ) != 0
+			    && code.substr( ls, p - ls ).find( "uniform" ) == std::string::npos )
+				return true;
+		}
+	}
+	return false;
 }
 
 void EffectShader::setClimaxIn( float secs )

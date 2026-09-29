@@ -496,16 +496,27 @@ AudioFeatures AudioConditioner::update( const AudioFeatures &audio, float rawDt,
     // Key colour: slew the chroma hue AROUND the colour circle (shortest
     // way, max ~20 deg/s) so key changes glide instead of jumping the
     // global palette from one frame to the next.
+    //
+    // The result is deliberately NOT wrapped back into [0, 1) and NOT
+    // scaled by the gate.  About 800 shaders use audioChromaHue as an angle
+    // in RADIANS (imgPalette's `ang = audioChromaHue + ...`, hueRot(c, h),
+    // sin(h)), not in turns: a value that wraps from 0.999 to 0.0 turned
+    // their palette by a whole radian (57 deg) in one frame, every time the
+    // key hue crossed C -- and a key near C crosses back and forth.
+    // Multiplying by the gate pulled the hue toward 0 whenever the music
+    // thinned out, another colour sweep with no musical cause.  Unwrapped,
+    // every consumer stays continuous: the radian users see a smooth angle,
+    // the turn users (fract(h), cos(2*pi*h)) see the same colour as before.
+    // The net winding of a key walk is small, so the value stays O(1..10).
     {
         float d = audio.chromaHue - m_chromaHueSlew;
-        d -= floorf(d + 0.5f);                        // wrap to [-0.5, 0.5)
+        d -= floorf(d + 0.5f);                        // shortest way, [-0.5, 0.5)
         float maxStep = 0.055f * dt;
         if (d >  maxStep) d =  maxStep;
         if (d < -maxStep) d = -maxStep;
         m_chromaHueSlew += d;
-        m_chromaHueSlew -= floorf(m_chromaHueSlew);   // keep in [0, 1)
     }
-    audioFx.chromaHue       = m_chromaHueSlew * gate;
+    audioFx.chromaHue       = m_chromaHueSlew;
     audioFx.harmonicChange  = audio.harmonicChange * gate;
     audioFx.roughness       = audio.roughness      * gate;
     audioFx.sharpness       = audio.sharpness      * gate;
