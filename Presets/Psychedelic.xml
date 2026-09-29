@@ -701,9 +701,6 @@
   <TextureShader file="..\\Scene3D\\PhotoCarousel.frag" type="scene3d" geom="quads" mood="calm,bright" probability="0.35" complexity="1">
     <rig preset="procedural"/>
   </TextureShader>
-  <TextureShader file="..\\Scene3D\\PhotoShatter.frag" type="scene3d" geom="quads" probability="0.3" mood="aggressive,dark" complexity="1">
-    <rig preset="procedural"/>
-  </TextureShader>
   <TextureShader file="..\\Scene3D\\MosaicWave.frag" type="scene3d" geom="quads" mood="bright,calm" probability="0.35" complexity="1">
     <rig preset="procedural"/>
   </TextureShader>
@@ -3019,6 +3016,12 @@
   <TextureShader file="..\\Scene2D\\DiamondFireMacro.frag" type="normal" mood="bright,psychedelic" probability="0.45" complexity="3">
     <rig preset="flat"/>
     <float name="cutP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\LightPillarsCity.frag" type="normal" mood="dark,calm,dreamy" probability="0.45" complexity="3">
+    <rig preset="flat"/>
+    <float name="pillarsP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>

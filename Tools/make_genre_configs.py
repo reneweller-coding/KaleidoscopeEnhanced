@@ -206,6 +206,9 @@ RECENT_SCENES = {
     "BasilicaCisternColumns", "TempleLanternHall", "MirrorBallRoom",
     "MusicalFountainShow", "DiscoFloorTiles", "HoliColourCloud",
     "JupiterJunoSwirls", "DiamondFireMacro", "WhirlingDervishes", "KoiPondAbove",
+    # Block 3 (29.09. abends).
+    "KarstPeaksMist", "SeaStacksFlight", "IceCaveBlueArch", "DesertMilkyWayArch",
+    "LightPillarsCity",
 }
 
 def rule_recent(m, h):

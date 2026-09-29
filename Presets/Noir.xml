@@ -49,11 +49,6 @@
     <float name="divisor" minValue="0.1" maxValue="0.001"></float>
     <float name="fiOffset" minValue="0.001" maxValue="10.0"></float>
   </TextureShader>
-  <TextureShader file="..\\Scene2D\\StereoSpectrum.frag" type="normal" mood="aggressive,dark" probability="0.25" complexity="1">
-    <rig preset="flat"/>
-    <float name="ledP" minValue="0.0" maxValue="22.0"></float>
-    <float name="spanP" minValue="0.5" maxValue="1.0"></float>
-  </TextureShader>
   <TextureShader file="..\Scene2D\FuturisticCityFlight.frag" type="normal" mood="bright,aggressive" probability="0.45" complexity="4">
     <rig preset="flat"/>
     <float name="buildP" minValue="0.98" maxValue="1.5"></float>
@@ -3698,9 +3693,16 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\\Scene2D\\MusicalFountainShow.frag" type="normal" mood="bright,aggressive" probability="0.45" complexity="3">
+  <TextureShader file="..\\Scene2D\\DesertMilkyWayArch.frag" type="normal" mood="dark,calm,dreamy,space" probability="0.45" complexity="3">
     <rig preset="flat"/>
-    <float name="jetsP" minValue="0" maxValue="1"></float>
+    <float name="starsP" minValue="0" maxValue="1"></float>
+    <float name="fireP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\LightPillarsCity.frag" type="normal" mood="dark,calm,dreamy" probability="0.45" complexity="3">
+    <rig preset="flat"/>
+    <float name="pillarsP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>

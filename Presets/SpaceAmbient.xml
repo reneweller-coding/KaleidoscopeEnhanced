@@ -105,20 +105,6 @@
     <int name="kSides" minValue="0" maxValue="9"></int>
     <float name="rosetteP" minValue="0.15" maxValue="0.35"></float>
   </TextureShader>
-  <TextureShader file="..\\Scene2D\\Tunnel.frag" type="KaleidoscopeBase" mood="psychedelic,bright" probability="0.5" complexity="1">
-    <rig preset="flat"/>
-    <bool name="rotate" probability="0.5"></bool>
-    <float name="speedTunnel" minValue="0.005" maxValue="0.07"></float>
-    <int name="sides" minValue="2" maxValue="14"></int>
-    <float name="speed" minValue="0.01" maxValue="0.09"></float>
-    <float name="power" minValue="1.0" maxValue="4.0"></float>
-  </TextureShader>
-  <TextureShader file="..\\Scene2D\\TunnelPlain.frag" type="normal" mood="calm,bright" probability="0.15" complexity="10">
-    <rig preset="flat"/>
-    <int name="sides" minValue="2" maxValue="14"></int>
-    <float name="speed" minValue="0.01" maxValue="0.05"></float>
-    <float name="power" minValue="1.0" maxValue="4.0"></float>
-  </TextureShader>
   <TextureShader file="..\\Scene2D\\Voyager.frag" type="normal" probability="0.5" mood="bright,space" complexity="2">
     <rig preset="flat"/>
     <int name="kSides" minValue="0" maxValue="9"></int>
@@ -3566,6 +3552,19 @@
   <TextureShader file="..\\Scene2D\\JupiterJunoSwirls.frag" type="normal" mood="bright,psychedelic,space" probability="0.45" complexity="3">
     <rig preset="flat"/>
     <float name="stormP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\DesertMilkyWayArch.frag" type="normal" mood="dark,calm,dreamy,space" probability="0.45" complexity="3">
+    <rig preset="flat"/>
+    <float name="starsP" minValue="0" maxValue="1"></float>
+    <float name="fireP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\LightPillarsCity.frag" type="normal" mood="dark,calm,dreamy" probability="0.45" complexity="3">
+    <rig preset="flat"/>
+    <float name="pillarsP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
