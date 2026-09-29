@@ -210,6 +210,7 @@ RECENT_SCENES = {
     "KarstPeaksMist", "SeaStacksFlight", "IceCaveBlueArch", "DesertMilkyWayArch",
     "LightPillarsCity",
     "BlueHourSkylineMirror", "PaintPourCells", "MonetLilyPond", "NeonPoolNight", "CometOverLake",
+    "NighthawksDiner", "FrostFernsSunrise", "EarthriseLunar", "TaikoSilhouettes", "RapeseedStormLight",
 }
 
 def rule_recent(m, h):

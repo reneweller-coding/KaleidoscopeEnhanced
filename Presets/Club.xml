@@ -511,13 +511,6 @@
     <expr name="hueP" formula="chromaHue + seed2*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\Scene2D\GalacticCoreBlackHole.frag" type="normal" mood="dark,aggressive,space" probability="0.45" complexity="5">
-    <rig preset="flat"/>
-    <float name="starP" minValue="0.5" maxValue="2.0"></float>
-    <float name="lensP" minValue="0.5" maxValue="1.5"></float>
-    <expr name="hueP" formula="chromaHue + seed3*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader file="..\Scene2D\MatrioshkaBrain.frag" type="normal" mood="dark,aggressive,space" probability="0.45" complexity="5">
     <rig preset="flat"/>
     <float name="techP" minValue="0.5" maxValue="1.5"></float>
@@ -3224,6 +3217,12 @@
   <TextureShader file="..\\Scene2D\\NeonPoolNight.frag" type="normal" mood="dark,dreamy" probability="0.45" complexity="3">
     <rig preset="flat"/>
     <float name="lampsP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TaikoSilhouettes.frag" type="normal" mood="aggressive,dark" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="drummersP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>

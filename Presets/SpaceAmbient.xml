@@ -2842,15 +2842,6 @@
     <expr name="hueP" formula="chromaHue + seed3*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\Scene2D\HyperbolicTilingPolyhedralFlight.frag" type="normal" mood="psychedelic,aggressive,dark" probability="0.4" complexity="2">
-    <rig preset="flat"/>
-    <float name="speedP" minValue="0.6" maxValue="1.6"></float>
-    <float name="curveP" minValue="0.8" maxValue="1.4"></float>
-    <float name="strutP" minValue="0.7" maxValue="1.5"></float>
-    <float name="glowP" minValue="0.7" maxValue="1.4"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader file="..\Scene2D\HyperspaceGridToroidTube.frag" type="normal" mood="psychedelic,bright,aggressive" probability="0.4" complexity="2">
     <rig preset="flat"/>
     <float name="speedP" minValue="0.6" maxValue="1.6"></float>
@@ -3567,6 +3558,12 @@
   <TextureShader file="..\\Scene2D\\CometOverLake.frag" type="normal" mood="calm,dark,dreamy,space" probability="0.45" complexity="2">
     <rig preset="flat"/>
     <float name="tailP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\EarthriseLunar.frag" type="normal" mood="calm,dark,space" probability="0.45" complexity="3">
+    <rig preset="flat"/>
+    <float name="phaseP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>

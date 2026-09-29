@@ -10041,4 +10041,39 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
 
+  <TextureShader file="..\\Scene2D\\NighthawksDiner.frag" type="normal" mood="dark,calm,dreamy" probability="0.45" complexity="3">
+    <rig preset="flat"/>
+    <float name="figuresP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\FrostFernsSunrise.frag" type="normal" mood="calm,bright,dreamy" probability="0.45" complexity="3">
+    <rig preset="flat"/>
+    <float name="frostP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\EarthriseLunar.frag" type="normal" mood="calm,dark,space" probability="0.45" complexity="3">
+    <rig preset="flat"/>
+    <float name="phaseP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\TaikoSilhouettes.frag" type="normal" mood="aggressive,dark" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="drummersP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\RapeseedStormLight.frag" type="normal" mood="dark,dreamy" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="hillsP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
 </configuration>
