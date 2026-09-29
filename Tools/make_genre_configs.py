@@ -216,6 +216,17 @@ def rule_recent(m, h):
     fm = re.search(r'file="[^"]*[\\/](\w+)\.frag"', h)
     return bool(fm) and fm.group(1) in RECENT_SCENES
 
+# The scenes no genre preset took (29.09.2026): with the fit-based choice they
+# are, almost to a scene, the ones rated dull -- near-black frames and slow
+# staged objects. They stay in Allround; this hidden bench collects them so
+# they can be judged one by one (keep, fix, or retire). Filled while the
+# genre presets are generated, so it must come after them in GENRES.
+GENRE_CHOSEN = set()
+
+def rule_low_interest(m, h):
+    fm = re.search(r'file="[^"]*[\\/](\w+)\.frag"', h)
+    return bool(fm) and fm.group(1) not in GENRE_CHOSEN
+
 def rule_modified(m, h):
     fm = re.search(r'file="[^"]*[\\/](\w+)\.frag"', h)
     return bool(fm) and fm.group(1) in MODIFIED_SCENES
@@ -236,6 +247,7 @@ GENRES = [
     ("TestAlle",    rule_all,         True),
     ("TestModified", rule_modified,   True),
     ("TestNeu",      rule_recent,     True),
+    ("TestNiedrigerSchauwert", rule_low_interest, True),
 ]
 
 src = open(SRC, encoding="utf-8").read()
@@ -346,6 +358,7 @@ for entry in GENRES:
     fxRule = entry[3] if len(entry) > 3 else rule
     if name in FIT_COLUMN and fit:
         sel_s = select_by_fit(name, rule)
+        GENRE_CHOSEN.update(b[1] for b in sel_s)
     else:
         sel_s = [b for b in scenes if rule(b[2], b[4])]
     sel_f = [b for b in fx    if fxRule(b[2], b[4]) or b[1] in ALWAYS]
