@@ -233,6 +233,8 @@ IMPROVED_SCENES = {
     "FrescoRestorationReveal", "DielectricMetasurfaceHologram", "MelodyScript",
     "PenguinHuddleRotation", "RiceTerracesDawn", "SeifertSurfaceBraidKnot",
     "SelfSimilarityTerrain",
+    # Runde 4: die letzten beiden Schauwert-2-Szenen, beide jetzt 2D.
+    "GlassStack", "LanternRise",
 }
 
 def rule_improved(m, h):

@@ -41,15 +41,6 @@
     <bool name="negative" probability="0.15"></bool>
     <bool name="vigneting" probability="0.15"></bool>
   </TextureShader>
-  <TextureShader file="..\\Scene2D\\ChromeDreams.frag" type="normal" probability="0.4" mood="bright" complexity="2">
-    <rig preset="flat"/>
-    <float name="ringP" minValue="0.12" maxValue="0.30"></float>
-    <float name="stretchP" minValue="0.10" maxValue="0.35"></float>
-    <float name="stripeP" minValue="4.0" maxValue="9.0"></float>
-    <float name="travP" minValue="0.6" maxValue="1.4"></float>
-    <int name="kSides" minValue="0" maxValue="9"></int>
-    <float name="rosetteP" minValue="0.15" maxValue="0.35"></float>
-  </TextureShader>
   <TextureShader file="..\\Scene2D\\CurlAurora.frag" type="normal" probability="0.6" mood="calm,space" complexity="1">
     <rig preset="flat"/>
   </TextureShader>
@@ -1312,6 +1303,9 @@
   <TextureShader file="..\\Scene3D\\Jellyfish.frag" type="scene3d" geom="points" probability="0.35" mood="calm" complexity="2">
     <rig preset="procedural"/>
   </TextureShader>
+  <TextureShader file="..\\Scene2D\\LanternRise.frag" type="normal" probability="0.3" mood="calm,bright,dreamy" complexity="2">
+    <rig preset="flat"/>
+  </TextureShader>
   <TextureShader file="..\\Scene3D\\KelpForest.frag" type="scene3d" geom="ribbon" probability="0.3" mood="calm" complexity="1">
     <rig preset="procedural"/>
   </TextureShader>
@@ -1536,6 +1530,15 @@
     <float name="softP"    minValue="0.3"  maxValue="1.0"></float>
     <expr name="hueP" formula="clamp(0.525 + 0.1875*(seed3*2.0-1.0) + 0.1875*sin(chromaHue), 0.15, 0.9)"/>
     <float name="hueP"     minValue="0.15" maxValue="0.9"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\GlassStack.frag" type="normal" probability="0.45" mood="calm,bright,dreamy" complexity="3">
+    <rig preset="flat"/>
+    <float name="camDistP" minValue="5.0"  maxValue="7.5"></float>
+    <float name="spreadP"  minValue="0.7"  maxValue="1.3"></float>
+    <float name="shellsP"  minValue="0.45" maxValue="1.0"></float>
+    <float name="glassP"   minValue="0.4"  maxValue="1.0"></float>
+    <expr name="glowP" formula="clamp(0.675 + 0.13*(seed3*2.0-1.0) + 0.2925*(0.6*kick+0.4*snare), 0.35, 1)"/>
+    <float name="glowP"    minValue="0.35" maxValue="1.0"></float>
   </TextureShader>
   <TextureShader file="..\\Scene2D\\VoronoiShatter.frag" type="normal" probability="0.5" mood="aggressive,psychedelic" complexity="2">
     <rig preset="flat"/>
@@ -1986,15 +1989,6 @@
     <float name="widthP"   minValue="0.5" maxValue="2.0"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP"     minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
-  <TextureShader file="..\Scene3D\BioluminescentBreakingWave.frag" type="scene3d" geom="grid" probability="0.5" mood="dark,calm,dreamy" complexity="3">
-    <rig preset="procedural"/>
-    <expr name="waveHeightP" formula="clamp(1.25 + 0.3*(seed2*2.0-1.0) + 0.6*(max(bassRel-0.9,0.0)), 0.5, 2)"/>
-    <float name="waveHeightP" minValue="0.5" maxValue="2.0"></float>
-    <float name="steepnessP"  minValue="0.5" maxValue="2.0"></float>
-    <float name="speedP"      minValue="0.5" maxValue="2.0"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP"        minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene3D\CryovolcanicIceGeysers.frag" type="scene3d" geom="indirect" probability="0.5" mood="bright,calm,dreamy" complexity="4">
     <rig preset="procedural"/>

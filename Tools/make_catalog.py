@@ -46,7 +46,7 @@ PREVIEW_LIMITED = {
     "MelodyScript", "Schlieren", "SelfSimilarity",
     # Live-verified but preview-dark: array-fed (audioChroma/Melody) or
     # sim-textured scenes the harness cannot drive.
-    "SciFiHUD", "Tonnetz", "GlassStack", "CrystalGrowth",
+    "SciFiHUD", "Tonnetz", "CrystalGrowth",
 }
 
 def header_comment(path):

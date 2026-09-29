@@ -1300,6 +1300,15 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
+  <TextureShader file="..\\Scene2D\\GlassStack.frag" type="normal" probability="0.45" mood="calm,bright,dreamy" complexity="3">
+    <rig preset="flat"/>
+    <float name="camDistP" minValue="5.0"  maxValue="7.5"></float>
+    <float name="spreadP"  minValue="0.7"  maxValue="1.3"></float>
+    <float name="shellsP"  minValue="0.45" maxValue="1.0"></float>
+    <float name="glassP"   minValue="0.4"  maxValue="1.0"></float>
+    <expr name="glowP" formula="clamp(0.675 + 0.13*(seed3*2.0-1.0) + 0.2925*(0.6*kick+0.4*snare), 0.35, 1)"/>
+    <float name="glowP"    minValue="0.35" maxValue="1.0"></float>
+  </TextureShader>
   <TextureShader file="..\Scene2D\GlitchMatrixHypercube.frag" type="normal" probability="0.46" mood="aggressive,bright,psychedelic" complexity="3">
     <rig preset="flat"/>
     <float name="glitchP" minValue="0.4" maxValue="2.0"></float>
@@ -1916,6 +1925,9 @@
     <float name="leafP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\LanternRise.frag" type="normal" probability="0.3" mood="calm,bright,dreamy" complexity="2">
+    <rig preset="flat"/>
   </TextureShader>
   <TextureShader file="..\Scene2D\LaserCavityTransverseModes.frag" type="normal" mood="psychedelic,dark" probability="0.4" complexity="2">
     <rig preset="flat"/>
@@ -5694,15 +5706,6 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\\Scene3D\\GlassStack.frag" type="scene3d" geom="cubes" probability="0.45" mood="dreamy" complexity="3">
-    <rig preset="procedural"/>
-    <float name="camDistP" minValue="5.0"  maxValue="7.5"></float>
-    <float name="spreadP"  minValue="0.7"  maxValue="1.3"></float>
-    <float name="shellsP"  minValue="0.45" maxValue="1.0"></float>
-    <float name="glassP"   minValue="0.4"  maxValue="1.0"></float>
-    <expr name="glowP" formula="clamp(0.675 + 0.13*(seed3*2.0-1.0) + 0.2925*(0.6*kick+0.4*snare), 0.35, 1)"/>
-    <float name="glowP"    minValue="0.35" maxValue="1.0"></float>
-  </TextureShader>
   <TextureShader file="..\Scene3D\GlassVesselsOIT.frag" type="scene3d" geom="indirect" mood="calm,bright,dreamy" probability="0.45" complexity="4">
     <rig preset="procedural"/>
     <float name="shapeP" minValue="0" maxValue="1"></float>
@@ -6247,9 +6250,6 @@
     <float name="windP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
-  <TextureShader file="..\\Scene3D\\LanternRise.frag" type="scene3d" geom="points" probability="0.3" mood="calm" complexity="2">
-    <rig preset="procedural"/>
   </TextureShader>
   <TextureShader file="..\Scene3D\LargeHadronCollision.frag" type="scene3d" geom="points" probability="0.5" mood="aggressive,dark" complexity="2">
     <rig preset="procedural"/>

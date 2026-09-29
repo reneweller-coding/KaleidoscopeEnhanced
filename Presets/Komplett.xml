@@ -3372,8 +3372,8 @@
     <rig preset="procedural"/>
   </TextureShader>
 
-  <TextureShader file="..\\Scene3D\\LanternRise.frag" type="scene3d" geom="points" probability="0.3" mood="calm" complexity="2">
-    <rig preset="procedural"/>
+  <TextureShader file="..\\Scene2D\\LanternRise.frag" type="normal" probability="0.3" mood="calm,bright,dreamy" complexity="2">
+    <rig preset="flat"/>
   </TextureShader>
 
   <TextureShader file="..\\Scene3D\\Tornado.frag" type="scene3d" geom="points" probability="0.3" mood="aggressive,dark" complexity="2">
@@ -3853,8 +3853,8 @@
     <float name="hueP"     minValue="0.15" maxValue="0.9"></float>
   </TextureShader>
 
-  <TextureShader file="..\\Scene3D\\GlassStack.frag" type="scene3d" geom="cubes" probability="0.45" mood="dreamy" complexity="3">
-    <rig preset="procedural"/>
+  <TextureShader file="..\\Scene2D\\GlassStack.frag" type="normal" probability="0.45" mood="calm,bright,dreamy" complexity="3">
+    <rig preset="flat"/>
     <float name="camDistP" minValue="5.0"  maxValue="7.5"></float>
     <float name="spreadP"  minValue="0.7"  maxValue="1.3"></float>
     <float name="shellsP"  minValue="0.45" maxValue="1.0"></float>
