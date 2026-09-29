@@ -1663,9 +1663,6 @@
   <TextureShader file="..\\Scene3D\\Phyllotaxis.frag" type="scene3d" geom="points" mood="dark,calm,dreamy" probability="0.3" complexity="2">
     <rig preset="procedural"/>
   </TextureShader>
-  <TextureShader file="..\\Scene3D\\NebulaCloud.frag" type="scene3d" geom="points" probability="0.3" mood="calm,dark,space" complexity="2">
-    <rig preset="procedural"/>
-  </TextureShader>
   <TextureShader file="..\\Scene3D\\LissajousOrbits.frag" type="scene3d" geom="points" mood="dark,calm,space" probability="0.3" complexity="2">
     <rig preset="procedural"/>
   </TextureShader>
@@ -3635,6 +3632,12 @@
   <TextureShader file="..\\Scene2D\\FanVaultFlight.frag" type="normal" mood="calm,dark,dreamy" probability="0.45" complexity="3">
     <rig preset="flat"/>
     <float name="ribsP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\DolomitesAlpenglow.frag" type="normal" mood="calm,dreamy" probability="0.45" complexity="1">
+    <rig preset="flat"/>
+    <float name="spiresP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
