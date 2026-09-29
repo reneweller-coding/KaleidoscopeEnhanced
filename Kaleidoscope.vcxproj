@@ -291,6 +291,7 @@ if errorlevel 1 exit /b 1
     <ClCompile Include="Source\Utils.cpp" />
     <ClCompile Include="Source\Vector3D.cpp" />
     <ClCompile Include="Source\WebRemote.cpp" />
+    <ClCompile Include="Source\OsdMenu.cpp" />
     <ClCompile Include="Source\CueReceiver.cpp" />
     <ClCompile Include="Source\CueSelfTest.cpp" />
     <ClCompile Include="Source\UpdateCheck.cpp" />
@@ -386,6 +387,7 @@ if errorlevel 1 exit /b 1
     <ClInclude Include="Source\VideoIn.h" />
     <ClInclude Include="Source\VideoPiP.h" />
     <ClInclude Include="Source\Strings.h" />
+    <ClInclude Include="Source\OsdMenu.h" />
     <ClInclude Include="Source\SpoutIn.h" />
     <ClInclude Include="Source\shader_setup.h" />
     <ClInclude Include="Source\stdinc.h" />

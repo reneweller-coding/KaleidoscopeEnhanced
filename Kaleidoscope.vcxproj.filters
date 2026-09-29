@@ -171,6 +171,9 @@
     <ClCompile Include="Source\WebRemote.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\OsdMenu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="Source\CueReceiver.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -219,6 +222,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\Strings.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\OsdMenu.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\SpoutIn.h">

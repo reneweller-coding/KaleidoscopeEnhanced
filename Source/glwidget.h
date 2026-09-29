@@ -28,6 +28,7 @@
 #include "Recorder.h"
 #include "OscSender.h"
 #include "TrackMedia.h"
+#include "OsdMenu.h"
 
 class UpdateCheck;
 
@@ -525,6 +526,11 @@ protected:
 	/// die keine C++-Destruktoren mehr durchlaufen), damit der zuletzt
 	/// gewählte Zustand wirklich immer übersteht.
 	void    saveAllSettings();
+	void    openOsdMenu();                          ///< Opens the remote-control menu at its root.
+	void    openQuitConfirm();                      ///< Asks "quit?" in the menu (Esc outside any menu).
+	std::vector<OsdItem> osdRootItems();            ///< Rows of the menu's root level.
+	std::vector<OsdItem> osdPresetItems();          ///< One row per preset in #m_configurationList.
+	std::vector<OsdItem> osdAudioSourceItems();     ///< Default output plus one row per audio device.
 
 	// Adaptive render scale: nudge RenderPipeline's internal render scale to keep
 	// the frame rate near target, never exceeding the launch -s value.
@@ -604,6 +610,7 @@ protected:
 	QString			m_audioMenuFilter;               ///< Typed substring filter; empty shows every device.
 	MenuHit			m_audioMenuHit;                  ///< Row geometry from the last draw, for mouse hit-testing.
 	bool			m_showShaderInfo = false;   ///< debug: active shader names ('v')
+	OsdMenu			m_osd;                      ///< Remote-control menu (OK / Menu key), see OsdMenu.h.
 
 	int		m_width;    ///< Physical (DPI-scaled) framebuffer width, set in resizeGL().
 	int		m_height;   ///< Physical (DPI-scaled) framebuffer height, set in resizeGL().

@@ -139,7 +139,10 @@ Building the packs yourself, from folders you have filled:
 
 | Key        | Action                                                        |
 |------------|-----------------------------------------------------------------|
-| `Esc`, `Q` | Quit                                                          |
+| `Q`        | Quit                                                          |
+| `Esc`      | Quit **after asking** (closes the help box first if it is up) |
+| `Enter`, `Menu` | Open the **on-screen menu** (remote control, see below) |
+| media keys | `⏭`/`⏮` next scene, `⏯` freeze, `⏹` blackout              |
 | `h`        | Toggle the on-screen **help** (keyboard reference)            |
 | `0`        | Open/close the preset menu (see below)                        |
 | `↑` `↓`    | Move the cursor in whichever overlay menu is open             |
@@ -177,6 +180,37 @@ Building the packs yourself, from folders you have filled:
 | `k`        | Save the current look **and** UI state as the startup default |
 | `s`        | Save a PNG screenshot of the window                           |
 | mouse drag | (when not fullscreen) trackball / interaction                 |
+
+### Remote control (HTPC)
+
+Everything can also be reached from a hardware remote on a living-room PC.
+Such remotes send ordinary keys: arrows, OK (Enter), Back (Back or Backspace),
+Esc, usually a Menu key, and the media keys.
+
+**OK** or the **Menu** key opens the on-screen menu, drawn large enough to read
+from the sofa. `↑`/`↓` select a row, **OK** opens a submenu, runs an action or
+flips a switch, `←`/`→` change sliders and choices (and `→` also opens
+submenus), **Back** goes one level up, **Esc** closes it. It hides itself after
+20 seconds without a key.
+
+| Menu | Contains |
+|---|---|
+| Presets | every preset; the running one is marked, OK switches to it |
+| Scene | next scene, hold scene, favourite, mark, save marked |
+| Picture & overlays | blackout, freeze, stage lamps, now-playing title, lyrics mode, line slam, artist images, music videos |
+| Fine tuning | reactivity, trails, mood colour, latency lead (sliders) |
+| Audio | audio source, tap tempo |
+| Stereo 3D | mode, depth |
+| Automation | pick preset by mood, adapt resolution |
+| Capture | record, instant replay armed / save, screenshot |
+| Info & diagnostics | shader names, audio analysis + FPS, keyboard shortcuts |
+| System | language, save settings as default, install update (when one is found), quit |
+
+The menu works on the same state as the keys and the web remote, so all three
+always agree. `Esc` outside the menu asks before quitting, because on a remote
+it sits right next to Back; `Q` on a keyboard still quits at once. The keyboard
+shortcuts all stay as they were -- the menu is for the remote, the letters are
+for debugging and live work.
 
 **Both overlay menus** — the preset picker (`0`) and the audio-source picker
 (`d`) — scroll, so they reach entries the digit keys cannot. Anything past

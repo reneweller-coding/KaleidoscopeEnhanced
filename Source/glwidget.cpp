@@ -82,7 +82,8 @@ MenuKey menuNavKey( int key, int &cursor, int count )
 		case Qt::Key_Enter:    return MenuKey::Accept;
 		// Escape quits the app everywhere else; inside a menu it has to mean
 		// "never mind, close this" instead.
-		case Qt::Key_Escape:   return MenuKey::Cancel;
+		case Qt::Key_Escape:
+		case Qt::Key_Back:     return MenuKey::Cancel;   // remote "Back"
 		default:               return MenuKey::None;
 	}
 }
@@ -483,6 +484,16 @@ GLwidget::GLwidget( QWidget *parent )
 	// and nothing else. Take it out of the selection instead, so unpacking
 	// the models is what makes it appear. No shipped preset is mesh-only
 	// today; the guard is what makes adding one safe.
+	// Presets/ also holds rigs.xml (the camera-rig table), which has no
+	// ConfigurationName: loaded as a preset it showed up as an empty row in
+	// the preset menus. Anything without a name is not a preset.
+	for( size_t i = m_configurationList.size(); i-- > 0; )
+		if( m_configurationList[i]->getConfigurationName().trimmed().isEmpty() )
+		{
+			m_hiddenConfigurations.push_back( m_configurationList[i] );
+			m_configurationList.erase( m_configurationList.begin() + i );
+		}
+
 	for( size_t i = m_configurationList.size(); i-- > 0; )
 	{
 		Configuration *c = m_configurationList[i];
@@ -1266,7 +1277,7 @@ void GLwidget::draw()
 	// normal render path is pure GL (no QPainter/GL state interaction).
 	if( m_showSelectConfigurationMenu || m_showFeatureOverlay || m_showHelp
 	    || m_showAudioMenu || m_showShaderInfo || m_recorder.recording()
-	    || fadeAlpha > 0.f || npAlpha > 0.f )
+	    || fadeAlpha > 0.f || npAlpha > 0.f || m_osd.isOpen() )
 	{
 		QPainter painter(this);
 		//painter.setRenderHint(QPainter::Antialiasing);
@@ -1306,6 +1317,7 @@ void GLwidget::draw()
 			painter.setFont( QFont("Consolas", 12, QFont::Bold) );
 			painter.drawText( width() - 126, 39, QString::fromUtf8( Strings::T( S_REC_FMT ) ).arg(m_recorder.frameCount()) );
 		}
+		m_osd.draw( &painter, width(), height() );   // last: on top of everything
 		painter.end();
 	}
 
@@ -1746,6 +1758,13 @@ void GLwidget::wheelEvent( QWheelEvent *e )
 	const int steps = e->angleDelta().y() / 120;
 	if( steps == 0 )
 		return;
+	if( m_osd.isOpen() )
+	{
+		for( int i = 0; i < std::abs( steps ); ++i )
+			m_osd.handleKey( steps > 0 ? Qt::Key_Up : Qt::Key_Down );
+		e->accept();
+		return;
+	}
 
 	int  *cursor = nullptr;
 	int   count  = 0;
@@ -1899,6 +1918,8 @@ void GLwidget::drawHelpOverlay( QPainter *painter )
 	struct Line { const char *key; StrId desc; };
 	static const Line lines[] = {
 		{ "h",       S_HELP_H },
+		{ "Enter",   S_HELP_MENU },
+		{ "⏭ ⏯ ⏹",  S_HELP_MEDIA },
 		{ "0",       S_HELP_0 },
 		{ "n",       S_HELP_N },
 		{ "i",       S_HELP_I },
@@ -2794,8 +2815,237 @@ void GLwidget::drawNowPlaying( QPainter *painter, const QString &title,
 	painter->drawText( x + 22, y + 58, artist );
 }
 
+// ---------------------------------------------------------------------------
+// Remote-control menu (OsdMenu): the tree. Every row goes through the same
+// setters/getters the keyboard shortcuts and the web remote use.
+// ---------------------------------------------------------------------------
+namespace {
+
+QString osdT( StrId id ) { return QString::fromUtf8( Strings::T( id ) ); }
+
+OsdItem osdSub( StrId id, std::function<std::vector<OsdItem>()> kids )
+{
+	OsdItem it; it.kind = OsdItem::Submenu; it.label = osdT( id ); it.children = std::move( kids );
+	return it;
+}
+OsdItem osdAct( const QString &label, std::function<void()> fn, bool closeAfter = false, bool confirm = false )
+{
+	OsdItem it; it.kind = OsdItem::Action; it.label = label; it.action = std::move( fn );
+	it.closeAfter = closeAfter;
+	if( confirm ) it.doneText = osdT( S_OSD_DONE );
+	return it;
+}
+OsdItem osdToggle( StrId id, std::function<bool()> get, std::function<void(bool)> set )
+{
+	OsdItem it; it.kind = OsdItem::Toggle; it.label = osdT( id ); it.getB = std::move( get ); it.setB = std::move( set );
+	return it;
+}
+OsdItem osdChoice( StrId id, const QStringList &opts, std::function<int()> get, std::function<void(int)> set )
+{
+	OsdItem it; it.kind = OsdItem::Choice; it.label = osdT( id ); it.options = opts;
+	it.getI = std::move( get ); it.setI = std::move( set );
+	return it;
+}
+OsdItem osdSlider( StrId id, float lo, float hi, float step, std::function<float()> get,
+                   std::function<void(float)> set, std::function<QString(float)> fmt = {} )
+{
+	OsdItem it; it.kind = OsdItem::Slider; it.label = osdT( id ); it.lo = lo; it.hi = hi; it.step = step;
+	it.getF = std::move( get ); it.setF = std::move( set ); it.fmt = std::move( fmt );
+	return it;
+}
+
+}   // namespace
+
+void GLwidget::openOsdMenu()
+{
+	m_osd.setRootTitle( [] { return osdT( S_OSD_TITLE ); } );
+	m_osd.open( osdT( S_OSD_TITLE ), [this] { return osdRootItems(); } );
+}
+
+void GLwidget::openQuitConfirm()
+{
+	m_osd.setRootTitle( [] { return osdT( S_OSD_QUIT_TITLE ); } );
+	m_osd.open( osdT( S_OSD_QUIT_TITLE ), [this] {
+		return std::vector<OsdItem>{
+			osdAct( osdT( S_OSD_QUIT_NO ), [] {}, true ),          // first row: OK by reflex does no harm
+			osdAct( osdT( S_OSD_QUIT_YES ), [this] { saveAllSettings(); exit( 0 ); } ),
+		};
+	} );
+}
+
+std::vector<OsdItem> GLwidget::osdPresetItems()
+{
+	std::vector<OsdItem> v;
+	for( int i = 0; i < int( m_configurationList.size() ); ++i )
+	{
+		Configuration *c = m_configurationList[i];
+		OsdItem it = osdAct( c->getConfigurationName(), [this, i] { remoteSelectConfig( i ); }, true );
+		it.checked = [this, c] { return c == m_actConfiguration; };
+		v.push_back( it );
+	}
+	return v;
+}
+
+std::vector<OsdItem> GLwidget::osdAudioSourceItems()
+{
+	std::vector<OsdItem> v;
+	QList<AudioDevice> devs;
+	if( m_audioAnalyzer ) devs = m_audioAnalyzer->devices();
+	auto currentRow = [this]() -> int {
+		if( !m_audioAnalyzer ) return 0;
+		const QString cur = m_audioAnalyzer->currentDeviceName();
+		const QList<AudioDevice> d = m_audioAnalyzer->devices();
+		for( int i = 0; i < d.size(); ++i )
+			if( !cur.isEmpty() && d[i].name == cur ) return i + 1;
+		return 0;
+	};
+	OsdItem def = osdAct( osdT( S_AUDIOMENU_DEFAULT_OUTPUT ), [this] { selectAudioDevice( 0 ); }, false, true );
+	def.checked = [currentRow] { return currentRow() == 0; };
+	v.push_back( def );
+	for( int i = 0; i < devs.size(); ++i )
+	{
+		const QString tag = osdT( devs[i].isCapture ? S_AUDIOMENU_INPUT_TAG : S_AUDIOMENU_OUTPUT_TAG );
+		OsdItem it = osdAct( devs[i].name + tag, [this, i] { selectAudioDevice( i + 1 ); }, false, true );
+		it.checked = [currentRow, i] { return currentRow() == i + 1; };
+		v.push_back( it );
+	}
+	return v;
+}
+
+std::vector<OsdItem> GLwidget::osdRootItems()
+{
+	std::vector<OsdItem> root;
+
+	root.push_back( osdSub( S_OSD_PRESETS, [this] { return osdPresetItems(); } ) );
+
+	root.push_back( osdSub( S_OSD_SCENE, [this] {
+		return std::vector<OsdItem>{
+			osdAct( osdT( S_OSD_NEXT ), [this] { remoteNextEffect(); }, false, true ),
+			osdToggle( S_OSD_PIN, [] { return RenderPipeline::pinned(); },
+			           []( bool b ) { if( b != RenderPipeline::pinned() ) RenderPipeline::togglePin(); } ),
+			osdAct( osdT( S_OSD_FAVORITE ), [this] { remoteFavorite(); }, false, true ),
+			osdAct( osdT( S_OSD_MARK ), [this] { remoteToggleMark(); }, false, true ),
+			osdAct( osdT( S_OSD_SAVEMARKED ), [this] { remoteSaveMarked(); }, false, true ),
+		};
+	} ) );
+
+	root.push_back( osdSub( S_OSD_PICTURE, [this] {
+		return std::vector<OsdItem>{
+			osdToggle( S_OSD_BLACKOUT, [] { return RenderPipeline::blackout(); },
+			           []( bool b ) { if( b != RenderPipeline::blackout() ) RenderPipeline::toggleBlackout(); } ),
+			osdToggle( S_OSD_FREEZE, [] { return RenderPipeline::frozen(); },
+			           []( bool b ) { if( b != RenderPipeline::frozen() ) RenderPipeline::toggleFreeze(); } ),
+			osdToggle( S_OSD_LIGHTSHOW, [] { return RenderPipeline::lightShow(); },
+			           []( bool b ) { RenderPipeline::setLightShow( b ); } ),
+			osdToggle( S_OSD_NOWPLAYING, [this] { return nowPlayingEnabled(); },
+			           [this]( bool b ) { setNowPlayingEnabled( b ); } ),
+			osdChoice( S_OSD_LYRICS, { osdT( S_WR_LYRICS_OFF ), osdT( S_WR_LYRICS_SCROLL ), osdT( S_WR_LYRICS_KARAOKE ) },
+			           [this] { return lyricsModeValue(); }, [this]( int m ) { setLyricsModeValue( m ); } ),
+			osdToggle( S_OSD_KINETIC, [this] { return m_lyricsKinetic; }, [this]( bool b ) { m_lyricsKinetic = b; } ),
+			osdToggle( S_OSD_ARTIST, [this] { return artistImagesEnabled(); },
+			           [this]( bool b ) { setArtistImagesEnabled( b ); } ),
+			osdToggle( S_OSD_VIDEO, [this] { return videoPipEnabled(); },
+			           [this]( bool b ) { setVideoPipEnabled( b ); } ),
+		};
+	} ) );
+
+	root.push_back( osdSub( S_OSD_TUNE, [] {
+		auto f1 = []( float v ) { return QString::number( double( v ), 'f', 1 ); };
+		auto f2 = []( float v ) { return QString::number( double( v ), 'f', 2 ); };
+		return std::vector<OsdItem>{
+			osdSlider( S_OSD_REACTIVITY, 0.f, 3.f, 0.1f, [] { return RenderPipeline::reactivity(); },
+			           []( float v ) { RenderPipeline::setReactivity( v ); }, f1 ),
+			osdSlider( S_OSD_TRAILS, 0.f, 0.95f, 0.05f, [] { return RenderPipeline::trails(); },
+			           []( float v ) { RenderPipeline::setTrails( v ); }, f2 ),
+			osdSlider( S_OSD_MOOD, 0.f, 2.5f, 0.1f, [] { return RenderPipeline::mood(); },
+			           []( float v ) { RenderPipeline::setMood( v ); }, f1 ),
+			osdSlider( S_OSD_LATENCY, 0.f, 0.25f, 0.01f, [] { return RenderPipeline::latency(); },
+			           []( float v ) { RenderPipeline::setLatency( v ); },
+			           []( float v ) { return QString( "%1 ms" ).arg( int( std::lround( v * 1000.f ) ) ); } ),
+		};
+	} ) );
+
+	root.push_back( osdSub( S_OSD_AUDIO, [this] {
+		return std::vector<OsdItem>{
+			osdSub( S_OSD_SOURCE, [this] { return osdAudioSourceItems(); } ),
+			osdAct( osdT( S_OSD_TAP ), [this] { remoteTapTempo(); } ),
+		};
+	} ) );
+
+	root.push_back( osdSub( S_OSD_STEREO, [] {
+		return std::vector<OsdItem>{
+			osdChoice( S_OSD_STEREOMODE, { osdT( S_SETUP_STEREO_OFF ), osdT( S_SETUP_STEREO_SBS ),
+			                               osdT( S_SETUP_STEREO_TB ), osdT( S_SETUP_STEREO_ANA ) },
+			           [] { return RenderPipeline::stereoMode(); }, []( int m ) { RenderPipeline::setStereoMode( m ); } ),
+			osdSlider( S_OSD_STEREODEPTH, 0.f, 2.f, 0.2f, [] { return RenderPipeline::stereoDepth(); },
+			           []( float v ) { RenderPipeline::setStereoDepth( v ); } ),
+		};
+	} ) );
+
+	root.push_back( osdSub( S_OSD_AUTO, [this] {
+		return std::vector<OsdItem>{
+			osdToggle( S_OSD_AUTOPRESET, [this] { return autoConfigEnabled(); },
+			           [this]( bool b ) { setAutoConfigEnabled( b ); } ),
+			osdToggle( S_OSD_AUTOSCALE, [this] { return autoScaleEnabled(); },
+			           [this]( bool b ) { setAutoScaleEnabled( b ); } ),
+		};
+	} ) );
+
+	root.push_back( osdSub( S_OSD_CAPTURE, [this] {
+		return std::vector<OsdItem>{
+			osdToggle( S_OSD_RECORD, [this] { return remoteRecording(); },
+			           [this]( bool b ) { if( b != remoteRecording() ) remoteToggleRecord(); } ),
+			osdToggle( S_OSD_REPLAYARM, [this] { return remoteReplayArmed(); },
+			           [this]( bool b ) { if( b != remoteReplayArmed() ) remoteToggleReplayArm(); } ),
+			osdAct( osdT( S_OSD_REPLAYSAVE ), [this] { remoteSaveReplay(); }, false, true ),
+			// The menu closes first and the grab follows a moment later, or the
+			// screenshot would show the menu over the picture.
+			osdAct( osdT( S_OSD_SCREENSHOT ), [this] { QTimer::singleShot( 150, this, [this] { remoteScreenshot(); } ); }, true ),
+		};
+	} ) );
+
+	root.push_back( osdSub( S_OSD_INFO, [this] {
+		return std::vector<OsdItem>{
+			osdToggle( S_OSD_SHADERNAMES, [this] { return shaderInfoVisible(); },
+			           [this]( bool b ) { setShaderInfoVisible( b ); } ),
+			osdToggle( S_OSD_FEATURES, [this] { return featureOverlayVisible(); },
+			           [this]( bool b ) { setFeatureOverlayVisible( b ); } ),
+			osdToggle( S_OSD_KEYHELP, [this] { return m_showHelp; }, [this]( bool b ) { m_showHelp = b; } ),
+		};
+	} ) );
+
+	root.push_back( osdSub( S_OSD_SYSTEM, [this] {
+		std::vector<OsdItem> v;
+		// Language names stay in their own language, so the switch can be
+		// found whichever one is active.
+		v.push_back( osdChoice( S_OSD_LANGUAGE, { QString::fromUtf8( "Deutsch" ), QString( "English" ) },
+		                        [] { return Strings::language() == Lang::EN ? 1 : 0; },
+		                        [this]( int i ) { Strings::setLanguage( i == 1 ? Lang::EN : Lang::DE ); m_osd.requestRebuild(); } ) );
+		v.push_back( osdAct( osdT( S_OSD_SAVEDEFAULTS ), [this] { saveAllSettings(); }, false, true ) );
+		if( updateAvailable() )
+			v.push_back( osdAct( osdT( S_OSD_UPDATE_FMT ).arg( updateVersion() ), [this] { remoteInstallUpdate(); }, true ) );
+		v.push_back( osdSub( S_OSD_QUIT, [this] {
+			return std::vector<OsdItem>{
+				osdAct( osdT( S_OSD_QUIT_NO ), [] {}, true ),
+				osdAct( osdT( S_OSD_QUIT_YES ), [this] { saveAllSettings(); exit( 0 ); } ),
+			};
+		} ) );
+		return v;
+	} ) );
+
+	return root;
+}
+
 void GLwidget::keyPressEvent(QKeyEvent* event)
 {
+	// The remote-control menu is modal while it is open: every key belongs
+	// to it (arrows, OK, Back, Esc), nothing reaches the shortcuts below.
+	if( m_osd.isOpen() )
+	{
+		m_osd.handleKey( event->key() );
+		return;
+	}
+
 	// The configuration picker is modal while it is open: the arrow keys drive
 	// its cursor rather than doing whatever they normally do, and Enter picks
 	// the highlighted preset. The digit shortcuts still work and still mean the
@@ -2827,7 +3077,10 @@ void GLwidget::keyPressEvent(QKeyEvent* event)
 		// '0' still closes -- but only while nothing is typed, after which it
 		// is a character like any other. Checked BEFORE the filter, or it
 		// would be typed instead of closing.
-		if( event->key() == Qt::Key_0 && m_configMenuFilter.isEmpty() )
+		// '0' still closes -- and so does Backspace with nothing typed, which
+		// is what a remote's Back button sends on many models.
+		if( ( event->key() == Qt::Key_0 || event->key() == Qt::Key_Backspace )
+		    && m_configMenuFilter.isEmpty() )
 		{
 			m_showSelectConfigurationMenu = false;
 			return;
@@ -2860,7 +3113,8 @@ void GLwidget::keyPressEvent(QKeyEvent* event)
 		}
 		// 'd' closes while nothing is typed; after that it is just a letter,
 		// which matters here because most device names contain one.
-		if( event->key() == Qt::Key_D && m_audioMenuFilter.isEmpty() )
+		if( ( event->key() == Qt::Key_D || event->key() == Qt::Key_Backspace )
+		    && m_audioMenuFilter.isEmpty() )
 		{
 			m_showAudioMenu = false;
 			return;
@@ -2871,9 +3125,38 @@ void GLwidget::keyPressEvent(QKeyEvent* event)
 
     switch(event->key())
 	{
+		// Esc no longer quits at once: on a remote it sits next to Back and
+		// is pressed by reflex. It closes the help box if that is up, and
+		// otherwise asks first. 'q' still quits immediately (keyboard).
 		case Qt::Key_Escape:
-			saveAllSettings();   // exit() unten läuft an keinem Destruktor vorbei
-			exit(0);
+			if( m_showHelp ) m_showHelp = false;
+			else             openQuitConfirm();
+			break;
+		case Qt::Key_Back:          // remote "Back" outside any menu: only closes the help box
+		case Qt::Key_Backspace:
+			m_showHelp = false;
+			break;
+
+		// ---- Remote control: OK / Menu key open the on-screen menu ----
+		case Qt::Key_Return:
+		case Qt::Key_Enter:
+		case Qt::Key_Menu:
+		case Qt::Key_Select:
+			openOsdMenu();
+			break;
+
+		// ---- Remote media keys ----
+		case Qt::Key_MediaNext:
+		case Qt::Key_MediaPrevious:
+			remoteNextEffect();
+			break;
+		case Qt::Key_MediaPlay:
+		case Qt::Key_MediaPause:
+		case Qt::Key_MediaTogglePlayPause:
+			RenderPipeline::toggleFreeze();
+			break;
+		case Qt::Key_MediaStop:
+			RenderPipeline::toggleBlackout();
 			break;
 		case Qt::Key_Q:
 			saveAllSettings();
