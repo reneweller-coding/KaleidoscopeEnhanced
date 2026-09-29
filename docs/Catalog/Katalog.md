@@ -1,6 +1,6 @@
 # Kaleidoscope Enhanced — Szenen-Katalog
 
-_885 Szenen, 29 FX-Overlays, 110 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
+_890 Szenen, 29 FX-Overlays, 110 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
 
 
 ---
@@ -1009,6 +1009,15 @@ DERELICT MOTHERSHIP: an enormous dead ship hangs across the sky above a blue-lim
 ![DerelictMothership ruhig (t=8)](img/DerelictMothership_A.jpg) ![DerelictMothership ruhig (t=16)](img/DerelictMothership_B.jpg) ![DerelictMothership audio-heiß (t=21)](img/DerelictMothership_C.jpg)
 
 
+### DesertMilkyWayArch
+
+`Scene2D/DesertMilkyWayArch.frag` · type=normal · mood=dark,calm,dreamy,space · complexity=3
+
+DESERT MILKY WAY ARCH: a sandstone arch in the desert at night, the Milky Way rising through it -- a band of countless round stars with dark dust lanes and the warm glow of the galactic core, turning slowly across the sky as the night goes on. A small campfire at the foot of the arch lights its inner curve orange; beyond, the desert floor and distant buttes lie in starlight. The sky's turn is steady; the music is the…
+
+![DesertMilkyWayArch ruhig (t=8)](img/DesertMilkyWayArch_A.jpg) ![DesertMilkyWayArch ruhig (t=16)](img/DesertMilkyWayArch_B.jpg) ![DesertMilkyWayArch audio-heiß (t=21)](img/DesertMilkyWayArch_C.jpg)
+
+
 ### DiamondFireMacro
 
 `Scene2D/DiamondFireMacro.frag` · type=normal · mood=bright,psychedelic · complexity=3
@@ -1560,6 +1569,15 @@ GLASSHOUSE IRON RIBS: inside a Victorian palm house, looking up along the barrel
 ![GlasshouseIronRibs ruhig (t=8)](img/GlasshouseIronRibs_A.jpg) ![GlasshouseIronRibs ruhig (t=16)](img/GlasshouseIronRibs_B.jpg) ![GlasshouseIronRibs audio-heiß (t=21)](img/GlasshouseIronRibs_C.jpg)
 
 
+### GlassStack
+
+`Scene2D/GlassStack.frag` · type=normal · mood=calm,bright,dreamy · complexity=3
+
+GLASS STACK: a sculpture of coloured glass slabs on a white light table -- thick panes of cobalt, amber, ruby, emerald and violet glass stacked and leaning at angles, turning very slowly on a turntable. Where the panes overlap their colours multiply into deeper ones; their edges glow bright where light travels inside them; and the light from a lamp above passes through them and throws coloured shadows across the whit…
+
+![GlassStack ruhig (t=8)](img/GlassStack_A.jpg) ![GlassStack ruhig (t=16)](img/GlassStack_B.jpg) ![GlassStack audio-heiß (t=21)](img/GlassStack_C.jpg)
+
+
 ### GlitchMatrixHypercube
 
 `Scene2D/GlitchMatrixHypercube.frag` · type=normal · mood=aggressive,bright,psychedelic · complexity=3
@@ -1938,6 +1956,15 @@ ICEBERG WATERLINE: the split view of an over-under photograph -- the camera half
 ![IcebergWaterline ruhig (t=8)](img/IcebergWaterline_A.jpg) ![IcebergWaterline ruhig (t=16)](img/IcebergWaterline_B.jpg) ![IcebergWaterline audio-heiß (t=21)](img/IcebergWaterline_C.jpg)
 
 
+### IceCaveBlueArch
+
+`Scene2D/IceCaveBlueArch.frag` · type=normal · mood=calm,bright,dreamy · complexity=4
+
+ICE CAVE BLUE ARCH: inside a glacier cave. The walls and ceiling are glacial ice lit from outside, glowing an impossible sapphire blue, scalloped by meltwater into shallow cups whose rims catch the light; dark bands of rock dust run through the ice; at the far end the mouth of the cave opens onto white daylight. A trickle of meltwater glints on the floor. The camera drifts slowly toward the mouth and back (bounded); …
+
+![IceCaveBlueArch ruhig (t=8)](img/IceCaveBlueArch_A.jpg) ![IceCaveBlueArch ruhig (t=16)](img/IceCaveBlueArch_B.jpg) ![IceCaveBlueArch audio-heiß (t=21)](img/IceCaveBlueArch_C.jpg)
+
+
 ### IceCrack
 
 `Scene2D/IceCrack.frag` · type=normal · mood=calm,bright · complexity=3
@@ -2145,6 +2172,15 @@ KARMAN VORTEX STREET: a flight down the wake behind a cylinder in a stream -- th
 ![KarmanVortexStreet ruhig (t=8)](img/KarmanVortexStreet_A.jpg) ![KarmanVortexStreet ruhig (t=16)](img/KarmanVortexStreet_B.jpg) ![KarmanVortexStreet audio-heiß (t=21)](img/KarmanVortexStreet_C.jpg)
 
 
+### KarstPeaksMist
+
+`Scene2D/KarstPeaksMist.frag` · type=normal · mood=calm,bright,dreamy · complexity=3
+
+KARST PEAKS MIST: the tower karst of Guilin at dawn -- row behind row of steep, rounded limestone peaks, each range paler and bluer than the one before, with bands of mist lying between them. A calm river winds through the foreground mirroring the peaks, and a bamboo raft with a fisherman and his lamp drifts slowly across it. The morning sun glows through the mist behind the ranges. The mist drifts and the raft moves…
+
+![KarstPeaksMist ruhig (t=8)](img/KarstPeaksMist_A.jpg) ![KarstPeaksMist ruhig (t=16)](img/KarstPeaksMist_B.jpg) ![KarstPeaksMist audio-heiß (t=21)](img/KarstPeaksMist_C.jpg)
+
+
 ### KerrNewmanSingularity
 
 `Scene2D/KerrNewmanSingularity.frag` · type=normal · mood=dark,aggressive · complexity=4
@@ -2289,6 +2325,15 @@ KUMIKO LATTICE SHOJI: a shoji screen with a kumiko lattice, lit from behind. The
 ![KumikoLatticeShoji ruhig (t=8)](img/KumikoLatticeShoji_A.jpg) ![KumikoLatticeShoji ruhig (t=16)](img/KumikoLatticeShoji_B.jpg) ![KumikoLatticeShoji audio-heiß (t=21)](img/KumikoLatticeShoji_C.jpg)
 
 
+### LanternRise
+
+`Scene2D/LanternRise.frag` · type=normal · mood=calm,bright,dreamy · complexity=2
+
+LANTERN RISE: the night of the lantern festival. Over a wide river at dusk, hundreds of paper sky lanterns drift up into a deep blue sky -- warm glowing shells with a bright flame at the base, near ones large and soft, far ones tiny sparks thinning into the stars -- and the river doubles them in shimmering streaks. On the far bank a temple roofline and a crowd stand in silhouette, a few floating krathong candles drif…
+
+![LanternRise ruhig (t=8)](img/LanternRise_A.jpg) ![LanternRise ruhig (t=16)](img/LanternRise_B.jpg) ![LanternRise audio-heiß (t=21)](img/LanternRise_C.jpg)
+
+
 ### LaserCavityTransverseModes
 
 `Scene2D/LaserCavityTransverseModes.frag` · type=normal · mood=psychedelic,dark · complexity=2
@@ -2395,6 +2440,15 @@ Displays the branching electrical discharge simulated in Engine/CfxLightningStep
 LIGHT PAINTING TRAILS: a long exposure in a dark room. A dancer swings light wands and the shutter keeps everything: the trails hang in the air as continuous ribbons, brightest where the wand is now and fading along their age. Each wand owns a chroma class and brightens with it; the trail geometry runs on the scene clock, so nothing jumps. The kick is the flash that freezes a silhouette of the dancer for an instant. …
 
 ![LightPaintingTrails ruhig (t=8)](img/LightPaintingTrails_A.jpg) ![LightPaintingTrails ruhig (t=16)](img/LightPaintingTrails_B.jpg) ![LightPaintingTrails audio-heiß (t=21)](img/LightPaintingTrails_C.jpg)
+
+
+### LightPillarsCity
+
+`Scene2D/LightPillarsCity.frag` · type=normal · mood=dark,calm,dreamy · complexity=3
+
+LIGHT PILLARS CITY: a winter night so cold that ice crystals hang flat in the air, and every streetlight, sign and floodlight of a small northern city throws a tall column of light straight up into the dark sky -- sodium orange, white, green, the odd magenta -- dozens of pillars of different heights and strengths standing over the snowy rooftops. Snow lies on the roofs and the ground; a few flakes glitter in the air.…
+
+![LightPillarsCity ruhig (t=8)](img/LightPillarsCity_A.jpg) ![LightPillarsCity ruhig (t=16)](img/LightPillarsCity_B.jpg) ![LightPillarsCity audio-heiß (t=21)](img/LightPillarsCity_C.jpg)
 
 
 ### LiquidChromeHyperSwirl
@@ -3868,6 +3922,15 @@ KNIFE-EDGE SCHLIEREN OPTICS over the live GPU fluid: the classic wind-tunnel pho
 SCHWARZSCHILD WORMHOLE TUNNEL: Raymarched flight through a traversable Morris-Thorne wormhole connecting two distinct universes (tex0 and tex1). Relativistic spacetime throat curvature, gravitational lensing arcs, chromatic dispersion, and seamless topological universe transitions. audioAdvance -> navigates camera through the wormhole throat audioKick -> pulses gravitational metric contraction shockwaves audioSubBass…
 
 ![SchwarzschildWormholeTunnel ruhig (t=8)](img/SchwarzschildWormholeTunnel_A.jpg) ![SchwarzschildWormholeTunnel ruhig (t=16)](img/SchwarzschildWormholeTunnel_B.jpg) ![SchwarzschildWormholeTunnel audio-heiß (t=21)](img/SchwarzschildWormholeTunnel_C.jpg)
+
+
+### SeaStacksFlight
+
+`Scene2D/SeaStacksFlight.frag` · type=normal · mood=calm,dreamy,bright · complexity=4
+
+SEA STACKS FLIGHT: a low glide over the sea at sunset between towering sea stacks -- sheer rock pillars rising out of the swell, their sunward faces glowing orange, their shadow sides deep violet, surf foaming at their feet. The sun hangs low ahead, laying a glittering road across the water; spray haze hangs between the pillars; gulls wheel as round dark specks. The glide is steady and level; the music is the light: …
+
+![SeaStacksFlight ruhig (t=8)](img/SeaStacksFlight_A.jpg) ![SeaStacksFlight ruhig (t=16)](img/SeaStacksFlight_B.jpg) ![SeaStacksFlight audio-heiß (t=21)](img/SeaStacksFlight_C.jpg)
 
 
 ### SectionMemoryHalls
@@ -6020,17 +6083,6 @@ Fragment stage for GlassNaveFlight: stone (pillars, floor) and sky in the opaque
 ![GlassNaveFlight ruhig (t=8)](img/GlassNaveFlight_A.jpg) ![GlassNaveFlight ruhig (t=16)](img/GlassNaveFlight_B.jpg) ![GlassNaveFlight audio-heiß (t=21)](img/GlassNaveFlight_C.jpg)
 
 
-### GlassStack
-
-`Scene3D/GlassStack.frag` · type=scene3d · geom=cubes · mood=dreamy · complexity=3
-
-_(Vorschau eingeschränkt: Sim-Textur/Mehrpass — Bilder unterschätzen die echte App)_
-
-GlassStack.frag — one shader, two very different jobs. In the opaque pass it writes an ordinary colour. In the transparent pass it writes into the two OIT accumulation targets instead, and what it writes is not a colour but a CONTRIBUTION: premultiplied colour times a weight, and the alpha that eats into the revealage. The weight is the whole technique. It has to fall off with depth so that nearer layers dominate — t…
-
-![GlassStack ruhig (t=8)](img/GlassStack_A.jpg) ![GlassStack ruhig (t=16)](img/GlassStack_B.jpg) ![GlassStack audio-heiß (t=21)](img/GlassStack_C.jpg)
-
-
 ### GlassVesselsOIT
 
 `Scene3D/GlassVesselsOIT.frag` · type=scene3d · geom=indirect · mood=calm,bright,dreamy · complexity=4
@@ -6335,15 +6387,6 @@ Shades one facet of the Miura-ori origami sheet folded by KineticTesseractOrigam
 Fragment stage for KiteFestival: a bright windy sky with cloud streaks, a green hillside carrying the photo as its patchwork of fields, kites as photo diamonds with bright spars, tails in palette colours that sparkle with the treble, and the kick lighting the kite edges. Audio Reactivity: audioHigh -> tail sparkle; audioKick -> kite edges; audioSwell -> sunlight; audioLevel -> brightness.
 
 ![KiteFestival ruhig (t=8)](img/KiteFestival_A.jpg) ![KiteFestival ruhig (t=16)](img/KiteFestival_B.jpg) ![KiteFestival audio-heiß (t=21)](img/KiteFestival_C.jpg)
-
-
-### LanternRise
-
-`Scene3D/LanternRise.frag` · type=scene3d · geom=points · mood=calm · complexity=2
-
-LanternRise.frag — soft glowing point (additive blending).
-
-![LanternRise ruhig (t=8)](img/LanternRise_A.jpg) ![LanternRise ruhig (t=16)](img/LanternRise_B.jpg) ![LanternRise audio-heiß (t=21)](img/LanternRise_C.jpg)
 
 
 ### LargeHadronCollision
