@@ -2362,12 +2362,6 @@
     <float name="symmetryP" minValue="0.6" maxValue="1.8"></float>
     <float name="fresnelP" minValue="0.8" maxValue="2.5"></float>
   </TextureShader>
-  <TextureShader file="..\Scene3D\E8LieAlgebraRootLattice.frag" type="scene3d" geom="cubes" probability="0.45" mood="aggressive,bright,psychedelic" complexity="4">
-    <rig preset="procedural"/>
-    <float name="rootScaleP" minValue="0.8" maxValue="2.2"></float>
-    <float name="cubeSizeP" minValue="0.04" maxValue="0.16"></float>
-    <float name="specularP" minValue="0.8" maxValue="2.5"></float>
-  </TextureShader>
   <TextureShader file="..\Scene3D\WignerCrystalElectronLattice.frag" type="scene3d" geom="points" probability="0.45" mood="calm,bright,dreamy" complexity="3">
     <rig preset="procedural"/>
     <float name="crystalScaleP" minValue="0.06" maxValue="0.22"></float>
@@ -3562,6 +3556,12 @@
   <TextureShader file="..\\Scene2D\\CalatravaRibsHall.frag" type="normal" mood="bright,calm" probability="0.45" complexity="3">
     <rig preset="flat"/>
     <float name="ribP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\ParametricPavilion.frag" type="normal" mood="bright,calm" probability="0.45" complexity="3">
+    <rig preset="flat"/>
+    <float name="twistP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>

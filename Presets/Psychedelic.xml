@@ -53,9 +53,6 @@
     <int name="kSides" minValue="0" maxValue="9"></int>
     <float name="rosetteP" minValue="0.15" maxValue="0.35"></float>
   </TextureShader>
-  <TextureShader file="..\\Scene2D\\CurlAurora.frag" type="normal" probability="0.6" mood="calm,space" complexity="1">
-    <rig preset="flat"/>
-  </TextureShader>
   <TextureShader file="..\\Scene2D\\DarkAmbientTunnel.frag" type="KaleidoscopeBase" mood="calm,dreamy" probability="0.4" complexity="1">
     <rig preset="flat"/>
     <!-- Very slow rotation - audio flux controls actual motion -->
@@ -3029,6 +3026,12 @@
   <TextureShader file="..\\Scene2D\\SagradaForestNave.frag" type="normal" mood="dreamy,calm,bright" probability="0.45" complexity="3">
     <rig preset="flat"/>
     <float name="branchP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\MonsterBuildingCourtyard.frag" type="normal" mood="dark,bright" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="heightP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
