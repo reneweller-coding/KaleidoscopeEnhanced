@@ -212,12 +212,6 @@
     <rig preset="flat"/>
     <float name="spacingP" minValue="3.0" maxValue="6.0"></float>
   </TextureShader>
-  <TextureShader file="..\\Scene2D\\Starfield.frag" type="normal" mood="calm,dark,dreamy,space" probability="0.45" complexity="1">
-    <rig preset="flat"/>
-    <float name="densP" minValue="0.88" maxValue="0.95"></float>
-    <float name="speedP" minValue="0.6" maxValue="1.6"></float>
-    <float name="rollP" minValue="0.0" maxValue="0.30"></float>
-  </TextureShader>
   <TextureShader file="..\\Scene2D\\StereoSpectrum.frag" type="normal" mood="aggressive,dark" probability="0.25" complexity="1">
     <rig preset="flat"/>
     <float name="ledP" minValue="0.0" maxValue="22.0"></float>
@@ -333,13 +327,6 @@
     <float name="twistP" minValue="0.5" maxValue="2.0"></float>
     <float name="energyP" minValue="0.5" maxValue="1.5"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
-  <TextureShader file="..\Scene2D\DarkMatterWeb.frag" type="normal" mood="dark,psychedelic,space" probability="0.45" complexity="4">
-    <rig preset="flat"/>
-    <float name="webP" minValue="0.85" maxValue="1.5"></float>
-    <float name="glowP" minValue="0.5" maxValue="2.0"></float>
-    <expr name="hueP" formula="chromaHue + seed3*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene2D\MatrioshkaBrain.frag" type="normal" mood="dark,aggressive,space" probability="0.45" complexity="5">
@@ -3030,6 +3017,18 @@
   <TextureShader file="..\\Scene2D\\ProjectionMappedFacade.frag" type="normal" mood="dark,bright" probability="0.45" complexity="2">
     <rig preset="flat"/>
     <float name="bayP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\FiberOpticChandelier.frag" type="normal" mood="dark,psychedelic,dreamy" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="spreadP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\SagradaForestNave.frag" type="normal" mood="dreamy,calm,bright" probability="0.45" complexity="3">
+    <rig preset="flat"/>
+    <float name="branchP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
