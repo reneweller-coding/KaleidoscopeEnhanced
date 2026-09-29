@@ -197,7 +197,11 @@ MODIFIED_SCENES = {
 # Minuten statt siebzig).  Bewusst eine eigene Liste: welche Szenen zuletzt
 # dran waren, ist eine historische Tatsache und soll im Diff stehen.
 RECENT_SCENES = {
-    # 29.09.: zweiter Block der Schauwert-Szenen (docs/proposals-2026-09-29-schauwert.md).
+    # 29.09.: die Schauwert-Szenen (docs/proposals-2026-09-29-schauwert.md),
+    # Block 1 und 2 -- zum Durchsehen am Stueck.
+    "NeonSignAlley", "SolidLightCones", "MuqarnasDome", "CloudSeaSummit",
+    "WaterfallCurtainRainbow", "ThunderstormFromOrbit", "StormLighthouse",
+    "RainOnWindowCity", "StarryNightFlow", "KlimtGoldMosaic",
     "BasilicaCisternColumns", "TempleLanternHall", "MirrorBallRoom",
     "MusicalFountainShow", "DiscoFloorTiles", "HoliColourCloud",
     "JupiterJunoSwirls", "DiamondFireMacro", "WhirlingDervishes", "KoiPondAbove",
