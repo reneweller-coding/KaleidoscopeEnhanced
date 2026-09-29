@@ -4257,3 +4257,31 @@ A stylised 2D object (a blade drawn across a black frame) whose reactions
 were a forge glow at the bottom edge, a hairline highlight and dust -- the
 class the mesh rebuild of 05.09. retired. Removed from Komplett.xml and the
 generated presets; the git history keeps the shader.
+
+## 29.09.2026 (2): presets chosen by rated fit, no staged-scene preference
+
+The build-up preference for staged scenes is gone from the scheduler: the
+user finds those scenes (an object slowly assembling, a clock hand moving)
+the dull ones, and picking them on purpose is the opposite of what a drop
+wants. setClimaxIn() still bends the arc of a staged scene that happens to
+be on screen.
+
+Genre presets had to hold at least 400 distinct scenes; the mood rules gave
+Club 372, Psychedelic 331, SpaceAmbient 114. Every one of the 865 scenes was
+rated by hand from its contact-sheet row (the three catalogue frames), its
+header and its measured luma/saturation/motion: fit 0..10 for each of the six
+genre presets plus a genre-free interest 0..10. The table is
+Tools/preset_fit.tsv; make_genre_configs.py ranks by
+fit + 0.15 * (interest - 5) (SpaceAmbient adds 0.4 * (ambient fit - 5)),
+takes everything ranked >= 6 and fills to 400 by rank, dull scenes
+(interest <= 2) last, nothing below fit 3. Mesh families carry at most six of
+their model variants in a genre preset (ShipFlyby has 29). FX, transitions and
+unrated new scenes still follow the mood rules.
+
+Result: 400 distinct scenes in each genre preset (Ambient 400, SpaceAmbient
+400, Galerie 400, Noir 400, Club 400, Psychedelic 400); 92 scenes, almost all
+rated interest 1..3, now appear only in Allround. Fewer than 400 scenes fit
+any single preset well (fit >= 6: Ambient 177, SpaceAmbient 175, Club 238,
+Noir 153, Psychedelic 260, Galerie 138), so the last hundred or two of every
+preset are acceptable rather than ideal -- in SpaceAmbient down to scenes
+that are merely dark and calm, not cosmic.

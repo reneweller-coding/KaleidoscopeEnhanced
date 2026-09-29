@@ -820,19 +820,13 @@ void SceneScheduler::tick( const Tick &t )
 				// search is running dry (a small preset, a narrow filter).
 				if( i < kMaxSearch * 2 / 3 && isRecentTexture( m_nextTexture ) )
 					continue;
-				// REGIE: waehrend die Spannung steigt, lieber eine INSZENIERTE
-				// Szene -- die kann ihren Hoehepunkt auf den Drop legen (siehe
-				// setClimaxIn oben).  Nur in der ersten Haelfte der Suche, damit
-				// ein Katalog ohne passende Szene nicht leer ausgeht.
-				// Schwelle und Phrasenfenster wie beim Bogen selbst (0.45,
-				// 4..45 s): nur dann kann eine inszenierte Szene ihren
-				// Hoehepunkt wirklich legen.  Mit 0.25 griff die Regel auf
-				// Tanzmusik in 77 % der Zeit, und 12 % des Katalogs bekamen
-				// 83 % der Wechsel (Messlauf 29.09.2026, Allround).
-				if( t.buildUp > 0.45f && t.phraseSecsLeft >= 4.f && t.phraseSecsLeft <= 45.f
-				    && i < kMaxSearch / 2
-				    && !tex[m_nextTexture]->usesProgress() )
-					continue;
+				// Keine Vorliebe fuer INSZENIERTE Szenen (sceneProgress) bei
+				// steigender Spannung mehr (29.09.2026).  Die Regel sollte deren
+				// Hoehepunkt auf den Drop legen, zog aber genau die Szenen nach
+				// vorn, die im Programm eher die ruhigen, langweiligen sind --
+				// 51 % aller Wechsel bei 12 % des Katalogs.  Laeuft zufaellig
+				// eine inszenierte Szene, biegt setClimaxIn() ihren Bogen
+				// weiterhin auf den Drop; ausgesucht wird sie dafuer nicht.
 				if( m_nextTexture != m_actTexture &&
 					(( tex[m_actTexture]->getComplexity() +
 					tex[m_nextTexture]->getComplexity() +

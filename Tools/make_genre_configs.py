@@ -8,7 +8,10 @@ moods) and re-running this script is all it takes to roll it out everywhere.
 
     python Tools/make_genre_configs.py          (run from the repo root)
 
-Genres (scene AND FX entries are filtered by the same rule):
+Genres. SCENES of the six genre presets are chosen by rated fit
+(Tools/preset_fit.tsv, see select_by_fit below): at least 400 distinct scenes
+each, best fit first, dull ones last. The mood rules below still pick the FX
+overlays and transitions, and the scenes nobody has rated yet:
     Ambient      calm or dreamy, never aggressive
     SpaceAmbient the hand-curated `space` tag: ships, worlds, deep sky --
                  long scene times and long crossfades (see TIMING)
@@ -16,7 +19,7 @@ Genres (scene AND FX entries are filtered by the same rule):
     Noir         dark
     Psychedelic  psychedelic
     Galerie      calm/bright/dreamy, never aggressive or psychedelic
-    Allround     everything
+    Allround     everything, every model variant
     TestAlle     the review bench, hidden. Everything, but deliberately NOT a
                  show: FxPlain as the only overlay and Crossfade as the only
                  transition, so nothing is ever painted over the scene being
@@ -263,10 +266,88 @@ print("master: %d scenes, %d fx, %d transitions" % (len(scenes), len(fx), len(tr
 # to the engine's built-in warning path).
 ALWAYS = {"FxPlain", "Crossfade"}
 
+# ---- Scene choice by rated fit (29.09.2026) -------------------------------
+# The mood rules alone left Club with 372 scenes, Psychedelic with 331 and
+# SpaceAmbient with 114 -- and "every preset at least 400 different scenes"
+# was the brief. Tools/preset_fit.tsv holds a hand rating of every scene
+# (contact sheet of the three catalogue frames + header + measured luma,
+# saturation, motion): fit 0..10 per genre preset and a genre-free
+# "interest" 0..10 (how spectacular and filmic it is -- slow staged
+# object scenes and near-black frames rate low).
+#
+# Per genre: rank = fit + INTEREST_WEIGHT * (interest - 5) (+ a second
+# genre for SpaceAmbient, whose fillers should at least be ambient). Every
+# scene ranked >= RANK_TAKE goes in; the rest by rank until MIN_SCENES
+# DISTINCT scenes are reached, skipping dull ones (interest <= DULL) as long
+# as anything else is left -- a near-black scene with a good fit on paper
+# is still a near-black scene. The counts below are distinct shaders, not
+# entries: a mesh family registers one entry per model (ShipFlyby 29), so
+# at most MAX_VARIANTS of its entries are carried, spread over its models,
+# or one family would crowd out everything else.
+#
+# A scene missing from the table (added after the rating) falls back to
+# the mood rule of its genre until someone rates it.
+FIT_FILE = "Tools/preset_fit.tsv"
+FIT_COLUMN = {"Ambient": "ambient", "SpaceAmbient": "space", "Club": "club",
+              "Noir": "noir", "Psychedelic": "psychedelic", "Galerie": "galerie"}
+MIN_SCENES = 400
+RANK_TAKE = 6.0
+FIT_FLOOR = 3          # never fill with a scene rated below this, even short of MIN_SCENES
+DULL = 2
+INTEREST_WEIGHT = 0.15
+SECOND_FIT = {"SpaceAmbient": ("ambient", 0.4)}
+MAX_VARIANTS = 6
+
+fit = {}
+if os.path.exists(FIT_FILE):
+    lines = open(FIT_FILE, encoding="utf-8").read().splitlines()
+    head = lines[0].split("\t")
+    for ln in lines[1:]:
+        if ln.strip():
+            v = ln.split("\t")
+            fit[v[0]] = {head[i]: int(v[i]) for i in range(1, len(head))}
+
+def select_by_fit(genre, rule):
+    col = FIT_COLUMN[genre]
+    shaders = []
+    for b in scenes:
+        if b[1] not in shaders:
+            shaders.append(b[1])
+    rated = [s for s in shaders if s in fit]
+    second = SECOND_FIT.get(genre)
+    def rank(s):
+        r = fit[s][col] + INTEREST_WEIGHT * (fit[s]["interest"] - 5)
+        if second:
+            r += second[1] * (fit[s][second[0]] - 5)
+        return r
+    chosen = {s for s in rated if rank(s) >= RANK_TAKE and fit[s][col] >= FIT_FLOOR
+              and fit[s]["interest"] > DULL}
+    for dull_ok in (False, True):
+        for s in sorted(rated, key=rank, reverse=True):
+            if len(chosen) >= MIN_SCENES:
+                break
+            if fit[s][col] >= FIT_FLOOR and (dull_ok or fit[s]["interest"] > DULL):
+                chosen.add(s)
+    # Unrated scenes: the old mood rule decides.
+    chosen |= {b[1] for b in scenes if b[1] not in fit and rule(b[2], b[4])}
+    sel = []
+    for s in shaders:
+        if s not in chosen:
+            continue
+        entries = [b for b in scenes if b[1] == s]
+        if len(entries) > MAX_VARIANTS:
+            n = len(entries)
+            entries = [entries[round(i * (n - 1) / (MAX_VARIANTS - 1))] for i in range(MAX_VARIANTS)]
+        sel.extend(entries)
+    return sel
+
 for entry in GENRES:
     name, rule, hidden = entry[0], entry[1], entry[2]
     fxRule = entry[3] if len(entry) > 3 else rule
-    sel_s = [b for b in scenes if rule(b[2], b[4])]
+    if name in FIT_COLUMN and fit:
+        sel_s = select_by_fit(name, rule)
+    else:
+        sel_s = [b for b in scenes if rule(b[2], b[4])]
     sel_f = [b for b in fx    if fxRule(b[2], b[4]) or b[1] in ALWAYS]
     sel_t = [b for b in trans if fxRule(b[2], b[4]) or b[1] in ALWAYS]
     review = name.startswith("Test")
