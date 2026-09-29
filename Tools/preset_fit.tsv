@@ -39,6 +39,7 @@ BallisticGrapheneElectronFocussing	4	2	6	2	5	4	5
 BallLightningPlasmoid	2	3	8	2	7	2	7
 BambooGroveWind	6	1	1	5	2	5	4
 BaryonAcousticRipples	7	7	2	5	4	5	5
+BasilicaCisternColumns	7	3	3	9	2	7	8
 BatikWaxCracks	4	1	1	3	2	5	3
 BauhausGeo	4	0	4	1	3	7	5
 BeatLattice	1	0	9	3	7	1	6
@@ -182,6 +183,7 @@ DendriticSnowflakeIceCrystalHabit	6	4	2	3	4	6	5
 DepthPortalRecursion	5	4	5	5	8	5	7
 DerelictMothership	4	6	1	6	0	2	2
 Detonation	3	3	6	5	2	3	5
+DiamondFireMacro	4	2	6	4	7	6	6
 DiatomSilicaMicrofrustule	5	3	5	3	5	5	6
 DichroicInfinityPrismVault	4	4	5	5	7	4	5
 DichroicPrismLaserField	6	3	3	4	5	5	4
@@ -189,6 +191,7 @@ DielectricMetasurfaceHologram	3	4	3	5	2	2	2
 DielectricResonatorMetagrating	3	2	5	4	3	3	4
 DiffusionDenoiseReveal	4	1	2	3	3	4	3
 DiracConeGrapheneValleytronics	4	2	6	2	6	4	6
+DiscoFloorTiles	2	1	9	3	6	2	7
 DiscoGodrays	2	2	10	3	8	2	9
 Dissolve	5	4	3	6	3	4	4
 DNAOrigamiNanotubeLattice	4	4	5	5	4	4	5
@@ -307,6 +310,7 @@ HexagonalLaserMatrixTunnel	4	3	5	3	6	4	4
 HexKaleido	4	2	8	3	9	5	8
 HigherDimensionAscension	4	3	3	2	5	4	3
 HilbertSpaceFillingCurveZoom	2	1	2	3	2	2	1
+HoliColourCloud	5	1	6	1	8	6	6
 Hologram	4	6	4	6	2	4	4
 HolographicDiffractionGratingMandala	3	1	8	1	9	4	7
 HolographicLaserDiffractionGrid	5	5	4	5	4	4	4
@@ -360,6 +364,7 @@ JosephsonVortexFluxonLattice	2	1	6	1	5	2	4
 JosephsonVortexLattice	3	1	7	2	8	4	6
 JukeboxBubbleTubes	3	0	3	3	2	4	3
 JuliaAudioMorph	6	4	3	4	6	6	6
+JupiterJunoSwirls	7	8	4	3	7	8	8
 KaleidocycleFold	4	1	2	3	3	5	4
 KaleidoDome	6	4	4	3	7	5	6
 Kaleidoscope	5	2	5	3	9	6	7
@@ -388,6 +393,7 @@ KleinQuarticHyperbolicCurve	5	3	6	3	8	6	7
 KlimtGoldMosaic	5	0	3	2	5	9	8
 KluverFormConstants	4	2	5	4	8	4	6
 KnittingRowsGrow	3	0	1	2	1	3	3
+KoiPondAbove	8	0	1	2	2	8	6
 KumikoLatticeShoji	5	0	1	3	1	5	3
 LanternRise	5	3	1	5	1	4	2
 LargeHadronCollision	4	6	6	5	4	3	5
@@ -472,6 +478,7 @@ MetamorphicLavaVortex	4	4	3	5	3	3	4
 MetaSculpt	5	4	2	5	3	5	5
 MeteorStorm	4	6	7	5	4	3	6
 MicrolensingCausticSweep	6	7	2	5	3	4	4
+MirrorBallRoom	3	4	9	6	6	3	8
 MirrorShardKaleidoscope	4	5	5	6	7	5	6
 MirrorShatterExplosion	2	2	7	4	4	2	5
 MobiusInversionKaleidoscope	5	4	4	5	7	5	5
@@ -491,6 +498,7 @@ MultiverseBubbles	6	6	2	4	3	5	5
 MuonTomographyPyramid	4	4	2	7	2	4	4
 MuqarnasDome	6	2	5	3	8	9	8
 Murmuration	5	1	1	3	1	4	3
+MusicalFountainShow	5	2	8	4	5	6	8
 MusicBoxCylinder	4	0	2	3	1	4	3
 MyceliumNeuralPulse	5	5	2	6	3	3	3
 NebulaCliffs	4	6	1	4	1	2	2
@@ -797,6 +805,7 @@ TachyonCommRelay	4	6	5	6	5	3	4
 TangramShuffle	3	0	1	2	2	4	3
 TapeReelEcho	4	1	3	4	2	4	3
 Teleidoscope	5	2	3	3	7	6	5
+TempleLanternHall	8	3	4	5	4	9	9
 TemporalZoomSSM	3	1	2	3	3	2	2
 TensegrityFloat	4	1	2	4	2	4	4
 TerraformingColony	2	4	1	5	0	1	1
@@ -861,6 +870,7 @@ WaterStriderDimples	6	2	1	6	1	5	4
 WaveformRiver	7	3	2	6	2	5	5
 WaveRibbon	7	5	5	5	5	6	6
 WeldingArcSeam	3	0	3	5	1	3	3
+WhirlingDervishes	7	1	2	4	4	7	6
 WhisperingGalleryMicrocavity	3	3	8	3	8	4	7
 WhiteDwarfAccretion	4	7	2	5	2	3	3
 WhiteHoleFountain	4	5	5	4	5	3	5

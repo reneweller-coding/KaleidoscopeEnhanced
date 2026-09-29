@@ -197,10 +197,10 @@ MODIFIED_SCENES = {
 # Minuten statt siebzig).  Bewusst eine eigene Liste: welche Szenen zuletzt
 # dran waren, ist eine historische Tatsache und soll im Diff stehen.
 RECENT_SCENES = {
-    # 29.09.: erster Block der Schauwert-Szenen (docs/proposals-2026-09-29-schauwert.md).
-    "NeonSignAlley", "SolidLightCones", "MuqarnasDome", "CloudSeaSummit",
-    "WaterfallCurtainRainbow", "ThunderstormFromOrbit", "StormLighthouse",
-    "RainOnWindowCity", "StarryNightFlow", "KlimtGoldMosaic",
+    # 29.09.: zweiter Block der Schauwert-Szenen (docs/proposals-2026-09-29-schauwert.md).
+    "BasilicaCisternColumns", "TempleLanternHall", "MirrorBallRoom",
+    "MusicalFountainShow", "DiscoFloorTiles", "HoliColourCloud",
+    "JupiterJunoSwirls", "DiamondFireMacro", "WhirlingDervishes", "KoiPondAbove",
 }
 
 def rule_recent(m, h):

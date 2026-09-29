@@ -1,6 +1,6 @@
 # Kaleidoscope Enhanced — Szenen-Katalog
 
-_875 Szenen, 29 FX-Overlays, 110 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
+_885 Szenen, 29 FX-Overlays, 110 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
 
 
 ---
@@ -222,6 +222,15 @@ BAMBOO GROVE WIND: inside a grove of tall culms, looking up the green columns in
 BARYON ACOUSTIC RIPPLES: the sound waves of the early universe, frozen into the galaxy distribution as faint rings of one fixed scale around every overdensity. Galaxies are round dots of the photo, denser on the shells; the whole pattern expands steadily over the scene arc (the universe growing), the shells light with their spectrum band, and the bass breathes the cosmic web between them. Literally acoustic: the ring…
 
 ![BaryonAcousticRipples ruhig (t=8)](img/BaryonAcousticRipples_A.jpg) ![BaryonAcousticRipples ruhig (t=16)](img/BaryonAcousticRipples_B.jpg) ![BaryonAcousticRipples audio-heiß (t=21)](img/BaryonAcousticRipples_C.jpg)
+
+
+### BasilicaCisternColumns
+
+`Scene2D/BasilicaCisternColumns.frag` · type=normal · mood=dark,calm,dreamy · complexity=4
+
+BASILICA CISTERN COLUMNS: an underground cistern -- a forest of stone columns under brick cross vaults, standing in black water that mirrors all of it. Every column is lit from its foot by a warm uplight; drops fall from the vault and ring the water. We glide slowly between the rows. Each uplight belongs to a spectrum band and swells with it, so the music moves through the hall as light along the colonnade. Audio Rea…
+
+![BasilicaCisternColumns ruhig (t=8)](img/BasilicaCisternColumns_A.jpg) ![BasilicaCisternColumns ruhig (t=16)](img/BasilicaCisternColumns_B.jpg) ![BasilicaCisternColumns audio-heiß (t=21)](img/BasilicaCisternColumns_C.jpg)
 
 
 ### BatikWaxCracks
@@ -991,6 +1000,15 @@ DERELICT MOTHERSHIP: An enormous, heavily damaged alien vessel drifting silently
 ![DerelictMothership ruhig (t=8)](img/DerelictMothership_A.jpg) ![DerelictMothership ruhig (t=16)](img/DerelictMothership_B.jpg) ![DerelictMothership audio-heiß (t=21)](img/DerelictMothership_C.jpg)
 
 
+### DiamondFireMacro
+
+`Scene2D/DiamondFireMacro.frag` · type=normal · mood=bright,psychedelic · complexity=3
+
+DIAMOND FIRE MACRO: a brilliant-cut diamond seen from above, filling the frame -- the table in the middle, the star and kite facets around it, the crown facets out to the girdle. Every facet mirrors the photo at its own angle, and the stone's dispersion splits white light into spectral "fire": small flashes of pure colour that move across the facets as the light source circles slowly overhead. The facets keep still; …
+
+![DiamondFireMacro ruhig (t=8)](img/DiamondFireMacro_A.jpg) ![DiamondFireMacro ruhig (t=16)](img/DiamondFireMacro_B.jpg) ![DiamondFireMacro audio-heiß (t=21)](img/DiamondFireMacro_C.jpg)
+
+
 ### DichroicInfinityPrismVault
 
 `Scene2D/DichroicInfinityPrismVault.frag` · type=normal · mood=bright,psychedelic · complexity=4
@@ -1025,6 +1043,15 @@ DIFFUSION DENOISE REVEAL: a diffusion model sampling, as a picture. Each phrase 
 DIRAC CONE GRAPHENE VALLEYTRONICS: 2D honeycomb carbon lattice displaying linear relativistic Dirac cones (E = +/- hbar * v_F * |k|). Valley Hall pseudospin states (K and K' valleys), Berry curvature flux, quantum wavepacket tunneling, and continuous photo texture reflections. audioAdvance -> drives electronic wavepacket drift across K/K' valleys audioKick -> flashes inter-valley quantum tunneling & plasmonic bursts …
 
 ![DiracConeGrapheneValleytronics ruhig (t=8)](img/DiracConeGrapheneValleytronics_A.jpg) ![DiracConeGrapheneValleytronics ruhig (t=16)](img/DiracConeGrapheneValleytronics_B.jpg) ![DiracConeGrapheneValleytronics audio-heiß (t=21)](img/DiracConeGrapheneValleytronics_C.jpg)
+
+
+### DiscoFloorTiles
+
+`Scene2D/DiscoFloorTiles.frag` · type=normal · mood=bright,aggressive,psychedelic · complexity=3
+
+DISCO FLOOR TILES: a lit dance floor seen from a low angle, glass tiles glowing from beneath, running away into a dark club with a mirror ceiling that repeats the floor overhead. Every tile column is a spectrum band and each tile lights by how high that band reaches -- the floor is an equaliser you could dance on -- and the kick pulses the whole grid. Haze hangs over it and catches the glow. Nothing moves but the lig…
+
+![DiscoFloorTiles ruhig (t=8)](img/DiscoFloorTiles_A.jpg) ![DiscoFloorTiles ruhig (t=16)](img/DiscoFloorTiles_B.jpg) ![DiscoFloorTiles audio-heiß (t=21)](img/DiscoFloorTiles_C.jpg)
 
 
 ### DiscoGodrays
@@ -1695,6 +1722,15 @@ HILBERT SPACE FILLING CURVE ZOOM: Infinite recursive scale zoom into a 3D Hilber
 ![HilbertSpaceFillingCurveZoom ruhig (t=8)](img/HilbertSpaceFillingCurveZoom_A.jpg) ![HilbertSpaceFillingCurveZoom ruhig (t=16)](img/HilbertSpaceFillingCurveZoom_B.jpg) ![HilbertSpaceFillingCurveZoom audio-heiß (t=21)](img/HilbertSpaceFillingCurveZoom_C.jpg)
 
 
+### HoliColourCloud
+
+`Scene2D/HoliColourCloud.frag` · type=normal · mood=bright,psychedelic,dreamy · complexity=4
+
+HOLI COLOUR CLOUD: clouds of coloured powder thrown into low sun, billowing in slow motion and lit from behind so their edges burn and their cores glow. Several plumes in different colours roll into each other and mix where they meet; fine grains glitter in the back light. The plumes keep their own slow billow; the music lights them: each plume glows with its band, and the kick sends a warm surge through the back lig…
+
+![HoliColourCloud ruhig (t=8)](img/HoliColourCloud_A.jpg) ![HoliColourCloud ruhig (t=16)](img/HoliColourCloud_B.jpg) ![HoliColourCloud audio-heiß (t=21)](img/HoliColourCloud_C.jpg)
+
+
 ### HolographicDiffractionGratingMandala
 
 `Scene2D/HolographicDiffractionGratingMandala.frag` · type=normal · mood=psychedelic,bright · complexity=2
@@ -2039,6 +2075,15 @@ A living Julia set: unlike a Mandelbrot deep-zoom dive (MandelbrotDeepZoom.frag)
 ![JuliaAudioMorph ruhig (t=8)](img/JuliaAudioMorph_A.jpg) ![JuliaAudioMorph ruhig (t=16)](img/JuliaAudioMorph_B.jpg) ![JuliaAudioMorph audio-heiß (t=21)](img/JuliaAudioMorph_C.jpg)
 
 
+### JupiterJunoSwirls
+
+`Scene2D/JupiterJunoSwirls.frag` · type=normal · mood=bright,psychedelic,space · complexity=3
+
+JUPITER JUNO SWIRLS: Jupiter's clouds seen close, as the Juno probe photographed them -- belts and zones sheared into each other, chains of white ovals, filaments that curl into Kelvin-Helmholtz waves along every belt edge, and a great storm spot rolling at the centre. The whole field fills the frame and flows: the bands drift in opposite directions and every edge rolls up in eddies. Colour comes from the photo, push…
+
+![JupiterJunoSwirls ruhig (t=8)](img/JupiterJunoSwirls_A.jpg) ![JupiterJunoSwirls ruhig (t=16)](img/JupiterJunoSwirls_B.jpg) ![JupiterJunoSwirls audio-heiß (t=21)](img/JupiterJunoSwirls_C.jpg)
+
+
 ### Kaleidoscope
 
 `Scene2D/Kaleidoscope.frag` · type=KaleidoscopeBase · mood=psychedelic,bright · complexity=1
@@ -2208,6 +2253,15 @@ KLUVER FORM CONSTANTS: the four geometric hallucination forms -- tunnel, spiral,
 KNITTING ROWS GROW: stocking stitch growing row by row over the scene arc. Each stitch is a V of yarn sitting in the row below, and the fabric is built as a lattice of those Vs; colourwork bands take their yarn from the chroma classes, the photo is the yarn's own dyed shade. The live row sits on the needle at the top of the growing fabric and is a little looser than the rest. Camera fixed on the work. Audio Reactivit…
 
 ![KnittingRowsGrow ruhig (t=8)](img/KnittingRowsGrow_A.jpg) ![KnittingRowsGrow ruhig (t=16)](img/KnittingRowsGrow_B.jpg) ![KnittingRowsGrow audio-heiß (t=21)](img/KnittingRowsGrow_C.jpg)
+
+
+### KoiPondAbove
+
+`Scene2D/KoiPondAbove.frag` · type=normal · mood=bright,calm,dreamy · complexity=3
+
+KOI POND ABOVE: a garden pond seen straight down. Koi -- white, orange and black-patched -- glide in slow curves under the surface; the sky and the overhanging branches mirror on the water; a few maple leaves float on top; caustics ripple over the stones on the bottom. The fish swim at their own gentle pace. The music is light on the water: each fish's colour glows a little with its band, and the swell brightens the …
+
+![KoiPondAbove ruhig (t=8)](img/KoiPondAbove_A.jpg) ![KoiPondAbove ruhig (t=16)](img/KoiPondAbove_B.jpg) ![KoiPondAbove audio-heiß (t=21)](img/KoiPondAbove_C.jpg)
 
 
 ### KumikoLatticeShoji
@@ -2597,6 +2651,15 @@ MICROLENSING CAUSTIC SWEEP: a pair of point-mass lenses drifts across a star fie
 ![MicrolensingCausticSweep ruhig (t=8)](img/MicrolensingCausticSweep_A.jpg) ![MicrolensingCausticSweep ruhig (t=16)](img/MicrolensingCausticSweep_B.jpg) ![MicrolensingCausticSweep audio-heiß (t=21)](img/MicrolensingCausticSweep_C.jpg)
 
 
+### MirrorBallRoom
+
+`Scene2D/MirrorBallRoom.frag` · type=normal · mood=dark,aggressive,psychedelic · complexity=4
+
+MIRROR BALL ROOM: an empty ballroom at night with a mirror ball turning under the ceiling. A spotlight hits the ball and a thousand small squares of light wander steadily over the walls, the parquet and the columns; in the haze each reflection draws a thin beam back to the ball. The ball keeps its own slow speed -- the music is in the light: the spot brightens with the kick, and the reflections take their colour from…
+
+![MirrorBallRoom ruhig (t=8)](img/MirrorBallRoom_A.jpg) ![MirrorBallRoom ruhig (t=16)](img/MirrorBallRoom_B.jpg) ![MirrorBallRoom audio-heiß (t=21)](img/MirrorBallRoom_C.jpg)
+
+
 ### MobiusInversionKaleidoscope
 
 `Scene2D/MobiusInversionKaleidoscope.frag` · type=normal · mood=psychedelic,dark · complexity=2
@@ -2703,6 +2766,15 @@ MUQARNAS DOME: looking straight up into a honeycomb vault of stalactite niches, 
 A starling flock of 131k boids, composited as dark silhouette density over an evening sky built from two colour samples of the photo. The flock (rendered upstream into texBoids) is read back here purely as a density field: a tight 8-tap blur feeds a contrast curve so dense regions go dark/solid and thin regions glow. audioAmbient brightens/dims the whole sky and its low sun glow; audioLevel and audioBeat add to the s…
 
 ![Murmuration ruhig (t=8)](img/Murmuration_A.jpg) ![Murmuration ruhig (t=16)](img/Murmuration_B.jpg) ![Murmuration audio-heiß (t=21)](img/Murmuration_C.jpg)
+
+
+### MusicalFountainShow
+
+`Scene2D/MusicalFountainShow.frag` · type=normal · mood=bright,aggressive · complexity=3
+
+MUSICAL FOUNTAIN SHOW: a dancing fountain at night on a long basin, a row of jets across the whole frame, each lit from below, the spray hanging as glowing mist and the whole show mirrored in the dark water. Each jet is a spectrum band: its height follows the smoothed energy of that band, so the row of water draws the spectrum as a living silhouette. A few tall centre jets breathe with the swell. Behind the basin a c…
+
+![MusicalFountainShow ruhig (t=8)](img/MusicalFountainShow_A.jpg) ![MusicalFountainShow ruhig (t=16)](img/MusicalFountainShow_B.jpg) ![MusicalFountainShow audio-heiß (t=21)](img/MusicalFountainShow_C.jpg)
 
 
 ### MusicBoxCylinder
@@ -4421,6 +4493,15 @@ TELEIDOSCOPE: the three-mirror kaleidoscope with a lens at the end -- the world 
 ![Teleidoscope ruhig (t=8)](img/Teleidoscope_A.jpg) ![Teleidoscope ruhig (t=16)](img/Teleidoscope_B.jpg) ![Teleidoscope audio-heiß (t=21)](img/Teleidoscope_C.jpg)
 
 
+### TempleLanternHall
+
+`Scene2D/TempleLanternHall.frag` · type=normal · mood=bright,calm,dreamy · complexity=4
+
+TEMPLE LANTERN HALL: a long temple hall whose whole ceiling is hung with glowing paper lanterns, row behind row into the depth, between red lacquered pillars, all of it mirrored in the polished dark floor. The lanterns sway very gently on their cords; each one belongs to a spectrum band and brightens with it, so the music drifts through the canopy as light. We walk slowly down the hall. Audio Reactivity: audioSpectru…
+
+![TempleLanternHall ruhig (t=8)](img/TempleLanternHall_A.jpg) ![TempleLanternHall ruhig (t=16)](img/TempleLanternHall_B.jpg) ![TempleLanternHall audio-heiß (t=21)](img/TempleLanternHall_C.jpg)
+
+
 ### TemporalZoomSSM
 
 `Scene2D/TemporalZoomSSM.frag` · type=normal · mood=psychedelic,calm,dark · complexity=2
@@ -4817,6 +4898,15 @@ WAVEFORM RIVER: the oscilloscope as geography. A river winds through a night lan
 WELDING ARC SEAM: a torch running a seam across a steel plate on the scene clock. Ahead of it the bare plate (the photo as mill scale), behind it the finished bead -- ripples of solidified metal cooling from white through orange to blue temper colours. The arc is a small violent core with a wide glow; round sparks fly off it; the visor tint darkens as the level rises, which is what a self-darkening helmet does. Camer…
 
 ![WeldingArcSeam ruhig (t=8)](img/WeldingArcSeam_A.jpg) ![WeldingArcSeam ruhig (t=16)](img/WeldingArcSeam_B.jpg) ![WeldingArcSeam audio-heiß (t=21)](img/WeldingArcSeam_C.jpg)
+
+
+### WhirlingDervishes
+
+`Scene2D/WhirlingDervishes.frag` · type=normal · mood=calm,dreamy · complexity=2
+
+WHIRLING DERVISHES: the sema seen as a long-exposure photograph from above. A circle of turning dancers, each a white skirt blurred into a luminous disc with soft folds, the whole ring itself slowly circling a centre; warm lamplight from above, the floor dark wood. The dancers turn at their own steady speed; the music is in the light -- each skirt glows with its band, and the swell brightens the lamps. Audio Reactivi…
+
+![WhirlingDervishes ruhig (t=8)](img/WhirlingDervishes_A.jpg) ![WhirlingDervishes ruhig (t=16)](img/WhirlingDervishes_B.jpg) ![WhirlingDervishes audio-heiß (t=21)](img/WhirlingDervishes_C.jpg)
 
 
 ### WhisperingGalleryMicrocavity
