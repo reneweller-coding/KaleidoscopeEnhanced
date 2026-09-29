@@ -10356,4 +10356,39 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
 
+  <TextureShader file="..\\Scene2D\\InterchangeLightTrails.frag" type="normal" mood="dark,bright" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="loopsP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\FogBridgeTowers.frag" type="normal" mood="calm,bright,dreamy" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="fogP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\RooftopRainTokyo.frag" type="normal" mood="dark,dreamy" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="rainP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\StadiumFloodlights.frag" type="normal" mood="dark,aggressive" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="rainP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\UVMineralsGlow.frag" type="normal" mood="dark,psychedelic" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="rocksP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
 </configuration>

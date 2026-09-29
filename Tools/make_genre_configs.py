@@ -219,6 +219,7 @@ RECENT_SCENES = {
     "StarTrailsPolaris", "MoonriseSkyline", "AnticrepuscularRays", "ShelfCloudPrairie", "UnderIceLookingUp",
     "CaveDiversTorches", "SurfBarrelInside", "SeaFoamLaceAerial", "FlamingoLakeAerial", "BatExodusSunset",
     "MayflyStreetLamps", "WildebeestDust", "FireflyForestSync", "ButterflyWingScales", "RunwayApproachLights",
+    "InterchangeLightTrails", "FogBridgeTowers", "RooftopRainTokyo", "StadiumFloodlights", "UVMineralsGlow",
 }
 
 def rule_recent(m, h):

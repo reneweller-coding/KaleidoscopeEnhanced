@@ -604,13 +604,6 @@
     <expr name="hueP" formula="chromaHue + seed3*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\Scene2D\HyperlaneJunction.frag" type="normal" mood="dark,calm,space" probability="0.45" complexity="4">
-    <rig preset="flat"/>
-    <float name="trafficP" minValue="0.5" maxValue="1.5"></float>
-    <float name="laneP" minValue="0.5" maxValue="2.0"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader file="..\Scene2D\CryosleepChamber.frag" type="normal" mood="dark,calm,space" probability="0.45" complexity="4">
     <rig preset="flat"/>
     <float name="podP" minValue="0.5" maxValue="1.5"></float>
@@ -665,13 +658,6 @@
     <float name="starP" minValue="0.5" maxValue="2.0"></float>
     <float name="lensP" minValue="0.5" maxValue="1.5"></float>
     <expr name="hueP" formula="chromaHue + seed3*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
-  <TextureShader file="..\Scene2D\WhiteDwarfAccretion.frag" type="normal" mood="dark,aggressive,space" probability="0.45" complexity="4">
-    <rig preset="flat"/>
-    <float name="flowP" minValue="0.5" maxValue="1.5"></float>
-    <float name="diskP" minValue="0.5" maxValue="2.0"></float>
-    <expr name="hueP" formula="chromaHue + seed2*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene2D\MatrioshkaBrain.frag" type="normal" mood="dark,aggressive,space" probability="0.45" complexity="5">
@@ -2609,15 +2595,6 @@
     <expr name="hueP" formula="chromaHue + seed2*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\Scene2D\AuroraBorealisCurtainFlight.frag" type="normal" mood="psychedelic,dreamy,aggressive" probability="0.4" complexity="2">
-    <rig preset="flat"/>
-    <float name="speedP" minValue="0.6" maxValue="1.6"></float>
-    <float name="curtainCountP" minValue="2.0" maxValue="5.0"></float>
-    <float name="waveP" minValue="0.7" maxValue="1.5"></float>
-    <float name="glowP" minValue="0.7" maxValue="1.4"></float>
-    <expr name="hueP" formula="chromaHue + seed3*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader file="..\Scene2D\BioluminescentDeepSeaCombJelly.frag" type="normal" mood="psychedelic,dreamy,dark" probability="0.4" complexity="2">
     <rig preset="flat"/>
     <float name="speedP" minValue="0.6" maxValue="1.6"></float>
@@ -3627,6 +3604,24 @@
   <TextureShader file="..\\Scene2D\\RunwayApproachLights.frag" type="normal" mood="dark,calm" probability="0.45" complexity="2">
     <rig preset="flat"/>
     <float name="mistP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\InterchangeLightTrails.frag" type="normal" mood="dark,bright" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="loopsP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\RooftopRainTokyo.frag" type="normal" mood="dark,dreamy" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="rainP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\StadiumFloodlights.frag" type="normal" mood="dark,aggressive" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="rainP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>

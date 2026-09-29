@@ -312,13 +312,6 @@
     <expr name="hueP" formula="chromaHue + seed2*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\Scene2D\SupermassiveBlackHoleOrbit.frag" type="normal" mood="dark,psychedelic,space" probability="0.45" complexity="5">
-    <rig preset="flat"/>
-    <float name="massP" minValue="0.5" maxValue="1.5"></float>
-    <float name="diskP" minValue="0.5" maxValue="1.5"></float>
-    <expr name="hueP" formula="chromaHue + seed2*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader file="..\Scene2D\QuantumSlipstream.frag" type="normal" mood="dark,aggressive,space" probability="0.45" complexity="4">
     <rig preset="flat"/>
     <float name="twistP" minValue="0.5" maxValue="2.0"></float>
@@ -580,13 +573,6 @@
     <float name="detailP" minValue="0.8" maxValue="1.2"></float>
     <float name="modesP" minValue="0" maxValue="1"></float>
     <float name="drainP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
-  <TextureShader file="..\Scene2D\ThreeBodyFigureEight.frag" type="normal" mood="space,dreamy,bright" probability="0.45" complexity="2">
-    <rig preset="flat"/>
-    <float name="sizeP" minValue="0" maxValue="1"></float>
-    <float name="tiltP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
@@ -3033,6 +3019,18 @@
   <TextureShader file="..\\Scene2D\\ButterflyWingScales.frag" type="normal" mood="bright,psychedelic,dreamy" probability="0.45" complexity="2">
     <rig preset="flat"/>
     <float name="patternP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\InterchangeLightTrails.frag" type="normal" mood="dark,bright" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="loopsP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\UVMineralsGlow.frag" type="normal" mood="dark,psychedelic" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="rocksP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>

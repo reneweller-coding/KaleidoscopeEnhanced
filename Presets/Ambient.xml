@@ -2100,21 +2100,6 @@
     <float name="foldDegreeP" minValue="3.0" maxValue="8.0"></float>
     <float name="specularP" minValue="0.8" maxValue="2.5"></float>
   </TextureShader>
-  <TextureShader file="..\Scene3D\TopologicalDiracSemimetalFermiArcs.frag" type="scene3d" geom="ribbon" probability="0.45" mood="bright,psychedelic" complexity="3">
-    <rig preset="procedural"/>
-    <float name="nodeDistP" minValue="0.8" maxValue="2.2"></float>
-    <float name="ribbonWidthP" minValue="0.02" maxValue="0.1"></float>
-    <float name="arcCurvP" minValue="0.6" maxValue="2.2"></float>
-    <float name="weylGlowP" minValue="0.8" maxValue="2.5"></float>
-  </TextureShader>
-  <TextureShader file="..\Scene3D\RydbergAtomQuantumSimulatorArray.frag" type="scene3d" geom="points" probability="0.45" mood="calm,bright,dreamy" complexity="3">
-    <rig preset="procedural"/>
-    <float name="arrayPitchP" minValue="0.015" maxValue="0.04"></float>
-    <float name="pointSizeP" minValue="8.0" maxValue="16.0"></float>
-    <float name="blockadeRadP" minValue="0.2" maxValue="0.8"></float>
-    <float name="pointGainP" minValue="0.5" maxValue="1.8"></float>
-    <float name="haloP" minValue="0.6" maxValue="2.2"></float>
-  </TextureShader>
   <TextureShader file="..\Scene3D\DendriticSnowflakeIceCrystalHabit.frag" type="scene3d" geom="grid" probability="0.45" mood="calm,dreamy,bright" complexity="3">
     <rig preset="procedural"/>
     <float name="flakeScaleP" minValue="0.8" maxValue="2.2"></float>
@@ -3183,6 +3168,18 @@
   <TextureShader file="..\\Scene2D\\RunwayApproachLights.frag" type="normal" mood="dark,calm" probability="0.45" complexity="2">
     <rig preset="flat"/>
     <float name="mistP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\FogBridgeTowers.frag" type="normal" mood="calm,bright,dreamy" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="fogP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\RooftopRainTokyo.frag" type="normal" mood="dark,dreamy" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="rainP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
