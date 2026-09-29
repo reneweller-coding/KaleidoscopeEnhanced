@@ -211,6 +211,7 @@ RECENT_SCENES = {
     "LightPillarsCity",
     "BlueHourSkylineMirror", "PaintPourCells", "MonetLilyPond", "NeonPoolNight", "CometOverLake",
     "NighthawksDiner", "FrostFernsSunrise", "EarthriseLunar", "TaikoSilhouettes", "RapeseedStormLight",
+    "WeatherProjectSun", "KineticBallCeiling", "LEDRainCurtain", "ProjectionMappedFacade", "HologramGauze",
 }
 
 def rule_recent(m, h):
