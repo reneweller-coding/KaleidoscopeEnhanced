@@ -152,6 +152,15 @@ APOLLONIAN SPHERE PACKING GASKET: Raymarched infinite 3D Apollonian sphere packi
 ![ApollonianSpherePackingGasket ruhig (t=8)](img/ApollonianSpherePackingGasket_A.jpg) ![ApollonianSpherePackingGasket ruhig (t=16)](img/ApollonianSpherePackingGasket_B.jpg) ![ApollonianSpherePackingGasket audio-heiß (t=21)](img/ApollonianSpherePackingGasket_C.jpg)
 
 
+### AsteroidMiningBase
+
+`Scene2D/AsteroidMiningBase.frag` · type=normal · mood=dark,calm,space · complexity=4
+
+ASTEROID MINING BASE: a slow orbit round a big asteroid that has been turned into a mine. Its cratered grey-brown surface carries lit domes with warm windows and blinking pad lights; a mining ship hangs above it, cutting into the rock with a laser whose impact throws a hot glow; smaller lumpy asteroids tumble in the field around it, sharp in the light of a distant sun. The camera circles steadily (never on audio); th…
+
+![AsteroidMiningBase ruhig (t=8)](img/AsteroidMiningBase_A.jpg) ![AsteroidMiningBase ruhig (t=16)](img/AsteroidMiningBase_B.jpg) ![AsteroidMiningBase audio-heiß (t=21)](img/AsteroidMiningBase_C.jpg)
+
+
 ### AttentionHeadRibbons
 
 `Scene2D/AttentionHeadRibbons.frag` · type=normal · mood=dark,calm,psychedelic · complexity=3
@@ -480,7 +489,7 @@ BUFFALO FRACTAL THUNDERSTORM: Deep plunge into the non-holomorphic Buffalo fract
 
 `Scene2D/BuildUpAvalanche.frag` · type=normal · mood=aggressive,bright · complexity=2
 
-BUILD-UP AVALANCHE: a mountain face of the photo under snow. As the music builds, the snow gathers on the slope -- the cornice grows and the load creeps down (slow, on the build-up envelope); at the drop the slab releases and the avalanche runs down the face as a wall of round snow grains and powder cloud. The drop is the one allowed cut, and it moves objects, not the camera, which is fixed on the mountain. After the…
+BUILD-UP AVALANCHE: a great alpine peak under a deep blue sky -- its left face in sun, ribbed with rock and couloirs, the right in blue shade, a pale range behind, spruce along the valley floor. As the music builds, the snow loads the face (the rock disappears under it), the cornice grows and a banner of spindrift streams off the summit; at the drop the slab releases and a powder avalanche billows down the sunny face…
 
 ![BuildUpAvalanche ruhig (t=8)](img/BuildUpAvalanche_A.jpg) ![BuildUpAvalanche ruhig (t=16)](img/BuildUpAvalanche_B.jpg) ![BuildUpAvalanche audio-heiß (t=21)](img/BuildUpAvalanche_C.jpg)
 
@@ -959,7 +968,7 @@ Atmospheric void tunnel designed for dark ambient and drone music. (Christoph He
 
 `Scene2D/DarkMatterWeb.frag` · type=normal · mood=dark,psychedelic,space · complexity=4
 
-DARK MATTER WEB: A visual representation of the cosmic web that binds the universe. Glowing filaments of dark matter connect massive galactic nodes, pulsing with dark, eerie energy to the beat. audioAdvance -> camera flight through the web audioKick -> bright pulses travelling along the filaments audioSwell -> brightness of the galactic nodes audioChromaHue-> palette offset for the dark matter Per-activation variety:…
+DARK MATTER WEB: the cosmic web as the big simulations draw it -- filaments of dark matter strung between bright halos where they cross, voids of near-black between them, galaxies strung along the threads like dew. Three depths of the web lie behind one another and drift at their own slow speeds (parallax), the nearest brightest: gold-white cores, a violet-blue dark-matter glow around them. Knots of light travel alon…
 
 ![DarkMatterWeb ruhig (t=8)](img/DarkMatterWeb_A.jpg) ![DarkMatterWeb ruhig (t=16)](img/DarkMatterWeb_B.jpg) ![DarkMatterWeb audio-heiß (t=21)](img/DarkMatterWeb_C.jpg)
 
@@ -995,7 +1004,7 @@ DEPTH PORTAL RECURSION: a Droste zoom built from the engine's own previous frame
 
 `Scene2D/DerelictMothership.frag` · type=normal · mood=dark,calm,space · complexity=4
 
-DERELICT MOTHERSHIP: An enormous, heavily damaged alien vessel drifting silently in the void. Its hull is breached, and its remaining lights flicker weakly and erratically. The atmosphere is eerie and mysterious. audioAdvance -> slow drift of the ship and camera movement audioKick -> erratic flickering of the surviving power grid audioSwell -> ambient fog and debris scattering audioChromaHue-> palette offset for the …
+DERELICT MOTHERSHIP: an enormous dead ship hangs across the sky above a blue-limbed planet. Its hull runs out of frame on both sides, plated and greebled, lit along its upper edge by the planet's glow; great breaches have torn the plating open, and inside the exposed ribs a few emergency lights still burn orange. Running lights along the keel pulse slowly, debris tumbles in the foreground. The ship drifts with glacia…
 
 ![DerelictMothership ruhig (t=8)](img/DerelictMothership_A.jpg) ![DerelictMothership ruhig (t=16)](img/DerelictMothership_B.jpg) ![DerelictMothership audio-heiß (t=21)](img/DerelictMothership_C.jpg)
 
@@ -1146,7 +1155,7 @@ END OF THE UNIVERSE: the heat death of the cosmos, and the last thing left in it
 
 ### ErodedLand
 
-`Scene2D/ErodedLand.frag` · type=normal · mood=calm,dark · complexity=2
+`Scene2D/ErodedLand.frag` · type=normal · mood=calm,bright,dreamy · complexity=2
 
 ERODED LAND: a slow glide over a worn mountain range -- long smooth valleys and sharp crests (fractal terrain whose octaves are damped where the slope is already steep, the classic erosion look), grass on the valley floors, bare rock on the flanks, snow on the ridges, lakes in the hollows, the far ranges fading into blue haze. The sun wheels slowly overhead, so the relief keeps turning in the light. This scene used t…
 
@@ -1499,7 +1508,7 @@ GAMMA RAY BURST: The most powerful explosion in the universe. We are looking alm
 
 ### GasGiantAtmosphere
 
-`Scene2D/GasGiantAtmosphere.frag` · type=normal · mood=dark,calm,space · complexity=10
+`Scene2D/GasGiantAtmosphere.frag` · type=normal · mood=calm,dreamy,bright,space · complexity=10
 
 GAS GIANT ATMOSPHERE: cruising low over the cloud deck of a gas giant. Billowing tops in the planet's own zone-and-belt colours (cream, ochre, rust) run to a warm hazy horizon; convective towers rise here and there, lit by a low sun with long shadows. Above, the planet's rings arch across a blue-violet sky beside a crescent moon. Storm cells deep in the deck light up from inside with the kick. sceneTime/sceneAdvance …
 
@@ -1715,7 +1724,7 @@ HIGHER DIMENSION ASCENSION: Breaking through the veil of 3D space into a mind-be
 
 ### HilbertSpaceFillingCurveZoom
 
-`Scene2D/HilbertSpaceFillingCurveZoom.frag` · type=normal · mood=psychedelic,dark · complexity=2
+`Scene2D/HilbertSpaceFillingCurveZoom.frag` · type=normal · mood=psychedelic,dark,calm · complexity=2
 
 HILBERT SPACE FILLING CURVE: a true Hilbert curve (order 7, one unbroken path through 16,384 cells) drawn as a neon tube on a dark ground, its colour running through the spectrum along the path, so the curve's nested U-shapes read as nested colour regions. Bright comets travel along the path, each trailing a fading tail, and show how the one line winds through every cell. The view drifts slowly over the curve. The ea…
 
@@ -1915,7 +1924,7 @@ HYPER WARP TUNNEL: Full-screen infinite warp tunnel with dynamic polar coordinat
 
 `Scene2D/IcebergWaterline.frag` · type=normal · mood=calm,dreamy,bright · complexity=2
 
-ICEBERG WATERLINE: the split view -- the iceberg white above the surface, and below it the nine tenths, vast and blue, the photo refracted through the ice. Light rays fall through the water on the swell, bubbles (round) rise on the scene clock, small fish pass as round-bodied shadows, and the kick is a crack of light in the ice. Camera fixed at the waterline. Audio Reactivity: audioSwell -> sunlight and rays (slow) s…
+ICEBERG WATERLINE: the split view of an over-under photograph -- the camera half in the water. Above the waterline a white berg under a pale polar sky, its faces lit by a low sun, blue in the crevasses; below it the nine tenths, vast and glowing turquoise, fading into the deep blue, sun rays slanting down through the water, round bubbles rising along the ice. The waterline itself wobbles as a bright meniscus with the…
 
 ![IcebergWaterline ruhig (t=8)](img/IcebergWaterline_A.jpg) ![IcebergWaterline ruhig (t=16)](img/IcebergWaterline_B.jpg) ![IcebergWaterline audio-heiß (t=21)](img/IcebergWaterline_C.jpg)
 
@@ -1967,7 +1976,7 @@ INFINITY MIRROR ROOM: a mirrored box with real depth. Instead of a depth buffer 
 
 ### InkTank
 
-`Scene2D/InkTank.frag` · type=normal · mood=dark,dreamy · complexity=2
+`Scene2D/InkTank.frag` · type=normal · mood=calm,bright,dreamy · complexity=2
 
 _(Vorschau eingeschränkt: Sim-Textur/Mehrpass — Bilder unterschätzen die echte App)_
 
@@ -2115,7 +2124,7 @@ KALEIDOSCOPIC LICHTENBERG ZOOM: Infinite recursive zoom into high-voltage dielec
 
 `Scene2D/KardashevTypeIIICity.frag` · type=normal · mood=dark,psychedelic,space · complexity=5
 
-KARDASHEV TYPE III CITY: View of an entire galaxy whose stars have been interconnected into a colossal, synchronized machine network. The network pulses and processes data in perfect rhythm to the audio. audioAdvance -> slow zooming/panning across the galactic machine audioKick -> flashes from major star-nodes firing audioSwell -> brightness of the connecting energy conduits audioChromaHue-> palette offset for the ga…
+KARDASHEV TYPE III CITY: a whole spiral galaxy turned into one machine. The galaxy lies tilted in the frame -- golden bulge, blue arms with pink star-forming knots and dark dust lanes -- and over its disc a luminous network is woven from star to star, densest along the arms, packets of light running along its links from node to node. The galaxy turns with slow, rigid majesty; the network hums with the music's light. …
 
 ![KardashevTypeIIICity ruhig (t=8)](img/KardashevTypeIIICity_A.jpg) ![KardashevTypeIIICity ruhig (t=16)](img/KardashevTypeIIICity_B.jpg) ![KardashevTypeIIICity audio-heiß (t=21)](img/KardashevTypeIIICity_C.jpg)
 
@@ -2574,7 +2583,7 @@ MARBLE RUN TRACK: a looping wooden track, and marbles (round, glass, each a chro
 
 `Scene2D/MatrioshkaBrain.frag` · type=normal · mood=dark,aggressive,space · complexity=5
 
-MATRIOSHKA BRAIN: Flight through the endless, glowing computing layers of a megastructure that completely encases a star. Dense, geometric pathways and data streams pulse violently to the music. audioAdvance -> flight speed through the computational layers audioKick -> flashes from massive data processing nodes audioSwell -> ambient brightness of the energy pathways audioChromaHue-> palette offset for the data stream…
+MATRIOSHKA BRAIN: a star wrapped in nested shells of computer, seen from outside. Three concentric spheres of panels, each turning on its own slow axis: the outer shell cold and dark red with its waste heat, the middle one orange, the inner one yellow-hot -- and where panels are missing, the view falls through to the next shell and finally to the star's white-gold surface. Seams between the panels carry streams of li…
 
 ![MatrioshkaBrain ruhig (t=8)](img/MatrioshkaBrain_A.jpg) ![MatrioshkaBrain ruhig (t=16)](img/MatrioshkaBrain_B.jpg) ![MatrioshkaBrain audio-heiß (t=21)](img/MatrioshkaBrain_C.jpg)
 
@@ -2716,7 +2725,7 @@ MOIRE TWISTED BILAYER GRAPHENE: Magic-angle (~1.1 deg) twisted bilayer graphene.
 
 ### MolecularCloudCore
 
-`Scene2D/MolecularCloudCore.frag` · type=normal · mood=dark,space · complexity=3
+`Scene2D/MolecularCloudCore.frag` · type=normal · mood=dark,dreamy,space · complexity=3
 
 MOLECULAR CLOUD CORE: a protostar deep in a dark molecular cloud, as the infrared telescopes show it -- an hourglass of two cavities carved by its outflow, their wispy walls lit gold above and cold blue below, pinched at the neck by the dark lane of its edge-on disk. Thin jets leave both ways, Herbig-Haro knots travelling out along them. Around it the dust hides and reddens the background stars. Everything moves at i…
 
@@ -2790,7 +2799,7 @@ MUSIC BOX CYLINDER: the works of a cylinder music box, lid open. The pinned bras
 
 `Scene2D/NebulaCliffs.frag` · type=normal · mood=calm,dreamy,space · complexity=3
 
-NEBULA CLIFFS: A breathtaking flight alongside towering, light-years-high cliffs of interstellar gas and dust. The dense molecular clouds are illuminated from behind by unseen young stars, pulsing softly to the audio. audioAdvance -> camera flight speed along the cliffs audioKick -> flashes from deep inside the dust clouds audioSwell -> brightness of the backlighting stars audioChromaHue-> palette offset for the nebu…
+NEBULA CLIFFS: the "cosmic cliffs" of a star-forming region, as the infrared telescopes show them -- a wall of orange-brown dust rising from the bottom of the frame in three ranges, its crags lit gold along the ionisation front where the young cluster above (off frame) burns into it, steam-like wisps boiling off the edges, and above it all a glowing blue-cyan cavity of hot gas strewn with stars, the brightest wearing…
 
 ![NebulaCliffs ruhig (t=8)](img/NebulaCliffs_A.jpg) ![NebulaCliffs ruhig (t=16)](img/NebulaCliffs_B.jpg) ![NebulaCliffs audio-heiß (t=21)](img/NebulaCliffs_C.jpg)
 
@@ -3233,7 +3242,7 @@ PLANETARY NEBULA SHELLS: a dying star has thrown off shell after shell of gas, a
 
 `Scene2D/PlanetaryRingRings.frag` · type=normal · mood=dark,calm,space · complexity=4
 
-PLANETARY RING RINGS: Complex ice rings within rings around a massive super-Saturn. The camera skims just above the ring plane. Colliding ice chunks generate sparks that react to the audio kicks. audioAdvance -> flight speed over the ring plane audioKick -> flashes from ice chunk collisions audioSwell -> ambient brightness of the planetary rings audioChromaHue-> palette offset for the rings Per-activation variety: ri…
+PLANETARY RING RINGS: skimming the ring plane of a super-Saturn. The rings stretch to the horizon as a sheet of ringlets in perspective, bright and dark bands running to the vanishing point, and close under the camera the ice chunks themselves -- round, sunlit boulders of every size -- drift past and out of view. Above, the banded planet fills half the sky with the rings' shadow lying across it, against black space. …
 
 ![PlanetaryRingRings ruhig (t=8)](img/PlanetaryRingRings_A.jpg) ![PlanetaryRingRings ruhig (t=16)](img/PlanetaryRingRings_B.jpg) ![PlanetaryRingRings audio-heiß (t=21)](img/PlanetaryRingRings_C.jpg)
 
@@ -3609,9 +3618,9 @@ The living Gray-Scott reaction-diffusion field (`texSim`), sampled through TWO n
 
 ### RecursiveHexagonHoneycombZoom
 
-`Scene2D/RecursiveHexagonHoneycombZoom.frag` · type=normal · mood=psychedelic,aggressive,dark · complexity=2
+`Scene2D/RecursiveHexagonHoneycombZoom.frag` · type=normal · mood=calm,bright,dreamy · complexity=2
 
-RECURSIVE HEXAGON HONEYCOMB ZOOM: Infinite logarithmic zoom dive through nested hexagonal honeycomb cells. Each honeycomb gate contains rotating sub-lattices that break open into glowing neon crystal walls with dimensional burst flashes. Audio Reactivity: audioAdvance -> drives continuous infinite logarithmic zoom progression audioKick -> flashes honeycomb cell walls & triggers lattice shatter bursts audioCentroid-> …
+RECURSIVE HEXAGON HONEYCOMB: a macro photograph of a honeycomb. Pale wax walls in their hexagon lattice; cells brimming with amber honey that catches the light in a bright glint, cells sealed under matte wax caps, a few empty ones showing the depth of the cell. Bees crawl over the comb on their own unhurried paths, round-bodied, banded, their wings a shimmer. The view drifts slowly across the comb and settles ever de…
 
 ![RecursiveHexagonHoneycombZoom ruhig (t=8)](img/RecursiveHexagonHoneycombZoom_A.jpg) ![RecursiveHexagonHoneycombZoom ruhig (t=16)](img/RecursiveHexagonHoneycombZoom_B.jpg) ![RecursiveHexagonHoneycombZoom audio-heiß (t=21)](img/RecursiveHexagonHoneycombZoom_C.jpg)
 
@@ -3838,7 +3847,7 @@ SECTION MEMORY HALLS: the song's structure as a suite of rooms. Every section th
 
 `Scene2D/SectionStrataCanyon.frag` · type=normal · mood=calm,bright,dreamy · complexity=2
 
-SECTION STRATA CANYON: the song as geology. A canyon wall fills the frame; every section of the song that has played is a rock layer, in that section's colour (a palette hue keyed to the section id), the oldest at the bottom; the current section is the layer being laid down on top, growing with its age. The wall passes steadily on the scene clock (a slow lateral drift of the erosion pattern, not of the camera); the p…
+SECTION STRATA CANYON: the song as geology, in a canyon at golden hour. Across the gorge rises a wall of banded rock -- deep red, orange, cream, maroon, the colours of a desert canyon -- carved into mesas and side canyons, its ledges catching the low sun; a river glints far below and a shaded near cliff frames the view. The bands at the top of the wall are the song: every section that has played is a stratum there, t…
 
 ![SectionStrataCanyon ruhig (t=8)](img/SectionStrataCanyon_A.jpg) ![SectionStrataCanyon ruhig (t=16)](img/SectionStrataCanyon_B.jpg) ![SectionStrataCanyon audio-heiß (t=21)](img/SectionStrataCanyon_C.jpg)
 
@@ -3937,9 +3946,9 @@ SKYRMION CHIRAL SPIN LATTICE: Dense 2D triangular lattice of topological magneti
 
 ### SlotMachineReels
 
-`Scene2D/SlotMachineReels.frag` · type=normal · mood=bright,aggressive,psychedelic · complexity=3
+`Scene2D/SlotMachineReels.frag` · type=normal · mood=bright,psychedelic · complexity=3
 
-SLOT MACHINE REELS: three reels behind the glass of a fruit machine. Each turns at its own steady rate for the whole activation -- they never snap to a stop, because a reel jerking to a halt on a beat is exactly the jolt this catalogue avoids. The symbols are cut from the photo and wrap on drums with a curved face, so they compress toward the top and bottom of the window. The pay line brightens with the swell and the…
+SLOT MACHINE REELS: a fruit machine in a dark casino. Behind the glass three drum reels turn, each at its own steady rate for the whole activation -- cherries, lucky sevens, golden bells, BAR plates, blue diamonds and lemons wrapping round the curved drums, darkening toward the top and bottom of the window. The cabinet is red and chrome, rimmed by a chase of round bulbs; the red pay line glows across the middle; the …
 
 ![SlotMachineReels ruhig (t=8)](img/SlotMachineReels_A.jpg) ![SlotMachineReels ruhig (t=16)](img/SlotMachineReels_B.jpg) ![SlotMachineReels audio-heiß (t=21)](img/SlotMachineReels_C.jpg)
 
@@ -4164,7 +4173,7 @@ SPIRAL STAIRWELL DESCENT: looking straight down an endless spiral staircase. The
 
 `Scene2D/SpirographGearDraw.frag` · type=normal · mood=calm,bright,psychedelic · complexity=3
 
-SPIROGRAPH GEAR DRAW: the toy -- a small gear rolling inside a ring, the pen in one of its holes drawing a hypotrochoid. The gear rolls on the scene clock, the pen leaves a trace that persists for the last turns (fading), the radii come from the chroma classes once per activation (the ratio picks the number of lobes), the trace colour from the class that sounds; the kick lights the pen, the treble the gear teeth glin…
+SPIROGRAPH GEAR DRAW: the toy, in gel-pen neon on dark paper. A translucent gear rolls inside a toothed ring, the pen in one of its holes drawing a hypotrochoid in glowing ink; when the figure closes, the next one begins with another gear and another colour, and the earlier figures stay on the paper, slowly fading, so the sheet is always a layered rosette of several drawings. The gear rolls on the scene clock; the pe…
 
 ![SpirographGearDraw ruhig (t=8)](img/SpirographGearDraw_A.jpg) ![SpirographGearDraw ruhig (t=16)](img/SpirographGearDraw_B.jpg) ![SpirographGearDraw audio-heiß (t=21)](img/SpirographGearDraw_C.jpg)
 
@@ -4270,9 +4279,9 @@ STELLAR ENGINE: A gigantic Shkadov thruster (a planet-sized mirror) built to mov
 
 ### StellarNursery
 
-`Scene2D/StellarNursery.frag` · type=normal · mood=dark,psychedelic,space · complexity=5
+`Scene2D/StellarNursery.frag` · type=normal · mood=calm,dreamy,space · complexity=5
 
-STELLAR NURSERY: A dark, dense nebula where countless protostars are igniting. They shoot highly energetic bipolar plasma jets into the gas clouds that react intensely to the music. audioAdvance -> camera flight through the nursery audioKick -> flashes from newly ignited stars and jet pulses audioSwell -> ambient brightness of the surrounding nebula gas audioChromaHue-> palette offset for the glowing gas Per-activati…
+STELLAR NURSERY: pillars of creation -- three towering columns of cold dust rising from the bottom of the frame into a glowing cavity, in the narrow-band palette of the famous photographs (teal oxygen, gold sulphur and hydrogen). The tops of the pillars are lit and eroded by the young stars above: bright rims, fingers of gas streaming off them, tiny evaporating globules at the tips; a few protostars inside the pillar…
 
 ![StellarNursery ruhig (t=8)](img/StellarNursery_A.jpg) ![StellarNursery ruhig (t=16)](img/StellarNursery_B.jpg) ![StellarNursery audio-heiß (t=21)](img/StellarNursery_C.jpg)
 
@@ -4387,9 +4396,9 @@ SUPERBLOOM OPENING: a desert valley carpeted in wildflowers that open with the l
 
 ### SupercellMesocyclone
 
-`Scene2D/SupercellMesocyclone.frag` · type=normal · mood=dark,aggressive · complexity=3
+`Scene2D/SupercellMesocyclone.frag` · type=normal · mood=dark,dreamy · complexity=3
 
-SUPERCELL MESOCYCLONE: Volumetric rotating supercell storm cloud with helical updraft mesocyclone, lowering wall cloud, anvil overhang, crepuscular god rays, and audio-reactive intracloud lightning illumination. audioAdvance -> rotates mesocyclone cloud tiers & anvil shear audioKick -> flashes branched intracloud lightning & illuminates storm audioBass -> undulates cloud density and storm pressure depression audioCen…
+SUPERCELL MESOCYCLONE: the storm chasers' "mothership" over the plains at dusk. A colossal rotating updraft stacked in striated tiers like a layer cake, lit gold on its sunset side and steel-blue in shade, its striations turning slowly round the axis; a dark wall cloud lowers beneath it; a grey curtain of rain hangs off to one side; an anvil spreads overhead. The flat plains below are lit by the last sun through the …
 
 ![SupercellMesocyclone ruhig (t=8)](img/SupercellMesocyclone_A.jpg) ![SupercellMesocyclone ruhig (t=16)](img/SupercellMesocyclone_B.jpg) ![SupercellMesocyclone audio-heiß (t=21)](img/SupercellMesocyclone_C.jpg)
 
@@ -4513,7 +4522,7 @@ TEMPORAL ZOOM: the song zooms into itself. The self-similarity matrix (texSSM) i
 
 ### TerraformingColony
 
-`Scene2D/TerraformingColony.frag` · type=normal · mood=dark,aggressive,space · complexity=4
+`Scene2D/TerraformingColony.frag` · type=normal · mood=calm,dreamy,space · complexity=4
 
 TERRAFORMING COLONY: A flight over a harsh, barren planet being transformed. Massive glowing biodomes and towering atmospheric processors dominate the landscape. Smoke and terraforming gases glow intensely to the beat. audioAdvance -> camera flight speed over the colony audioKick -> flashes from atmospheric processors and vent stacks audioSwell -> brightness of the biodomes and artificial daylight audioChromaHue-> pa…
 
@@ -5047,15 +5056,6 @@ Pieces flying in from nowhere and settling into an object that was not there a m
 AsteroidBelt.frag — matte rock faces; a faint cool rim keeps silhouettes readable against black space.
 
 ![AsteroidBelt ruhig (t=8)](img/AsteroidBelt_A.jpg) ![AsteroidBelt ruhig (t=16)](img/AsteroidBelt_B.jpg) ![AsteroidBelt audio-heiß (t=21)](img/AsteroidBelt_C.jpg)
-
-
-### AsteroidMiningBase
-
-`Scene3D/AsteroidMiningBase.frag` · type=scene3d · geom=cubes · mood=dark,aggressive,space · complexity=4
-
-ASTEROID MINING BASE: A sprawling industrial complex built into tumbling asteroids. Spotlights cut through the dust, and massive laser drills flash in time with the music. audioAdvance -> flight speed through the asteroid field audioKick -> flashes from mining lasers and warning lights audioSwell -> dust density and ambient industrial glow audioChromaHue-> laser and light color palette Per-activation variety: dustP f…
-
-![AsteroidMiningBase ruhig (t=8)](img/AsteroidMiningBase_A.jpg) ![AsteroidMiningBase ruhig (t=16)](img/AsteroidMiningBase_B.jpg) ![AsteroidMiningBase audio-heiß (t=21)](img/AsteroidMiningBase_C.jpg)
 
 
 ### AsteroidRubblePileTumble

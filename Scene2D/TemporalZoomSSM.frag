@@ -63,6 +63,19 @@ float ssm(float a, float b)
     return texture(texSSM, vec2(ssmHead - a, ssmHead - b)).r;
 }
 
+// Inferno-like heat ramp: black -> purple -> orange -> pale yellow.  A
+// matrix reads at a glance in a heat map; the photo palette made it a
+// purple wash (catalogue review 29.09.2026).
+vec3 heat(float x)
+{
+    x = clamp(x, 0.0, 1.0);
+    vec3 c = mix(vec3(0.0, 0.0, 0.02), vec3(0.35, 0.05, 0.45), smoothstep(0.0, 0.3, x));
+    c = mix(c, vec3(0.85, 0.25, 0.2), smoothstep(0.25, 0.6, x));
+    c = mix(c, vec3(1.0, 0.7, 0.15), smoothstep(0.55, 0.85, x));
+    c = mix(c, vec3(1.0, 1.0, 0.75), smoothstep(0.85, 1.0, x));
+    return c;
+}
+
 void main()
 {
     float aspect = resolution.x / resolution.y;
@@ -95,19 +108,23 @@ void main()
         float ageB = uvk.y * fill * exp(-float(k) * L) * 0.25;
         float sim = ssm(ageA, ageB);
         float w = clamp(1.0 - abs(ls) / (1.5 * L), 0.0, 1.0) * inside;
-        vec3 layerCol = imgPalette(hue * 0.159 + 0.15 + 0.2 * float(k + 1)) * pow(clamp(sim, 0.0, 1.0), 1.5) * 1.6;
+        float simA = smoothstep(0.15, 0.95, sim);
+        vec3 layerCol = mix(heat(simA), heat(simA) * imgPalette(hue * 0.159 + 0.15 + 0.2 * float(k + 1)) * 1.8, 0.15) * 1.3;
+        // Each cell a soft tile: the matrix as a glowing mosaic.
+        vec2 tf = abs(fract(uvk * 32.0) - 0.5);
+        layerCol *= 0.75 + 0.25 * smoothstep(0.5, 0.3, max(tf.x, tf.y));
         // Grid lines of the layer's own beat lattice.
         float grid = exp(-min(fract(uvk.x * 8.0), 1.0 - fract(uvk.x * 8.0)) * 30.0) + exp(-min(fract(uvk.y * 8.0), 1.0 - fract(uvk.y * 8.0)) * 30.0);
-        layerCol += imgPalette(hue * 0.159 + 0.6) * grid * 0.08;
+        layerCol += vec3(0.6, 0.7, 1.0) * grid * 0.06;
         // The diagonal is "now against now": a bright line, flashing on the kick.
         float diag = exp(-abs(uvk.x - uvk.y) * 40.0);
-        layerCol += imgPalette(hue * 0.159 + 0.9) * diag * (0.15 + 0.7 * audioKick);
+        layerCol += vec3(0.5, 0.95, 1.0) * diag * (0.3 + 0.9 * audioKick);
         col += layerCol * w;
         wsum += w;
     }
     col /= max(wsum, 1e-3);
     col = mix(col, col * imgPalette(hue * 0.159 + 0.05) * 2.0, 0.4 * clamp(audioSectionKnown, 0.0, 1.0));
-    col += imgPalette(hue * 0.159 + 0.4) * 0.03;
+    col += vec3(0.03, 0.02, 0.06) + vec3(0.2, 0.08, 0.3) * exp(-length(p) * 2.5) * 0.3;
     col *= (0.7 + 0.5 * audioLevel) * (0.85 + 0.35 * audioSwell);
     col *= 1.0 - 0.4 * smoothstep(0.7, 1.15, length(p));
 

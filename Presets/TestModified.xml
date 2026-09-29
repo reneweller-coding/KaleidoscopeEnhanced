@@ -504,7 +504,7 @@
     <expr name="hueP" formula="chromaHue + seed2*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\Scene2D\GasGiantAtmosphere.frag" type="normal" mood="dark,calm,space" probability="0.45" complexity="10">
+  <TextureShader file="..\Scene2D\GasGiantAtmosphere.frag" type="normal" mood="calm,dreamy,bright,space" probability="0.45" complexity="10">
     <rig preset="flat"/>
     <float name="cloudP" minValue="0.5" maxValue="1.5"></float>
     <float name="stormP" minValue="0.5" maxValue="1.6"></float>
@@ -551,7 +551,7 @@
     <expr name="hueP" formula="chromaHue + seed3*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\Scene2D\HilbertSpaceFillingCurveZoom.frag" type="normal" mood="psychedelic,dark" probability="0.4" complexity="2">
+  <TextureShader file="..\Scene2D\HilbertSpaceFillingCurveZoom.frag" type="normal" mood="psychedelic,dark,calm" probability="0.4" complexity="2">
     <rig preset="flat"/>
     <float name="speedP" minValue="0.6" maxValue="1.6"></float>
     <float name="scaleP" minValue="0.7" maxValue="1.5"></float>
@@ -839,7 +839,7 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\Scene2D\MolecularCloudCore.frag" type="normal" mood="dark,space" probability="0.45" complexity="3">
+  <TextureShader file="..\Scene2D\MolecularCloudCore.frag" type="normal" mood="dark,dreamy,space" probability="0.45" complexity="3">
     <rig preset="flat"/>
     <float name="dustP" minValue="0.5" maxValue="1.5"></float>
     <float name="starP" minValue="0.5" maxValue="2.0"></float>
@@ -1233,7 +1233,7 @@
     <expr name="hueP" formula="chromaHue + seed2*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\Scene2D\StellarNursery.frag" type="normal" mood="dark,psychedelic,space" probability="0.45" complexity="5">
+  <TextureShader file="..\Scene2D\StellarNursery.frag" type="normal" mood="calm,dreamy,space" probability="0.45" complexity="5">
     <rig preset="flat"/>
     <float name="starP" minValue="0.5" maxValue="1.5"></float>
     <float name="jetP" minValue="0.5" maxValue="2.0"></float>

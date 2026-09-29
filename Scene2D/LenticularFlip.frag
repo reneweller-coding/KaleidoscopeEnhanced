@@ -17,6 +17,9 @@ out vec4 fragColor;
  *   audioHigh    -> rainbow fringe (light/colour)
  *   audioLevel   -> brightness
  *
+ * A holographic foil over the print throws rainbow bands and winking
+ * glitter that sweep with the same viewing angle.
+ *
  * Per-activation variety: pitchP (lenticule pitch), waveP, hueP.
  */
 uniform vec2  resolution;
@@ -83,6 +86,29 @@ void main()
     vec3 A = texture(tex0, clamp(suv, 0.0, 1.0)).rgb;
     vec3 B = texture(tex1, clamp(suv, 0.0, 1.0)).rgb;
     vec3 col = mix(A, B, mixAB);
+    // A printed lenticular is punchy: lift contrast and saturation (the
+    // catalogue's quiet photos made the sheet a grey wash).
+    float lum = dot(col, vec3(0.299, 0.587, 0.114));
+    col = clamp(mix(vec3(lum), col, 1.35), 0.0, 1.0);
+    col = smoothstep(0.02, 0.95, col);
+
+    // Holographic foil laminated over the print: diffraction rainbows that
+    // sweep across the sheet with the viewing angle, strongest in the dark
+    // parts of the picture, and glitter that winks as the angle passes.
+    float foilMask = 0.25 + 0.55 * (1.0 - lum);
+    float wob = 0.15 * sin(p.y * 7.0 + p.x * 3.0);
+    vec3 holo = 0.5 + 0.5 * cos(6.2831853 * (dot(p, vec2(0.6, 0.8)) * 1.6 + view * 1.3 + wob + vec3(0.0, 0.33, 0.66)));
+    col = mix(col, col * 0.4 + holo * 0.8, foilMask * 0.55);
+    {
+        vec2 g = gl_FragCoord.xy / resolution.y * 90.0;
+        vec2 gi = floor(g), gf = fract(g);
+        vec2 gc = 0.25 + 0.5 * vec2(fract(sin(dot(gi, vec2(12.9898, 78.233))) * 43758.5453),
+                                    fract(sin(dot(gi, vec2(39.346, 11.135))) * 43758.5453));
+        float h = fract(sin(dot(gi, vec2(7.13, 157.1))) * 43758.5453);
+        float wink = smoothstep(0.93, 1.0, 0.5 + 0.5 * sin(view * 18.0 + h * 40.0));
+        float spark = smoothstep(0.16, 0.0, length(gf - gc)) * step(0.7, h) * wink;
+        col += (holo * 0.6 + 0.6) * spark * 0.9;
+    }
     // Rainbow fringe at the flip (dispersion), stronger with the treble.
     float fr = exp(-abs(seen - 0.5) * 8.0);
     float hi = clamp(audioHigh * 2.0, 0.0, 1.0);

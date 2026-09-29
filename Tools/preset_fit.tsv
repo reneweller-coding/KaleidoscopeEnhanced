@@ -23,7 +23,7 @@ ApollonianSpherePackingDive	3	5	6	6	9	3	8
 ApollonianSpherePackingGasket	4	4	6	3	9	5	8
 Assembly	4	3	3	6	2	5	5
 AsteroidBelt	5	8	3	5	1	4	5
-AsteroidMiningBase	1	4	2	5	0	1	1
+AsteroidMiningBase	3	8	1	6	1	3	5
 AsteroidRubblePileTumble	5	8	2	6	1	4	5
 AtmosphericEntry	5	9	5	5	1	5	8
 AtmosphericGravityWaveUndularBore	6	5	3	3	3	5	4
@@ -84,7 +84,7 @@ Bubble	6	2	4	2	5	6	6
 BubbleChamberTracks	6	4	3	6	4	5	5
 BuddhabrotCosmicGhost	5	6	4	4	6	5	6
 BuffaloFractalThunderstorm	4	2	4	4	6	4	4
-BuildUpAvalanche	3	0	3	3	1	3	2
+BuildUpAvalanche	6	1	2	3	0	6	5
 BuildUpPressureChamber	1	2	7	7	3	1	5
 BurningShipDeepVoyage	3	3	5	4	8	4	6
 CalabiYauManifold	5	4	5	5	5	4	5
@@ -173,7 +173,7 @@ CyborgHiveShip	3	5	5	6	2	2	4
 CymaticsPlate	6	5	3	6	3	5	5
 DandelionClock	5	0	1	3	1	5	3
 DarkAmbientTunnel	7	4	3	2	5	5	5
-DarkMatterWeb	4	6	2	6	2	2	2
+DarkMatterWeb	6	8	3	6	4	5	6
 DarkNebulaBokGlobules	5	5	2	5	3	4	4
 DeepSeaHydrothermalChimneyPillar	5	4	3	5	2	4	5
 DeepSeaVentsEcosystem	5	5	3	5	3	3	4
@@ -181,7 +181,7 @@ DeepSpaceArmada	4	7	5	3	1	3	5
 DendriticSnowCrystal	6	5	2	6	3	5	5
 DendriticSnowflakeIceCrystalHabit	6	4	2	3	4	6	5
 DepthPortalRecursion	5	4	5	5	8	5	7
-DerelictMothership	4	6	1	6	0	2	2
+DerelictMothership	4	8	1	7	1	4	6
 Detonation	3	3	6	5	2	3	5
 DiamondFireMacro	4	2	6	4	7	6	6
 DiatomSilicaMicrofrustule	5	3	5	3	5	5	6
@@ -341,7 +341,7 @@ HyperspaceGridToroidTube	3	4	7	3	6	3	6
 HyperspaceKaleidoscopicMatrix	3	5	8	5	8	3	7
 HyperToroidalRollerCoaster	3	4	6	4	6	3	5
 HyperWarpTunnel	2	5	8	6	8	2	8
-IcebergWaterline	3	1	2	4	2	3	2
+IcebergWaterline	7	1	0	3	1	7	7
 IceCrack	5	1	3	3	3	6	5
 IlluminatedManuscript	4	0	1	3	1	5	3
 IndustrialStation	3	7	2	6	1	3	3
@@ -371,7 +371,7 @@ Kaleidoscope	5	2	5	3	9	6	7
 KaleidoscopeOrganism	5	4	3	5	4	5	5
 KaleidoscopicBismuthLattice	3	2	8	3	9	4	8
 KaleidoscopicLichtenbergZoom	4	3	6	5	7	4	5
-KardashevTypeIIICity	4	6	1	5	1	2	2
+KardashevTypeIIICity	5	9	3	4	4	6	8
 KarmanVortexStreet	4	2	4	4	5	4	4
 KelpForest	7	4	3	5	3	6	6
 KelvinHelmholtzCloudWaves	6	2	2	3	2	6	5
@@ -405,7 +405,7 @@ LavaLamp	7	1	3	2	6	6	6
 LavaWorldTidalLock	5	6	3	4	3	4	5
 LeafVenationGrowth	4	1	1	3	1	4	3
 LeidenfrostDroplets	4	1	2	3	2	4	3
-LenticularFlip	3	0	1	3	2	3	2
+LenticularFlip	3	0	3	2	4	6	5
 LidarSweepPointCloud	4	2	4	6	3	5	5
 LiebLatticeFlatBandLocalization	3	1	5	3	6	4	5
 LiesegangPrecipitationRingArray	5	2	5	2	7	5	6
@@ -443,7 +443,7 @@ MangroveRootsTide	5	1	1	5	1	4	3
 MantleConvectionPlume	6	4	3	5	4	4	5
 MarangoniConvectionTearsOfWine	4	2	7	3	6	4	6
 MarbleRunTrack	3	0	2	3	2	3	3
-MatrioshkaBrain	3	5	2	5	1	2	2
+MatrioshkaBrain	4	8	4	5	4	5	8
 MatryoshkaPhotoDoll	4	2	3	4	4	4	3
 MelodyConstellation	6	6	2	6	2	4	5
 MelodyKaleidoscope	5	4	4	6	5	4	4
@@ -501,7 +501,7 @@ Murmuration	5	1	1	3	1	4	3
 MusicalFountainShow	5	2	8	4	5	6	8
 MusicBoxCylinder	4	0	2	3	1	4	3
 MyceliumNeuralPulse	5	5	2	6	3	3	3
-NebulaCliffs	4	6	1	4	1	2	2
+NebulaCliffs	7	9	1	5	3	6	7
 NebulaCloud	5	6	2	5	2	3	3
 NebulaShipyard	3	7	5	4	2	3	5
 NeonCyberVoxelFlight	1	2	9	3	6	1	7
@@ -583,7 +583,7 @@ PixelMelt	4	1	6	2	5	4	5
 Planet4D	6	7	4	5	6	5	6
 PlanetaryCollision	2	5	4	5	1	2	3
 PlanetaryNebulaShells	7	8	3	5	3	5	6
-PlanetaryRingRings	4	6	1	6	1	2	2
+PlanetaryRingRings	6	9	1	4	1	5	6
 PlanetRings	7	9	2	6	2	5	6
 PlasmaFilamentTornado	4	4	7	5	7	5	7
 PlasmaFlow	7	2	4	1	6	7	6
@@ -644,7 +644,7 @@ RaymarchTunnel	4	3	6	5	6	4	5
 ReactionDiffusion	5	1	6	2	6	6	7
 ReactionDiffusionKaleidoscope	5	3	4	5	7	5	5
 ReactionDiffusionMandala	4	2	3	4	4	4	3
-RecursiveHexagonHoneycombZoom	3	1	3	3	4	3	2
+RecursiveHexagonHoneycombZoom	6	0	1	1	2	7	7
 RecursiveTesseractWireframeZoom	3	4	7	4	8	3	7
 RecursiveTesseractZoomAbyss	3	3	7	3	8	3	6
 RegattaSpinnakers	4	0	2	3	1	4	3
@@ -680,7 +680,7 @@ Schlieren	6	2	3	4	6	6	6
 SchwarzschildWormholeTunnel	4	6	6	5	6	4	6
 SciFiHUD	2	4	7	6	3	2	5
 SectionMemoryHalls	4	1	4	4	4	4	4
-SectionStrataCanyon	4	1	1	4	1	3	2
+SectionStrataCanyon	6	1	0	3	1	6	5
 SeifertSurfaceBraidKnot	3	3	2	4	2	3	2
 SelfSimilarity	6	7	1	5	2	4	4
 SelfSimilarityCorridor	4	3	4	6	4	4	4
@@ -703,7 +703,7 @@ SineTunnel	5	3	6	3	7	5	6
 SiphonophoreBioluminescentCurtain	5	3	6	2	6	5	6
 Skyburst	5	3	5	4	3	5	5
 SkyrmionChiralSpinLattice	4	2	6	3	8	5	6
-SlotMachineReels	2	0	3	3	2	2	2
+SlotMachineReels	1	0	6	3	3	5	6
 SmokeHall	6	1	2	6	1	6	6
 SmokeRingChorus	6	3	2	5	3	5	4
 SmokeSigils	4	2	3	6	4	5	5
@@ -747,7 +747,7 @@ SpinGlassFrustrationLattice	5	5	3	5	3	3	3
 SpintronicDomainWallRacetrack	2	1	6	1	5	3	4
 SpiralArray	5	4	4	5	3	4	4
 SpiralStairwellDescent	5	3	5	6	5	5	6
-SpirographGearDraw	4	0	2	2	3	4	2
+SpirographGearDraw	5	1	3	3	5	6	6
 SplitFlapDepartureBoard	3	1	3	5	1	3	3
 SporeReleaseGills	5	1	2	4	3	5	4
 SpriteElvesUpperLightning	5	6	3	6	2	4	5
@@ -761,7 +761,7 @@ StarryNightFlow	5	3	5	3	8	8	7
 StarShattering	3	6	4	5	2	3	4
 StarshipPlanetaryOrbit	6	10	2	4	1	6	8
 StellarEngine	4	7	5	4	3	3	5
-StellarNursery	5	6	1	5	1	3	2
+StellarNursery	7	9	1	4	3	7	7
 StellarNurseryCollapse	7	9	2	6	3	5	7
 StepSequencerGrid	2	1	5	4	2	3	4
 StereoKaleidoscope	4	2	6	4	8	5	6
@@ -777,7 +777,7 @@ SubwayMapPulse	3	0	3	3	2	3	3
 SundialShadowSweep	3	0	1	3	1	4	3
 SundogHaloSky	5	2	1	4	2	5	4
 SuperbloomOpening	4	1	2	4	3	4	3
-SupercellMesocyclone	3	2	3	5	1	2	2
+SupercellMesocyclone	5	1	1	6	1	5	6
 SuperconductingFluxoniumQubitCircuit	3	3	5	5	4	3	4
 SuperconductingFluxVortex	5	5	6	5	6	5	7
 SuperconductingLevitationMeissnerPinch	4	3	3	4	4	4	5
@@ -806,7 +806,7 @@ TangramShuffle	3	0	1	2	2	4	3
 TapeReelEcho	4	1	3	4	2	4	3
 Teleidoscope	5	2	3	3	7	6	5
 TempleLanternHall	8	3	4	5	4	9	9
-TemporalZoomSSM	3	1	2	3	3	2	2
+TemporalZoomSSM	2	1	4	4	5	4	4
 TensegrityFloat	4	1	2	4	2	4	4
 TerraformingColony	3	5	1	4	0	2	4
 TeslaLightningTree	2	2	7	5	5	2	6

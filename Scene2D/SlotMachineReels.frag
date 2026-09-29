@@ -2,22 +2,24 @@
 out vec4 fragColor;
 /**
  * @file SlotMachineReels.frag
- * @brief SLOT MACHINE REELS: three reels behind the glass of a fruit
- * machine.  Each turns at its own steady rate for the whole activation --
- * they never snap to a stop, because a reel jerking to a halt on a beat
- * is exactly the jolt this catalogue avoids.  The symbols are cut from
- * the photo and wrap on drums with a curved face, so they compress toward
- * the top and bottom of the window.  The pay line brightens with the
- * swell and the coin tray lights on the kick.  Camera fixed on the glass.
+ * @brief SLOT MACHINE REELS: a fruit machine in a dark casino.  Behind the
+ * glass three drum reels turn, each at its own steady rate for the whole
+ * activation -- cherries, lucky sevens, golden bells, BAR plates, blue
+ * diamonds and lemons wrapping round the curved drums, darkening toward
+ * the top and bottom of the window.  The cabinet is red and chrome, rimmed
+ * by a chase of round bulbs; the red pay line glows across the middle; the
+ * casino behind is a blur of coloured bokeh.  The reels never snap to a
+ * stop -- a reel jerking to a halt on a beat is exactly the jolt this
+ * catalogue avoids.
  *
  * Audio Reactivity:
- *   sceneAdvance    -> the reels turn at their own steady rates (continuous)
+ *   sceneAdvance    -> the reels turn, the bulbs chase (continuous)
  *   audioSwell      -> the pay line and the cabinet light (slow)
- *   audioChroma[12] -> the symbol tints (light)
+ *   audioChroma[12] -> each symbol glows with its class (light)
  *   audioKick       -> the coin tray (light, local)
  *   audioHigh       -> the chrome and glass sparkle (light)
  *
- * Per-activation variety: symbolsP, speedP, hueP.
+ * Per-activation variety: symbolsP (symbol mix), speedP, hueP.
  */
 uniform vec2  resolution;
 uniform float time;
@@ -54,31 +56,68 @@ vec3 imgPalette(float t)
 }
 
 float hash11(float n) { return fract(sin(n * 127.1) * 43758.5453); }
-float hash21(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
-float noise2(vec2 p)
+float hash21(vec2 p)
 {
-    vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
-    return mix(mix(hash21(i), hash21(i + vec2(1.0, 0.0)), f.x),
-               mix(hash21(i + vec2(0.0, 1.0)), hash21(i + vec2(1.0, 1.0)), f.x), f.y);
+    vec3 p3 = fract(vec3(p.xyx) * 0.1031);
+    p3 += dot(p3, p3.yzx + 33.33);
+    return fract((p3.x + p3.y) * p3.z);
 }
 
-// A symbol: a simple emblem chosen by index, drawn in the cell.
-float symbol(vec2 q, float idx)
+float sdSeg(vec2 p, vec2 a, vec2 b)
 {
-    float k = mod(idx, 5.0);
-    if (k < 1.0)                                   // a bell
-        return max(smoothstep(0.3, 0.26, length(q * vec2(1.0, 1.25) - vec2(0.0, 0.03))),
-                   smoothstep(0.06, 0.04, length(q - vec2(0.0, -0.26))));
-    if (k < 2.0)                                   // a bar
-        return smoothstep(0.02, 0.0, max(abs(q.x) - 0.3, abs(q.y) - 0.11));
-    if (k < 3.0)                                   // a cherry pair
-        return max(smoothstep(0.15, 0.12, length(q - vec2(-0.12, -0.1))),
-                   smoothstep(0.15, 0.12, length(q - vec2(0.13, -0.14))));
-    if (k < 4.0)                                   // a seven
-        return max(smoothstep(0.04, 0.0, abs(q.y - 0.24) - 0.0) * step(abs(q.x), 0.22),
-                   smoothstep(0.05, 0.0, abs(q.x - 0.2 + (q.y + 0.28) * 0.55)) * step(abs(q.y), 0.28));
-    // a diamond
-    return smoothstep(0.03, 0.0, abs(q.x) * 1.5 + abs(q.y) - 0.28);
+    vec2 pa = p - a, ba = b - a;
+    float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
+    return length(pa - ba * h);
+}
+float sdBox(vec2 p, vec2 b, float r)
+{
+    vec2 d = abs(p) - b + r;
+    return length(max(d, 0.0)) + min(max(d.x, d.y), 0.0) - r;
+}
+
+// One symbol in its cell (q in -0.5..0.5); returns rgb, a = coverage.
+vec4 symbol(vec2 q, int kind)
+{
+    vec3 c = vec3(0.0); float d = 1.0;
+    if (kind == 0) {                       // cherries
+        float c1 = length(q - vec2(-0.14, -0.12)) - 0.13;
+        float c2 = length(q - vec2(0.13, -0.16)) - 0.13;
+        float stem = min(sdSeg(q, vec2(-0.12, 0.0), vec2(0.05, 0.3)), sdSeg(q, vec2(0.12, -0.04), vec2(0.05, 0.3))) - 0.022;
+        float leaf = length((q - vec2(0.15, 0.3)) * vec2(1.0, 2.2)) - 0.09;
+        float fruit = min(c1, c2);
+        d = min(fruit, min(stem, leaf));
+        c = (fruit < min(stem, leaf)) ? vec3(0.9, 0.08, 0.1) : vec3(0.15, 0.6, 0.15);
+        c += vec3(1.0) * smoothstep(0.05, 0.0, length(q - vec2(-0.18, -0.07))) * 0.6;
+    } else if (kind == 1) {                // lucky seven
+        float top = sdSeg(q, vec2(-0.2, 0.24), vec2(0.2, 0.24)) - 0.06;
+        float diag = sdSeg(q, vec2(0.2, 0.24), vec2(-0.06, -0.3)) - 0.07;
+        d = min(top, diag);
+        c = vec3(0.95, 0.1, 0.12);
+        c = mix(c, vec3(1.0, 0.8, 0.3), smoothstep(-0.02, 0.0, d) * 0.8);   // gold outline
+    } else if (kind == 2) {                // golden bell
+        float body = length((q - vec2(0.0, 0.04)) * vec2(1.0, 0.85)) - 0.22;
+        body = max(body, -(q.y + 0.16));
+        float rim = sdBox(q - vec2(0.0, -0.18), vec2(0.28, 0.04), 0.03);
+        float knob = length(q - vec2(0.0, 0.3)) - 0.05;
+        float clap = length(q - vec2(0.0, -0.27)) - 0.05;
+        d = min(min(body, rim), min(knob, clap));
+        c = vec3(1.0, 0.78, 0.2) * (0.75 + 0.5 * smoothstep(0.2, -0.2, q.x));
+    } else if (kind == 3) {                // BAR plate
+        float plate = sdBox(q, vec2(0.34, 0.14), 0.04);
+        d = plate;
+        c = vec3(0.05);
+        float stripes = step(0.5, fract(q.x * 7.0 + 0.25)) * step(abs(q.y), 0.06) * step(abs(q.x), 0.26);
+        c = mix(c, vec3(1.0, 0.85, 0.35), stripes);
+        c = mix(c, vec3(1.0, 0.8, 0.3), smoothstep(-0.025, 0.0, plate));
+    } else if (kind == 4) {                // blue diamond
+        d = (abs(q.x) / 0.26 + abs(q.y) / 0.33 - 1.0) * 0.2;
+        float facet = (q.x > 0.0 ? 0.25 : 0.0) + (q.y > 0.0 ? 0.5 : 0.0);
+        c = mix(vec3(0.1, 0.35, 0.95), vec3(0.6, 0.85, 1.0), facet);
+    } else {                               // lemon
+        d = length(q * vec2(1.0, 1.45)) - 0.25;
+        c = vec3(1.0, 0.88, 0.15) * (0.75 + 0.5 * smoothstep(0.2, -0.2, q.x - q.y));
+    }
+    return vec4(c, smoothstep(0.012, -0.004, d));
 }
 
 void main()
@@ -86,90 +125,105 @@ void main()
     float aspect = resolution.x / resolution.y;
     vec2 uv = gl_FragCoord.xy / resolution;
     vec2 p = (uv - 0.5) * vec2(aspect, 1.0);
-
     float hue = (hueP > 0.001) ? hueP : 0.0;
-    float symbols = 6.0 + floor(clamp(symbolsP, 0.0, 1.0) * 6.0);       // symbols round a drum
-    float speed = 0.5 + 0.9 * clamp(speedP, 0.0, 1.0);
-    float lamp = 0.6 + 0.6 * clamp(audioSwell, 0.0, 1.0);
+    float swell = clamp(audioSwell, 0.0, 1.0);
+    float kick = clamp(audioKick, 0.0, 1.0);
     float hi = clamp(audioHigh * 2.0, 0.0, 1.0);
-    float clock = sceneAdvance * 0.8 + sceneTime * 0.16;
+    float spd = 0.6 + 0.8 * clamp(speedP, 0.0, 1.0);
+    float T = sceneTime + sceneAdvance * 0.5;
 
-    // The cabinet: painted metal with the photo as its artwork.
-    vec3 cab = img(uv * 0.8 + 0.1) * mix(vec3(0.45, 0.12, 0.12), imgPalette(hue * 0.159 + 0.06), 0.35);
-    cab *= 0.7 + 0.4 * noise2(p * 20.0);
-    vec3 col = cab * lamp * 0.85;
-
-    // The window: three reels behind glass.
-    float winH = 0.3, winHalf = aspect * 0.36;
-    float win = step(abs(p.x), winHalf) * step(abs(p.y), winH);
-    if (win > 0.5)
-    {
-        float reel = floor((p.x + winHalf) / (2.0 * winHalf) * 3.0);
-        float rf = fract((p.x + winHalf) / (2.0 * winHalf) * 3.0);
-        // Each reel turns at its own steady rate, fixed for the activation.
-        float rate = speed * (0.9 + 0.5 * hash11(reel * 3.7 + 1.0));
-        float turn = clock * rate * 0.5;
-        // The drum is curved: the symbol coordinate compresses toward the
-        // top and bottom of the window, as a real reel does.
-        float yy = p.y / winH;                                          // -1 .. 1
-        float curved = asin(clamp(yy, -1.0, 1.0)) / 1.5708;             // eased toward the edges
-        // Three symbols in the window, no more: the drum coordinate is
-        // scaled so a cell is a third of the window, not a fortieth.
-        float s = curved * 1.5 + turn * symbols;
-        float si = floor(s);
-        float sf = fract(s) - 0.5;
-        // The symbol face: the photo as its printed art, tinted by a class.
-        int cls = int(mod(si * 3.0 + reel, 12.0));
-        float e = clamp(audioChroma[cls] * 1.6, 0.0, 1.0);
-        vec3 tint = imgPalette(hue * 0.159 + float(cls) / 12.0) * 1.4 + 0.15;
-        vec2 q = vec2((rf - 0.5) * 1.7, sf * 1.9);
-        float sym = symbol(q * 1.15, si + reel * 2.0);
-        // The reel band itself: pale, with a shadow near the edges of the
-        // window because the drum curves away.
-        vec3 band = vec3(0.9, 0.88, 0.84);
-        band = mix(band, img(clamp(vec2(fract(si * 0.13 + reel * 0.31), rf), 0.0, 1.0)) * 1.2, 0.25);
-        band *= 0.45 + 0.75 * cos(yy * 1.3);                            // the drum's shading
-        vec3 face = mix(band, mix(band * 0.4, tint, 0.75) * (0.7 + 0.6 * e), sym);
-        // The seam between symbols.
-        face *= 0.8 + 0.3 * smoothstep(0.03, 0.12, abs(sf));
-        // Motion blur: the faster the reel, the softer the symbol edges.
-        face = mix(face, band, clamp(rate * 0.18, 0.0, 0.45) * sym * 0.5);
-        col = mix(col, face * lamp, win);
-        // The reel dividers.
-        col = mix(col, vec3(0.25, 0.25, 0.28) * lamp, smoothstep(0.02, 0.006, min(rf, 1.0 - rf)) * 0.8);
+    // The casino behind: coloured bokeh discs.
+    vec3 col = vec3(0.03, 0.02, 0.04);
+    for (int k = 0; k < 18; ++k) {
+        float fk = float(k);
+        vec2 bc = vec2((hash11(fk * 1.7) - 0.5) * aspect, hash11(fk * 3.3) - 0.5);
+        float br = 0.05 + 0.08 * hash11(fk * 5.1);
+        float disc = smoothstep(br, br * 0.85, length(p - bc));
+        vec3 bcol = 0.5 + 0.5 * cos(6.2831853 * (hash11(fk * 7.9) + vec3(0.0, 0.33, 0.67)));
+        col += bcol * disc * 0.12 * (0.7 + 0.3 * sin(T * 0.3 + fk));
     }
-    // The pay line across the middle of the window.
-    float payLine = smoothstep(0.006, 0.002, abs(p.y)) * step(abs(p.x), winHalf);
-    vec3 payCol = mix(vec3(1.0, 0.85, 0.3), imgPalette(hue * 0.159 + 0.12), 0.3);
-    col = mix(col, payCol, payLine * (0.4 + 0.6 * clamp(audioSwell, 0.0, 1.0)));
-    col += payCol * exp(-abs(p.y) * 40.0) * step(abs(p.x), winHalf) * (0.1 + 0.35 * clamp(audioSwell, 0.0, 1.0));
-    // The glass: a diagonal reflection and a bright frame.
-    col += vec3(1.0) * smoothstep(0.4, 0.0, abs(p.x * 0.5 + p.y - 0.18)) * win * 0.07;
-    float frame = smoothstep(0.016, 0.008, abs(max(abs(p.x) - winHalf, abs(p.y) - winH)));
-    col = mix(col, vec3(0.78, 0.78, 0.82) * lamp, frame);
-    col += vec3(1.0) * frame * hi * 0.3;
-    // The light panel above with the machine's name in the photo.
-    float top = step(0.36, p.y) * step(abs(p.x), winHalf + 0.05);
-    vec3 topCol = img(clamp(vec2(uv.x, 0.85), 0.0, 1.0)) * mix(vec3(1.0, 0.85, 0.4), imgPalette(hue * 0.159 + 0.15), 0.35);
-    col = mix(col, topCol * (0.7 + 0.8 * lamp), top * 0.9);
-    // The coin tray at the bottom, lit on the kick.
-    float tray = step(p.y, -0.38) * step(abs(p.x), winHalf * 0.7);
-    vec3 trayCol = vec3(0.2, 0.2, 0.22);
-    // Coins in it: round, jittered discs.
-    vec2 cg = p * 40.0; vec2 cc = floor(cg); vec2 cf = fract(cg) - 0.5;
-    vec2 cj = vec2(hash21(cc + 1.9), hash21(cc + 7.3)) - 0.5;
-    float coin = smoothstep(0.32, 0.2, length(cf - cj * 0.6)) * step(0.55, hash21(cc));
-    trayCol = mix(trayCol, mix(vec3(0.9, 0.75, 0.35), imgPalette(hue * 0.159 + 0.12), 0.3), coin);
-    col = mix(col, trayCol * lamp * (0.7 + 1.0 * audioKick), tray);
-    col += vec3(1.0, 0.9, 0.6) * tray * coin * audioKick * 0.8;
-    // The handle on the right.
-    float handleX = winHalf + 0.07;
-    float rod = smoothstep(0.012, 0.008, abs(p.x - handleX)) * step(-0.05, p.y) * step(p.y, 0.3);
-    col = mix(col, vec3(0.7, 0.7, 0.74) * lamp, rod);
-    col = mix(col, mix(vec3(0.8, 0.1, 0.1), imgPalette(hue * 0.159 + 0.02), 0.25) * lamp,
-              smoothstep(0.035, 0.03, length(p - vec2(handleX, 0.32))));
-    col *= 0.9 + 0.2 * audioLevel;
 
+    // The cabinet: a red body with a chrome frame.
+    float cab = sdBox(p - vec2(0.0, -0.02), vec2(0.72, 0.46), 0.06);
+    if (cab < 0.0) {
+        vec3 body = mix(vec3(0.55, 0.05, 0.08), imgPalette(0.95 + hue * 0.159) * 0.6, 0.15);
+        body *= 0.7 + 0.3 * smoothstep(-0.46, 0.46, p.y) + 0.2 * swell;
+        col = body;
+    }
+    col += vec3(0.9, 0.9, 0.95) * smoothstep(0.012, 0.0, abs(cab)) * (0.6 + 0.6 * hi);
+
+    // Bulbs chasing round the frame: round lamps evenly spaced along the
+    // border (arclength), the chase running round it.
+    {
+        vec2 bp = p - vec2(0.0, -0.02);
+        vec2 hb = vec2(0.67, 0.41);
+        float sArc; vec2 onB; float side;
+        if (abs(bp.x) / hb.x > abs(bp.y) / hb.y) {
+            float yy = clamp(bp.y, -hb.y, hb.y);
+            sArc = (bp.x > 0.0) ? (yy + hb.y) : (2.0 * hb.y + 2.0 * hb.x + (hb.y - yy));
+            side = (bp.x > 0.0) ? 0.0 : 2.0;
+        } else {
+            float xx = clamp(bp.x, -hb.x, hb.x);
+            sArc = (bp.y > 0.0) ? (2.0 * hb.y + (hb.x - xx)) : (4.0 * hb.y + 2.0 * hb.x + (xx + hb.x));
+            side = (bp.y > 0.0) ? 1.0 : 3.0;
+        }
+        float spacing = 0.075;
+        float bi = floor(sArc / spacing + 0.5);
+        float sb = bi * spacing;
+        vec2 bulb;
+        if (side == 0.0)      bulb = vec2(hb.x, sb - hb.y);
+        else if (side == 1.0) bulb = vec2(hb.x - (sb - 2.0 * hb.y), hb.y);
+        else if (side == 2.0) bulb = vec2(-hb.x, hb.y - (sb - 2.0 * hb.y - 2.0 * hb.x));
+        else                  bulb = vec2(sb - 4.0 * hb.y - 2.0 * hb.x - hb.x, -hb.y);
+        bulb = clamp(bulb, -hb, hb);
+        float bd = length(bp - bulb);
+        float chase = 0.5 + 0.5 * sin(bi * 0.9 - T * 3.0 * spd);
+        vec3 bcol = mix(vec3(1.0, 0.75, 0.3), vec3(1.0, 0.95, 0.85), chase);
+        col = mix(col, bcol * (0.3 + 0.9 * chase), smoothstep(0.016, 0.011, bd));
+        col += bcol * exp(-bd * 55.0) * 0.25 * chase;
+    }
+
+    // The reel window.
+    vec2 wp = p - vec2(0.0, 0.03);
+    float win = sdBox(wp, vec2(0.6, 0.28), 0.02);
+    if (win < 0.0) {
+        float reelW = 0.38;
+        float rx = wp.x + 0.6;
+        float ri = floor(rx / (reelW + 0.03));
+        float lx = rx - ri * (reelW + 0.03);
+        if (lx < reelW && ri < 3.0) {
+            // Drum curvature: angle from the vertical position.
+            float yN = clamp(wp.y / 0.33, -0.99, 0.99);
+            float th = asin(yN);
+            float rate = (0.35 + 0.12 * ri + 0.08 * hash11(ri + 3.0)) * spd;
+            float s = th * 1.6 + T * rate + ri * 2.7;
+            float si = floor(s);
+            vec2 q = vec2((lx - reelW * 0.5) / (reelW * 0.62), fract(s) - 0.5);
+            int kind = int(mod(si * 2.0 + ri * 3.0 + floor(clamp(symbolsP, 0.0, 1.0) * 3.0) + floor(hash11(si + ri * 11.0) * 4.0), 6.0));
+            vec4 sym = symbol(q, kind);
+            float shade = cos(th);
+            vec3 strip = vec3(0.96, 0.95, 0.9);
+            vec3 rc = mix(strip, sym.rgb, sym.a);
+            float e = clamp(audioChroma[int(mod(float(kind) * 2.0 + ri, 12.0))] * 1.5, 0.0, 1.0);
+            rc *= (0.85 + 0.35 * e * sym.a);
+            col = rc * (0.15 + 0.9 * shade * shade);
+        } else {
+            col = vec3(0.08, 0.02, 0.03);
+        }
+        // Pay line.
+        col += vec3(1.0, 0.15, 0.1) * exp(-abs(wp.y) * 300.0) * (0.35 + 0.6 * swell);
+        // Glass: a soft diagonal reflection and a sparkle on the treble.
+        float refl = smoothstep(0.08, 0.0, abs(wp.x * 0.5 + wp.y - 0.18));
+        col += vec3(1.0) * refl * (0.06 + 0.1 * hi);
+    }
+    col += vec3(0.85, 0.85, 0.9) * smoothstep(0.01, 0.0, abs(win)) * 0.7;
+
+    // Coin tray at the bottom, lit on the kick.
+    float tray = sdBox(p - vec2(0.0, -0.4), vec2(0.3, 0.035), 0.02);
+    col = mix(col, vec3(0.12, 0.1, 0.1), smoothstep(0.003, 0.0, tray));
+    col += vec3(1.0, 0.8, 0.35) * exp(-max(tray, 0.0) * 40.0) * smoothstep(0.0, -0.03, tray + 0.02) * (0.2 + 1.1 * kick);
+
+    col *= 0.9 + 0.2 * audioLevel;
     vec3 _catTone = max(col, 0.0);
     _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
     fragColor = vec4(clamp(_catTone, 0.0, 1.0), 1.0);

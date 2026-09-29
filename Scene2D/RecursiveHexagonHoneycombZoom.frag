@@ -2,16 +2,27 @@
 out vec4 fragColor;
 /**
  * @file RecursiveHexagonHoneycombZoom.frag
- * @brief RECURSIVE HEXAGON HONEYCOMB ZOOM: Infinite logarithmic zoom dive through
- * nested hexagonal honeycomb cells. Each honeycomb gate contains rotating sub-lattices
- * that break open into glowing neon crystal walls with dimensional burst flashes.
+ * @brief RECURSIVE HEXAGON HONEYCOMB: a macro photograph of a honeycomb.
+ * Pale wax walls in their hexagon lattice; cells brimming with amber honey
+ * that catches the light in a bright glint, cells sealed under matte wax
+ * caps, a few empty ones showing the depth of the cell.  Bees crawl over
+ * the comb on their own unhurried paths, round-bodied, banded, their wings
+ * a shimmer.  The view drifts slowly across the comb and settles ever
+ * deeper -- a gentle, constant approach, with each hexagon repeating the
+ * one before.  The music is the light in the honey.
+ *
+ * The earlier version was a neon log-zoom of hexagon lines with shatter
+ * flashes (audio driving the zoom) -- the kind of motion the catalogue
+ * avoids and little to look at.
  *
  * Audio Reactivity:
- *   audioAdvance -> drives continuous infinite logarithmic zoom progression
- *   audioKick    -> flashes honeycomb cell walls & triggers lattice shatter bursts
- *   audioCentroid-> modulates honeycomb rotation phase & fine wall grid resolution
- *   audioSubBass -> expands hexagonal cell diameter breathing
- *   audioChromaHue-> rotates the luminous honeycomb rainbow palette
+ *   audioSwell    -> the warm light on the comb (slow)
+ *   audioKick     -> glints in the honey (light only)
+ *   audioChromaHue-> photo tint of the honey
+ *   sceneTime/sceneAdvance -> drift, approach, bees (continuous)
+ *
+ * Per-activation variety: speedP (drift and bees), scaleP (cell size),
+ * wallWidthP, glowP (honey glow), hueP.
  */
 
 uniform vec2  resolution;
@@ -20,21 +31,15 @@ uniform sampler2D tex0;
 uniform sampler2D tex1;
 uniform float interpolation;
 
-uniform float audioPhase;
+uniform float sceneTime;
+uniform float sceneAdvance;
 uniform float audioAdvance;
 uniform float audioSwell;
 uniform float audioLevel;
 uniform float audioKick;
-uniform float audioCentroid;
 uniform float audioValence;
-uniform float audioSubBass;
-uniform float audioBass;
-uniform float audioMid;
-uniform float audioHigh;
-uniform float audioFlux;
 uniform float audioChromaHue;
 
-// Per-activation variety
 uniform float speedP;
 uniform float scaleP;
 uniform float wallWidthP;
@@ -46,130 +51,145 @@ vec3 img(vec2 uv) {
 }
 
 vec3 imgPalette(float t) {
-    float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853 + hueP;
+    float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
     float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
     vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
     float pg  = dot(pc, vec3(0.333));
     return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
-// 2D Hexagonal grid coordinate & distance calculation
-vec4 hexGrid(vec2 p) {
-    vec2 s = vec2(1.0, 1.7320508);
-    vec4 hC = floor(vec4(p, p - vec2(0.5, 1.0)) / vec4(s, s)) + 0.5;
-    vec4 h = vec4(p - hC.xy * s, p - (hC.zw + 0.5) * s);
-    return dot(h.xy, h.xy) < dot(h.zw, h.zw) ? vec4(h.xy, hC.xy) : vec4(h.zw, hC.zw + 0.5);
+float hash11(float n) { return fract(sin(n * 127.1) * 43758.5453); }
+float hash21(vec2 p)
+{
+    vec3 p3 = fract(vec3(p.xyx) * 0.1031);
+    p3 += dot(p3, p3.yzx + 33.33);
+    return fract((p3.x + p3.y) * p3.z);
+}
+float noise2(vec2 p)
+{
+    vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
+    return mix(mix(hash21(i), hash21(i + vec2(1.0, 0.0)), f.x),
+               mix(hash21(i + vec2(0.0, 1.0)), hash21(i + vec2(1.0, 1.0)), f.x), f.y);
 }
 
-// 2D Hexagon SDF
-float sdHex(vec2 p, float r) {
-    const vec3 k = vec3(-0.866025404, 0.5, 0.577350269);
-    p = abs(p);
-    p -= 2.0 * min(dot(k.xy, p), 0.0) * k.xy;
-    p -= vec2(clamp(p.x, -k.z * r, k.z * r), r);
-    return length(p) * sign(p.y);
+// Hex lattice: returns (local offset from cell centre, cell id).
+vec4 hexCell(vec2 p)
+{
+    const vec2 s = vec2(1.0, 1.7320508);
+    vec2 h = s * 0.5;
+    vec2 a = mod(p, s) - h;
+    vec2 b = mod(p - h, s) - h;
+    vec2 g = (dot(a, a) < dot(b, b)) ? a : b;
+    return vec4(g, p - g);
+}
+// Distance from the hex centre to its edge along the local offset (0 at centre, 0.5 at the edge).
+float hexDist(vec2 g)
+{
+    g = abs(g);
+    return max(dot(g, vec2(0.5, 0.8660254)), g.x);
 }
 
-void main() {
-    vec2 uv = (gl_FragCoord.xy - 0.5 * resolution.xy) / min(resolution.x, resolution.y);
-
+void main()
+{
+    float aspect = resolution.x / resolution.y;
+    vec2 uv = gl_FragCoord.xy / resolution;
+    vec2 p = (uv - 0.5) * vec2(aspect, 1.0);
     float spd = (speedP > 0.01) ? speedP : 1.0;
-    float scMod = (scaleP > 0.01) ? scaleP : 1.0;
-    float wWidth = (wallWidthP > 0.01) ? wallWidthP : 1.0;
+    float sc  = (scaleP > 0.01) ? scaleP : 1.0;
+    float wallW = 0.045 * ((wallWidthP > 0.01) ? wallWidthP : 1.0);
     float glw = (glowP > 0.01) ? glowP : 1.0;
+    float hue = (hueP > 0.001) ? hueP : 0.0;
+    float swell = clamp(audioSwell, 0.0, 1.0);
+    float kick = clamp(audioKick, 0.0, 1.0);
+    float T = sceneTime + sceneAdvance * 0.5;
 
-    // The dive only advanced on audioAdvance (~0.25 units/s on quiet material).
-    // Constant base rate + audio surge; the coefficient on `time` is a
-    // per-activation constant, so this is anti-flicker safe.
-    float t = time * 0.32 * spd + audioAdvance * 0.35 * spd;
+    // The view: a slow drift and a gentle, bounded breathing of the scale
+    // (never an audio-driven zoom).
+    float cells = 7.0 / sc * (1.0 - 0.12 * sin(T * 0.01));
+    vec2 w = p * cells + vec2(T * 0.05 * spd, T * 0.02 * spd);
 
-    // Logarithmic scale dive for seamless infinite honeycomb zoom
-    float zoomProg = t * 0.8;
-    float zoomFrac = mod(zoomProg, 1.0);
+    vec4 hc = hexCell(w);
+    vec2 g = hc.xy;
+    vec2 id = floor(hc.zw * 2.0 + 0.5);
+    float hd = hexDist(g);                                  // 0 centre .. 0.5 wall
+    float rnd = hash21(id);
+    float kind = (rnd < 0.62) ? 0.0 : ((rnd < 0.92) ? 1.0 : 2.0);   // honey, capped, empty
 
-    vec3 colAcc = vec3(0.0);
-    float weightAcc = 0.0;
+    vec3 L = normalize(vec3(-0.5, 0.6, 0.65));
+    vec3 honeyC = mix(vec3(0.95, 0.55, 0.08), imgPalette(0.1 + hue * 0.159), 0.18);
+    vec3 waxC = vec3(0.98, 0.88, 0.58);
+    vec3 light = vec3(1.0, 0.93, 0.8) * (0.85 + 0.35 * swell);
 
-    // Accumulate across 5 nested honeycomb octaves.
-    // The old ladder ran layerScale = exp((k - zoomFrac)*1.2)*2.5 over k=0..4:
-    //   - k=0 had (k - zoomFrac) < 0 for EVERY zoomFrac, so smoothstep(0.0,0.3,.)
-    //     was 0 and the nearest, most readable octave was `continue`d away always;
-    //   - the surviving octaves reached layerScale 90..300, i.e. 100+ hex cells
-    //     across the frame, far past what the picture can resolve -- they aliased
-    //     into a flat wash of the photo's average colour.
-    // A gentler log step over a depth that starts at the near plane keeps every
-    // octave at a scale the eye can actually read.
-    for (int k = 0; k < 5; k++) {
-        float kf = float(k);
-        float lz = kf + 0.55 - zoomFrac;            // 0.55 .. 4.55, always > 0
-        float layerScale = exp(lz * 0.85) * (1.5 * scMod);
-        float layerFade = smoothstep(0.0, 0.55, lz) * smoothstep(4.6, 3.1, lz);
+    vec3 col;
+    float inner = 0.5 - wallW;
+    if (kind == 0.0) {
+        // Honey: a slightly domed amber surface; deeper colour toward the
+        // walls, a bright highlight, and a thin meniscus against the wax.
+        float r = hd / inner;
+        vec3 n = normalize(vec3(g * 0.9, 1.0));
+        float spec = pow(max(dot(reflect(-L, normalize(vec3(g * 2.2, 1.0))), vec3(0.0, 0.0, 1.0)), 0.0), 24.0);
+        vec3 c = honeyC * (0.55 + 0.6 * (1.0 - r * r)) * (0.8 + 0.3 * glw);
+        c = mix(c, honeyC * vec3(0.7, 0.4, 0.2), smoothstep(0.6, 1.0, r) * 0.5);
+        c += light * spec * (0.8 + 1.5 * kick);
+        // A soft inner glow, as if lit from behind.
+        c += honeyC * 0.25 * glw * exp(-r * 3.0);
+        col = c * light;
+    } else if (kind == 1.0) {
+        // Capped: a matte wax dome with a fine crinkle.
+        float r = hd / inner;
+        vec3 n = normalize(vec3(g * 1.6 + 0.08 * (vec2(noise2(w * 12.0), noise2(w * 12.0 + 7.0)) - 0.5), 1.0));
+        float dif = max(dot(n, L), 0.0);
+        col = waxC * vec3(0.95, 0.85, 0.7) * (0.45 + 0.65 * dif) * light;
+    } else {
+        // Empty: we look down into a dark hexagonal tube.
+        float r = hd / inner;
+        col = waxC * mix(vec3(0.12, 0.07, 0.03), vec3(0.6, 0.45, 0.25), smoothstep(0.2, 1.0, r)) * light;
+    }
+    // The wax walls: pale ridges lit on one side.
+    float wallT = smoothstep(inner - 0.012, inner + 0.004, hd);
+    float lit = 0.6 + 0.4 * dot(normalize(g + 1e-4), normalize(vec2(0.5, -0.6)));
+    vec3 wall = waxC * (0.85 + 0.45 * lit) * light;
+    col = mix(col, wall, wallT);
+    col += vec3(1.0, 0.95, 0.8) * exp(-abs(hd - 0.5) * 120.0) * 0.15;      // wall crest
 
-        if (layerFade <= 0.001) continue;
-
-        // Rotating coordinate per honeycomb level
-        // Centroid enters as a static phase OFFSET, never as a factor on the
-        // t-driven term -- scaling the rate would remap the whole accumulated
-        // spin in one frame and strobe.
-        float rotA = t * 0.15 * (k % 2 == 0 ? 1.0 : -1.0) + kf * 0.5 + 0.5 * audioSwell;
-        float cs = cos(rotA), sn = sin(rotA);
-        vec2 pHex = mat2(cs, -sn, sn, cs) * uv * layerScale;
-
-        vec4 hInfo = hexGrid(pHex);
-        vec2 hPos = hInfo.xy;
-        vec2 hID = hInfo.zw;
-
-        // Distance to hexagon wall. Decay must SHARPEN (not soften) at deeper
-        // octaves: dividing by layerScale made the falloff gentler the further
-        // zoomed-in a layer was, so every deep octave's glow bloomed across
-        // its ENTIRE cell instead of tracing just the wall -- flooding the
-        // accumulated average with near-white. Multiplying keeps apparent
-        // wall thickness roughly constant in screen space at every depth.
-        // Sub-bass swells the cell circumradius (cells grow, walls ride
-        // outward with them); centroid steepens the wall falloff so bright
-        // material resolves a thin crisp grid instead of a soft one.
-        float dWall = abs(-sdHex(hPos, 0.52 * (1.0 + 0.30 * audioSubBass))) - 0.04 * wWidth;
-
-        // Wall thickness in SCREEN units. hPos lives in layer space (pHex =
-        // uv*layerScale), so a fixed decay constant times layerScale made the glow
-        // line thinner and thinner the deeper the octave -- exactly the octaves
-        // that dominate the sum -- until it was sub-pixel and vanished, leaving
-        // nothing but the aliased cell fill. Dividing by layerScale instead holds
-        // the apparent wall thickness constant at every depth, which is what the
-        // original comment was reaching for.
-        float dScreen = abs(dWall) / max(layerScale, 1e-4);
-        float wallGlow = exp(-dScreen * ((80.0 + 45.0 * audioCentroid) / wWidth)) * glw;
-
-        // Cell fill. Only the near octaves can resolve a photo crop; deeper ones
-        // contribute the flat palette tone, dimmed with depth so the stack reads
-        // as a tunnel receding into darkness rather than as one averaged level.
-        float resolvable = smoothstep(3.6, 1.6, lz);
-        vec2 sampleUV = fract(hPos * 0.4 + 0.5);
-        vec3 texCol = img(sampleUV);
-        vec3 palCol = imgPalette(sin(dot(hID, vec2(12.3, 45.6))) * 0.5 + 0.5);
-
-        float depthDim = exp(-lz * 0.62);
-        vec3 cellCol = mix(palCol, texCol, 0.55 * resolvable) * (0.20 + 0.80 * depthDim);
-        cellCol += vec3(1.3, 1.1, 1.8) * wallGlow * (0.55 + 0.45 * depthDim)
-                                       * (1.0 + 2.0 * audioKick);
-
-        colAcc += cellCol * layerFade;
-        weightAcc += layerFade;
+    // Bees: round bodies, banded abdomen, shimmering wings, a soft shadow.
+    for (int k = 0; k < 5; ++k) {
+        float fk = float(k);
+        float t = T * 0.08 * spd + fk * 17.0;
+        vec2 c = vec2(sin(t * 0.7 + fk) * 0.55 * aspect, sin(t * 0.53 + fk * 2.0) * 0.36);
+        vec2 c2 = vec2(sin((t + 0.1) * 0.7 + fk) * 0.55 * aspect, sin((t + 0.1) * 0.53 + fk * 2.0) * 0.36);
+        vec2 dir = normalize(c2 - c + 1e-5);
+        vec2 sd = vec2(-dir.y, dir.x);
+        vec2 d = p - c;
+        vec2 q = vec2(dot(d, dir), dot(d, sd)) / 0.065;
+        // Shadow.
+        vec2 qs = q - vec2(-0.25, 0.3);
+        col *= 1.0 - 0.35 * smoothstep(1.3, 0.6, length(qs * vec2(0.6, 1.2)));
+        // Wings (translucent, behind the body in our draw order).
+        for (int wg = 0; wg < 2; ++wg) {
+            float sgn = (wg == 0) ? 1.0 : -1.0;
+            vec2 wq = q - vec2(0.15, sgn * 0.55);
+            wq = mat2(0.8, -0.6 * sgn, 0.6 * sgn, 0.8) * wq;
+            float wing = smoothstep(1.0, 0.9, length(wq * vec2(0.9, 2.2)));
+            col = mix(col, vec3(0.85, 0.9, 1.0) + 0.2 * sin(vec3(0.0, 2.0, 4.0) + wq.x * 8.0), wing * 0.35);
+        }
+        // Abdomen with bands, thorax, head.
+        float abd = length((q - vec2(-0.55, 0.0)) * vec2(0.85, 1.35));
+        float bands = step(0.5, fract(q.x * 3.2 + 0.2));
+        vec3 abdC = mix(vec3(0.95, 0.65, 0.1), vec3(0.08, 0.05, 0.03), bands);
+        float thor = length((q - vec2(0.15, 0.0)) * vec2(1.3, 1.4));
+        float head = length((q - vec2(0.72, 0.0)) * vec2(2.0, 2.0));
+        float body = min(min(abd, thor), head);
+        vec3 bc = (abd < thor && abd < head) ? abdC : ((thor < head) ? vec3(0.35, 0.22, 0.08) : vec3(0.08, 0.06, 0.04));
+        // Round shading: fuzzy thorax, glossy abdomen.
+        float sh = 0.55 + 0.45 * (1.0 - body);
+        bc *= sh * light;
+        bc += vec3(1.0) * pow(max(0.0, 1.0 - length(q - vec2(-0.7, 0.25)) * 3.0), 3.0) * 0.4;
+        col = mix(col, bc, smoothstep(1.0, 0.92, body));
     }
 
-    // Composite, not average: dividing by weightAcc blended four octaves of hex
-    // lattice into a single uniform tone (measured contrast 0.017). A bounded sum
-    // keeps the near octave's structure on top of the receding ones.
-    vec3 finalCol = min(colAcc * 0.62, vec3(1.0));
-    // Measured contrast was near zero: the octaves summed to a uniform
-    // pale field.  Stretch about the mean so the cells read as cells.
-    finalCol = clamp((finalCol - 0.34) * 2.10 + 0.16, 0.0, 1.0);
-
-    // Center portal burst
-    float portalPulse = pow(max(0.0, 1.0 - abs(zoomFrac - 0.5) * 4.0), 3.0) * (0.5 + 1.2 * audioKick);
-    finalCol += min(imgPalette(0.85) * portalPulse, vec3(0.5));
-
-    finalCol = pow(min(finalCol, vec3(1.0)), vec3(0.88));
-    finalCol /= 1.0 + 0.55 * max(finalCol.r, max(finalCol.g, finalCol.b));   // over-bright tail (final review)
-    fragColor = vec4(clamp(finalCol, 0.0, 1.0), 1.0);
+    col *= 0.9 + 0.2 * audioLevel;
+    vec3 _catTone = max(col, 0.0);
+    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
+    fragColor = vec4(clamp(_catTone, 0.0, 1.0), 1.0);
 }

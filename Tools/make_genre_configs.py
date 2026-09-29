@@ -221,6 +221,13 @@ IMPROVED_SCENES = {
     "MolecularCloudCore", "TerraformingColony", "EndOfTheUniverse",
     "ErodedLand", "HilbertSpaceFillingCurveZoom", "InkTank",
     "AttentionHeadRibbons",
+    # Runde 2: Schauwert 2 und AsteroidMiningBase (jetzt 2D statt Wuerfel).
+    "AsteroidMiningBase", "NebulaCliffs", "StellarNursery", "DarkMatterWeb",
+    "KardashevTypeIIICity", "IcebergWaterline", "PlanetaryRingRings",
+    "MatrioshkaBrain", "DerelictMothership", "SectionStrataCanyon",
+    "RecursiveHexagonHoneycombZoom", "SlotMachineReels", "SpirographGearDraw",
+    "LenticularFlip", "BuildUpAvalanche", "TemporalZoomSSM",
+    "SupercellMesocyclone",
 }
 
 def rule_improved(m, h):
