@@ -81,29 +81,6 @@
     <int name="kSides" minValue="0" maxValue="9"></int>
     <float name="rosetteP" minValue="0.15" maxValue="0.35"></float>
   </TextureShader>
-  <TextureShader file="..\\Scene2D\\Tunnel.frag" type="KaleidoscopeBase" mood="psychedelic,bright" probability="0.5" complexity="1">
-    <rig preset="flat"/>
-    <bool name="rotate" probability="0.5"></bool>
-    <float name="speedTunnel" minValue="0.005" maxValue="0.07"></float>
-    <int name="sides" minValue="2" maxValue="14"></int>
-    <float name="speed" minValue="0.01" maxValue="0.09"></float>
-    <float name="power" minValue="1.0" maxValue="4.0"></float>
-  </TextureShader>
-  <TextureShader file="..\\Scene2D\\TunnelPlain.frag" type="normal" mood="calm,bright" probability="0.15" complexity="10">
-    <rig preset="flat"/>
-    <int name="sides" minValue="2" maxValue="14"></int>
-    <float name="speed" minValue="0.01" maxValue="0.05"></float>
-    <float name="power" minValue="1.0" maxValue="4.0"></float>
-  </TextureShader>
-  <TextureShader file="..\\Scene2D\\TunnelReverse.frag" type="KaleidoscopeBase" mood="psychedelic,bright" probability="0.15" complexity="1">
-    <rig preset="flat"/>
-    <bool name="rotate" probability="0.15"></bool>
-    <float name="speedTunnel" minValue="0.001" maxValue="0.03"></float>
-    <float name="speedTunnelReverse" minValue="0.0001" maxValue="0.01"></float>
-    <int name="sides" minValue="2" maxValue="14"></int>
-    <float name="speed" minValue="0.02" maxValue="0.09"></float>
-    <float name="power" minValue="1.0" maxValue="4.0"></float>
-  </TextureShader>
   <TextureShader file="..\\Scene2D\\Voyager.frag" type="normal" probability="0.5" mood="bright,space" complexity="2">
     <rig preset="flat"/>
     <int name="kSides" minValue="0" maxValue="9"></int>
@@ -3524,6 +3501,30 @@
     <float name="nodeP" minValue="0" maxValue="1"></float>
     <float name="threadP" minValue="0" maxValue="1"></float>
     <float name="photoP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TexturePineConeSpirals.frag" type="normal" mood="psychedelic,calm" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="gapP" minValue="0" maxValue="1"></float>
+    <float name="photoP" minValue="0" maxValue="1"></float>
+    <float name="bulgeP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TexturePinArt.frag" type="normal" mood="calm,dark" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="pinP" minValue="0" maxValue="1"></float>
+    <float name="waveP" minValue="0" maxValue="1"></float>
+    <float name="tintP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureGirihChambers.frag" type="normal" mood="psychedelic,bright" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="cellP" minValue="0" maxValue="1"></float>
+    <float name="bandP" minValue="0" maxValue="1"></float>
+    <float name="photoZoomP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
