@@ -1195,13 +1195,6 @@
     <float name="piezoP" minValue="0.8" maxValue="2.5"></float>
     <float name="coreDipP" minValue="0.4" maxValue="1.8"></float>
   </TextureShader>
-  <TextureShader file="..\Scene2D\QuantumHallSkyrmionCrystal.frag" type="normal" probability="0.4" mood="calm,bright,dreamy" complexity="3">
-    <rig preset="flat"/>
-    <float name="crystalPitchP" minValue="2.0" maxValue="6.0"></float>
-    <float name="spinRadiusP" minValue="0.4" maxValue="1.8"></float>
-    <float name="hallCurrentP" minValue="0.8" maxValue="2.5"></float>
-    <float name="cyclotronP" minValue="8.0" maxValue="24.0"></float>
-  </TextureShader>
   <TextureShader file="..\Scene2D\SiphonophoreBioluminescentCurtain.frag" type="normal" probability="0.4" mood="calm,dark,dreamy" complexity="4">
     <rig preset="flat"/>
     <float name="nectoCountP" minValue="3.0" maxValue="8.0"></float>
@@ -1422,15 +1415,6 @@
     <float name="foldP" minValue="0.7" maxValue="1.4"></float>
     <float name="glowP" minValue="0.7" maxValue="1.4"></float>
     <expr name="hueP" formula="chromaHue + seed2*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
-  <TextureShader file="..\Scene2D\BioCellularInfiniteZoom.frag" type="normal" mood="psychedelic,aggressive,dark" probability="0.4" complexity="2">
-    <rig preset="flat"/>
-    <float name="speedP" minValue="0.6" maxValue="1.6"></float>
-    <float name="scaleP" minValue="0.8" maxValue="1.4"></float>
-    <float name="membraneP" minValue="0.7" maxValue="1.5"></float>
-    <float name="glowP" minValue="0.7" maxValue="1.4"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene2D\BioLuminescentTendrilTunnel.frag" type="normal" mood="psychedelic,aggressive,dreamy" probability="0.4" complexity="2">
@@ -3120,6 +3104,22 @@
     <float name="ribbonP" minValue="0" maxValue="1"></float>
     <float name="foldP" minValue="0" maxValue="1"></float>
     <float name="photoZoomP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureTruchetMirror.frag" type="normal" mood="psychedelic,calm" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="tileP" minValue="0" maxValue="1"></float>
+    <float name="mirrorP" minValue="0" maxValue="1"></float>
+    <float name="photoZoomP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\CellophanePolarized.frag" type="normal" mood="psychedelic,bright" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="shardP" minValue="0" maxValue="1"></float>
+    <float name="layerP" minValue="0" maxValue="1"></float>
+    <float name="photoP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
