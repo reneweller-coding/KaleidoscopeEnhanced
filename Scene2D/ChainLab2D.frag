@@ -13,7 +13,8 @@ out vec4 fragColor;
  * spiral arms, lattice size) that is tens of thousands of chains in one file.
  * Every stage is continuous and the stages are joined by the photo's mirror
  * repeat, so each chain is seamless; the photograph flows through it without
- * end.  Rendered as the photo, a lit relief, glowing edges or contour lines,
+ * end.  Rendered as the photo, a lit relief, glowing edges, flowing contour lines or
+ * combed flow (noise in the chain's space smeared along its contours),
  * with a colour field that follows the chain's own coordinates and wanders
  * with the music.  Endless, mirrorable.
  *
@@ -29,7 +30,7 @@ out vec4 fragColor;
  * Knobs: chainAP / chainBP / chainCP / chainDP (the transform of each stage and
  * its sub-variant -- rolled once per start, so the chain never switches while it
  * runs), morphP (which stage, if any, morphs on through its class while the
- * scene runs -- driven by the music, always as a cross-fade), styleP (photo / relief / glowing edges / contour lines), speedP (flow
+ * scene runs -- driven by the music, always as a cross-fade), styleP (photo / relief / glowing edges / contour lines / flow), speedP (flow
  * speed), detailP (texture sharpness), paletteP (photo colours / colour field), hueP.
  */
 
@@ -597,11 +598,33 @@ void main()
     vec3 isoC = gc * iso * (1.3 + kick) + photo * 0.12;
     // The rolled style snaps to a pure look (blends between two looks are muddy);
     // it is constant while the scene runs, so the snap never shows as a jump.
-    float st = clamp(styleP, 0.0, 1.0) * 3.0;               // 0 photo, 1 relief, 2 edges, 3 isolines
+    float st = clamp(styleP, 0.0, 1.0) * 4.0;               // 0 photo, 1 relief, 2 edges, 3 isolines, 4 flow
     st = floor(st) + smoothstep(0.35, 0.65, fract(st));
+    // Flow: noise living in the chain's own space, smeared along the chain's
+    // contour direction (line integral convolution) with a travelling phase --
+    // silky stream lines that follow the chain.  Only the flow style pays for
+    // it (st depends on a knob alone, so every pixel takes the same branch).
+    vec3 flowC = photo * 0.25;
+    if (st > 3.0) {
+        vec2 fd = vec2(-grad.y, grad.x);
+        float gl = length(fd);
+        fd /= max(gl, 1e-5);
+        float hpx = 3.0 / resolution.y;
+        float ph = gT * 25.0;
+        float acc = 0.0, wsum = 0.0;
+        for (int k = -6; k <= 6; ++k) {
+            float fk = float(k);
+            float nz = noise2(mirrorUV(chain(p + fd * fk * hpx)) * 70.0);
+            float w = 1.0 + 0.8 * sin(fk * 0.7 - ph);
+            acc += nz * w; wsum += w;
+        }
+        float lic = smoothstep(0.38, 0.72, acc / wsum) * smoothstep(0.004, 0.04, gl);
+        flowC = gc * lic * (1.3 + kick) + photo * 0.25;
+    }
     vec3 col = mix(photo, reliefC, smoothstep(0.0, 1.0, st));
     col = mix(col, neon, smoothstep(1.0, 2.0, st));
     col = mix(col, isoC, smoothstep(2.0, 3.0, st));
+    col = mix(col, flowC, smoothstep(3.0, 4.0, st));
     col *= mix(vec3(0.9, 0.97, 1.08), vec3(1.08, 0.98, 0.9), mode);
     col += gc * edge * kick * 0.3 * (1.0 - smoothstep(1.0, 2.0, st));
     finish(col);
