@@ -1299,8 +1299,10 @@ void GLwidget::draw()
 		{
 			QString info = m_actConfiguration->m_renderPipeline->activeShaderInfo();
 			QStringList rows = info.split('\n');
-			int y = height() - 120;
-			painter.fillRect( 20, y - 24, 720, 28 * rows.size() + 16, QColor(0, 0, 0, 175) );
+			// Grows upward: a chain lab adds up to ten lines of its chain.
+			int y = height() - 120 - 28 * ( rows.size() > 3 ? rows.size() - 3 : 0 );
+			if( y < 40 ) y = 40;
+			painter.fillRect( 20, y - 24, 820, 28 * rows.size() + 16, QColor(0, 0, 0, 175) );
 			painter.setFont( QFont("Consolas", 13, QFont::Bold) );
 			for( int i = 0; i < rows.size(); ++i )
 			{

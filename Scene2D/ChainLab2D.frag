@@ -1221,6 +1221,15 @@ vec3 imgChain(vec2 p, float bias, out vec2 grad)
     return col;
 }
 
+// @chainclasses spaceP mirrored lattice|octahedral lattice|icosahedral lattice|hexagonal lattice|4D-rotated lattice|log-spherical Droste|log-cylindrical Droste|turning lattice|torus-wrapped world|hyperbolic half-space|twisted lattice|gyroid-warped lattice|helix|double helix|inverted lattice|polar ring tunnel
+// @chainclasses coreP no fold core|plane folds|polyhedral kaleidoscope|sphere-inversion box fold|Apollonian sphere packing|hyperbolic honeycomb|Kleinian fold|pseudo-Kleinian|amazing surface|kaliset|tetrahedral KIFS|Sierpinski octahedron|icosahedral KIFS|dodecahedral KIFS|octahedral KIFS|Menger sponge
+// @chainclasses bodyP balls|superquadrics|octahedra|hollow spheres|tori|chain links|gyroid membrane|Schwarz P surface|Schwarz D surface|Neovius surface|Lidinoid|blocks|rod lattice|crosses
+// @chainclasses chainAP none|polar unwrap|elliptic coordinates|parabolic coordinates|Farris wallpaper|Farris frieze|sunflower spirals|quasicrystal|Droste zoom|Escher spiral Droste|bipolar Droste|hyperbolic Poincare tiling|hyperbolic band|hyperbolic half-plane|sphere kaleidoscope|log-polar spiral|Archimedean spiral|hyperbolic spiral|rotating Riemann sphere|breathing sphere|Peirce quincuncial sphere|Jacobi cn wallpaper|Jacobi sn/dn wallpaper|parabolic stream|hyperbolic Moebius flow|complex exponential|cardioid coordinates|Blaschke product|wandering poles|bipolar stream|complex sine|tan lattice|zeta partial sum|circle inversion|Moebius stream|loxodromic stream|Newton map|Julia map|Mandelbrot map|burning ship|Phoenix Julia|kaleidoscope|tunnel
+// @chainclasses chainBP none|mirror line|p4m lattice|kaleidoscope|curved kaleidoscope|Penrose mirror|Ammann-Beenker mirror|12-fold quasicrystal mirror|p6m lattice|Sierpinski fold|Koch fold|Levy C fold|Pythagoras-tree fold|Vicsek fold|iterated fold|Apollonian inversion fold
+// @chainclasses chainCP none|lens|fisheye|blossom|Farris rosette|mirrored power|Cayley transform|Joukowski map|spiral|complex square|inversion|kaleidoscope|tunnel
+// @chainclasses chainDP none|turning|bend|shear wave|wave interference|curl flow|cylinder flow|dipole field|twirl|vortex pair|vortex street|Karman street|Kelvin-Helmholtz rolls|domain warp|ripple
+// @chainclasses styleP photo|relief|contour lines|flow|glowing edges
+// @chainclasses orderP A → B → C → D|A → B → D → C|A → C → B → D|A → C → D → B|A → D → B → C|A → D → C → B|B → A → C → D|B → A → D → C|B → C → A → D|B → C → D → A|B → D → A → C|B → D → C → A|C → A → B → D|C → A → D → B|C → B → A → D|C → B → D → A|C → D → A → B|C → D → B → A|D → A → B → C|D → A → C → B|D → B → A → C|D → B → C → A|D → C → A → B|D → C → B → A
 float gT, gSpread, gRot, gMw;
 vec2 gCw, gCt;
 // The stage index and a sub-variant 0..1 from one rolled knob.

@@ -445,6 +445,10 @@ QString RenderPipeline::activeShaderInfo() const
 			out += QString("   → %1  (%2%)")
 			       .arg(base(m_effectTextures[m_scheduler.nextTexture()]->fragmentName()))
 			       .arg(int((1.0f - m_scheduler.texInterp()) * 100.0f + 0.5f));
+		// Chain labs: the chain in words, stage by stage (to spot weak transforms).
+		const std::string chain = m_effectTextures[m_scheduler.actTexture()]->chainInfo();
+		if (!chain.empty())
+			out += "\n" + QString::fromUtf8(chain.c_str());
 	}
 	out += "\n";
 	if (!m_effectFx.empty())
@@ -454,6 +458,9 @@ QString RenderPipeline::activeShaderInfo() const
 			out += QString("   → %1  (%2%)")
 			       .arg(base(m_effectFx[m_scheduler.nextFx()]->fragmentName()))
 			       .arg(int((1.0f - m_scheduler.fxInterp()) * 100.0f + 0.5f));
+		const std::string chain = m_effectFx[m_scheduler.actFx()]->chainInfo();   // FxChain
+		if (!chain.empty())
+			out += "\n" + QString::fromUtf8(chain.c_str());
 	}
 	// The transition only ACTS during a scene fade; showing it outside one
 	// would just name the stale last roll.

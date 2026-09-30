@@ -504,6 +504,18 @@ public:
 	 * can carry a whole set.
 	 */
 	bool walksWithMusic() const { return m_walk.active; }
+	/**
+	 * @brief The chain lab's current chain in words, one line per stage, for the shader-info overlay (key v).
+	 *
+	 * Reads the "// @chainclasses <knob> name|name|..." lines the generator writes
+	 * into every chain lab (Tools/scenegen/chain_classes.py -- the classes in the
+	 * shader's energy order) and names what each stage shows now: the rolled knob,
+	 * or, while the lab walks, the shown class and the one it fades to with the
+	 * fade's progress.  Frozen likes (ChainLike*) have constants instead of knobs;
+	 * those are read from the source.  Empty for every other shader.
+	 * @return Lines separated by '\n', or an empty string.
+	 */
+	std::string chainInfo();
 
 	// ---- Song-structure memory ----
 	// Snapshot / restore of all rolled per-activation parameter values, so a
@@ -684,6 +696,9 @@ protected:
 		bool  hasLast = false;          ///< last is valid.
 		std::minstd_rand rng;           ///< Own random stream (keeps the scene's rand() stream untouched per frame).
 	} m_walk;
+	int		m_chainParsed = -1;         ///< chainInfo(): -1 = source not read yet, 0 = no chain classes, 1 = parsed.
+	std::map<std::string, std::vector<std::string>> m_chainClasses;   ///< Stage knob -> class names (energy order), from "// @chainclasses".
+	std::map<std::string, float> m_chainConsts;   ///< Knobs frozen as constants (ChainLike*): name -> value.
 	GLuint	m_walkProg = 0;             ///< Program the walk locations belong to.
 	GLint	m_walkLoc[9] = { -1, -1, -1, -1, -1, -1, -1, -1, -1 };   ///< Locations of walkA..walkD, walkS, walkSpace, walkCore, walkBody (-1 = stage absent).
 	GLint	m_walkHostLoc = -1;         ///< Location of walkHost (-1: not a chain lab).

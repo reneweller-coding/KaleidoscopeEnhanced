@@ -21,17 +21,9 @@ ROOT = os.path.abspath(os.path.join(SP, "..", ".."))
 LABS = {"ChainLab2D": "2D", "ChainLab3D": "3D", "ChainLabTunnel": "Tunnel"}
 PIN = ["spaceP", "coreP", "bodyP", "solidP", "reliefP", "chainAP", "chainBP", "chainCP", "chainDP", "morphP", "depthP", "styleP", "paletteP"]
 # The stage classes as the labs define them (for the description only).
-CLASSES = {
-    "spaceP": ["mirrored lattice", "octahedral lattice", "icosahedral lattice", "hexagonal lattice", "4D-rotated lattice", "log-spherical Droste", "log-cylindrical Droste", "turning lattice", "torus-wrapped world", "hyperbolic half-space", "twisted lattice", "gyroid-warped lattice", "helix", "double helix", "inverted lattice", "polar ring tunnel"],
-    "coreP": ["no fold core", "plane folds", "polyhedral kaleidoscope", "sphere-inversion box fold", "Apollonian sphere packing", "hyperbolic honeycomb", "Kleinian fold", "pseudo-Kleinian", "amazing surface", "kaliset", "tetrahedral KIFS", "Sierpinski octahedron", "icosahedral KIFS", "dodecahedral KIFS", "octahedral KIFS", "Menger sponge"],
-    "bodyP": ["balls", "superquadrics", "octahedra", "hollow spheres", "tori", "chain links", "gyroid membrane", "Schwarz P surface", "Schwarz D surface", "Neovius surface", "Lidinoid", "blocks", "rod lattice", "crosses"],
-    # chain stages in the labs' energy order (calm .. energetic, ORD_A..ORD_D in ChainLab2D)
-    "chainAP": [None, "polar unwrap", "elliptic coordinates", "parabolic coordinates", "Farris wallpaper", "Farris frieze", "sunflower spirals", "quasicrystal", "Droste zoom", "Escher spiral Droste", "bipolar Droste", "hyperbolic Poincare tiling", "hyperbolic band", "hyperbolic half-plane", "sphere kaleidoscope", "log-polar spiral", "Archimedean spiral", "hyperbolic spiral", "rotating Riemann sphere", "breathing sphere", "Peirce quincuncial sphere", "Jacobi cn wallpaper", "Jacobi sn/dn wallpaper", "parabolic stream", "hyperbolic Moebius flow", "complex exponential", "cardioid coordinates", "Blaschke product", "wandering poles", "bipolar stream", "complex sine", "tan lattice", "zeta partial sum", "circle inversion", "Moebius stream", "loxodromic stream", "Newton map", "Julia map", "Mandelbrot map", "burning ship", "Phoenix Julia", "kaleidoscope", "tunnel"],
-    "chainBP": [None, "mirror line", "p4m lattice", "kaleidoscope", "curved kaleidoscope", "Penrose mirror", "Ammann-Beenker mirror", "12-fold quasicrystal mirror", "p6m lattice", "Sierpinski fold", "Koch fold", "Levy C fold", "Pythagoras-tree fold", "Vicsek fold", "iterated fold", "Apollonian inversion fold"],
-    "chainCP": [None, "lens", "fisheye", "blossom", "Farris rosette", "mirrored power", "Cayley transform", "Joukowski map", "spiral", "complex square", "inversion", "kaleidoscope", "tunnel"],
-    "chainDP": [None, "turning", "bend", "shear wave", "wave interference", "curl flow", "cylinder flow", "dipole field", "twirl", "vortex pair", "vortex street", "Karman street", "Kelvin-Helmholtz rolls", "domain warp", "ripple"],
-    "morphP": ["the first stage", "the symmetry", "the second map", "the warp"],
-}
+from chain_classes import CLASSES as _CC
+CLASSES = dict(_CC)
+CLASSES["morphP"] = ["the first stage", "the symmetry", "the second map", "the warp"]
 
 def pick(x, n):
     return min(int(x * n), n - 1)

@@ -1422,6 +1422,12 @@ def build(name):
         out.append(CHAIN_LIB)
     if re.search(r"float\s+field3\s*\(", body):
         out.append(CHAIN3D_LIB)
+    # Chain labs: the class names of every stage, for the app's shader-info
+    # overlay (key v; EffectShader::chainInfo reads these comment lines).
+    if "int orda(" in body:
+        from chain_classes import CLASSES as _CC
+        for k, names in _CC.items():
+            out.append("// @chainclasses %s %s" % (k, "|".join(n if n else "none" for n in names)))
     out.append(body.rstrip() + "\n")
     # //@target fx: an overlay (CombineShader) -- tex0/tex1 are then the finished
     # scene frame instead of the photos; the same library applies.

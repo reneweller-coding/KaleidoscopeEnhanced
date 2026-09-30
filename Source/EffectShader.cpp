@@ -1159,6 +1159,109 @@ void EffectShader::stepChainWalk( const AudioFeatures &f )
 	}
 }
 
+std::string EffectShader::chainInfo()
+{
+	if( m_chainParsed < 0 )
+	{
+		m_chainParsed = 0;
+		char *src = m_fragmentShaderFilename ? textFileRead( m_fragmentShaderFilename ) : nullptr;
+		if( src )
+		{
+			const std::string text( src );
+			free( src );
+			size_t a = 0;
+			while( a < text.size() )
+			{
+				size_t b = text.find( '\n', a );
+				if( b == std::string::npos ) b = text.size();
+				std::string line = text.substr( a, b - a );
+				a = b + 1;
+				if( !line.empty() && line.back() == '\r' ) line.pop_back();
+				static const std::string tag = "// @chainclasses ";
+				if( line.compare( 0, tag.size(), tag ) == 0 )
+				{
+					const std::string rest = line.substr( tag.size() );
+					const size_t sp = rest.find( ' ' );
+					if( sp == std::string::npos ) continue;
+					std::vector<std::string> names;
+					size_t c = sp + 1;
+					while( c <= rest.size() )
+					{
+						size_t d = rest.find( '|', c );
+						if( d == std::string::npos ) d = rest.size();
+						names.push_back( rest.substr( c, d - c ) );
+						c = d + 1;
+					}
+					m_chainClasses[ rest.substr( 0, sp ) ] = names;
+					m_chainParsed = 1;
+				}
+				// frozen likes: "const float chainAP = 0.4752;"
+				static const std::string ctag = "const float ";
+				if( line.compare( 0, ctag.size(), ctag ) == 0 )
+				{
+					const size_t eq = line.find( '=' );
+					if( eq != std::string::npos )
+					{
+						std::string name = line.substr( ctag.size(), eq - ctag.size() );
+						while( !name.empty() && name.back() == ' ' ) name.pop_back();
+						m_chainConsts[ name ] = (float) atof( line.c_str() + eq + 1 );
+					}
+				}
+			}
+		}
+	}
+	if( m_chainParsed != 1 )
+		return std::string();
+
+	// The rolled value of a knob (or its frozen constant); -1 if the shader has neither.
+	auto knobValue = [this]( const char *knob ) -> float {
+		for( const Uniform *u : m_uniforms )
+			if( u->getName() == knob ) return u->snapshotValue();
+		auto it = m_chainConsts.find( knob );
+		return it != m_chainConsts.end() ? it->second : -1.f;
+	};
+	auto className = [this]( const std::string &knob, float x ) -> std::string {
+		auto it = m_chainClasses.find( knob );
+		if( it == m_chainClasses.end() || it->second.empty() ) return "?";
+		const int n = (int) it->second.size();
+		int k = (int)( ( x < 0.f ? 0.f : ( x > 1.f ? 1.f : x ) ) * n );
+		if( k > n - 1 ) k = n - 1;
+		return it->second[k];
+	};
+	// Display order: the order first, then the stages, the look, the 3D structure.
+	static const int   kShow[9]   = { 8, 0, 1, 2, 3, 4, 5, 6, 7 };
+	static const char *kLabel[9]  = { "A", "B", "C", "D", "Look", "Raum", "Kern", "Koerper", "Reihenfolge" };
+	std::string out;
+	char buf[64];
+	for( int i = 0; i < 9; ++i )
+	{
+		const int s = kShow[i];
+		const float rolled = knobValue( kWalkKnob[s] );
+		if( rolled < 0.f || m_chainClasses.find( kWalkKnob[s] ) == m_chainClasses.end() )
+			continue;
+		const bool walking = m_walk.active && ( m_walkLoc[s] >= 0 );
+		const float x0 = walking ? m_walk.x0[s] : rolled;
+		std::string line = std::string( "  " ) + kLabel[s];
+		line.resize( 14, ' ' );
+		line += className( kWalkKnob[s], x0 );
+		if( walking && m_walk.fading[s] )
+		{
+			snprintf( buf, sizeof buf, "  (%d%%)", (int)( m_walk.f[s] * 100.f + 0.5f ) );
+			const std::string to = className( kWalkKnob[s], m_walk.x1[s] );
+			line += " -> " + ( to == className( kWalkKnob[s], x0 ) ? std::string( "neue Variante" ) : to ) + buf;
+		}
+		if( !out.empty() ) out += "\n";
+		out += line;
+	}
+	if( !out.empty() )
+	{
+		snprintf( buf, sizeof buf, "%.2f", m_walk.rate );
+		out = ( m_walk.active ? std::string( "  KETTE (wandert, Musiktempo " ) + buf + ")\n"
+		                      : std::string( "  KETTE (fest)\n" ) ) + out;
+	}
+	return out;
+}
+
 void EffectShader::setGradeModes( const std::string &list )
 {
 	m_gradeModes.clear();
