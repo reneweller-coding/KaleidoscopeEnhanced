@@ -3016,14 +3016,6 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\\Scene2D\\TextureLeafStorm.frag" type="normal" mood="calm,warm" probability="0.45" complexity="2">
-    <rig preset="flat"/>
-    <float name="densityP" minValue="0" maxValue="1"></float>
-    <float name="sizeP" minValue="0" maxValue="1"></float>
-    <float name="photoP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader file="..\\Scene2D\\TextureConfettiVolume.frag" type="normal" mood="energetic,bright" probability="0.45" complexity="2">
     <rig preset="flat"/>
     <float name="densityP" minValue="0" maxValue="1"></float>
@@ -3093,6 +3085,14 @@
     <float name="beamP" minValue="0" maxValue="1"></float>
     <float name="projP" minValue="0" maxValue="1"></float>
     <float name="wallP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\BoogieWoogieGrid.frag" type="normal" mood="bright,energetic" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="gridP" minValue="0" maxValue="1"></float>
+    <float name="blockP" minValue="0" maxValue="1"></float>
+    <float name="photoP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>

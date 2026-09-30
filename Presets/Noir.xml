@@ -1857,14 +1857,6 @@
     <expr name="hueP" formula="chromaHue + seed3*6.28"/>
     <float name="hueP"         minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\Scene2D\QuaternionicJulia4DFlight.frag" type="normal" probability="0.48" mood="psychedelic,bright" complexity="4">
-    <rig preset="flat"/>
-    <float name="iterP"  minValue="0.5" maxValue="2.0"></float>
-    <float name="sliceP" minValue="0.5" maxValue="2.2"></float>
-    <float name="speedP" minValue="0.5" maxValue="2.0"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader file="..\Scene2D\SchwarzschildWormholeTunnel.frag" type="normal" probability="0.5" mood="dark,aggressive" complexity="4">
     <rig preset="flat"/>
     <float name="throatP"    minValue="0.5" maxValue="2.2"></float>
@@ -3666,6 +3658,14 @@
     <rig preset="flat"/>
     <float name="curtainP" minValue="0" maxValue="1"></float>
     <float name="rayP" minValue="0" maxValue="1"></float>
+    <float name="photoP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\KlineBlackStrokes.frag" type="normal" mood="dark,energetic" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="strokeP" minValue="0" maxValue="1"></float>
+    <float name="curveP" minValue="0" maxValue="1"></float>
     <float name="photoP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>

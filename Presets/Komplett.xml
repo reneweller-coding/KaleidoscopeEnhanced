@@ -11945,4 +11945,31 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
 
+  <TextureShader file="..\\Scene2D\\BoogieWoogieGrid.frag" type="normal" mood="bright,energetic" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="gridP" minValue="0" maxValue="1"></float>
+    <float name="blockP" minValue="0" maxValue="1"></float>
+    <float name="photoP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\KlineBlackStrokes.frag" type="normal" mood="dark,energetic" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="strokeP" minValue="0" maxValue="1"></float>
+    <float name="curveP" minValue="0" maxValue="1"></float>
+    <float name="photoP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\TwomblyScribble.frag" type="normal" mood="calm,bright" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="rowP" minValue="0" maxValue="1"></float>
+    <float name="loopP" minValue="0" maxValue="1"></float>
+    <float name="lineP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
 </configuration>
