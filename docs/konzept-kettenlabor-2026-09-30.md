@@ -243,7 +243,131 @@ Weitere Quellen dieser Runde:
 [Penrose tiling](https://en.wikipedia.org/wiki/Penrose_tiling),
 [Truchet tiles](https://www.wayline.io/learn/shaders/10).
 
-## 8. Weiterdenken
+## 8. Penrose-Paket und Runde 4
+
+* **PenroseParquet** (Einzelshader): endloses Rhombenparkett nach de Bruijns
+  Pentagitter; jede Scheibe zeigt das Kaleidoskop-Foto im eigenen drehenden
+  Rahmen, Licht läuft entlang der de-Bruijn-Bänder (Ketten von Rhomben mit
+  gleicher Kantenrichtung), Looks Foto / Buntglas / Bänderlicht.
+* **Penrose-Spiegel** (Kette B): die Rhombus-Koordinaten symmetrisch gefaltet
+  (min/max der Kantenabstände) sind auf beiden Seiten jeder Kante gleich — so
+  wird das Parkett eine stetige, nie periodische Spiegelung.
+* Runde 4 eingebaut: Farris p3m1/p31m/p4g/cmm, Farris-Fries, Jacobi-cn-Tapete,
+  hyperbolische Halbebene, archimedische Spirale, Koch-Faltung, Biegung,
+  Wurzel-Faltung; 3D Torus-Raum, Gyroid-Verzerrung, Amazing Surface,
+  Oktaeder, Stabgitter.
+
+## 9. Katalog: 80 weitere Transformationen
+
+Legende: **A–D** Kettenstufe (A globale Abbildung, B Symmetrie, C zweite
+Abbildung, D Verzerrung), **R/K/Kö** 3D-Raum/Kern/Körper, **E** Einzelshader,
+**M** Meta (verändert das Labor selbst). „billig“ = eine Handvoll Zeilen.
+
+**Komplexe Analysis / konforme Abbildungen**
+1. Weierstraß-℘ auf dem Dreiecksgitter (Theta-Reihen wie cn) — A, billig
+2. Jacobi dn, sc, sd als eigene Tapeten (andere Pol-/Nullstellenmuster) — A, billig
+3. Modulfunktion λ(τ) / j(τ) auf der Halbebene (Dedekind-Eta-Reihen) — A, mittel; die klassische „Modulgruppen“-Kachelung
+4. Schwarz-Dreiecksabbildung (hypergeometrisch, Kreisbogendreiecke) — A, teuer
+5. Möbius-Strömung mit Fixpunkten auf dem Einheitskreis (hyperbolischer Fluss) — A, billig
+6. Konjugierte Möbius-Iteration (z ← M(z) n-mal, elliptisch der Ordnung n) — B, billig
+7. Rationale Abbildung mit wandernden Polen/Nullstellen (Summe z/(z−pₖ)) — A, billig
+8. Cayley-Transformation Halbebene↔Scheibe als eigene Stufe — C, billig
+9. Böttcher-Koordinate (Potential + Winkel außerhalb einer Julia-Menge) — A, mittel
+10. Log-polarer Droste mit zwei Zentren (Spirale zwischen zwei Löchern) — A, billig
+11. Hyperbolische Spirale r = a/θ (Tunnel mit Windung) — A, billig
+12. Fresnel-Integral-Abbildung (Cornu-Spirale als Koordinate) — C, mittel
+13. Zeta-Partialsumme Σ n^(−s) (wenige Glieder, fraktal verdrillt) — A, mittel
+14. Blaschke-Produkt mit Nullstellen auf einer Spirale (endloser Einzug) — A, billig (Variante)
+
+**Symmetriegruppen und Tapeten**
+15. Farris cm, pm, p2, p1 (Rest der 17 Gruppen) — A (Untervarianten), billig
+16. Farris-Farbdrehungs-Tapeten (Wellen mal Farbdrehung pro Symmetrieschritt) — A, billig
+17. Farris-Kugelmuster mit Ikosaeder-/Oktaedersymmetrie (Wellen auf der Kugel) — A, mittel
+18. Hyperbolische Farris-Muster (Wellen über der Halbebene) — A, mittel
+19. Spiegelgruppen *632 als Faltung mit wandernden Spiegelwinkeln (stetig im Winkel) — B, billig
+20. Frieze-Gruppen als Faltung (7 Streifengruppen, nur die Spiegelgruppen stetig) — B, billig
+21. Kaleidoskop mit gebogenen Spiegeln (Kreisbogenspiegel statt Geraden) — B, billig
+22. Dreiecksspiegelgruppe (p,q,r) sphärisch/euklidisch/hyperbolisch vereint — B, mittel
+23. Quasikristall-Spiegel 8- und 12-zählig (Ammann-Beenker, Stampfli) — B, mittel (wie Penrose)
+24. Penrose-Drachen/Pfeile statt Rhomben (Robinson-Dreiecke) — B/E, mittel
+25. Einstein-Kachel „Hut“ (aperiodisch, eine Form) — E, teuer (Substitution)
+
+**Fraktale Faltungen (2D)**
+26. Lévy-C-Kurve / Drachen als stetige Faltung (Spiegel + Skalierung) — B, billig
+27. Pythagoras-Baum-Faltung — B, billig
+28. Vicsek-/Kreuz-Faltung — B, billig
+29. Mandelbrot-Parameterabbildung (c = uv, wenige Iterationen) — A, billig
+30. Burning-Ship-Abbildung (|Re|, |Im| vor dem Quadrieren) — A, billig
+31. Phoenix-Julia (mit Gedächtnisterm) — A, billig
+32. Newton für zⁿ = w mit wanderndem n (stetig über Nullstellen-Überblendung) — A, mittel
+33. Kleinsche Grenzmenge echt (Maskit mit stetiger Randbehandlung) — B, teuer
+
+**Strömungen und Verzerrungen**
+34. Kármán-Wirbelstraße mit ablösenden Wirbeln — D, billig
+35. Potentialströmung um einen Zylinder (Joukowski-Strom mit Zirkulation) — D, billig
+36. Stokes-Strom / Dipolfeld — D, billig
+37. Gezeiten-Wirbel (zwei Punktwirbel umeinander) — D, billig
+38. Schallwellen-Interferenz zweier Quellen als Verschiebung — D, billig
+39. Scherstrom mit Kelvin-Helmholtz-Rollen — D, billig
+40. Linienintegral-Faltung längs einer anderen Kette (Kette als Strömung) — M, mittel
+41. Radiale Tonnen-/Kissen-/Fischauge — C, billig (schwach allein)
+42. Kugelflächen-Beule Y_lm auf der Riemann-Kugel — A, billig
+43. Möbiusband-Streifen (Band mit halber Drehung, gespiegelt geschlossen) — A, billig
+44. Wellen auf einer Kugel (Kugel atmet, projiziert) — A, billig
+
+**Koordinatensysteme**
+45. Parabolische Koordinaten (σ, τ) — A, billig
+46. Bipolare Kreise mit Verdrillung (Loxodrom zweier Pole, schon da) — Variante
+47. Kardioid-Koordinaten (z → √(1−4z), Mandelbrot-Hauptkörper) — A, billig
+48. Toroidale Koordinaten in 2D (Kreise um zwei Kreise) — A, billig
+49. Log-Spiralgitter (zwei Spiralscharen gekreuzt, Sonnenblume) — A, billig
+50. Phyllotaxis-Koordinaten (Goldwinkel-Spiralen, Fibonacci-Parastichen) — A/B, mittel
+
+**3D-Räume**
+51. Hopf-Faserung als Raum (jeder Punkt auf seinem Faser-Kreis) — R, mittel
+52. Hyperbolischer Raum in Halbraum-Koordinaten (Gitter wird nach oben winzig) — R, billig
+53. Sphärischer Raum S³ (Welt schließt sich) — R, teuer
+54. Doppelhelix-Raum (zwei verschränkte Helices) — R, billig
+55. Knoten-Raum (Raum längs eines Torusknotens gewickelt) — R, mittel
+56. Möbius-Raum (Band mit halber Drehung als Tunnel) — R, billig
+57. Zylinder-Droste (Rohr, das sich in sich selbst wiederholt) — R, billig
+58. Klein-Flaschen-Raum — R, teuer
+59. Dodekaeder-Raum (Poincaré-Homologiesphäre, gegenüberliegende Flächen verdreht verbunden) — R, mittel
+60. 5D-Gitter-Schnitt (Quasikristall in 3D, ikosaedrisch) — R, mittel
+
+**3D-Kerne**
+61. Pseudo-Kleinian mit eigener Abstandsformel (Knighty) — K, billig
+62. Mandelbulb-Faltung (Potenz 8, Kugelkoordinaten) — K/E, mittel
+63. Juliabulb / Quaternionen-Julia — K/E, mittel
+64. Kaliset (abs/Skalierung, Kali) — K, billig
+65. Sierpinski-Oktaeder, Dodekaeder-KIFS — K, billig
+66. Apollonische Kugelpackung (3D-Inversionen) — K, billig
+67. Menger mit Drehung zwischen den Stufen (schon Menger, Variante) — K
+68. Hyperbolische {5,3,4}-Wabe exakt — K, mittel
+
+**3D-Körper**
+69. Torusknoten — Kö, mittel
+70. Kapsel-Ketten (Kettenglieder) — Kö, billig
+71. Hohlkugel mit Löchern (Kugel ∖ Oktaeder) — Kö, billig
+72. Superquadrik (Würfel↔Kugel stetig) — Kö, billig
+73. Neovius-/Lidinoid-Minimalflächen — Kö, billig
+
+**Einzelshader**
+74. Truchet-Labyrinth mit Foto in den Bändern — E
+75. Voronoi-Zellen, jede mit eigenem Kaleidoskop — E
+76. Reaktion–Diffusion mit Foto als Futter (GpuSims) — E
+77. Foto-Advektion in einer Fluid-Simulation — E
+78. Hopf-Faserung (verschlungene Tori) — E
+79. Hilbert-Kurve als Bildpfad — E
+80. Weben/Flechten (über-unter) mit Fotofäden — E
+
+**Meta (verändert das Labor)**
+- Zwei Ketten mischen (Kette A als Maske für Kette B).
+- Ketten-Parameter aus dem Foto (Helligkeit steuert Faltwinkel).
+- Kette rückwärts laufen lassen (Inverse, wo es sie gibt: Möbius, Spiegel).
+- Kettenlänge mit der Musik (Identität am ruhigen Ende — schon da).
+
+## 10. Weiterdenken
 
 * **Ketten als FX-Stufe (größter Hebel, braucht deine Entscheidung)**: Jede
   Szene läuft durch eine CombineShader-Stufe, die dieselbe Schnittstelle hat
