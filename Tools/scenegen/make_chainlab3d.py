@@ -27,13 +27,14 @@ HEAD = r'''//@doc
  *   audioSwell      -> the fog glow and the colour saturation (slow)
  *
  * Knobs: spaceP / coreP / bodyP (the 3D chain, rolled per start), chainAP..chainDP
- * (the 2D colour chain, rolled per start), styleP (lit surface / glowing rims),
+ * (the 2D colour chain, rolled per start), morphP (which colour stage morphs on
+ * with the music), styleP (lit surface / glowing rims),
  * speedP (flight speed), detailP (texture sharpness), paletteP (photo colours /
  * colour field), hueP.
-//@params spaceP coreP bodyP chainAP chainBP chainCP chainDP styleP speedP detailP paletteP
+//@params spaceP coreP bodyP chainAP chainBP chainCP chainDP morphP styleP speedP detailP paletteP
 //@audio audioSpread audioKick audioMode audioSwell
 //@body
-float gT, gTC, gSpread, gRot;
+float gT, gTC, gSpread, gRot, gMw;
 vec2 gCw, gCt;
 '''
 FIELD = r'''
@@ -90,6 +91,7 @@ MAIN = t3[m:]
 MAIN = MAIN.replace("    gSpread = clamp(audioSpread, 0.0, 1.0);\n",
     "    gSpread = clamp(audioSpread, 0.0, 1.0);\n"
     "    gTC = (0.03 + 0.06 * clamp(speedP, 0.0, 1.0)) * sceneTime + 0.25 * audioAdvance;\n"
+    "    gMw = 0.012 * sceneTime + 0.15 * sceneAdvance;          // colour-chain morph position (integrated)\n"
     "    gCw = vec2(0.5) + 0.15 * vec2(sin(0.017 * sceneTime), cos(0.013 * sceneTime));\n"
     "    gCt = vec2(0.5) + vec2(0.22 * sin(0.023 * sceneTime + 0.3 * sin(0.011 * sceneTime)), 0.16 * cos(0.019 * sceneTime));\n")
 io.open(os.path.join(SP, "src", "ChainLab3D.glsl"), "w", encoding="utf-8").write(HEAD + STAGES + FIELD + MAIN)

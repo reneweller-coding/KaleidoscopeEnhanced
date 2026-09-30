@@ -22,7 +22,8 @@ out vec4 fragColor;
  *   audioSwell      -> the fog glow and the colour saturation (slow)
  *
  * Knobs: spaceP / coreP / bodyP (the 3D chain, rolled per start), chainAP..chainDP
- * (the 2D colour chain, rolled per start), styleP (lit surface / glowing rims),
+ * (the 2D colour chain, rolled per start), morphP (which colour stage morphs on
+ * with the music), styleP (lit surface / glowing rims),
  * speedP (flight speed), detailP (texture sharpness), paletteP (photo colours /
  * colour field), hueP.
  */
@@ -52,6 +53,7 @@ uniform float chainAP;
 uniform float chainBP;
 uniform float chainCP;
 uniform float chainDP;
+uniform float morphP;
 uniform float styleP;
 uniform float speedP;
 uniform float detailP;
@@ -492,7 +494,7 @@ vec3 photo3(vec3 q, vec3 n, float lod)
     return imgK(q.yz * 0.35 + 0.5, lod) * w.x + imgK(q.zx * 0.35 + 0.5, lod) * w.y + imgK(q.xy * 0.35 + 0.5, lod) * w.z;
 }
 
-float gT, gTC, gSpread, gRot;
+float gT, gTC, gSpread, gRot, gMw;
 vec2 gCw, gCt;
 // The stage index and a sub-variant 0..1 from one rolled knob.
 int pickStage(float x, int n) { return int(min(floor(clamp(x, 0.0, 1.0) * float(n)), float(n - 1))); }
@@ -501,9 +503,8 @@ float evenArms(float v) { return 2.0 * (1.0 + floor(v * 3.99)); }        // 2, 4
 float sides(float v) { return 5.0 + floor(v * 4.99); }                     // 5 .. 9 mirrors
 
 // Stage A: a global map.
-vec2 stageA(vec2 uv)
+vec2 stageAk(vec2 uv, int k, float v)
 {
-    int k = pickStage(chainAP, 9); float v = subVar(chainAP, 9);
     if (k == 0) return tKaleido(uv, gCw, sides(v), gRot);
     if (k == 1) return tSpiral(uv, vec2(0.5), evenArms(v), 0.8 + 0.4 * v, gTC * 2.0);
     if (k == 2) return tTunnel(uv, gCt, 0.2 + 0.1 * v, gTC * 3.0);
@@ -518,9 +519,8 @@ vec2 stageA(vec2 uv)
     return tInvert(uv, gCw, 0.22 + 0.08 * v + 0.1 * gSpread);
 }
 // Stage B: a symmetry.
-vec2 stageB(vec2 uv)
+vec2 stageBk(vec2 uv, int k, float v)
 {
-    int k = pickStage(chainBP, 6); float v = subVar(chainBP, 6);
     if (k == 0) return uv;
     if (k == 1) return tKaleido(uv, gCw, sides(v), gRot);
     if (k == 2) return tHex(uv, 2.0 + 1.5 * v);
@@ -529,9 +529,8 @@ vec2 stageB(vec2 uv)
     return tMirrorLine(uv, vec2(0.5), gRot * 2.0 + v * 3.14);
 }
 // Stage C: a second global map.
-vec2 stageC(vec2 uv)
+vec2 stageCk(vec2 uv, int k, float v)
 {
-    int k = pickStage(chainCP, 7); float v = subVar(chainCP, 7);
     if (k == 0) return uv;
     if (k == 1) return tSpiral(uv, vec2(0.5), evenArms(v), 1.0, gTC * 1.5);
     if (k == 2) return tTunnel(uv, gCt, 0.25, gTC * 2.5);
@@ -541,15 +540,62 @@ vec2 stageC(vec2 uv)
     return tKaleido(uv, vec2(0.5), sides(v), -gRot);
 }
 // Stage D: a warp.
-vec2 stageD(vec2 uv)
+vec2 stageDk(vec2 uv, int k, float v)
 {
-    int k = pickStage(chainDP, 6); float v = subVar(chainDP, 6);
     if (k == 0) return uv;
     if (k == 1) return tTwirl(uv, gCw, 2.5 * sin(gTC * 0.6), 0.3 + 0.1 * v + 0.2 * gSpread);
     if (k == 2) return tWave(uv, 6.0 + 4.0 * v, 0.02 + 0.04 * gSpread, gTC * 4.0);
     if (k == 3) return tRipple(uv, gCt, 25.0 + 15.0 * v, 0.01 + 0.03 * gSpread, gTC * 8.0);
     if (k == 4) return tWarp(uv, 0.05 + 0.15 * gSpread, gTC);
     return tRot(uv, vec2(0.5), 0.5 * sin(gTC * 0.3 + v * 6.28));
+}
+
+// Chain morph: morphP picks (once per start) which stage wanders -- none, A, B,
+// C or D.  That stage then walks through its class, driven by time and the
+// integrated music (sceneAdvance, which surges on flux and harmonic changes):
+// it holds a transform, then cross-fades to the next one.  The fade mixes the
+// two MIRRORED outputs, each continuous, so the picture never jumps.
+int morphStage() { return pickStage(morphP, 5); }
+vec2 morphMix(vec2 a, vec2 b, float f) { return mix(mirrorUV(a), mirrorUV(b), f); }
+vec2 stageA(vec2 uv)
+{
+    int k0 = pickStage(chainAP, 9); float v = subVar(chainAP, 9);
+    if (morphStage() != 1) return stageAk(uv, k0, v);
+    float kf = float(k0) + gMw;
+    int i0 = int(mod(floor(kf), 9.0)), i1 = int(mod(floor(kf) + 1.0, 9.0));
+    float f = smoothstep(0.55, 1.0, fract(kf));
+    if (f <= 0.0) return stageAk(uv, i0, v);
+    return morphMix(stageAk(uv, i0, v), stageAk(uv, i1, v), f);
+}
+vec2 stageB(vec2 uv)
+{
+    int k0 = pickStage(chainBP, 6); float v = subVar(chainBP, 6);
+    if (morphStage() != 2) return stageBk(uv, k0, v);
+    float kf = float(k0) + gMw;
+    int i0 = int(mod(floor(kf), 6.0)), i1 = int(mod(floor(kf) + 1.0, 6.0));
+    float f = smoothstep(0.55, 1.0, fract(kf));
+    if (f <= 0.0) return stageBk(uv, i0, v);
+    return morphMix(stageBk(uv, i0, v), stageBk(uv, i1, v), f);
+}
+vec2 stageC(vec2 uv)
+{
+    int k0 = pickStage(chainCP, 7); float v = subVar(chainCP, 7);
+    if (morphStage() != 3) return stageCk(uv, k0, v);
+    float kf = float(k0) + gMw;
+    int i0 = int(mod(floor(kf), 7.0)), i1 = int(mod(floor(kf) + 1.0, 7.0));
+    float f = smoothstep(0.55, 1.0, fract(kf));
+    if (f <= 0.0) return stageCk(uv, i0, v);
+    return morphMix(stageCk(uv, i0, v), stageCk(uv, i1, v), f);
+}
+vec2 stageD(vec2 uv)
+{
+    int k0 = pickStage(chainDP, 6); float v = subVar(chainDP, 6);
+    if (morphStage() != 4) return stageDk(uv, k0, v);
+    float kf = float(k0) + gMw;
+    int i0 = int(mod(floor(kf), 6.0)), i1 = int(mod(floor(kf) + 1.0, 6.0));
+    float f = smoothstep(0.55, 1.0, fract(kf));
+    if (f <= 0.0) return stageDk(uv, i0, v);
+    return morphMix(stageDk(uv, i0, v), stageDk(uv, i1, v), f);
 }
 
 vec3 zRepeat(vec3 q, float c) { q.z = c * (abs(mod(q.z / c - 1.0, 4.0) - 2.0) - 1.0); return q; }
@@ -628,6 +674,7 @@ void main()
     gRot = 0.02 * sceneTime + 0.2 * audioPhase;
     gSpread = clamp(audioSpread, 0.0, 1.0);
     gTC = (0.03 + 0.06 * clamp(speedP, 0.0, 1.0)) * sceneTime + 0.25 * audioAdvance;
+    gMw = 0.012 * sceneTime + 0.15 * sceneAdvance;          // colour-chain morph position (integrated)
     gCw = vec2(0.5) + 0.15 * vec2(sin(0.017 * sceneTime), cos(0.013 * sceneTime));
     gCt = vec2(0.5) + vec2(0.22 * sin(0.023 * sceneTime + 0.3 * sin(0.011 * sceneTime)), 0.16 * cos(0.019 * sceneTime));
     vec3 ro;

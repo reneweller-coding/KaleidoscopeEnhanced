@@ -3414,6 +3414,7 @@
     <float name="chainBP" minValue="0" maxValue="1"></float>
     <float name="chainCP" minValue="0" maxValue="1"></float>
     <float name="chainDP" minValue="0" maxValue="1"></float>
+    <float name="morphP" minValue="0" maxValue="1"></float>
     <float name="styleP" minValue="0" maxValue="1"></float>
     <float name="speedP" minValue="0" maxValue="1"></float>
     <float name="detailP" minValue="0" maxValue="1"></float>
@@ -3430,6 +3431,7 @@
     <float name="chainBP" minValue="0" maxValue="1"></float>
     <float name="chainCP" minValue="0" maxValue="1"></float>
     <float name="chainDP" minValue="0" maxValue="1"></float>
+    <float name="morphP" minValue="0" maxValue="1"></float>
     <float name="styleP" minValue="0" maxValue="1"></float>
     <float name="speedP" minValue="0" maxValue="1"></float>
     <float name="detailP" minValue="0" maxValue="1"></float>
