@@ -386,7 +386,47 @@ Wanderstufe: die App überblendet zwei ganze Ketten verschiedener Reihenfolge
 (einen Zustand „halb vertauscht“ gibt es nicht). Kosten: während dieser
 Überblendung doppelt (gemessen kurz bis 74 fps, Median 120).
 
-## 11. Weiterdenken
+## 11. Runde 6: 50 weitere und eigene Teilmengen
+
+50 neue Transformationen (Liste im Commit 35ece8e8), jede als Stichprobe
+gerendert. Ersetzt statt nachgebessert: Schwarz-Christoffel-Polygon (zu
+kantig, Singularitäten) → Magnet-Abbildung, sphärisches Droste (doppelte
+Pole) → hyperbolisches Droste; Schottky-Spiegel neu mit äußerem Kreis;
+Mandalay-Box und verdrilltes Okta-KIFS verkleinert (zerfielen zu Staub).
+Stand: Stufe A 58, B 23, C 18, D 20; 3D Raum 20, Kern 22, Körper 22.
+
+Quellen: Pellegrini/Johnson „Squares that Look Round“ (arXiv 1605.01396,
+Peirce/Schwarz-Christoffel), Bridges 2014 zu inversiven Kaleidoskopen,
+Mumford/Series/Wright „Indra's Pearls“ (Schottky, Modulgruppe), die
+fractalforums-Arbeiten zu Escape-Time-Kleinian/Pseudo-Kleinian, Farris
+„Creating Symmetry“; Strömungen (Double Gyre, Taylor-Green, Gerstner) aus
+der Standard-Strömungsliteratur, Linsen aus der Gravitationslinsen-Optik.
+
+**Was die Kompilierzeit treibt**: nicht die Zahl der Klassen, sondern die
+Zahl der *Aufrufstellen* der Kette — jede wird ganz inline eingesetzt. Im
+3D-Labor lief die Farbkette an ~9 Stellen (Triplanar × Look, dazu die
+Reihenfolge-Überblendung doppelt) → 10,6 s kalt. Ohne Reihenfolge-Wandern in
+der Farbkette und mit *einer* Triplanar-Projektion für beide Looks: 3,7 s.
+Schleifen „nicht entrollbar“ machen (loopN) war langsamer (bis 50 s).
+
+**Eigene Teilmengen** (`labsubset.py`, Namen in `chain_classes.py`): Ein
+Labor, das die Kette je Pixel viele Male auswertet, nimmt schwere Klassen
+gar nicht erst auf — ihr Code kostet Register, auch wenn er nie läuft.
+Tunnel (Kette in jedem Marschschritt): feste Reihenfolge, ohne hyperbolische
+Parkette, elliptische Funktionen, Escape-Time-Fraktale, Strömungen mit
+Schleifen, Quasikristalle → 117 fps statt 28–54. 3D-Labor: Farbkette ohne
+Quasikristall-Spiegel (49–59 → 117 fps).
+
+**Laufzeit 3D-Labor**: 2D-Labor 118–120 fps, Tunnel 105–121. Im 3D-Labor
+bestimmen die *Welten* die Kosten, nicht die Farbkette: jede Klasse allein
+läuft am Bildschirmtakt, aber dichte Kombinationen (4D-Gitter + Kreuz-Menger
++ Zahnräder) mit vielen streifenden Strahlen fallen auf 85–90 fps, während
+einer Strukturblende (zwei Welten je Schritt) kurz auf ~50–60. Das
+rauschverzerrte Gitter war der Ausreißer (46 fps: drei fbm-Aufrufe und
+2,25-fach kleinere Schritte) → eine Oktave, 82 fps. Für die Dellen ist die
+adaptive Auflösung (Taste g) da; sie ist in der Repo-ini ausgeschaltet.
+
+## 12. Weiterdenken
 
 * **Ketten als FX-Stufe (größter Hebel, braucht deine Entscheidung)**: Jede
   Szene läuft durch eine CombineShader-Stufe, die dieselbe Schnittstelle hat
