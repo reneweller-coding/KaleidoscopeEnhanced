@@ -205,6 +205,7 @@ void main()
     vec2 g = p * S;
     vec2 gi = floor(g);
     float grow = 0.8 + 0.4 * clamp(audioSpread, 0.0, 1.0);
+    float pxg = fwidth(g.x) * 1.2;                             // derivatives before any branch
     for (int j = -1; j <= 1; ++j) for (int i = -1; i <= 1; ++i) {
         vec2 id = gi + vec2(i, j);
         float h = hash21(id);
@@ -218,7 +219,7 @@ void main()
         // Shadow, offset down-right.
         float ds = cutout(rot2(rot) * (g - c - vec2(0.04, -0.05)), R, lobes, h, rough);
         col *= 1.0 - (0.15 + 0.25 * swell) * smoothstep(0.05, -0.02, ds);
-        float px = fwidth(g.x) * 1.2;
+        float px = pxg;
         float inside = smoothstep(px, -px, d);
         float kp = floor(hash21(floor((c / S) * 1.2 + vec2(0.01 * sceneTime, 0.0))) * 6.0);   // the panel under the shape's centre
         float ks = floor(hash21(id + 7.0) * 5.0);

@@ -1199,13 +1199,6 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\Scene3D\OrreryBrass.frag" type="scene3d" geom="indirect" mood="calm,dark,dreamy" probability="0.45" complexity="3">
-    <rig preset="procedural"/>
-    <float name="planetsP" minValue="0" maxValue="1"></float>
-    <float name="tiltP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader file="..\Scene2D\GlowwormCaveThreads.frag" type="normal" mood="dark,calm,dreamy" probability="0.45" complexity="3">
     <rig preset="flat"/>
     <float name="densP" minValue="0" maxValue="1"></float>
@@ -1403,14 +1396,6 @@
     <expr name="foamP" formula="clamp(0.65 + 0.1*(seed2*2.0-1.0) + 0.2*(max(bassRel-0.9,0.0)), 0.4, 0.9)"/>
     <float name="foamP"    minValue="0.4"  maxValue="0.9"></float>
     <float name="glitterP" minValue="0.35" maxValue="0.85"></float>
-  </TextureShader>
-  <TextureShader file="..\\Scene3D\\MetaSculpt.frag" type="scene3d" geom="indirect" probability="0.5" mood="dreamy" complexity="4" shadowExtent="2.8">
-    <rig preset="procedural"/>
-    <float name="blobP"    minValue="0.65" maxValue="1.05"></float>
-    <float name="spreadP"  minValue="0.75" maxValue="1.30"></float>
-    <float name="isoP"     minValue="0.8"  maxValue="1.25"></float>
-    <float name="camDistP" minValue="3.4"  maxValue="4.6"></float>
-    <float name="glossP"   minValue="0.4"  maxValue="0.9"></float>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\Magnetosphere.frag" type="scene3d" geom="indirect" probability="0.5" mood="dark,dreamy,space" complexity="4">
     <rig preset="procedural"/>
@@ -2873,14 +2858,6 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\\Scene2D\\ParticleLifeClusters.frag" type="normal" mood="psychedelic,bright,dark" probability="0.45" complexity="2">
-    <rig preset="flat"/>
-    <float name="speciesP" minValue="0" maxValue="1"></float>
-    <float name="densityP" minValue="0" maxValue="1"></float>
-    <float name="sizeP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader file="..\\Scene2D\\TextureGlowingIce.frag" type="normal" mood="calm,dark,dreamy" probability="0.45" complexity="2">
     <rig preset="flat"/>
     <float name="clarityP" minValue="0" maxValue="1"></float>
@@ -3518,6 +3495,30 @@
     <float name="densityP" minValue="0" maxValue="1"></float>
     <float name="angleP" minValue="0" maxValue="1"></float>
     <float name="skyP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureLeafStorm.frag" type="normal" mood="calm,warm" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="densityP" minValue="0" maxValue="1"></float>
+    <float name="sizeP" minValue="0" maxValue="1"></float>
+    <float name="photoP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureChainCurtains.frag" type="normal" mood="calm,bright" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="stringP" minValue="0" maxValue="1"></float>
+    <float name="beadP" minValue="0" maxValue="1"></float>
+    <float name="layerP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureConfettiVolume.frag" type="normal" mood="energetic,bright" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="densityP" minValue="0" maxValue="1"></float>
+    <float name="sizeP" minValue="0" maxValue="1"></float>
+    <float name="photoP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>

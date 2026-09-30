@@ -186,6 +186,7 @@ void main()
     float mode = clamp(audioMode, 0.0, 1.0);
     vec3 lc = mix(vec3(0.75, 0.85, 1.1), vec3(1.15, 0.9, 0.75), mode);
     float open = 0.8 + 0.6 * clamp(audioSpread, 0.0, 1.0);
+    float fwA = length(fwidth(vec2(cos(a), sin(a))));            // derivatives before any branch
     for (int k = 0; k < 2; ++k) {
         float w = wi - float(k);                                // outer first (it lies on top)
         float t = (u - w) / (1.6 * open);                       // 0 at the base, 1 at the tip
@@ -196,7 +197,7 @@ void main()
         // Petal outline: width as a function of t (round tip, narrow base).
         float sh = 0.4 + 0.6 * clamp(shapeP, 0.0, 1.0);
         float halfW = 0.5 * pow(sin(3.14159265 * clamp(t, 0.0, 1.0)), sh) * (0.8 + 0.2 * t);
-        float px = length(fwidth(vec2(cos(a), sin(a)))) * n / 6.2831853 + 1e-4;
+        float px = fwA * n / 6.2831853 + 1e-4;
         float inside = smoothstep(halfW + px, halfW - px, abs(pf));
         if (inside <= 0.0) continue;
         // Photo on the petal, one piece per petal.

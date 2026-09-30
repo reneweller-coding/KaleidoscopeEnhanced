@@ -192,6 +192,10 @@ void main()
     float mode = clamp(audioMode, 0.0, 1.0);
     vec3 lampC = mix(vec3(0.6, 0.8, 1.1), vec3(1.15, 0.85, 0.55), mode);
     vec3 gc = glowColour(imgLod(vec2(0.5), 6.0), vec2(travel * 0.02, 0.0), hueP * 0.159);
+    // Derivatives before the branch (they are undefined in divergent code).
+    float fwr = fwidth(r);
+    vec2 cfw = fwidth(vec2(cos(a), sin(a)));
+    float fwzO = fwidth(zOut);
     if (zS < zOut) {
         // On a step: where on its top face?
         float rho = r * zS;                                    // radius on the step
@@ -200,7 +204,7 @@ void main()
         float stepA = (s / nS - k - 0.5) * 6.2831853;          // start angle of the step
         vec2 sp = rho * vec2(cos(a), sin(a));
         vec2 suv = sp * 0.6 + vec2(hash11(s * 0.13), hash11(s * 0.71)) + 0.5;
-        float fw = fwidth(r) * zS * 0.6 * 1024.0;
+        float fw = fwr * zS * 0.6 * 1024.0;
         vec3 ph = imgLod(suv, clamp(log2(max(fw, 1.0)), 0.0, 9.0));
         vec3 stone = mix(vec3(0.5, 0.48, 0.45), ph, clamp(photoP, 0.0, 1.0));
         float fog = exp(-zS * 0.35);
@@ -219,8 +223,7 @@ void main()
         // The wall of the well behind/under the steps.
         float zW = zOut;
         vec2 wuv = vec2(a / 3.14159265, (zW + travel) * 0.3);
-        vec2 cfw = fwidth(vec2(cos(a), sin(a)));
-        float fw = max(length(cfw) / 3.14159265, fwidth(zW) * 0.3) * 1024.0;
+        float fw = max(length(cfw) / 3.14159265, fwzO * 0.3) * 1024.0;
         vec3 wall = imgLod(wuv, clamp(log2(max(fw, 1.0)), 0.0, 9.0)) * 0.5;
         float fog = exp(-zW * 0.35);
         col = mix(gc * (0.1 + 0.5 * swell), wall * lampC, fog);

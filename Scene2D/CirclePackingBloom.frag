@@ -215,6 +215,7 @@ void main()
     gT = 0.25 * sceneTime + 1.5 * audioAdvance;
     gSpread = clamp(audioSpread, 0.0, 1.0);
     // Find the disc covering x: level 0, then 1, then 2.
+    float pxx = fwidth(x.x);                                    // derivatives before any branch
     vec3 D = vec3(0.0, 0.0, -1.0); float lvl = -1.0; vec2 did = vec2(0.0);
     {
         vec2 ci = floor(x);
@@ -257,7 +258,7 @@ void main()
         c *= 1.0 - (0.1 + 0.3 * clamp(audioRoughness, 0.0, 1.0)) * band;
         c *= 0.75 + 0.35 * (1.0 - rr * rr);                    // domed
         c += tint * exp(-rr * 3.0) * (0.15 + 0.4 * swell);
-        float px = fwidth(rr) * 1.2;
+        float px = pxx / D.z * 1.2;
         float rim = exp(-(1.0 - rr) / (px * 2.0 + 0.02));
         c += mix(tint, vec3(1.0), 0.5) * rim * (0.35 + 0.8 * kick);
         float edge = smoothstep(1.0, 1.0 - px, rr);
