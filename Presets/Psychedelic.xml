@@ -391,13 +391,6 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\Scene2D\GravityLensingZoom.frag" type="normal" mood="space,psychedelic,bright" probability="0.45" complexity="2">
-    <rig preset="flat"/>
-    <float name="zoomP" minValue="0.7" maxValue="1.4"></float>
-    <float name="massP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader file="..\Scene2D\SpectrogramKaleidoscope.frag" type="normal" mood="psychedelic,bright,aggressive" probability="0.45" complexity="2">
     <rig preset="flat"/>
     <float name="sidesP" minValue="6" maxValue="12"></float>
@@ -416,13 +409,6 @@
   <TextureShader file="..\Scene2D\PersistenceOfVisionFan.frag" type="normal" mood="psychedelic,dark,dreamy" probability="0.45" complexity="2">
     <rig preset="flat"/>
     <float name="spokesP" minValue="2" maxValue="5"></float>
-    <float name="speedP" minValue="0.7" maxValue="1.4"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
-  <TextureShader file="..\Scene2D\ZCRNoiseStorm.frag" type="normal" mood="dark,aggressive" probability="0.45" complexity="2">
-    <rig preset="flat"/>
-    <float name="grainP" minValue="0" maxValue="1"></float>
     <float name="speedP" minValue="0.7" maxValue="1.4"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
@@ -3058,6 +3044,22 @@
     <float name="ringsP" minValue="0" maxValue="1"></float>
     <float name="bendP" minValue="0" maxValue="1"></float>
     <float name="thickP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TwinHelixTunnel.frag" type="normal" mood="psychedelic,bright" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="pitchP" minValue="0" maxValue="1"></float>
+    <float name="widthP" minValue="0" maxValue="1"></float>
+    <float name="photoP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\WindMapStreamlines.frag" type="normal" mood="calm,dreamy" probability="0.45" complexity="3">
+    <rig preset="flat"/>
+    <float name="densityP" minValue="0" maxValue="1"></float>
+    <float name="scaleP" minValue="0" maxValue="1"></float>
+    <float name="landP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
