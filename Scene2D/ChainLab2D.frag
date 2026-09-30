@@ -29,8 +29,8 @@ out vec4 fragColor;
  *
  * Knobs: chainAP / chainBP / chainCP / chainDP (the transform of each stage and
  * its sub-variant -- rolled once per start, so the chain never switches while it
- * runs), morphP (which stage, if any, morphs on through its class while the
- * scene runs -- driven by the music, always as a cross-fade), styleP (photo / relief / glowing edges / contour lines / flow), speedP (flow
+ * runs), morphP (the chain walk: none, one stage, or every stage and the
+ * look -- driven by the music, always as a cross-fade), styleP (photo / relief / glowing edges / contour lines / flow), speedP (flow
  * speed), detailP (texture sharpness), paletteP (photo colours / colour field), hueP.
  */
 
@@ -501,52 +501,84 @@ vec2 stageDk(vec2 uv, int k, float v)
     return tRot(uv, vec2(0.5), 0.5 * sin(gT * 0.3 + v * 6.28));
 }
 
-// Chain morph: morphP picks (once per start) which stage wanders -- none, A, B,
-// C or D.  That stage then walks through its class, driven by time and the
-// integrated music (sceneAdvance, which surges on flux and harmonic changes):
-// it holds a transform, then cross-fades to the next one.  The fade mixes the
-// two MIRRORED outputs, each continuous, so the picture never jumps.
-int morphStage() { return pickStage(morphP, 5); }
+// Chain walk.  morphP is rolled once per start:
+//   below 0.15  the chain stays as rolled;
+//   0.15..0.5   one stage (A, B, C or D) walks on;
+//   from 0.5    EVERY stage walks, and the style with them -- one lab scene
+//               can play for hours without ever repeating.
+// A walking stage holds a transform, then cross-fades to another one picked by
+// hash, with a fresh sub-variant (mirrors, arms, {p,q} ...), so it roams its
+// whole class instead of cycling.  In the all-stages walk the four stages are
+// staggered by a quarter, so mostly one fades at a time.  The fade mixes the
+// two MIRRORED outputs, each continuous: the picture never jumps.  Driven by
+// time and the integrated music (sceneAdvance surges on flux and harmonic
+// changes).
+bool walkAll() { return clamp(morphP, 0.0, 1.0) >= 0.5; }
+bool walks(int stage)
+{
+    float m = clamp(morphP, 0.0, 1.0);
+    if (m < 0.15) return false;
+    if (m >= 0.5) return true;
+    return int(min(floor((m - 0.15) / 0.35 * 4.0), 3.0)) + 1 == stage;
+}
+// The transform (k) and sub-variant (v) shown in walk cycle c; cycle 0 is the rolled one.
+void walkPick(float c, int k0, float v0, int n, float salt, out int k, out float v)
+{
+    if (c < 0.5) { k = k0; v = v0; return; }
+    float s = salt + 17.0 * (chainAP + 2.0 * chainBP + 3.0 * chainCP + 5.0 * chainDP);   // each start walks its own way
+    k = int(min(floor(hash11(c * 7.31 + s) * float(n)), float(n - 1)));
+    v = hash11(c * 3.17 + s * 1.7 + 0.5);
+}
+float walkPos(int stage) { return walkAll() ? 0.5 * gMw + 0.25 * float(stage - 1) : gMw; }
+float walkFade(float kf) { return smoothstep(walkAll() ? 0.7 : 0.55, 1.0, fract(kf)); }
 vec2 morphMix(vec2 a, vec2 b, float f) { return mix(mirrorUV(a), mirrorUV(b), f); }
 vec2 stageA(vec2 uv)
 {
-    int k0 = pickStage(chainAP, 11); float v = subVar(chainAP, 11);
-    if (morphStage() != 1) return stageAk(uv, k0, v);
-    float kf = float(k0) + gMw;
-    int i0 = int(mod(floor(kf), 11.0)), i1 = int(mod(floor(kf) + 1.0, 11.0));
-    float f = smoothstep(0.55, 1.0, fract(kf));
-    if (f <= 0.0) return stageAk(uv, i0, v);
-    return morphMix(stageAk(uv, i0, v), stageAk(uv, i1, v), f);
+    int k0 = pickStage(chainAP, 11); float v0 = subVar(chainAP, 11);
+    if (!walks(1)) return stageAk(uv, k0, v0);
+    float kf = walkPos(1), c = floor(kf);
+    int i0, i1; float w0, w1;
+    walkPick(c, k0, v0, 11, 1.3, i0, w0);
+    walkPick(c + 1.0, k0, v0, 11, 1.3, i1, w1);
+    float f = walkFade(kf);
+    if (f <= 0.0) return stageAk(uv, i0, w0);
+    return morphMix(stageAk(uv, i0, w0), stageAk(uv, i1, w1), f);
 }
 vec2 stageB(vec2 uv)
 {
-    int k0 = pickStage(chainBP, 6); float v = subVar(chainBP, 6);
-    if (morphStage() != 2) return stageBk(uv, k0, v);
-    float kf = float(k0) + gMw;
-    int i0 = int(mod(floor(kf), 6.0)), i1 = int(mod(floor(kf) + 1.0, 6.0));
-    float f = smoothstep(0.55, 1.0, fract(kf));
-    if (f <= 0.0) return stageBk(uv, i0, v);
-    return morphMix(stageBk(uv, i0, v), stageBk(uv, i1, v), f);
+    int k0 = pickStage(chainBP, 6); float v0 = subVar(chainBP, 6);
+    if (!walks(2)) return stageBk(uv, k0, v0);
+    float kf = walkPos(2), c = floor(kf);
+    int i0, i1; float w0, w1;
+    walkPick(c, k0, v0, 6, 2.9, i0, w0);
+    walkPick(c + 1.0, k0, v0, 6, 2.9, i1, w1);
+    float f = walkFade(kf);
+    if (f <= 0.0) return stageBk(uv, i0, w0);
+    return morphMix(stageBk(uv, i0, w0), stageBk(uv, i1, w1), f);
 }
 vec2 stageC(vec2 uv)
 {
-    int k0 = pickStage(chainCP, 8); float v = subVar(chainCP, 8);
-    if (morphStage() != 3) return stageCk(uv, k0, v);
-    float kf = float(k0) + gMw;
-    int i0 = int(mod(floor(kf), 8.0)), i1 = int(mod(floor(kf) + 1.0, 8.0));
-    float f = smoothstep(0.55, 1.0, fract(kf));
-    if (f <= 0.0) return stageCk(uv, i0, v);
-    return morphMix(stageCk(uv, i0, v), stageCk(uv, i1, v), f);
+    int k0 = pickStage(chainCP, 8); float v0 = subVar(chainCP, 8);
+    if (!walks(3)) return stageCk(uv, k0, v0);
+    float kf = walkPos(3), c = floor(kf);
+    int i0, i1; float w0, w1;
+    walkPick(c, k0, v0, 8, 4.7, i0, w0);
+    walkPick(c + 1.0, k0, v0, 8, 4.7, i1, w1);
+    float f = walkFade(kf);
+    if (f <= 0.0) return stageCk(uv, i0, w0);
+    return morphMix(stageCk(uv, i0, w0), stageCk(uv, i1, w1), f);
 }
 vec2 stageD(vec2 uv)
 {
-    int k0 = pickStage(chainDP, 6); float v = subVar(chainDP, 6);
-    if (morphStage() != 4) return stageDk(uv, k0, v);
-    float kf = float(k0) + gMw;
-    int i0 = int(mod(floor(kf), 6.0)), i1 = int(mod(floor(kf) + 1.0, 6.0));
-    float f = smoothstep(0.55, 1.0, fract(kf));
-    if (f <= 0.0) return stageDk(uv, i0, v);
-    return morphMix(stageDk(uv, i0, v), stageDk(uv, i1, v), f);
+    int k0 = pickStage(chainDP, 6); float v0 = subVar(chainDP, 6);
+    if (!walks(4)) return stageDk(uv, k0, v0);
+    float kf = walkPos(4), c = floor(kf);
+    int i0, i1; float w0, w1;
+    walkPick(c, k0, v0, 6, 6.1, i0, w0);
+    walkPick(c + 1.0, k0, v0, 6, 6.1, i1, w1);
+    float f = walkFade(kf);
+    if (f <= 0.0) return stageDk(uv, i0, w0);
+    return morphMix(stageDk(uv, i0, w0), stageDk(uv, i1, w1), f);
 }
 vec2 chain(vec2 p)
 {
@@ -596,16 +628,23 @@ void main()
     float pxi = fwidth(xi) + 1e-4;
     float iso = smoothstep(pxi * 1.5, 0.0, abs(fract(xi) - 0.5) - 0.5 + pxi * 1.5);
     vec3 isoC = gc * iso * (1.3 + kick) + photo * 0.12;
-    // The rolled style snaps to a pure look (blends between two looks are muddy);
-    // it is constant while the scene runs, so the snap never shows as a jump.
-    float st = clamp(styleP, 0.0, 1.0) * 4.0;               // 0 photo, 1 relief, 2 edges, 3 isolines, 4 flow
-    st = floor(st) + smoothstep(0.35, 0.65, fract(st));
+    // The look: the rolled one (a pure look -- blends between neighbouring looks
+    // are muddy); in the all-stages walk the look walks too, slowly, each look
+    // computed on its own and cross-faded.  s0/s1/sf depend on knobs and time
+    // only, so every pixel takes the same branches.
+    int s0, s1; float sf = 0.0, dummy;
+    s0 = pickStage(styleP, 5); s1 = s0;
+    if (walkAll()) {
+        float kf = 0.2 * gMw + 0.6, c = floor(kf);
+        walkPick(c, s0, 0.0, 5, 23.0, s0, dummy);
+        walkPick(c + 1.0, pickStage(styleP, 5), 0.0, 5, 23.0, s1, dummy);
+        sf = smoothstep(0.7, 1.0, fract(kf));
+    }
     // Flow: noise living in the chain's own space, smeared along the chain's
     // contour direction (line integral convolution) with a travelling phase --
-    // silky stream lines that follow the chain.  Only the flow style pays for
-    // it (st depends on a knob alone, so every pixel takes the same branch).
+    // silky stream lines that follow the chain.  Only paid for while shown.
     vec3 flowC = photo * 0.25;
-    if (st > 3.0) {
+    if (s0 == 4 || (s1 == 4 && sf > 0.0)) {
         vec2 fd = vec2(-grad.y, grad.x);
         float gl = length(fd);
         fd /= max(gl, 1e-5);
@@ -621,11 +660,9 @@ void main()
         float lic = smoothstep(0.38, 0.72, acc / wsum) * smoothstep(0.004, 0.04, gl);
         flowC = gc * lic * (1.3 + kick) + photo * 0.25;
     }
-    vec3 col = mix(photo, reliefC, smoothstep(0.0, 1.0, st));
-    col = mix(col, neon, smoothstep(1.0, 2.0, st));
-    col = mix(col, isoC, smoothstep(2.0, 3.0, st));
-    col = mix(col, flowC, smoothstep(3.0, 4.0, st));
+    vec3 looks[5] = vec3[5](photo, reliefC, neon, isoC, flowC);
+    vec3 col = mix(looks[s0], looks[s1], sf);
     col *= mix(vec3(0.9, 0.97, 1.08), vec3(1.08, 0.98, 0.9), mode);
-    col += gc * edge * kick * 0.3 * (1.0 - smoothstep(1.0, 2.0, st));
+    col += gc * edge * kick * 0.3 * ((s0 <= 1 ? 1.0 - sf : 0.0) + (s1 <= 1 ? sf : 0.0));   // kick glints on photo/relief
     finish(col);
 }
