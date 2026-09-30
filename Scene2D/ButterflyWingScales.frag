@@ -99,6 +99,9 @@ void main()
     vec3 col = vec3(0.02, 0.02, 0.03);                        // the dark membrane between
     float covered = 0.0;
     // The row above reaches down over this one with its tips, so it is on top.
+    // Derivatives before the loops (undefined after a pixel-dependent continue).
+    float fwY = fwidth(w.y) * 1.2;
+    float rfw = fwidth(w.x) * 70.0;                          // q.x jumps between rows
     for (int r = 1; r >= 0; --r) {
         float row = floor(w.y) + float(r);
         float off = 0.5 * mod(row, 2.0);
@@ -115,7 +118,7 @@ void main()
             float tip = length(vec2(q.x, max(q.y - (len - halfW), 0.0))) - halfW;
             float side = max(abs(q.x) - halfW, -q.y);
             float d = max(side, tip) + 0.02 * sin(atan(q.x, q.y - len + halfW) * 5.0) * step(len - halfW, q.y);
-            float fw = fwidth(w.y) * 1.2;
+            float fw = fwY;
             float cov = smoothstep(fw, -fw, d) * step(0.0, q.y);
             if (cov <= 0.0) continue;
             // Structural colour: phase from the scale's tilt and the view.
@@ -125,7 +128,6 @@ void main()
             irid = mix(irid, vec3(0.05, 0.35, 1.0), 0.45) * (0.85 + 0.5 * swell);
             // The ridges along each scale: fine lines catching light.
             float ridges = 0.5 + 0.5 * cos(q.x * 70.0);
-            float rfw = fwidth(w.x) * 70.0;                      // q.x jumps between rows
             ridges = mix(ridges, 0.5, smoothstep(1.0, 3.0, rfw));
             vec3 sc = irid * (0.75 + 0.3 * ridges);
             sc += vec3(0.7, 0.85, 1.0) * pow(ridges, 12.0) * (0.2 + 1.0 * hi) * smoothstep(0.3, 1.0, q.y);

@@ -139,6 +139,7 @@ void main()
     float sil = max(build, clamp(mast, 0.0, 1.0));
     vec3 city = vec3(0.02, 0.022, 0.035);
     // Windows: a grid on each facade, lit ones band by band.
+    float fwWin = fwidth(p.y * 120.0);                        // before the branch
     if (build > 0.5) {
         vec2 wq = vec2(bx * 5.0, p.y * 120.0);
         vec2 wi = floor(wq), wf = fract(wq);
@@ -146,7 +147,7 @@ void main()
         float b = band[int(mod(wi.x + wi.y * 3.0, 8.0))];
         float win = smoothstep(0.25, 0.2, abs(wf.x - 0.5)) * smoothstep(0.3, 0.2, abs(wf.y - 0.5));
         vec3 wc = mix(vec3(1.0, 0.75, 0.4), vec3(0.75, 0.85, 1.0), step(0.8, hash21(wi + 3.0)));
-        city += wc * win * lit * (0.25 + 0.9 * b) * smoothstep(0.3, 0.1, fwidth(wq.y));
+        city += wc * win * lit * (0.25 + 0.9 * b) * smoothstep(0.3, 0.1, fwWin);
     }
     col = mix(col, city, sil);
     // The warning light on the mast: a soft slow pulse.
