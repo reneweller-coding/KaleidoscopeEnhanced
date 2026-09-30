@@ -1454,9 +1454,6 @@
   <TextureShader file="..\\Scene3D\\SciFiHUD.frag" type="scene3d" geom="ribbon" probability="0.3" mood="aggressive,dark" complexity="1">
     <rig preset="procedural"/>
   </TextureShader>
-  <TextureShader file="..\\Scene3D\\VolumetricFire.frag" type="scene3d" geom="ribbon" mood="aggressive,dark" probability="0.35" complexity="1">
-    <rig preset="procedural"/>
-  </TextureShader>
   <TextureShader file="..\\Scene3D\\CymaticsPlate.frag" type="scene3d" geom="points" probability="0.3" mood="calm" complexity="2">
     <rig preset="procedural"/>
   </TextureShader>
@@ -3665,6 +3662,14 @@
     <float name="stripeP" minValue="0" maxValue="1"></float>
     <float name="widthP" minValue="0" maxValue="1"></float>
     <float name="zoomP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\CrystalThroatTunnel.frag" type="normal" mood="energetic,psychedelic" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="facetP" minValue="0" maxValue="1"></float>
+    <float name="tiltP" minValue="0" maxValue="1"></float>
+    <float name="wallZoomP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>

@@ -292,6 +292,7 @@ RECENT_SCENES = {
     "OilWheelMacro", "MeltingCrayonRainbow",
     "TextureChromatographyRings", "TextureBatikCrackle", "CoffeeRingStains",
     "TextureSatelliteClouds", "LiquidMarbleSpheres",
+    "CrystalThroatTunnel", "TexturePinwheelTiling", "TextureWeaveSymmetry",
 }
 
 def rule_recent(m, h):
