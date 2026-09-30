@@ -231,6 +231,7 @@ RECENT_SCENES = {
     "ThinSectionPolarized", "TurnerVortex", "NeonRingTunnel",
     "SoulagesOutrenoir", "TwinHelixTunnel", "WindMapStreamlines",
     "ParticleLifeClusters", "SymmetryBreathing",
+    "TextureEmberBed", "TextureGlowingIce", "TextureGlassCubeSwarm",
 }
 
 def rule_recent(m, h):

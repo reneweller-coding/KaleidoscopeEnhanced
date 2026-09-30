@@ -982,3 +982,6 @@ TwinHelixTunnel	4	3	6	3	9	5	8
 WindMapStreamlines	6	3	4	4	8	7	8
 ParticleLifeClusters	4	4	8	3	9	5	8
 SymmetryBreathing	5	2	5	3	9	7	9
+TextureEmberBed	5	2	6	6	6	6	8
+TextureGlowingIce	8	5	2	5	5	6	7
+TextureGlassCubeSwarm	6	3	4	3	7	7	7
