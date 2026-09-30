@@ -2894,14 +2894,6 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\\Scene2D\\TextureAmberSubsurface.frag" type="normal" mood="calm,warm" probability="0.45" complexity="2">
-    <rig preset="flat"/>
-    <float name="layerP" minValue="0" maxValue="1"></float>
-    <float name="spangleP" minValue="0" maxValue="1"></float>
-    <float name="bubbleP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader file="..\\Scene2D\\TextureSilkVeils.frag" type="normal" mood="calm,bright" probability="0.45" complexity="2">
     <rig preset="flat"/>
     <float name="veilP" minValue="0" maxValue="1"></float>
@@ -3086,14 +3078,6 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\\Scene2D\\TextureMicaGlitter.frag" type="normal" mood="calm,dark" probability="0.45" complexity="2">
-    <rig preset="flat"/>
-    <float name="flakeP" minValue="0" maxValue="1"></float>
-    <float name="sheetP" minValue="0" maxValue="1"></float>
-    <float name="stoneP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader file="..\\Scene2D\\SyrupCurtain.frag" type="normal" mood="calm,warm" probability="0.45" complexity="2">
     <rig preset="flat"/>
     <float name="ropeP" minValue="0" maxValue="1"></float>
@@ -3259,6 +3243,22 @@
     <float name="poolP" minValue="0" maxValue="1"></float>
     <float name="causticP" minValue="0" maxValue="1"></float>
     <float name="rockP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureAmberSubsurface.frag" type="normal" mood="calm,warm" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="layerP" minValue="0" maxValue="1"></float>
+    <float name="spangleP" minValue="0" maxValue="1"></float>
+    <float name="bubbleP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureMicaGlitter.frag" type="normal" mood="calm,dark" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="flakeP" minValue="0" maxValue="1"></float>
+    <float name="sheetP" minValue="0" maxValue="1"></float>
+    <float name="stoneP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>

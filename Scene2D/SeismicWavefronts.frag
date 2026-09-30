@@ -170,6 +170,41 @@ vec2 kaleidoUV(vec2 uv, float sides)
     return c + r * vec2(cos(a), sin(a));
 }
 vec3 imgK(vec2 uv, float lod) { return imgLod(kaleidoUV(uv, 6.0), lod); }
+// Other channels than RGB: the photo's structure, read through the kaleidoscope.
+// Gradient / edges / Laplacian are rotation invariant in magnitude, so they
+// stay seamless across the mirror folds (direction-based colours would not).
+vec2 imgKGrad(vec2 uv, float lod)
+{
+    float e = exp2(lod) / 1024.0 + 0.001;
+    return vec2(luma(imgK(uv + vec2(e, 0.0), lod)) - luma(imgK(uv - vec2(e, 0.0), lod)),
+                luma(imgK(uv + vec2(0.0, e), lod)) - luma(imgK(uv - vec2(0.0, e), lod))) / (2.0 * e);
+}
+float imgKEdge(vec2 uv, float lod) { return length(imgKGrad(uv, lod)) * (exp2(lod) / 1024.0 + 0.001) * 6.0; }
+float imgKLap(vec2 uv, float lod)
+{
+    float e = exp2(lod) / 1024.0 + 0.001;
+    float c = luma(imgK(uv, lod));
+    return (luma(imgK(uv + vec2(e, 0.0), lod)) + luma(imgK(uv - vec2(e, 0.0), lod)) +
+            luma(imgK(uv + vec2(0.0, e), lod)) + luma(imgK(uv - vec2(0.0, e), lod)) - 4.0 * c) * 4.0;
+}
+// Embossed relief of the kaleidoscoped photo, lit from a direction.
+float imgKRelief(vec2 uv, float lod, vec2 lightDir)
+{
+    vec2 g = imgKGrad(uv, lod) * (exp2(lod) / 1024.0 + 0.001) * 8.0;
+    return clamp(0.5 + dot(g, normalize(lightDir)), 0.0, 1.0);
+}
+// A second continuous transform: the photo wound into a log-polar spiral that
+// zooms forever (Droste-like).  angle/pi spans one mirror period, so the atan
+// cut is seamless; the zoom runs on integrated time, never jumps.
+vec2 spiralUV(vec2 uv, float arms, float zoom)
+{
+    vec2 d = uv - 0.5;
+    float r = max(length(d), 1e-4);
+    float a = atan(d.y, d.x);
+    // Both coordinates jump by whole mirror periods (2) at the cut: the shear
+    // a/pi jumps by 2, and a/pi*arms/2 by arms (arms must be even).
+    return vec2(log(r) * 0.5 - zoom + a / 3.14159265, a / 3.14159265 * arms * 0.5);
+}
 // Centred coordinates: y in -0.5..0.5, x scaled by the aspect.
 vec2 screenP() { return (gl_FragCoord.xy / resolution - 0.5) * vec2(resolution.x / resolution.y, 1.0); }
 // House finish: loudness brightness and the soft highlight roll-off.
@@ -214,10 +249,11 @@ void main()
         float dr = length(p - vec2(c.x, -c.y - 0.3)) * travelK;
         amp += on * 0.35 * exp(-pow((dr - front * 0.9) / width, 2.0)) * sin((dr - front * 0.9) * k) * (1.0 - age) * smoothstep(0.0, 0.05, age) / (1.0 + dr * 2.0);
     }
-    amp *= 1.5 + 1.0 * kick;
+    amp *= 0.7 + 0.8 * kick;
     vec3 pos = mix(vec3(0.9, 0.2, 0.15), vec3(0.2, 0.85, 0.3), mode);
     vec3 neg = mix(vec3(0.15, 0.3, 0.95), vec3(0.85, 0.2, 0.8), mode);
-    vec3 rock = vec3(0.35) + (vec3(luma(imgLod(uv, 1.5))) - 0.35) * (0.3 + 0.7 * clamp(layerP, 0.0, 1.0));
+    // Rock: the kaleidoscoped photo as an embossed relief.
+    vec3 rock = vec3(0.2 + 0.4 * imgKRelief(uv, 1.5, vec2(-0.6, 0.8))) + (vec3(luma(imgK(uv, 2.0))) - 0.35) * (0.3 + 0.7 * clamp(layerP, 0.0, 1.0));
     rock *= 0.8 + 0.2 * strata;
     rock *= 0.4 + 0.6 * swell;
     vec3 col = rock * 0.5;
