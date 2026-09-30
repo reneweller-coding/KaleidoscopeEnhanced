@@ -1392,9 +1392,6 @@
   <TextureShader file="..\\Scene3D\\SpiralArray.frag" type="scene3d" geom="points" mood="dark,dreamy" probability="0.3" complexity="2">
     <rig preset="procedural"/>
   </TextureShader>
-  <TextureShader file="..\\Scene3D\\JellyBody.frag" type="scene3d" geom="grid" mood="calm,dreamy" probability="0.35" complexity="2">
-    <rig preset="procedural"/>
-  </TextureShader>
   <TextureShader file="..\Scene3D\StrangeAttractor.frag" type="scene3d" geom="points" mood="dark,psychedelic" probability="0.35" complexity="2">
     <rig preset="procedural"/>
   </TextureShader>
@@ -2032,11 +2029,6 @@
     <float name="lavaHeatP" minValue="0.8" maxValue="2.5"></float>
     <float name="crustGlowP" minValue="0.6" maxValue="2.0"></float>
   </TextureShader>
-  <TextureShader file="..\Scene3D\CryogenicBrinicleStalactite.frag" type="scene3d" geom="indirect" probability="0.45" mood="calm,dark,dreamy" complexity="4">
-    <rig preset="procedural"/>
-    <float name="iceGlowP" minValue="0.8" maxValue="2.5"></float>
-    <float name="refrP" minValue="0.5" maxValue="2.2"></float>
-  </TextureShader>
   <TextureShader file="..\Scene3D\MajoranaNanowireBraiding.frag" type="scene3d" geom="ribbon" probability="0.45" mood="bright,psychedelic" complexity="3">
     <rig preset="procedural"/>
     <float name="ribbonWidthP" minValue="0.02" maxValue="0.1"></float>
@@ -2133,12 +2125,6 @@
     <float name="jetCollimP" minValue="0.08" maxValue="0.35"></float>
     <float name="wispCountP" minValue="4.0" maxValue="14.0"></float>
     <float name="synchGlowP" minValue="0.8" maxValue="2.5"></float>
-  </TextureShader>
-  <TextureShader file="..\Scene3D\CosmicInflationaryTensorModes.frag" type="scene3d" geom="grid" probability="0.45" mood="calm,dreamy,bright,space" complexity="3">
-    <rig preset="procedural"/>
-    <float name="tensorScaleP" minValue="0.6" maxValue="2.2"></float>
-    <float name="gwFreqP" minValue="4.0" maxValue="16.0"></float>
-    <float name="specularP" minValue="0.8" maxValue="2.5"></float>
   </TextureShader>
   <TextureShader file="..\Scene3D\MagnetarCrustalQuakeAlfvenResonance.frag" type="scene3d" geom="indirect" probability="0.45" mood="aggressive,dark" complexity="5">
     <rig preset="procedural"/>
@@ -3496,6 +3482,30 @@
     <float name="blockP" minValue="0" maxValue="1"></float>
     <float name="waveP" minValue="0" maxValue="1"></float>
     <float name="edgeP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\PolarRippleTunnel.frag" type="normal" mood="energetic,psychedelic" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="rippleP" minValue="0" maxValue="1"></float>
+    <float name="lobeP" minValue="0" maxValue="1"></float>
+    <float name="wallZoomP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureCoilSpring.frag" type="normal" mood="energetic,psychedelic" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="turnsP" minValue="0" maxValue="1"></float>
+    <float name="widthP" minValue="0" maxValue="1"></float>
+    <float name="outerP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureBokehStreams.frag" type="normal" mood="calm,dark" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="laneP" minValue="0" maxValue="1"></float>
+    <float name="densityP" minValue="0" maxValue="1"></float>
+    <float name="curveP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
