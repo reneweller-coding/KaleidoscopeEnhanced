@@ -3476,14 +3476,6 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\\Scene2D\\TextureGlideReflection.frag" type="normal" mood="calm,psychedelic" probability="0.45" complexity="2">
-    <rig preset="flat"/>
-    <float name="tileP" minValue="0" maxValue="1"></float>
-    <float name="shiftP" minValue="0" maxValue="1"></float>
-    <float name="inlayP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader file="..\\Scene2D\\TextureDustMotes.frag" type="normal" mood="calm,dark" probability="0.45" complexity="2">
     <rig preset="flat"/>
     <float name="moteP" minValue="0" maxValue="1"></float>
@@ -3521,6 +3513,14 @@
     <float name="beamP" minValue="0" maxValue="1"></float>
     <float name="particleP" minValue="0" maxValue="1"></float>
     <float name="reefP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureFloatingLights.frag" type="normal" mood="calm,dark" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="densityP" minValue="0" maxValue="1"></float>
+    <float name="sizeP" minValue="0" maxValue="1"></float>
+    <float name="shoreP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
