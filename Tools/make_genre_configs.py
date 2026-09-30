@@ -251,6 +251,7 @@ RECENT_SCENES = {
     "TexturePineConeSpirals", "TexturePinArt", "TextureGirihChambers",
     "DelaunayDiscs", "TextureLightShafts", "MatisseCutouts",
     "AfKlintSpirals", "TextureCrackleGlaze", "TextureAnodizeRainbow",
+    "SpiralPhoto", "CrossHatchPhoto", "RecursiveRectSubdivision",
 }
 
 def rule_recent(m, h):
