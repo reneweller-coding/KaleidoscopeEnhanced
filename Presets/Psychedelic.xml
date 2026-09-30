@@ -1630,13 +1630,6 @@
     <float name="fringeP" minValue="1.0" maxValue="3.5"></float>
     <float name="glowP" minValue="0.8" maxValue="2.5"></float>
   </TextureShader>
-  <TextureShader file="..\Scene2D\HyperbolicMetamaterialSpacetime.frag" type="normal" probability="0.4" mood="psychedelic,dark" complexity="4">
-    <rig preset="flat"/>
-    <float name="coneSlopeP" minValue="0.5" maxValue="2.0"></float>
-    <float name="curvP" minValue="0.4" maxValue="1.8"></float>
-    <float name="densityP" minValue="1.0" maxValue="3.5"></float>
-    <float name="warpP" minValue="0.2" maxValue="1.5"></float>
-  </TextureShader>
   <TextureShader file="..\Scene2D\WhisperingGalleryMicrocavity.frag" type="normal" probability="0.4" mood="bright,psychedelic" complexity="3">
     <rig preset="flat"/>
     <float name="deformP" minValue="0.05" maxValue="0.35"></float>
@@ -1650,13 +1643,6 @@
     <float name="coreP" minValue="0.8" maxValue="2.5"></float>
     <float name="lanthP" minValue="0.5" maxValue="2.2"></float>
     <float name="shockP" minValue="0.4" maxValue="1.8"></float>
-  </TextureShader>
-  <TextureShader file="..\Scene2D\QuaternionFractalHopfLoom.frag" type="normal" probability="0.4" mood="psychedelic,bright" complexity="4">
-    <rig preset="flat"/>
-    <float name="iterP" minValue="6.0" maxValue="14.0"></float>
-    <float name="sliceP" minValue="0.3" maxValue="1.5"></float>
-    <float name="trapP" minValue="0.5" maxValue="2.2"></float>
-    <float name="hopfP" minValue="1.0" maxValue="3.5"></float>
   </TextureShader>
   <TextureShader file="..\Scene2D\SkyrmionChiralSpinLattice.frag" type="normal" probability="0.4" mood="psychedelic,aggressive" complexity="3">
     <rig preset="flat"/>
@@ -1737,13 +1723,6 @@
     <float name="crustHeightP" minValue="0.15" maxValue="0.6"></float>
     <float name="lavaHeatP" minValue="0.8" maxValue="2.5"></float>
     <float name="crustGlowP" minValue="0.6" maxValue="2.0"></float>
-  </TextureShader>
-  <TextureShader file="..\Scene2D\SpintronicDomainWallRacetrack.frag" type="normal" probability="0.4" mood="bright" complexity="3">
-    <rig preset="flat"/>
-    <float name="trackPitchP" minValue="2.0" maxValue="6.0"></float>
-    <float name="wallWidthP" minValue="0.4" maxValue="1.8"></float>
-    <float name="magnonP" minValue="8.0" maxValue="24.0"></float>
-    <float name="torqueP" minValue="0.5" maxValue="2.2"></float>
   </TextureShader>
   <TextureShader file="..\Scene2D\CavityOptomechanicsPhononLasing.frag" type="normal" probability="0.4" mood="bright,psychedelic" complexity="3">
     <rig preset="flat"/>
@@ -3045,6 +3024,30 @@
     <float name="waveP" minValue="0" maxValue="1"></float>
     <float name="scaleP" minValue="0" maxValue="1"></float>
     <float name="fringeP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureLanternTunnel.frag" type="normal" mood="calm,dreamy,psychedelic" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="countP" minValue="0" maxValue="1"></float>
+    <float name="photoP" minValue="0" maxValue="1"></float>
+    <float name="gapP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\CurvedMirrorKaleido.frag" type="normal" mood="psychedelic,dreamy" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="sidesP" minValue="0" maxValue="1"></float>
+    <float name="bowP" minValue="0" maxValue="1"></float>
+    <float name="innerP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureMirrorSeamsWander.frag" type="normal" mood="psychedelic" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="seamsP" minValue="0" maxValue="1"></float>
+    <float name="scaleP" minValue="0" maxValue="1"></float>
+    <float name="curveP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>

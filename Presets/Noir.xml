@@ -2270,15 +2270,6 @@
     <expr name="hueP" formula="chromaHue + seed2*6.28"/>
     <float name="hueP"    minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\Scene3D\PhotonicCrystalFiberCore.frag" type="scene3d" geom="cubes" probability="0.5" mood="bright,psychedelic" complexity="3">
-    <rig preset="procedural"/>
-    <float name="pcfP"   minValue="0.5" maxValue="2.0"></float>
-    <expr name="coreP" formula="clamp(1.25 + 0.3*(seed3*2.0-1.0) + 0.675*(0.6*kick+0.4*snare), 0.5, 2)"/>
-    <float name="coreP"  minValue="0.5" maxValue="2.0"></float>
-    <float name="speedP" minValue="0.5" maxValue="2.0"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader file="..\Scene3D\BioluminescentSiphonophoreChain.frag" type="scene3d" geom="indirect" probability="0.5" mood="calm,dark,dreamy" complexity="4">
     <rig preset="procedural"/>
     <float name="chainP" minValue="0.5" maxValue="2.0"></float>
@@ -3640,6 +3631,14 @@
     <float name="sizeP" minValue="0" maxValue="1"></float>
     <float name="photoP" minValue="0" maxValue="1"></float>
     <expr name="densityP" formula="clamp(0.5 + 0.3*swell + 0.2*seed2, 0.0, 1.0)"/>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureLanternTunnel.frag" type="normal" mood="calm,dreamy,psychedelic" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="countP" minValue="0" maxValue="1"></float>
+    <float name="photoP" minValue="0" maxValue="1"></float>
+    <float name="gapP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
