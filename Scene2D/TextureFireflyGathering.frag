@@ -192,7 +192,7 @@ void main()
             if (hash21(id + fl * 7.0) > want) continue;
             float d = length(g - c);
             float blink = pow(max(0.0, sin(sceneTime * (1.0 + hash21(id + 3.0)) + hash21(id + 5.0) * 6.28)), 3.0);
-            float wave = kick * exp(-pow((cw.x + cw.y * 0.5) * 2.0 - fract(sceneTime * 0.3) * 4.0 + 2.0, 2.0));
+            float wave = kick * exp(-pow((cw.x + cw.y * 0.5) * 2.0 - fract(sceneTime * 0.2) * 7.0 + 3.5, 2.0));   // wraps off-screen
             float I = (0.35 + 0.8 * want + blink * (0.8 + 0.8 * hi) + 1.5 * wave) / (1.0 + fl * 0.5);
             vec3 c3 = mix(ffC, glowColour(imgLod(cuv, 4.0), cw, hueP * 0.159), clamp(colourP, 0.0, 1.0) * 0.7);
             col += c3 * (smoothstep(0.1, 0.02, d) * 1.6 + exp(-d * 7.0) * 0.45) * I;

@@ -211,7 +211,7 @@ void main()
         float prof = 1.0 - (d / band) * (d / band);
         vec3 gc = glowColour(ph, vec2(k, 0.0), hueP * 0.159 + h * 0.3);
         vec3 rc = ph * lc * (0.4 + 0.8 * prof) + gc * smoothstep(band * 0.7, band, d) * (0.4 + 1.2 * kick);
-        float fog = exp(-t * 0.08);
+        float fog = exp(-t * 0.08) * smoothstep(14.0 * sp, 10.0 * sp, t);   // far rings fade in, never pop
         rc = mix(gc * (0.2 + 0.5 * swell), rc, fog);
         col += trans * cover * rc;
         trans *= 1.0 - cover;

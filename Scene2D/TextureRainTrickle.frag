@@ -190,15 +190,18 @@ void main()
         // The rivulet exists above its head; the head moves down in stop-and-go steps (smooth).
         float cyc = T * (0.3 + 0.3 * h) + h * 5.0;
         float stepT = floor(cyc) + smoothstep(0.3, 1.0, fract(cyc));     // pause, then run (continuous)
-        float headY = 0.8 - mod(stepT * 0.35, 1.8);
+        float run = mod(stepT * 0.35, 1.8);
+        float headY = 0.8 - run;
+        // The rivulet fades before its head wraps back to the top (no jump).
+        float rvFade = smoothstep(1.8, 1.45, run) * smoothstep(0.0, 0.1, run);
         float above = smoothstep(headY - 0.01, headY + 0.02, p.y) * smoothstep(1.0, 0.7, p.y - headY);
-        float inC = smoothstep(w, w * 0.5, d) * above;
+        float inC = smoothstep(w, w * 0.5, d) * above * rvFade;
         if (inC > chan) { chan = inC; lensOff = vec2((p.x - x0) / w, 0.0); }
         // The drop at the head: a round lens.
         vec2 hd = vec2(p.x - x0, (p.y - headY) * 0.8);
         float R = w * 2.8;
         float hr = length(hd) / R;
-        float hdrop = smoothstep(1.0, 0.85, hr);
+        float hdrop = smoothstep(1.0, 0.85, hr) * rvFade;
         if (hdrop > head) { head = hdrop; lensOff = hd / R; }
     }
     // Through the water: the scene sharp, flipped, brighter.

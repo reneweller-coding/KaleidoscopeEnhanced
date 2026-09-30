@@ -14,7 +14,7 @@ out vec4 fragColor;
  *   audioPhase      -> the fork pattern turns (integrated)
  *   audioSpread     -> the openings widen
  *   audioKick       -> the openings flare (light)
- *   audioMode       -> two-way forks in minor, three-way in major (blended)
+ *   audioMode       -> the glow in the openings: cool in minor, warm in major
  *   audioSwell      -> the glow in the openings (slow)
  *
  * Knobs: forkP (fork spread), wallZoomP, rimP (opening rims), hueP.
@@ -202,14 +202,16 @@ void main()
     float mode = smoothstep(0.2, 0.8, clamp(audioMode, 0.0, 1.0));
     float spread = 0.25 + 0.1 * clamp(forkP, 0.0, 1.0);
     float openR = 0.16 + 0.05 * clamp(audioSpread, 0.0, 1.0);
-    float K = spread / openR;                                   // zoom factor between levels (approx.)
+    // Zoom factor per level: so large that at the end of a level its target
+    // opening fills the whole view (the next level then starts exactly there).
+    float K = 1.15 / openR;
     float T = 0.12 * sceneTime + 0.8 * audioAdvance;
     float f = fract(T);
     float L0 = floor(T);
     // Continuous zoom toward the chosen opening of level 0: position the
     // view between level L0 (at f=0) and inside its target opening (at f=1).
     float rot0 = 0.1 * sceneTime + 0.5 * audioPhase;
-    float n = mix(2.0, 3.0, step(0.5, mode));
+    float n = 3.0;                                              // fixed count (no jump)
     // The target opening of this level (per level index), so the path is deterministic.
     float tk = floor(hash11(L0 * 0.731) * n);
     float tAng = rot0 + L0 * 1.3 + tk * 6.2831853 / n;
@@ -220,6 +222,7 @@ void main()
     vec3 col = vec3(0.0);
     float trans = 1.0;
     vec3 gc = glowColour(imgLod(vec2(0.5), 6.0), vec2(T * 0.1, 0.0), hueP * 0.159);
+    gc = mix(gc, gc * mix(vec3(0.8, 0.9, 1.2), vec3(1.2, 0.9, 0.75), mode), 0.5);
     for (int i = 0; i < 4; ++i) {
         float lev = L0 + float(i);
         float rotL = rot0 + lev * 1.3;

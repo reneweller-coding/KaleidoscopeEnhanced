@@ -194,7 +194,7 @@ void main()
     col += mix(lc, vec3(1.0), 0.3) * lineI * (0.6 + 1.2 * kick);
     col += lc * exp(-(0.5 - f) / (px * 6.0)) * 0.1;
     // Scan line.
-    float sy = mod(0.08 * sceneTime, 2.0) - 1.0;
+    float sy = mod(0.08 * sceneTime, 2.6) - 1.3;               // wraps well off-screen
     float scan = exp(-pow((p.y - sy * 0.6) / 0.004, 2.0)) + 0.3 * exp(-abs(p.y - sy * 0.6) / 0.05);
     col += mix(lc, vec3(1.0), 0.6) * scan * (0.15 + 0.5 * hi) * (0.3 + line);
     finish(col);
