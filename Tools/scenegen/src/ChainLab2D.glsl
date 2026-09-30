@@ -2,9 +2,10 @@
  * @brief CHAIN LAB 2D: the chain laboratory -- every time the scene starts it
  * rolls a new chain of four continuous transforms from four classes: a global
  * map (kaleidoscope, log-polar spiral, tunnel, Moebius, Droste, polar,
- * exponential, sine, inversion), a symmetry (none, kaleidoscope, p6m, p4m,
+ * exponential, sine, inversion, hyperbolic Poincare tiling, bipolar
+ * stream), a symmetry (none, kaleidoscope, p6m, p4m,
  * iterated fold, mirror line), a second global map (none, spiral, tunnel,
- * inversion, square, lens, kaleidoscope) and a warp (none, twirl, shear wave,
+ * inversion, square, lens, kaleidoscope, Joukowski) and a warp (none, twirl, shear wave,
  * ripple, domain warp, turning).  With the sub-variants (number of mirrors,
  * spiral arms, lattice size) that is tens of thousands of chains in one file.
  * Every stage is continuous and the stages are joined by the photo's mirror
@@ -52,7 +53,14 @@ vec2 stageAk(vec2 uv, int k, float v)
     if (k == 5) return tPolar(uv, gCt, 1.2 + 0.8 * v);
     if (k == 6) return tExp(uv, gCw, 3.0 + 1.5 * v + 1.5 * gSpread);
     if (k == 7) return tSin(uv, gCw, 3.5 + 1.5 * v + 1.5 * gSpread);
-    return tInvert(uv, gCw, 0.22 + 0.08 * v + 0.1 * gSpread);
+    if (k == 8) return tInvert(uv, gCw, 0.22 + 0.08 * v + 0.1 * gSpread);
+    if (k == 9) {
+        // {p,q} from the sub-variant: (5,4) (4,5) (6,4) (7,3) (8,3) (4,6)
+        int j = int(floor(v * 5.99));
+        vec2 pq = j == 0 ? vec2(5.0, 4.0) : j == 1 ? vec2(4.0, 5.0) : j == 2 ? vec2(6.0, 4.0) : j == 3 ? vec2(7.0, 3.0) : j == 4 ? vec2(8.0, 3.0) : vec2(4.0, 6.0);
+        return tPoincare(uv, vec2(0.5), pq.x, pq.y, 2.2, 0.45 * vec2(sin(gT * 0.7), sin(gT * 0.53 + 1.0)));
+    }
+    return tBipolar(uv, gCt, 0.15 + 0.1 * v, 1.0 + floor(v * 2.99), gT * 2.0);
 }
 // Stage B: a symmetry.
 vec2 stageBk(vec2 uv, int k, float v)
@@ -73,7 +81,8 @@ vec2 stageCk(vec2 uv, int k, float v)
     if (k == 3) return tInvert(uv, gCw, 0.28 + 0.1 * gSpread);
     if (k == 4) return tSquare(uv, gCw, 1.4 + 0.4 * v + 0.6 * gSpread);
     if (k == 5) return tLens(uv, gCw, 0.35 + 0.15 * v, 0.4 + 0.4 * sin(gT));
-    return tKaleido(uv, vec2(0.5), sides(v), -gRot);
+    if (k == 6) return tKaleido(uv, vec2(0.5), sides(v), -gRot);
+    return tJoukowski(uv, gCw, 0.5 + 0.2 * sin(gT * 0.4) + 0.1 * v, 2.0);
 }
 // Stage D: a warp.
 vec2 stageDk(vec2 uv, int k, float v)
@@ -95,10 +104,10 @@ int morphStage() { return pickStage(morphP, 5); }
 vec2 morphMix(vec2 a, vec2 b, float f) { return mix(mirrorUV(a), mirrorUV(b), f); }
 vec2 stageA(vec2 uv)
 {
-    int k0 = pickStage(chainAP, 9); float v = subVar(chainAP, 9);
+    int k0 = pickStage(chainAP, 11); float v = subVar(chainAP, 11);
     if (morphStage() != 1) return stageAk(uv, k0, v);
     float kf = float(k0) + gMw;
-    int i0 = int(mod(floor(kf), 9.0)), i1 = int(mod(floor(kf) + 1.0, 9.0));
+    int i0 = int(mod(floor(kf), 11.0)), i1 = int(mod(floor(kf) + 1.0, 11.0));
     float f = smoothstep(0.55, 1.0, fract(kf));
     if (f <= 0.0) return stageAk(uv, i0, v);
     return morphMix(stageAk(uv, i0, v), stageAk(uv, i1, v), f);
@@ -115,10 +124,10 @@ vec2 stageB(vec2 uv)
 }
 vec2 stageC(vec2 uv)
 {
-    int k0 = pickStage(chainCP, 7); float v = subVar(chainCP, 7);
+    int k0 = pickStage(chainCP, 8); float v = subVar(chainCP, 8);
     if (morphStage() != 3) return stageCk(uv, k0, v);
     float kf = float(k0) + gMw;
-    int i0 = int(mod(floor(kf), 7.0)), i1 = int(mod(floor(kf) + 1.0, 7.0));
+    int i0 = int(mod(floor(kf), 8.0)), i1 = int(mod(floor(kf) + 1.0, 8.0));
     float f = smoothstep(0.55, 1.0, fract(kf));
     if (f <= 0.0) return stageCk(uv, i0, v);
     return morphMix(stageCk(uv, i0, v), stageCk(uv, i1, v), f);

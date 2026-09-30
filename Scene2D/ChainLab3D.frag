@@ -367,6 +367,53 @@ vec2 tMirrorLine(vec2 uv, vec2 c, float a)
     return uv - n * (s - abs(s));
 }
 
+// Hyperbolic {p,q} tiling of the Poincare disk, built only from mirrors (the
+// p-fold kaleidoscope and the inversion in a circle orthogonal to the rim), so
+// the map is continuous; the outside of the disk is folded in by the inversion
+// in the rim.  `move` is a point inside the disk: the disk automorphism
+// z -> (z - a) / (1 - conj(a) z) carries the tiling along it (a flight
+// through the hyperbolic plane).  Needs 1/p + 1/q < 1/2.
+vec2 tPoincare(vec2 uv, vec2 c, float p, float q, float zoom, vec2 move)
+{
+    vec2 z = (uv - c) * zoom;
+    float r2 = dot(z, z);
+    if (r2 > 1.0) z /= r2;                                      // fold the outside in (continuous at the rim)
+    vec2 nu = z - move, de = vec2(1.0, 0.0) - vec2(move.x * z.x + move.y * z.y, move.x * z.y - move.y * z.x);
+    z = vec2(nu.x * de.x + nu.y * de.y, nu.y * de.x - nu.x * de.y) / max(dot(de, de), 1e-6);
+    float a = 3.14159265 / p;
+    float cq = cos(3.14159265 / q), sa = sin(a);
+    float R = 1.0 / sqrt(max(cq * cq / (sa * sa) - 1.0, 1e-4));
+    vec2 cc = vec2(R * cq / sa, 0.0);
+    for (int i = 0; i < 14; ++i) {
+        float an = atan(z.y, z.x);
+        an = abs(mod(an, 2.0 * a) - a);                         // mirror into the wedge [0, pi/p]
+        z = length(z) * vec2(cos(an), sin(an));
+        vec2 d = z - cc;
+        float dd = dot(d, d);
+        if (dd < R * R) z = cc + d * (R * R / dd);               // mirror in the orthogonal circle
+    }
+    return c + z * 0.9;
+}
+// Bipolar coordinates around two foci at c -/+ (f, 0): sigma (the angle the
+// foci subtend) across, tau (log ratio of the distances) along -- the picture
+// streams out of one focus into the other.  sigma/pi jumps by 2 on the segment
+// between the foci, so `bands` must be whole.
+vec2 tBipolar(vec2 uv, vec2 c, float f, float bands, float travel)
+{
+    vec2 z = uv - c;
+    vec2 a = z + vec2(f, 0.0), b = z - vec2(f, 0.0);
+    float sigma = atan(a.y * b.x - a.x * b.y, a.x * b.x + a.y * b.y);
+    float tau = 0.5 * log(max(dot(a, a), 1e-8) / max(dot(b, b), 1e-8));
+    return vec2(sigma / 3.14159265 * bands, tau * 0.35 - travel);
+}
+// Joukowski map w = z + R^2 / z (the airfoil map): circles become wings.
+vec2 tJoukowski(vec2 uv, vec2 c, float R, float scale)
+{
+    vec2 z = (uv - c) * scale;
+    vec2 iz = vec2(z.x, -z.y) / max(dot(z, z), 1e-5);
+    return c + (z + R * R * iz) * 0.5;
+}
+
 vec2 chain(vec2 p);
 // The chain's photo read with a seam-proof footprint (per axis the smaller of
 // the two one-sided differences) and the screen-space luma gradient.
@@ -516,7 +563,14 @@ vec2 stageAk(vec2 uv, int k, float v)
     if (k == 5) return tPolar(uv, gCt, 1.2 + 0.8 * v);
     if (k == 6) return tExp(uv, gCw, 3.0 + 1.5 * v + 1.5 * gSpread);
     if (k == 7) return tSin(uv, gCw, 3.5 + 1.5 * v + 1.5 * gSpread);
-    return tInvert(uv, gCw, 0.22 + 0.08 * v + 0.1 * gSpread);
+    if (k == 8) return tInvert(uv, gCw, 0.22 + 0.08 * v + 0.1 * gSpread);
+    if (k == 9) {
+        // {p,q} from the sub-variant: (5,4) (4,5) (6,4) (7,3) (8,3) (4,6)
+        int j = int(floor(v * 5.99));
+        vec2 pq = j == 0 ? vec2(5.0, 4.0) : j == 1 ? vec2(4.0, 5.0) : j == 2 ? vec2(6.0, 4.0) : j == 3 ? vec2(7.0, 3.0) : j == 4 ? vec2(8.0, 3.0) : vec2(4.0, 6.0);
+        return tPoincare(uv, vec2(0.5), pq.x, pq.y, 2.2, 0.45 * vec2(sin(gTC * 0.7), sin(gTC * 0.53 + 1.0)));
+    }
+    return tBipolar(uv, gCt, 0.15 + 0.1 * v, 1.0 + floor(v * 2.99), gTC * 2.0);
 }
 // Stage B: a symmetry.
 vec2 stageBk(vec2 uv, int k, float v)
@@ -537,7 +591,8 @@ vec2 stageCk(vec2 uv, int k, float v)
     if (k == 3) return tInvert(uv, gCw, 0.28 + 0.1 * gSpread);
     if (k == 4) return tSquare(uv, gCw, 1.4 + 0.4 * v + 0.6 * gSpread);
     if (k == 5) return tLens(uv, gCw, 0.35 + 0.15 * v, 0.4 + 0.4 * sin(gTC));
-    return tKaleido(uv, vec2(0.5), sides(v), -gRot);
+    if (k == 6) return tKaleido(uv, vec2(0.5), sides(v), -gRot);
+    return tJoukowski(uv, gCw, 0.5 + 0.2 * sin(gTC * 0.4) + 0.1 * v, 2.0);
 }
 // Stage D: a warp.
 vec2 stageDk(vec2 uv, int k, float v)
@@ -559,10 +614,10 @@ int morphStage() { return pickStage(morphP, 5); }
 vec2 morphMix(vec2 a, vec2 b, float f) { return mix(mirrorUV(a), mirrorUV(b), f); }
 vec2 stageA(vec2 uv)
 {
-    int k0 = pickStage(chainAP, 9); float v = subVar(chainAP, 9);
+    int k0 = pickStage(chainAP, 11); float v = subVar(chainAP, 11);
     if (morphStage() != 1) return stageAk(uv, k0, v);
     float kf = float(k0) + gMw;
-    int i0 = int(mod(floor(kf), 9.0)), i1 = int(mod(floor(kf) + 1.0, 9.0));
+    int i0 = int(mod(floor(kf), 11.0)), i1 = int(mod(floor(kf) + 1.0, 11.0));
     float f = smoothstep(0.55, 1.0, fract(kf));
     if (f <= 0.0) return stageAk(uv, i0, v);
     return morphMix(stageAk(uv, i0, v), stageAk(uv, i1, v), f);
@@ -579,10 +634,10 @@ vec2 stageB(vec2 uv)
 }
 vec2 stageC(vec2 uv)
 {
-    int k0 = pickStage(chainCP, 7); float v = subVar(chainCP, 7);
+    int k0 = pickStage(chainCP, 8); float v = subVar(chainCP, 8);
     if (morphStage() != 3) return stageCk(uv, k0, v);
     float kf = float(k0) + gMw;
-    int i0 = int(mod(floor(kf), 7.0)), i1 = int(mod(floor(kf) + 1.0, 7.0));
+    int i0 = int(mod(floor(kf), 8.0)), i1 = int(mod(floor(kf) + 1.0, 8.0));
     float f = smoothstep(0.55, 1.0, fract(kf));
     if (f <= 0.0) return stageCk(uv, i0, v);
     return morphMix(stageCk(uv, i0, v), stageCk(uv, i1, v), f);
