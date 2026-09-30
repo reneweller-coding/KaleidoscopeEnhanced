@@ -1554,13 +1554,6 @@
     <float name="interfP" minValue="0.8" maxValue="2.5"></float>
     <float name="honeyP" minValue="0.2" maxValue="1.2"></float>
   </TextureShader>
-  <TextureShader file="..\Scene2D\LuciferinBioluminescentWavefront.frag" type="normal" probability="0.4" mood="calm,dark,dreamy" complexity="4">
-    <rig preset="flat"/>
-    <float name="waveP" minValue="0.6" maxValue="2.2"></float>
-    <float name="shearP" minValue="0.5" maxValue="2.0"></float>
-    <float name="foamP" minValue="0.8" maxValue="2.5"></float>
-    <float name="sparkP" minValue="1.0" maxValue="3.5"></float>
-  </TextureShader>
   <TextureShader file="..\Scene2D\ChiralNematicBeetleCuticle.frag" type="normal" probability="0.4" mood="bright,psychedelic" complexity="3">
     <rig preset="flat"/>
     <float name="pitchP" minValue="0.5" maxValue="2.2"></float>
@@ -1613,26 +1606,12 @@
     <float name="ribbonWidthP" minValue="0.02" maxValue="0.1"></float>
     <float name="glowP" minValue="0.8" maxValue="2.5"></float>
   </TextureShader>
-  <TextureShader file="..\Scene3D\SubglacialVolcanicPillowLava.frag" type="scene3d" geom="grid" probability="0.45" mood="dark,calm" complexity="4">
-    <rig preset="procedural"/>
-    <float name="pillowScaleP" minValue="2.5" maxValue="6.0"></float>
-    <float name="crustHeightP" minValue="0.15" maxValue="0.6"></float>
-    <float name="lavaHeatP" minValue="0.8" maxValue="2.5"></float>
-    <float name="crustGlowP" minValue="0.6" maxValue="2.0"></float>
-  </TextureShader>
   <TextureShader file="..\Scene2D\CavityOptomechanicsPhononLasing.frag" type="normal" probability="0.4" mood="bright,psychedelic" complexity="3">
     <rig preset="flat"/>
     <float name="cavityQ_P" minValue="1.0" maxValue="3.5"></float>
     <float name="phononFreqP" minValue="6.0" maxValue="20.0"></float>
     <float name="combP" minValue="8.0" maxValue="24.0"></float>
     <float name="pressureP" minValue="0.5" maxValue="2.2"></float>
-  </TextureShader>
-  <TextureShader file="..\Scene2D\NonlinearKerrOpticalSolitonCollision.frag" type="normal" probability="0.4" mood="psychedelic,bright" complexity="4">
-    <rig preset="flat"/>
-    <float name="solitonCountP" minValue="2.0" maxValue="6.0"></float>
-    <float name="kerrNonlinP" minValue="0.6" maxValue="2.2"></float>
-    <float name="shockP" minValue="8.0" maxValue="24.0"></float>
-    <float name="crossPhaseP" minValue="0.5" maxValue="2.0"></float>
   </TextureShader>
   <TextureShader file="..\Scene2D\BoseEinsteinGiantVortexTurbulence.frag" type="normal" probability="0.4" mood="calm,psychedelic" complexity="3">
     <rig preset="flat"/>
@@ -3069,6 +3048,30 @@
     <float name="gridP" minValue="0" maxValue="1"></float>
     <float name="padP" minValue="0" maxValue="1"></float>
     <float name="boardP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureOrbifoldFlow.frag" type="normal" mood="psychedelic,calm" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="cellP" minValue="0" maxValue="1"></float>
+    <float name="bendP" minValue="0" maxValue="1"></float>
+    <float name="photoZoomP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureLavaFieldTop.frag" type="normal" mood="dark,energetic" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="channelP" minValue="0" maxValue="1"></float>
+    <float name="crustP" minValue="0" maxValue="1"></float>
+    <float name="steamP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureFireflyGathering.frag" type="normal" mood="calm,dark" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="countP" minValue="0" maxValue="1"></float>
+    <float name="photoP" minValue="0" maxValue="1"></float>
+    <float name="colourP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>

@@ -1749,14 +1749,6 @@
     <expr name="hueP" formula="clamp(0.5 + 0.2*(seed3*2.0-1.0) + 0.2*sin(chromaHue), 0.1, 0.9)"/>
     <float name="hueP"    minValue="0.1"  maxValue="0.9"></float>
   </TextureShader>
-  <TextureShader file="..\\Scene3D\\Blueprint.frag" type="scene3d" geom="grid" probability="0.45" mood="calm" complexity="3">
-    <rig preset="procedural"/>
-    <float name="camDistP" minValue="3.6" maxValue="4.8"></float>
-    <float name="lineP"    minValue="0.3" maxValue="0.9"></float>
-    <float name="morphP"   minValue="0.6" maxValue="1.0"></float>
-    <expr name="glowP" formula="clamp(0.7 + 0.12*(seed1*2.0-1.0) + 0.27*(0.6*kick+0.4*snare), 0.4, 1)"/>
-    <float name="glowP"    minValue="0.4" maxValue="1.0"></float>
-  </TextureShader>
   <TextureShader file="..\\Scene3D\\Magnetosphere.frag" type="scene3d" geom="indirect" probability="0.5" mood="dark,dreamy,space" complexity="4">
     <rig preset="procedural"/>
     <float name="shellsP"  minValue="0.8"  maxValue="1.3"></float>
@@ -1851,15 +1843,6 @@
     <float name="widthP" minValue="0.5" maxValue="1.8"></float>
     <expr name="hueP" formula="chromaHue + seed2*6.28"/>
     <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
-  <TextureShader file="..\Scene3D\NeuroSynapseNetwork.frag" type="scene3d" geom="points" probability="0.48" mood="dark,calm" complexity="2">
-    <rig preset="procedural"/>
-    <float name="densityP" minValue="0.5" maxValue="1.8"></float>
-    <expr name="sparkP" formula="clamp(1.35 + 0.34*(seed2*2.0-1.0) + 0.765*(0.6*kick+0.4*snare), 0.5, 2.2)"/>
-    <float name="sparkP"   minValue="0.5" maxValue="2.2"></float>
-    <float name="camDistP" minValue="0.6" maxValue="1.5"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP"     minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene3D\BioluminescentSwarm.frag" type="scene3d" geom="indirect" probability="0.48" mood="dark,calm,dreamy" complexity="4">
     <rig preset="procedural"/>
@@ -3638,6 +3621,22 @@
     <float name="gridP" minValue="0" maxValue="1"></float>
     <float name="padP" minValue="0" maxValue="1"></float>
     <float name="boardP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureLavaFieldTop.frag" type="normal" mood="dark,energetic" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="channelP" minValue="0" maxValue="1"></float>
+    <float name="crustP" minValue="0" maxValue="1"></float>
+    <float name="steamP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureFireflyGathering.frag" type="normal" mood="calm,dark" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="countP" minValue="0" maxValue="1"></float>
+    <float name="photoP" minValue="0" maxValue="1"></float>
+    <float name="colourP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
