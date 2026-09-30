@@ -212,6 +212,8 @@ void main()
     sheenC = mix(sheenC, glowColour(imgLod(uv, 6.0), p, hueP * 0.159), 0.08);
     vec3 col = vec3(0.012, 0.012, 0.014);
     col += sheenC * (spec * 0.9 + sheenB * 0.18) * (0.7 + 0.6 * swell);
-    col += vec3(1.0) * spec * step(0.985, hash21(floor(p * 300.0))) * (0.2 + 1.0 * hi);
+    vec2 gq = p * 220.0, gcell = floor(gq);
+    float glint = step(0.985, hash21(gcell)) * smoothstep(0.35, 0.1, length(fract(gq) - 0.5));
+    col += vec3(1.0) * spec * glint * (0.2 + 1.0 * hi);
     finish(col);
 }
