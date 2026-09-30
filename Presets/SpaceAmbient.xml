@@ -1495,17 +1495,6 @@
     <expr name="hueP" formula="clamp(0.5 + 0.25*(seed2*2.0-1.0) + 0.25*sin(chromaHue), 0, 1)"/>
     <float name="hueP"     minValue="0.0" maxValue="1.0"></float>
   </TextureShader>
-  <TextureShader file="..\\Scene3D\\CathedralGlass.frag" type="scene3d" geom="indirect" probability="0.45" mood="calm,bright" complexity="3">
-    <rig preset="procedural"/>
-    <float name="spinP"    minValue="0.50" maxValue="2.20"></float>
-    <float name="paneP"    minValue="0.60" maxValue="1.45"></float>
-    <float name="depthP"   minValue="0.55" maxValue="1.60"></float>
-    <float name="camDistP" minValue="5.00" maxValue="6.60"></float>
-    <expr name="glowP" formula="clamp(0.725 + 0.11*(seed1*2.0-1.0) + 0.2475*(0.6*kick+0.4*snare), 0.45, 1)"/>
-    <float name="glowP"    minValue="0.45" maxValue="1.00"></float>
-    <expr name="hueP" formula="clamp(0.5 + 0.25*(seed2*2.0-1.0) + 0.25*sin(chromaHue), 0, 1)"/>
-    <float name="hueP"     minValue="0.00" maxValue="1.00"></float>
-  </TextureShader>
   <TextureShader file="..\Scene2D\HyperWarpTunnel.frag" type="normal" probability="0.5" mood="aggressive,dark,psychedelic" complexity="3">
     <rig preset="flat"/>
     <float name="speedP" minValue="0.5" maxValue="1.8"></float>
@@ -3075,18 +3064,6 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\\Scene2D\\CalatravaRibsHall.frag" type="normal" mood="bright,calm" probability="0.2" complexity="3">
-    <rig preset="flat"/>
-    <float name="ribP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
-  <TextureShader file="..\\Scene2D\\ParametricPavilion.frag" type="normal" mood="bright,calm" probability="0.2" complexity="3">
-    <rig preset="flat"/>
-    <float name="twistP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader file="..\\Scene2D\\StarTrailsPolaris.frag" type="normal" mood="calm,dark,space" probability="0.2" complexity="2">
     <rig preset="flat"/>
     <float name="trailP" minValue="0" maxValue="1"></float>
@@ -3533,6 +3510,30 @@
     <float name="pitchP" minValue="0" maxValue="1"></float>
     <float name="zoomP" minValue="0" maxValue="1"></float>
     <float name="wobbleP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureWaterSurfaceLookUp.frag" type="normal" mood="calm,dark" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="windowP" minValue="0" maxValue="1"></float>
+    <float name="waveP" minValue="0" maxValue="1"></float>
+    <float name="rimP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureGlassBlocksWall.frag" type="normal" mood="calm,bright" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="blockP" minValue="0" maxValue="1"></float>
+    <float name="mortarP" minValue="0" maxValue="1"></float>
+    <float name="patternP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\FoamCoarsening.frag" type="normal" mood="calm,bright" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="bubbleP" minValue="0" maxValue="1"></float>
+    <float name="wallP" minValue="0" maxValue="1"></float>
+    <float name="lensP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
