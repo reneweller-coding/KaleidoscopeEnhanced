@@ -1143,3 +1143,6 @@ TenPrintMaze	4	4	7	5	6	7	6
 HitomezashiStitch	6	3	4	3	5	8	6
 ConcentricPhoto	5	5	6	5	8	8	7
 PhotoLowPolyFacets	5	4	5	4	5	6	6
+StripePhoto	5	4	5	5	7	7	6
+MarchingSquaresIsobands	6	5	4	4	5	7	6
+SubstrateCracks	6	4	4	4	4	8	6
