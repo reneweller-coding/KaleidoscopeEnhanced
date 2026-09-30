@@ -277,6 +277,7 @@ RECENT_SCENES = {
     "TextureStarsFromLight", "TextureSnowVolume", "TextureBubbleColumn",
     "WatercolorWetInWet", "ResinGeodePour",
     "TextureMistLights", "SaltWatercolorBlooms",
+    "TextureNeonCalligraphy", "TextureLaserGrid", "TextureAuroraVolume",
 }
 
 def rule_recent(m, h):

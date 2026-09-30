@@ -1281,9 +1281,6 @@
   <TextureShader file="..\\Scene3D\\FireflyField.frag" type="scene3d" geom="points" probability="0.3" mood="calm" complexity="2">
     <rig preset="procedural"/>
   </TextureShader>
-  <TextureShader file="..\\Scene3D\\SnowDrift.frag" type="scene3d" geom="points" probability="0.3" mood="calm" complexity="2">
-    <rig preset="procedural"/>
-  </TextureShader>
   <TextureShader file="..\\Scene3D\\ChromeFlow.frag" type="scene3d" geom="grid" probability="0.3" mood="calm" complexity="2">
     <rig preset="procedural"/>
   </TextureShader>
@@ -1392,16 +1389,6 @@
     <float name="glowP"    minValue="0.4" maxValue="1.0"></float>
     <expr name="hueP" formula="clamp(0.5 + 0.25*(seed2*2.0-1.0) + 0.25*sin(chromaHue), 0, 1)"/>
     <float name="hueP"     minValue="0.0" maxValue="1.0"></float>
-  </TextureShader>
-  <TextureShader file="..\Scene2D\HyperWarpTunnel.frag" type="normal" probability="0.5" mood="aggressive,dark,psychedelic" complexity="3">
-    <rig preset="flat"/>
-    <float name="speedP" minValue="0.5" maxValue="1.8"></float>
-    <expr name="warpP" formula="clamp(1.25 + 0.3*(seed1*2.0-1.0) + 0.525*(flux), 0.5, 2)"/>
-    <float name="warpP" minValue="0.5" maxValue="2.0"></float>
-    <expr name="twistP" formula="clamp(0.9 + 0.24*(seed3*2.0-1.0) + 0.42*(flux), 0.3, 1.5)"/>
-    <float name="twistP" minValue="0.3" maxValue="1.5"></float>
-    <expr name="hueP" formula="chromaHue + seed2*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene2D\VolumetricSupernova.frag" type="normal" probability="0.5" mood="aggressive,dark" complexity="4">
     <rig preset="flat"/>
@@ -3524,6 +3511,22 @@
     <rig preset="flat"/>
     <float name="saltP" minValue="0" maxValue="1"></float>
     <float name="washP" minValue="0" maxValue="1"></float>
+    <float name="photoP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureNeonCalligraphy.frag" type="normal" mood="energetic,psychedelic" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="strokeP" minValue="0" maxValue="1"></float>
+    <float name="loopP" minValue="0" maxValue="1"></float>
+    <float name="photoP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureAuroraVolume.frag" type="normal" mood="calm,psychedelic" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="curtainP" minValue="0" maxValue="1"></float>
+    <float name="rayP" minValue="0" maxValue="1"></float>
     <float name="photoP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
