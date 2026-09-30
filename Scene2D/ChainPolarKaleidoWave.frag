@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 fragColor;
 /**
- * @file ChainSpiralKaleido.frag
- * @brief CHAINSPIRALKALEIDO: a chain of continuous transforms -- a log-polar spiral (endless zoom) seen through a six-fold kaleidoscope.  Every stage is
+ * @file ChainPolarKaleidoWave.frag
+ * @brief CHAINPOLARKALEIDOWAVE: a chain of continuous transforms -- a polar unwrap, folded six-fold, then rippled by a shear wave.  Every stage is
  * continuous and the stages are joined by the photo's mirror repeat, so the
  * whole map is seamless; the photograph flows through it endlessly and never
  * repeats.  Rendered as the photo, as a lit relief of it, or as glowing edges
@@ -375,9 +375,11 @@ vec2 chain(vec2 p)
     vec2 uv = p * 0.5 + 0.5;
     vec2 cw = vec2(0.5) + 0.15 * vec2(sin(0.017 * sceneTime), cos(0.013 * sceneTime));
     float rot = 0.02 * sceneTime + 0.2 * audioPhase;
-    uv = tSpiral(uv, vec2(0.5), 6.0, 1.0, gT * 2.0);
+    vec2 ct = vec2(0.5) + vec2(0.22 * sin(0.023 * sceneTime + 0.3 * sin(0.011 * sceneTime)), 0.16 * cos(0.019 * sceneTime));   // the wandering tunnel centre
+    uv = tPolar(uv, ct, 1.5);
     uv = mirrorUV(uv);
     uv = tKaleido(uv, cw, 6.0, rot);
+    uv = tWave(uv, 8.0, 0.02 + 0.04 * gSpread, gT * 4.0);
     return uv;
 }
 

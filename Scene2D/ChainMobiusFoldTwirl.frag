@@ -6,7 +6,7 @@ out vec4 fragColor;
  * continuous and the stages are joined by the photo's mirror repeat, so the
  * whole map is seamless; the photograph flows through it endlessly and never
  * repeats.  Rendered as the photo, as a lit relief of it, or as glowing edges
- * (styleP blends between them).  Endless, mirrorable.
+ * or as glowing contour lines (styleP blends through them).  Endless, mirrorable.
  *
  * Audio Reactivity (structure, not only light):
  *   audioAdvance    -> the flow through the chain (integrated, jump-free)
@@ -16,7 +16,7 @@ out vec4 fragColor;
  *   audioMode       -> the tint: cool in minor, warm in major
  *   audioSwell      -> the relief light (slow)
  *
- * Knobs: styleP (photo / relief / glowing edges), speedP (flow speed), detailP (texture sharpness), hueP.
+ * Knobs: styleP (photo / relief / glowing edges / contour lines), speedP (flow speed), detailP (texture sharpness), hueP.
  */
 
 uniform vec2  resolution;
@@ -276,6 +276,78 @@ vec2 tP4m(vec2 uv, float cells)
     return f.y > f.x ? f.yx : f;
 }
 vec2 tRot(vec2 uv, vec2 c, float a) { return c + rot2(a) * (uv - c); }
+// The classic tunnel: angle around, 1/r along (both jump by whole periods at the cut).
+vec2 tTunnel(vec2 uv, vec2 c, float depth, float travel)
+{
+    vec2 d = uv - c;
+    return vec2(atan(d.y, d.x) / 3.14159265, depth / max(length(d), 1e-3) + travel);
+}
+// Plain polar unwrap: angle across, radius along.
+vec2 tPolar(vec2 uv, vec2 c, float scale)
+{
+    vec2 d = uv - c;
+    return vec2(atan(d.y, d.x) / 3.14159265, length(d) * scale);
+}
+// Six-fold mirror tiling (p6m) of the plane, cell size 1/cells.
+vec2 tHex(vec2 uv, float cells)
+{
+    vec2 q = (uv - 0.5) * cells;
+    const vec2 s = vec2(1.0, 1.7320508);
+    vec2 a = mod(q, s) - s * 0.5, b = mod(q - s * 0.5, s) - s * 0.5;
+    vec2 h = dot(a, a) < dot(b, b) ? a : b;
+    float an = atan(h.y, h.x);
+    float sec = 1.0471976;
+    an = abs(mod(an, sec) - 0.5 * sec);
+    return 0.5 + length(h) * vec2(cos(an), sin(an)) / cells * 2.0;
+}
+// Complex exponential and sine: entire functions, smooth everywhere.
+vec2 tExp(vec2 uv, vec2 c, float k)
+{
+    vec2 z = (uv - c) * k;
+    return c + exp(z.x) * vec2(cos(z.y), sin(z.y)) * 0.3;
+}
+vec2 tSin(vec2 uv, vec2 c, float k)
+{
+    vec2 z = (uv - c) * k;
+    return c + vec2(sin(z.x) * cosh(z.y), cos(z.x) * sinh(z.y)) * 0.3;
+}
+// Radial ripple and a sinusoidal shear wave.
+vec2 tRipple(vec2 uv, vec2 c, float freq, float amp, float t)
+{
+    vec2 d = uv - c;
+    float r = length(d);
+    return uv + d / max(r, 1e-4) * amp * sin(r * freq - t);
+}
+vec2 tWave(vec2 uv, float freq, float amp, float t)
+{
+    return uv + amp * vec2(sin(uv.y * freq + t), sin(uv.x * freq * 1.3 - t * 0.8));
+}
+// Lens: bulge (k > 0) or pinch (k < 0) inside radius R.
+vec2 tLens(vec2 uv, vec2 c, float R, float k)
+{
+    vec2 d = uv - c;
+    float r = length(d) / R;
+    float f = r < 1.0 ? pow(max(r, 1e-4), k) / max(r, 1e-4) : 1.0;
+    return c + d * mix(1.0, f, smoothstep(1.0, 0.6, r));
+}
+// Droste zoom without a spiral: the radius is folded in log scale (a
+// triangle wave in log r), so the picture repeats inward at every scale,
+// mirrored at each repeat; the zoom runs on integrated time.
+vec2 tDroste(vec2 uv, vec2 c, float K, float zoom)
+{
+    vec2 d = uv - c;
+    float r = max(length(d), 1e-5);
+    float u = log(r) / log(K) - zoom;
+    float tri = abs(fract(u * 0.5) * 2.0 - 1.0);               // 0..1 triangle wave
+    return c + d / r * exp(tri * log(K)) * 0.15;
+}
+// A single mirror line through c at angle a (the half-plane reflected).
+vec2 tMirrorLine(vec2 uv, vec2 c, float a)
+{
+    vec2 n = vec2(cos(a), sin(a));
+    float s = dot(uv - c, n);
+    return uv - n * (s - abs(s));
+}
 
 vec2 chain(vec2 p);
 // The chain's photo read with a seam-proof footprint (per axis the smaller of
@@ -330,9 +402,16 @@ void main()
     // Glowing edges: gradient magnitude as neon in the photo's colour.
     float edge = smoothstep(0.02, 0.25, length(grad));
     vec3 neon = glowColour(ph, p, hueP * 0.159) * edge * (1.2 + 1.2 * kick) + photo * 0.06;
-    float st = clamp(styleP, 0.0, 1.0);
-    vec3 col = mix(mix(photo, reliefC, smoothstep(0.0, 0.5, st)), neon, smoothstep(0.5, 1.0, st));
+    // Isolines of the chain's luma: glowing contour lines.
+    float xi = m * 12.0;
+    float pxi = fwidth(xi) + 1e-4;
+    float iso = smoothstep(pxi * 1.5, 0.0, abs(fract(xi) - 0.5) - 0.5 + pxi * 1.5);
+    vec3 isoC = glowColour(ph, p, hueP * 0.159) * iso * (1.0 + kick) + photo * 0.08;
+    float st = clamp(styleP, 0.0, 1.0) * 3.0;               // 0 photo, 1 relief, 2 edges, 3 isolines
+    vec3 col = mix(photo, reliefC, smoothstep(0.0, 1.0, st));
+    col = mix(col, neon, smoothstep(1.0, 2.0, st));
+    col = mix(col, isoC, smoothstep(2.0, 3.0, st));
     col *= mix(vec3(0.9, 0.97, 1.08), vec3(1.08, 0.98, 0.9), mode);
-    col += glowColour(ph, p, hueP * 0.159) * edge * kick * 0.3 * (1.0 - smoothstep(0.5, 1.0, st));
+    col += glowColour(ph, p, hueP * 0.159) * edge * kick * 0.3 * (1.0 - smoothstep(1.0, 2.0, st));
     finish(col);
 }
