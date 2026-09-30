@@ -532,13 +532,6 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\Scene2D\PersistenceOfVisionFan.frag" type="normal" mood="psychedelic,dark,dreamy" probability="0.45" complexity="2">
-    <rig preset="flat"/>
-    <float name="spokesP" minValue="2" maxValue="5"></float>
-    <float name="speedP" minValue="0.7" maxValue="1.4"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader file="..\Scene2D\TidalLockTerminator.frag" type="normal" mood="space,calm,dreamy" probability="0.45" complexity="3">
     <rig preset="flat"/>
     <float name="tiltP" minValue="0" maxValue="1"></float>
@@ -550,12 +543,6 @@
     <rig preset="mesh-14"/>
     <float name="ringP" minValue="0.8" maxValue="1.2"></float>
     <float name="sizeP" minValue="0.8" maxValue="1.2"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
-  <TextureShader file="..\Scene3D\AnglerfishAbyss.frag" type="scene3d" geom="mesh" model="..\Models\Anglerfish.glb" mood="dark,calm,dreamy" probability="0.45" complexity="3">
-    <rig preset="mesh-14"/>
-    <float name="sizeP" minValue="0.9" maxValue="1.1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
@@ -3266,6 +3253,22 @@
     <float name="bloomsP" minValue="0" maxValue="1"></float>
     <float name="granP" minValue="0" maxValue="1"></float>
     <float name="edgeP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureLightningPaths.frag" type="normal" mood="dark,aggressive" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="scaleP" minValue="0" maxValue="1"></float>
+    <float name="branchP" minValue="0" maxValue="1"></float>
+    <float name="stoneP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureCircuitGlow.frag" type="normal" mood="dark,psychedelic" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="gridP" minValue="0" maxValue="1"></float>
+    <float name="padP" minValue="0" maxValue="1"></float>
+    <float name="boardP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
