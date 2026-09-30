@@ -2846,14 +2846,6 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\\Scene2D\\LouisVeilPours.frag" type="normal" mood="calm,dreamy,bright" probability="0.45" complexity="2">
-    <rig preset="flat"/>
-    <float name="layersP" minValue="0" maxValue="1"></float>
-    <float name="glazeP" minValue="0" maxValue="1"></float>
-    <float name="canvasP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader file="..\\Scene2D\\HoneyFold.frag" type="normal" mood="calm,dreamy" probability="0.45" complexity="2">
     <rig preset="flat"/>
     <float name="ropesP" minValue="0" maxValue="1"></float>
@@ -2883,14 +2875,6 @@
     <float name="tiltP" minValue="0" maxValue="1"></float>
     <float name="laneP" minValue="0" maxValue="1"></float>
     <float name="photoP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
-  <TextureShader file="..\\Scene2D\\TextureSpillBloom.frag" type="normal" mood="calm,bright" probability="0.45" complexity="2">
-    <rig preset="flat"/>
-    <float name="bloomsP" minValue="0" maxValue="1"></float>
-    <float name="granP" minValue="0" maxValue="1"></float>
-    <float name="edgeP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
@@ -3075,6 +3059,22 @@
     <float name="pitchP" minValue="0" maxValue="1"></float>
     <float name="weaveP" minValue="0" maxValue="1"></float>
     <float name="zoomP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureFlowerThroat.frag" type="normal" mood="psychedelic,calm" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="petalsP" minValue="0" maxValue="1"></float>
+    <float name="shapeP" minValue="0" maxValue="1"></float>
+    <float name="veinP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\BubbleOilLamp.frag" type="normal" mood="calm,bright" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="tubeP" minValue="0" maxValue="1"></float>
+    <float name="bubbleP" minValue="0" maxValue="1"></float>
+    <float name="glowP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>

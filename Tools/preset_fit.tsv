@@ -1026,3 +1026,6 @@ TextureLatticeTunnel	3	7	8	6	7	4	7
 TextureRibbonVortex	4	6	7	5	8	6	7
 TextureMarbleFlow	8	4	2	5	4	8	6
 TextureGlowVines	6	5	4	5	5	5	5
+TextureFlowerThroat	6	6	5	4	8	7	7
+TextureIronFilings	6	4	3	6	4	7	6
+BubbleOilLamp	7	4	5	4	6	6	6
