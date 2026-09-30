@@ -1269,14 +1269,6 @@
     <float name="hueP"   minValue="0.2"  maxValue="0.85"></float>
     <float name="skyP"   minValue="0.4"  maxValue="1.0"></float>
   </TextureShader>
-  <TextureShader file="..\\Scene3D\\MetaSculpt.frag" type="scene3d" geom="indirect" probability="0.5" mood="dreamy" complexity="4" shadowExtent="2.8">
-    <rig preset="procedural"/>
-    <float name="blobP"    minValue="0.65" maxValue="1.05"></float>
-    <float name="spreadP"  minValue="0.75" maxValue="1.30"></float>
-    <float name="isoP"     minValue="0.8"  maxValue="1.25"></float>
-    <float name="camDistP" minValue="3.4"  maxValue="4.6"></float>
-    <float name="glossP"   minValue="0.4"  maxValue="0.9"></float>
-  </TextureShader>
   <TextureShader file="..\\Scene3D\\GrowthTree.frag" type="scene3d" geom="indirect" probability="0.5" mood="calm" complexity="4">
     <rig preset="procedural"/>
     <float name="branchP"  minValue="0.80" maxValue="1.25"></float>
@@ -1288,16 +1280,6 @@
     <float name="camHP"    minValue="0.2"  maxValue="1.0"></float>
     <expr name="glowP" formula="clamp(0.7 + 0.12*(seed2*2.0-1.0) + 0.27*(0.6*kick+0.4*snare), 0.4, 1)"/>
     <float name="glowP"    minValue="0.4"  maxValue="1.0"></float>
-  </TextureShader>
-  <TextureShader file="..\\Scene3D\\SpectrumCity.frag" type="scene3d" geom="indirect" probability="0.5" mood="dark,dreamy" complexity="4">
-    <rig preset="procedural"/>
-    <expr name="heightP" formula="clamp(1.025 + 0.13*(seed1*2.0-1.0) + 0.26*(max(bassRel-0.9,0.0)), 0.7, 1.35)"/>
-    <float name="heightP"  minValue="0.7"  maxValue="1.35"></float>
-    <float name="densityP" minValue="0.65" maxValue="0.92"></float>
-    <float name="avenueP"  minValue="0.7"  maxValue="1.5"></float>
-    <float name="camHP"    minValue="11.0" maxValue="26.0"></float>
-    <expr name="glowP" formula="clamp(0.725 + 0.11*(seed3*2.0-1.0) + 0.2475*(0.6*kick+0.4*snare), 0.45, 1)"/>
-    <float name="glowP"    minValue="0.45" maxValue="1.0"></float>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\HairCurtain.frag" type="scene3d" geom="scatter" probability="0.45" mood="dreamy" complexity="3">
     <rig preset="procedural"/>
@@ -3191,6 +3173,22 @@
     <float name="bloomsP" minValue="0" maxValue="1"></float>
     <float name="goldP" minValue="0" maxValue="1"></float>
     <float name="paperP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\OilDropsOnWater.frag" type="normal" mood="calm,dreamy,bright" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="dropsP" minValue="0" maxValue="1"></float>
+    <float name="sizeP" minValue="0" maxValue="1"></float>
+    <float name="blurP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureStainedGlassField.frag" type="normal" mood="bright,calm" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="sizeP" minValue="0" maxValue="1"></float>
+    <float name="leadP" minValue="0" maxValue="1"></float>
+    <float name="saturateP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>

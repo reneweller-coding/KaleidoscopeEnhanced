@@ -2003,13 +2003,6 @@
     <float name="landauRadiusP" minValue="0.6" maxValue="1.6"></float>
     <float name="edgeGlowP" minValue="0.8" maxValue="2.5"></float>
   </TextureShader>
-  <TextureShader file="..\Scene3D\DielectricResonatorMetagrating.frag" type="scene3d" geom="quads" probability="0.45" mood="dark,aggressive" complexity="3">
-    <rig preset="procedural"/>
-    <float name="gratingPitchP" minValue="0.1" maxValue="0.3"></float>
-    <float name="pillarHeightP" minValue="0.1" maxValue="0.4"></float>
-    <float name="mieGlowP" minValue="0.8" maxValue="2.5"></float>
-    <float name="specularP" minValue="0.8" maxValue="2.2"></float>
-  </TextureShader>
   <TextureShader file="..\Scene3D\BioluminescentCombJellyCydippid.frag" type="scene3d" geom="ribbon" probability="0.45" mood="calm,dark,dreamy" complexity="3">
     <rig preset="procedural"/>
     <float name="bodyScaleP" minValue="0.8" maxValue="2.0"></float>
@@ -3077,6 +3070,14 @@
     <float name="crinkleP" minValue="0" maxValue="1"></float>
     <float name="photoP" minValue="0" maxValue="1"></float>
     <float name="gratingP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TruchetFlowWeave.frag" type="normal" mood="psychedelic,bright" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="scaleP" minValue="0" maxValue="1"></float>
+    <float name="weaveP" minValue="0" maxValue="1"></float>
+    <float name="flipP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
