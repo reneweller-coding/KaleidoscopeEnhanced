@@ -1190,3 +1190,5 @@ Chain3DMandelbox	4	8	7	7	8	5	7
 Chain3DOctaGyroid	5	8	8	5	8	6	8
 Chain3DPolarTunnelBoxes	4	8	9	5	8	6	8
 Chain3DTwistTorus	5	8	8	5	8	6	8
+ChainLab2D	6	7	8	5	9	7	9
+ChainLab3D	5	8	8	5	9	6	9
