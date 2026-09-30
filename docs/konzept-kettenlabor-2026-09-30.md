@@ -164,7 +164,86 @@ Noch nicht eingebaut (Kandidaten): Peirce-Quinkunx / Quadrat↔Kreis
 (braucht Jacobi-elliptische Funktionen), Grenzmengen Kleinscher Gruppen
 (Indra's Pearls; als Faltung zu teuer), Farris-Rosetten mit Farbdrehung.
 
-## 7. Weiterdenken
+## 7. Ideenkatalog (Runde 3) — Kette oder Einzelshader?
+
+**Faustregel:** In die Kette gehört, was eine *stetige* Abbildung uv → uv
+ist (Spiegelungen, konforme/analytische Abbildungen, Summen glatter
+Funktionen, beschränkte Verdrehungen). Was diskrete Entscheidungen je
+Kachel braucht (welche Truchet-Kachel, welche Voronoi-Zelle, welcher
+Penrose-Rhombus) oder einen Zustand über die Zeit (Simulation), gehört als
+eigener Shader gebaut — in der Kette würde es Nähte oder Sprünge erzeugen.
+Glatt, aber stark stauchend (Julia, Newton, Tangens, apollonisch) darf in
+die Kette, aber nur mit wenigen Iterationen: hinter einer schon stauchenden
+Stufe wird es sonst Grauschleier (die Mip-Mittelung glättet die Spitzen weg).
+
+| # | Idee | Einordnung | Stand |
+|---|---|---|---|
+| 1 | Blaschke-Produkt (Scheibe wickelt sich um wandernde Nullstellen) | Kette A | ✔ |
+| 2 | Parabolische Möbius-Strömung (Kreise durch einen Punkt) | Kette A | ✔ |
+| 3 | Elliptische Koordinaten (konfokale Ellipsen/Hyperbeln) | Kette A | ✔ |
+| 4 | tan z (Streifen voller Kugelbilder) | Kette A | ✔ |
+| 5 | Newton-Fraktal z³ = w (2–3 Schritte) | Kette A | ✔ |
+| 6 | Julia-Abbildung z² + c, c wandert | Kette A | ✔ |
+| 7 | Kugel-Kaleidoskop (Polyedergruppe auf der Riemann-Kugel) | Kette A | ✔ |
+| 8 | Quasikristall 5/7-zählig (de Bruijn) | Kette A | ✔ |
+| 9 | Sierpiński-Faltung | Kette B | ✔ |
+| 10 | Gespiegelte Potenz z^α (α wandert) | Kette C | ✔ |
+| 11 | Wirbelstraße (Punktwirbel, beschränkt) | Kette D | ✔ |
+| 12 | Curl-Rauschen (divergenzfrei) | Kette D | ✔ |
+| 13 | Farris pg / pgg (Gleitspiegelungen — als Faltung unmöglich) | Kette A | ✔ |
+| 14 | Invertiertes Gitter (Blasenwelt je Zelle) | 3D-Raum | ✔ |
+| 15 | Log-sphärischer 3D-Droste (Schalen) | 3D-Raum | ✔ |
+| 16 | Hyperbolische Wabe in der Poincaré-Kugel | 3D-Kern | ✔ |
+| 17 | Escher-Droste, Farris p4/p3/p6/p4m, Band, Quinkunx, Apollonisch, Rosette, Loxodrom, Riemann | Kette | ✔ (früher) |
+| 18 | Weitere Farris-Gruppen: cm, cmm, p31m, p3m1, p4g (Wellensätze) | Kette A (Untervarianten) | offen, billig |
+| 19 | Farris-Friese (7 Friesgruppen, endloses Band) | Kette A | offen |
+| 20 | Farris-Kugelmuster (Ikosaeder-Farbdrehung auf der Kugel) | Kette A | offen |
+| 21 | Weierstraß-℘ (doppelt periodisch, Dreiecksgitter) über Theta-Reihen | Kette A | offen (Theta-Code liegt schon vor) |
+| 22 | Jacobi sn-Tapete direkt (ohne Kugel) | Kette A | offen, billig |
+| 23 | Halbebenen-/Klein-Modell der hyperbolischen Ebene | Kette A (Varianten) | offen |
+| 24 | Kochsche Schneeflocke als Faltung | Kette B | offen |
+| 25 | Steiner-Ketten / Pappus-Kette (Kreisinversion + Kaleidoskop) | Kette B | offen |
+| 26 | Kármán-Straße mit Wirbelablösung (zeitabhängige Pfade) | Kette D | offen |
+| 27 | Tonnen-/Kissenverzeichnung, Fischauge | Kette C | offen, schwach allein |
+| 28 | Kugelflächenfunktionen Y_lm als Kugel-Beule | Kette A | offen |
+| 29 | Truchet-Kacheln (Bögen, Labyrinthe) mit Foto in den Bändern | **Einzelshader** | offen |
+| 30 | Voronoi-Zellen, jede mit eigenem Kaleidoskop | **Einzelshader** | offen |
+| 31 | Penrose-Parkett exakt (de-Bruijn-Pentagitter), Foto je Rhombus | **Einzelshader** | offen |
+| 32 | Hilbert-/Peano-Kurve als Bildpfad | **Einzelshader** | offen |
+| 33 | Reaktion–Diffusion mit Foto als Futter | **Einzelshader** (GpuSims) | offen |
+| 34 | Foto-Advektion in einer Fluid-Simulation | **Einzelshader** (GpuSims) | offen |
+| 35 | Hopf-Faserung (Fasern als verschlungene Tori, Foto als Farbe) | **Einzelshader 3D** | offen |
+| 36 | Quaternionen-Julia im 4D-Schnitt | **Einzelshader 3D** | offen |
+| 37 | Mandelbulb mit Farbkette | **Einzelshader 3D** (eigene DE) | offen |
+| 38 | Pseudo-Kleinian mit eigener Abstandsformel (Knighty) | 3D-Kern | offen |
+| 39 | Torus-Raum (Welt um einen Torus gewickelt) | 3D-Raum | offen |
+| 40 | {4,3,5}-Honigwabe exakt (statt Näherung) | 3D-Kern | offen |
+| 41 | Gyroid-verzerrter Raum (Verschiebung längs des Gyroid-Gradienten) | 3D-Raum | offen |
+| 42 | Zwei Ketten mischen (Kette A als Maske für Kette B) | Labor-Erweiterung | offen |
+| 43 | Kette als Partikelströmung (LIC gibt es schon, echte Partikel nicht) | Einzelshader | offen |
+
+**Stichproben dieser Runde:** alle Klassen einzeln gerendert; Blaschke und
+Julia lasen zu kleine Fotoausschnitte, invertiertes Gitter zeigte nur ein
+„Fenster“ (die äußere Welt fiel in eine Zelle), 3D-Droste hatte zu kleine
+Zellen — alle nachgebessert. Bildraten: 117 fps (2D, teuerste Ketten mit
+Strömungsstil), 110 fps (3D: Blasenwelt + hyperbolische Wabe + Relief +
+Volumentextur).
+
+**Musikgesteuerte Überblendzeit:** Überblendungen haben keine feste Dauer
+mehr. Die Grundlänge steht in Beats (bei festem Beat im echten Tempo, 4 Takte
+bei 120 BPM = 8 s), der Fortschritt läuft mit einer Musikgeschwindigkeit aus
+Kurzzeit-Energie und Spektralfluss (0,25–2,5×) — ruhige Passagen lassen eine
+Überblendung kriechen, Ausbrüche beschleunigen sie; Haltezeiten ebenso.
+
+Weitere Quellen dieser Runde:
+[Visualising complex functions](https://cp4space.hatsya.com/2013/01/27/visualising-complex-functions/),
+[Image Warping Using Conformal Mapping](https://demonstrations.wolfram.com/ImageWarpingUsingConformalMapping/),
+[Bridges 2023: Conformal maps and tilings](https://archive.bridgesmathart.org/2023/bridges2023-113.pdf),
+[Quasicrystals — the impact of de Bruijn](https://ar5iv.arxiv.org/html/1306.6698),
+[Penrose tiling](https://en.wikipedia.org/wiki/Penrose_tiling),
+[Truchet tiles](https://www.wayline.io/learn/shaders/10).
+
+## 8. Weiterdenken
 
 * **Ketten als FX-Stufe (größter Hebel, braucht deine Entscheidung)**: Jede
   Szene läuft durch eine CombineShader-Stufe, die dieselbe Schnittstelle hat
