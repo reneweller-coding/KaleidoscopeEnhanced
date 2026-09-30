@@ -399,7 +399,8 @@ vec2 tDrosteSpiral(vec2 uv, vec2 c, float K, float zoom)
 // that symmetry; their value at a point picks the photo's pixel.  Three waves
 // whose amplitudes and phases drift with time: the wallpaper keeps changing
 // while keeping its symmetry.  kind 0: p4 (square), 1: p3 (hexagonal),
-// 2: p6, 3: p4m (square with mirrors).
+// 2: p6, 3: p4m (square with mirrors), 4: pg, 5: pgg (glide reflections --
+// impossible as a fold, natural as a wave function).
 vec2 cexpi(float a) { return vec2(cos(a), sin(a)); }
 vec2 cmul(vec2 a, vec2 b) { return vec2(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x); }
 vec2 farrisWave(vec2 X, int kind, float n, float m)
@@ -410,6 +411,12 @@ vec2 farrisWave(vec2 X, int kind, float n, float m)
         vec2 w = cexpi(TAU * (n * Y.x + m * Y.y)) + cexpi(TAU * (m * Y.x - (n + m) * Y.y)) + cexpi(TAU * (-(n + m) * Y.x + n * Y.y));
         if (kind == 2) w += cexpi(-TAU * (n * Y.x + m * Y.y)) + cexpi(-TAU * (m * Y.x - (n + m) * Y.y)) + cexpi(-TAU * (-(n + m) * Y.x + n * Y.y));
         return w / (kind == 2 ? 6.0 : 3.0);
+    }
+    if (kind == 4 || kind == 5) {                               // glide groups on a rectangular lattice
+        float sg = mod(n, 2.0) < 0.5 ? 1.0 : -1.0;                 // (-1)^n: the half-step of the glide
+        vec2 w = cexpi(TAU * (n * X.x + m * X.y * 0.7)) + sg * cexpi(TAU * (n * X.x - m * X.y * 0.7));
+        if (kind == 5) w += cexpi(-TAU * (n * X.x + m * X.y * 0.7)) + sg * cexpi(TAU * (-n * X.x + m * X.y * 0.7));
+        return w / (kind == 5 ? 4.0 : 2.0);
     }
     vec2 w = cexpi(TAU * (n * X.x + m * X.y)) + cexpi(TAU * (-m * X.x + n * X.y))
            + cexpi(TAU * (-n * X.x - m * X.y)) + cexpi(TAU * (m * X.x - n * X.y));
@@ -491,6 +498,153 @@ vec2 tRosette(vec2 uv, vec2 c, float p, float k, float t)
            + cmul(cexpi(-t * 0.4 + 1.0), rosetteTerm(r, th, d2, abs(d2))) * 0.8
            + cmul(cexpi(t * 0.3 + 2.0), rosetteTerm(r, th, k, abs(k) + 2.0)) * 0.6;
     return c + f * 0.6;                                         // audit: 0.3 read too small a patch (flat, grey)
+}
+// ---- idea round 3 ----
+// Blaschke product: z * prod (z - a)/(1 - conj(a) z) -- the unit disk wrapped
+// onto itself several times around zeros that wander; conformal, continuous
+// (its poles lie outside the disk and only fold far picture in).
+vec2 cdiv(vec2 a, vec2 b) { return vec2(a.x * b.x + a.y * b.y, a.y * b.x - a.x * b.y) / max(dot(b, b), 1e-8); }
+vec2 tBlaschke(vec2 uv, vec2 c, float n, float t)
+{
+    vec2 z = (uv - c) * 2.2, B = z;
+    for (int k = 0; k < 4; ++k) {
+        if (float(k) >= n) break;
+        float fk = float(k);
+        vec2 a = 0.55 * vec2(cos(t * (0.3 + 0.07 * fk) + fk * 2.1), sin(t * (0.23 + 0.05 * fk) + fk * 1.3));
+        B = cmul(B, cdiv(z - a, vec2(1.0, 0.0) - cmul(vec2(a.x, -a.y), z)));
+    }
+    return c + B * 0.9;                                         // spot check: 0.45 read too small a patch
+}
+// Parabolic stream: in inverted coordinates a plain translation -- circles all
+// touching at one point, the picture streaming through them (a parabolic Moebius flow).
+vec2 tParabolic(vec2 uv, vec2 c, float scale, float travel)
+{
+    vec2 z = (uv - c) * scale;
+    vec2 w = vec2(z.x, -z.y) / max(dot(z, z), 1e-5);
+    return w * 0.3 + vec2(travel, 0.0);
+}
+// Elliptic coordinates around two foci: confocal ellipses and hyperbolas.
+// nu uses acos without the sign of y (mirror-symmetric, hence continuous).
+vec2 tElliptic(vec2 uv, vec2 c, float f, float travel)
+{
+    vec2 d = uv - c;
+    float r1 = length(d + vec2(f, 0.0)), r2 = length(d - vec2(f, 0.0));
+    float mu = log(max((r1 + r2) / (2.0 * f), 1.0) + sqrt(max(pow((r1 + r2) / (2.0 * f), 2.0) - 1.0, 0.0)));
+    float nu = acos(clamp((r1 - r2) / (2.0 * f), -1.0, 1.0));
+    return vec2(mu * 0.6 - travel, nu / 3.14159265 * 2.0);
+}
+// tan z: the plane in stripes, each a whole sphere of picture between two poles.
+vec2 tTanLattice(vec2 uv, vec2 c, float k)
+{
+    vec2 z = (uv - c) * k;
+    float den = cos(2.0 * z.x) + cosh(2.0 * z.y);
+    return c + vec2(sin(2.0 * z.x), sinh(2.0 * z.y)) / max(den, 1e-4) * 0.25;
+}
+// Newton's method for z^3 = w, a few steps: the picture folded along the
+// fractal borders of the three basins (a rational map: continuous off its poles).
+vec2 tNewton(vec2 uv, vec2 c, float steps, float t)
+{
+    vec2 z = (uv - c) * 2.4, w = cexpi(t * 0.3);
+    for (int i = 0; i < 4; ++i) {
+        if (float(i) >= steps) break;
+        vec2 z2 = cmul(z, z);
+        z -= cdiv(cmul(z2, z) - w, 3.0 * z2);
+    }
+    return c + z * 0.4;
+}
+// Julia map: z -> z^2 + k a few times, k wandering near the Mandelbrot border.
+vec2 tJulia(vec2 uv, vec2 c, float steps, float t)
+{
+    vec2 z = (uv - c) * 2.4;
+    vec2 k = 0.7885 * cexpi(t * 0.15 + 0.4);
+    for (int i = 0; i < 4; ++i) {
+        if (float(i) >= steps) break;
+        z = cmul(z, z) + k;
+    }
+    return c + z * 0.35;
+}
+// The polyhedral fold (Knighty) on the Riemann sphere: the plane lifted onto the
+// turning sphere, folded by the tetrahedral/octahedral/icosahedral mirrors,
+// projected back -- a spherical kaleidoscope with 12..120 copies.
+vec3 polyFold(vec3 p, float n)
+{
+    float cospin = cos(3.14159265 / n), scospin = sqrt(max(0.75 - cospin * cospin, 1e-4));
+    vec3 nc = vec3(-0.5, -cospin, scospin);
+    for (int i = 0; i < 5; ++i) {
+        if (float(i) >= n) break;
+        p.xy = abs(p.xy);
+        p -= 2.0 * min(0.0, dot(p, nc)) * nc;
+    }
+    return p;
+}
+vec2 tSphereKaleido(vec2 uv, vec2 c, float n, float a1, float a2)
+{
+    vec2 z = (uv - c) * 2.5;
+    float s = dot(z, z);
+    vec3 P = vec3(2.0 * z, s - 1.0) / (s + 1.0);
+    P.yz = rot2(a1) * P.yz;
+    P.xz = rot2(a2) * P.xz;
+    P = polyFold(P, n);
+    return c + P.xy / max(1.0 - P.z, 1e-3) * 1.2;
+}
+// Quasicrystal (de Bruijn): n plane waves in n directions -- a pattern with
+// n-fold symmetry that never repeats; phases drift, the pattern breathes.
+vec2 tQuasi(vec2 uv, vec2 c, float n, float k, float t)
+{
+    vec2 x = (uv - c) * k, f = vec2(0.0);
+    for (int j = 0; j < 7; ++j) {
+        if (float(j) >= n) break;
+        float a = 3.14159265 * float(j) / n;
+        f += cexpi(dot(x, vec2(cos(a), sin(a))) * 6.2831853 + t * (0.5 + 0.13 * float(j)));
+    }
+    return c + f / n * 0.6;
+}
+// Sierpinski fold: the three mirrors of a triangle, then scale 2 -- a
+// continuous iterated function system (every step a reflection or a scale).
+vec2 tSierpinski(vec2 uv, vec2 c, float iters, float turn)
+{
+    vec2 q = (uv - c) * 2.0;
+    vec2 n1 = vec2(-0.8660254, 0.5), n2 = vec2(0.8660254, 0.5);
+    for (int i = 0; i < 4; ++i) {
+        if (float(i) >= iters) break;
+        q.x = abs(q.x);
+        q -= 2.0 * min(0.0, dot(q, n1)) * n1;
+        q -= 2.0 * min(0.0, dot(q, n2)) * n2;
+        q = rot2(turn) * q;
+        q = q * 2.0 - vec2(0.0, 1.0);
+    }
+    return c + q * 0.12;
+}
+// Mirrored power: z^alpha with the angle mirrored first (|arg z|), so any
+// alpha -- also a drifting one -- stays continuous.
+vec2 tPowerMirror(vec2 uv, vec2 c, float alpha)
+{
+    vec2 d = (uv - c) * 2.0;
+    float r = length(d), a = abs(atan(d.y, d.x));
+    return c + pow(r, alpha) * vec2(cos(alpha * a), sin(alpha * a)) * 0.45;
+}
+// Vortex street: four point vortices of alternating spin drifting past; each
+// turns the picture near it by a bounded angle (a smooth, divergence-free flow).
+vec2 tVortexStreet(vec2 uv, float strength, float t)
+{
+    for (int k = 0; k < 4; ++k) {
+        float fk = float(k);
+        vec2 pk = vec2(0.5 + 0.45 * sin(t * 0.21 + fk * 1.57), 0.5 + (mod(fk, 2.0) - 0.5) * 0.35 + 0.1 * sin(t * 0.3 + fk));
+        vec2 d = uv - pk;
+        float g = strength * (mod(fk, 2.0) < 0.5 ? 1.0 : -1.0) * exp(-dot(d, d) / 0.03);
+        uv = pk + rot2(g) * d;
+    }
+    return uv;
+}
+// Curl flow: displaced along the curl of a noise field -- divergence-free, so
+// the picture swirls like a fluid without bunching up.
+vec2 tCurl(vec2 uv, float strength, float t)
+{
+    const float e = 0.01;
+    vec2 q = uv * 3.0 + vec2(0.3 * t, -0.2 * t);
+    float a = fbm3(q + vec2(0.0, e)), b = fbm3(q - vec2(0.0, e));
+    float c1 = fbm3(q + vec2(e, 0.0)), d1 = fbm3(q - vec2(e, 0.0));
+    return uv + strength * vec2(a - b, -(c1 - d1)) / (2.0 * e) * 0.02;
 }
 // Bipolar coordinates around two foci at c -/+ (f, 0): sigma (the angle the
 // foci subtend) across, tau (log ratio of the distances) along -- the picture
@@ -643,6 +797,37 @@ vec3 f4DLattice(vec3 p, float c, float a1, float a2, float w)
     q.yw = rot2(a2) * q.yw;
     q = c * (abs(mod(q / c - 1.0, 4.0) - 2.0) - 1.0);
     return q.xyz;                                            // a projection: distances never grow
+}
+// Log-spherical Droste in 3D: around a centre the radius is folded in log
+// scale (mirrored triangle wave), so the world repeats inward and outward in
+// shells at every scale; gDR carries the local scale.
+vec3 fLogSphere(vec3 p, vec3 c, float K, float zoom)
+{
+    vec3 d = p - c;
+    float r = max(length(d), 1e-4), lk = log(K);
+    float u = log(r) / lk - zoom;
+    float tri = abs(fract(u * 0.5) * 2.0 - 1.0);
+    float rn = exp(tri * lk) * 0.6;
+    gDR *= rn / r;
+    return d / r * rn;
+}
+// Hyperbolic honeycomb in the Poincare ball: the octahedral mirrors plus the
+// sphere orthogonal to the unit ball (centre k(1,1,1), R^2 = |c|^2 - 1),
+// repeated -- cells shrinking without end toward the ball's rim.
+vec3 fHyperBall(vec3 p, float k)
+{
+    vec3 c = vec3(k);
+    float R2 = dot(c, c) - 1.0;
+    for (int i = 0; i < 7; ++i) {
+        p = abs(p);
+        if (p.x < p.y) p.xy = p.yx;
+        if (p.x < p.z) p.xz = p.zx;
+        if (p.y < p.z) p.yz = p.zy;
+        vec3 d = p - c;
+        float dd = dot(d, d);
+        if (dd < R2) { float f = R2 / dd; p = c + d * f; gDR *= f; }
+    }
+    return p;
 }
 // Twist around z (keep k small: it stretches space).
 vec3 fTwistZ(vec3 p, float k) { vec2 q = rot2(k * p.z) * p.xy; return vec3(q, p.z); }

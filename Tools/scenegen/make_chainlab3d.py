@@ -59,8 +59,8 @@ vec3 fHexXY(vec3 p, float cell)
 // (if-chains, not const arrays: NVIDIA returned entry 0 for three arrays
 // indexed in one function -- the body never changed):
 // the music's energy picks the region of the world too.
-int ordsp(int i) { if (i == 0) return 0; if (i == 1) return 3; if (i == 2) return 6; if (i == 3) return 7; if (i == 4) return 4; if (i == 5) return 2; if (i == 6) return 5; return 1; }   // lattice, octahedral lattice, hexagons, 4D-rotated lattice, turning, twisted, helix, polar ring tunnel
-int ordco(int i) { if (i == 0) return 0; if (i == 1) return 4; if (i == 2) return 8; if (i == 3) return 3; if (i == 4) return 6; if (i == 5) return 1; if (i == 6) return 7; if (i == 7) return 2; return 5; }   // none, plane folds, polyhedral kaleidoscope, sphere-inversion box, Kleinian, tetra KIFS, icosa KIFS, octa KIFS, Menger
+int ordsp(int i) { if (i == 0) return 0; if (i == 1) return 3; if (i == 2) return 6; if (i == 3) return 7; if (i == 4) return 9; if (i == 5) return 4; if (i == 6) return 2; if (i == 7) return 5; if (i == 8) return 8; return 1; }   // lattice, octa lattice, hexagons, 4D lattice, log-spherical Droste, turning, twisted, helix, inverted lattice, polar ring tunnel
+int ordco(int i) { if (i == 0) return 0; if (i == 1) return 4; if (i == 2) return 8; if (i == 3) return 3; if (i == 4) return 9; if (i == 5) return 6; if (i == 6) return 1; if (i == 7) return 7; if (i == 8) return 2; return 5; }   // none, plane folds, polyhedral, sphere-inversion box, hyperbolic honeycomb, Kleinian, tetra, icosa, octa, Menger
 int ordbo(int i) { if (i == 0) return 1; if (i == 1) return 2; if (i == 2) return 3; if (i == 3) return 5; if (i == 4) return 6; if (i == 5) return 0; return 4; }   // balls, tori, gyroid, Schwarz P, Schwarz D, blocks, crosses
 // The app walks the structure too (EffectShader::stepChainWalk): (shown, target, fade).
 uniform vec3 walkSpace, walkCore, walkBody;
@@ -69,8 +69,8 @@ uniform vec3 walkSpace, walkCore, walkBody;
 float fieldK(vec3 p, float xs, float xc, float xb)
 {
     gDR = 1.0;
-    int ks = ordsp(pickStage(xs, 8)); float vs = subVar(xs, 8);
-    int kc = ordco(pickStage(xc, 9)); float vc = subVar(xc, 9);
+    int ks = ordsp(pickStage(xs, 10)); float vs = subVar(xs, 10);
+    int kc = ordco(pickStage(xc, 10)); float vc = subVar(xc, 10);
     int kb = ordbo(pickStage(xb, 7)); float vb = subVar(xb, 7);
     vec3 q;
     if (ks == 0) q = fRepeat(p, vec3(1.2 + 0.4 * vs));
@@ -82,7 +82,12 @@ float fieldK(vec3 p, float xs, float xc, float xb)
         q = fPolarZ(fTwistZ(p, 0.3 + 0.2 * vs), 5.0 + 2.0 * floor(vs * 2.99)); q.x -= 2.0; q = zRepeat(q, 0.7);
     }
     else if (ks == 6) q = zRepeat(fHexXY(p, 2.2 + 0.6 * vs), 1.2);
-    else q = f4DLattice(p, 1.3 + 0.3 * vs, 0.35 * sin(gT * 0.04) + gRot * 0.3, 0.25 * sin(gT * 0.031 + 1.0), 0.6 * sin(gT * 0.023));   // 4D-rotated lattice        // hexagonal lattice: a honeycomb of pillars
+    else if (ks == 8) {                                     // inverted lattice: lattice, inversion per cell, lattice again
+        q = fRepeat(p, vec3(1.7 + 0.3 * vs)); q = fInvert(q + vec3(0.3, 0.2, 0.0), 1.4);   // in every cell a sphere inversion
+        q = fRepeat(fScale(q, 1.6, vec3(0.0)), vec3(1.3));                                   // ... of a lattice: a bubble world per cell
+    }
+    else if (ks == 9) q = fRepeat(fScale(fLogSphere(p, gCam + vec3(0.0, 0.0, 6.0), 2.5 + vs, gT * 0.05), 2.5, vec3(0.0)), vec3(1.4));   // 3D Droste shells
+    else if (ks == 7) q = f4DLattice(p, 1.3 + 0.3 * vs, 0.35 * sin(gT * 0.04) + gRot * 0.3, 0.25 * sin(gT * 0.031 + 1.0), 0.6 * sin(gT * 0.023));   // 4D-rotated lattice        // hexagonal lattice: a honeycomb of pillars
     float bs = 1.0;                                         // body size in the core's space
     if (kc == 1) {
         for (int i = 0; i < 3; ++i) { q = fTetra(q); q = fRot(q, vec3(1.0, 1.0, 0.0), gRot * 0.5 + 0.3 * vc); q = fScale(q, 1.7, vec3(0.45)); }
@@ -126,6 +131,11 @@ float fieldK(vec3 p, float xs, float xc, float xb)
         // sub-variant) around each lattice cell, the body pushed off the axis
         q = fPoly(q, 3.0 + floor(vc * 2.99)); q.z -= 0.35;
         bs = 0.7;
+    }
+    else if (kc == 9) {
+        // hyperbolic honeycomb: the cell mapped into the Poincare ball, folded
+        q = fHyperBall(q * 0.8, 0.85 + 0.1 * vc) / 0.8;
+        bs = 0.45;
     }
     gP = q;
     float th = 1.0 + 0.3 * gSpread;
