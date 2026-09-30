@@ -291,7 +291,8 @@ uniform vec3 walkO;
 vec2 applyStage(int k, vec2 uv) { return k == 0 ? stageA(uv) : k == 1 ? stageB(uv) : k == 2 ? stageC(uv) : stageD(uv); }
 vec2 runOrder(vec2 uv, int code)
 {
-    for (int pos = 0; pos < 4; ++pos) {
+    int n = loopN(4);
+    for (int pos = 0; pos < n; ++pos) {                     // not unrolled: the four stages are inlined once
         uv = applyStage((code >> (2 * pos)) & 3, uv);
         if (pos < 3) uv = mirrorUV(uv);
     }
@@ -302,15 +303,17 @@ vec2 runChain(vec2 uv)
     int o0 = pickStage(orderP, 24), o1 = o0;
     float f = 0.0;
     if (walkHost > 0.5 && walkAll()) { o0 = pickStage(walkO.x, 24); o1 = pickStage(walkO.y, 24); f = smoothstep(0.0, 1.0, walkO.z); }
-    gIdW = 1.0;
-    vec2 a = runOrder(uv, permCode(o0));
-    if (f > 0.0 && o1 != o0) {
-        float gi = gIdW;
+    // One loop over the one or two orders: the chain is inlined once.
+    int nOrd = (f > 0.0 && o1 != o0) ? loopN(2) : loopN(1);
+    vec2 a = uv, b = uv;
+    float g0 = 1.0, g1 = 1.0;
+    for (int k = 0; k < nOrd; ++k) {
         gIdW = 1.0;
-        vec2 b = runOrder(uv, permCode(o1));
-        gIdW = mix(gi, gIdW, f);
-        a = morphMix(a, b, f);
+        vec2 r = runOrder(uv, permCode(k == 0 ? o0 : o1));
+        if (k == 0) { a = r; g0 = gIdW; } else { b = r; g1 = gIdW; }
     }
+    gIdW = g0;
+    if (nOrd > 1) { gIdW = mix(g0, g1, f); a = morphMix(a, b, f); }
     // Never an empty chain: as the stages together approach 'none' -- or only
     // weak classes that leave the photo nearly bare (gIdW) -- a calm six-fold
     // kaleidoscope fades in -- the bare photo is never shown.
@@ -339,7 +342,7 @@ void main()
     float m = luma(ph);
     // Colour field: follows the chain's own (mirrored, hence seamless) coordinates
     // and wanders with the music; the photo's luma keeps the detail.
-    vec2 cm = mirrorUV(chain(p));
+    vec2 cm = gChainM;                                          // the one chain evaluation (imgChain)
     float h = hueP * 0.159 + 0.9 * cm.x + 0.6 * cm.y + 0.25 * m + 0.12 * audioPhase + 0.004 * sceneTime + 0.3 * mode;
     vec3 field = hsv2rgb(vec3(fract(h), 0.6 + 0.35 * swell, 1.0)) * (0.35 + 1.3 * m);
     vec3 photo = max((ph - m) * 1.4 + m, 0.0);
@@ -385,7 +388,7 @@ void main()
         float acc = 0.0, wsum = 0.0;
         for (int k = -6; k <= 6; ++k) {
             float fk = float(k);
-            float nz = noise2(mirrorUV(chain(p + fd * fk * hpx)) * 70.0);
+            float nz = noise2((gChainM + (gChainDx * fd.x + gChainDy * fd.y) * fk * 3.0) * 70.0);   // the chain linearised along the flow
             float w = 1.0 + 0.8 * sin(fk * 0.7 - ph);
             acc += nz * w; wsum += w;
         }

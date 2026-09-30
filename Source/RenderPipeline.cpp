@@ -13,6 +13,7 @@
 
 #include "shader_setup.h"
 #include <set>
+#include <cstring>
 #include <string>
 #include "RenderPipeline.h"
 #include "PlatformQt.h"
@@ -1306,9 +1307,39 @@ void RenderPipeline::beginFrame( const AudioFeatures &audio )
 				s_warmLabel = QStringLiteral( "mesh " ) + QString::fromLocal8Bit( s->fragmentName() );
 				warmed = true; break;
 			}
+		// Background compile: the driver builds on its own threads; a shader
+		// is only "compiled" here once its program waits in the cache (then
+		// ensureCompiled() is a cache hit and costs nothing).  The scene and
+		// FX that come NEXT go first -- they are known one fade in advance.
+		// Up to four builds run at a time.  Without the driver extension the
+		// old one-per-frame blocking path below runs unchanged.
+		if( !warmed && shaderPrebuildPoll() < 4 )
+		{
+			auto want = [&]( EffectShader *s ) -> bool {
+				if( !s || s->isCompiled() || !s->plainFragment() || !s->fragmentFile() ) return false;
+				if( strstr( s->fragmentFile(), "Scene3D" ) ) return false;
+				return shaderPrebuildStart( s->fragmentFile() );
+			};
+			int started = 0;
+			if( m_scheduler.nextTexture() < m_effectTextures.size() && want( m_effectTextures[m_scheduler.nextTexture()] ) ) ++started;
+			if( m_scheduler.nextFx() < m_effectFx.size() && want( m_effectFx[m_scheduler.nextFx()] ) ) ++started;
+			for( EffectShader *s : m_effectTextures ) { if( started >= 2 ) break; if( want( s ) ) ++started; }
+			for( EffectShader *s : m_effectFx )       { if( started >= 2 ) break; if( want( s ) ) ++started; }
+		}
 		if( !warmed )
 			for( EffectShader *s : m_effectTextures )
-				if( !s->isCompiled() )
+				if( !s->isCompiled() && s->plainFragment() && s->fragmentFile() && !strstr( s->fragmentFile(), "Scene3D" )
+				    && shaderPrebuildStart( s->fragmentFile() ) )
+				{
+					if( !shaderPrebuildReady( s->fragmentFile() ) ) continue;   // still building in the background
+					s->ensureCompiled();      // cache hit: instant
+					s_warmLabel = QStringLiteral( "glsl " ) + QString::fromLocal8Bit( s->fragmentName() );
+					warmed = true;
+					break;
+				}
+		if( !warmed )
+			for( EffectShader *s : m_effectTextures )
+				if( !s->isCompiled() && !( s->plainFragment() && s->fragmentFile() && !strstr( s->fragmentFile(), "Scene3D" ) && shaderPrebuildStart( s->fragmentFile() ) ) )
 				{
 					s->ensureCompiled();      // GLSL only; a mesh build defers itself
 					s_warmLabel = QStringLiteral( "glsl " ) + QString::fromLocal8Bit( s->fragmentName() );
@@ -1319,6 +1350,10 @@ void RenderPipeline::beginFrame( const AudioFeatures &audio )
 			for( EffectShader *s : m_effectFx )
 				if( !s->isCompiled() )
 				{
+					// a background build in flight: wait for it instead of blocking
+					if( s->plainFragment() && s->fragmentFile() && shaderPrebuildStart( s->fragmentFile() )
+					    && !shaderPrebuildReady( s->fragmentFile() ) )
+						continue;
 					s->ensureCompiled();
 					s_warmLabel = QStringLiteral( "fx " ) + QString::fromLocal8Bit( s->fragmentName() );
 					break;

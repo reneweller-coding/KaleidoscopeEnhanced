@@ -25,6 +25,13 @@
  * @return The linked, currently-bound (glUseProgram already called) program id.
  */
 GLuint setShaders( const char *vert_source, const char * frag_source );
+// Background build of a setShaders() program (driver-parallel compile, see
+// shader_setup.cpp): start never blocks; poll hands finished programs to the
+// program cache, so the later setShaders() call is a cache hit.  Start returns
+// false when the driver cannot compile in the background (then nothing changed).
+bool shaderPrebuildStart( const char *frag_source );
+int  shaderPrebuildPoll();          ///< Collects finished background builds; returns how many are still running.
+bool shaderPrebuildReady( const char *frag_source );   ///< True if setShaders() for this file would be a cache hit.
 // Vertex+fragment pair (3D scenes) — actually attaches the vertex shader.
 /**
  * @brief Builds a vertex+fragment program where the vertex shader is actually the caller's own file, not the shared fullscreen one.

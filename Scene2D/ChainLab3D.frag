@@ -1204,20 +1204,23 @@ vec2 tJoukowski(vec2 uv, vec2 c, float R, float scale)
 vec2 chain(vec2 p);
 // The chain's photo read with a seam-proof footprint (per axis the smaller of
 // the two one-sided differences) and the screen-space luma gradient.
+// A loop count the compiler cannot see through (it depends on a uniform), so
+// the loop is NOT unrolled and its body -- a whole chain -- is inlined once.
+int loopN(int n) { return n + int(min(interpolation, 0.0)); }
+vec2 gChainM, gChainDx, gChainDy;    // mirrored chain coordinate of this pixel and its derivatives per pixel
 vec3 imgChain(vec2 p, float bias, out vec2 grad)
 {
-    float h = 1.5 / resolution.y;
     vec2 c0 = chain(p);
-    vec2 cx1 = chain(p + vec2(h, 0.0)), cx0 = chain(p - vec2(h, 0.0));
-    vec2 cy1 = chain(p + vec2(0.0, h)), cy0 = chain(p - vec2(0.0, h));
     vec2 m0 = mirrorUV(c0);
-    float fx = min(length(mirrorUV(cx1) - m0), length(m0 - mirrorUV(cx0)));
-    float fy = min(length(mirrorUV(cy1) - m0), length(m0 - mirrorUV(cy0)));
-    float lod = clamp(log2(max(max(fx, fy) / 1.5 * 1024.0, 1.0)) + bias, 0.0, 9.0);
+    // Footprint from the screen derivatives of the MIRRORED coordinate: it is
+    // continuous over every seam of the chain, so one evaluation suffices
+    // (it used to be five, each an inlined copy of the whole chain).
+    vec2 dx = dFdx(m0), dy = dFdy(m0);
+    gChainM = m0; gChainDx = dx; gChainDy = dy;
+    float lod = clamp(log2(max(max(length(dx), length(dy)) * 1024.0, 1.0)) + bias, 0.0, 9.0);
     vec3 col = imgLod(c0, lod);
-    float lx = luma(imgLod(cx1, lod)) - luma(imgLod(cx0, lod));
-    float ly = luma(imgLod(cy1, lod)) - luma(imgLod(cy0, lod));
-    grad = vec2(lx, ly) * 0.5;                                  // luma change per 1.5 px
+    float l = luma(col);
+    grad = vec2(dFdx(l), dFdy(l)) * 1.5;                         // luma change per 1.5 px, as before
     return col;
 }
 

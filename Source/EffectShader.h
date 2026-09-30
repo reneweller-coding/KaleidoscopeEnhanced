@@ -149,6 +149,10 @@ public:
 		m_usesMandelbrot = -1;
 		m_usesSceneLod = -1;
 	}
+	/// @return The fragment shader file (for background builds).
+	const char *fragmentFile() const { return m_fragmentShaderFilename; }
+	/// @brief True if this effect builds with plain setShaders() (fullscreen fragment only); background builds apply only to those.
+	virtual bool plainFragment() const { return true; }
 	/// @return True once ensureCompiled() has successfully built the GL program.
 	bool isCompiled() const { return m_glReady; }
 

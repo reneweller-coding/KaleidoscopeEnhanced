@@ -1204,20 +1204,23 @@ vec2 tJoukowski(vec2 uv, vec2 c, float R, float scale)
 vec2 chain(vec2 p);
 // The chain's photo read with a seam-proof footprint (per axis the smaller of
 // the two one-sided differences) and the screen-space luma gradient.
+// A loop count the compiler cannot see through (it depends on a uniform), so
+// the loop is NOT unrolled and its body -- a whole chain -- is inlined once.
+int loopN(int n) { return n + int(min(interpolation, 0.0)); }
+vec2 gChainM, gChainDx, gChainDy;    // mirrored chain coordinate of this pixel and its derivatives per pixel
 vec3 imgChain(vec2 p, float bias, out vec2 grad)
 {
-    float h = 1.5 / resolution.y;
     vec2 c0 = chain(p);
-    vec2 cx1 = chain(p + vec2(h, 0.0)), cx0 = chain(p - vec2(h, 0.0));
-    vec2 cy1 = chain(p + vec2(0.0, h)), cy0 = chain(p - vec2(0.0, h));
     vec2 m0 = mirrorUV(c0);
-    float fx = min(length(mirrorUV(cx1) - m0), length(m0 - mirrorUV(cx0)));
-    float fy = min(length(mirrorUV(cy1) - m0), length(m0 - mirrorUV(cy0)));
-    float lod = clamp(log2(max(max(fx, fy) / 1.5 * 1024.0, 1.0)) + bias, 0.0, 9.0);
+    // Footprint from the screen derivatives of the MIRRORED coordinate: it is
+    // continuous over every seam of the chain, so one evaluation suffices
+    // (it used to be five, each an inlined copy of the whole chain).
+    vec2 dx = dFdx(m0), dy = dFdy(m0);
+    gChainM = m0; gChainDx = dx; gChainDy = dy;
+    float lod = clamp(log2(max(max(length(dx), length(dy)) * 1024.0, 1.0)) + bias, 0.0, 9.0);
     vec3 col = imgLod(c0, lod);
-    float lx = luma(imgLod(cx1, lod)) - luma(imgLod(cx0, lod));
-    float ly = luma(imgLod(cy1, lod)) - luma(imgLod(cy0, lod));
-    grad = vec2(lx, ly) * 0.5;                                  // luma change per 1.5 px
+    float l = luma(col);
+    grad = vec2(dFdx(l), dFdy(l)) * 1.5;                         // luma change per 1.5 px, as before
     return col;
 }
 
@@ -1409,83 +1412,95 @@ float walkFade(float kf) { return smoothstep(walkAll() ? 0.7 : 0.55, 1.0, fract(
 vec2 morphMix(vec2 a, vec2 b, float f) { return mix(mirrorUV(a), mirrorUV(b), f); }
 vec2 stageA(vec2 uv)
 {
+    // Decide first (the class shown, the class faded to, the fade), then
+    // evaluate: the class switch is inlined at most twice.
     int k0 = pickStage(chainAP, 43); float v0 = subVar(chainAP, 43);
-    if (!walks(1)) { gIdW *= (k0 <= 0 ? 1.0 : 0.0); return stageAk(uv, k0, v0); }
-    if (walkHost > 0.5 && walkAll()) {
-        float f = smoothstep(0.0, 1.0, walkA.z);
-        int j0 = pickStage(walkA.x, 43), j1 = pickStage(walkA.y, 43);
-        gIdW *= (j0 <= 0 ? 1.0 - f : 0.0) + (j1 <= 0 ? f : 0.0);
-        if (f <= 0.0) return stageAk(uv, j0, subVar(walkA.x, 43));
-        return morphMix(stageAk(uv, j0, subVar(walkA.x, 43)), stageAk(uv, j1, subVar(walkA.y, 43)), f);
+    int ka = k0, kb = k0; float va = v0, vb = v0, f = 0.0;
+    if (walks(1)) {
+        if (walkHost > 0.5 && walkAll()) {
+            f = smoothstep(0.0, 1.0, walkA.z);
+            ka = pickStage(walkA.x, 43); va = subVar(walkA.x, 43);
+            kb = pickStage(walkA.y, 43); vb = subVar(walkA.y, 43);
+        } else {
+            float kf = walkPos(1), c = floor(kf);
+            walkPick(c, k0, v0, 43, 1.3, ka, va);
+            walkPick(c + 1.0, k0, v0, 43, 1.3, kb, vb);
+            f = walkFade(kf);
+        }
     }
-    float kf = walkPos(1), c = floor(kf);
-    int i0, i1; float w0, w1;
-    walkPick(c, k0, v0, 43, 1.3, i0, w0);
-    walkPick(c + 1.0, k0, v0, 43, 1.3, i1, w1);
-    float f = walkFade(kf);
-    gIdW *= (i0 <= 0 ? 1.0 - f : 0.0) + (i1 <= 0 ? f : 0.0);
-    if (f <= 0.0) return stageAk(uv, i0, w0);
-    return morphMix(stageAk(uv, i0, w0), stageAk(uv, i1, w1), f);
+    gIdW *= (ka <= 0 ? 1.0 - f : 0.0) + (kb <= 0 ? f : 0.0);
+    vec2 r = stageAk(uv, ka, va);
+    if (f > 0.0) r = morphMix(r, stageAk(uv, kb, vb), f);
+    return r;
 }
 vec2 stageB(vec2 uv)
 {
+    // Decide first (the class shown, the class faded to, the fade), then
+    // evaluate: the class switch is inlined at most twice.
     int k0 = pickStage(chainBP, 16); float v0 = subVar(chainBP, 16);
-    if (!walks(2)) { gIdW *= (k0 <= 1 ? 1.0 : 0.0); return stageBk(uv, k0, v0); }
-    if (walkHost > 0.5 && walkAll()) {
-        float f = smoothstep(0.0, 1.0, walkB.z);
-        int j0 = pickStage(walkB.x, 16), j1 = pickStage(walkB.y, 16);
-        gIdW *= (j0 <= 1 ? 1.0 - f : 0.0) + (j1 <= 1 ? f : 0.0);
-        if (f <= 0.0) return stageBk(uv, j0, subVar(walkB.x, 16));
-        return morphMix(stageBk(uv, j0, subVar(walkB.x, 16)), stageBk(uv, j1, subVar(walkB.y, 16)), f);
+    int ka = k0, kb = k0; float va = v0, vb = v0, f = 0.0;
+    if (walks(2)) {
+        if (walkHost > 0.5 && walkAll()) {
+            f = smoothstep(0.0, 1.0, walkB.z);
+            ka = pickStage(walkB.x, 16); va = subVar(walkB.x, 16);
+            kb = pickStage(walkB.y, 16); vb = subVar(walkB.y, 16);
+        } else {
+            float kf = walkPos(2), c = floor(kf);
+            walkPick(c, k0, v0, 16, 2.9, ka, va);
+            walkPick(c + 1.0, k0, v0, 16, 2.9, kb, vb);
+            f = walkFade(kf);
+        }
     }
-    float kf = walkPos(2), c = floor(kf);
-    int i0, i1; float w0, w1;
-    walkPick(c, k0, v0, 16, 2.9, i0, w0);
-    walkPick(c + 1.0, k0, v0, 16, 2.9, i1, w1);
-    float f = walkFade(kf);
-    gIdW *= (i0 <= 1 ? 1.0 - f : 0.0) + (i1 <= 1 ? f : 0.0);
-    if (f <= 0.0) return stageBk(uv, i0, w0);
-    return morphMix(stageBk(uv, i0, w0), stageBk(uv, i1, w1), f);
+    gIdW *= (ka <= 1 ? 1.0 - f : 0.0) + (kb <= 1 ? f : 0.0);
+    vec2 r = stageBk(uv, ka, va);
+    if (f > 0.0) r = morphMix(r, stageBk(uv, kb, vb), f);
+    return r;
 }
 vec2 stageC(vec2 uv)
 {
+    // Decide first (the class shown, the class faded to, the fade), then
+    // evaluate: the class switch is inlined at most twice.
     int k0 = pickStage(chainCP, 13); float v0 = subVar(chainCP, 13);
-    if (!walks(3)) { gIdW *= (k0 <= 1 ? 1.0 : 0.0); return stageCk(uv, k0, v0); }
-    if (walkHost > 0.5 && walkAll()) {
-        float f = smoothstep(0.0, 1.0, walkC.z);
-        int j0 = pickStage(walkC.x, 13), j1 = pickStage(walkC.y, 13);
-        gIdW *= (j0 <= 1 ? 1.0 - f : 0.0) + (j1 <= 1 ? f : 0.0);
-        if (f <= 0.0) return stageCk(uv, j0, subVar(walkC.x, 13));
-        return morphMix(stageCk(uv, j0, subVar(walkC.x, 13)), stageCk(uv, j1, subVar(walkC.y, 13)), f);
+    int ka = k0, kb = k0; float va = v0, vb = v0, f = 0.0;
+    if (walks(3)) {
+        if (walkHost > 0.5 && walkAll()) {
+            f = smoothstep(0.0, 1.0, walkC.z);
+            ka = pickStage(walkC.x, 13); va = subVar(walkC.x, 13);
+            kb = pickStage(walkC.y, 13); vb = subVar(walkC.y, 13);
+        } else {
+            float kf = walkPos(3), c = floor(kf);
+            walkPick(c, k0, v0, 13, 4.7, ka, va);
+            walkPick(c + 1.0, k0, v0, 13, 4.7, kb, vb);
+            f = walkFade(kf);
+        }
     }
-    float kf = walkPos(3), c = floor(kf);
-    int i0, i1; float w0, w1;
-    walkPick(c, k0, v0, 13, 4.7, i0, w0);
-    walkPick(c + 1.0, k0, v0, 13, 4.7, i1, w1);
-    float f = walkFade(kf);
-    gIdW *= (i0 <= 1 ? 1.0 - f : 0.0) + (i1 <= 1 ? f : 0.0);
-    if (f <= 0.0) return stageCk(uv, i0, w0);
-    return morphMix(stageCk(uv, i0, w0), stageCk(uv, i1, w1), f);
+    gIdW *= (ka <= 1 ? 1.0 - f : 0.0) + (kb <= 1 ? f : 0.0);
+    vec2 r = stageCk(uv, ka, va);
+    if (f > 0.0) r = morphMix(r, stageCk(uv, kb, vb), f);
+    return r;
 }
 vec2 stageD(vec2 uv)
 {
+    // Decide first (the class shown, the class faded to, the fade), then
+    // evaluate: the class switch is inlined at most twice.
     int k0 = pickStage(chainDP, 15); float v0 = subVar(chainDP, 15);
-    if (!walks(4)) { gIdW *= (k0 <= 2 ? 1.0 : 0.0); return stageDk(uv, k0, v0); }
-    if (walkHost > 0.5 && walkAll()) {
-        float f = smoothstep(0.0, 1.0, walkD.z);
-        int j0 = pickStage(walkD.x, 15), j1 = pickStage(walkD.y, 15);
-        gIdW *= (j0 <= 2 ? 1.0 - f : 0.0) + (j1 <= 2 ? f : 0.0);
-        if (f <= 0.0) return stageDk(uv, j0, subVar(walkD.x, 15));
-        return morphMix(stageDk(uv, j0, subVar(walkD.x, 15)), stageDk(uv, j1, subVar(walkD.y, 15)), f);
+    int ka = k0, kb = k0; float va = v0, vb = v0, f = 0.0;
+    if (walks(4)) {
+        if (walkHost > 0.5 && walkAll()) {
+            f = smoothstep(0.0, 1.0, walkD.z);
+            ka = pickStage(walkD.x, 15); va = subVar(walkD.x, 15);
+            kb = pickStage(walkD.y, 15); vb = subVar(walkD.y, 15);
+        } else {
+            float kf = walkPos(4), c = floor(kf);
+            walkPick(c, k0, v0, 15, 6.1, ka, va);
+            walkPick(c + 1.0, k0, v0, 15, 6.1, kb, vb);
+            f = walkFade(kf);
+        }
     }
-    float kf = walkPos(4), c = floor(kf);
-    int i0, i1; float w0, w1;
-    walkPick(c, k0, v0, 15, 6.1, i0, w0);
-    walkPick(c + 1.0, k0, v0, 15, 6.1, i1, w1);
-    float f = walkFade(kf);
-    gIdW *= (i0 <= 2 ? 1.0 - f : 0.0) + (i1 <= 2 ? f : 0.0);
-    if (f <= 0.0) return stageDk(uv, i0, w0);
-    return morphMix(stageDk(uv, i0, w0), stageDk(uv, i1, w1), f);
+    gIdW *= (ka <= 2 ? 1.0 - f : 0.0) + (kb <= 2 ? f : 0.0);
+    vec2 r = stageDk(uv, ka, va);
+    if (f > 0.0) r = morphMix(r, stageDk(uv, kb, vb), f);
+    return r;
 }
 // Stage order: the four stages are not commutative (a spiral seen through a
 // kaleidoscope is not a kaleidoscope wound into a spiral).  orderP picks one of
@@ -1544,7 +1559,7 @@ void main()
     float m = luma(ph);
     // Colour field: follows the chain's own (mirrored, hence seamless) coordinates
     // and wanders with the music; the photo's luma keeps the detail.
-    vec2 cm = mirrorUV(chain(p));
+    vec2 cm = gChainM;                                          // the one chain evaluation (imgChain)
     float h = hueP * 0.159 + 0.9 * cm.x + 0.6 * cm.y + 0.25 * m + 0.12 * audioPhase + 0.004 * sceneTime + 0.3 * mode;
     vec3 field = hsv2rgb(vec3(fract(h), 0.6 + 0.35 * swell, 1.0)) * (0.35 + 1.3 * m);
     vec3 photo = max((ph - m) * 1.4 + m, 0.0);
@@ -1590,7 +1605,7 @@ void main()
         float acc = 0.0, wsum = 0.0;
         for (int k = -6; k <= 6; ++k) {
             float fk = float(k);
-            float nz = noise2(mirrorUV(chain(p + fd * fk * hpx)) * 70.0);
+            float nz = noise2((gChainM + (gChainDx * fd.x + gChainDy * fd.y) * fk * 3.0) * 70.0);   // the chain linearised along the flow
             float w = 1.0 + 0.8 * sin(fk * 0.7 - ph);
             acc += nz * w; wsum += w;
         }

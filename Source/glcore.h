@@ -488,6 +488,8 @@ GLuint glcoreDummyTex2DArray();
 ///        'nothing occludes', so a shadow sampler bound to it renders fully lit.
 /// @return Texture name.
 GLuint glcoreDummyShadow();
+/// Resolves any GL entry point by name (context current); null if the driver lacks it.
+void *glcoreProc( const char *name );
 
 /**
  * @brief Resolves every GL function pointer declared above.

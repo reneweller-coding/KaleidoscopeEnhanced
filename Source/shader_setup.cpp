@@ -291,6 +291,93 @@ void shaderCacheStats( int *programs, int *reuses, double *buildMs )
 	if( reuses )   *reuses   = s_progReuses;
 	if( buildMs )  *buildMs  = s_progBuildMs;
 }
+// ---------------------------------------------------------------------------
+// Background builds (GL_KHR_parallel_shader_compile / GL_ARB_parallel_shader_compile).
+//
+// A plain compile blocks the render thread until the driver is done: a few ms
+// for most scenes, but SECONDS for a chain lab when the driver's shader cache
+// is cold (after every shader change, a driver update, a fresh install) -- the
+// warm-up then froze the picture.  With the extension the driver compiles on
+// its own threads: we hand it the source, link, and only ask the non-blocking
+// GL_COMPLETION_STATUS until it is done; then the program goes into the cache.
+// ---------------------------------------------------------------------------
+#ifndef GL_COMPLETION_STATUS_KHR
+#define GL_COMPLETION_STATUS_KHR 0x91B1
+#endif
+struct PrebuildJob { std::string key; GLuint prog; GLuint fs; };
+static std::map<std::string, PrebuildJob> s_prebuild;
+static int s_parallel = -1;                 ///< -1 unknown, 0 no, 1 yes
+static bool parallelCompile()
+{
+	if( s_parallel >= 0 ) return s_parallel == 1;
+	s_parallel = 0;
+	if( const char *e = getenv( "KALEIDO_NO_PARALLEL_COMPILE" ) ) { (void)e; return false; }
+	GLint n = 0;
+	glGetIntegerv( GL_NUM_EXTENSIONS, &n );
+	bool has = false;
+	for( GLint i = 0; i < n && !has; ++i )
+	{
+		const char *ext = (const char *) glGetStringi( GL_EXTENSIONS, (GLuint) i );
+		if( ext && ( !strcmp( ext, "GL_KHR_parallel_shader_compile" ) || !strcmp( ext, "GL_ARB_parallel_shader_compile" ) ) )
+			has = true;
+	}
+	if( has )
+	{
+		typedef void (APIENTRY *MaxThreadsFn)( GLuint );
+		MaxThreadsFn fn = (MaxThreadsFn) glcoreProc( "glMaxShaderCompilerThreadsKHR" );
+		if( !fn ) fn = (MaxThreadsFn) glcoreProc( "glMaxShaderCompilerThreadsARB" );
+		if( fn ) fn( 0xFFFFFFFFu );          // as many threads as the driver likes
+		s_parallel = 1;
+	}
+	fprintf( stderr, "SHADER: background compile %s\n", s_parallel ? "on (parallel_shader_compile)" : "off" );
+	return s_parallel == 1;
+}
+
+bool shaderPrebuildStart( const char *frag_source )
+{
+	if( !parallelCompile() ) return false;
+	const std::string key = progKey( "FS", frag_source, 0, 0, 0, 0 );
+	if( s_progByKey.count( key ) || s_prebuild.count( key ) ) return true;
+	GLchar *src = textFileRead( frag_source );
+	if( !src ) return false;
+	PrebuildJob j;
+	j.key  = key;
+	j.prog = glCreateProgram();
+	glAttachShader( j.prog, fullscreenVertShader() );
+	j.fs = glCreateShader( GL_FRAGMENT_SHADER );
+	glShaderSource( j.fs, 1, const_cast<const GLchar**>( &src ), NULL );
+	free( src );
+	glCompileShader( j.fs );                 // no status query: that would block
+	glAttachShader( j.prog, j.fs );
+	glLinkProgram( j.prog );
+	s_prebuild[key] = j;
+	return true;
+}
+
+int shaderPrebuildPoll()
+{
+	for( auto it = s_prebuild.begin(); it != s_prebuild.end(); )
+	{
+		GLint done = 0;
+		glGetProgramiv( it->second.prog, GL_COMPLETION_STATUS_KHR, &done );
+		if( !done ) { ++it; continue; }
+		GLint linked = 0;
+		glGetProgramiv( it->second.prog, GL_LINK_STATUS, &linked );
+		glDeleteShader( it->second.fs );     // flagged; freed with the program
+		if( linked )
+			progStore( it->second.key, it->second.prog );
+		else
+			glDeleteProgram( it->second.prog );   // the blocking path will build it again and log why
+		it = s_prebuild.erase( it );
+	}
+	return (int) s_prebuild.size();
+}
+
+bool shaderPrebuildReady( const char *frag_source )
+{
+	return s_progByKey.count( progKey( "FS", frag_source, 0, 0, 0, 0 ) ) != 0;
+}
+
 GLuint setShaders( const char *vert_source, const char * frag_source )
 {
 	// Keyed on the FRAGMENT alone: this builder ignores vert_source.

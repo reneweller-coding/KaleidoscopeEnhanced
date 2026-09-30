@@ -58,6 +58,8 @@
 class Scene3DShader : public EffectShader
 {
 public:
+	/// Built with its own vertex shader (setShadersVF), not the fullscreen one: no background prebuild.
+	bool plainFragment() const override { return false; }
 	/**
 	 * @brief Constructs a 3D scene bound to one fragment shader and geometry kind, and rolls its first per-activation variation.
 	 * @param filenameFragmentShader Path to the scene's X.frag; sibling X.vert/.tesc/.tese/.geom/.comp filenames are derived from it by replacing the extension.

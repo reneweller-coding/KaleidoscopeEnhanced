@@ -273,6 +273,8 @@ void glcoreEnableDebugOutput()
  * @param name Exact GL function name, e.g. "glGenBuffers".
  * @return The function pointer, or null if the driver does not provide it.
  */
+static void *glcGet(const char *name);
+void *glcoreProc( const char *name ) { return glcGet( name ); }
 static void *glcGet(const char *name)
 {
 #ifndef _WIN32
