@@ -38,7 +38,7 @@ float sides(float v) { return 5.0 + floor(v * 4.99); }                     // 5 
 // value, rolled or walked, picks a position on that scale, so the music's
 // energy can choose the region (EffectShader::stepChainWalk).
 int orda(int i) { if (i == 0) return 11; if (i == 1) return 5; if (i == 2) return 20; if (i == 3) return 14; if (i == 4) return 25; if (i == 5) return 4; if (i == 6) return 16; if (i == 7) return 9; if (i == 8) return 15; if (i == 9) return 24; if (i == 10) return 1; if (i == 11) return 12; if (i == 12) return 17; if (i == 13) return 19; if (i == 14) return 6; if (i == 15) return 18; if (i == 16) return 10; if (i == 17) return 7; if (i == 18) return 21; if (i == 19) return 8; if (i == 20) return 3; if (i == 21) return 13; if (i == 22) return 22; if (i == 23) return 23; if (i == 24) return 0; return 2; }   // energy order, 26 classes
-int ordb(int i) { if (i == 0) return 0; if (i == 1) return 5; if (i == 2) return 3; if (i == 3) return 1; if (i == 4) return 2; if (i == 5) return 7; if (i == 6) return 4; return 6; }   // none, mirror line, p4m, kaleidoscope, p6m, Sierpinski, fold, Apollonian
+int ordb(int i) { if (i == 0) return 0; if (i == 1) return 5; if (i == 2) return 3; if (i == 3) return 1; if (i == 4) return 8; if (i == 5) return 2; if (i == 6) return 7; if (i == 7) return 4; return 6; }   // none, mirror line, p4m, kaleidoscope, Penrose, p6m, Sierpinski, fold, Apollonian
 int ordc(int i) { if (i == 0) return 0; if (i == 1) return 5; if (i == 2) return 8; if (i == 3) return 9; if (i == 4) return 10; if (i == 5) return 7; if (i == 6) return 1; if (i == 7) return 4; if (i == 8) return 3; if (i == 9) return 6; return 2; }   // none, lens, blossom, rosette, power, Joukowski, spiral, square, inversion, kaleidoscope, tunnel
 int ordd(int i) { if (i == 0) return 0; if (i == 1) return 5; if (i == 2) return 2; if (i == 3) return 7; if (i == 4) return 1; if (i == 5) return 6; if (i == 6) return 4; return 3; }   // none, turning, wave, curl, twirl, vortex street, warp, ripple
 int ords(int i) { if (i == 0) return 0; if (i == 1) return 1; if (i == 2) return 3; if (i == 3) return 4; return 2; }   // photo, relief, contours, flow, glowing edges
@@ -97,6 +97,7 @@ vec2 stageAk(vec2 uv, int k, float v)
 vec2 stageBk(vec2 uv, int k, float v)
 {
     k = ordb(k);
+    if (k == 8) return tPenrose(uv, gCw, 3.0 + 2.0 * v, vec2(gTC * 0.7, gTC * 0.3), vec4(0.13, 0.27, -0.21, 0.36));
     if (k == 7) return tSierpinski(uv, gCw, 3.0 + floor(v * 1.99), 0.3 * sin(gTC * 0.4));
     if (k == 6) return tApollo(uv, gCw, 1.04 + 0.08 * v + 0.04 * sin(gTC * 0.3), 3.0);   // more rounds or a larger s turn to sub-pixel lace
     if (k == 0) return uv;
@@ -189,19 +190,19 @@ vec2 stageA(vec2 uv)
 }
 vec2 stageB(vec2 uv)
 {
-    int k0 = pickStage(chainBP, 8); float v0 = subVar(chainBP, 8);
+    int k0 = pickStage(chainBP, 9); float v0 = subVar(chainBP, 9);
     if (!walks(2)) { gIdW *= (k0 <= 1 ? 1.0 : 0.0); return stageBk(uv, k0, v0); }
     if (walkHost > 0.5 && walkAll()) {
         float f = smoothstep(0.0, 1.0, walkB.z);
-        int j0 = pickStage(walkB.x, 8), j1 = pickStage(walkB.y, 8);
+        int j0 = pickStage(walkB.x, 9), j1 = pickStage(walkB.y, 9);
         gIdW *= (j0 <= 1 ? 1.0 - f : 0.0) + (j1 <= 1 ? f : 0.0);
-        if (f <= 0.0) return stageBk(uv, j0, subVar(walkB.x, 8));
-        return morphMix(stageBk(uv, j0, subVar(walkB.x, 8)), stageBk(uv, j1, subVar(walkB.y, 8)), f);
+        if (f <= 0.0) return stageBk(uv, j0, subVar(walkB.x, 9));
+        return morphMix(stageBk(uv, j0, subVar(walkB.x, 9)), stageBk(uv, j1, subVar(walkB.y, 9)), f);
     }
     float kf = walkPos(2), c = floor(kf);
     int i0, i1; float w0, w1;
-    walkPick(c, k0, v0, 8, 2.9, i0, w0);
-    walkPick(c + 1.0, k0, v0, 8, 2.9, i1, w1);
+    walkPick(c, k0, v0, 9, 2.9, i0, w0);
+    walkPick(c + 1.0, k0, v0, 9, 2.9, i1, w1);
     float f = walkFade(kf);
     gIdW *= (i0 <= 1 ? 1.0 - f : 0.0) + (i1 <= 1 ? f : 0.0);
     if (f <= 0.0) return stageBk(uv, i0, w0);

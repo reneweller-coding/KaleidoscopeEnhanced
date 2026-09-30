@@ -31,7 +31,7 @@ CLASSES = {
                 "Peirce quincuncial sphere", "parabolic stream", "complex exponential", "Blaschke product", "bipolar stream",
                 "complex sine", "tan lattice", "circle inversion", "Moebius stream", "loxodromic stream", "Newton map", "Julia map",
                 "kaleidoscope", "tunnel"],
-    "chainBP": [None, "mirror line", "p4m lattice", "kaleidoscope", "p6m lattice", "Sierpinski fold", "iterated fold", "Apollonian inversion fold"],
+    "chainBP": [None, "mirror line", "p4m lattice", "kaleidoscope", "Penrose mirror", "p6m lattice", "Sierpinski fold", "iterated fold", "Apollonian inversion fold"],
     "chainCP": [None, "lens", "blossom", "Farris rosette", "mirrored power", "Joukowski map", "spiral", "complex square", "inversion", "kaleidoscope", "tunnel"],
     "chainDP": [None, "turning", "shear wave", "curl flow", "twirl", "vortex street", "domain warp", "ripple"],
     "morphP": ["the first stage", "the symmetry", "the second map", "the warp"],

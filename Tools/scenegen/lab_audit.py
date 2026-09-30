@@ -18,7 +18,7 @@ import numpy as np
 from PIL import Image
 
 scene, rolls = sys.argv[1], sys.argv[2]
-CLASSES = {"chainAP": 26, "chainBP": 8, "chainCP": 11, "chainDP": 8, "styleP": 5,
+CLASSES = {"chainAP": 26, "chainBP": 9, "chainCP": 11, "chainDP": 8, "styleP": 5,
            "spaceP": 10, "coreP": 10, "bodyP": 7}
 rows = []
 for i, line in enumerate(open(rolls, encoding="utf-8").read().splitlines()):

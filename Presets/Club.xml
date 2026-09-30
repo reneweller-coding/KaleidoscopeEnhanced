@@ -2221,14 +2221,6 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\\Scene2D\\TextureGeodeInterior.frag" type="normal" mood="psychedelic,dark" probability="0.45" complexity="2">
-    <rig preset="flat"/>
-    <float name="countP" minValue="0" maxValue="1"></float>
-    <float name="bandP" minValue="0" maxValue="1"></float>
-    <float name="glowP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader file="..\\Scene2D\\TextureHoloFoil.frag" type="normal" mood="psychedelic,bright" probability="0.45" complexity="2">
     <rig preset="flat"/>
     <float name="crinkleP" minValue="0" maxValue="1"></float>
@@ -3103,6 +3095,15 @@
     <float name="speedP" minValue="0" maxValue="1"></float>
     <float name="detailP" minValue="0" maxValue="1"></float>
     <float name="paletteP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\PenroseParquet.frag" type="normal" mood="psychedelic,bright,dreamy" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="tileP" minValue="0" maxValue="1"></float>
+    <float name="styleP" minValue="0" maxValue="1"></float>
+    <float name="ribbonP" minValue="0" maxValue="1"></float>
+    <float name="groutP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>

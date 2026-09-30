@@ -3383,14 +3383,6 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader grade="fade,grey,sepia" file="..\\Scene2D\\StripePhoto.frag" type="normal" mood="calm,psychedelic" probability="0.45" complexity="2">
-    <rig preset="flat"/>
-    <float name="stripeP" minValue="0" maxValue="1"></float>
-    <float name="widthP" minValue="0" maxValue="1"></float>
-    <float name="zoomP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader grade="fade,grey,sepia" file="..\\Scene2D\\CrystalThroatTunnel.frag" type="normal" mood="energetic,psychedelic" probability="0.45" complexity="2">
     <rig preset="flat"/>
     <float name="facetP" minValue="0" maxValue="1"></float>
@@ -3705,6 +3697,15 @@
     <float name="speedP" minValue="0" maxValue="1"></float>
     <float name="detailP" minValue="0" maxValue="1"></float>
     <float name="paletteP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader grade="fade,grey,sepia" file="..\\Scene2D\\PenroseParquet.frag" type="normal" mood="psychedelic,bright,dreamy" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="tileP" minValue="0" maxValue="1"></float>
+    <float name="styleP" minValue="0" maxValue="1"></float>
+    <float name="ribbonP" minValue="0" maxValue="1"></float>
+    <float name="groutP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>

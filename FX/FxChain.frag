@@ -535,6 +535,55 @@ vec2 tRosette(vec2 uv, vec2 c, float p, float k, float t)
            + cmul(cexpi(t * 0.3 + 2.0), rosetteTerm(r, th, k, abs(k) + 2.0)) * 0.6;
     return c + f * 0.6;                                         // audit: 0.3 read too small a patch (flat, grey)
 }
+// ---- Penrose rhombus tiling (de Bruijn's pentagrid) ----
+// Five families of parallel lines (directions e_j = 72 deg apart, offsets
+// gam_j with sum 0).  Every crossing of a line of family r (value n_r) with
+// one of family s (n_s) is a rhombus with edges e_r, e_s; its corner is
+// sum_j K_j e_j with K_j = ceil(p . e_j + gam_j) at the crossing p, and K_r,
+// K_s = n_r, n_s.  The tiling is about 5/2 times the pentagrid, so the
+// crossings near x * 0.4 are searched (3 x 3 per pair of families).  Returns
+// the rhombus coordinates a, b in [0, 1] (x = base + a e_r + b e_s).
+vec2 pentE(int j) { float a = 1.2566371 * float(j); return vec2(cos(a), sin(a)); }
+float pentG(int j, vec4 g) { return j == 0 ? g.x : j == 1 ? g.y : j == 2 ? g.z : j == 3 ? g.w : -(g.x + g.y + g.z + g.w); }
+bool penroseFind(vec2 x, vec4 g, out vec2 ab, out int rr, out int ss, out vec2 base, out vec2 nrs)
+{
+    vec2 pg = x * 0.4;
+    ab = vec2(0.5); rr = 0; ss = 1; base = vec2(0.0); nrs = vec2(0.0);
+    for (int r = 0; r < 4; ++r)
+    for (int s = 1; s < 5; ++s) {
+        if (s <= r) continue;
+        vec2 er = pentE(r), es = pentE(s);
+        float gr = pentG(r, g), gs = pentG(s, g);
+        float det = er.x * es.y - er.y * es.x;
+        float nr0 = floor(dot(pg, er) + gr), ns0 = floor(dot(pg, es) + gs);
+        for (int dr = -1; dr <= 1; ++dr)
+        for (int ds = -1; ds <= 1; ++ds) {
+            float nr = nr0 + float(dr), ns = ns0 + float(ds);
+            vec2 p = vec2((nr - gr) * es.y - (ns - gs) * er.y, (ns - gs) * er.x - (nr - gr) * es.x) / det;
+            vec2 b0 = nr * er + ns * es;
+            for (int j = 0; j < 5; ++j)
+                if (j != r && j != s) b0 += ceil(dot(p, pentE(j)) + pentG(j, g)) * pentE(j);
+            vec2 d = x - b0;
+            float a = (d.x * es.y - d.y * es.x) / det, b = (er.x * d.y - er.y * d.x) / det;
+            if (a >= 0.0 && a <= 1.0 && b >= 0.0 && b <= 1.0) {
+                ab = vec2(a, b); rr = r; ss = s; base = b0; nrs = vec2(nr, ns);
+                return true;
+            }
+        }
+    }
+    return false;
+}
+// Penrose mirror: the rhombus coordinates folded symmetrically -- distances to
+// the nearer edge of each pair, sorted.  On a shared edge both tiles give the
+// same pair (0, position along the edge, folded), so the map is continuous:
+// a quasi-periodic kaleidoscope that never repeats.
+vec2 tPenrose(vec2 uv, vec2 c, float cells, vec2 drift, vec4 g)
+{
+    vec2 ab, base, nrs; int r, s;
+    penroseFind((uv - c) * cells + drift, g, ab, r, s, base, nrs);
+    vec2 f = min(ab, 1.0 - ab);
+    return c + vec2(min(f.x, f.y), max(f.x, f.y)) * 0.9;
+}
 // ---- idea round 3 ----
 // Blaschke product: z * prod (z - a)/(1 - conj(a) z) -- the unit disk wrapped
 // onto itself several times around zeros that wander; conformal, continuous
@@ -767,7 +816,7 @@ float sides(float v) { return 5.0 + floor(v * 4.99); }                     // 5 
 // value, rolled or walked, picks a position on that scale, so the music's
 // energy can choose the region (EffectShader::stepChainWalk).
 int orda(int i) { if (i == 0) return 11; if (i == 1) return 5; if (i == 2) return 20; if (i == 3) return 14; if (i == 4) return 25; if (i == 5) return 4; if (i == 6) return 16; if (i == 7) return 9; if (i == 8) return 15; if (i == 9) return 24; if (i == 10) return 1; if (i == 11) return 12; if (i == 12) return 17; if (i == 13) return 19; if (i == 14) return 6; if (i == 15) return 18; if (i == 16) return 10; if (i == 17) return 7; if (i == 18) return 21; if (i == 19) return 8; if (i == 20) return 3; if (i == 21) return 13; if (i == 22) return 22; if (i == 23) return 23; if (i == 24) return 0; return 2; }   // energy order, 26 classes
-int ordb(int i) { if (i == 0) return 0; if (i == 1) return 5; if (i == 2) return 3; if (i == 3) return 1; if (i == 4) return 2; if (i == 5) return 7; if (i == 6) return 4; return 6; }   // none, mirror line, p4m, kaleidoscope, p6m, Sierpinski, fold, Apollonian
+int ordb(int i) { if (i == 0) return 0; if (i == 1) return 5; if (i == 2) return 3; if (i == 3) return 1; if (i == 4) return 8; if (i == 5) return 2; if (i == 6) return 7; if (i == 7) return 4; return 6; }   // none, mirror line, p4m, kaleidoscope, Penrose, p6m, Sierpinski, fold, Apollonian
 int ordc(int i) { if (i == 0) return 0; if (i == 1) return 5; if (i == 2) return 8; if (i == 3) return 9; if (i == 4) return 10; if (i == 5) return 7; if (i == 6) return 1; if (i == 7) return 4; if (i == 8) return 3; if (i == 9) return 6; return 2; }   // none, lens, blossom, rosette, power, Joukowski, spiral, square, inversion, kaleidoscope, tunnel
 int ordd(int i) { if (i == 0) return 0; if (i == 1) return 5; if (i == 2) return 2; if (i == 3) return 7; if (i == 4) return 1; if (i == 5) return 6; if (i == 6) return 4; return 3; }   // none, turning, wave, curl, twirl, vortex street, warp, ripple
 int ords(int i) { if (i == 0) return 0; if (i == 1) return 1; if (i == 2) return 3; if (i == 3) return 4; return 2; }   // photo, relief, contours, flow, glowing edges
@@ -826,6 +875,7 @@ vec2 stageAk(vec2 uv, int k, float v)
 vec2 stageBk(vec2 uv, int k, float v)
 {
     k = ordb(k);
+    if (k == 8) return tPenrose(uv, gCw, 3.0 + 2.0 * v, vec2(gT * 0.7, gT * 0.3), vec4(0.13, 0.27, -0.21, 0.36));
     if (k == 7) return tSierpinski(uv, gCw, 3.0 + floor(v * 1.99), 0.3 * sin(gT * 0.4));
     if (k == 6) return tApollo(uv, gCw, 1.04 + 0.08 * v + 0.04 * sin(gT * 0.3), 3.0);   // more rounds or a larger s turn to sub-pixel lace
     if (k == 0) return uv;
@@ -918,19 +968,19 @@ vec2 stageA(vec2 uv)
 }
 vec2 stageB(vec2 uv)
 {
-    int k0 = pickStage(chainBP, 8); float v0 = subVar(chainBP, 8);
+    int k0 = pickStage(chainBP, 9); float v0 = subVar(chainBP, 9);
     if (!walks(2)) { gIdW *= (k0 <= 1 ? 1.0 : 0.0); return stageBk(uv, k0, v0); }
     if (walkHost > 0.5 && walkAll()) {
         float f = smoothstep(0.0, 1.0, walkB.z);
-        int j0 = pickStage(walkB.x, 8), j1 = pickStage(walkB.y, 8);
+        int j0 = pickStage(walkB.x, 9), j1 = pickStage(walkB.y, 9);
         gIdW *= (j0 <= 1 ? 1.0 - f : 0.0) + (j1 <= 1 ? f : 0.0);
-        if (f <= 0.0) return stageBk(uv, j0, subVar(walkB.x, 8));
-        return morphMix(stageBk(uv, j0, subVar(walkB.x, 8)), stageBk(uv, j1, subVar(walkB.y, 8)), f);
+        if (f <= 0.0) return stageBk(uv, j0, subVar(walkB.x, 9));
+        return morphMix(stageBk(uv, j0, subVar(walkB.x, 9)), stageBk(uv, j1, subVar(walkB.y, 9)), f);
     }
     float kf = walkPos(2), c = floor(kf);
     int i0, i1; float w0, w1;
-    walkPick(c, k0, v0, 8, 2.9, i0, w0);
-    walkPick(c + 1.0, k0, v0, 8, 2.9, i1, w1);
+    walkPick(c, k0, v0, 9, 2.9, i0, w0);
+    walkPick(c + 1.0, k0, v0, 9, 2.9, i1, w1);
     float f = walkFade(kf);
     gIdW *= (i0 <= 1 ? 1.0 - f : 0.0) + (i1 <= 1 ? f : 0.0);
     if (f <= 0.0) return stageBk(uv, i0, w0);

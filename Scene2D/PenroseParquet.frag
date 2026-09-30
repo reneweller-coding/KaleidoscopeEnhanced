@@ -1,23 +1,49 @@
-# -*- coding: utf-8 -*-
-"""Assemble Scene2D/<Name>.frag from Tools/scenegen/src/<Name>.glsl.
+#version 330 core
+out vec4 fragColor;
+/**
+ * @file PenroseParquet.frag
+ * @brief PENROSE PARQUET: an endless Penrose rhombus tiling built from de
+ * Bruijn's pentagrid -- thick and thin rhombi that never repeat, the whole
+ * floor drifting and slowly turning.  Every rhombus is a pane of its own
+ * showing the kaleidoscoped photograph in its own turning frame, set in thin
+ * grout; light runs along the de Bruijn ribbons (the endless chains of tiles
+ * sharing one edge direction) in waves carried by the music, and the panes
+ * stand out as a relief.  Five-fold, no up or down: endless, mirrorable.
+ *
+ * Audio Reactivity (structure, not only light):
+ *   audioAdvance    -> the ribbon waves travel, the floor drifts (integrated, jump-free)
+ *   audioPhase      -> the photo frames in the panes turn (integrated)
+ *   audioSwell      -> the panes rise into relief, the grout widens (slow)
+ *   audioKick       -> the wave crests flash (light)
+ *   audioMode       -> the palette: thick and thin tiles cool in minor, warm in major
+ *
+ * Knobs: tileP (tile size), styleP (photo panes / stained glass / ribbon light),
+ * ribbonP (how strongly the ribbons glow), groutP (grout width), hueP.
+ */
 
-Source format:
-    //@doc
-     * @brief ...            (doc comment lines, without /** */)
-    //@params fooP barP       (per-activation knobs, 0..1; hueP is always added)
-    //@audio audioSwell audioSpectrum[32] ...
-    //@expr fooP = clamp(0.5 + 0.3*swell, 0.0, 1.0)   (optional, any number)
-    //@body
-    ... GLSL (functions + main, main ends with finish(col);)
-Usage: gen.py Name [Name ...]
-"""
-import io, os, re, sys
-ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
-SP = os.path.dirname(os.path.abspath(__file__))
+uniform vec2  resolution;
+uniform float time;
+uniform sampler2D tex0;
+uniform sampler2D tex1;
+uniform float interpolation;
 
-BASE_AUDIO = ["audioAdvance", "audioLevel", "audioValence", "audioChromaHue", "audioPhase"]
+uniform float sceneTime;
+uniform float sceneAdvance;
+uniform float audioAdvance;
+uniform float audioLevel;
+uniform float audioValence;
+uniform float audioChromaHue;
+uniform float audioPhase;
+uniform float audioKick;
+uniform float audioMode;
+uniform float audioSwell;
 
-LIB = r"""
+uniform float tileP;
+uniform float styleP;
+uniform float ribbonP;
+uniform float groutP;
+uniform float hueP;
+
 // ---- shared building blocks (texture pool, noise, shapes) ----
 float hash11(float n) { return fract(sin(n * 127.1) * 43758.5453); }
 float hash21(vec2 p)
@@ -189,9 +215,8 @@ void finish(vec3 col)
     t /= 1.0 + 0.35 * max(t.r, max(t.g, t.b));
     fragColor = vec4(clamp(t, 0.0, 1.0), 1.0);
 }
-"""
 
-CHAIN_LIB = r"""
+
 // ---- composable continuous transforms (photo space, centre 0.5) ----
 // Every stage may be followed by mirrorUV: it is continuous and periodic with
 // the photo's mirror period 2, so stages whose output jumps by whole periods
@@ -766,212 +791,63 @@ vec3 imgChain(vec2 p, float bias, out vec2 grad)
     grad = vec2(lx, ly) * 0.5;                                  // luma change per 1.5 px
     return col;
 }
-"""
 
-CHAIN3D_LIB = r"""
-// ---- composable continuous 3D space transforms (for raymarched fields) ----
-// Each stage is continuous; stages that scale space multiply gDR so the
-// distance estimate stays conservative.  gP keeps the final folded point
-// (used to texture the surface with the kaleidoscoped photo).
-float gDR = 1.0;
-vec3 gP = vec3(0.0);
-vec3 fRot(vec3 p, vec3 axis, float a)
-{
-    axis = normalize(axis);
-    float c = cos(a), s = sin(a);
-    return p * c + cross(axis, p) * s + axis * dot(axis, p) * (1.0 - c);
-}
-vec3 fAbs(vec3 p) { return abs(p); }
-// Reflect onto the positive side of the plane n.p = d.
-vec3 fPlane(vec3 p, vec3 n, float d) { float s = dot(p, n) - d; return p - 2.0 * n * min(s, 0.0); }
-// Octahedral mirror symmetry (48-fold): abs plus sorting (swaps are continuous).
-vec3 fOcta(vec3 p)
-{
-    p = abs(p);
-    if (p.x < p.y) p.xy = p.yx;
-    if (p.x < p.z) p.xz = p.zx;
-    if (p.y < p.z) p.yz = p.zy;
-    return p;
-}
-// Tetrahedral mirror symmetry.
-vec3 fTetra(vec3 p)
-{
-    if (p.x + p.y < 0.0) p.xy = -p.yx;
-    if (p.x + p.z < 0.0) p.xz = -p.zx;
-    if (p.y + p.z < 0.0) p.zy = -p.yz;
-    return p;
-}
-// Mandelbox folds.
-vec3 fBox(vec3 p, float l) { return clamp(p, -l, l) * 2.0 - p; }
-vec3 fSphere(vec3 p, float rMin, float rFix)
-{
-    float r2 = dot(p, p);
-    float k = r2 < rMin * rMin ? (rFix * rFix) / (rMin * rMin) : (r2 < rFix * rFix ? (rFix * rFix) / r2 : 1.0);
-    gDR *= k;
-    return p * k;
-}
-vec3 fScale(vec3 p, float s, vec3 offset) { gDR *= abs(s); return p * s - offset; }
-// Mirrored repetition (triangle wave: continuous), period 4c per axis.
-vec3 fRepeat(vec3 p, vec3 c) { return c * (abs(mod(p / c - 1.0, 4.0) - 2.0) - 1.0); }
-// Mirrored polar repetition around the z axis (n wedges, n whole).
-vec3 fPolarZ(vec3 p, float n)
-{
-    float sec = 6.2831853 / n;
-    float a = abs(mod(atan(p.y, p.x), sec) - 0.5 * sec);
-    return vec3(length(p.xy) * vec2(cos(a), sin(a)), p.z);
-}
-// Knighty's polyhedral fold: symmetric under the polyhedral group of type n
-// (3 tetrahedral, 4 octahedral, 5 icosahedral) -- abs of x and y and one
-// oblique mirror, repeated n times; every fold is a reflection (continuous).
-vec3 fPoly(vec3 p, float n)
-{
-    float cospin = cos(3.14159265 / n), scospin = sqrt(max(0.75 - cospin * cospin, 1e-4));
-    vec3 nc = vec3(-0.5, -cospin, scospin);
-    for (int i = 0; i < 5; ++i) {
-        if (float(i) >= n) break;
-        p.xy = abs(p.xy);
-        p -= 2.0 * min(0.0, dot(p, nc)) * nc;
-    }
-    return p;
-}
-// A lattice folded in FOUR dimensions and sliced by our space: the point is
-// lifted to 4D (w from time), turned in the xw and yw planes, mirror-repeated
-// in 4D and dropped back to 3D.  Every step is a rotation, a reflection or a
-// projection (distances never grow), and as the 4D turn runs the lattice
-// morphs continuously through shapes no 3D motion makes.
-vec3 f4DLattice(vec3 p, float c, float a1, float a2, float w)
-{
-    vec4 q = vec4(p, w);
-    q.xw = rot2(a1) * q.xw;
-    q.yw = rot2(a2) * q.yw;
-    q = c * (abs(mod(q / c - 1.0, 4.0) - 2.0) - 1.0);
-    return q.xyz;                                            // a projection: distances never grow
-}
-// Log-spherical Droste in 3D: around a centre the radius is folded in log
-// scale (mirrored triangle wave), so the world repeats inward and outward in
-// shells at every scale; gDR carries the local scale.
-vec3 fLogSphere(vec3 p, vec3 c, float K, float zoom)
-{
-    vec3 d = p - c;
-    float r = max(length(d), 1e-4), lk = log(K);
-    float u = log(r) / lk - zoom;
-    float tri = abs(fract(u * 0.5) * 2.0 - 1.0);
-    float rn = exp(tri * lk) * 0.6;
-    gDR *= rn / r;
-    return d / r * rn;
-}
-// Hyperbolic honeycomb in the Poincare ball: the octahedral mirrors plus the
-// sphere orthogonal to the unit ball (centre k(1,1,1), R^2 = |c|^2 - 1),
-// repeated -- cells shrinking without end toward the ball's rim.
-vec3 fHyperBall(vec3 p, float k)
-{
-    vec3 c = vec3(k);
-    float R2 = dot(c, c) - 1.0;
-    for (int i = 0; i < 7; ++i) {
-        p = abs(p);
-        if (p.x < p.y) p.xy = p.yx;
-        if (p.x < p.z) p.xz = p.zx;
-        if (p.y < p.z) p.yz = p.zy;
-        vec3 d = p - c;
-        float dd = dot(d, d);
-        if (dd < R2) { float f = R2 / dd; p = c + d * f; gDR *= f; }
-    }
-    return p;
-}
-// Twist around z (keep k small: it stretches space).
-vec3 fTwistZ(vec3 p, float k) { vec2 q = rot2(k * p.z) * p.xy; return vec3(q, p.z); }
-// Sphere inversion (radius R): the outside comes inside, endlessly nested.
-vec3 fInvert(vec3 p, float R) { float r2 = max(dot(p, p), 1e-4); gDR *= R * R / r2; return p * R * R / r2; }
-// Smooth 3D noise warp (small strength).
-vec3 fWarp(vec3 p, float s, float t)
-{
-    return p + s * vec3(fbm3(p.yz + t), fbm3(p.zx + 3.1 - t), fbm3(p.xy + 5.7 + t)) - s * 0.5;
-}
-// End bodies.
-float sdSphere3(vec3 p, float r) { return length(p) - r; }
-float sdBox3(vec3 p, vec3 b) { vec3 q = abs(p) - b; return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0); }
-float sdTorus3(vec3 p, float R, float r) { return length(vec2(length(p.xz) - R, p.y)) - r; }
-float sdGyroid3(vec3 p, float thick) { return (abs(dot(sin(p), cos(p.yzx))) - thick) / 1.8; }
+// (the chain library is pulled in for the pentagrid; this scene has no chain)
+vec2 chain(vec2 p) { return p; }
 
-float field3(vec3 p);
-vec3 gCam = vec3(0.0);
-// Collision-free flight: the camera follows a winding path through the field, and a
-// tube around that path is carved out of every body (soft edges, so the cut faces
-// read as sculpted walls).  The path depends only on z, so the carve is stateless.
-float gPathAmp = 1.0;   // how far the path winds (a scene may shrink it)
-float gTube = 0.45;     // tube radius
-vec2 camPathXY(float z)
+void main()
 {
-    return gPathAmp * vec2(1.1 * sin(z * 0.11) + 0.4 * sin(z * 0.23 + 1.3), 0.8 * sin(z * 0.083 + 0.7) + 0.3 * cos(z * 0.19));
+    vec2 p = screenP();
+    float kick = clamp(audioKick, 0.0, 1.0);
+    float swell = clamp(audioSwell, 0.0, 1.0);
+    float mode = clamp(audioMode, 0.0, 1.0);
+    float T = 0.04 * sceneTime + 0.3 * audioAdvance;
+    float cells = 3.0 + 4.0 * (1.0 - clamp(tileP, 0.0, 1.0));
+    vec2 x = rot2(0.01 * sceneTime) * p * cells + vec2(1.7 * T, 0.9 * T) + 40.0;
+    float px = fwidth(x.x);                                    // before the search: no derivatives in branches
+    vec4 g = vec4(0.13, 0.27, -0.21, 0.36);
+    vec2 ab, base, nrs; int r, s;
+    bool ok = penroseFind(x, g, ab, r, s, base, nrs);
+    bool thick = (s - r == 1) || (s - r == 4);
+    float h = hash21(floor(base * 3.0 + 0.5));
+    // Pane content: the kaleidoscoped photo in the tile's own turning frame.
+    vec2 er = pentE(r), es = pentE(s);
+    vec2 local = (ab.x - 0.5) * er + (ab.y - 0.5) * es;
+    vec2 puv = 0.5 + rot2(h * 6.28 + 0.2 * audioPhase + 0.02 * sceneTime) * local * 0.45 + 0.3 * hash22(base);
+    vec3 ph = imgK(puv, 1.5);
+    vec3 cool = thick ? vec3(0.55, 0.75, 1.1) : vec3(0.95, 0.6, 1.05);
+    vec3 warm = thick ? vec3(1.15, 0.8, 0.5) : vec3(1.05, 0.55, 0.45);
+    vec3 tint = mix(cool, warm, mode);
+    // Relief: the pane rises toward its middle (distance to the nearest edge).
+    vec2 f = min(ab, 1.0 - ab);
+    float e = min(f.x, f.y);                                   // 0 at the edges
+    float grout = (0.02 + 0.05 * clamp(groutP, 0.0, 1.0)) * (0.8 + 0.5 * swell);
+    float pane = smoothstep(grout - px * 0.7, grout + px * 0.7, e);
+    float bevel = smoothstep(grout, grout + 0.12 + 0.1 * swell, e);
+    // Ribbons: each tile lies on ribbon n_r of family r and n_s of family s;
+    // waves run along the ribbon numbers (integrated), so light travels
+    // through the tiling along the quasi-periodic worms.
+    float w1 = pow(0.5 + 0.5 * sin(nrs.x * 1.3 - T * 6.0 + float(r) * 1.7), 6.0);
+    float w2 = pow(0.5 + 0.5 * sin(nrs.y * 1.1 - T * 5.0 + float(s) * 2.3), 6.0);
+    float ribbon = max(w1, w2) * (0.3 + 1.2 * clamp(ribbonP, 0.0, 1.0));
+    // Each tile its own hue (thick and thin half a turn apart), wandering with
+    // the music; the ribbons glow in the hue of their family.
+    float hue = hueP * 0.159 + 0.12 * audioPhase + 0.3 * mode + h * 0.22 + (thick ? 0.0 : 0.5);
+    vec3 paneC = hsv2rgb(vec3(fract(hue), 0.75, 1.0));
+    vec3 ribC = hsv2rgb(vec3(fract(hueP * 0.159 + 0.12 * audioPhase + float(w1 > w2 ? r : s) * 0.2), 0.85, 1.0));
+    // Three looks, one knob.
+    float st = clamp(styleP, 0.0, 1.0) * 2.0;
+    vec3 photoPane = max((ph - luma(ph)) * 1.4 + luma(ph), 0.0) * mix(tint, paneC, 0.35) * 1.3 * (0.55 + 0.45 * bevel) * (0.8 + 0.3 * h);
+    vec3 glass = paneC * (0.25 + 1.1 * luma(ph)) * (0.55 + 0.45 * bevel);
+    vec3 lightC = photoPane * 0.25 + ribC * ribbon * 1.2 * (0.3 + 0.7 * bevel);
+    vec3 col = mix(photoPane, glass, smoothstep(0.0, 1.0, st));
+    col = mix(col, lightC, smoothstep(1.0, 2.0, st));
+    col += ribC * ribbon * (0.35 + 0.9 * kick) * (0.4 + 0.6 * bevel);
+    vec3 glow = ribC;
+    // Grout: dark lead, catching a little ribbon light.
+    vec3 lead = vec3(0.03, 0.03, 0.04) + glow * ribbon * 0.08;
+    col = mix(lead, col, pane);
+    if (!ok) col = lead;
+    col = mix(col, col * glowColour(imgLod(p * 0.5 + 0.5, 6.0), p, hueP * 0.159) * 1.2, 0.05);
+    finish(col);
 }
-float smaxK(float a, float b, float k) { float h = clamp(0.5 - 0.5 * (b - a) / k, 0.0, 1.0); return mix(b, a, h) + k * h * (1.0 - h); }
-float fieldD(vec3 p)
-{
-    gDR = 1.0;
-    float d = field3(p);
-    float tube = gTube - length(p.xy - camPathXY(p.z));
-    return max(smaxK(d, 0.8 * tube, 0.15), 0.3 - length(p - gCam));
-}
-// The camera frame at depth z: on the path, looking at the path ahead.
-mat3 camFrame(float z, out vec3 ro)
-{
-    ro = vec3(camPathXY(z), z);
-    vec3 ta = vec3(camPathXY(z + 2.0), z + 2.0);
-    vec3 fw = normalize(ta - ro);
-    // Bank into the curves: the roll follows the path's sideways curvature at
-    // this depth -- a function of position only, like a road, never of loudness.
-    vec2 curv = camPathXY(z + 1.5) - 2.0 * camPathXY(z) + camPathXY(z - 1.5);
-    float roll = clamp(-curv.x * 1.6, -0.3, 0.3);
-    vec3 up = vec3(sin(roll), cos(roll), 0.0);
-    vec3 rt = normalize(cross(up, fw));
-    return mat3(rt, cross(fw, rt), fw);
-}
-vec3 normal3(vec3 p)
-{
-    const vec2 e = vec2(0.0015, -0.0015);
-    return normalize(e.xyy * fieldD(p + e.xyy) + e.yyx * fieldD(p + e.yyx) + e.yxy * fieldD(p + e.yxy) + e.xxx * fieldD(p + e.xxx));
-}
-// The kaleidoscoped photo projected triplanarly onto the surface.
-vec3 photo3(vec3 q, vec3 n, float lod)
-{
-    vec3 w = pow(abs(n), vec3(4.0)); w /= (w.x + w.y + w.z);
-    return imgK(q.yz * 0.35 + 0.5, lod) * w.x + imgK(q.zx * 0.35 + 0.5, lod) * w.y + imgK(q.xy * 0.35 + 0.5, lod) * w.z;
-}
-"""
-
-
-def build(name):
-    src = io.open(os.path.join(SP, "src", name + ".glsl"), encoding="utf-8").read()
-    doc = src.split("//@doc", 1)[1].split("//@", 1)[0].rstrip()
-    params = re.search(r"^//@params(.*)$", src, re.M).group(1).split()
-    audio = re.search(r"^//@audio(.*)$", src, re.M).group(1).split()
-    exprs = re.findall(r"^//@expr\s+(\w+)\s*=\s*(.+)$", src, re.M)
-    body = src.split("//@body", 1)[1].lstrip("\n")
-    out = ["#version 330 core", "out vec4 fragColor;", "/**", " * @file %s.frag" % name]
-    out += [l for l in doc.split("\n") if l.strip()]
-    out += [" */", "", "uniform vec2  resolution;", "uniform float time;", "uniform sampler2D tex0;",
-            "uniform sampler2D tex1;", "uniform float interpolation;", "", "uniform float sceneTime;",
-            "uniform float sceneAdvance;"]
-    for a in BASE_AUDIO + [a for a in audio if a not in BASE_AUDIO]:
-        m = re.match(r"(\w+)\[(\d+)\]", a)
-        out.append("uniform float %s[%s];" % m.groups() if m else "uniform float %s;" % a)
-    out.append("")
-    for q in params + ["hueP"]:
-        out.append("uniform float %s;" % q)
-    for n, f in exprs:
-        out.append("// @expr %s = %s" % (n, f.strip()))
-    out.append(LIB)
-    if re.search(r"vec2\s+chain\s*\(", body):
-        out.append(CHAIN_LIB)
-    if re.search(r"float\s+field3\s*\(", body):
-        out.append(CHAIN3D_LIB)
-    out.append(body.rstrip() + "\n")
-    # //@target fx: an overlay (CombineShader) -- tex0/tex1 are then the finished
-    # scene frame instead of the photos; the same library applies.
-    folder = "FX" if re.search(r"^//@target\s+fx\b", src, re.M) else "Scene2D"
-    io.open(os.path.join(ROOT, folder, name + ".frag"), "w", encoding="utf-8", newline="\n").write("\n".join(out))
-    print("gebaut:", name)
-
-
-for n in sys.argv[1:]:
-    build(n)
