@@ -1,24 +1,23 @@
 #version 330 core
 out vec4 fragColor;
 /**
- * @file TextureP6Crystal.frag
- * @brief TEXTURE P6 CRYSTAL: the photograph cut into a crystal of
- * six-fold pinwheels -- each hexagonal cell holds the picture six times,
- * rotated (not mirrored) around its centre, so the cells swirl like
- * turbines; every one of the six wedges is a bevelled facet catching a
- * slowly circling light, with sharp bright facet edges and a small
- * refracting jewel at each cell centre.  The photo glides under the
- * crystal, the facet light wanders.  Endless, mirrorable.
+ * @file TextureSphericalTiling.frag
+ * @brief TEXTURE SPHERICAL TILING: a field of turning globes -- a lattice
+ * of spheres, each one tiled like a football or a disco ball with facets
+ * holding the photograph, rotating on its own tilted axis, lit from one
+ * side with a bright specular glint and a shadowed terminator; the
+ * spheres are packed tightly and drift slowly across the view.
+ * Endless, mirrorable.
  *
  * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the photo glides under the crystal (integrated)
- *   audioPhase      -> the crystal lattice turns (integrated)
- *   audioSpread     -> bevel depth
- *   audioKick       -> the facet edges flash (light)
- *   audioMode       -> light temperature: cool in minor, warm in major
- *   audioHigh       -> the jewels sparkle (light)
+ *   audioAdvance    -> the globes turn (integrated, jump-free)
+ *   audioSpread     -> globe size
+ *   audioKick       -> the glints flash (light)
+ *   audioMode       -> the light: cool in minor, warm in major
+ *   audioHigh       -> facet sparkles (light)
+ *   audioSwell      -> the terminator softens (slow)
  *
- * Knobs: cellP (cell size), twistP (pinwheel twist inside the cells), photoZoomP, hueP.
+ * Knobs: facetP (facets), tiltP (axis tilt), mirrorP (mirror-ball vs. photo), hueP.
  */
 
 uniform vec2  resolution;
@@ -33,15 +32,15 @@ uniform float audioAdvance;
 uniform float audioLevel;
 uniform float audioValence;
 uniform float audioChromaHue;
-uniform float audioPhase;
 uniform float audioSpread;
 uniform float audioKick;
 uniform float audioMode;
 uniform float audioHigh;
+uniform float audioSwell;
 
-uniform float cellP;
-uniform float twistP;
-uniform float photoZoomP;
+uniform float facetP;
+uniform float tiltP;
+uniform float mirrorP;
 uniform float hueP;
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
@@ -169,51 +168,59 @@ void main()
     vec2 p = screenP();
     float kick = clamp(audioKick, 0.0, 1.0);
     float hi = clamp(audioHigh * 1.5, 0.0, 1.0);
-    float cell = 0.22 + 0.25 * clamp(cellP, 0.0, 1.0);
-    vec2 q = rot2(0.008 * sceneTime + 0.1 * audioPhase) * p / cell;
-    const vec2 s = vec2(1.0, 1.7320508);
-    vec2 ha = mod(q, s) - s * 0.5;
-    vec2 hb = mod(q - s * 0.5, s) - s * 0.5;
-    vec2 h = dot(ha, ha) < dot(hb, hb) ? ha : hb;
-    vec2 cid = q - h;
-    cid = floor(cid / (s * 0.5) + 0.5) * (s * 0.5);                // exact centre: hashes must not see rounding noise
-    float r = length(h);
-    float ang = atan(h.y, h.x);
-    // Six wedges; each is the same piece of photo, rotated (p6: no mirrors).
-    float sec = 1.0471976;
-    float wi = floor((ang + 3.14159265) / sec);                // wedge index (space)
-    float la = ang - (wi * sec - 3.14159265) ;                  // 0..sec inside the wedge
-    float tw = (0.3 + 1.2 * clamp(twistP, 0.0, 1.0)) * r;       // pinwheel twist grows outward
-    vec2 lp = r * vec2(cos(la + tw), sin(la + tw));
-    float z = 0.35 + 0.35 * clamp(photoZoomP, 0.0, 1.0);
-    vec2 win = vec2(0.5) + 0.3 * vec2(sin(0.011 * sceneTime + 0.15 * audioAdvance), cos(0.009 * sceneTime + 0.12 * audioAdvance));
-    vec2 uv = win + (lp - vec2(0.25, 0.1)) * z + cid * 0.013;
-    vec3 ph = imgLod(uv, 0.4);
-    // Facets: each wedge a bevel tilted toward the cell centre.
-    float bevel = 0.4 + 0.6 * clamp(audioSpread, 0.0, 1.0);
-    float mid = wi * sec - 3.14159265 + sec * 0.5;
-    vec3 n = normalize(vec3(-cos(mid) * bevel * smoothstep(0.1, 0.5, r), -sin(mid) * bevel * smoothstep(0.1, 0.5, r), 1.0));
-    float la2 = 0.15 * sceneTime;
-    vec3 L = normalize(vec3(cos(la2), sin(la2), 1.2));
-    float diff = max(dot(n, L), 0.0);
-    float spec = pow(max(dot(reflect(-L, n), vec3(0.0, 0.0, 1.0)), 0.0), 24.0);
+    float swell = clamp(audioSwell, 0.0, 1.0);
     float mode = clamp(audioMode, 0.0, 1.0);
-    vec3 lc = mix(vec3(0.75, 0.88, 1.1), vec3(1.15, 0.9, 0.7), mode);
-    float m = luma(imgLod(win, 8.0));
-    vec3 col = max((ph - m) * 1.4 + m, 0.0) * (0.35 + 0.85 * diff) * lc;
-    col += lc * spec * 0.35;
-    // Facet edges: wedge borders and the hexagon rim.
-    float px = fwidth(r) * 1.5 + 1e-4;
-    float edgeW = min(la, sec - la) * r;
-    float hexD = max(abs(h.x), abs(h.x) * 0.5 + abs(h.y) * 0.866);   // pointy-top cell, inradius 0.5
-    vec3 gc = glowColour(imgLod(win, 5.0), cid * 0.1, hueP * 0.159);
-    float edge = exp(-edgeW / px) * smoothstep(0.05, 0.15, r) + exp(-max(0.5 - hexD, 0.0) / px);
-    col += mix(gc, vec3(1.0), 0.5) * edge * (0.2 + 0.9 * kick);
-    // The jewel at the centre: a small refracting dome.
-    float jr = 0.1;
-    float jd = smoothstep(jr, jr - px, r);
-    vec3 jewel = imgLod(win - h * 2.0, 1.0) * 1.2 * gc;
-    jewel += vec3(1.0) * pow(max(0.0, 1.0 - length(h - vec2(-0.03, 0.03)) / 0.04), 3.0) * (0.3 + 1.2 * hi);
-    col = mix(col, jewel, jd);
+    float S = 2.5 + 2.0 * (1.0 - clamp(audioSpread, 0.0, 1.0));
+    vec2 g = p * S + vec2(0.02, 0.01) * sceneTime;
+    // Hex packing of spheres.
+    const vec2 s = vec2(1.0, 1.7320508);
+    vec2 a = mod(g, s) - s * 0.5;
+    vec2 b = mod(g - s * 0.5, s) - s * 0.5;
+    vec2 l = dot(a, a) < dot(b, b) ? a : b;
+    vec2 cid = g - l;
+    cid = floor(cid / (s * 0.5) + 0.5) * (s * 0.5);                // exact centre: hashes must not see rounding noise
+    float R = 0.49;
+    float r = length(l);
+    float px = fwidth(g.x) * 1.2;
+    float inside = smoothstep(R + px, R - px, r);
+    vec3 lc = mix(vec3(0.75, 0.88, 1.1), vec3(1.15, 0.92, 0.7), mode);
+    vec3 col = vec3(0.01, 0.01, 0.015);
+    // Sphere normal.
+    vec2 ln = l / R;
+    float zz = sqrt(max(0.0, 1.0 - dot(ln, ln)));
+    vec3 n = vec3(ln, zz);
+    // Rotate the sphere: tilted axis, turning.
+    float h = hash21(cid);
+    float tilt = (0.2 + 0.8 * clamp(tiltP, 0.0, 1.0)) * (h - 0.5) * 2.0;
+    float spin = (0.5 + 0.5 * h) * (0.4 * sceneTime + 2.5 * audioAdvance) + h * 6.28;
+    vec3 v = n;
+    v.yz = rot2(tilt) * v.yz;
+    v.xz = rot2(spin) * v.xz;
+    // Facets: latitude/longitude cells (even longitudes, seamless at the wrap).
+    float nf = 5.0 + 7.0 * clamp(facetP, 0.0, 1.0);
+    float lat = asin(clamp(v.y, -1.0, 1.0));
+    float lon = atan(v.z, v.x);
+    float li = floor((lat / 3.14159265 + 0.5) * nf);
+    float nLon = 2.0 * max(1.0, floor(nf * cos((li + 0.5) / nf * 3.14159265 - 1.5708)));
+    float lo = floor((lon / 6.2831853 + 0.5) * nLon);
+    vec2 fid = vec2(li, mod(lo, nLon));
+    // Facet normal: flat per facet (mirror-ball look).
+    float flat_ = hash21(fid + cid);
+    vec2 fuv = vec2((lo + 0.5) / nLon, (li + 0.5) / nf);
+    vec3 ph = imgLod(fuv * 0.8 + hash22(cid) * 0.5, 2.0);
+    vec3 photoC = mix(ph, glowColour(ph, fid, hueP * 0.159), 0.3);
+    vec3 L = normalize(vec3(-0.5, 0.6, 0.65));
+    float diff = smoothstep(-0.1 - 0.3 * swell, 0.4, dot(n, L));
+    vec3 sc = mix(photoC * lc, lc * (0.3 + 0.7 * flat_), clamp(mirrorP, 0.0, 1.0) * 0.6) * (0.2 + 0.9 * diff);
+    // Facet edges.
+    float fe = min(abs(fract((lat / 3.14159265 + 0.5) * nf) - 0.5), abs(fract((lon / 6.2831853 + 0.5) * nLon) - 0.5));
+    sc *= 0.8 + 0.2 * smoothstep(0.42, 0.5, 0.5 - fe);
+    // Specular glint and facet sparkles.
+    float spec = pow(max(dot(reflect(-L, n), vec3(0.0, 0.0, 1.0)), 0.0), 40.0);
+    sc += vec3(1.0) * spec * (0.4 + 1.2 * kick);
+    sc += vec3(1.0) * step(0.97, flat_) * pow(max(0.0, sin(sceneTime * 2.0 + flat_ * 50.0)), 8.0) * hi * diff;
+    col = mix(col, sc, inside);
+    // Soft contact shadow between spheres.
+    col *= 1.0 - 0.3 * smoothstep(R * 0.9, R, r) * inside;
     finish(col);
 }

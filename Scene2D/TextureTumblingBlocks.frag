@@ -177,6 +177,7 @@ void main()
     vec2 hb = mod(q - s * 0.5, s) - s * 0.5;
     vec2 h = dot(ha, ha) < dot(hb, hb) ? ha : hb;
     vec2 cid = q - h;
+    cid = floor(cid / (s * 0.5) + 0.5) * (s * 0.5);                // exact centre: hashes must not see rounding noise
     float ang = atan(h.y, h.x);
     // Flat-top hex: split into three rhombi by spokes to the vertices at
     // 0, 120 and 240 degrees.

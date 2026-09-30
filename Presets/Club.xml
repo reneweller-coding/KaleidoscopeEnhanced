@@ -58,13 +58,6 @@
   <TextureShader file="..\\Scene2D\\FractalKIFS.frag" type="normal" probability="0.35" mood="aggressive,psychedelic" complexity="1">
     <rig preset="flat"/>
   </TextureShader>
-  <TextureShader file="..\\Scene2D\\HarmonicRings.frag" type="KaleidoscopeBase" mood="calm,bright" probability="0.5" complexity="1">
-    <rig preset="flat"/>
-    <!-- Speed only drives ring rotation; flux drives ring brightness -->
-    <float name="speed" minValue="0.0003" maxValue="0.0025"></float>
-    <float name="power" minValue="1.0"    maxValue="1.3"></float>
-    <bool  name="rotate" probability="0.5"></bool>
-  </TextureShader>
   <TextureShader file="..\\Scene2D\\HexKaleido.frag" type="normal" mood="psychedelic,bright" probability="0.5" complexity="1">
     <rig preset="flat"/>
     <float name="zoomP" minValue="0.7" maxValue="1.6"></float>
@@ -3087,11 +3080,19 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\\Scene2D\\TextureCelticKnotwork.frag" type="normal" mood="psychedelic,calm" probability="0.45" complexity="2">
+  <TextureShader file="..\\Scene2D\\TextureRingGears.frag" type="normal" mood="energetic,calm" probability="0.45" complexity="2">
     <rig preset="flat"/>
-    <float name="cellP" minValue="0" maxValue="1"></float>
-    <float name="breakP" minValue="0" maxValue="1"></float>
-    <float name="photoP" minValue="0" maxValue="1"></float>
+    <float name="toothP" minValue="0" maxValue="1"></float>
+    <float name="spokeP" minValue="0" maxValue="1"></float>
+    <float name="enamelP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureSphericalTiling.frag" type="normal" mood="energetic,bright" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="facetP" minValue="0" maxValue="1"></float>
+    <float name="tiltP" minValue="0" maxValue="1"></float>
+    <float name="mirrorP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>

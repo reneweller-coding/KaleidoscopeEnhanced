@@ -1978,13 +1978,6 @@
     <float name="gapWidthP" minValue="0.4" maxValue="1.8"></float>
     <float name="edgeGlowP" minValue="0.8" maxValue="2.5"></float>
   </TextureShader>
-  <TextureShader file="..\Scene2D\SolitonInternalWaveAndamanSea.frag" type="normal" probability="0.4" mood="calm,dreamy,bright" complexity="3">
-    <rig preset="flat"/>
-    <float name="packetCountP" minValue="3.0" maxValue="8.0"></float>
-    <float name="pycnoclineP" minValue="0.6" maxValue="2.2"></float>
-    <float name="glitterP" minValue="0.8" maxValue="2.5"></float>
-    <float name="roughnessP" minValue="0.5" maxValue="2.0"></float>
-  </TextureShader>
   <TextureShader file="..\Scene2D\AcousticBlackHoleEventHorizon.frag" type="normal" probability="0.4" mood="dark,psychedelic,space" complexity="4">
     <rig preset="flat"/>
     <float name="machGradP" minValue="0.8" maxValue="2.5"></float>
@@ -3521,6 +3514,14 @@
     <float name="cellP" minValue="0" maxValue="1"></float>
     <float name="breakP" minValue="0" maxValue="1"></float>
     <float name="photoP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureSphericalTiling.frag" type="normal" mood="energetic,bright" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="facetP" minValue="0" maxValue="1"></float>
+    <float name="tiltP" minValue="0" maxValue="1"></float>
+    <float name="mirrorP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>

@@ -1,24 +1,23 @@
 #version 330 core
 out vec4 fragColor;
 /**
- * @file TextureP6Crystal.frag
- * @brief TEXTURE P6 CRYSTAL: the photograph cut into a crystal of
- * six-fold pinwheels -- each hexagonal cell holds the picture six times,
- * rotated (not mirrored) around its centre, so the cells swirl like
- * turbines; every one of the six wedges is a bevelled facet catching a
- * slowly circling light, with sharp bright facet edges and a small
- * refracting jewel at each cell centre.  The photo glides under the
- * crystal, the facet light wanders.  Endless, mirrorable.
+ * @file TexturePetalFold.frag
+ * @brief TEXTURE PETAL FOLD: origami blossoms opening and closing -- a field
+ * of paper flowers, each folded from a square of the photograph into
+ * pleated petals that radiate from the centre, their valley and mountain
+ * folds shaded by a soft light; the blossoms slowly open (petals flatten)
+ * and close (petals rise and narrow) in waves across the field.
+ * Endless, mirrorable.
  *
  * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the photo glides under the crystal (integrated)
- *   audioPhase      -> the crystal lattice turns (integrated)
- *   audioSpread     -> bevel depth
- *   audioKick       -> the facet edges flash (light)
- *   audioMode       -> light temperature: cool in minor, warm in major
- *   audioHigh       -> the jewels sparkle (light)
+ *   audioAdvance    -> the opening waves travel (integrated, jump-free)
+ *   audioSpread     -> how far the blossoms open
+ *   audioKick       -> the fold ridges catch light (light)
+ *   audioMode       -> the light: cool in minor, warm in major
+ *   audioPhase      -> the blossoms turn (integrated)
+ *   audioSwell      -> the shadows deepen (slow)
  *
- * Knobs: cellP (cell size), twistP (pinwheel twist inside the cells), photoZoomP, hueP.
+ * Knobs: petalP (petal count), sizeP (blossom size), paperP (paper grain), hueP.
  */
 
 uniform vec2  resolution;
@@ -33,15 +32,15 @@ uniform float audioAdvance;
 uniform float audioLevel;
 uniform float audioValence;
 uniform float audioChromaHue;
-uniform float audioPhase;
 uniform float audioSpread;
 uniform float audioKick;
 uniform float audioMode;
-uniform float audioHigh;
+uniform float audioPhase;
+uniform float audioSwell;
 
-uniform float cellP;
-uniform float twistP;
-uniform float photoZoomP;
+uniform float petalP;
+uniform float sizeP;
+uniform float paperP;
 uniform float hueP;
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
@@ -168,52 +167,52 @@ void main()
 {
     vec2 p = screenP();
     float kick = clamp(audioKick, 0.0, 1.0);
-    float hi = clamp(audioHigh * 1.5, 0.0, 1.0);
-    float cell = 0.22 + 0.25 * clamp(cellP, 0.0, 1.0);
-    vec2 q = rot2(0.008 * sceneTime + 0.1 * audioPhase) * p / cell;
-    const vec2 s = vec2(1.0, 1.7320508);
-    vec2 ha = mod(q, s) - s * 0.5;
-    vec2 hb = mod(q - s * 0.5, s) - s * 0.5;
-    vec2 h = dot(ha, ha) < dot(hb, hb) ? ha : hb;
-    vec2 cid = q - h;
-    cid = floor(cid / (s * 0.5) + 0.5) * (s * 0.5);                // exact centre: hashes must not see rounding noise
-    float r = length(h);
-    float ang = atan(h.y, h.x);
-    // Six wedges; each is the same piece of photo, rotated (p6: no mirrors).
-    float sec = 1.0471976;
-    float wi = floor((ang + 3.14159265) / sec);                // wedge index (space)
-    float la = ang - (wi * sec - 3.14159265) ;                  // 0..sec inside the wedge
-    float tw = (0.3 + 1.2 * clamp(twistP, 0.0, 1.0)) * r;       // pinwheel twist grows outward
-    vec2 lp = r * vec2(cos(la + tw), sin(la + tw));
-    float z = 0.35 + 0.35 * clamp(photoZoomP, 0.0, 1.0);
-    vec2 win = vec2(0.5) + 0.3 * vec2(sin(0.011 * sceneTime + 0.15 * audioAdvance), cos(0.009 * sceneTime + 0.12 * audioAdvance));
-    vec2 uv = win + (lp - vec2(0.25, 0.1)) * z + cid * 0.013;
-    vec3 ph = imgLod(uv, 0.4);
-    // Facets: each wedge a bevel tilted toward the cell centre.
-    float bevel = 0.4 + 0.6 * clamp(audioSpread, 0.0, 1.0);
-    float mid = wi * sec - 3.14159265 + sec * 0.5;
-    vec3 n = normalize(vec3(-cos(mid) * bevel * smoothstep(0.1, 0.5, r), -sin(mid) * bevel * smoothstep(0.1, 0.5, r), 1.0));
-    float la2 = 0.15 * sceneTime;
-    vec3 L = normalize(vec3(cos(la2), sin(la2), 1.2));
-    float diff = max(dot(n, L), 0.0);
-    float spec = pow(max(dot(reflect(-L, n), vec3(0.0, 0.0, 1.0)), 0.0), 24.0);
+    float swell = clamp(audioSwell, 0.0, 1.0);
     float mode = clamp(audioMode, 0.0, 1.0);
-    vec3 lc = mix(vec3(0.75, 0.88, 1.1), vec3(1.15, 0.9, 0.7), mode);
-    float m = luma(imgLod(win, 8.0));
-    vec3 col = max((ph - m) * 1.4 + m, 0.0) * (0.35 + 0.85 * diff) * lc;
-    col += lc * spec * 0.35;
-    // Facet edges: wedge borders and the hexagon rim.
-    float px = fwidth(r) * 1.5 + 1e-4;
-    float edgeW = min(la, sec - la) * r;
-    float hexD = max(abs(h.x), abs(h.x) * 0.5 + abs(h.y) * 0.866);   // pointy-top cell, inradius 0.5
-    vec3 gc = glowColour(imgLod(win, 5.0), cid * 0.1, hueP * 0.159);
-    float edge = exp(-edgeW / px) * smoothstep(0.05, 0.15, r) + exp(-max(0.5 - hexD, 0.0) / px);
-    col += mix(gc, vec3(1.0), 0.5) * edge * (0.2 + 0.9 * kick);
-    // The jewel at the centre: a small refracting dome.
-    float jr = 0.1;
-    float jd = smoothstep(jr, jr - px, r);
-    vec3 jewel = imgLod(win - h * 2.0, 1.0) * 1.2 * gc;
-    jewel += vec3(1.0) * pow(max(0.0, 1.0 - length(h - vec2(-0.03, 0.03)) / 0.04), 3.0) * (0.3 + 1.2 * hi);
-    col = mix(col, jewel, jd);
+    float S = 2.0 + 2.5 * (1.0 - clamp(sizeP, 0.0, 1.0));
+    vec2 g = p * S;
+    const vec2 s = vec2(1.0, 1.7320508);
+    vec2 a = mod(g, s) - s * 0.5;
+    vec2 b = mod(g - s * 0.5, s) - s * 0.5;
+    vec2 l = dot(a, a) < dot(b, b) ? a : b;
+    vec2 cid = g - l;
+    cid = floor(cid / (s * 0.5) + 0.5) * (s * 0.5);                // exact centre: hashes must not see rounding noise
+    float h = hash21(cid);
+    float T = 0.2 * sceneTime + 1.2 * audioAdvance;
+    float open = 0.35 + 0.35 * clamp(audioSpread, 0.0, 1.0) + 0.3 * sin(T - dot(cid, vec2(0.5, 0.3)));
+    float n = 2.0 * floor(3.0 + 3.0 * clamp(petalP, 0.0, 1.0));
+    float rot = 0.1 * sceneTime * (h - 0.5) + 0.3 * audioPhase + h * 6.28;
+    vec2 q = rot2(rot) * l;
+    float r = length(q);
+    float ang = atan(q.y, q.x);
+    float sec = 6.2831853 / n;
+    float fa = mod(ang + 6.2831853, sec) - sec * 0.5;          // -half..half within the petal
+    // Petal outline: pointed, narrower when closed.
+    float R = 0.48 * (0.75 + 0.25 * open);
+    float widthF = 0.45 + 0.55 * open;
+    float edgeA = abs(fa) / (sec * 0.5 * widthF);
+    float outline = r / R + 0.35 * edgeA * edgeA * (r / R);
+    float px = fwidth(g.x) * 1.5 / R;
+    float inside = smoothstep(1.0 + px, 1.0 - px, outline);
+    // Pleats: each petal has a mountain fold on its midline and valley folds at its sides.
+    float slope = (1.0 - open) * 1.2;
+    float nx = sign(fa) * slope;                                 // the two halves tilt opposite
+    vec3 nrm = normalize(vec3(rot2(ang) * vec2(-0.3 * (1.0 - open), nx), 1.0));
+    vec3 L = normalize(vec3(-0.5, 0.6, 0.7));
+    float diff = 0.35 + 0.65 * max(dot(nrm, L), 0.0);
+    vec2 uv = cid / S * 0.6 + 0.5 + q * 0.25;
+    vec3 ph = imgLod(uv, 0.8);
+    vec3 lc = mix(vec3(0.85, 0.92, 1.1), vec3(1.1, 0.95, 0.8), mode);
+    vec3 paper = ph * lc * diff * (1.0 - 0.07 * clamp(paperP, 0.0, 1.0) * noise2(q * 40.0 * S));   // grain at a fixed screen scale
+    float ridge = exp(-abs(fa) * r / (px * R * 0.5 + 0.004));
+    paper += lc * ridge * (0.05 + 0.4 * kick) * (1.0 - open);
+    // Shadow under the petals onto the ground.
+    vec3 ground = imgLod(p * 0.5 + 0.5, 4.0) * 0.08;
+    float sh = smoothstep(1.2, 0.9, outline) * (0.4 + 0.4 * swell) * (1.0 - open * 0.5);
+    vec3 col = ground * (1.0 - sh);
+    col = mix(col, paper, inside);
+    col = mix(col, col * glowColour(ph, cid, hueP * 0.159) * 1.3, 0.08);
+    // The centre.
+    col = mix(col, lc * 0.9 * glowColour(ph, cid, hueP * 0.159), smoothstep(0.06, 0.03, r) * inside);
     finish(col);
 }
