@@ -177,6 +177,7 @@ void main()
     float nb = 4.0 + 5.0 * clamp(bandP, 0.0, 1.0);
     vec3 col = vec3(0.95, 0.94, 0.9);
     float bestZ = -1.0;
+    float fwG = fwidth(g.x);                                    // before the loop (continue below)
     // Arcs centred on the grid vertices; each covers a half or full disc;
     // the one with the highest priority at this crossing lies on top.
     for (int j = 0; j <= 1; ++j) for (int i = 0; i <= 1; ++i) {
@@ -203,7 +204,7 @@ void main()
         pc = pc / max(max(pc.r, max(pc.g, pc.b)), 0.2);
         vec3 fluo = hsv2rgb(vec3(fract(band * 0.13 + h * 0.5 + mix(0.55, 0.0, mode)), 0.85, 1.0));
         vec3 bc = mix(fluo, pc, clamp(photoP, 0.0, 1.0) * 0.6);
-        float px = fwidth(x) * 1.2 + 1e-4;
+        float px = fwG / R * nb * bw * 1.2 + 1e-4;
         float white = smoothstep(px * (1.0 + 2.0 * swell), 0.0, min(fb, 1.0 - fb));
         col = mix(bc * (1.0 + 0.3 * kick), vec3(0.97), white * 0.9);
         // Outline of the protractor.
