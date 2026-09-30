@@ -1070,3 +1070,6 @@ TextureAdvectionSilk	8	5	3	4	6	8	7
 TextureNeonRain	4	5	7	7	5	4	5
 TextureContourNeonMap	5	6	6	5	7	6	6
 TextureFireFront	4	5	6	6	5	6	7
+TextureMoldBloom	6	3	3	4	5	7	6
+TextureGoboWash	4	5	8	5	7	5	7
+TexturePhosphorTrails	5	7	5	6	6	5	5

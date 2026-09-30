@@ -2102,13 +2102,6 @@
     <float name="hawkingTempP" minValue="0.8" maxValue="2.5"></float>
     <float name="phononWaveP" minValue="8.0" maxValue="24.0"></float>
   </TextureShader>
-  <TextureShader file="..\Scene2D\PlasmonicMetamaterialBlackHole.frag" type="normal" probability="0.4" mood="psychedelic,bright" complexity="4">
-    <rig preset="flat"/>
-    <float name="trapRadiusP" minValue="0.6" maxValue="1.6"></float>
-    <float name="spiralCurlP" minValue="2.0" maxValue="6.0"></float>
-    <float name="absorberP" minValue="0.8" maxValue="2.5"></float>
-    <float name="poyntingP" minValue="8.0" maxValue="24.0"></float>
-  </TextureShader>
   <TextureShader file="..\Scene2D\RelativisticSynchrotronPulsarWind.frag" type="normal" probability="0.4" mood="bright" complexity="4">
     <rig preset="flat"/>
     <float name="torusRadiusP" minValue="0.3" maxValue="0.9"></float>
@@ -2335,15 +2328,6 @@
     <float name="jetIntensityP" minValue="0.8" maxValue="1.6"></float>
     <float name="glowP" minValue="0.7" maxValue="1.4"></float>
     <expr name="hueP" formula="chromaHue + seed3*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
-  <TextureShader file="..\Scene2D\HopfFibrationStreamlines.frag" type="normal" mood="psychedelic,dark" probability="0.4" complexity="2">
-    <rig preset="flat"/>
-    <float name="speedP" minValue="0.6" maxValue="1.6"></float>
-    <float name="fiberDensityP" minValue="0.7" maxValue="1.5"></float>
-    <float name="tubeRadiusP" minValue="0.05" maxValue="0.12"></float>
-    <float name="glowP" minValue="0.7" maxValue="1.4"></float>
-    <expr name="hueP" formula="chromaHue + seed2*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene2D\HyperspaceKaleidoscopicMatrix.frag" type="normal" mood="psychedelic,dark" probability="0.4" complexity="2">
@@ -3511,6 +3495,22 @@
     <float name="burnP" minValue="0" maxValue="1"></float>
     <float name="charP" minValue="0" maxValue="1"></float>
     <float name="ashP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureGoboWash.frag" type="normal" mood="energetic,psychedelic" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="spotP" minValue="0" maxValue="1"></float>
+    <float name="focusP" minValue="0" maxValue="1"></float>
+    <float name="wallP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TexturePhosphorTrails.frag" type="normal" mood="dark,calm" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="freqP" minValue="0" maxValue="1"></float>
+    <float name="beamP" minValue="0" maxValue="1"></float>
+    <float name="photoP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>

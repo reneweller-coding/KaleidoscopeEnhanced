@@ -972,15 +972,6 @@
     <expr name="hueP" formula="chromaHue + seed3*6.28"/>
     <float name="hueP"     minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\Scene3D\BioluminescentSwarm.frag" type="scene3d" geom="indirect" probability="0.48" mood="dark,calm,dreamy" complexity="4">
-    <rig preset="procedural"/>
-    <float name="swarmP" minValue="0.5" maxValue="1.8"></float>
-    <float name="speedP" minValue="0.5" maxValue="1.8"></float>
-    <expr name="glowP" formula="clamp(1.25 + 0.3*(seed2*2.0-1.0) + 0.675*(0.6*kick+0.4*snare), 0.5, 2)"/>
-    <float name="glowP"  minValue="0.5" maxValue="2.0"></float>
-    <expr name="hueP" formula="chromaHue + seed3*6.28"/>
-    <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader file="..\Scene2D\SupermassiveAccretionDisk.frag" type="normal" probability="0.5" mood="aggressive,bright,psychedelic" complexity="4">
     <rig preset="flat"/>
     <float name="spinP" minValue="0.5" maxValue="1.8"></float>
@@ -3096,6 +3087,14 @@
     <float name="burnP" minValue="0" maxValue="1"></float>
     <float name="charP" minValue="0" maxValue="1"></float>
     <float name="ashP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureGoboWash.frag" type="normal" mood="energetic,psychedelic" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="spotP" minValue="0" maxValue="1"></float>
+    <float name="focusP" minValue="0" maxValue="1"></float>
+    <float name="wallP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>

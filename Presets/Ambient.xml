@@ -891,9 +891,6 @@
   <TextureShader file="..\\Scene3D\\ParticleGalaxy.frag" type="scene3d" geom="points" probability="0.45" mood="calm,space" complexity="2">
     <rig preset="procedural"/>
   </TextureShader>
-  <TextureShader file="..\\Scene3D\\HelixTower.frag" type="scene3d" geom="points" probability="0.4" mood="calm" complexity="2">
-    <rig preset="procedural"/>
-  </TextureShader>
   <TextureShader file="..\\Scene3D\\PlanetRings.frag" type="scene3d" geom="points" probability="0.4" mood="calm,dark,space" complexity="2">
     <rig preset="procedural"/>
   </TextureShader>
@@ -3229,6 +3226,14 @@
     <float name="fibreP" minValue="0" maxValue="1"></float>
     <float name="vortexP" minValue="0" maxValue="1"></float>
     <float name="sheenP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureMoldBloom.frag" type="normal" mood="calm,bright" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="colonyP" minValue="0" maxValue="1"></float>
+    <float name="ringP" minValue="0" maxValue="1"></float>
+    <float name="fuzzP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>

@@ -2198,23 +2198,6 @@
     <expr name="hueP" formula="chromaHue + seed2*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\Scene3D\NeonHighwayDrive.frag" type="scene3d" geom="grid" probability="0.42" mood="dark,aggressive" complexity="3">
-    <rig preset="procedural"/>
-    <float name="speedP" minValue="0.6" maxValue="1.7"></float>
-    <float name="pylonP" minValue="0.6" maxValue="1.6"></float>
-    <float name="terrainP" minValue="0.5" maxValue="1.5"></float>
-    <expr name="hueP" formula="chromaHue + seed3*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
-  <TextureShader file="..\Scene2D\MobiusInversionKaleidoscope.frag" type="normal" mood="psychedelic,dark" probability="0.4" complexity="2">
-    <rig preset="flat"/>
-    <int name="circlesP" minValue="3" maxValue="7"></int>
-    <float name="ringP" minValue="0.45" maxValue="0.8"></float>
-    <float name="overlapP" minValue="1.0" maxValue="1.25"></float>
-    <float name="glowP" minValue="0.7" maxValue="1.4"></float>
-    <expr name="hueP" formula="chromaHue + seed2*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader file="..\Scene3D\WormholeMirrorWeave.frag" type="scene3d" geom="ribbon" probability="0.45" mood="dark,psychedelic,aggressive" complexity="3">
     <rig preset="procedural"/>
     <int name="sidesP" minValue="4" maxValue="8"></int>
@@ -3646,6 +3629,22 @@
     <float name="burnP" minValue="0" maxValue="1"></float>
     <float name="charP" minValue="0" maxValue="1"></float>
     <float name="ashP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureGoboWash.frag" type="normal" mood="energetic,psychedelic" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="spotP" minValue="0" maxValue="1"></float>
+    <float name="focusP" minValue="0" maxValue="1"></float>
+    <float name="wallP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TexturePhosphorTrails.frag" type="normal" mood="dark,calm" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="freqP" minValue="0" maxValue="1"></float>
+    <float name="beamP" minValue="0" maxValue="1"></float>
+    <float name="photoP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
