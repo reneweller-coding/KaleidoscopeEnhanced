@@ -384,25 +384,11 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\Scene2D\FrozenMethaneLakes.frag" type="normal" mood="calm,dreamy,space" probability="0.45" complexity="3">
-    <rig preset="flat"/>
-    <float name="iceP" minValue="0.5" maxValue="1.5"></float>
-    <float name="ringP" minValue="0.5" maxValue="2.0"></float>
-    <expr name="hueP" formula="chromaHue + seed2*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader file="..\Scene2D\DepthPortalRecursion.frag" type="normal" mood="psychedelic,dreamy,dark" probability="0.45" complexity="2">
     <rig preset="flat"/>
     <float name="portalP" minValue="0.55" maxValue="0.80"></float>
     <float name="twistP" minValue="0.05" maxValue="0.35"></float>
     <float name="decayP" minValue="0.90" maxValue="0.96"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
-  <TextureShader file="..\Scene2D\StereoKaleidoscope.frag" type="normal" mood="psychedelic,bright,aggressive" probability="0.45" complexity="2">
-    <rig preset="flat"/>
-    <float name="sidesP" minValue="5" maxValue="9"></float>
-    <float name="zoomP" minValue="0.8" maxValue="1.3"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
@@ -3317,6 +3303,22 @@
     <rig preset="flat"/>
     <float name="bandP" minValue="0" maxValue="1"></float>
     <float name="fibreP" minValue="0" maxValue="1"></float>
+    <float name="photoP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureRingFlight.frag" type="normal" mood="energetic,psychedelic" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="spacingP" minValue="0" maxValue="1"></float>
+    <float name="bandP" minValue="0" maxValue="1"></float>
+    <float name="curveP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureDichroicCoat.frag" type="normal" mood="psychedelic,bright" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="pieceP" minValue="0" maxValue="1"></float>
+    <float name="bevelP" minValue="0" maxValue="1"></float>
     <float name="photoP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
