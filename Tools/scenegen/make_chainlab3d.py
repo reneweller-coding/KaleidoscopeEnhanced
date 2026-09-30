@@ -10,8 +10,9 @@ HEAD = r'''//@doc
  * @brief CHAIN LAB 3D: the 3D chain laboratory -- every start rolls a new
  * raymarched world from three classes of continuous space transforms: a space
  * (mirrored lattice, polar ring tunnel, twisted lattice, octahedral lattice,
- * turning lattice), a fold core (none, tetrahedral KIFS, octahedral KIFS, a
- * sphere-inversion box fold, plane folds, Menger sponge) and an end body (block, ball, torus, gyroid
+ * turning lattice, helix, hexagonal lattice), a fold core (none, tetrahedral KIFS, octahedral KIFS, a
+ * sphere-inversion box fold, plane folds, Menger sponge,
+ * Kleinian fold) and an end body (block, ball, torus, gyroid
  * membrane, cross, Schwarz P and D minimal surfaces).  The surfaces are coloured by a rolled 2D chain of the
  * 2D chain lab (global map, symmetry, second map, warp) projected
  * triplanarly, with a colour field that follows the chain and wanders with the
@@ -28,12 +29,13 @@ HEAD = r'''//@doc
  *
  * Knobs: spaceP / coreP / bodyP (the 3D chain, rolled per start), solidP (the colour
  * chain projected on three planes, or as a solid texture with the depth as its
- * time axis), chainAP..chainDP
+ * time axis), reliefP (the surfaces bulge with the colour chain's brightness),
+ * chainAP..chainDP
  * (the 2D colour chain, rolled per start), morphP (which colour stage morphs on
  * with the music), styleP (lit surface / glowing rims),
  * speedP (flight speed), detailP (texture sharpness), paletteP (photo colours /
  * colour field), hueP.
-//@params spaceP coreP bodyP solidP chainAP chainBP chainCP chainDP morphP styleP speedP detailP paletteP
+//@params spaceP coreP bodyP solidP reliefP chainAP chainBP chainCP chainDP morphP styleP speedP detailP paletteP
 //@audio audioSpread audioKick audioMode audioSwell
 //@body
 float gT, gTC, gSpread, gRot, gMw;
@@ -41,17 +43,45 @@ vec2 gCw, gCt;
 '''
 FIELD = r'''
 vec3 zRepeat(vec3 q, float c) { q.z = c * (abs(mod(q.z / c - 1.0, 4.0) - 2.0) - 1.0); return q; }
-float field3(vec3 p)
+// Six-fold mirror lattice across the tube (p6m in xy): nearest hexagon
+// centre, then the angle folded into a 30-degree wedge -- mirror symmetric,
+// so the pieces meet without seams.
+vec3 fHexXY(vec3 p, float cell)
 {
-    int ks = pickStage(spaceP, 5); float vs = subVar(spaceP, 5);
-    int kc = pickStage(coreP, 6);  float vc = subVar(coreP, 6);
-    int kb = pickStage(bodyP, 7);  float vb = subVar(bodyP, 7);
+    vec2 q = p.xy / cell;
+    const vec2 s = vec2(1.0, 1.7320508);
+    vec2 a = mod(q, s) - s * 0.5, b = mod(q - s * 0.5, s) - s * 0.5;
+    vec2 h = dot(a, a) < dot(b, b) ? a : b;
+    float an = abs(mod(atan(h.y, h.x), 1.0471976) - 0.5235988);
+    return vec3(length(h) * vec2(cos(an), sin(an)) * cell, p.z);
+}
+// The structure classes in order of energy (calm .. energetic), as the chain's
+// (if-chains, not const arrays: NVIDIA returned entry 0 for three arrays
+// indexed in one function -- the body never changed):
+// the music's energy picks the region of the world too.
+int ordsp(int i) { if (i == 0) return 0; if (i == 1) return 3; if (i == 2) return 6; if (i == 3) return 4; if (i == 4) return 2; if (i == 5) return 5; return 1; }   // lattice, octahedral lattice, hexagons, turning, twisted, helix, polar ring tunnel
+int ordco(int i) { if (i == 0) return 0; if (i == 1) return 4; if (i == 2) return 3; if (i == 3) return 6; if (i == 4) return 1; if (i == 5) return 2; return 5; }   // none, plane folds, sphere-inversion box, Kleinian, tetra KIFS, octa KIFS, Menger
+int ordbo(int i) { if (i == 0) return 1; if (i == 1) return 2; if (i == 2) return 3; if (i == 3) return 5; if (i == 4) return 6; if (i == 5) return 0; return 4; }   // balls, tori, gyroid, Schwarz P, Schwarz D, blocks, crosses
+// The app walks the structure too (EffectShader::stepChainWalk): (shown, target, fade).
+uniform vec3 walkSpace, walkCore, walkBody;
+
+// One world: a space, a fold core and a body, each a knob value on its energy scale.
+float fieldK(vec3 p, float xs, float xc, float xb)
+{
+    gDR = 1.0;
+    int ks = ordsp(pickStage(xs, 7)); float vs = subVar(xs, 7);
+    int kc = ordco(pickStage(xc, 7)); float vc = subVar(xc, 7);
+    int kb = ordbo(pickStage(xb, 7)); float vb = subVar(xb, 7);
     vec3 q;
     if (ks == 0) q = fRepeat(p, vec3(1.2 + 0.4 * vs));
     else if (ks == 1) { q = fPolarZ(p, 6.0 + 2.0 * floor(vs * 2.99)); q.x -= 2.2; q = zRepeat(q, 0.8); }
     else if (ks == 2) q = fRepeat(fTwistZ(p, 0.25 * sin(gT * 0.05)), vec3(1.4));
     else if (ks == 3) q = fOcta(fRepeat(p, vec3(1.5)));
-    else q = fRepeat(fRot(p, vec3(0.0, 0.0, 1.0), 0.3 * sin(gRot)), vec3(1.2, 1.2, 1.8));
+    else if (ks == 4) q = fRepeat(fRot(p, vec3(0.0, 0.0, 1.0), 0.3 * sin(gRot)), vec3(1.2, 1.2, 1.8));
+    else if (ks == 5) {                                     // helix: a ring of blocks wound along the flight (a spiral staircase)
+        q = fPolarZ(fTwistZ(p, 0.3 + 0.2 * vs), 5.0 + 2.0 * floor(vs * 2.99)); q.x -= 2.0; q = zRepeat(q, 0.7);
+    }
+    else q = zRepeat(fHexXY(p, 2.2 + 0.6 * vs), 1.2);        // hexagonal lattice: a honeycomb of pillars
     float bs = 1.0;                                         // body size in the core's space
     if (kc == 1) {
         for (int i = 0; i < 3; ++i) { q = fTetra(q); q = fRot(q, vec3(1.0, 1.0, 0.0), gRot * 0.5 + 0.3 * vc); q = fScale(q, 1.7, vec3(0.45)); }
@@ -75,6 +105,16 @@ float field3(vec3 p)
             if (q.z < -1.0) q.z += 2.0;
         }
         bs = 2.6;
+    } else if (kc == 6) {
+        // Kleinian (pseudo-Kleinian) fold: box folds and sphere inversions,
+        // endlessly nested grottoes; max() keeps the inversion continuous.
+        q = fScale(q, 1.8, vec3(0.0));                      // the cells are small: grow them into the folds' reach
+        for (int i = 0; i < 4; ++i) {
+            q = 2.0 * clamp(q, -vec3(0.8, 0.8, 1.0), vec3(0.8, 0.8, 1.0)) - q;
+            float k = max((1.05 + 0.3 * vc) / max(dot(q, q), 1e-4), 1.0);
+            q *= k; gDR *= k;
+        }
+        bs = 0.7;
     }
     gP = q;
     float th = 1.0 + 0.3 * gSpread;
@@ -88,6 +128,23 @@ float field3(vec3 p)
         d = (abs(sn.x * sn.y * sn.z + sn.x * cs.y * cs.z + cs.x * sn.y * cs.z + cs.x * cs.y * sn.z) - 0.25 - 0.2 * gSpread) / 2.2 * bs / 3.0; }
     else d = min(min(sdBox3(q, vec3(0.6, 0.08, 0.08) * bs * th), sdBox3(q, vec3(0.08, 0.6, 0.08) * bs * th)), sdBox3(q, vec3(0.08, 0.08, 0.6) * bs * th));
     return d / gDR * 0.8;
+}
+// The world, walking: while the app fades one structure stage, the two worlds'
+// distance fields are mixed -- continuous, the architecture melts into the next.
+float field3(vec3 p)
+{
+    float xs = spaceP, xc = coreP, xb = bodyP, ys = xs, yc = xc, yb = xb, f = 0.0;
+    if (walkHost > 0.5 && walkAll()) {
+        xs = walkSpace.x; xc = walkCore.x; xb = walkBody.x;
+        ys = walkSpace.y; yc = walkCore.y; yb = walkBody.y;
+        f = smoothstep(0.0, 1.0, max(walkSpace.z, max(walkCore.z, walkBody.z)));   // one structure stage fades at a time
+    }
+    float d0 = fieldK(p, xs, xc, xb);
+    if (f <= 0.0) return d0;
+    vec3 p0 = gP;
+    float d1 = fieldK(p, ys, yc, yb);
+    gP = mix(p0, gP, f);
+    return mix(d0, d1, f);
 }
 vec2 chain(vec2 uv)
 {
@@ -144,6 +201,29 @@ vec3 colour3(vec3 q, vec3 n, float lod, float pal)
 """
 MAIN = MAIN.replace("void main()", SOLID + "\nvoid main()", 1)
 MAIN = MAIN.replace("vec3 tex = photoChain3(fp, n, lod, ", "vec3 tex = colour3(fp, n, lod, ")
+RELIEF = """
+// Relief: the brightness of the colour chain as height -- the normal is tilted
+// by its slope, measured in the world along two tangents (each sample folds its
+// point like the surface), so the light follows the bumps.
+float reliefH(vec3 qw, vec3 n, float lod)
+{
+    fieldD(qw);
+    vec3 w = abs(n), fq = gP;
+    vec2 uv = (w.x > w.y && w.x > w.z) ? fq.yz : (w.y > w.z ? fq.zx : fq.xy);
+    return luma(chainPlane(uv * 0.35 + 0.5, lod, 0.0));
+}
+"""
+MAIN = MAIN.replace("void main()", RELIEF + "\nvoid main()", 1)
+MAIN = MAIN.replace("        vec3 tex = colour3(fp, n, lod, ", """        vec3 nGeo = n;                                          // texture on the geometric normal, light on the bumped one
+        if (reliefP > 0.3) {                                    // a knob: every pixel takes the same branch
+            vec3 t1 = normalize(cross(n, abs(n.y) < 0.9 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0))), t2 = cross(n, t1);
+            float e = 0.006 * max(t, 1.0), hl = lod + 1.5;
+            float h0 = reliefH(q, n, hl);
+            vec3 g = t1 * (reliefH(q + t1 * e, n, hl) - h0) + t2 * (reliefH(q + t2 * e, n, hl) - h0);
+            n = normalize(n - g / e * 0.05 * smoothstep(0.3, 1.0, reliefP));
+        }
+        vec3 tex = colour3(fp, nGeo, lod, """, 1)
+assert "reliefH(q + t1" in MAIN
 assert "colour3(fp" in MAIN
 io.open(os.path.join(SP, "src", "ChainLab3D.glsl"), "w", encoding="utf-8").write(HEAD + STAGES + FIELD + MAIN)
 print("ok")

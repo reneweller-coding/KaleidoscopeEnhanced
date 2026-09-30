@@ -10668,6 +10668,7 @@
     <float name="coreP" minValue="0" maxValue="1"></float>
     <float name="bodyP" minValue="0" maxValue="1"></float>
     <float name="solidP" minValue="0" maxValue="1"></float>
+    <float name="reliefP" minValue="0" maxValue="1"></float>
     <float name="chainAP" minValue="0" maxValue="1"></float>
     <float name="chainBP" minValue="0" maxValue="1"></float>
     <float name="chainCP" minValue="0" maxValue="1"></float>

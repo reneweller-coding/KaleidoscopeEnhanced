@@ -378,6 +378,18 @@ vec2 tRiemann(vec2 uv, vec2 c, float scale, float a1, float a2)
     P.xy = rot2(a2) * P.xy;
     return c + P.xy / max(1.0 - P.z, 1e-3) / scale;
 }
+// Loxodromic stream: the Moebius map sending the two poles to 0 and infinity,
+// then log-polar -- the picture screws out of one pole and into the other
+// along spirals.  (log|w| + i arg w, mirror-repeated: arg jumps by 2 pi on the
+// segment between the poles, i.e. by a whole number of periods when the angle
+// is scaled by 1/pi and `twist` stays whole.)
+vec2 tLoxo(vec2 uv, vec2 pa, vec2 pb, float twist, float flow)
+{
+    vec2 z1 = uv - pa, z2 = uv - pb;
+    vec2 w = vec2(z1.x * z2.x + z1.y * z2.y, z1.y * z2.x - z1.x * z2.y) / max(dot(z2, z2), 1e-6);
+    float lr = 0.5 * log(max(dot(w, w), 1e-10)), an = atan(w.y, w.x) / 3.14159265;
+    return vec2(lr * 0.3 + an * twist - flow, an * 2.0 + lr * 0.15);
+}
 // Blossom: the radius swells and shrinks with the angle, n whole petals.
 vec2 tPetal(vec2 uv, vec2 c, float n, float amp, float turn)
 {

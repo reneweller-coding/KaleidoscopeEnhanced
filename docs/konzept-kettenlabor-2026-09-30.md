@@ -55,6 +55,16 @@ passiert unsichtbar zwischen zwei Auftritten.
   Zufallsanteil die Abwechslung. Der Planer schneidet ein wanderndes Labor
   nicht mehr bei Songteilwechseln und Drops weg (die Taste `n` wirkt weiter).
   Ohne App (Editor) wandert der Shader per Hash.
+* **Auch die 3D-Welt wandert** (ChainLab3D): Raum, Faltkern und Körper sind
+  weitere Wanderstufen; während eine davon überblendet, werden die
+  Distanzfelder beider Welten gemischt — die Architektur schmilzt in die
+  nächste (immer nur eine Strukturstufe zugleich; 89–95 fps währenddessen).
+  Neu: Helix- und Sechseck-Räume, Kleinsche Faltung, Schwarz-P/D-Körper,
+  Volumentextur (`solidP`: Zeit als dritte Achse), Relief (`reliefP`).
+  2D neu: Riemann-Kugel, loxodromische Strömung, Blüte. **Falle:** der
+  NVIDIA-Compiler lieferte bei mehreren dynamisch indizierten `const int[]`
+  in einer Funktion immer Eintrag 0 — die Energie-Tabellen sind deshalb
+  If-Ketten.
 * **Ketten-Morph** (`morphP` 0,15–0,5): würfelt, welche Stufe (oder keine) während der
   Szene weiterwandert. Getrieben von `sceneAdvance` (steigt bei Spektralfluss
   und Harmoniewechseln): Transformation halten, dann über die gespiegelten

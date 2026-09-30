@@ -654,7 +654,8 @@ protected:
 	 *
 	 * The shader alone cannot let the music choose where a stage walks: it has no
 	 * memory, so a target taken from the current audio could change mid-fade.
-	 * Here each stage (A..D and the look, S) keeps the knob value it shows, its
+	 * Here each stage (A..D, the look S, and in the 3D lab space/core/body) keeps
+ * the knob value it shows, its
 	 * target and the fade progress; the music decides when a stage walks (a new
 	 * section, a drop, a harmonic change, or its hold time running out -- shorter
 	 * the more energy) and where to (the classes are ordered calm..energetic in
@@ -665,23 +666,23 @@ protected:
 	{
 		bool  active = false;           ///< Walk mode rolled (morphP >= 0.5) and the shader takes host walks.
 		bool  pending = true;           ///< Reset due (activation); done lazily once the program exists.
-		float x0[5] = {};               ///< Knob value shown per stage (A, B, C, D, look).
-		float x1[5] = {};               ///< Fade target per stage.
-		float f[5] = {};                ///< Fade progress 0..1 per stage.
-		float fadeDur[5] = {};          ///< Fade length per stage, seconds.
-		float hold[5] = {};             ///< Seconds since the stage last changed.
-		bool  fading[5] = {};           ///< Stage is fading to x1.
+		float x0[8] = {};               ///< Knob value shown per stage (A, B, C, D, look, space, core, body).
+		float x1[8] = {};               ///< Fade target per stage.
+		float f[8] = {};                ///< Fade progress 0..1 per stage.
+		float fadeDur[8] = {};          ///< Fade length per stage, seconds.
+		float hold[8] = {};             ///< Seconds since the stage last changed.
+		bool  fading[8] = {};           ///< Stage is fading to x1.
 		int   lastSection = -1;         ///< Last seen AudioFeatures::sectionCount (-1 = not yet).
 		int   lastDrop = -1;            ///< Last seen AudioFeatures::dropCount.
 		float energy = 0.5f;            ///< Slowly smoothed arousal (8 s).
 		float harmCool = 0.f;           ///< Cooldown for harmonic-change walks, seconds.
-		std::map<int, std::array<float, 5>> sectionLook;   ///< Look per section id: a returning section returns to it.
+		std::map<int, std::array<float, 8>> sectionLook;   ///< Look per section id: a returning section returns to it.
 		std::chrono::steady_clock::time_point last;       ///< Wall clock of the previous step.
 		bool  hasLast = false;          ///< last is valid.
 		std::minstd_rand rng;           ///< Own random stream (keeps the scene's rand() stream untouched per frame).
 	} m_walk;
 	GLuint	m_walkProg = 0;             ///< Program the walk locations belong to.
-	GLint	m_walkLoc[5] = { -1, -1, -1, -1, -1 };   ///< Locations of walkA, walkB, walkC, walkD, walkS.
+	GLint	m_walkLoc[8] = { -1, -1, -1, -1, -1, -1, -1, -1 };   ///< Locations of walkA..walkD, walkS, walkSpace, walkCore, walkBody (-1 = stage absent).
 	GLint	m_walkHostLoc = -1;         ///< Location of walkHost (-1: not a chain lab).
 	/// @brief Re-reads the rolled knobs into the walk state (called lazily after an activation).
 	void resetChainWalk();

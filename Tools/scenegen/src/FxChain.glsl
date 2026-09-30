@@ -37,11 +37,11 @@ float sides(float v) { return 5.0 + floor(v * 4.99); }                     // 5 
 // The classes of every stage in order of energy (calm .. energetic): a knob
 // value, rolled or walked, picks a position on that scale, so the music's
 // energy can choose the region (EffectShader::stepChainWalk).
-const int ORD_A[13] = int[13](11, 5, 4, 9, 1, 12, 6, 10, 7, 8, 3, 0, 2);   // 11 = none (identity)
-const int ORD_B[6] = int[6](0, 5, 3, 1, 2, 4);
-const int ORD_C[9] = int[9](0, 5, 8, 7, 1, 4, 3, 6, 2);
-const int ORD_D[6] = int[6](0, 5, 2, 1, 4, 3);
-const int ORD_S[5] = int[5](0, 1, 3, 4, 2);   // photo, relief, contours, flow, glowing edges
+int orda(int i) { if (i == 0) return 11; if (i == 1) return 5; if (i == 2) return 4; if (i == 3) return 9; if (i == 4) return 1; if (i == 5) return 12; if (i == 6) return 6; if (i == 7) return 10; if (i == 8) return 7; if (i == 9) return 8; if (i == 10) return 3; if (i == 11) return 13; if (i == 12) return 0; return 2; }   // 11 = none (identity)
+int ordb(int i) { if (i == 0) return 0; if (i == 1) return 5; if (i == 2) return 3; if (i == 3) return 1; if (i == 4) return 2; return 4; }
+int ordc(int i) { if (i == 0) return 0; if (i == 1) return 5; if (i == 2) return 8; if (i == 3) return 7; if (i == 4) return 1; if (i == 5) return 4; if (i == 6) return 3; if (i == 7) return 6; return 2; }
+int ordd(int i) { if (i == 0) return 0; if (i == 1) return 5; if (i == 2) return 2; if (i == 3) return 1; if (i == 4) return 4; return 3; }
+int ords(int i) { if (i == 0) return 0; if (i == 1) return 1; if (i == 2) return 3; if (i == 3) return 4; return 2; }   // photo, relief, contours, flow, glowing edges
 // The app's walk: per stage (shown knob value, target, fade 0..1); walkHost = 1
 // when the app steers (otherwise the hash walk below runs, e.g. in the editor).
 uniform vec3 walkA, walkB, walkC, walkD, walkS;
@@ -50,7 +50,11 @@ uniform float walkHost;
 // Stage A: a global map.
 vec2 stageAk(vec2 uv, int k, float v)
 {
-    k = ORD_A[k];
+    k = orda(k);
+    if (k == 13) {
+        vec2 pa = gCw + 0.25 * vec2(cos(gT * 0.3), sin(gT * 0.3)), pb = gCw - 0.25 * vec2(cos(gT * 0.3), sin(gT * 0.3));
+        return tLoxo(uv, pa, pb, 1.0 + floor(v * 2.99), gT * 2.0);
+    }
     if (k == 11) return uv;                                  // none: the chain starts at stage B
     if (k == 12) return tRiemann(uv, gCw, 2.0 + 1.5 * v, 0.7 * sin(gT * 0.4) + v * 3.0, gT * 0.8 + gRot);
     if (k == 0) return tKaleido(uv, gCw, sides(v), gRot);
@@ -76,7 +80,7 @@ vec2 stageAk(vec2 uv, int k, float v)
 // Stage B: a symmetry.
 vec2 stageBk(vec2 uv, int k, float v)
 {
-    k = ORD_B[k];
+    k = ordb(k);
     if (k == 0) return uv;
     if (k == 1) return tKaleido(uv, gCw, sides(v), gRot);
     if (k == 2) return tHex(uv, 2.0 + 1.5 * v);
@@ -87,7 +91,7 @@ vec2 stageBk(vec2 uv, int k, float v)
 // Stage C: a second global map.
 vec2 stageCk(vec2 uv, int k, float v)
 {
-    k = ORD_C[k];
+    k = ordc(k);
     if (k == 8) return tPetal(uv, gCw, 3.0 + floor(v * 5.99), 0.15 + 0.2 * gSpread, gT * 2.0);
     if (k == 0) return uv;
     if (k == 1) return tSpiral(uv, vec2(0.5), evenArms(v), 1.0, gT * 1.5);
@@ -101,7 +105,7 @@ vec2 stageCk(vec2 uv, int k, float v)
 // Stage D: a warp.
 vec2 stageDk(vec2 uv, int k, float v)
 {
-    k = ORD_D[k];
+    k = ordd(k);
     if (k == 0) return uv;
     if (k == 1) return tTwirl(uv, gCw, 2.5 * sin(gT * 0.6), 0.3 + 0.1 * v + 0.2 * gSpread);
     if (k == 2) return tWave(uv, 6.0 + 4.0 * v, 0.02 + 0.04 * gSpread, gT * 4.0);
@@ -143,19 +147,19 @@ float walkFade(float kf) { return smoothstep(walkAll() ? 0.7 : 0.55, 1.0, fract(
 vec2 morphMix(vec2 a, vec2 b, float f) { return mix(mirrorUV(a), mirrorUV(b), f); }
 vec2 stageA(vec2 uv)
 {
-    int k0 = pickStage(chainAP, 13); float v0 = subVar(chainAP, 13);
+    int k0 = pickStage(chainAP, 14); float v0 = subVar(chainAP, 14);
     if (!walks(1)) { gIdW *= (k0 <= 0 ? 1.0 : 0.0); return stageAk(uv, k0, v0); }
     if (walkHost > 0.5 && walkAll()) {
         float f = smoothstep(0.0, 1.0, walkA.z);
-        int j0 = pickStage(walkA.x, 13), j1 = pickStage(walkA.y, 13);
+        int j0 = pickStage(walkA.x, 14), j1 = pickStage(walkA.y, 14);
         gIdW *= (j0 <= 0 ? 1.0 - f : 0.0) + (j1 <= 0 ? f : 0.0);
-        if (f <= 0.0) return stageAk(uv, j0, subVar(walkA.x, 13));
-        return morphMix(stageAk(uv, j0, subVar(walkA.x, 13)), stageAk(uv, j1, subVar(walkA.y, 13)), f);
+        if (f <= 0.0) return stageAk(uv, j0, subVar(walkA.x, 14));
+        return morphMix(stageAk(uv, j0, subVar(walkA.x, 14)), stageAk(uv, j1, subVar(walkA.y, 14)), f);
     }
     float kf = walkPos(1), c = floor(kf);
     int i0, i1; float w0, w1;
-    walkPick(c, k0, v0, 13, 1.3, i0, w0);
-    walkPick(c + 1.0, k0, v0, 13, 1.3, i1, w1);
+    walkPick(c, k0, v0, 14, 1.3, i0, w0);
+    walkPick(c + 1.0, k0, v0, 14, 1.3, i1, w1);
     float f = walkFade(kf);
     gIdW *= (i0 <= 0 ? 1.0 - f : 0.0) + (i1 <= 0 ? f : 0.0);
     if (f <= 0.0) return stageAk(uv, i0, w0);
@@ -293,7 +297,7 @@ void main()
     // contour direction (line integral convolution) with a travelling phase --
     // silky stream lines that follow the chain.  Only paid for while shown.
     vec3 flowC = photo * 0.25;
-    if (ORD_S[s0] == 4 || (ORD_S[s1] == 4 && sf > 0.0)) {
+    if (ords(s0) == 4 || (ords(s1) == 4 && sf > 0.0)) {
         vec2 fd = vec2(-grad.y, grad.x);
         float gl = length(fd);
         fd /= max(gl, 1e-5);
@@ -310,7 +314,7 @@ void main()
         flowC = gc * lic * (1.3 + kick) + photo * 0.25;
     }
     vec3 looks[5] = vec3[5](photo, reliefC, neon, isoC, flowC);
-    s0 = ORD_S[s0]; s1 = ORD_S[s1];                            // position on the calm..energetic scale -> look
+    s0 = ords(s0); s1 = ords(s1);                            // position on the calm..energetic scale -> look
     vec3 col = mix(looks[s0], looks[s1], sf);
     col *= mix(vec3(0.9, 0.97, 1.08), vec3(1.08, 0.98, 0.9), mode);
     col += gc * edge * kick * 0.3 * ((s0 <= 1 ? 1.0 - sf : 0.0) + (s1 <= 1 ? sf : 0.0));   // kick glints on photo/relief

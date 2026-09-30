@@ -975,8 +975,12 @@ bool EffectShader::usesBake()
 
 // ---- Chain walk (host side of the chain labs' walk) ----------------------
 // Stage order: A, B, C, D (the chain), S (the look); each has a rolled knob.
-static const char *kWalkKnob[5]  = { "chainAP", "chainBP", "chainCP", "chainDP", "styleP" };
-static const char *kWalkUni[5]   = { "walkA", "walkB", "walkC", "walkD", "walkS" };
+// Stages 5..7 (the 3D structure: space, fold core, body) exist in ChainLab3D only.
+static const int   kWalkN = 8;
+static const char *kWalkKnob[8]  = { "chainAP", "chainBP", "chainCP", "chainDP", "styleP", "spaceP", "coreP", "bodyP" };
+static const char *kWalkUni[8]   = { "walkA", "walkB", "walkC", "walkD", "walkS", "walkSpace", "walkCore", "walkBody" };
+static const char *kWalkName[8]  = { "A", "B", "C", "D", "look", "space", "core", "body" };
+static bool isStructure( int s ) { return s >= 5; }
 
 void EffectShader::resetChainWalk()
 {
@@ -984,7 +988,7 @@ void EffectShader::resetChainWalk()
 	for( const Uniform *u : m_uniforms )
 		if( u->getName() == "morphP" ) morph = u->snapshotValue();
 	m_walk.active = ( m_walkHostLoc >= 0 && morph >= 0.5f );
-	for( int s = 0; s < 5; ++s )
+	for( int s = 0; s < kWalkN; ++s )
 	{
 		float v = 0.f;
 		for( const Uniform *u : m_uniforms )
@@ -1005,13 +1009,17 @@ void EffectShader::resetChainWalk()
 
 void EffectShader::startWalk( int s, float target, float dur )
 {
-	if( m_walk.fading[s] )
+	if( m_walk.fading[s] || ( m_walkLoc[s] < 0 && s != 0 ) )
 		return;
+	// The shader mixes two whole 3D worlds while a structure stage fades: one at a time.
+	if( isStructure( s ) )
+		for( int o = 5; o < kWalkN; ++o )
+			if( m_walk.fading[o] ) return;
 	m_walk.x1[s]      = target < 0.f ? 0.f : ( target > 0.999f ? 0.999f : target );
 	m_walk.f[s]       = 0.f;
 	m_walk.fadeDur[s] = dur > 0.3f ? dur : 0.3f;
 	m_walk.fading[s]  = true;
-	fprintf( stderr, "WALK %s stage %c: %.3f -> %.3f over %.1f s\n", fragmentName(), "ABCDS"[s],
+	fprintf( stderr, "WALK %s stage %s: %.3f -> %.3f over %.1f s\n", fragmentName(), kWalkName[s],
 	         m_walk.x0[s], m_walk.x1[s], m_walk.fadeDur[s] );
 }
 
@@ -1020,7 +1028,7 @@ void EffectShader::stepChainWalk( const AudioFeatures &f )
 	if( m_walkProg != m_sh_prog_id )
 	{
 		m_walkProg = m_sh_prog_id;
-		for( int s = 0; s < 5; ++s )
+		for( int s = 0; s < kWalkN; ++s )
 			m_walkLoc[s] = glGetUniformLocation( m_sh_prog_id, kWalkUni[s] );
 		m_walkHostLoc = glGetUniformLocation( m_sh_prog_id, "walkHost" );
 		m_walk.pending = true;
@@ -1065,7 +1073,7 @@ void EffectShader::stepChainWalk( const AudioFeatures &f )
 		auto it = m_walk.sectionLook.find( f.sectionId );
 		if( f.sectionKnown && f.sectionId >= 0 && it != m_walk.sectionLook.end() )
 		{
-			for( int s = 0; s < 5; ++s )
+			for( int s = 0; s < kWalkN; ++s )
 				if( fabsf( it->second[s] - m_walk.x0[s] ) > 1e-4f )
 					startWalk( s, it->second[s], 4.f );
 		}
@@ -1074,11 +1082,14 @@ void EffectShader::stepChainWalk( const AudioFeatures &f )
 			startWalk( 0, pick(), 4.f );
 			if( uni( m_walk.rng ) < 0.5f )
 				startWalk( 4, pick(), 6.f );
+			// ... and in the 3D lab often a new space or fold core: the world itself turns.
+			if( uni( m_walk.rng ) < 0.6f )
+				startWalk( 5 + (int) ( m_walk.rng() % 2u ), pick(), lerp( 14.f, 8.f, E ) );
 		}
 		if( f.sectionId >= 0 )
 		{
-			std::array<float, 5> look;
-			for( int s = 0; s < 5; ++s )
+			std::array<float, 8> look;
+			for( int s = 0; s < kWalkN; ++s )
 				look[s] = m_walk.fading[s] ? m_walk.x1[s] : m_walk.x0[s];
 			m_walk.sectionLook[f.sectionId] = look;
 		}
@@ -1099,22 +1110,24 @@ void EffectShader::stepChainWalk( const AudioFeatures &f )
 	}
 	// 4. Otherwise the stage held longest walks when its time is up (sooner
 	//    the more energy; the look holds longer than the chain).
-	for( int s = 0; s < 5; ++s )
+	for( int s = 0; s < kWalkN; ++s )
 		if( !m_walk.fading[s] ) m_walk.hold[s] += dt;
 	if( !anyFading() )
 	{
 		int best = -1; float bestR = 1.f;
-		for( int s = 0; s < 5; ++s )
+		for( int s = 0; s < kWalkN; ++s )
 		{
-			float r = m_walk.hold[s] / ( lerp( 90.f, 35.f, E ) * ( s == 4 ? 1.6f : 1.f ) );
+			if( m_walkLoc[s] < 0 ) continue;            // stage absent in this shader
+			// the look holds longer than the chain, the 3D structure longer still
+			float r = m_walk.hold[s] / ( lerp( 90.f, 35.f, E ) * ( s == 4 ? 1.6f : ( isStructure( s ) ? 1.4f : 1.f ) ) );
 			if( r >= bestR ) { bestR = r; best = s; }
 		}
 		if( best >= 0 )
-			startWalk( best, pick(), lerp( 10.f, 5.f, E ) );
+			startWalk( best, pick(), isStructure( best ) ? lerp( 14.f, 8.f, E ) : lerp( 10.f, 5.f, E ) );
 	}
 
 	// Advance the fades and upload: (shown, target, progress) per stage.
-	for( int s = 0; s < 5; ++s )
+	for( int s = 0; s < kWalkN; ++s )
 	{
 		if( m_walk.fading[s] )
 		{

@@ -27,7 +27,7 @@ CLASSES = {
     "bodyP": ["blocks", "balls", "tori", "gyroid membrane", "crosses", "Schwarz P surface", "Schwarz D surface"],
     # chain stages in the labs' energy order (calm .. energetic, ORD_A..ORD_D in ChainLab2D)
     "chainAP": [None, "polar unwrap", "Droste zoom", "hyperbolic Poincare tiling", "log-polar spiral", "rotating Riemann sphere", "complex exponential",
-                "bipolar stream", "complex sine", "circle inversion", "Moebius stream", "kaleidoscope", "tunnel"],
+                "bipolar stream", "complex sine", "circle inversion", "Moebius stream", "loxodromic stream", "kaleidoscope", "tunnel"],
     "chainBP": [None, "mirror line", "p4m lattice", "kaleidoscope", "p6m lattice", "iterated fold"],
     "chainCP": [None, "lens", "blossom", "Joukowski map", "spiral", "complex square", "inversion", "kaleidoscope", "tunnel"],
     "chainDP": [None, "turning", "shear wave", "twirl", "domain warp", "ripple"],
