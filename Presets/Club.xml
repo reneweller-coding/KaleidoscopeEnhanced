@@ -2453,15 +2453,6 @@
     <expr name="hueP" formula="chromaHue + seed3*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\Scene2D\OctagrammicMirrorVault.frag" type="normal" mood="psychedelic,bright" probability="0.4" complexity="2">
-    <rig preset="flat"/>
-    <float name="speedP" minValue="0.6" maxValue="1.6"></float>
-    <float name="foldP" minValue="0.7" maxValue="1.5"></float>
-    <float name="depthP" minValue="0.7" maxValue="1.4"></float>
-    <float name="glowP" minValue="0.7" maxValue="1.4"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader file="..\Scene2D\PrismaticCrystalChamber4D.frag" type="normal" mood="psychedelic,dark" probability="0.4" complexity="2">
     <rig preset="flat"/>
     <float name="speedP" minValue="0.6" maxValue="1.6"></float>
@@ -2478,15 +2469,6 @@
     <float name="bounceP" minValue="0.8" maxValue="1.4"></float>
     <float name="glowP" minValue="0.7" maxValue="1.4"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
-  <TextureShader file="..\Scene2D\PsychedelicReactionMelt.frag" type="normal" mood="psychedelic,dark" probability="0.4" complexity="2">
-    <rig preset="flat"/>
-    <float name="speedP" minValue="0.6" maxValue="1.6"></float>
-    <float name="meltP" minValue="0.8" maxValue="1.6"></float>
-    <float name="spotFreqP" minValue="0.7" maxValue="1.5"></float>
-    <float name="glowP" minValue="0.7" maxValue="1.4"></float>
-    <expr name="hueP" formula="chromaHue + seed3*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene2D\QuantumChromodynamicFluxTube.frag" type="normal" mood="psychedelic,bright" probability="0.4" complexity="2">
@@ -3094,6 +3076,22 @@
     <float name="sizeP" minValue="0" maxValue="1"></float>
     <float name="gapP" minValue="0" maxValue="1"></float>
     <float name="bandP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureConformalMorph.frag" type="normal" mood="psychedelic,calm" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="twistP" minValue="0" maxValue="1"></float>
+    <float name="repeatP" minValue="0" maxValue="1"></float>
+    <float name="glowP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureOpalFire.frag" type="normal" mood="psychedelic,bright" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="patchP" minValue="0" maxValue="1"></float>
+    <float name="fireP" minValue="0" maxValue="1"></float>
+    <float name="bodyP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>

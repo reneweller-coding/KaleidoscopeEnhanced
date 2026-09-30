@@ -10973,4 +10973,31 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
 
+  <TextureShader file="..\\Scene2D\\TextureConformalMorph.frag" type="normal" mood="psychedelic,calm" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="twistP" minValue="0" maxValue="1"></float>
+    <float name="repeatP" minValue="0" maxValue="1"></float>
+    <float name="glowP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\TextureOpalFire.frag" type="normal" mood="psychedelic,bright" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="patchP" minValue="0" maxValue="1"></float>
+    <float name="fireP" minValue="0" maxValue="1"></float>
+    <float name="bodyP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\InkDropsFalling.frag" type="normal" mood="calm,bright" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="dropsP" minValue="0" maxValue="1"></float>
+    <float name="inkP" minValue="0" maxValue="1"></float>
+    <float name="photoP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
 </configuration>
