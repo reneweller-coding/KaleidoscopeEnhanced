@@ -2255,13 +2255,6 @@
     <expr name="hueP" formula="chromaHue + seed3*6.28"/>
     <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\Scene2D\CherenkovRadiationWakefield.frag" type="normal" probability="0.4" mood="bright,aggressive,psychedelic" complexity="4">
-    <rig preset="flat"/>
-    <float name="machP" minValue="0.6" maxValue="1.8"></float>
-    <float name="bubbleP" minValue="0.5" maxValue="2.0"></float>
-    <float name="fringeP" minValue="1.0" maxValue="3.5"></float>
-    <float name="glowP" minValue="0.8" maxValue="2.5"></float>
-  </TextureShader>
   <TextureShader file="..\Scene2D\HyperbolicMetamaterialSpacetime.frag" type="normal" probability="0.4" mood="psychedelic,dark" complexity="4">
     <rig preset="flat"/>
     <float name="coneSlopeP" minValue="0.5" maxValue="2.0"></float>
@@ -3560,6 +3553,14 @@
     <float name="densityP" minValue="0" maxValue="1"></float>
     <float name="scaleP" minValue="0" maxValue="1"></float>
     <float name="landP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\ParticleLifeClusters.frag" type="normal" mood="psychedelic,bright,dark" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="speciesP" minValue="0" maxValue="1"></float>
+    <float name="densityP" minValue="0" maxValue="1"></float>
+    <float name="sizeP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>

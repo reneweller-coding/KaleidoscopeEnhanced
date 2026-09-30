@@ -989,13 +989,6 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\Scene2D\PuddleNeonReflections.frag" type="normal" mood="dark,psychedelic,dreamy" probability="0.45" complexity="3">
-    <rig preset="flat"/>
-    <float name="signsP" minValue="0" maxValue="1"></float>
-    <float name="rainP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader file="..\Scene2D\WaterStriderDimples.frag" type="normal" mood="dark,calm,dreamy" probability="0.45" complexity="3">
     <rig preset="flat"/>
     <float name="bugsP" minValue="0" maxValue="1"></float>
@@ -3204,6 +3197,14 @@
     <float name="densityP" minValue="0" maxValue="1"></float>
     <float name="scaleP" minValue="0" maxValue="1"></float>
     <float name="landP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\SymmetryBreathing.frag" type="normal" mood="psychedelic,dreamy" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="minFoldP" minValue="0" maxValue="1"></float>
+    <float name="maxFoldP" minValue="0" maxValue="1"></float>
+    <float name="ringsP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>

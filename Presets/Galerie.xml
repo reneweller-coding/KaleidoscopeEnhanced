@@ -926,13 +926,6 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\Scene2D\PuddleNeonReflections.frag" type="normal" mood="dark,psychedelic,dreamy" probability="0.45" complexity="3">
-    <rig preset="flat"/>
-    <float name="signsP" minValue="0" maxValue="1"></float>
-    <float name="rainP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader file="..\Scene2D\CenoteLightShaft.frag" type="normal" mood="dark,calm,dreamy" probability="0.45" complexity="3">
     <rig preset="flat"/>
     <float name="rootsP" minValue="0" maxValue="1"></float>
@@ -1038,9 +1031,6 @@
     <rig preset="procedural"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\AuroraVeil.frag" type="scene3d" geom="ribbon" probability="0.3" mood="calm,dark,space" complexity="1">
-    <rig preset="procedural"/>
-  </TextureShader>
-  <TextureShader file="..\\Scene3D\\EchoSpiral.frag" type="scene3d" geom="ribbon" mood="psychedelic,dreamy" probability="0.35" complexity="1">
     <rig preset="procedural"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\TorusKnot.frag" type="scene3d" geom="points" probability="0.35" mood="dark,dreamy" complexity="2">
@@ -3252,6 +3242,22 @@
     <float name="densityP" minValue="0" maxValue="1"></float>
     <float name="scaleP" minValue="0" maxValue="1"></float>
     <float name="landP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\ParticleLifeClusters.frag" type="normal" mood="psychedelic,bright,dark" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="speciesP" minValue="0" maxValue="1"></float>
+    <float name="densityP" minValue="0" maxValue="1"></float>
+    <float name="sizeP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\SymmetryBreathing.frag" type="normal" mood="psychedelic,dreamy" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="minFoldP" minValue="0" maxValue="1"></float>
+    <float name="maxFoldP" minValue="0" maxValue="1"></float>
+    <float name="ringsP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
