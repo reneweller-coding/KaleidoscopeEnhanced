@@ -222,6 +222,7 @@ RECENT_SCENES = {
     "InterchangeLightTrails", "FogBridgeTowers", "RooftopRainTokyo", "StadiumFloodlights", "UVMineralsGlow",
     "GemInclusionFlight", "MarbleVeinsFlight", "SmokeColourCollide",
     "TextureBoreTunnel", "TextureNeonTrace", "TextureLavaCracks", "TextureMaelstrom", "WallpaperGroupCycle", "OilProjector",
+    "LavaLamp", "TextureFlowParticles", "SchillerOverTexture", "DewdropLensArray", "TextureSequinField",
 }
 
 def rule_recent(m, h):

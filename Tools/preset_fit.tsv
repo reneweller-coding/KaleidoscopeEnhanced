@@ -401,7 +401,7 @@ LaserArena	1	2	10	5	6	1	8
 LaserCavityTransverseModes	5	2	4	3	6	5	5
 LaserHarpBeams	3	1	6	6	2	3	5
 LaserSpireArray	3	3	8	3	6	3	7
-LavaLamp	7	1	3	2	6	6	6
+LavaLamp	8	1	3	3	8	6	8
 LavaWorldTidalLock	5	6	3	4	3	4	5
 LeafVenationGrowth	4	1	1	3	1	4	3
 LeidenfrostDroplets	4	1	2	3	2	4	3
@@ -952,3 +952,7 @@ TextureNeonTrace	3	2	8	6	8	5	8
 TextureLavaCracks	4	3	6	5	7	6	8
 TextureMaelstrom	6	3	5	5	7	6	8
 WallpaperGroupCycle	5	1	5	3	9	7	8
+TextureFlowParticles	6	3	5	3	9	7	8
+SchillerOverTexture	5	2	5	5	7	7	8
+DewdropLensArray	7	1	2	3	6	7	7
+TextureSequinField	3	1	8	3	7	5	8
