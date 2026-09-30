@@ -1065,3 +1065,6 @@ PhotoWovenThreads	6	3	3	4	3	7	5
 PolarRippleTunnel	5	7	7	5	7	5	7
 TextureCoilSpring	4	7	7	5	7	5	7
 TextureBokehStreams	7	6	4	6	4	5	5
+TextureInfiniteRosettes	5	7	7	4	9	7	8
+TextureAdvectionSilk	8	5	3	4	6	8	7
+TextureNeonRain	4	5	7	7	5	4	5
