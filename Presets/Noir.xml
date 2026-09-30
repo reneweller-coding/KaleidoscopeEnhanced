@@ -2042,13 +2042,6 @@
     <float name="symmetryP" minValue="0.6" maxValue="1.8"></float>
     <float name="fresnelP" minValue="0.8" maxValue="2.5"></float>
   </TextureShader>
-  <TextureShader file="..\Scene3D\WignerCrystalElectronLattice.frag" type="scene3d" geom="points" probability="0.45" mood="calm,bright,dreamy" complexity="3">
-    <rig preset="procedural"/>
-    <float name="crystalScaleP" minValue="0.06" maxValue="0.22"></float>
-    <float name="jitterP" minValue="0.005" maxValue="0.04"></float>
-    <float name="pointGainP" minValue="0.5" maxValue="1.8"></float>
-    <float name="haloP" minValue="0.6" maxValue="2.2"></float>
-  </TextureShader>
   <TextureShader file="..\Scene3D\LuttingerLiquidSpinChargeSeparation.frag" type="scene3d" geom="ribbon" probability="0.45" mood="calm,psychedelic" complexity="3">
     <rig preset="procedural"/>
     <float name="ribbonWidthP" minValue="0.02" maxValue="0.1"></float>
@@ -2065,13 +2058,6 @@
     <float name="branchScaleP" minValue="0.8" maxValue="2.2"></float>
     <float name="ribbonWidthP" minValue="0.02" maxValue="0.1"></float>
     <float name="glowP" minValue="0.8" maxValue="2.5"></float>
-  </TextureShader>
-  <TextureShader file="..\Scene3D\SubglacialVolcanicPillowLava.frag" type="scene3d" geom="grid" probability="0.45" mood="dark,calm" complexity="4">
-    <rig preset="procedural"/>
-    <float name="pillowScaleP" minValue="2.5" maxValue="6.0"></float>
-    <float name="crustHeightP" minValue="0.15" maxValue="0.6"></float>
-    <float name="lavaHeatP" minValue="0.8" maxValue="2.5"></float>
-    <float name="crustGlowP" minValue="0.6" maxValue="2.0"></float>
   </TextureShader>
   <TextureShader file="..\Scene3D\CosmicRayCherenkovAirShowerCascade.frag" type="scene3d" geom="indirect" probability="0.45" mood="aggressive,dark" complexity="5">
     <rig preset="procedural"/>
@@ -3661,6 +3647,22 @@
     <float name="forkP" minValue="0" maxValue="1"></float>
     <float name="wallZoomP" minValue="0" maxValue="1"></float>
     <float name="rimP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\VaultShaftUp.frag" type="normal" mood="calm,bright" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="archP" minValue="0" maxValue="1"></float>
+    <float name="storeyP" minValue="0" maxValue="1"></float>
+    <float name="glassP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureDustMotes.frag" type="normal" mood="calm,dark" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="moteP" minValue="0" maxValue="1"></float>
+    <float name="beamP" minValue="0" maxValue="1"></float>
+    <float name="swirlP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>

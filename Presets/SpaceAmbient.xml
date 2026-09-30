@@ -584,13 +584,6 @@
     <expr name="hueP" formula="chromaHue + seed2*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\Scene2D\TerraformingColony.frag" type="normal" mood="calm,dreamy,space" probability="0.45" complexity="4">
-    <rig preset="flat"/>
-    <float name="domeP" minValue="0.5" maxValue="1.5"></float>
-    <float name="gasP" minValue="0.5" maxValue="1.5"></float>
-    <expr name="hueP" formula="chromaHue + seed3*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader file="..\Scene2D\BinaryStarSystem.frag" type="normal" mood="dark,aggressive,space" probability="0.45" complexity="5">
     <rig preset="flat"/>
     <float name="distP" minValue="0.5" maxValue="1.5"></float>
@@ -638,13 +631,6 @@
     <float name="archP" minValue="0.5" maxValue="1.5"></float>
     <float name="glowP" minValue="0.5" maxValue="2.0"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
-  <TextureShader file="..\Scene2D\CyborgHiveShip.frag" type="normal" mood="dark,aggressive,space" probability="0.45" complexity="4">
-    <rig preset="flat"/>
-    <float name="techP" minValue="0.5" maxValue="1.5"></float>
-    <float name="glowP" minValue="0.5" maxValue="2.0"></float>
-    <expr name="hueP" formula="chromaHue + seed2*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene2D\VoidLeviathan.frag" type="normal" mood="dark,dreamy,space" probability="0.45" complexity="4">
@@ -834,13 +820,6 @@
     <float name="bubbleP" minValue="0.5" maxValue="1.5"></float>
     <float name="bulkP" minValue="0.5" maxValue="2.0"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
-  <TextureShader file="..\Scene2D\TheBigBounce.frag" type="normal" mood="bright,aggressive,space" probability="0.45" complexity="4">
-    <rig preset="flat"/>
-    <float name="bounceP" minValue="0.5" maxValue="1.5"></float>
-    <float name="plasmaP" minValue="0.5" maxValue="2.0"></float>
-    <expr name="hueP" formula="chromaHue + seed2*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene2D\TimeDilation.frag" type="normal" mood="bright,aggressive,space" probability="0.45" complexity="4">
@@ -3518,6 +3497,30 @@
     <float name="forkP" minValue="0" maxValue="1"></float>
     <float name="wallZoomP" minValue="0" maxValue="1"></float>
     <float name="rimP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\VaultShaftUp.frag" type="normal" mood="calm,bright" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="archP" minValue="0" maxValue="1"></float>
+    <float name="storeyP" minValue="0" maxValue="1"></float>
+    <float name="glassP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureGlideReflection.frag" type="normal" mood="calm,psychedelic" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="tileP" minValue="0" maxValue="1"></float>
+    <float name="shiftP" minValue="0" maxValue="1"></float>
+    <float name="inlayP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureDustMotes.frag" type="normal" mood="calm,dark" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="moteP" minValue="0" maxValue="1"></float>
+    <float name="beamP" minValue="0" maxValue="1"></float>
+    <float name="swirlP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>

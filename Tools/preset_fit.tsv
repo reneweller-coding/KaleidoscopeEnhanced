@@ -1094,3 +1094,6 @@ TextureConfettiVolume	3	5	8	3	6	4	6
 TextureBurrow	4	6	6	7	6	4	6
 TextureVortexCloud	6	8	6	5	7	5	6
 TextureForkingTunnel	4	7	7	5	8	6	7
+VaultShaftUp	6	7	5	6	7	7	8
+TextureGlideReflection	5	4	5	4	6	7	6
+TextureDustMotes	9	6	2	7	3	7	6
