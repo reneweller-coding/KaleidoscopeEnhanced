@@ -400,12 +400,33 @@ vec2 tDrosteSpiral(vec2 uv, vec2 c, float K, float zoom)
 // whose amplitudes and phases drift with time: the wallpaper keeps changing
 // while keeping its symmetry.  kind 0: p4 (square), 1: p3 (hexagonal),
 // 2: p6, 3: p4m (square with mirrors), 4: pg, 5: pgg (glide reflections --
-// impossible as a fold, natural as a wave function).
+// impossible as a fold, natural as a wave function), 6: p3m1, 7: p31m, 8: p4g, 9: cmm.
 vec2 cexpi(float a) { return vec2(cos(a), sin(a)); }
 vec2 cmul(vec2 a, vec2 b) { return vec2(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x); }
+vec2 cdiv(vec2 a, vec2 b) { return vec2(a.x * b.x + a.y * b.y, a.y * b.x - a.x * b.y) / max(dot(b, b), 1e-8); }
+vec2 hexWave3(vec2 X, float n, float m)
+{
+    const float TAU = 6.2831853;
+    vec2 Y = vec2(X.x + X.y * 0.5773503, X.y * 1.1547005);
+    return (cexpi(TAU * (n * Y.x + m * Y.y)) + cexpi(TAU * (m * Y.x - (n + m) * Y.y)) + cexpi(TAU * (-(n + m) * Y.x + n * Y.y))) / 3.0;
+}
+vec2 sqWave4(vec2 X, float n, float m)
+{
+    const float TAU = 6.2831853;
+    return (cexpi(TAU * (n * X.x + m * X.y)) + cexpi(TAU * (-m * X.x + n * X.y))
+          + cexpi(TAU * (-n * X.x - m * X.y)) + cexpi(TAU * (m * X.x - n * X.y))) / 4.0;
+}
 vec2 farrisWave(vec2 X, int kind, float n, float m)
 {
     const float TAU = 6.2831853;
+    if (kind == 6) return 0.5 * (hexWave3(X, n, m) + hexWave3(X, m, n));            // p3m1: p3 + mirrors
+    if (kind == 7) return 0.5 * (hexWave3(X, n, m) + hexWave3(X, -m, -n));          // p31m
+    if (kind == 8) return 0.5 * (sqWave4(X, n, m) + (mod(n + m, 2.0) < 0.5 ? 1.0 : -1.0) * sqWave4(X, m, n));   // p4g: p4 + glides
+    if (kind == 9) {                                                                 // cmm: centred rectangular, mirrors both ways
+        vec2 Z = X * vec2(0.8, 1.3);
+        return 0.25 * (cexpi(TAU * (n * Z.x + m * Z.y)) + cexpi(-TAU * (n * Z.x + m * Z.y))
+                     + cexpi(TAU * (n * Z.x - m * Z.y)) + cexpi(-TAU * (n * Z.x - m * Z.y)));
+    }
     if (kind == 1 || kind == 2) {                               // hexagonal lattice coordinates
         vec2 Y = vec2(X.x + X.y * 0.5773503, X.y * 1.1547005);
         vec2 w = cexpi(TAU * (n * Y.x + m * Y.y)) + cexpi(TAU * (m * Y.x - (n + m) * Y.y)) + cexpi(TAU * (-(n + m) * Y.x + n * Y.y));
@@ -548,11 +569,72 @@ vec2 tPenrose(vec2 uv, vec2 c, float cells, vec2 drift, vec4 g)
     vec2 f = min(ab, 1.0 - ab);
     return c + vec2(min(f.x, f.y), max(f.x, f.y)) * 0.9;
 }
+// ---- idea round 4 ----
+// Farris frieze: a power series in w = exp(i z) -- periodic along the band,
+// fading across it; the band folded (mirrored) so friezes stack endlessly.
+vec2 tFrieze(vec2 uv, vec2 c, float period, float t)
+{
+    vec2 z = (uv - c) * vec2(6.2831853 / period, 3.0);
+    z.y = abs(fract(z.y / 3.0 * 0.5 + 0.25) * 2.0 - 1.0) * 1.5;          // mirrored band, 0..1.5
+    vec2 w = exp(-z.y) * cexpi(z.x);
+    vec2 w2 = cmul(w, w), w3 = cmul(w2, w);
+    vec2 f = cmul(cexpi(t * 0.5), w) + cmul(cexpi(-t * 0.7 + 1.0), w2) * 0.7 + cmul(cexpi(t * 0.3 + 2.0), w3) * 0.5;
+    return c + f * 0.4;
+}
+// Jacobi sn/cn wallpaper: cn itself (m = 1/2) as a doubly periodic picture,
+// its value turned with time (the colours travel round every cell).
+vec2 tEllipticWall(vec2 uv, vec2 c, float scale, float t)
+{
+    vec2 z = (uv - c) * scale * 1.8540747;
+    vec2 N, D;
+    cnTheta(z * 0.8472131, N, D);
+    vec2 zeta = cdiv(N, D);
+    return c + cmul(zeta, cexpi(t * 0.3)) * 0.3;
+}
+// The hyperbolic plane in the upper half-plane: z = (w - i)/(w + i) to the
+// disk; the lower half is the mirror image; a horizontal shift is an exact
+// hyperbolic (parabolic) motion -- the tiling crawls along the horizon line.
+vec2 tHalfPlane(vec2 uv, vec2 c, float p, float q, float scale, float travel)
+{
+    vec2 w = (uv - c) * scale;
+    w.y = abs(w.y) + 0.04;
+    w.x += travel;
+    vec2 z = cdiv(w - vec2(0.0, 1.0), w + vec2(0.0, 1.0));
+    return c + poincareFold(z, p, q) * 0.9;
+}
+// Archimedean spiral coordinates: r against the angle -- arms of equal
+// spacing; one turn shifts both outputs by exactly one mirror period.
+vec2 tArchimedes(vec2 uv, vec2 c, float k, float travel)
+{
+    vec2 d = uv - c;
+    float r = length(d) * k, a = atan(d.y, d.x) / 3.14159265;
+    return vec2(r - a - travel, r + a);
+}
+// Koch fold: the snowflake's mirrors and a scale of 3, repeated.
+vec2 tKoch(vec2 uv, vec2 c, float iters, float turn)
+{
+    vec2 p = rot2(turn) * (uv - c) * 2.0;
+    const vec2 n = vec2(-0.5, 0.8660254);
+    float sc = 1.0;
+    for (int i = 0; i < 4; ++i) {
+        if (float(i) >= iters) break;
+        p.x = abs(p.x);
+        p.x -= 0.5;
+        p -= 2.0 * min(0.0, dot(p, n)) * n;
+        p *= 3.0; sc *= 3.0;
+        p.x -= 1.5;
+    }
+    return c + p / sc * 1.4;
+}
+// Bend: the picture turned by an angle that grows across it (a bounded bend).
+vec2 tBend(vec2 uv, float k)
+{
+    return 0.5 + rot2(k * (uv.x - 0.5)) * (uv - 0.5);
+}
 // ---- idea round 3 ----
 // Blaschke product: z * prod (z - a)/(1 - conj(a) z) -- the unit disk wrapped
 // onto itself several times around zeros that wander; conformal, continuous
 // (its poles lie outside the disk and only fold far picture in).
-vec2 cdiv(vec2 a, vec2 b) { return vec2(a.x * b.x + a.y * b.y, a.y * b.x - a.x * b.y) / max(dot(b, b), 1e-8); }
 vec2 tBlaschke(vec2 uv, vec2 c, float n, float t)
 {
     vec2 z = (uv - c) * 2.2, B = z;
@@ -878,6 +960,27 @@ vec3 fHyperBall(vec3 p, float k)
     }
     return p;
 }
+// The world wrapped round a great ring (radius R, in the xz plane): the
+// distance to the ring, the height and the arc length become the new axes.
+// The arc repeat divides 2 pi R into whole periods (no seam where the angle
+// wraps); gDR corrects the stretch inside the ring.
+vec3 fTorusWrap(vec3 p, float R, float cell)
+{
+    float rho = length(p.xz);
+    float arc = atan(p.z, p.x) * R;
+    float per = 6.2831853 * R / max(floor(6.2831853 * R / (4.0 * cell) + 0.5), 1.0) / 4.0;   // whole periods round the ring
+    gDR *= max(R / max(rho, 0.5), 1.0);
+    vec3 q = vec3(rho - R, p.y, arc);
+    return per * (abs(mod(q / per - 1.0, 4.0) - 2.0) - 1.0) * vec3(1.0, 1.0, 1.0);
+}
+// Gyroid-warped space: every point shifted along a gyroid-like field (smooth;
+// the shift's slope is bounded, gDR takes it).
+vec3 fGyroidWarp(vec3 p, float s, float t)
+{
+    gDR *= 1.0 + 1.3 * s;
+    return p + s * sin(p.yzx * 1.3 + vec3(t, 1.7 * t, 2.3 + t));
+}
+float sdOcta3(vec3 p, float s) { p = abs(p); return (p.x + p.y + p.z - s) * 0.57735027; }
 // Twist around z (keep k small: it stretches space).
 vec3 fTwistZ(vec3 p, float k) { vec2 q = rot2(k * p.z) * p.xy; return vec3(q, p.z); }
 // Sphere inversion (radius R): the outside comes inside, endlessly nested.

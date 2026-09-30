@@ -59,9 +59,9 @@ vec3 fHexXY(vec3 p, float cell)
 // (if-chains, not const arrays: NVIDIA returned entry 0 for three arrays
 // indexed in one function -- the body never changed):
 // the music's energy picks the region of the world too.
-int ordsp(int i) { if (i == 0) return 0; if (i == 1) return 3; if (i == 2) return 6; if (i == 3) return 7; if (i == 4) return 9; if (i == 5) return 4; if (i == 6) return 2; if (i == 7) return 5; if (i == 8) return 8; return 1; }   // lattice, octa lattice, hexagons, 4D lattice, log-spherical Droste, turning, twisted, helix, inverted lattice, polar ring tunnel
-int ordco(int i) { if (i == 0) return 0; if (i == 1) return 4; if (i == 2) return 8; if (i == 3) return 3; if (i == 4) return 9; if (i == 5) return 6; if (i == 6) return 1; if (i == 7) return 7; if (i == 8) return 2; return 5; }   // none, plane folds, polyhedral, sphere-inversion box, hyperbolic honeycomb, Kleinian, tetra, icosa, octa, Menger
-int ordbo(int i) { if (i == 0) return 1; if (i == 1) return 2; if (i == 2) return 3; if (i == 3) return 5; if (i == 4) return 6; if (i == 5) return 0; return 4; }   // balls, tori, gyroid, Schwarz P, Schwarz D, blocks, crosses
+int ordsp(int i) { if (i == 0) return 0; if (i == 1) return 3; if (i == 2) return 6; if (i == 3) return 7; if (i == 4) return 9; if (i == 5) return 4; if (i == 6) return 10; if (i == 7) return 2; if (i == 8) return 11; if (i == 9) return 5; if (i == 10) return 8; return 1; }   // ... turning, torus wrap, twisted, gyroid warp, helix, inverted lattice, polar ring tunnel
+int ordco(int i) { if (i == 0) return 0; if (i == 1) return 4; if (i == 2) return 8; if (i == 3) return 3; if (i == 4) return 9; if (i == 5) return 6; if (i == 6) return 10; if (i == 7) return 1; if (i == 8) return 7; if (i == 9) return 2; return 5; }   // ... hyperbolic honeycomb, Kleinian, amazing surface, tetra, icosa, octa, Menger
+int ordbo(int i) { if (i == 0) return 1; if (i == 1) return 7; if (i == 2) return 2; if (i == 3) return 3; if (i == 4) return 5; if (i == 5) return 6; if (i == 6) return 0; if (i == 7) return 8; return 4; }   // balls, octahedra, tori, gyroid, Schwarz P, Schwarz D, blocks, rod lattice, crosses
 // The app walks the structure too (EffectShader::stepChainWalk): (shown, target, fade).
 uniform vec3 walkSpace, walkCore, walkBody;
 
@@ -69,9 +69,9 @@ uniform vec3 walkSpace, walkCore, walkBody;
 float fieldK(vec3 p, float xs, float xc, float xb)
 {
     gDR = 1.0;
-    int ks = ordsp(pickStage(xs, 10)); float vs = subVar(xs, 10);
-    int kc = ordco(pickStage(xc, 10)); float vc = subVar(xc, 10);
-    int kb = ordbo(pickStage(xb, 7)); float vb = subVar(xb, 7);
+    int ks = ordsp(pickStage(xs, 12)); float vs = subVar(xs, 12);
+    int kc = ordco(pickStage(xc, 11)); float vc = subVar(xc, 11);
+    int kb = ordbo(pickStage(xb, 9)); float vb = subVar(xb, 9);
     vec3 q;
     if (ks == 0) q = fRepeat(p, vec3(1.2 + 0.4 * vs));
     else if (ks == 1) { q = fPolarZ(p, 6.0 + 2.0 * floor(vs * 2.99)); q.x -= 2.2; q = zRepeat(q, 0.8); }
@@ -87,6 +87,8 @@ float fieldK(vec3 p, float xs, float xc, float xb)
         q = fRepeat(fScale(q, 1.6, vec3(0.0)), vec3(1.3));                                   // ... of a lattice: a bubble world per cell
     }
     else if (ks == 9) q = fRepeat(fScale(fLogSphere(p, gCam + vec3(0.0, 0.0, 6.0), 2.5 + vs, gT * 0.05), 2.5, vec3(0.0)), vec3(1.4));   // 3D Droste shells
+    else if (ks == 10) q = fTorusWrap(p, 7.0 + 3.0 * vs, 1.3);                       // the world wrapped round a great ring
+    else if (ks == 11) q = fRepeat(fGyroidWarp(p, 0.25 + 0.15 * vs, gT * 0.05), vec3(1.4));   // gyroid-warped lattice
     else if (ks == 7) q = f4DLattice(p, 1.3 + 0.3 * vs, 0.35 * sin(gT * 0.04) + gRot * 0.3, 0.25 * sin(gT * 0.031 + 1.0), 0.6 * sin(gT * 0.023));   // 4D-rotated lattice        // hexagonal lattice: a honeycomb of pillars
     float bs = 1.0;                                         // body size in the core's space
     if (kc == 1) {
@@ -137,6 +139,19 @@ float fieldK(vec3 p, float xs, float xc, float xb)
         q = fHyperBall(q * 0.8, 0.85 + 0.1 * vc) / 0.8;
         bs = 0.45;
     }
+    else if (kc == 10) {
+        // 'amazing surface' (Kali): box folds in xy only, sphere fold, turn, scale --
+        // layered, sheet-like fractal terraces
+        for (int i = 0; i < 3; ++i) {
+            q.xy = clamp(q.xy, -1.0, 1.0) * 2.0 - q.xy;
+            float r2 = max(dot(q, q), 1e-4);
+            float k = r2 < 0.25 ? 4.0 : (r2 < 1.0 ? 1.0 / r2 : 1.0);
+            q *= k; gDR *= k;
+            q = fRot(q, vec3(0.0, 0.0, 1.0), 0.3 + 0.4 * vc + 0.2 * sin(gRot));
+            q = fScale(q, 1.25, vec3(0.0));
+        }
+        bs = 3.0;   /* spot check: 4 rounds x 1.5 turned to noise; bodies must be large after the folds */
+    }
     gP = q;
     float th = 1.0 + 0.3 * gSpread;
     float d;
@@ -147,6 +162,8 @@ float fieldK(vec3 p, float xs, float xc, float xb)
     else if (kb == 5) { vec3 w = q * (3.0 / bs); d = (abs(cos(w.x) + cos(w.y) + cos(w.z)) - 0.35 - 0.3 * gSpread) / 2.2 * bs / 3.0; }   // Schwarz P
     else if (kb == 6) { vec3 w = q * (3.0 / bs); vec3 sn = sin(w), cs = cos(w);                     // Schwarz D
         d = (abs(sn.x * sn.y * sn.z + sn.x * cs.y * cs.z + cs.x * sn.y * cs.z + cs.x * cs.y * sn.z) - 0.25 - 0.2 * gSpread) / 2.2 * bs / 3.0; }
+    else if (kb == 7) d = sdOcta3(q, 0.6 * bs * th);                                  // octahedron
+    else if (kb == 8) d = min(min(length(q.xy), length(q.yz)), length(q.zx)) - 0.1 * bs * th;   // rod lattice
     else d = min(min(sdBox3(q, vec3(0.6, 0.08, 0.08) * bs * th), sdBox3(q, vec3(0.08, 0.6, 0.08) * bs * th)), sdBox3(q, vec3(0.08, 0.08, 0.6) * bs * th));
     return d / gDR * 0.8;
 }

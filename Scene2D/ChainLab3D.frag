@@ -447,12 +447,33 @@ vec2 tDrosteSpiral(vec2 uv, vec2 c, float K, float zoom)
 // whose amplitudes and phases drift with time: the wallpaper keeps changing
 // while keeping its symmetry.  kind 0: p4 (square), 1: p3 (hexagonal),
 // 2: p6, 3: p4m (square with mirrors), 4: pg, 5: pgg (glide reflections --
-// impossible as a fold, natural as a wave function).
+// impossible as a fold, natural as a wave function), 6: p3m1, 7: p31m, 8: p4g, 9: cmm.
 vec2 cexpi(float a) { return vec2(cos(a), sin(a)); }
 vec2 cmul(vec2 a, vec2 b) { return vec2(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x); }
+vec2 cdiv(vec2 a, vec2 b) { return vec2(a.x * b.x + a.y * b.y, a.y * b.x - a.x * b.y) / max(dot(b, b), 1e-8); }
+vec2 hexWave3(vec2 X, float n, float m)
+{
+    const float TAU = 6.2831853;
+    vec2 Y = vec2(X.x + X.y * 0.5773503, X.y * 1.1547005);
+    return (cexpi(TAU * (n * Y.x + m * Y.y)) + cexpi(TAU * (m * Y.x - (n + m) * Y.y)) + cexpi(TAU * (-(n + m) * Y.x + n * Y.y))) / 3.0;
+}
+vec2 sqWave4(vec2 X, float n, float m)
+{
+    const float TAU = 6.2831853;
+    return (cexpi(TAU * (n * X.x + m * X.y)) + cexpi(TAU * (-m * X.x + n * X.y))
+          + cexpi(TAU * (-n * X.x - m * X.y)) + cexpi(TAU * (m * X.x - n * X.y))) / 4.0;
+}
 vec2 farrisWave(vec2 X, int kind, float n, float m)
 {
     const float TAU = 6.2831853;
+    if (kind == 6) return 0.5 * (hexWave3(X, n, m) + hexWave3(X, m, n));            // p3m1: p3 + mirrors
+    if (kind == 7) return 0.5 * (hexWave3(X, n, m) + hexWave3(X, -m, -n));          // p31m
+    if (kind == 8) return 0.5 * (sqWave4(X, n, m) + (mod(n + m, 2.0) < 0.5 ? 1.0 : -1.0) * sqWave4(X, m, n));   // p4g: p4 + glides
+    if (kind == 9) {                                                                 // cmm: centred rectangular, mirrors both ways
+        vec2 Z = X * vec2(0.8, 1.3);
+        return 0.25 * (cexpi(TAU * (n * Z.x + m * Z.y)) + cexpi(-TAU * (n * Z.x + m * Z.y))
+                     + cexpi(TAU * (n * Z.x - m * Z.y)) + cexpi(-TAU * (n * Z.x - m * Z.y)));
+    }
     if (kind == 1 || kind == 2) {                               // hexagonal lattice coordinates
         vec2 Y = vec2(X.x + X.y * 0.5773503, X.y * 1.1547005);
         vec2 w = cexpi(TAU * (n * Y.x + m * Y.y)) + cexpi(TAU * (m * Y.x - (n + m) * Y.y)) + cexpi(TAU * (-(n + m) * Y.x + n * Y.y));
@@ -595,11 +616,72 @@ vec2 tPenrose(vec2 uv, vec2 c, float cells, vec2 drift, vec4 g)
     vec2 f = min(ab, 1.0 - ab);
     return c + vec2(min(f.x, f.y), max(f.x, f.y)) * 0.9;
 }
+// ---- idea round 4 ----
+// Farris frieze: a power series in w = exp(i z) -- periodic along the band,
+// fading across it; the band folded (mirrored) so friezes stack endlessly.
+vec2 tFrieze(vec2 uv, vec2 c, float period, float t)
+{
+    vec2 z = (uv - c) * vec2(6.2831853 / period, 3.0);
+    z.y = abs(fract(z.y / 3.0 * 0.5 + 0.25) * 2.0 - 1.0) * 1.5;          // mirrored band, 0..1.5
+    vec2 w = exp(-z.y) * cexpi(z.x);
+    vec2 w2 = cmul(w, w), w3 = cmul(w2, w);
+    vec2 f = cmul(cexpi(t * 0.5), w) + cmul(cexpi(-t * 0.7 + 1.0), w2) * 0.7 + cmul(cexpi(t * 0.3 + 2.0), w3) * 0.5;
+    return c + f * 0.4;
+}
+// Jacobi sn/cn wallpaper: cn itself (m = 1/2) as a doubly periodic picture,
+// its value turned with time (the colours travel round every cell).
+vec2 tEllipticWall(vec2 uv, vec2 c, float scale, float t)
+{
+    vec2 z = (uv - c) * scale * 1.8540747;
+    vec2 N, D;
+    cnTheta(z * 0.8472131, N, D);
+    vec2 zeta = cdiv(N, D);
+    return c + cmul(zeta, cexpi(t * 0.3)) * 0.3;
+}
+// The hyperbolic plane in the upper half-plane: z = (w - i)/(w + i) to the
+// disk; the lower half is the mirror image; a horizontal shift is an exact
+// hyperbolic (parabolic) motion -- the tiling crawls along the horizon line.
+vec2 tHalfPlane(vec2 uv, vec2 c, float p, float q, float scale, float travel)
+{
+    vec2 w = (uv - c) * scale;
+    w.y = abs(w.y) + 0.04;
+    w.x += travel;
+    vec2 z = cdiv(w - vec2(0.0, 1.0), w + vec2(0.0, 1.0));
+    return c + poincareFold(z, p, q) * 0.9;
+}
+// Archimedean spiral coordinates: r against the angle -- arms of equal
+// spacing; one turn shifts both outputs by exactly one mirror period.
+vec2 tArchimedes(vec2 uv, vec2 c, float k, float travel)
+{
+    vec2 d = uv - c;
+    float r = length(d) * k, a = atan(d.y, d.x) / 3.14159265;
+    return vec2(r - a - travel, r + a);
+}
+// Koch fold: the snowflake's mirrors and a scale of 3, repeated.
+vec2 tKoch(vec2 uv, vec2 c, float iters, float turn)
+{
+    vec2 p = rot2(turn) * (uv - c) * 2.0;
+    const vec2 n = vec2(-0.5, 0.8660254);
+    float sc = 1.0;
+    for (int i = 0; i < 4; ++i) {
+        if (float(i) >= iters) break;
+        p.x = abs(p.x);
+        p.x -= 0.5;
+        p -= 2.0 * min(0.0, dot(p, n)) * n;
+        p *= 3.0; sc *= 3.0;
+        p.x -= 1.5;
+    }
+    return c + p / sc * 1.4;
+}
+// Bend: the picture turned by an angle that grows across it (a bounded bend).
+vec2 tBend(vec2 uv, float k)
+{
+    return 0.5 + rot2(k * (uv.x - 0.5)) * (uv - 0.5);
+}
 // ---- idea round 3 ----
 // Blaschke product: z * prod (z - a)/(1 - conj(a) z) -- the unit disk wrapped
 // onto itself several times around zeros that wander; conformal, continuous
 // (its poles lie outside the disk and only fold far picture in).
-vec2 cdiv(vec2 a, vec2 b) { return vec2(a.x * b.x + a.y * b.y, a.y * b.x - a.x * b.y) / max(dot(b, b), 1e-8); }
 vec2 tBlaschke(vec2 uv, vec2 c, float n, float t)
 {
     vec2 z = (uv - c) * 2.2, B = z;
@@ -924,6 +1006,27 @@ vec3 fHyperBall(vec3 p, float k)
     }
     return p;
 }
+// The world wrapped round a great ring (radius R, in the xz plane): the
+// distance to the ring, the height and the arc length become the new axes.
+// The arc repeat divides 2 pi R into whole periods (no seam where the angle
+// wraps); gDR corrects the stretch inside the ring.
+vec3 fTorusWrap(vec3 p, float R, float cell)
+{
+    float rho = length(p.xz);
+    float arc = atan(p.z, p.x) * R;
+    float per = 6.2831853 * R / max(floor(6.2831853 * R / (4.0 * cell) + 0.5), 1.0) / 4.0;   // whole periods round the ring
+    gDR *= max(R / max(rho, 0.5), 1.0);
+    vec3 q = vec3(rho - R, p.y, arc);
+    return per * (abs(mod(q / per - 1.0, 4.0) - 2.0) - 1.0) * vec3(1.0, 1.0, 1.0);
+}
+// Gyroid-warped space: every point shifted along a gyroid-like field (smooth;
+// the shift's slope is bounded, gDR takes it).
+vec3 fGyroidWarp(vec3 p, float s, float t)
+{
+    gDR *= 1.0 + 1.3 * s;
+    return p + s * sin(p.yzx * 1.3 + vec3(t, 1.7 * t, 2.3 + t));
+}
+float sdOcta3(vec3 p, float s) { p = abs(p); return (p.x + p.y + p.z - s) * 0.57735027; }
 // Twist around z (keep k small: it stretches space).
 vec3 fTwistZ(vec3 p, float k) { vec2 q = rot2(k * p.z) * p.xy; return vec3(q, p.z); }
 // Sphere inversion (radius R): the outside comes inside, endlessly nested.
@@ -996,10 +1099,10 @@ float sides(float v) { return 5.0 + floor(v * 4.99); }                     // 5 
 // The classes of every stage in order of energy (calm .. energetic): a knob
 // value, rolled or walked, picks a position on that scale, so the music's
 // energy can choose the region (EffectShader::stepChainWalk).
-int orda(int i) { if (i == 0) return 11; if (i == 1) return 5; if (i == 2) return 20; if (i == 3) return 14; if (i == 4) return 25; if (i == 5) return 4; if (i == 6) return 16; if (i == 7) return 9; if (i == 8) return 15; if (i == 9) return 24; if (i == 10) return 1; if (i == 11) return 12; if (i == 12) return 17; if (i == 13) return 19; if (i == 14) return 6; if (i == 15) return 18; if (i == 16) return 10; if (i == 17) return 7; if (i == 18) return 21; if (i == 19) return 8; if (i == 20) return 3; if (i == 21) return 13; if (i == 22) return 22; if (i == 23) return 23; if (i == 24) return 0; return 2; }   // energy order, 26 classes
-int ordb(int i) { if (i == 0) return 0; if (i == 1) return 5; if (i == 2) return 3; if (i == 3) return 1; if (i == 4) return 8; if (i == 5) return 2; if (i == 6) return 7; if (i == 7) return 4; return 6; }   // none, mirror line, p4m, kaleidoscope, Penrose, p6m, Sierpinski, fold, Apollonian
+int orda(int i) { if (i == 0) return 11; if (i == 1) return 5; if (i == 2) return 20; if (i == 3) return 14; if (i == 4) return 26; if (i == 5) return 25; if (i == 6) return 4; if (i == 7) return 16; if (i == 8) return 9; if (i == 9) return 15; if (i == 10) return 28; if (i == 11) return 24; if (i == 12) return 1; if (i == 13) return 29; if (i == 14) return 12; if (i == 15) return 17; if (i == 16) return 27; if (i == 17) return 19; if (i == 18) return 6; if (i == 19) return 18; if (i == 20) return 10; if (i == 21) return 7; if (i == 22) return 21; if (i == 23) return 8; if (i == 24) return 3; if (i == 25) return 13; if (i == 26) return 22; if (i == 27) return 23; if (i == 28) return 0; return 2; }   // energy order, 30 classes
+int ordb(int i) { if (i == 0) return 0; if (i == 1) return 5; if (i == 2) return 3; if (i == 3) return 1; if (i == 4) return 8; if (i == 5) return 2; if (i == 6) return 7; if (i == 7) return 9; if (i == 8) return 4; return 6; }   // none, mirror line, p4m, kaleidoscope, Penrose, p6m, Sierpinski, Koch, fold, Apollonian
 int ordc(int i) { if (i == 0) return 0; if (i == 1) return 5; if (i == 2) return 8; if (i == 3) return 9; if (i == 4) return 10; if (i == 5) return 7; if (i == 6) return 1; if (i == 7) return 4; if (i == 8) return 3; if (i == 9) return 6; return 2; }   // none, lens, blossom, rosette, power, Joukowski, spiral, square, inversion, kaleidoscope, tunnel
-int ordd(int i) { if (i == 0) return 0; if (i == 1) return 5; if (i == 2) return 2; if (i == 3) return 7; if (i == 4) return 1; if (i == 5) return 6; if (i == 6) return 4; return 3; }   // none, turning, wave, curl, twirl, vortex street, warp, ripple
+int ordd(int i) { if (i == 0) return 0; if (i == 1) return 5; if (i == 2) return 8; if (i == 3) return 2; if (i == 4) return 7; if (i == 5) return 1; if (i == 6) return 6; if (i == 7) return 4; return 3; }   // none, turning, bend, wave, curl, twirl, vortex street, warp, ripple
 int ords(int i) { if (i == 0) return 0; if (i == 1) return 1; if (i == 2) return 3; if (i == 3) return 4; return 2; }   // photo, relief, contours, flow, glowing edges
 // The app's walk: per stage (shown knob value, target, fade 0..1); walkHost = 1
 // when the app steers (otherwise the hash walk below runs, e.g. in the editor).
@@ -1010,6 +1113,11 @@ uniform float walkHost;
 vec2 stageAk(vec2 uv, int k, float v)
 {
     k = orda(k);
+    if (k == 26) return tFrieze(uv, gCw, 0.35 + 0.3 * v, gTC * 1.5);
+    if (k == 27) return tEllipticWall(uv, gCw, 2.0 + 2.0 * v, gTC);
+    if (k == 28) { int j = int(floor(v * 2.99)); vec2 pq = j == 0 ? vec2(5.0, 4.0) : j == 1 ? vec2(7.0, 3.0) : vec2(4.0, 6.0);
+                   return tHalfPlane(uv, gCt, pq.x, pq.y, 3.0 + 2.0 * v, gTC * 0.8); }
+    if (k == 29) return tArchimedes(uv, gCt, 4.0 + 6.0 * v, gTC * 2.0);
     if (k == 18) return tBlaschke(uv, gCw, 2.0 + floor(v * 2.99), gTC);
     if (k == 19) return tParabolic(uv, gCw, 0.8 + 0.6 * v, gTC * 0.8);
     if (k == 20) return tElliptic(uv, gCt, 0.15 + 0.1 * v, gTC * 1.5);
@@ -1019,7 +1127,7 @@ vec2 stageAk(vec2 uv, int k, float v)
     if (k == 24) return tSphereKaleido(uv, gCw, 3.0 + floor(v * 2.99), 0.4 * sin(gTC * 0.3), gTC * 0.4 + gRot);
     if (k == 25) return tQuasi(uv, gCw, v < 0.5 ? 5.0 : 7.0, 2.0 + 1.5 * fract(v * 2.0), gTC * 1.5);
     if (k == 17) return tQuincunx(uv, gCw, 3.0 + 2.0 * v, 0.5 * sin(gTC * 0.37) + v * 2.0, gTC * 0.5 + gRot);
-    if (k == 14) return tFarris(uv, gCw, int(floor(v * 5.99)), 1.5 + gSpread, gTC * 1.5);
+    if (k == 14) return tFarris(uv, gCw, int(floor(v * 9.99)), 1.5 + gSpread, gTC * 1.5);
     if (k == 15) {
         int j = int(floor(v * 3.99));
         vec2 pq = j == 0 ? vec2(5.0, 4.0) : j == 1 ? vec2(7.0, 3.0) : j == 2 ? vec2(4.0, 5.0) : vec2(6.0, 4.0);
@@ -1056,6 +1164,7 @@ vec2 stageAk(vec2 uv, int k, float v)
 vec2 stageBk(vec2 uv, int k, float v)
 {
     k = ordb(k);
+    if (k == 9) return tKoch(uv, gCw, 2.0 + floor(v * 1.99), 0.3 * sin(gTC * 0.3));
     if (k == 8) return tPenrose(uv, gCw, 3.0 + 2.0 * v, vec2(gTC * 0.7, gTC * 0.3), vec4(0.13, 0.27, -0.21, 0.36));
     if (k == 7) return tSierpinski(uv, gCw, 3.0 + floor(v * 1.99), 0.3 * sin(gTC * 0.4));
     if (k == 6) return tApollo(uv, gCw, 1.04 + 0.08 * v + 0.04 * sin(gTC * 0.3), 3.0);   // more rounds or a larger s turn to sub-pixel lace
@@ -1070,7 +1179,7 @@ vec2 stageBk(vec2 uv, int k, float v)
 vec2 stageCk(vec2 uv, int k, float v)
 {
     k = ordc(k);
-    if (k == 10) return tPowerMirror(uv, gCw, 1.5 + 1.2 * v + 0.4 * sin(gTC * 0.3));
+    if (k == 10) return tPowerMirror(uv, gCw, 0.5 + 2.3 * v + 0.3 * sin(gTC * 0.3))   /* 0.5: the square-root fold */;
     if (k == 9) return tRosette(uv, gCw, 3.0 + floor(v * 5.99), fract(v * 6.0) < 0.5 ? 0.0 : 1.0, gTC * 1.5);
     if (k == 8) return tPetal(uv, gCw, 3.0 + floor(v * 5.99), 0.15 + 0.2 * gSpread, gTC * 2.0);
     if (k == 0) return uv;
@@ -1086,6 +1195,7 @@ vec2 stageCk(vec2 uv, int k, float v)
 vec2 stageDk(vec2 uv, int k, float v)
 {
     k = ordd(k);
+    if (k == 8) return tBend(uv, 1.8 * sin(gTC * 0.4 + v * 6.28));
     if (k == 6) return tVortexStreet(uv, 1.5 + 2.0 * gSpread, gTC * 2.0);
     if (k == 7) return tCurl(uv, 0.4 + 0.8 * gSpread, gTC);
     if (k == 0) return uv;
@@ -1129,19 +1239,19 @@ float walkFade(float kf) { return smoothstep(walkAll() ? 0.7 : 0.55, 1.0, fract(
 vec2 morphMix(vec2 a, vec2 b, float f) { return mix(mirrorUV(a), mirrorUV(b), f); }
 vec2 stageA(vec2 uv)
 {
-    int k0 = pickStage(chainAP, 26); float v0 = subVar(chainAP, 26);
+    int k0 = pickStage(chainAP, 30); float v0 = subVar(chainAP, 30);
     if (!walks(1)) { gIdW *= (k0 <= 0 ? 1.0 : 0.0); return stageAk(uv, k0, v0); }
     if (walkHost > 0.5 && walkAll()) {
         float f = smoothstep(0.0, 1.0, walkA.z);
-        int j0 = pickStage(walkA.x, 26), j1 = pickStage(walkA.y, 26);
+        int j0 = pickStage(walkA.x, 30), j1 = pickStage(walkA.y, 30);
         gIdW *= (j0 <= 0 ? 1.0 - f : 0.0) + (j1 <= 0 ? f : 0.0);
-        if (f <= 0.0) return stageAk(uv, j0, subVar(walkA.x, 26));
-        return morphMix(stageAk(uv, j0, subVar(walkA.x, 26)), stageAk(uv, j1, subVar(walkA.y, 26)), f);
+        if (f <= 0.0) return stageAk(uv, j0, subVar(walkA.x, 30));
+        return morphMix(stageAk(uv, j0, subVar(walkA.x, 30)), stageAk(uv, j1, subVar(walkA.y, 30)), f);
     }
     float kf = walkPos(1), c = floor(kf);
     int i0, i1; float w0, w1;
-    walkPick(c, k0, v0, 26, 1.3, i0, w0);
-    walkPick(c + 1.0, k0, v0, 26, 1.3, i1, w1);
+    walkPick(c, k0, v0, 30, 1.3, i0, w0);
+    walkPick(c + 1.0, k0, v0, 30, 1.3, i1, w1);
     float f = walkFade(kf);
     gIdW *= (i0 <= 0 ? 1.0 - f : 0.0) + (i1 <= 0 ? f : 0.0);
     if (f <= 0.0) return stageAk(uv, i0, w0);
@@ -1149,19 +1259,19 @@ vec2 stageA(vec2 uv)
 }
 vec2 stageB(vec2 uv)
 {
-    int k0 = pickStage(chainBP, 9); float v0 = subVar(chainBP, 9);
+    int k0 = pickStage(chainBP, 10); float v0 = subVar(chainBP, 10);
     if (!walks(2)) { gIdW *= (k0 <= 1 ? 1.0 : 0.0); return stageBk(uv, k0, v0); }
     if (walkHost > 0.5 && walkAll()) {
         float f = smoothstep(0.0, 1.0, walkB.z);
-        int j0 = pickStage(walkB.x, 9), j1 = pickStage(walkB.y, 9);
+        int j0 = pickStage(walkB.x, 10), j1 = pickStage(walkB.y, 10);
         gIdW *= (j0 <= 1 ? 1.0 - f : 0.0) + (j1 <= 1 ? f : 0.0);
-        if (f <= 0.0) return stageBk(uv, j0, subVar(walkB.x, 9));
-        return morphMix(stageBk(uv, j0, subVar(walkB.x, 9)), stageBk(uv, j1, subVar(walkB.y, 9)), f);
+        if (f <= 0.0) return stageBk(uv, j0, subVar(walkB.x, 10));
+        return morphMix(stageBk(uv, j0, subVar(walkB.x, 10)), stageBk(uv, j1, subVar(walkB.y, 10)), f);
     }
     float kf = walkPos(2), c = floor(kf);
     int i0, i1; float w0, w1;
-    walkPick(c, k0, v0, 9, 2.9, i0, w0);
-    walkPick(c + 1.0, k0, v0, 9, 2.9, i1, w1);
+    walkPick(c, k0, v0, 10, 2.9, i0, w0);
+    walkPick(c + 1.0, k0, v0, 10, 2.9, i1, w1);
     float f = walkFade(kf);
     gIdW *= (i0 <= 1 ? 1.0 - f : 0.0) + (i1 <= 1 ? f : 0.0);
     if (f <= 0.0) return stageBk(uv, i0, w0);
@@ -1189,19 +1299,19 @@ vec2 stageC(vec2 uv)
 }
 vec2 stageD(vec2 uv)
 {
-    int k0 = pickStage(chainDP, 8); float v0 = subVar(chainDP, 8);
+    int k0 = pickStage(chainDP, 9); float v0 = subVar(chainDP, 9);
     if (!walks(4)) { gIdW *= (k0 <= 2 ? 1.0 : 0.0); return stageDk(uv, k0, v0); }
     if (walkHost > 0.5 && walkAll()) {
         float f = smoothstep(0.0, 1.0, walkD.z);
-        int j0 = pickStage(walkD.x, 8), j1 = pickStage(walkD.y, 8);
+        int j0 = pickStage(walkD.x, 9), j1 = pickStage(walkD.y, 9);
         gIdW *= (j0 <= 2 ? 1.0 - f : 0.0) + (j1 <= 2 ? f : 0.0);
-        if (f <= 0.0) return stageDk(uv, j0, subVar(walkD.x, 8));
-        return morphMix(stageDk(uv, j0, subVar(walkD.x, 8)), stageDk(uv, j1, subVar(walkD.y, 8)), f);
+        if (f <= 0.0) return stageDk(uv, j0, subVar(walkD.x, 9));
+        return morphMix(stageDk(uv, j0, subVar(walkD.x, 9)), stageDk(uv, j1, subVar(walkD.y, 9)), f);
     }
     float kf = walkPos(4), c = floor(kf);
     int i0, i1; float w0, w1;
-    walkPick(c, k0, v0, 8, 6.1, i0, w0);
-    walkPick(c + 1.0, k0, v0, 8, 6.1, i1, w1);
+    walkPick(c, k0, v0, 9, 6.1, i0, w0);
+    walkPick(c + 1.0, k0, v0, 9, 6.1, i1, w1);
     float f = walkFade(kf);
     gIdW *= (i0 <= 2 ? 1.0 - f : 0.0) + (i1 <= 2 ? f : 0.0);
     if (f <= 0.0) return stageDk(uv, i0, w0);
@@ -1225,9 +1335,9 @@ vec3 fHexXY(vec3 p, float cell)
 // (if-chains, not const arrays: NVIDIA returned entry 0 for three arrays
 // indexed in one function -- the body never changed):
 // the music's energy picks the region of the world too.
-int ordsp(int i) { if (i == 0) return 0; if (i == 1) return 3; if (i == 2) return 6; if (i == 3) return 7; if (i == 4) return 9; if (i == 5) return 4; if (i == 6) return 2; if (i == 7) return 5; if (i == 8) return 8; return 1; }   // lattice, octa lattice, hexagons, 4D lattice, log-spherical Droste, turning, twisted, helix, inverted lattice, polar ring tunnel
-int ordco(int i) { if (i == 0) return 0; if (i == 1) return 4; if (i == 2) return 8; if (i == 3) return 3; if (i == 4) return 9; if (i == 5) return 6; if (i == 6) return 1; if (i == 7) return 7; if (i == 8) return 2; return 5; }   // none, plane folds, polyhedral, sphere-inversion box, hyperbolic honeycomb, Kleinian, tetra, icosa, octa, Menger
-int ordbo(int i) { if (i == 0) return 1; if (i == 1) return 2; if (i == 2) return 3; if (i == 3) return 5; if (i == 4) return 6; if (i == 5) return 0; return 4; }   // balls, tori, gyroid, Schwarz P, Schwarz D, blocks, crosses
+int ordsp(int i) { if (i == 0) return 0; if (i == 1) return 3; if (i == 2) return 6; if (i == 3) return 7; if (i == 4) return 9; if (i == 5) return 4; if (i == 6) return 10; if (i == 7) return 2; if (i == 8) return 11; if (i == 9) return 5; if (i == 10) return 8; return 1; }   // ... turning, torus wrap, twisted, gyroid warp, helix, inverted lattice, polar ring tunnel
+int ordco(int i) { if (i == 0) return 0; if (i == 1) return 4; if (i == 2) return 8; if (i == 3) return 3; if (i == 4) return 9; if (i == 5) return 6; if (i == 6) return 10; if (i == 7) return 1; if (i == 8) return 7; if (i == 9) return 2; return 5; }   // ... hyperbolic honeycomb, Kleinian, amazing surface, tetra, icosa, octa, Menger
+int ordbo(int i) { if (i == 0) return 1; if (i == 1) return 7; if (i == 2) return 2; if (i == 3) return 3; if (i == 4) return 5; if (i == 5) return 6; if (i == 6) return 0; if (i == 7) return 8; return 4; }   // balls, octahedra, tori, gyroid, Schwarz P, Schwarz D, blocks, rod lattice, crosses
 // The app walks the structure too (EffectShader::stepChainWalk): (shown, target, fade).
 uniform vec3 walkSpace, walkCore, walkBody;
 
@@ -1235,9 +1345,9 @@ uniform vec3 walkSpace, walkCore, walkBody;
 float fieldK(vec3 p, float xs, float xc, float xb)
 {
     gDR = 1.0;
-    int ks = ordsp(pickStage(xs, 10)); float vs = subVar(xs, 10);
-    int kc = ordco(pickStage(xc, 10)); float vc = subVar(xc, 10);
-    int kb = ordbo(pickStage(xb, 7)); float vb = subVar(xb, 7);
+    int ks = ordsp(pickStage(xs, 12)); float vs = subVar(xs, 12);
+    int kc = ordco(pickStage(xc, 11)); float vc = subVar(xc, 11);
+    int kb = ordbo(pickStage(xb, 9)); float vb = subVar(xb, 9);
     vec3 q;
     if (ks == 0) q = fRepeat(p, vec3(1.2 + 0.4 * vs));
     else if (ks == 1) { q = fPolarZ(p, 6.0 + 2.0 * floor(vs * 2.99)); q.x -= 2.2; q = zRepeat(q, 0.8); }
@@ -1253,6 +1363,8 @@ float fieldK(vec3 p, float xs, float xc, float xb)
         q = fRepeat(fScale(q, 1.6, vec3(0.0)), vec3(1.3));                                   // ... of a lattice: a bubble world per cell
     }
     else if (ks == 9) q = fRepeat(fScale(fLogSphere(p, gCam + vec3(0.0, 0.0, 6.0), 2.5 + vs, gT * 0.05), 2.5, vec3(0.0)), vec3(1.4));   // 3D Droste shells
+    else if (ks == 10) q = fTorusWrap(p, 7.0 + 3.0 * vs, 1.3);                       // the world wrapped round a great ring
+    else if (ks == 11) q = fRepeat(fGyroidWarp(p, 0.25 + 0.15 * vs, gT * 0.05), vec3(1.4));   // gyroid-warped lattice
     else if (ks == 7) q = f4DLattice(p, 1.3 + 0.3 * vs, 0.35 * sin(gT * 0.04) + gRot * 0.3, 0.25 * sin(gT * 0.031 + 1.0), 0.6 * sin(gT * 0.023));   // 4D-rotated lattice        // hexagonal lattice: a honeycomb of pillars
     float bs = 1.0;                                         // body size in the core's space
     if (kc == 1) {
@@ -1303,6 +1415,19 @@ float fieldK(vec3 p, float xs, float xc, float xb)
         q = fHyperBall(q * 0.8, 0.85 + 0.1 * vc) / 0.8;
         bs = 0.45;
     }
+    else if (kc == 10) {
+        // 'amazing surface' (Kali): box folds in xy only, sphere fold, turn, scale --
+        // layered, sheet-like fractal terraces
+        for (int i = 0; i < 3; ++i) {
+            q.xy = clamp(q.xy, -1.0, 1.0) * 2.0 - q.xy;
+            float r2 = max(dot(q, q), 1e-4);
+            float k = r2 < 0.25 ? 4.0 : (r2 < 1.0 ? 1.0 / r2 : 1.0);
+            q *= k; gDR *= k;
+            q = fRot(q, vec3(0.0, 0.0, 1.0), 0.3 + 0.4 * vc + 0.2 * sin(gRot));
+            q = fScale(q, 1.25, vec3(0.0));
+        }
+        bs = 3.0;   /* spot check: 4 rounds x 1.5 turned to noise; bodies must be large after the folds */
+    }
     gP = q;
     float th = 1.0 + 0.3 * gSpread;
     float d;
@@ -1313,6 +1438,8 @@ float fieldK(vec3 p, float xs, float xc, float xb)
     else if (kb == 5) { vec3 w = q * (3.0 / bs); d = (abs(cos(w.x) + cos(w.y) + cos(w.z)) - 0.35 - 0.3 * gSpread) / 2.2 * bs / 3.0; }   // Schwarz P
     else if (kb == 6) { vec3 w = q * (3.0 / bs); vec3 sn = sin(w), cs = cos(w);                     // Schwarz D
         d = (abs(sn.x * sn.y * sn.z + sn.x * cs.y * cs.z + cs.x * sn.y * cs.z + cs.x * cs.y * sn.z) - 0.25 - 0.2 * gSpread) / 2.2 * bs / 3.0; }
+    else if (kb == 7) d = sdOcta3(q, 0.6 * bs * th);                                  // octahedron
+    else if (kb == 8) d = min(min(length(q.xy), length(q.yz)), length(q.zx)) - 0.1 * bs * th;   // rod lattice
     else d = min(min(sdBox3(q, vec3(0.6, 0.08, 0.08) * bs * th), sdBox3(q, vec3(0.08, 0.6, 0.08) * bs * th)), sdBox3(q, vec3(0.08, 0.08, 0.6) * bs * th));
     return d / gDR * 0.8;
 }
