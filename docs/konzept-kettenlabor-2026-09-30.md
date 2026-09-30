@@ -36,6 +36,10 @@ passiert unsichtbar zwischen zwei Auftritten.
 * **Grammatik statt Zufall**: Die Klassen sorgen dafür, dass jede Kette
   „Abbildung → Symmetrie → Abbildung → Verzerrung“ hat — zwei Verzerrungen
   hintereinander oder eine Kette ohne Struktur kommen nicht vor.
+* **ChainLabTunnel**: dieselbe gewürfelte 2D-Kette als Wand eines Tunnels
+  (wie die Original-Tunnelszenen), ihre Helligkeit als echtes Relief, die
+  Rohrachse windet sich (wandernder Fluchtpunkt). Das Relief wird dort
+  geglättet, wo die Kette das Foto staucht — sonst entstehen Sub-Pixel-Spitzen.
 * **Ketten-Morph** (`morphP`): würfelt, welche Stufe (oder keine) während der
   Szene weiterwandert. Getrieben von `sceneAdvance` (steigt bei Spektralfluss
   und Harmoniewechseln): Transformation halten, dann über die gespiegelten
@@ -63,6 +67,12 @@ Ein Labor zeigt jedes Mal etwas Neues; was gefällt, soll bleiben.
    eigener Name, eigene Bewertung und eigenes Katalogbild, und der Compiler
    faltet die Stufenwahl weg.
 3. **Bewerten**: wie jede neue Szene über `preset_fit.tsv`.
+
+Nebenbei gefunden: Windows hatte auf diesem Rechner die TCP-Ports 7498–8665
+reserviert (Hyper-V/WinNAT); die Fernbedienung (8091 ff.) konnte deshalb gar
+nicht starten. Sie weicht jetzt auf 18091 ff. bzw. einen freien Port aus; die
+LAN-Erkennung der Android-App meldet den echten Port. Im Browser also
+`http://<pc>:18091/`, solange die Reservierung besteht.
 
 So wächst der Katalog aus dem, was du beim Zuschauen magst, statt aus dem,
 was ich mir ausdenke.
@@ -98,8 +108,9 @@ Schritte, alle stetig und ohne Audio auf der Kamera:
 
 ## 6. Weiterdenken
 
-* **Kette als Gelände**: die Luma einer 2D-Kette als Höhenfeld, darüber
-  fliegen — jede Kette wird auch eine Landschaft.
+* **Kette als Gelände**: als Tunnelwand umgesetzt (ChainLabTunnel); ein
+  Flug *über* ein Höhenfeld hätte einen Horizont und verletzt die
+  Ursprungs-Kriterien — höchstens senkrecht von oben.
 * **Kette als Strömung**: Partikel/LIC entlang des Kettengradienten.
 * **Zwei Ketten mischen**: Kette A als Maske für Kette B, die Maske selbst
   eine Kette.
