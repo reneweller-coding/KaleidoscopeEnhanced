@@ -1782,13 +1782,6 @@
     <float name="combP" minValue="8.0" maxValue="24.0"></float>
     <float name="pressureP" minValue="0.5" maxValue="2.2"></float>
   </TextureShader>
-  <TextureShader file="..\Scene2D\NonlinearKerrOpticalSolitonCollision.frag" type="normal" probability="0.4" mood="psychedelic,bright" complexity="4">
-    <rig preset="flat"/>
-    <float name="solitonCountP" minValue="2.0" maxValue="6.0"></float>
-    <float name="kerrNonlinP" minValue="0.6" maxValue="2.2"></float>
-    <float name="shockP" minValue="8.0" maxValue="24.0"></float>
-    <float name="crossPhaseP" minValue="0.5" maxValue="2.0"></float>
-  </TextureShader>
   <TextureShader file="..\Scene2D\BoseEinsteinGiantVortexTurbulence.frag" type="normal" probability="0.4" mood="calm,psychedelic" complexity="3">
     <rig preset="flat"/>
     <float name="vortexCountP" minValue="4.0" maxValue="16.0"></float>
@@ -1864,12 +1857,6 @@
     <float name="ribbonWidthP" minValue="0.02" maxValue="0.1"></float>
     <float name="braidSpeedP" minValue="0.6" maxValue="2.5"></float>
     <float name="zeroModeGlowP" minValue="0.8" maxValue="2.5"></float>
-  </TextureShader>
-  <TextureShader file="..\Scene3D\Chladni3DAcousticLevitation.frag" type="scene3d" geom="cubes" probability="0.45" mood="bright,calm" complexity="3">
-    <rig preset="procedural"/>
-    <float name="nodeDensityP" minValue="2.0" maxValue="5.0"></float>
-    <float name="particleSizeP" minValue="0.03" maxValue="0.1"></float>
-    <float name="specularP" minValue="0.8" maxValue="2.5"></float>
   </TextureShader>
   <TextureShader file="..\Scene3D\BioluminescentCombJellyCydippid.frag" type="scene3d" geom="ribbon" probability="0.45" mood="calm,dark,dreamy" complexity="3">
     <rig preset="procedural"/>
@@ -3092,6 +3079,22 @@
     <float name="cellP" minValue="0" maxValue="1"></float>
     <float name="bandP" minValue="0" maxValue="1"></float>
     <float name="photoZoomP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\DelaunayDiscs.frag" type="normal" mood="bright,psychedelic" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="ringP" minValue="0" maxValue="1"></float>
+    <float name="sectorP" minValue="0" maxValue="1"></float>
+    <float name="photoP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\MatisseCutouts.frag" type="normal" mood="bright,calm" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="shapeP" minValue="0" maxValue="1"></float>
+    <float name="lobeP" minValue="0" maxValue="1"></float>
+    <float name="photoP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>

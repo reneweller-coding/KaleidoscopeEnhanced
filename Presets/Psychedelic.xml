@@ -1583,13 +1583,6 @@
     <float name="cageGlowP" minValue="0.8" maxValue="2.5"></float>
     <float name="sublatticeP" minValue="0.4" maxValue="1.8"></float>
   </TextureShader>
-  <TextureShader file="..\Scene2D\RelativisticSynchrotronPulsarWind.frag" type="normal" probability="0.4" mood="bright" complexity="4">
-    <rig preset="flat"/>
-    <float name="torusRadiusP" minValue="0.3" maxValue="0.9"></float>
-    <float name="jetCollimP" minValue="0.08" maxValue="0.35"></float>
-    <float name="wispCountP" minValue="4.0" maxValue="14.0"></float>
-    <float name="synchGlowP" minValue="0.8" maxValue="2.5"></float>
-  </TextureShader>
   <TextureShader file="..\Scene2D\LiesegangPrecipitationRingArray.frag" type="normal" probability="0.4" mood="calm,psychedelic" complexity="3">
     <rig preset="flat"/>
     <float name="spacingRatioP" minValue="1.05" maxValue="1.35"></float>
@@ -3080,6 +3073,14 @@
     <float name="cellP" minValue="0" maxValue="1"></float>
     <float name="bandP" minValue="0" maxValue="1"></float>
     <float name="photoZoomP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\DelaunayDiscs.frag" type="normal" mood="bright,psychedelic" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="ringP" minValue="0" maxValue="1"></float>
+    <float name="sectorP" minValue="0" maxValue="1"></float>
+    <float name="photoP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>

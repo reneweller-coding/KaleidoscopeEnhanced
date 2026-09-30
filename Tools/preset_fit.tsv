@@ -1035,3 +1035,6 @@ TextureDelaunayLightNet	6	8	6	5	5	5	6
 TexturePineConeSpirals	6	6	6	4	8	8	7
 TexturePinArt	5	4	4	5	3	6	5
 TextureGirihChambers	5	4	5	3	8	8	7
+DelaunayDiscs	4	4	6	3	7	9	7
+TextureLightShafts	8	7	4	6	4	6	6
+MatisseCutouts	6	3	5	2	5	9	6
