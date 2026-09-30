@@ -1918,17 +1918,6 @@
     <float name="fresnelP" minValue="0.8" maxValue="2.5"></float>
     <float name="heptagonP" minValue="0.6" maxValue="2.2"></float>
   </TextureShader>
-  <TextureShader file="..\Scene3D\HelicoidMinimalSurfaceTunnel.frag" type="scene3d" geom="grid" probability="0.45" mood="calm,dreamy,bright" complexity="3">
-    <rig preset="procedural"/>
-    <float name="helicoidPitchP" minValue="0.3" maxValue="1.2"></float>
-    <float name="tunnelRadiusP" minValue="1.0" maxValue="2.5"></float>
-    <float name="specularP" minValue="0.8" maxValue="2.5"></float>
-  </TextureShader>
-  <TextureShader file="..\Scene3D\SuperfluidHeliumVortexReconnection.frag" type="scene3d" geom="indirect" probability="0.45" mood="calm,bright,dreamy" complexity="4">
-    <rig preset="procedural"/>
-    <float name="reconnGlowP" minValue="0.8" maxValue="2.5"></float>
-    <float name="kelvinP" minValue="0.6" maxValue="2.2"></float>
-  </TextureShader>
   <TextureShader file="..\Scene3D\BioluminescentCombJellyCydippid.frag" type="scene3d" geom="ribbon" probability="0.45" mood="calm,dark,dreamy" complexity="3">
     <rig preset="procedural"/>
     <float name="bodyScaleP" minValue="0.8" maxValue="2.0"></float>
@@ -1936,25 +1925,12 @@
     <float name="beatSpeedP" minValue="1.0" maxValue="4.0"></float>
     <float name="cteneGlowP" minValue="0.8" maxValue="2.5"></float>
   </TextureShader>
-  <TextureShader file="..\Scene3D\KelvinWakeShipWavePattern.frag" type="scene3d" geom="grid" probability="0.45" mood="calm,bright,dreamy" complexity="3">
-    <rig preset="procedural"/>
-    <float name="waveScaleP" minValue="0.6" maxValue="2.2"></float>
-    <float name="foamGlowP" minValue="0.8" maxValue="2.5"></float>
-    <float name="specularP" minValue="0.8" maxValue="2.5"></float>
-  </TextureShader>
   <TextureShader file="..\Scene2D\SolitonInternalWaveAndamanSea.frag" type="normal" probability="0.4" mood="calm,dreamy,bright" complexity="3">
     <rig preset="flat"/>
     <float name="packetCountP" minValue="3.0" maxValue="8.0"></float>
     <float name="pycnoclineP" minValue="0.6" maxValue="2.2"></float>
     <float name="glitterP" minValue="0.8" maxValue="2.5"></float>
     <float name="roughnessP" minValue="0.5" maxValue="2.0"></float>
-  </TextureShader>
-  <TextureShader file="..\Scene2D\AcousticBlackHoleEventHorizon.frag" type="normal" probability="0.4" mood="dark,psychedelic,space" complexity="4">
-    <rig preset="flat"/>
-    <float name="machGradP" minValue="0.8" maxValue="2.5"></float>
-    <float name="horizonRadP" minValue="0.2" maxValue="0.6"></float>
-    <float name="hawkingTempP" minValue="0.8" maxValue="2.5"></float>
-    <float name="phononWaveP" minValue="8.0" maxValue="24.0"></float>
   </TextureShader>
   <TextureShader file="..\Scene2D\LiesegangPrecipitationRingArray.frag" type="normal" probability="0.4" mood="calm,psychedelic" complexity="3">
     <rig preset="flat"/>
@@ -3228,6 +3204,39 @@
     <float name="sizeP" minValue="0" maxValue="1"></float>
     <float name="wavesP" minValue="0" maxValue="1"></float>
     <float name="photoP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureAuroraField.frag" type="normal" mood="dreamy,dark,space" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="foldsP" minValue="0" maxValue="1"></float>
+    <float name="rayP" minValue="0" maxValue="1"></float>
+    <float name="photoP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureNebulaVolume.frag" type="normal" mood="space,dreamy,dark" probability="0.45" complexity="3">
+    <rig preset="flat"/>
+    <float name="densityP" minValue="0" maxValue="1"></float>
+    <float name="colourP" minValue="0" maxValue="1"></float>
+    <float name="turbP" minValue="0" maxValue="1"></float>
+    <expr name="densityP" formula="clamp(0.4 + 0.4*swell + 0.2*seed2, 0.0, 1.0)"/>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\RichterSqueegee.frag" type="normal" mood="bright,dreamy" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="layersP" minValue="0" maxValue="1"></float>
+    <float name="angleP" minValue="0" maxValue="1"></float>
+    <float name="scaleP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\RheoscopicSwirl.frag" type="normal" mood="calm,dreamy" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="scaleP" minValue="0" maxValue="1"></float>
+    <float name="dyeP" minValue="0" maxValue="1"></float>
+    <float name="speedP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>

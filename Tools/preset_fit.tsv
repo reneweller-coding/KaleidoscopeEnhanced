@@ -956,3 +956,7 @@ TextureFlowParticles	6	3	5	3	9	7	8
 SchillerOverTexture	5	2	5	5	7	7	8
 DewdropLensArray	7	1	2	3	6	7	7
 TextureSequinField	3	1	8	3	7	5	8
+TextureAuroraField	8	8	3	5	6	6	8
+TextureNebulaVolume	7	9	2	5	6	5	7
+RichterSqueegee	4	0	4	2	6	9	8
+RheoscopicSwirl	8	2	2	4	7	7	8
