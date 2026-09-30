@@ -233,6 +233,7 @@ RECENT_SCENES = {
     "ParticleLifeClusters", "SymmetryBreathing",
     "TextureEmberBed", "TextureGlowingIce", "TextureGlassCubeSwarm",
     "LouisVeilPours", "HoneyFold", "PointillistDots",
+    "DoubleMirrorWave", "TextureAccretionStreams", "TextureSpillBloom",
 }
 
 def rule_recent(m, h):

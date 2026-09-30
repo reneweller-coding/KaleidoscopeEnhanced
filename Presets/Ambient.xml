@@ -692,13 +692,6 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\Scene2D\Teleidoscope.frag" type="normal" mood="psychedelic,bright,dreamy" probability="0.45" complexity="2">
-    <rig preset="flat"/>
-    <float name="sizeP" minValue="0" maxValue="1"></float>
-    <float name="lensP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader file="..\Scene2D\BuildUpAvalanche.frag" type="normal" mood="aggressive,bright" probability="0.45" complexity="2">
     <rig preset="flat"/>
     <float name="slopeP" minValue="0" maxValue="1"></float>
@@ -710,13 +703,6 @@
     <rig preset="flat"/>
     <float name="hillsP" minValue="0" maxValue="1"></float>
     <float name="rainP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
-  <TextureShader file="..\Scene2D\SpectrumStalactiteCave.frag" type="normal" mood="dark,calm,psychedelic" probability="0.45" complexity="3">
-    <rig preset="flat"/>
-    <float name="lengthP" minValue="0" maxValue="1"></float>
-    <float name="poolP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
@@ -732,13 +718,6 @@
     <rig preset="procedural"/>
     <float name="mouthsP" minValue="0" maxValue="1"></float>
     <float name="thickP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
-  <TextureShader file="..\Scene2D\FastRadioBurstDispersion.frag" type="normal" mood="space,dark,psychedelic" probability="0.45" complexity="2">
-    <rig preset="flat"/>
-    <float name="dmP" minValue="0" maxValue="1"></float>
-    <float name="rateP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
@@ -3210,6 +3189,30 @@
     <float name="sizeP" minValue="0" maxValue="1"></float>
     <float name="splitP" minValue="0" maxValue="1"></float>
     <float name="zoomP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\DoubleMirrorWave.frag" type="normal" mood="psychedelic,dreamy" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="gapP" minValue="0" maxValue="1"></float>
+    <float name="waveP" minValue="0" maxValue="1"></float>
+    <float name="fadeP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureAccretionStreams.frag" type="normal" mood="space,psychedelic,dark" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="tiltP" minValue="0" maxValue="1"></float>
+    <float name="laneP" minValue="0" maxValue="1"></float>
+    <float name="photoP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureSpillBloom.frag" type="normal" mood="calm,bright" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="bloomsP" minValue="0" maxValue="1"></float>
+    <float name="granP" minValue="0" maxValue="1"></float>
+    <float name="edgeP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
