@@ -31,6 +31,8 @@
 #include <QtCore/qdir.h>
 #include <QtCore/qfileinfo.h>
 #include <QtCore/QSettings>
+#include <QtCore/QDateTime>
+#include <QtCore/QFile>
 #include <cmath>
 #include <GL/GLU.h>
 
@@ -1146,10 +1148,39 @@ bool RenderPipeline::saveMarkedPreset( QString *outPath )
 	return true;
 }
 
+/**
+ * @brief Appends the current scene's rolled parameter values to liked_rolls.tsv (next to the settings ini).
+ *
+ * One line per like: local time, the scene's file base, then name=value for
+ * every rolled Uniform.  For the chain-lab scenes (ChainLab2D/3D) the rolled
+ * knobs select the transforms themselves, so a liked roll is a whole new
+ * scene; Tools/scenegen/promote_likes.py freezes each such line into a named
+ * scene of its own (the lab's source with those knobs made constants).
+ * @param e The effect on screen; its values are read, not changed.
+ */
+static void logLikedRoll( const EffectShader *e )
+{
+	const QString base = tasteBase( e->fragmentName() );
+	QString line = QDateTime::currentDateTime().toString( Qt::ISODate ) + "\t" + base + "\t";
+	for( const auto &nv : e->namedParameters() )
+		line += QString( "%1=%2 " ).arg( QString::fromStdString( nv.first ) ).arg( nv.second, 0, 'f', 4 );
+	line = line.trimmed();
+	fprintf( stderr, "Like: %s\n", line.toLocal8Bit().constData() );
+	QFile f( QFileInfo( settingsFilePath() ).absolutePath() + "/liked_rolls.tsv" );
+	if( f.open( QIODevice::Append | QIODevice::Text ) )
+	{
+		QTextStream ts( &f );
+		ts << line << "\n";
+	}
+}
+
 void RenderPipeline::favoriteCurrentEffect()
 {
 	if( m_scheduler.actTexture() < m_effectTextures.size() )
+	{
 		bumpTaste( m_effectTextures[m_scheduler.actTexture()]->fragmentName(), 1.25f );
+		logLikedRoll( m_effectTextures[m_scheduler.actTexture()] );
+	}
 }
 
 /**

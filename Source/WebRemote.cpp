@@ -472,6 +472,20 @@ int WebRemote::bindFreePort( int preferred )
 	for( int p = preferred; p < preferred + 20; ++p )
 		if( m_server->listen( QHostAddress::Any, quint16(p) ) )
 			return p;
+	// Windows can reserve whole port blocks (Hyper-V / WinNAT "excluded port
+	// ranges", e.g. 7498-8665 on the dev machine), and then EVERY port near
+	// the default fails with "The address is protected" -- the remote was
+	// simply dead.  Fall back to a block far away, and finally to any port
+	// the OS hands out; LAN discovery advertises m_httpPort, so the phone app
+	// still finds the instance, and the log line names the port for a browser.
+	if( m_server->serverError() == QAbstractSocket::SocketAccessError )
+	{
+		for( int p = preferred + 10000; p < preferred + 10020 && p < 65536; ++p )
+			if( m_server->listen( QHostAddress::Any, quint16(p) ) )
+				return p;
+		if( m_server->listen( QHostAddress::Any, 0 ) )
+			return int( m_server->serverPort() );
+	}
 	return 0;
 }
 

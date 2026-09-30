@@ -27,6 +27,7 @@ x64/
 # Runtime-generated files
 kaleidoscope.log*
 kaleidoscope_settings.ini
+liked_rolls.tsv
 recordings/
 ThumbCache/
 

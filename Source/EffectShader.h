@@ -497,6 +497,21 @@ public:
 		for (size_t i = 0; i < m_uniforms.size() && i < v.size(); ++i)
 			m_uniforms[i]->restoreValue(v[i]);
 	}
+	/**
+	 * @brief The rolled value of every registered Uniform together with its name.
+	 *
+	 * Used to remember a liked roll (key 'f'): for the chain-lab scenes the rolled
+	 * knobs ARE the scene -- which transforms make up the chain -- so writing them
+	 * down is what lets a good roll become a fixed, named entry later.
+	 * @return (name, value) per Uniform in m_uniforms, in registration order.
+	 */
+	std::vector<std::pair<std::string, float>> namedParameters() const
+	{
+		std::vector<std::pair<std::string, float>> v;
+		v.reserve(m_uniforms.size());
+		for (const Uniform *u : m_uniforms) v.emplace_back(u->getName(), u->snapshotValue());
+		return v;
+	}
 
 	// ---- Mood tags (config attribute mood="dark,calm,...") ----
 	/// Bitmask flags parsed from a preset's mood="..." config attribute.

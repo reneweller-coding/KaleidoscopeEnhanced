@@ -75,6 +75,9 @@ private:
 
 	/**
 	 * @brief Binds m_server to the first free TCP port starting at @p preferred.
+	 *
+	 * Tries preferred..preferred+19; if those are refused as protected (Windows
+	 * excluded port ranges), preferred+10000..+10019, then any OS-chosen port.
 	 * @param preferred The requested port; tried first.
 	 * @return The port actually bound, or 0 if none of the attempted ports were free.
 	 */
