@@ -960,3 +960,8 @@ TextureAuroraField	8	8	3	5	6	6	8
 TextureNebulaVolume	7	9	2	5	6	5	7
 RichterSqueegee	4	0	4	2	6	9	8
 RheoscopicSwirl	8	2	2	4	7	7	8
+ActiveNematicDefects	5	3	5	3	9	7	8
+LiquidLightShow	5	1	5	2	9	7	8
+TextureCausticCeiling	8	2	3	4	6	7	8
+TextureLanternField	8	3	2	6	4	6	8
+TextureCloudInterior	8	3	1	2	4	6	7

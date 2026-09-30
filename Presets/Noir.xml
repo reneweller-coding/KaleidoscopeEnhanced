@@ -2302,12 +2302,6 @@
     <float name="flashP" minValue="0.8" maxValue="2.5"></float>
     <float name="methaneP" minValue="0.2" maxValue="1.5"></float>
   </TextureShader>
-  <TextureShader file="..\Scene3D\PhotonicTopologicalEdgeStates.frag" type="scene3d" geom="ribbon" probability="0.45" mood="dark,psychedelic" complexity="3">
-    <rig preset="procedural"/>
-    <float name="ribbonWidthP" minValue="0.02" maxValue="0.1"></float>
-    <float name="edgeSpeedP" minValue="0.8" maxValue="3.0"></float>
-    <float name="glowP" minValue="0.8" maxValue="2.5"></float>
-  </TextureShader>
   <TextureShader file="..\Scene3D\MagnetoRotationalHypernovaInstability.frag" type="scene3d" geom="indirect" probability="0.45" mood="aggressive,dark" complexity="5">
     <rig preset="procedural"/>
     <float name="jetGlowP" minValue="0.8" maxValue="2.5"></float>
@@ -3637,6 +3631,15 @@
     <float name="colourP" minValue="0" maxValue="1"></float>
     <float name="turbP" minValue="0" maxValue="1"></float>
     <expr name="densityP" formula="clamp(0.4 + 0.4*swell + 0.2*seed2, 0.0, 1.0)"/>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureLanternField.frag" type="normal" mood="calm,dreamy,dark" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="densityP" minValue="0" maxValue="1"></float>
+    <float name="sizeP" minValue="0" maxValue="1"></float>
+    <float name="photoP" minValue="0" maxValue="1"></float>
+    <expr name="densityP" formula="clamp(0.5 + 0.3*swell + 0.2*seed2, 0.0, 1.0)"/>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
