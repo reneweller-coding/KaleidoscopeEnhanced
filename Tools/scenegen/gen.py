@@ -486,7 +486,12 @@ mat3 camFrame(float z, out vec3 ro)
     ro = vec3(camPathXY(z), z);
     vec3 ta = vec3(camPathXY(z + 2.0), z + 2.0);
     vec3 fw = normalize(ta - ro);
-    vec3 rt = normalize(cross(vec3(0.0, 1.0, 0.0), fw));
+    // Bank into the curves: the roll follows the path's sideways curvature at
+    // this depth -- a function of position only, like a road, never of loudness.
+    vec2 curv = camPathXY(z + 1.5) - 2.0 * camPathXY(z) + camPathXY(z - 1.5);
+    float roll = clamp(-curv.x * 1.6, -0.3, 0.3);
+    vec3 up = vec3(sin(roll), cos(roll), 0.0);
+    vec3 rt = normalize(cross(up, fw));
     return mat3(rt, cross(fw, rt), fw);
 }
 vec3 normal3(vec3 p)

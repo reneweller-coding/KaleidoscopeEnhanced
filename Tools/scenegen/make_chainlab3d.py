@@ -24,7 +24,7 @@ HEAD = r'''//@doc
  *   audioSpread     -> the bodies thicken, the colour chain distorts more
  *   audioKick       -> the rims flare (light)
  *   audioMode       -> the light and the palette: cool in minor, warm in major
- *   audioSwell      -> the fog glow and the colour saturation (slow)
+ *   audioSwell      -> the fog glow, the colour saturation and the width of the flight tube (slow)
  *
  * Knobs: spaceP / coreP / bodyP (the 3D chain, rolled per start), chainAP..chainDP
  * (the 2D colour chain, rolled per start), morphP (which colour stage morphs on

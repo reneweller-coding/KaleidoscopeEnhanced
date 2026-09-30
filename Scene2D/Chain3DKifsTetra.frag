@@ -15,7 +15,7 @@ out vec4 fragColor;
  *   audioSpread     -> the bodies thicken
  *   audioKick       -> the rims flare (light)
  *   audioMode       -> the light: cool in minor, warm in major
- *   audioSwell      -> the fog glow and the colour saturation (slow)
+ *   audioSwell      -> the fog glow, the colour saturation and the width of the flight tube (slow)
  *   audioPhase      -> the surface colours wander (integrated, jump-free)
  *
  * Knobs: styleP (photo surface / glowing rims), speedP (flight speed), detailP (texture sharpness), paletteP (photo colours / a colour field
@@ -353,6 +353,53 @@ vec2 tMirrorLine(vec2 uv, vec2 c, float a)
     return uv - n * (s - abs(s));
 }
 
+// Hyperbolic {p,q} tiling of the Poincare disk, built only from mirrors (the
+// p-fold kaleidoscope and the inversion in a circle orthogonal to the rim), so
+// the map is continuous; the outside of the disk is folded in by the inversion
+// in the rim.  `move` is a point inside the disk: the disk automorphism
+// z -> (z - a) / (1 - conj(a) z) carries the tiling along it (a flight
+// through the hyperbolic plane).  Needs 1/p + 1/q < 1/2.
+vec2 tPoincare(vec2 uv, vec2 c, float p, float q, float zoom, vec2 move)
+{
+    vec2 z = (uv - c) * zoom;
+    float r2 = dot(z, z);
+    if (r2 > 1.0) z /= r2;                                      // fold the outside in (continuous at the rim)
+    vec2 nu = z - move, de = vec2(1.0, 0.0) - vec2(move.x * z.x + move.y * z.y, move.x * z.y - move.y * z.x);
+    z = vec2(nu.x * de.x + nu.y * de.y, nu.y * de.x - nu.x * de.y) / max(dot(de, de), 1e-6);
+    float a = 3.14159265 / p;
+    float cq = cos(3.14159265 / q), sa = sin(a);
+    float R = 1.0 / sqrt(max(cq * cq / (sa * sa) - 1.0, 1e-4));
+    vec2 cc = vec2(R * cq / sa, 0.0);
+    for (int i = 0; i < 14; ++i) {
+        float an = atan(z.y, z.x);
+        an = abs(mod(an, 2.0 * a) - a);                         // mirror into the wedge [0, pi/p]
+        z = length(z) * vec2(cos(an), sin(an));
+        vec2 d = z - cc;
+        float dd = dot(d, d);
+        if (dd < R * R) z = cc + d * (R * R / dd);               // mirror in the orthogonal circle
+    }
+    return c + z * 0.9;
+}
+// Bipolar coordinates around two foci at c -/+ (f, 0): sigma (the angle the
+// foci subtend) across, tau (log ratio of the distances) along -- the picture
+// streams out of one focus into the other.  sigma/pi jumps by 2 on the segment
+// between the foci, so `bands` must be whole.
+vec2 tBipolar(vec2 uv, vec2 c, float f, float bands, float travel)
+{
+    vec2 z = uv - c;
+    vec2 a = z + vec2(f, 0.0), b = z - vec2(f, 0.0);
+    float sigma = atan(a.y * b.x - a.x * b.y, a.x * b.x + a.y * b.y);
+    float tau = 0.5 * log(max(dot(a, a), 1e-8) / max(dot(b, b), 1e-8));
+    return vec2(sigma / 3.14159265 * bands, tau * 0.35 - travel);
+}
+// Joukowski map w = z + R^2 / z (the airfoil map): circles become wings.
+vec2 tJoukowski(vec2 uv, vec2 c, float R, float scale)
+{
+    vec2 z = (uv - c) * scale;
+    vec2 iz = vec2(z.x, -z.y) / max(dot(z, z), 1e-5);
+    return c + (z + R * R * iz) * 0.5;
+}
+
 vec2 chain(vec2 p);
 // The chain's photo read with a seam-proof footprint (per axis the smaller of
 // the two one-sided differences) and the screen-space luma gradient.
@@ -465,7 +512,12 @@ mat3 camFrame(float z, out vec3 ro)
     ro = vec3(camPathXY(z), z);
     vec3 ta = vec3(camPathXY(z + 2.0), z + 2.0);
     vec3 fw = normalize(ta - ro);
-    vec3 rt = normalize(cross(vec3(0.0, 1.0, 0.0), fw));
+    // Bank into the curves: the roll follows the path's sideways curvature at
+    // this depth -- a function of position only, like a road, never of loudness.
+    vec2 curv = camPathXY(z + 1.5) - 2.0 * camPathXY(z) + camPathXY(z - 1.5);
+    float roll = clamp(-curv.x * 1.6, -0.3, 0.3);
+    vec3 up = vec3(sin(roll), cos(roll), 0.0);
+    vec3 rt = normalize(cross(up, fw));
     return mat3(rt, cross(fw, rt), fw);
 }
 vec3 normal3(vec3 p)
@@ -529,6 +581,7 @@ void main()
     vec3 ro;
     mat3 cf = camFrame(gT, ro);
     gCam = ro;
+    gTube = 0.4 + 0.15 * swell;                             // the carved tube breathes with the slow swell
     vec3 rd = cf * normalize(vec3(p, 1.1));
     float t = 0.05; float d = 1.0; bool hit = false;
     for (int i = 0; i < 100; ++i) {
@@ -538,7 +591,9 @@ void main()
         if (t > 30.0) break;
     }
     vec3 lc = mix(vec3(0.7, 0.85, 1.1), vec3(1.15, 0.9, 0.7), mode);
-    vec3 fogC = glowColour(imgK(vec2(0.5) + 0.2 * p, 5.0), p, hueP * 0.159) * (0.05 + 0.12 * swell);
+    // The fog takes the palette's hue (wandering with the music) rather than the photo's cast.
+    vec3 fogPal = hsv2rgb(vec3(fract(hueP * 0.159 + 0.12 * audioPhase + 0.004 * sceneTime + 0.3 * mode + 0.5), 0.55, 1.0));
+    vec3 fogC = mix(glowColour(imgK(vec2(0.5) + 0.2 * p, 5.0), p, hueP * 0.159), fogPal, 0.8 * clamp(paletteP, 0.0, 1.0)) * (0.05 + 0.1 * swell);
     vec3 col = fogC;
     if (hit) {
         vec3 q = ro + rd * t;

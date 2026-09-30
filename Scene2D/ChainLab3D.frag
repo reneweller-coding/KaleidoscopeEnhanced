@@ -19,7 +19,7 @@ out vec4 fragColor;
  *   audioSpread     -> the bodies thicken, the colour chain distorts more
  *   audioKick       -> the rims flare (light)
  *   audioMode       -> the light and the palette: cool in minor, warm in major
- *   audioSwell      -> the fog glow and the colour saturation (slow)
+ *   audioSwell      -> the fog glow, the colour saturation and the width of the flight tube (slow)
  *
  * Knobs: spaceP / coreP / bodyP (the 3D chain, rolled per start), chainAP..chainDP
  * (the 2D colour chain, rolled per start), morphP (which colour stage morphs on
@@ -526,7 +526,12 @@ mat3 camFrame(float z, out vec3 ro)
     ro = vec3(camPathXY(z), z);
     vec3 ta = vec3(camPathXY(z + 2.0), z + 2.0);
     vec3 fw = normalize(ta - ro);
-    vec3 rt = normalize(cross(vec3(0.0, 1.0, 0.0), fw));
+    // Bank into the curves: the roll follows the path's sideways curvature at
+    // this depth -- a function of position only, like a road, never of loudness.
+    vec2 curv = camPathXY(z + 1.5) - 2.0 * camPathXY(z) + camPathXY(z - 1.5);
+    float roll = clamp(-curv.x * 1.6, -0.3, 0.3);
+    vec3 up = vec3(sin(roll), cos(roll), 0.0);
+    vec3 rt = normalize(cross(up, fw));
     return mat3(rt, cross(fw, rt), fw);
 }
 vec3 normal3(vec3 p)
@@ -735,6 +740,7 @@ void main()
     vec3 ro;
     mat3 cf = camFrame(gT, ro);
     gCam = ro;
+    gTube = 0.4 + 0.15 * swell;                             // the carved tube breathes with the slow swell
     vec3 rd = cf * normalize(vec3(p, 1.1));
     float t = 0.05; float d = 1.0; bool hit = false;
     for (int i = 0; i < 100; ++i) {
@@ -744,7 +750,9 @@ void main()
         if (t > 30.0) break;
     }
     vec3 lc = mix(vec3(0.7, 0.85, 1.1), vec3(1.15, 0.9, 0.7), mode);
-    vec3 fogC = glowColour(imgK(vec2(0.5) + 0.2 * p, 5.0), p, hueP * 0.159) * (0.05 + 0.12 * swell);
+    // The fog takes the palette's hue (wandering with the music) rather than the photo's cast.
+    vec3 fogPal = hsv2rgb(vec3(fract(hueP * 0.159 + 0.12 * audioPhase + 0.004 * sceneTime + 0.3 * mode + 0.5), 0.55, 1.0));
+    vec3 fogC = mix(glowColour(imgK(vec2(0.5) + 0.2 * p, 5.0), p, hueP * 0.159), fogPal, 0.8 * clamp(paletteP, 0.0, 1.0)) * (0.05 + 0.1 * swell);
     vec3 col = fogC;
     if (hit) {
         vec3 q = ro + rd * t;

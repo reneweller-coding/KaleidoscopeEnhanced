@@ -12,7 +12,7 @@
  *   audioSpread     -> the bodies thicken
  *   audioKick       -> the rims flare (light)
  *   audioMode       -> the light: cool in minor, warm in major
- *   audioSwell      -> the fog glow and the colour saturation (slow)
+ *   audioSwell      -> the fog glow, the colour saturation and the width of the flight tube (slow)
  *   audioPhase      -> the surface colours wander (integrated, jump-free)
  *
  * Knobs: styleP (photo surface / glowing rims), speedP (flight speed), detailP (texture sharpness), paletteP (photo colours / a colour field
@@ -69,6 +69,7 @@ void main()
     vec3 ro;
     mat3 cf = camFrame(gT, ro);
     gCam = ro;
+    gTube = 0.4 + 0.15 * swell;                             // the carved tube breathes with the slow swell
     vec3 rd = cf * normalize(vec3(p, 1.1));
     float t = 0.05; float d = 1.0; bool hit = false;
     for (int i = 0; i < 100; ++i) {
@@ -78,7 +79,9 @@ void main()
         if (t > 30.0) break;
     }
     vec3 lc = mix(vec3(0.7, 0.85, 1.1), vec3(1.15, 0.9, 0.7), mode);
-    vec3 fogC = glowColour(imgK(vec2(0.5) + 0.2 * p, 5.0), p, hueP * 0.159) * (0.05 + 0.12 * swell);
+    // The fog takes the palette's hue (wandering with the music) rather than the photo's cast.
+    vec3 fogPal = hsv2rgb(vec3(fract(hueP * 0.159 + 0.12 * audioPhase + 0.004 * sceneTime + 0.3 * mode + 0.5), 0.55, 1.0));
+    vec3 fogC = mix(glowColour(imgK(vec2(0.5) + 0.2 * p, 5.0), p, hueP * 0.159), fogPal, 0.8 * clamp(paletteP, 0.0, 1.0)) * (0.05 + 0.1 * swell);
     vec3 col = fogC;
     if (hit) {
         vec3 q = ro + rd * t;
