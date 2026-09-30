@@ -32,6 +32,9 @@
  *                                            (core80, clock flicker, flash; optional
  *                                            --images dir, --steps N, --out file.tsv,
  *                                            --scene Blit.frag for a still A, drone)
+ *   PresetEditor.exe --compile <files|@list> compile every shader with the real driver
+ *                                            (fullscreen fragments also linked against
+ *                                            Engine/Fullscreen.vert); exit code = failures
  *   PresetEditor.exe --cfxcheck              verify the GL 4.3 compute-FX
  *                                            2D shaders don't render solid
  *                                            black (regression guard)
@@ -46,6 +49,9 @@
 #include <QtCore/QTimer>
 #include <QtCore/QFile>
 #include <QtCore/QRegularExpression>
+#include <QtGui/QOffscreenSurface>
+#include <QtGui/QOpenGLContext>
+#include <QtGui/QOpenGLExtraFunctions>
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
@@ -229,6 +235,120 @@ int main(int argc, char *argv[])
     // shader ever loads, makes those same relative strings resolve correctly
     // regardless of where the exe was launched from.
     QDir::setCurrent( root + "/PresetEditor" );
+
+    // Headless GLSL compile check (Tools/shadercheck.py runs it): every file
+    // is compiled by the real driver, exactly as the app loads it (raw source,
+    // no preprocessing), with its stage taken from the extension.  Fullscreen
+    // fragment shaders (Scene2D, FX, Transitions, Engine) are also LINKED
+    // against Engine/Fullscreen.vert like the app does -- that catches
+    // in/out mismatches a lone compile does not.  Scene3D stages are compiled
+    // only (their pipelines are assembled per preset entry).
+    //   --compile <file> ...      files relative to the project root or absolute
+    //   --compile @list.txt       one file per line (long lists)
+    // Output: "COMPILE FAIL <file>" + the driver log per failure, then a
+    // summary line; exit code = number of failed files (capped at 255).
+    if (args.value(0) == "--compile")
+    {
+        QStringList files;
+        for (int i = 1; i < args.size(); ++i)
+        {
+            if (args[i].startsWith('@'))
+            {
+                QFile lf(args[i].mid(1));
+                if (lf.open(QIODevice::ReadOnly | QIODevice::Text))
+                    for (const QByteArray &l : lf.readAll().split('\n'))
+                        if (!l.trimmed().isEmpty()) files << QString::fromUtf8(l.trimmed());
+            }
+            else files << args[i];
+        }
+        QOffscreenSurface surf;
+        surf.setFormat(fmt);
+        surf.create();
+        QOpenGLContext ctx;
+        ctx.setFormat(fmt);
+        if (!ctx.create() || !ctx.makeCurrent(&surf))
+        {
+            fprintf(stderr, "COMPILE: no GL %d.%d context\n", fmt.majorVersion(), fmt.minorVersion());
+            return 255;
+        }
+        QOpenGLExtraFunctions *gl = ctx.extraFunctions();
+        auto readAll = [](const QString &path, QByteArray &out) {
+            QFile f(path);
+            if (!f.open(QIODevice::ReadOnly)) return false;
+            out = f.readAll();
+            return true;
+        };
+        auto shaderLog = [gl](GLuint s) {
+            GLint n = 0; gl->glGetShaderiv(s, GL_INFO_LOG_LENGTH, &n);
+            QByteArray b(n > 1 ? n : 1, '\0');
+            if (n > 1) gl->glGetShaderInfoLog(s, n, nullptr, b.data());
+            return QString::fromLocal8Bit(b.constData()).trimmed();
+        };
+        auto compile = [&](GLenum type, const QByteArray &src, QString *log) -> GLuint {
+            GLuint s = gl->glCreateShader(type);
+            const char *p = src.constData();
+            const GLint len = GLint(src.size());
+            gl->glShaderSource(s, 1, &p, &len);
+            gl->glCompileShader(s);
+            GLint ok = 0; gl->glGetShaderiv(s, GL_COMPILE_STATUS, &ok);
+            if (!ok) { if (log) *log = shaderLog(s); gl->glDeleteShader(s); return 0; }
+            return s;
+        };
+        // The app's shared fullscreen vertex shader, for the link check.
+        QByteArray vsSrc; GLuint fsVert = 0;
+        if (readAll(root + "/Engine/Fullscreen.vert", vsSrc))
+            fsVert = compile(GL_VERTEX_SHADER, vsSrc, nullptr);
+
+        int failed = 0, done = 0;
+        for (const QString &f : files)
+        {
+            const QString path = QFileInfo(f).isAbsolute() ? f : root + "/" + f;
+            const QString ext = QFileInfo(path).suffix().toLower();
+            GLenum type = 0;
+            if (ext == "frag")      type = GL_FRAGMENT_SHADER;
+            else if (ext == "vert") type = GL_VERTEX_SHADER;
+            else if (ext == "geom") type = GL_GEOMETRY_SHADER;
+            else if (ext == "tesc") type = GL_TESS_CONTROL_SHADER;
+            else if (ext == "tese") type = GL_TESS_EVALUATION_SHADER;
+            else if (ext == "comp") type = GL_COMPUTE_SHADER;
+            else continue;
+            QByteArray src;
+            if (!readAll(path, src)) { fprintf(stderr, "COMPILE FAIL %s\n  cannot read\n", qPrintable(f)); ++failed; continue; }
+            ++done;
+            QString log;
+            GLuint s = compile(type, src, &log);
+            const QString rel = QDir(root).relativeFilePath(path).replace('\\', '/');
+            const bool fullscreen = type == GL_FRAGMENT_SHADER && !rel.startsWith("Scene3D/", Qt::CaseInsensitive);
+            if (s && fullscreen && fsVert)
+            {
+                GLuint prog = gl->glCreateProgram();
+                gl->glAttachShader(prog, fsVert);
+                gl->glAttachShader(prog, s);
+                gl->glLinkProgram(prog);
+                GLint ok = 0; gl->glGetProgramiv(prog, GL_LINK_STATUS, &ok);
+                if (!ok)
+                {
+                    GLint n = 0; gl->glGetProgramiv(prog, GL_INFO_LOG_LENGTH, &n);
+                    QByteArray b(n > 1 ? n : 1, '\0');
+                    if (n > 1) gl->glGetProgramInfoLog(prog, n, nullptr, b.data());
+                    log = "link: " + QString::fromLocal8Bit(b.constData()).trimmed();
+                    gl->glDeleteShader(s); s = 0;
+                }
+                gl->glDeleteProgram(prog);
+            }
+            if (!s)
+            {
+                ++failed;
+                fprintf(stderr, "COMPILE FAIL %s\n", qPrintable(rel));
+                const QStringList lines = log.split('\n');
+                for (int i = 0; i < lines.size() && i < 6; ++i)
+                    fprintf(stderr, "  %s\n", qPrintable(lines[i].trimmed()));
+            }
+            else gl->glDeleteShader(s);
+        }
+        fprintf(stderr, "COMPILE: %d file(s), %d failed\n", done, failed);
+        return failed > 255 ? 255 : failed;
+    }
 
     // Headless-ish preview grab: render one frame of a shader pair to a PNG.
     // Optional trailing arg "drone" switches the synthesized music profile.

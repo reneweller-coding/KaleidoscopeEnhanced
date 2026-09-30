@@ -9,8 +9,11 @@ the machine finds them in a second instead of a human finding them in an hour.
 
 Usage:
     python Tools/shadercheck.py                 # check everything
-    python Tools/shadercheck.py --new <ref>     # only files added since <ref>
-                                                # e.g. --new HEAD~1
+    python Tools/shadercheck.py --new <ref>     # only files added/changed since <ref>
+                                                # (working tree incl. untracked), e.g. HEAD~1
+    python Tools/shadercheck.py --no-compile    # static rules only, skip the real compile
+Besides the static rules, every file is compiled by the real GL driver
+(PresetEditor --compile; rule C1) -- a plain compile error is caught too.
 Exit code 0 = clean, 1 = at least one ERROR.
 """
 import argparse, os, re, subprocess, sys
@@ -338,33 +341,78 @@ def check(paths, reg):
 
     return errors, warnings
 
+# ---- Real compile (C1) --------------------------------------------------------
+# The static rules above only see what a regex can see.  A plain undefined
+# variable (ChainLabTunnel, 2026-09-30: "gIdW" used but never declared) sailed
+# through them with "0 error(s)" and rendered black.  So every file is also
+# compiled by the real GL driver: PresetEditor --compile, exactly the raw
+# source the app loads, fullscreen fragments also linked against
+# Engine/Fullscreen.vert.  The driver's shader cache makes a full rerun take
+# ~2 s (the very first run after a driver update ~1 min).
+EDITOR = os.path.join(ROOT, "PresetEditor", "build", "Release", "PresetEditor.exe")
+STAGES = (".frag", ".vert", ".comp", ".geom", ".tesc", ".tese")
+
+def compile_check(paths):
+    """Compile every file with the real driver.  Returns (errors, warnings)."""
+    if not os.path.exists(EDITOR):
+        return [], [("PresetEditor", "not built -- real GLSL compile check skipped "
+                                     "(build PresetEditor/PresetEditor.vcxproj, Release x64)")]
+    import tempfile
+    with tempfile.NamedTemporaryFile("w", suffix=".txt", delete=False, encoding="utf-8") as lf:
+        lf.write("\n".join(os.path.relpath(p, ROOT).replace("\\", "/") for p in paths))
+        listfile = lf.name
+    try:
+        r = subprocess.run([EDITOR, "--compile", "@" + listfile], cwd=ROOT,
+                           capture_output=True, text=True, timeout=900)
+    except subprocess.TimeoutExpired:
+        return [], [("PresetEditor", "compile check timed out")]
+    finally:
+        os.remove(listfile)
+    out = (r.stderr or "") + (r.stdout or "")
+    if "COMPILE:" not in out:
+        return [], [("PresetEditor", "compile check did not run: " + out.strip()[-300:])]
+    errors = []
+    for m in re.finditer(r"^COMPILE FAIL (\S+)\n((?:  .*\n?)*)", out, re.M):
+        log = " | ".join(l.strip() for l in m.group(2).splitlines() if l.strip())
+        errors.append((m.group(1), "[C1] does not compile: " + (log or "no driver log")))
+    return errors, []
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--new", metavar="GITREF",
-                    help="only check shader files added/changed since this ref")
+                    help="only check shader files added/changed since this ref "
+                         "(including uncommitted and untracked files)")
+    ap.add_argument("--no-compile", action="store_true",
+                    help="skip the real GLSL compile (static rules only)")
     a = ap.parse_args()
 
     if a.new:
-        out = sh("git", "diff", "--name-only", "--diff-filter=AM", a.new, "HEAD")
-        files = [os.path.join(ROOT, p) for p in out.split()
-                 if p.endswith((".frag", ".vert", ".comp"))]
+        # Against the WORKING TREE, not HEAD: the broken shader is usually the
+        # one not committed yet.
+        out = sh("git", "diff", "--name-only", "--diff-filter=AM", a.new)
+        out += "\n" + sh("git", "ls-files", "--others", "--exclude-standard")
+        cfiles = sorted({os.path.join(ROOT, p) for p in out.split() if p.endswith(STAGES)})
     else:
-        files = []
+        cfiles = []
         for d in ("Scene2D", "Scene3D", "FX", "Engine", "Transitions"):
             dp = os.path.join(ROOT, d)
             if not os.path.isdir(dp):
                 continue
-            files += [os.path.join(dp, f) for f in os.listdir(dp)
-                      if f.endswith((".frag", ".vert", ".comp"))]
+            cfiles += [os.path.join(dp, f) for f in os.listdir(dp) if f.endswith(STAGES)]
+    files = [f for f in cfiles if f.endswith((".frag", ".vert", ".comp"))]
 
-    if not files:
+    if not cfiles:
         print("shadercheck: no shader files to check"); return 0
 
     errors, warnings = check(files, load_registry())
+    if not a.no_compile:
+        ce, cw = compile_check(cfiles)
+        errors += ce
+        warnings += cw
     for f, m in warnings: print(f"WARN  {f}\n      {m}")
     if warnings and errors: print()
     for f, m in errors:    print(f"ERROR {f}\n      {m}")
-    print(f"\nshadercheck: {len(files)} file(s), {len(errors)} error(s), "
+    print(f"\nshadercheck: {len(cfiles)} file(s), {len(errors)} error(s), "
           f"{len(warnings)} warning(s)")
     return 1 if errors else 0
 
