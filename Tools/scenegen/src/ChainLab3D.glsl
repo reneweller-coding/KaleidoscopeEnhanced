@@ -4,7 +4,7 @@
  * (mirrored lattice, polar ring tunnel, twisted lattice, octahedral lattice,
  * turning lattice), a fold core (none, tetrahedral KIFS, octahedral KIFS, a
  * sphere-inversion box fold, plane folds, Menger sponge) and an end body (block, ball, torus, gyroid
- * membrane, cross).  The surfaces are coloured by a rolled 2D chain of the
+ * membrane, cross, Schwarz P and D minimal surfaces).  The surfaces are coloured by a rolled 2D chain of the
  * 2D chain lab (global map, symmetry, second map, warp) projected
  * triplanarly, with a colour field that follows the chain and wanders with the
  * music.  The camera flies a winding path through a soft tube carved out of
@@ -18,12 +18,14 @@
  *   audioMode       -> the light and the palette: cool in minor, warm in major
  *   audioSwell      -> the fog glow, the colour saturation and the width of the flight tube (slow)
  *
- * Knobs: spaceP / coreP / bodyP (the 3D chain, rolled per start), chainAP..chainDP
+ * Knobs: spaceP / coreP / bodyP (the 3D chain, rolled per start), solidP (the colour
+ * chain projected on three planes, or as a solid texture with the depth as its
+ * time axis), chainAP..chainDP
  * (the 2D colour chain, rolled per start), morphP (which colour stage morphs on
  * with the music), styleP (lit surface / glowing rims),
  * speedP (flight speed), detailP (texture sharpness), paletteP (photo colours /
  * colour field), hueP.
-//@params spaceP coreP bodyP chainAP chainBP chainCP chainDP morphP styleP speedP detailP paletteP
+//@params spaceP coreP bodyP solidP chainAP chainBP chainCP chainDP morphP styleP speedP detailP paletteP
 //@audio audioSpread audioKick audioMode audioSwell
 //@body
 float gT, gTC, gSpread, gRot, gMw;
@@ -38,9 +40,9 @@ float sides(float v) { return 5.0 + floor(v * 4.99); }                     // 5 
 // The classes of every stage in order of energy (calm .. energetic): a knob
 // value, rolled or walked, picks a position on that scale, so the music's
 // energy can choose the region (EffectShader::stepChainWalk).
-const int ORD_A[12] = int[12](11, 5, 4, 9, 1, 6, 10, 7, 8, 3, 0, 2);   // 11 = none (identity)
+const int ORD_A[13] = int[13](11, 5, 4, 9, 1, 12, 6, 10, 7, 8, 3, 0, 2);   // 11 = none (identity)
 const int ORD_B[6] = int[6](0, 5, 3, 1, 2, 4);
-const int ORD_C[8] = int[8](0, 5, 7, 1, 4, 3, 6, 2);
+const int ORD_C[9] = int[9](0, 5, 8, 7, 1, 4, 3, 6, 2);
 const int ORD_D[6] = int[6](0, 5, 2, 1, 4, 3);
 const int ORD_S[5] = int[5](0, 1, 3, 4, 2);   // photo, relief, contours, flow, glowing edges
 // The app's walk: per stage (shown knob value, target, fade 0..1); walkHost = 1
@@ -53,6 +55,7 @@ vec2 stageAk(vec2 uv, int k, float v)
 {
     k = ORD_A[k];
     if (k == 11) return uv;                                  // none: the chain starts at stage B
+    if (k == 12) return tRiemann(uv, gCw, 2.0 + 1.5 * v, 0.7 * sin(gTC * 0.4) + v * 3.0, gTC * 0.8 + gRot);
     if (k == 0) return tKaleido(uv, gCw, sides(v), gRot);
     if (k == 1) return tSpiral(uv, vec2(0.5), evenArms(v), 0.8 + 0.4 * v, gTC * 2.0);
     if (k == 2) return tTunnel(uv, gCt, 0.2 + 0.1 * v, gTC * 3.0);
@@ -88,6 +91,7 @@ vec2 stageBk(vec2 uv, int k, float v)
 vec2 stageCk(vec2 uv, int k, float v)
 {
     k = ORD_C[k];
+    if (k == 8) return tPetal(uv, gCw, 3.0 + floor(v * 5.99), 0.15 + 0.2 * gSpread, gTC * 2.0);
     if (k == 0) return uv;
     if (k == 1) return tSpiral(uv, vec2(0.5), evenArms(v), 1.0, gTC * 1.5);
     if (k == 2) return tTunnel(uv, gCt, 0.25, gTC * 2.5);
@@ -142,19 +146,19 @@ float walkFade(float kf) { return smoothstep(walkAll() ? 0.7 : 0.55, 1.0, fract(
 vec2 morphMix(vec2 a, vec2 b, float f) { return mix(mirrorUV(a), mirrorUV(b), f); }
 vec2 stageA(vec2 uv)
 {
-    int k0 = pickStage(chainAP, 12); float v0 = subVar(chainAP, 12);
+    int k0 = pickStage(chainAP, 13); float v0 = subVar(chainAP, 13);
     if (!walks(1)) { gIdW *= (k0 <= 0 ? 1.0 : 0.0); return stageAk(uv, k0, v0); }
     if (walkHost > 0.5 && walkAll()) {
         float f = smoothstep(0.0, 1.0, walkA.z);
-        int j0 = pickStage(walkA.x, 12), j1 = pickStage(walkA.y, 12);
+        int j0 = pickStage(walkA.x, 13), j1 = pickStage(walkA.y, 13);
         gIdW *= (j0 <= 0 ? 1.0 - f : 0.0) + (j1 <= 0 ? f : 0.0);
-        if (f <= 0.0) return stageAk(uv, j0, subVar(walkA.x, 12));
-        return morphMix(stageAk(uv, j0, subVar(walkA.x, 12)), stageAk(uv, j1, subVar(walkA.y, 12)), f);
+        if (f <= 0.0) return stageAk(uv, j0, subVar(walkA.x, 13));
+        return morphMix(stageAk(uv, j0, subVar(walkA.x, 13)), stageAk(uv, j1, subVar(walkA.y, 13)), f);
     }
     float kf = walkPos(1), c = floor(kf);
     int i0, i1; float w0, w1;
-    walkPick(c, k0, v0, 12, 1.3, i0, w0);
-    walkPick(c + 1.0, k0, v0, 12, 1.3, i1, w1);
+    walkPick(c, k0, v0, 13, 1.3, i0, w0);
+    walkPick(c + 1.0, k0, v0, 13, 1.3, i1, w1);
     float f = walkFade(kf);
     gIdW *= (i0 <= 0 ? 1.0 - f : 0.0) + (i1 <= 0 ? f : 0.0);
     if (f <= 0.0) return stageAk(uv, i0, w0);
@@ -182,19 +186,19 @@ vec2 stageB(vec2 uv)
 }
 vec2 stageC(vec2 uv)
 {
-    int k0 = pickStage(chainCP, 8); float v0 = subVar(chainCP, 8);
+    int k0 = pickStage(chainCP, 9); float v0 = subVar(chainCP, 9);
     if (!walks(3)) { gIdW *= (k0 <= 1 ? 1.0 : 0.0); return stageCk(uv, k0, v0); }
     if (walkHost > 0.5 && walkAll()) {
         float f = smoothstep(0.0, 1.0, walkC.z);
-        int j0 = pickStage(walkC.x, 8), j1 = pickStage(walkC.y, 8);
+        int j0 = pickStage(walkC.x, 9), j1 = pickStage(walkC.y, 9);
         gIdW *= (j0 <= 1 ? 1.0 - f : 0.0) + (j1 <= 1 ? f : 0.0);
-        if (f <= 0.0) return stageCk(uv, j0, subVar(walkC.x, 8));
-        return morphMix(stageCk(uv, j0, subVar(walkC.x, 8)), stageCk(uv, j1, subVar(walkC.y, 8)), f);
+        if (f <= 0.0) return stageCk(uv, j0, subVar(walkC.x, 9));
+        return morphMix(stageCk(uv, j0, subVar(walkC.x, 9)), stageCk(uv, j1, subVar(walkC.y, 9)), f);
     }
     float kf = walkPos(3), c = floor(kf);
     int i0, i1; float w0, w1;
-    walkPick(c, k0, v0, 8, 4.7, i0, w0);
-    walkPick(c + 1.0, k0, v0, 8, 4.7, i1, w1);
+    walkPick(c, k0, v0, 9, 4.7, i0, w0);
+    walkPick(c + 1.0, k0, v0, 9, 4.7, i1, w1);
     float f = walkFade(kf);
     gIdW *= (i0 <= 1 ? 1.0 - f : 0.0) + (i1 <= 1 ? f : 0.0);
     if (f <= 0.0) return stageCk(uv, i0, w0);
@@ -226,7 +230,7 @@ float field3(vec3 p)
 {
     int ks = pickStage(spaceP, 5); float vs = subVar(spaceP, 5);
     int kc = pickStage(coreP, 6);  float vc = subVar(coreP, 6);
-    int kb = pickStage(bodyP, 5);  float vb = subVar(bodyP, 5);
+    int kb = pickStage(bodyP, 7);  float vb = subVar(bodyP, 7);
     vec3 q;
     if (ks == 0) q = fRepeat(p, vec3(1.2 + 0.4 * vs));
     else if (ks == 1) { q = fPolarZ(p, 6.0 + 2.0 * floor(vs * 2.99)); q.x -= 2.2; q = zRepeat(q, 0.8); }
@@ -264,6 +268,9 @@ float field3(vec3 p)
     else if (kb == 1) d = sdSphere3(q, 0.45 * bs * th);
     else if (kb == 2) d = sdTorus3(q.xzy, 0.5 * bs, 0.12 * bs * th);   // the ring lies in xy: z is the smallest axis after a sort
     else if (kb == 3) d = sdGyroid3(q * (3.0 / bs), 0.25 + 0.2 * gSpread) * bs / 3.0;
+    else if (kb == 5) { vec3 w = q * (3.0 / bs); d = (abs(cos(w.x) + cos(w.y) + cos(w.z)) - 0.35 - 0.3 * gSpread) / 2.2 * bs / 3.0; }   // Schwarz P
+    else if (kb == 6) { vec3 w = q * (3.0 / bs); vec3 sn = sin(w), cs = cos(w);                     // Schwarz D
+        d = (abs(sn.x * sn.y * sn.z + sn.x * cs.y * cs.z + cs.x * sn.y * cs.z + cs.x * cs.y * sn.z) - 0.25 - 0.2 * gSpread) / 2.2 * bs / 3.0; }
     else d = min(min(sdBox3(q, vec3(0.6, 0.08, 0.08) * bs * th), sdBox3(q, vec3(0.08, 0.6, 0.08) * bs * th)), sdBox3(q, vec3(0.08, 0.08, 0.6) * bs * th));
     return d / gDR * 0.8;
 }
@@ -302,6 +309,34 @@ vec3 photoChain3(vec3 q, vec3 n, float lod, float pal)
     return chainPlane(q.yz * 0.35 + 0.5, lod, pal) * w.x + chainPlane(q.zx * 0.35 + 0.5, lod, pal) * w.y + chainPlane(q.xy * 0.35 + 0.5, lod, pal) * w.z;
 }
 
+
+// The solid chain texture: time as the third axis.  A 2D chain whose
+// parameters run with time IS a volume (x, y, t).  One time axis alone is not
+// isotropic (a face along it cuts the volume in a line and smears it), so each
+// of the three planes reads the chain with the coordinate ALONG ITS NORMAL as
+// its time, and the normal picks the plane that faces the surface: no streaks,
+// and every depth shows its own phase of the chain, like a carved block --
+// while the real time keeps the whole block changing.
+vec3 chainSlice(vec2 uv, float depth, float lod, float pal)
+{
+    float tc = gTC, tr = gRot;
+    gTC += 0.3 * depth;
+    gRot += 0.15 * depth;
+    vec3 c = chainPlane(uv, lod, pal);
+    gTC = tc; gRot = tr;
+    return c;
+}
+vec3 solidChain3(vec3 q, vec3 n, float lod, float pal)
+{
+    vec3 w = pow(abs(n), vec3(4.0)); w /= (w.x + w.y + w.z);
+    return chainSlice(q.yz * 0.35 + 0.5, q.x, lod, pal) * w.x + chainSlice(q.zx * 0.35 + 0.5, q.y, lod, pal) * w.y
+         + chainSlice(q.xy * 0.35 + 0.5, q.z, lod, pal) * w.z;
+}
+vec3 colour3(vec3 q, vec3 n, float lod, float pal)
+{
+    return solidP >= 0.5 ? solidChain3(q, n, lod, pal) : photoChain3(q, n, lod, pal);
+}
+
 void main()
 {
     vec2 p = screenP();
@@ -338,7 +373,7 @@ void main()
         fieldD(q);                                              // sets gP for this point
         vec3 fp = gP;
         float lod = clamp(log2(t * 2.0) + 1.5 * (1.0 - clamp(detailP, 0.0, 1.0)), 0.0, 7.0);
-        vec3 tex = photoChain3(fp, n, lod, 0.2 + 0.7 * clamp(paletteP, 0.0, 1.0));
+        vec3 tex = colour3(fp, n, lod, 0.2 + 0.7 * clamp(paletteP, 0.0, 1.0));
         float tm = luma(tex);
         tex = max((tex - tm) * 1.5 + tm, 0.0) * 1.5;           // livelier colour, brighter
         vec3 L = normalize(vec3(0.5, 0.7, -0.4));

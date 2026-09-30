@@ -365,6 +365,26 @@ vec2 tBipolar(vec2 uv, vec2 c, float f, float bands, float travel)
     float tau = 0.5 * log(max(dot(a, a), 1e-8) / max(dot(b, b), 1e-8));
     return vec2(sigma / 3.14159265 * bands, tau * 0.35 - travel);
 }
+// The rotating Riemann sphere: the plane lifted onto the sphere (inverse
+// stereographic projection), the sphere turned about two axes, and projected
+// back -- the picture streams out of one pole and into the other.  (An
+// elliptic Moebius map, continuous except at the pole's image.)
+vec2 tRiemann(vec2 uv, vec2 c, float scale, float a1, float a2)
+{
+    vec2 z = (uv - c) * scale;
+    float s = dot(z, z);
+    vec3 P = vec3(2.0 * z, s - 1.0) / (s + 1.0);
+    P.yz = rot2(a1) * P.yz;
+    P.xy = rot2(a2) * P.xy;
+    return c + P.xy / max(1.0 - P.z, 1e-3) / scale;
+}
+// Blossom: the radius swells and shrinks with the angle, n whole petals.
+vec2 tPetal(vec2 uv, vec2 c, float n, float amp, float turn)
+{
+    vec2 d = uv - c;
+    float a = atan(d.y, d.x);
+    return c + d * (1.0 + amp * sin(n * a + turn));
+}
 // Joukowski map w = z + R^2 / z (the airfoil map): circles become wings.
 vec2 tJoukowski(vec2 uv, vec2 c, float R, float scale)
 {

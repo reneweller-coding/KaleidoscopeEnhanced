@@ -12,7 +12,7 @@ HEAD = r'''//@doc
  * (mirrored lattice, polar ring tunnel, twisted lattice, octahedral lattice,
  * turning lattice), a fold core (none, tetrahedral KIFS, octahedral KIFS, a
  * sphere-inversion box fold, plane folds, Menger sponge) and an end body (block, ball, torus, gyroid
- * membrane, cross).  The surfaces are coloured by a rolled 2D chain of the
+ * membrane, cross, Schwarz P and D minimal surfaces).  The surfaces are coloured by a rolled 2D chain of the
  * 2D chain lab (global map, symmetry, second map, warp) projected
  * triplanarly, with a colour field that follows the chain and wanders with the
  * music.  The camera flies a winding path through a soft tube carved out of
@@ -26,12 +26,14 @@ HEAD = r'''//@doc
  *   audioMode       -> the light and the palette: cool in minor, warm in major
  *   audioSwell      -> the fog glow, the colour saturation and the width of the flight tube (slow)
  *
- * Knobs: spaceP / coreP / bodyP (the 3D chain, rolled per start), chainAP..chainDP
+ * Knobs: spaceP / coreP / bodyP (the 3D chain, rolled per start), solidP (the colour
+ * chain projected on three planes, or as a solid texture with the depth as its
+ * time axis), chainAP..chainDP
  * (the 2D colour chain, rolled per start), morphP (which colour stage morphs on
  * with the music), styleP (lit surface / glowing rims),
  * speedP (flight speed), detailP (texture sharpness), paletteP (photo colours /
  * colour field), hueP.
-//@params spaceP coreP bodyP chainAP chainBP chainCP chainDP morphP styleP speedP detailP paletteP
+//@params spaceP coreP bodyP solidP chainAP chainBP chainCP chainDP morphP styleP speedP detailP paletteP
 //@audio audioSpread audioKick audioMode audioSwell
 //@body
 float gT, gTC, gSpread, gRot, gMw;
@@ -43,7 +45,7 @@ float field3(vec3 p)
 {
     int ks = pickStage(spaceP, 5); float vs = subVar(spaceP, 5);
     int kc = pickStage(coreP, 6);  float vc = subVar(coreP, 6);
-    int kb = pickStage(bodyP, 5);  float vb = subVar(bodyP, 5);
+    int kb = pickStage(bodyP, 7);  float vb = subVar(bodyP, 7);
     vec3 q;
     if (ks == 0) q = fRepeat(p, vec3(1.2 + 0.4 * vs));
     else if (ks == 1) { q = fPolarZ(p, 6.0 + 2.0 * floor(vs * 2.99)); q.x -= 2.2; q = zRepeat(q, 0.8); }
@@ -81,6 +83,9 @@ float field3(vec3 p)
     else if (kb == 1) d = sdSphere3(q, 0.45 * bs * th);
     else if (kb == 2) d = sdTorus3(q.xzy, 0.5 * bs, 0.12 * bs * th);   // the ring lies in xy: z is the smallest axis after a sort
     else if (kb == 3) d = sdGyroid3(q * (3.0 / bs), 0.25 + 0.2 * gSpread) * bs / 3.0;
+    else if (kb == 5) { vec3 w = q * (3.0 / bs); d = (abs(cos(w.x) + cos(w.y) + cos(w.z)) - 0.35 - 0.3 * gSpread) / 2.2 * bs / 3.0; }   // Schwarz P
+    else if (kb == 6) { vec3 w = q * (3.0 / bs); vec3 sn = sin(w), cs = cos(w);                     // Schwarz D
+        d = (abs(sn.x * sn.y * sn.z + sn.x * cs.y * cs.z + cs.x * sn.y * cs.z + cs.x * cs.y * sn.z) - 0.25 - 0.2 * gSpread) / 2.2 * bs / 3.0; }
     else d = min(min(sdBox3(q, vec3(0.6, 0.08, 0.08) * bs * th), sdBox3(q, vec3(0.08, 0.6, 0.08) * bs * th)), sdBox3(q, vec3(0.08, 0.08, 0.6) * bs * th));
     return d / gDR * 0.8;
 }
@@ -109,5 +114,36 @@ MAIN = MAIN.replace("    gSpread = clamp(audioSpread, 0.0, 1.0);\n",
     "    gMw = 0.012 * sceneTime + 0.15 * sceneAdvance;          // colour-chain morph position (integrated)\n"
     "    gCw = vec2(0.5) + 0.15 * vec2(sin(0.017 * sceneTime), cos(0.013 * sceneTime));\n"
     "    gCt = vec2(0.5) + vec2(0.22 * sin(0.023 * sceneTime + 0.3 * sin(0.011 * sceneTime)), 0.16 * cos(0.019 * sceneTime));\n")
+SOLID = r"""
+// The solid chain texture: time as the third axis.  A 2D chain whose
+// parameters run with time IS a volume (x, y, t).  One time axis alone is not
+// isotropic (a face along it cuts the volume in a line and smears it), so each
+// of the three planes reads the chain with the coordinate ALONG ITS NORMAL as
+// its time, and the normal picks the plane that faces the surface: no streaks,
+// and every depth shows its own phase of the chain, like a carved block --
+// while the real time keeps the whole block changing.
+vec3 chainSlice(vec2 uv, float depth, float lod, float pal)
+{
+    float tc = gTC, tr = gRot;
+    gTC += 0.3 * depth;
+    gRot += 0.15 * depth;
+    vec3 c = chainPlane(uv, lod, pal);
+    gTC = tc; gRot = tr;
+    return c;
+}
+vec3 solidChain3(vec3 q, vec3 n, float lod, float pal)
+{
+    vec3 w = pow(abs(n), vec3(4.0)); w /= (w.x + w.y + w.z);
+    return chainSlice(q.yz * 0.35 + 0.5, q.x, lod, pal) * w.x + chainSlice(q.zx * 0.35 + 0.5, q.y, lod, pal) * w.y
+         + chainSlice(q.xy * 0.35 + 0.5, q.z, lod, pal) * w.z;
+}
+vec3 colour3(vec3 q, vec3 n, float lod, float pal)
+{
+    return solidP >= 0.5 ? solidChain3(q, n, lod, pal) : photoChain3(q, n, lod, pal);
+}
+"""
+MAIN = MAIN.replace("void main()", SOLID + "\nvoid main()", 1)
+MAIN = MAIN.replace("vec3 tex = photoChain3(fp, n, lod, ", "vec3 tex = colour3(fp, n, lod, ")
+assert "colour3(fp" in MAIN
 io.open(os.path.join(SP, "src", "ChainLab3D.glsl"), "w", encoding="utf-8").write(HEAD + STAGES + FIELD + MAIN)
 print("ok")
