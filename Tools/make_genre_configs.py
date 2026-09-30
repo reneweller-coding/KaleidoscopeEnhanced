@@ -300,6 +300,7 @@ RECENT_SCENES = {
     "ChainTunnelKaleido", "ChainKaleidoTunnel", "ChainTunnelHex", "ChainHexTunnel", "ChainExpKaleido", "ChainSinFold", "ChainDrosteKaleido", "ChainRippleHex", "ChainTunnelLens", "ChainPolarKaleidoWave", "ChainMirrorTunnelSpiral", "ChainWaveDrosteHex",
     "Chain3DKifsTetra", "Chain3DMandelbox", "Chain3DOctaGyroid", "Chain3DPolarTunnelBoxes", "Chain3DTwistTorus",
     "ChainLab2D", "ChainLab3D",
+    "ChainLabTunnel",
 }
 
 def rule_recent(m, h):

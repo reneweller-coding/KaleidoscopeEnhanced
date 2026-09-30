@@ -18,8 +18,8 @@ import argparse, io, os, re, subprocess, sys
 
 SP = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(SP, "..", ".."))
-LABS = {"ChainLab2D": "2D", "ChainLab3D": "3D"}
-PIN = ["spaceP", "coreP", "bodyP", "chainAP", "chainBP", "chainCP", "chainDP", "morphP", "styleP", "paletteP"]
+LABS = {"ChainLab2D": "2D", "ChainLab3D": "3D", "ChainLabTunnel": "Tunnel"}
+PIN = ["spaceP", "coreP", "bodyP", "chainAP", "chainBP", "chainCP", "chainDP", "morphP", "depthP", "styleP", "paletteP"]
 # The stage classes as the labs define them (for the description only).
 CLASSES = {
     "spaceP": ["mirrored lattice", "polar ring tunnel", "twisted lattice", "octahedral lattice", "turning lattice"],
@@ -42,7 +42,7 @@ def describe(v, dim):
         parts.append("%s of %s with %s" % (CLASSES["spaceP"][pick(v["spaceP"], 5)], CLASSES["bodyP"][pick(v["bodyP"], 5)],
                                           CLASSES["coreP"][pick(v["coreP"], 5)]))
     stages = [CLASSES[k][pick(v[k], len(CLASSES[k]))] for k in ["chainAP", "chainBP", "chainCP", "chainDP"]]
-    parts.append(("coloured by " if dim == "3D" else "") + " -> ".join(s for s in stages if s))
+    parts.append({"3D": "coloured by ", "Tunnel": "a relief tunnel of "}.get(dim, "") + " -> ".join(s for s in stages if s))
     m = CLASSES["morphP"][pick(v["morphP"], 5)]
     if m:
         parts.append("%s morphing on with the music" % m)
@@ -76,7 +76,7 @@ for line in io.open(a.likes, encoding="utf-8").read().splitlines():
     name = "ChainLike%s%s" % (dim, stamp)
     src = io.open(os.path.join(SP, "src", lab + ".glsl"), encoding="utf-8").read()
     what = describe(vals, dim)
-    src = re.sub(r"@brief CHAIN LAB (2D|3D): .*?(?=\n \*\n)",
+    src = re.sub(r"@brief CHAIN LAB (2D|3D|TUNNEL): .*?(?=\n \*\n)",
                  "@brief CHAIN LIKE %s (%s): a liked roll of the chain lab, frozen -- %s.\n"
                  " * Frozen knobs: %s" % (dim, when, what, sig), src, count=1, flags=re.S)
     src = re.sub(r"^//@params (.*)$", lambda m: "//@params " + " ".join(p for p in m.group(1).split() if p not in pins),
