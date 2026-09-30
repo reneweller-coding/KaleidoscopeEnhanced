@@ -996,3 +996,6 @@ TextureCircuitGlow	3	3	8	5	7	5	7
 TextureOrbifoldFlow	6	5	6	4	8	7	7
 TextureLavaFieldTop	5	5	6	6	6	6	7
 TextureFireflyGathering	8	6	3	5	5	6	6
+DropCoalescence	6	5	5	4	7	7	7
+TextureUVBlacklight	3	4	7	5	8	4	6
+FidenzaStrokes	6	3	4	3	5	9	7

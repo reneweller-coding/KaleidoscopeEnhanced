@@ -143,16 +143,6 @@
     <float name="speedP" minValue="0.6" maxValue="1.6"></float>
     <float name="rollP" minValue="0.0" maxValue="0.30"></float>
   </TextureShader>
-  <TextureShader file="..\\Scene2D\\TextureEffectParallaxKaleidoscope.frag" type="KaleidoscopeBase" mood="psychedelic,bright" probability="0.15" complexity="10">
-    <rig preset="flat"/>
-    <bool name="rotate" probability="0.15"></bool>
-    <bool name="direction" probability="0.15"></bool>
-    <float name="speedMovement" minValue="3.0" maxValue="6.0"></float>
-    <float name="extend" minValue="2000.0" maxValue="8000.0"></float>
-    <int name="sides" minValue="2" maxValue="14"></int>
-    <float name="speed" minValue="0.02" maxValue="0.09"></float>
-    <float name="power" minValue="1.0" maxValue="4.0"></float>
-  </TextureShader>
   <TextureShader file="..\\Scene2D\\Tunnel.frag" type="KaleidoscopeBase" mood="psychedelic,bright" probability="0.5" complexity="1">
     <rig preset="flat"/>
     <bool name="rotate" probability="0.5"></bool>
@@ -428,13 +418,6 @@
     <float name="iceP" minValue="0.5" maxValue="1.5"></float>
     <float name="ringP" minValue="0.5" maxValue="2.0"></float>
     <expr name="hueP" formula="chromaHue + seed2*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
-  <TextureShader file="..\Scene2D\MultiverseBubbles.frag" type="normal" mood="calm,dreamy,space" probability="0.45" complexity="3">
-    <rig preset="flat"/>
-    <float name="bubbleP" minValue="0.5" maxValue="1.5"></float>
-    <float name="bulkP" minValue="0.5" maxValue="2.0"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene2D\DepthPortalRecursion.frag" type="normal" mood="psychedelic,dreamy,dark" probability="0.45" complexity="2">
@@ -3272,6 +3255,22 @@
     <float name="countP" minValue="0" maxValue="1"></float>
     <float name="photoP" minValue="0" maxValue="1"></float>
     <float name="colourP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\DropCoalescence.frag" type="normal" mood="calm,psychedelic" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="countP" minValue="0" maxValue="1"></float>
+    <float name="mergeP" minValue="0" maxValue="1"></float>
+    <float name="lensP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\FidenzaStrokes.frag" type="normal" mood="calm,bright" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="curlP" minValue="0" maxValue="1"></float>
+    <float name="strokeP" minValue="0" maxValue="1"></float>
+    <float name="gapP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
