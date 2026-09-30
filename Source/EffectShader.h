@@ -666,12 +666,12 @@ protected:
 	{
 		bool  active = false;           ///< Walk mode rolled (morphP >= 0.5) and the shader takes host walks.
 		bool  pending = true;           ///< Reset due (activation); done lazily once the program exists.
-		float x0[8] = {};               ///< Knob value shown per stage (A, B, C, D, look, space, core, body).
-		float x1[8] = {};               ///< Fade target per stage.
-		float f[8] = {};                ///< Fade progress 0..1 per stage.
-		float fadeDur[8] = {};          ///< Fade length per stage, seconds.
-		float hold[8] = {};             ///< Seconds since the stage last changed.
-		bool  fading[8] = {};           ///< Stage is fading to x1.
+		float x0[9] = {};               ///< Knob value shown per stage (A, B, C, D, look, space, core, body).
+		float x1[9] = {};               ///< Fade target per stage.
+		float f[9] = {};                ///< Fade progress 0..1 per stage.
+		float fadeDur[9] = {};          ///< Fade length per stage, seconds.
+		float hold[9] = {};             ///< Seconds since the stage last changed.
+		bool  fading[9] = {};           ///< Stage is fading to x1.
 		int   lastSection = -1;         ///< Last seen AudioFeatures::sectionCount (-1 = not yet).
 		int   lastDrop = -1;            ///< Last seen AudioFeatures::dropCount.
 		float energy = 0.5f;            ///< Slowly smoothed arousal (8 s).
@@ -679,13 +679,13 @@ protected:
 		float fluxS = 0.f;              ///< Spectral flux smoothed over ~0.5 s: bursts hurry a fade.
 		float rate = 1.f;               ///< Current music speed of the walk (fades and holds), 0.25 .. 2.5.
 		float harmCool = 0.f;           ///< Cooldown for harmonic-change walks, seconds.
-		std::map<int, std::array<float, 8>> sectionLook;   ///< Look per section id: a returning section returns to it.
+		std::map<int, std::array<float, 9>> sectionLook;   ///< Look per section id: a returning section returns to it.
 		std::chrono::steady_clock::time_point last;       ///< Wall clock of the previous step.
 		bool  hasLast = false;          ///< last is valid.
 		std::minstd_rand rng;           ///< Own random stream (keeps the scene's rand() stream untouched per frame).
 	} m_walk;
 	GLuint	m_walkProg = 0;             ///< Program the walk locations belong to.
-	GLint	m_walkLoc[8] = { -1, -1, -1, -1, -1, -1, -1, -1 };   ///< Locations of walkA..walkD, walkS, walkSpace, walkCore, walkBody (-1 = stage absent).
+	GLint	m_walkLoc[9] = { -1, -1, -1, -1, -1, -1, -1, -1, -1 };   ///< Locations of walkA..walkD, walkS, walkSpace, walkCore, walkBody (-1 = stage absent).
 	GLint	m_walkHostLoc = -1;         ///< Location of walkHost (-1: not a chain lab).
 	/// @brief Re-reads the rolled knobs into the walk state (called lazily after an activation).
 	void resetChainWalk();

@@ -1,6 +1,6 @@
 //@doc
- * @brief PENROSE PARQUET: an endless Penrose rhombus tiling built from de
- * Bruijn's pentagrid -- thick and thin rhombi that never repeat, the whole
+ * @brief PENROSE PARQUET: an endless quasi-periodic rhombus tiling built from de
+ * Bruijn's multigrid (Penrose, Ammann-Beenker, 12- and 14-fold) -- thick and thin rhombi that never repeat, the whole
  * floor drifting and slowly turning.  Every rhombus is a pane of its own
  * showing the kaleidoscoped photograph in its own turning frame, set in thin
  * grout; light runs along the de Bruijn ribbons (the endless chains of tiles
@@ -15,8 +15,10 @@
  *   audioMode       -> the palette: thick and thin tiles cool in minor, warm in major
  *
  * Knobs: tileP (tile size), styleP (photo panes / stained glass / ribbon light),
- * ribbonP (how strongly the ribbons glow), groutP (grout width), hueP.
-//@params tileP styleP ribbonP groutP
+ * ribbonP (how strongly the ribbons glow), groutP (grout width), gridP (the
+ * symmetry, rolled per start: 8-fold Ammann-Beenker, 10-fold Penrose, 12-fold,
+ * 14-fold -- de Bruijn's multigrid with 4, 5, 6 or 7 line families), hueP.
+//@params tileP styleP ribbonP groutP gridP
 //@audio audioKick audioMode audioSwell
 //@body
 // (the chain library is pulled in for the pentagrid; this scene has no chain)
@@ -32,13 +34,14 @@ void main()
     float cells = 3.0 + 4.0 * (1.0 - clamp(tileP, 0.0, 1.0));
     vec2 x = rot2(0.01 * sceneTime) * p * cells + vec2(1.7 * T, 0.9 * T) + 40.0;
     float px = fwidth(x.x);                                    // before the search: no derivatives in branches
-    vec4 g = vec4(0.13, 0.27, -0.21, 0.36);
+    float N = 4.0 + floor(clamp(gridP, 0.0, 0.999) * 4.0);   // 4..7 line families
     vec2 ab, base, nrs; int r, s;
-    bool ok = penroseFind(x, g, ab, r, s, base, nrs);
-    bool thick = (s - r == 1) || (s - r == 4);
+    bool ok = multiGridFind(x * (5.0 / N), N, ab, r, s, base, nrs);
+    float ang = min(float(s - r), N - float(s - r));        // the rhombus' angle class
+    bool thick = mod(ang, 2.0) > 0.5;
     float h = hash21(floor(base * 3.0 + 0.5));
     // Pane content: the kaleidoscoped photo in the tile's own turning frame.
-    vec2 er = pentE(r), es = pentE(s);
+    vec2 er = gridE(r, N), es = gridE(s, N);
     vec2 local = (ab.x - 0.5) * er + (ab.y - 0.5) * es;
     vec2 puv = 0.5 + rot2(h * 6.28 + 0.2 * audioPhase + 0.02 * sceneTime) * local * 0.45 + 0.3 * hash22(base);
     vec3 ph = imgK(puv, 1.5);
@@ -59,7 +62,7 @@ void main()
     float ribbon = max(w1, w2) * (0.3 + 1.2 * clamp(ribbonP, 0.0, 1.0));
     // Each tile its own hue (thick and thin half a turn apart), wandering with
     // the music; the ribbons glow in the hue of their family.
-    float hue = hueP * 0.159 + 0.12 * audioPhase + 0.3 * mode + h * 0.22 + (thick ? 0.0 : 0.5);
+    float hue = hueP * 0.159 + 0.12 * audioPhase + 0.3 * mode + h * 0.22 + ang * 0.29;
     vec3 paneC = hsv2rgb(vec3(fract(hue), 0.75, 1.0));
     vec3 ribC = hsv2rgb(vec3(fract(hueP * 0.159 + 0.12 * audioPhase + float(w1 > w2 ? r : s) * 0.2), 0.85, 1.0));
     // Three looks, one knob.

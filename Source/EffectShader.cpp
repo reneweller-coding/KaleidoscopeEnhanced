@@ -976,11 +976,11 @@ bool EffectShader::usesBake()
 // ---- Chain walk (host side of the chain labs' walk) ----------------------
 // Stage order: A, B, C, D (the chain), S (the look); each has a rolled knob.
 // Stages 5..7 (the 3D structure: space, fold core, body) exist in ChainLab3D only.
-static const int   kWalkN = 8;
-static const char *kWalkKnob[8]  = { "chainAP", "chainBP", "chainCP", "chainDP", "styleP", "spaceP", "coreP", "bodyP" };
-static const char *kWalkUni[8]   = { "walkA", "walkB", "walkC", "walkD", "walkS", "walkSpace", "walkCore", "walkBody" };
-static const char *kWalkName[8]  = { "A", "B", "C", "D", "look", "space", "core", "body" };
-static bool isStructure( int s ) { return s >= 5; }
+static const int   kWalkN = 9;            // + the stage order (8)
+static const char *kWalkKnob[9]  = { "chainAP", "chainBP", "chainCP", "chainDP", "styleP", "spaceP", "coreP", "bodyP", "orderP" };
+static const char *kWalkUni[9]   = { "walkA", "walkB", "walkC", "walkD", "walkS", "walkSpace", "walkCore", "walkBody", "walkO" };
+static const char *kWalkName[9]  = { "A", "B", "C", "D", "look", "space", "core", "body", "order" };
+static bool isStructure( int s ) { return s >= 5 && s <= 7; }
 
 void EffectShader::resetChainWalk()
 {
@@ -1013,7 +1013,7 @@ void EffectShader::startWalk( int s, float target, float dur )
 		return;
 	// The shader mixes two whole 3D worlds while a structure stage fades: one at a time.
 	if( isStructure( s ) )
-		for( int o = 5; o < kWalkN; ++o )
+		for( int o = 5; o <= 7; ++o )
 			if( m_walk.fading[o] ) return;
 	m_walk.x1[s]      = target < 0.f ? 0.f : ( target > 0.999f ? 0.999f : target );
 	m_walk.f[s]       = 0.f;
@@ -1101,7 +1101,7 @@ void EffectShader::stepChainWalk( const AudioFeatures &f )
 		}
 		if( f.sectionId >= 0 )
 		{
-			std::array<float, 8> look;
+			std::array<float, 9> look;
 			for( int s = 0; s < kWalkN; ++s )
 				look[s] = m_walk.fading[s] ? m_walk.x1[s] : m_walk.x0[s];
 			m_walk.sectionLook[f.sectionId] = look;

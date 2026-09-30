@@ -2,8 +2,8 @@
 out vec4 fragColor;
 /**
  * @file PenroseParquet.frag
- * @brief PENROSE PARQUET: an endless Penrose rhombus tiling built from de
- * Bruijn's pentagrid -- thick and thin rhombi that never repeat, the whole
+ * @brief PENROSE PARQUET: an endless quasi-periodic rhombus tiling built from de
+ * Bruijn's multigrid (Penrose, Ammann-Beenker, 12- and 14-fold) -- thick and thin rhombi that never repeat, the whole
  * floor drifting and slowly turning.  Every rhombus is a pane of its own
  * showing the kaleidoscoped photograph in its own turning frame, set in thin
  * grout; light runs along the de Bruijn ribbons (the endless chains of tiles
@@ -18,7 +18,9 @@ out vec4 fragColor;
  *   audioMode       -> the palette: thick and thin tiles cool in minor, warm in major
  *
  * Knobs: tileP (tile size), styleP (photo panes / stained glass / ribbon light),
- * ribbonP (how strongly the ribbons glow), groutP (grout width), hueP.
+ * ribbonP (how strongly the ribbons glow), groutP (grout width), gridP (the
+ * symmetry, rolled per start: 8-fold Ammann-Beenker, 10-fold Penrose, 12-fold,
+ * 14-fold -- de Bruijn's multigrid with 4, 5, 6 or 7 line families), hueP.
  */
 
 uniform vec2  resolution;
@@ -42,6 +44,7 @@ uniform float tileP;
 uniform float styleP;
 uniform float ribbonP;
 uniform float groutP;
+uniform float gridP;
 uniform float hueP;
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
@@ -445,6 +448,13 @@ vec2 farrisWave(vec2 X, int kind, float n, float m)
 {
     const float TAU = 6.2831853;
     if (kind == 6) return 0.5 * (hexWave3(X, n, m) + hexWave3(X, m, n));            // p3m1: p3 + mirrors
+    if (kind >= 10) {                                                                // p1, p2, pm, cm
+        vec2 Z = kind == 13 ? X * vec2(0.8, 1.3) : vec2(X.x + 0.3 * X.y, X.y * 1.1);       // oblique / centred lattice
+        vec2 w = cexpi(TAU * (n * Z.x + m * Z.y));
+        if (kind == 11) w += cexpi(-TAU * (n * Z.x + m * Z.y));                         // p2: half-turns
+        if (kind == 12 || kind == 13) w += cexpi(TAU * (n * Z.x - m * Z.y));            // pm / cm: one mirror
+        return w / (kind == 10 ? 1.0 : 2.0);
+    }
     if (kind == 7) return 0.5 * (hexWave3(X, n, m) + hexWave3(X, -m, -n));          // p31m
     if (kind == 8) return 0.5 * (sqWave4(X, n, m) + (mod(n + m, 2.0) < 0.5 ? 1.0 : -1.0) * sqWave4(X, m, n));   // p4g: p4 + glides
     if (kind == 9) {                                                                 // cmm: centred rectangular, mirrors both ways
@@ -594,6 +604,311 @@ vec2 tPenrose(vec2 uv, vec2 c, float cells, vec2 drift, vec4 g)
     vec2 f = min(ab, 1.0 - ab);
     return c + vec2(min(f.x, f.y), max(f.x, f.y)) * 0.9;
 }
+// ---- round 5 ----
+// Jacobi theta functions for m = 1/2 (q = e^-pi), all four, complex argument.
+void thetaAll(vec2 v, out vec2 t1, out vec2 t2, out vec2 t3, out vec2 t4)
+{
+    float n = floor(v.y / 3.14159265 + 0.5);
+    v -= n * vec2(3.14159265, 3.14159265);
+    v.x = mod(v.x + 3.14159265, 6.2831853) - 3.14159265;
+    const float q14 = 0.4559381, q94 = 0.0008505, q1 = 0.0432139, q4 = 3.487e-6;
+    t1 = 2.0 * (q14 * csin(v) - q94 * csin(3.0 * v));
+    t2 = 2.0 * (q14 * ccos(v) + q94 * ccos(3.0 * v));
+    t3 = vec2(1.0, 0.0) + 2.0 * (q1 * ccos(2.0 * v) + q4 * ccos(4.0 * v));
+    t4 = vec2(1.0, 0.0) + 2.0 * (-q1 * ccos(2.0 * v) + q4 * ccos(4.0 * v));
+}
+// sn and dn wallpapers (other poles and zeros than cn), values turned with time.
+vec2 tJacobiWall(vec2 uv, vec2 c, float scale, int which, float t)
+{
+    vec2 z = (uv - c) * scale * 1.8540747;
+    vec2 t1, t2, t3, t4;
+    thetaAll(z * 0.8472131, t1, t2, t3, t4);
+    vec2 f = which == 0 ? cdiv(t1, t4) * 1.1803 : cdiv(t3, t4) * 0.8409;   // sn: th3(0)/th2(0); dn: th4(0)/th3(0)
+    return c + cmul(f, cexpi(t * 0.3)) * 0.3;
+}
+// Hyperbolic Moebius flow: two fixed points on the unit circle, the picture
+// streaming from one to the other along circular arcs (flow parameter = time).
+vec2 tHypFlow(vec2 uv, vec2 c, float a, float t)
+{
+    vec2 z = (uv - c) * 2.0;
+    vec2 p = cexpi(a), q = -p;
+    vec2 w = cdiv(z - p, z - q);                                 // fixed points to 0 and infinity
+    float lr = 0.5 * log(max(dot(w, w), 1e-10)) - t, an = atan(w.y, w.x);
+    return vec2(lr * 0.5, an / 3.14159265 * 2.0);                 // log-polar of the flow: seamless (angle jumps by 4)
+}
+// Wandering poles: sum of k / (z - p_k) -- a rational map, flowers around every pole.
+vec2 tPoles(vec2 uv, vec2 c, float n, float t)
+{
+    vec2 z = (uv - c) * 2.0, f = vec2(0.0);
+    for (int k = 0; k < 5; ++k) {
+        if (float(k) >= n) break;
+        float fk = float(k);
+        vec2 pk = 0.7 * vec2(sin(t * (0.21 + 0.05 * fk) + fk * 1.9), cos(t * (0.17 + 0.04 * fk) + fk * 2.7));
+        f += cdiv(cexpi(fk * 1.3), z - pk) * (mod(fk, 2.0) < 0.5 ? 1.0 : -1.0);
+    }
+    return c + f * 0.35;
+}
+// Bipolar Droste: the spiral Droste between two holes (log of the cross-ratio).
+vec2 tBiDroste(vec2 uv, vec2 c, float f, float K, float zoom)
+{
+    vec2 w = cdiv(uv - c + vec2(f, 0.0), uv - c - vec2(f, 0.0));
+    vec2 L = vec2(0.5 * log(max(dot(w, w), 1e-10)), atan(w.y, w.x));
+    float lk = log(K), b = -lk / 3.14159265;
+    vec2 W = vec2(L.x - b * L.y, L.y + b * L.x);
+    float tri = abs(fract((W.x / lk - zoom) * 0.5) * 2.0 - 1.0);
+    return c + exp(tri * lk - lk) * cexpi(W.y) * 0.45;
+}
+// Hyperbolic spiral r = a / theta: a tunnel whose rings are wound.
+vec2 tHypSpiral(vec2 uv, vec2 c, float a, float wind, float travel)
+{
+    vec2 d = uv - c;
+    float an = atan(d.y, d.x) / 3.14159265;
+    return vec2(a / max(length(d), 1e-3) + an * wind - travel, an * 2.0);
+}
+// Riemann zeta, partial sum of n^-s: a few rotating spirals interfering.
+vec2 tZeta(vec2 uv, vec2 c, float terms, float t)
+{
+    vec2 sv = (uv - c) * vec2(2.0, 14.0) + vec2(0.5, t);
+    vec2 f = vec2(0.0);
+    for (int n = 1; n <= 7; ++n) {
+        if (float(n) > terms) break;
+        float ln = log(float(n));
+        f += exp(-sv.x * ln) * cexpi(-sv.y * ln);
+    }
+    return c + f * 0.2;
+}
+// Mandelbrot parameter map: z = 0, z <- z^2 + (the point), a few times.
+vec2 tMandel(vec2 uv, vec2 c, float steps, float t)
+{
+    vec2 k = (uv - c) * 2.2 + vec2(-0.5, 0.0) + 0.1 * cexpi(t * 0.2);
+    vec2 z = vec2(0.0);
+    for (int i = 0; i < 4; ++i) { if (float(i) >= steps) break; z = cmul(z, z) + k; }
+    return c + z * 0.55;
+}
+// Burning ship: |Re| and |Im| before squaring (the mirror makes the ship).
+vec2 tShip(vec2 uv, vec2 c, float steps, float t)
+{
+    vec2 z = (uv - c) * 2.2, k = vec2(-0.4, -0.55) + 0.12 * cexpi(t * 0.2);
+    for (int i = 0; i < 4; ++i) { if (float(i) >= steps) break; z = abs(z); z = cmul(z, z) + k; }
+    return c + z * 0.55;
+}
+// Phoenix Julia: z_{n+1} = z^2 + k + p z_{n-1} (a memory term).
+vec2 tPhoenix(vec2 uv, vec2 c, float steps, float t)
+{
+    vec2 z = (uv - c) * 2.2, zp = vec2(0.0);
+    vec2 k = vec2(0.5667, 0.0) + 0.05 * cexpi(t * 0.2), pp = vec2(-0.5, 0.0);
+    for (int i = 0; i < 4; ++i) {
+        if (float(i) >= steps) break;
+        vec2 zn = cmul(z, z) + k + cmul(pp, zp);
+        zp = z; z = zn;
+    }
+    return c + z * 0.3;
+}
+// Parabolic coordinates (sigma, tau): nested parabolas, mirror-folded.
+vec2 tParabCoords(vec2 uv, vec2 c, float k, float travel)
+{
+    vec2 d = (uv - c) * k;
+    float r = length(d);
+    float sg = sqrt(max(r + d.x, 0.0)), ta = sqrt(max(r - d.x, 0.0));
+    return vec2(sg - travel, ta);
+}
+// Cardioid coordinates: sqrt(1 - 4z) with the angle mirrored (the main bulb of
+// the Mandelbrot set unrolled).
+vec2 tCardioid(vec2 uv, vec2 c, float k, float t)
+{
+    vec2 z = (uv - c) * k;
+    vec2 w = vec2(1.0, 0.0) - 4.0 * z;
+    float r = sqrt(length(w)), a = abs(atan(w.y, w.x)) * 0.5;
+    return c + r * cexpi(a + t * 0.2) * 0.6;
+}
+// Sunflower: two log-spiral families crossed (the parastichies of a seed head).
+vec2 tSunflower(vec2 uv, vec2 c, float m1, float m2, float zoom)
+{
+    vec2 d = uv - c;
+    float lr = log(max(length(d), 1e-5)) * 1.5 - zoom, an = atan(d.y, d.x) / 3.14159265;
+    return vec2(lr + an * m1, lr - an * m2);
+}
+// Breathing sphere: the Riemann sphere bulged by a spherical harmonic, turning.
+vec2 tBreathSphere(vec2 uv, vec2 c, float m, float t)
+{
+    vec2 z = (uv - c) * 2.2;
+    float s = dot(z, z);
+    vec3 P = vec3(2.0 * z, s - 1.0) / (s + 1.0);
+    P.xz = rot2(t * 0.3) * P.xz;
+    float ph = atan(P.y, P.x), th = acos(clamp(P.z, -1.0, 1.0));
+    float Y = pow(sin(th), m) * cos(m * ph + t);
+    P *= 1.0 + 0.35 * Y;
+    return c + P.xy / max(1.3 - P.z, 0.05) * 0.5;
+}
+// Cayley transform: the upper half-plane to the disk (and back out again).
+vec2 tCayley(vec2 uv, vec2 c, float k)
+{
+    vec2 w = (uv - c) * k;
+    return c + cdiv(w - vec2(0.0, 1.0), w + vec2(0.0, 1.0)) * 0.45;
+}
+// Fisheye / barrel: radius raised to a drifting power.
+vec2 tFisheye(vec2 uv, vec2 c, float e)
+{
+    vec2 d = uv - c;
+    float r = length(d);
+    return c + d * pow(max(r, 1e-4) * 1.6, e - 1.0);
+}
+// Curved kaleidoscope: a kaleidoscope in hyperbolic-disk coordinates -- its
+// mirrors are circular arcs (the fold conjugated by a moving disk automorphism).
+vec2 tCurvedKaleido(vec2 uv, vec2 c, float sides, float rot, vec2 a)
+{
+    vec2 z = (uv - c) * 1.6;
+    vec2 w = cdiv(z - a, vec2(1.0, 0.0) - cmul(vec2(a.x, -a.y), z));
+    float sec = 6.2831853 / sides;
+    float an = abs(mod(atan(w.y, w.x), sec) - 0.5 * sec) + rot;
+    w = length(w) * cexpi(an);
+    z = cdiv(w + a, vec2(1.0, 0.0) + cmul(vec2(a.x, -a.y), w));
+    return c + z / 1.6;
+}
+// Levy C-curve fold: turn 45 deg, scale sqrt 2, mirror -- repeated.
+vec2 tLevy(vec2 uv, vec2 c, float iters, float turn)
+{
+    vec2 p = rot2(turn) * (uv - c) * 2.0;
+    float sc = 1.0;
+    for (int i = 0; i < 6; ++i) {
+        if (float(i) >= iters) break;
+        p = rot2(0.7853982) * p * 1.4142136; sc *= 1.4142136;
+        p.x = abs(p.x) - 0.7;
+    }
+    return c + p / sc * 1.2;
+}
+// Pythagoras-tree fold: mirror, turn 45 deg about the branch point, scale sqrt 2.
+vec2 tPythagoras(vec2 uv, vec2 c, float iters, float bend)
+{
+    vec2 p = (uv - c) * 2.5 + vec2(0.0, 0.8);
+    float sc = 1.0;
+    for (int i = 0; i < 6; ++i) {
+        if (float(i) >= iters) break;
+        p.x = abs(p.x);
+        p -= vec2(0.0, 1.0);
+        p = rot2(0.7853982 + bend) * p * 1.4142136; sc *= 1.4142136;
+    }
+    return c + p / sc * 0.9;
+}
+// Vicsek (cross) fold: abs, sort, scale 3 about the arm.
+vec2 tVicsek(vec2 uv, vec2 c, float iters, float turn)
+{
+    vec2 p = rot2(turn) * (uv - c) * 2.0;
+    float sc = 1.0;
+    for (int i = 0; i < 4; ++i) {
+        if (float(i) >= iters) break;
+        p = abs(p);
+        if (p.x < p.y) p = p.yx;
+        p = p * 3.0 - vec2(2.0, 0.0); sc *= 3.0;
+    }
+    return c + p / sc * 1.5;
+}
+// ---- multigrid quasicrystals (de Bruijn): N line families at pi/N ----
+// N = 4: Ammann-Beenker (8-fold), N = 5: Penrose (10-fold), N = 6: 12-fold,
+// N = 7: 14-fold.  As penroseFind, for any N (up to 7).
+vec2 gridE(int j, float N) { float a = 3.14159265 * float(j) / N; return vec2(cos(a), sin(a)); }
+float gridG(int j) { return fract(0.1234 + 0.6180339 * float(j)) - 0.5; }
+bool multiGridFind(vec2 x, float N, out vec2 ab, out int rr, out int ss, out vec2 base, out vec2 nrs)
+{
+    vec2 pg = x * 2.0 / N;
+    ab = vec2(0.5); rr = 0; ss = 1; base = vec2(0.0); nrs = vec2(0.0);
+    for (int r = 0; r < 6; ++r) {
+        if (float(r) >= N - 1.0) break;
+        for (int s = 1; s < 7; ++s) {
+            if (s <= r || float(s) >= N) continue;
+            vec2 er = gridE(r, N), es = gridE(s, N);
+            float gr = gridG(r), gs = gridG(s);
+            float det = er.x * es.y - er.y * es.x;
+            float nr0 = floor(dot(pg, er) + gr), ns0 = floor(dot(pg, es) + gs);
+            for (int dr = -1; dr <= 1; ++dr)
+            for (int ds = -1; ds <= 1; ++ds) {
+                float nr = nr0 + float(dr), ns = ns0 + float(ds);
+                vec2 p = vec2((nr - gr) * es.y - (ns - gs) * er.y, (ns - gs) * er.x - (nr - gr) * es.x) / det;
+                vec2 b0 = nr * er + ns * es;
+                for (int j = 0; j < 7; ++j) {
+                    if (float(j) >= N) break;
+                    if (j != r && j != s) b0 += ceil(dot(p, gridE(j, N)) + gridG(j)) * gridE(j, N);
+                }
+                vec2 d = x - b0;
+                float a = (d.x * es.y - d.y * es.x) / det, b = (er.x * d.y - er.y * d.x) / det;
+                if (a >= 0.0 && a <= 1.0 && b >= 0.0 && b <= 1.0) {
+                    ab = vec2(a, b); rr = r; ss = s; base = b0; nrs = vec2(nr, ns);
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+vec2 tQuasiMirror(vec2 uv, vec2 c, float N, float cells, vec2 drift)
+{
+    vec2 ab, base, nrs; int r, s;
+    multiGridFind((uv - c) * cells + drift, N, ab, r, s, base, nrs);
+    vec2 f = min(ab, 1.0 - ab);
+    return c + vec2(min(f.x, f.y), max(f.x, f.y)) * 0.9;
+}
+// ---- flows (stage D): smooth displacements ----
+// Karman street: vortices of alternating spin shed from an obstacle, drifting
+// downstream and fading in and out (no vortex ever appears or vanishes at once).
+vec2 tKarman(vec2 uv, float strength, float t)
+{
+    for (int k = 0; k < 6; ++k) {
+        float fk = float(k);
+        float ph = fract(t * 0.08 + fk / 6.0);                   // life 0..1, positions wrap while invisible
+        vec2 pk = vec2(-0.1 + 1.2 * ph, 0.5 + (mod(fk, 2.0) < 0.5 ? 0.12 : -0.12));
+        float life = sin(3.14159265 * ph);
+        vec2 d = uv - pk;
+        float g = strength * life * (mod(fk, 2.0) < 0.5 ? 1.0 : -1.0) * exp(-dot(d, d) / 0.02);
+        uv = pk + rot2(g) * d;
+    }
+    return uv;
+}
+// Flow round a cylinder with circulation (potential flow), as a displacement.
+vec2 tCylinderFlow(vec2 uv, vec2 c, float strength, float circ)
+{
+    vec2 z = (uv - c) * 4.0;
+    float r2 = max(dot(z, z), 0.36);
+    vec2 zi = cdiv(vec2(1.0, 0.0), cmul(z, z));
+    vec2 vel = vec2(1.0, 0.0) - zi + circ * vec2(-z.y, z.x) / r2;   // conj(dw/dz)
+    return uv + strength * vec2(vel.x, -vel.y) * 0.03 * smoothstep(0.36, 1.0, dot(z, z));
+}
+// Dipole field lines as a displacement.
+vec2 tDipole(vec2 uv, vec2 c, float strength, float t)
+{
+    vec2 d = (uv - c) * 3.0;
+    vec2 m = cexpi(t * 0.3);
+    float r2 = max(dot(d, d), 0.05);
+    vec2 B = (3.0 * dot(m, d) * d / r2 - m) / (r2 * sqrt(r2));
+    return uv + strength * B / (1.0 + length(B)) * 0.04;
+}
+// Two vortices orbiting each other.
+vec2 tVortexPair(vec2 uv, vec2 c, float strength, float t)
+{
+    for (int k = 0; k < 2; ++k) {
+        vec2 pk = c + 0.18 * cexpi(t * 0.5 + 3.14159265 * float(k));
+        vec2 d = uv - pk;
+        uv = pk + rot2(strength * exp(-dot(d, d) / 0.04)) * d;
+    }
+    return uv;
+}
+// Interference of two wave sources: displaced along the wave field's gradient.
+vec2 tInterference(vec2 uv, float k, float strength, float t)
+{
+    vec2 s1 = vec2(0.3, 0.5) + 0.1 * cexpi(t * 0.2), s2 = vec2(0.7, 0.5) - 0.1 * cexpi(t * 0.23);
+    vec2 d1 = uv - s1, d2 = uv - s2;
+    float r1 = max(length(d1), 1e-3), r2 = max(length(d2), 1e-3);
+    vec2 g = cos(r1 * k - t * 3.0) * d1 / r1 + cos(r2 * k - t * 3.0) * d2 / r2;
+    return uv + strength * g * 0.01;
+}
+// Kelvin-Helmholtz: a shear layer rolling up into a row of billows.
+vec2 tKelvinHelmholtz(vec2 uv, float strength, float t)
+{
+    float y = uv.y - 0.5;
+    float roll = exp(-y * y / 0.02);
+    vec2 cellc = vec2(floor(uv.x * 4.0 + t * 0.2) + 0.5 - t * 0.2, 2.0) / 4.0;   // billow centres drift
+    float a = strength * roll * sin(6.2831853 * (uv.x * 4.0 + t * 0.2));
+    return uv + vec2(0.04 * strength * tanh(y * 10.0), 0.0) + 0.03 * vec2(-sin(a), cos(a) - 1.0) * roll;
+}
 // ---- idea round 4 ----
 // Farris frieze: a power series in w = exp(i z) -- periodic along the band,
 // fading across it; the band folded (mirrored) so friezes stack endlessly.
@@ -705,6 +1020,18 @@ vec2 tNewton(vec2 uv, vec2 c, float steps, float t)
         if (float(i) >= steps) break;
         vec2 z2 = cmul(z, z);
         z -= cdiv(cmul(z2, z) - w, 3.0 * z2);
+    }
+    return c + z * 0.4;
+}
+// Newton's method for z^n = w (n = 3..5): n basins, fractal borders.
+vec2 tNewtonN(vec2 uv, vec2 c, float steps, float n, float t)
+{
+    vec2 z = (uv - c) * 2.4, w = cexpi(t * 0.3);
+    for (int i = 0; i < 4; ++i) {
+        if (float(i) >= steps) break;
+        vec2 zn1 = vec2(1.0, 0.0);
+        for (int k = 0; k < 4; ++k) { if (float(k) >= n - 1.0) break; zn1 = cmul(zn1, z); }
+        z -= cdiv(cmul(zn1, z) - w, n * zn1);
     }
     return c + z * 0.4;
 }
@@ -887,13 +1214,14 @@ void main()
     float cells = 3.0 + 4.0 * (1.0 - clamp(tileP, 0.0, 1.0));
     vec2 x = rot2(0.01 * sceneTime) * p * cells + vec2(1.7 * T, 0.9 * T) + 40.0;
     float px = fwidth(x.x);                                    // before the search: no derivatives in branches
-    vec4 g = vec4(0.13, 0.27, -0.21, 0.36);
+    float N = 4.0 + floor(clamp(gridP, 0.0, 0.999) * 4.0);   // 4..7 line families
     vec2 ab, base, nrs; int r, s;
-    bool ok = penroseFind(x, g, ab, r, s, base, nrs);
-    bool thick = (s - r == 1) || (s - r == 4);
+    bool ok = multiGridFind(x * (5.0 / N), N, ab, r, s, base, nrs);
+    float ang = min(float(s - r), N - float(s - r));        // the rhombus' angle class
+    bool thick = mod(ang, 2.0) > 0.5;
     float h = hash21(floor(base * 3.0 + 0.5));
     // Pane content: the kaleidoscoped photo in the tile's own turning frame.
-    vec2 er = pentE(r), es = pentE(s);
+    vec2 er = gridE(r, N), es = gridE(s, N);
     vec2 local = (ab.x - 0.5) * er + (ab.y - 0.5) * es;
     vec2 puv = 0.5 + rot2(h * 6.28 + 0.2 * audioPhase + 0.02 * sceneTime) * local * 0.45 + 0.3 * hash22(base);
     vec3 ph = imgK(puv, 1.5);
@@ -914,7 +1242,7 @@ void main()
     float ribbon = max(w1, w2) * (0.3 + 1.2 * clamp(ribbonP, 0.0, 1.0));
     // Each tile its own hue (thick and thin half a turn apart), wandering with
     // the music; the ribbons glow in the hue of their family.
-    float hue = hueP * 0.159 + 0.12 * audioPhase + 0.3 * mode + h * 0.22 + (thick ? 0.0 : 0.5);
+    float hue = hueP * 0.159 + 0.12 * audioPhase + 0.3 * mode + h * 0.22 + ang * 0.29;
     vec3 paneC = hsv2rgb(vec3(fract(hue), 0.75, 1.0));
     vec3 ribC = hsv2rgb(vec3(fract(hueP * 0.159 + 0.12 * audioPhase + float(w1 > w2 ? r : s) * 0.2), 0.85, 1.0));
     // Three looks, one knob.

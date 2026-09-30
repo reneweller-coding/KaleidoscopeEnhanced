@@ -22,18 +22,14 @@ LABS = {"ChainLab2D": "2D", "ChainLab3D": "3D", "ChainLabTunnel": "Tunnel"}
 PIN = ["spaceP", "coreP", "bodyP", "solidP", "reliefP", "chainAP", "chainBP", "chainCP", "chainDP", "morphP", "depthP", "styleP", "paletteP"]
 # The stage classes as the labs define them (for the description only).
 CLASSES = {
-    "spaceP": ["mirrored lattice", "octahedral lattice", "hexagonal lattice", "4D-rotated lattice", "log-spherical Droste", "turning lattice", "torus-wrapped world", "twisted lattice", "gyroid-warped lattice", "helix", "inverted lattice", "polar ring tunnel"],
-    "coreP": ["no fold core", "plane folds", "polyhedral kaleidoscope", "sphere-inversion box fold", "hyperbolic honeycomb", "Kleinian fold", "amazing surface", "tetrahedral KIFS", "icosahedral KIFS", "octahedral KIFS", "Menger sponge"],
-    "bodyP": ["balls", "octahedra", "tori", "gyroid membrane", "Schwarz P surface", "Schwarz D surface", "blocks", "rod lattice", "crosses"],
+    "spaceP": ["mirrored lattice", "octahedral lattice", "icosahedral lattice", "hexagonal lattice", "4D-rotated lattice", "log-spherical Droste", "log-cylindrical Droste", "turning lattice", "torus-wrapped world", "hyperbolic half-space", "twisted lattice", "gyroid-warped lattice", "helix", "double helix", "inverted lattice", "polar ring tunnel"],
+    "coreP": ["no fold core", "plane folds", "polyhedral kaleidoscope", "sphere-inversion box fold", "Apollonian sphere packing", "hyperbolic honeycomb", "Kleinian fold", "pseudo-Kleinian", "amazing surface", "kaliset", "tetrahedral KIFS", "Sierpinski octahedron", "icosahedral KIFS", "dodecahedral KIFS", "octahedral KIFS", "Menger sponge"],
+    "bodyP": ["balls", "superquadrics", "octahedra", "hollow spheres", "tori", "chain links", "gyroid membrane", "Schwarz P surface", "Schwarz D surface", "Neovius surface", "Lidinoid", "blocks", "rod lattice", "crosses"],
     # chain stages in the labs' energy order (calm .. energetic, ORD_A..ORD_D in ChainLab2D)
-    "chainAP": [None, "polar unwrap", "elliptic coordinates", "Farris wallpaper", "Farris frieze", "quasicrystal", "Droste zoom", "Escher spiral Droste",
-                "hyperbolic Poincare tiling", "hyperbolic band", "hyperbolic half-plane", "sphere kaleidoscope", "log-polar spiral", "Archimedean spiral",
-                "rotating Riemann sphere", "Peirce quincuncial sphere", "Jacobi cn wallpaper", "parabolic stream", "complex exponential", "Blaschke product", "bipolar stream",
-                "complex sine", "tan lattice", "circle inversion", "Moebius stream", "loxodromic stream", "Newton map", "Julia map",
-                "kaleidoscope", "tunnel"],
-    "chainBP": [None, "mirror line", "p4m lattice", "kaleidoscope", "Penrose mirror", "p6m lattice", "Sierpinski fold", "Koch fold", "iterated fold", "Apollonian inversion fold"],
-    "chainCP": [None, "lens", "blossom", "Farris rosette", "mirrored power", "Joukowski map", "spiral", "complex square", "inversion", "kaleidoscope", "tunnel"],
-    "chainDP": [None, "turning", "bend", "shear wave", "curl flow", "twirl", "vortex street", "domain warp", "ripple"],
+    "chainAP": [None, "polar unwrap", "elliptic coordinates", "parabolic coordinates", "Farris wallpaper", "Farris frieze", "sunflower spirals", "quasicrystal", "Droste zoom", "Escher spiral Droste", "bipolar Droste", "hyperbolic Poincare tiling", "hyperbolic band", "hyperbolic half-plane", "sphere kaleidoscope", "log-polar spiral", "Archimedean spiral", "hyperbolic spiral", "rotating Riemann sphere", "breathing sphere", "Peirce quincuncial sphere", "Jacobi cn wallpaper", "Jacobi sn/dn wallpaper", "parabolic stream", "hyperbolic Moebius flow", "complex exponential", "cardioid coordinates", "Blaschke product", "wandering poles", "bipolar stream", "complex sine", "tan lattice", "zeta partial sum", "circle inversion", "Moebius stream", "loxodromic stream", "Newton map", "Julia map", "Mandelbrot map", "burning ship", "Phoenix Julia", "kaleidoscope", "tunnel"],
+    "chainBP": [None, "mirror line", "p4m lattice", "kaleidoscope", "curved kaleidoscope", "Penrose mirror", "Ammann-Beenker mirror", "12-fold quasicrystal mirror", "p6m lattice", "Sierpinski fold", "Koch fold", "Levy C fold", "Pythagoras-tree fold", "Vicsek fold", "iterated fold", "Apollonian inversion fold"],
+    "chainCP": [None, "lens", "fisheye", "blossom", "Farris rosette", "mirrored power", "Cayley transform", "Joukowski map", "spiral", "complex square", "inversion", "kaleidoscope", "tunnel"],
+    "chainDP": [None, "turning", "bend", "shear wave", "wave interference", "curl flow", "cylinder flow", "dipole field", "twirl", "vortex pair", "vortex street", "Karman street", "Kelvin-Helmholtz rolls", "domain warp", "ripple"],
     "morphP": ["the first stage", "the symmetry", "the second map", "the warp"],
 }
 
@@ -43,8 +39,8 @@ def pick(x, n):
 def describe(v, dim):
     parts = []
     if dim == "3D":
-        parts.append("%s of %s with %s" % (CLASSES["spaceP"][pick(v["spaceP"], 12)], CLASSES["bodyP"][pick(v["bodyP"], 9)],
-                                          CLASSES["coreP"][pick(v["coreP"], 11)]))
+        parts.append("%s of %s with %s" % (CLASSES["spaceP"][pick(v["spaceP"], 16)], CLASSES["bodyP"][pick(v["bodyP"], 14)],
+                                          CLASSES["coreP"][pick(v["coreP"], 16)]))
     stages = [CLASSES[k][pick(v[k], len(CLASSES[k]))] for k in ["chainAP", "chainBP", "chainCP", "chainDP"]]
     parts.append({"3D": "coloured by ", "Tunnel": "a relief tunnel of "}.get(dim, "") + " -> ".join(s for s in stages if s))
     mp = v["morphP"]

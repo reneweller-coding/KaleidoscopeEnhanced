@@ -35,7 +35,7 @@ HEAD = r'''//@doc
  * with the music), styleP (lit surface / glowing rims),
  * speedP (flight speed), detailP (texture sharpness), paletteP (photo colours /
  * colour field), hueP.
-//@params spaceP coreP bodyP solidP reliefP chainAP chainBP chainCP chainDP morphP styleP speedP detailP paletteP
+//@params spaceP coreP bodyP solidP reliefP chainAP chainBP chainCP chainDP orderP morphP styleP speedP detailP paletteP
 //@audio audioSpread audioKick audioMode audioSwell
 //@body
 float gT, gTC, gSpread, gRot, gMw;
@@ -59,9 +59,9 @@ vec3 fHexXY(vec3 p, float cell)
 // (if-chains, not const arrays: NVIDIA returned entry 0 for three arrays
 // indexed in one function -- the body never changed):
 // the music's energy picks the region of the world too.
-int ordsp(int i) { if (i == 0) return 0; if (i == 1) return 3; if (i == 2) return 6; if (i == 3) return 7; if (i == 4) return 9; if (i == 5) return 4; if (i == 6) return 10; if (i == 7) return 2; if (i == 8) return 11; if (i == 9) return 5; if (i == 10) return 8; return 1; }   // ... turning, torus wrap, twisted, gyroid warp, helix, inverted lattice, polar ring tunnel
-int ordco(int i) { if (i == 0) return 0; if (i == 1) return 4; if (i == 2) return 8; if (i == 3) return 3; if (i == 4) return 9; if (i == 5) return 6; if (i == 6) return 10; if (i == 7) return 1; if (i == 8) return 7; if (i == 9) return 2; return 5; }   // ... hyperbolic honeycomb, Kleinian, amazing surface, tetra, icosa, octa, Menger
-int ordbo(int i) { if (i == 0) return 1; if (i == 1) return 7; if (i == 2) return 2; if (i == 3) return 3; if (i == 4) return 5; if (i == 5) return 6; if (i == 6) return 0; if (i == 7) return 8; return 4; }   // balls, octahedra, tori, gyroid, Schwarz P, Schwarz D, blocks, rod lattice, crosses
+int ordsp(int i) { if (i == 0) return 0; if (i == 1) return 3; if (i == 2) return 15; if (i == 3) return 6; if (i == 4) return 7; if (i == 5) return 9; if (i == 6) return 14; if (i == 7) return 4; if (i == 8) return 10; if (i == 9) return 12; if (i == 10) return 2; if (i == 11) return 11; if (i == 12) return 5; if (i == 13) return 13; if (i == 14) return 8; return 1; }   // energy order, 16 classes
+int ordco(int i) { if (i == 0) return 0; if (i == 1) return 4; if (i == 2) return 8; if (i == 3) return 3; if (i == 4) return 15; if (i == 5) return 9; if (i == 6) return 6; if (i == 7) return 11; if (i == 8) return 10; if (i == 9) return 12; if (i == 10) return 1; if (i == 11) return 14; if (i == 12) return 7; if (i == 13) return 13; if (i == 14) return 2; return 5; }   // energy order, 16 classes
+int ordbo(int i) { if (i == 0) return 1; if (i == 1) return 9; if (i == 2) return 7; if (i == 3) return 10; if (i == 4) return 2; if (i == 5) return 11; if (i == 6) return 3; if (i == 7) return 5; if (i == 8) return 6; if (i == 9) return 12; if (i == 10) return 13; if (i == 11) return 0; if (i == 12) return 8; return 4; }   // energy order, 14 classes
 // The app walks the structure too (EffectShader::stepChainWalk): (shown, target, fade).
 uniform vec3 walkSpace, walkCore, walkBody;
 
@@ -69,9 +69,9 @@ uniform vec3 walkSpace, walkCore, walkBody;
 float fieldK(vec3 p, float xs, float xc, float xb)
 {
     gDR = 1.0;
-    int ks = ordsp(pickStage(xs, 12)); float vs = subVar(xs, 12);
-    int kc = ordco(pickStage(xc, 11)); float vc = subVar(xc, 11);
-    int kb = ordbo(pickStage(xb, 9)); float vb = subVar(xb, 9);
+    int ks = ordsp(pickStage(xs, 16)); float vs = subVar(xs, 16);
+    int kc = ordco(pickStage(xc, 16)); float vc = subVar(xc, 16);
+    int kb = ordbo(pickStage(xb, 14)); float vb = subVar(xb, 14);
     vec3 q;
     if (ks == 0) q = fRepeat(p, vec3(1.2 + 0.4 * vs));
     else if (ks == 1) { q = fPolarZ(p, 6.0 + 2.0 * floor(vs * 2.99)); q.x -= 2.2; q = zRepeat(q, 0.8); }
@@ -87,6 +87,10 @@ float fieldK(vec3 p, float xs, float xc, float xb)
         q = fRepeat(fScale(q, 1.6, vec3(0.0)), vec3(1.3));                                   // ... of a lattice: a bubble world per cell
     }
     else if (ks == 9) q = fRepeat(fScale(fLogSphere(p, gCam + vec3(0.0, 0.0, 6.0), 2.5 + vs, gT * 0.05), 2.5, vec3(0.0)), vec3(1.4));   // 3D Droste shells
+    else if (ks == 12) q = fRepeat(fHalfSpace(p, 1.0), vec3(1.3));                  // hyperbolic half-space
+    else if (ks == 13) { q = fPolarZ(fTwistZ(p, 0.6 + 0.3 * vs), 2.0); q.x -= 1.4; q = zRepeat(q, 0.6); }   // double helix
+    else if (ks == 14) q = fRepeat(fLogCyl(p, 2.5 + vs), vec3(1.2));                  // log-cylindrical Droste
+    else if (ks == 15) q = fPoly(fRepeat(p, vec3(1.6)), 5.0);                        // icosahedral lattice
     else if (ks == 10) q = fTorusWrap(p, 7.0 + 3.0 * vs, 1.3);                       // the world wrapped round a great ring
     else if (ks == 11) q = fRepeat(fGyroidWarp(p, 0.25 + 0.15 * vs, gT * 0.05), vec3(1.4));   // gyroid-warped lattice
     else if (ks == 7) q = f4DLattice(p, 1.3 + 0.3 * vs, 0.35 * sin(gT * 0.04) + gRot * 0.3, 0.25 * sin(gT * 0.031 + 1.0), 0.6 * sin(gT * 0.023));   // 4D-rotated lattice        // hexagonal lattice: a honeycomb of pillars
@@ -152,6 +156,34 @@ float fieldK(vec3 p, float xs, float xc, float xb)
         }
         bs = 3.0;   /* spot check: 4 rounds x 1.5 turned to noise; bodies must be large after the folds */
     }
+    else if (kc == 11) {                                    // pseudo-Kleinian (Knighty's constants)
+        const vec3 CS = vec3(0.92436, 0.90756, 0.92436);
+        for (int i = 0; i < 5; ++i) {
+            q = 2.0 * clamp(q, -CS, CS) - q;
+            float k = max((1.0 + 0.15 * vc) / max(dot(q, q), 1e-4), 1.0);
+            q *= k; gDR *= k;
+        }
+        bs = 0.6;
+    } else if (kc == 12) {                                  // kaliset: abs(p)/|p|^2 - c
+        for (int i = 0; i < 4; ++i) {
+            float r2 = max(dot(q, q), 0.08);
+            q = abs(q) / r2 - vec3(0.5 + 0.3 * vc, 0.4, 0.6); gDR /= r2;
+        }
+        bs = 0.9;
+    } else if (kc == 13) {                                  // dodecahedral KIFS
+        for (int i = 0; i < 3; ++i) { q = fPoly(q, 5.0); q = fRot(q, vec3(0.0, 0.0, 1.0), gRot * 0.3 + 0.2 * vc); q = fScale(q, 2.0, vec3(0.0, 0.53, 0.85)); }
+        bs = 1.2;
+    } else if (kc == 14) {                                  // Sierpinski octahedron
+        for (int i = 0; i < 3; ++i) { q = fOcta(q); q = fRot(q, vec3(1.0, 1.0, 1.0), gRot * 0.3 + 0.2 * vc); q = fScale(q, 2.0, vec3(1.0, 0.0, 0.0)); }
+        bs = 1.8;
+    } else if (kc == 15) {                                  // Apollonian sphere packing
+        for (int i = 0; i < 3; ++i) {
+            q = abs(fract(q * 0.25 + 0.25) * 4.0 - 2.0) - 1.0;   // mirrored repeat (continuous)
+            float k = (1.1 + 0.2 * vc) / max(dot(q, q), 1e-3);
+            q *= k; gDR *= k;
+        }
+        bs = 1.6;
+    }
     gP = q;
     float th = 1.0 + 0.3 * gSpread;
     float d;
@@ -162,7 +194,12 @@ float fieldK(vec3 p, float xs, float xc, float xb)
     else if (kb == 5) { vec3 w = q * (3.0 / bs); d = (abs(cos(w.x) + cos(w.y) + cos(w.z)) - 0.35 - 0.3 * gSpread) / 2.2 * bs / 3.0; }   // Schwarz P
     else if (kb == 6) { vec3 w = q * (3.0 / bs); vec3 sn = sin(w), cs = cos(w);                     // Schwarz D
         d = (abs(sn.x * sn.y * sn.z + sn.x * cs.y * cs.z + cs.x * sn.y * cs.z + cs.x * cs.y * sn.z) - 0.25 - 0.2 * gSpread) / 2.2 * bs / 3.0; }
-    else if (kb == 7) d = sdOcta3(q, 0.6 * bs * th);                                  // octahedron
+    else if (kb == 7) d = sdOcta3(q, 0.6 * bs * th);
+    else if (kb == 9) d = sdSuperquad(q, 0.5 * bs * th, 2.5 + 6.0 * vb);                     // superquadric
+    else if (kb == 10) d = max(abs(length(q) - 0.5 * bs * th) - 0.05 * bs, -sdOcta3(q, 0.75 * bs));   // hollow sphere
+    else if (kb == 11) { vec3 w = q; w.x -= clamp(w.x, -0.25 * bs, 0.25 * bs); d = sdTorus3(w.xzy, 0.3 * bs, 0.07 * bs * th); }   // chain link
+    else if (kb == 12) d = sdNeovius(q * (3.0 / bs), 0.4 + 0.8 * gSpread) * bs / 3.0;          // Neovius surface
+    else if (kb == 13) d = sdLidinoid(q * (3.0 / bs), 0.05 + 0.05 * gSpread) * bs / 3.0;       // Lidinoid                                  // octahedron
     else if (kb == 8) d = min(min(length(q.xy), length(q.yz)), length(q.zx)) - 0.1 * bs * th;   // rod lattice
     else d = min(min(sdBox3(q, vec3(0.6, 0.08, 0.08) * bs * th), sdBox3(q, vec3(0.08, 0.6, 0.08) * bs * th)), sdBox3(q, vec3(0.08, 0.08, 0.6) * bs * th));
     return d / gDR * 0.8;
@@ -186,18 +223,7 @@ float field3(vec3 p)
 }
 vec2 chain(vec2 uv)
 {
-    gIdW = 1.0;
-    uv = stageA(uv);
-    uv = mirrorUV(uv);
-    uv = stageB(uv);
-    uv = mirrorUV(uv);
-    uv = stageC(uv);
-    uv = mirrorUV(uv);
-    uv = stageD(uv);
-    // Never an empty chain: as the stages together approach 'none' (gIdW), a
-    // calm six-fold kaleidoscope fades in -- the bare photo is never shown.
-    if (gIdW > 0.0) uv = morphMix(uv, tKaleido(mirrorUV(uv), gCw, 6.0, gRot), gIdW);
-    return uv;
+    return runChain(uv);
 }
 '''
 t3 = io.open(os.path.join(SP, "src", "Chain3DTwistTorus.glsl"), encoding="utf-8").read()
