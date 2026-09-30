@@ -1097,9 +1097,6 @@
   <TextureShader file="..\\Scene3D\\SpectralTorus.frag" type="scene3d" geom="grid" mood="calm,dreamy,bright" probability="0.35" complexity="2">
     <rig preset="procedural"/>
   </TextureShader>
-  <TextureShader file="..\\Scene3D\\CymaticsPlate.frag" type="scene3d" geom="points" probability="0.3" mood="calm" complexity="2">
-    <rig preset="procedural"/>
-  </TextureShader>
   <TextureShader file="..\\Scene3D\\Planet4D.frag" type="scene3d" geom="points" mood="dreamy,psychedelic,space" probability="0.3" complexity="2">
     <rig preset="procedural"/>
   </TextureShader>
@@ -1190,14 +1187,6 @@
     <expr name="hueP" formula="clamp(0.525 + 0.1625*(seed3*2.0-1.0) + 0.1625*sin(chromaHue), 0.2, 0.85)"/>
     <float name="hueP"   minValue="0.2"  maxValue="0.85"></float>
     <float name="skyP"   minValue="0.4"  maxValue="1.0"></float>
-  </TextureShader>
-  <TextureShader file="..\\Scene3D\\MetaSculpt.frag" type="scene3d" geom="indirect" probability="0.5" mood="dreamy" complexity="4" shadowExtent="2.8">
-    <rig preset="procedural"/>
-    <float name="blobP"    minValue="0.65" maxValue="1.05"></float>
-    <float name="spreadP"  minValue="0.75" maxValue="1.30"></float>
-    <float name="isoP"     minValue="0.8"  maxValue="1.25"></float>
-    <float name="camDistP" minValue="3.4"  maxValue="4.6"></float>
-    <float name="glossP"   minValue="0.4"  maxValue="0.9"></float>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\GrowthTree.frag" type="scene3d" geom="indirect" probability="0.5" mood="calm" complexity="4">
     <rig preset="procedural"/>
@@ -3232,6 +3221,22 @@
     <float name="sizeP" minValue="0" maxValue="1"></float>
     <float name="leadP" minValue="0" maxValue="1"></float>
     <float name="saturateP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\ThinSectionPolarized.frag" type="normal" mood="psychedelic,bright" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="grainP" minValue="0" maxValue="1"></float>
+    <float name="orderP" minValue="0" maxValue="1"></float>
+    <float name="twinP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TurnerVortex.frag" type="normal" mood="dreamy,calm" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="windP" minValue="0" maxValue="1"></float>
+    <float name="sunP" minValue="0" maxValue="1"></float>
+    <float name="smokeP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>

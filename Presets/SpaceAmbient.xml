@@ -1961,15 +1961,6 @@
     <expr name="hueP" formula="chromaHue + seed2*6.28"/>
     <float name="hueP"      minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\Scene3D\NeuralAxonSynapseCloud.frag" type="scene3d" geom="points" probability="0.5" mood="aggressive,dark" complexity="3">
-    <rig preset="procedural"/>
-    <float name="neuralP" minValue="0.5" maxValue="2.0"></float>
-    <expr name="pulseP" formula="clamp(1.35 + 0.34*(seed3*2.0-1.0) + 0.765*(0.6*kick+0.4*snare), 0.5, 2.2)"/>
-    <float name="pulseP"  minValue="0.5" maxValue="2.2"></float>
-    <float name="speedP"  minValue="0.5" maxValue="2.0"></float>
-    <expr name="hueP" formula="chromaHue + seed2*6.28"/>
-    <float name="hueP"    minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader file="..\Scene3D\KineticMirrorHexagonArray.frag" type="scene3d" geom="quads" probability="0.5" mood="bright,calm" complexity="3">
     <rig preset="procedural"/>
     <expr name="waveP" formula="clamp(1.25 + 0.3*(seed3*2.0-1.0) + 0.6*(max(bassRel-0.9,0.0)), 0.5, 2)"/>
@@ -3562,6 +3553,14 @@
     <float name="sunP" minValue="0" maxValue="1"></float>
     <float name="tintP" minValue="0" maxValue="1"></float>
     <expr name="densityP" formula="clamp(0.4 + 0.35*swell + 0.2*seed2, 0.0, 1.0)"/>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TurnerVortex.frag" type="normal" mood="dreamy,calm" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="windP" minValue="0" maxValue="1"></float>
+    <float name="sunP" minValue="0" maxValue="1"></float>
+    <float name="smokeP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>

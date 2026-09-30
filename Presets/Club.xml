@@ -1868,23 +1868,11 @@
     <float name="cubeSizeP" minValue="0.04" maxValue="0.16"></float>
     <float name="specularP" minValue="0.8" maxValue="2.5"></float>
   </TextureShader>
-  <TextureShader file="..\Scene3D\BismuthFerriteMultiferroicDomains.frag" type="scene3d" geom="quads" probability="0.45" mood="aggressive,dark" complexity="3">
-    <rig preset="procedural"/>
-    <float name="domainScaleP" minValue="0.12" maxValue="0.35"></float>
-    <float name="stepHeightP" minValue="0.04" maxValue="0.18"></float>
-    <float name="channelGlowP" minValue="0.8" maxValue="2.5"></float>
-    <float name="specularP" minValue="0.8" maxValue="2.2"></float>
-  </TextureShader>
   <TextureShader file="..\Scene3D\LuttingerLiquidSpinChargeSeparation.frag" type="scene3d" geom="ribbon" probability="0.45" mood="calm,psychedelic" complexity="3">
     <rig preset="procedural"/>
     <float name="ribbonWidthP" minValue="0.02" maxValue="0.1"></float>
     <float name="speedRatioP" minValue="1.2" maxValue="3.0"></float>
     <float name="glowP" minValue="0.8" maxValue="2.5"></float>
-  </TextureShader>
-  <TextureShader file="..\Scene3D\MagnetotacticBacteriaChains.frag" type="scene3d" geom="cubes" probability="0.45" mood="bright,psychedelic" complexity="3">
-    <rig preset="procedural"/>
-    <float name="magnetosomeSizeP" minValue="0.03" maxValue="0.12"></float>
-    <float name="specularP" minValue="0.8" maxValue="2.5"></float>
   </TextureShader>
   <TextureShader file="..\Scene2D\SpintronicDomainWallRacetrack.frag" type="normal" probability="0.4" mood="bright" complexity="3">
     <rig preset="flat"/>
@@ -3078,6 +3066,22 @@
     <float name="scaleP" minValue="0" maxValue="1"></float>
     <float name="weaveP" minValue="0" maxValue="1"></float>
     <float name="flipP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\ThinSectionPolarized.frag" type="normal" mood="psychedelic,bright" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="grainP" minValue="0" maxValue="1"></float>
+    <float name="orderP" minValue="0" maxValue="1"></float>
+    <float name="twinP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\NeonRingTunnel.frag" type="normal" mood="psychedelic,aggressive,dark" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="ringsP" minValue="0" maxValue="1"></float>
+    <float name="bendP" minValue="0" maxValue="1"></float>
+    <float name="thickP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
