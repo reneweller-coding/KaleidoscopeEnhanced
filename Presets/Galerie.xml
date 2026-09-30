@@ -2670,14 +2670,6 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\\Scene2D\\TextureCircuitGlow.frag" type="normal" mood="dark,psychedelic" probability="0.45" complexity="2">
-    <rig preset="flat"/>
-    <float name="gridP" minValue="0" maxValue="1"></float>
-    <float name="padP" minValue="0" maxValue="1"></float>
-    <float name="boardP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader file="..\\Scene2D\\TextureOrbifoldFlow.frag" type="normal" mood="psychedelic,calm" probability="0.45" complexity="2">
     <rig preset="flat"/>
     <float name="cellP" minValue="0" maxValue="1"></float>
@@ -2755,14 +2747,6 @@
     <float name="churnP" minValue="0" maxValue="1"></float>
     <float name="strokeP" minValue="0" maxValue="1"></float>
     <float name="photoP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
-  <TextureShader file="..\\Scene2D\\TextureTubeBundle.frag" type="normal" mood="energetic,psychedelic" probability="0.45" complexity="2">
-    <rig preset="flat"/>
-    <float name="tubeP" minValue="0" maxValue="1"></float>
-    <float name="rimP" minValue="0" maxValue="1"></float>
-    <float name="wallZoomP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
@@ -3331,6 +3315,22 @@
     <float name="beamP" minValue="0" maxValue="1"></float>
     <float name="particleP" minValue="0" maxValue="1"></float>
     <float name="reefP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\WatercolorWetInWet.frag" type="normal" mood="calm,bright" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="bloomP" minValue="0" maxValue="1"></float>
+    <float name="edgeP" minValue="0" maxValue="1"></float>
+    <float name="paperP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\ResinGeodePour.frag" type="normal" mood="calm,psychedelic" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="bandP" minValue="0" maxValue="1"></float>
+    <float name="lacingP" minValue="0" maxValue="1"></float>
+    <float name="crystalP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>

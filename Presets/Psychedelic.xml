@@ -2218,12 +2218,6 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\\Scene2D\\NeonPoolNight.frag" type="normal" mood="dark,dreamy" probability="0.45" complexity="3">
-    <rig preset="flat"/>
-    <float name="lampsP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader file="..\\Scene2D\\LEDRainCurtain.frag" type="normal" mood="dark,bright,psychedelic" probability="0.2" complexity="2">
     <rig preset="flat"/>
     <float name="densityP" minValue="0" maxValue="1"></float>
@@ -3110,6 +3104,14 @@
     <float name="armsP" minValue="0" maxValue="1"></float>
     <float name="dustP" minValue="0" maxValue="1"></float>
     <float name="photoP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\ResinGeodePour.frag" type="normal" mood="calm,psychedelic" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="bandP" minValue="0" maxValue="1"></float>
+    <float name="lacingP" minValue="0" maxValue="1"></float>
+    <float name="crystalP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>

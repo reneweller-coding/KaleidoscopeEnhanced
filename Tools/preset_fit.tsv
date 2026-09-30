@@ -1109,3 +1109,5 @@ TextureFloatingLights	8	6	3	6	3	5	6
 TextureStarsFromLight	8	9	3	5	5	5	6
 TextureSnowVolume	8	5	3	6	3	5	6
 TextureBubbleColumn	7	6	4	4	5	5	6
+WatercolorWetInWet	8	3	2	3	5	9	7
+ResinGeodePour	6	4	4	3	6	7	6
