@@ -368,13 +368,10 @@ vec2 tMirrorLine(vec2 uv, vec2 c, float a)
 // in the rim.  `move` is a point inside the disk: the disk automorphism
 // z -> (z - a) / (1 - conj(a) z) carries the tiling along it (a flight
 // through the hyperbolic plane).  Needs 1/p + 1/q < 1/2.
-vec2 tPoincare(vec2 uv, vec2 c, float p, float q, float zoom, vec2 move)
+// The {p,q} reflection folding inside the unit disk (shared by the disk and
+// the band model).
+vec2 poincareFold(vec2 z, float p, float q)
 {
-    vec2 z = (uv - c) * zoom;
-    float r2 = dot(z, z);
-    if (r2 > 1.0) z /= r2;                                      // fold the outside in (continuous at the rim)
-    vec2 nu = z - move, de = vec2(1.0, 0.0) - vec2(move.x * z.x + move.y * z.y, move.x * z.y - move.y * z.x);
-    z = vec2(nu.x * de.x + nu.y * de.y, nu.y * de.x - nu.x * de.y) / max(dot(de, de), 1e-6);
     float a = 3.14159265 / p;
     float cq = cos(3.14159265 / q), sa = sin(a);
     float R = 1.0 / sqrt(max(cq * cq / (sa * sa) - 1.0, 1e-4));
@@ -387,7 +384,83 @@ vec2 tPoincare(vec2 uv, vec2 c, float p, float q, float zoom, vec2 move)
         float dd = dot(d, d);
         if (dd < R * R) z = cc + d * (R * R / dd);               // mirror in the orthogonal circle
     }
-    return c + z * 0.9;
+    return z;
+}
+vec2 tPoincare(vec2 uv, vec2 c, float p, float q, float zoom, vec2 move)
+{
+    vec2 z = (uv - c) * zoom;
+    float r2 = dot(z, z);
+    if (r2 > 1.0) z /= r2;                                      // fold the outside in (continuous at the rim)
+    vec2 nu = z - move, de = vec2(1.0, 0.0) - vec2(move.x * z.x + move.y * z.y, move.x * z.y - move.y * z.x);
+    z = vec2(nu.x * de.x + nu.y * de.y, nu.y * de.x - nu.x * de.y) / max(dot(de, de), 1e-6);
+    return c + poincareFold(z, p, q) * 0.9;
+}
+// The hyperbolic plane in the BAND model (the hyperbolic Mercator: a line of
+// the plane becomes the band's axis), z = tanh(pi w / 4).  The screen's
+// height is mirror-folded into the band, so the tiling runs as an endless
+// strip; a shift along the band is an exact hyperbolic translation -- the
+// strip flows without end.
+vec2 tHyperBand(vec2 uv, vec2 c, float p, float q, float height, float travel)
+{
+    vec2 w = (uv - c) * vec2(4.0, 2.0 / height);
+    w.y = abs(fract(w.y * 0.5 + 0.5) * 2.0 - 1.0) * 2.0 - 1.0;   // triangle wave: mirrored at the band's rims
+    w.y *= 0.985;                                               // the rims are the circle at infinity
+    w.x += travel;
+    w *= 0.7853982;                                             // pi / 4
+    // tanh of a complex number: (sinh 2x + i sin 2y) / (cosh 2x + cos 2y)
+    float den = cosh(2.0 * w.x) + cos(2.0 * w.y);
+    vec2 z = vec2(sinh(2.0 * w.x), sin(2.0 * w.y)) / max(den, 1e-4);
+    return c + poincareFold(z, p, q) * 0.9;
+}
+// The spiral Droste of Escher's "Print Gallery" as reconstructed by Lenstra
+// and de Smit: in log space the picture is multiplied by beta = 1 - i log(K)/(2 pi),
+// so one turn around the centre is two scale steps K; the log-radius is folded
+// by a mirrored triangle wave of period log K, the angle is kept -- the
+// picture contains itself, turned and shrunk, endlessly, and zooms along the
+// spiral (zoom: integrated time).  Seamless: one turn shifts the log-radius
+// by exactly one period of the mirrored wave (2 log K; with log K it was half
+// a period, and the mirror showed as a hard seam).
+vec2 tDrosteSpiral(vec2 uv, vec2 c, float K, float zoom)
+{
+    vec2 d = uv - c;
+    vec2 L = vec2(log(max(length(d), 1e-5)), atan(d.y, d.x));
+    float lk = log(K), b = -lk / 3.14159265;                   // one turn = TWO mirrored steps (one period of the triangle wave)
+    vec2 w = vec2(L.x - b * L.y, L.y + b * L.x);               // (1 + i b) * L
+    float u = (w.x - zoom * lk) / lk;
+    float tri = abs(fract(u * 0.5) * 2.0 - 1.0);               // mirrored, period 2: 0..1..0
+    return c + exp(tri * lk - lk) * vec2(cos(w.y), sin(w.y)) * 0.45;
+}
+// Farris wallpaper functions ("Creating Symmetry", 2015): sums of plane waves
+// averaged over a symmetry group are smooth complex functions with exactly
+// that symmetry; their value at a point picks the photo's pixel.  Three waves
+// whose amplitudes and phases drift with time: the wallpaper keeps changing
+// while keeping its symmetry.  kind 0: p4 (square), 1: p3 (hexagonal),
+// 2: p6, 3: p4m (square with mirrors).
+vec2 cexpi(float a) { return vec2(cos(a), sin(a)); }
+vec2 cmul(vec2 a, vec2 b) { return vec2(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x); }
+vec2 farrisWave(vec2 X, int kind, float n, float m)
+{
+    const float TAU = 6.2831853;
+    if (kind == 1 || kind == 2) {                               // hexagonal lattice coordinates
+        vec2 Y = vec2(X.x + X.y * 0.5773503, X.y * 1.1547005);
+        vec2 w = cexpi(TAU * (n * Y.x + m * Y.y)) + cexpi(TAU * (m * Y.x - (n + m) * Y.y)) + cexpi(TAU * (-(n + m) * Y.x + n * Y.y));
+        if (kind == 2) w += cexpi(-TAU * (n * Y.x + m * Y.y)) + cexpi(-TAU * (m * Y.x - (n + m) * Y.y)) + cexpi(-TAU * (-(n + m) * Y.x + n * Y.y));
+        return w / (kind == 2 ? 6.0 : 3.0);
+    }
+    vec2 w = cexpi(TAU * (n * X.x + m * X.y)) + cexpi(TAU * (-m * X.x + n * X.y))
+           + cexpi(TAU * (-n * X.x - m * X.y)) + cexpi(TAU * (m * X.x - n * X.y));
+    if (kind == 3) w += cexpi(TAU * (m * X.x + n * X.y)) + cexpi(TAU * (-n * X.x + m * X.y))
+                      + cexpi(TAU * (-m * X.x - n * X.y)) + cexpi(TAU * (n * X.x - m * X.y));
+    return w / (kind == 3 ? 8.0 : 4.0);
+}
+vec2 tFarris(vec2 uv, vec2 c, int kind, float cells, float t)
+{
+    vec2 X = (uv - c) * cells;
+    vec2 f = cmul(cexpi(t * 0.7), farrisWave(X, kind, 1.0, 0.0)) * (0.8 + 0.2 * sin(t * 0.31))
+           + cmul(cexpi(-t * 0.5 + 1.0), farrisWave(X, kind, 1.0, 1.0)) * (0.6 + 0.4 * sin(t * 0.23 + 2.0))
+           + cmul(cexpi(t * 0.9 + 2.0), farrisWave(X, kind, 2.0, kind == 3 ? 1.0 : -1.0)) * (0.4 + 0.3 * sin(t * 0.17 + 4.0))
+           + (kind == 3 ? cmul(cexpi(-t * 0.6), farrisWave(X, kind, 3.0, 1.0)) * 0.5 : vec2(0.0));   // p4m: chiral waves made symmetric by the mirrors
+    return c + f * 0.35;
 }
 // Bipolar coordinates around two foci at c -/+ (f, 0): sigma (the angle the
 // foci subtend) across, tau (log ratio of the distances) along -- the picture
@@ -473,7 +546,7 @@ float sides(float v) { return 5.0 + floor(v * 4.99); }                     // 5 
 // The classes of every stage in order of energy (calm .. energetic): a knob
 // value, rolled or walked, picks a position on that scale, so the music's
 // energy can choose the region (EffectShader::stepChainWalk).
-int orda(int i) { if (i == 0) return 11; if (i == 1) return 5; if (i == 2) return 4; if (i == 3) return 9; if (i == 4) return 1; if (i == 5) return 12; if (i == 6) return 6; if (i == 7) return 10; if (i == 8) return 7; if (i == 9) return 8; if (i == 10) return 3; if (i == 11) return 13; if (i == 12) return 0; return 2; }   // 11 = none (identity)
+int orda(int i) { if (i == 0) return 11; if (i == 1) return 5; if (i == 2) return 14; if (i == 3) return 4; if (i == 4) return 16; if (i == 5) return 9; if (i == 6) return 15; if (i == 7) return 1; if (i == 8) return 12; if (i == 9) return 6; if (i == 10) return 10; if (i == 11) return 7; if (i == 12) return 8; if (i == 13) return 3; if (i == 14) return 13; if (i == 15) return 0; return 2; }   // 11 none, 14 Farris, 16 spiral Droste, 15 hyperbolic band
 int ordb(int i) { if (i == 0) return 0; if (i == 1) return 5; if (i == 2) return 3; if (i == 3) return 1; if (i == 4) return 2; return 4; }
 int ordc(int i) { if (i == 0) return 0; if (i == 1) return 5; if (i == 2) return 8; if (i == 3) return 7; if (i == 4) return 1; if (i == 5) return 4; if (i == 6) return 3; if (i == 7) return 6; return 2; }
 int ordd(int i) { if (i == 0) return 0; if (i == 1) return 5; if (i == 2) return 2; if (i == 3) return 1; if (i == 4) return 4; return 3; }
@@ -487,6 +560,13 @@ uniform float walkHost;
 vec2 stageAk(vec2 uv, int k, float v)
 {
     k = orda(k);
+    if (k == 14) return tFarris(uv, gCw, int(floor(v * 3.99)), 1.5 + gSpread, gT * 1.5);
+    if (k == 15) {
+        int j = int(floor(v * 3.99));
+        vec2 pq = j == 0 ? vec2(5.0, 4.0) : j == 1 ? vec2(7.0, 3.0) : j == 2 ? vec2(4.0, 5.0) : vec2(6.0, 4.0);
+        return tHyperBand(uv, gCt, pq.x, pq.y, 0.8 + 0.4 * v, gT * 1.2);
+    }
+    if (k == 16) return tDrosteSpiral(uv, gCt, 2.5 + 3.5 * v, gT * 0.6);
     if (k == 13) {
         vec2 pa = gCw + 0.25 * vec2(cos(gT * 0.3), sin(gT * 0.3)), pb = gCw - 0.25 * vec2(cos(gT * 0.3), sin(gT * 0.3));
         return tLoxo(uv, pa, pb, 1.0 + floor(v * 2.99), gT * 2.0);
@@ -583,19 +663,19 @@ float walkFade(float kf) { return smoothstep(walkAll() ? 0.7 : 0.55, 1.0, fract(
 vec2 morphMix(vec2 a, vec2 b, float f) { return mix(mirrorUV(a), mirrorUV(b), f); }
 vec2 stageA(vec2 uv)
 {
-    int k0 = pickStage(chainAP, 14); float v0 = subVar(chainAP, 14);
+    int k0 = pickStage(chainAP, 17); float v0 = subVar(chainAP, 17);
     if (!walks(1)) { gIdW *= (k0 <= 0 ? 1.0 : 0.0); return stageAk(uv, k0, v0); }
     if (walkHost > 0.5 && walkAll()) {
         float f = smoothstep(0.0, 1.0, walkA.z);
-        int j0 = pickStage(walkA.x, 14), j1 = pickStage(walkA.y, 14);
+        int j0 = pickStage(walkA.x, 17), j1 = pickStage(walkA.y, 17);
         gIdW *= (j0 <= 0 ? 1.0 - f : 0.0) + (j1 <= 0 ? f : 0.0);
-        if (f <= 0.0) return stageAk(uv, j0, subVar(walkA.x, 14));
-        return morphMix(stageAk(uv, j0, subVar(walkA.x, 14)), stageAk(uv, j1, subVar(walkA.y, 14)), f);
+        if (f <= 0.0) return stageAk(uv, j0, subVar(walkA.x, 17));
+        return morphMix(stageAk(uv, j0, subVar(walkA.x, 17)), stageAk(uv, j1, subVar(walkA.y, 17)), f);
     }
     float kf = walkPos(1), c = floor(kf);
     int i0, i1; float w0, w1;
-    walkPick(c, k0, v0, 14, 1.3, i0, w0);
-    walkPick(c + 1.0, k0, v0, 14, 1.3, i1, w1);
+    walkPick(c, k0, v0, 17, 1.3, i0, w0);
+    walkPick(c + 1.0, k0, v0, 17, 1.3, i1, w1);
     float f = walkFade(kf);
     gIdW *= (i0 <= 0 ? 1.0 - f : 0.0) + (i1 <= 0 ? f : 0.0);
     if (f <= 0.0) return stageAk(uv, i0, w0);

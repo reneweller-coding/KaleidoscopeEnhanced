@@ -131,7 +131,40 @@ Schritte, alle stetig und ohne Audio auf der Kamera:
   Funktion von `z`, also zustandslos und stetig; der Tunnel bleibt als
   Sicherheitsnetz.
 
-## 6. Weiterdenken
+## 6. Aus der Literatur (30.09.)
+
+Eingebaut, jeweils nahtlos und in die Energie-Reihenfolge einsortiert:
+
+* **Escher-Droste nach Lenstra/de Smit** (`tDrosteSpiral`): im Log-Raum mit
+  β = 1 − i·log K/π multipliziert, der Log-Radius gespiegelt gefaltet — das
+  Bild enthält sich gedreht und verkleinert, spiralförmig, endlos.
+  (Erst mit log K/2π: eine halbe Spiegelperiode je Umdrehung → harte Naht.)
+* **Farris-Tapetenfunktionen** („Creating Symmetry“, 2015; `tFarris`): Summen
+  ebener Wellen, über die Symmetriegruppe gemittelt (p4, p3, p6, p4m); der
+  komplexe Wert wählt das Pixel im Foto — genau das Prinzip der Labore.
+  Phasen und Amplituden laufen mit der Zeit: die Tapete verwandelt sich,
+  die Symmetrie bleibt.
+* **Hyperbolisches Band** (`tHyperBand`, z = tanh(πw/4)): die {p,q}-Kachelung
+  als endloser Streifen; eine Verschiebung entlang des Bandes ist eine exakte
+  hyperbolische Translation.
+* **Knightys polyedrische Faltung** (`fPoly`, Typ 3/4/5 = Tetraeder/Oktaeder/
+  Ikosaeder): Ikosaeder-KIFS und polyedrisches Kaleidoskop als Faltkerne.
+* **4D-gedrehtes Gitter** (`f4DLattice`): der Raum als Schnitt durch ein in 4D
+  gefaltetes Gitter; die Drehung in xw/yw verwandelt Würfel stetig in Platten
+  und Balken (nur Drehung, Spiegelung, Projektion: der Abstand bleibt sicher).
+
+Quellen: [Lenstra/de Smit, Escher and the Droste effect](https://pub.math.leidenuniv.nl/~smitbde/papers/bridges-2005-desmit.pdf),
+[Farris, Creating Symmetry (Scientific American)](https://www.scientificamerican.com/blog/guest-blog/mathematical-art-takes-a-fresh-look-at-wallpaper),
+[Wallpaper Functions (Wolfram)](https://demonstrations.wolfram.com/WallpaperFunctions/),
+[Bandmodell (Bridges 2019)](https://archive.bridgesmathart.org/2019/bridges2019-91.pdf),
+[Hvidtfeldt, Kaleidoscopic Fractals](https://blog.hvidtfeldts.net/index.php/2010/06/folding-space-ii-kaleidoscopic-fractals/),
+[Pseudo-Kleinian](https://www.imaginary.org/node/2364).
+
+Noch nicht eingebaut (Kandidaten): Peirce-Quinkunx / Quadrat↔Kreis
+(braucht Jacobi-elliptische Funktionen), Grenzmengen Kleinscher Gruppen
+(Indra's Pearls; als Faltung zu teuer), Farris-Rosetten mit Farbdrehung.
+
+## 7. Weiterdenken
 
 * **Ketten als FX-Stufe (größter Hebel, braucht deine Entscheidung)**: Jede
   Szene läuft durch eine CombineShader-Stufe, die dieselbe Schnittstelle hat

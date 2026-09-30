@@ -2,9 +2,9 @@
  * @brief CHAIN LAB 3D: the 3D chain laboratory -- every start rolls a new
  * raymarched world from three classes of continuous space transforms: a space
  * (mirrored lattice, polar ring tunnel, twisted lattice, octahedral lattice,
- * turning lattice, helix, hexagonal lattice), a fold core (none, tetrahedral KIFS, octahedral KIFS, a
+ * turning lattice, helix, hexagonal lattice, a lattice turned in 4D), a fold core (none, tetrahedral KIFS, octahedral KIFS, a
  * sphere-inversion box fold, plane folds, Menger sponge,
- * Kleinian fold) and an end body (block, ball, torus, gyroid
+ * Kleinian fold, icosahedral KIFS, polyhedral kaleidoscope) and an end body (block, ball, torus, gyroid
  * membrane, cross, Schwarz P and D minimal surfaces).  The surfaces are coloured by a rolled 2D chain of the
  * 2D chain lab (global map, symmetry, second map, warp) projected
  * triplanarly, with a colour field that follows the chain and wanders with the
@@ -42,7 +42,7 @@ float sides(float v) { return 5.0 + floor(v * 4.99); }                     // 5 
 // The classes of every stage in order of energy (calm .. energetic): a knob
 // value, rolled or walked, picks a position on that scale, so the music's
 // energy can choose the region (EffectShader::stepChainWalk).
-int orda(int i) { if (i == 0) return 11; if (i == 1) return 5; if (i == 2) return 4; if (i == 3) return 9; if (i == 4) return 1; if (i == 5) return 12; if (i == 6) return 6; if (i == 7) return 10; if (i == 8) return 7; if (i == 9) return 8; if (i == 10) return 3; if (i == 11) return 13; if (i == 12) return 0; return 2; }   // 11 = none (identity)
+int orda(int i) { if (i == 0) return 11; if (i == 1) return 5; if (i == 2) return 14; if (i == 3) return 4; if (i == 4) return 16; if (i == 5) return 9; if (i == 6) return 15; if (i == 7) return 1; if (i == 8) return 12; if (i == 9) return 6; if (i == 10) return 10; if (i == 11) return 7; if (i == 12) return 8; if (i == 13) return 3; if (i == 14) return 13; if (i == 15) return 0; return 2; }   // 11 none, 14 Farris, 16 spiral Droste, 15 hyperbolic band
 int ordb(int i) { if (i == 0) return 0; if (i == 1) return 5; if (i == 2) return 3; if (i == 3) return 1; if (i == 4) return 2; return 4; }
 int ordc(int i) { if (i == 0) return 0; if (i == 1) return 5; if (i == 2) return 8; if (i == 3) return 7; if (i == 4) return 1; if (i == 5) return 4; if (i == 6) return 3; if (i == 7) return 6; return 2; }
 int ordd(int i) { if (i == 0) return 0; if (i == 1) return 5; if (i == 2) return 2; if (i == 3) return 1; if (i == 4) return 4; return 3; }
@@ -56,6 +56,13 @@ uniform float walkHost;
 vec2 stageAk(vec2 uv, int k, float v)
 {
     k = orda(k);
+    if (k == 14) return tFarris(uv, gCw, int(floor(v * 3.99)), 1.5 + gSpread, gTC * 1.5);
+    if (k == 15) {
+        int j = int(floor(v * 3.99));
+        vec2 pq = j == 0 ? vec2(5.0, 4.0) : j == 1 ? vec2(7.0, 3.0) : j == 2 ? vec2(4.0, 5.0) : vec2(6.0, 4.0);
+        return tHyperBand(uv, gCt, pq.x, pq.y, 0.8 + 0.4 * v, gTC * 1.2);
+    }
+    if (k == 16) return tDrosteSpiral(uv, gCt, 2.5 + 3.5 * v, gTC * 0.6);
     if (k == 13) {
         vec2 pa = gCw + 0.25 * vec2(cos(gTC * 0.3), sin(gTC * 0.3)), pb = gCw - 0.25 * vec2(cos(gTC * 0.3), sin(gTC * 0.3));
         return tLoxo(uv, pa, pb, 1.0 + floor(v * 2.99), gTC * 2.0);
@@ -152,19 +159,19 @@ float walkFade(float kf) { return smoothstep(walkAll() ? 0.7 : 0.55, 1.0, fract(
 vec2 morphMix(vec2 a, vec2 b, float f) { return mix(mirrorUV(a), mirrorUV(b), f); }
 vec2 stageA(vec2 uv)
 {
-    int k0 = pickStage(chainAP, 14); float v0 = subVar(chainAP, 14);
+    int k0 = pickStage(chainAP, 17); float v0 = subVar(chainAP, 17);
     if (!walks(1)) { gIdW *= (k0 <= 0 ? 1.0 : 0.0); return stageAk(uv, k0, v0); }
     if (walkHost > 0.5 && walkAll()) {
         float f = smoothstep(0.0, 1.0, walkA.z);
-        int j0 = pickStage(walkA.x, 14), j1 = pickStage(walkA.y, 14);
+        int j0 = pickStage(walkA.x, 17), j1 = pickStage(walkA.y, 17);
         gIdW *= (j0 <= 0 ? 1.0 - f : 0.0) + (j1 <= 0 ? f : 0.0);
-        if (f <= 0.0) return stageAk(uv, j0, subVar(walkA.x, 14));
-        return morphMix(stageAk(uv, j0, subVar(walkA.x, 14)), stageAk(uv, j1, subVar(walkA.y, 14)), f);
+        if (f <= 0.0) return stageAk(uv, j0, subVar(walkA.x, 17));
+        return morphMix(stageAk(uv, j0, subVar(walkA.x, 17)), stageAk(uv, j1, subVar(walkA.y, 17)), f);
     }
     float kf = walkPos(1), c = floor(kf);
     int i0, i1; float w0, w1;
-    walkPick(c, k0, v0, 14, 1.3, i0, w0);
-    walkPick(c + 1.0, k0, v0, 14, 1.3, i1, w1);
+    walkPick(c, k0, v0, 17, 1.3, i0, w0);
+    walkPick(c + 1.0, k0, v0, 17, 1.3, i1, w1);
     float f = walkFade(kf);
     gIdW *= (i0 <= 0 ? 1.0 - f : 0.0) + (i1 <= 0 ? f : 0.0);
     if (f <= 0.0) return stageAk(uv, i0, w0);
@@ -248,8 +255,8 @@ vec3 fHexXY(vec3 p, float cell)
 // (if-chains, not const arrays: NVIDIA returned entry 0 for three arrays
 // indexed in one function -- the body never changed):
 // the music's energy picks the region of the world too.
-int ordsp(int i) { if (i == 0) return 0; if (i == 1) return 3; if (i == 2) return 6; if (i == 3) return 4; if (i == 4) return 2; if (i == 5) return 5; return 1; }   // lattice, octahedral lattice, hexagons, turning, twisted, helix, polar ring tunnel
-int ordco(int i) { if (i == 0) return 0; if (i == 1) return 4; if (i == 2) return 3; if (i == 3) return 6; if (i == 4) return 1; if (i == 5) return 2; return 5; }   // none, plane folds, sphere-inversion box, Kleinian, tetra KIFS, octa KIFS, Menger
+int ordsp(int i) { if (i == 0) return 0; if (i == 1) return 3; if (i == 2) return 6; if (i == 3) return 7; if (i == 4) return 4; if (i == 5) return 2; if (i == 6) return 5; return 1; }   // lattice, octahedral lattice, hexagons, 4D-rotated lattice, turning, twisted, helix, polar ring tunnel
+int ordco(int i) { if (i == 0) return 0; if (i == 1) return 4; if (i == 2) return 8; if (i == 3) return 3; if (i == 4) return 6; if (i == 5) return 1; if (i == 6) return 7; if (i == 7) return 2; return 5; }   // none, plane folds, polyhedral kaleidoscope, sphere-inversion box, Kleinian, tetra KIFS, icosa KIFS, octa KIFS, Menger
 int ordbo(int i) { if (i == 0) return 1; if (i == 1) return 2; if (i == 2) return 3; if (i == 3) return 5; if (i == 4) return 6; if (i == 5) return 0; return 4; }   // balls, tori, gyroid, Schwarz P, Schwarz D, blocks, crosses
 // The app walks the structure too (EffectShader::stepChainWalk): (shown, target, fade).
 uniform vec3 walkSpace, walkCore, walkBody;
@@ -258,8 +265,8 @@ uniform vec3 walkSpace, walkCore, walkBody;
 float fieldK(vec3 p, float xs, float xc, float xb)
 {
     gDR = 1.0;
-    int ks = ordsp(pickStage(xs, 7)); float vs = subVar(xs, 7);
-    int kc = ordco(pickStage(xc, 7)); float vc = subVar(xc, 7);
+    int ks = ordsp(pickStage(xs, 8)); float vs = subVar(xs, 8);
+    int kc = ordco(pickStage(xc, 9)); float vc = subVar(xc, 9);
     int kb = ordbo(pickStage(xb, 7)); float vb = subVar(xb, 7);
     vec3 q;
     if (ks == 0) q = fRepeat(p, vec3(1.2 + 0.4 * vs));
@@ -270,7 +277,8 @@ float fieldK(vec3 p, float xs, float xc, float xb)
     else if (ks == 5) {                                     // helix: a ring of blocks wound along the flight (a spiral staircase)
         q = fPolarZ(fTwistZ(p, 0.3 + 0.2 * vs), 5.0 + 2.0 * floor(vs * 2.99)); q.x -= 2.0; q = zRepeat(q, 0.7);
     }
-    else q = zRepeat(fHexXY(p, 2.2 + 0.6 * vs), 1.2);        // hexagonal lattice: a honeycomb of pillars
+    else if (ks == 6) q = zRepeat(fHexXY(p, 2.2 + 0.6 * vs), 1.2);
+    else q = f4DLattice(p, 1.3 + 0.3 * vs, 0.35 * sin(gT * 0.04) + gRot * 0.3, 0.25 * sin(gT * 0.031 + 1.0), 0.6 * sin(gT * 0.023));   // 4D-rotated lattice        // hexagonal lattice: a honeycomb of pillars
     float bs = 1.0;                                         // body size in the core's space
     if (kc == 1) {
         for (int i = 0; i < 3; ++i) { q = fTetra(q); q = fRot(q, vec3(1.0, 1.0, 0.0), gRot * 0.5 + 0.3 * vc); q = fScale(q, 1.7, vec3(0.45)); }
@@ -303,6 +311,16 @@ float fieldK(vec3 p, float xs, float xc, float xb)
             float k = max((1.05 + 0.3 * vc) / max(dot(q, q), 1e-4), 1.0);
             q *= k; gDR *= k;
         }
+        bs = 0.7;
+    }
+    else if (kc == 7) {
+        // icosahedral KIFS (Knighty): the icosahedral fold, a turn, scale 2
+        for (int i = 0; i < 3; ++i) { q = fPoly(q, 5.0); q = fRot(q, vec3(1.0, 1.0, 1.0), gRot * 0.4 + 0.3 * vc); q = fScale(q, 1.9, vec3(0.55, 0.3, 0.9)); }
+        bs = 1.2;
+    } else if (kc == 8) {
+        // polyhedral kaleidoscope: one polyhedral fold (tetra / octa / icosa by the
+        // sub-variant) around each lattice cell, the body pushed off the axis
+        q = fPoly(q, 3.0 + floor(vc * 2.99)); q.z -= 0.35;
         bs = 0.7;
     }
     gP = q;

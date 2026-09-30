@@ -19,14 +19,14 @@ import argparse, io, os, re, subprocess, sys
 SP = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(SP, "..", ".."))
 LABS = {"ChainLab2D": "2D", "ChainLab3D": "3D", "ChainLabTunnel": "Tunnel"}
-PIN = ["spaceP", "coreP", "bodyP", "solidP", "chainAP", "chainBP", "chainCP", "chainDP", "morphP", "depthP", "styleP", "paletteP"]
+PIN = ["spaceP", "coreP", "bodyP", "solidP", "reliefP", "chainAP", "chainBP", "chainCP", "chainDP", "morphP", "depthP", "styleP", "paletteP"]
 # The stage classes as the labs define them (for the description only).
 CLASSES = {
-    "spaceP": ["mirrored lattice", "polar ring tunnel", "twisted lattice", "octahedral lattice", "turning lattice"],
-    "coreP": ["no fold core", "tetrahedral KIFS", "octahedral KIFS", "sphere-inversion box fold", "plane folds", "Menger sponge"],
-    "bodyP": ["blocks", "balls", "tori", "gyroid membrane", "crosses", "Schwarz P surface", "Schwarz D surface"],
+    "spaceP": ["mirrored lattice", "octahedral lattice", "hexagonal lattice", "4D-rotated lattice", "turning lattice", "twisted lattice", "helix", "polar ring tunnel"],
+    "coreP": ["no fold core", "plane folds", "polyhedral kaleidoscope", "sphere-inversion box fold", "Kleinian fold", "tetrahedral KIFS", "icosahedral KIFS", "octahedral KIFS", "Menger sponge"],
+    "bodyP": ["balls", "tori", "gyroid membrane", "Schwarz P surface", "Schwarz D surface", "blocks", "crosses"],
     # chain stages in the labs' energy order (calm .. energetic, ORD_A..ORD_D in ChainLab2D)
-    "chainAP": [None, "polar unwrap", "Droste zoom", "hyperbolic Poincare tiling", "log-polar spiral", "rotating Riemann sphere", "complex exponential",
+    "chainAP": [None, "polar unwrap", "Farris wallpaper", "Droste zoom", "Escher spiral Droste", "hyperbolic Poincare tiling", "hyperbolic band", "log-polar spiral", "rotating Riemann sphere", "complex exponential",
                 "bipolar stream", "complex sine", "circle inversion", "Moebius stream", "loxodromic stream", "kaleidoscope", "tunnel"],
     "chainBP": [None, "mirror line", "p4m lattice", "kaleidoscope", "p6m lattice", "iterated fold"],
     "chainCP": [None, "lens", "blossom", "Joukowski map", "spiral", "complex square", "inversion", "kaleidoscope", "tunnel"],
@@ -40,8 +40,8 @@ def pick(x, n):
 def describe(v, dim):
     parts = []
     if dim == "3D":
-        parts.append("%s of %s with %s" % (CLASSES["spaceP"][pick(v["spaceP"], 5)], CLASSES["bodyP"][pick(v["bodyP"], 7)],
-                                          CLASSES["coreP"][pick(v["coreP"], 6)]))
+        parts.append("%s of %s with %s" % (CLASSES["spaceP"][pick(v["spaceP"], 8)], CLASSES["bodyP"][pick(v["bodyP"], 7)],
+                                          CLASSES["coreP"][pick(v["coreP"], 9)]))
     stages = [CLASSES[k][pick(v[k], len(CLASSES[k]))] for k in ["chainAP", "chainBP", "chainCP", "chainDP"]]
     parts.append({"3D": "coloured by ", "Tunnel": "a relief tunnel of "}.get(dim, "") + " -> ".join(s for s in stages if s))
     mp = v["morphP"]

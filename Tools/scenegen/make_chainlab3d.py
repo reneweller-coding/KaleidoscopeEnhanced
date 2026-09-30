@@ -10,9 +10,9 @@ HEAD = r'''//@doc
  * @brief CHAIN LAB 3D: the 3D chain laboratory -- every start rolls a new
  * raymarched world from three classes of continuous space transforms: a space
  * (mirrored lattice, polar ring tunnel, twisted lattice, octahedral lattice,
- * turning lattice, helix, hexagonal lattice), a fold core (none, tetrahedral KIFS, octahedral KIFS, a
+ * turning lattice, helix, hexagonal lattice, a lattice turned in 4D), a fold core (none, tetrahedral KIFS, octahedral KIFS, a
  * sphere-inversion box fold, plane folds, Menger sponge,
- * Kleinian fold) and an end body (block, ball, torus, gyroid
+ * Kleinian fold, icosahedral KIFS, polyhedral kaleidoscope) and an end body (block, ball, torus, gyroid
  * membrane, cross, Schwarz P and D minimal surfaces).  The surfaces are coloured by a rolled 2D chain of the
  * 2D chain lab (global map, symmetry, second map, warp) projected
  * triplanarly, with a colour field that follows the chain and wanders with the
@@ -59,8 +59,8 @@ vec3 fHexXY(vec3 p, float cell)
 // (if-chains, not const arrays: NVIDIA returned entry 0 for three arrays
 // indexed in one function -- the body never changed):
 // the music's energy picks the region of the world too.
-int ordsp(int i) { if (i == 0) return 0; if (i == 1) return 3; if (i == 2) return 6; if (i == 3) return 4; if (i == 4) return 2; if (i == 5) return 5; return 1; }   // lattice, octahedral lattice, hexagons, turning, twisted, helix, polar ring tunnel
-int ordco(int i) { if (i == 0) return 0; if (i == 1) return 4; if (i == 2) return 3; if (i == 3) return 6; if (i == 4) return 1; if (i == 5) return 2; return 5; }   // none, plane folds, sphere-inversion box, Kleinian, tetra KIFS, octa KIFS, Menger
+int ordsp(int i) { if (i == 0) return 0; if (i == 1) return 3; if (i == 2) return 6; if (i == 3) return 7; if (i == 4) return 4; if (i == 5) return 2; if (i == 6) return 5; return 1; }   // lattice, octahedral lattice, hexagons, 4D-rotated lattice, turning, twisted, helix, polar ring tunnel
+int ordco(int i) { if (i == 0) return 0; if (i == 1) return 4; if (i == 2) return 8; if (i == 3) return 3; if (i == 4) return 6; if (i == 5) return 1; if (i == 6) return 7; if (i == 7) return 2; return 5; }   // none, plane folds, polyhedral kaleidoscope, sphere-inversion box, Kleinian, tetra KIFS, icosa KIFS, octa KIFS, Menger
 int ordbo(int i) { if (i == 0) return 1; if (i == 1) return 2; if (i == 2) return 3; if (i == 3) return 5; if (i == 4) return 6; if (i == 5) return 0; return 4; }   // balls, tori, gyroid, Schwarz P, Schwarz D, blocks, crosses
 // The app walks the structure too (EffectShader::stepChainWalk): (shown, target, fade).
 uniform vec3 walkSpace, walkCore, walkBody;
@@ -69,8 +69,8 @@ uniform vec3 walkSpace, walkCore, walkBody;
 float fieldK(vec3 p, float xs, float xc, float xb)
 {
     gDR = 1.0;
-    int ks = ordsp(pickStage(xs, 7)); float vs = subVar(xs, 7);
-    int kc = ordco(pickStage(xc, 7)); float vc = subVar(xc, 7);
+    int ks = ordsp(pickStage(xs, 8)); float vs = subVar(xs, 8);
+    int kc = ordco(pickStage(xc, 9)); float vc = subVar(xc, 9);
     int kb = ordbo(pickStage(xb, 7)); float vb = subVar(xb, 7);
     vec3 q;
     if (ks == 0) q = fRepeat(p, vec3(1.2 + 0.4 * vs));
@@ -81,7 +81,8 @@ float fieldK(vec3 p, float xs, float xc, float xb)
     else if (ks == 5) {                                     // helix: a ring of blocks wound along the flight (a spiral staircase)
         q = fPolarZ(fTwistZ(p, 0.3 + 0.2 * vs), 5.0 + 2.0 * floor(vs * 2.99)); q.x -= 2.0; q = zRepeat(q, 0.7);
     }
-    else q = zRepeat(fHexXY(p, 2.2 + 0.6 * vs), 1.2);        // hexagonal lattice: a honeycomb of pillars
+    else if (ks == 6) q = zRepeat(fHexXY(p, 2.2 + 0.6 * vs), 1.2);
+    else q = f4DLattice(p, 1.3 + 0.3 * vs, 0.35 * sin(gT * 0.04) + gRot * 0.3, 0.25 * sin(gT * 0.031 + 1.0), 0.6 * sin(gT * 0.023));   // 4D-rotated lattice        // hexagonal lattice: a honeycomb of pillars
     float bs = 1.0;                                         // body size in the core's space
     if (kc == 1) {
         for (int i = 0; i < 3; ++i) { q = fTetra(q); q = fRot(q, vec3(1.0, 1.0, 0.0), gRot * 0.5 + 0.3 * vc); q = fScale(q, 1.7, vec3(0.45)); }
@@ -114,6 +115,16 @@ float fieldK(vec3 p, float xs, float xc, float xb)
             float k = max((1.05 + 0.3 * vc) / max(dot(q, q), 1e-4), 1.0);
             q *= k; gDR *= k;
         }
+        bs = 0.7;
+    }
+    else if (kc == 7) {
+        // icosahedral KIFS (Knighty): the icosahedral fold, a turn, scale 2
+        for (int i = 0; i < 3; ++i) { q = fPoly(q, 5.0); q = fRot(q, vec3(1.0, 1.0, 1.0), gRot * 0.4 + 0.3 * vc); q = fScale(q, 1.9, vec3(0.55, 0.3, 0.9)); }
+        bs = 1.2;
+    } else if (kc == 8) {
+        // polyhedral kaleidoscope: one polyhedral fold (tetra / octa / icosa by the
+        // sub-variant) around each lattice cell, the body pushed off the axis
+        q = fPoly(q, 3.0 + floor(vc * 2.99)); q.z -= 0.35;
         bs = 0.7;
     }
     gP = q;
