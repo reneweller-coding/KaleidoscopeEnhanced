@@ -1056,3 +1056,6 @@ TextureMitosisField	7	5	3	3	6	6	6
 TextureFlipDisc	3	4	8	5	6	5	6
 TextureRippleInterference	8	5	3	4	5	7	6
 TextureHeatGlowMetal	4	5	6	6	5	5	6
+WaterfallTunnel	6	7	7	5	7	5	7
+DoyleSpiralTexture	6	6	6	4	8	8	8
+TextureFanFold	6	4	4	5	5	7	5
