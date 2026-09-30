@@ -2089,12 +2089,6 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\\Scene2D\\MusicalFountainShow.frag" type="normal" mood="bright,aggressive" probability="0.45" complexity="3">
-    <rig preset="flat"/>
-    <float name="jetsP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader file="..\\Scene2D\\DiscoFloorTiles.frag" type="normal" mood="bright,aggressive,psychedelic" probability="0.45" complexity="3">
     <rig preset="flat"/>
     <float name="patternP" minValue="0" maxValue="1"></float>
@@ -3117,6 +3111,14 @@
     <float name="cellP" minValue="0" maxValue="1"></float>
     <float name="lineP" minValue="0" maxValue="1"></float>
     <float name="photoP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\ConcentricPhoto.frag" type="normal" mood="psychedelic,calm" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="centreP" minValue="0" maxValue="1"></float>
+    <float name="contrastP" minValue="0" maxValue="1"></float>
+    <float name="zoomP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
