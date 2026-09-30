@@ -1023,3 +1023,6 @@ MilkDyeBurst	5	3	4	2	5	6	5
 TextureOpWaves	3	4	7	6	8	8	6
 TextureRiverDelta	8	6	2	4	3	7	6
 TextureLatticeTunnel	3	7	8	6	7	4	7
+TextureRibbonVortex	4	6	7	5	8	6	7
+TextureMarbleFlow	8	4	2	5	4	8	6
+TextureGlowVines	6	5	4	5	5	5	5
