@@ -74,6 +74,8 @@ def rule_space(m, h):       return "space" in m and "aggressive" not in m
 # brightness -- reported three times before the cause was this line.
 TIMING = {
     "SpaceAmbient": (55, 150, 22, 45),
+    # One chain lab walking with the music carries a long stretch on its own.
+    "Kettenlabor": (600, 1800, 15, 30),
     # Review bench: the photograph must hold still while a scene is judged.
     # 45-60 s solo = one photo lives ~6-7 scenes of the walk; a 15-25 s fade
     # is below the threshold of notice while a scene is on trial.
@@ -356,6 +358,12 @@ def rule_modified(m, h):
 # transition carries that tag -- filtering overlays by it would leave the
 # preset with FxPlain and Crossfade alone.  Its overlays therefore use the
 # ambient rule: calm or dreamy, never aggressive.
+CHAIN_LABS = ("ChainLab2D", "ChainLab3D", "ChainLabTunnel")
+def rule_chainlab(m, h):    return any(("%s.frag" % n) in h for n in CHAIN_LABS)
+def rule_none(m, h):        return False
+# Knob ranges a preset narrows for its scenes: in Kettenlabor every start walks.
+KNOB_RANGES = {"Kettenlabor": {"morphP": ("0.5", "1")}}
+
 GENRES = [
     ("Ambient",     rule_ambient,     False),
     ("Club",        rule_club,        False),
@@ -364,6 +372,7 @@ GENRES = [
     ("Galerie",     rule_galerie,     False),
     ("SpaceAmbient", rule_space,      False, rule_ambient),
     ("Allround",    rule_all,         False),
+    ("Kettenlabor", rule_chainlab,    False, rule_none),
     ("TestAlle",    rule_all,         True),
     ("TestModified", rule_modified,   True),
     ("TestNeu",      rule_recent,     True),
@@ -525,6 +534,9 @@ for entry in GENRES:
                 and fit[b[1]][FIT_COLUMN[name]] <= GRADE[name][0]):
             blk = blk.replace("<TextureShader ", '<TextureShader grade="%s" ' % GRADE[name][1], 1)
             graded += 1
+        for knob, (lo, hi) in KNOB_RANGES.get(name, {}).items():
+            blk = re.sub(r'(<float name="%s") minValue="[^"]*" maxValue="[^"]*"' % knob,
+                         r'\1 minValue="%s" maxValue="%s"' % (lo, hi), blk)
         out.append(blk)
     if graded:
         print("%-12s %3d scenes wear a colour grade (%s)" % (name, graded, GRADE[name][1]))
