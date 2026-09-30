@@ -32,6 +32,7 @@ uniform float audioAdvance;
 uniform float audioLevel;
 uniform float audioValence;
 uniform float audioChromaHue;
+uniform float audioPhase;
 uniform float audioSpread;
 uniform float audioBass;
 uniform float audioKick;
@@ -152,6 +153,23 @@ float sdSeg(vec2 p, vec2 a, vec2 b)
     float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
     return length(pa - ba * h);
 }
+// The photo read through a turning kaleidoscope -- the trick of the original
+// Kaleidoscope/Tunnel scenes: uv is folded into mirrored wedges around a
+// slowly wandering centre and turned with time and the integrated audio
+// phase, so the texture itself keeps changing (detailed, continuous, never
+// repeating).  The fold is continuous at every wedge border and at the atan
+// cut (sides is a whole number); the explicit mip level avoids seams.
+vec2 kaleidoUV(vec2 uv, float sides)
+{
+    vec2 c = vec2(0.5) + 0.2 * vec2(sin(0.0107 * sceneTime), cos(0.0131 * sceneTime));
+    vec2 d = uv - c;
+    float r = length(d);
+    float sec = 6.2831853 / sides;
+    float a = abs(mod(atan(d.y, d.x), sec) - 0.5 * sec);
+    a += 0.03 * sceneTime + 0.25 * audioPhase;
+    return c + r * vec2(cos(a), sin(a));
+}
+vec3 imgK(vec2 uv, float lod) { return imgLod(kaleidoUV(uv, 6.0), lod); }
 // Centred coordinates: y in -0.5..0.5, x scaled by the aspect.
 vec2 screenP() { return (gl_FragCoord.xy / resolution - 0.5) * vec2(resolution.x / resolution.y, 1.0); }
 // House finish: loudness brightness and the soft highlight roll-off.
@@ -167,7 +185,7 @@ float gT;
 float heightAt(vec2 w)
 {
     vec2 uv = w * 0.6 + 0.5 + vec2(0.004, 0.002) * sceneTime;
-    float h = luma(imgLod(uv, 3.0));
+    float h = luma(imgK(uv, 3.0));
     h += clamp(waveP, 0.0, 1.0) * 0.25 * sin(dot(w, vec2(3.0, 1.7)) - gT) * sin(dot(w, vec2(-1.3, 2.4)) + gT * 0.7);
     return h;
 }
@@ -194,7 +212,7 @@ void main()
     float mode = clamp(audioMode, 0.0, 1.0);
     vec3 metal = mix(vec3(0.75, 0.78, 0.82), vec3(0.85, 0.65, 0.35), mode);
     vec2 uvc = cid / S * 0.6 + 0.5 + vec2(0.004, 0.002) * sceneTime;
-    vec3 tint = mix(vec3(1.0), imgLod(uvc, 2.0) * 1.4 + 0.2, clamp(tintP, 0.0, 1.0));
+    vec3 tint = mix(vec3(1.0), imgK(uvc, 2.0) * 1.4 + 0.2, clamp(tintP, 0.0, 1.0));
     // Pin head dome shading.
     float rr = length(l) / 0.42;
     float px = S / resolution.y * 2.0;
@@ -216,7 +234,7 @@ void main()
     vec3 bed = vec3(0.03, 0.03, 0.035) + metal * 0.08 * h;
     vec3 col = mix(bed, headC * shade, head);
     // Faint glow at the tallest pins.
-    vec3 gc = glowColour(imgLod(uvc, 5.0), cid * 0.02, hueP * 0.159);
+    vec3 gc = glowColour(imgK(uvc, 5.0), cid * 0.02, hueP * 0.159);
     col += gc * head * smoothstep(0.75, 1.0, h) * 0.15;
     finish(col);
 }

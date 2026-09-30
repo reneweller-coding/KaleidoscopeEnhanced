@@ -32,6 +32,7 @@ uniform float audioAdvance;
 uniform float audioLevel;
 uniform float audioValence;
 uniform float audioChromaHue;
+uniform float audioPhase;
 uniform float audioSpread;
 uniform float audioBass;
 uniform float audioMode;
@@ -152,6 +153,23 @@ float sdSeg(vec2 p, vec2 a, vec2 b)
     float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
     return length(pa - ba * h);
 }
+// The photo read through a turning kaleidoscope -- the trick of the original
+// Kaleidoscope/Tunnel scenes: uv is folded into mirrored wedges around a
+// slowly wandering centre and turned with time and the integrated audio
+// phase, so the texture itself keeps changing (detailed, continuous, never
+// repeating).  The fold is continuous at every wedge border and at the atan
+// cut (sides is a whole number); the explicit mip level avoids seams.
+vec2 kaleidoUV(vec2 uv, float sides)
+{
+    vec2 c = vec2(0.5) + 0.2 * vec2(sin(0.0107 * sceneTime), cos(0.0131 * sceneTime));
+    vec2 d = uv - c;
+    float r = length(d);
+    float sec = 6.2831853 / sides;
+    float a = abs(mod(atan(d.y, d.x), sec) - 0.5 * sec);
+    a += 0.03 * sceneTime + 0.25 * audioPhase;
+    return c + r * vec2(cos(a), sin(a));
+}
+vec3 imgK(vec2 uv, float lod) { return imgLod(kaleidoUV(uv, 6.0), lod); }
 // Centred coordinates: y in -0.5..0.5, x scaled by the aspect.
 vec2 screenP() { return (gl_FragCoord.xy / resolution - 0.5) * vec2(resolution.x / resolution.y, 1.0); }
 // House finish: loudness brightness and the soft highlight roll-off.
@@ -181,7 +199,7 @@ void main()
     vec2 off = vec2(fbm3(q + band * 7.0) - 0.5, fbm3(q * 1.3 + 4.0 + band) - 0.5) * (1.0 + rough);
     off += 0.5 * vec2(noise2(q * 3.0) - 0.5, 0.0) * rough;
     vec2 uv = p * 0.5 + 0.5 + off * str * 20.0;
-    vec3 ph = imgLod(uv, 0.5 + 1.5 * (1.0 - clamp(photoP, 0.0, 1.0)));
+    vec3 ph = imgK(uv, 0.5 + 1.5 * (1.0 - clamp(photoP, 0.0, 1.0)));
     vec3 fireC = mix(vec3(0.2, 0.45, 1.0), vec3(1.0, 0.5, 0.12), mode);
     vec3 col = ph * (0.8 + (0.2 + 0.4 * swell) * exp(-fy * 3.0) * fireC);
     // Flames: flickering tongues along the band's bottom.

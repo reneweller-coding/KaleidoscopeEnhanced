@@ -2784,14 +2784,6 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\\Scene2D\\TextureNeonRain.frag" type="normal" mood="dark,energetic" probability="0.45" complexity="2">
-    <rig preset="flat"/>
-    <float name="slantP" minValue="0" maxValue="1"></float>
-    <float name="layerP" minValue="0" maxValue="1"></float>
-    <float name="glowP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader file="..\\Scene2D\\TextureContourNeonMap.frag" type="normal" mood="psychedelic,dark" probability="0.45" complexity="2">
     <rig preset="flat"/>
     <float name="levelP" minValue="0" maxValue="1"></float>
@@ -3045,6 +3037,14 @@
     <float name="arcP" minValue="0" maxValue="1"></float>
     <float name="bandP" minValue="0" maxValue="1"></float>
     <float name="photoP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureNeonRain.frag" type="normal" mood="dark,psychedelic" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="slantP" minValue="0" maxValue="1"></float>
+    <float name="layerP" minValue="0" maxValue="1"></float>
+    <float name="glowP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>

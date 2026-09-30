@@ -32,6 +32,7 @@ uniform float audioAdvance;
 uniform float audioLevel;
 uniform float audioValence;
 uniform float audioChromaHue;
+uniform float audioPhase;
 uniform float audioSpread;
 uniform float audioKick;
 uniform float audioMode;
@@ -152,6 +153,23 @@ float sdSeg(vec2 p, vec2 a, vec2 b)
     float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
     return length(pa - ba * h);
 }
+// The photo read through a turning kaleidoscope -- the trick of the original
+// Kaleidoscope/Tunnel scenes: uv is folded into mirrored wedges around a
+// slowly wandering centre and turned with time and the integrated audio
+// phase, so the texture itself keeps changing (detailed, continuous, never
+// repeating).  The fold is continuous at every wedge border and at the atan
+// cut (sides is a whole number); the explicit mip level avoids seams.
+vec2 kaleidoUV(vec2 uv, float sides)
+{
+    vec2 c = vec2(0.5) + 0.2 * vec2(sin(0.0107 * sceneTime), cos(0.0131 * sceneTime));
+    vec2 d = uv - c;
+    float r = length(d);
+    float sec = 6.2831853 / sides;
+    float a = abs(mod(atan(d.y, d.x), sec) - 0.5 * sec);
+    a += 0.03 * sceneTime + 0.25 * audioPhase;
+    return c + r * vec2(cos(a), sin(a));
+}
+vec3 imgK(vec2 uv, float lod) { return imgLod(kaleidoUV(uv, 6.0), lod); }
 // Centred coordinates: y in -0.5..0.5, x scaled by the aspect.
 vec2 screenP() { return (gl_FragCoord.xy / resolution - 0.5) * vec2(resolution.x / resolution.y, 1.0); }
 // House finish: loudness brightness and the soft highlight roll-off.
@@ -197,7 +215,7 @@ void main()
     // Enamel inside: the photo, turning with the gear.
     vec2 luv = rot2(-(dir * T / teeth * 6.0)) * l;
     vec2 uv = (gi + 0.5) / S * 0.6 + 0.5 + luv * 0.3;
-    vec3 ph = imgLod(uv, 1.0);
+    vec3 ph = imgK(uv, 1.0);
     vec3 metal = mix(vec3(0.6, 0.62, 0.66), vec3(0.85, 0.62, 0.3), mode);
     vec3 enamel = mix(metal * (0.5 + 0.6 * luma(ph)), glowColour(ph, gi, hueP * 0.159) * (0.5 + 0.5 * luma(ph)), clamp(enamelP, 0.0, 1.0) * (0.5 + 0.5 * swell));
     // The windows between the spokes show the enamel; the solid parts are metal.

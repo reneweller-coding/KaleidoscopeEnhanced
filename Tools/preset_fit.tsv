@@ -1033,7 +1033,7 @@ TextureSuminagashiDrops	8	4	2	4	5	9	7
 TextureTelescopeRings	4	7	7	6	8	6	8
 TextureDelaunayLightNet	6	8	6	5	5	5	6
 TexturePineConeSpirals	6	6	6	4	8	8	7
-TexturePinArt	5	4	4	5	3	6	5
+TexturePinArt	5	4	5	5	5	6	6
 TextureGirihChambers	5	4	5	3	8	8	7
 DelaunayDiscs	4	4	6	3	7	9	7
 TextureLightShafts	8	7	4	6	4	6	6
@@ -1058,7 +1058,7 @@ TextureRippleInterference	8	5	3	4	5	7	6
 TextureHeatGlowMetal	4	5	6	6	5	5	6
 WaterfallTunnel	6	7	7	5	7	5	7
 DoyleSpiralTexture	6	6	6	4	8	8	8
-TextureFanFold	6	4	4	5	5	7	5
+TextureFanFold	6	5	5	5	7	7	6
 StarStreakTunnel	3	8	8	5	7	3	7
 TextureTumblingBlocks	5	4	5	4	7	8	7
 PhotoWovenThreads	6	3	3	4	3	7	5
@@ -1067,7 +1067,7 @@ TextureCoilSpring	4	7	7	5	7	5	7
 TextureBokehStreams	7	6	4	6	4	5	5
 TextureInfiniteRosettes	5	7	7	4	9	7	8
 TextureAdvectionSilk	8	5	3	4	6	8	7
-TextureNeonRain	4	5	7	7	5	4	5
+TextureNeonRain	4	5	7	7	7	4	6
 TextureContourNeonMap	5	6	6	5	7	6	6
 TextureFireFront	4	5	6	6	5	6	7
 TextureMoldBloom	6	3	3	4	5	7	6
@@ -1102,7 +1102,7 @@ TextureCelticKnotwork	5	4	5	4	6	7	6
 TextureRingGears	4	4	6	4	5	6	5
 TextureSphericalTiling	4	5	7	4	6	5	6
 TexturePetalFold	7	3	3	3	5	7	6
-TextureTidePools	7	4	2	4	4	6	5
+TextureTidePools	7	5	3	4	6	6	6
 TextureGalaxyFlight	7	9	4	5	7	5	7
 TextureUnderwaterHaze	9	7	2	5	4	6	6
 TextureFloatingLights	8	6	3	6	3	5	6
@@ -1120,13 +1120,13 @@ BoogieWoogieGrid	4	3	7	3	5	9	7
 KlineBlackStrokes	5	4	4	8	3	9	6
 TwomblyScribble	7	3	2	5	3	8	5
 HartungScratches	5	5	5	7	5	8	6
-TextureGoldLeafBurnish	6	3	3	4	4	7	5
+TextureGoldLeafBurnish	6	4	4	4	6	7	6
 TextureMurmurationShape	8	5	3	5	4	7	6
 TextureRainTrickle	8	4	2	7	3	6	5
 MitchellStrokes	4	3	6	3	6	8	6
 TexturePlanktonDrift	8	7	3	5	6	6	6
 TextureOilSlickSheen	5	5	6	6	7	5	5
-TextureIceGlaze	7	5	3	5	4	6	5
+TextureIceGlaze	7	5	3	5	6	6	6
 TextureMicaGlitter	6	5	4	6	5	5	5
 IkedaDataStreams	2	4	8	7	5	7	6
 ThermochromicSheet	4	3	6	3	8	5	6
@@ -1149,7 +1149,7 @@ SubstrateCracks	6	4	4	4	4	8	6
 OilWheelMacro	6	5	5	4	8	7	7
 MeltingCrayonRainbow	4	2	5	3	5	5	4
 TextureChromatographyRings	7	3	3	3	6	7	6
-TextureBatikCrackle	6	3	3	4	4	7	5
+TextureBatikCrackle	6	3	4	4	6	7	6
 CoffeeRingStains	6	2	2	4	3	7	5
 TextureSatelliteClouds	7	7	2	4	4	5	5
 LiquidMarbleSpheres	6	5	4	4	5	6	6
