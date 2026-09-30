@@ -1217,14 +1217,6 @@
     <expr name="hueP" formula="chromaHue + seed2*6.28"/>
     <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\Scene2D\InfinitePhotoZoomAbyss.frag" type="normal" probability="0.5" mood="bright,psychedelic" complexity="3">
-    <rig preset="flat"/>
-    <float name="speedP"  minValue="0.5" maxValue="2.0"></float>
-    <float name="spiralP" minValue="0.5" maxValue="2.0"></float>
-    <float name="zoomP"   minValue="0.5" maxValue="2.0"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP"    minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader file="..\Scene2D\FluidPhotoMarblingEbru.frag" type="normal" probability="0.5" mood="calm,bright,dreamy" complexity="3">
     <rig preset="flat"/>
     <float name="rakeP"  minValue="0.5" maxValue="2.0"></float>
@@ -3259,6 +3251,14 @@
     <float name="bloomP" minValue="0" maxValue="1"></float>
     <float name="splitP" minValue="0" maxValue="1"></float>
     <float name="fabricP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureNewtonRings.frag" type="normal" mood="psychedelic,calm" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="contactP" minValue="0" maxValue="1"></float>
+    <float name="orderP" minValue="0" maxValue="1"></float>
+    <float name="photoP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
