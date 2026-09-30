@@ -1299,13 +1299,6 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\Scene2D\ChainmailRingRipple.frag" type="normal" mood="dark,aggressive,psychedelic" probability="0.45" complexity="4">
-    <rig preset="flat"/>
-    <float name="gaugeP" minValue="0" maxValue="1"></float>
-    <float name="weaveP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader file="..\\Scene2D\\InkWater.frag" type="normal" probability="0.4" mood="calm" complexity="2">
     <rig preset="flat"/>
     <expr name="inkHueP" formula="chromaHue + 0.3*sin(0.07*time)"/>
@@ -3575,14 +3568,6 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\\Scene2D\\TextureRainTrickle.frag" type="normal" mood="calm,dark" probability="0.45" complexity="2">
-    <rig preset="flat"/>
-    <float name="rivuletP" minValue="0" maxValue="1"></float>
-    <float name="beadP" minValue="0" maxValue="1"></float>
-    <float name="clarityP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader file="..\\Scene2D\\TexturePlanktonDrift.frag" type="normal" mood="calm,dark" probability="0.45" complexity="2">
     <rig preset="flat"/>
     <float name="sizeP" minValue="0" maxValue="1"></float>
@@ -3700,6 +3685,22 @@
     <float name="quakeP" minValue="0" maxValue="1"></float>
     <float name="freqP" minValue="0" maxValue="1"></float>
     <float name="layerP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TwomblyScribble.frag" type="normal" mood="calm,bright" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="rowP" minValue="0" maxValue="1"></float>
+    <float name="loopP" minValue="0" maxValue="1"></float>
+    <float name="lineP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureRainTrickle.frag" type="normal" mood="calm,dark" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="rivuletP" minValue="0" maxValue="1"></float>
+    <float name="beadP" minValue="0" maxValue="1"></float>
+    <float name="clarityP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>

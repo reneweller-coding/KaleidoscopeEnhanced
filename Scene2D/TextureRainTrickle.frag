@@ -32,6 +32,7 @@ uniform float audioAdvance;
 uniform float audioLevel;
 uniform float audioValence;
 uniform float audioChromaHue;
+uniform float audioPhase;
 uniform float audioSpread;
 uniform float audioKick;
 uniform float audioMode;
@@ -152,6 +153,58 @@ float sdSeg(vec2 p, vec2 a, vec2 b)
     float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
     return length(pa - ba * h);
 }
+// The photo read through a turning kaleidoscope -- the trick of the original
+// Kaleidoscope/Tunnel scenes: uv is folded into mirrored wedges around a
+// slowly wandering centre and turned with time and the integrated audio
+// phase, so the texture itself keeps changing (detailed, continuous, never
+// repeating).  The fold is continuous at every wedge border and at the atan
+// cut (sides is a whole number); the explicit mip level avoids seams.
+vec2 kaleidoUV(vec2 uv, float sides)
+{
+    vec2 c = vec2(0.5) + 0.2 * vec2(sin(0.0107 * sceneTime), cos(0.0131 * sceneTime));
+    vec2 d = uv - c;
+    float r = length(d);
+    float sec = 6.2831853 / sides;
+    float a = abs(mod(atan(d.y, d.x), sec) - 0.5 * sec);
+    a += 0.03 * sceneTime + 0.25 * audioPhase;
+    return c + r * vec2(cos(a), sin(a));
+}
+vec3 imgK(vec2 uv, float lod) { return imgLod(kaleidoUV(uv, 6.0), lod); }
+// Other channels than RGB: the photo's structure, read through the kaleidoscope.
+// Gradient / edges / Laplacian are rotation invariant in magnitude, so they
+// stay seamless across the mirror folds (direction-based colours would not).
+vec2 imgKGrad(vec2 uv, float lod)
+{
+    float e = exp2(lod) / 1024.0 + 0.001;
+    return vec2(luma(imgK(uv + vec2(e, 0.0), lod)) - luma(imgK(uv - vec2(e, 0.0), lod)),
+                luma(imgK(uv + vec2(0.0, e), lod)) - luma(imgK(uv - vec2(0.0, e), lod))) / (2.0 * e);
+}
+float imgKEdge(vec2 uv, float lod) { return length(imgKGrad(uv, lod)) * (exp2(lod) / 1024.0 + 0.001) * 6.0; }
+float imgKLap(vec2 uv, float lod)
+{
+    float e = exp2(lod) / 1024.0 + 0.001;
+    float c = luma(imgK(uv, lod));
+    return (luma(imgK(uv + vec2(e, 0.0), lod)) + luma(imgK(uv - vec2(e, 0.0), lod)) +
+            luma(imgK(uv + vec2(0.0, e), lod)) + luma(imgK(uv - vec2(0.0, e), lod)) - 4.0 * c) * 4.0;
+}
+// Embossed relief of the kaleidoscoped photo, lit from a direction.
+float imgKRelief(vec2 uv, float lod, vec2 lightDir)
+{
+    vec2 g = imgKGrad(uv, lod) * (exp2(lod) / 1024.0 + 0.001) * 8.0;
+    return clamp(0.5 + dot(g, normalize(lightDir)), 0.0, 1.0);
+}
+// A second continuous transform: the photo wound into a log-polar spiral that
+// zooms forever (Droste-like).  angle/pi spans one mirror period, so the atan
+// cut is seamless; the zoom runs on integrated time, never jumps.
+vec2 spiralUV(vec2 uv, float arms, float zoom)
+{
+    vec2 d = uv - 0.5;
+    float r = max(length(d), 1e-4);
+    float a = atan(d.y, d.x);
+    // Both coordinates jump by whole mirror periods (2) at the cut: the shear
+    // a/pi jumps by 2, and a/pi*arms/2 by arms (arms must be even).
+    return vec2(log(r) * 0.5 - zoom + a / 3.14159265, a / 3.14159265 * arms * 0.5);
+}
 // Centred coordinates: y in -0.5..0.5, x scaled by the aspect.
 vec2 screenP() { return (gl_FragCoord.xy / resolution - 0.5) * vec2(resolution.x / resolution.y, 1.0); }
 // House finish: loudness brightness and the soft highlight roll-off.
@@ -172,7 +225,7 @@ void main()
     float mode = clamp(audioMode, 0.0, 1.0);
     vec2 uv = p * 0.5 + 0.5;
     vec3 tint = mix(vec3(0.8, 0.9, 1.1), vec3(1.1, 0.9, 0.75), mode);
-    vec3 outside = imgLod(uv, 3.5 + 1.5 * swell) * tint;
+    vec3 outside = imgK(uv, 3.5 + 1.5 * swell) * tint;
     vec3 col = outside * 0.8;
     float T = 0.15 * sceneTime + 1.0 * audioAdvance;
     // Rivulets: meandering vertical channels.
@@ -206,7 +259,7 @@ void main()
     }
     // Through the water: the scene sharp, flipped, brighter.
     float clar = clamp(clarityP, 0.0, 1.0);
-    vec3 sharp = imgLod(uv - lensOff * 0.03, 1.5 - clar) * tint * 1.3;
+    vec3 sharp = imgK(uv - lensOff * 0.03, 1.5 - clar) * tint * 1.3;
     col = mix(col, sharp, max(chan, head));
     // Head highlight.
     col += vec3(1.0) * smoothstep(0.35, 0.1, length(lensOff - vec2(-0.35, 0.35))) * head * (0.4 + 1.0 * kick);
@@ -218,7 +271,7 @@ void main()
     float br = 0.1 + 0.2 * hash21(gi + 1.0);
     float bd = length(fract(g) - bc) / br;
     float bead = step(hash21(gi + 2.0), 0.3 + 0.5 * clamp(beadP, 0.0, 1.0)) * smoothstep(1.0, 0.8, bd) * (1.0 - max(chan, head));
-    vec3 bv = imgLod(uv - (fract(g) - bc) * 0.02, 2.0) * tint * 1.2;
+    vec3 bv = imgK(uv - (fract(g) - bc) * 0.02, 2.0) * tint * 1.2;
     col = mix(col, bv, bead * 0.7);
     col += vec3(1.0) * bead * smoothstep(0.4, 0.1, length((fract(g) - bc) / br - vec2(-0.3, 0.3))) * (0.15 + 0.6 * hi);
     col = mix(col, col * glowColour(outside, p, hueP * 0.159) * 1.2, 0.05);

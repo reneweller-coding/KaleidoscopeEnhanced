@@ -9964,14 +9964,6 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\\Scene2D\\SaltWatercolorBlooms.frag" type="normal" mood="calm,bright" probability="0.45" complexity="2">
-    <rig preset="flat"/>
-    <float name="saltP" minValue="0" maxValue="1"></float>
-    <float name="washP" minValue="0" maxValue="1"></float>
-    <float name="photoP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader file="..\\Scene2D\\TextureNeonCalligraphy.frag" type="normal" mood="energetic,psychedelic" probability="0.45" complexity="2">
     <rig preset="flat"/>
     <float name="strokeP" minValue="0" maxValue="1"></float>
@@ -10012,14 +10004,6 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\\Scene2D\\TwomblyScribble.frag" type="normal" mood="calm,bright" probability="0.45" complexity="2">
-    <rig preset="flat"/>
-    <float name="rowP" minValue="0" maxValue="1"></float>
-    <float name="loopP" minValue="0" maxValue="1"></float>
-    <float name="lineP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader file="..\\Scene2D\\HartungScratches.frag" type="normal" mood="dark,energetic" probability="0.45" complexity="2">
     <rig preset="flat"/>
     <float name="sheafP" minValue="0" maxValue="1"></float>
@@ -10033,14 +10017,6 @@
     <float name="birdP" minValue="0" maxValue="1"></float>
     <float name="waveP" minValue="0" maxValue="1"></float>
     <float name="shapeP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
-  <TextureShader file="..\\Scene2D\\TextureRainTrickle.frag" type="normal" mood="calm,dark" probability="0.45" complexity="2">
-    <rig preset="flat"/>
-    <float name="rivuletP" minValue="0" maxValue="1"></float>
-    <float name="beadP" minValue="0" maxValue="1"></float>
-    <float name="clarityP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
@@ -10393,6 +10369,30 @@
     <float name="quakeP" minValue="0" maxValue="1"></float>
     <float name="freqP" minValue="0" maxValue="1"></float>
     <float name="layerP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TwomblyScribble.frag" type="normal" mood="calm,bright" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="rowP" minValue="0" maxValue="1"></float>
+    <float name="loopP" minValue="0" maxValue="1"></float>
+    <float name="lineP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\SaltWatercolorBlooms.frag" type="normal" mood="calm,psychedelic" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="saltP" minValue="0" maxValue="1"></float>
+    <float name="washP" minValue="0" maxValue="1"></float>
+    <float name="photoP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureRainTrickle.frag" type="normal" mood="calm,dark" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="rivuletP" minValue="0" maxValue="1"></float>
+    <float name="beadP" minValue="0" maxValue="1"></float>
+    <float name="clarityP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
