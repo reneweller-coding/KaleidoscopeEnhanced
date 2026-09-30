@@ -86,13 +86,18 @@ float field3(vec3 p)
 }
 vec2 chain(vec2 uv)
 {
+    gIdW = 1.0;
     uv = stageA(uv);
     uv = mirrorUV(uv);
     uv = stageB(uv);
     uv = mirrorUV(uv);
     uv = stageC(uv);
     uv = mirrorUV(uv);
-    return stageD(uv);
+    uv = stageD(uv);
+    // Never an empty chain: as the stages together approach 'none' (gIdW), a
+    // calm six-fold kaleidoscope fades in -- the bare photo is never shown.
+    if (gIdW > 0.0) uv = morphMix(uv, tKaleido(mirrorUV(uv), gCw, 6.0, gRot), gIdW);
+    return uv;
 }
 '''
 t3 = io.open(os.path.join(SP, "src", "Chain3DTwistTorus.glsl"), encoding="utf-8").read()

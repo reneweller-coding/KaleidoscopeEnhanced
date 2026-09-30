@@ -28,6 +28,7 @@
 float gT, gSpread, gRot, gMw;
 vec2 gCw, gCt;
 // The stage index and a sub-variant 0..1 from one rolled knob.
+float gIdW = 1.0;   // how much of the chain is 'none' or too weak to carry it (product over the stages)
 int pickStage(float x, int n) { return int(min(floor(clamp(x, 0.0, 1.0) * float(n)), float(n - 1))); }
 float subVar(float x, int n) { return fract(clamp(x, 0.0, 0.9999) * float(n)); }
 float evenArms(float v) { return 2.0 * (1.0 + floor(v * 3.99)); }        // 2, 4, 6, 8 (seamless spiral)
@@ -141,10 +142,11 @@ vec2 morphMix(vec2 a, vec2 b, float f) { return mix(mirrorUV(a), mirrorUV(b), f)
 vec2 stageA(vec2 uv)
 {
     int k0 = pickStage(chainAP, 12); float v0 = subVar(chainAP, 12);
-    if (!walks(1)) return stageAk(uv, k0, v0);
+    if (!walks(1)) { gIdW *= (k0 <= 0 ? 1.0 : 0.0); return stageAk(uv, k0, v0); }
     if (walkHost > 0.5 && walkAll()) {
         float f = smoothstep(0.0, 1.0, walkA.z);
         int j0 = pickStage(walkA.x, 12), j1 = pickStage(walkA.y, 12);
+        gIdW *= (j0 <= 0 ? 1.0 - f : 0.0) + (j1 <= 0 ? f : 0.0);
         if (f <= 0.0) return stageAk(uv, j0, subVar(walkA.x, 12));
         return morphMix(stageAk(uv, j0, subVar(walkA.x, 12)), stageAk(uv, j1, subVar(walkA.y, 12)), f);
     }
@@ -153,16 +155,18 @@ vec2 stageA(vec2 uv)
     walkPick(c, k0, v0, 12, 1.3, i0, w0);
     walkPick(c + 1.0, k0, v0, 12, 1.3, i1, w1);
     float f = walkFade(kf);
+    gIdW *= (i0 <= 0 ? 1.0 - f : 0.0) + (i1 <= 0 ? f : 0.0);
     if (f <= 0.0) return stageAk(uv, i0, w0);
     return morphMix(stageAk(uv, i0, w0), stageAk(uv, i1, w1), f);
 }
 vec2 stageB(vec2 uv)
 {
     int k0 = pickStage(chainBP, 6); float v0 = subVar(chainBP, 6);
-    if (!walks(2)) return stageBk(uv, k0, v0);
+    if (!walks(2)) { gIdW *= (k0 <= 1 ? 1.0 : 0.0); return stageBk(uv, k0, v0); }
     if (walkHost > 0.5 && walkAll()) {
         float f = smoothstep(0.0, 1.0, walkB.z);
         int j0 = pickStage(walkB.x, 6), j1 = pickStage(walkB.y, 6);
+        gIdW *= (j0 <= 1 ? 1.0 - f : 0.0) + (j1 <= 1 ? f : 0.0);
         if (f <= 0.0) return stageBk(uv, j0, subVar(walkB.x, 6));
         return morphMix(stageBk(uv, j0, subVar(walkB.x, 6)), stageBk(uv, j1, subVar(walkB.y, 6)), f);
     }
@@ -171,16 +175,18 @@ vec2 stageB(vec2 uv)
     walkPick(c, k0, v0, 6, 2.9, i0, w0);
     walkPick(c + 1.0, k0, v0, 6, 2.9, i1, w1);
     float f = walkFade(kf);
+    gIdW *= (i0 <= 1 ? 1.0 - f : 0.0) + (i1 <= 1 ? f : 0.0);
     if (f <= 0.0) return stageBk(uv, i0, w0);
     return morphMix(stageBk(uv, i0, w0), stageBk(uv, i1, w1), f);
 }
 vec2 stageC(vec2 uv)
 {
     int k0 = pickStage(chainCP, 8); float v0 = subVar(chainCP, 8);
-    if (!walks(3)) return stageCk(uv, k0, v0);
+    if (!walks(3)) { gIdW *= (k0 <= 1 ? 1.0 : 0.0); return stageCk(uv, k0, v0); }
     if (walkHost > 0.5 && walkAll()) {
         float f = smoothstep(0.0, 1.0, walkC.z);
         int j0 = pickStage(walkC.x, 8), j1 = pickStage(walkC.y, 8);
+        gIdW *= (j0 <= 1 ? 1.0 - f : 0.0) + (j1 <= 1 ? f : 0.0);
         if (f <= 0.0) return stageCk(uv, j0, subVar(walkC.x, 8));
         return morphMix(stageCk(uv, j0, subVar(walkC.x, 8)), stageCk(uv, j1, subVar(walkC.y, 8)), f);
     }
@@ -189,16 +195,18 @@ vec2 stageC(vec2 uv)
     walkPick(c, k0, v0, 8, 4.7, i0, w0);
     walkPick(c + 1.0, k0, v0, 8, 4.7, i1, w1);
     float f = walkFade(kf);
+    gIdW *= (i0 <= 1 ? 1.0 - f : 0.0) + (i1 <= 1 ? f : 0.0);
     if (f <= 0.0) return stageCk(uv, i0, w0);
     return morphMix(stageCk(uv, i0, w0), stageCk(uv, i1, w1), f);
 }
 vec2 stageD(vec2 uv)
 {
     int k0 = pickStage(chainDP, 6); float v0 = subVar(chainDP, 6);
-    if (!walks(4)) return stageDk(uv, k0, v0);
+    if (!walks(4)) { gIdW *= (k0 <= 2 ? 1.0 : 0.0); return stageDk(uv, k0, v0); }
     if (walkHost > 0.5 && walkAll()) {
         float f = smoothstep(0.0, 1.0, walkD.z);
         int j0 = pickStage(walkD.x, 6), j1 = pickStage(walkD.y, 6);
+        gIdW *= (j0 <= 2 ? 1.0 - f : 0.0) + (j1 <= 2 ? f : 0.0);
         if (f <= 0.0) return stageDk(uv, j0, subVar(walkD.x, 6));
         return morphMix(stageDk(uv, j0, subVar(walkD.x, 6)), stageDk(uv, j1, subVar(walkD.y, 6)), f);
     }
@@ -207,12 +215,14 @@ vec2 stageD(vec2 uv)
     walkPick(c, k0, v0, 6, 6.1, i0, w0);
     walkPick(c + 1.0, k0, v0, 6, 6.1, i1, w1);
     float f = walkFade(kf);
+    gIdW *= (i0 <= 2 ? 1.0 - f : 0.0) + (i1 <= 2 ? f : 0.0);
     if (f <= 0.0) return stageDk(uv, i0, w0);
     return morphMix(stageDk(uv, i0, w0), stageDk(uv, i1, w1), f);
 }
 vec2 chain(vec2 p)
 {
     vec2 uv = p * 0.5 + 0.5;
+    gIdW = 1.0;
     uv = stageA(uv);
     uv = mirrorUV(uv);
     uv = stageB(uv);
@@ -220,6 +230,10 @@ vec2 chain(vec2 p)
     uv = stageC(uv);
     uv = mirrorUV(uv);
     uv = stageD(uv);
+    // Never an empty chain: as the stages together approach 'none' -- or only
+    // weak classes that leave the photo nearly bare (gIdW) -- a
+    // calm six-fold kaleidoscope fades in -- the bare photo is never shown.
+    if (gIdW > 0.0) uv = morphMix(uv, tKaleido(mirrorUV(uv), gCw, 6.0, gRot), gIdW);
     return uv;
 }
 

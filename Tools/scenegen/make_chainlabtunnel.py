@@ -40,13 +40,18 @@ vec2 gCw, gCt;
 BODY = r'''
 vec2 chain(vec2 uv)
 {
+    gIdW = 1.0;
     uv = stageA(uv);
     uv = mirrorUV(uv);
     uv = stageB(uv);
     uv = mirrorUV(uv);
     uv = stageC(uv);
     uv = mirrorUV(uv);
-    return stageD(uv);
+    uv = stageD(uv);
+    // Never an empty chain: as the stages together approach 'none' (gIdW), a
+    // calm six-fold kaleidoscope fades in -- the bare photo is never shown.
+    if (gIdW > 0.0) uv = morphMix(uv, tKaleido(mirrorUV(uv), gCw, 6.0, gRot), gIdW);
+    return uv;
 }
 // The tube's axis winds slowly: the vanishing point wanders.
 vec2 axisXY(float z) { return vec2(0.35 * sin(z * 0.11) + 0.15 * sin(z * 0.27 + 1.0), 0.3 * sin(z * 0.087 + 0.6) + 0.12 * cos(z * 0.21)); }
