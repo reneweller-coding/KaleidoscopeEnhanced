@@ -243,11 +243,11 @@ void main()
         float ao = 0.45 + 0.55 * hgt;                              // the valleys of the relief lie in shade
         vec3 surf = tex * lc * (0.5 + 1.25 * diff) * ao + lc * spec * (0.15 + 0.35 * swell);
         // Glowing crests: the relief's ridges light up in the palette colour.
-        float crest = smoothstep(0.55, 0.9, hgt);
+        float crest = smoothstep(0.45, 0.85, hgt);
         float fres = pow(1.0 - abs(dot(n, -rd)), 3.0);
         vec3 glow = neonOf(field + 1e-3, 2.0) * (crest * (0.6 + 1.2 * kick) + fres * 0.5);
         float st = clamp(styleP, 0.0, 1.0);
-        vec3 sc = mix(surf + glow * 0.25 * (0.5 + kick), glow + surf * 0.35, smoothstep(0.35, 0.65, st));
+        vec3 sc = mix(surf + glow * 0.25 * (0.5 + kick), glow + surf * 0.55, smoothstep(0.35, 0.65, st));
         col = mix(fogC, sc, exp(-t * (0.07 + 0.03 * swell)));
     }
     finish(col);

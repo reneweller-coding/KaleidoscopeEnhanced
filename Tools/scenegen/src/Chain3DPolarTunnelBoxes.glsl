@@ -101,9 +101,9 @@ void main()
         float fres = pow(1.0 - abs(dot(n, -rd)), 3.0);
         vec3 surf = tex * lc * (0.35 + 0.9 * diff) * ao;
         vec3 rimC = glowColour(tex, fp.xy, hueP * 0.159);
-        vec3 rim = rimC * fres * (0.4 + 1.5 * kick) + surf * 0.15;
+        vec3 rim = rimC * fres * (0.7 + 1.5 * kick) + surf * 0.4;       // lab audit: the glow style was half as bright
         float st = clamp(styleP, 0.0, 1.0);
-        vec3 sc = mix(surf + rimC * fres * (0.15 + 0.6 * kick), rim * 1.3 + rimC * 0.05 * ao, smoothstep(0.5, 1.0, st));
+        vec3 sc = mix(surf + rimC * fres * (0.15 + 0.6 * kick), rim * 1.3 + rimC * 0.12 * ao, smoothstep(0.5, 1.0, st));
         col = mix(fogC, sc, exp(-t * (0.06 + 0.04 * swell)));
     }
     finish(col);
