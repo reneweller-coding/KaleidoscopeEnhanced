@@ -11,7 +11,7 @@ HEAD = r'''//@doc
  * raymarched world from three classes of continuous space transforms: a space
  * (mirrored lattice, polar ring tunnel, twisted lattice, octahedral lattice,
  * turning lattice), a fold core (none, tetrahedral KIFS, octahedral KIFS, a
- * sphere-inversion box fold, plane folds) and an end body (block, ball, torus, gyroid
+ * sphere-inversion box fold, plane folds, Menger sponge) and an end body (block, ball, torus, gyroid
  * membrane, cross).  The surfaces are coloured by a rolled 2D chain of the
  * 2D chain lab (global map, symmetry, second map, warp) projected
  * triplanarly, with a colour field that follows the chain and wanders with the
@@ -42,7 +42,7 @@ vec3 zRepeat(vec3 q, float c) { q.z = c * (abs(mod(q.z / c - 1.0, 4.0) - 2.0) - 
 float field3(vec3 p)
 {
     int ks = pickStage(spaceP, 5); float vs = subVar(spaceP, 5);
-    int kc = pickStage(coreP, 5);  float vc = subVar(coreP, 5);
+    int kc = pickStage(coreP, 6);  float vc = subVar(coreP, 6);
     int kb = pickStage(bodyP, 5);  float vb = subVar(bodyP, 5);
     vec3 q;
     if (ks == 0) q = fRepeat(p, vec3(1.2 + 0.4 * vs));
@@ -63,6 +63,16 @@ float field3(vec3 p)
     } else if (kc == 4) {
         q = fAbs(q); q = fRot(q, vec3(0.0, 0.0, 1.0), 0.4 * sin(gRot) + vc); q = fAbs(q) - vec3(0.25 + 0.1 * vc); q = fRot(q, vec3(1.0, 0.0, 0.0), 0.3 * sin(gT * 0.07));
         bs = 0.8;
+    } else if (kc == 5) {
+        // Menger sponge: the octahedral fold (abs + sort), scale 3 about the
+        // corner, the classic z shift; a slowly swaying axis between rounds.
+        for (int i = 0; i < 3; ++i) {
+            q = fOcta(q);
+            q = fRot(q, vec3(1.0, 1.0, 1.0), 0.12 * sin(gRot) + 0.15 * vc);
+            q = fScale(q, 3.0, vec3(2.0));
+            if (q.z < -1.0) q.z += 2.0;
+        }
+        bs = 2.6;
     }
     gP = q;
     float th = 1.0 + 0.3 * gSpread;

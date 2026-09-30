@@ -23,7 +23,7 @@ PIN = ["spaceP", "coreP", "bodyP", "chainAP", "chainBP", "chainCP", "chainDP", "
 # The stage classes as the labs define them (for the description only).
 CLASSES = {
     "spaceP": ["mirrored lattice", "polar ring tunnel", "twisted lattice", "octahedral lattice", "turning lattice"],
-    "coreP": ["no fold core", "tetrahedral KIFS", "octahedral KIFS", "sphere-inversion box fold", "plane folds"],
+    "coreP": ["no fold core", "tetrahedral KIFS", "octahedral KIFS", "sphere-inversion box fold", "plane folds", "Menger sponge"],
     "bodyP": ["blocks", "balls", "tori", "gyroid membrane", "crosses"],
     "chainAP": ["kaleidoscope", "log-polar spiral", "tunnel", "Moebius stream", "Droste zoom", "polar unwrap",
                 "complex exponential", "complex sine", "circle inversion", "hyperbolic Poincare tiling", "bipolar stream"],
@@ -40,7 +40,7 @@ def describe(v, dim):
     parts = []
     if dim == "3D":
         parts.append("%s of %s with %s" % (CLASSES["spaceP"][pick(v["spaceP"], 5)], CLASSES["bodyP"][pick(v["bodyP"], 5)],
-                                          CLASSES["coreP"][pick(v["coreP"], 5)]))
+                                          CLASSES["coreP"][pick(v["coreP"], 6)]))
     stages = [CLASSES[k][pick(v[k], len(CLASSES[k]))] for k in ["chainAP", "chainBP", "chainCP", "chainDP"]]
     parts.append({"3D": "coloured by ", "Tunnel": "a relief tunnel of "}.get(dim, "") + " -> ".join(s for s in stages if s))
     m = CLASSES["morphP"][pick(v["morphP"], 5)]

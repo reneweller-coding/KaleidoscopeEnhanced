@@ -31,8 +31,9 @@ passiert unsichtbar zwischen zwei Auftritten.
   (6), zweite Abbildung (8), Verzerrung (6) — plus Untervarianten aus dem
   Nachkomma-Anteil desselben Knopfs (Zähligkeit, Armzahl, {p,q}, Gittergröße),
   4 Stile, Palette: gut 3000 Ketten × Untervarianten × Stil.
-* **ChainLab3D**: Raum (5) × Faltkern (5) × Körper (5), alle 125 Kombinationen
-  gerendert und nachgebessert, eingefärbt mit der 2D-Stufenmaschine.
+* **ChainLab3D**: Raum (5) × Faltkern (6, seit dem Menger-Schwamm) × Körper (5);
+  die ersten 125 Kombinationen alle gerendert und nachgebessert, Menger mit
+  allen Körpern geprüft; eingefärbt mit der 2D-Stufenmaschine.
 * **Grammatik statt Zufall**: Die Klassen sorgen dafür, dass jede Kette
   „Abbildung → Symmetrie → Abbildung → Verzerrung“ hat — zwei Verzerrungen
   hintereinander oder eine Kette ohne Struktur kommen nicht vor.
