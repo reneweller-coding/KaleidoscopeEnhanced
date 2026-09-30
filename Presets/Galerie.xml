@@ -53,9 +53,6 @@
     <float name="power"       minValue="1.0"    maxValue="1.4"></float>
     <bool  name="rotate"      probability="0.4"></bool>
   </TextureShader>
-  <TextureShader file="..\\Scene2D\\DroneDepths.frag" type="normal" probability="0.3" mood="calm,dark" complexity="1">
-    <rig preset="flat"/>
-  </TextureShader>
   <TextureShader file="..\\Scene2D\\FlowingWires.frag" type="normal" mood="calm,bright" probability="0.4" complexity="2">
     <rig preset="flat"/>
     <float name="snapP" minValue="2.8" maxValue="5.2"></float>
@@ -72,13 +69,6 @@
   </TextureShader>
   <TextureShader file="..\\Scene2D\\FractalKIFS.frag" type="normal" probability="0.35" mood="aggressive,psychedelic" complexity="1">
     <rig preset="flat"/>
-  </TextureShader>
-  <TextureShader file="..\\Scene2D\\HarmonicRings.frag" type="KaleidoscopeBase" mood="calm,bright" probability="0.5" complexity="1">
-    <rig preset="flat"/>
-    <!-- Speed only drives ring rotation; flux drives ring brightness -->
-    <float name="speed" minValue="0.0003" maxValue="0.0025"></float>
-    <float name="power" minValue="1.0"    maxValue="1.3"></float>
-    <bool  name="rotate" probability="0.5"></bool>
   </TextureShader>
   <TextureShader file="..\\Scene2D\\HexKaleido.frag" type="normal" mood="psychedelic,bright" probability="0.5" complexity="1">
     <rig preset="flat"/>
@@ -3271,6 +3261,22 @@
     <float name="curlP" minValue="0" maxValue="1"></float>
     <float name="strokeP" minValue="0" maxValue="1"></float>
     <float name="gapP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\WaxDripCascade.frag" type="normal" mood="calm,warm" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="layerP" minValue="0" maxValue="1"></float>
+    <float name="dripP" minValue="0" maxValue="1"></float>
+    <float name="photoP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\KusamaDotInfinity.frag" type="normal" mood="psychedelic,bright" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="ringsP" minValue="0" maxValue="1"></float>
+    <float name="spiralP" minValue="0" maxValue="1"></float>
+    <float name="photoP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
