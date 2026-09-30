@@ -889,13 +889,7 @@
   <TextureShader file="..\\Scene3D\\AuroraVeil.frag" type="scene3d" geom="ribbon" probability="0.3" mood="calm,dark,space" complexity="1">
     <rig preset="procedural"/>
   </TextureShader>
-  <TextureShader file="..\\Scene3D\\TorusKnot.frag" type="scene3d" geom="points" probability="0.35" mood="dark,dreamy" complexity="2">
-    <rig preset="procedural"/>
-  </TextureShader>
   <TextureShader file="..\\Scene3D\\RoseOrbit.frag" type="scene3d" geom="points" probability="0.3" mood="calm,space" complexity="2">
-    <rig preset="procedural"/>
-  </TextureShader>
-  <TextureShader file="..\\Scene3D\\OrbitalShells.frag" type="scene3d" geom="points" probability="0.3" mood="dark,dreamy,space" complexity="2">
     <rig preset="procedural"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\PlasmaSheet.frag" type="scene3d" geom="grid" mood="aggressive,psychedelic" probability="0.3" complexity="2">
@@ -3289,6 +3283,22 @@
     <float name="pleatP" minValue="0" maxValue="1"></float>
     <float name="waveP" minValue="0" maxValue="1"></float>
     <float name="paperP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureTumblingBlocks.frag" type="normal" mood="psychedelic,calm" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="blockP" minValue="0" maxValue="1"></float>
+    <float name="waveP" minValue="0" maxValue="1"></float>
+    <float name="edgeP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\PhotoWovenThreads.frag" type="normal" mood="calm,bright" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="threadP" minValue="0" maxValue="1"></float>
+    <float name="twillP" minValue="0" maxValue="1"></float>
+    <float name="gapP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>

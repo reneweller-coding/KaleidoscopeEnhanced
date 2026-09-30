@@ -3565,14 +3565,6 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\\Scene2D\\TextureGlowVines.frag" type="normal" mood="calm,dark" probability="0.45" complexity="2">
-    <rig preset="flat"/>
-    <float name="vineP" minValue="0" maxValue="1"></float>
-    <float name="leafP" minValue="0" maxValue="1"></float>
-    <float name="photoP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader file="..\\Scene2D\\TextureIronFilings.frag" type="normal" mood="calm,dark" probability="0.45" complexity="2">
     <rig preset="flat"/>
     <float name="densityP" minValue="0" maxValue="1"></float>
@@ -3690,6 +3682,14 @@
     <float name="foamP" minValue="0" maxValue="1"></float>
     <float name="clarityP" minValue="0" maxValue="1"></float>
     <float name="twistP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\StarStreakTunnel.frag" type="normal" mood="energetic,dark" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="densityP" minValue="0" maxValue="1"></float>
+    <float name="widthP" minValue="0" maxValue="1"></float>
+    <float name="tunnelP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>

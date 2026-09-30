@@ -1187,14 +1187,6 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP"  minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\Scene3D\CrystallineCavernTessellation.frag" type="scene3d" geom="patches" probability="0.48" mood="calm,bright" complexity="4">
-    <rig preset="procedural"/>
-    <expr name="glowP" formula="clamp(1.25 + 0.3*(seed1*2.0-1.0) + 0.675*(0.6*kick+0.4*snare), 0.5, 2)"/>
-    <float name="glowP"     minValue="0.5" maxValue="2.0"></float>
-    <float name="crystalP"  minValue="0.5" maxValue="2.2"></float>
-    <expr name="hueP" formula="chromaHue + seed2*6.28"/>
-    <float name="hueP"      minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader file="..\Scene3D\TeslaLightningTree.frag" type="scene3d" geom="indirect" probability="0.5" mood="aggressive,dark" complexity="4">
     <rig preset="procedural"/>
     <expr name="glowP" formula="clamp(1.25 + 0.3*(seed2*2.0-1.0) + 0.675*(0.6*kick+0.4*snare), 0.5, 2)"/>
@@ -1401,14 +1393,6 @@
     <float name="speedP" minValue="0.5" maxValue="2.0"></float>
     <expr name="hueP" formula="chromaHue + seed3*6.28"/>
     <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
-  <TextureShader file="..\Scene2D\QuasarRelativisticJet.frag" type="normal" probability="0.5" mood="aggressive,bright,psychedelic" complexity="4">
-    <rig preset="flat"/>
-    <float name="jetP"         minValue="0.5" maxValue="2.2"></float>
-    <float name="collimationP" minValue="0.5" maxValue="2.0"></float>
-    <float name="speedP"       minValue="0.5" maxValue="2.0"></float>
-    <expr name="hueP" formula="chromaHue + seed3*6.28"/>
-    <float name="hueP"         minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene2D\SolarCoronaProminence.frag" type="normal" probability="0.5" mood="aggressive,bright,psychedelic" complexity="3">
     <rig preset="flat"/>
@@ -3098,6 +3082,22 @@
     <float name="armsP" minValue="0" maxValue="1"></float>
     <float name="photoZoomP" minValue="0" maxValue="1"></float>
     <float name="rimP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\StarStreakTunnel.frag" type="normal" mood="energetic,dark" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="densityP" minValue="0" maxValue="1"></float>
+    <float name="widthP" minValue="0" maxValue="1"></float>
+    <float name="tunnelP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureTumblingBlocks.frag" type="normal" mood="psychedelic,calm" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="blockP" minValue="0" maxValue="1"></float>
+    <float name="waveP" minValue="0" maxValue="1"></float>
+    <float name="edgeP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
