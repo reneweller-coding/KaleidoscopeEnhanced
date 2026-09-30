@@ -1085,3 +1085,6 @@ TextureAmberSubsurface	7	4	2	5	3	5	4
 TextureRingFlight	5	8	7	5	7	5	7
 TextureShardCloud	4	6	7	6	6	5	6
 TextureDichroicCoat	5	4	6	3	8	7	7
+TextureCrystalLatticeFlight	3	8	8	5	8	5	8
+TextureSilkVeils	8	5	2	4	5	7	6
+TextureCometShower	6	9	4	5	5	4	6

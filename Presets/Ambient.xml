@@ -160,17 +160,6 @@
     <float name="speed" minValue="0.02" maxValue="0.09"></float>
     <float name="power" minValue="1.0" maxValue="4.0"></float>
   </TextureShader>
-  <TextureShader file="..\\Scene2D\\VoronoiPulse.frag" type="normal" mood="aggressive,psychedelic" probability="0.4" complexity="1">
-    <rig preset="flat"/>
-    <int name="sidesP" minValue="3" maxValue="9"></int>
-    <float name="scaleP" minValue="2.2" maxValue="4.5"></float>
-    <float name="driftP" minValue="0.6" maxValue="1.5"></float>
-  </TextureShader>
-  <TextureShader file="..\Scene3D\Spaceship.frag" type="scene3d" geom="mesh" model="..\Models\AllianceDreadnought.glb" mood="dark,space" probability="0.4" complexity="3">
-    <rig preset="mesh-32-roll"/>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader file="..\Scene3D\RingStation.frag" type="scene3d" geom="mesh" model="..\Models\WheelStationPell.glb" mood="bright,space" probability="0.4" complexity="3">
     <rig preset="mesh-32-roll"/>
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
@@ -3241,6 +3230,22 @@
     <float name="pieceP" minValue="0" maxValue="1"></float>
     <float name="bevelP" minValue="0" maxValue="1"></float>
     <float name="photoP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureSilkVeils.frag" type="normal" mood="calm,bright" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="veilP" minValue="0" maxValue="1"></float>
+    <float name="foldP" minValue="0" maxValue="1"></float>
+    <float name="printP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureCometShower.frag" type="normal" mood="calm,dark" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="densityP" minValue="0" maxValue="1"></float>
+    <float name="angleP" minValue="0" maxValue="1"></float>
+    <float name="skyP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>

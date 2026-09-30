@@ -1561,15 +1561,6 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP"    minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\Scene2D\CalabiYauManifold.frag" type="normal" probability="0.48" mood="psychedelic,bright" complexity="4">
-    <rig preset="flat"/>
-    <float name="genusP" minValue="0.5" maxValue="2.0"></float>
-    <float name="zoomP"  minValue="0.5" maxValue="1.8"></float>
-    <expr name="glowP" formula="clamp(1.35 + 0.34*(seed1*2.0-1.0) + 0.765*(0.6*kick+0.4*snare), 0.5, 2.2)"/>
-    <float name="glowP"  minValue="0.5" maxValue="2.2"></float>
-    <expr name="hueP" formula="chromaHue + seed2*6.28"/>
-    <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader file="..\Scene2D\CliffordTorusKleinBottle.frag" type="normal" probability="0.48" mood="bright,psychedelic" complexity="3">
     <rig preset="flat"/>
     <expr name="radiusP" formula="clamp(1.15 + 0.325*(seed2*2.0-1.0) + 0.325*(swell), 0.5, 1.8)"/>
@@ -1872,15 +1863,6 @@
     <expr name="hueP" formula="chromaHue + seed3*6.28"/>
     <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\Scene3D\NonEuclideanDodecahedronLoom.frag" type="scene3d" geom="ribbon" probability="0.5" mood="bright,calm,psychedelic" complexity="3">
-    <rig preset="procedural"/>
-    <float name="dodecaP" minValue="0.5" maxValue="2.0"></float>
-    <float name="loomP"   minValue="0.5" maxValue="2.0"></float>
-    <expr name="widthP" formula="clamp(1.25 + 0.375*(seed1*2.0-1.0) + 0.375*(swell), 0.5, 2)"/>
-    <float name="widthP"  minValue="0.5" maxValue="2.0"></float>
-    <expr name="hueP" formula="chromaHue + seed3*6.28"/>
-    <float name="hueP"    minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader file="..\Scene3D\AbrikosovFluxLatticeVortices.frag" type="scene3d" geom="points" probability="0.5" mood="dark,aggressive" complexity="3">
     <rig preset="procedural"/>
     <float name="fluxP"   minValue="0.5" maxValue="2.0"></float>
@@ -1993,13 +1975,6 @@
     <rig preset="procedural"/>
     <float name="boreWaveP" minValue="6.0" maxValue="18.0"></float>
     <float name="airglowP" minValue="0.8" maxValue="2.5"></float>
-  </TextureShader>
-  <TextureShader file="..\Scene3D\SubglacialVolcanicPillowLava.frag" type="scene3d" geom="grid" probability="0.45" mood="dark,calm" complexity="4">
-    <rig preset="procedural"/>
-    <float name="pillowScaleP" minValue="2.5" maxValue="6.0"></float>
-    <float name="crustHeightP" minValue="0.15" maxValue="0.6"></float>
-    <float name="lavaHeatP" minValue="0.8" maxValue="2.5"></float>
-    <float name="crustGlowP" minValue="0.6" maxValue="2.0"></float>
   </TextureShader>
   <TextureShader file="..\Scene3D\MajoranaNanowireBraiding.frag" type="scene3d" geom="ribbon" probability="0.45" mood="bright,psychedelic" complexity="3">
     <rig preset="procedural"/>
@@ -3519,6 +3494,30 @@
     <float name="pieceP" minValue="0" maxValue="1"></float>
     <float name="bevelP" minValue="0" maxValue="1"></float>
     <float name="photoP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureCrystalLatticeFlight.frag" type="normal" mood="energetic,psychedelic" probability="0.45" complexity="3">
+    <rig preset="flat"/>
+    <float name="cellP" minValue="0" maxValue="1"></float>
+    <float name="glowP" minValue="0" maxValue="1"></float>
+    <float name="fogP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureSilkVeils.frag" type="normal" mood="calm,bright" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="veilP" minValue="0" maxValue="1"></float>
+    <float name="foldP" minValue="0" maxValue="1"></float>
+    <float name="printP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureCometShower.frag" type="normal" mood="calm,dark" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="densityP" minValue="0" maxValue="1"></float>
+    <float name="angleP" minValue="0" maxValue="1"></float>
+    <float name="skyP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
