@@ -47,9 +47,9 @@ passiert unsichtbar zwischen zwei Auftritten.
   Ausgaben zweier Nachbarn überblenden — beide stetig, also sprungfrei. Die
   Musik greift damit direkt in die *Wahl der Geometrie*.
 * **Kosten**: Die Stufenwahl hängt nur an Uniforms, alle Pixel nehmen
-  denselben Zweig; die Kette wird je Pixel 6-mal ausgewertet. ChainLab2D
-  sollte bei 120 fps bleiben wie die kuratierten Ketten; **ChainLab3D ist noch
-  nicht gemessen** (fps_probe spielt Musik — erst wenn du wach bist).
+  denselben Zweig. Gemessen in der App (fps_probe, lautlos): ChainLab2D,
+  ChainLab3D und ChainLabTunnel je dreimal gewürfelt, dazu Chain3DMandelbox
+  und Chain3DKifsTetra — überall 120 fps bei renderScale 1,00.
 
 ## 3. Vom Wurf zur Szene: merken, einfrieren, bewerten
 
