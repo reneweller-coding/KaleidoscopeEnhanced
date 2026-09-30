@@ -1756,12 +1756,6 @@
     <float name="pointGainP" minValue="0.5" maxValue="1.8"></float>
     <float name="haloP" minValue="0.6" maxValue="2.2"></float>
   </TextureShader>
-  <TextureShader file="..\Scene3D\E8LieAlgebraRootLattice.frag" type="scene3d" geom="cubes" probability="0.45" mood="aggressive,bright,psychedelic" complexity="4">
-    <rig preset="procedural"/>
-    <float name="rootScaleP" minValue="0.8" maxValue="2.2"></float>
-    <float name="cubeSizeP" minValue="0.04" maxValue="0.16"></float>
-    <float name="specularP" minValue="0.8" maxValue="2.5"></float>
-  </TextureShader>
   <TextureShader file="..\Scene3D\LuttingerLiquidSpinChargeSeparation.frag" type="scene3d" geom="ribbon" probability="0.45" mood="calm,psychedelic" complexity="3">
     <rig preset="procedural"/>
     <float name="ribbonWidthP" minValue="0.02" maxValue="0.1"></float>
@@ -3095,6 +3089,14 @@
     <float name="shapeP" minValue="0" maxValue="1"></float>
     <float name="lobeP" minValue="0" maxValue="1"></float>
     <float name="photoP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureAnodizeRainbow.frag" type="normal" mood="psychedelic,bright" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="bandP" minValue="0" maxValue="1"></float>
+    <float name="brushP" minValue="0" maxValue="1"></float>
+    <float name="shineP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
