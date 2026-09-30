@@ -426,6 +426,72 @@ vec2 tFarris(vec2 uv, vec2 c, int kind, float cells, float t)
            + (kind == 3 ? cmul(cexpi(-t * 0.6), farrisWave(X, kind, 3.0, 1.0)) * 0.5 : vec2(0.0));   // p4m: chiral waves made symmetric by the mirrors
     return c + f * 0.35;
 }
+// ---- Peirce quincuncial: the plane as a square-tiled sphere ----
+// cn(u; m = 1/2) is doubly periodic on a square lattice (its periods 4K and
+// 2K + 2iK, with K = K' = 1.8540747) and maps each square onto the Riemann
+// sphere: Peirce's quincuncial projection, inverted.  For m = 1/2 the theta
+// nome is q = exp(-pi), so three terms of each series are exact to float
+// precision.  cn = (th4(0)/th2(0)) * th2(v) / th4(v), v = pi u / (2K).
+vec2 csin(vec2 a) { return vec2(sin(a.x) * cosh(a.y), cos(a.x) * sinh(a.y)); }
+vec2 ccos(vec2 a) { return vec2(cos(a.x) * cosh(a.y), -sin(a.x) * sinh(a.y)); }
+void cnTheta(vec2 v, out vec2 N, out vec2 D)
+{
+    // reduce by the periods (2 pi and pi + i pi in v): the series stay small
+    float n = floor(v.y / 3.14159265 + 0.5);
+    v -= n * vec2(3.14159265, 3.14159265);
+    v.x = mod(v.x + 3.14159265, 6.2831853) - 3.14159265;
+    const float q14 = 0.4559381, q94 = 0.0008505, q254 = 1.6e-9;   // q^(1/4), q^(9/4), q^(25/4)
+    const float q1 = 0.0432139, q4 = 3.487e-6;                       // q, q^4
+    vec2 th2 = 2.0 * (q14 * ccos(v) + q94 * ccos(3.0 * v) + q254 * ccos(5.0 * v));
+    vec2 th4 = vec2(1.0, 0.0) + 2.0 * (-q1 * ccos(2.0 * v) + q4 * ccos(4.0 * v));
+    N = th2 * (1.0 - 2.0 * q1 + 2.0 * q4) / (2.0 * (q14 + q94 + q254));   // th4(0) / th2(0)
+    D = th4;
+}
+// The picture on a turning sphere, seen through Peirce's square tiling.  The
+// sphere point is lifted from N/D without dividing (poles are harmless), turned
+// about two axes, and projected back stereographically.
+vec2 tQuincunx(vec2 uv, vec2 c, float scale, float a1, float a2)
+{
+    vec2 z = (uv - c) * scale * 1.8540747;
+    z = vec2(z.x - z.y, z.x + z.y) * 0.7071068;                  // squares upright
+    vec2 N, D;
+    cnTheta(z * 0.8472131, N, D);                                // pi / (2K)
+    vec2 ND = vec2(N.x * D.x + N.y * D.y, N.y * D.x - N.x * D.y);   // N * conj(D)
+    float nn = dot(N, N), dd = dot(D, D);
+    vec3 P = vec3(2.0 * ND, nn - dd) / max(nn + dd, 1e-12);
+    P.yz = rot2(a1) * P.yz;
+    P.xy = rot2(a2) * P.xy;
+    return c + P.xy / max(1.0 - P.z, 1e-3) * 0.4;
+}
+// Apollonian inversion fold: mirrored repetition and inversion in the unit
+// circle, alternating -- the circle packings and limit-set lace of Kleinian
+// groups (Indra's Pearls), built only from continuous steps (a mirrored
+// triangle wave instead of the usual fract, an unconditional inversion).
+vec2 tApollo(vec2 uv, vec2 c, float s, float iters)
+{
+    vec2 p = (uv - c) * 2.2;
+    for (int i = 0; i < 6; ++i) {
+        if (float(i) >= iters) break;
+        p = abs(fract(p * 0.5 + 0.5) * 2.0 - 1.0) * 2.0 - 1.0;   // mirrored repeat, period 4 (continuous)
+        p *= s / max(dot(p, p), 1e-3);
+    }
+    return c + p * 0.25;
+}
+// Farris rosettes: sums of z^n conj(z)^m with n - m = k (mod p) -- p-fold
+// rosettes; with k = 1 the pattern has COLOUR TURNING: turning the plane by
+// 2 pi / p turns the picture looked up by the same step, so the photo's
+// colours travel round the rosette.  Coefficients turn with time.
+vec2 rosetteTerm(float r, float th, float d, float e) { return pow(r, e) * vec2(cos(d * th), sin(d * th)); }
+vec2 tRosette(vec2 uv, vec2 c, float p, float k, float t)
+{
+    vec2 d0 = (uv - c) * 1.7;
+    float r = length(d0), th = atan(d0.y, d0.x);
+    float d1 = k + p, d2 = k - p;
+    vec2 f = cmul(cexpi(t * 0.6), rosetteTerm(r, th, d1, abs(d1)))
+           + cmul(cexpi(-t * 0.4 + 1.0), rosetteTerm(r, th, d2, abs(d2))) * 0.8
+           + cmul(cexpi(t * 0.3 + 2.0), rosetteTerm(r, th, k, abs(k) + 2.0)) * 0.6;
+    return c + f * 0.6;                                         // audit: 0.3 read too small a patch (flat, grey)
+}
 // Bipolar coordinates around two foci at c -/+ (f, 0): sigma (the angle the
 // foci subtend) across, tau (log ratio of the distances) along -- the picture
 // streams out of one focus into the other.  sigma/pi jumps by 2 on the segment

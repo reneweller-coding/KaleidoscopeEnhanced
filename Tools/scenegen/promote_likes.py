@@ -26,10 +26,10 @@ CLASSES = {
     "coreP": ["no fold core", "plane folds", "polyhedral kaleidoscope", "sphere-inversion box fold", "Kleinian fold", "tetrahedral KIFS", "icosahedral KIFS", "octahedral KIFS", "Menger sponge"],
     "bodyP": ["balls", "tori", "gyroid membrane", "Schwarz P surface", "Schwarz D surface", "blocks", "crosses"],
     # chain stages in the labs' energy order (calm .. energetic, ORD_A..ORD_D in ChainLab2D)
-    "chainAP": [None, "polar unwrap", "Farris wallpaper", "Droste zoom", "Escher spiral Droste", "hyperbolic Poincare tiling", "hyperbolic band", "log-polar spiral", "rotating Riemann sphere", "complex exponential",
+    "chainAP": [None, "polar unwrap", "Farris wallpaper", "Droste zoom", "Escher spiral Droste", "hyperbolic Poincare tiling", "hyperbolic band", "log-polar spiral", "rotating Riemann sphere", "Peirce quincuncial sphere", "complex exponential",
                 "bipolar stream", "complex sine", "circle inversion", "Moebius stream", "loxodromic stream", "kaleidoscope", "tunnel"],
-    "chainBP": [None, "mirror line", "p4m lattice", "kaleidoscope", "p6m lattice", "iterated fold"],
-    "chainCP": [None, "lens", "blossom", "Joukowski map", "spiral", "complex square", "inversion", "kaleidoscope", "tunnel"],
+    "chainBP": [None, "mirror line", "p4m lattice", "kaleidoscope", "p6m lattice", "iterated fold", "Apollonian inversion fold"],
+    "chainCP": [None, "lens", "blossom", "Farris rosette", "Joukowski map", "spiral", "complex square", "inversion", "kaleidoscope", "tunnel"],
     "chainDP": [None, "turning", "shear wave", "twirl", "domain warp", "ripple"],
     "morphP": ["the first stage", "the symmetry", "the second map", "the warp"],
 }

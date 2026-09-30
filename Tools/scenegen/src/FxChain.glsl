@@ -37,9 +37,9 @@ float sides(float v) { return 5.0 + floor(v * 4.99); }                     // 5 
 // The classes of every stage in order of energy (calm .. energetic): a knob
 // value, rolled or walked, picks a position on that scale, so the music's
 // energy can choose the region (EffectShader::stepChainWalk).
-int orda(int i) { if (i == 0) return 11; if (i == 1) return 5; if (i == 2) return 14; if (i == 3) return 4; if (i == 4) return 16; if (i == 5) return 9; if (i == 6) return 15; if (i == 7) return 1; if (i == 8) return 12; if (i == 9) return 6; if (i == 10) return 10; if (i == 11) return 7; if (i == 12) return 8; if (i == 13) return 3; if (i == 14) return 13; if (i == 15) return 0; return 2; }   // 11 none, 14 Farris, 16 spiral Droste, 15 hyperbolic band
-int ordb(int i) { if (i == 0) return 0; if (i == 1) return 5; if (i == 2) return 3; if (i == 3) return 1; if (i == 4) return 2; return 4; }
-int ordc(int i) { if (i == 0) return 0; if (i == 1) return 5; if (i == 2) return 8; if (i == 3) return 7; if (i == 4) return 1; if (i == 5) return 4; if (i == 6) return 3; if (i == 7) return 6; return 2; }
+int orda(int i) { if (i == 0) return 11; if (i == 1) return 5; if (i == 2) return 14; if (i == 3) return 4; if (i == 4) return 16; if (i == 5) return 9; if (i == 6) return 15; if (i == 7) return 1; if (i == 8) return 12; if (i == 9) return 17; if (i == 10) return 6; if (i == 11) return 10; if (i == 12) return 7; if (i == 13) return 8; if (i == 14) return 3; if (i == 15) return 13; if (i == 16) return 0; return 2; }   // 11 none, 17 Peirce quincunx
+int ordb(int i) { if (i == 0) return 0; if (i == 1) return 5; if (i == 2) return 3; if (i == 3) return 1; if (i == 4) return 2; if (i == 5) return 4; return 6; }   // none, mirror line, p4m, kaleidoscope, p6m, fold, Apollonian
+int ordc(int i) { if (i == 0) return 0; if (i == 1) return 5; if (i == 2) return 8; if (i == 3) return 9; if (i == 4) return 7; if (i == 5) return 1; if (i == 6) return 4; if (i == 7) return 3; if (i == 8) return 6; return 2; }   // none, lens, blossom, rosette, Joukowski, spiral, square, inversion, kaleidoscope, tunnel
 int ordd(int i) { if (i == 0) return 0; if (i == 1) return 5; if (i == 2) return 2; if (i == 3) return 1; if (i == 4) return 4; return 3; }
 int ords(int i) { if (i == 0) return 0; if (i == 1) return 1; if (i == 2) return 3; if (i == 3) return 4; return 2; }   // photo, relief, contours, flow, glowing edges
 // The app's walk: per stage (shown knob value, target, fade 0..1); walkHost = 1
@@ -51,6 +51,7 @@ uniform float walkHost;
 vec2 stageAk(vec2 uv, int k, float v)
 {
     k = orda(k);
+    if (k == 17) return tQuincunx(uv, gCw, 3.0 + 2.0 * v, 0.5 * sin(gT * 0.37) + v * 2.0, gT * 0.5 + gRot);
     if (k == 14) return tFarris(uv, gCw, int(floor(v * 3.99)), 1.5 + gSpread, gT * 1.5);
     if (k == 15) {
         int j = int(floor(v * 3.99));
@@ -88,6 +89,7 @@ vec2 stageAk(vec2 uv, int k, float v)
 vec2 stageBk(vec2 uv, int k, float v)
 {
     k = ordb(k);
+    if (k == 6) return tApollo(uv, gCw, 1.04 + 0.08 * v + 0.04 * sin(gT * 0.3), 3.0);   // more rounds or a larger s turn to sub-pixel lace
     if (k == 0) return uv;
     if (k == 1) return tKaleido(uv, gCw, sides(v), gRot);
     if (k == 2) return tHex(uv, 2.0 + 1.5 * v);
@@ -99,6 +101,7 @@ vec2 stageBk(vec2 uv, int k, float v)
 vec2 stageCk(vec2 uv, int k, float v)
 {
     k = ordc(k);
+    if (k == 9) return tRosette(uv, gCw, 3.0 + floor(v * 5.99), fract(v * 6.0) < 0.5 ? 0.0 : 1.0, gT * 1.5);
     if (k == 8) return tPetal(uv, gCw, 3.0 + floor(v * 5.99), 0.15 + 0.2 * gSpread, gT * 2.0);
     if (k == 0) return uv;
     if (k == 1) return tSpiral(uv, vec2(0.5), evenArms(v), 1.0, gT * 1.5);
@@ -154,19 +157,19 @@ float walkFade(float kf) { return smoothstep(walkAll() ? 0.7 : 0.55, 1.0, fract(
 vec2 morphMix(vec2 a, vec2 b, float f) { return mix(mirrorUV(a), mirrorUV(b), f); }
 vec2 stageA(vec2 uv)
 {
-    int k0 = pickStage(chainAP, 17); float v0 = subVar(chainAP, 17);
+    int k0 = pickStage(chainAP, 18); float v0 = subVar(chainAP, 18);
     if (!walks(1)) { gIdW *= (k0 <= 0 ? 1.0 : 0.0); return stageAk(uv, k0, v0); }
     if (walkHost > 0.5 && walkAll()) {
         float f = smoothstep(0.0, 1.0, walkA.z);
-        int j0 = pickStage(walkA.x, 17), j1 = pickStage(walkA.y, 17);
+        int j0 = pickStage(walkA.x, 18), j1 = pickStage(walkA.y, 18);
         gIdW *= (j0 <= 0 ? 1.0 - f : 0.0) + (j1 <= 0 ? f : 0.0);
-        if (f <= 0.0) return stageAk(uv, j0, subVar(walkA.x, 17));
-        return morphMix(stageAk(uv, j0, subVar(walkA.x, 17)), stageAk(uv, j1, subVar(walkA.y, 17)), f);
+        if (f <= 0.0) return stageAk(uv, j0, subVar(walkA.x, 18));
+        return morphMix(stageAk(uv, j0, subVar(walkA.x, 18)), stageAk(uv, j1, subVar(walkA.y, 18)), f);
     }
     float kf = walkPos(1), c = floor(kf);
     int i0, i1; float w0, w1;
-    walkPick(c, k0, v0, 17, 1.3, i0, w0);
-    walkPick(c + 1.0, k0, v0, 17, 1.3, i1, w1);
+    walkPick(c, k0, v0, 18, 1.3, i0, w0);
+    walkPick(c + 1.0, k0, v0, 18, 1.3, i1, w1);
     float f = walkFade(kf);
     gIdW *= (i0 <= 0 ? 1.0 - f : 0.0) + (i1 <= 0 ? f : 0.0);
     if (f <= 0.0) return stageAk(uv, i0, w0);
@@ -174,19 +177,19 @@ vec2 stageA(vec2 uv)
 }
 vec2 stageB(vec2 uv)
 {
-    int k0 = pickStage(chainBP, 6); float v0 = subVar(chainBP, 6);
+    int k0 = pickStage(chainBP, 7); float v0 = subVar(chainBP, 7);
     if (!walks(2)) { gIdW *= (k0 <= 1 ? 1.0 : 0.0); return stageBk(uv, k0, v0); }
     if (walkHost > 0.5 && walkAll()) {
         float f = smoothstep(0.0, 1.0, walkB.z);
-        int j0 = pickStage(walkB.x, 6), j1 = pickStage(walkB.y, 6);
+        int j0 = pickStage(walkB.x, 7), j1 = pickStage(walkB.y, 7);
         gIdW *= (j0 <= 1 ? 1.0 - f : 0.0) + (j1 <= 1 ? f : 0.0);
-        if (f <= 0.0) return stageBk(uv, j0, subVar(walkB.x, 6));
-        return morphMix(stageBk(uv, j0, subVar(walkB.x, 6)), stageBk(uv, j1, subVar(walkB.y, 6)), f);
+        if (f <= 0.0) return stageBk(uv, j0, subVar(walkB.x, 7));
+        return morphMix(stageBk(uv, j0, subVar(walkB.x, 7)), stageBk(uv, j1, subVar(walkB.y, 7)), f);
     }
     float kf = walkPos(2), c = floor(kf);
     int i0, i1; float w0, w1;
-    walkPick(c, k0, v0, 6, 2.9, i0, w0);
-    walkPick(c + 1.0, k0, v0, 6, 2.9, i1, w1);
+    walkPick(c, k0, v0, 7, 2.9, i0, w0);
+    walkPick(c + 1.0, k0, v0, 7, 2.9, i1, w1);
     float f = walkFade(kf);
     gIdW *= (i0 <= 1 ? 1.0 - f : 0.0) + (i1 <= 1 ? f : 0.0);
     if (f <= 0.0) return stageBk(uv, i0, w0);
@@ -194,19 +197,19 @@ vec2 stageB(vec2 uv)
 }
 vec2 stageC(vec2 uv)
 {
-    int k0 = pickStage(chainCP, 9); float v0 = subVar(chainCP, 9);
+    int k0 = pickStage(chainCP, 10); float v0 = subVar(chainCP, 10);
     if (!walks(3)) { gIdW *= (k0 <= 1 ? 1.0 : 0.0); return stageCk(uv, k0, v0); }
     if (walkHost > 0.5 && walkAll()) {
         float f = smoothstep(0.0, 1.0, walkC.z);
-        int j0 = pickStage(walkC.x, 9), j1 = pickStage(walkC.y, 9);
+        int j0 = pickStage(walkC.x, 10), j1 = pickStage(walkC.y, 10);
         gIdW *= (j0 <= 1 ? 1.0 - f : 0.0) + (j1 <= 1 ? f : 0.0);
-        if (f <= 0.0) return stageCk(uv, j0, subVar(walkC.x, 9));
-        return morphMix(stageCk(uv, j0, subVar(walkC.x, 9)), stageCk(uv, j1, subVar(walkC.y, 9)), f);
+        if (f <= 0.0) return stageCk(uv, j0, subVar(walkC.x, 10));
+        return morphMix(stageCk(uv, j0, subVar(walkC.x, 10)), stageCk(uv, j1, subVar(walkC.y, 10)), f);
     }
     float kf = walkPos(3), c = floor(kf);
     int i0, i1; float w0, w1;
-    walkPick(c, k0, v0, 9, 4.7, i0, w0);
-    walkPick(c + 1.0, k0, v0, 9, 4.7, i1, w1);
+    walkPick(c, k0, v0, 10, 4.7, i0, w0);
+    walkPick(c + 1.0, k0, v0, 10, 4.7, i1, w1);
     float f = walkFade(kf);
     gIdW *= (i0 <= 1 ? 1.0 - f : 0.0) + (i1 <= 1 ? f : 0.0);
     if (f <= 0.0) return stageCk(uv, i0, w0);
