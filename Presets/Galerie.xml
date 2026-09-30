@@ -24,16 +24,6 @@
     <int name="kSides" minValue="0" maxValue="9"></int>
     <float name="rosetteP" minValue="0.15" maxValue="0.35"></float>
   </TextureShader>
-  <TextureShader file="..\\Scene2D\\BreathingFractalZoom.frag" type="normal" probability="0.35" mood="calm,bright" complexity="1">
-    <rig preset="flat"/>
-    <expr name="deepP" formula="clamp(3.2 + 1.0*swell, 2.5, 4.5)"/>
-    <float name="oscP" minValue="0.03" maxValue="0.09"></float>
-    <float name="deepP" minValue="2.5" maxValue="4.5"></float>
-    <float name="breathP" minValue="12.0" maxValue="30.0"></float>
-    <float name="palShiftP" minValue="0.0" maxValue="1.0"></float>
-    <int name="kSides" minValue="0" maxValue="9"></int>
-    <float name="rosetteP" minValue="0.15" maxValue="0.35"></float>
-  </TextureShader>
   <TextureShader file="..\\Scene2D\\Bubble.frag" type="normal" mood="calm,bright,dreamy" probability="0.15" complexity="10">
     <rig preset="flat"/>
     <float name="speed" minValue="1.0" maxValue="2.5"></float>
@@ -43,15 +33,6 @@
   </TextureShader>
   <TextureShader file="..\\Scene2D\\CurlAurora.frag" type="normal" probability="0.6" mood="calm,space" complexity="1">
     <rig preset="flat"/>
-  </TextureShader>
-  <TextureShader file="..\\Scene2D\\DarkAmbientTunnel.frag" type="KaleidoscopeBase" mood="calm,dreamy" probability="0.4" complexity="1">
-    <rig preset="flat"/>
-    <!-- Very slow rotation - audio flux controls actual motion -->
-    <float name="speedTunnel" minValue="0.0002" maxValue="0.0020"></float>
-    <float name="speed"       minValue="0.0002" maxValue="0.0015"></float>
-    <int   name="sides"       minValue="4"      maxValue="8"></int>
-    <float name="power"       minValue="1.0"    maxValue="1.4"></float>
-    <bool  name="rotate"      probability="0.4"></bool>
   </TextureShader>
   <TextureShader file="..\\Scene2D\\FlowingWires.frag" type="normal" mood="calm,bright" probability="0.4" complexity="2">
     <rig preset="flat"/>
@@ -2539,12 +2520,6 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\\Scene2D\\TaikoSilhouettes.frag" type="normal" mood="aggressive,dark" probability="0.2" complexity="2">
-    <rig preset="flat"/>
-    <float name="drummersP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader file="..\\Scene2D\\RapeseedStormLight.frag" type="normal" mood="dark,dreamy" probability="0.2" complexity="2">
     <rig preset="flat"/>
     <float name="hillsP" minValue="0" maxValue="1"></float>
@@ -3276,6 +3251,30 @@
     <rig preset="flat"/>
     <float name="ringsP" minValue="0" maxValue="1"></float>
     <float name="spiralP" minValue="0" maxValue="1"></float>
+    <float name="photoP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureIrisShutter.frag" type="normal" mood="energetic,psychedelic" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="bladesP" minValue="0" maxValue="1"></float>
+    <float name="curveP" minValue="0" maxValue="1"></float>
+    <float name="photoP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureNacreSheen.frag" type="normal" mood="calm,bright" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="terraceP" minValue="0" maxValue="1"></float>
+    <float name="plateP" minValue="0" maxValue="1"></float>
+    <float name="colourP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\ZaoWouKiStorm.frag" type="normal" mood="calm,dark" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="churnP" minValue="0" maxValue="1"></float>
+    <float name="strokeP" minValue="0" maxValue="1"></float>
     <float name="photoP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>

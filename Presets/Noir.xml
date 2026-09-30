@@ -1581,9 +1581,6 @@
   <TextureShader file="..\\Scene3D\\FireflyField.frag" type="scene3d" geom="points" probability="0.3" mood="calm" complexity="2">
     <rig preset="procedural"/>
   </TextureShader>
-  <TextureShader file="..\\Scene3D\\SnowDrift.frag" type="scene3d" geom="points" probability="0.3" mood="calm" complexity="2">
-    <rig preset="procedural"/>
-  </TextureShader>
   <TextureShader file="..\\Scene3D\\RainOnWater.frag" type="scene3d" geom="grid" probability="0.3" mood="calm,dark" complexity="2">
     <rig preset="procedural"/>
   </TextureShader>
@@ -1621,9 +1618,6 @@
     <rig preset="procedural"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\MonolithField.frag" type="scene3d" geom="cubes" probability="0.35" mood="dark,dreamy" complexity="3">
-    <rig preset="procedural"/>
-  </TextureShader>
-  <TextureShader file="..\\Scene3D\\BioCell.frag" type="scene3d" geom="points" probability="0.4" mood="calm" complexity="2">
     <rig preset="procedural"/>
   </TextureShader>
   <TextureShader file="..\\Scene2D\\CrystalGrowth.frag" type="normal" probability="0.4" mood="dark,calm" complexity="2">
@@ -3645,6 +3639,22 @@
     <float name="twistP" minValue="0" maxValue="1"></float>
     <float name="frameP" minValue="0" maxValue="1"></float>
     <float name="wallZoomP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureIrisShutter.frag" type="normal" mood="energetic,psychedelic" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="bladesP" minValue="0" maxValue="1"></float>
+    <float name="curveP" minValue="0" maxValue="1"></float>
+    <float name="photoP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\ZaoWouKiStorm.frag" type="normal" mood="calm,dark" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="churnP" minValue="0" maxValue="1"></float>
+    <float name="strokeP" minValue="0" maxValue="1"></float>
+    <float name="photoP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
