@@ -1053,3 +1053,6 @@ WeatherRadarSweep	3	6	7	6	5	4	6
 KuramotoRings	6	7	7	5	7	6	7
 TextureMicroscopeSlide	6	5	3	4	5	7	6
 TextureMitosisField	7	5	3	3	6	6	6
+TextureFlipDisc	3	4	8	5	6	5	6
+TextureRippleInterference	8	5	3	4	5	7	6
+TextureHeatGlowMetal	4	5	6	6	5	5	6

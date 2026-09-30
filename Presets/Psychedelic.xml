@@ -864,14 +864,6 @@
     <expr name="hueP" formula="chromaHue + seed3*6.28"/>
     <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\Scene2D\FerrofluidSpikeForest.frag" type="normal" probability="0.48" mood="dark,aggressive" complexity="4">
-    <rig preset="flat"/>
-    <float name="spikeP" minValue="0.5" maxValue="2.2"></float>
-    <float name="ringP"  minValue="0.5" maxValue="2.0"></float>
-    <float name="oilP"   minValue="0.5" maxValue="2.0"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader file="..\Scene2D\PlasmaLightningGlobe.frag" type="normal" probability="0.5" mood="aggressive,bright,psychedelic" complexity="3">
     <rig preset="flat"/>
     <float name="arcP"    minValue="0.5" maxValue="2.2"></float>
@@ -3078,6 +3070,14 @@
     <float name="rateP" minValue="0" maxValue="1"></float>
     <float name="cellP" minValue="0" maxValue="1"></float>
     <float name="photoP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureFlipDisc.frag" type="normal" mood="energetic,dark" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="discP" minValue="0" maxValue="1"></float>
+    <float name="waveP" minValue="0" maxValue="1"></float>
+    <float name="colourP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>

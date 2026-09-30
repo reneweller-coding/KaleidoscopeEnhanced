@@ -688,13 +688,6 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\Scene2D\GammaRayBurst.frag" type="normal" mood="bright,aggressive,space" probability="0.45" complexity="4">
-    <rig preset="flat"/>
-    <float name="beamP" minValue="0.5" maxValue="1.5"></float>
-    <float name="shockP" minValue="0.5" maxValue="2.0"></float>
-    <expr name="hueP" formula="chromaHue + seed2*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader file="..\Scene2D\DysonSphereCollapse.frag" type="normal" mood="dark,aggressive,space" probability="0.45" complexity="4">
     <rig preset="flat"/>
     <float name="damageP" minValue="0.5" maxValue="1.5"></float>
@@ -707,13 +700,6 @@
     <float name="beamP" minValue="0.5" maxValue="1.5"></float>
     <float name="blastP" minValue="0.5" maxValue="2.0"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
-  <TextureShader file="..\Scene2D\StarShattering.frag" type="normal" mood="bright,aggressive,space" probability="0.45" complexity="4">
-    <rig preset="flat"/>
-    <float name="gravityP" minValue="0.5" maxValue="1.5"></float>
-    <float name="shatterP" minValue="0.5" maxValue="2.0"></float>
-    <expr name="hueP" formula="chromaHue + seed2*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene2D\NebulaCliffs.frag" type="normal" mood="calm,dreamy,space" probability="0.45" complexity="3">
@@ -3688,6 +3674,22 @@
     <float name="dotP" minValue="0" maxValue="1"></float>
     <float name="armsP" minValue="0" maxValue="1"></float>
     <float name="photoP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureFlipDisc.frag" type="normal" mood="energetic,dark" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="discP" minValue="0" maxValue="1"></float>
+    <float name="waveP" minValue="0" maxValue="1"></float>
+    <float name="colourP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureHeatGlowMetal.frag" type="normal" mood="dark,energetic" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="torchP" minValue="0" maxValue="1"></float>
+    <float name="temperP" minValue="0" maxValue="1"></float>
+    <float name="reliefP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
